@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirtr1.F,v 1.5 2001-06-29 17:31:30 hjj Exp $
+C$Id: sirtr1.F,v 1.6 2001-10-01 13:22:21 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -480,7 +480,7 @@ C
       DO 4000 ISYM = 1,NSYM
          NISHI = NISH(ISYM)
       IF (NISHI .EQ. 0) GO TO 4000
-         JSYM  = MULD2H(ISYM,JWOPSY)
+         JSYM  = MULD2H(ISYM,JWOPSY)          
          ICMOI = ICMO(ISYM)
          IORBI = IORB(ISYM)
          NORBI = NORB(ISYM)
@@ -504,7 +504,7 @@ C        DXC(p,i) = 2*Bo(i,p)
          END IF
 C **  this symmetry block finished
  4000 CONTINUE
-C
+C     
 C **  add transposed matrix to get final result
          CALL MTRSP(NBAST,NBAST,DXCAO,NBAST,WRK(KDXAO1),NBAST)
          CALL DAXPY(N2BASX,D1,WRK(KDXAO1),1,DXCAO,1)
@@ -628,6 +628,7 @@ C 891103 - hjaaj : UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C 891106 - hjaaj : only FXCAO if NISHT.gt.0
 C 921201 - hjaaj : Fock matrices from AO integrals
 C                  (partly following Hans Agren 911202)
+C DFT modification tuh
 C
 C Purpose:
 C
@@ -684,6 +685,7 @@ C
 #include <infdim.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
 #if defined (VAR_DEBUG)
 #include <idbg.h>
@@ -775,6 +777,9 @@ C
       IF (NDMAT .GT. 0) THEN
          CALL DZERO(FXCAO,NDMAT*N2BASX)
       IF (LUSUPM .NE. -1) THEN
+         IF (DFTRUN) THEN
+            CALL QUIT('P supermatrix integrals not implemented for DFT')
+         END IF
          CALL RDSUPM(NDMAT,FXCAO,DXCAO,WRK(KFREE),LFREE)
 C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
       ELSE

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: siraba.F,v 1.3 2001-05-31 06:38:34 vebjornb Exp $
+C$Id: siraba.F,v 1.4 2001-10-01 13:22:20 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1182,6 +1182,8 @@ C
 C     Hans Joergen Aa. Jensen and Rika Kobayashi 24-Apr-1992
 C     (based on GETFCK by Henrik Koch and Trygve Helgaker Nov 91)
 C
+C     DFT modifications T. Helgaker
+C
 C     PURPOSE : Driver routine for the calculation of the two-electron
 C               part of the fock matrices.
 C               We assume the densities and fock matrices are full
@@ -1196,7 +1198,7 @@ C
 #include <iratdef.h>
       PARAMETER (D2 = 2.0D0,DM1 = -1.0D0)
 C
-      LOGICAL LONDON
+      LOGICAL LONDON, DFTADX
       DIMENSION TMAT(N2ORBX,NTMAT),CMO(*),UDV(*)
       DIMENSION FXC(NORBT,NORBT,NTMAT), FXV(NORBT,NORBT,NTMAT)
       DIMENSION WRK(LWRK)
@@ -1210,6 +1212,7 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
+#include <dftcom.h>
 C
       PARAMETER (MXTMAT = 50)
       DIMENSION ISYMDM(MXTMAT), IFCTYP(MXTMAT)
@@ -1256,8 +1259,11 @@ CTROND         IFCSET = 1
          ISYMDM(I) = JWOPSY
          IFCTYP(I) = IFCSET
   100 CONTINUE
+      DFTADX = DFTADD
+      IF (LONDON) DFTADD = .FALSE.
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NXMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
+      DFTADD = DFTADX
 #if defined (VAR_OLDCODE)
 C
 CHJAAJ: this is from FCKDIR; change it !

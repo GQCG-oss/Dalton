@@ -111,9 +111,8 @@ C
       NIREP = N1DIME + N2DIME
 C
       IF  (FCLASS(1:1).EQ.'D') ROTAX2 = .TRUE.
-      IF ((FCLASS(3:3).EQ.'v') .OR. ((FCLASS(1:1).EQ.'D')
-     &                        .AND. (FCLASS(3:3).EQ.'h'))) VPLANE=.TRUE.
-      IF ((FCLASS(1:1).EQ.'C') .AND. (FCLASS(3:3).EQ.'h')) HPLANE=.TRUE.
+      IF  (FCLASS(3:3).EQ.'v') VPLANE = .TRUE.
+      IF  (FCLASS(3:3).EQ.'h') HPLANE = .TRUE.
 C
       RETURN
       END
@@ -589,18 +588,6 @@ C
 C
       END IF
 C
-      IF (VPLANE) THEN
-         INMTRX = INMTRX + 1
-         CALL DZERO(CORTRA(1,1,INMTRX),9)
-C
-         CORTRA(1,1,INMTRX) =  D1
-         CORTRA(2,2,INMTRX) = -D1
-         CORTRA(3,3,INMTRX) =  D1
-C
-         CALL FNDATR(ATMTRA(1,1,INMTRX),COOR,CORTRA(1,1,INMTRX),TMPCOR,
-     &               'vertical mirror plane.')
-      END IF
-C
       IF (ROTAX2) THEN
          INMTRX = INMTRX + 1
          CALL DZERO(CORTRA(1,1,INMTRX),9)
@@ -623,6 +610,18 @@ C
 C
          CALL FNDATR(ATMTRA(1,1,INMTRX),COOR,CORTRA(1,1,INMTRX),TMPCOR,
      &               'horizontal plane.')
+      END IF
+C
+      IF (VPLANE) THEN
+         INMTRX = INMTRX + 1
+         CALL DZERO(CORTRA(1,1,INMTRX),9)
+C
+         CORTRA(1,1,INMTRX) =  D1
+         CORTRA(2,2,INMTRX) = -D1
+         CORTRA(3,3,INMTRX) =  D1
+C
+         CALL FNDATR(ATMTRA(1,1,INMTRX),COOR,CORTRA(1,1,INMTRX),TMPCOR,
+     &               'vertical mirror plane.')
       END IF
 C
       IF (ICNTR) THEN
@@ -673,23 +672,6 @@ C
             WRITE (LUPRI,'(A)') '                                  '
          END IF
 C
-         IF (VPLANE) THEN
-            INMTRX = INMTRX + 1
-            WRITE (LUPRI,'(A)') 'Atom transformation matrix for' //
-     &                          ' vertical mirror plane.'
-            DO J = 1, NUCDEP
-               WRITE (LUPRI,'(20F5.1)') (ATMTRA(I,J,INMTRX),I=1, NUCDEP)
-            END DO
-            WRITE (LUPRI,'(A)') '                                  '
-C
-            WRITE (LUPRI,'(A)') 'Coordinate transformation matrix' // 
-     &                          ' for vertical mirror plane.'
-            DO J = 1, 3
-               WRITE (LUPRI,'(20F8.4)') (CORTRA(I,J,INMTRX),I=1,3)
-            END DO
-            WRITE (LUPRI,'(A)') '                                  '
-         END IF
-C     
          IF (ROTAX2) THEN
             INMTRX = INMTRX + 1
             WRITE (LUPRI,'(A)') 'Atom transformation matrix for' //
@@ -718,6 +700,23 @@ C
 C
             WRITE (LUPRI,'(A)') 'Coordinate transformation matrix' // 
      &                          ' for horizontal mirror plane.'
+            DO J = 1, 3
+               WRITE (LUPRI,'(20F8.4)') (CORTRA(I,J,INMTRX),I=1,3)
+            END DO
+            WRITE (LUPRI,'(A)') '                                  '
+         END IF
+C
+         IF (VPLANE) THEN
+            INMTRX = INMTRX + 1
+            WRITE (LUPRI,'(A)') 'Atom transformation matrix for' //
+     &                          ' vertical mirror plane.'
+            DO J = 1, NUCDEP
+               WRITE (LUPRI,'(20F5.1)') (ATMTRA(I,J,INMTRX),I=1, NUCDEP)
+            END DO
+            WRITE (LUPRI,'(A)') '                                  '
+C
+            WRITE (LUPRI,'(A)') 'Coordinate transformation matrix' // 
+     &                          ' for vertical mirror plane.'
             DO J = 1, 3
                WRITE (LUPRI,'(20F8.4)') (CORTRA(I,J,INMTRX),I=1,3)
             END DO
@@ -948,7 +947,7 @@ C
 C
          RNORM2 = 0.0D0
          DO 2300 ICOOR1 = 1, NCOOR
-            RNORM2 = RNORM2 + TMPSYM(ICOOR1)**2
+            RNORM2 = RNORM2 + (TMPSYM(ICOOR1))**2
  2300    CONTINUE
          IF (RNORM2 .LT. DTHR) GOTO 2700
 C
@@ -1255,14 +1254,15 @@ C
 #include <trkoor.h>
 #include <numder.h>
 #include <fcsym.h>
+#include <pvibav.h>
       LOGICAL CLNRGY, PRTNR, SCND, C2NRGY, DEPFC, FOUND, ALRCAL
       DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK), 
-     &          INDSTP(NMORDR), KDPMTX(LDPMTX,NMORDR,IFRSTD), 
+     &          INDSTP(NMORDR), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
      &          IRPDEG(NMORDR), IREPST(NMORDR), ICRIRP(NCOOR,2), 
      &          IRPIND(NMORDR), IDXTMP(NMORDR), IDDBTP(NMORDR), 
      &          NPRTNR(MAXINR)
 C
-      IF (FCLASS .NE. 'C1 ') THEN
+      IF ((FCLASS .NE. 'C1 ').AND.(NAORDR.LE.1).AND.(.NOT.CNMPRP)) THEN
 C
 C        ***Check symmetry for the original component ***
 C
@@ -1290,7 +1290,7 @@ C
 C
 C        *** Check if it is possible to construct a force-constant *** 
 C        *** with two additional equal and arbitary indices. This  ***
-C        *** force constant will conatin this energy value.        ***
+C        *** force constant will contain this energy value.        ***
 C 
          IF (((NMORDR-IORDR).GE.2).AND.(.NOT.CLNRGY)) THEN
             ISTRT = IRSRDR + 1 
@@ -1351,7 +1351,6 @@ C        *** order > 2*iordr then clnrgy = .true.                      ***
 C     
          IF ((IORDR.LT.NMORDR) .AND. .NOT.CLNRGY .AND. .NOT.SCND) THEN
             DO 500 IN = 1, NMORDR-IORDR
-c         DO 100 IN = 1, MIN(NMORDR-IORDR,IORDR)
 C     
                NRP = 1
                DO 600 IRP = 1, IN
@@ -1476,10 +1475,15 @@ C
 C        *** Check if further simplyfication is possible through *** 
 C        *** the use of partner geometry's                       ***
 C
-c         IF (CLNRGY) THEN
-c            CALL PRTNRP(GRIREP,IDXTMP,WORK,ICRIRP,INDSTP,NPRTNR,MAXINR,
-c     &                  IINNER,IORDR,NMPRTN,LWORK,CLNRGY,PRTNR,ALRCAL)
-c         END IF
+         IF (CLNRGY.AND.(NAORDR.EQ.0)) THEN
+            KIDCTP = 1
+            KINDTP = KIDCTP + NMORDR
+            KLAST  = KINDTP + 5
+            LWRK   = LWORK  - KLAST + 1
+            CALL PRTNRP(GRIREP,WORK(KLAST),ICRIRP,INDSTP,NPRTNR,MAXINR,
+     &                  IINNER,IORDR,IRSRDR,NMPRTN,WORK(KIDCTP),
+     &                  WORK(KINDTP),LWRK,CLNRGY,PRTNR,ALRCAL)
+         END IF
 C
       ELSE
          CLNRGY = .TRUE.
@@ -1495,7 +1499,7 @@ C     /*Deck symmlt*/
 #include <implicit.h>
 #include <mxcent.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DTHR = 1.0D-12)
+      PARAMETER (D0 = 0.0D0, DTHR = 1.0D-12)
 #include <trkoor.h>
 #include <fcsym.h>
       LOGICAL CLNRGY
@@ -1504,12 +1508,12 @@ C     /*Deck symmlt*/
      &          IREPST(NMORDR), IDEGID(NMORDR), IDDEGI(NMORDR), 
      &          ICRIRP(NCOOR,2)
 C
-C     *** Starting points for the relevant rows in the relevant irreps *** 
-C     *** For instance, the starting point for the 1. row of E in C3v  ***
-C     *** is 2, while the second row is 4.                             ***
-C     *** IREPST -> Starting point of irrep                            ***
-C     *** KIRPDG -> dimension of the irrep                             ***
-C     *** IDEGGI -> coordinates that belong to 2 dimensional irreps    ***
+C     *** Starting points for the relevant rows in the relevant  ***
+C     *** irreps For instance, the starting point for the 1. row ***
+C     *** of E in C3v is 2, while the second row is 4.           ***
+C     *** IREPST -> Starting point of irrep                      ***
+C     *** KIRPDG -> dimension of the irrep                       ***
+C     *** IDEGGI -> coordinates that belong to 2 dim. irreps     ***
 C     
       NMAX = 0
       IC   = 0
@@ -1518,25 +1522,20 @@ C
          IF (IC2.EQ.1) NC1 = IORDR-IRSRDR
          DO 200 IC1 = 1, NC1
             IC = IC + 1
+            IREPST(IC) = IRPSTR(GRIREP,ICRIRP,NCOOR,INDSTP(IC2),IPRINT)
             IF (ICRIRP(INDSTP(IC2),1) .GT. N1DIME) THEN
+               NMAX = NMAX + 1
                KIRPDG(IC) = 2
-               IREPST(IC) = N1DIME + 4*(ICRIRP(INDSTP(IC2),1)-N1DIME-1) 
-               IF (ICRIRP(INDSTP(IC2),2) .EQ. 1) THEN
-                  IREPST(IC) = IREPST(IC) + 2
-               END IF
+               IDDEGI(NMAX) = IC
             ELSE
                KIRPDG(IC) = 1
-               IREPST(IC) = ICRIRP(INDSTP(IC2),1)-1
-            END IF
-            IF (KIRPDG(IC).GT.1) THEN
-               NMAX = NMAX + 1
-               IDDEGI(NMAX) = IC
             END IF
  200     CONTINUE
  100  CONTINUE
 C
-C     *** IRPDEG -> The row number we want use in our product - IREPST (irep-start) ***
-C     *** For two 2-dimensional irreps this is 11, 12, 21 and 22                    ***
+C     *** IRPDEG -> The row number we want use in our product -  ***
+C     *** IREPST (irep-start). For two 2-dimensional irreps this ***
+C     *** is 11, 12, 21 and 22                                   ***
 C
       DO 300 IC = 1, IORDR
          IRPDEG(IC) = 1
@@ -1579,7 +1578,7 @@ C
                END IF
             END IF
 C
- 1100        CONTINUE
+ 1100       CONTINUE
 C
 C           *** Assigning the nesscecary values of 2 ***
 C
@@ -1592,7 +1591,14 @@ C           *** Lecture notes in quantum chemistry 56, Springer   ***
 C
             SMTXEL = D0
             DO 2100 IORDER = 1, NGORDR
-               RTMPCO = D1
+C
+C              *** Finding the starting point for the  ***
+C              *** screening needed for the analytical ***
+C              *** derivative. Output: RTMPCO          ***
+C
+               CALL ANLSYM(GRIREP,ICRIRP,INDSTP,IREPST,RTMPCO,NCOOR,
+     &                     IORDER,IORDR,IPRINT)
+C
                DO 2200 IC = 1, IORDR
                   RTMPCO = RTMPCO*GRIREP(IORDER,IREPST(IC)+IRPDEG(IC))
  2200          CONTINUE
@@ -1608,6 +1614,126 @@ C
       END
 C
 C
+C     /* Deck irpstr */
+      FUNCTION IRPSTR(GRIREP,ICRIRP,NCOOR,ICOOR,IPRINT)
+C     ******************************************************
+C     *** Function that takes a coordinate as input, and ***
+C     *** returns the starting point of the irrep that   ***
+C     *** span that irrep in GRIREP.                     ***
+C     ******************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <fcsym.h>
+      DIMENSION GRIREP(NGORDR,NGVERT)
+      DIMENSION ICRIRP(NCOOR,2)
+C
+C     *** Finding the starting point. ***
+C
+      IF (ICRIRP(ICOOR,1) .GT. N1DIME) THEN
+         ISTRTT = N1DIME + 4*(ICRIRP(ICOOR,1)-N1DIME-1) 
+         IF (ICRIRP(ICOOR,2) .EQ. 1) THEN
+            ISTRTT = ISTRTT + 2
+         END IF
+      ELSE
+         ISTRTT = ICRIRP(ICOOR,1)-1
+      END IF
+C
+C     *** Assigning the value. ***
+C
+      IRPSTR = ISTRTT
+C
+      RETURN
+      END
+C
+C
+C     /* Deck anasym */
+      SUBROUTINE ANLSYM(GRIREP,ICRIRP,INDSTP,IREPST,RTMPCO,NCOOR,IORDER,
+     &                  IORDR,IPRINT)
+C     *******************************************************
+C     *** Subroutine that decides how the symmetry is for ***
+C     *** analytical derivatives for this numerical       ***
+C     *** distortion. Output parameter is RTMPCO, which is***
+C     *** assigned a value according to the symmetry prop.***
+C     *** of the analytical derivative.                   ***
+C     *******************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
+#include <numder.h>
+#include <fcsym.h>
+      LOGICAL SBDELM, SMEIRP
+      DIMENSION GRIREP(NGORDR,NGVERT)
+      DIMENSION INDSTP(NMORDR), IREPST(NMORDR), ICRIRP(NCOOR,2)
+C
+      IF (NAORDR.EQ.0) THEN
+         RTMPCO=D1
+      ELSE IF (NAORDR.EQ.1) THEN
+         RTMPCO = D0
+         DO ICOOR = 1, NCOOR
+            IPSTRT = IRPSTR(GRIREP,ICRIRP,NCOOR,ICOOR,IPRINT)
+            SBDELM = SMEIRP(GRIREP,ICRIRP,INDSTP,IREPST,ICOOR,IPSTRT,
+     &                      IORDR,NCOOR,IPRINT)
+            IF (SBDELM) THEN
+               NSTEP = 1
+               IF (ICRIRP(ICOOR,1).GT.N1DIME) NSTEP = 2
+               DO ISTP = 1, NSTEP
+                  RTMPCO = RTMPCO + GRIREP(IORDER,IPSTRT+ISTP)
+               END DO
+            END IF
+         END DO
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck smeirp */
+      LOGICAL FUNCTION SMEIRP(GRIREP,ICRIRP,INDSTP,IREPST,ICOOR,IPSTRT,
+     &                        IORDR,NCOOR,IPRINT)
+C     *********************************************************
+C     *** Subroutine that checks if the coordinate ICOOR is ***
+C     *** totally symmetric in the distorted geometry. The  ***
+C     *** distortions is done along the INDSTP coordinates. ***
+C     *********************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (D1=1.0D0, DTHRS=1.0D-12)
+#include <fcsym.h>
+#include <numder.h>
+      LOGICAL EXSTEL, TSMEIR
+      DIMENSION GRIREP(NGORDR,NGVERT)
+      DIMENSION INDSTP(NMORDR), ICRIRP(NCOOR,2), IREPST(NMORDR)
+C
+      TSMEIR = .TRUE.
+      DO IEL = 1, NGORDR
+C
+C        *** Checkin if this element is in the subgroup. ***
+C
+         EXSTEL = .TRUE.
+         DO IC = 1, IORDR
+            KSTP = ICRIRP(INDSTP(IC),2) + 1
+            IF ((GRIREP(IEL,IREPST(IC)+KSTP)-D1)**2 .GT. DTHRS) 
+     &                                                  EXSTEL = .FALSE. 
+         END DO
+C
+C        *** If this element exist, check if irep is totally ***
+C        *** symmetric.                                      ***
+C
+         KSTP = ICRIRP(ICOOR,2) + 1
+         IF (EXSTEL.AND.((GRIREP(IEL,IPSTRT+KSTP)-D1)**2.GT.DTHRS)) 
+     &                                                  TSMEIR = .FALSE.
+C
+      END DO
+C
+C     *** Assigning the result to the function. ***
+C
+      SMEIRP = TSMEIR
+C
+      RETURN
+      END
+C
+C
 C     /* Deck ffcdep */
       SUBROUTINE FFCDEP(KDPMTX,INDSTP,IDXTMP,NLDPMX,LDPMTX,IFRSTD,
      &                  IRSRDR,IORDR,IEIIN,IPRINT,DEPFC)
@@ -1617,7 +1743,7 @@ C     /* Deck ffcdep */
 #include <fcsym.h>
 #include <numder.h>
       LOGICAL DONE, DEPFC
-      DIMENSION KDPMTX(LDPMTX,NMORDR,IFRSTD), INDSTP(NMORDR), 
+      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), INDSTP(NMORDR), 
      &          IDXTMP(NMORDR)
 C
       IDXTMP(1) = INDSTP(1)
@@ -1855,9 +1981,10 @@ C
 #include <fcsym.h>
       DIMENSION SYMCOR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT), 
      &          DCOEFF(LDPMTX,IFRSTD), WORK(LWORK)
-      DIMENSION ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NMORDR,IFRSTD), 
+      DIMENSION ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
      &          NMIDPC(LDPMTX)
 C
+      call flshfo(5)
       DO 100 IORDR = 1, NMORDR
          IF (IORDR .EQ. 2) THEN
             CALL SCNFCS(DCOEFF,KDPMTX,ICRIRP,LDPMTX,IFRSTD,NLDPMX,
@@ -1867,7 +1994,7 @@ C
                NMIDPC(II) = 1
  200        CONTINUE
          END IF
-C
+C     
          IF (IORDR .EQ. 3) THEN
             KEQUMT = 1
             KIDXTS = KEQUMT + 2**(2*IORDR)
@@ -1906,7 +2033,7 @@ C     /* Deck thrdfc*/
       LOGICAL DPNDCY, EXIST, IEXIST, TRIVIA
       DIMENSION GRIREP(NGORDR,NGVERT), DCOEFF(LDPMTX,IFRSTD), 
      &          TCOEFF(8,8), EQUMTX(8,8),WORK(LWORK)
-      DIMENSION KDPMTX(LDPMTX,NMORDR,IFRSTD), NMIDPC(LDPMTX), 
+      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), NMIDPC(LDPMTX), 
      &          ICRIRP(NCOOR,2),IDEP(8,8), IDXTST(NMORDR,8), 
      &          ICRWMX(8,3)
 C
@@ -2059,7 +2186,7 @@ C           *** Sorting the components, such that the force-constants ***
 C           *** calculated is situated last.                          ***
 C
             KITMPE = 1
-            KITMPR = KITMPE + 8**2
+            KITMPR = KITMPE + 8
             CALL SRTNCF(EQUMTX,WORK(KITMPR),ICRWMX,WORK(KITMPE),8,3,
      &                  ICIJK,IPRINT)
             ICTUV = ICIJK
@@ -2067,11 +2194,10 @@ C
 C           *** Solving the homogeneous linear equation system. ***
 C
             KIRNDX = 1
-            KZINDX = KIRNDX + ICIJK
-            KIDXTP = KZINDX + ICIJK
+            KZINDX = KIRNDX + 8
+            KIDXTP = KZINDX + 8
             CALL DIAGUD(EQUMTX,TCOEFF,IDEP,WORK(KIRNDX),WORK(KZINDX),
      &                  WORK(KIDXTP),8,ICIJK,NROW,NIDEP,IPRINT)
-
 C
 C           *** Independent component.                                    ***
 C           *** Checking if it is av valid component, and assigning the   ***
@@ -2149,38 +2275,34 @@ C
 C
                KIDXTP = 1
                KNMIDP = KIDXTP + 3
-               KMVTMP = KNMIDP + NIDEP
+               KMVTMP = KNMIDP + 3
                KICMPI = KMVTMP + 3
                CALL CHKLCP(DCOEFF,KDPMTX,ICRIRP,WORK(KIDXTP),
      &                     WORK(KNMIDP),WORK(KMVTMP),WORK(KICMPI),
-     &                     LDPMTX,IFRSTD,3,NROW-1,NLDPMX-NROW+2,NIDEP,
-     &                     IPRINT)
+     &                     LDPMTX,IFRSTD,3,NROW-1,NLDPMX-NROW+NIDEP+1,
+     &                     NIDEP,IPRINT)
 C
 C              *** Test print ***
 C
-ckr
-               iprint = 22
-               IF ((IPRINT .GT. 20).AND.(NROW.GT.1)) THEN
-                  CALL HEADER('Coordinate dependency in cartesians.',-1)
-                  WRITE (LUPRI,'(5X,A,I4)') 'Number of independent' //
+               CALL HEADER('Coordinate dependency in cartesians.',-1)
+               WRITE (LUPRI,'(5X,A,I4)') 'Number of independent' //
      &                 'force constants.', NMIDPC(NLDPMX)
-                  WRITE (LUPRI,'(5X,A)') 'Dependent components      ' //
+               WRITE (LUPRI,'(5X,A)') 'Dependent components      ' //
      &                          'Independent components     Coeffisient'
-                  DO II = NLDPMX-NROW+2, NLDPMX
-                     WRITE (LUPRI,'(10X,3I4,10X,3I4,15X,F8.4)') 
-     &                    (KDPMTX(II,IX,1),IX=1,3), 
-     &                    (KDPMTX(II,IX,2),IX=1,3), DCOEFF(II,1)
-                     DO IDP = 2, NIDEP
-                        WRITE (LUPRI,'(32X,3I4,15X,F8.4)') 
-     &                      (KDPMTX(II,IX,IDP+1),IX=1,3), DCOEFF(II,IDP)
-                     END DO
+               DO II = NLDPMX-NROW+2, NLDPMX
+                 WRITE (LUPRI,'(A,3I4,A,3I4,A,F8.4)') '          ',
+     &                 (KDPMTX(II,IX,1),IX=1,3), '          ', 
+     &                 (KDPMTX(II,IX,2),IX=1,3), '              ', 
+     &                  DCOEFF(II,1)
+                  DO IDP = 2, NIDEP
+                     WRITE (LUPRI,'(A,3I4,A,F8.4)') 
+     &                      '                                ', 
+     &                  (KDPMTX(II,IX,IDP+1),IX=1,3), '               ', 
+     &                  DCOEFF(II,IDP)
                   END DO
-                  WRITE (LUPRI,'(A)')'                                 '
-                  WRITE (LUPRI,'(A)')'                                 '
-               END IF
-               call flshfo(lupri)
-ckr
-               iprint = 0
+               END DO
+               WRITE (LUPRI,'(A)')'                                 '
+               WRITE (LUPRI,'(A)')'                                 '
             ELSE
                IF (IPRINT.GT.20) THEN
                   WRITE (LUPRI,'(A)') '                                '
@@ -2218,7 +2340,7 @@ C     ***************************************************
 #include <trkoor.h>
 #include <numder.h>
 #include <fcsym.h>
-      DIMENSION DCOEFF(LDPMTX,IFRSTD), KDPMTX(LDPMTX,NMORDR,IFRSTD), 
+      DIMENSION DCOEFF(LDPMTX,IFRSTD), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
      &          ICRIRP(NCOOR,2)
 C
 C     *** Loop over all the 2 dimensional ireps ***
@@ -2252,16 +2374,14 @@ C
 C
 C     *** Test print ***
 C
-      IF (IPRINT.GT.20 .AND. NLDPMX .GT. KDPSTR) THEN
-         CALL HEADER('Dependent and indepenent force coefficients',-1)
-         WRITE (LUPRI,'(5X,A)') 'Dependent components   Independent ' //
+      CALL HEADER('Dependent and indepenent force coefficients',-1)
+      WRITE (LUPRI,'(5X,A)') 'Dependent components   Independent ' //
      &                          'components     coefficients'
-          DO II = KDPSTR, NLDPMX
-            WRITE (LUPRI,'(I15,I4,I19,I4,15X,F6.2)')
-     &            (KDPMTX(II,J,1),J=1,2), (KDPMTX(II,J,2),J=1,2), 
-     &            DCOEFF(II,1)
-         END DO
-      END IF
+      DO II = KDPSTR, NLDPMX
+         WRITE (LUPRI,'(I15,I4,I19,I4,15X,F6.2)')
+     &        (KDPMTX(II,J,1),J=1,2), (KDPMTX(II,J,2),J=1,2), 
+     &        DCOEFF(II,1)
+      END DO
 C
       RETURN
       END
@@ -2280,13 +2400,12 @@ C     /* Deck frthfc*/
 #include <fcsym.h>
       LOGICAL DPNDCY, EXIST, IEXIST, TRIVIA 
       DIMENSION GRIREP(NGORDR,NGVERT), DCOEFF(LDPMTX,IFRSTD), 
-     &          TCOEFF(ITHDDM,ITHDDM), EQUMTX(ITHDDM,ITHDDM),WORK(LWORK)
-      DIMENSION KDPMTX(LDPMTX,NMORDR,IFRSTD), NMIDPC(LDPMTX), 
+     &          TCOEFF(ITHDDM,ITHDDM), EQUMTX(ITHDDM,ITHDDM),WORK(10000)
+      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), NMIDPC(LDPMTX), 
      &          ICRIRP(NCOOR,2),IDEP(ITHDDM,ITHDDM), 
      &          IDXTST(NMORDR,ITHDDM), ICRWMX(ITHDDM,4), ITLRGR(ITHDDM)
 C
       NLDPST = NLDPMX
-C
       DO 100 IC4 = 1, NDCOOR
       DO 100 IC3 = 1, IC4
       DO 100 IC2 = 1, IC3
@@ -2467,7 +2586,7 @@ C           *** component is first. In addition matrix elements for  ***
 C           *** equal force-constants are added together             ***
 C
             KITMPE = 1
-            KITMPR = KITMPE + ITHDDM**2
+            KITMPR = KITMPE + ITHDDM
             CALL SRTNCF(EQUMTX,WORK(KITMPR),ICRWMX,WORK(KITMPE),ITHDDM,
      &                  4,ICIJKL,IPRINT)
 C
@@ -2561,34 +2680,36 @@ C              *** are the the components with least energy calculations. ***
 C
                KIDXTP = 1
                KNMIDP = KIDXTP + 4
-               KMVTMP = KNMIDP + NIDEP
+               KMVTMP = KNMIDP + 4
                KICMPI = KMVTMP + 4
                CALL CHKLCP(DCOEFF,KDPMTX,ICRIRP,WORK(KIDXTP),
      &                     WORK(KNMIDP),WORK(KMVTMP),WORK(KICMPI),
-     &                     LDPMTX,IFRSTD,4,NROW-1,NLDPMX-NROW+2,NIDEP,
-     &                     IPRINT)
+     &                     LDPMTX,IFRSTD,4,NROW-1,NLDPMX-NROW+NIDEP+1,
+     &                     NIDEP,IPRINT)
 C
 C              *** Test print ***
 C
-               IPRINT = 22
-               IF ((IPRINT .GT. 20).AND.(NROW.GT.1)) THEN
+               IF (NROW.GT.1) THEN
                   CALL HEADER('Coordinate dependency in cartesians.',-1)
                   WRITE (LUPRI,'(5X,A,I4)') 'Number of independent' //
      &                 'force constants.', NMIDPC(NLDPMX)
                   WRITE (LUPRI,'(5X,A)') 'Dependent components      ' //
      &                          'Independent components     Coeffisient'
-                  DO II = NLDPMX-NROW+2, NLDPMX
-                     WRITE (LUPRI,'(8X,4I4,6X,4I4,13X,F8.4)') 
-     &                    (KDPMTX(II,IX,1),IX=1,4), 
-     &                    (KDPMTX(II,IX,2),IX=1,4), DCOEFF(II,1)
+                  DO II = NLDPMX-NROW+NIDEP+1, NLDPMX
+                     WRITE (LUPRI,'(A,4I4,A,4I4,A,F8.4)') 
+     &                   '        ', (KDPMTX(II,IX,1),IX=1,4), '      ',
+     &                    (KDPMTX(II,IX,2),IX=1,4), '             ', 
+     &                     DCOEFF(II,1)
                      DO IDP = 2, NIDEP
-                        WRITE (LUPRI,'(30X,4I4,13X,F8.4)') 
-     &                      (KDPMTX(II,IX,IDP+1),IX=1,4), DCOEFF(II,IDP)
+                        WRITE (LUPRI,'(A,4I4,A,F8.4)') 
+     &                      '                              ',
+     &                    (KDPMTX(II,IX,IDP+1),IX=1,4), '             ',
+     &                     DCOEFF(II,IDP)
                      END DO
                   END DO
                   WRITE (LUPRI,'(A)')'                                 '
                   WRITE (LUPRI,'(A)')'                                 '
-               ELSE IF (IPRINT .GT. 20) THEN
+               ELSE 
                   WRITE (LUPRI,'(A)') '                                '
                   WRITE (LUPRI,'(A)') '                                '
                   WRITE (LUPRI,'(5X,A)') 'No valid component of the' //
@@ -2596,7 +2717,6 @@ C
                   WRITE (LUPRI,'(A)') '                                '
                   WRITE (LUPRI,'(A)') '                                '
                END IF
-               iprint = 0
             ELSE
                IF (IPRINT.GT.20) THEN
                   WRITE (LUPRI,'(A)') '                                '
@@ -2612,7 +2732,6 @@ C
 C
  100  CONTINUE
 C
-      iprint = 0
       RETURN
       END
 C
@@ -2629,9 +2748,10 @@ C     *******************************************************************
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0)
 #include <taymol.h>
-#include <numder.h>      
+#include <numder.h>
+#include <fcsym.h>      
       DIMENSION DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD)
-      DIMENSION KDPMTX(LDPMTX,NMORDR,IFRSTD), NMIDPC(LDPMTX)
+      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), NMIDPC(LDPMTX)
 C
       NSTART = 1
       DO 100 IRDR = 1, NMORDR
@@ -2640,7 +2760,7 @@ C
             MINTST = MIN(NMORDR,3)
             DO 200 ILDP = 1, NLDPMX
                IF ((KDPMTX(ILDP,MINTST,1).EQ.0).OR.
-     &                            (MINTST.EQ.NMORDR)) THEN
+     &                            (MINTST.EQ.2)) THEN
                   HESMOL(KDPMTX(ILDP,1,1),KDPMTX(ILDP,2,1)) =  
      &                         HESMOL(KDPMTX(ILDP,1,2),KDPMTX(ILDP,2,2))
                   ISTART = ISTART + 1
@@ -2933,7 +3053,7 @@ C
 #include <numder.h>
 #include <fcsym.h>
       LOGICAL EXIST
-      DIMENSION KDPMTX(LDPMTX,NMORDR,IFRSTD), IDXTST(NMORDR)
+      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), IDXTST(NMORDR)
 C
       DO 100 IDP = 1, NIDEP+1
       DO 100 II   = NSTART, NLDPMX
@@ -2979,7 +3099,7 @@ C     **********************************************************************
 #include <fcsym.h>
       LOGICAL INCMNT, FOUND
       DIMENSION DCOEFF(LDPMTX,IFRSTD)
-      DIMENSION KDPMTX(LDPMTX,NMORDR,IFRSTD), ICRIRP(NCOOR,2), 
+      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), ICRIRP(NCOOR,2), 
      &          IDXTMP(NDMCMP), ICMPID(NDMCMP), INMIDP(NIDEP), 
      &          IMVTMP(NDMCMP)
 C
@@ -2989,7 +3109,7 @@ C
          CALL HEADER('Coordinate dependency before change.',-1)
          WRITE (LUPRI,'(5X,A)') 'Dependent components      ' //
      &                          'Independent components     Coeffisient'
-         DO II = NSTART, NSTART+NUMCMP-1
+         DO II = NSTART, NSTART+NUMCMP-NIDEP
             IF (NDMCMP.EQ.3) THEN
                WRITE (LUPRI,FMT=1003) (KDPMTX(II,IX,1),IX=1,NDMCMP), 
      &                   (KDPMTX(II,IX,2),IX=1,NDMCMP), DCOEFF(II,1)
@@ -2998,6 +3118,7 @@ C
      &              (KDPMTX(II,IX,IDP+1),IX=1,NDMCMP), DCOEFF(II,IDP)
                END DO
             ELSE IF (NDMCMP.EQ.4) THEN
+               write (lupri,'(a,I4)') 'testkomp', II
                WRITE (LUPRI,FMT=1004) (KDPMTX(II,IX,1),IX=1,NDMCMP), 
      &                   (KDPMTX(II,IX,2),IX=1,NDMCMP), DCOEFF(II,1)
                DO IDP = 2, NIDEP
@@ -3046,7 +3167,7 @@ C
 C
 C     *** Comparing this with the dependent variables. ***
 C
-      DO 500 ICMP = NSTART, NSTART+NUMCMP-1
+      DO 500 ICMP = NSTART, NSTART+NUMCMP-NIDEP
          CALL IZERO(IDXTMP,NDMCMP)
 C
          INUM = 1
@@ -3092,7 +3213,7 @@ C
                DO 1200 II = 1, NDMCMP
                   IMVTMP(II) = KDPMTX(ICMP,II,1)
                   KDPMTX(ICMP,II,1) = KDPMTX(NSTART,II,IMIN+1)
-                  DO 1300 IST = NSTART, NSTART+NUMCMP-1
+                  DO 1300 IST = NSTART, NSTART+NUMCMP-NIDEP
                      KDPMTX(IST,II,IMIN+1) = IMVTMP(II)
  1300             CONTINUE
  1200          CONTINUE
@@ -3114,7 +3235,7 @@ C
 C              *** Changing the other coeffisients to fit the ***
 C              *** new and better point                       ***
 C
-               DO 1500 ICMP2 = NSTART, NSTART+NUMCMP-1
+               DO 1500 ICMP2 = NSTART, NSTART+NUMCMP-NIDEP
                   IF (ICMP2.NE.ICMP) THEN
                      DO 1600 IDP2 = 1, NIDEP
                         IF (IDP2 .NE. IMIN) THEN
@@ -3126,13 +3247,13 @@ C
                      DCOEFF(ICMP2,IMIN) = DCOEFF(ICMP2,IMIN)*BCOEFF
                   END IF
  1500          CONTINUE
-C                  
+                  
                IF (IPRINT .GT. 20) THEN
                   CALL HEADER('Coordinate dependency after 1. change.',
      &                        -1)
                   WRITE (LUPRI,'(5X,A)') 'Dependent components      ' //
      &                 'Independent components     Coeffisient'
-                  DO II = NSTART, NSTART+NUMCMP-1
+                  DO II = NSTART, NSTART+NUMCMP-NIDEP
                      IF (NDMCMP.EQ.3) THEN
                         WRITE (LUPRI,FMT=1003) 
      &                       (KDPMTX(II,IX,1),IX=1,NDMCMP), 
@@ -3196,7 +3317,7 @@ C
                DO 2100 II = 1, NDMCMP
                   IMVTMP(II) = KDPMTX(ICMP,II,1)
                   KDPMTX(ICMP,II,1) = KDPMTX(NSTART,II,MXIDX+1)
-                  DO 2200 IST = NSTART, NSTART+NUMCMP-1
+                  DO 2200 IST = NSTART, NSTART+NUMCMP-NIDEP
                      KDPMTX(IST,II,MXIDX+1) = IMVTMP(II)
  2200             CONTINUE
  2100          CONTINUE
@@ -3217,7 +3338,7 @@ C
 C              *** Changing the other coeffisients to fit the ***
 C              *** new and better point                       ***
 C
-               DO 2400 ICMP2 = NSTART, NSTART+NUMCMP-1
+               DO 2400 ICMP2 = NSTART, NSTART+NUMCMP-NIDEP
                   IF (ICMP2.NE.ICMP) THEN
                      DO 2500 IDP2 = 1, NIDEP
                         IF (IDP2 .NE. MXIDX) THEN
@@ -3235,7 +3356,7 @@ C
             CALL HEADER('Coordinate dependency after 2. change. ',-1)
             WRITE (LUPRI,'(5X,A)') 'Dependent components      ' //
      &           'Independent components     Coeffisient'
-            DO II = NSTART, NSTART+NUMCMP-1
+            DO II = NSTART, NSTART+NUMCMP-NIDEP
                IF (NDMCMP.EQ.3) THEN
                   WRITE (LUPRI,FMT=1003) (KDPMTX(II,IX,1),IX=1,NDMCMP), 
      &                       (KDPMTX(II,IX,2),IX=1,NDMCMP), DCOEFF(II,1)
@@ -3403,8 +3524,9 @@ C
 C
 C
 C     /* Deck prtnrp */
-      SUBROUTINE PRTNRP(GRIREP,IDXTMP,WORK,ICRIRP,INDSTP,NPRTNR,MAXINR,
-     &                  IINNER,IORDR,NMPRTN,LWORK,CLNRGY,PRTNR,ALRCAL)
+      SUBROUTINE PRTNRP(GRIREP,WORK,ICRIRP,INDSTP,NPRTNR,MAXINR,IINNER,
+     &                  IORDR,IRSRDR,NMPRTN,IDXTMP,INDTMP,LWORK,CLNRGY,
+     &                  PRTNR,ALRCAL)
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (D0 = 0.0D0, DTHRSH = 1.0D-6, MXIDCR=5)
@@ -3433,47 +3555,21 @@ C     *** Checking if all stepping coordinates are tot. sym. ***
 C
       ITST = 1
       TSM  = .FALSE.
-      DO 200 I = 1, IORDR
+      DO 200 I = 1, IRSRDR+1
          ITST = ITST*ICRIRP(INDSTP(I),1)
  200  CONTINUE
       IF (ITST.EQ.1) TSM = .TRUE.
 C
 C     *** Checking if this geometry has a partner geometry ***
-C     *** Sufficient demand for stepping in 1-3 directions ***
-C     *** is that all possible F_{x_1,x_2,x_3} in taylor   ***
-C     *** expansion is zero.                               *** 
 C
-c      print *, 'er her', IORDR, PRTNR, TSM
-      IF ((IORDR.LT.4) .AND. PRTNR .AND. (.NOT.TSM)) THEN
-         DO 300 IIRDR3 = 1, IORDR
-         DO 300 IIRDR2 = 1, IIRDR3
-         DO 300 IIRDR1 = 1, IIRDR2
-            IIREP3 = ICRIRP(INDSTP(IIRDR3),1)
-            IIREP2 = ICRIRP(INDSTP(IIRDR2),1)
-            IIREP1 = ICRIRP(INDSTP(IIRDR1),1)
+      IF ((IORDR.LE.2) .AND. (NMORDR.EQ.2) .AND. (PRTNR)
+     &                                     .AND. (.NOT.TSM)) THEN
 C
-            IF ((IIREP3.NE.1).OR.(IIREP2.NE.1).OR.(IIREP1.NE.1)) THEN
-C
-               INDTMP(1) = INDSTP(IIRDR1)
-               INDTMP(2) = INDSTP(IIRDR2)
-               INDTMP(3) = INDSTP(IIRDR3)
-C
-               KIRPST = 1
-               KIRPDG = KIRPST + MXIDCR
-               KKIRPD = KIRPDG + MXIDCR
-               KIDDEG = KKIRPD + MXIDCR
-               KIDEGI = KIDDEG + MXIDCR
-               KLAST  = KIDEGI + MXIDCR
-               IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in' //
-     &                                       ' PRTPNR.')
-C
-               C2NRGY = .FALSE.
-               CALL SYMMLT(GRIREP,INDTMP,ICRIRP,WORK(KIRPST),
-     &                     WORK(KIRPDG),WORK(KKIRPD),WORK(KIDDEG),
-     &                     WORK(KIDEGI),MXIDCR,2,3,IPRINT,C2NRGY)
-               PRTNR = PRTNR .AND. .NOT. C2NRGY
-            END IF
- 300     CONTINUE
+C        *** Stepping in two directions. ***
+C     
+         CALL SCNPRT(GRIREP,WORK,INDSTP,ICRIRP,INDTMP,IORDR,LWORK,PRTNR)
+c      ELSE ((IORDR.LE.3) .AND. (PRTNR).AND.(.NOT.TSM)) THEN
+c         
       ELSE
          PRTNR = .FALSE.
       END IF
@@ -3481,8 +3577,8 @@ C
 C     *** If there is a partner geometry, it's about ***
 C     ***             time to find it.               *** 
 C
-      NMPRTN = NMPRTN + 1
       IF (PRTNR) THEN
+         NMPRTN = NMPRTN + 1
          ITINNR = IINNER - 1
          DO 400 I = IORDR, 1, -1
             IS = 2**(I-1)
@@ -3502,6 +3598,55 @@ C
 C
       RETURN
       END
-
-
+C
+C
+      SUBROUTINE SCNPRT(GRIREP,WORK,INDSTP,ICRIRP,INDTMP,IORDR,LWORK,
+     &                  PRTNR)
+C     ********************************************************
+C     *** Checking if this geometry has a partner geometry ***
+C     *** Sufficient demand for stepping in 1-2 directions ***
+C     *** is that all possible F_{x_1,x_2,x_3} in taylor   ***
+C     *** expansion is zero.                               *** 
+C     ********************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (MXIDCR=5)
+#include <fcsym.h>
+#include <numder.h>
+      LOGICAL PRTNR, C2NRGY
+      DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK)
+      DIMENSION ICRIRP(NDCOOR,2), INDSTP(NMORDR), INDTMP(MXIDCR)
+C
+      DO 100 IIRDR3 = 1, IORDR
+      DO 100 IIRDR2 = 1, IIRDR3
+      DO 100 IIRDR1 = 1, IIRDR2
+         IIREP3 = ICRIRP(INDSTP(IIRDR3),1)
+         IIREP2 = ICRIRP(INDSTP(IIRDR2),1)
+         IIREP1 = ICRIRP(INDSTP(IIRDR1),1)
+C     
+         IF ((IIREP3.NE.1).OR.(IIREP2.NE.1).OR.(IIREP1.NE.1)) THEN
+C
+            INDTMP(1) = INDSTP(IIRDR1)
+            INDTMP(2) = INDSTP(IIRDR2)
+            INDTMP(3) = INDSTP(IIRDR3)
+C
+            KIRPST = 1
+            KIRPDG = KIRPST + MXIDCR
+            KKIRPD = KIRPDG + MXIDCR
+            KIDDEG = KKIRPD + MXIDCR
+            KIDEGI = KIDDEG + MXIDCR
+            KLAST  = KIDEGI + MXIDCR
+            IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in' //
+     &                                    ' PRTPNR.')
+C
+            C2NRGY = .FALSE.
+            CALL SYMMLT(GRIREP,INDTMP,ICRIRP,WORK(KIRPST),WORK(KIRPDG),
+     &                  WORK(KKIRPD),WORK(KIDDEG),WORK(KIDEGI),MXIDCR,2,
+     &                  3,IPRINT,C2NRGY)
+            PRTNR = PRTNR .AND. .NOT. C2NRGY
+         END IF
+ 100  CONTINUE      
+C
+      RETURN
+      END
 

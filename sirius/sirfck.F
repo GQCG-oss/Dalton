@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirfck.F,v 1.4 2001-05-31 06:38:35 vebjornb Exp $
+C$Id: sirfck.F,v 1.5 2001-10-01 13:22:20 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck sirfck */
@@ -42,6 +42,7 @@ C
 C     March 1997 - tsaue Screening
 C     921201-hjaaj; partly based on GETFCK
 C     written by Henrik Koch and Trygve Helgaker 22-November-1991.
+C     DFT modifications T. Helgaker
 C
 C PURPOSE : Driver routine for the calculation of the two-electron
 C           part of the fock matrices from AO integrals.
@@ -78,6 +79,7 @@ C              .FALSE.  Read integrals from AOTWOINT.
       DIMENSION WRK(*)
 C
 #include <iratdef.h>
+#include <dummy.h>
       PARAMETER (D1 = 1.0D0, D4 = 4.0D0, DMP5 = -0.5D0)
 C
 C Used from common blocks
@@ -91,6 +93,7 @@ C
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       LOGICAL SFIRST
       SAVE SFIRST
@@ -109,8 +112,18 @@ C           CALL SETHER(IPRHER,NEWGEO,WORK,LWORK)
          DO I = 1,NDMAT
             ISYMDM(I) = ISYMDM(I) - 1
          END DO
-         CALL HERFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,IPRFCK,
-     &               WRK,LWORK)
+         IF (NSYM.GT.1 .AND. DFTADD) THEN
+C           HERFCK destroys DMAT when called with symmetry
+            KDMAT = 1
+            KLAST = KDMAT + N2BASX
+            LWRK  = LWORK - KLAST + 1
+            IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','DMAT',KLAST,LWORK)
+            CALL DCOPY(N2BASX,DMAT,1,WRK(KDMAT),1)
+            CALL HERFCK(FMAT,WRK(KDMAT),NDMAT,ISYMDM,IFCTYP,IPRFCK,
+     &                  WRK(KLAST),LWRK)
+         ELSE
+            CALL HERFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,IPRFCK,WRK,LWORK)
+         END IF
          DO I = 1,NDMAT
             ISYMDM(I) = ISYMDM(I) + 1
          END DO
@@ -227,6 +240,14 @@ C
   300    CONTINUE
 C
       END IF
+C
+C     Add DFT contribution
+C
+      IF (DFTADD) THEN
+         CALL DFTEXC(DMAT,1,FMAT,1,.FALSE.,.TRUE.,.FALSE.,.FALSE.,
+     &        .FALSE.,.FALSE.,DUMMY,.FALSE.,WRK,LWORK,IPRFCK)
+      END IF
+C
 #if defined (VAR_OLDCODE)
 --- keep print option here ??? 921201-hjaaj
 C
@@ -274,16 +295,20 @@ C HJAaJ October 1994: NOTE:
 C     Symmetry is implicitly taken into account by the fact that
 C     only non-zero integrals are considered.  The symmetry of DMAT
 C     is not taken into account.
+C DFT modifications T. Helgaker
 C
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (DP5 = 0.50D00, DP25 = 0.25D0)
       INTEGER P, Q, R, S
 #include <inforb.h>
+#include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include <ibtfun.h>
 C
+      EFAC = DP25
+      IF (DFTRUN) EFAC = DP25*HFXFAC
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)
          P    = IBUF(1,INT)
@@ -293,7 +318,7 @@ C
          IF (P.EQ.Q)              DINT = DP5*DINT
          IF (R.EQ.S)              DINT = DP5*DINT
          IF (P.EQ.R .AND. S.EQ.Q) DINT = DP5*DINT
-         EINT = DP25*DINT
+         EINT = EFAC*DINT
 C        ... because DMAT is multiplied by extra 2 in SIRFCK
 C            in order to get full Coulomb contribution:
 C            DINT*(DMAT(R,S) + DMAT(S,R)) = 2*DINT*DMAT(R,S)
@@ -317,6 +342,7 @@ C     970304-tsaue: index permuted
 C     941011-hjaaj: renamed from LFKDIR to FCKDS2
 C                   more than halved the work by using
 C                   the antisymmetry also in the exchange part
+C     DFT modifications T. Helgaker
 C
 C     This subroutine adds two-electron integrals multiplied
 C     by antisymmetric effective density matrices to Fock matrices
@@ -334,19 +360,22 @@ C     Note that X(q,s) = -X(s,q)
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (DP5 = 0.50D00)
+      PARAMETER (D1 = 1.0D00, DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
+#include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), XMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include <ibtfun.h>
 C
+      EFAC = D1
+      IF (DFTRUN) EFAC = HFXFAC
       DO 100 INT = 1, LENGTH
          P    = IBUF(1,INT)
          Q    = IBUF(2,INT)
          R    = IBUF(3,INT)
          S    = IBUF(4,INT)
-         GINT = BUF(INT)
+         GINT = EFAC*BUF(INT)
          IF (P.EQ.Q)              GINT = DP5*GINT
          IF (R.EQ.S)              GINT = DP5*GINT
          IF (P.EQ.R .AND. S.EQ.Q) GINT = DP5*GINT
@@ -369,6 +398,7 @@ C
 C     Henrik Koch and Trygve Helgaker 18-NOV-1991.
 C     970303-tsaue : index permutation
 C     941011-hjaaj: renamed from FCKDI1 to FCKDS3
+C     DFT modifications T. Helgaker
 C
 C     This subroutine adds derivative two-electron integrals to
 C     Fock matrices. The Fock matrices are assumed
@@ -381,10 +411,13 @@ C
       PARAMETER (DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
+#include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include <ibtfun.h>
 C
+      EFAC = DP5
+      IF (DFTRUN) EFAC = DP5*HFXFAC
       DO 100 INT = 1, LENGTH
          P    = IBUF(1,INT)
          Q    = IBUF(2,INT)
@@ -402,7 +435,7 @@ C           coulomb:
          FMAT(R,S) = FMAT(R,S) + FADD
          FMAT(S,R) = FMAT(S,R) + FADD
 C           exchange:
-         GINT = DP5*GINT
+         GINT = EFAC*GINT
          FMAT(P,R) = FMAT(P,R) - GINT*DMAT(Q,S)
          FMAT(R,P) = FMAT(R,P) - GINT*DMAT(S,Q)
          FMAT(P,S) = FMAT(P,S) - GINT*DMAT(Q,R)

@@ -6,6 +6,7 @@ DALTON_LIBS = \
 -Lsirius -lsirius	\
 -Leri -leri		\
 -Lcc  -lcc		\
+-Ldft -ldft		\
 -Lgp -lgp		\
 -Lpdpack -lpdpack
 
@@ -26,7 +27,7 @@ OBJSMEM = abacus/linux_mem_allo.o
 #     Most common build of Dalton
 #
 dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) \
 	-o dalton.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) \
 	$(OBJSAMFI) $(DALTON_LIBS) $(LIB_LIST)
@@ -35,7 +36,7 @@ dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #       Linux version of the program
 #
 linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ MEM_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) \
 	-o dalton.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIB_LIST)
@@ -44,7 +45,7 @@ linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #     Linux parallel build
 #
 linuxparallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ MEM_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) \
 	-o dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIB_LIST) \
@@ -54,7 +55,7 @@ linuxparallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #	Minimal parallel build
 #
 parallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) \
 	-o dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) $(OBJSAMFI) \
 	$(DALTON_LIBS) $(LIB_LIST) $(MPI_LIB_PATH) $(MPI_LIB)
@@ -65,7 +66,7 @@ parallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #       First build master, then slave
 #
 dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ MEM_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) \
 	-o dalpvm.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIB_LIST) \
@@ -81,7 +82,7 @@ dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #	OBJSEIS
 #
 cray.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ \
-	ERI_OBJ PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	ERI_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) -o dalton.x $(OBJPRG) \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIB_LIST) $(DALTON_LIBS)
 	mv dalton.x $(INSTALLDIR)
@@ -89,14 +90,14 @@ cray.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ \
 #	This is a proper build for the Cray-T3D
 #
 t3d.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o dalpar.x $(OBJPRG) $(OBJSLAVE) \
 	$(LIB_LIST) $(OBJSAMFI) $(DALTON_LIBS)
 	mv dalpar.x $(INSTALLDIR)
 
 t90.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o dalpar.x $(OBJPRG) (IO_OBJS) $(OBJSLAVE) \
 	$(LIB_LIST) $(OBJSAMFI) $(DALTON_LIBS)
@@ -108,6 +109,7 @@ depend :
 	cd abacus && $(MAKE) depend
 	cd amfi   && $(MAKE) depend
 	cd cc     && $(MAKE) depend
+	cd dft    && $(MAKE) depend
 	cd eri    && $(MAKE) depend
 	cd gp     && $(MAKE) depend
 	cd pdpack && $(MAKE) depend
@@ -120,6 +122,7 @@ clean :
 	cd abacus && $(MAKE) clean
 	cd amfi   && $(MAKE) clean
 	cd cc     && $(MAKE) clean
+	cd dft    && $(MAKE) clean
 	cd eri    && $(MAKE) clean
 	cd gp     && $(MAKE) clean
 	cd pdpack && $(MAKE) clean
@@ -130,7 +133,7 @@ clean :
 #	We remove the entire source code as well if we do not plan to debug
 #
 veryclean :
-	$(RM) -rf abacus sirius rsp gp include eri pdpack cc
+	$(RM) -rf abacus sirius rsp gp include eri pdpack cc dft
 
 MAIN_OBJ :
 	cd abacus && $(MAKE) main
@@ -159,6 +162,9 @@ ERI_OBJ	:
 
 CC_OBJ	:
 	cd cc && $(MAKE) all
+
+DFT_OBJ	:
+	cd dft && $(MAKE) all
 
 IO_OBJ	:
 	cd cc && $(MAKE) io

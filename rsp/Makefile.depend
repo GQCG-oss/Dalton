@@ -12,11 +12,11 @@ expone.o : expone.F \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h  ../include/wrkrsp.h
 fone.o : fone.F \
-  ../include/implicit.h  ../include/infind.h \
-  ../include/inforb.h  ../include/infrsp.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/orbtypdef.h  ../include/single.h \
-  ../include/wrkrsp.h
+  ../include/dftcom.h  ../include/implicit.h \
+  ../include/infind.h  ../include/inforb.h \
+  ../include/infrsp.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/orbtypdef.h \
+  ../include/single.h  ../include/wrkrsp.h
 hsoal2.o : hsoal2.F \
   ../include/implicit.h  ../include/infhso.h \
   ../include/infinp.h  ../include/inforb.h \
@@ -289,15 +289,16 @@ rspoit.o : rspoit.F \
   ../include/orbtypdef.h  ../include/priunit.h \
   ../include/single.h
 rspoli.o : rspoli.F \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/infdim.h  ../include/infind.h \
-  ../include/infinp.h  ../include/inforb.h \
-  ../include/infpri.h  ../include/infrsp.h \
-  ../include/infsop.h  ../include/inftra.h \
-  ../include/infvar.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/orbtypdef.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/thrzer.h  ../include/wrkrsp.h
+  ../include/dftcom.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/infdim.h \
+  ../include/infind.h  ../include/infinp.h \
+  ../include/inforb.h  ../include/infpri.h \
+  ../include/infrsp.h  ../include/infsop.h \
+  ../include/inftra.h  ../include/infvar.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/orbtypdef.h  ../include/priunit.h \
+  ../include/single.h  ../include/thrzer.h \
+  ../include/wrkrsp.h
 rsporp.o : rsporp.F \
   ../include/dummy.h  ../include/ibndxdef.h \
   ../include/implicit.h  ../include/infdim.h \

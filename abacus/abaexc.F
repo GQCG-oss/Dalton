@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaexc.F,v 1.4 2001-05-31 06:38:00 vebjornb Exp $
+C$Id: abaexc.F,v 1.5 2001-10-01 13:22:09 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck excinp */
@@ -645,12 +645,13 @@ C  /* Deck excout */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <gnrinf.h>
 #include <cbiexc.h>
 #include <cbilrs.h>
 #include <inforb.h>
 #include <nuclei.h>
 #include <abainf.h>
-      CHARACTER COORDI*21
+      CHARACTER COORDI*21, NMDTXT*9
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
@@ -972,7 +973,29 @@ C
          WRITE (LUPRI,'(9(5X,I3,4(4X,G13.6)/))') 
      &         (K,(DISUMV(K,J),J=1,4),K=-6,2)
       ENDIF
+C     
+C        *** If numerical derivatives are calculated, then ***
+C        *** write properties to file.                     ***
 C
+      IF (NMWALK) THEN
+         DO ISYM = 1, NSYM
+            NMDTXT = '         '
+            DO IEXVAL=1, NEXCIT(ISYM)
+               IF (IEXVAL.LT.10) THEN
+                  WRITE (NMDTXT(5:6),'(2I1)') ISYM, IEXVAL
+               ELSE
+                  WRITE (NMDTXT(5:7),'(I1,I2)') ISYM, IEXVAL
+               END IF
+               NMDTXT(1:4) = 'EXEN'
+               CALL WRAVFL(EXENG(ISYM,IEXVAL),1,1,1,NMDTXT,IPRINT)
+               IF (DIPSTR) THEN
+                  NMDTXT(1:4) = 'TRDP' // CHAR(ISYM) // CHAR(IEXVAL)
+                  CALL WRAVFL(TRLEN(1,ISYM,IEXVAL),3,1,1,NMDTXT,IPRINT)
+               END IF
+            END DO
+         END DO
+      END IF
+
       RETURN
       END
 C  /* Deck excit2 */

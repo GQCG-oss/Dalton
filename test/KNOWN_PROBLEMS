@@ -6,6 +6,13 @@ all 64-bit architectures
   rsp_sreslrso will not work if Dalton is compiled as 64-bit code
 
 
+------------------------------------------------------------------------
+SGI 64-bit
+------------------------------------------------------------------------
+
+  On some (all?) SGIs the test case energy_solv does not work
+  when compiling the 64-bit version (32-bit works fine)
+
 
 ------------------------------------------------------------------------
 DEC alpha

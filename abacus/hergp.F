@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: hergp.F,v 1.4 2001-08-10 11:44:07 ruud Exp $
+C$Id: hergp.F,v 1.5 2001-10-01 13:22:13 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1285,6 +1285,12 @@ C
          END IF
       ELSE IF (TYPE .EQ. 'QMOM') THEN
          DISOTP = DATNUC(5,ISOTOP,IATOM)
+      ELSE IF (TYPE .EQ. 'NEUTRONS') THEN
+         IF (IATOM .LE. 0) THEN
+            DISOTP = D0
+         ELSE
+            DISOTP = FLOAT(NINT(DATNUC(1,ISOTOP,IATOM)-IATOM))
+         END IF
       ELSE
          WRITE (LUPRI,'(//,3A,/,A)')
      &         ' Keyword ',TYPE,' unknown in DISOTP.',

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abarlx.F,v 1.2 2001-05-31 06:38:03 vebjornb Exp $
+C$Id: abarlx.F,v 1.3 2001-10-01 13:22:11 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck rlxinp */
@@ -258,6 +258,7 @@ C
          IF (SPINRO) CALL DZERO(ELSPRP,9*NUCDEP)
          IF (SPNSPN) CALL HESZER(SPNPSO)
       END IF
+      
       DO 200 ITYPE = 1, 2
          IF (DOTRPL .AND. ITYPE .EQ. 1) THEN
             GOTO 200

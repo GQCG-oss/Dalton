@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirorb.F,v 1.2 2001-05-31 06:38:36 vebjornb Exp $
+C$Id: sirorb.F,v 1.3 2001-10-01 13:22:21 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck sirorb */
@@ -40,6 +40,7 @@ C  /* Deck sirorb */
      &                  WRK,LFREE)
 C
 C Nov-1985 HJAaJ
+C DFT modification tuh
 C
 C Purpose:
 C  Carry out intermediate optimization of orbitals for fixed
@@ -78,6 +79,7 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <inftra.h>
+#include <dfterg.h>
 C
       LOGICAL GETWOP, ACTROT, RHFCLC, NEWLVL
       CHARACTER*8 TABLE(4)
@@ -291,7 +293,7 @@ C    *                   DIAOR,INDXCI,WRK,LFREE)
             NCONF  = 0
             CALL GRDINF(GNORM,GORB)
             NCONF  = MCONF
-            EMCSCF = POTNUC + EMCMY + EMCACT
+            EMCSCF = POTNUC + EMCMY + EMCACT + EDFTY
             WRITE (LUW4,1010) EMCSCF,ITORB
             IF ( P4FLAG(2) .OR. (LUPRI.EQ.LUW4 .AND. P6FLAG(1)) )
      *         WRITE (LUW4,1015) POTNUC,EMCMY,EMCACT

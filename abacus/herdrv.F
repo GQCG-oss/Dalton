@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herdrv.F,v 1.16 2001-06-22 10:40:22 ruud Exp $
+C$Id: herdrv.F,v 1.17 2001-10-01 13:22:13 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -107,6 +107,7 @@ C
 #include <exeinf.h>
 #include <inftap.h>
 #include <huckel.h>
+#include <dftcom.h>
 C
       LOGICAL SET
 C
@@ -143,6 +144,15 @@ C
      &                        .FALSE.)
       CALL HERINT(WORK,LWORK)
 C
+C     ***********************************
+C     ***** Grid for DFT quadrature *****
+C     ***********************************
+C
+      IF (DFTRUN .AND. .NOT.GRDONE) THEN
+         CALL DFTGRD(WORK,LWORK,1,.FALSE.)
+         GRDONE = .TRUE.
+      END IF 
+C
 C     ******************************
 C     ***** End of Calculation *****
 C     ******************************
@@ -167,6 +177,8 @@ C
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
+C     tuh, extensively extended by others 
+C
 C <<< General Input for HERMIT >>>
 C
 #include <implicit.h>
@@ -177,8 +189,8 @@ C
 #include <mxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
-      PARAMETER (NDIR = 7, NTABLE = 96)
-      PARAMETER (D0 = 0.0D0)
+      PARAMETER (NDIR = 7, NTABLE = 100)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
       DIMENSION WORK(LWORK)
@@ -197,6 +209,7 @@ C
 #include <inftap.h>
 #include <cbisor.h>
 #include <ecpinf.h>
+#include <elweak.h>
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT'/
@@ -221,9 +234,10 @@ C
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
      &             '.NUCMOD', '.SORT I', '.DIPGRA', '.QUAGRA',
      &             '.OCTGRA', '.ROTSTR', '.THIRDM', '.SOFIEL',
-     &             '.SOMAGM', '.DEROVL', '.DERHAM', '.ELGDIA',
-     &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT',
-     &             '.XDDXR3', '.AD2DAR', '.PVP   ', '.1ELPOT'/
+     &             '.SOMAGM', '.DEROVL', '.DERHAM', '.ELGDIA', 
+     &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT', 
+     &             '.XDDXR3', '.AD2DAR', '.PVIOLA', '.WEINBG', 
+     &             '.ISOTOP', '.FNPROP', '.PVP   ', '.1ELPOT'/
 C
 C     Check if input has been processed earlier.
 C
@@ -234,6 +248,9 @@ C
          GOTO 1000
       END IF
       HRINPC = .TRUE.
+C
+C     *** Initialize ***
+C
       CALL HERINI
 C
       CALL TITLER('Output from HERMIT input processing','*',118)
@@ -281,7 +298,7 @@ C
      &                161,162,163,164,165,166,167,168,169,170,
      &                171,172,173,174,175,176,177,178,179,180,
      &                181,182,183,184,185,186,187,188,189,190,
-     &                191,192,193,194,195,196), I
+     &                191,192,193,194,195,196,197,198,199,200), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -401,11 +418,11 @@ C
             S2MAG = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
- 127     CONTINUE
+  127    CONTINUE
             ANGMOM = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
- 128     CONTINUE
+  128    CONTINUE
             ANGLON = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
@@ -713,23 +730,45 @@ C&&& Nuclear model
  194     CONTINUE
             AD2DAR = .TRUE.
             READ (LUCMD, *) DARFAC
-            GOTO 100
+            GO TO 100                            
  195     CONTINUE
+            PVIOLA = .TRUE.
+            SPNORB = .TRUE.
+            ONEPRP = .TRUE. 
+            GO TO 100                            
+ 196     CONTINUE
+            READ(LUCMD,*) BGWEIN
+            BGWEIL = .TRUE.
+            BGWEIN = D1 - D4*BGWEIN
+            GOTO 100   
+ 197     CONTINUE
+            READ (LUCMD, *) NISOPV
+            DO I = 1, NISOPV
+                READ (LUCMD, *) IOLD,INEW
+                ISOTPV(IOLD) = INEW
+            END DO
+            GOTO 100 
+ 198     CONTINUE
+            READ (LUCMD, *) X10FNP
+            PVFINN = D10 ** X10FNP
+            GOTO 100
+ 199     CONTINUE
             PVPINT = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100                            
- 196     CONTINUE
+ 200     CONTINUE
             POTENE = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
-         GO TO 199
+         GO TO 299
       ELSE
          WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in HERINP.')
       END IF
- 199  CONTINUE
+ 299  CONTINUE
+      IF (.NOT. BGWEIL) BGWEIN = WEINBG 
       NMRISS = FERMI .OR. PSO .OR. SPIDIP .OR. DSO .OR. SDFC
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' @@ Input test run only !!!'
       WRITE (LUPRI,'(/A,I5)') ' Default print level:    ',IPRDEF
@@ -964,15 +1003,17 @@ C&&& Nuclear model
      &      ' All one-electron property integrals are printed.'
          IF (S1ELE) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     $        'Type A'
+     &        'Type A'
          IF (S1ELB) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     $        'Type B'
+     &        'Type B'
          IF (ONEELD) THEN
             WRITE (LUPRI,'(10X,A)')
-     $       '- first electric derivatives of one-electron'
+     &       '- first electric derivatives of one-electron'
             WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
          ENDIF
+         IF (PVIOLA) WRITE (LUPRI,'(10X,A)')
+     &       '- parity violation electroweak interaction'
       END IF
       IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/A,3F20.15)')
      &    ' Operator center:', (ORIGIN(I),I=1,3)
@@ -1018,19 +1059,19 @@ C&&& Nuclear model
 C
 C     **** Process input for various program sections  *****
 C
-  200 CONTINUE
+  300 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
       CALL ER2INI
- 201  PROMPT = WORD(1:1)
+ 301  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-         GO TO 200
+         GO TO 300
       ELSE IF (PROMPT .EQ. '*') THEN
          IF (WORD(1:2) .EQ. '**') GO TO 1
-         DO 210 I = 1, NDIR
+         DO 310 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO (1,2,3,4,5,6,7), I
             END IF
-  210    CONTINUE
+  310    CONTINUE
          WRITE (LUPRI,'(/3A/)') ' Directory ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal directory in HERINP.')
@@ -1041,17 +1082,17 @@ C
          CALL QUIT('Program stopped in HERINP, error in prompt.')
       END IF
     2   CALL REAINP(WORD,IPRDEF,RELCAL,TSTINP)
-      GO TO 201
+      GO TO 301
     3   CALL HR1INP(WORD)
-      GO TO 201
+      GO TO 301
     4   CALL HR2INP(WORD)
-      GO TO 201
+      GO TO 301
     5   CALL HRSINP(WORD)
-      GO TO 201
+      GO TO 301
     6   CALL ER2INP(WORD)
-      GO TO 201
+      GO TO 301
     7   CALL SRTINP(WORD)
-      GO TO 201
+      GO TO 301
 C
     1 CONTINUE
 C
@@ -1071,9 +1112,9 @@ C
       IF (TSTINP) CALL GPCLOSE(LUONEL,' ')
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-         DO 234 I = 1, MXCENT
+         DO 334 I = 1, MXCENT
             ISOTOP(I) = 1
- 234     CONTINUE
+ 334     CONTINUE
          KGEOM = 1
          KMASS = KGEOM + 3*NATOMS
          KNAT  = KMASS + NATOMS
@@ -2385,6 +2426,16 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
+C           ***** Parity violating electroweak interaction *****
+C
+            IF (PVIOLA) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('PVIOLA ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('PVIOLA',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
 C           ***** DPT pso-lookalikes SQUARED *****
 C
             IF (XDDXR3) THEN
@@ -2702,6 +2753,7 @@ C/* Deck herini */
 #include <ecpinf.h>
 #include <drw2el.h>
 #include <orgcom.h>
+#include <elweak.h>
 C
 C     Initialize effective core potential parameters
 C
@@ -2843,6 +2895,14 @@ C        in order to skip solvent modules in ONEDRV
 C        and cavity center in VIBMAS
 C
       SOLVNT = .FALSE.
+C
+      PVFINN = D1
+      BGWEIL = .FALSE.
+      PVIOLA = .FALSE.
+      DO I = 1, MXCENT
+         ISOTPV(I) = 1
+      END DO
+C
       RETURN
       END
 C/* Deck amfiin */

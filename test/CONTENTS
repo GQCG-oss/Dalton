@@ -477,6 +477,116 @@ Wave Functions:   CCS, CC2, CCSD / 6-31G**
 Test Purpose:     Integral-direct calculation of twophoton
                   transition moments
 
+dft_b3lyp_cart
+--------------
+Molecule:         H2O 
+Wave Function:    DFT B3LYP    
+Test Purpose:     Check DFT-code with Cartesians
+
+
+dft_b3lyp_nosym
+---------------
+Molecule:         H2O 
+Wave Function:    DFT B3LYP    
+Test Purpose:     Check B3LYP functional w/o symmetry
+
+
+dft_b3lyp_sym
+-------------
+Molecule:         H2O 
+Wave Function:    DFT B3LYP    
+Test Purpose:     Check B3LYP functional w/symmetry. Includes
+                  f-functions
+
+
+dft_blyp_nosym
+--------------
+Molecule:         HCN
+Wave Function:    DFT BLYP / aug-cc-pVDZ
+Test Purpose:     Check BLYP functional w/o symmetry
+
+
+dft_blyp_sym
+------------
+Molecule:         HCN
+Wave Function:    DFT BLYP / aug-cc-pVDZ
+Test Purpose:     Check BLYP functional w/symmetry
+
+
+dft_energy_sym
+--------------
+Molecule:         H2O2
+Wave Function:    DFT B3LYP / 6-31G**
+Test Purpose:     DFT direct energy calculation w/symmetry
+
+
+dft_lda_cart
+------------
+Molecule:         HCN
+Wave Function:    DFT LDA / aug-cc-pVDZ
+Test Purpose:     Check DFT-code with Cartesians
+
+
+dft_lda_nosym
+-------------
+Molecule:         HCN
+Wave Function:    DFT LDA / aug-cc-pVDZ
+Test Purpose:     Check DFT/LDA w/o symmetry
+
+
+dft_lda_sym
+-----------
+Molecule:         HCN
+Wave Function:    DFT LDA / aug-cc-pVDZ
+Test Purpose:     Check DFT/LDA w/symmetry
+
+
+dft_optimize_nosym
+------------------
+Molecule:         H2O
+Wave Function:    DFT B3LYP / 6-31G*
+Test Purpose:     DFT B3LYP geometry optimization w/o symmetry
+
+
+dft_optimize_sym
+----------------
+Molecule:         H2O
+Wave Function:    DFT B3LYP / 6-31G*
+Test Purpose:     DFT B3LYP geometry optimization w/symmetry
+
+
+dft_properties_nosym
+--------------------
+Molecule:         H2O
+Wave Functions:   DFT B3LYP / cc-pVDZ
+Test Purpose:     DFT B3LYP properties test w/o symmetry:
+                  Shieldings, excitation energies, spin-spin, darwin,
+                  mass-vel., dipol, spin-orbit,  P-viola
+
+
+dft_properties_sym
+------------------
+Molecule:         H2O
+Wave Functions:   DFT B3LYP / cc-pVDZ
+Test Purpose:     DFT B3LYP properties test w/symmetry:
+                  Shieldings, excitation energies, spin-spin, darwin,
+                  mass-vel., dipol, spin-orbit,  P-viola
+
+
+effgeom_fromE2
+--------------
+Molecule:         CO
+Wave Function:    SCF / STO-3G
+Test Purpose:     Effective geometry from energies using normal
+                  coordinates
+
+
+effgeom_fromE
+-------------
+Molecule:         CO
+Wave Function:    SCF / STO-3G
+Test Purpose:     Effective geometry from energies
+
 
 energy_corehole
 ---------------
@@ -734,6 +844,22 @@ Wave Function:    N/A
 Test Purpose:     VRML visualization of input geometry. A ball-and-stick
                   representation of the molecule is written to the file
                   'first.wrl'
+
+
+hfreqfromE
+----------
+Molecule:         H2O
+Wave Function:    SCF / cc-pVDZ
+Test Purpose:     Harmonic frequencies calculated numerically from
+                  energies
+
+
+hfreqfromg
+----------
+Molecule:         H2O
+Wave Function:    SCF / cc-pVDZ
+Test Purpose:     Harmonic frequencies calculated numerically from
+                  gradients
 
 
 prop_ecd
@@ -1087,6 +1213,14 @@ rsp_twophot
 Molecule:         KUM1
 Wave Function:    SCF / 3-21G
 Test Purpose:     Two-photon absorption
+
+
+vibave_spinspin
+---------------
+Molecule:         H2O
+Wave Function:    HF / STO-3G
+Test Purpose:     Vibrational average of indirect spin-spin couplings 
+                  for H2O^{17}
 
 
 walk_gradex

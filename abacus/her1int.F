@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1int.F,v 1.6 2001-05-31 06:38:05 vebjornb Exp $
+C$Id: her1int.F,v 1.7 2001-10-01 13:22:12 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -462,10 +462,15 @@ C
          JMAXM  = 1
          DONUC1 = .FALSE. 
          DOMOM1 = .FALSE. 
+      ELSE IF (INTTYP .EQ.80) THEN 
+         JMAXD = 1
+         JMAXM = 0
+         DONUC1 = .TRUE.
+         DOMOM1 = .TRUE. 
       END IF
 C
       IF (IPRINT .GT. 5) THEN
-            WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
+         WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
          WRITE (LUPRI,'(A,I5)') ' NELMNT ', NELMNT
          WRITE (LUPRI,'(A,I5)') ' INTTYP ', INTTYP
          WRITE (LUPRI,'(A,I5)') ' NOPTYP ', NOPTYP
@@ -733,6 +738,7 @@ C
 #include <shells.h>
 #include <huckel.h>
 #include <symmet.h>
+#include <elweak.h>
 C
 #include <ibtfun.h>
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -767,7 +773,8 @@ C
      &                    .OR. (INTTYP .EQ. 70)
      &                    .OR. (INTTYP .EQ. 72)
      &                    .OR. (INTTYP .EQ. 73)
-     &                    .OR. (INTTYP .EQ. 74)) THEN    
+     &                    .OR. (INTTYP .EQ. 74)
+     &                    .OR. (INTTYP .EQ. 80)) THEN    
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
          IF (INTTYP .EQ. 10) JMAX = JMAX + 1
@@ -797,6 +804,7 @@ C
          IF (INTTYP .EQ. 72) JMAX = JMAX + 2
          IF (INTTYP .EQ. 73) JMAX = JMAX + 2
          IF (INTTYP .EQ. 74) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 80) JMAX = JMAX + 3
          MULCHA = (INTTYP .EQ. 5) .OR. (INTTYP .EQ. 19)
      &                            .OR. (INTTYP .EQ. 20)
      &                            .OR. (INTTYP .EQ. 24)
@@ -823,6 +831,11 @@ C
                CORCZ0 =  CORD(3,IATOMC)
                FACTOR = - FMULT(IBTAND(MULC,KAB))
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
+               IF (INTTYP .EQ. 80) THEN
+                  FACTOR = FACTOR/HKAB*(
+     &            DISOTP(NINT(CHARGE(IATOMC)),ISOTPV(IATOMC),'NEUTRONS')
+     &            -BGWEIN*CHARGE(IATOMC))
+               END IF
                DO 310 ISYMOP = 0, MAXOPR
                   IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
                      NATOMC = NATOMC + 1
@@ -1054,6 +1067,7 @@ C
 #include <huckel.h>
 #include <nuclei.h>
 #include <primit.h>
+#include <elweak.h>
 C
       DIFODC = (INTTYP.EQ. 3) .OR. (INTTYP.EQ. 5) .OR. (INTTYP.EQ.10)
      &    .OR. (INTTYP.EQ.14) .OR. (INTTYP.EQ.17) .OR. (INTTYP.EQ.18)
@@ -1065,12 +1079,12 @@ C
      &    .OR. (INTTYP.EQ.54) .OR. (INTTYP.EQ.55) .OR. (INTTYP.EQ.59)
      &    .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.70)
      &    .OR. (INTTYP.EQ.71) .OR. (INTTYP.EQ.72) .OR. (INTTYP.EQ.73)
-     &    .OR. (INTTYP.EQ.74)
+     &    .OR. (INTTYP.EQ.74) .OR. (INTTYP.EQ.80)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &    .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
      &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.62)
      &    .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.64) .OR. (INTTYP.EQ.72)
-     &    .OR. (INTTYP.EQ.73)
+     &    .OR. (INTTYP.EQ.73) .OR. (INTTYP.EQ.80)
 C
       DO 100 IPRIMA = 1,NUCA
          JPRIMA = JSTA + IPRIMA
@@ -1203,7 +1217,8 @@ C
      &                       .OR. (INTTYP .EQ. 70)
      &                       .OR. (INTTYP .EQ. 72)
      &                       .OR. (INTTYP .EQ. 73)
-     &                       .OR. (INTTYP .EQ. 74)) THEN
+     &                       .OR. (INTTYP .EQ. 74)
+     &                       .OR. (INTTYP .EQ. 80)) THEN      
                CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
             IF (ADDNAI) THEN
                CALL DZERO(AHGTF,NAHGTF)
@@ -1222,10 +1237,10 @@ C
                   GNUFAC=FACTOR * (GNUEXP(IATOMC)/
      &                 (EXPP + GNUEXP(IATOMC)))**1.5D0
                   CALL HERNAI(AHGTF,JMAX,PEXP,DIFCPX,DIFCPY,DIFCPZ,
-     &                 GNUFAC,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
+     &                        GNUFAC,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                ELSE
-                 CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ,
-     &                       FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
+                  CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ,
+     &                        FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                END IF
                IF (ADDNAI) THEN
                   CALL DAXPY(NAHGTF,D1,AHGTF(IADR),1,AHGTF(1),1)
@@ -1703,26 +1718,31 @@ C
 C        Overlap integrals for the small-component in DPT
 C        ------------------------------------------------
 C
-         ELSEIF (INTTYP .EQ. 71) THEN
+         ELSE IF (INTTYP .EQ. 71) THEN
             CALL RELOVL(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
-     $           SHLINT)
+     &                  SHLINT)
 C
 C        Potential energy int for the small-component in DPT
 C        ---------------------------------------------------
 C
-         ELSEIF (INTTYP .EQ. 72) THEN
+         ELSE IF (INTTYP .EQ. 72) THEN
             CALL RELPO1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
-     $           SHLINT,AHGTF,NATOMC,EXPA,EXPB)
-C
-         ELSEIF (INTTYP .EQ. 73) THEN
+     &                  SHLINT,AHGTF,NATOMC,EXPA,EXPB)
+         ELSE IF (INTTYP .EQ. 73) THEN
             CALL RELPO2(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
-     $           SHLINT,AHGTF,NATOMC,EXPA,EXPB)
+     &                  SHLINT,AHGTF,NATOMC,EXPA,EXPB)
 C
 C        PSO DPT-lookalike integrals
 C        ---------------------------
 C
          ELSE IF (INTTYP .EQ. 74) THEN
             CALL NSYINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  NOPTYP,NATOMC)
+C
+C        Parity violating electroweak interaction
+C        ----------------------------------------
+         ELSE IF (INTTYP .EQ. 80) THEN
+            CALL CNTFPV(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC)
 C
          END IF                                    
@@ -6093,6 +6113,7 @@ c$$$ 200     CONTINUE
  100  CONTINUE
       RETURN
       END
+C  /* Deck relvol */
       SUBROUTINE RELOVL(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C ach
 C     a. chr. hennum's  1. subroutine.
@@ -6162,6 +6183,7 @@ C
 C
 C
 C
+C  /* Deck relpo1 */
       SUBROUTINE RELPO1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT
      &                  ,AHGTF,NATOMC,EXPA,EXPB)
 C
@@ -6276,6 +6298,7 @@ C      WRITE(*,*) 'ACH : ', SHLINT(1,2)
       RETURN
       END
 C
+C  /* Deck relpo2 */
       SUBROUTINE RELPO2(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT
      &                  ,AHGTF,NATOMC,EXPA,EXPB)
 C     Based on CINT2
@@ -6455,6 +6478,90 @@ C
   300       CONTINUE
             IADRAV = IADRAV + ISTEPV
   200    CONTINUE
+  100 CONTINUE
+      RETURN
+      END
+C  /* Deck cntfpv */
+      SUBROUTINE CNTFPV(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT)
+C
+C     Parity violating electroweak interaction.
+C
+C     The array AHGTF contains Hermite integrals over a weighted sum
+C     of nuclear attraction integrals . The weights are the nucleus-
+C     dependent effective electroweak charges (enhancement factors) Q(Z):
+C
+C           Q(Z) = [N(neutrons) - (1 - 4*sin(theta_W)**2) * Z] ,
+C
+C     where theta_W is the Weinberg angle, Z the nuclear charge,
+C     and N(neutrons) the number of neutrons in the nucleus.
+C
+C     See:
+C     P. Lazzeretti and R. Zanasi, Chem. Phys. Lett. 279, 349 (1997).
+C     A. Bakasov, T.-K. Ha, and M. Quack, J. Chem. Phys. 109, 7263 (1998).
+C
+C     Wim Klopper, Utrecht University, October 18, 1999
+C
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+      PARAMETER (D1 = 1D0, D2 = 2.D0, D16 = 16D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          AHGTF(*), SHLINT(KCKTAB,3)
+#include <onecom.h>
+#include <lmns.h>
+      FFA = - D1 / (D16 * DATAN(D1))
+      INT = 1
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         MAXT = LVALA + LVALB + 1
+         MAXU = MVALA + MVALB + 1
+         MAXV = NVALA + NVALB + 1
+         IADRAV = 1
+         DO 200 IV = 0,MAXV
+            EV = FFA * ODC(NVALA,NVALB,IV,0,0,3)
+            FV = FFA * ODC(NVALA,NVALB,IV,1,0,3)
+            IADRAU = IADRAV
+            DO 300 IU = 0,MAXU
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               FU = ODC(MVALA,MVALB,IU,1,0,2)
+               EE = EU*EV
+               FE = FU*EV
+               EF = EU*FV
+               DO 400 IT = 0,MAXT
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  FT = ODC(LVALA,LVALB,IT,1,0,1)
+                  EEE = ET*EE
+                  FEE = FT*EE
+                  EFE = ET*FE
+                  EEF = ET*EF
+                  AH00 = (AHGTF(IADRAU + IT + 2 )
+     &                 +  AHGTF(IADRAU + IT + 2 * ISTEPU)
+     &                 +  AHGTF(IADRAU + IT + 2 * ISTEPV)) * D2
+                  AH0T =  AHGTF(IADRAU + IT + 3)
+     &                 +  AHGTF(IADRAU + IT + 2 * ISTEPU + 1)
+     &                 +  AHGTF(IADRAU + IT + 2 * ISTEPV + 1)
+                  AH0U =  AHGTF(IADRAU + IT + 2 + ISTEPU)
+     &                 +  AHGTF(IADRAU + IT + 3 * ISTEPU)
+     &                 +  AHGTF(IADRAU + IT + 2 * ISTEPV + ISTEPU)
+                  AH0V =  AHGTF(IADRAU + IT + 2 + ISTEPV)
+     &                 +  AHGTF(IADRAU + IT + 2 * ISTEPU + ISTEPV)
+     &                 +  AHGTF(IADRAU + IT + 3 * ISTEPV)
+                  SHLINT(INT,1) = SHLINT(INT,1) + FEE*AH00 - EEE*AH0T
+                  SHLINT(INT,2) = SHLINT(INT,2) + EFE*AH00 - EEE*AH0U
+                  SHLINT(INT,3) = SHLINT(INT,3) + EEF*AH00 - EEE*AH0V
+  400          CONTINUE
+               IADRAU = IADRAU + ISTEPU
+  300       CONTINUE
+            IADRAV = IADRAV + ISTEPV
+  200    CONTINUE
+         INT = INT + 1
   100 CONTINUE
       RETURN
       END

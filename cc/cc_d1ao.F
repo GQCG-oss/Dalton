@@ -510,6 +510,7 @@ C
          ISYM2 = MULD2H(ISYDMO,ISYM1)
          ISYMA = MULD2H(ISYMLP,ISYM1)
          ISYMB = MULD2H(ISYMLH,ISYM2)
+C         
          IF (ISYDAO.NE.MULD2H(ISYMA,ISYMB)) THEN
            CALL QUIT('Symmetry mismatch in CC_DENAO')
          END IF

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaenr.F,v 1.2 2001-05-31 06:38:00 vebjornb Exp $
+C$Id: abaenr.F,v 1.3 2001-10-01 13:22:09 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -334,7 +334,6 @@ C
             WRITE(LUPRI,'(/A,3I8)')' NSIM,NOSIM,NCSIM',NSIM,NOSIM,NCSIM
             WRITE(LUPRI,'(/A,I8)')' NREDH',NREDH
          END IF
-C
 C        Write (A-B)*X on LUNR5
 C
          REWIND LUNR5
@@ -421,7 +420,7 @@ C
       ELSE
          BINMEM=.FALSE.
       ENDIF
-C
+C     
       IF (IPRNR .GE. 2) THEN
          TIMIT = SECOND() - TIMIT
          WRITE (LUPRI,'(/A,F12.2,/)')

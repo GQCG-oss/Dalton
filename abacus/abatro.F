@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abatro.F,v 1.5 2001-05-31 06:38:03 vebjornb Exp $
+C$Id: abatro.F,v 1.6 2001-10-01 13:22:11 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck troinp */
@@ -1224,8 +1224,7 @@ C
      &                    WORK(KDGD),NDEP)
                IF (IPRINT .GE. 10) THEN
                   CALL AROUND('DGD - TRAROT')
-                  CALL OUTPUT(WORK(KDGD),1,NDEP,1,NAX,NDEP,NAX,1,
-     *                 LUPRI)
+                  CALL OUTPUT(WORK(KDGD),1,NDEP,1,NAX,NDEP,NAX,1,LUPRI)
                END IF
 C
 C              Construct DIPTR

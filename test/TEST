@@ -56,7 +56,14 @@ LONG="$LONG $LONGCC"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel"
 #
-ALL="$SHORT $MEDIUM $LONG"
+DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
+dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
+dft_optimize_nosym dft_optimize_sym dft_properties_nosym \
+dft_properties_sym"
+#
+NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"
+#
+ALL="$SHORT $MEDIUM $LONG $DFT $NUMDER"
 #
 ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
 #
@@ -88,6 +95,8 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           short                -- run all short testcases
           medium               -- run all medium length testcases
           long                 -- run all long testcases
+          dft                  -- run all DFT testcases
+          numder               -- run all numerical derivatives testcases
           all                  -- run all non-parallel testcases
                                   (= short + medium + long)
           <case1 [case2] ...>  -- run only the specified testcase(s)
@@ -166,6 +175,10 @@ elif [ "$testcase" = "all" ]; then
   testcase=$ALL
 elif [ "$testcase" = "allcc" ]; then
   testcase=$ALLCC
+elif [ "$testcase" = "dft" ]; then
+  testcase=$DFT
+elif [ "$testcase" = "numder" ]; then
+  testcase=$NUMDER
 fi
 
 

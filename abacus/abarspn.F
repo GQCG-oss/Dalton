@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abarspn.F,v 1.3 2001-05-31 06:38:03 vebjornb Exp $
+C$Id: abarspn.F,v 1.4 2001-10-01 13:22:11 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck abarsp */
@@ -231,7 +231,7 @@ cs
          DORSP = .TRUE.
          CALL SIROPI
          DORSP = FLAGSV
-         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA,MWORK)
+         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA,MWORK) 
       END IF
       FABRHS = .FALSE.
 C

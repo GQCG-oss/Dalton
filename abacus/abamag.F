@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamag.F,v 1.8 2001-08-10 11:44:07 ruud Exp $
+C$Id: abamag.F,v 1.9 2001-10-01 13:22:09 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1060,7 +1060,8 @@ C  /* Deck spninp */
 #include <priunit.h>
 #include <mxcent.h>
 #include <nuclei.h>
-      PARAMETER (NTABLE = 9, D0 = 0.0D0)
+#include <abainf.h>
+      PARAMETER (NTABLE = 10, D0 = 0.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
@@ -1068,7 +1069,7 @@ C  /* Deck spninp */
 #include <spnout.h>
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
-     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDxFC '/
+     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDxFC ','.ISOTOP'/
 C
       NEWDEF = (WORD .EQ. '*SPIN-S')
       ICHANG = 0
@@ -1083,7 +1084,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GOTO (1,2,3,4,5,6,7,8,9), I
+                     GOTO (1,2,3,4,5,6,7,8,9,10), I
                   END IF
  200           CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1137,6 +1138,11 @@ C
  9             CONTINUE 
                   ANISON = .TRUE.
                GOTO 100
+ 10            CONTINUE
+                  SPNISO = .TRUE.
+                  READ (LUCMD, *) (ISOTOP(IS), IS = 1, NATOMS)
+                  ABUND = D0
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -1187,6 +1193,7 @@ C
       DOSDFC= .FALSE.
       DOSELE= .FALSE.
       ANISON= .FALSE.
+      SPNISO= .FALSE.
       RETURN
       END
 C  /* Deck trpinp */
@@ -2147,6 +2154,7 @@ C  /* Deck spire1 */
 #include <dorps.h>
 #include <cbisol.h>
 #include <spnout.h>
+#include <cbinum.h>
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
@@ -2197,6 +2205,7 @@ C
 C
 C Print individual contributions, if requested
 C
+      isppri = 11
       IF (ISPPRI .GE. 10) THEN
          CALL HEADER('DSO-part of coupling constants',1)
          CALL PRIHES (SPNDSO,'SPNSPN',CSTRA,SCTRA)
@@ -2213,8 +2222,57 @@ C
          NCOOR = 3*NUCDEP
          CALL PR2DER(CHESS(1,1,1),NCOOR,NCOOR,LUPRI)
       END IF
+      isppri = 0
 C
-C Calculate the various spin parameters
+C     *** Final indirect spin-spin coupling analysis. ***
+C
+      IF (SPNISO) THEN
+         CALL ISOSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
+      ELSE
+         CALL FNLSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
+      END IF
+C
+C     *****************************************************
+C     *** If vibrational averaging we need to write our ***
+C     *** results to file.                              ***
+C     *****************************************************
+C
+      IF (NPRPDR) THEN
+         CALL WRAVFL(CHESS,3*NUCDEP,3*NUCDEP,6,'SPIN-SPIN',ISPPRI)
+      END IF
+C
+      RETURN
+      END
+C
+C
+C  /* Deck isospn */
+      SUBROUTINE ISOSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <codata.h>
+#include <cbisol.h>
+#include <maxaqn.h>
+      PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+     &                   *XTHZ)
+#include <dorps.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <spnout.h>
+#include <abainf.h>
+      LOGICAL TEST
+      DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
+     &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
+     &                ANISO (NUCDEP*(NUCDEP + 1)/2  ),
+     &                ASYM  (NUCDEP*(NUCDEP + 1)/2  ),
+     &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
+     &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
+     &                COUPLM(3,3)
+#include <ibtfun.h>
+C
+C     *** Calculate the various spin parameters. ***
 C
       WRITE (LUPRI,'(A/)') ' Definitions from Smith, Palke, and'//
      &       ' Grieg, Concepts in Mag. Res. 4 (1992) 107'
@@ -2231,14 +2289,13 @@ C
                   IF (IATOM1 .GT. IATOM2) THEN
                      CALL DZERO(COUPLM,9)
                      DO 60 ICOOR1 = 1, 3
-                        DO 60 ICOOR2 = 1, 3
-                           IADR1 = 3*(IATOM1 - 1) + ICOOR1
-                           IADR2 = 3*(IATOM2 - 1) + ICOOR2
-                           COUPLM(ICOOR1,ICOOR2) =
-     &                                       CHESS(IADR1,IADR2,ITYP)
+                     DO 60 ICOOR2 = 1, 3
+                        IADR1 = 3*(IATOM1 - 1) + ICOOR1
+                        IADR2 = 3*(IATOM2 - 1) + ICOOR2
+                        COUPLM(ICOOR1,ICOOR2) = CHESS(IADR1,IADR2,ITYP)
  60                  CONTINUE
                      AVEISO(IATIJ,ITYP) = (COUPLM(1,1) + COUPLM(2,2)
-     &                                  + COUPLM(3,3))/D3
+     &                                  +  COUPLM(3,3))/D3
                   ELSE
                      AVEISO(IATIJ,ITYP) = D0
                   END IF
@@ -2278,6 +2335,180 @@ C
             END IF
  70      CONTINUE
       END IF
+C
+      CALL AROUND('ABACUS - Final spin-spin couplings')
+      IF ((.NOT. DOSD) .OR. (.NOT. DOFC) .OR. (.NOT. DOPSO)
+     &                 .OR. (.NOT. DODSO)) THEN
+         WRITE (LUPRI,'(A)')
+     &         ' >>>WARNING: Total spin-spin couplings not correct '//
+     &         'because some'
+         WRITE (LUPRI,'(A)')
+     &         '             contributions have not been calculated !'
+      END IF
+      IATOM1 = 0
+      NUCINS = NUCIND
+      IF (SOLVNT) NUCINS = NUCINS - 1
+      DO 80 I1 = 1, NUCINS
+         DO 82 ISYM1 = 0, MAXOPR
+            IF (IBTAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
+               IATOM1 = IATOM1 + 1
+               IF (DOPERT(I1,2)) THEN
+      IATOM2 = 0
+      DO 85 I2 = 1, I1
+         IF (I2 .EQ. I1) THEN
+            MAXSYM = ISYM1 - 1
+         ELSE
+            MAXSYM = MAXOPR
+         END IF
+         DO 87 ISYM2 = 0, MAXSYM
+            IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
+               IATOM2 = IATOM2 + 1
+               IF (DOPERT(I2,2)) THEN
+                  IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
+                  NZ1 = NINT(CHARGE(I1))
+                  NZ2 = NINT(CHARGE(I2))
+                  CALL TITLER('Indirect spin-spin coupling between '//
+     &               NAMDEP(IATOM1)//' and '//
+     &               NAMDEP(IATOM2)//':','=',-1)
+                  GVAL1 = DISOTP(NZ1,ISOTOP(IATOM1),'GVAL')
+                  IF (GVAL1 .NE. 0) THEN
+                     GVAL2 = DISOTP(NZ2,ISOTOP(IATOM2),'GVAL')
+                     IF (GVAL2 .NE. 0) THEN
+                        ABUND1 = DISOTP(NZ1,ISOTOP(IATOM1),'ABUNDANCE')
+                        ABUND2 = DISOTP(NZ2,ISOTOP(IATOM2),'ABUNDANCE')
+                        NA1    = NINT(DISOTP(NZ1,ISOTOP(IATOM1),'A'))
+                        NA2    = NINT(DISOTP(NZ2,ISOTOP(IATOM2),'A'))
+                        FACTOR = AUTOHZ*GVAL1*GVAL2
+                        WRITE(LUPRI,'(/,2X,A,I3,3X,A,F8.3,3X,A,F10.6)')
+     &                       'Mass number atom 1: ',NA1, 'abundance: ',
+     &                       ABUND1,'g factor: ',GVAL1
+                        WRITE(LUPRI,'(2X,A,I3,3X,A,F8.3,3X,A,F10.6)')
+     &                       'Mass number atom 2: ',NA2, 'abundance: ',
+     &                       ABUND2,'g factor: ',GVAL2
+                        AVETOT = AVEISO(IATIJ,1)*FACTOR
+                        ANIS   = ANISO(IATIJ)*FACTOR
+                        ASYMM  = ASYM(IATIJ)
+                        SPARA  = SPAR(IATIJ)*FACTOR
+                        APARA  = APAR(IATIJ)*FACTOR
+                        DSO    = AVEISO(IATIJ,2)*FACTOR
+                        PSO    = AVEISO(IATIJ,3)*FACTOR
+                        SD     = AVEISO(IATIJ,4)*FACTOR
+                        FC     = AVEISO(IATIJ,5)*FACTOR
+                        WRITE(LUPRI,'(9(/,2X,A,F12.4,A),/,/)')
+     &                       'Isotropic coupling        :',AVETOT,' Hz',
+     &                       'Anisotropic coupling      :',ANIS  ,' Hz',
+     &                       'Asymmetry                 :',ASYMM ,'   ',
+     &                       'S parameter               :',SPARA ,' Hz',
+     &                       'A parameter               :',APARA ,' Hz',
+     &                       'Isotropic DSO contribution:',DSO   ,' Hz',
+     &                       'Isotropic PSO contribution:',PSO   ,' Hz',
+     &                       'Isotropic SD contribution :',SD    ,' Hz',
+     &                       'Isotropic FC contribution :',FC    ,' Hz'
+                     END IF
+                  END IF
+               END IF
+            END IF
+ 87      CONTINUE
+ 85   CONTINUE
+               END IF
+            END IF
+ 82      CONTINUE
+ 80   CONTINUE
+C
+      RETURN
+      END
+C
+C
+C  /* Deck fnlspn */
+      SUBROUTINE FNLSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <codata.h>
+#include <cbisol.h>
+#include <maxaqn.h>
+      PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+     &                   *XTHZ)
+#include <dorps.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <spnout.h>
+      LOGICAL TEST
+      DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
+     &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
+     &                ANISO (NUCDEP*(NUCDEP + 1)/2  ),
+     &                ASYM  (NUCDEP*(NUCDEP + 1)/2  ),
+     &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
+     &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
+     &                COUPLM(3,3)
+#include <ibtfun.h>
+C
+C     *** Calculate the various spin parameters. ***
+C
+      WRITE (LUPRI,'(A/)') ' Definitions from Smith, Palke, and'//
+     &       ' Grieg, Concepts in Mag. Res. 4 (1992) 107'
+      DO 30 ITYP = 1, 5
+         IF (ITYP .EQ. 1) THEN
+            CALL SPIANA(CHESS(1,1,ITYP),AVEISO(1,ITYP),ANISO,
+     &                  ASYM,SPAR,APAR)
+         ELSE
+            CALL DZERO(AVEISO(1,ITYP),NUCDEP*(NUCDEP + 1)/2)
+            IATIJ = 0
+            DO 40 IATOM1 = 1, NUCDEP
+               DO 50 IATOM2 = 1, IATOM1
+                  IATIJ = IATIJ + 1
+                  IF (IATOM1 .GT. IATOM2) THEN
+                     CALL DZERO(COUPLM,9)
+                     DO 60 ICOOR1 = 1, 3
+                     DO 60 ICOOR2 = 1, 3
+                        IADR1 = 3*(IATOM1 - 1) + ICOOR1
+                        IADR2 = 3*(IATOM2 - 1) + ICOOR2
+                        COUPLM(ICOOR1,ICOOR2) = CHESS(IADR1,IADR2,ITYP)
+ 60                  CONTINUE
+                     AVEISO(IATIJ,ITYP) = (COUPLM(1,1) + COUPLM(2,2)
+     &                                  +  COUPLM(3,3))/D3
+                  ELSE
+                     AVEISO(IATIJ,ITYP) = D0
+                  END IF
+ 50            CONTINUE
+ 40         CONTINUE
+         END IF
+ 30   CONTINUE
+C
+C Print section
+C
+      IF (ISPPRI .GT. 5) THEN
+         DO 70 ITYP = 1, 5
+            IF (ITYP .EQ. 1) THEN
+               CALL HEADER('Total spin-spin couplings',-1)
+            ELSE IF (ITYP .EQ. 2) THEN
+               CALL HEADER('DSO contribution to spin-spin couplings',-1)
+            ELSE IF (ITYP .EQ. 3) THEN
+               CALL HEADER('PSO contribution to spin-spin couplings',-1)
+            ELSE IF (ITYP .EQ. 4) THEN
+               CALL HEADER('SD contribution to spin-spin couplings',-1)
+            ELSE IF (ITYP .EQ. 5) THEN
+               CALL HEADER('FC contribution to spin-spin couplings',-1)
+            END IF
+            CALL HEADER('Isotropic couplings',-1)
+            CALL PRIDIS(NAMDPX,AVEISO(1,ITYP),NUCDEP)
+            IF (ISPPRI .GT. 10 .AND. ITYP .EQ. 1) THEN
+               CALL HEADER('Anisotropic couplings',-1)
+               CALL PRIDIS(NAMDPX,ANISO(1),NUCDEP)
+               IF (ITYP .GT. 2) THEN
+                  CALL HEADER('Asymmetric part of couplings',-1)
+                  CALL PRIDIS(NAMDPX,ASYM(1),NUCDEP)
+                  CALL HEADER('S-parameter of couplings',-1)
+                  CALL PRIDIS(NAMDPX,APAR(1),NUCDEP)
+                  CALL HEADER('A-parameter of couplings',-1)
+                  CALL PRIDIS(NAMDPX,SPAR(1),NUCDEP)
+               END IF
+            END IF
+ 70      CONTINUE
+      END IF
+C
       CALL AROUND('ABACUS - Final spin-spin couplings')
       IF ((.NOT. DOSD) .OR. (.NOT. DOFC) .OR. (.NOT. DOPSO)
      &                 .OR. (.NOT. DODSO)) THEN
@@ -2375,6 +2606,7 @@ C
             END IF
  82      CONTINUE
  80   CONTINUE
+C    
       RETURN
       END
 C  /* Deck spiana */

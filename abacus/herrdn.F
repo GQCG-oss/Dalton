@@ -32,11 +32,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.14 2001-06-08 11:35:42 hjj Exp $
+C$Id: herrdn.F,v 1.15 2001-10-01 13:22:13 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.14  2001/06/08 11:35:42  hjj
+1) removed unused ORBINX
+2) only write to LUCME if LUCME.gt.0 (slaves should never write to LUCME)
+3) write correct IGTO(*) instead of dummy IPRXYZ(*) to LUONEL   /hjaaj/
+
 Revision 1.13  2001/06/07 20:20:06  vebjornb
 Moved several FLUSH statements inside IF..END IF print level tests.
 This to avoid problems when running parallel jobs with slaves not having
@@ -601,6 +606,7 @@ C
 #include <aosotr.h>
 #include <gnrinf.h>
 #include <infpar.h>
+#include <numder.h>
 #include <ibtfun.h>
       ZMAT = .FALSE.
 C
@@ -670,8 +676,10 @@ C*****************************************************************************
       ADDSYM = (SYMTXT .EQ. '  ')
       IF (.NOT. ADDSYM) THEN
          READ(SYMTXT,'(I2)') NSYMOP
+         NOADSY = .TRUE.
       ELSE
          NSYMOP = 0
+         NOADSY = .FALSE.
       END IF
       NMLAU = NMLINE
 C     .. NMLAU indentifies input line with Angstroms or bohrs indicator.

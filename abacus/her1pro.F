@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1pro.F,v 1.12 2001-08-10 11:44:07 ruud Exp $
+C$Id: her1pro.F,v 1.13 2001-10-01 13:22:12 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -166,7 +166,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 72)
+      PARAMETER (NTABLE = 73)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -182,6 +182,7 @@ C
 #include <nuclei.h>
 #include <huckel.h>
 #include <cbihr1.h>
+#include <elweak.h>
 #include <orgcom.h>
 C
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
@@ -201,7 +202,8 @@ C
      &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD',
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
      &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
-     &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'SPHMOML'/
+     &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
+     &            'SPHMOML'/
 C
 #include <ibtfun.h>
 C
@@ -222,7 +224,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69,70,71,72), I
+     &             64,65,66,67,68,69,70,71,72,73), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1616,10 +1618,51 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
+C     Parity violation
+C     ----------------
+C 
+   72 CONTINUE
+      IF (IPRINT .GT. 0) THEN
+          WRITE (LUPRI,'(/A/)')
+     &    ' Calculation of parity violating electroweak'//
+     &    ' interaction integrals'
+          WRITE (LUPRI,'(A,F9.6//A/)')
+     &    ' Weinberg angle: 1-sin^2[theta_W] =',BGWEIN,
+     &    ' Enhancement factors Q(z) for symmetry-independent nuclei:'
+          WRITE (LUPRI,'(A)')
+     &    '   #   Isotope   Charge           Mass     #Neutrons'//
+     &    '     Q(z) '
+          WRITE (LUPRI,'(A)')
+     &    ' ***************************************************'//
+     &    '********* '
+          DO IATOMC=1,NUCIND
+             WRITE (LUPRI,'(I4,I7,3X,F9.5,F15.8,6X,I3,F14.6)')
+     &             IATOMC,ISOTPV(IATOMC),CHARGE(IATOMC),
+     &             DISOTP(NINT(CHARGE(IATOMC)),
+     &             ISOTPV(IATOMC),'MASS'),
+     &             NINT(DISOTP(NINT(CHARGE(IATOMC)),
+     &             ISOTPV(IATOMC),'NEUTRONS')),
+     &             (DISOTP(NINT(CHARGE(IATOMC)),
+     &             ISOTPV(IATOMC),'NEUTRONS')-BGWEIN*CHARGE(IATOMC))
+          END DO
+        END IF
+        INTTYP = 80
+        NOPTYP  = 3
+        CALL NTYPTS(NOPTYP)
+        CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+        LABINT(1) = 'PVIOLA X'
+        LABINT(2) = 'PVIOLA Y'
+        LABINT(3) = 'PVIOLA Z'
+        INTREP(1) = ISYMAX(1,1)
+        INTREP(2) = ISYMAX(2,1)
+        INTREP(3) = ISYMAX(3,1)
+        ANTI = .TRUE. 
+      GO TO 200
+C
 C     Spherical moments integrals with local origins
 C     ----------------------------------------------
 C
-   72 CONTINUE
+   73 CONTINUE
          INTTYP = 8
          TRASPH = .TRUE.
          FMMORI = .TRUE.

@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspoli.F,v 1.2 2001-05-31 06:38:30 vebjornb Exp $
+C$Id: rspoli.F,v 1.3 2001-10-01 13:22:19 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck rev_log */
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/05/31 06:38:30  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.1.1.1  2001/02/08 13:33:14  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -69,6 +72,8 @@ C 21-1-1992: Changed for Direct RPA (KEYWORD: DIRFCK), HA.
 C 21-7-1992: Supersymmetry averaging added. Hinne Hettema
 C 28-2-1995: Changed for Direct RPA with AO integrals read
 C            from disk, NOITRA=.TRUE. P&D /is not included?/hjaaj
+C
+C DFT modifications T. Helgaker 
 C
 C PURPOSE:
 C    CALCULATE ORBITAL PART OF THE LINEAR TRANSFORMATIONS
@@ -114,11 +119,13 @@ C
 #include <orbtypdef.h>
 #include <wrkrsp.h>
 #include <infsop.h>
+#include <dftcom.h>
 C
 C -- local constants
 C
       PARAMETER ( DP5 = 0.5D0, D2 = 2.0D0 )
       PARAMETER ( MXFMAT = 100 )
+      LOGICAL DFTADX
       DIMENSION ISYMDM(MXFMAT), IFCTYP(MXFMAT)
       DIMENSION NEEDMU(6),NEEDDI(6)
       DATA NEEDMU /1,1,1,0,0,0/
@@ -599,8 +606,11 @@ C           Coulomb+exchange
          END IF
          JDXCAO = JDXCAO + N2BASX
       END DO
+      DFTADX = DFTADD
+      DFTADD = .FALSE.
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
+      DFTADD = DFTADX
 C
 C ***** Transform FXCAO and FXVAO to MO basis and add to FCONE
 C ***** and FVONE, resp. (the one-index transformations of FCONE
@@ -638,6 +648,20 @@ C
  2000 CONTINUE
 C
 C From here the code is as before DIRFCK
+C
+C add DFT contribution 
+C
+      IF (DFTADD) THEN
+         DO IOSIM = 1, NOSIM
+           IF (DFTHES) THEN
+              CALL DFTATX(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
+     &                    WRK(KWRK0),LFREE)
+           ELSE
+              CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
+     &                    KSYMOP,WRK(KWRK0),LFREE)
+           END IF
+         END DO
+      END IF
 C
 C ADD CONTRIBUTION FROM THE A(0)S(2) TERM IF HRPA
 C

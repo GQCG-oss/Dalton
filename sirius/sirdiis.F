@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirdiis.F,v 1.2 2001-05-31 06:38:34 vebjornb Exp $
+C$Id: sirdiis.F,v 1.3 2001-10-01 13:22:20 vebjornb Exp $
 C
 #include <single.h>
 C
@@ -43,6 +43,9 @@ HJMAERKE 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
   also will work if .FREEZE implemented in FCKEIG).
 
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/05/31 06:38:34  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.1.1.1  2001/02/08 13:33:32  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -284,6 +287,8 @@ C  /* Deck disctl */
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
+C DFT modifications T.  Helgaker
+C
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -310,6 +315,8 @@ C
 #include <cbihr2.h>
 #include <infpri.h>
 #include <gnrinf.h>
+#include <dftcom.h>
+#include <dfterg.h>
 C
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -403,9 +410,10 @@ C
       ITNOCC = 0
       NEWOCC = 0
       NOSCIL = 0
-      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16)
+      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DFTRUN
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
+Ctuh:   DIFDEN does not work with DFT either   
       DIFDEN   = DODIFDEN
       IF (.NOT. USRSCR) THEN
          IF (FLAG(13)) THEN
@@ -523,6 +531,7 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
          END IF
          EMY = DDOT(NNBAST,DAOSAV,1,H1AO,1)
      &       + DDOT(NNBAST,DAOSAV,1,FAOSAV(1,INDEVC,1),1) * DP5
+     &       + EDFTY
 C
          IF (ONLYFC) THEN
             EACTIV = D0
@@ -1015,46 +1024,46 @@ C
          CALL DSPTSI(NBASI,FDAO(1+IIBAS(ISYM)),WRK(KTMP3))
          CALL DSPTSI(NBASI,H1AO(1+IIBAS(ISYM)),WRK(KTMP2))
          CALL DAXPY(N2BAS(ISYM),D1,WRK(KTMP2),1,WRK(KTMP3),1)
-      IF (NISH(ISYM) .GT. 0) THEN
-         CALL DUNFLD(NBASI,DCAO(1+IIBAS(ISYM)),WRK(KTMP2))
-         CALL DGEMM('N','N',NBASI,NBASI,NBASI,1.D0,
-     &              WRK(KTMP2),NBASI,
-     &              WRK(KTMP3),NBASI,0.D0,
-     &              WRK(KTMP1),NBASI)
-         IF (IPRDIS .GE. 35) THEN
-            WRITE (LUPRI,*) 'DISEVC DCAO unfolded:'
-            CALL OUTPUT(WRK(KTMP2),1,NBASI,1,NBASI,
-     &                  NBASI,NBASI,1,LUPRI)
-            WRITE (LUPRI,*) 'DISEVC FDAO:'
-            CALL OUTPUT(WRK(KTMP3),1,NBASI,1,NBASI,
-     &                  NBASI,NBASI,1,LUPRI)
-            WRITE (LUPRI,*) 'DISEVC TMP1 = DCAO FDAO:'
-            CALL OUTPUT(WRK(KTMP1),1,NBASI,1,NBASI,
-     &                  NBASI,NBASI,1,LUPRI)
+         IF (NISH(ISYM) .GT. 0) THEN
+            CALL DUNFLD(NBASI,DCAO(1+IIBAS(ISYM)),WRK(KTMP2))
+            CALL DGEMM('N','N',NBASI,NBASI,NBASI,1.D0,
+     &                 WRK(KTMP2),NBASI,
+     &                 WRK(KTMP3),NBASI,0.D0,
+     &                 WRK(KTMP1),NBASI)
+            IF (IPRDIS .GE. 35) THEN
+               WRITE (LUPRI,*) 'DISEVC DCAO unfolded:'
+               CALL OUTPUT(WRK(KTMP2),1,NBASI,1,NBASI,
+     &                     NBASI,NBASI,1,LUPRI)
+               WRITE (LUPRI,*) 'DISEVC FDAO:'
+               CALL OUTPUT(WRK(KTMP3),1,NBASI,1,NBASI,
+     &                     NBASI,NBASI,1,LUPRI)
+               WRITE (LUPRI,*) 'DISEVC TMP1 = DCAO FDAO:'
+               CALL OUTPUT(WRK(KTMP1),1,NBASI,1,NBASI,
+     &                     NBASI,NBASI,1,LUPRI)
+            END IF
+         ELSE
+            CALL DZERO(WRK(KTMP1),NBASI*NBASI)
          END IF
-      ELSE
-         CALL DZERO(WRK(KTMP1),NBASI*NBASI)
-      END IF
-      IF (NASH(ISYM) .GT. 0) THEN
-         CALL DSPTSI(NBASI,FVAO(1+IIBAS(ISYM)),WRK(KTMP2))
-         CALL DAXPY(NBASI*NBASI,DM1,WRK(KTMP2),1,WRK(KTMP3),1)
-         CALL DUNFLD(NBASI,DVAO(1+IIBAS(ISYM)),WRK(KTMP2))
-         CALL DGEMM('N','N',NBASI,NBASI,NBASI,1.D0,
-     &              WRK(KTMP2),NBASI,
-     &              WRK(KTMP3),NBASI,1.D0,
-     &              WRK(KTMP1),NBASI)
-         IF (IPRDIS .GE. 35) THEN
-            WRITE (LUPRI,*) 'DISEVC DVAO unfolded:'
-            CALL OUTPUT(WRK(KTMP2),1,NBASI,1,NBASI,
-     &                  NBASI,NBASI,1,LUPRI)
-            WRITE (LUPRI,*) 'DISEVC FCAO:'
-            CALL OUTPUT(WRK(KTMP3),1,NBASI,1,NBASI,
-     &                  NBASI,NBASI,1,LUPRI)
-            WRITE (LUPRI,*) 'DISEVC TMP1 = DCAO FDAO + DVAO FCAO:'
-            CALL OUTPUT(WRK(KTMP1),1,NBASI,1,NBASI,
-     &                  NBASI,NBASI,1,LUPRI)
+         IF (NASH(ISYM) .GT. 0) THEN
+            CALL DSPTSI(NBASI,FVAO(1+IIBAS(ISYM)),WRK(KTMP2))
+            CALL DAXPY(NBASI*NBASI,DM1,WRK(KTMP2),1,WRK(KTMP3),1)
+            CALL DUNFLD(NBASI,DVAO(1+IIBAS(ISYM)),WRK(KTMP2))
+            CALL DGEMM('N','N',NBASI,NBASI,NBASI,1.D0,
+     &                 WRK(KTMP2),NBASI,
+     &                 WRK(KTMP3),NBASI,1.D0,
+     &                 WRK(KTMP1),NBASI)
+            IF (IPRDIS .GE. 35) THEN
+               WRITE (LUPRI,*) 'DISEVC DVAO unfolded:'
+               CALL OUTPUT(WRK(KTMP2),1,NBASI,1,NBASI,
+     &                     NBASI,NBASI,1,LUPRI)
+               WRITE (LUPRI,*) 'DISEVC FCAO:'
+               CALL OUTPUT(WRK(KTMP3),1,NBASI,1,NBASI,
+     &                     NBASI,NBASI,1,LUPRI)
+               WRITE (LUPRI,*) 'DISEVC TMP1 = DCAO FDAO + DVAO FCAO:'
+               CALL OUTPUT(WRK(KTMP1),1,NBASI,1,NBASI,
+     &                     NBASI,NBASI,1,LUPRI)
+            END IF
          END IF
-      END IF
          CALL DGEMM('N','N',NORBI,NBASI,NBASI,1.D0,
      &              SMOAO(1+I2BAS(ISYM)),NORBI,
      &              WRK(KTMP1),NBASI,0.D0,

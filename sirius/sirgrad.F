@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirgrad.F,v 1.2 2001-05-31 06:38:35 vebjornb Exp $
+C$Id: sirgrad.F,v 1.3 2001-10-01 13:22:21 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/05/31 06:38:35  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.1.1.1  2001/02/08 13:33:31  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -354,6 +357,7 @@ C
 C Written 6-Nov-1983 Hans Jorgen Aa. Jensen
 C Last revision 18-May-1993 hjaaj (moved AO to MO transf. outside)
 C March 1997 - tsaue Screening
+C DFT modifications T. Helgaker
 C
 C Purpose:
 C  Construction of inactive and active parts of the
@@ -385,6 +389,7 @@ C
 #include <infind.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <dfterg.h>
 C
       DIMENSION ISYMDM(2), IFCTYP(2)
       LOGICAL NOFV
@@ -422,7 +427,7 @@ C
          EMCMY = DDOT(N2BASX,DCAO,1,WRK(KH1AO),1)
          IF (P6FLAG(11)) WRITE (LUPRI,'(/A,F25.12)')
      *   ' Inactive one-electron energy :',EMCMY
-         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)
+         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1) + EDFTY
       ELSE
          EMCMY = D0
       END IF
@@ -455,6 +460,7 @@ C  /* Deck fck2ao */
 C
 C 2-Apr-1997 Hans Joergen Aa. Jensen
 C     : 2-electron part extracted from FCKMAO
+C DFT modifications T. Helgaker
 C
 C Purpose:
 C  Construction 2-electron part of inactive and active parts of the
@@ -485,6 +491,7 @@ C
 #include <inftap.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       DIMENSION ISYMDM(2), IFCTYP(2)
       SAVE ISYMDM, IFCTYP
@@ -517,6 +524,9 @@ C        ... off-set to FVAO,DVAO in FCAO,DCAO
 CKR   This line read NDMAT instead of NFMAT, 150997
       IF (NFMAT .GT. 0) THEN
       IF (LUSUPM .NE. -1) THEN
+         IF (DFTRUN) THEN
+            CALL QUIT('P supermatrix integrals not implemented for DFT')
+         END IF
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,

@@ -1,0 +1,79 @@
+dftac.o : dftac.F \
+  ../include/codata.h  ../include/dftacb.h \
+  ../include/dftcom.h  ../include/dfterg.h \
+  ../include/implicit.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/single.h
+dftaos.o : dftaos.F \
+  ../include/aovec.h  ../include/dftinf.h \
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/lmns.h  ../include/maxaqn.h \
+  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/onecom.h \
+  ../include/orgcom.h  ../include/pincom.h \
+  ../include/primit.h  ../include/priunit.h \
+  ../include/sdpre.h  ../include/shells.h \
+  ../include/single.h  ../include/sphtrm.h \
+  ../include/symmet.h
+dftaux.o : dftaux.F \
+  ../include/dftcom.h  ../include/dfterg.h \
+  ../include/dftinf.h  ../include/energy.h \
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/inforb.h  ../include/maxaqn.h \
+  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/orgcom.h \
+  ../include/priunit.h  ../include/shells.h \
+  ../include/single.h  ../include/symmet.h \
+  ../include/wrkrsp.h
+dftden.o : dftden.F \
+  ../include/abainf.h  ../include/dftcom.h \
+  ../include/dummy.h  ../include/ibtfun.h \
+  ../include/implicit.h  ../include/inforb.h \
+  ../include/inftap.h  ../include/infvar.h \
+  ../include/iratdef.h  ../include/maxaqn.h \
+  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/pincom.h \
+  ../include/priunit.h  ../include/shells.h \
+  ../include/single.h  ../include/symmet.h
+dftdrv.o : dftdrv.F \
+  ../include/chrnos.h  ../include/dftcom.h \
+  ../include/dfterg.h  ../include/dftinf.h \
+  ../include/dummy.h  ../include/energy.h \
+  ../include/implicit.h  ../include/infinp.h \
+  ../include/inflin.h  ../include/inforb.h \
+  ../include/infpar.h  ../include/inftap.h \
+  ../include/infvar.h  ../include/iratdef.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/orgcom.h  ../include/pi.h \
+  ../include/priunit.h  ../include/sdpre.h \
+  ../include/single.h
+dftest.o : dftest.F \
+  ../include/dftinf.h  ../include/implicit.h \
+  ../include/inforb.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h
+dftfun.o : dftfun.F \
+  ../include/implicit.h  ../include/pi.h \
+  ../include/single.h
+dftgrd.o : dftgrd.F \
+  ../include/chrnos.h  ../include/dftcom.h \
+  ../include/dummy.h  ../include/ibtfun.h \
+  ../include/implicit.h  ../include/infpar.h \
+  ../include/maxaqn.h  ../include/mxcent.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/sdpre.h \
+  ../include/single.h  ../include/symmet.h
+dftpar.o : dftpar.F \
+  ../include/aovec.h  ../include/dftcom.h \
+  ../include/dfterg.h  ../include/dftinf.h \
+  ../include/dummy.h  ../include/energy.h \
+  ../include/implicit.h  ../include/inforb.h \
+  ../include/infpar.h  ../include/lmns.h \
+  ../include/maxaqn.h  ../include/maxmom.h \
+  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/onecom.h \
+  ../include/orgcom.h  ../include/pi.h \
+  ../include/pincom.h  ../include/primit.h \
+  ../include/priunit.h  ../include/shells.h \
+  ../include/sphtrm.h  ../include/symmet.h \
+  ../include/wrkrsp.h  ../include/xyzpow.h

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abadrv.F,v 1.9 2001-06-08 11:43:06 hjj Exp $
+C$Id: abadrv.F,v 1.10 2001-10-01 13:22:09 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -70,9 +70,11 @@ C
 #include <inforb.h>
 #include <spnout.h>
 #include <infinp.h>
+#include <numder.h>
+#include <dftcom.h>
 C
 C
-      LOGICAL PROPTY, OLDDX
+      LOGICAL PROPTY, OLDDX, DFTADX
 #include <past.h>
 C
 C---------------------------------------------------------------------
@@ -86,7 +88,7 @@ C
 C     Tag this as an ABACUS run.
 C
       CALL ABASET
-C
+C     
 C     *************************
 C     ***** Input Section *****
 C     *************************
@@ -114,7 +116,7 @@ C
       CALL FLSHFO(LUPRI)
 C
 C     *********************************************************
-C     ***** One-Electron Expectation Values and Integrals *****
+C     ***** One-Electron Expectation Values and Integrals *****C
 C     *********************************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
@@ -442,6 +444,7 @@ C
          CALL ADDGRD(GRADEE)
          CALL ADDGRD(GRADNN)
          CALL ADDGRD(GRADFS)
+         CALL ADDGRD(GRADFT)
          IF (SOLVNT) CALL ADDGRD(GSOLTT)
          IF (SOLVNT) CALL ADDGRD(GSOLNN)
       END IF
@@ -508,7 +511,7 @@ C     *************************
 C     ***** Geometry walk *****
 C     *************************
 C
-      IF (DOWALK) THEN
+      IF (DOWALK.AND..NOT.NWPROP) THEN
          TIMSTR = SECOND()
          IF (SPNSPN) THEN
 C           ... save "SPNTOT" in "SPNDSO" for WLKDRV
@@ -526,7 +529,7 @@ C
       ELSE
          TIMWLK = D0
       END IF
-C
+C     
 C     ********************************
 C     ***** Vibrational analysis *****
 C     ********************************
@@ -591,6 +594,7 @@ C
 #include <exeinf.h>
 #include <inftap.h>
 #include <cbiwlk.h>
+#include <dftcom.h>
 C
 C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
@@ -653,6 +657,7 @@ C
       PASMAG = .FALSE.
       PASAAT = .FALSE.
       PASLNR = .FALSE.
+      PASTRP = .FALSE.
 C
 C     Initialize /ABAINF/
 C
@@ -666,7 +671,7 @@ C
 C     Next lines commented out because control of the walk/geometry
 C     optimization has been moved to GENERAL input processing.
 C
-      IF (.NOT. OPTNEW) THEN
+      IF (.NOT. OPTNEW.AND.(.NOT.NMWALK)) THEN
          DOWALK = OPTWLK .AND. .NOT. (WRDSRC .EQ. '**FINAL')
          MOLGRD = OPTWLK .AND. .NOT. (WRDSRC .EQ. '**FINAL')
          MOLHES = (OPTWLK .AND. .NOT. (WRDSRC .EQ. '**FINAL')) .OR.
@@ -674,6 +679,13 @@ C
          IF (((V3CAL .AND. NMODIF) .OR. VIBAVE) .AND. 
      &            (WRDSRC .NE. '**START')) MOLHES = .FALSE.
          IF (VIBAVE .AND. REUSED) MOLHES = .FALSE.
+      END IF
+C
+C     Initializing some properties depends on if this is a numerical 
+C     differentiation. If so initialization is done elsewhere.
+C      
+      IF (.NOT.NMWALK.OR.(WRDSRC .EQ. '**FINAL')) THEN
+         SPNSPN = .FALSE.
       END IF
       DODRCT = DIRCAL
       FCKEXP = .FALSE.
@@ -684,7 +696,6 @@ C
       GDALL  = .FALSE.
       POPULA = .FALSE.
       DOLRES = .FALSE.
-      SPNSPN = .FALSE.
       VCD    = .FALSE.
       NACME  = .FALSE.
       NOLOND = .FALSE.
@@ -1323,7 +1334,7 @@ C
          CALL QUIT
      *      ('Inconsistency in input for ".DIPOLE", cannot proceed.')
       END IF
-      IF (SPNSPN .AND. NASHT .LE. 1 .AND. .NOT. ABASOP) THEN
+      IF (SPNSPN .AND. NASHT .LE. 1 .AND. .NOT.(ABASOP.OR.DFTRUN)) THEN
          WRITE (LUPRI,'(2X,A,/,2X,A)')
      &      ' >>>>> WARNING - RHF calculations of spin-spin coupling'//
      &      ' constants are likely to give ', 

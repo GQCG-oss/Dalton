@@ -32,12 +32,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.10 2001-06-22 19:44:28 vebjornb Exp $
+C$Id: dalton.F,v 1.11 2001-10-01 13:22:12 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.10  2001/06/22 19:44:28  vebjornb
+FILNAM has to declared even for non-parallel code, caused compilation error
+with pgf77 - VB
+
 Revision 1.9  2001/06/22 13:19:40  hjj
 1) Initialize MPI at top with MPIXINIT so we know if master or slave
    before LUERR is used.
@@ -308,6 +312,7 @@ C
          CALL QUIT(' DALTON: Core HPALLOC failure')
       END IF
 #endif
+C
       IF (BASDIR(1:1) .NE. '/') THEN
 C
          BASDIR=
@@ -393,9 +398,10 @@ C
 C     *** End of old version ***
 C
       IF (MYNUM .EQ. 0) THEN
+C         
          CALL TITLER(' DALTON - An electronic structure program ',
      &               '*',111)
-C
+C     
          WRITE (LUPRI,'(T15,A,//,T26,A,/,6(/T12,A),//,T26,A,//,
      &        (T12,A))')
      *   ' This is output from DALTON (Release 1.2, June 2001)',
@@ -536,8 +542,8 @@ C
 #endif
 #if !defined (VAR_MPI)
       CALL EXEDRV(WORK, LMWORK, IWOFF, WRKDLM)
-      CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUERR,'KEEP')
+      CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUMOLDEN,'KEEP')
       CALL GPCLOSE(LUPRI,'KEEP')
 #endif

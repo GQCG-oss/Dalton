@@ -1,0 +1,3 @@
+C
+      COMMON /DFTERG/ EDFTX, EDFTC, EDFTY, 
+     &                WDFTX, WDFTC, WDFTL, WDFTB

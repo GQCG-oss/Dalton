@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1drv.F,v 1.5 2001-05-31 06:38:04 vebjornb Exp $
+C$Id: her1drv.F,v 1.6 2001-10-01 13:22:12 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck oneinp */
@@ -334,6 +334,7 @@ C
 #include <symind.h>
 #include <csym1.h>
 #include <cbisol.h>
+#include <dftcom.h>
 #include <gnrinf.h>
 C
 #include <ibtfun.h>
@@ -664,6 +665,15 @@ C
          END IF
       END IF
 C
+C     ****************************************
+C     ***** DFT contribution to gradient *****
+C     ****************************************
+C
+      IF (PROPTY .AND. DFTRUN) THEN
+         CALL DFTEXC(DENMAT,1,FOCMAT,1,.TRUE.,.FALSE.,.TRUE.,.FALSE.,
+     &               .FALSE.,.FALSE.,DUMMY,.FALSE.,WORK,LWORK,1)
+      END IF
+C
 C     *************************
 C     ***** Print Section *****
 C     *************************
@@ -690,6 +700,10 @@ C
             CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
             CALL HEADER('Nuclear solvent part of gradient',-1)
             CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
+         END IF
+         IF (DFTRUN) THEN
+            CALL HEADER('DFT contribution to gradient',-1)
+            CALL PRIGRD(GRADFT,WORK(KCSTRA),WORK(KSCTRA))
          END IF
          IF (SECDER) THEN
             CALL HEADER('Kinetic energy integral Hessian',-1)

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: fone.F,v 1.2 2001-05-31 06:38:27 vebjornb Exp $
+C$Id: fone.F,v 1.3 2001-10-01 13:22:19 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck fonedn */
@@ -54,6 +54,7 @@ C
 #include <infind.h>
 #include <wrkrsp.h>
 #include <infrsp.h>
+#include <dftcom.h>
 C
       DIMENSION FCOCO(NORBT,NORBT,*),FVOCO(NORBT,NORBT,*)
       DIMENSION FCOEX(NORBT,NORBT,*),FVOEX(NORBT,NORBT,*)
@@ -61,6 +62,7 @@ C
       PARAMETER ( D2 = 2.0D0  , DP5 = 0.5D0 )
 C
       IF(NASHT.GT.0) CALL DSCAL(NORBT*NORBT*NSIM,DP5,FVOEX,1)
+      IF(DFTRUN) CALL DSCAL(NORBT*NORBT*NSIM,HFXFAC,FCOEX,1)
       IF (TRPLET) RETURN
       IF(NISHT.GT.0) CALL DSCAL(NORBT*NORBT*NSIM,D2,FCOCO,1)
       DO 100 IPSYM = 1,NSYM

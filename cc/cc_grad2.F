@@ -94,7 +94,7 @@ C
 #include <ccinftap.h>
 C
       LOGICAL LOCDBG 
-      PARAMETER( LOCDBG = .FALSE. )
+      PARAMETER( LOCDBG = .TRUE. )
       INTEGER INDEXA(MXCORB)
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -728,6 +728,7 @@ C              Work space allocation two.
 C----------------------------------------
 C
                ISYDEN = ISYMD
+               ISYDNB = MULD2H(ISYDEN,ISYRLX)
 C
                KD2IJG = KEND1A
                KD2AIG = KD2IJG + ND2IJG(ISYDEN)

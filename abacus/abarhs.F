@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abarhs.F,v 1.6 2001-05-31 06:38:02 vebjornb Exp $
+C$Id: abarhs.F,v 1.7 2001-10-01 13:22:11 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -484,6 +484,7 @@ C
 #include <inftap.h>
 #include <inflin.h>
 #include <infpar.h>
+#include <cbieri.h>
 C
 C     For GDHAM true:
 C
@@ -768,7 +769,7 @@ C
      &                             IPRSOR,ANTI,PANTI)
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('PSORT ',TIMSTR,TIMEND)
-                        ANTI   = .TRUE.
+                        ANTI = .TRUE.
 C
 C                       Antisymmetric part
 C
@@ -858,15 +859,29 @@ C
                   END IF
                ELSE
 #endif
-                 CALL TWOINT(WORK(K2INT),L2INT,DUMMY,WORK(KFMAT),
-     &                       WORK(KDMAT),
-     &                       NDMAT,ISYMDM,IFCTYP,DUMMY,IDUMMY,NUMDIS,1,
-     &                       ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
-     &                       TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &                       IPRNTD,RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
-     &                       WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
-     &                       IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                       DUMMY,.FALSE.)
+C                IF (.NOT.DOERIP) THEN
+                    CALL TWOINT(WORK(K2INT),L2INT,DUMMY,WORK(KFMAT),
+     &                        WORK(KDMAT),
+     &                        NDMAT,ISYMDM,IFCTYP,DUMMY,IDUMMY,NUMDIS,1,
+     &                        ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
+     &                        TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
+     &                        IPRNTD,RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
+     &                        WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &                        IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
+     &                        DUMMY,.FALSE.)
+C                ELSE
+C                   KCCFBT = KLAST
+C                   KINDXB = KCCFBT + MXPRIM*MXCONT
+C                   KLAST  = KINDXB + 8*MXSHEL*MXCONT
+C                   IF (KLAST.GT.LWRK) THEN
+C                      CALL STOPIT('TWOEXP','ERIPRO',KLAST,LWRK)
+C                   END IF
+C                   LWRK = LWRK - KLAST
+C                   CALL ERIPRO(DUMMY,DUMMY,NDMAT,ISYMDM,IFCTYP,
+C    &                          .FALSE.,.TRUE.,
+C    &                          IPRINT,WORK(KCCFBT),WORK(KINDXB),
+C    &                          WORK(KLAST),LWRK)
+C                END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
                END IF
 #endif

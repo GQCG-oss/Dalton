@@ -32,11 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.8 2001-05-31 06:38:35 vebjornb Exp $
+C$Id: sirinp.F,v 1.9 2001-10-01 13:22:21 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.8  2001/05/31 06:38:35  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.7  2001/05/14 10:04:42  hjj
 revised print to correspond to current keywords /hjaaj
 
@@ -287,6 +290,8 @@ C
 #include <gnrinf.h>
 #include <siripc.h>
 #include <huckel.h>
+#include <dftcom.h>
+#include <dfterg.h>
 C
       DIMENSION MBAS(8)
       LOGICAL ONELOK
@@ -440,6 +445,7 @@ C
       DOCINO= .FALSE.
       DOCI  = .FALSE.
       DOMC  = .FALSE.
+      DODFT = .FALSE.
       DORSP = RNRESP
       ABAIPH= RNABAC
 C     ... It's followed by an abacus run
@@ -562,6 +568,36 @@ C           (default: use AOSUPMAT if available,
 C                     LUSUPM=-1 means do not use AOSUPMAT)
 C
       LUSUPM = -9999
+C
+C********** Default values section DFTINP *****
+C
+      IQDTYP = 4
+C
+C     IQDTYP = 1     very coarse
+C     IQDTYP = 2     coarse
+C     IQDTYP = 3     medium
+C     IQDTYP = 4     dense
+C     IQDTYP = 5     very dense
+C
+      HFXFAC = D1
+      WDFTX  = D0
+      WDFTC  = D0
+      WDFTL  = D0
+      WDFTB  = D0
+      DFTRUN = .FALSE.
+      DFTADD = .FALSE.
+      GRDONE = .FALSE.
+      DFTPOT = .FALSE.
+      DFTORD = .FALSE.
+      DFTASC = .FALSE.
+      DFTHES = .FALSE.
+      DFTHR0 = 1.0D-8
+      DFTHRL = 1.0D-10
+      DFTHRI = 1.0D-13 
+      DFTHRS = .FALSE.
+      DFTELS = 1.0D-3
+      DFTEST = .FALSE.
+C
 C
 C********** Default values section ORBINP *****
 C
@@ -1686,7 +1722,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 19)
+      PARAMETER (NTBMOD = 20)
       CHARACTER WORD*7, PROMPT*1, PROMPX*2, TABMOD(NTBMOD)*7,
      *          REWORD*12, RWORD*7, TITLIN*80
       LOGICAL   ALLOPT, PTABMO
@@ -1698,7 +1734,7 @@ C
       DATA TABMOD/'XXXXXXX','*CONFIG','*OPTIMI','*CI INP','*ORBITA',
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILL','*HF INP',
-     *            '*MP2 IN','*HAMILT','*CC INP','*END OF'/
+     *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*END OF'/
 C
 C
 C  ***************************************************
@@ -1717,7 +1753,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                8000), I
+     *                2500,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -1809,7 +1845,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*20, TITLIN*80
       LOGICAL ALLOPT
@@ -1834,7 +1870,7 @@ C
       DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
-     *            '.SCF   '/
+     *            '.SCF   ','.DFT   '/
 C
 C
 C
@@ -1850,7 +1886,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112,113,114,115,106), II
+     *                   111,112,113,114,115,106,116), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2039,6 +2075,19 @@ C    Default: specified by integral program
   115 CONTINUE
        READ (LUCMD,*) (NBAS(I), I = 1,NSYM)
       GO TO 100
+C
+C *** Option 6 >HARTRE<  Restricted, closed shell Hartree-Fock SCF
+  116 CONTINUE
+         IF (.NOT.DORHF) THEN
+C           ... DORHF may also be set with .CC
+            DODFT    = .TRUE.
+            DORHF    = .TRUE.
+            FLAG(21) = .TRUE.
+C           ... flag for QCHF -- quadratically convergent Hartree-Fock
+            NUMRUN = NUMRUN + 1
+         END IF
+      GO TO 100
+C
 C
       END
 C  /* Deck haminp */
@@ -2308,9 +2357,11 @@ C  /* Deck rhfinp */
 C
 C 8-May-1989 Hans Joergen Aa. Jensen
 C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
+C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 23)
+      PARAMETER (NTABLE = 35)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -2330,6 +2381,8 @@ C
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <dftcom.h>
+#include <dfterg.h>
 C
       LOGICAL NODIIS,SET,ELECTR
       SAVE SET,ELECTR
@@ -2339,8 +2392,9 @@ C
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
      *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','XXXXXXX',
-     *            '.ELECTR','.AUTOCC','.FC MVO'/
-C
+     *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
+     *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
+     *            '.GRID  ','.DFTAC ','.DFTHES','.DFTTHR','.DFTELS'/
 C
 C     ***** PROCESS INPUT FOR RHFINP *****
 C
@@ -2359,7 +2413,8 @@ C
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
-     &                   121,122,123),II
+     &                   121,122,123,124,125,126,127,128,129,130,
+     &                   131,132,133,134,135),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2519,6 +2574,89 @@ C     Reference: C.W. Bauschlicher, JCP 72 (1980) 880.
          WRITE (LUPRI,*) 'Last .FC MVO will be used.'
       END IF
       FCVORB = .TRUE.
+      GO TO 100
+C
+C     DFT input
+C
+  124 CONTINUE
+      READ(LUCMD,*) HFXFAC
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      GO TO 100
+C
+  125 CONTINUE
+      DFTTYP = 'LDA   '
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      WDFTX  = D1
+      WDFTB  = D0
+      WDFTC  = D1
+      WDFTL  = D0
+      HFXFAC = D0
+      GO TO 100
+  126 CONTINUE
+      DFTTYP = 'BLYP  '
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      WDFTX  = D1
+      WDFTB  = D1
+      WDFTC  = D0
+      WDFTL  = D1
+      HFXFAC = D0
+      GO TO 100
+  127 CONTINUE
+      DFTTYP = 'B3LYP '
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      WDFTX  = 0.80D0
+      WDFTB  = 0.72D0
+      WDFTL  = 0.81D0
+      WDFTC  = D1 - WDFTL
+      HFXFAC = D1 - WDFTX
+      GO TO 100
+  128 CONTINUE
+      DFTPOT = .TRUE.
+      GO TO 100
+  129 CONTINUE
+      DFTTYP = 'WAH   '
+      DFTORD = .TRUE.
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      WDFTX  = 0.95D0
+      WDFTB  = 0.72D0
+      WDFTL  = 0.81D0
+      WDFTC  = D1 - WDFTL
+      HFXFAC = D1 - WDFTX
+      GO TO 100
+  130 CONTINUE
+      DFTTYP = 'OWN   '
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      WDFTX  = 0.95D0
+      WDFTB  = 0.72D0
+      WDFTL  = 0.81D0
+      READ(LUCMD,*) WDFTX
+      WDFTC  = D1 - WDFTL
+      HFXFAC = D1 - WDFTX
+      GO TO 100
+  131 CONTINUE
+      READ (LUCMD,*) IQDTYP
+      GO TO 100
+  132 CONTINUE
+      DFTASC = .TRUE.
+      DFTPOT = .TRUE.
+      READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
+      GO TO 100
+  133 CONTINUE
+      DFTHES = .TRUE.
+      GO TO 100
+  134 CONTINUE
+      DFTHRS = .TRUE.
+      READ (LUCMD,*) DFTHR0, DFTHRL, DFTHRI
+      GO TO 100
+  135 CONTINUE
+      DFTEST = .TRUE.
+      READ (LUCMD,*) DFTELS 
       GO TO 100
 C
  2000 CONTINUE
@@ -4313,6 +4451,7 @@ C
 C Last revisions
 C   12-Oct-1984 / 2-Jul-1984 / 4-May-1984 hjaaj
 C    7-Jan-1985 hjaaj (write date and time to output if VAX)
+C   DFT modifications tuh
 C
 C  ***** PROGRAM SIRIUS (INPUT SECTION): PRINT ON UNIT IWUNIT *****
 C
@@ -4350,6 +4489,8 @@ C
 #include <infpri.h>
 #include <huckel.h>
 #include <gnrinf.h>
+#include <dftcom.h>
+#include <dfterg.h>
 C
       CHARACTER*6 RDMOLB(11)
       DATA RDMOLB/'CANORB','MOLORB','FORM18','FORM12','--5-- ',
@@ -4465,18 +4606,33 @@ C
       ELSE IF ( DOCCSD) THEN
          WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
       ELSE IF ( DORHF ) THEN
-         IF (IOPRHF .EQ. 0) THEN
-            WRITE(IWUNIT,1050)
-     *         'Restricted, closed shell Hartree-Fock calculation.'
-            IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
-     *         'Restricted, closed shell Hartree-Fock calculation.'
+         IF (.NOT.DODFT) THEN
+            IF (IOPRHF .EQ. 0) THEN
+               WRITE(IWUNIT,1050)
+     *            'Restricted, closed shell Hartree-Fock calculation.'
+               WRITE(LUCME,'(A/)')
+     *            'Restricted, closed shell Hartree-Fock calculation.'
+            ELSE
+               WRITE(IWUNIT,1050)
+     *            'Restricted, one open shell Hartree-Fock calculation.'
+            END IF
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *         'Time-dependent Hartree-Fock calculation '//
+     *         '(random phase approximation).'
          ELSE
-            WRITE(IWUNIT,1050)
-     *         'Restricted, one open shell Hartree-Fock calculation.'
+            IF (IOPRHF .EQ. 0) THEN
+               WRITE(IWUNIT,1050)
+     *            'Restricted, closed shell Kohn-Sham calculation.'
+               WRITE(LUCME,'(A/)')
+     *            'Restricted, closed shell Kohn-Sham calculation.'
+            ELSE
+               WRITE(IWUNIT,1050)
+     *            'Restricted, one open shell Kohn-Sham calculation.'
+            END IF
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *         'Time-dependent Kohn-Sham calculation '//
+     *         '(random phase approximation).'
          END IF
-         IF ( DORSP ) WRITE (IWUNIT,1050)
-     *      'Time-dependent Hartree-Fock calculation '//
-     *      '(random phase approximation).'
       ELSE
          WRITE (IWUNIT,1050) 'No wave function optimization.'
          IF ( DORSP ) WRITE (IWUNIT,1050)
@@ -4605,6 +4761,47 @@ C
  1075 FORMAT(/5X,'Number of active orbitals in RAS1, RAS2, and RAS3 :',
      &       3I4)
 C
+C     DFT run
+C
+      IF (DFTRUN) THEN
+         WRITE (IWUNIT,'(/,4X,2A)')
+     &        ' This is a DFT calculation of type: ',DFTTYP
+         WRITE (IWUNIT,'(/,4X,A,3F12.6)')
+     &        ' Dirac, Becke, and HF exchange weights:',
+     &          WDFTX,WDFTB,HFXFAC
+         WRITE (IWUNIT,'(4X,A,2F12.6)')
+     &        ' WVN and LYP correlation weights:      ',
+     &          WDFTC, WDFTL
+         IF (DFTHRS) THEN
+            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+     &        ' Redefined thresholds:', DFTHR0, DFTHRL, DFTHRI 
+         ELSE
+            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+     &        ' Default thresholds:  ', DFTHR0, DFTHRL, DFTHRI 
+         END IF
+         IF (DFTHRS) THEN
+            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+     &        ' Redefined threshold for number of electrons: ', DFTELS 
+         ELSE
+            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+     &        ' Default threshold for number of electrons:   ', DFTELS 
+         END IF
+         WRITE (IWUNIT,'(4X,A,I2)') ' DFT quadrature level:', IQDTYP 
+         IF (DFTPOT) WRITE (IWUNIT,'(/,A)')
+     &        ' Kohn-Sham matrix calculated from potential.'
+         IF (DFTASC) THEN
+            WRITE (IWUNIT,'(/,4X,A)') ' Asymptotic correction applied'
+            WRITE (IWUNIT,'(10X,A,F10.5)')
+     &        ' Ionization potential used: ', DFTIPT      
+            WRITE (IWUNIT,'(10X,A,2F10.5)')
+     &        ' Radius factors:            ', DFTBR1, DFTBR2      
+         END IF 
+         IF (DFTHES) THEN
+            WRITE (IWUNIT,'(/,4X,A)') 
+     &        ' DFT electronic Hessian constructed.'
+         END IF
+      END IF
+C
 C ***** Orbital specifications *****
 C
       WRITE(IWUNIT,1100) (I,      I=1,NSYM)
@@ -4630,11 +4827,19 @@ C
       WRITE(IWUNIT,1500) (NBAS(I),I=1,NSYM)
       IF (DORHF .AND. (AUTOCC .OR. MCTYPE .GT. 0)) THEN
          IF (AUTOCC) THEN
-            WRITE(IWUNIT,'(/5X,A/5X,2A/5X,A)')
-     &      ' ** Automatic occupation of RHF orbitals **',
-     &      ' -- Initial occupation of symmetries is determined from ',
-     &      TXTOCC(INIOCC),
-     &      ' -- Initial occupation of symmetries is : --'
+           IF (.NOT.DODFT) THEN
+             WRITE(IWUNIT,'(/5X,A/5X,2A/5X,A)')
+     &       ' ** Automatic occupation of RHF orbitals **',
+     &       ' -- Initial occupation of symmetries is determined from ',
+     &       TXTOCC(INIOCC),
+     &       ' -- Initial occupation of symmetries is : --'
+           ELSE
+             WRITE(IWUNIT,'(/5X,A/5X,2A/5X,A)')
+     &       ' ** Automatic occupation of RKS orbitals **',
+     &       ' -- Initial occupation of symmetries is determined from ',
+     &       TXTOCC(INIOCC),
+     &       ' -- Initial occupation of symmetries is : --'
+           END IF
          END IF
          WRITE(IWUNIT,'()')
          WRITE(IWUNIT,1550) (NRHF(I),I=1,NSYM)
@@ -4747,7 +4952,11 @@ C
       NFRHT = ISUM(NSYM,NFRRHF,1)
       NFRMT = ISUM(NSYM,NFRMP2,1)
       IF (DORHF .AND. NFRHT .GT. 0) THEN
-         WRITE (IWUNIT,6110) (NFRRHF(I),I=1,NSYM)
+         IF (.NOT.DODFT) THEN
+            WRITE (IWUNIT,6110) (NFRRHF(I),I=1,NSYM)
+         ELSE
+            WRITE (IWUNIT,6111) (NFRRHF(I),I=1,NSYM)
+         END IF
       END IF
       IF (DOMP2 .AND. NFRMT .GT. 0) THEN
          WRITE (IWUNIT,6120) (NFRMP2(I),I=1,NSYM)
@@ -4756,6 +4965,7 @@ C
          WRITE (IWUNIT,6100) (NFRO(I),I=1,NSYM)
       END IF
  6110 FORMAT(//,5X,'Number of frozen HF orbitals',T38,8I4)
+ 6111 FORMAT(//,5X,'Number of frozen KS orbitals',T38,8I4)
  6120 FORMAT(//,5X,'Number of frozen MP2 orbitals',T38,8I4)
  6100 FORMAT(//,5X,'Number of frozen MCSCF orbitals',T38,8I4)
 C

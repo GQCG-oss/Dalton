@@ -66,7 +66,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG = .TRUE.)
       DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
       DIMENSION IPNTAB(MXCORB,2)
       DIMENSION IADR(MXCORB,MXDIST)
@@ -1185,8 +1185,8 @@ C
                      LWRK4  = LWORK  - KEND4
 C
                      IF (LWRK4 .LT. 0) THEN
-                        WRITE(LUPRI,*) 'Available:', LWORK
-                        WRITE(LUPRI,*) 'Needed:', KEND4
+                        WRITE(LURPI,*) 'Available:', LWORK
+                        WRITE(LURPI,*) 'Needed:', KEND4
                         CALL QUIT( 
      &                    'Insufficient work space in CC_GRAD2E')
                      ENDIF

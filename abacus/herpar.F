@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herpar.F,v 1.3 2001-06-20 15:49:10 vebjornb Exp $
+C$Id: herpar.F,v 1.4 2001-10-01 13:22:13 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -226,6 +226,7 @@ C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
 C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
+C           HFXFAC - HF exchange factor             
 C
 C
 C
@@ -272,7 +273,7 @@ C
 C
 C     Take calculation time of each IJ pair?
 C
-      TIMING = FIRST .OR. NEWBAS
+      TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
 C
 C--------------------------
 C     Make the index array.
@@ -428,6 +429,7 @@ C
 #include <symmet.h>
 #include <nuclei.h>
 #include <inftap.h>
+#include <dftcom.h>
 #include <parint.h>
 #include <blocks.h>
 #if defined (SYS_T3e)
@@ -522,6 +524,8 @@ C
       CALL MPIXBCAST(DMAT,N2BASX*NDMAT,'DOUBLE',MASTER)
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
+      CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
+C
       IF(ITYPE.EQ.3) THEN
         N2RED = NSYMBL*NSYMBL
         CALL MPIXBCAST(N2RED,1,'INTEGER',MASTER)
@@ -717,7 +721,7 @@ C
      &       MTOTTK
         WRITE(LUPRI,'(5X,A,I5)') 'Number of tasks    calculated : ',
      &       ICOUNT
-        CALL QUIT('Inconsistence in RVRES -> MTOTTK .NE. ICOUNT')
+c        CALL QUIT('Inconsistence in RVRES -> MTOTTK .NE. ICOUNT')
       ENDIF
 C
       RETURN
@@ -951,6 +955,7 @@ C
 #include <abainf.h>
 #include <symmet.h>
 #include <nuclei.h>
+#include <dftcom.h>
 #include <inftap.h>
 #include <parint.h>
 C
@@ -975,9 +980,9 @@ C
       CALL MPIXBCAST(NEWBAS,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)
 C
-      TIMING = FIRST .OR. NEWBAS
+      TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
 C
-      IF (TIMING .OR. NEWGEO) THEN
+      IF (TIMING) THEN
          IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
      &        ' Receiving new orbital inf.',
      &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
@@ -1014,9 +1019,9 @@ C     --------------------------------------------------
 C     Unpack common block MOLINP and INFORB (only once).
 C     --------------------------------------------------
 C
-      TIMING = FIRST .OR. NEWBAS
+      TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
 C
-      IF (TIMING .OR. NEWGEO) THEN
+      IF (TIMING) THEN
          IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
      &        ' Receiving new orbital inf.',
      &        ' FIRST,NEWBAS,NEWGEO :',FIRST,NEWBAS,NEWGEO
@@ -1115,6 +1120,7 @@ C
       CALL MPIXBCAST(WORK(KDMAT),NDMAT*N2BASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ISYMDM,NFMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NFMAT,'INTEGER',MASTER)
+      CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
       IF(ITYPE.EQ.3) THEN
         CALL MPIXBCAST(N2RED,1,'INTEGER',MASTER)
         CALL MEMGET('REAL',KDMRAO,NDMAT*N2RED,WORK,KFREE,LFREE)     
@@ -1858,7 +1864,7 @@ C     *  no event shall the lines between and including -BEGIN-TERMS-
 C     *  and --END-TERMS-- be modified.
 C     *
 C     *  (C) 1997, Jorn Amundsen, University Administration, NTNU.
-C     *  $Id: herpar.F,v 1.3 2001-06-20 15:49:10 vebjornb Exp $
+C     *  $Id: herpar.F,v 1.4 2001-10-01 13:22:13 vebjornb Exp $
 C     * --END-TERMS--
 C     *
 C     ******************************************************************

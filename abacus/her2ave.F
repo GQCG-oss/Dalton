@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her2ave.F,v 1.2 2001-05-31 06:38:05 vebjornb Exp $
+C$Id: her2ave.F,v 1.3 2001-10-01 13:22:12 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck intexp */
@@ -41,7 +41,6 @@ C  /* Deck intexp */
      &                  ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,SYMFAC,
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,
      &                  ZFS2EL,DDFOCK)
-
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -120,6 +119,7 @@ C
      &          NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
      &          DIFAB(3), DIFCD(3), HESSEE(*)
 #include <twocom.h>
+#include <dftcom.h>
 #include <symmet.h>
 #include <nuclei.h>
 #include <expcom.h>
@@ -341,7 +341,11 @@ C
                               ELSE
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                               ENDIF
-                              IF (NODV) THEN
+                              IF (DFTADD) THEN
+                                 PVAL = DP5*FAB*FCD*FCABCD*(DTAB*DTCD
+     &                                - HFXFAC*DP25*
+     &                                  (DTAC*DTBD + DTAD*DTBC))
+                              ELSE IF (NODV) THEN
                                  PVAL = DP5*FAB*FCD*FCABCD*(DTAB*DTCD
      &                                - DP25*(DTAC*DTBD + DTAD*DTBC)
      &                                + PAOVAL)
@@ -377,7 +381,7 @@ C                         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
 C old code/950210-hjaaj       DFAC = DP5*FAB*FCD*FCABCD
                               DFAC = FAB*FCD*FCABCD
-                              EFAC = - DP25*DFAC
+                              EFAC = -HFXFAC*DP25*DFAC
 C
 C                             Total Fock matrix
 C
@@ -482,7 +486,7 @@ C
                            END IF
                            IF (DDFOCK) THEN
                               DFAC = DP125*FAB*FCD*FCABCD
-                              EFAC = DP5*DFAC
+                              EFAC = DP5*HFXFAC*DFAC
 C
 C                             Total Fock matrix
 C

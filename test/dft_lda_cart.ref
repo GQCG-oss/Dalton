@@ -1,0 +1,652 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Release 1.2, April 2001)
+
+                          Principal authors:
+
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
+
+ 
+     Date and time (IRIX)   : Wed Apr 25 10:39:24 2001
+     Host name              : gridur                                  
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Biggtest HCN                                                            
+  cc-pVDZ basis                                                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(s)   
+
+ The following element was found:   Z        
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 1
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(s)           
+Represented as: Cs 
+
+   * The point group was generated by:
+
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   Oxy
+   -----+----------
+     E  |  E 
+    Oxy | Oxy   E 
+
+   * Character table
+
+        |  E   Oxy
+   -----+----------
+    A'  |   1    1
+    A"  |   1   -1
+
+   * Direct product table
+
+        | A'   A" 
+   -----+----------
+    A'  | A' 
+    A"  | A"   A' 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     3
+  Total number of atoms:    3
+
+  Basis set used is "aug-cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  H           1       1      11       9      [5s2p|3s2p]                                  
+  N           1       7      37      25      [10s5p2d|4s3p2d]                             
+  0           1       6      37      25      [10s5p2d|4s3p2d]                             
+  ----------------------------------------------------------------------
+  total:      3      14      85      59
+  ----------------------------------------------------------------------
+  Cartesian basis used. 
+  (Note that d, f, ... atomic GTOs are not all normalized.)
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   H        x     -1.1559202000
+   2            y     -0.1869748706
+   3            z      0.0000000000
+
+   4   N        x      1.3370780747
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+   7   0        x     -0.1811578746
+   8            y      0.1869748706
+   9            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   6  3
+
+
+  Symmetry 1
+
+   1   H     x    1
+   2   H     y    2
+   3   N     x    4
+   4   N     y    5
+   5   0     x    7
+   6   0     y    8
+
+
+  Symmetry 2
+
+   7   H     z    3
+   8   N     z    6
+   9   0     z    9
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           N           0   
+
+   H       0.000000
+   N       1.322943    0.000000
+   0       0.552477    0.809485    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    0          H                              0.552477
+  bond distance:    0          N                              0.809485
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          0          N                    151.991
+
+
+  Nuclear repulsion energy :   36.003216630673
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         43  16
+
+
+  Symmetry  A' ( 1)
+
+    1     H        s          1
+    2     H        s          2
+    3     H        s          3
+    4     H        px         4
+    5     H        py         5
+    6     H        px         7
+    7     H        py         8
+    8     N        s         10
+    9     N        s         11
+   10     N        s         12
+   11     N        s         13
+   12     N        px        14
+   13     N        py        15
+   14     N        px        17
+   15     N        py        18
+   16     N        px        20
+   17     N        py        21
+   18     N        dxx       23
+   19     N        dxy       24
+   20     N        dyy       26
+   21     N        dzz       28
+   22     N        dxx       29
+   23     N        dxy       30
+   24     N        dyy       32
+   25     N        dzz       34
+   26     0        s         35
+   27     0        s         36
+   28     0        s         37
+   29     0        s         38
+   30     0        px        39
+   31     0        py        40
+   32     0        px        42
+   33     0        py        43
+   34     0        px        45
+   35     0        py        46
+   36     0        dxx       48
+   37     0        dxy       49
+   38     0        dyy       51
+   39     0        dzz       53
+   40     0        dxx       54
+   41     0        dxy       55
+   42     0        dyy       57
+   43     0        dzz       59
+
+
+  Symmetry  A" ( 2)
+
+   44     H        pz         6
+   45     H        pz         9
+   46     N        pz        16
+   47     N        pz        19
+   48     N        pz        22
+   49     N        dxz       25
+   50     N        dyz       27
+   51     N        dxz       31
+   52     N        dyz       33
+   53     0        pz        41
+   54     0        pz        44
+   55     0        pz        47
+   56     0        dxz       50
+   57     0        dyz       52
+   58     0        dxz       56
+   59     0        dyz       58
+
+  Symmetries of electric field:  A' (1)  A' (1)  A" (2)
+
+  Symmetries of magnetic field:  A" (2)  A" (2)  A' (1)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.03 seconds
+
+
+ >>> Time used in OVERLA is   0.04 seconds
+
+
+ Number of two-electron integrals written:      782661 ( 49.9% )
+ Megabytes written:                              8.966
+
+
+
+ >>> Time used in TWOINT is   2.09 seconds
+
+ >>>> Total CPU  time used in HERMIT:   2.69 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (IRIX)   : Wed Apr 25 10:39:27 2001
+     Host name              : gridur                                  
+
+ Title lines from integral program:
+     Biggtest HCN                                                            
+     cc-pVDZ basis                                                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         14
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 59
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     This is a DFT calculation of type: LDA   
+
+     Dirac, Becke, and HF exchange weights:    1.000000    0.000000    0.000000
+     WVN and LYP correlation weights:          1.000000    0.000000
+     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
+     Default threshold for number of electrons:                        0.10D-02
+     DFT quadrature level: 4
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Total number of orbitals          43  16
+     Number of basis functions         43  16
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               6   1
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  14 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+H     1   21828      60     590
+N     1   21638      64     590
+0     1   21048      64     590
+
+   Number of grid points in quadrature:     64514 (100.0%)
+
+
+ >>> Time used in DFTGRD is   0.09 seconds
+
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -10.952852      0.000000    -10.952852
+   VWN and LYP correlation energy :     -0.913452      0.000000     -0.913452
+   DFT exchange-correlation energy:                                -11.866304
+
+ >>> Time used in DFTDRV is   4.41 seconds
+
+   1    -90.319412057040   5.54D+00  -9.03D+01    6  1
+
+   Number of electrons/abscissas:       13.999985      -.15D-04         64514
+   Dirac and Becke exchange energy:    -12.138370      0.000000    -12.138370
+   VWN and LYP correlation energy :     -0.976398      0.000000     -0.976398
+   DFT exchange-correlation energy:                                -13.114768
+
+ >>> Time used in DFTDRV is   4.24 seconds
+
+   2    -90.938327333314   2.79D+00  -6.19D-01    6  1
+
+   Number of electrons/abscissas:       13.999988      -.12D-04         64514
+   Dirac and Becke exchange energy:    -11.479916      0.000000    -11.479916
+   VWN and LYP correlation energy :     -0.944630      0.000000     -0.944630
+   DFT exchange-correlation energy:                                -12.424546
+
+ >>> Time used in DFTDRV is   4.37 seconds
+
+   3    -91.301372682961   8.78D-01  -3.63D-01    6  1
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -11.533602      0.000000    -11.533602
+   VWN and LYP correlation energy :     -0.947224      0.000000     -0.947224
+   DFT exchange-correlation energy:                                -12.480826
+
+ >>> Time used in DFTDRV is   4.23 seconds
+
+   4    -91.325830502860   5.43D-01  -2.45D-02    6  1
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -11.591859      0.000000    -11.591859
+   VWN and LYP correlation energy :     -0.950136      0.000000     -0.950136
+   DFT exchange-correlation energy:                                -12.541995
+
+ >>> Time used in DFTDRV is   4.23 seconds
+
+   5    -91.339720005271   3.41D-02  -1.39D-02    6  1
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -11.583727      0.000000    -11.583727
+   VWN and LYP correlation energy :     -0.949709      0.000000     -0.949709
+   DFT exchange-correlation energy:                                -12.533436
+
+ >>> Time used in DFTDRV is   4.30 seconds
+
+   6    -91.339782049544   4.45D-03  -6.20D-05    6  1
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -11.584287      0.000000    -11.584287
+   VWN and LYP correlation energy :     -0.949739      0.000000     -0.949739
+   DFT exchange-correlation energy:                                -12.534026
+
+ >>> Time used in DFTDRV is   4.30 seconds
+
+   7    -91.339783285473   7.17D-04  -1.24D-06    6  1
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -11.584300      0.000000    -11.584300
+   VWN and LYP correlation energy :     -0.949740      0.000000     -0.949740
+   DFT exchange-correlation energy:                                -12.534040
+
+ >>> Time used in DFTDRV is   4.42 seconds
+
+   8    -91.339783313908   1.50D-04  -2.84D-08    6  1
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -11.584306      0.000000    -11.584306
+   VWN and LYP correlation energy :     -0.949740      0.000000     -0.949740
+   DFT exchange-correlation energy:                                -12.534046
+
+ >>> Time used in DFTDRV is   4.36 seconds
+
+   9    -91.339783315202   1.07D-05  -1.29D-09    6  1
+
+   Number of electrons/abscissas:       13.999987      -.13D-04         64514
+   Dirac and Becke exchange energy:    -11.584306      0.000000    -11.584306
+   VWN and LYP correlation energy :     -0.949740      0.000000     -0.949740
+   DFT exchange-correlation energy:                                -12.534046
+
+ >>> Time used in DFTDRV is   4.34 seconds
+
+  10    -91.339783315208   6.89D-07  -5.71D-12    6  1
+ DIIS converged in  10 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   14
+ Orbital occupations :    6    1
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -13.84896838    -9.83158317    -0.91811034    -0.66788283    -0.44442850
+        -0.30393084    -0.00233184     0.03364272     0.04731041     0.07134438
+         0.10856013
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.45620883     0.03816295     0.09269160     0.17361501     0.28777704
+         0.35121085
+
+    E(LUMO) :    -0.00233184 au (symmetry 1)
+  - E(HOMO) :    -0.30393084 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.30159900 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -91.339783315208
+     Nuclear repulsion:            36.003216630673
+     Electronic energy:          -127.342999945880
+
+     Final gradient norm:           0.000000688729
+
+ 
+     Date and time (IRIX)   : Wed Apr 25 10:40:16 2001
+     Host name              : gridur                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6
+   1  H   s      0.0005   0.0451   0.2283  -1.0317  -0.2055  -0.0821
+   2  H   s      0.0176   0.0496   0.6802   1.3595   0.2664  -0.6967
+   3  H   s     -0.0005   0.0007   0.0215  -0.1023  -0.0248   0.0091
+   4  H   px     0.0010   0.0045   0.0167   0.0006  -0.0057  -0.0176
+   5  H   py    -0.0005   0.0034   0.0210  -0.0344   0.0130  -0.0124
+   6  H   px     0.0111   0.0128  -0.1981   0.0670  -0.0767   0.1292
+   7  H   py    -0.0059  -0.0012   0.3103   0.3720   0.0637  -0.2655
+   8  N   s      0.9928  -0.0058  -0.0465  -0.0517  -0.0046  -0.0055
+   9  N   s      0.0166   0.0175   0.7643   0.0814   0.0702   0.3846
+  10  N   s     -0.0411   0.0235  -0.5513  -0.7197  -0.3047   0.6664
+  11  N   s      0.0086   0.0473   0.2891   0.2616   0.1399   0.0730
+  12  N   px    -0.0108  -0.0106  -0.4298  -0.1034  -0.1530   0.8462
+  13  N   py     0.0016   0.0029   0.0492   0.1811  -0.6794  -0.1103
+  14  N   px     0.0244  -0.0173   0.8454   0.5753   0.3113  -0.7146
+  15  N   py    -0.0061   0.0061  -0.0551  -0.2889   0.2016   0.0745
+  16  N   px     0.0023  -0.0111  -0.0422  -0.1118  -0.0326   0.0520
+  17  N   py    -0.0009   0.0018   0.0088  -0.0424   0.0304  -0.0041
+  18  N   dxx   -0.0102   0.0014   0.0201   0.0268   0.0083  -0.0272
+  19  N   dxy   -0.0003  -0.0020  -0.0099  -0.0081   0.0460   0.0108
+  20  N   dyy   -0.0119  -0.0008  -0.0090  -0.0009  -0.0105   0.0113
+  21  N   dzz   -0.0119  -0.0010  -0.0106  -0.0056  -0.0021   0.0126
+  22  N   dxx   -0.0172   0.0054  -0.1297  -0.0681  -0.0541   0.1102
+  23  N   dxy    0.0005  -0.0027   0.0350   0.0705  -0.0227  -0.0305
+  24  N   dyy   -0.0176   0.0013   0.0474   0.0281   0.0055  -0.0208
+  25  N   dzz   -0.0178   0.0008   0.0616   0.0560   0.0068  -0.0335
+  26  0   s      0.0003   0.9737  -0.0834   0.0980   0.0272   0.0349
+  27  0   s     -0.0090  -0.0288   0.6211  -0.2579  -0.1361  -0.3011
+  28  0   s      0.0952  -0.0279  -0.0987   0.4226   0.3540  -0.1686
+  29  0   s     -0.0065  -0.0251  -0.1932   0.1045  -0.0277  -0.0089
+  30  0   px    -0.0008   0.0057   0.4944   0.7451   0.2114  -0.3435
+  31  0   py     0.0009  -0.0024  -0.0799   0.2808  -0.6974   0.0261
+  32  0   px     0.0529  -0.0016  -0.0891  -0.0903   0.0422  -0.0766
+  33  0   py     0.0031   0.0107  -0.1639  -0.2172   0.0572   0.1473
+  34  0   px    -0.0035  -0.0015   0.0021   0.0010  -0.0067  -0.0244
+  35  0   py     0.0012   0.0015   0.0060   0.0228  -0.0184  -0.0045
+  36  0   dxx    0.0010  -0.0171   0.0182   0.0543  -0.0098  -0.0177
+  37  0   dxy    0.0000  -0.0023  -0.0043  -0.0052   0.0017  -0.0004
+  38  0   dyy    0.0002  -0.0142   0.0272  -0.0144   0.0102  -0.0256
+  39  0   dzz    0.0003  -0.0145   0.0234  -0.0035  -0.0045  -0.0242
+  40  0   dxx    0.0117  -0.0132  -0.3766  -0.2774  -0.1297   0.2830
+  41  0   dxy   -0.0029  -0.0038   0.0675   0.1994  -0.0254  -0.0669
+  42  0   dyy   -0.0032  -0.0140  -0.0685  -0.1744  -0.0483   0.0655
+  43  0   dzz   -0.0021  -0.0132  -0.1114  -0.2234  -0.0639   0.1012
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  H   pz    -0.0213
+   2  H   pz     0.0707
+   3  N   pz     0.7285
+   4  N   pz    -0.2549
+   5  N   pz    -0.0328
+   6  N   dxz   -0.0526
+   7  N   dyz    0.0102
+   8  N   dxz    0.0405
+   9  N   dyz   -0.0054
+  10  0   pz     0.7388
+  11  0   pz    -0.1793
+  12  0   pz     0.0206
+  13  0   dxz   -0.0091
+  14  0   dyz   -0.0168
+  15  0   dxz    0.0672
+  16  0   dyz    0.0042
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     49.03 seconds
+ >>>> Total wall time used in SIRIUS :     49.00 seconds
+
+ 
+     Date and time (IRIX)   : Wed Apr 25 10:40:16 2001
+     Host name              : gridur                                  
+
+- End of Wave Function Section
+ >>>> Total CPU  time used in DALTON:  51.73 seconds
+ >>>> Total wall time used in DALTON:  52.00 seconds
+
+ 
+     Date and time (IRIX)   : Wed Apr 25 10:40:16 2001
+     Host name              : gridur                                  

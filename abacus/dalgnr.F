@@ -418,11 +418,13 @@ C  /* Deck exeher */
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
 #include <gnrinf.h>
+#include <dftcom.h>
 #include <cbirea.h>
 C
 C     Run Integral section
 C
       NEWPRP = .TRUE.
+      GRDONE = .FALSE.
 C
       WRITE(LUPRI, '(A/)') '    Starting in Integral Section -'
 C     The dollar sign in the previous line may not be standard.
@@ -613,10 +615,12 @@ C  /* Deck exedrv */
          DOWALK = .FALSE.
          CALL OPTMIN(WORK,LMWORK,IWOFF,WRKDLM)
       ELSE IF (OPTWLK) THEN
-         DOWALK = .TRUE.
          RNABAC = .TRUE.
-         MOLGRD = .TRUE.
-         MOLHES = .TRUE.
+         IF (.NOT. NMWALK) THEN
+            DOWALK = .TRUE.
+            MOLGRD = .TRUE.
+            MOLHES = .TRUE.
+         END IF
          START  = .TRUE.
          GEOCNV = .FALSE.
          NEWWLK = .TRUE.
@@ -728,25 +732,25 @@ C           *** Walk to make numerical derivatives. ***
 C
             IF (NMWALK) THEN
                IWOTMP = IWOFF
-               CALL NMDINI
+               CALL NMDINI(IPRINT)
                CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
                REWIND (LUCMD,IOSTAT=IOS)
  1100          READ (LUCMD,'(A7)') WORD
-               IF (WORD .NE. '*NMDDRV') GOTO 1100
-               CALL NMDINP(WORD)
+               IF (WORD .NE. '**NMDDR') GOTO 1100
+               CALL NMDINP(WORD,IPRINT)
                CALL GPCLOSE(LUCMD,'KEEP')
-               CALL NUMDRV(WORK,LMWORK,IWOFF,WRKDLM)
+               CALL NUMDRV(WORK,LMWORK,IWOFF,IPRINT,WRKDLM)
                IWOFF = IWOTMP
                GEOCNV = .TRUE.
-#if defined (VAR_MPI)
-               IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
-                  IJOB = 0
-                  CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
-     &                           MPI_COMM_WORLD,IERR)
-                  GOTO 87
-               END IF
-#endif
+c#if defined (VAR_MPI)
+c               IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
+c                  IJOB = 0
+c                  CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
+c     &                           MPI_COMM_WORLD,IERR)
+c                  GOTO 87
+c               END IF
+c#endif
             ELSE
                WRINDX = .TRUE.
                IF (NEWWLK) THEN
@@ -785,30 +789,30 @@ C
                      CALL GPCLOSE(LUCMD,'KEEP')
                   END IF
                END IF
-            END IF
 C     We may have more DOSYM under **START than under **PROPE
-            DO I = 0, 7
-               DOREPW(I) = DOSYM(I + 1) .AND. DOREPW(I)
-            END DO
-            IF (REUSED .AND. ITERNR .GT. 0) THEN
-               REWIND (LUSIFC)
-               CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
-               READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
-               CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                     WORK(IWOFF + 2),LMWORK)
-            ELSE
-               CALL EXEABA(WORK,LMWORK,IWOFF,WRKDLM)
-            END IF
-            IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
-     &           .OR. (IWKTYP .EQ. 6))) THEN
-               IF (MOD(ITERNR+2,10) .EQ. 0) THEN
-                  IPRUSR = 0
+               DO I = 0, 7
+                  DOREPW(I) = DOSYM(I + 1) .AND. DOREPW(I)
+               END DO
+               IF (REUSED .AND. ITERNR .GT. 0) THEN
+                  REWIND (LUSIFC)
+                  CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+                  READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
+                  CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                        WORK(IWOFF + 2),LMWORK)
                ELSE
-                  IPRUSR = -2
+                  CALL EXEABA(WORK,LMWORK,IWOFF,WRKDLM)
                END IF
+               IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
+     &              .OR. (IWKTYP .EQ. 6))) THEN
+                  IF (MOD(ITERNR+2,10) .EQ. 0) THEN
+                     IPRUSR = 0
+                  ELSE
+                     IPRUSR = -2
+                  END IF
+               END IF
+               WRITE (LUPRI,'(/4X,A,F12.6,A,F13.10)')'Energy: ', ERGMOL,
+     &                                           '   Gradient:', GRADML
             END IF
-            WRITE (LUPRI,'(/4X,A,F12.6,A,F13.10)') 'Energy: ', ERGMOL,
-     &                                         '   Gradient:', GRADML
 C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C
@@ -817,7 +821,7 @@ C
             REWIND (LUMOL)
             DO 200 IMLINE = 1,NMLINE
                WRITE (LUMOL,'(A)') MLINE(IMLINE)
-  200       CONTINUE
+ 200        CONTINUE
             CALL GPCLOSE(LUMOL,'KEEP')
 C
 C     Punch MOLECULE input with updated coordinates to XXXX_mol.inp
@@ -827,10 +831,11 @@ C
             IF (ITERNR .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
             IF (ITERNR .LT. 99) WRITE(FILENM(2:2),'(A1)') '0'
             IF (ITERNR .LT. 9) WRITE(FILENM(3:3),'(A1)') '0'
-            CALL GPOPEN(LUMOL,FILENM,' ',' ','FORMATTED',IDUMMY,.FALSE.)
+            CALL GPOPEN(LUMOL,FILENM,' ',' ','FORMATTED',IDUMMY,
+     &                  .FALSE.)
             DO 300 IMLINE = 1,NMLINE
                WRITE (LUMOL,'(A)') MLINE(IMLINE)
-  300       CONTINUE
+ 300        CONTINUE
             CALL GPCLOSE(LUMOL,'KEEP')
 C
             START = .FALSE.
@@ -1238,7 +1243,7 @@ C
          GO TO 100
  129     CONTINUE
             NMWALK = .TRUE.
-            NOMOVE = .FALSE.
+            NOMOVE = .TRUE.
             OPTWLK = .TRUE.
          GOTO 100
  130     CONTINUE

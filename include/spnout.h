@@ -1,7 +1,7 @@
 C
-C$Id: spnout.h,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C$Id: spnout.h,v 1.2 2001-10-01 13:22:18 vebjornb Exp $
 C
       LOGICAL DOSD, DODSO, DOFC, DOSDFC, DOPSO, DOSELE, ANISON,
-     &        FCFIN
+     &        FCFIN, SPNISO
       COMMON /SPNOUT/ ABUND, ISPPRI, DOSD, DODSO, DOFC, DOPSO,
-     &                DOSDFC, DOSELE, ANISON, FCFIN
+     &                DOSDFC, DOSELE, ANISON, FCFIN, SPNISO

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abafsd.F,v 1.5 2001-05-31 06:38:00 vebjornb Exp $
+C$Id: abafsd.F,v 1.6 2001-10-01 13:22:09 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck getfd */
@@ -117,6 +117,7 @@ C
      *          EMYD(3), DCFOLD(*), WORK(LWORK)
 #include <ccom.h>
 #include <abainf.h>
+#include <dftcom.h>
 #include <nuclei.h>
 #include <inftap.h>
 #include <ibtfun.h>
@@ -182,6 +183,13 @@ C     Note that in order to save memory, we use FCD for UFCDSOX/Y/Z
 C
          CALL ONEDRL('HMAT',FCD(1,1),FCD(1,2),FCD(1,3),IATOM,DERX,
      &               DERY,DERZ,WORK,LWORK,IPRINT,INTPRI)
+C
+C        DFT contribution
+C
+         IF (DFTADD .AND. IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
+            CALL DFTLND(FCD(1,1),FCD(1,2),FCD(1,3),WORK,LWORK,IPRINT)
+         END IF
+C
          IF (IATOM .GT. 0) THEN
             CALL DSITSP(NBAST,FCD(1,1),FCSOX)
             CALL DSITSP(NBAST,FCD(1,2),FCSOY)
@@ -938,6 +946,7 @@ C
      &          FCSQ(NBAST,NBAST,3), FVSQ(NBAST,NBAST,3),
      &          DCSQ(NBAST,NBAST), DVSQ(NBAST,NBAST),
      &          IBUF(4,600), WORK(*)
+#include <dftcom.h>
 #include <nuclei.h>
 #include <inftap.h>
 #include <inforb.h>
@@ -1029,7 +1038,7 @@ C                 IF (IPRINT .GE. 25) WRITE (LUPRI,'(1X,F12.6,5X,4I5)')
 C    &                                        CINT,P,Q,R,S
 C
                   IF (P.EQ.R .AND. S.EQ.Q) CINT = DP5*CINT
-                  EINT = DP5*CINT
+                  EINT = DP5*HFXFAC*CINT
 C
 C     Add Coulomb contributions to inactive fock matrix
 C     =================================================

@@ -116,17 +116,17 @@ newtrahso.o : newtrahso.F \
   ../include/trinfo.h  ../include/trinp.h \
   ../include/trunit.h
 siraba.o : siraba.F \
-  ../include/cbgetdis.h  ../include/implicit.h \
-  ../include/infdim.h  ../include/infind.h \
-  ../include/infinp.h  ../include/inflin.h \
-  ../include/infopt.h  ../include/inforb.h \
-  ../include/infpri.h  ../include/inftra.h \
-  ../include/infvar.h  ../include/iratdef.h \
-  ../include/line.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/orbtypdef.h \
-  ../include/priunit.h  ../include/scalar.h \
-  ../include/single.h  ../include/sirbkd.h \
-  ../include/thrzer.h
+  ../include/cbgetdis.h  ../include/dftcom.h \
+  ../include/implicit.h  ../include/infdim.h \
+  ../include/infind.h  ../include/infinp.h \
+  ../include/inflin.h  ../include/infopt.h \
+  ../include/inforb.h  ../include/infpri.h \
+  ../include/inftra.h  ../include/infvar.h \
+  ../include/iratdef.h  ../include/line.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/orbtypdef.h  ../include/priunit.h \
+  ../include/scalar.h  ../include/single.h \
+  ../include/sirbkd.h  ../include/thrzer.h
 sirave.o : sirave.F \
   ../include/implicit.h  ../include/infind.h \
   ../include/infinp.h  ../include/inforb.h \
@@ -183,7 +183,8 @@ sirctl.o : sirctl.F \
   ../include/single.h  ../include/sirbkd.h \
   ../include/thrldp.h
 sirdiis.o : sirdiis.F \
-  ../include/cbihr2.h  ../include/dummy.h \
+  ../include/cbihr2.h  ../include/dftcom.h \
+  ../include/dfterg.h  ../include/dummy.h \
   ../include/gnrinf.h  ../include/implicit.h \
   ../include/infdim.h  ../include/infind.h \
   ../include/infinp.h  ../include/infopt.h \
@@ -193,6 +194,7 @@ sirdiis.o : sirdiis.F \
   ../include/priunit.h  ../include/scbrhf.h \
   ../include/single.h
 sirfck.o : sirfck.F \
+  ../include/dftcom.h  ../include/dummy.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/infinp.h  ../include/inforb.h \
   ../include/infpri.h  ../include/inftap.h \
@@ -212,7 +214,8 @@ sirgp.o : sirgp.F \
   ../include/scbrhf.h  ../include/single.h \
   ../include/thrzer.h  ../include/vdir.h
 sirgrad.o : sirgrad.F \
-  ../include/cbgetdis.h  ../include/implicit.h \
+  ../include/cbgetdis.h  ../include/dftcom.h \
+  ../include/dfterg.h  ../include/implicit.h \
   ../include/infdim.h  ../include/infind.h \
   ../include/infinp.h  ../include/infopt.h \
   ../include/inforb.h  ../include/infpri.h \
@@ -223,6 +226,7 @@ sirgrad.o : sirgrad.F \
   ../include/orbtypdef.h  ../include/priunit.h \
   ../include/single.h  ../include/thrzer.h
 sirinp.o : sirinp.F \
+  ../include/dftcom.h  ../include/dfterg.h \
   ../include/dummy.h  ../include/gnrinf.h \
   ../include/huckel.h  ../include/implicit.h \
   ../include/infdim.h  ../include/infind.h \
@@ -311,13 +315,14 @@ siropt.o : siropt.F \
   ../include/scbrhf.h  ../include/single.h \
   ../include/thrldp.h
 sirorb.o : sirorb.F \
-  ../include/dummy.h  ../include/ibndxdef.h \
-  ../include/implicit.h  ../include/infdim.h \
-  ../include/infinp.h  ../include/infopt.h \
-  ../include/inforb.h  ../include/infpri.h \
-  ../include/inftap.h  ../include/inftra.h \
-  ../include/infvar.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
+  ../include/dfterg.h  ../include/dummy.h \
+  ../include/ibndxdef.h  ../include/implicit.h \
+  ../include/infdim.h  ../include/infinp.h \
+  ../include/infopt.h  ../include/inforb.h \
+  ../include/infpri.h  ../include/inftap.h \
+  ../include/inftra.h  ../include/infvar.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
 sirout.o : sirout.F \
   ../include/dummy.h  ../include/implicit.h \
   ../include/infdim.h  ../include/infind.h \
@@ -370,15 +375,16 @@ sirtest.o : sirtest.F \
   ../include/infvar.h  ../include/maxorb.h \
   ../include/priunit.h  ../include/single.h
 sirtr1.o : sirtr1.F \
-  ../include/cbgetdis.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/infdim.h \
-  ../include/infind.h  ../include/infinp.h \
-  ../include/inflin.h  ../include/inforb.h \
-  ../include/infpri.h  ../include/inftap.h \
-  ../include/inftra.h  ../include/infvar.h \
-  ../include/line.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/orbtypdef.h \
-  ../include/priunit.h  ../include/single.h
+  ../include/cbgetdis.h  ../include/dftcom.h \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/infdim.h  ../include/infind.h \
+  ../include/infinp.h  ../include/inflin.h \
+  ../include/inforb.h  ../include/infpri.h \
+  ../include/inftap.h  ../include/inftra.h \
+  ../include/infvar.h  ../include/line.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/orbtypdef.h  ../include/priunit.h \
+  ../include/single.h
 sirtra.o : sirtra.F \
   ../include/cbgetdis.h  ../include/dummy.h \
   ../include/exeinf.h  ../include/gnrinf.h \

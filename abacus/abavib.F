@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abavib.F,v 1.6 2001-05-31 06:38:03 vebjornb Exp $
+C$Id: abavib.F,v 1.7 2001-10-01 13:22:11 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2831,6 +2831,7 @@ C  /* Deck vibv3 */
 #include <mxcent.h>
 #include <mxorb.h>
 #include <codata.h>
+      LOGICAL NMODIF
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
@@ -2842,6 +2843,7 @@ C
 #include <abainf.h>
 #include <inftap.h>
 #include <cbivib.h>
+#include <cbinum.h>
 #include <cbiwlk.h>
 C      
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
@@ -2892,8 +2894,10 @@ C
       END DO
       ELSE
          CALL DCOPY(NCORD*NCORD*NCORD,FMATF,1,FMATT,1)
-         FAC = D1/XFAMU
-         CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
+         IF (.NOT.NUMVIB) THEN
+            FAC = D1/XFAMU
+            CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
+         END IF
       END IF
       
 C

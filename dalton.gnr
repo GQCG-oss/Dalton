@@ -89,6 +89,9 @@ while [ -n "`echo $1 | grep '-'`" ]; do
       -m ) WRKMEM=$2
            export WRKMEM
 	   shift;;
+      -M ) let WRKMEM=$2*128000
+           export WRKMEM
+           shift;;
       -o ) OUTFIL=$2
            export OUTFIL
 	   opto=1

@@ -2088,8 +2088,8 @@ C------------------------
 C     Add up the vectors.
 C------------------------
 C
-      C1NOSQ = 0
-      C2NOSQ = 0
+      C1NOSQ = 0.0D0
+      C2NOSQ = 0.0D0
       KC1 = 1
       KC2 = KC1 + NT1AM(ISYMTR)
       C1NOSQ = DDOT(NT1AM(ISYMTR),CAM(KC1),1,CAM(KC1),1)

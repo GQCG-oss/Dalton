@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaopt.F,v 1.9 2001-08-21 09:46:23 vebjornb Exp $
+C$Id: abaopt.F,v 1.10 2001-10-01 13:22:10 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2082,6 +2082,7 @@ C
 #include <optinf.h>
 #include <gnrinf.h>
 #include <siripc.h>
+#include <dftcom.h>
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       CALL QENTER('GTNRGY')
@@ -2091,9 +2092,25 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
+C ach 
+      IF (DFTRUN) GRDONE = .FALSE.
       IF (.NOT. EXSIR) THEN
+C     
+C        *** For numerical derivatives we might need to  ***
+C        *** reassign the symmetry of the frozen core    ***
+C        *** orbitals. tar 01-2001                       ***
+C
+         IF (NMWALK.AND.DOCCSD) THEN
+            KWORD = IWOFF + 2
+            KLAST = KWORD + 80*KMLINE
+            IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded ' //
+     &                                       'in fndexs.')
+            CALL FNDEXS(WORK(KWORD))
+         END IF
+C
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
          IF (DOCCSD) THEN
+C
             CALL CC_GEOFLAG
             CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
          ENDIF
@@ -2179,6 +2196,7 @@ C
 #include <abainf.h>
 #include <gnrinf.h>
 #include <optinf.h>
+#include <pvibav.h>
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
@@ -2195,10 +2213,18 @@ C
          HRINPC = .FALSE.
       END IF
 C
-C     Let's see if this is a wave function we know, if not: Do it numerically
+C     TR: Using FNDANA to find highest order of analytical 
+C         derivatives (NAORDR). If this is 0, we use numerical 
+C         gradients.
+C         NAORDR = 0; Only energies available
+C         NAORDR = 1; Analytical gradients available
+C         NAORDR = 2; Analytical gradients and hessians available.
 C
-      IF ((DOMP2 .AND. .NOT. DOMC) .OR. ((DOCI .OR. DOCINO)
-     &    .AND. .NOT. DOMC) .OR. (PARIO .AND. MYNUM .GT. 0)) THEN
+      CALL FNDANA(NAORDR)
+C
+C      IF ((DOMP2 .AND. .NOT. DOMC) .OR. ((DOCI .OR. DOCINO)
+C     &    .AND. .NOT. DOMC) .OR. (PARIO .AND. MYNUM .GT. 0)) THEN
+      IF (NAORDR.EQ.0) THEN 
          CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
       ELSE
          WRINDX = .TRUE.
@@ -2209,6 +2235,15 @@ C
          ELSE
             CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
          END IF
+C
+C        *** For numerical differentiation (vibrational ***
+C        *** average), we don't nescesary calculate all ***
+C        *** properties.                                ***
+C
+         IF (.NOT.CNMPRP) THEN
+            CALL NVBPIN(IPRINT)
+         END IF
+C
          IF ( DOCCSD ) THEN
             CALL CC_GEOFLAG
             CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
@@ -2245,6 +2280,7 @@ C
 #include <optinf.h>
 #include <trkoor.h>
 #include <cbiwlk.h>
+#include <pvibav.h>
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -2264,6 +2300,15 @@ C
       ELSE
          CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
       END IF
+C
+C     *** For numerical differentiation (vibrational ***
+C     *** average), we don't nescesary calculate all ***
+C     *** properties.                                ***
+C
+      IF (.NOT.CNMPRP) THEN
+         CALL NVBPIN(IPRINT)
+      END IF
+C
       CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
       EXABA = .TRUE.
       START = .FALSE.
@@ -2271,9 +2316,19 @@ C
       MOLHES = .FALSE.
       HELFEY = .FALSE.
 C
-C     For all iterations except the first, MINCGH is run here.
+      IF (NMWALK) THEN
 C
-      IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
+C        *** For numerical derivatives, the Hessian is ***
+C        *** "desymmetrized".                          ***
+C
+         KCSTRA = 1
+         KSCTRA = KCSTRA + NCOOR**2
+         CALL TRAHES(HESMOL,MXCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
+     &               MXCOOR,NCOOR,1)
+      ELSE IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
+C
+C        For all iterations except the first, MINCGH is run here.
+C
          CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
       END IF
       CALL QEXIT('GTHESS')
@@ -2542,7 +2597,7 @@ C
 C
 C     Collect the symmetry-to-cartesian transformation matrix in TMPMT3
 C
-               CALL TRACOR(TMPMT2,TMPMT3,1,ICRTCR,0)
+               CALL TRACOR(TMPMT2,TMPMT3,1,ICRTCR,IPRINT)
 C
                CALL DGEMM('T','N',ICRTCR,ICRTCR,ICRTCR,1.D0,
      &                    TMPMT3,ICRTCR,
@@ -7089,7 +7144,7 @@ C
             READ(LUHES,*)
  100     CONTINUE
          IF (MAXREP .GT. 0) THEN
-            CALL TRACOR(TMPMT2,TMPMT3,1,ICRD,0)
+            CALL TRACOR(TMPMT2,TMPMT3,1,ICRD,IPRINT)
             CALL DGEMM('T','N',ICRD,ICRD,ICRD,1.D0,
      &                 TMPMT3,ICRD,
      &                 TMPMT4,MXCOOR,0.D0,
@@ -7240,17 +7295,17 @@ C
 C     Call new numerical derivative routines.
 C
       IWOTMP = IWOFF
-      CALL NMDINI
+      CALL NMDINI(IPRINT)
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND (LUCMD,IOSTAT=IOS)
  1100 READ (LUCMD,'(A7)',END=1110) WORD
-      IF (WORD .NE. '*NMDDRV') GOTO 1100
-      CALL NMDINP(WORD)
+      IF (WORD .NE. '**NMDDR') GOTO 1100
+      CALL NMDINP(WORD,IPRINT)
  1110 CALL GPCLOSE(LUCMD,'KEEP')
       FCLASS = GROUP
       IF (NMORDR .LT. 1) NMORDR = 1
-      CALL NUMDRV(WORK,LWORK,IWOFF,WRKDLM)
+      CALL NUMDRV(WORK,LWORK,IWOFF,IPRINT,WRKDLM)
       IF (IWOTMP .NE. IWOFF) IWOFF = IWOTMP
 C
       RETURN

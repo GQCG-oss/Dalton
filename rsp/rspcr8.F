@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspcr8.F,v 1.3 2001-05-31 06:38:29 vebjornb Exp $
+C$Id: rspcr8.F,v 1.4 2001-10-01 13:22:19 vebjornb Exp $
 C
 #include <single.h>
 C
@@ -599,6 +599,9 @@ C
      &                 CMO(ICMO2+NOCC2*NBAS2+1),NBAS2,
      &                 ZYM(IOCC1+1,IVIR2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST)
+         END IF
+         NTMP = NBAS1*NBAS2*NOCC1
+         IF (NTMP .NE. 0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NOCC1,1.D0,
      &                 CMO(ICMO1+1),NBAS1,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST,1.D0,
@@ -609,6 +612,9 @@ C
      &                 CMO(ICMO2+1),NBAS2,
      &                 ZYM(IVIR1+1,IOCC2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST)
+         END IF
+         NTMP = NBAS1*NBAS2*NVIR1
+         IF (NTMP .NE. 0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NVIR1,-1.D0,
      &                 CMO(ICMO1+NOCC1*NBAS1+1),NBAS1,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST,1.D0,
@@ -676,6 +682,9 @@ C
      &                 CMO(ICMO2+1),NBAS2,
      &                 ZYM(IOCC1+1,IOCC2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST)
+         END IF
+         NTMP = NBAS1*NBAS2*NOCC1
+         IF (NTMP .NE.0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NOCC1,1.D0,
      &                 CMO(ICMO1+1),NBAS1,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST,1.D0,
@@ -686,6 +695,9 @@ C
      &                 CMO(ICMO2+NOCC2*NBAS2+1),NBAS2,
      &                 ZYM(IVIR1+1,IVIR2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST)
+         END IF
+         NTMP = NBAS1*NBAS2*NVIR1
+         IF (NTMP .NE.0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NVIR1,-1.D0,
      &                 CMO(ICMO1+NOCC1*NBAS1+1),NBAS1,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST,1.D0,

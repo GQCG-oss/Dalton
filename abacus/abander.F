@@ -32,129 +32,383 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C  /* Deck nmdinp */
-      SUBROUTINE NMDINP(WORD)
+      SUBROUTINE NMDINP(WORD,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER (NTABLE = 9)
-      CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7, WORD1*7
+      PARAMETER (NDIR=2,NTABLE = 16)
+      CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7, 
+     &          TABDIR(NDIR)*7, WORD1*7
 #include <numder.h>
 #include <fcsym.h>
 #include <cbinum.h>
+#include <abainf.h>
+#include <cbiwlk.h>
       LOGICAL NEWDEF
+C     
+      DATA TABDIR/'*VIBANA','*PROPER'/
 C
       DATA TABLE /'.DORDR ', '.SYMMET', '.SDRTST', '.RESTRT', '.DRYRUN',
-     *            '.PARTST', '.NORMAL', '.XXXXXX', '.XXXXXX'/
+     *            '.PARTST', '.NORMAL', '.PRECAL', '.REUSE ', '.ISOTOP',
+     *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ', 
+     *            '.MANUAL'/
 C
-      NEWDEF = (WORD .EQ. '*NMDDRV')
+C     *** Initializing a few local variables. ***
+C
+      NIS = 0
+      NATOMS = 0
+C
+C     *** Initializing variables for *VIBANA. ***
+      CALL NVBINI
+C
+C
+C     ************************************************
+C     **** Finding the analytical differentiation ****
+C     **** order of the  energy for the           ****
+C     **** wavefunction used.                     ****
+C     ************************************************
+C
+      CALL FNDANA(NAORDR)
+C
       ICHANG = 0
-      IF (NEWDEF) THEN
-         WORD1 = WORD
-  100    CONTINUE
-            READ (LUCMD, '(A7)') WORD
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9), I
-                  END IF
-  200          CONTINUE
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GO TO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in NMDINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in NMDINP.')
- 1             CONTINUE
-                  READ (LUCMD,'(2I4)') NMORDR, NAORDR
-                  GOTO 100
- 2             CONTINUE
-                  READ (LUCMD,'(A)') GRPTMP
-                  IJ = 0
-                  DO II = 1, 15
-                     IF (GRPTMP(II:II).NE.' ') THEN
-                        IJ = IJ + 1
-                        FCLASS(IJ:IJ) = GRPTMP(II:II)
-                     END IF
-                  END DO
-                  GOTO 100
- 3             CONTINUE
-                  SDRTST = .TRUE.
-                  GOTO 100
- 4             CONTINUE
-                  RESTRT = .TRUE.
-                  GOTO 100
- 5             CONTINUE
-                  DRYRUN = .TRUE.
-                  READ (LUCMD,'( I4)')  NMREDU
-                  READ (LUCMD,'(6I4)') (KDRYRN(II),II=1,NMREDU)
-                  GOTO 100
- 6             CONTINUE
-                  DRYRUN = .TRUE.
-                  READ (LUCMD,'( I4)')  NMREDU
-                  READ (LUCMD,'(6I4)') (KDRYRN(II),II=1,NMREDU)
- 7             CONTINUE
-                  NRMCRD = .TRUE.
- 8             CONTINUE
- 9             CONTINUE
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GO TO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in NMDINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in NMDINP.')
+      WORD1 = WORD
+ 100  CONTINUE
+      READ (LUCMD, '(A7)') WORD
+      PROMPT = WORD(1:1)
+      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+         GO TO 100
+      ELSE IF (PROMPT .EQ. '.') THEN
+         ICHANG = ICHANG + 1
+         DO 200 I = 1, NTABLE
+            IF (TABLE(I) .EQ. WORD) THEN
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
             END IF
+ 200     CONTINUE
+         IF (WORD .EQ. '.OPTION') THEN
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            GO TO 100
+         END IF
+         WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *        '" not recognized in NMDINP.'
+         CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Illegal keyword in NMDINP.')
+ 1       CONTINUE
+            READ (LUCMD,'(2I4)') NMORDR, NAORDR
+            GOTO 100
+ 2       CONTINUE
+            READ (LUCMD,'(A)') GRPTMP
+            IJ = 0
+            DO II = 1, 15
+               IF (GRPTMP(II:II).NE.' ') THEN
+                  IJ = IJ + 1
+                  FCLASS(IJ:IJ) = GRPTMP(II:II)
+               END IF
+            END DO
+            GOTO 100
+ 3       CONTINUE
+            SDRTST = .TRUE.
+            GOTO 100
+ 4       CONTINUE
+            RESTRT = .TRUE.
+            GOTO 100
+ 5       CONTINUE
+            DRYRUN = .TRUE.
+            READ (LUCMD,'( I4)')  NMREDU
+            READ (LUCMD,'(6I4)') (KDRYRN(II),II=1,NMREDU)
+            GOTO 100
+ 6       CONTINUE
+            DRYRUN = .TRUE.
+            READ (LUCMD,'( I4)')  NMREDU
+            READ (LUCMD,'(6I4)') (KDRYRN(II),II=1,NMREDU)
+            GOTO 100
+ 7       CONTINUE
+            NRMCRD = .TRUE.
+            GOTO 100
+ 8       CONTINUE
+            PREHES = .TRUE.
+            GOTO 100
+ 9       CONTINUE
+            REUHES = .TRUE.
+            GOTO 100
+ 10      CONTINUE
+            READ (LUCMD,*) NIS, NATOMS
+            DO I = 1, NIS
+               READ (LUCMD, *) (ISOTOP(IS), IS = 1 ,NATOMS)
+            END DO
+            GOTO 100
+ 11      CONTINUE
+            NUMVIB = .TRUE.
+            ANALZE = .TRUE.
+            GOTO 100
+ 12      CONTINUE
+            NRMCRD = .TRUE.
+            HTEST  = .TRUE.
+            GOTO 100
+ 13      CONTINUE
+            READ (LUCMD, *) DISPLC
+            GOTO 100
+ 14      CONTINUE
+            NPRPDR = .TRUE.
+            READ (LUCMD, *) NMRDRP, NARDRP
+            NMORDR = MAX(NMRDRP,NMORDR-NAORDR)
+            GOTO 100
+ 15      CONTINUE
+            READ (LUCMD, *) IPRINT
+            GOTO 100
+ 16      CONTINUE
+            MANUAL = .TRUE.
+            GOTO 100
+      ELSE IF (PROMPT .EQ. '*') THEN
+         GO TO 300
+      ELSE
+         WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *        '" not recognized in NMDINP.'
+         CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Illegal prompt in NMDINP.')
       END IF
-  300 CONTINUE
+C
+C     *** Print section. ***
+C
+ 300  CONTINUE
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for NMDINP:',0)
          WRITE (LUPRI,'(A)') '                                    '
-         WRITE (LUPRI,'(5X,A,I4,A,I4,a)') 'Numerical derivatives' //
-     &             'calculated to order', NMORDR, ' from analytical', 
-     &                                    NAORDR, '. derivatives'
+
+         IF (NUMVIB) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)') 'A vibrational analysis is done.'
+            WRITE (LUPRI,'(5X,A)') 'Which/how is specified in ' //
+     &           '*VIBANA (and **PROPERTIES).'
+         ELSE
+            WRITE (LUPRI,'(5X,A,I4)') 'Numerical derivatives' //
+     &           'calculated to order', NMORDR 
+            WRITE (LUPRI,'(5X,A,I4,A)') 'using analytical', NAORDR, 
+     &           '. derivatives'
+         END IF
+C
          WRITE (LUPRI,'(5x,A)') 'Group used for force constants ' // 
      &                           GRPTMP
+         WRITE (LUPRI,'(5x,A,F6.4)') 'Step size used: ', DISPLC
          IF (SDRTST) THEN
             WRITE (LUPRI,'(A)') '                                    '
             WRITE (LUPRI,'(5X,A)') 'Comparison of numerical Hessian ' //
-     &                           'with analytical Hessian is performed'
+     &           'with analytical Hessian is performed'
          END IF
          IF (DRYRUN) THEN
             WRITE (LUPRI,'(A)') '                                    '
             WRITE (LUPRI,'(5X,A)') 'Numerical derivatives will be' //
-     &                 'conducted as a dry run.'
+     &           'conducted as a dry run.'
             WRITE (LUPRI,'(5X,A)') 'No actual derivatives will be' //
-     &                             'calculated.'
+     &           'calculated.'
             WRITE (LUPRI,'(A,I4)') 'Number of rendundant coordinates:', 
-     &                             NMREDU
+     &           NMREDU
+         END IF
+C
+         IF (RESTRT) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)') 'This is a restart of an old run.'
+         END IF
+C
+         IF (NRMCRD) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)') 'Normal coordinates will be found.'
+            WRITE (LUPRI,'(5X,A)') 'Energy and property derivatives' //
+     &           'will be with respect to these coordinates.'
+         END IF
+C
+         IF (PREHES) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)') 'A precalculated hessian will be' //
+     &           ' used to find normal coordinates.' 
+         END IF
+C
+         IF (REUHES) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)') 'Hessian (if specified elsewhere)' //
+     &           ' will be saved for future work.'
+            WRITE (LUPRI,'(5X,A)') 'Hessian will be saved on the file'// 
+     &           ' DALTON.HES'
+         END IF
+C
+         IF (NIS.GT.0) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)')'Other isotopes will be investigated.'
+            WRITE (LUPRI,'(5X,A)') 'These isotopes are: '
+            DO IIS = 1, NIS
+               WRITE (LUPRI,*) (ISOTOP(IATOM),IATOM=1,NATOMS)
+            END DO
+         END IF
+C
+         IF (NRMCRD.AND.HTEST) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)') 'A test of the normal coordinates '//
+     &           'will be done.'
+         END IF
+C
+         IF (MANUAL) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(A)') 'The mol file will be printed for '//
+     &                          'geometries.'
+         END IF
+C
+         IF (NPRPDR) THEN
+            WRITE (LUPRI,'(A)') '                                    '
+            WRITE (LUPRI,'(5X,A)') 'Property derivatives will be ' //
+     &           'calculated.'
+            IF (NMORDR.GT.0) THEN
+               WRITE (LUPRI,'(5X,A,I4)') 'Order of the' //
+     &              'differentiation is equal to: ', NMORDR
+            END IF
          END IF
       END IF
+C
+C
+C     *** Different * sections. ***
+C     
+ 400  CONTINUE
+      PROMPT = WORD(1:1)
+      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+         GO TO 400
+      ELSE IF (PROMPT .EQ. '*') THEN
+         DO 500 I = 1, NDIR
+            IF (WORD .EQ. TABDIR(I)) THEN
+               GO TO
+     *         (101,102), I
+            END IF
+ 500     CONTINUE
+         IF (WORD(1:2) .EQ. '**') GO TO 600
+         WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Illegal directory in ABAINP.')
+      ELSE
+         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal or',
+     *                        ' out of order.'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Program stopped in ABAINP, error in prompt.')
+      END IF
+ 101  CONTINUE
+      CALL NVBINP(WORD)
+      GOTO 400
+ 102  CONTINUE
+      CALL NVBINP(WORD)
+      GOTO 400
+C
+ 600  CONTINUE
+C
+      RETURN
+      END
+C
+C     
+C     /* Deck fndana */
+      SUBROUTINE FNDANA(NAORDR)
+C     *******************************************************
+C     **** Subroutine that keeps track of the analytical ****
+C     **** for a given wave-function. NAORDR gives the   ****
+C     **** order of the analytical derivative.           ****
+C     *******************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+C
+#include <gnrinf.h>
+#include <dftcom.h>
+#include <ccsdinp.h>
+      LOGICAL MCSCF, DMP2, WAVTP
+C
+C     *** Workaround to many common variables with the same name ***
+C     *** MCSCF is set to DOMC (in infinp.h), and DMP2 is set    ***
+C     *** to DOMP2 (in infinp.h through the logical function     ***
+C     *** WAVTP.                                                 ***
+C
+      MCSCF = WAVTP('MCSCF')
+      DMP2  = WAVTP('DOMP2')
+C
+      IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR. 
+     &    CCD   .OR. CC3   .OR. CCPT .OR. CCP3  .OR. CCRT .OR. CCR3 .OR. 
+     &    CCR1A .OR. CCR1B .OR. CCR1B.OR. CCT .OR. 
+     &   (MP2.AND..NOT.DOCCSD)) THEN
+         NAORDR = 0
+C      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. (MP2.AND..NOT.MCSCF) .OR. 
+C     &                                                   DFTRUN) THEN
+C
+C     *** Temporary code while waiting bug fix for cc analytical ***
+C     *** gradients.                                             ***
+C
+      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. (DMP2.AND..NOT.MCSCF)) THEN 
+         NAORDR = 0
+      ELSE IF (DFTRUN) THEN
+         NAORDR = 1
+      ELSE
+         NAORDR = 2
+      END IF
+C
+      WRITE (LUPRI,'(A)') '                                   '
+      WRITE (LUPRI,'(5X,A,I4)') 'Order of the analytical ' //
+     &          'energy-derivative available:', NAORDR
+      WRITE (LUPRI,'(5X,A,I4)') 'This will be the default.'
+      WRITE (LUPRI,'(A)') '                                   '
+C
       RETURN
       END
 C
 C
+C     /* Deck wavmc */
+      LOGICAL FUNCTION WAVTP(STRING)
+C     **************************************************************
+C     *** Workaround to many common variables with the same name ***
+C     *** MCSCF is set to DOMC (in infinp.h) through the logical ***
+C     *** function WAVMC.                                        ***
+C     **************************************************************
+#include <implicit.h>
+#include <maxorb.h>
+#include <infinp.h>
+      CHARACTER*5 STRING
 C
-      SUBROUTINE NMDINI
+      IF (STRING.EQ.'MCSCF') THEN
+         WAVTP = DOMC
+      ELSE IF (STRING.EQ.'DOMP2') THEN
+         WAVTP = DOMP2
+      ELSE
+         CALL QUIT('Wrong string in WAVTP')
+      END IF
 C
-C     Initialize /NUMDER/, /NMDPRP/ and /FCSYM/
+      RETURN
+      END
+C     
+C
+C     /* Deck nmdini */
+      SUBROUTINE NMDINI(IPRINT)
+C
+C     Initialize /NUMDER/, /FCSYM/ and some /ABAINF/ 
 C
 #include <implicit.h>
+#include <mxcent.h>
 #include <numder.h>
 #include <fcsym.h>
 #include <cbinum.h>
+#include <abainf.h>
+#include <cbiwlk.h>
+C
+C     Print variable.
+      IPRINT = 0
 C
 C     /CBINUM/
       NRMCRD = .FALSE.
+      PGMTST = .FALSE.
+      HTEST  = .FALSE.
+      PREHES = .FALSE.
+      REUHES = .FALSE.
+      ANALZE = .FALSE.
+      NUMVIB = .FALSE.
+      NPRPDR = .FALSE.
 C
 C     /NUMDER/
       NMORDR = 0
       NAORDR = 0
+      NMDPRP = 0
+      NMRDRP = 0
+      NARDRP = 0
+      NMPINI = 0
       NWPROP = .FALSE.
       FSTPRP = .FALSE.
       NOMOVE = .TRUE.
@@ -162,6 +416,9 @@ C     /NUMDER/
       CMPARE = .FALSE.
       SDRTST = .FALSE.
       DRYRUN = .FALSE.
+      FRSTNM = .FALSE.
+      PRPVIB = .FALSE.
+      MANUAL = .FALSE.
 C      
 C     /FCSYM/
       FCLASS = 'C1             '
@@ -173,12 +430,20 @@ C     /FCSYM/
       ICNTR  = .FALSE.
       ROTARE = .FALSE.
 C
+C     /ABAINF/
+      DO 100 I = 1, MXCENT
+         ISOTOP(I) = 1
+ 100  CONTINUE
+C     
+C     /CBIWLK/
+      DISPLC = 1.0D-2
+C
       RETURN
       END
 C
 C
 C     /* Deck numdrv */
-      SUBROUTINE NUMDRV(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE NUMDRV(WORK,LWORK,IWOFF,IPRINT,WRKDLM)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -186,41 +451,35 @@ C     /* Deck numdrv */
 #include <mxorb.h>
 #include <infpar.h>
 C
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-      LOGICAL FINISH
-#include <gnrinf.h>
-#endif
+c#if defined (VAR_MPI)
+c      INCLUDE 'mpif.h'
+c      LOGICAL FINISH
+c#endif
 #include <cbiwlk.h>
 #include <cbinum.h>
 #include <trkoor.h>
 #include <nuclei.h>
-#include <inftap.h>
-#include <cbiexc.h>
 #include <symmet.h>
 #include <numder.h>
 #include <molinp.h>
 #include <fcsym.h>
+#include <gnrinf.h>
+#include <huckel.h>
       DIMENSION WORK(LWORK)
       LOGICAL MOLECU
       CHARACTER WORD*7
 C
- 8    CONTINUE
+ 100  CONTINUE
 C
       MOLECU = .TRUE.
-      PGMTST = .TRUE.
-      MDGTST = .TRUE.
-      HTEST  = .TRUE.
       NCOOR  = 3*NUCDEP
-C
-      NMEXCI = 0
-      DO 100 ISYM = 0, MAXREP
-         NMEXCI = NMEXCI + NEXCIT(ISYM+1)
- 100  CONTINUE
+      ADSTBK = ADDSTO.AND.(NMORDR.GT.1).AND.(NMRDRP.GT.0)
 C
       NDERIV = 0
       NDIME  = 1
-      NINNER = NCOOR**NAORDR
+      NINNER = 1
+      IF (NAORDR.GE.1) NINNER = NCOOR*NINNER
+      IF (NAORDR.GE.2) NINNER =(NCOOR+1)*NINNER/2
 C     
       MAXADR = 1
       DO 200 J = NMORDR, 1, -2
@@ -252,14 +511,18 @@ C
       IF (NMORDR .GE. 5) THEN
          NDIME = NDIME + 2*NCOOR
       END IF
-      NDIME = NDIME*NINNER
 C
       KDERIV = IWOFF + 2
-      KENVAL = KDERIV +   NDERIV
-      KCOOR  = KENVAL +   NDIME
+      KFUVAL = KDERIV +   NDERIV
+      KCOOR  = KFUVAL +   NDIME*NINNER
       KCSTAR = KCOOR  + 3*NCOOR
       KSYMCO = KCSTAR + 3*NCOOR
-      KLAST = KSYMCO +   NCOOR**2
+      KTRNRC = KSYMCO +   NCOOR**2
+      KTRMSS = KTRNRC +   NCOOR**2
+      KDKIN  = KTRMSS +   NCOOR
+      KFREQ  = KDKIN  +   NCOOR
+      KRNNRM = KFREQ  +   NCOOR
+      KLAST  = KRNNRM +   NCOOR
 C         
 C     *** Memory needed for test on Hessian. ***
 C
@@ -274,7 +537,7 @@ C
          KLAST  = KENTST + LTHTST
       END IF
 C
-C     *** Memory for screening of redundant force constants. ***
+C     *** Memory for screening of rendundant force constants. ***
 C
       LDPMTX = 0
       IF (NMORDR .GE. 4) THEN
@@ -291,11 +554,19 @@ C
          KNIDPC = KDCOEF +   IFRSTD       *LDPMTX
          KLAST  = KNIDPC +                 LDPMTX
       END IF
+      NSTRDR = NMORDR
 C
 C     *** Space for backup av MOLECULE.INP ***
 C
       KMBKLN = KLAST
       KLAST  = KMBKLN + 80*NMLINE
+C
+C     *** Space for backup av isotopes if abacus is run. ***
+C
+      IF (NAORDR.GT.0) THEN
+         KISOTP = KLAST
+         KLAST  = KISOTP + NATOMS
+      END IF
 C
 C     *** Symmetry initialization and symmetry ***
 C     ***       related memory allocation      ***
@@ -308,74 +579,78 @@ C
 C
       LWRK1 = LWORK - (KLAST - IWOFF) + 1
 C
-      DISPLC = 1.0D-2
-C
       IWSAV = IWOFF
 #if defined (SYS_HAL) || defined (VAR_G77)
       IWOFF = 0
 #endif
-      CALL NUMDR1(WORK(KDERIV),WORK(KENVAL),WORK(KCOOR),WORK(KCSTAR),
+      CALL NUMDR1(WORK(KDERIV),WORK(KFUVAL),WORK(KCOOR),WORK(KCSTAR),
      &            WORK(KSYMCO),WORK(KDCOEF),WORK(KTSTGD),WORK(KTSTSD),
-     &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KLAST),
-     &            WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),WORK(KMBKLN),
-     &            LWRK1,IWOFF,NDERIV,NDIME,MAXADR,LTHTST,LDPMTX,IFRSTD,
-     &            WRKDLM)
+     &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KTRNRC), 
+     &            WORK(KTRMSS),WORK(KDKIN) ,WORK(KFREQ), WORK(KRNNRM), 
+     &            WORK(KLAST) ,WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),
+     &            WORK(KISOTP),WORK(KMBKLN),LWRK1,IWOFF,NDERIV,NDIME,
+     &            NINNER,MAXADR,LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
+
 #if defined (SYS_HAL) || defined (VAR_G77)
       IWOFF = IWSAV
 #endif
 C
-#if defined (VAR_MPI)
+c#if defined (VAR_MPI)
+cC
+cC     We let the slaves wait for the Master to tell them whether to pick up
+cC     a new geometry or to end this calculation
+cC
+c      IF (MYNUM .GT. 0) THEN
+c         CALL MPI_BCAST(NTASK,1,MPI_INTEGER,NODEID(MASTER),
+c     &                 MPI_COMM_WORLD,IERR)
+c         IF (NTASK .EQ. 1) THEN
+c            CALL PARION
+c            RDINPC = .FALSE.
+c            CALL READIN(WORK(IWOFF),LWORK,.FALSE.)
+c            GOTO 100
+c         ELSE IF (NTASK .EQ. 0) THEN
+c            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
+c     &                  MPI_COMM_WORLD,IERR)
+c            CALL MPI_FINALIZE(IERR)
+c#if defined (SYS_CRAY)
+c            CALL INFO = ISHELL('rm -f $SCRATCHDIR/*')
+c#else
+c            CALL SYSTEM('rm -f $SCRATCHDIR/*')
+c#endif
+c            STOP '*** End of DALTON calculation ***'
+c         ELSE
+c            WRITE (LUPRI,'(/A)') 'Unknown message received by slave'
+c            CALL QUIT('Slave received unknown message from master')
+c         END IF
+c      END IF
+c#endif
 C
-C     We let the slaves wait for the Master to tell them whether to pick up
-C     a new geometry or to end this calculation
+C     *** No more numerical derivative. ***
 C
-      IF (MYNUM .GT. 0) THEN
-         CALL MPI_BCAST(NTASK,1,MPI_INTEGER,NODEID(MASTER),
-     &                 MPI_COMM_WORLD,IERR)
-         IF (NTASK .EQ. 1) THEN
-            CALL PARION
-            RDINPC = .FALSE.
-            CALL READIN(WORK(IWOFF),LWORK,.FALSE.)
-            GOTO 8
-         ELSE IF (NTASK .EQ. 0) THEN
-            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
-     &                  MPI_COMM_WORLD,IERR)
-            CALL MPI_FINALIZE(IERR)
-#if defined (SYS_CRAY)
-            CALL INFO = ISHELL('rm -f $SCRATCHDIR/*')
-#else
-            CALL SYSTEM('rm -f $SCRATCHDIR/*')
-#endif     
-            STOP '*** End of DALTON calculation ***'
-         ELSE
-            WRITE (LUPRI,'(/A)') 'Unknown message received by slave'
-            CALL QUIT('Slave received unknown message from master')
-         END IF
-      END IF
-#endif
+      NMWALK = .FALSE.
+C
       RETURN
       END
 C
 C  /* Deck numdr1 */
-      SUBROUTINE NUMDR1(DERIV,ENVAL,COOR,CSTART,SYMCOR,DCOEFF,TSTGDR,
-     &                  TSTSDR,ENTST,GRIREP,CHRCTR,WORK,KDPMTX,NMIDPC,
-     &                  ICRIRP,MBKLIN,LWORK,IWOFF,NDERIV,NDIME,MAXADR,
-     &                  LTHTST,LDPMTX,IFRSTD,WRKDLM)
+      SUBROUTINE NUMDR1(DERIV,FUVAL,COOR,CSTART,SYMCOR,DCOEFF,TSTGDR,
+     &                  TSTSDR,ENTST,GRIREP,CHRCTR,TRNCCR,TRAMSS,DKIN,
+     &                  FREQ,RNNORM,WORK,KDPMTX,NMIDPC,ICRIRP,ISOTMP,
+     &                  MBKLIN,LWORK,IWOFF,NDERIV,NDIME,NINTIN,MAXADR,
+     &                  LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <dummy.h>
 #include <mxorb.h>
+#include <infpar.h>
       PARAMETER (D0 = 0.0D0)
 #include <cbiwlk.h>
-#include <cbiexc.h>
 #include <cbinum.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <exeinf.h>
 #include <abainf.h>
-#include <infpar.h>
 #include <taymol.h>
 #include <trkoor.h>
 #include <numder.h>
@@ -384,22 +659,35 @@ C  /* Deck numdr1 */
 #include <inftap.h>
 #include <molinp.h>
 #include <fcsym.h>
-      LOGICAL EXHER, EXSIR, EXABA, GTCOMP, SYMDET, RSTDON
+      LOGICAL EXHER, EXSIR, EXABA, GTCOMP, RSTDON, SYMDET, NPRBKP, 
+     &        NSPNBK
       CHARACTER*80 MBKLIN, PRTEXT
       CHARACTER*8 ANDER
       DIMENSION MBKLIN(NMLINE)
-      DIMENSION DERIV(NDERIV), ENVAL(NDIME), CSTART(3*NCOOR), 
+      DIMENSION DERIV(NDERIV), FUVAL(NINTIN,NDIME), CSTART(3*NCOOR), 
      &          COOR(3*NCOOR), SYMCOR(NCOOR,NCOOR), 
      &          DCOEFF(LDPMTX,IFRSTD), TSTGDR(NCOOR), ENTST(LTHTST), 
      &          TSTSDR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT), 
-     &          CHRCTR(NGORDR,NCVERT),WORK(LWORK)
-      DIMENSION ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NMORDR,IFRSTD), 
+     &          CHRCTR(NGORDR,NCVERT), TRNCCR(NCOOR,NCOOR), 
+     &          TRAMSS(NCOOR), DKIN(NCOOR), FREQ(NCOOR), RNNORM(NCOOR), 
+     &          ISOTMP(NATOMS), WORK(LWORK)
+      DIMENSION ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
      &          NMIDPC(LDPMTX)
+#include <dummy.h>
 #include <ibtfun.h>
 C
+C     ******************************
 C     *** Restart initialization ***
+C     ******************************
 C
       RSTDON = .FALSE.
+C
+C     *****************************************
+C     *** Backing up symmetry for later use ***
+C     *****************************************
+C
+      CALL BKSMNM
+c      CALL DALCHG(DUMMY,IDUMMY,IDUMMY,IPRINT,IDUMMY,IDUMMY,.TRUE.)
 C
 C     *************************************
 C     ***Backup of original MOLECULE.INP***
@@ -410,6 +698,14 @@ C
       DO 100 IMLINE = 1, NMLINE
          MBKLIN(IMLINE) = MLINE(IMLINE)
  100  CONTINUE
+C     
+C     *********************************************
+C     *** Backup of isotopes, if abacus is run. ***
+C     *********************************************
+C
+      IF (NAORDR.GT.0) THEN
+         CALL ICOPY(NATOMS,ISOTOP,1,ISOTMP,1)
+      END IF
 C     
 C     ****************************************
 C     ***Unrolling the symmetry coordinates***
@@ -438,18 +734,24 @@ C
       CALL GPOPEN(LURSTR,'RSTRT.FC','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LURSTR)
+      IF (NPRPDR) THEN
+         LUNDPR = 0
+         CALL GPOPEN(LUNDPR,'PROPERTY.NDER','UNKNOWN',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND(LUNDPR)
+      END IF
 C     
       IF (RESTRT) THEN
 C
 C        *** Restart, find which round it ended  ***
-C        *** in this run of nmder. Reread enval  ***
+C        *** in this run of nmder. Reread fuval  ***
 C        *** values from file.                   ***
 C     
          KEND = 0
          IDIMAX = 0
          IDIMIN = 2
-         CALL RERSTR(ENVAL,SYMCOR,ICRIRP,NDIME,KEND,IDIMAX,IDIMIN,
-     &               LURSTR,IPRINT,RSTDON)
+         CALL RERSTR(FUVAL,SYMCOR,DUMMY,DUMMY,ICRIRP,NDIME,NINTIN,
+     &               KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
       ELSE
 C
 C        *** Open restart file. A zero first in the file ***
@@ -464,130 +766,190 @@ C
       IF (NRMCRD) THEN
          NTMPDR = NMORDR
          NMORDR = 2 - NAORDR
-         IF ((NAORDR+NMORDR).LT.2) NDORDR = NMORDR
+         IF ((NAORDR+NMORDR).LT.2) NMORDR = NTMPDR
       END IF
       MAXINR = 2**NMORDR
 C
-      KIADRS = 1
-      KINDST = KIADRS + MAXADR
-      KNPRTN = KINDST + NMORDR
-      KIDCMP = KNPRTN + MAXINR
-      KIEQVG = KIDCMP + NCOOR
-      KICIN  = KIEQVG + 2*NMORDR
-      KIRPID = KICIN  +   NMORDR
-#if defined (VAR_MPI)
-      KFTVAL = KIRPID +   NMORDR
-      KLAST  = KFTVAL +   NDIME
-#else
-      KLAST  = KIRPID +   NMORDR
-#endif
+      IF (.NOT.(PREHES.AND.NRMCRD)) THEN
+         IF (PREHES) WRITE (LUPRI,'(A)') '   Not able to use a' //
+     &           ' precalculated hessian, since normal coordinates' //
+     &           ' is not specified.' 
 C
-      LWRK  = LWORK - KLAST + 1
+C        *** If normal coordinates then no property derivatives ***
+C        *** should be calculated at this time.                 ***
 C
-      CALL NMDER(DERIV,ENVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
-     &           CHRCTR,WORK(KLAST),ICRIRP,KDPMTX,NMIDPC,WORK(KIADRS),
-     &           WORK(KINDST),WORK(KNPRTN),WORK(KIDCMP),WORK(KIEQVG),
-     &           WORK(KICIN),WORK(KIRPID),MBKLIN,NMBKLN,NDERIV,LWRK,
-     &           NDIME,MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,
-     &           IDIMIN,LURSTR,WRKDLM,
-#if defined (VAR_MPI)
-     &              WORK(KFTVAL),SYMDET,RSTDON)
-#else
-     &              SYMDET,RSTDON)
-#endif
+         IF (NRMCRD) THEN
+C           
+C           *** First time through. ***
+C
+            FRSTNM = .TRUE.
+C
+C           *** If normal coordinates then no  ***
+C           *** property derivatives should be ***
+C           *** calculated at this time.       ***
+C
+            NPRBKP = NPRPDR
+            NPRPDR = .FALSE.
+            NSPNBK = NSPNSP
+            NSPNSP = .FALSE.
+C
+         END IF
+C
+         KIADRS = IWOFF + 2
+         KINDST = KIADRS + MAXADR
+         KNPRTN = KINDST + NMORDR
+         KIDCMP = KNPRTN + MAXINR
+         KIEQVG = KIDCMP + NCOOR
+         KICIN  = KIEQVG + 2*NMORDR
+         KIRPID = KICIN  +   NMORDR
+         KEGRAD = KIRPID +   NMORDR
+         KEHESS = KEGRAD +   MXCOOR
+c#if defined (VAR_MPI)
+c         KFTVAL = KEHESS +   MXCOOR**2
+c         KLAST  = KFTVAL +   NDIME
+c#else 
+         KLAST  = KEHESS +   MXCOOR**2
+c#endif
+C
+         LWRK  = LWORK - KLAST + 1
+C
+         CALL NMDER(DERIV,FUVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
+     &        CHRCTR,WORK(KEGRAD),WORK(KEHESS),WORK(KLAST),ICRIRP,
+     &        KDPMTX,NMIDPC,WORK(KIADRS),WORK(KINDST),WORK(KNPRTN),
+     &        WORK(KIDCMP),WORK(KIEQVG),WORK(KICIN),WORK(KIRPID),MBKLIN,
+     &        NMBKLN,NDERIV,LWRK,NDIME,NINTIN,MAXADR,LDPMTX,IFRSTD,
+     &        MAXINR,IWOFF,LTHTST,IDIMAX,IDIMIN,LURSTR,IPRINT,WRKDLM,
+c#if defined (VAR_MPI)
+c     &        WORK(KFTVAL),SYMDET,RSTDON)
+c#else 
+     &        SYMDET,RSTDON)
+c#endif
+C
+C        *** Restoring property derivatives. ***
+C
+         IF (NRMCRD) THEN
+            NPRPDR = NPRBKP
+            NSPNSP = NSPNBK
+         END IF
+C     
+C        *******************************************
+C        *** Restore isotopes, if abacus is run. ***
+C        *******************************************
+C
+         IF (NAORDR.GT.0) THEN
+            CALL ICOPY(NATOMS,ISOTMP,1,ISOTOP,1)
+         END IF
+
+      ELSE
+         WRITE (LUPRI,'(A)') '                                '
+         WRITE (LUPRI,'(A)') 'Reading in precalculated hessian'
+         WRITE (LUPRI,'(A)') '                                '
+C
+         KHSSIN = 1
+         KLAST  = KHSSIN + NCOOR**2
+         LWRK   = LWORK - KLAST + 1
+         CALL RDHESS(SYMCOR,CSTART,GRIREP,CHRCTR,WORK(KHSSIN),
+     &               WORK(KLAST),ICRIRP,LWRK,IPRINT,SYMDET)
+      END IF
+C
+C     *** Resetting some variables. ***
+C
       IF (NRMCRD) THEN
          NMORDR = NTMPDR
       END IF
 C
-C        *** Close the restart file ***
+C     *** Close the restart file ***
 C
       CALL GPCLOSE(LURSTR,'KEEP')
 C
-C        *** Reevaluate restart parameter ***
+C     *** Printing the derivatives ***
 C
-      IF (RESTRT.AND.RSTDON) THEN
-         RESTRT = .FALSE.
-         RSTDON = .FALSE.
-      END IF
-C
-C        *** Printing the derivatives ***
-C
-      IF (MYNUM .EQ. 0) THEN
+      IF (MYNUM.EQ.0) THEN
          PRTEXT(1:9) = 'symmetric'
          LTEXT  = 9
          IF (NRMCRD) THEN
             NPRRDR = 2
          ELSE
-            NPRRDR = NMORDR
+            NPRRDR = NMORDR+NAORDR
          END IF
-         KTDRS  = 1
-         NDIMT  = NCOOR*(NCOOR+1)*(NCOOR+2)/6
-         KFDRS  = NDIMT  + 1
-         NDIMF  = NCOOR*(NCOOR+1)*(NCOOR+2)*(NCOOR+3)/24
+         NDIMT = NCOOR*(NCOOR+1)*(NCOOR+2)/6
+         NDIMF = NCOOR*(NCOOR+1)*(NCOOR+2)*(NCOOR+3)/24
+         KTDRS = 1
+         KFDRS = KTDRS + NDIMT   
+C
          CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &               WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,
-     &               PRTEXT)
+     &        CSTART,WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTEXT,
+     &        IPRINT,PRTEXT)
 C
          IF (SDRTST) THEN
-            KTMPGD = 1
+            KTMPGD = IWOFF + 2
             KTMPHS = KTMPGD + MXCOOR
             KBKPGD = KTMPHS + NCOOR**2
             KBKPHS = KBKPGD + NCOOR
             KLAST  = KBKPHS + NCOOR**2
-            LWRK = LWORK - KLAST
+            LWRK = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in SDERTT')
             CALL SDERTT(TSTSDR,TSTGDR,SYMCOR,WORK(KTMPGD),WORK(KTMPHS),
-     &                  WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,
-     &                  IPRINT)
+     &           WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,IPRINT)
          END IF
 C     
          IF ((NAORDR+NMORDR).GT.1) THEN
             IF (.NOT.DRYRUN) THEN
-               KEIGNV = 1
+               KEIGNV = IWOFF + 2
                KEGNVC = KEIGNV + NCOOR
                KHSMWT = KEGNVC + NCOOR**2
                KMT1TP = KHSMWT + NCOOR**2
                KMT2TP = KMT1TP + NCOOR**2
                KAMASS = KMT2TP + NCOOR**2
-               KDKIN  = KAMASS + NATOMS
-               KHTSTM = KDKIN  + NCOOR
-               KFREQ  = KHTSTM + NCOOR**2
-               KNATYP = KFREQ  + NCOOR
+               KHTSTM = KAMASS + NATOMS
+               KNATYP = KHTSTM + NCOOR**2
                KNMSSP = KNATYP + NATOMS
-               KLAST  = KNMSSP + NCOOR
-               LWRK   = LWORK  - KLAST 
+               KCRTMP = KNMSSP + NCOOR
+               KLAST  = KCRTMP + NCOOR
+C
+               LWRK   = LWORK  - KLAST + 1
                IF (KLAST.GT.LWORK)CALL QUIT('Memory exceeded in MKNRMC')
-               CALL MKNRMC(SYMCOR,CSTART,WORK(KEIGNV),WORK(KEGNVC),
-     &                     WORK(KHSMWT),WORK(KMT1TP),WORK(KMT2TP),
-     &                     WORK(KAMASS),WORK(KDKIN),WORK(KHTSTM),
-     &                     WORK(KFREQ),WORK(KLAST),ICRIRP,WORK(KNATYP),
-     &                     WORK(KNMSSP),LWRK)
+               CALL MKNRMC(SYMCOR,CSTART,TRNCCR,TRAMSS,WORK(KEIGNV),
+     &              WORK(KEGNVC),WORK(KHSMWT),WORK(KMT1TP),
+     &              WORK(KMT2TP),WORK(KAMASS),DKIN,
+     &              WORK(KHTSTM),FREQ,RNNORM,WORK(KCRTMP),
+     &              WORK(KLAST),ICRIRP,WORK(KNATYP),WORK(KNMSSP),
+     &              LWRK,IPRINT)
             ELSE
                CALL DRNRMC(SYMCOR,ICRIRP,IPRINT)
             END IF
          END IF
       END IF
 C
+C     *** Reevaluate restart parameter ***
+C
+      IF (RESTRT.AND.RSTDON) THEN
+         RESTRT = .FALSE.
+         RSTDON = .FALSE.
+      END IF
+C
       IF (NRMCRD .AND. ((NAORDR+NMORDR).GT.2)) THEN
+         FRSTNM = .FALSE.
 C
 C        *** Restart ***
 C
          LURSTR = 0
-         CALL GPOPEN(LURSTR,'RSTRT.FC','UNKNOWN',' ','FORMATTED',
-     &               IDUMMY,.FALSE.)
+         CALL GPOPEN(LURSTR,'RSTRT.FC','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+         REWIND(LURSTR)
 C
          IF (RESTRT) THEN
 C
 C           *** Restart, find which round it ended  ***
-C           *** in this run of nmder. Reread enval  ***
+C           *** in this run of nmder. Reread fuval  ***
 C           *** values and normal coordinates from  ***
 C           *** file.                               ***
 C     
-            KEND = 1
+            KEND = IWOFF + 2
             IDIMAX = 0
             IDIMIN = 2
-            CALL RERSTR(ENVAL,SYMCOR,ICRIRP,NDIME,KEND,IDIMAX,IDIMIN,
-     &                  LURSTR,IPRINT,RSTDON)
+            CALL RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
+     &                  KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
          ELSE
 C
 C           *** Open restart file. A 1 first in the file ***
@@ -596,38 +958,42 @@ C           *** Normal coordinates are also written to   ***
 C           *** file for restart purposes.               ***
 C
             WRITE (LURSTR,'(I2)') 1
-            CALL WRICOR(SYMCOR,ICRIRP,LURSTR,IPRINT)
+            CALL WRICOR(SYMCOR,RNNORM,FREQ,ICRIRP,LURSTR,IPRINT)
          END IF
 C
          MAXINR = 2**NMORDR
 C
-         KIADRS = 1
+         KIADRS = IWOFF + 2
          KINDST = KIADRS + MAXADR
          KNPRTN = KINDST + NMORDR
          KIDCMP = KNPRTN + MAXINR
          KIEQVG = KIDCMP + NCOOR
          KICIN  = KIEQVG + 2*NMORDR
-         KIRPID = KICIN   +   NMORDR
-#if defined (VAR_MPI)
-         KFTVAL = KIRPID +   NMORDR
-         KLAST  = KFTVAL +   NDIME
-#else
-         KLAST  = KIRPID +   NMORDR
-#endif
+         KIRPID = KICIN  +   NMORDR
+         KEGRAD = KIRPID +   NMORDR
+         KEHESS = KEGRAD +   MXCOOR
+c#if defined (VAR_MPI)
+c         KFTVAL = KEHESS +   MXCOOR**2
+c         KLAST  = KFTVAL +   NDIME
+c#else
+         KLAST  = KEHESS +   MXCOOR**2
+c#endif
+
 C
          LWRK   = LWORK - KLAST + 1
 C     
-         CALL NMDER(DERIV,ENVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
-     &              CHRCTR,WORK(KLAST),ICRIRP,KDPMTX,NMIDPC,
-     &              WORK(KIADRS),WORK(KINDST),WORK(KNPRTN),WORK(KIDCMP),
-     &              WORK(KIEQVG),WORK(KICIN),WORK(KIRPID),MBKLIN,NMBKLN,
-     &              NDERIV,LWRK,NDIME,MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,
-     &              LTHTST,WIDIMAX,IDIMIN,LURSTR,WRKDLM,
-#if defined (VAR_MPI)
-     &              WORK(KFTVAL),SYMDET,RSTDON)
-#else
+         CALL NMDER(DERIV,FUVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
+     &              CHRCTR,WORK(KEGRAD),WORK(KEHESS),WORK(KLAST),ICRIRP,
+     &              KDPMTX,NMIDPC,WORK(KIADRS),WORK(KINDST),
+     &              WORK(KNPRTN),WORK(KIDCMP),WORK(KIEQVG),WORK(KICIN),
+     &              WORK(KIRPID),MBKLIN,NMBKLN,NDERIV,LWRK,NDIME,NINTIN,
+     &              MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,
+     &              IDIMIN,LURSTR,IPRINT,WRKDLM,
+c#if defined (VAR_MPI)
+c     &              WORK(KFTVAL),SYMDET,RSTDON)
+c#else
      &              SYMDET,RSTDON)
-#endif
+c#endif
 C
 C        *** Close the restart file ***
 C
@@ -639,34 +1005,59 @@ C
             RESTRT = .FALSE.
          END IF
 C     
-         PRTEXT(1:6) = 'normal'
+         IF (MYNUM.EQ.0) THEN
+            PRTEXT(1:6) = 'normal'
+C     
+            LTEXT  = 6
+            NPRRDR = NAORDR + NMORDR
+            NDIMT  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)/6
+            NDIMF  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)*(NCOOR+3)/24
 C
-         LTEXT  = 6
-         NPRRDR = NAORDR + NMORDR
-         KTDRS  = 1
-         KFDRS  = (NDCOOR*(NDCOOR+1)*(NDCOOR+2))/6  + 1
+            KTDRS  = 1
+            KFDRS  = KTDRS + NDIMT
 C
-         NDIMT  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)/6
-         NDIMF  = NDCOOR*(NDCOOR+1)*(NDCOOR+2)*(NCOOR+3)/24
-         CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &               WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,
-     &               PRTEXT)
-      END IF
+            CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
+     &           CSTART,WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTEXT,
+     &           IPRINT,PRTEXT)
 C
-      IF (NAORDR.EQ.0) THEN
-         ANDER = 'energy  '
-      ELSE IF (NAORDR .EQ. 1) THEN
-         ANDER = 'gradient'
-      ELSE
-         ANDER = 'hessian '
-      END IF
+C        *** Isotope analysis. ***
 C         
-      IF (DRYRUN) THEN
-         WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER // 
+c         KTPGRD = IWOFF  + 2
+c         KTPHES = KTPGRD + NCOOR
+c         KTPMSS = KTPHES + NCOOR**2
+c         KTPTD1 = KTPMSS + NCOOR
+c         KTPTD2 = KTPTD1 + NCOOR**3
+c         KLAST  = KTPTD2 + NCOOR**3
+c         LWRK   = LWORK -KLAST + 1
+c         IF (KLAST.GT.LWORK)CALL QUIT('Memory exceeded in NRMISO')
+c         CALL NRMISO(DERIV(KTDRS),SYMCOR,DKIN,TRNCCR,TRAMSS,
+c     &               WORK(KTPGRD),WORK(KTPHES),WORK(KTPMSS),
+c     &               WORK(KTPTD1),WORK(KTPTD2),NDIMT)
+         END IF
+      END IF
+C
+      IF (MYNUM.EQ.0) THEN
+         IF (NAORDR.EQ.0) THEN
+            ANDER = 'energy  '
+         ELSE IF (NAORDR .EQ. 1) THEN
+            ANDER = 'gradient'
+         ELSE
+            ANDER = 'hessian '
+         END IF
+C         
+         IF (DRYRUN) THEN
+            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER // 
      &              ' calculations needed:', NUMCAL
-      ELSE
-         WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER // 
+         ELSE
+            WRITE (LUPRI,'(5X,A,I15)') 'Number of ' // ANDER // 
      &        ' calculations done:', NUMCAL
+         END IF
+C
+         IF (ANALZE) THEN
+            CALL PRIPRP
+            CALL NVBDRV(DERIV,SYMCOR,FREQ,RNNORM,CSTART,WORK,LWORK,
+     &                  NDERIV,IPRINT)
+         END IF
       END IF
 C
       RETURN 
@@ -674,34 +1065,37 @@ C
 C
 C  /* Deck nmder */
       SUBROUTINE NMDER(DERIV,FUVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,
-     &                 GRIREP,CHRCTR,WORK,ICRIRP,KDPMTX,NMIDPC,IADRSS,
-     &                 INDSTP,NPRTNR,IDCOMP,IEQVGM,ICIN,IRPIND,MBKLIN,
-     &                 NMBKLN,NDERIV,LWORK,NDIME,MAXADR,LDPMTX,IFRSTD,
-     &                 MAXINR,IWOFF,LTHTST,IDIMAX,IDIMIN,LURSTR,WRKDLM,
-#if defined (VAR_MPI)
-     &                 FTVAL,SYMDET,RSTDON)
-#else
+     &                 GRIREP,CHRCTR,EGRAD,EHESS,WORK,ICRIRP,KDPMTX,
+     &                 NMIDPC,IADRSS,INDSTP,NPRTNR,IDCOMP,IEQVGM,ICIN,
+     &                 IRPIND,MBKLIN,NMBKLN,NDERIV,LWORK,NDIME,NINTIN,
+     &                 MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,
+     &                 IDIMIN,LURSTR,IPRINT,WRKDLM,
+c#if defined (VAR_MPI)
+c     &                 FTVAL,SYMDET,RSTDON)
+c#else
      &                 SYMDET,RSTDON)
-#endif
+c#endif
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
       PARAMETER (D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0, DMAX=1.0D-15) 
-#if defined (VAR_MPI) 
-      INCLUDE 'mpif.h'      
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-      DIMENSION FTVAL(NDIME)
-#endif
-#if defined (VAR_MPI2)
-C
-C     pario.h will no longer be needed as an include file when locking RMA
-C     operations become available.
-C
-#include <dummy.h>
-#include <pario.h>
-#endif
+c#if defined (VAR_MPI)
+c      INCLUDE 'mpif.h'      
+c      DIMENSION ISTAT(MPI_STATUS_SIZE) 
+c      DIMENSION FTVAL(NINTIN,NDIME)
+c#endif
+c#if defined (VAR_MPI2)
+cC
+cC     pario.h will no longer be needed as an include file when locking RMA
+cC     operations become available.
+cC
+c#include <dummy.h>
+c#include <pario.h>
+c#endif
 #include <infpar.h>
+#include <inforb.h>
+#include <cbilrs.h>
 C      
 #include <trkoor.h>
 #include <nuclei.h>
@@ -709,23 +1103,27 @@ C
 #include <molinp.h>
 #include <cbiwlk.h>
 #include <cbinum.h>
-#include <optinf.h>
-#include <taymol.h>
 #include <fcsym.h>
+#include <abainf.h>
+#include <taymol.h>
 C
-      LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, EXESIR, EXEHER, EXEABA, 
-     &        TOTSYM, SYMDET, RSTDON, PRTNR, ALRCAL
+      LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSYM, SYMDET, RSTDON, 
+     &        ALRCAL, PRTNR, DODIPS
       CHARACTER*80 MBKLIN
       DIMENSION MBKLIN(NMBKLN)
-      DIMENSION FUVAL(NDIME), COOR(NCOOR), CSTART(NCOOR),WORK(LWORK), 
+      DIMENSION FUVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
      &          DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD),
      &          SYMCOR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT), 
-     &          CHRCTR(NGORDR,NCVERT), EGRAD(MXCOOR), ENTST(LTHTST) 
+     &          CHRCTR(NGORDR,NCVERT), EGRAD(MXCOOR), 
+     &          EHESS(MXCOOR,MXCOOR), ENTST(LTHTST), WORK(LWORK)
       DIMENSION INDSTP(NMORDR), ICIN(NMORDR), IDCOMP(NCOOR), 
      &          IADRSS(MAXADR), IRPIND(NMORDR), ICRIRP(NCOOR,2), 
-     &          KDPMTX(LDPMTX,NMORDR,IFRSTD), NMIDPC(LDPMTX), 
+     &          KDPMTX(LDPMTX,NSTRDR,IFRSTD), NMIDPC(LDPMTX), 
      &          IEQVGM(NMORDR,2), NPRTNR(MAXINR)
-#include <ibtfun.h>
+C
+c#if defined (VAR_MPI2)
+c      LUNMCL = -9056
+c#endif
 C
 C     *** Finite field header. ***
 C
@@ -755,7 +1153,6 @@ C
       CALL IZERO(KDPMTX,KDIM)
       CALL FSDCST(SYMCOR,GRIREP,DCOEFF,WORK,KDPMTX,NMIDPC,ICRIRP,LDPMTX,
      &            IFRSTD,NLDPMX,LWORK,IPRINT)
-c      if (nmordr.gt.2) stop '2'
 C     
 C     *** Memory allocations for future use ***
 C
@@ -772,23 +1169,9 @@ C
       KIRPST = KIRPDG + NMORDR
 C
       ITYPE = 1
-      NINTIN = 1
-      IF (NAORDR .GT. 0) NINTIN = NINTIN*NCOOR
-      IF (NAORDR .GT. 1) NINTIN = NINTIN*(NCOOR+1)/2
 C      
-C     Commented out to make optimizations work
-C
-C      NOMOVE = .FALSE.
-      IDIME = NINTIN + 1
+      IDIME = 2
       IF (PGMTST) EMAX = D0
-      NUMCAL = 0
-      CALL DZERO(FUVAL,NDIME)
-#if defined (VAR_MPI)
-      CALL DZERO(FTVAL,NDIME)
-#endif
-#if defined (VAR_MPI2)
-      LUNMCL = -9056
-#endif
 C
 C     *** Order for derivatives ***
 C
@@ -805,8 +1188,8 @@ C
 C
 C           ***   The first component IX1 has always the largest order,   ***
 C           ***          and are then independent of the others           ***
-C           *** The order of the other components are not larger than one ***
-C
+C           *** The order of the other components are not larger then one ***
+C     
             IMINCR = 1
             IF (IMXRDR .EQ. 1) IMINCR = IORDR
             IRSRDR    = IORDR - (2*IMXRDR-1)
@@ -830,7 +1213,7 @@ C
                      NSTP = NSTP*(NDCOOR-I+1)/I
  600              CONTINUE
                END IF
-C     
+C
 C              *** NSTP -> Number of components for this IORDR, IMXRDR and IX1***
 C
                DO 700 ISTP = 1, NSTP
@@ -879,8 +1262,8 @@ C                 *** Have we calculated this function-value before? ***
 C
                   IF (CALCMP) THEN
 C
-C                    *** IDCOMP(INDSTP(IC)) -> gives the length of the steps we need ***
-C                    ***                       to do in INDSTP(IC) direction         ***
+C                    *** IDCOMP(INDSTP(IC)) -> gives the length of the ***
+C                    *** steps we need to do in INDSTP(IC) direction.  ***
 C
                      CALL IZERO(IDCOMP,NDCOOR)
                      IDCOMP(INDSTP(1)) = IMXRDR
@@ -908,6 +1291,10 @@ C
                      CALL IZERO(NPRTNR,MAXINR)
 C
                      DO 1500 IINNER = 1, NINNER
+C
+C                    *** Initialize alrcal. ***
+C
+                        ALRCAL = .FALSE.
 C     
 C                       *** Finding the appropriate step-possibility. ***
 C
@@ -918,176 +1305,24 @@ C
                            ICIN(I) = MOD(INT((IINNER-1)/IDIV),2) + 1 
                            IDIV = IDIV*2
  1600                   CONTINUE
-C
-                        KDIM = 3*NCOOR
-                        CALL DCOPY(KDIM,CSTART,1,COOR,1)
-C
-C                       *** Making the appropriate step. ***
-C
-                        SCLFCK = D1
-                        DO 1700 IC = 1, IRSRDR+1
-                        DO 1700 IMXN = 1, IDCOMP(INDSTP(IC))
-                           CALL STPCOR(COOR,COOR,SYMCOR,DISPLC,NCOOR,
-     &                                 ICIN(IC),INDSTP(IC),IPRINT) 
- 1700                   CONTINUE
-C
-C                       *** Symmetry of derivatives calculated ***
-C
-                        CLNRGY = .FALSE.
-                        KIDTMP = 1
-                        KIDDBT = KIDTMP + NMORDR
-                        KIRPDG = KIDDBT + NMORDR
-                        KIRPST = KIRPDG + NMORDR
-                        KLAST  = KIRPST + NMORDR
-                        LWRK   = LWORK  - KLAST + 1
-                        CALL FCSCRN(GRIREP,WORK(KLAST),KDPMTX,INDSTP,
-     &                              ICRIRP,IRPIND,WORK(KIDTMP),
-     &                              WORK(KIDDBT),WORK(KIRPDG),
-     &                              WORK(KIRPST),NPRTNR,LWRK,NLDPMX,
-     &                              LDPMTX,IFRSTD,IORDR,IRSRDR,MAXINR,
-     &                              IINNER,NMPRTN,IPRINT,CLNRGY,PRTNR,
-     &                              ALRCAL,.FALSE.)
-C
-C                       *** Calculate the energy, gradient or ***
-C                       *** hessian. If this is a paralell    ***
-C                       *** job, we need to find the proper   ***
-C                       *** processor.                        ***
-C                       
-                        IF (CLNRGY) THEN
 C     
-C                          *** Update MOLECULE.INP file. ***
+C                       *** Making the appropriate step, and  ***
+C                       ***      get the function value.      ***
 C
-#if defined (VAR_MPI)                           
-#if defined (VAR_MPI2)
-C
-C     The following code should be replaced with RMA operations following
-C     the MPI-2 standard and as exemplified in for example Fig.6-9 in
-C     "Using MPI-2" by Gropp, Lusk, and Thakur, and WIN_LOCK becomes
-C     available in an MPI-2 implementation
-C
- 199                       CONTINUE
-                           OPEN(UNIT=99,FILE=WRKDIR(1:LENWRK)//'LOCK',
-     &                          STATUS='NEW',FORM='FORMATTED',
-     &                          ERR=199)
-                           CALL GPOPEN(LUNMCL,
-     &                                 WRKDIR(1:LENWRK)//'NUMCAL',
-     &                                 'OLD',' ','FORMATTED',IDUMMY,
-     &                                 .FALSE.)
-                           READ (LUNMCL,'(I5)') NUMCL
-                           NUMCAL = NUMCAL + 1
-                           IF (NUMCL .EQ. NUMCAL) THEN
-                              REWIND (LUNMCL)
-                              WRITE (LUNMCL,'(I5)') NUMCL + 1
-                              CALL GPCLOSE(LUNMCL,'KEEP')
-                              CLOSE(UNIT=99,STATUS='DELETE',ERR=107)
- 107                          CONTINUE
-#else
-                           NUMCAL = NUMCAL + 1
-                           IF (MYNUM.EQ.MOD(NUMCAL,(NODTOT+1))) THEN
-#endif
-#endif
-                              IF ((.NOT.DRYRUN).AND.((.NOT.RESTRT).OR.
-     &                            (     RESTRT .AND.        RSTDON.AND.
-     &                            (IDIME.GT.IDIMAX)))) THEN
-                                 CALL UPCOMB(COOR,WORK(KNATOM),
-     &                                       WORK(KNLINE),WORK(KNATIN),
-     &                                       MBKLIN,NMBKLN,LASTE)
-                              END IF
-C
-C                             *** Reset nescesary variables ***
-C     
-                              CALL NUMRES(NMORDR+NAORDR,EXHER,EXSIR,
-     &                                    EXABA)
-C     
-C                             *** Find the energy, gradient or hessian ***
-C     
-                              IF (NAORDR .EQ. 0) THEN
-                                IF ((.NOT.DRYRUN).AND.((.NOT.RESTRT).OR.
-     &                              (     RESTRT .AND.       RSTDON.AND.
-     &                                         (IDIME.GT.IDIMAX)))) THEN
-                                   CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,
-     &                                         LWORK,IWOFF,WRKDLM)
-#if defined (VAR_MPI)
-                                   FTVAL(IDIME) = ENERGY
-#else
-                                   FUVAL(IDIME) = ENERGY
-#endif
-                                   WRITE(LURSTR,'(I8,F24.16)') IDIME,
-     &                                                         ENERGY
-                                   PRTNR = .FALSE.
-                                   IF (PRTNR) THEN
-                                      IMDIME = IDIME - IINNER 
-     &                                               + NPRTNR(NMPRTN)
-#if defined (VAR_MPI)                                      
-                                      FTVAL(IMDIME) = ENERGY
-#else
-                                      FUVAL(IMDIME) = ENERGY
-#endif
-                                      WRITE(LURSTR,'(I8,F24.16)')IMDIME,
-     &                                                           ENERGY
-                                   END IF
-                                   CALL FLSHFO(LURSTR)
-                                END IF
-                                IDIME = IDIME + 1
-                             ELSE IF (NAORDR .EQ. 1) THEN
-                                CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,
-     &                                      WORK,LWORK,IWOFF,WRKDLM)
-                                DO ISCOOR = 1, NCOOR
-#if defined (VAR_MPI)
-                                   FTVAL(IDIME) = GRDMOL(ISCOOR)
-#else
-                                   FUVAL(IDIME) = GRDMOL(ISCOOR)
-#endif
-                                   IDIME = IDIME + 1
-                                END DO
-                             ELSE IF (NAORDR .EQ. 2) THEN
-                                CALL GTHESS(DUMMY,FUVAL(IDIME),DUMMY,
-     &                                      EXHER,EXSIR,EXABA,WORK,
-     &                                      LWORK,IWOFF,WRKDLM)
-                                DO ISCOO2 = 1, NCOOR
-                                DO ISCOO1 = 1, ISCOO2
-                                   IDIME = IDIME + 1
-#if defined (VAR_MPI)
-                                   FTVAL(IDIME) = HESMOL(ISCOO1,ISCOO2)
-#else
-                                   FUVAL(IDIME) = HESMOL(ISCOO1,ISCOO2)
-#endif
-                                END DO
-                                END DO
-                             END IF
-#if defined (VAR_MPI)
-                          ELSE
-#if defined (VAR_MPI2)
-                             CALL GPCLOSE(LUNMCL,'KEEP')
-                             CLOSE(UNIT=99,STATUS='DELETE',ERR=108)
- 108                         CONTINUE
-#endif
-                             DO INTIN = IDIME, IDIME+NINTIN
-                                FUVAL(INTIN) = D0
-                             END DO
-                             IDIME = IDIME + NINTIN
-                          END IF
-#endif
-                       ELSE 
-                          IF (NAORDR .EQ. 0) THEN
-                             ALRCAL = .FALSE.
-                             IF (((.NOT.RESTRT).OR.(RESTRT.AND.
-     &                             RSTDON.AND.(IDIME.GT.IDIMAX))).AND.
-     &                            (.NOT.ALRCAL)) THEN
-                                FUVAL(IDIME) = D0
-                                WRITE(LURSTR,'(I8,F24.16)') IDIME, D0
-                                CALL FLSHFO(LURSTR)
-                             END IF
-                             IDIME = IDIME + 1
-                          ELSE
-                             DO 2100 INTIN = IDIME, IDIME+NINTIN
-                                FUVAL(INTIN) = D0
- 2100                        CONTINUE
-                             IDIME = IDIME + NINTIN
-                          END IF
-                       END IF
+                        CALL GTNPNT(FUVAL,GRIREP,SYMCOR,EGRAD,EHESS,
+     &                       COOR,CSTART,WORK,WRKDLM,INDSTP,ICRIRP,
+     &                       NPRTNR,ICIN,KDPMTX,IRPIND,IDCOMP,LDPMTX,
+     &                       IFRSTD,NLDPMX,IORDR,IRSRDR,IINNER,NMPRTN,
+     &                       NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,
+     &                       NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
+c#if defined (VAR_MPI)
+c     &                       FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+c#else
+     &                       RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+c#endif
 C     
  1500                CONTINUE
+                     IDIME = IDIME + NMPRTN
                   END IF
  700           CONTINUE
 C     
@@ -1098,120 +1333,88 @@ C
 C     *** Returning to the original geometry, only for master. ***
 C
       IF (MYNUM .EQ. 0) THEN
-C      
-C        ***      Update MOLECULE.INP file.     ***
-C     
-         LASTE = .TRUE.
-         CALL UPCOMB(CSTART,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
-     &               MBKLIN,NMBKLN,LASTE)
-C
-C        *** Reset nescesary variables ***
-C
-         CALL NUMRES(NMORDR+NAORDR,EXHER,EXSIR,EXABA)
-C
-C        *** Find the energy, gradient or hessian ***
-C
-         NUMCAL = NUMCAL + 1
-         IF ((.NOT.DRYRUN).AND.((.NOT.RESTRT).OR.
-     &                 (RSTDON.AND.RESTRT.AND.(IDIMIN.GT.1)))) THEN
-            IF (NAORDR .EQ. 0) THEN
-               CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
-#if defined (VAR_MPI)
-               FTVAL (1) = ENERGY
-#else
-               FUVAL (1) = ENERGY
-#endif
-               WRITE(LURSTR,'(I8,F24.16)') 1, ENERGY
-            ELSE IF (NAORDR .EQ. 1) THEN
-               CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,
-     &                     WRKDLM)
-C     
-               DO 2200 I = 1, NCOOR
-#if defined (VAR_MPI)
-                  FTVAL(I) = EGRAD(I)
-#else
-                  FUVAL(I) = EGRAD(I)
-#endif
- 2200          CONTINUE
-            ELSE IF (NAORDR .EQ. 2) THEN
-               KHESS = 1
-               KLAST = KHESS + MXCOOR**2
-               CALL GTHESS(DUMMY,WORK(KHESS),DUMMY,EXHER,EXSIR,EXABA,
-     &                     WORK,LWORK,IWOFF,WRKDLM)
-C         
-               KHINT = 0
-               KFINT = 0
-               DO 2300 J = 1, MXCOOR
-               DO 2300 I = 1, J
-                  KHINT = KHINT + 1
-                  IF (WORK(KHESS+KHINT-1) .GT. DMAX) THEN
-                     KFINT = KFINT + 1
-#if defined (VAR_MPI)
-                     FTVAL(KFINT) = WORK(KHESS+KHINT-1)
-#else
-                     FUVAL(KFINT) = WORK(KHESS+KHINT-1)
-#endif
-                  END IF
- 2300          CONTINUE
-            END IF
-         END IF
+         IORDR = 0
+         IDIME = 1
+         CLNRGY = .TRUE.
+         MINLIM = 1
          IADRSS(1) = 0
-#if defined (VAR_MPI)
-      ELSE
-         DO INTIN = 1, NINTIN
-            FUVAL(INTIN) = D0
-         END DO
-#endif         
+         LASTE = .TRUE.
+         IF (NAORDR.EQ.1) MINLIM = NCOOR
+         CALL GTNPNT(FUVAL,GRIREP,SYMCOR,EGRAD,EHESS,COOR,CSTART,WORK,
+     &        WRKDLM,INDSTP,ICRIRP,NPRTNR,ICIN,KDPMTX,IRPIND,IDCOMP,
+     &        LDPMTX,IFRSTD,NLDPMX,0,IRSRDR,IINNER,NMPRTN,NDIME,
+     &        MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,NINTIN,IDIMAX,IDIMIN,
+c#if defined (VAR_MPI)
+c     &        LURSTR,IWOFF,FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+c#else
+     &        LURSTR,IWOFF,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+c#endif
+C
+c#if defined (VAR_MPI)
+c      ELSE
+c         DO IDIME = 1, NDIME
+c         DO INTIN = 1, NINTIN
+c            FUVAL(INTIN,IDIME) = D0
+c         END DO
+c         END DO
+c#endif         
       END IF
 C
-#if defined (VAR_MPI)
+c#if defined (VAR_MPI)
+cC
+cC     *** If paralell calculation all energies are ***
+cC     *** collected into one array.                ***
+cC
+c#if defined (VAR_MPI2)
+cC
+cC     However, in the case of "simulated" MPI2 behaviour (RMA operations),
+cC     there can occur a "glitch" in the NFS lock file, and points may happen
+cC     to be calculated on several processors.
+cC
+cC     We collect results from one processor at a time, checking for double
+cC     counting
+cC
+c      IF (MYNUM .EQ. 0) THEN
+c         CALL DCOPY(NDIME,FTVAL,1,FUVAL,1)
+c         DO IWHO = 1, NODTOT
+c            CALL MPI_RECV(NWHO,1,MPI_INTEGER,MPI_ANY_SOURCE,65,
+c     &                    MPI_COMM_WORLD,ISTAT,IERR)
+c            CALL MPI_RECV(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NWHO,65,
+c     &                    MPI_COMM_WORLD,ISTAT,IERR)
+c            DO IPOS = 1, NDIME
+cC
+cC     Molecular energies ought to be negative
+cC
+c               IF (.NOT. (FUVAL(IPOS) .LT. D0))
+c     &              FUVAL(IPOS) = FTVAL(IPOS)
+c            END DO
+c         END DO
+c      ELSE
+c         CALL MPI_SEND(MYNUM,1,MPI_INTEGER,NODEID(MASTER),
+c     &                 65,MPI_COMM_WORLD,IERR)
+c         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MASTER),
+c     &                 65,MPI_COMM_WORLD,IERR)
+c      END IF
+c#else
+c      CALL MPI_REDUCE(FTVAL,FUVAL,NINTIN*NDIME,MPI_DOUBLE_PRECISION,
+c     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+c#endif
+c#endif      
 C
-C     *** If paralell calculation all energies are ***
-C     *** collected into one array.                ***
+      IF (MYNUM.EQ.0) THEN
 C
-#if defined (VAR_MPI2)
+C        ********************************************
+C        *** Preliminary constants to derivatives ***
+C        ********************************************
 C
-C     However, in the case of "simulated" MPI2 behaviour (RMA operations),
-C     there can occur a "glitch" in the NFS lock file, and points may happen
-C     to be calculated on several processors.
-C     
-C     We collect results from one processor at a time, checking for double
-C     counting
-C
-      IF (MYNUM .EQ. 0) THEN
-         CALL DCOPY(NDIME,FTVAL,1,FUVAL,1)
-         DO IWHO = 1, NODTOT
-            CALL MPI_RECV(NWHO,1,MPI_INTEGER,MPI_ANY_SOURCE,65,
-     &                    MPI_COMM_WORLD,ISTAT,IERR)
-            CALL MPI_RECV(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NWHO,65,
-     &                    MPI_COMM_WORLD,ISTAT,IERR)
-            DO IPOS = 1, NDIME
-C
-C     Molecular energies ought to be negative
-C     
-               IF (.NOT. (FUVAL(IPOS) .LT. D0))
-     &              FUVAL(IPOS) = FTVAL(IPOS)
-            END DO
-         END DO
-      ELSE
-         CALL MPI_SEND(MYNUM,1,MPI_INTEGER,NODEID(MASTER),
-     &                 65,MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MASTER),
-     &                 65,MPI_COMM_WORLD,IERR)
-      END IF
-#else
-      CALL MPI_REDUCE(FTVAL,FUVAL,NDIME,MPI_DOUBLE_PRECISION,MPI_SUM,0,
-     &                MPI_COMM_WORLD,IERR)
-#endif
-#endif      
-C
-C     *** Preliminary constants to derivatives ***
-C
-      IF (MYNUM .EQ. 0) THEN
          MXCOEF = INT(NMORDR/2) + 1
+C     
+C        ***********************************
+C        *** Calculating the derivatives ***
+C        ***********************************
 C
-C     *** Calculating the derivatives ***
-C
+c         if (.not.frstnm) stop ' '
+         NFINNR = 1
          KCOEF  = 1
          KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
          KIMIN  = KIMAX  +               NMORDR
@@ -1219,29 +1422,404 @@ C
          KNCVAL = KICNT  +               NTYPE
          KIDDCP = KNCVAL +               NCOOR
          KLAST  = KIDDCP +               NCOOR
+         LWRK1  = LWORK - KLAST
+         IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in NMNDER')
          CALL NMNDER(DERIV,WORK(KCOEF),FUVAL,GRIREP,WORK(KLAST),IADRSS,
-     &               KDPMTX,ICRIRP,INDSTP,IDCOMP,WORK(KIMAX),
-     &               WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),
-     &               MXCOEF,NDIME,NTYPE,NDERIV,LDPMTX,IFRSTD,NLDPMX,
-     &               LWORK)
+     &        KDPMTX,ICRIRP,INDSTP,IDCOMP,WORK(KIMAX),WORK(KIMIN),
+     &        WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),MXCOEF,NMORDR,
+     &        NDIME,NTYPE,NDERIV,NINTIN,LDPMTX,IFRSTD,NLDPMX,LWRK1,
+     &        .TRUE.)
 C
-C     *** Assigning values to the dependent force constants. ***
+C        **********************************************************
+C        *** Assigning values to the dependent force constants. ***
+C        **********************************************************
 C     
-         CALL ADDPFC(DERIV,DCOEFF,KDPMTX,NMIDPC,LDPMTX,IFIRSTD,NDERIV,
-     &               NLDPMX,IPRINT)
+         IF (NAORDR.EQ.0) THEN
+            CALL ADDPFC(DERIV,DCOEFF,KDPMTX,NMIDPC,LDPMTX,IFRSTD,
+     &                  NDERIV,NLDPMX,IPRINT)
+         END IF
+C
+C        *****************************************
+C        *** Calculating property derivatives. ***
+C        *****************************************
+C
+         IF ((NPRPDR).AND.((.NOT.NRMCRD).OR.
+     &                          (NRMCRD.AND..NOT.FRSTNM))) THEN
+C
+C           *** Workaround to avoid common commonblock ***
+C           *** variables.                             ***
+C
+            CALL STPPVR(DODIPS)
+C
+            KCOEF  = 1
+            KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
+            KIMIN  = KIMAX  +               NMRDRP
+            KICNT  = KIMIN  +               NMRDRP
+            KNCVAL = KICNT  +               NTYPE
+            KIDDCP = KNCVAL +               NCOOR
+            KLAST  = KIDDCP +               NCOOR
+            NPPDER = NDCOOR
+            IF (NMRDRP.GE.2) NPPDER = NPPDER + NDCOOR*(NDCOOR+1)/2
+            IF (NMRDRP.GE.3) NPPDER = NPPDER 
+     &                              + NDCOOR*(NDCOOR+1)*(NDCOOR+2)/6
+            IF (NMRDRP.GE.4) NPPDER = NPPDER 
+     &                      + NDCOOR*(NDCOOR+1)*(NDCOOR+2)*(NDCOOR+3)/24
+C
+            IF (SPNSPN) THEN
+               KSPNSP = KLAST
+               KDSPSP = KSPNSP + 6*NMPCAL*NCOOR**2
+               KLAST  = KDSPSP + 6*NPPDER*NCOOR**2
+            END IF
+            IF (DODIPS) THEN
+               KTRLEN = KLAST
+               KDRTRL = KTRLEN + 3*NMPCAL*NSYM*MXNEXI
+               KEXEFV = KDRTRL + 3*NPPDER*NSYM*MXNEXI
+               KLAST  = KEXEFV +   NMPCAL*NSYM*MXNEXI
+            END IF
+            LWRK1  = LWORK - KLAST
+            IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in PRPDER')
+            CALL PRPDER(SYMCOR,WORK(KDSPSP),WORK(KCOEF),WORK(KSPNSP),
+     &           WORK(KTRLEN),WORK(KDRTRL),WORK(KEXEFV),GRIREP,
+     &           WORK(KLAST),IADRSS,KDPMTX,ICRIRP,INDSTP,IDCOMP,
+     &           WORK(KIMAX),WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),
+     &           WORK(KIDDCP),MXCOEF,NTYPE,NPPDER,LDPMTX,IFRSTD,NLDPMX,
+     &           LWORK,IPRINT)  
+         END IF
+C
+C        *******************
+C        *** Test print. ***
+C        *******************
 C
          IF (PGMTST) THEN
-            WRITE (LUPRI,'(/A)') 
-     &           'Test "equal energy for partner '//
-     &           'geometries" is complete.'
-            WRITE (LUPRI,'(A,F20.12)') 'Maximum error in energy is:',
-     &                                 EMAX
+            WRITE (LUPRI,'(A)') '                                      '
+            WRITE (LUPRI,'(A)') 
+     &        'Test "equal energy for partner geometries" is complete.'
+            WRITE (LUPRI,'(A,F20.12)') 'Maximum error in energy is:', EMAX
             WRITE (LUPRI,'(A,F20.12)') 'Relative error: '
             DO IRDR = 1, NMORDR
                WRITE (LUPRI,'(I2,A,F14.8)') IRDR, '. derivative: ', 
      &              EMAX/(DISPLC**(DBLE(IRDR)))
             END DO
          END IF
+      END IF
+C     
+      RETURN
+      END
+C
+C  /* Deck gtnpnt */
+      SUBROUTINE GTNPNT(FUVAL,GRIREP,SYMCOR,EGRAD,EHESS,COOR,CSTART,
+     &                  WORK,WRKDLM,INDSTP,ICRIRP,NPRTNR,ICIN,KDPMTX,
+     &                  IRPIND,IDCOMP,LDPMTX,IFRSTD,NLDPMX,IORDR,IRSRDR,
+     &                  IINNER,NMPRTN,NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,
+     &                  IDIME,NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
+c#if defined (VAR_MPI)
+c     &                  FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+c#else
+     &                  RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
+c#endif
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#include <mxcent.h>
+      PARAMETER (D0=0.0D0)
+c#if defined (VAR_MPI)
+c      INCLUDE 'mpif.h'
+c      DIMENSION FTVAL(NINTIN,NDIME)
+c#endif
+c#if defined (VAR_MPI2)
+cC
+cC     pario.h will no longer be needed as an include file when locking RMA
+cC     operations become available.
+cC
+c#include <dummy.h>
+c#include <pario.h>
+c#endif
+#include <abainf.h>
+#include <cbinum.h>      
+#include <cbiwlk.h>
+#include <optinf.h>
+#include <trkoor.h>
+#include <infpar.h>
+#include <numder.h>
+#include <fcsym.h>
+#include <taymol.h>
+#include <past.h>
+#include <pvibav.h>
+#include <gnrinf.h>
+c
+#include <huckel.h>      
+c
+      LOGICAL CLNRGY, RSTDON, PRTNR, XESIR, XEHER, XEABA, ALRCAL, PRPCAL
+      CHARACTER*80 MBKLIN
+      DIMENSION MBKLIN(NMBKLN)
+      DIMENSION FUVAL(NINTIN,NDIME), COOR (NCOOR), SYMCOR(NCOOR,NCOOR),
+     &          CSTART(NCOOR), EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR),
+     &          GRIREP(NGORDR,NGVERT), WORK(LWORK)
+      DIMENSION INDSTP(NMORDR), ICRIRP(NCOOR,2), NPRTNR(MAXINR), 
+     &          ICIN(NMORDR), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
+     &          IRPIND(NMORDR), IDCOMP(NCOOR)
+C
+C     *** Symmetry initilization. ***
+C
+      PRTNR = .FALSE.
+C
+      KDIM = 3*NCOOR
+      CALL DCOPY(KDIM,CSTART,1,COOR,1)
+C
+C     *** If property derivatives are calculated at this ***
+C     *** geometry, som variables needs to be set.       ***
+C
+      IF ((.NOT.NRMCRD).OR.(NRMCRD.AND..NOT.FRSTNM)) THEN
+         IF ((PRPVIB).AND.(IORDR.LE.1)) THEN
+            NMPCAL = NMPCAL + 1
+            CNMPRP = .TRUE.
+         ELSE IF ((NPRPDR).AND.(IORDR.LE.NMRDRP+NARDRP)) THEN
+            NMPCAL = NMPCAL + 1
+            CNMPRP = .TRUE.
+         ELSE
+            CNMPRP = .FALSE.
+         END IF
+      END IF
+C     
+C     *** Making the appropriate step, if any. ***
+C
+      IF (IDIME.NE.1) THEN
+         DO 1700 IC = 1, IRSRDR+1
+         DO 1700 IMXN = 1, IDCOMP(INDSTP(IC))
+            CALL STPCOR(COOR,COOR,SYMCOR,DISPLC,NCOOR,ICIN(IC),
+     &                  INDSTP(IC),IPRINT) 
+ 1700    CONTINUE
+C
+C        *** Symmetry of derivatives calculated ***
+C     
+         CLNRGY = .FALSE.
+         KIDTMP = 1
+         KIDDBT = KIDTMP + NMORDR
+         KIRPDG = KIDDBT + NMORDR
+         KIRPST = KIRPDG + NMORDR
+         KLAST  = KIRPST + NMORDR
+         LWRK   = LWORK  - KLAST + 1
+         CALL FCSCRN(GRIREP,WORK(KLAST),KDPMTX,INDSTP,ICRIRP,IRPIND,
+     &               WORK(KIDTMP),WORK(KIDDBT),WORK(KIRPDG),
+     &               WORK(KIRPST),NPRTNR,LWRK,NLDPMX,LDPMTX,IFRSTD,
+     &               IORDR,IRSRDR,MAXINR,IINNER,NMPRTN,IPRINT,CLNRGY,
+     &               PRTNR,ALRCAL,.FALSE.)
+C
+C        *** Test print. ***
+         IF (IPRINT.GT.10) THEN
+            WRITE (LUPRI,'(A, 12I5)') 'Component: ',
+     &                                          (INDSTP(I),I=1,IRSRDR+1)
+         END IF
+      END IF
+C
+C     *** Information needed for .MANUAL keyword. ***
+C
+      IF (MANUAL) THEN
+         WRITE (LUPRI,'(A)') '                                    '
+         WRITE (LUPRI,'(5X,A,I5)') 'Manual geometry calculated', IDIME
+         IF (PRTNR) THEN
+            WRITE (LUPRI,'(5X,A,I5)') 'Partner geometry',
+     &           IDIME - IINNER + NPRTNR(NMPRTN)  
+         END IF
+      END IF
+C
+C     *** Calculate the energy, gradient or hessian. If ***
+C     *** this is a paralell job, we need to find the   ***
+C     *** proper processor.                             ***
+C         
+      IF (CLNRGY) THEN
+C
+C        *** Another calculation. ***
+C         
+         NUMCAL = NUMCAL + 1
+C
+c#if defined (VAR_MPI)
+c#if defined (VAR_MPI2)
+cC
+cC     The following code should be replaced with RMA operations following
+cC     the MPI-2 standard and as exemplified in for example Fig.6-9 in
+cC     "Using MPI-2" by Gropp, Lusk, and Thakur, and WIN_LOCK becomes
+cC     available in an MPI-2 implementation
+cC
+c 199     CONTINUE
+c         OPEN(UNIT=99,FILE=WRKDIR(1:LENWRK)//'LOCK',STATUS='NEW',
+c     &        FORM='FORMATTED',ERR=199)
+c         CALL GPOPEN(LUNMCL,WRKDIR(1:LENWRK)//'NUMCAL','OLD',' ',
+c     &        'FORMATTED',IDUMMY,.FALSE.)
+c         READ (LUNMCL,'(I5)') NUMCL
+c         IF (NUMCL .EQ. NUMCAL) THEN
+c            REWIND (LUNMCL)
+c            WRITE (LUNMCL,'(I5)') NUMCL + 1
+c            CALL GPCLOSE(LUNMCL,'KEEP')
+c            CLOSE(UNIT=99,STATUS='DELETE',ERR=107)
+c 107        CONTINUE
+c#else
+c         IF (MYNUM.EQ.MOD(NUMCAL,(NODTOT+1))) THEN
+c#endif
+c#endif
+C
+C           *** Header print ***
+C
+            CALL HEADER('Component calulated',0)
+            WRITE (LUPRI,'(A)') '                       '
+            IF (IDIME.NE.1) THEN
+               WRITE (LUPRI,'(12I5)')  (INDSTP(I),I=1,IRSRDR+1)
+            ELSE
+               WRITE (LUPRI,'(5X,A)') 'Starting geometry.'
+            END IF
+            WRITE (LUPRI,'(A)') '                       '
+            WRITE (LUPRI,'(A)') '                       '
+C
+            IF ((.NOT.DRYRUN).AND.((.NOT.RESTRT).OR.(RESTRT.AND.RSTDON
+     &           .AND.((IDIME.GT.IDIMAX).OR.(IDIME.LT.IDIMIN))))) THEN
+C
+C              *** Reducing symmetry in the DALTON.INP file. ***
+C
+c               CALL DALCHG(INDSTP,ICRIRP,IRSRDR,IPRINT,NCOOR,NMORDR,
+c     &                     .FALSE.)
+C     
+C              *** Update MOLECULE.INP file. ***
+C
+               CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
+     &                     MBKLIN,NMBKLN,LASTE)
+C
+C              *** Reset nescesary variables ***
+C     
+               CALL NUMRES(EXHER,EXSIR,EXABA)
+C     
+C              *** Find the energy, gradient or hessian ***
+C     
+               IF (NAORDR .EQ. 0) THEN
+                  CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+c#if defined (VAR_MPI)
+c                  FTVAL(1,IDIME) = ENERGY
+c#else
+                  FUVAL(1,IDIME) = ENERGY
+c#endif
+                  WRITE(LURSTR,'(2I8,F24.16)') 1, IDIME, ENERGY
+                  IF (PRTNR) THEN
+                     IMDIME = IDIME - IINNER + NPRTNR(NMPRTN)
+                     FUVAL(1,IMDIME) = ENERGY
+                     WRITE(LURSTR,'(2I8,F24.16)') 1, IMDIME, ENERGY
+                  END IF
+                  CALL FLSHFO(LURSTR)
+C
+                  IDIME = IDIME + 1
+C
+C                 ****************************************************
+C                 *** If derivatives of properties are calculated. ***
+C                 ****************************************************
+C
+                  IF (CNMPRP) THEN
+C
+C                    ************************************************
+C                    *** Calculating properties for this geometry ***
+C                    ************************************************
+C
+                     PASEXC = .FALSE.
+                     DOWALK = .FALSE.
+                     WRINDX = .TRUE.
+                     LUSUPM = -1
+                     WORK(IWOFF+1) = WRKDLM 
+                     CALL ABAINP('**PROPE',WORK(IWOFF+2),LWORK)
+                     CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+C     
+                     KTRAMT = 1
+                     KCRTPR = KTRAMT + NCOOR**2
+                     CALL TRMTOC(WORK(KTRAMT),COOR,WORK(KCRTPR),NCOOR,
+     &                           IPRINT)
+                  END IF
+C
+               ELSE IF (NAORDR .EQ. 1) THEN
+C                 ******************************************************
+C                 *** If gradient is used, property calculations are ***
+C                 *** run through GTGRAD.                            ***
+C                 ******************************************************
+C
+                  CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,
+     &                        WRKDLM,IPRINT)
+C
+                  KSEGRD = 1
+                  KLAST  = KSEGRD + NCOOR
+                  LWRK1  = LWORK  - KLAST + 1
+                  IF (KLAST.GT.LWORK)
+     &                           CALL QUIT('Memory exceeded in TRFCGD')
+                  CALL TRFCGD(EGRAD,SYMCOR,COOR,WORK(KSEGRD),
+     &                        WORK(KLAST),NCOOR,NDCOOR,LWRK1,IPRINT)
+C
+                  DO ICOOR = 1, NDCOOR
+c#if defined (VAR_MPI)
+c                     FTVAL(ICOOR,IDIME) = EGRAD(ICOOR)
+c#else
+                     FUVAL(ICOOR,IDIME) = EGRAD(ICOOR)
+c#endif
+                     WRITE(LURSTR,'(2I8,F24.16)') ICOOR, IDIME, 
+     &                                           EGRAD(ICOOR)
+                  END DO
+                  IDIME = IDIME + 1
+                  CALL FLSHFO(LURSTR)
+               ELSE IF (NAORDR .EQ. 2) THEN
+C                 ******************************************************
+C                 *** If hessian is used, property calculations are  ***
+C                 *** run through GTHESS.                            ***
+C                 ******************************************************
+C
+                  KAHESS = 1
+                  KLAST  = KAHESS + NCOOR**2
+                  LWRK   = LWORK - KLAST +1
+                  CALL GTHESS(EGRAD,EHESS,WORK(KAHESS),EXHER,EXSIR,
+     &                        EXABA,WORK(KLAST),LWRK,IWOFF,WRKDLM)
+C
+                  KSEHSS = 1
+                  KLAST  = KSEHSS + NCOOR**2
+                  LWRK1  = LWORK  - KLAST + 1
+                  IF (KLAST.GT.LWORK)
+     &                           CALL QUIT('Memory exceeded in TRFCHS')
+                  CALL TRFCHS(EHESS,SYMCOR,COOR,WORK(KSEHSS),
+     &                        WORK(KLAST),NCOOR,NDCOOR,LWRK1,IPRINT)
+C
+                  ICOOR12 = 0
+                  DO ICOOR2 = 1, NDCOOR
+                  DO ICOOR1 = 1, ICOOR2
+                     ICOOR12 = ICOOR12 + 1
+c#if defined (VAR_MPI)
+c                     FTVAL(ICOOR12,IDIME) = EHESS(ICOOR1,ICOOR2)
+c#else
+                     FUVAL(ICOOR12,IDIME) = EHESS(ICOOR1,ICOOR2)
+c#endif
+                     WRITE(LURSTR,'(2I8,F24.16)') ICOOR12, IDIME, 
+     &                                           EHESS(ICOOR1,ICOOR2)
+                  END DO
+                  END DO
+                  IDIME = IDIME + 1
+                  CALL FLSHFO(LURSTR)
+               END IF
+            ELSE
+               IDIME = IDIME + 1
+            END IF
+c#if defined (VAR_MPI)
+c         ELSE
+c#if defined (VAR_MPI2)
+c            CALL GPCLOSE(LUNMCL,'KEEP')
+c            CLOSE(UNIT=99,STATUS='DELETE',ERR=108)
+c 108        CONTINUE
+c#endif
+c            DO INTIN = 1, NINTIN
+c               FUVAL(INTIN,IDIME) = D0
+c            END DO
+c            IDIME = IDIME + 1
+c         END IF
+c#endif
+      ELSE IF (.NOT.ALRCAL) THEN
+         IF ((.NOT.RESTRT).OR.(RESTRT.AND.
+     &              RSTDON.AND.(IDIME.GT.IDIMAX))) THEN
+            DO 2100 INTIN = 1, NINTIN
+               FUVAL(INTIN,IDIME) = D0
+               WRITE(LURSTR,'(2I8,F24.16)') INTIN, IDIME, D0
+ 2100       CONTINUE
+            CALL FLSHFO(LURSTR)
+         END IF
+         IDIME = IDIME + 1
       END IF
 C
       RETURN
@@ -1260,9 +1838,11 @@ C
 #include <nuclei.h>
 #include <trkoor.h> 
 #include <symmet.h>
+#include <numder.h>
 #include <inftap.h>
       LOGICAL BIG, USED, LASTE
-      CHARACTER CHR
+      CHARACTER*6 CHR
+      CHARACTER*4 NAME
       CHARACTER*80 MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND), 
@@ -1331,7 +1911,7 @@ C
          ICENT1 = ICENT1 + KCENT2
          DO 700 ICENT2 = ICENT1+1, NUCIND
             READ (MLINE(NCLINE(ICENT2)-1),'(A)') CHR
-            IF (CHR .EQ. ' ') THEN
+            IF (CHR .EQ. '      ') THEN
                NAT = 0
                DO 800 IC = ICENT1, ICENT2-1
                   NAT = NAT + NUCDEG(IC)
@@ -1356,12 +1936,21 @@ C
       END IF
 C     
 C     Punch MOLECULE input with updated coordinates to LUMOL
+C     (And DALTON.OUT if manual is set.)
 C
+      manual = .true.
+      IF (MANUAL) THEN
+         WRITE (LUPRI,'(5X,A,)') 'Molecular geometry as requested:'
+         WRITE (LUPRI,'(5X,A,I5)') 'Number of lines printed', NMLINE 
+      END IF
       CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND (LUMOL)
       DO 1300 IMLINE = 1,NMLINE
          WRITE (LUMOL,'(A)') MLINE(IMLINE)
+         IF (MANUAL) THEN
+            WRITE (LUPRI,'(A)') MLINE(IMLINE)
+         END IF
  1300 CONTINUE
       CALL GPCLOSE(LUMOL,'KEEP')
 C     
@@ -1404,44 +1993,145 @@ C
       END
 C
 C  /* Deck numres */
-      SUBROUTINE NUMRES(NORDR,EXHER,EXSIR,EXABA)
+      SUBROUTINE NUMRES(EXHER,EXSIR,EXABA)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <mxorb.h>
 C      
+#include <ccorb.h>
 #include <optinf.h>
 #include <symmet.h>
 #include <nuclei.h>
 #include <gnrinf.h>
 #include <huckel.h>
-      LOGICAL EXHER,EXSIR,EXABA
+#include <trkoor.h>
+#include <cbiwlk.h>
+#include <past.h>
+#include <abainf.h>
+#include <cbinum.h>
+#include <numder.h>
+      LOGICAL EXHER,EXSIR,EXABA,EX
 C
 C     This routine resets a few variables, to be able to calculate 
-C     energy again for a new geometry (and symmetry). Only for 
-C     derivatives higher then 1.
+C     energy again for a new geometry (and symmetry).
 C
       EXHER  = .FALSE.
       EXSIR  = .FALSE.
       EXABA  = .FALSE.
-      RDMLIN = .FALSE.
       RDINPC = .FALSE.
-      IF (NORDR .GT. 1) THEN
-         NEWSYM = .TRUE.
+      RDMLIN = .FALSE.
+C
+C     *** NOADSY -> If no automatic symmetry detection is requested ***
+C     ***           we need to use Huckel start-guess first time.   ***
+C
+      IF (ADSTBK) THEN
          ADDSTO = .TRUE.
+         NOADSY = .FALSE.
+      END IF
+      IF ((NMORDR+NAORDR).GT.1) THEN
+         HRINPC = .FALSE.
+         NEWSYM = .TRUE.
          KEEPHE = .FALSE.
          RSTARR = .TRUE.
+         DOWALK = .FALSE.
          BRKSYM = .FALSE.
+         ITRBRK = ITRNMR
          INDOLD = INDTOT
          GECONV = .FALSE.
-         HRINPC = .FALSE.
          CALL IZERO(NUCNUM, MXCENT*8)
          CALL IZERO(NCRREP, 16)
          CALL IZERO(IPTCNT, MXCENT*48)
          CALL IZERO(NAXREP, 16)
          CALL IZERO(INDHES, 8)
+C
+C        *** For analytical hessians **
+C     
+         ITRNMR = 1
+         NCRTOT = NCOOR
+         NCART  = NCOOR
+         DO I = 0, 7
+            DOREPW(I) = .TRUE.
+         END DO
       END IF
+C
+      IF (NPRPDR) THEN
+         IF (SPNSPN) THEN
+            PASTRP = .FALSE. 
+         END IF
+      END IF
+C
+C     *** Initialization related to doing CC. ***
+C
+      IF (DOCCSD) THEN
+         DO ISYM  = 1, 8
+         DO IXFRO = 1, MAXFRO
+            FRORHF(IXFRO,ISYM) = .FALSE.
+         END DO
+         END DO
+      END IF
+C
+C     *** For spin-spin couplings. ***
+C
+      CALL GPINQ('RSPVEC','EXIST',EX)
+      IF (EX) THEN
+         CALL GPOPEN(LURSP,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+         CALL GPCLOSE(LURSP,'DELETE')
+      END IF
+      
+
+cC
+c      CALL GPINQ('RSPRST.E2C','EXIST',EX)
+c      IF (EX) THEN
+c         CALL GPOPEN(LURSP,'RSPRST.E2C','OLD',' ','UNFORMATTED',IDUMMY,
+c     &               .FALSE.)
+c         CALL GPCLOSE(LURSP,'DELETE')
+c      END IF
+cC
+c      CALL GPINQ('AOPROPER','EXIST',EX)
+c      IF (EX) THEN
+c         CALL GPOPEN(LURSP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
+c     &               .FALSE.)
+c         CALL GPCLOSE(LURSP,'DELETE')
+c      END IF
+cC
+c      CALL GPINQ('ABACUS.RESTART','EXIST',EX)
+c      IF (EX) THEN
+c         CALL GPOPEN(LURSP,'ABACUS.RESTART','OLD',' ','UNFORMATTED',
+c     &               IDUMMY,.FALSE.)
+c         CALL GPCLOSE(LURSP,'DELETE')
+c      END IF
+cC
+c      CALL GPINQ('ABAENR.RST','EXIST',EX)
+c      IF (EX) THEN
+c         CALL GPOPEN(LURSP,'ABAENR.RST','OLD',' ','UNFORMATTED',
+c     &               IDUMMY,.FALSE.)
+c         CALL GPCLOSE(LURSP,'DELETE')
+c      END IF
+cC
+c      CALL GPINQ('ABACUS.GDT','EXIST',EX)
+c      IF (EX) THEN
+c         CALL GPOPEN(LURSP,'ABACUS.GDT','OLD',' ','UNFORMATTED',
+c     &               IDUMMY,.FALSE.)
+c         CALL GPCLOSE(LURSP,'DELETE')
+c      END IF
+cC
+c      CALL GPINQ('ABACUS.RDT','EXIST',EX)
+c      IF (EX) THEN
+c         CALL GPOPEN(LURSP,'ABACUS.RDT','OLD',' ','UNFORMATTED',
+c     &               IDUMMY,.FALSE.)
+c         CALL GPCLOSE(LURSP,'DELETE')
+c      END IF
+cC
+c      CALL GPINQ('DRCINT','EXIST',EX)
+c      IF (EX) THEN
+c         CALL GPOPEN(LURSP,'DRCINT','OLD',' ','UNFORMATTED',
+c     &               IDUMMY,.FALSE.)
+c         CALL GPCLOSE(LURSP,'DELETE')
+c      END IF
+C
       RETURN
       END
 C
@@ -1540,7 +2230,8 @@ C /* Deck NMCOEF */
       PARAMETER (D1 = 1.0D0, D05 = 0.5D0)
 C
       DIMENSION COEFF (-MXCOEF:MXCOEF,0:NMNMDR), 
-     &          TCOEFF(-NMNMDR:NMNMDR,0:NMNMDR)
+     &          TCOEFF(-NMNMDR:NMNMDR,0:NMNMDR), WORK(LWORK)
+
 C
       KDIM1 = (2*MXCOEF+1)*(NMNMDR+1)
       KDIM2 = (2*NMNMDR+1)*(NMNMDR+1)
@@ -1602,39 +2293,36 @@ C
 C /* Deck NMNDER */
       SUBROUTINE NMNDER(DERIV,COEFF,FUNVAL,GRIREP,WORK,IADRSS,KDPMTX,
      &                  ICRIRP,INDSTP,IDCOMP,IMAX,IMIN,ICNT,NCVAL,
-     &                  IDDCMP,MXCOEF,NDIME,NTYPE,NDERIV,LDPMTX,IFRSTD,
-     &                  NLDPMX,LWORK)
+     &                  IDDCMP,MXCOEF,NORDR,NDIME,NTYPE,NDERIV,NFINNR,
+     &                  LDPMTX,IFRSTD,NLDPMX,LWORK,FCCAL)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
       PARAMETER (DMIN = 1.0D-12, D1=1.0D0, D0=0.0D0)
 #include <taymol.h>
 #include <trkoor.h>
 #include <cbiwlk.h>
-#include <nuclei.h>
-#include <symmet.h>
 #include <numder.h>
 #include <fcsym.h> 
 #include <dummy.h>      
-      LOGICAL CLFVAL
-      DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMORDR), DERIV(NDERIV), 
-     &          FUNVAL(NDIME), GRIREP(NGORDR,NGVERT), WORK(LWORK)
-      DIMENSION ICNT(NTYPE), IADRSS(NTYPE), IMAX(NMORDR), IMIN(NMORDR), 
+      LOGICAL CLFVAL, FCCAL, DIAGON
+      DIMENSION COEFF(-MXCOEF:MXCOEF,0:NORDR), DERIV(NDERIV), 
+     &          FUNVAL(NFINNR,NDIME), GRIREP(NGORDR,NGVERT), WORK(LWORK)
+      DIMENSION ICNT(NTYPE), IADRSS(NTYPE), IMAX(NORDR), IMIN(NORDR), 
      &          INDSTP(NMORDR), IDCOMP(NCOOR), IDDCMP(NCOOR), 
-     &          NCVAL(NCOOR), KDPMTX(LDPMTX,NMORDR,IFRSTD), 
+     &          NCVAL(NCOOR), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
      &          ICRIRP(NCOOR,2)
-#include <ibtfun.h>
 C
-      KDIM = MXCOOR**2
-      IF (NAORDR .LT. 1) THEN
-         CALL DZERO(GRDMOL,MXCOOR)
+      IF (FCCAL) THEN
+         KDIM = MXCOOR**2
+         IF (NAORDR .LT. 1) THEN
+            CALL DZERO(GRDMOL,MXCOOR)
+         END IF
+         IF (NAORDR .LT.2 ) THEN
+            CALL DZERO(HESMOL,  KDIM)
+         END IF
       END IF
-      IF (NAORDR .LT.2 ) THEN
-         CALL DZERO(HESMOL,  KDIM)
-      END IF
-      CALL DZERO(DERIV ,NDERIV)
+      CALL DZERO(DERIV,NDERIV)
 C
 C     ***************************************************
 C     *** This subroutine calculates the coeffisients ***
@@ -1642,74 +2330,73 @@ C     ***      for the numerical differentiation.     ***
 C     ***************************************************
 C
       KTCOEF = 1
-      KLAST  = KTCOEF + (2*NMORDR+1)*(NMORDR+1)
-      CALL NMCOEF(COEFF,WORK(KTCOEF),WORK,MXCOEF,NMORDR,LWORK)
+      KLAST  = KTCOEF + (2*NORDR+1)*(NORDR+1)
+      LWRK = LWORK - KLAST + 1
+      CALL NMCOEF(COEFF,WORK(KTCOEF),WORK(KLAST),MXCOEF,NORDR,LWORK)
 C
       IDERIV = 0
-      DO 100 IORDR = 1, NMORDR
+      DO 100 IORDR = 1, NORDR
 C
-         MAXIND = 3*NUCIND
-         IF ((IORDR+NAORDR) .EQ. 1) THEN
+         DIAGON = (.NOT.FCCAL ).AND.(IORDR.EQ.NORDR).AND.
+     &            (     PRPVIB).AND.((NARDRP+NMRDRP).EQ.2) 
+
+C        ***********************************************
+C        *** Special code for gradients and hessians ***
+C        *** due to special memory places.           ***
+C        ***********************************************
 C
-C           ****************************************
-C           *** Numerical gradient from energies ***
-C           ****************************************
+         IF (((IORDR+NAORDR).LE.2).AND.FCCAL) THEN
+
+            IF ((IORDR+NAORDR).EQ.1) THEN
 C
-            IMAX(1)  =  1
-            IMIN(1)  = -1
-            IDIME    =  1
-            HINV     =  D1/DISPLC
-            DO 200 ICOOR = 1, MAXIND
-               IF (ICOOR .NE. 0) THEN
-                  DO 250 I   = IMAX(1), IMIN(1), -2
-                     IF (COEFF(I,1)**2 .GT. DMIN) THEN
-                        IDIME = IDIME + 1
-                        GRDMOL(ICOOR) = GRDMOL(ICOOR) 
-     &                                + COEFF(I,1)*FUNVAL(IDIME)*HINV
-                     END IF
- 250              CONTINUE
-                  sclfck = 1.0d0
-                  GRDMOL(ICOOR) = SCLFCK*GRDMOL(ICOOR)
-               END IF
- 200        CONTINUE
-         ELSE IF ((IORDR+NAORDR) .EQ. 2) THEN
-C
-C           ******************************
-C           *** Numerical Hessian from *** 
-C           ***  analytical gradients  ***
-C           ******************************
-C
-            IF (NAORDR .EQ. 1) THEN
-               IDIME    =  7
-               HINV     =  D1/DISPLC
-               DO 260 ICOOR2 = 1, MAXIND
-                  IF (ICOOR2 .GT. 0) THEN
-                     DO 270 ICOOR1 = 1, NCOOR
-                        HESMOL(ICOOR1,ICOOR2) =
-     &                            (COEFF( 1,1)*FUNVAL(IDIME      )
-     &                           + COEFF(-1,1)*FUNVAL(IDIME+NCOOR))*HINV
-                        IDIME = IDIME + 1
- 270                 CONTINUE
-                     IDIME = IDIME + NCOOR
-                  END IF
-                  sclfck = 1.0d0
-                  GRDMOL(ICOOR2) = SCLFCK*GRDMOL(ICOOR2)
- 260           CONTINUE
-            ELSE
-C
-C           ******************************
-C           *** Numerical Hessian from *** 
-C           ***        energies.       ***
-C           ******************************
-C
-               CALL IZERO(ICNT,NTYPE)
+C              ****************************************
+C              *** Numerical gradient from energies ***
+C              ****************************************
 C
                IMAX(1)  =  1
                IMIN(1)  = -1
-               HINV    =  D1/(DISPLC**2)
-               DO 300 IX2 = 1, NDCOOR
-               DO 300 IX1 = 1, IX2
-                  IF (IX1 .LE. IX2) THEN
+               IDIME    =  1
+               HINV     =  D1/DISPLC
+               DO 200 ICOOR = 1, NCOOR
+               DO 200 I   = IMAX(1), IMIN(1), -2
+                  IF (COEFF(I,1)**2 .GT. DMIN) THEN
+                     IDIME = IDIME + 1
+                     GRDMOL(ICOOR) = GRDMOL(ICOOR) 
+     &                             + COEFF(I,1)*FUNVAL(1,IDIME)*HINV
+                  END IF
+ 200           CONTINUE
+            ELSE 
+C
+C              ******************************
+C              *** Numerical Hessian from *** 
+C              ***  analytical gradients  ***
+C              ******************************
+C
+               IF (NAORDR .EQ. 1) THEN
+                  IDIME    = 2
+                  HINV     = D1/DISPLC
+                  DO 260 ICOOR2 = 1, NCOOR
+                     DO 270 ICOOR1 = 1, NCOOR
+                        HESMOL(ICOOR1,ICOOR2) =
+     &                         (COEFF( 1,1)*FUNVAL(ICOOR1,IDIME      )
+     &                        + COEFF(-1,1)*FUNVAL(ICOOR1,IDIME+1))*HINV
+ 270                 CONTINUE
+                     IDIME = IDIME + 2
+ 260              CONTINUE
+               ELSE
+C
+C              ******************************
+C              *** Numerical Hessian from *** 
+C              ***        energies.       ***
+C              ******************************
+C
+                  CALL IZERO(ICNT,NTYPE)
+C
+                  IMAX(1)  =  1
+                  IMIN(1)  = -1
+                  HINV    =  D1/(DISPLC**2)
+                  DO 300 IX2 = 1, NDCOOR
+                  DO 300 IX1 = 1, IX2
                      MX = IMIN(1)
                      IF (IX1 .EQ. IX2) MX = IMAX(1)
                      DO 400 I2 = IMAX(1), IMIN(1),-1
@@ -1731,14 +2418,12 @@ C
                         IF (BCOEFF**2 .GT. DMIN) THEN
                            ICNT(ITYPE) = ICNT(ITYPE) + 1
                            HESMOL(IX2,IX1) = HESMOL(IX2,IX1) 
-     &                               + BCOEFF*HINV
-     &                               * FUNVAL(IADRSS(ITYPE)+ICNT(ITYPE))
+     &                             + BCOEFF*HINV
+     &                             * FUNVAL(1,IADRSS(ITYPE)+ICNT(ITYPE))
                         END IF
  400                 CONTINUE
-                     sclfck = 1.0d0
-                     HESMOL(IX2,IX1) = SCLFCK*HESMOL(IX2,IX1)
-                  END IF
- 300           CONTINUE
+ 300              CONTINUE
+               END IF
             END IF
          ELSE
 C
@@ -1763,7 +2448,6 @@ C           ***      numerical differentiation      ***
 C
             DO 600 ISTP = 1, NSTP
 C
-               
  700           CONTINUE
 C
 C              *** Finding which component this is ***
@@ -1786,52 +2470,75 @@ C
 C
  1100          CONTINUE
 C
-C              *** Checking whether this component should be something. ***
+C              *** Checking whether this component should *** 
+C              *** not be calculated, due to symmetry.    ***
 C
-               KIDTMP = 1
-               KIDDBT = KIDTMP + NMORDR
-               KIRPDG = KIDDBT + NMORDR
-               KIRPST = KIRPDG + NMORDR
-               KLAST  = KIRPST + NMORDR
-               LWRK   = LWORK - KLAST + 1
-               CALL FCSCRN(GRIREP,WORK(KLAST),KDPMTX,INDSTP,ICRIRP,
-     &                     IDUMMY,WORK(KIDTMP),WORK(KIDDBT),
-     &                     WORK(KIRPDG),WORK(KIRPST),IDUMMY,LWORK,
-     &                     NLDPMX,LDPMTX,IFRSTD,IORDR,IORDR-1,IDUMMY,
-     &                     IDUMMY,IDUMMY,IPRINT,CLFVAL,.FALSE.,.FALSE.,
-     &                     .TRUE.)
+               IF (FCCAL) THEN
+                  KIDTMP = 1
+                  KIDDBT = KIDTMP + NORDR
+                  KIRPDG = KIDDBT + NORDR
+                  KIRPST = KIRPDG + NORDR
+                  KLAST  = KIRPST + NORDR
+                  LWRK   = LWORK - KLAST + 1
+                  CALL FCSCRN(GRIREP,WORK(KLAST),KDPMTX,INDSTP,ICRIRP,
+     &                        IDUMMY,WORK(KIDTMP),WORK(KIDDBT),
+     &                        WORK(KIRPDG),WORK(KIRPST),IDUMMY,LWORK,
+     &                        NLDPMX,LDPMTX,IFRSTD,IORDR,IORDR-1,IDUMMY,
+     &                        IDUMMY,IDUMMY,IPRINT,CLFVAL,.FALSE.,
+     &                        .FALSE.,.TRUE.)
+               ELSE
+                  CLFVAL = .TRUE.
+               END IF
+C
+C              *** In some calculations we only need diagonal. ***
+C              *** derivatives.                                ***
+C
+               IF ((IORDR.GT.1).AND.DIAGON) THEN
+                  CLFVAL = (CLFVAL).AND.
+     &                     (INDSTP(IORDR-1).EQ.INDSTP(IORDR)) 
+               END IF
+C
+C              *** The number of innermost elements. ***
+C
+               IF (FCCAL) THEN
+                  NINNR2 = 1
+                  IF (NAORDR .GE. 1) THEN
+                     NINNR2 = INDSTP(IORDR)
+                  END IF
+                  IF (NAORDR .GE. 2) THEN
+                     NINNR2 = NINNR2*(INDSTP(IORDR)+1)/2
+                  END IF
+               ELSE
+                  NINNR2 = NFINNR
+               END IF
 C
                IF (CLFVAL) THEN
+C
                   CALL IZERO(NCVAL,NDCOOR)
                   DO 1200 IC = 1, IORDR
                      NCVAL(INDSTP(IC)) = NCVAL(INDSTP(IC)) + 1
  1200             CONTINUE
 C
-C                 *** IDCOMP -> Maks steporder to get the derivative             ***
-C                 *** IDDCMP -> Counting array, maks to min steporder            ***
-C                 *** NTTYPE -> Number of function values needed for 1 component ***
+C                 *******************************************************
+C                 *** IDCOMP -> Maks steporder to get the derivative  ***
+C                 *** IDDCMP -> Counting array, maks to min steporder *** 
+C                 *** NTTYPE -> Number of function values needed for  ***
+C                 ***           1 component                           ***
+C                 *******************************************************
 C
                   NTTYPE = 1
                   CALL IZERO(IDCOMP,NDCOOR)
+                  CALL IZERO(IDDCMP,NDCOOR)
                   DO 1300 IC = 1, NDCOOR
                      IF (NCVAL(IC) .NE. 0) THEN
                         IDCOMP(IC) =   INT((NCVAL(IC)+1)/2)
                         NTTYPE     =   NTTYPE*(2*IDCOMP(IC) + 1)
                      END IF
  1300             CONTINUE
-                  CALL ICOPY(NDCOOR,IDCOMP,1,IDDCMP,1)
+                  DO I=1,NDCOOR
+                     IDDCMP(I) = IDCOMP(I)
+                  END DO
 C     
-                  NINNR1 = 1
-                  NINNR2 = 1
-                  IF (NAORDR .EQ. 1) THEN
-                     NINNR1 = NDCOOR
-                     NINNR2 = INDSTP(IORDR)
-                  END IF
-                  IF (NAORDR .EQ. 2) THEN
-                     NINNR1 = NINNR1*(NDCOOR+1)/2
-                     NINNR2 = NINNR2*(INDSTP(IORDR)+1)/2
-                  END IF
-C
                   DO 1400 ITTYPE = 1, NTTYPE
 C     
 C                    *** Finding the right indices to identify ***
@@ -1849,7 +2556,8 @@ C
  1500                CONTINUE
  1700                CONTINUE
 C     
-C                    *** Calculate the coeffisient for this function value ***
+C                    *** Calculate the coeffisient for this *** 
+C                    *** function value                     ***
 C
                      BCOEFF = D1
                      NUMCOF = 0
@@ -1868,30 +2576,34 @@ C
 C                       ************************************************
 C                       *** This subroutine finds the adress for the ***
 C                       ***      function value, from the indices    ***
-C                       ***   NEIND - The adress in the FUVAL-array  **
+C                       ***   NEIND - The adress in the FUVAL-array  ***
 C                       ************************************************
 C
                         KITCMP = 1
+                        NINTIN = 1
+                        IF (FCCAL) NINTIN = NINNR2
                         CALL GTEIND(IADRSS,IDDCMP,IDCOMP,INDSTP,NCVAL,
-     &                              WORK(KITCMP),NEIND,ITTYPE,IORDR)
+     &                              WORK(KITCMP),NEIND,ITTYPE,NORDR,
+     &                              IORDR)
 C
 C                       *** The derivative is calculated. ***
 C
-                        DO 1810 I = 1, NINNR2
-                           ID    = IDERIV + I
+                        DO INNER = 1, NINNR2
+                           ID = IDERIV + INNER 
                            DERIV(ID) = DERIV(ID) 
-     &                               + BCOEFF*FUNVAL(NEIND)
- 1810                   CONTINUE
+     &                               + BCOEFF*FUNVAL(INNER,NEIND)
+                        END DO
 C     
                      END IF
  1400             CONTINUE
 C
-C              *** The derivative is correctly scaled. *** 
+C                 *** The derivative is correctly scaled. *** 
 C
                   SCLFCK = D1
-                  DO 1900 I = 1, NINNR2
-                     DERIV(IDERIV+I) = DERIV(IDERIV+I)*DIVDIS*SCLFCK
- 1900             CONTINUE
+                  DO INNER = 1, NINNR2
+                     ID = IDERIV + INNER
+                     DERIV(ID) = DERIV(ID)*DIVDIS*SCLFCK
+                  END DO
                END IF
                IDERIV = IDERIV + NINNR2
  600        CONTINUE
@@ -1905,7 +2617,7 @@ C
 C
 C   /*Deck gteind*/
       SUBROUTINE GTEIND(IADRSS,INDCMP,IDCOMP,INDSTP,NCVAL,ITCMP,NEIND,
-     &                  NMTYPE,IORDR)
+     &                  NMTYPE,NORDR,IORDR)
 C     
 C     *************************************************************************
 C     *** This routine finds the adress of the function-value (in numerical ***
@@ -1923,9 +2635,9 @@ C
 #include <trkoor.h>
 #include <numder.h>
       DIMENSION IADRSS(NMTYPE), INDCMP(NCOOR), INDSTP(NMORDR), 
-     &          ITCMP(NMORDR), NCVAL(NCOOR)
+     &          ITCMP(NORDR), NCVAL(NCOOR)
 C
-      CALL IZERO(ITCMP,NMORDR)
+      CALL IZERO(ITCMP,NORDR)
 C
 C     *** Preliminary components ***
 C
@@ -2008,7 +2720,7 @@ C
       DO 900 IRS = NRSRDR, 2, -1
          IDISP = 0
          IF (INDCMP(ITCMP(IRS)) .LT. 0) THEN
-            IDISP = 2**IORD
+            IDISP = 2**(IORD)
          END IF
          IORD = IORD - 1
          NDISP = NDISP + IDISP
@@ -2017,14 +2729,14 @@ C
          IF (INDCMP(ITCMP(1)) .LE. 0) NDISP = NDISP + 1
       END IF
 C
-      NEIND = IADRSS(NTYPE) + NSTP + NDISP
+      NEIND = IADRSS(NTYPE) + (NSTP + NDISP)
 C
       RETURN
       END
 C
 C    /*Deck pritdr*/  
       SUBROUTINE PRITDR(TMPTDR,SYMCOR,TDER,SYMTDR,SCTRA,CSTRA,NTMPDM,
-     &                  LTXT,TEXT)
+     &                  LTXT,IPRINT,TEXT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2080,7 +2792,7 @@ C
             INLC2 = 6*(INLCMX-1) + 1
             INLC  = MIN(INLC+6,NDCOOR)
             DO 300 ICOL1 = 1, NDCOOR
-               WRITE (LUPRI,'(A,6F15.6)') '         ', 
+               WRITE (LUPRI,'(A,6F10.6)') '   ', 
      &                           (SYMTDR(I,ICOL1,ICOL2), I=INLC2, INLC)
  300        CONTINUE
             WRITE (LUPRI,'(A)') '                              '
@@ -2096,7 +2808,7 @@ C
 C
          CALL HEADER('Cartesian coordinates',-1)
 C
-         CALL TRATDR(CSTRA,SCTRA,SYMTDR,TDER,NDCOOR)
+         CALL TRATDR(SYMCOR,SYMTDR,TDER,NDCOOR,IPRINT)
 C
          IF (MOD(NCOOR,6).EQ.0) THEN
             NLCMAX = NCOOR/6
@@ -2112,7 +2824,7 @@ C
                INLC2 = 6*(INLCMX-1) + 1
                INLC  = MIN(INLC+6,NCOOR)
                DO 700 ICOL1 = 1, NCOOR
-                  WRITE (LUPRI,'(A,6F15.6)') '         ', 
+                  WRITE (LUPRI,'(A,6F10.6)') '   ', 
      &                             (TDER(I,ICOL1,ICOL2), I=INLC2, INLC)
  700           CONTINUE
                WRITE (LUPRI,'(A)') '                              '
@@ -2122,40 +2834,77 @@ C
 C
       RETURN
       END
+
 C
 C    /*Deck tratdr*/  
-      SUBROUTINE TRATDR(CSTRA,SCTRA,SYMTDR,TDER,NCOOR)
+      SUBROUTINE TRATDR(SYMCOR,SYMTDR,TDER,NCOOR,IPRINT)
 C     *********************************************
 C     *** Transforming to cartesian coordinates ***
 C     *********************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR), 
-     &          SYMTDR(NCOOR,NCOOR,NCOOR), TDER(NCOOR,NCOOR,NCOOR)
+      DIMENSION SYMTDR(NCOOR,NCOOR,NCOOR), TDER(NCOOR,NCOOR,NCOOR), 
+     &          SYMCOR(NCOOR,NCOOR)
 C
       CALL DZERO(TDER,NCOOR**3)
 C
-      ITYPE = 1
-      CALL TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,0)
-C
-      DO 100 ICART3 = 1, NCOOR
-      DO 100 ICART2 = 1, NCOOR
+      DO 100 ISYCO3 = 1, NCOOR
+      DO 100 ISYCO2 = 1, NCOOR
+      DO 100 ISYCO1 = 1, NCOOR
       DO 100 ICART1 = 1, NCOOR
-         DO 200 ISYCO3 = 1, NCOOR
-         DO 200 ISYCO2 = 1, NCOOR
-         DO 200 ISYCO1 = 1, NCOOR
-            TDER(ICART1,ICART2,ICART3) = TDER(ICART1,ICART2,ICART3)
-     &            + SCTRA(ICART1,ISYCO1)
-     &             *SCTRA(ICART2,ISYCO2)*SCTRA(ICART3,ISYCO3)
-     &             *SYMTDR(ISYCO1,ISYCO2,ISYCO3)
- 200     CONTINUE
+         TDER(ICART1,ISYCO2,ISYCO3) = TDER(ICART1,ISYCO2,ISYCO3)
+     &              + SYMCOR(ICART1,ISYCO1)*SYMTDR(ISYCO1,ISYCO2,ISYCO3)
  100  CONTINUE
+C
+      CALL DZERO(SYMTDR,NCOOR**3)
+      DO 200 ISYCO3 = 1, NCOOR
+      DO 200 ISYCO2 = 1, NCOOR
+      DO 200 ICART2 = 1, NCOOR
+      DO 200 ICART1 = 1, NCOOR
+         SYMTDR(ICART1,ICART2,ISYCO3) = SYMTDR(ICART1,ICART2,ISYCO3)
+     &              + SYMCOR(ICART2,ISYCO2)*TDER(ICART1,ISYCO2,ISYCO3)
+ 200  CONTINUE
+C
+      CALL DZERO(TDER,NCOOR**3)
+      DO 300 ISYCO3 = 1, NCOOR
+      DO 300 ICART3 = 1, NCOOR
+      DO 300 ICART2 = 1, NCOOR
+      DO 300 ICART1 = 1, NCOOR
+         TDER(ICART1,ICART2,ICART3) = TDER(ICART1,ICART2,ICART3)
+     &              + SYMCOR(ICART3,ISYCO3)*SYMTDR(ICART1,ICART2,ISYCO3)
+ 300  CONTINUE
+C
+      IF (IPRINT .GT.6) THEN
+         CALL HEADER('Cartesian coordinates',-1)
+C
+         IF (MOD(NCOOR,6).EQ.0) THEN
+            NLCMAX = NCOOR/6
+         ELSE
+            NLCMAX = INT(NCOOR/6)+1
+         END IF
+C
+         DO 400 ICOL2 = 1, NCOOR
+            WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
+            WRITE (LUPRI,'(A)') '      -----------------'
+            INLC = 0
+            DO 500 INLCMX = 1, NLCMAX
+               INLC2 = 6*(INLCMX-1) + 1
+               INLC  = MIN(INLC+6,NCOOR)
+               DO 600 ICOL1 = 1, NCOOR
+                  WRITE (LUPRI,'(A,6F15.6)') '         ', 
+     &                             (TDER(I,ICOL1,ICOL2), I=INLC2, INLC)
+ 600           CONTINUE
+               WRITE (LUPRI,'(A)') '                              '
+ 500        CONTINUE
+ 400     CONTINUE
+      END IF
 C
       RETURN
       END
 C
 C    /*Deck prifdr*/  
-      SUBROUTINE PRIFDR(TMPFDR,FDER,SYMFDR,SCTRA,CSTRA,NTMPDM,LTXT,TEXT)
+      SUBROUTINE PRIFDR(TMPFDR,SYMCOR,FDER,SYMFDR,SCTRA,CSTRA,NTMPDM,
+     &                  LTXT,TEXT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2169,7 +2918,7 @@ C
       CHARACTER*80 TEXT
       DIMENSION FDER(NCOOR,NCOOR,NCOOR,NCOOR), TMPFDR(NTMPDM), 
      &          SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), SCTRA(NCOOR,NCOOR),
-     &          CSTRA(NCOOR,NCOOR)
+     &          CSTRA(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
 C
 C     *****************************************
 C     *** Assigning values to proper places ***
@@ -2204,10 +2953,10 @@ C
          SYMFDR(K,L,I,J) = TMPFDR(ITMP)
          SYMFDR(K,L,J,I) = TMPFDR(ITMP)
 C
-         SYMFDR(L,I,J,L) = TMPFDR(ITMP)
-         SYMFDR(L,I,L,J) = TMPFDR(ITMP)
-         SYMFDR(L,J,I,L) = TMPFDR(ITMP)
-         SYMFDR(L,J,L,I) = TMPFDR(ITMP)
+         SYMFDR(L,I,J,K) = TMPFDR(ITMP)
+         SYMFDR(L,I,K,J) = TMPFDR(ITMP)
+         SYMFDR(L,J,I,K) = TMPFDR(ITMP)
+         SYMFDR(L,J,K,I) = TMPFDR(ITMP)
          SYMFDR(L,K,I,J) = TMPFDR(ITMP)
          SYMFDR(L,K,J,I) = TMPFDR(ITMP)
  100  CONTINUE
@@ -2237,7 +2986,7 @@ C
                INLC2 = 6*(INLCMX-1) + 1
                INLC  = MIN(INLC+6,NDCOOR)
                DO 500 ICOL1 = 1, NDCOOR
-                  WRITE (LUPRI,'(A,6F15.6)') '           ', 
+                  WRITE (LUPRI,'(A,6F10.6)') '   ', 
      &                 (SYMFDR(I,ICOL1,ICOL2,ICOL3), I=INLC2, INLC)
  500           CONTINUE
                WRITE (LUPRI,'(A)') '                              '
@@ -2254,7 +3003,7 @@ C
 C
          CALL HEADER('Cartesian coordinates',-1)
 C
-         CALL TRAFDR(CSTRA,SCTRA,SYMFDR,FDER,NCOOR)
+         CALL TRAFDR(SYMCOR,SYMFDR,FDER,NCOOR)
 C
          IF (MOD(NCOOR,6).EQ.0) THEN
             NLCMAX = NCOOR/6
@@ -2273,7 +3022,7 @@ C
                   INLC2 = 6*(INLCMX-1) + 1
                   INLC  = MIN(INLC+6,NCOOR)
                   DO 900 ICOL1 = 1, NCOOR
-                     WRITE (LUPRI,'(A,6F15.6)') '           ', 
+                     WRITE (LUPRI,'(A,6F10.6)') '   ', 
      &                    (SYMFDR(I,ICOL1,ICOL2,ICOL3), I=INLC2, INLC)
  900              CONTINUE
                   WRITE (LUPRI,'(A)') '                              '
@@ -2284,44 +3033,73 @@ C
       RETURN
       END
 C
-C    /*Deck traFdr*/  
-      SUBROUTINE TRAFDR(CSTRA,SCTRA,SYMFDR,FDER,NCOOR)
+C    /*Deck trafdr*/  
+      SUBROUTINE TRAFDR(SYMCOR,SYMFDR,FDER,NCOOR)
 C     *********************************************
 C     *** Transforming to cartesian coordinates ***
 C     *********************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR), 
-     &          SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), 
-     &          FDER(NCOOR,NCOOR,NCOOR,NCOOR)
+      DIMENSION SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), 
+     &          FDER  (NCOOR,NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
 C
-      ITYPE = 1
-      CALL TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,0)
+      KDIM = NCOOR**4
 C
-      DO 100 ICART4 = 1, NCOOR
-      DO 100 ICART3 = 1, NCOOR
-      DO 100 ICART2 = 1, NCOOR
+      CALL DZERO(FDER,KDIM)
+      DO 100 ISYCO4 = 1, NCOOR
+      DO 100 ISYCO3 = 1, NCOOR
+      DO 100 ISYCO2 = 1, NCOOR
+      DO 100 ISYCO1 = 1, NCOOR
       DO 100 ICART1 = 1, NCOOR
-         DO 200 ISYCO4 = 1, NCOOR
-         DO 200 ISYCO3 = 1, NCOOR
-         DO 200 ISYCO2 = 1, NCOOR
-         DO 200 ISYCO1 = 1, NCOOR
-            FDER(ICART1,ICART2,ICART3,ICART4) 
-     &           =  FDER(ICART1,ICART2,ICART3,ICART4) 
-     *           +  SCTRA(ICART1,ISYCO1)*SCTRA(ICART2,ISYCO2)
-     &             *SCTRA(ICART3,ISYCO3)*SCTRA(ICART4,ISYCO4)
-     &                   *SYMFDR(ISYCO1,ISYCO2,ISYCO3,ISYCO4)
- 200     CONTINUE
+         FDER(ICART1,ISYCO2,ISYCO3,ISYCO4) = 
+     &         FDER(ICART1,ISYCO2,ISYCO3,ISYCO4)
+     &       + SYMCOR(ICART1,ISYCO1)*SYMFDR(ISYCO1,ISYCO2,ISYCO3,ISYCO4)
  100  CONTINUE
+C
+      CALL DZERO(SYMFDR,KDIM)
+      DO 200 ISYCO4 = 1, NCOOR
+      DO 200 ISYCO3 = 1, NCOOR
+      DO 200 ISYCO2 = 1, NCOOR
+      DO 200 ICART2 = 1, NCOOR
+      DO 200 ICART1 = 1, NCOOR
+         SYMFDR(ICART1,ICART2,ISYCO3,ISYCO4) = 
+     &         SYMFDR(ICART1,ICART2,ISYCO3,ISYCO4)
+     &       + SYMCOR(ICART2,ISYCO2)*FDER(ICART1,ISYCO2,ISYCO3,ISYCO4)
+ 200  CONTINUE
+C
+      CALL DZERO(FDER,KDIM)
+      DO 300 ISYCO4 = 1, NCOOR
+      DO 300 ISYCO3 = 1, NCOOR
+      DO 300 ICART3 = 1, NCOOR
+      DO 300 ICART2 = 1, NCOOR
+      DO 300 ICART1 = 1, NCOOR
+         FDER(ICART1,ICART2,ICART3,ISYCO4) = 
+     &         FDER(ICART1,ICART2,ICART3,ISYCO4)
+     &       + SYMCOR(ICART3,ISYCO3)*SYMFDR(ICART1,ICART2,ISYCO3,ISYCO4)
+ 300  CONTINUE
+C
+      CALL DZERO(SYMFDR,KDIM)
+      DO 400 ISYCO4 = 1, NCOOR
+      DO 400 ICART4 = 1, NCOOR
+      DO 400 ICART3 = 1, NCOOR
+      DO 400 ICART2 = 1, NCOOR
+      DO 400 ICART1 = 1, NCOOR
+         SYMFDR(ICART1,ICART2,ICART3,ICART4) = 
+     &        SYMFDR(ICART1,ICART2,ICART3,ICART4)
+     &        + SYMCOR(ICART4,ISYCO4)*FDER(ICART1,ICART2,ICART3,ISYCO4)
+ 400  CONTINUE
+C
+      CALL DCOPY(KDIM,SYMFDR,1,FDER,1)
 C
       RETURN
       END
 C
 C
 C     /* Deck mknrmc */
-      SUBROUTINE MKNRMC(SYMCOR,CSTART,EIGNVL,EGNVCT,HESMWT,TM1TMP,
-     &                  TM2TMP,AMASS,DKIN,HTESTM,FREQ,WORK,ICRIRP,
-     &                  NATTYP,NMSYSP,LWORK)
+      SUBROUTINE MKNRMC(SYMCOR,CSTART,TRNCCR,TRAMSS,EIGNVL,EGNVCT,
+     &                  HESMWT,TM1TMP,TM2TMP,AMASS,DKIN,HTESTM,FREQ,
+     &                  RNNORM,CORTMP,WORK,ICRIRP,NATTYP,NMSYSP,
+     &                  LWORK,IPRINT)
 ************************************************************
 *** Makes normal coordinates from the molecular hessian, ***
 *** and writes out the  harmonic frequensies according   ***
@@ -2337,13 +3115,14 @@ C     /* Deck mknrmc */
 #include <nuclei.h>
 #include <cbinum.h>
 #include <numder.h>
+#include <abainf.h>
       DIMENSION SYMCOR(NCOOR,NCOOR), EIGNVL(NCOOR), EGNVCT(NCOOR,NCOOR), 
      &          HESMWT(NCOOR*(NCOOR+1)/2), AMASS(NATOMS), CSTART(NCOOR), 
-     &          DKIN(NCOOR), TM1TMP(NCOOR,NCOOR), 
-     &          TM2TMP(NCOOR,NCOOR), 
-     &          FREQ(NCOOR), HTESTM(NCOOR,NCOOR), WORK(LWORK)
-      DIMENSION ICRIRP(NCOOR,2), NATTYP(NATOMS), ISOTOP(MXCENT), 
-     &          NMSYSP(NCOOR)
+     &          DKIN(NCOOR), TM1TMP(NCOOR,NCOOR), TRAMSS(NCOOR),
+     &          TM2TMP(NCOOR,NCOOR), TRNCCR(NCOOR,NCOOR),
+     &          FREQ(NCOOR), HTESTM(NCOOR,NCOOR), RNNORM(NCOOR), 
+     &          CORTMP(NCOOR), WORK(LWORK)
+      DIMENSION ICRIRP(NCOOR,2), NATTYP(NATOMS), NMSYSP(NCOOR)
 C
       DO 100 I = 1, NATOMS
          ISOTOP(I) = 1
@@ -2351,7 +3130,8 @@ C
 C
 C     *** Calculating center of mass, and mass of each center ***
 C
-      CALL CMMASS(CSTART,AMASS,NATTYP,ISOTOP,IPRINT)
+      CALL DCOPY(NCOOR,CSTART,1,CORTMP,1)
+      CALL CMMASS(CORTMP,AMASS,NATTYP,ISOTOP,IPRINT)
 C
 C     *** Diagonal sqrt(mass)^(-1/2) matrix ***
 C
@@ -2380,7 +3160,7 @@ C
 C     *** Test if TM2TMP is a diagonal matrix (if there are ***
 C     ***              different isotopes)                  ***
 C
-      IF (MDGTST) THEN
+      IF (HTEST) THEN
          DO 500 IC2 = 1, NCOOR
          DO 500 IC1 = 1, NCOOR
             IF ((IC1 .NE. IC2).AND.(ABS(TM2TMP(IC1,IC2)).GT.DMTHR)) 
@@ -2388,54 +3168,62 @@ C
      &                      'elements present.')
  500     CONTINUE
       END IF
+C
+C     *** Mass transformation matrix ***
+C
+      DO 600 IC = 1, NCOOR
+         TRAMSS(IC) = D1/TM2TMP(IC,IC)
+ 600  CONTINUE
 C     
 C     *** Calculating the mass-weighted Hessian ***
 C
       CALL DZERO(TM1TMP,KDIM)
-      DO 600 IC3 = 1, NCOOR
-      DO 600 IC2 = 1, NCOOR
-      DO 600 IC1 = 1, NCOOR
+      DO 700 IC3 = 1, NCOOR
+      DO 700 IC2 = 1, NCOOR
+      DO 700 IC1 = 1, NCOOR
          TM1TMP(IC1,IC3) = TM1TMP(IC1,IC3) 
      &                   + TM2TMP(IC1,IC2)*HESMOL(IC2,IC3)
- 600  CONTINUE
+ 700  CONTINUE
 C
 C     *** HESMWT is the mass-weighted hessian. ***
 C
       IC12 = 0
       CALL DZERO(HESMWT,KDIM)
-      DO 700 IC2 = 1, NCOOR
-      DO 700 IC1 = 1, IC2
+      DO 800 IC2 = 1, NCOOR
+      DO 800 IC1 = 1, IC2
          IC12 = IC12 + 1
          HESMWT(IC12) = HESMWT(IC12) + TM1TMP(IC1,IC2)*TM2TMP(IC2,IC2)
- 700  CONTINUE
+ 800  CONTINUE
 C
 C     *** Test to check if mass-weighted hessian is symmetric. ***
 C
       IF (HTEST) THEN
          CALL DZERO(HTESTM,KDIM)
-         DO 800 IC3 = 1, NCOOR
-         DO 800 IC2 = 1, NCOOR
-         DO 800 IC1 = 1, NCOOR
+         DO 900 IC3 = 1, NCOOR
+         DO 900 IC2 = 1, NCOOR
+         DO 900 IC1 = 1, NCOOR
             HTESTM(IC1,IC3) = HTESTM(IC1,IC3) 
      &                      + TM1TMP(IC1,IC2)*TM2TMP(IC2,IC3)
- 800     CONTINUE
-C
-         DO 900 IC2 = 1, NCOOR
-         DO 900 IC1 = 1, IC2
-            IF (ABS(HTESTM(IC1,IC2)-HTESTM(IC2,IC1)).GT.DMTHR) 
-     &           CALL QUIT('Mass-weighted hessian is not symmetric.')
  900     CONTINUE
+C
+         IF (.NOT. RESTRT) THEN
+            DO 1100 IC2 = 1, NCOOR
+            DO 1100 IC1 = 1, IC2
+               IF (ABS(HTESTM(IC1,IC2)-HTESTM(IC2,IC1)).GT.DMTHR) 
+     &              CALL QUIT('Mass-weighted hessian is not symmetric.')
+ 1100       CONTINUE
+         END IF
 C
          CALL HEADER('Mass weighted Hessian in symmetry coordinates',-1)
          NUMTIM = (NCOOR-1)/9 + 1
-         DO 1100 ITIM = 1, NUMTIM
+         DO 1200 ITIM = 1, NUMTIM
             ISTART =     9*(ITIM-1) + 1
             IEND   = MIN(9* ITIM  ,NCOOR)
-            DO 1200 IC1 = 1, NCOOR
+            DO 1300 IC1 = 1, NCOOR
                WRITE (LUPRI,'(9F12.7)')(HTESTM(IC1,IC2),IC2=ISTART,IEND)
- 1200       CONTINUE
+ 1300       CONTINUE
             WRITE (LUPRI,'(A)') '                                  '
- 1100    CONTINUE
+ 1200    CONTINUE
       END IF
 C
 C     *** Diagonalizing the mass weighted Hessian. ***
@@ -2445,31 +3233,43 @@ C
       CALL DUNIT(EGNVCT,NCOOR)
       CALL JACO(HESMWT,EGNVCT,NCOOR,NCOOR,NCOOR,WORK(KWRK),WORK(KIWRK))
 C
+C     *** Storing the transformation matrix for later isotope-studies. ****
+C
+      DO 1400 IC2 = 1, NCOOR
+      DO 1400 IC1 = 1, NCOOR
+         TRNCCR(IC1,IC2) = EGNVCT(IC1,IC2)
+ 1400 CONTINUE
+C
 C     *** Mass-weighting the normal coordinates. ***
 C
       KDIM = NCOOR**2
       CALL DCOPY(KDIM,EGNVCT,1,TM1TMP,1)
       CALL DZERO(EGNVCT,KDIM)
-      DO 1300 IC3 = 1, NCOOR
-      DO 1300 IC2 = 1, NCOOR
-      DO 1300 IC1 = 1, NCOOR
+      DO 1500 IC3 = 1, NCOOR
+      DO 1500 IC2 = 1, NCOOR
+      DO 1500 IC1 = 1, NCOOR
          EGNVCT(IC1,IC3) = EGNVCT(IC1,IC3) 
      &                   + TM2TMP(IC1,IC2)*TM1TMP(IC2,IC3)
- 1300 CONTINUE
+ 1500 CONTINUE
 C
-C     *** Normalizing the normal coordinates. ***
+C     *** Normalizing the normal and transformation coordinates. ***
 C
-      DO 1400 IC2 = 1, NCOOR
-         RLENGTH = D0
-         DO 1500 IC1 = 1, NCOOR
-            RLENGTH = RLENGTH + EGNVCT(IC1,IC2)**2
- 1500    CONTINUE
-
-         DRINV = D1/SQRT(RLENGTH)
-         DO 1600 IC1 = 1, NCOOR
-            EGNVCT(IC1,IC2) = EGNVCT(IC1,IC2)*DRINV
- 1600    CONTINUE
- 1400 CONTINUE
+      CALL DZERO(RNNORM,NCOOR)
+      DO 1600 IC2 = 1, NCOOR
+         RLENGT2 = D0
+         DO 1700 IC1 = 1, NCOOR
+            RNNORM(IC2) = RNNORM(IC2) + EGNVCT(IC1,IC2)**2
+            RLENGT2     = RLENGT2     + TRNCCR(IC1,IC2)**2
+ 1700    CONTINUE
+         RNNORM(IC2) = SQRT(RNNORM(IC2))
+C
+         DRINV1 = D1/RNNORM(IC2)
+         DRINV2 = D1/SQRT(RLENGT2)
+         DO 1800 IC1 = 1, NCOOR
+            EGNVCT(IC1,IC2) = EGNVCT(IC1,IC2)*DRINV1
+            TRNCCR(IC1,IC2) = TRNCCR(IC1,IC2)*DRINV2
+ 1800    CONTINUE
+ 1600 CONTINUE
 C
 C     *** Removing the redundant normal coordinates, and setting some ***
 C     *** common variables according to this                          ***
@@ -2477,42 +3277,44 @@ C
       IC12 = 0
       IFREQ = 0
       NUMZRO = 0
-      DO 1700 IC = 1, NCOOR
+      DO 1900 IC = 1, NCOOR
          IC12 = IC12 + IC
          IF (ABS(HESMWT(IC12)).GT.DMTHR) THEN
             IFREQ = IFREQ + 1
             FREQ(IFREQ) = SQRT(ABS(HESMWT(IC12)))
          ELSE
             NUMZRO = NUMZRO + 1
-            DO 1800 IC2 = IC-NUMZRO+1, NCOOR-1
+            DO 2100 IC2 = IC-NUMZRO+1, NCOOR-1
                ICRIRP(IC2,1) = ICRIRP(IC2+1,1)
                ICRIRP(IC2,2) = ICRIRP(IC2+1,2)
-               DO 1900 IC1 =  1, NCOOR
+               DO 2200 IC1 =  1, NCOOR
+                  RNNORM(    IC2) = RNNORM(    IC2+1)
                   EGNVCT(IC1,IC2) = EGNVCT(IC1,IC2+1)
- 1900          CONTINUE
+                  TRNCCR(IC1,IC2) = TRNCCR(IC1,IC2+1)
+ 2200          CONTINUE
 C
- 1800       CONTINUE
+ 2100       CONTINUE
 C
          END IF
- 1700 CONTINUE
+ 1900 CONTINUE
       NDCOOR = NCOOR - NUMZRO
 C
 C     *** Calculating the normal coordinates in cartesian coordinates ***
 C     
       CALL DZERO(TM1TMP,KDIM)
-      DO 2100 IC3 = 1, NCOOR-NUMZRO
-      DO 2100 IC2 = 1, NCOOR
-      DO 2100 IC1 = 1, NCOOR
+      DO 2300 IC3 = 1, NCOOR-NUMZRO
+      DO 2300 IC2 = 1, NCOOR
+      DO 2300 IC1 = 1, NCOOR
          TM1TMP(IC1,IC3) = TM1TMP(IC1,IC3) 
      &                   + SYMCOR(IC1,IC2)*EGNVCT(IC2,IC3)
- 2100 CONTINUE
+ 2300 CONTINUE
 C
 C     *** Using these coordinates in future differentiations. ***
 C
-      DO 2200 IC2 = 1, NCOOR-NUMZRO
-      DO 2200 IC1 = 1, NCOOR
+      DO 2400 IC2 = 1, NCOOR-NUMZRO
+      DO 2400 IC1 = 1, NCOOR
          SYMCOR(IC1,IC2) = TM1TMP(IC1,IC2)
- 2200 CONTINUE
+ 2400 CONTINUE
 C
 C     *** Printing the frequencies. ***
 C
@@ -2520,22 +3322,22 @@ C
      &                  'Number of modes with zero frequency: ', NUMZRO
       CALL HEADER('Vibrational frequencies harmonic approximation: ',-1)
       WRITE (LUPRI,'(20X,A)') ' Mode     cm-1       hartrees  ' 
-      DO 2300 IFREQ = 1, NCOOR-NUMZRO
+      DO 2500 IFREQ = 1, NCOOR-NUMZRO
          WRITE (LUPRI,'(20X,I4,F12.2,F12.6)') ICRIRP(IFREQ,1), 
      &                                XTKAYS*FREQ(IFREQ), FREQ(IFREQ)
- 2300 CONTINUE
+ 2500 CONTINUE
 C
 C     *** Printing the cartesian components of the normal coordinates ***
 C
       NONZRO = NCOOR-NUMZRO
       CALL HEADER('Normal coordinates:  ',0)
-      NUMTIM = (NONZRO-1)/9 + 1
+      NUMTIM = (NONZRO-1)/6 + 1
       DO ITIM = 1, NUMTIM
-         ISTART =     9*(ITIM-1)+1
-         IEND   = MIN(9* ITIM     ,NONZRO)
+         ISTART =     6*(ITIM-1)+1
+         IEND   = MIN(6*(ITIM  )  ,NONZRO)
          WRITE (LUPRI,'(I11,8I13)') (ICRIRP(I,1),I=ISTART,IEND)
          DO ICOOR = 1, NCOOR
-            WRITE (LUPRI,'(9F13.7)') (SYMCOR(ICOOR,I),I=ISTART,IEND)
+            WRITE (LUPRI,'(6F13.7)') (SYMCOR(ICOOR,I),I=ISTART,IEND)
          END DO
          WRITE (LUPRI,'(A)') '                                        '
       END DO
@@ -2560,19 +3362,38 @@ C
             WRITE (LUPRI,'(24F9.7)') (TM2TMP(IC1,IC2),IC2= 1, NCOOR)
          END DO
 C
+C        *** Mass-weighted hessian. ***
+C
          CALL HEADER('Diagonalized mass weighted hessian.',-1)
-         DO IC1 = 1, NCOOR
-            WRITE (LUPRI,'(24F9.7)') 
-     &            (HESMWT(IC12),IC12= IC1*(IC1-1)/2+1, IC1*(IC1+1)/2)
+C
+         BEGIN = 1
+         LAST  = MIN(NDCOOR,KCOL)
+         KCOOR = NDCOOR
+         NCOL  = NCOOR/KCOL
+         IF (MOD(NCOOR,KCOL).NE.0) NCOL = NCOL + 1
+C
+         DO ICOL = 1, NCOL
+            WRITE (LUPRI,1000) (ICRIRP(I,1),I = BEGIN,LAST)
+C
+            DO ICOOR = BEGIN, NCOOR
+               WRITE (LUPRI,2000) ICRIRP(ICOOR,1), 
+     &                        (HESMOL(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
+            END DO
+            WRITE (LUPRI,'(A)') '                                 '
+            BEGIN = BEGIN + KCOL
+            LAST  = MIN(NDCOOR,KCOL+LAST)
          END DO
+ 1000    FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
+ 2000    FORMAT (1X,I4,2X,6F12.6)
       END IF
       RETURN
       END
 C
-C     
+C
 C     /*Deck prderv*/
-      SUBROUTINE PRDERV(TDER,FDER,TSTGDR,TSTSDR,SYMCOR,WORK,ICRIRP,
-     &                  LWORK,NPRRDR,NDIMT,NDIMF,LTXT,IPRINT,TEXT)
+      SUBROUTINE PRDERV(TDER,FDER,TSTGDR,TSTSDR,SYMCOR,CSTART,WORK,
+     &                  ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTXT,IPRINT,
+     &                  TEXT)
 C     ***************************************************************
 C     **** This routine prints out the derivatives of the energy ****
 C     **** to NPRRDR order. These are done in 'TEXT' coordinates ****
@@ -2580,14 +3401,18 @@ C     ***************************************************************
 #include <implicit.h>
 #include <mxcent.h>
 #include <priunit.h>
+#include <mxorb.h>
+#include <maxaqn.h>
 C
+#include <symmet.h>      
 #include <nuclei.h>
 #include <trkoor.h>
 #include <taymol.h>
 #include <cbiwlk.h>
+#include <cbinum.h>
 #include <numder.h>
       CHARACTER*80 TEXT
-      DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), 
+      DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), CSTART(NCOOR),
      &          TSTSDR(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2)
 C
@@ -2597,6 +3422,21 @@ C
 C     
          CALL HEADER('Numerical gradient in ' // TEXT(1:LTXT) // 
      &               ' coordinates',-1)
+C
+         IF (NAORDR.GE.1) THEN
+            KCSTRA = 1
+            KSCTRA = KCSTRA + NCOOR**2
+            KEGRAD = KSCTRA + MXCOOR
+            KSEGRD = KEGRAD + MXCOOR
+            KLAST  = KSEGRD + NCOOR
+            LWRK1  = LWORK  - KLAST + 1
+            IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in TRFCGD')
+            CALL TRAGRD(GRDMOL,WORK(KEGRAD),WORK(KCSTRA),WORK(KSCTRA),
+     &                  NCRREP(0,1),NCOOR)
+            CALL TRFCGD(WORK(KEGRAD),SYMCOR,CSTART,WORK(KSEGRD),
+     &                  WORK(KLAST),NCOOR,NDCOOR,LWRK1,IPRINT)
+            CALL DCOPY(MXCOOR,WORK(KEGRAD),1,GRDMOL,1)
+         END IF
 C
          KCGRAD = 1
          KWRK   = KCGRAD + MXCOOR
@@ -2621,6 +3461,22 @@ C
 C
          CALL HEADER('Numerical hessian in ' // TEXT(1:LTXT) //
      &               ' coordinates',-1)  
+C
+         IF ((NAORDR.GE.2).AND..NOT.(PREHES)) THEN
+            KCSTRA = 1
+            KSCTRA = KCSTRA + NCOOR**2
+            KEHESS = KSCTRA + NCOOR**2
+            KSEHSS = KEHESS + MXCOOR**2
+            KLAST  = KSEHSS + NCOOR**2
+            LWRK1  = LWORK  - KLAST + 1
+            IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in TRFCHS')
+            CALL TRAHES(HESMOL,MXCOOR,WORK(KEHESS),WORK(KCSTRA),
+     &                  WORK(KSCTRA),MXCOOR,NCOOR,1)
+            CALL TRFCHS(WORK(KEHESS),SYMCOR,CSTART,WORK(KSEHSS),
+     &                  WORK(KLAST),NCOOR,NDCOOR,LWRK1,IPRINT)
+
+            CALL DCOPY(MXCOOR**2,WORK(KEHESS),1,HESMOL,1)
+         END IF
 C
          KSMCIN = 1
          KCHES1 = KSMCIN + NCOOR**2
@@ -2653,7 +3509,7 @@ C
          CALL HEADER('Numerical third derivative of energy in ' // 
      &                TEXT(1:LTXT) // 'coordinates',-1)
          CALL PRITDR(TDER,SYMCOR,WORK(KTDER),WORK(KSYMTD),WORK(KSCTRA),
-     &               WORK(KCSTRA),NDIMT,LTXT,TEXT)
+     &               WORK(KCSTRA),NDIMT,LTXT,IPRINT,TEXT)
       END IF
 C
 C     *** Print fourth derivative of energy ***
@@ -2666,7 +3522,7 @@ C
          KLAST  = KCSTRA + NCOOR**2
          CALL HEADER('Numerical fourth derivative of energy in ' //
      &                TEXT(1:LTXT) // 'coordinates',-1)
-         CALL PRIFDR(FDER,WORK(KFDER),WORK(KSYMFD),WORK(KSCTRA),
+         CALL PRIFDR(FDER,SYMCOR,WORK(KFDER),WORK(KSYMFD),WORK(KSCTRA),
      &               WORK(KCSTRA),NDIMF,LTXT,TEXT)
       END IF
 C
@@ -2699,7 +3555,7 @@ C
       DIMENSION SYMCOR(NCOOR,NCOOR), CGRAD(NCOOR), ICRIRP(NCOOR,2),
      &          WORK(LWORK)
 C
-      CALL HEADER('Gradient in ' // TEXT(1:LTXT) // ' coordinates',-1)
+      CALL HEADER('Gradient in ' // TEXT(1:LTXT) // 'coordinates',-1)
 C
       DO 100 ICOOR = 1, NDCOOR
          IF (ICRIRP(ICOOR,1).EQ.1) THEN
@@ -2773,7 +3629,9 @@ C     /*Deck gsphes*/
 #include <trkoor.h>
 #include <taymol.h>
 #include <cbiwlk.h>
+#include <cbinum.h>
       INTEGER BEGIN, LAST
+      LOGICAL HESEXS
       CHARACTER TEXT*80
       DIMENSION SYMCOR(NCOOR,NCOOR), SMCINV(NCOOR,NCOOR), 
      &          CHESS1(NCOOR,NCOOR), CHESS2(NCOOR,NCOOR),
@@ -2786,7 +3644,8 @@ C
       BEGIN = 1
       LAST  = MIN(NDCOOR,KCOL)
       KCOOR = NDCOOR
-      NCOL  = INT(DBLE(NDCOOR)/DBLE(KCOL)) + 1
+      NCOL  = NDCOOR/KCOL
+      IF (MOD(NDCOOR,KCOL).NE.0) NCOL = NCOL + 1
 C
       DO 100 ICOL = 1, NCOL
          WRITE (LUPRI,1000) (ICRIRP(I,1),I = BEGIN,LAST)
@@ -2796,7 +3655,7 @@ C
      &                        (HESMOL(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
  200     CONTINUE
          WRITE (LUPRI,'(A)') '                                       '
-         BEGIN = BEGIN + LAST
+         BEGIN = BEGIN + KCOL
          LAST  = MIN(NDCOOR,KCOL+LAST)
  100  CONTINUE
 C
@@ -2834,22 +3693,40 @@ C
 C        *** Print cartesian hessian ***
 C
          CALL HEADER('Cartesian Hessian in GSPHES',-1)
+         CALL PR2DER(CHESS2,NCOOR,NCOOR,LUPRI)
 C      
-         BEGIN = 1
-         LAST  = MIN(NCOOR,KCOL)
-         KCOOR = NCOOR
-         NCOL  = INT(DBLE(NCOOR)/DBLE(KCOL)) + 1
+C        *** Print to file if we are going to reuse the Hessian. ***
 C
-         DO 600 ICOL = 1, NCOL
-            WRITE (LUPRI,3000) (NAMEX(I),I = BEGIN,LAST)
-            DO 700 ICOOR = BEGIN, NCOOR
-               WRITE (LUPRI,4000) NAMEX(ICOOR), 
-     &                        (CHESS2(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR)) 
- 700        CONTINUE
-            WRITE (LUPRI,'(A)') '                                      '
-            BEGIN = BEGIN + LAST
-            LAST  = MIN(NCOOR,KCOL+LAST)
- 600     CONTINUE
+         IF (REUHES) THEN
+            INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
+C
+C           *** No hessian specified, we can safely write to file. ***
+            IF (.NOT. HESEXS) THEN
+C
+C              *** Open hessian file. ***
+               CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+C
+C              *** Printing nescecary pre-hessian information. ***
+               WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
+               WRITE(LUHES,*) NCOOR
+               WRITE(LUHES,'(A)') '                                   '
+C
+               DO 800 ICOOR2 = 1, NCOOR
+                  DO 900 ICOOR1 = 1, NCOOR
+                     WRITE (LUHES,'(F22.12)') CHESS2(ICOOR1,ICOOR2)
+ 900              CONTINUE
+                  WRITE (LUHES,'(A)') '                               '
+ 800           CONTINUE
+            ELSE
+               WRITE (LUHES,'(A)') '                                '
+               WRITE (LUHES,'(A)') 'Hessian file already exist. This' //
+     &               ' file will NOT be overwritten.'
+               WRITE (LUHES,'(A)') 'Please restart the calculation ' //
+     &               'without this file.'
+               WRITE (LUHES,'(A)') '                                '
+            END IF
+         END IF
 C
 C        *** Print ***
 C
@@ -3045,14 +3922,13 @@ C
       CALL ABAINP('**PROPE',WORK(IWOFF+2),LWORK)
       CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
 C     
-      
 C     *** Transforming the analytical derivatives into ***
 C     ***               cartesian basis.               ***
 C
       IF (MAXREP.GT.0) THEN
          KSCTR = 1
          KCSTR = KSCTR + NCOOR**2
-         KLAST  = KCSTR + NCOOR**2
+         KLAST = KCSTR + NCOOR**2
          IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded inside SDERTT')
          CALL TRAGRD(GRDMOL,TMPGRD,WORK(KCSTR),WORK(KSCTR),NCRREP(0,1),
      &               NCOOR)
@@ -3067,7 +3943,7 @@ C
  400     CONTINUE
       END IF
 C
-      RMAXGD = 0.D0
+      RMAXGD = D0
       DO 600 J = 1, NCOOR
          RGRDJ = ABS(TMPGRD(J)-TSTGDR(J))
          IF (RGRDJ .GT. RMAXGD) THEN
@@ -3081,7 +3957,7 @@ C
       WRITE (LUPRI,'(A,2E13.7//)') 'The values of these elements are: ',
      &                             TMPGRD(NMG),TSTGDR(NMG)
 
-      RLRGST = 0.D0
+      RLRGST = D0
       DO 700 J = 1, NCOOR
       DO 700 I = 1, J
          RINTMD = (TMPHES(I,J)-TSTSDR(I,J))**2
@@ -3142,7 +4018,7 @@ C
                      IF ((ICRIRP(IC3,1).EQ.IIREP).AND.
      &                   (ICRIRP(IC3,2).EQ.    1).AND.(.NOT.FOUND)) THEN
                         FOUND = .TRUE.
-                        DO 500 II  =     1,      2
+                        DO 500 II  =     1      2
                         DO 500 IC4 = IC3+1, NDCOOR
                            ICRIRP(IC4-1,II) = ICRIRP(IC4,II)
  500                    CONTINUE
@@ -3167,7 +4043,7 @@ C
 C
 C
 C     /* Deck wricor*/
-      SUBROUTINE WRICOR(SYMCOR,ICRIRP,LURSTR,IPRINT)
+      SUBROUTINE WRICOR(SYMCOR,RNNORM,FREQ,ICRIRP,LURSTR,IPRINT)
 C     *************************************************
 C     *** This is a routine that writes out normal  ***
 C     *** coordinates to file, in case of a restart.***
@@ -3178,10 +4054,12 @@ C     *************************************************
 C
 #include <trkoor.h>
 #include <numder.h>
-      DIMENSION SYMCOR(NCOOR,NCOOR)
+      DIMENSION SYMCOR(NCOOR,NCOOR), RNNORM(NCOOR), FREQ(NCOOR)
       DIMENSION ICRIRP(NCOOR,2)
 C
       WRITE (LURSTR,'(I8)') NDCOOR
+C
+C     *** Writing normal coordinates. ***
 C
       DO 100 IC2 = 1, NDCOOR
          WRITE(LURSTR,'(2I5)') (ICRIRP(IC2,I),I=1,2)
@@ -3189,6 +4067,20 @@ C
             WRITE(LURSTR,'(F24.16)') SYMCOR(IC1,IC2)
  200     CONTINUE
  100  CONTINUE
+C
+C     *** Norm of the non-normalized normal coordinates. ***
+C     
+      WRITE(LURSTR,'(A)') 'Norm'
+      DO 300 IC = 1, NDCOOR
+         WRITE(LURSTR,'(F24.16)') RNNORM(IC)
+ 300  CONTINUE
+C
+C     *** Frequencies. ***
+C      
+      WRITE(LURSTR,'(A)') 'Freq'
+      DO 400 IC = 1, NDCOOR
+         WRITE(LURSTR,'(F24.16)') FREQ(IC)
+ 400  CONTINUE
       CALL FLSHFO(LURSTR)
 C
       RETURN
@@ -3196,8 +4088,8 @@ C
 C
 C
 C     /*Deck rerstr*/
-      SUBROUTINE RERSTR(ENVAL,SYMCOR,ICRIRP,NDIME,KEND,IDIMAX,IDIMIN,
-     &                  LURSTR,IPRINT,RSTDON)
+      SUBROUTINE RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
+     &                  KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -3205,10 +4097,13 @@ C
 #include <trkoor.h>
 #include <numder.h>
       LOGICAL RSTDON
-      DIMENSION SYMCOR(NCOOR,NCOOR), ENVAL(NDIME)
+      DIMENSION SYMCOR(NCOOR,NCOOR), FUVAL(NINTIN,NDIME), RNNORM(NCOOR), 
+     &          FREQ(NCOOR)
       DIMENSION ICRIRP(NCOOR,2)
 C
-      READ(LURSTR,'(I2)') II
+      CALL DZERO(FUVAL,NINTIN*NDIME)
+C
+      READ(LURSTR,*) II
 C
 C     *** The program ended the first time around. ***
 C
@@ -3218,11 +4113,11 @@ C
 C        *** Reading the function values ***
 C
  100     CONTINUE
-         READ(LURSTR,FMT='(I8,F24.16)',IOSTAT=IOS) IDIME, ENERGY
+         READ(LURSTR,FMT=*,IOSTAT=IOS) IINTIN, IDIME, ENERGY
          IF (IOS.GE.0) THEN
             IDIMAX = MAX(IDIMAX,IDIME)
             IDIMIN = MIN(IDIMIN,IDIME)
-            ENVAL(IDIME) = ENERGY
+            FUVAL(IINTIN,IDIME) = ENERGY
             GOTO 100
          END IF
       ELSE IF ((II.EQ.1) .AND. (II.EQ.KEND)) THEN
@@ -3241,17 +4136,1303 @@ C
  300        CONTINUE
  200     CONTINUE
 C
+C        *** Norm of the non-normalized normal coordinates. ***
+C         
+         READ(LURSTR,FMT='(A)')
+         DO 400 IC = 1, NDCOOR
+            READ(LURSTR,'(F24.16)') RNNORM(IC) 
+ 400     CONTINUE
+C
+C        *** Frequencies. ***
+C         
+         READ(LURSTR,FMT='(A)')
+         DO 500 IC = 1, NDCOOR
+            READ(LURSTR,'(F24.16)') FREQ(IC) 
+ 500     CONTINUE
+C
 C        *** Read the function values. ***
 C
- 400     CONTINUE
-         READ(LURSTR,FMT='(I8,F24.16)',IOSTAT=IOS) IDIME, ENERGY
+ 600     CONTINUE
+         READ(LURSTR,FMT=*,IOSTAT=IOS) IINTIN, IDIME, ENERGY
          IF (IOS.GE.0) THEN
             IDIMAX = MAX(IDIMAX,IDIME)
             IDIMIN = MIN(IDIMIN,IDIME)
-            ENVAL(IDIME) = ENERGY
-            GOTO 400
+            FUVAL(IINTIN,IDIME) = ENERGY
+            GOTO 600
          END IF
       END IF
 C
       RETURN
       END
+C
+C
+C     /*Deck nrmiso*/
+      SUBROUTINE NRMISO(TDER,SYMCOR,DKIN,TRNCCR,TRAMSS,TMPGRD,TMPHES,
+     &                  TMPMSS,TMPTD1,TMPTD2,NDIMT)
+C     *******************************************************************************
+C     *** This routine takes the force constants (with respect to the most normal ***
+C     *** masses) and finds the force constants with respect to other isotopes).  ***
+C     *******************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <trkoor.h>
+#include <numder.h>
+#include <taymol.h>
+      LOGICAL HESEXS
+      DIMENSION TDER(NDIMT), SYMCOR(NCOOR,NCOOR), TRNCCR(NCOOR,NCOOR), 
+     &          TRAMSS(NCOOR), DKIN(NCOOR), TMPGRD(NCOOR), 
+     &          TMPHES(NCOOR,NCOOR), TMPMSS(NCOOR), 
+     &          TMPTD1(NCOOR,NCOOR,NCOOR), TMPTD2(NCOOR,NCOOR,NCOOR)
+C
+      KDIMH = NCOOR**2
+      KDIMT = NCOOR**3
+C
+C     *** Making the third derivative ready for transformation. ***
+C
+      NCOUNT = 0
+      DO 100 IC3 = 1, NCOOR
+      DO 100 IC2 = 1, IC3
+      DO 100 IC1 = 1, IC2
+         NCOUNT = NCOUNT + 1
+         TMPTD1(IC1,IC2,IC3) =  TDER(NCOUNT)
+         TMPTD1(IC1,IC3,IC2) =  TDER(NCOUNT)
+         TMPTD1(IC2,IC1,IC3) =  TDER(NCOUNT)
+         TMPTD1(IC2,IC3,IC1) =  TDER(NCOUNT)
+         TMPTD1(IC3,IC2,IC1) =  TDER(NCOUNT)
+         TMPTD1(IC3,IC1,IC2) =  TDER(NCOUNT)
+ 100  CONTINUE
+C
+C     *** Averaged masses needed to be used to transform ***
+C     ***          to mass-weighted coordinates.         ***
+C
+      CALL DZERO(TMPMSS,NDCOOR)
+      DO 200 IC2 = 1, NDCOOR
+      DO 200 IC1 = 1, NCOOR
+         TMPMSS(IC2) = TMPMSS(IC2) + (SYMCOR(IC1,IC2)/DKIN(IC1))**2
+ 200  CONTINUE
+C
+C     *** Mass weigting (with the average masses) the force constants ***
+C     *** to transform to mass-weighted coordinates.                  ***
+C
+C     *** Gradient. ***
+      DO 300 IC1 = 1, NDCOOR
+         GRDMOL(IC1) = GRDMOL(IC1)/SQRT(TMPMSS(IC1))
+ 300  CONTINUE
+C     *** Hessian. ***
+      DO 400 IC1 = 1, NDCOOR
+         HESMOL(IC1,IC1) = HESMOL(IC1,IC1)/TMPMSS(IC1)
+ 400  CONTINUE
+C     *** Third derivative ***
+      DO 500 IC3 = 1, NDCOOR
+      DO 500 IC2 = 1, NDCOOR
+      DO 500 IC1 = 1, NDCOOR
+         TMPTD1(IC1,IC2,IC3) = 
+     &   TMPTD1(IC1,IC2,IC3)/(SQRT(TMPMSS(IC1)*TMPMSS(IC2)*TMPMSS(IC3)))
+ 500  CONTINUE
+C
+C     *** Transforming the force constants back to mass weighted ***
+C     ***                cartesian coordinates.                  ***
+C
+C     *** Gradient ***
+      CALL DZERO(TMPGRD,NCOOR)
+      DO 600 IC2 = 1, NDCOOR
+      DO 600 IC1 = 1, NCOOR
+         TMPGRD(IC1) = TMPGRD(IC1) + TRNCCR(IC1,IC2)*GRDMOL(IC2)
+ 600  CONTINUE
+C     *** Hessian ***
+      CALL DZERO(TMPHES,KDIMH)
+      DO 700 IC3 = 1, NCOOR
+      DO 700 IC2 = 1, NDCOOR
+      DO 700 IC1 = 1, NDCOOR
+         TMPHES(IC1,IC3) = TMPHES(IC1,IC3) 
+     &                   + HESMOL(IC1,IC2)*TRNCCR(IC3,IC2)
+ 700  CONTINUE
+      CALL DZERO(HESMOL,MXCOOR**2)
+      DO 800 IC3 = 1, NCOOR
+      DO 800 IC2 = 1, NDCOOR
+      DO 800 IC1 = 1, NCOOR
+         HESMOL(IC1,IC3) = HESMOL(IC1,IC3) 
+     &                   + TRNCCR(IC1,IC2)*TMPHES(IC2,IC3)
+ 800  CONTINUE
+C     *** Third derivative ***
+      CALL DZERO(TMPTD2,KDIMT)
+      DO 900 IC4 = 1, NDCOOR
+      DO 900 IC3 = 1, NDCOOR
+      DO 900 IC2 = 1, NDCOOR
+      DO 900 IC1 = 1, NCOOR
+         TMPTD2(IC1,IC3,IC4) = TMPTD2(IC1,IC3,IC4) 
+     &                       + TRNCCR(IC1,IC2)*TMPTD1(IC2,IC3,IC4)
+ 900  CONTINUE
+      CALL DZERO(TMPTD1,KDIMT)
+      DO 1000 IC4 = 1, NDCOOR
+      DO 1000 IC3 = 1, NDCOOR
+      DO 1000 IC2 = 1, NCOOR
+      DO 1000 IC1 = 1, NCOOR
+         TMPTD1(IC1,IC2,IC4) = TMPTD1(IC1,IC2,IC4) 
+     &                       + TRNCCR(IC2,IC3)*TMPTD2(IC1,IC3,IC4)
+ 1000 CONTINUE
+      CALL DZERO(TMPTD2,KDIMT)
+      DO 1100 IC4 = 1, NDCOOR
+      DO 1100 IC3 = 1, NCOOR
+      DO 1100 IC2 = 1, NCOOR
+      DO 1100 IC1 = 1, NCOOR
+         TMPTD2(IC1,IC2,IC3) = TMPTD2(IC1,IC2,IC3) 
+     &                       + TRNCCR(IC3,IC4)*TMPTD1(IC1,IC2,IC4)
+ 1100 CONTINUE
+C
+C     *** Mass transformation. ***
+C
+C     *** Gradient ***
+      CALL DZERO(GRDMOL,MXCOOR)
+      DO 1200 IC1 = 1, NCOOR
+         GRDMOL(IC1) = GRDMOL(IC1) + TRAMSS(IC1)*TMPGRD(IC1)
+ 1200 CONTINUE
+C     *** Hessian ***
+      CALL DZERO(TMPHES,KDIMH)
+      DO 1300 IC2 = 1, NCOOR
+      DO 1300 IC1 = 1, NCOOR
+         TMPHES(IC1,IC2) = TMPHES(IC1,IC2)+ HESMOL(IC1,IC2)*TRAMSS(IC2)
+ 1300 CONTINUE
+      CALL DZERO(HESMOL,MXCOOR**2)
+      DO 1400 IC2 = 1, NCOOR
+      DO 1400 IC1 = 1, NCOOR
+         HESMOL(IC1,IC2) = HESMOL(IC1,IC2)+ TRAMSS(IC1)*TMPHES(IC1,IC2)
+ 1400 CONTINUE
+C     *** Third derivative. ***
+      CALL DZERO(TMPTD1,KDIMT)
+      DO 1500 IC3 = 1, NCOOR
+      DO 1500 IC2 = 1, NCOOR
+      DO 1500 IC1 = 1, NCOOR
+         TMPTD1(IC1,IC2,IC3) = TMPTD1(IC1,IC2,IC3) 
+     &                       + TRAMSS(IC1)*TMPTD2(IC1,IC2,IC3)
+ 1500 CONTINUE
+      CALL DZERO(TMPTD2,KDIMT)
+      DO 1600 IC3 = 1, NCOOR
+      DO 1600 IC2 = 1, NCOOR
+      DO 1600 IC1 = 1, NCOOR
+         TMPTD2(IC1,IC2,IC3) = TMPTD2(IC1,IC2,IC3) 
+     &                       + TRAMSS(IC2)*TMPTD1(IC1,IC2,IC3)
+ 1600 CONTINUE
+      CALL DZERO(TMPTD1,KDIMT)
+      DO 1700 IC3 = 1, NCOOR
+      DO 1700 IC2 = 1, NCOOR
+      DO 1700 IC1 = 1, NCOOR
+         TMPTD1(IC1,IC2,IC3) = TMPTD1(IC1,IC2,IC3) 
+     &                       + TRAMSS(IC3)*TMPTD2(IC1,IC2,IC3)
+ 1700 CONTINUE
+C
+C     *** Temporary code, please remove ***
+C
+      INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
+C
+C     *** No hessian specified, we can safely write to file. ***
+      IF (.NOT. HESEXS) THEN
+C
+C        *** Open hessian file. ***
+         CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+C
+C        *** Printing nescecary pre-hessian information. ***
+         WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
+         WRITE(LUHES,*) NCOOR
+         WRITE(LUHES,'(A)') '                                   '
+C
+         DO 1800 ICOOR2 = 1, NCOOR
+            DO 1900 ICOOR1 = 1, NCOOR
+               WRITE (LUHES,'(F22.12)') HESMOL(ICOOR1,ICOOR2)
+ 1900       CONTINUE
+            WRITE (LUHES,'(A)') '                               '
+ 1800    CONTINUE
+      ELSE
+         WRITE (LUHES,'(A)') '                                '
+         WRITE (LUHES,'(A)') 'Hessian file already exist. This' //
+     &        ' file will NOT be overwritten.'
+         WRITE (LUHES,'(A)') 'Please restart the calculation ' //
+     &        'without this file.'
+         WRITE (LUHES,'(A)') '                                '
+      END IF
+C
+C     *** Print section. ***
+C
+      WRITE (LUPRI,'(A)') 'Gradient in symmetry coordinates.'
+      DO IC =1, NCOOR
+         WRITE (LUPRI,'(F12.7)') GRDMOL(IC)
+      END DO
+      WRITE (LUPRI,'(A)') 'Hessian in symmetry coordinates.'
+      DO IC1 = 1, NCOOR
+         WRITE (LUPRI,'(12F12.7)') (HESMOL(IC1,IC2), IC2 = 1, NCOOR)
+      END DO
+      WRITE (LUPRI,'(A)') 'Third derivative in symmetry coordinates.'
+      DO IC3 = 1, NCOOR
+         WRITE (LUPRI,'(A,I4)') 'Third dimension:', IC3
+         DO IC1 = 1, NCOOR
+           WRITE (LUPRI,'(12F12.7)') (TMPTD1(IC1,IC2,IC3),IC2= 1, NCOOR)
+         END DO
+      END DO
+C
+      IF (IPRINT .GT. 22) THEN
+         WRITE (LUPRI,'(A)') 'Inverse of averaged mass'
+         WRITE (LUPRI,'(24F10.7)') (TMPMSS(I),I=1,NDCOOR)
+      END IF
+C     
+      RETURN
+      END
+C
+C
+C     /*Deck dalchg*/
+      SUBROUTINE DALCHG(INDSTP,ICRIRP,IRSRDR,IPRINT,NCOOR,NMORDR,FIRST)
+C     ***********************************************************
+C     *** Routine that reduces the symmetry in the DALTON.INP ***
+C     *** file, according to the distortions.                 ***
+C     ***********************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <molinp.h>
+#include <fcsym.h>      
+#include <ccorb.h> 
+      LOGICAL FIRST
+      CHARACTER*80 WORD(KMLINE)
+      DIMENSION ICRIRP(NCOOR,2), INDSTP(NMORDR)
+C
+      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+      ILINE = 0
+      REWIND (LUCMD,IOSTAT=IOS)
+ 100  READ (LUCMD,'(A)',ERR=2000) WORD(ILINE+1)
+      ILINE = ILINE + 1
+      IF (WORD(ILINE)(1:7) .EQ. '*END OF') GOTO 200
+      GOTO 100
+C
+ 200  CONTINUE
+      DO 300 I = 1, ILINE
+         IF (WORD(I)(1:7) .EQ. '.NSYM  ') THEN
+            IF (FIRST) THEN
+               READ (WORD(I+1),*) NSMBKP
+            ELSE
+               NSYM = NSMBKP
+               DO 400 J = 1, IRSRDR+1
+                  IF ((ICRIRP(INDSTP(J),1).NE.1).AND.(NSYM.GT.1)) THEN
+                     NSYM = NSYM/2
+                  END IF
+ 400           CONTINUE
+               WRITE (WORD(I+1),'(I4)') NSYM
+            END IF
+         END IF
+ 300  CONTINUE
+C
+      REWIND (LUCMD,IOSTAT=IOS)
+      DO 500 I = 1, ILINE
+         WRITE (LUCMD,'(A)') WORD(I)
+ 500  CONTINUE
+      CALL GPCLOSE(LUCMD,'KEEP')
+C
+      RETURN
+ 2000 CONTINUE
+      CALL QUIT('There are problems in correcting the .NSYM parameter')
+      END
+C
+C
+C     /* Deck rdhess */
+      SUBROUTINE RDHESS(SYMCOR,CSTART,GRIREP,CHRCTR,HESSIN,WORK,ICRIRP,
+     &                  LWORK,IPRINT,SYMDET)
+C     **********************************************************
+C     **** Subroutine that reads in a precalculated hessian ****
+C     **** uses this for further work in normal coordinates.****
+C     **********************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <fcsym.h>
+#include <trkoor.h>
+#include <taymol.h>
+      LOGICAL SYMDET, SYMADA
+      DIMENSION SYMCOR(NCOOR ,NCOOR ), CSTART(NCOOR        ), 
+     &          GRIREP(NGORDR,NGVERT), CHRCTR(NGORDR,NCVERT),
+     &          HESSIN(NCOOR ,NCOOR),  WORK  (LWORK)
+      DIMENSION ICRIRP(NCOOR,2)
+C
+C     *** Initializing. ***
+      SYMADA = .FALSE.
+C
+C     *** Making symmetry adapted coordinates. ***
+C
+      CALL GRPCHR(CSTART,SYMCOR,GRIREP,CHRCTR,WORK,ICRIRP,LWORK,IPRINT)
+C
+C     *** Declaring that the symmetry of the system is determined. ***
+      SYMDET = .FALSE.
+C
+C     *** Reading in the hessian ***
+C
+      CALL RDFHES(WORK,LWORK,IPRINT,SYMADA)
+C
+      IF (.NOT. SYMADA) THEN
+C
+C        *** The hessian is cartesian coordinates. Transform it to ***
+C        *** Symmetry adapted coordinates.                         ***
+C     
+         KTMPHS = 1
+         KLAST  = KTMPHS + NCOOR**2
+         CALL TRGHES(HESSIN,SYMCOR,WORK(KTMPHS),WORK(KLAST),NCOOR,LWRK,
+     &               IPRINT,'symmetry ')
+C
+         DO 100 ICOOR2 = 1, NCOOR
+         DO 100 ICOOR1 = 1, NCOOR
+            HESMOL(ICOOR1,ICOOR2) = HESSIN(ICOOR1,ICOOR2)
+ 100     CONTINUE
+         
+      END IF
+C
+C     *** Print! ***
+C
+      IF (IPRINT .GT. 7) THEN
+         CALL HEADER ('Final hessian from RDHESS',0)
+C
+         N = 0
+         IF (MOD(NCOOR,6).NE.0) N = 1
+         NCOL = NCOOR/6 + N
+         NSTART = 1
+         NEND   = MIN(NCOOR,6)
+         DO I = 1, NCOL
+            DO ICOOR1 = 1, NCOOR
+               WRITE (LUPRI,'(6F14.6)') 
+     &            (HESMOL(ICOOR1,ICOOR2), ICOOR2= NSTART, NEND)
+            END DO
+            NSTART = NEND + 1
+            NEND   = MIN(NCOOR,NEND+6)
+            WRITE (LUPRI,'(A)') '                              '
+            WRITE (LUPRI,'(A)') '                              '
+         END DO
+      END IF
+C
+      RETURN
+      END
+C
+C     /* Deck rdfhes */
+      SUBROUTINE RDFHES(WORK,LWORK,IPRINT,SYMADA)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <taymol.h>
+#include <nuclei.h>
+#include <trkoor.h>
+      LOGICAL SYMADA, HESEXS
+      CHARACTER*5 HSMINF 
+      DIMENSION WORK(LWORK)
+C
+      INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
+C
+C     *** No hessian specified. ***
+      IF (.NOT. HESEXS) CALL QUIT('Unable to open the file DALTON.HES.')
+C
+C     *** Open hessian file. ***
+      LUHES = 0
+      CALL GPOPEN(LUHES,'DALTON.HES','OLD',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+C     *** Specified hessian in symmetry coordinates? ***
+      READ(LUHES,'(A5)') HSMINF 
+      IF (HSMINF .EQ. 'SYMME') SYMADA = .TRUE.
+C
+C     *** Check if the speciefied dimensions match those from MOLECULE.INP. ***
+      READ(LUHES,*) IDIM
+      IF (IDIM .NE. 3*NUCDEP) CALL QUIT('Dimensions for specified ' //
+     &     'Hessian does not match those found from the molecule-file.') 
+      READ(LUHES,*)
+      
+C
+C     *** Read the hessian from file. ***
+C
+      DO 100 ICOOR2 = 1, NCOOR
+C
+         DO 200 ICOOR1 = 1, NCOOR
+            READ(LUHES,*) HESMOL(ICOOR1,ICOOR2)
+ 200     CONTINUE
+C
+         READ(LUHES,*)
+ 100  CONTINUE
+C
+      CALL GPCLOSE(LUHES,'KEEP')
+C
+      CALL HEADER ('Molecular Hessian read from file.', 0)
+      WRITE (LUPRI,'(A)') '                              '
+      CALL HEADER ('Molecular Hessian', -1)
+      call flshfo(lupri)
+C
+      N = 0
+      IF (MOD(NCOOR,6).NE.0) N = 1
+      NCOL = NCOOR/6 + N
+      NSTART = 1
+      NEND   = MIN(NCOOR,6)
+      DO I = 1, NCOL
+         DO ICOOR1 = 1, NCOOR
+            WRITE (LUPRI,'(6F14.6)') 
+     &            (HESMOL(ICOOR1,ICOOR2), ICOOR2= NSTART, NEND)
+         END DO
+         NSTART = NEND + 1
+         NEND   = MIN(NCOOR,NEND+6)
+         WRITE (LUPRI,'(A)') '                              '
+         WRITE (LUPRI,'(A)') '                              '
+      END DO
+C
+      CALL FLSHFO(LUPRI)
+C
+      RETURN 
+      END
+C
+C     /* Deck trahes */
+      SUBROUTINE TRGHES(HESSIN,SYMCOR,TMPHES,WORK,NCOOR,LWORK,IPRINT,
+     &                  TYPE)
+C     **********************************************************
+C     *** Transforming hessian in cartesian coordinates, to ****
+C     *** symmetry coordinate basis in SYMCOR.              **** 
+C     **********************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <taymol.h>
+      CHARACTER*9 TYPE
+      DIMENSION HESSIN(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR), 
+     &          TMPHES(NCOOR,NCOOR), WORK(LWORK)
+C
+C     *** Cartesian to symmetric transformation. ***
+      IF (TYPE .EQ. 'symmetry ') THEN
+C
+        KDIM = NCOOR**2
+C
+         CALL DZERO(TMPHES,KDIM)
+         DO 100 ICOOR3 = 1, NCOOR
+         DO 100 ICOOR2 = 1, NCOOR
+         DO 100 ICOOR1 = 1, NCOOR
+            TMPHES(ICOOR1,ICOOR3) = TMPHES(ICOOR1,ICOOR3) 
+     &                     + SYMCOR(ICOOR2,ICOOR1)*HESMOL(ICOOR2,ICOOR3)
+ 100     CONTINUE
+C
+         CALL DZERO(HESSIN,KDIM)
+         DO 200 ICOOR3 = 1, NCOOR
+         DO 200 ICOOR2 = 1, NCOOR
+         DO 200 ICOOR1 = 1, NCOOR
+            HESSIN(ICOOR1,ICOOR3) = HESSIN(ICOOR1,ICOOR3) 
+     &                     + TMPHES(ICOOR1,ICOOR2)*SYMCOR(ICOOR2,ICOOR3)
+ 200     CONTINUE         
+      END IF
+C
+C     *** Print ***
+C
+      IF (IPRINT .GT. 7) THEN
+         CALL HEADER ('Molecular Hessian in ' // TYPE // 
+     &                'coordinates, from TRAHES.', 0)
+C
+         N = 0
+         IF (MOD(NCOOR,6).NE.0) N = 1
+         NCOL = NCOOR/6 + N
+         NSTART = 1
+         NEND   = MIN(NCOOR,6)
+         DO I = 1, NCOL
+            DO ICOOR1 = 1, NCOOR
+               WRITE (LUPRI,'(6F14.6)') 
+     &            (HESSIN(ICOOR1,ICOOR2), ICOOR2= NSTART, NEND)
+            END DO
+            NSTART = NEND + 1
+            NEND   = MIN(NCOOR,NEND+6)
+            WRITE (LUPRI,'(A)') '                              '
+            WRITE (LUPRI,'(A)') '                              '
+         END DO
+      END IF
+C
+      RETURN
+      END
+C
+C     /* Deck priprp */
+      SUBROUTINE PRIPRP
+C     ****************************************
+C     *** Print routine for analyzing part ***
+C     *** of the numerical derivatives.    ***
+C     ****************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <cbinum.h>
+#include <prpndr.h>
+C
+      CALL HEADER('Analysis using the numerical derivatives',0)
+      WRITE (LUPRI,'(A)') '                                      '
+      WRITE (LUPRI,'(A)') ' Properties that are analyzed: '
+C
+      WRITE (LUPRI,'(A)') '                                      '
+      IF (NUMVIB) WRITE (LUPRI,'(A)') ' Frequency analysis and ' //
+     &                              'efficient geometry.'
+      IF (NSPNSP) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
+     &                              ' spin-spin coupling constants'
+C
+      RETURN
+      END
+C
+C
+C     /*Deck stppvr*/
+      SUBROUTINE STPPVR(DODIPS)
+#include <implicit.h>
+#include <priunit.h>
+#include <cbiexc.h>
+      LOGICAL DODIPS
+C
+      DODIPS = DIPSTR
+C
+      RETURN
+      END
+C
+C
+C     /*Deck prpder*/
+      SUBROUTINE PRPDER(SYMCOR,SPSPDR,COEFF,SPSPFV,TRLNFV,TRLNDR,EXENFV,
+     &           GRIREP,WORK,IADRSS,KDPMTX,ICRIRP,INDSTP,IDCOMP,IMAX,
+     &           IMIN,ICNT,NCVAL,IDDCMP,MXCOEF,NTYPE,NPPDER,LDPMTX,
+     &           IFRSTD,NLDPMX,NSYM,MXNEXI,LWORK,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER (DMIN = 1.0D-12, D1=1.0D0, D0=0.0D0)
+#include <abainf.h>
+#include <trkoor.h>
+#include <numder.h>
+#include <fcsym.h> 
+#include <cbinum.h>
+      LOGICAL PRIVAL
+      DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMRDRP), SYMCOR(NCOOR,NCOOR), 
+     &          SPSPDR(NCOOR ,NCOOR,6,NPPDER), GRIREP(NGORDR,NGVERT),
+     &          SPSPFV(NCOOR,NCOOR,6,NMPCAL),EXENFV(NSYM,MXNEXI,NMPCAL), 
+     &          TRLNFV(3,NSYM,MXNEXI,NMPCAL), 
+     &          TRLNDR(3,NSYM,MXNEXI,NPPDER), WORK(LWORK)  
+      DIMENSION ICNT(NTYPE), IADRSS(NTYPE), IMAX(NMRDRP), IMIN(NMRDRP), 
+     &          INDSTP(NMORDR), IDCOMP(NCOOR), IDDCMP(NCOOR), 
+     &          NCVAL(NCOOR), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
+     &          ICRIRP(NCOOR,2)
+C
+C     *************************************
+C     *** Reading properties from file. ***
+C     *************************************
+C
+      KTRAMA = 1
+      KLAST  = KTRAMA + NMPCAL*NCOOR**2
+      LWRK1  = LWORK - KLAST + 1
+      CALL NDRDPP(SPSPFV,TRLNFV,EXENFV,WORK(KTRAMA),SYMCOR,WORK(KLAST),
+     &            LWRK1,IPRINT)
+      IF (NPRPDR) CALL GPCLOSE(LUNDPR,'DELETE')
+C
+C     ******************************************
+C     *** Calculating numerical derivatives. ***
+C     ******************************************
+C
+C     *** For spin-spin. ***
+C
+      IF (SPNSPN) THEN
+         NFINNR = 6*NCOOR**2
+         CALL NMNDER(SPSPDR,COEFF,SPSPFV,GRIREP,WORK,IADRSS,KDPMTX,
+     &               ICRIRP,INDSTP,IDCOMP,IMAX,IMIN,ICNT,NCVAL,IDDCMP,
+     &               MXCOEF,NMRDRP,NMPCAL,NTYPE,NPPDER*NFINNR,NFINNR,
+     &               LDPMTX,IFRSTD,NLDPMX,LWORK,.FALSE.)
+      END IF
+C
+C     ***********************************************
+C     *** Write nescesary results to file for the ***
+C     *** for the vibrational analysis.           ***
+C     ***********************************************
+C     
+      IF (PRPVIB) THEN
+         NMDPRP = 0
+         CALL NDWTPP(SPSPFV,SPSPDR,NMPCAL,NPPDER,IPRINT)
+      END IF
+C
+C     ***********************************
+C     *** Test print or result print. ***
+C     ***********************************
+C
+      IF ((IPRINT.GE.20).OR.(NPRPDR.AND..NOT.PRPVIB)) THEN
+C
+C        *** For spin-spin ***
+C
+         IF (SPNSPN) THEN
+            IDERV = 0
+            CALL TITLER('Spin-spin derivatives.','*',118)
+            DO IORDR = 1, NMRDRP
+               IF (IORDR.EQ.1) THEN
+                  CALL HEADER('1. numerical derivative',0)
+                  DO ICOOR = 1, NDCOOR
+C     
+                     IDERV = IDERV + 1
+C
+                     WRITE (LUPRI,'(A,I4)')
+     &                    '   Derivative with respect to coordinate', 
+     &                    ICOOR
+C
+                     CALL PRSPSP(SPSPDR(1,1,1,IDERV),NCOOR,NCOOR,LUPRI)
+                  END DO
+               ELSE IF (IORDR.EQ.2) THEN
+C                  
+                  CALL HEADER('2. numerical derivative',0)
+C
+                  DO ICOOR2 = 1, NDCOOR
+                  DO ICOOR1 = 1, ICOOR2
+C
+                     IDERV = IDERV + 1
+C                    
+                     IF ((PRPVIB).AND.((NARDRP+NMRDRP).EQ.2)) THEN
+                        PRIVAL = ICOOR1.EQ.ICOOR2
+                     ELSE
+                        PRIVAL = .TRUE.
+                     END IF
+C
+                     IF (PRIVAL) THEN
+                        WRITE (LUPRI,'(A,I4,A,I4)')
+     &                       '   Derivative with respect to coordinate', 
+     &                       ICOOR2, ' and ', ICOOR1
+C
+                        CALL PRSPSP(SPSPDR(1,1,1,IDERV),NCOOR,NCOOR,
+     &                              LUPRI)
+                     END IF
+                  END DO
+                  END DO
+               END IF
+            END DO
+         END IF
+      END IF
+C
+      RETURN 
+      END
+C
+C     
+C     /* Deck prspsp */
+      SUBROUTINE PRSPSP(SPSPFV,NDIM1,NDIM2,LPRIUN)
+#include <implicit.h>
+C
+      CHARACTER*26 CNTRIB(6)
+      DIMENSION SPSPFV(NDIM1,NDIM2,6)
+C
+C     *** Different contributions. ***
+C
+      DATA CNTRIB /'Total spin-spin-coupling. ',
+     &             'DSO-contribution.         ',
+     &             'PSO-contribution.         ',
+     &             'SD-contribution.          ',
+     &             'FC-contribution.          ',
+     &             'Spin dipole Fermi contact.'/
+C
+      NTCOL = NDIM1/3 + 1
+      IF (MOD(NDIM1,3).EQ.0) NTCOL = NDIM1/3
+C
+C     *** Printing the cntributions. ***
+C
+      DO IDIM3 = 1, 6
+         KDIM = 0
+         CALL HEADER(CNTRIB(IDIM3),-1)
+         DO ITCOL = 1, NTCOL
+            DO IDIM2 = 1, NDIM2
+               WRITE (LPRIUN,'(3F24.16)') 
+     &              (SPSPFV(IDIM1,IDIM2,IDIM3),
+     &                                 IDIM1 = KDIM+1,MIN(KDIM+3,NDIM1))
+            END DO
+            WRITE (LPRIUN,'(A)') '                          '
+            KDIM = KDIM + 3
+         END DO
+         WRITE (LPRIUN,'(A)') '                          '
+      END DO
+C
+      RETURN
+      END
+C
+C
+C     /* Deck prtrma */
+      SUBROUTINE PRTRMA(TRAMAT,NDIMT,NDIMP,LPRIUN)
+C     *****************************************************************
+C     *** Subroutine that prints a two dimensional matrix (TRAMAT). ***
+C     *****************************************************************
+#include <implicit.h>
+C
+      DIMENSION TRAMAT(NDIMT,NDIMT)
+C
+      NTCOL = NDIMP/6 + 1
+      IF (MOD(NDIMP,6).EQ.0) NTCOL = NDIMP/6
+C
+C     *** Printing transformation matrix. ***
+C
+      KDIM = 0
+      DO ITCOL = 1, NTCOL
+         DO IDIM2 = 1, NDIMP
+            WRITE(LPRIUN,'(6F10.4)') 
+     &           (TRAMAT(IDIM1,IDIM2), IDIM1 = KDIM+1,MIN(KDIM+6,NDIMP))
+         END DO
+         WRITE (LPRIUN,'(A)') '                          '
+         KDIM = KDIM + 6
+      END DO
+      WRITE (LPRIUN,'(A)') '                          '
+C
+      RETURN
+      END
+C
+C
+C     /* Deck trfcgd */
+      SUBROUTINE PRDPTR(TRLEN,EXENG,NSYM,MXNEXI,LUPRI)
+C     **************************************************
+C     *** Subroutine that prints the dipoletransition***
+C     *** moments.                                   ***
+C     **************************************************
+#include <implicit.h>
+C
+#include <cbiexc.h>
+      DIMENSION TRLEN(3,NSYM,MXNEXI), EXENG(NSYM,MXNEXI)
+C
+      CALL HEADER('Electric transition dipole moments (in a.u.)',15)
+      WRITE (LUPRI,'(1X,A,A,2(/,1X,A))')
+     &   ' Sym.   Mode    Frequency  ',
+     &   '            Length       ',
+     &   'ex. st.  No.      (au)          x       y       z   ',
+     &   '----------------------------------------------------'
+      DO 200 ISYM = 1, NSYM
+         DO 100 IEXVAL = 1,NEXCIT(ISYM)
+            WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,2X,3F8.3)')
+     &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
+     &            TRLEN(1,ISYM,IEXVAL),  TRLEN(2,ISYM,IEXVAL),
+     &            TRLEN(3,ISYM,IEXVAL)
+ 100     CONTINUE
+ 200  CONTINUE
+      WRITE (LUPRI,'()')
+      WRITE (LUPRI,'()')
+      WRITE (LUPRI,'()')
+      WRITE (LUPRI,'()')
+C
+      RETURN
+      END
+C
+C
+C     /* Deck trfcgd */
+      SUBROUTINE TRFCGD(EGRAD,SYMCOR,COOR,SEGRAD,WORK,NCOOR1,NCOOR2,
+     &                  LWORK,IPRINT)
+C     ************************************************************
+C     **** Subroutine that transforms a gradien in a set of   ****
+C     **** cartesian coordinates, via the permutation of the  ****
+C     **** atoms used by the numerical differentiation, to the****
+C     **** symmetry adapted coordinates used by the numerical ****
+C     **** differentiation scheme.                            ****
+C     ************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      DIMENSION SYMCOR(NCOOR1,NCOOR1), EGRAD(MXCOOR), SEGRAD(NCOOR1),
+     &          COOR(NCOOR1), WORK(LWORK)
+C
+C     *** Transforming into the "old" set of cartesian ***
+C     *** coordinates.                                 ***
+C
+      KCRPRG = 1
+      KTRAMT = KCRPRG + NCOOR1
+      CALL TROCGD(EGRAD,COOR,SEGRAD,WORK(KCRPRG),WORK(KTRAMT),NCOOR1,
+     &            IPRINT)
+C
+C     *** Transforming into symmetry coordinates. ***
+C
+      CALL TRSFCG(EGRAD,SYMCOR,SEGRAD,NCOOR1,NCOOR2,IPRINT)
+C
+      RETURN
+      END
+C
+C     
+C     /* Deck trocgd*/
+      SUBROUTINE TROCGD(EGRAD,COOR,TMPGRD,CRTPRG,TRAMAT,NCOOR,IPRINT)
+C     ***********************************************************
+C     **** Subroutine that transforms the gradient in the set****
+C     **** of cartesian coordinates, to another set of       ****
+C     **** cartesian coordinates (stored in coor).           ****
+C     ***********************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
+C
+      DIMENSION EGRAD (MXCOOR), COOR  (NCOOR      ), CRTPRG(NCOOR), 
+     &          TMPGRD(NCOOR ), TRAMAT(NCOOR,NCOOR) 
+C
+C     *** Constructing the transformation matrix. ***
+C
+      CALL TRMTOC(TRAMAT,COOR,CRTPRG,NCOOR,IPRINT)
+C
+C     *** Transforming the gradient matrix. ***
+C      
+      CALL DGEMM('N','N',NCOOR,1,NCOOR,D1,TRAMAT,NCOOR,EGRAD,MXCOOR,
+     &           D0,TMPGRD,NCOOR)
+C
+      CALL DCOPY(NCOOR,TMPGRD,1,EGRAD,1)
+C
+      IF (IPRINT .GT. 20) THEN
+         CALL HEADER('Test-printing of gradient in new cart. coor.',0)
+C
+         DO ICOOR = 1, NCOOR
+            WRITE (LUPRI,'(5X,F12.6)') EGRAD(ICOOR)
+         END DO
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck trsfcg */
+      SUBROUTINE TRSFCG(EGRAD,SYMCOR,SEGRAD,NCOOR1,NCOOR2,IPRINT)
+C     ***************************************************************
+C     **** Subroutine that transforms a gradient in the cartesian****
+C     **** coordinates used by the numerical differentiation, to ****
+C     **** the symmetry adapted coordinates used by the numerical****
+C     **** differentiation scheme.                               ****
+C     ***************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
+C
+      DIMENSION SYMCOR(NCOOR1,NCOOR1), EGRAD(MXCOOR), SEGRAD(NCOOR1)
+C
+      CALL DGEMM('T','N',NCOOR2,1,NCOOR1,D1,SYMCOR,NCOOR1,EGRAD,MXCOOR,
+     &           D0,SEGRAD,NCOOR1)
+C      
+      CALL DCOPY(NCOOR2,SEGRAD,1,EGRAD,1)
+C
+      IF (IPRINT .GT. 20) THEN
+         CALL HEADER('Test-printing of gradient in sym. coordinates',0)
+         DO ICOOR1 = 1, NCOOR2
+            WRITE (LUPRI,*) SEGRAD(ICOOR1)
+         END DO
+      END IF
+C
+      RETURN
+      END 
+C
+C
+C     /* Deck trfchs */
+      SUBROUTINE TRFCHS(EHESS,SYMCOR,COOR,SEHESS,WORK,NCOOR1,NCOOR2,
+     &                  LWORK,IPRINT)
+C     ************************************************************
+C     **** Subroutine that transforms a hessian in a set of   ****
+C     **** cartesian coordinates, via the permutation of the  ****
+C     **** atoms used by the numerical differentiation, to the****
+C     **** symmetry adapted coordinates used by the numerical ****
+C     **** differentiation scheme.                            ****
+C     ************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, KCOL = 6)
+C
+      INTEGER BEGIN, LAST
+      DIMENSION SYMCOR(NCOOR1,NCOOR1), EHESS(MXCOOR,MXCOOR), 
+     &          COOR(NCOOR1), SEHESS(NCOOR1,NCOOR1), WORK(LWORK)
+C
+C     *** Transforming into the "old" set of cartesian ***
+C     *** coordinates.                                 ***
+C
+      KCRPRG = 1
+      KTRAMT = KCRPRG + NCOOR1
+      CALL TROCHS(EHESS,COOR,SEHESS,WORK(KCRPRG),WORK(KTRAMT),NCOOR1,
+     &            IPRINT)
+C
+C     *** Transforming into symmetry coordinates. ***
+C
+      CALL TRSFC2(EHESS,SYMCOR,SEHESS,NCOOR1,NCOOR2,MXCOOR,IPRINT)
+C
+      RETURN
+      END
+C
+C     
+C     /* Deck trochs*/
+      SUBROUTINE TROCHS(EHESS,COOR,TMPHES,CRTPRG,TRAMAT,NCOOR,IPRINT)
+C     ***********************************************************
+C     **** Subroutine that transforms the hessian in the set ****
+C     **** of cartesian coordinates, to another set of       ****
+C     **** cartesian coordinates (stored in coor).           ****
+C     ***********************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, KCOL = 6)
+C
+      DIMENSION EHESS (MXCOOR,MXCOOR), COOR(NCOOR), CRTPRG(NCOOR),
+     &          TMPHES(NCOOR ,NCOOR ), TRAMAT(NCOOR ,NCOOR ) 
+C
+C     *** Constructing the transformation matrix. ***
+C
+      CALL TRMTOC(TRAMAT,COOR,CRTPRG,NCOOR,IPRINT)
+C
+C     *** Transforming the hessian matrix. ***
+C      
+      CALL OTRTEN(EHESS,TRAMAT,TMPHES,MXCOOR,NCOOR,IPRINT,'N','T')      
+C
+
+C
+      IF (IPRINT .GT. 20) THEN
+         CALL HEADER('Test-printing of hessian in new cart. coor.',0)
+         BEGIN = 1
+         LAST  = MIN(NCOOR,KCOL)
+         KCOOR = NCOOR
+         NCOL  = INT(DBLE(NCOOR)/DBLE(KCOL))
+         IF (MOD(NCOOR,KCOL).NE.0) NCOL = NCOL + 1
+C     
+         DO ICOL = 1, NCOL
+C
+            DO ICOOR = BEGIN, NCOOR
+               WRITE (LUPRI,'(2X,6F12.6)') 
+     &                        (EHESS(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
+            END DO
+            WRITE (LUPRI,'(A)') '                                '
+            BEGIN = BEGIN + KCOL
+            LAST  = MIN(NCOOR,KCOL+LAST)
+         END DO
+
+      END IF
+      RETURN
+      END
+C
+C
+C     /* Deck trsfc2 */
+      SUBROUTINE TRSFC2(SCNDER,SYMCOR,SSCNDR,NCOOR1,NCOOR2,NSCNDR,
+     &                  IPRINT)
+C     **************************************************************
+C     **** Subroutine that transforms a secon derivetive in     ****
+C     **** cartesian coordinates used by the numerical          ****
+C     **** differentiation, to the symmetry adapted coordinates ****
+C     **** used by the numerical differentiation scheme.        ****
+C     **************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, KCOL = 6)
+C
+      INTEGER BEGIN, LAST
+      DIMENSION SYMCOR(NCOOR1,NCOOR1), SCNDER(NSCNDR,NSCNDR), 
+     &          SSCNDR(NCOOR1,NCOOR1)
+C
+      CALL DGEMM('T','N',NCOOR2,NCOOR1,NCOOR1,D1,SYMCOR,NCOOR1,
+     &           SCNDER,NSCNDR,D0,SSCNDR,NCOOR1)
+C
+      CALL DGEMM('N','N',NCOOR2,NCOOR2,NCOOR1,D1,SSCNDR,NCOOR1,
+     &           SYMCOR,NCOOR1,D0,SCNDER,NSCNDR)
+C
+      IF (IPRINT .GT. 20) THEN
+         CALL HEADER('Test-printing of hessian in sym. coordinates',0)
+         BEGIN = 1
+         LAST  = MIN(NCOOR1,KCOL)
+         KCOOR = NCOOR2
+         NCOL = NCOOR2/KCOL
+         IF (MOD(NCOOR2,KCOL).NE.0) NCOL = NCOL + 1
+C     
+         DO ICOL = 1, NCOL
+C
+            DO ICOOR = BEGIN, NCOOR2
+               WRITE (LUPRI,1000) 
+     &                        (SCNDER(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
+            END DO
+            WRITE (LUPRI,'(A)') '                                '
+            BEGIN = BEGIN + KCOL
+            LAST  = MIN(NCOOR2,KCOL+LAST)
+         END DO
+      END IF
+C
+      RETURN
+ 1000 FORMAT (2X,6F12.6)
+      END 
+C
+C
+C     /* Deck trmtoc */
+      SUBROUTINE TRMTOC(TRAMAT,COOR,CRTPRG,NCOOR,IPRINT)
+C     **************************************************************
+C     **** Subroutine that constructs the transformation matrix ****
+C     **** to transform gradient/hessian back to original       ****
+C     **** set of coordinates, defined in COOR.                 ****
+C     **************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+      PARAMETER (D1 = 1.0D0, DMTHR=1.0D-4)
+#include <symmet.h>
+#include <nuclei.h>
+#include <pvibav.h>
+      LOGICAL FOUND
+       CHARACTER*9 PRPTXT
+       DIMENSION TRAMAT(NCOOR,NCOOR), COOR(NCOOR), CRTPRG(NCOOR)
+#include <ibtfun.h>
+C
+C     *** Finding the cartesian coordinates used by the ***
+C     *** program at the moment.                        ***
+C
+      ICOOR = 0
+      IATOM = 0
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO IOP = 0, MAXOPR
+            IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+               IATOM = IATOM + 1
+               DO I = 1, 3
+                  ICOOR = ICOOR + 1
+                  CRTPRG(ICOOR) =
+     &                 PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+               END DO
+            END IF
+         END DO
+      END DO
+C     
+C     *** Constructing the transformation matrix by comparing them ***
+C     *** to the old set of cartesian coordinates.                 ***
+C
+      CALL DZERO(TRAMAT,NCOOR**2)
+      DO IATOM1 = 1, NATOMS
+         ICS1 = 3*(IATOM1-1)
+         DO IATOM2 = 1, NATOMS
+            ICS2 = 3*(IATOM2-1)
+C
+            FOUND = .TRUE.
+            DO IC = 1, 3
+               FOUND = FOUND .AND. 
+     &                     ((COOR(ICS1+IC)-CRTPRG(ICS2+IC))**2.LT.DMTHR)
+            END DO
+C
+            IF (FOUND) THEN
+               DO IC = 1, 3
+                  TRAMAT(ICS1+IC,ICS2+IC) = D1
+               END DO
+            END IF
+         END DO
+      END DO
+C
+C     *** If property derivative is calculated, we need to save ***
+C     *** the transformation matrix in the property-file.       ***
+C
+      IF (CNMPRP) THEN
+         NDIM3  = 1
+         PRPTXT = 'CART-TRAN'
+         CALL WRAVFL(TRAMAT,NCOOR,NCOOR,NDIM3,PRPTXT,IPRINT)
+      END IF
+C
+C     *** Test print ***
+C
+      IF (IPRINT .GT. 50) THEN
+         WRITE (LUPRI,'(A)') 
+     &                  'The nuclear coordinates used by the program:'
+         DO ICOOR = 1, NCOOR
+            WRITE (LUPRI,'(5X,2F10.5,I4)') CRTPRG(ICOOR)
+         END DO
+         WRITE (LUPRI,'(A)') '                                       '
+         WRITE (LUPRI,'(A)') 
+     &              'Transforming to using these nuclear coordinates.'
+         DO ICOOR = 1, NCOOR
+            WRITE (LUPRI,'(5X,F10.5)') COOR(ICOOR)
+         END DO
+C
+         WRITE (LUPRI,'(5X,A)') '                       '
+         WRITE (LUPRI,'(5X,A)') 'Transformation matrix: '
+         WRITE (LUPRI,'(5X,A)') '                       '
+         CALL PRTRMA(TRAMAT,NCOOR,NCOOR,LUPRI)
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck bksmnm */
+      SUBROUTINE BKSMNM
+C     ****************************************************
+C     *** This routine takes care of symmetry odds and ***
+C     *** ends connected to frozen core orbitals in    ***
+C     *** distorted symmetry.                          ***
+C     ****************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+C
+#include <symmet.h>
+#include <nmbksym.h>
+#include <ccorb.h>
+#include <numder.h>
+#include <cbinum.h>
+      CHARACTER*8 WORD
+C
+C     *** Backing up symmetry. ***
+C
+      CALL ICOPY(64    ,IXVAL      ,1,IXVALB,1)
+      CALL ICOPY(8     ,ISOP       ,1,ISOPB ,1)
+      CALL ICOPY(8     ,NRHFFR     ,1,NRHFRB,1)
+      MAXRPB = MAXREP
+C
+C     *** If only numerical derivatives of energy then ***
+C     *** the molecule is free to rotate.              ***
+C
+      IF ((NAORDR.EQ.0).AND.(NMORDR.NE.1).AND.(.NOT.NPRPDR)) 
+     &                                         NOMOVE = .FALSE.
+C
+C     *** Different circumstances where molecule ***
+C     *** is not allowed to rotate.              ***
+C
+C
+C     *** If symmetry is reported in DALTON.INP ***
+C     *** using .NSYM, no rotation is allowed.  ***
+C     
+      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)      
+      ILINE = 0
+      REWIND (LUCMD,IOSTAT=IOS)
+ 100  CONTINUE
+      READ (LUCMD,'(A)') WORD
+      IF (WORD .EQ. '.NSYM  ') NOMOVE = .TRUE.
+      IF (WORD .NE. '*END OF') GOTO 100
+      CALL GPCLOSE(LUCMD,'KEEP')
+C
+C     *** Numerical derivatives of properties, ***
+C     *** no rotation is allowed.              ***
+C
+      IF (NMDPRP.GT.0) NOMOVE = .TRUE.
+C      
+      RETURN
+      END 
+C
+C
+C     /* Deck fndexs */
+      SUBROUTINE FNDEXS(WORD)
+C     ******************************************************
+C     *** Subroutine that sorts out the symmetry of the  ***
+C     *** excited states, and assign them to a new irrep ***
+C     *** in the distroted geometry.                     ***
+C     ******************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+#include <molinp.h>
+C
+#include <symmet.h>
+#include <nmbksym.h>
+#include <ccorb.h>
+#include <pgroup.h>
+      LOGICAL SAMIRP
+      CHARACTER*80 WORD(KMLINE)
+C
+      CALL STCCSM(NSYM)
+C
+      CALL IZERO(NRHFFR,8)
+C
+C     *** Sorting irep's, and assign them to the appropriate ***
+C     *** place in NRHFFR.                                   ***
+C
+      DO 100 IREP = 0, MAXREP
+         DO 200 IRPOLD = 0, MAXRPB
+            IF (NRHFRB(IRPOLD+1) .GT. 0) THEN
+               SAMIRP = .TRUE.
+               DO 300 ISYOP2 = 0, MAXREP
+               DO 300 ISYOP1 = 0, MAXRPB
+                  IF (SYMOP(ISOP(ISYOP2)).EQ.SYMOP(ISOPB(ISYOP1))) THEN
+                     IF (IXVALB(ISOPB(ISYOP1),IRPOLD)  .NE. 
+     &                    IXVAL (ISOP (ISYOP2),IREP )) SAMIRP = .FALSE.
+                  END IF
+300           CONTINUE
+              IF (SAMIRP) THEN
+                 NRHFFR(IREP+1) = NRHFFR(IREP+1) + NRHFRB(IRPOLD+1)
+              END IF
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+C
+C     *** Writing results to DALTON.INP ***
+C     
+      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)      
+C
+C     *** Updating file.***
+C
+      ILINE = 0
+      REWIND (LUCMD,IOSTAT=IOS)
+ 400  CONTINUE
+      ILINE = ILINE + 1
+      READ (LUCMD,'(A)') WORD(ILINE)
+      IF (WORD(ILINE) .EQ. '.NSYM  ') THEN
+         WRITE (WORD(ILINE+1),'(I3)')  NSYM
+      ELSE IF (WORD(ILINE) .EQ. '.FROIMP') THEN
+         WRITE (WORD(ILINE+1),'(8I4)') (NRHFFR(IREP),IREP=1,NSYM)
+      END IF
+      IF (WORD(ILINE) .NE. '*END OF') GOTO 400
+C
+      REWIND(LUCMD,IOSTAT=IOS)
+      DO I = 1, ILINE
+         WRITE (LUCMD,'(A)') WORD(I)
+      END DO
+C
+C     *** Closing DALTON.INP. ***
+C
+      CALL GPCLOSE(LUCMD,'KEEP')
+C
+C     *** Print. ***
+C
+      IF (IPRINT.GT.0) THEN
+         WRITE (LUPRI,'(A)') '                                   '
+         WRITE (LUPRI,'(A)') 
+     &         'Symmetries of frozen core orbitals in reduced symmetry:'
+         WRITE (LUPRI,'(8A4))') (REP(I), I=0,MAXREP)
+         WRITE (LUPRI,'(I2,7I4)') (NRHFFR(I), I=1,MAXREP+1)
+         WRITE (LUPRI,'(A)') '                                   '
+         WRITE (LUPRI,'(A)') '                                   '
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck stccsm */
+      SUBROUTINE STCCSM(NSYMCC)
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <inforb.h>
+C
+      NSYMCC = NSYM
+C
+      RETURN
+      END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

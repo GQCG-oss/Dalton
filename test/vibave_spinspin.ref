@@ -1,0 +1,6841 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Release 1.2, April 2001)
+
+                          Principal authors:
+
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Geometry optimization
+      Starting at iteration:    0
+      Maximum number of iterations:   20
+   Numerical derivatives will be calculated
+
+
+   ********************************************************************
+   *********** Commencing geometry optimization using .WALK ***********
+   ********************************************************************
+
+
+
+     @@>>>>>>>>>> Geometry walk iteration number:    0 <<<<<<<<<<
+
+
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(2v)  
+
+ The following elements were found:   X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           2       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.8009956615
+
+   4   H    1   x      0.0000000000
+   5            y      1.4325641791
+   6            z      0.4004978308
+
+   7   H    2   x      0.0000000000
+   8            y     -1.4325641791
+   9            z      0.4004978308
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H     y    [  5  -   8 ]/2
+   3   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H     y    [  5  +   8 ]/2
+   8   H     z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989410    0.000000
+   H  2    0.989410    1.516161    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989410
+  bond distance:    H  2       O                              0.989410
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.027
+
+
+  Nuclear repulsion energy :    8.906487554664
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          4   1   2   0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6  +   7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6  -   7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals           4   1   2   0
+     Number of basis functions          4   1   2   0
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724812043048   3.49D+00  -7.47D+01    3  1  1  0
+   2    -74.950451313668   3.59D-01  -2.26D-01    3  1  1  0
+   3    -74.964670453114   9.53D-02  -1.42D-02    3  1  1  0
+   4    -74.965853606462   1.53D-02  -1.18D-03    3  1  1  0
+   5    -74.965895954931   5.20D-03  -4.23D-05    3  1  1  0
+   6    -74.965901188587   2.01D-04  -5.23D-06    3  1  1  0
+   7    -74.965901192777   2.09D-06  -4.19D-09    3  1  1  0
+   8    -74.965901192777   1.50D-07  -3.07D-13    3  1  1  0
+   9    -74.965901192777   1.06D-08  -8.88D-15    3  1  1  0
+  10    -74.965901192777   1.32D-09   5.33D-15    3  1  1  0
+  11    -74.965901192777   9.74D-11   5.33D-15    3  1  1  0
+  12    -74.965901192777   2.33D-12   5.33D-15    3  1  1  0
+  13    -74.965901192777   6.94D-15  -2.31D-14    3  1  1  0
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25157697    -1.25754913    -0.45973017     0.58179404
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39261707
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.59385495     0.69267398
+
+    E(LUMO) :     0.58179404 au (symmetry 1)
+  - E(HOMO) :    -0.39261707 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97441111 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965901192777
+     Nuclear repulsion:             8.906487554664
+     Electronic energy:           -83.872388747441
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     0.9942  -0.2338   0.1040
+   2  O   1s     0.0258   0.8444  -0.5382
+   3  O   2pz    0.0042   0.1228   0.7559
+   4  H   1s    -0.0056   0.1556   0.2951
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2py    0.6127
+   2  H   1s     0.4492
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
+
+
+ Changes of defaults for NMDINP:
+ -------------------------------
+
+                                    
+                                    
+     A vibrational analysis is done.
+     Which/how is specified in *VIBANA (and **PROPERTIES).
+     Group used for force constants   C2v          
+     Step size used: 0.0100
+                                    
+     Other isotopes will be investigated.
+     These isotopes are: 
+            2           1           1
+
+
+ Changes of defaults for *VIBANA section:
+ ----------------------------------------
+
+                                    
+     Numerical derivatives of energy calculated to order   1
+     from analytical   2. derivatives
+     Total order of differentiation:   3
+     Effective geometry calculated.
+     Vibrational averages of properties calculated.
+                                  
+     Vibrational averages of the folowing properties:
+                                  
+     Harmonic contribution calculated.
+     Anharmonic contribution calculated.
+     Cannot use group theory for this. 
+     Group used in calculations: C2v            
+
+
+       ************************************************************
+       ****************** Numerical derivatives. ******************
+       ************************************************************
+
+
+
+ Derivatives calculated:
+ -----------------------
+
+           Derivatives calculated to order  2
+           Analytical derivatives from energies to   2 order.
+           0. numerical derivatives from  2. order analytical derivatives
+
+
+                   Making symmetry adapted coor in C2v
+                   -----------------------------------
+
+
+
+                 Group matrix elements for the group C2v
+                 ---------------------------------------
+
+ 1. irep:
+  1.00  1.00  1.00  1.00
+ 2. irep:
+  1.00 -1.00  1.00 -1.00
+ 3. irep:
+  1.00  1.00 -1.00 -1.00
+ 4. irep:
+  1.00 -1.00 -1.00  1.00
+                                      
+
+
+ Characters for the group C2v
+ ----------------------------
+
+ 1. irep:
+  1.0  1.0  1.0  1.0
+ 2. irep:
+  1.0 -1.0  1.0 -1.0
+ 3. irep:
+  1.0  1.0 -1.0 -1.0
+ 4. irep:
+  1.0 -1.0 -1.0  1.0
+                                      
+
+
+                           Symmetry coordinates
+                           --------------------
+
+Symmetry   1       1       1       2       2       3       4       4       4
+        0.0000  0.0000  0.0000  1.0000  0.0000  0.0000  0.0000  0.0000  0.0000
+        0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  1.0000  0.0000  0.0000
+        1.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000
+        0.0000  0.0000  0.0000  0.0000  0.7071  0.7071  0.0000  0.0000  0.0000
+        0.0000  0.7071  0.0000  0.0000  0.0000  0.0000  0.0000  0.7071  0.0000
+        0.0000  0.0000  0.7071  0.0000  0.0000  0.0000  0.0000  0.0000  0.7071
+        0.0000  0.0000  0.0000  0.0000  0.7071 -0.7071  0.0000  0.0000  0.0000
+        0.0000 -0.7071  0.0000  0.0000  0.0000  0.0000  0.0000  0.7071  0.0000
+        0.0000  0.0000  0.7071  0.0000  0.0000  0.0000  0.0000  0.0000 -0.7071
+                             
+                             
+                                
+
+
+ Component calulated
+ -------------------
+
+                       
+     Starting geometry.
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           2       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.8009956615
+
+   4   H    1   x      0.0000000000
+   5            y      1.4325641791
+   6            z      0.4004978308
+
+   7   H    2   x      0.0000000000
+   8            y     -1.4325641791
+   9            z      0.4004978308
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H     y    [  5  -   8 ]/2
+   3   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H     y    [  5  +   8 ]/2
+   8   H     z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989410    0.000000
+   H  2    0.989410    1.516161    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989410
+  bond distance:    H  2       O                              0.989410
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.027
+
+
+  Nuclear repulsion energy :    8.906487554663
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          4   1   2   0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6  +   7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6  -   7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals           4   1   2   0
+     Number of basis functions          4   1   2   0
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724812043048   3.49D+00  -7.47D+01    3  1  1  0
+   2    -74.950451313668   3.59D-01  -2.26D-01    3  1  1  0
+   3    -74.964670453114   9.53D-02  -1.42D-02    3  1  1  0
+   4    -74.965853606462   1.53D-02  -1.18D-03    3  1  1  0
+   5    -74.965895954931   5.20D-03  -4.23D-05    3  1  1  0
+   6    -74.965901188587   2.01D-04  -5.23D-06    3  1  1  0
+   7    -74.965901192777   2.09D-06  -4.19D-09    3  1  1  0
+   8    -74.965901192777   1.50D-07  -2.79D-13    3  1  1  0
+   9    -74.965901192777   1.06D-08  -2.31D-14    3  1  1  0
+  10    -74.965901192777   1.32D-09   5.33D-15    3  1  1  0
+  11    -74.965901192777   9.73D-11   5.33D-15    3  1  1  0
+  12    -74.965901192777   2.34D-12   5.33D-15    3  1  1  0
+  13    -74.965901192777   1.06D-14   5.33D-15    3  1  1  0
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25157697    -1.25754913    -0.45973017     0.58179404
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39261707
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.59385495     0.69267398
+
+    E(LUMO) :     0.58179404 au (symmetry 1)
+  - E(HOMO) :    -0.39261707 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97441111 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965901192777
+     Nuclear repulsion:             8.906487554663
+     Electronic energy:           -83.872388747441
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     0.9942  -0.2338   0.1040
+   2  O   1s     0.0258   0.8444  -0.5382
+   3  O   2pz    0.0042   0.1228   0.7559
+   4  H   1s    -0.0056   0.1556   0.2951
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2py    0.6127
+   2  H   1s     0.4492
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+
+
+ Changes of defaults for LINRES:
+ -------------------------------
+
+ Linear response calculation
+ Number of perturbations:    1
+ Print level in LINRES        :    0
+ Threshold in LINRES          : 1.00E-12
+ Maximum iterations in LINRES :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:04 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0000000000           -0.8009956615
+ H    1     0.0000000000            1.4325641791            0.4004978308
+ H    2     0.0000000000           -1.4325641791            0.4004978308
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9659011928 au (Hartrees)
+                         -2039.92587928 eV
+                           -196822.9456 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.0293132580 au
+     Mass-velocity correction:                  -0.0410130178 au
+
+     Total relativistic correction:             -0.0116997598 au (0.0156%)
+     Non-relativistic + relativistic energy:   -74.9776009525 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O    z    -0.0000005771
+                         H    y    -0.0000000490
+                         H    z     0.0000005771
+
+
+
+ O          0.0000000000            0.0000000000           -0.0000005771
+ H    1     0.0000000000           -0.0000000245            0.0000002885
+ H    2     0.0000000000            0.0000000245            0.0000002885
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O    z      H    y      H    z
+
+ O    z    0.634900
+ H    y   -0.432623    0.951695
+ H    z   -0.634900    0.432623    0.634900
+
+
+           Symmetry 2
+
+           O    x      H    x
+
+ O    x    0.000000
+ H    x    0.000000    0.000000
+
+
+           Symmetry 3
+
+           O    y      H    y      H    z
+
+ O    y    0.803949
+ H    y   -0.803949    0.803949
+ H    z   -0.674273    0.674273    0.565513
+
+
+           Symmetry 4
+
+           H    x
+
+ H    x    0.000000
+
+
+
+
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
+
+ O    x    0.000000
+ O    y    0.000000    0.803949
+ O    z    0.000000    0.000000    0.634900
+
+ H  1 x    0.000000    0.000000    0.000000    0.000000
+ H  1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
+ H  1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
+
+ H  2 x    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+ H  2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
+ H  2 z    0.000000    0.337136   -0.317450    0.000000   -0.060412    0.017347
+
+
+           H  2 x      H  2 y      H  2 z
+
+ H  2 x    0.000000
+ H  2 y    0.000000    0.438911
+ H  2 z    0.000000   -0.276724    0.300103
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.672454 au           1.709224 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.67245412      1.70922371
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989410    0.000000
+   H  2    0.989410    1.516161    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989410
+  bond distance:    H  2       O                              0.989410
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.027
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.17 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
+
+- End of Static Property Section
+
+
+               Numerical gradient in symmetric coordinates
+               -------------------------------------------
+
+
+
+                     Gradient in symmetriccoordinates
+                     --------------------------------
+
+                                    -0.00000058
+                                    -0.00000003
+                                     0.00000041
+
+
+                    Gradient in cartesian coordinates
+                    ---------------------------------
+
+ O          0.0000000000            0.0000000000           -0.0000005771
+ H    1     0.0000000000           -0.0000000245            0.0000002885
+ H    2     0.0000000000            0.0000000245            0.0000002885
+
+
+                 Gradient in Dalton symmetry coordinates
+                 ---------------------------------------
+
+                         O    z    -0.0000005771
+                         H    y    -0.0000000490
+                         H    z     0.0000005771
+
+
+                Numerical hessian in symmetric coordinates
+                ------------------------------------------
+
+
+
+                     Hessian in symmetric coordinates
+                     --------------------------------
+
+              1           1           1           2           2           3
+    1      0.634900
+    1     -0.305911    0.475847
+    1     -0.448942    0.216312    0.317450
+    2      0.000000    0.000000    0.000000    0.000000
+    2      0.000000    0.000000    0.000000    0.000000    0.000000
+    3      0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+    4      0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+    4      0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+    4      0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+                                       
+              4           4           4
+    4      0.803949
+    4     -0.568478    0.401975
+    4     -0.476783    0.337136    0.282757
+                                       
+
+
+                       Cartesian Hessian in GSPHES
+                       ---------------------------
+
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
+
+ O    x    0.000000
+ O    y    0.000000    0.803949
+ O    z    0.000000    0.000000    0.634900
+
+ H  1 x    0.000000    0.000000    0.000000    0.000000
+ H  1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
+ H  1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
+
+ H  2 x    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+ H  2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
+ H  2 z    0.000000    0.337136   -0.317450    0.000000   -0.060412    0.017347
+
+
+           H  2 x      H  2 y      H  2 z
+
+ H  2 x    0.000000
+ H  2 y    0.000000    0.438911
+ H  2 z    0.000000   -0.276724    0.300103
+
+
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+          Number of modes with zero frequency:   6
+
+
+             Vibrational frequencies harmonic approximation: 
+             ------------------------------------------------
+
+                     Mode     cm-1       hartrees  
+                       1     4130.34    0.018819
+                       1     2161.53    0.009849
+                       4     4374.19    0.019930
+
+
+ Normal coordinates:  
+ ---------------------
+
+          1            1            4
+    0.0000000    0.0000000    0.0000000
+    0.0000000    0.0000000   -0.0605605
+   -0.0465017   -0.0614729    0.0000000
+    0.0000000    0.0000000    0.0000000
+    0.5713921   -0.4436004    0.5407871
+    0.4152467    0.5489347    0.4535587
+    0.0000000    0.0000000    0.0000000
+   -0.5713921    0.4436004    0.5407871
+    0.4152467    0.5489347   -0.4535587
+                                        
+
+
+       ************************************************************
+       ****************** Numerical derivatives. ******************
+       ************************************************************
+
+
+
+ Derivatives calculated:
+ -----------------------
+
+           Derivatives calculated to order  3
+           Analytical derivatives from energies to   2 order.
+           1. numerical derivatives from  2. order analytical derivatives
+
+
+ Component calulated
+ -------------------
+
+                       
+    1
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(2v)  
+
+ The following elements were found:   X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           2       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.8014606788
+
+   4   H    1   x      0.0000000000
+   5            y      1.4382781001
+   6            z      0.4046502983
+
+   7   H    2   x      0.0000000000
+   8            y     -1.4382781001
+   9            z      0.4046502983
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H     y    [  5  -   8 ]/2
+   3   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H     y    [  5  +   8 ]/2
+   8   H     z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.993296    0.000000
+   H  2    0.993296    1.522208    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.993296
+  bond distance:    H  2       O                              0.993296
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.035
+
+
+  Nuclear repulsion energy :    8.871614306203
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          4   1   2   0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6  +   7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6  -   7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals           4   1   2   0
+     Number of basis functions          4   1   2   0
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724992789531   3.47D+00  -7.47D+01    3  1  1  0
+   2    -74.950323047408   3.60D-01  -2.25D-01    3  1  1  0
+   3    -74.964625239018   9.56D-02  -1.43D-02    3  1  1  0
+   4    -74.965818994509   1.54D-02  -1.19D-03    3  1  1  0
+   5    -74.965862261501   5.29D-03  -4.33D-05    3  1  1  0
+   6    -74.965867710573   2.14D-04  -5.45D-06    3  1  1  0
+   7    -74.965867715451   2.21D-06  -4.88D-09    3  1  1  0
+   8    -74.965867715451   1.63D-07  -3.36D-13    3  1  1  0
+   9    -74.965867715451   1.19D-08   5.33D-15    3  1  1  0
+  10    -74.965867715451   1.48D-09  -8.88D-15    3  1  1  0
+  11    -74.965867715451   1.28D-10   1.95D-14    3  1  1  0
+  12    -74.965867715451   3.09D-12   5.33D-15    3  1  1  0
+  13    -74.965867715451   2.05D-14   5.33D-15    3  1  1  0
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25208573    -1.25569242    -0.45922956     0.57810629
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39243151
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.59194086     0.68833174
+
+    E(LUMO) :     0.57810629 au (symmetry 1)
+  - E(HOMO) :    -0.39243151 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97053780 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965867715451
+     Nuclear repulsion:             8.871614306203
+     Electronic energy:           -83.837482021654
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     0.9942  -0.2339   0.1038
+   2  O   1s     0.0258   0.8459  -0.5366
+   3  O   2pz    0.0041   0.1215   0.7551
+   4  H   1s    -0.0055   0.1553   0.2965
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2py    0.6126
+   2  H   1s     0.4494
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0000000000           -0.8014606788
+ H    1     0.0000000000            1.4382781001            0.4046502983
+ H    2     0.0000000000           -1.4382781001            0.4046502983
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9658677155 au (Hartrees)
+                         -2039.92496832 eV
+                           -196822.8577 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1295036958 au
+     Mass-velocity correction:                  -0.1669879404 au
+
+     Total relativistic correction:             -0.0374842445 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033519600 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O   z     -0.0053461533
+                         H   y      0.0073546843
+                         H   z      0.0053461533
+
+
+
+ O          0.0000000000            0.0000000000           -0.0053461533
+ H    1     0.0000000000            0.0036773422            0.0026730766
+ H    2     0.0000000000           -0.0036773422            0.0026730766
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O   z       H   y       H   z 
+
+ O   z     0.626628
+ H   y    -0.419065    0.934463
+ H   z    -0.626628    0.419065    0.626628
+
+
+           Symmetry 2
+
+           O   x       H   x 
+
+ O   x     0.004433
+ H   x    -0.004433    0.004433
+
+
+           Symmetry 3
+
+           O   y       H   y       H   z 
+
+ O   y     0.789067
+ H   y    -0.789067    0.789067
+ H   z    -0.657978    0.657978    0.556881
+
+
+           Symmetry 4
+
+           H   x 
+
+ H   x     0.005114
+
+
+
+
+           O   x       O   y       O   z       H  1x       H  1y       H  1z 
+
+ O   x     0.004433
+ O   y     0.000000    0.789067
+ O   z     0.000000    0.000000    0.626628
+
+ H  1x    -0.002216    0.000000    0.000000    0.002387
+ H  1y     0.000000   -0.394533   -0.209533    0.000000    0.430882
+ H  1z     0.000000   -0.328989   -0.313314    0.000000    0.269261    0.295877
+
+ H  2x    -0.002216    0.000000    0.000000   -0.000170    0.000000    0.000000
+ H  2y     0.000000   -0.394533    0.209533    0.000000   -0.036349    0.059728
+ H  2z     0.000000    0.328989   -0.313314    0.000000   -0.059728    0.017437
+
+
+           H  2x       H  2y       H  2z 
+
+ H  2x     0.002387
+ H  2y     0.000000    0.430882
+ H  2z     0.000000   -0.269261    0.295877
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.670272 au           1.703678 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.67027248      1.70367848
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      8.7632 Hz
+  Anisotropic coupling      :    -57.3979 Hz
+  Asymmetry                 :      0.4463   
+  S parameter               :    -59.2728 Hz
+  A parameter               :     -0.1926 Hz
+  Isotropic DSO contribution:     -0.4914 Hz
+  Isotropic PSO contribution:     -4.6644 Hz
+  Isotropic SD contribution :      1.4642 Hz
+  Isotropic FC contribution :     12.4548 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      8.7632 Hz
+  Anisotropic coupling      :    -57.3979 Hz
+  Asymmetry                 :      0.4463   
+  S parameter               :    -59.2728 Hz
+  A parameter               :     -0.1926 Hz
+  Isotropic DSO contribution:     -0.4914 Hz
+  Isotropic PSO contribution:     -4.6644 Hz
+  Isotropic SD contribution :      1.4642 Hz
+  Isotropic FC contribution :     12.4548 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -27.1719 Hz
+  Anisotropic coupling      :    -52.4523 Hz
+  Asymmetry                 :     -0.5214   
+  S parameter               :     54.7776 Hz
+  A parameter               :     10.5434 Hz
+  Isotropic DSO contribution:     -4.8431 Hz
+  Isotropic PSO contribution:      3.1620 Hz
+  Isotropic SD contribution :      1.2329 Hz
+  Isotropic FC contribution :    -26.7236 Hz
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.993296    0.000000
+   H  2    0.993296    1.522208    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.993296
+  bond distance:    H  2       O                              0.993296
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.035
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.34 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
+
+- End of Static Property Section
+
+
+ Component calulated
+ -------------------
+
+                       
+    1
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(2v)  
+
+ The following elements were found:   X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           2       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.8005306442
+
+   4   H    1   x      0.0000000000
+   5            y      1.4268502581
+   6            z      0.3963453633
+
+   7   H    2   x      0.0000000000
+   8            y     -1.4268502581
+   9            z      0.3963453633
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H     y    [  5  -   8 ]/2
+   3   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H     y    [  5  +   8 ]/2
+   8   H     z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.985523    0.000000
+   H  2    0.985523    1.510113    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.985523
+  bond distance:    H  2       O                              0.985523
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.019
+
+
+  Nuclear repulsion energy :    8.941636008363
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          4   1   2   0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6  +   7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6  -   7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals           4   1   2   0
+     Number of basis functions          4   1   2   0
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724564130094   3.50D+00  -7.47D+01    3  1  1  0
+   2    -74.950513557282   3.59D-01  -2.26D-01    3  1  1  0
+   3    -74.964648348940   9.50D-02  -1.41D-02    3  1  1  0
+   4    -74.965820761871   1.51D-02  -1.17D-03    3  1  1  0
+   5    -74.965862201648   5.11D-03  -4.14D-05    3  1  1  0
+   6    -74.965867226757   1.88D-04  -5.03D-06    3  1  1  0
+   7    -74.965867230344   1.98D-06  -3.59D-09    3  1  1  0
+   8    -74.965867230345   1.38D-07  -2.90D-13    3  1  1  0
+   9    -74.965867230345   9.43D-09   8.88D-15    3  1  1  0
+  10    -74.965867230345   1.18D-09   8.88D-15    3  1  1  0
+  11    -74.965867230345   7.20D-11  -3.38D-14    3  1  1  0
+  12    -74.965867230345   1.73D-12   2.31D-14    3  1  1  0
+  13    -74.965867230345   6.72D-15  -1.95D-14    3  1  1  0
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25107395    -1.25942850    -0.46022995     0.58550071
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39281106
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.59577793     0.69704192
+
+    E(LUMO) :     0.58550071 au (symmetry 1)
+  - E(HOMO) :    -0.39281106 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97831177 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965867230345
+     Nuclear repulsion:             8.941636008363
+     Electronic energy:           -83.907503238708
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     0.9942  -0.2336   0.1043
+   2  O   1s     0.0259   0.8430  -0.5397
+   3  O   2pz    0.0042   0.1242   0.7566
+   4  H   1s    -0.0056   0.1559   0.2936
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2py    0.6128
+   2  H   1s     0.4490
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+ Old LUGDT file opened in TRPRH1.
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0000000000           -0.8005306442
+ H    1     0.0000000000            1.4268502581            0.3963453633
+ H    2     0.0000000000           -1.4268502581            0.3963453633
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9658672303 au (Hartrees)
+                         -2039.92495512 eV
+                           -196822.8564 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1294951648 au
+     Mass-velocity correction:                  -0.1669760815 au
+
+     Total relativistic correction:             -0.0374809167 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033481471 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O   z      0.0054619173
+                         H   y     -0.0075175051
+                         H   z     -0.0054619173
+
+
+
+ O          0.0000000000            0.0000000000            0.0054619173
+ H    1     0.0000000000           -0.0037587525           -0.0027309586
+ H    2     0.0000000000            0.0037587525           -0.0027309586
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O   z       H   y       H   z 
+
+ O   z     0.643311
+ H   y    -0.446509    0.969244
+ H   z    -0.643311    0.446509    0.643311
+
+
+           Symmetry 2
+
+           O   x       H   x 
+
+ O   x    -0.004563
+ H   x     0.004563   -0.004563
+
+
+           Symmetry 3
+
+           O   y       H   y       H   z 
+
+ O   y     0.819113
+ H   y    -0.819113    0.819113
+ H   z    -0.690919    0.690919    0.574291
+
+
+           Symmetry 4
+
+           H   x 
+
+ H   x    -0.005269
+
+
+
+
+           O   x       O   y       O   z       H  1x       H  1y       H  1z 
+
+ O   x    -0.004563
+ O   y     0.000000    0.819113
+ O   z     0.000000    0.000000    0.643311
+
+ H  1x     0.002282    0.000000    0.000000   -0.002458
+ H  1y     0.000000   -0.409556   -0.223254    0.000000    0.447089
+ H  1z     0.000000   -0.345460   -0.321656    0.000000    0.284357    0.304401
+
+ H  2x     0.002282    0.000000    0.000000    0.000176    0.000000    0.000000
+ H  2y     0.000000   -0.409556    0.223254    0.000000   -0.037533    0.061103
+ H  2z     0.000000    0.345460   -0.321656    0.000000   -0.061103    0.017255
+
+
+           H  2x       H  2y       H  2z 
+
+ H  2x    -0.002458
+ H  2y     0.000000    0.447089
+ H  2z     0.000000   -0.284357    0.304401
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.674634 au           1.714763 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.67463362      1.71476349
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      6.6932 Hz
+  Anisotropic coupling      :    -55.1070 Hz
+  Asymmetry                 :      0.4611   
+  S parameter               :    -57.0261 Hz
+  A parameter               :     -0.1813 Hz
+  Isotropic DSO contribution:     -0.5056 Hz
+  Isotropic PSO contribution:     -4.7460 Hz
+  Isotropic SD contribution :      1.4160 Hz
+  Isotropic FC contribution :     10.5288 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      6.6932 Hz
+  Anisotropic coupling      :    -55.1070 Hz
+  Asymmetry                 :      0.4611   
+  S parameter               :    -57.0261 Hz
+  A parameter               :     -0.1813 Hz
+  Isotropic DSO contribution:     -0.5056 Hz
+  Isotropic PSO contribution:     -4.7460 Hz
+  Isotropic SD contribution :      1.4160 Hz
+  Isotropic FC contribution :     10.5288 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -25.9755 Hz
+  Anisotropic coupling      :    -52.3071 Hz
+  Asymmetry                 :     -0.5471   
+  S parameter               :     54.8542 Hz
+  A parameter               :     10.8112 Hz
+  Isotropic DSO contribution:     -4.9707 Hz
+  Isotropic PSO contribution:      3.2532 Hz
+  Isotropic SD contribution :      1.2227 Hz
+  Isotropic FC contribution :    -25.4807 Hz
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.985523    0.000000
+   H  2    0.985523    1.510113    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.985523
+  bond distance:    H  2       O                              0.985523
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.019
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ REST       00:00:01     380 %
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.35 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
+
+- End of Static Property Section
+
+
+ Component calulated
+ -------------------
+
+                       
+    2
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(2v)  
+
+ The following elements were found:   X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           2       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.8016103903
+
+   4   H    1   x      0.0000000000
+   5            y      1.4281281754
+   6            z      0.4059871774
+
+   7   H    2   x      0.0000000000
+   8            y     -1.4281281754
+   9            z      0.4059871774
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H     y    [  5  -   8 ]/2
+   3   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H     y    [  5  +   8 ]/2
+   8   H     z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989695    0.000000
+   H  2    0.989695    1.511466    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989695
+  bond distance:    H  2       O                              0.989695
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                  99.566
+
+
+  Nuclear repulsion energy :    8.905106197592
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          4   1   2   0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6  +   7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6  -   7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals           4   1   2   0
+     Number of basis functions          4   1   2   0
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724228221648   3.48D+00  -7.47D+01    3  1  1  0
+   2    -74.950462467987   3.60D-01  -2.26D-01    3  1  1  0
+   3    -74.964674028893   9.51D-02  -1.42D-02    3  1  1  0
+   4    -74.965844758075   1.52D-02  -1.17D-03    3  1  1  0
+   5    -74.965886460880   5.20D-03  -4.17D-05    3  1  1  0
+   6    -74.965891690277   2.06D-04  -5.23D-06    3  1  1  0
+   7    -74.965891694755   2.11D-06  -4.48D-09    3  1  1  0
+   8    -74.965891694755   1.55D-07  -3.04D-13    3  1  1  0
+   9    -74.965891694755   1.13D-08  -1.95D-14    3  1  1  0
+  10    -74.965891694755   1.36D-09   8.88D-15    3  1  1  0
+  11    -74.965891694755   1.16D-10  -5.33D-15    3  1  1  0
+  12    -74.965891694755   2.77D-12  -5.33D-15    3  1  1  0
+  13    -74.965891694755   1.18D-14  -1.95D-14    3  1  1  0
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25214893    -1.25790201    -0.46076556     0.58221030
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39290483
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.59290782     0.69115369
+
+    E(LUMO) :     0.58221030 au (symmetry 1)
+  - E(HOMO) :    -0.39290483 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97511513 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965891694755
+     Nuclear repulsion:             8.905106197592
+     Electronic energy:           -83.870997892347
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     0.9942  -0.2337   0.1043
+   2  O   1s     0.0258   0.8444  -0.5393
+   3  O   2pz    0.0042   0.1232   0.7544
+   4  H   1s    -0.0056   0.1555   0.2957
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2py    0.6135
+   2  H   1s     0.4495
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:05 2001
+     Host name              : wigner                                  
+
+ Old LUGDT file opened in TRPRH1.
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0000000000           -0.8016103903
+ H    1     0.0000000000            1.4281281754            0.4059871774
+ H    2     0.0000000000           -1.4281281754            0.4059871774
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9658916948 au (Hartrees)
+                         -2039.92562083 eV
+                           -196822.9206 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1295037624 au
+     Mass-velocity correction:                  -0.1669886185 au
+
+     Total relativistic correction:             -0.0374848560 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033765508 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O   z     -0.0019657091
+                         H   y     -0.0015803102
+                         H   z      0.0019657091
+
+
+
+ O          0.0000000000            0.0000000000           -0.0019657091
+ H    1     0.0000000000           -0.0007901551            0.0009828546
+ H    2     0.0000000000            0.0007901551            0.0009828546
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O   z       H   y       H   z 
+
+ O   z     0.637468
+ H   y    -0.432216    0.950831
+ H   z    -0.637468    0.432216    0.637468
+
+
+           Symmetry 2
+
+           O   x       H   x 
+
+ O   x     0.001628
+ H   x    -0.001628    0.001628
+
+
+           Symmetry 3
+
+           O   y       H   y       H   z 
+
+ O   y     0.798498
+ H   y    -0.798498    0.798498
+ H   z    -0.673818    0.673818    0.568661
+
+
+           Symmetry 4
+
+           H   x 
+
+ H   x    -0.001107
+
+
+
+
+           O   x       O   y       O   z       H  1x       H  1y       H  1z 
+
+ O   x     0.001628
+ O   y     0.000000    0.798498
+ O   z     0.000000    0.000000    0.637468
+
+ H  1x    -0.000814    0.000000    0.000000    0.000130
+ H  1y     0.000000   -0.399249   -0.216108    0.000000    0.437332
+ H  1z     0.000000   -0.336909   -0.318734    0.000000    0.276508    0.301532
+
+ H  2x    -0.000814    0.000000    0.000000    0.000684    0.000000    0.000000
+ H  2y     0.000000   -0.399249    0.216108    0.000000   -0.038083    0.060401
+ H  2z     0.000000    0.336909   -0.318734    0.000000   -0.060401    0.017202
+
+
+           H  2x       H  2y       H  2z 
+
+ H  2x     0.000130
+ H  2y     0.000000    0.437332
+ H  2z     0.000000   -0.276508    0.301532
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.673331 au           1.711452 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.67333090      1.71145228
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      8.0246 Hz
+  Anisotropic coupling      :    -56.4580 Hz
+  Asymmetry                 :      0.4519   
+  S parameter               :    -58.3478 Hz
+  A parameter               :     -0.2100 Hz
+  Isotropic DSO contribution:     -0.4976 Hz
+  Isotropic PSO contribution:     -4.7131 Hz
+  Isotropic SD contribution :      1.4466 Hz
+  Isotropic FC contribution :     11.7887 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      8.0246 Hz
+  Anisotropic coupling      :    -56.4580 Hz
+  Asymmetry                 :      0.4519   
+  S parameter               :    -58.3478 Hz
+  A parameter               :     -0.2100 Hz
+  Isotropic DSO contribution:     -0.4976 Hz
+  Isotropic PSO contribution:     -4.7131 Hz
+  Isotropic SD contribution :      1.4466 Hz
+  Isotropic FC contribution :     11.7887 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -26.8430 Hz
+  Anisotropic coupling      :    -52.3539 Hz
+  Asymmetry                 :     -0.5226   
+  S parameter               :     54.6850 Hz
+  A parameter               :     10.6203 Hz
+  Isotropic DSO contribution:     -4.8114 Hz
+  Isotropic PSO contribution:      3.1856 Hz
+  Isotropic SD contribution :      1.2441 Hz
+  Isotropic FC contribution :    -26.4612 Hz
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989695    0.000000
+   H  2    0.989695    1.511466    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989695
+  bond distance:    H  2       O                              0.989695
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                  99.566
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.34 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
+
+- End of Static Property Section
+
+
+ Component calulated
+ -------------------
+
+                       
+    2
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(2v)  
+
+ The following elements were found:   X  Y     
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(2v)          
+Represented as: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           2       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.8003809327
+
+   4   H    1   x      0.0000000000
+   5            y      1.4370001828
+   6            z      0.3950084842
+
+   7   H    2   x      0.0000000000
+   8            y     -1.4370001828
+   9            z      0.3950084842
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H     y    [  5  -   8 ]/2
+   3   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H     y    [  5  +   8 ]/2
+   8   H     z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989140    0.000000
+   H  2    0.989140    1.520855    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989140
+  bond distance:    H  2       O                              0.989140
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.488
+
+
+  Nuclear repulsion energy :    8.907738242085
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          4   1   2   0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6  +   7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6  -   7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals           4   1   2   0
+     Number of basis functions          4   1   2   0
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.725373339781   3.49D+00  -7.47D+01    3  1  1  0
+   2    -74.950420902637   3.59D-01  -2.25D-01    3  1  1  0
+   3    -74.964647697863   9.56D-02  -1.42D-02    3  1  1  0
+   4    -74.965843486852   1.54D-02  -1.20D-03    3  1  1  0
+   5    -74.965886493883   5.20D-03  -4.30D-05    3  1  1  0
+   6    -74.965891732077   1.95D-04  -5.24D-06    3  1  1  0
+   7    -74.965891735997   2.07D-06  -3.92D-09    3  1  1  0
+   8    -74.965891735997   1.46D-07  -3.13D-13    3  1  1  0
+   9    -74.965891735997   1.00D-08   0.00D+00    3  1  1  0
+  10    -74.965891735997   1.28D-09   0.00D+00    3  1  1  0
+  11    -74.965891735997   8.02D-11   1.42D-14    3  1  1  0
+  12    -74.965891735997   1.94D-12   0.00D+00    3  1  1  0
+  13    -74.965891735997   9.00D-15  -1.42D-14    3  1  1  0
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25099584    -1.25718464    -0.45868838     0.58134429
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39232316
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.59478621     0.69418991
+
+    E(LUMO) :     0.58134429 au (symmetry 1)
+  - E(HOMO) :    -0.39232316 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97366746 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965891735997
+     Nuclear repulsion:             8.907738242085
+     Electronic energy:           -83.873629978082
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     0.9942  -0.2338   0.1038
+   2  O   1s     0.0259   0.8445  -0.5370
+   3  O   2pz    0.0042   0.1225   0.7574
+   4  H   1s    -0.0056   0.1557   0.2945
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2py    0.6119
+   2  H   1s     0.4490
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+ Old LUGDT file opened in TRPRH1.
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0000000000           -0.8003809327
+ H    1     0.0000000000            1.4370001828            0.3950084842
+ H    2     0.0000000000           -1.4370001828            0.3950084842
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9658917360 au (Hartrees)
+                         -2039.92562195 eV
+                           -196822.9207 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1294950933 au
+     Mass-velocity correction:                  -0.1669753806 au
+
+     Total relativistic correction:             -0.0374802873 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033720233 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O   z      0.0019468859
+                         H   y      0.0015816931
+                         H   z     -0.0019468859
+
+
+
+ O          0.0000000000            0.0000000000            0.0019468859
+ H    1     0.0000000000            0.0007908465           -0.0009734430
+ H    2     0.0000000000           -0.0007908465           -0.0009734430
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O   z       H   y       H   z 
+
+ O   z     0.632227
+ H   y    -0.432969    0.952535
+ H   z    -0.632227    0.432969    0.632227
+
+
+           Symmetry 2
+
+           O   x       H   x 
+
+ O   x    -0.001629
+ H   x     0.001629   -0.001629
+
+
+           Symmetry 3
+
+           O   y       H   y       H   z 
+
+ O   y     0.809347
+ H   y    -0.809347    0.809347
+ H   z    -0.674622    0.674622    0.562295
+
+
+           Symmetry 4
+
+           H   x 
+
+ H   x     0.001101
+
+
+
+
+           O   x       O   y       O   z       H  1x       H  1y       H  1z 
+
+ O   x    -0.001629
+ O   y     0.000000    0.809347
+ O   z     0.000000    0.000000    0.632227
+
+ H  1x     0.000814    0.000000    0.000000   -0.000132
+ H  1y     0.000000   -0.404673   -0.216484    0.000000    0.440470
+ H  1z     0.000000   -0.337311   -0.316113    0.000000    0.276898    0.298630
+
+ H  2x     0.000814    0.000000    0.000000   -0.000682    0.000000    0.000000
+ H  2y     0.000000   -0.404673    0.216484    0.000000   -0.035797    0.060413
+ H  2z     0.000000    0.337311   -0.316113    0.000000   -0.060413    0.017483
+
+
+           H  2x       H  2y       H  2z 
+
+ H  2x    -0.000132
+ H  2y     0.000000    0.440470
+ H  2z     0.000000   -0.276898    0.298630
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.671564 au           1.706960 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.67156371      1.70696050
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      7.4216 Hz
+  Anisotropic coupling      :    -56.0287 Hz
+  Asymmetry                 :      0.4552   
+  S parameter               :    -57.9311 Hz
+  A parameter               :     -0.1653 Hz
+  Isotropic DSO contribution:     -0.4992 Hz
+  Isotropic PSO contribution:     -4.6975 Hz
+  Isotropic SD contribution :      1.4332 Hz
+  Isotropic FC contribution :     11.1851 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      7.4216 Hz
+  Anisotropic coupling      :    -56.0287 Hz
+  Asymmetry                 :      0.4552   
+  S parameter               :    -57.9311 Hz
+  A parameter               :     -0.1653 Hz
+  Isotropic DSO contribution:     -0.4992 Hz
+  Isotropic PSO contribution:     -4.6975 Hz
+  Isotropic SD contribution :      1.4332 Hz
+  Isotropic FC contribution :     11.1851 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -26.2802 Hz
+  Anisotropic coupling      :    -52.3892 Hz
+  Asymmetry                 :     -0.5457   
+  S parameter               :     54.9276 Hz
+  A parameter               :     10.7309 Hz
+  Isotropic DSO contribution:     -5.0007 Hz
+  Isotropic PSO contribution:      3.2279 Hz
+  Isotropic SD contribution :      1.2112 Hz
+  Isotropic FC contribution :    -25.7186 Hz
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989140    0.000000
+   H  2    0.989140    1.520855    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989140
+  bond distance:    H  2       O                              0.989140
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.488
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ REST       00:00:01     391 %
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.34 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
+
+- End of Static Property Section
+
+
+ Component calulated
+ -------------------
+
+                       
+    3
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(s)   
+
+ The following element was found:   X        
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 1
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(s)           
+Represented as: Cs 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+
+   * Group multiplication table
+
+        |  E   Oyz
+   -----+----------
+     E  |  E 
+    Oyz | Oyz   E 
+
+   * Character table
+
+        |  E   Oyz
+   -----+----------
+    A'  |   1    1
+    A"  |   1   -1
+
+   * Direct product table
+
+        | A'   A" 
+   -----+----------
+    A'  | A' 
+    A"  | A"   A' 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           1       1       3       1      [3s|1s]                                      
+  H           1       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y     -0.0006056047
+   3            z     -0.8009956615
+
+   4   H        x      0.0000000000
+   5            y      1.4379720503
+   6            z      0.4050334179
+
+   7   H        x      0.0000000000
+   8            y     -1.4271563079
+   9            z      0.3959622437
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   6  3
+
+
+  Symmetry 1
+
+   1   O     y    2
+   2   O     z    3
+   3   H     y    5
+   4   H     z    6
+   5   H     y    8
+   6   H     z    9
+
+
+  Symmetry 2
+
+   7   O     x    1
+   8   H     x    4
+   9   H     x    7
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H           H   
+
+   O       0.000000
+   H       0.993390    0.000000
+   H       0.985429    1.516168    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          O                              0.993390
+  bond distance:    H          O                              0.985429
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          O          H                    100.027
+
+
+  Nuclear repulsion energy :    8.906624129751
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          6   1
+
+
+  Symmetry  A' ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2py        4
+    4     O        2pz        5
+    5     H        1s         6
+    6     H        1s         7
+
+
+  Symmetry  A" ( 2)
+
+    7     O        2px        3
+
+  Symmetries of electric field:  A" (2)  A' (1)  A' (1)
+
+  Symmetries of magnetic field:  A' (1)  A" (2)  A" (2)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ Number of two-electron integrals written:         231 ( 56.9% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Total number of orbitals           6   1
+     Number of basis functions          6   1
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               4   1
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724778646554   3.49D+00  -7.47D+01    4  1
+   2    -74.950413615327   3.59D-01  -2.26D-01    4  1
+   3    -74.964631786839   9.53D-02  -1.42D-02    4  1
+   4    -74.965814858015   1.53D-02  -1.18D-03    4  1
+   5    -74.965857208957   5.20D-03  -4.24D-05    4  1
+   6    -74.965862446972   8.48D-05  -5.24D-06    4  1
+   7    -74.965862447901   3.28D-06  -9.29D-10    4  1
+   8    -74.965862447903   5.53D-07  -1.70D-12    4  1
+   9    -74.965862447903   7.70D-08  -8.88D-15    4  1
+  10    -74.965862447903   3.03D-10  -2.31D-14    4  1
+  11    -74.965862447903   3.56D-11   1.95D-14    4  1
+  12    -74.965862447903   3.95D-13   1.95D-14    4  1
+ DIIS converged in  12 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    4    1
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25157804    -1.25756580    -0.59385565    -0.45972587     0.58165265
+         0.69283765
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39262027
+
+    E(LUMO) :     0.58165265 au (symmetry 1)
+  - E(HOMO) :    -0.39262027 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97427293 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965862447903
+     Nuclear repulsion:             8.906624129751
+     Electronic energy:           -83.872486577654
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4
+   1  O   1s     0.9942  -0.2338  -0.0014   0.1040
+   2  O   1s     0.0258   0.8444   0.0077  -0.5381
+   3  O   2py   -0.0001  -0.0020   0.6127   0.0037
+   4  O   2pz    0.0042   0.1228  -0.0050   0.7559
+   5  H   1s    -0.0055   0.1541   0.4486   0.2984
+   6  H   1s    -0.0056   0.1571  -0.4498   0.2918
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:06 2001
+     Host name              : wigner                                  
+
+ (ORTBVC) new orbital b-vector no.  3
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.52218D-15
+
+ (ORTBVC) NBOSIM reduced from  3 to  2
+
+ Old LUGDT file opened in TRPRH1.
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000           -0.0006056047           -0.8009956615
+ H          0.0000000000            1.4379720503            0.4050334179
+ H          0.0000000000           -1.4271563079            0.3959622437
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9658624479 au (Hartrees)
+                         -2039.92482498 eV
+                           -196822.8438 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1294994205 au
+     Mass-velocity correction:                  -0.1669819964 au
+
+     Total relativistic correction:             -0.0374825759 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033450238 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O   y     -0.0078933094
+                         O   z      0.0000722323
+                         H   y      0.0039051378
+                         H   z      0.0032739686
+                         H   y      0.0039881716
+                         H   z     -0.0033462009
+
+
+
+ O          0.0000000000           -0.0078933094            0.0000722323
+ H          0.0000000000            0.0039051378            0.0032739686
+ H          0.0000000000            0.0039881716           -0.0033462009
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O   y       O   z       H   y       H   z       H   y       H   z 
+
+ O   y     0.804086
+ O   z    -0.016780    0.634984
+ H   y    -0.394381   -0.208017    0.431316
+ H   z    -0.328840   -0.312563    0.268554    0.295217
+ H   y    -0.409705    0.224797   -0.036935    0.060286    0.446640
+ H   z     0.345620   -0.322422   -0.060537    0.017345   -0.285083    0.305076
+
+
+           Symmetry 2
+
+           O   x       H   x       H   x 
+
+ O   x    -0.000081
+ H   x    -0.002715    0.002715
+ H   x     0.002796    0.000000   -0.002796
+
+
+
+
+           O   x       O   y       O   z       H   x       H   y       H   z 
+
+ O   x    -0.000081
+ O   y     0.000000    0.804086
+ O   z     0.000000   -0.016780    0.634984
+
+ H   x    -0.002715    0.000000    0.000000    0.002715
+ H   y     0.000000   -0.394381   -0.208017    0.000000    0.431316
+ H   z     0.000000   -0.328840   -0.312563    0.000000    0.268554    0.295217
+
+ H   x     0.002796    0.000000    0.000000    0.000000    0.000000    0.000000
+ H   y     0.000000   -0.409705    0.224797    0.000000   -0.036935    0.060286
+ H   z     0.000000    0.345620   -0.322422    0.000000   -0.060537    0.017345
+
+
+           H   x       H   y       H   z 
+
+ H   x    -0.002796
+ H   y     0.000000    0.446640
+ H   z     0.000000   -0.285083    0.305076
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.672464 au           1.709250 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    y     -0.00182310     -0.00463389
+                    z      0.67246201      1.70924377
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H      and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      8.1331 Hz
+  Anisotropic coupling      :    -57.3952 Hz
+  Asymmetry                 :      0.4405   
+  S parameter               :    -59.2221 Hz
+  A parameter               :     -0.1751 Hz
+  Isotropic DSO contribution:     -0.4927 Hz
+  Isotropic PSO contribution:     -4.7500 Hz
+  Isotropic SD contribution :      1.4777 Hz
+  Isotropic FC contribution :     11.8980 Hz
+
+
+
+
+          Indirect spin-spin coupling between H      and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      7.3107 Hz
+  Anisotropic coupling      :    -55.1038 Hz
+  Asymmetry                 :      0.4671   
+  S parameter               :    -57.0726 Hz
+  A parameter               :     -0.1991 Hz
+  Isotropic DSO contribution:     -0.5043 Hz
+  Isotropic PSO contribution:     -4.6583 Hz
+  Isotropic SD contribution :      1.4025 Hz
+  Isotropic FC contribution :     11.0709 Hz
+
+
+
+
+          Indirect spin-spin coupling between H      and H     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -26.5621 Hz
+  Anisotropic coupling      :    -52.3885 Hz
+  Asymmetry                 :     -0.5355   
+  S parameter               :     54.8352 Hz
+  A parameter               :     10.6764 Hz
+  Isotropic DSO contribution:     -4.9064 Hz
+  Isotropic PSO contribution:      3.2074 Hz
+  Isotropic SD contribution :      1.2278 Hz
+  Isotropic FC contribution :    -26.0909 Hz
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H           H   
+
+   O       0.000000
+   H       0.993390    0.000000
+   H       0.985429    1.516168    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          O                              0.993390
+  bond distance:    H          O                              0.985429
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          O          H                    100.027
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.49 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
+
+- End of Static Property Section
+
+
+ Component calulated
+ -------------------
+
+                       
+    3
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+                  SYMADD: Requested addition of symmetry
+                  --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Symmetry class found: C(s)   
+
+ The following element was found:   X        
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 1
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Full group is:  C(s)           
+Represented as: Cs 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+
+   * Group multiplication table
+
+        |  E   Oyz
+   -----+----------
+     E  |  E 
+    Oyz | Oyz   E 
+
+   * Character table
+
+        |  E   Oyz
+   -----+----------
+    A'  |   1    1
+    A"  |   1   -1
+
+   * Direct product table
+
+        | A'   A" 
+   -----+----------
+    A'  | A' 
+    A"  | A"   A' 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           1       1       3       1      [3s|1s]                                      
+  H           1       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0006056047
+   3            z     -0.8009956615
+
+   4   H        x      0.0000000000
+   5            y      1.4271563079
+   6            z      0.3959622437
+
+   7   H        x      0.0000000000
+   8            y     -1.4379720503
+   9            z      0.4050334179
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   6  3
+
+
+  Symmetry 1
+
+   1   O     y    2
+   2   O     z    3
+   3   H     y    5
+   4   H     z    6
+   5   H     y    8
+   6   H     z    9
+
+
+  Symmetry 2
+
+   7   O     x    1
+   8   H     x    4
+   9   H     x    7
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H           H   
+
+   O       0.000000
+   H       0.985429    0.000000
+   H       0.993390    1.516168    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          O                              0.985429
+  bond distance:    H          O                              0.993390
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          O          H                    100.027
+
+
+  Nuclear repulsion energy :    8.906624129751
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          6   1
+
+
+  Symmetry  A' ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2py        4
+    4     O        2pz        5
+    5     H        1s         6
+    6     H        1s         7
+
+
+  Symmetry  A" ( 2)
+
+    7     O        2px        3
+
+  Symmetries of electric field:  A" (2)  A' (1)  A' (1)
+
+  Symmetries of magnetic field:  A' (1)  A" (2)  A" (2)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ Number of two-electron integrals written:         231 ( 56.9% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Total number of orbitals           6   1
+     Number of basis functions          6   1
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               4   1
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724778646554   3.49D+00  -7.47D+01    4  1
+   2    -74.950413615327   3.59D-01  -2.26D-01    4  1
+   3    -74.964631786839   9.53D-02  -1.42D-02    4  1
+   4    -74.965814858015   1.53D-02  -1.18D-03    4  1
+   5    -74.965857208957   5.20D-03  -4.24D-05    4  1
+   6    -74.965862446972   8.48D-05  -5.24D-06    4  1
+   7    -74.965862447901   3.28D-06  -9.29D-10    4  1
+   8    -74.965862447903   5.53D-07  -1.69D-12    4  1
+   9    -74.965862447903   7.70D-08  -3.91D-14    4  1
+  10    -74.965862447903   3.03D-10   1.78D-14    4  1
+  11    -74.965862447903   3.56D-11  -1.07D-14    4  1
+  12    -74.965862447903   3.95D-13   3.55D-15    4  1
+ DIIS converged in  12 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    4    1
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25157804    -1.25756580    -0.59385565    -0.45972587     0.58165265
+         0.69283765
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39262027
+
+    E(LUMO) :     0.58165265 au (symmetry 1)
+  - E(HOMO) :    -0.39262027 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97427293 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965862447903
+     Nuclear repulsion:             8.906624129751
+     Electronic energy:           -83.872486577654
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4
+   1  O   1s     0.9942  -0.2338   0.0014   0.1040
+   2  O   1s     0.0258   0.8444  -0.0077  -0.5381
+   3  O   2py    0.0001   0.0020   0.6127  -0.0037
+   4  O   2pz    0.0042   0.1228   0.0050   0.7559
+   5  H   1s    -0.0056   0.1571   0.4498   0.2918
+   6  H   1s    -0.0055   0.1541  -0.4486   0.2984
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+ (ORTBVC) new orbital b-vector no.  3
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.63240D-15
+
+ (ORTBVC) NBOSIM reduced from  3 to  2
+
+ Old LUGDT file opened in TRPRH1.
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0006056047           -0.8009956615
+ H          0.0000000000            1.4271563079            0.3959622437
+ H          0.0000000000           -1.4379720503            0.4050334179
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9658624479 au (Hartrees)
+                         -2039.92482498 eV
+                           -196822.8438 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1294994205 au
+     Mass-velocity correction:                  -0.1669819964 au
+
+     Total relativistic correction:             -0.0374825759 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033450238 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O   y      0.0078933094
+                         O   z      0.0000722323
+                         H   y     -0.0039881716
+                         H   z     -0.0033462009
+                         H   y     -0.0039051378
+                         H   z      0.0032739686
+
+
+
+ O          0.0000000000            0.0078933094            0.0000722323
+ H          0.0000000000           -0.0039881716           -0.0033462009
+ H          0.0000000000           -0.0039051378            0.0032739686
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O   y       O   z       H   y       H   z       H   y       H   z 
+
+ O   y     0.804086
+ O   z     0.016780    0.634984
+ H   y    -0.409705   -0.224797    0.446640
+ H   z    -0.345620   -0.322422    0.285083    0.305076
+ H   y    -0.394381    0.208017   -0.036935    0.060537    0.431316
+ H   z     0.328840   -0.312563   -0.060286    0.017345   -0.268554    0.295217
+
+
+           Symmetry 2
+
+           O   x       H   x       H   x 
+
+ O   x    -0.000081
+ H   x     0.002796   -0.002796
+ H   x    -0.002715    0.000000    0.002715
+
+
+
+
+           O   x       O   y       O   z       H   x       H   y       H   z 
+
+ O   x    -0.000081
+ O   y     0.000000    0.804086
+ O   z     0.000000    0.016780    0.634984
+
+ H   x     0.002796    0.000000    0.000000   -0.002796
+ H   y     0.000000   -0.409705   -0.224797    0.000000    0.446640
+ H   z     0.000000   -0.345620   -0.322422    0.000000    0.285083    0.305076
+
+ H   x    -0.002715    0.000000    0.000000    0.000000    0.000000    0.000000
+ H   y     0.000000   -0.394381    0.208017    0.000000   -0.036935    0.060537
+ H   z     0.000000    0.328840   -0.312563    0.000000   -0.060286    0.017345
+
+
+           H   x       H   y       H   z 
+
+ H   x     0.002715
+ H   y     0.000000    0.431316
+ H   z     0.000000   -0.268554    0.295217
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.672464 au           1.709250 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    y      0.00182310      0.00463389
+                    z      0.67246201      1.70924377
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H      and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      7.3107 Hz
+  Anisotropic coupling      :    -55.1038 Hz
+  Asymmetry                 :      0.4671   
+  S parameter               :    -57.0726 Hz
+  A parameter               :     -0.1991 Hz
+  Isotropic DSO contribution:     -0.5043 Hz
+  Isotropic PSO contribution:     -4.6583 Hz
+  Isotropic SD contribution :      1.4025 Hz
+  Isotropic FC contribution :     11.0709 Hz
+
+
+
+
+          Indirect spin-spin coupling between H      and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      8.1331 Hz
+  Anisotropic coupling      :    -57.3952 Hz
+  Asymmetry                 :      0.4405   
+  S parameter               :    -59.2221 Hz
+  A parameter               :     -0.1751 Hz
+  Isotropic DSO contribution:     -0.4927 Hz
+  Isotropic PSO contribution:     -4.7500 Hz
+  Isotropic SD contribution :      1.4777 Hz
+  Isotropic FC contribution :     11.8980 Hz
+
+
+
+
+          Indirect spin-spin coupling between H      and H     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -26.5621 Hz
+  Anisotropic coupling      :    -52.3885 Hz
+  Asymmetry                 :     -0.5355   
+  S parameter               :     54.8352 Hz
+  A parameter               :     10.6764 Hz
+  Isotropic DSO contribution:     -4.9064 Hz
+  Isotropic PSO contribution:      3.2074 Hz
+  Isotropic SD contribution :      1.2278 Hz
+  Isotropic FC contribution :    -26.0909 Hz
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H           H   
+
+   O       0.000000
+   H       0.985429    0.000000
+   H       0.993390    1.516168    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          O                              0.985429
+  bond distance:    H          O                              0.993390
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          O          H                    100.027
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ REST       00:00:02     360 %
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.50 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
+
+- End of Static Property Section
+
+
+ Component calulated
+ -------------------
+
+                       
+     Starting geometry.
+                       
+                       
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  h2o                                                                     
+  Project: vib. ave. of h2o spin-spin couplings                           
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  H           2       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:      3      10      21       7
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.8009956615
+
+   4   H    1   x      0.0000000000
+   5            y      1.4325641791
+   6            z      0.4004978308
+
+   7   H    2   x      0.0000000000
+   8            y     -1.4325641791
+   9            z      0.4004978308
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   O     z    3
+   2   H     y    [  5  -   8 ]/2
+   3   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   O     y    2
+   7   H     y    [  5  +   8 ]/2
+   8   H     z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989410    0.000000
+   H  2    0.989410    1.516161    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989410
+  bond distance:    H  2       O                              0.989410
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.027
+
+
+  Nuclear repulsion energy :    8.906487554663
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          4   1   2   0
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2pz        5
+    4     H        1s         6  +   7
+
+
+  Symmetry  B1 ( 2)
+
+    5     O        2px        3
+
+
+  Symmetry  B2 ( 3)
+
+    6     O        2py        4
+    7     H        1s         6  -   7
+
+
+  No orbitals in symmetry  A2 ( 4)
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ Number of two-electron integrals written:         138 ( 34.0% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+ Title lines from integral program:
+     h2o                                                                     
+     Project: vib. ave. of h2o spin-spin couplings                           
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals           4   1   2   0
+     Number of basis functions          4   1   2   0
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    4
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -74.724812043048   3.49D+00  -7.47D+01    3  1  1  0
+   2    -74.950451313668   3.59D-01  -2.26D-01    3  1  1  0
+   3    -74.964670453114   9.53D-02  -1.42D-02    3  1  1  0
+   4    -74.965853606462   1.53D-02  -1.18D-03    3  1  1  0
+   5    -74.965895954931   5.20D-03  -4.23D-05    3  1  1  0
+   6    -74.965901188587   2.01D-04  -5.23D-06    3  1  1  0
+   7    -74.965901192777   2.09D-06  -4.19D-09    3  1  1  0
+   8    -74.965901192777   1.50D-07  -2.79D-13    3  1  1  0
+   9    -74.965901192777   1.06D-08  -2.31D-14    3  1  1  0
+  10    -74.965901192777   1.32D-09   5.33D-15    3  1  1  0
+  11    -74.965901192777   9.73D-11   5.33D-15    3  1  1  0
+  12    -74.965901192777   2.34D-12   5.33D-15    3  1  1  0
+  13    -74.965901192777   1.06D-14   5.33D-15    3  1  1  0
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.25157697    -1.25754913    -0.45973017     0.58179404
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.39261707
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.59385495     0.69267398
+
+    E(LUMO) :     0.58179404 au (symmetry 1)
+  - E(HOMO) :    -0.39261707 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.97441111 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:          -74.965901192777
+     Nuclear repulsion:             8.906487554663
+     Electronic energy:           -83.872388747441
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     0.9942  -0.2338   0.1040
+   2  O   1s     0.0258   0.8444  -0.5382
+   3  O   2pz    0.0042   0.1228   0.7559
+   4  H   1s    -0.0056   0.1556   0.2951
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    1.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2py    0.6127
+   2  H   1s     0.4492
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      The molecular gradient
+      The molecular Hessian
+      Nuclear spin-spin coupling constants
+
+
+ Default print level:        0
+
+   >>>>> WARNING - RHF calculations of spin-spin coupling constants are likely to give 
+  qualitatively incorrect results
+
+
+  Only the spin-spin couplings between the following nuclei will be calculated:
+  -----------------------------------------------------------------------------
+
+             1           2           3
+
+
+
+ Changes of defaults for SPIN-S:
+ -------------------------------
+
+
+
+ Changes of defaults for TRPRSP:
+ -------------------------------
+
+ Threshold in TRPRSP          : 1.00E-12
+ Maximum iterations in TRPRSP :   60
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:07 2001
+     Host name              : wigner                                  
+
+ Old LUGDT file opened in TRPRH1.
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:08 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0000000000           -0.8009956615
+ H    1     0.0000000000            1.4325641791            0.4004978308
+ H    2     0.0000000000           -1.4325641791            0.4004978308
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9659011928 au (Hartrees)
+                         -2039.92587928 eV
+                           -196822.9456 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1294994305 au
+     Mass-velocity correction:                  -0.1669820010 au
+
+     Total relativistic correction:             -0.0374825705 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033837633 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O    z    -0.0000005771
+                         H    y    -0.0000000490
+                         H    z     0.0000005771
+
+
+
+ O          0.0000000000            0.0000000000           -0.0000005771
+ H    1     0.0000000000           -0.0000000245            0.0000002885
+ H    2     0.0000000000            0.0000000245            0.0000002885
+
+
+
+
+
+                          Molecular Hessian (au)
+                          ----------------------
+
+
+           Symmetry 1
+
+           O    z      H    y      H    z
+
+ O    z    0.634900
+ H    y   -0.432623    0.951695
+ H    z   -0.634900    0.432623    0.634900
+
+
+           Symmetry 2
+
+           O    x      H    x
+
+ O    x    0.000000
+ H    x    0.000000    0.000000
+
+
+           Symmetry 3
+
+           O    y      H    y      H    z
+
+ O    y    0.803949
+ H    y   -0.803949    0.803949
+ H    z   -0.674273    0.674273    0.565513
+
+
+           Symmetry 4
+
+           H    x
+
+ H    x    0.000000
+
+
+
+
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
+
+ O    x    0.000000
+ O    y    0.000000    0.803949
+ O    z    0.000000    0.000000    0.634900
+
+ H  1 x    0.000000    0.000000    0.000000    0.000000
+ H  1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
+ H  1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
+
+ H  2 x    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+ H  2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
+ H  2 z    0.000000    0.337136   -0.317450    0.000000   -0.060412    0.017347
+
+
+           H  2 x      H  2 y      H  2 z
+
+ H  2 x    0.000000
+ H  2 y    0.000000    0.438911
+ H  2 z    0.000000   -0.276724    0.300103
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.672454 au           1.709224 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.67245412      1.70922371
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+ *******************************************************************************
+ **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
+ *******************************************************************************
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      7.7214 Hz
+  Anisotropic coupling      :    -56.2387 Hz
+  Asymmetry                 :      0.4536   
+  S parameter               :    -58.1351 Hz
+  A parameter               :     -0.1873 Hz
+  Isotropic DSO contribution:     -0.4984 Hz
+  Isotropic PSO contribution:     -4.7050 Hz
+  Isotropic SD contribution :      1.4400 Hz
+  Isotropic FC contribution :     11.4848 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      7.7214 Hz
+  Anisotropic coupling      :    -56.2387 Hz
+  Asymmetry                 :      0.4536   
+  S parameter               :    -58.1351 Hz
+  A parameter               :     -0.1873 Hz
+  Isotropic DSO contribution:     -0.4984 Hz
+  Isotropic PSO contribution:     -4.7050 Hz
+  Isotropic SD contribution :      1.4400 Hz
+  Isotropic FC contribution :     11.4848 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -26.5578 Hz
+  Anisotropic coupling      :    -52.3721 Hz
+  Asymmetry                 :     -0.5342   
+  S parameter               :     54.8066 Hz
+  A parameter               :     10.6762 Hz
+  Isotropic DSO contribution:     -4.9064 Hz
+  Isotropic PSO contribution:      3.2072 Hz
+  Isotropic SD contribution :      1.2277 Hz
+  Isotropic FC contribution :    -26.0863 Hz
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989410    0.000000
+   H  2    0.989410    1.516161    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989410
+  bond distance:    H  2       O                              0.989410
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.027
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.34 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
+
+- End of Static Property Section
+
+
+                 Numerical gradient in normal coordinates
+                 ----------------------------------------
+
+
+
+                      Gradient in normalcoordinates
+                      -----------------------------
+
+                                     0.00000024
+                                     0.00000037
+
+
+                    Gradient in cartesian coordinates
+                    ---------------------------------
+
+ O          0.0000000000            0.0000000000           -0.0000000341
+ H    1     0.0000000000           -0.0000000297            0.0000003043
+ H    2     0.0000000000            0.0000000297            0.0000003043
+
+
+                 Gradient in Dalton symmetry coordinates
+                 ---------------------------------------
+
+                         O    z    -0.0000000341
+                         H    y    -0.0000000593
+                         H    z     0.0000006086
+
+
+                 Numerical hessian in normal coordinates
+                 ---------------------------------------
+
+
+
+                      Hessian in normal coordinates
+                      -----------------------------
+
+              1           1           4
+    1      0.674372
+    1      0.000000    0.189549
+    4      0.000000    0.000000    0.774869
+                                       
+
+
+        Numerical third derivative of energy in normalcoordinates
+        ---------------------------------------------------------
+
+
+
+             Third derivative of energy in normal coordinates
+             ------------------------------------------------
+
+      Coloumn number  1
+      -----------------
+    -1.469720  0.008182  0.000000
+     0.008182  0.090044  0.000000
+     0.000000  0.000000 -1.620801
+                              
+   
+   
+   
+                              
+      Coloumn number  2
+      -----------------
+     0.008182  0.090044  0.000000
+     0.090044  0.101275  0.000000
+     0.000000  0.000000 -0.152634
+                              
+   
+   
+   
+                              
+      Coloumn number  3
+      -----------------
+     0.000000  0.000000 -1.620801
+     0.000000  0.000000 -0.152634
+    -1.620801 -0.152634  0.000000
+                              
+   
+   
+   
+                              
+     Number of hessian  calculations done:              8
+
+
+ Analysis using the numerical derivatives
+ ----------------------------------------
+
+                                      
+ Properties that are analyzed: 
+                                      
+ Frequency analysis and efficient geometry.
+
+
+          ******************************************************
+          *** Output from Anharmonic Force Constant analysis ***
+          ******************************************************
+
+
+
+  Effective geometry corrections in normal coordinates
+  ----------------------------------------------------
+
+Normal mode:    1   Frequency:    0.0188   Displacement:    0.0296
+Normal mode:    2   Frequency:    0.0098   Displacement:   -0.0021
+Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
+
+
+                      +------------------------------+
+                      ! Change to effective geometry !
+                      +------------------------------+
+
+
+
+                        Cartesian coordinates (au)
+                        --------------------------
+
+ O          0.0000000000            0.0000000000           -0.0012182044
+ H    1     0.0000000000            0.0174427489            0.0108782058
+ H    2     0.0000000000           -0.0174427489            0.0108782058
+
+
+
+
+
+                      +------------------------------+
+                      ! Estimated effective geometry !
+                      +------------------------------+
+
+
+
+                        Cartesian coordinates (au)
+                        --------------------------
+
+ O          0.0000000000            0.0000000000           -0.8022138659
+ H    1     0.0000000000            1.4500069280            0.4113760366
+ H    2     0.0000000000           -1.4500069280            0.4113760366
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    1.000596    0.000000
+   H  2    1.000596    1.534621    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              1.000596
+  bond distance:    H  2       O                              1.000596
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.144
+
+
+
+
+ *******************************************************************************
+ ****************** Vibrational average of property SPIN-SPIN ******************
+ *******************************************************************************
+
+
+
+ Vibrational averaged SPIN-SPIN couplings
+ ----------------------------------------
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :     12.1191 Hz
+  Anisotropic coupling      :    -63.7820 Hz
+  Asymmetry                 :      0.4178   
+  S parameter               :    -65.6115 Hz
+  A parameter               :     -0.2300 Hz
+  Isotropic DSO contribution:     -0.4952 Hz
+  Isotropic PSO contribution:     -4.5951 Hz
+  Isotropic SD contribution :      1.5334 Hz
+  Isotropic FC contribution :     15.6760 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :     12.1191 Hz
+  Anisotropic coupling      :    -63.7820 Hz
+  Asymmetry                 :      0.4178   
+  S parameter               :    -65.6115 Hz
+  A parameter               :     -0.2300 Hz
+  Isotropic DSO contribution:     -0.4952 Hz
+  Isotropic PSO contribution:     -4.5951 Hz
+  Isotropic SD contribution :      1.5334 Hz
+  Isotropic FC contribution :     15.6760 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :    -31.9490 Hz
+  Anisotropic coupling      :    -55.5922 Hz
+  Asymmetry                 :     -0.4620   
+  S parameter               :     57.5363 Hz
+  A parameter               :     10.3436 Hz
+  Isotropic DSO contribution:     -4.7096 Hz
+  Isotropic PSO contribution:      3.0429 Hz
+  Isotropic SD contribution :      1.2430 Hz
+  Isotropic FC contribution :    -31.5254 Hz
+
+
+
+
+ Harmonic contribution to vibrational average of property SPIN-SPIN
+ ------------------------------------------------------------------
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      1.4662 Hz
+  Anisotropic coupling      :     -4.2725 Hz
+  Asymmetry                 :      0.1971   
+  S parameter               :     -4.3001 Hz
+  A parameter               :     -0.0310 Hz
+  Isotropic DSO contribution:     -0.0172 Hz
+  Isotropic PSO contribution:     -0.0098 Hz
+  Isotropic SD contribution :      0.0251 Hz
+  Isotropic FC contribution :      1.4681 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      1.4662 Hz
+  Anisotropic coupling      :     -4.2725 Hz
+  Asymmetry                 :      0.1971   
+  S parameter               :     -4.3001 Hz
+  A parameter               :     -0.0310 Hz
+  Isotropic DSO contribution:     -0.0172 Hz
+  Isotropic PSO contribution:     -0.0098 Hz
+  Isotropic SD contribution :      0.0251 Hz
+  Isotropic FC contribution :      1.4681 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :     -3.7190 Hz
+  Anisotropic coupling      :     -3.0065 Hz
+  Asymmetry                 :     -0.1956   
+  S parameter               :      3.0256 Hz
+  A parameter               :      0.0434 Hz
+  Isotropic DSO contribution:      0.0318 Hz
+  Isotropic PSO contribution:     -0.0366 Hz
+  Isotropic SD contribution :      0.0039 Hz
+  Isotropic FC contribution :     -3.7182 Hz
+
+
+
+
+ Anharmonic contribution to vibrational average of property SPIN-SPIN
+ --------------------------------------------------------------------
+
+ Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
+
+
+
+                   +------------------------------------+
+                   ! ABACUS - Final spin-spin couplings !
+                   +------------------------------------+
+
+
+
+          Indirect spin-spin coupling between H    1 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      2.9316 Hz
+  Anisotropic coupling      :     -3.2992 Hz
+  Asymmetry                 :      0.0818   
+  S parameter               :     -3.3029 Hz
+  A parameter               :     -0.0117 Hz
+  Isotropic DSO contribution:      0.0204 Hz
+  Isotropic PSO contribution:      0.1196 Hz
+  Isotropic SD contribution :      0.0684 Hz
+  Isotropic FC contribution :      2.7231 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and O     :
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
+
+  Isotropic coupling        :      2.9316 Hz
+  Anisotropic coupling      :     -3.2992 Hz
+  Asymmetry                 :      0.0818   
+  S parameter               :     -3.3029 Hz
+  A parameter               :     -0.0117 Hz
+  Isotropic DSO contribution:      0.0204 Hz
+  Isotropic PSO contribution:      0.1196 Hz
+  Isotropic SD contribution :      0.0684 Hz
+  Isotropic FC contribution :      2.7231 Hz
+
+
+
+
+          Indirect spin-spin coupling between H    2 and H    1:
+          ======================================================
+
+
+  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+
+  Isotropic coupling        :     -1.6722 Hz
+  Anisotropic coupling      :      0.9585 Hz
+  Asymmetry                 :      0.5543   
+  S parameter               :      1.0064 Hz
+  A parameter               :      0.3760 Hz
+  Isotropic DSO contribution:      0.1650 Hz
+  Isotropic PSO contribution:     -0.1277 Hz
+  Isotropic SD contribution :      0.0114 Hz
+  Isotropic FC contribution :     -1.7209 Hz
+
+
+
+
+      >>>>>>>>>> Geometry has converged <<<<<<<<<<
+
+
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:08 2001
+     Host name              : wigner                                  
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:08 2001
+     Host name              : wigner                                  
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          0.0000000000            0.0000000000           -0.8009956615
+ H    1     0.0000000000            1.4325641791            0.4004978308
+ H    2     0.0000000000           -1.4325641791            0.4004978308
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -74.9659011928 au (Hartrees)
+                         -2039.92587928 eV
+                           -196822.9456 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1294994305 au
+     Mass-velocity correction:                  -0.1669820010 au
+
+     Total relativistic correction:             -0.0374825705 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033837633 au
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.672454 au           1.709224 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.67245412      1.70922371
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.989410    0.000000
+   H  2    0.989410    1.516161    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.989410
+  bond distance:    H  2       O                              0.989410
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 100.027
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
+
+- End of Static Property Section
+ >>>> Total CPU  time used in DALTON:   3.39 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
+
+ 
+     Date and time (Linux)  : Mon May 28 15:44:08 2001
+     Host name              : wigner                                  

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: eri2par.F,v 1.6 2001-05-31 06:38:24 vebjornb Exp $
+C$Id: eri2par.F,v 1.7 2001-10-01 13:22:17 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pardrv */
@@ -92,7 +92,7 @@ C
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                   DINTSKP,RELCAL)
+     &                   DINTSKP,RELCAL)         
       ELSE
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
@@ -576,7 +576,7 @@ C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
-C
+C  
 C        Send (I|J) batch to NODEID
 C
          CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
@@ -766,13 +766,15 @@ C     Get calculation type (iprtyp)
 C
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
-      DO WHILE(IPRTYP.GT.0)         
+      DO WHILE(IPRTYP.GT.0)       
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C
          IF (IPRTYP.EQ.1) THEN
             CALL HER_NODSTR(WORK,MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.2) THEN
             CALL ERI_NODSTR(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP.EQ.4) THEN
+            CALL DFT_NODSTR(WORK,MWORK,IPRINT)
 C         ELSE IF (IPRTYP.EQ.3) THEN
 C            CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
          END IF

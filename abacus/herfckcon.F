@@ -59,6 +59,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <dftcom.h>
 #include <veclen.h>
       PARAMETER (DP25=0.25D0,DP5=0.5D0)
       INTEGER A,B,C,D
@@ -70,7 +71,10 @@ CNECgh990830
 #endif        
      &		DMAT(NBASIS,NBASIS,NDMAT),
      &		AOINT(NINT),IND(NIND,4)
-
+C
+      DP5X  =  DP5*HFXFAC
+      DP25X = DP25*HFXFAC
+C
         ICHUNK = MAX (IVECLN/NDMAT,1)
         IF    (IX.EQ.1.OR.IX.EQ.2) THEN
 C
@@ -89,7 +93,7 @@ C
                 C = IND(J,3)
                 D = IND(J,4)
 		DINT = AOINT(J) * FAC
-                EINT = -DP25*DINT
+                EINT = -DP25X*DINT
                 FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I)
                 FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I)
                 FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
@@ -107,7 +111,7 @@ C
                 C = IND(J,3)
                 D = IND(J,4)
 		DINT = AOINT(J) * FAC
-                EINT = -DP25*DINT
+                EINT = -DP25X*DINT
                 FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I)
                 FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I)
                 FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
@@ -134,7 +138,7 @@ C
                 C = IND(J,3)
                 D = IND(J,4)
 		DINT = AOINT(J) * FAC
-                EINT = -DP25*DINT
+                EINT = -DP25X*DINT
                 FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
                 FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
                 FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -150,7 +154,7 @@ C
                 C = IND(J,3)
                 D = IND(J,4)
 		DINT = AOINT(J) * FAC
-                EINT = -DP25*DINT
+                EINT = -DP25X*DINT
                 FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
                 FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
                 FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -220,7 +224,7 @@ C
               GAB  = DINT*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I,K) = FMAT(C,D,I,K) + GAB
               FMAT(D,C,I,K) = FMAT(D,C,I,K) + GAB
-              EINT = -DP5*DINT
+              EINT = -DP5X*DINT
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
               FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -246,7 +250,7 @@ C
               GAB  = DINT*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I,K) = FMAT(C,D,I,K) + GAB
               FMAT(D,C,I,K) = FMAT(D,C,I,K) + GAB
-              EINT = -DP5*DINT
+              EINT = -DP5X*DINT
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
               FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -273,7 +277,7 @@ C
               C = IND(J,3)
               D = IND(J,4)
 	      DINT = AOINT(J) * FAC
-              EINT = -DP5*DINT
+              EINT = -DP5X*DINT
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
               FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -293,7 +297,7 @@ C
               C = IND(J,3)
               D = IND(J,4)
 	      DINT = AOINT(J) * FAC
-              EINT = -DP5*DINT
+              EINT = -DP5X*DINT
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
               FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
@@ -336,7 +340,7 @@ C
               B = IND(J,2)
               C = IND(J,3)
               D = IND(J,4)
-		DINT = AOINT(J) * FAC
+              DINT = AOINT(J) * FAC
               GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I,K) = FMAT(A,B,I,K) + GCD
               FMAT(B,A,I,K) = FMAT(B,A,I,K) + GCD

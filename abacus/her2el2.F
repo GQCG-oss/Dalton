@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her2el2.F,v 1.3 2001-05-31 06:38:06 vebjornb Exp $
+C$Id: her2el2.F,v 1.4 2001-10-01 13:22:12 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck c2driv */
@@ -1672,7 +1672,7 @@ C
   100    CONTINUE
 C
 C     Transformation of first index only
-C     =================================
+C     ==================================
 C
       ELSE IF (SPHR3) THEN
          DO 400 ICOMP3 = 1, KCKT3
@@ -1692,7 +1692,7 @@ C
   400    CONTINUE
 C
 C     Transformation of second index only
-C     ==================================
+C     ===================================
 C
       ELSE
          DO 500 IKOMP3 = 1, KHKT3

@@ -1,0 +1,106 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dft_b3lyp_nosym.info <<%EOF%
+   dft_b3lyp_nosym
+   ---------------
+   Molecule:         H2O 
+   Wave Function:    DFT B3LYP    
+   Test Purpose:     Check B3LYP functional w/o symmetry
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > dft_b3lyp_nosym.mol <<%EOF%
+INTGRL
+H20
+Test including f's 
+    2    0
+        8.    1    4    1    1    1    1
+O     0.0  0.0000000000          0.0
+    4    0    
+87.0
+18.34
+3.23
+1.0
+    2    0    
+3.67
+1.0
+    1    0    
+1.0
+    1    0    
+1.0
+        1.    2    2    1    1
+H1    1.430    0.0  1.1
+H2   -1.430    0.0  1.1
+    2    0 
+4.2321
+1.22
+    1    0   
+1.0 
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > dft_b3lyp_nosym.dal <<%EOF%
+**DALTON INPUT
+.RUN WAVE 
+**INTEGRALS
+.NOSUP
+**WAVE FUNCTIONS
+.HF
+*HF INPUT
+.B3LYP
+*ORBITAL
+.NOSUPSYM
+*AUXILLIAR
+.NOSUPMAT
+*END OF INPUT
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# B3LYP ENERGY 
+CRIT1=`$GREP "Final * HF energy\: * \-73\.176324745..." $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=1
+ERROR[1]="B3LYP ENERGY NOT CORRECT"
+
+PASSED=1
+for i in 1
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > dft_b3lyp_nosym.check
+#######################################################################
