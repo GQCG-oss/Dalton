@@ -169,6 +169,9 @@ C
 C     ORGANIZE CALCULATION FOR EACH PERTURBATION OPERATOR
 C
       IF (DFT_SO) THEN
+         IF (RSPCI) THEN
+            CALL QUIT('.DFT_SO is not compatible with CI response')
+         END IF
          KCMO  = 1
          KLST  = KCMO   + NCMOT
          LFREE = LWRK-KLST
@@ -757,7 +760,7 @@ C
       SAVE TABLE, SET
 C
       DATA TABLE /'.INPTES', '.NOAVDI', '.SOPPA ',
-     *            '.RSPCI ', '.NOITRA', '.ORBSFT',
+     *            'XXXXXXX', '.NOITRA', '.ORBSFT',
      *            '.ORBSPC', '.TRPFLG', '.S0MIX ',
      *            '.OPTORB', '.MAXPHP', '.PHPRES',
      *            '.MAXRM ', '.QRREST', '.PROPAV',
@@ -805,7 +808,6 @@ C
                   SOPPA = .TRUE.
                GO TO 100
     4          CONTINUE
-                  RSPCI = .TRUE.
                GO TO 100
     5          CONTINUE
                   NOITRA = .TRUE.
@@ -847,7 +849,7 @@ C
      *               ,MAX1AV
                    CALL QUIT('RSPINP, TOO MANY AVE OPERATORS SPECIFIED')
                   END IF
-                  READ(LUCMD,'( A )') LBL1AV(N1AVTOT)
+                  READ(LUCMD,'(A)') LBL1AV(N1AVTOT)
                GO TO 100
    16          CONTINUE
                   HIRPA = .TRUE.
@@ -865,9 +867,18 @@ C
                GO TO 100
  20            CONTINUE
 c              compute DFT_SO integrals
-               DFT_SO = .TRUE.
+                  DFT_SO = .TRUE.
                GO TO 100
 C              .PROP2Average
+                  N2AVTOT = N2AVTOT + 1
+                  IF ( N2AVTOT .GT. MAX2AV ) THEN
+                     WRITE(LUPRI,'(/A,I5)')
+     *               '@rspinp: NUMBER OF OPERATORS FOR .PROP2AV'//
+     *               'CALCULATION EXCEEDS THE ALLOWED NUMBER :',MAX2AV
+                   CALL QUIT('RSPINP, TOO MANY 2AV OPERATORS SPECIFIED')
+                  END IF
+                  READ(LUCMD,'(A)') LBL2AV(1,N2AVTOT)
+                  READ(LUCMD,'(A)') LBL2AV(2,N2AVTOT)
  21            CONTINUE
                   N2AVTOT = N2AVTOT + 1
                   IF ( N2AVTOT .GT. MAX2AV ) THEN
@@ -905,11 +916,6 @@ C              .PROP2Average
      *   ' with Coupled Cluster Singles and Doubles Amplitudes',
      *   ' Reference : S. P. A. Sauer, to be published'
          END IF
-         IF (RSPCI) WRITE(LUPRI,'(/A,L1/A)')
-     *      ' Configuration interaction response calculation.  RSPCI= '
-     *      ,RSPCI,
-     *      '   Note: this is equivalent to a CI sum-over-states'//
-     *      ' calculation of properties.'
          IF (NOITRA) WRITE(LUPRI,'(/2A,L1)')
      *      ' MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.'
      *      ,'  NOITRA = ',NOITRA
@@ -924,7 +930,7 @@ C              .PROP2Average
      *      ' ORBITAL DIAGONAL'
      *      ,'  AVDIA = ',AVDIA
          IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D10.6)')
-     *      ' DIAGONAL ORBITAL E(2)  SHIFTED WITH, ORBSFT =',ORBSFT
+     *      ' DIAGONAL ORBITAL E[2] SHIFTED WITH, ORBSFT =',ORBSFT
          IF (ORBSPC) WRITE(LUPRI,'(/2A,L1)')
      *      ' CALCULATION WITH ONLY ORBITAL OPERATORS ARE INCLUDED.',
      *      ' ORBSPC = ',ORBSPC
@@ -947,18 +953,20 @@ C              .PROP2Average
          IF (.NOT. DIROIT) WRITE(LUPRI,'(/A/A)')
      *      ' Direct linear transformations NOT used in RESPONSE',
      *      ' calculation, DIROIT=',DIROIT
+         IF (DFT_SO) WRITE (LUPRI,'(/A)')
+     &      ' DFT_SO integrals calculated.'
       END IF
       IF (CCPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
-     &      ' Input ERROR: ".RSPCI " and ".SOPPCC" are incompatible.'
+     &      ' Input ERROR: CI response and ".SOPPCC" are incompatible.'
          CALL QUIT('RSPINP: Input error')
       ELSEIF (HIRPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
-     &      ' Input ERROR: ".RSPCI " and ".HIRPA " are incompatible.'
+     &      ' Input ERROR: CI response and ".HIRPA " are incompatible.'
          CALL QUIT('RSPINP: Input error')
       ELSEIF (SOPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
-     &      ' Input ERROR: ".RSPCI " and ".SOPPA " are incompatible.'
+     &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
          CALL QUIT('RSPINP: Input error')
       END IF
 C
@@ -1962,12 +1970,15 @@ C
                   READ(LUCMD,'(A)')LABEL
                   LC6OP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
+               GO TO 100
+C     .C6SPH
    21          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01-01 ')) = .TRUE.
                   LC6OP( INDPRP('SM01+00 ')) = .TRUE.
                   LC6OP( INDPRP('SM01+01 ')) = .TRUE.
                GO TO 100
+C     .C8SPH
    22          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01-01 ')) = .TRUE.
@@ -2027,11 +2038,13 @@ C
    32          CONTINUE
                   READ (LUCMD,*) NGRID
                GO TO 100
+C     .C6CALC
    33          CONTINUE
                   LC6OP( INDPRP('XDIPLEN ')) = .TRUE.
                   LC6OP( INDPRP('YDIPLEN ')) = .TRUE.
                   LC6OP( INDPRP('ZDIPLEN ')) = .TRUE.
                GO TO 100
+C     .C10SPH
    34          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01-01 ')) = .TRUE.
@@ -2070,16 +2083,19 @@ C
                   LC6OP( INDPRP('SM05+04 ')) = .TRUE.
                   LC6OP( INDPRP('SM05+05 ')) = .TRUE.
                GO TO 100
+C     .C6ATM
    35          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01+00 ')) = .TRUE.
                GO TO 100
+C     .C8ATM
    36          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01+00 ')) = .TRUE.
                   LC6OP( INDPRP('SM02+00 ')) = .TRUE.
                   LC6OP( INDPRP('SM03+00 ')) = .TRUE.
                GO TO 100
+C     .C10ATM
    37          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01+00 ')) = .TRUE.
@@ -2088,11 +2104,13 @@ C
                   LC6OP( INDPRP('SM04+00 ')) = .TRUE.
                   LC6OP( INDPRP('SM05+00 ')) = .TRUE.
                GO TO 100
+C     .C6LMO
    38          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01+00 ')) = .TRUE.
                   LC6OP( INDPRP('SM01+01 ')) = .TRUE.
                GO TO 100
+C     .C8LMO
    39          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01+00 ')) = .TRUE.
@@ -2105,6 +2123,7 @@ C
                   LC6OP( INDPRP('SM03+02 ')) = .TRUE.
                   LC6OP( INDPRP('SM03+03 ')) = .TRUE.
                GO TO 100
+C     .C10LMO
    40          CONTINUE
                   C6IFC = .TRUE.
                   LC6OP( INDPRP('SM01+00 ')) = .TRUE.
@@ -2217,6 +2236,8 @@ C
 #include "trhso.h"
 #include "infcr.h"
 C
+      LOGICAL FNDLAB
+C
 C ****** Used unit names: ******
 C        (the file numbers are now assigned by GPOPEN)
 C
@@ -2240,6 +2261,16 @@ C          LUXYVE XY-vectors
 C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,FNSIFC,'OLD',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
+      REWIND LUSIFC
+      IF (FNDLAB('CIRESPON',LUSIFC)) THEN
+         RSPCI = .TRUE.
+         WRITE(LUPRI,'(/A/A)')
+     *     ' This is a configuration interaction response calculation.',
+     *     '   Note: this is equivalent to a CI sum-over-states'//
+     *     ' calculation of properties.'
+      ELSE
+         RSPCI = .FALSE.
+      END IF
 C
       NPRLBL = 0
       DO 100 I = 1,MAXLBL
@@ -3370,7 +3401,7 @@ C
          KSCDIA = KSODIA + KZWOPT
 C
          IF (KZWOPT.GT.0) THEN
-            IF (IPRRSP.GT.100) THEN
+             IF (IPRRSP.GT.100) THEN
                IF (NASHT.GT.0) THEN
                   WRITE(LUPRI,'(/A)')
      *            ' ONE ELECTRON ACTIVE DENSITY MATRIX  UNPACKED'
@@ -3382,7 +3413,7 @@ C
                CALL OUTPKB(FC,  NORB,NSYM,1,LUPRI)
                WRITE(LUPRI,'(/A)') ' TOTAL FOCK  MATRIX'
                CALL OUTPTB(FOCK,NORB,NSYM,1,LUPRI)
-            END IF
+             END IF
 C
             CALL ORBDIA(FOCK,FC,FV,UDV,WRK(KEODIA),WRK(KSODIA))
 C           CALL ORBDIA(FOCK,FC,FV,UDV,EDIA,SDIA)
@@ -3670,15 +3701,6 @@ C        read and unpack DV
             CALL READT (LUSIFC,NNORBT,FC)
             CALL READT (LUSIFC,NNORBT,FV)
          END IF
-         IF ( IPRRSP.GT.110 .AND. .NOT. TDHF) THEN
-            CALL GETREF(WRK,NCONRF)
-            WRITE(LUPRI,'(/A)')
-     &           ' **** RSPMC **** REFERENCE CONFIGURATION'
-            CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
-            IF (NCONRF.EQ.1) READ(LUSIFC)
-         ELSE
-            READ (LUSIFC)
-         END IF
          CALL READT (LUSIFC,NNASHX,FCAC)
          CALL READT (LUSIFC,(NNASHX*NNASHX),H2AC)
       ELSE
@@ -3686,13 +3708,15 @@ C        read and unpack DV
          CALL READT (LUSIFC,N2ORBT,FOCK)
          READ (LUSIFC)
          CALL READT (LUSIFC,NNORBT,FC)
-         READ (LUSIFC)
-         READ (LUSIFC)
-         READ (LUSIFC)
-         READ (LUSIFC)
          CALL DZERO(FV,NNORBT)
       END IF
-C     CALL READT(LUSIFC,NWOPH,GORB)
+C
+      IF ( IPRRSP.GT.110 .AND. .NOT. TDHF) THEN
+         CALL GETREF(WRK,NCONRF)
+         WRITE(LUPRI,'(/A)')
+     &        ' **** RSPMC **** REFERENCE CONFIGURATION'
+         CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
+      END IF
 C
 C     If a solvent-response calculation:
 C     (i) read solvent t matrix (ii) subtract it from FC
@@ -3777,31 +3801,31 @@ C  /* Deck getref */
       SUBROUTINE GETREF(CREF,LCREF)
 C
 C 28 JAN 87 BASED ON READMC(RSPMC)
+C l.r. Sep 2004 hjaaj
 C
 C Purpose:
-C  GET MC REFERENCE STATE
+C  GET MC REFERENCE STATE from SIRIFC
 C
 #include "implicit.h"
 #include "priunit.h"
 C
       DIMENSION CREF(LCREF)
+      LOGICAL   FNDLAB, CIRESPON
 C
-#include "inforb.h"
-#include "infrsp.h"
 #include "inftap.h"
-#include "maxorb.h"
-#include "infinp.h"
 C
       IF (LCREF .EQ. 1) THEN
          CREF(1) = 1.0D0
-      ELSE IF (LCREF .EQ. 0 .AND. (NASHT .LE. 1 .OR. HSROHF)) THEN
+      ELSE IF (LCREF .EQ. 0) THEN
 C        ... Hartree-Fock case ....
       ELSE
          REWIND LUSIFC
-         IF (RSPCI) THEN
-            CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+         IF ( FNDLAB(LBSIFC,LUSIFC) ) THEN
+            CIRESPON = .FALSE.
          ELSE
-            CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
+            CIRESPON = .TRUE.
+            REWIND LUSIFC
+            CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
          END IF
          READ (LUSIFC)
          READ (LUSIFC) MISHT,MASHT,MOCCT,MORBT,MBAST,
@@ -3809,13 +3833,6 @@ C        ... Hartree-Fock case ....
          IF (LCREF .EQ. MCONF) THEN
 C
             READ (LUSIFC)
-            READ (LUSIFC)
-            IF (.NOT.RSPCI) THEN
-               READ (LUSIFC)
-               READ (LUSIFC)
-               READ (LUSIFC)
-               READ (LUSIFC)
-            END IF
          ELSE IF (LCREF .EQ. MDETS) THEN
             CALL MOLLAB('CREFDETS',LUSIFC,LUPRI)
          ELSE
