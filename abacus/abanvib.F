@@ -512,13 +512,13 @@ C
 #include <gnrinf.h>
 #include <pvibav.h>
 #include <prpc.h>
-      CHARACTER*9 PRPTXT 
+      CHARACTER*9 PRPTXT
       LOGICAL CCPRP
-      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL), 
+      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL),
      &          TRLNFV(3,NSYM,MXNEXI,NMPCAL),
      &          EXENFV(  NSYM,MXNEXI,NMPCAL), SYMCOR(NCOOR,NCOOR),
      &          TRAMAT(NCOOR,NCOOR,NMPCAL), CCPRFV(NPRPC,NMPCAL),
-     &          EXCERF(NSYM,MXNEXI), EXETMP(NSYM,NTOTEX), 
+     &          EXCERF(NSYM,MXNEXI), EXETMP(NSYM,NTOTEX),
      &          TRDTMP(3,NSYM,NTOTEX),WORK(LWORK)
       DIMENSION NREDSM(NSYM,NSYM)
 C
@@ -615,7 +615,7 @@ C
 C
 C        *** Workaround for common common block variables. ***
 C
-         CALL STPPVR(DODIPS)
+         CALL STPPVR
 C
 C        *** If cc-properties. ***
 C
@@ -690,10 +690,8 @@ C
 C
 C        *** If excited state properties are calculated. ***
 C        *** Find dalton symmetry of this derivative.    ***
-C     
-C        CALL TRTNMS(SYMCOR,IMPCAL,KSYM,IPRINT)
 C
-         CALL RDAVFL(CCPRFV(1),NDIM1,NDIM2,NDIM3,LUNDPR)
+         CALL RDAVFL(CCPRFV(1),NDIM1,NDIM2,NDIM3)
 C
       ELSE IF (PRPTXT(1:9).EQ.'SPIN-SPIN') THEN
 C
@@ -1510,7 +1508,7 @@ C
       REWIND(LUREF)
 C
 C     *** Reading properties at reference geometry from file. ***
-C         
+C
       DO IS = 1, NSYM
       DO IE = 1, NEXCIT(IS)
          READ (LUREF,'(A9)') PRPTXT
@@ -1519,8 +1517,8 @@ C
             READ (PRPTXT(5:6),'(2I1)') ISYM, IEXVAL
          ELSE
             READ (PRPTXT(5:7),'(I1,I2)') ISYM, IEXVAL
-         END IF            
-         CALL RDAVFL(EXCERF(ISYM,IEXVAL),1,1,1,LUREF)
+         END IF
+         CALL RDAVFL(EXCERF(ISYM,IEXVAL),1,1,1)
       END DO
       END DO
 C
