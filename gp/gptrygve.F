@@ -696,9 +696,9 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <chrnos.h>
-      CHARACTER*80 FILENM, STATUF, ACCESF, FORMF
+      CHARACTER*80 STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
-      CHARACTER OUTFIL*20, WRKDIR*60
+      CHARACTER OUTFIL*40, WRKDIR*80, FILENM*121
       INTEGER FILELN, STATLN, ACCELN, FORMLN
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
@@ -713,13 +713,6 @@ C     Initialization
 C     
       IF (FIRST) THEN
          CALL IZERO(IUNTAB,99)
-#if defined (SYS_HPUX)
-C
-C     This avoids us writing to unit 7 of HP-systems (which corresponds to
-C     standard error on this machine)
-C
-         IUNTAB(7) = 1
-#endif
          FIRST = .FALSE.
       END IF
 C
@@ -749,18 +742,26 @@ C
 C
 C     The user has requested a specific unit number. We don't 
 C     quite trust the user, so we check that
-C     1) It is not unit 5, or 6
+C     1) It is not unit 5 or 6
 C     2) The file either has been closed with status='KEEP' or is
 C        not currently in use
 C
          IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6)) GOTO 9002
+#if defined (SYS_HPUX)
+C
+C     This avoids us writing to unit 7 of HP-systems (which corresponds to
+C     standard error on this machine)
+C
+         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6) .OR. (LUNIT .EQ. 7))
+     &      GOTO 9002
+#else
+         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6)) GOTO 9002
+#endif
          IF (IUNTAB(LUNIT) .EQ. 1) GOTO 9003
       END IF
-#if defined (VAR_MPI)
       IF (MYNUM .EQ. 0) THEN
-#endif
       IF (FILENM(1:FILELN) .EQ. 'DALTON.OUT') THEN
-         OUTFIL = '                    '
+         OUTFIL = ' '
 #if defined (SYS_T3D) || defined (SYS_T90)
          CALL PXFGETENV ('OUTFIL',6,OUTFIL,LOUTFL,IERR)
 #else 
@@ -768,7 +769,7 @@ C
 #endif
          IF (OUTFIL(1:1) .NE. ' ') THEN
             LENOUT = 0
-            DO I = 1, 20
+            DO I = 1, 40
                IF (OUTFIL(I:I) .EQ. ' ') GO TO 43
                LENOUT = LENOUT + 1
             END DO
@@ -779,7 +780,7 @@ C
             CALL GETENV ('WRKDIR',WRKDIR)
 #endif
             LENWRK = 0
-            DO I = 1, 60
+            DO I = 1, 80
                IF (WRKDIR(I:I) .EQ. ' ') GO TO 44
                LENWRK = LENWRK + 1
             END DO
@@ -789,9 +790,7 @@ C
      &                         OUTFIL(1:LENOUT)
          END IF
       END IF
-#if defined (VAR_MPI)
       END IF
-#endif
       IF (STATLN .EQ. 1) THEN
          STATLN = 7
          STATUF(1:7) = 'UNKNOWN'
@@ -801,13 +800,10 @@ C     We've got a file number now, get rid of the direct access case
 C
       IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
          IF (FILELN .EQ. 1) THEN
-#if defined (VAR_MPI)
             IF (MYNUM .EQ. 0) THEN
-#endif
                FILELN = 9
                FILENM(1:9) = 'UNIT'//CHRNOS(LUNIT/10)//
      &                        CHRNOS(MOD(LUNIT,10))//'.DA'
-#if defined (VAR_MPI)
             ELSE
                FILELN = 13
                FILENM(1:9) = 'UNIT'//CHRNOS(LUNIT/10)//
@@ -824,7 +820,6 @@ C
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
                FILELN = FILELN + 4
             END IF
-#endif
          END IF
          IF (IPRERR.GT.1) WRITE (LUERR,*) 'GPOPEN calling OPENDX ',
      &      LUNIT,' ',FILENM(1:FILELN),NELEM,' ',STATUF(1:STATLN)
@@ -836,7 +831,6 @@ C
 C     This better be a file with a name, and it better exist
 C
             IF (FILELN .EQ. 1) GOTO 9005
-#if defined (VAR_MPI)
             IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
      &           MYNUM .GT. 0 .AND. FILENM(1:3) .NE. BASDIR(1:3) 
      &           .AND. FILENM(FILELN-5:FILELN) .NE. 'NUMCAL') THEN
@@ -849,7 +843,6 @@ C
      &                        CHRNOS(MOD(MOD(MYNUM,100),10))
                FILELN = FILELN + 4
             END IF
-#endif
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
             IF (.NOT. FEXST) GOTO 9007
             IF (FORMLN .EQ. 1) THEN
@@ -865,13 +858,10 @@ C
             IF (STATUF(1:3) .EQ. 'NEW' .AND. IUNTAB(LUNIT) .NE. 0)
      &           GOTO 9006
             IF (FILELN .EQ. 1) THEN
-#if defined (VAR_MPI)
                IF (MYNUM .EQ. 0) THEN
-#endif
                   FILELN = 6
                   FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
      &                     CHRNOS(MOD(LUNIT,10))
-#if defined (VAR_MPI)
                ELSE
                   FILELN = 10
                   FILENM = 'UNIT'//CHRNOS(LUNIT/10)//
@@ -888,7 +878,6 @@ C
      &                                  CHRNOS(MOD(MOD(MYNUM,100),10))
                   FILELN = FILELN + 4
                END IF
-#endif
             END IF
             IF (FORMLN .EQ. 1) THEN
                FORMLN = 11
