@@ -555,10 +555,11 @@ C
      &                                 NCSF,IREFSM
       IF(IWAY .EQ. 1 ) THEN
 C
-      IF(NTEST .GE. 40) THEN
-        WRITE(LUPRI,*) ' INPUT VECTOR IN CSF BASIS '
-        CALL WRTMAT(CSFVEC,1,NCSF,1,NCSF,0)
-      END IF
+c--renzo important for conversion cfg->det
+         IF(NTEST .GE. 40) THEN
+            WRITE(LUPRI,*) ' INPUT VECTOR IN CSF BASIS '
+            CALL WRTMAT(CSFVEC,1,NCSF,1,NCSF,0)
+         END IF
 C.. CSF to DET transformation
 C
 C. Multiply with  expansion matrix
@@ -584,15 +585,16 @@ C. Change from csf to string ordering with sign changes
 C       CALL SCACSF(NDET,ADET,BCSF,IORD)
 C       IF(ICOPY.NE.0) CALL COPVEC(DETVEC,CSFVEC,NDET)
 Chj-890501: vector is currently already in both DETVEC and CSFVEC
+c--renzo 
         IF(NTEST .GE. 40) THEN
-          WRITE(LUPRI,*) ' OUTPUT VECTOR IN DET BASIS '
-          CALL WRTMAT(DETVEC,1,NDET,1,NDET,0)
+           WRITE(LUPRI,*) ' OUTPUT VECTOR IN DET BASIS '
+           CALL WRTMAT(DETVEC,1,NDET,1,NDET,0)
         END IF
       ELSE
-        IF( NTEST .GE. 40 ) THEN
-          WRITE(LUPRI,*) ' INPUT VECTOR ON DETERMINANT BASIS '
-          CALL WRTMAT(DETVEC,1,NDET,1,NDET,0)
-        END IF
+         IF( NTEST .GE. 40 ) THEN
+            WRITE(LUPRI,*) ' INPUT VECTOR ON DETERMINANT BASIS '
+            CALL WRTMAT(DETVEC,1,NDET,1,NDET,0)
+         END IF
 C
 C.. Determinant to csf transformation
 C

@@ -137,6 +137,8 @@ Section~\ref{ref-rhfinp} \Sec{HF INPUT}
 
 Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
 
+Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}
+
 \noindent
 The next section is used to select some types of analysis of the final
 MCSCF or CI wave function:
@@ -240,6 +242,10 @@ input.
 \item[\Key{MP2}]
  \index{M{\o}ller-Plesset!second-order}\index{MP2}
   M{\o}ller-Plesset second-order perturbation theory calculation.
+
+\item[\Key{NEVPT2}]
+ \index{NEVPT2}
+  Multireference second-order perturbation theory calculation.
 
 \item[\Key{NSYM}]
 %  Required, no defaults. \\
@@ -844,6 +850,52 @@ used basis sets do not contain correlating orbitals for the core
 orbitals and as the core correlation energy therefore becomes arbitrary,
 the \quotekw{\Key{MP2 FROZEN}} option can also be of benefit in MP2 energy
 calculations.
+
+\pagebreak[3]
+\subsection{\label{ref-nevpt2inp}\Sec{NEVPT2 INPUT}}
+
+{\bf Purpose:}
+
+\index{NEVPT2}\index{multireference PT!second-order}
+Calculation of the second order correction to the energy for a
+CAS--SCF or CAS--CI zero order wavefunction.
+The user is referred to Chapter~\ref{ch:nevpt2} at
+page~\pageref{ch:nevpt2}  for a brief
+introduction to the $n$--electron valence state second order
+perturbation theory (NEVPT2).
+
+\begin{description}
+\item[\Key{THRESH}]
+ Default = 0.0D0\\
+  \kw{READ (LUINP,*) THRNEVPT} \\
+  Threshold to discard small coefficients in the CAS wavefunction
+
+
+\item[\Key{FROZEN}]
+  Default = no frozen orbitals\\
+  \kw{READ (LUINP,*) (NFRNEVPT2(I),I=1,NSYM)} \\
+  Orbitals frozen in NEVPT2 calculation
+
+\item[\Key{STATE}]
+ No default provided\\
+\kw{READ (LUINP,*) ISTNEVCI} \\
+Root number in a CASCI calculation. This keyword is unnecessary
+(ignored) in the CASSCF case.
+\end{description}
+
+
+\noindent{\bf Comments:}
+
+
+%The present version of the NEVPT2 module requires the
+%\quotekw{\Key{DETERMINANTS}} option  to be set.
+
+The use of canonical orbitals for the core and virtual orbitals is
+strongly recommended since this choice guarantees compliance of the
+results with a totally invariant form of NEVPT2 (see page~\pageref{ch:nevpt2})
+
+At present the NEVPT2 module can deal with active spaces of dimension
+not higher than 14.
 
 
 \pagebreak[3]

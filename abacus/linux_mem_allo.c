@@ -65,3 +65,36 @@ void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm,
     drv(mem_block, nwords, wrkdlm,master,mynum);
     if(debug) fprintf(stderr,"CEXE finished.\n");
 }
+/* ioff=iallor8(work,nwords)  work(ioff) is the first position */
+int  iallor8_(double *work,int *nwords){
+  double *iadd=(double *)calloc((*nwords),8);
+  if(iadd==NULL){fprintf(stderr,"iallor8: cannot allocate\n");exit(2);}
+  return (iadd-work +1);
+}
+int  ialloi4_(int *work,int *nwords){
+  int *iadd=(int *)calloc((*nwords),4);
+  if(iadd==NULL){fprintf(stderr,"ialloi4: cannot allocate\n");exit(2);}
+  return (iadd-work +1);
+}
+int  ialloi2_(short int *work,int *nwords){
+  short int *iadd=(short int *)calloc((*nwords),2);
+  if(iadd==NULL){fprintf(stderr,"ialloi2: cannot allocate\n");exit(2);}
+  return (iadd-work +1);
+}
+int  ialloi1_(char *work,int *nwords){
+  char *iadd=(char *)calloc((*nwords),1);
+  if(iadd==NULL){fprintf(stderr,"ialloi1: cannot allocate\n");exit(2);}
+  return (iadd-work +1);
+}
+void memrelr8_(double *work){  /*call memrel8(work(ioff))  */
+free(work);
+}
+void memreli4_(int *work){
+free(work);
+}
+void memreli2_(short int *work){
+free(work);
+}
+void memreli1_(char *work){
+free(work);
+}

@@ -155,6 +155,18 @@ C
 #include <csfbas.h>
 #include <strnum.h>
 C
+c remco
+#include <maxorb.h>
+#include <infinp.h>
+#include <infvar.h>
+#include <priunit.h>
+#if (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
+      allocatable detvec(:),cvec(:)
+#endif
+#if (defined(VAR_G77))
+      dimension detvec(1),cvec(1)
+#endif
+c einde remco
       IF(INCSFB.EQ.0) THEN
 C. SD basis
         IF( ICOMBI .EQ. 0 ) THEN
@@ -169,11 +181,56 @@ C. SD basis
      &              XNDXCI(KLTSOB),IOUT)
       ELSE
 C. CSF basis
-        CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
-     &              NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
+        if (.not.donevpt) then
+           CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
+     &                 NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
+#if (defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77) || !defined (NO_F90))
+        else
+           CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
+     &                 NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
+           write(lupri,100)
+#if !(defined(VAR_G77))
+           allocate(detvec(ncdets))
+           allocate(cvec(ncdets))
+           call dcopy(nconf,civec,1,cvec,1)
+           call csdtvc(cvec,detvec,1,XNDXCI(KDTOC),
+     *                XNDXCI(KICTS(1)),lsym,0,0)
+#else
+           i_detvec=iallor8(detvec,ncdets)
+           i_cvec=iallor8(cvec,ncdets)
+           call dcopy(nconf,civec,1,cvec(i_cvec),1)
+           call csdtvc(cvec(i_cvec),detvec(i_detvec),1,XNDXCI(KDTOC),
+     *                XNDXCI(KICTS(1)),lsym,0,0)
+#endif
+           IF( ICOMBI .EQ. 0 ) THEN
+              NCIVAR = NDTASM(ICSYM)
+           ELSE
+              NCIVAR = NCMASM(ICSYM)
+           END IF
+#if !(defined(VAR_G77))
+           CALL ANACI2(detvec,XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,
+     &              NOCTPB,MAXSYM,SYMPRO,THRES,MAXTRM,XNDXCI(KISSOA),
+     &              XNDXCI(KISSOB),NAEL,NBEL,XNDXCI(KIOCOC),ICSYM,
+     &              NCIVAR,ICOMBI,XNDXCI(KIASTR),XNDXCI(KIBSTR),
+     &              XNDXCI(KLTSOB),IOUT)
+           deallocate (detvec)
+           deallocate (cvec)
+#else
+      CALL ANACI2(detvec(i_detvec),XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,
+     &              NOCTPB,MAXSYM,SYMPRO,THRES,MAXTRM,XNDXCI(KISSOA),
+     &              XNDXCI(KISSOB),NAEL,NBEL,XNDXCI(KIOCOC),ICSYM,
+     &              NCIVAR,ICOMBI,XNDXCI(KIASTR),XNDXCI(KIBSTR),
+     &              XNDXCI(KLTSOB),IOUT)
+           call memrelr8 (detvec(i_detvec))
+           call memrelr8 (cvec(i_cvec))
+#endif
+#endif
+        endif
       END IF
 C
       RETURN
+ 100  format(//'   *** Calculation was done in CSF basis, but results ar
+     *e printed in determinant basis for NEVPT2 calculation ***',//)
       END
 C  /* Deck anacsf */
       SUBROUTINE ANACSF(CIVEC,ICONF,IPROCS,IREFSM,NEL,THRES,MAXTRM,
@@ -315,13 +372,31 @@ c
 c Modified Spring 1992 to allow vector with general norm
 C
 #include <implicit.h>
+#include <dummy.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <infpt2.h>
       INTEGER SYMPRO(8,8)
       DIMENSION CIVEC(*)
       DIMENSION NSSOA(NOCTPA,MAXSYM),NSSOB(NOCTPB,MAXSYM)
       DIMENSION ISSOA(NOCTPA,MAXSYM),ISSOB(NOCTPB,MAXSYM)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*),ILTSOB(*)
       DIMENSION IOCOC(NOCTPA,NOCTPB)
+      data itimes/0/
+      save itimes
+      logical owrite
 C
+      itimes=itimes+1
+      owrite=.false.
+      if (doci) then
+          if (itimes.eq.istnevci) owrite=.true.
+      else
+          owrite=.true.
+      endif
+c
+      LUN98=-13300
+      CALL GPOPEN(LUN98,'DETSTR','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     *           .FALSE.)
       VNRM = DNORM2(NCIVAR,CIVEC,1)
       ITRM = 0
       IDET = 0
@@ -362,6 +437,13 @@ C
             IF(IB.GT.IA .AND. ICOMBI.NE.0)GOTO 80
 C
             IDET = IDET + 1
+c--renzo begin
+c            print*,'idet,civec',idet,civec(idet)
+            if(iloop.eq.1.and.owrite)then
+               write(LUN98) civec(idet),(ILTSOB(IASTR(IEL,IA)),
+     $              IEL=1,NAEL),(ILTSOB(IBSTR(IEL,IB)),IEL= 1,NBEL)
+               endif
+c--renzo end
             IF( XMAX .GE. ABS(CIVEC(IDET)) .AND.
      &         ABS(CIVEC(IDET)).GT. XMIN ) THEN
               ITRM = ITRM + 1
@@ -431,6 +513,7 @@ C
 C
       WRITE(IOUT,*) ' Number of coefficients less than 10^-11 times ',
      & 'norm is  ',NCIVAR - ISUM
+      CALL GPCLOSE(LUN98,'KEEP')
 C
       RETURN
       END

@@ -82,7 +82,8 @@ C
       DATA LAB123 /'********','********','********'/
       DATA LABSTR /'MOLLAB  '/
       DATA IFIRST / 1 /
-C
+
+C     
       CALL QENTER('GETCIX')
       IF (IPRCIX .GT. 0) THEN
          WRITE (LUPRI,'(//A/)') ' >>>>> OUTPUT FROM GETCIX <<<<<'
@@ -629,7 +630,13 @@ CMAERKE-901019: make input option for MS2
          IF (NOCSF) THEN
             MS2 = MULTS - 1
          ELSE
-            MS2 = MOD(MULTS-1,2)
+c--renzo
+            if(donevpt)then
+               MS2 = MULTS - 1
+            else
+               MS2 = MOD(MULTS-1,2) !original statement
+            endif
+c--renzo
          END IF
 C
 C Input test:

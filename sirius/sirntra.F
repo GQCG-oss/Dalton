@@ -226,7 +226,8 @@ C
 C
 C     Set MO loop limits for the four integral indices
 C
-      CALL TRALIM(ITRLVL,WRK(KCDTRA),WRK(KTRTYP))
+cele      CALL TRALIM(ITRLVL,WRK(KCDTRA),WRK(KTRTYP))
+      CALL TRALIM(WRK(KCDTRA),WRK(KTRTYP))
 C
 C     Initialize output integral file : LUMINT
 C
@@ -2921,7 +2922,8 @@ C
       RETURN
       END
 C  /* Deck tralim */
-      SUBROUTINE TRALIM(ITRLVL,ICDTRA,ITRTYP)
+cele      SUBROUTINE TRALIM(ITRLVL,ICDTRA,ITRTYP)
+      SUBROUTINE TRALIM(ICDTRA,ITRTYP)
 C
 C 24-Aug-1989 Hans Joergen Aa. Jensen
 C
@@ -2962,6 +2964,8 @@ C
 #include <priunit.h>
 #include <trinp.h>
 #include <inftra.h>
+#include <maxorb.h>
+#include <infinp.h>
 C
       CHARACTER*35 EXTPRM(3)
       DATA EXTPRM/'inactive + active orbitals         ',
@@ -2971,6 +2975,8 @@ C
       CALL QENTER('TRALIM')
       JTRLVL = MOD(ITRLVL,100)
       KTRLVL = ITRLVL/100
+C Cele Deb
+      if (DONEVPT) jtrlvl=3
 C
       IF (KTRLVL .LT. 0 .OR. KTRLVL .GT. 2) THEN
          WRITE (LUPRI,*) 'Illegal KTRLVL in TRALIM, KTRLVL =',KTRLVL

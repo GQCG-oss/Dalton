@@ -416,6 +416,7 @@ C
       DOCI  = .FALSE.
       DOMC  = .FALSE.
       DODFT = .FALSE.
+      DONEVPT= .FALSE.
       DORSP = RNRESP
       ABAIPH= RNABAC
 C     ... It's followed by an abacus run
@@ -885,6 +886,7 @@ C        ... include (ii/aa) and (ia/ia) for orbital diagonal
 C        ... exclude (ii/aa) and (ia/ia) for orbital diagonal
             ITRLVL = 3
          END IF
+	 IF (DONEVPT) ITRLVL=4
       END IF
 C
 C     Set print parameters in /INFTRA/ for TRACTL
@@ -1555,6 +1557,7 @@ C  *MP2 INPUT               used to be *MP2 CALCULATION
 C  *CONFIGURATION INPUT     used to be *WAVE FUNCTION
 C  *CI INPUT                used to be *CI CALCULATION
 C  *CC INPUT                used to be *CC
+C  *NEVPT2 INPUT
 C  *ORBITAL INFORMATION
 C  *CI VECTOR
 C  *STEP CONTROL
@@ -1670,7 +1673,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 20)
+      PARAMETER (NTBMOD = 21)
       CHARACTER WORD*7, PROMPT*1, PROMPX*2, TABMOD(NTBMOD)*7,
      *          REWORD*12, RWORD*7, TITLIN*80
       LOGICAL   ALLOPT, PTABMO
@@ -1683,7 +1686,8 @@ C
       DATA TABMOD/'XXXXXXX','*CONFIG','*OPTIMI','*CI INP','*ORBITA',
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILL','*HF INP',
-     *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*END OF'/
+     *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
+     *            '*END OF'/
 C
 C
 C  ***************************************************
@@ -1702,7 +1706,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2500,8000), I
+     *                2500,2900,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -1766,6 +1770,8 @@ C
           CALL QUIT(
      &       'CC_INP error: NSYM from SIRIFC .ne. NSYM in this run')
        END IF
+       GOTO 910
+ 2900  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -1794,7 +1800,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 17)
+      PARAMETER (NTABLE = 18)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*20, TITLIN*80
       LOGICAL ALLOPT
@@ -1812,6 +1818,7 @@ C
 #include <inforb.h>
 #include <infpri.h>
 #include <gnrinf.h>
+#include <inftra.h>
 C
 #if !defined (VAR_NONAMELIST)
       NAMELIST /NMLSIR/ NPATH, MAXMIC
@@ -1819,7 +1826,7 @@ C
       DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
-     *            '.SCF   ','.DFT   '/
+     *            '.SCF   ','.DFT   ','.NEVPT2'/
 C
 C
 C
@@ -1835,7 +1842,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112,113,114,115,106,116), II
+     *                   111,112,113,114,115,106,116,117), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2039,6 +2046,14 @@ C           ... flag for QCHF -- quadratically convergent Hartree-Fock
          END IF
       GO TO 100
 C
+C *** Option NEW NEVPT2
+  117 CONTINUE
+            DONEVPT  = .TRUE.
+            NUMRUN = NUMRUN + 1
+cele
+	    USEDRC=.TRUE.
+cele
+      GO TO 100
 C
       END
 C  /* Deck haminp */
@@ -4605,6 +4620,9 @@ C
      *      'Type: complete active space calculation (CAS).'
             IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *      'Type: complete active space calculation (CAS).'
+           IF ( DONEVPT ) then
+              WRITE (IWUNIT,1050) ' NEVPT2 calculation.'
+           ENDIF
          END IF
       ELSE IF ( DOMP2 ) THEN
          WRITE (IWUNIT,1050) ' Moller-Plesset PT2 calculation.'
@@ -5007,4 +5025,82 @@ C
 C *** End of subroutine PRTINP
 C
       RETURN
+      END
+      SUBROUTINE NEVPT2INP(WORD,INPERR,ALLOPT)
+C
+C 17/9 - 1990 Hans Agren
+C
+#include <implicit.h>
+      PARAMETER (NTABLE = 3)
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
+     *          REWORD*12
+      LOGICAL ALLOPT
+C
+C Used from common:
+C
+C INFORB : NSYM
+C INFMP2 : NFRMP2(*)
+C INFPRI : IPRMP2
+C
+#include <maxorb.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <infpri.h>
+#include <infpt2.h>
+C
+      DATA TABLE /'.FROZEN','.THRESH','.STATE'/
+C
+C     ***** PROCESS INPUT FOR NEVPT2INP *****
+C
+      do i=1,nsym
+       NFRNEVPT2(i)=0
+      enddo
+      THRNEVPT=0.d0
+      WORD1 = WORD
+      ISTNEVCI=0
+      IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
+     &                       LUPRI)
+  100    READ (LUCMD, '(A7)') WORD
+         PROMPT = WORD(1:1)
+         IF (PROMPT .EQ. '.') THEN
+            DO 1102 II = 1, NTABLE
+               IF (TABLE(II) .EQ. WORD) THEN
+                  GO TO (101,102,103), II
+               END IF
+ 1102       CONTINUE
+            IF (WORD .EQ. '.OPTION') THEN
+               IF (.NOT.ALLOPT)
+     &            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
+     &                       LUPRI)
+               GO TO 100
+            END IF
+            WRITE (LUPRI,'(/4A/)') ' Keyword ',WORD,
+     *         ' not recognized for ',WORD1
+         ELSE IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') THEN
+            GO TO 100
+         ELSE IF (PROMPT .EQ. '*') THEN
+            RETURN
+         ELSE
+            WRITE (LUPRI,'(/3A/2A/)')
+     *         ' Keyword ',WORD,' does not begin with',
+     *         ' one of the four characters ".*!#" for ',WORD1
+         END IF
+         CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+         CALL QUIT(' ILLEGAL KEYWORD IN NEVPT2INP ')
+C
+C *** Option 1 >NEVPT2 FROZEN<   Frozen NEVPT2 orbitals
+  101 CONTINUE
+         READ(LUCMD,*) (NFRNEVPT2(I),I=1,NSYM)
+      GO TO 100
+C
+C *** Option 2 >THRESHOLD < Threshold for the determinant coefficients for
+C                           the calculation of density matrices in koopro4
+  102 READ(LUCMD,*) THRNEVPT
+      GO TO 100
+C
+C *** Option 3 >ISTNEVCI < If .CI, state considered for NEVPT2
+C                           
+  103 READ(LUCMD,*) ISTNEVCI
+      GO TO 100
+C
       END

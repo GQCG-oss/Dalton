@@ -588,6 +588,13 @@ C *** ORBITAL OUTPUT
          IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
       END IF
       IF (LUINF .GT.0) CALL GPCLOSE(LUINF,'DELETE')
+C
+C ***************************************************
+C        *** NEVPT ***
+C
+      IF (DONEVPT) THEN
+          CALL KOOPRO4(WORK,LWORK)
+      ENDIF
 C *** POPULATION ANALYSIS AND PROPERTIES
       IF (FLAG(6) .AND. NUMRUN .GT. 0) THEN
          CALL SIRPOP(WORK,LWORK)

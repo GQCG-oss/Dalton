@@ -468,7 +468,10 @@ C     (first work space allocation)
 C
 C
       IF (IPRI4 .GE. 4) P4FLAG(4) = .TRUE.
-      IF (P4FLAG(4) .AND. NCONF.GT.1 .AND. .NOT.DOCINO) THEN
+c      IF (P4FLAG(4) .AND. NCONF.GT.1 .AND. .NOT.DOCINO) THEN
+c--renzo modif
+      IF (P4FLAG(4) .AND.((nconf.eq.1.and.donevpt).or.(nconf.gt.1)).AND.
+     $     .NOT.DOCINO) THEN
          IF (LCINDX .GT. LFREE) THEN
             WRITE (LUW4,1077) LCINDX-LFREE
             GO TO 110
@@ -483,6 +486,8 @@ C           this is an old LUIT1 file (before 5-Aug-1986)
             I = ISTATE
          ELSE
             READ (RTNLBL(1),'(2I4)') NRS,I
+c--renzo modif
+            if(nconf.eq.1) i=1   !just a patch (hopefully harmless)
             IF (RTNLBL(2) .EQ. 'CISAVE ') THEN
                IF (.NOT. CICALC) THEN
                   NWARN = NWARN + 1
