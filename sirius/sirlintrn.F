@@ -399,12 +399,15 @@ C
      &                        .FALSE.,KSYMOP,WRK(K3A),L3A)
            KSYMOP = KSYMOX
            CALL PKWOP(NWOPT,JWOP,WRK(KUBO),WRK(KFXC))
-           IF (IPRLIN.GT.5) THEN
-              WRITE (LUPRI,*) 'Orbital part of linearly transformed '//
-     &             'B vector before DFT contribution'
-              DO ILOOP = 1,NWOPT
-                 WRITE(LUPRI,*) WRK(KSOVEC+ILOOP-1)
-              END DO
+           IF (IPRLIN.GT.20) THEN
+              WRITE (LUPRI,'(/A)') 'Orbital part of linearly'//
+     &             ' transformed B vector before DFT contribution'
+              IF (IPRLIN.GT.100) THEN
+                 PRFAC = 0.0D0
+              ELSE
+                 PRFAC = 0.1D0
+              END IF
+              CALL PRKAP (NWOPT,WRK(KSOVEC),PRFAC,LUPRI)
            END IF
            CALL DAXPY(NWOPT,D4,WRK(KUBO),1,WRK(KSOVEC+(IOSIM-1)*NVAR),1)
          END DO
