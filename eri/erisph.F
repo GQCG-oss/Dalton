@@ -43,7 +43,13 @@ C
 #include <nuclei.h>
 #include <ccom.h>
       DIMENSION CSQ(NROWS,NCOLS), WORK(LWORK)
-C     
+C
+      IF (DOCART) THEN
+         WRITE (LUPRI,'(1X,2A)') 
+     &     ' Only spherical-harmonic basis implemented in ERI.',
+     &     ' Run TWOINT instead.' 
+         CALL QUIT('ERI does not work with Cartesian basis.')
+      END IF
       IF (IPRINT .GT. 5) THEN
          CALL TITLER('Output from SPHMAT','*',103)
          WRITE (LUPRI,'(1X,A,2I5)')    ' NROWS,NCOLS: ',NROWS,NCOLS
@@ -59,34 +65,37 @@ C        WRITE (LUPRI,'(1X,A,I5)') ' NCOLS:', NCOLS
 C        CALL QUIT('Error in SPHMAT: incorrect NCOLS')
 C     END IF 
 C
-      DO 100 D = 0, NDER
-      DO 100 X = D, 0, -1
-      DO 100 Y = D - X, 0, -1
+      DO D = 0, NDER
+      DO X = D, 0, -1
+      DO Y = D - X, 0, -1
          Z = D - X - Y 
-         DO 200 L = 0, NHTYP - 1
-         DO 200 M = 0, 2*L 
+         DO L = 0, NHTYP - 1
+         DO M = 0, 2*L 
             IF (GDER) THEN 
                CALL SPHDER(CSQ,NROWS,NCOLS,L,M,X,Y,Z,0,0,0,IPRINT)
             ELSE
                CALL SPHDER(CSQ,NROWS,NCOLS,L,M,0,0,0,X,Y,Z,IPRINT)
             END IF
-  200    CONTINUE
-  100 CONTINUE         
+         END DO
+         END DO
+      END DO
+      END DO
+      END DO
 C
       IF (IPRINT.GT.10) THEN
          IF (NDIM.GT.LWORK) CALL STOPIT('SPHMAT',' ',LWORK,NDIM)
          CALL MTRSP(NROWS,NCOLS,CSQ,NROWS,WORK,NCOLS)
          CALL HEADER('CSQ in SPHMAT',-1) 
          ISTART = 0
-         DO 300 IATOM = 1, NCOLS
+         DO IATOM = 1, NCOLS
             IF (.NOT.GDER) WRITE (LUPRI,'(//,2X,A,I5)')
      &         ' B-field CSQ for atom ', IATOM 
-            DO 310 D = 0, NDER
-            DO 310 X = D, 0, -1
-            DO 310 Y = D - X, 0, -1
+            DO D = 0, NDER
+            DO X = D, 0, -1
+            DO Y = D - X, 0, -1
                Z = D - X - Y 
-               DO 320 L = 0, NHTYP - 1
-               DO 320 C = -D, D 
+               DO L = 0, NHTYP - 1
+               DO C = -D, D 
                IF (L + C .GE. 0) THEN
                   NS = 2*L+1
                   NC = (L+C+1)*(L+C+2)/2
@@ -96,10 +105,13 @@ C
      &               ' angular momentum:',L, ' Cartesian level: ',C
                   CALL OUTPUT(WORK(IADR),1,NS,1,NC,NS,NC,1,LUPRI) 
                END IF
-  320          CONTINUE
-  310       CONTINUE
+               END DO
+               END DO
+            END DO
+            END DO
+            END DO
             ISTART = ISTART + NROWS 
-  300    CONTINUE         
+         END DO
       END IF
 C
       RETURN

@@ -451,7 +451,7 @@ C
      &               WORK(KLABL),'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
      &               IPRINT,SPHINT(1,IOFF+1),NCOMP,TOFILE,'TRIANG',
      &               DOINT)
-         IF (IPRINT .GT. 5) CALL FMMSPR(SPHINT(1,IOFF+ICOMP),
+         IF (IPRINT .GT. 5) CALL FMMSPR(SPHINT(1,IOFF+1),
      &                                  WORK(KLABL),WORK(KINTR),NCOMPS)
          IOFF = IOFF + NCOMPS 
       END DO
