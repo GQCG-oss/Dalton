@@ -233,9 +233,9 @@ C
       U1R=(ZFS(1,3)+ZFS(3,1))/2
       U1I=(ZFS(2,3)+ZFS(3,2))/2
       U( 2) = U2R + I*U2I
-      U(-2) = CONJG(U(2))
+      U(-2) = DCONJG(U(2))
       U( 1) =-U1R - I*U1I
-      U(-1) =-CONJG(U(1))
+      U(-1) =-DCONJG(U(1))
       U( 0) = (2*ZFS(3,3)-ZFS(1,1)-ZFS(2,2))/SQRT(D6)
       IF (IPRINT.GT.5) THEN
          CALL HEADER('Spherical zero field splitting tensor (cm-1)',0)
@@ -296,7 +296,7 @@ C     H(M,N)=<SM|T|SN>U(M-N)* = <S||T||S><S2NM-N|SM>U(M-N)*
 
       DO IM=1,MULT
          DO IN=1,MULT
-            HZFS(IM,IN) = TSS*CG(IM,IN)*CONJG(U(IM-IN))
+            HZFS(IM,IN) = TSS*CG(IM,IN)*DCONJG(U(IM-IN))
          END DO
       END DO
       IF (IPRINT.GT.5) THEN
