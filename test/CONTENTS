@@ -254,7 +254,7 @@ cc_geoopt_mp2
 Molecule:         HF in C1
 Wave Function:    MP2 / aug-cc-pVDZ
 Test Purpose:     Geometry optimization using analytic gradient
-                  from the CC program and the *OPTIMIZE module.
+                  from the CC program and the *OPTIMIZE module
 
 
 cc_grad
@@ -507,6 +507,14 @@ energy_nosymm
 Molecule:         H2O
 Wave Functions:   SCF, MP2, and MCSCF (CAS) / cc-pVDZ (Atombasis)
 Test Purpose:     Check energy calculations without symmetry
+
+
+energy_parallel
+---------------
+Molecule:         H2O
+Wave Function:    Parallel SCF / cc-pVDZ
+Test Purpose:     Check energy calculated in parallel (using TWOINT)
+                  and with symmetry
 
 
 energy_restart
@@ -882,6 +890,13 @@ rsp_excipolar2
 Molecule:         LiH
 Wave Function:    MCSCF (CAS) / 4-31G
 Test Purpose:     Polarizability of an excited state
+
+
+rsp_hyperpolar
+--------------
+Molecule:         H2O
+Wave Function:    MCSCF (CAS) / 6-31++G**
+Test Purpose:     First hyperpolarizability
 
 
 rsp_lrso
