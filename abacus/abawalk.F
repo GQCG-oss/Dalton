@@ -2125,7 +2125,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mxcent.h>
-      PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
+      PARAMETER (D0 = 0.0D0, D10 = 10.00D00, D100 = 100.00D00)
 C
       CHARACTER NAME*4, TMPTXT*11
       LOGICAL VBIG, BIG
