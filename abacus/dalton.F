@@ -343,7 +343,6 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' Hinne Hettema,         University of Auckland,       NZ     ',
      *  ' Dan Jonsson,           San Diego Superc. Center,     USA    ',
      *  ' Sheela Kirpekar,       SDU - Odense University,      Denmark',
-     *  ' Wim Klopper,           University of Karlsruhe,      Germany',
      *  ' Rika Kobayashi,        Cambridge University,         England',
      *  ' Henrik Koch,           SDU - Odense University,      Denmark',
      *  ' Kurt V.Mikkelsen,      University of Copenhagen,     Denmark',
@@ -358,6 +357,7 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark',
      *  ' Peter R.Taylor,        San Diego Superc. Center,     USA    ',
      *  ' Olav Vahtras,          PDC, Stockholm,               Sweden '
+C    *  ' Wim Klopper,           University of Karlsruhe,      Germany',
 C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
@@ -383,12 +383,13 @@ C        Changed format (WK/UniKA/04-11-2002).
      &'J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,',
      &'O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,',
      &'T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,',
-     &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,',
+     &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar,',
      &'R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,'
      &,'T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, ' //
      &'S. P. A. Sauer,',
      &'B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,',
      &'and O. Vahtras"'
+C    &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,',
 C
 C     Stamp date and time and hostname to output
 C
