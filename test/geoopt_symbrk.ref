@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,16 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:42 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:12 2002
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -89,7 +95,7 @@
  Optimization will be performed in Cartesian coordinates.
 
 
- Threshold for symmetry-break set to       :      0.10D-02
+ Threshold for symmetry-break set to       :      0.10E-02
  Trust region method will be used to control step (default).
 
 
@@ -123,8 +129,8 @@
   Title Cards
   -----------
 
-  Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-  egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+  Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                          
 
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
@@ -175,6 +181,22 @@ Point group: C2h
     Bg  | Bg   Bu   Au   Ag 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O    1     15.994915
+                           O    2     15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    34.005480 amu
+                       Natural abundance:  99.491 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -192,7 +214,7 @@ Point group: C2h
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -227,30 +249,30 @@ Point group: C2h
 
   Symmetry 1
 
-   1   O     y    [  2  -   5 ]/2
-   2   O     z    [  3  -   6 ]/2
-   3   H     y    [  8  -  11 ]/2
-   4   H     z    [  9  -  12 ]/2
+   1   O     y    [  3  -   6 ]/2
+   2   O     z    [  8  -  11 ]/2
+   3   H     y    [  9  -  12 ]/2
+   4   H     z    [  1  +   4 ]/2
 
 
   Symmetry 2
 
-   5   O     x    [  1  +   4 ]/2
-   6   H     x    [  7  +  10 ]/2
+   5   O     x    [  7  +  10 ]/2
+   6   H     x    [  2  +   5 ]/2
 
 
   Symmetry 3
 
-   7   O     y    [  2  +   5 ]/2
-   8   O     z    [  3  +   6 ]/2
-   9   H     y    [  8  +  11 ]/2
-  10   H     z    [  9  +  12 ]/2
+   7   O     y    [  3  +   6 ]/2
+   8   O     z    [  8  +  11 ]/2
+   9   H     y    [  9  +  12 ]/2
+  10   H     z    [  1  -   4 ]/2
 
 
   Symmetry 4
 
-  11   O     x    [  1  -   4 ]/2
-  12   H     x    [  7  -  10 ]/2
+  11   O     x    [  7  -  10 ]/2
+  12   H     x    [  1  -   4 ]/2
 
 
    Interatomic separations (in Angstroms):
@@ -283,6 +305,27 @@ Point group: C2h
                   ------     ------     ------                   -----
   bond angle:       O  2       O  1       H  1                  90.000
   bond angle:       O  1       O  2       H  2                  90.000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    1.590439          0.000000    0.986881    0.161451
+   IB   10.363585          0.000000   -0.161451    0.986881
+   IC   11.954024          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         317760.7574          48764.8804          42276.8935 MHz
+           10.599358            1.626621            1.410205 cm-1
 
 
   Nuclear repulsion energy :   37.190893169763
@@ -368,28 +411,28 @@ Point group: C2h
 
 
 
- >>> Time used in TWOINT is   0.56 seconds
+ >>> Time used in TWOINT is   0.51 seconds
 
 
  >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.64 seconds
+ >>>> Total CPU  time used in HERMIT:   0.60 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:43 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:13 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -419,7 +462,7 @@ Point group: C2h
      Number of basis functions         14   5  14   5
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               4   1   3   1
@@ -427,7 +470,7 @@ Point group: C2h
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -438,17 +481,17 @@ Point group: C2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1   -150.112416321313   4.79D+00  -1.50D+02    4  1  3  1
-   2   -150.740135286547   7.00D-01  -6.28D-01    4  1  3  1
-   3   -150.771358177563   2.35D-01  -3.12D-02    4  1  3  1
-   4   -150.774941691480   7.86D-02  -3.58D-03    4  1  3  1
-   5   -150.775467492634   1.30D-02  -5.26D-04    4  1  3  1
-   6   -150.775490694738   3.89D-03  -2.32D-05    4  1  3  1
-   7   -150.775493389338   7.36D-04  -2.69D-06    4  1  3  1
-   8   -150.775493488125   8.96D-05  -9.88D-08    4  1  3  1
-   9   -150.775493488984   1.37D-05  -8.59D-10    4  1  3  1
-  10   -150.775493489007   2.28D-06  -2.26D-11    4  1  3  1
-  11   -150.775493489007   3.43D-07  -7.25D-13    4  1  3  1
+   1   -150.112416321313   4.79E+00  -1.50E+02    4  1  3  1
+   2   -150.740135286547   7.00E-01  -6.28E-01    4  1  3  1
+   3   -150.771358177563   2.35E-01  -3.12E-02    4  1  3  1
+   4   -150.774941691480   7.86E-02  -3.58E-03    4  1  3  1
+   5   -150.775467492634   1.30E-02  -5.26E-04    4  1  3  1
+   6   -150.775490694738   3.89E-03  -2.32E-05    4  1  3  1
+   7   -150.775493389338   7.36E-04  -2.69E-06    4  1  3  1
+   8   -150.775493488125   8.96E-05  -9.88E-08    4  1  3  1
+   9   -150.775493488984   1.37E-05  -8.59E-10    4  1  3  1
+  10   -150.775493489007   2.28E-06  -2.24E-11    4  1  3  1
+  11   -150.775493489007   3.43E-07  -7.18E-13    4  1  3  1
  DIIS converged in  11 iterations !
 
 
@@ -495,7 +538,7 @@ Point group: C2h
      Final gradient norm:           0.000000343053
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:43 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:13 2002
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -554,11 +597,11 @@ Point group: C2h
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.09 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:43 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:13 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -566,24 +609,8 @@ Point group: C2h
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:43 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:13 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    z       -0.0740498319    -0.0740498929     0.0000000610
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  6.10E-08
 
@@ -594,10 +621,8 @@ Point group: C2h
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:52 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:20 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
@@ -620,8 +645,8 @@ Point group: C2h
 
 
      Total energy       -150.7754934890 au (Hartrees)
-                         -4102.80976065 eV
-                           -395861.0018 kJ/mol
+                         -4102.80976635 eV
+                           -395861.0013 kJ/mol
 
 
 
@@ -629,11 +654,11 @@ Point group: C2h
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.3985184782 au
-     Mass-velocity correction:                  -0.5018302789 au
+     Darwin correction:                          0.3985184182 au
+     Mass-velocity correction:                  -0.5018302034 au
 
-     Total relativistic correction:             -0.1033118007 au (0.0685%)
-     Non-relativistic + relativistic energy:  -150.8788052897 au
+     Total relativistic correction:             -0.1033117852 au (0.0685%)
+     Non-relativistic + relativistic energy:  -150.8788052742 au
 
 
 
@@ -786,19 +811,19 @@ Point group: C2h
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:05      56 %
- RHSIDE     00:00:03      37 %
+ TWOTEX     00:00:04      55 %
+ RHSIDE     00:00:03      36 %
 
- TOTAL      00:00:09     100 %
+ TOTAL      00:00:08     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   8.63 seconds
- >>>> Total wall time used in ABACUS:   9.00 seconds
+ >>>> Total CPU  time used in ABACUS:   7.51 seconds
+ >>>> Total wall time used in ABACUS:   7.00 seconds
 
 - End of Static Property Section
 
- Predicted energy change       -0.011158384759048
+ Predicted energy change       -0.011158384759034
 
 
   Step in diagonal representation
@@ -856,31 +881,31 @@ Point group: C2h
 
 
 
- >>> Time used in TWOINT is   1.46 seconds
+ >>> Time used in TWOINT is   0.55 seconds
 
 
  >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   1.52 seconds
- >>>> Total wall time used in HERMIT:   3.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.62 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:55 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:21 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -918,7 +943,7 @@ Point group: C2h
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -927,16 +952,16 @@ Point group: C2h
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.774922706263    3.50625D-01   -1.51D+02
-    2     -150.784036212845    8.55854D-02   -9.11D-03
-    3     -150.784836975257    2.58491D-02   -8.01D-04
-    4     -150.784889658235    8.33230D-03   -5.27D-05
-    5     -150.784900169635    1.64932D-03   -1.05D-05
-    6     -150.784900573849    2.54513D-04   -4.04D-07
-    7     -150.784900582412    3.59378D-05   -8.56D-09
-    8     -150.784900582536    6.11715D-06   -1.24D-10
-    9     -150.784900582541    1.54353D-06   -5.89D-12
-   10     -150.784900582542    2.72035D-07   -5.76D-13
+    1     -150.774922706263    3.50625E-01   -1.51E+02
+    2     -150.784036212845    8.55854E-02   -9.11E-03
+    3     -150.784836975257    2.58491E-02   -8.01E-04
+    4     -150.784889658235    8.33230E-03   -5.27E-05
+    5     -150.784900169635    1.64932E-03   -1.05E-05
+    6     -150.784900573849    2.54513E-04   -4.04E-07
+    7     -150.784900582412    3.59378E-05   -8.56E-09
+    8     -150.784900582536    6.11715E-06   -1.24E-10
+    9     -150.784900582542    1.54353E-06   -6.05E-12
+   10     -150.784900582542    2.72035E-07   -4.26E-13
  DIIS converged in  10 iterations !
 
 
@@ -977,76 +1002,22 @@ Point group: C2h
      Spatial symmetry:            1
 
      Final    HF energy:         -150.784900582542
-     Nuclear repulsion:            38.231981201635
-     Electronic energy:          -189.016881784177
+     Nuclear repulsion:            38.231981201633
+     Electronic energy:          -189.016881784175
 
      Final gradient norm:           0.000000272035
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:55 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:21 2002
      Host name              : slater.uio.no                           
 
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4
-   1  O   1s     0.7074  -0.0066   0.0027   0.0004
-   2  O   1s     0.0017   0.6215   0.0229  -0.1930
-   3  O   1s    -0.0013  -0.0711  -0.0464  -0.1170
-   4  O   2py   -0.0014  -0.1342   0.4655  -0.4391
-   5  O   2pz    0.0013   0.0365   0.3588   0.4557
-   6  O   2py    0.0011   0.0263  -0.0312  -0.0092
-   7  O   2pz   -0.0011  -0.0278  -0.0561  -0.0006
-   8  O   3d1-   0.0000   0.0022   0.0048  -0.0009
-   9  O   3d0    0.0002  -0.0053   0.0244   0.0048
-  10  O   3d2+   0.0003  -0.0159   0.0233  -0.0150
-  11  H   1s    -0.0001   0.1891   0.4453   0.3102
-  12  H   1s     0.0006  -0.0996  -0.1640  -0.1560
-  13  H   2py   -0.0001  -0.0032   0.0040  -0.0116
-  14  H   2pz    0.0005  -0.0241  -0.0333  -0.0132
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6437
-   2  O   2px    0.0052
-   3  O   3d2-  -0.0177
-   4  O   3d1+   0.0077
-   5  H   2px    0.0197
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1        2        3
-   1  O   1s     0.7075  -0.0014  -0.0004
-   2  O   1s     0.0019   0.6349  -0.2438
-   3  O   1s    -0.0029  -0.0368  -0.0937
-   4  O   2py   -0.0010   0.1111  -0.1156
-   5  O   2pz    0.0013   0.1343   0.5250
-   6  O   2py    0.0020  -0.0197  -0.0071
-   7  O   2pz   -0.0008  -0.0530  -0.0392
-   8  O   3d1-   0.0000  -0.0016  -0.0168
-   9  O   3d0    0.0001   0.0092   0.0087
-  10  O   3d2+   0.0002   0.0065  -0.0031
-  11  H   1s     0.0001   0.3223   0.3485
-  12  H   1s     0.0001  -0.1512  -0.1411
-  13  H   2py    0.0000  -0.0047  -0.0127
-  14  H   2pz    0.0005  -0.0367  -0.0239
-
-     Molecular orbitals for symmetry species   4
-
- Orbital          1
-   1  O   2px    0.7201
-   2  O   2px    0.0625
-   3  O   3d2-   0.0030
-   4  O   3d1+   0.0110
-   5  H   2px    0.0255
 
 
-
- >>>> Total CPU  time used in SIRIUS :      0.05 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:55 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:21 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -1056,7 +1027,7 @@ Point group: C2h
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:27:55 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:21 2002
      Host name              : slater.uio.no                           
 
 
@@ -1078,7 +1049,7 @@ Point group: C2h
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.42E-06
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:30 2002
      Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
@@ -1088,23 +1059,23 @@ Point group: C2h
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:06      55 %
- RHSIDE     00:00:04      39 %
- REST       00:00:01      12 %
+ TWOTEX     00:00:05      56 %
+ RHSIDE     00:00:03      37 %
+ REST       00:00:01      15 %
 
- TOTAL      00:00:10     100 %
+ TOTAL      00:00:09     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  10.26 seconds
- >>>> Total wall time used in ABACUS:  11.00 seconds
+ >>>> Total CPU  time used in ABACUS:   8.64 seconds
+ >>>> Total wall time used in ABACUS:   9.00 seconds
 
 - End of Static Property Section
 
  *** ERROR, Wrong interval in WLKBIS (WSTPLN)
      Setting level-shift equal to zero.
 
- Predicted energy change       -0.000495315746879
+ Predicted energy change       -0.000495315746875
 
 
   Step in diagonal representation
@@ -1155,7 +1126,7 @@ Point group: C2h
  *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.02 seconds
 
 
  Number of two-electron integrals written:       73191 ( 26.6% )
@@ -1163,31 +1134,31 @@ Point group: C2h
 
 
 
- >>> Time used in TWOINT is   0.61 seconds
+ >>> Time used in TWOINT is   0.55 seconds
 
 
  >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.67 seconds
+ >>>> Total CPU  time used in HERMIT:   0.61 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:30 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1225,7 +1196,7 @@ Point group: C2h
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1234,15 +1205,15 @@ Point group: C2h
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.785033164862    7.09354D-02   -1.51D+02
-    2     -150.785381455591    1.66745D-02   -3.48D-04
-    3     -150.785408093136    5.29112D-03   -2.66D-05
-    4     -150.785409925919    1.35733D-03   -1.83D-06
-    5     -150.785410184245    3.64827D-04   -2.58D-07
-    6     -150.785410205473    7.04259D-05   -2.12D-08
-    7     -150.785410206223    8.24025D-06   -7.50D-10
-    8     -150.785410206230    1.53522D-06   -6.73D-12
-    9     -150.785410206230    3.47173D-07   -1.35D-13
+    1     -150.785033164862    7.09354E-02   -1.51E+02
+    2     -150.785381455591    1.66745E-02   -3.48E-04
+    3     -150.785408093136    5.29112E-03   -2.66E-05
+    4     -150.785409925919    1.35733E-03   -1.83E-06
+    5     -150.785410184245    3.64827E-04   -2.58E-07
+    6     -150.785410205473    7.04259E-05   -2.12E-08
+    7     -150.785410206223    8.24025E-06   -7.50E-10
+    8     -150.785410206229    1.53522E-06   -6.53E-12
+    9     -150.785410206230    3.47173E-07   -3.62E-13
  DIIS converged in   9 iterations !
 
 
@@ -1283,76 +1254,22 @@ Point group: C2h
      Spatial symmetry:            1
 
      Final    HF energy:         -150.785410206230
-     Nuclear repulsion:            37.951456342218
-     Electronic energy:          -188.736866548448
+     Nuclear repulsion:            37.951456342213
+     Electronic energy:          -188.736866548442
 
      Final gradient norm:           0.000000347173
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:30 2002
      Host name              : slater.uio.no                           
 
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4
-   1  O   1s     0.7074  -0.0068   0.0033  -0.0002
-   2  O   1s     0.0017   0.6200   0.0153  -0.1975
-   3  O   1s    -0.0013  -0.0686  -0.0546  -0.1120
-   4  O   2py   -0.0014  -0.1280   0.4514  -0.4501
-   5  O   2pz    0.0013   0.0400   0.3749   0.4434
-   6  O   2py    0.0010   0.0242  -0.0261  -0.0089
-   7  O   2pz   -0.0010  -0.0291  -0.0551  -0.0024
-   8  O   3d1-   0.0000   0.0018   0.0049  -0.0016
-   9  O   3d0    0.0002  -0.0048   0.0246   0.0040
-  10  O   3d2+   0.0003  -0.0152   0.0227  -0.0156
-  11  H   1s    -0.0002   0.1949   0.4490   0.2989
-  12  H   1s     0.0007  -0.1026  -0.1668  -0.1539
-  13  H   2py   -0.0001  -0.0026   0.0054  -0.0113
-  14  H   2pz    0.0005  -0.0248  -0.0329  -0.0129
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6438
-   2  O   2px    0.0068
-   3  O   3d2-  -0.0170
-   4  O   3d1+   0.0079
-   5  H   2px    0.0200
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1        2        3
-   1  O   1s     0.7075  -0.0014  -0.0002
-   2  O   1s     0.0019   0.6375  -0.2433
-   3  O   1s    -0.0029  -0.0402  -0.0969
-   4  O   2py   -0.0010   0.1066  -0.1111
-   5  O   2pz    0.0014   0.1331   0.5244
-   6  O   2py    0.0020  -0.0177  -0.0058
-   7  O   2pz   -0.0008  -0.0538  -0.0404
-   8  O   3d1-   0.0000  -0.0015  -0.0163
-   9  O   3d0    0.0002   0.0091   0.0092
-  10  O   3d2+   0.0002   0.0063  -0.0027
-  11  H   1s     0.0001   0.3229   0.3556
-  12  H   1s     0.0001  -0.1517  -0.1443
-  13  H   2py    0.0000  -0.0039  -0.0123
-  14  H   2pz    0.0005  -0.0369  -0.0245
-
-     Molecular orbitals for symmetry species   4
-
- Orbital          1
-   1  O   2px    0.7194
-   2  O   2px    0.0593
-   3  O   3d2-   0.0027
-   4  O   3d1+   0.0109
-   5  H   2px    0.0254
 
 
-
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:30 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -1362,47 +1279,29 @@ Point group: C2h
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:30 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    y       -0.0020016525    -0.0020008263    -0.0000008263
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  1:  8.26E-07
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:17 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:39 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:06      55 %
- RHSIDE     00:00:04      39 %
+ TWOTEX     00:00:05      55 %
+ RHSIDE     00:00:03      37 %
 
- TOTAL      00:00:10     100 %
+ TOTAL      00:00:09     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  10.13 seconds
- >>>> Total wall time used in ABACUS:  11.00 seconds
+ >>>> Total CPU  time used in ABACUS:   8.56 seconds
+ >>>> Total wall time used in ABACUS:   9.00 seconds
 
 - End of Static Property Section
 
@@ -1450,7 +1349,7 @@ Point group: C2h
 
 
  ***** NOTE! *****
- Due to non-zero index of total Hessian, symmetry #           1
+ Due to non-zero index of total Hessian, symmetry # 1
  has to be broken to minimize energy!
 
     Starting in Integral Section -
@@ -1472,8 +1371,8 @@ Point group: C2h
   Title Cards
   -----------
 
-  Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-  egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+  Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                          
 
 
                   SYMADD: Requested addition of symmetry
@@ -1525,6 +1424,22 @@ Represented as: C2
     B   | B    A  
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O    1     15.994915
+                           O    2     15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    34.005480 amu
+                       Natural abundance:  99.491 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -1542,7 +1457,7 @@ Represented as: C2
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -1553,19 +1468,19 @@ Represented as: C2
 
    1   O    1   x      1.3231824106
    2            y      0.0000000000
-   3            z     -0.2500000000
+   3            z     -0.0296371350
 
    4   O    2   x     -1.3231824106
    5            y      0.0000000000
-   6            z     -0.2500000000
+   6            z     -0.0296371350
 
    7   H    1   x      1.6580685810
    8            y      1.7585333002
-   9            z      0.2500000000
+   9            z      0.4703628650
 
   10   H    2   x     -1.6580685810
   11            y     -1.7585333002
-  12            z      0.2500000000
+  12            z      0.4703628650
 
 
 
@@ -1577,22 +1492,22 @@ Represented as: C2
 
   Symmetry 1
 
-   1   O     x    [  1  -   4 ]/2
-   2   O     y    [  2  -   5 ]/2
-   3   O     z    [  3  +   6 ]/2
-   4   H     x    [  7  -  10 ]/2
-   5   H     y    [  8  -  11 ]/2
-   6   H     z    [  9  +  12 ]/2
+   1   O     x    [  2  -   5 ]/2
+   2   O     y    [  3  +   6 ]/2
+   3   O     z    [  7  -  10 ]/2
+   4   H     x    [  8  -  11 ]/2
+   5   H     y    [  9  +  12 ]/2
+   6   H     z    [  1  +   4 ]/2
 
 
   Symmetry 2
 
-   7   O     x    [  1  +   4 ]/2
-   8   O     y    [  2  +   5 ]/2
-   9   O     z    [  3  -   6 ]/2
-  10   H     x    [  7  +  10 ]/2
-  11   H     y    [  8  +  11 ]/2
-  12   H     z    [  9  -  12 ]/2
+   7   O     x    [  2  +   5 ]/2
+   8   O     y    [  3  -   6 ]/2
+   9   O     z    [  7  +  10 ]/2
+  10   H     x    [  8  +  11 ]/2
+  11   H     y    [  9  -  12 ]/2
+  12   H     z    [  3  +  12 ]/2
 
 
    Interatomic separations (in Angstroms):
@@ -1627,7 +1542,26 @@ Represented as: C2
   bond angle:       O  1       O  2       H  2                 100.380
 
 
-  Nuclear repulsion energy :   37.574488567196
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    1.551893          0.981494    0.190824    0.016023
+   IB   10.336180         -0.190412    0.981407   -0.024160
+   IC   11.636651         -0.020335    0.020662    0.999580
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         325653.2465          48894.1742          43429.9357 MHz
+           10.862623            1.630934            1.448667 cm-1
+
+
+  Nuclear repulsion energy :   37.574488567191
 
 
   Symmetry Orbitals
@@ -1702,31 +1636,31 @@ Represented as: C2
 
 
 
- >>> Time used in TWOINT is   0.70 seconds
+ >>> Time used in TWOINT is   0.62 seconds
 
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.07 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.80 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.74 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:17 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:40 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1753,7 +1687,7 @@ Represented as: C2
      Number of basis functions         19  19
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               5   4
@@ -1761,7 +1695,7 @@ Represented as: C2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1772,18 +1706,18 @@ Represented as: C2
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1   -150.154199777895   4.74D+00  -1.50D+02    5  4
-   2   -150.745300174877   6.97D-01  -5.91D-01    5  4
-   3   -150.778261017763   2.63D-01  -3.30D-02    5  4
-   4   -150.782555576317   8.43D-02  -4.29D-03    5  4
-   5   -150.783265453537   1.50D-02  -7.10D-04    5  4
-   6   -150.783305627996   5.41D-03  -4.02D-05    5  4
-   7   -150.783312513431   1.78D-03  -6.89D-06    5  4
-   8   -150.783313497894   7.08D-04  -9.84D-07    5  4
-   9   -150.783313667069   1.31D-04  -1.69D-07    5  4
-  10   -150.783313671725   1.31D-05  -4.66D-09    5  4
-  11   -150.783313671749   2.18D-06  -2.36D-11    5  4
-  12   -150.783313671750   5.89D-07  -7.11D-13    5  4
+   1   -150.154199777895   4.74E+00  -1.50E+02    5  4
+   2   -150.745300174878   6.97E-01  -5.91E-01    5  4
+   3   -150.778261017763   2.63E-01  -3.30E-02    5  4
+   4   -150.782555576317   8.43E-02  -4.29E-03    5  4
+   5   -150.783265453537   1.50E-02  -7.10E-04    5  4
+   6   -150.783305627996   5.41E-03  -4.02E-05    5  4
+   7   -150.783312513431   1.78E-03  -6.89E-06    5  4
+   8   -150.783313497894   7.08E-04  -9.84E-07    5  4
+   9   -150.783313667069   1.31E-04  -1.69E-07    5  4
+  10   -150.783313671725   1.31E-05  -4.66E-09    5  4
+  11   -150.783313671749   2.18E-06  -2.37E-11    5  4
+  12   -150.783313671750   5.89E-07  -6.18E-13    5  4
  DIIS converged in  12 iterations !
 
 
@@ -1816,68 +1750,22 @@ Represented as: C2
      Spatial symmetry:            1
 
      Final    HF energy:         -150.783313671750
-     Nuclear repulsion:            37.574488567196
-     Electronic energy:          -188.357802238946
+     Nuclear repulsion:            37.574488567191
+     Electronic energy:          -188.357802238940
 
      Final gradient norm:           0.000000589142
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:18 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:40 2002
      Host name              : slater.uio.no                           
 
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     0.7074  -0.0063   0.0026   0.0025   0.0002
-   2  O   1s     0.0015   0.6219  -0.0038   0.0880  -0.1792
-   3  O   1s    -0.0012  -0.0633  -0.0470   0.0104  -0.1066
-   4  O   2px   -0.0013  -0.1276   0.4002   0.3386  -0.3554
-   5  O   2py    0.0013   0.0419   0.2684   0.1160   0.5130
-   6  O   2pz    0.0004   0.0168   0.3296  -0.5313  -0.1239
-   7  O   2px    0.0010   0.0232  -0.0267  -0.0078  -0.0092
-   8  O   2py   -0.0011  -0.0244  -0.0429  -0.0100   0.0053
-   9  O   2pz   -0.0003  -0.0052  -0.0151  -0.0131  -0.0102
-  10  O   3d2-   0.0000  -0.0002   0.0077   0.0050  -0.0009
-  11  O   3d1-   0.0000   0.0013   0.0075  -0.0062   0.0027
-  12  O   3d0    0.0002  -0.0103   0.0089   0.0041  -0.0143
-  13  O   3d1+   0.0000  -0.0011  -0.0060   0.0156   0.0018
-  14  O   3d2+  -0.0003   0.0126  -0.0263  -0.0163   0.0019
-  15  H   1s     0.0001   0.1766   0.4151   0.0925   0.3090
-  16  H   1s     0.0005  -0.0924  -0.1500  -0.0188  -0.1472
-  17  H   2px   -0.0001  -0.0040   0.0009   0.0061  -0.0098
-  18  H   2py    0.0004  -0.0219  -0.0320  -0.0049  -0.0111
-  19  H   2pz    0.0001  -0.0065  -0.0018  -0.0179  -0.0121
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1        2        3        4
-   1  O   1s     0.7075  -0.0011   0.0000  -0.0005
-   2  O   1s     0.0017   0.6445  -0.2264  -0.0424
-   3  O   1s    -0.0029  -0.0255  -0.0892  -0.0211
-   4  O   2px   -0.0009   0.1177  -0.0674  -0.0137
-   5  O   2py    0.0013   0.1088   0.5326  -0.0879
-   6  O   2pz    0.0004   0.0254   0.0369   0.7079
-   7  O   2px    0.0019  -0.0221  -0.0093  -0.0066
-   8  O   2py   -0.0009  -0.0428  -0.0348  -0.0175
-   9  O   2pz   -0.0003  -0.0111  -0.0115   0.0545
-  10  O   3d2-   0.0000   0.0002  -0.0152   0.0028
-  11  O   3d1-   0.0000   0.0021   0.0052   0.0100
-  12  O   3d0    0.0001   0.0016  -0.0060   0.0038
-  13  O   3d1+   0.0000   0.0010   0.0005   0.0034
-  14  O   3d2+  -0.0002  -0.0103  -0.0082   0.0007
-  15  H   1s     0.0003   0.2964   0.3539   0.1025
-  16  H   1s     0.0000  -0.1383  -0.1377  -0.0333
-  17  H   2px    0.0000  -0.0051  -0.0134   0.0000
-  18  H   2py    0.0004  -0.0326  -0.0225  -0.0121
-  19  H   2pz    0.0001  -0.0094  -0.0088   0.0210
 
 
-
- >>>> Total CPU  time used in SIRIUS :      0.12 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.13 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:18 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:40 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -1885,25 +1773,8 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:18 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:40 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O   y        -0.0768202277    -0.0768201303    -0.0000000974
-        O   z        -0.0182195654    -0.0182195654     0.0000000000
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  9.74E-08
 
@@ -1914,20 +1785,18 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:30 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:50 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- O    1     1.3231824106            0.0000000000           -0.2500000000
- O    2    -1.3231824106            0.0000000000           -0.2500000000
- H    1     1.6580685810            1.7585333002            0.2500000000
- H    2    -1.6580685810           -1.7585333002            0.2500000000
+ O    1     1.3231824106            0.0000000000           -0.0296371350
+ O    2    -1.3231824106            0.0000000000           -0.0296371350
+ H    1     1.6580685810            1.7585333002            0.4703628650
+ H    2    -1.6580685810           -1.7585333002            0.4703628650
 
 
 
@@ -1940,8 +1809,8 @@ Represented as: C2
 
 
      Total energy       -150.7833136717 au (Hartrees)
-                         -4103.02255864 eV
-                           -395881.5337 kJ/mol
+                         -4103.02256435 eV
+                           -395881.5332 kJ/mol
 
 
 
@@ -1949,11 +1818,11 @@ Represented as: C2
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.3983111319 au
-     Mass-velocity correction:                  -0.5015406713 au
+     Darwin correction:                          0.3983110720 au
+     Mass-velocity correction:                  -0.5015405958 au
 
-     Total relativistic correction:             -0.1032295394 au (0.0685%)
-     Non-relativistic + relativistic energy:  -150.8865432111 au
+     Total relativistic correction:             -0.1032295239 au (0.0685%)
+     Non-relativistic + relativistic energy:  -150.8865431956 au
 
 
 
@@ -2045,7 +1914,7 @@ Represented as: C2
                               Dipole moment
                               -------------
 
-                    0.394620 au           1.003033 Debye
+                    0.394620 au           1.003023 Debye
 
 
 
@@ -2055,9 +1924,9 @@ Represented as: C2
 
                                au             Debye
 
-                    z      0.39461975      1.00303264
+                    z      0.39461975      1.00302324
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2100,16 +1969,16 @@ Represented as: C2
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:07      59 %
+ TWOTEX     00:00:06      58 %
  RHSIDE     00:00:04      35 %
- REST       00:00:01      11 %
+ REST       00:00:01      14 %
 
- TOTAL      00:00:12     100 %
+ TOTAL      00:00:10     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  12.43 seconds
- >>>> Total wall time used in ABACUS:  12.00 seconds
+ >>>> Total CPU  time used in ABACUS:  10.42 seconds
+ >>>> Total wall time used in ABACUS:  10.00 seconds
 
 - End of Static Property Section
 
@@ -2133,10 +2002,10 @@ Represented as: C2
                             Next geometry (au)
                             ------------------
 
- O    1     1.3209579941            0.0315476942           -0.2645095289
- O    2    -1.3209579941           -0.0315476942           -0.2645095289
- H    1     1.6309879957            1.7046359729            0.2645095289
- H    2    -1.6309879957           -1.7046359729            0.2645095289
+ O    1     1.3209579941            0.0315476942           -0.0441466639
+ O    2    -1.3209579941           -0.0315476942           -0.0441466639
+ H    1     1.6309879957            1.7046359729            0.4848723940
+ H    2    -1.6309879957           -1.7046359729            0.4848723940
 
 
 
@@ -2163,7 +2032,7 @@ Represented as: C2
  *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.02 seconds
 
 
  Number of two-electron integrals written:      117739 ( 42.8% )
@@ -2171,31 +2040,31 @@ Represented as: C2
 
 
 
- >>> Time used in TWOINT is   0.76 seconds
+ >>> Time used in TWOINT is   0.68 seconds
 
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.07 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.85 seconds
+ >>>> Total CPU  time used in HERMIT:   0.79 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:31 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:51 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2233,7 +2102,7 @@ Represented as: C2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2242,17 +2111,17 @@ Represented as: C2
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.784444822295    1.46091D-01   -1.51D+02
-    2     -150.785934668270    3.35187D-02   -1.49D-03
-    3     -150.786044394766    9.54500D-03   -1.10D-04
-    4     -150.786055258856    3.87507D-03   -1.09D-05
-    5     -150.786057154108    1.02768D-03   -1.90D-06
-    6     -150.786057356696    2.27558D-04   -2.03D-07
-    7     -150.786057368102    7.88230D-05   -1.14D-08
-    8     -150.786057369902    3.36071D-05   -1.80D-09
-    9     -150.786057370273    9.32343D-06   -3.71D-10
-   10     -150.786057370298    1.79126D-06   -2.54D-11
-   11     -150.786057370299    3.57182D-07   -7.82D-13
+    1     -150.784444822295    1.46091E-01   -1.51E+02
+    2     -150.785934668270    3.35187E-02   -1.49E-03
+    3     -150.786044394766    9.54500E-03   -1.10E-04
+    4     -150.786055258856    3.87507E-03   -1.09E-05
+    5     -150.786057154108    1.02768E-03   -1.90E-06
+    6     -150.786057356696    2.27558E-04   -2.03E-07
+    7     -150.786057368102    7.88230E-05   -1.14E-08
+    8     -150.786057369902    3.36071E-05   -1.80E-09
+    9     -150.786057370273    9.32343E-06   -3.71E-10
+   10     -150.786057370298    1.79126E-06   -2.52E-11
+   11     -150.786057370299    3.57182E-07   -6.82E-13
  DIIS converged in  11 iterations !
 
 
@@ -2285,68 +2154,22 @@ Represented as: C2
      Spatial symmetry:            1
 
      Final    HF energy:         -150.786057370299
-     Nuclear repulsion:            38.026228646587
-     Electronic energy:          -188.812286016886
+     Nuclear repulsion:            38.026228646586
+     Electronic energy:          -188.812286016885
 
      Final gradient norm:           0.000000357182
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:31 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:51 2002
      Host name              : slater.uio.no                           
 
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     0.7074  -0.0068   0.0024   0.0025   0.0001
-   2  O   1s     0.0017   0.6198  -0.0152   0.0912  -0.1767
-   3  O   1s    -0.0013  -0.0697  -0.0586   0.0107  -0.1063
-   4  O   2px   -0.0013  -0.1255   0.3906   0.3315  -0.3747
-   5  O   2py    0.0014   0.0447   0.2951   0.1200   0.5050
-   6  O   2pz    0.0005   0.0206   0.3165  -0.5347  -0.1341
-   7  O   2px    0.0010   0.0225  -0.0296  -0.0076  -0.0092
-   8  O   2py   -0.0011  -0.0293  -0.0521  -0.0100   0.0033
-   9  O   2pz   -0.0004  -0.0073  -0.0201  -0.0132  -0.0113
-  10  O   3d2-   0.0000   0.0006   0.0069   0.0043  -0.0010
-  11  O   3d1-   0.0000   0.0016   0.0080  -0.0061   0.0030
-  12  O   3d0    0.0001  -0.0102   0.0088   0.0034  -0.0146
-  13  O   3d1+   0.0000  -0.0013  -0.0053   0.0160   0.0017
-  14  O   3d2+  -0.0003   0.0122  -0.0271  -0.0160   0.0022
-  15  H   1s    -0.0002   0.1961   0.4393   0.0809   0.2921
-  16  H   1s     0.0007  -0.1029  -0.1684  -0.0157  -0.1487
-  17  H   2px    0.0000  -0.0044   0.0012   0.0068  -0.0105
-  18  H   2py    0.0005  -0.0236  -0.0326  -0.0031  -0.0084
-  19  H   2pz    0.0002  -0.0078  -0.0035  -0.0187  -0.0131
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1        2        3        4
-   1  O   1s     0.7075  -0.0015  -0.0001  -0.0005
-   2  O   1s     0.0019   0.6369  -0.2391  -0.0476
-   3  O   1s    -0.0028  -0.0399  -0.0981  -0.0254
-   4  O   2px   -0.0009   0.1145  -0.0824  -0.0124
-   5  O   2py    0.0014   0.1229   0.5329  -0.0987
-   6  O   2pz    0.0005   0.0316   0.0455   0.7047
-   7  O   2px    0.0019  -0.0214  -0.0085  -0.0068
-   8  O   2py   -0.0008  -0.0504  -0.0390  -0.0201
-   9  O   2pz   -0.0004  -0.0150  -0.0142   0.0524
-  10  O   3d2-   0.0000  -0.0003  -0.0154   0.0032
-  11  O   3d1-   0.0000   0.0027   0.0059   0.0103
-  12  O   3d0    0.0001   0.0016  -0.0060   0.0044
-  13  O   3d1+   0.0000   0.0012   0.0004   0.0033
-  14  O   3d2+  -0.0003  -0.0109  -0.0076   0.0006
-  15  H   1s     0.0000   0.3242   0.3531   0.1117
-  16  H   1s     0.0001  -0.1534  -0.1430  -0.0393
-  17  H   2px    0.0000  -0.0058  -0.0136   0.0000
-  18  H   2py    0.0005  -0.0346  -0.0216  -0.0133
-  19  H   2pz    0.0002  -0.0111  -0.0094   0.0219
 
 
-
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.11 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:31 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:51 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -2356,52 +2179,33 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:31 2001
+     Date and time (Linux)  : Sat Jun  8 22:03:51 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    y        0.0096618557     0.0096618351     0.0000000206
-        O    z        0.0051816709     0.0051816709     0.0000000000
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  2.06E-08
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:45 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:03 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:08      56 %
- RHSIDE     00:00:05      38 %
+ TWOTEX     00:00:07      58 %
+ RHSIDE     00:00:04      35 %
 
- TOTAL      00:00:14     100 %
+ TOTAL      00:00:11     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  13.79 seconds
- >>>> Total wall time used in ABACUS:  14.00 seconds
+ >>>> Total CPU  time used in ABACUS:  11.44 seconds
+ >>>> Total wall time used in ABACUS:  12.00 seconds
 
 - End of Static Property Section
 
- Predicted energy change       -0.001079547154432
+ Predicted energy change       -0.001079547154409
 
 
   Step in diagonal representation
@@ -2421,10 +2225,10 @@ Represented as: C2
                             Next geometry (au)
                             ------------------
 
- O    1     1.3167636612            0.0656819302           -0.4216303641
- O    2    -1.3167636612           -0.0656819302           -0.4216303641
- H    1     1.6075785774            1.6524426089            0.4216303641
- H    2    -1.6075785774           -1.6524426089            0.4216303641
+ O    1     1.3167636612            0.0656819302           -0.2012674991
+ O    2    -1.3167636612           -0.0656819302           -0.2012674991
+ H    1     1.6075785774            1.6524426089            0.6419932292
+ H    2    -1.6075785774           -1.6524426089            0.6419932292
 
 
 
@@ -2460,31 +2264,31 @@ Represented as: C2
 
 
 
- >>> Time used in TWOINT is   0.76 seconds
+ >>> Time used in TWOINT is   0.65 seconds
 
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.08 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.84 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.75 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:46 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:03 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2522,7 +2326,7 @@ Represented as: C2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2531,17 +2335,17 @@ Represented as: C2
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.774958632987    3.74832D-01   -1.51D+02
-    2     -150.785099684212    9.35761D-02   -1.01D-02
-    3     -150.786088636701    2.37846D-02   -9.89D-04
-    4     -150.786172051667    1.09826D-02   -8.34D-05
-    5     -150.786191287069    2.56485D-03   -1.92D-05
-    6     -150.786192575403    4.40609D-04   -1.29D-06
-    7     -150.786192608542    9.26583D-05   -3.31D-08
-    8     -150.786192610104    2.30234D-05   -1.56D-09
-    9     -150.786192610219    5.86531D-06   -1.15D-10
-   10     -150.786192610229    2.41429D-06   -9.12D-12
-   11     -150.786192610230    4.99911D-07   -1.87D-12
+    1     -150.774958632987    3.74832E-01   -1.51E+02
+    2     -150.785099684212    9.35761E-02   -1.01E-02
+    3     -150.786088636701    2.37846E-02   -9.89E-04
+    4     -150.786172051667    1.09826E-02   -8.34E-05
+    5     -150.786191287069    2.56485E-03   -1.92E-05
+    6     -150.786192575403    4.40609E-04   -1.29E-06
+    7     -150.786192608542    9.26583E-05   -3.31E-08
+    8     -150.786192610104    2.30234E-05   -1.56E-09
+    9     -150.786192610219    5.86531E-06   -1.15E-10
+   10     -150.786192610229    2.41429E-06   -9.27E-12
+   11     -150.786192610230    4.99910E-07   -1.85E-12
  DIIS converged in  11 iterations !
 
 
@@ -2574,68 +2378,22 @@ Represented as: C2
      Spatial symmetry:            1
 
      Final    HF energy:         -150.786192610230
-     Nuclear repulsion:            37.856506641750
-     Electronic energy:          -188.642699251981
+     Nuclear repulsion:            37.856506641756
+     Electronic energy:          -188.642699251986
 
-     Final gradient norm:           0.000000499911
+     Final gradient norm:           0.000000499910
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:46 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:04 2002
      Host name              : slater.uio.no                           
 
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     0.7074  -0.0065   0.0017   0.0031   0.0006
-   2  O   1s     0.0016   0.6210  -0.0338   0.1299  -0.1496
-   3  O   1s    -0.0013  -0.0672  -0.0557   0.0235  -0.0972
-   4  O   2px   -0.0013  -0.1286   0.3351   0.4365  -0.3189
-   5  O   2py    0.0012   0.0344   0.2442   0.1325   0.5447
-   6  O   2pz    0.0007   0.0302   0.3990  -0.4460  -0.1759
-   7  O   2px    0.0010   0.0239  -0.0284  -0.0087  -0.0096
-   8  O   2py   -0.0010  -0.0234  -0.0463  -0.0098   0.0126
-   9  O   2pz   -0.0006  -0.0101  -0.0290  -0.0179  -0.0171
-  10  O   3d2-   0.0000   0.0013   0.0044   0.0038   0.0004
-  11  O   3d1-   0.0000   0.0020   0.0096  -0.0038   0.0054
-  12  O   3d0    0.0002  -0.0094   0.0112   0.0052  -0.0128
-  13  O   3d1+   0.0000  -0.0020  -0.0069   0.0161   0.0025
-  14  O   3d2+  -0.0003   0.0130  -0.0233  -0.0201   0.0001
-  15  H   1s     0.0000   0.1846   0.4289   0.0741   0.2846
-  16  H   1s     0.0006  -0.0964  -0.1631  -0.0067  -0.1372
-  17  H   2px   -0.0001  -0.0040  -0.0003   0.0091  -0.0081
-  18  H   2py    0.0004  -0.0210  -0.0317  -0.0021  -0.0044
-  19  H   2pz    0.0002  -0.0115  -0.0086  -0.0164  -0.0183
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1        2        3        4
-   1  O   1s     0.7075  -0.0014   0.0002  -0.0007
-   2  O   1s     0.0018   0.6409  -0.2237  -0.0760
-   3  O   1s    -0.0028  -0.0304  -0.0934  -0.0392
-   4  O   2px   -0.0009   0.1142  -0.0924  -0.0149
-   5  O   2py    0.0012   0.1111   0.5356  -0.1514
-   6  O   2pz    0.0007   0.0467   0.0694   0.6832
-   7  O   2px    0.0020  -0.0215  -0.0087  -0.0098
-   8  O   2py   -0.0007  -0.0428  -0.0346  -0.0284
-   9  O   2pz   -0.0006  -0.0210  -0.0210   0.0433
-  10  O   3d2-   0.0000  -0.0007  -0.0157   0.0049
-  11  O   3d1-   0.0000   0.0038   0.0086   0.0095
-  12  O   3d0    0.0001   0.0027  -0.0046   0.0068
-  13  O   3d1+   0.0000   0.0017   0.0004   0.0031
-  14  O   3d2+  -0.0002  -0.0100  -0.0057   0.0008
-  15  H   1s     0.0002   0.3084   0.3480   0.1770
-  16  H   1s     0.0000  -0.1457  -0.1368  -0.0605
-  17  H   2px    0.0000  -0.0043  -0.0127   0.0000
-  18  H   2py    0.0005  -0.0306  -0.0189  -0.0195
-  19  H   2pz    0.0002  -0.0163  -0.0146   0.0159
 
 
-
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:46 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:04 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -2645,53 +2403,34 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:28:46 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:04 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    y       -0.0318504337    -0.0318504787     0.0000000450
-        O    z       -0.0146397376    -0.0146397376     0.0000000000
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  4.50E-08
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:00 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:15 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:08      56 %
- RHSIDE     00:00:05      38 %
- REST       00:00:02      12 %
+ TWOTEX     00:00:07      57 %
+ RHSIDE     00:00:04      35 %
+ REST       00:00:02      16 %
 
- TOTAL      00:00:14     100 %
+ TOTAL      00:00:11     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  13.65 seconds
- >>>> Total wall time used in ABACUS:  14.00 seconds
+ >>>> Total CPU  time used in ABACUS:  11.40 seconds
+ >>>> Total wall time used in ABACUS:  11.00 seconds
 
 - End of Static Property Section
 
- Predicted energy change       -0.000540713337636
+ Predicted energy change       -0.000540713337588
 
 
   Step in diagonal representation
@@ -2699,7 +2438,7 @@ Represented as: C2
 
 
                Column   1     Column   2     Column   3     Column   4
-       1       0.04632553    -0.01264029    -0.01190517     0.02703288
+       1      -0.04632553    -0.01264029    -0.01190517     0.02703288
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2711,10 +2450,10 @@ Represented as: C2
                             Next geometry (au)
                             ------------------
 
- O    1     1.3141655205            0.0830217345           -0.4337694040
- O    2    -1.3141655205           -0.0830217345           -0.4337694040
- H    1     1.5939571588            1.6241319010            0.4337694040
- H    2    -1.5939571588           -1.6241319010            0.4337694040
+ O    1     1.3141655205            0.0830217345           -0.2134065390
+ O    2    -1.3141655205           -0.0830217345           -0.2134065390
+ H    1     1.5939571588            1.6241319010            0.6541322691
+ H    2    -1.5939571588           -1.6241319010            0.6541322691
 
 
 
@@ -2750,31 +2489,31 @@ Represented as: C2
 
 
 
- >>> Time used in TWOINT is   0.76 seconds
+ >>> Time used in TWOINT is   0.66 seconds
 
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.07 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.84 seconds
+ >>>> Total CPU  time used in HERMIT:   0.75 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:01 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:16 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2812,7 +2551,7 @@ Represented as: C2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2821,16 +2560,16 @@ Represented as: C2
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.786305241713    7.41653D-02   -1.51D+02
-    2     -150.786695181850    1.75226D-02   -3.90D-04
-    3     -150.786728459252    4.71347D-03   -3.33D-05
-    4     -150.786731555956    2.01229D-03   -3.10D-06
-    5     -150.786732142957    5.70570D-04   -5.87D-07
-    6     -150.786732207320    1.51035D-04   -6.44D-08
-    7     -150.786732212829    5.83541D-05   -5.51D-09
-    8     -150.786732213862    1.92508D-05   -1.03D-09
-    9     -150.786732213972    4.22702D-06   -1.11D-10
-   10     -150.786732213977    8.97859D-07   -4.21D-12
+    1     -150.786305241713    7.41653E-02   -1.51E+02
+    2     -150.786695181850    1.75226E-02   -3.90E-04
+    3     -150.786728459252    4.71347E-03   -3.33E-05
+    4     -150.786731555956    2.01229E-03   -3.10E-06
+    5     -150.786732142956    5.70570E-04   -5.87E-07
+    6     -150.786732207320    1.51035E-04   -6.44E-08
+    7     -150.786732212829    5.83541E-05   -5.51E-09
+    8     -150.786732213862    1.92508E-05   -1.03E-09
+    9     -150.786732213972    4.22702E-06   -1.11E-10
+   10     -150.786732213977    8.97859E-07   -4.11E-12
  DIIS converged in  10 iterations !
 
 
@@ -2863,68 +2602,22 @@ Represented as: C2
      Spatial symmetry:            1
 
      Final    HF energy:         -150.786732213977
-     Nuclear repulsion:            38.052414397512
-     Electronic energy:          -188.839146611489
+     Nuclear repulsion:            38.052414397511
+     Electronic energy:          -188.839146611487
 
      Final gradient norm:           0.000000897859
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:01 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:16 2002
      Host name              : slater.uio.no                           
 
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     0.7074  -0.0067   0.0015   0.0031   0.0006
-   2  O   1s     0.0017   0.6201  -0.0385   0.1330  -0.1460
-   3  O   1s    -0.0013  -0.0699  -0.0598   0.0244  -0.0963
-   4  O   2px   -0.0013  -0.1281   0.3309   0.4383  -0.3222
-   5  O   2py    0.0012   0.0342   0.2500   0.1357   0.5459
-   6  O   2pz    0.0008   0.0329   0.3983  -0.4426  -0.1793
-   7  O   2px    0.0010   0.0239  -0.0295  -0.0088  -0.0098
-   8  O   2py   -0.0009  -0.0248  -0.0493  -0.0098   0.0128
-   9  O   2pz   -0.0006  -0.0115  -0.0322  -0.0182  -0.0180
-  10  O   3d2-   0.0000   0.0017   0.0039   0.0033   0.0005
-  11  O   3d1-   0.0000   0.0022   0.0098  -0.0036   0.0058
-  12  O   3d0    0.0002  -0.0093   0.0115   0.0050  -0.0127
-  13  O   3d1+   0.0000  -0.0021  -0.0068   0.0164   0.0025
-  14  O   3d2+  -0.0003   0.0129  -0.0234  -0.0202   0.0000
-  15  H   1s    -0.0001   0.1922   0.4371   0.0695   0.2774
-  16  H   1s     0.0006  -0.1004  -0.1696  -0.0050  -0.1369
-  17  H   2px   -0.0001  -0.0042  -0.0003   0.0095  -0.0083
-  18  H   2py    0.0004  -0.0214  -0.0317  -0.0013  -0.0029
-  19  H   2pz    0.0002  -0.0124  -0.0097  -0.0164  -0.0187
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1        2        3        4
-   1  O   1s     0.7075  -0.0016   0.0002  -0.0007
-   2  O   1s     0.0019   0.6380  -0.2275  -0.0803
-   3  O   1s    -0.0028  -0.0357  -0.0966  -0.0424
-   4  O   2px   -0.0010   0.1128  -0.1002  -0.0133
-   5  O   2py    0.0012   0.1156   0.5354  -0.1592
-   6  O   2pz    0.0008   0.0511   0.0757   0.6797
-   7  O   2px    0.0020  -0.0212  -0.0083  -0.0099
-   8  O   2py   -0.0007  -0.0451  -0.0357  -0.0298
-   9  O   2pz   -0.0006  -0.0237  -0.0228   0.0411
-  10  O   3d2-   0.0000  -0.0010  -0.0157   0.0052
-  11  O   3d1-   0.0000   0.0042   0.0091   0.0095
-  12  O   3d0    0.0001   0.0029  -0.0044   0.0072
-  13  O   3d1+   0.0000   0.0018   0.0003   0.0031
-  14  O   3d2+  -0.0002  -0.0101  -0.0053   0.0007
-  15  H   1s     0.0001   0.3191   0.3472   0.1844
-  16  H   1s     0.0000  -0.1517  -0.1385  -0.0650
-  17  H   2px    0.0000  -0.0044  -0.0128   0.0001
-  18  H   2py    0.0005  -0.0309  -0.0181  -0.0202
-  19  H   2pz    0.0003  -0.0175  -0.0151   0.0157
 
 
-
- >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:01 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:16 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -2934,52 +2627,33 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:01 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:16 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    y        0.0006898606     0.0006895804     0.0000002802
-        O    z        0.0012966884     0.0012966884     0.0000000000
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  2.80E-07
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:15 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:27 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:08      57 %
- RHSIDE     00:00:05      37 %
+ TWOTEX     00:00:07      58 %
+ RHSIDE     00:00:04      35 %
 
- TOTAL      00:00:14     100 %
+ TOTAL      00:00:11     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  13.62 seconds
- >>>> Total wall time used in ABACUS:  14.00 seconds
+ >>>> Total CPU  time used in ABACUS:  11.44 seconds
+ >>>> Total wall time used in ABACUS:  11.00 seconds
 
 - End of Static Property Section
 
- Predicted energy change       -0.000041160886834
+ Predicted energy change       -0.000041160886853
 
 
   Step in diagonal representation
@@ -2999,10 +2673,10 @@ Represented as: C2
                             Next geometry (au)
                             ------------------
 
- O    1     1.3116493050            0.1018235833           -0.4791714292
- O    2    -1.3116493050           -0.1018235833           -0.4791714292
- H    1     1.5810337751            1.5953313016            0.4791714292
- H    2    -1.5810337751           -1.5953313016            0.4791714292
+ O    1     1.3116493050            0.1018235833           -0.2588085642
+ O    2    -1.3116493050           -0.1018235833           -0.2588085642
+ H    1     1.5810337751            1.5953313016            0.6995342943
+ H    2    -1.5810337751           -1.5953313016            0.6995342943
 
 
 
@@ -3038,31 +2712,31 @@ Represented as: C2
 
 
 
- >>> Time used in TWOINT is   0.77 seconds
+ >>> Time used in TWOINT is   0.66 seconds
 
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.07 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.85 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.75 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:15 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:28 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -3100,7 +2774,7 @@ Represented as: C2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -3109,16 +2783,16 @@ Represented as: C2
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.785619384959    1.20534D-01   -1.51D+02
-    2     -150.786650363945    2.96469D-02   -1.03D-03
-    3     -150.786750217607    6.72638D-03   -9.99D-05
-    4     -150.786758370715    2.62054D-03   -8.15D-06
-    5     -150.786759378604    7.35489D-04   -1.01D-06
-    6     -150.786759472183    1.51572D-04   -9.36D-08
-    7     -150.786759477138    5.65105D-05   -4.96D-09
-    8     -150.786759477952    1.86680D-05   -8.14D-10
-    9     -150.786759478054    4.25892D-06   -1.02D-10
-   10     -150.786759478059    9.54121D-07   -5.00D-12
+    1     -150.785619384959    1.20534E-01   -1.51E+02
+    2     -150.786650363945    2.96469E-02   -1.03E-03
+    3     -150.786750217606    6.72638E-03   -9.99E-05
+    4     -150.786758370715    2.62054E-03   -8.15E-06
+    5     -150.786759378604    7.35489E-04   -1.01E-06
+    6     -150.786759472182    1.51572E-04   -9.36E-08
+    7     -150.786759477138    5.65105E-05   -4.96E-09
+    8     -150.786759477952    1.86680E-05   -8.14E-10
+    9     -150.786759478054    4.25892E-06   -1.02E-10
+   10     -150.786759478059    9.54121E-07   -5.02E-12
  DIIS converged in  10 iterations !
 
 
@@ -3151,68 +2825,22 @@ Represented as: C2
      Spatial symmetry:            1
 
      Final    HF energy:         -150.786759478059
-     Nuclear repulsion:            38.047608934435
-     Electronic energy:          -188.834368412494
+     Nuclear repulsion:            38.047608934427
+     Electronic energy:          -188.834368412486
 
      Final gradient norm:           0.000000954121
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:15 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:28 2002
      Host name              : slater.uio.no                           
 
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     0.7074  -0.0066   0.0013   0.0032   0.0008
-   2  O   1s     0.0017   0.6202  -0.0441   0.1418  -0.1366
-   3  O   1s    -0.0013  -0.0698  -0.0599   0.0280  -0.0927
-   4  O   2px   -0.0013  -0.1288   0.3174   0.4582  -0.3093
-   5  O   2py    0.0011   0.0304   0.2379   0.1381   0.5575
-   6  O   2pz    0.0009   0.0359   0.4126  -0.4201  -0.1842
-   7  O   2px    0.0010   0.0243  -0.0294  -0.0090  -0.0100
-   8  O   2py   -0.0009  -0.0231  -0.0482  -0.0095   0.0161
-   9  O   2pz   -0.0007  -0.0125  -0.0353  -0.0193  -0.0194
-  10  O   3d2-   0.0000   0.0022   0.0030   0.0026   0.0009
-  11  O   3d1-   0.0000   0.0022   0.0099  -0.0030   0.0066
-  12  O   3d0    0.0002  -0.0090   0.0124   0.0053  -0.0120
-  13  O   3d1+   0.0000  -0.0024  -0.0071   0.0166   0.0026
-  14  O   3d2+  -0.0003   0.0131  -0.0225  -0.0209  -0.0005
-  15  H   1s    -0.0001   0.1907   0.4373   0.0641   0.2706
-  16  H   1s     0.0006  -0.0995  -0.1698  -0.0018  -0.1322
-  17  H   2px   -0.0001  -0.0041  -0.0007   0.0101  -0.0077
-  18  H   2py    0.0004  -0.0207  -0.0312  -0.0007  -0.0011
-  19  H   2pz    0.0002  -0.0135  -0.0116  -0.0157  -0.0196
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1        2        3        4
-   1  O   1s     0.7075  -0.0016   0.0002  -0.0008
-   2  O   1s     0.0018   0.6386  -0.2229  -0.0894
-   3  O   1s    -0.0028  -0.0343  -0.0958  -0.0469
-   4  O   2px   -0.0010   0.1122  -0.1067  -0.0121
-   5  O   2py    0.0011   0.1127   0.5361  -0.1744
-   6  O   2pz    0.0009   0.0560   0.0839   0.6709
-   7  O   2px    0.0020  -0.0211  -0.0083  -0.0104
-   8  O   2py   -0.0006  -0.0433  -0.0344  -0.0316
-   9  O   2pz   -0.0007  -0.0258  -0.0249   0.0373
-  10  O   3d2-   0.0000  -0.0012  -0.0158   0.0057
-  11  O   3d1-   0.0000   0.0045   0.0098   0.0092
-  12  O   3d0    0.0001   0.0033  -0.0039   0.0079
-  13  O   3d1+   0.0000   0.0020   0.0002   0.0030
-  14  O   3d2+  -0.0002  -0.0098  -0.0044   0.0007
-  15  H   1s     0.0001   0.3170   0.3447   0.2040
-  16  H   1s     0.0000  -0.1508  -0.1366  -0.0720
-  17  H   2px    0.0000  -0.0039  -0.0125   0.0001
-  18  H   2py    0.0005  -0.0296  -0.0168  -0.0216
-  19  H   2pz    0.0003  -0.0190  -0.0165   0.0135
 
 
-
- >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:15 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:28 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -3222,7 +2850,7 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:15 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:28 2002
      Host name              : slater.uio.no                           
 
 
@@ -3245,7 +2873,7 @@ Represented as: C2
  Largest deviation from tra-rot symmetry is in gradient element  1:  6.29E-06
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:29 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:40 2002
      Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
@@ -3255,20 +2883,20 @@ Represented as: C2
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:08      56 %
- RHSIDE     00:00:05      38 %
- REST       00:00:02      12 %
+ TWOTEX     00:00:07      58 %
+ RHSIDE     00:00:04      35 %
+ REST       00:00:02      15 %
 
- TOTAL      00:00:14     100 %
+ TOTAL      00:00:11     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  13.74 seconds
- >>>> Total wall time used in ABACUS:  14.00 seconds
+ >>>> Total CPU  time used in ABACUS:  11.47 seconds
+ >>>> Total wall time used in ABACUS:  12.00 seconds
 
 - End of Static Property Section
 
- Predicted energy change       -0.000007045658462
+ Predicted energy change       -0.000007045658469
 
 
   Step in diagonal representation
@@ -3288,10 +2916,10 @@ Represented as: C2
                             Next geometry (au)
                             ------------------
 
- O    1     1.3119340108            0.0995275299           -0.4714369209
- O    2    -1.3119340108           -0.0995275299           -0.4714369209
- H    1     1.5828524698            1.5990896192            0.4714369209
- H    2    -1.5828524698           -1.5990896192            0.4714369209
+ O    1     1.3119340108            0.0995275299           -0.2510740559
+ O    2    -1.3119340108           -0.0995275299           -0.2510740559
+ H    1     1.5828524698            1.5990896192            0.6917997860
+ H    2    -1.5828524698           -1.5990896192            0.6917997860
 
 
 
@@ -3327,31 +2955,31 @@ Represented as: C2
 
 
 
- >>> Time used in TWOINT is   0.76 seconds
+ >>> Time used in TWOINT is   0.66 seconds
 
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.08 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.84 seconds
+ >>>> Total CPU  time used in HERMIT:   0.77 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:30 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:41 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -3389,7 +3017,7 @@ Represented as: C2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -3398,15 +3026,15 @@ Represented as: C2
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.786737273134    1.95440D-02   -1.51D+02
-    2     -150.786764036667    4.75592D-03   -2.68D-05
-    3     -150.786766545286    1.10987D-03   -2.51D-06
-    4     -150.786766750738    4.65152D-04   -2.05D-07
-    5     -150.786766784759    1.32067D-04   -3.40D-08
-    6     -150.786766787503    2.81813D-05   -2.74D-09
-    7     -150.786766787664    6.98557D-06   -1.61D-10
-    8     -150.786766787675    2.34128D-06   -1.06D-11
-    9     -150.786766787677    7.03440D-07   -1.52D-12
+    1     -150.786737273134    1.95440E-02   -1.51E+02
+    2     -150.786764036667    4.75592E-03   -2.68E-05
+    3     -150.786766545285    1.10987E-03   -2.51E-06
+    4     -150.786766750738    4.65152E-04   -2.05E-07
+    5     -150.786766784759    1.32067E-04   -3.40E-08
+    6     -150.786766787503    2.81813E-05   -2.74E-09
+    7     -150.786766787664    6.98557E-06   -1.61E-10
+    8     -150.786766787675    2.34128E-06   -1.08E-11
+    9     -150.786766787676    7.03440E-07   -1.44E-12
  DIIS converged in   9 iterations !
 
 
@@ -3438,61 +3066,15 @@ Represented as: C2
      Spin multiplicity:           1
      Spatial symmetry:            1
 
-     Final    HF energy:         -150.786766787677
-     Nuclear repulsion:            38.062040487107
+     Final    HF energy:         -150.786766787676
+     Nuclear repulsion:            38.062040487106
      Electronic energy:          -188.848807274783
 
      Final gradient norm:           0.000000703440
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:30 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:41 2002
      Host name              : slater.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     0.7074  -0.0067   0.0014   0.0032   0.0007
-   2  O   1s     0.0017   0.6202  -0.0434   0.1404  -0.1381
-   3  O   1s    -0.0013  -0.0700  -0.0602   0.0274  -0.0933
-   4  O   2px   -0.0013  -0.1286   0.3197   0.4547  -0.3120
-   5  O   2py    0.0011   0.0311   0.2406   0.1379   0.5554
-   6  O   2pz    0.0009   0.0355   0.4100  -0.4242  -0.1836
-   7  O   2px    0.0010   0.0242  -0.0295  -0.0090  -0.0100
-   8  O   2py   -0.0009  -0.0235  -0.0486  -0.0095   0.0155
-   9  O   2pz   -0.0007  -0.0125  -0.0350  -0.0191  -0.0192
-  10  O   3d2-   0.0000   0.0021   0.0031   0.0027   0.0008
-  11  O   3d1-   0.0000   0.0022   0.0099  -0.0031   0.0065
-  12  O   3d0    0.0002  -0.0090   0.0123   0.0053  -0.0122
-  13  O   3d1+   0.0000  -0.0023  -0.0070   0.0166   0.0026
-  14  O   3d2+  -0.0003   0.0130  -0.0226  -0.0208  -0.0004
-  15  H   1s    -0.0001   0.1915   0.4378   0.0648   0.2714
-  16  H   1s     0.0006  -0.1000  -0.1702  -0.0022  -0.1330
-  17  H   2px   -0.0001  -0.0042  -0.0006   0.0100  -0.0078
-  18  H   2py    0.0004  -0.0208  -0.0313  -0.0007  -0.0013
-  19  H   2pz    0.0002  -0.0133  -0.0114  -0.0158  -0.0195
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1        2        3        4
-   1  O   1s     0.7075  -0.0016   0.0002  -0.0008
-   2  O   1s     0.0018   0.6382  -0.2240  -0.0880
-   3  O   1s    -0.0028  -0.0349  -0.0961  -0.0463
-   4  O   2px   -0.0010   0.1122  -0.1060  -0.0121
-   5  O   2py    0.0011   0.1136   0.5360  -0.1722
-   6  O   2pz    0.0009   0.0555   0.0829   0.6723
-   7  O   2px    0.0020  -0.0211  -0.0082  -0.0103
-   8  O   2py   -0.0006  -0.0438  -0.0347  -0.0314
-   9  O   2pz   -0.0006  -0.0256  -0.0246   0.0378
-  10  O   3d2-   0.0000  -0.0012  -0.0158   0.0056
-  11  O   3d1-   0.0000   0.0045   0.0097   0.0092
-  12  O   3d0    0.0001   0.0032  -0.0040   0.0078
-  13  O   3d1+   0.0000   0.0020   0.0003   0.0031
-  14  O   3d2+  -0.0002  -0.0099  -0.0045   0.0007
-  15  H   1s     0.0001   0.3182   0.3451   0.2009
-  16  H   1s     0.0000  -0.1514  -0.1371  -0.0710
-  17  H   2px    0.0000  -0.0040  -0.0125   0.0001
-  18  H   2py    0.0005  -0.0299  -0.0170  -0.0214
-  19  H   2pz    0.0003  -0.0188  -0.0163   0.0140
 
 
 
@@ -3500,7 +3082,7 @@ Represented as: C2
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:30 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:41 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -3510,48 +3092,29 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:30 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:41 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    y       -0.0000447072    -0.0000445034    -0.0000002037
-        O    z       -0.0000671901    -0.0000671901     0.0000000000
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  2.04E-07
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:44 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:52 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:08      57 %
- RHSIDE     00:00:05      37 %
+ TWOTEX     00:00:07      58 %
+ RHSIDE     00:00:04      35 %
 
- TOTAL      00:00:14     100 %
+ TOTAL      00:00:11     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  13.60 seconds
- >>>> Total wall time used in ABACUS:  14.00 seconds
+ >>>> Total CPU  time used in ABACUS:  11.46 seconds
+ >>>> Total wall time used in ABACUS:  11.00 seconds
 
 - End of Static Property Section
 
@@ -3575,10 +3138,10 @@ Represented as: C2
                             Next geometry (au)
                             ------------------
 
- O    1     1.3120207124            0.0988720665           -0.4699937870
- O    2    -1.3120207124           -0.0988720665           -0.4699937870
- H    1     1.5833081905            1.6000987418            0.4699937870
- H    2    -1.5833081905           -1.6000987418            0.4699937870
+ O    1     1.3120207124            0.0988720665           -0.2496309220
+ O    2    -1.3120207124           -0.0988720665           -0.2496309220
+ H    1     1.5833081905            1.6000987418            0.6903566521
+ H    2    -1.5833081905           -1.6000987418            0.6903566521
 
 
 
@@ -3614,31 +3177,31 @@ Represented as: C2
 
 
 
- >>> Time used in TWOINT is   0.80 seconds
+ >>> Time used in TWOINT is   0.65 seconds
 
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.07 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.88 seconds
+ >>>> Total CPU  time used in HERMIT:   0.75 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:45 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:53 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization (2nd order) with automatic breaking of symmetry   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -3676,7 +3239,7 @@ Represented as: C2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -3685,14 +3248,14 @@ Represented as: C2
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -150.786765635973    3.93678D-03   -1.51D+02
-    2     -150.786766733942    9.65959D-04   -1.10D-06
-    3     -150.786766840582    2.14452D-04   -1.07D-07
-    4     -150.786766849489    6.71924D-05   -8.91D-09
-    5     -150.786766850267    2.11973D-05   -7.78D-10
-    6     -150.786766850335    5.45089D-06   -6.77D-11
-    7     -150.786766850340    2.07902D-06   -5.73D-12
-    8     -150.786766850342    6.62589D-07   -1.18D-12
+    1     -150.786765635973    3.93678E-03   -1.51E+02
+    2     -150.786766733941    9.65959E-04   -1.10E-06
+    3     -150.786766840582    2.14452E-04   -1.07E-07
+    4     -150.786766849489    6.71924E-05   -8.91E-09
+    5     -150.786766850267    2.11973E-05   -7.78E-10
+    6     -150.786766850334    5.45089E-06   -6.77E-11
+    7     -150.786766850340    2.07902E-06   -5.80E-12
+    8     -150.786766850341    6.62589E-07   -1.14E-12
  DIIS converged in   8 iterations !
 
 
@@ -3724,61 +3287,15 @@ Represented as: C2
      Spin multiplicity:           1
      Spatial symmetry:            1
 
-     Final    HF energy:         -150.786766850342
-     Nuclear repulsion:            38.061792343236
-     Electronic energy:          -188.848559193577
+     Final    HF energy:         -150.786766850341
+     Nuclear repulsion:            38.061792343234
+     Electronic energy:          -188.848559193576
 
      Final gradient norm:           0.000000662589
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:45 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:53 2002
      Host name              : slater.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     0.7074  -0.0067   0.0014   0.0032   0.0007
-   2  O   1s     0.0017   0.6202  -0.0432   0.1401  -0.1384
-   3  O   1s    -0.0013  -0.0700  -0.0602   0.0273  -0.0934
-   4  O   2px   -0.0013  -0.1286   0.3202   0.4541  -0.3123
-   5  O   2py    0.0011   0.0312   0.2409   0.1378   0.5550
-   6  O   2pz    0.0009   0.0354   0.4096  -0.4249  -0.1835
-   7  O   2px    0.0010   0.0242  -0.0295  -0.0090  -0.0100
-   8  O   2py   -0.0009  -0.0236  -0.0487  -0.0095   0.0154
-   9  O   2pz   -0.0007  -0.0124  -0.0349  -0.0191  -0.0191
-  10  O   3d2-   0.0000   0.0021   0.0032   0.0028   0.0008
-  11  O   3d1-   0.0000   0.0022   0.0099  -0.0031   0.0064
-  12  O   3d0    0.0002  -0.0090   0.0123   0.0052  -0.0122
-  13  O   3d1+   0.0000  -0.0023  -0.0070   0.0166   0.0026
-  14  O   3d2+  -0.0003   0.0130  -0.0227  -0.0208  -0.0004
-  15  H   1s    -0.0001   0.1916   0.4378   0.0650   0.2716
-  16  H   1s     0.0006  -0.1000  -0.1702  -0.0024  -0.1332
-  17  H   2px   -0.0001  -0.0042  -0.0006   0.0100  -0.0078
-  18  H   2py    0.0004  -0.0209  -0.0313  -0.0007  -0.0014
-  19  H   2pz    0.0002  -0.0133  -0.0113  -0.0158  -0.0195
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1        2        3        4
-   1  O   1s     0.7075  -0.0016   0.0002  -0.0008
-   2  O   1s     0.0018   0.6382  -0.2242  -0.0877
-   3  O   1s    -0.0028  -0.0350  -0.0961  -0.0462
-   4  O   2px   -0.0010   0.1122  -0.1058  -0.0122
-   5  O   2py    0.0011   0.1137   0.5359  -0.1717
-   6  O   2pz    0.0009   0.0553   0.0826   0.6726
-   7  O   2px    0.0020  -0.0211  -0.0083  -0.0103
-   8  O   2py   -0.0006  -0.0438  -0.0348  -0.0313
-   9  O   2pz   -0.0006  -0.0256  -0.0246   0.0380
-  10  O   3d2-   0.0000  -0.0012  -0.0158   0.0056
-  11  O   3d1-   0.0000   0.0044   0.0097   0.0093
-  12  O   3d0    0.0001   0.0032  -0.0040   0.0078
-  13  O   3d1+   0.0000   0.0019   0.0003   0.0031
-  14  O   3d2+  -0.0002  -0.0099  -0.0046   0.0007
-  15  H   1s     0.0001   0.3182   0.3452   0.2002
-  16  H   1s     0.0000  -0.1514  -0.1372  -0.0708
-  17  H   2px    0.0000  -0.0040  -0.0126   0.0001
-  18  H   2py    0.0005  -0.0299  -0.0171  -0.0214
-  19  H   2pz    0.0003  -0.0188  -0.0162   0.0140
 
 
 
@@ -3786,7 +3303,7 @@ Represented as: C2
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:45 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:53 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -3796,49 +3313,30 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:45 2001
+     Date and time (Linux)  : Sat Jun  8 22:04:53 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    y       -0.0000032804    -0.0000031723    -0.0000001081
-        O    z       -0.0000022795    -0.0000022795     0.0000000000
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  1.08E-07
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:59 2001
+     Date and time (Linux)  : Sat Jun  8 22:05:04 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:08      56 %
- RHSIDE     00:00:05      38 %
- REST       00:00:02      12 %
+ TWOTEX     00:00:07      57 %
+ RHSIDE     00:00:04      35 %
+ REST       00:00:02      15 %
 
- TOTAL      00:00:14     100 %
+ TOTAL      00:00:11     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  13.74 seconds
- >>>> Total wall time used in ABACUS:  14.00 seconds
+ >>>> Total CPU  time used in ABACUS:  11.43 seconds
+ >>>> Total wall time used in ABACUS:  11.00 seconds
 
 - End of Static Property Section
 
@@ -3850,7 +3348,7 @@ Represented as: C2
 
 
                Column   1     Column   2     Column   3     Column   4
-       1     3.261191D-05  -1.313627D-06  -1.163690D-06   2.822853D-06
+       1     3.261191E-05  -1.313628E-06  -1.163690E-06   2.822853E-06
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -3862,10 +3360,10 @@ Represented as: C2
                            Final geometry (au)
                            -------------------
 
- O    1     1.3120207124            0.0988720665           -0.4699937870
- O    2    -1.3120207124           -0.0988720665           -0.4699937870
- H    1     1.5833081905            1.6000987418            0.4699937870
- H    2    -1.5833081905           -1.6000987418            0.4699937870
+ O    1     1.3120207124            0.0988720665           -0.2496309220
+ O    2    -1.3120207124           -0.0988720665           -0.2496309220
+ H    1     1.5833081905            1.6000987418            0.6903566521
+ H    2    -1.5833081905           -1.6000987418            0.6903566521
 
 
 
@@ -3897,6 +3395,7 @@ Represented as: C2
 
       The molecular gradient
       The molecular Hessian
+      Dipole moment gradient
       Vibrational analysis
 
 
@@ -3906,25 +3405,8 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:29:59 2001
+     Date and time (Linux)  : Sat Jun  8 22:05:04 2002
      Host name              : slater.uio.no                           
-
-
-        +---------------------------------------------------------+
-        ! Gradient elements calculated directly and from symmetry !
-        +---------------------------------------------------------+
-
-
-
-        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
-        ------------------------------------------------------------
-
-        O    y       -0.0000032804    -0.0000031723    -0.0000001081
-        O    z       -0.0000022795    -0.0000022795     0.0000000000
-
-
-
- >>> WARNING from TRAROT:
 
  Largest deviation from tra-rot symmetry is in gradient element  2:  1.08E-07
 
@@ -3935,20 +3417,18 @@ Represented as: C2
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:30:08 2001
+     Date and time (Linux)  : Sat Jun  8 22:05:13 2002
      Host name              : slater.uio.no                           
-
- WARNING: warnings have been issued, please check the output above !
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- O    1     1.3120207124            0.0988720665           -0.4699937870
- O    2    -1.3120207124           -0.0988720665           -0.4699937870
- H    1     1.5833081905            1.6000987418            0.4699937870
- H    2    -1.5833081905           -1.6000987418            0.4699937870
+ O    1     1.3120207124            0.0988720665           -0.2496309220
+ O    2    -1.3120207124           -0.0988720665           -0.2496309220
+ H    1     1.5833081905            1.6000987418            0.6903566521
+ H    2    -1.5833081905           -1.6000987418            0.6903566521
 
 
 
@@ -3961,8 +3441,8 @@ Represented as: C2
 
 
      Total energy       -150.7867668503 au (Hartrees)
-                         -4103.11652441 eV
-                           -395890.6000 kJ/mol
+                         -4103.11653011 eV
+                           -395890.5995 kJ/mol
 
 
 
@@ -3970,11 +3450,11 @@ Represented as: C2
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.3982773177 au
-     Mass-velocity correction:                  -0.5015121174 au
+     Darwin correction:                          0.3982772577 au
+     Mass-velocity correction:                  -0.5015120420 au
 
-     Total relativistic correction:             -0.1032347998 au (0.0685%)
-     Non-relativistic + relativistic energy:  -150.8900016501 au
+     Total relativistic correction:             -0.1032347842 au (0.0685%)
+     Non-relativistic + relativistic energy:  -150.8900016346 au
 
 
 
@@ -4066,7 +3546,7 @@ Represented as: C2
                               Dipole moment
                               -------------
 
-                    0.745252 au           1.894260 Debye
+                    0.745252 au           1.894242 Debye
 
 
 
@@ -4076,11 +3556,71 @@ Represented as: C2
 
                                au             Debye
 
-                    z      0.74525220      1.89425968
+                    z      0.74525220      1.89424194
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
+
+
+
+                       Dipole moment gradient (au)
+                       ---------------------------
+
+
+    Symmetry 1
+                       Ez
+
+        O    x     0.01196589
+        O    y     0.22086580
+        O    z    -0.67774512
+        H    x     0.05338698
+        H    y    -0.12832182
+        H    z     0.67774512
+
+    Symmetry 2
+                       Ex             Ey
+
+        O    x    -0.47961768    -0.04220176
+        O    y    -0.05934111    -0.59471356
+        O    z    -0.28793947     0.18443942
+        H    x     0.47961768     0.04220176
+        H    y     0.05934111     0.59471356
+        H    z     0.05265242    -0.12778258
+
+
+
+                       Ex             Ey             Ez
+
+        O  1 x    -0.23980884    -0.02110088     0.00598295
+        O  1 y    -0.02967055    -0.29735678     0.11043290
+        O  1 z    -0.14396973     0.09221971    -0.33887256
+
+        O  2 x    -0.23980884    -0.02110088    -0.00598295
+        O  2 y    -0.02967055    -0.29735678    -0.11043290
+        O  2 z     0.14396973    -0.09221971    -0.33887256
+
+        H  1 x     0.23980884     0.02110088     0.02669349
+        H  1 y     0.02967055     0.29735678    -0.06416091
+        H  1 z     0.02632621    -0.06389129     0.33887256
+
+        H  2 x     0.23980884     0.02110088    -0.02669349
+        H  2 y     0.02967055     0.29735678     0.06416091
+        H  2 z    -0.02632621     0.06389129     0.33887256
+
+
+
+                        +-------------------------+
+                        ! APT Population Analysis !
+                        +-------------------------+
+
+
+      [ Reference : J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333 ]
+
+                            O    1   -0.292013
+                            O    2   -0.292013
+                            H    1    0.292013
+                            H    2    0.292013
 
 
 
@@ -4128,10 +3668,11 @@ Represented as: C2
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63137
+    Hartree to (cm)-1      : 219474.63128
     a.m.u.  to a.u.        :   1822.88848
     Bohr    to Angstrom    :  0.529177208
     a.u.    to A**4amu-1   :   142.943570
+    a.u.    to km (mol)-1  :      974.864
 
 
  Vibrational analysis for parent molecule only.
@@ -4155,6 +3696,9 @@ Represented as: C2
 
 
 
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.193914
+
+
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
@@ -4168,24 +3712,28 @@ Represented as: C2
 
                A                   B                   C
 
-         320926.7994          28501.4971          27513.9723 MHz
+         320926.7993          28501.4971          27513.9723 MHz
            10.704966            0.950708            0.917767 cm-1
 
 
 
-  Vibrational Frequencies
-  -----------------------
+  Vibrational Frequencies and IR Intensities
+  ------------------------------------------
 
-   mode   irrep     cm-1     hartrees 
-  ------------------------------------
 
-    1      A       4117.48  0.0187606 
-    3      A       1612.01  0.0073449 
-    5      A       1132.59  0.0051604 
-    6      A        377.87  0.0017217 
 
-    2      B       4114.80  0.0187484 
-    4      B       1469.94  0.0066976 
+  mode   irrep        frequency             IR intensity
+  ============================================================
+                 cm-1       hartrees     km/mol   (D/A)**2/amu
+  ------------------------------------------------------------
+
+   1      A      4117.48    0.018761     31.688   0.7499
+   3      A      1612.01    0.007345      0.345   0.0082
+   5      A      1132.59    0.005160      1.713   0.0405
+   6      A       377.87    0.001722    213.244   5.0465
+
+   2      B      4114.80    0.018748    109.603   2.5938
+   4      B      1469.94    0.006698    101.194   2.3948
 
 
 
@@ -4199,21 +3747,21 @@ Represented as: C2
                 1  4117     2  4115     3  1612     4  1470     5  1133 
   ----------------------------------------------------------------------
 
-      O  1 x   -0.007988   -0.006094   -0.006222   -0.041874   -0.175675
-      O  1 y   -0.037083   -0.036099    0.050672    0.003326   -0.013428
-      O  1 z   -0.022497   -0.022936    0.005708    0.034966    0.003310
+      O  1 x    0.007988   -0.006094    0.006222   -0.041874   -0.175675
+      O  1 y    0.037083   -0.036099   -0.050672    0.003326   -0.013428
+      O  1 z    0.022497   -0.022936   -0.005708    0.034966    0.003310
 
-      O  2 x    0.007988   -0.006094    0.006222   -0.041874    0.175675
-      O  2 y    0.037083   -0.036099   -0.050672    0.003326    0.013428
-      O  2 z   -0.022497    0.022936    0.005708   -0.034966    0.003310
+      O  2 x   -0.007988   -0.006094   -0.006222   -0.041874    0.175675
+      O  2 y   -0.037083   -0.036099    0.050672    0.003326    0.013428
+      O  2 z    0.022497    0.022936   -0.005708   -0.034966    0.003310
 
-      H  1 x    0.092939    0.096714    0.667849    0.664574   -0.017331
-      H  1 y    0.573697    0.572911    0.002351   -0.052789   -0.015030
-      H  1 z    0.357048    0.359052   -0.090595   -0.065301   -0.052535
+      H  1 x   -0.092939    0.096714   -0.667849    0.664574   -0.017331
+      H  1 y   -0.573697    0.572911   -0.002351   -0.052789   -0.015030
+      H  1 z   -0.357048    0.359052    0.090595   -0.065301   -0.052535
 
-      H  2 x   -0.092939    0.096714   -0.667849    0.664574    0.017331
-      H  2 y   -0.573697    0.572911   -0.002351   -0.052789    0.015030
-      H  2 z    0.357048   -0.359052   -0.090595    0.065301   -0.052535
+      H  2 x    0.092939    0.096714    0.667849    0.664574    0.017331
+      H  2 y    0.573697    0.572911    0.002351   -0.052789    0.015030
+      H  2 z   -0.357048   -0.359052    0.090595    0.065301   -0.052535
 
 
                 6   378 
@@ -4237,13 +3785,29 @@ Represented as: C2
 
 
 
+
+  Dipole Gradient in Normal Coordinate Basis (D/(A*amu**(1/2)))
+  -------------------------------------------------------------
+
+
+  mode           dMA/dQi        dMB/dQi        dMC/dQi
+  ----------------------------------------------------
+   1            0.000000       0.000000      -0.865984
+   2            0.532947       1.519801       0.000000
+   3            0.000000       0.000000       0.090297
+   4            1.546579       0.053961       0.000000
+   5            0.000000       0.000000      -0.201318
+   6            0.000000       0.000000       2.246452
+
+
+
                           Total Molecular Energy
                           ----------------------
 
              electronic     vibrational           total    energy 
 
             -150.786767        0.029217     -150.757550    Hartrees
-           -33093870.07         6412.34    -33087457.73    cm-1
+           -33093870.06         6412.34    -33087457.71    cm-1
              -395890.60           76.71      -395813.89    kJ/mol
               -94620.12           18.33       -94601.79    kcal/mol
 
@@ -4259,21 +3823,74 @@ Represented as: C2
 
  Temp.(K)  Translational     Rotational    Vibrational      Total
 
-    50.00     8.9766D+04         119.85         1.0000   1.075843D+07
-   100.00     5.0779D+05         337.51         1.0044   1.721359D+08
-   200.00     2.8725D+06         952.55         1.0710   2.930476D+09
-   273.15     6.2617D+06        1519.47         1.1620   1.105572D+10
-   298.15     7.7942D+06        1732.55         1.1991   1.619279D+10
-   300.00     7.9157D+06        1748.68         1.2020   1.663790D+10
-   400.00     1.6249D+07        2691.29         1.3801   6.035432D+10
-   500.00     2.8387D+07        3760.37         1.6076   1.715993D+11
-   600.00     4.4778D+07        4942.42         1.8913   4.185747D+11
-   700.00     6.5831D+07        6227.51         2.2392   9.179937D+11
-   800.00     9.1920D+07        7607.97         2.6599   1.860116D+12
-   900.00     1.2339D+08        9077.61         3.1632   3.543195D+12
-  1000.00     1.6058D+08       10631.30         3.7607   6.420062D+12
-  1500.00     4.4250D+08       19528.11         8.6778   7.498648D+13
-  2000.00     9.0837D+08       30063.30        18.7166   5.111241D+14
+    50.00     8.9766E+04         119.85         1.0000   1.075843E+07
+   100.00     5.0779E+05         337.51         1.0044   1.721359E+08
+   200.00     2.8725E+06         952.55         1.0710   2.930476E+09
+   273.15     6.2617E+06        1519.47         1.1620   1.105572E+10
+   298.15     7.7942E+06        1732.55         1.1991   1.619279E+10
+   300.00     7.9157E+06        1748.68         1.2020   1.663790E+10
+   400.00     1.6249E+07        2691.29         1.3801   6.035433E+10
+   500.00     2.8387E+07        3760.37         1.6076   1.715993E+11
+   600.00     4.4778E+07        4942.42         1.8913   4.185749E+11
+   700.00     6.5831E+07        6227.51         2.2392   9.179939E+11
+   800.00     9.1920E+07        7607.97         2.6599   1.860117E+12
+   900.00     1.2339E+08        9077.61         3.1632   3.543196E+12
+  1000.00     1.6058E+08       10631.30         3.7607   6.420064E+12
+  1500.00     4.4250E+08       19528.11         8.6778   7.498651E+13
+  2000.00     9.0837E+08       30063.30        18.7166   5.111243E+14
+
+
+                            +------------------+
+                            ! Polarizabilities !
+                            +------------------+
+
+
+ Vibrational polarizabilities calculated acc. to Rinaldi et al.,
+ Chem.Phys.Lett. 128 (1986) 177-181.
+
+
+                    Vibrational Polarizabilities (au)
+                    ---------------------------------
+
+                         Ex          Ey          Ez
+
+
+            Ex       1.287126    0.099030    0.000000
+            Ey       0.099030    0.157794    0.000000
+            Ez       0.000000    0.000000   40.572508
+
+
+
+
+               Vibrational Polarizabilities (angstroms**3)
+               -------------------------------------------
+
+                         Ex          Ey          Ez
+
+
+            Ex       0.190732    0.014675    0.000000
+            Ey       0.014675    0.023383    0.000000
+            Ez       0.000000    0.000000    6.012225
+
+
+
+
+               Vibrational Polarizabilities (angstroms**3)
+               -------------------------------------------
+
+               (Along principal axes of moments of inertia)
+
+                         EA          EB          EC
+
+
+            EA       0.191017   -0.012949    0.000000
+            EB      -0.012949    0.023098    0.000000
+            EC       0.000000    0.000000    6.012225
+
+
+
+
+ Vibrational mean polarization :    5.2416 cm**3 mol**-1
 
  >>> Time used in VIBCTL is   0.01 seconds
 
@@ -4282,14 +3899,14 @@ Represented as: C2
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:08      89 %
- REST       00:00:01      11 %
+ TWOTEX     00:00:07      83 %
+ REST       00:00:01      17 %
 
- TOTAL      00:00:09     100 %
+ TOTAL      00:00:08     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   9.11 seconds
+ >>>> Total CPU  time used in ABACUS:   8.16 seconds
  >>>> Total wall time used in ABACUS:   9.00 seconds
 
 - End of Static Property Section
@@ -4304,10 +3921,10 @@ Represented as: C2
                               Final geometry
                               --------------
 
- O    1     1.3120207124            0.0988720665           -0.4699937870
- O    2    -1.3120207124           -0.0988720665           -0.4699937870
- H    1     1.5833081905            1.6000987418            0.4699937870
- H    2    -1.5833081905           -1.6000987418            0.4699937870
+ O    1     1.3120207124            0.0988720665           -0.2496309220
+ O    2    -1.3120207124           -0.0988720665           -0.2496309220
+ H    1     1.5833081905            1.6000987418            0.6903566521
+ H    2    -1.5833081905           -1.6000987418            0.6903566521
 
 
 
@@ -4327,16 +3944,16 @@ Represented as: C2
  *) Newton step taken.
  x) Symmetry was broken after this iteration.
 
- Geometry converged in           10 iterations!
+ Geometry converged in  10 iterations!
  Please note that symmetry was broken during this optimization.
 
  Energy at final geometry is       :    -150.786767 a.u.
  Energy change during optimization :      -0.011273 a.u.
                                             -29.598 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  2 minutes 22 seconds
- >>>> Total wall time used in DALTON:  2 minutes 26 seconds
+ >>>> Total CPU  time used in DALTON:  2 minutes  0 seconds
+ >>>> Total wall time used in DALTON:  2 minutes  1 second 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:30:08 2001
+     Date and time (Linux)  : Sat Jun  8 22:05:13 2002
      Host name              : slater.uio.no                           

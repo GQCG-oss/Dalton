@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,16 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 00:31:03 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:36 2002
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -115,8 +121,8 @@
   Title Cards
   -----------
 
-  lithium-hydrid                                                          
-  --------------                                                          
+  Calculation of phosphorescence                                          
+                                                                          
 
 
   Symmetry Operations
@@ -164,6 +170,20 @@ Point group: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                            H          1.007825
+                            Li         7.016005
+
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.608359
+
+
   Atoms and basis sets
   --------------------
 
@@ -181,7 +201,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.10D-11
+  Threshold for integrals:  1.10E-11
 
 
   Cartesian Coordinates
@@ -208,20 +228,20 @@ Point group: C2v
 
   Symmetry 1
 
-   1    H    z    3
-   2    Li   z    6
+   1    H    z    6
+   2    Li   z    1
 
 
   Symmetry 2
 
-   3    H    x    1
-   4    Li   x    4
+   3    H    x    4
+   4    Li   x    2
 
 
   Symmetry 3
 
-   5    H    y    2
-   6    Li   y    5
+   5    H    y    5
+   6    Li   y    2
 
 
    Interatomic separations (in Angstroms):
@@ -241,6 +261,24 @@ Point group: C2v
                   atom 1     atom 2                           distance
                   ------     ------                           --------
   bond distance:     Li         H                             1.637242
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          0.000000    0.000000    1.000000
+   IB   14.379117          0.000000    1.000000    0.000000
+   IC   14.379117          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =        35146.73 MHz     (    1.172369 cm-1)
 
 
   Nuclear repulsion energy :    0.969637476220
@@ -324,10 +362,10 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   0.42 seconds
+ >>> Time used in TWOINT is   0.40 seconds
 
 
- >>> Time used in TWOINT is   1.79 seconds
+ >>> Time used in TWOINT is   1.70 seconds
 
 
    Two-electron spin-orbit integrals
@@ -343,27 +381,27 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.10D-11
+ Threshold for discarding integrals :  1.10E-11
 
- >>> Time used in FRMSUP is   0.02 seconds
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   2.29 seconds
+ >>>> Total CPU  time used in HERMIT:   2.19 seconds
  >>>> Total wall time used in HERMIT:   2.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:31:05 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:38 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     lithium-hydrid                                                          
-     --------------                                                          
+     Calculation of phosphorescence                                          
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -416,7 +454,7 @@ Point group: C2v
 
      Maximum number of macro iterations      15
      Maximum number of micro iterations     360
-     Threshold for gradient            1.00D-05
+     Threshold for gradient            1.00E-05
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
@@ -433,15 +471,15 @@ Point group: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1       -7.940087923799    5.28682D-01   -7.94D+00
-    2       -7.979865452532    1.36403D-01   -3.98D-02
-    3       -7.985178936422    3.40410D-02   -5.31D-03
-    4       -7.985799518970    7.76600D-03   -6.21D-04
-    5       -7.985841759628    8.45850D-04   -4.22D-05
-    6       -7.985842066508    9.21877D-05   -3.07D-07
-    7       -7.985842069736    1.62504D-05   -3.23D-09
-    8       -7.985842069828    1.92509D-06   -9.26D-11
-    9       -7.985842069829    2.98450D-07   -9.75D-13
+    1       -7.940087923799    5.28682E-01   -7.94E+00
+    2       -7.979865452532    1.36403E-01   -3.98E-02
+    3       -7.985178936422    3.40410E-02   -5.31E-03
+    4       -7.985799518970    7.76600E-03   -6.21E-04
+    5       -7.985841759628    8.45850E-04   -4.22E-05
+    6       -7.985842066508    9.21877E-05   -3.07E-07
+    7       -7.985842069736    1.62504E-05   -3.23E-09
+    8       -7.985842069828    1.92509E-06   -9.26E-11
+    9       -7.985842069829    2.98450E-07   -9.73E-13
  DIIS converged in   9 iterations !
 
 
@@ -488,7 +526,7 @@ Point group: C2v
   --------------------------
     gap     :     0.29101716
 
- ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  1.56D-06
+ ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  1.56E-06
 
  MP2 move   0.031354 electrons to unoccupied HF orbitals
 
@@ -534,7 +572,7 @@ Point group: C2v
  RHF     0.00000000
  Diff.   0.00005168
 
- Time used for MP2 natural orbitals :       0.080 CPU seconds.
+ Time used for MP2 natural orbitals :       0.090 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -567,7 +605,7 @@ Point group: C2v
 
 
  CI energies and residuals:
-    1       -8.001670085289117       3.38D-17
+    1       -8.001670085289110       9.74E-17
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -582,7 +620,7 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :       -8.001670085289117       (MACRO    1)
+ Total MCSCF energy       :       -8.001670085289112       (MACRO    1)
 
  Norm of total gradient   :        0.037611015860
  -    of CI gradient      :        0.000000000000
@@ -607,7 +645,7 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :       -8.002239099161143       (MACRO    2)
+ Total MCSCF energy       :       -8.002239099161146       (MACRO    2)
 
  Norm of total gradient   :        0.013372014667
  -    of CI gradient      :        0.006366456854
@@ -632,7 +670,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :       -8.002309139553089       (MACRO    3)
+ Total MCSCF energy       :       -8.002309139553088       (MACRO    3)
 
  Norm of total gradient   :        0.001182565273
  -    of CI gradient      :        0.000189481491
@@ -682,7 +720,7 @@ Point group: C2v
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :       -8.002310207704301       (MACRO    5)
+ Total MCSCF energy       :       -8.002310207704305       (MACRO    5)
 
  Norm of total gradient   :        0.000002440390
  -    of CI gradient      :        0.000002031267
@@ -691,13 +729,13 @@ Point group: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           17
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used         0.47
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Tue Feb 13 00:31:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:39 2002
      Host name              : slater.uio.no                           
 
 
@@ -716,17 +754,17 @@ Point group: C2v
     2      3   -0.005272    0.006366     30    0.007630    0.011759    0.013372
     3      2   -0.000174    0.000189     30   -0.000710    0.001167    0.001183
     4      3   -0.000005    0.000006     27   -0.000009    0.000013    0.000015
-    5      2   -0.000002    0.000002     17   -0.000001    0.000001    0.000002
+    5      2   -0.000002    0.000002     17    0.000001    0.000001    0.000002
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     4     1     3      0.00      0.00      1.88      0.00      0.47
-    2     3     2     2      0.00      0.00      1.88      0.00      0.63
-    3     8     2     6      0.00      0.00      1.88      0.00      0.23
-    4     2     1     2      0.00      0.00      1.88      0.00      0.94
-    5     0     0     0      0.00      0.00      0.00      0.00
+    1     4     1     3      0.09      0.06      0.03      0.03      0.01
+    2     3     2     2      0.09      0.06      0.03      0.02      0.01
+    3     8     2     6      0.11      0.05      0.05      0.05      0.01
+    4     2     1     2      0.08      0.05      0.02      0.01      0.01
+    5     0     0     0      0.06      0.06      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
@@ -741,9 +779,9 @@ Point group: C2v
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000724370597     -0.000569013872      0.785528670149
-    3     -0.000067773823     -0.000070040392      1.033443134867
-    4     -0.000001064453     -0.000001068087      1.003414009583
+    2     -0.000724370597     -0.000569013872      0.785528670162
+    3     -0.000067773823     -0.000070040392      1.033443134792
+    4     -0.000001064453     -0.000001068087      1.003414011263
     5     -0.000000000064     -0.000000000064      1.000000000000
 
 
@@ -779,7 +817,7 @@ Point group: C2v
      Final gradient norm:           0.000002440390
 
  
-     Date and time (Linux)  : Tue Feb 13 00:31:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:39 2002
      Host name              : slater.uio.no                           
 
 
@@ -863,21 +901,21 @@ Point group: C2v
    ( Ranges are relative to norm of vector :  1.00E+00 )
 
   10- 1 to 10- 0         2    0.10000000E+01    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            1
+  Number of coefficients less than 10^-11 times norm is  1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.61 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.62 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:31:06 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:39 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -897,12 +935,12 @@ Point group: C2v
  Spin of operator B , ISPINB=    1
  Spin of operator C , (Excitation energy) ISPINC=    1
 
-  1 B-frequencies  0.000000D+00
+  1 B-frequencies  0.000000E+00
 
  Print level                                    : IPRSMO =    2
- Threshold for convergence in RSPPP             : THCPP  = 1.000D-03
+ Threshold for convergence in RSPPP             : THCPP  = 1.000E-03
  Maximum number of iterations in RSPPP          : MAXITP =   60
- Threshold for convergence in RSPLR             : THCLR  = 1.000D-03
+ Threshold for convergence in RSPLR             : THCLR  = 1.000E-03
  Maximum number of iterations in RSPLR          : MAXITL =   60
  Maximum iterations in optimal orbital algorithm: MAXITO =    5
 
@@ -933,9 +971,9 @@ Point group: C2v
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :       -8.002310207704301
- -- inactive part     :       -7.881121857883445
- --   active part     :       -1.090825826041227
+ MCSCF energy         :       -8.002310207704305
+ -- inactive part     :       -7.881121857883446
+ --   active part     :       -1.090825826041228
  -- nuclear repulsion :        0.969637476220371
 
 
@@ -959,10 +997,10 @@ Point group: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   4.69D-04
+ RSP solution vector no.    1; norm of residual   4.69E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -987,10 +1025,10 @@ Point group: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   9.18D-04
+ RSP solution vector no.    1; norm of residual   9.18E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1067,14 +1105,14 @@ Point group: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   8.27D-04
+ RSP solution vector no.    1; norm of residual   8.27E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.133622D+00
+ QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.133622E+00
  SYMMETRY    1
 
 @QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.13362):    -45.4284895243    
@@ -1104,14 +1142,14 @@ Point group: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   6.82D-04
+ RSP solution vector no.    1; norm of residual   6.82E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.999663D-01
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.999663E-01
  SYMMETRY    2
 
 @QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.09997):     66.1213994641    
@@ -1141,20 +1179,20 @@ Point group: C2v
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   5.70D-04
- RSP solution vector no.    2; norm of residual   6.63D-04
+ RSP solution vector no.    1; norm of residual   5.70E-04
+ RSP solution vector no.    2; norm of residual   6.63E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.999663D-01
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.999663E-01
  SYMMETRY    3
 
 @QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.09997):     66.1266712181    
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.133622D+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.133622E+00
  SYMMETRY    3
 
 @QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.13362):     182.473267503    
@@ -1184,10 +1222,10 @@ Point group: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.33D-04
+ RSP solution vector no.    1; norm of residual   2.33E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1216,10 +1254,10 @@ Point group: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.33D-04
+ RSP solution vector no.    1; norm of residual   2.33E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1239,7 +1277,7 @@ Point group: C2v
  QRTRVE -- operator label : Z SPNORB
  QRTRVE -- frequencies :  0.000000
   >>> RSPCTL skipped because norm of
-      property vector is only  6.3795841612161572E-022
+      property vector is only  4.84428835E-22
 
 
  Second order moment in a.u. for
@@ -1247,7 +1285,7 @@ Point group: C2v
  B operator label,  symmetry, spin:      Y SPNORB    2    1
  Excited state no., symmetry, spin:             1    1    1
 
- omega B, excitation energy, moment :    0.000000    0.099966    0.000015
+ omega B, excitation energy, moment :    0.000000    0.099966   -0.000015
 
 
  Second order moment in a.u. for
@@ -1255,7 +1293,7 @@ Point group: C2v
  B operator label,  symmetry, spin:      X SPNORB    3    1
  Excited state no., symmetry, spin:             1    1    1
 
- omega B, excitation energy, moment :    0.000000    0.099966   -0.000015
+ omega B, excitation energy, moment :    0.000000    0.099966    0.000015
 
  Phosphorescence electric dipole transition rates
  from excited states of symmetry  1
@@ -1268,9 +1306,9 @@ Point group: C2v
 
  Partial rates (H_SO): X-polarization      0.50792E-02
  Partial rates (H_SO): Y-polarization      0.51006E-02
- Partial rates (H_SO): Z-polarization      0.00000E+00
+ Partial rates (H_SO): Z-polarization       0.0000    
 
- Total transtion       rate     (H_SO) 1.01799E-02 s-1
+ Total transition      rate     (H_SO) 1.01798E-02 s-1
  Total phosphorescence lifetime (H_SO)  98.233     s
 
 
@@ -1298,11 +1336,11 @@ Point group: C2v
 
  Phosphorescence transition rate from excited state no.  1
 
- Partial rates (H_SO): X-polarization      0.00000E+00
+ Partial rates (H_SO): X-polarization       0.0000    
  Partial rates (H_SO): Y-polarization      0.67789    
  Partial rates (H_SO): Z-polarization      0.19386E-01
 
- Total transtion       rate     (H_SO) 0.69728     s-1
+ Total transition      rate     (H_SO) 0.69727     s-1
  Total phosphorescence lifetime (H_SO)  1.4342     s
 
  Phosphorescence electric dipole transition rates
@@ -1319,11 +1357,11 @@ Point group: C2v
 
  (H_SO: Full spin-orbit integrals used.)
 
- >>>> Total CPU  time used in RESPONSE:  10.91 seconds
- >>>> Total wall time used in RESPONSE:  15.00 seconds
- >>>> Total CPU  time used in DALTON:  13.81 seconds
- >>>> Total wall time used in DALTON:  18.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   4.59 seconds
+ >>>> Total wall time used in RESPONSE:   5.00 seconds
+ >>>> Total CPU  time used in DALTON:   7.41 seconds
+ >>>> Total wall time used in DALTON:   8.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:31:21 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:44 2002
      Host name              : slater.uio.no                           

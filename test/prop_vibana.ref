@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,16 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 01:12:01 2001
+     Date and time (Linux)  : Sat Jun  8 22:13:03 2002
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -102,8 +108,8 @@
   Title Cards
   -----------
 
-  Rydberg test                                                            
-  MP2/cc-pVTZ structure                                                   
+  Vibrational analysis of open-shell molecule                             
+                                                                          
 
 
   Symmetry Operations
@@ -151,6 +157,28 @@ Point group: C2v
     A2  | A2   B1   B2   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           N    1     14.003074
+                           N    2     14.003074
+                           C    1     12.000000
+                           C    2     12.000000
+                           C          12.000000
+                           C          12.000000
+                           H    1      1.007825
+                           H    2      1.007825
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    80.037448 amu
+                       Natural abundance:  94.908 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.424190    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -173,7 +201,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -232,48 +260,48 @@ Point group: C2v
 
   Symmetry 1
 
-   1   N     x    [  1  -   4 ]/2
-   2   N     y    [  2  +   5 ]/2
-   3   C     x    [  7  -  10 ]/2
-   4   C     y    [  8  +  11 ]/2
-   5   C     y   14
-   6   C     y   17
-   7   H     x    [ 19  -  22 ]/2
-   8   H     y    [ 20  +  23 ]/2
-   9   H     y   26
-  10   H     y   29
+   1   N     x    [  2  +   5 ]/2
+   2   N     y    [  7  -  10 ]/2
+   3   C     x    [  8  +  11 ]/2
+   4   C     y   14
+   5   C     y   17
+   6   C     y    [ 19  -  22 ]/2
+   7   H     x    [ 20  +  23 ]/2
+   8   H     y   26
+   9   H     y   29
+  10   H     y    [  1  +   4 ]/2
 
 
   Symmetry 2
 
-  11   N     x    [  1  +   4 ]/2
-  12   N     y    [  2  -   5 ]/2
-  13   C     x    [  7  +  10 ]/2
-  14   C     y    [  8  -  11 ]/2
-  15   C     x   13
-  16   C     x   16
-  17   H     x    [ 19  +  22 ]/2
-  18   H     y    [ 20  -  23 ]/2
-  19   H     x   25
-  20   H     x   28
+  11   N     x    [  2  -   5 ]/2
+  12   N     y    [  7  +  10 ]/2
+  13   C     x    [  8  -  11 ]/2
+  14   C     y   13
+  15   C     x   16
+  16   C     x    [ 19  +  22 ]/2
+  17   H     x    [ 20  -  23 ]/2
+  18   H     y   25
+  19   H     x   28
+  20   H     x    [  3  +   6 ]/2
 
 
   Symmetry 3
 
-  21   N     z    [  3  +   6 ]/2
-  22   C     z    [  9  +  12 ]/2
-  23   C     z   15
-  24   C     z   18
-  25   H     z    [ 21  +  24 ]/2
-  26   H     z   27
-  27   H     z   30
+  21   N     z    [  9  +  12 ]/2
+  22   C     z   15
+  23   C     z   18
+  24   C     z    [ 21  +  24 ]/2
+  25   H     z   27
+  26   H     z   30
+  27   H     z    [  3  -   6 ]/2
 
 
   Symmetry 4
 
-  28   N     z    [  3  -   6 ]/2
-  29   C     z    [  9  -  12 ]/2
-  30   H     z    [ 21  -  24 ]/2
+  28   N     z    [  9  -  12 ]/2
+  29   C     z    [ 21  -  24 ]/2
+  30   H     z    [  3  +  30 ]/2
 
 
    Interatomic separations (in Angstroms):
@@ -338,6 +366,27 @@ Point group: C2v
   bond angle:       N  1       C          N  2                 112.741
   bond angle:       N  1       C          H                    123.629
   bond angle:       N  2       C          H                    123.629
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA   17.383664          0.244263    0.969709    0.000000
+   IB   68.989086          0.969709   -0.244263    0.000000
+   IC   86.372750          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+          29072.0645           7325.4921           5851.1395 MHz
+            0.969740            0.244352            0.195173 cm-1
 
 
   Nuclear repulsion energy :  211.685038462494
@@ -478,7 +527,7 @@ Point group: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.12 seconds
+ >>> Time used in ONEDRV is   0.14 seconds
 
 
  >>> Time used in OVERLA is   0.11 seconds
@@ -489,7 +538,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is  28.92 seconds
+ >>> Time used in TWOINT is  19.56 seconds
 
 
 
@@ -500,27 +549,27 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   3.14 seconds
+ >>> Time used in FRMSUP is   1.94 seconds
 
- >>>> Total CPU  time used in HERMIT:  32.31 seconds
- >>>> Total wall time used in HERMIT:  48.00 seconds
+ >>>> Total CPU  time used in HERMIT:  21.79 seconds
+ >>>> Total wall time used in HERMIT:  25.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:12:49 2001
+     Date and time (Linux)  : Sat Jun  8 22:13:28 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Rydberg test                                                            
-     MP2/cc-pVTZ structure                                                   
+     Vibrational analysis of open-shell molecule                             
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -562,7 +611,7 @@ Point group: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-10
+     Threshold for HF convergence      1.00E-10
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -571,29 +620,29 @@ Point group: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -260.873303700985    7.15438D+00   -2.61D+02
-    2     -262.247971308111    1.30222D+00   -1.37D+00
-    3     -262.357542270683    4.78801D-01   -1.10D-01
-    4     -262.373522045474    8.48793D-02   -1.60D-02
-    5     -262.374772096560    4.40746D-02   -1.25D-03
-    6     -262.374999002591    1.77382D-02   -2.27D-04
-    7     -262.375082815415    8.67301D-03   -8.38D-05
-    8     -262.375104333661    2.48297D-03   -2.15D-05
-    9     -262.375105981844    8.60659D-04   -1.65D-06
-   10     -262.375106115297    2.39119D-04   -1.33D-07
-   11     -262.375106124277    8.91621D-05   -8.98D-09
-   12     -262.375106125392    2.34424D-05   -1.11D-09
-   13     -262.375106125492    4.03156D-06   -1.01D-10
-   14     -262.375106125496    9.97263D-07   -3.56D-12
-   15     -262.375106125496    2.91737D-07   -4.58D-13
-   16     -262.375106125495    1.05405D-07    9.77D-13
-   17     -262.375106125497    3.77671D-08   -1.42D-12
-   18     -262.375106125496    1.32353D-08    9.63D-13
-   19     -262.375106125496    5.37512D-09    2.15D-13
-   20     -262.375106125496    2.01637D-09   -1.40D-13
-   21     -262.375106125496    6.54304D-10   -5.13D-13
-   22     -262.375106125497    1.84184D-10   -2.98D-13
-   23     -262.375106125496    6.99235D-11    1.01D-12
+    1     -260.873303700985    7.15438E+00   -2.61E+02
+    2     -262.247971308111    1.30222E+00   -1.37E+00
+    3     -262.357542270682    4.78801E-01   -1.10E-01
+    4     -262.373522045473    8.48793E-02   -1.60E-02
+    5     -262.374772096560    4.40746E-02   -1.25E-03
+    6     -262.374999002591    1.77382E-02   -2.27E-04
+    7     -262.375082815414    8.67301E-03   -8.38E-05
+    8     -262.375104333662    2.48297E-03   -2.15E-05
+    9     -262.375105981844    8.60659E-04   -1.65E-06
+   10     -262.375106115297    2.39119E-04   -1.33E-07
+   11     -262.375106124277    8.91621E-05   -8.98E-09
+   12     -262.375106125392    2.34424E-05   -1.11E-09
+   13     -262.375106125492    4.03156E-06   -1.00E-10
+   14     -262.375106125496    9.97263E-07   -3.97E-12
+   15     -262.375106125496    2.91737E-07   -3.11E-13
+   16     -262.375106125496    1.05405E-07   -3.73E-14
+   17     -262.375106125496    3.77672E-08   -4.66E-15
+   18     -262.375106125496    1.32353E-08   -6.31E-14
+   19     -262.375106125496    5.37511E-09   -1.18E-14
+   20     -262.375106125496    2.01639E-09    1.87E-13
+   21     -262.375106125496    6.54335E-10   -4.60E-14
+   22     -262.375106125496    1.84193E-10    4.37E-14
+   23     -262.375106125496    6.99071E-11    3.50E-14
  DIIS converged in  23 iterations !
 
 
@@ -609,7 +658,7 @@ Point group: C2v
      Final gradient norm:           0.000000000070
 
  
-     Date and time (Linux)  : Tue Feb 13 01:12:53 2001
+     Date and time (Linux)  : Sat Jun  8 22:13:32 2002
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -780,11 +829,11 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      4.03 seconds
+ >>>> Total CPU  time used in SIRIUS :      4.25 seconds
  >>>> Total wall time used in SIRIUS :      4.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:12:53 2001
+     Date and time (Linux)  : Sat Jun  8 22:13:32 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -801,6 +850,7 @@ Point group: C2v
 
       The molecular gradient
       The molecular Hessian
+      Dipole moment gradient
       Vibrational analysis
 
 
@@ -810,8 +860,28 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:12:53 2001
+     Date and time (Linux)  : Sat Jun  8 22:13:32 2002
      Host name              : slater.uio.no                           
+
+
+ WARNING: Dif. between prop. calculated from density and CI gradient!
+ --------------------------------------------------------------------
+
+
+
+              Testing property: y component of dipole moment
+             -----------------------------------------------
+
+
+         Active (CI)          Inactive             Total
+
+
+        0.0000000000      -14.1647848440      -14.1647848440
+
+         CI property      Density property       Difference
+
+
+      -14.1647848440      -15.7264322465        1.5616474025
 
 
  ***************************************************************************
@@ -820,8 +890,10 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:39:20 2001
+     Date and time (Linux)  : Sat Jun  8 22:27:48 2002
      Host name              : slater.uio.no                           
+
+ WARNING: warnings have been issued, please check the output above !
 
 
 
@@ -850,8 +922,8 @@ Point group: C2v
 
 
      Total energy       -262.3751061255 au (Hartrees)
-                         -7139.58960740 eV
-                           -688865.7431 kJ/mol
+                         -7139.58961732 eV
+                           -688865.7422 kJ/mol
 
 
 
@@ -859,11 +931,11 @@ Point group: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.4724831115 au
-     Mass-velocity correction:                  -0.5888544290 au
+     Darwin correction:                          0.4724830404 au
+     Mass-velocity correction:                  -0.5888543404 au
 
-     Total relativistic correction:             -0.1163713175 au (0.0444%)
-     Non-relativistic + relativistic energy:  -262.4914774430 au
+     Total relativistic correction:             -0.1163713000 au (0.0444%)
+     Non-relativistic + relativistic energy:  -262.4914774255 au
 
 
 
@@ -907,7 +979,7 @@ Point group: C2v
 
            N    x      N    y      C    x      C    y      C    y      C    y
 
- N    x    1.265833
+ N    x    1.265832
  N    y   -0.484943    1.725163
  C    x   -0.226611    0.010619    1.849531
  C    y    0.079760   -0.981252   -0.052056    1.709425
@@ -955,7 +1027,7 @@ Point group: C2v
 
  N    z    0.197623
  C    z   -0.148040    0.383086
- C    z    0.003871   -0.141057    0.135901
+ C    z    0.003870   -0.141057    0.135901
  C    z   -0.102581   -0.011032    0.016294    0.150609
  H    z    0.029540   -0.108639    0.033183   -0.003147    0.053298
  H    z    0.000236    0.022277   -0.001928   -0.051144    0.001613    0.031560
@@ -1128,11 +1200,120 @@ Point group: C2v
 
                                au             Debye
 
-                    y      0.01276018      0.03243344
+                    y      0.01276018      0.03243313
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
+
+
+
+                       Dipole moment gradient (au)
+                       ---------------------------
+
+
+    Symmetry 1
+                       Ey
+
+        N    x     0.28430387
+        N    y    -1.13868000
+        C    x    -0.15864199
+        C    y     0.61933529
+        C    y     0.13124346
+        C    y     0.72361433
+        H    x    -0.03348608
+        H    y     0.29482164
+        H    y     0.23392813
+        H    y     0.13573716
+
+    Symmetry 2
+                       Ex
+
+        N    x    -0.17517834
+        N    y     0.42821153
+        C    x     0.83379234
+        C    y     1.45423668
+        C    x    -0.98698768
+        C    x     0.85078278
+        H    x     0.33646189
+        H    y    -0.07899000
+        H    x     0.11668540
+        H    x     0.02444361
+
+    Symmetry 3
+                       Ez
+
+        N    z    -0.52257902
+        C    z     0.54376633
+        C    z    -0.19748384
+        C    z     0.52122880
+        H    z     0.38007923
+        H    z     0.11767837
+        H    z     0.15731014
+
+
+
+                       Ex             Ey             Ez
+
+        N  1 x    -0.08758917     0.14215194     0.00000000
+        N  1 y     0.21410577    -0.56934000     0.00000000
+        N  1 z     0.00000000     0.00000000    -0.26128951
+
+        N  2 x    -0.08758917    -0.14215194     0.00000000
+        N  2 y    -0.21410577    -0.56934000     0.00000000
+        N  2 z     0.00000000     0.00000000    -0.26128951
+
+        C  1 x     0.41689617    -0.07932100     0.00000000
+        C  1 y     0.72711834     0.30966764     0.00000000
+        C  1 z     0.00000000     0.00000000     0.27188316
+
+        C  2 x     0.41689617     0.07932100     0.00000000
+        C  2 y    -0.72711834     0.30966764     0.00000000
+        C  2 z     0.00000000     0.00000000     0.27188316
+
+        C    x    -0.98698768     0.00000000     0.00000000
+        C    y     0.00000000     0.13124346     0.00000000
+        C    z     0.00000000     0.00000000    -0.19748384
+
+        C    x     0.85078278     0.00000000     0.00000000
+        C    y     0.00000000     0.72361433     0.00000000
+        C    z     0.00000000     0.00000000     0.52122880
+
+        H  1 x     0.16823094    -0.01674304     0.00000000
+        H  1 y    -0.03949500     0.14741082     0.00000000
+        H  1 z     0.00000000     0.00000000     0.19003961
+
+        H  2 x     0.16823094     0.01674304     0.00000000
+        H  2 y     0.03949500     0.14741082     0.00000000
+        H  2 z     0.00000000     0.00000000     0.19003961
+
+        H    x     0.11668540     0.00000000     0.00000000
+        H    y     0.00000000     0.23392813     0.00000000
+        H    z     0.00000000     0.00000000     0.11767837
+
+        H    x     0.02444361     0.00000000     0.00000000
+        H    y     0.00000000     0.13573716     0.00000000
+        H    z     0.00000000     0.00000000     0.15731014
+
+
+
+                        +-------------------------+
+                        ! APT Population Analysis !
+                        +-------------------------+
+
+
+      [ Reference : J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333 ]
+
+                            N    1   -0.306073
+                            N    2   -0.306073
+                            C    1    0.332816
+                            C    2    0.332816
+                            C        -0.351076
+                            C         0.698542
+                            H    1    0.168560
+                            H    2    0.168560
+                            H         0.156097
+                            H         0.105830
 
 
 
@@ -1212,10 +1393,11 @@ Point group: C2v
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63137
+    Hartree to (cm)-1      : 219474.63128
     a.m.u.  to a.u.        :   1822.88848
     Bohr    to Angstrom    :  0.529177208
     a.u.    to A**4amu-1   :   142.943570
+    a.u.    to km (mol)-1  :      974.864
 
 
  Vibrational analysis for parent molecule only.
@@ -1245,6 +1427,9 @@ Point group: C2v
 
 
 
+ Center-of-mass coordinates (A):    0.000000    0.424190    0.000000
+
+
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
@@ -1265,39 +1450,43 @@ Point group: C2v
 
 
 
-  Vibrational Frequencies
-  -----------------------
+  Vibrational Frequencies and IR Intensities
+  ------------------------------------------
 
-   mode   irrep     cm-1     hartrees 
-  ------------------------------------
 
-    1      A1      3442.17  0.0156837 
-    2      A1      3411.66  0.0155447 
-    4      A1      3367.86  0.0153451 
-    5      A1      1772.33  0.0080753 
-    7      A1      1576.51  0.0071831 
-   11      A1      1245.80  0.0056763 
-   13      A1      1143.79  0.0052115 
-   18      A1      1035.33  0.0047173 
-   21      A1       694.75  0.0031655 
 
-    3      B2      3370.82  0.0153586 
-    6      B2      1658.01  0.0075545 
-    8      B2      1565.90  0.0071348 
-    9      B2      1434.19  0.0065346 
-   10      B2      1279.07  0.0058279 
-   12      B2      1199.18  0.0054639 
-   16      B2      1050.64  0.0047870 
-   20      B2       710.61  0.0032378 
+  mode   irrep        frequency             IR intensity
+  ============================================================
+                 cm-1       hartrees     km/mol   (D/A)**2/amu
+  ------------------------------------------------------------
 
-   14      B1      1109.13  0.0050536 
-   17      B1      1036.91  0.0047245 
-   19      B1       923.99  0.0042100 
-   22      B1       515.66  0.0023495 
-   24      B1       390.26  0.0017782 
+   1      A1     3442.17    0.015684     21.557   0.5102
+   2      A1     3411.66    0.015545     17.675   0.4183
+   4      A1     3367.86    0.015345      2.402   0.0569
+   5      A1     1772.33    0.008075     70.686   1.6728
+   7      A1     1576.51    0.007183     79.893   1.8907
+  11      A1     1245.80    0.005676      0.677   0.0160
+  13      A1     1143.79    0.005211      0.089   0.0021
+  18      A1     1035.33    0.004717      8.183   0.1937
+  21      A1      694.75    0.003165      8.481   0.2007
 
-   15      A2      1067.32  0.0048631 
-   23      A2       483.18  0.0022015 
+   3      B2     3370.82    0.015359     43.622   1.0323
+   6      B2     1658.01    0.007554    193.587   4.5814
+   8      B2     1565.90    0.007135      3.242   0.0767
+   9      B2     1434.19    0.006535      6.849   0.1621
+  10      B2     1279.07    0.005828     46.121   1.0915
+  12      B2     1199.18    0.005464     18.681   0.4421
+  16      B2     1050.64    0.004787      0.072   0.0017
+  20      B2      710.61    0.003238      6.406   0.1516
+
+  14      B1     1109.13    0.005054      0.000   0.0000
+  17      B1     1036.91    0.004725      0.049   0.0012
+  19      B1      923.99    0.004210     25.082   0.5936
+  22      B1      515.66    0.002350    114.859   2.7182
+  24      B1      390.26    0.001778      1.236   0.0292
+
+  15      A2     1067.32    0.004863      0.000   0.0000
+  23      A2      483.18    0.002202      0.000   0.0000
 
 
 
@@ -1328,7 +1517,7 @@ Point group: C2v
       C  2 z    0.000000    0.000000    0.000000    0.000000    0.000000
 
       C    x    0.000000    0.000000    0.005999    0.000000    0.000000
-      C    y    0.001077   -0.084702    0.000000    0.018162   -0.054071
+      C    y    0.001077   -0.084702    0.000000    0.018163   -0.054071
       C    z    0.000000    0.000000    0.000000    0.000000    0.000000
 
       C    x    0.000000    0.000000    0.002061    0.000000    0.000000
@@ -1445,7 +1634,7 @@ Point group: C2v
 
       N  1 x   -0.054225    0.000000    0.124150    0.000000   -0.118666
       N  1 y    0.052911    0.000000    0.070928    0.000000   -0.076362
-      N  1 z    0.000000    0.004150    0.000000    0.054990    0.000000
+      N  1 z    0.000000    0.004151    0.000000    0.054990    0.000000
 
       N  2 x   -0.054225    0.000000   -0.124150    0.000000   -0.118666
       N  2 y   -0.052911    0.000000    0.070928    0.000000    0.076362
@@ -1529,14 +1718,48 @@ Point group: C2v
 
 
 
+
+  Dipole Gradient in Normal Coordinate Basis (D/(A*amu**(1/2)))
+  -------------------------------------------------------------
+
+
+  mode           dMA/dQi        dMB/dQi        dMC/dQi
+  ----------------------------------------------------
+   1            0.000000       0.714258       0.000000
+   2            0.000000       0.646746       0.000000
+   3            1.016038       0.000000       0.000000
+   4            0.000000       0.238433       0.000000
+   5            0.000000       1.293377       0.000000
+   6           -2.140411       0.000000       0.000000
+   7            0.000000       1.375031       0.000000
+   8           -0.277009       0.000000       0.000000
+   9            0.402592       0.000000       0.000000
+  10           -1.044741       0.000000       0.000000
+  11            0.000000       0.126572       0.000000
+  12           -0.664897       0.000000       0.000000
+  13            0.000000       0.045929       0.000000
+  14            0.000000       0.000000       0.000355
+  15            0.000000       0.000000       0.000000
+  16           -0.041420       0.000000       0.000000
+  17            0.000000       0.000000       0.033933
+  18            0.000000      -0.440065       0.000000
+  19            0.000000       0.000000       0.770445
+  20           -0.389372       0.000000       0.000000
+  21            0.000000      -0.447992       0.000000
+  22            0.000000       0.000000      -1.648702
+  23            0.000000       0.000000       0.000000
+  24            0.000000       0.000000      -0.171019
+
+
+
                           Total Molecular Energy
                           ----------------------
 
              electronic     vibrational           total    energy 
 
             -262.375106        0.080841     -262.294265    Hartrees
-           -57584679.70        17742.53    -57566937.17    cm-1
-             -688865.74          212.25      -688653.50    kJ/mol
+           -57584679.67        17742.53    -57566937.15    cm-1
+             -688865.74          212.25      -688653.49    kJ/mol
              -164642.86           50.73      -164592.14    kcal/mol
 
 
@@ -1551,44 +1774,98 @@ Point group: C2v
 
  Temp.(K)  Translational     Rotational    Vibrational      Total
 
-    50.00     3.2414D+05        5258.85         1.0000   1.704613D+09
-   100.00     1.8336D+06       14866.72         1.0053   2.740419D+10
-   200.00     1.0372D+07       42038.76         1.1455   4.994725D+11
-   273.15     2.2610D+07       67092.99         1.4507   2.200682D+12
-   298.15     2.8144D+07       76510.46         1.6138   3.475155D+12
-   300.00     2.8583D+07       77223.59         1.6274   3.592174D+12
-   400.00     5.8675D+07      118888.47         2.7999   1.953134D+13
-   500.00     1.0250D+08      166147.46         5.5508   9.453106D+13
-   600.00     1.6169D+08      218402.81        12.0920   4.270096D+14
-   700.00     2.3771D+08      275215.66        27.8863   1.824371D+15
-   800.00     3.3192D+08      336246.00        66.3076   7.400297D+15
-   900.00     4.4556D+08      401220.25       159.6842   2.854662D+16
-  1000.00     5.7983D+08      469912.10       384.9094   1.048766D+17
-  1500.00     1.5978D+09      863269.03     26211.4481   3.615505D+19
-  2000.00     3.2800D+09     1329078.36   1145169.0934   4.992279D+21
+    50.00     3.2414E+05        5258.85         1.0000   1.704613E+09
+   100.00     1.8336E+06       14866.72         1.0053   2.740419E+10
+   200.00     1.0372E+07       42038.76         1.1455   4.994725E+11
+   273.15     2.2610E+07       67092.99         1.4507   2.200682E+12
+   298.15     2.8144E+07       76510.46         1.6138   3.475155E+12
+   300.00     2.8583E+07       77223.59         1.6274   3.592174E+12
+   400.00     5.8675E+07      118888.47         2.7999   1.953134E+13
+   500.00     1.0250E+08      166147.46         5.5508   9.453106E+13
+   600.00     1.6169E+08      218402.81        12.0920   4.270096E+14
+   700.00     2.3771E+08      275215.66        27.8863   1.824371E+15
+   800.00     3.3192E+08      336246.00        66.3076   7.400297E+15
+   900.00     4.4556E+08      401220.25       159.6842   2.854662E+16
+  1000.00     5.7983E+08      469912.10       384.9094   1.048766E+17
+  1500.00     1.5978E+09      863269.03     26211.4484   3.615505E+19
+  2000.00     3.2800E+09     1329078.36   1145169.1099   4.992279E+21
 
- >>> Time used in VIBCTL is   0.04 seconds
+
+                            +------------------+
+                            ! Polarizabilities !
+                            +------------------+
+
+
+ Vibrational polarizabilities calculated acc. to Rinaldi et al.,
+ Chem.Phys.Lett. 128 (1986) 177-181.
+
+
+                    Vibrational Polarizabilities (au)
+                    ---------------------------------
+
+                         Ex          Ey          Ez
+
+
+            Ex       3.600918    0.000000    0.000000
+            Ey       0.000000    2.274360    0.000000
+            Ez       0.000000    0.000000   12.726017
+
+
+
+
+               Vibrational Polarizabilities (angstroms**3)
+               -------------------------------------------
+
+                         Ex          Ey          Ez
+
+
+            Ex       0.533601    0.000000    0.000000
+            Ey       0.000000    0.337025    0.000000
+            Ez       0.000000    0.000000    1.885801
+
+
+
+
+               Vibrational Polarizabilities (angstroms**3)
+               -------------------------------------------
+
+               (Along principal axes of moments of inertia)
+
+                         EA          EB          EC
+
+
+            EA       0.337025    0.000000    0.000000
+            EB       0.000000    0.533601    0.000000
+            EC       0.000000    0.000000    1.885801
+
+
+
+
+ Vibrational mean polarization :    2.3205 cm**3 mol**-1
+
+ >>> Time used in VIBCTL is   0.02 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:05:28      26 %
- RHSIDE     00:12:07      57 %
- RESPON     00:03:30      17 %
+ TWOTEX     00:04:31      37 %
+ RHSIDE     00:03:56      32 %
+ RESPON     00:03:50      31 %
+ REST       00:00:04       1 %
 
- TOTAL      00:21:09     100 %
+ TOTAL      00:12:20     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS: 21 minutes  9 seconds
- >>>> Total wall time used in ABACUS: 26 minutes 27 seconds
+ >>>> Total CPU  time used in ABACUS: 12 minutes 20 seconds
+ >>>> Total wall time used in ABACUS: 14 minutes 16 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON: 21 minutes 45 seconds
- >>>> Total wall time used in DALTON: 27 minutes 19 seconds
+ >>>> Total CPU  time used in DALTON: 12 minutes 46 seconds
+ >>>> Total wall time used in DALTON: 14 minutes 45 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:39:20 2001
+     Date and time (Linux)  : Sat Jun  8 22:27:48 2002
      Host name              : slater.uio.no                           

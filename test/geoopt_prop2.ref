@@ -78,7 +78,8 @@
      and O. Vahtras"
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:37 2002
+     Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -94,6 +95,7 @@
  Optimization will be performed in Cartesian coordinates.
 
 
+ Threshold for symmetry-break set to       :      0.10E-02
  Trust region method will be used to control step (default).
 
 
@@ -171,30 +173,45 @@ Represented as: C2v
 
    * Group multiplication table
 
-        |  E   C2z  Oxz  Oyz  
+        |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E   
-    C2z | C2z   E   
-    Oxz | Oxz  Oyz   E   
-    Oyz | Oyz  Oxz  C2z   E   
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
 
-        |  E   C2z  Oxz  Oyz  
+        |  E   C2z  Oxz  Oyz
    -----+--------------------
-    A1  |   1    1    1    1  
-    B1  |   1   -1    1   -1  
-    B2  |   1   -1   -1    1  
-    A2  |   1    1   -1   -1  
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
 
    * Direct product table
 
-        | A1   B1   B2   A2   
+        | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1   
-    B1  | B1   A1   
-    B2  | B2   A2   A1   
-    A2  | A2   B2   B1   A1   
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
 
 
   Atoms and basis sets
@@ -214,7 +231,7 @@ Represented as: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -225,15 +242,15 @@ Represented as: C2v
 
    1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z     -0.7496859287
+   3            z     -0.1258515023
 
    4   H    1   x      0.0000000000
    5            y      1.4523500000
-   6            z      0.3748429643
+   6            z      0.9986773907
 
    7   H    2   x      0.0000000000
    8            y     -1.4523500000
-   9            z      0.3748429643
+   9            z      0.9986773907
 
 
 
@@ -245,33 +262,33 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -297,6 +314,27 @@ Represented as: C2v
   bond angle:       H  1       O          H  2                 104.500
 
 
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.567417          0.000000    1.000000    0.000000
+   IB    1.190584          0.000000    0.000000    1.000000
+   IC    1.758001          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         890665.3782         424480.0013         287473.6488 MHz
+           29.709399           14.159129            9.589089 cm-1
+
+
   Nuclear repulsion energy :    9.055004525638
 
 
@@ -308,54 +346,54 @@ Represented as: C2v
 
   Symmetry  A1 ( 1)
 
-    1     O        1s         1  
-    2     O        1s         2  
-    3     O        1s         3  
-    4     O        1s         4  
-    5     O        1s         5  
-    6     O        2pz        8  
-    7     O        2pz       11  
-    8     O        2pz       14  
-    9     O        2pz       17  
-   10     O        3d0       20  
-   11     O        3d2+      22  
-   12     H        1s        23  +  24  
-   13     H        1s        25  +  26  
-   14     H        1s        27  +  28  
-   15     H        1s        29  +  30  
-   16     H        2py       33  -  34  
-   17     H        2pz       35  +  36  
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        1s         4
+    5     O        1s         5
+    6     O        2pz        8
+    7     O        2pz       11
+    8     O        2pz       14
+    9     O        2pz       17
+   10     O        3d0       20
+   11     O        3d2+      22
+   12     H        1s        23  +  24
+   13     H        1s        25  +  26
+   14     H        1s        27  +  28
+   15     H        1s        29  +  30
+   16     H        2py       33  -  34
+   17     H        2pz       35  +  36
 
 
   Symmetry  B1 ( 2)
 
-   18     O        2px        6  
-   19     O        2px        9  
-   20     O        2px       12  
-   21     O        2px       15  
-   22     O        3d1+      21  
-   23     H        2px       31  +  32  
+   18     O        2px        6
+   19     O        2px        9
+   20     O        2px       12
+   21     O        2px       15
+   22     O        3d1+      21
+   23     H        2px       31  +  32
 
 
   Symmetry  B2 ( 3)
 
-   24     O        2py        7  
-   25     O        2py       10  
-   26     O        2py       13  
-   27     O        2py       16  
-   28     O        3d1-      19  
-   29     H        1s        23  -  24  
-   30     H        1s        25  -  26  
-   31     H        1s        27  -  28  
-   32     H        1s        29  -  30  
-   33     H        2py       33  +  34  
-   34     H        2pz       35  -  36  
+   24     O        2py        7
+   25     O        2py       10
+   26     O        2py       13
+   27     O        2py       16
+   28     O        3d1-      19
+   29     H        1s        23  -  24
+   30     H        1s        25  -  26
+   31     H        1s        27  -  28
+   32     H        1s        29  -  30
+   33     H        2py       33  +  34
+   34     H        2pz       35  -  36
 
 
   Symmetry  A2 ( 4)
 
-   35     O        3d2-      18  
-   36     H        2px       31  -  32  
+   35     O        3d2-      18
+   36     H        2px       31  -  32
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -370,7 +408,7 @@ Represented as: C2v
  >>> Time used in ONEDRV is   0.01 seconds
 
 
- >>> Time used in OVERLA is   0.02 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:       57092 ( 25.7% )
@@ -378,12 +416,12 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.19 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
- >>> Time used in FRMSUP is   0.76 seconds
+ >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   1.07 seconds
+ >>>> Total CPU  time used in HERMIT:   0.28 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
@@ -394,7 +432,8 @@ Represented as: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:38 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
@@ -436,7 +475,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -447,17 +486,17 @@ Represented as: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -75.692895860280   3.86D+00  -7.57D+01    3  1  1  0
-   2    -76.032442809670   5.22D-01  -3.40D-01    3  1  1  0
-   3    -76.048536785869   2.31D-01  -1.61D-02    3  1  1  0
-   4    -76.050965551171   7.68D-02  -2.43D-03    3  1  1  0
-   5    -76.051432984875   1.49D-02  -4.67D-04    3  1  1  0
-   6    -76.051457481299   3.40D-03  -2.45D-05    3  1  1  0
-   7    -76.051459480014   4.80D-04  -2.00D-06    3  1  1  0
-   8    -76.051459518235   7.75D-05  -3.82D-08    3  1  1  0
-   9    -76.051459519144   1.74D-05  -9.09D-10    3  1  1  0
-  10    -76.051459519203   2.92D-06  -5.89D-11    3  1  1  0
-  11    -76.051459519204   2.95D-07  -1.12D-12    3  1  1  0
+   1    -75.692895860280   3.86E+00  -7.57E+01    3  1  1  0
+   2    -76.032442809669   5.22E-01  -3.40E-01    3  1  1  0
+   3    -76.048536785869   2.31E-01  -1.61E-02    3  1  1  0
+   4    -76.050965551171   7.68E-02  -2.43E-03    3  1  1  0
+   5    -76.051432984875   1.49E-02  -4.67E-04    3  1  1  0
+   6    -76.051457481299   3.40E-03  -2.45E-05    3  1  1  0
+   7    -76.051459480014   4.80E-04  -2.00E-06    3  1  1  0
+   8    -76.051459518235   7.75E-05  -3.82E-08    3  1  1  0
+   9    -76.051459519144   1.74E-05  -9.09E-10    3  1  1  0
+  10    -76.051459519203   2.92E-06  -5.90E-11    3  1  1  0
+  11    -76.051459519204   2.95E-07  -1.11E-12    3  1  1  0
  DIIS converged in  11 iterations !
 
 
@@ -505,7 +544,8 @@ Represented as: C2v
      Final gradient norm:           0.000000294912
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:38 2002
+     Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
 
@@ -519,7 +559,7 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0605   0.3840
    8  O   2pz    0.0002   0.0192   0.2997
    9  O   2pz    0.0001  -0.0001   0.0602
-  10  O   3d0   -0.0000   0.0027   0.0163
+  10  O   3d0    0.0000   0.0027   0.0163
   11  O   3d2+   0.0001  -0.0075  -0.0048
   12  H   1s     0.0002   0.0905   0.0881
   13  H   1s     0.0002   0.0812   0.1527
@@ -555,18 +595,20 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.16 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.08 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:38 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:38 2002
+     Host name              : slater.uio.no                           
 
 
  ***************************************************************************
@@ -575,16 +617,17 @@ Represented as: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:40 2002
+     Host name              : slater.uio.no                           
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- O          0.0000000000            0.0000000000           -0.7496859287
- H    1     0.0000000000            1.4523500000            0.3748429643
- H    2     0.0000000000           -1.4523500000            0.3748429643
+ O          0.0000000000            0.0000000000           -0.1258515023
+ H    1     0.0000000000            1.4523500000            0.9986773907
+ H    2     0.0000000000           -1.4523500000            0.9986773907
 
 
 
@@ -597,7 +640,7 @@ Represented as: C2v
 
 
      Total energy        -76.0514595192 au (Hartrees)
-                         -2069.46542311 eV
+                         -2069.46542598 eV
                            -199673.0783 kJ/mol
 
 
@@ -638,7 +681,7 @@ Represented as: C2v
 
            Symmetry 1
 
-           O   z       H   y       H   z       
+           O   z       H   y       H   z 
 
  O   z     0.472257
  H   y    -0.363925    0.780892
@@ -647,7 +690,7 @@ Represented as: C2v
 
            Symmetry 2
 
-           O   x       H   x       
+           O   x       H   x 
 
  O   x     0.036482
  H   x    -0.036482    0.036482
@@ -655,7 +698,7 @@ Represented as: C2v
 
            Symmetry 3
 
-           O   y       H   y       H   z       
+           O   y       H   y       H   z 
 
  O   y     0.657735
  H   y    -0.657735    0.657735
@@ -664,14 +707,14 @@ Represented as: C2v
 
            Symmetry 4
 
-           H   x       
+           H   x 
 
  H   x     0.034090
 
 
 
 
-           O   x       O   y       O   z       H  1x       H  1y       H  1z       
+           O   x       O   y       O   z       H  1x       H  1y       H  1z 
 
  O   x     0.036482
  O   y     0.000000    0.657735
@@ -686,7 +729,7 @@ Represented as: C2v
  H  2z     0.000000    0.240513   -0.236129    0.000000   -0.029275    0.016429
 
 
-           H  2x       H  2y       H  2z       
+           H  2x       H  2y       H  2z 
 
  H  2x     0.017643
  H  2y     0.000000    0.359657
@@ -720,7 +763,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -751,25 +794,25 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01      98 %
+ TWOTEX     00:00:01      56 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.26 seconds
+ >>>> Total CPU  time used in ABACUS:   1.94 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
 
- Predicted energy change       -0.002101936459403
+ Predicted energy change       -0.002101936459400
 
 
   Step in diagonal representation
   -------------------------------
 
 
-               Column   1     Column   2     
+               Column   1     Column   2
        1      -0.01768153     0.06775295
 
 
@@ -782,9 +825,9 @@ Represented as: C2v
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7101452491
- H    1     0.0000000000            1.4165875841            0.3550726245
- H    2     0.0000000000           -1.4165875841            0.3550726245
+ O          0.0000000000            0.0000000000           -0.0863108228
+ H    1     0.0000000000            1.4165875841            0.9789070509
+ H    2     0.0000000000           -1.4165875841            0.9789070509
 
 
 
@@ -819,13 +862,13 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.25 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
- >>> Time used in FRMSUP is   0.64 seconds
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.96 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.25 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -835,14 +878,15 @@ Represented as: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:40 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
      generation at the optimized geometry                                    
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -880,7 +924,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -889,15 +933,15 @@ Represented as: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -76.052581067387    1.29432D-01   -7.61D+01
-    2      -76.053318156313    3.85085D-02   -7.37D-04
-    3      -76.053380284751    1.74711D-02   -6.21D-05
-    4      -76.053396278294    3.06683D-03   -1.60D-05
-    5      -76.053397654382    7.91306D-04   -1.38D-06
-    6      -76.053397779125    1.49454D-04   -1.25D-07
-    7      -76.053397783027    2.50579D-05   -3.90D-09
-    8      -76.053397783127    3.84358D-06   -1.00D-10
-    9      -76.053397783129    3.42458D-07   -2.19D-12
+    1      -76.052581067387    1.29432E-01   -7.61E+01
+    2      -76.053318156313    3.85085E-02   -7.37E-04
+    3      -76.053380284751    1.74711E-02   -6.21E-05
+    4      -76.053396278294    3.06683E-03   -1.60E-05
+    5      -76.053397654382    7.91306E-04   -1.38E-06
+    6      -76.053397779125    1.49454E-04   -1.25E-07
+    7      -76.053397783027    2.50579E-05   -3.90E-09
+    8      -76.053397783127    3.84358E-06   -1.00E-10
+    9      -76.053397783129    3.42458E-07   -2.22E-12
  DIIS converged in   9 iterations !
 
 
@@ -945,61 +989,17 @@ Represented as: C2v
      Final gradient norm:           0.000000342458
 
  
-     Host name              : pico                                    
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.5514  -0.1136   0.0376
-   2  O   1s     0.4717  -0.1897   0.0642
-   3  O   1s     0.0056   0.5390  -0.1986
-   4  O   1s    -0.0009   0.3763  -0.3119
-   5  O   1s     0.0009  -0.0124  -0.0068
-   6  O   2pz    0.0018   0.0383   0.2546
-   7  O   2pz   -0.0007   0.0641   0.3872
-   8  O   2pz    0.0002   0.0191   0.3006
-   9  O   2pz    0.0001   0.0011   0.0621
-  10  O   3d0   -0.0000   0.0026   0.0164
-  11  O   3d2+   0.0001  -0.0083  -0.0049
-  12  H   1s     0.0002   0.0965   0.0871
-  13  H   1s     0.0002   0.0826   0.1481
-  14  H   1s    -0.0002  -0.0067   0.0118
-  15  H   1s    -0.0001   0.0076  -0.0000
-  16  H   2py   -0.0001  -0.0239  -0.0309
-  17  H   2pz   -0.0000  -0.0141   0.0107
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.2871
-   2  O   2px    0.4445
-   3  O   2px    0.4111
-   4  O   2px    0.0823
-   5  O   3d1+   0.0165
-   6  H   2px    0.0335
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.2295
-   2  O   2py    0.3521
-   3  O   2py    0.2073
-   4  O   2py    0.0136
-   5  O   3d1-   0.0290
-   6  H   1s     0.1508
-   7  H   1s     0.2156
-   8  H   1s     0.0257
-   9  H   1s     0.0127
-  10  H   2py   -0.0193
-  11  H   2pz   -0.0260
+     Date and time (Linux)  : Sat Jun  8 21:52:40 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.05 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:40 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
@@ -1008,23 +1008,26 @@ Represented as: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:40 2002
+     Host name              : slater.uio.no                           
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:42 2002
+     Host name              : slater.uio.no                           
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     100 %
+ TWOTEX     00:00:01      58 %
+ REST       00:00:02      87 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.19 seconds
+ >>>> Total CPU  time used in ABACUS:   1.87 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
@@ -1036,7 +1039,7 @@ Represented as: C2v
   -------------------------------
 
 
-               Column   1     Column   2     
+               Column   1     Column   2
        1       0.00579661    -0.00638513
 
 
@@ -1049,9 +1052,9 @@ Represented as: C2v
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7117522899
- H    1     0.0000000000            1.4225246120            0.3558761449
- H    2     0.0000000000           -1.4225246120            0.3558761449
+ O          0.0000000000            0.0000000000           -0.0879178635
+ H    1     0.0000000000            1.4225246120            0.9797105713
+ H    2     0.0000000000           -1.4225246120            0.9797105713
 
 
 
@@ -1079,7 +1082,7 @@ Represented as: C2v
  *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:       57092 ( 25.7% )
@@ -1087,13 +1090,13 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.17 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
- >>> Time used in FRMSUP is   0.77 seconds
+ >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.99 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -1103,14 +1106,15 @@ Represented as: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:42 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
      generation at the optimized geometry                                    
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1148,7 +1152,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1157,14 +1161,14 @@ Represented as: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -76.053416329890    1.26659D-02   -7.61D+01
-    2      -76.053422901542    3.66980D-03   -6.57D-06
-    3      -76.053423408259    1.65437D-03   -5.07D-07
-    4      -76.053423539916    2.51391D-04   -1.32D-07
-    5      -76.053423548870    6.93037D-05   -8.95D-09
-    6      -76.053423549838    1.33489D-05   -9.68D-10
-    7      -76.053423549870    2.07916D-06   -3.19D-11
-    8      -76.053423549871    2.93253D-07   -7.11D-13
+    1      -76.053416329890    1.26659E-02   -7.61E+01
+    2      -76.053422901542    3.66980E-03   -6.57E-06
+    3      -76.053423408259    1.65437E-03   -5.07E-07
+    4      -76.053423539916    2.51391E-04   -1.32E-07
+    5      -76.053423548870    6.93037E-05   -8.95E-09
+    6      -76.053423549838    1.33489E-05   -9.68E-10
+    7      -76.053423549870    2.07916E-06   -3.19E-11
+    8      -76.053423549871    2.93253E-07   -6.91E-13
  DIIS converged in   8 iterations !
 
 
@@ -1212,61 +1216,17 @@ Represented as: C2v
      Final gradient norm:           0.000000293253
 
  
-     Host name              : pico                                    
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.5514  -0.1137   0.0375
-   2  O   1s     0.4717  -0.1898   0.0640
-   3  O   1s     0.0056   0.5395  -0.1981
-   4  O   1s    -0.0009   0.3775  -0.3102
-   5  O   1s     0.0009  -0.0127  -0.0073
-   6  O   2pz    0.0018   0.0379   0.2545
-   7  O   2pz   -0.0007   0.0636   0.3872
-   8  O   2pz    0.0002   0.0190   0.3013
-   9  O   2pz    0.0001   0.0010   0.0621
-  10  O   3d0   -0.0000   0.0025   0.0164
-  11  O   3d2+   0.0001  -0.0083  -0.0049
-  12  H   1s     0.0002   0.0959   0.0871
-  13  H   1s     0.0002   0.0824   0.1480
-  14  H   1s    -0.0002  -0.0065   0.0125
-  15  H   1s    -0.0001   0.0076   0.0000
-  16  H   2py   -0.0001  -0.0239  -0.0308
-  17  H   2pz   -0.0000  -0.0141   0.0106
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.2872
-   2  O   2px    0.4446
-   3  O   2px    0.4113
-   4  O   2px    0.0824
-   5  O   3d1+   0.0165
-   6  H   2px    0.0333
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.2292
-   2  O   2py    0.3518
-   3  O   2py    0.2078
-   4  O   2py    0.0137
-   5  O   3d1-   0.0289
-   6  H   1s     0.1504
-   7  H   1s     0.2158
-   8  H   1s     0.0261
-   9  H   1s     0.0127
-  10  H   2py   -0.0195
-  11  H   2pz   -0.0260
+     Date and time (Linux)  : Sat Jun  8 21:52:42 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.04 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:42 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
@@ -1275,23 +1235,25 @@ Represented as: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:42 2002
+     Host name              : slater.uio.no                           
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:44 2002
+     Host name              : slater.uio.no                           
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     100 %
+ TWOTEX     00:00:01      58 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.33 seconds
+ >>>> Total CPU  time used in ABACUS:   1.86 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
@@ -1303,8 +1265,8 @@ Represented as: C2v
   -------------------------------
 
 
-               Column   1     Column   2     
-       1     2.304413D-05  -7.725075D-05
+               Column   1     Column   2
+       1     2.304413E-05  -7.725075E-05
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1316,9 +1278,9 @@ Represented as: C2v
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7117937013
- H    1     0.0000000000            1.4225689198            0.3558968506
- H    2     0.0000000000           -1.4225689198            0.3558968506
+ O          0.0000000000            0.0000000000           -0.0879592749
+ H    1     0.0000000000            1.4225689198            0.9797312770
+ H    2     0.0000000000           -1.4225689198            0.9797312770
 
 
 
@@ -1354,12 +1316,12 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.20 seconds
+ >>> Time used in TWOINT is   0.21 seconds
 
 
- >>> Time used in FRMSUP is   0.70 seconds
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.93 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
@@ -1370,14 +1332,15 @@ Represented as: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:45 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
      generation at the optimized geometry                                    
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1415,7 +1378,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1424,11 +1387,11 @@ Represented as: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -76.053423552100    1.48577D-04   -7.61D+01
-    2      -76.053423553044    4.44246D-05   -9.45D-10
-    3      -76.053423553124    2.00743D-05   -8.00D-11
-    4      -76.053423553145    3.38838D-06   -2.07D-11
-    5      -76.053423553147    8.85200D-07   -1.68D-12
+    1      -76.053423552100    1.48577E-04   -7.61E+01
+    2      -76.053423553044    4.44246E-05   -9.45E-10
+    3      -76.053423553124    2.00743E-05   -8.00E-11
+    4      -76.053423553145    3.38838E-06   -2.07E-11
+    5      -76.053423553147    8.85200E-07   -1.69E-12
  DIIS converged in   5 iterations !
 
 
@@ -1476,61 +1439,17 @@ Represented as: C2v
      Final gradient norm:           0.000000885200
 
  
-     Host name              : pico                                    
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.5514  -0.1137   0.0375
-   2  O   1s     0.4717  -0.1898   0.0640
-   3  O   1s     0.0056   0.5395  -0.1981
-   4  O   1s    -0.0009   0.3775  -0.3102
-   5  O   1s     0.0009  -0.0127  -0.0073
-   6  O   2pz    0.0018   0.0379   0.2545
-   7  O   2pz   -0.0007   0.0636   0.3872
-   8  O   2pz    0.0002   0.0190   0.3013
-   9  O   2pz    0.0001   0.0010   0.0621
-  10  O   3d0   -0.0000   0.0025   0.0164
-  11  O   3d2+   0.0001  -0.0083  -0.0049
-  12  H   1s     0.0002   0.0958   0.0871
-  13  H   1s     0.0002   0.0824   0.1480
-  14  H   1s    -0.0002  -0.0065   0.0125
-  15  H   1s    -0.0001   0.0076   0.0000
-  16  H   2py   -0.0001  -0.0239  -0.0308
-  17  H   2pz   -0.0000  -0.0141   0.0106
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.2872
-   2  O   2px    0.4446
-   3  O   2px    0.4113
-   4  O   2px    0.0824
-   5  O   3d1+   0.0165
-   6  H   2px    0.0333
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.2292
-   2  O   2py    0.3518
-   3  O   2py    0.2078
-   4  O   2py    0.0137
-   5  O   3d1-   0.0288
-   6  H   1s     0.1504
-   7  H   1s     0.2158
-   8  H   1s     0.0261
-   9  H   1s     0.0127
-  10  H   2py   -0.0195
-  11  H   2pz   -0.0260
+     Date and time (Linux)  : Sat Jun  8 21:52:45 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:45 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
@@ -1539,24 +1458,27 @@ Represented as: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:45 2002
+     Host name              : slater.uio.no                           
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:46 2002
+     Host name              : slater.uio.no                           
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     100 %
+ TWOTEX     00:00:01      58 %
+ REST       00:00:02      84 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.33 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.82 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -1567,8 +1489,8 @@ Represented as: C2v
   -------------------------------
 
 
-               Column   1     Column   2     
-       1     5.446863D-07   1.541797D-07
+               Column   1     Column   2
+       1     5.446862E-07   1.541797E-07
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1580,9 +1502,9 @@ Represented as: C2v
                            Final geometry (au)
                            -------------------
 
- O          0.0000000000            0.0000000000           -0.7117937013
- H    1     0.0000000000            1.4225689198            0.3558968506
- H    2     0.0000000000           -1.4225689198            0.3558968506
+ O          0.0000000000            0.0000000000           -0.0879592749
+ H    1     0.0000000000            1.4225689198            0.9797312770
+ H    2     0.0000000000           -1.4225689198            0.9797312770
 
 
 
@@ -1594,7 +1516,7 @@ Represented as: C2v
  Iteration number               :       3
  End of optimization            :       T 
  Energy at this geometry is     :     -76.053424
- Energy change from last geom.  :      -0.000000
+ Energy change from last geom.  :       0.000000
  Norm of gradient               :       0.000000
  Norm of step                   :       0.000001
  Updated trust radius           :       0.500000
@@ -1605,7 +1527,8 @@ Represented as: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:46 2002
+     Host name              : slater.uio.no                           
 
 
  ***************************************************************************
@@ -1614,16 +1537,17 @@ Represented as: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:46 2002
+     Host name              : slater.uio.no                           
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- O          0.0000000000            0.0000000000           -0.7117937013
- H    1     0.0000000000            1.4225689198            0.3558968506
- H    2     0.0000000000           -1.4225689198            0.3558968506
+ O          0.0000000000            0.0000000000           -0.0879592749
+ H    1     0.0000000000            1.4225689198            0.9797312770
+ H    2     0.0000000000           -1.4225689198            0.9797312770
 
 
 
@@ -1636,7 +1560,7 @@ Represented as: C2v
 
 
      Total energy        -76.0534235531 au (Hartrees)
-                         -2069.51886719 eV
+                         -2069.51887006 eV
                            -199678.2349 kJ/mol
 
 
@@ -1678,7 +1602,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.941231    0.000000
@@ -1713,7 +1637,7 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.03 seconds
+ >>>> Total CPU  time used in ABACUS:   0.04 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -1736,13 +1660,13 @@ Represented as: C2v
  Calculation of a special processes carried out :
  - Third harmonic generation calculation
 
-  1 B-frequencies  5.920000D-02
-  1 C-frequencies  5.920000D-02
-  1 D-frequencies  5.920000D-02
+  1 B-frequencies  5.920000E-02
+  1 C-frequencies  5.920000E-02
+  1 D-frequencies  5.920000E-02
 
  Print level                                    : IPRCR  =   2
- Threshold for non-zero norm of property vectors: THRNRM = 1.000D-09
- Threshold for convergence of lin. resp. eq.s   : THCLR  = 1.000D-03
+ Threshold for non-zero norm of property vectors: THRNRM = 1.000E-09
+ Threshold for convergence of lin. resp. eq.s   : THCLR  = 1.000E-03
  Maximum number of iterations in LR solver      : MAXITL =  60
  Direct one-index transformation                : DIROIT = T
 
@@ -1796,8 +1720,8 @@ Represented as: C2v
 
 
    SCF energy         :      -76.053423553146814
- -- inactive part     :      -85.400387928796789
- -- nuclear repulsion :        9.346964375649979
+ -- inactive part     :      -85.400387928796903
+ -- nuclear repulsion :        9.346964375650094
 
 
  <<<<< Solving set of linear response equations for cubic response >>>>>
@@ -1824,11 +1748,11 @@ Represented as: C2v
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   24)
- RSP solution vector no.    1; norm of residual   1.19D-04
- RSP solution vector no.    2; norm of residual   1.83D-04
+ RSP solution vector no.    1; norm of residual   1.19E-04
+ RSP solution vector no.    2; norm of residual   1.83E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1858,11 +1782,11 @@ Represented as: C2v
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   5.31D-04
- RSP solution vector no.    2; norm of residual   2.00D-04
+ RSP solution vector no.    1; norm of residual   5.31E-04
+ RSP solution vector no.    2; norm of residual   2.00E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1892,11 +1816,11 @@ Represented as: C2v
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   1.37D-04
- RSP solution vector no.    2; norm of residual   1.68D-04
+ RSP solution vector no.    1; norm of residual   1.37E-04
+ RSP solution vector no.    2; norm of residual   1.68E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1912,7 +1836,7 @@ Represented as: C2v
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      21
 
- >>> Time used in CRVEC1 is   0.41 seconds
+ >>> Time used in CRVEC1 is   0.23 seconds
 
 
 
@@ -1926,8 +1850,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: ZDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :   5.920000D-02
- CRLRV2 -- freqr2 :   5.920000D-02
+ CRLRV2 -- freqr1 :   5.920000E-02
+ CRLRV2 -- freqr2 :   5.920000E-02
 
 
 
@@ -1938,10 +1862,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   1.87D-04
+ RSP solution vector no.    1; norm of residual   1.87E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     ZDIPLEN      freq1     freq2                Norm
@@ -1959,8 +1883,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  2
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :   5.920000D-02
- CRLRV2 -- freqr2 :   5.920000D-02
+ CRLRV2 -- freqr1 :   5.920000E-02
+ CRLRV2 -- freqr2 :   5.920000E-02
 
 
 
@@ -1971,10 +1895,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   7.53D-04
+ RSP solution vector no.    1; norm of residual   7.53E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     ZDIPLEN      freq1     freq2                Norm
@@ -1992,8 +1916,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  3
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :   5.920000D-02
- CRLRV2 -- freqr2 :   5.920000D-02
+ CRLRV2 -- freqr1 :   5.920000E-02
+ CRLRV2 -- freqr2 :   5.920000E-02
 
 
 
@@ -2004,10 +1928,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   2.11D-04
+ RSP solution vector no.    1; norm of residual   2.11E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     ZDIPLEN      freq1     freq2                Norm
@@ -2025,8 +1949,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: XDIPLEN 
- CRLRV2 -- freqr1 :   5.920000D-02
- CRLRV2 -- freqr2 :   5.920000D-02
+ CRLRV2 -- freqr1 :   5.920000E-02
+ CRLRV2 -- freqr2 :   5.920000E-02
 
 
 
@@ -2037,10 +1961,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.59D-04
+ RSP solution vector no.    1; norm of residual   2.59E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     XDIPLEN      freq1     freq2                Norm
@@ -2058,8 +1982,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: YDIPLEN 
- CRLRV2 -- freqr1 :   5.920000D-02
- CRLRV2 -- freqr2 :   5.920000D-02
+ CRLRV2 -- freqr1 :   5.920000E-02
+ CRLRV2 -- freqr2 :   5.920000E-02
 
 
 
@@ -2070,10 +1994,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.67D-04
+ RSP solution vector no.    1; norm of residual   2.67E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     YDIPLEN      freq1     freq2                Norm
@@ -2091,8 +2015,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  4
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: XDIPLEN 
- CRLRV2 -- freqr1 :   5.920000D-02
- CRLRV2 -- freqr2 :   5.920000D-02
+ CRLRV2 -- freqr1 :   5.920000E-02
+ CRLRV2 -- freqr2 :   5.920000E-02
 
 
 
@@ -2103,17 +2027,17 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   1.23D-04
+ RSP solution vector no.    1; norm of residual   1.23E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     XDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
                           0.059200  0.059200          7.49923037
 
- >>> Time used in CRVEC2 is   1.07 seconds
+ >>> Time used in CRVEC2 is   0.65 seconds
 
 
 
@@ -2322,8 +2246,8 @@ Represented as: C2v
 
 @ Averaged gamma parallel to the applied field is       618.644392
 
- >>>> Total CPU  time used in RESPONSE:   6.88 seconds
- >>>> Total wall time used in RESPONSE:   8.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   2.42 seconds
+ >>>> Total wall time used in RESPONSE:   3.00 seconds
 
 
      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -2335,9 +2259,9 @@ Represented as: C2v
                               Final geometry
                               --------------
 
- O          0.0000000000            0.0000000000           -0.7117937013
- H    1     0.0000000000            1.4225689198            0.3558968506
- H    2     0.0000000000           -1.4225689198            0.3558968506
+ O          0.0000000000            0.0000000000           -0.0879592749
+ H    1     0.0000000000            1.4225689198            0.9797312770
+ H    2     0.0000000000           -1.4225689198            0.9797312770
 
 
 
@@ -2346,18 +2270,19 @@ Represented as: C2v
    0   -76.051460   0.000000   0.061239    0    0.070022*   0.500000   0 
    1   -76.053398  -0.001938   0.007134    0    0.008624*   0.500000   0 
    2   -76.053424  -0.000026   0.000084    0    0.000081*   0.500000   0 
-   3   -76.053424  -0.000000   0.000000    0    0.000001*   0.500000   0 
+   3   -76.053424   0.000000   0.000000    0    0.000001*   0.500000   0 
 
  *) Newton step taken.
 
- Geometry converged in  4  iterations!
+ Geometry converged in  4 iterations!
 
  Energy at final geometry is       :     -76.053424 a.u.
  Energy change during optimization :      -0.001964 a.u.
                                              -5.157 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  16.58 seconds
- >>>> Total wall time used in DALTON:  20.00 seconds
+ >>>> Total CPU  time used in DALTON:  11.27 seconds
+ >>>> Total wall time used in DALTON:  12.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 21:52:49 2002
+     Host name              : slater.uio.no                           

@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,18 +66,20 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
-     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
-     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
-     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (DEC)    : Thu May  3 13:47:21 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:28:15 2002
+     Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -99,6 +104,12 @@
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - Mean field spin-orbit integrals
+
+ All one-electron property integrals are printed.
+
 
  *************************************************************************
  ****************** Output from READIN input processing ******************
@@ -109,8 +120,8 @@
   Title Cards
   -----------
 
-  lithium-hydrid                                                          
-  --------------                                                          
+  AMFI spin-orbit and phosphorescence                                     
+                                                                          
 
 Atomic type:     1
    Nuclear charge:   6.0
@@ -203,6 +214,24 @@ Point group: D2h
     Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                            C   1     12.000000
+                            C   2     12.000000
+                            H   1      1.007825
+                            H   2      1.007825
+                            H   3      1.007825
+                            H   4      1.007825
+
+                       Total mass:    28.031300 amu
+                       Natural abundance:  97.753 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -217,7 +246,7 @@ Point group: D2h
   total:      6      16     162      38
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.10D-11
+  Threshold for integrals:  1.10E-11
 
 
   Cartesian Coordinates
@@ -260,52 +289,52 @@ Point group: D2h
 
   Symmetry 1
 
-   1    C    z    [  3  -   6 ]/2
-   2    H    y    [  8  -  11  +  14  -  17 ]/4
-   3    H    z    [  9  +  12  -  15  -  18 ]/4
+   1    C    z    [  8  -  11  +  14  -  17 ]/4
+   2    H    y    [  9  +  12  -  15  -  18 ]/4
+   3    H    z    [  1  +   4 ]/2
 
 
   Symmetry 2
 
-   4    C    x    [  1  +   4 ]/2
-   5    H    x    [  7  +  10  +  13  +  16 ]/4
+   4    C    x    [  7  +  10  +  13  +  16 ]/4
+   5    H    x    [  2  +   5 ]/2
 
 
   Symmetry 3
 
-   6    C    y    [  2  +   5 ]/2
-   7    H    y    [  8  +  11  +  14  +  17 ]/4
-   8    H    z    [  9  -  12  -  15  +  18 ]/4
+   6    C    y    [  8  +  11  +  14  +  17 ]/4
+   7    H    y    [  9  -  12  -  15  +  18 ]/4
+   8    H    z    [  7  -  10  +  13  -  16 ]/4
 
 
   Symmetry 4
 
-   9    H    x    [  7  -  10  +  13  -  16 ]/4
+   9    H    x    [  3  +   6 ]/2
 
 
   Symmetry 5
 
-  10    C    z    [  3  +   6 ]/2
-  11    H    y    [  8  -  11  -  14  +  17 ]/4
-  12    H    z    [  9  +  12  +  15  +  18 ]/4
+  10    C    z    [  8  -  11  -  14  +  17 ]/4
+  11    H    y    [  9  +  12  +  15  +  18 ]/4
+  12    H    z    [  1  -   4 ]/2
 
 
   Symmetry 6
 
-  13    C    x    [  1  -   4 ]/2
-  14    H    x    [  7  +  10  -  13  -  16 ]/4
+  13    C    x    [  7  +  10  -  13  -  16 ]/4
+  14    H    x    [  2  -   5 ]/2
 
 
   Symmetry 7
 
-  15    C    y    [  2  -   5 ]/2
-  16    H    y    [  8  +  11  -  14  -  17 ]/4
-  17    H    z    [  9  -  12  +  15  -  18 ]/4
+  15    C    y    [  8  +  11  -  14  -  17 ]/4
+  16    H    y    [  9  -  12  +  15  -  18 ]/4
+  17    H    z    [  7  -  10  -  13  +  16 ]/4
 
 
   Symmetry 8
 
-  18    H    x    [  7  -  10  -  13  +  16 ]/4
+  18    H    x    [  2  -   5 ]/2
 
 
    Interatomic separations (in Angstroms):
@@ -346,6 +375,33 @@ Point group: D2h
   bond angle:        C 1        C 2        H 3                 121.861
   bond angle:        C 1        C 2        H 4                 121.861
   bond angle:        H 3        C 2        H 4                 116.277
+
+
+
+
+ Moments of inertia (u*A**2) :
+        15.398530    0.000000    0.000000
+         0.000000   11.959245    0.000000
+         0.000000    0.000000    3.439285
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    3.439285          0.000000    0.000000    1.000000
+   IB   11.959245          0.000000    1.000000    0.000000
+   IC   15.398530          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         146943.0398          42258.4384          32819.9518 MHz
+            4.901492            1.409590            1.094756 cm-1
 
 
   Nuclear repulsion energy :   33.327855514045
@@ -862,8 +918,8 @@ Point group: D2h
  -----------------------
 
 ATOMBASIS                                                                       
-lithium-hydrid                                                                  
---------------                                                                  
+AMFI spin-orbit and phosphorescence                                             
+                                                                                
     2    3  X  Y  Z 1 1.00D-12                                                  
         6.0   1 ano-1 3 2 0 0                                                   
  C             0.000000       0.000000       1.257892                           
@@ -890,7 +946,7 @@ lithium-hydrid
    146 kinetic energy integrals written in   1 buffers.
  Percentage non-zero integrals:  19.70
 
- >>> Time used in ONEDRV is   0.07 seconds
+ >>> Time used in ONEDRV is   0.09 seconds
 
 
 
@@ -1034,7 +1090,7 @@ lithium-hydrid
       51       0.17291898    -0.42946024    -0.21216120
       52       0.00000000     0.00000000     0.00000000     3.25520754
 
- >>> Time used in OVERLA is   0.04 seconds
+ >>> Time used in OVERLA is   0.05 seconds
 
 SO-integrals are calculated for  C: [He]2s^2 2p^2             
 SO-integrals are calculated for  H: no mean-field             
@@ -1193,32 +1249,32 @@ SO-integrals are calculated for  H: no mean-field
   Number of primitive integrals (counting zeros) :    87166206
 
 
-  Average time for non-zero (written) integrals:  158.1 microseconds
-  Average time for zero/non-zero integrals     :   22.6 microseconds
+  Average time for non-zero (written) integrals:  274.4 microseconds
+  Average time for zero/non-zero integrals     :   39.3 microseconds
   Average time for primitive integrals         :    0.1 microseconds
 
   Average reduction of primitive ODC vectors:    2.13 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   6.23 seconds
+ >>> Time used in TWOINT is  10.80 seconds
 
- >>>> Total CPU  time used in HERMIT:   6.46 seconds
- >>>> Total wall time used in HERMIT:   6.55 seconds
+ >>>> Total CPU  time used in HERMIT:  11.11 seconds
+ >>>> Total wall time used in HERMIT:  11.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (DEC)    : Thu May  3 13:47:28 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:28:26 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     lithium-hydrid                                                          
-     --------------                                                          
+     AMFI spin-orbit and phosphorescence                                     
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1271,7 +1327,7 @@ SO-integrals are calculated for  H: no mean-field
 
      Maximum number of macro iterations      15
      Maximum number of micro iterations     360
-     Threshold for gradient            1.00D-05
+     Threshold for gradient            1.00E-05
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
@@ -1288,15 +1344,15 @@ SO-integrals are calculated for  H: no mean-field
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -77.648073039148    3.55942D+00   -7.76D+01
-    2      -78.004373416925    5.97605D-01   -3.56D-01
-    3      -78.028690710759    2.01902D-01   -2.43D-02
-    4      -78.031828325890    2.60157D-02   -3.14D-03
-    5      -78.031955420564    3.28874D-03   -1.27D-04
-    6      -78.031957382237    5.60009D-04   -1.96D-06
-    7      -78.031957452607    7.64810D-05   -7.04D-08
-    8      -78.031957453791    8.53640D-06   -1.18D-09
-    9      -78.031957453806    9.97928D-07   -1.43D-11
+    1      -77.648073039148    3.55942E+00   -7.76E+01
+    2      -78.004373416924    5.97605E-01   -3.56E-01
+    3      -78.028690710759    2.01902E-01   -2.43E-02
+    4      -78.031828325890    2.60157E-02   -3.14E-03
+    5      -78.031955420564    3.28874E-03   -1.27E-04
+    6      -78.031957382237    5.60009E-04   -1.96E-06
+    7      -78.031957452607    7.64810E-05   -7.04E-08
+    8      -78.031957453791    8.53640E-06   -1.18E-09
+    9      -78.031957453806    9.97928E-07   -1.42E-11
  DIIS converged in   9 iterations !
 
 
@@ -1358,7 +1414,7 @@ SO-integrals are calculated for  H: no mean-field
   --------------------------
     gap     :     0.48484843
 
- ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  1.85D-06
+ ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  1.85E-06
 
  MP2 move   0.172840 electrons to unoccupied HF orbitals
 
@@ -1435,7 +1491,7 @@ SO-integrals are calculated for  H: no mean-field
  RHF     0.00000000
  Diff.   0.00241955
 
- Time used for MP2 natural orbitals :       0.330 CPU seconds.
+ Time used for MP2 natural orbitals :       0.190 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -1467,7 +1523,7 @@ SO-integrals are calculated for  H: no mean-field
 
 
  CI energies and residuals:
-    1      -78.173416507607513       7.48D-02
+    1      -78.173416507607442       7.48E-02
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -1502,7 +1558,7 @@ SO-integrals are calculated for  H: no mean-field
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :      -78.173416507607286       (MACRO    1)
+ Total MCSCF energy       :      -78.173416507607413       (MACRO    1)
 
  Norm of total gradient   :        0.169331836583
  -    of CI gradient      :        0.149676346692
@@ -1547,9 +1603,9 @@ SO-integrals are calculated for  H: no mean-field
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :      -78.178392748386486       (MACRO    2)
+ Total MCSCF energy       :      -78.178392748386429       (MACRO    2)
 
- Norm of total gradient   :        0.029044352760
+ Norm of total gradient   :        0.029044352759
  -    of CI gradient      :        0.027434965615
  -    of orbital gradient :        0.009533996482
 
@@ -1592,7 +1648,7 @@ SO-integrals are calculated for  H: no mean-field
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :      -78.178507125307220       (MACRO    3)
+ Total MCSCF energy       :      -78.178507125307306       (MACRO    3)
 
  Norm of total gradient   :        0.000683435482
  -    of CI gradient      :        0.000561847470
@@ -1637,7 +1693,7 @@ SO-integrals are calculated for  H: no mean-field
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :      -78.178507219021697       (MACRO    4)
+ Total MCSCF energy       :      -78.178507219021753       (MACRO    4)
 
  Norm of total gradient   :        0.000007593200
  -    of CI gradient      :        0.000007495833
@@ -1646,14 +1702,14 @@ SO-integrals are calculated for  H: no mean-field
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            4
      Number of micro iterations used           28
-     Total number of CPU seconds used        63.12
+     Total number of CPU seconds used        74.85
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (DEC)    : Thu May  3 13:48:32 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:29:47 2002
+     Host name              : slater.uio.no                           
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
@@ -1675,16 +1731,16 @@ SO-integrals are calculated for  H: no mean-field
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     5     4     2     11.81      0.16      9.81      9.29      1.96
-    2    11     9     3     22.62      0.16     20.64     19.44      1.88
-    3    12     9     4     23.73      0.16     21.74     20.42      1.81
-    4     0     0     0      1.96      0.16      0.00      0.00
+    1     5     4     2     13.80      0.16     11.47     10.84      2.29
+    2    11     9     3     27.11      0.16     24.77     23.46      2.25
+    3    12     9     4     27.84      0.16     25.52     23.99      2.13
+    4     0     0     0      2.30      0.15      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
     1    -78.556838734349    -32.944433287303    -78.173416507607
-    2    -78.562014877585    -32.944233384847    -78.178392748386
+    2    -78.562014877584    -32.944233384847    -78.178392748386
     3    -78.562360862602    -32.944001776749    -78.178507125307
     4    -78.562363310160    -32.943999422907    -78.178507219022
 
@@ -1692,16 +1748,16 @@ SO-integrals are calculated for  H: no mean-field
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.005231900081     -0.004976240779      0.951134521333
-    3     -0.000113654157     -0.000114376921      1.006359324402
-    4     -0.000000093693     -0.000000093714      1.000225189744
+    2     -0.005231900081     -0.004976240779      0.951134521298
+    3     -0.000113654157     -0.000114376921      1.006359325658
+    4     -0.000000093693     -0.000000093714      1.000224886397
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
     1      0.20000000  1.00000000      0.258950509634      0.700000000000
     2      0.20000000  1.00000000      0.029677499002      0.700000000000
-    3      0.20000000  1.00000000      0.001151405720      0.700000000000
+    3      0.20000000  1.00000000      0.001151405717      0.700000000000
     4      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
@@ -1727,8 +1783,8 @@ SO-integrals are calculated for  H: no mean-field
      Final gradient norm:           0.000007593200
 
  
-     Date and time (DEC)    : Thu May  3 13:48:32 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:29:47 2002
+     Host name              : slater.uio.no                           
 
 
  Occupancies of natural orbitals
@@ -1893,17 +1949,17 @@ SO-integrals are calculated for  H: no mean-field
   10- 7 to 10- 6      3163    0.10361556E-08    0.10000000E+01
   10- 8 to 10- 7       375    0.14076696E-11    0.10000000E+01
   10- 9 to 10- 8        36    0.16256455E-14    0.10000000E+01
-  10-10 to 10- 9         4    0.65233363E-18    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            1
+  10-10 to 10- 9         4    0.65233362E-18    0.10000000E+01
+  Number of coefficients less than 10^-11 times norm is  1
 
 
 
- >>>> Total CPU  time used in SIRIUS :     64.80 seconds
- >>>> Total wall time used in SIRIUS :     65.39 seconds
+ >>>> Total CPU  time used in SIRIUS :     76.37 seconds
+ >>>> Total wall time used in SIRIUS :     82.00 seconds
 
  
-     Date and time (DEC)    : Thu May  3 13:48:33 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:29:48 2002
+     Host name              : slater.uio.no                           
 
  NOTE:    1 informational messages have been issued.
  Check output, result, and error files for "INFO".
@@ -1911,7 +1967,7 @@ SO-integrals are calculated for  H: no mean-field
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -1931,12 +1987,12 @@ SO-integrals are calculated for  H: no mean-field
  Spin of operator B , ISPINB=    1
  Spin of operator C , (Excitation energy) ISPINC=    1
 
-  1 B-frequencies  0.000000D+00
+  1 B-frequencies  0.000000E+00
 
  Print level                                    : IPRSMO =    5
- Threshold for convergence in RSPPP             : THCPP  = 1.000D-03
+ Threshold for convergence in RSPPP             : THCPP  = 1.000E-03
  Maximum number of iterations in RSPPP          : MAXITP =   60
- Threshold for convergence in RSPLR             : THCLR  = 1.000D-03
+ Threshold for convergence in RSPLR             : THCLR  = 1.000E-03
  Maximum number of iterations in RSPLR          : MAXITL =   60
  Maximum iterations in optimal orbital algorithm: MAXITO =    5
 
@@ -1963,10 +2019,10 @@ SO-integrals are calculated for  H: no mean-field
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :      -78.178507219021697
+ MCSCF energy         :      -78.178507219021753
  -- inactive part     :      -78.562363310159611
- --   active part     :      -32.943999422906678
- -- nuclear repulsion :       33.327855514044586
+ --   active part     :      -32.943999422906728
+ -- nuclear repulsion :       33.327855514044593
 
 
  Linear response excitations for quadratic response
@@ -1979,9 +2035,9 @@ SO-integrals are calculated for  H: no mean-field
  Orbital variables.         KZWOPT:      66
  Configuration variables.   KZCONF:  107552
  Total number of variables. KZVAR :  107618
-  IN QRPPVE: MAXRM               200
-  IN QRPPVE: LWRK ,LWRK1    23787387    23666787
-  IN QRPPVE: THCPP        1.000000000000000E-003
+  IN QRPPVE: MAXRM       200
+  IN QRPPVE: LWRK ,LWRK1 8787387 8666787
+  IN QRPPVE: THCPP        0.001
 
 
 
@@ -1989,7 +2045,7 @@ SO-integrals are calculated for  H: no mean-field
 
  Operator symmetry =  5; triplet =   T
 
-           1  START configuration VECTORS USING
+ 1 START configuration VECTORS USING
   LOWEST EIGENVALUES OF PHP
 
  ** RSPCTL MICROITERATION NUMBER    1
@@ -1997,105 +2053,105 @@ SO-integrals are calculated for  H: no mean-field
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    4.86438D-01  4.32D-01  2.23D-01  1.00D+00    3.12166D-01
+         1    4.86438E-01  4.32E-01  2.23E-01  1.00E+00    3.12166E-01
 
  ** RSPCTL MICROITERATION NUMBER    2
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    2.62241D-01  1.31D-01  2.27D-01  1.00D+00    2.27105D-01
+         1    2.62241E-01  1.31E-01  2.27E-01  1.00E+00    2.27105E-01
 
  ** RSPCTL MICROITERATION NUMBER    3
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    1.35615D-01  1.32D-01  3.00D-02  1.02D+00    1.73728D-01
+         1    1.35615E-01  1.32E-01  3.00E-02  1.02E+00    1.73728E-01
 
  ** RSPCTL MICROITERATION NUMBER    4
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    5.49767D-02  4.59D-02  3.03D-02  1.02D+00    1.68359D-01
+         1    5.49767E-02  4.59E-02  3.03E-02  1.02E+00    1.68359E-01
 
  ** RSPCTL MICROITERATION NUMBER    5
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    4.45842D-02  3.26D-02  3.04D-02  1.02D+00    1.68054D-01
+         1    4.45842E-02  3.26E-02  3.04E-02  1.02E+00    1.68054E-01
 
  ** RSPCTL MICROITERATION NUMBER    6
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    3.24865D-02  1.32D-02  2.97D-02  1.02D+00    1.67465D-01
+         1    3.24865E-02  1.32E-02  2.97E-02  1.02E+00    1.67465E-01
 
  ** RSPCTL MICROITERATION NUMBER    7
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    1.36656D-02  1.29D-02  4.61D-03  1.01D+00    1.66516D-01
+         1    1.36656E-02  1.29E-02  4.61E-03  1.01E+00    1.66516E-01
 
  ** RSPCTL MICROITERATION NUMBER    8
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    8.99443D-03  7.57D-03  4.85D-03  1.01D+00    1.66481D-01
+         1    8.99443E-03  7.57E-03  4.85E-03  1.01E+00    1.66481E-01
 
  ** RSPCTL MICROITERATION NUMBER    9
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    6.22924D-03  3.96D-03  4.80D-03  1.01D+00    1.66466D-01
+         1    6.22924E-03  3.96E-03  4.80E-03  1.01E+00    1.66466E-01
 
  ** RSPCTL MICROITERATION NUMBER   10
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    4.15427D-03  4.06D-03  8.83D-04  1.00D+00    1.66454D-01
+         1    4.15427E-03  4.06E-03  8.83E-04  1.00E+00    1.66454E-01
 
  ** RSPCTL MICROITERATION NUMBER   11
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    2.21048D-03  2.02D-03  8.91D-04  1.00D+00    1.66451D-01
+         1    2.21048E-03  2.02E-03  8.91E-04  1.00E+00    1.66451E-01
 
  ** RSPCTL MICROITERATION NUMBER   12
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    1.79540D-03  1.54D-03  9.22D-04  1.00D+00    1.66450D-01
+         1    1.79540E-03  1.54E-03  9.22E-04  1.00E+00    1.66450E-01
 
  ** RSPCTL MICROITERATION NUMBER   13
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    1.14673D-03  6.57D-04  9.40D-04  1.00D+00    1.66450D-01
+         1    1.14673E-03  6.57E-04  9.40E-04  1.00E+00    1.66450E-01
 
  ** RSPCTL MICROITERATION NUMBER   14
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
 
       ----------------------------------------------------------------
-         1    7.53287D-04  7.28D-04  1.92D-04  1.00D+00    1.66449D-01
+         1    7.53287E-04  7.28E-04  1.92E-04  1.00E+00    1.66449E-01
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   28)
- RSP solution vector no.    1; norm of residual   7.50D-04
+ RSP solution vector no.    1; norm of residual   7.50E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -2109,7 +2165,7 @@ SO-integrals are calculated for  H: no mean-field
           49        22(5)   7(1)        0.0218239975       -0.0285565029
           57        29(6)  11(2)       -0.2288749162       -0.0054426315
 
-       62 elements with absolute value less than 2.29D-02 not printed.
+       62 elements with absolute value less than 2.29E-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -2118,7 +2174,7 @@ SO-integrals are calculated for  H: no mean-field
        17235                            0.6510669728       -0.0178445332
        68391                           -0.6510669728        0.0178445332
 
-   107550 elements with absolute value less than 6.51D-02 not printed.
+   107550 elements with absolute value less than 6.51E-02 not printed.
 
  The numbers in parenthesis give the configuration symmetry.
 
@@ -2163,7 +2219,7 @@ SO-integrals are calculated for  H: no mean-field
   10- 9 to 10- 8      1026    0.32846503E-13    0.90042818E+00
   10-10 to 10- 9       112    0.36432291E-16    0.90042818E+00
   10-11 to 10-10        10    0.31876409E-19    0.90042818E+00
-  Number of coefficients less than 10^-11 times norm is             0
+  Number of coefficients less than 10^-11 times norm is   0
 
 
  Linear response calculations for quadratic response
@@ -2190,14 +2246,14 @@ SO-integrals are calculated for  H: no mean-field
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   34)
- RSP solution vector no.    1; norm of residual   8.49D-04
+ RSP solution vector no.    1; norm of residual   8.49E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.166449D+00
+ QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.166449E+00
  SYMMETRY    2
 
 @QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.16645):     15.2387757390    
@@ -2227,14 +2283,14 @@ SO-integrals are calculated for  H: no mean-field
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   32)
- RSP solution vector no.    1; norm of residual   9.01D-04
+ RSP solution vector no.    1; norm of residual   9.01E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
- QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.166449D+00
+ QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.166449E+00
  SYMMETRY    3
 
 @QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.16645):     20.7340291891    
@@ -2264,10 +2320,10 @@ SO-integrals are calculated for  H: no mean-field
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   24)
- RSP solution vector no.    1; norm of residual   4.91D-04
+ RSP solution vector no.    1; norm of residual   4.91E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -2296,10 +2352,10 @@ SO-integrals are calculated for  H: no mean-field
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   24)
- RSP solution vector no.    1; norm of residual   6.70D-04
+ RSP solution vector no.    1; norm of residual   6.70E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -2376,7 +2432,7 @@ SO-integrals are calculated for  H: no mean-field
  Partial rates (AMFI): Y-polarization      0.19840E-02
  Partial rates (AMFI): Z-polarization       0.0000    
 
- Total transtion       rate     (AMFI) 1.94525E-02 s-1
+ Total transition      rate     (AMFI) 1.94525E-02 s-1
  Total phosphorescence lifetime (AMFI)  51.407     s
 
  Phosphorescence electric dipole transition rates
@@ -2400,11 +2456,11 @@ SO-integrals are calculated for  H: no mean-field
 
  (AMFI: Atomic Mean field spin-orbit Integrals used.)
 
- >>>> Total CPU  time used in RESPONSE:  4 minutes 15 seconds
- >>>> Total wall time used in RESPONSE:  4 minutes 18 seconds
- >>>> Total CPU  time used in DALTON:  5 minutes 26 seconds
- >>>> Total wall time used in DALTON:  5 minutes 30 seconds
+ >>>> Total CPU  time used in RESPONSE:  5 minutes 45 seconds
+ >>>> Total wall time used in RESPONSE:  5 minutes 47 seconds
+ >>>> Total CPU  time used in DALTON:  7 minutes 12 seconds
+ >>>> Total wall time used in DALTON:  7 minutes 20 seconds
 
  
-     Date and time (DEC)    : Thu May  3 13:52:51 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:35:35 2002
+     Host name              : slater.uio.no                           

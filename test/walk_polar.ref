@@ -78,7 +78,8 @@
      and O. Vahtras"
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:52 2002
+     Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -141,30 +142,45 @@ Point group: C2v
 
    * Group multiplication table
 
-        |  E   C2y  Oxy  Oyz  
+        |  E   C2y  Oxy  Oyz
    -----+--------------------
-     E  |  E   
-    C2y | C2y   E   
-    Oxy | Oxy  Oyz   E   
-    Oyz | Oyz  Oxy  C2y   E   
+     E  |  E 
+    C2y | C2y   E 
+    Oxy | Oxy  Oyz   E 
+    Oyz | Oyz  Oxy  C2y   E 
 
    * Character table
 
-        |  E   C2y  Oxy  Oyz  
+        |  E   C2y  Oxy  Oyz
    -----+--------------------
-    A1  |   1    1    1    1  
-    B2  |   1   -1    1   -1  
-    B1  |   1   -1   -1    1  
-    A2  |   1    1   -1   -1  
+    A1  |   1    1    1    1
+    B2  |   1   -1    1   -1
+    B1  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
 
    * Direct product table
 
-        | A1   B2   B1   A2   
+        | A1   B2   B1   A2 
    -----+--------------------
-    A1  | A1   
-    B2  | B2   A1   
-    B1  | B1   A2   A1   
-    A2  | A2   B1   B2   A1   
+    A1  | A1 
+    B2  | B2   A1 
+    B1  | B1   A2   A1 
+    A2  | A2   B1   B2   A1 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000   -0.099054    0.000000
 
 
   Atoms and basis sets
@@ -182,7 +198,7 @@ Point group: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -213,33 +229,33 @@ Point group: C2v
 
   Symmetry 1
 
-   1   O     y    2
-   2   H     x    [  4  -   7 ]/2
-   3   H     y    [  5  +   8 ]/2
+   1   O     y    [  4  -   7 ]/2
+   2   H     x    [  5  +   8 ]/2
+   3   H     y    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
-   6   H     y    [  5  -   8 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    [  5  -   8 ]/2
+   6   H     y    3
 
 
   Symmetry 3
 
-   7   O     z    3
-   8   H     z    [  6  +   9 ]/2
+   7   O     z    [  6  +   9 ]/2
+   8   H     z    [  6  -   9 ]/2
 
 
   Symmetry 4
 
-   9   H     z    [  6  -   9 ]/2
+   9   H     z    1
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -265,6 +281,27 @@ Point group: C2v
   bond angle:       H  1       O          H  2                 104.500
 
 
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.567417          1.000000    0.000000    0.000000
+   IB    1.190584          0.000000    1.000000    0.000000
+   IC    1.758001          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         890665.3782         424480.0013         287473.6488 MHz
+           29.709399           14.159129            9.589089 cm-1
+
+
   Nuclear repulsion energy :    9.055004525638
 
 
@@ -276,54 +313,54 @@ Point group: C2v
 
   Symmetry  A1 ( 1)
 
-    1     O        1s         1  
-    2     O        1s         2  
-    3     O        1s         3  
-    4     O        1s         4  
-    5     O        1s         5  
-    6     O        2py        7  
-    7     O        2py       10  
-    8     O        2py       13  
-    9     O        2py       16  
-   10     O        3d0       20  
-   11     O        3d2+      22  
-   12     H        1s        23  +  24  
-   13     H        1s        25  +  26  
-   14     H        1s        27  +  28  
-   15     H        1s        29  +  30  
-   16     H        2px       31  -  32  
-   17     H        2py       33  +  34  
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        1s         4
+    5     O        1s         5
+    6     O        2py        7
+    7     O        2py       10
+    8     O        2py       13
+    9     O        2py       16
+   10     O        3d0       20
+   11     O        3d2+      22
+   12     H        1s        23  +  24
+   13     H        1s        25  +  26
+   14     H        1s        27  +  28
+   15     H        1s        29  +  30
+   16     H        2px       31  -  32
+   17     H        2py       33  +  34
 
 
   Symmetry  B2 ( 2)
 
-   18     O        2px        6  
-   19     O        2px        9  
-   20     O        2px       12  
-   21     O        2px       15  
-   22     O        3d2-      18  
-   23     H        1s        23  -  24  
-   24     H        1s        25  -  26  
-   25     H        1s        27  -  28  
-   26     H        1s        29  -  30  
-   27     H        2px       31  +  32  
-   28     H        2py       33  -  34  
+   18     O        2px        6
+   19     O        2px        9
+   20     O        2px       12
+   21     O        2px       15
+   22     O        3d2-      18
+   23     H        1s        23  -  24
+   24     H        1s        25  -  26
+   25     H        1s        27  -  28
+   26     H        1s        29  -  30
+   27     H        2px       31  +  32
+   28     H        2py       33  -  34
 
 
   Symmetry  B1 ( 3)
 
-   29     O        2pz        8  
-   30     O        2pz       11  
-   31     O        2pz       14  
-   32     O        2pz       17  
-   33     O        3d1-      19  
-   34     H        2pz       35  +  36  
+   29     O        2pz        8
+   30     O        2pz       11
+   31     O        2pz       14
+   32     O        2pz       17
+   33     O        3d1-      19
+   34     H        2pz       35  +  36
 
 
   Symmetry  A2 ( 4)
 
-   35     O        3d1+      21  
-   36     H        2pz       35  -  36  
+   35     O        3d1+      21
+   36     H        2pz       35  -  36
 
   Symmetries of electric field:  B2 (2)  A1 (1)  B1 (3)
 
@@ -346,7 +383,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   0.13 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
 
@@ -357,12 +394,12 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.07 seconds
+ >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.33 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.28 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -372,7 +409,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:52 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization using WALK module plus                            
@@ -414,7 +452,7 @@ Point group: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -425,17 +463,17 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -75.692895860280   3.86D+00  -7.57D+01    3  1  1  0
-   2    -76.032442809669   5.22D-01  -3.40D-01    3  1  1  0
-   3    -76.048536785869   2.31D-01  -1.61D-02    3  1  1  0
-   4    -76.050965551171   7.68D-02  -2.43D-03    3  1  1  0
-   5    -76.051432984875   1.49D-02  -4.67D-04    3  1  1  0
-   6    -76.051457481299   3.40D-03  -2.45D-05    3  1  1  0
-   7    -76.051459480014   4.80D-04  -2.00D-06    3  1  1  0
-   8    -76.051459518235   7.75D-05  -3.82D-08    3  1  1  0
-   9    -76.051459519144   1.74D-05  -9.09D-10    3  1  1  0
-  10    -76.051459519203   2.92D-06  -5.90D-11    3  1  1  0
-  11    -76.051459519204   2.95D-07  -1.07D-12    3  1  1  0
+   1    -75.692895860280   3.86E+00  -7.57E+01    3  1  1  0
+   2    -76.032442809670   5.22E-01  -3.40E-01    3  1  1  0
+   3    -76.048536785869   2.31E-01  -1.61E-02    3  1  1  0
+   4    -76.050965551171   7.68E-02  -2.43E-03    3  1  1  0
+   5    -76.051432984875   1.49E-02  -4.67E-04    3  1  1  0
+   6    -76.051457481299   3.40E-03  -2.45E-05    3  1  1  0
+   7    -76.051459480014   4.80E-04  -2.00E-06    3  1  1  0
+   8    -76.051459518235   7.75E-05  -3.82E-08    3  1  1  0
+   9    -76.051459519144   1.74E-05  -9.09E-10    3  1  1  0
+  10    -76.051459519203   2.92E-06  -5.90E-11    3  1  1  0
+  11    -76.051459519204   2.95E-07  -1.11E-12    3  1  1  0
  DIIS converged in  11 iterations !
 
 
@@ -483,7 +521,8 @@ Point group: C2v
      Final gradient norm:           0.000000294912
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:52 2002
+     Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
 
@@ -533,18 +572,20 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.20 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.08 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:52 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:52 2002
+     Host name              : slater.uio.no                           
 
 
  ***************************************************************************
@@ -553,7 +594,8 @@ Point group: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:54 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -575,7 +617,7 @@ Point group: C2v
 
 
      Total energy        -76.0514595192 au (Hartrees)
-                         -2069.46542311 eV
+                         -2069.46542598 eV
                            -199673.0783 kJ/mol
 
 
@@ -616,7 +658,7 @@ Point group: C2v
 
            Symmetry 1
 
-           O    y      H    x      H    y      
+           O    y      H    x      H    y
 
  O    y    0.472257
  H    x   -0.363925    0.780892
@@ -625,7 +667,7 @@ Point group: C2v
 
            Symmetry 2
 
-           O    x      H    x      H    y      
+           O    x      H    x      H    y
 
  O    x    0.657735
  H    x   -0.657735    0.657735
@@ -634,7 +676,7 @@ Point group: C2v
 
            Symmetry 3
 
-           O    z      H    z      
+           O    z      H    z
 
  O    z    0.036482
  H    z   -0.036482    0.036482
@@ -642,14 +684,14 @@ Point group: C2v
 
            Symmetry 4
 
-           H    z      
+           H    z
 
  H    z    0.034090
 
 
 
 
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z      
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
 
  O    x    0.657735
  O    y    0.000000    0.472257
@@ -664,7 +706,7 @@ Point group: C2v
  H  2 z    0.000000    0.000000   -0.018241    0.000000    0.000000    0.000598
 
 
-           H  2 x      H  2 y      H  2 z      
+           H  2 x      H  2 y      H  2 z
 
  H  2 x    0.359657
  H  2 y   -0.211238    0.219699
@@ -698,7 +740,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -725,8 +767,8 @@ Point group: C2v
 
 
 
- Largest deviation from orthonormality of OMOs:0.317524E-13
- - found for element   13  13
+ Largest deviation from orthonormality of OMOs:0.304201E-13
+ - found for element   15  15
 
 
  ***************************************************************************
@@ -750,10 +792,10 @@ Point group: C2v
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       6.123927D-02    0          4.59D+00
-    2           1           2       0.000000D+00    0          1.00D+00
-    3           0           2       
-    4           0           1       
+    1           2           1       6.123927E-02    0          4.59E+00
+    2           1           2       0.000000E+00    0          1.00E+00
+    3           0           2
+    4           0           1
 
 
 
@@ -776,14 +818,14 @@ Point group: C2v
                           +----------------------+
 
 
-   sym 1            1           2       
+   sym 1            1           2
   ----------------------------------
    O    y       0.428038    0.695306
    H    x       0.851573   -0.524237
    H    y      -0.302668   -0.491656
 
 
-   sym 2            1       
+   sym 2            1
   ----------------------
    O    x       0.745406
    H    x      -0.527082
@@ -818,7 +860,7 @@ Point group: C2v
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1   -0.034085    0.000000
@@ -849,7 +891,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.937915    0.000000
@@ -880,13 +922,13 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01      99 %
+ TWOTEX     00:00:01      58 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.42 seconds
+ >>>> Total CPU  time used in ABACUS:   1.86 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
@@ -914,7 +956,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   0.13 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
 
@@ -925,12 +967,12 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.07 seconds
+ >>> Time used in FRMSUP is   0.05 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.23 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -940,14 +982,15 @@ Point group: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:55 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization using WALK module plus                            
      static and dynamic polarizabilities                                     
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -985,7 +1028,7 @@ Point group: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -994,16 +1037,16 @@ Point group: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -75.927614376336    3.70532D+00   -7.59D+01
-    2      -76.052226756108    1.71210D-01   -1.25D-01
-    3      -76.053293515117    4.44761D-02   -1.07D-03
-    4      -76.053380381547    1.83677D-02   -8.69D-05
-    5      -76.053396868952    2.15082D-03   -1.65D-05
-    6      -76.053397757330    3.65330D-04   -8.88D-07
-    7      -76.053397782275    6.92449D-05   -2.49D-08
-    8      -76.053397783108    1.12625D-05   -8.33D-10
-    9      -76.053397783129    1.87752D-06   -2.04D-11
-   10      -76.053397783129    3.42173D-07   -4.69D-13
+    1      -75.927614376336    3.70532E+00   -7.59E+01
+    2      -76.052226756108    1.71210E-01   -1.25E-01
+    3      -76.053293515117    4.44761E-02   -1.07E-03
+    4      -76.053380381547    1.83677E-02   -8.69E-05
+    5      -76.053396868952    2.15082E-03   -1.65E-05
+    6      -76.053397757331    3.65330E-04   -8.88E-07
+    7      -76.053397782275    6.92449E-05   -2.49E-08
+    8      -76.053397783108    1.12625E-05   -8.33E-10
+    9      -76.053397783129    1.87752E-06   -2.04E-11
+   10      -76.053397783129    3.42173E-07   -4.67E-13
  DIIS converged in  10 iterations !
 
 
@@ -1066,68 +1109,25 @@ Point group: C2v
      Final gradient norm:           0.000000342173
 
  
-     Host name              : pico                                    
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.5514  -0.1136   0.0376
-   2  O   1s     0.4717  -0.1897   0.0642
-   3  O   1s     0.0056   0.5390  -0.1986
-   4  O   1s    -0.0009   0.3763  -0.3119
-   5  O   1s     0.0009  -0.0124  -0.0068
-   6  O   2py    0.0018   0.0383   0.2546
-   7  O   2py   -0.0007   0.0641   0.3872
-   8  O   2py    0.0002   0.0191   0.3006
-   9  O   2py    0.0001   0.0011   0.0621
-  10  O   3d0    0.0001  -0.0085  -0.0124
-  11  O   3d2+  -0.0000   0.0019  -0.0117
-  12  H   1s     0.0002   0.0965   0.0871
-  13  H   1s     0.0002   0.0826   0.1481
-  14  H   1s    -0.0002  -0.0067   0.0118
-  15  H   1s    -0.0001   0.0076  -0.0000
-  16  H   2px   -0.0001  -0.0239  -0.0309
-  17  H   2py   -0.0000  -0.0141   0.0107
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.2295
-   2  O   2px    0.3521
-   3  O   2px    0.2073
-   4  O   2px    0.0136
-   5  O   3d2-   0.0290
-   6  H   1s     0.1508
-   7  H   1s     0.2156
-   8  H   1s     0.0257
-   9  H   1s     0.0127
-  10  H   2px   -0.0193
-  11  H   2py   -0.0260
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2pz    0.2871
-   2  O   2pz    0.4445
-   3  O   2pz    0.4111
-   4  O   2pz    0.0823
-   5  O   3d1-   0.0165
-   6  H   2pz    0.0335
+     Date and time (Linux)  : Sat Jun  8 22:35:55 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:55 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:55 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDR file opened in ORTREL.
 
@@ -1138,7 +1138,8 @@ Point group: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:57 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -1160,7 +1161,7 @@ Point group: C2v
 
 
      Total energy        -76.0533977831 au (Hartrees)
-                         -2069.51816595 eV
+                         -2069.51816882 eV
                            -199678.1672 kJ/mol
 
 
@@ -1201,7 +1202,7 @@ Point group: C2v
 
            Symmetry 1
 
-           O    y      H    x      H    y      
+           O    y      H    x      H    y
 
  O    y    0.538515
  H    x   -0.498203    0.958106
@@ -1210,7 +1211,7 @@ Point group: C2v
 
            Symmetry 2
 
-           O    x      H    x      H    y      
+           O    x      H    x      H    y
 
  O    x    0.829490
  H    x   -0.829490    0.829490
@@ -1219,7 +1220,7 @@ Point group: C2v
 
            Symmetry 3
 
-           O    z      H    z      
+           O    z      H    z
 
  O    z   -0.003995
  H    z    0.003995   -0.003995
@@ -1227,14 +1228,14 @@ Point group: C2v
 
            Symmetry 4
 
-           H    z      
+           H    z
 
  H    z   -0.004863
 
 
 
 
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z      
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
 
  O    x    0.829490
  O    y    0.000000    0.538515
@@ -1249,7 +1250,7 @@ Point group: C2v
  H  2 z    0.000000    0.000000    0.001998    0.000000    0.000000    0.000217
 
 
-           H  2 x      H  2 y      H  2 z      
+           H  2 x      H  2 y      H  2 z
 
  H  2 x    0.446899
  H  2 y   -0.281238    0.251235
@@ -1283,7 +1284,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.937915    0.000000
@@ -1310,7 +1311,7 @@ Point group: C2v
 
 
 
- Largest deviation from orthonormality of OMOs:0.521805E-13
+ Largest deviation from orthonormality of OMOs:0.504041E-13
  - found for element   12  12
 
 
@@ -1342,10 +1343,10 @@ Point group: C2v
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       7.134572D-03    0          6.08D+00
-    2           1           2       0.000000D+00    0          1.00D+00
-    3           0           2       
-    4           0           1       
+    1           2           1       7.134572E-03    0          6.08E+00
+    2           1           2       0.000000E+00    0          1.00E+00
+    3           0           2
+    4           0           1
 
 
 
@@ -1368,14 +1369,14 @@ Point group: C2v
                           +----------------------+
 
 
-   sym 1            1           2       
+   sym 1            1           2
   ----------------------------------
    O    y       0.463326    0.672306
    H    x       0.823404   -0.567456
    H    y      -0.327621   -0.475392
 
 
-   sym 2            1       
+   sym 2            1
   ----------------------
    O    x       0.748959
    H    x      -0.529594
@@ -1410,7 +1411,7 @@ Point group: C2v
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.003278    0.000000
@@ -1441,7 +1442,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.941193    0.000000
@@ -1472,13 +1473,14 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01      99 %
+ TWOTEX     00:00:01      59 %
+ REST       00:00:02      84 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.38 seconds
+ >>>> Total CPU  time used in ABACUS:   1.84 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
@@ -1506,7 +1508,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   0.13 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
 
@@ -1517,11 +1519,11 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.07 seconds
+ >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.23 seconds
+ >>>> Total CPU  time used in HERMIT:   0.25 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -1532,14 +1534,15 @@ Point group: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:57 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization using WALK module plus                            
      static and dynamic polarizabilities                                     
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1577,7 +1580,7 @@ Point group: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1586,15 +1589,15 @@ Point group: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -76.052212237343    3.68477D-01   -7.61D+01
-    2      -76.053415051263    1.52006D-02   -1.20D-03
-    3      -76.053423300827    1.58879D-03   -8.25D-06
-    4      -76.053423526428    5.72835D-04   -2.26D-07
-    5      -76.053423545492    1.83905D-04   -1.91D-08
-    6      -76.053423549633    3.71399D-05   -4.14D-09
-    7      -76.053423549866    7.97753D-06   -2.33D-10
-    8      -76.053423549877    1.75181D-06   -1.04D-11
-    9      -76.053423549877    2.11357D-07   -5.12D-13
+    1      -76.052212237343    3.68477E-01   -7.61E+01
+    2      -76.053415051263    1.52006E-02   -1.20E-03
+    3      -76.053423300827    1.58879E-03   -8.25E-06
+    4      -76.053423526428    5.72835E-04   -2.26E-07
+    5      -76.053423545492    1.83905E-04   -1.91E-08
+    6      -76.053423549633    3.71399E-05   -4.14E-09
+    7      -76.053423549866    7.97753E-06   -2.33E-10
+    8      -76.053423549877    1.75181E-06   -1.04E-11
+    9      -76.053423549877    2.11357E-07   -5.04E-13
  DIIS converged in   9 iterations !
 
 
@@ -1657,68 +1660,25 @@ Point group: C2v
      Final gradient norm:           0.000000211357
 
  
-     Host name              : pico                                    
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.5514  -0.1137   0.0375
-   2  O   1s     0.4717  -0.1898   0.0640
-   3  O   1s     0.0056   0.5395  -0.1981
-   4  O   1s    -0.0009   0.3775  -0.3102
-   5  O   1s     0.0009  -0.0127  -0.0073
-   6  O   2py    0.0018   0.0379   0.2545
-   7  O   2py   -0.0007   0.0636   0.3872
-   8  O   2py    0.0002   0.0190   0.3013
-   9  O   2py    0.0001   0.0010   0.0621
-  10  O   3d0    0.0001  -0.0084  -0.0124
-  11  O   3d2+  -0.0000   0.0019  -0.0117
-  12  H   1s     0.0002   0.0959   0.0871
-  13  H   1s     0.0002   0.0824   0.1480
-  14  H   1s    -0.0002  -0.0065   0.0125
-  15  H   1s    -0.0001   0.0076   0.0000
-  16  H   2px   -0.0001  -0.0239  -0.0308
-  17  H   2py   -0.0000  -0.0141   0.0106
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.2292
-   2  O   2px    0.3518
-   3  O   2px    0.2078
-   4  O   2px    0.0137
-   5  O   3d2-   0.0289
-   6  H   1s     0.1504
-   7  H   1s     0.2158
-   8  H   1s     0.0261
-   9  H   1s     0.0127
-  10  H   2px   -0.0195
-  11  H   2py   -0.0260
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2pz    0.2872
-   2  O   2pz    0.4446
-   3  O   2pz    0.4113
-   4  O   2pz    0.0824
-   5  O   3d1-   0.0165
-   6  H   2pz    0.0333
+     Date and time (Linux)  : Sat Jun  8 22:35:57 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.05 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:57 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:57 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDR file opened in ORTREL.
 
@@ -1729,7 +1689,8 @@ Point group: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:35:59 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -1751,7 +1712,7 @@ Point group: C2v
 
 
      Total energy        -76.0534235499 au (Hartrees)
-                         -2069.51886710 eV
+                         -2069.51886997 eV
                            -199678.2349 kJ/mol
 
 
@@ -1792,7 +1753,7 @@ Point group: C2v
 
            Symmetry 1
 
-           O    y      H    x      H    y      
+           O    y      H    x      H    y
 
  O    y    0.529833
  H    x   -0.483508    0.940027
@@ -1801,7 +1762,7 @@ Point group: C2v
 
            Symmetry 2
 
-           O    x      H    x      H    y      
+           O    x      H    x      H    y
 
  O    x    0.813706
  H    x   -0.813706    0.813706
@@ -1810,7 +1771,7 @@ Point group: C2v
 
            Symmetry 3
 
-           O    z      H    z      
+           O    z      H    z
 
  O    z   -0.000051
  H    z    0.000051   -0.000051
@@ -1818,14 +1779,14 @@ Point group: C2v
 
            Symmetry 4
 
-           H    z      
+           H    z
 
  H    z   -0.000050
 
 
 
 
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z      
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
 
  O    x    0.813706
  O    y    0.000000    0.529833
@@ -1837,10 +1798,10 @@ Point group: C2v
 
  H  2 x   -0.406853    0.241754    0.000000   -0.031580    0.031808    0.000000
  H  2 y    0.305369   -0.264916    0.000000   -0.031808    0.017878    0.000000
- H  2 z    0.000000    0.000000    0.000025    0.000000    0.000000   -0.000000
+ H  2 z    0.000000    0.000000    0.000025    0.000000    0.000000    0.000000
 
 
-           H  2 x      H  2 y      H  2 z      
+           H  2 x      H  2 y      H  2 z
 
  H  2 x    0.438433
  H  2 y   -0.273562    0.247038
@@ -1874,7 +1835,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.941193    0.000000
@@ -1901,8 +1862,8 @@ Point group: C2v
 
 
 
- Largest deviation from orthonormality of OMOs:0.455191E-13
- - found for element   13  13
+ Largest deviation from orthonormality of OMOs:0.461853E-13
+ - found for element    3   3
 
 
  ***************************************************************************
@@ -1933,10 +1894,10 @@ Point group: C2v
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       8.356161D-05    0          5.90D+00
-    2           1           2       0.000000D+00    0          1.00D+00
-    3           0           2       
-    4           0           1       
+    1           2           1       8.356161E-05    0          5.90E+00
+    2           1           2       0.000000E+00    0          1.00E+00
+    3           0           2
+    4           0           1
 
 
 
@@ -1947,8 +1908,8 @@ Point group: C2v
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    2     1       1     -0.00000427    0.18327288    0.00002330   -0.00000000 
-@    2     1       2      0.00008345<   1.08149015   -0.00007716<  -0.00000000<
+@    2     1       1     -0.00000427    0.18327288    0.00002330    0.00000000 
+@    2     1       2      0.00008345<   1.08149015   -0.00007716<   0.00000000<
 @    2     2       1      0.00000000    1.44975225<   0.00000000    0.00000000 
 
   This is Newton step.
@@ -1959,14 +1920,14 @@ Point group: C2v
                           +----------------------+
 
 
-   sym 1            1           2       
+   sym 1            1           2
   ----------------------------------
    O    y       0.461326    0.673680
    H    x       0.825086   -0.565007
    H    y      -0.326207   -0.476364
 
 
-   sym 2            1       
+   sym 2            1
   ----------------------
    O    x       0.749187
    H    x      -0.529755
@@ -2001,7 +1962,7 @@ Point group: C2v
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.000038    0.000000
@@ -2032,7 +1993,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.941231    0.000000
@@ -2063,13 +2024,13 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     100 %
+ TWOTEX     00:00:01      60 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.27 seconds
+ >>>> Total CPU  time used in ABACUS:   1.81 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
@@ -2089,7 +2050,7 @@ Point group: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.02 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  Number of two-electron integrals written:       57092 ( 25.7% )
@@ -2097,7 +2058,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   0.12 seconds
+ >>> Time used in TWOINT is   0.21 seconds
 
 
 
@@ -2108,12 +2069,12 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.07 seconds
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.23 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -2123,14 +2084,15 @@ Point group: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:36:00 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      Geometry optimization using WALK module plus                            
      static and dynamic polarizabilities                                     
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2168,7 +2130,7 @@ Point group: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2177,12 +2139,12 @@ Point group: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -76.053423380986    4.38646D-03   -7.61D+01
-    2      -76.053423551744    1.86155D-04   -1.71D-07
-    3      -76.053423553090    2.22024D-05   -1.35D-09
-    4      -76.053423553141    9.26728D-06   -5.07D-11
-    5      -76.053423553146    2.71708D-06   -5.19D-12
-    6      -76.053423553147    4.60884D-07   -1.11D-12
+    1      -76.053423380986    4.38646E-03   -7.61E+01
+    2      -76.053423551744    1.86155E-04   -1.71E-07
+    3      -76.053423553090    2.22024E-05   -1.35E-09
+    4      -76.053423553141    9.26728E-06   -5.07E-11
+    5      -76.053423553146    2.71708E-06   -5.16E-12
+    6      -76.053423553147    4.60884E-07   -1.15E-12
  DIIS converged in   6 iterations !
 
 
@@ -2226,7 +2188,7 @@ Point group: C2v
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000000033  -0.0000000033    1.000082
+ actual, predicted and ratio:  -0.0000000033  -0.0000000033    1.000099
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
@@ -2245,68 +2207,25 @@ Point group: C2v
      Final gradient norm:           0.000000460884
 
  
-     Host name              : pico                                    
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.5514  -0.1137   0.0375
-   2  O   1s     0.4717  -0.1898   0.0640
-   3  O   1s     0.0056   0.5395  -0.1981
-   4  O   1s    -0.0009   0.3775  -0.3102
-   5  O   1s     0.0009  -0.0127  -0.0073
-   6  O   2py    0.0018   0.0379   0.2545
-   7  O   2py   -0.0007   0.0636   0.3872
-   8  O   2py    0.0002   0.0190   0.3013
-   9  O   2py    0.0001   0.0010   0.0621
-  10  O   3d0    0.0001  -0.0084  -0.0124
-  11  O   3d2+  -0.0000   0.0019  -0.0117
-  12  H   1s     0.0002   0.0958   0.0871
-  13  H   1s     0.0002   0.0824   0.1480
-  14  H   1s    -0.0002  -0.0065   0.0125
-  15  H   1s    -0.0001   0.0076   0.0000
-  16  H   2px   -0.0001  -0.0239  -0.0308
-  17  H   2py   -0.0000  -0.0141   0.0106
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.2292
-   2  O   2px    0.3518
-   3  O   2px    0.2078
-   4  O   2px    0.0137
-   5  O   3d2-   0.0288
-   6  H   1s     0.1504
-   7  H   1s     0.2158
-   8  H   1s     0.0261
-   9  H   1s     0.0127
-  10  H   2px   -0.0195
-  11  H   2py   -0.0260
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2pz    0.2872
-   2  O   2pz    0.4446
-   3  O   2pz    0.4113
-   4  O   2pz    0.0824
-   5  O   3d1-   0.0165
-   6  H   2pz    0.0333
+     Date and time (Linux)  : Sat Jun  8 22:36:00 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.04 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:36:00 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:36:00 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDR file opened in ORTREL.
 
@@ -2317,7 +2236,8 @@ Point group: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:36:01 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -2339,7 +2259,7 @@ Point group: C2v
 
 
      Total energy        -76.0534235531 au (Hartrees)
-                         -2069.51886719 eV
+                         -2069.51887006 eV
                            -199678.2349 kJ/mol
 
 
@@ -2380,7 +2300,7 @@ Point group: C2v
 
            Symmetry 1
 
-           O    y      H    x      H    y      
+           O    y      H    x      H    y
 
  O    y    0.529754
  H    x   -0.483342    0.939809
@@ -2389,7 +2309,7 @@ Point group: C2v
 
            Symmetry 2
 
-           O    x      H    x      H    y      
+           O    x      H    x      H    y
 
  O    x    0.813496
  H    x   -0.813496    0.813496
@@ -2398,22 +2318,22 @@ Point group: C2v
 
            Symmetry 3
 
-           O    z      H    z      
+           O    z      H    z
 
  O    z    0.000000
- H    z   -0.000000    0.000000
+ H    z    0.000000    0.000000
 
 
            Symmetry 4
 
-           H    z      
+           H    z
 
- H    z   -0.000000
-
-
+ H    z    0.000000
 
 
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z      
+
+
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
 
  O    x    0.813496
  O    y    0.000000    0.529754
@@ -2421,18 +2341,18 @@ Point group: C2v
 
  H  1 x   -0.406748   -0.241671    0.000000    0.438326
  H  1 y   -0.305280   -0.264877    0.000000    0.273475    0.247000
- H  1 z    0.000000    0.000000   -0.000000    0.000000    0.000000   -0.000000
+ H  1 z    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
 
  H  2 x   -0.406748    0.241671    0.000000   -0.031578    0.031804    0.000000
  H  2 y    0.305280   -0.264877    0.000000   -0.031804    0.017877    0.000000
- H  2 z    0.000000    0.000000   -0.000000    0.000000    0.000000    0.000000
+ H  2 z    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
 
 
-           H  2 x      H  2 y      H  2 z      
+           H  2 x      H  2 y      H  2 z
 
  H  2 x    0.438326
  H  2 y   -0.273475    0.247000
- H  2 z    0.000000    0.000000   -0.000000
+ H  2 z    0.000000    0.000000    0.000000
 
 
 
@@ -2462,7 +2382,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.941231    0.000000
@@ -2518,10 +2438,10 @@ Point group: C2v
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       2.470066D-08    0          5.90D+00
-    2           1           2       0.000000D+00    0          1.00D+00
-    3           0           2       
-    4           0           1       
+    1           2           1       2.470066E-08    0          5.90E+00
+    2           1           2       0.000000E+00    0          1.00E+00
+    3           0           2
+    4           0           1
 
 
 
@@ -2542,14 +2462,14 @@ Point group: C2v
                           +----------------------+
 
 
-   sym 1            1           2       
+   sym 1            1           2
   ----------------------------------
    O    y       0.461291    0.673704
    H    x       0.825116   -0.564964
    H    y      -0.326182   -0.476381
 
 
-   sym 2            1       
+   sym 2            1
   ----------------------
    O    x       0.749184
    H    x      -0.529753
@@ -2577,7 +2497,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.941231    0.000000
@@ -2608,14 +2528,15 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     100 %
+ TWOTEX     00:00:01      63 %
+ REST       00:00:01      80 %
 
- TOTAL      00:00:01     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.12 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.71 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -2651,17 +2572,18 @@ Point group: C2v
  Number of frequencies     :   3
  Frequencies               :  0.000000  0.059200  0.096000
  Print level in LNRABA     :   0
- Threshold in LNRABA       :  5.00D-05
+ Threshold in LNRABA       :  5.00E-05
  Max. iterations in LNRABA :  60
       Starting Static Property Section -
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:36:01 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDR file opened in ORTREL.
 
- >>> Time used in LNRABA is   0.70 seconds
+ >>> Time used in LNRABA is   0.32 seconds
 
 
 
@@ -2671,7 +2593,8 @@ Point group: C2v
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:36:03 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -2693,7 +2616,7 @@ Point group: C2v
 
 
      Total energy        -76.0534235531 au (Hartrees)
-                         -2069.51886719 eV
+                         -2069.51887006 eV
                            -199678.2349 kJ/mol
 
 
@@ -2737,28 +2660,28 @@ Point group: C2v
 
 
     Symmetry 1
-                       Ey             
+                       Ey
 
         O    y    -0.44817914
         H    x    -0.05948978
         H    y     0.44817914
 
     Symmetry 2
-                       Ex             
+                       Ex
 
         O    x    -0.59852284
         H    x     0.59852284
         H    y    -0.15809335
 
     Symmetry 3
-                       Ez             
+                       Ez
 
         O    z    -0.80916316
         H    z     0.80916316
 
 
 
-                       Ex             Ey             Ez             
+                       Ex             Ey             Ez
 
         O    x    -0.59852284     0.00000000     0.00000000
         O    y     0.00000000    -0.44817914     0.00000000
@@ -2837,7 +2760,7 @@ Point group: C2v
           Polarizability tensor for frequency     0.000000 au
           ----------------------------------------------------
 
-                        Ex     Ey     Ez     
+                        Ex     Ey     Ez
 
                 Ex     7.4206934   0.0000000   0.0000000
                 Ey     0.0000000   5.8495193   0.0000000
@@ -2846,7 +2769,7 @@ Point group: C2v
           Polarizability tensor for frequency     0.059200 au
           ----------------------------------------------------
 
-                        Ex     Ey     Ez     
+                        Ex     Ey     Ez
 
                 Ex     7.4783717   0.0000000   0.0000000
                 Ey     0.0000000   5.9086008   0.0000000
@@ -2855,7 +2778,7 @@ Point group: C2v
           Polarizability tensor for frequency     0.096000 au
           ----------------------------------------------------
 
-                        Ex     Ey     Ez     
+                        Ex     Ey     Ez
 
                 Ex     7.5750245   0.0000000   0.0000000
                 Ey     0.0000000   6.0094993   0.0000000
@@ -2865,7 +2788,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.941231    0.000000
@@ -2930,6 +2853,9 @@ Point group: C2v
 
 
 
+ Center-of-mass coordinates (A):    0.000000   -0.067523    0.000000
+
+
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
@@ -2960,10 +2886,10 @@ Point group: C2v
                  cm-1       hartrees     km/mol   (D/A)**2/amu
   ------------------------------------------------------------
 
-   2      A1     4142.56    0.018875     25.488   0.6032          
-   3      A1     1726.25    0.007865     85.614   2.0261          
+   2      A1     4142.56    0.018875     25.488   0.6032
+   3      A1     1726.25    0.007865     85.614   2.0261
 
-   1      B2     4244.54    0.019340     88.280   2.0892          
+   1      B2     4244.54    0.019340     88.280   2.0892
 
 
 
@@ -2998,9 +2924,9 @@ Point group: C2v
 
   mode           dMA/dQi        dMB/dQi        dMC/dQi
   ----------------------------------------------------
-   1            1.445403      -0.000000       0.000000
-   2           -0.000000      -0.776654       0.000000
-   3           -0.000000       1.423411       0.000000
+   1            1.445403       0.000000       0.000000
+   2            0.000000      -0.776654       0.000000
+   3            0.000000       1.423411       0.000000
 
 
 
@@ -3026,21 +2952,21 @@ Point group: C2v
 
  Temp.(K)  Translational     Rotational    Vibrational      Total
 
-    50.00     3.4600D+04           6.07         1.0000   2.100909D+05
-   100.00     1.9573D+05          16.43         1.0000   3.216541D+06
-   200.00     1.1072D+06          45.43         1.0000   5.030555D+07
-   273.15     2.4136D+06          72.07         1.0001   1.739639D+08
-   298.15     3.0043D+06          82.07         1.0002   2.466214D+08
-   300.00     3.0511D+06          82.83         1.0003   2.527786D+08
-   400.00     6.2633D+06         127.03         1.0020   7.972146D+08
-   500.00     1.0942D+07         177.11         1.0070   1.951489D+09
-   600.00     1.7260D+07         232.46         1.0163   4.077437D+09
-   700.00     2.5375D+07         292.60         1.0300   7.647465D+09
-   800.00     3.5431D+07         357.19         1.0481   1.326386D+10
-   900.00     4.7562D+07         425.94         1.0702   2.168126D+10
-  1000.00     6.1895D+07         498.61         1.0963   3.383294D+10
-  1500.00     1.7056D+08         914.56         1.2816   1.999100D+11
-  2000.00     3.5013D+08        1406.96         1.5548   7.659217D+11
+    50.00     3.4600E+04           6.07         1.0000   2.100909E+05
+   100.00     1.9573E+05          16.43         1.0000   3.216541E+06
+   200.00     1.1072E+06          45.43         1.0000   5.030555E+07
+   273.15     2.4136E+06          72.07         1.0001   1.739639E+08
+   298.15     3.0043E+06          82.07         1.0002   2.466214E+08
+   300.00     3.0511E+06          82.83         1.0003   2.527786E+08
+   400.00     6.2633E+06         127.03         1.0020   7.972146E+08
+   500.00     1.0942E+07         177.11         1.0070   1.951489E+09
+   600.00     1.7260E+07         232.46         1.0163   4.077437E+09
+   700.00     2.5375E+07         292.60         1.0300   7.647465E+09
+   800.00     3.5431E+07         357.19         1.0481   1.326386E+10
+   900.00     4.7562E+07         425.94         1.0702   2.168126E+10
+  1000.00     6.1895E+07         498.61         1.0963   3.383294E+10
+  1500.00     1.7056E+08         914.56         1.2816   1.999100E+11
+  2000.00     3.5013E+08        1406.96         1.5548   7.659217E+11
 
 
                             +------------------+
@@ -3125,21 +3051,21 @@ Point group: C2v
 
 
 
- >>> Time used in VIBCTL is   0.01 seconds
+ >>> Time used in VIBCTL is   0.00 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02      99 %
+ REST       00:00:02     100 %
 
  TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.84 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.56 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
 
@@ -3160,10 +3086,10 @@ Point group: C2v
 
  Print level                                    : IPRLR  = -12
  Maximum number of iterations                   : MAXITL =  60
- Threshold for relative convergence             : THCLR  = 5.000D-05
+ Threshold for relative convergence             : THCLR  = 5.000E-05
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
 
-  2 B-frequencies  0.000000D+00  5.920000D-02
+  2 B-frequencies  0.000000E+00  5.920000E-02
 
     1 second order properties calculated with symmetry no.    1 and labels:
 
@@ -3181,9 +3107,9 @@ Point group: C2v
  the required MO integrals are already available.
 
 
-   SCF energy         :      -76.053423553146899
- -- inactive part     :      -85.400387918805364
- -- nuclear repulsion :        9.346964365658462
+   SCF energy         :      -76.053423553146928
+ -- inactive part     :      -85.400387918805080
+ -- nuclear repulsion :        9.346964365658149
 
 
  >>>>>>>>>> Linear response calculation
@@ -3224,10 +3150,10 @@ Point group: C2v
  ======================================================================
 
  Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    1 -0.000000
+ A operator, symmetry, frequency:   YDIPLEN    1  0.000000
  B operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
- Value of linear response:       5.849519333476
+ Value of linear response:       5.849519333477
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   YDIPLEN    1 -0.059200
@@ -3267,16 +3193,16 @@ Point group: C2v
  ======================================================================
 
  Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    2 -0.000000
+ A operator, symmetry, frequency:   XDIPLEN    2  0.000000
  B operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
- Value of linear response:       7.420693445300
+ Value of linear response:       7.420693445301
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   XDIPLEN    2 -0.059200
  B operator, symmetry, frequency:   XDIPLEN    2  0.059200
 
- Value of linear response:       7.478371663513
+ Value of linear response:       7.478371663514
 
 
  >>>>>>>>>> Linear response calculation
@@ -3310,21 +3236,22 @@ Point group: C2v
  ======================================================================
 
  Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    3 -0.000000
+ A operator, symmetry, frequency:   ZDIPLEN    3  0.000000
  B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
- Value of linear response:       5.501171626275
+ Value of linear response:       5.501171626276
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   ZDIPLEN    3 -0.059200
  B operator, symmetry, frequency:   ZDIPLEN    3  0.059200
 
- Value of linear response:       5.576153911409
+ Value of linear response:       5.576153911410
 
- >>>> Total CPU  time used in RESPONSE:   0.04 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.02 seconds
  >>>> Total wall time used in RESPONSE:   0.00 seconds
- >>>> Total CPU  time used in DALTON:   8.56 seconds
- >>>> Total wall time used in DALTON:  12.00 seconds
+ >>>> Total CPU  time used in DALTON:  10.10 seconds
+ >>>> Total wall time used in DALTON:  11.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Sat Jun  8 22:36:03 2002
+     Host name              : slater.uio.no                           

@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,18 +66,20 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
-     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
-     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
-     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (DEC)    : Sun Apr 29 14:45:34 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:28:06 2002
+     Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -103,8 +108,8 @@
   Title Cards
   -----------
 
-  Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-  egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+  ECP test                                                                
+                                                                          
 
  Pseudo potential parameters for ECP type  1.
 ------------------------------------------------
@@ -170,6 +175,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          12.000000
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    14.015650 amu
+                       Natural abundance:  98.870 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -184,7 +204,7 @@ Represented as: C2v
   total:      3       8      24      12
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -195,15 +215,15 @@ Represented as: C2v
 
    1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z     -0.6916906149
+   3            z     -0.1492124362
 
    4   H    1   x      0.0000000000
    5            y      1.3457079896
-   6            z      0.3458453074
+   6            z      0.8883234861
 
    7   H    2   x      0.0000000000
    8            y     -1.3457079896
-   9            z      0.3458453074
+   9            z      0.8883234861
 
 
 
@@ -215,27 +235,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -265,6 +285,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                 104.736
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.451693          0.000000    1.000000    0.000000
+   IB    1.022160          0.000000    0.000000    1.000000
+   IC    1.473854          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+        1118854.7237         494422.4136         342896.3569 MHz
+           37.320976           16.492157           11.437791 cm-1
 
 
   Nuclear repulsion energy :    7.433539368126
@@ -312,7 +353,7 @@ Represented as: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:         929 ( 30.2% )
@@ -331,27 +372,27 @@ Represented as: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.07 seconds
- >>>> Total wall time used in HERMIT:   1.14 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (DEC)    : Sun Apr 29 14:45:35 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:28:06 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     ECP test                                                                
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -395,7 +436,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -404,17 +445,17 @@ Represented as: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -12.542588757863    7.55789D+00   -1.25D+01
-    2      -14.107362535089    5.91535D+00   -1.56D+00
-    3      -16.846691622865    7.92162D-01   -2.74D+00
-    4      -16.878477369383    1.55006D-01   -3.18D-02
-    5      -16.880315177377    1.95586D-02   -1.84D-03
-    6      -16.880392689413    4.67770D-03   -7.75D-05
-    7      -16.880395150987    4.62091D-04   -2.46D-06
-    8      -16.880395172010    8.33957D-05   -2.10D-08
-    9      -16.880395172632    9.52807D-06   -6.21D-10
-   10      -16.880395172638    1.32950D-06   -6.52D-12
-   11      -16.880395172638    1.21265D-07   -1.35D-13
+    1      -12.542588757863    7.55789E+00   -1.25E+01
+    2      -14.107362535089    5.91535E+00   -1.56E+00
+    3      -16.846691622865    7.92162E-01   -2.74E+00
+    4      -16.878477369383    1.55006E-01   -3.18E-02
+    5      -16.880315177377    1.95586E-02   -1.84E-03
+    6      -16.880392689413    4.67770E-03   -7.75E-05
+    7      -16.880395150987    4.62091E-04   -2.46E-06
+    8      -16.880395172010    8.33957E-05   -2.10E-08
+    9      -16.880395172632    9.52807E-06   -6.21E-10
+   10      -16.880395172638    1.32950E-06   -6.52E-12
+   11      -16.880395172638    1.21265E-07   -1.31E-13
  DIIS converged in  11 iterations !
 
 
@@ -456,8 +497,8 @@ Represented as: C2v
      Final gradient norm:           0.000000121265
 
  
-     Date and time (DEC)    : Sun Apr 29 14:45:35 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:28:06 2002
+     Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
 
@@ -485,17 +526,17 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.05 seconds
- >>>> Total wall time used in SIRIUS :      0.11 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (DEC)    : Sun Apr 29 14:45:35 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:28:06 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -510,13 +551,13 @@ Represented as: C2v
 
  Second hyperpolarizability calculation :  CRCAL= T
 
-  1 B-frequencies  0.000000D+00
-  1 C-frequencies  0.000000D+00
-  1 D-frequencies  0.000000D+00
+  1 B-frequencies  0.000000E+00
+  1 C-frequencies  0.000000E+00
+  1 D-frequencies  0.000000E+00
 
  Print level                                    : IPRCR  =   2
- Threshold for non-zero norm of property vectors: THRNRM = 1.000D-09
- Threshold for convergence of lin. resp. eq.s   : THCLR  = 1.000D-06
+ Threshold for non-zero norm of property vectors: THRNRM = 1.000E-09
+ Threshold for convergence of lin. resp. eq.s   : THCLR  = 1.000E-06
  Maximum number of iterations in LR solver      : MAXITL =  60
  Direct one-index transformation                : DIROIT = T
 
@@ -569,9 +610,9 @@ Represented as: C2v
           YDIPLEN 
 
 
-   SCF energy         :      -16.880395172638316
- -- inactive part     :      -24.313934540763853
- -- nuclear repulsion :        7.433539368125535
+   SCF energy         :      -16.880395172638298
+ -- inactive part     :      -24.313934540763832
+ -- nuclear repulsion :        7.433539368125533
 
 
  <<<<< Solving set of linear response equations for cubic response >>>>>
@@ -598,10 +639,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   16)
- RSP solution vector no.    1; norm of residual   4.82D-08
+ RSP solution vector no.    1; norm of residual   4.82E-08
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -630,10 +671,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   8.15D-16
+ RSP solution vector no.    1; norm of residual   3.43E-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -662,10 +703,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.94D-07
+ RSP solution vector no.    1; norm of residual   2.94E-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -680,7 +721,7 @@ Represented as: C2v
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       4
 
- >>> Time used in CRVEC1 is   0.08 seconds
+ >>> Time used in CRVEC1 is   0.03 seconds
 
 
 
@@ -694,8 +735,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: ZDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :   0.000000D+00
- CRLRV2 -- freqr2 :   0.000000D+00
+ CRLRV2 -- freqr1 :   0.000000E+00
+ CRLRV2 -- freqr2 :   0.000000E+00
 
 
 
@@ -706,10 +747,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   9.22D-07
+ RSP solution vector no.    1; norm of residual   9.22E-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     ZDIPLEN      freq1     freq2                Norm
@@ -727,8 +768,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  2
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :   0.000000D+00
- CRLRV2 -- freqr2 :   0.000000D+00
+ CRLRV2 -- freqr1 :   0.000000E+00
+ CRLRV2 -- freqr2 :   0.000000E+00
 
 
 
@@ -739,10 +780,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   4.28D-16
+ RSP solution vector no.    1; norm of residual   5.34E-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     ZDIPLEN      freq1     freq2                Norm
@@ -760,8 +801,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  3
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: ZDIPLEN 
- CRLRV2 -- freqr1 :   0.000000D+00
- CRLRV2 -- freqr2 :   0.000000D+00
+ CRLRV2 -- freqr1 :   0.000000E+00
+ CRLRV2 -- freqr2 :   0.000000E+00
 
 
 
@@ -772,10 +813,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.32D-07
+ RSP solution vector no.    1; norm of residual   2.32E-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     ZDIPLEN      freq1     freq2                Norm
@@ -793,8 +834,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: XDIPLEN 
  CRLRV2 -- operator label2: XDIPLEN 
- CRLRV2 -- freqr1 :   0.000000D+00
- CRLRV2 -- freqr2 :   0.000000D+00
+ CRLRV2 -- freqr1 :   0.000000E+00
+ CRLRV2 -- freqr2 :   0.000000E+00
 
 
 
@@ -805,10 +846,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   16)
- RSP solution vector no.    1; norm of residual   3.48D-08
+ RSP solution vector no.    1; norm of residual   3.48E-08
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     XDIPLEN      freq1     freq2                Norm
@@ -826,8 +867,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  1
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: YDIPLEN 
- CRLRV2 -- freqr1 :   0.000000D+00
- CRLRV2 -- freqr2 :   0.000000D+00
+ CRLRV2 -- freqr1 :   0.000000E+00
+ CRLRV2 -- freqr2 :   0.000000E+00
 
 
 
@@ -838,10 +879,10 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   16)
- RSP solution vector no.    1; norm of residual   4.21D-08
+ RSP solution vector no.    1; norm of residual   4.21E-08
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     YDIPLEN      freq1     freq2                Norm
@@ -859,8 +900,8 @@ Represented as: C2v
  CRLRV2 -- linear response calc for sym:  4
  CRLRV2 -- operator label1: YDIPLEN 
  CRLRV2 -- operator label2: XDIPLEN 
- CRLRV2 -- freqr1 :   0.000000D+00
- CRLRV2 -- freqr2 :   0.000000D+00
+ CRLRV2 -- freqr1 :   0.000000E+00
+ CRLRV2 -- freqr2 :   0.000000E+00
 
 
 
@@ -871,17 +912,17 @@ Represented as: C2v
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-06
+ Convergence of RSP solution vectors, threshold = 1.00E-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   3.25D-16
+ RSP solution vector no.    1; norm of residual   3.03E-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     XDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
                           0.000000  0.000000          3.05523615
 
- >>> Time used in CRVEC2 is   0.18 seconds
+ >>> Time used in CRVEC2 is   0.06 seconds
 
 
 
@@ -1033,11 +1074,11 @@ Represented as: C2v
 
 @ Averaged gamma parallel to the applied field is       116.499989
 
- >>>> Total CPU  time used in RESPONSE:   0.40 seconds
- >>>> Total wall time used in RESPONSE:   0.79 seconds
- >>>> Total CPU  time used in DALTON:   0.52 seconds
- >>>> Total wall time used in DALTON:   2.04 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.14 seconds
+ >>>> Total wall time used in RESPONSE:   0.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.19 seconds
+ >>>> Total wall time used in DALTON:   0.00 seconds
 
  
-     Date and time (DEC)    : Sun Apr 29 14:45:36 2001
-     Host name              : angus.theochem.kth.se                   
+     Date and time (Linux)  : Sat Jun  8 22:28:06 2002
+     Host name              : slater.uio.no                           

@@ -78,8 +78,8 @@
      and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -180,6 +180,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -196,7 +211,7 @@ Represented as: C2v
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -227,27 +242,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -277,6 +292,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                 100.027
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.663096          0.000000    1.000000    0.000000
+   IB    1.158365          0.000000    0.000000    1.000000
+   IC    1.821461          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         762150.4986         436286.3616         277457.9780 MHz
+           25.422604           14.552947            9.255002 cm-1
 
 
   Nuclear repulsion energy :    8.906487554664
@@ -319,10 +355,10 @@ Represented as: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:         138 ( 34.0% )
@@ -330,7 +366,7 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.00 seconds
+ >>> Time used in TWOINT is   0.01 seconds
 
 
 
@@ -341,11 +377,11 @@ Represented as: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -356,8 +392,8 @@ Represented as: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
@@ -399,7 +435,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -410,19 +446,19 @@ Represented as: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724812043048   3.49D+00  -7.47D+01    3  1  1  0
-   2    -74.950451313668   3.59D-01  -2.26D-01    3  1  1  0
-   3    -74.964670453114   9.53D-02  -1.42D-02    3  1  1  0
-   4    -74.965853606462   1.53D-02  -1.18D-03    3  1  1  0
-   5    -74.965895954931   5.20D-03  -4.23D-05    3  1  1  0
-   6    -74.965901188587   2.01D-04  -5.23D-06    3  1  1  0
-   7    -74.965901192777   2.09D-06  -4.19D-09    3  1  1  0
-   8    -74.965901192777   1.50D-07  -3.07D-13    3  1  1  0
-   9    -74.965901192777   1.06D-08  -8.88D-15    3  1  1  0
-  10    -74.965901192777   1.32D-09   5.33D-15    3  1  1  0
-  11    -74.965901192777   9.74D-11   5.33D-15    3  1  1  0
-  12    -74.965901192777   2.33D-12   5.33D-15    3  1  1  0
-  13    -74.965901192777   6.94D-15  -2.31D-14    3  1  1  0
+   1    -74.724812043048   3.49E+00  -7.47E+01    3  1  1  0
+   2    -74.950451313668   3.59E-01  -2.26E-01    3  1  1  0
+   3    -74.964670453114   9.53E-02  -1.42E-02    3  1  1  0
+   4    -74.965853606462   1.53E-02  -1.18E-03    3  1  1  0
+   5    -74.965895954931   5.20E-03  -4.23E-05    3  1  1  0
+   6    -74.965901188587   2.01E-04  -5.23E-06    3  1  1  0
+   7    -74.965901192777   2.09E-06  -4.19E-09    3  1  1  0
+   8    -74.965901192777   1.50E-07  -3.07E-13    3  1  1  0
+   9    -74.965901192777   1.06E-08   5.33E-15    3  1  1  0
+  10    -74.965901192777   1.32E-09   5.33E-15    3  1  1  0
+  11    -74.965901192777   9.73E-11   5.33E-15    3  1  1  0
+  12    -74.965901192777   2.34E-12   5.33E-15    3  1  1  0
+  13    -74.965901192777   1.04E-14  -8.88E-15    3  1  1  0
  DIIS converged in  13 iterations !
 
 
@@ -463,8 +499,8 @@ Represented as: C2v
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
 
@@ -487,12 +523,12 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
                                    
@@ -510,10 +546,6 @@ Represented as: C2v
      Which/how is specified in *VIBANA (and **PROPERTIES).
      Group used for force constants   C2v          
      Step size used: 0.0100
-                                    
-     Other isotopes will be investigated.
-     These isotopes are: 
-            2           1           1
 
 
  Changes of defaults for *VIBANA section:
@@ -674,6 +706,21 @@ Point group: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -690,7 +737,7 @@ Point group: C2v
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -721,27 +768,27 @@ Point group: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -773,7 +820,28 @@ Point group: C2v
   bond angle:       H  1       O          H  2                 100.027
 
 
-  Nuclear repulsion energy :    8.906487554663
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.663096          0.000000    1.000000    0.000000
+   IB    1.158365          0.000000    0.000000    1.000000
+   IC    1.821461          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         762150.4986         436286.3616         277457.9780 MHz
+           25.422604           14.552947            9.255002 cm-1
+
+
+  Nuclear repulsion energy :    8.906487554664
 
 
   Symmetry Orbitals
@@ -835,11 +903,11 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.00 seconds
+ >>> Time used in FRMSUP is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -850,15 +918,15 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -893,7 +961,7 @@ Point group: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -904,19 +972,19 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724812043048   3.49D+00  -7.47D+01    3  1  1  0
-   2    -74.950451313668   3.59D-01  -2.26D-01    3  1  1  0
-   3    -74.964670453114   9.53D-02  -1.42D-02    3  1  1  0
-   4    -74.965853606462   1.53D-02  -1.18D-03    3  1  1  0
-   5    -74.965895954931   5.20D-03  -4.23D-05    3  1  1  0
-   6    -74.965901188587   2.01D-04  -5.23D-06    3  1  1  0
-   7    -74.965901192777   2.09D-06  -4.19D-09    3  1  1  0
-   8    -74.965901192777   1.50D-07  -2.79D-13    3  1  1  0
-   9    -74.965901192777   1.06D-08  -2.31D-14    3  1  1  0
-  10    -74.965901192777   1.32D-09   5.33D-15    3  1  1  0
-  11    -74.965901192777   9.73D-11   5.33D-15    3  1  1  0
-  12    -74.965901192777   2.34D-12   5.33D-15    3  1  1  0
-  13    -74.965901192777   1.06D-14   5.33D-15    3  1  1  0
+   1    -74.724812043048   3.49E+00  -7.47E+01    3  1  1  0
+   2    -74.950451313668   3.59E-01  -2.26E-01    3  1  1  0
+   3    -74.964670453114   9.53E-02  -1.42E-02    3  1  1  0
+   4    -74.965853606462   1.53E-02  -1.18E-03    3  1  1  0
+   5    -74.965895954931   5.20E-03  -4.23E-05    3  1  1  0
+   6    -74.965901188587   2.01E-04  -5.23E-06    3  1  1  0
+   7    -74.965901192777   2.09E-06  -4.19E-09    3  1  1  0
+   8    -74.965901192777   1.50E-07  -3.07E-13    3  1  1  0
+   9    -74.965901192777   1.06E-08   5.33E-15    3  1  1  0
+  10    -74.965901192777   1.32E-09   5.33E-15    3  1  1  0
+  11    -74.965901192777   9.73E-11   5.33E-15    3  1  1  0
+  12    -74.965901192777   2.34E-12   5.33E-15    3  1  1  0
+  13    -74.965901192777   1.04E-14  -8.88E-15    3  1  1  0
  DIIS converged in  13 iterations !
 
 
@@ -951,42 +1019,23 @@ Point group: C2v
      Spatial symmetry:            1
 
      Final    HF energy:          -74.965901192777
-     Nuclear repulsion:             8.906487554663
+     Nuclear repulsion:             8.906487554664
      Electronic energy:           -83.872388747441
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9942  -0.2338   0.1040
-   2  O   1s     0.0258   0.8444  -0.5382
-   3  O   2pz    0.0042   0.1228   0.7559
-   4  H   1s    -0.0056   0.1556   0.2951
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.6127
-   2  H   1s     0.4492
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -1014,14 +1063,13 @@ Point group: C2v
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -1043,8 +1091,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 
  ***************************************************************************
@@ -1053,8 +1101,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -1076,8 +1124,8 @@ Point group: C2v
 
 
      Total energy        -74.9659011928 au (Hartrees)
-                         -2039.92587928 eV
-                           -196822.9456 kJ/mol
+                         -2039.92588212 eV
+                           -196822.9453 kJ/mol
 
 
 
@@ -1085,11 +1133,11 @@ Point group: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.0293132580 au
-     Mass-velocity correction:                  -0.0410130178 au
+     Darwin correction:                          0.0293132536 au
+     Mass-velocity correction:                  -0.0410130116 au
 
-     Total relativistic correction:             -0.0116997598 au (0.0156%)
-     Non-relativistic + relativistic energy:   -74.9776009525 au
+     Total relativistic correction:             -0.0116997580 au (0.0156%)
+     Non-relativistic + relativistic energy:   -74.9776009508 au
 
 
 
@@ -1178,7 +1226,7 @@ Point group: C2v
                               Dipole moment
                               -------------
 
-                    0.672454 au           1.709224 Debye
+                    0.672454 au           1.709208 Debye
 
 
 
@@ -1188,9 +1236,9 @@ Point group: C2v
 
                                au             Debye
 
-                    z      0.67245412      1.70922371
+                    z      0.67245412      1.70920770
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1234,10 +1282,11 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.09 seconds
+ >>>> Total CPU  time used in ABACUS:   0.17 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
+ er her dalalalalalala
 
 
                Numerical gradient in symmetric coordinates
@@ -1332,6 +1381,9 @@ Point group: C2v
                        Total mass:    20.014809 amu
                        Natural abundance:   0.200 %
 
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
           Number of modes with zero frequency:   6
 
 
@@ -1460,6 +1512,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -1476,7 +1543,7 @@ Represented as: C2v
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -1507,27 +1574,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -1557,6 +1624,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                 100.035
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.668203          0.000000    1.000000    0.000000
+   IB    1.167624          0.000000    0.000000    1.000000
+   IC    1.835827          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         756326.0233         432826.7331         275286.8545 MHz
+           25.228321           14.437546            9.182581 cm-1
 
 
   Nuclear repulsion energy :    8.871614306203
@@ -1621,7 +1709,7 @@ Represented as: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.00 seconds
 
@@ -1636,15 +1724,15 @@ Represented as: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1679,7 +1767,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1690,19 +1778,19 @@ Represented as: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724992789531   3.47D+00  -7.47D+01    3  1  1  0
-   2    -74.950323047408   3.60D-01  -2.25D-01    3  1  1  0
-   3    -74.964625239018   9.56D-02  -1.43D-02    3  1  1  0
-   4    -74.965818994509   1.54D-02  -1.19D-03    3  1  1  0
-   5    -74.965862261501   5.29D-03  -4.33D-05    3  1  1  0
-   6    -74.965867710573   2.14D-04  -5.45D-06    3  1  1  0
-   7    -74.965867715451   2.21D-06  -4.88D-09    3  1  1  0
-   8    -74.965867715451   1.63D-07  -3.36D-13    3  1  1  0
-   9    -74.965867715451   1.19D-08   5.33D-15    3  1  1  0
-  10    -74.965867715451   1.48D-09  -8.88D-15    3  1  1  0
-  11    -74.965867715451   1.28D-10   1.95D-14    3  1  1  0
-  12    -74.965867715451   3.09D-12   5.33D-15    3  1  1  0
-  13    -74.965867715451   2.05D-14   5.33D-15    3  1  1  0
+   1    -74.724992789531   3.47E+00  -7.47E+01    3  1  1  0
+   2    -74.950323047408   3.60E-01  -2.25E-01    3  1  1  0
+   3    -74.964625239018   9.56E-02  -1.43E-02    3  1  1  0
+   4    -74.965818994509   1.54E-02  -1.19E-03    3  1  1  0
+   5    -74.965862261501   5.29E-03  -4.33E-05    3  1  1  0
+   6    -74.965867710573   2.14E-04  -5.45E-06    3  1  1  0
+   7    -74.965867715451   2.21E-06  -4.88E-09    3  1  1  0
+   8    -74.965867715451   1.63E-07  -3.46E-13    3  1  1  0
+   9    -74.965867715451   1.19E-08  -5.33E-15    3  1  1  0
+  10    -74.965867715451   1.48E-09  -1.95E-14    3  1  1  0
+  11    -74.965867715451   1.28E-10   2.31E-14    3  1  1  0
+  12    -74.965867715451   3.09E-12  -1.95E-14    3  1  1  0
+  13    -74.965867715451   1.64E-14   2.31E-14    3  1  1  0
  DIIS converged in  13 iterations !
 
 
@@ -1743,36 +1831,17 @@ Represented as: C2v
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9942  -0.2339   0.1038
-   2  O   1s     0.0258   0.8459  -0.5366
-   3  O   2pz    0.0041   0.1215   0.7551
-   4  H   1s    -0.0055   0.1553   0.2965
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.6126
-   2  H   1s     0.4494
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -1800,14 +1869,13 @@ Represented as: C2v
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -1819,8 +1887,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:42 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:46 2002
+     Host name              : slater.uio.no                           
 
 
  ***************************************************************************
@@ -1829,8 +1897,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -1852,8 +1920,8 @@ Represented as: C2v
 
 
      Total energy        -74.9658677155 au (Hartrees)
-                         -2039.92496832 eV
-                           -196822.8577 kJ/mol
+                         -2039.92497115 eV
+                           -196822.8574 kJ/mol
 
 
 
@@ -1861,11 +1929,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1295036958 au
-     Mass-velocity correction:                  -0.1669879404 au
+     Darwin correction:                          0.1295036764 au
+     Mass-velocity correction:                  -0.1669879152 au
 
-     Total relativistic correction:             -0.0374842445 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033519600 au
+     Total relativistic correction:             -0.0374842389 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033519543 au
 
 
 
@@ -1954,7 +2022,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.670272 au           1.703678 Debye
+                    0.670272 au           1.703663 Debye
 
 
 
@@ -1964,9 +2032,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.67027248      1.70367848
+                    z      0.67027248      1.70366251
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1975,345 +2043,6 @@ Represented as: C2v
  *******************************************************************************
  **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
  *******************************************************************************
-
-
-
-  DSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x     0.491856
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y     0.000000
- H   y     1.923774    0.575096
- H   z     3.331649   -0.480501    0.756419
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x     0.000000
- H   x    -2.138080   -0.491856
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z     0.000000
- H   y     3.340055   -0.575096
- H   z     0.717923    0.480501   -0.756419
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- H  1x    -1.069040    0.000000    0.000000    0.000000
- H  1y     0.000000    0.961887    1.670027    0.000000    0.000000
- H  1z     0.000000    1.665825    0.358962    0.000000    0.000000    0.000000
-
- H  2x    -1.069040    0.000000    0.000000   -0.245928    0.000000    0.000000
- H  2y     0.000000    0.961887   -1.670027    0.000000    0.287548   -0.240250
- H  2z     0.000000   -1.665825    0.358962    0.000000    0.240250   -0.378209
-
-
-           H  2x       H  2y       H  2z 
-
-
-
-
-
-  PSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.306170
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -55.020745
- H   y     1.072739   -0.020915
- H   z    -5.499729    0.107228   -0.549739
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -54.105762
- H   x     2.657363   -0.261611
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -74.232919
- H   y    -4.877626   -0.320494
- H   z     1.050561    0.069029   -0.014868
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -54.105762
- O   y     0.000000  -55.020745
- O   z     0.000000    0.000000  -74.232919
-
- H  1x     1.328681    0.000000    0.000000   -0.141945
- H  1y     0.000000    0.536370   -2.438813    0.000000   -0.085352
- H  1z     0.000000   -2.749865    0.525281    0.000000    0.044064   -0.141152
-
- H  2x     1.328681    0.000000    0.000000    0.011140    0.000000    0.000000
- H  2y     0.000000    0.536370    2.438813    0.000000    0.074895    0.009550
- H  2z     0.000000    2.749865    0.525281    0.000000   -0.009550    0.133718
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.141945
- H  2y     0.000000   -0.085352
- H  2z     0.000000   -0.044064   -0.141152
-
-
-
-
-
-  SD-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.074637
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.764231
- H   y    -0.574507   -0.264940
- H   z    -0.295058   -0.211220   -0.425831
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -17.239164
- H   x    -0.594036   -0.197863
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -20.340805
- H   y    -0.793948   -0.483821
- H   z    -0.332187   -0.157016   -0.178745
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -17.239164
- O   y     0.000000  -20.764231
- O   z     0.000000    0.000000  -20.340805
-
- H  1x    -0.297018    0.000000    0.000000   -0.068125
- H  1y     0.000000   -0.287253   -0.396974    0.000000   -0.187190
- H  1z     0.000000   -0.147529   -0.166093    0.000000   -0.092059   -0.151144
-
- H  2x    -0.297018    0.000000    0.000000   -0.030807    0.000000    0.000000
- H  2y     0.000000   -0.287253    0.396974    0.000000    0.054720   -0.013551
- H  2z     0.000000    0.147529   -0.166093    0.000000    0.013551    0.061771
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.068125
- H  2y     0.000000   -0.187190
- H  2z     0.000000    0.092059   -0.151144
-
-
-
-
-
-  FC-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x   -20.340417
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y  -730.926485
- H   y    -4.255077  -22.816767
- H   z     0.000000    0.000000  -20.340417
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x  -730.926485
- H   x    -4.255077  -22.816767
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z  -730.926485
- H   y     0.000000  -20.340417
- H   z    -4.255077    0.000000  -22.816767
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -730.926485
- O   y     0.000000 -730.926485
- O   z     0.000000    0.000000 -730.926485
-
- H  1x    -2.127539    0.000000    0.000000  -10.789296
- H  1y     0.000000   -2.127539    0.000000    0.000000  -10.789296
- H  1z     0.000000    0.000000   -2.127539    0.000000    0.000000  -10.789296
-
- H  2x    -2.127539    0.000000    0.000000   -0.619087    0.000000    0.000000
- H  2y     0.000000   -2.127539    0.000000    0.000000   -0.619087    0.000000
- H  2z     0.000000    0.000000   -2.127539    0.000000    0.000000   -0.619087
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -10.789296
- H  2y     0.000000  -10.789296
- H  2z     0.000000    0.000000  -10.789296
-
-
-
-
-
-  SD-FC-crosscoupling part of coupling constants
-  ----------------------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -1.940193
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.131174
- H   y     3.592517    2.795342
- H   z    10.743422    4.471944   -0.100371
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -19.712662
- H   x    -8.117881   -4.159687
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z    39.843836
- H   y    10.743422    2.040564
- H   z     4.525364    4.471944    1.364345
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -19.712662
- O   y     0.000000  -20.131174
- O   z     0.000000    0.000000   39.843836
-
- H  1x    -4.058941    0.000000    0.000000   -1.524970
- H  1y     0.000000    1.796258    5.371711    0.000000    1.208977
- H  1z     0.000000    5.371711    2.262682    0.000000    2.235972    0.315993
-
- H  2x    -4.058941    0.000000    0.000000   -0.554873    0.000000    0.000000
- H  2y     0.000000    1.796258   -5.371711    0.000000    0.188694    0.000000
- H  2z     0.000000   -5.371711    2.262682    0.000000    0.000000    0.366179
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -1.524970
- H  2y     0.000000    1.208977
- H  2z     0.000000   -2.235972    0.315993
-
-
-
-
-
-  Total spin-spin coupling matrix
-  -------------------------------
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -821.984073
- O   y     0.000000 -826.842634
- O   z     0.000000    0.000000 -785.656373
-
- H  1x    -6.223856    0.000000    0.000000  -12.524337
- H  1y     0.000000    0.879723    4.205952    0.000000   -9.852862
- H  1z     0.000000    4.140142    0.853293    0.000000    2.187977  -10.765598
-
- H  2x    -6.223856    0.000000    0.000000   -1.439556    0.000000    0.000000
- H  2y     0.000000    0.879723   -4.205952    0.000000   -0.013230   -0.244252
- H  2z     0.000000   -4.140142    0.853293    0.000000    0.244252   -0.435629
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -12.524337
- H  2y     0.000000   -9.852862
- H  2z     0.000000   -2.187977  -10.765598
-
 
  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
 
@@ -2372,7 +2101,7 @@ Represented as: C2v
   Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
   Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
 
-  Isotropic coupling        :    -27.1719 Hz
+  Isotropic coupling        :    -27.1718 Hz
   Anisotropic coupling      :    -52.4523 Hz
   Asymmetry                 :     -0.5214   
   S parameter               :     54.7776 Hz
@@ -2423,7 +2152,7 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.21 seconds
+ >>>> Total CPU  time used in ABACUS:   0.42 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
@@ -2515,6 +2244,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -2531,7 +2275,7 @@ Represented as: C2v
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -2562,27 +2306,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -2612,6 +2356,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                 100.019
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.658009          0.000000    1.000000    0.000000
+   IB    1.149143          0.000000    0.000000    1.000000
+   IC    1.807152          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         768042.5155         439787.6362         279654.8852 MHz
+           25.619141           14.669736            9.328283 cm-1
 
 
   Nuclear repulsion energy :    8.941636008363
@@ -2657,7 +2422,7 @@ Represented as: C2v
  >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:         138 ( 34.0% )
@@ -2665,7 +2430,7 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.01 seconds
+ >>> Time used in TWOINT is   0.00 seconds
 
 
 
@@ -2676,11 +2441,11 @@ Represented as: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.00 seconds
+ >>> Time used in FRMSUP is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -2691,15 +2456,15 @@ Represented as: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2734,7 +2499,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2745,19 +2510,19 @@ Represented as: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724564130094   3.50D+00  -7.47D+01    3  1  1  0
-   2    -74.950513557282   3.59D-01  -2.26D-01    3  1  1  0
-   3    -74.964648348940   9.50D-02  -1.41D-02    3  1  1  0
-   4    -74.965820761871   1.51D-02  -1.17D-03    3  1  1  0
-   5    -74.965862201648   5.11D-03  -4.14D-05    3  1  1  0
-   6    -74.965867226757   1.88D-04  -5.03D-06    3  1  1  0
-   7    -74.965867230344   1.98D-06  -3.59D-09    3  1  1  0
-   8    -74.965867230345   1.38D-07  -2.90D-13    3  1  1  0
-   9    -74.965867230345   9.43D-09   8.88D-15    3  1  1  0
-  10    -74.965867230345   1.18D-09   8.88D-15    3  1  1  0
-  11    -74.965867230345   7.20D-11  -3.38D-14    3  1  1  0
-  12    -74.965867230345   1.73D-12   2.31D-14    3  1  1  0
-  13    -74.965867230345   6.72D-15  -1.95D-14    3  1  1  0
+   1    -74.724564130094   3.50E+00  -7.47E+01    3  1  1  0
+   2    -74.950513557282   3.59E-01  -2.26E-01    3  1  1  0
+   3    -74.964648348940   9.50E-02  -1.41E-02    3  1  1  0
+   4    -74.965820761871   1.51E-02  -1.17E-03    3  1  1  0
+   5    -74.965862201648   5.11E-03  -4.14E-05    3  1  1  0
+   6    -74.965867226757   1.88E-04  -5.03E-06    3  1  1  0
+   7    -74.965867230344   1.98E-06  -3.59E-09    3  1  1  0
+   8    -74.965867230345   1.38E-07  -2.75E-13    3  1  1  0
+   9    -74.965867230345   9.43E-09  -5.33E-15    3  1  1  0
+  10    -74.965867230345   1.18E-09  -5.33E-15    3  1  1  0
+  11    -74.965867230345   7.20E-11  -1.95E-14    3  1  1  0
+  12    -74.965867230345   1.72E-12   8.88E-15    3  1  1  0
+  13    -74.965867230345   9.01E-15  -5.33E-15    3  1  1  0
  DIIS converged in  13 iterations !
 
 
@@ -2798,36 +2563,17 @@ Represented as: C2v
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9942  -0.2336   0.1043
-   2  O   1s     0.0259   0.8430  -0.5397
-   3  O   2pz    0.0042   0.1242   0.7566
-   4  H   1s    -0.0056   0.1559   0.2936
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.6128
-   2  H   1s     0.4490
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -2855,14 +2601,13 @@ Represented as: C2v
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -2874,8 +2619,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDT file opened in TRPRH1.
 
@@ -2886,8 +2631,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -2909,8 +2654,8 @@ Represented as: C2v
 
 
      Total energy        -74.9658672303 au (Hartrees)
-                         -2039.92495512 eV
-                           -196822.8564 kJ/mol
+                         -2039.92495795 eV
+                           -196822.8561 kJ/mol
 
 
 
@@ -2918,11 +2663,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1294951648 au
-     Mass-velocity correction:                  -0.1669760815 au
+     Darwin correction:                          0.1294951453 au
+     Mass-velocity correction:                  -0.1669760564 au
 
-     Total relativistic correction:             -0.0374809167 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033481471 au
+     Total relativistic correction:             -0.0374809111 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033481414 au
 
 
 
@@ -3011,7 +2756,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.674634 au           1.714763 Debye
+                    0.674634 au           1.714747 Debye
 
 
 
@@ -3021,9 +2766,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.67463362      1.71476349
+                    z      0.67463362      1.71474742
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -3032,345 +2777,6 @@ Represented as: C2v
  *******************************************************************************
  **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
  *******************************************************************************
-
-
-
-  DSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x     0.505785
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y     0.000000
- H   y     1.968173    0.591670
- H   z     3.411301   -0.493372    0.776799
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x     0.000000
- H   x    -2.187110   -0.505785
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z     0.000000
- H   y     3.418214   -0.591670
- H   z     0.737146    0.493372   -0.776799
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- H  1x    -1.093555    0.000000    0.000000    0.000000
- H  1y     0.000000    0.984087    1.709107    0.000000    0.000000
- H  1z     0.000000    1.705651    0.368573    0.000000    0.000000    0.000000
-
- H  2x    -1.093555    0.000000    0.000000   -0.252892    0.000000    0.000000
- H  2y     0.000000    0.984087   -1.709107    0.000000    0.295835   -0.246686
- H  2z     0.000000   -1.705651    0.368573    0.000000    0.246686   -0.388399
-
-
-           H  2x       H  2y       H  2z 
-
-
-
-
-
-  PSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.316685
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -53.866771
- H   y     1.096013   -0.022300
- H   z    -5.517986    0.112273   -0.565250
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -53.601719
- H   x     2.695095   -0.270642
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -73.243244
- H   y    -4.924660   -0.331120
- H   z     1.073192    0.072158   -0.015725
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -53.601719
- O   y     0.000000  -53.866771
- O   z     0.000000    0.000000  -73.243244
-
- H  1x     1.347548    0.000000    0.000000   -0.146832
- H  1y     0.000000    0.548007   -2.462330    0.000000   -0.088355
- H  1z     0.000000   -2.758993    0.536596    0.000000    0.046108   -0.145244
-
- H  2x     1.347548    0.000000    0.000000    0.011511    0.000000    0.000000
- H  2y     0.000000    0.548007    2.462330    0.000000    0.077205    0.010029
- H  2z     0.000000    2.758993    0.536596    0.000000   -0.010029    0.137381
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.146832
- H  2y     0.000000   -0.088355
- H  2z     0.000000   -0.046108   -0.145244
-
-
-
-
-
-  SD-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.077064
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.394491
- H   y    -0.559876   -0.271424
- H   z    -0.290681   -0.214221   -0.429865
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -16.877520
- H   x    -0.578815   -0.200216
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -19.898078
- H   y    -0.767018   -0.488719
- H   z    -0.312562   -0.159026   -0.184108
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -16.877520
- O   y     0.000000  -20.394491
- O   z     0.000000    0.000000  -19.898078
-
- H  1x    -0.289408    0.000000    0.000000   -0.069320
- H  1y     0.000000   -0.279938   -0.383509    0.000000   -0.190036
- H  1z     0.000000   -0.145340   -0.156281    0.000000   -0.093312   -0.153493
-
- H  2x    -0.289408    0.000000    0.000000   -0.030788    0.000000    0.000000
- H  2y     0.000000   -0.279938    0.383509    0.000000    0.054324   -0.013799
- H  2z     0.000000    0.145340   -0.156281    0.000000    0.013799    0.061439
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.069320
- H  2y     0.000000   -0.190036
- H  2z     0.000000    0.093312   -0.153493
-
-
-
-
-
-  FC-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x   -19.822896
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y  -740.243573
- H   y    -3.597099  -22.184073
- H   z     0.000000    0.000000  -19.822896
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x  -740.243573
- H   x    -3.597099  -22.184073
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z  -740.243573
- H   y     0.000000  -19.822896
- H   z    -3.597099    0.000000  -22.184073
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -740.243573
- O   y     0.000000 -740.243573
- O   z     0.000000    0.000000 -740.243573
-
- H  1x    -1.798550    0.000000    0.000000  -10.501742
- H  1y     0.000000   -1.798550    0.000000    0.000000  -10.501742
- H  1z     0.000000    0.000000   -1.798550    0.000000    0.000000  -10.501742
-
- H  2x    -1.798550    0.000000    0.000000   -0.590294    0.000000    0.000000
- H  2y     0.000000   -1.798550    0.000000    0.000000   -0.590294    0.000000
- H  2z     0.000000    0.000000   -1.798550    0.000000    0.000000   -0.590294
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -10.501742
- H  2y     0.000000  -10.501742
- H  2z     0.000000    0.000000  -10.501742
-
-
-
-
-
-  SD-FC-crosscoupling part of coupling constants
-  ----------------------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -1.933172
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.097622
- H   y     3.466887    2.765387
- H   z    10.301714    4.439371   -0.087946
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -19.393676
- H   x    -7.787949   -4.121709
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z    39.491299
- H   y    10.301714    2.021118
- H   z     4.321063    4.439371    1.356322
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -19.393676
- O   y     0.000000  -20.097622
- O   z     0.000000    0.000000   39.491299
-
- H  1x    -3.893975    0.000000    0.000000   -1.513720
- H  1y     0.000000    1.733443    5.150857    0.000000    1.196626
- H  1z     0.000000    5.150857    2.160531    0.000000    2.219685    0.317094
-
- H  2x    -3.893975    0.000000    0.000000   -0.547134    0.000000    0.000000
- H  2y     0.000000    1.733443   -5.150857    0.000000    0.186067    0.000000
- H  2z     0.000000   -5.150857    2.160531    0.000000    0.000000    0.361067
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -1.513720
- H  2y     0.000000    1.196626
- H  2z     0.000000   -2.219685    0.317094
-
-
-
-
-
-  Total spin-spin coupling matrix
-  -------------------------------
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -830.116489
- O   y     0.000000 -834.602457
- O   z     0.000000    0.000000 -793.893597
-
- H  1x    -5.727939    0.000000    0.000000  -12.231614
- H  1y     0.000000    1.187049    4.014125    0.000000   -9.583507
- H  1z     0.000000    3.952174    1.110870    0.000000    2.172482  -10.483385
-
- H  2x    -5.727939    0.000000    0.000000   -1.409598    0.000000    0.000000
- H  2y     0.000000    1.187049   -4.014125    0.000000    0.023136   -0.250456
- H  2z     0.000000   -3.952174    1.110870    0.000000    0.250456   -0.418807
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -12.231614
- H  2y     0.000000   -9.583507
- H  2z     0.000000   -2.172482  -10.483385
-
 
  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
 
@@ -3476,11 +2882,12 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
+ REST       00:00:02     353 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.20 seconds
+ >>>> Total CPU  time used in ABACUS:   0.45 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -3572,6 +2979,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -3588,7 +3010,7 @@ Represented as: C2v
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -3619,27 +3041,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -3669,6 +3091,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                  99.566
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.669851          0.000000    1.000000    0.000000
+   IB    1.151203          0.000000    0.000000    1.000000
+   IC    1.821053          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         754465.0472         439000.9270         277520.1491 MHz
+           25.166245           14.643495            9.257076 cm-1
 
 
   Nuclear repulsion energy :    8.905106197592
@@ -3711,10 +3154,10 @@ Represented as: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:         138 ( 34.0% )
@@ -3722,7 +3165,7 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.00 seconds
+ >>> Time used in TWOINT is   0.01 seconds
 
 
 
@@ -3733,11 +3176,11 @@ Represented as: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -3748,15 +3191,15 @@ Represented as: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -3791,7 +3234,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -3802,19 +3245,19 @@ Represented as: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724228221648   3.48D+00  -7.47D+01    3  1  1  0
-   2    -74.950462467987   3.60D-01  -2.26D-01    3  1  1  0
-   3    -74.964674028893   9.51D-02  -1.42D-02    3  1  1  0
-   4    -74.965844758075   1.52D-02  -1.17D-03    3  1  1  0
-   5    -74.965886460880   5.20D-03  -4.17D-05    3  1  1  0
-   6    -74.965891690277   2.06D-04  -5.23D-06    3  1  1  0
-   7    -74.965891694755   2.11D-06  -4.48D-09    3  1  1  0
-   8    -74.965891694755   1.55D-07  -3.04D-13    3  1  1  0
-   9    -74.965891694755   1.13D-08  -1.95D-14    3  1  1  0
-  10    -74.965891694755   1.36D-09   8.88D-15    3  1  1  0
-  11    -74.965891694755   1.16D-10  -5.33D-15    3  1  1  0
-  12    -74.965891694755   2.77D-12  -5.33D-15    3  1  1  0
-  13    -74.965891694755   1.18D-14  -1.95D-14    3  1  1  0
+   1    -74.724228221648   3.48E+00  -7.47E+01    3  1  1  0
+   2    -74.950462467987   3.60E-01  -2.26E-01    3  1  1  0
+   3    -74.964674028893   9.51E-02  -1.42E-02    3  1  1  0
+   4    -74.965844758075   1.52E-02  -1.17E-03    3  1  1  0
+   5    -74.965886460880   5.20E-03  -4.17E-05    3  1  1  0
+   6    -74.965891690277   2.06E-04  -5.23E-06    3  1  1  0
+   7    -74.965891694755   2.11E-06  -4.48E-09    3  1  1  0
+   8    -74.965891694755   1.55E-07  -3.16E-13    3  1  1  0
+   9    -74.965891694755   1.13E-08   1.07E-14    3  1  1  0
+  10    -74.965891694755   1.36E-09  -3.55E-15    3  1  1  0
+  11    -74.965891694755   1.16E-10  -1.78E-14    3  1  1  0
+  12    -74.965891694755   2.77E-12   1.07E-14    3  1  1  0
+  13    -74.965891694755   1.34E-14  -1.78E-14    3  1  1  0
  DIIS converged in  13 iterations !
 
 
@@ -3855,36 +3298,17 @@ Represented as: C2v
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9942  -0.2337   0.1043
-   2  O   1s     0.0258   0.8444  -0.5393
-   3  O   2pz    0.0042   0.1232   0.7544
-   4  H   1s    -0.0056   0.1555   0.2957
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.6135
-   2  H   1s     0.4495
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -3912,14 +3336,13 @@ Represented as: C2v
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -3931,8 +3354,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:47 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDT file opened in TRPRH1.
 
@@ -3943,8 +3366,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -3966,8 +3389,8 @@ Represented as: C2v
 
 
      Total energy        -74.9658916948 au (Hartrees)
-                         -2039.92562083 eV
-                           -196822.9206 kJ/mol
+                         -2039.92562366 eV
+                           -196822.9204 kJ/mol
 
 
 
@@ -3975,11 +3398,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1295037624 au
-     Mass-velocity correction:                  -0.1669886185 au
+     Darwin correction:                          0.1295037429 au
+     Mass-velocity correction:                  -0.1669885933 au
 
-     Total relativistic correction:             -0.0374848560 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033765508 au
+     Total relativistic correction:             -0.0374848504 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033765451 au
 
 
 
@@ -4068,7 +3491,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.673331 au           1.711452 Debye
+                    0.673331 au           1.711436 Debye
 
 
 
@@ -4078,9 +3501,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.67333090      1.71145228
+                    z      0.67333090      1.71143625
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -4089,345 +3512,6 @@ Represented as: C2v
  *******************************************************************************
  **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
  *******************************************************************************
-
-
-
-  DSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x     0.493066
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y     0.000000
- H   y     1.916708    0.587968
- H   z     3.373284   -0.488783    0.763682
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x     0.000000
- H   x    -2.160862   -0.493066
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z     0.000000
- H   y     3.381115   -0.587968
- H   z     0.754152    0.488783   -0.763682
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- H  1x    -1.080431    0.000000    0.000000    0.000000
- H  1y     0.000000    0.958354    1.690558    0.000000    0.000000
- H  1z     0.000000    1.686642    0.377076    0.000000    0.000000    0.000000
-
- H  2x    -1.080431    0.000000    0.000000   -0.246533    0.000000    0.000000
- H  2y     0.000000    0.958354   -1.690558    0.000000    0.293984   -0.244391
- H  2z     0.000000   -1.686642    0.377076    0.000000    0.244391   -0.381841
-
-
-           H  2x       H  2y       H  2z 
-
-
-
-
-
-  PSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.310815
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -54.730020
- H   y     1.119648   -0.022905
- H   z    -5.511766    0.112758   -0.555080
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -53.799184
- H   x     2.680359   -0.268724
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -73.677677
- H   y    -4.898955   -0.325740
- H   z     1.030567    0.068524   -0.014415
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -53.799184
- O   y     0.000000  -54.730020
- O   z     0.000000    0.000000  -73.677677
-
- H  1x     1.340180    0.000000    0.000000   -0.144885
- H  1y     0.000000    0.559824   -2.449478    0.000000   -0.087161
- H  1z     0.000000   -2.755883    0.515283    0.000000    0.045320   -0.142374
-
- H  2x     1.340180    0.000000    0.000000    0.010523    0.000000    0.000000
- H  2y     0.000000    0.559824    2.449478    0.000000    0.075709    0.011058
- H  2z     0.000000    2.755883    0.515283    0.000000   -0.011058    0.135166
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.144885
- H  2y     0.000000   -0.087161
- H  2z     0.000000   -0.045320   -0.142374
-
-
-
-
-
-  SD-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.075867
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.594679
- H   y    -0.569005   -0.264590
- H   z    -0.301872   -0.211205   -0.429906
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -17.090880
- H   x    -0.586179   -0.198959
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -20.156064
- H   y    -0.779030   -0.486748
- H   z    -0.327476   -0.160400   -0.183124
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -17.090880
- O   y     0.000000  -20.594679
- O   z     0.000000    0.000000  -20.156064
-
- H  1x    -0.293090    0.000000    0.000000   -0.068706
- H  1y     0.000000   -0.284503   -0.389515    0.000000   -0.187835
- H  1z     0.000000   -0.150936   -0.163738    0.000000   -0.092901   -0.153258
-
- H  2x    -0.293090    0.000000    0.000000   -0.030773    0.000000    0.000000
- H  2y     0.000000   -0.284503    0.389515    0.000000    0.055540   -0.012701
- H  2z     0.000000    0.150936   -0.163738    0.000000    0.012701    0.061696
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.068706
- H  2y     0.000000   -0.187835
- H  2z     0.000000    0.092901   -0.153258
-
-
-
-
-
-  FC-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x   -20.120644
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y  -733.145347
- H   y    -4.027515  -22.572682
- H   z     0.000000    0.000000  -20.120644
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x  -733.145347
- H   x    -4.027515  -22.572682
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z  -733.145347
- H   y     0.000000  -20.120644
- H   z    -4.027515    0.000000  -22.572682
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -733.145347
- O   y     0.000000 -733.145347
- O   z     0.000000    0.000000 -733.145347
-
- H  1x    -2.013757    0.000000    0.000000  -10.673331
- H  1y     0.000000   -2.013757    0.000000    0.000000  -10.673331
- H  1z     0.000000    0.000000   -2.013757    0.000000    0.000000  -10.673331
-
- H  2x    -2.013757    0.000000    0.000000   -0.613009    0.000000    0.000000
- H  2y     0.000000   -2.013757    0.000000    0.000000   -0.613009    0.000000
- H  2z     0.000000    0.000000   -2.013757    0.000000    0.000000   -0.613009
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -10.673331
- H  2y     0.000000  -10.673331
- H  2z     0.000000    0.000000  -10.673331
-
-
-
-
-
-  SD-FC-crosscoupling part of coupling constants
-  ----------------------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -1.941558
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.124205
- H   y     3.592541    2.725012
- H   z    10.559474    4.470185   -0.057538
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -19.583463
- H   x    -7.982207   -4.144058
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z    39.707668
- H   y    10.559474    1.999096
- H   z     4.389665    4.470185    1.419046
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -19.583463
- O   y     0.000000  -20.124205
- O   z     0.000000    0.000000   39.707668
-
- H  1x    -3.991103    0.000000    0.000000   -1.521404
- H  1y     0.000000    1.796271    5.279737    0.000000    1.181027
- H  1z     0.000000    5.279737    2.194833    0.000000    2.235092    0.340377
-
- H  2x    -3.991103    0.000000    0.000000   -0.550625    0.000000    0.000000
- H  2y     0.000000    1.796271   -5.279737    0.000000    0.181479    0.000000
- H  2z     0.000000   -5.279737    2.194833    0.000000    0.000000    0.369146
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -1.521404
- H  2y     0.000000    1.181027
- H  2z     0.000000   -2.235092    0.340377
-
-
-
-
-
-  Total spin-spin coupling matrix
-  -------------------------------
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -823.618873
- O   y     0.000000 -828.594251
- O   z     0.000000    0.000000 -787.271420
-
- H  1x    -6.038202    0.000000    0.000000  -12.408326
- H  1y     0.000000    1.016189    4.131302    0.000000   -9.767300
- H  1z     0.000000    4.059560    0.909697    0.000000    2.187512  -10.628586
-
- H  2x    -6.038202    0.000000    0.000000   -1.430418    0.000000    0.000000
- H  2y     0.000000    1.016189   -4.131302    0.000000   -0.006298   -0.246034
- H  2z     0.000000   -4.059560    0.909697    0.000000    0.246034   -0.428842
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -12.408326
- H  2y     0.000000   -9.767300
- H  2z     0.000000   -2.187512  -10.628586
-
 
  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
 
@@ -4533,13 +3617,12 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     567 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.21 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -4630,6 +3713,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -4646,7 +3744,7 @@ Represented as: C2v
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -4677,27 +3775,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -4727,6 +3825,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                 100.488
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.656376          0.000000    1.000000    0.000000
+   IB    1.165550          0.000000    0.000000    1.000000
+   IC    1.821926          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         769953.9842         433596.8968         277387.2410 MHz
+           25.682900           14.463236            9.252642 cm-1
 
 
   Nuclear repulsion energy :    8.907738242085
@@ -4780,7 +3899,7 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.00 seconds
+ >>> Time used in TWOINT is   0.01 seconds
 
 
 
@@ -4791,11 +3910,11 @@ Represented as: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -4806,15 +3925,15 @@ Represented as: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -4849,7 +3968,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -4860,19 +3979,19 @@ Represented as: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.725373339781   3.49D+00  -7.47D+01    3  1  1  0
-   2    -74.950420902637   3.59D-01  -2.25D-01    3  1  1  0
-   3    -74.964647697863   9.56D-02  -1.42D-02    3  1  1  0
-   4    -74.965843486852   1.54D-02  -1.20D-03    3  1  1  0
-   5    -74.965886493883   5.20D-03  -4.30D-05    3  1  1  0
-   6    -74.965891732077   1.95D-04  -5.24D-06    3  1  1  0
-   7    -74.965891735997   2.07D-06  -3.92D-09    3  1  1  0
-   8    -74.965891735997   1.46D-07  -3.13D-13    3  1  1  0
-   9    -74.965891735997   1.00D-08   0.00D+00    3  1  1  0
-  10    -74.965891735997   1.28D-09   0.00D+00    3  1  1  0
-  11    -74.965891735997   8.02D-11   1.42D-14    3  1  1  0
-  12    -74.965891735997   1.94D-12   0.00D+00    3  1  1  0
-  13    -74.965891735997   9.00D-15  -1.42D-14    3  1  1  0
+   1    -74.725373339781   3.49E+00  -7.47E+01    3  1  1  0
+   2    -74.950420902637   3.59E-01  -2.25E-01    3  1  1  0
+   3    -74.964647697863   9.56E-02  -1.42E-02    3  1  1  0
+   4    -74.965843486852   1.54E-02  -1.20E-03    3  1  1  0
+   5    -74.965886493883   5.20E-03  -4.30E-05    3  1  1  0
+   6    -74.965891732077   1.95E-04  -5.24E-06    3  1  1  0
+   7    -74.965891735997   2.07E-06  -3.92E-09    3  1  1  0
+   8    -74.965891735997   1.46E-07  -2.98E-13    3  1  1  0
+   9    -74.965891735997   1.00E-08   1.42E-14    3  1  1  0
+  10    -74.965891735997   1.28E-09  -1.42E-14    3  1  1  0
+  11    -74.965891735997   8.02E-11   0.00E+00    3  1  1  0
+  12    -74.965891735997   1.93E-12   1.42E-14    3  1  1  0
+  13    -74.965891735997   1.14E-14   0.00E+00    3  1  1  0
  DIIS converged in  13 iterations !
 
 
@@ -4913,36 +4032,17 @@ Represented as: C2v
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9942  -0.2338   0.1038
-   2  O   1s     0.0259   0.8445  -0.5370
-   3  O   2pz    0.0042   0.1225   0.7574
-   4  H   1s    -0.0056   0.1557   0.2945
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.6119
-   2  H   1s     0.4490
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -4970,14 +4070,13 @@ Represented as: C2v
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -4989,8 +4088,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDT file opened in TRPRH1.
 
@@ -5001,8 +4100,8 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -5024,8 +4123,8 @@ Represented as: C2v
 
 
      Total energy        -74.9658917360 au (Hartrees)
-                         -2039.92562195 eV
-                           -196822.9207 kJ/mol
+                         -2039.92562479 eV
+                           -196822.9205 kJ/mol
 
 
 
@@ -5033,11 +4132,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1294950933 au
-     Mass-velocity correction:                  -0.1669753806 au
+     Darwin correction:                          0.1294950738 au
+     Mass-velocity correction:                  -0.1669753555 au
 
-     Total relativistic correction:             -0.0374802873 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033720233 au
+     Total relativistic correction:             -0.0374802817 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033720177 au
 
 
 
@@ -5126,7 +4225,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.671564 au           1.706960 Debye
+                    0.671564 au           1.706945 Debye
 
 
 
@@ -5136,9 +4235,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.67156371      1.70696050
+                    z      0.67156371      1.70694451
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -5147,345 +4246,6 @@ Represented as: C2v
  *******************************************************************************
  **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
  *******************************************************************************
-
-
-
-  DSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x     0.504415
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y     0.000000
- H   y     1.974832    0.578654
- H   z     3.368652   -0.484949    0.769327
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x     0.000000
- H   x    -2.163859   -0.504415
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z     0.000000
- H   y     3.376172   -0.578654
- H   z     0.700693    0.484949   -0.769327
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- H  1x    -1.081929    0.000000    0.000000    0.000000
- H  1y     0.000000    0.987416    1.688086    0.000000    0.000000
- H  1z     0.000000    1.684326    0.350347    0.000000    0.000000    0.000000
-
- H  2x    -1.081929    0.000000    0.000000   -0.252208    0.000000    0.000000
- H  2y     0.000000    0.987416   -1.688086    0.000000    0.289327   -0.242475
- H  2z     0.000000   -1.684326    0.350347    0.000000    0.242475   -0.384663
-
-
-           H  2x       H  2y       H  2z 
-
-
-
-
-
-  PSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.311945
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -54.156399
- H   y     1.049277   -0.020330
- H   z    -5.505681    0.106672   -0.559722
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -53.907868
- H   x     2.672160   -0.263476
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -73.793814
- H   y    -4.902425   -0.325688
- H   z     1.093210    0.072626   -0.016195
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -53.907868
- O   y     0.000000  -54.156399
- O   z     0.000000    0.000000  -73.793814
-
- H  1x     1.336080    0.000000    0.000000   -0.143855
- H  1y     0.000000    0.524638   -2.451212    0.000000   -0.086504
- H  1z     0.000000   -2.752840    0.546605    0.000000    0.044825   -0.143979
-
- H  2x     1.336080    0.000000    0.000000    0.012117    0.000000    0.000000
- H  2y     0.000000    0.524638    2.451212    0.000000    0.076340    0.008511
- H  2z     0.000000    2.752840    0.546605    0.000000   -0.008511    0.135882
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.143855
- H  2y     0.000000   -0.086504
- H  2z     0.000000   -0.044825   -0.143979
-
-
-
-
-
-  SD-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -0.075797
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.561300
- H   y    -0.565232   -0.271681
- H   z    -0.283881   -0.214135   -0.425675
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -17.023653
- H   x    -0.586516   -0.199065
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z   -20.079910
- H   y    -0.781724   -0.485657
- H   z    -0.317197   -0.155610   -0.179670
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -17.023653
- O   y     0.000000  -20.561300
- O   z     0.000000    0.000000  -20.079910
-
- H  1x    -0.293258    0.000000    0.000000   -0.068715
- H  1y     0.000000   -0.282616   -0.390862    0.000000   -0.189334
- H  1z     0.000000   -0.141940   -0.158598    0.000000   -0.092436   -0.151336
-
- H  2x    -0.293258    0.000000    0.000000   -0.030817    0.000000    0.000000
- H  2y     0.000000   -0.282616    0.390862    0.000000    0.053494   -0.014631
- H  2z     0.000000    0.141940   -0.158598    0.000000    0.014631    0.061501
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -0.068715
- H  2y     0.000000   -0.189334
- H  2z     0.000000    0.092436   -0.151336
-
-
-
-
-
-  FC-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x   -20.038012
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y  -738.012369
- H   y    -3.821317  -22.421233
- H   z     0.000000    0.000000  -20.038012
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x  -738.012369
- H   x    -3.821317  -22.421233
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z  -738.012369
- H   y     0.000000  -20.038012
- H   z    -3.821317    0.000000  -22.421233
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -738.012369
- O   y     0.000000 -738.012369
- O   z     0.000000    0.000000 -738.012369
-
- H  1x    -1.910659    0.000000    0.000000  -10.614811
- H  1y     0.000000   -1.910659    0.000000    0.000000  -10.614811
- H  1z     0.000000    0.000000   -1.910659    0.000000    0.000000  -10.614811
-
- H  2x    -1.910659    0.000000    0.000000   -0.595805    0.000000    0.000000
- H  2y     0.000000   -1.910659    0.000000    0.000000   -0.595805    0.000000
- H  2z     0.000000    0.000000   -1.910659    0.000000    0.000000   -0.595805
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -10.614811
- H  2y     0.000000  -10.614811
- H  2z     0.000000    0.000000  -10.614811
-
-
-
-
-
-  SD-FC-crosscoupling part of coupling constants
-  ----------------------------------------------
-
-
-           Symmetry 1
-
-           H   x 
-
- H   x    -1.931627
-
-
-           Symmetry 2
-
-           O   y       H   y       H   z 
-
- O   y   -20.107061
- H   y     3.466102    2.834908
- H   z    10.483220    4.439834   -0.130716
-
-
-           Symmetry 3
-
-           O   x       H   x 
-
- O   x   -19.520469
- H   x    -7.920844   -4.136471
-
-
-           Symmetry 4
-
-           O   z       H   y       H   z 
-
- O   z    39.627530
- H   y    10.483220    2.062344
- H   z     4.454741    4.439834    1.301563
-
-
-
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x   -19.520469
- O   y     0.000000  -20.107061
- O   z     0.000000    0.000000   39.627530
-
- H  1x    -3.960422    0.000000    0.000000   -1.517025
- H  1y     0.000000    1.733051    5.241610    0.000000    1.224313
- H  1z     0.000000    5.241610    2.227371    0.000000    2.219917    0.292712
-
- H  2x    -3.960422    0.000000    0.000000   -0.551211    0.000000    0.000000
- H  2y     0.000000    1.733051   -5.241610    0.000000    0.193141    0.000000
- H  2z     0.000000   -5.241610    2.227371    0.000000    0.000000    0.358070
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x    -1.517025
- H  2y     0.000000    1.224313
- H  2z     0.000000   -2.219917    0.292712
-
-
-
-
-
-  Total spin-spin coupling matrix
-  -------------------------------
-
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
-
- O   x  -828.464359
- O   y     0.000000 -832.837130
- O   z     0.000000    0.000000 -792.258562
-
- H  1x    -5.910188    0.000000    0.000000  -12.344407
- H  1y     0.000000    1.051831    4.087622    0.000000   -9.666337
- H  1z     0.000000    4.031155    1.055065    0.000000    2.172306  -10.617415
-
- H  2x    -5.910188    0.000000    0.000000   -1.417923    0.000000    0.000000
- H  2y     0.000000    1.051831   -4.087622    0.000000    0.016497   -0.248594
- H  2z     0.000000   -4.031155    1.055065    0.000000    0.248594   -0.425016
-
-
-           H  2x       H  2y       H  2z 
-
- H  2x   -12.344407
- H  2y     0.000000   -9.666337
- H  2z     0.000000   -2.172306  -10.617415
-
 
  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
 
@@ -5544,7 +4304,7 @@ Represented as: C2v
   Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
   Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
 
-  Isotropic coupling        :    -26.2802 Hz
+  Isotropic coupling        :    -26.2801 Hz
   Anisotropic coupling      :    -52.3892 Hz
   Asymmetry                 :     -0.5457   
   S parameter               :     54.9276 Hz
@@ -5591,11 +4351,12 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
+ REST       00:00:02     391 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.21 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -5680,6 +4441,21 @@ Represented as: Cs
     A"  | A"   A' 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -5697,7 +4473,7 @@ Represented as: Cs
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -5728,19 +4504,19 @@ Represented as: Cs
 
   Symmetry 1
 
-   1   O     y    2
-   2   O     z    3
-   3   H     y    5
-   4   H     z    6
-   5   H     y    8
-   6   H     z    9
+   1   O     y    3
+   2   O     z    5
+   3   H     y    6
+   4   H     z    8
+   5   H     y    9
+   6   H     z    1
 
 
   Symmetry 2
 
-   7   O     x    1
-   8   H     x    4
-   9   H     x    7
+   7   O     x    4
+   8   H     x    7
+   9   H     x    1
 
 
    Interatomic separations (in Angstroms):
@@ -5770,6 +4546,24 @@ Represented as: Cs
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H          O          H                    100.027
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA   -0.003709          0.000000    0.800100    0.599867
+   IB    0.909966          1.000000    0.000000    0.000000
+   IC    0.913675          0.000000   -0.599867    0.800100
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =       555382.07 MHz     (   18.525552 cm-1)
 
 
   Nuclear repulsion energy :    8.906624129751
@@ -5808,7 +4602,7 @@ Represented as: Cs
  >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:         231 ( 56.9% )
@@ -5827,11 +4621,11 @@ Represented as: Cs
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -5842,15 +4636,15 @@ Represented as: Cs
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -5885,7 +4679,7 @@ Represented as: Cs
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -5896,18 +4690,18 @@ Represented as: Cs
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724778646554   3.49D+00  -7.47D+01    4  1
-   2    -74.950413615327   3.59D-01  -2.26D-01    4  1
-   3    -74.964631786839   9.53D-02  -1.42D-02    4  1
-   4    -74.965814858015   1.53D-02  -1.18D-03    4  1
-   5    -74.965857208957   5.20D-03  -4.24D-05    4  1
-   6    -74.965862446972   8.48D-05  -5.24D-06    4  1
-   7    -74.965862447901   3.28D-06  -9.29D-10    4  1
-   8    -74.965862447903   5.53D-07  -1.70D-12    4  1
-   9    -74.965862447903   7.70D-08  -8.88D-15    4  1
-  10    -74.965862447903   3.03D-10  -2.31D-14    4  1
-  11    -74.965862447903   3.56D-11   1.95D-14    4  1
-  12    -74.965862447903   3.95D-13   1.95D-14    4  1
+   1    -74.724778646554   3.49E+00  -7.47E+01    4  1
+   2    -74.950413615326   3.59E-01  -2.26E-01    4  1
+   3    -74.964631786839   9.53E-02  -1.42E-02    4  1
+   4    -74.965814858015   1.53E-02  -1.18E-03    4  1
+   5    -74.965857208957   5.20E-03  -4.24E-05    4  1
+   6    -74.965862446972   8.48E-05  -5.24E-06    4  1
+   7    -74.965862447901   3.28E-06  -9.29E-10    4  1
+   8    -74.965862447903   5.53E-07  -1.70E-12    4  1
+   9    -74.965862447903   7.70E-08  -1.07E-14    4  1
+  10    -74.965862447903   3.03E-10  -1.07E-14    4  1
+  11    -74.965862447903   3.56E-11   3.55E-15    4  1
+  12    -74.965862447903   3.98E-13   1.78E-14    4  1
  DIIS converged in  12 iterations !
 
 
@@ -5945,32 +4739,17 @@ Represented as: Cs
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4
-   1  O   1s     0.9942  -0.2338  -0.0014   0.1040
-   2  O   1s     0.0258   0.8444   0.0077  -0.5381
-   3  O   2py   -0.0001  -0.0020   0.6127   0.0037
-   4  O   2pz    0.0042   0.1228  -0.0050   0.7559
-   5  H   1s    -0.0055   0.1541   0.4486   0.2984
-   6  H   1s    -0.0056   0.1571  -0.4498   0.2918
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -5998,14 +4777,13 @@ Represented as: Cs
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -6017,12 +4795,12 @@ Represented as: Cs
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:43 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:48 2002
+     Host name              : slater.uio.no                           
 
  (ORTBVC) new orbital b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 2.36928D-15
+ norm of vector after Gram-Schmidt's orthogonalization 3.98518E-15
 
  (ORTBVC) NBOSIM reduced from  3 to  2
 
@@ -6035,8 +4813,8 @@ Represented as: Cs
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:49 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -6058,8 +4836,8 @@ Represented as: Cs
 
 
      Total energy        -74.9658624479 au (Hartrees)
-                         -2039.92482498 eV
-                           -196822.8438 kJ/mol
+                         -2039.92482782 eV
+                           -196822.8436 kJ/mol
 
 
 
@@ -6067,11 +4845,11 @@ Represented as: Cs
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1294994205 au
-     Mass-velocity correction:                  -0.1669819964 au
+     Darwin correction:                          0.1294994010 au
+     Mass-velocity correction:                  -0.1669819713 au
 
-     Total relativistic correction:             -0.0374825759 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033450238 au
+     Total relativistic correction:             -0.0374825703 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033450182 au
 
 
 
@@ -6151,7 +4929,7 @@ Represented as: Cs
                               Dipole moment
                               -------------
 
-                    0.672464 au           1.709250 Debye
+                    0.672464 au           1.709234 Debye
 
 
 
@@ -6161,10 +4939,10 @@ Represented as: Cs
 
                                au             Debye
 
-                    y     -0.00182310     -0.00463389
-                    z      0.67246201      1.70924377
+                    y     -0.00182310     -0.00463385
+                    z      0.67246201      1.70922776
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -6173,285 +4951,6 @@ Represented as: Cs
  *******************************************************************************
  **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
  *******************************************************************************
-
-
-
-  DSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x     0.000000
- H   x    -1.068519    0.000000
- H   x    -1.094088   -0.249381    0.000000
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y     0.000000
- O   z     0.000000    0.000000
- H   y     0.962178    1.669688    0.000000
- H   z     1.665955    0.358815    0.000000    0.000000
- H   y     0.983786   -1.709457    0.291657   -0.243032    0.000000
- H   z    -1.705523    0.368730    0.243861   -0.383266    0.000000    0.000000
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- H   x    -1.068519    0.000000    0.000000    0.000000
- H   y     0.000000    0.962178    1.669688    0.000000    0.000000
- H   z     0.000000    1.665955    0.358815    0.000000    0.000000    0.000000
-
- H   x    -1.094088    0.000000    0.000000   -0.249381    0.000000    0.000000
- H   y     0.000000    0.983786   -1.709457    0.000000    0.291657   -0.243032
- H   z     0.000000   -1.705523    0.368730    0.000000    0.243861   -0.383266
-
-
-           H   x       H   y       H   z 
-
-
-
-
-
-  PSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x   -53.853596
- H   x     1.331488   -0.142382
- H   x     1.344619    0.011326   -0.146383
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y   -54.441864
- O   z     0.483645  -73.738819
- H   y     0.553770   -2.420087   -0.084741
- H   z    -2.722691    0.548952    0.044883   -0.139899
- H   y     0.530222    2.481555    0.076044    0.008822   -0.088999
- H   z     2.786639    0.512372   -0.010751    0.135540   -0.045251   -0.146549
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x   -53.853596
- O   y     0.000000  -54.441864
- O   z     0.000000    0.483645  -73.738819
-
- H   x     1.331488    0.000000    0.000000   -0.142382
- H   y     0.000000    0.553770   -2.420087    0.000000   -0.084741
- H   z     0.000000   -2.722691    0.548952    0.000000    0.044883   -0.139899
-
- H   x     1.344619    0.000000    0.000000    0.011326    0.000000    0.000000
- H   y     0.000000    0.530222    2.481555    0.000000    0.076044    0.008822
- H   z     0.000000    2.786639    0.512372    0.000000   -0.010751    0.135540
-
-
-           H   x       H   y       H   z 
-
- H   x    -0.146383
- H   y     0.000000   -0.088999
- H   z     0.000000   -0.045251   -0.146549
-
-
-
-
-
-  SD-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x   -17.058022
- H   x    -0.291299   -0.067798
- H   x    -0.295237   -0.030803   -0.069658
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y   -20.579654
- O   z    -0.126524  -20.119045
- H   y    -0.294048   -0.396327   -0.186393
- H   z    -0.149818   -0.171938   -0.091688   -0.150410
- H   y    -0.273104    0.384019    0.054525   -0.013825   -0.190850
- H   z     0.143030   -0.150374    0.013522    0.061610    0.093690   -0.154243
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x   -17.058022
- O   y     0.000000  -20.579654
- O   z     0.000000   -0.126524  -20.119045
-
- H   x    -0.291299    0.000000    0.000000   -0.067798
- H   y     0.000000   -0.294048   -0.396327    0.000000   -0.186393
- H   z     0.000000   -0.149818   -0.171938    0.000000   -0.091688   -0.150410
-
- H   x    -0.295237    0.000000    0.000000   -0.030803    0.000000    0.000000
- H   y     0.000000   -0.273104    0.384019    0.000000    0.054525   -0.013825
- H   z     0.000000    0.143030   -0.150374    0.000000    0.013522    0.061610
-
-
-           H   x       H   y       H   z 
-
- H   x    -0.069658
- H   y     0.000000   -0.190850
- H   z     0.000000    0.093690   -0.154243
-
-
-
-
-
-  FC-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x  -735.595037
- H   x    -2.032438  -10.782900
- H   x    -1.891139   -0.604429  -10.507675
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y  -735.595037
- O   z     0.000000 -735.595037
- H   y    -2.032438    0.000000  -10.782900
- H   z     0.000000   -2.032438    0.000000  -10.782900
- H   y    -1.891139    0.000000   -0.604429    0.000000  -10.507675
- H   z     0.000000   -1.891139    0.000000   -0.604429    0.000000  -10.507675
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x  -735.595037
- O   y     0.000000 -735.595037
- O   z     0.000000    0.000000 -735.595037
-
- H   x    -2.032438    0.000000    0.000000  -10.782900
- H   y     0.000000   -2.032438    0.000000    0.000000  -10.782900
- H   z     0.000000    0.000000   -2.032438    0.000000    0.000000  -10.782900
-
- H   x    -1.891139    0.000000    0.000000   -0.604429    0.000000    0.000000
- H   y     0.000000   -1.891139    0.000000    0.000000   -0.604429    0.000000
- H   z     0.000000    0.000000   -1.891139    0.000000    0.000000   -0.604429
-
-
-           H   x       H   y       H   z 
-
- H   x   -10.507675
- H   y     0.000000  -10.507675
- H   z     0.000000    0.000000  -10.507675
-
-
-
-
-
-  SD-FC-crosscoupling part of coupling constants
-  ----------------------------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x   -19.551558
- H   x    -4.036194   -1.523142
- H   x    -3.916299   -0.551156   -1.515499
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y   -20.115485
- O   z     0.106501   39.667042
- H   y     1.802821    5.358933    1.206497
- H   z     5.358933    2.233373    2.233660    0.316645
- H   y     1.727044   -5.163671    0.187442   -0.015423    1.199087
- H   z    -5.163671    2.189255   -0.015423    0.363715   -2.221917    0.316412
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x   -19.551558
- O   y     0.000000  -20.115485
- O   z     0.000000    0.106501   39.667042
-
- H   x    -4.036194    0.000000    0.000000   -1.523142
- H   y     0.000000    1.802821    5.358933    0.000000    1.206497
- H   z     0.000000    5.358933    2.233373    0.000000    2.233660    0.316645
-
- H   x    -3.916299    0.000000    0.000000   -0.551156    0.000000    0.000000
- H   y     0.000000    1.727044   -5.163671    0.000000    0.187442   -0.015423
- H   z     0.000000   -5.163671    2.189255    0.000000   -0.015423    0.363715
-
-
-           H   x       H   y       H   z 
-
- H   x    -1.515499
- H   y     0.000000    1.199087
- H   z     0.000000   -2.221917    0.316412
-
-
-
-
-
-  Total spin-spin coupling matrix
-  -------------------------------
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x  -826.058213
- O   y     0.000000 -830.732040
- O   z     0.000000    0.463623 -789.785858
-
- H   x    -6.096962    0.000000    0.000000  -12.516222
- H   y     0.000000    0.992283    4.212207    0.000000   -9.847538
- H   z     0.000000    4.152379    0.936765    0.000000    2.186855  -10.756564
-
- H   x    -5.852144    0.000000    0.000000   -1.424443    0.000000    0.000000
- H   y     0.000000    1.076811   -4.007553    0.000000    0.005239   -0.263457
- H   z     0.000000   -3.939524    1.028844    0.000000    0.231209   -0.426830
-
-
-           H   x       H   y       H   z 
-
- H   x   -12.239216
- H   y     0.000000   -9.588437
- H   z     0.000000   -2.173479  -10.492055
-
 
  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
 
@@ -6513,7 +5012,7 @@ Represented as: Cs
   Isotropic coupling        :    -26.5621 Hz
   Anisotropic coupling      :    -52.3885 Hz
   Asymmetry                 :     -0.5355   
-  S parameter               :     54.8352 Hz
+  S parameter               :     54.8351 Hz
   A parameter               :     10.6764 Hz
   Isotropic DSO contribution:     -4.9064 Hz
   Isotropic PSO contribution:      3.2074 Hz
@@ -6557,11 +5056,12 @@ Represented as: Cs
  CPU time statistics for ABACUS
  ------------------------------
 
+ REST       00:00:01     168 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.31 seconds
+ >>>> Total CPU  time used in ABACUS:   0.62 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
@@ -6646,6 +5146,21 @@ Represented as: Cs
     A"  | A"   A' 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -6663,7 +5178,7 @@ Represented as: Cs
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -6694,19 +5209,19 @@ Represented as: Cs
 
   Symmetry 1
 
-   1   O     y    2
-   2   O     z    3
-   3   H     y    5
-   4   H     z    6
-   5   H     y    8
-   6   H     z    9
+   1   O     y    3
+   2   O     z    5
+   3   H     y    6
+   4   H     z    8
+   5   H     y    9
+   6   H     z    1
 
 
   Symmetry 2
 
-   7   O     x    1
-   8   H     x    4
-   9   H     x    7
+   7   O     x    4
+   8   H     x    7
+   9   H     x    1
 
 
    Interatomic separations (in Angstroms):
@@ -6736,6 +5251,24 @@ Represented as: Cs
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H          O          H                    100.027
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA   -0.003796          0.000000    0.800375    0.599499
+   IB    0.895644          1.000000    0.000000    0.000000
+   IC    0.899440          0.000000   -0.599499    0.800375
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =       564263.14 MHz     (   18.821792 cm-1)
 
 
   Nuclear repulsion energy :    8.906624129751
@@ -6774,7 +5307,7 @@ Represented as: Cs
  >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:         231 ( 56.9% )
@@ -6793,11 +5326,11 @@ Represented as: Cs
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -6808,15 +5341,15 @@ Represented as: Cs
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:49 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -6851,7 +5384,7 @@ Represented as: Cs
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -6862,18 +5395,18 @@ Represented as: Cs
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724778646554   3.49D+00  -7.47D+01    4  1
-   2    -74.950413615327   3.59D-01  -2.26D-01    4  1
-   3    -74.964631786839   9.53D-02  -1.42D-02    4  1
-   4    -74.965814858015   1.53D-02  -1.18D-03    4  1
-   5    -74.965857208957   5.20D-03  -4.24D-05    4  1
-   6    -74.965862446972   8.48D-05  -5.24D-06    4  1
-   7    -74.965862447901   3.28D-06  -9.29D-10    4  1
-   8    -74.965862447903   5.53D-07  -1.69D-12    4  1
-   9    -74.965862447903   7.70D-08  -3.91D-14    4  1
-  10    -74.965862447903   3.03D-10   1.78D-14    4  1
-  11    -74.965862447903   3.56D-11  -1.07D-14    4  1
-  12    -74.965862447903   3.95D-13   3.55D-15    4  1
+   1    -74.724778646554   3.49E+00  -7.47E+01    4  1
+   2    -74.950413615326   3.59E-01  -2.26E-01    4  1
+   3    -74.964631786839   9.53E-02  -1.42E-02    4  1
+   4    -74.965814858015   1.53E-02  -1.18E-03    4  1
+   5    -74.965857208957   5.20E-03  -4.24E-05    4  1
+   6    -74.965862446972   8.48E-05  -5.24E-06    4  1
+   7    -74.965862447901   3.28E-06  -9.29E-10    4  1
+   8    -74.965862447903   5.53E-07  -1.69E-12    4  1
+   9    -74.965862447903   7.70E-08  -2.66E-14    4  1
+  10    -74.965862447903   3.03E-10   1.78E-15    4  1
+  11    -74.965862447903   3.56E-11   1.60E-14    4  1
+  12    -74.965862447903   3.93E-13  -1.24E-14    4  1
  DIIS converged in  12 iterations !
 
 
@@ -6911,32 +5444,17 @@ Represented as: Cs
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4
-   1  O   1s     0.9942  -0.2338   0.0014   0.1040
-   2  O   1s     0.0258   0.8444  -0.0077  -0.5381
-   3  O   2py    0.0001   0.0020   0.6127  -0.0037
-   4  O   2pz    0.0042   0.1228   0.0050   0.7559
-   5  H   1s    -0.0056   0.1571   0.4498   0.2918
-   6  H   1s    -0.0055   0.1541  -0.4486   0.2984
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
+     Date and time (Linux)  : Sat Jun  8 22:35:49 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:49 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -6964,14 +5482,13 @@ Represented as: Cs
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -6983,12 +5500,12 @@ Represented as: Cs
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:49 2002
+     Host name              : slater.uio.no                           
 
  (ORTBVC) new orbital b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 5.53466D-15
+ norm of vector after Gram-Schmidt's orthogonalization 6.29046E-15
 
  (ORTBVC) NBOSIM reduced from  3 to  2
 
@@ -7001,8 +5518,8 @@ Represented as: Cs
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:50 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -7024,8 +5541,8 @@ Represented as: Cs
 
 
      Total energy        -74.9658624479 au (Hartrees)
-                         -2039.92482498 eV
-                           -196822.8438 kJ/mol
+                         -2039.92482782 eV
+                           -196822.8436 kJ/mol
 
 
 
@@ -7033,11 +5550,11 @@ Represented as: Cs
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1294994205 au
-     Mass-velocity correction:                  -0.1669819964 au
+     Darwin correction:                          0.1294994010 au
+     Mass-velocity correction:                  -0.1669819713 au
 
-     Total relativistic correction:             -0.0374825759 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033450238 au
+     Total relativistic correction:             -0.0374825703 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033450182 au
 
 
 
@@ -7117,7 +5634,7 @@ Represented as: Cs
                               Dipole moment
                               -------------
 
-                    0.672464 au           1.709250 Debye
+                    0.672464 au           1.709234 Debye
 
 
 
@@ -7127,10 +5644,10 @@ Represented as: Cs
 
                                au             Debye
 
-                    y      0.00182310      0.00463389
-                    z      0.67246201      1.70924377
+                    y      0.00182310      0.00463385
+                    z      0.67246201      1.70922776
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -7139,285 +5656,6 @@ Represented as: Cs
  *******************************************************************************
  **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
  *******************************************************************************
-
-
-
-  DSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x     0.000000
- H   x    -1.094088    0.000000
- H   x    -1.068519   -0.249381    0.000000
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y     0.000000
- O   z     0.000000    0.000000
- H   y     0.983786    1.709457    0.000000
- H   z     1.705523    0.368730    0.000000    0.000000
- H   y     0.962178   -1.669688    0.291657   -0.243861    0.000000
- H   z    -1.665955    0.358815    0.243032   -0.383266    0.000000    0.000000
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- H   x    -1.094088    0.000000    0.000000    0.000000
- H   y     0.000000    0.983786    1.709457    0.000000    0.000000
- H   z     0.000000    1.705523    0.368730    0.000000    0.000000    0.000000
-
- H   x    -1.068519    0.000000    0.000000   -0.249381    0.000000    0.000000
- H   y     0.000000    0.962178   -1.669688    0.000000    0.291657   -0.243861
- H   z     0.000000   -1.665955    0.358815    0.000000    0.243032   -0.383266
-
-
-           H   x       H   y       H   z 
-
-
-
-
-
-  PSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x   -53.853596
- H   x     1.344619   -0.146383
- H   x     1.331488    0.011326   -0.142382
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y   -54.441864
- O   z    -0.483645  -73.738819
- H   y     0.530222   -2.481555   -0.088999
- H   z    -2.786639    0.512372    0.045251   -0.146549
- H   y     0.553770    2.420087    0.076044    0.010751   -0.084741
- H   z     2.722691    0.548952   -0.008822    0.135540   -0.044883   -0.139899
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x   -53.853596
- O   y     0.000000  -54.441864
- O   z     0.000000   -0.483645  -73.738819
-
- H   x     1.344619    0.000000    0.000000   -0.146383
- H   y     0.000000    0.530222   -2.481555    0.000000   -0.088999
- H   z     0.000000   -2.786639    0.512372    0.000000    0.045251   -0.146549
-
- H   x     1.331488    0.000000    0.000000    0.011326    0.000000    0.000000
- H   y     0.000000    0.553770    2.420087    0.000000    0.076044    0.010751
- H   z     0.000000    2.722691    0.548952    0.000000   -0.008822    0.135540
-
-
-           H   x       H   y       H   z 
-
- H   x    -0.142382
- H   y     0.000000   -0.084741
- H   z     0.000000   -0.044883   -0.139899
-
-
-
-
-
-  SD-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x   -17.058022
- H   x    -0.295237   -0.069658
- H   x    -0.291299   -0.030803   -0.067798
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y   -20.579654
- O   z     0.126524  -20.119045
- H   y    -0.273104   -0.384019   -0.190850
- H   z    -0.143030   -0.150374   -0.093690   -0.154243
- H   y    -0.294048    0.396327    0.054525   -0.013522   -0.186393
- H   z     0.149818   -0.171938    0.013825    0.061610    0.091688   -0.150410
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x   -17.058022
- O   y     0.000000  -20.579654
- O   z     0.000000    0.126524  -20.119045
-
- H   x    -0.295237    0.000000    0.000000   -0.069658
- H   y     0.000000   -0.273104   -0.384019    0.000000   -0.190850
- H   z     0.000000   -0.143030   -0.150374    0.000000   -0.093690   -0.154243
-
- H   x    -0.291299    0.000000    0.000000   -0.030803    0.000000    0.000000
- H   y     0.000000   -0.294048    0.396327    0.000000    0.054525   -0.013522
- H   z     0.000000    0.149818   -0.171938    0.000000    0.013825    0.061610
-
-
-           H   x       H   y       H   z 
-
- H   x    -0.067798
- H   y     0.000000   -0.186393
- H   z     0.000000    0.091688   -0.150410
-
-
-
-
-
-  FC-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x  -735.595037
- H   x    -1.891139  -10.507675
- H   x    -2.032438   -0.604429  -10.782900
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y  -735.595037
- O   z     0.000000 -735.595037
- H   y    -1.891139    0.000000  -10.507675
- H   z     0.000000   -1.891139    0.000000  -10.507675
- H   y    -2.032438    0.000000   -0.604429    0.000000  -10.782900
- H   z     0.000000   -2.032438    0.000000   -0.604429    0.000000  -10.782900
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x  -735.595037
- O   y     0.000000 -735.595037
- O   z     0.000000    0.000000 -735.595037
-
- H   x    -1.891139    0.000000    0.000000  -10.507675
- H   y     0.000000   -1.891139    0.000000    0.000000  -10.507675
- H   z     0.000000    0.000000   -1.891139    0.000000    0.000000  -10.507675
-
- H   x    -2.032438    0.000000    0.000000   -0.604429    0.000000    0.000000
- H   y     0.000000   -2.032438    0.000000    0.000000   -0.604429    0.000000
- H   z     0.000000    0.000000   -2.032438    0.000000    0.000000   -0.604429
-
-
-           H   x       H   y       H   z 
-
- H   x   -10.782900
- H   y     0.000000  -10.782900
- H   z     0.000000    0.000000  -10.782900
-
-
-
-
-
-  SD-FC-crosscoupling part of coupling constants
-  ----------------------------------------------
-
-
-           Symmetry 1
-
-           O   x       H   x       H   x 
-
- O   x   -19.551558
- H   x    -3.916299   -1.515499
- H   x    -4.036194   -0.551156   -1.523142
-
-
-           Symmetry 2
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y   -20.115485
- O   z    -0.106501   39.667042
- H   y     1.727044    5.163671    1.199087
- H   z     5.163671    2.189255    2.221917    0.316412
- H   y     1.802821   -5.358933    0.187442    0.015423    1.206497
- H   z    -5.358933    2.233373    0.015423    0.363715   -2.233660    0.316645
-
-
-
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x   -19.551558
- O   y     0.000000  -20.115485
- O   z     0.000000   -0.106501   39.667042
-
- H   x    -3.916299    0.000000    0.000000   -1.515499
- H   y     0.000000    1.727044    5.163671    0.000000    1.199087
- H   z     0.000000    5.163671    2.189255    0.000000    2.221917    0.316412
-
- H   x    -4.036194    0.000000    0.000000   -0.551156    0.000000    0.000000
- H   y     0.000000    1.802821   -5.358933    0.000000    0.187442    0.015423
- H   z     0.000000   -5.358933    2.233373    0.000000    0.015423    0.363715
-
-
-           H   x       H   y       H   z 
-
- H   x    -1.523142
- H   y     0.000000    1.206497
- H   z     0.000000   -2.233660    0.316645
-
-
-
-
-
-  Total spin-spin coupling matrix
-  -------------------------------
-
-           O   x       O   y       O   z       H   x       H   y       H   z 
-
- O   x  -826.058213
- O   y     0.000000 -830.732040
- O   z     0.000000   -0.463623 -789.785858
-
- H   x    -5.852144    0.000000    0.000000  -12.239216
- H   y     0.000000    1.076811    4.007553    0.000000   -9.588437
- H   z     0.000000    3.939524    1.028844    0.000000    2.173479  -10.492055
-
- H   x    -6.096962    0.000000    0.000000   -1.424443    0.000000    0.000000
- H   y     0.000000    0.992283   -4.212207    0.000000    0.005239   -0.231209
- H   z     0.000000   -4.152379    0.936765    0.000000    0.263457   -0.426830
-
-
-           H   x       H   y       H   z 
-
- H   x   -12.516222
- H   y     0.000000   -9.847538
- H   z     0.000000   -2.186855  -10.756564
-
 
  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
 
@@ -7479,7 +5717,7 @@ Represented as: Cs
   Isotropic coupling        :    -26.5621 Hz
   Anisotropic coupling      :    -52.3885 Hz
   Asymmetry                 :     -0.5355   
-  S parameter               :     54.8352 Hz
+  S parameter               :     54.8351 Hz
   A parameter               :     10.6764 Hz
   Isotropic DSO contribution:     -4.9064 Hz
   Isotropic PSO contribution:      3.2074 Hz
@@ -7523,13 +5761,13 @@ Represented as: Cs
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     484 %
+ REST       00:00:01     198 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.31 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.62 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -7609,6 +5847,21 @@ Point group: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          17.999159
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    20.014809 amu
+                       Natural abundance:   0.200 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000   -0.679996
+
+
   Atoms and basis sets
   --------------------
 
@@ -7625,7 +5878,7 @@ Point group: C2v
   total:      3      10      21       7
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -7656,27 +5909,27 @@ Point group: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -7708,7 +5961,28 @@ Point group: C2v
   bond angle:       H  1       O          H  2                 100.027
 
 
-  Nuclear repulsion energy :    8.906487554663
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.663096          0.000000    1.000000    0.000000
+   IB    1.158365          0.000000    0.000000    1.000000
+   IC    1.821461          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         762150.4986         436286.3616         277457.9780 MHz
+           25.422604           14.552947            9.255002 cm-1
+
+
+  Nuclear repulsion energy :    8.906487554664
 
 
   Symmetry Orbitals
@@ -7751,7 +6025,7 @@ Point group: C2v
  >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:         138 ( 34.0% )
@@ -7770,11 +6044,11 @@ Point group: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -7785,15 +6059,15 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:50 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -7828,7 +6102,7 @@ Point group: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -7839,19 +6113,19 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.724812043048   3.49D+00  -7.47D+01    3  1  1  0
-   2    -74.950451313668   3.59D-01  -2.26D-01    3  1  1  0
-   3    -74.964670453114   9.53D-02  -1.42D-02    3  1  1  0
-   4    -74.965853606462   1.53D-02  -1.18D-03    3  1  1  0
-   5    -74.965895954931   5.20D-03  -4.23D-05    3  1  1  0
-   6    -74.965901188587   2.01D-04  -5.23D-06    3  1  1  0
-   7    -74.965901192777   2.09D-06  -4.19D-09    3  1  1  0
-   8    -74.965901192777   1.50D-07  -2.79D-13    3  1  1  0
-   9    -74.965901192777   1.06D-08  -2.31D-14    3  1  1  0
-  10    -74.965901192777   1.32D-09   5.33D-15    3  1  1  0
-  11    -74.965901192777   9.73D-11   5.33D-15    3  1  1  0
-  12    -74.965901192777   2.34D-12   5.33D-15    3  1  1  0
-  13    -74.965901192777   1.06D-14   5.33D-15    3  1  1  0
+   1    -74.724812043048   3.49E+00  -7.47E+01    3  1  1  0
+   2    -74.950451313668   3.59E-01  -2.26E-01    3  1  1  0
+   3    -74.964670453114   9.53E-02  -1.42E-02    3  1  1  0
+   4    -74.965853606462   1.53E-02  -1.18E-03    3  1  1  0
+   5    -74.965895954931   5.20E-03  -4.23E-05    3  1  1  0
+   6    -74.965901188587   2.01E-04  -5.23E-06    3  1  1  0
+   7    -74.965901192777   2.09E-06  -4.19E-09    3  1  1  0
+   8    -74.965901192777   1.50E-07  -3.07E-13    3  1  1  0
+   9    -74.965901192777   1.06E-08   5.33E-15    3  1  1  0
+  10    -74.965901192777   1.32E-09   5.33E-15    3  1  1  0
+  11    -74.965901192777   9.73E-11   5.33E-15    3  1  1  0
+  12    -74.965901192777   2.34E-12   5.33E-15    3  1  1  0
+  13    -74.965901192777   1.04E-14  -8.88E-15    3  1  1  0
  DIIS converged in  13 iterations !
 
 
@@ -7886,42 +6160,23 @@ Point group: C2v
      Spatial symmetry:            1
 
      Final    HF energy:          -74.965901192777
-     Nuclear repulsion:             8.906487554663
+     Nuclear repulsion:             8.906487554664
      Electronic energy:           -83.872388747441
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9942  -0.2338   0.1040
-   2  O   1s     0.0258   0.8444  -0.5382
-   3  O   2pz    0.0042   0.1228   0.7559
-   4  H   1s    -0.0056   0.1556   0.2951
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    1.0000
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.6127
-   2  H   1s     0.4492
+     Date and time (Linux)  : Sat Jun  8 22:35:50 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:50 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -7949,14 +6204,13 @@ Point group: C2v
   Only the spin-spin couplings between the following nuclei will be calculated:
   -----------------------------------------------------------------------------
 
-             1           2           3
+   1 2 3
 
 
 
  Changes of defaults for SPIN-S:
  -------------------------------
 
- Print level in spin-spin output routine:    10
 
 
  Changes of defaults for TRPRSP:
@@ -7968,8 +6222,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:50 2002
+     Host name              : slater.uio.no                           
 
  Old LUGDT file opened in TRPRH1.
 
@@ -7980,8 +6234,8 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:51 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -8003,8 +6257,8 @@ Point group: C2v
 
 
      Total energy        -74.9659011928 au (Hartrees)
-                         -2039.92587928 eV
-                           -196822.9456 kJ/mol
+                         -2039.92588212 eV
+                           -196822.9453 kJ/mol
 
 
 
@@ -8012,11 +6266,11 @@ Point group: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1294994305 au
-     Mass-velocity correction:                  -0.1669820010 au
+     Darwin correction:                          0.1294994111 au
+     Mass-velocity correction:                  -0.1669819759 au
 
-     Total relativistic correction:             -0.0374825705 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033837633 au
+     Total relativistic correction:             -0.0374825648 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033837576 au
 
 
 
@@ -8105,7 +6359,7 @@ Point group: C2v
                               Dipole moment
                               -------------
 
-                    0.672454 au           1.709224 Debye
+                    0.672454 au           1.709208 Debye
 
 
 
@@ -8115,9 +6369,9 @@ Point group: C2v
 
                                au             Debye
 
-                    z      0.67245412      1.70922371
+                    z      0.67245412      1.70920770
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -8126,345 +6380,6 @@ Point group: C2v
  *******************************************************************************
  **************** ABACUS - INDIRECT NUCLEAR SPIN-SPIN COUPLINGS ****************
  *******************************************************************************
-
-
-
-  DSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H    x
-
- H    x    0.498764
-
-
-           Symmetry 2
-
-           O    y      H    y      H    z
-
- O    y    0.000000
- H    y    1.945803    0.583309
- H    z    3.371166   -0.486885    0.766528
-
-
-           Symmetry 3
-
-           O    x      H    x
-
- O    x    0.000000
- H    x   -2.162415   -0.498764
-
-
-           Symmetry 4
-
-           O    z      H    y      H    z
-
- O    z    0.000000
- H    y    3.378837   -0.583309
- H    z    0.727449    0.486885   -0.766528
-
-
-
-
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
-
- H  1 x   -1.081208    0.000000    0.000000    0.000000
- H  1 y    0.000000    0.972902    1.689418    0.000000    0.000000
- H  1 z    0.000000    1.685583    0.363725    0.000000    0.000000    0.000000
-
- H  2 x   -1.081208    0.000000    0.000000   -0.249382    0.000000    0.000000
- H  2 y    0.000000    0.972902   -1.689418    0.000000    0.291654   -0.243443
- H  2 z    0.000000   -1.685583    0.363725    0.000000    0.243443   -0.383264
-
-
-           H  2 x      H  2 y      H  2 z
-
-
-
-
-
-  PSO-part of coupling constants
-  ------------------------------
-
-
-           Symmetry 1
-
-           H    x
-
- H    x   -0.311379
-
-
-           Symmetry 2
-
-           O    y      H    y      H    z
-
- O    y  -54.440948
- H    y    1.084361   -0.021598
- H    z   -5.508807    0.109725   -0.557429
-
-
-           Symmetry 3
-
-           O    x      H    x
-
- O    x  -53.852238
- H    x    2.676077   -0.266080
-
-
-           Symmetry 4
-
-           O    z      H    y      H    z
-
- O    z  -73.736237
- H    y   -4.901002   -0.325753
- H    z    1.061830    0.070576   -0.015291
-
-
-
-
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
-
- O    x  -53.852238
- O    y    0.000000  -54.440948
- O    z    0.000000    0.000000  -73.736237
-
- H  1 x    1.338038    0.000000    0.000000   -0.144365
- H  1 y    0.000000    0.542181   -2.450501    0.000000   -0.086838
- H  1 z    0.000000   -2.754404    0.530915    0.000000    0.045075   -0.143180
-
- H  2 x    1.338038    0.000000    0.000000    0.011325    0.000000    0.000000
- H  2 y    0.000000    0.542181    2.450501    0.000000    0.076039    0.009787
- H  2 z    0.000000    2.754404    0.530915    0.000000   -0.009787    0.135535
-
-
-           H  2 x      H  2 y      H  2 z
-
- H  2 x   -0.144365
- H  2 y    0.000000   -0.086838
- H  2 z    0.000000   -0.045075   -0.143180
-
-
-
-
-
-  SD-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H    x
-
- H    x   -0.075834
-
-
-           Symmetry 2
-
-           O    y      H    y      H    z
-
- O    y  -20.577585
- H    y   -0.567152   -0.268140
- H    z   -0.292853   -0.212692   -0.427798
-
-
-           Symmetry 3
-
-           O    x      H    x
-
- O    x  -17.056866
- H    x   -0.586354   -0.199014
-
-
-           Symmetry 4
-
-           O    z      H    y      H    z
-
- O    z  -20.117240
- H    y   -0.780364   -0.486214
- H    z   -0.322346   -0.158003   -0.181393
-
-
-
-
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
-
- O    x  -17.056866
- O    y    0.000000  -20.577585
- O    z    0.000000    0.000000  -20.117240
-
- H  1 x   -0.293177    0.000000    0.000000   -0.068712
- H  1 y    0.000000   -0.283576   -0.390182    0.000000   -0.188588
- H  1 z    0.000000   -0.146427   -0.161173    0.000000   -0.092674   -0.152298
-
- H  2 x   -0.293177    0.000000    0.000000   -0.030795    0.000000    0.000000
- H  2 y    0.000000   -0.283576    0.390182    0.000000    0.054519   -0.013672
- H  2 z    0.000000    0.146427   -0.161173    0.000000    0.013672    0.061601
-
-
-           H  2 x      H  2 y      H  2 z
-
- H  2 x   -0.068712
- H  2 y    0.000000   -0.188588
- H  2 z    0.000000    0.092674   -0.152298
-
-
-
-
-
-  FC-part of coupling constants
-  -----------------------------
-
-
-           Symmetry 1
-
-           H    x
-
- H    x  -20.078405
-
-
-           Symmetry 2
-
-           O    y      H    y      H    z
-
- O    y -735.584364
- H    y   -3.923703  -22.495703
- H    z    0.000000    0.000000  -20.078405
-
-
-           Symmetry 3
-
-           O    x      H    x
-
- O    x -735.584364
- H    x   -3.923703  -22.495703
-
-
-           Symmetry 4
-
-           O    z      H    y      H    z
-
- O    z -735.584364
- H    y    0.000000  -20.078405
- H    z   -3.923703    0.000000  -22.495703
-
-
-
-
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
-
- O    x -735.584364
- O    y    0.000000 -735.584364
- O    z    0.000000    0.000000 -735.584364
-
- H  1 x   -1.961852    0.000000    0.000000  -10.643527
- H  1 y    0.000000   -1.961852    0.000000    0.000000  -10.643527
- H  1 z    0.000000    0.000000   -1.961852    0.000000    0.000000  -10.643527
-
- H  2 x   -1.961852    0.000000    0.000000   -0.604324    0.000000    0.000000
- H  2 y    0.000000   -1.961852    0.000000    0.000000   -0.604324    0.000000
- H  2 z    0.000000    0.000000   -1.961852    0.000000    0.000000   -0.604324
-
-
-           H  2 x      H  2 y      H  2 z
-
- H  2 x  -10.643527
- H  2 y    0.000000  -10.643527
- H  2 z    0.000000    0.000000  -10.643527
-
-
-
-
-
-  SD-FC-crosscoupling part of coupling constants
-  ----------------------------------------------
-
-
-           Symmetry 1
-
-           H    x
-
- H    x   -1.936541
-
-
-           Symmetry 2
-
-           O    y      H    y      H    z
-
- O    y  -20.115473
- H    y    3.529055    2.780051
- H    z   10.520650    4.455194   -0.094169
-
-
-           Symmetry 3
-
-           O    x      H    x
-
- O    x  -19.551370
- H    x   -7.951016   -4.140210
-
-
-           Symmetry 4
-
-           O    z      H    y      H    z
-
- O    z   39.666842
- H    y   10.520650    2.030710
- H    z    4.421961    4.455194    1.360158
-
-
-
-
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
-
- O    x  -19.551370
- O    y    0.000000  -20.115473
- O    z    0.000000    0.000000   39.666842
-
- H  1 x   -3.975508    0.000000    0.000000   -1.519188
- H  1 y    0.000000    1.764528    5.260325    0.000000    1.202690
- H  1 z    0.000000    5.260325    2.210980    0.000000    2.227597    0.316497
-
- H  2 x   -3.975508    0.000000    0.000000   -0.550917    0.000000    0.000000
- H  2 y    0.000000    1.764528   -5.260325    0.000000    0.187335    0.000000
- H  2 z    0.000000   -5.260325    2.210980    0.000000    0.000000    0.363582
-
-
-           H  2 x      H  2 y      H  2 z
-
- H  2 x   -1.519188
- H  2 y    0.000000    1.202690
- H  2 z    0.000000   -2.227597    0.316497
-
-
-
-
-
-  Total spin-spin coupling matrix
-  -------------------------------
-
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
-
- O    x -826.044838
- O    y    0.000000 -830.718369
- O    z    0.000000    0.000000 -789.770999
-
- H  1 x   -5.973706    0.000000    0.000000  -12.375792
- H  1 y    0.000000    1.034183    4.109060    0.000000   -9.716263
- H  1 z    0.000000    4.045078    0.982595    0.000000    2.179998  -10.622507
-
- H  2 x   -5.973706    0.000000    0.000000   -1.424093    0.000000    0.000000
- H  2 y    0.000000    1.034183   -4.109060    0.000000    0.005222   -0.247327
- H  2 z    0.000000   -4.045078    0.982595    0.000000    0.247327   -0.426871
-
-
-           H  2 x      H  2 y      H  2 z
-
- H  2 x  -12.375792
- H  2 y    0.000000   -9.716263
- H  2 z    0.000000   -2.179998  -10.622507
-
 
  Definitions from Smith, Palke, and Grieg, Concepts in Mag. Res. 4 (1992) 107
 
@@ -8526,7 +6441,7 @@ Point group: C2v
   Isotropic coupling        :    -26.5578 Hz
   Anisotropic coupling      :    -52.3721 Hz
   Asymmetry                 :     -0.5342   
-  S parameter               :     54.8066 Hz
+  S parameter               :     54.8065 Hz
   A parameter               :     10.6762 Hz
   Isotropic DSO contribution:     -4.9064 Hz
   Isotropic PSO contribution:      3.2072 Hz
@@ -8570,12 +6485,13 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
+ REST       00:00:01     233 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.21 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.45 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -8656,9 +6572,9 @@ Point group: C2v
   Effective geometry corrections in normal coordinates
   ----------------------------------------------------
 
-Normal mode:    1   Frequency:    0.0188   Displacement:    0.029562
-Normal mode:    2   Frequency:    0.0098   Displacement:   -0.002137
-Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
+Normal mode:    1   Frequency:    0.0188   Displacement:    0.0296
+Normal mode:    2   Frequency:    0.0098   Displacement:   -0.0021
+Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
                       +------------------------------+
@@ -8675,9 +6591,6 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
  H    2     0.0000000000           -0.0174427489            0.0108782058
 
 
-
-
-
                       +------------------------------+
                       ! Estimated effective geometry !
                       +------------------------------+
@@ -8692,43 +6605,9 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
  H    2     0.0000000000           -1.4500069280            0.4113760366
 
 
-
-
-
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
-
-            O           H  1        H  2
-
-   O       0.000000
-   H  1    1.000596    0.000000
-   H  2    1.000596    1.534621    0.000000
-
-
-
-
-  Bond distances (angstroms):
-  ---------------------------
-
-                  atom 1     atom 2                           distance
-                  ------     ------                           --------
-  bond distance:    H  1       O                              1.000596
-  bond distance:    H  2       O                              1.000596
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3                   angle
-                  ------     ------     ------                   -----
-  bond angle:       H  1       O          H  2                 100.144
-
-
-
-
- *******************************************************************************
- ****************** Vibrational average of property SPIN-SPIN ******************
- *******************************************************************************
+ ************************************************************************
+ ****************** Vibrational average of properties. ******************
+ ************************************************************************
 
 
 
@@ -8753,9 +6632,9 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
   Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
 
   Isotropic coupling        :     12.1191 Hz
-  Anisotropic coupling      :    -63.7820 Hz
+  Anisotropic coupling      :    -63.7819 Hz
   Asymmetry                 :      0.4178   
-  S parameter               :    -65.6115 Hz
+  S parameter               :    -65.6114 Hz
   A parameter               :     -0.2300 Hz
   Isotropic DSO contribution:     -0.4952 Hz
   Isotropic PSO contribution:     -4.5951 Hz
@@ -8773,9 +6652,9 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
   Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
 
   Isotropic coupling        :     12.1191 Hz
-  Anisotropic coupling      :    -63.7820 Hz
+  Anisotropic coupling      :    -63.7819 Hz
   Asymmetry                 :      0.4178   
-  S parameter               :    -65.6115 Hz
+  S parameter               :    -65.6114 Hz
   A parameter               :     -0.2300 Hz
   Isotropic DSO contribution:     -0.4952 Hz
   Isotropic PSO contribution:     -4.5951 Hz
@@ -8958,8 +6837,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:51 2002
+     Host name              : slater.uio.no                           
 
 
  ***************************************************************************
@@ -8968,8 +6847,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
 
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:51 2002
+     Host name              : slater.uio.no                           
 
 
 
@@ -8991,8 +6870,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
 
 
      Total energy        -74.9659011928 au (Hartrees)
-                         -2039.92587928 eV
-                           -196822.9456 kJ/mol
+                         -2039.92588212 eV
+                           -196822.9453 kJ/mol
 
 
 
@@ -9000,11 +6879,11 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1294994305 au
-     Mass-velocity correction:                  -0.1669820010 au
+     Darwin correction:                          0.1294994111 au
+     Mass-velocity correction:                  -0.1669819759 au
 
-     Total relativistic correction:             -0.0374825705 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033837633 au
+     Total relativistic correction:             -0.0374825648 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033837576 au
 
 
 
@@ -9012,7 +6891,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
                               Dipole moment
                               -------------
 
-                    0.672454 au           1.709224 Debye
+                    0.672454 au           1.709208 Debye
 
 
 
@@ -9022,9 +6901,9 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
 
                                au             Debye
 
-                    z      0.67245412      1.70922371
+                    z      0.67245412      1.70920770
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -9072,9 +6951,9 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.000000
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:   2.09 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in DALTON:   4.26 seconds
+ >>>> Total wall time used in DALTON:   5.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 12 13:19:44 2002
-     Host name              : theochem01.uio.no                       
+     Date and time (Linux)  : Sat Jun  8 22:35:51 2002
+     Host name              : slater.uio.no                           

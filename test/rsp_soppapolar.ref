@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,16 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 00:24:36 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:44 2002
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -102,8 +108,8 @@
   Title Cards
   -----------
 
-  A small basis set for test purposes                                     
-  -----------------------------------                                     
+  Calculation of SOPPA polarizability                                     
+                                                                          
 
 
                   SYMADD: Requested addition of symmetry
@@ -162,6 +168,23 @@ Represented as: D2
     B1  | B1   B3   B2   A  
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           C1         12.000000
+                            H3  1      1.007825
+                            H3  2      1.007825
+                            H3  3      1.007825
+                            H3  4      1.007825
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:  98.841 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -176,7 +199,7 @@ Represented as: D2
   total:      5      10      36      18
   ----------------------------------------------------------------------
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -189,21 +212,21 @@ Represented as: D2
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4    H3  1   x      1.1823709712
-   5            y     -1.1823709711
-   6            z      1.1823709712
+   4    H3  1   x      1.1823709711
+   5            y     -1.1823709712
+   6            z      1.1823709713
 
-   7    H3  2   x      1.1823709712
-   8            y      1.1823709711
-   9            z     -1.1823709712
+   7    H3  2   x      1.1823709711
+   8            y      1.1823709712
+   9            z     -1.1823709713
 
-  10    H3  3   x     -1.1823709712
-  11            y     -1.1823709711
-  12            z     -1.1823709712
+  10    H3  3   x     -1.1823709711
+  11            y     -1.1823709712
+  12            z     -1.1823709713
 
-  13    H3  4   x     -1.1823709712
-  14            y      1.1823709711
-  15            z      1.1823709712
+  13    H3  4   x     -1.1823709711
+  14            y      1.1823709712
+  15            z      1.1823709713
 
 
 
@@ -215,33 +238,33 @@ Represented as: D2
 
   Symmetry 1
 
-   1    H3   x    [  4  +   7  -  10  -  13 ]/4
-   2    H3   y    [  5  -   8  +  11  -  14 ]/4
-   3    H3   z    [  6  -   9  -  12  +  15 ]/4
+   1    H3   x    [  5  -   8  +  11  -  14 ]/4
+   2    H3   y    [  6  -   9  -  12  +  15 ]/4
+   3    H3   z    2
 
 
   Symmetry 2
 
-   4   C1    y    2
-   5    H3   x    [  4  -   7  -  10  +  13 ]/4
-   6    H3   y    [  5  +   8  +  11  +  14 ]/4
-   7    H3   z    [  6  +   9  -  12  -  15 ]/4
+   4   C1    y    [  4  -   7  -  10  +  13 ]/4
+   5    H3   x    [  5  +   8  +  11  +  14 ]/4
+   6    H3   y    [  6  +   9  -  12  -  15 ]/4
+   7    H3   z    1
 
 
   Symmetry 3
 
-   8   C1    x    1
-   9    H3   x    [  4  +   7  +  10  +  13 ]/4
-  10    H3   y    [  5  -   8  -  11  +  14 ]/4
-  11    H3   z    [  6  -   9  +  12  -  15 ]/4
+   8   C1    x    [  4  +   7  +  10  +  13 ]/4
+   9    H3   x    [  5  -   8  -  11  +  14 ]/4
+  10    H3   y    [  6  -   9  +  12  -  15 ]/4
+  11    H3   z    3
 
 
   Symmetry 4
 
-  12   C1    z    3
-  13    H3   x    [  4  -   7  +  10  -  13 ]/4
-  14    H3   y    [  5  +   8  -  11  -  14 ]/4
-  15    H3   z    [  6  +   9  +  12  +  15 ]/4
+  12   C1    z    [  4  -   7  +  10  -  13 ]/4
+  13    H3   x    [  5  +   8  -  11  -  14 ]/4
+  14    H3   y    [  6  +   9  +  12  +  15 ]/4
+  15    H3   z    [  3  +   6  -   9  -  12 ]/4
 
 
    Interatomic separations (in Angstroms):
@@ -282,7 +305,26 @@ Represented as: D2
   bond angle:        H33       C1          H34                 109.471
 
 
-  Nuclear repulsion energy :   13.513294214467
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    3.156348          0.000000    0.000000    1.000000
+   IB    3.156348          0.000000    1.000000    0.000000
+   IC    3.156348          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         160115.1046         160115.1046         160115.1046 MHz
+            5.340865            5.340865            5.340865 cm-1
+
+
+  Nuclear repulsion energy :   13.513294214520
 
 
   Symmetry Orbitals
@@ -334,10 +376,10 @@ Represented as: D2
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
- >>> Time used in OVERLA is   0.01 seconds
+ >>> Time used in OVERLA is   0.00 seconds
 
 
  Number of two-electron integrals written:        3690 ( 25.1% )
@@ -345,7 +387,7 @@ Represented as: D2
 
 
 
- >>> Time used in TWOINT is   0.03 seconds
+ >>> Time used in TWOINT is   0.04 seconds
 
 
 
@@ -356,27 +398,27 @@ Represented as: D2
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.01 seconds
+ >>> Time used in FRMSUP is   0.02 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.07 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:24:36 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:45 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     A small basis set for test purposes                                     
-     -----------------------------------                                     
+     Calculation of SOPPA polarizability                                     
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -411,7 +453,7 @@ Represented as: D2
      Number of basis functions          6   4   4   4
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               2   1   1   1
@@ -419,7 +461,7 @@ Represented as: D2
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -430,14 +472,14 @@ Represented as: D2
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -39.942206738483   2.52D+00  -3.99D+01    2  1  1  1
-   2    -40.149005767254   5.76D-01  -2.07D-01    2  1  1  1
-   3    -40.168265656249   1.97D-01  -1.93D-02    2  1  1  1
-   4    -40.170844301696   2.32D-02  -2.58D-03    2  1  1  1
-   5    -40.170919976565   2.00D-03  -7.57D-05    2  1  1  1
-   6    -40.170920548153   2.59D-04  -5.72D-07    2  1  1  1
-   7    -40.170920554247   8.54D-06  -6.09D-09    2  1  1  1
-   8    -40.170920554256   9.38D-07  -8.91D-12    2  1  1  1
+   1    -39.942206738480   2.52E+00  -3.99E+01    2  1  1  1
+   2    -40.149005767254   5.76E-01  -2.07E-01    2  1  1  1
+   3    -40.168265656249   1.97E-01  -1.93E-02    2  1  1  1
+   4    -40.170844301696   2.32E-02  -2.58E-03    2  1  1  1
+   5    -40.170919976565   2.00E-03  -7.57E-05    2  1  1  1
+   6    -40.170920548153   2.59E-04  -5.72E-07    2  1  1  1
+   7    -40.170920554247   8.54E-06  -6.09E-09    2  1  1  1
+   8    -40.170920554256   9.38E-07  -8.90E-12    2  1  1  1
  DIIS converged in   8 iterations !
 
 
@@ -454,7 +496,7 @@ Represented as: D2
  Orbital occupations :    2    1    1    1
 
 
- Hartree-Fock electronic energy:         -53.684214768723
+ Hartree-Fock electronic energy:         -53.684214768776
 
  Hartree-Fock total      energy:         -40.170920554256
 
@@ -480,14 +522,14 @@ Represented as: D2
   --------------------------
     gap     :     0.74500553
 
- ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  1.31D-06
+ ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  1.31E-06
 
  MP2 move   0.074254 electrons to unoccupied HF orbitals
 
 
  Hartree-Fock total energy :           -40.1709205543
  + MP2 contribution        :            -0.1080032234
- = MP2 second order energy :           -40.2789237777
+ = MP2 second order energy :           -40.2789237776
 
  Natural orbital occupation numbers, symmetry 1
 
@@ -522,7 +564,7 @@ Represented as: D2
  RHF     2.00000000
  Diff.  -0.00057525
 
- Time used for MP2 natural orbitals :       0.040 CPU seconds.
+ Time used for MP2 natural orbitals :       0.050 CPU seconds.
 
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
@@ -531,13 +573,13 @@ Represented as: D2
      Spatial symmetry:            1
 
      Final    HF energy:          -40.170920554256
-     Nuclear repulsion:            13.513294214467
-     Electronic energy:           -53.684214768723
+     Nuclear repulsion:            13.513294214520
+     Electronic energy:           -53.684214768776
 
      Final gradient norm:           0.000000937536
 
  
-     Date and time (Linux)  : Tue Feb 13 00:24:36 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:45 2002
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -576,17 +618,17 @@ Represented as: D2
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.07 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:24:36 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:45 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -605,6 +647,7 @@ Represented as: D2
  USE FOCK TYPE DECOUPLING OF THE TWO-ELECTRON DENSITY MATRIX :
  ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE ORBITAL DIAGONAL
   AVDIA = T
+ 2
 
 
  Linear Response calculation
@@ -612,10 +655,10 @@ Represented as: D2
 
  Print level                                    : IPRLR  =   2
  Maximum number of iterations                   : MAXITL =  60
- Threshold for convergence                      : THCLR  = 1.000D-03
+ Threshold for relative convergence             : THCLR  = 1.000E-03
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
 
-  1 B-frequencies  0.000000D+00
+  1 B-frequencies  0.000000E+00
 
     1 second order properties calculated with symmetry no.    2 and labels:
 
@@ -633,9 +676,9 @@ Represented as: D2
  the required MO integrals are already available.
 
 
-   SCF energy         :      -40.170920554256170
- -- inactive part     :      -53.684214768723450
- -- nuclear repulsion :       13.513294214467280
+   SCF energy         :      -40.170920554256028
+ -- inactive part     :      -53.684214768775547
+ -- nuclear repulsion :       13.513294214519521
 
 
  >>>>>>>>>> Linear response calculation
@@ -665,19 +708,19 @@ Represented as: D2
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   4.89D-04
+ RSP solution vector no.    1; norm of residual   4.89E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@YDIPLEN    YDIPLEN   1.164546443783D+01
+@YDIPLEN    YDIPLEN   1.164546443828E+01
 
 
- Time used in linear response calculation is      0.00 CPU seconds for symmetry 2
+ Time used in linear response calculation is      0.06 CPU seconds for symmetry 2
 
 
  >>>>>>>>>> Linear response calculation
@@ -707,19 +750,19 @@ Represented as: D2
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   4.89D-04
+ RSP solution vector no.    1; norm of residual   4.89E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@XDIPLEN    XDIPLEN   1.164546443807D+01
+@XDIPLEN    XDIPLEN   1.164546443671E+01
 
 
- Time used in linear response calculation is      0.00 CPU seconds for symmetry 3
+ Time used in linear response calculation is      0.05 CPU seconds for symmetry 3
 
 
  >>>>>>>>>> Linear response calculation
@@ -749,25 +792,25 @@ Represented as: D2
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-03
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   4.89D-04
+ RSP solution vector no.    1; norm of residual   4.89E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ZDIPLEN    ZDIPLEN   1.164546443879D+01
+@ZDIPLEN    ZDIPLEN   1.164546443940E+01
 
 
- Time used in linear response calculation is      0.00 CPU seconds for symmetry 4
+ Time used in linear response calculation is      0.06 CPU seconds for symmetry 4
 
- >>>> Total CPU  time used in RESPONSE:   0.18 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.22 seconds
  >>>> Total wall time used in RESPONSE:   0.00 seconds
- >>>> Total CPU  time used in DALTON:   0.31 seconds
- >>>> Total wall time used in DALTON:   0.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.37 seconds
+ >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:24:36 2001
+     Date and time (Linux)  : Sat Jun  8 22:35:45 2002
      Host name              : slater.uio.no                           
