@@ -1304,7 +1304,8 @@ C
          MULBSI(NUCIND) = MAX(MBSI,1)
          IF (MBSI .GT. 1) THEN
             CHARGE(NUCIND) = D0
-            IZATOM(NUCIND) = -1
+            IZATOM(NUCIND) = 0
+C           IZATOM(NUCIND) = -1
 C           ... code -1 to tell MBSI
             GNUEXP(NUCIND) = D0
          ELSE
