@@ -1383,7 +1383,7 @@ C ::: track of indexes, so that all combinations are tried.        :::
                                  V2(3) = V2(3) + ATMARR(3,M)
  167                          CONTINUE
 C ::: We check for all possible orders of rotation from Ord/2 and down :::
-     0                        IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(1))
+                              IF((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(1))
      1                                       .GT. TOLLRN*TOLLRN) THEN
                                DO 168 M = IORD/2, MINORD, -1
                                 IF(ROTAXS(MXM,ATMARR,TMPARR,M,
