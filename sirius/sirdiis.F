@@ -572,7 +572,7 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
      &       + DDOT(NNBAST,DAOSAV,1,FAOSAV(1,INDEVC,1),1) * DP5
          IF(DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
-     &                  WRK(KFREE),LFREE)
+     &                  WRK(KFREE),LFREE,IPRDIS)
 C
          IF (ONLYFC) THEN
             EACTIV = D0
@@ -1471,7 +1471,7 @@ C
       END
 c /* DFT_ADD_KS */
       SUBROUTINE DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,FCAO,FVAO,
-     &                      WRK,LWRK)
+     &                      WRK,LWRK,IPRFCK)
 c     TMP1 is of NNBASX size, TMP2 is of N2BASX size.  They are passed
 c     because they are available but they could as well be allocated
 c     here.
