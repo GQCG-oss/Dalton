@@ -139,5 +139,5 @@ check_second_hyperpolarizabilities 0.067 0.067 0.067 'Z;Y,Z,Y' 34.9550 1e-4
 check_second_hyperpolarizabilities 0.067 0.067 0.067 'Z;Z,Z,Z' 4.8315 1e-4
 "
 
-source ./functions || { echo "'functions' library not found." ; exit 1; }
+. ./functions || { echo "'functions' library not found." ; exit 1; }
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
