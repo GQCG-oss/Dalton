@@ -26,6 +26,7 @@
 # machine libraries
 # For Red Hat 7.0 the shipped compiler (gcc-g77-2.96-54) does not 
 # work properly ... test and issue warning. kh010302
+# Darwin (OS X) support added 151202 tuh 
 #
 
 # set the target def 
@@ -44,7 +45,7 @@ blas="false"
 blas2="false"
 blas3="false"
 MACHTYPE=`uname -s`
-if [ `uname` = 'Linux' ]; then
+if [ "$MACHTYPE" = 'Linux' -o "$MACHTYPE" = Darwin ]; then
     ECHO='echo -e'
     prc=`uname -m`
 else
@@ -57,7 +58,7 @@ $ECHO '   Configuring the DALTON Makefile.config and DALTON run script'
 $ECHO '------------------------------------------------------------------'
 $ECHO ''
 
-arclist='aix convex cray cray-t3d cray-t3e dec-alpha linux-alpha linux paragon sgi sun hp hal cray-t90 nec'
+arclist='aix convex cray cray-t3d cray-t3e dec-alpha linux-alpha linux paragon sgi sun hp hal cray-t90 nec darwin'
 
 #
 # Attempting auto-configuration. The list of replies from uname should be
@@ -76,6 +77,7 @@ if [ -z "$1" ]; then
 	OSF1 ) ARCH="-dec-alpha";;
  	HP-UX ) ARCH="-hp";;
  	SunOS ) ARCH="-sun";;
+        Darwin ) ARCH="-darwin";;
     * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
         exit;;
     esac
@@ -112,6 +114,7 @@ case $ARCH in
     -hp ) WHICH="hp";;
     -linux ) WHICH="linux";;
     -hal ) WHICH="hal";;
+    -darwin ) WHICH="darwin";;  
     -?|-help ) $ECHO " Run from command line: 'configure -architecture'\n\n The following architectures are allowed:\n    $arclist"
         exit;;
     * ) $ECHO "$1 is an unsupported architecture. Choose one of\n   $arclist\n\n NOTE: The syntax is 'configure -architecture'\n"
@@ -160,6 +163,9 @@ case $WHICH in
     linux)    liblist='libatlas.a libblas.a'
               complist='pgf77 g77'
               ccmplist='pgcc gcc';;
+    darwin)   liblist='libatlas.a libblas.a'
+              complist='g77'
+              ccmplist='gcc';;
     hal)      liblist='libblas.a'
               complist='frt'
               ccmplist='cc';;
@@ -897,6 +903,19 @@ case $WHICH in
               fi
               inc='-I../include'
               cpp=${cpp}" -DIMPLICIT_NONE";;
+    darwin) if [ "$mesp" = "dummy" ]; then
+              cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+            else       
+              cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+              set_parallel_def $mesp
+            fi 
+            cpp="-DVAR_G77 $cpp"
+            copt="-mcpu=7450"
+            copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
+            opt="$copt -fno-second-underscore -fno-globals -Wno-globals"
+            def='linux.x'
+            inc='-I../include'
+            cpp=${cpp}" -DIMPLICIT_NONE";;
     hal) if [ "$mesp" = "dummy" ]; then
                 cpp="-DSYS_HAL -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -Wp,-P"
             else
