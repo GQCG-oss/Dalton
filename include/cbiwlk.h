@@ -1,5 +1,5 @@
 C
-C$Id: cbiwlk.h,v 1.4 2001-04-21 12:12:01 ruud Exp $
+C$Id: cbiwlk.h,v 1.5 2001-12-13 08:54:39 ruden Exp $
 C
       PARAMETER (MAXTMP = 20)
       LOGICAL WFPRED, REJECT, KEEPSY, VIBCNV,

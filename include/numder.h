@@ -1,9 +1,9 @@
 C     
-C $Id: numder.h,v 1.3 2001-10-08 18:38:16 vebjornb Exp $
+C $Id: numder.h,v 1.4 2001-12-13 08:54:39 ruden Exp $
 C
       LOGICAL NWPROP, NOMOVE, FSTPRP, NUMELC, CMPARE, SDRTST,
-     &        RESTRT, DRYRUN, FRSTNM, PRPVIB, MANUAL, ADSTBK,
-     &        NOADSY
+     &        RESTRT, DRYRUN, FRSTNM, PRPVIB, ADSTBK, NOADSY, 
+     &        MANUAL
       DIMENSION KDRYRN(6)
       COMMON /NUMDER/ KDRYRN, NMORDR, NAORDR, NDCOOR, NMREDU, 
      &                NUMCAL, MEMOFF, NMDPRP, NMRDRP, NARDRP, 

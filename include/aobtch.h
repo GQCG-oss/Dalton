@@ -1,5 +1,5 @@
 C
-C$Id: aobtch.h,v 1.4 2001-10-01 13:22:17 vebjornb Exp $
+C$Id: aobtch.h,v 1.5 2001-12-13 08:54:39 ruden Exp $
 C
       LOGICAL ACTVBT
       COMMON /AOBTCH/ EXPBT(MXPRIM),  

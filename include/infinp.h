@@ -1,5 +1,5 @@
 C
-C$Id: infinp.h,v 1.2 2001-10-01 13:22:18 vebjornb Exp $
+C$Id: infinp.h,v 1.3 2001-12-13 08:54:39 ruden Exp $
 C
       PARAMETER (NFLAG = 80, MAXRTS = 20, MXFELT = 20)
       COMMON /INTINP/ ISPIN,ISTATE,LSYM,NACTEL, MCTYPE,

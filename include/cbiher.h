@@ -1,5 +1,5 @@
 C
-C$Id: cbiher.h,v 1.5 2001-10-01 13:22:17 vebjornb Exp $
+C$Id: cbiher.h,v 1.6 2001-12-13 08:54:39 ruden Exp $
 C
       LOGICAL SKIP, TSTINP, HAMILT, DIPLEN, SPNORB, SOTEST, SUPMAT,
      &        DIPVEL, QUADRU, SECMOM, ONEPRP, CARMOM, SPHMOM, OCTUPO,
