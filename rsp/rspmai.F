@@ -32,12 +32,19 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmai.F,v 1.9 2001-06-22 11:51:22 hjj Exp $
+C$Id: rspmai.F,v 1.10 2001-06-22 13:11:19 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.9  2001/06/22 11:51:22  hjj
+1) stop if HIRPA and RSPCI (incompatible)
+2) removed unused OLDVEC initialization (was in infcr.h)
+3) output changes
+4) Consistency checks in PPINP: stop if *LINEAR .DOUBLE or *QUADRA .SINGLE
+/hjaaj
+
 Revision 1.8  2001/05/31 06:38:29  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -1022,7 +1029,7 @@ C
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC',
      *            '.NODOIT', '.X2TEST', '.A2TEST',
      *            '.SINGLE', '.DOUBLE', '.THCLR ', '.MAXITL',
-     *            'xxxxxxx', '.NSIMUL', '.NSTART'/
+     *            '.TRIPLE', '.NSIMUL', '.NSTART'/
 C
       DATA SPNDEF/.FALSE./
 C
@@ -1231,6 +1238,8 @@ C
                   READ (LUCMD,*) MAXITL
                GO TO 100
  47            CONTINUE
+                  TRPLET = .TRUE.
+                  TRPFLG = .TRUE.
                GO TO 100
  48            CONTINUE
                   READ (LUCMD,*) (NPPSIM(J),J=1,NSYM)
@@ -1280,25 +1289,26 @@ C
          IF (SPNDEF) THEN
             TRPLET = .TRUE.
             TRPFLG = .TRUE.
-            WRITE(LUPRI,'(A,L1,/)') 
-     *      ' Spin orbit calculation requested               : TRPFLG ='
-     *      ,TRPFLG
+            WRITE(LUPRI,'(A,/)') 
+     *      ' Spin orbit matrix elements requested'
          END IF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
      *       ,IPRPP
          WRITE(LUPRI,'(A,I4)')
-     *      ' Maximum number of iterations                   : MAXITL ='
-     *       ,MAXITL
-         WRITE(LUPRI,'(A,I4)')
-     *      ' Maximum number of iterations                   : MAXITP ='
+     *      ' Maximum number of iterations for eigenval.eqs. : MAXITP ='
      *       ,MAXITP
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence                      : THCPP  ='
+     *      ' Threshold for convergence of eigenval.eqs.     : THCPP  ='
      *      ,THCPP
-         WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence                      : THCLR  ='
+         IF (EXMOM) THEN
+            WRITE(LUPRI,'(A,I4)')
+     *      ' Maximum number of iterations lin.eqs. for A    : MAXITL ='
+     *       ,MAXITL
+            WRITE(LUPRI,'(A,1P,D10.3)')
+     *      ' Threshold for convergence of lin.eqs. for A    : THCLR  ='
      *      ,THCLR
+         END IF
          WRITE(LUPRI,'(A,I4)')
      *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
      *      ,MAXITO
@@ -1319,6 +1329,7 @@ C
      *      ,ABSYM
          IF (OLSEN) WRITE(LUPRI,'(/A,L1)')
      *      ' CI TRIAL VECTORS WITH OLSEN ALGORITHM. OLSEN=',OLSEN
+       IF (EXMOM) THEN
          IF (IPREXM.NE.2) WRITE(LUPRI,'(/A,I5)')
      *        '    PRINT LEVEL IN EXM ROUTINES. IPREXM =',IPREXM
          IF (EXMTES) WRITE (LUPRI,'(/A)')
@@ -1330,6 +1341,11 @@ C
      *        ' (Excitation energy) ISPINB=',ISPINB
          WRITE (LUPRI,'( A,I5)') ' Spin of operator C ,'//
      *        ' (Excitation energy) ISPINC=',ISPINC
+         IF (ISPINA+ISPINB+ISPINC .GT. 0) THEN
+            TRPLET = .TRUE.
+            TRPFLG = .TRUE.
+         END IF
+       END IF
       END IF
       END IF
 C
@@ -1354,7 +1370,7 @@ C
 #include <inftap.h>
 C
       LOGICAL NEWDEF, SPNDEF
-      PARAMETER ( NTABLE = 35 )
+      PARAMETER ( NTABLE = 36 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -1366,7 +1382,8 @@ C
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
      *            '.MAXIT ', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
-     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT'/
+     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
+     *            '.TRIPLE'/
 C
       DATA SPNDEF/.FALSE./
 C
@@ -1387,7 +1404,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
-     *                      28,29,30,31,32,33,34,35,35), I
+     *                      28,29,30,31,32,33,34,35,35,36), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1538,6 +1555,10 @@ C
                GO TO 100
  35            CONTINUE
                   DIROIT=.TRUE.
+               GO TO 100
+ 36            CONTINUE
+                  TRPLET=.TRUE.
+                  TRPFLG=.TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
