@@ -1477,10 +1477,10 @@ C
 #include "chrnos.h"
 #include "elweak.h"
 C
-      LOGICAL NEWDEF, SPNDEF
-      PARAMETER ( NTABLE = 39 )
+      LOGICAL NEWDEF, SPNDEF, NXTLAB
+      PARAMETER ( NTABLE = 41 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL, LABFND
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
@@ -1491,7 +1491,8 @@ C
      *            '.MAXIT ', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2'/
+     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
+     *            '.FERMI ', '.SPIN-D'/
 C
 C
 C
@@ -1511,7 +1512,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
-     *                      28,29,30,31,32,33,34,35,36,37,38,39),I
+     *                      28,29,30,31,32,33,34,35,36,37,38,39,40,41),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1731,6 +1732,31 @@ C PV from spin-orbit 2 el
                LLROP( INDPRP('Y2SPNORB')) = .TRUE.
                LLROP( INDPRP('Z2SPNORB')) = .TRUE.
                GO TO 100
+C
+ 40            CONTINUE
+               CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                     'UNFORMATTED',IDUMMY,.FALSE.)
+ 199           CONTINUE
+               IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                  IF (LABFND(1:3) .EQ. 'FC ')
+     &                 LLROP(INDPRP(LABFND)) = .TRUE.
+                  GOTO 199
+               END IF
+               CALL GPCLOSE(LUPROP,'KEEP')
+               GO TO 100
+C
+ 41            CONTINUE
+               CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                     'UNFORMATTED',IDUMMY,.FALSE.)
+ 198           CONTINUE
+               IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                  IF (LABFND(1:3) .EQ. 'SD ')
+     &                 LLROP(INDPRP(LABFND)) = .TRUE.
+                  GOTO 199
+               END IF
+               CALL GPCLOSE(LUPROP,'KEEP')
+               GO TO 100
+C
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
