@@ -2337,7 +2337,7 @@ C
      *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
      *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
      *            '.DFTAC ','.DFTHES','.DFTTHR','.DFTELS','.RADINT',
-     *            '.ANGINT','.ANGMIN',',.NOPRUN'/
+     *            '.ANGINT','.ANGMIN','.NOPRUN'/
 C
 C     ***** PROCESS INPUT FOR RHFINP *****
 C
