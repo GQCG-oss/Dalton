@@ -31,61 +31,61 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C
-#ifdef UNDEF
-===========================================================================
-MAERKE 940727 ITRSIR=10 og USEDRC (som i .HYPCAL) giver fuldt saet
- af Dirac integraler: dvs. alle integraler baade som Coulomb og Dirac !!!!
-MAERKE 940520 Brug DARECL til LUHLFx, hvor recl kendes
-MAERKE 931201 external option for KTRLVL ??
-MAERKE 900620 new DRCCTL which calls TRA2 to add Dirac integrals.
-MAERKE 900322 definer /TRHSO/ ILXYZ, LUAHSO, LUMHSO;
-              definer IDATA (i.e. LADX,NPQ) for LUAHSO
-              anvend IADOUT(1:3,*) for lx, ly, og lz !!
-/* Comdeck notes */
-se efter MAERKE
-NOTE: 891127 LBINTM skal vaere max record paa LUMINT
-             (bruges i DRCCTL til memory estimate for nxth2m)
-NOTE: 900103 TRACHK routine which checks CMO, INTSYM, ITRLVL m.m.
-         MAERKE 900307: naeste linjer er fra motra2.l02.u
-         ?? anvend #include <tralistgs.h>
-NOTE: 900320 use NCOINT,NE1INT,NE2INT to count integrals written to LUMINT
-=======================
-/* Comdeck rev_log */
---------> lav TRACHK rutine (se ovenover) 940520/hjaaj !!!!!!!!!!
--- version n06 --
-950102-hjaaj
-TRA2E1: corrected OPHLF3 calculation
--- version n05 --
-940727-hjaaj
-TRACTL: delete AOORDINT after transformation if ITRSIR .lt. 0
-TRALIM: comments on MISH, MASH reset for JTRLVL .gt. 2
-940520-hjaaj
-TRA2,TRA2E1: OPHLFx parameter, call DARMOV(LUHLFx) if true to delete
-   any large temporary files before exit from TRACTL.
--- version n04 --
-931201-hjaaj:
-TRALVL: 'MOFCFV' is not defined any more.
-920529-hjaaj:
-TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
-        use NOCOUL in LTUPQ calculation
--- version m02 --
-901024-hjaaj: renamed LUAINT to LUORDA
-901016-hjaaj: TRA2: a) return immediately if DOTUPQ,DORUPQ,DOUSPQ all
-   false; b) changed DORUPQ and DOUSPQ definitions so now always false
-   if the corresponding integrals not needed for exchange.
--- TRACTL: USEDRC reset to true if ITRLVL 1,2,3, or 4
--- TRASE2: dummy routine
-900924-hjaaj: define LUAINT as LUORD = LUDA = 14
--- changed IBM names from ORDINT,MOLINT to AORDINT,MTWOINT
-900912-hjaaj: call flshfo(lupri) at end of tractl
-900619-hjaaj: new routine TRALVL for translating from Sirius to
-              newtra transformation levels.
-900320-hjaaj: implemented ICDTRA in TRA2E1
-900316-hjaaj: added NXTH2D and NX2H2D routines
-900314-hjaaj: rewritten NX2H2M to outer loop over symmetries.
-===========================================================================
+#ifdef OLD_REV_LOG
+!===========================================================================
+!MAERKE 940727 ITRSIR=10 og USEDRC (som i .HYPCAL) giver fuldt saet
+! af Dirac integraler: dvs. alle integraler baade som Coulomb og Dirac !!!!
+!MAERKE 940520 Brug DARECL til LUHLFx, hvor recl kendes
+!MAERKE 931201 external option for KTRLVL ??
+!MAERKE 900620 new DRCCTL which calls TRA2 to add Dirac integrals.
+!MAERKE 900322 definer /TRHSO/ ILXYZ, LUAHSO, LUMHSO;
+!              definer IDATA (i.e. LADX,NPQ) for LUAHSO
+!              anvend IADOUT(1:3,*) for lx, ly, og lz !!
+!/* Comdeck notes */
+!se efter MAERKE
+!NOTE: 891127 LBINTM skal vaere max record paa LUMINT
+!             (bruges i DRCCTL til memory estimate for nxth2m)
+!NOTE: 900103 TRACHK routine which checks CMO, INTSYM, ITRLVL m.m.
+!         MAERKE 900307: naeste linjer er fra motra2.l02.u
+!         ?? anvend #include "tralistgs.h"
+!NOTE: 900320 use NCOINT,NE1INT,NE2INT to count integrals written to LUMINT
+!=======================
+!/* Comdeck rev_log */
+!--------> lav TRACHK rutine (se ovenover) 940520/hjaaj !!!!!!!!!!
+!-- version n06 --
+!950102-hjaaj
+!TRA2E1: corrected OPHLF3 calculation
+!-- version n05 --
+!940727-hjaaj
+!TRACTL: delete AOORDINT after transformation if ITRSIR .lt. 0
+!TRALIM: comments on MISH, MASH reset for JTRLVL .gt. 2
+!940520-hjaaj
+!TRA2,TRA2E1: OPHLFx parameter, call DARMOV(LUHLFx) if true to delete
+!   any large temporary files before exit from TRACTL.
+!-- version n04 --
+!931201-hjaaj:
+!TRALVL: 'MOFCFV' is not defined any more.
+!920529-hjaaj:
+!TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
+!        use NOCOUL in LTUPQ calculation
+!-- version m02 --
+!901024-hjaaj: renamed LUAINT to LUORDA
+!901016-hjaaj: TRA2: a) return immediately if DOTUPQ,DORUPQ,DOUSPQ all
+!   false; b) changed DORUPQ and DOUSPQ definitions so now always false
+!   if the corresponding integrals not needed for exchange.
+!-- TRACTL: USEDRC reset to true if ITRLVL 1,2,3, or 4
+!-- TRASE2: dummy routine
+!900924-hjaaj: define LUAINT as LUORD = LUDA = 14
+!-- changed IBM names from ORDINT,MOLINT to AORDINT,MTWOINT
+!900912-hjaaj: call flshfo(lupri) at end of tractl
+!900619-hjaaj: new routine TRALVL for translating from Sirius to
+!              newtra transformation levels.
+!900320-hjaaj: implemented ICDTRA in TRA2E1
+!900316-hjaaj: added NXTH2D and NX2H2D routines
+!900314-hjaaj: rewritten NX2H2M to outer loop over symmetries.
+!===========================================================================
 #endif
 C /* Deck n_tractl */
       SUBROUTINE N_TRACTL(ITRSIR,CMO,WORK,KWORK)
@@ -93,10 +93,10 @@ C
 C Mar 1990 Hans Joergen Aa. Jensen
 C last revision 940727-hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(NCMOT),WORK(KWORK)
 C
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFORB : NCMOT
@@ -104,11 +104,11 @@ C   INFTRA : IPRTRA,USEDRC
 C CBGETDIS : IAD*
 C   INFTAP : LUORDA
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <inftra.h>
-#include <cbgetdis.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "inftra.h"
+#include "cbgetdis.h"
+#include "inftap.h"
 C
       LOGICAL NOCOUL,NOEXCH,NOTUVX,MCOPT,DELORD
 C
@@ -200,18 +200,18 @@ C    Comments:
 C       hj-890106: INTSYM = symmetry of integrals
 C       In revised INTSORT KEEP(2) = INTSYM below
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),TUVX(*),WRK(*)
       LOGICAL   NOTUVX, NOCOUL,NOEXCH, MCOPT
 C
-#include <maxorb.h>
+#include "maxorb.h"
 C
 C Used from common blocks:
 C  TRINP  : MMORBX
 C  INFTRA : IPRTRA
 C
-#include <trinp.h>
-#include <inftra.h>
+#include "trinp.h"
+#include "inftra.h"
 C
       CALL QENTER('TRACT2')
 C
@@ -250,7 +250,7 @@ C  Retrieve first free address, address of CMO and
 C  address of ICDTRA from the LUMINT address array
 C  (here IADRM).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IADRM(3,1297)
       IADFRE = IADRM(1,1297)
       IADCMO = IADRM(2,1297)
@@ -262,12 +262,12 @@ C  /* Deck n_siropi */
 C
 C 900309-hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFTAP : LUORDA,LUMINT
 C
-#include <inftap.h>
+#include "inftap.h"
 #if defined (VAR_DARECL)
       CALL DARECL(LUORDA,8*8*1024)
 #endif
@@ -305,8 +305,8 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION H2CD(1),NEEDTP(6),WRK(1)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
@@ -318,9 +318,9 @@ C   INFORB : NNORBX
 C   INFDIM : NORBMA
 C   INFPRI : LUERR
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       SAVE KFRSAV, KNEXT, KIADRM, KICDTR
       DATA KNEXT /-1/
@@ -407,13 +407,13 @@ C       BUF(NORBMA,NORBMA,2)
 C
 C ****************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(1)
       INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
 C
-#include <iratdef.h>
-c#include <dacodes.h>
-#include <dalistgs.h>
+#include "iratdef.h"
+c#include "dacodes.h"
+#include "dalistgs.h"
 C
 C Used from common blocks:
 C   INFORB : NORBX,NORBT,NSYM
@@ -421,15 +421,15 @@ C   INFIND : IROW(*)
 C   INFTAP : LUMINT
 C   INFPRI : IPRSIR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       DIMENSION IADCD(8)
       SAVE      IADCD,INTSY1, JSUM, ICFRST,ICLAST,IDFRST,IDLAST
@@ -682,8 +682,8 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION H2CD(1),NEEDTP(6),WRK(1)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
@@ -695,9 +695,9 @@ C   INFORB : NNORBX
 C   INFDIM : NORBMA
 C   INFPRI : LUERR
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       SAVE KFRSAV, KNEXT, KIADRM, KICDTR
       DATA KNEXT /-1/
@@ -783,13 +783,13 @@ C       BUF(NORBMA,NORBMA,2)
 C
 C ****************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(1)
       INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
 C
-#include <iratdef.h>
-c#include <dacodes.h>
-#include <dalistgs.h>
+#include "iratdef.h"
+c#include "dacodes.h"
+#include "dalistgs.h"
 C
 C Used from common blocks:
 C   INFORB : NORBX,NORBT,NSYM
@@ -797,15 +797,15 @@ C   INFIND : IROW(*)
 C   INFTAP : LUMINT
 C   INFPRI : IPRSIR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       DIMENSION IADCD1(8),IADCD2(8)
       SAVE      IADCD1,IADCD2,INTSY1, JSUM, ICFRST,ICLAST,IDFRST,IDLAST
@@ -1041,96 +1041,96 @@ C
       RETURN
       END
 #ifdef UNDEF
-/* Comdeck notes and ideas*/
-se MAERKE
-ABACUS new transf: soerg for alt i TRASET, TRALIM, TRAINI er i orden!
-900308-hjaaj: fjerne MCOPT og altid blot kraeve mindst to okkup.?
- (forudsat ITRLVL .le. 2); eller teste paa INTSYM? (er det altid ok?).
-900124-hjaaj: indfoert ITUSYM parameter for spin-orbit integraler!
-891227-hjaaj: new input: *TRAINP .PRINT .FIOPRI .PRIUNIT .SKIP
-  .OLDMOLECULE .NOSUPMAT .OPTIONS ...
-  - REMEMBER change abadtrn.u if change in tr2ctl (everything defined
-  in TRACTL, TRASET and TRALIM must be define in abadtrn.u)
-  HUSK IDISKM in IADOUT(*,LIADUT)
-  - LIADUT = 1297 = 1296 + 1 where IADOUT(*,1297) is used for next
-  free address
-891220-Henrik: infoer kun Dirac til CCSD.
-890825-hjaaj: if out-of-core nec. then try to keep two or at least one
-  of TUPQ, RUPQ, USPQ in core instead of taking all three out-of-core.
-  - changed NBAS to MBAS etc.
-890704-hjaaj: option for appending exchange integral to previously
-   calculated Coulomb integrals
-890612-hjaaj TRA2 call of GTUVX does not work if MISH.gt.0 or MFRO.gt.0
-890611-hjaaj CHECK2 does not work if MISH.gt.0 or MFRO.gt.0
-890605-hjaaj PROGRAM MOTRA2 gives conflict with NAMELIST MOTRA2
-/* Comdeck job_log */
-900314-hjaaj: - written code in TRALIM to determine transf. from ITRLVL
-900313-hjaaj: - implemented JMO[PQRS]2 and ICDTRA in TR2CTL and TRA2
-  - major overhaul of TRALIM (modify MFRO,MISH,MASH,
-  define ITRTYP, define ICDTRA)
-900307-hjaaj: - use QENTER/QEXIT/QTRACE;; use INFTRA for LUPRI,IPRTRA
-  - TRRDAO : stop if illegal IRDAO
-  - TRALIM : corrected code
-900124-hjaaj: - ITUSYM in TRINP cdk; define ITUSYM in TRASET;
-  s/SQUARE/TRASQ/; added IASYM parameter to TRASQ and calls of TRASQ
-900102-hjaaj: - TRAINI: added CMO to param. and LUMINT
-  - TRALIM : defined ICDTRA; - new option NOCOUL;
-  - TRA2: new local var. DORUPQ, DOUSPQ, DOTUPQ
-891229-hjaaj: - revised symmetry checks for exhange integrals so
-  INTSYM.ne.1 cases also can be handled.
-891228-hjaaj: - changed code in TR2CTL to minimize number of temporary
-  files (LUHLF*); - new routine TRAINI
-  - split TRA2 in TRA2 and TRA2E1
-891227-hjaaj: - new routine TRASET
-  - changed test program motra2 to define inforb,inftap(used in TRASET)
-  - GTUVX and allocation of TUVX : NNASHX*NNASHX instead of NNASHY
-891221-hjaaj: - RDDER2 dummy routine
-  - Reordered decks in two groups: newtractl.u and chktra2.u
-  - Worked on deck tractl, was unfinished. Introduced ICDTRA(NNORBX)
-891220-hjaaj: transfer INTSYM and ICDTRA(NNORBX) to LUMINT
-  - #include <dacodes.h> and use symbolic names for DAFILE operations.
-  - #include <dalistgs.h> for gslist.
-890826-hjaaj
-   s/LUINTA/LUAINT/ and s/LUINTM/LUMINT/
-   moved IDATA(352),KEEP(18) to TRUNIT (was local to TR2CTL)
-   changed IADOUT(3888) to IADOUT(3,LIADUT), LIADUT = 1296
-   new IDATA(LIDATA), LIDATA = 1296=36*36 for absolute addressing
-   changed NSYMP from NSYM*(NSYM+1)/2 to 36 = 8*(8+1)/2 for
-     absolute addressing, defined NSYMP in TRINFO
-   changed NCHAIN in TR2CTL to absolute addressing
-890825-hjaaj
-   use local DOEXCH for greater readability in TRA2
-   changed *URPQ,NOUR into *USPQ,NOUS in /TRINFO/,TR2CTL,TRA2
-890824-hjaaj
-   New routine TRALIM; called from TR2CTL
-890823-hjaaj-t13
-   Replaced IEOR with IBTXOR statement function
-890705-hjaaj-t13
-   Skip memory tests for exchange integrals if NOEXCH
-================
-890620-hjaaj-t12.1
-   NOEXCH, MCOPT, and MAXMEM options
-   Test that at least two symmetries occupied in TR2CTL
-================
-890619-hjaaj-t11.2
-   NOTUVX option
-   Check that MEMX .gt. 0
-================
-890610-hjaaj-t10.2
-   Corrected error in CHECK2 (calculation of PQRS address)
-   Count non-zero integrals in test in CHECK2
-   Check that LADX ne 0 in TR2CTL
-890609-hjaaj-t10.1
-   New module GETH2A for reading AO integrals from Molecule LUINTA
-     used when VECTOR=UNIT
-   INTSYM in common TRINP, use INTSYM in CHECK/CHECK2
-================
-890605-hjaaj-t09.1
-   Introduced ITRLVL in parameter lists, value not used yet.
-   Check for INTSYM from LUINTA in KEEP(2)
-   call darecl(LUINTA,8*8*1024) if *DEFINE DARECL
-   Introduced FASTIO test output, starting w. STATUS at IPRTRA=10
-================
+C* Comdeck notes and ideas*
+!se MAERKE
+!ABACUS new transf: soerg for alt i TRASET, TRALIM, TRAINI er i orden!
+!900308-hjaaj: fjerne MCOPT og altid blot kraeve mindst to okkup.?
+! (forudsat ITRLVL .le. 2); eller teste paa INTSYM? (er det altid ok?).
+!900124-hjaaj: indfoert ITUSYM parameter for spin-orbit integraler!
+!891227-hjaaj: new input: *TRAINP .PRINT .FIOPRI .PRIUNIT .SKIP
+!  .OLDMOLECULE .NOSUPMAT .OPTIONS ...
+!  - REMEMBER change abadtrn.u if change in tr2ctl (everything defined
+!  in TRACTL, TRASET and TRALIM must be define in abadtrn.u)
+!  HUSK IDISKM in IADOUT(*,LIADUT)
+!  - LIADUT = 1297 = 1296 + 1 where IADOUT(*,1297) is used for next
+!  free address
+!891220-Henrik: infoer kun Dirac til CCSD.
+!890825-hjaaj: if out-of-core nec. then try to keep two or at least one
+!  of TUPQ, RUPQ, USPQ in core instead of taking all three out-of-core.
+!  - changed NBAS to MBAS etc.
+!890704-hjaaj: option for appending exchange integral to previously
+!   calculated Coulomb integrals
+!890612-hjaaj TRA2 call of GTUVX does not work if MISH.gt.0 or MFRO.gt.0
+!890611-hjaaj CHECK2 does not work if MISH.gt.0 or MFRO.gt.0
+!890605-hjaaj PROGRAM MOTRA2 gives conflict with NAMELIST MOTRA2
+!/* Comdeck job_log */
+!900314-hjaaj: - written code in TRALIM to determine transf. from ITRLVL
+!900313-hjaaj: - implemented JMO[PQRS]2 and ICDTRA in TR2CTL and TRA2
+!  - major overhaul of TRALIM (modify MFRO,MISH,MASH,
+!  define ITRTYP, define ICDTRA)
+!900307-hjaaj: - use QENTER/QEXIT/QTRACE;; use INFTRA for LUPRI,IPRTRA
+!  - TRRDAO : stop if illegal IRDAO
+!  - TRALIM : corrected code
+!900124-hjaaj: - ITUSYM in TRINP cdk; define ITUSYM in TRASET;
+!  s/SQUARE/TRASQ/; added IASYM parameter to TRASQ and calls of TRASQ
+!900102-hjaaj: - TRAINI: added CMO to param. and LUMINT
+!  - TRALIM : defined ICDTRA; - new option NOCOUL;
+!  - TRA2: new local var. DORUPQ, DOUSPQ, DOTUPQ
+!891229-hjaaj: - revised symmetry checks for exhange integrals so
+!  INTSYM.ne.1 cases also can be handled.
+!891228-hjaaj: - changed code in TR2CTL to minimize number of temporary
+!  files (LUHLF*); - new routine TRAINI
+!  - split TRA2 in TRA2 and TRA2E1
+!891227-hjaaj: - new routine TRASET
+!  - changed test program motra2 to define inforb,inftap(used in TRASET)
+!  - GTUVX and allocation of TUVX : NNASHX*NNASHX instead of NNASHY
+!891221-hjaaj: - RDDER2 dummy routine
+!  - Reordered decks in two groups: newtractl.u and chktra2.u
+!  - Worked on deck tractl, was unfinished. Introduced ICDTRA(NNORBX)
+!891220-hjaaj: transfer INTSYM and ICDTRA(NNORBX) to LUMINT
+!  - #include "dacodes.h"and use symbolic names for DAFILE operations.
+!  - #include "dalistgs.h"for gslist.
+!890826-hjaaj
+!   s/LUINTA/LUAINT/ and s/LUINTM/LUMINT/
+!   moved IDATA(352),KEEP(18) to TRUNIT (was local to TR2CTL)
+!   changed IADOUT(3888) to IADOUT(3,LIADUT), LIADUT = 1296
+!   new IDATA(LIDATA), LIDATA = 1296=36*36 for absolute addressing
+!   changed NSYMP from NSYM*(NSYM+1)/2 to 36 = 8*(8+1)/2 for
+!     absolute addressing, defined NSYMP in TRINFO
+!   changed NCHAIN in TR2CTL to absolute addressing
+!890825-hjaaj
+!   use local DOEXCH for greater readability in TRA2
+!   changed *URPQ,NOUR into *USPQ,NOUS in /TRINFO/,TR2CTL,TRA2
+!890824-hjaaj
+!   New routine TRALIM; called from TR2CTL
+!890823-hjaaj-t13
+!   Replaced IEOR with IBTXOR statement function
+!890705-hjaaj-t13
+!   Skip memory tests for exchange integrals if NOEXCH
+!================
+!890620-hjaaj-t12.1
+!   NOEXCH, MCOPT, and MAXMEM options
+!   Test that at least two symmetries occupied in TR2CTL
+!================
+!890619-hjaaj-t11.2
+!   NOTUVX option
+!   Check that MEMX .gt. 0
+!================
+!890610-hjaaj-t10.2
+!   Corrected error in CHECK2 (calculation of PQRS address)
+!   Count non-zero integrals in test in CHECK2
+!   Check that LADX ne 0 in TR2CTL
+!890609-hjaaj-t10.1
+!   New module GETH2A for reading AO integrals from Molecule LUINTA
+!     used when VECTOR=UNIT
+!   INTSYM in common TRINP, use INTSYM in CHECK/CHECK2
+!================
+!890605-hjaaj-t09.1
+!   Introduced ITRLVL in parameter lists, value not used yet.
+!   Check for INTSYM from LUINTA in KEEP(2)
+!   call darecl(LUINTA,8*8*1024) if *DEFINE DARECL
+!   Introduced FASTIO test output, starting w. STATUS at IPRTRA=10
+!================
 #endif
 C  /* Deck tr2ctl */
       SUBROUTINE TR2CTL(NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
@@ -1159,11 +1159,11 @@ C    Comments:
 C       hj-890106: INTSYM = symmetry of integrals
 C       In revised INTSORT KEEP(2) = INTSYM below
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),TUVX(*),WORK(*),ICDTRA(*)
       LOGICAL   NOTUVX, NOCOUL, NOEXCH, MCOPT
 C
-c#include <dacodes.h>
+c#include "dacodes.h"
 C
 C Used from common blocks:
 C  TRINP  : INTSYM
@@ -1172,14 +1172,14 @@ C  TRINFO : LX2X3, ?
 C  INFTRA : IPRTRA
 C  INFTAP : LUMINT
 C
-#include <priunit.h>
-#include <trinp.h>
-#include <trunit.h>
-#include <trinfo.h>
-#include <inftra.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "trinp.h"
+#include "trunit.h"
+#include "trinfo.h"
+#include "inftra.h"
+#include "inftap.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('TR2CTL')
 C
@@ -1225,11 +1225,11 @@ C             to absolute addressing of a given quadruplet.
 C
       IF (IPRTRA .GE. 2 .AND. IPRTRA .LT. 5) WRITE(LUPRI,2000)
 #if defined (SYS_UNIX) || defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
- 2000 FORMAT(/1X,'SYMMETRY BASIS FUNCTION  ORBITALS',3X,
-     &       'MEMLFT   LTUPQ  USER(SEC) SYS(SEC)')
+ 2000 FORMAT(/' SYMMETRY BASIS FUNCTION  ORBITALS',3X,
+     &       ' MEMLFT     LTUPQ   USER(SEC) SYS(SEC)')
 #else
- 2000 FORMAT(/1X,'SYMMETRY BASIS FUNCTION  ORBITALS',3X,
-     &       'MEMLFT   LTUPQ   CPU(SEC) I/O(SEC)')
+ 2000 FORMAT(/' SYMMETRY BASIS FUNCTION  ORBITALS',3X,
+     &       ' MEMLFT     LTUPQ    CPU(SEC) I/O(SEC)')
 #endif
 C
       ITP    = 0
@@ -1361,58 +1361,63 @@ C         LX2X3 is defined in TRASET
           LW4    = MAX(LW4, LW2 + LX2X3)
           MEMLFT = MEMX-LW4+1
 C         CORE ALLOCATION FOR THE SORTING AREAS RUPQ,USPQ, AND TUPQ
-          IF (NOCOUL) THEN
+          IF (NOCOUL .OR. NOTU.EQ.0) THEN
+           NBPQMAX= NBPQ
+           LTUPQCM= 0
            LTUPQ  = 0
-           LTUPQM = 0
           ELSE
-           LTUPQ  = NOTU*NBPQ
-           LTUPQM = NOTU
+           NBPQMAX= MIN( MEMLFT/NOTU, NBPQ)
+           LTUPQCM= NOTU
+           LTUPQ  = NOTU*NBPQMAX
           END IF
           IF (NOEXCH) THEN
-           LRUPQ = 0
-           LUSPQ = 0
+           LTUPQM = LTUPQCM
+           LRUPQ  = 0
+           LUSPQ  = 0
           ELSE
-           LRUPQ  = NBPQ*NBR*NOCS
-           LUSPQ  = NBPQ*NBS*NOCR
-           LTUPQ  = MAX(LTUPQ,NOCQ*NOCS*NBR*NOP,NOCP*NOCS*NBR*NOQ)
-           LTUPQM = MAX(LTUPQM,NOCQ*NOCS*NOP,NOCP*NOCS*NOQ)
-           MEMT   = LRUPQ+LUSPQ+LTUPQ
            L2M    = MAX(NOCQ*NOCR*NOP,NOCP*NOCR*NOQ)
 C          ... L2M is minimum size of LRUPQ+LTUPQ
-#if !defined (VAR_HJAAJ920529)
-           IF (MEMT.GT.MEMLFT) THEN
-            NPQMIN = MIN(256,NBPQ)
-C           min. no. of elements in each record on temp. files
-            LUSPQ  = MIN(NPQMIN*NOCR*NBS, MEMLFT-L2M, MEMLFT/3 )
-            LRUPQ  = MIN(NPQMIN*NOCS*NBR, MEMLFT/3 )
-            LRUPQ  = MAX(LRUPQ, MEMLFT-LUSPQ-LTUPQ)
-#else
-CMAERKE-920529-hjaaj:
-problem with using my original core allocation is that
-some record lengths will be ONE if anything out of core!
---> highly inefficient (and wasteful if record length = 4kbyte) !
-For example, record length for LUSPQ is LUSPQ / (NBS*NOCR)
-           L2     = L2M*NBS
-           IF(MEMT.GT.MEMLFT.OR.L2.GT.MEMLFT-LUSPQ) THEN
-#if defined (VAR_BJORN)
-            LRUPQ  = MEMLFT*LRUPQ/MEMT
-            LUSPQ  = MEMLFT*LUSPQ/MEMT
-#else
-            LUSPQ  = NBS*NOCR
-            MEMT   = LRUPQ+LUSPQ+LTUPQ
-            IF(MEMT.GT.MEMLFT.OR.L2.GT.MEMLFT-LUSPQ) THEN
-C            ... Try to use only two temporary files
-             LRUPQ  = MEMLFT - LTUPQ - LUSPQ
-             IF(LRUPQ .LT. NBR*NOCS) THEN
-C             ... Too bad, we need three temporary files
-              LRUPQ  = NBR*NOCS
-             ENDIF
-            ENDIF
-#endif
-#endif
-           ENDIF
+           LTUPQXM= MAX(NOCQ*NOCS*NOP,NOCP*NOCS*NOQ)
+           LTUPQM = MAX(LTUPQCM,LTUPQXM)
+           LRUPQM = NBR*NOCS
+           LUSPQM = NBS*NOCR
+           IF (LRUPQM+LUSPQM .NE. 0)
+     &     NBPQMAX  = MIN(NBPQMAX, (MEMLFT-LTUPQM)/(LRUPQM+LUSPQM))
+C
+C          --------
+C          Find optimal NBPQX, number of simultaneous P,Q
+  100      IF (NBPQMAX .LE. 0) GO TO 902
+           MEMLFTX= MAX(NBPQMAX*LTUPQCM,LTUPQXM,
+     &                  MEMLFT - NBPQMAX*(LRUPQM+LUSPQM))
+C          Memory left for LTUPQ with min. NBPQMAX elements in each record
+C          on any temp. files for RUPQ and USPQ (if possible).
+C          We try if we can avoid temp. file for TUPQ.
+C          Now find LTUPQ with these constraints:
+           LTUPQ  = NBPQMAX*LTUPQCM
+           NBRX   = NBR
+           IF (LTUPQXM .NE. 0) THEN
+              NBRX   = MIN( MEMLFTX/LTUPQXM, NBR)
+              LTUPQ  = MAX( LTUPQM, NBRX*LTUPQXM )
+           END IF
+C          Memory left for RUPQ and USPQ:
+           MEMLFTX= MEMLFT - LTUPQ
+           NBPQX  = NBPQMAX
+           IF (LRUPQM+LUSPQM .NE. 0)
+     &     NBPQX  = MIN(NBPQX, MEMLFTX/(LRUPQM+LUSPQM))
+           IF (LUSPQM .NE. 0)
+     &     NBPQX  = MIN(NBPQX, (MEMLFT-L2M)/LUSPQM)
+           LRUPQ  = NBPQX*LRUPQM
+           LUSPQ  = NBPQX*LUSPQM
+           LTUPQ  = MAX(NBPQX*LTUPQCM, NBRX*LTUPQXM)
+           MEMT   = LRUPQ+LUSPQ+LTUPQ
+C
+           NBPQMAX = NBPQMAX  - 32
+           IF (NBPQX .LT. NBPQMAX) GO TO 100
+C          -------- end Find optimal NBPQX
           END IF
+C
           LTUPQ  = MEMLFT-LRUPQ-LUSPQ
+C
           IF (.NOT. NOEXCH) THEN
            IF(LRUPQ.LT.NBR*NOCS)  GO TO 902
            IF(LUSPQ.LT.NBS*NOCR)  GO TO 902
@@ -1430,7 +1435,7 @@ C
              IF (IPRTRA .GE. 5) WRITE(LUPRI,2000)
              WRITE(LUPRI,2100) ISP,ISQ,ISR,ISS,NBP,NBQ,NBR,NBS,
      &                          NOP,NOQ,NOR,NOS,MEMLFT,LTUPQ,CPE,TIOE
- 2100        FORMAT(1X,4I2,1X,4I3,1X,4I3,2I8,2F9.3)
+ 2100        FORMAT(1X,4I2,1X,4I3,1X,4I3,2I10,2F9.3)
           END IF
   101    CONTINUE
   102   CONTINUE
@@ -1442,10 +1447,10 @@ C
          WRITE(LUPRI,2200) CPT,TIOT
       END IF
 #if defined (SYS_UNIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
- 2200 FORMAT(/1X,'TOTAL USER TIME(SEC)',F9.3,
+ 2200 FORMAT(/' TOTAL USER TIME(SEC)',F9.3,
      &        ' TOTAL SYSTEM TIME(SEC)',F9.3)
 #else
- 2200 FORMAT(/1X,'TOTAL CPU TIME(SEC)',F9.3,' TOTAL I/O TIME(SEC)',F9.3)
+ 2200 FORMAT(/' TOTAL CPU TIME(SEC)',F9.3,' TOTAL I/O TIME(SEC)',F9.3)
 #endif
 C
 C     FINALLY save first free address on LUMINT in IADOUT(1,LIADUT) and
@@ -1493,12 +1498,12 @@ C     HERE IF NOT ENOUGH CORE SPACE
 C
   902 WRITE(LUPRI,9020) MEMLFT,LRUPQ,NBR*NOCS,LUSPQ,NBS*NOCR,
      &                   LTUPQ,LTUPQM,LRUPQ+LTUPQ,L2M
- 9020 FORMAT(/1X,'NOT ENOUGH CORE SPACE FOR SORTING IN TRA2'
-     &       /1X,'TOTAL SORTING SPACE IS',I8,
-     &       /1X,'STEP1: AVAILABLE IS',I8,'  NEEDED IS',I8,
-     &       /1X,'STEP2:     "       ',I8,'    "      ',I8,
-     &       /1X,'STEP3:     "       ',I8,'    "      ',I8,
-     &       /1X,'STEP4:     "       ',I8,'    "      ',I8)
+ 9020 FORMAT(/' NOT ENOUGH CORE SPACE FOR SORTING IN TRA2'
+     &       /' TOTAL SORTING SPACE IS',I8,
+     &       /' STEP1: AVAILABLE IS',I8,'  NEEDED IS',I8,
+     &       /' STEP2:     "       ',I8,'    "      ',I8,
+     &       /' STEP3:     "       ',I8,'    "      ',I8,
+     &       /' STEP4:     "       ',I8,'    "      ',I8)
       CALL QTRACE(LUPRI)
       CALL QUIT('TR2CTL, not enough core space for sorting.')
       END
@@ -1537,12 +1542,12 @@ C                                                   and ISR.ne.ISS
 C
 C     ********** IBM-3090 RELEASE 87 09 14 **********
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),X1(*),X2(*),X3(*),RUPQ(*),USPQ(*),TUPQ(*),TUVX(*)
       DIMENSION ICDTRA(*)
       LOGICAL   NOTUVX, NOCOUL, NOEXCH, OPHLF1, OPHLF2, OPHLF3
-#include <iratdef.h>
-c#include <dacodes.h>
+#include "iratdef.h"
+c#include "dacodes.h"
 C
 C Used from common blocks:
 C   TRINP  : ?,ITUSYM,?
@@ -1551,12 +1556,12 @@ C   TRINFO : NSYMP, LX2X3, ?
 C   INFTRA : IPRTRA
 C   INFTAP : LUORDA,?
 C
-#include <priunit.h>
-#include <trinp.h>
-#include <trunit.h>
-#include <trinfo.h>
-#include <inftra.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "trinp.h"
+#include "trunit.h"
+#include "trinfo.h"
+#include "inftra.h"
+#include "inftap.h"
 C
       LOGICAL   DOTUPQ,DORUPQ,DOUSPQ
 C
@@ -1587,7 +1592,7 @@ C           case 2a: (PQ/RS) -> (AT/UB) IF ISP.GE.ISS
 C           case 2b: (PQ/RS) -> (TA/UB) IF ISQ.GE.ISS AND ISP.NE.ISQ
          END IF
       END IF
-      IF (IPRTRA .GE. 5) THEN
+      IF (IPRTRA .GE. 3) THEN
          WRITE (LUPRI,'(/A/A,4I3/)')
      &      ' <<<<<< Test output from TRA2 >>>>>>',
      &      ' ISP,ISQ,ISR,ISS =',ISP,ISQ,ISR,ISS
@@ -1698,7 +1703,7 @@ C
         IF (IPRTRA .GT. 50) THEN
          IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &   WRITE(LUPRI,6000) NP,NQ,(X2(I),I=1,NBR*NBS)
- 6000    FORMAT(1X,'AO INTEGRALS FOR P,Q =',2I3/(1X,10F10.6))
+ 6000    FORMAT(' AO INTEGRALS FOR P,Q =',2I3/(1X,10F10.6))
         END IF
 C
 C       INTEGRALS (PQ/US)
@@ -1712,7 +1717,7 @@ C        ... exchange integrals case 2*
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6001) NP,NQ,(X3(I),I=1,NBS*NOCR)
- 6001     FORMAT(1X,'PQUS FOR P,Q =',2I3/(1X,10F10.6))
+ 6001     FORMAT(' PQUS FOR P,Q =',2I3/(1X,10F10.6))
          END IF
 C
 C        SORT THESE INTEGRALS AS (US/PQ)
@@ -1738,7 +1743,7 @@ C
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6002) NP,NQ,(X3(I),I=1,NBR*NOCS)
- 6002     FORMAT(1X,'PQRU FOR P,Q =',2I3/(1X,10F10.6))
+ 6002     FORMAT(' PQRU FOR P,Q =',2I3/(1X,10F10.6))
          END IF
         END IF
 C
@@ -1774,7 +1779,7 @@ C
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6100) NP,NQ,(X2(I),I=1,NOCR*NOCS)
- 6100     FORMAT(1X,'INTEGRALS PQTU FOR P,Q =',2I3/(1X,10F10.6))
+ 6100     FORMAT(' INTEGRALS PQTU FOR P,Q =',2I3/(1X,10F10.6))
          END IF
 C
 C        SORT INTEGRALS (PQ/TU) INTO TUPQ (SORT AFTER PQ INSTEAD OF TU)
@@ -1804,26 +1809,26 @@ C
         IF (IOUT1 .EQ. NBPQ) THEN
          WRITE(LUPRI,6003) (RUPQ(I),I=1,NBPQ*NBR*NOCS)
         ELSE
-         WRITE(LUPRI,'(1X,A)') 'RUPQ sorted to LUHLF1'
+         WRITE(LUPRI,'(A)') ' RUPQ sorted to LUHLF1'
         END IF
        END IF
        IF (DOUSPQ) THEN
         IF (IOUT2 .EQ. NBPQ) THEN
          WRITE(LUPRI,6013) (USPQ(I),I=1,NBPQ*NBS*NOCR)
         ELSE
-         WRITE(LUPRI,'(1X,A)') 'USPQ sorted to LUHLF2'
+         WRITE(LUPRI,'(A)') ' USPQ sorted to LUHLF2'
         END IF
        END IF
        IF (DOTUPQ) THEN
         IF (IOUT3 .EQ. NBPQ) THEN
          WRITE(LUPRI,6200) (TUPQ(I),I=1,NOTU*NBPQ)
         ELSE
-         WRITE(LUPRI,'(1X,A)') 'TUPQ sorted to LUHLF3'
+         WRITE(LUPRI,'(A)') ' TUPQ sorted to LUHLF3'
         END IF
        END IF
- 6003  FORMAT(1X,'RUPQ SORTED'/(1X,10F10.6))
- 6013  FORMAT(1X,'USPQ SORTED'/(1X,10F10.6))
- 6200  FORMAT(1X,'TUPQ SORTED'/(1X,10F10.6))
+ 6003  FORMAT(' RUPQ SORTED'/(1X,10F10.6))
+ 6013  FORMAT(' USPQ SORTED'/(1X,10F10.6))
+ 6200  FORMAT(' TUPQ SORTED'/(1X,10F10.6))
       END IF
 C
 C     EMPTY LAST BUFFERS
@@ -1865,7 +1870,7 @@ C
       IADOUT(1,ISPQRS)=IDISKM
       IF (IPRTRA .GT. 50) THEN
        WRITE(LUPRI,7001) ISP,ISQ,ISR,ISS,ISPQRS
- 7001  FORMAT(1X,'ADDRESS FOR ABTU',4I2,5X,I6)
+ 7001  FORMAT(' ADDRESS FOR ABTU',4I2,5X,I6)
       END IF
       ITU=0
       DO 20 NT=1,NOCR
@@ -1918,7 +1923,7 @@ C
        ENDIF
        IF (IPRTRA .GT. 50) THEN
         WRITE(LUPRI,6010) NT,NU,(X2(I),I=1,IX2)
- 6010   FORMAT(1X,'ABTU INTEGRALS FOR NT,NU =',2I3/(1X,10F10.6))
+ 6010   FORMAT(' ABTU INTEGRALS FOR NT,NU =',2I3/(1X,10F10.6))
        END IF
 C
 C      WRITE INTEGRALS (AB/TU) ON OUTPUT UNIT LUMINT
@@ -2001,11 +2006,11 @@ C
 C     ********** IBM-3090 RELEASE 87 09 14 **********
 C     Last revision Dec 29, 1989 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),X1(*),X2(*),RUPQ(*),USPQ(*),TUPQ(*),ICDTRA(*)
       LOGICAL   OPHLF3
-#include <iratdef.h>
-c#include <dacodes.h>
+#include "iratdef.h"
+c#include "dacodes.h"
 C
 C Used from common blocks:
 C   TRUNIT : ?
@@ -2013,12 +2018,12 @@ C   TRINFO : NSYMP, ?
 C   INFTRA : IPRTRA
 C   INFTAP : LUMINT
 C
-#include <priunit.h>
-#include <trinp.h>
-#include <trunit.h>
-#include <trinfo.h>
-#include <inftra.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "trinp.h"
+#include "trunit.h"
+#include "trinfo.h"
+#include "inftra.h"
+#include "inftap.h"
 C
 C
       CALL QENTER('TRA2E1')
@@ -2081,7 +2086,7 @@ C
         IF(ISQ.EQ.ISS) THEN
          IF (IPRTRA .GT. 50) THEN
           WRITE(LUPRI,6004) NR,NU,(X2(I),I=1,NBP*NBQ)
- 6004     FORMAT(1X,'X2=RUPQ FOR R AND U =',2I4/(1X,10F10.6))
+ 6004     FORMAT(' X2=RUPQ FOR R AND U =',2I4/(1X,10F10.6))
          END IF
          CALL MXMA(X2,                   NBQ,1,
      &             CMO(LMOQ2+NBQ*(NU-1)),1,NBQ,
@@ -2093,7 +2098,7 @@ C
      &             NOCQ-NU+1,NBP,NOP)
          IF (IPRTRA .GT. 50) THEN
           WRITE(LUPRI,6005) NR,NU,(X2(I),I=1,NOP*(NOCQ-NU+1))
- 6005     FORMAT(1X,'RUAT FOR R AND U =',2I4/(1X,10F10.6))
+ 6005     FORMAT(' RUAT FOR R AND U =',2I4/(1X,10F10.6))
          END IF
         ELSE
          CALL MXMA(X2,        NBQ,1,
@@ -2160,7 +2165,7 @@ C
         JMOU2=JMOQ2
         IF (IPRTRA .GT. 50) THEN
          WRITE(LUPRI,7002) ISS,ISQ,ISP,ISR,ISPQRS
- 7002    FORMAT(1X,'ADDRESS FOR ATBU',4I2,5X,I6)
+ 7002    FORMAT(' ADDRESS FOR ATBU',4I2,5X,I6)
         END IF
        ENDIF
        NTU=0
@@ -2198,7 +2203,7 @@ C       Write this block of exchange integrals on LUMINT
 C
         IF (IPRTRA .GT. 50) THEN
          WRITE(LUPRI,6008) (X2(I),I=1,NOP*NOR)
- 6008    FORMAT('ATBU INTEGRALS'/(1X,10F10.6))
+ 6008    FORMAT(' ATBU INTEGRALS'/(1X,10F10.6))
         END IF
         CALL DAWRITE(LUMINT,X2,IRAT*NOP*NOR,IDISKM)
    39  CONTINUE
@@ -2289,7 +2294,7 @@ C
        IADOUT(2,ISPQRS)=IDISKM
        IF (IPRTRA .GT. 50) THEN
         WRITE(LUPRI,7003) ISP,ISS,ISQ,ISR,ISPQRS
- 7003   FORMAT(1X,'ADDRESS FOR TABU',4I2,5X,I6)
+ 7003   FORMAT(' ADDRESS FOR TABU',4I2,5X,I6)
        END IF
        NTU=0
        IST=1-NOQ*NBR
@@ -2430,7 +2435,7 @@ C
         JMOU2=JMOQ2
         IF (IPRTRA .GT. 50) WRITE(LUPRI,7004) ISR,ISQ,ISP,ISS,ISPQRS
        ENDIF
- 7004  FORMAT(1X,'ADDRESS FOR ATUB',4I2,5X,I6)
+ 7004  FORMAT(' ADDRESS FOR ATUB',4I2,5X,I6)
        NTU=0
        IST=1-NBS*NOP
        DO 80 NT=1,NTMAX
@@ -2576,7 +2581,7 @@ C
         JMOU2=JMOP2
         IF (IPRTRA .GT. 50) WRITE(LUPRI,7005) ISR,ISP,ISQ,ISS,ISPQRS
        ENDIF
- 7005  FORMAT(1X,'ADDRESS FOR TAUB',4I2,5X,I6)
+ 7005  FORMAT(' ADDRESS FOR TAUB',4I2,5X,I6)
        NTU=0
        IST=1-NOQ*NBS
        DO 100 NT=1,NTMAX
@@ -2633,9 +2638,9 @@ C     BLOCKING
 C
 C     ********** IBM-3090 RELEASE 87 09 15 **********
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ABVX(*),TUVX(*)
-#include <trinp.h>
+#include "trinp.h"
 C
       CALL QENTER('GTUVX ')
 C
@@ -2679,7 +2684,7 @@ C DIMENSION B(1:IRB:ICB,*)
 C B(1+IR*ICB+IC*IRB) corresponds to B(IR+1,IC+1)
 C For normal square "operation", ICB=1, IRB=NROW
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*)
       IF (IASYM .GE. 0) THEN
          IND=0
@@ -2705,22 +2710,22 @@ C  /* Deck traini */
 C
 C Dec 1989 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       DIMENSION CMO(LCMO),ICDTRA(MMORBX),ITRTYP(MXCORB)
 C MAERKE ??      LOGICAL   NOTUVX, NOEXCH, MCOPT
-#include <iratdef.h>
-c#include <dacodes.h>
-#include <dalistgs.h>
+#include "iratdef.h"
+c#include "dacodes.h"
+#include "dalistgs.h"
 C
 C Used from common blocks:
 C  TRINP  : LCMO, MMORBX, MSYM, MBAS(), INTSYM, ...
 C  TRUNIT : LIADUT,IADOUT
 C  INFTAP : LUMINT
 C
-#include <trinp.h>
-#include <trunit.h>
-#include <inftap.h>
+#include "trinp.h"
+#include "trunit.h"
+#include "inftap.h"
 C
       CALL QENTER('TRAINI')
 C
@@ -2770,8 +2775,8 @@ C               the Lund INTSORT program.
 C     JRDAO=1 : derivative integrals from Abacus
 C     JRDAO=2 : Spin-orbit integrals.
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFORB : NSYM, ..., NBAS(), NNORBX,NCMOT
@@ -2780,12 +2785,12 @@ C   TRINFO : LX2X3
 C   TRBINS : LMSBIN
 C   INFTRA : IPRTRA
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <trinp.h>
-#include <trinfo.h>
-#include <trbins.h>
-#include <inftra.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "trinp.h"
+#include "trinfo.h"
+#include "trbins.h"
+#include "inftra.h"
 C
 C     Local variables
 C
@@ -2852,10 +2857,10 @@ C
 C Obtain KEEP and IDATA information from LUORDA
 C (Moved to here from TRACT2)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-c#include <dacodes.h>
-#include <dalistgs.h>
+c#include "dacodes.h"
+#include "dalistgs.h"
 C
 C Used from common blocks:
 C  TRINP  : MSYM, MBAS(), INTSYM
@@ -2863,11 +2868,11 @@ C  TRUNIT : LIDATA,IDATA,KEEP, ?
 C  INFTRA : IPRTRA
 C  INFTAP : LUORDA
 C
-#include <priunit.h>
-#include <trinp.h>
-#include <trunit.h>
-#include <inftra.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "trinp.h"
+#include "trunit.h"
+#include "inftra.h"
+#include "inftap.h"
 C
       CALL QENTER('TRASE0')
 C
@@ -2912,7 +2917,7 @@ C
      *      '     NCHAIN      LADX       NPQ'
          DO 20 I = 1,LIDATA
             IF (IDATA(I,1) .GE. -1 .OR. IDATA(I,2) .GE. 0)
-     *         WRITE(LUPRI,'(1X,3I10)') I,IDATA(I,1),IDATA(I,2)
+     *         WRITE(LUPRI,'(3I10)') I,IDATA(I,1),IDATA(I,2)
    20    CONTINUE
       END IF
 C
@@ -2961,17 +2966,17 @@ C
 C     ITRTYP(1:NORBT) = number of integral indices in which this orbital
 C     enters (i.e. 0,1,2,3, or 4)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ICDTRA(1), ITRTYP(1)
 C
 C Used from common blocks:
 C  TRINP  : MFRO,MISH,MASH,MORB
 C  INFTRA : IPRTRA
 C
-#include <priunit.h>
-#include <trinp.h>
-#include <inftra.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "trinp.h"
+#include "inftra.h"
+#include "maxorb.h"
 C
       CHARACTER*35 EXTPRM(3)
       DATA EXTPRM/'inactive + active orbitals         ',
@@ -2988,9 +2993,9 @@ C
          CALL QUIT('FATAL ERROR TRALIM: Illegal KTRLVL')
       END IF
       IF (IPRTRA .GE. 2) THEN
-         WRITE (LUPRI,'(/1X,A,I5/1X,2A/)')
-     &      'Integral transformation order : ',JTRLVL,
-     &      'Extent of primary space       : ',EXTPRM(KTRLVL+1)
+         WRITE (LUPRI,'(/A,I5/2A/)')
+     &      ' Integral transformation order : ',JTRLVL,
+     &      ' Extent of primary space       : ',EXTPRM(KTRLVL+1)
       END IF
 C
 C     Calculate ITRTYP.
@@ -3089,7 +3094,7 @@ C        3       a        g        g        g      third-order
 C        4       g        g        g        g      full transf.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CALL QENTER('TRALVL')
       JTRLVL = ABS(ITRSIR)
@@ -3127,18 +3132,18 @@ C 25-Aug-1989 Hans Joergen Aa. Jensen
 C
 C Interface routine to read ao integrals for tra2
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X1(NX1), WRK(LWRK)
 C
-#include <iratdef.h>
-c#include <dacodes.h>
+#include "iratdef.h"
+c#include "dacodes.h"
 C
 C Used from common blocks
 C  TRINP  : IRDAO
 C
-#include <priunit.h>
-#include <trinp.h>
-#include <inftra.h>
+#include "priunit.h"
+#include "trinp.h"
+#include "inftra.h"
 C
       IF (IRDAO .EQ. 0) THEN
          CALL DAREAD(LUORDA,X1,IRAT*NX1,IDA)
@@ -3155,13 +3160,13 @@ C
       RETURN
       END
 C  /* Deck rdder2 */
-      SUBROUTINE RDDER2()
+      SUBROUTINE RDDER2(a,b,c,d,e,f,g)
 C
 C 21-Dec-1989 hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inftra.h"
       WRITE(LUPRI,*)' ERROR, RDDER2 called but program is linked'
       WRITE(LUPRI,*)' with dummy RDDER2, not the correct one in Abacus'
       CALL QTRACE(LUPRI)
