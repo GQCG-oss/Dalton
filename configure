@@ -510,7 +510,7 @@ done
 #
 for testdir in $dirlist; do
     if test -f $testdir/liblapack.a; then
-        lapack=true; LIB="$LIB -llapack"
+        lapack=true; LIB="-llapack $LIB"
         break
     fi
 done
