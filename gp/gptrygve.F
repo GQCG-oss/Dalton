@@ -235,7 +235,9 @@ C     Write to stderr
       CALL FLSHFO(LUPRIN)
 C
 #if defined (VAR_MPI)
-      CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
+      IERR = 100
+C     ... define exit code to the environment for MPI_ABORT
+      CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERROR)
 #endif
 #if defined (VAR_PVM)
       CALL PVMXHALT

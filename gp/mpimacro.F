@@ -52,11 +52,9 @@ C
 #include <priunit.h>
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-#endif
 #include <maxorb.h>
 #include <infpar.h>
 C
-#if defined (VAR_MPI)
       CALL MPI_INIT(IERR)
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
 C
@@ -102,12 +100,10 @@ C
 #include <priunit.h>
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-#endif
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, ROOT
-      DIMENSION BUFFER(*) 
+      DIMENSION BUFFER(*)
 C
-#if defined (VAR_MPI)
       IF      (TYPE .EQ. 'INTEGE') THEN
          DATATYPE = MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
@@ -134,12 +130,10 @@ C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, SOURCE, TAG
-      DIMENSION BUFFER(*) 
+      DIMENSION BUFFER(*)
 C
-#if defined (VAR_MPI)
       IF      (TYPE .EQ. 'INTEGE') THEN
          DATATYPE = MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
@@ -172,12 +166,10 @@ C
 #include <priunit.h>
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-#endif
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, DEST, TAG
-      DIMENSION BUFFER(*) 
+      DIMENSION BUFFER(*)
 C
-#if defined (VAR_MPI)
       IF      (TYPE .EQ. 'INTEGE') THEN
          DATATYPE = MPI_INTEGER
       ELSE IF (TYPE .EQ. 'LOGICA') THEN
@@ -187,76 +179,82 @@ C
       ELSE IF (TYPE .EQ. 'STRING' .OR. TYPE .EQ. 'CHARAC') THEN
          DATATYPE = MPI_CHARACTER
       ELSE
-         WRITE(LUPRI,*) ' TYPE :',TYPE,' does not exist!'
+         WRITE(LUPRI,*) ' MPIXSEND : TYPE "',TYPE,'" does not exist!'
          CALL QUIT('ERROR in MPIXBCAST: Nonexisting DATATYPE')
       END IF
       CALL MPI_SEND(BUFFER,COUNT,DATATYPE,DEST,TAG,MPI_COMM_WORLD,IERR)
-      IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
+      IF (IERR.GT.0) THEN
+         write (lupri,*) 'ERROR: problem in MPIXSEND, ierr =',IERR
+         write (lupri,*) '- count,dest,tag: ',count,dest,tag
+         write (lupri,*) '- calling MPI_MYFAIL ...'
+         CALL MPI_MYFAIL(IERR)
+      END IF
 #endif
 C
       RETURN
       END
+#if defined (VAR_MPI)
 C  /* Deck mpi_myfail */
       SUBROUTINE MPI_MYFAIL(IERR)
 C
 #include <implicit.h>
 #include <priunit.h>
-#if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-#endif
       CHARACTER ERRBUF*40
 C
-#if defined (VAR_MPI)
-      CALL MPI_ERROR_CLASS(IERR,IERRCL,IERR)
-#endif
+      CALL MPI_ERROR_CLASS(IERR,IERRCL,IERR2)
 C
       IF (IERRCL.EQ.MPI_SUCCESS) THEN
-         ERRBUF = ' No error'                       
+         ERRBUF = 'No error'
       ELSE IF (IERRCL.EQ.MPI_ERR_BUFFER) THEN
-         ERRBUF = ' Invalid buffer pointer'
-      ELSE IF (IERRCL.EQ.MPI_ERR_COUNT) THEN    
-         ERRBUF = ' Invalid count argument'
+         ERRBUF = 'Invalid buffer pointer'
+      ELSE IF (IERRCL.EQ.MPI_ERR_COUNT) THEN
+         ERRBUF = 'Invalid count argument'
       ELSE IF (IERRCL.EQ.MPI_ERR_TYPE) THEN
-         ERRBUF = ' Invalid datatype argument'
+         ERRBUF = 'Invalid datatype argument'
       ELSE IF (IERRCL.EQ.MPI_ERR_TAG) THEN
-         ERRBUF = ' Invalid tag argument'
-      ELSE IF (IERRCL.EQ.MPI_ERR_COMM) THEN     
-         ERRBUF = ' Invalid communicator'
+         ERRBUF = 'Invalid tag argument'
+      ELSE IF (IERRCL.EQ.MPI_ERR_COMM) THEN
+         ERRBUF = 'Invalid communicator'
       ELSE IF (IERRCL.EQ.MPI_ERR_RANK) THEN
-         ERRBUF = ' Invalid rank'
+         ERRBUF = 'Invalid rank'
       ELSE IF (IERRCL.EQ.MPI_ERR_REQUEST) THEN
-         ERRBUF = ' Invalid request (handle)'
+         ERRBUF = 'Invalid request (handle)'
       ELSE IF (IERRCL.EQ.MPI_ERR_ROOT) THEN
-         ERRBUF = ' Invalid root'
-      ELSE IF (IERRCL.EQ.MPI_ERR_GROUP) THEN 
-         ERRBUF = ' Invalid group'
-      ELSE IF (IERRCL.EQ.MPI_ERR_OP) THEN 
-         ERRBUF = ' Invalid operation'
-      ELSE IF (IERRCL.EQ.MPI_ERR_TOPOLOGY) THEN 
-         ERRBUF = ' Invalid topology'
+         ERRBUF = 'Invalid root'
+      ELSE IF (IERRCL.EQ.MPI_ERR_GROUP) THEN
+         ERRBUF = 'Invalid group'
+      ELSE IF (IERRCL.EQ.MPI_ERR_OP) THEN
+         ERRBUF = 'Invalid operation'
+      ELSE IF (IERRCL.EQ.MPI_ERR_TOPOLOGY) THEN
+         ERRBUF = 'Invalid topology'
       ELSE IF (IERRCL.EQ.MPI_ERR_DIMS) THEN
-         ERRBUF = ' Invalid dimension argument'
+         ERRBUF = 'Invalid dimension argument'
       ELSE IF (IERRCL.EQ.MPI_ERR_ARG) THEN
-         ERRBUF = ' Invalid argument of some other kind'
+         ERRBUF = 'Invalid argument of some other kind'
       ELSE IF (IERRCL.EQ.MPI_ERR_UNKNOWN) THEN
-         ERRBUF = ' Unknown error'
+         ERRBUF = 'Unknown error'
       ELSE IF (IERRCL.EQ.MPI_ERR_TRUNCATE) THEN
-         ERRBUF = ' Message truncated on receive'
+         ERRBUF = 'Message truncated on receive'
       ELSE IF (IERRCL.EQ.MPI_ERR_OTHER) THEN
-         ERRBUF = ' Known error not in this list'
+         ERRBUF = 'Known error not in this list'
       ELSE IF (IERRCL.EQ.MPI_ERR_INTERN) THEN
-         ERRBUF = ' Internal MPI (implementation) error'
+         ERRBUF = 'Internal MPI (implementation) error'
       ELSE IF (IERRCL.EQ.MPI_ERR_IN_STATUS) THEN
-         ERRBUF = ' Error code is in status'
+         ERRBUF = 'Error code is in status'
       ELSE IF (IERRCL.EQ.MPI_ERR_PENDING) THEN
-         ERRBUF = ' Pending request'
+         ERRBUF = 'Pending request'
       ELSE IF (IERRCL.EQ.MPI_ERR_LASTCODE) THEN
-         ERRBUF = ' Last error code'
+         ERRBUF = 'Last error code'
+      ELSE
+C        something we didn't know ...
+         WRITE(ERRBUF,'(A,I4)') 'MPI error class',IERRCL
       END IF
 C
-      WRITE(LUPRI,'(/,1X,A)') 'ERROR in MPI: '//ERRBUF
+      WRITE(LUPRI,'(/A)') ' ERROR in MPI : '//ERRBUF
 C
       CALL QUIT('Error detected in MPI. Please consult dalton output!')
 C
       RETURN
       END
+#endif  /* ifdef VAR_MPI */
