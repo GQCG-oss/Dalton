@@ -127,7 +127,7 @@ esac
 # thus define only two for each computer type.
 # Check first local libraries (hoping they were installed there for a
 # reason), then system-provided libraries.
-dirlist='/lib /usr/local/lib /usr/lib'
+dirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS'
 
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
@@ -464,7 +464,7 @@ for testdir in $dirlist; do
         echo "testing existence of $testdir/$testlib"
       if test -f $testdir/$testlib; then
          case $testlib in
-             libacml.a) LIB='-lacml'; blas3=true;;
+            libacml.a) LIB='-lacml'; blas3=true;;
 	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
                        pdpackextras="$pdpackextras gp_zlapack.o";;
 	    libessl.a) LIB='-lessl'
@@ -890,7 +890,10 @@ case "$WHICH" in
               cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
  	      set_def $mesp
  	  fi
-          opt='-fast -assume no2underscores -check nopower'
+#         opt='-fast -assume no2underscores -check nopower'
+#         hjaaj Oct 04: note that HAVE_GCPP is now used to tell c-routines
+#         that the fort fortran compiler can make 2 underscores
+          opt='-fast -check nopower'
 	  inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
           copt='-fast';;
@@ -975,7 +978,7 @@ case "$WHICH" in
                   *)  copt="-mcpu=$prc -malign-double" 
               esac
               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
-              opt="$copt -fno-globals -Wno-globals -fno-second-underscore"
+              opt="$copt -fno-globals -Wno-globals"
               copt="$copt -std=c99 -DRESTRICT=restrict"
               ;;
           esac
@@ -1006,7 +1009,7 @@ case "$WHICH" in
                cpp="-DVAR_G77 $cpp"
                copt="-mcpu=7450"
                copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
-               opt="$copt -fno-second-underscore -fno-globals -Wno-globals"
+               opt="$copt -fno-globals -Wno-globals"
                copt="$copt -std=c99 -DRESTRICT=restrict"
                def='linux.x'
                inc='-I../include'
