@@ -993,7 +993,7 @@ case "$WHICH" in
             if [ "$F77" = xlf ]; then
                cpp="-WF,-DSYS_AIX,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
                copt='-qarch=auto -O3 -qtune=auto -qmaxmem=-1 -qunroll=yes'
-               opt="$copt -qextname -qstrict -prebind"
+               opt="$copt -qextname -qstrict -noprebind"
                def='dalton.x'
                inc='-I../include'
                LIB='-L/opt/ibmcmp/lib -L/opt/ibmcmp/xlf/8.1/lib -L/opt/ibmcmp/vacpp/6.0/lib'
