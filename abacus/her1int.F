@@ -33,15 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-9507-hjaaj: fixed bug in GOSINT ( ODC(...,2) for y and ODC(...,3) for z)
-            modified to calc. cos kx/k etc. instead of cos kx.
-930309-Sheela Kirpekar: added MVLINT and DWNINT
-930726-hjaaj: SDINT: factor DFACSD = (GFAC/D2)
-===========================================================================
-#endif
 C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
@@ -2280,10 +2271,7 @@ C
 C  /* Deck mvlint */
       SUBROUTINE MVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C     shki. jan. 93 (based on KININT)
-C
-C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
-C     for use in HERPRO.
+C     Sheela Kirpekar  jan. 93 (based on KININT)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -4375,7 +4363,7 @@ C
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
 C
-C     shki, Jan. 93 (based on FRMINT tuh feb 91)
+C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
 #include <implicit.h>
 #include <priunit.h>
