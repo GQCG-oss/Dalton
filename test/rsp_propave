@@ -48,9 +48,11 @@ cat > rsp_propave.dal <<'%EOF%'
 .RUN RESPONSE
 **INTEGRALS
 .DIPLEN
+.DIPVEL
 **WAVE FUNCTION
 .HF
 **RESPONSE
+.S0MIX
 .PROPAVE
 ZDIPLEN
 *CUBIC
@@ -81,10 +83,9 @@ CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $l
 CRIT2=`$GREP "The following one\-electron property integrals are calculated\:" $log | wc -l`
 CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
 CRIT4=`$GREP "\- dipole length integrals" $log | wc -l`
-CRIT5=`$GREP "In this run * precalculated two\-electron integrals are transformed" $log | wc -l`
-CRIT6=`$GREP "to P\-supermatrix elements\." $log | wc -l`
-TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[1]=6
+CRIT5=`$GREP "two-electron integrals are transformed to P-supermatrix elements" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[1]=5
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set

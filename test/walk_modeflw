@@ -94,7 +94,7 @@ CTRL[2]=5
 ERROR[2]="ATOMBASIS NOT READ CORRECTLY"
 
 # Cartesian functions
-CRIT1=`$GREP "Cartesian basis used\. " $log | wc -l`
+CRIT1=`$GREP "Cartesian basis used" $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="CARTESIAN BASIS FUNCTIONS NOT USED"

@@ -122,7 +122,7 @@ fi
 CRIT1=`$GREP "O * 1 * 8 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
 CRIT2=`$GREP "H * 2 * 1 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
 CRIT3=`$GREP "total\: * 3 * 10 * 60 * 39" $log | wc -l`
-CRIT4=`$GREP "Cartesian basis used\. " $log | wc -l`
+CRIT4=`$GREP "Cartesian basis used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
 ERROR[1]="BASIS SET NOT READ CORRECTLY"
