@@ -3656,12 +3656,20 @@ C
 #include <cbiwlk.h>
 #include <cbinum.h>
 #include <numder.h>
+#include <pvibav.h>
+      LOGICAL CPRPBK
       CHARACTER*80 TEXT
       DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), CSTART(NCOOR),
      &          TSTSDR(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR), 
      &          TTMPDR(NCOOR,NCOOR,NCOOR), 
      &          FTMPDR(NCOOR,NCOOR,NCOOR,NCOOR), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2)
+C
+C     *** We are finished calculating properties. But are ***
+C     *** backing it up for later use.                    ***
+C
+      CPRPBK = CNMPRP
+      CNMPRP = .FALSE.
 C
 C     *** Print gradient ***
 C
@@ -3785,6 +3793,11 @@ C
             WRITE (LUPRI,'(12F12.8)') (TSTSDR(IC1,IC2),IC2=1,NCOOR)
          END DO
       END IF
+C
+C     *** Restoring CNMPRP. ***
+C
+      CNMPRP = CPRPBK
+C
       RETURN
       END
 C     
