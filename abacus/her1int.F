@@ -5392,7 +5392,7 @@ C
                              END IF
                           ELSE      
                              ISCOOR = 3*(ISCORD - 1) + ICOORC
-                          END IF    
+                          END IF 
                           IADR = INTADR(ISCOOR)
                           FACSYM=FACD*PT(IBTAND(ISYMAX(ICOORC,2),ISYMC))
      &                               *PT(IBTAND(IREPO ,ISYMC))

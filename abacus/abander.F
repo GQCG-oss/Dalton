@@ -2512,10 +2512,6 @@ C
                         HESMOL(ICOOR1,ICOOR2) =
      &                         (COEFF( 1,1)*FUNVAL(ICOOR1,IDIME      )
      &                        + COEFF(-1,1)*FUNVAL(ICOOR1,IDIME+1))*HINV
-                        if ((ICOOR1.eq.3).and.(ICOOR2.eq.3)) then
-                           write (lupri,*) 'er inne inne',
-     &                             FUNVAL(ICOOR1,IDIME), idime
-                        end if
  270                 CONTINUE
                      IDIME = IDIME + 2
  260              CONTINUE

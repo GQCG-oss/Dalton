@@ -494,6 +494,7 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
      &               TRIANG)
+         write (0,*) intadr(7)
          ANTI = .FALSE.
       GO TO 200
 C

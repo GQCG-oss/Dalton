@@ -1310,7 +1310,7 @@ C
      &          IRPIND(NMORDR), IDXTMP(NMORDR), IDDBTP(NMORDR), 
      &          NPRTNR(MAXINR)
 C
-      IF ((FCLASS .NE. 'C1 ').AND.(NAORDR.LE.1).AND..NOT.CNMPRP) THEN
+      IF ((FCLASS .NE. 'C1 ').AND.(NAORDR.LT.1).AND..NOT.CNMPRP) THEN
 C
 C        ***Check symmetry for the original component ***
 C
