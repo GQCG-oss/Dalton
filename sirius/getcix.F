@@ -93,15 +93,16 @@ C
       END IF
       LFREE  = LFRSAV
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
-         LUSTR = -9999
-         IF( FLAG(26) ) THEN
-          IF (IFIRST .EQ. 1) 
-     &           CALL GPOPEN(LUSTR,'SIRIUS.STRINGINFO','UNKNOWN',
+        LUSTR = -9999
+        IF (FLAG(26) .AND. IFIRST .EQ. 1) THEN
+          CALL GPOPEN(LUSTR,'SIRIUS.STRINGINFO','UNKNOWN',
      &                       ' ','UNFORMATTED',IDUMMY,.FALSE.)
           REWIND(LUSTR)
           CALL GETDAT(LAB123(2),LAB123(3))
           WRITE(LUSTR) LAB123,LABSTR
-          IFIRST = 0
+C         IFIRST = 0
+C         ... write to LUSTR each call, CI space may change during
+C             calculation in future. /hjaaj
         END IF
 C
 C980820-hjaaj: CSF's are only implented for the ref.sym. LSYM
@@ -127,7 +128,7 @@ C       CALL DETINF(NEL,NORB,SYMPRO,MULTS,NCDET,NHCDET,ICSYM,IHCSYM,
 C    *              NRAS1,NRAS2,NRAS3,NTEST,XNDXCI,WORK,LFREE,LUSTR,
 C    *              NOSYM,ICSF,REFSPC)
 C
-        IF (FLAG(26)) CALL GPCLOSE(LUSTR,'KEEP')
+        IF (LUSTR.GT.0) CALL GPCLOSE(LUSTR,'KEEP')
       ELSE
 C     ... NASHT .le. 1
         IF (IPRCIX .GT. 0) WRITE (LUPRI,'(/A/A)')
