@@ -43,16 +43,11 @@ static int  kt1_read(const char* conf_line);
 static int  kt2_read(const char* conf_line);
 static int  kt3_read(const char* conf_line);
 static int  olyp_read(const char* conf_line);
+static int  pw91_read(const char* conf_line);
 
 static int  gga_isgga(void);
 static int  xalpha_read(const char* conf_line);
 static int  gga_key_read(const char* conf_line);
-static int  blyp_read(const char* conf_line);
-static int  b3lyp_read(const char* conf_line);
-static int  kt1_read(const char* conf_line);
-static int  kt2_read(const char* conf_line);
-static int  kt3_read(const char* conf_line);
-static int  olyp_read(const char* conf_line);
 static void gga_report(void);
 static real gga_energy(const DftDensProp* dp);
 static void gga_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
@@ -198,6 +193,17 @@ Functional OLYPFunctional = {
     "OLYP",      /* name */
     gga_isgga,     /* gga-corrected */
     olyp_read,
+    gga_report,
+    gga_energy,
+    gga_first,
+    gga_second,
+    gga_third
+};
+
+Functional PW91Functional = {
+    "PW91",      /* name */
+    gga_isgga,     /* gga-corrected */
+    pw91_read,
     gga_report,
     gga_energy,
     gga_first,
@@ -390,6 +396,15 @@ olyp_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw);
     gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional, optkw);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,   1.0);
+    dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
+pw91_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &PWggaIIcFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PWggaIIxFunctional, 1.0);
     dft_set_hf_weight(0);
     return 1;
 }

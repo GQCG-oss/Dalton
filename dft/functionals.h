@@ -250,7 +250,7 @@ extern Functional KT1Functional;
 extern Functional KT2Functional;
 extern Functional KT3Functional;
 extern Functional OLYPFunctional;
-
+extern Functional PW91Functional;
 /* the list of the functionals */
 extern Functional* available_functionals[];
 

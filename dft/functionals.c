@@ -80,6 +80,7 @@ Functional* available_functionals[] = {
     &LDAFunctional,
     &LDAGaussFunctional,
     &OLYPFunctional,
+    &PW91Functional,
     NULL
 };
 Functional* selected_func = &LDAFunctional;
