@@ -75,7 +75,7 @@ c /* deck ccfbtaf */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
@@ -84,7 +84,7 @@ c /* deck ccfbtaf */
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
 * local parameters:

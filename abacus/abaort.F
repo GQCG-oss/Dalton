@@ -319,7 +319,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
       PARAMETER (D2 = 2.0D0)
       DIMENSION SKMAT(LEN), YXMAT(LEN), GLM(LMTOT),

@@ -136,7 +136,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
       PARAMETER (DP25=0.25D0,DP5=0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
@@ -431,7 +431,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
 #include <shells.h>
@@ -501,7 +501,7 @@ C  /* Deck sklfck */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <dummy.h>
 #include <mxcent.h>
 #include <iratdef.h>
@@ -658,7 +658,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
@@ -974,7 +974,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
@@ -1159,7 +1159,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)

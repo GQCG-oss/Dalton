@@ -193,7 +193,6 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <mxcent.h>
 #include <iratdef.h>
@@ -363,7 +362,7 @@ C  /* Deck polpri */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <debye.h>
       PARAMETER (D1 = 1.0 D00)
@@ -478,7 +477,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (THIRD = 1.0D0/3.0D0)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR)
       DIMENSION HELP1(3,3), HELP2(3,3), HELP3(3,3), CORR(3,3)
@@ -548,7 +547,7 @@ C  /* Deck dp0sum */
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
 #include <dipole.h>
 #include <moldip.h>
@@ -610,7 +609,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
@@ -682,7 +681,7 @@ C  /* Deck trapol */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)
 #include <symmet.h>

@@ -117,7 +117,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <abainf.h>
 #include <nuclei.h>
@@ -161,7 +161,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
       DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR),
@@ -292,7 +292,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       DIMENSION COORD(3,*)
 C
@@ -340,7 +340,6 @@ C
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D00)
 C
@@ -1355,7 +1354,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <alphac.h>
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
@@ -1458,7 +1457,7 @@ C  /* Deck tradip */
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0)
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
@@ -1486,7 +1485,7 @@ C  /* Deck dp0pri */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <debye.h>
 #include <cbidip.h>
 #include <symmet.h>
@@ -1516,7 +1515,7 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
      &          ISOTOP(MXCENT)
 #include <orgcom.h>

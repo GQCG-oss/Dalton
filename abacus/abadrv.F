@@ -571,7 +571,6 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <priunit.h>
       PARAMETER (NDIR = 28, NTABLE = 50, D0 = 0.D0)
@@ -1674,7 +1673,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <debye.h>
 #include <codata.h>
@@ -2092,7 +2091,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <past.h>
 #include <energy.h>
@@ -2219,7 +2218,7 @@ C  /* Deck qdrres */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (DM1 = -1.0D0, D1 = 1.0D0)
       DIMENSION QUADRT(3,3)
@@ -2249,7 +2248,7 @@ C  /* Deck susres */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <pmass.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, THRESH = 1.0D-5,
@@ -2448,7 +2447,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       PARAMETER (CONV = 234.9647D0, CONV2 = 2.802494514D0)
       DIMENSION PVAL(6), AXIS(3,3,MXCENT), WRK(3), IWRK(3)
@@ -2581,7 +2580,7 @@ C  /* Deck efgpri */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION VMAT(3,3,MXCENT)
       CHARACTER*33 TEXT
 #include <nuclei.h>

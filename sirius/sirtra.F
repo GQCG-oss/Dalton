@@ -130,7 +130,7 @@ TRACD,TRAAB,TRACTL: test print for IPRTRA.ge.100 (from Hinne)
  NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
 891213-hjaaj
  inserted *CALL MAXASH in all decks with INFIND
- inserted *CALL MAXORB in all decks with INFIND or INFINP
+ inserted *CALL MXCORB in all decks with INFIND or INFINP
 891208-hjaaj
  SORTA,TRACD,TRAAB: print threshold for discarding integrals
  TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)

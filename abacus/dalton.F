@@ -81,7 +81,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <mtags.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <priunit.h>
 #include <infpri.h>

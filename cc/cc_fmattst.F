@@ -55,9 +55,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -94,8 +93,8 @@ C
 C
       INTEGER LWORK
       DIMENSION INDEXA(MXCORB)
-      DIMENSION IADRPQ0(MAXORB+IRAT), IADRPQR(MAXORB+IRAT)
-      DIMENSION IADRBFI(MAXORB), IADRBFD(MAXORB)
+      DIMENSION IADRPQ0(MXCORB+IRAT), IADRPQR(MXCORB+IRAT)
+      DIMENSION IADRBFI(MXCORB), IADRBFD(MXCORB)
       DIMENSION WORK(*)
       CHARACTER*6 CFIL,DFIL,CTFIL,DTFIL
       CHARACTER*7 O3FIL,O3TFIL
@@ -248,8 +247,8 @@ C       -----------------------------------------
         CALL WOPEN2(LUPQR0,FILPQR0,64,0)
         CALL WOPEN2(LUPQRR,FILPQRR,64,0)
 
-        CALL GETWA2(LUPQR0,FILPQR0,IADRPQ0,1,(MAXORB+IRAT)/IRAT)
-        CALL GETWA2(LUPQRR,FILPQRR,IADRPQR,1,(MAXORB+IRAT)/IRAT)
+        CALL GETWA2(LUPQR0,FILPQR0,IADRPQ0,1,(MXCORB+IRAT)/IRAT)
+        CALL GETWA2(LUPQRR,FILPQRR,IADRPQR,1,(MXCORB+IRAT)/IRAT)
 
       END IF
 

@@ -41,7 +41,7 @@ C
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <dummy.h>
       LOGICAL   ABA, OLDDX
@@ -138,7 +138,7 @@ C
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <dummy.h>
 

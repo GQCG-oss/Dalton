@@ -2353,9 +2353,9 @@ C*****************************************************************************
 #include <priunit.h>
 C
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxaqn.h>
-C
+C maxorb.h for symmet.h
+#include <maxorb.h>
 #include <symmet.h>
 #include <pgroup.h>
 C

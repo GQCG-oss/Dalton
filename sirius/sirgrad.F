@@ -1400,7 +1400,7 @@ C
 C           WRITE (LUW4,'(/A)')
 C    1         ' No redundant orbital variations found.'
          ELSE
-            DO 135 J = 1,MAXORB
+            DO 135 J = 1,MXCORB
                DO 135 I = 1,MAXOCC
                   KLWOP(I,J) = 0
   135       CONTINUE

@@ -172,8 +172,8 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <gnrinf.h>
+#include <maxorb.h>
 #include <huckel.h>
 #include <nuclei.h>
 #include <symmet.h>

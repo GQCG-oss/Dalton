@@ -48,7 +48,7 @@ C
       INCLUDE "mpif.h"
 #endif
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <mxcent.h>
 #include <pi.h>
@@ -160,7 +160,7 @@ C
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <priunit.h>
 #include <inforb.h>      
@@ -326,7 +326,7 @@ C
       INCLUDE "mpif.h"
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <infpar.h>
 #include <mxcent.h>
@@ -570,7 +570,7 @@ C
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 Ca
       DIMENSION EXCMAT(NBAST*NBAST*NXCMAT),WORK(LWORK)
@@ -614,7 +614,7 @@ C
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <mxorb.h> 
+#include <maxorb.h> 
 #include <mxcent.h>
 #include <nuclei.h>
 #include <energy.h>

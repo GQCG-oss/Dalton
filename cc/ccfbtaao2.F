@@ -80,7 +80,6 @@ C
 #include <priunit_dec.h>
 #include <ccsdsym_dec.h>
 #include <maxorb_dec.h>
-#include <mxorb_dec.h>
 #include <ccorb_dec.h>
 #include <ccisao_dec.h>
 #else
@@ -90,7 +89,6 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccorb.h>
 #include <ccisao.h>
 
@@ -103,14 +101,14 @@ C
       CHARACTER*(*) FNBFDE0, FNBFDE1
       INTEGER ISYCTR, ISYMTA, ISY0DIS, ISY1DIS, IDEL, LWORK
       INTEGER ISYHOP, IREAL
-      INTEGER LUBFZA,  IADRBZA(MAXORB)
-      INTEGER LUBFZQA, IADRBZQA(MAXORB)
-      INTEGER LUPQ0, IADRPQ0(MAXORB)
-      INTEGER LUPQ1, IADRPQ1(MAXORB)
-      INTEGER LUPQA0, IADRPQA0(MAXORB)
-      INTEGER LUPQA1, IADRPQA1(MAXORB)
-      INTEGER LUBFDE0,IADRE0(MAXORB)
-      INTEGER LUBFDE1,IADRE1(MAXORB)
+      INTEGER LUBFZA,  IADRBZA(MXCORB)
+      INTEGER LUBFZQA, IADRBZQA(MXCORB)
+      INTEGER LUPQ0, IADRPQ0(MXCORB)
+      INTEGER LUPQ1, IADRPQ1(MXCORB)
+      INTEGER LUPQA0, IADRPQA0(MXCORB)
+      INTEGER LUPQA1, IADRPQA1(MXCORB)
+      INTEGER LUBFDE0,IADRE0(MXCORB)
+      INTEGER LUBFDE1,IADRE1(MXCORB)
       
 #if defined (SYS_CRAY)
       REAL XLAMDP0(*), XLAMDH0(*), XLAMDPQ(*), XLAMDHQ(*)

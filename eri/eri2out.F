@@ -41,7 +41,7 @@ C  /* Deck eriout */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eridst.h>
       DIMENSION SO(NAOINT,*), 
      &          IPNTCR(MAXBCH,4), IPNTUV(KC2MAX,0:NRDER,2),
@@ -155,7 +155,7 @@ C  /* Deck eriou1 */
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <eridst.h>
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,*), SOPRT(*),
@@ -293,7 +293,7 @@ C  /* Deck eriwrt */
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 C
 #include <eridst.h>
@@ -530,7 +530,7 @@ C  /* Deck ericlt */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D0 = 0.0D0, TEN14 = 1.1D14)
       INTEGER A, B, C, D, I, A1, B1, C1, D1, AB, CD, R, S, T
@@ -972,7 +972,7 @@ C
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 C
 #include <eridst.h>
@@ -1164,7 +1164,7 @@ C  /* Deck erisrt */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <eridst.h>
 C
@@ -1205,7 +1205,7 @@ C /* Deck erisds */
 #include <aovec.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eridst.h>
       DIMENSION IPNTCR(MAXBCH,4)
       DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
@@ -1247,7 +1247,7 @@ C  /* Deck erichn */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eridst.h>
       DIMENSION NBTCHX(*), LBTCHX(*), 
      &          IPNBCH(LPNBCH,*),
@@ -1384,7 +1384,7 @@ C  /* Deck erilbd */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D2=2.0D0, D1=1.0D0)
       INTEGER A, B, C, D, AB, CD, R, S, T
@@ -1588,7 +1588,7 @@ C  /* Deck eribrc */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (DP5 = 0.5D0, D4 = 4.0D0)
       LOGICAL DCD, DOXYZ
@@ -1637,7 +1637,7 @@ C
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
 #include <aobtch.h>
 #include <symmet.h>
@@ -1668,7 +1668,7 @@ C
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aobtch.h>
 #include <symmet.h>
       DIMENSION SOPRT(NAOINT), SO(NAOINT,6)
@@ -1747,7 +1747,7 @@ C  /* Deck prprep */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER A
       LOGICAL DOREP(0:7)
 #include <symmet.h>
@@ -1793,7 +1793,7 @@ C  /* Deck getrst */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER R, R1, X
       DIMENSION IPNRST(0:7)
 #include <symmet.h>
@@ -1821,7 +1821,7 @@ C  /* Deck getcmp */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER A, B
       LOGICAL TKMPAB
       DIMENSION JCMPAB(MXAQN**2,0:7,0:7),
@@ -1888,7 +1888,7 @@ C  /* Deck getrep */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER A
       LOGICAL DOREP(0:7)
       DIMENSION NREP(1), IPNREP(8)
@@ -1924,7 +1924,7 @@ C  /* Deck eripnt */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       INTEGER A,B,C,D
       DIMENSION IPOINT(NCCS,5), 

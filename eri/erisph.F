@@ -137,10 +137,10 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxaqn.h>
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
 #include <ccom.h>
+#include <maxorb.h>
 #include <symmet.h>
 #include <nuclei.h>
       INTEGER A, B, C, E, F, G, EE, FF, GG, P, Q, R,

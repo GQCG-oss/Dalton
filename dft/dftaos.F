@@ -42,7 +42,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
       LOGICAL DOLND, DOGGA
@@ -78,7 +78,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <aovec.h>
 C
@@ -196,7 +196,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
@@ -281,7 +281,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
@@ -430,7 +430,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
@@ -551,7 +551,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
       PARAMETER (DP5 = 0.5D0)
@@ -596,7 +596,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       DIMENSION GSO(NBAST,NVEC), GAO(NBAST,NVEC), NCNT(NBAST)
 #include <shells.h>

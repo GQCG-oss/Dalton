@@ -96,7 +96,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <cbiher.h>
 #include <cbihr1.h>
@@ -186,7 +186,7 @@ C
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
       PARAMETER (NDIR = 7, NTABLE = 102)
@@ -1607,7 +1607,7 @@ C  /* Deck herint */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <dummy.h>
@@ -2662,7 +2662,7 @@ C  /* Deck setdch */
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
 #include <symmet.h>
@@ -2797,7 +2797,7 @@ C/* Deck herini */
       SUBROUTINE HERINI
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <nuclei.h>
 #include <gnrinf.h>
 #include <inftra.h>
@@ -3022,7 +3022,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       DIMENSION WORK(LWORK)
       LOGICAL STOBKP
@@ -3131,7 +3131,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       DIMENSION WORK(LWORK)
 #include <shells.h>
@@ -3192,7 +3192,7 @@ C
 #include <alphac.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, CVEL2 = CVEL*CVEL, DM1 = -D1)
       CHARACTER*8 RTNLBL(2)
       LOGICAL FNDLAB
@@ -3590,7 +3590,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <dkinf.h>      
@@ -3647,7 +3647,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <pi.h>

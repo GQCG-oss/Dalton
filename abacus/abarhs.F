@@ -454,7 +454,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D2 = 2.D0, DP5=0.50D0)
       PARAMETER (MXDMAT = 50)
@@ -1083,7 +1083,6 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <iratdef.h>
 #include <dummy.h>
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.D0, D0 = 0.D0,
@@ -3369,7 +3368,6 @@ C  /* Deck psorh1 */
 #include <maxorb.h>
 #include <maxmom.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <mxcent.h>
       PARAMETER (DM2 = -2.D0)
       INTEGER X
@@ -4040,7 +4038,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <symmet.h>
 #include <inforb.h>
 #include <infdim.h>
@@ -4146,7 +4144,7 @@ C
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
       DIMENSION TD1(N2ORBX), TD2(N2ORBX), TEMP(N2ORBX),
      &          FOCK(N2ORBT), HESFS1(MXCOOR,MXCOOR)

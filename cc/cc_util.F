@@ -1011,7 +1011,7 @@ c /* deck cc_iajb2 */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
@@ -1019,7 +1019,7 @@ c /* deck cc_iajb2 */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
 * local parameters:
@@ -1164,7 +1164,7 @@ c /* deck cc_iajb3 */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
@@ -1172,7 +1172,7 @@ c /* deck cc_iajb3 */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
 * local parameters:
@@ -2303,7 +2303,7 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
       INTEGER IV, IADR, IADRW
-      INTEGER IADRPQ(MAXORB,IV)
+      INTEGER IADRPQ(MXCORB,IV)
       INTEGER ISYTAMP,ISYCTR,ISYMC,ISYTIN,ISYAIK, ISYMAI,ISYMA,ISYMI
       INTEGER KEND1, LWRK1, KOFF, KOFFY, KYIM
       INTEGER IERR, IOPT, IVIRC
@@ -2592,7 +2592,7 @@ C
 
       CHARACTER*(*) FILAO, FILMO
       INTEGER ISYPQMO, ISYLAM, IADRPQ, ITRAN, LWORK, LUAO, LUMO
-      INTEGER IADRAO(MAXORB,*), IADRMO(MAXORB,*)
+      INTEGER IADRAO(MXCORB,*), IADRMO(MXCORB,*)
 
 #if defined (SYS_CRAY)
       REAL ZERO, ONE
@@ -2965,7 +2965,7 @@ C
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
       INTEGER IV, IADR, IADRW
-      INTEGER IADRPQ(MAXORB,IV)
+      INTEGER IADRPQ(MXCORB,IV)
       INTEGER ISYTAMP, ISYCTR, ISYMD, ISYTIN, ISYAIK, ISYMA, ISYMAI
       INTEGER KEND1, LWRK1, KEND2, LWRK2, NVIRD, NBASD
       INTEGER IERR, IOPT, IDEL, ILLL, KOFF1, KOFF2, KOFF, ISYMI

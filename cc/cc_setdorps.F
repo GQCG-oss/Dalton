@@ -56,7 +56,7 @@ C
 #  include <ccorb_dec.h>
 #  include <mxcent_dec.h>
 #  include <maxaqn_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <symmet_dec.h>
 #  include <nuclei_dec.h>
 #  include <dorps_dec.h>
@@ -68,7 +68,7 @@ C
 #endif
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <symmet.h>

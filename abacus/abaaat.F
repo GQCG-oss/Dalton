@@ -255,7 +255,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (DP25 = 0.25D0)
       INTEGER X, Y, Z
       DIMENSION CSTRA(*), SCTRA(*)
@@ -395,7 +395,7 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       PARAMETER (D05 = 0.5D0)
       INTEGER X
@@ -567,7 +567,7 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       INTEGER X, XS
       CHARACTER*8 LABINT(*)
@@ -975,7 +975,7 @@ C***********************************************************************
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <symmet.h>
 #include <dummy.h>
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 = 1.0D0, DP1 = 0.1D0,
@@ -992,7 +992,6 @@ C***********************************************************************
 #include <inflin.h>
 #include <infdim.h>
 #include <aatens.h>
-#include <maxorb.h>
 #include <infinp.h>
 #include <abainf.h>
 C

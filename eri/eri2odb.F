@@ -43,7 +43,7 @@ C  /* Deck odbchs */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL SAMEOD, ODALL1, ODALL2
       DIMENSION CCFBT(*), WORK(LWORK)
 #include <cbieri.h>
@@ -316,7 +316,7 @@ C  /* Deck godbch */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       LOGICAL ODTRI
       DIMENSION IODBCH(NITBC,NAOBC2), IODTRA(NITTR,NAOBC2),
@@ -368,7 +368,7 @@ C  /* Deck odsort */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL ODTRI, TRIBCH
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
      &          WORK(LWORK), IODPPR(NITPP,*), RODPPR(NRTPP,*),
@@ -406,7 +406,7 @@ C  /* Deck odsor1 */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL TRIBCH, ODBTGT
       INTEGER A, B
 #include <aobtch.h>
@@ -546,7 +546,7 @@ C  /* Deck noddim */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.D0)
       LOGICAL GCNT
       INTEGER A, B, R, R1
@@ -631,7 +631,7 @@ C  /* Deck odbtgt */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aobtch.h>
 #include <odbtch.h>
       DIMENSION NSORT(NPSORT,*)
@@ -654,7 +654,7 @@ C  /* Deck odcls */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aobtch.h>
 #include <odbtch.h>
       LOGICAL NEWCLS
@@ -686,7 +686,7 @@ C  /* Deck clsinf */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <odbtch.h>
 #include <aobtch.h>
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), IODCLS(NITCL,NODCLS),

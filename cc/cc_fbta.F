@@ -114,24 +114,24 @@ C
         ISTART      = 1
         IEND        = ISTART    + NTRAN
         IADRE0      = IEND      + NTRAN
-        IADRE1      = IADRE0    + MAXORB*NTRAN
-        IADRPQ0     = IADRE1    + MAXORB*NTRAN
-        IADRPQ1     = IADRPQ0   + MAXORB*NTRAN
-        IADRPQMO    = IADRPQ1   + MAXORB*NTRAN
-        IADRPQA0    = IADRPQMO  + MAXORB*NTRAN
-        IADRPQA1    = IADRPQA0  + MAXORB*NTRAN
-        IADPQAMO    = IADRPQA1  + MAXORB*NTRAN
-        IADRBFA     = IADPQAMO  + MAXORB*NTRAN
-        IADRBFQA    = IADRBFA   + MAXORB*NTRAN
-        IADRBZA     = IADRBFQA  + MAXORB*NTRAN
-        IADRBZQA    = IADRBZA   + MAXORB*NTRAN
+        IADRE1      = IADRE0    + MXCORB*NTRAN
+        IADRPQ0     = IADRE1    + MXCORB*NTRAN
+        IADRPQ1     = IADRPQ0   + MXCORB*NTRAN
+        IADRPQMO    = IADRPQ1   + MXCORB*NTRAN
+        IADRPQA0    = IADRPQMO  + MXCORB*NTRAN
+        IADRPQA1    = IADRPQA0  + MXCORB*NTRAN
+        IADPQAMO    = IADRPQA1  + MXCORB*NTRAN
+        IADRBFA     = IADPQAMO  + MXCORB*NTRAN
+        IADRBFQA    = IADRBFA   + MXCORB*NTRAN
+        IADRBZA     = IADRBFQA  + MXCORB*NTRAN
+        IADRBZQA    = IADRBZA   + MXCORB*NTRAN
 C
-        IT2DEL0     = IADRBZQA  + MAXORB*NTRAN
-        IT2DELB     = IT2DEL0   + MAXORB*1
-        IT2DELA     = IT2DELB   + MAXORB*NTRAN
-        IT2DELBA    = IT2DELA   + MAXORB*NTRAN
+        IT2DEL0     = IADRBZQA  + MXCORB*NTRAN
+        IT2DELB     = IT2DEL0   + MXCORB*1
+        IT2DELA     = IT2DELB   + MXCORB*NTRAN
+        IT2DELBA    = IT2DELA   + MXCORB*NTRAN
 C
-        KCMOPQ      = IT2DELBA  + MAXORB*NTRAN
+        KCMOPQ      = IT2DELBA  + MXCORB*NTRAN
         KCMOHQ      = KCMOPQ    + NTRAN
         KLAMDPQ     = KCMOHQ    + NTRAN
         KLAMDHQ     = KLAMDPQ   + NTRAN
@@ -302,9 +302,9 @@ c /* deck cc_fbta1 */
 *                  IFBDOTS. Scalar results are returned in the FBCONS matrix
 *
 *    IT2DEL0,IT2DELB  -- integer scratch arrays of dimensions
-*                        MAXORB and MAXORB x NFBTRAN  (integrals)
+*                        MXCORB and MXCORB x NFBTRAN  (integrals)
 *    IT2DELA,IT2DELBA -- integer scratch arrays of dimensions
-*                        MAXORB x NFBTRAN       (integrals)
+*                        MXCORB x NFBTRAN       (integrals)
 *    operator labels:
 *
 *           HAM0     : unperturbed Hamiltonian (1-el & 2-el part)
@@ -323,7 +323,6 @@ c /* deck cc_fbta1 */
 #  include <priunit_dec.h>
 #  include <dummy_dec.h>
 #  include <aovec_dec.h>
-#  include <mxorb_dec.h>
 #  include <mxcent_dec.h>
 #  include <maxorb_dec.h>
 #  include <blocks_dec.h>
@@ -342,9 +341,8 @@ c /* deck cc_fbta1 */
 #include <priunit.h>
 #include <dummy.h>
 #include <aovec.h>
-#include <mxorb.h>
-#include <mxcent.h>
 #include <maxorb.h>
+#include <mxcent.h>
 #include <blocks.h>
 #include <maxaqn.h>
 #include <symmet.h>
@@ -440,10 +438,10 @@ C      PARAMETER (LUFBTA  = 89)
       INTEGER IFBDOTS(MXVEC,NFBTRAN)             
       INTEGER ISTART(NFBTRAN), IEND(NFBTRAN)
 C
-      INTEGER IT2DEL0(MAXORB)                 !the 3-MO integrals g(0)
-      INTEGER IT2DELB(MAXORB,NFBTRAN)         !the 3-MO integrals g(1)
-      INTEGER IT2DELA(MAXORB,NFBTRAN)         !the 3-MO integrals g(0A) 
-      INTEGER IT2DELBA(MAXORB,NFBTRAN)        !the 3-MO integrals g(1A) 
+      INTEGER IT2DEL0(MXCORB)                 !the 3-MO integrals g(0)
+      INTEGER IT2DELB(MXCORB,NFBTRAN)         !the 3-MO integrals g(1)
+      INTEGER IT2DELA(MXCORB,NFBTRAN)         !the 3-MO integrals g(0A) 
+      INTEGER IT2DELBA(MXCORB,NFBTRAN)        !the 3-MO integrals g(1A) 
 
       INTEGER KRAIM(NFBTRAN), KFAIM(NFBTRAN)      !calR,calF
       INTEGER KRQAIM(NFBTRAN), KFQAIM(NFBTRAN)    !calR-bar,calF-bar
@@ -473,15 +471,15 @@ C
 cs pointers for quantities on file (for each del or f, and in some cases ITRAN)
 cs integer arrays addresses
 
-      INTEGER IADRE0(MAXORB,NFBTRAN),  IADRE1(MAXORB,NFBTRAN)   
-      INTEGER IADRBFA(MAXORB,NFBTRAN), IADRBFQA(MAXORB,NFBTRAN)
-      INTEGER IADRBZA(MAXORB,NFBTRAN), IADRBZQA(MAXORB,NFBTRAN)
+      INTEGER IADRE0(MXCORB,NFBTRAN),  IADRE1(MXCORB,NFBTRAN)   
+      INTEGER IADRBFA(MXCORB,NFBTRAN), IADRBFQA(MXCORB,NFBTRAN)
+      INTEGER IADRBZA(MXCORB,NFBTRAN), IADRBZQA(MXCORB,NFBTRAN)
 
-      INTEGER IADRPQ0(MAXORB,NFBTRAN), IADRPQ1(MAXORB,NFBTRAN) 
-      INTEGER IADRPQMO(MAXORB,NFBTRAN)                        
+      INTEGER IADRPQ0(MXCORB,NFBTRAN), IADRPQ1(MXCORB,NFBTRAN) 
+      INTEGER IADRPQMO(MXCORB,NFBTRAN)                        
 
-      INTEGER IADRPQA0(MAXORB,NFBTRAN), IADRPQA1(MAXORB,NFBTRAN)
-      INTEGER IADPQAMO(MAXORB,NFBTRAN)                          
+      INTEGER IADRPQA0(MXCORB,NFBTRAN), IADRPQA1(MXCORB,NFBTRAN)
+      INTEGER IADPQAMO(MXCORB,NFBTRAN)                          
 
       INTEGER INDEXA(MXCORB), IGAM(MXCORB)                     
 

@@ -114,8 +114,8 @@ C
 C
 C     loop to set up triangular indexing array ...
 C
-      IF (MAXORB .GE. LIROW) THEN
-         CALL QUIT('SIRINI error: MAXORB exceeds LIROW')
+      IF (MXCORB .GE. LIROW) THEN
+         CALL QUIT('SIRINI error: MXCORB exceeds LIROW')
       END IF
       IROW(1) = 0
       DO 400 I = 1,(LIROW-1)

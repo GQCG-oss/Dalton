@@ -46,7 +46,7 @@ C     Punch out geometry to VRML-file
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <molinp.h>
@@ -166,7 +166,7 @@ C     Make VRML representation of symmetry elements.
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <priunit.h>
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
       KATMAR = 1
@@ -185,7 +185,7 @@ C     Punch out geometry to VRML-file
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <molinp.h>
@@ -281,7 +281,7 @@ C     Make VRML representation of symmetry elements.
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <priunit.h>
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
@@ -301,7 +301,7 @@ C     Punch out geometry to VRML-file
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <molinp.h>
@@ -463,7 +463,7 @@ C     Draws all the atoms as spheres with appropriate colour
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <priunit.h>
@@ -534,7 +534,7 @@ C     Draws bonds between the atoms
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <pi.h>
 #include <nuclei.h>
@@ -631,7 +631,7 @@ C     Draws coordinate axes
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <priunit.h>
@@ -691,7 +691,7 @@ C     Draws vectors to illustrate vibrational modes
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <priunit.h>
@@ -781,7 +781,7 @@ C     Draws vectors
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <priunit.h>
 #include <pi.h>
@@ -916,7 +916,7 @@ C     Draws vectors
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <priunit.h>
       DIMENSION ATMARR(MXCENT,8)
@@ -1002,7 +1002,7 @@ C     Expand all symmetry-dependent atoms.
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <molinp.h>

@@ -43,7 +43,7 @@ C  /* Deck eripro */
 #include <dummy.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       LOGICAL DOBDER, DOGDER
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK), IFCTYP(NDMT),

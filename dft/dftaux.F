@@ -41,7 +41,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
      &           DP5 = 0.5D0, DP3 = D1/3.0D0)
@@ -192,7 +192,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
@@ -307,7 +307,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       PARAMETER (D2 = 2.0D0)
 C

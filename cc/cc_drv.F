@@ -934,7 +934,7 @@ C
 C
 #include <codata.h>
 #include <ccorb.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccsdinp.h>
 #include <ccsections.h>
 #include <cclr.h>

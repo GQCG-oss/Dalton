@@ -48,7 +48,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
@@ -122,7 +122,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
@@ -209,7 +209,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       LOGICAL SQ12EL, SOP000
       INTEGER X
@@ -250,7 +250,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (DP5 = 0.5D0)
       INTEGER X, Y, Z

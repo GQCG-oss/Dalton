@@ -666,7 +666,6 @@ C
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
 #include <chrnos.h>
       CHARACTER*80 FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
@@ -675,6 +674,8 @@ C
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
 #include <gnrinf.h>
+c maxorb for infpar.h
+#include <maxorb.h>
 #include <infpar.h>
       DATA FIRST /.TRUE./
       SAVE FIRST
@@ -1160,12 +1161,13 @@ C
 C     K.Ruud, San Diego Aug 2000
 C
 #include <implicit.h>
-#include <mxorb.h>
       CHARACTER*(*) FILENM, TASK
       CHARACTER FILTMP*80
       INTEGER FILELN
       LOGICAL VALUE
 #include <chrnos.h>
+c maxorb for infpar.h
+#include <maxorb.h>
 #include <infpar.h>
 C
       FILELN = LEN(FILENM)

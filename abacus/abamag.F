@@ -384,7 +384,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxmom.h>
 #include <iratdef.h>
       LOGICAL NODC, NODV
@@ -433,7 +433,6 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <maxmom.h>
 #include <iratdef.h>
 #include <priunit.h>
@@ -603,7 +602,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
       PARAMETER (DP5 = 0.5D0)
@@ -942,7 +941,7 @@ C  /* Deck efntra */
 #include <maxmom.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION STAVEC(NCOMP), EXPVAL(NCOMP), CSTRA(*), SCTRA(*)
       CHARACTER NSTNUM*2, LABINT(9*MXCENT)*8, WORD*8
 #include <nuclei.h>
@@ -964,7 +963,7 @@ C  /* Deck shitra */
 #include <maxmom.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION STAVEC(NROW,3), EXPVAL(NCOMP), CSTRA(*), SCTRA(*)
       CHARACTER NSTNUM*3, NSTDIR*1, LABINT(9*MXCENT)*8, WORD*8, INWORD*7
 #include <sigma.h>
@@ -1366,7 +1365,6 @@ C
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <maxorb.h>
       LOGICAL PASS
       CHARACTER*8 SDLAB(9*MXCENT), FCLAB(MXCENT)
@@ -1677,7 +1675,6 @@ C  /* Deck trprs1 */
 #include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <maxaqn.h>
       LOGICAL INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM, EXCLC
@@ -1867,7 +1864,7 @@ C  /* Deck shire1 */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER DIAPAR*12
       DIMENSION TMAT(3,3,MXCENT), DMAT(3,3,MXCENT), PMAT(3,3,MXCENT),
@@ -2150,7 +2147,7 @@ C  /* Deck spire1 */
       LOGICAL TEST
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <dorps.h>
@@ -2252,7 +2249,7 @@ C  /* Deck isospn */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <cbisol.h>
 #include <maxaqn.h>
@@ -2426,7 +2423,7 @@ C  /* Deck fnlspn */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <cbisol.h>
 #include <maxaqn.h>
@@ -2697,7 +2694,7 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D3 = 3.0D0)
       DIMENSION GEOM(3*NATOMS)
 #include <nuclei.h>
@@ -2763,7 +2760,7 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
 #include <nuclei.h>
@@ -2819,7 +2816,7 @@ C
       DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <molgfa.h>
@@ -2869,7 +2866,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.D0)
       DIMENSION GEOM(3*NATOMS), ORIGIN(3)
@@ -2941,7 +2938,7 @@ C  /* Deck mgfres */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <pmass.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5)
@@ -3207,7 +3204,7 @@ C  /* Deck sprres */
 #include <maxaqn.h>
 #include <codata.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <pmass.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
@@ -3401,7 +3398,7 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION TEMP(3,3,NUCDEP), EXPVAL(NCOMP)
 #include <nqcc.h>
 #include <nuclei.h>
@@ -3459,7 +3456,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
      &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
 #include <nuclei.h>

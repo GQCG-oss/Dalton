@@ -161,9 +161,9 @@ C
       IF((IPRTRD.GT.2) .AND. (JTER.EQ.1)) WRITE(LUPRI,902) LPQRS
   902 FORMAT(' Maximum number of integrals =',I10)
 C
-C     max MAXORB orbitals (and max 255 because of index packing)
+C     max MXCORB orbitals (and max 255 because of index packing)
 C
-      MXBAST = MIN(255,MAXORB)
+      MXBAST = MIN(255,MXCORB)
       IF (NORBT.GT.MXBAST .OR. NBAST.GT.MXBAST) THEN
          WRITE (LUPRI,9020) MXBAST, NORBT, NBAST
          CALL QUIT('DERTRA error: too many orbitals for this version')

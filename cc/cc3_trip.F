@@ -64,7 +64,7 @@ C  /* Deck cc3_triplet */
 #include <maxash_dec.h>
 #include <maxash.h>
 #include <mxorb_dec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent_dec.h>
 #include <mxcent.h>
 #include <aovec_dec.h>
@@ -1415,7 +1415,7 @@ C  /* Deck cc33_transtemp */
 #include <mxcent_dec.h>
 #include <mxcent.h>
 #include <mxorb_dec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec_dec.h>
 #include <aovec.h>
 #include <iratdef_dec.h>

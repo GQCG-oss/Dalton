@@ -42,7 +42,7 @@ C     modified for symmetry Jul 5 1988 tuh
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
@@ -235,7 +235,7 @@ C     modified for symmetry tuh Jul 5 1988
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
@@ -510,7 +510,7 @@ C     modified for symmetry tuh Jul 5 1988
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
@@ -1066,7 +1066,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.00 D00)
       LOGICAL DIFDIP

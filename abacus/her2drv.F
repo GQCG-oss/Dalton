@@ -68,7 +68,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <dummy.h>
       PARAMETER (D0 = 0.00 D00)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
@@ -271,7 +271,7 @@ C  /* Deck twocal */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, DISTRI, SQ12EL, 
      &        SUSCEP, ADISTR, RELCAL
@@ -400,7 +400,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <dummy.h>
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
@@ -791,7 +791,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
 #include <dummy.h>
 C      PARAMETER (LBUF = 600)
@@ -1031,7 +1031,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
       LOGICAL NOPV, NODV, PERTUR,
@@ -1176,7 +1176,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <dummy.h>
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, DIA2SO,
@@ -1317,7 +1317,7 @@ C  /* Deck twoods */
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -1567,7 +1567,7 @@ C  /* Deck twood1 */
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, ONECEN,
      &        FIRST, LAST, SQ12EL, SUSCEP, TPRAB, TPRCD, ADISTR, SOFOCK
@@ -1767,7 +1767,7 @@ C  /* Deck symlop */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -2291,7 +2291,7 @@ C  /* Deck caoint */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, DIA2SO, BIGVEC, ONECEN,
@@ -2515,7 +2515,7 @@ C  /* Deck paovec */
 #include <implicit.h>
 #include <maxaqn.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       LOGICAL ORBOUT(MXSHEL), ALONE(MXSHEL), ALLSHR, ALLSEG, NOBLK
       DIMENSION IPRVOR(MXSHEL), IPRVPR(MXSHEL),
@@ -2778,7 +2778,7 @@ C  /* Deck cordif */
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL DIFX, DIFY, DIFZ, D0X, D0Y, D0Z
       DIMENSION NUCOA(*), NUCOB(*), JSTRA(*), JSTRB(*)
 #include <primit.h>
@@ -2872,7 +2872,7 @@ C  /* Deck nintso */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       LOGICAL LONDON, SPNORB, UNDIFF, SOFOCK, DISTRI, SQ12EL
 #include <twocom.h>
@@ -2923,7 +2923,7 @@ C  /* Deck nmboso */
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL SQ12EL, DCMPAC, DCABAB, NOTEST
 #include <twocom.h>
 #include <symmet.h>
@@ -3443,7 +3443,7 @@ C  /* Deck ndistr */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
       LOGICAL DCMPAB
@@ -3510,7 +3510,7 @@ C
 C  /* Deck paoset */
       SUBROUTINE PAOSET(JSTRSH,NPRIMS,NCONTS,KORBSH)
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (DSM = 1.0D-10)
 C
@@ -3572,7 +3572,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       LOGICAL SQ12EL, DCMPAB, DCMPCD, DCABAB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*),
@@ -4015,7 +4015,7 @@ C  /* Deck whtrep */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL DOPREP(0:7)
 #include <dorps.h>
 #include <symmet.h>
@@ -4123,7 +4123,7 @@ C  /* Deck seteff */
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION IEFFB(0:7), IEFFC(0:7), IEFFD(0:7)
 #include <symmet.h>
 #include <twocom.h>
@@ -4174,7 +4174,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       LOGICAL PERTUR, EXPECT, UNDIFF, DIRFCK, SPNORB, DIA2SO, DISTRI, 
      &        SQ12EL, LONDON, SUSCEP, DDFOCK, ADISTR, SOFOCK, ZFS2EL

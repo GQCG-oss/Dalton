@@ -216,9 +216,8 @@ c     END IF
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -254,8 +253,8 @@ C
 C
       INTEGER LWORK
       DIMENSION INDEXA(MXCORB)
-      DIMENSION IADRPQ0(MAXORB+IRAT), IADRPQR(MAXORB+IRAT)
-      DIMENSION IADRBFI(MAXORB), IADRBFD(MAXORB)
+      DIMENSION IADRPQ0(MXCORB+IRAT), IADRPQR(MXCORB+IRAT)
+      DIMENSION IADRBFI(MXCORB), IADRBFD(MXCORB)
       DIMENSION WORK(*)
       CHARACTER*6 CFIL,DFIL,CTFIL,DTFIL
       CHARACTER*7 O3FIL,O3TFIL
@@ -405,8 +404,8 @@ C       -----------------------------------------
         CALL WOPEN2(LUPQR0,FILPQR0,64,0)
         CALL WOPEN2(LUPQRR,FILPQRR,64,0)
 
-        CALL GETWA2(LUPQR0,FILPQR0,IADRPQ0,1,(MAXORB+IRAT)/IRAT)
-        CALL GETWA2(LUPQRR,FILPQRR,IADRPQR,1,(MAXORB+IRAT)/IRAT)
+        CALL GETWA2(LUPQR0,FILPQR0,IADRPQ0,1,(MXCORB+IRAT)/IRAT)
+        CALL GETWA2(LUPQRR,FILPQRR,IADRPQR,1,(MXCORB+IRAT)/IRAT)
 
       END IF
 
@@ -3366,7 +3365,7 @@ C----------------------------------------------------------------------
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)
 
       CHARACTER*(10) MODEL
-      INTEGER IADRPQ(MAXORB+IRAT)
+      INTEGER IADRPQ(MXCORB+IRAT)
       INTEGER ISYTAMP, ISYZETA, ISYMD, ISYTIN, ISYAIK
       INTEGER KZETA, KTAMP, KEND1, LWRK1, KEND2, LWRK2
       INTEGER IERR, IADR, IOPT, IDEL, ILLL
@@ -3411,7 +3410,7 @@ C----------------------------------------------------------------------
       LUPQIM = 0
       CALL WOPEN2(LUPQIM,FILNAM,64,0)
 * reserve at the beginning a record for the start addresses:
-      IADR = (MAXORB+IRAT)/IRAT + 1
+      IADR = (MXCORB+IRAT)/IRAT + 1
 
 *----------------------------------------------------------------------
 * get XLAMD matrices from zero T1 amplitudes:
@@ -3595,7 +3594,7 @@ C
 *----------------------------------------------------------------------
 * save start addresses and close file and return:
 *----------------------------------------------------------------------
-      CALL  PUTWA2(LUPQIM,FILNAM,IADRPQ,1,(MAXORB+IRAT)/IRAT)
+      CALL  PUTWA2(LUPQIM,FILNAM,IADRPQ,1,(MXCORB+IRAT)/IRAT)
 
       CALL WCLOSE2(LUPQIM,FILNAM,'KEEP')
 

@@ -38,7 +38,6 @@ C  /* Deck erisym */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER R, S, T
@@ -47,6 +46,7 @@ C  /* Deck erisym */
      &          RMAT(64,0:7), SMAT(64,0:7), TMAT(64,0:7),
      &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
 #include <ericom.h>
+#include <maxorb.h>
 #include <symmet.h>
 #include <hertop.h>
 C
@@ -193,9 +193,9 @@ C  /* Deck eritra */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <mxcent.h>
       DIMENSION RMAT(64,0:7)
+#include <maxorb.h>
 #include <symmet.h>
 #include <ibtfun.h>
 C

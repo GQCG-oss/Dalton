@@ -67,7 +67,7 @@ C*****************************************************************************
 #include <maxaqn.h>
 #include <aovec.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <dummy.h>
       PARAMETER (D0 = 0.00 D00)
 #ifdef PRG_DIRAC
@@ -420,7 +420,7 @@ C  /* Deck gabdr1 */
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, ONECEN,
      &        SOFOCK, SQ12EL, SUSCEP, TPRAB, TPRCD
@@ -600,7 +600,7 @@ C  /* Deck Gabdr2 */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <dummy.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
 C
@@ -1025,7 +1025,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -1108,7 +1108,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER(D1 = 1.0D0)
       INTEGER A,B,C,D
@@ -1242,7 +1242,7 @@ C*****************************************************************************
       PARAMETER(D0=0.0D0)
 C
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
 #include <shells.h>
@@ -1292,7 +1292,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
 #include <shells.h>
@@ -1356,7 +1356,7 @@ C*****************************************************************************
 #include <priunit.h>
 C
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
 #include <shells.h>
@@ -1396,7 +1396,7 @@ C*****************************************************************************
 #include <priunit.h>
 C
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 C
@@ -1438,7 +1438,7 @@ C*****************************************************************************
       PARAMETER(D0=0.0D0)
 C
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
 #include <shells.h>
@@ -1751,7 +1751,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 C
@@ -1790,7 +1790,7 @@ C     T.Saue March 1997
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <shells.h>
       NGAB = KMAX
       RETURN
@@ -1811,7 +1811,7 @@ C***********************************************************************
 #include <priunit.h>
 #include <dummy.h>
 C
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
 #include <blocks.h>

@@ -79,7 +79,7 @@ c /* deck ccfbtaao1 */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
@@ -88,7 +88,7 @@ c /* deck ccfbtaao1 */
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
       INTEGER ISYM0

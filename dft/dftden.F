@@ -134,7 +134,7 @@ C
 #include <iratdef.h>
 #include <mxcent.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <abainf.h>
 #include <inforb.h>
@@ -271,7 +271,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       DIMENSION DSO(*), DENMAT(*)
 #include <shells.h>

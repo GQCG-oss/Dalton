@@ -39,7 +39,7 @@ C  /* Deck setaob */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       DIMENSION CCFBT(MXPRIM*MXCONT), INDXBT(MXSHEL*MXCONT,0:7),
      &          WORK(LWORK)
@@ -170,7 +170,7 @@ C  /* Deck aobch */
       SUBROUTINE AOBCH(NB,ISHELL,CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <shells.h>
 C
@@ -198,7 +198,7 @@ C  /* Deck aobch1 */
      &                  IPNTC,IPNTP,ISHELL,CCFBT,INDXBT,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
@@ -379,7 +379,7 @@ C  /* Deck aobsrt */
       SUBROUTINE AOBSRT(IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -417,7 +417,7 @@ C  /* Deck aobtgt */
       LOGICAL FUNCTION AOBTGT(IAO,JAO)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -456,7 +456,7 @@ C  /* Deck mltcmp */
       FUNCTION MLTCMP(NHKTA,KHKTA,MULA,IREPA)
 #include <implicit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <symmet.h>
 #include <ibtfun.h>
@@ -476,7 +476,7 @@ C     T. Helgaker Jan 2001
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0)
       PARAMETER (THR = 1.0D-17)

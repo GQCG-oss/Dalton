@@ -39,7 +39,7 @@ C  /* Deck sochk2 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 C
@@ -89,7 +89,7 @@ C
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -200,7 +200,7 @@ C attraction integrals.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <maxmom.h>
@@ -363,7 +363,7 @@ C
 C
 #include <implicit.h>
 #include <dummy.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -411,7 +411,7 @@ C
 C
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
 #include <aovec.h>
@@ -564,7 +564,7 @@ C repulsion integrals.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <maxmom.h>
@@ -773,7 +773,7 @@ C  /* Deck mg1tst */
 #include <implicit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -812,7 +812,7 @@ C  /* Deck mg1ts1 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
@@ -1024,7 +1024,7 @@ C  /* Deck mgtst2 */
 #include <implicit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -1061,7 +1061,7 @@ C  /* Deck mg1ts2 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
@@ -1270,7 +1270,7 @@ C  /* Deck hdbtst */
 #include <dummy.h>
 #include <maxmom.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -1308,7 +1308,7 @@ C  /* Deck hdbts1 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
@@ -1483,7 +1483,7 @@ C  /* Deck sustst */
 #include <implicit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -1521,7 +1521,7 @@ C  /* Deck susts1 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
@@ -1700,7 +1700,7 @@ C  /* Deck ns1tst */
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -1746,7 +1746,7 @@ C  /* Deck ns1ts1 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
@@ -1940,7 +1940,7 @@ C  /* Deck nstst2 */
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -1981,7 +1981,7 @@ C  /* Deck ns1ts2 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
@@ -2167,7 +2167,7 @@ C  /* Deck nstst3 */
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -2205,7 +2205,7 @@ C  /* Deck ns1ts3 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
@@ -2305,7 +2305,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
       PARAMETER (PRTHRS = 1D-13)
@@ -2380,7 +2380,7 @@ C
 #include <implicit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -2435,7 +2435,7 @@ C
 #include <dummy.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxmom.h>
 #include <primit.h>

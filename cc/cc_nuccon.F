@@ -54,7 +54,7 @@ C
 #  include <ccsdsym_dec.h>
 #  include <maxaqn_dec.h>
 #  include <mxcent_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <nuclei_dec.h>
 #  include <symmet_dec.h>
 #  include <dipole_dec.h>
@@ -66,7 +66,7 @@ C
 #include <ccsdsym.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <nuclei.h>
 #include <dipole.h>
 #include <symmet.h>

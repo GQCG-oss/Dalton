@@ -1885,7 +1885,7 @@ C
      &                      'k->l rot.'
             WRITE (LUPRI,*) 'IG, K, L, ITYPK, ITYPL',IG,K,L,ITYPK,ITYPL
             WRITE (LUPRI,*) 'Possible cause: inconsistent common '//
-     *         'blocks, check /INFIND/ and MAXORB'
+     *         'blocks, check /INFIND/ and MXCORB'
             CALL QUIT('ORBDIA FATAL ERROR: k not occ. for k->l rot.')
          ENDIF
  100  CONTINUE

@@ -255,7 +255,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
       PARAMETER ( THRGEO = 1.D-4, THRSH = 1.0D-6)
       LOGICAL HESEXS
@@ -459,7 +459,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <iratdef.h>
 C
@@ -703,7 +703,7 @@ C  /* Deck rotana */
 #include <codata.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
       PARAMETER (ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU), 
      &           CINVRS = 3.335 641 0 D-5)
@@ -832,7 +832,6 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <codata.h>
 #include <debye.h>
@@ -1216,7 +1215,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
      &            THRSH1 = 1.0D-14, THRSH2 = 1.0D-3, THRSH3 = 1.0D-7)
@@ -1451,7 +1450,7 @@ C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 C
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D1 = 1.0D0, PVFAC  = 0.124 748 D0)
 C
@@ -2058,7 +2057,7 @@ C  /* Deck getb */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -2103,7 +2102,7 @@ C  /* Deck getcmat */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0)
 C
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
@@ -2705,7 +2704,7 @@ C  /* Deck getnos */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
@@ -2829,7 +2828,7 @@ C  /* Deck vibv3 */
 #include <thrzer.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <codata.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
@@ -3162,7 +3161,7 @@ C  /* Deck vibroa */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION EVEC(NCORD,NCORD), FREQ(NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
      &          ROAGLQ(3,3,NFRVAL,NCORD), ROAAQ(3,3,3,NFRVAL,NCORD)
@@ -3237,7 +3236,7 @@ C     by G.Hangartner 20.11.1996
 C
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <cbilnr.h>
 C
@@ -3536,7 +3535,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -3730,7 +3729,7 @@ C
 #include <thrzer.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D1 = 1.0D0, D4 = 4.0D0, PMASS = 1.007275D0,
      &           THRESH = 1.0D-5, D0 = 0.0D0, D2 = 2.0D0)

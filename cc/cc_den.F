@@ -65,10 +65,9 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <iratdef.h>
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)

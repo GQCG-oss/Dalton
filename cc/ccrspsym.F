@@ -50,7 +50,7 @@ c /* deck ccrspsym */
       IMPLICIT NONE  
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <maxaqn_dec.h>
 #  include <mxcent_dec.h>
 #  include <nuclei_dec.h>
@@ -59,7 +59,7 @@ c /* deck ccrspsym */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <nuclei.h>

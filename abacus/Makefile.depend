@@ -6,8 +6,8 @@ aba2tex.o : aba2tex.F \
   ../include/gnrinf.h  ../include/implicit.h \
   ../include/inforb.h  ../include/infpar.h \
   ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/priunit.h  ../include/single.h \
   ../include/symmet.h  ../include/taymol.h \
   ../include/taysol.h
@@ -20,10 +20,9 @@ abaaat.o : abaaat.F \
   ../include/inftap.h  ../include/infvar.h \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/wrkrsp.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h  ../include/wrkrsp.h
 abadip.o : abadip.F \
   ../include/abainf.h  ../include/cbidip.h \
   ../include/cbisol.h  ../include/chrxyz.h \
@@ -36,9 +35,8 @@ abadip.o : abadip.F \
   ../include/iratdef.h  ../include/linaba.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/moldip.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h
 abadrv.o : abadrv.F \
   ../include/aatens.h  ../include/abainf.h \
   ../include/cbilnr.h  ../include/cbilrs.h \
@@ -57,15 +55,15 @@ abadrv.o : abadrv.F \
   ../include/magone.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/moldip.h \
   ../include/molgfa.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nqcc.h \
-  ../include/nuclei.h  ../include/numder.h \
-  ../include/orgcom.h  ../include/past.h \
-  ../include/pmass.h  ../include/priunit.h \
-  ../include/quadru.h  ../include/relcor.h \
-  ../include/sigma.h  ../include/single.h \
-  ../include/spinro.h  ../include/spnout.h \
-  ../include/suscpt.h  ../include/symmet.h \
-  ../include/taymol.h  ../include/taysol.h
+  ../include/nqcc.h  ../include/nuclei.h \
+  ../include/numder.h  ../include/orgcom.h \
+  ../include/past.h  ../include/pmass.h \
+  ../include/priunit.h  ../include/quadru.h \
+  ../include/relcor.h  ../include/sigma.h \
+  ../include/single.h  ../include/spinro.h \
+  ../include/spnout.h  ../include/suscpt.h \
+  ../include/symmet.h  ../include/taymol.h \
+  ../include/taysol.h
 abadtra.o : abadtra.F \
   ../include/cbdtra.h  ../include/ibtdef.h \
   ../include/implicit.h  ../include/infind.h \
@@ -127,9 +125,9 @@ abaexc.o : abaexc.F \
   ../include/infvar.h  ../include/iratdef.h \
   ../include/maxaqn.h  ../include/maxmom.h \
   ../include/maxorb.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h  ../include/wrkrsp.h
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h \
+  ../include/wrkrsp.h
 abaflt.o : abaflt.F \
   ../include/abainf.h  ../include/cbiflt.h \
   ../include/implicit.h  ../include/iratdef.h \
@@ -147,10 +145,10 @@ abafmm.o : abafmm.F \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxmom.h  ../include/maxorb.h \
   ../include/memint.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/orgcom.h  ../include/primit.h \
-  ../include/priunit.h  ../include/shells.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/nuclei.h  ../include/orgcom.h \
+  ../include/primit.h  ../include/priunit.h \
+  ../include/shells.h  ../include/single.h \
+  ../include/symmet.h
 abafsd.o : abafsd.F \
   ../include/abainf.h  ../include/aosotr.h \
   ../include/cbisol.h  ../include/ccom.h \
@@ -161,10 +159,9 @@ abafsd.o : abafsd.F \
   ../include/infinp.h  ../include/inforb.h \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/maxaqn.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/shells.h  ../include/single.h \
-  ../include/symmet.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/shells.h \
+  ../include/single.h  ../include/symmet.h
 abalnr.o : abalnr.F \
   ../include/abainf.h  ../include/alphac.h \
   ../include/anrinf.h  ../include/cbiexc.h \
@@ -177,10 +174,10 @@ abalnr.o : abalnr.F \
   ../include/inftap.h  ../include/infvar.h \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxmom.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/pi.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h  ../include/wrkrsp.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/pi.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h \
+  ../include/wrkrsp.h
 abalrs.o : abalrs.F \
   ../include/abainf.h  ../include/abares.h \
   ../include/anrinf.h  ../include/cbiexc.h \
@@ -220,15 +217,14 @@ abamag.o : abamag.F \
   ../include/magone.h  ../include/maxaqn.h \
   ../include/maxmom.h  ../include/maxorb.h \
   ../include/molgfa.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nqcc.h \
-  ../include/nuclei.h  ../include/onecom.h \
-  ../include/orgcom.h  ../include/pmass.h \
-  ../include/priunit.h  ../include/quadru.h \
-  ../include/relcor.h  ../include/shells.h \
-  ../include/sigma.h  ../include/single.h \
-  ../include/spinro.h  ../include/spnout.h \
-  ../include/suscpt.h  ../include/symmet.h \
-  ../include/wrkrsp.h
+  ../include/nqcc.h  ../include/nuclei.h \
+  ../include/onecom.h  ../include/orgcom.h \
+  ../include/pmass.h  ../include/priunit.h \
+  ../include/quadru.h  ../include/relcor.h \
+  ../include/shells.h  ../include/sigma.h \
+  ../include/single.h  ../include/spinro.h \
+  ../include/spnout.h  ../include/suscpt.h \
+  ../include/symmet.h  ../include/wrkrsp.h
 abamolden.o : abamolden.F \
   ../include/aosotr.h  ../include/aovec.h \
   ../include/cbieri.h  ../include/cbirea.h \
@@ -239,10 +235,10 @@ abamolden.o : abamolden.F \
   ../include/inforb.h  ../include/inftap.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/molde.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/pgroup.h  ../include/pi.h \
-  ../include/primit.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/nuclei.h  ../include/pgroup.h \
+  ../include/pi.h  ../include/primit.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
 abander.o : abander.F \
   ../include/abainf.h  ../include/cbiexc.h \
   ../include/cbilrs.h  ../include/cbinum.h \
@@ -257,13 +253,13 @@ abander.o : abander.F \
   ../include/infpar.h  ../include/inftap.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/molinp.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nmbksym.h \
-  ../include/nuclei.h  ../include/numder.h \
-  ../include/optinf.h  ../include/past.h \
-  ../include/pgroup.h  ../include/priunit.h \
-  ../include/prpndr.h  ../include/pvibav.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/taymol.h  ../include/trkoor.h
+  ../include/nmbksym.h  ../include/nuclei.h \
+  ../include/numder.h  ../include/optinf.h \
+  ../include/past.h  ../include/pgroup.h \
+  ../include/priunit.h  ../include/prpndr.h \
+  ../include/pvibav.h  ../include/single.h \
+  ../include/symmet.h  ../include/taymol.h \
+  ../include/trkoor.h
 abandsym.o : abandsym.F \
   ../include/fcsym.h  ../include/implicit.h \
   ../include/mxcent.h  ../include/nuclei.h \
@@ -275,8 +271,8 @@ abanuc.o : abanuc.F \
   ../include/abainf.h  ../include/cbinuc.h \
   ../include/dorps.h  ../include/energy.h \
   ../include/ibtfun.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/past.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
 abanvib.o : abanvib.F \
@@ -285,7 +281,7 @@ abanvib.o : abanvib.F \
   ../include/codata.h  ../include/fcsym.h \
   ../include/implicit.h  ../include/inforb.h \
   ../include/infpar.h  ../include/inftap.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/numder.h \
   ../include/priunit.h  ../include/prpndr.h \
   ../include/pvibav.h  ../include/single.h \
@@ -302,9 +298,8 @@ abaopg.o : abaopg.F \
   ../include/inftap.h  ../include/infvar.h \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h
 abaopt.o : abaopt.F \
   ../include/abainf.h  ../include/cbiher.h \
   ../include/cbirea.h  ../include/cbiwlk.h \
@@ -316,15 +311,14 @@ abaopt.o : abaopt.F \
   ../include/infpar.h  ../include/inftap.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/molde.h  ../include/molinp.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/numder.h \
-  ../include/optinf.h  ../include/pario.h \
-  ../include/pgroup.h  ../include/pi.h \
-  ../include/priunit.h  ../include/prkoor.h \
-  ../include/pvibav.h  ../include/scalar.h \
-  ../include/single.h  ../include/siripc.h \
-  ../include/symmet.h  ../include/taymol.h \
-  ../include/trkoor.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/numder.h  ../include/optinf.h \
+  ../include/pario.h  ../include/pgroup.h \
+  ../include/pi.h  ../include/priunit.h \
+  ../include/prkoor.h  ../include/pvibav.h \
+  ../include/scalar.h  ../include/single.h \
+  ../include/siripc.h  ../include/symmet.h \
+  ../include/taymol.h  ../include/trkoor.h
 abaort.o : abaort.F \
   ../include/abainf.h  ../include/cbiort.h \
   ../include/cbisol.h  ../include/dorps.h \
@@ -334,10 +328,9 @@ abaort.o : abaort.F \
   ../include/inftap.h  ../include/infvar.h \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h  ../include/taymol.h \
-  ../include/taysol.h
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h \
+  ../include/taymol.h  ../include/taysol.h
 abaptr.o : abaptr.F \
   ../include/2gbdef.h  ../include/abainf.h \
   ../include/aovec.h  ../include/blocks.h \
@@ -347,7 +340,7 @@ abaptr.o : abaptr.F \
   ../include/inflin.h  ../include/inforb.h \
   ../include/inftap.h  ../include/ioweight.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/pincom.h  ../include/priunit.h \
   ../include/ptrbuf.h  ../include/sdpre.h \
   ../include/shells.h  ../include/single.h \
@@ -360,7 +353,7 @@ abaqr.o : abaqr.F \
   ../include/inforb.h  ../include/infrsp.h \
   ../include/infsmo.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
 abarhs.o : abarhs.F \
@@ -380,20 +373,19 @@ abarhs.o : abarhs.F \
   ../include/infvar.h  ../include/iratdef.h \
   ../include/maxaqn.h  ../include/maxash.h \
   ../include/maxmom.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nodint.h  ../include/nuclei.h \
-  ../include/orgcom.h  ../include/priunit.h \
-  ../include/sigma.h  ../include/single.h \
-  ../include/spnout.h  ../include/suscpt.h \
-  ../include/symmet.h  ../include/thrzer.h \
-  ../include/wrkrsp.h
+  ../include/mxcent.h  ../include/nodint.h \
+  ../include/nuclei.h  ../include/orgcom.h \
+  ../include/priunit.h  ../include/sigma.h \
+  ../include/single.h  ../include/spnout.h \
+  ../include/suscpt.h  ../include/symmet.h \
+  ../include/thrzer.h  ../include/wrkrsp.h
 abarint.o : abarint.F \
   ../include/cbirea.h  ../include/cbiwlk.h \
   ../include/codata.h  ../include/gnrinf.h \
   ../include/huckel.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/maxaqn.h \
-  ../include/molinp.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxorb.h  ../include/molinp.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/optinf.h  ../include/pi.h \
   ../include/priunit.h  ../include/scalar.h \
   ../include/single.h  ../include/symmet.h \
@@ -410,11 +402,10 @@ abarlx.o : abarlx.F \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/moldip.h \
   ../include/molgfa.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/sigma.h \
-  ../include/single.h  ../include/spinro.h \
-  ../include/spnout.h  ../include/suscpt.h \
-  ../include/symmet.h
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/sigma.h  ../include/single.h \
+  ../include/spinro.h  ../include/spnout.h \
+  ../include/suscpt.h  ../include/symmet.h
 abarspn.o : abarspn.F \
   ../include/abainf.h  ../include/cbisol.h \
   ../include/codata.h  ../include/dummy.h \
@@ -428,9 +419,9 @@ abarspn.o : abarspn.F \
   ../include/inftra.h  ../include/iratdef.h \
   ../include/maxaqn.h  ../include/maxmom.h \
   ../include/maxorb.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h  ../include/wrkrsp.h
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h \
+  ../include/wrkrsp.h
 abaset.o : abaset.F \
   ../include/abainf.h  ../include/cbdtra.h \
   ../include/cbirhs.h  ../include/cbisol.h \
@@ -461,11 +452,10 @@ abatro.o : abatro.F \
   ../include/infvar.h  ../include/iratdef.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/moldip.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/sdpre.h \
-  ../include/single.h  ../include/spnout.h \
-  ../include/symmet.h  ../include/taymol.h \
-  ../include/trkoor.h
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/sdpre.h  ../include/single.h \
+  ../include/spnout.h  ../include/symmet.h \
+  ../include/taymol.h  ../include/trkoor.h
 abavib.o : abavib.F \
   ../include/aatens.h  ../include/abainf.h \
   ../include/cbilnr.h  ../include/cbinum.h \
@@ -479,19 +469,18 @@ abavib.o : abavib.F \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/molde.h \
   ../include/moldip.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/optinf.h  ../include/orgcom.h \
-  ../include/pgroup.h  ../include/pi.h \
-  ../include/priunit.h  ../include/sdpre.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/taymol.h  ../include/thrzer.h \
-  ../include/trkoor.h
+  ../include/nuclei.h  ../include/optinf.h \
+  ../include/orgcom.h  ../include/pgroup.h \
+  ../include/pi.h  ../include/priunit.h \
+  ../include/sdpre.h  ../include/single.h \
+  ../include/symmet.h  ../include/taymol.h \
+  ../include/thrzer.h  ../include/trkoor.h
 abavrml.o : abavrml.F \
   ../include/cbiwlk.h  ../include/codata.h \
   ../include/dummy.h  ../include/gnrinf.h \
   ../include/ibtfun.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/molinp.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/molinp.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/optinf.h \
   ../include/pi.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h \
@@ -511,14 +500,14 @@ abawalk.o : abawalk.F \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/moldip.h  ../include/molgfa.h \
   ../include/molinp.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nqcc.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/prkoor.h  ../include/quadru.h \
-  ../include/scalar.h  ../include/sdpre.h \
-  ../include/shells.h  ../include/sigma.h \
-  ../include/single.h  ../include/spinro.h \
-  ../include/suscpt.h  ../include/symmet.h \
-  ../include/taymol.h  ../include/trkoor.h
+  ../include/nqcc.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/prkoor.h \
+  ../include/quadru.h  ../include/scalar.h \
+  ../include/sdpre.h  ../include/shells.h \
+  ../include/sigma.h  ../include/single.h \
+  ../include/spinro.h  ../include/suscpt.h \
+  ../include/symmet.h  ../include/taymol.h \
+  ../include/trkoor.h
 abawfn.o : abawfn.F \
   ../include/aosotr.h  ../include/aovec.h \
   ../include/cbirea.h  ../include/ccom.h \
@@ -527,11 +516,10 @@ abawfn.o : abawfn.F \
   ../include/implicit.h  ../include/inforb.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/molde.h  ../include/molinp.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/pi.h \
-  ../include/primit.h  ../include/priunit.h \
-  ../include/single.h  ../include/sphtrm.h \
-  ../include/symmet.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/pi.h  ../include/primit.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/sphtrm.h  ../include/symmet.h
 dalgnr.o : dalgnr.F \
   ../include/abainf.h  ../include/cbieri.h \
   ../include/cbihr2.h  ../include/cbirea.h \
@@ -544,19 +532,18 @@ dalgnr.o : dalgnr.F \
   ../include/inftap.h  ../include/inftra.h \
   ../include/inpbak.h  ../include/maxorb.h \
   ../include/molde.h  ../include/molinp.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/numder.h \
-  ../include/orgcom.h  ../include/pario.h \
-  ../include/pastbk.h  ../include/past.h \
-  ../include/pribak.h  ../include/priunit.h \
-  ../include/single.h  ../include/siripc.h \
-  ../include/taymol.h  ../include/trunit.h \
-  ../include/veclen.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/numder.h  ../include/orgcom.h \
+  ../include/pario.h  ../include/pastbk.h \
+  ../include/past.h  ../include/pribak.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/siripc.h  ../include/taymol.h \
+  ../include/trunit.h  ../include/veclen.h
 dalton.o : dalton.F \
   ../include/dummy.h  ../include/gnrinf.h \
   ../include/implicit.h  ../include/infpar.h \
   ../include/infpri.h  ../include/inftap.h \
-  ../include/mtags.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mtags.h \
   ../include/priunit.h  ../include/single.h
 eckart.o : eckart.F \
   ../include/cbiwlk.h  ../include/implicit.h \
@@ -568,7 +555,7 @@ ecp.o : ecp.F \
   ../include/ecpinf.h  ../include/gnrinf.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/infpar.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/pi.h \
   ../include/priunit.h  ../include/single.h \
   ../include/symmet.h
@@ -576,8 +563,8 @@ her1ave.o : her1ave.F \
   ../include/ader.h  ../include/dipole.h \
   ../include/dorps.h  ../include/energy.h \
   ../include/ibtfun.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/onecom.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/onecom.h \
   ../include/priunit.h  ../include/scalar.h \
   ../include/single.h  ../include/symmet.h
 her1car.o : her1car.F \
@@ -586,7 +573,7 @@ her1car.o : her1car.F \
   ../include/ecpinf.h  ../include/gamcom.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/lmns.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/onecom.h  ../include/pi.h \
   ../include/primit.h  ../include/priunit.h \
   ../include/single.h
@@ -602,11 +589,11 @@ her1drv.o : her1drv.F \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/lmns.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/onecom.h  ../include/orgcom.h \
-  ../include/priunit.h  ../include/shells.h \
-  ../include/single.h  ../include/symind.h \
-  ../include/symmet.h  ../include/taysol.h
+  ../include/nuclei.h  ../include/onecom.h \
+  ../include/orgcom.h  ../include/priunit.h \
+  ../include/shells.h  ../include/single.h \
+  ../include/symind.h  ../include/symmet.h \
+  ../include/taysol.h
 her1int.o : her1int.F \
   ../include/alphac.h  ../include/aovec.h \
   ../include/ccom.h  ../include/dummy.h \
@@ -615,8 +602,8 @@ her1int.o : her1int.F \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/iratdef.h  ../include/lmns.h \
   ../include/maxaqn.h  ../include/maxmom.h \
-  ../include/mgsolt.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxorb.h  ../include/mgsolt.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/onecom.h  ../include/orgcom.h \
   ../include/pi.h  ../include/primit.h \
   ../include/priunit.h  ../include/sdpre.h \
@@ -631,8 +618,8 @@ her1out.o : her1out.F \
   ../include/energy.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/inforb.h \
   ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/oneadr.h  ../include/priunit.h \
   ../include/sdpre.h  ../include/single.h \
   ../include/symmet.h  ../include/taysol.h
@@ -644,8 +631,8 @@ her1pro.o : her1pro.F \
   ../include/huckel.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/maxmom.h  ../include/mgsolt.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxmom.h  ../include/maxorb.h \
+  ../include/mgsolt.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/orgcom.h \
   ../include/pgroup.h  ../include/pi.h \
   ../include/priunit.h  ../include/sdpre.h \
@@ -657,8 +644,8 @@ her1sym.o : her1sym.F \
   ../include/dummy.h  ../include/energy.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/onecom.h  ../include/pincom.h \
   ../include/priunit.h  ../include/shells.h \
   ../include/single.h  ../include/sphtrm.h \
@@ -668,8 +655,8 @@ her2ave.o : her2ave.F \
   ../include/dirprt.h  ../include/energy.h \
   ../include/expcom.h  ../include/gtensor.h \
   ../include/ibtfun.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/priunit.h  ../include/single.h \
   ../include/suscpt.h  ../include/symmet.h \
   ../include/twocom.h  ../include/twosta.h
@@ -694,8 +681,8 @@ her2drv.o : her2drv.F \
   ../include/implicit.h  ../include/inforb.h \
   ../include/infpar.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/memint.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxorb.h  ../include/memint.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/primit.h  ../include/priunit.h \
   ../include/scalar.h  ../include/sdpre.h \
   ../include/shells.h  ../include/single.h \
@@ -727,8 +714,8 @@ her2fck.o : her2fck.F \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/inforb.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/memint.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxorb.h  ../include/memint.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/pincom.h  ../include/priunit.h \
   ../include/scalar.h  ../include/sdpre.h \
   ../include/shells.h  ../include/single.h \
@@ -743,8 +730,8 @@ her2gab.o : her2gab.F \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/infpar.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/memint.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxorb.h  ../include/memint.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/pincom.h  ../include/priunit.h \
   ../include/shells.h  ../include/single.h \
   ../include/symmet.h  ../include/twocom.h \
@@ -764,8 +751,8 @@ her2odc.o : her2odc.F \
   ../include/chrnos.h  ../include/chrxyz.h \
   ../include/drw2el.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/orgcom.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/orgcom.h \
   ../include/pi.h  ../include/primit.h \
   ../include/priunit.h  ../include/sdpre.h \
   ../include/single.h  ../include/symmet.h \
@@ -779,7 +766,7 @@ her2out.o : her2out.F \
   ../include/ibtpar.h  ../include/implicit.h \
   ../include/inforb.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/nodint.h  ../include/nuclei.h \
   ../include/priunit.h  ../include/sdpre.h \
   ../include/single.h  ../include/symmet.h \
@@ -794,8 +781,8 @@ her2sym.o : her2sym.F \
   ../include/dirprt.h  ../include/dorps.h \
   ../include/doxyz.h  ../include/expcom.h \
   ../include/ibtfun.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/priunit.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h \
   ../include/twocom.h  ../include/twosta.h
 herbas.o : herbas.F \
@@ -812,8 +799,8 @@ herdirect.o : herdirect.F \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/inforb.h  ../include/infpar.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/memint.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/priunit.h \
+  ../include/maxorb.h  ../include/memint.h \
+  ../include/mxcent.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h \
   ../include/veclen.h
 herdrv.o : herdrv.F \
@@ -831,8 +818,8 @@ herdrv.o : herdrv.F \
   ../include/huckel.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/inftap.h \
   ../include/inftra.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/memint.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/memint.h  ../include/mxcent.h \
   ../include/mxsymm.h  ../include/nuclei.h \
   ../include/orgcom.h  ../include/pgroup.h \
   ../include/pi.h  ../include/primit.h \
@@ -853,8 +840,8 @@ hergeo.o : hergeo.F \
   ../include/abainf.h  ../include/codata.h \
   ../include/facang.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/inftap.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/pi.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
 hergp.o : hergp.F \
@@ -865,10 +852,10 @@ hergp.o : hergp.F \
   ../include/implicit.h  ../include/infinp.h \
   ../include/inforb.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/orgcom.h  ../include/pi.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h  ../include/taymol.h
+  ../include/nuclei.h  ../include/orgcom.h \
+  ../include/pi.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h \
+  ../include/taymol.h
 herpar.o : herpar.F \
   ../include/abainf.h  ../include/aovec.h \
   ../include/blocks.h  ../include/cbisol.h \
@@ -877,9 +864,9 @@ herpar.o : herpar.F \
   ../include/gnrinf.h  ../include/implicit.h \
   ../include/inforb.h  ../include/infpar.h \
   ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/memint.h \
-  ../include/molinp.h  ../include/mtags.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/memint.h  ../include/molinp.h \
+  ../include/mtags.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/parint.h \
   ../include/priunit.h  ../include/single.h \
   ../include/siripc.h  ../include/suscpt.h \
@@ -900,15 +887,14 @@ herrdn.o : herrdn.F \
   ../include/inftap.h  ../include/maxaqn.h \
   ../include/maxmom.h  ../include/maxorb.h \
   ../include/molde.h  ../include/molinp.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/mxsymm.h  ../include/nuclei.h \
-  ../include/numder.h  ../include/pgroup.h \
-  ../include/pi.h  ../include/pincom.h \
-  ../include/primit.h  ../include/priunit.h \
-  ../include/sdpre.h  ../include/shells.h \
-  ../include/single.h  ../include/sphtrm.h \
-  ../include/symmet.h  ../include/thrzer.h \
-  ../include/veclen.h
+  ../include/mxcent.h  ../include/mxsymm.h \
+  ../include/nuclei.h  ../include/numder.h \
+  ../include/pgroup.h  ../include/pi.h \
+  ../include/pincom.h  ../include/primit.h \
+  ../include/priunit.h  ../include/sdpre.h \
+  ../include/shells.h  ../include/single.h \
+  ../include/sphtrm.h  ../include/symmet.h \
+  ../include/thrzer.h  ../include/veclen.h
 hersol.o : hersol.F \
   ../include/cbisol.h  ../include/chrnos.h \
   ../include/dummy.h  ../include/ibtfun.h \
@@ -917,11 +903,10 @@ hersol.o : hersol.F \
   ../include/iratdef.h  ../include/lmns.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/mgsolt.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/onecom.h  ../include/orgcom.h \
-  ../include/pi.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/taysol.h
+  ../include/nuclei.h  ../include/onecom.h \
+  ../include/orgcom.h  ../include/pi.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h  ../include/taysol.h
 hersym.o : hersym.F \
   ../include/cbihr1.h  ../include/cbirea.h \
   ../include/cbisol.h  ../include/implicit.h \
@@ -936,7 +921,7 @@ hertst.o : hertst.F \
   ../include/implicit.h  ../include/inforb.h \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/maxaqn.h  ../include/maxmom.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/primit.h \
   ../include/priunit.h  ../include/sdpre.h \
   ../include/shells.h  ../include/single.h \
@@ -946,6 +931,5 @@ huckel.o : huckel.F \
   ../include/implicit.h  ../include/infdim.h \
   ../include/infinp.h  ../include/inforb.h \
   ../include/infpri.h  ../include/inftap.h \
-  ../include/maxorb.h  ../include/mxorb.h \
-  ../include/priunit.h  ../include/scbrhf.h \
-  ../include/single.h
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/scbrhf.h  ../include/single.h

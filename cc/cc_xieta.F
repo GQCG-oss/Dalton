@@ -103,17 +103,17 @@ C
         ISTART      = 1
         IEND        = ISTART   + NTRAN
         IADRX0      = IEND     + NTRAN
-        IADRX1      = IADRX0   + MAXORB*1
-        IADRE0      = IADRX1   + MAXORB*NTRAN
-        IADRE1      = IADRE0   + MAXORB*NTRAN
-        IADRPQ0     = IADRE1   + MAXORB*NTRAN
-        IADRPQ1     = IADRPQ0  + MAXORB*NTRAN
-        IADRPQMO    = IADRPQ1  + MAXORB*NTRAN
-        IT2DEL0     = IADRPQMO + MAXORB*NTRAN
-        IT2DELB     = IT2DEL0  + MAXORB*1
-        IADRH0      = IT2DELB  + MAXORB*NTRAN
-        IADRH1      = IADRH0   + MAXORB*NTRAN
-        KCMOPQ      = IADRH1   + MAXORB*NTRAN
+        IADRX1      = IADRX0   + MXCORB*1
+        IADRE0      = IADRX1   + MXCORB*NTRAN
+        IADRE1      = IADRE0   + MXCORB*NTRAN
+        IADRPQ0     = IADRE1   + MXCORB*NTRAN
+        IADRPQ1     = IADRPQ0  + MXCORB*NTRAN
+        IADRPQMO    = IADRPQ1  + MXCORB*NTRAN
+        IT2DEL0     = IADRPQMO + MXCORB*NTRAN
+        IT2DELB     = IT2DEL0  + MXCORB*1
+        IADRH0      = IT2DELB  + MXCORB*NTRAN
+        IADRH1      = IADRH0   + MXCORB*NTRAN
+        KCMOPQ      = IADRH1   + MXCORB*NTRAN
         KCMOHQ      = KCMOPQ   + NTRAN
         KLAMDPQ     = KCMOHQ   + NTRAN
         KLAMDHQ     = KLAMDPQ  + NTRAN
@@ -295,7 +295,7 @@ c /* deck cc_xieta1 */
 *
 *
 *    IT2DEL0,IT2DELB -- integer scratch arrays of dimensions
-*                       MAXORB and MAXORB x NXETRAN
+*                       MXCORB and MXCORB x NXETRAN
 *
 *    operator labels:
 *           HAM0     : unperturbed Hamiltonian (1-el & 2-el part)
@@ -314,7 +314,6 @@ c /* deck cc_xieta1 */
       IMPLICIT NONE  
 #  include <priunit_dec.h>
 #  include <aovec_dec.h>
-#  include <mxorb_dec.h>
 #  include <maxorb_dec.h>
 #  include <blocks_dec.h>
 #  include <mxcent_dec.h>
@@ -334,7 +333,6 @@ c /* deck cc_xieta1 */
 #endif
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <blocks.h>
 #include <mxcent.h>
@@ -399,7 +397,7 @@ c /* deck cc_xieta1 */
       INTEGER LWORK, NXETRAN, IOPTRES, MAXSIM, MXVEC, IORDER
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN), IEDOTS(MXVEC,NXETRAN)
-      INTEGER IT2DEL0(MAXORB), IT2DELB(MAXORB,NXETRAN)
+      INTEGER IT2DEL0(MXCORB), IT2DELB(MXCORB,NXETRAN)
       INTEGER ISTART(NXETRAN), IEND(NXETRAN)
       INTEGER KRBIM(NXETRAN), KGBIM(NXETRAN), KFBIM(NXETRAN)
       INTEGER KRHO1(NXETRAN), KRHO2(NXETRAN), KBFZI(NXETRAN)
@@ -413,12 +411,12 @@ c /* deck cc_xieta1 */
       INTEGER KDNSHFB(NXETRAN), KDPKHFB(NXETRAN)
       INTEGER KXINT(NXETRAN),   KYINT(NXETRAN)
       INTEGER KCMOPQ(NXETRAN),  KCMOHQ(NXETRAN)
-      INTEGER IADRX0(MAXORB),          IADRX1(MAXORB,NXETRAN)
-      INTEGER IADRH0(MAXORB,NXETRAN),  IADRH1(MAXORB,NXETRAN)
+      INTEGER IADRX0(MXCORB),          IADRX1(MXCORB,NXETRAN)
+      INTEGER IADRH0(MXCORB,NXETRAN),  IADRH1(MXCORB,NXETRAN)
 
-      INTEGER IADRE0(MAXORB,NXETRAN),  IADRE1(MAXORB,NXETRAN)
-      INTEGER IADRPQ0(MAXORB,NXETRAN), IADRPQ1(MAXORB,NXETRAN)
-      INTEGER IADRPQMO(MAXORB,NXETRAN)
+      INTEGER IADRE0(MXCORB,NXETRAN),  IADRE1(MXCORB,NXETRAN)
+      INTEGER IADRPQ0(MXCORB,NXETRAN), IADRPQ1(MXCORB,NXETRAN)
+      INTEGER IADRPQMO(MXCORB,NXETRAN)
 
       INTEGER INDEXA(MXCORB), IGAM(MXCORB)
 
@@ -2622,8 +2620,8 @@ C          END IF
       CHARACTER*(*) FNBFDX0, FNBFDX1
       CHARACTER*(8) LABELH
       INTEGER ITRAN, ISYAMP, ISYHOP, IORDER, LWORK
-      INTEGER LUBFDX0, IADRBFX0, IADRX0(MAXORB)
-      INTEGER LUBFDX1, IADRBFX1, IADRX1(MAXORB,*)
+      INTEGER LUBFDX0, IADRBFX0, IADRX0(MXCORB)
+      INTEGER LUBFDX1, IADRBFX1, IADRX1(MXCORB,*)
       
 #if defined (SYS_CRAY)
       REAL DENSPKQ(*), DPKHFQ(*), FOCKQ(*), FCKHFQ(*)
@@ -2794,11 +2792,11 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
       LOGICAL LRELAX, LTWOEL
       CHARACTER*(*) LISTL, FNBFDE0, FNBFDE1, FILPQMO, FILPQ0, FILPQ1
       INTEGER ITRAN, ISTART, IDLSTL, ISYAMP, ISYCTR, ISYHOP, LWORK
-      INTEGER LUBFDE0, IADRBFE0, IADRE0(MAXORB,*)
-      INTEGER LUBFDE1, IADRBFE1, IADRE1(MAXORB,*)
-      INTEGER LUPQMO,  IADRPQ,   IADRPQMO(MAXORB,*)
-      INTEGER LUPQ0,   IADRPQI0, IADRPQ0(MAXORB,*)
-      INTEGER LUPQ1,   IADRPQI1, IADRPQ1(MAXORB,*)
+      INTEGER LUBFDE0, IADRBFE0, IADRE0(MXCORB,*)
+      INTEGER LUBFDE1, IADRBFE1, IADRE1(MXCORB,*)
+      INTEGER LUPQMO,  IADRPQ,   IADRPQMO(MXCORB,*)
+      INTEGER LUPQ0,   IADRPQI0, IADRPQ0(MXCORB,*)
+      INTEGER LUPQ1,   IADRPQI1, IADRPQ1(MXCORB,*)
       
 #if defined (SYS_CRAY)
       REAL XINT(*), YINT(*), MINT(*), ZETA1(*), ZETA2(*)
@@ -3078,14 +3076,12 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
 #include <priunit_dec.h>
 #include <ccsdsym_dec.h>
 #include <maxorb_dec.h>
-#include <mxorb_dec.h>
 #include <ccorb_dec.h>
 #include <ccisao_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccorb.h>
 #include <ccisao.h>
 
@@ -3096,12 +3092,12 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
       CHARACTER*(*) FNBFDE0, FNBFDE1, FILPQ0, FILPQ1, FNHINT0, FNHINT1
       INTEGER ISYCTR,ISYAMP,ISYHOP,ISY0DIS,ISY1DIS,IDEL,IREAL,LWORK
       INTEGER IADRZ0, IADRZ1
-      INTEGER LUBFDE0, IADRE0(MAXORB)
-      INTEGER LUBFDE1, IADRE1(MAXORB)
-      INTEGER LUPQ0, IADRPQ0(MAXORB)
-      INTEGER LUPQ1, IADRPQ1(MAXORB)
-      INTEGER LUHINT0, IADRH0(MAXORB)
-      INTEGER LUHINT1, IADRH1(MAXORB)
+      INTEGER LUBFDE0, IADRE0(MXCORB)
+      INTEGER LUBFDE1, IADRE1(MXCORB)
+      INTEGER LUPQ0, IADRPQ0(MXCORB)
+      INTEGER LUPQ1, IADRPQ1(MXCORB)
+      INTEGER LUHINT0, IADRH0(MXCORB)
+      INTEGER LUHINT1, IADRH1(MXCORB)
       
 #if defined (SYS_CRAY)
       REAL XLAMDP0(*), XLAMDH0(*), XLAMDPQ(*), XLAMDHQ(*)
@@ -3436,19 +3432,17 @@ c /* deck ccxiintao */
       IMPLICIT NONE
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
 #include <ccorb.h>
-#include <maxorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
       INTEGER ISYM0
@@ -3466,8 +3460,8 @@ c /* deck ccxiintao */
       INTEGER LU0IAJB, LU0IABJ, LU0IJBA, LU0AIBJ
       INTEGER LU1IAJB, LU1IABJ, LU1IJBA, LU1AIBJ
       INTEGER IADRX0(*), IADRX1(*)
-      INTEGER IT2DEL0(MAXORB)
-      INTEGER IT2DELB(MAXORB,*)
+      INTEGER IT2DEL0(MXCORB)
+      INTEGER IT2DELB(MXCORB,*)
 
 #if defined (SYS_CRAY)
       REAL X0INT(*), X1INT(*), D0SRHF(*), D1SRHF(*)
@@ -4693,7 +4687,7 @@ c /* deck cceta2 */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #  include <dummy_dec.h>
 #else
@@ -4703,7 +4697,7 @@ c /* deck cceta2 */
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 #include <ccfield.h>
 #include <dummy.h>

@@ -632,7 +632,7 @@ C  /* Deck wlkdrv */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       DIMENSION POLDD(*), POLDQ(*), POLDL(*), POLDA(*), SPNTOT(*),
      &          WORK(LWORK)
@@ -823,7 +823,7 @@ C  /* Deck wlkdr1 */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D00, D100 = 100.0D0, SMALL = 1.0D-8)
 C
       LOGICAL INDXOK, OLD, STOP, STATPO, WLKEND, OLDREA, DOHESS, DODIP,
@@ -1308,7 +1308,7 @@ C  /* Deck wlkcgh */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0)
 C
       LOGICAL DOREPW(0:7), DOHESS, DODIP, START
@@ -1421,7 +1421,7 @@ C  /* Deck wlkscl */
 #include <codata.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0)
 C
       LOGICAL DOREP(0:7), NOCHRG
@@ -1547,7 +1547,7 @@ C  /* Deck wlkprj */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
 C
       LOGICAL DOREPW(0:7)
@@ -1705,7 +1705,7 @@ C  /* Deck wlkeig */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
@@ -2124,9 +2124,8 @@ C
 #include <dummy.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
 #include <maxorb.h>
+#include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
 C
       CHARACTER NAME*4
@@ -2521,7 +2520,7 @@ C  /* Deck wlkir1 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <inftap.h>
 #include <symmet.h>
@@ -2585,7 +2584,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <facang.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D100 =100.D0, D15 = 1.0D15,
@@ -3048,7 +3047,7 @@ C  /* Deck wlkend */
 #include <gnrinf.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       LOGICAL INDXOK, STATPO
       DIMENSION GRDCAR(NCART), INDHES(0:7)
@@ -3150,7 +3149,7 @@ C
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL DOREL
       DIMENSION PMCAR(NCART), SCAL(NCART), AM(2), QCM(3,2), PCM(3,2),
      *          QCMDIF(3)
@@ -3261,7 +3260,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D2 = 2.0D0)
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND), COOR(NCRIND)
@@ -3329,7 +3328,7 @@ C
 #include <codata.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D2 = 2.0D0)
 C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
@@ -3391,7 +3390,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL, DODIP
@@ -3576,7 +3575,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL
@@ -3672,7 +3671,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL
@@ -3771,7 +3770,7 @@ C
 #include <codata.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
       PARAMETER (FACTOR = 1.D6*ALPHA2, PRMASS = 1.007276470D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
@@ -4973,7 +4972,7 @@ C  /* Deck wlkcor */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <nuclei.h>
 #include <symmet.h>
@@ -6618,7 +6617,7 @@ C
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION PMCARX(NCART), WORK(LWORK)
 #include <cbiwlk.h>
 #include <nuclei.h>
@@ -6684,7 +6683,7 @@ C
      &           D100 = 100.0D0)
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER X, Y, Z
       LOGICAL TPLAN, APLAN, BPLAN, TLIN, ALIN, BLIN
 C
@@ -7205,7 +7204,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2=2.0D0,DE3=1.0D3)
@@ -7442,7 +7441,7 @@ C  /* Deck ircpot */
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION CMO(*), CMOORT(*), CORNEW(*), WORK(*)
 #include <shells.h>
 #include <inforb.h>
@@ -7490,7 +7489,7 @@ C  /* Deck wlkor1 */
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       CHARACTER LABEL(9*MXCENT)*8
@@ -7830,7 +7829,7 @@ C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.00D0, D1 = 1.00D0)

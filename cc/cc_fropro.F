@@ -48,7 +48,6 @@ C
 C
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -237,7 +236,6 @@ C
 C
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -315,7 +313,6 @@ C
 C
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -388,7 +385,6 @@ C
 C
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -578,7 +574,6 @@ C
 C
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -814,7 +809,6 @@ C
       DIMENSION AODEN(*), DIJ(*), DJI(*), DAI(*), DIA(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1015,7 +1009,6 @@ C
       DIMENSION XINT(*), DSFRO(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1053,7 +1046,6 @@ C
       DIMENSION DSRHF(*), DSRES(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1160,7 +1152,6 @@ C
       DIMENSION ETAFRO(*), DSINT(*), TINT(*)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1214,7 +1205,6 @@ C
       DIMENSION ETAFRO(*), XINTFR(*), ZKAB(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1340,7 +1330,6 @@ C
       DIMENSION ETAFRO(*), XINTFR(*), ZKAB(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1480,7 +1469,6 @@ C
       DIMENSION ETAFRO(*), XINTFR(*), ZKIJ(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1606,7 +1594,6 @@ C
       DIMENSION ETAFRO(*), XINOFO(*), ZKIJ(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1703,7 +1690,6 @@ C
       DIMENSION ETAAI(*), XINOFO(*), ZKJK(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1768,7 +1754,6 @@ C
       DIMENSION ETAFRO(*), XINTFR(*), ZKJK(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1894,7 +1879,6 @@ C
       DIMENSION ETAAI(*), XINOFO(*), ZKJK(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -1986,7 +1970,6 @@ C
       DIMENSION ETAAI(*), DSFRO(*), ZKJK(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -2127,7 +2110,6 @@ C
       DIMENSION ETAFRO(*), DSFRO(*), ZKJK(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -2268,7 +2250,6 @@ C
       DIMENSION ETAFRO(*), DSRHF(*), ZKJK(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -2419,7 +2400,6 @@ C
       DIMENSION XAOINT(*), XLAMDP(*), XLAMDH(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -2600,7 +2580,6 @@ C
       DIMENSION DFJI(*), DFAI(*), DFIA(*), T1AM(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -2806,7 +2785,6 @@ C
       DIMENSION DFJI(*), DFAI(*), DFIA(*), T1AM(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -2959,7 +2937,6 @@ C
       DIMENSION DFJI(*), DFAI(*), DFIA(*), T1AM(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3107,7 +3084,6 @@ C
       PARAMETER(TWO = 2.0D0)
       DIMENSION DFII(*)
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3145,7 +3121,6 @@ C
       DIMENSION XFAI(*), XFIA(*), XFII(*), T1AM(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3346,7 +3321,6 @@ C
       DIMENSION XFIJ(*), XFJI(*), XFAI(*), XFIA(*), XFII(*)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3453,7 +3427,6 @@ C
 C
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3528,7 +3501,6 @@ C
       DIMENSION XFAI(*), XFIA(*), XFII(*), T1AM(*), WORK(LWORK)
 #include <priunit.h>      
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3717,7 +3689,6 @@ C
       DIMENSION XINTAI(*), XINOFO(*)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3779,7 +3750,6 @@ C
       DIMENSION XINTAI(*), XINAIF(*)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3826,7 +3796,6 @@ C
       DIMENSION ETAAI(*), ETAAIF(*), ZETAJK(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3992,7 +3961,6 @@ C
       DIMENSION XINTAI(*), XINAIF(*), DSFRO(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -4126,7 +4094,6 @@ C
       DIMENSION XINAIF(*), DSFRO(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -4240,7 +4207,6 @@ C
       DIMENSION XINAIF(*), DSRHF(*), CMO(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>

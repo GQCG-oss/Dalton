@@ -234,7 +234,7 @@ C  /* Deck opgor1 */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (D2 = 2.0D0)
       LOGICAL AOMAT, DERIV(3), DOTD
@@ -469,7 +469,7 @@ C     tuh 010190
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <inforb.h>
       DIMENSION CMO(NCMOT), WORK(LWORK), SQMO(NORBT,NORBT), SQSO(N2BASX)
       PARAMETER (D1 =1.0D0)

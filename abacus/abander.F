@@ -459,7 +459,7 @@ C     /* Deck numdrv */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 C
 c#if defined (VAR_MPI)
@@ -653,7 +653,7 @@ C  /* Deck numdr1 */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
       PARAMETER (D0 = 0.0D0)
 #include <cbiwlk.h>
@@ -1187,7 +1187,7 @@ c#endif
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0, DMAX=1.0D-15) 
 c#if defined (VAR_MPI)
 c      INCLUDE 'mpif.h'      
@@ -1625,7 +1625,7 @@ c#else
 c#endif
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (D0=0.0D0)
 c#if defined (VAR_MPI)
@@ -1942,7 +1942,7 @@ C  /* Deck upcomb */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       PARAMETER (D100 = 100.0D0, THRSH = 1.0D-12)
 #include <molinp.h>
@@ -2108,7 +2108,7 @@ C  /* Deck numres */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C      
 #include <ccorb.h>
 #include <optinf.h>
@@ -3043,7 +3043,7 @@ C    /*Deck pritdr*/
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (KCOL=6)
 #include <trkoor.h>
@@ -3178,7 +3178,7 @@ C    /*Deck prifdr*/
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <trkoor.h>
 #include <symmet.h>
@@ -3705,7 +3705,7 @@ C     /*Deck trafrc*/
 #include <implicit.h>
 #include <mxcent.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <infpar.h>
 #include <taymol.h>
@@ -3912,7 +3912,7 @@ C     ***************************************************************
 #include <implicit.h>
 #include <mxcent.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
 #include <symmet.h>      
@@ -4077,7 +4077,7 @@ C     /*Deck gspgrd*/
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <priunit.h>
 C
 #include <symmet.h>
@@ -4414,7 +4414,7 @@ C     *******************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0)
 #include <numder.h>
@@ -5921,7 +5921,7 @@ C     **************************************************************
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0, DMTHR=1.0D-4)
 #include <symmet.h>
 #include <nuclei.h>
@@ -6018,7 +6018,7 @@ C     ****************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
 #include <symmet.h>
@@ -6080,7 +6080,7 @@ C     ******************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <molinp.h>
 C
@@ -6121,7 +6121,7 @@ C     ************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <molinp.h>
 C

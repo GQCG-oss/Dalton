@@ -260,7 +260,6 @@ C
 #include <infrsp.h>
 #include <wrkrsp.h>
 #include <maxmom.h>
-#include <mxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <abainf.h>
@@ -945,7 +944,7 @@ C
 #include <mxcent.h>
 #include <pi.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
       PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
      &           D3 = 3.0D0)

@@ -56,7 +56,6 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,THR=1.0D-08)
@@ -67,6 +66,9 @@ C
 C
 #include <iratdef.h>
 #include <inftap.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
 #include <cclr.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -80,9 +82,6 @@ C
 #include <ccexpfck.h>
 #include <ccfro.h>
 #include <leinf.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
 #include <symmet.h>
 #include <alphac.h>
 C
@@ -1436,7 +1435,6 @@ C
 C
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <symmet.h>
 C
 C------------------------------------

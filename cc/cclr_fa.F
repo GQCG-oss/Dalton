@@ -71,7 +71,7 @@ c /* deck cclr_fa */
 #  include <cbieri_dec.h>
 #  include <mxcent_dec.h>
 #  include <eribuf_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <distcl_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccisao_dec.h>
@@ -84,7 +84,7 @@ c /* deck cclr_fa */
 #include <cbieri.h>
 #include <mxcent.h>
 #include <eribuf.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <distcl.h>
 #include <ccorb.h>
 #include <ccisao.h>

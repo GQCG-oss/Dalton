@@ -53,7 +53,7 @@ C
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <codata.h>
@@ -310,7 +310,7 @@ C     basis set information is read from an existing WFN.AO file
 C
 * -------------------------------------------------------------------- *
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <molinp.h>
@@ -463,7 +463,7 @@ C     Purpose: write *.wfn interface file
 C
 * -------------------------------------------------------------------- *
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <molinp.h>

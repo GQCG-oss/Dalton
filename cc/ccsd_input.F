@@ -88,7 +88,6 @@ C
       CHARACTER*(80) LINE
 C
 #include <maxorb.h>
-#include <mxorb.h>
 #include <mxcent.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -864,7 +863,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <ccfield.h>

@@ -151,7 +151,6 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <maxmom.h>
 #include <iratdef.h>
 #include <inforb.h>
@@ -199,7 +198,6 @@ C
 #include <maxmom.h>
 #include <maxorb.h>
 #include <aovec.h>
-#include <mxorb.h>
 C
       DIMENSION SPHINT(NNBASX,NCOMP), DENMAT(NNBASX), 
      &          AOCOOR(NBAST,3), AOEXP(NBAST), 
@@ -258,7 +256,6 @@ C
 #include <maxmom.h>
 #include <maxorb.h>
 #include <aovec.h>
-#include <mxorb.h>
 C
       PARAMETER (D0 = 0.0D0, D100 = 1.0D2)
       DIMENSION WORK(LWORK)
@@ -489,7 +486,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
@@ -582,7 +579,7 @@ C  /* Deck fmmorb */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 C

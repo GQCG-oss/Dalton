@@ -1543,7 +1543,7 @@ c /* deck CCPRPAO */
       IMPLICIT NONE  
 #  include <priunit_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccisao_dec.h>
 #include <inftap_dec.h>
@@ -1554,7 +1554,7 @@ c /* deck CCPRPAO */
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccorb.h>
 #include <inftap.h>
 #include <ccisao.h>

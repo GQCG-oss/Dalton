@@ -108,7 +108,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <pi.h>
@@ -545,7 +545,7 @@ C
 #include <aovec.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <pi.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (R2PI52 = 5.91496 71727 95612 D00)
@@ -1810,7 +1810,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T, P

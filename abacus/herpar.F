@@ -58,7 +58,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
@@ -240,7 +240,7 @@ C
 C
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 C Used from common blocks
 C 
@@ -394,7 +394,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST
       DIMENSION DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*)
@@ -593,7 +593,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
       PARAMETER (D1 = 1.0D0)
       DIMENSION FMAT(*), TMPMAT(NTMPMT), TIMES(MTOTTK),
@@ -809,7 +809,7 @@ C
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <dummy.h>
 C
@@ -921,7 +921,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
       PARAMETER (D0 = 0.0D0)
       CHARACTER*6 NAVN
@@ -1178,7 +1178,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h> 
+#include <maxorb.h> 
 #include <dummy.h>
 #include <mtags.h>
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -1600,7 +1600,7 @@ C  /* Deck her_sdres */
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
       DIMENSION FMAT(NFMAT*N2BASX), TSKCPU(ICOUNT), IWHICH(ICOUNT),
      &          DINTSKP(8), HESSEE(*)
@@ -1707,7 +1707,7 @@ C  /* Deck prlinp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'

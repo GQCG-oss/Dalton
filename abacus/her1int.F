@@ -99,7 +99,7 @@ C  /* Deck pr1dr1 */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <pi.h>
 #include <maxaqn.h>
       PARAMETER (D1 = 1.00 D00, D4 = 4.D0,D8 = 8.D0,DMTRA = .75D0)
@@ -724,7 +724,7 @@ C  /* Deck pr1so1 */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
@@ -1054,7 +1054,7 @@ C  /* Deck pr1pra */
 #include <implicit.h>
 #include <priunit.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <pi.h>
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3,
@@ -1781,7 +1781,7 @@ C  /* Deck pr1prd */
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3)
 C
@@ -3670,7 +3670,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3, 
      &           THRESH = 1.0D-10)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4135,7 +4135,7 @@ C
 #include <gfac.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
       PARAMETER (DFAC = D4*GFAC*PI/D3)
@@ -4198,7 +4198,7 @@ C
 #include <pi.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <alphac.h>
 C
       PARAMETER (D0 = 0.0D0)
@@ -4441,7 +4441,7 @@ C  /* Deck nsttra */
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
@@ -4494,7 +4494,7 @@ C  /* Deck psotra */
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
@@ -4539,7 +4539,7 @@ C  /* Deck hdbtra */
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER B, X
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
@@ -4572,7 +4572,7 @@ C  /* Deck dpgtra */
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER B, X
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
@@ -4640,7 +4640,7 @@ C  /* Deck qugtra */
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER B, X, C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),
@@ -4709,7 +4709,7 @@ C  /* Deck ocgtra */
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INTEGER B, X, C, D
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,60), SOINT(NELMNT,NOPTYP),
@@ -4775,7 +4775,7 @@ C  /* Deck hdotra */
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
 #include <onecom.h>
@@ -4836,7 +4836,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
 #include <onecom.h>
@@ -4870,7 +4870,7 @@ C
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
 #include <onecom.h>
@@ -4934,7 +4934,7 @@ C
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
@@ -5126,7 +5126,7 @@ C  /* Deck sdtra */
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*), FACINT(NATOMC), JSYMC(NATOMC),
@@ -5181,7 +5181,7 @@ C
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
@@ -5226,7 +5226,7 @@ C
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
@@ -5270,7 +5270,7 @@ C  /* Deck efgtra */
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
@@ -5320,7 +5320,7 @@ C  /* Deck dsotra */
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
@@ -5571,7 +5571,7 @@ C
 C
 #include <implicit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
       DIMENSION AINT(NELMNT),WORK(NELMNT),IOFFBL(8)

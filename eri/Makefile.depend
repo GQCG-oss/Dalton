@@ -2,7 +2,7 @@ eri2aob.o : eri2aob.F \
   ../include/aobtch.h  ../include/aovec.h \
   ../include/erisel.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/primit.h  ../include/priunit.h \
   ../include/shells.h  ../include/single.h \
   ../include/symmet.h  ../include/veclen.h
@@ -13,7 +13,7 @@ eri2ave.o : eri2ave.F \
   ../include/erithr.h  ../include/hertop.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
 eri2car1.o : eri2car1.F \
@@ -42,10 +42,10 @@ eri2dis.o : eri2dis.F \
   ../include/implicit.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/odbtch.h \
-  ../include/odclss.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/odbtch.h  ../include/odclss.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
 eri2drv.o : eri2drv.F \
   ../include/aobtch.h  ../include/aovec.h \
   ../include/cbieri.h  ../include/cbiher.h \
@@ -59,8 +59,8 @@ eri2drv.o : eri2drv.F \
   ../include/gnrinf.h  ../include/hertop.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/infpar.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
   ../include/odbtch.h  ../include/odclss.h \
   ../include/priunit.h  ../include/single.h \
   ../include/sphtrm.h  ../include/symmet.h
@@ -73,8 +73,8 @@ eri2fck.o : eri2fck.F \
   ../include/hertop.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/inforb.h \
   ../include/infpar.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/odbtch.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/odbtch.h \
   ../include/priunit.h  ../include/single.h \
   ../include/symmet.h  ../include/veclen.h
 eri2her.o : eri2her.F \
@@ -88,8 +88,8 @@ eri2odb.o : eri2odb.F \
   ../include/cbieri.h  ../include/eripi.h \
   ../include/erithr.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/odbtch.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/odbtch.h \
   ../include/odclss.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
 eri2out.o : eri2out.F \
@@ -101,7 +101,7 @@ eri2out.o : eri2out.F \
   ../include/ibtfun.h  ../include/ibtpar.h \
   ../include/implicit.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
 eri2par.o : eri2par.F \
@@ -114,9 +114,9 @@ eri2par.o : eri2par.F \
   ../include/hertop.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/inforb.h \
   ../include/infpar.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/memint.h \
-  ../include/molinp.h  ../include/mtags.h \
-  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/memint.h  ../include/molinp.h \
+  ../include/mtags.h  ../include/mxcent.h \
   ../include/odclss.h  ../include/priunit.h \
   ../include/single.h  ../include/siripc.h \
   ../include/symmet.h  ../include/veclen.h
@@ -127,9 +127,9 @@ eri2pro.o : eri2pro.F \
   ../include/erimem.h  ../include/erithr.h \
   ../include/implicit.h  ../include/infpar.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/odbtch.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/mxcent.h  ../include/odbtch.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
 eri2sph.o : eri2sph.F \
   ../include/eriao.h  ../include/ericom.h \
   ../include/hertop.h  ../include/ibtfun.h \
@@ -141,8 +141,8 @@ eri2sym.o : eri2sym.F \
   ../include/ericom.h  ../include/hertop.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
 eri2vec.o : eri2vec.F \
   ../include/aobtch.h  ../include/aovec.h \
   ../include/cbieri.h  ../include/clsfmm.h \
@@ -150,10 +150,10 @@ eri2vec.o : eri2vec.F \
   ../include/erisop.h  ../include/erithr.h \
   ../include/hertop.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/odclss.h \
-  ../include/orgcom.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/odclss.h  ../include/orgcom.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
 eriprg.o : eriprg.F \
   ../include/implicit.h  ../include/mtags.h \
   ../include/priunit.h  ../include/single.h
@@ -161,6 +161,6 @@ erisph.o : erisph.F \
   ../include/ccom.h  ../include/ericom.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxdr.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/mxdr.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h

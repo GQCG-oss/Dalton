@@ -77,7 +77,6 @@ C
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <codata.h>
@@ -170,7 +169,6 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 
       CHARACTER*4 NAME
       CHARACTER*4 WORD
@@ -273,7 +271,6 @@ C           2 save orbital energies in ORVAL
 #include <inftap.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <aosotr.h>
 #include <molde.h>
 #include <priunit.h>

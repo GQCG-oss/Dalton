@@ -45,7 +45,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <gnrinf.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <ecpinf.h>
 C
@@ -186,7 +186,7 @@ C
 #include <mxcent.h>
 #include <nuclei.h>
 #include <pi.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 C

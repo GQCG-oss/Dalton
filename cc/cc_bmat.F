@@ -176,7 +176,6 @@ c/* Deck CC_BMAT */
 #  include "priunit_dec.h"
 #  include "ccsdsym_dec.h"
 #  include "maxorb_dec.h"
-#  include "mxorb_dec.h"
 #  include "mxcent_dec.h"
 #  include "ccorb_dec.h"
 #  include "cbieri_dec.h"
@@ -193,7 +192,6 @@ c/* Deck CC_BMAT */
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 #include "maxorb.h"
-#include "mxorb.h"
 #include "mxcent.h"
 #include "ccsdio.h"
 #include "ccorb.h"
@@ -262,7 +260,7 @@ c/* Deck CC_BMAT */
       INTEGER INTMED2(4,MAXSIM), NINT2
       INTEGER I1HGH(0:MAXSIM), I2HGH(0:MAXSIM), NBATCH
       INTEGER IOFFCD(0:MAXSIM+1), IT2F(MXCORB,2*MAXSIM)
-      INTEGER IADRD(MAXORB,2*MAXSIM)
+      INTEGER IADRD(MXCORB,2*MAXSIM)
       INTEGER KLAMP(2*MAXSIM), KLAMH(2*MAXSIM), KDENS(2*MAXSIM)
       INTEGER KFOCK(2*MAXSIM), KRHO2(2*MAXSIM), KRIM(2*MAXSIM)
       INTEGER KFOCKOO(2*MAXSIM), KFOCKOV(2*MAXSIM), KFOCKVV(2*MAXSIM)
@@ -5438,7 +5436,7 @@ c /* deck cc_aibj */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
@@ -5446,7 +5444,7 @@ c /* deck cc_aibj */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
 * local parameters:

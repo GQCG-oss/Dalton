@@ -242,7 +242,6 @@ C   HUCKEL : ADDSTO
 C
 #include <maxash.h>
 #include <maxorb.h>
-#include <mxorb.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
@@ -273,8 +272,8 @@ C
 C
 C  ***** Check dimension
 C
-      IF ( LCMO .LT. MAXORB*MAXORB )
-     *   CALL ERRWRK('SIRRDI.cmo',-MAXORB*MAXORB,LCMO)
+      IF ( LCMO .LT. MXCORB*MXCORB )
+     *   CALL ERRWRK('SIRRDI.cmo',-MXCORB*MXCORB,LCMO)
 C
 C     Skip next section if processed earlier
 C
@@ -440,7 +439,7 @@ C
   650 CONTINUE
       NMVOT = 0
       NASHT = 0
-      CALL IZERO(NOROT,MAXORB)
+      CALL IZERO(NOROT,MXCORB)
       LNOROT = .FALSE.
       NACTEL = -1
       ISPIN  = -2
@@ -1364,7 +1363,7 @@ C
 C *****  PROCESS AND CHECK INPUT DATA *****
 C
       IF(NSYM  .LE.0 .OR.NSYM  .GT.8)      CALL ERRINP( 4,INPERR)
-      IF(NORBT .LT.0 .OR.NORBT .GT.MAXORB) CALL ERRINP( 8,INPERR)
+      IF(NORBT .LT.0 .OR.NORBT .GT.MXCORB) CALL ERRINP( 8,INPERR)
       IF (IORTO .EQ. 1) GO TO 8000
 C
       IF (NUMRUN .GT. 0) THEN
@@ -1383,7 +1382,7 @@ C
          WRITE(LUPRI,'(/A,I5/A,I5)') 'Number of occ. orbitals  :',NOCCT,
      *      'is .lt. 1 or .gt. MAXOCC :',MAXOCC
       END IF
-      IF(NSSHT .LT.0 .OR.NSSHT .GT.MAXORB) CALL ERRINP(11,INPERR)
+      IF(NSSHT .LT.0 .OR.NSSHT .GT.MXCORB) CALL ERRINP(11,INPERR)
 C
       NERROR = 0
       DO 310 ISYM = 1,NSYM
@@ -3167,7 +3166,6 @@ C INFORB : NFRO, NBAS
 C HUCKEL : ADDSTO
 C
 #include <maxorb.h>
-#include <mxorb.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <huckel.h>
@@ -3375,7 +3373,7 @@ C     ... to signal that DELETE cannot be specified any more
      &      'ORBINP error, .REORDE and .AO DELETE both specified.')
       END IF
       READ(LUCMD,*) (NREOR(I),I=1,NSYM)
-      DO 801 I = 1,MAXORB
+      DO 801 I = 1,MXCORB
          IMOORD(I) = I
   801 CONTINUE
       IORBI = 0
@@ -4375,7 +4373,7 @@ C
      *       ' 0.0 TO 1.0')
       RETURN
 C
-    8 WRITE(LUERR,800) TAB1,NORBT,TAB2,MAXORB
+    8 WRITE(LUERR,800) TAB1,NORBT,TAB2,MXCORB
   800 FORMAT(/A/' TOTAL NUMBER OF ORBITALS=',I4,A,' 0 TO',I4)
       RETURN
 C
@@ -4387,7 +4385,7 @@ C
  1000 FORMAT(/A/' NUMBER OF ACTIVE ORBITALS=',I4,A,' 0 TO',I4)
       RETURN
 C
-   11 WRITE(LUERR,1100) TAB1,NSSHT,TAB2,MAXORB
+   11 WRITE(LUERR,1100) TAB1,NSSHT,TAB2,MXCORB
  1100 FORMAT(/A/' NUMBER OF SECONDARY ORBITALS=',I4,A,' 0 TO',I4)
       RETURN
 C
@@ -4445,7 +4443,6 @@ C
 #include <maxash.h>
 #include <maxorb.h>
 #include <priunit.h>
-#include <mxorb.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <infind.h>

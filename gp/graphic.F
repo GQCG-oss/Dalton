@@ -44,8 +44,6 @@ C
 #include <codata.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <maxorb.h>
-#include <mxorb.h>
 #include <dummy.h>
 C
       CHARACTER*2 ATMSYM(103),SKINDS(MXCENT)
@@ -53,6 +51,8 @@ C
       DIMENSION KOLORS(103)
 #include <abainf.h>
 #include <nuclei.h>
+c maxorb for symmet.h
+#include <maxorb.h>
 #include <symmet.h>
 #include <infinp.h>
 #include <ibtfun.h>
@@ -169,7 +169,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <pi.h>
 #include <codata.h>
 C

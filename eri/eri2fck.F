@@ -43,7 +43,7 @@ C  /* Deck erifck */
 #include <aovec.h>
 #include <dummy.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
 C
 C	I don't know if IFCTYP and ISYMDM is used properly in this 
@@ -260,7 +260,7 @@ C  /* Deck erifok */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <eridst.h>
       DIMENSION SO(*), IPNTCR(MAXBCH,4), CCFBT(*), INDXBT(*),
@@ -296,7 +296,7 @@ C  /* Deck erifo1 */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 C
 #include <eridst.h>
@@ -335,7 +335,7 @@ C  /* Deck erindf */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D1 = 1.0D0, DP5=0.50D0)
       INTEGER A, B, C, D, AB, CD, R, S, T

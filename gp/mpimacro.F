@@ -50,10 +50,10 @@ C  /* Deck mpixinit */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
+#include <maxorb.h>
 #include <infpar.h>
 C
 #if defined (VAR_MPI)

@@ -248,7 +248,7 @@ cs
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <abainf.h>
 #include <exeinf.h>
 #include <inforb.h>

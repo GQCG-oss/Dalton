@@ -1101,7 +1101,7 @@ C  /* Deck optmin */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <inftap.h>
 #if defined (VAR_MPI)
@@ -1242,7 +1242,6 @@ C  /* Deck runopt */
 #include <abainf.h>
 #include <gnrinf.h>
 #include <inftap.h>
-#include <mxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <nuclei.h>
@@ -1915,7 +1914,7 @@ C
 #include <priunit.h>
 #include <trkoor.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <symmet.h>
 #include <nuclei.h>
       DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
@@ -2195,7 +2194,6 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <taymol.h>
 #include <maxaqn.h>
@@ -2283,7 +2281,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <taymol.h>
 #include <maxaqn.h>
 #include <symmet.h>
@@ -2357,7 +2355,7 @@ C     Initializes Hessian
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <optinf.h>
@@ -2685,7 +2683,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <optinf.h>
 #include <symmet.h>
@@ -2911,7 +2909,7 @@ C     Some common output for the updating subroutines.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <optinf.h>
@@ -2979,7 +2977,7 @@ C     The previous Hessian is copied to MOLHES and GRDOLD is updated.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <optinf.h>
@@ -4645,7 +4643,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <nuclei.h>
@@ -4689,7 +4687,7 @@ C
 #include <mxcent.h>
 #include <priunit.h>
 #include <optinf.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <prkoor.h>
@@ -4772,7 +4770,7 @@ C  /* Deck projgh */
 #include <priunit.h>
 #include <optinf.h>
 #include <cbiwlk.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <trkoor.h>
@@ -4889,7 +4887,7 @@ C
       PARAMETER (D0 = 0.0D0)
 #include <cbiwlk.h>
 #include <optinf.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -6155,7 +6153,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <molinp.h>
 #include <gnrinf.h>
@@ -6504,7 +6502,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <molinp.h>
 #include <gnrinf.h>
@@ -6566,7 +6564,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <optinf.h>
 #include <nuclei.h>
@@ -6605,7 +6603,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <taymol.h>
 #include <gnrinf.h>
@@ -7045,7 +7043,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -7116,7 +7114,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <nuclei.h>
@@ -7254,7 +7252,7 @@ C
 #include <inftap.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       LOGICAL FIRST
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)

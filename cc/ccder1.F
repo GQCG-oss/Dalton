@@ -731,7 +731,7 @@ c /* deck ccgeth2d */
 #  include <nodint_dec.h>
 #  include <mxcent_dec.h>
 #  include <maxaqn_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -741,7 +741,7 @@ c /* deck ccgeth2d */
 #include <aovec.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <nuclei.h>
 #include <nodint.h>
 #include <ccorb.h>

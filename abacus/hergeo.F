@@ -189,7 +189,7 @@ C
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL PRINT, DIF, PUNCH
       DIMENSION WORK(LWORK)
 #include <nuclei.h>
@@ -222,7 +222,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
 #include <pi.h>
       PARAMETER (MAXANG = 20)

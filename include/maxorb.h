@@ -1,8 +1,13 @@
-C     MAXORB = maximum number of orbitals
-C             (Note: should be equal to MXCORB in mxorb.h)
+C     MXSHEL = maximum number of shells (insert shell definition here).
+C     MXPRIM = maximum number of primitives.
+C     MXCORB = maximum number of orbitals (possibly contracted).
 C     MAXOCC = maximum number of occupied orbitals
 #if defined (VAR_ABASMALL)
-      PARAMETER ( MAXORB = 400, MAXOCC = 120 )
+      PARAMETER (MXSHEL = 200, MXPRIM = 800, MXCORB = 400,
+     *           MXORBT = MXCORB*(MXCORB + 1)/2)
+      PARAMETER ( MAXOCC = 120 )
 #else
-      PARAMETER ( MAXORB = 1200, MAXOCC = 400 )
+      PARAMETER (MXSHEL = 750, MXPRIM = 4000, MXCORB = 1200,
+     *           MXORBT = MXCORB*(MXCORB + 1)/2)
+      PARAMETER ( MAXOCC = 400 )
 #endif

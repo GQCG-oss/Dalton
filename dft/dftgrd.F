@@ -45,7 +45,7 @@ C
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 #include <nuclei.h>
 #include <dftcom.h>
@@ -226,7 +226,7 @@ C
       COMMON /DFTAML/ NSCHEME
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
 C
@@ -1807,7 +1807,7 @@ C     T. Helgaker  Feb 01
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX

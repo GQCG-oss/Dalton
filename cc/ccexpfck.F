@@ -962,8 +962,8 @@ C  /* Deck cc_expfck_init */
 #include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsections.h>
-#include <mxorb_dec.h>
-#include <mxorb.h>
+#include <maxorb_dec.h>
+#include <maxorb.h>
 #include <maxaqn_dec.h>
 #include <maxaqn.h>
 #include <mxcent_dec.h>
@@ -1490,8 +1490,8 @@ C  /* Deck ccefffockhlp2 */
 #include <ccorb_dec.h>
 #include <ccorb.h>
 #include <chrxyz.h>
-#include <mxorb_dec.h>
-#include <mxorb.h>
+#include <maxorb_dec.h>
+#include <maxorb.h>
 #include <mxcent_dec.h>
 #include <mxcent.h>
 #include <maxaqn_dec.h>
@@ -1706,8 +1706,8 @@ C  /* Deck ccefffockhlp3 */
 #include <ccfro.h>
 #include <ccr1rsp.h>
 #include <chrxyz.h>
-#include <mxorb_dec.h>
-#include <mxorb.h>
+#include <maxorb_dec.h>
+#include <maxorb.h>
 #include <mxcent_dec.h>
 #include <mxcent.h>
 #include <maxaqn_dec.h>

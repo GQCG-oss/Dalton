@@ -321,7 +321,6 @@ C
 #include <infrsp.h>
 #include <wrkrsp.h>
 #include <maxmom.h>
-#include <mxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <abainf.h>
@@ -1082,7 +1081,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <nuclei.h>

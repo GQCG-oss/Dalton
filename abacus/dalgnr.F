@@ -144,7 +144,7 @@ C
       DO 100 I = 1, MAXRTS
          IROOT(I) = IROOTB(I)
  100  CONTINUE
-      DO 110 I = 1, MAXORB
+      DO 110 I = 1, MXCORB
          NOROT(I)  = NOROTB(I)
          IMOORD(I) = IMORDB(I)
          CENT(I)   = CENTB(I)
@@ -285,7 +285,7 @@ C
       DO 100 I = 1, MAXRTS
          IROOTB(I) = IROOT(I)
  100  CONTINUE
-      DO 110 I = 1, MAXORB
+      DO 110 I = 1, MXCORB
          NOROTB(I) = NOROT(I)
          IMORDB(I) = IMOORD(I)
          CENTB(I)  = CENT(I)
@@ -459,7 +459,7 @@ C  /* Deck exesir */
 #endif
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <siripc.h>
 #include <inftra.h>
 #include <cbihr2.h>
@@ -556,7 +556,7 @@ C  /* Deck exeaba */
 #endif
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <inftra.h>
 #include <inftap.h>
@@ -592,7 +592,6 @@ C  /* Deck exedrv */
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <mxorb.h>
       PARAMETER (D0 = 0.0D0)
 #include <siripc.h>
 #include <nuclei.h>
@@ -1010,7 +1009,6 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <priunit.h>
 #include <siripc.h>
@@ -1446,7 +1444,7 @@ C
       INCLUDE 'mpif.h'
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       CHARACTER WORD*7
 #include <priunit.h>
 #include <inftap.h>
@@ -1551,7 +1549,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       INCLUDE 'mpif.h'
 #include <priunit.h>
 #include <inftap.h>

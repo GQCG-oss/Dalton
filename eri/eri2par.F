@@ -42,7 +42,7 @@ C  /* Deck pardrv */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*),DMAT(*),ISYMDM(*),IFCTYP(*),WORK(LWORK),
@@ -219,7 +219,7 @@ C
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
 C
       LOGICAL FIRST
@@ -341,7 +341,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
       LOGICAL FIRST
@@ -451,7 +451,7 @@ C  /* Deck eri_rvcls */
       SUBROUTINE ERI_RVCLS(NODCLS,IPRINT)
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
 C Used from common blocks
@@ -482,7 +482,7 @@ C  /* Deck eri_pardr1 */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
       LOGICAL FIRST
@@ -547,7 +547,7 @@ C  /* Deck dopar */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
       LOGICAL DONE
@@ -635,7 +635,7 @@ C
 #include <implicit.h>
 #include <mtags.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0=0.0D0,D1 = 1.0D0)
       LOGICAL NOTMEM
       DIMENSION FMAT(N2BASX), TMPMAT(N2BASX), TIMES(MXCLS2),
@@ -788,7 +788,7 @@ C  /* Deck sendname */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
 #include <infpar.h>
@@ -826,7 +826,7 @@ C  /* Deck recvnames */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
       CHARACTER NAME*20 
 #include <infpar.h>
@@ -875,7 +875,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 C
       PARAMETER (MXDMAT = 100)
@@ -957,7 +957,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
       LOGICAL FIRST
@@ -1099,7 +1099,7 @@ C MXORB  : MXSHEL (for INFPAR)
 C INFPAR : MASTER, MYNUM, NCODE
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
       DIMENSION TMGARR(2)
 #include <infpar.h>
@@ -1140,7 +1140,7 @@ C  /* Deck eri_noddrv */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eribuf.h>
 #include <dummy.h>
 #include <mtags.h>
@@ -1575,7 +1575,7 @@ C  /* Deck eri_sdcls */
       SUBROUTINE ERI_SDCLS(NODCLS,IPRINT)
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
 C Used from common blocks
@@ -1606,7 +1606,7 @@ C  /* Deck sdres */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mtags.h>
 C
       DIMENSION DMAT(*), FMAT(*), CLSCPU(IJSTOT), IWHICH(IJSTOT)   

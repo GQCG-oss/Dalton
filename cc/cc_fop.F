@@ -1748,7 +1748,7 @@ C              equivalent ABACUS-routines)!
 C
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
       DIMENSION XONEP(*), DENS(*), RESVEC(3,3)
@@ -1776,7 +1776,7 @@ C              CC storing.
 C
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
       PARAMETER (ZERO = 0.0D0)
@@ -1891,7 +1891,7 @@ C
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION DENS(*), EFGINT(*), DOTPRO(NCOMP), WORK(LWORK)
       CHARACTER*8 LABEL
 #include <nuclei.h>
@@ -2150,9 +2150,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -3720,9 +3719,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -4563,9 +4561,8 @@ C              frozen core contributions.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -4966,9 +4963,8 @@ C     CC2 (without frozen core) by A. Halkier & S. Coriani 20/01-2000.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>

@@ -76,7 +76,7 @@ C        (Peter Taylor)
 C
 #include <implicit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <priunit.h>
       LOGICAL NODPTR, ANTI, PANTI, DIA2SO
       DIMENSION WORK(LWORK)
@@ -302,7 +302,7 @@ C
 #include <implicit.h>
 C
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 C
@@ -392,7 +392,7 @@ C....    ******      VERSION 1.0      RELEASE 820423      ******
 C
 #include <implicit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <priunit.h>
 C
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
@@ -500,7 +500,7 @@ C
 #include <iratdef.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #if defined (VAR_64BITS)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
@@ -764,7 +764,7 @@ C
 #include <implicit.h>
 #include <iratdef.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #if defined (VAR_64BITS)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
 #else
@@ -940,7 +940,7 @@ C
       PARAMETER (IBIT08 = 255, IFIELD = 8)
 #endif
       PARAMETER (D0 = 0.0D0)
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
       INTEGER SIGMA, T, U, TA, UA, TM, UM, ALPHA, BETA, GAMMA,
@@ -1318,7 +1318,7 @@ C
 #include <maxaqn.h>
 #include <aovec.h>
 C
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <iratdef.h>
 #include <priunit.h>
@@ -1561,7 +1561,7 @@ C  /* Deck psrt */
 #include <aovec.h>
 C
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <priunit.h>
 #if defined (VAR_SPLITFILES)
@@ -2012,7 +2012,7 @@ C  /* Deck psrset */
       SUBROUTINE PSRSET(IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #if defined (VAR_64BITS)
@@ -2458,7 +2458,7 @@ C
 #include <implicit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       DIMENSION NCONTS(MXSHEL,MXAOVC,2)
       INTEGER P, Q, R, S

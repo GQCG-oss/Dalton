@@ -77,7 +77,7 @@ C
 #include <inforb.h>
 #include <infpri.h>
 C
-      CHARACTER*4 LFTUC4, CTMPMO(MAXORB)
+      CHARACTER*4 LFTUC4, CTMPMO(MXCORB)
 C
       CALL QENTER('CMODEL')
       IF (IPRERR .GE. 99) THEN

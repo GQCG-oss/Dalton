@@ -781,7 +781,7 @@ C   INFLIN : NVARPT
 C
 #include <mxcent.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
 #include <inftap.h>

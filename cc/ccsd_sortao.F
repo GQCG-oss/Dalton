@@ -43,7 +43,7 @@ C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       PARAMETER (LBUF = 600)
 C
@@ -366,7 +366,7 @@ C
 
       COMMON/SORTIO/LUAOIN(8)
 #include <ccorb.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccpack.h>
 C
       NFILE = LUAOIN(ISYM)

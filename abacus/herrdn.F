@@ -356,7 +356,7 @@ C******************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 C
@@ -509,7 +509,7 @@ C******************************************************************************
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <codata.h>
@@ -738,7 +738,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <cbirea.h>
@@ -798,7 +798,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0)
@@ -1091,7 +1091,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <codata.h>
       PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
 #include <cbirea.h>
@@ -1203,7 +1203,7 @@ C
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <cbirea.h>
@@ -1401,10 +1401,9 @@ C*****************************************************************************
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <maxorb.h>
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
@@ -2061,7 +2060,7 @@ C******************************************************************************
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
@@ -2196,7 +2195,7 @@ C******************************************************************************
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #if defined (SYS_T3D)
@@ -2310,7 +2309,7 @@ C  /* Deck orbout */
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0)
@@ -2518,7 +2517,7 @@ C******************************************************************************
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -2672,7 +2671,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
 #include <symmet.h>
@@ -2861,7 +2860,7 @@ C*************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DOOWN
@@ -3075,7 +3074,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <nuclei.h>
 #include <ccom.h>
@@ -3208,7 +3207,7 @@ C  /* Deck symnco */
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxmom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <cbirea.h>
 #include <nuclei.h>
@@ -3320,7 +3319,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
@@ -3456,7 +3455,7 @@ C
 C  /* Deck priord */
       SUBROUTINE PRIORD(ALPHA,CPRIMU,NPRI,NRCI,SEG,KPRIM,DSM)
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 C
@@ -3672,7 +3671,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       DIMENSION IAOAO(MXCORB)
 C
@@ -3739,7 +3738,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <symmet.h>
 #include <nuclei.h>
@@ -3779,7 +3778,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
 C
@@ -3857,7 +3856,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <thrzer.h>
       PARAMETER (D0 = 0.0D0)
 C
@@ -3955,7 +3954,7 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <symmet.h>
 C
@@ -4178,7 +4177,7 @@ C  /* Deck rdline */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <molinp.h>
 #include <infpar.h>
    10 CONTINUE
@@ -4208,7 +4207,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <dummy.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
       CHARACTER*72 TITLE(2)
@@ -4339,7 +4338,7 @@ C  /* Deck reapri */
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 C
@@ -4442,7 +4441,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
 #include <symmet.h>
@@ -4720,7 +4719,7 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
 #include <cbirea.h>
@@ -5020,7 +5019,7 @@ C
 #include <molinp.h>
 #include <cbisol.h>
 Cjth - these files are included to make Huckel work
-#include <mxorb.h>
+#include <maxorb.h>
 #include <huckel.h>
     1 FORMAT(/,2X,' INTERNAL COORDINATES'/)
     2 FORMAT(2X,I3,67X,F15.5)
@@ -5384,7 +5383,7 @@ C
 #include <priunit.h>
 #include <pi.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0)

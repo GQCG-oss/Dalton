@@ -40,8 +40,8 @@ C  /* Deck eriexp */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <aovec.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0)
       INTEGER AB, CD, PQ, RST
       DIMENSION EXPAB(NPQBCS,MLTPZ,NPRFAB,3),
@@ -134,8 +134,8 @@ C  /* Deck ericor */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <aovec.h>
+#include <maxorb.h>
       INTEGER PQ
       DIMENSION COORTR(NPQBCS,3,4),
      &          IPNTCR(MAXBCH,4), CORBCH(NPQBCS,3)
@@ -186,8 +186,8 @@ C  /* Deck erisso */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <aovec.h>
+#include <maxorb.h>
       PARAMETER (D1 = 1.0D0)
       INTEGER PQ, R, S, T, RST, X
 #include <cbieri.h>
@@ -260,8 +260,8 @@ C  /* Deck eripfs */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <aovec.h>
+#include <maxorb.h>
       INTEGER AB, CD, PQ, RST
       DIMENSION FACINT(NPQBCS,MLTPZ,NPRFPQ),
      &          FACPQ(NPQBCS,NPRFPQ), 
@@ -575,7 +575,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       INTEGER RST, PQ, A
       DIMENSION NCENTR(MLTPZ,NPQBCS,4), IPNTCR(MAXBCH,4)
@@ -624,8 +624,8 @@ C     tuh
 C
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <aovec.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
       LOGICAL CLASIC 
       DIMENSION FACINT(NPQBCX,NPRFAB,NPRFCD),

@@ -65,7 +65,7 @@ C  /* Deck eriav1 */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D1=1.0D0, DP5=0.5D0)
       INTEGER A, B, C, D, R, S, T
@@ -205,7 +205,7 @@ C  /* Deck erifrc */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D4=4.0D0, D2=2.0D0, D1=1.0D0, DP5=0.5D0, DP25=0.25D0)
       LOGICAL DAB, DCD, NOTRAS

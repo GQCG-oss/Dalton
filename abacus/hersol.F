@@ -42,7 +42,7 @@ C     tuh 01.02.90
 C
 #include <implicit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <symmet.h>
 #include <ibtfun.h>
@@ -122,7 +122,7 @@ C
 #include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0)
       DIMENSION WORK(LWORK)
@@ -249,7 +249,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
@@ -1016,7 +1016,7 @@ C     Corrections(counters are being stepped)kvm+hjaaj
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1583,7 +1583,6 @@ C
 #include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <iratdef.h>
@@ -1780,7 +1779,6 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
-#include <mxorb.h>
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <iratdef.h>

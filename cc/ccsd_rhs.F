@@ -57,9 +57,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -4510,7 +4509,6 @@ C     Purpose: Read destribution of AO integrals.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxash.h>

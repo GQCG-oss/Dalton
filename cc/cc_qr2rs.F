@@ -75,7 +75,6 @@ C
 C
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
 #include <symmet.h>
 C
 C------------------------------------

@@ -39,7 +39,7 @@ C
 C     K.Ruud, July-96
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       DIMENSION WORK(LWORK), CMO(NCMOT)
 #include <infdim.h>
@@ -84,7 +84,7 @@ C     K.Ruud, July-96
 C
 #include <implicit.h>
 #include <dummy.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL ANTSYM, FNDLB2
       CHARACTER*8 RTNLBL(2)
       DIMENSION WORK(LWORK)
@@ -299,7 +299,7 @@ C     Ionization potentials supplied from TURBOMOLE basis sets.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       DIMENSION EIGVL1(10,3), EIGVL2(11:18,5), EIGVL3(19:30,7),
      &          EIGVL4(31:36,8)
@@ -489,11 +489,10 @@ C     of hjj
 C     Revised by hjaaj May 2000 to handle round-off errors
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (THNORM = 1.0D-6, D1 = 1.0D0, D0 = 0.0D0, THRRND=0.9D0)
       DIMENSION CMO(*), CMO1(*), S(*), WORK(LWORK)
 C
-#include <maxorb.h>
 #include <priunit.h>
 #include <huckel.h>
 #include <infinp.h>

@@ -38,7 +38,7 @@ C  /* Deck er2inp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (NTABLE = 35)
 C
       LOGICAL NEWDEF
@@ -312,7 +312,7 @@ C  /* Deck er2ini */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <cbiher.h>
 #include <cbieri.h>
 #include <erisel.h>
@@ -372,7 +372,7 @@ C  /* Deck er2int */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <dummy.h>
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <ccom.h>
@@ -482,7 +482,7 @@ C  /* Deck odcdrv */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -635,7 +635,7 @@ C  /* Deck odcdr1 */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eribuf.h>
 #include <dummy.h>
 #include <cbieri.h>
@@ -1180,7 +1180,7 @@ C  /* Deck odcpar */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL LSTBCH
       DIMENSION IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
@@ -1307,7 +1307,7 @@ C  /* Deck odcpa2 */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL LSTBCH
       DIMENSION IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
@@ -1444,7 +1444,7 @@ C  /* Deck odcpas */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       DIMENSION IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
@@ -1542,7 +1542,7 @@ C  /* Deck erint0 */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <dummy.h>
       DIMENSION FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*), 
@@ -1808,7 +1808,7 @@ C  /* Deck erints */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       DIMENSION AOINT(NCCS,MLTPX,KHKTAB*KHKTCD,NDIMD),
      &          HRINT1(*),HRINT2(*),RJ000(*),CPINT(*),
@@ -2512,7 +2512,7 @@ C  /* Deck mempqb */
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
       LOGICAL DOREC, FRSTAO

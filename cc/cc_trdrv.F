@@ -102,9 +102,8 @@ C-------------------------------------------------------------------
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <ccorb.h>
 #include <ccisao.h>

@@ -165,7 +165,7 @@ C
 #include <dftcom.h>
 #include <dftinf.h>
 #include <orgcom.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <infpar.h>
 C
       INTEGER A, B

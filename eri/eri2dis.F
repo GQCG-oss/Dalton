@@ -44,7 +44,7 @@ C  /* Deck eridi1 */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <ccom.h>
 #include <cbieri.h>
@@ -132,7 +132,7 @@ C  /* Deck eridi2 */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eridst.h>
 #include <dummy.h>
       CHARACTER*8 FAODER
@@ -286,7 +286,7 @@ C  /* Deck eridid */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eridst.h>
 #include <dummy.h>
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
@@ -378,7 +378,7 @@ C  /* Deck eriact */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D0 = 0.0D0)
       LOGICAL ODTRI
@@ -445,7 +445,7 @@ C  /* Deck pickao */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <mxcent.h>
 #include <erisel.h>
@@ -493,7 +493,7 @@ C  /* Deck eridsi */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <mxcent.h>
 C
@@ -597,7 +597,7 @@ C  /* Deck getdst */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <eridst.h>
@@ -767,7 +767,6 @@ C
 C
 #include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
 #include <aovec.h>
 C
       DIMENSION INDEXA(MXCORB), WORK(LWORK)
@@ -814,7 +813,7 @@ C  /* Deck eriidx */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eridst.h>
 #include <dummy.h>
       DIMENSION INDEXA(*), INDXBT(*)

@@ -760,7 +760,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION WRKSD(9*NUCDEP,9*NUCDEP), WRKFC(NUCDEP,NUCDEP),
      &          WRKSDF(9*NUCDEP,NUCDEP), SPNSD(MXCOOR,MXCOOR),
      &          SPNFC(MXCOOR,MXCOOR), SPSDFC(MXCOOR,MXCOOR)

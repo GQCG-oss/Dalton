@@ -92,7 +92,7 @@ c /* deck cc_ijcb */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
@@ -100,7 +100,7 @@ c /* deck cc_ijcb */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
 #if defined (SYS_CRAY)
@@ -245,7 +245,7 @@ c /* deck ccijcb */
 #  include <priunit_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
@@ -253,7 +253,7 @@ c /* deck ccijcb */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
 #if defined (SYS_CRAY)
@@ -954,14 +954,14 @@ c /* deck cc_ijcb2 */
       IMPLICIT NONE
 #  include <ccsdsym_dec.h>
 #  include <ccorb_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
 #endif
 #include <ccsdsym.h>
 #include <ccorb.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccisao.h>
 
 #if defined (SYS_CRAY)

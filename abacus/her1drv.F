@@ -196,7 +196,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2), HFONLY,
@@ -304,7 +304,7 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
 #include <priunit.h>
       PARAMETER (D0 = 0.00 D00)
@@ -785,7 +785,7 @@ C
 #include <iratdef.h>
 #include <mxcent.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 C Used from common blocks:
 C  INFRSP : CCPPA
@@ -1039,7 +1039,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
       DIMENSION CSTRA(*), SCTRA(*)

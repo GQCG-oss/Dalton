@@ -100,7 +100,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <maxaqn.h>
 #include <iratdef.h>
       PARAMETER (D0 = 0.00 D00, D1 = 1.0D0, DP5 = 0.50D00)
@@ -488,7 +488,7 @@ C     tuh 310888
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
       LOGICAL NODC, NODV
       INTEGER R, S, U, V, UV, UR, US, VR, VS, RS
@@ -620,7 +620,7 @@ C     tuh 120988
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (TWO = 2.00 D00, THRHLF = 1.50 D00,
      *           HALF = 0.50D00, IBIT08 = 255)
       INTEGER P, Q, R, S
@@ -935,7 +935,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (DP5 = 0.50D00, IBIT08 = 255)
       LOGICAL SYMMET
@@ -1147,7 +1147,7 @@ C  /* Deck traoso */
       SUBROUTINE TRAOSO(FCAO,WORK,LWORK,IDIM,IATOM,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
       DIMENSION FCAO(*), WORK(LWORK)
 #include <aosotr.h>
 C
@@ -1188,7 +1188,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
 #include <nuclei.h>
 #include <shells.h>
@@ -1338,7 +1338,7 @@ C     ***  handles symmetry.                            ***
 C     *****************************************************
 C
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <iratdef.h>
       PARAMETER (D0 = 0.D00, D1 = 1.D00, TWO = 2.D00)
@@ -1435,7 +1435,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <iratdef.h>
       PARAMETER (D0 = 0.D00, TWO = 2.D00)
       LOGICAL DERIV(3)
@@ -1504,7 +1504,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <symmet.h>
 #include <inforb.h>
 #include <infdim.h>
@@ -1883,7 +1883,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 C
       LOGICAL DNULL, TOTSYM
@@ -1999,7 +1999,7 @@ C
 #include <dummy.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (D1 = 1.0D0)
       CHARACTER*8 LABEL

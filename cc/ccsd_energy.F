@@ -1189,7 +1189,6 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 #include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -1896,7 +1895,6 @@ C
       EXTERNAL INIDAT
 C
 #include <maxorb.h>
-#include <mxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -3435,7 +3433,7 @@ C     Ove Christiansen 230899, Find and freeze NFC lowest-lying/NFV highest lyin
 C     canonical orbitals in CC calculation.
 C
 #include <implicit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
       DIMENSION FOCDIA(NF),WORK(LWORK),NFCS(8),NFVS(8),IPLACE(MXCORB)
 #include <ccorb.h>

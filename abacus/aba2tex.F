@@ -263,7 +263,7 @@ C
 #include <iratdef.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       LOGICAL PASS, ANTI, PANTI, ANTIDM, DIA2SO, DOERI
       DIMENSION WORK(LWORK)
@@ -619,7 +619,7 @@ C                                         880420  PRT
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <iratdef.h>
       PARAMETER (D0 = 0.0D0)

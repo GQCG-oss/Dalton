@@ -281,13 +281,13 @@ C
       RETURN
       END
 C  /* Deck iznum */
-      FUNCTION IZNUM(IOCC,NEL,Z,MAXEL,MAXORB,NEWORD,NTEST)
+      FUNCTION IZNUM(IOCC,NEL,Z,MAXEL,MXCORB,NEWORD,NTEST)
 C
 C ADRESS OF STRING IOCC
 C
       INTEGER Z
       DIMENSION IOCC(NEL),NEWORD(*)
-      DIMENSION Z(MAXORB,MAXEL)
+      DIMENSION Z(MXCORB,MAXEL)
 #include <priunit.h>
 C
       IZ = 1
@@ -308,7 +308,7 @@ C
       END
 C  /* Deck sexci */
       SUBROUTINE SEXCI(STRING,NSTRIN,NEL,NORB,TIJ,TTO,
-     &                      MAXORB,MAXEL,Z,MAXTL,NEWORD,
+     &                      MXCORB,MAXEL,Z,MAXTL,NEWORD,
      &                      NEXFST,IAB,NTEST)
 C
 C CALCULATE AND STORE INFORMATION ABOUT SINGLE EXCITATIONS OBTAINED FROM
@@ -318,7 +318,7 @@ c October 90 : Excitations packed in a onedimensional array
 #include <implicit.h>
       INTEGER   STRING,TIJ,TTO,OCC,UNOCC,STRIN2,Z
 c. Input
-      DIMENSION STRING(NEL,NSTRIN),Z(MAXORB,MAXEL)
+      DIMENSION STRING(NEL,NSTRIN),Z(MXCORB,MAXEL)
 c. Output
       DIMENSION TIJ(MAXTL),TTO(MAXTL),NEWORD(NSTRIN),NEXFST(*)
 C
@@ -435,7 +435,7 @@ c. Is new string allowed  ?
               NSXTOT = NSXTOT + 1
               TIJ(NSXTOT) = KL
               TTO(NSXTOT) =
-     *           IZNUM(STRIN2,NEL,Z,MAXEL,MAXORB,NEWORD,NTEST)
+     *           IZNUM(STRIN2,NEL,Z,MAXEL,MXCORB,NEWORD,NTEST)
               IF (IIISGN .EQ. -1 )
      &           TTO(NSXTOT) = TTO(NSXTOT) + NSTRIN
                NEXFST(ISTRIN) = NEXFST(ISTRIN ) + 1

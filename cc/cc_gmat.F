@@ -246,7 +246,7 @@ c/* Deck CC_GMAT */
 #  include <iratdef_dec.h>
 #  include <cbieri_dec.h>
 #  include <eribuf_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <mxcent_dec.h>
 #  include <distcl_dec.h>
 #  include <ccorb_dec.h>
@@ -262,7 +262,7 @@ c/* Deck CC_GMAT */
 #include <cbieri.h>
 #include <mxcent.h>
 #include <eribuf.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <distcl.h>
 #include <ccorb.h>
 #include <ccisao.h>
@@ -2066,14 +2066,14 @@ c/* Deck CCG_21CCSD */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #  include <priunit_dec.h>
-#  include <mxorb_dec.h>
+#  include <maxorb_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>

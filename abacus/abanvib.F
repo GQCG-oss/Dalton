@@ -698,7 +698,7 @@ C     /* Deck otrten */
      &                  IPRINT,T1,T2)
 #include <implicit.h>
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <infpar.h>
 #include <priunit.h>

@@ -64,9 +64,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -96,7 +95,7 @@ C
       DIMENSION RHO1(LRHO1,NSIMTR), CTR1(LRHO1,NSIMTR)
       DIMENSION RHO2(*), CTR2(*)
       DIMENSION WORK(LWORK)
-      DIMENSION IADRPQ(MAXORB,MAXSIM)
+      DIMENSION IADRPQ(MXCORB,MAXSIM)
 C
       LOGICAL ETRAN,FCKCON
 C

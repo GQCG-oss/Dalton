@@ -76,8 +76,6 @@ c*DECK CC_RHTR3
 #include <dummy.h>
 #include <maxorb_dec.h>
 #include <maxorb.h>
-#include <mxorb_dec.h>
-#include <mxorb.h>
 #include <mxcent_dec.h>
 #include <mxcent.h>
 #include <aovec_dec.h>

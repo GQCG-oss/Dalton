@@ -235,9 +235,9 @@ sirinp.o : sirinp.F \
   ../include/infpri.h  ../include/inftap.h \
   ../include/inftra.h  ../include/infvar.h \
   ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxorb.h  ../include/orbtypdef.h \
-  ../include/priunit.h  ../include/scbrhf.h \
-  ../include/single.h  ../include/siripc.h
+  ../include/orbtypdef.h  ../include/priunit.h \
+  ../include/scbrhf.h  ../include/single.h \
+  ../include/siripc.h
 sirlintrn.o : sirlintrn.F \
   ../include/cbgetdis.h  ../include/dummy.h \
   ../include/implicit.h  ../include/infdim.h \

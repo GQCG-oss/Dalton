@@ -254,7 +254,7 @@ c /* deck ccdorpsini */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
 #include <symmet.h>

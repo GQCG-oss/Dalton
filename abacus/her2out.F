@@ -49,7 +49,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -261,7 +261,7 @@ C  /* Deck un2wrt */
 #include <priunit.h>
 #include <iratdef.h>
 #include <dummy.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <ibtpar.h>
@@ -429,7 +429,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -621,7 +621,7 @@ C     tuh Sep 92
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -788,7 +788,7 @@ C
 #include <priunit.h>
 #include <iratdef.h>
 #include <dummy.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
       PARAMETER (TEN14 = 1.1D14, LBUF = 600)
@@ -1072,7 +1072,7 @@ C     tuh Sep 92
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -1263,7 +1263,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -1507,7 +1507,7 @@ C  /* Deck un2wrn */
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <ibtpar.h>

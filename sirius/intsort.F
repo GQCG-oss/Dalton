@@ -82,7 +82,7 @@ C
 890510-hjaaj
   corrected code in DECK ORDER for INTSYM .ne. 1
   -- note that INTSYM .ne. 1 has never been tested yet
-  stop if NBAST .gt. MAXORB or 2*NBUF .gt. LRINT
+  stop if NBAST .gt. MXCORB or 2*NBUF .gt. LRINT
 890501-hjaaj
   idea: dynamic LUORD buffer length?
 890104-hjaaj
@@ -307,7 +307,7 @@ C
 C     COMPUTE VECTOR IT(I) = I*(I-1)/2
 C
       K = 0
-      DO 3 I = 1,MAXORB
+      DO 3 I = 1,MXCORB
          IT(I) = K
          K = K+I
     3 CONTINUE
@@ -328,10 +328,10 @@ C
     4 CONTINUE
     5 CONTINUE
 C
-      IF (NBAST .GT. MAXORB) THEN
+      IF (NBAST .GT. MXCORB) THEN
          WRITE (LUPRI,'(/A/2(A,I8))')
      *      ' Insufficient length of IT(*) and IS(*) in common N_SORT',
-     *      ' Length is',MAXORB,', need',NBAST
+     *      ' Length is',MXCORB,', need',NBAST
          CALL QUIT(' ')
       END IF
 C
