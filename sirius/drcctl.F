@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: drcctl.F,v 1.2 2001-05-31 06:38:33 vebjornb Exp $
+C$Id: drcctl.F,v 1.3 2001-11-20 13:09:13 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -65,18 +65,19 @@ C else if (LVLDRC .eq. 1) then C,D both occupied
 C else                    C,D general
 C
 #include <implicit.h>
+#include <priunit.h>
 C
       DIMENSION WRK(LWRK)
 C
 #include <iratdef.h>
+#include <lbmxsq.h>
 C
 C Used from common blocks:
 C   INFORB : N2ORBT, N2ORBX, ...
 C   INFTAP : LUINTD, LBINTD
-C   INFTRA :  IPRTRA
+C   INFTRA : IPRTRA
 C   INFPRI : LUERR
 C
-#include <priunit.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <inftra.h>
@@ -84,11 +85,11 @@ C
 C
       CALL QENTER('DRCCTL')
 C
-C Set LBINTD to optimal buffer length .le. 1024 for LUINTD
+C Set LBINTD to optimal buffer length .le. LBMXSQ for LUINTD
 C ( N2ORBT is the maximum number of non-zero elements in
 C any distribution).
 C
-      NBINTD = (N2ORBT-1)/1024 + 1
+      NBINTD = (N2ORBT-1)/LBMXSQ + 1
       LBINTD = (N2ORBT-1)/NBINTD + 1
 C
 C
@@ -100,8 +101,8 @@ C
       KWRK1  = KH2    + N2ORBX
       LWRK1  = LWRK   - KWRK1
 C
-C     LNDACD = guess of how much work space needed in DRCACD
-      LNDACD = MAX(2*LBINTM+2,N2ORBX)
+C     LNDACD = how much work space needed in DRCACD (for NXTH2M)
+      LNDACD = ((1+IRAT)*LBINTM+2)/IRAT + 1
       NCDDIS = (LWRK1-LNDACD)/N2ORBX
       IF ( NCDDIS.LE.0 ) THEN
          WRITE(LUERR,'(/A,I5)')
@@ -158,11 +159,11 @@ C ICMIN AND IDMIN ARE UPDATED IN DRCWRT
 C
 C END REPEAT
 C
-      IF (IPRTRA.GT.0) WRITE(LUPRI,1000) LUINTD,LABCD,NLOAD
+      IF (IPRTRA.GT.0) WRITE(LUPRI,1000) LABCD,NLOAD
       CALL GPCLOSE(LUINTD,'KEEP')
- 1000 FORMAT(/' DRCCTL: NUMBER OF DIRAC INTEGRALS WRITTEN ON UNIT'
-     *       ,I3,' IS',I10,
-     *       /'         NUMBER OF PASSES OVER MULLIKEN FILE',I5)
+ 1000 FORMAT(/' DRCCTL: Number of Dirac integrals written on file'//
+     *        ' "DRCINT" is',I10,
+     *       /'         Number of passes over Mulliken file',I5)
 C
       CALL QEXIT('DRCCTL')
       RETURN
@@ -184,7 +185,7 @@ C    MULLIKEN INTEGRALS (CD,AB) = (XP,YQ)
 C    TO DIRAC INTEGRALS <CA,DB> = <XY,PQ>
 C
 #include <implicit.h>
-      DIMENSION H2ACD(NORBT,NORBT,1),H2(NORBT,2),WRK(2)
+      DIMENSION H2ACD(NORBT,NORBT,*),H2(NORBT,NORBT),WRK(LWRK)
 C
 C Used from common blocks:
 C   INFORB : NSYM,NORB(*),IORB(*),?
@@ -200,11 +201,11 @@ C
 C
       DIMENSION NEEDMU(6)
 #include <ibtdef.h>
-#include <line.h>
 C
+      CALL QENTER('DRCACD')
       IF ( IPRTRA.GT.20 ) THEN
          WRITE(LUPRI,'(/4(A,I7))')'  ICLOW :',ICLOW, '  ICHGH :',ICHGH,
-     *                             '  ILOWDI:',ILOWDI,'  IHGHDI:',IHGHDI
+     *                            '  ILOWDI:',ILOWDI,'  IHGHDI:',IHGHDI
       ENDIF
       NEEDMU(1) = 0
       NEEDMU(2) = 1
@@ -225,7 +226,7 @@ C
 C
 C     >>> zero H2ACD
 C
-      LENGTH = NORBT * NORBT * (IHGHDI - ILOWDI + 1)
+      LENGTH = N2ORBX * (IHGHDI - ILOWDI + 1)
       CALL DZERO(H2ACD,LENGTH)
 C
 C     >>> prepare for reading MO integrals ...
@@ -337,6 +338,7 @@ C
 C
 C *** end of subroutine DRCACD
 C
+      CALL QEXIT('DRCACD')
       RETURN
       END
 C  /* Deck drcwrt */
@@ -354,7 +356,7 @@ C NOTE: EQUIVALENCE (OUTB,IOUTB) in call of DRCWRT
 C
 #include <implicit.h>
 C
-      DIMENSION H2ACD(NORBT,NORBT,2),OUTB(2),IOUTB(2)
+      DIMENSION H2ACD(NORBT,NORBT,*),OUTB(*),IOUTB(*)
 #include <iratdef.h>
       PARAMETER ( D0 = 0.0D0 )
 C

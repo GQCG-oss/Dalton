@@ -32,12 +32,22 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirtra.F,v 1.5 2001-11-15 10:32:53 hjj Exp $
+C$Id: sirtra.F,v 1.6 2001-11-20 13:09:13 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck rev_log */
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/11/15 10:32:53  hjj
+hjaaj: let SORTA/SORTB use all awailable memory for sorting integrals.
+They have always only used max MWORK memory, but the MWORK restriction
+is in fact primarily relevant for TRAAB/TRACD, i.e. the transformations
+(for TRAAB/TRACD the MWORK restriction is necessary for efficiency
+and in some cases for not running out of memory in later integral
+transformations).
+-- This change may fix some reported problems with insufficient memory
+in the integral transformation.
+
 Revision 1.4  2001/05/31 06:38:37  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -326,7 +336,7 @@ C....       MEMS --  LENGTH OF SCRATCH SORT AREA
 C....       MEMT --    **   *    **    TRANSFORMATION AREA
 C
 #include <implicit.h>
-      DIMENSION IINT(1),ISCR(1),SCR(1),RINT(1)
+      DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*)
 #include <iratdef.h>
 #include <dummy.h>
 C
@@ -334,8 +344,6 @@ C
       DIMENSION IBUF(IBUFL)
 C
       LOGICAL FEXIST, OLDDX
-C
-      PARAMETER (D0=0.0D0, D1=1.0D0, D2=2.0D0, HALF=0.5D0)
 C
 #include <priunit.h>
 #include <inttra.h>
@@ -675,8 +683,7 @@ C
 #include <implicit.h>
       PARAMETER (IBUFL = 500)
 #include <iratdef.h>
-      PARAMETER (D0=0.0D0, D1=1.0D0, D2=2.0D0, HALF=0.5D0)
-      DIMENSION IINT(1),ISCR(1),SCR(1),RINT(1),IBUF(IBUFL)
+      DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*),IBUF(IBUFL)
       LOGICAL FEXIST
 #include <lbmxsq.h>
 C
@@ -963,11 +970,9 @@ C
 C          ********** RELEASE 79 03 28 **********
 C
 #include <implicit.h>
-      DIMENSION CMOT(1),BUF(1),IBUF(1),OUTB(1),IOUTB(1),
-     *          PQCD(MORBT,1),PQRD(1),TRI(1)
+      DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
+     *          PQCD(MORBT,*),PQRD(*),TRI(*)
 #include <iratdef.h>
-C
-      PARAMETER (D0=0.0D0, D1=1.0D0, D2=2.0D0, HALF=0.5D0)
 #include <lbmxsq.h>
 C
 #include <priunit.h>
@@ -1355,11 +1360,10 @@ C                23-Mar-1984 hjaaj /
 C                11-Dec-1983 ha/hjaaj
 C
 #include <implicit.h>
-      DIMENSION CMOT(1),BUF(1),IBUF(1),OUTB(1),IOUTB(1),
-     *          ABCD(MORBT,1),PBCD(1),TRI(1)
+      DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
+     *          ABCD(MORBT,*),PBCD(*),TRI(*)
 #include <iratdef.h>
 C
-      PARAMETER (D0=0.0D0, D1=1.0D0, D2=2.0D0, HALF=0.5D0, DM1=-1.0D0)
 #include <priunit.h>
 #include <inforb.h>
 #include <inttra.h>
@@ -2444,8 +2448,10 @@ C
       IF (USEDRC .AND. ITRLVL .GT. 0) THEN
          IF (ITRLVL .GE. 4) THEN
             LVLDRC = 1
+C           ... all occ-occ distributions
          ELSE
             LVLDRC = 0
+C           ... all active-active distributions
          END IF
          CALL DRCCTL(LVLDRC,WORK,LWORK)
          CALL FLSHFO(LUPRI)
@@ -2513,7 +2519,7 @@ C
 #include <implicit.h>
 #include <iratdef.h>
 #include <priunit.h>
-      DIMENSION H2CD(1),NEEDTP(6),WRK(LFREE)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTM,LBINTM
@@ -2561,8 +2567,8 @@ C        We need to keep BUF and IBUF consecutively in memory.
 C        IBUF(LBINTM + 1) = LENGTH of record
 C        K.Ruud, April 2000
 C
-         LBINTT = LBINTM + (LBINTM + 1)*IRAT
-         CALL MEMGET('REAL',KBUF ,LBINTT,WRK,KFREE,LFREE)
+         LBINTT = LBINTM*(IRAT + 1) + 2
+         CALL MEMGET('INTE',KBUF ,LBINTT,WRK,KFREE,LFREE)
          KIBUF = KBUF + LBINTM
          KNEXT = KFREE
       ELSE
@@ -2660,7 +2666,6 @@ C
 C     If first read (IDIST .EQ. 0)
 C     then setup for reading MO integrals ...
 C
-      LBINTT = LBINTM + (LBINTM + 1)*IRAT
       IF (IDIST .EQ. 0) THEN
          JBUF = 2521*IRAT + 256 + NCMOT
          CALL REWSPL(LUINTM)
@@ -2794,7 +2799,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      DIMENSION H2CD(1),NEEDTP(6),WRK(LFREE)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTD,LBINTD
