@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.8 2001-06-21 12:32:56 vebjornb Exp $
+C$Id: dalton.F,v 1.9 2001-06-22 13:19:40 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -163,6 +163,7 @@ C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       LOGICAL FINISH
+      CHARACTER*12 FILNAM
 #endif
 #if defined (VAR_G77)
       INTEGER(KIND=2) IWOFF
@@ -197,9 +198,18 @@ C
 #endif
       DATA WRKDLM/8H*WRKDLM*/
 C
+#if defined (VAR_MPI)
+      CALL MPIXINIT
+#else
+      MYNUM = 0
+#endif
       CALL GPIOIN
+      IF (MYNUM .EQ. 0) THEN
       CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
+      ELSE
+         LUERR = 0
+      END IF
       LMWORK = 0
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
 C
@@ -356,23 +366,17 @@ C      MYNUM = 0
 C#endif
 C
 C     Back to old version...   vb jan-01
+C     Revised June 01 /hjaaj
 C
-      CALL GPIOIN
-#if defined (VAR_MPI)
-      CALL MPIXINIT
-#else
-      MYNUM = 0
-#endif
       IF (MYNUM .EQ. 0) THEN
          CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
-     &        IDUMMY,.FALSE.)
+     &            IDUMMY,.FALSE.)
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
-     &        IDUMMY,.FALSE.)
-C      ELSE
-C         CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',
-C     &        IDUMMY,.FALSE.)
-C         CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',
-C     &        IDUMMY,.FALSE.)
+     &            IDUMMY,.FALSE.)
+      ELSE
+         WRITE (FILNAM,'(A,I2.2)') 'DALTON.OUT',MYNUM
+         CALL GPOPEN(LUPRI,filnam,'NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
       END IF
       CALL MEMINI(LUPRI,LUERR)
 C
