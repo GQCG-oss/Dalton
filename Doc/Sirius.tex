@@ -136,6 +136,8 @@ Section~\ref{ref-cicinp} \Sec{CI INPUT}
 
 Section~\ref{ref-rhfinp} \Sec{SCF INPUT}
 
+Section~\ref{ref-rhfinp} \Sec{DFT INPUT}
+
 Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
 
 Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}
@@ -248,7 +250,7 @@ Specification of which wave function calculation is to be performed.
 
 \item[\Key{CC}]
   \index{Coupled Cluster}\index{CC}
-  Coupled Cluster calculation. Activates automatically Hartree--Fock (\quotekw{.HF}).
+  Coupled Cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
   After the Hartree--Fock calculation
   the \cc\ program is called to do a Coupled Cluster (response) calculation.
   For further input options for the \cc\ program see Section~\ref{sec:ccgeneral}. 
@@ -353,7 +355,8 @@ categories.
 \item[\Key{NOSUPMAT}]
   Do not use P-SUPERMATRIX integrals, but calculate Fock matrices
   from AO integrals (slower, but requires less disk space). The
-  default is to use the supermatrix file if it exists.
+  default is to use the supermatrix file if it exists. See option
+  \Key{NOSUP} in Chapter~\ref{sec:herminp}.
 
 %\item[\Key{ONESUP}]
 %  Use same unit for P-SUPERMATRIX\index{supermatrix} and ONE-ELECTRON
@@ -435,11 +438,11 @@ WEIGHTED RESIDUALS:  Normally the CI states will be converged to a
 residual less than the specified threshold, and this will give
 approximately the squared number of decimal places in the energy.
 Depending on the value of the energy, the eigenvectors will be converged
-to different accuracy. If the eigenvectors are wanted with, e.g., at
+to different accuracy. If the eigenvectors are wanted with, for instance at
 least 6 decimal places for property calculations, specify a threshold of
 1.0D-6 and weighted residuals.
 
-ZEROELEMENTS: an experimental option to perhaps save time (if the CI
+ZEROELEMENTS: an experimental option that might save time (if the CI
 module can use sparseness) by zeroing all elements less than 1.0D-3
 times the largest element in the CI trial vector before
 orthonormalization against previous trial vectors.
@@ -493,7 +496,7 @@ To specify the configuration part in MCSCF and CI calculations.
 \begin{description}
 \item[\Key{CAS SPACE}]
   \kw{READ (LUINP,*) (NASH(I),I=1,NSYM)} \\
-  CAS calculation: Active orbitals\index{active orbital} each symmetry.
+  CAS calculation: Active orbitals\index{active orbital} in each symmetry.
 
 \item[\Key{ELECTRONS}]
   Required.\\
@@ -502,6 +505,11 @@ To specify the configuration part in MCSCF and CI calculations.
   electrons to be distributed
   in the active orbitals).  The total number of electrons is this number
   plus two times the total number of inactive orbitals.
+
+\item[\Key{INACTIVE ORBITALS}]
+  Required.\\
+  \kw{READ (LUINP,*) (NISH(I),I=1,NSYM)} \\
+  Number of inactive orbitals\index{inactive orbital} each symmetry.
 
 \item[\Key{RAS1 ELECTRONS}]
    \kw{READ (LUINP,*) NEL1MN,NEL1MX} \\
@@ -542,11 +550,6 @@ To specify the configuration part in MCSCF and CI calculations.
   Required for MCSCF and CI wave functions.\\
   \kw{READ (LUINP,*) LSYM} \\
   Spatial symmetry\index{symmetry} of CI and/or MCSCF wave function
-
-\item[\Key{INACTIVE ORBITALS}]
-  Required.\\
-  \kw{READ (LUINP,*) (NISH(I),I=1,NSYM)} \\
-  Number of inactive orbitals\index{inactive orbital} each symmetry.
 
 \end{description}
 
@@ -607,14 +610,17 @@ The field integrals are read from file \verb|AOPROPER| with the specified label.
 
 This section deals with the closed shell and one open shell
 Hartree--Fock cases\index{SCF}\index{HF}\index{Hartree--Fock}
-and Kohn-Sham DFT\index{DFT}. 
+and Kohn-Sham DFT\index{DFT}. For the case of Hartree--Fock, also
+high-spin restricted open-shell wave functions can be defined.
 The input here will usually only be used if either
 \quotekw{\Key{DFT}} or \quotekw{\Key{HF}}
 has been specified under \quotekw{\Sec{*WAVE FUNCTIONS}}
 (though it is also needed for MP2 calculations based on saved closed-shell HF
 orbitals).
 Single configuration cases with more than one open shell\index{open shell}
-are handled by the general \Sec{CONFIGURATION INPUT} section.
+are handled by the general \Sec{CONFIGURATION INPUT} section, although
+high-spin restricted open-shell Hartree--Fock calculations can be done
+using this module described here.
 
 \begin{description}
 \item[\Key{AUTOCCUPATION}]
@@ -665,6 +671,16 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
 %  Default: AO integrals or P-supermatrix integrals read from disk.
 %\fi
 
+\item[\Key{DOUBLY OCCUPIED}]
+    \kw{READ (LUINP,*) (NRHF(I),I=1,NSYM)} \\
+  \index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}
+  Explicit specification of number of doubly occupied orbitals in each symmetry
+  for DFT, RHF and MP2 calculations. This keyword
+  is required when Hartree--Fock or MP2 is part of a multistep
+  calculation which includes an MCSCF wave function. 
+  Otherwise the program by default will try to guess the occupation,
+  corresponding to the  \quotekw{.AUTOCC} keyword.
+
 \item[\Key{ELECTRONS}]
   \kw{READ (LUINP,*) NRHFEL} \\
   Number of electrons in the molecule\index{electrons in molecule}. By
@@ -701,15 +717,13 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
   must be frozen in the MP2 calculation).
   NOTE: no Roothaan Fock iterations allowed if frozen orbitals.
 
-\item[\Key{DOUBLY OCCUPIED}]
-    \kw{READ (LUINP,*) (NRHF(I),I=1,NSYM)} \\
-  \index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}
-  Explicit specification of number of doubly occupied orbitals in each symmetry
-  for DFT, RHF and MP2 calculations. This keyword
-  is required when Hartree--Fock or MP2 is part of a multistep
-  calculation which includes an MCSCF wave function. 
-  Otherwise the program by default will try to guess the occupation,
-  corresponding to the  \quotekw{.AUTOCC} keyword.
+\item[\Key{H1VIRT}]
+
+\item[\Key{HSROHF}]
+    \kw{READ (LUINP,*) (NROHF(I),I=1,NSYM)} \\
+Number of singly occupied orbitals in each irreducible representation
+    of the molecular point group. Only the high-spin state of these
+    singly-occupied orbitals will be made and used in the calculations.
 
 \item[\Key{MAX DIIS ITERATIONS}]
   \kw{READ (LUINP,*) MXDIIS} \\
@@ -750,6 +764,11 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
   \kw{READ (LUINP,*) IPRRHF} \\
   Resets general print level to \verb|IPRRHF| in Hartree--Fock calculation
   (if not specified, global print levels will be used).
+
+\item[\Key{SHIFT}] 
+  \kw{READ (LUINP,*) SHFTLVL} \\
+Value of level-shift parameter. The default value is 0.0D0 (no level
+  shift).
 
 \item[\Key{THRESH}]
   Default = 1.0D-06\\
@@ -912,7 +931,7 @@ calculations.
 \index{NEVPT2}\index{multireference PT!second-order}
 Calculation of the second order correction to the energy for a
 CAS--SCF or CAS--CI zero order wavefunction.
-The user is referred to Chapter~\ref{ch:nevpt2} at
+The user is referred to Chapter~\ref{ch:nevpt2} on
 page~\pageref{ch:nevpt2}  for a brief
 introduction to the $n$--electron valence state second order
 perturbation theory (NEVPT2).
@@ -945,7 +964,7 @@ Root number in a CASCI calculation. This keyword is unnecessary
 
 The use of canonical orbitals for the core and virtual orbitals is
 strongly recommended since this choice guarantees compliance of the
-results with a totally invariant form of NEVPT2 (see page~\pageref{ch:nevpt2})
+results with a totally invariant form of NEVPT2 (see page~\pageref{ch:nevpt2}).
 
 At present the NEVPT2 module can deal with active spaces of dimension
 not higher than 14.
@@ -1269,7 +1288,7 @@ reordering and punching of orbitals.
 \item[\Key{CMOMAX}]
   \kw{READ (LUINP,*) CMAXMO} \\
   Abort calculation if the absolute value of any initial MO coefficient is
-  greater than CMAXMO (default : CMAXMO = 10**4).  Large MO coefficients
+  greater than CMAXMO (default : CMAXMO = 10**3).  Large MO coefficients
   can cause significant loss of accuracy in the two-electron integral
   transformation.
 
@@ -1303,6 +1322,16 @@ reordering and punching of orbitals.
   Default.\\
   Gram--Schmidt orthonormalization\index{orthonormalization!Gram--Schmidt} of input orbitals.
 
+\item[\Key{LOCALIZATION}]
+Specify that the orbitals should be localized.
+   \kw{READ (LUINP,'(1X,A6)') REWORD} \\
+Two options for localization of the orbitals are available:
+\begin{description}
+\item[{\tt BOYLOC\ }] Use the Boys localization scheme~\cite{}.
+\item[{\tt PIPLOC\ }] Use the Pipek-Mezey localization scheme~\cite{}.
+\end{description}
+
+\begin{description}
 \item[\Key{MOSTART}]
    Molecular orbital input\index{molecular orbital}\\
    \kw{READ (LUINP,'(1X,A6)') RWORD} \\
@@ -1341,13 +1370,13 @@ reordering and punching of orbitals.
 
 \item[\Key{PUNCHINPUTORBITALS}]
   Punch input orbitals with label \Sec{*MOLORB}, Format (4F18.14).
-  These orbitals may e.g. be transferred to another computer and
+  These orbitals may {\it e.g.\/} be transferred to another computer and
   read there with \quotekw{.MOSTART} followed by \quotekw{ FORM18} on
   next line from this input section.
 
 \item[\Key{PUNCHOUTPUTORBITALS}]
   Punch final orbitals with label \Sec{*MOLORB}, Format (4F18.14).
-  These orbitals may e.g. be transferred to another computer and
+  These orbitals may {\it e.g.\/} be transferred to another computer and
   read there with \quotekw{.MOSTART} followed by \quotekw{ FORM18} on
   next line from this input section.
 
@@ -1392,20 +1421,21 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
 
 \noindent{\bf Comments:}
 
-{\sir} automatically identifies "super
+{\sir} can identify "super
 symmetry"\index{supersymmetry}, {\it i.e.\/} of irreps of the true point
 group of the molecule\index{symmetry!group} which is a
 "supergroup" of the Abelian group used in the calculation.
 Degenerate orbitals will be averaged and the "super
 symmetry"\index{supersymmetry} will be enforced in the orbitals.
-The use of "super symmetry" may be deactivated with the
-\quotekw{\Key{NOSUPSYM}} keyword, for example in finite field
-calculations where the field lowers the symmetry.
-%\ifabacus
-For
-\aba\ and \resp\ calculations, the "super symmetry" is deactivated
-unless explicitly enforced with \Key{SUPSYM}.
-%\fi
+The use of "super symmetry" can  be activated with the
+\quotekw{\Key{SUPSYM}} keyword.
+%, for example in finite field
+%calculations where the field lowers the symmetry.
+%%\ifabacus
+%For
+%\aba\ and \resp\ calculations, the "super symmetry" is deactivated
+%unless explicitly enforced with \Key{SUPSYM}.
+%%\fi
 The initial
 orbitals must be symmetry orbitals, and the super symmetry
 analysis is performed on the kinetic energy matrix in this basis.
@@ -1420,8 +1450,10 @@ geometry deviates slightly from a higher symmetry point group, for
 example because too few digits has been used in the input of the
 nuclear geometry. If the program stops because the super symmetry
 analysis fails with a degeneracy error, you might consider to use
-more digits in the nuclear coordinates, to change \kw{THRSSY}, or
-to disable super symmetry with \quotekw{.NOSUPSYM}.  The value of
+more digits in the nuclear coordinates, to change \kw{THRSSY}.
+%, or
+%to disable super symmetry with \quotekw{.NOSUPSYM}.  
+The value of
 \kw{THRSSY} should be sufficiently small to avoid accidental
 degeneracies and sufficiently large to ignore small errors in
 geometry and numerical round-off errors.
@@ -1474,7 +1506,7 @@ Requires a set of natural orbitals\index{natural orbital} and their occupation.
   Print level for population analysis.
 
 \item[\Key{QUADRP}]
-  Calculate quadrupole moments. Note that this requires that the dipole
+  Calculate quadrupole moments. Note that this requires that the quadrupole
   length integrals are available on the file \verb|AOPROPER|\index{quadrupole moment}
 
 \item[\Key{VIRIAL}]\index{virial analysis}
@@ -1589,9 +1621,13 @@ will activate this model.
   Enter relevant dielectric constant\index{dielectric constant} of solvent.
 
 \item[\Key{INERSINITIAL}]
-  \kw{READ (LUINP,*) EPSOL}\\
-  Enter static dielectric constant\index{dielectric constant} of solvent for calculation
-  of the initial state defining inertial polarization\index{inertial polarization}.
+  \kw{READ (LUINP,*) EPSOL, EPPN}\\
+  Enter static and optical dielectric constant\index{dielectric constant} of solvent for calculation
+  of the initial state defining inertial polarization\index{inertial
+  polarization}. Note that the optical dielectric constant in this
+  only will take effect in case there is a calculation of response
+  properties, in which this is an alternative input to the use of the
+  keywork \Key{INERSFINAL}.
 
 \item[\Key{INERSFINAL}]
   \kw{READ (LUINP,*) EPSTAT,EPSOL}\\
@@ -1657,18 +1693,18 @@ User control of the NEO restricted step optimization.
   Maximum damping value.\index{damping}
 
 \item[\Key{MAX STEP LENGTH}]
-  Default = 0.7\\
+  Default = 0.7D0\\
   \kw{READ (LUINP,*) STPMAX} \\
   Maximum acceptable step length, trust radius will never be larger than
   STPMAX even if the ratio is good as defined by GOOD RATIO.
 
 \item[\Key{MIN DAMPING}]
-  Default = 0.2\\
+  Default = 0.2D0\\
   \kw{READ (LUINP,*) BETMIN} \\
   Minimum damping value
 
 \item[\Key{MIN RATIO}]
-  Default = 0.4 for ground state, 0.6 for excited states\\
+  Default = 0.4D0 for ground state, 0.6 for excited states\\
   \kw{READ (LUINP,*) RATMIN} \\
   Threshold ratio for bad second order agreement: the trust radius is
   to be decreased if ratio is worse than RATMIN.
@@ -1695,13 +1731,13 @@ User control of the NEO restricted step optimization.
   THQKVA*(norm of gradient)**2
 
 \item[\Key{THQLIN}]
-  Default: 0.2\\
+  Default: 0.2D0\\
   \kw{READ (LUINP,*) THQLIN} \\
   Convergence factor for micro iterations in global (linear) region: \\
   THQLIN*(norm of gradient)
 
 \item[\Key{THQMIN}]
-  Default: 0.1\\
+  Default: 0.1D0\\
   \kw{READ (LUINP,*) THQMIN} \\
   Convergence threshold for auxiliary roots in NEO MCSCF optimization.
 

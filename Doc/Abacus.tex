@@ -20,12 +20,9 @@ general input  module. See also Chapter~\ref{ch:geometrywalks}.
 
 \begin{description}
 
-\item[\Key{ABALNR}] Invokes the calculation of frequency dependent
-linear response\index{frequency}\index{linear response}\index{response!linear}
-calculations. At present this only  
-includes the frequency dependent polarizability\index{polarizability} as well as directives
-controlling the calculation of Raman related
-properties\index{Raman intensity}\index{Raman optical activity}\index{ROA}. Combined with the 
+\item[\Key{ALPHA}] Invokes the calculation of frequency dependent
+polarizabilities\index{frequency}\index{polarizability}
+ Combined with the 
 keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} or SOPPA(CCSD) 
 \index{SOPPA(CCSD)} calculation of the frequency dependent polarizability.
 
@@ -36,7 +33,7 @@ Reads the origin to be used for the cavity\index{cavity!origin}\index{reaction f
 during a solvent calculation. By default this is chosen to be the
 center of mass\index{center of mass}. Should by used with care, as it
 has to correspond to the center used in the evaluation of the
-undifferentiated solvent integrals in the {\her} section.
+undifferentiated solvent integrals in the {\her} section, see Chapter~\ref{sec:oneinp}.
 
 \item[\Key{CTOCD}] Starts the calculation of the magnetic properties with the
 CTOCD-DZ\index{CTOCD-DZ} method (Ref.~\cite{paololazz1,paololazz2,ctocd}). This sets also 
@@ -64,12 +61,12 @@ origin must be used during the integral evaluation sections , in
 particular if one is doing numerical 
 differentiation with respect to electric field perturbations. For such
 finite-field calculations\index{finite field} we refer to Chapter
-\ref{ch:finite}, which deals with finite field calculations. It's
-use is mainly for debugging.  
+\ref{ch:finite}, which deals with finite field calculations. It is
+primarily used for debugging.  
 
 \item[\Key{ECD}] Invokes the calculation of Electronic Circular
 Dichroism (ECD)\index{electronic circular dichroism}\index{ECD} as
-described in Ref.~\cite{klbaehkrthjopjtca90}. This 
+described in Ref.~\cite{klbaehkrthjopjtca90,mpkrthcpl388}. This 
 necessitates the specification of the number electronic
 excitations\index{electronic excitation} in 
 each symmetry, given in the \Sec{EXCITA} module. The reader is
@@ -94,6 +91,11 @@ default in direct and parallel runs in order to save memory. In
 ordinary calculations the total CPU time will increase as a result of
 invoking this option.
 
+\item[\Key{EXPGRA}] Calculates the gradient of the orbital
+  exponents. This can be used to optimize the so-called polarization
+  consistent basis sets~\cite{gjjcp115} if combined with a suitable script for
+  predicting new orbital exponents based on this gradient.
+
 \item[\Key{GAUGEO}]\verb| |\newline
 \verb|READ (LUCMD, *) (GAGORG(ICOOR), ICOOR = 1, 3)|
 
@@ -101,7 +103,8 @@ Reads in a user defined gauge origin\index{gauge origin} and overwrite
 both the \Key{NOCMC} option, as well as the default value of
 center-of-mass coordinates. Note that an unsymmetric position of the
 gauge origin will lead to wrong results in calculations employing
-symmetry. 
+symmetry, as the program will not be able to detect that such a choice
+of gauge origin breaks the symmetry of the molecule.
 
 \item[\Key{HELLMA}]
 Tells the program to use the Hellman--Feynman approximation when
@@ -116,38 +119,9 @@ differentiated two-electron integrals.
 %
 %Indicates that a quadratic response calculation is to be performed.
 
-\item[\Key{INPTES}] Checks  only the input and then stops.
+\item[\Key{INPTES}] Checks the input in the \Sec{*PROPERTIES} input
+  section and then stops.
 
-\item[\Key{ISOTOP}]\verb| |\newline
-\verb|READ (LUCMD,*) NIS|\newline
-\verb|READ (LUCMD, *) (ISOTOP(IS), IS = 1, NIS)|
-
-Read one more line indicating the number of nuclei for which the
-isotope will be explicitly given. On the next line read the
-isotope chosen for each nuclei\index{isotopic constitution}.
-
-By default the isotope chosen for each nucleus is the most abundant
-one. Although one may choose the number of nuclei for which an
-isotopic substitution is to be given explicitly, one should notice
-that this ordering follows the ordering of the atoms in the input.
-Thus, if only the last atom is to be an isotope different from the
-most common, all atoms has to be specified (and this applies to {\em all}
-nuclei, not only the symmetry independent one, se also Sec.~\ref{sec:vibfreq}).
-
-The ordering of the isotopes for each nuclei is in the order of
-natural abundance. Thus deuterium will be isotope 2 of hydrogen, while
-tritium will be isotope 3.
-
-The choice of isotopic substituted molecules will affect the gauge
-origin\index{gauge origin}, as well as dynamical walks\index{dynamics}
-and walks using mass-weighted normal\index{mass-weighted coordinates} 
-modes, which depend on the choice of 
-isotopic substitution. We notice that for the vibrational
-analysis\index{vibrational analysis},
-the isotopic substitution may be introduced rather late, there
-is a similar \Key{ISOTOP}| keyword in the \Sec{VIBANA} input
-module. This can also be used to study the vibrational and rotational
-structure of several isotopic substituted species.
 
 \item[\Key{LINEAR}] Invokes the linear coupling model for estimation
 of Franck-Condon factors~\cite{optphavckrcp260}. In this model, the
@@ -179,6 +153,7 @@ mass\index{center of mass} of the molecule.
 This origin can be changed by the two keywords \Key{GAUGEO} and
 \Key{NOCMC}. This will of course not affect the total magnetizability,
 only the size of the dia- and paramagnetic terms.
+
 Combined with the keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
 or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of the magnetizability and the rotational 
 {\em g} tensor (Ref.~\cite{spascpl260}). London orbitals are automatically disabled in 
@@ -210,9 +185,10 @@ is not recommended, and may give erroneous results.
 
 Note that if the isotopic constitution of the molecule is such that
 the vibrational wave function has lower symmetry than the electronic
-wave function, the program will give wrong results unless the symmetry
-of the electronic wave function is reduced to that of the vibrational
-part.
+wave function, care must be taken to ensure the symmetry corresponds
+to the symmetry of the nuclear framework. The automatic symmetry
+detection routines will in general ensure that this is the case.
+
 Combined with the keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
 or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of the magnetizability and the 
 rotational {\em g} tensor (Ref.~\cite{spascpl260}). London orbitals are automatically 
@@ -283,6 +259,11 @@ perturbatively.
 \item[\Key{NQCC}] Calculates the nuclear quadrupole moment
 coupling constant\index{nuclear quadrupole coupling}\index{NQCC}. 
 
+\item[\Key{NUMHES}] In VROA or Raman intensity calculations, use the
+  numerical Hessian calculated from the analytical gradients instead
+  of a fully analytical molecular Hessian calculation in the final
+  geometry.
+
 \item[\Key{OPTROT}] Requests the calculation of the optical rotation
 of a molecule~\cite{thkrklbpjjofd99,plpmp91}. By default the optical
 rotation is calculated 
@@ -301,14 +282,13 @@ atomic orbitals, but the total magnetic properties will remain
 unchanged. To be used for debugging purposes only.
 
 \item[\Key{POLARI}] Invokes the calculation of frequency-independent
-polarizabilities\index{polarizability}. See the keyword \Key{ALFA} in
-the \Sec{ABALNR} 
-input module for the calculation of frequency-dependent
+polarizabilities\index{polarizability}. See the keyword \Key{ALPHA} in
+this input section for the calculation of frequency-dependent
 polarizabilities.
 
 \item[\Key{POPANA}] Invokes a population analysis\index{population analysis}\index{dipole gradient} based on the 
 dipole gradient as first introduced by Cioslowski \cite{jcjacs111}.
-This flag also invokes the \Key{DIPGRA} flag.
+This flag also invokes the \Key{DIPGRA} flag and the \Key{POLARI} flags.
 
 \item[\Key{PRINT}]\verb| |
 \newline
@@ -341,8 +321,8 @@ line specifying how many symmetries, then one line listing the
 desired symmetries. This option is currently only implemented
 for geometric perturbations. 
 
-\item[\Key{RESTART}] Restart in the property evaluation section. This
-keyword is currently disabled. 
+%\item[\Key{RESTART}] Restart in the property evaluation section. This
+%keyword is currently disabled. 
 
 \item[\Key{SELECT}]\verb| |
 \newline
@@ -351,7 +331,7 @@ keyword is currently disabled.
 
 Select which nuclear geometric perturbations are to be considered.
 Read one more line specifying how many perturbations, then on a
-new line the sequence of perturbations to be considered. By default,
+new line the list of perturbations to be considered. By default,
 all perturbations are to be considered, but by invoking this keyword,
 only those perturbations specified in the sequence will be considered. 
 
@@ -374,7 +354,7 @@ connection can be turned off by the keyword \verb|.NODIFC| in which
 case the symmetric connection\index{symmetric connection} is used instead.
 
 
-The gauge origin\index{gauge origin} are chosen to be the center of
+The gauge origin\index{gauge origin} is chosen to be the center of
 mass\index{center of mass} of the molecule.
 This origin can be changed by the two keywords \verb|.GAUGEO| and
 \verb|.NOCMC |. This choice of gauge origin will not affect
@@ -387,7 +367,7 @@ or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of the Nuclear Magnetic Shieldings
 SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} 
 calculations. Gauge origin independent SOPPA or SOPPA(CCSD) calculations of Nuclear 
 Magnetic Shieldings can be carried out with the CTOCD-DZ method\index{CTOCD-DZ} 
-(Ref.~\cite{paololazz1,paololazz2,ctocd}) (keyword \Key{CTOCD}).
+(see Refs.~\cite{paololazz1,paololazz2,ctocd}) using the keyword \Key{CTOCD}.
 
 In combination with the keyword \Key{CTOCD}\index{CTOCD-DZ} this invokes a calculation of the
 Nuclear Magnetic Shieldings without the use of London orbitals but with both 
@@ -436,7 +416,7 @@ Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 As this is a very time consuming property, as well as requiring MCSCF
 wave functions (or MP2 wave functions used together with the keyword
-\verb|.SOPPA| or CCSD wave functins used together with the keyword \verb|.SOPPA(CCSD)|) 
+\verb|.SOPPA| or CCSD wave functions used together with the keyword \verb|.SOPPA(CCSD)|) 
 in order to get reliable results, it is recommended to 
 consult the chapter describing the calculation of NMR-parameters
 (Ch.~\ref{ch:magnetic}). The main control of which
@@ -458,15 +438,16 @@ numerically stable results. The natural
 connection can be turned off by the keyword \verb|.NODIFC| in which
 case the symmetric connection\index{symmetric connection} will be used.
 
-The gauge origin\index{gauge origin} is chosen to be the center of
-mass\index{center of mass} of the molecule. 
-This origin can be changed by the two keywords \verb|.GAUGEO| and
-\verb|.NOCMC |. This will of course not affect the final VCD results,
-only the size of the contributing terms.
+%The gauge origin\index{gauge origin} is chosen to be the center of
+%mass\index{center of mass} of the molecule. 
+%This origin can be changed by the two keywords \verb|.GAUGEO| and
+%\verb|.NOCMC |. This will of course not affect the final VCD results,
+%only the size of the contributing terms.
 
 In the current implementation, the keyword \Key{NOCMC} will be set
 true in calculations of Vibrational Circular Dichroism, that is, the
-coordinate system origin will be used as gauge origin.
+coordinate system origin will be used as gauge origin. Changing this
+default value will give incorrect results for VCD.
 
 %\item[\Key{VERDET}] Requests the calculation of Verdet
 %constants~\cite{mjpjarkrthcpl222}. London orbitals can not be used in
