@@ -58,7 +58,7 @@ cat > cc_rsp_solv.dal <<'%EOF%'
 .CC
 *HF INP
 .THRESH
-1.0D-11
+1.0D-9
 *CC INP
 .CCSD
 .FREEZE

@@ -58,7 +58,7 @@ cat > cc_exgr_prop.dal <<'%EOF%'
 *HAMILTONIAN
 *HF INPUT
 .THRESH
-1.0D-10
+1.0D-9
 *CC INP
 .NSYM
  1

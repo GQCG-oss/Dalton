@@ -56,7 +56,7 @@ cat > cc_fop_drw2e.dal <<'%EOF%'
 .CC
 *HF INP
 .THRESH
- 1.0D-11
+ 1.0D-9
 .HF OCCUPATION
  2 1 1 0 1 0 0 0
 *ORBITAL INPUT
