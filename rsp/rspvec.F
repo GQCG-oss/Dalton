@@ -58,6 +58,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
+#include <mxcent.h>
 #include <maxorb.h>
 #include <priunit.h>
 #include <infvar.h>
@@ -108,9 +109,36 @@ C
          CALL LRHYP(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,WRK(KVECB),WRK(KVECC),WRK(KMJWOP),
      *                 WRK(KWRK1),LWRK1)
+         IF (SSCOLL) THEN
+            KFC1 = KWRK1
+            KFC2 = KFC1 + MXCOOR**2
+            KFC  = KFC2 + MXCOOR**2
+            KSD1 = KFC  + MXCOOR**2
+            KSD2 = KSD1 + MXCOOR**2
+            KSD  = KSD2 + MXCOOR**2
+            KFS1 = KSD  + MXCOOR**2
+            KFS2 = KFS1 + MXCOOR**2
+            KFS  = KFS2 + MXCOOR**2
+            KLAST= KFS  + MXCOOR**2
+            LLEFT = LWRK - KLAST
+            IF (LLEFT.LT.0) CALL ERRWRK('RSPVEC 2',LLEFT-1,LWRK)
+         ELSE
+            KFC1 = KWRK1
+            KFC2 = KWRK1
+            KFC  = KWRK1
+            KSD1 = KWRK1
+            KSD2 = KWRK1
+            KSD  = KWRK1
+            KFS1 = KWRK1
+            KFS2 = KWRK1
+            KFS  = KWRK1
+            KLAST= KWRK1
+         END IF
          CALL QRHYP(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,WRK(KVECB),WRK(KVECC),WRK(KMJWOP),
-     *                 WRK(KWRK1),LWRK1)
+     *                 WRK(KFC1),WRK(KFC2),WRK(KFC),WRK(KSD1),WRK(KSD2),
+     *                 WRK(KSD),WRK(KFS1),WRK(KFS2),WRK(KFS),
+     *                 WRK(KLAST),LLEFT)
       END IF
       IF (SOMOM) CALL QRSMO(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,WRK(KVECB),WRK(KVECC),WRK(KMJWOP),
@@ -728,7 +756,8 @@ C
       END
 C  /* Deck qrhyp */
       SUBROUTINE QRHYP(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
-     *                 XINDX,VECB,VECC,MJWOP,WRK,LWRK)
+     *                 XINDX,VECB,VECC,MJWOP,SPNFC1,SPNFC2,SPNFC,SPNSD1,
+     *                 SPNSD2,SPNSD,SPNSU1,SPNSU2,SPNSU,WRK,LWRK)
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -743,6 +772,8 @@ C
       CHARACTER*8 BLANK, LABEL
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECB(*),VECC(*),WRK(*)
+      DIMENSION SPNFC1(*), SPNFC2(*), SPNFC(*), SPNSD1(*), SPNSD2(*),
+     &          SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
 C
       PARAMETER ( D0 = 0.0D0, THRFRQ = 1.0D-14, BLANK = '        ')
 C
@@ -769,6 +800,8 @@ C
 C
       CALL QENTER('QRHYP')
       IF (SOCOLL) CALL SOINIT
+      IF (SSCOLL) CALL SSINIT(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,
+     &                        SPNSU1,SPNSU2,SPNSU)
       CALL HEADER(' Results from quadratic response calculation',0)
 C
       LURSPRES = -1
@@ -1075,7 +1108,9 @@ C DOCAL indicates the result.
 C
                               CALL BCCHK(DOCAL,LURSPRES,MSYMA,MSYMB,
      *                             MSYMC,FREQB,FREQC,BQRLB(MSYMB,IBOP),
-     *                             CQRLB(MSYMC,ICOP))
+     *                             CQRLB(MSYMC,ICOP),SPNFC1,SPNFC2,
+     *                             SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
+     *                             SPNSU2,SPNSU)
                               IF (.NOT.DOCAL) GO TO 800
 C
                               CALL T3DRV(M1,MSYMA,MSYMB,MSYMC,
@@ -1518,6 +1553,11 @@ C
                              IF (SOCOLL) CALL SODIST(AQRLB(MSYMA,IAOP),
      *                             MSYMA,BQRLB(MSYMB,IBOP),MSYMB,
      *                             CQRLB(MSYMC,ICOP),MSYMC,HYPVAL(IAOP))
+                             IF (SSCOLL) CALL SSDIST(AQRLB(MSYMA,IAOP),
+     *                             MSYMA,BQRLB(MSYMB,IBOP),MSYMB,
+     *                             CQRLB(MSYMC,ICOP),MSYMC,HYPVAL(IAOP),
+     *                             SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,
+     *                             SPNSD,SPNSU1,SPNSU2,SPNSU)
  950                       CONTINUE
  800                    CONTINUE
  700                 CONTINUE
@@ -1532,6 +1572,12 @@ C
          KCSTRA = KMAT2 + MXCOOR*MXCOOR
          KSCTRA = KCSTRA + MXCOOR*MXCOOR
          CALL SOSOUT(WRK(KMAT1),WRK(KMAT2),WRK(KCSTRA),WRK(KSCTRA))
+      END IF
+      IF (SSCOLL) THEN 
+         KCSTRA = 1
+         KSCTRA = KCSTRA + MXCOOR*MXCOOR
+         CALL SPNSO(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
+     &               SPNSU2,SPNSU,WRK(KCSTRA),WRK(KSCTRA))
       END IF
       CALL GPCLOSE(LURSPRES,'KEEP')
       CALL QEXIT('QRHYP')
@@ -2881,7 +2927,8 @@ C
       RETURN
       END
       SUBROUTINE BCCHK(DOCAL,LURSPRES,ISYMA,ISYMB,ISYMC,FREQB,
-     &                 FREQC,BLAB,CLAB)
+     &                 FREQC,BLAB,CLAB,SPNFC1,SPNFC2,SPNFC,SPNSD1,
+     *                 SPNSD2,SPNSD,SPNSU1,SPNSU2,SPNSU)
 C
 #include <implicit.h>
 #include <iratdef.h>
@@ -2892,13 +2939,14 @@ C calculated due to permutation symmetry
 C
 C
       PARAMETER (THD = 1.0D-8)
-      PARAMETER (MXCALC = 200)
+      PARAMETER (MXCALC = 1000)
 C 
       LOGICAL DOCAL, MEMFLG, DIPLEN, ONFIL
       CHARACTER*8 LAB(MXCALC,3), ALAB, BLAB, CLAB
       CHARACTER DIR(3)*1, STRING*75, LABEL(3)*8
       DIMENSION FRQ(MXCALC,3), ISYM(MXCALC,3)
-C
+      DIMENSION SPNFC1(*), SPNFC2(*), SPNFC(*), SPNSD1(*),
+     *          SPNSD2(*), SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
 #include <maxorb.h>
 #include <priunit.h>
 #include <infvar.h>
@@ -3028,6 +3076,11 @@ C
                    WRITE(LUPRI,'(/A,3F15.8)')
      *                  '@omega B, omega C, QR value :',
      *                  FRQB,FRQC,QUAVAL
+                   IF (SOCOLL) CALL SODIST(ALAB,KSYMA,BLAB,KSYMB,
+     *                  CLAB,KSYMC,QUAVAL)
+                   IF (SSCOLL) CALL SSDIST(ALAB,KSYMA,BLAB,KSYMB,CLAB,
+     *                  KSYMC,QUAVAL,SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,
+     *                  SPNSD,SPNSU1,SPNSU2,SPNSU)
                 END IF
                 CALL FLSHFO(LUPRI)
                 DOCAL = .FALSE.
@@ -3325,7 +3378,7 @@ C
                IF (TWOSO) SIGFS2(IPTAX(IDIRB,2),INUCDR) =
      &                         SIGFS2(IPTAX(IDIRB,2),INUCDR) - VALUE
                IF (SUMSO) SIGFS(IPTAX(IDIRB,2),INUCDR) =
-     &                         SIGFS2(IPTAX(IDIRB,2),INUCDR) - VALUE
+     &                         SIGFS(IPTAX(IDIRB,2),INUCDR) - VALUE
             END IF
          END IF
       END IF
@@ -3357,6 +3410,7 @@ C     shielding constants. K.Ruud, July-03
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <thrzer.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
@@ -3452,7 +3506,6 @@ C
       END IF
 C
       CALL TRADIP(SIGFC1,SMAT1,CSTRA,SCTRA,3*NUCDEP,2,2)
-      call output(smat1,1,3,1,3*nucdep,3,3*nucdep,1,2)
       CALL TRADIP(SIGFC2,SMAT2,CSTRA,SCTRA,3*NUCDEP,2,2)
       CALL AROUND('Summary of isotropic SO-FC contribution to '//
      &            'chemical shieldings')
@@ -3483,7 +3536,7 @@ C
       CALL AROUND('Summary of isotropic SO-SD contribution to '//
      &            'chemical shieldings')
       WRITE (LUPRI,'(1X,A,/,1X,A)')
-     & '@1atom   1-electron FC    2-electron FC    Total FC',
+     & '@1atom   1-electron SD    2-electron SD    Total SD',
      & '@1----------------------------------------------'/
      &  /'-------------'
       IATOM = 0
@@ -3501,6 +3554,271 @@ C
             END IF
          END DO
       END DO
+C
+      RETURN
+      END
+C  /* Deck ssdist */
+      SUBROUTINE SSDIST(AOPLAB,IASYM,BOPLAB,IBSYM,COPLAB,ICSYM,VALUE,
+     &                  SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,
+     &                  SPNSU1,SPNSU2,SPNSU)
+C
+C     This routine collects contributions to the SO-corrected shielding 
+C     tensor in suitable arrays. K.Ruud, July-03
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <codata.h>
+#include <gfac.h>
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2*XTHZ/(XFAMU*XFAMU))
+      DIMENSION SPNFC1(MXCOOR,MXCOOR), SPNFC2(MXCOOR,MXCOOR),
+     &          SPNFC (MXCOOR,MXCOOR), SPNSD1(MXCOOR,MXCOOR),
+     &          SPNSD2(MXCOOR,MXCOOR), SPNSD (MXCOOR,MXCOOR),
+     &          SPNSU1(MXCOOR,MXCOOR), SPNSU2(MXCOOR,MXCOOR),
+     &          SPNSU(MXCOOR,MXCOOR)
+      LOGICAL ONESO, TWOSO, SUMSO, FRMONL, SDONL, FCSD
+      CHARACTER*8 AOPLAB, BOPLAB, COPLAB
+      CHARACTER DIRSO*1, NUMNUC*2, NUCDIR*3, DIR2*1
+#include <nuclei.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      ONESO = .FALSE.
+      TWOSO = .FALSE.
+      SUMSO = .FALSE.
+      FRMONL = .FALSE.
+      SDONL  = .FALSE.
+      FCSD   = .FALSE.
+      VALUE = -VALUE*AUTOHZ*GFAC/(2.0D0*PI)
+C
+      IF (AOPLAB(1:3).EQ.'PSO') READ (AOPLAB(5:7),'(I3)') IPSO
+      IF (BOPLAB(1:3).EQ.'PSO') READ (BOPLAB(5:7),'(I3)') IPSO
+      IF (COPLAB(1:3).EQ.'PSO') READ (COPLAB(5:7),'(I3)') IPSO
+C
+      IF (AOPLAB(3:8).EQ.'SPNORB' .OR. AOPLAB(3:8) .EQ. 'MNF-SO') THEN
+         DIRSO = AOPLAB(1:1)
+         ONESO = AOPLAB(2:2).EQ.'1'
+         TWOSO = AOPLAB(2:2).EQ.'2'
+         SUMSO = AOPLAB(2:2).EQ.' '
+         IREPSO = IASYM
+      ELSE IF (BOPLAB(3:8).EQ.'SPNORB'.OR.BOPLAB(3:8).EQ.'MNF-SO') THEN
+         DIRSO = BOPLAB(1:1)
+         ONESO = BOPLAB(2:2).EQ.'1'
+         TWOSO = BOPLAB(2:2).EQ.'2'
+         SUMSO = BOPLAB(2:2).EQ.' '
+         IREPSO = IBSYM
+      ELSE IF (COPLAB(3:8).EQ.'SPNORB'.OR.BOPLAB(3:8).EQ.'MNF-SO') THEN
+         DIRSO = COPLAB(1:1)
+         ONESO = COPLAB(2:2).EQ.'1'
+         TWOSO = COPLAB(2:2).EQ.'2'
+         SUMSO = COPLAB(2:2).EQ.' '
+         IREPSO = ICSYM
+      END IF
+C
+      IF (AOPLAB(1:3) .EQ. 'FC ') THEN 
+         NUMNUC = AOPLAB(7:8)
+         FRMONL = .TRUE.
+      ELSE IF (BOPLAB(1:3) .EQ. 'FC ') THEN 
+         NUMNUC = BOPLAB(7:8)
+         FRMONL = .TRUE.
+      ELSE IF (COPLAB(1:3) .EQ. 'FC ') THEN 
+         NUMNUC = COPLAB(7:8)
+         FRMONL = .TRUE.
+      END IF
+      IF (AOPLAB(1:3) .EQ. 'SD ') THEN 
+         NUCDIR = AOPLAB(4:6)
+         DIR2 = AOPLAB(8:8)
+         SDONL = .TRUE.
+      ELSE IF (BOPLAB(1:3) .EQ. 'SD ') THEN 
+         NUCDIR = BOPLAB(4:6)
+         DIR2 = BOPLAB(8:8)
+         SDONL = .TRUE.
+      ELSE IF (COPLAB(1:3) .EQ. 'SD ') THEN 
+         NUCDIR = COPLAB(4:6)
+         DIR2 = COPLAB(8:8)
+         SDONL = .TRUE.
+      END IF
+      IF (AOPLAB(1:3) .EQ. 'SDC') THEN 
+         NUCDIR = AOPLAB(4:6)
+         DIR2 = AOPLAB(8:8)
+         FCSD = .TRUE.
+      ELSE IF (BOPLAB(1:3) .EQ. 'SDC') THEN 
+         NUCDIR = BOPLAB(4:6)
+         DIR2 = BOPLAB(8:8)
+         FCSD = .TRUE.
+      ELSE IF (COPLAB(1:3) .EQ. 'SDC') THEN 
+         NUCDIR = COPLAB(4:6)
+         DIR2 = COPLAB(8:8)
+         FCSD = .TRUE.
+      END IF
+C
+C     Add contributions to the proper place of the shielding tensor
+C     
+      IF (DIRSO .EQ. 'X') IDIRSO = 1
+      IF (DIRSO .EQ. 'Y') IDIRSO = 2
+      IF (DIRSO .EQ. 'Z') IDIRSO = 3
+      IF (FRMONL) THEN
+         READ (NUMNUC,'(I2)') INUCNM
+         DO IREP = 0, MAXREP
+            DO IATOM = 1, NUCIND
+               IF (IPTNUC(IATOM,IREP) .EQ. INUCNM) THEN
+                  IREPF = IBTXOR(IREPSO - 1,IREP)
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + IDIRSO,IREPF,2)
+               END IF
+            END DO
+         END DO
+         IF (ONESO) SPNFC1(IPSO,ISCOOR) = SPNFC1(IPSO,ISCOOR) - VALUE
+         IF (TWOSO) SPNFC2(IPSO,ISCOOR) = SPNFC2(IPSO,ISCOOR) - VALUE
+         IF (SUMSO) SPNFC(IPSO,ISCOOR) = SPNFC(IPSO,ISCOOR) - VALUE
+         IF (ONESO) SPNFC1(ISCOOR,IPSO) = SPNFC1(ISCOOR,IPSO) - VALUE
+         IF (TWOSO) SPNFC2(ISCOOR,IPSO) = SPNFC2(ISCOOR,IPSO) - VALUE
+         IF (SUMSO) SPNFC(ISCOOR,IPSO) = SPNFC(ISCOOR,IPSO) - VALUE
+      ELSE
+         IF (DIR2 .EQ. 'x') IDIR2 = 1
+         IF (DIR2 .EQ. 'y') IDIR2 = 2
+         IF (DIR2 .EQ. 'z') IDIR2 = 3
+         READ (NUCDIR, '(I3)') INUCDR 
+         IF (IDIR2 .EQ. IDIRSO) THEN
+            IF (SDONL) THEN
+               IF (ONESO) SPNSD1(IPSO,INUCDR)=SPNSD1(IPSO,INUCDR)-VALUE
+               IF (TWOSO) SPNSD2(IPSO,INUCDR)=SPNSD2(IPSO,INUCDR)-VALUE
+               IF (SUMSO) SPNSD(IPSO,INUCDR)=SPNSD(IPSO,INUCDR) - VALUE
+               IF (ONESO) SPNSD1(INUCDR,IPSO)=SPNSD1(INUCDR,IPSO)-VALUE
+               IF (TWOSO) SPNSD2(INUCDR,IPSO)=SPNSD2(INUCDR,IPSO)-VALUE
+               IF (SUMSO) SPNSD(INUCDR,IPSO)=SPNSD(INUCDR,IPSO) - VALUE
+            ELSE IF (FCSD) THEN
+               IF (ONESO) SPNSU1(IPSO,INUCDR)=SPNSU1(IPSO,INUCDR)-VALUE
+               IF (TWOSO) SPNSU2(IPSO,INUCDR)=SPNSU2(IPSO,INUCDR)-VALUE
+               IF (SUMSO) SPNSU(IPSO,INUCDR)=SPNSU(IPSO,INUCDR) - VALUE
+               IF (ONESO) SPNSU1(INUCDR,IPSO)=SPNSU1(INUCDR,IPSO)-VALUE
+               IF (TWOSO) SPNSU2(INUCDR,IPSO)=SPNSU2(INUCDR,IPSO)-VALUE
+               IF (SUMSO) SPNSU(INUCDR,IPSO)=SPNSU(INUCDR,IPSO) - VALUE
+            END IF
+         END IF
+      END IF
+C
+      RETURN
+      END
+C  /* Deck ssinit */
+      SUBROUTINE SSINIT(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
+     &                  SPNSU2,SPNSU)
+#include <implicit.h>
+#include <mxcent.h>
+      DIMENSION SPNFC1(*), SPNFC2(*), SPNFC(*), SPNSD1(*), SPNSD2(*),
+     &          SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
+C
+      CALL DZERO(SPNFC1,MXCOOR**2)
+      CALL DZERO(SPNFC2,MXCOOR**2)
+      CALL DZERO(SPNFC,MXCOOR**2)
+      CALL DZERO(SPNSD1,MXCOOR**2)
+      CALL DZERO(SPNSD2,MXCOOR**2)
+      CALL DZERO(SPNSD,MXCOOR**2)
+      CALL DZERO(SPNSU1,MXCOOR**2)
+      CALL DZERO(SPNSU2,MXCOOR**2)
+      CALL DZERO(SPNSU,MXCOOR**2)
+C
+      RETURN
+      END
+C  /* Deck spnso */
+      SUBROUTINE SPNSO(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
+     &                 SPNSU2,SPNSU,CSTRA,SCTRA)
+C
+C     Collects and prints the final results of the SO-corrections to the
+C     shielding constants. K.Ruud, July-03
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <thrzer.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <codata.h>
+      DIMENSION CSTRA(*), SCTRA(*)
+      DIMENSION SPNFC1(MXCOOR,MXCOOR), SPNFC2(MXCOOR,MXCOOR),
+     &          SPNFC(MXCOOR,MXCOOR), SPNSD1(MXCOOR,MXCOOR),
+     &          SPNSD2(MXCOOR,MXCOOR), SPNSD(MXCOOR,MXCOOR),
+     &          SPNSU1(MXCOOR,MXCOOR), SPNSU2(MXCOOR,MXCOOR),
+     &          SPNSU(MXCOOR,MXCOOR)
+#include <abainf.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <sigmaso.h>
+#include <ibtfun.h>
+C
+      FC1SUM = DNORM2(MXCOOR**2,SPNFC1,1)
+      FC2SUM = DNORM2(MXCOOR**2,SPNFC2,1)
+      FCSUM = DNORM2(MXCOOR**2,SPNFC,1)
+      SD1SUM = DNORM2(MXCOOR**2,SPNSD1,1)
+      SD2SUM = DNORM2(MXCOOR**2,SPNSD2,1)
+      SDSUM = DNORM2(MXCOOR**2,SPNSD,1)
+      FS1SUM = DNORM2(MXCOOR**2,SPNSU1,1)
+      FS2SUM = DNORM2(MXCOOR**2,SPNSU2,1)
+      FSSUM = DNORM2(MXCOOR**2,SPNSU,1)
+      DO I = 1, 8
+         DOSYM(I) = .TRUE.
+      END DO
+C
+      IF (FCSUM .LT. THRZER .AND. (FC1SUM .GT. THRZER .AND. 
+     &                             FC2SUM .GT. THRZER)) THEN
+         DO I = 1, MXCOOR*MXCOOR
+            SPNFC(I,1) = SPNFC1(I,1) + SPNFC2(I,1)
+         END DO
+         FCSUM = DNORM2(MXCOOR**2,SPNFC,1)
+      END IF
+      IF (SDSUM .LT. THRZER .AND. (SD1SUM .GT. THRZER .AND. 
+     &                             SD2SUM .GT. THRZER)) THEN
+         DO I = 1, MXCOOR*MXCOOR
+            SPNSD(I,1) = SPNSD1(I,1) + SPNSD2(I,1)
+         END DO
+         SDSUM = DNORM2(MXCOOR**2,SPNSD,1)
+      END IF
+      IF (FSSUM .LT. THRZER .AND. (FS1SUM .GT. THRZER .AND. 
+     &                             FS2SUM .GT. THRZER)) THEN
+         DO I = 1, MXCOOR*MXCOOR
+            SPNSU(I,1) = SPNSU1(I,1) + SPNSU2(I,1)
+         END DO
+         FSSUM = DNORM2(MXCOOR**2,SPNSU,1)
+      END IF
+C
+      CALL TITLER('ABACUS - SO CORRECTIONS TO REDUCED J COUPLINGS',
+     &     '*',124)
+      IF (FC1SUM .GT. THRZER) THEN
+         CALL HEADER('FC(1) contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNFC1,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (FC2SUM .GT. THRZER) THEN
+         CALL HEADER('FC(2) contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNFC2,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (FCSUM .GT. THRZER) THEN
+         CALL HEADER('FC contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNFC,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (SD1SUM .GT. THRZER) THEN
+         CALL HEADER('SD(1) contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNSD1,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (SD2SUM .GT. THRZER) THEN
+         CALL HEADER('SD(2) contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNSD2,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (SDSUM .GT. THRZER) THEN
+         CALL HEADER('SD contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNSD,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (FS1SUM .GT. THRZER) THEN
+         CALL HEADER('FC+SD(1) contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNSU1,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (FS2SUM .GT. THRZER) THEN
+         CALL HEADER('FC+SD(2) contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNSU2,'SPNSPN',CSTRA,SCTRA)
+      END IF
+      IF (FSSUM .GT. THRZER) THEN
+         CALL HEADER('FC+SD contribution to reduced J couplings ',-1)
+         CALL PRIHES (SPNSU,'SPNSPN',CSTRA,SCTRA)
+      END IF
 C
       RETURN
       END

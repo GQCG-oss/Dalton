@@ -50,7 +50,7 @@ C
 #include <inftap.h>
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
-      PARAMETER ( NTABLE = 27, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
+      PARAMETER ( NTABLE = 28, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND, RTNLBL(2)
 C
@@ -60,7 +60,7 @@ C
      *            '.ISPABC', '.A2TEST', '.X2TEST', '.REFCHK',
      *            '.TSTJEP', '.SHG   ', '.POCKEL', '.FREQUE',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.ASPIN ',
-     *            '.BSPIN ', '.CSPIN ', '.SOSHIE'/
+     *            '.BSPIN ', '.CSPIN ', '.SOSHIE', '.SOSPIN'/
 C
 C READ quadratic response INPUT
 C
@@ -81,7 +81,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,
      *                    14,15,16,17,18,19,20,21,22,23,24,
-     *                    25,26,27),I
+     *                    25,26,27,28),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -110,6 +110,36 @@ C
                      BQROP(INDPRP('X1MNF-SO')) = .TRUE.
                      BQROP(INDPRP('Y1MNF-SO')) = .TRUE.
                      BQROP(INDPRP('Z1MNF-SO')) = .TRUE.
+                  ELSE IF (LABEL .EQ. 'FERMI CO') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 199                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'FC ')
+     &                       BQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 199
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
+                  ELSE IF (LABEL .EQ. 'SPIN-DIP') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 299                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'SD ')
+     &                       BQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 299
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
+                  ELSE IF (LABEL .EQ. 'PSO     ') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 399                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'PSO')
+     &                       BQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 399
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
                   ELSE
                      BQROP( INDPRP(LABEL)) = .TRUE.
                   END IF
@@ -150,21 +180,31 @@ C
                   ELSE IF (LABEL .EQ. 'FERMI CO') THEN
                      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                           'UNFORMATTED',IDUMMY,.FALSE.)
- 199                 CONTINUE
+ 198                 CONTINUE
                      IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
                         IF (LABFND(1:3) .EQ. 'FC ')
      &                       CQROP(INDPRP(LABFND)) = .TRUE.
-                        GOTO 199
+                        GOTO 198
                      END IF
                      CALL GPCLOSE(LUPROP,'KEEP')
                   ELSE IF (LABEL .EQ. 'SPIN-DIP') THEN
                      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                           'UNFORMATTED',IDUMMY,.FALSE.)
- 299                 CONTINUE
+ 298                 CONTINUE
                      IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
                         IF (LABFND(1:3) .EQ. 'SD ')
      &                       CQROP(INDPRP(LABFND)) = .TRUE.
-                        GOTO 299
+                        GOTO 298
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
+                  ELSE IF (LABEL .EQ. 'PSO     ') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 398                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'PSO')
+     &                       CQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 398
                      END IF
                      CALL GPCLOSE(LUPROP,'KEEP')
                   ELSE
@@ -204,6 +244,36 @@ C
                      AQROP(INDPRP('X1MNF-SO')) = .TRUE.
                      AQROP(INDPRP('Y1MNF-SO')) = .TRUE.
                      AQROP(INDPRP('Z1MNF-SO')) = .TRUE.
+                  ELSE IF (LABEL .EQ. 'FERMI CO') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 197                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'FC ')
+     &                       AQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 197
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
+                  ELSE IF (LABEL .EQ. 'SPIN-DIP') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 297                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'SD ')
+     &                       AQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 297
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
+                  ELSE IF (LABEL .EQ. 'PSO     ') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 397                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'PSO')
+     &                       AQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 397
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
                   ELSE
                      AQROP( INDPRP(LABEL)) = .TRUE.
                   END IF
@@ -312,6 +382,9 @@ C
  27            CONTINUE
                   SOCOLL = .TRUE.
                GO TO 100
+ 28            CONTINUE
+                  SSCOLL = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -405,6 +478,12 @@ C
      *      NBQRFR,' B-frequencies', (BQRFR(I),I=1,NBQRFR)
          WRITE(LUPRI,'(I3,A,(1P,5D14.6))')
      *      NCQRFR,' C-frequencies', (CQRFR(I),I=1,NCQRFR)
+         IF (SOCOLL) WRITE (LUPRI,'(A)') 
+     *        ' Quadratic response functions will be collected as '//
+     *        'SO-corrections to nuclear shieldings'
+         IF (SSCOLL) WRITE (LUPRI,'(A)') 
+     *        ' Quadratic response functions will be collected as '//
+     *        'SO-corrections to reduced spin-spin couplings'
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
             WRITE(LUPRI,'(A,L2,/)')
      *      ' Equilibrium solvent model requested            : SOLVNT ='
