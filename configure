@@ -483,7 +483,8 @@ LIB=''
 LIBDIR=''
 $ECHO "\nTesting existence of libraries in this order:"
 $ECHO   " $liblist"
-$ECHO   "dirlist=$dirlist"
+$ECHO   "Directory search list for libraries:"
+$ECHO   " $dirlist"
 if [ -n "$liblist" ]; then
 for testlib in $liblist; do
    for testdir in $dirlist; do
@@ -600,7 +601,7 @@ fi
 # Determine memory size. 
 #
 
-$ECHO 'DALTON uses almost 7 million *8 words (56 Megabytes) of static allocations'
+$ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static allocations'
 $ECHO 'How many million *8 words to use as default for scratch memory ?'
 $ECHO '(we recommend at least 20 million words, larger for correlated calculations)'
 $ECHO 'Note that scratch memory can be changed through the shell variable WRKMEM'
@@ -618,10 +619,10 @@ $ECHO '\n   Program will be installed with a default scratch memory of '$memsiz'
 #
 
 curr=`pwd`
-$ECHO '   Current directory is '$curr'\n'
+$ECHO '\n   Current directory is '$curr'\n'
 
-INSTALL_DIR=$curr
-get_yes_or_no 'Use current directory as installation directory for binaries and scripts?'
+INSTALL_DIR=$curr/bin
+get_yes_or_no 'Use ./bin as installation directory for binaries and scripts?'
 
 while [ "$answer" = "n" ]
 do
@@ -647,6 +648,9 @@ do
         answer="ok"
     fi
 done
+if [ ! -d "$INSTALL_DIR" ]; then
+   mkdir "$INSTALL_DIR"
+fi
 
 if [ "$curr" = "$INSTALL_DIR" ]; then
     sed -e '/mv dalton.x/d' -e '/mv dalpar.x/d' -e '/mv dalpvm.x/d' Makefile.in > Makefile
@@ -704,7 +708,7 @@ fi
 #
 tab=`$ECHO "\t"`
 
-$ECHO '   Creating Makefile.config'
+$ECHO '\n   Creating Makefile.config'
 
 if [ -f Makefile.config ]; then
     $ECHO '   Ooops. Makefile.config exists. I take a backup.'
@@ -1296,6 +1300,8 @@ cat <<EOF > $INSTALL_DIR/dalton
 # Converted to sh on February 23, 1997 by K.Ruud                               #
 #                                                                              #
 # Version 1.1 spring 2000 by K.Ruud and H.J.Aa.Jensen                          #
+#                                                                              #
+# Version 2.1 Feb. 2005 by K.Ruud, H.J.Aa.Jensen, and P. Salek                 #
 #                                                                              #
 ################################################################################
 #
