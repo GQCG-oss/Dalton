@@ -1304,7 +1304,7 @@ C     -------------------------
           WRITE(LUPRI,'(5X,2I5,3X,A3,I3)') IFADEN, IDXL_INTER(IFADEN),
      &             LSTR_INTER(IFADEN), IDXR_INTER(IFADEN)
         END DO
-        WRITE(LUPRI,'(//')
+        WRITE(LUPRI,'(//)')
       END IF
 
       RETURN
