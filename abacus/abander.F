@@ -884,7 +884,8 @@ C
             LWRK = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in SDERTT')
             CALL SDERTT(TSTSDR,TSTGDR,SYMCOR,WORK(KTMPGD),WORK(KTMPHS),
-     &           WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,IPRINT)
+     &           WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,
+     &           IWOFF,WRKDLM,IPRINT)
          END IF
 C     
          IF ((NAORDR+NMORDR).GT.1) THEN
@@ -1935,7 +1936,7 @@ C     (And DALTON.OUT if manual is set.)
 C
       manual = .true.
       IF (MANUAL) THEN
-         WRITE (LUPRI,'(5X,A,)') 'Molecular geometry as requested:'
+         WRITE (LUPRI,'(5X,A)') 'Molecular geometry as requested:'
          WRITE (LUPRI,'(5X,A,I5)') 'Number of lines printed', NMLINE 
       END IF
       CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -3118,6 +3119,7 @@ C     /* Deck mknrmc */
      &          FREQ(NCOOR), HTESTM(NCOOR,NCOOR), RNNORM(NCOOR), 
      &          CORTMP(NCOOR), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2), NATTYP(NATOMS), NMSYSP(NCOOR)
+      INTEGER BEGIN
 C
 C     *** Calculating center of mass, and mass of each center ***
 C
@@ -3849,7 +3851,7 @@ C
 C
 C     /*Deck sdertt*/
       SUBROUTINE SDERTT(TSTSDR,TSTGDR,SYMCOR,TMPGRD,TMPHES,BKPGRD,
-     &                  BKPHES,WORK,LWORK,IPRINT)
+     &                  BKPHES,WORK,LWORK,IWOFF,WRKDLM,IPRINT)
 C     *******************************************************************
 C     *** This routine tests the numerical derivatives with available ***
 C     ***                   analytical derivatives.                   ***
@@ -3860,7 +3862,7 @@ C     *******************************************************************
 #include <mxcent.h>
 #include <mxorb.h>
 #include <maxaqn.h>
-C
+      PARAMETER (D0 = 0.0D0)
 #include <numder.h>
 #include <trkoor.h>
 #include <taymol.h>
@@ -4009,7 +4011,7 @@ C
                      IF ((ICRIRP(IC3,1).EQ.IIREP).AND.
      &                   (ICRIRP(IC3,2).EQ.    1).AND.(.NOT.FOUND)) THEN
                         FOUND = .TRUE.
-                        DO 500 II  =     1      2
+                        DO 500 II  =     1,      2
                         DO 500 IC4 = IC3+1, NDCOOR
                            ICRIRP(IC4-1,II) = ICRIRP(IC4,II)
  500                    CONTINUE
@@ -5052,6 +5054,7 @@ C     ***********************************************************
 C
       DIMENSION EHESS (MXCOOR,MXCOOR), COOR(NCOOR), CRTPRG(NCOOR),
      &          TMPHES(NCOOR ,NCOOR ), TRAMAT(NCOOR ,NCOOR ) 
+      INTEGER BEGIN
 C
 C     *** Constructing the transformation matrix. ***
 C
