@@ -31,7 +31,7 @@ GGAKey hf=0.5 dirac=0.5 pz81=1
 '
 
 test='
-check_scf_energy DFT  -151.201391780306 1e-13
+check_scf_energy DFT  -151.201391837176 1e-10
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

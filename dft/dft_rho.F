@@ -398,8 +398,10 @@ cdebug below
 #include <mxcent.h>
 #include <nuclei.h>
       DIMENSION RSHEL2(KMAX)
-      THLOG = LOG(DFTHRI)
-c     factor 4 works for c20h22-2
+      THLOG = 2*LOG(DFTHRI)
+c     factor 4 works for c20h22-2, factor 2 or 1.5 is sufficient.
+c     We should really remove it and change the default for DFTTHRI
+c     instead.
       DO ISHELA=1,KMAX
          JSTA = JSTRT(ISHELA)
          RSHEL2(ISHELA) =  0D0
