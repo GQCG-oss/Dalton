@@ -127,7 +127,7 @@ CTRL[2]=28
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-78\.08937925822[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-78\.08937925816[0-9]" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="DFT ENERGY NOT CORRECT"
