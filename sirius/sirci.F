@@ -66,8 +66,8 @@ C
       CALL MEMGET('INTE',KICROO,NCROOT,WORK,KFREE,LFREE)
 C
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF)
-     *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KW1),LW1,0)
-      CALL READMO(WORK(KCMO),9,WORK(KW1),LW1)
+     *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KFREE),LFREE,0)
+      CALL READMO(WORK(KCMO),9,WORK(KFREE),LFREE)
 C
       CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),WORK(KCINDX),
      *           WORK(KECI),ICONV,WORK(KICROO),WORK(KFREE),LFREE)
@@ -115,7 +115,7 @@ C   CICB01 : NCIRED,NJCR,JCROOT(*),THRCIT
 C   INFINP : POTNUC,FLAG(*),LSYM
 C   INFVAR : NCONF
 C   INFORB : NNASHX
-C   INFDIM : MWORK,LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
+C   INFDIM : LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
 C   INFTAP : LUIT1,LUIT3,LUIT5
 C
 #include <maxorb.h>
@@ -254,12 +254,12 @@ C
       JCONV  = NCROOT
       TIMITR = SECOND()
       IF (.NOT. FLAG(14)) THEN
-	 IF (DONEVPT) THEN
-         CALL TRACTL(4,CMO,WRK,LWRK ,MWORK)
-	 ELSE
-         CALL TRACTL(0,CMO,WRK,LWRK ,MWORK)
-	 ENDIF
-C        CALL TRACTL(ITRLVL,CMO,WRK,LWRK ,MWORK)
+      IF (DONEVPT) THEN
+         CALL TRACTL(4,CMO,WRK,LWRK)
+      ELSE
+         CALL TRACTL(0,CMO,WRK,LWRK)
+      ENDIF
+C        CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
          FLAG(14) = .TRUE.
       END IF
       TIMITR = SECOND() - TIMITR
@@ -586,8 +586,8 @@ C                  transformation in CISAVE
      *            ' were modified after CI convergence',
      *            ' integrals are transformed to new orbital basis',
      *            ' before saving information for post-programs'
-               CALL TRACTL(0,CMO,WRK,LWRK ,MWORK)
-C              CALL TRACTL(ITRLVL,CMO,WRK,LWRK ,MWORK)
+               CALL TRACTL(0,CMO,WRK,LWRK)
+C              CALL TRACTL(ITRLVL,CMO,WRK,LWRK)
                FLAG(14) = .TRUE.
                CALL CIINTS(DISKH2,CMO,INDXCI,
      *            WRK(KCDIAG),EMY,WRK(KFCAC),WRK(KH2AC),WRK(KW1),LW1)
