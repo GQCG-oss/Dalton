@@ -4604,10 +4604,12 @@ C
 C     Purpose: To calculate the ab & ij parts of the CCSD kappa-bar-0,
 C              from right-hand-sides (ZKDIA on input) and canonical
 C              orbital energies.
+C     Control numerical instabilities. Sonia, 2002
 C
 #include <implicit.h>
 #include <dummy.h>
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (THRDNM = 1.0D-12)
       DIMENSION ZKDIA(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
@@ -4674,12 +4676,14 @@ C
             KOFFJ = KFOCKD + IRHF(ISYMJ) + J - 1
             DO 120 I = J+1,NRHF(ISYMI)
                KOFFI = KFOCKD + IRHF(ISYMI) + I - 1
-               NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
-               NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
+               DENOM = WORK(KOFFJ) - WORK(KOFFI)
+               IF (ABS(DENOM) .GT. THRDNM) THEN
+                  NIJ = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
+                  NJI = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
 C
-               ZKDIA(NIJ) = HALF*WORK(KETAIJ+NIJ-1)/
-     *                      (WORK(KOFFJ) - WORK(KOFFI))
-               ZKDIA(NJI) = ZKDIA(NIJ)
+                  ZKDIA(NIJ) = HALF*WORK(KETAIJ+NIJ-1)/DENOM
+                  ZKDIA(NJI) = ZKDIA(NIJ)
+               END IF
 C
   120       CONTINUE
   110    CONTINUE
@@ -4695,12 +4699,14 @@ C
             KOFFB = KFOCKD + IVIR(ISYMB) + B - 1
             DO 150 A = B+1,NVIR(ISYMA)
                KOFFA = KFOCKD + IVIR(ISYMA) + A - 1
-               NAB   = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
-               NBA   = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
+               IF (ABS(DENOM) .GT. THRDNM) THEN
+                  NAB = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
+                  NBA = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
 C
-               ZKDIA(NMATIJ(1) + NAB) = HALF*WORK(KETAAB+NAB-1)/
-     *                      (WORK(KOFFB) - WORK(KOFFA))
-               ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
+                  ZKDIA(NMATIJ(1) + NAB) = HALF*WORK(KETAAB+NAB-1)/
+     *                                     DENOM
+                  ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
+               END IF
 C
   150       CONTINUE
   140    CONTINUE
