@@ -234,9 +234,14 @@ C
 C
 C           sort distributions
 C
-            CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,IODDCC,
-     &                  IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,INDXBT,
-     &                  ICART,IPRINT)
+            IF (.TRUE.) THEN
+               CALL ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+     &                     IODDCC,IPNTUV,ICART,IPRINT)
+            ELSE
+               CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,
+     &                     IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,
+     &                     INDXBT,ICART,IPRINT)
+            END IF
 C
 C           write integrals
 C
@@ -259,7 +264,7 @@ C        sort distributions
 C
          IF (.TRUE.) THEN
             CALL ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
-     &                  IODDCC,IPNTUV,IPRINT)
+     &                  IODDCC,IPNTUV,0,IPRINT)
          ELSE
             CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,
      &                  IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,
@@ -2107,7 +2112,7 @@ C  /* Deck eripri */
       END
 C  /* Deck erisor */
       SUBROUTINE ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
-     &                  IODDCC,IPNTUV,IPRINT)
+     &                  IODDCC,IPNTUV,ICART,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -2139,7 +2144,7 @@ C
          INT0 = INT
          DO ICMPCD = 1, KHKTCD
          DO ICMPAB = 1, KHKTAB
-         IF (IODDCC(IPNTUV(ICMPCD,0,2)).EQ. 
+         IF (IODDCC(IPNTUV(ICMPCD,ICART,2)).EQ. 
      &       IODDCC(IPNTUV(ICMPAB,0,1))) THEN
             IF (NIBUF.EQ.1) THEN
                DO I = 1, NCCT 
