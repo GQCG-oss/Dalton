@@ -529,7 +529,7 @@ C
             END IF
          END IF
          IF (IWKTYP .EQ. 6) THEN
-            ITERMX = 6*NUCDEP + 1
+            IF (ITERMX .EQ. 20) ITERMX = 6*NUCDEP + 1
             WRITE (LUPRI,'(/A,I5)') 'Maximum number of iterations '//
      *           'reset in numerical differentiation to ',ITERMX
          END IF
