@@ -319,13 +319,14 @@ C
          END DO
         END DO
 
-
-        WRITE(LUPRI,*) 'The virtual-virtual block of the reference:'
-        CALL OUTPUT(WORK(KDABR),1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,LUPRI)
-        WRITE(LUPRI,*)'The occupied-occupied block of the reference:'
-        CALL OUTPUT(WORK(KDIJR),1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,LUPRI)
-        WRITE(LUPRI,*)'The occupied-virtual block of the reference:'
-        CALL OUTPUT(WORK(KDIAR),1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,LUPRI)
+        IF (LOCDBG) THEN
+          WRITE(LUPRI,*) 'The virtual-virtual block of the reference:'
+          CALL OUTPUT(WORK(KDABR),1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,LUPRI)
+          WRITE(LUPRI,*)'The occupied-occupied block of the reference:'
+          CALL OUTPUT(WORK(KDIJR),1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,LUPRI)
+          WRITE(LUPRI,*)'The occupied-virtual block of the reference:'
+          CALL OUTPUT(WORK(KDIAR),1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,LUPRI)
+        END IF
       END IF
 
 *---------------------------------------------------------------------*
@@ -369,13 +370,15 @@ C
      &                         WORK(KT0FMI), WORK(KTYFMI),
      &                         WORK(KT0MI),  WORK(KTYMI),
      &                         WORK(KWDE),   WORK(KWED), WORK(KSCR))
-c
-      write(lupri,*)'DAB in noddy after VIR'
-      call output(DAB,1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,lupri)
-      write(lupri,*)'DIJ in noddy after VIR'
-      call output(DIJ,1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
-      write(lupri,*)'DIA in noddy after VIR'
-      call output(DIA,1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,lupri)
+ 
+      IF (LOCDBG) THEN
+        write(lupri,*)'DAB in noddy after VIR'
+        call output(DAB,1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,lupri)
+        write(lupri,*)'DIJ in noddy after VIR'
+        call output(DIJ,1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
+        write(lupri,*)'DIA in noddy after VIR'
+        call output(DIA,1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,lupri)
+      END IF
 
       KWTILDE = KEND1
       KTHVIRT = KWTILDE + NVIRT*NVIRT*NT1AMX
@@ -388,13 +391,15 @@ c
       CALL CCSDT_ADENOCC_NODDY(DAB,DIJ,DIA,WORK(KWBAR),WORK(KTHETA),
      &                         WORK(KL2AMP),WORK(KWTILDE),
      &                         WORK(KTHVIRT),WORK(KSWAP))
-c
-      write(lupri,*)'DAB in noddy after OCC'
-      call output(DAB,1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,lupri)
-      write(lupri,*)'DIJ in noddy after OCC'
-      call output(DIJ,1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
-      write(lupri,*)'DIA in noddy after OCC'
-      call output(DIA,1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,lupri)
+ 
+      IF (LOCDBG) THEN
+        write(lupri,*)'DAB in noddy after OCC'
+        call output(DAB,1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,lupri)
+        write(lupri,*)'DIJ in noddy after OCC'
+        call output(DIJ,1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
+        write(lupri,*)'DIA in noddy after OCC'
+        call output(DIA,1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,lupri)
+      END IF
 
 *---------------------------------------------------------------------*
 * add the one-index transformed zeroth-order density to DIA:
@@ -409,13 +414,6 @@ c
       IOPT = 1
       Call CC_RDRSP(LISTR,IDLSTR,ISYMR,IOPT,MODEL,WORK(KT1AMY),DUMMY)
 
-      write(lupri,*)'KDIJ0 in ADEN_NODDY'
-      call output(WORK(KDIJ0),1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
-      write(lupri,*)'KDAB0 in ADEN_NODDY'
-      call output(WORK(KDAB0),1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,lupri)
-
-c
-c
       CALL DGEMM('T','N',NVIRT,NRHFT,NVIRT,
      &           -ONE,WORK(KDAB0),NVIRT,WORK(KT1AMY),NVIRT,
      &            ONE,DIA,NVIRT)
@@ -423,12 +421,7 @@ c
       CALL DGEMM('N','T',NVIRT,NRHFT,NRHFT,
      &            ONE,WORK(KT1AMY),NVIRT,WORK(KDIJ0),NRHFT,
      &            ONE,DIA,NVIRT)  
-c
-      write(lupri,*)'DIA t1 contribution in ADEN_NODDY'
-      call output(dia,1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,lupri)
-c
-c     stop'after CCSDT_ADENOCC_NODDY'
-c
+ 
 
       IF (HAVETB3T3) THEN
         CALL DGEMM('T','N',NVIRT,NRHFT,NVIRT,
@@ -548,8 +541,7 @@ c
       PARAMETER( HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0 )
 
       INTEGER NDM, NDL
-c
-c
+ 
 *---------------------------------------------------------------------*
 *     start loop over D and E to compute contributions to D(IA) using
 *     more or less the same algorithms as in CC3_XI_DEN_IA 
@@ -584,7 +576,6 @@ c          ------------------------------------------
 c          D(IA) -= W^DE(fmnl) t^x(fm,Ei) t^y(an,DL)
 c                      scr(n,i) 
 c          ------------------------------------------
-c(3)
            CALL DGEMM('T','N',NRHFT,NRHFT,NT1AMX,
      &                ONE,WDE,NT1AMX,TXFMI,NT1AMX,
      &                ZERO,SCR,NRHFT)
@@ -592,18 +583,17 @@ c(3)
      &               -ONE,TYAMP(1,D,L),NVIRT,SCR,NRHFT,
      &                ONE,DIA,NVIRT)
 
-
 c          ------------------------------------------
 c          D(IA) -= W^DE(fmnl) t^y(fm,Ei) t^x(an,DL)
 c                      scr(n,i) 
 c          ------------------------------------------
-c(3)
            CALL DGEMM('T','N',NRHFT,NRHFT,NT1AMX,
      &                ONE,WDE,NT1AMX,TYFMI,NT1AMX,
      &                ZERO,SCR,NRHFT)
            CALL DGEMM('N','N',NVIRT,NRHFT,NRHFT,
      &               -ONE,TXAMP(1,D,L),NVIRT,SCR,NRHFT,
      &                ONE,DIA,NVIRT)
+
 c          --------------------------------------------
 c          resort:   WDE(fmi) -->   WDE(fim)
 c                  TXFMI(fmi) --> TXFMI(fim)
@@ -629,7 +619,6 @@ c          ------------------------------------------
 c          D(IA) -= W^DE(fnml) t^x(fi,Em) t^y(an,Dl)
 c                      scr(n,i) 
 c          ------------------------------------------
-c(2)
            CALL DGEMM('T','N',NRHFT,NRHFT,NT1AMX,
      &                ONE,WDE,NT1AMX,TXFMI,NT1AMX,
      &                ZERO,SCR,NRHFT)
@@ -643,7 +632,6 @@ c          ------------------------------------------
 c          D(IA) -= W^DE(fnml) t^y(fi,Em) t^x(an,Dl)
 c                      scr(n,i) 
 c          ------------------------------------------
-c(2)
            CALL DGEMM('T','N',NRHFT,NRHFT,NT1AMX,
      &                ONE,WDE,NT1AMX,TYFMI,NT1AMX,
      &                ZERO,SCR,NRHFT)
@@ -657,7 +645,6 @@ c          ------------------------------------------
 c          D(IA) -= W^ED(fnml) t^x(Dm,Ei) t^y(fn,al)
 c                        scr(fni)
 c          ------------------------------------------
-c(1)
            CALL DGEMM('N','N',NT1AMX,NRHFT,NRHFT,
      &                ONE,WED,NT1AMX,TXMI,NRHFT,
      &                ZERO,SCR,NT1AMX)
@@ -670,7 +657,6 @@ c          ------------------------------------------
 c          D(IA) -= W^ED(fnml) t^y(Dm,Ei) t^x(fn,al)
 c                        scr(fni)
 c          ------------------------------------------
-c(1)
            CALL DGEMM('N','N',NT1AMX,NRHFT,NRHFT,
      &                ONE,WED,NT1AMX,TYMI,NRHFT,
      &                ZERO,SCR,NT1AMX)
@@ -754,13 +740,6 @@ c          -----------------------------------------------------------
 c          --------------------------------------------
 c          D(ab) += WTILDE^DL(em,an) * THEOCC^DL(em,bn)
 c          --------------------------------------------
-c     write(lupri,*)'D,L ', D,l
-c     write(lupri,*)'xxx THEOCC(vo,vo) in noddy '
-c     call output(THEOCC,1,NT1AM(1),1,NT1AM(1),NT1AM(1),NT1AM(1),1,
-c    *            lupri)
-c     write(lupri,*)'xxx WTILDE(vo,vo) in noddy '
-c     call output(WTILDE,1,NT1AM(1),1,NT1AM(1),NT1AM(1),NT1AM(1),1,
-c    *            lupri)
            DO N = 1, NRHFT
              CALL DGEMM('T','N',NVIRT,NVIRT,NT1AMX,
      &                  ONE,WTILDE(1,1,1,N),NT1AMX,
@@ -781,14 +760,6 @@ c          --------------------------------------------
 c          -----------------------------------------------------
 c          D(ia) += [THEOCC^DL(em,ai)-THEOCC^DL(ei,am)]*L(em,DL)
 c          -----------------------------------------------------
-c       write(lupri,*)'yyy L2AMP in noddy '
-c       call output(L2AMP,1,NT1AM(1)*NVIR(1),1,NRHF(1),
-c    *                     NT1AM(1)*NVIR(1),NRHF(1),1,lupri)
-c       write(lupri,*)'yyy THEOCC in noddy '
-c       call output(THEOCC,1,NT1AM(1),1,NT1AM(1),
-c    *                    NT1AM(1),NT1AM(1),1,lupri)
-
-
            DO I = 1, NRHFT
              DO A = 1, NVIRT
                DO M = 1, NRHFT
@@ -802,9 +773,6 @@ c    *                    NT1AM(1),NT1AM(1),1,lupri)
 c          ----------------------------------------------------------
 c          add TVIRT1 to THEOCC: THEOCC^DL(em,fi) += TVIRT1^DL(fi,em)
 c          ----------------------------------------------------------
-c     write(lupri,*)'xxx THEOCC(vo,vo) in noddy before sum'
-c     call output(THEOCC,1,NT1AM(1),1,NT1AM(1),NT1AM(1),NT1AM(1),
-c    *             1,lupri)
            DO M = 1, NRHFT
              DO E = 1, NVIRT
                DO I = 1, NRHFT
@@ -818,12 +786,6 @@ c    *             1,lupri)
 c          -----------------------------------------------------------
 c          D(ij)+=WTILDE^DL(em,fj)*[THEOCC^DL(em,fi)+TVIRT1^DL(fi,em)]
 c          -----------------------------------------------------------
-c     write(lupri,*)'xxx TVIRT1(vo,vo) in noddy '
-c     call output(TVIRT1,1,NT1AM(1),1,NT1AM(1),NT1AM(1),NT1AM(1),
-c    *             1,lupri)
-c     write(lupri,*)'xxx THEOCC(vo,vo) in noddy THEOCC + TVIRT1'
-c     call output(THEOCC,1,NT1AM(1),1,NT1AM(1),NT1AM(1),NT1AM(1),
-c    *             1,lupri)
            CALL DGEMM('T','N',NRHFT,NRHFT,NT1AMX*NVIRT,
      &                          -ONE,THEOCC,NT1AMX*NVIRT,
      &                             WTILDE,NT1AMX*NVIRT,
@@ -848,9 +810,6 @@ c          -----------------------------------------------------------
 
         END DO
       END DO
-c
-c     write(lupri,*)'THETA in noddy'
-c     call PRINT_E3AM_NODDY(THETA)
 
       RETURN
       END
@@ -2130,8 +2089,6 @@ C
         CALL CC_FCKMO(WORK(KFOCKY),XLAMDP0,XLAMDH0,
      &                WORK(KEND0),LWRK0,ISTAMY,1,1)
       END IF
-      write(lupri,*)'xxx focky in noddy '
-      call output(WORK(KFOCKY),1,NORBT,1,NORBT,NORBT,NORBT,1,lupri)
 
 C
 C-----------------------------
