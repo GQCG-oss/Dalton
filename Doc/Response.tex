@@ -150,8 +150,10 @@ example input in Chapter~\ref{ch:starting}.
 
 \item{\Key{PROPAV}} \\
 \verb|READ '(A)', LABEL|\\
-Property average\index{property average}. The average value of an
-operator is calculated. 
+Property average\index{property average}.
+The average value of an electronic one-electron
+operator is calculated.
+(Thus, no nuclear contributions are added.)
 The line following this option must contain the
 label of the operator given in the integral property file.
 (See section \ref{ch:hermit}.)
@@ -287,6 +289,7 @@ Sets print level for linear response module. Default is 2.
 Sets $A$ and $B$ to a given operator with label; LABEL.
 (The calculation of the operator must be specified to the integral
 module, see section \ref{ch:hermit}.)
+This keyword may be repeated for different properties.
 
 \item{\Key{PV PSO}} Sets $A$ and $B$ in the linear response function
   to the parity-violating operator and the complete list of
@@ -369,17 +372,29 @@ together with linear response properties
 and with long range dispersion coefficients, but not 
 together with quadratic or cubic response.
 
+Required keywords:
+
+\begin{description}
+
+\item{\Key{SINGLE RESIDUE}} Required to get excitation energies, without
+this keyword the linear response function will be evaluated, see Sec.~\ref{sec:linearrsp}.
+
+\end{description}
+
+Optional keywords
+
 \begin{description}
 
 \item{\Key{ABCHK}} Sets up $E^{\left[2\right]}$
-  and $S^{\left[2\right]}$ used in solving the linear response
-  equation. Mainly for debugging purposes.
+  and $S^{\left[2\right]}$ used in solving the
+  single residue linear response equation. Only for debugging purposes.
 
 \item{\Key{ABSYM}} Tests the symmetry of $E^{\left[2\right]}$
   and $S^{\left[2\right]}$ in the reduced space.
+  Only for debugging purposes.
 
-\item{\Key{ANTTES}} Test the antisymmetry of the response
-  vector. Mainly for debugging purposes.
+\item{\Key{ANTTES}} Test the antisymmetry of the single residue response
+  vector. Only for debugging purposes.
 
 \item{\Key{DIPLEN}}
 Sets $A$ and $B$ to dipole operators\index{dipole length}.
@@ -402,8 +417,8 @@ operator, respectively\index{dipole velocity}.
 
 \item{\Key{MAX IT}}\\
 \verb|READ *, MAXITP|\\
-Maximum number of iterations for solving the linear response eigenvalue
-equation. Default is 60.
+Maximum number of iterations for solving the single residue
+linear response eigenvalue equation. Default is 60.
 
 \item{\Key{MAXITO}}\\
 \verb|READ *, MAXITO|\\
@@ -412,8 +427,9 @@ algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}. 
 Default is 5.
 
-\item{\Key{NODOIT}} Do not perform the linear transformation of the
-  response equation in a direct manner, which is the default. Not
+\item{\Key{NODOIT}} Do not perform the linear transformations of the
+  single residue response equation in a direct manner,
+  which is the default. Not
   recommend to use and primarily for debugging purposes.
 
 \item{\Key{NSTART}}\\
@@ -421,13 +437,18 @@ Default is 5.
  The number of start vectors to be used in the
   optimization of the transition vectors in each symmetry. By default
   this is set equal to the number of excited states that have been
-  requested through the keyword \Key{ROOTS}. Mainly for debugging purposes.
+  requested through the keyword \Key{ROOTS}.
+  It can be relevant to make the number of start vectors bigger,
+  for example if the molecule has higher symmetry than used in the
+  calculation. In this case one might need more start vectors to
+  get a representative of each symmetry.
+
 
 \item{\Key{NSIMUL}}\\
 \verb|READ (LUCMD,*) (NPPSIM(J),J=1,NSYM)|\\
 The number of eigenvectors to solve simultaneously in each
-symmetry. Normally decided automatically be the program depending on
-available memory and size of eigenvectors. Mainly for debugging purposes.
+symmetry. Normally decided automatically by the program depending on
+available memory and size of eigenvectors.
 
 \item{\Key{PRINT}}\\
 \verb|READ *,IPRPP|\\
@@ -438,6 +459,7 @@ Sets print level for single residue linear response module. Default is 2.
 Calculate either singlet or triplet transition moments for a given operator with label; LABEL.
 (The calculation of the operator must be specified to the integral
 module, see section \ref{ch:hermit}.)
+This keyword may be repeated for different properties.
 
 \item{\Key{QUADMOM}}
 Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
@@ -447,10 +469,10 @@ Sets $A$ and $B$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
 quadrupole\index{quadrupole operator} operator, respectively.
 
 \item{\Key{RESTPP}}
-Restart\index{restart!excitation energy} of response
+Restart\index{restart!excitation energy} of single residue response
 calculation. This can only be used if the root which is 
 specified is the same which was used \textit{last} in the previous
-response calculation.
+single residue response calculation.
 
 \item{\Key{ROOTS}}\\
 \verb|READ '*',(ROOTS(I) I=1,NSYM)|\\
@@ -461,10 +483,8 @@ any operators are given,
 symmetry-allowed transition moments\index{transition moment} are
 calculated between the 
 reference state and the excited states.
-Remember to increase \Key{MAXRM} if many frequencies are specified.
-
-\item{\Key{SINGLE RESIDUE}} Required to get excitation energies, without
-this keyword the linear response function will be evaluated, see Sec.~\ref{sec:linearrsp}.
+Remember to increase \Key{MAXRM} if many roots are specified.
+Default: one of each symmetry.
 
 \item{\Key{SPIN-O}}
 Sets $A$ and $B$ to spin-orbit operators\index{spin-orbit}.
@@ -486,7 +506,8 @@ and all operators---including
 Threshold for solving the single residue linear response eigenvalue equation. 
 Default is 1.0D-3; note that this number should be at least 10 times
 bigger than the final gradient norm in the SCF/MCSCF
-wave function optimization.
+wave function optimization, otherwise you may encounter
+numerical problems.
 The accuracy of the pole (excitation energy) will be 
 quadratic in this threshold, thus the default corresponds to approximately
 6 digits. The accuracy of transition moments will be linear in this threshold.
