@@ -62,7 +62,6 @@ C
       DOGGA = DFT_ISGGA()
       IF (IPRINT .GE. 5) CALL TITLER('Output from DFTMOLHES','*',103)
 C     
-      IF (HFXMU.NE.D0) CALL QUIT('DFTHES not implemented for CAMB3LYP.')
       KCMO   = 1 
       KDMAT  = KCMO   + NCMOT
       KV1MAT = KDMAT  + N2BASX
@@ -139,6 +138,8 @@ C
       CALL DZERO(CMO,NCMOT)
       CALL RDSIFC('CMO',FOUND,CMO,WORK,LWRK)
       IF(.NOT.FOUND)CALL QUIT('GETV1MAT error: CMO not found on SIRIFC')
+      IF(NSYM.GT.1)CALL QUIT(
+     &     'DFT analytical Hessians do not work with symmetry')
 C    
       NORBI = 0
       NISHI = 0

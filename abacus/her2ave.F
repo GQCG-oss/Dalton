@@ -413,9 +413,9 @@ C
 C                         950210-hjaaj: new SKLFC1 symmetrizes with
 C                         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
-C old code/950210-hjaaj       DFAC = DP5*FAB*FCD*FCABCD
                               DFAC = FAB*FCD*FCABCD
                               EFAC = -HFXFAC*DP25*DFAC
+                              IF (HFXMU .NE. D0) DFAC = D0
 C
 C                             Total Fock matrix
 C
@@ -487,7 +487,15 @@ C
                                  PAOVL1 = PAO(IORBA,IORBB,IORBC,IORBD)
                                  PAOVL2 = PAA(IORBA,IORBB,IORBC,IORBD)
                               ENDIF
-                              IF (NODV) THEN
+                              IF (HFXMU .NE. D0) THEN
+                                 PVAL1  = FACTOR*(
+     &                                  - HFXFAC*DP25*
+     &                                    (DTAC*DTBD + DTAD*DTBC)
+     &                                  + PAOVL1)
+                                 PVAL2  = FACTOR*(HFXFAC*DP25*
+     &                                    (DTAC*DTBD - DTAD*DTBC)
+     &                                  + PAOVL2)
+                              ELSE IF (NODV) THEN
                                  PVAL1  = FACTOR*(DTAB*DTCD
      &                                  - HFXFAC*DP25*
      &                                    (DTAC*DTBD + DTAD*DTBC)
@@ -523,6 +531,7 @@ C
                            IF (DDFOCK) THEN
                               DFAC = DP125*FAB*FCD*FCABCD
                               EFAC = DP5*HFXFAC*DFAC
+                              IF (HFXMU .NE. D0) DFAC = D0 
 C
 C                             Total Fock matrix
 C

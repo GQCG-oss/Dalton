@@ -455,7 +455,7 @@ C
 #include <maxmom.h>
 #include <maxorb.h>
 #include <aovec.h>
-      PARAMETER (D2 = 2.D0, DP5=0.50D0)
+      PARAMETER (D0 = 0.D0, D2 = 2.D0, DP5=0.50D0)
       PARAMETER (MXDMAT = 50)
 C
       CHARACTER*8 LABINT(9*MXCENT)
@@ -868,15 +868,32 @@ C
                ELSE
 #endif
 C                IF (.NOT.DOERIP) THEN
+                    HFXM0 = HFXMU
+                    HFXMU = D0
                     CALL TWOINT(WORK(K2INT),L2INT,DUMMY,WORK(KFMAT),
-     &                        WORK(KDMAT),
-     &                        NDMAT,ISYMDM,IFCTYP,DUMMY,IDUMMY,NUMDIS,1,
-     &                        ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
-     &                        TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &                        IPRNTD,RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
-     &                        WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
-     &                        IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                        DUMMY,.FALSE.)
+     &                          WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
+     &                          DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDIF,
+     &                          IATOM,NODV,NOPV,.FALSE.,TKTIME,
+     &                          IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                          RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
+     &                          WORK(KNPRIM),WORK(KNCONT),
+     &                          WORK(KIORBS),IDUMMY,IDUMMY,DUMMY,
+     &                          DUMMY,DUMMY,DUMMY,.FALSE.)
+                    HFXMU = HFXM0
+                    IF (HFXMU.NE.D0) THEN
+                       HFXFC0 = HFXFAC
+                       HFXFAC = HFXATT
+                       CALL TWOINT(WORK(K2INT),L2INT,DUMMY,WORK(KFMAT),
+     &                             WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
+     &                             DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDIF,
+     &                             IATOM,NODV,NOPV,.FALSE.,TKTIME,
+     &                             IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                             RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
+     &                             WORK(KNPRIM),WORK(KNCONT),
+     &                             WORK(KIORBS),IDUMMY,IDUMMY,DUMMY,
+     &                             DUMMY,DUMMY,DUMMY,.FALSE.)
+                       HFXFAC = HFXFC0
+                    END IF
 C                ELSE
 C                   KCCFBT = KLAST
 C                   KINDXB = KCCFBT + MXPRIM*MXCONT

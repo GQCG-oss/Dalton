@@ -125,6 +125,8 @@ C           HERFCK destroys DMAT when called with symmetry
             ISYMDM(I) = ISYMDM(I) + 1
          END DO
       ELSE
+         IF (HFXMU .NE. D0) CALL QUIT(
+     &       'SIRFCK2: nonzero HFXMU requires .DIRECT calculation.') 
 C     ... not DIRECT
          CALL SIRFCK2(LUINTA,'AOTWOINT',
      &                FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WRK,LWORK)
