@@ -69,20 +69,19 @@ YDIPLEN XDIPLEN ZDIPLEN YDIPLEN XDIPLEN ZDIPLEN
 %EOF%
 #######################################################################
 
- 
 
 #######################################################################
 
 #######################################################################
-#  CHECK SCRIPT
+# CHECK SCRIPT
 #######################################################################
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = Linux ]; then
-   GREP="egrep -a"
-else
+if [ `uname` = IRIX64 ]; then
    GREP="egrep"
+else
+   GREP="egrep -a"
 fi
 
 # SCF, MP2 and CCSD energies:
@@ -93,40 +92,42 @@ TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
-
 # CCS threephoton transition moment
-CRIT1=`$GREP  " w moment product[ ]* 26\.385090" $log | wc -l`
-CRIT2=`$GREP "\-w moment product[ ]* 26\.385090" $log | wc -l`
-CRIT3=`$GREP "tot moment product[ ]* 26\.385090" $log | wc -l`
-CRIT4=`$GREP "ablmom[ ]*( |\-)7\.538375.*[ ]* cdrmom[ ]*( |\-)3\.500103" $log | wc -l`
-CRIT5=`$GREP "cdlmom[ ]*( |\-)7\.538375.*[ ]* abrmom[ ]*( |\-)3\.500103" $log | wc -l`
+CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)7\.538375" $log |
+       $GREP "M\^DEF_fo\(w1,w2\): *( |\-)3\.500103" | wc -l`
+CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)7\.538375" $log |
+       $GREP "M\^ABC_fo\(w1,w2\): *( |\-)3\.500103" $log | wc -l`
+CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 26\.385090" $log | wc -l`
+CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 26\.385090" $log | wc -l`
+CRIT5=`$GREP "CCS  S\^of_ABC,DEF" $log | $GREP "26\.385090" | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=5
-ERROR[2]="CCS THREEPHOTON TRANSITION MOMENTS NOT CORRECT"
-
+ERROR[2]="CCS THREEPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
 
 # CC2 threephoton transition moment
-CRIT1=`$GREP  " w moment product[ ]* 12\.578974" $log | wc -l`
-CRIT2=`$GREP "\-w moment product[ ]* 12\.578974" $log | wc -l`
-CRIT3=`$GREP "tot moment product[ ]* 12\.578974" $log | wc -l`
-CRIT4=`$GREP "ablmom[ ]*( |\-)5\.052446.*[ ]* cdrmom[ ]*( |\-)2\.489679" $log | wc -l`
-CRIT5=`$GREP "cdlmom[ ]*( |\-)5\.052446.*[ ]* abrmom[ ]*( |\-)2\.489679" $log | wc -l`
+CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)5\.052446" $log |
+       $GREP "M\^DEF_fo\(w1,w2\): * ( |\-)2\.489679" | wc -l`
+CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)5\.052446" $log |
+       $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)2\.489679" $log | wc -l`
+CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.578974" $log | wc -l`
+CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.578974" $log | wc -l`
+CRIT5=`$GREP "CC2  S\^of_ABC,DEF" $log | $GREP "12\.578974" | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=5
-ERROR[3]="CC2 THREEPHOTON TRANSITION MOMENTS NOT CORRECT"
-
+ERROR[3]="CC2 THREEPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
 
 # CCSD threephoton transition moment
-CRIT1=`$GREP  " w moment product[ ]* 12\.666220" $log | wc -l`
-CRIT2=`$GREP "\-w moment product[ ]* 12\.666220" $log | wc -l`
-CRIT3=`$GREP "tot moment product[ ]* 12\.666220" $log | wc -l`
-CRIT4=`$GREP "ablmom[ ]*( |\-)7\.590291.*[ ]* cdrmom[ ]*( |\-)1\.668739" $log | wc -l`
-CRIT5=`$GREP "cdlmom[ ]*( |\-)7\.590291.*[ ]* abrmom[ ]*( |\-)1\.668739" $log | wc -l`
+CRIT1=`$GREP "M\^ABC_of\(\-w1,\-w2\): *( |\-)7\.590291" $log |
+       $GREP "M\^DEF_fo\(w1,w2\): * ( |\-)1\.6687397" | wc -l`
+CRIT2=`$GREP "M\^DEF_of\(\-w1,\-w2\): *( |\-)7\.590291" $log |
+       $GREP "M\^ABC_fo\(w1,w2\): * ( |\-)1\.6687397" $log | wc -l`
+CRIT3=`$GREP "M\^ABC_of\(\-w1,\-w2\) x M\^DEF_fo\(w1,w2\)   = * 12\.666220" $log | wc -l`
+CRIT4=`$GREP "M\^DEF_of\(\-w1,\-w2\) x M\^ABC_fo\(w1,w2\)\]\* = * 12\.666220" $log | wc -l`
+CRIT5=`$GREP "CCSD S\^of_ABC,DEF" $log | $GREP "12\.666220" | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[4]=5
-ERROR[4]="CCSD THREEPHOTON TRANSITION MOMENTS NOT CORRECT"
-
-
+ERROR[4]="CCSD THREEPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
+#
 # CCS/CC2/CCSD excitation energies:
 CRIT1=`$GREP "\^1A2[ \|]* 1[ \|]*  1\.455144.  \|      39\.596..  \|    319367\....  \| 100\.00" $log | wc -l`
 CRIT2=`$GREP "\^1A2[ \|]* 1[ \|]*  1\.518329.  \|      41\.315..  \|    333234\....  \|  99\.13" $log | wc -l`
@@ -140,6 +141,7 @@ CRIT1=`$GREP "\^1A2[ \|]* 1[ \|]* ( |0)\.0000000 [ \|]* ( |0).0000000 [ \|]* \- 
 TEST[6]=`expr $CRIT1`
 CTRL[6]=3
 ERROR[6]="CC ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
+
 
 PASSED=1
 for i in 1 2 3 4 5 6
@@ -159,5 +161,4 @@ else
   exit 1
 fi                
 ' > threephot.check
-chmod +x threephot.check
 #######################################################################

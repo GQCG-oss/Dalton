@@ -72,10 +72,10 @@ XDIPLEN YDIPLEN XDIPLEN YDIPLEN
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = Linux ]; then
-   GREP="egrep -a"
-else
+if [ `uname` = IRIX64 ]; then
    GREP="egrep"
+else
+   GREP="egrep -a"
 fi
 
 # SCF, MP2 and CCSD energies:
@@ -88,14 +88,16 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC2 twophoton transition moment
-CRIT1=`$GREP "TSM:[ ]*0.337647." $log | wc -l`
-CRIT2=`$GREP "ABLMOM[ ]*( |0).815478.*[ ]* CDRMOM[ ]*( |0).414048." $log | wc -l`
-CRIT3=`$GREP "CDLMOM[ ]*( |0).815478.*[ ]* ABRMOM[ ]*( |0).414048." $log | wc -l`
-CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]+0.337647.." $log | wc -l`
-CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]+0.337647.." $log | wc -l`
+CRIT1=`$GREP "M\^AB_of\(\-w\): *( |\-)( |0)\.815478" $log |
+       $GREP "M\^CD_fo\(w\): *( |\-)( |0)\.414048" | wc -l`
+CRIT2=`$GREP "M\^CD_of\(\-w\): *( |\-)( |0)\.815478" $log |
+       $GREP "M\^AB_fo\(w\): * ( |\-)( |0)\.414048" $log | wc -l`
+CRIT3=`$GREP "M\^AB_of\(\-w\) x M\^CD_fo\(w\)   = * ( |0)\.337647" $log | wc -l`
+CRIT4=`$GREP "M\^CD_of\(\-w\) x M\^AB_fo\(w\)\]\* = * ( |0)\.337647" $log | wc -l`
+CRIT5=`$GREP "CC2  S\^of_AB,CD" $log | $GREP "0\.337647.." | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=10
-ERROR[2]="CC2 TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
+ERROR[2]="CC2 TWOPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
 
 # CC2 excitation energies
 CRIT1=`$GREP "\^1A.  \|    1   \|     ( |0)\.396682.  \|      10\.7942.  \|     87061\....  \|  96\.73" $log | wc -l`
@@ -113,7 +115,7 @@ CRIT3=`$GREP "\^1A.  \|    3   \|        ( |0)\.000000.      \|      ( |0)\.0000
 CRIT4=`$GREP "\^1A.  \|    4   \|        ( |0)\.008620.      \|      ( |0)\.009038.       \|    Y " $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[4]=4
-ERROR[4]="CC2 ONEPHOTON TRANSITON MOMENTS NOT CORRECT"
+ERROR[4]="CC2 ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 
 PASSED=1
@@ -134,5 +136,4 @@ else
   exit 1
 fi                
 ' > twophot.check
-chmod +x twophot.check
 #######################################################################

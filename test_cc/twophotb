@@ -72,10 +72,10 @@ cat > twophotb.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = Linux ]; then
-   GREP="egrep -a"
-else
+if [ `uname` = IRIX64 ]; then
    GREP="egrep"
+else
+   GREP="egrep -a"
 fi
 
 # SCF, MP2 and CCSD energies:
@@ -124,5 +124,4 @@ else
   exit 1
 fi                
 ' > twophotb.check
-chmod +x twophotb.check
 #######################################################################

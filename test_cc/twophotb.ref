@@ -1,13 +1,3 @@
-
- DALTON: user specified work memory size used,
-         environment variable WRKMEM = "20000000            "
-
- Work memory size (LMWORK) :    20000000 =  152.59 megabytes.
-
- User supplied basis set directory :
-        /u/haettig/dalton/basis/                                    
-
-
     ******************************************************************
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************

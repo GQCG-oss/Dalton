@@ -78,10 +78,10 @@ XDIPLEN YDIPLEN XDIPLEN YDIPLEN
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = Linux ]; then
-   GREP="egrep -a"
-else
+if [ `uname` = IRIX64 ]; then
    GREP="egrep"
+else
+   GREP="egrep -a"
 fi
 
 # SCF, MP2 and CCSD energies:
@@ -92,33 +92,38 @@ TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
-
 # CCS twophoton transition moment
-CRIT1=`$GREP "TSM:[ ]*(5\.|0\.5|0.05)238618." $log | wc -l`
-CRIT2=`$GREP "ABLMOM[ ]*( |\-|0|\-0|0)\.364653[0-9]*[ ]* CDRMOM[ ]*( |\-|0|\-0|0)\.143659." $log | wc -l`
-CRIT3=`$GREP "CDLMOM[ ]*( |\-|0|\-0|0)\.364653[0-9]*[ ]* ABRMOM[ ]*( |\-|0|\-0|0)\.143659." $log | wc -l`
-CRIT4=`$GREP "w moment product * \(ablmom\*cdlmom\):[ ]*(\+| )(5\.|0\.5|0\.05)238618." $log | wc -l`
-CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]*(\+| )(5\.|0\.5|0\.05)238618." $log | wc -l`
+CRIT1=`$GREP "M\^AB_of\(\-w\): *( |\-|0|\-0)\.364653[0-9]" $log |
+       $GREP "M\^CD_fo\(w\): *( |\-|0|\-0)\.143659." | wc -l`
+CRIT2=`$GREP "M\^CD_of\(\-w\): *( |\-|0|\-0)\.364653[0-9]" $log |
+       $GREP "M\^AB_fo\(w\): * ( |\-|0|\-0)\.143659." $log | wc -l`
+CRIT3=`$GREP "M\^AB_of\(\-w\) x M\^CD_fo\(w\)   = * (5\.|0\.5|0\.05)238618." $log | wc -l`
+CRIT4=`$GREP "M\^CD_of\(\-w\) x M\^AB_fo\(w\)\]\* = * (5\.|0\.5|0\.05)238618." $log | wc -l`
+CRIT5=`$GREP "CCS  S\^of_AB,CD" $log | $GREP "(5\.|0\.5|0\.05)238618." | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=10
 ERROR[2]="CCS TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 # CC2 twophoton transition moment
-CRIT1=`$GREP "TSM:[ ]*0.337647." $log | wc -l`
-CRIT2=`$GREP "ABLMOM[ ]*( |0)\.815478[0-9]*[ ]* CDRMOM[ ]*( |0)\.414048." $log | wc -l`
-CRIT3=`$GREP "CDLMOM[ ]*( |0)\.815478[0-9]*[ ]* ABRMOM[ ]*( |0)\.414048." $log | wc -l`
-CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]*(\+| )( |0)\.337647." $log | wc -l`
-CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]*(\+| )( |0)\.337647." $log | wc -l`
+CRIT1=`$GREP "M\^AB_of\(\-w\): *( |\-|0|\-0)\.815478[0-9]" $log |
+       $GREP "M\^CD_fo\(w\): *( |\-|0|\-0)\.414048." | wc -l`
+CRIT2=`$GREP "M\^CD_of\(\-w\): *( |\-|0|\-0)\.815478[0-9]" $log |
+       $GREP "M\^AB_fo\(w\): * ( |\-|0|\-0)\.414048." $log | wc -l`
+CRIT3=`$GREP "M\^AB_of\(\-w\) x M\^CD_fo\(w\)   = * (3\.|0\.3|0\.03)376473." $log | wc -l`
+CRIT4=`$GREP "M\^CD_of\(\-w\) x M\^AB_fo\(w\)\]\* = * (3\.|0\.3|0\.03)376473." $log | wc -l`
+CRIT5=`$GREP "CC2  S\^of_AB,CD" $log | $GREP "(3\.|0\.3|0\.03)376473." | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=10
 ERROR[3]="CC2 TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 # CCSD twophoton transition moment
-CRIT1=`$GREP "TSM:[ ]*(7\.|0\.7|0.007)995971." $log | wc -l`
-CRIT2=`$GREP "ABLMOM[ ]*( |\-|0|\-0)\.168028[0-9]*[ ]* CDRMOM[ ]*( |\-)(4\.|0.4|0\.04)758689." $log | wc -l`
-CRIT3=`$GREP "CDLMOM[ ]*( |\-|0|\-0)\.168028[0-9]*[ ]* ABRMOM[ ]*( |\-)(4\.|0.4|0\.04)758689." $log | wc -l`
-CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]+(7\.|0\.7|0.007)995971." $log | wc -l`
-CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]+(7\.|0\.7|0.007)995971." $log | wc -l`
+CRIT1=`$GREP "M\^AB_of\(\-w\): *( |\-|0|\-0)\.168028[0-9]" $log |
+       $GREP "M\^CD_fo\(w\): *( |\-)(4\.|0\.4|0\.04)758689[0-9]" | wc -l`
+CRIT2=`$GREP "M\^CD_of\(\-w\): *( |\-|0|\-0)\.168028[0-9]" $log |
+       $GREP "M\^AB_fo\(w\): * ( |\-)(4\.|0\.4|0\.04)758689[0-9]" $log | wc -l`
+CRIT3=`$GREP "M\^AB_of\(\-w\) x M\^CD_fo\(w\)   = * (7\.|0\.7|0\.007)995971" $log | wc -l`
+CRIT4=`$GREP "M\^CD_of\(\-w\) x M\^AB_fo\(w\)\]\* = * (7\.|0\.7|0\.007)995971" $log | wc -l`
+CRIT5=`$GREP "CCSD S\^of_AB,CD" $log | $GREP "(7\.|0\.7|0\.007)995971" | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[4]=10
 ERROR[4]="CCSD TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
@@ -131,7 +136,6 @@ TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[5]=3
 ERROR[5]="CC EXCITATION ENERGIES NOT CORRECT"
 
-
 # check if it is AO direct:
 CRIT1=`$GREP "Direct calculation" $log | wc -l`
 CRIT2=`$GREP "This is a direct atomic orbital integral based" $log | wc -l`
@@ -140,7 +144,7 @@ CTRL[6]=2
 ERROR[6]="OPTION FOR AO DIRECT CALCULATION WORKS NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4 5 6
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
@@ -157,5 +161,4 @@ else
   exit 1
 fi                
 ' > twophot_direct.check
-chmod +x twophot_direct.check
 #######################################################################

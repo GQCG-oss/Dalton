@@ -4,41 +4,46 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Prerelease 1.1, September 1999)
+               This is output from DALTON (Release 1.2, April 2001)
 
                           Principal authors:
 
-            Trygve Helgaker,     University of Oslo,        Norway 
-            Hans Joergen Jensen, SDU - Odense University,   Denmark
-            Poul Joergensen,     Aarhus University,         Denmark
-            Jeppe Olsen,         Aarhus University,         Denmark
-            Kenneth Ruud,        San Diego Superc. Center,  USA    
-            Hans Aagren,         KTH Stockholm,             Sweden 
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
 
                           Contributors:
 
-            Keld L. Bak,         UNI-C,                     Denmark
-            Vebjoern Bakken,     University of Oslo,        Norway 
-            Ove Christiansen,    University of Lund,        Sweden 
-            Paal Dahle,          University of Oslo,        Norway 
-            Erik K. Dalskov,     UNI-C,                     Denmark
-            Thomas Enevoldsen,   SDU - Odense University,   Denmark
-            Berta Fernandez,     U.of Santiago de Compostela,Spain 
-            Hanne Heiberg,       University of Oslo,        Norway 
-            Hinne Hettema,       University of Auckland,    NZ     
-            Dan Jonsson,         San Diego Superc. Center,  USA    
-            Sheela Kirpekar,     SDU - Odense University,   Denmark
-            Rika Kobayashi,      Cambridge University,      England
-            Henrik Koch,         SDU - Odense University,   Denmark
-            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
-            Patrick Norman,      University of Linkoeping,  Sweden 
-            Martin J. Packer,    University of Sheffield,   UK     
-            Torgeir A. Ruden,    University of Oslo,        Norway 
-            Trond Saue,          University of Toulouse,    France 
-            Stephan P. A. Sauer, University of Copenhagen,  Denmark
-            Bernd Schimmelpfennig,KTH Stockholm,            Sweden 
-            Peter R.Taylor,      San Diego Superc. Center,  USA    
-            Olav Vahtras,        PDC, Stockholm,            Sweden 
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
 ------------------------------------------------------------------------
 
 
@@ -59,20 +64,19 @@
      appropriate citation would be:
       
      T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, T. Andersen, K.L. Bak, V. Bakken, O. Christiansen
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.1 (1999), an electronic structure program"
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Host name              : inthaettig                              
-
+     Date and time (Linux)  : Wed Mar 28 13:02:58 2001
+     Host name              : dschcoriani.univ.trieste.it             
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
-
-
 
 
  Default print level:        0
@@ -88,22 +92,18 @@
  *************************************************************************
 
 
-
  Default print level:        1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
 
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
-
 
 
  *************************************************************************
@@ -173,7 +173,8 @@ Point group: Cs
   total:      2      10      34      19
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
-  Threshold for integrals:  1.00D-15
+
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -276,27 +277,21 @@ Point group: Cs
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   -nan seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
- >>> Time used in OVERLA is   -nan seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in DIPLEN is   -nan seconds
+ >>> Time used in DIPLEN is   0.00 seconds
 
 
-
- ************************************************************************
- ************************** Output from TWOINT **************************
- ************************************************************************
-
-
- Number of two-electron integrals written:      4125 (22.7%)
- Kilobytes written:                               51
+ Number of two-electron integrals written:        4125 ( 22.7% )
+ Megabytes written:                              0.048
 
 
 
- >>> Time used in TWOINT is   0.00 seconds
+ >>> Time used in TWOINT is   0.04 seconds
 
 
 
@@ -307,31 +302,32 @@ Point group: Cs
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   -nan seconds
+ >>> Time used in FRMSUP is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.16 seconds
+ >>>> Total CPU  time used in HERMIT:   0.09 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
- NCCEXCI for singlet:           0           3
+ NCCEXCI for singlet: 0 3
  SET CCSM TO TRUE
  ************************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
  ************************************************************************
 
  
-     Host name              : inthaettig                              
+     Date and time (Linux)  : Wed Mar 28 13:02:58 2001
+     Host name              : dschcoriani.univ.trieste.it             
 
  Title lines from integral program:
      Hydrogen flourid                                                        
      small test basis                                                        
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -371,7 +367,7 @@ Point group: Cs
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-12
+     Threshold for HF convergence      1.00E-12
 
 
  Changes of defaults for CC:
@@ -394,21 +390,21 @@ Point group: Cs
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -99.551360608924   4.65D+00  -9.96D+01    4  1
-   2    -99.960190098143   1.12D+00  -4.09D-01    4  1
-   3   -100.002096206569   4.01D-01  -4.19D-02    4  1
-   4   -100.008746939609   5.69D-02  -6.65D-03    4  1
-   5   -100.008919812606   1.43D-03  -1.73D-04    4  1
-   6   -100.008919917735   1.59D-04  -1.05D-07    4  1
-   7   -100.008919920754   4.43D-05  -3.02D-09    4  1
-   8   -100.008919920979   5.20D-06  -2.25D-10    4  1
-   9   -100.008919920982   3.29D-07  -2.51D-12    4  1
-  10   -100.008919920982   3.60D-08  -2.75D-14    4  1
-  11   -100.008919920982   3.19D-09   4.35D-14    4  1
-  12   -100.008919920982   2.83D-10  -1.33D-14    4  1
-  13   -100.008919920982   1.32D-11   1.51D-14    4  1
-  14   -100.008919920982   1.68D-12  -1.33D-14    4  1
-  15   -100.008919920982   2.01D-13   8.88D-16    4  1
+   1    -99.735041634039   3.53E+00  -9.97E+01    4  1
+   2    -99.999515918713   3.90E-01  -2.64E-01    4  1
+   3   -100.008001428631   1.41E-01  -8.49E-03    4  1
+   4   -100.008808105229   4.72E-02  -8.07E-04    4  1
+   5   -100.008919443898   3.47E-03  -1.11E-04    4  1
+   6   -100.008919911216   2.99E-04  -4.67E-07    4  1
+   7   -100.008919920217   7.78E-05  -9.00E-09    4  1
+   8   -100.008919920973   9.61E-06  -7.56E-10    4  1
+   9   -100.008919920982   4.84E-07  -9.19E-12    4  1
+  10   -100.008919920982   5.95E-08   8.88E-16    4  1
+  11   -100.008919920982   3.98E-09  -1.33E-14    4  1
+  12   -100.008919920982   1.39E-10   8.88E-16    4  1
+  13   -100.008919920982   2.01E-11   1.51E-14    4  1
+  14   -100.008919920982   2.73E-12   8.88E-16    4  1
+  15   -100.008919920982   1.17E-13   1.51E-14    4  1
  DIIS converged in  15 iterations !
 
 
@@ -429,10 +425,10 @@ Point group: Cs
         -0.62549530     1.48848731     1.89379535     2.15801855     3.02038756
 
     E(LUMO) :     0.21639317 au (symmetry 1)
-  - E(HOMO) :    -0.62549530 au (symmetry 2)
+  - E(HOMO) :    -0.62549530 au (symmetry 1)
   ------------------------------------------
     gap     :     0.84188847 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
@@ -446,7 +442,8 @@ Point group: Cs
      Final gradient norm:           0.000000000000
 
  
-     Host name              : inthaettig                              
+     Date and time (Linux)  : Wed Mar 28 13:02:59 2001
+     Host name              : dschcoriani.univ.trieste.it             
 
      Molecular orbitals for symmetry species   1
 
@@ -458,7 +455,7 @@ Point group: Cs
    5  F   2pz   -0.0013  -0.0602   0.5496   0.0000
    6  F   2px    0.0000   0.0000   0.0000   0.4859
    7  F   2pz    0.0009  -0.0224   0.3522   0.0000
-   8  F   3d0    0.0000   0.0004  -0.0068   0.0000
+   8  F   3d0    0.0000   0.0013  -0.0237   0.0000
    9  F   3d1+   0.0000   0.0000   0.0000  -0.0223
   10  F   3d2+   0.0000   0.0000   0.0000   0.0000
   11  H   1s     0.0001   0.1311  -0.2709   0.0000
@@ -477,13 +474,14 @@ Point group: Cs
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.15 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Host name              : inthaettig                              
+     Date and time (Linux)  : Wed Mar 28 13:02:59 2001
+     Host name              : dschcoriani.univ.trieste.it             
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -609,18 +607,18 @@ Point group: Cs
 
  Length of Excitation vectors in this class is:        26
  Converging for  3 roots.
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  2 NOT found on file.
  Start vector guessed from diagonal
  ... selected element no. 17
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  2 of symmetry  2 NOT found on file.
  Start vector guessed from diagonal
  ... selected element no. 18
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  3 of symmetry  2 NOT found on file.
  Start vector guessed from diagonal
- ... selected element no. 19
+ ... selected element no. 13
 
 
  SYMMETRY CLASS NR.    2
@@ -634,9 +632,17 @@ Point group: Cs
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.439505           11.959543
-         2            1.155515           31.443187
-         3            1.455144           39.596507
+         1            0.439505           11.959537
+         2            1.155515           31.443173
+         3            1.455144           39.596488
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1           -99.569414980979147
+@@    2    2           -98.853404510010250
+@@    2    3           -98.553775661117086
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -695,8 +701,8 @@ Point group: Cs
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   3       1     |       19          |              |    0.707079  |
- | 2   1   |   1       4     |       13          |              |   -0.707079  |
+ | 1   2   |   3       1     |       19          |              |   -0.707079  |
+ | 2   1   |   1       4     |       13          |              |    0.707079  |
  +=============================================================================+
 
 
@@ -774,22 +780,22 @@ Point group: Cs
 
  Length of Excitation vectors in this class is:        26
  Converging for  3 roots.
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  2 NOT found on file.
  Start left vector eigenvalue equation from right eigenvectors.
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CCS       RE  vector
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  2 of symmetry  2 NOT found on file.
  Start left vector eigenvalue equation from right eigenvectors.
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  2 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CCS       RE  vector
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  3 of symmetry  2 NOT found on file.
  Start left vector eigenvalue equation from right eigenvectors.
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CCS       RE  vector
 
@@ -805,9 +811,17 @@ Point group: Cs
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.439505           11.959543
-         2            1.155515           31.443187
-         3            1.455144           39.596507
+         1            0.439505           11.959537
+         2            1.155515           31.443173
+         3            1.455144           39.596488
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1           -99.569414980979147
+@@    2    2           -98.853404510010250
+@@    2    3           -98.553775661117086
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -874,8 +888,8 @@ Point group: Cs
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   2   |   3       1     |       19          |              |    0.707079  |
- | 2   1   |   1       4     |       13          |              |   -0.707079  |
+ | 1   2   |   3       1     |       19          |              |   -0.707079  |
+ | 2   1   |   1       4     |       13          |              |    0.707079  |
  +=============================================================================+
 
 
@@ -920,41 +934,41 @@ Point group: Cs
  LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
 
  LIST OF REQUIRED FIRST ORDER XI VECTORS:
-    1   XDIPLEN   F    1     0.000000D+00
-    2   YDIPLEN   F    2     0.000000D+00
+    1   XDIPLEN   F    1     0.000000E+00
+    2   YDIPLEN   F    2     0.000000E+00
 
  LIST OF REQUIRED FIRST ORDER T VECTORS:
-    1   XDIPLEN   F    1    -1.455144D+00
-    2   XDIPLEN   F    1     0.000000D+00
-    3   XDIPLEN   F    1     1.455144D+00
-    4   YDIPLEN   F    2    -1.455144D+00
-    5   YDIPLEN   F    2     0.000000D+00
-    6   YDIPLEN   F    2     1.455144D+00
+    1   XDIPLEN   F    1    -1.455144E+00
+    2   XDIPLEN   F    1     0.000000E+00
+    3   XDIPLEN   F    1     1.455144E+00
+    4   YDIPLEN   F    2    -1.455144E+00
+    5   YDIPLEN   F    2     0.000000E+00
+    6   YDIPLEN   F    2     1.455144E+00
 
  LIST OF REQUIRED FIRST ORDER ETA VECTORS:
-    1   XDIPLEN   F    1     0.000000D+00
-    2   YDIPLEN   F    2     0.000000D+00
+    1   XDIPLEN   F    1     0.000000E+00
+    2   YDIPLEN   F    2     0.000000E+00
 
  LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
-    1   XDIPLEN   F    1    -1.455144D+00
-    2   XDIPLEN   F    1     0.000000D+00
-    3   YDIPLEN   F    2    -1.455144D+00
-    4   YDIPLEN   F    2     0.000000D+00
+    1   XDIPLEN   F    1    -1.455144E+00
+    2   XDIPLEN   F    1     0.000000E+00
+    3   YDIPLEN   F    2    -1.455144E+00
+    4   YDIPLEN   F    2     0.000000E+00
 
  LIST OF REQUIRED FIRST ORDER M-VECTORS:
-    1          1    2     4.395049D-01
-    2          2    2     1.155515D+00
-    3          3    2     1.455144D+00
+    1          1    2     4.395049E-01
+    2          2    2     1.155515E+00
+    3          3    2     1.455144E+00
 
  LIST OF REQUIRED SECOND-ORDER XKSI VECTORS:
-    1   XDIPLEN   1    -1.455144D+00   YDIPLEN   2     0.000000D+00  2
-    2   XDIPLEN   1     1.455144D+00   YDIPLEN   2     0.000000D+00  2
-    3   YDIPLEN   2    -1.455144D+00   XDIPLEN   1     0.000000D+00  2
-    4   YDIPLEN   2     1.455144D+00   XDIPLEN   1     0.000000D+00  2
+    1   XDIPLEN   1    -1.455144E+00   YDIPLEN   2     0.000000E+00  2
+    2   XDIPLEN   1     1.455144E+00   YDIPLEN   2     0.000000E+00  2
+    3   YDIPLEN   2    -1.455144E+00   XDIPLEN   1     0.000000E+00  2
+    4   YDIPLEN   2     1.455144E+00   XDIPLEN   1     0.000000E+00  2
 
  LIST OF REQUIRED SECOND-ORDER ETA VECTORS:
-    1   XDIPLEN   1    -1.455144D+00   YDIPLEN   2     0.000000D+00  2
-    2   YDIPLEN   2    -1.455144D+00   XDIPLEN   1     0.000000D+00  2
+    1   XDIPLEN   1    -1.455144E+00   YDIPLEN   2     0.000000E+00  2
+    2   YDIPLEN   2    -1.455144E+00   XDIPLEN   1     0.000000E+00  2
       
 
     *******************************************************************
@@ -1020,59 +1034,59 @@ Point group: Cs
    will be performed.
 
 
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 NOT found on file.
      R1  start vector nr.  1 of symmetry  1 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  2 of symmetry  1 NOT found on file.
      R1  start vector nr.  2 of symmetry  1 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  3 of symmetry  1 NOT found on file.
      R1  start vector nr.  3 of symmetry  1 generated from gradient
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 2.32161D-32
+ norm of vector after Gram-Schmidt's orthogonalization 2.06737E-32
   After Gram Smidt orthonormalization
-           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+ -1 vectors with norm le:  1.E-35 REMOVED
 
  (CCORT)  trial vectors reduced from  3 to  2
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  4 of symmetry  2 NOT found on file.
      R1  start vector nr.  4 of symmetry  2 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  5 of symmetry  2 NOT found on file.
      R1  start vector nr.  5 of symmetry  2 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  6 of symmetry  2 NOT found on file.
      R1  start vector nr.  6 of symmetry  2 generated from gradient
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 1.17758D-32
+ norm of vector after Gram-Schmidt's orthogonalization 3.01176E-32
   After Gram Smidt orthonormalization
-           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+ -1 vectors with norm le:  1.E-35 REMOVED
 
  (CCORT)  trial vectors reduced from  3 to  2
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 NOT found on file.
      L1  start vector nr.  1 of symmetry  1 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  2 of symmetry  1 NOT found on file.
      L1  start vector nr.  2 of symmetry  1 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  3 of symmetry  2 NOT found on file.
      L1  start vector nr.  3 of symmetry  2 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  4 of symmetry  2 NOT found on file.
      L1  start vector nr.  4 of symmetry  2 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  2 NOT found on file.
      M1  start vector nr.  1 of symmetry  2 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  2 of symmetry  2 NOT found on file.
      M1  start vector nr.  2 of symmetry  2 generated from gradient
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  3 of symmetry  2 NOT found on file.
      M1  start vector nr.  3 of symmetry  2 generated from gradient
 
@@ -1094,12 +1108,12 @@ Point group: Cs
 
 
  +--------------------------------------------------+
- | total time for   4 B transforms.:      0.00 secs.|
+ | total time for   4 B transforms.:      0.02 secs.|
  +--------------------------------------------------+
- |  % of time used in start up org.:    643.67      |
- |  % of time used in Fock interm. :   9076.75      |
+ |  % of time used in start up org.:      0.00      |
+ |  % of time used in Fock interm. :    100.00      |
  |  % of time used in ERI          :      0.00      |
- |  % of time used in CCRDAO       :  11456.97      |
+ |  % of time used in CCRDAO       :      0.00      |
  |  % of time used in (**|k del)   :      0.00      |
  |  % of time used in singles part :      0.00      |
  |  % of time used in A term       :      0.00      |
@@ -1108,7 +1122,7 @@ Point group: Cs
  |  % of time used in E term       :      0.00      |
  |  % of time used in C term       :      0.00      |
  |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :    643.68      |
+ |  % of time used in I/O          :      0.00      |
  +==================================================+
 
 
@@ -1133,15 +1147,15 @@ Point group: Cs
  +--------------------------------------------------+
  | total time for   2 G transforms.:      0.00 secs.|
  +--------------------------------------------------+
- |  % of time used in ERI          :      0.00      |
- |  % of time used in CCRDAO       :      0.00      |
- |  % of time used in CCTRBT       :      0.00      |
- |  % of time used in CCG_21CD     :      0.00      |
- |  % of time used in Fock interm. :      0.00      |
- |  % of time used in CCS part     :      0.00      |
- |  % of time used in 21 CCSD part :      0.00      |
- |  % of time used in doubles part :      0.00      |
- |  % of time used in I/O          :      0.00      |
+ |  % of time used in ERI          :       nan      |
+ |  % of time used in CCRDAO       :       nan      |
+ |  % of time used in CCTRBT       :       nan      |
+ |  % of time used in CCG_21CD     :       nan      |
+ |  % of time used in Fock interm. :       nan      |
+ |  % of time used in CCS part     :       nan      |
+ |  % of time used in 21 CCSD part :       nan      |
+ |  % of time used in doubles part :       nan      |
+ |  % of time used in I/O          :       nan      |
  +==================================================+
 
 
@@ -1327,62 +1341,49 @@ Point group: Cs
        1       1.00000000     0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
- LABELA:YDIPLEN 
- LABELB:XDIPLEN 
- LABELC:YDIPLEN 
- LABELD:XDIPLEN 
- ISYMA:           2
- ISYMB:           1
- ISYMC:           2
- ISYMD:           1
-  norm of O2 vector:  0.1005360897696417       0.0000000000000000E+000
-   0.1005360897696417     
-  product Mf*CSIab : -1.0160130158332448E-002
-  smclm:  0.3646539722168338     
 
- SYM   STATE NUM   EXCITATION ENERGY
-   2       3           1.455144
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<< CALCULATION OF TWO PHOTON TRANSITION STRENGTHS >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
 
-OPERATOR LABELS. 
- A: YDIPLEN  B: XDIPLEN  C: YDIPLEN  D: XDIPLEN 
+ -----------------------------------------------------------------
+ For trans. to |f(  1.455144)>, state nr.3 of symm. 2
 
- LASER FREQUENCES   W:     0.000000
+  A : YDIPLEN (2); B : XDIPLEN (1)
+  C : YDIPLEN (2); D : XDIPLEN (1)
 
- TRANSITION STRENGTH FOR SECOND ORDER MOMENT 
- TSM = 0.5*( ABLMOM * CDRMOM + CDLMOM * ABRMOM ) 
-  TSM:   5.2386180934932236E-002
-  ABLMOM  0.3646539722168338      CDRMOM  0.1436599761040911     
-  CDLMOM  0.3646539722168338      ABRMOM  0.1436599761040911     
-  w moment product  (ablmom*cdlmom):   5.2386180934932236E-002
-  -w moment product (cdlmom*abrmom):   5.2386180934932236E-002
- LABELA:XDIPLEN 
- LABELB:YDIPLEN 
- LABELC:XDIPLEN 
- LABELD:YDIPLEN 
- ISYMA:           1
- ISYMB:           2
- ISYMC:           1
- ISYMD:           2
-  norm of O2 vector:  0.1005360897696421       0.0000000000000000E+000
-   0.1005360897696421     
-  product Mf*CSIab :  1.0160130158331631E-002
-  smclm: -0.3646539722168682     
+  Laser frequency w (au) =         0.000000
 
- SYM   STATE NUM   EXCITATION ENERGY
-   2       3           1.455144
+  M^AB_of(-w):    -0.364653972  M^CD_fo(w):    -0.143659976
+  M^CD_of(-w):    -0.364653972  M^AB_fo(w):    -0.143659976
 
-OPERATOR LABELS. 
- A: XDIPLEN  B: YDIPLEN  C: XDIPLEN  D: YDIPLEN 
+  M^AB_of(-w) x M^CD_fo(w)   =     0.052386181
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.052386181
 
- LASER FREQUENCES   W:     0.000000
+ CCS  Transition strength for Second Order Moment: 
+ CCS  S^of_AB,CD(  0.000000) =     0.052386181
+ -----------------------------------------------------------------
+ -----------------------------------------------------------------
+ For trans. to |f(  1.455144)>, state nr.3 of symm. 2
 
- TRANSITION STRENGTH FOR SECOND ORDER MOMENT 
- TSM = 0.5*( ABLMOM * CDRMOM + CDLMOM * ABRMOM ) 
-  TSM:   5.2386180934942619E-002
-  ABLMOM -0.3646539722168682      CDRMOM -0.1436599761041060     
-  CDLMOM -0.3646539722168682      ABRMOM -0.1436599761041060     
-  w moment product  (ablmom*cdlmom):   5.2386180934942619E-002
-  -w moment product (cdlmom*abrmom):   5.2386180934942619E-002
+  A : XDIPLEN (1); B : YDIPLEN (2)
+  C : XDIPLEN (1); D : YDIPLEN (2)
+
+  Laser frequency w (au) =         0.000000
+
+  M^AB_of(-w):     0.364653972  M^CD_fo(w):     0.143659976
+  M^CD_of(-w):     0.364653972  M^AB_fo(w):     0.143659976
+
+  M^AB_of(-w) x M^CD_fo(w)   =     0.052386181
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.052386181
+
+ CCS  Transition strength for Second Order Moment: 
+ CCS  S^of_AB,CD(  0.000000) =     0.052386181
+ -----------------------------------------------------------------
   
 
  *******************************************************************************
@@ -1401,27 +1402,44 @@ OPERATOR LABELS.
                                                                                 
  +=============================================================================+
  |  sym. | Exci.  |        CCS        Excitation energies            | ||T1||  |
- |       |        +------------------------------------------------------------+
- |       |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A"  |    1   |     0.4395049  |      11.95954  |     96460.184  | 100.00  |
- | ^1A"  |    2   |     1.1555154  |      31.44319  |    253606.318  | 100.00  |
- | ^1A"  |    3   |     1.4551443  |      39.59651  |    319367.249  | 100.00  |
+ | ^1A"  |    1   |     0.4395049  |      11.95954  |     96460.185  | 100.00  |
+ | ^1A"  |    2   |     1.1555154  |      31.44317  |    253606.319  | 100.00  |
+ | ^1A"  |    3   |     1.4551443  |      39.59649  |    319367.250  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
  +=============================================================================+
  |  sym. | Exci.  |        CCS        Transition properties                    |
- |       |        +------------------------------------------------------------+
- |       |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
  +=============================================================================+
  | ^1A"  |    1   |        0.0460434      |      0.0134909       |    Y        |
  | ^1A"  |    2   |        0.0879658      |      0.0677639       |    Y        |
  | ^1A"  |    3   |        0.0000000      |      0.0000000       |    -        |
  +=============================================================================+
 
-  1 a.u. =        27.21140 eV.  
-  1 a.u. =    219474.63067 cm-1.
+  1 a.u. =        27.21138 eV.  
+  1 a.u. =    219474.63137 cm-1.
+  
+
+ +---------------------------------------------------------+ 
+ | List of selected calculated molecular properties (a.u.) | 
+ +---------------------------------------------------------+ 
+
+
+ CCS        properties :
+ #  1 2 |<O|XDIPLEN |i( 0.439505)>| =     0.00000000
+ #  2 2 |<O|XDIPLEN |i( 1.155515)>| =     0.00000000
+ #  3 2 |<O|XDIPLEN |i( 1.455144)>| =     0.00000000
+ #  4 1 |<O|YDIPLEN |i( 0.439505)>| =     0.21457717
+ #  5 1 |<O|YDIPLEN |i( 1.155515)>| =     0.29659034
+ #  6 1 |<O|YDIPLEN |i( 1.455144)>| =     0.00000000
+ #  7 2 |<O|ZDIPLEN |i( 0.439505)>| =     0.00000000
+ #  8 2 |<O|ZDIPLEN |i( 1.155515)>| =     0.00000000
+ #  9 2 |<O|ZDIPLEN |i( 1.455144)>| =     0.00000000
   
 
  *******************************************************************************
@@ -1442,8 +1460,9 @@ OPERATOR LABELS.
  Unit number was:  11
 
 - End of Coupled Cluster
- >>>> Total CPU  time used in DALTON:   2.29 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+ >>>> Total CPU  time used in DALTON:   1.24 seconds
+ >>>> Total wall time used in DALTON:   2.00 seconds
 
  
-     Host name              : inthaettig                              
+     Date and time (Linux)  : Wed Mar 28 13:03:00 2001
+     Host name              : dschcoriani.univ.trieste.it             
