@@ -2192,13 +2192,13 @@ C
 C
 C     *** Initialization related to doing CC. ***
 C
-      IF (DOCCSD) THEN
-         DO ISYM  = 1, 8
-         DO IXFRO = 1, MAXFRO
-            FRORHF(IXFRO,ISYM) = .FALSE.
-         END DO
-         END DO
-      END IF
+Ctbp  IF (DOCCSD) THEN
+Ctbp     DO ISYM  = 1, 8
+Ctbp     DO IXFRO = 1, MAXFRO
+Ctbp        FRORHF(IXFRO,ISYM) = .FALSE.
+Ctbp     END DO
+Ctbp     END DO
+Ctbp  END IF
 C
 C     *** For spin-spin couplings. ***
 C
