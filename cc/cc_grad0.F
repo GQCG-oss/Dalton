@@ -1149,8 +1149,8 @@ C
                      LWRK4  = LWORK  - KEND4
 C
                      IF (LWRK4 .LT. 0) THEN
-                        WRITE(LURPI,*) 'Available:', LWORK
-                        WRITE(LURPI,*) 'Needed:', KEND4
+                        WRITE(LUPRI,*) 'Available:', LWORK
+                        WRITE(LUPRI,*) 'Needed:', KEND4
                         CALL QUIT( 
      &                    'Insufficient work space in CC_GRAD2E')
                      ENDIF
