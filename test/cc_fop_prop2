@@ -105,7 +105,7 @@ CRIT15=`$GREP "N    1 14    Vy =       ( |0)\.57427.     2\.75804.     ( |0)\.98
 CRIT16=`$GREP "N    1 14    Vz =      -1\.14854.    -5\.51608.    -1\.97055" $log | wc -l`
 CRIT17=`$GREP "   1-elec\. Darwin term: *( |0)\.23063641" $log | wc -l`
 CRIT18=`$GREP "   Mass-Velocity term: *( -|-0)\.28863568" $log | wc -l`
-CRIT19=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms: *( -|-0)\.05799927" $log | wc -l`
+CRIT19=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms: *( -|-0)\.05799926" $log | wc -l`
 CRIT20=`$GREP "Ecorr = * -108\.9541307232(5|6)" $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \

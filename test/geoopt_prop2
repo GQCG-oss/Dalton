@@ -100,14 +100,14 @@ ERROR[3]="SYMMETRY IS NOT CORRECT"
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-76\.051459519[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-2069\.4654231[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-199673\.079[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-199673\.078[0-9] kJ\/mol" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
 
 # Relativistic corrections:
-CRIT1=`$GREP "Darwin correction\: * (0| )\.197451424[0-9] au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0|\-)\.248963763[0-9] au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\: * (0| )\.197451423[0-9] au" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * (\-0|\-)\.248963761[0-9] au" $log | wc -l`
 CRIT3=`$GREP "Total relativistic correction\: * (\-0|\-)\.051512338[0-9] au \((0| )\.0677\%\)" $log | wc -l`
 CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.102971857[0-9] au" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -174,7 +174,7 @@ ERROR[11]="FINAL GEOMETRY NOT CORRECT"
 # Final SCF energy:
 CRIT1=`$GREP "Total energy * \-76\.053423553[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-2069\.5188671[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-199678\.236[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-199678\.234[0-9] kJ\/mol" $log | wc -l`
 TEST[12]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[12]=3
 ERROR[12]="FINAL ENERGY NOT CORRECT"

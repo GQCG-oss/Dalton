@@ -128,7 +128,7 @@ ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Transition moments
 CRIT1=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOMENT\: (\-| )1\.3025817[0-9](D|E)\-03 \*ENERGY\(eV\)\: * \-2\.913258[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOMENT\: (\-| )4\.5488211[0-9](D|E)\-04 \*ENERGY\(eV\)\: * \-2\.913258[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOMENT\: (\-| )4\.5488210[0-9](D|E)\-04 \*ENERGY\(eV\)\: * \-2\.913258[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="TRANSITION MOMENTS NOT CORRECT"

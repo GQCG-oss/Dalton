@@ -82,8 +82,8 @@ CTRL[1]=3
 ERROR[1]="DFT/B3LYP ENERGY NOT CORRECT"
 
 # Relativistic prop.
-CRIT1=`$GREP "Darwin correction\: * (0| )\.198757251. au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0| \-)\.250296926. au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\: * (0| )\.198757249. au" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * (\-0| \-)\.250296925. au" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="RELATIVISTIC PROPERTIES NOT CORRECT"

@@ -130,7 +130,7 @@ ERROR[6]="INITIAL OCCUPANCIES NOT CORRECT"
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-224\.518523910[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.4596345[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.304[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-589473\.299[0-9] kJ\/mol" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="INITIAL ENERGY NOT CORRECT"
@@ -200,7 +200,7 @@ ERROR[14]="FINAL GEOMETRY NOT CORRECT"
 # Final SCF energy:
 CRIT1=`$GREP "Total energy * \-224\.518756963[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.4659762[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.916[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-589473\.911[0-9] kJ\/mol" $log | wc -l`
 TEST[15]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[15]=3
 ERROR[15]="FINAL ENERGY NOT CORRECT"
@@ -246,8 +246,8 @@ CRIT8=`$GREP "Asymmetry\: * (0| )\.856[0-9]" $log | wc -l`
 CRIT9=`$GREP "S parameter\: * 1984\.130[0-9] ppm" $log | wc -l`
 CRIT10=`$GREP "A parameter\: * 246\.597[0-9] ppm" $log | wc -l`
 CRIT11=`$GREP "\@1OS * \-620\.5772 * 476\.1668\-1096\.7440 * (\-0|\-)\.2388 1404\.1642  969\.3085 * 1\.3459" $log | wc -l`
-CRIT12=`$GREP "\@1OP * 1\-1173\.2318 * 446\.0854\-1619\.3171 * (\-0|\-)\.1115 2286\.3452 1651\.0362 * 1\.1544" $log | wc -l`
-CRIT13=`$GREP "\@1OP * 2\-1173\.2318 * 446\.0854\-1619\.3171 * (\-0|\-)\.1115 2286\.3452 1651\.0362 * 1\.1544" $log | wc -l`
+CRIT12=`$GREP "\@1OP * 1\-1173\.2318 * 446\.0854\-1619\.3171 * (\-0|\-)\.1115 2286\.3451 1651\.0362 * 1\.1544" $log | wc -l`
+CRIT13=`$GREP "\@1OP * 2\-1173\.2318 * 446\.0854\-1619\.3171 * (\-0|\-)\.1115 2286\.3451 1651\.0362 * 1\.1544" $log | wc -l`
 TEST[18]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
                $CRIT11 \+ $CRIT12 \+ $CRIT13`

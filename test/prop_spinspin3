@@ -179,14 +179,14 @@ CTRL[5]=8
 ERROR[5]="CALCULATION SETUP NOT CORRECT"
 
 # Shielding tensor
-CRIT1=`$GREP "O * y * 315\.7308915[0-9]" $log | wc -l`
-CRIT2=`$GREP "H1 * y * 46\.2765020[0-9]" $log | wc -l`
-CRIT3=`$GREP "O * x * 370\.3845861[0-9]" $log | wc -l`
-CRIT4=`$GREP "H1 * x * 76\.2088281[0-9]" $log | wc -l`
-CRIT5=`$GREP "H1 * z * 15\.5839309[0-9]" $log | wc -l`
-CRIT6=`$GREP "O * z * 329\.6701388[0-9]" $log | wc -l`
-CRIT7=`$GREP "H1 * x * 18\.6333668[0-9]" $log | wc -l`
-CRIT8=`$GREP "H1 * z * 59\.9807369[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * 315\.7308891[0-9]" $log | wc -l`
+CRIT2=`$GREP "H1 * y * 46\.2765017[0-9]" $log | wc -l`
+CRIT3=`$GREP "O * x * 370\.3845833[0-9]" $log | wc -l`
+CRIT4=`$GREP "H1 * x * 76\.2088275[0-9]" $log | wc -l`
+CRIT5=`$GREP "H1 * z * 15\.5839308[0-9]" $log | wc -l`
+CRIT6=`$GREP "O * z * 329\.6701363[0-9]" $log | wc -l`
+CRIT7=`$GREP "H1 * x * 18\.6333666[0-9]" $log | wc -l`
+CRIT8=`$GREP "H1 * z * 59\.9807365[0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[6]=9

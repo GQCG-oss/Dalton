@@ -109,7 +109,7 @@ CRIT17=`$GREP "   3       ( |0)\.0000000.     ( |0)\.0000000.    ( -|-0)\.519728
 CRIT18=`$GREP "O      17    Vx =       ( |0)\.25986.    -1\.56188.    ( -|-0)\.55796" $log | wc -l`
 CRIT19=`$GREP "O      17    Vy =       ( |0)\.25986.    -1\.56188.    ( -|-0)\.55796" $log | wc -l`
 CRIT20=`$GREP "O      17    Vz =      ( -|-0)\.51972.     3\.12377.     1\.11593." $log | wc -l`
-CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26055217" $log | wc -l`
+CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26055216" $log | wc -l`
 CRIT22=`$GREP "   Mass-Velocity term: * ( -|-0)\.32718385" $log | wc -l`
 CRIT23=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.06663168" $log | wc -l`
 CRIT24=`$GREP "Ecorr = * -112\.75469112100" $log | wc -l`
@@ -145,7 +145,7 @@ CRIT18=`$GREP "O      17    Vx =       ( |0)\.28063.    -1\.68670.    ( -|-0)\.6
 CRIT19=`$GREP "O      17    Vy =       ( |0)\.28063.    -1\.68670.    ( -|-0)\.60255" $log | wc -l`
 CRIT20=`$GREP "O      17    Vz =      ( -|-0)\.56126.     3\.37340.     1\.20511" $log | wc -l`
 CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26048655" $log | wc -l`
-CRIT22=`$GREP "   Mass-Velocity term: * ( -|-0)\.32719553" $log | wc -l`
+CRIT22=`$GREP "   Mass-Velocity term: * ( -|-0)\.32719552" $log | wc -l`
 CRIT23=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.06670897" $log | wc -l`
 CRIT24=`$GREP "Ecorr = * -113\.06579816745" $log | wc -l`
 

@@ -144,7 +144,7 @@ ERROR[3]="MOLECULAR GEOMETRY NOT CORRECT"
 # SCF energy:
 CRIT1=`$GREP "Total energy * \-152\.810086303[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-4158\.1738457[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-401202\.827[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-401202\.824[0-9] kJ\/mol" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGY NOT CORRECT"

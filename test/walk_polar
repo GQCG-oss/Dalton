@@ -123,8 +123,8 @@ CTRL[5]=2
 ERROR[5]="SYMMETRY IS NOT CORRECT"
 
 # Relativistic corrections:
-CRIT1=`$GREP "Darwin correction\: * (0| )\.197451424[0-9] au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0|\-)\.248963763[0-9] au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\: * (0| )\.197451423[0-9] au" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * (\-0|\-)\.248963761[0-9] au" $log | wc -l`
 CRIT3=`$GREP "Total relativistic correction\: * (\-0|\-)\.051512338[0-9] au \((0| ).0677\%\)" $log | wc -l`
 CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.102971857[0-9] au" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
@@ -134,7 +134,7 @@ ERROR[6]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-76\.051459519[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-2069\.4654231[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-199673\.079[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-199673\.078[0-9] kJ\/mol" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="INITIAL ENERGY NOT CORRECT"
@@ -206,7 +206,7 @@ ERROR[12]="SECOND GEOMETRY NOT CORRECT"
 # SCF energy, 2nd iteration:
 CRIT1=`$GREP "Total energy * \-76\.053397783[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-2069\.5181659[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-199678\.168[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-199678\.167[0-9] kJ\/mol" $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
 ERROR[13]="SECOND ENERGY NOT CORRECT"
@@ -308,7 +308,7 @@ CTRL[23]=3
 ERROR[23]="ISOTOPIC MASSES NOT CORRECT"
 
 # Rotational constants:
-CRIT1=`$GREP "884411\.511[0-9] * 442438\.789[0-9] * 294907\.389[0-9] MHz" $log | wc -l`
+CRIT1=`$GREP "884411\.508[0-9] * 442438\.787[0-9] * 294907\.388[0-9] MHz" $log | wc -l`
 CRIT2=`$GREP "29\.50079[0-9] * 14\.7581[6-7][0-9] * 9\.83705[0-9] cm\-1" $log | wc -l`
 TEST[24]=`expr $CRIT1  \+ $CRIT2`
 CTRL[24]=2

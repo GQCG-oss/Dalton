@@ -144,7 +144,7 @@ ERROR[6]="INITIAL OCCUPANCIES NOT CORRECT"
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-224\.518523910[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.4596345[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.304[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-589473\.299[0-9] kJ\/mol" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="INITIAL ENERGY NOT CORRECT"
@@ -196,7 +196,7 @@ ERROR[12]="SECOND GEOMETRY NOT CORRECT"
 # Energy, 2nd iteration:
 CRIT1=`$GREP "Total energy * \-224\.518756473[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.465962[8-9][0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.914[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-589473\.910[0-9] kJ\/mol" $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
 ERROR[13]="SECOND ENERGY NOT CORRECT"

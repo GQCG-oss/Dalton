@@ -11,7 +11,7 @@ C -- Fundamental constants, atomic units, Avogadro's constant
 #include <pi.h>
 C
       PARAMETER ( XTANG = 0.529 177 2083 D0, XFAMU  = 1822.88848 D0,
-     &            ECHARGE = 1.602 176 462D-19, HBAR = 1.054 571 60D-34)
+     &            ECHARGE = 1.602 176 462D-19, HBAR = 1.054 571 596D-34)
       PARAMETER ( XFMOL = 6.022 141 99 D23 )
       PARAMETER ( XTANGM10 = XTANG*1.0D-10)
 C
