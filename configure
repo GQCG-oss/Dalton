@@ -993,12 +993,13 @@ case "$WHICH" in
             if [ "$F77" = xlf ]; then
                cpp="-WF,-DSYS_AIX,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
                copt='-qarch=auto -O3 -qtune=auto -qmaxmem=-1 -qunroll=yes'
-               opt="$copt -qextname -qstrict -s"
+               opt="$copt -qextname -qstrict -prebind"
                def='dalton.x'
                inc='-I../include'
                LIB='-L/opt/ibmcmp/lib -L/opt/ibmcmp/xlf/8.1/lib -L/opt/ibmcmp/vacpp/6.0/lib'
 # Notes for xlf (8.1) under OS X 10.3:
 # Tested for G5 architecture (not G4). Significant speedup over g77 for G5. 
+# -prebind required for xlf fortran 8.1 on G5, for xlf 8.0 use -s and NOT -prebind
 # LIB may need to be modified depending on installation of the xlf compiler. 
             elif [ "$F77" = g77 ]; then
                cpp="-DVAR_G77 $cpp"
