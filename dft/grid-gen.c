@@ -1004,8 +1004,8 @@ boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
 #include <mpi.h>
 static int mynum, nodes, last;
 static void
-grid_par_init(real *radint, int *angmin, int *angint) {
-    int arr[3];
+grid_par_init(real *radint, int *angmin, int *angint, int *grdone) {
+    int arr[4];
     /* Executed by master and all slaves */
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
     MPI_Comm_size(MPI_COMM_WORLD, &nodes);
@@ -1016,8 +1016,9 @@ grid_par_init(real *radint, int *angmin, int *angint) {
     else if(selected_partitioning == &partitioning_becke_corr) arr[2] = 1;
     else if(selected_partitioning == &partitioning_ssf) arr[2] = 2;
     else /* if(selected_partitioning == &partitioning_block)*/ arr[2] = 3;
-    MPI_Bcast(radint, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(arr,    3, MPI_INT,    0, MPI_COMM_WORLD);
+    arr[3] = *grdone;
+    MPI_Bcast(radint, 1,             MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(arr,    ELEMENTS(arr), MPI_INT,    0, MPI_COMM_WORLD);
     *angmin = arr[0];
     *angint = arr[1];
     switch(arr[2]) {
@@ -1026,6 +1027,7 @@ grid_par_init(real *radint, int *angmin, int *angint) {
     case 2: selected_partitioning = &partitioning_ssf; break;
     default: selected_partitioning = &partitioning_block; break;
     }
+    *grdone = arr[3];
 }
 
 static char*
@@ -1719,6 +1721,9 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
         {
         case GRID_TYPE_STANDARD:
             FSYM2(get_grid_paras)(&grdone, &radint, &angmin, &angint);
+#ifdef VAR_MPI
+            grid_par_init(&radint, &angmin, &angint, &grdone);
+#endif
             if(!grdone) {
                 int atom_cnt, pnt_cnt;
                 int lwrk = *lwork - nbast;
@@ -1728,7 +1733,6 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
                 dt.dmat =  NULL; dt.dmagao = work;
 
 #ifdef VAR_MPI
-                grid_par_init(&radint, &angmin, &angint);
                 if(mynum == 0) {
                     pnt_cnt = grid_generate("DALTON.QUAD", atom_cnt, atoms,
                                             radint, NULL, &dt,
