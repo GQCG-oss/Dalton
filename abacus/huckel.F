@@ -104,7 +104,6 @@ C
 #include <scbrhf.h>
 #include <huckel.h>
 C
-D     p6flag(6) = .true.
       IF (P6FLAG(6) .OR. IPRI6.GE.0 .OR. IPRRHF.GE.0 .OR. EWMO)
      &   WRITE (LUPRI,'(/A/2(/5X,A,L10)/5X,A,8I5)')
      &      ' *** Output from Huckel module :',
