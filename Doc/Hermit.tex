@@ -15,13 +15,19 @@ be reduced by not calculating the
 supermatrix\index{supermatrix}, and this is also controlled in the
 \Sec{*INTEGRALS} input section.
 
-It is worth noticing that the two-electron part of \her\ is actually
-two integral programs. One --- \her\ --- is general and invoked by default in
-sequential calculations as well as in calculations using generally
-contracted basis sets. The other, {\sc ERI}, is a highly vectorized
-code with orientation towards integral distributions. This code will
-be invoked in direct calculations using segmented basis sets for
-totally-symmetric Fock matrices.
+It is worth noticing that the two-electron part of {\her} is actually
+two integral programs. One, {\twoint}, is general and invoked by
+default in sequential calculations. The other, {\eri} (Electron Repulsion
+Integrals), is a highly vectorized two-electron integral code with
+orientation towards integral distributions. This code is
+invoked by default in integral-direct coupled-cluster calculations and
+may in other cases be invoked by specifying the \Key{RUNERI} keyword
+in the \Sec{*GENERAL} input section. This keyword ensures that {\eri}
+rather than {\her} is called whenever {\eri} has the required
+functionality. Note that {\eri} cannot be used in
+parallel calculations. Furthermore, {\eri} contains only
+first-derivatives, and it cannot be used to calculate Hessians
+or to calculate MCSCF gradients.
 
     Input to integral evaluation is
 indicated by the keyword \Sec{*INTEGRALS}, and the section may be
@@ -32,6 +38,7 @@ what molecular integrals is to be evaluated, and then a set of
 modules controlling the different parts of the calculation of
 undifferentiated atomic integrals and the (possible) formation of
 a supermatrix as defined in for instance~\cite{pemsjaahborjcp74}.
+
 
 \section{\Sec{*INTEGRALS} directives}\label{sec:herinp}
 
@@ -246,28 +253,28 @@ line containing the three Cartesian components (*). Default is~(0,0,0).
 overlap integrals.
 
 \begin{list}{}{}
-\item Integral: $\left<\chi_{\mu}\mid\frac{\partial^2}{\partial {\mathbf
-r}^2}\mid\chi_{\nu}\right>$ 
-\item Property labels: \verb|dd/dxdx |, \verb|dd/dxdy |,
-\verb|dd/dxdz |,\verb|dd/dydy |, \verb|dd/dydz |, \verb|dd/dzdz |
+\item Integral: $\left<\chi_{\mu}\left|\frac{\partial^2}{\partial {\mathbf
+r}^2}\right|\chi_{\nu}\right>$ 
+\item Property labels: \verb|dd/dxdx|, \verb|dd/dxdy|,
+\verb|dd/dxdz|, \verb|dd/dydy|, \verb|dd/dydz|, \verb|dd/dzdz|
 \end{list}
 
 \item[\Key{DPTPOT}] DPT integrals: Small-component one-electron
 potential energy integrals.
 
 \begin{list}{}{}
-\item Integral:$\left<\chi_{\mu}\mid\frac{\partial}{\partial {\mathbf
+\item Integral:$\left<\chi_{\mu}\left|\frac{\partial}{\partial {\mathbf
 r}}\frac{1}{\mathbf{R}_K}\frac{\partial}{\partial {\mathbf
-r}}\mid\chi_{\nu}\right>$ 
+r}}\right|\chi_{\nu}\right>$ 
 \item Property labels: \verb|DERXXPVP|, \verb|DERXY+YX|,
-\verb|DERXZ+ZX|, \verb|DERYY   |, \verb|DERYZ+ZY|, \verb|DERZZ   |
+\verb|DERXZ+ZX|, \verb|DERYY|, \verb|DERYZ+ZY|, \verb|DERZZ|
 \end{list}
 
 \item[\Key{DSO}] Diamagnetic spin-orbit\index{diamagnetic spin-orbit}
 integrals. These are
 calculated using Gaussian quadrature\index{Gaussian quadrature} as
 described in
-Ref.~\cite{dmtajcp73}. The number of quadrature point is controled by
+Ref.~\cite{dmtajcp73}. The number of quadrature point is controlled by
 the keyword \Key{POINTS}.
 
 \begin{list}{}{}
@@ -905,7 +912,7 @@ integral}\index{supermatrix}.
 magnetizability} integrals calculated
 without the use of London atomic orbitals. The choice of gauge
 origin\index{gauge origin}
-can be controled by the keyword \Key{GAUGEO}.
+can be controlled by the keyword \Key{GAUGEO}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|r^{2}_{O}I - {\bf r}_{O}
@@ -1133,7 +1140,7 @@ discarding the two-electron integrals (see the chapter describing the
 \mol\ input format, Ch.~\ref{ch:molinp}).
 \end{description}
 
-\subsection{Two-electron integrals: \Sec{TWOINT}}
+\subsection{Two-electron integrals using {\twoint}: \Sec{TWOINT}}
 
 Directives affecting the two-electron\index{two-electron integral}
 undifferentiated Hamiltonian
@@ -1147,7 +1154,8 @@ contributions to the Fock
 matrix in direct and parallel calculations. The thresholds for the
 integrals will ten to the power of these numbers. By default the same
 screening threshold will be used for Coulomb and exchange
-contribution which will change dynamically as the wave function converges more and more tightly.
+contribution which will change dynamically as the wave function
+converges more and more tightly.
 
 \item[\Key{IFTHRS}]\verb| |\newline
 \verb|READ (LUCMD,*) IFTHRS|
@@ -1182,4 +1190,83 @@ basis during a direct or parallel calculation. Currently not active.
 
 \item[\Key{TIME}] Provide detailed timing breakdown for the
 two-electron integral calculation.
+\end{description}
+
+
+\subsection{Two-electron integrals using {\eri}: \Sec{ER2INT}}
+
+Directives controlling the two-electron integral calculation with {\eri}
+are specified in the \Sec{ER2INT} section.
+
+By default {\eri} is only used for direct coupled-cluster
+calculations. However, {\eri} can also be invoked by setting the
+\Key{RUNERI} keyword in the \Sec{*GENERAL} input section. Note that
+{\dalton} will automatically use {\her} for all integrals not
+available in {\eri}.
+
+\begin{description}
+\item[\Key{BUFFER}]\verb| |\newline
+\verb|READ (LUCMD,*) LBFINP|
+
+This option may be used to set the buffer length for integrals written
+to disk. For compatibility with {\twoint}, the default buffer length
+is 600. Longer buffer lengths may give more efficient I/O.
+
+\item[\Key{EXTPRI}]\verb| |\newline
+\verb|READ (LUCMD,'(2I5)') IPROD1, IPROD2|
+
+Full print for OD classes \verb|IPROD1| and \verb|IPROD2|.
+
+\item[\Key{GENCON}] Treat all AOs as generally contracted during
+integral evaluation.
+
+\item[\Key{GRDZER}] During evaluation of the molecular gradient, the
+gradient is set to zero upon each entry into \verb|ERIAVE| (for
+debugging).
+
+\item[\Key{NCLERI}] Calculate only integrals with nonclassiscal
+contributions.
+
+\item[\Key{NOLOCS}] Do not use local symmetry during evaluation.
+
+\item[\Key{NONCAN}] Do not sort integral indices in canonical
+order. This option is applicable only for undifferentiated integrals
+written fully to disk (without the use of distributions). This option
+may save some time but will lead to incorrect results whenever
+canonical ordering is assumed.
+
+\item[\Key{NO12GS}] During sorting of OD batches, treat batches
+containing one and two distinct AOs as equivalent.
+
+\item[\Key{NOPS12}] Do not assume permutational symmetry between the
+two electrons.
+
+\item[\Key{NOPSAB}] Do not assume permutational symmetry between
+orbitals of electron 1.
+
+\item[\Key{NOPSCD}] Do not assume permutational symmetry between
+orbitals of electron 2.
+
+\item[\Key{NOWRIT}] Do not write integrals to disk.
+
+\item[\Key{OFFCNT}] During sorting of OD batches, treat batches
+containing one and two AO centers as equivalent.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,'(I5)') IPRERI|
+
+Print level for {\eri}.
+
+\item[\Key{SELCT1}]\verb| |\newline
+\verb|READ (LUCMD,'(  I5)') NSELCT(1)|\newline
+\verb|READ (LUCMD,'(15I5)') (NACTAO(I,1),I=1,NSELCT(1))|
+
+Calculate only integrals containing indices \verb|NACTAO(I,1)| for the
+first AO.
+
+\item[\Key{SELCT2}] Same as \Key{SELCT1} but for the second AO.
+
+\item[\Key{SELCT3}] Same as \Key{SELCT1} but for the third AO.
+
+\item[\Key{SELCT4}] Same as \Key{SELCT1} but for the fourth AO.
 \end{description}
