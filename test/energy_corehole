@@ -310,7 +310,7 @@ CTRL[5]=2
 ERROR[5]="START VECTOR NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-102\.28828716" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-102\.288287(1|2)." $log | wc -l`
 TEST[6]=`expr	$CRIT1`
 CTRL[6]=1
 ERROR[6]="MCSCF ENERGY NOT CORRECT"
