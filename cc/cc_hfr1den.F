@@ -52,6 +52,7 @@
 *---------------------------------------------------------------------*
 *     short cut for the test case 'HAM0    ':
 *---------------------------------------------------------------------*
+      CALL QENTER('CC_HFR1DEN')
       LABEL = LBLOPR(IOPER)
       IF (LABEL.EQ.'HAM0    ') THEN
          CALL DZERO(R1DEN,N2BST(ISYMOPR))
@@ -66,18 +67,11 @@
 *---------------------------------------------------------------------*
 *     allocate work space and initialize index array ICMO:
 *---------------------------------------------------------------------*
-      KCMO   = 1
-      KCMOHQ = KCMO   + NLAMDS
-      KRMAT  = KCMOHQ + NCMO(ISYMOPR)
-      KQMATP = KRMAT  + N2BST(ISYMOPR)
-      KQMATH = KQMATP + N2BST(ISYMOPR)
-      KEND1  = KQMATH + N2BST(ISYMOPR)
-      LWRK1  = LWORK - KEND1
-
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Insufficient work space in CC_HFR1DEN.')
-      END IF
-
+C VB mar 2001
+C     NCMO has to be initialized before it can be used to allocate
+C     memory. The allocation of work space has been moved down below
+C     the initialization.
+C
       DO ISYM = 1, NSYM
          ICOUNT = 0
          DO ISYM2 = 1, NSYM
@@ -87,6 +81,18 @@
          END DO
          NCMO(ISYM) = ICOUNT
       END DO                             
+
+      KCMO   = 1
+      KCMOHQ = KCMO   + NLAMDS
+      KRMAT  = KCMOHQ + NCMO(ISYMOPR)
+      KQMATP = KRMAT  + N2BST(ISYMOPR)
+      KQMATH = KQMATP + N2BST(ISYMOPR)
+      KEND1  = KQMATH + N2BST(ISYMOPR)
+      LWRK1  = LWORK - KEND1
+
+      IF (LWRK1 .LT. 0) THEN
+         CALL STOPIT('CC_HFR1DEN','',KEND1,LWORK)
+      END IF
 
 *---------------------------------------------------------------------*
 *     read SCF orbital coefficient matrix from file: 
@@ -193,6 +199,7 @@
         CALL FLSHFO(LUPRI)
       END IF
 
+      CALL QEXIT('CC_HFR1DEN')
       RETURN
       END
 *=====================================================================*

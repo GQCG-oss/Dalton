@@ -679,7 +679,7 @@ case $WHICH in
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000';;
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;
-	       *) opt='-O2 -32 -mips2 -G 0 -OPT:Olimit=0';;
+	       *) opt='-O2 -32 -mips2 -G 0 -Olimit 2000';;
             esac
             if [ "$mesp" = "dummy" ]; then
 	       if [ $split = 'true' ] ; then

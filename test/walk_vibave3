@@ -305,8 +305,8 @@ ERROR[22]="VIBRATIONALLY AVERAGED DIPOLE MOMENT NOT CORRECT"
 # Vibrationally averaged nuclear magnetic shielding constants for oxygen
 CRIT1=`$GREP "Bxmx * 350\.1149163[0-9] * (\-0|\-)\.8856342[0-9] * 349\.2292821[0-9]" $log | wc -l`
 CRIT2=`$GREP "Bymy * 341\.0009785[0-9] * \-7\.056420[0-1][0-9] * 333\.9445584[0-9]" $log | wc -l`
-CRIT3=`$GREP "Bzmy * (\-0|\-)\.0000019[0-9] * (\-0|\-)\.0000024[0-9] * (\-0|\-)\.0000044[0-9]" $log | wc -l`
-CRIT4=`$GREP "Bymz * (\-0|\-)\.0000016[0-9] * (\-0|\-)\.0000025[0-9] * (\-0|\-)\.0000042[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bzmy * (\-0|\-)\.0000019[0-9] * (\-0|\-)\.000002[4-5][0-9] * (\-0|\-)\.0000044[0-9]" $log | wc -l`
+CRIT4=`$GREP "Bymz * (\-0|\-)\.0000016[0-9] * (\-0|\-)\.000002[4-5][0-9] * (\-0|\-)\.0000042[0-9]" $log | wc -l`
 CRIT5=`$GREP "Bzmz * 328\.8785875[0-9] * \-4\.6545508[0-9] * 324\.224036[6-7][0-9]" $log | wc -l`
 TEST[23]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[23]=5

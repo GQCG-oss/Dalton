@@ -1014,11 +1014,16 @@ c /* deck cc_iajb2 */
       DO ISYDEL = 1, NSYM
 
         ISYMB0  = MULD2H(ISYDEL,ISYM0)
-        ISYMBB  = MULD2H(ISYDEL,ISYMB)
+C VB mar 2001:
+C     If IOPT=1 ISYMB is a dummy argument at the statement below may
+C     cause a segmentation fault. Moved inside IF-test instead
+C
+C        ISYMBB  = MULD2H(ISYDEL,ISYMB)
 
         IF (IOPT.EQ.1) THEN
           ISY0IAJ = MULD2H(ISYIAJB,ISYMB0)
         ELSE IF (IOPT.EQ.2) THEN
+          ISYMBB  = MULD2H(ISYDEL,ISYMB)
           ISY0IAJ = MULD2H(ISYIAJB,ISYMBB)
           ISYBIAJ = MULD2H(ISYIAJB,ISYMB0)
         ELSE
