@@ -2703,7 +2703,8 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <efield.h>
-      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0)
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
+     &           D1 = 1.0D0)
       DIMENSION SHLINT(KCKTAB,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include <onecom.h>
@@ -2762,36 +2763,47 @@ C
      &        D2*ADZ* ODC(NVALA + 1,NVALB,0,0,1,3) +
      &        ADZ*ADZ*ODC(NVALA    ,NVALB,0,0,1,3))
 C
-         IF (FIELD3 .EQ. 'XX-FGRD' .OR. FIELD3 .EQ. 'YY-FGRD' .OR.
-     &       FIELD3 .EQ. 'ZZ-FGRD') THEN
-            XR2 = D2I*(DX3*SY0*SZ0 + SX1*DY2*SZ0 + SX1*SY0*DZ2)
-            YR2 = D2I*(DX2*SY1*SZ0 + SX0*DY3*SZ0 + SX0*SY1*DZ2)
-            ZR2 = D2I*(DX2*SY0*SZ1 + SX0*DY2*SZ1 + SX0*SY0*DZ3)
-            IF (FIELD3 .EQ. 'XX-FGRD') THEN
-               DPLX = - XR2 + D1P5*DX3*SY0*SZ0
-               DPLY = - YR2 + D1P5*DX2*SY1*SZ0
-               DPLZ = - ZR2 + D1P5*DX2*SY0*SZ1
-            ELSE IF (FIELD3 .EQ. 'YY-FGRD') THEN
-               DPLX = - XR2 + D1P5*SX1*DY2*SZ0
-               DPLY = - YR2 + D1P5*SX0*DY3*SZ0
-               DPLZ = - ZR2 + D1P5*SX0*DY2*SZ1
+         IF (FIELD3(4:7) .EQ. 'FGRD') THEN
+            FAC = D1P5
+         ELSE
+            FAC = D1
+         END IF
+         IF (FIELD3(1:2) .EQ. 'XX' .OR. FIELD3(1:2) .EQ. 'YY' .OR.
+     &       FIELD3(1:2) .EQ. 'ZZ') THEN
+            IF (FIELD3(4:7) .EQ. 'FGRD') THEN
+               XR2 = D2I*(DX3*SY0*SZ0 + SX1*DY2*SZ0 + SX1*SY0*DZ2)
+               YR2 = D2I*(DX2*SY1*SZ0 + SX0*DY3*SZ0 + SX0*SY1*DZ2)
+               ZR2 = D2I*(DX2*SY0*SZ1 + SX0*DY2*SZ1 + SX0*SY0*DZ3)
             ELSE
-               DPLX = - XR2 + D1P5*SX1*SY0*DZ2
-               DPLY = - YR2 + D1P5*SX0*SY1*DZ2
-               DPLZ = - ZR2 + D1P5*SX0*SY0*DZ3
+               XR2 = D0
+               YR2 = D0
+               ZR2 = D0
             END IF
-         ELSE IF (FIELD3 .EQ. 'XY-FGRD') THEN
-            DPLX = D1P5*SDX2*DY1*SZ0
-            DPLY = D1P5*DX1*SDY2*SZ0
-            DPLZ = D1P5*DX1*DY1*SZ1
-         ELSE IF (FIELD3 .EQ. 'XZ-FGRD') THEN
-            DPLX = D1P5*SDX2*SY0*SZ1
-            DPLY = D1P5*DX1*SY1*DZ1
-            DPLZ = D1P5*DX1*SY0*SDZ2
-         ELSE IF (FIELD3 .EQ. 'YZ-FGRD') THEN
-            DPLX = D1P5*SX1*DY1*DZ1
-            DPLY = D1P5*SX0*SDY2*DZ1
-            DPLZ = D1P5*SX0*SY1*SDZ2
+            IF (FIELD3(1:2) .EQ. 'XX') THEN
+               DPLX = - XR2 + FAC*DX3*SY0*SZ0
+               DPLY = - YR2 + FAC*DX2*SY1*SZ0
+               DPLZ = - ZR2 + FAC*DX2*SY0*SZ1
+            ELSE IF (FIELD3(1:2) .EQ. 'YY') THEN
+               DPLX = - XR2 + FAC*SX1*DY2*SZ0
+               DPLY = - YR2 + FAC*SX0*DY3*SZ0
+               DPLZ = - ZR2 + FAC*SX0*DY2*SZ1
+            ELSE
+               DPLX = - XR2 + FAC*SX1*SY0*DZ2
+               DPLY = - YR2 + FAC*SX0*SY1*DZ2
+               DPLZ = - ZR2 + FAC*SX0*SY0*DZ3
+            END IF
+         ELSE IF (FIELD3(1:2) .EQ. 'XY') THEN
+            DPLX = FAC*SDX2*DY1*SZ0
+            DPLY = FAC*DX1*SDY2*SZ0
+            DPLZ = FAC*DX1*DY1*SZ1
+         ELSE IF (FIELD3(1:2) .EQ. 'XZ') THEN
+            DPLX = FAC*SDX2*SY0*SZ1
+            DPLY = FAC*DX1*SY1*DZ1
+            DPLZ = FAC*DX1*SY0*SDZ2
+         ELSE IF (FIELD3(1:2) .EQ. 'YZ') THEN
+            DPLX = FAC*SX1*DY1*DZ1
+            DPLY = FAC*SX0*SDY2*DZ1
+            DPLZ = FAC*SX0*SY1*SDZ2
          END IF
 C
          SHLINT(INT,1) = SHLINT(INT,1) - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)

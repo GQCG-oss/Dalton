@@ -31,7 +31,7 @@ C        Then, both the Hessian and the geometry in the Test.FChk file are
 C        in the input orientation, and everthing is fine.
 C     #######################################################################
 C
-      PROGRAM
+      PROGRAM FCHK2HES
 C
       INTEGER HESFIL,MOLFIL,INPFIL,NATOM,NELEM,MAXAT
       PARAMETER (MAXAT=99 ,INPFIL=50,HESFIL=60,MOLFIL=70)

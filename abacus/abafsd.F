@@ -1789,7 +1789,8 @@ C
                      NCOMP = 3
                      CALL GET1PR(WORK(KTMAT),'CM1    ',NCOMP,'SQUARE',
      &                           .TRUE.,WORK(MWRK),LLEFT,IDUMMY,INTPRI)
-                  ELSE IF (LFIELD(IFIELD)(3:7) .EQ. 'THETA') THEN
+                  ELSE IF (LFIELD(IFIELD)(3:7) .EQ. 'THETA' .OR.
+     &                     LFIELD(IFIELD)(3:8) .EQ. 'SECMOM') THEN
                      IF (LFIELD(IFIELD) .EQ. 'XXTHETA ') THEN
                         FIELD3 = 'XX-FGRD'
                      ELSE IF (LFIELD(IFIELD) .EQ. 'YYTHETA ') THEN
@@ -1802,6 +1803,18 @@ C
                         FIELD3 = 'XZ-FGRD'
                      ELSE IF (LFIELD(IFIELD) .EQ. 'YZTHETA ') THEN
                         FIELD3 = 'YZ-FGRD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'XXSECMOM') THEN
+                        FIELD3 = 'XX-2MOM'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'YYSECMOM') THEN
+                        FIELD3 = 'YY-2MOM'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'ZZSECMOM') THEN
+                        FIELD3 = 'ZZ-2MOM'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'XYSECMOM') THEN
+                        FIELD3 = 'XY-2MOM'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'XZSECMOM') THEN
+                        FIELD3 = 'XZ-2MOM'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'YZSECMOM') THEN
+                        FIELD3 = 'YZ-2MOM'
                      ELSE
                         WRITE (LUPRI,'(/,3A,/)') 'Field type ',
      &                       LFIELD(IFIELD),
