@@ -3180,8 +3180,11 @@ C
       IF (KZCONF .GT. 0) THEN
 #if defined (VAR_SPLITFILES)
          CALL READST(LURSP4,LRSP4,A,JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPEDG')
+         IF (LRSP4 .NE. KZCONF) THEN
+            WRITE(LUPRI,*) 'ERROR, LRSP4 .ne. KZCONF',LRSP4,KZCONF
+            CALL QUIT('Inconsistent record length'//
+     &        ' on unit LURSP4 in RSPEDG - conf')
+         END IF
 #else
          CALL READT (LURSP4,KZCONF,A)
 #endif
@@ -3189,8 +3192,11 @@ C
       IF (KZWOPT .GT. 0) THEN
 #if defined (VAR_SPLITFILES)
          CALL READST(LURSP4,LRSP4,A(1+KZCONF),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZWOPT) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPEDG (2)')
+         IF (LRSP4 .NE. KZWOPT) THEN
+            WRITE(LUPRI,*) 'ERROR, LRSP4 .ne. KZWOPT',LRSP4,KZWOPT
+            CALL QUIT('Inconsistent record length'//
+     &        ' on unit LURSP4 in RSPEDG - orb')
+         END IF
 #else
          CALL READT (LURSP4,KZWOPT,A(1+KZCONF))
 #endif
