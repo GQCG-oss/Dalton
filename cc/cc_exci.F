@@ -412,6 +412,13 @@ C
          KEIVAL = KREDGD + MAXRED*NSIMR
          KSOLEQ = KEIVAL + MAXRED
          KWRK1  = KSOLEQ + MAXRED*MAXRED
+
+         IF (CCSDT .AND. CCSDT_DIIS) THEN
+            KREDS = KWRK1 
+            KAMAT = KREDS + MAXRED*MAXRED
+            KWRK1 = KAMAT + (MXDIIS+1)*(MXDIIS+1)*NSIM
+         END IF
+
          LWRK1  = LWORK  - KWRK1
 C
          IF (LWRK1.LT. 0 )
@@ -466,12 +473,30 @@ C------------------------------------------
 C        Solve equations by call to solver.
 C------------------------------------------
 C
-         CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,LIST,
-     *                 LPROJECT, ISTATPRJ,
-     *                 LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
-     *                 NREDH,WORK(KREDH),WORK(KEIVAL),
-     *                 WORK(KSOLEQ),WORK(KWRK1),LWRK1)
+         IF (OMESC .AND. CCSDT .AND. CCSDT_DIIS) THEN
+
+           DO ICOUNT = 1, NSIM
+             IF (TRIPLET) THEN
+               WORK(KEIVAL-1+ICOUNT) = EIGVAL(ITROFE(ISYM)+ICOUNT)
+             ELSE
+               WORK(KEIVAL-1+ICOUNT) = EIGVAL(ISYOFE(ISYM)+ICOUNT)
+             END IF
+           END DO
+
+           CALL CCDIIS_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
+     *                     FC1AM,LUFC1,FC2AM,LUFC2,LIST,IRST,
+     *                     TRIPLET,ISIDE,NSIMR,NUPVEC,
+     *                     NREDH,WORK(KREDH),WORK(KREDS),WORK(KEIVAL),
+     *                     WORK(KSOLEQ),WORK(KAMAT),
+     *                     WORK(KWRK1),LWRK1)
+         ELSE
+           CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
+     *                   FC1AM,LUFC1,FC2AM,LUFC2,LIST,
+     *                   LPROJECT, ISTATPRJ,
+     *                   LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                   NREDH,WORK(KREDH),WORK(KEIVAL),
+     *                   WORK(KSOLEQ),WORK(KWRK1),LWRK1)
+         END IF
 C
          IF ( STSD.AND.KAJ ) THEN
             CCSDT = .TRUE.
@@ -653,7 +678,7 @@ C       IF CCSDT we may solve until self consistency:
 C==========================================================
 C----------------------------------------------------------
 C
-         IF (OMESC.AND.CCSDT) THEN
+         IF (OMESC.AND.CCSDT.AND.(.NOT.CCSDT_DIIS)) THEN
 C
          CALL DZERO(WORK(KEXCIS),NCCEXCI(ISYMTR,IMULT))
          CALL DZERO(WORK(KT1PS),NCCEXCI(ISYMTR,IMULT))
@@ -672,6 +697,7 @@ C
 C
             NCCEXCI(ISYM,IMULT) = ISTATE
 C           NCC(ISYM,IMULT) = ISTATE
+            NSIMR = ISTATE
             NSIDE = 1
 C
 C--------------------------------
@@ -2333,7 +2359,7 @@ C
             CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NRHO2,NR2,WORK(KRHO2))
          END IF
          IF (IPRINT .GT. 45) THEN
-            CALL AROUND('CC_TRDRV: RHO = trans. Vector ')
+            CALL AROUND('CC_ATRR: RHO = trans. Vector ')
             CALL CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYMTR,1,NC2)
          ENDIF
          IF (.NOT.(CCS.OR.CC2)) THEN

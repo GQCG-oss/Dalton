@@ -1072,7 +1072,7 @@ C=====================================================================*
 
 * data:
       DATA SET /.FALSE./
-      DATA TABLE /'.NCCEXC','.XXXXXX','.FDJAC ','.FDEXCI','.JACEXP',
+      DATA TABLE /'.NCCEXC','.R3DIIS','.FDJAC ','.FDEXCI','.JACEXP',
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.XXXXXX','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN'/
@@ -1087,6 +1087,7 @@ C=====================================================================*
 * initializations & defaults:
 *---------------------------------------------------------------------*
 C
+      CCSDT_DIIS = .FALSE.
       FDJAC  = .FALSE.
       FDEXCI = .FALSE.
       JACEXP = .FALSE.
@@ -1168,12 +1169,12 @@ C           -------------------------------------------
             GO TO 100
 
 C
-C--------------------------------
-C           .XXXXXX  unused label
-C--------------------------------
+C---------------------------------------------------------------
+C           .R3DIIS  use CCDIIS_SOL for iterative triples models
+C---------------------------------------------------------------
 C
-
 2           CONTINUE
+            CCSDT_DIIS = .TRUE.
             GO TO 100
 
 C

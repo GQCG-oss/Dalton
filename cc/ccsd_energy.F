@@ -442,8 +442,9 @@ C
 C
   529    FORMAT(7X,A,D25.10)
 C
-         CALL CCSD_NXTAM(WORK(KT1AM),WORK(KT2AM),WORK(KOMEG1),
-     *                   WORK(KOMEG2),WORK(KFOCKD))
+         CALL CCSD_NXTAM(WORK(KT1AM),WORK(KT2AM),DUMMY,WORK(KOMEG1),
+     *                   WORK(KOMEG2),DUMMY,WORK(KFOCKD),.FALSE.,
+     *                   ISYMOP,0.0D0)
 C
          IF (CCSTST) THEN
             CALL DZERO(WORK(KT2AM),NT2AMX)
@@ -866,19 +867,22 @@ C
       RETURN
       END
 C  /* Deck ccsd_nxtam */
-      SUBROUTINE CCSD_NXTAM(T1AM,T2AM,OMEGA1,OMEGA2,FCDIAG)
+      SUBROUTINE CCSD_NXTAM(T1AM,T2AM,T2AM2,OMEGA1,OMEGA2,OMEGA22,
+     *                      FCDIAG,TRIPLET,ISYMT,FREQ)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C     Brueckner bit by Rika Kobayashi 1992.
 C
 #include <implicit.h>
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, THREE = 3.0D0)
-      DIMENSION T1AM(*),T2AM(*)
-      DIMENSION OMEGA1(*),OMEGA2(*)
+      DIMENSION T1AM(*),T2AM(*), T2AM2(*)
+      DIMENSION OMEGA1(*),OMEGA2(*), OMEGA22(*)
       DIMENSION FCDIAG(*)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      LOGICAL TRIPLET
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -887,7 +891,7 @@ C
 c     IF (.NOT. (CCD.OR.LBRUK)) THEN
 C
          DO 100 ISYMI = 1,NSYM
-            ISYMA = ISYMI
+            ISYMA = MULD2H(ISYMT,ISYMI)
             DO 110 I = 1,NRHF(ISYMI)
                KOFFI = IRHF(ISYMI) + I
                DO 120 A = 1,NVIR(ISYMA)
@@ -896,7 +900,7 @@ C
                   NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A
 C
                   OMEGA1(NAI) = T1AM(NAI) + OMEGA1(NAI)/
-     *                       (FCDIAG(KOFFI) - FCDIAG(KOFFA))
+     *                       (FREQ + FCDIAG(KOFFI) - FCDIAG(KOFFA))
 C
   120          CONTINUE
   110       CONTINUE
@@ -906,7 +910,8 @@ c     ENDIF
 c     IF (LBRUK) CALL DCOPY(NVIRT*NRHFT,OMEGA1,1,T1AM,1)
 C
       DO 200 ISYMBJ = 1,NSYM
-         ISYMAI = ISYMBJ
+         ISYMAI = MULD2H(ISYMBJ,ISYMT)
+         IF (ISYMAI .LE. ISYMBJ) THEN
          DO 210 ISYMJ = 1,NSYM
             ISYMB = MULD2H(ISYMJ,ISYMBJ)
             DO 220 ISYMI = 1,NSYM
@@ -922,13 +927,22 @@ C
                            KOFFA = IVIR(ISYMA) + A
                            NAI = IT1AM(ISYMA,ISYMI)+NVIR(ISYMA)*(I-1)+A
 C
-                           IF (NAI .GT. NBJ) GOTO 260
-C
-                           NAIBJ = IT2AM(ISYMAI,ISYMBJ) + INDEX(NAI,NBJ)
-C
-                           OMEGA2(NAIBJ) = T2AM(NAIBJ) + OMEGA2(NAIBJ)/
-     *                                   (FCDIAG(KOFFI) + FCDIAG(KOFFJ)
+                           IF (ISYMAI.EQ.ISYMBJ .AND. NAI.LE.NBJ) THEN
+                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                            + INDEX(NAI,NBJ)
+                              OMEGA2(NAIBJ) = T2AM(NAIBJ)+OMEGA2(NAIBJ)/
+     *                                   (FREQ + 
+     *                                    FCDIAG(KOFFI) + FCDIAG(KOFFJ)
      *                                  - FCDIAG(KOFFA) - FCDIAG(KOFFB))
+                           ELSE IF (ISYMAI.LT.ISYMBJ) THEN
+                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                            + NT1AM(ISYMAI)*(NBJ-1) + NAI
+                              OMEGA2(NAIBJ) = T2AM(NAIBJ)+OMEGA2(NAIBJ)/
+     *                                   (FREQ + 
+     *                                    FCDIAG(KOFFI) + FCDIAG(KOFFJ)
+     *                                  - FCDIAG(KOFFA) - FCDIAG(KOFFB))
+                           ENDIF
+C
 C
   260                   CONTINUE
   250                CONTINUE
@@ -936,7 +950,58 @@ C
   230          CONTINUE
   220       CONTINUE
   210    CONTINUE
+         ENDIF
   200 CONTINUE
+C
+C     Do second double block if triplet.
+C
+C
+      IF (TRIPLET) THEN
+C
+      DO ISYMBJ = 1,NSYM
+         ISYMAI = MULD2H(ISYMBJ,ISYMT)
+         IF (ISYMAI .LE. ISYMBJ) THEN
+         DO ISYMJ = 1,NSYM
+            ISYMB = MULD2H(ISYMJ,ISYMBJ)
+            DO ISYMI = 1,NSYM
+               ISYMA = MULD2H(ISYMI,ISYMAI)
+               DO J = 1,NRHF(ISYMJ)
+                  KOFFJ = IRHF(ISYMJ) + J
+                  DO B = 1,NVIR(ISYMB)
+                     KOFFB = IVIR(ISYMB) + B
+                     NBJ = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
+                     DO I = 1,NRHF(ISYMI)
+                        KOFFI = IRHF(ISYMI) + I
+                        DO A = 1,NVIR(ISYMA)
+                           KOFFA = IVIR(ISYMA) + A
+                           NAI = IT1AM(ISYMA,ISYMI)+NVIR(ISYMA)*(I-1)+A
+C
+                           IF (ISYMAI.EQ.ISYMBJ .AND. NAI.LE.NBJ) THEN
+                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                           + INDEX(NAI,NBJ)
+                             OMEGA22(NAIBJ)=T2AM2(NAIBJ)+OMEGA22(NAIBJ)/
+     *                                  (FREQ + 
+     *                                   FCDIAG(KOFFI) + FCDIAG(KOFFJ)
+     *                                 - FCDIAG(KOFFA) - FCDIAG(KOFFB))
+                           ELSE IF (ISYMAI.LT.ISYMBJ) THEN
+                             NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                           + NT1AM(ISYMAI)*(NBJ-1) + NAI
+                             OMEGA22(NAIBJ)=T2AM2(NAIBJ)+OMEGA22(NAIBJ)/
+     *                                  (FREQ + 
+     *                                   FCDIAG(KOFFI) + FCDIAG(KOFFJ)
+     *                                 - FCDIAG(KOFFA) - FCDIAG(KOFFB))
+                           ENDIF
+C
+C
+                        END DO
+                     END DO
+                  END DO
+               END DO
+            END DO
+         END DO
+         ENDIF
+      END DO
+      ENDIF
 C
       CALL QEXIT('CCSD_NXTAM')
 C

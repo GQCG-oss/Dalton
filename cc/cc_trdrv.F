@@ -34,6 +34,7 @@ C
 c*DECK CC_TRDRV
       SUBROUTINE CC_TRDRV(FRHO1,LUFR1,FRHO2,LUFR2,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
+     *                    CC3DIIS,ITRAN,FREQ,
      *                    ISIDE,IST,NSIM,WORK,LWORK)
 C
 C-------------------------------------------------------------------
@@ -113,10 +114,11 @@ C
 #include <leinf.h>
 #include <aovec.h>
       PARAMETER ( TWO = 2.0D00,XHALF=0.5D00 )
-      DIMENSION WORK(LWORK)
+      DIMENSION WORK(LWORK), FREQ(*)
 C
-      LOGICAL ORSAVE,T2TSAV,MSCRS,TRIPLET
+      LOGICAL ORSAVE,T2TSAV,MSCRS,TRIPLET,CC3DIIS
       CHARACTER*8  FRHO1,FRHO2,FC1AM,FC2AM,FR2SD
+      INTEGER ITRAN(NSIM)
 C
 C-------------------------
 C     Save and initialize.
@@ -211,6 +213,9 @@ C
       IF (NSIMTR .GT. 100 ) CALL QUIT(
      *   ' Maximum nr of simultaneously trial vectors')
 C
+      IF (CC3DIIS .AND. (.NOT.MINSCR))
+     *  CALL QUIT('CC3DIIS option requires MINSCR=.TRUE.')
+C
 C--------------------------------------------------------
 C     Max is 100 due to limitations in the array IT2DLR
 C     set in ccsd.cdk.
@@ -231,11 +236,19 @@ C
 C
          ELSE
 C
-            K1 = I + IST - 1
+            IF (CC3DIIS) THEN
+              K1    = ITRAN(I)
+              ECURR = FREQ(K1)
+            ELSE
+              K1 = I + IST - 1
+            END IF
+            
 C
             IF (IPRINT .GT. 5 ) THEN
                WRITE(LUPRI,'(A35,I4)')
      *         ' CC_TRDRV: Transforming vector nr.:',K1
+               IF (CCSDT) WRITE(LUPRI,'(A,F8.4)')
+     *         ' CC_TRDRV: Frequency in R3 denominators:',ECURR
             ENDIF
 C
          ENDIF
