@@ -83,7 +83,7 @@ C
 #include <ccfro.h>
 #include <leinf.h>
 #include <symmet.h>
-#include <alphac.h>
+#include <codata.h>
 C
       LOGICAL FTSAV,LRLXA,LRLXB,LPDBSA,LPDBSB,LPRTSCF,OPTST,NOKAPPA
       LOGICAL SHIELD

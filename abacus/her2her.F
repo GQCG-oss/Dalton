@@ -165,11 +165,10 @@ C     TUH 84
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <pi.h>
 #include <maxaqn.h>
 #include <iratdef.h>
 #include <aovec.h>
-#include <alphac.h>
+#include <codata.h>
 #include <drw2el.h>
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP25 = 0.25D0)
       LOGICAL ONECEN, NOINT

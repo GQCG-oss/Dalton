@@ -1675,7 +1675,6 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
-#include <debye.h>
 #include <codata.h>
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0,
      *            D3 = 3.0D0, D100 = 100.0D0)
@@ -2250,7 +2249,6 @@ C  /* Deck susres */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <codata.h>
-#include <pmass.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, THRESH = 1.0D-5,
      &           SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21,
      &           CGS = SI*XFMOL*1.0D6)
@@ -2448,8 +2446,12 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <codata.h>
 C
-      PARAMETER (CONV = 234.9647D0, CONV2 = 2.802494514D0)
+      PARAMETER (XMUB =  ECHARGE*HBAR/(2.0D0*EMASS))
+      PARAMETER (AUFGR = XTJ*1D10*1D10/(ECHARGE*XTANG**2))
+      PARAMETER (CONV = ECHARGE*AUFGR*1D-28*1D-6/(HBAR*2.0*PI),
+     &           CONV2 = 1D-10*2.0D0*XMUB/(2.0D0*PI*HBAR))
       DIMENSION PVAL(6), AXIS(3,3,MXCENT), WRK(3), IWRK(3)
       CHARACTER*33 TEXT
 #include <nuclei.h>

@@ -642,6 +642,7 @@ C  /* Deck excout */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <codata.h>
 #include <gnrinf.h>
 #include <cbiexc.h>
 #include <cbilrs.h>
@@ -658,9 +659,8 @@ C  /* Deck excout */
       DIMENSION DSSUMM(-6:2,1:4),DLSUMM(-6:2,1:4),DISUMM(-6:2,1:4)
       DIMENSION DSSUMV(-6:2,1:4),DLSUMV(-6:2,1:4),DISUMV(-6:2,1:4)
       PARAMETER (D05 = 0.5D0, DTWO =  2.0D0, DTHREE = 3.0D0,
-     &           ZERO = 0.0D0,
-     &          ESUDIP = 64604.885D0, ESUECD = 471.44360D0)
-#include <codata.h>
+     &           ZERO = 0.0D0, ESUDIP = 1D4*DEBYE**2,
+     &           ESUECD =  ECHARGE*XTANG*CCM*1D36*ECHARGE*HBAR/EMASS)
 C
 C     Write transition moments, dip. strength, and rot. strength
 C     to outputfile.

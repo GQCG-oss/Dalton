@@ -124,7 +124,7 @@ TRACD,TRAAB,TRACTL: test print for IPRTRA.ge.100 (from Hinne)
  NXTH2M,NXTH2D: needtp(ityp) .lt. 0 now means at least one distribution
  of that type needed, but not all (in that case needtp(ityp) .gt. 0)
 900111-hjaaj
- SIROPI: local logical variable OPINTM, added FLAG(8:9) [RESPONS and
+ SIROPI: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
    MP2] to cases when LUINTM is opened.
 900108-hjaaj
  NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
@@ -215,7 +215,7 @@ C     signalling TRACTL to check if LUDA exist.
 C
 C     Find if we should open LUINTM:
 C     need LUINTM in MC/CI optimization or for WRGEOM
-C     or for MP2 or for RESPONS
+C     or for MP2 or for RESPONSE
 C
       LSRTAO = 0
       OPINTM = .NOT.FLAG(34) .OR. (FLAG(25) .AND. ABS(ITRFIN).LE.10)

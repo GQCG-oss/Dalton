@@ -1997,7 +1997,7 @@ C  /* Deck shiana */
 #include <implicit.h>
 #include <priunit.h>
 #include <inftap.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
@@ -2171,8 +2171,8 @@ C  /* Deck spire1 */
 #include <priunit.h>
 #include <dummy.h>
 #include <codata.h>
-      PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+      PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
       LOGICAL TEST
 #include <mxcent.h>
@@ -2281,8 +2281,8 @@ C  /* Deck isospn */
 #include <codata.h>
 #include <cbisol.h>
 #include <maxaqn.h>
-      PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+      PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
 #include <dorps.h>
 #include <nuclei.h>
@@ -2455,8 +2455,8 @@ C  /* Deck fnlspn */
 #include <codata.h>
 #include <cbisol.h>
 #include <maxaqn.h>
-      PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+      PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
 #include <dorps.h>
 #include <nuclei.h>
@@ -2968,7 +2968,7 @@ C  /* Deck mgfres */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <pmass.h>
+#include <codata.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5)
       LOGICAL PLANAR, LINEAR, D12, D23
@@ -3100,7 +3100,7 @@ C
       ELSE
          IF (IPRDEF .GE. 0) THEN
             CALL HEADER
-     &    ('Principal moments of inertia (a.u.) and principle axis',0)
+     &    ('Principal moments of inertia (a.u.) and principal axes',0)
             WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
      &           'IA',D1/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
      &           'IB',D1/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
@@ -3168,19 +3168,19 @@ C
      &         'B', (GTRAN(I,2),I = 1,3),
      &         'C', (GTRAN(I,3),I = 1,3)
             CALL HEADER('Nuclear contribution '//
-     &                  'in principle axis system (a.u.):',1)
+     &                  'in principal axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F12.8)')
      &         'A', (GTRAN1(I,1),I = 1,3),
      &         'B', (GTRAN1(I,2),I = 1,3),
      &         'C', (GTRAN1(I,3),I = 1,3)
             CALL HEADER('Electronic contribution '//
-     &                  'in principle axis system (a.u.):',1)
+     &                  'in principal axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F12.8)')
      &         'A', (GTRAN2(I,1),I = 1,3),
      &         'B', (GTRAN2(I,2),I = 1,3),
      &         'C', (GTRAN2(I,3),I = 1,3)
             CALL HEADER('Diamagnetic contribution '//
-     &                  'in principle axis system (a.u.):',1)
+     &                  'in principal axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F12.8)')
      &         'A', (GTRAN3(I,1),I = 1,3),
      &         'B', (GTRAN3(I,2),I = 1,3),
@@ -3203,19 +3203,19 @@ C
      &         'B', (GTRAN(I,2),I = 1,3),
      &         'C', (GTRAN(I,3),I = 1,3)
             CALL HEADER('Nuclear contribution '//
-     &                  'in principle axis system (a.u.):',1)
+     &                  'in principal axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F12.8)')
      &         'A', (GTRAN1(I,1),I = 1,3),
      &         'B', (GTRAN1(I,2),I = 1,3),
      &         'C', (GTRAN1(I,3),I = 1,3)
             CALL HEADER('Electronic contribution '//
-     &                  'in principle axis system (a.u.):',1)
+     &                  'in principal axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F12.8)')
      &         'A', (GTRAN2(I,1),I = 1,3),
      &         'B', (GTRAN2(I,2),I = 1,3),
      &         'C', (GTRAN2(I,3),I = 1,3)
             CALL HEADER('Diamagnetic contribution '//
-     &                  'in principle axis system (a.u.):',1)
+     &                  'in principal axis system (a.u.):',1)
             WRITE (LUPRI,'(3X,A,6X,3F12.8)')
      &         'A', (GTRAN3(I,1),I = 1,3),
      &         'B', (GTRAN3(I,2),I = 1,3),
@@ -3234,7 +3234,6 @@ C  /* Deck sprres */
 #include <codata.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <pmass.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
@@ -3355,7 +3354,7 @@ C
       ELSE
          IF (IPRINT .GE. 0) THEN
             CALL HEADER
-     &    ('Prinicpal moments of inertia (a.u.) and principle axis',0)
+     &    ('Principal moments of inertia (a.u.) and principal axes',0)
             WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
      &           'IA',D1/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
      &           'IB',D1/EIGVAL(2), (EIGVEC(I,2),I = 1,3),

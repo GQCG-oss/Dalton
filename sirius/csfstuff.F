@@ -1529,7 +1529,7 @@ C
       ELSE
 C
 C        LSTSYM is thus the reference symmetry, LSYM.
-C        ABACUS and RESPONS use CSF for singlet operators
+C        ABACUS and RESPONSE use CSF for singlet operators
 C        and det for triplet operators in reference symmetry,
 C        we find what is the case for this call by comparing
 C        to NCSASM and NDTASM:

@@ -197,7 +197,7 @@ C
       IF  (NTPCAL.GT.0)  THEN
          CALL HEADER('Cubic Response double residue calculation',0)
          WRITE (LUPRI,'(A,L1)')
-     *      ' Cubic respons two-photon absorbtion TPAMP='
+     *      ' Cubic response two-photon absorbtion TPAMP='
      *      ,TPAMP
          IF (TPALP) WRITE (LUPRI,'(A,L1)')
      *      ' Excited state polarizability requested TPALP='

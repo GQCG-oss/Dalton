@@ -932,7 +932,7 @@ C
          IERR = 0
          ICCSF = 0
          IF ( ICSYM.EQ.LSYM ) THEN
-C           ABACUS and RESPONS use CSF for singlet and det for triplet,
+C           ABACUS and RESPONSE use CSF for singlet and det for triplet,
 C           we find what is the case for this call by comparing
 C           to NCSASM and NDTASM:
             IF ( NCVEC .EQ. NCSASM( ICSYM) ) THEN
@@ -945,7 +945,7 @@ C           to NCSASM and NDTASM:
          END IF
          IHCCSF = 0
          IF (IHCSYM.EQ.LSYM ) THEN
-C           ABACUS and RESPONS use CSF for singlet and det for triplet,
+C           ABACUS and RESPONSE use CSF for singlet and det for triplet,
 C           we find what is the case for this call by comparing
 C           to NCSASM and NDTASM:
             IF (NHCVEC .EQ. NCSASM(IHCSYM) ) THEN

@@ -75,7 +75,6 @@ C
 #include <molde.h>
 #include <inftap.h>
 #include <priunit.h>
-#include <pi.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>

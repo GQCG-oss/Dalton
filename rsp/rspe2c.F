@@ -5313,7 +5313,7 @@ C
       subroutine printelweak(nop,sopr,ksymop)
 #include <implicit.h>
 #include <priunit.h>
-#include <alphac.h>
+#include <codata.h>
 #include <inflr.h>
 #include <mxcent.h>
 #include <elweak.h>

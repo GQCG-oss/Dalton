@@ -379,7 +379,7 @@ C
 #include <twoao.h>
 #include <twocom.h>
 #include <sphtrm.h>
-#include <alphac.h>
+#include <codata.h>
 #include <drw2el.h>
       DIMENSION INCDPT(3,3), ITYDPT(3,3)
       DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/

@@ -395,7 +395,7 @@ C      ELSE
               WRITE(LUPRI,'(/A,I5)') ' Number of excitations: ',NEXVAL
            ELSE
               WRITE(LUPRI,'(2(/A,I5))')
-     *        ' Number of operators for linear respons equations: '
+     *        ' Number of operators for linear response equations: '
      *        ,NABAOP, ' Number of response frequencies: ',NEXVAL
            ENDIF
         END IF
@@ -766,7 +766,7 @@ C  /* Deck prpaba */
       SUBROUTINE PRPABA(WORD,GPLON,LWRK)
 C
 C GET RIGHT HAND SIDE LONDON VECTOR in GPLON(1)
-C for RESPONS module
+C for RESPONSE module
 C
 #include <implicit.h>
 #include <priunit.h>

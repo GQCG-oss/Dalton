@@ -376,7 +376,7 @@ C           NCONMA = MXNCS
             NCONMA = MXNDT
 C              ... we must have sufficient space
 C                  for determinant vectors of different
-C                  symmetries or triplet in ABACUS and RESPONS
+C                  symmetries or triplet in ABACUS and RESPONSE
          END IF
          LACIMX = LACISV
          LBCIMX = LBCISV
@@ -494,7 +494,7 @@ C           ... do not use CSF expansion
                NCONMA = MXNDT
 C              ... we must have sufficient space
 C                  for determinant vectors of different
-C                  symmetries in ABACUS and RESPONS
+C                  symmetries in ABACUS and RESPONSE
             ELSE
                NCONMA = MXNCS
             END IF

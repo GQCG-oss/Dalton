@@ -82,14 +82,14 @@ CTRL[1]=3
 ERROR[1]="DFT/B3LYP ENERGY NOT CORRECT"
 
 # Relativistic prop.
-CRIT1=`$GREP "Darwin correction\: * (0| )\.198757279. au" $log | wc -l`
-CRIT2=`$GREP "Mass\-velocity correction\: * (\-0| \-)\.250296962. au" $log | wc -l`
+CRIT1=`$GREP "Darwin correction\: * (0| )\.198757251. au" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * (\-0| \-)\.250296926. au" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="RELATIVISTIC PROPERTIES NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP "(0| )\.748785 au * 1\.903239 Debye" $log | wc -l`
+CRIT1=`$GREP "(0| )\.748785 au * 1\.903221 Debye" $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="DIPOLE MOMENT NOT CORRECT"
@@ -104,7 +104,7 @@ CTRL[4]=2
 ERROR[4]="EXCITATION ENERGIES NOT CORRECT"
 
 # O shieldings
-CRIT1=`$GREP "O * x * 328\.4378.... * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT1=`$GREP "O * x * 328\.4377.... * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
 CRIT2=`$GREP "O * y * (0| )\.00000000 * 363\.3205.... * (0| )\.00000000" $log | wc -l`
 CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 * 349\.4163...." $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`

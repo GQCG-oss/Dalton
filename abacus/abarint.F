@@ -194,7 +194,6 @@ C
 #include <priunit.h>
 #include <optinf.h>
 #include <codata.h>
-#include <pi.h>
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
@@ -258,7 +257,6 @@ C
 #include <implicit.h>
 C
 #include <codata.h>
-#include <pi.h>
 C
 #include <mxcent.h>
 #include <maxorb.h>

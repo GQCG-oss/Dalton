@@ -1014,7 +1014,7 @@ C
 C     If (FLAG(25) .OR. INERSI) write LUSIFC
 C     modified hjaaj-aug99: only if this is final MO level
 C       FLAG(25) is true for .ABACUS (geometry optimization)
-C                         or .RESPONS (response calculation)
+C                         or .RESPONSE (response calculation)
 C                         or .INTERFACE (request for LUSIFC)
 C       INERSI is true if this is initial state calculation
 C              in a solvent calculation with inertial polarization
@@ -2487,7 +2487,7 @@ C
             CALL READDI(LUDA2,IADH2+IJ,IRAT*NNASHX,H2AC)
             CALL WRITT (LUSIFC,MMASHX,H2AC)
   100    CONTINUE
-... men der mangler en label som fortaeller respons at H2AC on disk.
+... men der mangler en label som fortaeller response at H2AC on disk.
 #else
          WRITE (LUPRI,*)
      &      'SIRCI.WRSIFC: ".DISKH2" not implemented here yet.'

@@ -136,7 +136,7 @@ ERROR[4]="INITIAL OCCUPANCY NOT CORRECT"
 # Energy
 CRIT1=`$GREP "Total energy * \-224\.510748516[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.2480553[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589452\.886[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-589452\.890[0-9] kJ\/mol" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[5]=3
 ERROR[5]="INITIAL ENERGY NOT CORRECT"
@@ -150,8 +150,8 @@ CTRL[6]=3
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP "(0| )\.204760 au * (0| )\.520453 Debye" $log | wc -l`
-CRIT2=`$GREP "x * (\-0|\-)\.2047600[0-9] * (\-0|\-)\.5204530[0-9]" $log | wc -l`
+CRIT1=`$GREP "(0| )\.204760 au * (0| )\.520448 Debye" $log | wc -l`
+CRIT2=`$GREP "x * (\-0|\-)\.2047600[0-9] * (\-0|\-)\.5204481[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="INITIAL DIPOLE MOMENT NOT CORRECT"

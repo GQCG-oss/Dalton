@@ -144,7 +144,7 @@ ERROR[6]="INITIAL OCCUPANCIES NOT CORRECT"
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-224\.518523910[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.4596345[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.300[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-589473\.304[0-9] kJ\/mol" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="INITIAL ENERGY NOT CORRECT"
@@ -173,8 +173,8 @@ CTRL[9]=10
 ERROR[9]="INITIAL HESSIAN NOT CORRECT"
 
 # Dipole moment, 1st iteration:
-CRIT1=`$GREP "(0| )\.216(5|6)(0|9)[0-9] au * (0| )\.55054[0-9] Debye" $log | wc -l`
-CRIT2=`$GREP "x * (\-0|\-)\.2165986[0-9] * (\-0|\-)\.5505439[0-9]" $log | wc -l`
+CRIT1=`$GREP "(0| )\.216(5|6)(0|9)[0-9] au * (0| )\.55053[0-9] Debye" $log | wc -l`
+CRIT2=`$GREP "x * (\-0|\-)\.2165986[0-9] * (\-0|\-)\.5505387[0-9]" $log | wc -l`
 TEST[10]=`expr $CRIT1  \+ $CRIT2`
 CTRL[10]=2
 ERROR[10]="INITIAL DIPOLE MOMENT NOT CORRECT"
@@ -196,7 +196,7 @@ ERROR[12]="SECOND GEOMETRY NOT CORRECT"
 # Energy, 2nd iteration:
 CRIT1=`$GREP "Total energy * \-224\.518756473[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.465962[8-9][0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-589473\.911[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-589473\.914[0-9] kJ\/mol" $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
 ERROR[13]="SECOND ENERGY NOT CORRECT"
@@ -289,7 +289,7 @@ ERROR[21]="ROTATIONAL CONSTANTS NOT CORRECT"
 # Vibrational frequencies:
 CRIT1=`$GREP "1 * A1 * 1093\.93 * (0| )\.004984 * (0| )\.795 * (0| )\.0188" $log | wc -l`
 CRIT2=`$GREP "3 * A1 * 708\.43 * (0| )\.003228 * 4\.496 * (0| )\.1064" $log | wc -l`
-CRIT3=`$GREP "2 * B1 * 1021\.92 * (0| )\.004656 * 89\.005 * 2\.1064" $log | wc -l`
+CRIT3=`$GREP "2 * B1 * 1021\.92 * (0| )\.004656 * 89\.005 * 2\.1063" $log | wc -l`
 TEST[22]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[22]=3
 ERROR[22]="VIBRATIONAL FREQUENCIES NOT CORRECT"
@@ -297,7 +297,7 @@ ERROR[22]="VIBRATIONAL FREQUENCIES NOT CORRECT"
 # IR intensities:
 CRIT1=`$GREP "1 * A1 * ....... * ........ * (0| )\.795 * (0| )\.0188" $log | wc -l`
 CRIT2=`$GREP "3 * A1 * ....... * ........ * 4\.496 * (0| )\.1064" $log | wc -l`
-CRIT3=`$GREP "2 * B1 * ....... * ........ * 89\.005 * 2\.1064" $log | wc -l`
+CRIT3=`$GREP "2 * B1 * ....... * ........ * 89\.005 * 2\.1063" $log | wc -l`
 TEST[23]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[23]=3
 ERROR[23]="IR INTENSITIES NOT CORRECT"

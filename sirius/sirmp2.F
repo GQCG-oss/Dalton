@@ -41,7 +41,7 @@ in sirctl.F should be removed.
 /* Comdeck mp2log */
 951130-hjaaj
 removed IADR2 from comdeck INFMP2; moved calculation of IADR2 to new
-  subroutine PHADR2, to be called from RESPONS.
+  subroutine PHADR2, to be called from RESPONSE.
 corrected dimension for initialization if IADR1.
 renamed PHADDR to PHADR1
 950517-hjaaj
@@ -843,7 +843,7 @@ C
 C  /* Deck mp2ifc */
         SUBROUTINE MP2IFC(DONE,COEMP2)
 C
-C This routine prepares the SOPPA interface for RESPONS storing
+C This routine prepares the SOPPA interface for RESPONSE storing
 C the correlation coefficients and the second order one-density
 C matrix on the end of the LUSIFC file.
 C MJP 181093

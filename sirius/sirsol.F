@@ -1358,7 +1358,7 @@ C
      &          .OR. ISYRLM(L+M+1) .EQ. -1) THEN
              WRITE(LUPRI,*)'SOLLNC ERROR, needed RLM not on LUSOL file!'
              WRITE(LUPRI,*)'- You must not specify ".NOT ALL RLM" under'
-             WRITE(LUPRI,*)'  "*ONEINT" when running ABACUS or RESPONS'
+             WRITE(LUPRI,*)'  "*ONEINT" when running ABACUS or RESPONSE'
              WRITE(LUPRI,*)'  with non-totally symmetric perturbations.'
              WRITE(LUPRI,*)'L,M,ISYRLM(l,m), LSYMPT',
      &                    L,M,ISYRLM(L+M+1),LSYMPT
@@ -1638,7 +1638,7 @@ C
      &          .OR. ISYRLM(L+M+1) .EQ. -1) THEN
              WRITE(LUPRI,*)'SOLLNO ERROR, needed RLM not on LUSOL file!'
              WRITE(LUPRI,*)'- You must not specify ".NOT ALL RLM" under'
-             WRITE(LUPRI,*)'  "*ONEINT" when running ABACUS or RESPONS'
+             WRITE(LUPRI,*)'  "*ONEINT" when running ABACUS or RESPONSE'
              WRITE(LUPRI,*)'  with non-totally symmetric perturbations.'
              WRITE(LUPRI,*)'L,M,ISYRLM(l,m), LSYMPT',
      &                    L,M,ISYRLM(L+M+1),LSYMPT

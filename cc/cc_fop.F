@@ -73,7 +73,7 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <alphac.h>
+#include <codata.h>
 #include <iratdef.h>
 #include <ccfop.h>
 #include <cclr.h>
@@ -561,7 +561,7 @@ C
          END IF
 C
 C---------------------------------------------------------------
-C        Unclosed leftover from respons-solver has to be closed.
+C        Unclosed leftover from response-solver has to be closed.
 C---------------------------------------------------------------
 C
          CALL GPCLOSE(LUSOVE,'DELETE')

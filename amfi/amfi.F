@@ -4538,7 +4538,7 @@ cbs   ensure normalization of the vectors.
       end   
       Subroutine kinemat(L,ndim,evtkin,type1,type2,Energy)
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
 cbs   at least it's identical with Odd's valuE
       parameter (speed2=CVEL*CVEL) 
       parameter (speed4=speed2*speed2) 

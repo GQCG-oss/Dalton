@@ -1444,7 +1444,7 @@ C
          IERR = 0
          ILCSF = 0
          IF (ILSYM .EQ. LSYM) THEN
-C           ABACUS and RESPONS use CSF for singlet and det for triplet,
+C           ABACUS and RESPONSE use CSF for singlet and det for triplet,
 C           we find what is the case for this call by comparing
 C           to NCSASM and NDTASM:
             IF (NCLDIM .EQ. NCSASM(ILSYM)) THEN
@@ -1457,7 +1457,7 @@ C           to NCSASM and NDTASM:
          END IF
          IRCSF = 0
          IF (IRSYM .EQ. LSYM) THEN
-C           ABACUS and RESPONS use CSF for singlet and det for triplet,
+C           ABACUS and RESPONSE use CSF for singlet and det for triplet,
 C           we find what is the case for this call by comparing
 C           to NCSASM and NDTASM:
             IF (NCRDIM .EQ. NCSASM(IRSYM)) THEN

@@ -81,7 +81,7 @@ RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
 C
-C Driver for RESPONS.
+C Driver for RESPONSE.
 C
 C We assume that either the SIRIUS module or the SETSIR
 C subroutine has been called before RSPDRV.
@@ -125,7 +125,7 @@ C
       TIMRSP = SECOND()
       CALL GETTIM(CSTR,WSTR)
       WRITE (LUPRI,'(//A)')
-     *   '  This is output from RESPONS  -  '//
+     *   '  This is output from RESPONSE  -  '//
      *   'an MCSCF and SOPPA response property program '
       WRITE (LUPRI,'(1X,78A1/)') ('-',I=1,78)
 C
@@ -160,8 +160,8 @@ C
 C
       IF (INPTES) THEN
          WRITE(LUPRI,'(//,A,/)') 
-     &        ' *** END of input test for RESPONS ***'
-         CALL QUIT('*** END of input test for RESPONS ***')
+     &        ' *** END of input test for RESPONSE ***'
+         CALL QUIT('*** END of input test for RESPONSE ***')
       END IF
       CALL FLSHFO(LUPRI)
 C
@@ -547,7 +547,7 @@ C
       WRITE (LUPRI,'(//,A,//)')
      *   ' <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>'
 C
-C     ***** PROCESS INPUT FOR RESPONS *****
+C     ***** PROCESS INPUT FOR RESPONSE *****
 C
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
@@ -3329,7 +3329,7 @@ C
       TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1))
 C
 C     If any triplet operators, then we must use determinants
-C     in RESPONS also for the reference symmetry, even if
+C     in RESPONSE also for the reference symmetry, even if
 C     CSF's were used in SIRIUS. /hjaaj May 2001
 C
       MCONRF = NCONRF

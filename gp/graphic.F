@@ -170,7 +170,6 @@ C
 #include <maxaqn.h>
 #include <aovec.h>
 #include <maxorb.h>
-#include <pi.h>
 #include <codata.h>
 C
       PARAMETER (ONE=1.0D+00, HALF=0.5D+00, PT75 = 0.75D+00, 

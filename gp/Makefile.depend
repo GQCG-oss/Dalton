@@ -1,40 +1,52 @@
 gpdahle.o : gpdahle.F \
   ../include/implicit.h  ../include/priunit.h \
   ../include/single.h
+
+
 gphjj.o : gphjj.F \
   ../include/2gbdef.h  ../include/chrnos.h \
   ../include/dummy.h  ../include/implicit.h \
   ../include/inftap.h  ../include/ivdep.h \
   ../include/priunit.h  ../include/single.h \
   ../include/thrzer.h
+
+
 gpjeppe.o : gpjeppe.F \
   ../include/implicit.h  ../include/iratdef.h \
   ../include/nosync.h  ../include/prefer_vector.h \
   ../include/priunit.h  ../include/single.h
+
+
 gpsaue.o : gpsaue.F \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/ivdep.h  ../include/maxaqn.h \
-  ../include/memint.h  ../include/mxcent.h \
-  ../include/nosync.h  ../include/pgroup.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
+  ../include/maxorb.h  ../include/memint.h \
+  ../include/mxcent.h  ../include/nosync.h \
+  ../include/pgroup.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h
+
+
 gptrygve.o : gptrygve.F \
   ../include/2gbdef.h  ../include/chrnos.h \
   ../include/dummy.h  ../include/eribuf.h \
   ../include/gnrinf.h  ../include/ibtdef.h \
   ../include/implicit.h  ../include/infpar.h \
-  ../include/inftap.h  ../include/mxcent.h \
-  ../include/priunit.h  ../include/single.h
+  ../include/inftap.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/priunit.h \
+  ../include/single.h
+
+
 graphic.o : graphic.F \
   ../include/abainf.h  ../include/aovec.h \
   ../include/codata.h  ../include/dummy.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/infinp.h  ../include/maxaqn.h \
   ../include/maxorb.h  ../include/mxcent.h \
-  ../include/nuclei.h  ../include/pi.h \
-  ../include/primit.h  ../include/priunit.h \
-  ../include/shells.h  ../include/single.h \
-  ../include/symmet.h
+  ../include/nuclei.h  ../include/primit.h \
+  ../include/priunit.h  ../include/shells.h \
+  ../include/single.h  ../include/symmet.h
+
+
 intf7790.o : intf7790.F \
   ../include/abainf.h  ../include/cbirea.h \
   ../include/codata.h  ../include/gnrinf.h \
@@ -44,19 +56,34 @@ intf7790.o : intf7790.F \
   ../include/molinp.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
+
+
 mempkg.o : mempkg.F \
   ../include/implicit.h  ../include/iratdef.h \
   ../include/memcb1.h  ../include/single.h
+
+
 mpimacro.o : mpimacro.F \
   ../include/implicit.h  ../include/infpar.h \
-  ../include/priunit.h  ../include/single.h
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
+
+
 mxmpack.o : mxmpack.F \
   ../include/implicit.h  ../include/single.h
+
+
 pvmmacro.o : pvmmacro.F \
   ../include/implicit.h  ../include/priunit.h \
   ../include/single.h
+
+
 qpack.o : qpack.F \
   ../include/priunit.h  ../include/single.h
+
+
 vcraypack.o : vcraypack.F \
   ../include/implicit.h  ../include/priunit.h \
   ../include/single.h
+
+

@@ -507,7 +507,6 @@ C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <pi.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <aovec.h>
@@ -4996,7 +4995,6 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <pi.h>
 #include <codata.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DSM = 1.0D-30)

@@ -55,14 +55,14 @@ C
 !     Purpose: Calculate B-term and F-term in the orthonormal basis.
 !
 !     IOPT equals one for energy-calculations and two or three for
-!     respons calculations (2 for left trans. and 3 for right trans.)
+!     response calculations (2 for left trans. and 3 for right trans.)
 !     IOPT eq. 4 for F*vector contributions.
 !     IOPT equals 5  (Tilde)rhoBF(-)
 !
 !
 !     XLAMD1 is always a true lamda matrix whereas XLAMD2
 !     is an AO transformed trialvector in the case af a
-!     respons calculation.
+!     response calculation.
 !
 !
 !     24-9-1996:
@@ -522,7 +522,7 @@ C
                      ENDIF
 C
 C---------------------------------------------------------------------
-C                    For respons calculation add permuted terms.
+C                    For response calculation add permuted terms.
 C---------------------------------------------------------------------
 C
                      IF (IOPT .GE. 2) THEN

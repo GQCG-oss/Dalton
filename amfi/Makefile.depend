@@ -1,11 +1,15 @@
 amfi.o : amfi.F \
-  ../include/alphac.h  ../include/datapow.h \
+  ../include/codata.h  ../include/datapow.h \
   ../include/dofuc.h  ../include/dummy.h \
   ../include/implicit.h  ../include/ired.h \
   ../include/para.h  ../include/param.h \
   ../include/pi.h  ../include/priunit.h \
   ../include/Regge.h  ../include/single.h
+
+
 symtra.o : symtra.F \
   ../include/dummy.h  ../include/implicit.h \
   ../include/para.h  ../include/priunit.h \
   ../include/single.h
+
+

@@ -4295,7 +4295,7 @@ C
       IF (IPRALL .GE. 4) CALL TITLER('Output from ANGRHS','*',103)
 C
 C----------------------------------------------
-C     Initialize variables for RESPONS routines
+C     Initialize variables for RESPONSE routines
 C----------------------------------------------
 C
       IPRRSP = IPRALL - 2

@@ -2123,7 +2123,7 @@ C
      &          SHLINT(KCKTAB)
 #include <onecom.h>
 #include <lmns.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER (ALPMVL = ALPHA2*0.125D0, ALPMV2 = ALPHA2*0.25D0)
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -4195,11 +4195,10 @@ C     shki, Jan. 93 (based on FRMINT tuh feb 91)
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <pi.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <alphac.h>
+#include <codata.h>
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DWNFAC = 0.5D0*PI*ALPHA2)

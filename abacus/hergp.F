@@ -401,9 +401,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <codata.h>
-#include <pi.h>
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 86)
-      PARAMETER (DMP = 1.6726231D-27)
+      PARAMETER (DMP = PMASS*XFAMU*EMASS)
       PARAMETER (THRESH = 1.0D-10)
 C
       CHARACTER*(*) TYPE
@@ -1355,7 +1354,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)
@@ -1486,7 +1485,7 @@ C  /* Deck dp0pri */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <debye.h>
+#include <codata.h>
 #include <cbidip.h>
 #include <symmet.h>
       DIMENSION DIPOLE(3)

@@ -835,7 +835,7 @@ C in depolarized rightangle scattering =
 C DELTAZ = 4/c ( 6*BETAGM - 2*BETAA)
 C
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER ( D2 = 2.0D0, D4 = 4.0D0, D6 = 6.0D0 )
 C
       DELTAZ = D4 / CVEL * (D6 * BETAGM - D2 * BETAA)
@@ -850,7 +850,7 @@ C in polarized rightangle scattering =
 C DELTAX = 4/c ( 45*ALFAMN*GMMN+7*BETAGM+BETAA)
 C
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER ( D4 = 4.0D0, D7 = 7.0D0, D45 = 45.0D0)
 C
       DELTAX = D4 / CVEL * (D45*ALFAMN*GMMN+D7*BETAGM+BETAA)
@@ -865,7 +865,7 @@ C in forward scattering with no analyzer =
 C DELTA0 = 4/c (180*ALFAMN*GMMN+4*BETAGM-4*BETAA)
 C
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER ( D4 = 4.0D0, D180 = 18.0D1 )
 C
       DELTA0 = D4 / CVEL * (D180*ALFAMN*GMMN+D4*BETAGM-D4*BETAA)
@@ -880,7 +880,7 @@ C in backward scattering with no analyzer =
 C DELTAB = 4/c ( 24*BETAGM+8*BETAA)
 C
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER ( D4 = 4.0D0, D8 = 8.0D0, D24 = 24.0D0 )
 C
       DELTAB = D4 / CVEL * (D24*BETAGM + D8*BETAA)
@@ -930,7 +930,7 @@ C CROSSK = K*B**2
 C ****************** FREQ is in Hartree = 2Pi*freq
 C
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER ( D180 = 18.0D1)
 C
       CROSSK = (FRVAL-FREQ)**3*FRVAL/FREQ/D180/CVEL**3
@@ -942,7 +942,6 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <pi.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <codata.h>

@@ -456,7 +456,7 @@ C        CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
 C----------------------------------------------------------------------
-C 'PL1 ' projected 1st-order respons Lagrang. multipls: --> 'X1 ' + 'F1 '
+C 'PL1 ' projected 1st-order response Lagrang. multipls: --> 'X1 ' + 'F1 '
 C----------------------------------------------------------------------
 
       ELSE IF (LIST(1:3) .EQ. 'PL1') THEN

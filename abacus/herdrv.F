@@ -3189,7 +3189,7 @@ C
 C     K.Ruud, Sept.-2000
 C
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
@@ -3463,7 +3463,7 @@ C
 C     Subroutine for calculating second-order Douglas-Kroll contributions
 C
 #include <implicit.h>
-#include <alphac.h>
+#include <codata.h>
       PARAMETER (CVEL2 = CVEL*CVEL, DP5 = 0.50D0)
 #include <priunit.h>
       DIMENSION VMAT(NNBASX), PVPMAT(NNBASX), E1DIAG(NBAST),

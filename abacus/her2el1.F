@@ -271,7 +271,7 @@ C
 #include <hertop.h>
 #include <sphtrm.h>
 #include <drw2el.h>
-#include <alphac.h>
+#include <codata.h>
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*), INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHVC(0:*), IODDHR(*), INDHSQ(*),

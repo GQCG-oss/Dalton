@@ -224,7 +224,6 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <codata.h>
-#include <pi.h>
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, RADTDG = 180.D0/PI)
       LOGICAL SKIP, DIF, PRINT, PUNCH

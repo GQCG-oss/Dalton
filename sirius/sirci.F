@@ -2451,7 +2451,7 @@ C  17-Jun-1987 hjaaj
 C  Revised 13-Jun-1991 hjaaj : also calculate and write DV
 C
 C Purpose:
-C  Interface to RESPONS for CI response calculations:
+C  Interface to RESPONSE for CI response calculations:
 C  write information to LUSIFC needed for response calculation.
 C
 C  The following records are written:
@@ -2545,7 +2545,7 @@ C
             CALL READDX(LUH2AC,IADH2+IJ,IRAT*NNASHX,H2AC)
             CALL WRITT (LUSIFC,MMASHX,H2AC)
   100    CONTINUE
-... men der mangler en label som fortaeller respons at H2AC on disk.
+... men der mangler en label som fortaeller response at H2AC on disk.
 #else
          CALL QUIT('SIRCI.CIRSPS: ".DISKH2" not implemented here yet.')
 #endif

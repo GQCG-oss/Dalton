@@ -174,7 +174,7 @@ C
          CALL SOLGDT(WRK(KCREF),CMO,XINDX,WRK(KDV),WRK(KGP2),
      *               ESOLT,WRK(KWRK1),WRK(KWRK2),LWRK1,NDREF,IREFSY)
 C
-C        scale by a half for consistency with respons and add to GP.
+C        scale by a half for consistency with response and add to GP.
 C
          CALL DAXPY(KZWOPT,DHALF,WRK(KGP2+KZCONF),1,WRK(KGP+KZCONF),1)
          CALL DAXPY(KZWOPT,(-DHALF),WRK(KGP2+KZCONF),1,
@@ -309,7 +309,7 @@ C
 C  /* Deck esrinp */
       SUBROUTINE ESRINP(WORD)
 C
-C     Module for *ESR    input under **RESPONS
+C     Module for *ESR    input under **RESPONSE
 C
 #include <implicit.h>
 C

@@ -3307,7 +3307,7 @@ c /* deck cc_smind */
 *    Purpose: Determine which vectors are needed in second moment
 *             calculations, flags are set for the following :
 *             chi vectors , second order rhs vectors,
-*             first order t and zeta respons vectors, m vectors
+*             first order t and zeta response vectors, m vectors
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -3513,7 +3513,7 @@ c /* deck cc_tmind */
 *    Purpose: Determine which vectors are needed in third moment
 *             calculations, flags are set for the following :
 *             chi vectors , second order rhs vectors,
-*             first order t respons vectors, m vectors
+*             first order t response vectors, m vectors
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)

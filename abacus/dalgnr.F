@@ -884,7 +884,7 @@ C
      &                  IDUMMY,.FALSE.)
             REWIND (LUCMD)
 C
-C     Let us first see if we can find any **RESPONS input
+C     Let us first see if we can find any **RESPONSE input
 C
  133        CONTINUE
             READ (LUCMD,'(A7)',END=134,ERR=134) WORD

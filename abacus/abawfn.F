@@ -51,7 +51,6 @@ C
 #include <molde.h>
 
 #include <priunit.h>
-#include <pi.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <aovec.h>

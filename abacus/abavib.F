@@ -706,7 +706,7 @@ C  /* Deck rotana */
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
       PARAMETER (ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU), 
-     &           CINVRS = 3.335 641 0 D-5)
+     &           CINVRS = 1.0D4/CCM)
 C
       DIMENSION GEOM(NCORD), AMASS(NATOMS), 
      &          AINRTI(3,3), AINRTP(6), VINRTI(3,3), VCMNUC(3),
@@ -834,9 +834,9 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <codata.h>
-#include <debye.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
-      PARAMETER (ESUDIP = 64604.885D0, ESUROT = 4714436.0D0)
+      PARAMETER (ESUDIP = 1D4*DEBYE**2,
+     &           ESUROT =  ECHARGE*XTANG*CCM*1D40*ECHARGE*HBAR/EMASS)
 C
       LOGICAL DONE, SAME, NOTALL, DOVCD
       DIMENSION HESS(NCORD,NCORD), GRAD(NCORD), GRDN(NCORD),
@@ -1363,7 +1363,6 @@ C
       PARAMETER (RPFFAC = 0.041 229 342 D0,
      &           TPFFAC = 0.025 607 3D0)
       PARAMETER ( MAXTMP = 15 )
-#include <pi.h>
 C
       LOGICAL  LINEAR
       DIMENSION EVAL(NCORD)
@@ -1726,7 +1725,6 @@ C  /* Deck intern */
 #include <priunit.h>
 #include <mxcent.h>
 #include <codata.h>
-#include <debye.h>
 #include <facang.h>
       PARAMETER (D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0)
 C
@@ -2238,7 +2236,6 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <codata.h>
-#include <pi.h>
       LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
       PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)
 C
@@ -3725,15 +3722,14 @@ C     geometry. K.Ruud, San Diego, March 1999
 C
 #include <implicit.h>
 #include <codata.h>
-#include <pi.h>
 #include <thrzer.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
-      PARAMETER (D1 = 1.0D0, D4 = 4.0D0, PMASS = 1.007275D0,
+      PARAMETER (D1 = 1.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, D0 = 0.0D0, D2 = 2.0D0)
-      PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*6.5796838999D12)
+      PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
      &           D3 = 3.0D0)
 #include <cbilnr.h>
@@ -4342,7 +4338,6 @@ C Juhani Lounila 21.1.1998
 C
 C ***************************************************************************
 #include <implicit.h>
-#include <pi.h>
 #include <codata.h>
 #include <priunit.h>
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)

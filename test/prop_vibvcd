@@ -144,7 +144,7 @@ ERROR[3]="MOLECULAR GEOMETRY NOT CORRECT"
 # SCF energy:
 CRIT1=`$GREP "Total energy * \-152\.810086303[0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-4158\.1738457[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-401202\.824[0-9] kJ\/mol" $log | wc -l`
+CRIT3=`$GREP "\-401202\.827[0-9] kJ\/mol" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGY NOT CORRECT"
@@ -191,8 +191,8 @@ CTRL[6]=21
 ERROR[6]="HESSIAN NOT CORRECT"
 
 # Dipole moment:
-CRIT1=`$GREP "1\.104664 au * 2\.807802 Debye" $log | wc -l`
-CRIT2=`$GREP "z * \-1\.1046640[0-9] * \-2\.8078019[0-9]" $log | wc -l`
+CRIT1=`$GREP "1\.104664 au * 2\.807776 Debye" $log | wc -l`
+CRIT2=`$GREP "z * \-1\.1046640[0-9] * \-2\.8077756[0-9]" $log | wc -l`
 TEST[7]=`expr $CRIT1  \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="DIPOLE MOMENT NOT CORRECT"
@@ -291,7 +291,7 @@ CTRL[11]=30
 ERROR[11]="FREQUENCIES NOT CORRECT"
 
 # Dipole and rotational strengths:
-CRIT1=`$GREP " 1 * 3315\.39 *  78\.999 * (\-0|\-|0| )\.000" $log | wc -l`
+CRIT1=`$GREP " 1 * 3315\.39 *  78\.998 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT2=`$GREP " 2 * 3297\.25 *   (0| )\.000 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT3=`$GREP " 3 * 3210\.76 *  13\.112 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT4=`$GREP " 4 * 3192\.31 *  63\.853 * (\-0|\-|0| )\.000" $log | wc -l`
@@ -305,8 +305,8 @@ CRIT11=`$GREP "11 * 1226\.49 *  20\.750 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT12=`$GREP "12 * 1185\.79 *   (0| )\.000 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT13=`$GREP "13 *  965\.66 *  22\.511 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT14=`$GREP "14 *  960\.42 *   7\.089 * (\-0|\-|0| )\.000" $log | wc -l`
-CRIT15=`$GREP "15 *  957\.42 * 417\.465 * (\-0|\-|0| )\.000" $log | wc -l`
-CRIT16=`$GREP " 1 * 3259\.27 *  72\.562 * 27\.232" $log | wc -l`
+CRIT15=`$GREP "15 *  957\.42 * 417\.464 * (\-0|\-|0| )\.000" $log | wc -l`
+CRIT16=`$GREP " 1 * 3259\.27 *  72\.561 * 27\.232" $log | wc -l`
 CRIT17=`$GREP " 2 * 3256\.72 *   5\.841 * \-22\.113" $log | wc -l`
 CRIT18=`$GREP " 3 * 2406\.34 *   7\.064 * 11\.285" $log | wc -l`
 CRIT19=`$GREP " 4 * 2384\.28 *  60\.222 * \-12\.272" $log | wc -l`

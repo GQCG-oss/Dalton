@@ -53,7 +53,7 @@ HERFCK: new parameter (print level in CBITWO)
 GETFCK now calls HERFCK
 AOLABE renamed to AOLAB4, generalized, and moved to GP.
 GETFCK is now only internal test routine; HERFCK is called from the
-outside (SIRIUS and RESPONS).
+outside (SIRIUS and RESPONSE).
 921201-hjaaj:
    new Sirius input routine for Hermit parameters ? an extended sether?
    also direct calculation of solvent integrals ?

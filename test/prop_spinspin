@@ -195,7 +195,7 @@ ERROR[6]="O-H SPIN-SPIN COUPLING NOT CORRECT"
 
 # H-H coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-11\.9277 Hz" $log | wc -l`
-CRIT2=`$GREP "Anisotropic coupling * \: * \-37\.8904 Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-37\.8903 Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.0676" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * 37\.9192 Hz" $log | wc -l`
 CRIT5=`$GREP "A parameter * \: * 2\.5137 Hz" $log | wc -l`
