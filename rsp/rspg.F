@@ -1299,7 +1299,7 @@ C           GTENSOR(3,2)=(GTENSOR(2,3)+GTENSOR(3,2))*DP5
                   IJ = IJ + 1
                END DO
             END DO
-            CALL JACO(PVAL,GSHIFT,3,3,3,WORK,LWORK)
+            CALL JACO(PVAL,GSHIFT,3,3,3,WORK,WORK(10))
             GEIG(1)=SQRT(PVAL(1))
             GEIG(2)=SQRT(PVAL(3))
             GEIG(3)=SQRT(PVAL(6))
