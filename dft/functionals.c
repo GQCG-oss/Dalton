@@ -203,9 +203,10 @@ DFTPOT1(SecondDrv *ds, const real* w, const DftDensProp* dp,
 {
     real grad = dp->grada + dp->gradb;
     SecondFuncDrv drvs;
+
     drv2_clear(&drvs);
-    if(dp->rhoa + dp->rhob<1e-14) return;
-    selected_func->second(&drvs, *w, dp);
+    if(dp->rhoa + dp->rhob>1e-14)
+        selected_func->second(&drvs, *w, dp);
          
     /* This could be a separate function. */
     if (*triplet) {

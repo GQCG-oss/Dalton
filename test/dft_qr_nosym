@@ -51,18 +51,16 @@ GC2 SSF
 
 test="
 check_scf_energy DFT -75.881285947058 1e-10
-check_hyperpolarizabilities 0.0 0.0 'X;Y,X'  -17.89534364 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Y;X,X'  -17.89534364 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y'   -7.42786790 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Y;Z,Z'   -4.22093597 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'   -4.22093597 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;X,Y'  -20.01161730 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;Y,X'  -20.27941551 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;X,X'  -20.27941551 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y'   -9.46450067 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'   -5.01037749 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Z;Y,Z'   -5.01037749 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y'  -12.50308134 1e-6
+check_hyperpolarizabilities 0.0 0.0 'X;Y,X' -20.11107907 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Y;X,X' -20.31063082 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y'  -9.01605221 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -4.19045020 1e-6
+check_hyperpolarizabilities 0.1 0.0 'X;X,Y' -22.47955542 1e-6
+check_hyperpolarizabilities 0.1 0.0 'X;Y,X' -22.84664605 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -23.12729758 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -11.44896342 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Z;Y,Z'  -4.94277490 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y' -12.86866510 1e-6
 "
 
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"

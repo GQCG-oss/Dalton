@@ -25,11 +25,15 @@ dalton='**DALTON
 *DFT INPUT
 .RADINT
 1e-7
+*SCF INPUT
+.NOQCSCF
+.SHIFT
+-0.3
 **END OF 
 '
 
 test='
-check_scf_energy DFT  -525.926546746953 5e-11
+check_scf_energy DFT  -525.926546746953 1e-9
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

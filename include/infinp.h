@@ -27,11 +27,11 @@ C     - orbital specifications are in inforb.h
 #endif
      &                THRGRD, THRPWF, THRRHF, THRCI, THRMC, THRCGR,
      &                EFIELD, TITMOL, CMAXMO, THROVL,
-     &                THRSSY
+     &                THRSSY, DEFLVL
       COMMON /RELINP/ SPIN,POTNUC, EPSOL,EPSTAT,EPPN,RSOL(3),
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,
      &                EFIELD(MXFELT), TITMOL(12,2), CMAXMO, THROVL,
-     &                THRSSY
+     &                THRSSY, DEFLVL
       CHARACTER*60 TITLE
       CHARACTER*4  CENT,   TYPE
       CHARACTER*8  LFIELD

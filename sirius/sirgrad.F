@@ -393,6 +393,11 @@ C ***** TWO-ELECTRON PART calculated in FCAO, FVAO
 C       (FCAO, FVAO zeroed in FCK2AO)
 C
       CALL FCK2AO(ONLYFC,FCAO,FVAO,DCAO,DVAO,WRK,KFREE,LFREE)
+      IF(DODFT) THEN
+         EXCTRO = HALF*DDOT(N2BASX,DCAO,1,FCAO,1)
+         CALL DFTKSMb(DCAO,FCAO,EDFTY,WRK(KFREE),LFREE,IPRFCK)
+         EDFTY = EDFTY + EXCTRO - HALF*DDOT(N2BASX,DCAO,1,FCAO,1)
+      ENDIF
 C
 C     If this is a direct run, DCAO is returned in SO basis (to save
 C     memory). Thus, we need to recreate it. K.Ruud, March-98

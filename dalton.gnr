@@ -140,9 +140,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    fi
    if [ $optf -eq 1 ] ; then
       if [ -s $WRKDIR/$outnam.tar.gz -a -r $WRKDIR/$outnam.tar.gz ] ; then
-         cp $WRKDIR/$outnam.RST $outnam.tar.gz
-	 gunzip $outnam.tar.gz
-	 tar xf $outnam.tar
+	 gunzip < $WRKDIR/$outnam.tar.gz | tar xvf -
       else
          echo "$WRKDIR/$outnam.tar.gz does not exist or is not readable"
          exit 1

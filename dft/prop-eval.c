@@ -282,10 +282,11 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
 	   data->dtgao,&ONEI);
     b0 = ddot_(&inforb_.nbast,data->dtgao,&ONEI,grid->atv,&ONEI);
     if(grid->dogga) {
-	real znv, rx, ry, rz, br, facr, bmax, vt[4];
+	real br, facr, bmax, vt[4];
 	real *atvX = &grid->atv[inforb_.nbast  ];
 	real *atvY = &grid->atv[inforb_.nbast*2];
 	real *atvZ = &grid->atv[inforb_.nbast*3];
+        real ngrad = (grid->dp.grada + grid->dp.gradb);
 	/* B3 = GAO1'*DTGAO; */
 	dgemv_("T",&inforb_.nbast,&THREEI,&ONER,atvX, &inforb_.nbast,
 	       data->dtgao,&ONEI, &ZEROR, b3, &ONEI);
@@ -297,33 +298,30 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
 	       &inforb_.nbast,data->dtgao,&ONEI,&ONER,b3,&ONEI);
 	bmax = max(fabs(b0),max(fabs(b3[0]),max(fabs(b3[1]),fabs(b3[2]))));
 	if(bmax<=grid->dfthri) return;
+	br = (b3[0]*grid->grada[0] + b3[1]*grid->grada[1] + b3[2]*grid->grada[2])/
+            ngrad;
 
 	dftpot1_(&vxc, &grid->curr_weight, &grid->dp, &data->trplet);
-	znv = 1.0/grid->dp.grada;
-	vxc.fZ *= 0.5*znv;
-	rx = znv*grid->grada[0];
-	ry = znv*grid->grada[1];
-	rz = znv*grid->grada[2];
-	br = b3[0]*rx + b3[1]*ry + b3[2]*rz;
-	facr  = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ)*br;
+	facr  = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*br;
         vt[0] = vxc.fRR*b0 + vxc.fRZ*br; 
-        vt[1] = facr*rx + vxc.fZ*b3[0]; 
-        vt[2] = facr*ry + vxc.fZ*b3[1];
-        vt[3] = facr*rz + vxc.fZ*b3[2];
+        vt[1] = (facr*grid->grada[0] + vxc.fZ*b3[0])/ngrad;
+        vt[2] = (facr*grid->grada[1] + vxc.fZ*b3[1])/ngrad;
+        vt[3] = (facr*grid->grada[2] + vxc.fZ*b3[2])/ngrad;
 	for(isym=0; isym<inforb_.nsym; isym++) {
 	    int istr = inforb_.ibas[isym];
 	    int iend = inforb_.ibas[isym] + inforb_.nbas[isym];
 	    int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
 	    if (isym>=jsym) {
 		int jstr = inforb_.ibas[jsym];
-		int jend = inforb_.ibas[jsym] + inforb_.nbas[jsym]-1;
+		int jend = inforb_.ibas[jsym] + inforb_.nbas[jsym];
 		for(i=istr; i<iend; i++) {
 		    real g0 = grid->atv[i];
 		    real gx = atvX[i];
 		    real gy = atvY[i];
 		    real gz = atvZ[i];
 		    int ioff = i*inforb_.nbast;
-		    for(j=min(i,jend); j>=jstr; j--) {
+                   int jtop = min(jend,i+1);
+		    for(j=jstr; j<jtop; j++) {
 			real a0 = g0*grid->atv[j];
 			real ax = gx*grid->atv[j] + g0*atvX[j];
 			real ay = gy*grid->atv[j] + g0*atvY[j];
@@ -358,7 +356,6 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
     }
 }
 
-extern void get_ksymop_(int *);
 /* dft_lin_resp_:
    Main Linear Response evaluator.
    FMAT(NORBT,NORBT) - result added to FMAT.
@@ -388,7 +385,7 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
     lr_data.kappa = calloc(inforb_.n2basx,sizeof(real));
     lr_data.dtgao = malloc(inforb_.nbast *sizeof(real));
     lr_data.trplet= *trplet;
-    get_ksymop_(&lr_data.ksymop);
+    lr_data.ksymop = *ksymop;
     dens.dmata = lr_data.dmat;
 
     dft_get_ao_dens_mat_(cmo, lr_data.dmat, work, lwork);
@@ -987,7 +984,7 @@ lin_resp_cbab_nogga(DftGrid* grid, LinRespDataab* data)
 
 void
 dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat, 
-                int *trplet, real* work,int* lwork)
+                int *trplet, int *ksymop, real* work,int* lwork)
 {
     const real DP5R = 0.5;
     const real MONER = -1.0;
@@ -1016,7 +1013,7 @@ dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
     lr_data.dtgaoa  = malloc(inforb_.nbast *sizeof(real));  
     lr_data.dtgaob  = malloc(inforb_.nbast *sizeof(real)); 
     lr_data.trplet  = *trplet;
-    get_ksymop_(&lr_data.ksymop);
+    lr_data.ksymop  = *ksymop;
 
     /* get alpha/beta densities and corresponding kappas */
 
@@ -1399,6 +1396,10 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                            grid->g.grad[i][1]*grid->g.grad[i][1]+
                            grid->g.grad[i][2]*grid->g.grad[i][2]);
         real b0 = vt3[i][0];
+        if(ngrad<1e-15|| grid->r.rho[i]<1e-15) {
+            vt3[i][0] = vt3[i][1] = vt3[i][2] = vt3[i][3] = 0;
+            continue;
+        }
         real br = (vt3[i][1]*grid->g.grad[i][0]
                    + vt3[i][2]*grid->g.grad[i][1] 
                    + vt3[i][3]*grid->g.grad[i][2])/ngrad;
@@ -1478,7 +1479,7 @@ FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
     lr_data.vt    = dal_malloc(DFT_BLLEN*4   *sizeof(real));
     lr_data.dtgao = dal_malloc(inforb_.nbast *sizeof(real));
     lr_data.trplet= *trplet;
-    FSYM(get_ksymop)(&lr_data.ksymop);
+    lr_data.ksymop= *ksymop;
     dft_get_ao_dens_mat_(cmo, lr_data.dmat, work, lwork);
     FSYM(deq27)(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
     electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, 0, 

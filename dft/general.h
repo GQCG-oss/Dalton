@@ -85,7 +85,7 @@ void dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,
 void dft_kohn_shamab_(real* dmat, real* ksm, real *edfty, 
                       real* work, int *lwork, int* ipr);
 void dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat, 
-                     int *trplet, real* work,int* lwork);
+                     int *trplet, int *ksymop, real* work,int* lwork);
 
 typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, int* lwork, const int* iprint);

@@ -432,7 +432,9 @@ C         SHFTLVL and approximately to add -SHFTLVL to the
 C         approximate Hessian diagonal implicit in the Roothaan diag.
 C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
-      SHFTLVL = D0
+c     DEFLVL is read from SCF INPUT/.SHIFT
+      SHFTLVL = DEFLVL
+      SHFTFAC = 0.7D0 
 #ifdef DYNAMIC_SCREENING
   ... not finished yet ... hjaaj 01 feb 2001
       SCRFAC = 100*NBAST
@@ -898,11 +900,17 @@ C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
 C
-         IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+#if 1 /* I am not sure what the test for stalling detection should be */
+c We ignore small jump up.
+         IF (JTDIIS.GT.1 .AND.
+     &       EMCDIF.GT.5D-5) THEN
+#else
+          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
      &         EMCDIF*(GRDNRM-GNRMSV) .LT. 0.0D0 )
      &      ) THEN
+#endif
 c        IF (ITDIIS.GT.1 .AND. 
 c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
 c    &         ABS(CVEC(INDEVC)) .GT. 2.0D0 ) .AND.
@@ -944,11 +952,14 @@ C
              JTDIIS  = 1
              NEVC    = 1
 C            also restrict orbital rotation with a level shift
-             SHFTLVL = SHFTLVL - 3.0D0
-             WRITE(LUPRI,'(/A,F10.4)')
-     &          'Occupied orbital energies shifted by:',SHFTLVL
+c            the formula is empirical EMCDIF is positive here.
+             SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4D0,ABS(EMCDIF)*10D0))
+c            and slow down  the level shifting annealing...
+             SHFTFAC = MIN(SHFTFAC + (1D0-SHFTFAC)*0.25,0.85D0)
          ELSE
-             SHFTLVL = D0
+             SHFTLVL =  SHFTLVL*SHFTFAC
+c             make sure we get right HOMO-LUMO gap in the end.
+             IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5e-5) SHFTLVL = 0D0
          END IF
          GNRMSV = GRDNRM
 C
@@ -1683,6 +1694,8 @@ C
 C
 C     Step 1: Diagonalize Fock-matrix:
 C
+      IF (SHFTLVL .NE. D0)
+     &     WRITE(LUPRI,*)'Applying shift level=',SHFTLVL
       DO 200 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200

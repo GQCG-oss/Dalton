@@ -1,3 +1,17 @@
+2004-05-20  Pawel Salek 
+
+	* dft/dft_aux.F: get_ksymop not used any more: remove.
+	* dft/functionals.c: initialize derivative fields correctly.
+	* dft/prop-eval.c: cleanup + fix debugging LR code.
+	* include/infinp.h: add level shifting field.
+	* sirius/sirdiis.F: gradual switching off of level shift.
+	* sirius/sirgrad.F: add XC contribution to KS matrix: Fix QCSCF.
+	* sirius/sirinp.F: input for level shift.
+	* test/dft_lb94: level shift test.
+	* test/dft_qr_{no,}sym{,.ref}: fix QR DFT tests.
+	* configure: port to Opteron/gcc.
+	* dalton.gnr: Fix restart.
+
 2004-04-30  Pawel Salek 
 
 	* abacus/abarlx.F:

@@ -585,6 +585,7 @@ C         If IRDMO .eq. 8, i.e. new calculation, call CMODEL
 C         to find 3s,4p,... components and delete them.
 C         if .lt. 0, orbitals have been deleted in input
 C THROVL: limit for basis set numerical linear dependence
+C DEFLVL: default shift level - must be 0 or negative.
 C
       IRDMO  = 8
       FLAG(13) = .FALSE.
@@ -592,6 +593,7 @@ C
       THROVL = 1.0D-6
       CMAXMO = 1.0D3
       FCVORB   = .FALSE.
+      DEFLVL = 0.0D0
 C
 C********** Default values section CIVINP *****
 C
@@ -2398,7 +2400,7 @@ C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 24)
+      PARAMETER (NTABLE = 25)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -2435,7 +2437,7 @@ C
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
      *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','.HF OCC',
-     *            '.ELECTR','.AUTOCC','.FC MVO','.HSROHF'/
+     *            '.ELECTR','.AUTOCC','.FC MVO','.HSROHF','.SHIFT '/
 C
 C     ***** PROCESS INPUT FOR SCFINP *****
 C
@@ -2461,7 +2463,7 @@ C
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
-     &                   121,122,123,124),II
+     &                   121,122,123,124,125),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2629,6 +2631,9 @@ C High spin orbitals input
  124  HSROHF = .TRUE.
       READ(LUCMD,*) (NROHF(I),I=1,NSYM)
       GO TO 100
+C Shift level
+ 125  READ(LUCMD,*) DEFLVL
+       GO TO 100
 C
  2000 CONTINUE
       IF (NODIIS) MXDIIS = 0

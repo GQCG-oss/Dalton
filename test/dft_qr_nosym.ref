@@ -4,51 +4,53 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-            This is output from DALTON (Release 2.0, ? 2002)
+          This is output from DALTON (Release 2.0, ? 2004)
 
                           Principal authors:
 
-            Trygve Helgaker,       University of Oslo,         Norway 
-            Hans Joergen Jensen,   SDU - Odense University,    Denmark
-            Poul Joergensen,       Aarhus University,          Denmark
-            Jeppe Olsen,           Aarhus University,          Denmark
-            Kenneth Ruud,          San Diego Superc. Center,   USA    
-            Hans Aagren,           KTH Stockholm,              Sweden 
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
 
                           Contributors:
 
-            Alexander A. Auer,     University of Mainz,        Germany
-            Keld L. Bak,           UNI-C,                      Denmark
-            Vebjoern Bakken,       University of Oslo,         Norway 
-            Ove Christiansen,      University of Lund,         Sweden 
-            Sonia Coriani,         University of Trieste,      Italy  
-            Paal Dahle,            University of Oslo,         Norway 
-            Erik K. Dalskov,       UNI-C,                      Denmark
-            Thomas Enevoldsen,     SDU - Odense University,    Denmark
-            Berta Fernandez,       U.of Santiago de Compostela,Spain  
-            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
-            Kasper Hald,           Aarhus University,          Denmark
-            Asger Halkier,         Aarhus University,          Denmark
-            Hanne Heiberg,         University of Oslo,         Norway 
-            Hinne Hettema,         University of Auckland,     NZ     
-            Dan Jonsson,           San Diego Superc. Center,   USA    
-            Sheela Kirpekar,       SDU - Odense University,    Denmark
-            Rika Kobayashi,        Cambridge University,       England
-            Henrik Koch,           SDU - Odense University,    Denmark
-            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
-            Patrick Norman,        University of Linkoeping,   Sweden 
-            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
-            Martin J. Packer,      University of Sheffield,    UK     
-            Torgeir A. Ruden,      University of Oslo,         Norway 
-            Alfredo Sanchez,       University of Valencia,     Spain  
-            Trond Saue,            University of Toulouse,     France 
-            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
-            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
-            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
-            Peter R.Taylor,        San Diego Superc. Center,   USA    
-            Olav Vahtras,          PDC, Stockholm,             Sweden 
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          PDC, Stockholm,               Sweden 
 
-------------------------------------------------------------------------
+ ---------------------------------------------------------------------
 
 
      NOTE:
@@ -58,7 +60,7 @@
      responsibility for the performance of the code or for the
      correctness of the results.
       
-     The code (in whole or part) is provided under a license and
+     The code (in whole or part) is provided under a licence and
      is not to be reproduced for further distribution without
      the written permission of the authors or their representatives.
      See licence agreement for further information.
@@ -71,14 +73,14 @@
      J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
      O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
      T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-     and O. Vahtras"
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,
+     R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, P. Salek, A. Sanchez, T. Saue, 
+     S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+     P. R. Taylor and O. Vahtras"
 
  
-     Date and time (Linux)  : Thu Feb 20 15:06:32 2003
+     Date and time (Linux)  : Thu May 20 13:53:25 2004
      Host name              : pi.biotech.kth.se                       
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -90,7 +92,8 @@
     Integral sections will be executed
     Wave function sections will be executed
     Dynamic molecular property section will be executed
-    Starting in Integral Section -
+
+Starting in Integral Section -
 
 
 
@@ -137,6 +140,19 @@ Point group: C1
     A   | A  
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (A):    0.000000   -0.099052    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -145,7 +161,7 @@ Point group: C1
 
   Basis set used is "aug-cc-pVDZ" from the basis set library.
 
-  label    atoms   charge   prim    cont     basis   
+  label    atoms   charge   prim    cont     basis
   ----------------------------------------------------------------------
   O           1       8      35      23      [10s5p2d|4s3p2d]                             
   H           1       1      11       9      [5s2p|3s2p]                                  
@@ -163,7 +179,6 @@ Point group: C1
 
   Total number of coordinates:  9
 
-
    1   O        x      0.0000000000
    2            y     -0.2249000000
    3            z      0.0000000000
@@ -177,34 +192,56 @@ Point group: C1
    9            z      0.0000000000
 
 
-
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H           H   
+            O           H           H     
+            ------      ------      ------
+ O     :    0.000000
+ H     :    0.971970    0.000000
+ H     :    0.971970    1.537048    0.000000
 
-   O       0.000000
-   H       0.971970    0.000000
-   H       0.971970    1.537048    0.000000
 
-
+  Max interatomic separation is    1.5370 Angstroms
+  between atoms "H     " and "H     ".
 
 
   Bond distances (angstroms):
   ---------------------------
 
-                  atom 1     atom 2                           distance
-                  ------     ------                           --------
-  bond distance:    H          O                              0.971970
-  bond distance:    H          O                              0.971970
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          O            0.971970
+  bond distance:  H          O            0.971970
 
 
   Bond angles (degrees):
   ----------------------
 
-                  atom 1     atom 2     atom 3                   angle
-                  ------     ------     ------                   -----
-  bond angle:       H          O          H                    104.500
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          O          H            104.500
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.633856          1.000000    0.000000    0.000000
+   IB    1.190502          0.000000    1.000000    0.000000
+   IC    1.824358          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         797308.3147         424509.2299         277017.4157 MHz
+           26.595343           14.160104            9.240306 cm-1
 
 
   Nuclear repulsion energy :    9.055287756882
@@ -215,27 +252,33 @@ Point group: C1
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
-
-
  >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in GABGEN is   0.02 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.05 seconds
+
+ >>> Time used in GABGEN is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
-     Starting Wave Function Section -
 
- Reading DFT input from 'B3LYP'...
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Feb 20 15:06:32 2003
+     Date and time (Linux)  : Thu May 20 13:53:25 2004
      Host name              : pi.biotech.kth.se                       
 
  Title lines from integral program:
@@ -245,10 +288,10 @@ Point group: C1
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Hartree-Fock calculation.
+     Restricted, closed shell Kohn-Sham calculation.
 
 
-     Time-dependent Hartree-Fock calculation (random phase approximation).
+     Time-dependent Kohn-Sham calculation (random phase approximation).
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -260,6 +303,8 @@ Point group: C1
      ============================
      Number of closed shell electrons         10
      Number of electrons in active shells      0
+     Total charge of the molecule              0
+
      Number of active orbitals                 0
      Total number of orbitals                 41
 
@@ -267,16 +312,7 @@ Point group: C1
      Total number of symmetries                1
      Reference state symmetry                  1
  
-     This is a DFT calculation of type: B3LYP
- Weighted mixed functional:
-                    HF exchange:    0.20000
-                            VWN:    0.19000
-                            LYP:    0.81000
-                          Becke:    0.72000
-                          Dirac:    0.80000
-     Default thresholds:                       0.10E-08    0.10E-09    0.10E-12
-     Default threshold for number of electrons:                        0.10E-02
-     DFT radial quadrature accuracy/ang. expansion order:  0.10E-09  35
+     This is a DFT calculation of type: LDA
 
      Orbital specifications
      ======================
@@ -285,127 +321,115 @@ Point group: C1
      Total number of orbitals          41
      Number of basis functions         41
 
-      ** Automatic occupation of RHF orbitals **
+      ** Automatic occupation of RKS orbitals **
       -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
-     Occupied HF orbitals               5
+     Occupied SCF orbitals              5
 
-     Maximum number of Fock  iterations       0
-     Maximum number of DIIS  iterations      30
-     Maximum number of QC-HF iterations       0
-     Threshold for HF convergence      1.00E-12
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00E-12
 
- Pulay DIIS scheme with max    10 fockmatrices.
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
 
  Automatic occupation of symmetries with  10 electrons.
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
- Screening settings in next iteration (IFTHRS)    7
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    F
 
- >>> Time used in TWOINT is   0.19 seconds
+ >>> Time used in TWOINT is   0.16 seconds
 
- Grid Type         : adaptive
- Radial Quadrature : Gauss-Chebychev, 2nd kind
- Space partitioning: SSF
- Number of grid points: 49064
+ Radial Quadrature : Gauss-Chebychev scheme of second kind
+ Space partitioning: SSF partitioning
+ Radial integration threshold: 1e-10
+ Atom:    1*1 points=31966 compressed from 37466 (115 radial)
+ Atom:    2*1 points=35100 compressed from 38990 (115 radial)
+ Atom:    3*1 points=35100 compressed from 38990 (115 radial)
+ Postprocessing compression: from 102166 to 102165
 
- Electrons:   9.9999849    -2e-06: Energy -7.400272 KS Eval. time:       7.6 s
+ Number of grid points:   102165 Grid generation time:       0.1 s
 
-   1    -76.063779919564   1.26E+00  -7.61E+01    5
- Screening settings in next iteration (IFTHRS)    9
+Kohn-Sham electrons/energy :    9.99999942982312   -8.63313036464951
+   1    -75.542862679629   3.84E+00  -7.55E+01    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    8    F
 
- >>> Time used in TWOINT is   0.41 seconds
+ >>> Time used in TWOINT is   0.17 seconds
 
- Electrons:   9.9999881    -1e-06: Energy -7.606182 KS Eval. time:       3.3 s
+Kohn-Sham electrons/energy :    9.99999956654040   -8.87552663928587
+   2    -75.838646088252   9.73E-01  -2.96E-01    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
 
-   2    -76.377077341599   3.15E-01  -3.13E-01    5
- Screening settings in next iteration (IFTHRS)   10
+ >>> Time used in TWOINT is   0.17 seconds
 
- >>> Time used in TWOINT is   0.42 seconds
+Kohn-Sham electrons/energy :    9.99999958533243   -8.52113352560091
+   3    -75.839136547065   9.60E-01  -4.90E-04    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
 
- Electrons:   9.9999769    -2e-06: Energy -7.366865 KS Eval. time:       3.4 s
+ >>> Time used in TWOINT is   0.17 seconds
 
-   3    -76.383952334596   2.11E-01  -6.87E-03    5
- Screening settings in next iteration (IFTHRS)   10
+Kohn-Sham electrons/energy :    9.99999952197842   -8.80075496857023
+   4    -75.874946984502   3.68E-01  -3.58E-02    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
 
- >>> Time used in TWOINT is   0.46 seconds
+ >>> Time used in TWOINT is   0.17 seconds
 
- Electrons:   9.9999812    -2e-06: Energy -7.537027 KS Eval. time:       3.4 s
+Kohn-Sham electrons/energy :    9.99999954857546   -8.72857158942108
+   5    -75.881282475440   7.38E-03  -6.34E-03    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
 
-   4    -76.404265788693   7.42E-02  -2.03E-02    5
- Screening settings in next iteration (IFTHRS)   10
+ >>> Time used in TWOINT is   0.16 seconds
 
- >>> Time used in TWOINT is   0.62 seconds
+Kohn-Sham electrons/energy :    9.99999954836482   -8.72850017848953
+   6    -75.881285887912   1.10E-03  -3.41E-06    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   12    F
 
- Electrons:   9.9999805    -2e-06: Energy -7.491236 KS Eval. time:       4.2 s
+ >>> Time used in TWOINT is   0.17 seconds
 
-   5    -76.407497059469   5.25E-03  -3.23E-03    5
- Screening settings in next iteration (IFTHRS)   11
+Kohn-Sham electrons/energy :    9.99999954830486   -8.72868620876791
+   7    -75.881285943823   2.56E-04  -5.59E-08    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   13    F
 
- >>> Time used in TWOINT is   0.53 seconds
+ >>> Time used in TWOINT is   0.16 seconds
 
- Electrons:   9.9999806    -2e-06: Energy -7.494203 KS Eval. time:       3.7 s
+Kohn-Sham electrons/energy :    9.99999954829188   -8.72873802126337
+   8    -75.881285947056   6.47E-06  -3.23E-09    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
 
-   6    -76.407512119489   7.74E-05  -1.51E-05    5
- Screening settings in next iteration (IFTHRS)   13
+ >>> Time used in TWOINT is   0.17 seconds
 
- >>> Time used in TWOINT is   0.27 seconds
+Kohn-Sham electrons/energy :    9.99999954829177   -8.72873949236629
+   9    -75.881285947058   8.76E-08  -2.28E-12    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
 
- Electrons:   9.9999806    -2e-06: Energy -7.494245 KS Eval. time:       3.8 s
+ >>> Time used in TWOINT is   0.16 seconds
 
-   7    -76.407512125753   2.49E-05  -6.26E-09    5
- Screening settings in next iteration (IFTHRS)   14
+Kohn-Sham electrons/energy :    9.99999954829175   -8.72873948529259
+  10    -75.881285947058   9.13E-09   2.20E-13    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
 
- >>> Time used in TWOINT is   0.55 seconds
+ >>> Time used in TWOINT is   0.16 seconds
 
- Electrons:   9.9999806    -2e-06: Energy -7.494230 KS Eval. time:       4.0 s
+Kohn-Sham electrons/energy :    9.99999954829181   -8.72873948731132
+  11    -75.881285947058   1.43E-10  -4.97E-14    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
 
-   8    -76.407512126028   1.97E-06  -2.75E-10    5
- Screening settings in next iteration (IFTHRS)   14
+ >>> Time used in TWOINT is   0.16 seconds
 
- >>> Time used in TWOINT is   0.51 seconds
+Kohn-Sham electrons/energy :    9.99999954829181   -8.72873948728338
+  12    -75.881285947058   7.57E-12  -1.07E-13    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
 
- Electrons:   9.9999806    -2e-06: Energy -7.494232 KS Eval. time:       3.8 s
+ >>> Time used in TWOINT is   0.16 seconds
 
-   9    -76.407512126030   1.26E-07  -1.64E-12    5
- Screening settings in next iteration (IFTHRS)   14
-
- >>> Time used in TWOINT is   0.50 seconds
-
- Electrons:   9.9999806    -2e-06: Energy -7.494231 KS Eval. time:       3.9 s
-
-  10    -76.407512126030   9.98E-09  -2.20E-13    5
- Screening settings in next iteration (IFTHRS)   14
-
- >>> Time used in TWOINT is   0.58 seconds
-
- Electrons:   9.9999806    -2e-06: Energy -7.494231 KS Eval. time:       3.6 s
-
-  11    -76.407512126030   2.99E-10   2.34E-13    5
- Screening settings in next iteration (IFTHRS)   14
-
- >>> Time used in TWOINT is   0.37 seconds
-
- Electrons:   9.9999806    -2e-06: Energy -7.494231 KS Eval. time:       3.5 s
-
-  12    -76.407512126030   3.31E-11  -6.39E-14    5
- Screening settings in next iteration (IFTHRS)   14
-
- >>> Time used in TWOINT is   0.37 seconds
-
- Electrons:   9.9999806    -2e-06: Energy -7.494231 KS Eval. time:       3.5 s
-
-  13    -76.407512126030   1.93E-12  -3.55E-14    5
- Screening settings in next iteration (IFTHRS)   14
-
- >>> Time used in TWOINT is   0.35 seconds
-
- Electrons:   9.9999806    -2e-06: Energy -7.494231 KS Eval. time:       3.5 s
-
-  14    -76.407512126030   1.03E-13  -7.82E-14    5
- DIIS converged in  14 iterations !
+Kohn-Sham electrons/energy :    9.99999954829171   -8.72873948728506
+  13    -75.881285947058   8.27E-13   3.55E-14    5
+ DIIS converged in  13 iterations !
 
 
  *** RHF orbital energy analysis ***
@@ -417,88 +441,92 @@ Point group: C1
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -19.15899107    -1.01611939    -0.53302935    -0.39590575    -0.31924790
-        -0.02351154     0.02406442     0.10168386     0.12153743     0.13161826
+       -18.62351907    -0.92331214    -0.48370796    -0.34491255    -0.26957395
+        -0.03510395     0.02007366     0.09127350     0.11134934     0.12032411
 
-    E(LUMO) :    -0.02351154 au (symmetry 1)
-  - E(HOMO) :    -0.31924790 au (symmetry 1)
+    E(LUMO) :    -0.03510395 au (symmetry 1)
+  - E(HOMO) :    -0.26957395 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.29573636 au
+    gap     :     0.23447000 au
+
+ >>> Writing SIRIFC interface file <<<
 
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
      Spin multiplicity:           1
      Spatial symmetry:            1
+     Total charge of molecule:    0
 
-     Final    HF energy:          -76.407512126030
+     Final DFT energy:            -75.881285947058
      Nuclear repulsion:             9.055287756882
-     Electronic energy:           -85.462799882912
+     Electronic energy:           -84.936573703940
 
-     Final gradient norm:           0.000000000000
+     Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Thu Feb 20 15:07:34 2003
+     Date and time (Linux)  : Thu May 20 13:54:07 2004
      Host name              : pi.biotech.kth.se                       
 
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5
-   1  O   1s     1.0039  -0.0034   0.0000   0.0021   0.0000
-   2  O   1s     0.0196   0.8867   0.0000  -0.3247   0.0000
-   3  O   1s    -0.0259  -0.1487   0.0000  -0.1429   0.0000
-   4  O   1s    -0.0101   0.0617   0.0000  -0.1131   0.0000
-   5  O   2px    0.0000   0.0000   0.7505   0.0000   0.0000
-   6  O   2py    0.0026   0.1596   0.0000   0.8045   0.0000
-   7  O   2pz    0.0000   0.0000   0.0000   0.0000   0.9248
-   8  O   2px    0.0000   0.0000  -0.1976   0.0000   0.0000
-   9  O   2py   -0.0042  -0.0851   0.0000  -0.0779   0.0000
-  10  O   2pz    0.0000   0.0000   0.0000   0.0000  -0.0093
-  11  O   2px    0.0000   0.0000   0.0104   0.0000   0.0000
-  12  O   2py   -0.0016   0.0130   0.0000   0.0478   0.0000
-  13  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0908
-  14  O   3d2-   0.0000   0.0000   0.0255   0.0000   0.0000
-  15  O   3d1-   0.0000   0.0000   0.0000   0.0000   0.0142
-  16  O   3d0   -0.0003  -0.0084   0.0000  -0.0094   0.0000
+   1  O   1s     1.0059  -0.0085   0.0000   0.0046   0.0000
+   2  O   1s     0.0317   0.8670   0.0000  -0.3299   0.0000
+   3  O   1s    -0.0371  -0.1356   0.0000  -0.1391   0.0000
+   4  O   1s    -0.0115   0.0573   0.0000  -0.1193   0.0000
+   5  O   2px    0.0000   0.0000   0.7592   0.0000   0.0000
+   6  O   2py    0.0029   0.1784   0.0000   0.8037   0.0000
+   7  O   2pz    0.0000   0.0000   0.0000   0.0000   0.9191
+   8  O   2px    0.0000   0.0000  -0.1948   0.0000   0.0000
+   9  O   2py   -0.0044  -0.0864   0.0000  -0.0746   0.0000
+  10  O   2pz    0.0000   0.0000   0.0000   0.0000  -0.0106
+  11  O   2px    0.0000   0.0000   0.0092   0.0000   0.0000
+  12  O   2py   -0.0017   0.0122   0.0000   0.0488   0.0000
+  13  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0940
+  14  O   3d2-   0.0000   0.0000   0.0246   0.0000   0.0000
+  15  O   3d1-   0.0000   0.0000   0.0000   0.0000   0.0146
+  16  O   3d0   -0.0005  -0.0093   0.0000  -0.0087   0.0000
   17  O   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
-  18  O   3d2+   0.0002   0.0007   0.0000  -0.0116   0.0000
-  19  O   3d2-   0.0000   0.0000  -0.0439   0.0000   0.0000
-  20  O   3d1-   0.0000   0.0000   0.0000   0.0000   0.0179
-  21  O   3d0    0.0005   0.0193   0.0000   0.0060   0.0000
+  18  O   3d2+   0.0003   0.0006   0.0000  -0.0125   0.0000
+  19  O   3d2-   0.0000   0.0000  -0.0405   0.0000   0.0000
+  20  O   3d1-   0.0000   0.0000   0.0000   0.0000   0.0194
+  21  O   3d0    0.0005   0.0174   0.0000   0.0046   0.0000
   22  O   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
-  23  O   3d2+  -0.0004  -0.0047   0.0000  -0.0199   0.0000
-  24  H   1s     0.0014   0.3595  -0.6145   0.3581   0.0000
-  25  H   1s     0.0075  -0.2047   0.1718  -0.1026   0.0000
-  26  H   1s     0.0007  -0.0020  -0.0031   0.0077   0.0000
-  27  H   2px   -0.0005   0.0363  -0.0207   0.0255   0.0000
-  28  H   2py    0.0004  -0.0206   0.0315   0.0047   0.0000
-  29  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0270
-  30  H   2px    0.0027  -0.0043  -0.0175   0.0039   0.0000
-  31  H   2py   -0.0024   0.0076   0.0127   0.0210   0.0000
-  32  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0289
-  33  H   1s     0.0014   0.3595   0.6145   0.3581   0.0000
-  34  H   1s     0.0075  -0.2047  -0.1718  -0.1026   0.0000
-  35  H   1s     0.0007  -0.0020   0.0031   0.0077   0.0000
-  36  H   2px    0.0005  -0.0363  -0.0207  -0.0255   0.0000
-  37  H   2py    0.0004  -0.0206  -0.0315   0.0047   0.0000
-  38  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0270
-  39  H   2px   -0.0027   0.0043  -0.0175  -0.0039   0.0000
-  40  H   2py   -0.0024   0.0076  -0.0127   0.0210   0.0000
-  41  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0289
+  23  O   3d2+  -0.0005  -0.0046   0.0000  -0.0217   0.0000
+  24  H   1s     0.0009   0.3562  -0.5952   0.3378   0.0000
+  25  H   1s     0.0091  -0.1979   0.1562  -0.0906   0.0000
+  26  H   1s     0.0008  -0.0017  -0.0046   0.0084   0.0000
+  27  H   2px   -0.0009   0.0354  -0.0175   0.0225   0.0000
+  28  H   2py    0.0007  -0.0198   0.0295   0.0071   0.0000
+  29  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0277
+  30  H   2px    0.0032  -0.0029  -0.0192   0.0052   0.0000
+  31  H   2py   -0.0031   0.0064   0.0140   0.0232   0.0000
+  32  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0334
+  33  H   1s     0.0009   0.3562   0.5952   0.3378   0.0000
+  34  H   1s     0.0091  -0.1979  -0.1562  -0.0906   0.0000
+  35  H   1s     0.0008  -0.0017   0.0046   0.0084   0.0000
+  36  H   2px    0.0009  -0.0354  -0.0175  -0.0225   0.0000
+  37  H   2py    0.0007  -0.0198  -0.0295   0.0071   0.0000
+  38  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0277
+  39  H   2px   -0.0032   0.0029  -0.0192  -0.0052   0.0000
+  40  H   2py   -0.0031   0.0064  -0.0140   0.0232   0.0000
+  41  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0334
 
 
 
- >>>> Total CPU  time used in SIRIUS :     62.78 seconds
- >>>> Total wall time used in SIRIUS :     62.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     41.67 seconds
+ >>>> Total wall time used in SIRIUS :     42.00 seconds
 
  
-     Date and time (Linux)  : Thu Feb 20 15:07:34 2003
+     Date and time (Linux)  : Thu May 20 13:54:07 2004
      Host name              : pi.biotech.kth.se                       
 
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program
  ------------------------------------------------------------------------------
 
 
@@ -545,8 +573,8 @@ Point group: C1
           ZDIPLEN 
 
 
-   SCF energy         :      -76.407512126029957
- -- inactive part     :      -85.462799882911980
+   SCF energy         :      -75.881285947058188
+ -- inactive part     :      -84.936573703940212
  -- nuclear repulsion :        9.055287756882031
 
 
@@ -572,82 +600,68 @@ Point group: C1
  Operator symmetry =  1; triplet =   F
 
 
- >>> Time used in TWOINT is   0.45 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.7 s
+ >>> Time used in TWOINT is   0.19 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- >>> Time used in TWOINT is   0.48 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.1 s
+ >>> Time used in TWOINT is   0.19 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- >>> Time used in TWOINT is   0.68 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.4 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.7 s
+ >>> Time used in TWOINT is   0.19 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- >>> Time used in TWOINT is   0.65 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.4 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.9 s
-
-
- >>> Time used in TWOINT is   0.74 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.4 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.2 s
-
-
- >>> Time used in TWOINT is   0.57 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.0 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       7.0 s
-
-
- >>> Time used in TWOINT is   0.67 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.7 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       7.0 s
-
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00E-08
  ---------------------------------------------------------------
  (dimension of paired reduced space:   28)
- RSP solution vector no.    1; norm of residual   1.55E-09
- RSP solution vector no.    2; norm of residual   2.04E-09
+ RSP solution vector no.    1; norm of residual   6.46E-10
+ RSP solution vector no.    2; norm of residual   6.49E-10
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.000000E+00
  SYMMETRY    1
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     10.3204709361    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     10.6535992559    
 
-@QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.00000):   -2.961630947341E-12
+@QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.00000):   -1.145290415357E-11
 
-@QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.00000):    3.082184906936E-19
+@QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.00000):   -4.919286567293E-15
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.100000E+00
  SYMMETRY    1
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.10000):     10.6085037809    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.10000):     10.9668929687    
 
-@QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.10000):   -3.680128885869E-12
+@QRLRVE:  << YDIPLEN  ; XDIPLEN  >> (   0.10000):   -1.469259784887E-11
 
-@QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.10000):    3.454436194762E-19
+@QRLRVE:  << ZDIPLEN  ; XDIPLEN  >> (   0.10000):   -5.156687211364E-15
 
 
  QRLRVE -- linear response calculation for symmetry  1
@@ -661,89 +675,68 @@ Point group: C1
  Operator symmetry =  1; triplet =   F
 
 
- >>> Time used in TWOINT is   0.64 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.4 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.3 s
+ >>> Time used in TWOINT is   0.19 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- >>> Time used in TWOINT is   0.57 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.0 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
+ >>> Time used in TWOINT is   0.19 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
 
- >>> Time used in TWOINT is   0.57 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.1 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.7 s
+ >>> Time used in TWOINT is   0.18 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
 
- >>> Time used in TWOINT is   0.65 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.6 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.7 s
-
-
- >>> Time used in TWOINT is   0.57 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.5 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
-
-
- >>> Time used in TWOINT is   0.45 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
-
-
- >>> Time used in TWOINT is   0.46 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.6 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.4 s
-
-
- >>> Time used in TWOINT is   0.41 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.6 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
-
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00E-08
  ---------------------------------------------------------------
- (dimension of paired reduced space:   32)
- RSP solution vector no.    1; norm of residual   1.26E-09
- RSP solution vector no.    2; norm of residual   1.58E-09
+ (dimension of paired reduced space:   28)
+ RSP solution vector no.    1; norm of residual   7.94E-09
+ RSP solution vector no.    2; norm of residual   7.99E-09
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.000000E+00
  SYMMETRY    1
 
-@QRLRVE:  << XDIPLEN  ; YDIPLEN  >> (   0.00000):   -1.034899953366E-13
+@QRLRVE:  << XDIPLEN  ; YDIPLEN  >> (   0.00000):   -1.700783194493E-13
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     9.45734473101    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     9.92447172944    
 
-@QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.00000):    2.483913716909E-20
+@QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.00000):   -2.511784556546E-13
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.100000E+00
  SYMMETRY    1
 
-@QRLRVE:  << XDIPLEN  ; YDIPLEN  >> (   0.10000):   -1.458446308136E-13
+@QRLRVE:  << XDIPLEN  ; YDIPLEN  >> (   0.10000):   -1.944701922208E-13
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.10000):     9.83367512595    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.10000):     10.3629653606    
 
-@QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.10000):    7.635726681182E-20
+@QRLRVE:  << ZDIPLEN  ; YDIPLEN  >> (   0.10000):   -3.091501821144E-13
 
 
  QRLRVE -- linear response calculation for symmetry  1
@@ -757,86 +750,73 @@ Point group: C1
  Operator symmetry =  1; triplet =   F
 
 
- >>> Time used in TWOINT is   0.48 seconds
+ >>> Time used in TWOINT is   0.17 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.5 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.4 s
+ >>> Time used in TWOINT is   0.18 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- >>> Time used in TWOINT is   0.54 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
+ >>> Time used in TWOINT is   0.18 seconds
 
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
- >>> Time used in TWOINT is   0.23 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       3.4 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
 
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       3.4 s
+ >>> Time used in TWOINT is   0.18 seconds
 
-
- >>> Time used in TWOINT is   0.23 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       5.8 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.5 s
-
-
- >>> Time used in TWOINT is   0.63 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.4 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.3 s
-
-
- >>> Time used in TWOINT is   0.60 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.3 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.1 s
-
-
- >>> Time used in TWOINT is   0.58 seconds
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.2 s
-
- Electrons: 9.999981(-1.94121e-05): LR-DFT evaluation time:       6.7 s
-
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.9 s
+ Electrons: 10.000000(-4.52e-07): LR-DFT/b evaluation time:       3.8 s
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00E-08
  ---------------------------------------------------------------
- (dimension of paired reduced space:   28)
- RSP solution vector no.    1; norm of residual   7.00E-10
- RSP solution vector no.    2; norm of residual   8.35E-10
+ (dimension of paired reduced space:   24)
+ RSP solution vector no.    1; norm of residual   1.48E-09
+ RSP solution vector no.    2; norm of residual   1.17E-09
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.000000E+00
  SYMMETRY    1
 
-@QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.00000):   -4.621039339563E-16
+@QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.00000):    1.206911171623E-14
 
-@QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.00000):   -6.247765296490E-15
+@QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.00000):   -1.180821097113E-12
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     8.96749993767    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     9.62475339891    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.100000E+00
  SYMMETRY    1
 
-@QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.10000):   -6.254991439983E-16
+@QRLRVE:  << XDIPLEN  ; ZDIPLEN  >> (   0.10000):    1.655899685596E-13
 
-@QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.10000):   -5.683539386906E-15
+@QRLRVE:  << YDIPLEN  ; ZDIPLEN  >> (   0.10000):   -1.829459771634E-12
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.10000):     9.55079428257    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.10000):     10.3609378348    
  
  ======================================================================
  >>>>>>>>    L I N E A R   R E S P O N S E   F U N C T I O N   <<<<<<<<
  ======================================================================
+
+ The -<<A;B>>(omega_b) functions from vectors generated
+ in a *QUADRA calculation of <<A;B,C>>(omega_b,omega_c)
+
+ Note: the accuracy of off-diagonal elements will be linear
+ in the convergence threshold THCLR =  1.00E-08
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -845,182 +825,200 @@ Point group: C1
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :     180
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    1  0.000000
- B operator, symmetry, frequency:   XDIPLEN    1  0.000000
+@ Singlet linear response function in a.u.
 
- Value of linear response:      10.320470936073
+@ A operator, symmetry, frequency:   XDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.000000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    1  0.000000
- B operator, symmetry, frequency:   XDIPLEN    1  0.000000
+@ Value of linear response -<<A;B>(omega):      10.653599255857
 
- Value of linear response:      -0.000000000003
+@ Singlet linear response function in a.u.
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    1  0.000000
- B operator, symmetry, frequency:   XDIPLEN    1  0.000000
+@ A operator, symmetry, frequency:   YDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.000000
 
- Value of linear response:       0.000000000000
+@ Value of linear response -<<A;B>(omega):      -0.000000000011
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   XDIPLEN    1  0.100000
+@ Singlet linear response function in a.u.
 
- Value of linear response:      10.608503780947
+@ A operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.000000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   XDIPLEN    1  0.100000
+@ Value of linear response -<<A;B>(omega):       0.000000000000
 
- Value of linear response:      -0.000000000004
+@ Singlet linear response function in a.u.
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   XDIPLEN    1  0.100000
+@ A operator, symmetry, frequency:   XDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.100000
 
- Value of linear response:       0.000000000000
+@ Value of linear response -<<A;B>(omega):      10.966892968705
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    1  0.000000
- B operator, symmetry, frequency:   YDIPLEN    1  0.000000
+@ Singlet linear response function in a.u.
 
- Value of linear response:       0.000000000000
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.100000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    1  0.000000
- B operator, symmetry, frequency:   YDIPLEN    1  0.000000
+@ Value of linear response -<<A;B>(omega):      -0.000000000015
 
- Value of linear response:       9.457344731006
+@ Singlet linear response function in a.u.
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    1  0.000000
- B operator, symmetry, frequency:   YDIPLEN    1  0.000000
+@ A operator, symmetry, frequency:   ZDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   XDIPLEN    1  0.100000
 
- Value of linear response:       0.000000000000
+@ Value of linear response -<<A;B>(omega):       0.000000000000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   YDIPLEN    1  0.100000
+@ Singlet linear response function in a.u.
 
- Value of linear response:       0.000000000000
+@ A operator, symmetry, frequency:   XDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   YDIPLEN    1  0.100000
+@ Value of linear response -<<A;B>(omega):       0.000000000000
 
- Value of linear response:       9.833675125953
+@ Singlet linear response function in a.u.
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   YDIPLEN    1  0.100000
+@ A operator, symmetry, frequency:   YDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
- Value of linear response:       0.000000000000
+@ Value of linear response -<<A;B>(omega):       9.924471729441
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    1  0.000000
- B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+@ Singlet linear response function in a.u.
 
- Value of linear response:       0.000000000000
+@ A operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    1  0.000000
- B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+@ Value of linear response -<<A;B>(omega):       0.000000000000
 
- Value of linear response:       0.000000000000
+@ Singlet linear response function in a.u.
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    1  0.000000
- B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+@ A operator, symmetry, frequency:   XDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.100000
 
- Value of linear response:       8.967499937673
+@ Value of linear response -<<A;B>(omega):       0.000000000000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   ZDIPLEN    1  0.100000
+@ Singlet linear response function in a.u.
 
- Value of linear response:       0.000000000000
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.100000
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   ZDIPLEN    1  0.100000
+@ Value of linear response -<<A;B>(omega):      10.362965360567
 
- Value of linear response:       0.000000000000
+@ Singlet linear response function in a.u.
 
- Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    1 -0.100000
- B operator, symmetry, frequency:   ZDIPLEN    1  0.100000
+@ A operator, symmetry, frequency:   ZDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   YDIPLEN    1  0.100000
 
- Value of linear response:       9.550794282566
+@ Value of linear response -<<A;B>(omega):       0.000000000000
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   XDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+
+@ Value of linear response -<<A;B>(omega):       0.000000000000
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   YDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+
+@ Value of linear response -<<A;B>(omega):      -0.000000000001
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.000000
+
+@ Value of linear response -<<A;B>(omega):       9.624753398905
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   XDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.100000
+
+@ Value of linear response -<<A;B>(omega):       0.000000000000
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.100000
+
+@ Value of linear response -<<A;B>(omega):      -0.000000000002
+
+@ Singlet linear response function in a.u.
+
+@ A operator, symmetry, frequency:   ZDIPLEN    1 -0.100000
+@ B operator, symmetry, frequency:   ZDIPLEN    1  0.100000
+
+@ Value of linear response -<<A;B>(omega):      10.360937834757
 
 
   Results from quadratic response calculation
  --------------------------------------------
 
 
- >>> Time used in TWOINT is   0.66 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
  DFT-QR uses symmetry adapted matrix multipication code.
 
- Electrons:       9.9999806. Quadratic response time:      30.83 s
+ Electrons:       9.9999995. Quadratic response time:       8.18 s
 
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;X,X) =      0.00000000
-@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;X,X) =    -16.49830674
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;X,X) =    -20.31063082
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;X,X) =      0.00000000
 
- >>> Time used in TWOINT is   0.51 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.51 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      25.29 s
+ Electrons:       9.9999995. Quadratic response time:       8.21 s
 
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;X,X) =      0.00000000
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;X,X) =    -18.50413917
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;X,X) =    -23.12729758
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Z;X,X) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,X) = beta(Y,X,X)
 
- >>> Time used in TWOINT is   0.48 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
 
- >>> Time used in TWOINT is   0.52 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons:       9.9999806. Quadratic response time:      29.24 s
+ Electrons:       9.9999995. Quadratic response time:       8.19 s
 
-@ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,X) =    -16.49830674
+@ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,X) =    -20.11107907
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,X) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Y,X) =      0.00000000
 
- >>> Time used in TWOINT is   0.61 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.60 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      16.03 s
+ Electrons:       9.9999995. Quadratic response time:       8.19 s
 
-@ B-freq = 0.100000  C-freq = 0.000000     beta(X;Y,X) =    -18.50413917
+@ B-freq = 0.100000  C-freq = 0.000000     beta(X;Y,X) =    -22.84664605
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Y,X) =      0.00000000
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Y,X) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,X) = beta(Z,X,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,X) = beta(Z,Y,X)
 
- >>> Time used in TWOINT is   0.27 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.28 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      25.34 s
+ Electrons:       9.9999995. Quadratic response time:       8.19 s
 
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,X) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,X) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,X) =      0.00000000
 
- >>> Time used in TWOINT is   0.73 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.59 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      29.33 s
+ Electrons:       9.9999995. Quadratic response time:       8.17 s
 
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;Z,X) =      0.00000000
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Z,X) =      0.00000000
@@ -1029,70 +1027,70 @@ Point group: C1
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;X,Y) = beta(Y,Y,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;X,Y) = beta(Z,Y,X)
 
- >>> Time used in TWOINT is   0.60 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.60 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      25.64 s
+ Electrons:       9.9999995. Quadratic response time:       8.18 s
 
-@ B-freq = 0.100000  C-freq = 0.000000     beta(X;X,Y) =    -18.32903362
+@ B-freq = 0.100000  C-freq = 0.000000     beta(X;X,Y) =    -22.47955542
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Y;X,Y) =      0.00000000
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Z;X,Y) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,Y) = beta(Y,Y,X)
 
- >>> Time used in TWOINT is   0.54 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
- Electrons:       9.9999806. Quadratic response time:      25.80 s
+ Electrons:       9.9999995. Quadratic response time:       8.17 s
 
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,Y) =      0.00000000
-@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,Y) =     -6.45363408
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,Y) =     -9.01605221
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Y,Y) =      0.00000000
 
- >>> Time used in TWOINT is   0.54 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.52 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      29.02 s
+ Electrons:       9.9999995. Quadratic response time:       8.19 s
 
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;Y,Y) =      0.00000000
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Y,Y) =     -7.97631337
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Y,Y) =    -11.44896342
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Y,Y) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,Y) = beta(Z,Y,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Y) = beta(Z,Y,Y)
 
- >>> Time used in TWOINT is   0.61 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.58 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      27.61 s
+ Electrons:       9.9999995. Quadratic response time:       8.18 s
 
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,Y) =      0.00000000
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Y) =      0.00000000
-@ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Y) =     -2.44301820
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Y) =     -4.19045020
 
- >>> Time used in TWOINT is   0.52 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.50 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      30.26 s
+ Electrons:       9.9999995. Quadratic response time:       8.19 s
 
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;Z,Y) =      0.00000000
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Z,Y) =      0.00000000
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Z,Y) =     -7.98200130
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Z,Y) =    -12.86866510
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;X,Z) = beta(Z,X,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;X,Z) = beta(Z,Y,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;X,Z) = beta(Z,Z,X)
 
- >>> Time used in TWOINT is   0.57 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
- >>> Time used in TWOINT is   0.59 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
- Electrons:       9.9999806. Quadratic response time:      26.91 s
+ Electrons:       9.9999995. Quadratic response time:       8.18 s
 
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;X,Z) =      0.00000000
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Y;X,Z) =      0.00000000
@@ -1101,43 +1099,43 @@ Point group: C1
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,Z) = beta(Z,Y,Y)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Y,Z) = beta(Z,Z,Y)
 
- >>> Time used in TWOINT is   0.53 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in TWOINT is   0.54 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      31.24 s
+ Electrons:       9.9999995. Quadratic response time:       8.17 s
 
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;Y,Z) =      0.00000000
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Y,Z) =      0.00000000
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Y,Z) =     -2.74794500
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Y,Z) =     -4.94277490
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,Z) = beta(Z,Z,X)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Z) = beta(Z,Z,Y)
 
- >>> Time used in TWOINT is   0.70 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
- Electrons:       9.9999806. Quadratic response time:      33.45 s
+ Electrons:       9.9999995. Quadratic response time:       8.18 s
 
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Z,Z) =      0.00000000
-@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Z) =     -2.44301820
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Z) =     -4.38560404
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Z) =      0.00000000
 
- >>> Time used in TWOINT is   0.66 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
- >>> Time used in TWOINT is   0.70 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
- Electrons:       9.9999806. Quadratic response time:      32.71 s
+ Electrons:       9.9999995. Quadratic response time:       8.17 s
 
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;Z,Z) =      0.00000000
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Z,Z) =     -2.74794500
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Z,Z) =     -5.25958074
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Z,Z) =      0.00000000
 
- >>>> Total CPU  time used in RESPONSE: 11 minutes 56 seconds
- >>>> Total wall time used in RESPONSE: 12 minutes  1 second 
- >>>> Total CPU  time used in DALTON: 12 minutes 59 seconds
- >>>> Total wall time used in DALTON: 13 minutes  3 seconds
+ >>>> Total CPU  time used in RESPONSE:  4 minutes 46 seconds
+ >>>> Total wall time used in RESPONSE:  4 minutes 45 seconds
+ >>>> Total CPU  time used in DALTON:  5 minutes 28 seconds
+ >>>> Total wall time used in DALTON:  5 minutes 27 seconds
 
  
-     Date and time (Linux)  : Thu Feb 20 15:19:35 2003
+     Date and time (Linux)  : Thu May 20 13:58:52 2004
      Host name              : pi.biotech.kth.se                       

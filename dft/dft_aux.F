@@ -247,11 +247,6 @@ c
       TDFTI = DFTHRI
       TDFT0 = DFTHR0
       END
-      SUBROUTINE GET_KSYMOP(KS)
-#include <implicit.h>
-#include <wrkrsp.h>
-      KS = KSYMOP
-      END
 #ifdef VAR_MPI
       SUBROUTINE DFTLRSYNC
 #include <implicit.h>

@@ -450,6 +450,11 @@ fi
 #
 # For rs6000 we first try ESSL, then BLAS
 #
+if [ $WHICH = "nec" ]; then
+    pdpackextras=""
+else
+    pdpackextras="linpack.o eispack.o"
+fi
 
 LIB=''
 for testdir in $dirlist; do
@@ -457,7 +462,8 @@ for testdir in $dirlist; do
     for testlib in $liblist; do
       if test -f $testdir/$testlib; then
          case $testlib in
-	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true';;
+	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
+                       pdpackextras="$pdpackextras gp_zlapack.o";;
 	    libessl.a) LIB='-lessl'
       	               blas3="true" # - but not complete...
 		       # double-check dlapack.
@@ -510,6 +516,21 @@ for testdir in $dirlist; do
         break
     fi
 done
+
+#
+# Figure out list of needed numerical libraries.
+#
+
+[ "$lapack" = "true" ] || pdpackextras="$pdpackextras gp_dlapack.o gp_zlapack.o"
+if [ "$blas3" != "true" ] ; then
+    pdpackextras="$pdpackextras gp_dblas3.o"
+    if [ "$blas2" != "true" ] ; then
+       pdpackextras="$pdpackextras gp_dblas2.o"
+       if [ "$blas" != "true" ] ; then
+          pdpackextras="$pdpackextras gp_dblas1.o gp_zblas.o"
+       fi
+    fi
+fi
 
 if [ -z "$LIB" -a -n "$liblist" ]; then
     $ECHO '   No mathematical libraries seem to be available'
@@ -642,27 +663,6 @@ done
 if [ "$answer" = "n" ];  then
     $ECHO 'Please enter default root scratch directory: \c'
     read worksp
-fi
-
-#
-# Figure out list of needed numerical libraries.
-#
-
-if [ $WHICH = "nec" ]; then
-    pdpackextras=""
-else
-    pdpackextras="linpack.o eispack.o gp_zblas.o"
-fi
-
-[ "$lapack" = "true" ] || pdpackextras="$pdpackextras gp_dlapack.o gp_zlapack.o"
-if [ "$blas3" != "true" ] ; then
-    pdpackextras="$pdpackextras gp_dblas3.o"
-    if [ "$blas2" != "true" ] ; then
-       pdpackextras="$pdpackextras gp_dblas2.o"
-       if [ "$blas" != "true" ] ; then
-          pdpackextras="$pdpackextras gp_dblas1.o gp_zblas.o"
-       fi
-    fi
 fi
 
 #
@@ -974,11 +974,11 @@ case "$WHICH" in
                  fi
               fi
               cpp="-DVAR_G77 $cpp"
-              if [ "$prc" = alpha ]; then
-                 copt="-mieee"; 
-               else 
-                 copt="-mcpu=$prc -malign-double" 
-              fi
+              case "$prc" in
+              alpha)  copt="-mieee";;
+              x86_64) copt="-march=x86-64";;
+                  *)  copt="-mcpu=$prc -malign-double" 
+              esac
               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
               opt="$copt -fno-globals -Wno-globals -fno-second-underscore"
               copt="$copt -std=c99 -DRESTRICT=restrict"
