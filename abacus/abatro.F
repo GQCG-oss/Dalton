@@ -45,7 +45,6 @@ C  /* Deck troinp */
       LOGICAL NEWDEF
 C
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  ', '.THRESH', '.COMPAR',
-     *            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
      *            'XXXXXXX', 'xGD    ', 'xRD    ', 'xNOROT '/
 C    .GD, .RD, and .NOROT disabled because not working currently.
 C    Nov 2004/hjaaj
