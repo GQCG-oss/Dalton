@@ -8,7 +8,7 @@ F_OBJS = \
 	detfi.o           detpr.o           dets0.o\
 	dets1.o           drcctl.o          getcix.o\
 	getint.o          siraba.o          sirave.o\
-	sirbkd.o          sircan.o          sirci.o\
+	sircan.o          sirci.o\
 	sircmo.o          sirctl.o\
 	sirdiis.o         sirfck.o          sirgp.o\
 	sirgrad.o         sirinp.o          sirlintrn.o\

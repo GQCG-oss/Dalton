@@ -164,9 +164,9 @@ case $WHICH in
               complist='ifc efc pgf77 g77'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
-              complist='g77 f77'
+              complist='xlf g77 f77'
 #                       f77 is the Absoft v8.0 compiler
-              ccmplist='gcc';;
+              ccmplist='xlc gcc';;
     hal)      liblist='libblas.a'
               complist='frt'
               ccmplist='cc';;
@@ -997,7 +997,17 @@ case "$WHICH" in
               cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
               set_parallel_def $mesp
             fi
-            if [ "$F77" = g77 ]; then
+            if [ "$F77" = xlf ]; then
+               cpp="-WF,-DSYS_AIX,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
+               copt='-qarch=auto -O3 -qtune=auto -qmaxmem=-1 -qunroll=yes'
+               opt="$copt -qextname -qstrict -s"
+               def='dalton.x'
+               inc='-I../include'
+               LIB='-L/opt/ibmcmp/lib -L/opt/ibmcmp/xlf/8.1/lib -L/opt/ibmcmp/vacpp/6.0/lib'
+# Notes for xlf (8.1) under OS X 10.3:
+# Tested for G5 architecture (not G4). Significant speedup over g77 for G5. 
+# LIB may need to be modified depending on installation of the xlf compiler. 
+            elif [ "$F77" = g77 ]; then
                cpp="-DVAR_G77 $cpp"
                copt="-mcpu=7450"
                copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
