@@ -171,9 +171,9 @@ CTRL[12]=3
 ERROR[12]="FINAL ENERGY NOT CORRECT"
 
 # Quadropole moment:
-CRIT1=`$GREP "Ex * \-1\.755668 * (0| )\.000000 * (0| )\.000000" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| )\.000000 * 1\.938555 * (0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.182887" $log | wc -l`
+CRIT1=`$GREP "Ex * \-1\.755668 * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * 1\.938555 * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * (\-0|\-)\.182887" $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
 ERROR[13]="QUADROPOLE MOMENT NOT CORRECT"

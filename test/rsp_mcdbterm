@@ -110,16 +110,16 @@ CTRL[4]=6
 ERROR[4]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 #
 # Transition moments
-CRIT1=`$GREP "omega B\, excitation energy\, moment \: * (0| )\.000000 * 1\.003438 * (\-| )1\.96682" $log | wc -l`
+CRIT1=`$GREP "omega B\, excitation energy\, moment \: * (\-0|\-|0| )\.000000 * 1\.003438 * (\-| )1\.96682" $log | wc -l`
 CRIT2=`$GREP "Excitation energy in au,    moment \: * 1\.003438 * (\-| )1\.019782" $log | wc -l`
 CRIT3=`$GREP "B term contribution\: * \-1\.002864" $log | wc -l`
-CRIT4=`$GREP "omega B\, excitation energy\, moment \: * (0| )\.000000 * 1\.446943 * (\-| )1\.238333" $log | wc -l`
+CRIT4=`$GREP "omega B\, excitation energy\, moment \: * (\-0|\-|0| )\.000000 * 1\.446943 * (\-| )1\.238333" $log | wc -l`
 CRIT5=`$GREP "Excitation energy in au,    moment \: * 1\.446943 * (\-0|\-|0| )\.317319" $log | wc -l`
 CRIT6=`$GREP "B term contribution\: * (\-0|\-)\.196473" $log | wc -l`
-CRIT7=`$GREP "omega B\, excitation energy\, moment \: * (0| )\.000000 * (0| )\.508268 * (0| )\.000000" $log | wc -l`
+CRIT7=`$GREP "omega B\, excitation energy\, moment \: * (\-0|\-|0| )\.000000 * (0| )\.508268 * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT8=`$GREP "Excitation energy in au,    moment \: * (0| )\.508268 * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT9=`$GREP "B term contribution\: * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT10=`$GREP "omega B\, excitation energy\, moment \: * (0| )\.000000 * (0| )\.748121 * (\-| )1\.887384" $log | wc -l`
+CRIT10=`$GREP "omega B\, excitation energy\, moment \: * (\-0|\-|0| )\.000000 * (0| )\.748121 * (\-| )1\.887384" $log | wc -l`
 CRIT11=`$GREP "Excitation energy in au,    moment \: * (0| )\.748121 * (\-| )1\.231217" $log | wc -l`
 CRIT12=`$GREP "B term contribution\: * (\-| )1\.161889" $log | wc -l`
 TEST[5]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
