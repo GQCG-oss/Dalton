@@ -12,7 +12,15 @@ many different electronic linear, quadratic, or cubic molecular
 response properties based on SCF or MCSCF or CI wave functions.
 No nuclear contributions are added.
 
-Some of these SCF/MCSCF properties can also be requested
+If the final wave function from \Sec{*WAVE FUNCTIONS} was \Key{CI}, then
+a configuration interaction\index{Configuration Interaction!response}\index{CI!response}
+response calculation will be performed. 
+This is equivalent to a CI sum-over-states\index{response!CI sum-over-states}
+calculation of response properties,
+but of course calculated directly without diagonalization of the full
+CI Hamiltonian matrix.
+
+Some of the SCF/MCSCF response properties can also be requested
 from \Sec{*PROPERTIES} input modules.
 NOTE: for such properties you should request them either here or
 in \Sec{*PROPERTIES}, otherwise you will calculate them twice!
@@ -53,15 +61,6 @@ should follow another {\ttfamily{**<something>}} input group
 (or \Sec{*END OF DALTON INPUT} if this was the last input to \dalton).
 
 \begin{description}
-
-\item{\Key{RSPCI}}
-Configuration interaction\index{Configuration Interaction!response}\index{CI!response}
-response calculation. 
-This is equivalent to a CI sum-over-states\index{response!CI sum-over-states}
-calculation of response properties,
-but of course calculated directly without diagonalization of the full
-CI Hamiltonian matrix.
-The final wave function from \Sec{*WAVE FUNCTIONS} must be \Key{CI}.
 
 \item{\Key{SOPPA}}
 Requests the second order polarization propagator approximation 
