@@ -1,10 +1,10 @@
 \section*{Appendix: DALTON Tool box}
 
-This appendix describes the pre- and postprocessing processing program
+This appendix describes the pre- and postprocessing programs
 supplied to us by various users and authors. The programs are designed
 to create files directly useable by the \siraba\ program, or do
 various final analyses of one or more \siraba\ output files. We
-strongly encourage users to supply with any such programs they have
+strongly encourage users to supply us with any such programs they have
 written in connection with their own use of the \siraba\ program,
 which we will be glad to distribute along with the \siraba\
 program.
@@ -97,7 +97,7 @@ given integrals do indeed, or do not, exist on a given file (usually
 \noindent
 {\large\bf Author: \normalsize\large Antonio Rizzo (Istituto di
 Chimica Quantistica ed Energetica Molecolare, Pisa, Italy), and
-Sonia Coriani (Aarhus University, Denmark)}
+Sonia Coriani (University of Trieste, Italy)}
 
 \smallskip
 
@@ -110,8 +110,8 @@ nuclear shielding calculations.
 \noindent
 {\bf Commandline:} odcprog
 
-Requires the existence of a readmg.dat file, and n DALTON.CM files,
-where n is the number of finite field output files.
+Requires the existence of a readmg.dat file, and $n$ DALTON.CM files,
+where $n$ is the number of finite field output files.
 
 \smallskip
 \noindent
@@ -125,22 +125,21 @@ FILE2
 ... 
 FILEN 
 \end{verbatim}
-
+where
 \begin{itemize}
 \item[N] Number of output DALTON.CM files for the FF calculations
 \item[ZPRT]  Sets the print level (T for maximum print level, F otherwise)
 \item[IPG] Point group (1=Td, 2=Civ, 3=D2h, 4=C2v, 5=C3v, 6=Dih)
 \item[ISSYM] Site symmetry of the atom for which the shielding
-polarizabilities are required
+               polarizabilities are required
 \item[NIST] First atom of which shielding polarizabilities must be computed
-        (of those in  the DALTON.CM files)
+               (of those in  the DALTON.CM files)
 \item[NLAST] Last atom of which shielding polarizabilities must be computed
-        (of those in  the DALTON.CM files)
+               (of those in  the DALTON.CM files)
 \item[NSTEP] Step to go from nist to nlast in the do-loop for
-shielding polarizabilities
-\item[FILEn] n.th DALTON.CM file (current name and location)
+               shielding polarizabilities
+\item[FILEn] $n$th DALTON.CM file (current name and location)
 \end{itemize}
-
 
 \smallskip
 \noindent
@@ -226,3 +225,24 @@ Need     x  0  0
 Need     x  0  z
 \end{verbatim}
 \end{itemize}
+
+%\subsection*{A4: arturo}
+%\noindent
+%{\large\bf Author: \normalsize\large Asger Halkier (Aarhus University, Denmark)
+%and Sonia Coriani (University of Trieste, Italy)}
+%
+%\smallskip
+%
+%\noindent
+%{\bf Purpose:} Performs central difference analysis of (finite
+%field) energy calculations with \cc.
+%
+%\smallskip
+%\noindent
+%{\bf Commandline:} arturo
+%
+%Requires the existence of a readmg.dat file, and n DALTON.CM files,
+%where n is the number of finite field output files.
+%
+%\smallskip
+%\noindent
