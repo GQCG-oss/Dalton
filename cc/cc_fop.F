@@ -1415,6 +1415,7 @@ C
 C
       IF ( CCS ) THEN
          CALL DZERO(ETA,NT1AM(ISYMOP))
+         CALL QEXIT('CC_ETA')
          RETURN
       ENDIF
 C
@@ -1514,6 +1515,7 @@ C
       ENDIF
 C
       CALL QEXIT('CC_ETA')
+      RETURN
       END
 C  /* Deck cc_d1orre */
       SUBROUTINE CC_D1ORRE(D1AO,ZKAM,WORK,LWORK)
