@@ -856,18 +856,19 @@ case "$WHICH" in
           if [ $F77 = 'f90' ]; then
               case $bit in
                   64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
-                      LIB="$LIB +DA2.0W"
+                      LIB="$LIB +U77 +DA2.0W"
                       copt='+DA2.0W +O3 +Onolimit +Ofastaccess';;
                   *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
-                      LIB="-lV7 $LIB"
+                      LIB="-lV7 +U77 $LIB"
                       copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
               esac
           else
               opt='+O2 +U77 +E4 +E5'
               safe_opt='+O1 +U77 +E4 +E5'
               copt='-D_FILE_OFFSET_BITS=64 +O3'
-              LIB="-lV7 $LIB"
+              LIB="-lV7 +U77 $LIB"
           fi
+          copt="copt -AC99"
           cpp=${cpp}${f90yes};;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then

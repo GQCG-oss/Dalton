@@ -59,13 +59,6 @@ CFILES =\
 
 EXTRA_FILES = fun-tester.c
 
-# this ifeq section below is GNU specific thing. Feel free to remove it.
-ifeq ($(CC),gcc)
-FFLAGS += -Wall -Wunused -Wuninitialized 
-CFLAGS += -Wall -Wunused -Wuninitialized
-endif
-
-
 CCOMPILE = $(CC)  $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 FCOMPILE = $(F77) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(FFLAGS)
 
@@ -88,32 +81,4 @@ libdft.a: $(OBJS) Makefile
 fun-tester: fun-tester.c functionals.c $(FUNFILES)
 	$(CC) -g -O -I../include -DNO_BACKWARD_COMP $^ -o $@  -lm
 
-ifeq ($(CC),gcc)
-# dependency part, should go to a separate, dynamically-created dependency 
-# file.
-DEP_FILES := $(addprefix .deps/, $(OBJS:.o=.P))
-DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
-
-sinclude $(DEP_FILES)
-
-# This is  adapted automake output.
-# This is GNU specific thing. Feel free to remove it.
-%.o: %.c
-	@echo '$(CCOMPILE) -c $<'; \
-	$(CCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
-	@-cp .deps/$(*F).pp .deps/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*F).P; \
-	rm .deps/$(*F).pp
-endif
-ifeq ($(F77),g77)
-%.o: %.F
-	@echo '$(FCOMPILE) -c $<'; \
-	$(FCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
-	@-cp .deps/$(*F).pp .deps/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*F).P; \
-	rm .deps/$(*F).pp
-endif
+include Makefile.depend
