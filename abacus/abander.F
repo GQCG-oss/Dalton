@@ -1251,9 +1251,6 @@ C
       LASTE  = .FALSE.
       NOSYM  = .FALSE.
       IF (MLINE(NMLAU)(10:10).EQ.'0') NOSYM = .TRUE.
-      KNATOM = 1
-      KNLINE = KNATOM + NUCIND
-      KNATIN = KNLINE + NUCIND
 C
       KIDTMP = 1
       KIRPDG = KIDTMP + NMORDR
@@ -1773,6 +1770,9 @@ c     &                     .FALSE.)
 C     
 C              *** Update MOLECULE.INP file. ***
 C
+               KNATOM = 1
+               KNLINE = KNATOM + NUCIND
+               KNATIN = KNLINE + NUCIND
                CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
      &                     MBKLIN,NMBKLN,LASTE)
 C
@@ -4697,7 +4697,8 @@ C
 C
 C     /*Deck nrmiso*/
       SUBROUTINE NRMISO(TDER,SYMCOR,DKIN,TRNCCR,TRAMSS,TMPGRD,TMPHES,
-     &                  TMPMSS,TMPTD1,TMPTD2,CSTART,WORK,NDIMT,LWORK)
+     &                  TMPMSS,TMPTD1,TMPTD2,CSTART,WORK,NDIMT,LWORK,
+     &                  IPRINT)
 C     ***************************************************************
 C     *** This routine takes the force constants (with respect to ***
 C     *** the most normal masses) and finds the force constants   ***
