@@ -123,6 +123,8 @@ camb3lyp_read(const char *conf_line)
     if(!parse_table("CAM-B3LYP", conf_line,
                     ELEMENTS(cam_keywords), cam_keywords, weights))
         return 0;
+    /* sanity checks */
+    if(weights[2]<=0) weights[2] = 1e-30;
     dft_set_hf_weight(weights[0]);
     dft_set_cam_param(weights[2], weights[1]);
     CamMuFactor = weights[2]; CamBeta = weights[1];

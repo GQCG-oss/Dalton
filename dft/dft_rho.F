@@ -333,7 +333,10 @@ c
       ISHLEN = 0
       NBLCNT = 0
       IPREV = -1111
-      CELLDG = CELLSZ/SQRT(2D0)
+c     pawsa: Include also orbitals active in nearest neigbour boxes:
+c     critical for heavy atoms. Check out eg. TeC2H4 I have a feeling it
+c     should not be necessary - perhaps I am masking another bug here?
+      CELLDG = CELLSZ*SQRT(2D0)
       DO 10 ISHELA=1,KMAX
          ICENT = NCENT(ISHELA)
          MULCNT = ISTBNU(ICENT)

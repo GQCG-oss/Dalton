@@ -48,7 +48,7 @@ C
 #endif
 C     choose reasonably large. Exceeding this limit means that boxes are
 C     too large.
-      PARAMETER(NBUFLEN=70000)
+      PARAMETER(NBUFLEN=99000)
 C
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
       EXTERNAL CB
