@@ -73,7 +73,7 @@
      "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Date and time (Linux)  : Mon Mar 12 16:51:58 2001
+     Date and time (Linux)  : Thu Apr 19 11:11:44 2001
      Host name              : dschcoriani.univ.trieste.it             
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -327,10 +327,10 @@ Point group: C2v
 
  Threshold for discarding integrals :  1.00E-12
 
- >>> Time used in FRMSUP is   0.00 seconds
+ >>> Time used in FRMSUP is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.67 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -341,7 +341,7 @@ Point group: C2v
  ************************************************************************
 
  
-     Date and time (Linux)  : Mon Mar 12 16:51:58 2001
+     Date and time (Linux)  : Thu Apr 19 11:11:45 2001
      Host name              : dschcoriani.univ.trieste.it             
 
  Title lines from integral program:
@@ -381,7 +381,7 @@ Point group: C2v
      Number of basis functions          2   1   0   0
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               1   0   0   0
@@ -451,7 +451,7 @@ Point group: C2v
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Mon Mar 12 16:51:58 2001
+     Date and time (Linux)  : Thu Apr 19 11:11:45 2001
      Host name              : dschcoriani.univ.trieste.it             
 
      Molecular orbitals for symmetry species   1
@@ -466,7 +466,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Mar 12 16:51:58 2001
+     Date and time (Linux)  : Thu Apr 19 11:11:45 2001
      Host name              : dschcoriani.univ.trieste.it             
 
 - End of Wave Function Section
@@ -584,47 +584,8 @@ Point group: C2v
                      ! Coupled Cluster model is: CCSD !
                      +--------------------------------+
 
-     Start vector generated from gradient
-
-
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
-
-
-          CC_PRAM:Overall Contribution of the Different Components
-          --------------------------------------------------------
-
-
-
-          Single Excitation Contribution :               0.2128 %
-
-          Double Excitation Contribution :              99.7872 %
-
-          ||T1||/||T2||                  :               0.0462
-
-          Tau1 diagnostic                :               0.0078
-
-          Norm of Total Amplitude Vector :               0.2398
-
-
- +=============================================================================+
- | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
- |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
- +=============================================================================+
- | 1   1   |   1       1     |        1          |              |   -0.011064  |
- +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.136101  |
- | 2 2 1 1 |   1   1   1   1 |        1        1 |            2 |   -0.197172  |
- +=============================================================================+
-
-
-          Norm of Printed Amplitude Vector :             0.2398
-
-
-          Printed all single excitations greater than 0.009226
-
-
-          Printed all double excitations greater than 0.039957
+ There are no amplitudes of symmetry  3!
+ There are no amplitudes of symmetry  4!
   
    
 
@@ -658,14 +619,6 @@ Point group: C2v
  ... selected element no.  1
  Start vector guessed from diagonal
  ... selected element no.  3
-
- (CCORT) new  b-vector no.  2
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 1.23260E-32
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  2 to  1
 
 
  SYMMETRY CLASS NR.    1
@@ -726,7 +679,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             1.0000
 
 
-          Printed all single excitations greater than 0.191819
+          Printed all single excitations greater than 0.959097
 
 
           Printed all double excitations greater than 0.056616
@@ -767,7 +720,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             0.9909
 
 
-          Printed all single excitations greater than 0.100445
+          Printed all single excitations greater than 0.502225
 
 
           Printed all double excitations greater than 0.172947
@@ -861,7 +814,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             1.0000
 
 
-          Printed all single excitations greater than 0.194436
+          Printed all single excitations greater than 0.972179
 
 
           Printed all double excitations greater than 0.046848
@@ -902,7 +855,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             1.0000
 
 
-          Printed all single excitations greater than 0.045799
+          Printed all single excitations greater than 0.228993
 
 
           Printed all double excitations greater than 0.194686
@@ -1018,14 +971,6 @@ Point group: C2v
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      RE  vector
 
- (CCORT) new  b-vector no.  2
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 9.31482E-33
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  2 to  1
-
 
  SYMMETRY CLASS NR.    1
  MULTIPLICITY          1
@@ -1085,7 +1030,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             1.0000
 
 
-          Printed all single excitations greater than 0.172291
+          Printed all single excitations greater than 0.861454
 
 
           Printed all double excitations greater than 0.101567
@@ -1130,7 +1075,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             0.9882
 
 
-          Printed all single excitations greater than 0.056103
+          Printed all single excitations greater than 0.280516
 
 
           Printed all double excitations greater than 0.191970
@@ -1232,7 +1177,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             1.0000
 
 
-          Printed all single excitations greater than 0.194686
+          Printed all single excitations greater than 0.973428
 
 
           Printed all double excitations greater than 0.045799
@@ -1277,7 +1222,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             1.0000
 
 
-          Printed all single excitations greater than 0.046848
+          Printed all single excitations greater than 0.234238
 
 
           Printed all double excitations greater than 0.194436
@@ -1476,8 +1421,7 @@ WARNING: irrep symmetry can not be determined.
     3   YDIPLEN   1    -1.674668E+00   ZANGMOM   2     0.000000E+00  2
     4   YDIPLEN   1    -7.481214E-01   ZANGMOM   2     0.000000E+00  2
 
- LIST OF REQUIRED FIRST-ORDER RIGHT EIGENVECTOR RESPONSES:
-
+    LIST OF REQUIRED FIRST-ORDER RIGHT EIGENVECTOR RESPONSES:
    ---------------------------------------------------------------------
    IDX STATE/SYM   EXC. ENERGY    OPERATOR/SYM    FREQUENCY    SYM R  P
    ---------------------------------------------------------------------
@@ -1492,21 +1436,14 @@ WARNING: irrep symmetry can not be determined.
    ---------------------------------------------------------------------
 
 
- LIST OF REQUIRED FIRST-ORDER LEFT
-
-  EIGENVECTOR RESPONSES:
-
+    LIST OF REQUIRED FIRST-ORDER LEFT  EIGENVECTOR RESPONSES:
    ---------------------------------------------------------------------
    IDX STATE/SYM   EXC. ENERGY    OPERATOR/SYM    FREQUENCY    SYM R  P
    ---------------------------------------------------------------------
-    1     3  2     7.481214E-01   ZANGMOM   2     0.000000E+00  1  F
-    0
-    2     4  2     1.674668E+00   ZANGMOM   2     0.000000E+00  1  F
-    0
-    3     1  1     1.003438E+00   ZANGMOM   2     0.000000E+00  2  F
-    0
-    4     2  1     1.446943E+00   ZANGMOM   2     0.000000E+00  2  F
-    0
+    1     3  2     7.481214E-01   ZANGMOM   2     0.000000E+00  1  F  F
+    2     4  2     1.674668E+00   ZANGMOM   2     0.000000E+00  1  F  F
+    3     1  1     1.003438E+00   ZANGMOM   2     0.000000E+00  2  F  F
+    4     2  1     1.446943E+00   ZANGMOM   2     0.000000E+00  2  F  F
    ---------------------------------------------------------------------
 
       
@@ -1576,41 +1513,8 @@ WARNING: irrep symmetry can not be determined.
    will be performed.
 
 
-     R1  start vector nr.  1 of symmetry  1 generated from gradient
-     R1  start vector nr.  2 of symmetry  1 generated from gradient
-
- (CCORT) new  b-vector no.  2
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 9.60834E-34
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  2 to  1
-     R1  start vector nr.  3 of symmetry  2 generated from gradient
-     R1  start vector nr.  4 of symmetry  2 generated from gradient
-     R1  start vector nr.  5 of symmetry  2 generated from gradient
-
- (CCORT) new  b-vector no.  1
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 2.83108E-33
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  1 to  0
  There are no amplitudes of symmetry  3!
  There are no amplitudes of symmetry  4!
-     M1  start vector nr.  1 of symmetry  1 generated from gradient
-     M1  start vector nr.  2 of symmetry  1 generated from gradient
-
- (CCORT) new  b-vector no.  2
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 5.59765E-33
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  2 to  1
-     M1  start vector nr.  3 of symmetry  2 generated from gradient
-     M1  start vector nr.  4 of symmetry  2 generated from gradient
  There are no amplitudes of symmetry  3!
  There are no amplitudes of symmetry  4!
 
@@ -1632,7 +1536,7 @@ WARNING: irrep symmetry can not be determined.
 
 
  +--------------------------------------------------+
- | total time for   4 B transforms.:      0.02 secs.|
+ | total time for   4 B transforms.:      0.06 secs.|
  +--------------------------------------------------+
  |  % of time used in start up org.:      0.00      |
  |  % of time used in Fock interm. :      0.00      |
@@ -1643,10 +1547,10 @@ WARNING: irrep symmetry can not be determined.
  |  % of time used in A term       :      0.00      |
  |  % of time used in BF term      :      0.00      |
  |  % of time used in F term       :      0.00      |
- |  % of time used in E term       :     50.00      |
+ |  % of time used in E term       :      0.00      |
  |  % of time used in C term       :      0.00      |
- |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :      0.00      |
+ |  % of time used in D term       :     16.67      |
+ |  % of time used in I/O          :     83.33      |
  +==================================================+
 
 
@@ -1669,9 +1573,9 @@ WARNING: irrep symmetry can not be determined.
 
 
  +--------------------------------------------------+
- | total time for   8 B transforms.:      0.04 secs.|
+ | total time for   8 B transforms.:      0.22 secs.|
  +--------------------------------------------------+
- |  % of time used in start up org.:     25.00      |
+ |  % of time used in start up org.:      0.00      |
  |  % of time used in Fock interm. :      0.00      |
  |  % of time used in ERI          :      0.00      |
  |  % of time used in CCRDAO       :      0.00      |
@@ -1680,66 +1584,18 @@ WARNING: irrep symmetry can not be determined.
  |  % of time used in A term       :      0.00      |
  |  % of time used in BF term      :      0.00      |
  |  % of time used in F term       :      0.00      |
- |  % of time used in E term       :      0.00      |
+ |  % of time used in E term       :     13.64      |
  |  % of time used in C term       :      0.00      |
  |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :     50.00      |
+ |  % of time used in I/O          :     86.36      |
  +==================================================+
 
 
-     ER1 start vector nr.  1 of symmetry  1 generated from gradient
-     ER1 start vector nr.  2 of symmetry  1 generated from gradient
-
- (CCORT) new  b-vector no.  2
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 1.63911E-33
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  2 to  1
-     ER1 start vector nr.  3 of symmetry  2 generated from gradient
-     ER1 start vector nr.  4 of symmetry  2 generated from gradient
-     ER1 start vector nr.  5 of symmetry  2 generated from gradient
-
- (CCORT) new  b-vector no.  1
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 6.85204E-33
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  1 to  0
-     ER1 start vector nr.  6 of symmetry  2 generated from gradient
-
- (CCORT) new  b-vector no.  1
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 1.76818E-33
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  1 to  0
-     ER1 start vector nr.  7 of symmetry  2 generated from gradient
-
- (CCORT) new  b-vector no.  1
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 2.96372E-34
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  1 to  0
-     ER1 start vector nr.  8 of symmetry  2 generated from gradient
-
- (CCORT) new  b-vector no.  1
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 3.68548E-33
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  1 to  0
  There are no amplitudes of symmetry  3!
  There are no amplitudes of symmetry  4!
 
  -------------------------------------------------------------------
- |                 OUTPUT FROM ETA/RHS VECTOR SECTION  Sonia       |
+ |                 OUTPUT FROM ETA/RHS VECTOR SECTION  (ETADRV1)   |
  -------------------------------------------------------------------
 
 
@@ -1756,18 +1612,6 @@ WARNING: irrep symmetry can not be determined.
 
 
  CC_ETADRV1: I am entering CC_XIETA
-     EL1 start vector nr.  1 of symmetry  1 generated from gradient
-     EL1 start vector nr.  2 of symmetry  1 generated from gradient
-
- (CCORT) new  b-vector no.  2
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 2.27961E-32
-  After Gram Smidt orthonormalization
- -1 vectors with norm le:  1.E-35 REMOVED
-
- (CCORT)  trial vectors reduced from  2 to  1
-     EL1 start vector nr.  3 of symmetry  2 generated from gradient
-     EL1 start vector nr.  4 of symmetry  2 generated from gradient
  There are no amplitudes of symmetry  3!
  There are no amplitudes of symmetry  4!
 
@@ -1782,18 +1626,6 @@ WARNING: irrep symmetry can not be determined.
  *                                                                 *
  *******************************************************************
 
- CCMCD_SETUP> LABELA: YDIPLEN   ISYMA:  1  LORXA:  F LPDBSA:  F
- CCMCD_SETUP> LABELB: ZANGMOM   ISYMB:  2  LORXB:  F LPDBSB:  F
- LUSEPL1:  F
- CCMCD_SETUP> LABELA: YDIPLEN   ISYMA:  1  LORXA:  F LPDBSA:  F
- CCMCD_SETUP> LABELB: ZANGMOM   ISYMB:  2  LORXB:  F LPDBSB:  F
- LUSEPL1:  F
- CCMCD_SETUP> LABELA: XDIPLEN   ISYMA:  2  LORXA:  F LPDBSA:  F
- CCMCD_SETUP> LABELB: ZANGMOM   ISYMB:  2  LORXB:  F LPDBSB:  F
- LUSEPL1:  F
- CCMCD_SETUP> LABELA: XDIPLEN   ISYMA:  2  LORXA:  F LPDBSA:  F
- CCMCD_SETUP> LABELB: ZANGMOM   ISYMB:  2  LORXB:  F LPDBSB:  F
- LUSEPL1:  F
 
 
    For the requested   4 contributions to B terms of magn.circ.dichr. 
@@ -1808,20 +1640,9 @@ WARNING: irrep symmetry can not be determined.
 
 
  +--------------------------------------------------+
- | total time for   4 G transforms.:      0.00 secs.|
+ | total time for   4 G transforms.:      0.01 secs.|
  +--------------------------------------------------+
- |  % of time used in ERI          :       nan      |
- |  % of time used in CCRDAO       :       nan      |
- |  % of time used in CCTRBT       :       nan      |
- |  % of time used in CCG_21CD     :       nan      |
- |  % of time used in Fock interm. :       nan      |
- |  % of time used in CCS part     :       nan      |
- |  % of time used in 21 CCSD part :       nan      |
- |  % of time used in doubles part :       nan      |
- |  % of time used in I/O          :       nan      |
- +==================================================+
-
-
+ ----------------------------------------------------------
 
  For transition |o> -> |f(  0.74812)>, of symm. 2
 
@@ -1829,12 +1650,13 @@ WARNING: irrep symmetry can not be determined.
   B oper.: ZANGMOM (unrel.)(  0.00000), symm. 2
   C oper.: XDIPLEN (unrel.)(  0.74812), symm. 2
 
-  Dipole strength (au) (C oper) =       1.23121650
-  M^(AB)_of(0.0) * M^(C)_fo     =      -2.32377881
-  M^(C*)_of * M^(AB*)_fo(0.0)   =       2.32377881
+  Dipole strength (au) (C oper) =       1.51589408
+  M^AB_of(0.0) x M^C_fo         =      -2.32377881
+  M^C*_of x M^AB*_fo(0.0)       =       2.32377881
 
- B term contribution (au):      -1.16188941 (antisym) 
- -----------------------------------------------------
+ CCSD  B term contribution (au):      -1.16188941 (antisym) 
+ ----------------------------------------------------------
+ ----------------------------------------------------------
 
  For transition |o> -> |f(  1.67467)>, of symm. 2
 
@@ -1842,12 +1664,13 @@ WARNING: irrep symmetry can not be determined.
   B oper.: ZANGMOM (unrel.)(  0.00000), symm. 2
   C oper.: XDIPLEN (unrel.)(  1.67467), symm. 2
 
-  Dipole strength (au) (C oper) =       0.13633567
-  M^(AB)_of(0.0) * M^(C)_fo     =      -0.02916011
-  M^(C*)_of * M^(AB*)_fo(0.0)   =       0.02916011
+  Dipole strength (au) (C oper) =       0.01858741
+  M^AB_of(0.0) x M^C_fo         =      -0.02916011
+  M^C*_of x M^AB*_fo(0.0)       =       0.02916011
 
- B term contribution (au):      -0.01458005 (antisym) 
- -----------------------------------------------------
+ CCSD  B term contribution (au):      -0.01458005 (antisym) 
+ ----------------------------------------------------------
+ ----------------------------------------------------------
 
  For transition |o> -> |f(  1.00344)>, of symm. 1
 
@@ -1855,12 +1678,13 @@ WARNING: irrep symmetry can not be determined.
   B oper.: ZANGMOM (unrel.)(  0.00000), symm. 2
   C oper.: YDIPLEN (unrel.)(  1.00344), symm. 1
 
-  Dipole strength (au) (C oper) =       1.01978186
-  M^(AB)_of(0.0) * M^(C)_fo     =      -2.00572773
-  M^(C*)_of * M^(AB*)_fo(0.0)   =       2.00572774
+  Dipole strength (au) (C oper) =       1.03995504
+  M^AB_of(0.0) x M^C_fo         =      -2.00572773
+  M^C*_of x M^AB*_fo(0.0)       =       2.00572774
 
- B term contribution (au):      -1.00286387 (antisym) 
- -----------------------------------------------------
+ CCSD  B term contribution (au):      -1.00286387 (antisym) 
+ ----------------------------------------------------------
+ ----------------------------------------------------------
 
  For transition |o> -> |f(  1.44694)>, of symm. 1
 
@@ -1868,12 +1692,12 @@ WARNING: irrep symmetry can not be determined.
   B oper.: ZANGMOM (unrel.)(  0.00000), symm. 2
   C oper.: YDIPLEN (unrel.)(  1.44694), symm. 1
 
-  Dipole strength (au) (C oper) =       0.31731912
-  M^(AB)_of(0.0) * M^(C)_fo     =      -0.39294686
-  M^(C*)_of * M^(AB*)_fo(0.0)   =       0.39294686
+  Dipole strength (au) (C oper) =       0.10069143
+  M^AB_of(0.0) x M^C_fo         =      -0.39294686
+  M^C*_of x M^AB*_fo(0.0)       =       0.39294686
 
- B term contribution (au):      -0.19647343 (antisym) 
- -----------------------------------------------------
+ CCSD  B term contribution (au):      -0.19647343 (antisym) 
+ ----------------------------------------------------------
   
 
  *******************************************************************************
@@ -1920,22 +1744,10 @@ WARNING: irrep symmetry can not be determined.
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  11
-
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  12
-
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  13
-
 - End of Coupled Cluster
- >>>> Total CPU  time used in DALTON:   0.59 seconds
- >>>> Total wall time used in DALTON:   6.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.77 seconds
+ >>>> Total wall time used in DALTON:  14.00 seconds
 
  
-     Date and time (Linux)  : Mon Mar 12 16:52:04 2001
+     Date and time (Linux)  : Thu Apr 19 11:11:58 2001
      Host name              : dschcoriani.univ.trieste.it             
