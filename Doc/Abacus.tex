@@ -471,6 +471,10 @@ true in calculations of Vibrational Circular Dichroism, that is, the
 coordinate system origin will be used as gauge origin. Changing this
 default value will give incorrect results for VCD.
 
+Note that in the current release, VCD is not implemented for Density
+functional theory calculations, and the program will stop if VCD is
+requested for a DFT calculation.
+
 %\item[\Key{VERDET}] Requests the calculation of Verdet
 %constants~\cite{mjpjarkrthcpl222}. London orbitals can not be used in
 %these calculations.
