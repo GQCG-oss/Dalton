@@ -289,7 +289,11 @@ do
       else
           molfile=$item
           dalfile=$item
-          logfile=./$item'__'$step'_'$item.log
+	  if [ "$multi" -eq 0 ]; then
+             logfile=./$item.log
+          else
+	     logfile=./$item'__'$step'_'$item.log
+	  fi
           checkfile=./$item.check
           reffile=./$item.ref
           moldenfile=./$item.molden
