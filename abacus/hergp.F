@@ -1516,9 +1516,10 @@ C  /* Deck cmmass */
       SUBROUTINE CMMASS(GEOM,AMASS,NATTYP,NUMIS,IPRINT)
 C
 C     Determine center of mass from information in common blocks
-C     K.Ruud, june-94
+C     K.Ruud, June-94
 C
 #include <implicit.h>
+#include <codata.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
@@ -1530,6 +1531,7 @@ C
 #include <symmet.h>
 #include <ibtfun.h>
 C
+      ICHTOT = 0
       JATOM = 0
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
@@ -1539,6 +1541,7 @@ C
      &              .OR. (ICHARG .EQ. 0 .AND. SOLVNT 
      &              .AND. (IATOM .EQ. NUCIND))) THEN
                   NATTYP(JATOM + 1) = ICHARG
+                  ICHTOT = ICHTOT + ICHARG
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
      &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
@@ -1552,6 +1555,9 @@ C
  10   CONTINUE
 C
       CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
+      TELCMAS = ICHTOT/XFAMU
+      TNUCMAS = TOTMAS - TELCMAS
+C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
       RETURN
       END
 C  /* Deck vibmas */
