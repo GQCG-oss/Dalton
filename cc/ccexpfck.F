@@ -985,8 +985,9 @@ C  /* Deck cc_expfck_init */
 
             IF (ISCOOR.GT.0) THEN
                IDX = IDX + 1
-               LABEL = '1DHAM '//CHRNOS(ISCOOR/10)
-     &                         //CHRNOS(MOD(ISCOOR,10))
+               LABEL = '1DHAM'//CHRNOS(ISCOOR/100)
+     &                        //CHRNOS(MOD(ISCOOR,100))
+     &                        //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                LBLEXPFCK(IDX)  = LABEL
                ISYEXPFCK(IDX)  = ICORSY
                ORDEXPFCK(IDX)  = 1

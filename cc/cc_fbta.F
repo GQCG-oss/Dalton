@@ -274,7 +274,7 @@ c /* deck cc_fbta1 */
 *
 *           HAM0     : unperturbed Hamiltonian (1-el & 2-el part)
 *                      (for test purposes)
-*           1DHAM xx : geometrical first derivatives (1-el & 2-el part)
+*           1DHAMxxx : geometrical first derivatives (1-el & 2-el part)
 *           dh/dB xx : London first derivatives (1-el & 2-el part)
 *
 *           ELSE the label is interpreted as a one-electron operator

@@ -161,7 +161,7 @@ c     ISYHOP = 1
 * . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 c     ITEST  = 5
 c     IORDER = 2
-c     LABEL1 = '1DHAM 03'
+c     LABEL1 = '1DHAM003'
 c     LORX1  = .TRUE.
 c     LTWO1  = .TRUE.
 c     FREQ1  = ZERO

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.5 2001-03-28 06:54:54 haettig Exp $
+C$Id: her1pro.F,v 1.6 2001-03-28 10:00:22 haettig Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -2577,7 +2577,7 @@ C  /* Deck hdotyp */
      &                              //CHRNOS(MOD(ISCOOR,100)/10)
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE IF (INTTYP .EQ. 70) THEN
-                           LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/10)
+                           LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
      &                              //CHRNOS(MOD(ISCOOR,100)/10)   
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE
@@ -2657,8 +2657,9 @@ C
                   IF (ISCOOR .GT. 0) THEN
                      ITYP = ITYP + 1
                      IF (INTTYP .EQ. 70) THEN
-                        LABINT(ITYP) = '1DHAM '//CHRNOS(ISCOOR/10)
-     &                                         //CHRNOS(MOD(ISCOOR,10))
+                        LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
+     &                           //CHRNOS(MOD(ISCOOR,100)/10)   
+     &                           //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                      ELSE
                         LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/10)
      &                                       //CHRNOS(MOD(ISCOOR,10))

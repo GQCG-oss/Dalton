@@ -865,8 +865,9 @@ C
 C
               ELSE
 C
-                 LABEL = '1DHAM '//CHRNOS(ISCOOR/10)
-     &                           //CHRNOS(MOD(ISCOOR,10))
+                 LABEL = '1DHAM'//CHRNOS(ISCOOR/100)
+     &                          //CHRNOS(MOD(ISCOOR,100)/10)
+     &                          //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
                  CALL CCPRPAO(LABEL,WORK(K1DHAM),IRREP,ISYM,IERR,
      &                        WORK(KEND2),LWRK2)
@@ -1560,8 +1561,9 @@ C
                  CALL QUIT('Insufficient work space in CC_GRAD.')
               END IF
 C
-              LABEL = '1DOVL '//CHRNOS(ISCOOR/10)
-     &                        //CHRNOS(MOD(ISCOOR,10))
+              LABEL = '1DOVL'//CHRNOS(ISCOOR/100) 
+     &                       //CHRNOS(MOD(ISCOOR,100)/10)
+     &                       //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
               CALL CCPRPAO(LABEL,WORK(K1DOVL),IRREP,ISYM,IERR,
      &                     WORK(KEND2),LWRK2)
