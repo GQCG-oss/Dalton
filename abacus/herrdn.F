@@ -842,7 +842,7 @@ C*****************************************************************************
      &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*1
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*4
       DIMENSION IBLOCK(2)
 #include <molinp.h>
 #include <ccom.h>
@@ -893,14 +893,21 @@ C
 C
 C        Test if Z-matrix for first line (I.eq.1):
 C
-         IF (I .EQ. 1 .AND. .NOT. DIRAC) THEN
-           READ (MLINE(NMLINE),'(A1)') ZMATL
-           IF (ZMATL .NE. ' ') THEN
+         IF (I .EQ. 1) THEN
+           READ (MLINE(NMLINE),'(A4)') ZMATL
+           IF (ZMATL .EQ. 'ZMAT') THEN
              ZMTTST = .TRUE.
              WRITE (LUPRI,'(/A)')
-     &         'Atoms and their geometry are read in Z-matrix format.'
-             IF (.NOT. BASIS)
-     &         CALL QUIT('READI1: Z-matrix only implemented with BASIS')
+     &       'Atoms and their geometry are read in Z-matrix format.'
+
+             IF (DIRAC) CALL
+     &          QUIT('READI1: Z-matrix is not implemented for DIRAC')
+             IF (.NOT. BASIS) CALL
+     &          QUIT('READI1: Z-matrix is only implemented with BASIS')
+             IF (LMULBS) CALL
+     &          QUIT('READI1: Z-matrix not implemented with LMULBS')
+
+             CALL RDLINE(LUINFO)
            END IF
          END IF
 C
@@ -908,13 +915,13 @@ C        Read/process data on centers/blocks
 C        ===================================
 C
          IF (DIRAC) THEN
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,2I5)') Q,NONT(I),NSETS
+            READ (MLINE(NMLINE),'(BN,F10.0,2I5)') Q,NONT(I),NSETS
             IF (LMULBS) THEN
                CALL QUIT('READI1: LMULBS not implemented for Dirac yet')
             ELSE
                MBSI = 1
             END IF
-         ELSE IF (ZMTTST) THEN
+         ELSE IF (ZMATL .EQ. 'ZMAT') THEN
 C           Z-matrix not implemented with LMULBS (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
                CALL QUIT('READI1: Z-matrix not implemented with LMULBS')
@@ -930,9 +937,9 @@ C               thus always use isotope no. 1 /hjaaj feb 2003
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
-               READ (MLINE(NMLINE),'(BN,1X,I2,F7.0,I5)') MBSI,Q,NONT(I)
+               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5)') MBSI,Q,NONT(I)
             ELSE
-               READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
+               READ (MLINE(NMLINE),'(BN,F10.0,I5)') Q,NONT(I)
                MBSI = 1
             END IF
          ELSE
@@ -944,10 +951,10 @@ C ach
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
-               READ (MLINE(NMLINE),'(BN,1X,I2,F7.0,I5,24I5)') 
+               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5,24I5)') 
      &               MBSI,Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
             ELSE
-               READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,24I5)') 
+               READ (MLINE(NMLINE),'(BN,F10.0,I5,24I5)') 
      &                    Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
                MBSI = 1
             END IF
