@@ -68,16 +68,17 @@ lb94_energy(const DftDensProp* dp)
     return SlaterFunctional.func(dp)+VWNFunctional.func(dp);
 }
 
-__inline__ double
-max(double a, double b) { return a>b ? a : b; }
 static void
 lb94_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 {
     real rho    = dp->rhoa + dp->rhob;
     real rho13 = pow(rho, 1.0/3.0);
     real grad = dp->grada + dp->gradb;
-    real scaled_grad = grad/max(rho*rho13,1e-13);
-    real sg2   = scaled_grad*scaled_grad;
+    real rho43=rho*rho13;
+    real scaled_grad, sg2;
+    scaled_grad = grad/(rho43>1e-13 ? rho43 : 1e-13);
+    sg2   = scaled_grad*scaled_grad;
+
 
     real vx = -BETA*rho13*sg2/
         (1+3*BETA*scaled_grad*asinh(scaled_grad));
