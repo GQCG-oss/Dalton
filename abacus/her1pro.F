@@ -3554,7 +3554,6 @@ C
 C     Renormalize if requested with MINTEG
 C
       IF (MINTEG.EQ.1) THEN
-         IOFF = LVAL*LVAL
          DO 800 I = 1, 2*LVAL + 1
             TMIN = TRAMAT(IDAMAX(NXYZ,TRAMAT(1,I),1),I)
             DO 810 J = 1, NXYZ
