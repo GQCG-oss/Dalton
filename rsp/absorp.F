@@ -380,6 +380,7 @@ C
 #include <absorp.h>
 #include <inftap.h>
 #include <ibndxdef.h>
+      PARAMETER (D0 = 0.0D0)
 C
 C PURPOSE:
 C     Create start vectors from the reduced eigenvalue problem
