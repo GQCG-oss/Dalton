@@ -8,7 +8,7 @@ cat > grdhf.info <<%EOF%
    Molecule:       HF in C1
    Wave Function:  CCS, MP2, CC2, CCSD
    Test Purpose:   analytic gradient
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

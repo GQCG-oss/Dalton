@@ -8,7 +8,7 @@ cat > solvh2mini.info <<%EOF%
    Molecule:       HS in C2v
    Wave Function:  CCSD
    Test Purpose:   solvent for CCSD excitation energies
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

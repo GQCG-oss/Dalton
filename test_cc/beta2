@@ -10,7 +10,7 @@ cat > beta2.info <<%EOF%
    Test Purpose: - parallel (beta_||) and orthogonal averages (beta_|_)
                  - A & B coefficients 
                  - frozen-core approximation for hyperpolarizabilities
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

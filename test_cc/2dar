@@ -10,7 +10,7 @@ cat > 2dar.info <<%EOF%
    Wave Function:  CCS, MP2, CCSD
    Test Purpose:   first-order one-electron properties,
                    two-electron Darwin term
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

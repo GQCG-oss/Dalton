@@ -8,7 +8,8 @@ cat > dipgra_relaxb.info <<%EOF%
    Molecule:       HeH+ C2v
    Wave Function:  FCI / 6-31G
    Test Purpose:   geometrical derivatives of dipole moment
-%EOF
+%EOF%
+
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################   

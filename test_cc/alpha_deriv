@@ -9,7 +9,7 @@ cat > alpha_deriv.info <<%EOF%
    Wave Function:  CC2, CCSD
    Test Purpose:   geometric derivatives of frequency-dependent
                    polarizabilities
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > exlr_ccsd.info <<%EOF%
    Molecule:       He in D2h
    Wave Function:  CCSD
    Test Purpose:   excited states frequency-dependent polarizabilities
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

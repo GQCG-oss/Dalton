@@ -9,7 +9,7 @@ cat > optco.info <<%EOF%
    Wave Function:  CCSD
    Test Purpose:   geometry optimization using the analytic CCSD
                    gradient and the *optimize module
-%EOF
+%EOF%
 
 #######################################################################
 #  MOLECULE INPUT

@@ -8,7 +8,7 @@ cat > 2dar.info <<%EOF%
    Molecule:       HF in C1
    Wave Function:  CC2, CCSD, CC3 / 6-31G**
    Test Purpose:   triplet excitation energies
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > grdn2.info <<%EOF%
    Molecule:       N2 in C1
    Wave Function:  CCSD
    Test Purpose:   gradient
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

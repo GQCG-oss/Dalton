@@ -11,7 +11,7 @@ cat > gamma_freq2.info <<%EOF%
                    - XXXX, XXZZ, XZXZ, XZZX, ZZXX, XZXZ, XXZZ, ZZZZ components
                    - ESHG & THG for one frequency
                    - no use of special symmetries 
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > cc2refop.info <<%EOF%
    Molecule:       CO in C2v
    Wave Function:  CCS, CC2
    Test Purpose:   first-order one-electron properties
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

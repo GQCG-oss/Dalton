@@ -136,6 +136,9 @@ do
   myprint "--------------------------"
   chmod +x $item
   ./$item
+  if [ -f $item.info ]; then
+     cat $item.info | tee -a $listing
+  fi
   rm -f $item.log
   chmod +x $item.check
 
@@ -158,7 +161,7 @@ do
   passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
   if [ -n "$passed" ]; then
     if [ "$keep" = "false" ]; then
-      rm -f $item.dal $item.mol $item.check $item.log
+      rm -f $item.dal $item.mol $item.check $item.log $item.info
     fi
   else
     passedall="THERE IS A PROBLEM IN TEST CASE"

@@ -9,7 +9,7 @@ cat > optmp2fh.info <<%EOF%
    Wave Function:  MP2
    Test Purpose:   geometry optimization using analytic gradient
                    from the CC program and the *OPTIMIZE module.
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

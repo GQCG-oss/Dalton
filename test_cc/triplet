@@ -8,7 +8,7 @@ cat > triplet.info <<%EOF%
    Molecule:       CH
    Wave Function:  CCS, CC2, CCSD / cc-pVDZ
    Test Purpose:   triplet excitation energies
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

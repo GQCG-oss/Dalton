@@ -8,7 +8,7 @@ cat > exlr_ccsd_2.info <<%EOF%
    Molecule:       HeH+ in C2
    Wave Function:  CCSD
    Test Purpose:   excited states linear response function
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

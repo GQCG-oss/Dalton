@@ -8,7 +8,7 @@ cat > optn2h2.info <<%EOF%
    Molecule:       N2H2 in C1
    Wave Function:  CCSD
    Test Purpose:   geometry optimization using analytic gradient
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > alpha_relax.info <<%EOF%
    Molecule:       HF in C1
    Wave Function:  CCSD / 6-31G**
    Test Purpose:   orbital-relaxed polarizabilities
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > fop2.info <<%EOF%
    Molecule:       CO in C2v
    Wave Function:  CCS, MP2, CCSD
    Test Purpose:   first-order one-electron properties
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

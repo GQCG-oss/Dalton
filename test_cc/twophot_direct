@@ -9,7 +9,7 @@ cat > twophot_direct.info <<%EOF%
    Wave Function:  CCS, CC2, CCSD
    Test Purpose:   integral-direct calculation of twophoton
                    transition moments
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > dpt.info <<%EOF%
    Molecule:       CO in C2v
    Wave Function:  CCS, CCSD
    Test Purpose:   relativistic direct perturbation theory
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

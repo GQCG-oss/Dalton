@@ -8,7 +8,7 @@ cat > twophot_cc2_cs.info <<%EOF%
    Molecule:       HF in C2
    Wave Function:  CC2 / 6-31G**
    Test Purpose:   twophoton transition moments
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

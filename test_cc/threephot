@@ -8,7 +8,7 @@ cat > threephot.info <<%EOF%
    Molecule:       HF in C2v
    Wave Function:  CCS, CC2, CCSD
    Test Purpose:   threephoton transition moments
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -9,7 +9,7 @@ cat > alpha.info <<%EOF%
    Wave Function:  CCS, CCSD / 6-31G**
    Test Purpose:   frequency-dependent polarizabilities and
                    dispersion coefficients
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

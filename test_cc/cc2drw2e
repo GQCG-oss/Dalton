@@ -8,7 +8,7 @@ cat > cc2drw2e.info <<%EOF%
    Molecule:       N2 in D2h
    Wave Function:  CC2, CCSD / cc-pVTZ
    Test Purpose:   two-electron Darwin term
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

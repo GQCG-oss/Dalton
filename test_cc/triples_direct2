@@ -9,7 +9,7 @@ cat > triples_direct2.info <<%EOF%
    Wave Function:  CCSD(T)
    Test Purpose:   integral direct calculation of CCSD(T) energy
                    using HERMIT as integral program.
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

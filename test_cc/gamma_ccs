@@ -11,7 +11,7 @@ cat > gamma_ccs.info <<%EOF%
                    - parallel isotropic average (gamma_||) 
                    - A & B coefficients  (2. and 4. order disp. coefficients)
                    - use explicitly symmetry of linear molecules
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

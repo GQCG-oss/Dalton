@@ -9,7 +9,7 @@ cat > oddisp.info <<%EOF%
    Wave Function:  CCS, CCSD
    Test Purpose:   dispersion coefficients for pure imaginary
                    quadratic response functions
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

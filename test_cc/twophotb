@@ -8,7 +8,7 @@ cat > twophotb.info <<%EOF%
    Molecule:       HF in C2
    Wave Function:  CC2
    Test Purpose:   finite difference on one-photon transition moments
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

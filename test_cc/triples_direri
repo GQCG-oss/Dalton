@@ -8,7 +8,8 @@ cat > triples_direri.info <<%EOF%
    Molecule:       HF in C2
    Wave Function:  CCSD(T)
    Test Purpose:   integral direct calculation of CCSD(T) energy
-%EOF
+%EOF%
+
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################

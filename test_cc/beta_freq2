@@ -10,7 +10,7 @@ cat > beta_freq2.info <<%EOF%
    Test Purpose:   first hyperpolarizabilities
                    - ZZZ, XXZ, XZX, ZXX components
                    - static and for two non-zero frequencies
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > fop1.info <<%EOF%
    Molecule:       N2 in D2h
    Wave Function:  CCS, MP2, CCSD
    Test Purpose:   first-order one-electron properties
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

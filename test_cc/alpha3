@@ -9,7 +9,7 @@ cat > alpha3.info <<%EOF%
    Wave Function:  CCS, CC2, CCSD
    Test Purpose:   frequency-dependent polarizabilities and
                    dispersion coefficients
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

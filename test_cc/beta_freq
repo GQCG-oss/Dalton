@@ -11,7 +11,7 @@ cat > beta_freq.info <<%EOF%
                    - parallel (beta_||) and orthogonal averages (beta_|_)
                    - static and for two non-zero frequencies
                    - use explicitly that X and Y directions degnerated
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

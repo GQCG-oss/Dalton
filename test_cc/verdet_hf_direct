@@ -9,7 +9,7 @@ cat > verdet_hf_direct.info <<%EOF%
    Wave Function:  CCSD
    Test Purpose:   verdet constant with London orbitals
                    integral direct calculation
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

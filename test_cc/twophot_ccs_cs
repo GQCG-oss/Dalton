@@ -8,7 +8,7 @@ cat > twophot_ccs_cs.info <<%EOF%
    Molecule:       HF in C2
    Wave Function:  CCS
    Test Purpose:   twophoton transition moments
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > cc2rf.info <<%EOF%
    Molecule:       N2 in D2h
    Wave Function:  CCS, CC2 / cc-pVDZ
    Test Purpose:   first-order one-electron properties,
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

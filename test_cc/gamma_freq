@@ -11,7 +11,7 @@ cat > gamma_freq.info <<%EOF%
                    - parallel isotropic average (gamma_||) 
                    - ESHG & THG for one frequency
                    - no use of special symmetries 
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

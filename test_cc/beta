@@ -10,7 +10,7 @@ cat > 2dar.info <<%EOF%
    Test Purpose:   static first hyperpolarizabilities and
                    first hyperpolarizability dispersion coefficients
                    tests .AVERAGE and .NOBMAT options
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

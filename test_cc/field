@@ -9,7 +9,7 @@ cat > field.info <<%EOF%
    Wave Function:  CCSD, CCSD(T)
    Test Purpose:   finite field for energy
                    binary packing of two-electron integrals
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

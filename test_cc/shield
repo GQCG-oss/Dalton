@@ -8,7 +8,7 @@ cat > shield.info <<%EOF%
    Molecule:       H3 in C1
    Wave Function:  CCSD
    Test Purpose:   shieldings
-%EOF
+%EOF%
 
 #######################################################################
 #  MOLECULE INPUT

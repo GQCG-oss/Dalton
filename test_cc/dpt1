@@ -8,7 +8,7 @@ cat > dpt1.info <<%EOF%
    Molecule:       Ne D2h
    Wave Function:  CCS, CCSD
    Test Purpose:   relativistic direct perturbation theory
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

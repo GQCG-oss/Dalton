@@ -8,7 +8,7 @@ cat > verdet.info <<%EOF%
    Molecule:       H2
    Wave Function:  CCSD
    Test Purpose:   verdet constants with London orbitals
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -9,7 +9,7 @@ cat > exgr1.info <<%EOF%
    Wave Function:  CCS, CC2, CCSD
    Test Purpose:   excited states first-order properties and
                    transition moments
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

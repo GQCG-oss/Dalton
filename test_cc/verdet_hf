@@ -8,7 +8,7 @@ cat > verdet_hf.info <<%EOF%
    Molecule:       HF in C1
    Wave Function:  CCSD / DunningDZ
    Test Purpose:   verdet constant with London orbitals
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

@@ -8,7 +8,7 @@ cat > hyp4_ccsd.info <<%EOF%
    Molecule:       HF in C2
    Wave Function:  CCSD
    Test Purpose:   static third and fourth hyperpolarizabilities
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT

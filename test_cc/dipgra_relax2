@@ -8,7 +8,7 @@ cat > dipgra_relax2.info <<%EOF%
    Molecule:       H2O in C1
    Wave Function:  CCSD
    Test Purpose:   orbital-relaxed dipole derivatives
-%EOF
+%EOF%
 
 #######################################################################
 #  INTEGRAL INPUT
