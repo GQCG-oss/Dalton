@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2out.F,v 1.3 2001-04-03 14:25:12 vebjornb Exp $
+C$Id: eri2out.F,v 1.4 2001-04-03 20:26:34 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck eriout */
@@ -268,7 +268,6 @@ C
      &               IBUF(1,1,1,0),IPRINT)
       END IF
 C
-      call flush(2)
       RETURN
       END
 C  /* Deck eriwrt */
