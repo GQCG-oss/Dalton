@@ -1977,8 +1977,8 @@ C  /* Deck setatm */
 #include <maxorb.h>
 #include <maxaqn.h>
 C
-      LOGICAL DOATOM(NUCIND), SPIN
 #include <nuclei.h>
+      LOGICAL DOATOM(NUCIND), SPIN
 #include <symmet.h>
 #include <cbiher.h>
 C
@@ -2292,10 +2292,10 @@ C  /* Deck frmtyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
@@ -2325,10 +2325,10 @@ C  /* Deck nsttyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, LABEL*4
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>
@@ -2373,10 +2373,10 @@ C  /* Deck psotyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
@@ -2412,10 +2412,10 @@ C  /* Deck sdtyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>
@@ -2475,11 +2475,11 @@ C
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       PARAMETER (D1 = 1.0D0)
       DIMENSION INTREP(*), INTADR(*)
       LOGICAL DOATOM(NUCIND), TRIANG, SAME
       CHARACTER LABINT(*)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
@@ -2550,10 +2550,10 @@ C  /* Deck hdbtyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>
@@ -2591,10 +2591,10 @@ C  /* Deck dpgtyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>
@@ -2639,10 +2639,10 @@ C  /* Deck qugtyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(18*MXCENT), INTADR(18*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(18*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>
@@ -2685,10 +2685,10 @@ C  /* Deck ocgtyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(30*MXCENT), INTADR(30*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(30*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>
@@ -2740,10 +2740,10 @@ C  /* Deck hdotyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(*)
       LOGICAL DOATOM(NUCIND), ANTISY
       CHARACTER LABINT(*)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
@@ -2795,11 +2795,11 @@ C  /* Deck npetyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
+#include <symmet.h>
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
-#include <nuclei.h>
-#include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
 C
@@ -2831,10 +2831,10 @@ C  /* Deck efntyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
@@ -2875,11 +2875,11 @@ C  /* Deck efgtyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
+#include <symmet.h>
       DIMENSION INTREP(6*MXCENT), IFGTBL(NUCIND,6,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(6*MXCENT)*8
-#include <nuclei.h>
-#include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
@@ -2922,9 +2922,9 @@ C  /* Deck efgsph */
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       LOGICAL DOATOM(9*MXCENT)
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
-#include <nuclei.h>
 #include <symmet.h>
 C
       IORDER = 2
@@ -2954,11 +2954,11 @@ C  /* Deck efgsp1 */
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0)
       LOGICAL DOATOM(NUCIND)
       DIMENSION CARINT(NELMNT,NOPTYP), TRAMAT(NXYZ,NLM), JTABLE(6),
      &          SPHINT(NELMNT,NLM*NATOM), ITABLE(6), WORK(LWORK)
-#include <nuclei.h>
 #include <symmet.h>
       DATA ITABLE /1,2,3,5,6,9/
 #include <ibtfun.h>
@@ -3014,10 +3014,10 @@ C
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       LOGICAL DOATOM(NUCIND)
       DIMENSION INTREP(5*NATOM)
       CHARACTER LABINT(5*NATOM)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
@@ -3563,11 +3563,11 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0)
       DIMENSION SOINT(NELMNT,NOPTYP), DIFFER(NELMNT), INTADR(NOPTYP)
       LOGICAL DOATOM(NUCIND), SAME
       CHARACTER LABINT(9*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 C
       DIFMAX = D0
@@ -3632,10 +3632,10 @@ C  /* Deck alftyp */
 #include <maxmom.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
 #include <chrxyz.h>

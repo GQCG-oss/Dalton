@@ -311,6 +311,7 @@ C
 #include <priunit.h>
       PARAMETER (D0 = 0.00 D00)
 C
+#include <nuclei.h>
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
      &        TOFILE, HFONLY, NCLONE, FOUND
       DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,3),
@@ -327,7 +328,6 @@ C
 #include <dipole.h>
 #include <taysol.h>
 #include <ccom.h>
-#include <nuclei.h>
 #include <shells.h>
 #include <symmet.h>
 #include <dorps.h>
@@ -1140,9 +1140,9 @@ C  /* Deck tlmwr1 */
 #include <iratdef.h>
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
+#include <nuclei.h>
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
-#include <nuclei.h>
 #include <inftap.h>
 #include <cbisol.h>
 #include <taysol.h>

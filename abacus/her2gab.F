@@ -1031,11 +1031,11 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
+#include <nuclei.h>
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
      &          IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2),NINDCD(NORBC*NORBD,2)
-#include <nuclei.h>
 #include <twocom.h>
 #include <symmet.h>
 C
@@ -1115,6 +1115,7 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0)
       INTEGER A,B,C,D
       LOGICAL SUSCEP
+#include <nuclei.h>
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),
      &          ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT), GABM(NBASIS,NBASIS),
@@ -1124,7 +1125,6 @@ C*****************************************************************************
 #include <twocom.h>
 #include <expcom.h>
 #include <symmet.h>
-#include <nuclei.h>
 #include <blocks.h>
 C
 #include <ibtfun.h>

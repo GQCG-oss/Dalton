@@ -106,6 +106,7 @@ C
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
      &        EXPECT, LONDON, DIA2SO, ZFS2EL
+#include <nuclei.h>
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          DERIV(NINTYP), PSO(*), PSA(*),
      &          PAO(NORBA,NORBB,NORBC,NORBD),
@@ -120,7 +121,6 @@ C
 #include <twocom.h>
 #include <dftcom.h>
 #include <symmet.h>
-#include <nuclei.h>
 #include <expcom.h>
 #include <expopt.h>
 #include <dirprt.h>

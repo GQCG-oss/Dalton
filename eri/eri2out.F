@@ -158,6 +158,7 @@ C  /* Deck eriou1 */
 #include <maxorb.h>
 #include <aovec.h>
 #include <eridst.h>
+#include <eribuf.h>
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,*), SOPRT(*),
      &          INDORB(LBIN,NIBUF), IPNBCH(*), INDALL(NCCS,2), 
      &          INDXTR(*), LABEL(*), IPNTCR(MAXBCH,4),
@@ -171,7 +172,6 @@ C  /* Deck eriou1 */
 #include <ericom.h>
 #include <erithr.h>
 #include <nuclei.h>
-#include <eribuf.h>
 #include <aobtch.h>
 #include <hertop.h>
 #include <symmet.h>
@@ -298,6 +298,7 @@ C  /* Deck eriwrt */
 C
 #include <eridst.h>
       CHARACTER*8 FAODER
+#include <eribuf.h>
       DIMENSION BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS)
@@ -307,7 +308,6 @@ C
 #include <nuclei.h>
 #include <ericom.h>
 #include <erithr.h>
-#include <eribuf.h>
 #include <aobtch.h>
 #include <hertop.h>
 #include <inftap.h>
@@ -977,6 +977,7 @@ C
 C
 #include <eridst.h>
       INTEGER A, B, C, D, AB, CD, R, S, T
+#include <symmet.h>
       DIMENSION INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF),
      &          INDALL(NCCS), INDCD(NCCS), INDXTR(NCCS,MAXREP+1,4),
      &          IPNTCR(MAXBCH,4), IODDCC(NRTOP), 
@@ -991,7 +992,6 @@ C
 #include <erithr.h>
 #include <aobtch.h>
 #include <hertop.h>
-#include <symmet.h>
 C
 #include <ibtfun.h>
 C
@@ -1389,6 +1389,7 @@ C  /* Deck erilbd */
       PARAMETER (D2=2.0D0, D1=1.0D0)
       INTEGER A, B, C, D, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, DCD
+#include <eribuf.h>
       DIMENSION IPOINT(NCCS,4), 
      &          IPNTCR(MAXBCH,4), INDXBT(MXSHEL*MXCONT,0:7),
      &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
@@ -1399,7 +1400,6 @@ C  /* Deck erilbd */
 #include <cbieri.h>
 #include <ericom.h>
 #include <erithr.h>
-#include <eribuf.h>
 #include <aobtch.h>
 #include <hertop.h>
 #include <symmet.h>
