@@ -6,19 +6,3 @@ all architectures
   in the integrals used to compute DPTTWO
 
 
-
-------------------------------------------------------------------------
-DEC
-------------------------------------------------------------------------
-
-  test case field doesn't yet work, because the .PACK flag
-  is not yet implemented for DEC
-
-
-
-------------------------------------------------------------------------
-HP-UX
-------------------------------------------------------------------------
-
-  test case field doesn't yet work, because the .PACK flag
-  is not yet implemented for HP-UX
