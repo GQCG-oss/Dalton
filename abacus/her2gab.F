@@ -950,7 +950,7 @@ C
      &                   SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                   NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
      &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                   IDUMMY,IDUMMY)
+     &                   NSOINT,IDUMMY,IDUMMY)
 C
 C            ********************************
 C            ***** Process AO integrals *****
