@@ -583,6 +583,7 @@ C
 #include <priunit.h>
       PARAMETER (NDIR = 28, NTABLE = 51, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP, GAGT
+      LOGICAL   GRDINP
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(9)*6, WORD1*7, WRDSRC*7,
      *          WORDL*12
@@ -699,6 +700,7 @@ C
          SPNSPN = .FALSE.
       END IF
       DODRCT = DIRCAL
+      GRDINP = .FALSE.
       FCKEXP = .FALSE.
       DIPDER = .FALSE.
       VIB    = .FALSE.
@@ -840,6 +842,7 @@ C
             GO TO 100
   102    CONTINUE
             MOLGRD = .TRUE.
+            GRDINP = .TRUE.
             GO TO 100
   103    CONTINUE
             READ (LUCMD,*) NPERT
@@ -1197,7 +1200,7 @@ cs
       END IF
       IF ((VROA .OR. RAMAN) .AND.DOWALK) THEN
          MOLHES = .FALSE.
-         MOLGRD = .FALSE.
+         MOLGRD = GRDINP
          IF (DIPDER) POLAR = .TRUE.
       END IF
       IF (ABASOP) THEN
