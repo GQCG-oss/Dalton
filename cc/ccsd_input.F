@@ -751,7 +751,7 @@ C                '.PAIRS '
                  CCPAIR = .TRUE.
                GO TO 1000
    97          CONTINUE
-C                '.ETAPTI', extra integrals for CCSD(T) geopt
+C                '.ETAPTI', extra integrals for CCSD(T) geopt (redundant!)
                   ETACCPT = .TRUE.
                GO TO 1000
    98          CONTINUE
@@ -788,6 +788,9 @@ C
       IF ( .NOT. MINSCR ) MINMEM = .TRUE.
 
       DIRGRD = ( DIRGRD .OR. DIRECT )
+       
+      !Sonia: replace ETAPTI keyword....
+      ETACCPT = ( (OPTNEW.OR.CCDERI).AND.(CCPT) )
 
       RETURN
       END
