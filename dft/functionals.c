@@ -209,13 +209,13 @@ DFTPOT1(SecondDrv *ds, const real* w, const DftDensProp* dp,
          
     /* This could be a separate function. */
     if (*triplet) {
-        ds->fR  = 0; /* NOT USED */
+        ds->fR  = 0.5*(drvs.df0100 - drvs.df0100);
         ds->fZ  = drvs.df0010 - 0.5*drvs.df00001* grad;
         ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
         ds->fRZ = 0.5*(drvs.df1010 - drvs.df1001);
         ds->fZZ = 0.5*(drvs.df0020 - drvs.df0011 - drvs.df00001);
     } else { /* singlet */
-        ds->fR  = 0; /* NOT USED */
+        ds->fR  = 0.5*(drvs.df0100 + drvs.df0100);
         ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* grad;
         ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
         ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* grad);
