@@ -5179,8 +5179,8 @@ C
       ILINE = 0
       REWIND (LUCMD,IOSTAT=IOS)
  100  READ (LUCMD,'(A)',ERR=2000) WORD(ILINE+1)
-      ILINE = ILINE + 1
-      IF (WORD(ILINE)(1:7) .EQ. '*END OF') GOTO 200
+         ILINE = ILINE + 1
+         IF (INDEX(WORD(ILINE),'*END OF').GT.0) GOTO 200
       GOTO 100
 C
  200  CONTINUE
@@ -5440,10 +5440,8 @@ C     ****************************************
 #include <prpndr.h>
 C
       CALL HEADER('Analysis using the numerical derivatives',0)
-      WRITE (LUPRI,'(A)') '                                      '
-      WRITE (LUPRI,'(A)') ' Properties that are analyzed: '
+      WRITE (LUPRI,'(/A/)') ' Properties that are analyzed: '
 C
-      WRITE (LUPRI,'(A)') '                                      '
       IF (NUMVIB) WRITE (LUPRI,'(A)') ' Frequency analysis and ' //
      &                              'efficient geometry.'
       IF (NSPNSP) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
@@ -5485,9 +5483,6 @@ C
 C
       RETURN
       END
-C
-C
-C     /*Deck prpder*/
 C
 C
 C     /*Deck prpder*/
