@@ -41,8 +41,7 @@ Functions as CCSPIC but the picking is based on CC2 excitation energies.
 \item[\Key{CCSDPI}] 
 Functions as CCSPIC but the picking is based on CCSD excitation energies.
 %
-\item[\Key{CCSPIC}] 
-
+\item[\Key{CCSPIC}] \verb| |\newline 
 \verb|READ(LUCMD,*) OMPCCS| \newline
 Keyword for picking a state with a given CCS excitation energy.
 Optimize a number of states in CCS with different symmetries and this option
@@ -55,24 +54,22 @@ Useful for example in numerical Hessian calculations on excited states.
 Specifies the maximum allowed deviation of the actual excitation energy
 from the input excitation energy when using CCSPIC, CC2PIC and CCSDPI. 
 
-\item[\Key{NCCEXC}] 
-
+\item[\Key{NCCEXC}] \verb| |\newline
 \verb|READ (LUCMD,*) (NCCEXCI(ISYM,1),ISYM=1,MSYM)|
 
 Give the number of states desired.
-For singlet states only, only one line is required with
+For singlet states only, one single line is required with
 the number of excitation energies for each symmetry class (max. 8). \\ 
-If also triplet states are desired an additional line is given in same format, 
-else nothing.
+If also triplet states are desired an additional line is given in same format. 
 %
 \item[\Key{NOSCOM}] 
 %
 For CC3 calculations only: indicates that no self-consistent solution
 should be seeked in the partitioned CC3 algorithm.
 
-\item[\Key{OMEINP}] 
+\item[\Key{OMEINP}]\verb| |\newline
 %
-\noindent\verb|READ (LUCMD,*) (NOMINP(ISYM,1),ISYM=1,MSYM)|\newline
+\verb|READ (LUCMD,*) (NOMINP(ISYM,1),ISYM=1,MSYM)|\newline
 \verb|DO ISYM = 1, MSYM|\newline
 \verb|  DO IOM = 1, NOMINP(ISYM,1)|\newline
 \verb|     READ (LUCMD,*) IOMINP(IOM,ISYM,1),EOMINP(IOM,ISYM,1)|\newline
@@ -116,7 +113,6 @@ Set tolerance for the self-consistent solution for obtaining self-consistent
 solution to the partitioned CC3 algorithm.
 Tolerance refers to the eigenvalue itself.
 (Default:1.0D-04).
-
 
 %\item[\Key{STVEC }] 
 %
