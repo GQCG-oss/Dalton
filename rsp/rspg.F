@@ -1309,67 +1309,6 @@ C
       CALL QEXIT('AVEDSO')
       RETURN
       END
-C  /* Deck gtdmso */      
-      SUBROUTINE GTDMSO(UDV,CMO,DI,DV,WRK)
-#include <implicit.h>
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-#include <inforb.h>
-      DIMENSION UDV(NASHT,NASHT)
-      DIMENSION CMO(*)
-      DIMENSION DI(NBAST,NBAST)
-      DIMENSION DV(NBAST,NBAST)
-      DIMENSION WRK(*)
-C
-      CALL QENTER('GTDMSO')
-C
-C Input: active density matrix MO basis
-C Output: inactive and active density matrix SO basis
-C
-C
-      CALL DZERO(DI,N2BASX)
-      IF (NASHT.GT.0) CALL DZERO(DV,N2BASX)
-C
-      DO ISYM = 1, NSYM
-         ICMOI = ICMO(ISYM) + 1
-         IORBI = IORB(ISYM) + 1
-         IASHI = IASH(ISYM) + 1
-         IBASI = IBAS(ISYM) + 1
-         NORBI = NORB(ISYM)
-         NASHI = NASH(ISYM)
-         NISHI = NISH(ISYM)
-         NBASI = NBAS(ISYM)
-C
-C Inactive density
-C
-         IF (NISHI.GT.0) THEN
-            CALL DGEMM(
-     &        'N', 'T', NBASI, NBASI, NISHI, 
-     &        D2, CMO(ICMOI), NBASI,
-     &            CMO(ICMOI), NBASI,
-     &        D1, DI(IBASI,IBASI),NBAST
-     &        )
-         END IF
-C
-C Active density
-C
-         ICMOA = ICMOI + NBASI*NISHI
-         IF (NASHI.GT.0) THEN
-            CALL DGEMM(
-     &         'N', 'N', NBASI, NASHI, NASHI, 
-     &         D1, CMO(ICMOA), NBASI,
-     &             UDV(IASHI,IASHI), NASHT,
-     &         D0, WRK,NBASI
-     &      )
-            CALL DGEMM(
-     &         'N', 'T', NBASI, NBASI, NASHI, 
-     &         D1, WRK,       NBASI,
-     &             CMO(ICMOA),NBASI,
-     &         D1, DV(IBASI,IBASI),NBAST
-     &      )
-         END IF
-      END DO
-      CALL QEXIT('GTDMSO')
-      END
       SUBROUTINE LUSHIF(CMO,DENSNG,DENTRP,WORK,KFREE,LFREE)
 C
 C Write an interface file for Gerry Lushingtons 2esg2 program
