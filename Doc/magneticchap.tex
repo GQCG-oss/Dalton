@@ -11,11 +11,10 @@ also describe the calculation of the magnetic analogue of the
 polarizability, the molecular
 magnetizability\index{magnetizability}. This property
 is of importance in NMR experiments where the reference substance is placed
-in another tube than the sample. We also shortly
-describe two properties very closely related to the magnetizability
-and nuclear shieldings, respectively, the rotational {\em g} factor and the
-nuclear spin--rotation constants\index{rotational g
-tensor}\index{spin-rotation constant}.
+in another tube than the sample. We also shortly describe
+two properties very closely related to the magnetizability and nuclear
+shieldings, respectively, the rotational {\em g} factor\index{rotational g factor}
+and the nuclear spin--rotation constants\index{spin--rotation constant}.
 
 Three properties that in principle depend on the %nuclear
 magnetic moments are
@@ -31,17 +30,18 @@ Another (magneto-)optical property, the ${\cal{B}}$ term of
 Magnetic Circular Dichroism (MCD) will be described in
 Chapter~\ref{ch:rspchap}.
 
-Gauge-origin\index{gauge origin} independent nuclear shieldings,
+Gauge-origin\index{gauge origin independence!London orbitals}
+independent nuclear shieldings,
 magnetizabilities and rotational {\em g} tensors are
 obtained through the use of London atomic orbitals, and the theory is
 presented in several references
 \cite{kwjfhppjacs112,krthrkpjklbhjajjcp100,krthklbpjhjajjcp99,krthklbpjjocp195}.
-Gauge-origin\index{gauge origin} independent nuclear shieldings and
+Gauge-origin\index{gauge origin independence!CTOCD} independent nuclear shieldings and
 magnetizabilities can also be obtained by using the 
 the Continuous Transformation of the Origin of the Current Density method (CTOCD)
 \index{Continuous Transformation of the Origin of the Current Density}
 \index{CTOCD-DZ} approach~\cite{paololazz1,paololazz2,ctocd}. In the present
-version of DALTON the CTOCD-DZ method is implemented and can be invoked by
+version of \dalton\ the CTOCD-DZ method is implemented and can be invoked by
 the keyword \Key{CTOCD} in the \Sec{*PROPERTIES} input module.
 More detailed information on CTOCD-DZ calculations can be found in section
 \ref{sec:ctocdgeneral}. 
@@ -50,10 +50,10 @@ More detailed information on CTOCD-DZ calculations can be found in section
 The indirect spin--spin couplings are calculated by using the triplet linear
 response function\index{triplet response}, as described in
 Ref.~\cite{ovhapjhjajsbpthjcp96}.
-These are in principle equally simple to calculate with \siraba\ as
+These are in principle equally simple to calculate with \dalton\ as
 nuclear shieldings and magnetizabilities. However, there are 10
 contributions to the spin--spin coupling constant from {\em each}
-nucleus.\footnote{Dalton 2.0 now only calculates the symmetry-distinct
+nucleus.\footnote{\dalton\ 2.0 now only calculates the symmetry-distinct
   contributions to the spin--dipole operator, that is---six instead of
   nine elements are calculated for this operator.} Furthermore, the
 spin--spin coupling constants put severe 
@@ -120,10 +120,10 @@ magnetizabilities will look like:
 This will invoke the calculation of molecular magnetizabilities using
 London Atomic Orbitals\index{London orbitals} to ensure fast basis set
 convergence and
-gauge-origin\index{gauge origin} independent results. The natural
-connection\index{natural connection}
+gauge-origin\index{gauge origin independence!London orbitals} independent results.
+The natural connection\index{natural connection}
 \cite{joklbkrthpjtca90} is used in order to get numerically accurate
-results. By default the center of mass\index{center of mass} is chosen
+results. By default the center of mass\index{gauge origin!center of mass} is chosen
 as gauge origin.
 
 For a SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of
@@ -334,7 +334,7 @@ calculations.
 \end{center}
 
 
-In \siraba\ the nuclear spin--rotation\index{spin-rotation constant}
+In \dalton\ the nuclear spin--rotation\index{spin-rotation constant}
 constants are calculated using
 rotational orbitals, giving an improved
 basis set convergence~\cite{jgkrthjcp105}. We use the
@@ -375,8 +375,8 @@ CCSD calculation has to be requested by the keyword \Key{CC} in the \Sec{*WAVE
 \Key{SOPPA(CCSD)}. This will also automatically disable the use of London
 orbitals.
 
-We note that in the current release of \siraba , nuclear spin--rotation
-constants can not be calculated employing symmetry-dependent
+We note that in the current release of \dalton, nuclear spin--rotation
+constants cannot be calculated employing symmetry-dependent
 nuclei. Thus for a molecule like N$_2$, the symmetry plane
 perpendicular to the molecular bond will have to be removed during the
 calculation.
@@ -665,14 +665,15 @@ is implemented.
 
 \section{CTOCD-DZ calculations}\label{sec:ctocd}
 
-The Dalton program system can be used to perform calculations of the magnetic 
+The \dalton\ program system can be used to perform calculations of the magnetic 
 properties using the Continuous Transformation of the Origin of the Current Density
 approach (CTOCD) \index{CTOCD-DZ}. Setting the diamagnetic contribution 
 to the current density zero, one obtains fully analytical solutions via equations 
 in closed form for several magnetic properties. 
 
 
-In the present version of \dalton , the following properties can be computed in Dalton by the CTOCD-DZ approach:
+In the present version of \dalton, the following properties can be computed by
+the CTOCD-DZ approach:
 
 \begin{center}
 \begin{itemize}{}{}
@@ -690,10 +691,10 @@ in Chapter~\ref{ch:rspchap}.
 The CTOCD-DZ approach is competitive with other methods when the dimension
 of the basis set is not too small, both for magnetizabilities and
 shieldings ~\cite{ctocd}. However, for small basis sets the results can be 
-very unreliable. A good basis set for CTOCD-DZ nuclear magnetic shiedling 
-calculations, both at the SCF and the correlated level, is the aug-ccp-CVTZ-CTOCD-uc
+very unreliable. A good basis set for CTOCD-DZ nuclear magnetic shielding 
+calculations, both at the SCF and the correlated level, is the aug-cc-pCVTZ-CTOCD-uc
 basis set (Ref.~\cite{ctocd}), derived from the aug-cc-pVTZ basis set.  
-This basis set is included in the basis set library.
+This basis set is included in the \dalton\ basis set library.
 
 In SCF calculations, the convergence toward the HF limit is slower 
 than when employing London Orbitals since in the CTOCD-DZ expressions for 
@@ -722,7 +723,7 @@ paramagnetic contributions are gauge origin independent.
 
 For calculations of nuclear magnetic shieldings (and shielding
 polarizabilities) using symmetry, the gauge origin has to be placed at the
-center of mass, otherwise DALTON will give wrong results! This is the
+center of mass, otherwise \dalton\ will give wrong results! This is the
 default choice of gauge origin. Nuclear magnetic
 shielding calculations with the gauge origin set at the respective atoms can
 only be carried without symmetry and by setting the gauge origin on that atom
@@ -790,8 +791,6 @@ magnetizability requires the following input:
 .DIPVEL
 **WAVE FUNCTIONS
 .CC
-*ORBITAL
-.NOSUPSYM
 *CC INPUT
 .CCS
 .CCSD
@@ -825,11 +824,11 @@ $\chi_{\alpha\beta}^{\Delta} = \epsilon_{\beta\lambda\mu}
 << \hat{p}_{\lambda} ; \hat{r_O}_{\mu}\hat{L}_{\alpha} >>$ 
 \end{center}
 where $\hat{r_O}_{\mu}\hat{L}_{\alpha}$ are the $\mu\alpha$RANG operators.
-Input examples for shieldings and shielding polarizabilities cand be found in
+Input examples for shieldings and shielding polarizabilities can be found in
 the test directory. 
 
 For \Sec{*RESPONSE} calculations of these properties the integrals needed in
 the \Sec{*INTEGRALS}  
-section are .DIPVEL and .RANGMO for magnetizabilty, and .DIPVEL and .RPSO for
+section are .DIPVEL and .RANGMO for magnetizability, and .DIPVEL and .RPSO for
 nuclear magnetic shieldings.
 
