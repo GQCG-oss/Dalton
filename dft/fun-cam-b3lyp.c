@@ -148,62 +148,62 @@ static real
 fun_a(real rho, real ex)
 {
   real a, k;
-  k = -ex * pow(rho,-4.0/3.0);
+  k = -2.0* ex * pow(rho,-4.0/3.0);
   a = MU*sqrt(k)/(6.0*sqrt(M_PI)*pow(rho,1.0/3.0));
   return a;
 }
 
 static void
-fun_a_first(real rho, real a, real ex, FirstFuncDrv *fun1, 
+fun_a_first(real rho, real a, real ex, RGFirstDrv *fun1, 
             RGFirstDrv *res)
 {
     memset(res, 0, sizeof(RGFirstDrv));
     if(fabs(a)<1e-40 || fabs(ex)<1e-40) return;
-    res->df10 = (fun1->df1000/(2*ex)-1.0/rho)*a;
-    res->df01 = fun1->df0010/(2*ex)*a;
+    res->df10 = (fun1->df10/(2*ex)-1.0/rho)*a;
+    res->df01 = fun1->df01/(2*ex)*a;
 }
 
 static void
-fun_a_second(real rho, real a, real ex, SecondFuncDrv *f2,
+fun_a_second(real rho, real a, real ex, RGSecondDrv *f2,
              RGSecondDrv *res)
 {
     real f10, f20, f01;
 
     memset(res, 0, sizeof(RGSecondDrv));
     if(fabs(a)<1e-40 || fabs(ex)<1e-40) return;
-    f10 = f2->df1000/(2*ex)-1.0/rho;
-    f20 = f2->df2000/(2*ex) - f2->df1000*f2->df1000/(2*ex*ex) +1/(rho*rho);
-    f01 = f2->df0010/(2*ex);
+    f10 = f2->df10/(2*ex)-1.0/rho;
+    f20 = f2->df20/(2*ex) - f2->df10*f2->df10/(2*ex*ex) +1/(rho*rho);
+    f01 = f2->df01/(2*ex);
     res->df10 = a*f10;
     res->df01 = a*f01;
     res->df20 = a*(f10*f10 + f20);
-    res->df11 = a*(f10*f01 + f2->df1010/(2*ex) -
-                   f2->df1000*f2->df0010/(2*ex*ex));
-    res->df02 = a*(f2->df0020/(2*ex)-f2->df0010*f2->df0010/(4*ex*ex)); 
+    res->df11 = a*(f10*f01 + f2->df11/(2*ex) -
+                   f2->df10*f2->df01/(2*ex*ex));
+    res->df02 = a*(f2->df02/(2*ex)-f2->df01*f2->df01/(4*ex*ex)); 
 }
 
 static void
-fun_a_third(real rho, real a, real ex, ThirdFuncDrv *f3, RGThirdDrv *res)
+fun_a_third(real rho, real a, real ex, RGThirdDrv *f3, RGThirdDrv *res)
 {
     real f10, f01, f20, f11, f02, f30, f21, f12, f03;
 
     memset(res, 0, sizeof(RGThirdDrv));
     if(fabs(a)<1e-15 || fabs(ex)<1e-15) return;
-    f10 = f3->df1000/(2*ex)-1.0/rho;
-    f01 = f3->df0010/(2*ex);
-    f20 = f3->df2000/(2*ex) - f3->df1000*f3->df1000/(2*ex*ex) +1/(rho*rho);
-    f11 = f3->df1010/(2*ex) - f3->df1000*f3->df0010/(2*ex*ex);
-    f02 = f3->df0020/(2*ex) - f3->df0010*f3->df0010/(2*ex*ex);
-    f30 = f3->df3000/(2*ex) - 1.5*f3->df1000*f3->df2000/(ex*ex)
-        + f3->df1000*f3->df1000*f3->df1000/(ex*ex*ex) - 2/(rho*rho*rho);
-    f21 = f3->df2010/(2*ex)
-        - f3->df2000*f3->df0010/(2*ex*ex) - 2*f3->df1000*f3->df1010/(2*ex*ex)
-        + f3->df1000*f3->df1000*f3->df0010/(ex*ex*ex);
-    f12 = f3->df1020/(2*ex)
-        - 2*f3->df1010*f3->df0010/(2*ex*ex) - f3->df1000*f3->df0020/(2*ex*ex) 
-        + f3->df1000*f3->df0010*f3->df0010/(ex*ex*ex);
-    f03 = f3->df0030/(2*ex) - 1.5*f3->df0020*f3->df0010/(ex*ex)
-        + f3->df0010*f3->df0010*f3->df0010/(ex*ex*ex);
+    f10 = f3->df10/(2*ex)-1.0/rho;
+    f01 = f3->df01/(2*ex);
+    f20 = f3->df20/(2*ex) - f3->df10*f3->df10/(2*ex*ex) +1/(rho*rho);
+    f11 = f3->df11/(2*ex) - f3->df10*f3->df01/(2*ex*ex);
+    f02 = f3->df02/(2*ex) - f3->df01*f3->df01/(2*ex*ex);
+    f30 = f3->df30/(2*ex) - 1.5*f3->df10*f3->df20/(ex*ex)
+        + f3->df10*f3->df10*f3->df10/(ex*ex*ex) - 2/(rho*rho*rho);
+    f21 = f3->df21/(2*ex)
+        - f3->df20*f3->df01/(2*ex*ex) - 2*f3->df10*f3->df11/(2*ex*ex)
+        + f3->df10*f3->df10*f3->df01/(ex*ex*ex);
+    f12 = f3->df12/(2*ex)
+        - 2*f3->df11*f3->df01/(2*ex*ex) - f3->df10*f3->df02/(2*ex*ex) 
+        + f3->df10*f3->df01*f3->df01/(ex*ex*ex);
+    f03 = f3->df03/(2*ex) - 1.5*f3->df02*f3->df01/(ex*ex)
+        + f3->df01*f3->df01*f3->df01/(ex*ex*ex);
     res->df10 = a*f10;
     res->df01 = a*f01;
     res->df20 = a*(f10*f10 + f20);
@@ -332,7 +332,7 @@ camb3lyp_b_second_medium(real a)
     if(a>=5)  {
         static const double large_coefs[] = {  6, -48, 640,  -11520 };
         return evaluate_series(ELEMENTS(large_coefs), large_coefs, t1)/
-            (t1*a);
+            (t1*t1);
     }
     t2 = 1/t1;
     t3 = exp(-0.25*t2);
@@ -403,15 +403,15 @@ camb3lyp_b_fourth_medium(real a)
 
 #define FAC M_SQRT2
 #define EVALUATOR(a,type) \
-  ((a<0.1) ? camb3lyp_b_ ## type ## _small(a*FAC)  : \
-  ((a<3)   ? camb3lyp_b_ ## type ## _medium(a*FAC) : \
-   camb3lyp_b_ ## type ## _large(a*FAC)))
+  ((a<0.14) ? camb3lyp_b_ ## type ## _small(a)  : \
+  ((a<4.25) ? camb3lyp_b_ ## type ## _medium(a) : \
+   camb3lyp_b_ ## type ## _large(a)))
 
 static real
 camb3lyp_energy_sigma(real rho, real grad, real a)
 {
     real bfactor = EVALUATOR(a, energy);
-    return -2*18*M_PI/(MU*MU)*rho*rho*a*a*bfactor;
+    return -18*M_PI/(MU*MU)*rho*rho*a*a*bfactor;
 }
 
 static real
@@ -431,7 +431,7 @@ camb3lyp_energy(const DftDensProp *dp)
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
         dsigma.grada = dsigma.gradb = dp->gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
-                    BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
+                  BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
         a = fun_a(dp->rhob, ex);
         eb = camb3lyp_energy_sigma(dp->rhob, dp->gradb, a);
     } else eb = ea;
@@ -445,24 +445,23 @@ camb3lyp_energy(const DftDensProp *dp)
 }
 
 static void
-camb3lyp_first_sigma(real rho, real grad, real a, real ex,
-                     FirstFuncDrv *ds, RGFirstDrv *res)
+camb3lyp_first_sigma(real rho, real a, real ex,
+                     RGFirstDrv *ds, RGFirstDrv *res)
 {
     real bfactor       = EVALUATOR(a, energy);
     real bfactor_first = EVALUATOR(a, first);
     RGFirstDrv ader;
 
     fun_a_first(rho, a, ex, ds, &ader);
-    ader.df10 *= FAC; ader.df01 *= FAC;
 
-    res->df10 = ds->df1000*bfactor + ex*bfactor_first*ader.df10;
-    res->df01 = ds->df0010*bfactor + ex*bfactor_first*ader.df01;
+    res->df10 = ds->df10*bfactor + ex*bfactor_first*ader.df10;
+    res->df01 = ds->df01*bfactor + ex*bfactor_first*ader.df01;
 }
 
 static void
 camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
 {
-    RGFirstDrv res;
+    RGFirstDrv res, dfun;
     DftDensProp dsigma;
     real ex, a;
     FirstFuncDrv fun1;
@@ -477,7 +476,8 @@ camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
     SlaterFunctional.first(&fun1, 1, dp);
     BeckeFunctional.first(&fun1, BECKE88_CORR_WEIGHT, dp);
 
-    camb3lyp_first_sigma(dp->rhoa, dp->grada, a, ex, &fun1, &res);
+    dfun.df10 = fun1.df1000; dfun.df01 = fun1.df0010;
+    camb3lyp_first_sigma(dp->rhoa, a, ex, &dfun, &res);
     ds->df1000 += factor*res.df10;
     ds->df0010 += factor*res.df01;
 
@@ -488,7 +488,8 @@ camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
             ex = 0.5*(SlaterFunctional.func(&dsigma) +
                       BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
             a = fun_a(dp->rhob, ex);
-            camb3lyp_first_sigma(dp->rhob, dp->gradb, a, ex, &fun1, &res);
+            dfun.df10 = fun1.df0100; dfun.df01 = fun1.df0001;
+            camb3lyp_first_sigma(dp->rhob, a, ex, &dfun, &res);
         }
         ds->df0100 += factor*res.df10;
         ds->df0001 += factor*res.df01;
@@ -500,7 +501,7 @@ camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
 }
 
 static void
-camb3lyp_second_sigma(real rho, real ex, SecondFuncDrv *f2,
+camb3lyp_second_sigma(real rho, real ex, RGSecondDrv *f2,
                       RGSecondDrv *res)
 {
     real bfactor, b_first, b_second;
@@ -516,22 +517,20 @@ camb3lyp_second_sigma(real rho, real ex, SecondFuncDrv *f2,
     a = fun_a(rho, ex);
     bfactor  = EVALUATOR(a, energy);
     b_first  = EVALUATOR(a, first);
-    b_second = camb3lyp_b_second_medium(a*FAC);
+    b_second = camb3lyp_b_second_medium(a);
 
     fun_a_second(rho, a, ex, f2, &ader);
-    ader.df10 *= FAC; ader.df01 *= FAC;
-    ader.df20 *= FAC; ader.df11 *= FAC; ader.df02 *= FAC;
     
-    res->df10 = f2->df1000*bfactor + ex*b_first*ader.df10;
-    res->df01 = f2->df0010*bfactor + ex*b_first*ader.df01;
+    res->df10 = f2->df10*bfactor + ex*b_first*ader.df10;
+    res->df01 = f2->df01*bfactor + ex*b_first*ader.df01;
 
-    res->df20 = f2->df2000*bfactor + 2*f2->df1000*b_first*ader.df10 +
+    res->df20 = f2->df20*bfactor + 2*f2->df10*b_first*ader.df10 +
         ex*b_second*ader.df10*ader.df10 + ex*b_first*ader.df20;
-    res->df11 = f2->df1010*bfactor + f2->df1000*b_first*ader.df01 + 
-        f2->df0010*b_first*ader.df10 + 
+    res->df11 = f2->df11*bfactor + f2->df10*b_first*ader.df01 + 
+        f2->df01*b_first*ader.df10 + 
         ex*b_second*ader.df10*ader.df01 +
         ex*b_first*ader.df11;
-    res->df02 = f2->df0020*bfactor + 2*f2->df0010*b_first*ader.df01 +
+    res->df02 = f2->df02*bfactor + 2*f2->df01*b_first*ader.df01 +
         ex*b_second*ader.df01*ader.df01 + ex*b_first*ader.df02;
 }
 
@@ -539,7 +538,7 @@ static void
 camb3lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 {
     SecondFuncDrv f2;
-    RGSecondDrv res;
+    RGSecondDrv res, dfun;
     DftDensProp dsigma;
     real ex;
 
@@ -551,7 +550,10 @@ camb3lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
     SlaterFunctional.second(&f2, 1, dp);
     BeckeFunctional.second(&f2, BECKE88_CORR_WEIGHT, dp);
 
-    camb3lyp_second_sigma(dp->rhoa, ex, &f2, &res);
+    dfun.df10 = f2.df1000; dfun.df20 = f2.df2000; 
+    dfun.df01 = f2.df0010; dfun.df02 = f2.df0020;
+    dfun.df11 = f2.df1010; 
+    camb3lyp_second_sigma(dp->rhoa, ex, &dfun, &res);
 
     ds->df1000 += factor*res.df10;
     ds->df0010 += factor*res.df01;
@@ -564,7 +566,10 @@ camb3lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
         dsigma.grada = dsigma.gradb = dp->gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
-        camb3lyp_second_sigma(dp->rhob, ex, &f2, &res);
+        dfun.df10 = f2.df0100; dfun.df20 = f2.df0200; 
+        dfun.df01 = f2.df0001; dfun.df02 = f2.df0002;
+        dfun.df11 = f2.df0101; 
+        camb3lyp_second_sigma(dp->rhob, ex, &dfun, &res);
     }
 
     ds->df0100 += factor*res.df10;
@@ -584,7 +589,7 @@ camb3lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    =================================================================== */
 
 static void
-camb3lyp_third_sigma(real rho, real ex, ThirdFuncDrv *f3,
+camb3lyp_third_sigma(real rho, real ex, RGThirdDrv *f3,
                      RGThirdDrv *res)
 {
     real bfactor, b_first, b_second, b_third, a;
@@ -593,48 +598,45 @@ camb3lyp_third_sigma(real rho, real ex, ThirdFuncDrv *f3,
     a = fun_a(rho, ex);
     bfactor  = EVALUATOR(a, energy);
     b_first  = EVALUATOR(a, first);
-    b_second = camb3lyp_b_second_medium(a*FAC);
-    b_third  = camb3lyp_b_third_medium(a*FAC);
+    b_second = camb3lyp_b_second_medium(a);
+    b_third  = camb3lyp_b_third_medium(a);
     fun_a_third(rho, a, ex, f3, &ader);
-    ader.df10 *= FAC; ader.df01 *= FAC;
-    ader.df20 *= FAC; ader.df11 *= FAC; ader.df02 *= FAC;
-    ader.df30 *= FAC; ader.df21 *= FAC; ader.df12 *= FAC; ader.df03 *= FAC;
 
-    res->df10 = f3->df1000*bfactor + ex*b_first*ader.df10;
-    res->df01 = f3->df0010*bfactor + ex*b_first*ader.df01;
+    res->df10 = f3->df10*bfactor + ex*b_first*ader.df10;
+    res->df01 = f3->df01*bfactor + ex*b_first*ader.df01;
 
-    res->df20 = f3->df2000*bfactor + 2*f3->df1000*b_first*ader.df10 +
+    res->df20 = f3->df20*bfactor + 2*f3->df10*b_first*ader.df10 +
         ex*b_second*ader.df10*ader.df10 + ex*b_first*ader.df20;
-    res->df11 = f3->df1010*bfactor + f3->df1000*b_first*ader.df01 + 
-        f3->df0010*b_first*ader.df10 + 
+    res->df11 = f3->df11*bfactor + f3->df10*b_first*ader.df01 + 
+        f3->df01*b_first*ader.df10 + 
         ex*b_second*ader.df10*ader.df01 +
         ex*b_first*ader.df11;
-    res->df02 = f3->df0020*bfactor + 2*f3->df0010*b_first*ader.df01 +
+    res->df02 = f3->df02*bfactor + 2*f3->df01*b_first*ader.df01 +
         ex*b_second*ader.df01*ader.df01 + ex*b_first*ader.df02;
 
-    res->df30 = f3->df3000*bfactor + 3*f3->df2000*b_first*ader.df10
-        + 3*f3->df1000*b_second*ader.df10*ader.df10
-        + 3*f3->df1000*b_first *ader.df20 + 3*ex*b_second*ader.df10*ader.df20
+    res->df30 = f3->df30*bfactor + 3*f3->df20*b_first*ader.df10
+        + 3*f3->df10*b_second*ader.df10*ader.df10
+        + 3*f3->df10*b_first *ader.df20 + 3*ex*b_second*ader.df10*ader.df20
         + ex*b_third*ader.df10*ader.df10*ader.df10
         + ex*b_first*ader.df30;
 
-    res->df21 = f3->df2010*bfactor + ex*b_first*ader.df21 +
+    res->df21 = f3->df21*bfactor + ex*b_first*ader.df21 +
         ex*b_third*ader.df10*ader.df10*ader.df01 +
-        b_first*(f3->df2000*ader.df01 + f3->df0010*ader.df20 + 
-                 2*f3->df1010*ader.df10 + 2*f3->df1000*ader.df11) + 
-        b_second*(ex*ader.df20*ader.df01 + f3->df0010*ader.df10*ader.df10 +
-                  2*ex*ader.df10*ader.df11 + 2*f3->df1000*ader.df10*ader.df01);
+        b_first*(f3->df20*ader.df01 + f3->df01*ader.df20 + 
+                 2*f3->df11*ader.df10 + 2*f3->df10*ader.df11) + 
+        b_second*(ex*ader.df20*ader.df01 + f3->df01*ader.df10*ader.df10 +
+                  2*ex*ader.df10*ader.df11 + 2*f3->df10*ader.df10*ader.df01);
 
-    res->df12 = f3->df1020*bfactor + ex*b_first*ader.df12 +
+    res->df12 = f3->df12*bfactor + ex*b_first*ader.df12 +
         ex*b_third*ader.df10*ader.df01*ader.df01 +
-        b_first*(f3->df0020*ader.df10 + f3->df1000*ader.df02 + 
-                 2*f3->df1010*ader.df01 + 2*f3->df0010*ader.df11) +
-        b_second*(ex*ader.df10*ader.df02 + f3->df1000*ader.df01*ader.df01 +
-                  2*ex*ader.df01*ader.df11 + 2*f3->df0010*ader.df10*ader.df01);
+        b_first*(f3->df02*ader.df10 + f3->df10*ader.df02 + 
+                 2*f3->df11*ader.df01 + 2*f3->df01*ader.df11) +
+        b_second*(ex*ader.df10*ader.df02 + f3->df10*ader.df01*ader.df01 +
+                  2*ex*ader.df01*ader.df11 + 2*f3->df01*ader.df10*ader.df01);
 
-    res->df03 = f3->df0030*bfactor + 3*f3->df0020*b_first*ader.df01
-        + 3*f3->df0010*b_second*ader.df01*ader.df01
-        + 3*f3->df0010*b_first *ader.df02 + 3*ex*b_second*ader.df01*ader.df02
+    res->df03 = f3->df03*bfactor + 3*f3->df02*b_first*ader.df01
+        + 3*f3->df01*b_second*ader.df01*ader.df01
+        + 3*f3->df01*b_first *ader.df02 + 3*ex*b_second*ader.df01*ader.df02
         + ex*b_third*ader.df01*ader.df01*ader.df01
         + ex*b_first*ader.df03;
 }
@@ -644,7 +646,7 @@ static void
 camb3lyp_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 {
     ThirdFuncDrv f3;
-    RGThirdDrv res;
+    RGThirdDrv res, dfun;
     DftDensProp dsigma;
     real ex;
 
@@ -656,7 +658,10 @@ camb3lyp_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
     SlaterFunctional.third(&f3, 1, dp);
     BeckeFunctional.third(&f3, BECKE88_CORR_WEIGHT, dp);
 
-    camb3lyp_third_sigma(dp->rhoa, ex, &f3, &res);
+    dfun.df10 = f3.df1000; dfun.df20 = f3.df2000; dfun.df30 = f3.df3000; 
+    dfun.df01 = f3.df0010; dfun.df02 = f3.df0020; dfun.df03 = f3.df0030;
+    dfun.df11 = f3.df1010; dfun.df21 = f3.df2010; dfun.df12 = f3.df1020;
+    camb3lyp_third_sigma(dp->rhoa, ex, &dfun, &res);
 
     ds->df1000 += factor*res.df10;
     ds->df0010 += factor*res.df01;
@@ -674,7 +679,10 @@ camb3lyp_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
         dsigma.grada = dsigma.gradb = dp->gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
-        camb3lyp_third_sigma(dp->rhob, ex, &f3, &res);
+        dfun.df10 = f3.df0100; dfun.df20 = f3.df0200; dfun.df30 = f3.df0300; 
+        dfun.df01 = f3.df0001; dfun.df02 = f3.df0002; dfun.df03 = f3.df0003;
+        dfun.df11 = f3.df0101; dfun.df21 = f3.df0201; dfun.df12 = f3.df0102;
+        camb3lyp_third_sigma(dp->rhob, ex, &dfun, &res);
     }
 
     ds->df0100 += factor*res.df10;
