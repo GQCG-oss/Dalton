@@ -122,7 +122,7 @@ line specifying order. See also the keyword \Key{SPHMOM}.
 $\left<\chi_{\mu}\left|x^{i}y^{j}z^{k}\right|\chi_{\nu}\right>$
 \item Property labels: \verb|CMiijjkk|
 \end{list}
-where $ii+jj+kk =$\verb|IORDER|, and where \verb|ii| = (i/10)*10+mod(i,10)
+where $ii+jj+kk =$\verb|IORDER|, and where \verb|ii| = (i/10)*10+mod(i,10).
 
 \item[\Key{CM-1}]\verb| |\newline
 \verb|READ (LUCMD, '(A7)') FIELD1|
@@ -366,7 +366,7 @@ Ref.~\cite{ovhapjhjajsbpthjcp96}.
 \begin{list}{}{}
 \item Integral: $\frac{4\pi g_e}{3}\left<\chi_{\mu}\left|\delta\left({\bf
 r}_K\right)\right|\chi_{\nu}\right>$
-\item Property label: \verb|FC NAMab|, where \verb|NAM| is the three
+\item Property labels: \verb|FC NAMab|, where \verb|NAM| is the three
 first letters in the name of this atom, as given in the
 \verb|MOLECULE.INP| file, and \verb|ab| is the number of the
 symmetry-adapted nucleus.
@@ -379,11 +379,16 @@ Specify the gauge origin\index{gauge origin} to be used in the
 calculation. Read one more line containing the three Cartesian
 components (*). Default is~(0,0,0).
 
-\item[\Key{GFACDI}] 
 \item[\Key{HBDO}] Geometric half-differentiated overlap
 matrix\index{overlap!half-differentiated}
-differentiated once more with respect to magnetic field as given in Eq.~(59)
-in Ref.~\cite{klbpjthkrhjajjcp98}.
+differentiated once more with respect to magnetic field, see
+Ref.~\cite{klbpjthkrhjajjcp98}. 
+
+\begin{list}{}{}
+\item Integral: $-\frac{1}{4}\left(Q_{MO} +
+Q_{NO}\right)\left<\chi_{\mu}\left|{\mathbf r}\right|\chi_{\nu}\right>$
+\item Property labels: \verb| HBDO X |, \verb| HBDO Y |, \verb| HBDO Z |.
+\end{list}
 
 \item[\Key{HDO}] Symmetrized, half-differentiated
 overlap integrals with respect to geometric
@@ -400,8 +405,16 @@ of the symmetry-adapted coordinate being differentiated.
 
 \item[\Key{HDOBR}] Geometric half-differentiated overlap
 matrix\index{overlap!half-differentiated}
-differentiated once more on the ket-vector with respect to external
-magnetic field as given in Eq.~(60) of Ref.~\cite{klbpjthkrhjajjcp98}.
+differentiated once more on the ket-vector with respect to an external
+magnetic field, see Ref.~\cite{klbpjthkrhjajjcp98}.
+
+\begin{list}{}{}
+\item Integral: $-\frac{1}{2}Q_{NO}\left<\frac{\partial
+\chi_{\mu}}{\partial R_K}\left|{\mathbf r}\right|\chi_{\nu}\right>$
+\item Property labels: \verb|ab HBD c|, where \verb|ab| is the
+symmetry coordinate of the nuclear coordinate being differentiations,
+and \verb|c| is the coordinate of the external magnetic field.
+\end{list}
 
 \item[\Key{HDOBRT}] Test the calculation of the \Key{HDOBR}
 integral. Mainly for debugging purposes.
@@ -417,8 +430,7 @@ wave function optimization is generated in the \Sec{ONEINT} section.
 \begin{list}{}{}
 \item Integral:
 $\frac{1}{2}\left<\chi_{\mu}\left|\nabla^{2}\right|\chi_{\nu}\right>$
-\item Property label: \verb|KINENERG|, where \verb|ab| is the number
-of the symmetry-adapted nuclear coordinate.
+\item Property label: \verb|KINENERG|.
 \end{list}
 
 \item[\Key{LONMOM}] Contribution to the London magnetic
@@ -429,7 +441,7 @@ orbital\index{London orbitals} phase factors, see Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral:
 $\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}h\right|\chi_{\nu}\right>$
-\item Property label: \verb|XLONMOM |, \verb|YLONMOM |, \verb|ZLONMOM |.
+\item Property labels: \verb|XLONMOM |, \verb|YLONMOM |, \verb|ZLONMOM |.
 \end{list}
 
 \item[\Key{MAGMOM}] One-electron contribution to the magnetic
@@ -451,9 +463,8 @@ r}h\right|\chi_{\nu}\right>$
 
 \begin{list}{}{}
 \item Integral:
-$\frac{\alpha^2}{4}\left<\chi_{\mu}\left|\nabla^{2}\cdot\nabla^2\right|\chi_{\nu}\right>$
-\item Property label: \verb|MASSVELO|, where \verb|ab| is the number
-of the symmetry-adapted nuclear coordinate.
+$\frac{\alpha^2}{8}\left<\chi_{\mu}\left|\nabla^{2}\cdot\nabla^2\right|\chi_{\nu}\right>$
+\item Property label: \verb|MASSVELO|.
 \end{list}
 
 \item[\Key{MGMO2T}] Test of two-electron integral contribution to
@@ -468,13 +479,22 @@ integrals.
 Set the threshold for which two-electron integrals should be tested
  with the keyword \Key{MGMO2T}. Default is~10$^{-10}$.
 
-\item[\Key{NELFLD}] Nuclear electric field integrals\index{electric field!at nucleus}.
+\item[\Key{MNF-SO}] Calculates the atomic mean-field spin-orbit
+ integrals as described in Ref.~\cite{bahcmmuwogcpl251}. As the
+ calculation of these 
+ integrals require a proper description of the atomic states, reliable
+ results can only be expected for generally contracted basis sets such
+ as the ANO sets, and in some cases also the correlation-consistent
+ basis sets ((aug-)cc-p(C)VXZ)).
+
+\item[\Key{NELFLD}] Nuclear electric field integrals\index{electric
+ field at nucleus}.
 
 \begin{list}{}{}
 \item Integral:
 $\left<\chi_{\mu}\left|\frac{{\bf r}_K}{r_{K}^3}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
-\item Property label: \verb|NEF ab  |, where \verb|ab| is the number
+\item Property labels: \verb|NEF ab  |, where \verb|ab| is the number
 of the symmetry-adapted nuclear coordinate.
 \end{list}
 
@@ -506,7 +526,8 @@ keyword \Key{NSTNOL}. Mainly for debugging purposes.
 \item[\Key{NST}] Calculate the one-electron contribution to the
 diamagnetic nuclear shielding\index{diamagnetic nuclear shielding}
 tensor integrals using London atomic
-orbitals\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
+orbitals\index{London orbitals}, see Ref.~\cite{thpjjcp95}. It is
+calculated as the sum of \verb|NSTLON| and \verb|NSTNOL|.
 
 \begin{list}{}{}
 \item Integral:
@@ -526,7 +547,7 @@ orbitals}. Note that the gauge origin is controlled by the keyword
 
 \begin{list}{}{}
 \item Integral:
-$\frac{1}{2}Q_{MN}\left<\chi_{\mu}\left|\frac{{\bf r}_O^T{\bf r}_K -
+$\frac{1}{2}\left<\chi_{\mu}\left|\frac{{\bf r}_O^T{\bf r}_K -
 {\bf r}_O{\bf r}_K^T}{r_{K}^3}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
 \item Property label: \verb|NSCOab c|, where \verb|ab| is the number
@@ -535,7 +556,7 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 is the gauge origin.
 \end{list}
 
-\item[\Key{NSTLON}] Calculate the contribution to the nuclear
+\item[\Key{NSTLON}] Calculate the contribution to the London orbital nuclear
 shielding tensor\index{diamagnetic nuclear shielding} from the differentiation of the London orbital
 phase-factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
@@ -544,13 +565,14 @@ phase-factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 $\frac{1}{2}Q_{MN}\left<\chi_{\mu}\left|\frac{{\bf r}_N^T{\bf
 l}_K}{r_{K}^3}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
-\item Property label: \verb|NSLOab c|, where \verb|ab| is the number
+\item Property labels: \verb|NSLOab c|, where \verb|ab| is the number
 of the symmetry-adapted nuclear magnetic moment coordinate, and
 \verb|c| refers to the x, y, or z component of the magnetic field.
 \end{list}
 
 \item[\Key{NSTNOL}] Calculate the contribution to the nuclear
-shielding tensor\index{diamagnetic nuclear shielding} from the
+shielding tensor when using London atomic orbitals\index{diamagnetic
+nuclear shielding} from the 
 differentiation of the Hamiltonian alone\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
@@ -581,11 +603,24 @@ symmetry.\index{potential energy!at nucleus}
 \item Integral:
 $\left<\chi_{\mu}\left|\frac{Z_K}{r_{K}}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
-\item Property label: \verb|POT.E ab|, where \verb|ab| are the two
+\item Property labels: \verb|POT.E ab|, where \verb|ab| are the two
 first letters in the name of this nuclei. Thus note that in order
 to distinguish between integrals, the first two letters in an
 atom's name must be unique.
 \end{list}
+
+\item[\Key{OCTGRA}]\verb| |\newline
+Calculate octupole gradient integrals, that is, the geometrical first
+derivatives of the octupole moment integrals.
+
+\begin{list}{}{}
+\item Integral: $\frac{\partial}{\partial {\mathbf
+R}_K}\left<\chi_{\mu}\left|{\mathbf r}^3\right|\chi_{\nu}\right>$ 
+\item Property labels: \verb|abODGcde|
+\end{list}
+where \verb|ab| is the symmetry adapted nuclear coordinate, and \verb|cde| the
+component (x/y/z) of the octupole moment tensors.
+
 
 \item[\Key{PHASEO}]\verb| |\newline
 \verb|READ (LUCMD, *) (ORIGIN(I), I = 1, 3)|
@@ -625,6 +660,15 @@ where $K$ is the nucleus of interest.
 of the symmetry-adapted nuclear magnetic moment coordinate.
 \end{list}
 
+\item[\Key{PVP}] Calculate the $pVp$ integrals that appear in the
+Douglas--Kroll--He\ss\ transformation~\cite{bahpra33}.
+
+\begin{list}{}{}
+\item Integral:
+$\left<\chi_{\mu}\left|\nabla\left(\sum_K\frac{Z_K}{r_iK}\right)\nabla\right|\chi_{\nu}\right>$ 
+\item Property labels: \verb|pVpINTEG|.
+\end{list}
+
 \item[\Key{QUADRU}] Quadrupole moment\index{quadrupole
 moment} integrals. For traceless quadrupole moment integrals as
 defined by Buckingham~\cite{adbacp12}, see the keyword \Key{THETA}.
@@ -636,9 +680,30 @@ r}_{O}^{T} - r^{2}_{O}I\right|\chi_{\nu}\right>$
 \verb|XZQUADRU|, \verb|YYQUADRU|, \verb|YZQUADRU|, \verb|ZZQUADRU|
 \end{list}
 
+\item[\Key{QUAGRA}]\verb| |\newline
+Calculate quadrupole gradient integrals, that is, the geometrical first
+derivatives of the second moment integrals.
+
+\begin{list}{}{}
+\item Integral: $\frac{\partial}{\partial {\mathbf
+R}_K}\left<\chi_{\mu}\left|{\mathbf r}{\mathbf r}^T\right|\chi_{\nu}\right>$ 
+\item Property labels: \verb|abQDG cd|
+\end{list}
+where \verb|ab| is the symmetry adapted nuclear coordinate, and \verb|cd| the
+component (x/y/z) of the octupole moment tensors.
+
 \item[\Key{QUASUM}] Calculate all atomic integrals as square
 matrices, irrespective of their inherent Hermiticity or
 anti-Hermiticity.
+
+\item[\Key{ROTSTR}] Rotational strength integrals in the mixed
+representation~\cite{tbphkkrjcp110}.
+
+\begin{list}{}{}
+\item Integral: $\left<\chi_{\mu}\left|\nabla\;{\mathbf r}^T +
+{\mathbf r}\nabla^T\right|\chi_{\nu}\right>$
+\item Property labels : \verb|XXROTSTR|, \verb|XYROTSTR|, \verb|XZROTSTR|, \verb|YYROTSTR|, \verb|YZROTSTR|, \verb|ZZROTSTR|.
+\end{list}
 
 \item[\Key{S1MAG}] Calculate the first derivative overlap
 matrix\index{overlap!magnetic field derivative} with respect to an
@@ -648,7 +713,7 @@ of the London phase factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}Q_{MN}\left<\chi_{\mu}\left|{\bf
 r}\right|\chi_{\nu}\right>$
-\item Property label: \verb|dS/dBX  |, \verb|dS/dBY  |,
+\item Property labels: \verb|dS/dBX  |, \verb|dS/dBY  |,
 \verb|dS/dBZ  |
 \end{list}
 
@@ -662,8 +727,8 @@ on the bra-vector.
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}Q_{MO}\left<\chi_{\mu}\left|{\bf
 r}\right|\chi_{\nu}\right>$
-\item Property label: \verb|d<S|/dBX|, \verb|d<S|/dBY|,
-\verb|d<S|/dBZ|
+\item Property label: \verb%d<S|/dBX%, \verb%d<S|/dBY%,
+\verb%d<S|/dBZ%
 \end{list}
 
 \item[\Key{S1MAGR}] Calculate the first magnetic half-differentiated overlap
@@ -674,8 +739,8 @@ the ket-vector.
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}Q_{ON}\left<\chi_{\mu}\left|{\bf
 r}\right|\chi_{\nu}\right>$
-\item Property label: \verb|d|S>/dBX|, \verb|d|S>/dBZ|,
-\verb|d|S>/dBZ|
+\item Property labels: \verb%d|S>/dBX%, \verb%d|S>/dBZ%,
+\verb%d|S>/dBZ%
 \end{list}
 
 \item[\Key{S1MAGT}] Test the integrals calculated with the keyword
@@ -694,7 +759,7 @@ of the London phase factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}{\bf
 r}^{T}\right|\chi_{\nu}\right>Q_{MN}$
-\item Property label: \verb|dS/dB2XX|, \verb|dS/dB2XY|,
+\item Property labels: \verb|dS/dB2XX|, \verb|dS/dB2XY|,
 \verb|dS/dB2XZ|, \verb|dS/dB2YY|, \verb|dS/dB2YZ|, \verb|dS/dB2ZZ|
 \end{list}
 
@@ -706,7 +771,7 @@ Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{2}\left<\chi_{\mu}\left|\frac{3{\bf
-r}_K^T{\bf r}_K - r_K^2}{r_{K}^5}\right|\chi_{\nu}\right>$
+r}_K{\bf r}_K^T - r_K^2}{r_{K}^5}\right|\chi_{\nu}\right>$
 \item Property label: \verb|SD  ab c|, where \verb|ab| is the number
 of the first symmetry-adapted coordinate (corresponding to
 symmetry-adapted nuclear magnetic moments) and \verb|c| is the x, y,
@@ -718,7 +783,7 @@ Fermi-contact integrals\index{Fermi contact}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{2}\left<\chi_{\mu}\left|\frac{3{\bf
-r}_K^T{\bf r}_K - r_K^2}{r_{K}^5}\right|\chi_{\nu}\right> + \frac{4\pi
+r}_K{\bf r}_K^T - r_K^2}{r_{K}^5}\right|\chi_{\nu}\right> + \frac{4\pi
 g_e}{3}\left<\chi_{\mu}\left|\delta\left({\bf
 r}_K\right)\right|\chi_{\nu}\right>$
 \item Property label: \verb|SDC ab c|, where \verb|ab| is the number
@@ -733,7 +798,7 @@ integral}\index{second-moment}.
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf r}{\bf
 r}^{T}\right|\chi_{\nu}\right>$
-\item Property label: \verb|XXSECMOM|, \verb|XYSECMOM|,
+\item Property labels: \verb|XXSECMOM|, \verb|XYSECMOM|,
 \verb|XZSECMOM|, \verb|YYSECMOM|, \verb|YZSECMOM|, \verb|ZZSECMOM|
 \end{list}
 
@@ -749,6 +814,29 @@ containing the numbers of the atoms selected. Most useful when
 calculating diamagnetic spin-orbit\index{diamagnetic spin-orbit}
 integrals, as this is a rather time-consuming calculation. The
 numbering is of symmetry-independent nuclei.
+
+\item[\Key{SOFIEL}] External magnetic-field dependence of the spin--orbit
+operator integrals~\cite{jvkrovjcp111}.
+
+\begin{list}{}{}
+\item Integral:
+$\frac{1}{2}\sum_KZ_K\left<\chi_{\mu}\left|\frac{{\bf r}_O^T{\bf r}_K -
+{\bf r}_O{\bf r}_K^T}{r_{K}^3}\right|\chi_{\nu}\right>$
+where $K$ is the nucleus of interest.
+\item Property labels: \verb|SOMF  XX|, \verb|SOMF  XY|, \verb|SOMF
+XZ|, \verb|SOMF  YX|, \verb|SOMF  YY|, \verb|SOMF  YZ|, \verb|SOMF
+ZX|, \verb|SOMF  ZY|, \verb|SOMF  ZZ|. 
+\end{list}
+
+\item[\Key{SOMAGM}] Nuclear magnetic moment dependence of the spin--orbit
+operator integrals~\cite{jvkrovjcc20}.
+
+\begin{list}{}{}
+\item Integral: \sum_KZ_K$\left<\chi_{\mu}\left|\frac{{\bf r}_K^T{\bf r}_LI - {\bf r}_K{\bf r}_L^T}{r_K^3r_L^3}\right|\chi_{\nu}\right>$
+\item Property label: \verb|SOMM ab c|, where \verb|ab| is the number
+of the symmetry-adapted nuclear magnetic moment coordinate, and
+\verb|c| refers to the x, y, or z component of the magnetic field.
+\end{list}
 
 \item[\Key{SORT I}]\index{integral sort} Requests that the
 two-electron integrals should be
@@ -768,11 +856,11 @@ line specifying order. See also the keyword \Key{CARMOM}.
 \begin{list}{}{}
 \item Property label: \verb|CMiijjkk|
 \end{list}
-where $i+j+k =$\verb|IORDER|.
+where $i+j+k =$\verb|IORDER|, and where \verb|ii| = (i/10)*10+mod(i,10).
 
 \item[\Key{SPIN-O}] Spatial spin-orbit\index{spatial spin-orbit}
 integrals, see Ref.~\cite{ovhapjhjajthjojcp96}. Both the one- and the
-two-electron integrals are calculated, the latter stored on the file
+two-electron integrals are calculated, the latter is stored on the file
 \verb|AO2SOINT|.
 
 \begin{list}{}{}
@@ -780,10 +868,10 @@ two-electron integrals are calculated, the latter stored on the file
 $\sum_A\left<\chi_{\mu}\left|Z_A\frac{{\bf l}_A}{r_{A}^{3}}\right|\chi_{\nu}\right>$
 where $Z_A$ is the charge of nucleus $A$ and the summation runs over
 all nuclei of the molecule.
-\item Property label: \verb|X1SPNORB|,  \verb|Y1SPNORB|,  \verb|Z1SPNORB|
+\item Property labels: \verb|X1SPNORB|,  \verb|Y1SPNORB|,  \verb|Z1SPNORB|
 \item Two-electron Integral:
 $\left<\chi_{\mu}\chi_{\nu}\left|\frac{{\bf l}_{12}}{r_{12}^{3}}\right|\chi_{\rho}\chi_{\sigma}\right>$
-\item Property label: \verb|X2SPNORB|,  \verb|Y2SPNORB|,  \verb|Z2SPNORB|
+\item Property labels: \verb|X2SPNORB|,  \verb|Y2SPNORB|,  \verb|Z2SPNORB|
 \end{list}
 
 %\item[\Key{SQHDOL}] Square, non-symmetrized half differentiated
@@ -798,7 +886,7 @@ $\left<\chi_{\mu}\chi_{\nu}\left|\frac{{\bf l}_{12}}{r_{12}^{3}}\right|\chi_{\rh
 %of the symmetry-adapted coordinate being differentiated.
 %\end{list}
 
-\item[\Key{SQHDOR}] Square, non-symmetrized half differentiated
+\item[\Key{SQHDOR}] Square, non-symmetrized half-differentiated
 overlap integrals with respect to geometric distortions\index{overlap!half-differentiated}, see
 Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the ket-vector.
 
@@ -822,18 +910,30 @@ can be controled by the keyword \Key{GAUGEO}.
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|r^{2}_{O}I - {\bf r}_{O}
 {\bf r}_{O}^{T}\right|\chi_{\nu}\right>$
-\item Property label: \verb|XXSUSCGO|, \verb|XYSUSCGO|,
+\item Property labels: \verb|XXSUSCGO|, \verb|XYSUSCGO|,
 \verb|XZSUSCGO|, \verb|YYSUSCGO|, \verb|YZSUSCGO|, \verb|ZZSUSCGO|
 \end{list}
 
 \item[\Key{THETA}] Traceless quadrupole moment\index{quadrupole
-moment!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
+moment traceless} integrals as defined by Buckingham~\cite{adbacp12}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{5}\left<\chi_{\mu}\left|3r^{2}I - {\bf r}
 {\bf r}^{T}\right|\chi_{\nu}\right>$
-\item Property label: \verb|XXTHETA |, \verb|XYTHETA |,
+\item Property labels: \verb|XXTHETA |, \verb|XYTHETA |,
 \verb|XZTHETA |, \verb|YYTHETA |, \verb|YZTHETA |, \verb|ZZTHETA |
+
+\item[\Key{THIRDM}] Third-moment integrals\index{multipole
+integral}\index{third-moment}.
+
+\begin{list}{}{}
+\item Integral: $\left<\chi_{\mu}\left|{\bf r}^3\right|\chi_{\nu}\right>$
+\item Property labels: \verb|XXX 3MOM|, \verb|XXY 3MOM|, \verb|XXZ
+3MOM|, \verb|XYY 3MOM|, \verb|XYZ 3MOM|, \verb|XZZ 3MOM|, \verb|YYY
+3MOM|, \verb|YYZ 3MOM|, \verb|YYZ 3MOM|, \verb|ZZZ 3MOM|. 
+\end{list}
+
+
 \end{list}
 
 \end{description}
