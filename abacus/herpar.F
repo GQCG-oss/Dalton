@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herpar.F,v 1.2 2001-05-31 06:38:08 vebjornb Exp $
+C$Id: herpar.F,v 1.3 2001-06-20 15:49:10 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -479,13 +479,13 @@ CTROND      J2TYP  = I2TYP
       J2TYP  = 0
       JCEDIF = ICEDIF
       JFTHRS = IFTHRS
-      NODV   = JNODV 
-      NOPV   = JNOPV 
-      NOCONT = JNOCNT
-      RETUR  = JRETUR
-      TKTIME = JTKTIM
-      SOLVNT = JSOLVN
-      RELCAL = JRELCL
+      JNODV  = NODV 
+      JNOPV  = NOPV 
+      JNOCNT = NOCONT
+      JRETUR = RETUR
+      JTKTIM = TKTIME
+      JSOLVN = SOLVNT
+      JRELCL = RELCAL
 C
 #if defined (VAR_MPI)
       CALL MPIXBCAST(FIRST ,1,'LOGICAL',MASTER)
@@ -1858,7 +1858,7 @@ C     *  no event shall the lines between and including -BEGIN-TERMS-
 C     *  and --END-TERMS-- be modified.
 C     *
 C     *  (C) 1997, Jorn Amundsen, University Administration, NTNU.
-C     *  $Id: herpar.F,v 1.2 2001-05-31 06:38:08 vebjornb Exp $
+C     *  $Id: herpar.F,v 1.3 2001-06-20 15:49:10 vebjornb Exp $
 C     * --END-TERMS--
 C     *
 C     ******************************************************************
