@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaopt.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: abaopt.F,v 1.2 2001-02-12 18:17:50 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1124,7 +1124,7 @@ C
       TSTIN  = TSTINP
       TSTINP = .TRUE.
       IPRSAV = IPRUSR
-      IPRUSR = -2
+      IPRUSR = -10
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL HERINP(WORK(IWOFF+2),LWORK-2)
       CALL GPCLOSE(LUONEL,' ')
@@ -1188,7 +1188,7 @@ C
       LWRK   = LWORK  - (KWRK - IWOFF) + 1
       IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
       IWSAV  = IWOFF
-#if defined (SYS_CONVEX) || defined (SYS_HAL) || defined (VAR_G77)
+#if defined (SYS_HAL) || defined (VAR_G77)
       IWOFF  = 0
 #endif
       CALL RUNOPT(IWOFF,WRKDLM,MXRINT,WORK(KGRAD),WORK(KSTEP),
@@ -1196,7 +1196,7 @@ C
      &     WORK(KHESOL),WORK(KGRDAR), WORK(KSTPAR),WORK(KINFO),
      &     WORK(KWILBM),WORK(KBMTRN),WORK(KHSINT),WORK(KVCMOD),
      &     WORK(KWRK),LWRK)
-#if defined (SYS_CONVEX)  || defined (SYS_HAL) || defined (VAR_G77)
+#if defined (SYS_HAL) || defined (VAR_G77)
       IWOFF  = IWSAV
 #endif
       CALL QEXIT('OPTMIN')
@@ -2087,6 +2087,7 @@ C
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
          IF (DOCCSD) THEN
+            CALL CC_GEOFLAG
             CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
          ENDIF
          EXSIR = .TRUE.
@@ -2189,7 +2190,7 @@ C
 C
 C     Let's see if this is a wave function we know, if not: Do it numerically
 C
-      IF ((DOMP2 .AND. .NOT. DOMC) .OR. DOCCSD .OR. ((DOCI .OR. DOCINO)
+      IF ((DOMP2 .AND. .NOT. DOMC) .OR. ((DOCI .OR. DOCINO)
      &    .AND. .NOT. DOMC) .OR. (PARIO .AND. MYNUM .GT. 0)) THEN
          CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
       ELSE
@@ -2201,7 +2202,12 @@ C
          ELSE
             CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
          END IF
-         CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+         IF ( DOCCSD ) THEN
+            CALL CC_GEOFLAG
+            CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
+         ELSE
+            CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+         END IF
          EXABA = .TRUE.
          MOLGRD = .FALSE.
          HELFEY = .FALSE.

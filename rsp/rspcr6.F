@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspcr6.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: rspcr6.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
 C
 #include <single.h>
       SUBROUTINE T4DRV(IBCDEQ,ISYMA,ISYMB,ISYMC,ISYMD,VECA,VECB,VECC,
@@ -319,7 +319,7 @@ C
 #include <inftmo.h>
 #include <inftpa.h>
 C
-      PARAMETER (THD = 1.0D-8, MXCALC = 60)
+      PARAMETER (THD = 1.0D-8, MXCALC = 200)
 C
       LOGICAL DOCAL,DIPLEN,ONFIL
 C

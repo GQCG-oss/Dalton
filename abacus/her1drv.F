@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1drv.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her1drv.F,v 1.2 2001-02-12 18:17:51 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck oneinp */
@@ -576,7 +576,7 @@ C
      &               IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,
      &               DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,
      &               NCENTC,SIGNC,NNBASX,WORK(KFCM),TLMD(1,1),
-     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,HFONLY)
+     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN)
   110    IDENB0 = IDENB0 + KHKTB*MULTB
          IDENA = IDENA + KHKTA*MULTA
   100 CONTINUE

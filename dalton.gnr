@@ -26,7 +26,7 @@ optw=0
 frl=rel
 #
 usage (){
-          echo "\nUsage:    dalton [-a] [-A] [-b directory] [-d] [-D] [-e ext] [
+          echo "\nUsage:    dalton [-a] [-A] [-b directory] [-d] [-D] [-ext log] [
 -f] [-F] [-i] [-I] \n[-m mem] [-N nodes]  dal{.$DALEXT} mol{.$MOLEXT}\n"
           echo 'Options:'
           echo ' a        copy auxiliary files from WRKDIR to TMPDIR before calculation starts'
@@ -34,7 +34,7 @@ usage (){
 	  echo ' b dir    change directory where basis sets are searched for to dir'
           echo ' d        delete TMPDIR before calculation starts'
           echo ' D        do not delete TMPDIR after calculation stops'
-          echo ' e ext    change default output extension to ext'
+          echo ' ext log  change default output extension to log'
           echo ' f        copy SIRIUS.RST/RESULTS.RSP/RSPVEC from WRKDIR to TMPDIR before calculation starts'
           echo ' F        copy SIRIUS.RST/RESULTS.RSP/RSPVEC from TMPDIR to WRKDIR after calculation stops'
           echo ' i f1 f2  copy SIRIFCs from WRKDIR to TMPDIR before calculation starts'
@@ -54,7 +54,7 @@ while [ -n "`echo $1 | grep '-'`" ]; do
 	   shift;;
       -d ) optd=1;;
       -D ) optD=0;;
-      -e ) OUTEXT=$2
+      -ext ) OUTEXT=$2
            shift;;
       -f ) optf=1;;
       -F ) optF=1;;

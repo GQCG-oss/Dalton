@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: herdrv.F,v 1.2 2001-02-12 18:17:53 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -174,7 +174,7 @@ C
 #include <mxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
-      PARAMETER (NDIR = 7, NTABLE = 90)
+      PARAMETER (NDIR = 7, NTABLE = 94)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -188,6 +188,7 @@ C
 #include <nuclei.h>
 #include <orgcom.h>
 #include <huckel.h>
+#include <drw2el.h>
 #include <ccom.h>
 #include <inftra.h>
 #include <inftap.h>
@@ -218,7 +219,8 @@ C
      &             '.NUCMOD', '.SORT I', '.DIPGRA', '.QUAGRA',
      &             '.OCTGRA', '.ROTSTR', '.THIRDM', '.SOFIEL',
      &             '.SOMAGM', '.DEROVL', '.DERHAM', '.ELGDIA',
-     &             '.ELGDIL', '.MNF-SO'/
+     &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT',
+     &             '.XDDXR3', '.AD2DAR'/
 C
 C     Check if input has been processed earlier.
 C
@@ -336,6 +338,18 @@ CTSAUE
       ALLATM = .TRUE.
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
+      DO2DAR = .FALSE.
+      AD2DAR = .FALSE.
+      FINDPT = .FALSE.
+      DPTINT = .FALSE.
+      NO2DPT = .FALSE.
+      DPTFAC = D0
+      DARFAC = D0
+      S4CENT = .FALSE.
+      DPTOVL = .FALSE.
+      DPTPOT = .FALSE.
+      XDDXR3 = .FALSE.
+C
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
@@ -379,6 +393,7 @@ C         if reading input from a terminal
          WRITE (LUPRI,*) 'WARNING HERINP: error reading Dalton input'
   920 CONTINUE
          CALL REAINI(IPRDEF,RELCAL,TSTINP)
+         CALL ER2INI
          WORD = '**END O'
          GOTO 1
   930 CONTINUE
@@ -401,7 +416,8 @@ C
      &                151,152,153,154,155,156,157,158,159,160,
      &                161,162,163,164,165,166,167,168,169,170,
      &                171,172,173,174,175,176,177,178,179,180,
-     &                181,182,183,184,185,186,187,188,189,190), I
+     &                181,182,183,184,185,186,187,188,189,190,
+     &                191,192,193,194), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -521,11 +537,11 @@ C
             S2MAG = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
-  127    CONTINUE
+ 127     CONTINUE
             ANGMOM = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
-  128    CONTINUE
+ 128     CONTINUE
             ANGLON = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
@@ -695,8 +711,9 @@ C
  165     CONTINUE
             READ (LUCMD,'(A7)') FIELD1
             IF (.NOT. ((FIELD1 .EQ. 'X-FIELD')
-     &          .OR. (FIELD1 .EQ. 'Y-FIELD')
-     &          .OR. (FIELD1 .EQ. 'Z-FIELD'))) THEN
+     &          .OR.   (FIELD1 .EQ. 'Y-FIELD')
+     &          .OR.   (FIELD1 .EQ. 'Z-FIELD')
+     &          .OR.   (FIELD1 .EQ. 'XYZ-ALL'))) THEN
                WRITE (LUPRI,'(/,3A,/)') ' Field direction "',FIELD1,
      &               '" illegal'
                CALL QUIT('Illegal field directions for CM-1 integrals')
@@ -774,39 +791,39 @@ C&&& Nuclear model
             GO TO 100
  179     CONTINUE
             DPLGRA = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  180     CONTINUE
             QUAGRA = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  181     CONTINUE
             OCTGRA = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  182     CONTINUE
             ROTSTR = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100                   
  183     CONTINUE
             THRMOM = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  184     CONTINUE
             SOFLD  = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  185     CONTINUE
             SOMM   = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  186     CONTINUE
             DEROVL = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  187     CONTINUE
             DERHAM = .TRUE.
-            PROPRI = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100                            
  188     CONTINUE
             ELGDIA = .TRUE.
@@ -819,6 +836,22 @@ C&&& Nuclear model
  190     CONTINUE
             MNF_SO = .TRUE.
             GO TO 100
+ 191     CONTINUE
+            DPTOVL = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 192     CONTINUE
+            DPTPOT = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 193     CONTINUE
+            XDDXR3 = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100        
+ 194     CONTINUE
+            AD2DAR = .TRUE.
+            READ (LUCMD, *) DARFAC
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199
       ELSE
@@ -854,6 +887,9 @@ C&&& Nuclear model
          IF (NOTWO) WRITE (LUPRI,'(/A)')
      &          ' Two-electron integrals not calculated.'
       END IF
+      IF (AD2DAR) WRITE (LUPRI,'(/A/A,F18.14/)')
+     &    ' Two-electron Darwin integrals are added to standard',
+     &    ' repulsion integrals with perturbation parameter:',DARFAC
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A)')
      &  ' The following one-electron property integrals are calculated:'
@@ -1044,6 +1080,12 @@ C&&& Nuclear model
          IF (DERHAM) WRITE (LUPRI,'(10X,A)')
      &        '- Geometrical derivatives of one-electron Hamiltonian '//
      &        'integrals'                                                   
+         IF (DPTPOT) WRITE (LUPRI,'(10X,A,A)')
+     &        '- small component potential energy for DPT'
+         IF (DPTOVL) WRITE (LUPRI,'(10X,A)')
+     &        '- small component overlap integrals for DPT'
+         IF (XDDXR3) WRITE (LUPRI,'(10X,A)')
+     &        '-d/dB d/dK   < 1/Rk^3 > type of integrals. '
          IF (PROPRI) WRITE (LUPRI,'(/A)')
      &      ' All one-electron property integrals are printed.'
          IF (S1ELE) WRITE (LUPRI,'(10X,A)')
@@ -1104,6 +1146,7 @@ C     **** Process input for various program sections  *****
 C
   200 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
+      CALL ER2INI
  201  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -1626,6 +1669,7 @@ C
 #include <huckel.h>
 #include <ccom.h>
 #include <cbisor.h>
+#include <efield.h>
 C
 C
       DIMENSION   RLMORI(3)
@@ -1663,7 +1707,7 @@ C
          IF (HAMILT) THEN
             CALL TIMER('START ',TIMSTR,TIMEND)
             CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                  .TRUE.,.FALSE.)
+     &                  .TRUE.,.FALSE.,.FALSE.)
             CALL TIMER('ONEDRV',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
          END IF
@@ -2302,8 +2346,20 @@ C           ****  First order magnetic derivative of electric field  ****
 C
             IF (CM1) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('CM1    ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               IF (FIELD1.EQ.'XYZ-ALL') THEN
+                 FIELD1 = 'X-FIELD'
+                 CALL PR1INT('CM1    ',WORK,LWORK,IDUMMY,
+     &                       IDUMMY,TRIANG,PROPRI,IPRONE)
+                 FIELD1 = 'Y-FIELD'
+                 CALL PR1INT('CM1    ',WORK,LWORK,IDUMMY,
+     &                       IDUMMY,TRIANG,PROPRI,IPRONE)
+                 FIELD1 = 'Z-FIELD'
+                 CALL PR1INT('CM1    ',WORK,LWORK,IDUMMY,
+     &                       IDUMMY,TRIANG,PROPRI,IPRONE)
+               ELSE    
+                 CALL PR1INT('CM1    ',WORK,LWORK,IDUMMY,
+     &                       IDUMMY,TRIANG,PROPRI,IPRONE)
+               END IF
                CALL TIMER('CM1   ',TIMSTR,TIMEND)
             END IF
 C
@@ -2414,6 +2470,39 @@ C
      &                     TRIANG,PROPRI,IPRONE)
                CALL TIMER('DERHAM',TIMSTR,TIMEND)
             END IF                                        
+C
+C           ***** DPT overlap integrals ********************************
+C
+            IF (DPTOVL) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('DPTOVL ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('DPTOVL',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** DPT potential energy  integrals ***********************
+C
+            IF (DPTPOT) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('DPTPO1 ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL FLSHFO(LUPRI)
+               CALL PR1INT('DPTPO2 ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('DPTPOT',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** DPT pso-lookalikes SQUARED *****
+C
+            IF (XDDXR3) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('XDDXR3 ',WORK,LWORK,IDUMMY,
+     &              IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('XDDXR3',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END  IF
          END IF
       END IF
 C

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2out.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: her2out.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck un2out */
@@ -821,6 +821,10 @@ C
             CALL REWSPL(LU2DER)
             CALL NEWLAB('AO2MGINT',LU2DER,LUPRI)
          ELSE
+            IF (LU2DER .LE. 0) THEN
+               CALL QUIT('illegal unit number LU2DER in DR2WRT')
+            ENDIF
+C
             CALL REWSPL(LU2DER)
          END IF
          JBUF = 256
@@ -1250,7 +1254,7 @@ C
       END
 C  /* Deck ds2ou1 */
       SUBROUTINE DS2OU1(SO,BUF,IBUF,NCOUNT,IDSORB,IORBDS,IPNTNO,IPNTRP,
-     &                  IPNTLG,FIRST,LAST,THRESH,NINDAB,NINDCD,LBUF,
+     &                  IPNTLG,FIRST,LAST,THRESH,NINDAB,NINDCD,LDSBUF,
      &                  NDIST,IORBSH,IPRINT)
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
@@ -1262,6 +1266,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
+#include <eribuf.h>
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
@@ -1274,6 +1279,12 @@ C
 C
 #include <ibtfun.h>
 #include <sdpre.h>
+C
+      IF (LBUF .NE. LDSBUF) THEN
+        WRITE (LUPRI,*) 'LBUF  :',LBUF
+        WRITE (LUPRI,*) 'LDSBUF:',LDSBUF
+        CALL QUIT('Error in DS2OU1')
+      END IF
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1315,7 +1326,8 @@ C     *******************************************************
 C
       IF (FIRST) THEN
          CALL IZERO(NCOUNT,NDIST)
-         CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,-1,NBITS,0,IPRINT)
+         CALL UN2WRN(BUF,IBUF,ICOUNT,-1,0,IPRINT)
+C         CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,-1,NBITS,0,IPRINT)
          DOINDX = .TRUE.
          CALL AINDEX(ISHELA,NAINTS,IDSORB,DOINDX,IORBSH,IPRINT)
          DO 50 IDIST = 1, NDIST
@@ -1360,8 +1372,10 @@ C
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
-                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
-     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
+                          CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
+     &                                ICOUNT,0,INDA,IPRINT)
+C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
+C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
                        END IF
                      END IF
@@ -1392,8 +1406,10 @@ C
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
-                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
-     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
+                          CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
+     &                                ICOUNT,0,INDA,IPRINT)
+C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
+C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NCOUNT(IDIST) = 0
                        END IF
                      END IF
@@ -1430,8 +1446,10 @@ C
                        BUF (ICOUNT,IDIST) = SOINT
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
-                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
-     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
+                          CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
+     &                                ICOUNT,0,INDA,IPRINT)
+C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
+C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
                           NCOUNT(IDIST) = 0
                        END IF
@@ -1445,8 +1463,10 @@ C
                        IBUF(ICOUNT,1,IDIST) = INDAB
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
-                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
-     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
+                          CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
+     &                                ICOUNT,0,INDA,IPRINT)
+C                          CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,
+C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                           NBUFCL = NBUFCL + 1
                           NCOUNT(IDIST) = 0
                        END IF
@@ -1466,15 +1486,126 @@ C
       IF (LAST) THEN
          DO 400 IDIST = 1, NDIST
             NWRIT = NWRIT + NCOUNT(IDIST)
-            CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
-     &                  NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
+            CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
+     &                  NCOUNT(IDIST),1,IDSORB(IDIST),IPRINT)
+C            CALL UN2WRT(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
+C     &                  NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
   400    CONTINUE
          NALL = NDIST*(NBASIS + 1)*(NBASIS**2)/2
          PERCNT = SDPRE(100*NWRIT) / SDPRE(NALL)
-         WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
+         IF (IPRINT.GT.0) WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
      &         'Number of two-electron integrals written:',NWRIT,
      &         ' (',PERCNT,'%)'
       END IF
 C
+      RETURN
+      END
+C  /* Deck un2wrn */
+      SUBROUTINE UN2WRN(BUF,IBUF,ICOUNT,ITYPE,INDA,
+     &                  IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <ibtpar.h>
+#include <eribuf.h>
+      DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
+#include <twosta.h>
+#include <inftap.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <ibtfun.h>
+#include <sdpre.h>
+C
+      NBUFX(0) = NBUFX(0) + 1
+C
+      IF (ITYPE .EQ. -1) THEN
+         REWIND LUINTR
+         NBUFX(0) = NBUFX(0) - 1
+c        CALL NEWLAB('BASINFO ',LUINTA,LUPRI)
+c        WRITE (LUINTA) MAXREP+1,(NAOS(I),I=1,8),LBUF,NIBUF,NBITS
+c        CALL NEWLAB('BASTWOEL',LUINTA,LUPRI)
+c        ICOUNT = 0
+c        NBUFX(0) = 0
+      ELSE IF (ITYPE .EQ. 0) THEN
+         IF (INDA .NE. 0) WRITE (LUINTR) INDA
+         WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF,ICOUNT
+C
+         IF (IPRINT .GE. 6) THEN
+            WRITE (LUPRI,'(2X,A,I5,A/)')
+     &         'Integral buffer #',NBUFX(0),' has been written.'
+            IBIT1 = 2**NBITS - 1
+            DO 100 INT = 1, ICOUNT
+               IF (NIBUF .EQ. 1) THEN
+                  I = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
+                  J = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
+                  K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
+                  L = IBTAND(       IBUF(INT,1),         IBIT1)
+               ELSE
+                  I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
+                  J = IBTAND(       IBUF(INT,1),       IBIT1)
+                  K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
+                  L = IBTAND(       IBUF(INT,2),       IBIT1)
+               END IF
+               WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
+     &                      ' ## ', I, J, K, L, BUF(INT)
+  100       CONTINUE
+         END IF
+         ICOUNT = 0
+      ELSE
+         IF (INDA .NE. 0) THEN
+            WRITE (LUINTR) INDA
+            WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF,ICOUNT
+         ELSE
+            CALL QUIT('Error in UN2WRN')
+         END IF
+C
+         IF (IPRINT .GE. 6) THEN
+            IF (ICOUNT .GT. 0) THEN
+               WRITE (LUPRI,'(2X,A,I5,A/)')
+     &            'Integral buffer #',NBUFX(0)+1,' has been written.'
+               IBIT1 = 2**NBITS - 1
+               DO 200 INT = 1, ICOUNT
+                  IF (NIBUF .EQ. 1) THEN
+                     I = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
+                     J = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
+                     K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
+                     L = IBTAND(       IBUF(INT,1),         IBIT1)
+                  ELSE
+                     I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
+                     J = IBTAND(       IBUF(INT,1),       IBIT1)
+                     K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
+                     L = IBTAND(       IBUF(INT,2),       IBIT1)
+                  END IF
+                  WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
+     &                         ' ## ', I, J, K, L, BUF(INT)
+  200          CONTINUE
+            END IF
+         END IF
+C
+C        Statistics
+C
+         IF (INDA .EQ. 0) THEN
+            N2WRIT = LBUF*NBUFX(0) + ICOUNT
+            IF (ICOUNT.GT.0 .AND. INDA.NE.0) THEN
+               NBUFX(0) = NBUFX(0) + 2
+            ELSE
+               NBUFX(0) = NBUFX(0) + 1
+            END IF
+            IF (IRAT .EQ. 1) LWORD = 8
+            IF (IRAT .EQ. 2) LWORD = 4
+            KBYTES = NBUFX(0)*LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
+            KBYTES = (KBYTES + 999)/1000
+            NALL   = (NBASIS*(NBASIS + 1))/2
+            NALL   = (NALL*(NALL + 1))/2
+            PERCNT = SDPRE(100*N2WRIT) / SDPRE(NALL)
+            WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A,/1X,A,I10//)')
+     &         'Number of two-electron integrals written:',N2WRIT,
+     &         ' (',PERCNT,'%)',
+     &         'Kilobytes written:                       ',KBYTES
+         END IF
+      END IF
       RETURN
       END

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2her.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: her2her.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck hr2drv */
@@ -164,10 +164,13 @@ C     TUH 84
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <pi.h>
 #include <maxaqn.h>
 #include <iratdef.h>
 #include <aovec.h>
-      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
+#include <alphac.h>
+#include <drw2el.h>
+      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP25 = 0.25D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX), WORK(LWORK),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
@@ -193,6 +196,9 @@ C     this may in the case of one-center integrals introduce
 C     numerical instabilities for large exponents.
 C
       NOINT = .FALSE.
+      IF (AD2DAR) DRWFAC=DP25*ALPHA2*DARFAC
+      IF (DO2DAR) DRWFAC=DP25*ALPHA2
+      IF (S4CENT) DRWFAC=-DP25/PI
       IF (ONECEN) THEN
          IODS = 0
          CALL DZERO(PQX,NUABCD)
@@ -204,7 +210,40 @@ C
          DO 100 IOD12 = 1, NUC12
             EXPP   = EXP12(IOD12)
             FAC12I = FAC12(IOD12)
-            IF (PANAS .EQ. D0) THEN
+            IF (DO2DAR .OR. S4CENT) THEN
+C
+C              Compute two-electron Dirac delta function
+C              (Wim Klopper, University of Utrecht, March 4, 1999)
+C              Merged into Dalton1.1 by A. Halkier 29/11/99.
+C
+               DO 112 IOD34 = 1, NUC34
+                  IODS   = IODS + 1
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQ  = EXPP + EXPQ
+                  EXPPQI = D1/(EXPP + EXPQ) 
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
+                  SCLFAC(IODS) = FACTOR*TALPHA(IODS)
+                  RJ000(IODS,0) = DRWFAC*SCLFAC(IODS)
+ 112           CONTINUE
+            ELSE IF (AD2DAR) THEN
+C
+C              Add two-electron Darwin integrals with perturbation
+C              parameter DARFAC onto repulsion integrals.
+C              (Wim Klopper, University of Utrecht, March 4, 1999)
+C              Merged into Dalton1.1 by A. Halkier 29/11/99.
+C
+               DO 113 IOD34 = 1, NUC34
+                  IODS   = IODS + 1
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQ  = EXPP + EXPQ
+                  EXPPQI = D1/(EXPP + EXPQ) 
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
+                  SCLFAC(IODS) = FACTOR*TALPHA(IODS)
+                  RJ000(IODS,0) = FACTOR+DRWFAC*SCLFAC(IODS)
+ 113           CONTINUE
+            ELSE IF (PANAS .EQ. D0) THEN
                DO 110 IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
@@ -228,14 +267,31 @@ C
             END IF
   100    CONTINUE
          IF (JMAX .GT. 0) THEN
-            CALL DCOPY(NUABCD,TALPHA,1,SCLFAC,1)
-            DO 200 J = 1, JMAX
-               FAC = D1/SDPRE(2*J + 1)
-               DO 210 I = 1, NUABCD
-                  RJ000(I,J) = FAC*SCLFAC(I)*RJ000(I,0)
-                  SCLFAC(I) = TALPHA(I)*SCLFAC(I)
-  210          CONTINUE
-  200       CONTINUE
+            IF (DO2DAR .OR. S4CENT) THEN
+               DO 201 J = 1, JMAX
+                  DO 211 I = 1, NUABCD
+                     SCLFAC(I) = TALPHA(I)*SCLFAC(I)
+                     RJ000(I,J) = DRWFAC*SCLFAC(I)
+  211             CONTINUE
+  201          CONTINUE
+            ELSE IF (AD2DAR) THEN
+               DO 202 J = 1, JMAX
+                  FAC = D1/SDPRE(2*J + 1)
+                  DO 212 I = 1, NUABCD
+                     RJ000(I,J) = (FAC+DRWFAC*TALPHA(I))*SCLFAC(I)
+                     SCLFAC(I) = TALPHA(I)*SCLFAC(I)
+  212             CONTINUE
+  202          CONTINUE
+            ELSE
+               CALL DCOPY(NUABCD,TALPHA,1,SCLFAC,1)
+               DO 200 J = 1, JMAX
+                  FAC = D1/SDPRE(2*J + 1)
+                  DO 210 I = 1, NUABCD
+                     RJ000(I,J) = FAC*SCLFAC(I)*RJ000(I,0)
+                     SCLFAC(I) = TALPHA(I)*SCLFAC(I)
+  210             CONTINUE
+  200          CONTINUE
+            END IF
          END IF
 C
 C     General case: Multicenter Integrals
@@ -356,11 +412,30 @@ C
             KREXPW = KFJW   + NODS*(JMAX + 1)
             KLAST  = KREXPW + NODS
             IF (KLAST .GT. LWORK) CALL STOPIT('R0001',' ',KLAST,LWORK)
-            CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,WORK(KFJW),
+            IF (.NOT. (DO2DAR .OR. S4CENT))
+     &      CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,WORK(KFJW),
      &                  WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
 C
 C           Scale gamma function
 C
+            IF (DO2DAR .OR. AD2DAR .OR. S4CENT) THEN
+              DO 412 I = 1, NUABCD
+                WVALU(I) = DRWFAC*TALPHA(I)*EXP(-WVALU(I))
+  412         CONTINUE
+            ENDIF
+            IF (DO2DAR .OR. S4CENT) THEN
+              DO 416 J = 0, JMAX
+                DO 417 I = 1, NUABCD
+                  RJ000(I,J) = WVALU(I)
+  417           CONTINUE
+  416         CONTINUE
+            ELSE IF (AD2DAR) THEN
+              DO 413 J = 0, JMAX
+                DO 414 I = 1, NUABCD
+                  RJ000(I,J) = RJ000(I,J) + WVALU(I)
+  414           CONTINUE
+  413         CONTINUE
+            END IF
             DO 400 J = 0, JMAX
                DO 410 I = 1, NUABCD
                   RJ000(I,J) = SCLFAC(I)*RJ000(I,J)

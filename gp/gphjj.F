@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.1.1.1 2001-02-08 13:33:12 hjj Exp $
+C$Id: gphjj.F,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -1871,6 +1871,7 @@ C
       character*24 function fdate()
       fdate = '** no date available **'
       return
+      end
 #endif
 C  /* Deck matsym */
       INTEGER FUNCTION MATSYM(N,NDIM,AMAT,THRZER)

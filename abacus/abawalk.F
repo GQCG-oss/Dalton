@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: abawalk.F,v 1.2 2001-02-12 18:17:50 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVLOG
@@ -2561,7 +2561,7 @@ C
      &         '  Change in energy since start of walk:',
      &                   ERGMOL - ESTART,  ' au',
      &                   XKJMOL*(ERGMOL - ESTART), ' kJ/mol',
-     &                   XKCMOL*(ERGMOL - ESTART), ' kcal/mol'
+     &                   XKCMOL*(ERGMOL - ESTART), ' kCal/mol'
          IF (.NOT.REJECT) WRITE (LUPRI,'(/A,F6.2)')
      &      '@ Ratio between actual and predicted energies:',
      &       (ERGMOL - ERGMLX)/ERGSCX

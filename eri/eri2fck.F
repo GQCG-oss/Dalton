@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2fck.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: eri2fck.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck erifck */
@@ -40,6 +40,7 @@ C  /* Deck erifck */
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
+#include <dummy.h>
 #include <maxaqn.h>
 #include <mxorb.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
@@ -47,28 +48,28 @@ C
 C	I don't know if IFCTYP and ISYMDM is used properly in this 
 C	routine at the current stage, K.Ruud-jan96
 C
-      DIMENSION FMAT(NBASIS,NBASIS,NDMT), DMAT(*), WORK(LWORK),
-     &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
-     &	        FCKTMP(*)
-#include <veclen.h>
 #include <ccom.h>
 #include <cbieri.h>
 #include <ericom.h>
 #include <erithr.h>
 #include <erimem.h>
 #include <aobtch.h>
+#include <veclen.h>
 #include <odbtch.h>
 #include <symmet.h>
 #include <infpar.h>
+      DIMENSION FMAT(NBASE,NBASE,NDMT), DMAT(*), WORK(LWORK),
+     &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
+     &	        FCKTMP(*)
 C
       IF (SLAVE) THEN
          IPRINT = IPRFCK
       ELSE
          CALL TIMER('START ',TIMSTR,TIMEND)
 C
-C        Initialization in ER2INP
+C        Initialization in ER2INI
 C
-         CALL ER2INP('*ER2FCK')
+         CALL ER2INI
 C
          IPRINT = MAX(IPRERI,IPRFCK)
       END IF
@@ -131,7 +132,7 @@ C
       END IF
 C
       ICALL = 0
-      CALL GETDST(ICALL,IPRINT)
+      CALL GETDST(ICALL,ICALL,IPRINT)
 C
 C     Select integrals to be calculated
 C     =================================
@@ -160,7 +161,7 @@ C
      &               WORK(KRDBC1),WORK(KRDBC2),
      &               WORK(KODPP1),WORK(KODPP2),
      &               WORK(KRDPP1),WORK(KRDPP2),
-     &               FCKTMP,DMAT,NDMT,IFCTYP,CCFBT,
+     &               FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &	             INDXBT,WORK(KLAST),LWRK,IPRINT)
 #else
          CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
@@ -168,7 +169,7 @@ C
      &               WORK(KRDBC1),WORK(KRDBC2),
      &               WORK(KODPP1),WORK(KODPP2),
      &               WORK(KRDPP1),WORK(KRDPP2),
-     &               FMAT,DMAT,NDMT,IFCTYP,CCFBT,
+     &               FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &               INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif
       ELSE
@@ -179,7 +180,7 @@ C
      &                  WORK(KRDBC1),WORK(KRDBC2),
      &                  WORK(KODPP1),WORK(KODPP2),
      &                  WORK(KRDPP1),WORK(KRDPP2),
-     &                  FCKTMP,DMAT,NDMT,IFCTYP,CCFBT,
+     &                  FCKTMP,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &	                INDXBT,WORK(KLAST),LWRK,IPRINT)
 #else
             CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
@@ -187,7 +188,7 @@ C
      &                  WORK(KRDBC1),WORK(KRDBC2),
      &                  WORK(KODPP1),WORK(KODPP2),
      &                  WORK(KRDPP1),WORK(KRDPP2),
-     &                  FMAT,DMAT,NDMT,IFCTYP,CCFBT,
+     &                  FMAT,DMAT,NDMT,IFCTYP,DUMMY,IDUMMY,CCFBT,
      &                  INDXBT,WORK(KLAST),LWRK,IPRINT)
 #endif
 C
@@ -236,12 +237,12 @@ C
             KSTR = 1
             DO 300 I = 1, NDMT
                WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-               CALL OUTPUT(DMAT(KSTR),1,NBASIS,1,NBASIS,NBASIS,
-     &                     NBASIS,1,LUPRI)
+               CALL OUTPUT(DMAT(KSTR),1,NBASE,1,NBASE,NBASE,
+     &                     NBASE,1,LUPRI)
                WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-               CALL OUTPUT(FMAT(1,1,I),1,NBASIS,1,NBASIS,NBASIS,
-     &                     NBASIS,1,LUPRI)
-               KSTR = KSTR + NBASIS*NBASIS
+               CALL OUTPUT(FMAT(1,1,I),1,NBASE,1,NBASE,NBASE,
+     &                     NBASE,1,LUPRI)
+               KSTR = KSTR + NBASE*NBASE
   300       CONTINUE
          END IF
 C
@@ -263,8 +264,8 @@ C  /* Deck erifok */
 #include <aovec.h>
 #include <eridst.h>
       DIMENSION SO(*), IPNTCR(MAXBCH,4), CCFBT(*), INDXBT(*),
-     &          IPNTUV(KC2MAX,2,2), WORK(LWORK), IODDCC(NRTOP),
-     &          FMAT(*), DMAT(*), IFCTYP(NDMT)
+     &          IPNTUV(KC2MAX,0:NRDER,2), WORK(LWORK), IODDCC(NRTOP),
+     &          FMAT(NBASE,NBASE), DMAT(NBASE,NBASE), IFCTYP(NDMT)
 #include <cbieri.h>
 #include <aobtch.h>
 #include <ericom.h>
@@ -274,7 +275,7 @@ C  /* Deck erifok */
 C
 C     Allocation for ERIFOK
 C
-      LBIN   = NCCX*KHKTA*KHKTB*KHKTC*KHKTD
+      LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
       KBIN   = 1
       KIBIN  = KBIN   +  LBIN
       KINDEX = KIBIN  + (4*LBIN - 1)/IRAT + 1
@@ -301,9 +302,10 @@ C
 #include <eridst.h>
       DIMENSION SO(*), INDEX(LBIN,4), CCFBT(*), INDXBT(*),
      &          IPNTCR(MAXBCH,4),
-     &          IODDCC(NRTOP), IPNTUV(KC2MAX,2,2),
+     &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
      &          BIN(LBIN), IBIN(LBIN,4),
-     &          FMAT(*), DMAT(*), IFCTYP(NDMT)
+     &          FMAT(NBASE,NBASE,NDMT), DMAT(NBASE,NBASE,NDMT),
+     &          IFCTYP(NDMT)
 #include <cbieri.h>
 #include <ericom.h>
 #include <eribuf.h>
@@ -342,7 +344,7 @@ C  /* Deck erindf */
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          INDEX(NCCS,4), CCFBT(MXPRIM*MXCONT),
      &          IPNTCR(MAXBCH,4), INDXBT(MXSHEL*MXCONT,0:7),
-     &          IODDCC(NRTOP), IPNTUV(KC2MAX,2,2),
+     &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
      &          BIN(LBIN), IBIN(LBIN,4),
      &          IPNRST(0:7,3),
      &          IADCMP(MXAQN,MXAQN,2)
@@ -360,7 +362,6 @@ C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERINDF',-1)
 C
       IF (IPRINT .GT. 15) THEN
-         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCX,NPPBCX ',NPQBCX,NPPBCX
          WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCS,NPPBCS ',NPQBCS,NPPBCS
       END IF
 C
@@ -434,7 +435,7 @@ C
                   IB = IB + 1
                   IC = -1
                   ICMPAB = IADCMP(ICMPA,ICMPB,1)
-                  IODDAB = IODDCC(IPNTUV(ICMPAB,2,1))
+                  IODDAB = IODDCC(IPNTUV(ICMPAB,0,1))
                   DO 320 ICMPC = 1, KHKTC
                   IVARC = IBTEST(ISTBLC,C,NHKTC,ICMPC)
                   IF (IVARC.EQ.0) THEN
@@ -446,7 +447,7 @@ C
                      IF (IVARD.EQ.0) THEN
                         ID = ID + 1
                         ICMPCD = IADCMP(ICMPC,ICMPD,2)
-                        IODDCD = IODDCC(IPNTUV(ICMPCD,2,2))
+                        IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
                         IF (IODDAB .EQ. IODDCD) THEN
                            IF (WRTSCR) THEN
                               DO 400 I = 1, NCCS1
@@ -552,7 +553,7 @@ C
                   IB = IB + 1
                   IC = -1
                   ICMPAB = IADCMP(ICMPA,ICMPB,1)
-                  IODDAB = IODDCC(IPNTUV(ICMPAB,2,1))
+                  IODDAB = IODDCC(IPNTUV(ICMPAB,0,1))
                   IF (CTRIAC) MAXC = ICMPA
                   DO 325 ICMPC = 1, MAXC
                   IVARC = IBTEST(ISTBLC,C,NHKTC,ICMPC)
@@ -570,7 +571,7 @@ C
                      IF (IVARD.EQ.0) THEN
                         ID = ID + 1
                         ICMPCD = IADCMP(ICMPC,ICMPD,2)
-                        IODDCD = IODDCC(IPNTUV(ICMPCD,2,2))
+                        IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
                         IF (IODDAB .EQ. IODDCD) THEN
                            IF (WRTSCR) THEN
                               DO 405 I = NCCS1 + 1, NCCS
@@ -669,12 +670,12 @@ C NECgh980505  FAC = DP5
       RETURN
       END
 C  /* Deck erisfk */
-      SUBROUTINE ERISFK(FMAT,NBASIS,NDMT)
+      SUBROUTINE ERISFK(FMAT,NBASE,NDMT)
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION FMAT(NBASIS,NBASIS,NDMT)
+      DIMENSION FMAT(NBASE,NBASE,NDMT)
       DO IDM = 1, NDMT
-         DO 100 I = 1, NBASIS
+         DO 100 I = 1, NBASE
          DO 100 J = 1, I
             FMT = FMAT(I,J,IDM) + FMAT(J,I,IDM)
             FMAT(I,J,IDM) = FMT

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirpop.F,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C$Id: sirpop.F,v 1.2 2001-02-12 18:17:57 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck sirpop */
@@ -645,7 +645,7 @@ C         POPNET will contain net and overlap populations between
 C                cgto basis functions, summed over all MO's
 C
       IF (IPRMUL .GE. 5) THEN
-         LUTEMP = 0
+         LUTEMP = -99
          CALL GPOPEN(LUTEMP,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUTEMP

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2el1.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her2el1.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 C
@@ -46,6 +46,7 @@ C
 #include <iratdef.h>
 #include <twoao.h>
 #include <twosta.h>
+#include <drw2el.h>
       INTEGER TUV
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*),
@@ -104,7 +105,7 @@ C                |        | SCR1 | SCR2
 C                |
 C                | HCSINT
 C
-         IF (KHKT12 .EQ. 1) THEN
+         IF ((KHKT12 .EQ. 1) .AND. (.NOT. (FINDPT.OR.DPTINT))) THEN
             LETUV  = 0
             LHCPRM = 0
          ELSE
@@ -115,6 +116,10 @@ C
          LCSINT = 0
          IF (SPHR12)            LCCONT = NCCPP*NTUV34*KCKT12
          IF (SPHR1 .AND. SPHR2) LCSINT = NCCPP*NTUV34*KHKT2
+         IF (DPTINT) THEN
+            LHCPRM = LHCPRM * 2
+            IF (SPHR12) LCCONT = LCCONT * 2
+         END IF
 C
          KCCONT = 1
          KHCPRM = KCCONT + LCCONT
@@ -196,17 +201,23 @@ C     Print Hermite-Spherical integrals
 C     =================================
 C
       IF (IPRINT .GE. 20) THEN
+         IF (DPTINT) THEN
+            MHCINT = 2
+         ELSE
+            MHCINT = NHCINT
+         END IF
          NTOT = NCCPP*NTUV34*KHKT12
-         IF (NHCINT.GT.1) NTOT = NTOT + NCCPP*KTUV34*KHKT12*(NHCINT - 1)
+         IF (MHCINT.GT.1) NTOT = NTOT + NCCPP*KTUV34*KHKT12*(MHCINT - 1)
          CALL HEADER('Hermite-spherical integrals in C1DRIV',-1)
-         WRITE (LUPRI,'(7X,A, I5)')'# integral types:',NHCINT
+         WRITE (LUPRI,'(7X,A, I5)')'# integral types:',MHCINT
          WRITE (LUPRI,'(7X,A,2I5)')'# components:    ',KHKT1,KHKT2
          WRITE (LUPRI,'(7X,A, I5)')'Columns (NORB12):',NORB12
          WRITE (LUPRI,'(7X,A, I5)')'Rows    (NUC34): ',NUC34
          WRITE (LUPRI,'(7X,A, I5)')'# integrals:     ',NTOT
-         DO 600 IHCINT = 1, NHCINT
+         DO 600 IHCINT = 1, MHCINT
             MTUV34 = KTUV34
             IF (DC10 .AND. IHCINT .EQ. 1) MTUV34 = NTUV34
+            IF (DPTINT .AND. IHCINT .EQ. 2) MTUV34 = LTUV34
             ICMP12 = 0
             DO 610 ICOMP1 = 1, KHKT1
                MAX2 = KHKT2
@@ -253,37 +264,50 @@ C     TUH
 C
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER (D0 = 0.0D0, DP25=25D-2)
 #include <maxaqn.h>
       INTEGER T, U, V, TUV
 #include <twoao.h>
 #include <hertop.h>
 #include <sphtrm.h>
+#include <drw2el.h>
+#include <alphac.h>
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*), INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
      &          COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          ETUV(NU1234), HCPRIM(NU1234,NTUV34),
-     &          HCCONT(NCCPP,NTUV34,KHKT12),
-     &          HCINT (NCCPP,NTUV34,KHKT12),
+     &          HCCONT(NCCPP,NTUV34,KCKT12,*),
+     &          HCINT (NCCPP,NTUV34,KHKT12,*),
      &          HCSINT(*), SCR1(*), SCR2(*), CONT1(*), CONT2(*),
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2),
      &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
+      DIMENSION INCDPT(3,3), ITYDPT(3,3)
+      DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/
+      DATA ITYDPT/5, 1, 1, 1, 5, 1, 1, 1, 5/
 C
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C10INT','*',103)
+      IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
+      IF (FINDPT) ECOFAC = DPTFAC * DP25 * ALPHAC ** 2
+      IF (NO2DPT) ECOFAC = D0
 C
 C     COMMON /DHCINF/
 C     ---------------
 C
       IHCADR(1) = 1
       IHCSYM(1) = 0
+      IF (DPTINT) THEN
+         IHCADR(2) = 2
+         IHCSYM(2) = 0
+      END IF
 C
 C     *********************************
 C     ***** Special Case: (ss|xy) *****
 C     *********************************
 C
-      IF (KHKT12 .EQ. 1) THEN
+      IF ((KHKT12 .EQ. 1) .AND. (.NOT. (FINDPT.OR.DPTINT))) THEN
          JODD12 = 0
          CALL C1CONT(HERINT,HCINT,CONT1,CONT2,SCR1,SCR2,IODDHR,JODD12,
      &               NTUV34,NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
@@ -366,16 +390,70 @@ C
   500             CONTINUE
   300          CONTINUE
 C
+               IF (FINDPT .OR. DPTINT) THEN
+C
+C     =============== Add or do first-order DPT perturbation ==============
+C     Wim Klopper & Asger Halkier, University of Utrecht, November 25, 1999
+C
+                  IF (DPTINT)
+     &            CALL DZERO(HCPRIM(1,1+NTUV34),NTUV34*NU1234)
+                  DO 333 ICOOR = 1, 3
+                     DO 301 V = MINV, MAXV + INCDPT(3,ICOOR), INCRMV
+                     DO 301 U = MINU, MAXU + INCDPT(2,ICOOR), INCRMU
+                     DO 301 T = MINT, MAXT + INCDPT(1,ICOOR), INCRMT
+                        DO 401 I = 1, NUC12
+                           ECOEFI = COEF12(I,T,L1,L2,1,ITYDPT(1,ICOOR))
+     &                            * COEF12(I,U,M1,M2,2,ITYDPT(2,ICOOR))
+     &                            * COEF12(I,V,N1,N2,3,ITYDPT(3,ICOOR))
+     &                            * ECOFAC
+                           IJ = (I - 1)*NUC34
+                           DO 411 J = 1, NUC34
+                              ETUV(IJ + J) = ECOEFI
+  411                      CONTINUE
+  401                   CONTINUE
+                        ITUV = INDHER(T,U,V)
+                        IODD = IODDHR(ITUV)
+                        INDS = INDHSQ(ITUV)
+                        IF (FINDPT) THEN
+                           LHCTUV = 0
+                        ELSE
+                           LHCTUV = NTUV34
+                        END IF
+                        DO 501 TUV = 1, LTUV34
+                           LHCTUV = LHCTUV + 1
+                           IF (IODD .EQ. IODDHR(TUV)) THEN
+                              INDT = INDS + INDHSQ(TUV)
+                              INDT = INDHVC(INDT)
+                              DO 511 I = 1, NU1234
+                                 HCPRIM(I,LHCTUV) = HCPRIM(I,LHCTUV)
+     &                                 + ETUV(I)*HERINT(I,INDT)
+  511                         CONTINUE
+                           END IF
+  501                   CONTINUE
+  301                CONTINUE
+  333             CONTINUE
+               END IF
+C
 C              Contracted integrals
 C              ====================
 C
                JODD12 = IODD12(ICMP12,1)
                IF (SPHR12) THEN
-                  CALL C1CONT(HCPRIM,HCCONT(1,1,ICMP12),CONT1,CONT2,
+                  CALL C1CONT(HCPRIM,HCCONT(1,1,ICMP12,1),CONT1,CONT2,
+     &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
+     &                        NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
+                  IF (DPTINT)
+     &            CALL C1CONT(HCPRIM(1,1+NTUV34),
+     &                        HCCONT(1,1,ICMP12,2),CONT1,CONT2,
      &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
      &                        NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
                ELSE
-                  CALL C1CONT(HCPRIM,HCINT(1,1,ICMP12),CONT1,CONT2,
+                  CALL C1CONT(HCPRIM,HCINT(1,1,ICMP12,1),CONT1,CONT2,
+     &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
+     &                        NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
+                  IF (DPTINT)
+     &            CALL C1CONT(HCPRIM(1,1+NTUV34),
+     &                        HCINT(1,1,ICMP12,2),CONT1,CONT2,
      &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
      &                        NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
                END IF
@@ -388,6 +466,10 @@ C
          IF (SPHR12) THEN
             CALL C1SPHR(HCCONT,HCINT,HCSINT,CSP(ISPADR(NHKT1)),
      &                  CSP(ISPADR(NHKT2)),IODDHR,IODD12,NTUV34,IPRINT)
+            IF (DPTINT) 
+     &      CALL C1SPHR(HCCONT(1,1,1,2),HCINT(1,1,1,2),
+     &                  HCSINT,CSP(ISPADR(NHKT1)),
+     &                  CSP(ISPADR(NHKT2)),IODDHR,IODD12,NTUV34,IPRINT) 
          END IF
       END IF
       RETURN

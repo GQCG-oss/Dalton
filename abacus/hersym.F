@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: hersym.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: hersym.F,v 1.2 2001-02-12 18:17:53 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -135,9 +135,9 @@ C	 END IF
             ATMARR(2,I) = CORD(2,I)
             ATMARR(3,I) = CORD(3,I)
             ATMARR(4,I) = ANINT(CHARGE(I))
-            ATMARR(5,I) = 1.0D0*I
+            ATMARR(5,I) = FLOAT(I)
  100	 CONTINUE
-         ATMARR(1,0)= 1.0D0*(I - 1)
+         ATMARR(1,0)= FLOAT(I - 1)
          IF (IPREAD .GE. IPRTHR) THEN
             TEXT = 'Original Coordinates                    '
             CALL PRNARR(TEXT, MXCENT, ATMARR)
@@ -253,10 +253,10 @@ C ::: Then the different elements are counted, and arrays updated. :::
             NAMEX(3*I)   = '      '
             NAMEX(3*I-1) = '      '
             NAMEX(3*I-2) = '      '
-            CORD(1,I) = 0.0D0
-            CORD(2,I) = 0.0D0
-            CORD(3,I) = 0.0D0
-            CHARGE(I) = 0.0D0
+            CORD(1,I) = D0
+            CORD(2,I) = D0
+            CORD(3,I) = D0
+            CHARGE(I) = D0
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
          DO 400 I = 1, NUCIND
@@ -349,7 +349,7 @@ C ::: numbers close to these values
             END IF
             VECANG = ACOS(TEMP)
          ELSE
-            VECANG = 2.D0*ATAN(1.0D0)
+            VECANG = 0.5D0*PI
          END IF
          RETURN
       END

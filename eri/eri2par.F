@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2par.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: eri2par.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pardrv */
@@ -247,9 +247,9 @@ C     Consistancy check
 C
       CALL ERI_CONCHK(NDMAT,ISYMDM,IFCTYP)
 C
-C     Initialization in ER2INP (Set /CBIERI/)
+C     Initialization in ER2INI (Set /CBIERI/)
 C
-      CALL ER2INP('*ER2FCK')
+      CALL ER2INI
 C
 C     Send initialization to nodes
 C
@@ -702,7 +702,6 @@ C
          ELSE
             CALL PVMXUNPACK(MEMADD,3,'INTEGER')
             CALL PVMXUNPACK(LWORK ,1,'INTEGER')
-#endif
             IF (MEMADD .GT. MAXADD) THEN
                IABMAX = MODAB
                ICDMAX = MODCD
@@ -711,6 +710,7 @@ C
             END IF
             NOTMEM = .TRUE.
          END IF
+#endif
  100  CONTINUE
 C
       IF (NOTMEM) THEN
@@ -918,7 +918,7 @@ C
       KINDXB = KCCFBT + MXPRIM*MXCONT  
       KFCKPT = KINDXB + (MXSHEL*MXCONT*8 - 1)/IRAT + 1
 #if defined (VAR_VECTOR)
-      KLAST  = KFCKPT + ICHUNK*NDMAT*(NBASIS + NODD)*NBASIS
+      KLAST  = KFCKPT + ICHUNK*NDMAT*(NBASE + NODD)*NBASE
 #else 
       KLAST  = KFCKPT
 #endif
@@ -1116,13 +1116,13 @@ C  /* Deck eri_noddrv */
       SUBROUTINE ERI_NODDRV(IODCL1,IODCL2,
      &                      IODBC1,IODBC2,RODBC1,RODBC2,
      &                      IODPP1,IODPP2,RODPP1,RODPP2,
-     &                      FMAT,DMAT,NDMT,IFCTYP,
+     &                      FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &                      NACTAB,NACTCD,SCRNAB,SCRNCD,
      &                      INDHER,INDHSQ,IODDHR,
      &                      LMNPWR,LMNSYM,IPNTUV,
      &                      BUF,IBUF,
      &                      CLSCPU,IWHICH,IJS,MXCLS2,
-     &                      CCFBT,INDXBT,WORK,LWORK,IPRINT)
+     &                      CCFBT,INDXBT,NCOUNT,CSQ,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -1133,6 +1133,23 @@ C  /* Deck eri_noddrv */
 #include <eribuf.h>
 #include <dummy.h>
 #include <mtags.h>
+#include <cbieri.h>
+#include <erithr.h>
+#include <odclss.h>
+#include <ccom.h>
+#include <aobtch.h>
+#include <doxyz.h>
+#include <ericom.h>
+#include <erimem.h>
+#include <erista.h>
+#include <hertop.h>
+#include <symmet.h>
+C
+C Used from common blocks
+C
+C INFPAR: MYNUM, NTASK, TIMING
+C
+#include <infpar.h>
       LOGICAL DONE
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -1145,28 +1162,11 @@ C  /* Deck eri_noddrv */
      &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
      &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
      &          IPNTUV(KC2MAX,2,2),
-     &          FMAT(*), DMAT(*), IFCTYP(NDMT),
+     &          FMAT(*), DMAT(*), IFCTYP(NDMT), D2MAT(*), ID2MAT(*),
      &          BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
      &          CCFBT(*), INDXBT(*),
      &          CLSCPU(MXCLS2), IWHICH(MXCLS2), IJS(NTASK),
-     &          WORK(LWORK)
-C
-C Used from common blocks
-C
-C INFPAR: MYNUM, NTASK, TIMING
-C
-#include <cbieri.h>
-#include <erithr.h>
-#include <odclss.h>
-#include <ccom.h>
-#include <aobtch.h>
-#include <doxyz.h>
-#include <ericom.h>
-#include <erimem.h>
-#include <erista.h>
-#include <hertop.h>
-#include <symmet.h>
-#include <infpar.h>
+     &          NCOUNT(*), CSQ(NCSQ1,NCSQ2), WORK(LWORK)
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODDRV','*',103)
@@ -1529,8 +1529,9 @@ C
      &                     INDHER,INDHSQ,IODDHR,
      &                     LMNPWR,LMNSYM,IPNTUV,
      &                     WORK(KPNTCR),WORK(KPNTPP),
-     &                     FMAT,DMAT,NDMT,IFCTYP,BUF,IBUF,
-     &                     CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &                     FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,IBUF,
+     &                     CCFBT,INDXBT,NCOUNT,CSQ,WORK(KLAST),
+     &                     LWRK,IPRINT)
             END IF
          END IF
          END IF
@@ -1552,7 +1553,7 @@ C
 C
  500  CONTINUE
 C
-      CALL ERI_SDRES(DMAT,FMAT,NBASIS,CLSCPU,IWHICH,IJSTOT,LWORK,
+      CALL ERI_SDRES(DMAT,FMAT,NBASE,CLSCPU,IWHICH,IJSTOT,LWORK,
      &               IPRINT)
 C
       IPRINT = IPRKEP
@@ -1589,7 +1590,7 @@ C
       RETURN
       END
 C  /* Deck sdres */
-      SUBROUTINE ERI_SDRES(DMAT,FMAT,NBASIS,CLSCPU,IWHICH,IJSTOT,
+      SUBROUTINE ERI_SDRES(DMAT,FMAT,NBASE,CLSCPU,IWHICH,IJSTOT,
      &                     LWORK,IPRINT)
 C
 #include <implicit.h>
@@ -1618,12 +1619,12 @@ C
             KSTR = 1
             DO 300 I = 1, NDMAT
                WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-               CALL OUTPUT(DMAT(KSTR),1,NBASIS,1,NBASIS,NBASIS,
-     &                     NBASIS,1,LUPRI)
+               CALL OUTPUT(DMAT(KSTR),1,NBASE,1,NBASE,NBASE,
+     &                     NBASE,1,LUPRI)
                WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-               CALL OUTPUT(FMAT(KSTR),1,NBASIS,1,NBASIS,NBASIS,
-     &                     NBASIS,1,LUPRI)
-               KSTR = NBASIS*NBASIS
+               CALL OUTPUT(FMAT(KSTR),1,NBASE,1,NBASE,NBASE,
+     &                     NBASE,1,LUPRI)
+               KSTR = NBASE*NBASE
   300       CONTINUE
             CALL FLSHFO(LUPRI)
          END IF
@@ -1632,7 +1633,7 @@ C        Send MEMOK and Fock matrix
 C
 #if defined (VAR_MPI)
          CALL MPIXSEND(MEMOK,1,'LOGICAL',MASTER,MTAG7)
-         CALL MPIXSEND(FMAT,NBASIS*NBASIS,'DOUBLE',MASTER,MTAG7)
+         CALL MPIXSEND(FMAT,NBASE*NBASE,'DOUBLE',MASTER,MTAG7)
          CALL MPIXSEND(IJSTOT,1,'INTEGER',MASTER,MTAG7)
          IF (TIMING) THEN
             CALL MPIXSEND(IWHICH,IJSTOT,'INTEGER',MASTER,MTAG7)
@@ -1646,7 +1647,7 @@ C
 #if defined (VAR_PVM)
          CALL PVMXINITSEND(NCODE)
          CALL PVMXPACK(MEMOK,1,'LOGICAL')
-         CALL PVMXPACK(FMAT,NBASIS*NBASIS,'DOUBLE')
+         CALL PVMXPACK(FMAT,NBASE*NBASE,'DOUBLE')
          CALL PVMXPACK(IJSTOT,1,'INTEGER')
          IF (TIMING) THEN
             CALL PVMXPACK(IWHICH,IJSTOT,'INTEGER')

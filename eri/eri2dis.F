@@ -29,9 +29,10 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2dis.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: eri2dis.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
 C
 #include <single.h>
+C
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
@@ -39,7 +40,6 @@ C  /* Deck eridi1 */
      &                  KFREE,LFREE,KEND,CCFBT,INDXBT,
      &                  WORK,LWORK,IPRINT)
 #include <implicit.h>
-#include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
@@ -55,18 +55,19 @@ C  /* Deck eridi1 */
 #include <aobtch.h>
 #include <odbtch.h>
 #include <symmet.h>
-#include <inftap.h>
 #include <iratdef.h>
+#include <inftap.h>
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
+C
+c       IPRINT = 999
 C
       DODIST = .TRUE.
       PMSAB  = .FALSE.
       PMS12  = .FALSE.
       CANIND = .FALSE.
 C
-      IF (LBFINP .EQ. 600) LBFINP = 20 000
 C
 C     Memory
 C
@@ -80,7 +81,6 @@ C
       SYMTRA = DOSTRA .OR. MAXREP .GT. 0
 C
       WRTINT = .TRUE.
-      ERITWO = .TRUE.
       FCKINT = .FALSE.
 C
 C     Pi
@@ -91,15 +91,6 @@ C     AO batches
 C     ==========
 C
       CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
-C
-C     Open files
-C
-C     Note: NBASIS is unknown until after SETAOB has been called
-C
-      CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      CALL GPOPEN(LUAORC,' ','UNKNOWN','DIRECT','UNFORMATTED',
-     &            LBFINP,OLDDX)
 C
 C     OD batches
 C     ==========
@@ -132,12 +123,12 @@ C
       END IF
 C
       ICALL = 0
-      CALL GETDST(ICALL,IPRINT)
+      CALL GETDST(ICALL,ICALL,IPRINT)
 C
       RETURN
       END
 C  /* Deck eridi2 */
-      SUBROUTINE ERIDI2(ICALL,INDEXA,NUMDIS,
+      SUBROUTINE ERIDI2(ICALL,INDEXA,NUMDIS,NGDER,NBDER,
      &                  IODCL1,IODCL2,
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
@@ -150,6 +141,7 @@ C  /* Deck eridi2 */
 #include <mxorb.h>
 #include <eridst.h>
 #include <dummy.h>
+      CHARACTER*8 FAODER
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
@@ -161,14 +153,32 @@ C  /* Deck eridi2 */
 #include <ericom.h>
 #include <erithr.h>
 #include <erimem.h>
+#include <eribuf.h>
 #include <aobtch.h>
 #include <odbtch.h>
+#include <nuclei.h>
+#include <chrnos.h>
 #include <odclss.h>
 #include <symmet.h>
-#include <eribuf.h>
 #include <iratdef.h>
+#include <inftap.h>
 C
       IPRINT = IPRERI
+C
+      GDER   = NGDER .GT. 0 
+      BDER   = NBDER .GT. 0 
+      IF (GDER .OR. BDER) THEN
+         UNDIFF = .TRUE.
+      ELSE
+         UNDIFF = .FALSE.
+      END IF
+      WRTINT = .TRUE.
+      FCKINT = .FALSE.
+      EXPERI = .FALSE.
+      CCRUN  = .TRUE.
+      NPDIMA = 0
+      NPDIMB = 0
+c     write(2,*) 'in eridi2: undiff,gder,bder=',undiff,gder,bder
 C
       NEWDIS = .TRUE.
 C
@@ -179,11 +189,47 @@ C
       MODAB  = 0
       MODCD  = 0
 C
+      IF (LBFINP .EQ. 600) LBFINP = 20 000
+C
+C     Open files
+C
+      IF (LUINTR.EQ.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
+     &     'UNFORMATTED',IDUMMY,.FALSE.)
+#if defined (SYS_CRAY) || defined (SYS_T90)
+      LRECL = LBFINP + LBFINP + 1
+#endif
+#if defined (SYS_AIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
+      IF (NBASIS .LE. 255) THEN
+         LRECL = 2*LBFINP + LBFINP + 1
+      ELSE
+         LRECL = 2*LBFINP + 2*LBFINP + 1
+      END IF
+#endif
+#if defined (SYS_IRIX) || defined (SYS_DEC)
+      IF (NBASIS .LE. 255) THEN
+         LRECL = 2*LBFINP + LBFINP + 1
+      ELSE
+         LRECL = 2*LBFINP + 2*LBFINP + 1
+      END IF
+#endif
+#if defined (SYS_NEC)
+      LRECL = LBFINP + LBFINP/IRAT + 1
+#endif
+      NSCOOR = 0
+      IF (GDER) NSCOOR = 3*NUCDEP
+      IF (BDER) NSCOOR = 6
+      DO ISCOOR = 0, NSCOOR
+         FAODER = 'AO2DIS'//CHRNOS(ISCOOR/10)
+     &                    //CHRNOS(MOD(ISCOOR,10))
+         CALL GPOPEN(LUAORC(ISCOOR),FAODER,'UNKNOWN','DIRECT',
+     &        'UNFORMATTED',LRECL,OLDDX)
+      END DO
+C
 C     Symmetry transformation
 C
       SYMTRA = DOSTRA .OR. MAXREP .GT. 0
 C
-      CALL GETDST(ICALL,IPRINT)
+      CALL GETDST(ICALL,0,IPRINT)
 C
 C     Select integrals to be calculated
 C     =================================
@@ -215,8 +261,8 @@ C
          CALL ODCDRV(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
-     &               DUMMY,DUMMY,IDUMMY,IDUMMY,
-     &               CCFBT,INDXBT,WORK,LWORK,IPRINT)
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,CCFBT,
+     &               INDXBT,WORK,LWORK,IPRINT)
          IF ( IPRINT .GT. 2) CALL TIMER('HERMIT',TIMSTR,TIMEND)
          CALL FLSHFO(LUPRI)
 C
@@ -232,6 +278,109 @@ C
      &         ' Memory requirements largest for OD classes :',
      &           MODAB,MODCD
             CALL QUIT('Insufficient memory in ERIDI2.')
+         END IF
+      END IF
+C
+      DO ISCOOR = 0, NSCOOR
+         CALL GPCLOSE(LUAORC(ISCOOR),'KEEP')
+      END DO
+C
+      RETURN
+      END
+C  /* Deck eridid */
+      SUBROUTINE ERIDID(ICALL1,ICALL2,D2MAT,ID2MAT,NDIMA,NDIMB,
+     &                  IODCL1,IODCL2,IODBC1,IODBC2,RODBC1,RODBC2,
+     &                  IODPP1,IODPP2,RODPP1,RODPP2,
+     &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <eridst.h>
+#include <dummy.h>
+      DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
+     &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
+     &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
+     &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
+     &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
+     &          CCFBT(*), INDXBT(*), WORK(LWORK)
+      DIMENSION D2MAT(*), ID2MAT(*)
+#include <ccom.h>
+#include <cbieri.h>
+#include <ericom.h>
+#include <erithr.h>
+#include <erimem.h>
+#include <aobtch.h>
+#include <odbtch.h>
+#include <odclss.h>
+#include <symmet.h>
+#include <eribuf.h>
+#include <iratdef.h>
+C
+      IPRINT = IPRERI
+C
+      GDER   = .TRUE.
+      BDER   = .FALSE.
+      WRTINT = .FALSE.
+      FCKINT = .FALSE.
+      EXPERI = .TRUE.
+      UNDIFF = .FALSE.
+      CCRUN  = .TRUE.
+      NPDIMA = NDIMA
+      NPDIMB = NDIMB
+C
+      NEWDIS = .TRUE.
+C
+C     Memory
+C
+      MEMOK  = .TRUE.
+      MEMADD = 0
+      MODAB  = 0
+      MODCD  = 0
+C
+C     Symmetry transformation
+C
+      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
+C
+      CALL GETDST(ICALL1,ICALL2,IPRINT)
+C
+C     Select integrals to be calculated
+C     =================================
+C
+      CALL PICKAO(IPRINT)
+C
+C     Information about distributions
+C     ===============================
+C
+      CALL ERIDSI(INDXBT,IPRINT)
+C
+C     Calculate integrals
+C     ===================
+C
+      IF (.NOT.INTSKP) THEN
+         CALL TIMER('START ',TIMSTR,TIMEND)
+         CALL ODCDRV(IODCL1,IODCL2,
+     &               IODBC1,IODBC2,RODBC1,RODBC2,
+     &               IODPP1,IODPP2,RODPP1,RODPP2,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,D2MAT,ID2MAT,CCFBT,
+     &               INDXBT,WORK,LWORK,IPRINT)
+         IF ( IPRINT .GT. 2) CALL TIMER('HERMIT',TIMSTR,TIMEND)
+         CALL FLSHFO(LUPRI)
+C
+C        Error message in case of insufficient memory
+C
+         IF (.NOT.MEMOK) THEN
+            WRITE (LUPRI,'(//,1X,A,3(/,1X,A,I10))')
+     &         ' Not enough memory for this run of ERIDID.',
+     &         ' Available memory in ERIDID:',LWORK,
+     &         ' Required memory for ERIDID:',LWORK + MEMADD,
+     &         ' Increase memory (LWORK) by:',MEMADD
+            WRITE (LUPRI,'(/,1X,A,2I5)')
+     &         ' Memory requirements largest for OD classes :',
+     &           MODAB,MODCD
+            CALL QUIT('Insufficient memory in ERIDID.')
          END IF
       END IF
 C
@@ -454,7 +603,7 @@ C
       RETURN
       END
 C  /* Deck getdst */
-      SUBROUTINE GETDST(ICLX,IPRINT)
+      SUBROUTINE GETDST(ICLX1,ICLX2,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -470,6 +619,10 @@ C
 #include <distcl.h>
 #include <aobtch.h>
 C
+C
+C     ICLX .EQ. 0: initialization call
+C
+      ICLX = ICLX1
       IF (ICLX.EQ.0) THEN
 C
 C        MAXCML
@@ -478,6 +631,10 @@ C
          DO 100 I = 1, NAOBCH
             MAXCML = MAX(MAXCML,NORBBT(KAOSRT(I)))
   100    CONTINUE
+C
+C        MXDIST: value used in parameter statement for 
+C                common blocks etc. 
+C        MAXDST: input parameter with default
 C
          IF (MAXCML .GT. MXDIST) THEN
             WRITE (LUPRI,'(2X,A,/,2X,A,2I5,/,2X,A)')
@@ -584,7 +741,7 @@ C
   400          CONTINUE
             END IF
          END IF
-      ELSE
+      ELSE IF (ICLX2.EQ.0) THEN
          NSELCT(1) = ICLBCH(ICLX)
          NSELCT(2) = 0
          NSELCT(3) = 0
@@ -593,6 +750,19 @@ C
          DO 600 I = 1, ICLBCH(ICLX)
             NACTAO(I,1) = KAOSRT(IFIRST + I - 1)
   600    CONTINUE
+      ELSE 
+         NSELCT(1) = ICLBCH(ICLX1)
+         NSELCT(2) = ICLBCH(ICLX2)
+         NSELCT(3) = 0
+         NSELCT(4) = 0
+         IFIRST = ICLFRS(ICLX1)
+         DO 610 I = 1, ICLBCH(ICLX1)
+            NACTAO(I,1) = KAOSRT(IFIRST + I - 1)
+  610    CONTINUE
+         IFIRST = ICLFRS(ICLX2)
+         DO 620 I = 1, ICLBCH(ICLX2)
+            NACTAO(I,2) = KAOSRT(IFIRST + I - 1)
+  620    CONTINUE
 C
       END IF
 C
@@ -631,7 +801,7 @@ C
          WRITE (LUPRI,'(A,I5)')
      &      ' Calling ERIDI2 for distribution #',IDIST
          CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL ERIDI2(IDIST,INDEXA,NUMDIS,
+         CALL ERIDI2(IDIST,INDEXA,NUMDIS,0,0,
      &               WORK(KODCL1),WORK(KODCL2),
      &               WORK(KODBC1),WORK(KODBC2),
      &               WORK(KRDBC1),WORK(KRDBC2),
@@ -644,6 +814,55 @@ C
      &      ' Distributions:              ',(INDEXA(I),I=1,NUMDIS)
          CALL TIMER('ERIDI2',TIMSTR,TIMEND)
   100 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck eriidx */
+      SUBROUTINE ERIIDX(ICALL,INDEXA,NUMDIS,INDXBT,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <eridst.h>
+#include <dummy.h>
+      DIMENSION INDEXA(*), INDXBT(*)
+#include <ccom.h>
+#include <cbieri.h>
+#include <ericom.h>
+#include <erithr.h>
+#include <erimem.h>
+#include <aobtch.h>
+#include <odbtch.h>
+#include <odclss.h>
+#include <symmet.h>
+#include <eribuf.h>
+#include <iratdef.h>
+C
+      CALL GETDST(ICALL,0,IPRINT)
+C
+C     Select integrals to be calculated
+C     =================================
+C
+      CALL PICKAO(IPRINT)
+C
+C     Information about distributions
+C     ===============================
+C
+      CALL ERIDSI(INDXBT,IPRINT)
+C
+C     Transfer information
+C     ====================
+C
+      NUMDIS = NDISTR
+      CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+      IF ( IPRINT .GT. 2 ) THEN
+         CALL HEADER('Output from ERIIDX',2)
+         WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
+     &         NDISTR,' distributions in this ERI call:',
+     &         (INDEXA(I),I=1,NDISTR)
+      ENDIF
 C
       RETURN
       END

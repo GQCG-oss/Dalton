@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspmai.F,v 1.1.1.1 2001-02-08 13:33:14 hjj Exp $
+C$Id: rspmai.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
@@ -916,6 +916,7 @@ C     Initialization of INFHYP
       DATA IAABB/0/
 C     Initialization of INFSMO
       DATA SOMOM/.FALSE./
+      DATA MCDCAL/.FALSE./
       DATA IPRSMO/2/
       DATA NBSMFR/1/ , BSMFR(1)/0.0D0/
       DATA IPRESR/2/ , MAXESR/60/ ,THCESR/1.0D-5/ ,ESRCAL/.FALSE./

@@ -1,0 +1,42 @@
+#!/bin/csh -f
+
+set ORI = `pwd`
+set DIR = '/tmp'
+
+echo $* '.' | sed -e 's/-WF//g' | sed -e 's/-I//g' | sed -e 's/,/ /g' > $DIR/tmp.$$
+set dirlist = `cat $DIR/tmp.$$ | awk '{ for (i = NF; i > 0; --i) print $i }' `
+
+echo 'BEGIN{'  > $DIR/awk.tmp$$
+foreach dir ( $dirlist )
+  cd $dir
+  set list = `find . -name "*.h" -print | sed -e 's/\.\///g'`
+  foreach file ( $list )
+   echo 'dir["'$file'"]="'$dir'/";'  >> $DIR/awk.tmp$$
+  end
+  cd $ORI
+end
+echo ' n = 2 }'  >> $DIR/awk.tmp$$
+
+
+cat >> $DIR/awk.tmp$$ <<!
+  \$1 != prev { 
+    path = dir[\$1];
+    if      ( n == 1 && path ) {printf("  %s%s",path,\$1);       n++  }
+    else {if ( n == 2 && path ) {printf(" \\\\\n  %s%s",path,\$1); n = 1}}
+    prev = \$1 }
+END{printf("\n");}
+!
+
+foreach file (*.F)
+  set root   = $file:r
+  set object = $root.o
+  echo "$object  $file" | awk '{printf("%s : %s",$1,$2)}'
+  grep 'include' $file  | grep '#' | sed -e 's/[#<>"]//g'   | \
+                          sed -e 's/include//g' | sort     | \
+                          awk -f $DIR/awk.tmp$$
+  echo
+  echo 
+end
+
+rm -f $DIR/awk.tmp$$ $DIR/tmp.$$ 
+

@@ -1,5 +1,5 @@
 C
-C$Id: aobtch.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
+C$Id: aobtch.h,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
 C
       LOGICAL ACTVBT
       COMMON /AOBTCH/ EXPBT(MXPRIM),  
@@ -11,5 +11,5 @@ C
      &                KEXPBT(MXSHEL), KCCFBT(MXSHEL),
      &                KAOSRT(MXSHEL),
      &                NORBBT(MXSHEL), ACTVBT(MXSHEL,4),
-     &                NAOBCH, NBASIS, NGAB, IORBRP(0:7),
-     &                MAXQN, KQNBT(MXQN), NQNBT(MXQN), NODD
+     &                NAOBCH, NBASE, NGAB, IORBRP(0:7),
+     &                MAXQN, KQNBT(MXQN), NQNBT(MXQN)

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her1pro.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -148,7 +148,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 65)
+      PARAMETER (NTABLE = 69)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -181,7 +181,8 @@ C
      &            'S1ELB  ', 'ONEELD ', 'DPLGRA ', 'QUAGRA ',
      &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD',
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
-     &            'ELGDIAL'/ 
+     &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
+     &            'XDDXR3 '/
 C
 #include <ibtfun.h>
 C
@@ -202,7 +203,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65), I
+     &             64,65,66,67,68,69), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -796,7 +797,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,INTTYP)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,INTADR,
+     &               INTTYP)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -894,6 +896,7 @@ C
             CALL NPETYP(NOPTYP,INTREP,INTADR,LABINT,WORK(KATOM),NATOM)
             ANTI = .FALSE.
          END IF
+      GOTO 200
 C
 C     Half B-differentiated overlap matrix
 C     ------------------------------------
@@ -1404,11 +1407,12 @@ C     Derivative one-electron Hamiltonian integrals
 C     ---------------------------------------------
 C
  63   CONTINUE
-         INTTYP = 60
+         INTTYP = 70
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of derivative Hamiltonian integrals.'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,INTTYP)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,INTADR,
+     &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .FALSE.
       GO TO 200                                 
@@ -1476,6 +1480,93 @@ C
          INTREP(9) = 0
          ANTI = .FALSE.
       GOTO 200
+C     Overlap integrals for the small component in dpt ( <opG|opG> )
+C     --------------------------------------------------------------
+C     ACH     
+ 66   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &     'Calculation of small-component 1 el. overlap '
+         INTTYP = 71
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'dd/dxdx '
+         LABINT(2) = 'dd/dxdy '
+         LABINT(3) = 'dd/dxdz '
+         LABINT(4) = 'dd/dydy '
+         LABINT(5) = 'dd/dydz '
+         LABINT(6) = 'dd/dzdz '        
+C
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI=.FALSE.
+      GOTO 200
+C
+C     Pot energy integrals for the small component in dpt ( <opG|V|opG> )
+C     ---------------------------------------------------------------.---
+C     ACH     
+ 67   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &     'Calculation of small-component 1 el. pot. integrals'
+         INTTYP = 72
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'DERXXPVP'
+         LABINT(2) = 'DERXY+YX'
+         LABINT(3) = 'DERXZ+ZX'
+         LABINT(4) = 'DERYY   '
+         LABINT(5) = 'DERYZ+ZY'
+         LABINT(6) = 'DERZZ   '
+C
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI=.FALSE.
+      GOTO 200
+C
+C     Pot energy integrals for the small component in dpt ( <opG|V|opG> )
+C     ---------------------------------------------------------------.---
+C     ACH
+ 68   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &     'Calculation of small-component 1 el. pot. integrals'
+         INTTYP = 73
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'DERXY-YX'
+         LABINT(2) = 'DERXZ-ZX'
+         LABINT(3) = 'DERYZ-ZY'
+C
+         INTREP(1) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         ANTI=.TRUE.
+      GOTO 200
+C
+C     DPT pso-lookalike integrals <(op)(oA)>
+C     ---------------------------------
+C
+ 69   CONTINUE
+         INTTYP = 74
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      ' Calculation of magnetic-dpt integrals ( <(op)(oA)> )'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL ALFTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),
+     &              NATOM)
+C         CALL ALFTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
+C     &        TRIANG)
+         SQUARE = .TRUE.
+      GO TO 200
+C
 C
   200 CONTINUE
 C
@@ -2371,7 +2462,7 @@ C  /* Deck ocgtyp */
                         ITYP = ITYP + 1
                         IXY = IXY + 1
                         LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG'//
+     &                                 CHRNOS(MOD(ISCOOR,10))//'ODG'//
      &                                 CHRXYZ(LCOOR)//CHRXYZ(MCOOR)//
      &                                 CHRXYZ(NCOOR)
 CCH
@@ -2429,7 +2520,7 @@ C  /* Deck hdotyp */
                         ELSE IF (INTTYP .EQ. 59) THEN
                            LABINT(ITYP) = '1DOVL '//CHRNOS(ISCOOR/10)
      &                                        //CHRNOS(MOD(ISCOOR,10))
-                        ELSE IF (INTTYP .EQ. 60) THEN
+                        ELSE IF (INTTYP .EQ. 70) THEN
                            LABINT(ITYP) = '1DHAM '//CHRNOS(ISCOOR/10)
      &                                        //CHRNOS(MOD(ISCOOR,10))   
                         ELSE
@@ -2482,14 +2573,14 @@ C
       RETURN
       END
 C  /* Deck efntyp */
-      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTTYP)
+      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,INTTYP)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
 #include <mxorb.h>
-      DIMENSION INTREP(9*MXCENT)
+      DIMENSION INTREP(9*MXCENT), INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
 #include <nuclei.h>
@@ -2507,7 +2598,7 @@ C
                   ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
                   IF (ISCOOR .GT. 0) THEN
                      ITYP = ITYP + 1
-                     IF (INTTYP .EQ. 60) THEN
+                     IF (INTTYP .EQ. 70) THEN
                         LABINT(ITYP) = '1DHAM '//CHRNOS(ISCOOR/10)
      &                                         //CHRNOS(MOD(ISCOOR,10))
                      ELSE
@@ -2516,6 +2607,7 @@ C
      &                                       //'  '
                      END IF                                                   
                      INTREP(ITYP) = IREP
+                     INTADR(ISCOOR) = ITYP
                   END IF
  200           CONTINUE
             END IF
@@ -2959,11 +3051,9 @@ C
 C     MORDER eq 0 : M_l order 0, +1, -1, +2, -2, ..., +LVAL, -LVAL
 C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
-C     MINTEG eq 1 : the spherical components are normalized such
-C                   that the smallest coefficient is one (abs.val.).
-C
-C     MINTEG eq 2 : the spherical components are normalized such
-C                   that all GTO basis functions are normalized
+C     MINTEG eq 0 : old Hermit normalization
+C     MINTEG eq 1 : the smallest coefficient is one (abs.val.).
+C     MINTEG eq 2 : the spherical components are normalized to unity 
 C
 C     tuh 11.10.90
 C
@@ -2995,22 +3085,6 @@ C  /* Deck sphco1 */
 #include <priunit.h>
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
-C
-Chjaaj/apr2000: 1 / sqrt(FACNRM(i) / 3) is the normalization factor for
-C     GTO type no. "i". Dimension of 49 includes s,p,d,f,g,h,i orbitals.
-C     The factors are found by inspection of diagonal elements of
-C     the overlap matrix.
-      DIMENSION FACNRM(49)
-      SAVE      FACNRM
-      DATA FACNRM/D3, D3,D3,D3, D3,D3,36.D0,D3,12.D0,
-     &     72.D0,D3,120.D0,45.D0,120.D0,12.D0,72.D0,
-     &     36.D0,72.D0,252.D0,56.D0,2240.D0,56.D0,
-     &           1008.D0,72.D0,576.D0,
-     &     5760.D0,36.D0,10368.D0,108.D0,12096.D0,2835.D0,
-     &           12096.D0,432.D0,10368.D0,576.D0,5760.D0,
-     &     1920.D0,5760.D0,7920.D0,4224.D0,38016.D0,3801.6D0,
-     &           319334.4D0,3801.6D0,152064.D0,4224.D0,
-     &           126720.D0,5760.D0,69120.D0/
 C
 #include <sdpre.h>
 C
@@ -3052,6 +3126,7 @@ C
       DO 300 M = 0, LVAL
          CM = SQRT(D2*FACULT(LVAL-M)/FACULT(LVAL+M))
          IF (M .EQ. 0) CM = D1
+         IF (MINTEG.EQ.2) CM = CM/SQRT(FACUL2(2*LVAL-1))
          DO 400 K = MOD(LVAL - M,2), LVAL - M, 2
             IF (M .GT. 0) PL(K) = SDPRE((K+1))*PL(K+1)
             CMK = CM*PL(K)
@@ -3080,29 +3155,15 @@ C
 C
 C     Renormalize if requested with MINTEG
 C
-      IF (MINTEG.EQ.1 .OR. MINTEG.EQ.2) THEN
+      IF (MINTEG.EQ.1) THEN
          IOFF = LVAL*LVAL
          DO 800 I = 1, 2*LVAL + 1
-            IF (MINTEG.EQ.1) THEN
-C           hjaaj/apr2000: this is kept for being able to
-C           read CMO coefficients produced by dalton1.0
-C           note bug: TMIN may be negative, in which case
-C           the largest coefficient will be -1 !!
-               TMIN = TRAMAT(IDAMAX(NXYZ,TRAMAT(1,I),1),I)
-            ELSE
-               TMIN = 1.0D20
-            END IF
+            TMIN = TRAMAT(IDAMAX(NXYZ,TRAMAT(1,I),1),I)
             DO 810 J = 1, NXYZ
                TJI = ABS(TRAMAT(J,I))
                IF ((TJI.GT.D0).AND.(TJI.LT.TMIN)) TMIN = TJI
   810       CONTINUE
-            IF (MINTEG.EQ.1 .OR. LVAL.GT.7) THEN
-C     Renormalize so that smallest coefficient is one (abs.value)
-               TMIN = D1 / TMIN
-            ELSE
-C     Renormalize so all GTO's are normalized /hjaaj-apr2000
-               TMIN = D1 / (SQRT(FACNRM(IOFF+I)/D3) * TMIN )
-            END IF
+            TMIN = D1 / TMIN
             CALL DSCAL(NXYZ,TMIN,TRAMAT(1,I),1)
   800    CONTINUE
       END IF
@@ -3132,6 +3193,47 @@ C  /* Deck facult */
         DO 100 I = 1, N
            FACULT = FACULT*SDPRE(I)
   100   CONTINUE
+      END IF
+      RETURN
+      END
+C  /* Deck facul2 */
+      FUNCTION FACUL2(N)
+C
+C     tuh
+C
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (D1=1.D0)
+#include <sdpre.h>
+C
+C     N < 0
+C
+      IF (N .LT. 0) THEN
+         FACUL2 = SDPRE(N + 2)
+         DO I = N + 4, 1, 2
+            FACUL2 = FACUL2*SDPRE(I)
+         END DO
+         IF (FACUL2 .EQ. SDPRE(0)) THEN
+            WRITE (LUPRI,'(/,A,I10,/A)')
+     &            ' Double factorial undefined for ',N, 
+     &            ' Program cannot continue.'
+            CALL QUIT('Illegal argument in FACUL2')
+         ELSE
+            FACUL2 = D1/FACUL2
+         END IF
+C
+C     N = 0
+C
+      ELSE IF (N.EQ.0) THEN
+         FACUL2 = D1
+C
+C     N > 0
+C
+      ELSE
+        FACUL2 = SDPRE(N) 
+        DO I = N - 2, 1, -2 
+           FACUL2 = FACUL2*SDPRE(I)
+        END DO
       END IF
       RETURN
       END
@@ -3269,5 +3371,46 @@ C
       WRITE (LUPRI,'(/A,I4,A,E12.6)')
      &   ' Largest difference found for',NPQUAD,
      &   ' quadrature points: ',DIFMAX
+      RETURN
+      END
+C  /* Deck alftyp */
+      SUBROUTINE ALFTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+      NOPTYP = 9*NATOM
+      CALL NTYPTS(NOPTYP)
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               DO 300 ICOOR1 = 1, 3               
+                  ISCOR1 = IPTCNT(3*(IATOM - 1) + ICOOR1,IREP,2)
+                  IF (ISCOR1 .GT. 0) THEN
+                     DO 400 ICOOR2 = 1, 3
+                        ITYP = ITYP + 1                        
+                        LABINT(ITYP) = 'ALF '//CHRXYZ(ICOOR1)//
+     &                       CHRXYZ(ICOOR2)//
+     &                       CHRNOS(ITYP/10)//CHRNOS(MOD(ITYP,10))
+                        INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR2,2))
+                        ISCOOR = 3*(ISCOR1 - 1) + ICOOR2
+                        INTADR(ISCOOR) = ITYP
+ 400                 CONTINUE
+                  END IF
+ 300           CONTINUE
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
       RETURN
       END

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2drv.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: eri2drv.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck er2inp */
@@ -38,9 +38,9 @@ C  /* Deck er2inp */
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
-      PARAMETER (NTABLE = 26)
+      PARAMETER (NTABLE = 33)
 C
-      LOGICAL SET, NEWDEF
+      LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
 #include <cbiher.h>
@@ -48,53 +48,13 @@ C
 #include <erisel.h>
 #include <eribuf.h>
 #include <gnrinf.h>
-      SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.TIME  ', '.RETURN', '.AOBTCH',
      &            '.NOPSAB', '.NOPSCD', '.NOPS12', '.OFFCNT', '.NO12GS',
      &            '.NEWCR1', '.CANIND', '.WRTSCR', '.NOWRIT', '.SYMTRA',
      &            '.EXTPRI', '.SELCT1', '.SELCT2', '.SELCT3', '.SELCT4',
      &            '.INTPRI', '.DISTRI', '.INTSKI', '.BUFFER', '.MAXDIS',
-     &            '.DISTST'/
-      DATA SET/.FALSE./
-C
-      IF (SET) RETURN
-      SET = .TRUE.
-C
-C     Initialize /CBIERI/
-C
-C RUNERI should be RUNERI = SEGBAS when SIRIUS can read ERI-created 
-C integrals from file
-C
-C NECgh970904 We now initialze RUNERI in General input processing.
-C      RUNERI = .FALSE.
-C      IF (DIRCAL .OR. PARCAL) RUNERI = .FALSE.
-C
-      IF (PARCAL) RUNERI = .FALSE.
-      IPRERI = IPRDEF
-      IPRNT1 = 0
-      IPRNT2 = 0
-      RTNERI = .FALSE.
-      TIMERI = .FALSE.
-      IAOBCH = 0
-      PMSAB  = .TRUE.
-      PMSCD  = .TRUE.
-      PMS12  = .TRUE.
-      OFFCNT = .FALSE.
-      DIASRT = .TRUE.
-      OLDCR1 = .TRUE.
-      CANIND = .FALSE.
-      WRTSCR = .FALSE.
-      NOWRIT = .FALSE.
-      DOSTRA = .FALSE.
-      EXTPRI = .FALSE.
-      INTPRI = .FALSE.
-      DODIST = .FALSE.
-      INTSKP = .FALSE.
-      LBFINP = 600
-      MAXDSD = 30
-      MAXDST = MAXDSD
-      DISTST = .FALSE.
-ckr      MULFIL = .FALSE.      
+     &            '.DISTST', '.MXBCH ', '.NSPMAX', '.NOLOCS', '.GRDZER',
+     &            '.OLDDER', '.DOERIP', '.NOSCRE'/
 C
       NEWDEF = WORD .EQ. '*ER2INT'
       ICHANG = 0
@@ -110,7 +70,8 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,
-     &                      18,19,20,21,22,23,24,25,26), I
+     &                      18,19,20,21,22,23,24,25,26,27,28,29,30,31,
+     &                      32,33),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -209,6 +170,27 @@ C
    26          CONTINUE
                   DISTST = .TRUE.
                GO TO 100
+   27          CONTINUE
+                  READ (LUCMD,'(I5)') MXBCH
+               GO TO 100
+   28          CONTINUE
+                  READ (LUCMD,'(I5)') NSPMAX
+               GO TO 100
+   29          CONTINUE
+                  NOLOCS = .TRUE. 
+               GO TO 100
+   30          CONTINUE
+                  GRDZER = .TRUE. 
+               GO TO 100
+   31          CONTINUE
+                  OLDDER = .TRUE. 
+               GO TO 100
+   32          CONTINUE
+                  DOERIP = .TRUE. 
+               GO TO 100
+   33          CONTINUE
+                  COMPRS = .FALSE. 
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -224,10 +206,8 @@ C
       IF (ICHANG .EQ. 0) RETURN
       IF (NEWDEF) THEN
          CALL HEADER('Changes of defaults for ER2INP:',1)
-C         IF (.NOT.RUNERI .AND. .NOT. (DIRCAL .OR. PARCAL)) THEN
-C            WRITE (LUPRI,'(A)') ' No two-electron integrals calculated.'
-	 IF (.NOT.RUNERI) THEN
-            WRITE (LUPRI,'(A)') ' Eri is skipped. Hermit will be used.'
+         IF (.NOT.RUNERI .AND. .NOT. (DIRCAL .OR. PARCAL)) THEN
+            WRITE (LUPRI,'(A)') ' No two-electron integrals calculated.'
          ELSE
             IF (IPRERI .NE. IPRDEF) WRITE (LUPRI,'(A,I5)')
      &         ' Print level in ERIINT:',IPRERI
@@ -267,9 +247,19 @@ C            WRITE (LUPRI,'(A)') ' No two-electron integrals calculated.'
      &         ' Integrals will not be written to file.'
             IF (DOSTRA) WRITE (LUPRI,'(A)')
      &         ' Symmetry transformation always carried out.'
+            IF (NOLOCS) WRITE (LUPRI,'(A)')
+     &         ' No use of local symmetry.'
+            IF (GRDZER) WRITE (LUPRI,'(A)')
+     &         ' GRADEE is set to zero at each call to ERIGRD.'
+            IF (OLDDER) WRITE (LUPRI,'(A)')
+     &         ' Old derivative code will be used in ERI.'
+            IF (DOERIP) WRITE (LUPRI,'(A)')
+     &         ' ERIPRO used instead of TWOINT.'
             IF (EXTPRI) WRITE (LUPRI,'(A,2I5)')
      &         ' Extra high print for the following OD pair:',
      &           IPROD1, IPROD2
+            IF (.NOT.COMPRS) WRITE (LUPRI,'(A)')
+     &         ' No integral screening before write.'
             IF (DODIST) THEN
                WRITE (LUPRI, '(A)')
      &         ' Distributions for electron 1.'
@@ -298,8 +288,80 @@ C            WRITE (LUPRI,'(A)') ' No two-electron integrals calculated.'
      &            ' Maximum number of distribution in each call:',
      &              MAXDST
             END IF
+            IF (MXBCH .NE. MXBCH0) THEN
+               WRITE (LUPRI,'(A,I5)')
+     &            ' MXBCH for this run:', MXBCH
+            END IF
+            IF (NSPMAX .NE. 8**3) THEN
+               NSPMAX = 2**INT(LOG(REAL(NSPMAX))/LOG(REAL(2)))
+               NSPMAX = MIN(MAX(1,NSPMAX),8**3)
+               WRITE (LUPRI,'(A,I5)')
+     &            ' NSPMAX for this run:', NSPMAX
+            END IF
          END IF
       END IF
+      RETURN
+      END
+C  /* Deck er2ini */
+      SUBROUTINE ER2INI
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <cbiher.h>
+#include <cbieri.h>
+#include <erisel.h>
+#include <eribuf.h>
+#include <ericom.h>
+#include <gnrinf.h>
+C
+C     Initialize /CBIERI/
+C
+C RUNERI should be RUNERI = SEGBAS when SIRIUS can read ERI-created 
+C integrals from file
+C
+C NECgh970904 We now initialze RUNERI in General input processing.
+C      RUNERI = .FALSE.
+C      IF (DIRCAL .OR. PARCAL) RUNERI = .FALSE.
+C
+      IF (PARCAL) RUNERI = .FALSE.
+      IPRERI = IPRDEF
+      IPRNT1 = 0
+      IPRNT2 = 0
+      RTNERI = .FALSE.
+      TIMERI = .FALSE.
+      IAOBCH = 0
+      PMSAB  = .TRUE.
+      PMSCD  = .TRUE.
+      PMS12  = .TRUE.
+      OFFCNT = .FALSE.
+      DIASRT = .TRUE.
+      OLDCR1 = .TRUE.
+      CANIND = .FALSE.
+      WRTSCR = .FALSE.
+      NOWRIT = .FALSE.
+      DOSTRA = .FALSE.
+      EXTPRI = .FALSE.
+      INTPRI = .FALSE.
+      DODIST = .FALSE.
+      INTSKP = .FALSE.
+      NOLOCS = .FALSE.
+      GRDZER = .FALSE.
+      OLDDER = .FALSE.
+      COMPRS = .TRUE.
+      GDER   = .FALSE.
+      BDER   = .FALSE.
+      LBFINP = 600
+      MAXDSD = 30
+      MAXDST = MAXDSD
+      DISTST = .FALSE.
+      MXBCH0 = 1000000000
+      MXBCH  = MXBCH0
+      NSPMAX = 8**3 
+      DOERIP = .FALSE.
+      DO I = 1, 4
+         NSELCT(I) = 0
+      END DO
       RETURN
       END
 C  /* Deck er2int */
@@ -368,7 +430,7 @@ C
       END IF
 C
       ICALL = 0
-      CALL GETDST(ICALL,IPRINT)
+      CALL GETDST(ICALL,ICALL,IPRINT)
 C
 C     Select integrals to be calculated
 C     =================================
@@ -392,7 +454,7 @@ C
      &               WORK(KRDBC1),WORK(KRDBC2),
      &               WORK(KODPP1),WORK(KODPP2),
      &               WORK(KRDPP1),WORK(KRDPP2),
-     &               DUMMY,DUMMY,IDUMMY,IDUMMY,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,
      &               CCFBT,INDXBT,WORK(KLAST),
      &               LWRK,IPRINT)
 C
@@ -411,14 +473,15 @@ C
          END IF
       END IF
 C
+      if (.true.) CALL QUIT('In ER2INT')
       RETURN
       END
 C  /* Deck odcdrv */
       SUBROUTINE ODCDRV(IODCL1,IODCL2,
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
-     &                  FMAT,DMAT,NDMT,IFCTYP,CCFBT,INDXBT,
-     &                  WORK,LWORK,IPRINT)
+     &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
+     &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -430,7 +493,7 @@ C  /* Deck odcdrv */
      &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
-     &          FMAT(*), DMAT(*), IFCTYP(*),
+     &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
      &          CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <cbieri.h>
 #include <odclss.h>
@@ -439,33 +502,58 @@ C  /* Deck odcdrv */
 #include <eridst.h>
 #include <hertop.h>
 #include <eribuf.h>
+#include <nuclei.h>
 #include <aobtch.h>
 #include <iratdef.h>
 #include <infpar.h>
 C
       MAXDER = 0
+      NEWDER = .TRUE.
+      IF (GDER) THEN
+         MAXDER = 1
+         NEWDER = .NOT.OLDDER 
+      END IF
+      IF (BDER) THEN
+         MAXDER = 1
+         NEWDER = .TRUE. 
+      END IF
+C
       JTOP  = 4*(NHTYP - 1) + MAXDER
+      IF (BDER) JTOP = JTOP + 1
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
 C
       NHKMAX = NHTYP + MAXDER
       KCKMAX = NHKMAX*(NHKMAX + 1)/2
       KC2MAX = KCKMAX**2
+      NRDER  = 3*MAXDER
 C
 C     Buffers and bits
 C     ================
 C
       LBUF  = LBFINP
       NBUFS = NDISTR
+      IF (GDER .AND. WRTINT) THEN
+         NPERTS = 3*NUCDEP
+         NCORS = NPERTS 
+         IF (UNDIFF) NCORS = NCORS + 1
+      ELSE IF (BDER .AND. WRTINT) THEN
+         NPERTS = 6
+         NCORS = NPERTS
+         IF (UNDIFF) NCORS = NCORS + 1
+      ELSE
+         NPERTS = 1
+         NCORS = 1
+      END IF
 #if defined (SYS_CRAY) || defined (SYS_T90) || defined (SYS_NEC)
       NIBUF = 1
-      IF (NBASIS .LE. 255) THEN
+      IF (NBASE .LE. 255) THEN
          NBITS = 8
       ELSE
          NBITS = 16
       END IF
 #else
-      IF (NBASIS .LE. 255) THEN
+      IF (NBASE .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
@@ -473,6 +561,11 @@ C
          NBITS = 16
       END IF
 #endif
+C
+C     Dimensions for CSQ
+C     ==================
+C
+      CALL SPHDIM
 C
 C     Allocate
 C     ========
@@ -487,14 +580,15 @@ C
       KLMNVL = KIODHR + (8*NRTOP - 1)/IRAT + 1
       KLMNSM = KLMNVL + (3*NHKMAX*KCKMAX - 1)/IRAT + 1
       KPNTUV = KLMNSM + (16*NHKMAX*KCKMAX - 1)/IRAT + 1
-      KRBUF  = KPNTUV + (4*KC2MAX - 1)/IRAT + 1
-      KIBUF  = KRBUF  + LBUF*NBUFS
-      KLAST  = KIBUF  + (LBUF*NBUFS*NIBUF - 1)/IRAT + 1
+      KRBUF  = KPNTUV + (4*KC2MAX*(NRDER+1) - 1)/IRAT + 1
+      KIBUF  = KRBUF  + LBUF*NBUFS*NCORS
+      KCSQ   = KIBUF  + (LBUF*NBUFS*NIBUF*NCORS - 1)/IRAT + 1
+      KCOUNT = KCSQ   + NCSQ1*NCSQ2
+      KLAST  = KCOUNT + (NDISTR*NCORS - 1)/IRAT + 1
 C
       IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)     
       LWRK   = LWORK - KLAST + 1
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
       IF (SLAVE) THEN
          MXCLS2 = NODCL1*(NODCL2 + 1)/2
 C
@@ -513,29 +607,27 @@ C
          CALL ERI_NODDRV(IODCL1,IODCL2,
      &                   IODBC1,IODBC2,RODBC1,RODBC2,
      &                   IODPP1,IODPP2,RODPP1,RODPP2,
-     &                   FMAT,DMAT,NDMT,IFCTYP,
+     &                   FMAT, DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &                   WORK(KACTAB),WORK(KACTCD),
      &                   WORK(KSCRAB),WORK(KSCRCD),
      &                   WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
      &                   WORK(KLMNVL),WORK(KLMNSM),WORK(KPNTUV),
      &                   WORK(KRBUF), WORK(KIBUF),
      &                   WORK(KCLCPU),WORK(KWHICH),WORK(KIJS),MXCLS2,
-     &                   CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &                   CCFBT,INDXBT,WORK(KCOUNT),WORK(KCSQ),
+     &                   WORK(KLAST),LWRK,IPRINT)
       ELSE
-#endif
          CALL ODCDR1(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
-     &               FMAT,DMAT,NDMT,IFCTYP,
+     &               FMAT, DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &               WORK(KACTAB),WORK(KACTCD),
      &               WORK(KSCRAB),WORK(KSCRCD),
      &               WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
      &               WORK(KLMNVL),WORK(KLMNSM),WORK(KPNTUV),
-     &               WORK(KRBUF), WORK(KIBUF),CCFBT,INDXBT,
-     &               WORK(KLAST),LWRK,IPRINT)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+     &               WORK(KRBUF), WORK(KIBUF),CCFBT,INDXBT,WORK(KCOUNT),
+     &               WORK(KCSQ),  WORK(KLAST),LWRK,IPRINT)
       END IF
-#endif
 C
       RETURN
       END
@@ -543,11 +635,12 @@ C  /* Deck odcdr1 */
       SUBROUTINE ODCDR1(IODCL1,IODCL2,
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
-     &                  FMAT,DMAT,NDMT,IFCTYP,
+     &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
      &                  NACTAB,NACTCD,SCRNAB,SCRNCD,
      &                  INDHER,INDHSQ,IODDHR,
      &                  LMNPWR,LMNSYM,IPNTUV,
-     &                  BUF,IBUF,CCFBT,INDXBT,WORK,LWORK,IPRINT)
+     &                  BUF,IBUF,CCFBT,INDXBT,NCOUNT,
+     &                  CSQ,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -556,20 +649,6 @@ C  /* Deck odcdr1 */
 #include <mxorb.h>
 #include <eribuf.h>
 #include <dummy.h>
-      DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
-     &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
-     &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
-     &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
-     &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
-     &          NACTAB(NODCL1), NACTCD(NODCL2),
-     &          SCRNAB(NODBC1), SCRNCD(NODBC2),
-     &          INDHER(0:JTOP,0:JTOP,0:JTOP),
-     &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
-     &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
-     &          IPNTUV(KC2MAX,2,2),
-     &          FMAT(*), DMAT(*), IFCTYP(NDMT),
-     &          BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
-     &          CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <cbieri.h>
 #include <erithr.h>
 #include <odclss.h>
@@ -582,6 +661,21 @@ C  /* Deck odcdr1 */
 #include <hertop.h>
 #include <symmet.h>
 #include <iratdef.h>
+      DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
+     &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
+     &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
+     &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
+     &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
+     &          NACTAB(NODCL1), NACTCD(NODCL2),
+     &          SCRNAB(NODBC1), SCRNCD(NODBC2),
+     &          INDHER(0:JTOP,0:JTOP,0:JTOP),
+     &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
+     &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
+     &          IPNTUV(KC2MAX,0:NRDER,2,2),
+     &          FMAT(*), DMAT(*), IFCTYP(NDMT), D2MAT(*), ID2MAT(*),
+     &          BUF(*), IBUF(*),
+     &          CCFBT(*), INDXBT(*), NCOUNT(*),
+     &          CSQ(NCSQ1,NCSQ2), WORK(LWORK)
 #include <ibtfun.h>
 C
 C     Information in arrays:
@@ -703,6 +797,8 @@ C
       NPCSA = 0
       NCPSA = 0
       NCCSA = 0
+      MPRFPQ = 0
+      MPQBCS = 0
 C
       NPPX1 = 1000000
       NPCX1 = 1000000
@@ -726,6 +822,11 @@ C
       IPASS1 = 1000
       IPASS2 = 0
       IPASSN = 0
+C
+C     Spherical-harmonic transformation matrices
+C     ==========================================
+C
+      CALL SPHMAT(CSQ,NCSQ1,NCSQ2,MAXDER,GDER,WORK,LWORK,IPRINT)
 C
 C     Arrays for Hermite integrals
 C     ============================
@@ -829,10 +930,10 @@ C
             NTUVCD = (JMAXCD + 1)*(JMAXCD + 2)*(JMAXCD + 3)/6
             NTUV   = (JMAX   + 1)*(JMAX   + 2)*(JMAX   + 3)/6
 C
-            SPHRA  = KHKTA .NE. KCKTA
-            SPHRB  = KHKTB .NE. KCKTB
-            SPHRC  = KHKTC .NE. KCKTC
-            SPHRD  = KHKTD .NE. KCKTD
+            SPHRA  = KHKTA .NE. KCKTA .OR. (NEWDER.AND.MAXDER.GT.0)
+            SPHRB  = KHKTB .NE. KCKTB .OR. (NEWDER.AND.MAXDER.GT.0)
+            SPHRC  = KHKTC .NE. KCKTC .OR. (NEWDER.AND.MAXDER.GT.0)
+            SPHRD  = KHKTD .NE. KCKTD .OR. (NEWDER.AND.MAXDER.GT.0)
 C
             SPHRAB = SPHRA .OR. SPHRB
             SPHRCD = SPHRC .OR. SPHRD
@@ -852,13 +953,24 @@ C
             MLTPT = MULT(ISTBLT)
             MLTPX = MLTPR*MLTPS*MLTPT
 C
-            TKMPAB = NCNTAB.EQ.1 .AND. KHKTA.EQ.KHKTB .AND..NOT.DODIST
-            TKMPCD = NCNTCD.EQ.1 .AND. KHKTC.EQ.KHKTD .AND..NOT.DODIST
-            TCMPAB = TKMPAB .AND. .NOT.SPHRAB
-            TCMPCD = TKMPCD .AND. .NOT.SPHRCD
-C
+C           DIAGAB = NGTOAB .EQ. 1 .AND. ODTRI1 .AND. MAXDER .EQ. 0 
+C           DIAGCD = NGTOCD .EQ. 1 .AND. ODTRI2 .AND. MAXDER .EQ. 0
+C           DIAGAB = NGTOAB .EQ. 1 .AND. ODTRI1 .AND. .NOT.NEWDER
+C           DIAGCD = NGTOCD .EQ. 1 .AND. ODTRI2 .AND. .NOT.NEWDER
             DIAGAB = NGTOAB .EQ. 1 .AND. ODTRI1
             DIAGCD = NGTOCD .EQ. 1 .AND. ODTRI2
+C
+            IF (MAXDER .EQ. 0) THEN
+              TKMPAB = NCNTAB.EQ.1 .AND. KHKTA.EQ.KHKTB .AND..NOT.DODIST
+              TKMPCD = NCNTCD.EQ.1 .AND. KHKTC.EQ.KHKTD .AND..NOT.DODIST
+              TCMPAB = TKMPAB .AND. .NOT.SPHRAB
+              TCMPCD = TKMPCD .AND. .NOT.SPHRCD
+            ELSE IF (MAXDER .EQ. 1) THEN
+              TKMPAB = DIAGAB .AND. EXPERI 
+              TKMPCD = DIAGCD .AND. EXPERI 
+              TCMPAB = TKMPAB .AND. .NOT.SPHRAB
+              TCMPCD = TKMPCD .AND. .NOT.SPHRCD
+            END IF
 C
             KHKTAB = KHKTA*KHKTB
             KHKTCD = KHKTC*KHKTD
@@ -868,6 +980,22 @@ C
             IF (TKMPCD) KHKTCD = KHKTC*(KHKTC + 1)/2
             IF (TCMPAB) KCKTAB = KCKTA*(KCKTA + 1)/2
             IF (TCMPCD) KCKTCD = KCKTC*(KCKTC + 1)/2
+C
+            DOPTH1 = .TRUE.
+            DOPTH2 = .FALSE.
+C
+            MLTPZ = MIN(MLTPX,NSPMAX)
+            NREDZ = MLTPX/MLTPZ
+            IF (MLTPX .NE. NREDZ*MLTPZ) THEN
+               WRITE (LUPRI,'(/,1X,A,3(/1X,A,I5))')
+     &            ' Error in ODCDR1: MLTPZ incorrectly determined:',
+     &            ' NSPMAX = ', NSPMAX, 
+     &            ' MLTPZ  = ', MLTPZ, 
+     &            ' NREDZ  = ', NREDZ,
+     &            ' MLTPX  = ', MLTPX
+               CALL QUIT('Error in ODCDR1')
+            END IF
+C           N2POW = INT(LOG(REAL(MLTPX))/LOG(REAL(2))+0.10D0)
 C
 C           Memory requirements
 C
@@ -888,6 +1016,11 @@ C
                   MODCD  = IODCD
                END IF
             ELSE IF (MEMOK) THEN
+C              MEMBC1 = (IRAT*LWORK-(IRAT-1)*NALLOI)/MEMBCH
+C              MXBCHD = MXBCH/(MLTPZ*NPRFAB*NPRFCD)
+C              MIXBCH = MIN(IJ,MEMBC1)
+C              MINPRZ = MIN(MXBCHD,MIXBCH)
+C              MAXBCH = MAX(MINPRZ,1)
                IJ = 0
                DO 400 I = KODSAB, KODSAB + NODTAB - 1
                   MAXJ = KODSCD + NODTCD - 1
@@ -896,7 +1029,12 @@ C
                      IF (SCRNAB(I)*SCRNCD(J).GT.THRSH) IJ = IJ + 1
   410             CONTINUE
   400          CONTINUE
-               MAXBCH = MIN(IJ,(IRAT*LWORK-(IRAT-1)*NALLOI)/MEMBCH)
+C              MXBCH1 = MIN(IJ,(IRAT*LWORK-(IRAT-1)*NALLOI)/MEMBCH)
+C              MAXBCH = MIN(MXBCH/(MLTPZ*NPRFAB*NPRFCD),MXBCH1)
+C              IF (MAXBCH .LT. 1) MAXBCH = 1
+               MIXBCH = MIN(IJ,(IRAT*LWORK-(IRAT-1)*NALLOI)/MEMBCH)
+               MIN1 =   MIN(MXBCH/(MLTPZ*NPRFAB*NPRFCD),MIXBCH)
+               MAXBCH = MAX(1,MIN1,MIXBCH)
             END IF
 C
             IF (IPRINT .GT. 10) THEN
@@ -947,8 +1085,9 @@ C
      &                     INDHER,INDHSQ,IODDHR,
      &                     LMNPWR,LMNSYM,IPNTUV,
      &                     WORK(KPNTCR),WORK(KPNTPP),
-     &                     FMAT,DMAT,NDMT,IFCTYP,BUF,IBUF,
-     &                     CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &                     FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,IBUF,
+     &                     CCFBT,INDXBT,NCOUNT,CSQ,WORK(KLAST),
+     &                     LWRK,IPRINT)
             END IF
          END IF
          END IF
@@ -959,11 +1098,10 @@ C
 C     Empty last buffer
 C     =================
 C
-C NECgh We only write to 2eint if we really want this.
-      IF (WRTINT .AND. ERITWO) THEN
+      IF (WRTINT) THEN
          LAST = .TRUE.
-         CALL ERIOUT(DUMMY,DUMMY,DUMMY,DUMMY,BUF,IBUF,INDXBT,
-     &               WORK,LWORK,IPRINT)
+         CALL ERIOUT(DUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,BUF,IBUF,INDXBT,
+     &               NCOUNT,WORK,LWORK,IPRINT)
       END IF
 C
       IF (IPRINT .GT. 1) THEN
@@ -999,6 +1137,10 @@ C
      &             ' IPASSA, (min and max):',
      &             NINT(FLOAT(IPASSA)/FLOAT(IPASSN)),IPASS1, IPASS2
             END IF
+            WRITE (LUPRI,'(/,1X,A,2I10)')
+     &          ' NPQBCS, NPRFPQ ',
+     &          NINT(FLOAT(MPQBCS)/FLOAT(NTPAS)),
+     &          NINT(FLOAT(MPRFPQ)/FLOAT(NTPAS))
          END IF
       END IF
 C
@@ -1012,8 +1154,8 @@ C  /* Deck odcpar */
      &                  SCRNAB,SCRNCD,
      &                  INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
      &                  IPNTCR,IPNTPP,
-     &                  FMAT,DMAT,NDMT,IFCTYP,BUF,IBUF,
-     &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
+     &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,IBUF,
+     &                  CCFBT,INDXBT,NCOUNT,CSQ,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -1028,11 +1170,11 @@ C  /* Deck odcpar */
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
      &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
-     &          IPNTUV(KC2MAX,2,2),
+     &          IPNTUV(KC2MAX,0:NRDER,2,2),
      &          IPNTCR(MAXBCH,4), IPNTPP(MAXBCH,2),
-     &          FMAT(*), DMAT(*), IFCTYP(*),
-     &          BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
-     &          CCFBT(*), INDXBT(*), WORK(LWORK)
+     &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
+     &          BUF(*), IBUF(*),
+     &          CCFBT(*), INDXBT(*), NCOUNT(*), CSQ(*), WORK(LWORK)
 #include <aobtch.h>
 #include <ericom.h>
 #include <erimem.h>
@@ -1095,10 +1237,10 @@ C
                   IF (IJ.EQ.MAXBCH) THEN
                      CALL ODCPA2(IJ,II,IODPP1,IODPP2,RODPP1,RODPP2,
      &                           IPNTCR,IPNTPP,INDHER,INDHSQ,IODDHR,
-     &                           LMNPWR,LMNSYM,
-     &                           IPNTUV,WORK,LWORK,FMAT,DMAT,
-     &                           NDMT,IFCTYP,BUF,IBUF,CCFBT,
-     &                           INDXBT,IPASS,IPRINT)
+     &                           LMNPWR,LMNSYM,IPNTUV,WORK,LWORK,FMAT,
+     &                           DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,
+     &                           IBUF,CSQ,CCFBT,
+     &                           INDXBT,NCOUNT,IPASS,IPRINT)
                   END IF
                END IF
   300       CONTINUE
@@ -1109,8 +1251,9 @@ C
       IF (IJ.GT.0) THEN
          CALL ODCPA2(IJ,II,IODPP1,IODPP2,RODPP1,RODPP2,
      &               IPNTCR,IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,
-     &               IPNTUV,WORK,LWORK,FMAT,DMAT,NDMT,IFCTYP,
-     &               BUF,IBUF,CCFBT,INDXBT,IPASS,IPRINT)
+     &               IPNTUV,WORK,LWORK,FMAT,DMAT,NDMT,IFCTYP,D2MAT,
+     &               ID2MAT,BUF,IBUF,
+     &               CSQ,CCFBT,INDXBT,NCOUNT,IPASS,IPRINT)
       END IF
 C
       IPASSA = IPASSA + IPASS
@@ -1135,7 +1278,8 @@ C  /* Deck odcpa2 */
      &                  IPNTCR,IPNTPP,INDHER,INDHSQ,IODDHR,
      &                  LMNPWR,LMNSYM,
      &                  IPNTUV,WORK,LWORK,FMAT,DMAT,NDMT,IFCTYP,
-     &                  BUF,IBUF,CCFBT,INDXBT,IPASS,IPRINT)
+     &                  D2MAT,ID2MAT,
+     &                  BUF,IBUF,CSQ,CCFBT,INDXBT,NCOUNT,IPASS,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -1148,11 +1292,11 @@ C  /* Deck odcpa2 */
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
      &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
-     &          IPNTUV(KC2MAX,2,2),
+     &          IPNTUV(KC2MAX,0:NRDER,2,2),
      &          IPNTCR(MAXBCH,4), IPNTPP(MAXBCH,2),
-     &          FMAT(*), DMAT(*), IFCTYP(*),
-     &          BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
-     &          CCFBT(*), INDXBT(*), WORK(LWORK)
+     &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
+     &          BUF(*), IBUF(*),
+     &          CCFBT(*), CSQ(*), INDXBT(*), NCOUNT(*), WORK(LWORK)
 #include <aobtch.h>
 #include <ericom.h>
 #include <erimem.h>
@@ -1161,6 +1305,7 @@ C  /* Deck odcpa2 */
 #include <odclss.h>
 #include <erista.h>
 #include <hertop.h>
+#include <iratdef.h>
 C
       IPASS = IPASS + 1
       NTPAS = NTPAS + 1
@@ -1176,18 +1321,25 @@ C
       NCPS = NPQBCS*NCTFAB*NPRFCD
       NCCS = NPQBCS*NCTFAB*NCTFCD
 C
-      NPQBCX = MLTPX*NPQBCS
-      NPPBCX = MLTPX*NPPBCS
+      NPQBCX = MLTPZ*NPQBCS
+      NPPBCX = MLTPZ*NPPBCS
 C
-      NPPX = MLTPX*NPPS
-      NPCX = MLTPX*NPCS
-      NCPX = MLTPX*NCPS
-      NCCX = MLTPX*NCCS
+      NPPAB = NPQBCX*NPRFAB
+      NPPCD = NPQBCX*NPRFCD
+C
+      NPPX = MLTPZ*NPPS
+      NPCX = MLTPZ*NPCS
+      NCPX = MLTPZ*NCPS
+      NCCX = MLTPZ*NCCS
+      NCCT = MLTPX*NCCS
 C
       NPPXA = NPPXA + NPPX
       NPCXA = NPCXA + NPCX
       NCPXA = NCPXA + NCPX
       NCCXA = NCCXA + NCCX
+C
+      MPRFPQ = MPRFPQ + NPRFPQ 
+      MPQBCS = MPQBCS + NPQBCS 
 C
       NPPX1 = MIN(NPPX1,NPPX)
       NPCX1 = MIN(NPCX1,NPCX)
@@ -1214,21 +1366,31 @@ C
       NCPS2 = MAX(NCPS2,NCPS)
       NCCS2 = MAX(NCCS2,NCCS)
 C
+      IF (BDER) THEN
+         LCENTR = (4*NCCT - 1)/IRAT + 1
+      ELSE
+         LCENTR = 0
+      END IF
+C
 C     Allocate ODCPAS
 C
-      KFAC   = 1
-      KEXP   = KFAC   +    NPPX
-      KCORAO = KEXP   +  4*NPPX
-      KCORPQ = KCORAO + 12*NPPX
-      KEXPPQ = KCORPQ + 12*NPPX
-      KPQINV = KEXPPQ +  2*NPPX
-      KPQXYZ = KPQINV +  2*NPPX
+      KCORTR = 1 
+      KFCINT = KCORTR + 12*NPQBCS
+      KEXPAB = KFCINT +    NPPX
+      KEXPCD = KEXPAB +  3*NPPAB
+      KALPHA = KEXPCD +  3*NPPCD
+      KFACPQ = KALPHA +    NPPX
+      KCENTR = KFACPQ +    NPPS
+      KCORAO = KCENTR +    LCENTR 
+      KCORAB = KCORAO + 12*NPQBCX
+      KCORCD = KCORAB +  6*NPPAB
+      KCORPQ = KCORCD +  6*NPPCD
 #if defined (VAR_CRY)
-      KROD1 = KPQXYZ  +  3*NPPX
+      KROD1 = KCORPQ  +  3*NPPX
       KROD2 = KROD1   +  3*NPQBCS*NPRFAB
       KLAST = KROD2   +  3*NPQBCS*NPRFCD
 #else
-      KROD1 = KPQXYZ  + 3*NPPX
+      KROD1 = KCORPQ  + 3*NPPX
       KROD2 = KROD1
       KLAST = KROD2
 #endif
@@ -1236,16 +1398,13 @@ C
       IF (KLAST .GT. LWORK) THEN
          CALL STOPIT('ODCPAR','ODCPAS',KLAST,LWORK)
       END IF
-      CALL ODCPAS(IODPP1,IODPP2,RODPP1,RODPP2,
-     &            IPNTCR,IPNTPP,
-     &            INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,
-     &            IPNTUV,
-     &            WORK(KFAC),WORK(KEXP),WORK(KCORAO),
-     &            WORK(KCORPQ),WORK(KEXPPQ),WORK(KPQINV),
-     &            WORK(KPQXYZ),
-     &            WORK(KROD1),WORK(KROD2),
-     &            FMAT,DMAT,NDMT,IFCTYP,BUF,IBUF,
-     &            CCFBT,INDXBT,WORK(KLAST),LWRK,IPASS,IPRINT)
+      CALL ODCPAS(IODPP1,IODPP2,RODPP1,RODPP2,IPNTCR,IPNTPP,INDHER,
+     &            INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,WORK(KFCINT),
+     &            WORK(KCORTR),WORK(KEXPAB),WORK(KEXPCD),WORK(KALPHA),
+     &            WORK(KFACPQ),WORK(KCORAO),WORK(KCORAB),WORK(KCORCD),
+     &            WORK(KCORPQ),WORK(KROD1),WORK(KROD2),WORK(KCENTR),
+     &            FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,IBUF,CSQ,CCFBT,
+     &            INDXBT,NCOUNT,WORK(KLAST),LWRK,IPASS,IPRINT)
 C
       RETURN
       END
@@ -1253,34 +1412,43 @@ C  /* Deck odcpas */
       SUBROUTINE ODCPAS(IODPP1,IODPP2,RODPP1,RODPP2,
      &                  IPNTCR,IPNTPP,
      &                  INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
-     &                  FACINT,EXPAO,COORAO,
-     &                  COORPQ,EXPPQ,PQINV,PQXYZ,
-     &                  ROD1,ROD2,FMAT,DMAT,NDMT,IFCTYP,
-     &                  BUF,IBUF,CCFBT,INDXBT,WORK,LWORK,IPASS,IPRINT)
+     &                  FACINT,COORTR,
+     &                  EXPAB,EXPCD,ALPHA,FACPQ,
+     &                  COORAO,COORAB,COORCD,COORPQ,
+     &                  ROD1,ROD2,NCENTR,FMAT,DMAT,NDMT,IFCTYP,D2MAT,
+     &                  ID2MAT,BUF,IBUF,CSQ,CCFBT,INDXBT,NCOUNT,
+     &                  WORK,LWORK,IPASS,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
 #include <aovec.h>
-      INTEGER A, B, C, D, AB, CD, P, Q, PQ
       DIMENSION IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          ROD1(NPQBCS,NPRFAB,3),
      &          ROD2(NPQBCS,NPRFCD,3),
-     &          FMAT(*), DMAT(*),  IFCTYP(*),
-     &          BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
+     &          NCENTR(NCCT,4),
+     &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
+     &          BUF(*), IBUF(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
      &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
-     &          IPNTUV(KC2MAX,2,2),
+     &          IPNTUV(KC2MAX,0:NRDER,2,2),
      &          IPNTCR(MAXBCH,4), IPNTPP(MAXBCH,2),
-     &          FACINT(NPPX), EXPAO(NPPX,4), COORAO(NPPX,3,4),
-     &          COORPQ(NPPX,3,4), EXPPQ(NPPX,2), PQINV(NPPX,2),
-     &          PQXYZ(NPPX,3), CCFBT(*), INDXBT(*), WORK(LWORK)
+     &          FACINT(NPPX), 
+     &          COORAO(NPQBCX,3,4),
+     &          COORTR(NPQBCS,3,4), 
+     &          COORAB(NPPAB,3,2), 
+     &          COORCD(NPPCD,3,2), 
+     &          EXPAB(NPPAB,3), EXPCD(NPPCD,3), 
+     &          ALPHA(NPPX), FACPQ(NPPS),
+     &          COORPQ(NPPX,3), CSQ(*), CCFBT(*), INDXBT(*), NCOUNT(*),
+     &          WORK(LWORK)
 #include <cbieri.h>
 #include <odclss.h>
 #include <ericom.h>
+#include <eriao.h>
 #include <eribuf.h>
 #include <hertop.h>
 #include <aobtch.h>
@@ -1316,45 +1484,79 @@ C
          END IF
       END IF
 C
-C     Path through integrals
+C     Collect coordinates and exponents
+C     =================================
 C
-      IPATH = 1
-C
-C     Collect coordinates
-C     ===================
-C
-C     COORPQ is here used as work space
-C
-      CALL ERICOR(COORAO,COORPQ,IPNTCR,ROD1,IPRINT)
-C
-C     Collect exponents and preexponential factors
-C     ============================================
-C
-C     COORPQ is used as work space
-C
-      KSTR1 = 2*NODPP1 + 1
-      KSTR2 = 2*NODPP2 + 1
-      CALL ERIEXP(FACINT,EXPAO,COORPQ,
-     &            RODPP1(1,1),RODPP2(1,1),
-     &            RODPP1(KSTR1,1),RODPP2(KSTR2,1),
-     &            IPNTPP,ROD1,ROD2,IPRINT)
-C
-C     Exponents, coordinates and local symmetries
-C     ===========================================
-C
-      CALL ERIVCS(EXPAO,EXPPQ,PQINV,COORAO,COORPQ,PQXYZ,IPRINT)
+      CALL ERICOR(COORTR,IPNTCR,ROD1,IPRINT)
+      CALL ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPP1,RODPP2,IPNTPP,IPRINT)
+      CALL ERISSO(IPRINT)
+      IF (BDER) CALL ERICNT(NCENTR,IPNTCR,IPRINT)
 C
 C     Set IPNTUV
 C     ==========
 C
       CALL PNTUV(IPNTUV,LMNPWR,INDHER,IPRINT)
 C
-C     Set COMMON /ERIAO/
-C     ==================
+C     Integrals
+C     =========
 C
-      CALL SETCAO
+      CALL ERINT0(IPNTCR,IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,
+     &            IPNTUV,RODPP1,RODPP2,ROD1,ROD2,COORTR,
+     &            FACINT,EXPAB,EXPCD,ALPHA,FACPQ,
+     &            COORAO,COORAB,COORCD,COORPQ,NCENTR,
+     &            FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,CSQ,BUF,IBUF,
+     &            CCFBT,INDXBT,NCOUNT,WORK,LWORK,IPRINT)
+      RETURN
+      END
+C  /* Deck erint0 */
+      SUBROUTINE ERINT0(IPNTCR,IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,
+     &                  LMNSYM,IPNTUV,RODPP1,RODPP2,ROD1,ROD2,
+     &                  COORTR,FACINT,EXPAB,EXPCD,ALPHA,FACPQ,
+     &                  COORAO,COORAB,COORCD,COORPQ,NCENTR,
+     &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,CSQ,BUF,IBUF,
+     &                  CCFBT,INDXBT,NCOUNT,
+     &                  WORK,LWORK,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+#include <dummy.h>
+      DIMENSION FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
+     &          CSQ(*), BUF(*), IBUF(*),
+     &          INDHER(0:JTOP,0:JTOP,0:JTOP),
+     &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
+     &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
+     &          IPNTUV(KC2MAX,0:NRDER,2),
+     &          IPNTCR(MAXBCH,4), IPNTPP(MAXBCH,2),
+     &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
+     &          ROD1(NPQBCS,NPRFAB,3),
+     &          ROD2(NPQBCS,NPRFCD,3),
+     &          NCENTR(NCCT,4),
+     &          FACINT(NPPX), COORAO(NPQBCX,3,4),
+     &          COORTR(NPQBCS,3,4), 
+     &          COORAB(NPPAB,3,2), 
+     &          COORCD(NPPCD,3,2), 
+     &          EXPAB(NPPAB,3), EXPCD(NPPCD,3), 
+     &          ALPHA(NPPX), FACPQ(NPPS),
+     &          COORPQ(NPPX,3), CCFBT(*), INDXBT(*), 
+     &          NCOUNT(*), WORK(LWORK)
+#include <cbieri.h>
+#include <odclss.h>
+#include <ericom.h>
+#include <eriao.h>
+#include <eribuf.h>
+#include <hertop.h>
+#include <nuclei.h>
+#include <aobtch.h>
 C
-C     Allocate HERCAR
+      IF (IPRINT .GT. 10) THEN
+         CALL TITLER('Output from ERINT0','*',103)
+         WRITE (LUPRI,'(1X,A,I10  )')' LWORK in ERINT0: ',LWORK
+      END IF
+C
+C     Allocate Memory 
 C     ---------------
 C
 C     CCINT    ... | CPINT
@@ -1362,115 +1564,534 @@ C     HERINT | ... |
 C            | RJ000
 C
       LRJ000 = NPPX*(JMAX + 1)
-      LHRINT = NPPX*NTUV
-      LCPINT = NCPX*NTUVCD*KHKTAB
+      LHRIN1 = NPPX*NTUV
+      LHRINT = LHRIN1
+      IF (DOPTH2 .OR. MAXDER.GT.0) LHRINT = 2*LHRIN1
+C
+      LCPIN1 = 0 
+      LCPIN2 = 0 
+      IF (DOPTH1 .OR. MAXDER.GT.0) LCPIN1 = NCPX*NTUVCD*KHKTAB
+      IF (DOPTH2 .OR. MAXDER.GT.0) LCPIN2 = NPCX*NTUVAB*KHKTCD
+      LCPINT = MAX(LCPIN1,LCPIN2) 
       IF (OLDCR1) THEN
-         LCPMAX = NCPX*NTUVCD*KHKTAB
+         LCPMAX = LCPINT 
       ELSE
          LCPMAX = NCPX*NTUVCD*KCREC1
       END IF
-      LCCINT = NCCX*KHKTAB*KHKTCD
-      IF (MLTPX .EQ. 1) THEN
-         LSOINT = 0
-      ELSE
-         LSOINT = LCCINT
-      END IF
 C
-      KLAST  = 1
-      KCCINT = KLAST
-      KSOINT = KLAST + LSOINT
-      KHRINT = KLAST
-      KRJ000 = KLAST + LHRINT
-      KCPINT = KLAST + MAX(LHRINT,LCCINT)
+      NINTYP = 1
+      IF (MAXDER .EQ. 1) THEN
+         IF (GDER) THEN
+            IF (UNDIFF) THEN
+               NINTYP = 13
+            ELSE
+               NINTYP = 12
+            END IF
+         END IF
+         IF (BDER) THEN
+            IF (UNDIFF) THEN
+               NINTYP = 7
+            ELSE
+               NINTYP = 6
+            END IF
+         END IF
+      END IF
+      NAOINT = NCCT*KHKTAB*KHKTCD
+      LAOINT = NINTYP*NAOINT 
+      LSOINT = 0
+      LCENTR = 0
+      IOFFAO = 0
+      IF (MLTPX .GT. 1) LSOINT = LAOINT
+      IF (NREDZ .GT. 1) IOFFAO = LAOINT
+      IF (MAXDER .EQ. 1) IOFFAO = LAOINT
+      IF (MAXDER .EQ. 0) IOFFAO = LAOINT
+      LPMAT = 0
+      IF (MAXDER .GT. 0) LPMAT = NAOINT 
+C
+      KAOINT = 1 
+      KSOINT = KAOINT + LSOINT
+      KHRINT = KAOINT + IOFFAO
+      KHRIN2 = KHRINT + LHRIN1
+      KRJ000 = KAOINT + IOFFAO + LHRINT
+      KCPINT = KAOINT + IOFFAO + MAX(LHRINT,LAOINT)
 C
       IF (IPRINT .GT. 20) THEN
-         CALL HEADER('Allocations HERCAR in ODCPAS',1)
-         WRITE (LUPRI,'(1X,A,I10)') ' LRJ000 ', LRJ000
-         WRITE (LUPRI,'(1X,A,I10)') ' LHRINT ', LHRINT
-         WRITE (LUPRI,'(1X,A,I10)') ' LCPINT ', LCPINT
-         WRITE (LUPRI,'(1X,A,I10)') ' LCPMAX ', LCPMAX
-         WRITE (LUPRI,'(1X,A,I10)') ' LCCINT ', LCCINT
-         WRITE (LUPRI,'(1X,A,I10)') ' LSOINT ', LSOINT
-         WRITE (LUPRI,'(1X,A,I10)') ' KCCINT ', KCCINT
-         WRITE (LUPRI,'(1X,A,I10)') ' KSOINT ', KSOINT
-         WRITE (LUPRI,'(1X,A,I10)') ' KHRINT ', KHRINT
-         WRITE (LUPRI,'(1X,A,I10)') ' KRJ000 ', KRJ000
-         WRITE (LUPRI,'(1X,A,I10)') ' KCPINT ', KCPINT
+         CALL HEADER('Allocations HERCAR in ERINT0',1)
+         WRITE (LUPRI,'(1X,A, I10)') ' LRJ000 ', LRJ000
+         WRITE (LUPRI,'(1X,A,2I10)') ' LHRINT ', LHRINT,LHRIN1
+         WRITE (LUPRI,'(1X,A, I10)') ' LCPINT ', LCPINT
+         WRITE (LUPRI,'(1X,A, I10)') ' LCPMAX ', LCPMAX
+         WRITE (LUPRI,'(1X,A, I10)') ' LAOINT ', LAOINT
+         WRITE (LUPRI,'(1X,A, I10)') ' LSOINT ', LSOINT
+         WRITE (LUPRI,'(1X,A, I10)') ' KAOINT ', KAOINT
+         WRITE (LUPRI,'(1X,A, I10)') ' KSOINT ', KSOINT
+         WRITE (LUPRI,'(1X,A, I10)') ' KHRINT ', KHRINT
+         WRITE (LUPRI,'(1X,A, I10)') ' KRJ000 ', KRJ000
+         WRITE (LUPRI,'(1X,A, I10)') ' KCPINT ', KCPINT
       END IF
 C
       LSTGAM = KRJ000 + LRJ000
       LSTHER = KRJ000 + LRJ000
       LSTCR1 = KCPINT + LCPMAX
       LSTCR2 = KCPINT + LCPINT
-      LSTOUT = KSOINT + LCCINT
+      LSTOUT = KSOINT + LAOINT
 C
-      IF (LSTGAM.GT.LWORK) CALL STOPIT('ODCPAS','LSTGAM',LSTGAM,LWORK)
-      IF (LSTHER.GT.LWORK) CALL STOPIT('ODCPAS','LSTHER',LSTHER,LWORK)
-      IF (LSTCR1.GT.LWORK) CALL STOPIT('ODCPAS','LSTCR1',LSTCR1,LWORK)
-      IF (LSTCR2.GT.LWORK) CALL STOPIT('ODCPAS','LSTCR2',LSTCR2,LWORK)
-      IF (LSTOUT.GT.LWORK) CALL STOPIT('ODCPAS','LSTOUT',LSTOUT,LWORK)
+      LWKGAM = LWORK - LSTGAM + 1
+      LWKHER = LWORK - LSTHER + 1
+      LWKCR1 = LWORK - LSTCR1 + 1
+      LWKCR2 = LWORK - LSTCR2 + 1
+      LWKOUT = LWORK - LSTOUT + 1
 C
-C     Incomplete gamma function
-C     =========================
+      IF (LSTGAM.GT.LWORK) CALL STOPIT('ERINT0','LSTGAM',LSTGAM,LWORK)
+      IF (LSTHER.GT.LWORK) CALL STOPIT('ERINT0','LSTHER',LSTHER,LWORK)
+      IF (LSTCR1.GT.LWORK) CALL STOPIT('ERINT0','LSTCR1',LSTCR1,LWORK)
+      IF (LSTCR2.GT.LWORK) CALL STOPIT('ERINT0','LSTCR2',LSTCR2,LWORK)
+      IF (LSTOUT.GT.LWORK) CALL STOPIT('ERINT0','LSTOUT',LSTOUT,LWORK)
 C
-      LWRK = LWORK - LSTGAM + 1
-      CALL ERIGAM(WORK(KRJ000),FACINT,EXPPQ,PQXYZ,WORK(LSTGAM),LWRK,
-     &            IPRINT)
+C     **********************************
+C     *** Undifferentiated integrals ***
+C     **********************************
 C
-C     Hermite integrals
-C     =================
+      IF (MAXDER .EQ. 0) THEN
 C
-      LWRK = LWORK - LSTHER + 1
-      CALL ERITUV(WORK(KHRINT),WORK(KRJ000),PQXYZ,INDHER,
-     &            IODDHR(1,IPQXYZ),WORK(LSTHER),LWRK,IPRINT)
+C        Calculate integrals
+C        ===================
 C
-C     Cartesian integrals on first electron
-C     =====================================
+         NDIMD  = 1
+         CALL ERINTS(WORK(KAOINT),WORK(KHRINT),WORK(KHRIN2),
+     &               WORK(KRJ000),WORK(KCPINT),
+     &               IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
+     &               RODPP1,RODPP2,ROD1,ROD2,
+     &               COORTR,FACINT,
+     &               EXPAB,EXPCD,ALPHA,FACPQ,
+     &               COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,
+     &               WORK(LSTGAM),WORK(LSTHER),WORK(LSTCR1),
+     &               WORK(LSTCR2),
+     &               LWKGAM,LWKHER,LWKCR1,LWKCR2,
+     &               NDIMD,IPRINT)
 C
-      LWRK = LWORK - LSTCR1 + 1
-      CALL CR1DRV(WORK(KHRINT),WORK(KCPINT),INDHER,IODDHR(1,IPQXYZ),
-     &            IODDHR(1,IHCXYZ),INDHSQ,LMNPWR,IPNTUV,COORAO,COORPQ,
-     &            PQINV,WORK(LSTCR1),LWRK,IPRINT)
+C        Symmetrize
+C        ==========
 C
+         IF (MLTPX.GT.1) THEN
+            CALL ERISYM(WORK(KAOINT),WORK(KSOINT),
+     &                  0,IODDHR(1,ICCXYZ),IPNTUV,IPRINT)
+         END IF
 C
-C     Cartesian integrals on second electron
-C     ======================================
+C        Write out integrals
+C        ===================
 C
-      LWRK = LWORK - LSTCR2 + 1
-      CALL CR2DRV(WORK(KCCINT),WORK(KCPINT),INDHER,IODDHR(1,IHCXYZ),
-     &            IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
-     &            COORAO(1,1,3),COORPQ(1,1,3),PQINV(1,2),
-     &            WORK(LSTCR2),LWRK,IPRINT)
+         IF (WRTINT) THEN
+            CALL ERIOUT(WORK(KSOINT),IDUMMY,IPNTCR,IODDHR(1,ICCXYZ),
+     &                  IPNTUV,BUF,IBUF,INDXBT,NCOUNT,WORK(LSTOUT),
+     &                  LWKOUT,IPRINT)
+         END IF
 C
-C     Transform to symmetry basis
-C     ===========================
+C        Construct Fock matrix
+C        =====================
 C
-      IF (MLTPX.GT.1) THEN
-         CALL ERISYM(WORK(KCCINT),WORK(KSOINT),IODDHR(1,ICCXYZ),
-     &               IPNTUV,IPRINT)
+         IF (FCKINT) THEN
+            CALL ERIFOK(WORK(KSOINT),IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,
+     &                  FMAT,DMAT,NDMT,IFCTYP,CCFBT,INDXBT,
+     &                  WORK(LSTOUT),LWKOUT,IPRINT)
+         END IF
+C
+C     ********************************
+C     *** Differentiated integrals ***
+C     ********************************
+C
+      ELSE
+         IF (GDER) THEN
+            NDIMD  = 12
+            IF (UNDIFF) NDIMD = 13
+         ELSE IF (BDER) THEN
+            NDIMD = 6
+            IF (UNDIFF) NDIMD = 7
+         END IF
+         CALL ERINTS(WORK(KAOINT),WORK(KHRINT),WORK(KHRIN2),
+     &               WORK(KRJ000),WORK(KCPINT),
+     &               IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
+     &               RODPP1,RODPP2,ROD1,ROD2,
+     &               COORTR,FACINT,
+     &               EXPAB,EXPCD,ALPHA,FACPQ,
+     &               COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,
+     &               WORK(LSTGAM),WORK(LSTHER),WORK(LSTCR1),
+     &               WORK(LSTCR2),
+     &               LWKGAM,LWKHER,LWKCR1,LWKCR2,
+     &               NDIMD,IPRINT)
+C
+C        Symmetrization
+C        ==============
+C
+         IF (MLTPX.GT.1) THEN
+            KADD = 0
+            DO I = 1, NINTYP
+               ICRB = MOD(I-1,3)+1
+               IF (UNDIFF .AND. I.EQ.NINTYP) ICRB = 0
+               CALL ERISYM(WORK(KAOINT+KADD),WORK(KSOINT+KADD),
+     &                     ICRB,IODDHR(1,ICCXYZ),IPNTUV,IPRINT)
+               KADD = KADD + NAOINT
+            END DO
+            KINT = KSOINT
+         ELSE
+            KINT = KAOINT
+         END IF
+C
+C        Write integrals
+C        ===============
+C
+         IF (WRTINT) THEN
+            IF (GDER .OR. BDER) THEN
+               CALL ERIOUT(WORK(KINT),I,IPNTCR,IODDHR(1,ICCXYZ),
+     &                     IPNTUV,BUF,IBUF,INDXBT,NCOUNT,WORK(LSTOUT),
+     &                     LWKOUT,IPRINT)
+            ELSE
+               KADD = 0
+               DO I = 1, 3
+                  CALL ERIOUT(WORK(KINT+KADD),I,IPNTCR,IODDHR(1,ICCXYZ),
+     &                        IPNTUV,BUF,IBUF,INDXBT,NCOUNT,
+     &                        WORK(LSTOUT),LWKOUT,IPRINT)
+                  KADD = KADD + NAOINT
+               END DO 
+            END IF
+         END IF
+C
+C        Expectation value
+C        =================
+C
+         IF (EXPERI) THEN
+            KPMAT = KINT  + LAOINT
+            KLAST = KPMAT + NAOINT
+            LWRK  = LWORK - KLAST + 1
+            IF(KLAST.GT.LWORK) CALL STOPIT('ERINT0','ERIAVE',LWRK,LWORK)
+            CALL ERIAVE(WORK(KINT),WORK(KPMAT),DMAT,D2MAT,ID2MAT,
+     &                  IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,INDXBT,
+     &                  WORK(KLAST),LWRK,IPRINT)
+         END IF
       END IF
 C
-C     Write out integrals
-C     ===================
-C
-C     KCCINT is unused after ERISYM
-C
-C NECgh We only write to 2eint if we really want this.
-      IF (WRTINT .AND. ERITWO) THEN
-         LWRK = LWORK - LSTOUT + 1
-         CALL ERIOUT(WORK(KSOINT),IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,
-     &               BUF,IBUF,INDXBT,WORK(LSTOUT),LWRK,IPRINT)
+      RETURN
+      END
+C  /* Deck erints */
+      SUBROUTINE ERINTS(AOINT,HRINT1,HRINT2,RJ000,CPINT,
+     &                  IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,
+     &                  IPNTUV,RODPP1,RODPP2,ROD1,ROD2,
+     &                  COORTR,FACINT,EXPAB,EXPCD,ALPHA,FACPQ,
+     &                  COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,
+     &                  WRKGAM,WRKHER,WRKCR1,WRKCR2,
+     &                  LWKGAM,LWKHER,LWKCR1,LWKCR2,
+     &                  NDIMD,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+      DIMENSION AOINT(NCCS,MLTPX,KHKTAB*KHKTCD,NDIMD),
+     &          HRINT1(*),HRINT2(*),RJ000(*),CPINT(*),
+     &          INDHER(0:JTOP,0:JTOP,0:JTOP),
+     &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
+     &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
+     &          IPNTUV(KC2MAX,0:NRDER,2), IPNTPP(MAXBCH,2),
+     &          FACINT(NPPX), COORAO(NPQBCX,3,4),
+     &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
+     &          ROD1(NPQBCS,NPRFAB,3),
+     &          ROD2(NPQBCS,NPRFCD,3),
+     &          COORTR(NPQBCS,3,4),
+     &          COORAB(NPPAB,3,2), 
+     &          COORCD(NPPCD,3,2), 
+     &          EXPAB(NPPAB,3), EXPCD(NPPCD,3), 
+     &          ALPHA(NPPX), FACPQ(NPPS),
+     &          COORPQ(NPPX,3),
+     &          CSQ(*), NCENTR(NCCS,MLTPX,4)
+#include <cbieri.h>
+#include <odclss.h>
+#include <ericom.h>
+#include <eriao.h>
+#include <erisop.h>
+#include <eribuf.h>
+#include <hertop.h>
+#include <aobtch.h>
+      IF (IPRINT .GT. 10) THEN
+         CALL TITLER('Output from ERINTS','*',103)
       END IF
 C
-C     Construct Fock matrix
-C     =====================
+C     IF (NREDZ .GT. 1) CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
+      CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
+C     Try to avoid zeroing - check sph2 rouintes.
 C
-      IF (FCKINT) THEN
-         LWRK = LWORK - LSTOUT + 1
-         CALL ERIFOK(WORK(KSOINT),IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,
-     &               FMAT,DMAT,NDMT,IFCTYP,CCFBT,INDXBT,
-     &               WORK(LSTOUT),LWRK,IPRINT)
-      END IF
+      IF (BDER) THEN
+         IODDPT(1) = INDHER(0,1,1)
+         IODDPT(2) = INDHER(1,0,1)
+         IODDPT(3) = INDHER(1,1,0)
+      ELSE
+         IODDPT(1) = 0 
+         IODDPT(2) = 0 
+         IODDPT(3) = 0 
+      END IF 
+C
+      IOFRST = 0
+      DO 100 IOPS = 1, NREDZ 
+C
+         IF (IPRINT .GT. 10) THEN
+            WRITE (LUPRI,'(//,1X,A,I5,A,I5,A,/)')
+     &         ' Symmetry pass ',IOPS, ' out of ',NREDZ,' in ERINTS.'
+            WRITE (LUPRI,'(1X,A,I5)') ' IOFRST ', IOFRST 
+         END IF
+C
+C        Coordinates and exponents
+C        =========================
+C
+         CALL ERICRS(COORAO,COORTR,IPRINT)
+C
+C        Preexponential factors
+C        =======================
+C
+         CALL ERIPFS(FACINT,FACPQ,COORAB,COORCD,
+     &               RODPP1(2*NODPP1+1,1),RODPP2(2*NODPP2+1,1),
+     &               IPNTPP,ROD1,ROD2,IPRINT)
+C
+C        Set up coordinate vectors
+C        =========================
+C
+         CALL ERIVCS(EXPAB,EXPCD,COORAO,COORAB,COORCD,COORPQ,IPRINT)
+C
+C        Incomplete gamma function
+C        =========================
+C
+         CALL ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WRKGAM,LWKGAM,IPRINT)
+C
+C        Hermite integrals
+C        =================
+C
+         CALL ERITUV(HRINT1,RJ000,COORPQ,INDHER,IODDHR(1,IPQXYZ),
+     &               WRKHER,LWKHER,IPRINT)
+C 
+C        A: Undifferentiated Cartesian integrals
+C        =======================================
+C
+         IF (MAXDER .EQ. 0) THEN
+            NDER3 = 0 
+            NDER4 = 0 
+            IF (DOPTH1) THEN
+               IPATH = 1
+               CALL SETCAO(IPRINT)
+               CALL CR1DRV(HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                     IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                     COORAB,EXPAB,CSQ,WRKCR1,LWKCR1,IPRINT)
+               CALL CR2DRV(AOINT(1,IOFRST+1,1,1),CPINT,INDHER,
+     &                     IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
+     &                     IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                     COORCD,EXPCD,CSQ,NCENTR(1,IOFRST+1,1),
+     &                     NDER3,NDER4,NDIMD,
+     &                     WRKCR2,LWKCR2,IPRINT)
+            ELSE
+               IPATH = 2
+               CALL SETCAO(IPRINT)
+               CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
+               CALL CR1DRV(HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                     IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                     COORCD,EXPCD,CSQ,WRKCR1,LWKCR1,IPRINT)
+               CALL CR2DRV(AOINT(1,IOFRST+1,1,1),CPINT,INDHER,
+     &                     IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                     IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                     COORAB,EXPAB,CSQ,NCENTR(1,IOFRST+1,1),
+     &                     NDER3,NDER4,NDIMD,WRKCR2,LWKCR2,IPRINT)
+            END IF
+C
+C        B: Magnetic field derivatives 
+C        =============================
+C
+         ELSE IF (BDER) THEN
+C
+C
+C           CD derivatives
+C           --------------
+C
+            IPATH  = 1
+            CALL SETCAO(IPRINT)
+            CALL CR1DRV(HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                  COORAB,EXPAB,CSQ,WRKCR1,LWKCR1,IPRINT)
+C
+            IF (IPRINT.GT.5) CALL HEADER('Undifferentiated integrals',1)
+C
+            NDER3 = 0
+            NDER4 = 0
+            NDIMD1 = 1
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,7),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,NCENTR(1,IOFRST+1,3),
+     &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+            CALL ERIBUN(AOINT(1,IOFRST+1,1,1),AOINT(1,IOFRST+1,1,7),
+     &                  COORAO,IODDHR(1,ICCXYZ),IPNTUV,WRKCR2,LWKCR2,
+     &                  IPRINT)
+C
+            IF (IPRINT.GT.5) CALL HEADER('CD derivatives',1)
+C
+            NDIMD1 = 3
+            NDER3 = 1
+            NDER4 = 0
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,4),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,NCENTR(1,IOFRST+1,3),
+     &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+C
+C           AB derivatives
+C           --------------
+C
+            IF (IPRINT.GT.5) CALL HEADER('AB derivatives',1)
+C
+            IPATH  = 2
+            NDIMD2 = 3
+            CALL SETCAO(IPRINT)
+            CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
+            CALL CR1DRV(HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,WRKCR1,LWKCR1,IPRINT)
+            NDER3 = 1
+            NDER4 = 0
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,1),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORAB,EXPAB,CSQ,NCENTR(1,IOFRST+1,1),
+     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+C
+C        B: Differentiated Cartesian integrals
+C        =====================================
+C
+         ELSE IF (NEWDER) THEN
+C
+C           CD derivatives
+C           --------------
+C
+            IPATH  = 1
+            NDIMD1 = 3
+            CALL SETCAO(IPRINT)
+            CALL CR1DRV(HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                  COORAB,EXPAB,CSQ,WRKCR1,LWKCR1,IPRINT)
+C
+            IF (UNDIFF) THEN
+               IF (IPRINT.GT.5) CALL HEADER('Undiff. integrals',1)
+               NDER3 = 0
+               NDER4 = 0
+               IAOCR = 13 
+               CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                     IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
+     &                     IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                     COORCD,EXPCD,CSQ,NCENTR(1,IOFRST+1,3),
+     &                     NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+            END IF
+C
+            IF (IPRINT.GT.5) CALL HEADER('Calculating C derivatives',1)
+C
+            NDER3 = 1
+            NDER4 = 0
+            IAOCR = 7
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,NCENTR(1,IOFRST+1,3),
+     &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+C
+            IF (IPRINT.GT.5) CALL HEADER('Calculating D derivatives',1)
+C
+            NDER3 = 0
+            NDER4 = 1
+            IAOCR = 10
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,NCENTR(1,IOFRST+1,3),
+     &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+C
+C           AB derivatives
+C           --------------
+C
+            IPATH  = 2
+            NDIMD2 = 3
+            CALL SETCAO(IPRINT)
+            CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
+            CALL CR1DRV(HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,WRKCR1,LWKCR1,IPRINT)
+C
+            IF (IPRINT.GT.5) CALL HEADER('Calculating A derivatives',1)
+C
+            NDER3 = 1
+            NDER4 = 0
+            IAOCR = 1
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORAB,EXPAB,CSQ,NCENTR(1,IOFRST+1,1),
+     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+ 
+            IF (IPRINT.GT.5) CALL HEADER('Calculating B derivatives',1)
+C
+            NDER3 = 0
+            NDER4 = 1
+            IAOCR = 4
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORAB,EXPAB,CSQ,NCENTR(1,IOFRST+1,1),
+     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+C
+C        B: Differentiated Cartesian integrals (old style)
+C        =================================================
+C
+         ELSE
+            NDER3 = 0 
+            NDER4 = 0 
+C
+C           CD derivatives
+C           --------------
+C
+            IPATH = 1
+            NDIMD1 = 6
+            CALL SETCAO(IPRINT)
+            CALL CR1DRV(HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                  COORAB,EXPAB,CSQ,WRKCR1,LWKCR1,IPRINT)
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,7),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,NCENTR(1,IOFRST+1,1),
+     &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+C
+C           AB derivatives
+C           --------------
+C
+            IPATH = 2
+            NDIMD2 = 6
+            CALL SETCAO(IPRINT)
+            CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
+            CALL CR1DRV(HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                  COORCD,EXPCD,CSQ,WRKCR1,LWKCR1,IPRINT)
+            CALL CR2DRV(AOINT(1,IOFRST+1,1,1),CPINT,INDHER,
+     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                  COORAB,EXPAB,CSQ,NCENTR(1,IOFRST+1,1),
+     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+         END IF
+
+         IF (IPRINT .GE. 15) THEN
+            CALL HEADER('AOINT in ERINTS after CR2DRV',-1)
+            DO 200 I = 1, NDIMD
+               WRITE (LUPRI,'(1X,A,I5)') ' Derivative direction: ', I
+               CALL OUTPUT(AOINT(1,IOFRST+1,1,I),
+     &                     1,NCCS,1,MLTPX*KHKTAB*KHKTCD,
+     &                     NCCS,MLTPX*KHKTAB*KHKTCD,1,LUPRI)
+  200       CONTINUE
+         END IF
+C
+         IOFRST = IOFRST + MLTPZ
+  100 CONTINUE
 C
       RETURN
       END
@@ -1488,7 +2109,7 @@ C  /* Deck pntuv */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-      DIMENSION IPNTUV(KC2MAX,2,2), LMNPWR(KCKMAX,NHKMAX,3),
+      DIMENSION IPNTUV(KC2MAX,0:NRDER,2,2), LMNPWR(KCKMAX,NHKMAX,3),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP)
 #include <ccom.h>
 #include <ericom.h>
@@ -1508,7 +2129,16 @@ C
             LB = LMNPWR(ICMPB,NHKTB,1)
             MB = LMNPWR(ICMPB,NHKTB,2)
             NB = LMNPWR(ICMPB,NHKTB,3)
-            IPNTUV(ICMPAB,1,1) = INDHER(LA+LB,MA+MB,NA+NB)
+            IPNTUV(ICMPAB,0,1,2) = INDHER(LA+LB,MA+MB,NA+NB)
+            IF (GDER) THEN
+               IPNTUV(ICMPAB,1,1,2) = INDHER(LA+LB+1,MA+MB,NA+NB)
+               IPNTUV(ICMPAB,2,1,2) = INDHER(LA+LB,MA+MB+1,NA+NB)
+               IPNTUV(ICMPAB,3,1,2) = INDHER(LA+LB,MA+MB,NA+NB+1)
+            ELSE IF (BDER) THEN
+               IPNTUV(ICMPAB,1,1,2) = INDHER(LA+LB,MA+MB+1,NA+NB+1)
+               IPNTUV(ICMPAB,2,1,2) = INDHER(LA+LB+1,MA+MB,NA+NB+1)
+               IPNTUV(ICMPAB,3,1,2) = INDHER(LA+LB+1,MA+MB+1,NA+NB)
+            END IF 
   110    CONTINUE
   100 CONTINUE
 C
@@ -1524,13 +2154,24 @@ C
             LD = LMNPWR(ICMPD,NHKTD,1)
             MD = LMNPWR(ICMPD,NHKTD,2)
             ND = LMNPWR(ICMPD,NHKTD,3)
-            IPNTUV(ICMPCD,1,2) = INDHER(LC+LD,MC+MD,NC+ND)
+            IPNTUV(ICMPCD,0,2,2) = INDHER(LC+LD,MC+MD,NC+ND)
+            IF (GDER) THEN
+               IPNTUV(ICMPCD,1,2,2) = INDHER(LC+LD+1,MC+MD,NC+ND)
+               IPNTUV(ICMPCD,2,2,2) = INDHER(LC+LD,MC+MD+1,NC+ND)
+               IPNTUV(ICMPCD,3,2,2) = INDHER(LC+LD,MC+MD,NC+ND+1)
+            ELSE IF (BDER) THEN
+               IPNTUV(ICMPCD,1,2,2) = INDHER(LC+LD,MC+MD+1,NC+ND+1)
+               IPNTUV(ICMPCD,2,2,2) = INDHER(LC+LD+1,MC+MD,NC+ND+1)
+               IPNTUV(ICMPCD,3,2,2) = INDHER(LC+LD+1,MC+MD+1,NC+ND)
+            END IF
   210    CONTINUE
   200 CONTINUE
 C
       IF (DOCART) THEN
-         CALL ICOPY(KHKTAB,IPNTUV(1,1,1),1,IPNTUV(1,2,1),1)
-         CALL ICOPY(KHKTCD,IPNTUV(1,1,2),1,IPNTUV(1,2,2),1)
+         DO 250 I = 0, NRDER
+            CALL ICOPY(KHKTAB,IPNTUV(1,I,1,2),1,IPNTUV(1,I,1,1),1)
+            CALL ICOPY(KHKTCD,IPNTUV(1,I,2,2),1,IPNTUV(1,I,2,1),1)
+  250    CONTINUE
       ELSE
          ICMPAB = 0
          MAXB = KHKTB
@@ -1545,7 +2186,9 @@ C
                ELSE
                   IAB = (IA - 1)*KCKTB + IB
                END IF
-               IPNTUV(ICMPAB,2,1) = IPNTUV(IAB,1,1)
+               DO 350 I = 0, NRDER 
+                  IPNTUV(ICMPAB,I,1,1) = IPNTUV(IAB,I,1,2)
+  350          CONTINUE
   310       CONTINUE
   300    CONTINUE
 C
@@ -1562,31 +2205,37 @@ C
                ELSE
                   ICD = (IC - 1)*KCKTD + ID
                END IF
-               IPNTUV(ICMPCD,2,2) = IPNTUV(ICD,1,2)
+               DO 450 I = 0, NRDER
+                  IPNTUV(ICMPCD,I,2,1) = IPNTUV(ICD,I,2,2)
+  450          CONTINUE
   410       CONTINUE
   400    CONTINUE
       END IF
 C
       IF (IPRINT .GT. 20) THEN
          CALL HEADER('IPNTUV in PNTUV',-1)
-         WRITE (LUPRI,'(15I5)') (IPNTUV(I,1,1),I=1,KCKTAB)
-         WRITE (LUPRI,'(1X)')
-         WRITE (LUPRI,'(15I5)') (IPNTUV(I,2,1),I=1,KHKTAB)
-         WRITE (LUPRI,'(1X)')
-         WRITE (LUPRI,'(15I5)') (IPNTUV(I,1,2),I=1,KCKTCD)
-         WRITE (LUPRI,'(1X)')
-         WRITE (LUPRI,'(15I5)') (IPNTUV(I,2,2),I=1,KHKTCD)
+         WRITE (LUPRI,'(2X,A,I2,/)') ' NRDER ',NRDER
+         DO 500 J = 0,NRDER
+            WRITE (LUPRI,'(15I5  )') (IPNTUV(I,J,1,2),I=1,KCKTAB)
+            WRITE (LUPRI,'(15I5  )') (IPNTUV(I,J,1,1),I=1,KHKTAB)   
+            WRITE (LUPRI,'(15I5  )') (IPNTUV(I,J,2,2),I=1,KCKTCD)
+            WRITE (LUPRI,'(15I5,/)') (IPNTUV(I,J,2,1),I=1,KHKTCD)
+  500    CONTINUE
       END IF
 C
       RETURN
       END
 C  /* Deck setcao */
-      SUBROUTINE SETCAO
+      SUBROUTINE SETCAO(IPRINT)
 #include <implicit.h>
 #include <ericom.h>
 #include <eriao.h>
 C
       IF (IPATH .EQ. 1) THEN
+C
+         IELCT1 = 1
+         IELCT2 = 2
+C
          NHKT1  = NHKTA
          NHKT2  = NHKTB
          NHKT3  = NHKTC
@@ -1648,6 +2297,9 @@ C
          NCCPP  = NCPX
          NCCCC  = NCCX
 C
+         NPP12 = NPPAB
+         NPP34 = NPPCD
+C
          I12XYZ  = IABXYZ
          I120(1) = IAB0(1)
          I120(2) = IAB0(2)
@@ -1658,7 +2310,15 @@ C
          I340(2) = ICD0(2)
          I340(3) = ICD0(3)
 C
+         IHHBIT = IHHXYZ
+         IHCBIT = IHCXYZ
+         ICHBIT = ICHXYZ
+         ICCBIT = ICCXYZ
       ELSE
+C
+         IELCT1 = 2
+         IELCT2 = 1
+C
          NHKT1  = NHKTC
          NHKT2  = NHKTD
          NHKT3  = NHKTA
@@ -1720,6 +2380,9 @@ C
          NCCPP  = NPCX
          NCCCC  = NCCX
 C
+         NPP12 = NPPCD
+         NPP34 = NPPAB
+C
          I12XYZ  = ICDXYZ
          I120(1) = ICD0(1)
          I120(2) = ICD0(2)
@@ -1730,6 +2393,10 @@ C
          I340(2) = IAB0(2)
          I340(3) = IAB0(3)
 C
+         IHHBIT = IHHXYZ
+         IHCBIT = ICHXYZ
+         ICHBIT = IHCXYZ
+         ICCBIT = ICCXYZ
       END IF
       RETURN
       END
@@ -1803,6 +2470,12 @@ C
       END IF
       RETURN
       END
+C  /* Deck npairs */
+      FUNCTION NPAIRS(J)
+#include <implicit.h>
+      NPAIRS = J*(J+1)/2
+      RETURN
+      END
 C  /* Deck kcdim */
       FUNCTION KCDIM(JMAX1,JMAX2)
 #include <implicit.h>
@@ -1848,9 +2521,9 @@ C     ODCPAS
 C     ======
 C
 #if defined (VAR_CRY)
-      MEMPAS = MEMR(36*NPRFPQ + 6*NPRFPQ + 3*NPRFAB + 3*NPRFCD)
+      MEMPAS = MEMR(27*NPRFPQ + 6*NPRFPQ + 3*NPRFAB + 3*NPRFCD)
 #else
-      MEMPAS = MEMR(36*NPRFPQ)
+      MEMPAS = MEMR(27*NPRFPQ)
 #endif
       NAIPAS = 0
 C
@@ -1859,20 +2532,24 @@ C     ======
 C
       LRJ000 = NPRFPQ*(JMAX + 1)
       LHRINT = NPRFPQ*NTUV
-      LCPINT = NCTFAB*NPRFCD*NTUVCD*KHKTAB
+      LCPIN1 = 0
+      LCPIN2 = 0
+      IF (DOPTH1) LCPIN1 = NCTFAB*NPRFCD*NTUVCD*KHKTAB
+      IF (DOPTH2) LCPIN2 = NCTFCD*NPRFAB*NTUVAB*KHKTCD
+      LCPINT = MAX(LCPIN1,LCPIN2) 
       IF (OLDCR1) THEN
-         LCPMAX = NCTFAB*NPRFCD*NTUVCD*KHKTAB
+         LCPMAX = LCPINT 
       ELSE
          KCREC1 = KCDIM(JMAXA,JMAXB)
          LCPMAX = NCTFAB*NPRFCD*NTUVCD*KCREC1
       END IF
-      LCCINT = NCTFPQ*KHKTAB*KHKTCD
+      LAOINT = NCTFPQ*KHKTAB*KHKTCD
 C
       NGAM = MEMR(LHRINT + LRJ000)
       NHER = MEMR(LHRINT + LRJ000)
-      NCR1 = MEMR(MAX(LCCINT,LHRINT) + LCPMAX)
-      NCR2 = MEMR(MAX(LCCINT,LHRINT) + LCPINT)
-      NOUT = MEMR(LCCINT)
+      NCR1 = MEMR(MAX(LAOINT,LHRINT) + LCPMAX)
+      NCR2 = MEMR(MAX(LAOINT,LHRINT) + LCPINT)
+      NOUT = MEMR(LAOINT)
       IF (MLTPX .GT. 1) NOUT = NOUT + NOUT
 C
 C     **************
@@ -1920,50 +2597,23 @@ C     CR1TWO
 C     ======
 C
       IF (OLDCR1) THEN
-         LCCONT = 0
-         LCSINT = 0
-         LFCSNT = 0
-         LFCINT = 0
-         LECOEF = 0
-         LHPI   = 0
-         LPA    = 0
-         LPB    = 0
-         LEUV   = 0
-         LETUV  = 0
-         LHCPRM = 0
-         LFIRST = 0
-C
-         IF (KHKTAB .GT. 1) THEN
-            IF (SPHRAB) THEN
-               LCCONT = NPRFCD*NTUVCD*KCKTAB
-               LFCINT = NTUVCD*KHKTAB
-            END IF
-            IF (SPHRA .AND. SPHRB) THEN
-               LCSINT = NPRFCD*NTUVCD*KHKTB
-               LFCSNT = NTUVCD*KHKTB
-            END IF
-C
-            LECOEF = 3*NPRFPQ*(JMAXAB + 1)*(JMAXA + 1)*(JMAXB+1)
-            LHPI   =   NPRFPQ
-            LPA    = 3*NPRFPQ
-            LPB    = 3*NPRFPQ
-C
-            LEUV   = NPRFPQ
-            LETUV  = NPRFPQ
-C
-            LHCPRM = NPRFPQ*NTUVCD
-            LFIRST = NTUVCD
+         IF (DOPTH1) THEN
+            NREAL1 = MEMCR1(KHKTAB,KCKTAB,KHKTA,KHKTB,
+     &                      JMAXAB,JMAXA,JMAXB,
+     &                      SPHRAB,SPHRA,SPHRB,
+     &                      NPRFCD,NTUVCD,NPRFPQ)
+         ELSE
+            NREAL1 = 0
          END IF
-C
-         NREAL  = LCCONT
-     &          + MAX(
-     &                 LCSINT + LFCSNT + LFCINT,
-     &                 LECOEF + MAX(
-     &                              LHPI+LPA+LPB,
-     &                              LEUV+LETUV+LHCPRM+LFIRST
-     &                             )
-     &               )
-         MEMC1T = MEMR(NREAL)
+         IF (DOPTH2) THEN
+            NREAL2 = MEMCR1(KHKTCD,KCKTCD,KHKTC,KHKTD,
+     &                      JMAXCD,JMAXC,JMAXD,
+     &                      SPHRCD,SPHRC,SPHRD,
+     &                      NPRFAB,NTUVAB,NPRFPQ)
+         ELSE
+            NREAL2 = 0
+         END IF
+         MEMC1T = MEMR(MAX(NREAL1,NREAL2))
       ELSE
          MEMC1T = 0
       END IF
@@ -2034,49 +2684,23 @@ C     CR2TWO
 C     ======
 C
       IF (.TRUE.) THEN
-         LCCONT = 0
-         LCSINT = 0
-         LFCSNT = 0
-         LFAONT = 0
-         LECOEF = 0
-         LHPI   = 0
-         LPC    = 0
-         LPD    = 0
-         LEUV   = 0
-         LETUV  = 0
-         LCCPRM = 0
-         LFIRST = 0
-C
-         IF (KHKTCD .GT. 1) THEN
-            IF (SPHRCD) THEN
-               LCCONT = NCTFPQ*KHKTAB*KCKTCD
-               LFAONT = KHKTAB*KHKTCD
-            END IF
-            IF (SPHRC .AND. SPHRD) THEN
-               LCSINT = NCTFPQ*KHKTAB*KHKTD
-               LFCSNT = KHKTAB*KHKTD
-            END IF
-C
-            LECOEF = 3*NCTFAB*NPRFCD*(JMAXCD+1)*(JMAXC+1)*(JMAXD+1)
-            LHPI   =   NCTFAB*NPRFCD
-            LPC    = 3*NCTFAB*NPRFCD
-            LPD    = 3*NCTFAB*NPRFCD
-C
-            LEUV   = NCTFAB*NPRFCD
-            LETUV  = NCTFAB*NPRFCD
-C
-            LCCPRM = NCTFAB*NPRFCD*KHKTAB
-            LFIRST = KHKTAB
+         IF (DOPTH1) THEN
+            NREAL1 = MEMCR2(KHKTAB,KHKTCD,KHKTD,KCKTCD,
+     &                      JMAXCD,JMAXC,JMAXD,
+     &                      SPHRCD,SPHRC,SPHRD,
+     &                      NCTFAB,NPRFCD,NCTFPQ)
+         ELSE
+            NREAL1 = 0
          END IF
-C
-         NREAL = LCCONT + MAX(
-     &                        LCSINT + LFCSNT + LFAONT,
-     &                        LECOEF + MAX(
-     &                                     LHPI+LPC+LPD,
-     &                                     LEUV+LETUV+LCCPRM+LFIRST
-     &                                    )
-     &                        )
-         MEMC2T = MEMR(NREAL)
+         IF (DOPTH2) THEN
+            NREAL2 = MEMCR2(KHKTCD,KHKTAB,KHKTB,KCKTAB,
+     &                      JMAXAB,JMAXA,JMAXB,
+     &                      SPHRAB,SPHRA,SPHRB,
+     &                      NCTFCD,NPRFAB,NCTFPQ)
+         ELSE
+            NREAL2 = 0
+         END IF
+         MEMC2T = MEMR(MAX(NREAL1,NREAL2))
       ELSE
          MEMC2T = 0
       END IF
@@ -2122,7 +2746,7 @@ C
      &                               NCR2 + MEMC2T,
      &                               NOUT + MEMOUT
      &                              )
-      MEMORY = MLTPX*MEMORY
+      MEMORY = MLTPZ*MEMORY +  MEMR(12*NPRFPQ)
       NALLOI = NAIPAR + NAIPAS + NAIGAM + NAIGGM + NAIOUT
 C
       IF (IPRINT .GT. 10) THEN
@@ -2138,5 +2762,108 @@ C
          WRITE (LUPRI,'(2X,A,I10)') 'MEMORY ',MEMORY
       END IF
 C
+      RETURN
+      END
+C  /* Deck memcr1 */
+      FUNCTION MEMCR1(KHKT12,KCKT12,KHKT1,KHKT2,JMAX12,JMAX1,JMAX2,
+     &                SPHR12,SPHR1,SPHR2,NPRF34,NTUV34,NPRFPQ)
+C
+#include <implicit.h>
+C
+      LOGICAL SPHR12, SPHR1, SPHR2
+C
+      LCCONT = 0
+      LCSINT = 0
+      LFCSNT = 0
+      LFCINT = 0
+      LECOEF = 0
+      LHPI   = 0
+      LPA    = 0
+      LPB    = 0
+      LEUV   = 0
+      LETUV  = 0
+      LHCPRM = 0
+C
+      LFIRST = NTUV34
+C
+      IF (KHKT12 .GT. 1) THEN
+         IF (SPHR12) THEN
+            LCCONT = NPRF34*NTUV34*KCKT12
+            LFCINT = NTUV34*KHKT12
+         END IF
+         IF (SPHR1 .AND. SPHR2) THEN
+            LCSINT = NPRF34*NTUV34*KHKT2
+            LFCSNT = NTUV34*KHKT2
+         END IF
+C
+         LECOEF = 3*NPRFPQ*(JMAX12 + 1)*(JMAX1 + 1)*(JMAX2+1)
+         LHPI   =   NPRFPQ
+         LPA    = 3*NPRFPQ
+         LPB    = 3*NPRFPQ
+C
+         LEUV   = NPRFPQ
+         LETUV  = NPRFPQ
+C
+         LHCPRM = NPRFPQ*NTUV34
+      END IF
+C
+      MEMCR1 = LCCONT
+     &       + MAX(
+     &              LCSINT + LFCSNT + LFCINT,
+     &              LECOEF + MAX(
+     &                           LHPI+LPA+LPB,
+     &                           LEUV+LETUV+LHCPRM+LFIRST
+     &                          )
+     &         )
+      RETURN
+      END
+C  /* Deck memcr2 */
+      FUNCTION MEMCR2(KHKT12,KHKT34,KHKT4,KCKT34,JMAX34,JMAX3,JMAX4,
+     &                SPHR34,SPHR3,SPHR4,NCTF12,NPRF34,NCTFPQ)
+C
+#include <implicit.h>
+      LOGICAL SPHR34,SPHR3,SPHR4
+C
+      LCCONT = 0
+      LCSINT = 0
+      LFCSNT = 0
+      LFAONT = 0
+      LECOEF = 0
+      LHPI   = 0
+      LPC    = 0
+      LPD    = 0
+      LEUV   = 0
+      LETUV  = 0
+      LCCPRM = 0
+      LFIRST = KHKT12
+C
+      IF (KHKT34 .GT. 1) THEN
+         IF (SPHR34) THEN
+            LCCONT = NCTFPQ*KHKT12*KCKT34
+            LFAONT = KHKT12*KHKT34
+         END IF
+         IF (SPHR3 .AND. SPHR4) THEN
+            LCSINT = NCTFPQ*KHKT12*KHKT4
+            LFCSNT = KHKT12*KHKT4
+         END IF
+C
+         LECOEF = 3*NCTF12*NPRF34*(JMAX34+1)*(JMAX3+1)*(JMAX4+1)
+         LHPI   =   NCTF12*NPRF34
+         LPC    = 3*NCTF12*NPRF34
+         LPD    = 3*NCTF12*NPRF34
+C
+         LEUV   = NCTF12*NPRF34
+         LETUV  = NCTF12*NPRF34
+C
+         LCCPRM = NCTF12*NPRF34*KHKT12
+      END IF
+C
+      MEMCR2 = LCCONT + MAX(
+     &                      LCSINT + LFCSNT + LFAONT,
+     &                      LECOEF + MAX(
+     &                                   LHPI+LPC+LPD,
+     &                                   LEUV+LETUV+LCCPRM+LFIRST
+     &                                  )
+     &                      )
       RETURN
       END

@@ -1065,7 +1065,7 @@ C
         MXFORM(1:1) = 'F'
         NDEC = NDIG - NDEC - 3
       ENDIF
-      IF(NDEC.LE.0) STOP 'MXFORM: NDEC.LE.0'
+      IF(NDEC.LE.0) CALL QUIT('MXFORM: NDEC.LE.0')
       IF(NDIG.LT.10) THEN
         IDIG = ICHAR('0') + NDIG
         MXFORM(2:2) = CHAR(IDIG)
@@ -1366,7 +1366,7 @@ C                                                                C
 C****************************************************************C
       IF(X.LT.D0.OR.A.LE.D0) THEN
          GAMMP=D0
-         STOP 'Negative A or X..'
+         CALL QUIT('Negative A or X..')
       ELSEIF(X.LT.A+D1) THEN
          CALL GSER(GAMMP,A,X,GLN)
       ELSE
@@ -1397,7 +1397,7 @@ C******************************************************************C
         SUM=SUM+DEL
         IF(ABS(DEL).LT.ABS(SUM)*EPS)GO TO 1
 11    CONTINUE
-      STOP 'ITMAX Too Small'
+      CALL QUIT('ITMAX Too Small')
 C
 1     GAMSER=SUM*EXP(-X+A*LOG(X)-GLN)
       RETURN
@@ -1417,7 +1417,7 @@ C*******************************************************************C
       B1=D1
       FAC=D1
       DO 11 N=1,ITMAX
-        AN=N
+        AN=FLOAT(N)
         ANA=AN-A
         A0=(A1+A0*ANA)*FAC
         B0=(B1+B0*ANA)*FAC
@@ -1431,7 +1431,7 @@ C*******************************************************************C
           GOLD=G
         ENDIF
 11    CONTINUE
-      STOP 'ITMAX Too Small'
+      CALL QUIT('ITMAX Too Small')
 C
 1     GAMMCF=EXP(-X+A*LOG(X)-GLN)*G
       RETURN
@@ -1727,7 +1727,7 @@ C
       ITJACO = 0
   410 ITJACO = ITJACO + 1
       IF (ITJACO .GT. MXITJA) THEN
-         STOP 'ERROR: JACO did not converge ...'
+         CALL QUIT('ERROR: JACO did not converge ...')
       END IF
 #endif
       T = D0

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.1.1.1 2001-02-08 13:33:31 hjj Exp $
+C$Id: sirinp.F,v 1.2 2001-02-12 18:17:57 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -668,7 +668,7 @@ C
 C     Extra default: CALL SIROUT for summary
       FLAG(5) = .TRUE.
 C
-      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST)
+      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
       IF (.NOT.DORHF) MAXFCK = 0
 C
       IF (DORHF .AND. .NOT.FLAG(21)) THEN
@@ -1514,7 +1514,7 @@ C     END OF SIRRDI.
 C
       END
 C  /* Deck newinp */
-      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST)
+      SUBROUTINE NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
 C
 C Revisions
 C    1-OCT-1987 HA     Keyword directed input for all parameters
@@ -1750,16 +1750,12 @@ C
        GO TO 910
  2700  CALL HAMINP(WORD,INPERR,ALLOPT)
        GO TO 910
-#if defined (CC_AARHUS)
  2800  MSYM = NSYM
        CALL CC_INP(WORD,IREST,MSYM)
        IF (NSYM .NE. MSYM) THEN
           CALL QUIT(
      &       'CC_INP error: NSYM from SIRIFC .ne. NSYM in this run')
        END IF
-#else
- 2800  CALL QUIT('No Coupled-Cluster implemented in this version')
-#endif
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -1773,10 +1769,8 @@ C
 C
 C     We anyway need to process CC default settings
 C
-#if defined (CC_AARHUS)
       JREST = 0
       CALL CC_INP('**WAVE F',JREST,NSYM)
-#endif
 C
       CALL QEXIT('NEWINP')
       RETURN
@@ -4697,9 +4691,7 @@ C
       ELSE IF (DORHF) THEN
          WRITE(IWUNIT,1900) MAXFCK,MXDIIS,MXHFMA, THRRHF
       END IF
-#if defined (CC_AARHUS)
       IF (DOCCSD) CALL CC_PRTI
-#endif
  1600 FORMAT(/5X,'Maximum number of macro iterations',I8,
      *       /5X,'Maximum number of micro iterations',I8,
      *       /5X,'Threshold for gradient',10X,1P,D10.2,

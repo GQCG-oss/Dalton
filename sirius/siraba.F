@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: siraba.F,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C$Id: siraba.F,v 1.2 2001-02-12 18:17:57 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1083,7 +1083,7 @@ C
          NORBA = NORB(IASYM)
          NORBB = NORB(IBSYM)
          NORBC = NORB(ICSYM)
-         IF ((NORBA.NE.0) .AND. (NORBB.NE.0) .AND. (NORBC.NE.0)) THEN
+         IF (NORBA*NORBB*NORBC.NE.0) THEN
             IAST  = IORB(IASYM) + 1
             IBST  = IORB(IBSYM) + 1
             ICST  = IORB(ICSYM) + 1
@@ -1292,6 +1292,7 @@ C
          NBASJ = NBAS(JSYM)
          JFXCAO = KFXCAO + NBAST*IBASI + IBASJ
          JFXVAO = KFXVAO + NBAST*IBASI + IBASJ
+         IF (NORBI*NORBJ*NBASI*NBASJ .NE. 0) THEN
          DO 3800 ITMAT = 1,NTMAT
          IF (NISHT .GT. 0) THEN
             CALL DGEMM('T','N',NORBJ,NBASI,NBASJ,1.D0,
@@ -1316,6 +1317,7 @@ C
             JFXVAO = JFXVAO + N2BASX
          END IF
  3800    CONTINUE
+         END IF
 C **  this symmetry block finished
  4000 CONTINUE
 C
@@ -1425,6 +1427,7 @@ C *****  first calculate one-index transformation of first index
 C *****  of UDV(uv), the active density matrix.
 C        DXV(u,q) = sum(v) T(q,v) UDV(u,v) = sum(v) T(q,v) UDV(v,u)
 C        DXVT(q,u) = DXV(u,q) = sum(v) T(q,v) UDV(v,u)
+      IF (NASHI*NORBJ*NBASJ*NBASI .NE. 0) THEN
       DO 1800 ITMAT = 1,NTMAT
          CALL DGEMM('N','N',NORBJ,NASHI,NASHI,1.D0,
      &              TMAT(IORBJ+1,IORBI+NISHI+1,ITMAT),NORBT,
@@ -1442,6 +1445,7 @@ C        DXVAO(a,b) = sum(u) CMO(a,u) (sum(q) CMO(b,q) DXVT(q,u))
      &              WRK(KDXAO1),NBASJ,0.D0,
      &              DXVAO(IBAS(ISYM)+1,IBAS(JSYM)+1,ITMAT),NBAST)
  1800 CONTINUE
+      END IF
 C **  this symmetry block finished
  2000 CONTINUE
 C
@@ -1489,6 +1493,7 @@ C        DXC(i,q) = 2*T(q,i)
 C        DXCAO(a,b) = sum(i) CMO(a,i) (sum(q) CMO(b,q) DXC(i,q))
 C                 = 2 sum(i) CMO(a,i) (sum(q) CMO(b,q) TMAT(q,i))
 C        The factor 2 is postponed to the DSCAL below
+         IF (NBASJ*NISHI*NORBJ*NBASI .NE. 0) THEN
       DO 3800 ITMAT = 1,NTMAT
          CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,1.D0,
      &              CMO(ICMOJ+1),NBASJ,
@@ -1501,6 +1506,7 @@ C        ... DXAO1(alpha,i) = CMO(alpha,p) TMAT(p,i)
      &              DXCAO(IBAS(ISYM)+1,IBAS(JSYM)+1,ITMAT),NBAST)
 C        ... DXCAO(beta,alpha) = CMO(beta,i) DXAO1(alpha,i)
  3800 CONTINUE
+      END IF
 C **  this symmetry block finished
  4000 CONTINUE
 C

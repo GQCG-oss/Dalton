@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2odc.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: her2odc.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck odcvec */
@@ -895,11 +895,14 @@ C
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), HEXPPI(*), EXP12(NUC1*NUC2,3),
      &          COOR1(MXUC12),  ORIGO(3)
+#include <drw2el.h>
 C
       LA = NHKT1 - 1
       LB = NHKT2 - 1
       IF (SPNORB) THEN
          MAXDIF = 1
+      ELSE IF (FINDPT.OR.DPTINT) THEN
+         MAXDIF = 2
       ELSE IF (DIA2UP .OR. EL2CD) THEN
          MAXDIF = 1
       ELSE IF (LONDON .OR. ZFS2EL) THEN
@@ -957,7 +960,8 @@ C     *************************************************************
 C     ***** Calculate undifferentiated expansion coefficients *****
 C     *************************************************************
 C
-      IF (.NOT. (UNDIFF .AND. (LA+LB .EQ. 0)) ) THEN
+      IF ((.NOT. (UNDIFF .AND. (LA+LB .EQ. 0))) .OR. FINDPT
+     *    .OR. DPTINT ) THEN
 C
          DO 100 I = 1, NUC12
             HEXPPI(I) = SIGN*DP5/EXP12(I,1)
@@ -1813,6 +1817,7 @@ C
       DIMENSION COEFCD(MXUCCD,0:JMAXC+JMAXD,0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
 #include <symmet.h>
+#include <drw2el.h>
 #include <chrnos.h>
 #include <chrxyz.h>
       SAVE SGNOLD, DOCOMP, MAXDIF
@@ -1831,6 +1836,8 @@ C
          DOCOMP(3) = ICD0Z .EQ. 0
          IF (SPNORB .OR. DIA2SO) THEN
             MAXDIF = 1
+         ELSE IF (FINDPT.OR.DPTINT) THEN
+            MAXDIF = 2
          ELSE
             MAXDIF = MAXDER
          END IF

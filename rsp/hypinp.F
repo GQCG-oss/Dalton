@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: hypinp.F,v 1.1.1.1 2001-02-08 13:33:14 hjj Exp $
+C$Id: hypinp.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck hypinp */
@@ -368,6 +368,8 @@ C
 C  /* Deck smoinp */
       SUBROUTINE SMOINP(WORD)
 C
+C Sonia: added MCDBTE section (1999)
+C
 #include <implicit.h>
 C
 #include <priunit.h>
@@ -386,7 +388,7 @@ C
 #include <inftap.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 24)
+      PARAMETER ( NTABLE = 25)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -395,7 +397,8 @@ C
      *            '.MAXITO', '.PRINT ', '.DIPLEN', '.E3TEST',
      *            '.ISPABC', '.DIROIT', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
-     *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH'/
+     *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
+     *            '.MCDBTE'/
 C
 C READ IN  INPUT
 C
@@ -414,7 +417,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19,20,21,22,23,24), I
+     &                      17,18,19,20,21,22,23,24,25), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -543,6 +546,7 @@ C
                   BSMOP( INDPRP(LABEL)) = .TRUE.
                   LABEL='Z1MNF-SO'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
                   LABEL='XDIPLEN'
@@ -553,6 +557,21 @@ C
                   BSMOP( INDPRP(LABEL)) = .TRUE.
                   LABEL='ZDIPLEN'
                   ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 25            CONTINUE
+                  MCDCAL=.TRUE.
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='XANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YANGMOM'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZANGMOM'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -675,6 +694,11 @@ C
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
+         END IF
+         IF (MCDCAL) THEN
+            WRITE (LUPRI,'(A,L1)')
+     *       ' B of Magnetic Circular Dichroism requested    : MCDCAL ='
+     *      ,MCDCAL
          END IF
          WRITE(LUPRI,'(/A,I5)')
      *      ' Print level                                    : IPRSMO ='

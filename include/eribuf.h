@@ -1,6 +1,6 @@
 C
-C$Id: eribuf.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
 C
-      LOGICAL NEWDIS, MULFIL
-      COMMON /ERIBUF/ LBUF, NBUFS, NIBUF, NBITS, NBUF,
-     &                NEWDIS, MULFIL
+      LOGICAL NEWDIS
+      COMMON /ERIBUF/ LBUF, NBUFS, NIBUF, NBITS, NBUFX(0:MXCOOR),
+     &                NEWDIS
+      COMMON /ERITAP/ LUAORC(0:MXCOOR)

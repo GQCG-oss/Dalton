@@ -29,21 +29,23 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2sym.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: eri2sym.F,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
 C
 #include <single.h>
+C
 C  /* Deck erisym */
-      SUBROUTINE ERISYM(AO,SO,IODDCC,IPNTUV,IPRINT)
+      SUBROUTINE ERISYM(AO,SO,ICRB,IODDCC,IPNTUV,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxorb.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      DIMENSION SO(NCCX,KHKTAB,KHKTCD),
-     &          AO(NCCX,KHKTAB,KHKTCD),
+      INTEGER R, S, T
+      DIMENSION AO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
+     &          SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          RMAT(64,0:7), SMAT(64,0:7), TMAT(64,0:7),
-     &          IPNTUV(KC2MAX,2,2), IODDCC(NRTOP)
+     &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
 #include <ericom.h>
 #include <symmet.h>
 #include <hertop.h>
@@ -51,7 +53,7 @@ C
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 10) THEN
-         CALL HEADER('Output from ERI2SYM',-1)
+         CALL HEADER('Output from ERISYM',-1)
          WRITE (LUPRI,'(1X,A,4I5)')
      &         ' NHKTA,... ',NHKTA,NHKTB,NHKTC,NHKTD
          WRITE (LUPRI,'(1X,A,4I5)')
@@ -64,9 +66,6 @@ C
      &         ' MLTPR,... ', MLTPR,MLTPS,MLTPT
          WRITE (LUPRI,'(1X,A,2I5)')
      &         ' NCCS, NCCX', NCCS, NCCX
-         IF (IPRINT .GT. 15) THEN
-            CALL HEADER('AO and SO integrals in ERI2SYM',-1)
-         END IF
       END IF
 C
       CALL ERITRA(RMAT,MLTPR,ISTBLR)
@@ -91,9 +90,21 @@ C
       DO 300 ICOMPD = 1, MAXD
          ICMPCD = ICMPCD + 1
 C
-         IODDAB = IODDCC(IPNTUV(ICMPAB,2,1))
-         IODDCD = IODDCC(IPNTUV(ICMPCD,2,2))
-         IF (IODDAB .EQ. IODDCD) THEN
+         IODDAB = IODDCC(IPNTUV(ICMPAB,ICRB,1))
+         IF (BDER) THEN
+            JODDAB = IODDCC(IPNTUV(ICMPAB,0,1))
+         ELSE
+            JODDAB = IODDAB 
+         END IF
+         IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
+C
+         IF ((IODDAB.EQ.IODDCD).OR.(JODDAB.EQ.IODDCD)) THEN
+            IF (IPRINT .GT. 15) THEN
+               WRITE (LUPRI,'(1X,A,2I5)')
+     &            ' AO integrals for components ',ICMPAB,ICMPCD
+               CALL OUTPUT(AO(1,1,1,1,ICMPAB,ICMPCD),1,NCCS,1,MLTPX,
+     &                     NCCS,MLTPX,1,LUPRI)
+            END IF
 C
 C           Cartesian phase factors
 C           =======================
@@ -102,30 +113,71 @@ C
             IPARC  = ISYMAO(NHKTC,ICOMPC)
             IPARD  = ISYMAO(NHKTD,ICOMPD)
 C
-            CALL DGEMM('T','N',MLTPS*MLTPT*NCCS,MLTPR,MLTPR,
-     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPR,
-     &                 RMAT(1,IPARB),MLTPR,
-     &                 D0,SO(1,ICMPAB,ICMPCD),MLTPS*MLTPT*NCCS)
-            CALL DGEMM('T','N',MLTPT*NCCS*MLTPR,MLTPS,MLTPS,
-     &                 D1,SO(1,ICMPAB,ICMPCD),MLTPS,
-     &                 SMAT(1,IPARD),MLTPS,
-     &                 D0,AO(1,ICMPAB,ICMPCD),MLTPT*NCCS*MLTPR)
-            CALL DGEMM('T','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
-     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPT,
+C           Transform T
+C
+            CALL DGEMM('N','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
+     &                 D1,AO(1,1,1,1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS,
      &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
-     &                 D0,SO(1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
+     &                 D0,SO(1,1,1,1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
+C
+C           Transform S
+C
+            DO 400 T = 1, MLTPT
+               CALL DGEMM('N','N',NCCS*MLTPR,MLTPS,MLTPS,
+     &                    D1,SO(1,1,1,T,ICMPAB,ICMPCD),NCCS*MLTPR,
+     &                    SMAT(1,IPARD),MLTPS,
+     &                    D0,AO(1,1,1,T,ICMPAB,ICMPCD),NCCS*MLTPR)
+  400       CONTINUE
+C
+C           Transform R
+C
+            DO 500 T = 1, MLTPT
+            DO 500 S = 1, MLTPS
+               CALL DGEMM('N','N',NCCS,MLTPR,MLTPR,
+     &                    D1,AO(1,1,S,T,ICMPAB,ICMPCD),NCCS,
+     &                    RMAT(1,IPARB),MLTPR,
+     &                    D0,SO(1,1,S,T,ICMPAB,ICMPCD),NCCS)
+  500       CONTINUE
+C
+C#if defined (SYS_CRAY)
+C            CALL SGEMM('T','N',MLTPS*MLTPT*NCCS,MLTPR,MLTPR,
+C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPR,
+C     &                 RMAT(1,IPARB),MLTPR,
+C     &                 D0,SO(1,ICMPAB,ICMPCD),MLTPS*MLTPT*NCCS)
+C            CALL SGEMM('T','N',MLTPT*NCCS*MLTPR,MLTPS,MLTPS,
+C     &                 D1,SO(1,ICMPAB,ICMPCD),MLTPS,
+C     &                 SMAT(1,IPARD),MLTPS,
+C     &                 D0,AO(1,ICMPAB,ICMPCD),MLTPT*NCCS*MLTPR)
+C            CALL SGEMM('T','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
+C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPT,
+C     &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
+C     &                 D0,SO(1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
+C#endif
+C#if defined (SYS_DEC)
+C            CALL QUIT('This will require ESSL (eri2sym)')
+C#endif
+C#if !defined (SYS_CRAY) && !defined (SYS_DEC)
+C            CALL DGEMM('T','N',MLTPS*MLTPT*NCCS,MLTPR,MLTPR,
+C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPR,
+C     &                 RMAT(1,IPARB),MLTPR,
+C     &                 D0,SO(1,ICMPAB,ICMPCD),MLTPS*MLTPT*NCCS)
+C            CALL DGEMM('T','N',MLTPT*NCCS*MLTPR,MLTPS,MLTPS,
+C     &                 D1,SO(1,ICMPAB,ICMPCD),MLTPS,
+C     &                 SMAT(1,IPARD),MLTPS,
+C     &                 D0,AO(1,ICMPAB,ICMPCD),MLTPT*NCCS*MLTPR)
+C            CALL DGEMM('T','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
+C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPT,
+C     &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
+C     &                 D0,SO(1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
+C#endif
 C
 C           Print
 C           =====
 C
             IF (IPRINT .GT. 15) THEN
                WRITE (LUPRI,'(1X,A,2I5)')
-     &            ' AO integrals for components ',ICMPAB,ICMPCD
-               CALL OUTPUT(AO(1,ICMPAB,ICMPCD),1,NCCS,1,MLTPX,
-     &                     NCCS,MLTPX,1,LUPRI)
-               WRITE (LUPRI,'(1X,A,2I5)')
      &            ' SO integrals for components ',ICMPAB,ICMPCD
-               CALL OUTPUT(SO(1,ICMPAB,ICMPCD),1,NCCS,1,MLTPX,
+               CALL OUTPUT(SO(1,1,1,1,ICMPAB,ICMPCD),1,NCCS,1,MLTPX,
      &                     NCCS,MLTPX,1,LUPRI)
             END IF
 C

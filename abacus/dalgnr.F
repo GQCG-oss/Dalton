@@ -521,14 +521,10 @@ C     It causes the End of Record to be skipped.
 #if defined (VAR_MPI) || defined (VAR_PVM)
          CALL QUIT('No CC in parallel code')
 #else
-         CALL ER2INP('*EXECC ')
+         CALL ER2INI
 #endif
       END IF
-#if defined (CC_AARHUS)
       CALL CC_DRV(WORK(IWOFF+2),LMWORK)
-#else
-      CALL QUIT('Coupled-Cluster not implemented in this version')
-#endif
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'CC    ')
       WRITE(LUPRI, '(/A)') '- End of Coupled Cluster'
       CALL FLSHFO(LUPRI)

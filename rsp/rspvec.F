@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspvec.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: rspvec.F,v 1.2 2001-02-12 18:17:57 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVLOG
@@ -1537,6 +1537,9 @@ C CALCULATION OF SECOND ORDER TRANSITION MOMENTS
 C
 C Revision 910405-hjaaj: FACB and FACMOM for mixed and velocity repr.
 C
+C Modified 980722-sonia: MCD. Included common block WRKRSP and
+C call to GETGP.
+C
 #include <implicit.h>
 C
       LOGICAL FOUND, CONV
@@ -1547,6 +1550,7 @@ C
       PARAMETER (BLANK = '        ')
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
      &            IMXEXC=20)
+      PARAMETER ( DP5 = 0.5D0 )
       DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
 #include <iratdef.h>
@@ -1567,9 +1571,20 @@ C
 #include <infhso.h>
 #include <inftap.h>
 #include <inflr.h>
+C Sonia: MCD variables
+#include <wrkrsp.h>
+C
+      DIMENSION JWOPSV(2,MAXWOP)
+      CHARACTER A1*1, B1*1, CLABEL*8
+      LOGICAL LYESGP
+C
+      IPRRSP = IPRSMO
+      LYESGP = .FALSE.
+C
+C end lvariables for MCD
 C
       CALL QENTER('QRSMO')
-      IPRRSP = IPRSMO
+C
 C
 C Counters NCEXC and ICEXC are defined in order to identify the correct 
 C response calculations in a two-photon process. RESSOM and RESFRE are 
@@ -2045,6 +2060,100 @@ C
                               END IF
                            END IF
                            CALL FLSHFO(LUPRI)
+
+C------------------------------------------------------------------------*
+C Calculation of MCD B term: the full residue SMOM*TM1 (Sonia)
+C
+                           IF (MCDCAL) THEN
+                              LYESGP  = .FALSE.
+                              A1 = ASMLB(MSYMA,IAOP)(1:1)
+                              B1 = BSMLB(MSYMB,IBOP)(1:1)
+                              IF (((A1.EQ.'X') .AND. (B1.EQ.'Y'))
+     *                        .OR.((A1.EQ.'Y').AND.(B1.EQ.'X'))) THEN
+                                 CLABEL = 'ZDIPLEN '
+                                 LYESGP  = .TRUE.
+                              END IF
+                              IF (((A1.EQ.'X') .AND. (B1.EQ.'Z'))
+     *                        .OR.((A1.EQ.'Z').AND.(B1.EQ.'X'))) THEN
+                                 CLABEL = 'YDIPLEN '
+                                 LYESGP  = .TRUE.
+                              END IF
+                              IF (((A1.EQ.'Y') .AND. (B1.EQ.'Z'))
+     *                        .OR.((A1.EQ.'Z').AND.(B1.EQ.'Y'))) THEN
+                                 CLABEL = 'XDIPLEN '
+                                 LYESGP  = .TRUE.
+                              END IF
+                              IF (LYESGP) THEN
+C
+C Calculate propriety gradient. Returned as first element in WRK
+C
+                                 !backup variables in wrkrsp.h
+                                 KSYMOPSV = KSYMOP
+                                 KZYVARSV = KZYVAR
+                                 KZVARSV  = KZVAR
+                                 KZCONFSV = KZCONF
+                                 KZYCONSV = KZYCON
+                                 KZYWOPSV = KZYWOP
+                                 KZWOPTSV = KZWOPT
+                                 KSYMSTSV = KSYMST
+                                 DO IOP = 1,KZWOPT
+                                   JWOPSV(1,IOP) = JWOP(1,IOP)
+                                   JWOPSV(2,IOP) = JWOP(2,IOP)
+                                 ENDDO
+C
+                                 !set variables in wrkrsp.h to current value
+                                 KSYMOP = MSYMCX
+                                 KZYVAR = MZYVAR(MSYMC)
+                                 KZVAR  = MZVAR(MSYMC)
+                                 KZCONF = MZCONF(MSYMC)
+                                 KZYCON = MZYCON(MSYMC)
+                                 KZYWOP = MZYWOP(MSYMC)
+                                 KZWOPT = MZWOPT(MSYMC)
+                                 KSYMST = MSYMCX
+                                 DO IOP = 1,KZWOPT
+                                   JWOP(1,IOP) = MJWOP(1,IOP,KSYMOP)
+                                   JWOP(2,IOP) = MJWOP(2,IOP,KSYMOP)
+                                 ENDDO
+c
+                                 !GETGP uses variables in wrkrsp.h
+                                 CALL GETGP(CLABEL,FC,CMO,UDV,PV,XINDX,
+     *                                              WRK(KFREE),LFREE)
+
+                                TM1 = DDOT(KZYVAR,WRK(KFREE),1,VECC,1)
+                                BCONTR = SMOM*TM1*D05
+c
+                      WRITE(LUPRI,'(/A,(/A,5X,A,2I5),/A,5X,I8,2I5)')
+     *   ' First order moment in a.u. for',
+     *   ' C operator label,  symmetry, spin: ',
+     *                       CLABEL,MSYMCX,ISPINC,
+     *   ' Excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
+                           WRITE(LUPRI,'(A,2F12.6)')
+c     *   ' Excitation energy in eV,    moment :            ',
+c     *                XTEV*EXCITA(MSYMC,IC,ISPINC+1),TM1
+     *   ' Excitation energy in au,    moment :            ',
+     *                     EXCITA(MSYMC,IC,ISPINC+1),TM1
+                           WRITE(LUPRI,'(/A,F12.6,/A)')
+     *   ' B term contribution:          ', BCONTR,
+     *   ' ------------------------------------------- '
+                                 !restore variables in wrkrsp.h as originally
+                                 KSYMOP = KSYMOPSV
+                                 KZYVAR = KZYVARSV
+                                 KZVAR  = KZVARSV
+                                 KZCONF = KZCONFSV
+                                 KZYCON = KZYCONSV
+                                 KZYWOP = KZYWOPSV
+                                 KZWOPT = KZWOPTSV
+                                 KSYMST = KSYMSTSV
+                                 DO IOP = 1,KZWOPT
+                                   JWOP(1,IOP) = JWOPSV(1,IOP)
+                                   JWOP(2,IOP) = JWOPSV(2,IOP)
+                                 ENDDO
+                              ELSE
+                                 WRITE(LUPRI,*)'No MCD for this SOMOM'
+                              ENDIF
+                           END IF
+                           CALL FLSHFO(LUPRI)
+C ---------------------------------------------------------------endofmcd-------
  900                    CONTINUE
  800                 CONTINUE
  700              CONTINUE
@@ -2771,11 +2880,12 @@ C calculated due to permutation symmetry
 C
 C
       PARAMETER (THD = 1.0D-8)
+      PARAMETER (MXCALC = 200)
 C 
       LOGICAL DOCAL, MEMFLG, DIPLEN, ONFIL
-      CHARACTER*8 LAB(500,3), ALAB, BLAB, CLAB
+      CHARACTER*8 LAB(MXCALC,3), ALAB, BLAB, CLAB
       CHARACTER DIR(3)*1, STRING*75, LABEL(3)*8
-      DIMENSION FRQ(500,3), ISYM(500,3)
+      DIMENSION FRQ(MXCALC,3), ISYM(MXCALC,3)
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -2922,6 +3032,11 @@ C If not done before, put in list
 C
          IF (DOCAL .OR. ONFIL) THEN
             N = N + 1
+            IF (N .GT. MXCALC) THEN
+               WRITE (LUPRI,'(/A,I3)')
+     &              'BCCHK: # unique calculations .gt. MXCALC =',MXCALC
+               CALL QUIT('BCCHK: # unique calculations .gt. MXCALC')
+            END IF
             LAB(N,1) = ALAB
             LAB(N,2) = BLAB
             LAB(N,3) = CLAB

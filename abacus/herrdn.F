@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: herrdn.F,v 1.2 2001-02-12 18:17:53 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
@@ -220,8 +220,8 @@ C
                GO TO 100
  7             CONTINUE 
                   READ (LUCMD,*) LCMMAX, CMSTR, CMEND
-                  NCMSTR = NINT(2*CMSTR)
-                  NCMEND = NINT(2*CMEND)
+                  NCMSTR = NINT(2*CMSTR + 0.01D0)
+                  NCMEND = NINT(2*CMEND + 0.01D0)
                GO TO 100
  8             CONTINUE 
                   READ (LUCMD,*) ZCMVAL
@@ -1221,6 +1221,7 @@ C
 #include <primit.h>
 #include <huckel.h>
 #include <aosotr.h>
+#include <veclen.h>
 #include <ibtfun.h>
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
@@ -1580,6 +1581,13 @@ C     ***** Determine IAOAO *****
 C     ***************************
 C
       CALL AOTOAO(IAOAO,IPREAD)
+C
+C     **************************
+C     **** Determine ICNTAO ****
+C     **************************
+C
+      CALL CNTAO(IPREAD)
+C
       END
 C  /* Deck bastyp */
       SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NBLOCK,NPRIM,NBAS,TSTRING)
@@ -3637,6 +3645,45 @@ C
       END IF
       RETURN
       END
+C/* Deck cntao */
+      SUBROUTINE CNTAO(IPRINT)
+C 
+C     tuh
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+C
+#include <symmet.h>
+#include <nuclei.h>
+#include <shells.h>
+C
+#include <ibtfun.h>
+C
+      IORB = 0
+      DO 100 ISHELL = 1, KMAX
+         ICENT  = NCENT(ISHELL)
+         ISTABO = ISTBAO(ISHELL)
+         DO 200 ICMP = 1, KHKT(ISHELL)
+            DO 300 JSYMOP = 0, MAXREP
+            IF (IBTAND(JSYMOP,ISTABO) .EQ. 0) THEN
+               IORB = IORB + 1
+               ICNTAO(IORB) = NUCNUM(ICENT,JSYMOP+1)
+            END IF
+  300       CONTINUE
+  200    CONTINUE
+  100 CONTINUE
+C
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ICNTAO',-1)
+         DO 400 I = 1, IORB
+            WRITE (LUPRI,'(4X,I5,1X,I5)') I, ICNTAO(I)
+  400    CONTINUE
+      END IF
+      RETURN
+      END
 C  /* Deck magcor */
       SUBROUTINE MAGCOR(IPREAD)
 C
@@ -3939,6 +3986,8 @@ C
          END IF
   100 CONTINUE
 C
+      SPHNRM = .TRUE.
+C
       IF (DOCART) THEN
          CALL CARLAB(MXQN-1,GTOTYP)
       ELSE
@@ -3961,7 +4010,8 @@ C
                ELSE
                   IF (OLDNRM) THEN
 C                    use old Dalton 1.0 normalization
-                     MINTEG = 1
+                     MINTEG = 0
+                     SPHNRM = .FALSE.
                   ELSE
 C                    generate normalized s,p,d,f,g,h,i GTO's
                      MINTEG = 2

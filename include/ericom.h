@@ -1,10 +1,9 @@
-C
-C$Id: ericom.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
-C
-      LOGICAL SAMEPQ, SYMPQ, SAMEAB, SYMAB, SAMECD, SYMCD,
-     &        SPHRA,  SPHRB, SPHRC,  SPHRD, SPHRAB, SPHRCD,
+      LOGICAL SAMEPQ, SYMPQ,  SAMEAB, SYMAB, SAMECD, SYMCD,
+     &        SPHRA,  SPHRB,  SPHRC,  SPHRD, SPHRAB, SPHRCD,
      &        DIAGAB, DIAGCD, TKMPAB,TKMPCD,TCMPAB, TCMPCD,
-     &        FIRST, LAST, LSTCLS, DIACLS, SYMTRA
+     &        FIRST,  LAST,   LSTCLS, DIACLS, SYMTRA,
+     &        DOPTH1, DOPTH2, GDER, NEWDER, BDER,
+     &        UNDIFF
       COMMON /ERICOM/ SCRMAB, SCRMCD,
      &                NHKTA,  NHKTB,  NHKTC,  NHKTD,
      &                JMAXA,  JMAXB,  JMAXC,  JMAXD,
@@ -17,9 +16,10 @@ C
      &                ISTBLR, ISTBLS, ISTBLT,
      &                MLTPA,  MLTPB,  MLTPC,  MLTPD, MLTPX,
      &                MLTPR,  MLTPS,  MLTPT,
+     &                NREDZ,  MLTPZ,
      &                NGTOAB, NGTOCD, DIAGAB, DIAGCD,
      &                TKMPAB, TKMPCD, TCMPAB, TCMPCD,
-     &                NHKMAX, KCKMAX, KC2MAX, KCREC1,
+     &                NHKMAX, KCKMAX, KC2MAX, KCREC1, NRDER,
      &                NPRFAB, NPRFCD, NPRFPQ,
      &                NCTFAB, NCTFCD, NCTFPQ,
      &                NCNTAB, NCNTCD,
@@ -30,10 +30,14 @@ C
      &                NBCHES, NBTPAS, DIACLS,
      &                NPQBCX, NPPBCX,
      &                NPQBCS, NPPBCS,
-     &                NPPX,   NPCX,   NCPX,   NCCX,
+     &                NPPX,   NPCX,   NCPX,   NCCX, NCCT, NAOINT,
      &                NPPS,   NPCS,   NCPS,   NCCS,
+     &                NPPAB,  NPPCD,
      &                NITPQ,
      &                IPQ0(3), IPQXYZ, IAB0(3), IABXYZ, ICD0(3), ICDXYZ,
      &                IHHXYZ, IHCXYZ, ICHXYZ, ICCXYZ,
-     &                FIRST,  LAST,  LSTCLS,
-     &                MAXDER, IPATH, SYMTRA
+     &                FIRST,  LAST,  LSTCLS, MAXDER, SYMTRA,
+     &                DOPTH1, DOPTH2, IPATH, 
+     &                GDER,   NCSQ1,  NCSQ2, NEWDER, BDER, DOERP,
+     &                IODDPT(3) , NPDIMA, NPDIMB, UNDIFF,  NCORS,
+     &                NPERTS

@@ -1,5 +1,5 @@
 C
-C$Id: cbiher.h,v 1.1.1.1 2001-02-08 13:33:27 hjj Exp $
+C$Id: cbiher.h,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
 C
       LOGICAL SKIP, TSTINP, HAMILT, DIPLEN, SPNORB, SOTEST, SUPMAT,
      &        DIPVEL, QUADRU, SECMOM, ONEPRP, CARMOM, SPHMOM, OCTUPO,
@@ -12,7 +12,8 @@ C
      &        NSTCGO, EXPIKR, DIRAC, DARWIN, MASSVL, CM1, CM2, NOTWO,
      &        SQHDOL, SQHDOR, S1ELE, S1ELB, ONEELD, GFACDI, THETA,
      &        DERHAM, DEROVL, SOMM, SOFLD, THRMOM, ROTSTR, OCTGRA,
-     &        QUAGRA, DPLGRA, ELGDIL, ELGDIA, MNF_SO
+     &        QUAGRA, DPLGRA, ELGDIL, ELGDIA, MNF_SO, DPTOVL, DPTPOT,
+     &        XDDXR3
       COMMON /CBIHER/ EXPKR(3), THRESH, ISOTOP(MXCENT),
      &                IPRDEF, IORCAR, IORSPH, NPQUAD,
      &                SKIP, TSTINP, HAMILT, DIPLEN, SPNORB,
@@ -30,4 +31,4 @@ C
      &                SQHDOL, SQHDOR, S1ELE, S1ELB, ONEELD, GFACDI,
      &                THETA, DERHAM, DEROVL, SOMM, SOFLD, THRMOM,
      &                ROTSTR, OCTGRA, QUAGRA, DPLGRA, ELGDIL, ELGDIA,
-     &                MNF_SO
+     &                MNF_SO, DPTOVL, DPTPOT, XDDXR3

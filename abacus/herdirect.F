@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdirect.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: herdirect.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -471,9 +471,6 @@ C
 #include <cbihr2.h>
 #include <cbieri.h>
 #include <veclen.h>
-#if defined (VAR_VECTOR)
-#include <nuclei.h>
-#endif
 C
 #include <memint.h>
 C

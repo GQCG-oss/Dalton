@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspe2c.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: rspe2c.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -3752,6 +3752,7 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
          KSOPR = 1
          KWRK1 = KSOPR + NFREQ*NOP*NOP
          LWRK1 = LWRK  - KWRK1
+         IF (LWRK1.LT.0) CALL ERRWRK('RSPLR 2',KWRK1-1,LWRK)
          CALL LRSOPR(NOP,WRK(KSOPR),FC,CMO,UDV,PV,XINDX,LURSP2,
      &               WRK(KWRK1),LWRK1)
       END IF

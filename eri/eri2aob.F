@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2aob.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: eri2aob.F,v 1.2 2001-02-12 18:17:53 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck setaob */
@@ -45,17 +45,18 @@ C  /* Deck setaob */
 #include <shells.h>
 #include <symmet.h>
 #include <aobtch.h>
+#include <veclen.h>
 #include <ibtfun.h>
 C
 C     Number of basis functions
 C
-      NBASIS  = 0
+      NBASE  = 0
       DO 100 K = 0, MAXREP
       DO 100 I = 1, KMAX
-         IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASIS = NBASIS + KHKT(I)
+         IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
   100 CONTINUE
 CNECgh980808
-      NODD = 1 - MOD(NBASIS,2) 
+      NODD = 1 - MOD(NBASE,2) 
 C
       NGAB = 0
       DO 110 I = 1, KMAX

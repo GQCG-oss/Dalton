@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2drv.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her2drv.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck twoint */
@@ -283,11 +283,13 @@ C  /* Deck twocal */
 C NECgh
 #include <nuclei.h>
 #include <veclen.h>
+#include <drw2el.h>
 C NECgh
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOCAL','*',103)
 C
       JTOP  = 4*(NHTYP - 1) + MAXDER
+      IF (FINDPT.OR.DPTINT) JTOP = JTOP + 2
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
       KINDHR = 1
@@ -479,8 +481,7 @@ C
         CALL DZERO(DINTSKP,8)
         IF(IFTHRS.LT.16) THEN
           DOSCRN = .TRUE.
-          FCKTHR = -IFTHRS
-          FCKTHR = 10.0D0**FCKTHR
+          FCKTHR = (10.0D0)**DBLE(-IFTHRS)
           ICEFLG = ICEDIF
           NCM = 0
           NEM = 0
@@ -792,7 +793,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <dummy.h>
-      PARAMETER (LBUF = 600)
+C      PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DOINDX,
@@ -810,6 +811,7 @@ C
 #include <blocks.h>
 #include <symmet.h>
 #include <disbuf.h>
+#include <eribuf.h>
 C
       CALL QENTER('TWODSA')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODSA','*',103)
@@ -860,8 +862,8 @@ C
       LDSBUF = LBUF
       KDSBUF = 1
       KDSIBF = KDSBUF + NDIST*LDSBUF
-      KDSCNT = KDSIBF + (2*NDIST*LDSBUF - 1)/IRAT + 1
-      KDSORB = KDSCNT + (NDIST          - 1)/IRAT + 1
+      KDSNCT = KDSIBF + (2*NDIST*LDSBUF - 1)/IRAT + 1
+      KDSORB = KDSNCT + (NDIST          - 1)/IRAT + 1
       KORBDS = KDSORB + (NDIST          - 1)/IRAT + 1
       KDSEND = KORBDS + (NBASIS         - 1)/IRAT + 1
 C
@@ -1334,9 +1336,15 @@ C  /* Deck twoods */
 #include <twocom.h>
 #include <blocks.h>
 #include <twosta.h>
+#include <drw2el.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from TWOODS','*',103)
-      IF (DIA2SO) THEN
+      IF (FINDPT.OR.DPTINT) THEN
+         JMAXA  = NHKTA + 1
+         JMAXB  = NHKTB + 1
+         JMAXC  = NHKTC + 1
+         JMAXD  = NHKTD + 1
+      ELSE IF (DIA2SO) THEN
          JMAXA = NHKTA 
          JMAXB = NHKTB - 1
          JMAXC = NHKTC
@@ -1581,6 +1589,7 @@ C  /* Deck twood1 */
      &          JSTRSH(MXSHEL,MXAOVC,2), NPRIMS(MXSHEL,MXAOVC,2),
      &          NCONTS(MXSHEL,MXAOVC,2),GABRAO(*),
      &          DMRAO(*),DMRSO(*),DINTSKP(*),IREPDM(*)
+#include <drw2el.h>
 #include <twocom.h>
 #include <inftap.h>
 #include <blocks.h>
@@ -1671,6 +1680,7 @@ C
       ELSE IF (MAXDER .EQ. 2) THEN
          NCFTYP = 6
       END IF
+      IF (FINDPT.OR.DPTINT) NCFTYP = 6
       IF (DIA2SO) NCFTYP = 9
       MXUCAB = IMXVEC(NUCTAB,NODCAB)
       MXUCCD = IMXVEC(NUCTCD,NODCCD)
@@ -3014,11 +3024,13 @@ C  /* Deck intder */
      &          NPNTAB(*), NPNTCD(*), NREDAB(*), NREDCD(*)
 #include <twocom.h>
 #include <twosta.h>
+#include <drw2el.h>
       CALL QENTER('INTDER')
 #include <memint.h>
       IF (IPRINT .GT. 5) CALL TITLER('Output from INTDER','*',103)
 C
       JMAX   = JMAX0 + MAXDER
+      IF (FINDPT.OR.DPTINT) JMAX = JMAX + 2
       NUABCD = NUCAB*NUCCD
       NRTUV  = (JMAX + 1)**3
       NTUV   = (JMAX + 1)*(JMAX + 2)*(JMAX + 3)/6
@@ -3075,6 +3087,7 @@ C
 #include <twoao.h>
 #include <crossd.h>
 #include <subdir.h>
+#include <drw2el.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from INTDR1','*',103)
 C
@@ -3104,6 +3117,7 @@ C
       NOCNT  = NOCONT
       IDERIV = MAXDER
       IF (DIA2SO) IDERIV = 1
+      IF (FINDPT.OR.DPTINT) IDERIV = 2
       JM1234 = JMAX
       NU1234 = NUABCD
       NC1234 = NCCINT
@@ -3346,6 +3360,7 @@ C
      &          LMNV12(KCKMX,5,2), LMNV34(KCKMX,5,2),
      &          NRED12(*), NRED34(*), NUCS12(*), NUCS34(*)
 #include <twoao.h>
+#include <drw2el.h>
 #include <crsdir.h>
 #include <twosta.h>
 C
@@ -3364,6 +3379,7 @@ C
          IF (DHCEZ2) NHCINT = NHCINT + 1
       END IF
       LHCINT = NCCPP*NTUV34*KHKT12*NHCINT
+      IF (DPTINT) LHCINT = LHCINT * 2 
 C
       KODD12 = 1
       KODD34 = KODD12 + (2*KCKT12 + 1)/IRAT

@@ -1,5 +1,5 @@
 C
-C$Id: nuclei.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
+C$Id: nuclei.h,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
 C
       CHARACTER*4 NAMN
       LOGICAL NOORBT,GAUNUC
@@ -8,7 +8,7 @@ C
      &                ISTBNU(MXCENT), GNUEXP(MXCENT), NAMN(MXCENT),
      &                NUCIND, NUCDEP, NTRACO, ITRACO(3), NATOMS, NFLOAT,
      &                NBASIS, NLARGE, NSMALL, NPBAS, NPLRG, NPSML,
-     &                NUCNET, INCENT(MXCENT),INUNIQ(MXCENT),GAUNUC, NODD
+     &                NUCNET, INCENT(MXCENT),INUNIQ(MXCENT),GAUNUC
       CHARACTER NAMEX*6, NAMDEP*6, NAMDPX*6
       COMMON /NUCLEC/ NAMEX(MXCOOR), NAMDEP(MXCENT), NAMDPX(MXCOOR),
      &                NDEGNM(MXCENT)

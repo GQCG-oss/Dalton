@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2el2.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her2el2.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck c2driv */
@@ -136,6 +136,7 @@ C
 #include <twoao.h>
 #include <twosta.h>
 #include <derzer.h>
+#include <drw2el.h>
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
       COMMON /DHCINF/ IDHC(10), IHCSYM(10)
@@ -299,7 +300,7 @@ C                      | CSINT
 C
          LSSINT = NO1234*NHCMAX*KHKT34
          LCCPRM = NCCPP*NHCMAX
-         IF (KHKT34 .EQ. 1) THEN
+         IF ((KHKT34 .EQ. 1) .AND. (.NOT. (FINDPT.OR.DPTINT))) THEN
             LETUV = 0
          ELSE
             LETUV  = NCCPP
@@ -358,7 +359,7 @@ C  /* Deck c2hin1 */
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0)
+      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0)
 #include <maxaqn.h>
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
@@ -377,9 +378,17 @@ C
 #include <twoao.h>
 #include <twocom.h>
 #include <sphtrm.h>
+#include <alphac.h>
+#include <drw2el.h>
+      DIMENSION INCDPT(3,3), ITYDPT(3,3)
+      DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/
+      DATA ITYDPT/5, 1, 1, 1, 5, 1, 1, 1, 5/
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
+      IF (FINDPT) ECOFAC = DPTFAC * DP25 * ALPHAC ** 2
+      IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
+      IF (NO2DPT) ECOFAC = D0
 C
       INCRMT = I340X + 1
       INCRMU = I340Y + 1
@@ -402,7 +411,7 @@ C              *******************************
 C
                JODD34 = IODD34(ICMP34,1)
                CALL DZERO(CCPRIM,NHCCMP*NCCPP)
-               IF (KHKT34 .EQ. 1) THEN
+               IF ((KHKT34 .EQ. 1).AND.(.NOT.(FINDPT.OR.DPTINT))) THEN
                   ICCTYP = 1
                   DO 200 ICOOR = 1, NCOOR
                      IODDIF= JODDIF(ICOOR)
@@ -428,8 +437,12 @@ C
                   MINT = IBTAND(MAXT,INCRMT - 1)
                   MINU = IBTAND(MAXU,INCRMU - 1)
                   MINV = IBTAND(MAXV,INCRMV - 1)
-                  IF (IDERIV .EQ. 0) THEN
-                     ITYPE  = IOFFHC(1)
+                  IF (IDERIV .EQ. 0 .OR. FINDPT .OR. DPTINT) THEN
+                     IF (DPTINT) THEN
+                        ITYPE = 2
+                     ELSE
+                        ITYPE  = IOFFHC(1)
+                     END IF
                      DO 300 V = MINV, MAXV, INCRMV
                      DO 300 U = MINU, MAXU, INCRMU
                      DO 300 T = MINT, MAXT, INCRMT
@@ -463,6 +476,48 @@ C
                         END IF
   330                   CONTINUE
   300                CONTINUE
+                     IF (FINDPT.OR.DPTINT) THEN
+C
+C     =============== Add or do first-order DPT perturbation ==============
+C     Wim Klopper & Asger Halkier, University of Utrecht, November 25, 1999
+C
+                     DO 333 ICOOR = 1, 3
+                        DO 301 V = MINV, MAXV + INCDPT(3,ICOOR), INCRMV
+                        DO 301 U = MINU, MAXU + INCDPT(2,ICOOR), INCRMU
+                        DO 301 T = MINT, MAXT + INCDPT(1,ICOOR), INCRMT
+C
+C                          Expansion coefficients
+C                          ======================
+C
+                           DO 311 I = 1, NUC34
+                            ECOEFI = COEF34(I,T,L3,L4,1,ITYDPT(1,ICOOR))
+     &                             * COEF34(I,U,M3,M4,2,ITYDPT(2,ICOOR))
+     &                             * COEF34(I,V,N3,N4,3,ITYDPT(3,ICOOR))
+     &                             * ECOFAC
+                            IJ = I
+                            DO 321 J = 1, NORB12
+                              ETUV(IJ) = ECOEFI
+                              IJ = IJ + NUC34
+  321                       CONTINUE
+  311                      CONTINUE
+C
+C                          Cartesian integrals
+C                          ===================
+
+                           ITUV = INDHER(T,U,V)
+                           ICCTYP = 1
+                           DO 331 I = 1, KHKT12
+                            IF (IODD12(I,2) .EQ. JODD34) THEN
+                              DO 341 J = 1, NCCPP
+                                 CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
+     &                              + ETUV(J)*HCINT(J,ITUV,I,1)
+  341                         CONTINUE
+                              ICCTYP = ICCTYP + 1
+                            END IF
+  331                      CONTINUE
+  301                   CONTINUE
+  333                CONTINUE
+                     END IF
                   ELSE
                      DO 400 V = MINV, MAXV, INCRMV
                      DO 400 U = MINU, MAXU, INCRMU

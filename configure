@@ -35,15 +35,8 @@ set_parallel_def() {
     fi
 }
 
-set_cc_def() {
-    if [ "$2" = "" ]; then pref=dalton; else pref="$2"; fi
-    if [ "$1" = "mpi" ]; then
-       def="$pref_cc.x"
-    else
-       def="$pref.x"
-    fi
-}
-
+if [ "$2" = "" ]; then pref=dalton; else pref="$2"; fi
+def="$pref.x"
 
 blas="false"
 blas2="false"
@@ -220,19 +213,19 @@ fi
 #
 # Compile the coupled-cluster code as well?
 #
-cc='false'
-if [ -e cc ]; then
-    answer=
-    cc='dummy'
-    while [ "$answer" != "y" -a "$answer" != "n" ]
-    do
-	$ECHO 'Do you want to install the coupled-cluster program? [y/n] \c'
-	read answer
-    done
-    if [ "$answer" = "y" ]; then
-	cc='true'
-    fi
-fi
+#cc='false'
+#if [ -e cc ]; then
+#    answer=
+#    cc='dummy'
+#    while [ "$answer" != "y" -a "$answer" != "n" ]
+#    do
+#	$ECHO 'Do you want to install the coupled-cluster program? [y/n] \c'
+#	read answer
+#    done
+#    if [ "$answer" = "y" ]; then
+#	cc='true'
+#    fi
+#fi
 #
 # Parallel Dalton?
 #
@@ -649,7 +642,6 @@ case $WHICH in
 		   else
                        cpp="-w -P -DSYS_AIX -DVAR_SIRBIG -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 		    fi
-		    set_cc_def $cc
                    else
 		      if [ $split = 'true' ] ; then
                          cpp="-w -P -DSYS_AIX -DVAR_SIRBIG -DSYS_AIX23 -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
@@ -662,18 +654,14 @@ case $WHICH in
                           def='dalpvm.x'
 		       fi
 		   fi
-                   inc='-I../include'
-                   if [ "$cc" = "true" ]; then
-                      cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	              inc=${inc}" -I../include_cc"
-                    fi;;
+                   inc='-I../include -I../include_cc'
+                   cpp=${cpp}" -DIMPLICIT_NONE";;
                 *) if [ "$mesp" = "dummy" ]; then
 		     if [ $split = 'true' ] ; then
                        cpp="-WF,-DSYS_AIX,-DVAR_SIRBIG,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
 		     else
                        cpp="-WF,-DSYS_AIX,-DVAR_SIRBIG,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
 		     fi
-		     set_cc_def $cc
                    else
 		      if [ $split = 'true' ] ; then
                         cpp="-WF,-DSYS_AIX,-DVAR_SIRBIG,-DVAR_MFDS,-DVAR_SPLITFILES,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"',-D$parop"
@@ -682,11 +670,8 @@ case $WHICH in
 		      fi
 		      set_parallel_def $mesp
 		   fi
-		   inc='-WF,-I../include'
-                   if [ "$cc" = "true" ]; then
-                      cpp=${cpp}",-DCC_AARHUS,-DIMPLICIT_NONE"
-	              inc=${inc}",-I../include_cc"
-	           fi;;
+		   inc='-WF,-I../include,-I../include_cc'
+                   cpp=${cpp}",-DIMPLICIT_NONE"
             esac
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000';;
     iris4d) case $opsys in
@@ -699,7 +684,6 @@ case $WHICH in
 	       else
                    cpp="-DSYS_IRIX -DNO_F90 -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 		fi
-		set_cc_def $cc
 	    else
 	       if [ $split = 'true' ] ; then
                    cpp="-DSYS_IRIX -DNO_F90 -DVAR_SIRBIG -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
@@ -708,97 +692,62 @@ case $WHICH in
 		fi
 		set_parallel_def $mesp
 	    fi
-	    inc='-I../include'
-            if [ "$cc" = "true" ]; then
-               cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	       inc=${inc}" -I../include_cc"
-	    fi;;
+	    inc='-I../include -I../include_cc'
+            cpp=${cpp}" -DIMPLICIT_NONE";;
     convex) if [ "$mesp" = "dummy" ]; then
                 cpp="-P -DSYS_CONVEX -DNO_F90 -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-		set_cc_def $cc
 	    else
                 cpp="-P -DSYS_CONVEX -DNO_F90 -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
                 def='parallel.x'
 	    fi
-            if [ "$cc" = "true" ]; then
-	       cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	    fi
+            cpp=${cpp}" -DIMPLICIT_NONE"
             opt="-O2 -link \"-W\""
-	    inc='-I../include';;
+	    inc='-I../include -I../include_cc';;
     cray)   if [ "$mesp" = "dummy" ]; then
                 cpp="-DSYS_CRAY -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DVAR_VECTOR"
 	    else
                 cpp="-DSYS_CRAY -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DVAR_VECTOR $parop"
 	    fi
-	    inc='-I../include'
-            if [ "$cc" = "true" ]; then
-	       cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	       inc=${inc}" -I../include_cc"
-	    fi
+	    inc='-I../include -I../include_cc'
+	    cpp=${cpp}" -DIMPLICIT_NONE"
             opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
-            if [ "$cc" = "true" ]; then
-               def='cray_cc.x'
-            else
-               def='cray.x'
-	    fi;;
+            def='cray.x';;
     cray_t90) if [ "$mesp" = "dummy" ]; then
                 cpp="-DSYS_T90 -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DVAR_VECTOR"
             else
                 cpp="-DSYS_T90 -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DVAR_VECTOR $parop"
             fi
-            inc='-I../include'
-            if [ "$cc" = "true" ]; then
-	       cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	       inc=${inc}" -I../include"
-	    fi
+            inc='-I../include -I../include_cc'
+	    cpp=${cpp}" -DIMPLICIT_NONE"
             opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
-            if [ "$cc" = "true" ]; then
-               def='t90_cc.x'
-            else
-               def='t90.x'
-	    fi;;
+            def='t90.x';;
     cray_t3e) if [ "$mesp" = "dummy" ]; then
                 cpp="-DSYS_T3D -DVAR_SIRBIG -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 	    else
                 cpp="-DSYS_T3D -DVAR_SIRBIG -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	    fi
-	    inc='-I../include -I/opt/ctl/mpt/mpt/include'
-            if [ "$cc" = "true" ]; then
-	       cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	       inc=${inc}" -I../include_cc"
-	    fi
+	    inc='-I../include -I/opt/ctl/mpt/mpt/include -I../include_cc'
+            cpp=${cpp}" -DIMPLICIT_NONE"
             opt="-dp -F -Oaggress,scalar3,vector3,unroll2,msgs,negmsgs"
-            if [ "$cc" = "true" ]; then
-               def='t3d_cc.x'
-            else
-               def='t3d.x'
-	    fi
+            def='t3d.x'
             LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
     nec) if [ "$mesp" = "dummy" ]; then
            cpp="-cpp DSYS_NEC DVAR_SIRBIG D'INSTALL_WRKMEM=$memsiz' D'INSTALL_BASDIR=\"$basdir\"' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
-	   set_cc_def $cc
 	else
            cpp="DSYS_NEC DVAR_SIRBIG D'INSTALL_WRKMEM=$memsiz' D'INSTALL_BASDIR=\"$basdir\"' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
 	   set_parallel_def $mesp
 	fi
-        inc='-I../include'
-        if [ "$cc" = "true" ]; then
-           cpp=${cpp}" DCC_AARHUS DIMPLICIT_NONE"
-	   inc=${inc}" -I../include_cc"
-	fi
+        inc='-I../include -I../include_cc'
+        cpp=${cpp}" DIMPLICIT_NONE"
 	opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
     alpha)  if [ "$mesp" = "dummy" ]; then
                 cpp="$cpp -DSYS_DEC -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-		set_cc_def $cc
 	    else
                 cpp="$cpp -DSYS_DEC -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 		set_parallel_def $cc
 	    fi
-	    inc='-I../include'
-            if [ "$cc" = "true" ]; then
-	       cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	       inc=${inc}" -I../include_cc"
-	    fi
+	    inc='-I../include -I../include_cc'
+            cpp=${cpp}" -DIMPLICIT_NONE"
             opt='-O4 -fpe2';;
     sun4) if [ "$mesp" = "dummy" ]; then
            if [ $split = 'true' ] ; then
@@ -806,7 +755,6 @@ case $WHICH in
 	   else
               cpp="-DSYS_SUN -DNO_F90 -DVAR_SIRBIG -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR= \"$basdir\"'"
 	   fi
-	   set_cc_def $cc
           else
 	     if [ $split = 'true' ] ; then
               cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_SIRBIG -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR= \"$basdir\"' -D$parop"
@@ -815,40 +763,32 @@ case $WHICH in
 	     fi
 	     set_parallel_def $mesp
               fi
-              inc='-I../include'
-              if [ "$cc" = "true" ]; then
-	         cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-		 inc=${inc}" -I../include_cc"
-	      fi
+              inc='-I../include -I../include_cc'
+              cpp=${cpp}" -DIMPLICIT_NONE"
               opt='-O5 -Nc50';;
     hp) if [ "$mesp" = "dummy" ]; then
               cpp="-DSYS_HPUX -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-	      set_cc_def $cc
           else
               cpp="-DSYS_HPUX -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	      set_parallel_def $mesp
           fi
-          inc='-I../include'
-          if [ "$cc" = "true" ]; then
-	     cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	     inc=${inc}" -I../include_cc"
-	  fi
+          inc='-I../include -I../include_cc'
+          cpp=${cpp}" -DIMPLICIT_NONE"
           opt='+O2 +U77 +E4 +E5'
           LIB="-lV7 $LIB";;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then
               cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_SIRBIG -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-	      set_cc_def $cc linux
  	  else
               cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_SIRBIG -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
  	      set_def $mesp
  	  fi
           opt='-fast'
-	  inc='-I../include'
+	  inc='-I../include -I../include_cc'
+          cpp=${cpp}" -DIMPLICIT_NONE"
           copt='-fast';;
     linux) if [ "$mesp" = "dummy" ]; then
               cpp="-DSYS_LINUX -DVAR_SIRBIG -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-	      set_cc_def $cc linux
           else
               cpp="-DSYS_LINUX -DVAR_SIRBIG -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	      set_parallel_def $mesp
@@ -874,28 +814,19 @@ case $WHICH in
                   fi
                   cpp="-DVAR_G77 $cpp"
                   copt='-malign-double'
-                  if [ "$cc" = "true" ]; then
-	             cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	          fi
                   opt="-O3 -m$proc -ffast-math -fexpensive-optimizations -malign-double -funroll-loops -fno-globals -Wno-globals"
               fi
-              inc='-I../include'
-              if [ "$cc" = "true" ]; then
-                 cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-		 inc=${inc}" -I../include_cc"
-	      fi;;
+	      def='linux.x'
+              inc='-I../include -I../include_cc'
+              cpp=${cpp}" -DIMPLICIT_NONE";;
     hal) if [ "$mesp" = "dummy" ]; then
                 cpp="-DSYS_HAL -DVAR_SIRBIG -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -Wp,-P"
-		set_cc_def $cc
             else
                 cpp="-DSYS_HAL -DVAR_SIRBIG -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop -Wp,-P"
                 def='parallel.x'
             fi
-            inc='-I../include'
-            if [ "$cc" = "true" ]; then
-	       cpp=${cpp}" -DCC_AARHUS -DIMPLICIT_NONE"
-	       inc=" -I../include_cc"
-	    fi
+            inc='-I../include -I../include_cc'
+            cpp=${cpp}" -DIMPLICIT_NONE"
             opt="-Kfast,gs,V8PLUS,eval -fs"
             LIB="$LIB -L/usr/ucblib -lucb"
 esac

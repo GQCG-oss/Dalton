@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abatro.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abatro.F,v 1.2 2001-02-12 18:17:50 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck troinp */
@@ -1211,22 +1211,18 @@ C
 C
 C              DGD vector
 C
-               IF (NIND .GT. 0) THEN
-                  CALL DGEMM('N','N',NDEP,NAX,NIND,-1.D0,
+               IF (NIND .GT. 0) CALL DGEMM('N','N',NDEP,NAX,NIND,-1.D0,
      &                       WORK(KTDI),NDEP,
      &                       WORK(KDGI),NIND,1.D0,
      &                       WORK(KBMAT),NDEP)
-                  CALL DGEMM('N','N',NDEP,NAX,NDEP,1.D0,
-     &                       WORK(KTDINV),NDEP,
-     &                       WORK(KBMAT),NDEP,0.D0,
-     &                       WORK(KDGD),NDEP)
-                  IF (IPRINT .GE. 10) THEN
-                     CALL AROUND('DGD - TRAROT')
-                     CALL OUTPUT(WORK(KDGD),1,NDEP,1,NAX,NDEP,NAX,1,
-     *                           LUPRI)
-                  END IF
-               ELSE
-                  CALL DZERO(WORK(KDGD),NDEP*NAX)
+               CALL DGEMM('N','N',NDEP,NAX,NDEP,1.D0,
+     &                    WORK(KTDINV),NDEP,
+     &                    WORK(KBMAT),NDEP,0.D0,
+     &                    WORK(KDGD),NDEP)
+               IF (IPRINT .GE. 10) THEN
+                  CALL AROUND('DGD - TRAROT')
+                  CALL OUTPUT(WORK(KDGD),1,NDEP,1,NAX,NDEP,NAX,1,
+     *                 LUPRI)
                END IF
 C
 C              Construct DIPTR

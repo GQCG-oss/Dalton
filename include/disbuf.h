@@ -1,5 +1,5 @@
 C
-C$Id: disbuf.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
+C$Id: disbuf.h,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
 C
       COMMON /DISBUF/ NDIST, KDSBF, KDSIBF, KDSLBF, KDSNCT,
-     &                KDSORB, KORBDS, KDSEND
+     &                KDSORB, KORBDS, KDSEND, LDSBUF

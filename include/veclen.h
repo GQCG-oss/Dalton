@@ -1,4 +1,4 @@
 C
-C$Id: veclen.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
+C$Id: veclen.h,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
 C
-      COMMON /VECLEN/ IVECLN
+      COMMON /VECLEN/ IVECLN, NODD

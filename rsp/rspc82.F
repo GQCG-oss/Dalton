@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspc82.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: rspc82.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1006,7 +1006,7 @@ C
       DIMENSION XINDX(*),H2AC(*)
 #include <ibndxdef.h>
       PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1=-1.0D0 )
-      PARAMETER ( REDFAC = 0.3D0 , THRLDP = 1.D-20, DTEST=1.0D-4  )
+      PARAMETER ( REDFAC = 0.3D0 , DTEST=1.0D-4  )
 C
 C Used from common blocks:
 C  INFRSP: ?
@@ -1021,6 +1021,7 @@ C
 #include <infopt.h>
 #include <infdim.h>
 #include <abares.h>
+#include <thrldp.h>
 C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       DIMENSION KEX(MAXVEC), TEST(*)
@@ -3137,7 +3138,7 @@ C
 C
 #include <ibndxdef.h>
 C
-      PARAMETER ( THRLDP=1.0D-20 , TOLEQL=1.0D-6 )
+      PARAMETER ( TOLEQL=1.0D-6 )
       PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1 = -1.0D0 )
 C
 #include <priunit.h>
@@ -3148,6 +3149,7 @@ C
 #include <infpri.h>
 #include <infopt.h>
 #include <phpinf.h>
+#include <thrldp.h>
       LOGICAL DOEVEC
 C
 C WORK SPACE ALLOCATION

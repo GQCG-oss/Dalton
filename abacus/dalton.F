@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: dalton.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: dalton.F,v 1.2 2001-02-12 18:17:51 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -129,16 +129,25 @@ C
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
       CHARACTER*20 WRKMEM
 #endif
-#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
+#if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
 #else
 #if defined (SYS_CONVEX) || (defined (SYS_LINUX) && defined (VAR_G77))
       DIMENSION WORK(2)
 #else
+#if defined (SYS_NEC) || defined (SYS_AIX)
+#if defined (NO_F90)
+      POINTER (WADDR,WORK(1))
+#else
+      DOUBLE PRECISION , ALLOCATABLE , DIMENSION(:) :: WORK
+      INTEGER                                       :: WADDR
+#endif
+#else
 C
 C     Static memory allocation
 C
       DIMENSION WORK(LWORK+2)
+#endif
 #endif
 #endif
       DATA WRKDLM/8H*WRKDLM*/
@@ -197,12 +206,18 @@ C
      &       /'       (1) Insufficient free memory+page+swap space',
      &       /'       (2) "datasize" resource limit too small.')
 C
-#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_HAL) || defined (SYS_DEC)
-#if defined (SYS_AIX)
-      WADDR = MALLOC(%VAL(NBYTES))
-#endif
-#if defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
+#if defined (SYS_IRIX) || defined (SYS_AIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_HAL) || defined (SYS_DEC)
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       WADDR = MALLOC(NBYTES)
+#endif
+
+#if defined (SYS_NEC) || defined (SYS_AIX)
+#if defined (NO_F90)
+      WADDR = MALLOC(NBYTES)
+#else
+      WADDR = 1
+      ALLOCATE (WORK(LMWORK+2),STAT=I)
+#endif
 #endif
 #if (defined (SYS_LINUX) && defined (VAR_G77))
       WADDR = LINUX_MEM_ALLO(IWOFF,NBYTES,WORK)
@@ -211,29 +226,6 @@ C
          WRITE(LUERR,1000)
          IF (LUERR .NE. 0) WRITE(0,1000)
          CALL QUIT(' DALTON: memory allocation failure')
-      END IF
-#endif
-#if defined (SYS_CONVEX)
-      CALL NALLOC(NBYTES,IPTR,IERR)
-      IF (IERR .LT. 0) THEN
-         WRITE(LUERR,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (LUERR .NE. 0)
-     &   WRITE(0,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (IERR .EQ. -3) THEN
-            WRITE(LUERR,1000)
-            IF (LUERR .NE. 0) WRITE(0,1000)
-         END IF
-         CALL QUIT(' DALTON: memory allocation failure')
-      END IF
-      IWOFFB = IPTR - LOC(WORK(1))
-      IWOFF  = IWOFFB / 8
-      IF (IWOFF*8 .NE. IWOFFB) THEN
-         WRITE (0,'(/A,3(/A,I12))')
-     &      'Convex alignment problem, see DALTON main program',
-     &      '   pointer from NALLOC    :',IPTR,
-     &      '   off-set to WORK, IWOFFB=',IWOFFB,
-     &      '   mod(IWOFFB,8) =         ',IWOFFB - IWOFF*8
-         CALL QUIT('DALTON: Convex alignment failure, see main program')
       END IF
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
@@ -320,6 +312,7 @@ C#endif
 C
 C     Back to old version...   vb jan-01
 C
+      CALL GPIOIN
       CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL MEMINI(LUPRI,LUERR)
@@ -335,41 +328,44 @@ C
          CALL TITLER(' DALTON - An electronic structure program ',
      &               '*',111)
 C
-C Aug. 98/kr+hjaaj
-C next line is for when Final release 1.1 instead of prerelease
-C    *    ' This is output from DALTON (Release 1.1, 1999) ',
          WRITE (LUPRI,'(T15,A,//,T26,A,/,6(/T12,A),//,T26,A,//,
      &        (T12,A))')
-     *   ' This is output from DALTON (Release 1.1, September 2000)',
+     *   ' This is output from DALTON (Release 1.2, April 2001)',
      *    ' Principal authors:',
-     *    ' Trygve Helgaker,     University of Oslo,        Norway ',
-     *    ' Hans Joergen Jensen, SDU - Odense University,   Denmark',
-     *    ' Poul Joergensen,     Aarhus University,         Denmark',
-     *    ' Jeppe Olsen,         Aarhus University,         Denmark',
-     *    ' Kenneth Ruud,        San Diego Superc. Center,  USA    ',
-     *    ' Hans Aagren,         KTH Stockholm,             Sweden ',
+     *    ' Trygve Helgaker,       University of Oslo,         Norway ',
+     *    ' Hans Joergen Jensen,   SDU - Odense University,    Denmark',
+     *    ' Poul Joergensen,       Aarhus University,          Denmark',
+     *    ' Jeppe Olsen,           Aarhus University,          Denmark',
+     *    ' Kenneth Ruud,          San Diego Superc. Center,   USA    ',
+     *    ' Hans Aagren,           KTH Stockholm,              Sweden ',
      *    ' Contributors:',
-     *    ' Keld L. Bak,         UNI-C,                     Denmark',
-     *    ' Vebjoern Bakken,     University of Oslo,        Norway ',
-     *    ' Ove Christiansen,    University of Lund,        Sweden ',
-     *    ' Paal Dahle,          University of Oslo,        Norway ',
-     *    ' Erik K. Dalskov,     UNI-C,                     Denmark',
-     *    ' Thomas Enevoldsen,   SDU - Odense University,   Denmark',
-     *    ' Berta Fernandez,     U.of Santiago de Compostela,Spain ',
-     *    ' Hanne Heiberg,       University of Oslo,        Norway ',
-     *    ' Hinne Hettema,       University of Auckland,    NZ     ',
-     *    ' Dan Jonsson,         San Diego Superc. Center,  USA    ',
-     *    ' Sheela Kirpekar,     SDU - Odense University,   Denmark',
-     *    ' Rika Kobayashi,      Cambridge University,      England',
-     *    ' Henrik Koch,         SDU - Odense University,   Denmark',
-     *    ' Kurt V.Mikkelsen,    University of Copenhagen,  Denmark',
-     *    ' Patrick Norman,      University of Linkoeping,  Sweden ',
-     *    ' Martin J. Packer,    University of Sheffield,   UK     ',
-     *    ' Torgeir A. Ruden,    University of Oslo,        Norway ',
-     *    ' Trond Saue,          University of Toulouse,    France ',
-     *    ' Stephan P. A. Sauer, University of Copenhagen,  Denmark',
-     *    ' Peter R.Taylor,      San Diego Superc. Center,  USA    ',
-     *    ' Olav Vahtras,        PDC, Stockholm,            Sweden '
+     *    ' Keld L. Bak,           UNI-C,                      Denmark',
+     *    ' Vebjoern Bakken,       University of Oslo,         Norway ',
+     *    ' Ove Christiansen,      University of Lund,         Sweden ',
+     *    ' Sonia Coriani,         University of Trieste,      Italy  ',
+     *    ' Paal Dahle,            University of Oslo,         Norway ',
+     *    ' Erik K. Dalskov,       UNI-C,                      Denmark',
+     *    ' Thomas Enevoldsen,     SDU - Odense University,    Denmark',
+     *    ' Berta Fernandez,       U.of Santiago de Compostela,Spain  ',
+     *    ' Christof Haettig,      Forschungszentrum Karlsruhe,Germany', 
+     *    ' Kasper Hald,           Aarhus University,          Denmark',
+     *    ' Asger Halkier,         Aarhus University,          Denmark',
+     *    ' Hanne Heiberg,         University of Oslo,         Norway ',
+     *    ' Hinne Hettema,         University of Auckland,     NZ     ',
+     *    ' Dan Jonsson,           San Diego Superc. Center,   USA    ',
+     *    ' Sheela Kirpekar,       SDU - Odense University,    Denmark',
+     *    ' Rika Kobayashi,        Cambridge University,       England',
+     *    ' Henrik Koch,           SDU - Odense University,    Denmark',
+     *    ' Kurt V.Mikkelsen,      University of Copenhagen,   Denmark',
+     *    ' Patrick Norman,        University of Linkoeping,   Sweden ',
+     *    ' Martin J. Packer,      University of Sheffield,    UK     ',
+     *    ' Torgeir A. Ruden,      University of Oslo,         Norway ',
+     *    ' Trond Saue,            University of Toulouse,     France ',
+     *    ' Stephan P. A. Sauer,   University of Copenhagen,   Denmark',
+     *    ' Bernd Schimmelpfennig, KTH Stockholm,              Sweden ',
+     *    ' K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark',
+     *    ' Peter R.Taylor,        San Diego Superc. Center,   USA    ',
+     *    ' Olav Vahtras,          PDC, Stockholm,             Sweden '
 C
          WRITE (LUPRI,'(72A1/)') ('-',I=1,72)
          WRITE (LUPRI,'(//,(5X,A))')
@@ -389,13 +385,15 @@ C
      &'appropriate citation would be:',
      &' ',
      &'T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,'//
-     &'H. Aagren,','K.L. Bak, V. Bakken, O. Christiansen,'//
-     &'P. Dahle, E.K. Dalskov, T. Enevoldsen,','B. Fernandez,'//
+     &'H. Aagren,','K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,'//
+     &'P. Dahle, E.K. Dalskov,','T. Enevoldsen, B. Fernandez,'//
+     &'C. Haettig, K. Hald, A. Halkier,',
      &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,',
      &'H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden,'//
      &' T. Saue,',
-     &'S.P.A. Sauer, P.R. Taylor, and O. Vahtras:',
-     &'"Dalton release 1.1 (2000), an electronic structure program"'
+     &'S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,'//
+     &'P.R. Taylor, and O. Vahtras:',
+     &'"Dalton release 1.2 (2001), an electronic structure program"'
 C
 C     Stamp date and time and hostname to output
 C
