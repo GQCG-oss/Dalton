@@ -2184,500 +2184,6 @@ C
   200 CONTINUE
       RETURN
       END
-C  /* Deck machb */
-      SUBROUTINE MACHB (NCORD,NINTER,BMAT,XA,YA,ZA,QQ,CTYPE,WRI,QONLY)
-C
-C     Subroutine to set up B matrix for transformation from Cartesian to
-C     internal coordinates. This routine has been adapted from Pulay's
-C     program TEXAS.
-C
-C
-C     NCORD - 3*number of atoms input parameter
-C     NINTER - number of internal coordinates
-C     BMAT - the transpose of the B matrix, B(NCORD,NINTER)
-C     XA,YA,ZA - cartesian coordinates in angstroms
-C     QQ contains the values of the internal coordinates (OUTPUT)
-C     CTYPE is 0.0 except -1.0 for stretch and 1.0 for invers stretch
-C     WRI is .TRUE. if the definition of internal coordinates is
-C         to be O printed
-C     QONLY is .TRUE. if only coordinates (no B matrix) are to be
-C           calculated
-C
-C
-C                      INPUT DATA
-C
-C     Each elementary valence coordinate on a separate card
-C
-C                        COL. 1
-C
-C     'K' or ' ' (blank). If 'K' a new coordinate begins, if blank
-C     then the composite internal coordinate begun earlier is
-C     continued. Any other character terminates the input.
-C
-C                        COLS. 2-9
-C
-C     Scale factor for the total coordinate (only if there is 'K' in
-C     column 1). Blank or zero is interpreted as 1.0.
-C
-C                        COLS. 21-24
-C
-C     Coordinate type STRE, INVR, BEND, OUT, TORS, LIN1, LIN2
-C
-C                        COLS. 31-40,41-50,51-60,61-70
-C
-C     Participating atoms A,B,C,D (FORMAT 4F10.X).
-C
-C     A and B are given for 'STRE' - order arbitrary
-C
-C     A and B are given for 'INVR' - order arbitrary
-C
-C     A,B,C for 'BEND' - A and B are end atoms, C is the apex atom.
-C     Atom A out of the BCD plane - C is the central atom -
-C     coordinate positive if A is displaced toward the vector
-C     product DB*DC
-C
-C     Torsion A-B-C-D, positive as in the Wilson-Decius-Cross book
-C     Note that the value of the coordinate varies between -pi/2 to
-C     3pi/2   NOT  between -pi/2 to +PI/2.
-C
-C     LIN1 L  collinear bending A-B-C distorted in the plane of ABD
-C     Positive if A moves toward D.
-C
-C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
-C     ABD - positive if A moves toward the vector cross product CD*CA.
-C     The linear bendings are A-C-B, i.e., the apex atom is third.
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <codata.h>
-      LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
-      PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)
-C
-      CHARACTER TIPUS(7)*4, TYP*4, WE*1, TLAST*4
-      CHARACTER*6 NAME1, NAME2, NAME3, NAME4
-#include <cbivib.h>
-#include <nuclei.h>
-      DIMENSION QQ(*),
-     &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
-     &          WW(3), ZZ(3), UV(12),
-     &          BMAT(NCORD,NINTER), XA(*), YA(*), ZA(*), CTYPE(NINTER)
-      EQUIVALENCE (KA,IA(1)), (KB,IA(2)), (KC,IA(3)), (KD,IA(4)),
-     &            (UV(1),UU(1)), (UV(4),VV(1)), (UV(7),WW(1)),
-     &            (UV(10),ZZ(1))
-      DATA TIPUS/'STRE','INVR','BEND','OUT ','TORS','LIN1','LIN2'/,
-     &     ANULL/1.0/
-C
-      IF (WRI) THEN
-         CALL HEADER('DEFINITION OF INTERNAL COORDINATES',-1)
-         WRITE (LUPRI,'(5X,A,25X,A,//)')
-     *    '#     type     atoms','coefficient  scaling'
-      END IF
-      I     = 0
-      CNORM = D0
-      CSCAL = D0
-      TLAST = '    '
-      ICARD = 1
-      GETB = .NOT. QONLY
-   20 CONTINUE
-      IF (FREAD) THEN
-         READ (LUCMD,'(A1)') WE
-         BACKSPACE 5
-      ELSE
-         WE = KWORD(ICARD)
-      END IF
-      NEW = WE .EQ. 'K'
-      OLD = WE .EQ. ' '
-C
-C     All coordinates have been read - normalize last coordinate
-C
-      IF (.NOT.NEW .AND. .NOT.OLD) THEN
-         CNORM = CSCAL/SQRT(CNORM)
-         QQ(I) = QQ(I)*CNORM
-         IF (GETB) THEN
-            DO 50 K = 1, NCORD
-               BMAT(K,I) = BMAT(K,I)*CNORM
-   50       CONTINUE
-         END IF
-         GO TO 370
-      END IF
-C
-C     Not finished yet...
-C
-      IF (FREAD) THEN
-         READ (LUCMD,70)  WE, CC, CCOEF, TYP, IA
-         KWORD(ICARD)   = WE
-         SCALE(ICARD)   = CC
-         COEF(ICARD)    = CCOEF
-         ITYPCD(ICARD)   = TYP
-         IATOMS(1,ICARD) = IA(1)
-         IATOMS(2,ICARD) = IA(2)
-         IATOMS(3,ICARD) = IA(3)
-         IATOMS(4,ICARD) = IA(4)
-      ELSE
-         WE    = KWORD(ICARD)
-         CC    = SCALE(ICARD)
-         CCOEF = COEF(ICARD)
-         TYP   = ITYPCD(ICARD)
-         IA(1) = IATOMS(1,ICARD)
-         IA(2) = IATOMS(2,ICARD)
-         IA(3) = IATOMS(3,ICARD)
-         IA(4) = IATOMS(4,ICARD)
-      END IF
-      NAME1 = '      '
-      NAME2 = '      '
-      NAME3 = '      '
-      NAME4 = '      '
-      IF (IA(1) .NE. 0) NAME1 = NAMDEP(IA(1))
-      IF (IA(2) .NE. 0) NAME2 = NAMDEP(IA(2))
-      IF (IA(3) .NE. 0) NAME3 = NAMDEP(IA(3))
-      IF (IA(4) .NE. 0) NAME4 = NAMDEP(IA(4))
-      ICARD = ICARD + 1
-   70 FORMAT (A1,F9.5,F10.4,A4,6X,4F10.4)
-      IF (TYP .EQ. '    ') TYP = TLAST
-      TLAST = TYP
-      IF (CC    .EQ. D0) CC = D1
-      IF (CCOEF .EQ. D0) CCOEF  = D1
-C
-C     Continuation of coordinate
-C
-      IF (OLD) THEN
-         CNORM = CNORM + CCOEF*CCOEF
-C
-C     New coordinate
-C
-      ELSE IF (NEW) THEN
-C
-C        Normalize old coordinate
-C
-         IF (I.NE.0) THEN
-            IF (WRI) WRITE (LUPRI,'()')
-            CNORM = CSCAL/SQRT(CNORM)
-            IF (GETB) THEN
-               DO 90 K = 1, NCORD
-                  BMAT(K,I) = BMAT(K,I)*CNORM
-   90          CONTINUE
-            END IF
-            QQ(I) = QQ(I)*CNORM
-         END IF
-C
-C        Initialize new coordinate
-C
-         I = I + 1
-         QQ(I) = D0
-         CSCAL = CC
-         CNORM = CCOEF*CCOEF
-         IF (GETB) THEN
-            DO 120 J = 1, NCORD
-               BMAT(J,I) = D0
-  120       CONTINUE
-         END IF
-      END IF
-C
-C     Determine type
-C
-      DO 150 K = 1, 7
-         IF (TYP .EQ. TIPUS(K)) GO TO 170
-  150 CONTINUE
-C
-C     If type unknown return
-C
-      WRITE (LUPRI,160) I
-  160 FORMAT (/,' Undefined int. coordinate type at No.',I3,
-     &        /,1X,10('****'))
-      GO TO 380
-C
-C     Print type
-C
-  170 CONTINUE
-      IF (WRI) THEN
-         IF (NEW) THEN
-            WRITE (LUPRI,180) I,TYP,NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
-         ELSE
-            WRITE (LUPRI,181)       NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
-         END IF
-      END IF
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-  180 FORMAT (3X,I3,1H.,4X,A4,5X,4(A6,2X),F10.5,F12.6)
-#else
-  180 FORMAT (3X,I3,1H.,A8,5X,4(A6,2X),F10.5,F12.6)
-#endif
-  181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
-C
-C     Test that all specified atoms are well defined
-C
-      NAB = NCORD/3
-      IF (KA.LT.1 .OR. KA.GT.NAB .OR. KB.LT.1 .OR. KB.GT.NAB) GO TO 350
-      IF (K.GT.2  .AND. (KC.LT.1 .OR. KC.GT.NAB)) GO TO 350
-      IF (K.GT.3  .AND. (KD.LT.1 .OR. KD.GT.NAB)) GO TO 350
-C
-      GO TO (190,200,210,230,260,280,300), K
-C
-C..... stretch
-C
-  190 CALL VEKTOR (UU,R1,KA,KB,XA,YA,ZA)
-      UU(1) =   UU(1)*ANULL
-      UU(2) =   UU(2)*ANULL
-      UU(3) =   UU(3)*ANULL
-      VV(1) = - UU(1)
-      VV(2) = - UU(2)
-      VV(3) = - UU(3)
-      IA(3) = 0
-      IA(4) = 0
-      QQ(I) = QQ(I) + R1*CCOEF
-      CTYPE(I) = D1/XTANG
-      GO TO 320
-C
-C.....inverse
-C
-  200 CALL VEKTOR (UU,R1,KA,KB,XA,YA,ZA)
-      RM1   = D1/R1
-      RM2   = RM1*RM1
-      UU(1) = - RM2*UU(1)*ANULL
-      UU(2) = - RM2*UU(2)*ANULL
-      UU(3) = - RM2*UU(3)*ANULL
-      VV(1) = - UU(1)
-      VV(2) = - UU(2)
-      VV(3) = - UU(3)
-      IA(3) = 0
-      IA(4) = 0
-      QQ(I) = QQ(I) + RM1*CCOEF
-      CTYPE(I) = XTANG
-      GO TO 320
-C
-C.....bending
-C
-  210 CALL VEKTOR (U,R1,KA,KC,XA,YA,ZA)
-      CALL VEKTOR (V,R2,KB,KC,XA,YA,ZA)
-      CO = V3DOT(U,V)
-      SI = S2(CO)
-      DO 220 L = 1, 3
-         UU(L) = (CO*U(L) - V(L))/(SI*R1)
-         VV(L) = (CO*V(L) - U(L))/(SI*R2)
-         WW(L) = - UU(L) - VV(L)
-  220 CONTINUE
-      IA(4) = 0
-      QQ(I) = QQ(I) + CCOEF*DARCOS(CO)
-      CTYPE(I) = D1
-      GO TO 320
-C
-C.....out of plane
-C
-  230 CALL VEKTOR (U,R1,KA,KD,XA,YA,ZA)
-      CALL VEKTOR (V,R2,KB,KD,XA,YA,ZA)
-      CALL VEKTOR (W,R3,KC,KD,XA,YA,ZA)
-      CALL V3NRML (V,W,Z)
-      STETA = V3DOT(U,Z)
-      CTETA = S2(STETA)
-      CFI1  = V3DOT(V,W)
-      SFI1  = S2(CFI1)
-      CFI2  = V3DOT(W,U)
-      CFI3  = V3DOT(V,U)
-      DEN   = CTETA*SFI1**2
-      ST2   = (CFI1*CFI2 - CFI3)/(R2*DEN)
-      ST3   = (CFI1*CFI3 - CFI2)/(R3*DEN)
-      DO 240 L = 1, 3
-         VV(L) = Z(L)*ST2
-         WW(L) = Z(L)*ST3
-  240 CONTINUE
-      CALL V3NRML (Z,U,X)
-      CALL V3NRML (U,X,Z)
-      DO 250 L = 1, 3
-         UU(L) = Z(L)/R1
-         ZZ(L) = - UU(L) - VV(L) - WW(L)
-  250 CONTINUE
-      CX = - CCOEF
-      IF (STETA .LT. D0) CX = CCOEF
-      QQ(I) = QQ(I) - CX*DARCOS(CTETA)
-      CTYPE(I) = D1
-      GO TO 320
-C
-C.....torsion
-C
-  260 CALL VEKTOR (U,R1,KA,KB,XA,YA,ZA)
-      CALL VEKTOR (V,R2,KC,KB,XA,YA,ZA)
-      CALL VEKTOR (W,R3,KC,KD,XA,YA,ZA)
-      CALL V3NRML (U,V,Z)
-      CALL V3NRML (W,V,X)
-      CO  = V3DOT(U,V)
-      CO2 = V3DOT(V,W)
-      SI  = S2(CO)
-      SI2 = S2(CO2)
-      DO 270 L = 1, 3
-         UU(L) = Z(L)/(R1*SI)
-         ZZ(L) = X(L)/(R3*SI2)
-         VV(L) = (R1*CO/R2 - D1)*UU(L) - R3*CO2/R2*ZZ(L)
-         WW(L) = -UU(L) - VV(L) - ZZ(L)
-  270 CONTINUE
-      CO   = V3DOT(Z,X)
-      U(1) = Z(2)*X(3) - Z(3)*X(2)
-      U(2) = Z(3)*X(1) - Z(1)*X(3)
-      U(3) = Z(1)*X(2) - Z(2)*X(1)
-      SI3  = SQRT(U(1)**2 + U(2)**2 + U(3)**2)
-      CO2  = V3DOT(U,V)
-      S    = ARC1(-CO,SI3)
-      IF (CO2 .LT. D0) S = - S
-      IF (S .GT. (PI*0.5D0)) S = S - 2.0D0*PI
-      QQ(I) = QQ(I) - CCOEF*S
-      CTYPE(I) = D1
-C
-C     Remember that the range of this coordinate is -pi/2 to 3*pi/2
-C     in order to shift the discontinuity off the planar position.
-C
-      GO TO 320
-C
-C.....linear coplanar bending
-C
-  280 CALL VEKTOR (U,R1,KA,KC,XA,YA,ZA)
-      CALL VEKTOR (V,R2,KD,KC,XA,YA,ZA)
-      CALL VEKTOR (X,R2,KB,KC,XA,YA,ZA)
-      CO    = V3DOT(V,U)
-      CO2   = V3DOT(X,V)
-      QQ(I) = QQ(I) + CCOEF*(PI - DARCOS(CO) - DARCOS(CO2))
-      CALL V3NRML (V,U,W)
-      CALL V3NRML (U,W,Z)
-      CALL V3NRML (X,V,W)
-      CALL V3NRML (W,X,U)
-C
-C     Coordinate positiv if atom A moves towards atom D
-C
-      DO 290 L = 1, 3
-         UU(L) = Z(L)/R1
-         VV(L) = U(L)/R2
-         WW(L) = - UU(L) - VV(L)
-  290 CONTINUE
-      IA(4) = 0
-      CTYPE(I) = D1
-      GO TO 320
-C
-C.....linear perpendicular bending
-C
-  300 CALL VEKTOR (U,R1,KA,KC,XA,YA,ZA)
-      CALL VEKTOR (V,R2,KD,KC,XA,YA,ZA)
-      CALL VEKTOR (Z,R2,KB,KC,XA,YA,ZA)
-      CALL V3NRML (V,U,W)
-      CALL V3NRML (Z,V,X)
-      DO 310 L = 1, 3
-         UU(L) = W(L)/R1
-         VV(L) = X(L)/R2
-         WW(L) = - UU(L) - VV(L)
-  310 CONTINUE
-      IA(4) = 0
-      CO    = V3DOT(U,W)
-      CO2   = V3DOT(Z,W)
-      QQ(I) = QQ(I) + CCOEF*(PI - DARCOS(CO) - DARCOS(CO2))
-      CTYPE(I) = D1
-C
-  320 CONTINUE
-      IF (GETB) THEN
-         DO 340 J = 1, 4
-            M = IA(J)
-            IF (M .GT. 0) THEN
-               M = M - 1
-               J1 = 3*(J - 1)
-               DO 330 L = 1, 3
-                  M1 = 3*M + L
-                  L1 = J1 + L
-                  BMAT(M1,I) = UV(L1)*CCOEF + BMAT(M1,I)
-  330          CONTINUE
-            END IF
-  340    CONTINUE
-      END IF
-      GO TO 20
-C
-  350 CONTINUE
-      WRITE (LUPRI,360) I
-  360 FORMAT (/' Atoms erroneously defined, coordinate No.',I3,
-     &        /1X,10('****'))
-  370 CONTINUE
-  380 RETURN
-      END
-C  /* Deck arc1 */
-      FUNCTION ARC1 (X,Y)
-#include <implicit.h>
-#include <pi.h>
-C
-      IF (ABS(X) .LT. 1.0 D-11) THEN
-         ARC1 = PI / 2
-      ELSE
-         S = ATAN(Y/X)
-         IF (X .LT. 0.0 D0) S = S + PI
-         ARC1 = S
-      END IF
-      RETURN
-      END
-C  /* Deck darcos */
-      FUNCTION DARCOS (X)
-#include <implicit.h>
-#include <pi.h>
-C
-      IF (X .GE. 1.0 D0 ) THEN
-         DARCOS = 0.0 D0
-      ELSE IF (X .LE. -1.0 D0) THEN
-         DARCOS = PI
-      ELSE IF (ABS(X) .LT. 1.0 D-11) THEN
-         DARCOS = PI / 2
-      ELSE
-         X1 = SQRT(1.0 D0 - X*X)
-         S  = ATAN(X1/X)
-         IF (X .LT. 0.0) S = S + PI
-         DARCOS = S
-      END IF
-      RETURN
-      END
-C  /* Deck vektor */
-      SUBROUTINE VEKTOR (U,R,I,J,XA,YA,ZA)
-#include <implicit.h>
-      DIMENSION U(3), XA(*), YA(*), ZA(*)
-C
-C     Bildet den normierten Entfernungsvektor vom Kern J nach Kern I
-C     und die Entfernung R.
-C
-      U(1) = XA(I)-XA(J)
-      U(2) = YA(I)-YA(J)
-      U(3) = ZA(I)-ZA(J)
-      R    = SQRT(V3DOT(U,U))
-      CALL V3NOM (U)
-      RETURN
-      END
-C  /* Deck v3nom */
-      SUBROUTINE V3NOM (U)
-#include <implicit.h>
-      DIMENSION U(3)
-      X = 1.0 D0 / SQRT(V3DOT(U,U))
-      DO 10 I = 1,3
-         U(I) = U(I)*X
-   10 CONTINUE
-      RETURN
-      END
-C  /* Deck s2 */
-      FUNCTION S2 (X)
-#include <implicit.h>
-      S2 = SQRT(1.0 D0 - X*X)
-      RETURN
-      END
-C  /* Deck v3dot */
-      FUNCTION V3DOT (U,V)
-#include <implicit.h>
-      DIMENSION U(3), V(3)
-      V3DOT = U(1)*V(1) + U(2)*V(2) + U(3)*V(3)
-      RETURN
-      END
-C  /* Deck v3nrml */
-      SUBROUTINE V3NRML (U,V,W)
-#include <implicit.h>
-      DIMENSION U(3), V(3), W(3)
-C
-C     99999...  W wird ein senkrecht auf die Ebene(U,V) stehender
-C     Einheitor
-C
-      W(1) = U(2)*V(3)-U(3)*V(2)
-      W(2) = U(3)*V(1)-U(1)*V(3)
-      W(3) = U(1)*V(2)-U(2)*V(1)
-      CALL V3NOM (W)
-      RETURN
-      END
-C  /* Deck rpflin */
       FUNCTION RPFLIN(C)
 C
 C 27-May-1986 hjaaj + tuh
@@ -4517,3 +4023,497 @@ C
 C
       RETURN
       END
+C  /* Deck machb */
+      SUBROUTINE MACHB (NCORD,NINTER,BMAT,XA,YA,ZA,QQ,CTYPE,WRI,QONLY)
+C
+C     Subroutine to set up B matrix for transformation from Cartesian to
+C     internal coordinates. This routine has been adapted from Pulay's
+C     program TEXAS.
+C
+C
+C     NCORD - 3*number of atoms input parameter
+C     NINTER - number of internal coordinates
+C     BMAT - the transpose of the B matrix, B(NCORD,NINTER)
+C     XA,YA,ZA - cartesian coordinates in angstroms
+C     QQ contains the values of the internal coordinates (OUTPUT)
+C     CTYPE is 0.0 except -1.0 for stretch and 1.0 for invers stretch
+C     WRI is .TRUE. if the definition of internal coordinates is
+C         to be O printed
+C     QONLY is .TRUE. if only coordinates (no B matrix) are to be
+C           calculated
+C
+C
+C                      INPUT DATA
+C
+C     Each elementary valence coordinate on a separate card
+C
+C                        COL. 1
+C
+C     'K' or ' ' (blank). If 'K' a new coordinate begins, if blank
+C     then the composite internal coordinate begun earlier is
+C     continued. Any other character terminates the input.
+C
+C                        COLS. 2-9
+C
+C     Scale factor for the total coordinate (only if there is 'K' in
+C     column 1). Blank or zero is interpreted as 1.0.
+C
+C                        COLS. 21-24
+C
+C     Coordinate type STRE, INVR, BEND, OUT, TORS, LIN1, LIN2
+C
+C                        COLS. 31-40,41-50,51-60,61-70
+C
+C     Participating atoms A,B,C,D (FORMAT 4F10.X).
+C
+C     A and B are given for 'STRE' - order arbitrary
+C
+C     A and B are given for 'INVR' - order arbitrary
+C
+C     A,B,C for 'BEND' - A and B are end atoms, C is the apex atom.
+C     Atom A out of the BCD plane - C is the central atom -
+C     coordinate positive if A is displaced toward the vector
+C     product DB*DC
+C
+C     Torsion A-B-C-D, positive as in the Wilson-Decius-Cross book
+C     Note that the value of the coordinate varies between -pi/2 to
+C     3pi/2   NOT  between -pi/2 to +PI/2.
+C
+C     LIN1 L  collinear bending A-B-C distorted in the plane of ABD
+C     Positive if A moves toward D.
+C
+C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
+C     ABD - positive if A moves toward the vector cross product CD*CA.
+C     The linear bendings are A-C-B, i.e., the apex atom is third.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <codata.h>
+      LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
+      PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)
+C
+      CHARACTER TIPUS(7)*4, TYP*4, WE*1, TLAST*4
+      CHARACTER*6 NAME1, NAME2, NAME3, NAME4
+#include <cbivib.h>
+#include <nuclei.h>
+      DIMENSION QQ(*),
+     &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
+     &          WW(3), ZZ(3), UV(12),
+     &          BMAT(NCORD,NINTER), XA(*), YA(*), ZA(*), CTYPE(NINTER)
+      EQUIVALENCE (KA,IA(1)), (KB,IA(2)), (KC,IA(3)), (KD,IA(4)),
+     &            (UV(1),UU(1)), (UV(4),VV(1)), (UV(7),WW(1)),
+     &            (UV(10),ZZ(1))
+      DATA TIPUS/'STRE','INVR','BEND','OUT ','TORS','LIN1','LIN2'/,
+     &     ANULL/1.0/
+C
+      IF (WRI) THEN
+         CALL HEADER('DEFINITION OF INTERNAL COORDINATES',-1)
+         WRITE (LUPRI,'(5X,A,25X,A,//)')
+     *    '#     type     atoms','coefficient  scaling'
+      END IF
+      I     = 0
+      CNORM = D0
+      CSCAL = D0
+      TLAST = '    '
+      ICARD = 1
+      GETB = .NOT. QONLY
+   20 CONTINUE
+      IF (FREAD) THEN
+         READ (LUCMD,'(A1)') WE
+         BACKSPACE 5
+      ELSE
+         WE = KWORD(ICARD)
+      END IF
+      NEW = WE .EQ. 'K'
+      OLD = WE .EQ. ' '
+C
+C     All coordinates have been read - normalize last coordinate
+C
+      IF (.NOT.NEW .AND. .NOT.OLD) THEN
+         CNORM = CSCAL/SQRT(CNORM)
+         QQ(I) = QQ(I)*CNORM
+         IF (GETB) THEN
+            DO 50 K = 1, NCORD
+               BMAT(K,I) = BMAT(K,I)*CNORM
+   50       CONTINUE
+         END IF
+         GO TO 370
+      END IF
+C
+C     Not finished yet...
+C
+      IF (FREAD) THEN
+         READ (LUCMD,70)  WE, CC, CCOEF, TYP, IA
+         KWORD(ICARD)   = WE
+         SCALE(ICARD)   = CC
+         COEF(ICARD)    = CCOEF
+         ITYPCD(ICARD)   = TYP
+         IATOMS(1,ICARD) = IA(1)
+         IATOMS(2,ICARD) = IA(2)
+         IATOMS(3,ICARD) = IA(3)
+         IATOMS(4,ICARD) = IA(4)
+      ELSE
+         WE    = KWORD(ICARD)
+         CC    = SCALE(ICARD)
+         CCOEF = COEF(ICARD)
+         TYP   = ITYPCD(ICARD)
+         IA(1) = IATOMS(1,ICARD)
+         IA(2) = IATOMS(2,ICARD)
+         IA(3) = IATOMS(3,ICARD)
+         IA(4) = IATOMS(4,ICARD)
+      END IF
+      NAME1 = '      '
+      NAME2 = '      '
+      NAME3 = '      '
+      NAME4 = '      '
+      IF (IA(1) .NE. 0) NAME1 = NAMDEP(IA(1))
+      IF (IA(2) .NE. 0) NAME2 = NAMDEP(IA(2))
+      IF (IA(3) .NE. 0) NAME3 = NAMDEP(IA(3))
+      IF (IA(4) .NE. 0) NAME4 = NAMDEP(IA(4))
+      ICARD = ICARD + 1
+   70 FORMAT (A1,F9.5,F10.4,A4,6X,4F10.4)
+      IF (TYP .EQ. '    ') TYP = TLAST
+      TLAST = TYP
+      IF (CC    .EQ. D0) CC = D1
+      IF (CCOEF .EQ. D0) CCOEF  = D1
+C
+C     Continuation of coordinate
+C
+      IF (OLD) THEN
+         CNORM = CNORM + CCOEF*CCOEF
+C
+C     New coordinate
+C
+      ELSE IF (NEW) THEN
+C
+C        Normalize old coordinate
+C
+         IF (I.NE.0) THEN
+            IF (WRI) WRITE (LUPRI,'()')
+            CNORM = CSCAL/SQRT(CNORM)
+            IF (GETB) THEN
+               DO 90 K = 1, NCORD
+                  BMAT(K,I) = BMAT(K,I)*CNORM
+   90          CONTINUE
+            END IF
+            QQ(I) = QQ(I)*CNORM
+         END IF
+C
+C        Initialize new coordinate
+C
+         I = I + 1
+         QQ(I) = D0
+         CSCAL = CC
+         CNORM = CCOEF*CCOEF
+         IF (GETB) THEN
+            DO 120 J = 1, NCORD
+               BMAT(J,I) = D0
+  120       CONTINUE
+         END IF
+      END IF
+C
+C     Determine type
+C
+      DO 150 K = 1, 7
+         IF (TYP .EQ. TIPUS(K)) GO TO 170
+  150 CONTINUE
+C
+C     If type unknown return
+C
+      WRITE (LUPRI,160) I
+  160 FORMAT (/,' Undefined int. coordinate type at No.',I3,
+     &        /,1X,10('****'))
+      GO TO 380
+C
+C     Print type
+C
+  170 CONTINUE
+      IF (WRI) THEN
+         IF (NEW) THEN
+            WRITE (LUPRI,180) I,TYP,NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
+         ELSE
+            WRITE (LUPRI,181)       NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
+         END IF
+      END IF
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+  180 FORMAT (3X,I3,1H.,4X,A4,5X,4(A6,2X),F10.5,F12.6)
+#else
+  180 FORMAT (3X,I3,1H.,A8,5X,4(A6,2X),F10.5,F12.6)
+#endif
+  181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
+C
+C     Test that all specified atoms are well defined
+C
+      NAB = NCORD/3
+      IF (KA.LT.1 .OR. KA.GT.NAB .OR. KB.LT.1 .OR. KB.GT.NAB) GO TO 350
+      IF (K.GT.2  .AND. (KC.LT.1 .OR. KC.GT.NAB)) GO TO 350
+      IF (K.GT.3  .AND. (KD.LT.1 .OR. KD.GT.NAB)) GO TO 350
+C
+      GO TO (190,200,210,230,260,280,300), K
+C
+C..... stretch
+C
+  190 CALL VEKTOR (UU,R1,KA,KB,XA,YA,ZA)
+      UU(1) =   UU(1)*ANULL
+      UU(2) =   UU(2)*ANULL
+      UU(3) =   UU(3)*ANULL
+      VV(1) = - UU(1)
+      VV(2) = - UU(2)
+      VV(3) = - UU(3)
+      IA(3) = 0
+      IA(4) = 0
+      QQ(I) = QQ(I) + R1*CCOEF
+      CTYPE(I) = D1/XTANG
+      GO TO 320
+C
+C.....inverse
+C
+  200 CALL VEKTOR (UU,R1,KA,KB,XA,YA,ZA)
+      RM1   = D1/R1
+      RM2   = RM1*RM1
+      UU(1) = - RM2*UU(1)*ANULL
+      UU(2) = - RM2*UU(2)*ANULL
+      UU(3) = - RM2*UU(3)*ANULL
+      VV(1) = - UU(1)
+      VV(2) = - UU(2)
+      VV(3) = - UU(3)
+      IA(3) = 0
+      IA(4) = 0
+      QQ(I) = QQ(I) + RM1*CCOEF
+      CTYPE(I) = XTANG
+      GO TO 320
+C
+C.....bending
+C
+  210 CALL VEKTOR (U,R1,KA,KC,XA,YA,ZA)
+      CALL VEKTOR (V,R2,KB,KC,XA,YA,ZA)
+      CO = V3DOT(U,V)
+      SI = S2(CO)
+      DO 220 L = 1, 3
+         UU(L) = (CO*U(L) - V(L))/(SI*R1)
+         VV(L) = (CO*V(L) - U(L))/(SI*R2)
+         WW(L) = - UU(L) - VV(L)
+  220 CONTINUE
+      IA(4) = 0
+      QQ(I) = QQ(I) + CCOEF*DARCOS(CO)
+      CTYPE(I) = D1
+      GO TO 320
+C
+C.....out of plane
+C
+  230 CALL VEKTOR (U,R1,KA,KD,XA,YA,ZA)
+      CALL VEKTOR (V,R2,KB,KD,XA,YA,ZA)
+      CALL VEKTOR (W,R3,KC,KD,XA,YA,ZA)
+      CALL V3NRML (V,W,Z)
+      STETA = V3DOT(U,Z)
+      CTETA = S2(STETA)
+      CFI1  = V3DOT(V,W)
+      SFI1  = S2(CFI1)
+      CFI2  = V3DOT(W,U)
+      CFI3  = V3DOT(V,U)
+      DEN   = CTETA*SFI1**2
+      ST2   = (CFI1*CFI2 - CFI3)/(R2*DEN)
+      ST3   = (CFI1*CFI3 - CFI2)/(R3*DEN)
+      DO 240 L = 1, 3
+         VV(L) = Z(L)*ST2
+         WW(L) = Z(L)*ST3
+  240 CONTINUE
+      CALL V3NRML (Z,U,X)
+      CALL V3NRML (U,X,Z)
+      DO 250 L = 1, 3
+         UU(L) = Z(L)/R1
+         ZZ(L) = - UU(L) - VV(L) - WW(L)
+  250 CONTINUE
+      CX = - CCOEF
+      IF (STETA .LT. D0) CX = CCOEF
+      QQ(I) = QQ(I) - CX*DARCOS(CTETA)
+      CTYPE(I) = D1
+      GO TO 320
+C
+C.....torsion
+C
+  260 CALL VEKTOR (U,R1,KA,KB,XA,YA,ZA)
+      CALL VEKTOR (V,R2,KC,KB,XA,YA,ZA)
+      CALL VEKTOR (W,R3,KC,KD,XA,YA,ZA)
+      CALL V3NRML (U,V,Z)
+      CALL V3NRML (W,V,X)
+      CO  = V3DOT(U,V)
+      CO2 = V3DOT(V,W)
+      SI  = S2(CO)
+      SI2 = S2(CO2)
+      DO 270 L = 1, 3
+         UU(L) = Z(L)/(R1*SI)
+         ZZ(L) = X(L)/(R3*SI2)
+         VV(L) = (R1*CO/R2 - D1)*UU(L) - R3*CO2/R2*ZZ(L)
+         WW(L) = -UU(L) - VV(L) - ZZ(L)
+  270 CONTINUE
+      CO   = V3DOT(Z,X)
+      U(1) = Z(2)*X(3) - Z(3)*X(2)
+      U(2) = Z(3)*X(1) - Z(1)*X(3)
+      U(3) = Z(1)*X(2) - Z(2)*X(1)
+      SI3  = SQRT(U(1)**2 + U(2)**2 + U(3)**2)
+      CO2  = V3DOT(U,V)
+      S    = ARC1(-CO,SI3)
+      IF (CO2 .LT. D0) S = - S
+      IF (S .GT. (PI*0.5D0)) S = S - 2.0D0*PI
+      QQ(I) = QQ(I) - CCOEF*S
+      CTYPE(I) = D1
+C
+C     Remember that the range of this coordinate is -pi/2 to 3*pi/2
+C     in order to shift the discontinuity off the planar position.
+C
+      GO TO 320
+C
+C.....linear coplanar bending
+C
+  280 CALL VEKTOR (U,R1,KA,KC,XA,YA,ZA)
+      CALL VEKTOR (V,R2,KD,KC,XA,YA,ZA)
+      CALL VEKTOR (X,R2,KB,KC,XA,YA,ZA)
+      CO    = V3DOT(V,U)
+      CO2   = V3DOT(X,V)
+      QQ(I) = QQ(I) + CCOEF*(PI - DARCOS(CO) - DARCOS(CO2))
+      CALL V3NRML (V,U,W)
+      CALL V3NRML (U,W,Z)
+      CALL V3NRML (X,V,W)
+      CALL V3NRML (W,X,U)
+C
+C     Coordinate positiv if atom A moves towards atom D
+C
+      DO 290 L = 1, 3
+         UU(L) = Z(L)/R1
+         VV(L) = U(L)/R2
+         WW(L) = - UU(L) - VV(L)
+  290 CONTINUE
+      IA(4) = 0
+      CTYPE(I) = D1
+      GO TO 320
+C
+C.....linear perpendicular bending
+C
+  300 CALL VEKTOR (U,R1,KA,KC,XA,YA,ZA)
+      CALL VEKTOR (V,R2,KD,KC,XA,YA,ZA)
+      CALL VEKTOR (Z,R2,KB,KC,XA,YA,ZA)
+      CALL V3NRML (V,U,W)
+      CALL V3NRML (Z,V,X)
+      DO 310 L = 1, 3
+         UU(L) = W(L)/R1
+         VV(L) = X(L)/R2
+         WW(L) = - UU(L) - VV(L)
+  310 CONTINUE
+      IA(4) = 0
+      CO    = V3DOT(U,W)
+      CO2   = V3DOT(Z,W)
+      QQ(I) = QQ(I) + CCOEF*(PI - DARCOS(CO) - DARCOS(CO2))
+      CTYPE(I) = D1
+C
+  320 CONTINUE
+      IF (GETB) THEN
+         DO 340 J = 1, 4
+            M = IA(J)
+            IF (M .GT. 0) THEN
+               M = M - 1
+               J1 = 3*(J - 1)
+               DO 330 L = 1, 3
+                  M1 = 3*M + L
+                  L1 = J1 + L
+                  BMAT(M1,I) = UV(L1)*CCOEF + BMAT(M1,I)
+  330          CONTINUE
+            END IF
+  340    CONTINUE
+      END IF
+      GO TO 20
+C
+  350 CONTINUE
+      WRITE (LUPRI,360) I
+  360 FORMAT (/' Atoms erroneously defined, coordinate No.',I3,
+     &        /1X,10('****'))
+  370 CONTINUE
+  380 RETURN
+      END
+C  /* Deck arc1 */
+      FUNCTION ARC1 (X,Y)
+#include <implicit.h>
+#include <pi.h>
+C
+      IF (ABS(X) .LT. 1.0 D-11) THEN
+         ARC1 = PI / 2
+      ELSE
+         S = ATAN(Y/X)
+         IF (X .LT. 0.0 D0) S = S + PI
+         ARC1 = S
+      END IF
+      RETURN
+      END
+C  /* Deck darcos */
+      FUNCTION DARCOS (X)
+#include <implicit.h>
+#include <pi.h>
+C
+      IF (X .GE. 1.0 D0 ) THEN
+         DARCOS = 0.0 D0
+      ELSE IF (X .LE. -1.0 D0) THEN
+         DARCOS = PI
+      ELSE IF (ABS(X) .LT. 1.0 D-11) THEN
+         DARCOS = PI / 2
+      ELSE
+         X1 = SQRT(1.0 D0 - X*X)
+         S  = ATAN(X1/X)
+         IF (X .LT. 0.0) S = S + PI
+         DARCOS = S
+      END IF
+      RETURN
+      END
+C  /* Deck vektor */
+      SUBROUTINE VEKTOR (U,R,I,J,XA,YA,ZA)
+#include <implicit.h>
+      DIMENSION U(3), XA(*), YA(*), ZA(*)
+C
+C     Bildet den normierten Entfernungsvektor vom Kern J nach Kern I
+C     und die Entfernung R.
+C
+      U(1) = XA(I)-XA(J)
+      U(2) = YA(I)-YA(J)
+      U(3) = ZA(I)-ZA(J)
+      R    = SQRT(V3DOT(U,U))
+      CALL V3NOM (U)
+      RETURN
+      END
+C  /* Deck v3nom */
+      SUBROUTINE V3NOM (U)
+#include <implicit.h>
+      DIMENSION U(3)
+      X = 1.0 D0 / SQRT(V3DOT(U,U))
+      DO 10 I = 1,3
+         U(I) = U(I)*X
+   10 CONTINUE
+      RETURN
+      END
+C  /* Deck s2 */
+      FUNCTION S2 (X)
+#include <implicit.h>
+      S2 = SQRT(1.0 D0 - X*X)
+      RETURN
+      END
+C  /* Deck v3dot */
+      FUNCTION V3DOT (U,V)
+#include <implicit.h>
+      DIMENSION U(3), V(3)
+      V3DOT = U(1)*V(1) + U(2)*V(2) + U(3)*V(3)
+      RETURN
+      END
+C  /* Deck v3nrml */
+      SUBROUTINE V3NRML (U,V,W)
+#include <implicit.h>
+      DIMENSION U(3), V(3), W(3)
+C
+C     99999...  W wird ein senkrecht auf die Ebene(U,V) stehender
+C     Einheitor
+C
+      W(1) = U(2)*V(3)-U(3)*V(2)
+      W(2) = U(3)*V(1)-U(1)*V(3)
+      W(3) = U(1)*V(2)-U(2)*V(1)
+      CALL V3NOM (W)
+      RETURN
+      END
+C  /* Deck rpflin */
