@@ -188,7 +188,7 @@ C
      &       /'       (2) "datasize" resource limit too small.')
 C
 #if defined (SYS_IRIX) || defined (SYS_AIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_HAL) || defined (SYS_DEC)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))||defined(VAR_ABSOFT)
       WADDR = MALLOC(NBYTES)
 #endif
 
@@ -227,8 +227,14 @@ C
 C
       IF (BASDIR(1:1) .NE. '/') THEN
 C
+#if defined (VAR_ABSOFT)
+         BASDIR="Insert basis-directory path here"
+C        Example:
+C        BASDIR="/Users/helgaker/Dalton/basis/"
+#else
          BASDIR=
      &INSTALL_BASDIR
+#endif
          WRITE(LUERR,'(/A,/8X,A)') ' Default basis set library used:',
      &                              BASDIR
       ELSE

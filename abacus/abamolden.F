@@ -92,8 +92,7 @@ C
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK),
-     &          SEG(KBLOCK),NOINT(KBLOCK)
-      DIMENSION IPCON(KPRIM)
+     &          SEG(KBLOCK)
       IF (.NOT. DONEIT) THEN
 
          WRITE(LUMOLDEN,'(A)') '[GTO]'

@@ -43,7 +43,7 @@ C
 #include <nuclei.h>
       PARAMETER (D0 = 0.0D0) 
       LOGICAL INSIDE 
-      DIMENSION DST(NATOMS)
+      DIMENSION DST(MXCENT)
 #include <dfterg.h>
 #include <dftcom.h>
 #include <dftacb.h>

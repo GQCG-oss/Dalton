@@ -172,7 +172,7 @@ C
       TIMCPU = second1 - TCPU0
       TIMWAL = second2 - TWALL0
 #endif
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT)
 #if defined (SYS_IRIX) || defined (SYS_SUN)
 C...  SGI IRIX code
       external time
