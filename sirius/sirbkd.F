@@ -36,6 +36,7 @@ C
 C  /* Deck sbdorb */
       BLOCK DATA SBDORB
 C     Initialize MULD2H in common block /INFORB/
+#include <implicit.h>
 #include <inforb.h>
 C
 C     MULTIPLICATION TABLE FOR SYMMETRIES (MULD2H is in /INFORB/)
@@ -48,16 +49,6 @@ C
      *            6,5,8,7,2,1,4,3,
      *            7,8,5,6,3,4,1,2,
      *            8,7,6,5,4,3,2,1/
-      END
-C  /* Deck sbdtap */
-      BLOCK DATA SBDTAP
-C 900226-hjaaj
-C Define file names for INFTAP
-C Define LUSIFC label, LBSIFC, in INTAP
-C To be safe, include EXTERNAL SBDTAP in main program.
-#include <implicit.h>
-#include <inftap.h>
-      DATA LBSIFC /'SIR IPH '/
       END
 C  /* Deck sbdgetd */
       BLOCK DATA SBDGETD
