@@ -140,6 +140,7 @@ which for a calculation using the 4-31G** basis would look like:
 This option will not be active with customizable basis sets like the
 ANO or NQvD sets.
 
+
 Alternatively you may specify different basis sets for different
 atoms, in which case the first line should read
 \begin{verbatim}
@@ -245,8 +246,7 @@ For tetrahedrane, the input would then look like
 
 The different lines are:
 \begin{description}
-\item[5] \verb|ZMATL, CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|
-{\tt (BN,A1,F9.0,25I5)}.
+\item[5] \verb|ZMATL, CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|{\tt (BN,A1,F9.0,25I5)}.
 \begin{description}
 \item[ZMATL] This field must be left blank when Cartesian
 coordinate input\index{Cartesian coordinate input} is used as the field
@@ -580,6 +580,57 @@ ATOMBASIS} is used, is that the length of the line must note exceed 80
 characters. If that happens, we recommend dumping a standard basis set
 to \verb|DALTON.BAS| using the keyword \Key{MOLPRI}, and then adding
 functions to this set.
+
+\section{Auxiliary basis sets}
+
+It is possible to specify more than one basis set. For example, by typing
+\begin{verbatim}
+ 1:BASIS
+ 2:4-31G** 6-311++G(3df,3pd)
+\end{verbatim}
+the basis set 6-311++G(3df,3pd) will be used as an auxiliary basis.
+When using an auxiliary basis, each atom line must contain a basis-set
+identifier, which at present may take the values {\tt MBSI = 1} (orbital basis) or 
+{\tt MBSI = 2} (auxiliary basis). Basis sets with {\tt MBSI = 1} must be read first,
+basis sets with {\tt MBSI = 2} thereafter.
+An atom line hence reads
+\begin{description}
+\item[5] \verb|ZMATL, MBSI, CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|\break
+\noindent{\tt (BN,A1,I2,F7.0,25I5)}.
+\end{description}
+The above also applies to the \verb|ATOMBASIS| and \verb|INTGRL| input modes.
+Examples are provided by the following input files:
+\begin{verbatim}
+ 1:BASIS
+ 2:cc-pVDZ cc-pCVQZ
+ 3:Direct MP2-R12/cc-pVDZ calculation on H2O
+ 4:Auxiliary basis: cc-pCVQZ
+ 5:    4    1  X
+ 6: 1      8.    1
+ 7:O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 8: 1      1.    1
+ 9:H      1.427450200000000    .000000000000000   0.986437000000000       *
+10: 2      8.    1
+11:O       .000000000000000    .000000000000000  -0.124309000000000       *
+12: 2      1.    1
+13:H      1.427450200000000    .000000000000000   0.986437000000000       *
+\end{verbatim}
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:Direct MP2-R12/cc-pVDZ calculation on H2O
+ 3:Auxiliary basis: cc-pCVQZ
+ 4:    4    1  X
+ 5: 1      8.    1 cc-pVDZ
+ 6:O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 7: 1      1.    1 cc-pVDZ
+ 8:H      1.427450200000000    .000000000000000   0.986437000000000       *
+ 9: 2      8.    1 cc-pCVQZ
+10:O       .000000000000000    .000000000000000  -0.124309000000000       *
+11: 2      1.    1 cc-pCVQZ
+12:H      1.427450200000000    .000000000000000   0.986437000000000       *
+\end{verbatim}
+Note that the key \Key{AUXBAS} must be specified in the 
+\Sec{*INTEGRALS} input section to be able to read the above inputs.
 
 \section{The basis sets supplied with \dalton }
 

@@ -77,16 +77,16 @@ C  /* Deck hr2dr1 */
      &                  MAXDER,NUABCD,IPQ0X,IPQ0Y,IPQ0Z,NOINT,ONECEN,
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
      &                  SIGNT,IODDHR,PANAS)
+C     Modified for r12 integrals (WK/UniKA/15-11-2002).
 #include <implicit.h>
 #include <priunit.h>
 #include <r12int.h>
 #include <maxaqn.h>
       LOGICAL NOINT, ONECEN
 #include <twosta.h>
-C     HERINT is declared 3-dimensional 
-C     for r12 integrals (WK/UniKA/14-11-2002).
+C     HERINT is declared 3-dimensional for r12 integrals (WK/UniKA/14-11-2002).
       DIMENSION HERINT(NUABCD,NTUV,2), INDHER(*), IODDHR(*),
-     &          RJ000(NUABCD,0:JMAX), WORK(LWORK),
+     &          RJ000(NUABCD,*), WORK(LWORK),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          COOR12(*), COOR34(*), EXP12(*), EXP34(*), FAC12(*),
      &          FAC34(*), SIGNT(*)
@@ -94,8 +94,8 @@ C
       IF (R12EIN) THEN
 C
 C        Gaussian-damped R12 integrals (WK/UniKA/15-11-2002).
+C        ====================================================
 C
-         IF (TKTIME) TIMSTR = SECOND()
          LRJ000 = NUABCD * (JMAX + 1)
          LHRINT = NUABCD * NTUV
          KFACNT = 1
@@ -107,33 +107,35 @@ C
          KHPRE1 = KHBETA + NUABCD
          KHPRE2 = KHPRE1 + NUABCD
          KHPRE3 = KHPRE2 + NUABCD
-         KRO000 = KHPRE3 + NUABCD
+         KHEXPP = KHPRE3 + NUABCD
+         KHEXPQ = KHEXPP + NUABCD
+         KRO000 = KHEXPQ + NUABCD
          KHRIN3 = KRO000 + LRJ000
          KHRIN4 = KHRIN3 + LHRINT
          KHRIN5 = KHRIN4 + LHRINT
          LSTEIN = KHRIN5 + LHRINT
          LWKHER = LWORK - LSTEIN + 1
          IF (LWKHER .LE. 0) CALL STOPIT('HR2DR1',' ',LSTEIN,LWORK)
-         IODS = KFACNT
-         DO IOD12 = 1, NUC12
-            FACP = FAC12(IOD12)
-            DO  IOD34 = 1, NUC34
-               WORK(IODS) = FACP * FAC34(IOD34)
-               IODS = IODS + 1
-            END DO
-         END DO
+         IF (TKTIME) TIMSTR = SECOND()
+         CALL R00G(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,
+     &             PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,
+     &             NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,
+     &             WORK(KFACNT),WORK(KHEXPP),WORK(KHEXPQ))
+         CALL ERIIFC(NTUV,NUABCD,IPQ0X,IPQ0Y,IPQ0Z,JMAX)
          CALL ERIHER(HERINT(1,1,1),HERINT(1,1,2),RJ000,PQX,INDHER,
      &              IODDHR,WORK(KFACNT),WORK(KALPHA),WORK(KHARGE),
      &              WORK(KHARGF),WORK(KHALPH),WORK(KHBETA),
      &              WORK(KHPRE1),WORK(KHPRE2),WORK(KHPRE3),
-     &              WORK(KRO000),WORK(KHRIN1),WORK(KHRIN2),
-     &              WORK(KHRIN3),EXP12,EXP34,WORK(LSTEIN),LWKHER,IPRINT)
+     &              WORK(KRO000),WORK(KHRIN3),WORK(KHRIN4),
+     &              WORK(KHRIN5),WORK(KHEXPP),WORK(KHEXPQ),
+     &              WORK(LSTEIN),LWKHER,IPRINT)
          IF (TKTIME) THEN
             TIMEND = SECOND()
             TIME = TIMEND - TIMSTR
             THERIX(JMAX) = THERIX(JMAX) + TIME
             THERI = THERI + TIME
          END IF
+C
       ELSE  
 C
 C        Incomplete gamma function
@@ -201,6 +203,7 @@ C
 #include <maxaqn.h>
 #include <iratdef.h>
 #include <twosta.h>
+#include <r12int.h>
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
@@ -216,7 +219,7 @@ C-----------------------------------------------------------------------
       CALL R0001(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,
      &           PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,
      &           THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,
-     &           WORK(KWVALU),WORK(KALPHj),WORK(KALPHa),WORK(KINDAD),
+     &           WORK(KWVALU),WORK(KALPHJ),WORK(KALPHA),WORK(KINDAD),
      &           PANAS,WORK(KLAST),LWRK)
       RETURN
       END

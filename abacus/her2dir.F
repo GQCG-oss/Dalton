@@ -152,22 +152,18 @@ C     Integrals for r12 methods (WK/UniKA/15-11-2002).
          IZERO  = 1
          DC101  = .TRUE.
          DC2H1  = .TRUE.
+         NINTYP = 0
          IF (R12EIN) THEN
-            NINTYP = 1
-            IF (U12INT) THEN
-               DPATH2 = .TRUE.
-               DC102  = .TRUE.
-            END IF
+            NINTYP = NINTYP + 1
          ELSE
-            NINTYP = 0
             IF (V12INT) NINTYP = NINTYP + 1
             IF (R12INT) NINTYP = NINTYP + 1
             IF (U21INT) NINTYP = NINTYP + 1
-            IF (U12INT) THEN
-               NINTYP = NINTYP + 1
-               DPATH2 = .TRUE.
-               DC102  = .TRUE.
-            END IF
+            IF (U12INT) NINTYP = NINTYP + 1
+         END IF
+         IF (U12INT) THEN
+            DPATH2 = .TRUE.
+            DC102  = .TRUE.
          END IF
          NTOTAL = NCCINT
          GO TO 900

@@ -226,4 +226,28 @@ model in the list.
 .CCSD
 *END OF
 \end{verbatim}
+
 %\section{Excited state geometry optimization}
+\section{R12 methods}
+
+\noindent At present available at the MP2 level. The input for
+an MP2-R12/A calculation is as follows (the key \Key{AUXBAS} is used only if
+an auxiliary basis is employed):
+\begin{verbatim}
+**GENERAL
+.DIRECT
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.R12
+.AUXBAS
+**WAVE FUNCTIONS
+.CC
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INPUT
+.MP2
+*R12
+.NO A'
+.NO B
+*END OF
+\end{verbatim}

@@ -61,7 +61,8 @@ dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_properties_nosym \
 dft_properties_sym"
 #
-R12="r12_damped r12_sym r12_nosym r12_fc_sym r12_fc_nosym \
+R12="r12_damped r12_damped_herdir \
+r12_sym r12_nosym r12_fc_sym r12_fc_nosym \
 r12_aux_sym r12_aux_nosym r12_fc_aux_sym r12_fc_aux_nosym"
 #
 NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"

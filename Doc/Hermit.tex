@@ -119,6 +119,9 @@ the \Key{GAUGEO} keyword.
 \item Property labels: \verb|XANGMOM |, \verb|YANGMOM |, \verb|ZANGMOM |
 \end{list}
 
+\item[\Key{AUXBAS}] An auxiliary basis is used. Basis sets must be identified as
+orbital basis and auxiliary basis in the \verb|MOLECULE.INP| file (line 5).
+
 \item[\Key{CARMOM}]\verb| |\newline
 \verb|READ (LUCMD,*) IORCAR|
 
@@ -707,6 +710,17 @@ component (x/y/z) of the second moment tensor.
 \item[\Key{QUASUM}] Calculate all atomic integrals as square
 matrices, irrespective of their inherent Hermiticity or
 anti-Hermiticity.
+
+\item[\Key{R12}] Perform integral evaluation as required by the R12 method.
+One-electron integrals for the R12 method (Cartesian multipole integrals up to order 2)
+are precomputed and stored on the file \texttt{AOPROPER}. Two-electron integrals are
+computed in direct mode.
+
+\item[\Key{R12EXP}]\verb| |\newline
+\verb|READ (LUCMD,*) GAMMAC|
+
+Same as \Key{R12} but with Gaussian-damped linear $r_{12}$ terms of
+the form $r_{12}\exp{-\gamma r_{12}^2}$. The value of $\gamma$ is read from the input line.
 
 \item[\Key{ROTSTR}] Rotational strength integrals in the mixed
 representation~\cite{tbphkkrjcp110}.

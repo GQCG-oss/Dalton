@@ -108,6 +108,7 @@ C
 #include <inftap.h>
 #include <huckel.h>
 #include <dftcom.h>
+#include <r12int.h>
 C
       LOGICAL SET
 C
@@ -138,8 +139,8 @@ C
      &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      IF (RUNTWO .OR. RUNERI .OR. RUNSUP) CALL GPOPEN (LUINTA,
-     &     'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      IF ((RUNTWO .OR. RUNERI .OR. RUNSUP) .AND. .NOT. DCCR12)
+     &   CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF (RUNSUP) CALL GPOPEN(LUSUPM,'AOSUPINT','NEW',' ',' ',IDUMMY,
      &                        .FALSE.)
       CALL HERINT(WORK,LWORK)
@@ -190,7 +191,7 @@ C
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
-      PARAMETER (NDIR = 7, NTABLE = 109)
+      PARAMETER (NDIR = 7, NTABLE = 110)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -242,7 +243,7 @@ C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-1
      &             '.XXXXXX', '.FNPROP', '.PVP   ', '.1ELPOT',
      &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
-     &             '.U21INT'/
+     &             '.U21INT', '.DCCR12'/
 C
 C     Check if input has been processed earlier.
 C
@@ -305,7 +306,7 @@ C              Labels 203-209 have been added (WK/UniKA/04-11-2002).
      &                171,172,173,174,175,176,177,178,179,180,
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
-     &                201,202,203,204,205,206,207,208,209), I
+     &                201,202,203,204,205,206,207,208,209,210), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -801,8 +802,8 @@ C           R12 calculation requested with Gaussian-damped r12 integrals (WK/Uni
             R12EOR = .TRUE.
             READ(LUCMD,*) GAMAC
             GAMAD = GAMAC
-            CALL QUIT('The Gaussian-damped R12 method is '//
-     &                'not available in this version. Sorry.')
+C           CALL QUIT('The Gaussian-damped R12 method is '//
+C    &                'not available in this version. Sorry.')
             GOTO 100
  205     CONTINUE
 C           Calculation with multiple basis sets requested (WK/UniKA/04-11-2002).
@@ -823,6 +824,10 @@ C           Calculation of integrals of the operator U12 (WK/UniKA/04-11-2002).
  209     CONTINUE
 C           Calculation of integrals of the operator U21 (WK/UniKA/04-11-2002).
             U21INT = .TRUE.
+            GOTO 100
+ 210     CONTINUE
+C           Integrals are computed for DIRCCR12 program (WK/UniKA/25-11-2002).
+            DCCR12 = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
@@ -1651,7 +1656,7 @@ C
 #include <ccom.h>
 #include <cbisor.h>
 #include <efield.h>
-C
+#include <r12int.h>
 C
       DIMENSION   RLMORI(3)
       CHARACTER*8 LABELT(3), LABELS(6)
@@ -2534,6 +2539,37 @@ C
             END  IF
          END IF
       END IF
+      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
+C
+C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
+      NOPP12 = 0
+      IF (R12EIN) THEN
+         NOPP12 = NOPP12 + 1
+      ELSE
+         IF (V12INT) NOPP12 = NOPP12 + 1
+         IF (R12INT) NOPP12 = NOPP12 + 1
+         IF (U12INT) NOPP12 = NOPP12 + 1
+         IF (U21INT) NOPP12 = NOPP12 + 1
+      END IF
+      IF (NOPP12 .EQ. 0)
+     &CALL QUIT('Wrong number of integral types in HERINT')
+C
+C     Determine pointers to various integrals (WK/UniKA/26-11-2002).
+      IADV12 = 0
+      IADR12 = 0
+      IADU12 = 0
+      IADU21 = 0
+      IF (R12EIN) THEN
+         IADV12 = 1
+      ELSE
+         IF (V12INT) IADV12 = 1
+         IF (R12INT) IADR12 = 1
+         IF (U12INT) IADU12 = 1
+         IF (U21INT) IADU21 = 1
+      END IF
+      IADR12 = IADV12 + IADR12
+      IADU12 = IADR12 + IADU12
+      IADU21 = IADU12 + IADU21
 C
 C     **********************************
 C     ***** Two-Electron Integrals *****

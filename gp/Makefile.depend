@@ -33,7 +33,7 @@ gptrygve.o : gptrygve.F \
   ../include/implicit.h  ../include/infpar.h \
   ../include/inftap.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/single.h  ../include/r12int.h
 
 
 graphic.o : graphic.F \

@@ -37,12 +37,13 @@ C  /* Deck u2driv */
       SUBROUTINE U2DRIV(AOINT,HCINT,HCRNT,
      &                  COEF34,INDHER,CONT3,CONT4,WORK,
      &                  LWORK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,LMNV34,
-     &                  IODD12,IODD34,NPNT34,NRED34)
+     &                  IODD12,IODD34,NPNT34,NRED34,R12EIN)
 C     Copy of C2DRIV for [r12,T1+T2] integrals (WK/UniKA/15-11-2002).
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
 #include <maxaqn.h>
+      LOGICAL R12EIN
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
      &          LMNV12(*), LMNV34(*), IODD12(*), IODD34(*),
@@ -84,7 +85,7 @@ C
       IF (TKTIME) TIMSTR = SECOND()
       CALL U2HINT(AOINT,IODD12,IODD34,HCINT,HCRNT,COEF34,CONT3,
      &            CONT4,WORK(KLAST),LWRK,LMNV34,NPCO3,NPCO4,NUCS34,
-     &            IPRINT,WORK(KNHCC),INDHER,NPNT34,NRED34)
+     &            IPRINT,WORK(KNHCC),INDHER,NPNT34,NRED34,R12EIN)
       IF (TKTIME) TC2HIN = TC2HIN + SECOND() - TIMSTR
       LWTOT  = LWTOT - KLAST
 C
@@ -103,13 +104,13 @@ C  /* Deck u2hint */
       SUBROUTINE U2HINT(AOINT,IODD12,IODD34,HCINT,HCRNT,
      &                  COEF34,CONT3,CONT4,
      &                  WORK,LWORK,LMNV34,NPCO3,NPCO4,NUCS34,IPRINT,
-     &                  NHCC,INDHER,NPNT34,NRED34)
+     &                  NHCC,INDHER,NPNT34,NRED34,R12EIN)
 C     Copy of C2HINT for [r12,T1+T2] integrals (WK/UniKA/15-11-2002).
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (D1 = 1.00 D00)
 #include <maxaqn.h>
-      LOGICAL DORDER(2), DHOVEC
+      LOGICAL DORDER(2), DHOVEC, R12EIN
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
       DIMENSION AOINT(*), IODD12(KCKT12,2), IODD34(KCKT34,2),
      &          HCINT(*), WORK(LWORK),
@@ -285,7 +286,7 @@ C
      &               HCRNT,COEF34,CONT3,CONT4,WORK(KETUV),WORK(KCCONT),
      &               WORK(KSCR1),WORK(KSCR2),NCOOR,LMNV34,NPCO3,NPCO4,
      &               NUCS34,IPRINT,INDHER,NPNT34,NRED34,
-     &               WORK(KSSINT),WORK(KCSINT),NHCMAX)
+     &               WORK(KSSINT),WORK(KCSINT),NHCMAX,R12EIN)
          LWTOT  = LWTOT - KLAST
       END IF
       RETURN
@@ -295,7 +296,7 @@ C  /* Deck u2hin1 */
      &                  HCRNT,COEF34,CONT3,CONT4,ETUV,
      &                  CCONT,SCR1,SCR2,NCOOR,LMNV34,
      &                  NPCO3,NPCO4,NUCS34,IPRINT,INDHER,NPNT34,NRED34,
-     &                  SSINT,CSINT,NHCMAX)
+     &                  SSINT,CSINT,NHCMAX,R12EIN)
 C
 C     [r12,T1+T2] integrals are computed according to:
 C     W.Klopper, R.Roehse, Theor Chim Acta (1992) 83:441, Eq.(21).
@@ -304,7 +305,7 @@ C     (WK/UniKA/15-11-2002).
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 #include <maxaqn.h>
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
@@ -320,6 +321,7 @@ C
      &          LMNV34(KCKMX,5,2), NHCC(KCKT34,2),
      &          CONT3(*), CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*), NRED34(*)
+      LOGICAL R12EIN
 #include <hertop.h>
 #include <twoao.h>
 #include <twocom.h>
@@ -363,6 +365,7 @@ C                 =====================================
 C
                   DO 220 I = 1, NUC34
                      ECOEFI = COEF34(I,0,0,0,1,3)
+                     IF (R12EIN) ECOEFI = ECOEFI * DP5
                      IJ = I
                      DO 230 J = 1, NORB12
                         ETUV(IJ) = ECOEFI
@@ -373,16 +376,34 @@ C
 C                 Cartesian integrals := (a-b)/(a+b) (ab|1/r12|cd)
 C                 ================================================
 C
-                  INTHC = INDHER(0,0,0)
-                  ICCTYP = 1
-                  DO 210 I = 1, KHKT12
-                  IF (IODD12(I,2) .EQ. 0) THEN
-                     DO 240 J = 1, NCCPP
-                        CCPRIM(J,ICCTYP) = ETUV(J)*HCINT(J,INTHC,I,1)
-  240                CONTINUE
-                     ICCTYP = ICCTYP + 1
+                  IF (R12EIN) THEN
+                     INTHCT = INDHER(2,0,0)
+                     INTHCU = INDHER(0,2,0)
+                     INTHCV = INDHER(0,0,2)
+                     ICCTYP = 1
+                     DO 215 I = 1, KHKT12
+                     IF (IODD12(I,2) .EQ. 0) THEN
+                        DO 245 J = 1, NCCPP
+                           HHCRNT = HCRNT(J,INTHCT,I,1)
+     &                            + HCRNT(J,INTHCU,I,1)
+     &                            + HCRNT(J,INTHCV,I,1)
+                           CCPRIM(J,ICCTYP) = ETUV(J)*HHCRNT
+  245                   CONTINUE
+                        ICCTYP = ICCTYP + 1
+                     END IF
+  215                CONTINUE
+                  ELSE
+                     INTHC = INDHER(0,0,0)
+                     ICCTYP = 1
+                     DO 210 I = 1, KHKT12
+                     IF (IODD12(I,2) .EQ. 0) THEN
+                        DO 240 J = 1, NCCPP
+                           CCPRIM(J,ICCTYP) = ETUV(J)*HCINT(J,INTHC,I,1)
+  240                   CONTINUE
+                        ICCTYP = ICCTYP + 1
+                     END IF
+  210                CONTINUE
                   END IF
-  210             CONTINUE
 C
                   IF (I340X .EQ. 0) THEN
 C
@@ -473,7 +494,6 @@ C
                      END IF
   213                CONTINUE
                   END IF
-C
                ELSE
                   L4 = LMNV34(ICOMP4,1,2)
                   M4 = LMNV34(ICOMP4,2,2)
@@ -496,6 +516,7 @@ C
      &                         * COEF34(I,U,M3,M4,2,1)
      &                         * COEF34(I,V,N3,N4,3,1)
      &                         * COEF34(I,0,0 ,0 ,1,3)
+                        IF (R12EIN) ECOEFI = ECOEFI * DP5
                         IJ = I
                         DO 320 J = 1, NORB12
                            ETUV(IJ) = ECOEFI
@@ -506,18 +527,38 @@ C
 C                    Cartesian integrals := (a-b)/(a+b) (ab|1/r12|cd)
 C                    ================================================
 C
-                     INTHC = INDHER(T,U,V)
-                     ICCTYP = 1
-                     DO 330 I = 1, KHKT12
-                     IF (IODD12(I,2) .EQ. JODD34) THEN
-                        DO 340 J = 1, NCCPP
-                           CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
-     &                            + ETUV(J)*HCINT(J,INTHC,I,1)
-  340                   CONTINUE
-                        ICCTYP = ICCTYP + 1
+                     IF (R12EIN) THEN
+                        INTHCT = INDHER(T+2,U,V)
+                        INTHCU = INDHER(T,U+2,V)
+                        INTHCV = INDHER(T,U,V+2)
+                        ICCTYP = 1
+                        DO 335 I = 1, KHKT12
+                        IF (IODD12(I,2) .EQ. JODD34) THEN
+                           DO 345 J = 1, NCCPP
+                              HHCRNT = HCRNT(J,INTHCT,I,1)
+     &                               + HCRNT(J,INTHCU,I,1)
+     &                               + HCRNT(J,INTHCV,I,1)
+                              CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
+     &                                         + ETUV(J) * HHCRNT
+  345                      CONTINUE
+                           ICCTYP = ICCTYP + 1
+                        END IF
+  335                   CONTINUE
+                     ELSE
+                        INTHC = INDHER(T,U,V)
+                        ICCTYP = 1
+                        DO 330 I = 1, KHKT12
+                        IF (IODD12(I,2) .EQ. JODD34) THEN
+                           DO 340 J = 1, NCCPP
+                              CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
+     &                               + ETUV(J)*HCINT(J,INTHC,I,1)
+  340                      CONTINUE
+                           ICCTYP = ICCTYP + 1
+                        END IF
+  330                   CONTINUE
                      END IF
-  330                CONTINUE
   300             CONTINUE
+C
                   MINT = IBTAND(MAXT + 1,INCRMT - 1)
                   MINU = IBTAND(MAXU    ,INCRMU - 1)
                   MINV = IBTAND(MAXV    ,INCRMV - 1)
@@ -741,7 +782,7 @@ C
       INTEGER*4 M(2)
       DIMENSION SO(N,*)
       EQUIVALENCE(X,M(1))
-      IF (U12INT .OR. R12INT) THEN
+      IF (NOPP12 .GT. 1) THEN
          IF (U12INT) THEN
             IF (IA .GT. IB) THEN
                M(1) = IA*65536 + IB
@@ -780,7 +821,8 @@ C
                GTTHRS = .TRUE.
             END IF
   100    CONTINUE
-         IF (GTTHRS .AND. IPRINT .GE. 10)
+CWMK     IF (GTTHRS .AND. IPRINT .GE. 10)
+         IF (GTTHRS)
      &      WRITE(LUPRI,'(4I4,4(1P,E15.6))')
      &      IA, IB, IC, ID, (SO(1,I),I=1,NOPP12)
       ELSE
@@ -792,7 +834,8 @@ C
             M(2) = MMMM
          END IF
          GTTHRS = ABS(SO(1,1)) .GT. THRESH
-         IF (GTTHRS .AND. IPRINT .GE. 10)
+CWMK     IF (GTTHRS .AND. IPRINT .GE. 10)
+         IF (GTTHRS)
      &      WRITE(LUPRI,'(4I4,1P,E15.6)')
      &      IA, IB, IC, ID, SO(1,1)
       END IF

@@ -2,38 +2,43 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > r12_fc_aux_sym.info <<%EOF%
-   r12_fc_aux_sym
-   --------------
-   Molecule:         Nitrogen (N2)
-   Wave Function:    MP2-R12 / cc-pVTZ w/frozen core
-   Test Purpose:     Check R12 method with auxiliary basis and symmetry
+cat > r12_damped_herdir.info <<%EOF%
+   r12_damped_herdir
+   -------
+   Molecule:         Water (H2O)
+   Wave Function:    MP2-R12 / cc-pVDZ
+   Test Purpose:     Check R12 method with Gaussian damping
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > r12_fc_aux_sym.mol <<%EOF%
+cat > r12_damped_herdir.mol <<%EOF%
 BASIS
-cc-pVTZ cc-pCVQZ
-Direct MP2-R12 calculation using symmetry
+cc-pVDZ cc-pCVQZ
+Direct Gaussian-damped MP2-R12 calculation using symmetry
 
-    2    3  X  Y  Z
- 1      7.    1
-N      0.000000000000000   0.000000000000000   1.037572100000000       *
- 2      7.    1
-N      0.000000000000000   0.000000000000000   1.037572100000000       *
+    4    1  X
+ 1      8.    1
+O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 1      1.    1
+H      1.427450200000000    .000000000000000   0.986437000000000       *
+ 2      8.    1
+O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 2      1.    1
+H      1.427450200000000    .000000000000000   0.986437000000000       *
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > r12_fc_aux_sym.dal <<%EOF%
+cat > r12_damped_herdir.dal <<%EOF%
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
 **INTEGRALS
-.R12
+.R12EXP
+.123
 **WAVE FUNCTIONS
 .CC
 *HF INPUT
@@ -43,8 +48,9 @@ cat > r12_fc_aux_sym.dal <<%EOF%
 .MP2
 .PRINT
  3
+.HERDIR
 .FROIMP
- 1 0 0 0 1 0 0 0 
+ 1 0 0 0 0 0 0 0
  0 0 0 0 0 0 0 0
 *ORBITALS
 .MOSTART
@@ -69,13 +75,9 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
-#                       ! Original MP2-R12 method !
-#             MP2-R12/A   correlation energy =   -0.403449906
-#             MP2-R12/B   correlation energy =   -0.393864561
-#                       ! Improved MP2-R12 method !
-#             MP2-R12/A   correlation energy =   -0.395123679
-#             MP2-R12/B   correlation energy =   -0.389709677
-CRIT1=`$GREP "MP2-R12/B   correlation energy =   \-0\.38970967" $log | wc -l`
+#             MP2-R12/A   correlation energy =   -0.240601580
+#             MP2-R12/B   correlation energy =   -0.233558376
+CRIT1=`$GREP "MP2-R12/B   correlation energy =   \-0\.23355837" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"
@@ -98,5 +100,5 @@ else
   exit 1
 fi
 
-' > r12_fc_aux_sym.check
+' > r12_damped_herdir.check
 #######################################################################

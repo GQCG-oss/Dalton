@@ -33,6 +33,22 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C  /* Deck eriifc */
+      SUBROUTINE ERIIFC(NNTUV,NNPPX,NIPQ0X,NIPQ0Y,NIPQ0Z,NJMAX)
+C
+C     Written by Wim Klopper (University of Karlsruhe, 19 November 2002).
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <ericom.h>
+      NPPX = NNPPX
+      NTUV = NNTUV
+      IPQ0(1) = NIPQ0X
+      IPQ0(2) = NIPQ0Y
+      IPQ0(3) = NIPQ0Z
+      JMAX = NJMAX
+      RETURN
+      END
 C  /* Deck eriher */
       SUBROUTINE ERIHER(HRINT1,HRINT2,RJ000,COORPQ,INDHER,IODDHR,FACINT,
      &                  ALPHA,HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,
@@ -48,11 +64,9 @@ C
      &          HPRE2(*), HPRE3(*), RO000(*), HRIN1(*),
      &          HRIN2(*), HRIN3(*), HEXPP(*), HEXPQ(*)
       DIMENSION WORK(LWORK), HRINT1(NPPX,NTUV), HRINT2(NPPX,NTUV), 
-     &          RJ000(NPPX,0:JMAX), COORPQ(NPPX,3), ALPHA(NPPX),
-     &          INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP),
-     *          FACINT(NPPX)
+     &          RJ000(*), COORPQ(NPPX,3), ALPHA(NPPX),
+     &          INDHER(*), IODDHR(*), FACINT(NPPX)
 #include <ericom.h>
-#include <hertop.h>
 #include <r12int.h>
       IF (R12EIN) THEN
 C
@@ -63,7 +77,7 @@ C
          CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
      &              FACINT,HEXPP,HEXPQ,IPRINT)
          CALL ERIFGHTUV(HRIN1,HRIN2,HRIN3,COORPQ(1,1),COORPQ(1,2),
-     &                  COORPQ(1,3),INDHER,HARGE,HARGF,IPRINT)
+     &                  COORPQ(1,3),INDHER,HARGE,IPRINT)
          IF (INTGAC .EQ. 3 .OR. INTGAC .EQ. 5) THEN
             INTGAD = 1
             CALL COEFF(HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,HPRE3,
@@ -82,7 +96,7 @@ C        =======================
 C
          CALL ERITUV(HRINT1,RJ000,COORPQ,INDHER,IODDHR,
      &                     WORK,LWORK,IPRINT)
-         IF (R12INT) THEN
+         IF (R12INT .OR. U12INT) THEN
 C
 C           r12 Hermite integrals
 C           =====================
@@ -95,6 +109,19 @@ C
             IF (.NOT. U12INT)
      &      CALL DCOPY(NPPX*NTUV,HRINT2,1,HRINT1,1)
          END IF
+      END IF
+C
+C     Print section
+C     =============
+C
+      IF (IPRINT .GE. 10) THEN
+         CALL AROUND('Output from ERIHER')
+         DO I=1,NTUV
+            WRITE(LUPRI,'(A,I5)') ' TUV =',I
+            DO J = 1, NPPX
+               WRITE(LUPRI,'(I5,2F14.9)') J,HRINT1(J,I),HRINT2(J,I)
+            END DO
+         END DO
       END IF
       RETURN
       END
@@ -929,6 +956,24 @@ C
   500       END DO  
          END IF
       END IF
+C
+C     Print section
+C
+      IF (IPRINT .GE. 10) THEN
+        CALL AROUND('Output from COEFF')
+        WRITE(LUPRI,'(3X,5(10X,A4))') 'PRE1','PRE2','PRE3','ARGE','ARGF'
+        IF (INTGAC .EQ. 1) THEN
+          DO I = 1, NPPX
+            WRITE(LUPRI,'(I3,5F14.9)') I,
+     &      PRE1(I),PRE2(I),PRE3(I),ARGE(I),ARGF(I)
+          END DO
+        ELSE
+          DO I = 1, NPPX
+            WRITE(LUPRI,'(I3,5F14.9)') I,
+     &      PRE1(I),PRE2(I),PRE3(I),ARGE(I)
+          END DO
+        END IF
+      END IF
       RETURN
       END
 C  /* Deck tester */
@@ -1110,7 +1155,7 @@ C
          WRITE (LUPRI,'(2X,A,I10)') 'JMAX  ', JMAX
          WRITE (LUPRI,'(2X,A,I10)') 'NPPX  ', NPPX
          WRITE (LUPRI,'(2X,A,I10)') 'NTUV  ', NTUV
-         IF (IPRINT .GE. 20) THEN
+         IF (IPRINT .GE. 10) THEN
             CALL HEADER('Hermite integrals RO(t,u,v) and RM(t,u,v)',1)
             DO 300 J = 0, JMAX
               DO 320 T = J, 0, -1
@@ -1306,20 +1351,25 @@ C     Written by Wim Klopper (University of Oslo, 29 October 2001).
       END
 C  /* Deck erifghtuv */
       SUBROUTINE ERIFGHTUV(CURF,CURG,CURH,PQX,PQY,PQZ,INDHER,
-     &                     ARGE,ARGF,IPRINT)
+     &                     ARGE,IPRINT)
 C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
 #include <implicit.h>
+#include <priunit.h>
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0, DOG, DOH
       DIMENSION CURF(NPPX,NTUV), CURG(NPPX,NTUV), CURH(NPPX,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NPPX), PQY(NPPX), PQZ(NPPX),
-     &          ARGE(NPPX),ARGF(NPPX)
+     &          ARGE(NPPX)
 #include <hertop.h>
 #include <ericom.h>
 #include <r12int.h>
 #include <sdpre.h>
 #include <ibtfun.h>
+C
+      CALL DZERO(CURF,NPPX*NTUV)
+      CALL DZERO(CURG,NPPX*NTUV)
+      CALL DZERO(CURH,NPPX*NTUV)
 C
       DOH = INTGAC .EQ. 6
       DOG = INTGAC .EQ. 4 .OR. DOH
@@ -1404,6 +1454,20 @@ C
       ENDDO
       ENDDO
       ENDDO
+C
+C     Print section
+C
+      IF (IPRINT .GE. 10) THEN
+         CALL AROUND('Output from ERIFGHTUV')
+         DO ITUV = 1, NTUV
+            WRITE(LUPRI,'(1X,A5,I5)') 'TUV =', ITUV
+            WRITE(LUPRI,'(3X,3(10X,A4))') 'CURF','CURG','CURH'
+            DO I = 1, NPPX
+               WRITE(LUPRI,'(I3,5F14.9)') I,
+     &         CURF(I,ITUV),CURG(I,ITUV),CURH(I,ITUV)
+            END DO
+         END DO
+      END IF
       RETURN
       END
 C  /* Deck ericrx */

@@ -121,13 +121,7 @@ C     Employ MP2-R12 method (WK/UniKA/04-11-2002).
 C-------------------------------------------------
 C
       R12CAL = R12CAL .OR. LMULBS
-      IF (R12CAL) THEN
-#if defined (SYS_HPUX)
-         CALL CCSD_R12(WORK,LWORK,WXRK,LWXRK)
-#else
-         CALL CCSD_R12(WORK,LWORK,WORK,LWORK)
-#endif
-      ENDIF
+      IF (R12CAL) CALL CCSD_R12(WORK,LWORK,WORK,LWORK)
 C
 C     Use LABEL (WK/UniKA/04-11-2002).
       LABEL = 'TRCCINT '
@@ -259,8 +253,22 @@ C
          KT2AM = KOMEG2
      *        + MAX(NT2AMX,NT2AM(ISYMOP),NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
       ENDIF
-      KSCR2   = KT2AM   + NT2AMX
-      KEND1   = KSCR2   + NT2AMX + NT1AMX
+      IF (CCPAIR) THEN
+C        Work space for printing of pair energies (WK/UniKA/21-11-2002).
+         KES     = KT2AM   + NT2AMX
+         KET     = KES     + NRHFT * (NRHFT + 1)/2
+         KQS     = KET     + NRHFT * (NRHFT + 1)/2
+         KQT     = KQS     + NRHFT * (NRHFT + 1)/2
+         KT1S    = KQT     + NRHFT * (NRHFT + 1)/2
+         KT1T    = KT1S    + NRHFT * (NRHFT + 1)/2
+         KT2S    = KT1T    + NRHFT * (NRHFT + 1)/2
+         KT2T    = KT2S    + NRHFT * (NRHFT + 1)/2
+         KSCR2   = KT2T    + NRHFT * (NRHFT + 1)/2
+         KEND1   = KSCR2   + NT2AMX + NT1AMX
+      ELSE
+         KSCR2   = KT2AM   + NT2AMX
+         KEND1   = KSCR2   + NT2AMX + NT1AMX
+      END IF
       LWRK1   = LWORK   - KEND1
 C
       IF ( KEND1 .GT. LWORK ) THEN
@@ -341,17 +349,19 @@ C
       ENDIF
    
       IF  ( (.NOT.CCRSTR) .OR. MP2 .OR. (IOPT.EQ.33) ) THEN
-         CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
-     *                   IALPR)
-C
+         IF (CCPAIR) THEN
+C           Print MP2 pair energies (WK/UniKA/21-11-2002).
+            CALL CCSD_CBS1(WORK(KT2AM),WORK(KFOCKD),
+     *                     WORK(KES),WORK(KET),
+     *                     WORK(KQS),WORK(KQT))
+         END IF
+         CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),IALPR)
          IF (IPRINT .GT. 4) THEN
             CALL AROUND('Largest amplitudes in MP2 guess')
-C
             CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
             CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
             CALL CC_PRAM(WORK(KOMEG1),PT1,1)
          ENDIF
-C
          ETY1 = 'MP2  '
       ENDIF
 C
@@ -509,6 +519,12 @@ C
 C
       WRITE(LUPRI,250) ETY2,THRENR,EN2
  250  FORMAT(/,1x,A5,' energy converged to within ',D10.2,' is ',F16.9)
+      IF (CCPAIR) THEN 
+C        Print CC pair energies (WK/UniKA/21-11-2002).
+         CALL CCSD_CBS2(WORK(KT1AM),WORK(KT2AM),WORK(KEND1),LWRK1,
+     *                  WORK(KT1S),WORK(KT1T),WORK(KT2S),WORK(KT2T),
+     *                  ETY2)
+      END IF
 C
 C-----------------
 C     end of loop.
@@ -1326,7 +1342,7 @@ C     Additional work space allocation.
 C--------------------------------------
 C
       IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
-     *    .AND. .NOT. R12EIN) .OR.
+     *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
      *    (RELORB .OR. (CCFOP .AND. MP2)))) THEN
 C        Not needed for R12 integrals (WK/UniKA/04-11-2002).
          KCMO  = KEND1
@@ -1484,7 +1500,7 @@ C-----------------------------------------------
 C
 C             Modified for R12 method (WK/UniKA/04-11-2002).
               IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
-     *             .AND. .NOT. R12EIN) .OR.
+     *             .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
      *              (RELORB .OR. (CCFOP .AND. MP2)))) THEN
 C
                   CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
@@ -1659,7 +1675,7 @@ C-------------------------------------
 C
 C     Modified for R12 method (WK/UniKA/04-11-2002).
       IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
-     *    .AND. .NOT. R12EIN) .OR.
+     *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
      *    (RELORB .OR. (CCFOP .AND. MP2)))) THEN
          LUCJDK = 0
          CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
@@ -3668,5 +3684,204 @@ C
 C
       CALL QEXIT('CC_SYMHFO(IHFO,ISYMHFO')
 C
+      RETURN
+      END
+C  /* Deck ccsd_cbs1 */
+      SUBROUTINE CCSD_CBS1(T2AM,FCDIAG,ES,ET,QS,QT)
+C
+C     Written by Wim Klopper (University of Karlsruhe, 21 November 2002).
+C
+C     MP2 pair energies and CBS scaling factors
+C
+#include <implicit.h>
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER (DP25 = 0.25D0, DP75 = 0.75D0)
+#include <priunit.h>
+      DIMENSION T2AM(*),FCDIAG(*),ES(*),ET(*),QS(*),QT(*)
+#include <ccorb.h>
+#include <ccsdsym.h>
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+      N12 = NRHFT * (NRHFT + 1)/2
+      CALL DZERO(ES,N12)
+      CALL DZERO(ET,N12)
+      CALL DZERO(QS,N12)
+      CALL DZERO(QT,N12)
+      DO 100 ISYMBJ = 1,NSYM
+         ISYMAI = ISYMBJ
+         DO 110 ISYMJ = 1,NSYM
+            ISYMB = MULD2H(ISYMJ,ISYMBJ)
+            DO 120 ISYMI = 1,NSYM
+               ISYMA = MULD2H(ISYMI,ISYMAI)
+               DO 130 J = 1,NRHF(ISYMJ)
+                  KOFFJ = IRHF(ISYMJ) + J
+                  DO 140 B = 1,NVIR(ISYMB)
+                     KOFFB = IVIR(ISYMB) + B
+                     NBJ = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
+                     DO 150 I = 1,NRHF(ISYMI)
+                        KOFFI = IRHF(ISYMI) + I
+                        DO 160 A = 1,NVIR(ISYMA)
+                           KOFFA = IVIR(ISYMA) + A
+                           NAI = IT1AM(ISYMA,ISYMI)+NVIR(ISYMA)*(I-1)+A
+                           NAIBJ = IT2AM(ISYMAI,ISYMBJ) + INDEX(NAI,NBJ)
+                           DENOM = ONE/(FCDIAG(KOFFI) + FCDIAG(KOFFJ)
+     *                              -   FCDIAG(KOFFA) - FCDIAG(KOFFB))
+                           IJ = INDEX(KOFFI,KOFFJ)
+                           ISYMJA = MULD2H(ISYMJ,ISYMA) 
+                           ISYMIB = MULD2H(ISYMI,ISYMB)
+                           NAJ = IT1AM(ISYMA,ISYMJ) +
+     *                           NVIR(ISYMA)*(J-1) + A
+                           NBI = IT1AM(ISYMB,ISYMI) +
+     *                           NVIR(ISYMB)*(I-1) + B
+                           NAJBI = IT2AM(ISYMJA,ISYMIB) +
+     *                             INDEX(NAJ,NBI)  
+                           VAIBJ = T2AM(NAIBJ)
+                           VAJBI = T2AM(NAJBI)
+                           CS = ABS(VAIBJ + VAJBI)
+                           CT = ABS(VAIBJ - VAJBI)
+                           VS = CS**2
+                           VT = CT**2
+                           ES(IJ) = ES(IJ) + VS * DENOM
+                           ET(IJ) = ET(IJ) + VT * DENOM 
+                           QS(IJ) = QS(IJ) + CS * DENOM
+                           QT(IJ) = QT(IJ) + CT * DENOM 
+  160                   CONTINUE
+  150                CONTINUE
+  140             CONTINUE
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+      E2S = ZERO
+      E2T = ZERO
+      CALL AROUND('SECOND-ORDER PAIR ENERGIES')
+      WRITE(LUPRI,'(4X,A8,4(7X,A8))') 
+     *  '   I   J','T_2(s=0)','T_2(s=1)'
+CQST *             'Q_2(s=0)','Q_2(s=1)'
+      I = 0
+      DO 230 KI=1,NRHFT
+       DO 230 KJ=1,KI
+        I = I + 1 
+        ES(I) = ES(I) * DP25
+        ET(I) = ET(I) * DP75
+        E2S = E2S + ES(I)
+        E2T = E2T + ET(I)
+        WRITE(LUPRI,'(4X,2I4,4F15.9)') KI,KJ,ES(I),ET(I)
+CQST *        (ONE+QS(I))**2,(ONE+QT(I))**2
+  230 CONTINUE
+      E2 = E2S + E2T
+      WRITE(LUPRI,'(/A5,7X,2F15.9 )') ' SUM ',E2S,E2T 
+      WRITE(LUPRI,'(/A5,7X, F15.9/)') ' TOT.',E2
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
+C  /* Deck ccsd_cbs2 */
+      SUBROUTINE CCSD_CBS2(T1AM,T2AM,WORK,LWORK,
+     *                     ET1S,ET1T,ET2S,ET2T,ETY)
+C
+C     Written by Wim Klopper (University of Karlsruhe, 21 November 2002).
+C
+C     Coupled-cluster pair energies and CBS scaling factors
+C
+#include <implicit.h>
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (DP5 = 0.5D0, D1P5 = 1.5D0)
+#include <priunit.h>
+#include <iratdef.h>
+      DIMENSION T1AM(*),T2AM(*),WORK(*),
+     *          ET1S(*),ET1T(*),ET2S(*),ET2T(*)
+      CHARACTER*5 ETY
+      LOGICAL LEXIST
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <ccfield.h>
+#include <ccinftap.h>
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+      N12 = NRHFT * (NRHFT + 1)/2 
+      CALL DZERO(ET1S,N12)
+      CALL DZERO(ET1T,N12)
+      CALL DZERO(ET2S,N12)
+      CALL DZERO(ET2T,N12)
+      KIAJB  = 1
+      KEND1  = KIAJB + NT2AMX
+      LWRK1  = LWORK - KEND1
+      IF (LWRK1 .LT. 0) THEN
+         STOP 'Insufficient spaces in CCSD_CBS2'
+      ENDIF
+      REWIND(LUIAJB)
+      CALL READI(LUIAJB,IRAT*NT2AMX,WORK)
+      DO 100 ISYMJ = 1,NSYM
+         DO 110 ISYMB = 1,NSYM
+            ISYMBJ = MULD2H(ISYMB,ISYMJ)
+            ISYMAI = ISYMBJ
+            DO 120 ISYMI = 1,NSYM
+               ISYMBI = MULD2H(ISYMB,ISYMI)
+               ISYMA  = MULD2H(ISYMI,ISYMAI)
+               ISYMAJ = ISYMBI
+               DO 130 J = 1,NRHF(ISYMJ)
+                  KOFFJ = IRHF(ISYMJ) + J
+                  DO 140 B = 1,NVIR(ISYMB)
+                     KBJ = IT1AM(ISYMB,ISYMJ)
+                     NBJ = KBJ + NVIR(ISYMB)*(J-1) + B
+                     DO 150 I = 1,NRHF(ISYMI)
+                        KOFFI = IRHF(ISYMI) + I
+                        IJ = INDEX(KOFFI,KOFFJ)
+                        KBI = IT1AM(ISYMB,ISYMI)
+                        NBI = KBI + NVIR(ISYMB)*(I-1) + B
+                        DO 160 A = 1,NVIR(ISYMA)
+                           KAI = IT1AM(ISYMA,ISYMI)
+                           NAI = KAI + NVIR(ISYMA)*(I-1) + A
+                           KAJ = IT1AM(ISYMA,ISYMJ)
+                           NAJ = KAJ + NVIR(ISYMA)*(J-1) + A
+                           NAIBJ = IT2AM(ISYMAI,ISYMBJ) + INDEX(NAI,NBJ)
+                           NAJBI = IT2AM(ISYMAJ,ISYMBI) + INDEX(NAJ,NBI)
+                           IF (ISYMB .EQ. ISYMJ) THEN
+                              ET1S(IJ) = ET1S(IJ) + 
+     *                                   (WORK(NAIBJ) + WORK(NAJBI)) *
+     *                                   T1AM(NAI)*T1AM(NBJ)
+                              ET1T(IJ) = ET1T(IJ) + 
+     *                                   (WORK(NAIBJ) - WORK(NAJBI)) *
+     *                                   T1AM(NAI)*T1AM(NBJ)
+                           ENDIF
+                           ET2S(IJ) = ET2S(IJ) + 
+     *                                (WORK(NAIBJ) + WORK(NAJBI)) *
+     *                                T2AM(NAIBJ)        
+                           ET2T(IJ) = ET2T(IJ) + 
+     *                                (WORK(NAIBJ) - WORK(NAJBI))*
+     *                                T2AM(NAIBJ)        
+  160                   CONTINUE
+  150                CONTINUE
+  140             CONTINUE
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+      EET1S = ZERO
+      EET1T = ZERO
+      EET2S = ZERO
+      EET2T = ZERO
+      CALL AROUND(ETY//' PAIR ENERGIES')
+      WRITE(LUPRI,'(4X,A8,4(7X,A8))')
+     *  '   I   J','T_1(s=0)','T_1(s=1)',
+     *             'T_2(s=0)','T_2(s=1)'  
+      I = 0
+      DO 230 KI=1,NRHFT
+       DO 230 KJ=1,KI        
+        I = I + 1
+        ET1S(I) = ET1S(I) * DP5
+        ET2S(I) = ET2S(I) * DP5
+        ET1T(I) = ET1T(I) * D1P5
+        ET2T(I) = ET2T(I) * D1P5
+        WRITE(LUPRI,'(4X,2I4,4F15.9)') KI,KJ,
+     *  ET1S(I), ET1T(I), ET2S(I), ET2T(I)
+        EET1S = EET1S + ET1S(I)
+        EET1T = EET1T + ET1T(I)
+        EET2S = EET2S + ET2S(I)
+        EET2T = EET2T + ET2T(I)
+  230 CONTINUE
+      EE = EET1S + EET1T + EET2S + EET2T
+      WRITE(LUPRI,'(/A5,7X,4F15.9 )') ' SUM ',EET1S,EET1T,EET2S,EET2T
+      WRITE(LUPRI,'(/A5,7X, F15.9/)') ' TOT.',EE
+      CALL FLSHFO(LUPRI)
       RETURN
       END

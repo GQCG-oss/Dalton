@@ -9,8 +9,17 @@ aba2eth.o : aba2eth.F \
 
 
 aba2r12.o : aba2r12.F \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/priunit.h   ../include/single.h \
+  ../include/implicit.h  ../include/subdir.h \
+  ../include/r12int.h    ../include/iratdef.h \
+  ../include/maxorb.h    ../include/mxcent.h \
+  ../include/maxaqn.h    ../include/aovec.h \
+  ../include/nuclei.h    ../include/twocom.h \
+  ../include/symmet.h    ../include/ibtfun.h \
+  ../include/dummy.h     ../include/ibtpar.h \
+  ../include/twosta.h    ../include/inftap.h \
+  ../include/symmet.h    ../include/2gbdef.h \
+  ../include/chrnos.h    ../include/sdpre.h
 
 
 aba2tex.o : aba2tex.F \

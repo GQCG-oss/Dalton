@@ -948,7 +948,8 @@ C
      &                   NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
      &                   SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                   NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DUMMY)
+     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DUMMY,
+     &                   NSOINT)
 C
 C            ********************************
 C            ***** Process AO integrals *****

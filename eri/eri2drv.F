@@ -1676,9 +1676,9 @@ C
       KHRIN2 = KHRINT + LHRIN1
       IF (R12EIN) THEN
 C        Space for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
-         KRJ000 = KAOINT + IOFFAO + 2*LHRINT
-         KCPINT = KAOINT + IOFFAO + MAX(2*LHRINT,LAOINT)
-         KHARGE = KRJ000
+         KRJ000 = KAOINT + IOFFAO + 2*LHRIN1
+         KCPINT = KAOINT + IOFFAO + MAX(2*LHRIN1,LAOINT)
+         KHARGE = KRJ000 + LRJ000
          KHARGF = KHARGE + NPPX
          KHALPH = KHARGF + NPPX
          KHBETA = KHALPH + NPPX
@@ -1687,15 +1687,9 @@ C        Space for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
          KHPRE3 = KHPRE2 + NPPX
          KRO000 = KHPRE3 + NPPX
          KHRIN3 = KRO000 + LRJ000
-         IF (U12INT) THEN
-            KHRIN4 = KHRIN3 + LHRINT/2
-            KHRIN5 = KHRIN4 + LHRINT/2
-            LSTEIN = KHRIN5 + LHRINT/2
-         ELSE
-            KHRIN4 = KHRIN3 + LHRINT
-            KHRIN5 = KHRIN4 + LHRINT
-            LSTEIN = KHRIN5 + LHRINT
-         END IF
+         KHRIN4 = KHRIN3 + LHRIN1
+         KHRIN5 = KHRIN4 + LHRIN1
+         LSTEIN = KHRIN5 + LHRIN1
       ELSE
          KRJ000 = KAOINT + IOFFAO + LHRINT
          KCPINT = KAOINT + IOFFAO + MAX(LHRINT,LAOINT)
@@ -1742,12 +1736,13 @@ C        Output for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
          END IF
       END IF
 C
-      LSTGAM = KRJ000 + LRJ000
       IF (R12EIN) THEN
 C        Space for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
-         LSTHER = KRJ000 + 7*NPPX + 2*LRJ000 + 3*LHRINT
+         LSTHER = KRJ000 + 7*NPPX + 2*LRJ000 + 3*LHRIN1
+         LSTGAM = KRJ000
       ELSE
          LSTHER = KRJ000 + LRJ000
+         LSTGAM = KRJ000 + LRJ000
       END IF
       LSTCR1 = KCPINT + LCPMAX
       LSTCR2 = KCPINT + LCPINT
@@ -2689,7 +2684,7 @@ C
       NHER = MEMR(LHRINT + LRJ000)
       NCR1 = MEMR(MAX(LAOINT,LHRINT) + LCPMAX)
       NCR2 = MEMR(MAX(LAOINT,LHRINT) + LCPINT)
-      IF (R12INT) THEN
+      IF (R12INT .OR. U12INT) THEN
 C        Space for R12 method (WK/UniKA/04-11-2002).
          NQ52 = MEMR(2*LHRINT + NPRFPQ)
          IF (U12INT) THEN

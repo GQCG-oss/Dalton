@@ -2063,21 +2063,6 @@ C
          ENDIF
          KUGAM = KQQ6M + NRHFT ** 4 
          KFRIN = KUGAM + NOCXBS 
-C
-#if defined (SYS_HPUX)
-         KS2AM = 1
-         KT2AM = KS2AM + NT2AMX
-         KU2AM = KT2AM 
-         KR2AM = KT2AM + NT2AMX  
-         KENDX = MAX(KR2AM + NT2AMX, KU2AM + NU2AMX)
-         LWRKX = LWXRK - KENDX
-         IF (KENDX .GT. LWXRK) CALL QUIT('R12 WXRK SPACE')
-         KV2AM = KFRIN + NT2FRO(1)
-         KW2AM = KV2AM + NT2AMX 
-         KEND1 = KW2AM + NT2AMX
-         LWRK1 = LWORK - KEND1
-         IF (KEND1 .GT. LWORK) CALL QUIT('R12 WORK SPACE')
-#else
          KS2AM = KFRIN + NT2FRO(1)
          KT2AM = KS2AM + NT2AMX
          KU2AM = KT2AM 
@@ -2087,7 +2072,6 @@ C
          KEND1 = KW2AM + NT2AMX
          LWRK1 = LWORK - KEND1
          IF (KEND1 .GT. LWORK) CALL QUIT('R12 WORK SPACE')
-#endif
          IF (R12EOR) THEN
 C
             R12EIN = .TRUE.
@@ -2116,6 +2100,12 @@ C
 C           COMPUTE (IA|F12**2|JB) INTEGRALS
 C
             CALL TIMER('START ',TIMSTR,TIMEND)
+            R12TRA = .TRUE.
+            R12INT = .FALSE.
+            R12SQR = .FALSE.
+            U12INT = .FALSE.
+            U21INT = .FALSE.
+            V12INT = .FALSE.
             MBSMAX = 4
             INTGAC = 4
             CALL DZERO(WORK(KT1AM),NT1AMX)
@@ -2129,6 +2119,12 @@ C
 C           COMPUTE (IA|(1/R12)*F12|JB) INTEGRALS
 C
             CALL TIMER('START ',TIMSTR,TIMEND)
+            R12TRA = .TRUE.
+            R12INT = .FALSE.
+            R12SQR = .FALSE.
+            U12INT = .FALSE.
+            U21INT = .FALSE.
+            V12INT = .FALSE.
             MBSMAX = 4
             INTGAC = 2
             CALL DZERO(WORK(KT1AM),NT1AMX)

@@ -83,7 +83,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 C     Keywords have been added for R12 method (WK/UniKA/04-11-2002).
-      PARAMETER (NTABLE = 102)
+      PARAMETER (NTABLE = 96)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -126,9 +126,8 @@ C
      &            '*CCMCD ','.ANAAOD','.PACK  ','.CONNEC','.THRLDP',
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
-     &            '.BRSKIP','.FREEZE','*CCSLV ','.NO HYB',
-     &            '.R12   ','.NO A  ','.NO A'' ','.NO B  ','.NO RXR',
-     &            '.R12THR','.SVDTHR','.R12XXL'/
+     &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
+     &            '.PAIRS '/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -270,15 +269,15 @@ C
       CALL DZERO(EFIELD,MXFELT)
 C
       ITEST  = 0
+C
       MINSCR = .TRUE.
       MINMEM = .FALSE.
-C
-C     R12 method (WK/UniKA/04-11-2002).
-C
+      CCPAIR = .FALSE.
+      R12CAL = .TRUE.
       R12NOA = .FALSE.
       R12NOP = .FALSE.
       R12NOB = .FALSE.
-      R12HYB = .TRUE. 
+      R12HYB = .TRUE.
       NORXR  = .FALSE.
       VCLTHR =  0D0
       SVDTHR =  1D-15
@@ -334,7 +333,7 @@ C
      *                47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
-     *                92,93,94,95,96,97,98,99,400,401,402), I
+     *                92,93,94,94,95), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -720,41 +719,12 @@ C                '*CCSLV '
                   CALL CC_SLVINP(WORD)
                GO TO 100
    94          CONTINUE
-C                '.R12HYB'
-                 R12HYB = .FALSE.
+C                '*R12   ' OR '*R12 IN'
+                 CALL CC_R12IN(WORD)
                GO TO 100
    95          CONTINUE
-C                '.R12   '
-                 R12CAL = .TRUE.
-               GO TO 100
-   96          CONTINUE
-C                '.NO A  '
-                 R12NOA = .TRUE.
-               GO TO 100
-   97          CONTINUE
-C                '.NO A'' '
-                 R12NOP = .TRUE.
-               GO TO 100
-   98          CONTINUE
-C                '.NO B  '
-                 R12NOB = .TRUE.
-                 NORXR  = .TRUE.
-               GO TO 100
-   99          CONTINUE
-C                '.NO RXR'
-                 NORXR  = .TRUE.
-               GO TO 100
-  400          CONTINUE
-C                '.R12THR'
-                 READ (LUCMD, *) VCLTHR
-               GO TO 100
-  401          CONTINUE
-C                '.SVDTHR'
-                 READ (LUCMD, *) SVDTHR
-               GO TO 100
-  402          CONTINUE
-C                '.R12XXL'
-                 R12XXL = .TRUE.
+C                '.PAIRS '
+                 CCPAIR = .TRUE.
                GO TO 100
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
@@ -6565,4 +6535,78 @@ C
 C
       RETURN
       END
+c/* deck cc_r12in */
+      SUBROUTINE CC_R12IN(WORD)
+C     Purpose: Read input for R12 calculations.
+C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
+#include <implicit.h>
+#include <priunit.h>
+#include <r12int.h>
+      LOGICAL SET
+      CHARACTER SECNAM*(8)
+      PARAMETER (SECNAM='CC_R12IN')
+      PARAMETER (NTABLE = 8)
+      CHARACTER WORD*(7)
+      CHARACTER TABLE(NTABLE)*(7)
+      DATA TABLE /'.NO HYB','.NO A  ','.NO A'' ','.NO B  ',
+     &            '.NO RXR','.R12THR','.SVDTHR','.R12XXL'/
+      DATA SET/.FALSE./
+      IF (SET) RETURN
+      SET    = .TRUE.
+      IF (WORD(1:4) .EQ. '*R12') THEN
+  100   CONTINUE
+        READ (LUCMD,'(A7)') WORD
+        DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+          READ (LUCMD,'(A7)') WORD
+        END DO
+        IF (WORD(1:1) .EQ. '.') THEN
+          IJUMP = 1
+          DO WHILE ( IJUMP .LE. NTABLE .AND. TABLE(IJUMP) .NE. WORD)
+            IJUMP = IJUMP + 1
+          END DO
+          IF (IJUMP .LE. NTABLE) THEN
+            GOTO (1,2,3,4,5,6,7,8), IJUMP
+            CALL QUIT('Illegal address in computed GOTO in CC_R12IN.')
+    1       CONTINUE
+               R12HYB = .FALSE.
+            GO TO 100
+    2       CONTINUE
+               R12NOA = .TRUE.
+            GO TO 100
+    3       CONTINUE
+               R12NOP = .TRUE.
+            GO TO 100
+    4       CONTINUE
+               R12NOB = .TRUE.
+            GO TO 100
+    5       CONTINUE
+               NORXR = .TRUE.
+            GO TO 100
+    6       CONTINUE
+               READ (LUCMD, *) VCLTHR
+            GO TO 100
+    7       CONTINUE
+               READ (LUCMD, *) SVDTHR
+            GO TO 100
+    8       CONTINUE
+               R12XXL = .TRUE.
+            GO TO 100
+          ELSE
+           WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
+     &             '" not recognized in ',SECNAM,'.'
+           CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',LUPRI)
+           CALL QUIT('Illegal Keyword in '//SECNAM//'.')
+          END IF
 
+        ELSE IF (WORD(1:1) .NE. '*') THEN
+          WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+          CALL QUIT('Illegal prompt in '//SECNAM//'.')
+        ELSE IF (WORD(1:1) .EQ.'*') THEN
+          BACKSPACE (LUCMD)
+          GO TO 200
+        END IF
+      END IF
+  200 CONTINUE
+      RETURN
+      END

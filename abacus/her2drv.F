@@ -325,19 +325,6 @@ C  NECgh We allocate temporary FOCK matrices for TWOLOP
       LWRK   = LWORK - KLAST + 1
       CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
 C
-C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
-      NOPP12 = 0
-      IF (R12EIN) THEN
-         NOPP12 = NOPP12 + 1
-      ELSE
-         IF (V12INT) NOPP12 = NOPP12 + 1
-         IF (R12INT) NOPP12 = NOPP12 + 1
-         IF (U12INT) NOPP12 = NOPP12 + 1
-         IF (U21INT) NOPP12 = NOPP12 + 1
-      END IF
-      IF (NOPP12 .EQ. 0) 
-     &CALL QUIT('Wrong number of integral types in TWOCAL')
-C
 C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
@@ -1859,7 +1846,7 @@ C  /* Deck symlop */
      &        ABADY,  ABADZ, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB, 
      &        DIA2SO, ZFS2EL, ONECEN, FIRST, LAST, SQ12EL, SOP000,
      &        IPNTLG(3,*), LONDON, SUSCEP, ADISTR,SOFOCK
-      DIMENSION SOINT(NSOINT), PSO(NPMAT), PSA(NPMAT), HESSEE(*),
+      DIMENSION SOINT(NSOINT,*), PSO(NPMAT), PSA(NPMAT), HESSEE(*),
      &          WORK(LWORK), DMAT(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), FMAT(*), GMAT(*),
      &          CONTA(NORBA*NUCA,2,NODCAB), CONTB(NORBB*NUCB,2,NODCAB),
@@ -1971,7 +1958,7 @@ C     Generates distinct overlap distributions A*R(B)
 C
       IF (UNDIFF .OR. DIRFCK .OR. DISTRI .OR. SOFOCK) THEN
          SOP000 = .TRUE.
-         IF (LAST) CALL DZERO(SOINT,NSOINT)
+         IF (LAST) CALL DZERO(SOINT,NSOINT*NOPP12)
       ELSE
          SOP000 = .FALSE.
          IF (PERTUR .OR. LONDON .OR. SPNORB .OR. LAST)
@@ -2258,7 +2245,8 @@ C
      &                     NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
      &                     SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                     NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                     NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP)
+     &                     NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP,
+     &                     NSOINT)
                LWTOT  = LWTOT - KLAST
             END IF
   300       CONTINUE
@@ -2281,8 +2269,13 @@ C
          IF (UNDIFF) THEN
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             IF (.NOT.ADISTR) THEN
-               CALL UN2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                     THRESH,NINDAB,NINDCD,IPRINT)
+               IF (DCCR12) THEN
+                  CALL RN2OUT(SOINT,NSOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,
+     &                        LAST,THRESH,NINDAB,NINDCD,IPRINT)
+               ELSE
+                  CALL UN2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+     &                        THRESH,NINDAB,NINDCD,IPRINT)
+               END IF
             ELSE
                CALL DS2OUT(SOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                     THRESH,NINDAB,NINDCD,IORBSH,IPRINT)
@@ -2372,19 +2365,20 @@ C  /* Deck caoint */
      &                  IPNTAO,IPNTOP,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
-     &                  HESSEE,DNSBUF,DINTSKP)
+     &                  HESSEE,DNSBUF,DINTSKP,NSOINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
+#include <r12int.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, DIA2SO, BIGVEC, ONECEN,
      &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, ZFS2EL
-      DIMENSION AOINT(NCCINT,NINTYP), SOINT(*), PSO(*),PSA(*),COEFAB(*),
-     &          COEFCD(*), COORAB(*), COORCD(*), EXPAB(*), EXPCD(*),
-     &          CONTA(*), CONTB(*), CONTC(*), CONTD(*), FACAB(*),
-     &          FACCD(*), NPCOA(*), NPCOB(*), NPCOC(*),
+      DIMENSION AOINT(NCCINT,NINTYP), SOINT(NSOINT,*), PSO(*),PSA(*),
+     &          COEFAB(*), COEFCD(*), COORAB(*), COORCD(*), EXPAB(*), 
+     &          EXPCD(*), CONTA(*), CONTB(*), CONTC(*), CONTD(*), 
+     &          FACAB(*), FACCD(*), NPCOA(*), NPCOB(*), NPCOC(*),
      &          NPCOD(*), NUCSAB(*), NUCSCD(*), ICORBA(*), ICORBB(*),
      &          ICORBC(*), ICORBD(*), IPNTAO(*), IPNTOP(3,*),
      &          SIGNT(3), INDHSQ(*), IODDHR(*), INDHER(*), LMNVLS(*),
@@ -2444,8 +2438,36 @@ C        a) Undifferentiated integrals
 C
          IF (UNDIFF .OR. DISTRI. OR. SOFOCK) THEN
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
-            CALL SYM2(SOINT,AOINT,IPNTAO,IPNTOP,ISYMR,ISYMT,ISYMTS,
-     &                HKABCD,SQ12EL,SOP000,NINTS,IPRINT)
+            IF (R12EIN) THEN
+               CALL SYM2(SOINT,AOINT,IPNTAO,IPNTOP,
+     &                   ISYMR,ISYMT,ISYMTS,HKABCD,
+     &                   SQ12EL,SOP000,NINTS,IPRINT)
+            ELSE
+               IX = 1
+               IF (V12INT) THEN
+                  CALL SYM2(SOINT(1,IX),AOINT(1,IX),IPNTAO,IPNTOP,
+     &                      ISYMR,ISYMT,ISYMTS,HKABCD,
+     &                      SQ12EL,SOP000,NINTS,IPRINT)
+                  IX = IX + 1
+               END IF
+               IF (R12INT) THEN
+                  CALL SYM2(SOINT(1,IX),AOINT(1,IX),IPNTAO,IPNTOP,
+     &                      ISYMR,ISYMT,ISYMTS,HKABCD,
+     &                      SQ12EL,SOP000,NINTS,IPRINT)
+                  IX = IX + 1
+               END IF
+               IF (U12INT) THEN
+                  CALL SYM2(SOINT(1,IX),AOINT(1,IX),IPNTAO,IPNTOP,
+     &                      ISYMR,ISYMT,ISYMTS,HKABCD,
+     &                      SQ12EL,SOP000,NINTS,IPRINT)
+                  IX = IX + 1
+               END IF
+               IF (U21INT) THEN
+                  CALL SYM2(SOINT(1,IX),AOINT(1,IX),IPNTAO,IPNTOP,
+     &                      ISYMR,ISYMT,ISYMTS,HKABCD,
+     &                      SQ12EL,SOP000,NINTS,IPRINT)
+               END IF
+            END IF
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TSYM2S = TSYM2S + TIMEND - TIMSTR
@@ -3162,7 +3184,7 @@ C
      &            ISMXYZ,ONECEN,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,NUCSCD,
      &            SIGNT,INDHSQ,IODDHR,LMNVLS,NPNTAB,NPNTCD,
      &            NREDAB,NREDCD,V12INT,R12INT,U12INT,
-     &            R12EIN,U21INT)
+     &            R12EIN,U21INT,INTGAC,IADV12,IADR12,IADU12)
       LWTOT  = LWTOT - KFREE
       CALL MEMREL('INTDER',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('INTDER')
@@ -3176,7 +3198,8 @@ C  /* Deck intdr1 */
      &                  THRESH,JMAX,ISMXYZ,ONECEN,NPCOA,NPCOB,NPCOC,
      &                  NPCOD,NUCSAB,NUCSCD,SIGNT,INDHSQ,IODDHR,LMNVLS,
      &                  NPNTAB,NPNTCD,NREDAB,NREDCD,V12INT,R12INT,
-     &                  U12INT,R12EIN,U21INT)
+     &                  U12INT,R12EIN,U21INT,INTGAC,
+     &                  IADV12,IADR12,IADU12)
 C
 C     tuh
 C
@@ -3340,7 +3363,7 @@ C
 C
 C           Special case: [T1+T2,r12] integrals (WK/UniKA/14-11-2002).
             IF (U12INT) MAX34D = MAX34 + 1
-            IF (INTGAC .EQ. 5) MAX34D = MAX34 + 1
+            IF (INTGAC .EQ. 5) MAX34D = MAX34D + 1
 C
             NTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
             MAX34D = MAX34 + IDERIV - 1
@@ -3352,7 +3375,8 @@ C
      &                  NPCOC,NPCOD,NUCSAB,NUCSCD,INDHSQ,
      &                  IODDHR(1,ISMXYZ),LMNVLS(1,1,1),LMNVLS(1,1,3),
      &                  NPNTAB,NPNTCD,NREDAB,NREDCD,NTUV,NUABCD,
-     &                  V12INT,R12INT,U12INT,R12EIN)
+     &                  V12INT,R12INT,U12INT,R12EIN,
+     &                  IADV12,IADR12,IADU12)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TPATH1 = TPATH1 + TIMEND - TIMSTR
@@ -3455,7 +3479,7 @@ C              Also swap Hermite integrals over r12 (WK/UniKA/14-11-2002).
 C
 C           Special case: [T1+T2,r12] integrals (WK/UniKA/14-11-2002).
             IF (U12INT) MAX34D = MAX34 + 1
-            IF (INTGAC .EQ. 5) MAX34D = MAX34 + 1
+            IF (INTGAC .EQ. 5) MAX34D = MAX34D + 1
 C
             NTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
             MAX34D = MAX34 + IDERIV - 1
@@ -3466,7 +3490,8 @@ C
      &                  NPCOA,NPCOB,NUCSCD,NUCSAB,INDHSQ,
      &                  IODDHR(1,ISMXYZ),LMNVLS(1,1,3),LMNVLS(1,1,1),
      &                  NPNTCD,NPNTAB,NREDCD,NREDAB,NTUV,NUABCD,
-     &                  V12INT,R12INT,U12INT,R12EIN)
+     &                  V12INT,R12INT,U12INT,R12EIN,
+     &                  IADV12,IADR12,IADU12)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TPATH2 = TPATH2 + TIMEND - TIMSTR
@@ -3480,7 +3505,8 @@ C  /* Deck ccdriv */
      &                  CONT2,CONT3,CONT4,WORK,LWORK,IPRINT,NPCO1,NPCO2,
      &                  NPCO3,NPCO4,NUCS12,NUCS34,INDHSQ,IODDHR,
      &                  LMNV12,LMNV34,NPNT12,NPNT34,NRED12,NRED34,
-     &                  NTUV,NUABCD,V12INT,R12INT,U12INT,R12EIN)
+     &                  NTUV,NUABCD,V12INT,R12INT,U12INT,R12EIN,
+     &                  IADV12,IADR12,IADU12)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -3522,29 +3548,13 @@ C
       KLAST  = KHCINT + LHCINT
 C
 C     Allocate work space for r12 integrals (WK/UniKA/15-11-2002).
-      IF (R12EIN) THEN
-         IDV12 = 1
-         IDU12 = 1
-         KHRINT = KHCINT
-      ELSE
-         IDV12 = 1
-         IDU12 = 1
-         KHRINT = KHCINT
-         IF (R12INT .OR. U12INT) THEN
-            IDV12 = 1
-            IDR12 = 2
-            IDU12 = 3
-            IF (.NOT. V12INT) THEN
-               IDR12 = IDR12 - 1
-               IDU12 = IDU12 - 1
-            END IF
-            IF (.NOT. R12INT) IDU12 = IDU12 - 1
-            KHRINT = KLAST
-            IF (.NOT. V12INT .AND. .NOT. U12INT) KHRINT = KHCINT
-            KLAST = KHRINT + LHCINT
-         END IF
+      KHRINT = KHCINT
+      IF (.NOT. R12EIN .AND. (R12INT .OR. U12INT)) THEN
+         KHRINT = KLAST
+         IF (.NOT. V12INT .AND. .NOT. U12INT) KHRINT = KHCINT
+         KLAST = KHRINT + LHCINT
       END IF
-      IDU21 = IDU12 + 2 - IPATH
+      IADUUU = IADU12 + 2 - IPATH
 C
       IF (KLAST .GT. LWORK) CALL STOPIT('CCDRIV',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
@@ -3591,18 +3601,20 @@ C     ... 980826-hjaaj: check if no contraction and no omissions
          NOCNT = .FALSE.
       END IF
       IF (V12INT .OR. (R12EIN .AND. .NOT. U12INT))
-     &CALL C2DRIV(AOINT(1,IDV12),WORK(KHCINT),COEF34,INDHER,CONT3,CONT4,
+     &CALL C2DRIV(AOINT(1,IADV12),
+     &            WORK(KHCINT),COEF34,INDHER,CONT3,CONT4,
      &            WORK(KLAST),LWRK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,
      &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34)
       IF (R12INT)
-     &CALL C2DRIV(AOINT(1,IDR12),WORK(KHRINT),COEF34,INDHER,CONT3,CONT4,
+     &CALL C2DRIV(AOINT(1,IADR12),
+     &            WORK(KHRINT),COEF34,INDHER,CONT3,CONT4,
      &            WORK(KLAST),LWRK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,
      &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34)
       IF (U12INT)
-     &CALL U2DRIV(AOINT(1,IDU21),
+     &CALL U2DRIV(AOINT(1,IADUUU),
      &            WORK(KHCINT),WORK(KHRINT),COEF34,INDHER,CONT3,CONT4,
      &            WORK(KLAST),LWRK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,
-     &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34)
+     &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34,R12EIN)
       LWTOT = LWTOT - KLAST
       RETURN
       END

@@ -9480,13 +9480,6 @@ C
   560    CONTINUE
 C     .......... TEST FOR CONVERGENCE ..........
   565    Z = W(K)
-C        To avoid compiler bug (WK/UniKA/11-11-2002).
-         LUDUMM = 31
-         IDUMMY = 0
-         CALL GPOPEN(LUDUMM,'AODUMMY','UNKNOWN',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-         WRITE(LUDUMM,*) ITS,L,K
-         CALL GPCLOSE(LUDUMM,'DELETE')
          IF (L .EQ. K) GO TO 650
 C     .......... SHIFT FROM BOTTOM 2 BY 2 MINOR ..........
          IF (ITS .EQ. 30) GO TO 1000
