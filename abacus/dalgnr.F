@@ -1009,6 +1009,8 @@ C
 #include <cbieri.h>
 #include <veclen.h>
 #include <numder.h>
+CSONIA
+#include <grdccpt.h>
       PARAMETER (NDIR = 7, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
@@ -1101,6 +1103,12 @@ C
       HUCCNT = 2.0D0
       CALL IZERO(NHUCAO,8)
       CALL IZERO(IHUCPT,MXSHEL)
+C
+C     Initialize /GRDCCPT/
+C
+      IGRDCCPT = 1
+      LGRDCCPT = .FALSE.
+
 C
 C
       WRITE (LUPRI,'(/A/)')
