@@ -63,7 +63,6 @@ All the old testjobs have been given names instead of numbers:
 	test61		geoopt_mp2froz
 	test62		walk_vibave
 	test63		walk_vibave2
-	test64		walk_vibave3
 	test65		prop_vibana
 	test66		rsp_twophot
 	test67		rsp_propave
@@ -1033,11 +1032,4 @@ walk_vibave2
 ------------
 Molecule:         HF
 Wave Function:    SCF / ANO (Atombasis)
-Test Purpose:     Vibrational average of shieldings
-
-
-walk_vibave3
-------------
-Molecule:         H2O
-Wave Function:    SCF / STO-3G
 Test Purpose:     Vibrational average of shieldings
