@@ -1118,6 +1118,11 @@ C
          END DO
          PFAC = -D025*TMP*RNNORM(ICOOR2)/(FREQ(ICOOR2)**D2)
 C
+         IF (IPRINT.GE.20) THEN
+            WRITE (LUPRI,*) 'Prefactor for anharmonic contribution.'
+            WRITE (LUPRI,'(A,I4,F8.4)') 'Coordinate:', ICOOR2, PFAC
+         END IF
+C
          DO IDIM3 = 1, NDIM3
          DO IDIM2 = 1, NDIM2
          DO IDIM1 = 1, NDIM1
@@ -1279,6 +1284,25 @@ C
          TDER(ICOOR3,ICOOR2,ICOOR1) = DERIV(IDERIV)*DFAC
  100  CONTINUE
 C
+      IF (IPRINT.GE.20) THEN
+         CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
+C
+         ISTRT = 1
+         LAST  = MIN(NDCOOR,KCOL)
+         KCOOR = NDCOOR
+         NCOL  = NDCOOR/KCOL
+         IF (MOD(NDCOOR,KCOL).NE.0) NCOL = NCOL + 1
+C
+         DO ICOL = 1, NCOL
+            DO ICOOR = 1, NDCOOR
+               WRITE (LUPRI,'(5X,6F12.6)')
+     &                        (TDER(ICOOR,I,I),I=ISTRT,LAST)
+            END DO
+            WRITE (LUPRI,'(A)') '                                  '
+            ISTRT = ISTRT + KCOL
+            LAST  = MIN(NDCOOR,KCOL+LAST)
+         END DO
+      END IF
       RETURN
       END
 C
