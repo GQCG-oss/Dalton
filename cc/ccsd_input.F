@@ -2328,7 +2328,7 @@ C                    END OF SUBROUTINE CC_OPAINP
 C=====================================================================*
 c/* deck cc_qr2rinp */
 C=====================================================================*
-       SUBROUTINE CC_QR2RINP(WORD,MSYM)
+       SUBROUTINE CC_QR2RINP(WORD)
 C---------------------------------------------------------------------*
 C
 C    Purpose: Read input for CC excitec state calculations.
