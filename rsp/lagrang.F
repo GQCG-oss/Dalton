@@ -360,7 +360,7 @@ C
       ZFSCAL = .FALSE.
       IF (ISPIN .EQ. 1) THEN
         CALL QUIT(
-     &   'ESRINP: Singlet reference state has no ESR properties',
+     &   'ESRINP: Singlet reference state has no ESR properties'
      &       )
       END IF
       IF (NEWDEF) THEN
