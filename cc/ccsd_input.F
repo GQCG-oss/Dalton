@@ -273,15 +273,15 @@ C
       MINSCR = .TRUE.
       MINMEM = .FALSE.
       CCPAIR = .FALSE.
-      R12CAL = .TRUE.
-      R12NOA = .FALSE.
-      R12NOP = .FALSE.
-      R12NOB = .FALSE.
-      R12HYB = .TRUE.
-      NORXR  = .FALSE.
+ckr      R12CAL = .TRUE.
+ckr      R12NOA = .FALSE.
+ckr      R12NOP = .FALSE.
+ckr      R12NOB = .FALSE.
+ckr      R12HYB = .TRUE.
+ckr      NORXR  = .FALSE.
       VCLTHR =  0D0
       SVDTHR =  1D-15
-      R12XXL = .FALSE.
+ckr      R12XXL = .FALSE.
 C
 C     If this is a restart run, we read MSYM from SIRIFC
 C
