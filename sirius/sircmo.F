@@ -33,16 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REVISION_LOG
-===========================================================================
-Revision 1.3  2000/05/24 12:23:49  hjj
-1) option for printing eigenvalues of overlap matrix
-2) use THROVL instead of fixed THNORM in CALL NORM
-
-Revision 1.2  2000/05/01 13:15:57  hjj
-removed obsolete KAVER references.
-===========================================================================
-#endif
 C  /* Deck cmodel */
       SUBROUTINE CMODEL(CMO,GETCMO)
 C
@@ -550,20 +540,34 @@ C
          IF (NORBI .NE. NBASI) THEN
             CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(JCSYM),SCRA(KSCR1),
      *                NBASI,NORBI)
+C           CALL UTHU(H,HT,U,WRK,NAO,NMO)
          ELSE
             NNBASI = NNBAS(ISYM)
             CALL DCOPY(NNBASI,SCRA(ISSYM),1,SCRA(KS1T),1)
             CALL DUNIT(CMO(JCSYM),NBASI)
          END IF
 C
+C
          CALL JACO(SCRA(KS1T),CMO(JCSYM),NORBI,NORBI,NBASI,
      *             SCRA(KSCR1),SCRA(KSCR2))
+C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
             SCRA(KS1T-1+I)=SCRA(KS1T-1+II)
   175    CONTINUE
          CALL ORDER2(CMO(JCSYM),SCRA(KS1T),NORBI,NBASI)
+         IF (IPRI6 .GT. 10 .OR. P6FLAG(38)) THEN
+            IF (LMULBS .AND. LAUXBS) THEN
+              WRITE (LUPRI,'(/A,I5/)')
+     &        'CMODEL: eigenvalues of overlap matrix for symmetry',ISYM
+            ELSE
+              WRITE (LUPRI,'(/A,I5/)')
+     &        'CMODEL: eigenvalues of overlap matrix for '//
+     &        'auxilliary basis for symmetry',ISYM
+            END IF
+            WRITE (LUPRI,'(1P,5D15.5)') (SCRA(KS1T-1+I),I=1,NORBI)
+         END IF
 C
 C Delete orbitals with small ( THROVL) eigenvalues
 C
@@ -580,6 +584,7 @@ C
      *           '@   because of detected numerical linear dependence.',
      *           '@ Eigenvalue threshold for num. lin. dep. =',THROVL
               END IF
+              IF (.NOT.LAUXBS) DELEMO = .TRUE.
               WRITE (LUW4,'(/A,I4,A,I5/A/,(1P,5D10.2))')
      *        '@',IDEL,' MO components are deleted in symmetry',ISYM,
      *        ' Overlap eigenvalues of the deleted orbitals:',
@@ -622,16 +627,16 @@ C
            END IF
   275    CONTINUE
   280    CONTINUE
+C
          JCSYM = JCSYM + NORB2(ISYM)*NBASI       
   200 CONTINUE
 C
 C *** OUTPUT SECTION
 C
       IF (LAUXBS) THEN
-        WRITE(LUPRI,'(/A)') '  CANONICAL PRIMARY '//
-     *     'AND SECONDARY BASIS SETS ' 
-        WRITE(LUPRI,'(A)') '  ISYM       NORB1 MBAS1'//
-     *     '       NORB2 MBAS2'
+        WRITE(LUPRI,'(/A/A)')
+     *      '  Canonical primary and secondary basis sets',
+     *      '  ISYM       NORB1 MBAS1       NORB2 MBAS2'
         DO 777 ISYM = 1, NSYM
            WRITE(LUPRI,'(I6,6X,2I6,6X,2I6)') 
      *     ISYM, NORB1(ISYM), MBAS1(ISYM), NORB2(ISYM), MBAS2(ISYM)
@@ -743,6 +748,7 @@ C
             CALL NORM(S(ISTS),CMO(ISTC),NBASI,NORBI,SIN,THROVL,IRETUR)
 C           ... error exit with IRETUR.ne.0 if norm**2 < THROVL
 C               after Gram-Schmidt orthogonalization to prev. vectors
+C           hjaaj may 2000: use THROVL instead of fixed THNORM in CALL NORM
          ELSE
             CALL SYMORT(CMO(ISTC),S(ISTS),NBASI,NORBI,SIN,LSIN,IRETUR)
             IF (IRETUR .NE. 0 .AND. IRETUR .NE. 8888) THEN
@@ -905,9 +911,11 @@ C
 C
          CALL UTHU(SH1(ISSYM),SCRA(KH1T),CMO(ICSYM),SCRA(KSCR1),
      *             NBASI,NORBI)
+C        CALL UTHU(H,HT,U,WRK,NAO,NMO)
 C
          CALL JACO(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,
      *             SCRA(KSCR1),SCRA(KSCR2))
+C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -1135,6 +1143,7 @@ C
 C
             CALL JACO(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,
      *                SCRA,SCRA(1+NORBI))
+C           CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
 C
             II = ISSYM - 1
             DO 175 I=1,NORBI
@@ -1315,6 +1324,7 @@ C
          KJBIG = KBIG + NORBI
          CALL JACO(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,
      *             WRK(KBIG),WRK(KJBIG))
+C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
 C
          DO 175 I = 1,NORBI
             WRK(I) = WRK(JXFC-1 + IROW(I+1))
