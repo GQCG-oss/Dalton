@@ -1130,6 +1130,8 @@ C  /* Deck ijkaux */
 #include <implicit.h>
 #include <priunit.h>
 #include <ccorb.h>
+C ... only called from cc/ routines,
+C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
 #include <maxorb.h>
 #include <r12int.h>
       LOGICAL FIRST
@@ -1162,6 +1164,8 @@ C  /* Deck inoaux */
 #include <implicit.h>
 #include <priunit.h>
 #include <ccorb.h>
+C ... only used in RDONEL when called from cc/ routines,
+C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
 #include <maxorb.h>
 #include <r12int.h>
       LOGICAL FIRST
