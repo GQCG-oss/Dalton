@@ -6302,8 +6302,8 @@ C
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT1OP(INDOP,NOP,MAXOP,OPERATOR,ROUTINE)
 C
-      CHARACTER*6 ROUTINE
-      CHARACTER*9 OPERATOR
+      CHARACTER*(*) ROUTINE
+      CHARACTER*(*) OPERATOR
       LOGICAL FAILED
       INTEGER MAXOP, NEWOP
       INTEGER INDOP(MAXOP)
@@ -6344,7 +6344,7 @@ C
         WRITE(LUPRI,'(2(/,A,I5),/)')
      &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
      &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
-        CALL QUIT('TO MANY OPERATORS IN '//ROUTINE//'.')
+        CALL QUIT('TO MANY OPERATORS IN '//ROUTINE(1:LEN(ROUTINE))//'.')
       ELSE
         NOP = NOP + NEWOP
       END IF
@@ -6354,8 +6354,8 @@ C
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT2OP(INDOP1,INDOP2,NOP,MAXOP,OPERATOR,ROUTINE)
 C
-      CHARACTER*6 ROUTINE
-      CHARACTER*9 OPERATOR
+      CHARACTER*(*) ROUTINE
+      CHARACTER*(*) OPERATOR
       LOGICAL FAILED
       INTEGER MAXOP, NEWOP
       INTEGER INDOP1(MAXOP), INDOP2(MAXOP), IOP(10)
@@ -6389,14 +6389,14 @@ C
           IOP(3) = INDPRPCC('ZANGMOM ')
         END IF
       ELSE
-        CALL QUIT('Unkown OPERATOR in CC_PUT1OP')
+        CALL QUIT('Unkown OPERATOR in CC_PUT2OP')
       END IF
 
       IF (FAILED) THEN
         WRITE(LUPRI,'(2(/,A,I5),/)')
      &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
      &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
-        CALL QUIT('TO MANY OPERATORS IN '//ROUTINE//'.')
+        CALL QUIT('TO MANY OPERATORS IN '//ROUTINE(1:LEN(ROUTINE))//'.')
       ELSE
         DO IDX1 = 1, NEWOP
           DO IDX2 = 1, NEWOP
