@@ -280,7 +280,7 @@ C
      *                  ALAB,BLAB,CLAB,DLAB,IAOP,IBOP,ICOP,IDOP,
      *                  IBFR,ICFR,IDFR,FREQA,FREQB,FREQC,FREQD,
      *                  KZYVA,KZYVB,KZYVC,KZYVD,KZYVBC,KZYVBD,KZYVCD,
-     *                  VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD)
+     *                  VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,IEQTO)
 C
 C     Called from CRHYP or CRTMO or CRTPA.
 C
@@ -332,6 +332,7 @@ C
      &          VECBD(*),VECCD(*)
       DIMENSION LAB(MXCALC,4), FRQ(MXCALC,4), ISYM(MXCALC,4)
       DIMENSION GAMMA(3,3,3,3)
+      DIMENSION IEQTO(5)
 C
       SAVE LAB, FRQ, N, ISYM
 C
@@ -482,6 +483,14 @@ C
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),-FRQ(I,2),
      *' C operator, symmetry, frequency: ',LAB(I,3),ISYM(I,3),-FRQ(I,3),
      *' Symmetry, excitation energy:     ','  ',ISYM(I,4),FRQ(I,4)
+                      CALL DIPLAB(LAB(I,1),I1)
+                      CALL DIPLAB(LAB(I,2),I2)
+                      CALL DIPLAB(LAB(I,3),I3)
+                      IEQTO(1)=I1
+                      IEQTO(2)=I2
+                      IEQTO(3)=I3
+                      IEQTO(4)=IDFR
+                      IEQTO(5)=ISYM(I,4)
                    END IF
                    IF (DOCAL.AND.TPAMP) THEN
       WRITE(LUPRI,'(//A,2(/A,A10,I4,F10.6),2(/A,I7,F10.6))')

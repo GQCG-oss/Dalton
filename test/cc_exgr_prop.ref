@@ -5957,7 +5957,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Energy:  0.419985 and nr.:   1 of symmetry:   1
  CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
- Start vector is a CC2       E0  vector
+ Start vector is a CC2       E0 vector
  exgr, irst: 1
  CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F

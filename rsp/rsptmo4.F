@@ -54,7 +54,9 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-      PARAMETER ( D0 = 0.0D0, ZEROTHR = 1.0D-10 )
+      PARAMETER ( D0 = 0.0D0, ZEROTHR = 1.0D-10, IMXEXC = 20 )
+      DIMENSION RESTOM(3,3,3,IMXEXC,8), RESFRE(IMXEXC,8)
+      DIMENSION IEQTO(5)
 C
 #include <priunit.h>
 #include <infrsp.h>
@@ -71,6 +73,7 @@ C
 #include <indcr.h>
 #include <infcr.h>
 #include <inftmo.h>
+#include <codata.h>
 C
       CALL QENTER('CRTMO')
       ATEST = .FALSE.
@@ -87,6 +90,11 @@ C
       WRITE(LUPRI,'(//A,A)')
      *' <<<<< CALCULATING CONTRIBUTIONS TO THIRD ORDER',
      *' TRANSITION MOMENT >>>>>'
+C
+      IF (THREEPHOTON) THEN
+        CALL DZERO(RESTOM,3*3*3*IMXEXC*8)
+        CALL DZERO(RESFRE,IMXEXC*8)
+      END IF
 C
       DO 200 ISYMD = 1,NSYM
       DO 300 ISYMC = 1,NSYM
@@ -130,8 +138,16 @@ C
      *            ALAB,BLAB,CLAB,DLAB,IAOP,IBOP,ICOP,0,
      *            IBFR,ICFR,ID,FREQA,FREQB,FREQC,FREQD,
      *            KZYVA,KZYVB,KZYVC,KZYVD,KZYVBC,KZYVBD,KZYVCD,
-     *            VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD)
+     *            VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,IEQTO)
 C
+      IF (THREEPHOTON .AND. (.NOT. DOMOM)) THEN
+        CALL DIPLAB(ALAB,IA)
+        CALL DIPLAB(BLAB,IB)
+        CALL DIPLAB(CLAB,IC)
+        RESFRE(ID,ISYMD)=EXCIT2(ISYMD,ID)
+        RESTOM(IA,IB,IC,ID,ISYMD)=
+     &  RESTOM(IEQTO(1),IEQTO(2),IEQTO(3),IEQTO(4),IEQTO(5))
+      END IF
       IF (.NOT.DOMOM) GOTO 800
 C
 C    Initialize third order transition moment
@@ -341,6 +357,14 @@ C
      *     ' State no., symmetry, excitation energy:',ID,ISYMD,FREQD
       WRITE(LURSPRES,'(/A,F20.8)') ' < 0 | ABC | f >  = ', TMOM
 C
+      IF (THREEPHOTON) THEN
+        CALL DIPLAB(ALAB,IA)
+        CALL DIPLAB(BLAB,IB)
+        CALL DIPLAB(CLAB,IC)
+        RESTOM(IA,IB,IC,ID,ISYMD)=TMOM
+        RESFRE(ID,ISYMD)=EXCIT2(ISYMD,ID)
+      END IF
+C
  800  CONTINUE
  750  CONTINUE
  700  CONTINUE
@@ -355,8 +379,136 @@ C
  200  CONTINUE
       CALL GPCLOSE(LURSPRES,'KEEP')
 C
+C
+      IF (THREEPHOTON) THEN
+         CALL PRINT_THREEPHOTON(RESTOM,RESFRE)   
+      END IF
+C
 C    End of subroutine CRTMO
 C
       CALL QEXIT('CRTMO')
+      RETURN
+      END
+      SUBROUTINE PRINT_THREEPHOTON(RESTOM,RESFRE)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <inftmo.h>
+#include <codata.h>
+C
+      PARAMETER ( D0 = 0.0D0, ZERO = 1.0D-10, IMXEXC = 20 )
+      DIMENSION RESTOM(3,3,3,IMXEXC,8), RESFRE(IMXEXC,8)
+      CHARACTER*8 ALAB,BLAB,CLAB,DLAB
+      CHARACTER*1 ITINDX,JTINDX
+C
+      CALL TITLER('FINAL RESULTS FROM THREE-PHOTON CALCULATION',
+     &       '*',112)
+      WRITE(LUPRI,'(A64,4(/A64))')
+     & ' The three-photon absorption strength for an average molecular',
+     & ' orientation is computed according to formulas given by       ',
+     & ' W.M. MacClain in J. Chem. Phys. 57:2264, 1972. The absorption',
+     & ' depends on the light polarization. A monochromatic light     ',
+     & ' source is assumed.                                           '
+      WRITE(LUPRI,'(2(/A64))')
+     & ' All results are presented in atomic units, except the        ',
+     & ' excitation energy which is given in eV.                      '
+      WRITE(LUPRI,'(/,3(/A52))')
+     &        '+----------------------------------+',
+     &        '| Three-photon transition tensor T |',
+     &        '+----------------------------------+'
+      WRITE(LUPRI,'(2A)')
+     & ' ----------------------------------------------------',
+     & '--------------'
+C
+      DO ISYMD=1,NSYM
+      DO ID=1,NTMCNV(ISYMD)
+C
+        DF=D0
+        DG=D0
+        WRITE(LUPRI,'(A12,I2,A9,I2,A11,F8.3,A3)') '   Symmetry ',ISYMD,
+     &  '   State ',ID,'   Energy: ',RESFRE(ID,ISYMD)*XTEV,' eV'
+        WRITE(LUPRI,'(A1)')
+        DO I=1,3
+        DO J=1,3
+            CALL LABDIP(ITINDX,I)
+            CALL LABDIP(JTINDX,J)
+          WRITE(LUPRI,'(3(A5,2A1,A3,F12.2))')
+     &   '  T_{',ITINDX,JTINDX,'x}=',RESTOM(I,J,1,ID,ISYMD),
+     &   '  T_{',ITINDX,JTINDX,'y}=',RESTOM(I,J,2,ID,ISYMD),
+     &   '  T_{',ITINDX,JTINDX,'z}=',RESTOM(I,J,3,ID,ISYMD)
+        END DO
+        END DO
+      WRITE(LUPRI,'(2A)')
+     & ' ----------------------------------------------------',
+     & '--------------'
+      END DO
+      END DO
+      WRITE(LUPRI,'(/,6(/A60))')
+     &        ' Transition probabilities (a.u.)         ',
+     &        '--------------------------------------------------',
+     &        ' D  =  (3*Df + 2*Dg)/35, Linear   polarization',
+     &        ' D  = (-3*Df + 5*Dg)/35, Circular polarization',
+     &        ' Df = sum(i,j,k){ T_iij * T_kkj }             ',
+     &        ' Dg = sum(i,j,k){ T_ijk * T_ijk }             '
+      WRITE(LUPRI,'(3(/A53))')
+     &        '       Polarization ratio      ',
+     &        '-------------------------------',
+     &        '    R  = (-3*Df+5*Dg)/(3*Df+2*Dg)  '
+      WRITE(LUPRI,'(/,3(/A56))')
+     &        '+-------------------------------------+',
+     &        '| Three-photon transition probability |',
+     &        '+-------------------------------------+'
+      WRITE(LUPRI,'(A62,A)')
+     &'-----------------------------------------------------------',
+     &'-----------'
+      WRITE(LUPRI,'(A6,A4,A8,A14,3A11,A8/A62,A)') 'Sym','No',
+     &        'Energy','Polarization','Df','Dg','D','R',
+     &'-----------------------------------------------------------',
+     &'-----------'
+      DO ISYMD=1,NSYM
+      DO ID = 1,NTMCNV(ISYMD)
+         IF (ID.LE.IMXEXC) THEN
+            DF=0.0D0
+            DG=0.0D0
+            DO I=1,3
+            DO J=1,3
+            DO K=1,3
+               DF=DF+RESTOM(I,I,J,ID,ISYMD)*RESTOM(K,K,J,ID,ISYMD)
+               DG=DG+RESTOM(I,J,K,ID,ISYMD)**2
+            END DO
+            END DO
+            END DO
+            R=(-3*DF+5*DG)/(3*DF+2*DG)
+            D=(3*DF+2*DG)/35
+            WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMD,ID,
+     &           RESFRE(ID,ISYMD)*XTEV,'Linear     ',DF,DG,D,R
+            D=(-3*DF+5*DG)/35
+            WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMD,ID,
+     &              RESFRE(ID,ISYMD)*XTEV,'Circular   ',DF,DG,D,R
+         ELSE
+            WRITE(LUPRI,'(/A)')
+     &           'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'
+         END IF
+      END DO
+      END DO
+      WRITE(LUPRI,'(A62,A)')
+     &'-----------------------------------------------------------',
+     &'-----------'
+      RETURN
+      END
+      SUBROUTINE LABDIP(LAB,I)
+C
+#include <implicit.h>
+C
+      CHARACTER*1 LAB
+C
+C Map integer numbers to dipole operators
+C 1 => x, 2 => y, and 3 => z
+C
+      IF (I.EQ.1) LAB(1:1)='x'
+      IF (I.EQ.2) LAB(1:1)='y'
+      IF (I.EQ.3) LAB(1:1)='z'
+C
       RETURN
       END

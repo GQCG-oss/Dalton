@@ -5,9 +5,9 @@
 # For the .check file ksh or bash is preferred, otherwise use sh
 # (and hope it is not the old Bourne shell, which will not work)
 #
-if [ -e /bin/ksh ]; then
+if [ -x /bin/ksh ]; then
    CHECK_SHELL='#!/bin/ksh'
-elif [ -e /bin/bash ]; then
+elif [ -x /bin/bash ]; then
    CHECK_SHELL='#!/bin/bash'
 else
    CHECK_SHELL='#!/bin/sh'
