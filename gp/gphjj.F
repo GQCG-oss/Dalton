@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: gphjj.F,v 1.10 2001-05-31 06:38:25 vebjornb Exp $
+C$Id: gphjj.F,v 1.11 2001-06-08 11:22:37 hjj Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -53,21 +53,20 @@ C up to the moment of the last call while the program continues
 C executing (provided the computer allows shared access).
 C This subroutine may be a dummy routine.
 C
-#if defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_T90)
+      IF (IUNIT .GE. 0) THEN
+C     ... do not try to flush unused units (e.g. LUPRI on a slave) /hjaaj
+#if defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX)
 C
-C     Force transfer of all buffered output to the file or device
-C     associated with logical unit IUNIT.
+C        Force transfer of all buffered output to the file or device
+C        associated with logical unit IUNIT.
 C
-      CALL FLUSH(IUNIT)
-#endif
-#if defined (SYS_HPUX)
-C     HP-UX flush as communicated by T.Saue
-      CALL FLUSH(IUNIT)
+         CALL FLUSH(IUNIT)
 #endif
 #if defined (SYS_AIX)
-C     AIX XL FORTRAN version 2.3+
-      CALL flush_(IUNIT)
+C        AIX XL FORTRAN version 2.3+
+         CALL flush_(IUNIT)
 #endif
+      END IF
       RETURN
       END
 C  /* Deck getdat */
