@@ -853,7 +853,7 @@ C
             ELSE
 #if defined (VAR_SPLITFILES)
                CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-               IF (IREC.NE.KZWOP) CALL QUIT('Read error in ABSLR')
+               IF (IREC.NE.KZYWOP) CALL QUIT('Read error in ABSLR')
 #else        
                CALL READT(LURSP3,KZYWOP,WRK(KBVEC))
 #endif
