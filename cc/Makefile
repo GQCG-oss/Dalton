@@ -57,7 +57,7 @@ cc3_etasd.o cc3_ft3b.o cc3_fmatsd.o cc3_xi_cont.o \
 cc3_init.o ccexnorm.o cc_opa.o ccsdt_aden_noddy.o cc3_aden.o \
 cc_foppt_sc.o cc_r12.o  cc_mkrv.o cc_rhtr_noddy.o \
 cc_2eexp_1.o  cc_grad_1.o   cc_2eexp_2.o   asqr.o \
-cc3_gmat.o cc3_bfmat.o
+cc3_gmat.o cc3_bfmat.o  ccsoppa.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

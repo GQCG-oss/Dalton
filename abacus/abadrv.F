@@ -646,9 +646,9 @@ cLig <> added CTOCD in the 51st position
      &             '.MOLGFA', '.SPIN-R', '.XXXXXX',
      &             '.PHASEO', '.NOMASV', '.NODARW',
      &             '.ALPHA ', '.VROA  ', 'XXXXXXX',
-     &             'XXXXXXX', '.HELLMA', '.NOCMC ',
+     &             '.SOPPA(', '.HELLMA', '.NOCMC ',
      &             '.EXPFCK', '.GAUGEO', '.DIPORG',
-     &	           '.RAMAN ', '.QUADRU', '.NQCC  ',
+     &             '.RAMAN ', '.QUADRU', '.NQCC  ',
      &             '.CAVORG', '.HYPER ', '.VERDET',
      &             '.MCD   ', '.SOPPA ', '.EXPGRA',
      &             '.CTOCD '/
@@ -764,6 +764,7 @@ C
       FCKDDR = .TRUE.
       EXPFCK = .FALSE.
       ABASOP = .FALSE.
+      CCPPA  = .FALSE.
 C
 C     Initialize /NUCLEI/
 C
@@ -1017,6 +1018,8 @@ cLig <> added goto 151
   136    CONTINUE
          GOTO 100
   137    CONTINUE
+            ABASOP = .TRUE.
+            CCPPA  = .TRUE.
          GOTO 100
   138    CONTINUE
             HELFEY = .TRUE.
@@ -1220,9 +1223,18 @@ cs
          IF (DIPDER) POLAR = .TRUE.
       END IF
       IF (ABASOP) THEN
-         WRITE(LUPRI,'(//5x,A,A,/)')
-     *       ' SOPPA :',
-     *       ' Second Order Polarization Propagator Approximation'
+         IF (CCPPA) THEN
+            WRITE(LUPRI,'(A,A,/,18X,A,/,A,A)')
+     &          ' SOPPA(CCSD) :    ',
+     &          'Second Order Polarization Propagator Approximation',
+     &          'with Coupled Cluster Singles and Doubles Amplitudes',
+     &          '    (Ref.: S.P.A. Sauer, ',
+     &          'J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997))'
+         ELSE 
+            WRITE(LUPRI,'(//5x,A,A,/)')
+     *          ' SOPPA :',
+     *          ' Second Order Polarization Propagator Approximation'
+         END IF
          IF (SHIELD .OR. MAGSUS .OR. SPINRO .OR. MOLGFA) THEN
             NOLOND = .TRUE.
          END IF

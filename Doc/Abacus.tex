@@ -26,8 +26,8 @@ calculations. At present this only
 includes the frequency dependent polarizability\index{polarizability} as well as directives
 controlling the calculation of Raman related
 properties\index{Raman intensity}\index{Raman optical activity}\index{ROA}. Combined with the 
-keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} calculation of the 
-frequency dependent polarizability.
+keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} or SOPPA(CCSD) 
+\index{SOPPA(CCSD)} calculation of the frequency dependent polarizability.
 
 \item[\Key{CAVORG}]\verb| |\newline
 \verb|READ (LUCMD,*) (CAVORG(ICOOR), ICOOR = 1, 3)|
@@ -42,8 +42,8 @@ undifferentiated solvent integrals in the {\her} section.
 CTOCD-DZ\index{CTOCD-DZ} method (Ref.~\cite{paololazz1,paololazz2,ctocd}). This sets also 
 automatically the .NOLOND option since the CTOCD-DZ formalism is already truely gauge 
 independent (for Nuclear Magnetic Shieldings). The default gauge origin is choosen to be 
-the center of mass.  \Key{CTOCD} and \Key{SOPPA} can be combined to perform CTOCD calculations 
-at the SOPPA level.\index{SOPPA}
+the center of mass.  \Key{CTOCD} and \Key{SOPPA} or \Key{SOPPA(CCSD)} can be combined to 
+perform CTOCD calculations at the SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} level.
 
 \item[\Key{DIPGRA}] Invokes the calculation of dipole moment
 gradients\index{dipole gradient}\index{atomic polar tensor}\index{APT}
@@ -83,7 +83,8 @@ as described by Olsen and J\o rgensen \cite{jopjjcp82}. It also
 calculates closely related properties like transition
 moments\index{transition moment}\index{rotatory strength} and 
 rotatory strengths. Combined with the 
-keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} calculation of electronic
+keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
+or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of electronic
 excitation energies and transition moments.
 
 
@@ -178,9 +179,10 @@ mass\index{center of mass} of the molecule.
 This origin can be changed by the two keywords \Key{GAUGEO} and
 \Key{NOCMC}. This will of course not affect the total magnetizability,
 only the size of the dia- and paramagnetic terms.
-Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
-calculation of the magnetizability and the rotational {\em g} tensor. London 
-orbitals are automatically disabled in SOPPA\index{SOPPA} calculations.
+Combined with the keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
+or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of the magnetizability and the rotational 
+{\em g} tensor (Ref.~\cite{spascpl260}). London orbitals are automatically disabled in 
+SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} calculations.
 
 \Key{MAGNET} in combination with the keyword \Key{CTOCD}\index{CTOCD-DZ} invokes a 
 calculation without the use of London orbitals both with the CTOCD-DZ method 
@@ -211,9 +213,10 @@ the vibrational wave function has lower symmetry than the electronic
 wave function, the program will give wrong results unless the symmetry
 of the electronic wave function is reduced to that of the vibrational
 part.
-Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
-calculation of the magnetizability and the rotational {\em g} tensor. London 
-orbitals are automatically disabled in SOPPA\index{SOPPA} calculations.
+Combined with the keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
+or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of the magnetizability and the 
+rotational {\em g} tensor (Ref.~\cite{spascpl260}). London orbitals are automatically 
+disabled in SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} calculations.
 
 \item[\Key{MOLGRA}] Invokes the calculation of the analytical
 molecular gradient as \index{gradient}described in Ref.~\cite{tuhjahjajpjjcp84}.
@@ -378,12 +381,13 @@ This origin can be changed by the two keywords \verb|.GAUGEO| and
 the final shieldings if London orbitals are used, only the size of the
 dia- and paramagnetic contributions.
 
-Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
-calculation of the Nuclear Magnetic Shieldings. London 
-orbitals are automatically disabled in SOPPA\index{SOPPA} calculations. Gauge origin
-independent SOPPA calcualtions of Nuclear Magnetic Shieldings can be carried
-out with the CTOCD-DZ method\index{CTOCD-DZ} (Ref.~\cite{paololazz1,paololazz2,ctocd}) 
-(keyword \Key{CTOCD}).
+Combined with the keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
+or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of the Nuclear Magnetic Shieldings 
+(Ref.~\cite{paololazz1,paololazz2,ctocd}). London orbitals are automatically disabled in 
+SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} 
+calculations. Gauge origin independent SOPPA or SOPPA(CCSD) calculations of Nuclear 
+Magnetic Shieldings can be carried out with the CTOCD-DZ method\index{CTOCD-DZ} 
+(Ref.~\cite{paololazz1,paololazz2,ctocd}) (keyword \Key{CTOCD}).
 
 In combination with the keyword \Key{CTOCD}\index{CTOCD-DZ} this invokes a calculation of the
 Nuclear Magnetic Shieldings without the use of London orbitals but with both 
@@ -394,9 +398,15 @@ Changing the default value of the gauge origin could give wrong results!
 
 \item[\Key{SOPPA}] Indicates that the requested molecular properties
 be calculated using the second-order polarization-propagator
-approach~\cite{mjpekdtehjajjojcp}.\index{SOPPA} This requires that the MP2 energy and wave
+approximation~\cite{mjpekdtehjajjojcp}.\index{SOPPA} This requires that the MP2 energy and wave
 function have been calculated. London orbitals can not be used
 together with the SOPPA approximation.
+
+\item[\Key{SOPPA(CCSD)}] Indicates that the requested molecular properties
+be calculated using the Second-Order Polarization-Propagator Approximation with Coupled
+Cluster Singles and Doubles Amplitudes~\cite{soppaccsd,tejospastcan100,ekdspasjpca102,ctocd}.\index{SOPPA(CCSD)} 
+This requires that the CCSD energy and wave function have been calculated. 
+London orbitals can not be used together with the SOPPA(CCSD) approximation.
 
 \item[\Key{SPIN-R}] Invokes the calculation of
 spin-rotation\index{spin-rotation constant}
@@ -426,7 +436,8 @@ Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 As this is a very time consuming property, as well as requiring MCSCF
 wave functions (or MP2 wave functions used together with the keyword
-\verb|.SOPPA|) in order to get reliable results, it is recommended to 
+\verb|.SOPPA| or CCSD wave functins used together with the keyword \verb|.SOPPA(CCSD)|) 
+in order to get reliable results, it is recommended to 
 consult the chapter describing the calculation of NMR-parameters
 (Ch.~\ref{ch:magnetic}). The main control of which
 contributions and which nuclei to calculate spin-spin couplings
@@ -1892,3 +1903,8 @@ of \verb|IPRDEF| from the general input module.
 and normal modes of the molecule.
 \end{description}
 
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "Master"
+%%% End: 

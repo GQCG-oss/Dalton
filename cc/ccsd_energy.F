@@ -550,6 +550,71 @@ C
 C
  500  CONTINUE
 C
+CSPAS 22.10.2003 implementing SOPPA(CCSD)
+C
+C------------------------------------------------------
+C     Write interface to SIRIUS SOPPA response program.
+C------------------------------------------------------
+C
+      IF (SIRSOP) THEN
+C
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &              .FALSE.)
+         REWIND LUSIFC
+C
+C
+         IERR = -1
+         CALL MOLLAB('MP2INFO ',LUSIFC,IERR)
+         IF (IERR.EQ.0) THEN
+            READ(LUSIFC)
+            READ(LUSIFC)
+         ELSE IF (IERR.EQ.-1) THEN
+            REWIND LUSIFC
+            CALL MOLLAB('EODATA  ',LUSIFC,LUPRI)
+            BACKSPACE(LUSIFC)
+         ENDIF
+         CALL GETDAT(CDATE,CTIME)
+         IF (MP2) THEN
+            WRITE(LUSIFC) '********',CDATE,CTIME,'MP2INFO '
+         ELSE
+            WRITE(LUSIFC) '********',CDATE,CTIME,'CCSDINFO'
+         ENDIF
+C
+         KSCR1 = KEND1
+         KSCR2 = KSCR1 + NT2SQ(1)
+         KSCR3 = KSCR2 + NT2SQ(1)
+         KEND2 = KSCR3 + NORBTS*NORBTS
+         LWRK2 = LWORK - KEND2
+C
+        IF (LWRK2 .LT. 0) THEN
+            STOP 'Insufficient memory in CCSD_ENERGY'
+         ENDIF
+C
+         CALL CC_T2SQ(WORK(KT2AM),WORK(KSCR1),1)
+         CALL CCRHS_T2TR(WORK(KSCR1),WORK(KEND2),LWRK2,1)
+         CALL T2AM_REORDER(WORK(KSCR1),WORK(KSCR2),IPRINT)
+C
+         WRITE(LUSIFC) (WORK(KSCR2+I-1), I = 1,NT2SQ(1))
+C
+C----------------------------------------------------------
+C        Calculate density matrices D(ij), D(ab) and D(ia).
+C----------------------------------------------------------
+C
+         CALL CC_T2SQ(WORK(KT2AM),WORK(KSCR2),1)
+C
+         CALL SOPPA_DENSITY(WORK(KSCR3),WORK(KT1AM),WORK(KSCR2),
+     *                       WORK(KSCR1),IPRINT)
+C
+         WRITE(LUSIFC) (WORK(KSCR3+I-1), I = 1,NORBTS*NORBTS)
+C
+         WRITE(LUSIFC) '********',CDATE,CTIME,'EODATA  '
+C
+         CALL GPCLOSE(LUSIFC,'KEEP')
+C
+C
+      END IF
+CKeinSPASmehr
+C
 C------------------------------------
 C     Write final amplitudes to disk.
 C------------------------------------

@@ -1,0 +1,1036 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0, ? 2001)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          PDC, Stockholm,               Sweden 
+
+ ---------------------------------------------------------------------
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,
+     R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, P. Salek, A. Sanchez, T. Saue, 
+     S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+     P. R. Taylor and O. Vahtras"
+
+ 
+     Date and time (Linux)  : Thu Oct 23 21:10:18 2003
+     Host name              : linux                                   
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    Wave function sections will be executed
+    Dynamic molecular property section will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  SOPPA(CCSD) calculation of singlet excitation energies. Symmetry        
+                                                                          
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2y  Oxy  Oyz
+   -----+--------------------
+     E  |  E 
+    C2y | C2y   E 
+    Oxy | Oxy  Oyz   E 
+    Oyz | Oyz  Oxy  C2y   E 
+
+   * Character table
+
+        |  E   C2y  Oxy  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B2  |   1   -1    1   -1
+    B1  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B2   B1   A2 
+   -----+--------------------
+    A1  | A1 
+    B2  | B2   A1 
+    B1  | B1   A2   A1 
+    A2  | A2   B1   B2   A1 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000   -0.099054    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      26      14      [9s4p1d|3s2p1d]                              
+  H           2       1       7       5      [4s1p|2s1p]                                  
+  ----------------------------------------------------------------------
+  total:      3      10      40      24
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00E-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y     -0.2249058930
+   3            z      0.0000000000
+
+   4   H    1   x      1.4523500000
+   5            y      0.8996230000
+   6            z      0.0000000000
+
+   7   H    2   x     -1.4523500000
+   8            y      0.8996230000
+   9            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  3  2  1
+
+
+  Symmetry 1
+
+   1   O     y    2
+   2   H     x    [  4  -   7 ]/2
+   3   H     y    [  5  +   8 ]/2
+
+
+  Symmetry 2
+
+   4   O     x    1
+   5   H     x    [  4  +   7 ]/2
+   6   H     y    [  5  -   8 ]/2
+
+
+  Symmetry 3
+
+   7   O     z    3
+   8   H     z    [  6  +   9 ]/2
+
+
+  Symmetry 4
+
+   9   H     z    [  6  -   9 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H  1        H  2
+
+   O       0.000000
+   H  1    0.972000    0.000000
+   H  2    0.972000    1.537101    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.972000
+  bond distance:    H  2       O                              0.972000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  1       O          H  2                 104.500
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.567417          1.000000    0.000000    0.000000
+   IB    1.190584          0.000000    1.000000    0.000000
+   IC    1.758001          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         890665.3782         424480.0013         287473.6488 MHz
+           29.709399           14.159129            9.589089 cm-1
+
+
+  Nuclear repulsion energy :    9.055004525638
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:              11   7   4   2
+
+
+  Symmetry  A1 ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        2py        5
+    5     O        2py        8
+    6     O        3d0       12
+    7     O        3d2+      14
+    8     H        1s        15  +  16
+    9     H        1s        17  +  18
+   10     H        2px       19  -  20
+   11     H        2py       21  +  22
+
+
+  Symmetry  B2 ( 2)
+
+   12     O        2px        4
+   13     O        2px        7
+   14     O        3d2-      10
+   15     H        1s        15  -  16
+   16     H        1s        17  -  18
+   17     H        2px       19  +  20
+   18     H        2py       21  -  22
+
+
+  Symmetry  B1 ( 3)
+
+   19     O        2pz        6
+   20     O        2pz        9
+   21     O        3d1-      11
+   22     H        2pz       23  +  24
+
+
+  Symmetry  A2 ( 4)
+
+   23     O        3d1+      13
+   24     H        2pz       23  -  24
+
+  Symmetries of electric field:  B2 (2)  A1 (1)  B1 (3)
+
+  Symmetries of magnetic field:  B1 (3)  A2 (4)  B2 (2)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ Number of two-electron integrals written:       11412 ( 25.3% )
+ Megabytes written:                              0.137
+
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00E-15
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.09 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Thu Oct 23 21:10:18 2003
+     Host name              : linux                                   
+
+ Title lines from integral program:
+     SOPPA(CCSD) calculation of singlet excitation energies. Symmetry        
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 24
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals          11   7   4   2
+     Number of basis functions         11   7   4   2
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      60
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00E-06
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ CCSD Amplitudes appended to Sirius interface for SOPPA(CCSD)
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -75.670901820992   3.78E+00  -7.57E+01    3  1  1  0
+   2    -76.007414913511   5.05E-01  -3.37E-01    3  1  1  0
+   3    -76.023050214081   2.14E-01  -1.56E-02    3  1  1  0
+   4    -76.025312606709   6.22E-02  -2.26E-03    3  1  1  0
+   5    -76.025662324684   1.19E-02  -3.50E-04    3  1  1  0
+   6    -76.025679476062   3.14E-03  -1.72E-05    3  1  1  0
+   7    -76.025681464444   3.50E-04  -1.99E-06    3  1  1  0
+   8    -76.025681483796   3.68E-05  -1.94E-08    3  1  1  0
+   9    -76.025681483938   6.72E-06  -1.42E-10    3  1  1  0
+  10    -76.025681483944   9.96E-07  -5.49E-12    3  1  1  0
+ DIIS converged in  10 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.55302007    -1.32934105    -0.56387096     0.18304191     0.84069365
+         1.16451079     1.44696810     1.87052765
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.69144634     0.25403521     0.77887079     1.25426150     1.91890924
+         2.41834246
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.49212358     1.20008018     1.67196076     3.27277144
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         1.47255803     3.32446047
+
+    E(LUMO) :     0.18304191 au (symmetry 1)
+  - E(HOMO) :    -0.49212358 au (symmetry 3)
+  ------------------------------------------
+    gap     :     0.67516549 au
+
+ >>> Writing SIRIFC interface file <<<
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final    HF energy:          -76.025681483944
+     Nuclear repulsion:             9.055004525638
+     Electronic energy:           -85.080686009581
+
+     Final gradient norm:           0.000000996111
+
+ 
+     Date and time (Linux)  : Thu Oct 23 21:10:18 2003
+     Host name              : linux                                   
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  O   1s     1.0004  -0.0076   0.0022
+   2  O   1s     0.0021   0.8737  -0.2932
+   3  O   1s    -0.0014  -0.1145  -0.1768
+   4  O   2py    0.0025   0.1108   0.7927
+   5  O   2py   -0.0017  -0.0619   0.0018
+   6  O   3d0   -0.0001  -0.0031  -0.0128
+   7  O   3d2+   0.0000   0.0004  -0.0130
+   8  H   1s    -0.0003   0.3191   0.3516
+   9  H   1s     0.0006  -0.1494  -0.1327
+  10  H   2px    0.0005  -0.0364  -0.0317
+  11  H   2py    0.0005  -0.0201   0.0070
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  O   2px    0.7111
+   2  O   2px   -0.1012
+   3  O   3d2-   0.0262
+   4  H   1s     0.5530
+   5  H   1s    -0.1845
+   6  H   2px   -0.0234
+   7  H   2py   -0.0324
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  O   2pz    0.9204
+   2  O   2pz    0.0724
+   3  O   3d1-   0.0180
+   4  H   2pz    0.0305
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Thu Oct 23 21:10:18 2003
+     Host name              : linux                                   
+
+- End of Wave Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      11       7       4       2
+   IBAS   :       0      11      18      22
+   NRHF   :       3       1       1       0
+   NVIR   :       8       6       3       2
+   NRHFS  :       3       1       1       0
+   NVIRS  :       8       6       3       2
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
+   NORBTS :      24
+   NORBT  :      24
+   N2BAST :     190
+   N2BASX :     576
+   NNBASX :     300
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        33
+          Number of t2 amplitudes                 :      1277
+          Total number of amplitudes in ccsd      :      1310
+
+ Iter.  1: Coupled cluster MP2   energy :     -76.2306668252719675
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2354661710390218
+ Iter.  2: Coupled cluster CCSD  energy :     -76.2394944747500745
+ Iter.  3: Coupled cluster CCSD  energy :     -76.2399868746195182
+ Iter.  4: Coupled cluster CCSD  energy :     -76.2399939632351220
+ Iter.  5: Coupled cluster CCSD  energy :     -76.2400050148641384
+ Iter.  6: Coupled cluster CCSD  energy :     -76.2400028248046908
+ Iter.  7: Coupled cluster CCSD  energy :     -76.2400021034568312
+ Iter.  8: Coupled cluster CCSD  energy :     -76.2400019506478372
+ Iter.  9: Coupled cluster CCSD  energy :     -76.2400019213326061
+ Iter. 10: Coupled cluster CCSD  energy :     -76.2400019090833894
+ Iter. 11: Coupled cluster CCSD  energy :     -76.2400019057853626
+
+ CCSD  energy converged to within   0.10E-07 is    -76.240001906
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                   -76.0256814839
+
+            Total MP2   energy:                   -76.2306668253
+
+            Total CCSD  energy:                   -76.2400019058
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                   -76.0256814839                
+            Total MP2   energy:                   -76.2306668253                
+            Total CCSD  energy:                   -76.2400019058                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+
+
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ CHANGES OF DEFAULTS FOR RSPINP:
+ -------------------------------
+
+
+ SOPPA(CCSD) : Second Order Polarization Propagator Approximation
+               with Coupled Cluster Singles and Doubles Amplitudes
+ Reference : S. P. A. Sauer, to be published
+
+ USE FOCK TYPE DECOUPLING OF THE TWO-ELECTRON DENSITY MATRIX :
+ ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE ORBITAL DIAGONAL
+  AVDIA = T
+
+
+  Linear Response single residue calculation
+ -------------------------------------------
+
+ Print level                                    : IPRPP  =   2
+ Maximum number of iterations for eigenval.eqs. : MAXITP =  60
+ Threshold for convergence of eigenval.eqs.     : THCPP  = 1.000E-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+
+      2 Excitation energies are calculated for symmetry no.    1
+
+      1 property residues are calculated with labels:
+
+               YDIPLEN 
+
+      2 Excitation energies are calculated for symmetry no.    2
+
+      1 property residues are calculated with labels:
+
+               XDIPLEN 
+
+      2 Excitation energies are calculated for symmetry no.    3
+
+      1 property residues are calculated with labels:
+
+               ZDIPLEN 
+
+      2 Excitation energies are calculated for symmetry no.    4
+
+
+   SCF energy         :      -76.025681483943586
+ -- inactive part     :      -85.080686009581484
+ -- nuclear repulsion :        9.055004525637894
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    1
+
+ Number of excitations of this symmetry            2
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       1
+ p-h variables.             KZWOPT:      33
+ 2p-2h variables.           KZCONF:    1277
+ Total number of variables. KZVAR :    1310
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  1; triplet =   F
+
+
+ **WARNING** EIGENVALUES NOT PAIRED
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00E-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   40)
+ RSP solution vector no.    1; norm of residual   2.62E-04
+ RSP solution vector no.    2; norm of residual   6.31E-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@Transition operator type:    YDIPLEN 
+@STATE NO:    1 *TRANSITION MOMENT:  0.60797288     *ENERGY(eV):   10.459138    
+@STATE NO:    2 *TRANSITION MOMENT:  0.53461332     *ENERGY(eV):   17.463837    
+
+
+@REFERENCE  STATE    SYMMETRY  1
+@EXCITATION OPERATOR SYMMETRY  1
+@EXCITED    STATE    SYMMETRY  1
+
+@State no:    1
+
+@Excitation energy :  0.38436625     au
+@                      10.459138     eV
+@                      84358.642     cm-1
+                       1009.1535     kJ / mol
+
+@Total energy :       -75.641315     au
+
+@SOPPA  p-h  weight in excitation operator:   95.20 %
+@SOPPA 2p-2h weight in excitation operator:    4.80 %
+
+@Operator type:    YDIPLEN 
+@Oscillator strength (LENGTH)   :  9.47157957E-02
+ Transition moment   (LENGTH)   :  0.60797288    
+
+@State no:    2
+
+@Excitation energy :  0.64178423     au
+@                      17.463837     eV
+@                      140855.36     cm-1
+                       1685.0043     kJ / mol
+
+@Total energy :       -75.383897     au
+
+@SOPPA  p-h  weight in excitation operator:   95.95 %
+@SOPPA 2p-2h weight in excitation operator:    4.05 %
+
+@Operator type:    YDIPLEN 
+@Oscillator strength (LENGTH)   :  0.12228617    
+ Transition moment   (LENGTH)   :  0.53461332    
+
+
+ Time used in polarization propagator calculation is      0.20 CPU seconds for symmetry 1
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    2
+
+ Number of excitations of this symmetry            2
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       2
+ p-h variables.             KZWOPT:      28
+ 2p-2h variables.           KZCONF:    1209
+ Total number of variables. KZVAR :    1237
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  2; triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00E-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   38)
+ RSP solution vector no.    1; norm of residual   6.81E-04
+ RSP solution vector no.    2; norm of residual   5.89E-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@Transition operator type:    XDIPLEN 
+@STATE NO:    1 *TRANSITION MOMENT: -0.49698952     *ENERGY(eV):   12.515092    
+@STATE NO:    2 *TRANSITION MOMENT:  0.90824561     *ENERGY(eV):   14.447494    
+
+
+@REFERENCE  STATE    SYMMETRY  1
+@EXCITATION OPERATOR SYMMETRY  2
+@EXCITED    STATE    SYMMETRY  2
+
+@State no:    1
+
+@Excitation energy :  0.45992119     au
+@                      12.515092     eV
+@                      100941.03     cm-1
+                       1207.5229     kJ / mol
+
+@Total energy :       -75.565760     au
+
+@SOPPA  p-h  weight in excitation operator:   95.51 %
+@SOPPA 2p-2h weight in excitation operator:    4.49 %
+
+@Operator type:    XDIPLEN 
+@Oscillator strength (LENGTH)   :  7.57332552E-02
+ Transition moment   (LENGTH)   : -0.49698952    
+
+@State no:    2
+
+@Excitation energy :  0.53093567     au
+@                      14.447494     eV
+@                      116526.91     cm-1
+                       1393.9714     kJ / mol
+
+@Total energy :       -75.494746     au
+
+@SOPPA  p-h  weight in excitation operator:   96.53 %
+@SOPPA 2p-2h weight in excitation operator:    3.47 %
+
+@Operator type:    XDIPLEN 
+@Oscillator strength (LENGTH)   :  0.29198280    
+ Transition moment   (LENGTH)   :  0.90824561    
+
+
+ Time used in polarization propagator calculation is      0.15 CPU seconds for symmetry 2
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    3
+
+ Number of excitations of this symmetry            2
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       3
+ p-h variables.             KZWOPT:      19
+ 2p-2h variables.           KZCONF:    1047
+ Total number of variables. KZVAR :    1066
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  3; triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00E-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   36)
+ RSP solution vector no.    1; norm of residual   2.71E-04
+ RSP solution vector no.    2; norm of residual   4.61E-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@Transition operator type:    ZDIPLEN 
+@STATE NO:    1 *TRANSITION MOMENT: -0.36132584     *ENERGY(eV):   7.8026832    
+@STATE NO:    2 *TRANSITION MOMENT: -0.34513950     *ENERGY(eV):   23.076824    
+
+
+@REFERENCE  STATE    SYMMETRY  1
+@EXCITATION OPERATOR SYMMETRY  3
+@EXCITED    STATE    SYMMETRY  3
+
+@State no:    1
+
+@Excitation energy :  0.28674335     au
+@                      7.8026832     eV
+@                      62932.890     cm-1
+                       752.84455     kJ / mol
+
+@Total energy :       -75.738938     au
+
+@SOPPA  p-h  weight in excitation operator:   95.24 %
+@SOPPA 2p-2h weight in excitation operator:    4.76 %
+
+@Operator type:    ZDIPLEN 
+@Oscillator strength (LENGTH)   :  2.49574461E-02
+ Transition moment   (LENGTH)   : -0.36132584    
+
+@State no:    2
+
+@Excitation energy :  0.84805774     au
+@                      23.076824     eV
+@                      186127.16     cm-1
+                       2226.5753     kJ / mol
+
+@Total energy :       -75.177624     au
+
+@SOPPA  p-h  weight in excitation operator:   94.66 %
+@SOPPA 2p-2h weight in excitation operator:    5.34 %
+
+@Operator type:    ZDIPLEN 
+@Oscillator strength (LENGTH)   :  6.73478140E-02
+ Transition moment   (LENGTH)   : -0.34513950    
+
+
+ Time used in polarization propagator calculation is      0.15 CPU seconds for symmetry 3
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    4
+
+ Number of excitations of this symmetry            2
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       4
+ p-h variables.             KZWOPT:      15
+ 2p-2h variables.           KZCONF:    1027
+ Total number of variables. KZVAR :    1042
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  4; triplet =   F
+
+
+ *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00E-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   28)
+ RSP solution vector no.    1; norm of residual   7.51E-04
+ RSP solution vector no.    2; norm of residual   8.68E-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+@REFERENCE  STATE    SYMMETRY  1
+@EXCITATION OPERATOR SYMMETRY  4
+@EXCITED    STATE    SYMMETRY  4
+
+@State no:    1
+
+@Excitation energy :  0.36067320     au
+@                      9.8144168     eV
+@                      79158.618     cm-1
+                       946.94735     kJ / mol
+
+@Total energy :       -75.665008     au
+
+@SOPPA  p-h  weight in excitation operator:   95.49 %
+@SOPPA 2p-2h weight in excitation operator:    4.51 %
+
+@State no:    2
+
+@Excitation energy :  0.78430814     au
+@                      21.342110     eV
+@                      172135.74     cm-1
+                       2059.2007     kJ / mol
+
+@Total energy :       -75.241373     au
+
+@SOPPA  p-h  weight in excitation operator:   94.96 %
+@SOPPA 2p-2h weight in excitation operator:    5.04 %
+
+
+ Time used in polarization propagator calculation is      0.12 CPU seconds for symmetry 4
+
+ >>>> Total CPU  time used in RESPONSE:   0.68 seconds
+ >>>> Total wall time used in RESPONSE:   1.00 seconds
+ >>>> Total CPU  time used in DALTON:   1.21 seconds
+ >>>> Total wall time used in DALTON:   2.00 seconds
+
+ 
+     Date and time (Linux)  : Thu Oct 23 21:10:20 2003
+     Host name              : linux                                   

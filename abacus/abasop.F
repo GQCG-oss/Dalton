@@ -37,23 +37,27 @@ C  /* Deck sopinp */
       SUBROUTINE SOPINP(WORD)
 C
 C     Erik K. Dalskov, Stephan P.A. Sauer 19.2.1996
+C     Stephan P. A. Sauer 22.10.2003: SOPPA(CCSD) included
+C
+C     This subroutine processes additional input options for SOPPA
+C     and SOPPA(CCSD) calculations in abacus. This includes the option
+C     to carry out Higher RPA calculations and to calculate the W4 term
+C     explicitly.
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER (NTABLE = 7)
+      PARAMETER (NTABLE = 2)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <abainf.h>
 #include <infrsp.h>
 C
-      DATA TABLE /'.(CCSD)', 'XXXXXXX', '.SOPW4 ', '.HIRPA ','XXXXXX',
-     &            'XXXXXXX', 'XXXXXXX'/
+      DATA TABLE /'.HIRPA', '.SOPW4 '/
 C     
 C-----------------
 C     Set default.
 C-----------------
 C
-      CCPPA  = .FALSE.
       SOPW4  = .FALSE.
       HIRPA  = .FALSE.
 C
@@ -68,7 +72,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GOTO (1,2,3,4,5,6,7), I
+               GOTO (1,2), I
             END IF
   200    CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -80,21 +84,10 @@ C
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal keyword in SOPPA')
     1    CONTINUE
-            CCPPA  = .TRUE.
-            GOTO 100
-    2    CONTINUE
-            GOTO 100
-    3    CONTINUE
-            SOPW4  = .TRUE.
-            GOTO 100
-    4    CONTINUE
             HIRPA  = .TRUE.
             GOTO 100
-    5    CONTINUE
-            GOTO 100
-    6    CONTINUE
-            GOTO 100
-    7    CONTINUE
+    2    CONTINUE
+            SOPW4  = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
@@ -108,14 +101,10 @@ C
 C
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults in SOPPA:',0)
-         IF (CCPPA) WRITE(LUPRI,'(A,A,/,14X,A,/,A,A)')
-     &       ' SOPPA(CCSD) :',
-     &       '    Second Order Polarization Propagator Approximation',
-     &       '    with Coupled Cluster Singles and Doubles Amplitudes',
-     &       '    (Ref.: S.P.A. Sauer,',
-     &       ' J. Phys. B: At. Mol. Opt. Phys. 30, 3773-3780 (1997))'
          IF (HIRPA)  WRITE(LUPRI,'(A)')
      &       ' HRPA : Higher RPA Polarization Propagator Approximation'
+         IF (SOPW4)  WRITE(LUPRI,'(A)')
+     &       ' The W4 term of SOPPA is calculated explicitly'
       END IF
 C     
       RETURN

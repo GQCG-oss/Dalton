@@ -29,13 +29,17 @@ in the chapter on coupled cluster calculations.
 
 In addition, SOPPA\index{SOPPA}\index{polarization propagator}
 (Second-Order Polarization Propagator 
-approximation) for the calculation of linear response
+approximation) or SOPPA(CCSD)\index{SOPPA(CCSD)} (Second Order Polarization
+Propagator Approximation with Coupled Cluster Singles and Doubles Amplitudes) 
+for the calculation of linear response
 \index{linear response}\index{response!linear}
 properties and excitation energies with transition moments
 may be requested in this input section. The current
 implementation of the SOPPA method is described 
-in Ref.~\cite{mjpekdtehjajjojcp}. Note that a SOPPA calculation
-requires the keyword \Key{SOPPA}.
+in Ref.~\cite{mjpekdtehjajjojcp} and of the SOPPA(CCSD) method in 
+Ref.~\cite{soppaccsd}. Note that a SOPPA calculation
+requires the keyword \Key{SOPPA}, whereas a SOPPA(CCSD) calculation requires
+the keyword \Key{SOPPA(CCSD)}.
 %M. J. Packer, E. K. Dalskov, T. Enevoldsen, H. J. Aa. Jensen, and
 %J. Oddershede, J. Chem. Phys., submitted. 
 
@@ -69,11 +73,24 @@ coefficients and written them to disk (set \Key{RUN RESPONSE} in \Sec{*DALTON}
 input as well as \Key{HF} and \Key{MP2} in \Sec{*WAVE FUNCTIONS}). See
 example input in Chapter~\ref{ch:starting}.
 
+\item{\Key{SOPPA(CCSD)}}
+Requests the second order polarization propagator approximation with coupled 
+cluster singles and doubles amplitudes in the linear response module.
+The SOPPA(CCSD)\index{SOPPA(CCSD)}\index{polarization propagator!SOPPA(CCSD)}
+\index{response!SOPPA(CCSD)} flag requires that the preceding Coupled Cluster 
+calculation has generated the CCSD amplitudes and written them to disk 
+(set \Key{RUN RESPONSE} in 
+\Sec{*DALTON} input, \Key{HF} and \Key{CC} in \Sec{*WAVE FUNCTIONS}  and 
+\Key{SOPPA(CCSD)} in \Sec{CC INPUT}). See example input in 
+Chapter~\ref{ch:starting}.
+
 \item{\Key{SOPW4}}
 Calculate explicitly the W4 term described by Odderhede {\it et
 al.\/}~\cite{jopjdycpr2}. This term is already included in the normal
-SOPPA\index{SOPPA}\index{polarization propagator!SOPPA} result, and used mostly for comparing to older
-calculations. Note that this keyword requires that \Key{SOPPA} is set.
+SOPPA\index{SOPPA}\index{polarization propagator!SOPPA} or 
+SOPPA(CCSD)\index{SOPPA(CCSD)} result, and used mostly for comparing to older
+calculations. Note that this keyword requires that \Key{SOPPA} or 
+\Key{SOPPA(CCSD)}is set.
 
 \item{\Key{HIRPA}}
 Invoke the higher RPA approximation for the calculation of linear

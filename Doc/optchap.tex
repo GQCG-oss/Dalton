@@ -203,13 +203,14 @@ be calculated both in
 length and velocity forms. It is expected that the same requirements
 for basis set quality applies to this property as for ECD.
 
-For a Second Order Polarization Propagator Approximation (SOPPA)\index{SOPPA} 
-\index{polarization propagator} 
-\cite{esnpjjodjcp73,jopjdycpr2,mjpekdtehjajjojcp} calculation of the 
-oscillatory strength the additional keyword \Key{SOPPA} has to be specified 
-in the \Sec{*PROPERTIES} 
-input module and an MP2 calculation has to be requested by the keyword 
-\Key{MP2} in the \Sec{*WAVE FUNCTIONS} input module. 
+For a SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of
+the oscillator strength the additional keywords \Key{SOPPA} or
+\Key{SOPPA(CCSD)} have to be specified in the \Sec{*PROPERTIES} input
+module. For SOPPA an MP2 calculation has to be requested by the keyword
+\Key{MP2} in the \Sec{*WAVE FUNCTIONS} input module, whereas for SOPPA(CCSD) a
+CCSD calculation has to be requested by the keyword \Key{CC} in the \Sec{*WAVE
+  FUNCTIONS} input module with the \Key{CC INPUT} option
+\Key{SOPPA(CCSD)}.
 
 The two properties may of course be combined a single run, with an
 input that would then look like (where we also request the rotatory

@@ -220,6 +220,13 @@ M.~J. Packer, E.~K. Dalskov, T.~Enevoldsen, H.~J.~Aa. Jensen, and
 E.~K. Dalskov and S.~P. A.Sauer.
 \newblock {\em J.~Phys.~Chem.~{\bf A}}, 102:5269, 1998.
 
+\bibitem{soppaccsd}
+S.~P.~A. Sauer.
+\newblock Second order polarization propagator approximation with cupled
+  cluster singles and doubles amplitudes - soppa(ccsd): The polariability and
+  hyperpolarizability of li$¯$.
+\newblock {\em J.~Phys.\ B: At.~Mol.~Phys.}, 30:3773--3780, 1997.
+
 \bibitem{kwjfhppjacs112}
 K.~Wolinski, J.~F. Hinton, and P.~Pulay.
 \newblock Efficient implementation of the gauge-independent atomic orbital
@@ -243,6 +250,23 @@ K.~Ruud, T.~Helgaker, K.~L. Bak, P.~J{\o}rgensen, and J.~Olsen.
 \newblock Accurate magnetizabilities of the isoelectronic series {BeH$^{-}$},
   {BH} and {CH$^{+}$}. the {MCSCF-GIAO} approach.
 \newblock {\em Chem.~Phys.}, 195:157, 1995.
+
+\bibitem{paololazz1}
+P.~Lazzeretti, M.~Malagoli, and R.~Zanasi.
+\newblock Computational approach to molecular magnetic properties by continuous
+  transformation of the origin of the current density.
+\newblock {\em Chem.~Phys.~Lett.}, 220:299, 1994.
+
+\bibitem{paololazz2}
+P.~Lazzeretti.
+\newblock Ring currents.
+\newblock {\em Prog.~Nuc.~Magn.~Prop.~Spectr}, 36:1--88, 2000.
+
+\bibitem{ctocd}
+A.~Ligabue, S.~P.~A. Sauer, and P.~Lazzeretti.
+\newblock Correlated and gauge inveariant calculations of nuclear magnetic
+  shieldings constants using the {CTOCD-DZ} approach.
+\newblock {\em J.~Chem.~Phys.}, 118:6830--6845, 2003.
 
 \bibitem{ovhapjhjajsbpthjcp96}
 O.~Vahtras, H.~{\AA}gren, P.~J{\o}rgensen, H.~J.~Aa. Jensen, S.~B. Padkj{\ae}r,
@@ -478,6 +502,31 @@ K.~Ruud, {\mbox{P.-O.}}~{\AA}strand, and P.~R. Taylor.
 \bibitem{rmpnmwijqc40}
 R.~M. Pitzer and N.~M. Pitzer.
 \newblock {\em Int.~J.~Quantum Chem.}, 40:773, 1991.
+
+\bibitem{nevpt1}
+C.~Angeli, R.~Cimiraglia, S.~Evangelisti, T.~Leininger, and J.~P. Malrieu.
+\newblock Introduction of n--electron valence states for multireference
+  perturbation theory.
+\newblock {\em J.~Chem.~Phys.}, 114:10252, 2001.
+
+\bibitem{nevpt2}
+C.~Angeli, R.~Cimiraglia, and J.~P. Malrieu.
+\newblock n--electron valence state perturbation theory: a fast implementation
+  of the strongly contracted variant.
+\newblock {\em Chem.~Phys.~Lett.}, 350:297, 2001.
+
+\bibitem{nevpt3}
+C.~Angeli, R.~Cimiraglia, and J.~P. Malrieu.
+\newblock n--electron valence state perturbation theory: a spinless formulation
+  and an efficient implementation of the strongly contracted and of the
+  partially contracted variants.
+\newblock {\em J.~Chem.~Phys.}, 117:9138, 2002.
+
+\bibitem{nevpt4}
+C.~Angeli, S.~Borini, and R.~Cimiraglia.
+\newblock An application of second-order n-electron valence state perturbation
+  theory (nevpt2) to the calculation of excited states.
+\newblock {\emph{ Theor.~Chem.~Acc.}}, submitted.
 
 \bibitem{thkrprt95}
 K.~Ruud T.~Helgaker and P.~R. Taylor.

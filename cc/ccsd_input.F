@@ -108,6 +108,7 @@ C
       CHARACTER*(80) LINE
 C
       SAVE SET
+CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
       DATA TABLE /'.SKIP  ','.PRINT ','.DIRECT','.RESTAR','.CC3   ',
      &            '*CCEXCI','*CCLRSD','.CCSTST','.NSYM  ','.MAXRED',
      &            '*CCEXGR','.R1SKIP','.L1SKIP','.RESKIP','.LESKIP',
@@ -118,7 +119,7 @@ C
      &            '.IMSKIP','.M1SKIP','.FRSKIP','.MINSCR','.MINMEM',
      &            '.B0SKIP','.NEWCAU','.NOT2TC','*CCGR  ','.FROEXP',
      &            '.FROIMP','.MXDIIS','.CCSD  ','.CCR(A)','.CCR(B)',
-     &            '*CCFOP ','.XXXXXX','.CCR(3)','.CCR(T)','.FIELD ',
+     &            '*CCFOP ','.SOPPA(','.CCR(3)','.CCR(T)','.FIELD ',
      &            '.DEBUG ','*CCQR2R','.HERDIR','.BUFLEN','*CCLR  ',
      &            '*CCEXLR','.NSIMLE','.THRLEQ','.MXLRV ','*CCTM  ',
      &            '*CCSM  ','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
@@ -235,6 +236,10 @@ C
       KEEPAOIN  = .FALSE.
       LPACKINT  = .FALSE.
       THRPCKINT = 1.0D-15
+C
+CSPAS 22.10.2003 implementing SOPPA(CCSD)
+      SIRSOP    = .FALSE.
+CKeinSPASmehr
 C
       CONNECTION = 'SYMMETR'
 C
@@ -565,6 +570,11 @@ cch
                   CALL CC_FOPINP(WORD)
                GO TO 1000
    52          CONTINUE
+CSPAS 22.10.2003 implementing SOPPA(CCSD)
+                  SIRSOP = .TRUE.
+                  CCSD   = .TRUE.
+                  KEEPAOTWO = MAX(KEEPAOTWO,2)
+CKeinSPASmehr
                GO TO 1000
    53          CONTINUE
                   CCR3   = .TRUE.
@@ -895,6 +905,12 @@ C
      *         ' Relativistic two-electron Darwin term calculated'
             IF (DPTECO) WRITE(LUPRI,'(/A)')
      *         ' First-order DPT energy corrections calculated'
+CSPAS 22.10.2003 implementing SOPPA(CCSD)
+            IF (SIRSOP) WRITE (LUPRI,'(/A,A)')
+     *         ' CCSD Amplitudes appended to Sirius interface',
+     *         ' for SOPPA(CCSD)'
+CKeinSPASmehr
+
 
 C
          END IF

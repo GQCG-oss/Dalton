@@ -80,6 +80,9 @@ Jeppe Olsen, Danny L. Yeager, and Poul J{\o}rgensen, \newblock {\em J. Chem. Phy
 \item SOPPA linear response:
 Martin J. Packer, Erik K. Dalskov, Thomas Enevoldsen, Hans J{\o}rgen Aagaard Jensen and Jens Oddershede, 
 \newblock {\em J. Chem. Phys.}, {\bf 105}, \hspace{0.25em}5886, (1996)
+\item SOPPA(CCSD) linear response:
+Stephan P. A. Sauer,
+\newblock {\em J. Phys. B: At. Opt. Mol. Phys.}, {\bf 30}, \hspace{0.25em}3773, (1997)
 \end{list}
 }}
 \end{center}
@@ -132,6 +135,31 @@ for SOPPA dynamic polarizability tensors  will be:
 The {\tt .NOITRA} keyword has the effect that the transformation of the two 
 electron integrals necessary for a MP2 and SOPPA calculation is only perfomed
 once in the \Sec{*WAVE FUNCTIONS} module.
+
+A Second Order Polarization Propagator Approximation with Coupled Cluster
+Singles and Doubles Amplitudes - SOPPA(CCSD)\index{SOPPA(CCSD)}\cite{soppaccsd}
+calculation of linear response functions can be invoked if the additonal 
+keyword \Key{SOPPA(CCSD)} is specified in the 
+\Sec{*RESPONSE} input module and an CCSD calculation is requested by the 
+keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS} input module.  A typical input 
+for SOPPA(CCSD) dynamic polarizability tensors  will be:
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.SOPPA(CCSD)
+**RESPONSE
+.SOPPA(CCSD)
+*LINEAR
+.DIPLEN
+.FREQUENCIES
+ 3
+ 0.0 0.5 1.0
+*END OF INPUT
+\end{verbatim}
 
 The linear response function contains a wealth of
 information about the spectrum of a given Hamiltonian. 

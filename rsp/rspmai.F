@@ -694,7 +694,7 @@ C
      *            '.ORBSPC', '.TRPFLG', '.S0MIX ',
      *            '.OPTORB', '.MAXPHP', '.PHPRES',
      *            '.MAXRM ', '.QRREST', '.PROPAV',
-     *            '.HIRPA ', '.SOPW4 ', '.SOPPCC',
+     *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
      *            '.NODOIT', '.PROP2A'/
       DATA SET /.FALSE./
 C
