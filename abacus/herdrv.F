@@ -34,17 +34,15 @@ C
 #include <single.h>
 C
 #ifdef UNDEF
-===========================================================================
-/* Comdeck notes */
-950602-vebjorn:
-      Added flag HRINPC to ensure that HERMIT input processing is done
-      only once.
-950505-hjaaj: let .NOTWO and .NOHAM imply .NOSUP
- new option .SUPONLy for just SUPMAT .and. .NOT.HAMILT
-    (for generating AOSUPINT file from existing AOTWOINT)
-    Kenneth: will you put .SUPONLy into HERMIT manual ?
-    Done by Kenneth before jan.-96
-===========================================================================
+c===========================================================================
+c/* Comdeck notes */
+c951129-hjaaj: force NEWTRA true if .INTSORT (later changed to .SORT Integrals)
+c950602-vebjorn:
+c  Added flag HRINPC to ensure that HERMIT input processing is done only once.
+c950505-hjaaj: let .NOTWO and .NOHAM imply .NOSUP
+c new option .SUPONLy for just SUPMAT .and. .NOT.HAMILT
+c    (for generating AOSUPINT file from existing AOTWOINT)
+c===========================================================================
 #endif
 C  /* Deck herctl */
       SUBROUTINE HERCTL(WORK,LWORK)
@@ -102,6 +100,7 @@ C
 #include <cbihr1.h>
 #include <cbihr2.h>
 #include <cbihrs.h>
+#include <cbisor.h>
 #include <cbieri.h>
 #include <gnrinf.h>
 #include <exeinf.h>
@@ -109,6 +108,7 @@ C
 #include <huckel.h>
 #include <dftcom.h>
 #include <r12int.h>
+#include <nuclei.h>
 C
       LOGICAL SET
 C
@@ -141,9 +141,45 @@ C
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF ((RUNTWO .OR. RUNERI .OR. RUNSUP) .AND. .NOT. DCCR12)
      &   CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      IF (RUNSUP) CALL GPOPEN(LUSUPM,'AOSUPINT','NEW',' ',' ',IDUMMY,
-     &                        .FALSE.)
       CALL HERINT(WORK,LWORK)
+C
+C     **********************************
+C     ***** P Supermatrix Elements *****
+C     **********************************
+C
+C     Integrals on AOSUPINT
+C     HJAaJ TODO FIXME: CALL FRMSUP should be moved to SIRIUS and
+C     only done when relevant ...
+C
+      IF (RUNSUP) THEN
+         IF (LUSUPM .GT. 0) CALL GPCLOSE(LUSUPM,'DELETE')
+      IF (NBASIS .GT. 255) THEN
+         RUNSUP = .FALSE.
+         SUPMAT = .FALSE.
+         WRITE(LUPRI,'(//A)')
+     &      'INFO: SUPMAT ignored because more than 255 basis functions'
+         NINFO = NINFO + 1
+      ELSE
+         CALL TIMER('START ',TIMSTR,TIMEND)
+         CALL GPOPEN(LUSUPM,'AOSUPINT','NEW',' ',' ',IDUMMY,.FALSE.)
+         CALL FRMSUP(WORK,LWORK,NOSSUP,THRSUP,IPRSUP)
+         CALL TIMER('FRMSUP',TIMSTR,TIMEND)
+      END IF
+         CALL FLSHFO(LUPRI)
+      END IF
+C
+C     **********************************
+C     ***** Integral sorting       *****
+C     **********************************
+C
+C     Integrals on AOORDINT
+C
+      IF (RNINTS) THEN
+         CALL TIMER('START ',TIMSTR,TIMEND)
+         CALL SORTAO(WORK,LWORK)
+         CALL TIMER('SORTAO',TIMSTR,TIMEND)
+         CALL FLSHFO(LUPRI)
+      END IF
 C
 C     ***********************************
 C     ***** Grid for DFT quadrature *****
@@ -1155,9 +1191,9 @@ cLig <<
       IF (.NOT.HAMILT) WRITE (LUPRI,'(/A)')
      *    ' Ordinary (field-free non-relativistic) Hamiltonian '/
      *     /'integrals not calculated.'
-      IF (SUPMAT) WRITE (LUPRI,'(/A/A)') ' In this run '//
-     *     ' precalculated two-electron integrals are transformed',
-     *     ' to P-supermatrix elements.'
+      IF (SUPMAT) WRITE (LUPRI,'(/A)') 
+     *    ' Precalculated two-electron integrals are transformed'/
+     *     /' to P-supermatrix elements.'
       IF (MGMO2T) THEN
          WRITE (LUPRI,'(/A,D12.6)')
      &    ' Threshold for testing two-electron part of magnetic moment:'
@@ -1569,7 +1605,7 @@ C
 #include <cbiher.h>
 #include <cbihrs.h>
       SAVE SET
-      DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', '.OLDSUP', '.THRESH',
+      DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', 'xxxxxxx', '.THRESH',
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -1589,7 +1625,6 @@ C
       RUNSUP = SUPMAT
       IPRSUP = IPRDEF
       NOSSUP = .FALSE.
-      OLDSUP = .FALSE.
       THRSUP = -1.0D0
 C
       NEWDEF = WORD .EQ. '*SUPINT'
@@ -1627,7 +1662,6 @@ C
                   NOSSUP = .TRUE.
                GO TO 100
     4          CONTINUE
-                  OLDSUP = .TRUE.
                GO TO 100
     5          CONTINUE
                   READ (LUCMD,*) THRSUP
@@ -1659,16 +1693,6 @@ C
      &         ' Print level in SUPINT:',IPRSUP
          IF (THRSUP .NE. -1.0D0) WRITE (LUPRI,'(A,D12.2)')
      &         ' Threshold for supermatrix integrals:', THRSUP
-         IF (OLDSUP) THEN
-            WRITE (LUPRI,'(A)')
-     &         ' Old format for supmatrix integral file.'
-            IF (NOSSUP) THEN
-               NOSSUP = .FALSE.
-               WRITE (LUPRI,'(/A/)' )
-     &           ' Note: NOSSUP has been set .FALSE. to conform with'
-     &           //' .OLDSUP in input.'
-            END IF
-         END IF
          IF (NOSSUP) THEN
             WRITE (LUPRI,'(A)') ' No symmetry used in SUPINT.'
          ELSE
@@ -1698,7 +1722,6 @@ C
 #include <nuclei.h>
 #include <huckel.h>
 #include <ccom.h>
-#include <cbisor.h>
 #include <efield.h>
 #include <r12int.h>
 #include <drw2el.h>
@@ -2727,17 +2750,17 @@ C
      &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                  .FALSE.)
+            CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
             CALL GETTIM(SO2CPU,SO2WAL)
             SOCPU=SO2CPU-SO1CPU
             SOWAL=SO2WAL-SO1WAL
             CALL TIMER('TWOINT',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-            CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
             WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
      &      '   Two-electron spin-orbit integrals',
      &      '   =================================',
      &      '   Spin-orbit 2-electron CPU  time ',SOCPU,' seconds',
      &      '   Spin-orbit 2-electron wall time ',SOWAL,' seconds'
+            CALL FLSHFO(LUPRI)
          END IF
 C
 C        *************************************
@@ -2756,32 +2779,6 @@ C
          IF (MGMO2T) THEN
             CALL MM2TST(WORK,LWORK,PRTHRS,IPRINT)
          END IF
-      END IF
-C
-C     **********************************
-C     ***** P Supermatrix Elements *****
-C     **********************************
-C
-C     Integrals on LUSUPM
-C
-      IF (RUNSUP) THEN
-         CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL FRMSUP(WORK,LWORK,NOSSUP,OLDSUP,THRSUP,IPRSUP)
-         CALL TIMER('FRMSUP',TIMSTR,TIMEND)
-         CALL FLSHFO(LUPRI)
-      END IF
-C
-C     **********************************
-C     ***** Integral sorting       *****
-C     **********************************
-C
-C     Integrals on LU?
-C
-      IF (RNINTS) THEN
-         CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL SORTAO(WORK,LWORK)
-         CALL TIMER('SORTAO',TIMSTR,TIMEND)
-         CALL FLSHFO(LUPRI)
       END IF
 C
       CALL QEXIT('HERINT')
@@ -2861,9 +2858,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in SUPINP.'
+     *            '" not recognized in *SORINT.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in SUPINP.')
+               CALL QUIT('Illegal keyword in *SORINT.')
     1          CONTINUE
                GO TO 100
     2          CONTINUE
@@ -2898,9 +2895,9 @@ C
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in SUPINP.'
+     *            '" not recognized in *SORINT.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in SUPINP.')
+               CALL QUIT('Illegal prompt in *SORINT.')
             END IF
       END IF
   300 CONTINUE
@@ -3621,7 +3618,7 @@ C
       NPRIM  = NBAST
       NNPRMX = NNBASX
       REWIND(LUPROP)
-      CALL WRTPRO(TRMAT2,NNBASX,'DKINTPRI',RTNLBL,IPRINT)
+      CALL WRTPRO(TRMAT2,NNBASX,'DKINTPRI',RTNLBL)
       CALL GPCLOSE(LUPROP,'KEEP')
 C
 C     End of DKDRIV
@@ -3894,7 +3891,7 @@ C
      &           REP(INTREP(I)),'(',(INTREP(I) + 1),')'
             CALL OUTPAK(AOINT,NBAST,1,LUPRI)
          END IF
-         CALL WRTPRO(AOINT,NELMNT,LABINT(I),RTNLBL,IPRINT)
+         CALL WRTPRO(AOINT,NELMNT,LABINT(I),RTNLBL)
  600  CONTINUE
 C     
       RETURN

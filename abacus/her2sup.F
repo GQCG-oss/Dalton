@@ -33,53 +33,51 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-950605-vebjornb:
-      Added test to check if LUSUPM already open to avoid error message.
-940818-hjaaj:
-- new label: IRIX for Silicon Graphics
-- Removed check for duplicate integrals (reactivate with *DEFINE DUPLCHCK)
-- move symmetry check in SUPSRT in front of canonical index ordering
-- passed NOSYM to SUPSRT, skip symmetry check if NOSYM
-- changed def. of ZERO,ONE,ON2,...,TH8 from DATA to PARAMETER
-- SUPSRT: use that hermit already has put the 4 indices in canonical
-  order (when SUPSRT's def. of np,nq,nr,ns was reversed).
-- SUP1,SUP,SUP1D,SUPD: reverse order of np,nq,nr,ns in label
-- removed N8,N16,N24 from /CSPINT/ (not used)
-- maximize NST1 for LWORK
-nov 90-hjaaj:
-SUPDRV: LINT = 1706 instead of 540
-SUPNWR: fixed errors for NOSYM false
-900327-hjaaj: if OLDSUP .and. NOSYM then write 'NOSYMMET' in TWOELSUP
-label element 3.
-900319-hjaaj: corrected error in NPLAST for SUP1D and SUPD
-- rewritten SUPNWR to write up to NP=NST-1 as type 1 if advantageous,
-  used new routine NDXGTA to determine this.
-- added WRSUP2 to correcte error in SUPNWR
-900112-hjaaj: new routines SUPOWR and SUPNWR for writing to LUSUPM
-when OLDSUP and .NOT.OLDSUP, resp.
-- use new variable NBAS1 = true NBAS(1) for NST in SUPSRT
-900111-hjaaj: added NPLAST to CSPINT
-- Format of LUSUPM if .not.oldsup:
-rec 1 : '*******','date    ','time    ','PSUPMAT '
-rec 2 : nosym,nsym,nbas(1:8)
-for i = 3 until finished
-rec ia: ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
-rec ib: if (ityp.eq.1) P(ibef+1:ibef+npqrs)
-        if (ityp.eq.2) P(1:npqrs),INDP(1:npqrs) and np1=npl, nq1=nql
-rec n : -2
-900109-hjaaj: s/SRTINT/SUPSRT/;s/ONEL/SUPONE/;s/RDINFO/SUPRDI/;
-   s/FRMDRV/SUPDRV/; implemented NOSYM option;
-   s/SUPA/SUP1D/; s/SUPB/SUPD/; implemented OLDSUP option;
-   implemented NEWSUP = .NOT. OLDSUP format (label "PSUPMAT ");
-   removed saving IJ,KL in INDP in SUP1,SUP,SUP1D,SUPD; just
-   allocate IT(NP+1) for INDP when not OLDSUP
-===========================================================================
+#ifdef REV_LOG
+c===========================================================================
+c031021-hjaaj: removed OLDSUP
+c950605-vebjornb:
+c      Added test to check if LUSUPM already open to avoid error message.
+c940818-hjaaj:
+c- new label: IRIX for Silicon Graphics
+c- Removed check for duplicate integrals (reactivate with *DEFINE DUPLCHCK)
+c- move symmetry check in SUPSRT in front of canonical index ordering
+c- passed NOSYM to SUPSRT, skip symmetry check if NOSYM
+c- changed def. of ZERO,ONE,ON2,...,TH8 from DATA to PARAMETER
+c- SUPSRT: use that hermit already has put the 4 indices in canonical
+c  order (when SUPSRT's def. of np,nq,nr,ns was reversed).
+c- SUP1,SUP,SUP1D,SUPD: reverse order of np,nq,nr,ns in label
+c- removed N8,N16,N24 from /CSPINT/ (not used)
+c- maximize NST1 for LWORK
+cnov 90-hjaaj:
+cSUPDRV: LINT = 1706 instead of 540
+cSUPNWR: fixed errors for NOSYM false
+c900319-hjaaj: corrected error in NPLAST for SUP1D and SUPD
+c- rewritten SUPNWR to write up to NP=NST-1 as type 1 if advantageous,
+c  used new routine NDXGTA to determine this.
+c- added WRSUP2 to correcte error in SUPNWR
+c900112-hjaaj: new routines SUPOWR and SUPNWR for writing to LUSUPM
+cwhen OLDSUP and .NOT.OLDSUP, resp.
+c- use new variable NBAS1 = true NBAS(1) for NST in SUPSRT
+c900111-hjaaj: added NPLAST to CSPINT
+c- Format of LUSUPM if .not.oldsup:
+crec 1 : '*******','date    ','time    ','PSUPMAT '
+crec 2 : nosym,nsym,nbas(1:8)
+cfor i = 3 until finished
+crec ia: ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
+crec ib: if (ityp.eq.1) P(ibef+1:ibef+npqrs)
+c        if (ityp.eq.2) P(1:npqrs),INDP(1:npqrs) and np1=npl, nq1=nql
+crec n : -2
+c900109-hjaaj: s/SRTINT/SUPSRT/;s/ONEL/SUPONE/;s/RDINFO/SUPRDI/;
+c   s/FRMDRV/SUPDRV/; implemented NOSYM option;
+c   s/SUPA/SUP1D/; s/SUPB/SUPD/; implemented OLDSUP option;
+c   implemented NEWSUP = .NOT. OLDSUP format (label "PSUPMAT ");
+c   removed saving IJ,KL in INDP in SUP1,SUP,SUP1D,SUPD; just
+c   allocate IT(NP+1) for INDP when not OLDSUP
+c===========================================================================
 #endif
 C  /* Deck frmsup */
-      SUBROUTINE FRMSUP(WORK,LWORK,NOSYM,OLDSUP,THRESH,IPRINT)
+      SUBROUTINE FRMSUP(WORK,LWORK,NOSYM,THRESH,IPRINT)
 C
 C --- PROGRAM FORMSUP (form super matrices for Fock matrices)
 C
@@ -102,24 +100,24 @@ C                         made appropriate changes in commons etc.
 C       13-Jun-1987 hjaaj changed packing to accept NBMAX .gt. 127
 C                         (VAX gives integer overflow on e.g.
 C                          LABEL = NS*2**24, when NS .gt. 127)
-C        9-Jan-1990 tuh+hjaaj: NOSYM parameter; OLDSUP parameter
+C        9-Jan-1990 tuh+hjaaj: NOSYM parameter;
 C        Dec 1991 - work space in call, tuh
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-      LOGICAL NOSYM,OLDSUP
+      LOGICAL NOSYM
       DIMENSION WORK(LWORK)
+C
+      CALL QENTER('FRMSUP')
       IF (IPRINT .GT. 0) THEN
          CALL TITLER('Output from FORMSUP','*',125)
          WRITE (LUPRI,*) ' NOSYM : ',NOSYM
-         WRITE (LUPRI,*) 'OLDSUP : ',OLDSUP
-      END IF
-      IF (OLDSUP .AND. NOSYM) THEN
-         CALL QUIT('FATAL ERROR, NOSYM and OLDSUP are not compatible')
+         WRITE (LUPRI,'(/A,1P,D10.2)')
+     *   ' Threshold for discarding integrals :',THRESH
       END IF
 C
-C allocate memory for IT vector in IWORK
+C*** Allocate memory for IT vector in IWORK
 C
       NBMAX = 255
       LWRK2 = (NBMAX*(NBMAX+1))/2
@@ -132,12 +130,13 @@ C and allocate memory for IBIT vector in IWORK
       KWRK1 = 1
       KWRK2 = KWRK1 + LWRK1
       LDWRK2 = IRAT*LWRK2
-      CALL SUPDRV(NOSYM,OLDSUP,WORK(KWRK1),LWRK1,WORK(KWRK2),LDWRK2,
+      CALL SUPDRV(NOSYM,WORK(KWRK1),LWRK1,WORK(KWRK2),LDWRK2,
      &            THRESH,IPRINT)
+      CALL QEXIT('FRMSUP')
       RETURN
       END
 C  /* Deck supdrv */
-      SUBROUTINE SUPDRV(NOSYM,OLDSUP,WORK,LWORK,IWORK,NWORK1,THRESH,
+      SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,NWORK1,THRESH,
      &                  IPRINT)
 #include <implicit.h>
 #include <dummy.h>
@@ -145,7 +144,7 @@ C  /* Deck supdrv */
 #include <iratdef.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION WORK(LWORK), IWORK(NWORK)
-      LOGICAL   NOSYM, OLDSUP, OPTST
+      LOGICAL   NOSYM, OPTST
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      A           NBAS1,NPLAST,NST,IND(600),NUT,
      B           LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
@@ -168,10 +167,8 @@ C
       LDA21  = LDA2+1
       LDA22  = LDA21+1
       LRDA22 = (LDA22-1)/IRAT + 1
-      CALL SUPRDI(NOSYM,OLDSUP)
+      CALL SUPRDI(NOSYM)
 C
-      IF (IPRINT .GT. 0) WRITE (LUPRI,'(/A,1P,D10.2)')
-     *   ' Threshold for discarding integrals :',THRQ
       NUT  = 0
 C
 C***  SIZE OF FIRST BLOCK on LUDASP
@@ -181,12 +178,10 @@ C     NST1 max. equal to nbas1, ie. to nbas(1) before NOSYM reset to nbast
 C
       NST1  = NBAS1
       LAVAIL = LWORK - LRDA22
-      IF (.NOT. OLDSUP) THEN
 C     ... max. memory for INDP
-         IJ = (NST1*(NST1+1))/2
-         IJ = (IJ-1)/IRAT + 1
-         LAVAIL = LAVAIL - IJ
-      END IF
+      IJ = (NST1*(NST1+1))/2
+      IJ = (IJ-1)/IRAT + 1
+      LAVAIL = LAVAIL - IJ
 C     IJ = nst1*(nst1+1)/2 = # (p q) distributions in first block
 C     NPMAX = ij*(ij+1)/2 = # unique integrals in first block
 C     To have all integrals of first block in memory NPMAX .le. LAVAIL
@@ -216,7 +211,7 @@ C allocate space for buffer with 600 real + 602 integer elements
       DFIN  = SECOND()
       DTOT  = DFIN-DST
       IF (IPRINT .GT. 1) WRITE(LUPRI,340) DTOT
- 340  FORMAT(/,'    TIME IN SORT  :',F9.2,' SEC.')
+ 340  FORMAT(/,'    TIME IN SUPSRT :',F9.2,' SEC.')
 C
 C*** START TRANSFERRING INTEGRALS TO SUPERMATRIX FORM.
 C*** BEGIN WITH FIRST BLOCK CONTAINING ALL INDICES BETWEEN
@@ -244,7 +239,7 @@ C
       JBUF = 256 + 144*IRAT
       IF (NPM.LE.LWORK) THEN
          LW3 = LW2+NPMAX
-         CALL SUP1(OLDSUP,ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
+         CALL SUP1(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
          DFIN = SECOND()
          DTOT = DFIN-DST
@@ -252,7 +247,7 @@ C
  350     FORMAT(/,'    TIME IN SUP1  :',F9.2,' SEC.')
       ELSE
          LW3 = LW2+LSUP
-         CALL SUP1D(OLDSUP,ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
+         CALL SUP1D(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
          DFIN = SECOND()
          DTOT = DFIN-DST
@@ -280,12 +275,12 @@ C
          LSUP   = LWORK - LRDA22 - IJ
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMM
-            CALL SUP1(OLDSUP,ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
+            CALL SUP1(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
      &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
          ELSE
             DTOTD = DTOTD - SECOND()
             LW3 = LW2+LSUP
-            CALL SUP1D(OLDSUP,ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
+            CALL SUP1D(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
      &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
             DTOTD = DTOTD + SECOND()
          END IF
@@ -330,13 +325,13 @@ C
          LSUP = LWORK - LRDA22 - IJ
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMAX
-            CALL SUP(OLDSUP,ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
+            CALL SUP(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &               WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP,IPRINT,
      &               JBUF)
          ELSE
             DTOTD = DTOTD - SECOND()
             LW3 = LW2+LSUP
-            CALL SUPD(OLDSUP,ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
+            CALL SUPD(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
      &                WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP,JBUF)
             DTOTD = DTOTD + SECOND()
          END IF
@@ -355,25 +350,18 @@ C
 C
 C*** FINALLY BUF MUST BE EMPTIED IF IT STILL CONTAINS INFORMATION
 C
-      IF (OLDSUP) THEN
-         IF (NUT.GT.0) WRITE(LUSUPM) BUF,IND,NUT
-         MINUS1 = -1
-         WRITE(LUSUPM) BUF,IND,MINUS1
-      ELSE
-         WRITE(LUSUPM) -2,0,0,0,0,0,0
-      END IF
+      WRITE(LUSUPM) -2,0,0,0,0,0,0
       CALL GPCLOSE(LUDASP,' ')
       DFIN1 = SECOND()
       DTOT1 = DFIN1-DST1
       IF (IPRINT .GT. 1) WRITE(LUPRI,380) DTOT1
  380  FORMAT(/,'    TOTAL TIME    :',F9.2,' SEC.')
       END
-C  /* Deck supone */
 C  /* Deck suprdi */
-      SUBROUTINE SUPRDI(NOSYM,OLDSUP)
+      SUBROUTINE SUPRDI(NOSYM)
 #include <implicit.h>
 #include <priunit.h>
-      LOGICAL NOSYM,OLDSUP
+      LOGICAL NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      A           NBAS1,NPLAST,NST,IND(600),NUT,
      B           LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
@@ -391,13 +379,8 @@ C
   10     NBAST = NBAST+NBAS(I)
       CALL GETDAT(LAB123(2),LAB123(3))
       CALL REWSPL(LUSUPM)
-      IF (OLDSUP) THEN
-         IF (NOSYM) LAB123(3) = 'NOSYMMET'
-         WRITE (LUSUPM) LAB123, OLDLBL
-      ELSE
-         WRITE (LUSUPM) LAB123, NEWLBL
-         WRITE (LUSUPM) NOSYM, NSYM, NBAS
-      END IF
+      WRITE (LUSUPM) LAB123, NEWLBL
+      WRITE (LUSUPM) NOSYM, NSYM, NBAS
 C
 C***  If (NOSYM) then reset symmetry index arrays
 C
@@ -675,12 +658,11 @@ C
       CALL QUIT('SUPSRT ERROR: insufficient memory')
       END
 C  /* Deck sup1 */
-      SUBROUTINE SUP1(OLDSUP,ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IT,IBIT,
+      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IT,IBIT,
      &                JBUF)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-      LOGICAL OLDSUP
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      A           NBAS1,NPLAST,NST,IND(600),NUT,
@@ -910,11 +892,7 @@ C
 C
 C***  Transfer P to disk
 C
-      IF (OLDSUP) THEN
-         CALL SUPOWR(P,IT,IBEF,NPMAX,JBUF)
-      ELSE
-         CALL SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
-      END IF
+      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
 C
  900  CONTINUE
       RETURN
@@ -926,14 +904,13 @@ C
 #endif
       END
 C  /* Deck sup */
-      SUBROUTINE SUP(OLDSUP,ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
+      SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
      &               IBEF,NP,IPRINT,JBUF)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
-      LOGICAL OLDSUP
 #include <inftap.h>
       DIMENSION P(2),INDP(2),IBUF(2),BBUF(2),IT(2),IBIT(2)
 C
@@ -1222,11 +1199,7 @@ C
 C
 C***  Transfer P to disk
 C
-      IF (OLDSUP) THEN
-         CALL SUPOWR(P,IT,IBEF,NPMAX,JBUF)
-      ELSE
-         CALL SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
-      END IF
+      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
 C
  900  CONTINUE
       RETURN
@@ -1238,12 +1211,11 @@ C
 #endif
       END
 C  /* Deck sup1d */
-      SUBROUTINE SUP1D(OLDSUP,ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,
+      SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,
      &                 IT,IBIT,JBUF)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-      LOGICAL OLDSUP
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      A           NBAS1,NPLAST,NST,IND(600),NUT,
@@ -1517,12 +1489,8 @@ C
 C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
-      IF (OLDSUP) THEN
-         CALL SUPOWR(P,IT,IOFF,NBB,JBUF)
-      ELSE
-C        Note: A PQ distribution may be divided into two records
-         CALL SUPNWR(P,INDP,IT,IOFF,NBB,JBUF)
-      END IF
+C     Note: A PQ distribution may be divided into two records
+      CALL SUPNWR(P,INDP,IT,IOFF,NBB,JBUF)
 C
 C
  800  IRED = IRED+NBB
@@ -1536,12 +1504,11 @@ C
 #endif
       END
 C  /* Deck supd */
-      SUBROUTINE SUPD(OLDSUP,ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
+      SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
      &               IBEF,NP,JBUF)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-      LOGICAL OLDSUP
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      A           NBAS1,NPLAST,NST,IND(600),NUT,
      B           LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
@@ -1877,12 +1844,8 @@ C
 C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
-      IF (OLDSUP) THEN
-         CALL SUPOWR(P,IT,IOFF,NBB,JBUF)
-      ELSE
-C        Note: A PQ distribution may be divided into two records
-         CALL SUPNWR(P,INDP,IT,IOFF,NBB,JBUF)
-      END IF
+C     Note: A PQ distribution may be divided into two records
+      CALL SUPNWR(P,INDP,IT,IOFF,NBB,JBUF)
 C
 C
  800  IRED = IRED+NBB
@@ -1895,111 +1858,11 @@ C
       CALL QUIT('Insfspce')
 #endif
       END
-C  /* Deck supowr */
-      SUBROUTINE SUPOWR(P,IT,IBEF,NPMAX,JBUF)
-C
-C     Jan 90 Hans Joergen Aa. Jensen
-C     Write to LUSUPM for OLDSUP true
-C     TRANSFER P TO BUF AND WRITE ONTO DISK IN BLOCKS OF 600
-C
-#include <implicit.h>
-      DIMENSION P(1), IT(1)
-C
-      COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
-     A           NBAS1,NPLAST,NST,IND(600),NUT,
-     B           LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C           NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
-#include <priunit.h>
-#if defined (VAR_SPLITFILES)
-#include <dummy.h>
-#include <iratdef.h>
-#include <2gbdef.h>
-      CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
-#endif
-#include <ibtfun.h>
-C
-      LBUF = 600
-      DO 740 NP = NPLAST,NBAST
-      ISP = IS(NP)
-      NPR = NP - IBAS(ISP)
-      DO 730 NQR = 1,NPR
-         NPQ    = IIBAS(ISP) + IT(NPR) + NQR
-         NPQROW = IT(NPQ) - IBEF
-       IF (NPQROW+NPQ .LE. 0) GO TO 730
-         DO 720 NR = 1,NP
-         ISR = IS(NR)
-         NRR = NR - IBAS(ISR)
-         NSEND  = NRR
-         IF (NR .EQ. NP) NSEND = NQR
-         DO 710 NSR = 1,NSEND
-            NRS = IIBAS(ISR) + IT(NRR) + NSR
-            NPQRS = NPQROW + NRS
-          IF (NPQRS .LE. 0) GO TO 710
-          IF (NPQRS .GT. NPMAX) GO TO 900
-          IF(ABS(P(NPQRS)).GT.THRQ) THEN
-            NUT = NUT + 1
-            BUF(NUT) = P(NPQRS)
-            IND(NUT) = IBTOR( NPQ , IBTSHL(NRS,16) )
-            IF (NUT.EQ.600) THEN
-#if defined (VAR_SPLITFILES)
-C
-               IF ((JBUF + LBUF*(IRAT + NIBUF) + 1) .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-                  INQUIRE(UNIT=LUSUPM,NAME=FNNAME)
-                  LN = 1
- 10               CONTINUE
-                  IF (FNNAME(LN:LN) .NE. ' ') THEN
-                     LN = LN + 1
-                     GOTO 10
-                  END IF
-                  LN = LN - 1
-                  CALL GPCLOSE(LUSUPM,'KEEP')
-                  I = LN - 1
-                  IF (FNNAME(I:I) .NE. '-') THEN
-                     FNNM2 = FNNAME(1:LN)//'-0'
-                     LN = LN + 2
-                  ELSE
-                     READ(FNNAME(LN:),'(I1)') INUM
-                     INUM = INUM + 1
-                     IF (INUM .GT. 9) THEN
-                        WRITE (LUPRI,'(/A)') ' DALTON needs to split '//
-     &                       ' a file more than 11 times.',
-     &                       ' This is currently not supported'
-                        CALL QUIT('Too many splittings of a file')
-                     END IF
-                     FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-                  END IF
-                  CALL GPOPEN(LUSUPM,FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &                        IDUMMY,.FALSE.)
-                  JBUF = 0
-               END IF
-               WRITE (LUSUPM) BUF,IND,NUT
-               JBUF = JBUF + LBUF*(IRAT + NIBUF) + 1
-#else
-               WRITE(LUSUPM) BUF,IND,NUT
-#endif
-               NUT = 0
-            END IF
-          END IF
-  710    CONTINUE
-  720    CONTINUE
-  730 CONTINUE
-      NPLAST = NP
-  740 CONTINUE
-C
-  900 CONTINUE
-      RETURN
-      END
 C  /* Deck supnwr */
       SUBROUTINE SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
 C
-C     Jan 90 Hans Joergen Aa. Jense
-C     Write to LUSUPM for OLDSUP false
+C     Jan 90 Hans Joergen Aa. Jensen
+C     Write to LUSUPM
 C
 C     On input P contains P(IBEF+1:IBEF+NPMAX)
 C
