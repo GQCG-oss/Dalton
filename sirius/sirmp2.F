@@ -1,3 +1,4 @@
+#define VAR_MP2SUPSYM
 C
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -33,31 +34,31 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-NOTE (961114/hjaaj): if solvent is implemented in MP2 then
-   IF (DOMP2) FLAG(16) = .FALSE.
-in sirctl.F should be removed.
-/* Comdeck mp2log */
-951130-hjaaj
-removed IADR2 from comdeck INFMP2; moved calculation of IADR2 to new
-  subroutine PHADR2, to be called from RESPONSE.
-corrected dimension for initialization if IADR1.
-renamed PHADDR to PHADR1
-950517-hjaaj
-new call to READMO
-941115-hjaaj
-PHPACK: rewritten code completely (old version used 10% of CPU time on
-  Cray for SOPPA!)
-941028-hjaaj
-MP2CTL: JTRLVL = -10 for SOPPA (was JTRLVL = 10)
-941005-hjaaj
-FCKIFR: new routine for "not frozen" index arrays
-MP2FCK: use NRHF instead of IFRMP2 so MP2SET can be called after FCKFRO
---- Major overhaul of SOPPA code and other code, in particular FCKFRO.
-December 1993-mjp (Martin J. Packer)
---- Revised module for SOPPA
-===========================================================================
+#ifdef OLD_REV_LOG
+!===========================================================================
+!NOTE (961114/hjaaj): if solvent is implemented in MP2 then
+!   IF (DOMP2) FLAG(16) = .FALSE.
+!in sirctl.F should be removed.
+!/* Comdeck mp2log */
+!951130-hjaaj
+!removed IADR2 from comdeck INFMP2; moved calculation of IADR2 to new
+!  subroutine PHADR2, to be called from RESPONSE.
+!corrected dimension for initialization if IADR1.
+!renamed PHADDR to PHADR1
+!950517-hjaaj
+!new call to READMO
+!941115-hjaaj
+!PHPACK: rewritten code completely (old version used 10% of CPU time on
+!  Cray for SOPPA!)
+!941028-hjaaj
+!MP2CTL: JTRLVL = -10 for SOPPA (was JTRLVL = 10)
+!941005-hjaaj
+!FCKIFR: new routine for "not frozen" index arrays
+!MP2FCK: use NRHF instead of IFRMP2 so MP2SET can be called after FCKFRO
+!--- Major overhaul of SOPPA code and other code, in particular FCKFRO.
+!December 1993-mjp (Martin J. Packer)
+!--- Revised module for SOPPA
+!===========================================================================
 #endif
 C  /* Deck mp2ctl */
       SUBROUTINE MP2CTL(WRK,LFRSAV)
@@ -82,7 +83,6 @@ C
 C
 C Used from common blocks:
 C     INFORB: NORBT,NRHF,?
-C     INFDIM: MWORK
 C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
 C     INFINP: FLAG(25)
@@ -96,7 +96,6 @@ C
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
-#include <infdim.h>
 #include <infmp2.h>
 #include <scbrhf.h>
 #include <infinp.h>
@@ -160,8 +159,8 @@ C     JTRLVL =  5 : code for MP2 transformation.
 C     JTRLVL = 10 : code for full transformation if SOPPA response follows.
 C     JTRLVL negative: delete AO integral file after transformation.
 C
-      CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KFREE),LFREE,MWORK)
-C     CALL TRACTL(ITRLVL,CMO,WRK,LFREE,MWORK)
+      CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KFREE),LFREE)
+C     CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
 C
 C
       IF (MP2FRO) THEN
@@ -351,6 +350,7 @@ C
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
+#include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
 #include <inftap.h>
@@ -396,7 +396,8 @@ C
 #if !defined (VAR_MP2SUPSYM)
          CALL ORDER2(CMO(1+ICSYM),WRK(KORBEN+IORBI),NORBI,NBASI)
 #else
-      HJ MAERKE : implement SUPSYM in MP2 ????? 940823 hjaaj
+C     HJ : implement SUPSYM in MP2 ????? 940823 hjaaj
+C          Done, Aug. 2004 /hjaaj
          CALL ORD2SS(CMO(1+ICSYM),WRK(KORBEN+IORBI),
      &               ISSMO(1+IORBI),NORBI,NBASI)
 #endif
@@ -412,12 +413,16 @@ C
             ELSE
                WRITE (LUW4,1841) ISYM
                WRITE (LUW4,1851)
-     &            (WRK(KORBEN-1+IOCCI+I),ISSMO(IORBI+I),I=1,NORBI)
+     &            (WRK(KORBEN-1+IORBI+I),ISSMO(IORBI+I),I=1,NORBI)
             END IF
 #endif
             WRITE (LUW4,1860) OCCSUM,OCCRHF,OCCSUM-OCCRHF
          END IF
   200 CONTINUE
+#if defined (VAR_MP2SUPSYM)
+      IF (SUPSYM) CALL AVEORD()
+C     ... remake ISSORD() as ISSMO() may have changed in ORD2SS
+#endif
 C
  1840 FORMAT(/' Natural orbital occupation numbers, symmetry',I2/)
  1850 FORMAT(4X,5F15.8)
