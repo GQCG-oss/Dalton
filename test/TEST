@@ -248,12 +248,14 @@ do
           logfile=./$item'__'$step'_'$item.log
           checkfile=./$item'__'$step.check
           reffile=./$item'__'$step.ref
+          moldenfile=./$item'__'$step'_'$item.molden
       else
           molfile=$item
           dalfile=$item
           logfile=./$item.log
           checkfile=./$item.check
           reffile=./$item.ref
+          moldenfile=./$item.molden
       fi
 # If it's a reftest, no calculation uis performed
       if [ "$reftest" = "true" ]; then

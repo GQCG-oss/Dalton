@@ -45,8 +45,6 @@ cat > hfreqfromE.dal <<%EOF%
 .THRESH
  1.0D-12
 **PROPERTIES
-.SPIN-SPIN
-*TRPRSP
 *END OF INPUT
 %EOF%
 #######################################################################

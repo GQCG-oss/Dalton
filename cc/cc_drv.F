@@ -877,7 +877,7 @@ C
           CALL GPCLOSE(LUINTA,'KEEP')
         END IF
       END IF
-
+C
       DO I = 1, 8
         IF (LUAOIN(I) .GT. 0) THEN
           IF ((.NOT.KEEPAOIN).OR.MOLGRD) THEN
