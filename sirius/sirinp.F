@@ -2433,7 +2433,7 @@ C
       DATA TABLE /'.DOUBLY','.THRESH','.FOCK I','.H1VIRT','.NOQCSC',
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
-     *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','.HF OCC',
+     *            '.MAX ER','.XXXXXX','.COREHO','.CORERE','.HF OCC',
      *            '.ELECTR','.AUTOCC','.FC MVO','.HSROHF','.SHIFT '/
 C
 C     ***** PROCESS INPUT FOR SCFINP *****
