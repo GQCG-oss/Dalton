@@ -439,8 +439,8 @@ C
 C     Electronic part
 C
                      GRADKE(JCOOR) = GRADKE(JCOOR) 
-     &                    - EFIELD(IFIELD)*(DDIPE(ICOOR,JCOOR) + 
-     &                                      DDIPN(ICOOR,JCOOR))
+     &                    - EFIELD(IFIELD)*(DDIPE(IFIELD,JCOOR) + 
+     &                                      DDIPN(IFIELD,JCOOR))
                   END DO
 C
 C     Nuclear part. We assume molecule to be in center-of charge.
