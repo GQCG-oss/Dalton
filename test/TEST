@@ -169,7 +169,7 @@ while [ -n "`echo $1 | grep '-'`" ]; do
      "-reftest" ) reftest="true"; shift;;
      "-bell" ) bell="true"; shift;;
      "-benchmark" ) benchmark="true"; shift;;
-     * ) usage;;
+     * ) echo "ERROR: $1 is an unknown option!"; usage;;
    esac
 done
 if [ $help ]; then
