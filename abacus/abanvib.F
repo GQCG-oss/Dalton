@@ -492,8 +492,9 @@ C
 C
 C
 C     /* Deck ndrdpp */
-      SUBROUTINE NDRDPP(SPSPFV,TRLNFV,EXENFV,TRAMAT,SYMCOR,WORK,LWORK,
-     &                  IPRINT,DODIPS)
+      SUBROUTINE NDRDPP(SPSPFV,TRLNFV,EXENFV,CCPRFV,TRAMAT,SYMCOR,
+     &                  EXETMP,TRDTMP,EXCERF,WORK,NREDSM,LWORK,
+     &                  IPRINT,CCPRP)
 C     **************************************************
 C     *** This routine keeps track of which property ***
 C     *** that will be read from file next. The      ***
@@ -508,12 +509,26 @@ C
 #include <abainf.h>
 #include <trkoor.h>
 #include <numder.h>
-      CHARACTER*9 PRPTXT
-      LOGICAL DODIPS
-      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL),
+#include <gnrinf.h>
+#include <pvibav.h>
+#include <prpc.h>
+      CHARACTER*9 PRPTXT 
+      LOGICAL CCPRP
+      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL), 
      &          TRLNFV(3,NSYM,MXNEXI,NMPCAL),
      &          EXENFV(  NSYM,MXNEXI,NMPCAL), SYMCOR(NCOOR,NCOOR),
-     &          TRAMAT(NCOOR,NCOOR,NMPCAL), WORK(LWORK)
+     &          TRAMAT(NCOOR,NCOOR,NMPCAL), CCPRFV(NPRPC,NMPCAL),
+     &          EXCERF(NSYM,MXNEXI), EXETMP(NSYM,NTOTEX), 
+     &          TRDTMP(3,NSYM,NTOTEX),WORK(LWORK)
+      DIMENSION NREDSM(NSYM,NSYM)
+C
+c      IF (DODIPS.OR.EXCIT) THEN
+c         CALL IZERO(NREDSM,NSYM**2)
+C
+C     *** Read reference properties from file. ***
+C
+c         CALL RDREFG(EXCERF,NSYM,MXNEXI,PRPTXT)
+c      END IF
 C
 C     *** Rewind property file. ***
 C
@@ -538,8 +553,8 @@ C        *** Figures out which property read in, and reads it. ***
 C
 
          CALL CHPRRD(SPSPFV(1,1,1,IMPCAL),TRAMAT(1,1,IMPCAL),
-     &               TRLNFV(1,1,1,IMPCAL),EXENFV(1,1,IMPCAL),NDIM1,
-     &               NDIM2,NDIM3,PRPTXT)
+     &               TRLNFV(1,1,1,IMPCAL),EXENFV(1,1,IMPCAL),
+     &               CCPRFV(1,IMPCAL),NDIM1,NDIM2,NDIM3,PRPTXT,CCPRP)
 C
       END DO
       END DO
@@ -553,8 +568,18 @@ C
 C        *** Figures out which property read in, and reads it. ***
 C
          CALL CHPRRD(SPSPFV(1,1,1,1),TRAMAT(1,1,1),TRLNFV(1,1,1,1),
-     &               EXENFV(1,1,1),NDIM1,NDIM2,NDIM3,PRPTXT)
+     &               EXENFV(1,1,1),CCPRFV(1,1),NDIM1,NDIM2,NDIM3,
+     &               PRPTXT,CCPRP)
       END DO
+C
+C     *** Checkin sign on the transition dipole moment ***
+C     *** derivatives.                                 ***
+C
+      IF (DOCCSD) THEN
+         CALL CHKCCS(CCPRFV,IPRINT)
+      ELSE
+         CALL CHKSGN(TRLNFV,IPRINT)
+      END IF
 C
 C     *** Transformation of all the matrices/vectors back ***
 C     *** to original cartesian coordinates. Matrix in the***
@@ -591,6 +616,21 @@ C
 C        *** Workaround for common common block variables. ***
 C
          CALL STPPVR(DODIPS)
+C
+C        *** If cc-properties. ***
+C
+         IF (CCPRP) THEN
+            CALL HEADER('CC-properties read from file.',0)
+            DO IMPCAL = 1, NMPCAL
+               CALL AROUND('New geometry:')
+               WRITE (LUPRI,'(5X,A,I5)') 'Geometry number:', IMPCAL
+               LUPRPCO = 0
+               CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
+     &                     ' ','FORMATTED',IDUMMY,.FALSE.)
+               CALL PRPRPC(LUPRPCO,2,CCPRFV(1,IMPCAL))
+               CALL GPCLOSE(LUPRPCO,'KEEP')
+            END DO
+         END IF
 C
 C        *** If one property is spin-spin. ***
 C
@@ -630,19 +670,32 @@ C
 C
 C
 C     /* Deck chprrd*/
-      SUBROUTINE CHPRRD(SPSPFV,TRAMAT,TRLNFV,EXENFV,NDIM1,NDIM2,NDIM3,
-     &                  PRPTXT)
+      SUBROUTINE CHPRRD(SPSPFV,TRAMAT,TRLNFV,EXENFV,CCPRFV,NDIM1,NDIM2,
+     &                  NDIM3,PRPTXT,CCPRP)
 #include <implicit.h>
 #include <mxcent.h>
 C
 #include <cbilrs.h>
 #include <trkoor.h>
 #include <inforb.h>
+#include <prpc.h>
+      LOGICAL CCPRP
       CHARACTER*9 PRPTXT
       DIMENSION SPSPFV(NCOOR,NCOOR,6), TRLNFV(3,NSYM,MXNEXI),
-     &          TRAMAT(NCOOR,NCOOR  ), EXENFV(  NSYM,MXNEXI)
+     &          TRAMAT(NCOOR,NCOOR  ), EXENFV(  NSYM,MXNEXI),
+     &          CCPRFV(NPRPC)
 C
-      IF (PRPTXT(1:9).EQ.'SPIN-SPIN') THEN
+      IF (PRPTXT(1:9).EQ.'CC PROPER') THEN
+         CCPRP = .TRUE.
+C
+C        *** If excited state properties are calculated. ***
+C        *** Find dalton symmetry of this derivative.    ***
+C     
+C        CALL TRTNMS(SYMCOR,IMPCAL,KSYM,IPRINT)
+C
+         CALL RDAVFL(CCPRFV(1),NDIM1,NDIM2,NDIM3,LUNDPR)
+C
+      ELSE IF (PRPTXT(1:9).EQ.'SPIN-SPIN') THEN
 C
 C        *** If property is spin-spin. ***
 C
@@ -1434,6 +1487,52 @@ C
             WRITE (LUPRI,'(A)') '                               '
             WRITE (LUPRI,'(A)') '                               '
          END DO
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck rdrefg */
+      SUBROUTINE RDREFG(EXCERF,NSYM,MXNEXI,PRPTXT)
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <cbiexc.h>
+      CHARACTER*9 PRPTXT
+      DIMENSION EXCERF(NSYM,MXNEXI)
+C
+C     *** Open ref file. ***
+C
+      LUREF = 0
+      CALL GPOPEN(LUREF,'PROPERTY.REF','UNKNOWN',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      REWIND(LUREF)
+C
+C     *** Reading properties at reference geometry from file. ***
+C         
+      DO IS = 1, NSYM
+      DO IE = 1, NEXCIT(IS)
+         READ (LUREF,'(A9)') PRPTXT
+         READ (LUREF,'(3I7)') NDIM1, NDIM2, NDIM3
+         IF (PRPTXT(7:7).EQ.' ') THEN
+            READ (PRPTXT(5:6),'(2I1)') ISYM, IEXVAL
+         ELSE
+            READ (PRPTXT(5:7),'(I1,I2)') ISYM, IEXVAL
+         END IF            
+         CALL RDAVFL(EXCERF(ISYM,IEXVAL),1,1,1,LUREF)
+      END DO
+      END DO
+C
+C     *** Closing file. ***
+C
+      CALL GPCLOSE(LUREF,'DELETE')
+C
+C     *** Debug print. ***
+C
+      IF (IPRINT.GT.20) THEN
+         CALL HEADER('Excitation energies at ref. geom.',0)
+         CALL PREXCE(EXCERF,NSYM,MXNEXI,LUPRI)
       END IF
 C
       RETURN

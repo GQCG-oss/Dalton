@@ -199,6 +199,10 @@ C
      &            .FALSE.)
       REWIND(LURES)
 C
+      CALL GPOPEN(LUPRPC,'CC_PRPC','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND(LUPRPC)
+C
       CALL GPOPEN(LUIAJB,'CCSD_IAJB','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUIAJB)
@@ -229,19 +233,6 @@ C
          IMULTE2(IEX) = IMULTE(IEX)
       ENDDO
       NPRPC = 0
-      DO IPRPC = 1, MXPRPC
-         PRPC(IPRPC)   = 1000000.0
-         CPRPC(IPRPC)  = 'DDDDDDDDDD'
-         IOPRPC(IPRPC) = 0
-         LAB0(IPRPC)   = 'DDDDDDDD'
-         LAB1(IPRPC)   = 'DDDDDDDD'
-         LAB2(IPRPC)   = 'DDDDDDDD'
-         LAB3(IPRPC)   = 'DDDDDDDD'
-         FRQ1(IPRPC)   = 1000000.0
-         FRQ2(IPRPC)   = 1000000.0
-         FRQ3(IPRPC)   = 1000000.0
-         ISAVSY(IPRPC) = 0
-      ENDDO
 C
 C-------------------------------------
 C     Set logicals: 4,6,8 is obsolete.
@@ -942,6 +933,7 @@ C     Close files.
 C
 C
       CALL GPCLOSE(LURES,'KEEP')
+      CALL GPCLOSE(LUPRPC,'KEEP')
       CALL GPCLOSE(LUIAJB,'KEEP')
       IF (LUAORC(0) .GT. 0) CALL GPCLOSE(LUAORC,'DELETE')
       IF (LUINTR.GT.0) CALL GPCLOSE(LUINTR,'DELETE')
@@ -1014,6 +1006,7 @@ C
 #include <prpc.h>
 #include <ccpack.h>
 #include <ccinftap.h>
+#include <numder.h>
 C
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
@@ -1065,61 +1058,67 @@ C
       ENDIF
 C
       IF (FIRSTCALL) THEN
-C
-C        Save the list of properties.
-C
-         NPRPCO = NPRPC
-         DO I = 1, NPRPC
-            PRPCO(I)  = PRPC(I)
-            CPRPCO(I) = CPRPC(I)
-            IOPRPCO(I)= IOPRPC(I)
-            LAB0O(I)  = LAB0(I)
-            LAB1O(I)  = LAB1(I)
-            LAB2O(I)  = LAB2(I)
-            LAB3O(I)  = LAB3(I)
-            FRQ1O(I)  = FRQ1(I)
-            FRQ2O(I)  = FRQ2(I)
-            FRQ3O(I)  = FRQ3(I)
-            ISAVSYO(I)= ISAVSY(I)
-         ENDDO
          FIRSTCALL = .FALSE.
          CALL CC_WPRPC
+C
+C-----------------------------------------------
+C           Save the list ("old prpc") on file.
+C           Count the number of properties in 
+C           each symmetry class
+C-----------------------------------------------
+C
+         DO ISYM=1,8
+            NPRPINSYM(ISYM) = 0
+         ENDDO
+         LUPRPCO = 0  
+         CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
+     *        IDUMMY,.FALSE.)
+         REWIND(LUPRPCO)
+         REWIND(LUPRPC)
+         NPRPCO = NPRPC
+         DO I = 1, NPRPC
+            READ(LUPRPC,
+     *           '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *           IPRPC,ISYMIN,NORD,LABEL,PROP,
+     *           LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+            WRITE(LUPRPCO,
+     *           '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *           IPRPC,ISYMIN,NORD,LABEL,PROP,
+     *           LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+            NPRPINSYM(ISYMIN) = NPRPINSYM(ISYMIN) + 1
+         END DO
+         CALL GPCLOSE(LUPRPCO,'KEEP')
+C
       ELSE
 C
 C        Reorder the list of properties to match the firstcall order
 C
          CALL CC_PRPCREORDER
+C
+C        *** For numerical differentiation of cc-properties, write the ***
+C        *** property to file.                                         ***
+C
+         IF (NMDPRP.GT.0) THEN
+            KPRPC = 1 
+            KEND  = KPRPC + NPRPC
+            LEND  = LWORK - KEND
+            IF (LEND.LE.0)CALL QUIT('Too little workspace in cc_resume')
+            REWIND(LUPRPC)
+            DO I = 1, NPRPC
+               READ(LUPRPC,
+     *            '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *            IPRPC,ISYMIN,NORD,LABEL,WORK(KPRPC+I-1),
+     *            LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+            ENDDO
+            CALL WRAVFL(WORK(KPRPC),NPRPC,1,1,'CC PROPER',IPRINT)
+         END IF
       ENDIF
 C
-      IF (NPRPC.GT.0) THEN
-       WRITE (LUPRI,'(A,/)') '  '
-       WRITE (LUPRI,'(A)')
-     * ' +---------------------------------------------------------+ '
-       WRITE (LUPRI,'(A)')
-     * ' | List of selected calculated molecular properties (a.u.) | '
-       WRITE (LUPRI,'(A,/)')
-     * ' +---------------------------------------------------------+ '
-       STHELP = 'Dummy'
-       DO I = 1, NPRPC
-        NORD = IOPRPC(I)
-        IF (STHELP.NE.CPRPC(I)) WRITE(LUPRI,'(/,1X,A10,A)') CPRPC(I),
-     *    ' properties :'
-        STHELP = CPRPC(I)
-        IF (NORD.EQ.1) WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A3,F20.12)')
-     *   '#',I,ISAVSY(I),' <',LAB0(I),'> = ',PRPC(I)
-        IF (NORD.EQ.2) WRITE(LUPRI,
-     *  '(1X,A,I3,I2,A,A8,A1,A8,A3,F9.6,A,F20.12)')
-     *   '#',I,ISAVSY(I),' <<',LAB0(I),',',LAB1(I),
-     *   '>>(',FRQ1(I),') =',PRPC(I)
-        IF (NORD.EQ.-1) WRITE(LUPRI,
-     *    '(1X,A,I3,I2,A,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
-     *    '#',I,ISAVSY(I),' |<O|',LAB0(I),'|i(',FRQ1(I),')>| =',PRPC(I)
-        IF (NORD.EQ.-3) WRITE(LUPRI,
-     *    '(1X,A,I3,I2,A,A8,A1,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
-     *    '#',I,ISAVSY(I),' RES{<<',LAB0(I),',',LAB1(I),
-     *    '>>(',FRQ1(I),')} =',
-     *    PRPC(I),' ( ',SQRT(ABS(PRPC(I))),')'
-       ENDDO
+C     Writeout the list of properties to summary section of output file. 
+C
+      CALL FLSHFO(LUPRI)
+      IF ((NPRPC.GT.0).AND.(IPRINT.GT.0)) THEN
+        CALL PRPRPC(LUPRPC,1,DUMMY)
       ENDIF
 C
       IF ( LPACKINT ) THEN
@@ -1321,7 +1320,7 @@ C
       END
 
 *=====================================================================*
-      SUBROUTINE CC_PRPCREORDER
+       SUBROUTINE CC_PRPCREORDER
 C
 C     Ove Christiansen Nov. 1999
 C
@@ -1330,71 +1329,197 @@ C              Property list for numerical differentiation.
 C
 #include <implicit.h>
 #include <prpc.h>
+#include <priunit.h>
+#include <ccinftap.h>
+      CHARACTER LABELI*10, LABXI*8, LABYI*8, LABZI*8, LABUI*8
+      CHARACTER LABELJ*10, LABXJ*8, LABYJ*8, LABZJ*8, LABUJ*8
 C
-      DIMENSION FRQ12(MXPRPC),FRQ22(MXPRPC),FRQ32(MXPRPC)
-      DIMENSION PRPC2(MXPRPC)
-      CHARACTER*8  LAB02(MXPRPC), LAB12(MXPRPC), LAB22(MXPRPC),       
-     *             LAB32(MXPRPC)
-      CHARACTER*10 CPRPC2(MXPRPC)
-      DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC) 
-      PARAMETER (TOLPRPFD=1.0D-10,TOLEX=1.0D-02)
+c     DIMENSION FRQ12(MXPRPC),FRQ22(MXPRPC),FRQ32(MXPRPC)
+c     DIMENSION PRPC2(MXPRPC)
+c     CHARACTER*8  LAB02(MXPRPC), LAB12(MXPRPC), LAB22(MXPRPC),       
+c    *             LAB32(MXPRPC)
+c     CHARACTER*10 CPRPC2(MXPRPC)
+c     DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC) 
+      PARAMETER (TOLPRPFD=1.0D-10,TOLE=1.0D-02)
 C
       CALL QENTER('CC_WPRPCREORDER')
 C
       IF (NPRPC.NE.NPRPCO) CALL QUIT('Mistmatch in WPRPC')
-      DO I = 1, NPRPC
-         PRPC2(I)  = PRPC(I)
-         CPRPC2(I) = CPRPC(I)
-         IOPRPC2(I)= IOPRPC(I)
-         LAB02(I)  = LAB0(I)
-         LAB12(I)  = LAB1(I)
-         LAB22(I)  = LAB2(I)
-         LAB32(I)  = LAB3(I)
-         FRQ12(I)  = FRQ1(I)
-         FRQ22(I)  = FRQ2(I)
-         FRQ32(I)  = FRQ3(I)
-         ISAVSY2(I)= ISAVSY(I) 
+C
+C-----------------------------------------------
+C     Save the current list on ("prpc_tmp") on file.
+C-----------------------------------------------
+C
+      LUPRPCTMP = 0
+      CALL GPOPEN(LUPRPCTMP,'CC_PRPC_TMP','UNKNOWN',' ','FORMATTED',
+     *           IDUMMY,.FALSE.)
+      REWIND(LUPRPCTMP)
+      REWIND(LUPRPC) 
+       DO I = 1, NPRPC
+         READ(LUPRPC,
+     *     '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
+     *     LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
+     *     ISYEXI,ISPEXI,IEXI
+         WRITE(LUPRPCTMP,
+     *     '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
+     *     LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
+     *     ISYEXI,ISPEXI,IEXI
       ENDDO
 C
-      DO 100 I = 1, NPRPC
-       DO 200 J = 1, NPRPC
-        IF (CPRPC2(J).EQ.CPRPCO(I))  THEN
-         IF (IOPRPC2(J).EQ.IOPRPCO(I)) THEN 
-          IF ((LAB02(J).EQ.LAB0O(I)).AND.
-     *        (LAB12(J).EQ.LAB1O(I)).AND.
-     *        (LAB22(J).EQ.LAB2O(I)).AND.
-     *        (LAB32(J).EQ.LAB3O(I)))  THEN
+C-----------------------------------------------
+C     Open the saved list ("prpc_o") on file.
+C-----------------------------------------------
+C
+      LUPRPCO   = 0
+      CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
+     *            IDUMMY,.FALSE.)
+C
+C     Rewind luprpc to make ready for the ordered set of data.
+C
+      REWIND(LUPRPC)
+C
+C     Rewind luprpco to prepare the reference set of data.
+C
+      REWIND(LUPRPCO)
+      DO 300 I = 1, NPRPC
+       READ(LUPRPCO,
+     *    '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *    IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
+     *    LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
+     *    ISYEXI,ISPEXI,IEXI
+
+C
+C     Rewind luprpc_tmp to prepare the data that is reordered
+C
+       REWIND(LUPRPCTMP)
+       DO 400 J = 1, NPRPC
+        READ(LUPRPCTMP,
+     *     '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     IPRPCJ,ISYMINJ,NORDJ,LABELJ,PROPJ,
+     *     LABXJ,LABYJ,LABZJ,LABUJ,FRQYJ,FRQZJ,FRQUJ,
+     *     ISYEXJ,ISPEXJ,IEXJ
+        IF (LABELJ.EQ.LABELI) THEN 
+         IF (NORDI.EQ.NORDJ) THEN 
+          IF ((LABXJ.EQ.LABXI).AND.
+     *        (LABYJ.EQ.LABYI).AND.
+     *        (LABZJ.EQ.LABZI).AND.
+     *        (LABUJ.EQ.LABUI))  THEN
 C Take care with excitation energies !!!!
-           IF (((IOPRPCO(I).GT.0).AND.
-     *          ((ABS(FRQ12(J)-FRQ1O(I)).LT.TOLPRPFD).AND.
-     *           (ABS(FRQ22(J)-FRQ2O(I)).LT.TOLPRPFD).AND.
-     *           (ABS(FRQ32(J)-FRQ3O(I)).LT.TOLPRPFD))).OR.
-     *         ((IOPRPCO(I).LT.0).AND.     
-     *          ((ABS(FRQ12(J)-FRQ1O(I)).LT.TOLEX).AND.
-     *           (ABS(FRQ22(J)-FRQ2O(I)).LT.TOLEX).AND.
-     *           (ABS(FRQ32(J)-FRQ3O(I)).LT.TOLEX)))) THEN
-              PRPC(I)  = PRPC2(J)
-              CPRPC(I) = CPRPC2(J)
-              IOPRPC(I)= IOPRPC2(J)
-              LAB0(I)  = LAB02(J)
-              LAB1(I)  = LAB12(J)
-              LAB2(I)  = LAB22(J)
-              LAB3(I)  = LAB32(J)
-              FRQ1(I)  = FRQ12(J)
-              FRQ2(I)  = FRQ22(J)
-              FRQ3(I)  = FRQ32(J)
-              ISAVSY(I) = ISAVSY2(J) 
-              GOTO 100
+           IF (  
+     *         ((NORDI.GT.0).AND.
+     *          ((ABS(FRQYJ-FRQYI).LT.TOLPRPFD).AND.
+     *           (ABS(FRQZJ-FRQZI).LT.TOLPRPFD).AND.
+     *           (ABS(FRQUJ-FRQUI).LT.TOLPRPFD))).OR.
+     *         ((NORDI.LE.0).AND.     
+     *          ((ABS(FRQYJ-FRQYI).LT.TOLE).AND.
+     *           (ABS(FRQZJ-FRQZI).LT.TOLE).AND.
+     *           (ABS(FRQUJ-FRQUI).LT.TOLE)))) THEN
+              WRITE(LUPRPC,
+     *          '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *          IPRPCI,ISYMINJ,NORDJ,LABELJ,PROPJ,
+     *          LABXJ,LABYJ,LABZJ,LABUJ,FRQYJ,FRQZJ,FRQUJ,
+     *          ISYEXJ,ISPEXJ,IEXJ
+              GOTO 300
            ENDIF
           ENDIF
          ENDIF
         ENDIF
- 200   CONTINUE
- 100  CONTINUE
-C
-C Loop old list
-C
+ 400   CONTINUE
+ 300  CONTINUE 
+
+      CALL GPCLOSE(LUPRPCTMP,'KEEP')
+      CALL GPCLOSE(LUPRPCO,'KEEP')
       CALL QEXIT('CC_WPRPCREORDER')
 C
       END
+C
+C
+      SUBROUTINE PRPRPC(LU,IOPT,PROPIN)
+C
+C     Outputs the prpc to lupri the list of properties 
+C     that is stored on the file opened with unit number LU
+C     NB: File should be open on entry 
+C     IF IOPT = 1 the properties on file is output.
+C     IF IOPT = 2 the properties in vector propin is output with 
+C                 labels etc. comming from the prpc list.
+C
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <prpc.h>
+      CHARACTER STHELP*10
+      CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
+      DIMENSION PROPIN(*)
 
+      WRITE (LUPRI,'(A,/)') '  '
+      WRITE (LUPRI,'(A)')
+     *' +---------------------------------------------------------+ '
+      WRITE (LUPRI,'(A)')
+     *' | List of selected calculated molecular properties (a.u.) | '
+      WRITE (LUPRI,'(A,/)')
+     *' +---------------------------------------------------------+ '
+      STHELP = 'Dummy'
+      REWIND(LU)
+      DO I = 1, NPRPC
+       READ(LU,
+     *      '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *      IPRPC,ISYMIN,NORD,LABEL,PROP,
+     *      LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+       IF (I.NE.IPRPC) WRITE(LUPRI,*) ' PROBLEM OM PRPC LIST?'
+       IF (IOPT.EQ.2) PROP = PROPIN(I)
+       IF (STHELP.NE.LABEL) WRITE(LUPRI,'(/,1X,A10,A)') LABEL,
+     *   ' properties :'
+       STHELP = LABEL    
+       IF (NORD.EQ.0) THEN
+         IF (LABX.EQ."Excita  ") THEN
+          IF (IOPT.NE.2) THEN
+            WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,3(A,F18.10))')
+     *      '#',I,ISYMIN,
+     *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
+     *       ' E_tot:',PROP,' w:',FRQZ,' E_grs:',FRQU 
+          ELSE 
+            WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,1(A,F18.10))')
+     *      '#',I,ISYMIN,
+     *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
+     *       ' E_tot:',PROP
+          ENDIF
+         ELSE
+            WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,F18.10)')
+     *      '#',I,ISYMIN,' ',LABX,' Ground state Energy = ',PROP
+         ENDIF
+       ENDIF
+       IF (NORD.EQ.1) WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A3,F20.12)')
+     *  '#',I,ISYMIN,' <',LABX,'> = ',PROP
+       IF (NORD.EQ.-11) 
+     *   WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,I1,X,I1,I3,F9.6,A,F20.12)')
+     *  '#',I,ISYMIN,' <',LABX,'>(',ISYEX,ISPEX,IEX,FRQY,') = ',PROP
+       IF (NORD.EQ.2) WRITE(LUPRI,
+     * '(1X,A,I3,I2,A,A8,A1,A8,A3,F9.6,A,F20.12)')
+     *  '#',I,ISYMIN,' <<',LABX,',',LABY,
+     *  '>>(',FRQY,') =',PROP
+       IF (NORD.EQ.3) WRITE(LUPRI,
+     * '(1X,A,I3,I2,A,A8,A1,A8,A1,A8,A3,F9.6,A1,F9.6,A,F20.12)')
+     *  '#',I,ISYMIN,' <<',LABX,',',LABY,',',LABZ,
+     *  '>>(',FRQY,',',FRQZ,') =',PROP
+       IF (NORD.EQ.4) WRITE(LUPRI,
+     * '(1X,A,I3,I2,A,A8,A1,A8,A1,A8,A1,A8,A3,F9.6,A1,F9.6,A1,F9.6,
+     *    A,F20.12)')
+     *  '#',I,ISYMIN,' <<',LABX,',',LABY,',',LABZ,
+     *   ',',LABU,
+     *  '>>(',FRQY,',',FRQZ,',',FRQU,') =',PROP
+       IF (NORD.EQ.-1) WRITE(LUPRI,
+     *   '(1X,A,I3,I2,A,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
+     *   '#',I,ISYMIN,' |<O|',LABX,'|i(',FRQY,')>| =',PROP
+       IF (NORD.EQ.-10) WRITE(LUPRI,
+     *   '(1X,A,I3,I2,A,F9.6,A,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
+     *   '#',I,ISYMIN,' |<i(',FRQY,')|',LABX,'|f(',FRQZ,
+     *   ')>| =',PROP
+       IF (NORD.EQ.-20) WRITE(LUPRI,
+     *   '(1X,A,I3,I2,A,A8,A1,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
+     *   '#',I,ISYMIN,' RES{<<',LABX,',',LABY,
+     *   '>>(',FRQY,')} =',
+     *   PROP,' ( ',SQRT(ABS(PROP)),')'
+      ENDDO
+      END

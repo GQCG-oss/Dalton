@@ -3244,6 +3244,7 @@ C
 #include <ccsdio.h>
 #include <ccsdinp.h>
 #include <prpc.h>
+#include <ccinftap.h>
 C
       LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
@@ -3256,95 +3257,21 @@ C--------------------------------------------------
 C
       EXIST = .FALSE.
 C
-C     New decision....
-C
-c     DO IPRPC = 1, NPRPC
-c       IF ((CPRPC(IPRPC).EQ.LABEL).AND.(NORD.EQ.IOPRPC(IPRPC))) THEN
-c        L1 = .TRUE. 
-c        L2 = .TRUE. 
-c        L3 = .TRUE. 
-c        L4 = .TRUE. 
-c        LI1 = .TRUE.
-c        LI2 = .TRUE.
-c
-c        IF ((NORD.GE.1).AND.(LABX.EQ.LAB0(IOPRPC(IPRPC)))) THEN
-c          L1 = .TRUE.
-c        ELSE 
-c          L1 = .FALSE.
-c        ENDIF
-c        IF ((NORD.GE.2).AND.(LABY.EQ.LAB1(IOPRPC(IPRPC))).AND.
-c    *       (ABS(FRQY-FRQ1(IPRPC)).LT.TOLFRQ)) THEN
-c          L2 = .TRUE.
-c        ELSE 
-c          L2 = .FALSE.
-c        ENDIF
-c        IF ((NORD.GE.3).AND.(LABZ.EQ.LAB2(IOPRPC(IPRPC))).AND.
-c    *       (ABS(FRQZ-FRQ2(IPRPC)).LT.TOLFRQ)) THEN
-c          L3 = .TRUE.
-c        ELSE 
-c          L3 = .FALSE.
-c        ENDIF
-c        IF ((NORD.GE.4).AND.(LABU.EQ.LAB3(IOPRPC(IPRPC))).AND.
-c    *       (ABS(FRQU-FRQ3(IPRPC)).LT.TOLFRQ)) THEN
-c          L4 = .TRUE.
-c        ELSE 
-c          L4 = .FALSE.
-c        ENDIF
-c        IF ((NORD.EQ.-1).AND.
-c    *       (LABX.EQ.LAB0(IOPRPC(IPRPC))).AND.
-c    *       (LABY.EQ.LAB1(IOPRPC(IPRPC))).AND.
-c    *       (ABS(FRQY-FRQ1(IPRPC)).LT.TOLEXCI)) THEN
-c          LI1 = .TRUE.
-c        ELSE
-c          LI1 = .FALSE.
-c        ENDIF
-c        IF ((NORD.EQ.-2).AND.
-c    *       (LABX.EQ.LAB0(IOPRPC(IPRPC))).AND.
-c    *       (LABY.EQ.LAB1(IOPRPC(IPRPC))).AND.
-c    *       (ABS(FRQY-FRQ1(IPRPC)).LT.TOLEXCI).AND.
-c    *       (ABS(FRQZ-FRQ2(IPRPC)).LT.TOLEXCI)) THEN
-c          LI2 = .TRUE.
-c        ELSE
-c          LI2 = .FALSE.
-c        ENDIF
-c       ENDIF
-c       EXIST = L1.AND.L2.AND.L3.AND.L4.AND.LI1.AND.LI2
-c       IF (EXIST) THEN
-c         IHIT = IPRPC
-c         GOTO 100
-c       ENDIF
-c     ENDDO
-c
-c100  CONTINUE
-C
-      IF (EXIST) THEN
-         IPRPC = IHIT
-      ELSE
-         NPRPC = NPRPC + 1
-         IPRPC = NPRPC
+      IF (NOEONL .AND. (NORD.EQ.0)) THEN 
+C         if energy and NOEONList = true then skip addition to list.
+        RETURN
+      ELSE 
+        IF (EXIST) THEN
+           IPRPC = IHIT
+        ELSE
+           NPRPC = NPRPC + 1
+           IPRPC = NPRPC
+        ENDIF 
+C 
+        WRITE(LUPRPC,
+     *   '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)') 
+     *   IPRPC,ISYMIN,NORD,LABEL,PROP,
+     *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
       ENDIF 
-      IF (NPRPC.GT.MXPRPC) THEN
-        WRITE(LUPRI,*) ' Too many properties on PRPC list - ',
-     *    ' I will not add more!'
-      ENDIF
-C
-C--------------------------------------------------
-C     Overwritehis property is already on the list.
-C--------------------------------------------------
-C
-      IOPRPC(IPRPC) = NORD
-      CPRPC(IPRPC)  = LABEL
-C
-      LAB0(IPRPC) = LABX
-      LAB1(IPRPC) = LABY
-      LAB2(IPRPC) = LABZ
-      LAB3(IPRPC) = LABU
-C
-      FRQ1(IPRPC) = FRQY
-      FRQ2(IPRPC) = FRQZ
-      FRQ3(IPRPC) = FRQU
-C
-      ISAVSY(IPRPC) = ISYMIN
-      PRPC(IPRPC) = PROP
 C
       END

@@ -144,7 +144,8 @@ C
  14      CONTINUE
             NPRPDR = .TRUE.
             READ (LUCMD, *) NMRDRP, NARDRP
-            NMORDR = MAX(NMRDRP,NMORDR-NAORDR)
+            IF (NMORDR.EQ.0) NAORDR = 0 
+            NMORDR = MAX(NMRDRP,NMORDR)
             GOTO 100
  15      CONTINUE
             READ (LUCMD, *) IDRPRI
@@ -1201,9 +1202,11 @@ C
 #include <abainf.h>
 #include <taymol.h>
 #include <pvibav.h>
+#include <prpc.h>
+#include <gnrinf.h>
 C
-      LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSYM, SYMDET, RSTDON, 
-     &        ALRCAL, PRTNR, DODIPS, CPRPBK
+      LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSM, SYMDET, RSTDON, 
+     &        ALRCAL, PRTNR, CPRPBK
       CHARACTER*80 MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
@@ -1369,11 +1372,11 @@ C                    *** steps are all totally symmetric.           ***
 C
                      IF (NAORDR .EQ. 0) THEN
                         IJ = 1
-                        TOTSYM = .FALSE.
+                        TOTSM = .FALSE.
                         DO IRDR = 1, IRSRDR+1
                            IJ = IJ*ICRIRP(INDSTP(IRDR),1)
                         END DO
-                        IF (IJ.EQ.1) TOTSYM = .TRUE.
+                        IF (IJ.EQ.1) TOTSM = .TRUE.
                      END IF
 C
                      NINNER = 2**(IRSRDR+1)
@@ -1553,7 +1556,7 @@ C
 C           *** Workaround to avoid common commonblock ***
 C           *** variables.                             ***
 C
-            CALL STPPVR(DODIPS)
+            CALL STPPVR
 C
             KCOEF  = 1
             KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
@@ -1569,25 +1572,37 @@ C
             IF (NMRDRP.GE.4) NPPDER = NPPDER 
      &                      + NDCOOR*(NDCOOR+1)*(NDCOOR+2)*(NDCOOR+3)/24
 C
-            IF (SPNSPN) THEN
-               KSPNSP = KLAST
-               KDSPSP = KSPNSP + 6*NMPCAL*NCOOR**2
-               KLAST  = KDSPSP + 6*NPPDER*NCOOR**2
+C
+            IF (DOCCSD) THEN
+C
+C           *** Derivatives of cc-properties. ***
+C
+               KCCPRP = KLAST 
+               KDCCPR = KCCPRP + NMPCAL*NPRPC
+               KLAST  = KDCCPR + NPPDER*NPRPC
+            ELSE
+               IF (SPNSPN) THEN
+                  KSPNSP = KLAST
+                  KDSPSP = KSPNSP + 6*NMPCAL*NCOOR**2
+                  KLAST  = KDSPSP + 6*NPPDER*NCOOR**2
+               END IF
+               IF (DODIPS) THEN
+                  KTRLEN = KLAST
+                  KDRTRL = KTRLEN + 3*NMPCAL*NSYM*MXNEXI
+                  KEXEFV = KDRTRL + 3*NPPDER*NSYM*MXNEXI
+                  KLAST  = KEXEFV +   NMPCAL*NSYM*MXNEXI
+               END IF
             END IF
-            IF (DODIPS) THEN
-               KTRLEN = KLAST
-               KDRTRL = KTRLEN + 3*NMPCAL*NSYM*MXNEXI
-               KEXEFV = KDRTRL + 3*NPPDER*NSYM*MXNEXI
-               KLAST  = KEXEFV +   NMPCAL*NSYM*MXNEXI
-            END IF
+C
             LWRK1  = LWORK - KLAST
             IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in PRPDER')
             CALL PRPDER(SYMCOR,WORK(KDSPSP),WORK(KCOEF),WORK(KSPNSP),
-     &           WORK(KTRLEN),WORK(KDRTRL),WORK(KEXEFV),GRIREP,
-     &           WORK(KLAST),IADRSS,KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,
-     &           WORK(KIMAX),WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),
-     &           WORK(KIDDCP),MXCOEF,NTYPE,NPPDER,LDPMTX,IFRSTD,NLDPMX,
-     &           MXNEXI,NSYM,LWORK,IPRINT,DODIPS)  
+     &           WORK(KTRLEN),WORK(KDRTRL),WORK(KEXEFV),WORK(KCCPRP),
+     &           WORK(KDCCPR),GRIREP,WORK(KLAST),IADRSS,KDPMTX,
+     &           ICRIRP,INDSTP,IDCOMP,WORK(KIMAX),WORK(KIMIN),
+     &           WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),MXCOEF,NTYPE,
+     &           NPPDER,LDPMTX,IFRSTD,NLDPMX,MXNEXI,NSYM,LWRK1,
+     &           IPRINT) 
          END IF
 C
 C        *******************
@@ -1680,7 +1695,7 @@ C
             NMPCAL = NMPCAL + 1
             CNMPRP = .TRUE.
          ELSE IF ((.NOT.PRPVIB).AND.(IORDR.LE.NMRDRP)
-     &                         .AND.(IORDR.GT.0     )) THEN
+     &                         .AND.(NMRDRP.GT.0)) THEN
             NMPCAL = NMPCAL + 1
             CNMPRP = .TRUE.
          ELSE
@@ -2907,7 +2922,7 @@ C
                            DERIV(ID) = DERIV(ID) 
      &                               + BCOEFF*FUNVAL(INNER,NEIND)
                         END DO
-C     
+C
                      END IF
                   END DO
 C
@@ -4702,6 +4717,7 @@ C     *************************************************
       DIMENSION WORK(LWORK)
 #include <numder.h>
 #include <trkoor.h>
+#include <dummy.h>
 C
       KNMPRP = 0
       INMTCL = 0
@@ -4714,7 +4730,7 @@ C        *** Figures out which property to read in, and reads it. ***
 C
          KGRBG = 1
          CALL CHPRRD(WORK(KGRBG),WORK(KGRBG),WORK(KGRBG),WORK(KGRBG),
-     &               NDIM1,NDIM2,NDIM3,PRPTXT)
+     &               NDIM1,NDIM2,NDIM3,PRPTXT,IDUMMY)
 C
 C        *** Another property has been calculated. ***
 C         
@@ -4768,7 +4784,7 @@ C              *** reads it.                                  ***
 C
                KGRB = 1
                CALL CHPRRD(WORK(KGRB),WORK(KGRB),WORK(KGRB),WORK(KGRB),
-     &                     NDIM1,NDIM2,NDIM3,PRPTXT) 
+     &                     NDIM1,NDIM2,NDIM3,PRPTXT,IDUMMY) 
             END DO
             END DO
 C
@@ -5391,23 +5407,47 @@ C
 C
 C
 C     /*Deck stppvr*/
-      SUBROUTINE STPPVR(DODIPS)
+      SUBROUTINE STPPVR
 #include <implicit.h>
 #include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+C
+#include <inforb.h>
 #include <cbiexc.h>
-      LOGICAL DODIPS
+#include <pvibav.h>
+#include <symmet.h>
+#include <ccexcinf.h>
+#include <gnrinf.h>
 C
       DODIPS = DIPSTR
+C
+C
+      NTOTEX = 0
+      DO ISYM = 1, MAXREP+1
+         IF (DOCCSD) THEN
+            NTOTEX = NTOTEX + (NCCEXCI(ISYM,1))
+            NEXCTB(ISYM) = NCCEXCI(ISYM,1)
+         ELSE
+            NTOTEX = NTOTEX + (NEXCIT(ISYM))
+            NEXCTB(ISYM) = NEXCIT(ISYM)
+         END IF
+      END DO
+      EXCIT = (NTOTEX.NE.0)
 C
       RETURN
       END
 C
 C
 C     /*Deck prpder*/
+C
+C
+C     /*Deck prpder*/
       SUBROUTINE PRPDER(SYMCOR,SPSPDR,COEFF,SPSPFV,TRLNFV,TRLNDR,EXENFV,
-     &           GRIREP,WORK,IADRSS,KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,
-     &           IMAX,IMIN,ICNT,NCVAL,IDDCMP,MXCOEF,NTYPE,NPPDER,LDPMTX,
-     &           IFRSTD,NLDPMX,MXNEXI,NSYM,LWORK,IPRINT,DODIPS)
+     &           CCPRFV,CCPRDR,GRIREP,WORK,IADRSS,KDPMTX,ICRIRP,INDSTP,
+     &           IDCOMP,IMAX,IMIN,ICNT,NCVAL,IDDCMP,MXCOEF,NTYPE,NPPDER,
+     &           LDPMTX,IFRSTD,NLDPMX,MXNEXI,NSYM,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -5417,15 +5457,18 @@ C     /*Deck prpder*/
 #include <numder.h>
 #include <fcsym.h> 
 #include <cbinum.h>
-      LOGICAL PRIVAL,DODIPS
-      DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMRDRP), SYMCOR(NCOOR,NCOOR),
+#include <pvibav.h>
+#include <prpc.h>
+      LOGICAL PRIVAL,CCPRP
+      DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMRDRP), SYMCOR(NCOOR,NCOOR), 
      &          SPSPDR(NCOOR ,NCOOR,6,NPPDER), GRIREP(NGORDR,NGVERT),
-     &          SPSPFV(NCOOR,NCOOR,6,NMPCAL),EXENFV(NSYM,MXNEXI,NMPCAL),
-     &          TRLNFV(3,NSYM,MXNEXI,NMPCAL),
-     &          TRLNDR(3,NSYM,MXNEXI,NPPDER), WORK(LWORK)
-      DIMENSION ICNT(NTYPE), IADRSS(NTYPE), IMAX(NMRDRP), IMIN(NMRDRP),
-     &          INDSTP(NTORDR), INDTMP(NTORDR), IDCOMP(NCOOR),
-     &          IDDCMP(NCOOR), NCVAL(NCOOR),
+     &          SPSPFV(NCOOR,NCOOR,6,NMPCAL),EXENFV(NSYM,MXNEXI,NMPCAL), 
+     &          TRLNFV(3,NSYM,MXNEXI,NMPCAL), CCPRFV(NPRPC,NMPCAL), 
+     &          TRLNDR(3,NSYM,MXNEXI,NPPDER), CCPRDR(NPRPC,NPPDER),
+     &          WORK(LWORK)  
+      DIMENSION ICNT(NTYPE), IADRSS(NTYPE), IMAX(NMRDRP), IMIN(NMRDRP), 
+     &          INDSTP(NTORDR), INDTMP(NTORDR), IDCOMP(NCOOR), 
+     &          IDDCMP(NCOOR), NCVAL(NCOOR), 
      &          KDPMTX(LDPMTX,NSTRDR,IFRSTD), ICRIRP(NCOOR,2)
 C
 C     *************************************
@@ -5433,15 +5476,48 @@ C     *** Reading properties from file. ***
 C     *************************************
 C
       KTRAMA = 1
-      KLAST  = KTRAMA + NMPCAL*NCOOR**2
+      KNREDS = KTRAMA +   NMPCAL*NCOOR**2
+      KEXTMP = KNREDS +   NSYM**2
+      KTRTMP = KEXTMP +   NSYM*NTOTEX
+      KEXERF = KTRTMP + 3*NSYM*NTOTEX
+      KLAST  = KEXERF +   NSYM*MXNEXI
       LWRK1  = LWORK - KLAST + 1
-      CALL NDRDPP(SPSPFV,TRLNFV,EXENFV,WORK(KTRAMA),SYMCOR,WORK(KLAST),
-     &            LWRK1,IPRINT,DODIPS)
+      CALL NDRDPP(SPSPFV,TRLNFV,EXENFV,CCPRFV,WORK(KTRAMA),SYMCOR,
+     &            WORK(KEXTMP),WORK(KTRTMP),WORK(KEXERF),
+     &            WORK(KLAST),WORK(KNREDS),LWRK1,IPRINT,CCPRP)
       IF (NPRPDR) CALL GPCLOSE(LUNDPR,'DELETE')
+c      KTRAMA = 1
+c      KLAST  = KTRAMA + NMPCAL*NCOOR**2
+c      LWRK1  = LWORK - KLAST + 1
+c      CALL NDRDPP(SPSPFV,TRLNFV,EXENFV,WORK(KTRAMA),SYMCOR,WORK(KLAST),
+c     &            LWRK1,IPRINT,DODIPS)
+c      IF (NPRPDR) CALL GPCLOSE(LUNDPR,'DELETE')
 C
 C     ******************************************
 C     *** Calculating numerical derivatives. ***
 C     ******************************************
+C
+C     *** For cc-properties. ***
+C
+      IF (CCPRP) THEN
+         NFINNR = NPRPC
+         CALL NMNDER(CCPRDR,COEFF,CCPRFV,GRIREP,WORK,IADRSS,KDPMTX,
+     &               ICRIRP,INDSTP,INDTMP,IDCOMP,IMAX,IMIN,ICNT,NCVAL,
+     &               IDDCMP,MXCOEF,NMRDRP,NMPCAL,NTYPE,NPPDER*NFINNR,
+     &               NFINNR,LDPMTX,IFRSTD,NLDPMX,LWORK,.FALSE.)
+C
+C        *** Double check sign on excited states property derivatives. ***
+C
+         KTPCCD = 1
+         KTPCCF = KTPCCD + 2*NPRPC*NPPDER
+         KLAST  = KTPCCF +   NPRPC*NMPCAL
+         LWRK1  = LWORK  - KLAST + 1 
+         CALL CHK1DR(CCPRFV,CCPRDR,WORK(KTPCCD),WORK(KTPCCF),COEFF,
+     &               GRIREP,WORK(KLAST),ICNT,IADRSS,IMAX,IMIN,
+     &               INDSTP,INDTMP,IDCOMP,IDDCMP,NCVAL,KDPMTX,ICRIRP,
+     &               NPPDER,MXCOEF,NTYPE,NFINNR,LDPMTX,IFRSTD,
+     &               NLDPMX,LWRK1,IPRINT)
+      END IF
 C
 C     *** For spin-spin. ***
 C
@@ -5478,6 +5554,97 @@ C     *** Test print or result print. ***
 C     ***********************************
 C
       IF ((IPRINT.GE.20).OR.(NPRPDR.AND..NOT.PRPVIB)) THEN
+C
+C       *** For cc-properties. ***
+C        
+         IF (CCPRP) THEN
+            IDERV = 0
+            CALL TITLER('Derivatives OF CC-properties.','*',118)
+            DO IORDR = 1, NMRDRP
+               IF (IORDR.EQ.1) THEN
+                  CALL HEADER('1. numerical derivative',0)
+                  DO IC = 1, 2
+                     DO ICOOR = 1, NDCOOR
+                        IF (IC.EQ.1) THEN
+                           IDERV = IDERV + 1
+                           WRITE (LUPRI,'(5X,A,I4)')
+     &                        'Derivative with respect to ' //
+     &                        'symmetry coordinate', ICOOR
+                        ELSE
+                           WRITE (LUPRI,'(5X,A,I4)')
+     &                        'Derivative with respect to ' //
+     &                        'cartesian coordinate', ICOOR
+                        END IF
+C
+                        IF (IC.EQ.1) THEN
+C
+C                          *** Update value for printout in ***
+C                          *** symmetry coordinates.        ***
+C                           
+                           LUPRPCO = 0
+                           CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
+     &                          ' ','FORMATTED',IDUMMY,.FALSE.)
+                           CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV))
+                           CALL GPCLOSE(LUPRPCO,'KEEP')
+                           WRITE (LUPRI,'(A)') '                   '
+                           WRITE (LUPRI,'(A)') '                   '
+                        ELSE
+C
+C                          *** Update value for printout in ***
+C                          *** cartesian coordinates.       ***
+C                           
+                           LUPRPCO = 0
+                           CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
+     &                          ' ','FORMATTED',IDUMMY,.FALSE.)
+                           CALL PRPRPC(LUPRPCO,2,WORK(KSTART))
+                           CALL GPCLOSE(LUPRPCO,'KEEP')
+                           WRITE (LUPRI,'(A)') '                     '
+                           WRITE (LUPRI,'(A)') '                     '
+C
+C                          *** Update value for printout. ***
+C
+                           KSTART = KSTART + NPRPC
+                        END IF
+                     END DO
+C     
+                     IF (IC.EQ.1) THEN
+                        KCDVAL = 1
+                        CALL T1PRSC(CCPRDR,WORK(KCDVAL),SYMCOR,NPRPC,
+     &                              NPPDER,IPRINT)
+                        KSTART = KCDVAL
+                     END IF
+                  END DO
+               ELSE IF (IORDR.EQ.2) THEN
+C                  
+                  CALL HEADER('2. numerical derivative',0)
+C
+                  DO ICOOR2 = 1, NDCOOR
+                  DO ICOOR1 = 1, ICOOR2
+C
+                     IDERV = IDERV + 1
+C                    
+                     IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
+                        PRIVAL = ICOOR1.EQ.ICOOR2
+                     ELSE
+                        PRIVAL = .TRUE.
+                     END IF
+C
+                     IF (PRIVAL) THEN
+                        WRITE (LUPRI,'(5X,A,I4,A,I4)')
+     &                       'Derivative with respect to coordinate', 
+     &                       ICOOR2, ' and ', ICOOR1
+C
+                        LUPRPCO = 0 
+                        CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
+     &                              ' ','FORMATTED',IDUMMY,.FALSE.)
+                        CALL PRPRPC(LUPRPCO,2,CCPRDR(1,IDERV))
+                        CALL GPCLOSE(LUPRPCO,'KEEP')
+                     END IF
+                  END DO
+                  END DO
+               END IF
+            END DO
+         END IF
 C
 C        *** For spin-spin ***
 C
@@ -6408,6 +6575,426 @@ C
          CALL ICOPY(3,INDSTP,1,INDTMP,1)
       END IF
 C      
+      RETURN
+      END
+C
+C
+C     /* Deck prexce */
+      SUBROUTINE PREXCE(EXENG,NSYM,MXNEXI,LUPRI)
+C     **************************************************
+C     *** Subroutine that prints excitation energies ***
+C     **************************************************
+#include <implicit.h>
+#include <codata.h>
+#include <cbiexc.h>
+      DIMENSION EXENG(NSYM,MXNEXI)
+C
+      IF (EXCTRP) THEN
+         CALL HEADER('Triplet electronic excitation energies',15)
+      ELSE
+         CALL HEADER ('Singlet electronic excitation energies',15)
+      END IF
+C     
+      WRITE (LUPRI,'(14X,A,/,14X,A,/,14X,A)')
+     &     ' Sym.   Mode   Frequency    Frequency',
+     &     'ex. st.  No.      (au)          (eV)',
+     &     '---------------------------------------'
+      DO 15 ISYM = 1, NSYM
+         DO 14 IEXVAL = 1, NEXCIT(ISYM)
+            WRITE (LUPRI,'(16X,I2,6X,I3,2F12.6)')
+     &           ISYM,IEXVAL,EXENG(ISYM,IEXVAL),
+     &           EXENG(ISYM,IEXVAL)*XTEV
+ 14      CONTINUE
+ 15   CONTINUE
+C
+      WRITE (LUPRI,'(A)') '                            '
+      WRITE (LUPRI,'(A)') '                            '
+      WRITE (LUPRI,'(A)') '                            '
+C
+      RETURN
+      END
+C
+C     /* Deck trtnms */
+      SUBROUTINE TRTNMS(SYMCOR,KCOOR,KSYM,IPRINT)
+C     *****************************************************
+C     *** Subroutine that transforms DALTON symmetry to ***
+C     *** symmetry in the numerical derivative.         ***
+C     *****************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+      PARAMETER (D0=0.0D0,D1=1.0D0,DM1=-1.0D0,THRSH=1.0D-6)
+#include <pgroup.h>
+#include <symmet.h>
+#include <inforb.h>
+#include <fcsym.h>
+#include <trkoor.h>
+      LOGICAL FOUND
+      DIMENSION SYMCOR(NCOOR,NCOOR), CSTRA(NCOOR,NCOOR), 
+     &          SCTRA(NCOOR,NCOOR)
+C
+      IF (NGORDR.GT.NCORDR) CALL QUIT('You shouldnt run ' //
+     &     'excited state property derivatives with ' //
+     &     'non-abelian groups')
+C
+C     *** Create the symmetry adapted dalton-coordinates. *** 
+C
+      CALL TRACOR(CSTRA,SCTRA,1,NCOOR,0)
+C
+C     *** Normalize the symmetry adapted dalton-coordinates. *** 
+C     
+      DO IC2 = 1, NCOOR
+         RNORM = D0
+         DO IC1 = 1, NCOOR
+            RNORM = RNORM + (SCTRA(IC1,IC2))**2
+         END DO
+         RNORM = D1/SQRT(RNORM)
+C
+         DO IC1 = 1, NCOOR
+            SCTRA(IC1,IC2) = SCTRA(IC1,IC2)*RNORM
+         END DO
+      END DO
+C
+C     *** Find which dalton coordinate this corresponds to. ***
+C      
+      DO IC2  = 1, NCOOR
+      DO IFAC = 1, 2   
+C     
+         IF (.NOT.FOUND) THEN
+            FAC = D1
+            IF (IFAC.EQ.2) FAC = DM1
+C
+            FOUND = .TRUE.
+            DO IC1 = 1, NCOOR
+               IF (ABS(SYMCOR(IC1,KCOOR)-SCTRA(IC1,IC2)).GT.THRSH)
+     &                                                FOUND = .FALSE.
+            END DO
+C
+            IF (FOUND) KDCSYM = IC2
+         END IF
+      END DO
+      END DO
+C
+C     *** Which symmetry does this coordinate belong to. ***
+C
+      DO IREP = 0, MAXREP
+      DO IATOM = 1, NUCIND
+      DO ICOOR = 1, 3
+         ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+         IF (ISCOOR.EQ.KDCSYM) KSYM = IREP+1
+      END DO
+      END DO
+      END DO
+C
+      RETURN
+      END 
+C
+C
+C     /* Deck chksgn */
+      SUBROUTINE CHKSGN(TRLNFV,IPRINT)
+C     *************************************************************
+C     *** Subroutine that checks if the phase of the components ***
+C     *** of the transition dipole moment is correct.           ***
+C     *************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+      PARAMETER (THRSH=1.0D-8)
+#include <inforb.h>
+#include <cbilrs.h>
+#include <pvibav.h>
+#include <symmet.h>
+#include <numder.h>
+      DIMENSION TRLNFV(3,NSYM,MXNEXI,NMPCAL), NEXCIT(MAXREP+1)
+C
+      DO 100 IMPCAL = 1, NMPCAL
+         CALL NMCOMP(NFIRST,IMPCAL,NMRDRP,IPRINT)
+C         
+         DO 200 ISYM   = 1, MAXREP+1
+         DO 200 IEXVAL = 1, NEXCTB(ISYM)
+         DO 200 IC = 1, 3
+            TADD  =(TRLNFV(IC,ISYM,IEXVAL,IMPCAL) 
+     &            + TRLNFV(IC,ISYM,IEXVAL,NFIRST))**2
+            TSUB  =(TRLNFV(IC,ISYM,IEXVAL,IMPCAL) 
+     &            - TRLNFV(IC,ISYM,IEXVAL,NFIRST))**2
+C
+C           *** Checking if there has been a change of sign. ***
+C
+            IF (ABS(TRLNFV(IC,ISYM,IEXVAL,1)).GT.THRSH) THEN
+               IF (TADD.LT.TSUB) THEN
+                  TRLNFV(IC,ISYM,IEXVAL,IMPCAL) = 
+     &                                   - TRLNFV(IC,ISYM,IEXVAL,IMPCAL)
+               END IF
+            ELSE
+               IF (TSUB.LT.TADD) THEN
+                  TRLNFV(IC,ISYM,IEXVAL,IMPCAL) = 
+     &                                   - TRLNFV(IC,ISYM,IEXVAL,IMPCAL)
+               END IF
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+C     
+      RETURN
+      END
+C
+C
+C     /* Deck chkccs */
+      SUBROUTINE CHKCCS(TRLNFV,IPRINT)
+C     *************************************************************
+C     *** Subroutine that checks if the phase of the components ***
+C     *** of the cc transition dipole moment is correct.        ***
+C     *************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (THRESH=1.0D-10)
+#include <numder.h>
+#include <prpc.h>
+      DIMENSION TRLNFV(NPRPC,NMPCAL)
+      CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
+C
+      LUPRPCO = 0
+      CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
+     *            IDUMMY,.FALSE.)
+C
+      CALL NMCOMP(NFIRST,IMPCAL,NMRDRP,IPRINT)     
+C
+      REWIND(LUPRPCO)
+      DO IPRPC = 1, NPRPC
+C
+C           Read in info on property
+C
+         READ(LUPRPCO,
+     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
+     *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+         IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHKCCS')
+C
+         IF (NORD .EQ.-1) THEN
+C
+            TRLNFV(IPRPC,1) = ABS(TRLNFV(IPRPC,1))
+C
+            DO IMPCAL = 2, NMPCAL, 2
+               
+               TADD=(TRLNFV(IPRPC,IMPCAL)+TRLNFV(IPRPC,IMPCAL+1))**2
+               TSUB=(TRLNFV(IPRPC,IMPCAL)-TRLNFV(IPRPC,IMPCAL+1))**2
+C
+               IF (ISYMIN .NE.1) THEN
+                  IF (TSUB.LT.TADD) THEN
+                     TRLNFV(IPRPC,IMPCAL) = -TRLNFV(IPRPC,IMPCAL)
+                  END IF
+               ELSE
+                  IF (ABS(TRLNFV(IPRPC,1)).LT.THRESH) THEN
+                     IF (TSUB.LT.TADD) THEN
+                        TRLNFV(IPRPC,IMPCAL) = -TRLNFV(IPRPC,IMPCAL)
+                     END IF
+                  ELSE
+                     IF (TADD.LT.TSUB) THEN
+                        TRLNFV(IPRPC,IMPCAL) = -TRLNFV(IPRPC,IMPCAL)
+                     END IF
+                  END IF
+               END IF
+            END DO
+         END IF
+      END DO
+      CALL GPCLOSE(LUPRPCO,'KEEP')
+C
+      RETURN
+      END
+C
+C
+C     /* Deck nmcomp */
+      SUBROUTINE NMCOMP(NFIRST,IMPCAL,NORDR,IPRINT)
+C     ***********************************************************
+C     *** Subroutine that recognizes the first function value ***
+C     *** of a derivative and returns this in NFIRST.         ***
+C     ***********************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <trkoor.h>
+      LOGICAL DONE
+C
+C     *** Init. ***
+C
+      DONE = .FALSE.
+C
+      IDSTRT = 0
+      DO IORDR = 1, NORDR
+C         
+         IADD = 1
+         DO I = 1, IORDR
+            IADD = IADD*2*(NCOOR-I+1)/I
+         END DO
+         IDSTRT = IDSTRT + IADD
+C
+C        *** Test that this is a derivative of order iordr. ***
+C        *** We need to remove the first point since this   ***
+C        *** does not contribute to any derivative.         ***
+C           
+         IF ((IMPCAL-1.LE.IDSTRT).AND.(.NOT.DONE)) THEN
+            DONE = .TRUE.
+C            
+C           *** Number of calculation points for this ***
+C           *** derivative                            ***
+C               
+            IPNTS = 2**IORDR
+C
+C           *** This is point number: ***
+C            
+            IDNUM = IMPCAL-2 - (IDSTRT-IADD)
+            KPNT = MOD(IDNUM,IPNTS) 
+C
+C           *** First point for this derivative is: ***
+C
+            NFIRST = IMPCAL - KPNT
+C
+         END IF
+      END DO
+C
+      RETURN 
+      END
+C
+C
+C     /* Deck cke1dr */
+      SUBROUTINE CHK1DR(CCPRFV,CCPRDR,TMPCCD,TMPCCF,COEFF,GRIREP,
+     &                  WORK,ICNT,IADRSS,IMAX,IMIN,INDSTP,INDTMP, 
+     &                  IDCOMP,IDDCMP,NCVAL,KDPMTX,ICRIRP,NPPDER,MXCOEF,
+     &                  NTYPE,NFINNR,LDPMTX,IFRSTD,NLDPMX,LWORK,IPRINT) 
+C     **********************************************************
+C     *** Subroutine that calculates two other possible      ***
+C     *** derivatives for the first derivative of transition ***
+C     *** dipole moment. This is to check if there is a sign *** 
+C     *** problem in the molecular system.                   ***
+C     **********************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <prpc.h>
+#include <numder.h>      
+#include <fcsym.h>
+#include <trkoor.h>
+      DIMENSION CCPRFV(NPRPC,NMPCAL), CCPRDR(NPRPC,NPPDER  ),
+     &          TMPCCF(NPRPC,NMPCAL), TMPCCD(NPRPC,NPPDER,2),
+     &          COEFF(-MXCOEF:MXCOEF,0:NMRDRP),GRIREP(NGORDR,NGVERT),
+     &          WORK(LWORK)  
+      DIMENSION ICNT(NTYPE), IADRSS(NTYPE), IMAX(NMRDRP), IMIN(NMRDRP), 
+     &          INDSTP(NTORDR), INDTMP(NTORDR), IDCOMP(NCOOR), 
+     &          IDDCMP(NCOOR),NCVAL(NCOOR),KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
+     &          ICRIRP(NCOOR,2)
+C
+      CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
+C
+C     *** First option, reversing the sign on the last value. ***
+C     *** df/dx = f(+)-(-f(-)).                               ***
+C
+C     *** Assigning new function values. ***
+C
+      IMPCAL = 1
+      DO ICOOR = 1, NCOOR
+         IMPCAL = IMPCAL + 1
+         DO IPRPC = 1, NPRPC
+            TMPCCF(IPRPC,IMPCAL) = CCPRFV(IPRPC,IMPCAL)
+         END DO
+         IMPCAL = IMPCAL + 1
+         DO IPRPC = 1, NPRPC
+            TMPCCF(IPRPC,IMPCAL) = -CCPRFV(IPRPC,IMPCAL)
+         END DO
+      END DO
+C
+C     *** Finding the new derivative. ***
+C
+      NFINNR = NPRPC
+      CALL NMNDER(TMPCCD(1,1,1),COEFF,TMPCCF,GRIREP,WORK,IADRSS,KDPMTX,
+     &            ICRIRP,INDSTP,INDTMP,IDCOMP,IMAX,IMIN,ICNT,NCVAL,
+     &            IDDCMP,MXCOEF,1,NMPCAL,NTYPE,NPPDER*NFINNR,NFINNR,
+     &            LDPMTX,IFRSTD,NLDPMX,LWORK,.FALSE.)     
+C
+C     *** Second option, two, point formula ***
+C     *** df/dx = f(+)-f(0).                ***
+C
+C     *** Assigning new function values. ***
+C
+      IMPCAL = 1
+      DO ICOOR = 1, NCOOR
+         IMPCAL = IMPCAL + 1
+         DO IPRPC = 1, NPRPC
+            TMPCCF(IPRPC,IMPCAL) = CCPRFV(IPRPC,IMPCAL)
+         END DO
+         IMPCAL = IMPCAL + 1
+         DO IPRPC = 1, NPRPC
+            TMPCCF(IPRPC,IMPCAL) = CCPRFV(IPRPC,1)
+         END DO
+      END DO
+C
+C     *** Finding the new derivative. ***
+C
+      WRITE (LUPRI,*) 'ER FORAN'
+      NFINNR = NPRPC
+      CALL NMNDER(TMPCCD(1,1,2),COEFF,TMPCCF,GRIREP,WORK,IADRSS,
+     &            KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,IMAX,IMIN,ICNT,
+     &            NCVAL,
+     &            IDDCMP,MXCOEF,1,NMPCAL,NTYPE,NPPDER*NFINNR,
+     &            NFINNR,LDPMTX,IFRSTD,NLDPMX,LWORK,.FALSE.)          
+C
+      LUPRPCO = 0
+      CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
+     *            IDUMMY,.FALSE.)
+C
+      DO ICOOR = 1, NCOOR
+         CALL AROUND ('Checking derivative with respect to new' //
+     &                ' coordinate')
+         WRITE (LUPRI,'(A,I4)') 'Coordinate number', ICOOR
+         REWIND(LUPRPCO)
+         WRITE (LUPRI,'(36X,A)') ' Best guess      Second choice' //
+     &           ' Two point formula' 
+         DO IPRPC = 1, NPRPC
+            READ(LUPRPCO,
+     *         '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
+     *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+            IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHK1DR')
+            IF (NORD .EQ.-1) THEN
+               WRITE(LUPRI,
+     &       '(I2,A,A8,A3,F9.6,A,3X,F14.7,3X,F14.7,3X,F14.7)')
+     &              ISYMIN,' |<O|',LABX,'|i(',FRQY,')>|', 
+     &              CCPRDR(IPRPC,ICOOR), TMPCCD(IPRPC,ICOOR,1), 
+     &              2.0D0*TMPCCD(IPRPC,ICOOR,2)
+            END IF
+         END DO
+      END DO
+C
+      CALL GPCLOSE(LUPRPCO,'KEEP')
+C
+      RETURN
+      END
+C
+C
+C     /* Deck trprsc*/
+      SUBROUTINE T1PRSC(DVAL,CDVAL,SYMCOR,NDIM1,NDERV,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER (D1=1.0D0, D0=0.0D0)
+#include <trkoor.h>
+      DIMENSION  DVAL(NDIM1,NDERV), SYMCOR(NCOOR,NCOOR),
+     &          CDVAL(NDIM1,NCOOR)
+C
+      CALL DZERO(CDVAL,NDIM1*NCOOR)
+      DO ICOOR2 = 1, NCOOR
+      DO ICOOR1 = 1, NCOOR
+      DO IINNER = 1, NDIM1
+         CDVAL(IINNER,ICOOR1) = CDVAL(IINNER,ICOOR1) 
+     &                 + SYMCOR(ICOOR1,ICOOR2)*DVAL(IINNER,ICOOR2)
+      END DO
+      END DO
+      END DO
+C
       RETURN
       END
 
