@@ -136,9 +136,9 @@ ERROR[5]="CALCULATION OF PORPERTIES NOT SET UP CORRECTLY"
 # H-C coupling
 CRIT1=`$GREP "Isotropic coupling * \: * 121\.494[0-9] Hz" $log | wc -l`
 CRIT2=`$GREP "Anisotropic coupling * \: * \-4\.496[0-9] Hz" $log | wc -l`
-CRIT3=`$GREP "Asymmetry * \: * (0| )\.000[0-9]" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * (\-| )(0| )\.000[0-9]" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * 4\.496[0-9] Hz" $log | wc -l`
-CRIT5=`$GREP "A parameter * \: * (0| )\.000[0-9] Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * (\-| )(0| )\.000[0-9] Hz" $log | wc -l`
 CRIT6=`$GREP "Isotropic DSO contribution\: * (0| )\.303[0-9] Hz" $log | wc -l`
 CRIT7=`$GREP "Isotropic PSO contribution\: * 1\.067[0-9] Hz" $log | wc -l`
 CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.056[0-9] Hz" $log | wc -l`
