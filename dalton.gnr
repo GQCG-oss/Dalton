@@ -6,7 +6,7 @@ paramlist="$*"
 OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
-AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK BAS"
+AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opta=0
 optA=0
@@ -343,6 +343,11 @@ if [ "$1" = "$2" ]; then
          echo "DALTON.OUT has not been created from the present run"
       fi
    fi
+   if [ -s DALTON.BAS -a -r DALTON.BAS ]; then
+      cp DALTON.BAS $WRKDIR/$1.BAS
+   else
+      echo "DALTON.BAS has not been created from the present run"
+   fi
    if [ $optv -eq 1 ] ; then
       if [ -s molden.inp -a -r molden.inp ]; then
          cp molden.inp $WRKDIR/$1.molden
@@ -371,6 +376,11 @@ else
       else
          echo "DALTON.OUT has not been created from the present run"
       fi
+   fi
+   if [ -s DALTON.BAS -a -r DALTON.BAS ]; then
+      cp DALTON.BAS $WRKDIR/$1_$2.BAS
+   else
+      echo "DALTON.BAS has not been created from the present run"
    fi
    if [ $optv -eq 1 ] ; then
       if [ -s molden.inp -a -r molden.inp ]; then
