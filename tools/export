@@ -2,7 +2,7 @@
 #
    TARNAME=dalton12.tar
    CTARNAME=$TARNAME.gz
-   TODAY=`date +%Y-%m-%d`
+#   TODAY=`date +%Y-%m-%d`
 #
    echo
    echo "********************************** "
@@ -35,7 +35,7 @@
    fi
    echo " ...done"
    echo "Checking out files from CVS server (takes a while)..."
-   cvs -Q export -D $TODAY dalton
+   cvs -Q export -r HEAD dalton
    echo " ...done"
    echo "Removing directories not part of release..."
    rm -rf dalton/Doc_cc
