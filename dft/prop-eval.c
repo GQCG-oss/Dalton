@@ -236,22 +236,24 @@ dft_lin_resp_slave(real* work, int* lwork, const int* iprint)
 #endif
 
 static void
-dft_lin_resp_sync_slaves(real* cmo, real* zymat, int* trplet)
+dft_lin_resp_sync_slaves(real* cmo, real* zymat, int* trplet, int* ksymop)
 {
 #ifdef C99_COMPILER
     const SyncData data2[] = {
 	{ &inforb_.norbt, 1,                   MPI_INT    },
 	{ cmo,     inforb_.norbt*inforb_.nbast,MPI_DOUBLE },
 	{ zymat,   inforb_.n2orbx,             MPI_DOUBLE },
-	{ trplet,  1,                          MPI_INT    }
+	{ trplet,  1,                          MPI_INT    },
+	{ ksymop,  1,                          MPI_INT    }
     };
 #else
     /* Is it only HP that has such archaic compilers? */
-    static SyncData data2[3] = 
-    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT} };
+    static SyncData data2[4] = 
+    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT}, {NULL, 0, MPI_INT} };
     data2[0].data = cmo;    data2[0].count = inforb_.norbt*inforb_.nbast;
     data2[1].data = zymat;  data2[1].count = inforb_.n2orbx;
     data2[2].data = trplet; data2[2].count = 1;
+    data2[3].data = ksymop; data2[3].count = 1;
 #endif
     FSYM(dftlrsync)();
     mpi_sync_data(data2, ELEMENTS(data2));
@@ -266,7 +268,7 @@ dft_lin_resp_collect_info(real* fmat, real*work)
 }
 
 #else  /* VAR_MPI */
-#define dft_lin_resp_sync_slaves(cmo,zymat,trplet)
+#define dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop)
 #define dft_lin_resp_collect_info(fmat,work)
 #endif /* VAR_MPI */
 
@@ -381,7 +383,7 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
     
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)dft_lin_resp_); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,zymat,trplet);        /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop); /* NO-OP in serial */
 
     times(&starttm);
     lr_data.dmat  = malloc(inforb_.n2basx*sizeof(real));
@@ -1011,7 +1013,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respab)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,zymat,trplet);          /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop);          /* NO-OP in serial */
 
     times(&starttm);
     /* linear reponse data */
@@ -1365,8 +1367,8 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
                 int ioff = i*bllen;
                 for(k=blstart; k<blend; k++)
                     tmp[k+ioff] = aos[k+ioff]*vt[k];
-            }
-        
+	    }
+
         for(ibl=0; ibl<ibl_cnt; ibl++) {
         for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
             int ioff = i*inforb_.nbast;
@@ -1489,7 +1491,7 @@ FSYM2(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
     
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respf)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,zymat,trplet);         /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop);         /* NO-OP in serial */
     times(&starttm);
     lr_data.dmat  = dal_malloc(inforb_.n2basx*sizeof(real));
     lr_data.res   = calloc(inforb_.n2basx,sizeof(real));
