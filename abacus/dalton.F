@@ -65,11 +65,12 @@ C...   R. Cimiraglia, S. Coriani, P. Dahle, E. K. Dalskov,
 C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier, 
 C...   H. Heiberg, T. Helgaker, H. Hettema, H. J. Aa. Jensen, 
 C...   D. Jonsson, P. Joergensen, S. Kirpekar, W. Klopper, R.Kobayashi,
-C...   H. Koch, O. B. Lutnaes, K. V. Mikkelsen, P. Norman, J.Olsen,
-C...   M. J. Packer, T. B. Pedersen, Z. Rinkevicius, E. Rudberg,
-C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue,
-C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   H. Koch, A. Ligabaue, O. B. Lutnaes, K. V. Mikkelsen, P. Norman,
+C...   J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
+C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+C...   K. O. Sylvester-Hvid, P. R. Taylor, O. Vahtras, D. J. Wilson,
+C...   H. Agren.
 C
 C     This note is not to be removed or altered.
 C
@@ -334,6 +335,8 @@ C
      &                      //'Australia  ',
      *  'Henrik Koch,              University of Trondheim,      '
      &                      //'Norway     ',
+     *  'Andrea Ligabue,           University of Modena,         '
+     &                      //'Italy      ',
      *  'Ola B. Lutnaes,           University of Oslo,           '
      &                      //'Norway     ',
      *  'Kurt V. Mikkelsen,        University of Copenhagen,     '
