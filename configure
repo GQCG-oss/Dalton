@@ -117,13 +117,13 @@ if [ -z "$1" ]; then
  	SunOS ) ARCH="-sun";;
         Darwin ) ARCH="-darwin";;
     * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
-        exit;;
+        exit 1;;
     esac
     $ECHO "No architecture specified, attempting auto-configuration:"
     get_yes_or_no "This appears to be a $ARCH architecture. Is this correct? "
     if [ "$answer" = "n" ]; then
         $ECHO "\nPlease configure manually from command line: 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
-        exit
+        exit 1
     else
 	$ECHO ""
     fi
@@ -148,9 +148,9 @@ case $ARCH in
     -hal ) WHICH="hal";;
     -darwin ) WHICH="darwin";;  
     -?|-help ) $ECHO " Run from command line: 'configure -architecture'\n\n The following architectures are allowed:\n    $arclist"
-        exit;;
+        exit 1;;
     * ) $ECHO "$1 is an unsupported architecture. Choose one of\n   $arclist\n\n NOTE: The syntax is 'configure -architecture'\n"
-        exit;;
+        exit 1;;
 esac
 #
 # Now we try to check the compiler and find some mathematical libraries. 
@@ -380,6 +380,8 @@ $ECHO   "   from this list: $complist \n"
 
 for comp in $complist; do
     set dummy $comp; ac_word=$2
+#   Add ":" to IFS, the list of internal field separators
+#   (normally space, tab, and newline).
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
@@ -402,30 +404,45 @@ done
 if test -z "$F77"; then
     $ECHO "\n   No compiler found and accepted on this computer"
     $ECHO   "   Cannot proceed without a Fortran compiler"
-    exit
+    exit 1
 fi
+if [ $F77 = "g77" ]; then
+# the 3.3.3 version 
+    test_linux_g77="`$F77 -v 2>&1 | grep '3.3.3'`"
+    if [ "$test_linux_g77" != "" ]; then
+      $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+      echo $test_linux_g77
+      $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+      $ECHO "Version 3.3.3 is known to give erroneous Dalton code"
+      $ECHO "(e.g. for SuSe Linux 9.1, while 9.2 has 3.3.4 which is OK)"
+      $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+    fi
+fi
+
 #
 #   Test to see whether the compiler has necessary F90 support
 #
-cat <<EOF > test.f
+cat <<EOF > F90test.f
       PROGRAM TEST
       ALLOCATABLE WORK(:)
       ALLOCATE(WORK(199))
       END PROGRAM
 EOF
-$F77 -o test.x test.f >/dev/null 2>&1
-if [ ! -r test.x ]; then
+$F77 -o F90test.x F90test.f >/dev/null 2>&1
+if [ ! -r F90test.x ]; then
     f90yes=" -DNO_F90"
-    rm -f test.x test.o test.f
+    rm -f F90test.x F90test.o F90test.f
 else
     f90yes=""
-    rm -f test.x test.o test.f
+    rm -f F90test.x F90test.o F90test.f
 fi
 #
 $ECHO "\n   Checking for C compiler ..."
 $ECHO   "   from this list: $ccmplist \n"
 for comp in $ccmplist; do
     set dummy $comp; ac_word=$2
+#   Add ":" to IFS, the list of internal field separators
+#   (normally space, tab, and newline).
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
@@ -448,7 +465,7 @@ done
 if test -z "$CC"; then
     $ECHO "\n   No C compiler found and accepted on this computer"
     $ECHO   "   Cannot proceed without a C compiler in path"
-    exit
+    exit 1
 fi
 #
 # Check out mathematical libraries. May have to expand library list?
@@ -656,6 +673,7 @@ if [ ! -d "$INSTALL_DIR" ]; then
    mkdir "$INSTALL_DIR"
 fi
 
+backup -v Makefile
 if [ "$curr" = "$INSTALL_DIR" ]; then
     sed -e '/mv dalton.x/d' -e '/mv dalpar.x/d' -e '/mv dalpvm.x/d' Makefile.in > Makefile
 else
@@ -1321,4 +1339,4 @@ chmod 755 $INSTALL_DIR/dalton
 $ECHO '\n   The configuration of DALTON has finished succesfully.'
 $ECHO '   Check compiler flags etc. in Makefile.config and run "make" to get executable.\n'
 
-exit
+exit 0
