@@ -1,0 +1,105 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+#
+#*# geoopt_vrml
+#*# -----------
+#*# Molecule:         KUM1
+#*# Wave Function:    N/A
+#*# Test Purpose:     VRML visualization of input geometry. A ball-and-stick
+#*#                   representation of the molecule is written to the file
+#*#                   'first.wrl'
+#
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > geoopt_vrml.mol <<%EOF%
+BASIS
+6-31++G
+VRML visualization
+(test77)
+    2    3  X  Y  Z1
+      6.0    4
+C      0.6289236   0.0000000   0.0000000
+C      1.9404215   0.0000000   0.0000000
+C      2.8397340   1.1742575   0.0000000
+C      4.1286140   0.7285165   0.0000000
+      1.0    2
+H      2.4725314   2.1982533   0.0000000
+H      5.0413894   1.3219498   0.0000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > geoopt_vrml.dal <<%EOF%
+**GENERAL
+.OPTIMIZE
+*OPTIMIZE
+.VISUAL
+.VR-BON
+**WAVE FUNCTION
+.HF
+*END OF INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
+
+# Visualization setup
+CRIT1=`$GREP "Visualization has been requested\. No optimization will be done\." $log | wc -l`
+CRIT2=`$GREP "VRML\-file of geometry will be created\." $log | wc -l`
+CRIT3=`$GREP "Bonds will be drawn between nearby atoms\." $log | wc -l`
+CRIT4=`$GREP "Other keywords will be ignored\!" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="VISUALIZATION NOT SET UP CORRECTLY"
+
+# End of visualization
+CRIT1=`$GREP "End of visualization" $log | wc -l`
+TEST[2]=`expr	$CRIT1`
+CTRL[2]=1
+ERROR[2]="VISUALIZATION NOT CORRECT"
+
+# Other parts
+CRIT1=`$GREP "SIRIUS" $log | wc -l`
+CRIT2=`$GREP "ABACUS" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=0
+ERROR[3]="OTHER PARTS OF DALTON SHOULD NOT BE RUN"
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > geoopt_vrml.check
+#######################################################################

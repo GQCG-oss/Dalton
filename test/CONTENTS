@@ -1,5 +1,5 @@
 ========================================================================
-62 test jobs have been translated to the new automatic test job system
+74 test jobs have been translated to the new automatic test job system
 All these tests have now been given names instead of numbers:
 
 	test1	energy_nosymm
@@ -64,6 +64,18 @@ All these tests have now been given names instead of numbers:
 	test63	walk_vibave2
 	test64	walk_vibave3
 	test65	prop_vibana
+	test66	rsp_twophot
+	test67	rsp_propave
+	test68	geoopt_cartsad
+	test69	geoopt_redintmin
+	test70	geoopt_delintsad
+	test71	geoopt_cartmin
+	test72	geoopt_redintsad
+	test73	geoopt_delintmin
+	test74	geoopt_cartsad2
+	test75	geoopt_constrain1a
+	test76	geoopt_constrain1b
+	test77	geoopt_vrml
 
 ========================================================================
 
@@ -97,6 +109,54 @@ Wave Functions:   SCF, MP2, and MCSCF (CAS)
 Test Purpose:     Check energy calculation with symmetry
 
 
+geoopt_cartmin
+--------------
+Molecule:         C6H5CHO
+Wave Function:    SCF
+Test Purpose:     Minimization in Cartesian coordinates. The initial
+                  Hessian is calculated, then updated using the
+                  PSB-formula. The rational function method determines
+                  the step and Baker's convergence criteria are used
+
+
+geoopt_cartsad
+--------------
+Molecule:         C2H6
+Wave Function:    SCF
+Test Purpose:     Second order saddle point optimization in
+                  Cartesian coordinates
+
+
+geoopt_cartsad2
+---------------
+Molecule:         C2H6
+Wave Function:    SCF
+Test Purpose:     First order transition state optimization in Cartesian
+                  coordinates. Initial approximate (model) Hessian, updates
+                  are done with Bofill's method. The partitioned rational
+                  function method controls the steps and Baker's convergence
+                  criteria are used
+
+
+geoopt_constrain1a
+------------------
+Molecule:         C2H6
+Wave Function:    N/A
+Test Purpose:     Demonstrates a run were nothing but determination of
+                  redundant internal coordinates is performed. This is
+                  needed to get the coordinate numbers required for
+                  constraints
+
+
+geoopt_constrain1b
+------------------
+Molecule:         C2H6
+Wave Function:    SCF
+Test Purpose:     Shows a constrained optimization of ethane, keeping the
+                  C-C bond distance fixed (coordinate #1 as determined
+                  from geoopt_constrain1a)
+
+
 geoopt_dckerr
 -------------
 Molecule:         O3
@@ -104,6 +164,26 @@ Wave Function:    MCSCF (RAS)
 Test Purpose:     Geometry optimization using .OPTIMIZE module
                   (1st order) with a calculation of DC-Kerr effect
                   at the optimized geometry.
+
+
+geoopt_delintmin
+----------------
+Molecule:         C6H5CHO
+Wave Function:    SCF
+Test Purpose:     Minimization in delocalized internal coordinates.
+                  A model Hessian is determined initially, then updated using
+                  the DFP-formula. Baker's convergence criteria are used.
+
+
+geoopt_delintsad
+----------------
+Molecule:         C2H6
+Wave Function:    SCF
+Test Purpose:     Saddle point optimization in delocalized internal
+                  coordinates. The initial Hessian is calculated, then
+                  updated using the Rank one (MS) formula. The step is
+                  controlled with the partitioned rational function
+                  method and Baker's convergence criteria are used
 
 
 geoopt_exci
@@ -165,11 +245,29 @@ geoopt_prop3
 ------------
 Molecule:         O3
 Wave Function:    MCSCF (CAS)
-Test Purpose:     As geoopt_prop
 Test Purpose:     Geometry optimization using .OPTIMIZE module
                   (2nd order) with a calculation of quadrupole moment,
                   magnetizability and nuclear shieldings at the
                   optimized geometry, along with a vibrational analysis.
+
+
+geoopt_redintmin
+----------------
+Molecule:         C2H6
+Wave Function:    SCF
+Test Purpose:     Minimization in redundant internal coordinates using
+                  a model Hessian. The BFGS-formula is used for updating
+                  the Hessians
+
+
+geoopt_redintsad
+----------------
+Molecule:         Acrolein
+Wave Function:    SCF
+Test Purpose:     Second order transition state optimization in redundant
+                  internal coordinates. The partitioned rational function
+                  method controls the steps and Baker's convergence
+                  criteria are used
 
 
 geoopt_symbrk
@@ -177,6 +275,15 @@ geoopt_symbrk
 Molecule:         H2O2
 Wave Function:    SCF
 Test Purpose:     Geometry optimization (2nd order) with symmetry breaking
+
+
+geoopt_vrml
+-----------
+Molecule:         KUM1
+Wave Function:    N/A
+Test Purpose:     VRML visualization of input geometry. A ball-and-stick
+                  representation of the molecule is written to the file
+                  'first.wrl'
 
 
 prop_ecd
@@ -370,6 +477,13 @@ rsp_polar
 Molecule:         LiH
 Wave Function:    MCSCF (CAS)
 Test Purpose:     Polarizability
+
+
+rsp_propave
+-----------
+Molecule:         LiH
+Wave Function:    SCF
+Test Purpose:     Check that AVEPRP in response works properly
 
 
 rsp_socorr
@@ -570,95 +684,3 @@ TEST56:
 Molecule:       H2CO
 Wave function:  MCSCF (CAS)
 Test purpose:   Non-equilibrium solvation energies
-
-
-TEST67:
-Molecule:       LiH
-Wave function:  SCF
-Test purpose:   Check that AVEPRP in response works properly
-
-
-TEST68:
-Molecule:	C2H6
-Wave function:  SCF
-Test purpose:	Second order saddle point optimization in
-                Cartesian coordinates
-
-
-TEST69:
-Molecule:	C2H6
-Wave function:  SCF
-Test purpose:	Minimization in redundant internal coordinates using a
-                model Hessian. The BFGS-formula is used for updating
-                the Hessians
-
-
-TEST70:
-Molecule:	C2H6
-Wave function:  SCF
-Test purpose:	Saddle point optimization in delocalized internal
-                coordinates. The initial Hessian is calculated, then
-                updated using the Rank one (MS) formula. The step is
-                controlled with the partitioned rational function method
-                and Baker's convergence criteria are used
-
-
-TEST71:
-Molecule:	C6H5CHO
-Wave function:  SCF
-Test purpose:	Minimization in Cartesian coordinates. The initial
-                Hessian is calculated, then updated using the PSB-formula.
-                The rational function method determines the step and
-                Baker's convergence criteria are used
-
-
-TEST72:
-Molecule:	Acrolein rotational TS
-Wave function:  SCF
-Test purpose:	Second order transition state optimization in redundant
-                internal coordinates. The partitioned rational function
-                method controls the steps and Baker's convergence
-                criteria are used
-
-
-TEST73:
-Molecule:	C6H5CHO
-Wave function:  SCF
-Test purpose:	Minimization in delocalized internal coordinates. A model
-                is determined initially, then updated using the DFP-formula.
-                Baker's convergence criteria are used
-
-
-TEST74:
-Molecule:	C2H6
-Wave function:  SCF
-Test purpose:	Transition state optimization in Cartesian coordinates.
-                Initial approximate (model) Hessian, updates are done
-                with Bofill's method. The partitioned rational function
-                method controls the steps and Baker's convergence
-                criteria are used
-
-
-TEST75:
-Molecule:	C2H6
-Wave function:  N/A
-Test purpose:   Demonstrates a run were nothing but determination of
-                redundant internal coordinates is performed. This is
-                needed to get the coordinate numbers required for
-                constraints
-
-
-TEST76:
-Molecule:	C2H6
-Wave function:  SCF
-Test purpose:   Shows a constrained optimization of ethane, keeping the
-                C-C bond distance fixed (coordinate #1 as determined
-                from test87)
-
-
-TEST77:
-Molecule:	KUM1
-Wave function:  N/A
-Test purpose:   VRML visualization of input geometry. A ball-and-stick
-                representation of the molecule is written to the file
-                'first.wrl'

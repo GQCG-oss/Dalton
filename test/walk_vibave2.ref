@@ -63,16 +63,17 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
      "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:34 2001
+     Date and time (Linux)  : Tue Feb 27 16:48:49 2001
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -113,8 +114,8 @@
   Title Cards
   -----------
 
-  Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-  =============                                                           
+  Vibrational averaging of shieldings                                     
+  (test63)                                                                
 
 
                       SYMGRP:Point group information
@@ -196,7 +197,7 @@ Point group: C1
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.05 seconds
+ >>> Time used in ONEDRV is   0.06 seconds
 
 
  >>> Time used in OVERLA is   0.03 seconds
@@ -207,7 +208,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOINT is   0.45 seconds
+ >>> Time used in TWOINT is   0.44 seconds
 
 
 
@@ -222,8 +223,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.58 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.08 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -233,12 +234,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:34 2001
+     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-     =============                                                           
+     Vibrational averaging of shieldings                                     
+     (test63)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -334,7 +335,7 @@ Point group: C1
      Final gradient norm:           0.000000000031
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:34 2001
+     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -379,7 +380,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:34 2001
+     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -473,7 +474,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:34 2001
+     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
      Host name              : slater.uio.no                           
 
 
@@ -784,7 +785,7 @@ Point group: C1
 
 
 
- >>> Time used in MAGINT is   1.06 seconds
+ >>> Time used in MAGINT is   1.05 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -835,14 +836,14 @@ Point group: C1
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   70.7 microseconds
-  Average time for zero/non-zero integrals     :   15.4 microseconds
+  Average time for non-zero (written) integrals:   69.7 microseconds
+  Average time for zero/non-zero integrals     :   15.2 microseconds
   Average time for primitive integrals         :    1.4 microseconds
 
   Average reduction of primitive ODC vectors:    0.97 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   2.15 seconds
+ >>> Time used in TWOINT is   2.12 seconds
 
 
 
@@ -894,7 +895,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOEXP is   2.15 seconds
+ >>> Time used in TWOEXP is   2.12 seconds
 
 
 
@@ -943,8 +944,8 @@ Point group: C1
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   40.1 microseconds
-  Average time for zero/non-zero integrals     :    8.7 microseconds
+  Average time for non-zero (written) integrals:   38.8 microseconds
+  Average time for zero/non-zero integrals     :    8.4 microseconds
   Average time for primitive integrals         :    0.8 microseconds
 
   Average reduction of primitive ODC vectors:    0.97 %
@@ -960,10 +961,10 @@ Point group: C1
  NORB    32
  NBAS    32
 
- >>> Time used in GETFD  is   0.51 seconds
+ >>> Time used in GETFD  is   0.52 seconds
 
 
- >>> Time used in GETSD  is   0.08 seconds
+ >>> Time used in GETSD  is   0.07 seconds
 
 
  >>> Time used in ABARHS is   0.01 seconds
@@ -972,7 +973,7 @@ Point group: C1
  >>> Time used in ABARHS is   0.00 seconds
 
 
- >>> Time used in ABARHS is   0.01 seconds
+ >>> Time used in ABARHS is   0.00 seconds
 
 
 
@@ -1020,13 +1021,13 @@ Point group: C1
  >>> Time used in GETFD  is   0.00 seconds
 
 
- >>> Time used in GETSD  is   0.00 seconds
+ >>> Time used in GETSD  is   0.01 seconds
 
 
  >>> Time used in ABARHS is   0.00 seconds
 
 
- >>> Time used in RHSIDE is   2.01 seconds
+ >>> Time used in RHSIDE is   1.98 seconds
 
   <<<<<<<<<< OUTPUT FROM REORT >>>>>>>>>> 
 
@@ -1293,11 +1294,11 @@ Point group: C1
    Total number of CI and orbital trial vectors :   0   9
 
              ROUTINE   CALLS    TIME
-             ABALIN       9     22.84
+             ABALIN       9     22.85
              ANRRED       9      0.00
              ANRNEX       9      0.00
 
- >>> Time used in ANRCTL is   0.07 seconds
+ >>> Time used in ANRCTL is   0.06 seconds
 
 
  >>> Time used in RESPON is   0.07 seconds
@@ -1323,7 +1324,7 @@ Point group: C1
  Number of response frequencies:     1
  Convergence threshold:     1.00D-06
 
- WORKING AREA IN TRANSFORMATION SECTION    9998962
+ WORKING AREA IN TRANSFORMATION SECTION   14998962
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -1514,7 +1515,7 @@ Point group: C1
 
  >>> Total time used in response solver is         0.00 CPU seconds.
 
- >>> Time used in LRSDRV is   0.29 seconds
+ >>> Time used in LRSDRV is   0.28 seconds
 
   <<<<<<<<<< Output from RELAX >>>>>>>>>> 
 
@@ -1586,7 +1587,7 @@ Point group: C1
 
  Largest deviation from tra-rot symmetry is in gradient element  6:  0.00E+00
 
- >>> Time used in TROINV is   0.00 seconds
+ >>> Time used in TROINV is   0.01 seconds
 
 
 
@@ -1596,7 +1597,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:41 2001
+     Date and time (Linux)  : Tue Feb 27 16:48:56 2001
      Host name              : slater.uio.no                           
 
 
@@ -1895,21 +1896,6 @@ Point group: C1
  Largest deviation from orthonormality of OMOs:0.444089E-13
  - found for element   29  29
 
-               Column   1     Column   2     Column   3     Column   4
-       1       0.00000000     0.00000000     0.00000000     0.00000000
-       2       0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.00000000     0.00000000     0.65526763     0.00000000
-       4       0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
-       6       0.00000000     0.00000000    -0.65526763     0.00000000
-
-               Column   5     Column   6
-       2       0.00000000     0.00000000
-       3       0.00000000    -0.65526763
-       5       0.00000000     0.00000000
-       6       0.00000000     0.65526763
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -2078,23 +2064,23 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
   F    y     0.00000000   381.49945838     0.00000000
   F    z     0.00000000     0.00000000   481.77723476
 
- >>> Time used in WLKDRV is   0.10 seconds
+ >>> Time used in WLKDRV is   0.47 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- MAGINT     00:00:01      18 %
- TWOTEX     00:00:02      36 %
- RHSIDE     00:00:02      34 %
+ MAGINT     00:00:01      17 %
+ TWOTEX     00:00:02      34 %
+ RHSIDE     00:00:02      32 %
 
  TOTAL      00:00:06     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   5.98 seconds
- >>>> Total wall time used in ABACUS:   7.00 seconds
+ >>>> Total CPU  time used in ABACUS:   6.27 seconds
+ >>>> Total wall time used in ABACUS:   6.00 seconds
 
 - End of Static Property Section
 
@@ -2117,8 +2103,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
   Title Cards
   -----------
 
-  Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-  =============                                                           
+  Vibrational averaging of shieldings                                     
+  (test63)                                                                
 
 Atomic type:     1
    Nuclear charge:   1.0
@@ -2416,8 +2402,8 @@ Point group: C1
  -----------------------
 
 ATOMBASIS                                                                       
-Water H2O C2v From Landholt-Bornstein II/15(2,279)                              
-=============                                                                   
+Vibrational averaging of shieldings                                             
+(test63)                                                                        
     2  0 0X  Y        0.10D-14                                                  
         1.    1 ano-4 3 2 0                                                     
 H     0.0000000000000000  0.0000000000000000  1.7983277090485840       *        
@@ -2426,7 +2412,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>> Time used in ONEDRV is   0.06 seconds
+ >>> Time used in ONEDRV is   0.05 seconds
 
 
  Number of two-electron integrals written:       30407 ( 21.8% )
@@ -2449,8 +2435,8 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.55 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   2.04 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -2460,12 +2446,12 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:42 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-     =============                                                           
+     Vibrational averaging of shieldings                                     
+     (test63)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -2576,7 +2562,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
      Final gradient norm:           0.000000000056
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:42 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -2617,11 +2603,11 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:42 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -2672,7 +2658,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:42 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
      Host name              : slater.uio.no                           
 
 
@@ -2781,7 +2767,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>> Time used in ONEINT is   0.15 seconds
+ >>> Time used in ONEINT is   0.14 seconds
 
 
 
@@ -2912,7 +2898,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>> Time used in MAGINT is   1.82 seconds
+ >>> Time used in MAGINT is   1.04 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -3005,7 +2991,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                    Molecular gradient norm:  6.91E-02
 
- >>> Time used in TWOEXP is   0.84 seconds
+ >>> Time used in TWOEXP is   0.83 seconds
 
 
 
@@ -3054,9 +3040,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   39.8 microseconds
-  Average time for zero/non-zero integrals     :    8.7 microseconds
-  Average time for primitive integrals         :    0.8 microseconds
+  Average time for non-zero (written) integrals:   77.6 microseconds
+  Average time for zero/non-zero integrals     :   16.9 microseconds
+  Average time for primitive integrals         :    1.5 microseconds
 
   Average reduction of primitive ODC vectors:    1.03 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -3071,19 +3057,19 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  NORB    32
  NBAS    32
 
- >>> Time used in GETFD  is   0.53 seconds
+ >>> Time used in GETFD  is   0.52 seconds
 
 
- >>> Time used in GETSD  is   0.08 seconds
-
-
- >>> Time used in ABARHS is   0.00 seconds
-
-
- >>> Time used in ABARHS is   0.00 seconds
+ >>> Time used in GETSD  is   0.07 seconds
 
 
  >>> Time used in ABARHS is   0.01 seconds
+
+
+ >>> Time used in ABARHS is   0.01 seconds
+
+
+ >>> Time used in ABARHS is   0.00 seconds
 
 
 
@@ -3118,7 +3104,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  >>> Time used in PSORHS is   0.10 seconds
 
 
- >>> Time used in RHSIDE is   1.94 seconds
+ >>> Time used in RHSIDE is   3.07 seconds
 
 
 
@@ -3141,7 +3127,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  Number of response frequencies:     1
  Convergence threshold:     1.00D-04
 
- WORKING AREA IN TRANSFORMATION SECTION    9998962
+ WORKING AREA IN TRANSFORMATION SECTION   14998962
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -3338,7 +3324,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  >>> Total time used in response solver is         0.00 CPU seconds.
 
- >>> Time used in LRSDRV is   0.80 seconds
+ >>> Time used in LRSDRV is   0.29 seconds
 
   <<<<<<<<<< Output from RELAX >>>>>>>>>> 
 
@@ -3393,7 +3379,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  Largest deviation from tra-rot symmetry is in gradient element  6:  0.00E+00
 
- >>> Time used in TROINV is   0.01 seconds
+ >>> Time used in TROINV is   0.00 seconds
 
 
 
@@ -3403,7 +3389,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:51 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:06 2001
      Host name              : slater.uio.no                           
 
 
@@ -3665,17 +3651,6 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  Largest deviation from orthonormality of OMOs:0.490719E-13
  - found for element   32  32
 
-               Column   1     Column   2     Column   3     Column   4
-       1     9.401961D-01   0.000000D+00   4.853949-314   4.243992-314
-       2     0.000000D+00   9.097941-314           -nan   0.000000D+00
-       3     0.000000D+00   0.000000D+00   2.121996-314   0.000000D+00
-       4    -9.401961D-01   9.401961D-01   2.731953-314   0.000000D+00
-       5     0.000000D+00   9.401961D-01   1.909796-313   6.099576-315
-       6     0.000000D+00   0.000000D+00   9.097941-314   0.000000D+00
-
-               Column   5     Column   6
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -3822,16 +3797,16 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  CPU time statistics for ABACUS
  ------------------------------
 
- MAGINT     00:00:02      32 %
- RHSIDE     00:00:02      34 %
- REST       00:00:02      43 %
+ MAGINT     00:00:01      19 %
+ RHSIDE     00:00:03      56 %
+ REST       00:00:02      35 %
 
  TOTAL      00:00:06     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   5.71 seconds
- >>>> Total wall time used in ABACUS:   9.00 seconds
+ >>>> Total CPU  time used in ABACUS:   5.53 seconds
+ >>>> Total wall time used in ABACUS:   6.00 seconds
 
 - End of Static Property Section
 
@@ -3854,8 +3829,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
   Title Cards
   -----------
 
-  Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-  =============                                                           
+  Vibrational averaging of shieldings                                     
+  (test63)                                                                
 
 Atomic type:     1
    Nuclear charge:   1.0
@@ -4153,8 +4128,8 @@ Point group: C1
  -----------------------
 
 ATOMBASIS                                                                       
-Water H2O C2v From Landholt-Bornstein II/15(2,279)                              
-=============                                                                   
+Vibrational averaging of shieldings                                             
+(test63)                                                                        
     2  0 0X  Y        0.10D-14                                                  
         1.    1 ano-4 3 2 0                                                     
 H     0.0000000000000000  0.0000000000000000  1.7012580783514160       *        
@@ -4163,7 +4138,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in ONEDRV is   0.05 seconds
+ >>> Time used in ONEDRV is   0.06 seconds
 
 
  Number of two-electron integrals written:       30407 ( 21.8% )
@@ -4171,7 +4146,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in TWOINT is   0.45 seconds
+ >>> Time used in TWOINT is   0.43 seconds
 
 
 
@@ -4186,8 +4161,8 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
  >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.56 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.20 seconds
+ >>>> Total wall time used in HERMIT:   2.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -4197,12 +4172,12 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:52 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-     =============                                                           
+     Vibrational averaging of shieldings                                     
+     (test63)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -4314,7 +4289,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
      Final gradient norm:           0.000000000007
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:52 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -4355,11 +4330,11 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:52 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -4410,7 +4385,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:52 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
      Host name              : slater.uio.no                           
 
 
@@ -4519,7 +4494,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in ONEINT is   0.15 seconds
+ >>> Time used in ONEINT is   0.14 seconds
 
 
 
@@ -4650,7 +4625,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in MAGINT is   1.05 seconds
+ >>> Time used in MAGINT is   1.07 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -4701,14 +4676,14 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   27.3 microseconds
+  Average time for non-zero (written) integrals:   27.0 microseconds
   Average time for zero/non-zero integrals     :    5.9 microseconds
   Average time for primitive integrals         :    0.5 microseconds
 
   Average reduction of primitive ODC vectors:    0.84 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   0.83 seconds
+ >>> Time used in TWOINT is   0.82 seconds
 
 
 
@@ -4743,7 +4718,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                    Molecular gradient norm:  2.62E-02
 
- >>> Time used in TWOEXP is   0.83 seconds
+ >>> Time used in TWOEXP is   0.82 seconds
 
 
 
@@ -4792,8 +4767,8 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   40.5 microseconds
-  Average time for zero/non-zero integrals     :    8.8 microseconds
+  Average time for non-zero (written) integrals:   39.1 microseconds
+  Average time for zero/non-zero integrals     :    8.5 microseconds
   Average time for primitive integrals         :    0.8 microseconds
 
   Average reduction of primitive ODC vectors:    0.84 %
@@ -4809,7 +4784,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  NORB    32
  NBAS    32
 
- >>> Time used in GETFD  is   0.54 seconds
+ >>> Time used in GETFD  is   0.52 seconds
 
 
  >>> Time used in GETSD  is   0.07 seconds
@@ -4856,7 +4831,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  >>> Time used in PSORHS is   0.10 seconds
 
 
- >>> Time used in RHSIDE is   1.96 seconds
+ >>> Time used in RHSIDE is   1.90 seconds
 
 
 
@@ -4879,7 +4854,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  Number of response frequencies:     1
  Convergence threshold:     1.00D-04
 
- WORKING AREA IN TRANSFORMATION SECTION    9998962
+ WORKING AREA IN TRANSFORMATION SECTION   14998962
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -5143,7 +5118,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:57 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:12 2001
      Host name              : slater.uio.no                           
 
 
@@ -5405,17 +5380,6 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  Largest deviation from orthonormality of OMOs:0.448530E-13
  - found for element   20  20
 
-               Column   1     Column   2     Column   3     Column   4
-       1     8.861041D-01   0.000000D+00   4.853949-314   4.243992-314
-       2     0.000000D+00   9.097941-314           -nan   0.000000D+00
-       3     0.000000D+00   0.000000D+00   2.121996-314   0.000000D+00
-       4    -8.861041D-01   8.861041D-01   2.731953-314   0.000000D+00
-       5     0.000000D+00   8.861041D-01   1.909796-313   6.099576-315
-       6     0.000000D+00   0.000000D+00   9.097941-314   0.000000D+00
-
-               Column   5     Column   6
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -5634,16 +5598,16 @@ Atom : F
  CPU time statistics for ABACUS
  ------------------------------
 
- MAGINT     00:00:01      24 %
- RHSIDE     00:00:02      45 %
+ MAGINT     00:00:01      25 %
+ RHSIDE     00:00:02      44 %
  REST       00:00:01      28 %
 
  TOTAL      00:00:04     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   4.40 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   4.34 seconds
+ >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
 
@@ -5666,8 +5630,8 @@ Atom : F
   Title Cards
   -----------
 
-  Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-  =============                                                           
+  Vibrational averaging of shieldings                                     
+  (test63)                                                                
 
 Atomic type:     1
    Nuclear charge:   1.0
@@ -5965,8 +5929,8 @@ Point group: C1
  -----------------------
 
 ATOMBASIS                                                                       
-Water H2O C2v From Landholt-Bornstein II/15(2,279)                              
-=============                                                                   
+Vibrational averaging of shieldings                                             
+(test63)                                                                        
     2  0 0X  Y        0.10D-14                                                  
         1.    1 ano-4 3 2 0                                                     
 H     0.0000000000000000  0.0000000000000000  1.7497928937000000       *        
@@ -5983,7 +5947,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
 
- >>> Time used in TWOINT is   0.46 seconds
+ >>> Time used in TWOINT is   0.48 seconds
 
 
 
@@ -5998,7 +5962,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.55 seconds
+ >>>> Total CPU  time used in HERMIT:   1.23 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
@@ -6009,12 +5973,12 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:58 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Water H2O C2v From Landholt-Bornstein II/15(2,279)                      
-     =============                                                           
+     Vibrational averaging of shieldings                                     
+     (test63)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -6125,7 +6089,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
      Final gradient norm:           0.000000000062
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:58 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -6170,7 +6134,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:58 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -6178,11 +6142,11 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:58 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
      Host name              : slater.uio.no                           
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:58 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:14 2001
      Host name              : slater.uio.no                           
 
 
@@ -6195,12 +6159,12 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
  >>>> Total CPU  time used in ABACUS:   0.28 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:  19.09 seconds
- >>>> Total wall time used in DALTON:  24.00 seconds
+ >>>> Total CPU  time used in DALTON:  22.46 seconds
+ >>>> Total wall time used in DALTON:  25.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:58 2001
+     Date and time (Linux)  : Tue Feb 27 16:49:14 2001
      Host name              : slater.uio.no                           

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirtr1.F,v 1.1.1.1 2001-02-08 13:33:31 hjj Exp $
+C$Id: sirtr1.F,v 1.2 2001-02-28 10:01:01 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -473,14 +473,16 @@ C
 C
 C **     the inactive one-index transformed dm:
 C        DXC(p,i) = 2*Bo(i,p)
-         CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
-     &              CMO(ICMOJ+1),NBASJ,
-     &              UBO(IORBI+1,IORBJ+1),NORBT,0.D0,
-     &              WRK(KDXAO1),NBASJ)
-         CALL DGEMM('N','T',NBASJ,NBASI,NISHI,1.D0,
-     &              WRK(KDXAO1),NBASJ,
-     &              CMO(ICMOI+1),NBASI,0.D0,
-     &              DXCAO(1+IBAS(JSYM),1+IBAS(ISYM)),NBAST)
+         IF (NBASJ*NORBJ*NBASI .NE. 0) THEN
+            CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
+     &                 CMO(ICMOJ+1),NBASJ,
+     &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0,
+     &                 WRK(KDXAO1),NBASJ)
+            CALL DGEMM('N','T',NBASJ,NBASI,NISHI,1.D0,
+     &                 WRK(KDXAO1),NBASJ,
+     &                 CMO(ICMOI+1),NBASI,0.D0,
+     &                 DXCAO(1+IBAS(JSYM),1+IBAS(ISYM)),NBAST)
+         END IF
 C **  this symmetry block finished
  4000 CONTINUE
 C

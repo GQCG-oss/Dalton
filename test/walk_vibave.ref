@@ -63,16 +63,17 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
      "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:47 2001
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -113,8 +114,8 @@
   Title Cards
   -----------
 
-  cs2 geom Amos Battaglia mp                                              
-  cs2                                                                     
+  Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+  (test62)                                                                
 
 
                       SYMGRP:Point group information
@@ -221,7 +222,7 @@ Point group: C1
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  >>> Time used in OVERLA is   0.01 seconds
@@ -232,7 +233,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOINT is   0.03 seconds
+ >>> Time used in TWOINT is   0.02 seconds
 
 
 
@@ -247,7 +248,7 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total CPU  time used in HERMIT:   0.56 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -258,12 +259,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:47 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -353,7 +354,7 @@ Point group: C1
      Final gradient norm:           0.000000000366
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:47 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -374,7 +375,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:47 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -456,7 +457,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:47 2001
      Host name              : slater.uio.no                           
 
  (ORTBVC) new orbital b-vector no.  7
@@ -482,7 +483,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:48 2001
      Host name              : slater.uio.no                           
 
 
@@ -1090,49 +1091,6 @@ Point group: C1
 
   Norm of projected gradient     0.018582
 
-               Column   1     Column   2     Column   3     Column   4
-       1       0.32280055    -0.00000022     0.00000000    -0.10760023
-       2      -0.00000022     0.81750872     0.00000000     0.12070495
-       3       0.00000000     0.00000000     0.81750931     0.20906713
-       4      -0.10760023     0.12070495     0.20906713     0.10715493
-       5       0.06655595    -0.18594483    -0.14992317    -0.08798086
-       6       0.11527830    -0.14992320    -0.35906131    -0.15238736
-       7      -0.10760023     0.12070495    -0.20906713     0.00022265
-       8       0.06655595    -0.18594483     0.14992317    -0.01129915
-       9      -0.11527830     0.14992320    -0.35906131    -0.03126294
-      10      -0.10760009    -0.24140967     0.00000000     0.00022265
-      11      -0.13311168    -0.44561906     0.00000000    -0.02142493
-      12       0.00000000     0.00000000    -0.09938668    -0.02541682
-
-               Column   5     Column   6     Column   7     Column   8
-       1       0.06655595     0.11527830    -0.10760023     0.06655595
-       2      -0.18594483    -0.14992320     0.12070495    -0.18594483
-       3      -0.14992317    -0.35906131    -0.20906713     0.14992317
-       4      -0.08798086    -0.15238736     0.00022265    -0.01129915
-       5       0.18682746     0.16903570    -0.01129915     0.01611060
-       6       0.16903570     0.38201314     0.03126294    -0.02947651
-       7      -0.01129915     0.03126294     0.10715493    -0.08798086
-       8       0.01611060    -0.02947651    -0.08798086     0.18682746
-       9       0.02947651    -0.02802783     0.15238736    -0.16903570
-      10       0.03272406     0.00584612     0.00022265     0.03272406
-      11      -0.01699323     0.01036400    -0.02142493    -0.01699323
-      12      -0.04858904     0.00507601     0.02541682     0.04858904
-
-               Column   9     Column  10     Column  11     Column  12
-       1      -0.11527830    -0.10760009    -0.13311168     0.00000000
-       2       0.14992320    -0.24140967    -0.44561906     0.00000000
-       3      -0.35906131     0.00000000     0.00000000    -0.09938668
-       4      -0.03126294     0.00022265    -0.02142493    -0.02541682
-       5       0.02947651     0.03272406    -0.01699323    -0.04858904
-       6      -0.02802783     0.00584612     0.01036400     0.00507601
-       7       0.15238736     0.00022265    -0.02142493     0.02541682
-       8      -0.16903570     0.03272406    -0.01699323     0.04858904
-       9       0.38201314    -0.00584612    -0.01036400     0.00507601
-      10      -0.00584612     0.10715479     0.17596154     0.00000000
-      11      -0.01036400     0.17596154     0.47960553     0.00000000
-      12       0.00507601     0.00000000     0.00000000     0.08923467
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -1295,8 +1253,8 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.48 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.92 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -1309,7 +1267,7 @@ Point group: C1
     Starting in Integral Section -
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:         579 ( 86.9% )
@@ -1317,7 +1275,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOINT is   0.02 seconds
+ >>> Time used in TWOINT is   0.01 seconds
 
 
 
@@ -1332,8 +1290,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.02 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -1343,12 +1301,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:49 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1455,7 +1413,7 @@ Point group: C1
      Final gradient norm:           0.000000000685
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:49 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -1476,7 +1434,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:49 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -1507,7 +1465,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:23 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:49 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -1531,7 +1489,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:50 2001
      Host name              : slater.uio.no                           
 
 
@@ -2086,35 +2044,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1    -1.842025D-03   8.390108D-01  -8.104180D-01   0.000000D+00
-       2    -4.289955D-01  -4.146434D-01  -4.218192D-01   3.456189-313
-       3     4.844031D-01   4.678950D-01  -9.522976D-01   0.000000D+00
-       4     8.408528D-01  -8.085760D-01   1.842025D-03   1.060998D+00
-       5     0.000000D+00   1.435208D-02   7.176319D-03   1.022081D+00
-       6     0.000000D+00  -1.650807D-02  -1.436701D+00   1.041540D+00
-       7     0.000000D+00  -1.649429D+00  -8.390108D-01   1.060998D+00
-       8    -1.435208D-02   0.000000D+00  -7.175757D-03   0.000000D+00
-       9     1.650807D-02   0.000000D+00  -1.420193D+00   1.649574D+00
-      10     1.649429D+00   0.000000D+00   8.104180D-01   1.663761D+00
-      11    -7.176319D-03   7.175757D-03   0.000000D+00   1.022081D+00
-      12     1.436701D+00   1.420193D+00   0.000000D+00   1.649574D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.635168D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.041540D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.663761D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.635168D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -2141,7 +2070,7 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     271 %
+ REST       00:00:02     364 %
 
 
 
@@ -2183,8 +2112,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.68 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -2194,12 +2123,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:51 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -2306,7 +2235,7 @@ Point group: C1
      Final gradient norm:           0.000000003537
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:51 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -2327,7 +2256,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:51 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -2358,7 +2287,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:51 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -2382,7 +2311,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:51 2001
      Host name              : slater.uio.no                           
 
 
@@ -2937,35 +2866,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1     1.842025D-03   8.104176D-01  -8.390104D-01   0.000000D+00
-       2    -4.146432D-01  -4.289953D-01  -4.218196D-01   3.456189-313
-       3     4.678947D-01   4.844028D-01  -9.522986D-01   0.000000D+00
-       4     8.085756D-01  -8.408525D-01  -1.842025D-03   1.022081D+00
-       5     0.000000D+00  -1.435208D-02  -7.176319D-03   1.060998D+00
-       6     0.000000D+00   1.650807D-02  -1.420193D+00   1.041541D+00
-       7     0.000000D+00  -1.649428D+00  -8.104176D-01   1.022081D+00
-       8     1.435208D-02   0.000000D+00   7.175757D-03   0.000000D+00
-       9    -1.650807D-02   0.000000D+00  -1.436701D+00   1.649573D+00
-      10     1.649428D+00   0.000000D+00   8.390104D-01   1.635169D+00
-      11     7.176319D-03  -7.175757D-03   0.000000D+00   1.060998D+00
-      12     1.420193D+00   1.436701D+00   0.000000D+00   1.649573D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.663761D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.041541D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.635169D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.663761D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -2996,7 +2896,7 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
+ >>>> Total CPU  time used in ABACUS:   0.45 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -3033,8 +2933,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.68 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -3044,12 +2944,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:52 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -3156,7 +3056,7 @@ Point group: C1
      Final gradient norm:           0.000000001932
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:52 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -3177,7 +3077,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:52 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -3208,7 +3108,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:24 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:52 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -3232,7 +3132,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:25 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:52 2001
      Host name              : slater.uio.no                           
 
 
@@ -3787,35 +3687,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1     4.166939D-08   8.329680D-01  -8.329686D-01   0.000000D+00
-       2    -4.259623D-01  -4.259626D-01  -4.135332D-01   3.456189-313
-       3     4.827562D-01   4.827566D-01  -9.313942D-01   0.000000D+00
-       4     8.329679D-01  -8.329687D-01  -4.166939D-08   1.052774D+00
-       5     0.000000D+00  -3.246610D-07   1.242910D-02   1.052775D+00
-       6     0.000000D+00   3.734318D-07  -1.414150D+00   1.019071D+00
-       7     0.000000D+00  -1.665937D+00  -8.329680D-01   1.052774D+00
-       8     3.246610D-07   0.000000D+00   1.242942D-02   0.000000D+00
-       9    -3.734318D-07   0.000000D+00  -1.414151D+00   1.665937D+00
-      10     1.665937D+00   0.000000D+00   8.329686D-01   1.641284D+00
-      11    -1.242910D-02  -1.242942D-02   0.000000D+00   1.052775D+00
-      12     1.414150D+00   1.414151D+00   0.000000D+00   1.665937D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.641284D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.019071D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.641284D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.641284D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -3842,13 +3713,13 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     337 %
+ REST       00:00:02     336 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.45 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
 
@@ -3861,7 +3732,7 @@ Point group: C1
     Starting in Integral Section -
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  Number of two-electron integrals written:         579 ( 86.9% )
@@ -3884,8 +3755,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.67 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -3895,12 +3766,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:25 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:53 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -4007,7 +3878,7 @@ Point group: C1
      Final gradient norm:           0.000000003592
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:25 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:53 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -4024,11 +3895,11 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.00 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:25 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:53 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -4059,7 +3930,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:25 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:53 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -4083,7 +3954,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:25 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:53 2001
      Host name              : slater.uio.no                           
 
 
@@ -4638,35 +4509,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1    -4.166939D-08   8.164605D-01  -8.164598D-01   0.000000D+00
-       2    -4.176764D-01  -4.176761D-01  -4.301055D-01   3.456189-313
-       3     4.695416D-01   4.695412D-01  -9.732020D-01   0.000000D+00
-       4     8.164605D-01  -8.164598D-01   4.166939D-08   1.030306D+00
-       5     0.000000D+00   3.246610D-07  -1.242910D-02   1.030305D+00
-       6     0.000000D+00  -3.734318D-07  -1.442744D+00   1.064008D+00
-       7     0.000000D+00  -1.632920D+00  -8.164605D-01   1.030306D+00
-       8    -3.246610D-07   0.000000D+00  -1.242942D-02   0.000000D+00
-       9     3.734318D-07   0.000000D+00  -1.442743D+00   1.632920D+00
-      10     1.632920D+00   0.000000D+00   8.164598D-01   1.657791D+00
-      11     1.242910D-02   1.242942D-02   0.000000D+00   1.030305D+00
-      12     1.442744D+00   1.442743D+00   0.000000D+00   1.632920D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.657790D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.064008D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.657791D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.657790D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -4697,8 +4539,8 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.47 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.45 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
 
@@ -4734,8 +4576,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.67 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -4745,12 +4587,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:54 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -4857,7 +4699,7 @@ Point group: C1
      Final gradient norm:           0.000000002096
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:55 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -4874,11 +4716,11 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.74 seconds
+ >>>> Total wall time used in SIRIUS :      2.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:56 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -4909,7 +4751,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:56 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -4933,7 +4775,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:56 2001
      Host name              : slater.uio.no                           
 
 
@@ -5491,35 +5333,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1    -7.359797D-13   8.123375D-01  -8.123375D-01   0.000000D+00
-       2    -4.160579D-01  -4.160579D-01  -4.160579D-01   3.456189-313
-       3     4.690032D-01   4.690032D-01  -9.380066D-01   0.000000D+00
-       4     8.123375D-01  -8.123375D-01   7.359797D-13   1.026139D+00
-       5     0.000000D+00   2.543484D-12   3.748044D-08   1.026139D+00
-       6     0.000000D+00  -1.347148D-12  -1.407010D+00   1.026139D+00
-       7     0.000000D+00  -1.624675D+00  -8.123375D-01   1.026139D+00
-       8    -2.543484D-12   0.000000D+00   3.747790D-08   0.000000D+00
-       9     1.347148D-12   0.000000D+00  -1.407010D+00   1.624675D+00
-      10     1.624675D+00   0.000000D+00   8.123375D-01   1.624675D+00
-      11    -3.748044D-08  -3.747790D-08   0.000000D+00   1.026139D+00
-      12     1.407010D+00   1.407010D+00   0.000000D+00   1.624675D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.624675D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.026139D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.624675D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.624675D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -5546,13 +5359,13 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     349 %
+ REST       00:00:01     341 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.45 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -5588,7 +5401,7 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.68 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -5599,12 +5412,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:57 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -5709,7 +5522,7 @@ Point group: C1
      Final gradient norm:           0.000000000145
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:57 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -5730,7 +5543,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:57 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -5761,7 +5574,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:26 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:57 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -5785,7 +5598,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:57 2001
      Host name              : slater.uio.no                           
 
 
@@ -6343,35 +6156,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1     7.360855D-13   8.370909D-01  -8.370909D-01   0.000000D+00
-       2    -4.275808D-01  -4.275808D-01  -4.275809D-01   3.456189-313
-       3     4.832946D-01   4.832946D-01  -9.665896D-01   0.000000D+00
-       4     8.370909D-01  -8.370909D-01  -7.360855D-13   1.056939D+00
-       5     0.000000D+00  -2.543543D-12  -3.748044D-08   1.056939D+00
-       6     0.000000D+00   1.346913D-12  -1.449884D+00   1.056939D+00
-       7     0.000000D+00  -1.674182D+00  -8.370909D-01   1.056939D+00
-       8     2.543543D-12   0.000000D+00  -3.747790D-08   0.000000D+00
-       9    -1.346913D-12   0.000000D+00  -1.449884D+00   1.674182D+00
-      10     1.674182D+00   0.000000D+00   8.370909D-01   1.674182D+00
-      11     3.748044D-08   3.747790D-08   0.000000D+00   1.056939D+00
-      12     1.449884D+00   1.449884D+00   0.000000D+00   1.674182D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.674182D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.056939D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.674182D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.674182D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -6402,7 +6186,7 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.45 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
@@ -6424,7 +6208,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOINT is   0.02 seconds
+ >>> Time used in TWOINT is   0.03 seconds
 
 
 
@@ -6439,7 +6223,7 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.68 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -6450,12 +6234,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:58 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -6562,7 +6346,7 @@ Point group: C1
      Final gradient norm:           0.000000004170
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:58 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -6579,11 +6363,11 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.00 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:58 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -6614,7 +6398,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:58 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -6638,7 +6422,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:59 2001
      Host name              : slater.uio.no                           
 
 
@@ -7193,35 +6977,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1    -2.100000D-02   8.069247D-01  -8.425107D-01   0.000000D+00
-       2    -4.275841D-01  -4.160524D-01  -4.218216D-01   3.456189-313
-       3     4.658710D-01   4.864166D-01  -9.522972D-01   0.000000D+00
-       4     8.279247D-01  -8.215107D-01   2.100000D-02   1.041789D+00
-       5     0.000000D+00   1.153170D-02   5.762467D-03   1.041432D+00
-       6     0.000000D+00   2.054554D-02  -1.418168D+00   1.041751D+00
-       7     0.000000D+00  -1.649435D+00  -8.069247D-01   1.041789D+00
-       8    -1.153170D-02   0.000000D+00  -5.769234D-03   0.000000D+00
-       9    -2.054554D-02   0.000000D+00  -1.438714D+00   1.649604D+00
-      10     1.649435D+00   0.000000D+00   8.425107D-01   1.631675D+00
-      11    -5.762467D-03   5.769234D-03   0.000000D+00   1.041432D+00
-      12     1.418168D+00   1.438714D+00   0.000000D+00   1.649604D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.667260D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.041751D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.631675D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.667260D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -7248,13 +7003,13 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     333 %
+ REST       00:00:01     336 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -7267,7 +7022,7 @@ Point group: C1
     Starting in Integral Section -
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:         579 ( 86.9% )
@@ -7290,7 +7045,7 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.67 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -7301,12 +7056,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:59 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -7413,7 +7168,7 @@ Point group: C1
      Final gradient norm:           0.000000001248
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:59 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -7434,7 +7189,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:59 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -7465,7 +7220,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:27 2001
+     Date and time (Linux)  : Tue Feb 27 16:45:59 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -7489,7 +7244,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:00 2001
      Host name              : slater.uio.no                           
 
 
@@ -8044,35 +7799,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1     2.100000D-02   8.425037D-01  -8.069178D-01   0.000000D+00
-       2    -4.160547D-01  -4.275864D-01  -4.218171D-01   3.456189-313
-       3     4.864268D-01   4.658812D-01  -9.522990D-01   0.000000D+00
-       4     8.215037D-01  -8.279178D-01  -2.100000D-02   1.041432D+00
-       5     0.000000D+00  -1.153170D-02  -5.762467D-03   1.041788D+00
-       6     0.000000D+00  -2.054554D-02  -1.438726D+00   1.041751D+00
-       7     0.000000D+00  -1.649421D+00  -8.425037D-01   1.041432D+00
-       8     1.153170D-02   0.000000D+00   5.769234D-03   0.000000D+00
-       9     2.054554D-02   0.000000D+00  -1.418180D+00   1.649590D+00
-      10     1.649421D+00   0.000000D+00   8.069178D-01   1.667266D+00
-      11     5.762467D-03  -5.769234D-03   0.000000D+00   1.041788D+00
-      12     1.438726D+00   1.418180D+00   0.000000D+00   1.649590D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.631682D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.041751D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.667266D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.631682D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -8146,8 +7872,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.65 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -8157,12 +7883,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:01 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -8269,7 +7995,7 @@ Point group: C1
      Final gradient norm:           0.000000000714
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:01 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -8290,7 +8016,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:01 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -8321,7 +8047,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:01 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -8345,7 +8071,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:01 2001
      Host name              : slater.uio.no                           
 
 
@@ -8900,35 +8626,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1    -7.114863D-06   8.144354D-01  -8.144475D-01   0.000000D+00
-       2    -4.251502D-01  -4.251463D-01  -4.151615D-01   3.456189-313
-       3     4.912144D-01   4.912214D-01  -9.550220D-01   0.000000D+00
-       4     8.144425D-01  -8.144404D-01   7.114863D-06   1.041807D+00
-       5     0.000000D+00   3.906975D-06   9.988701D-03   1.041807D+00
-       6     0.000000D+00   6.960893D-06  -1.446236D+00   1.041358D+00
-       7     0.000000D+00  -1.628883D+00  -8.144354D-01   1.041807D+00
-       8    -3.906975D-06   0.000000D+00   9.984794D-03   0.000000D+00
-       9    -6.960893D-06   0.000000D+00  -1.446243D+00   1.628883D+00
-      10     1.628883D+00   0.000000D+00   8.144475D-01   1.659821D+00
-      11    -9.988701D-03  -9.984794D-03   0.000000D+00   1.041807D+00
-      12     1.446236D+00   1.446243D+00   0.000000D+00   1.628883D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.659833D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.041358D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.659821D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.659833D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -8955,12 +8652,12 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     335 %
+ REST       00:00:02     336 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
+ >>>> Total CPU  time used in ABACUS:   0.45 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -8974,7 +8671,7 @@ Point group: C1
     Starting in Integral Section -
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:         579 ( 86.9% )
@@ -8997,8 +8694,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.69 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -9008,12 +8705,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:02 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -9119,7 +8816,7 @@ Point group: C1
      Final gradient norm:           0.000000005735
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:02 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -9140,7 +8837,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:02 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -9171,7 +8868,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:28 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:02 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -9195,7 +8892,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:02 2001
      Host name              : slater.uio.no                           
 
 
@@ -9750,35 +9447,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1     7.114863D-06   8.349930D-01  -8.349810D-01   0.000000D+00
-       2    -4.184885D-01  -4.184924D-01  -4.284772D-01   3.456189-313
-       3     4.610834D-01   4.610764D-01  -9.495742D-01   0.000000D+00
-       4     8.349859D-01  -8.349881D-01  -7.114863D-06   1.041601D+00
-       5     0.000000D+00  -3.906975D-06  -9.988701D-03   1.041601D+00
-       6     0.000000D+00  -6.960893D-06  -1.410658D+00   1.041770D+00
-       7     0.000000D+00  -1.669974D+00  -8.349930D-01   1.041601D+00
-       8     3.906975D-06   0.000000D+00  -9.984794D-03   0.000000D+00
-       9     6.960893D-06   0.000000D+00  -1.410651D+00   1.669974D+00
-      10     1.669974D+00   0.000000D+00   8.349810D-01   1.639289D+00
-      11     9.988701D-03   9.984794D-03   0.000000D+00   1.041601D+00
-      12     1.410658D+00   1.410651D+00   0.000000D+00   1.669974D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.639277D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.041770D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.639289D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.639277D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -9809,8 +9477,8 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.45 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
 
@@ -9823,7 +9491,7 @@ Point group: C1
     Starting in Integral Section -
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  Number of two-electron integrals written:         577 ( 86.6% )
@@ -9846,8 +9514,8 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.68 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -9857,12 +9525,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:03 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -9969,7 +9637,7 @@ Point group: C1
      Final gradient norm:           0.000000003488
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:03 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -9990,7 +9658,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:03 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -10021,7 +9689,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:03 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -10045,7 +9713,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:03 2001
      Host name              : slater.uio.no                           
 
 
@@ -10603,35 +10271,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1     2.615141D-12   8.292392D-01  -8.292392D-01   0.000000D+00
-       2    -4.060604D-01  -4.060604D-01  -4.060604D-01   3.456189-313
-       3     4.787614D-01   4.787614D-01  -9.575230D-01   0.000000D+00
-       4     8.292392D-01  -8.292392D-01  -2.615141D-12   1.040065D+00
-       5     0.000000D+00  -1.357180D-12  -1.443170D-09   1.040065D+00
-       6     0.000000D+00  -3.175581D-12  -1.436284D+00   1.040065D+00
-       7     0.000000D+00  -1.658478D+00  -8.292392D-01   1.040065D+00
-       8     1.357180D-12   0.000000D+00  -1.441812D-09   0.000000D+00
-       9     3.175581D-12   0.000000D+00  -1.436284D+00   1.658478D+00
-      10     1.658478D+00   0.000000D+00   8.292392D-01   1.658478D+00
-      11     1.443170D-09   1.441812D-09   0.000000D+00   1.040065D+00
-      12     1.436284D+00   1.436284D+00   0.000000D+00   1.658478D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.658478D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.040065D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.658478D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.658478D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -10658,13 +10297,13 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     337 %
+ REST       00:00:02     343 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -10700,7 +10339,7 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.68 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -10711,12 +10350,12 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:04 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -10821,7 +10460,7 @@ Point group: C1
      Final gradient norm:           0.000000002946
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:04 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -10842,7 +10481,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:04 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -10873,7 +10512,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:29 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:04 2001
      Host name              : slater.uio.no                           
 
  Converged vectors from previous geometry used as starting vectors
@@ -10897,7 +10536,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:30 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:05 2001
      Host name              : slater.uio.no                           
 
 
@@ -11455,35 +11094,6 @@ Point group: C1
 
 
 
-               Column   1     Column   2     Column   3     Column   4
-       1    -2.614929D-12   8.201893D-01  -8.201893D-01   0.000000D+00
-       2    -4.375783D-01  -4.375783D-01  -4.375783D-01   3.456189-313
-       3     4.735364D-01   4.735364D-01  -9.470732D-01   0.000000D+00
-       4     8.201893D-01  -8.201893D-01   2.614929D-12   1.043275D+00
-       5     0.000000D+00   1.357077D-12   1.443170D-09   1.043275D+00
-       6     0.000000D+00   3.175874D-12  -1.420610D+00   1.043275D+00
-       7     0.000000D+00  -1.640379D+00  -8.201893D-01   1.043275D+00
-       8    -1.357077D-12   0.000000D+00   1.441812D-09   0.000000D+00
-       9    -3.175874D-12   0.000000D+00  -1.420610D+00   1.640379D+00
-      10     1.640379D+00   0.000000D+00   8.201893D-01   1.640379D+00
-      11    -1.443170D-09  -1.441812D-09   0.000000D+00   1.043275D+00
-      12     1.420610D+00   1.420610D+00   0.000000D+00   1.640379D+00
-
-               Column   5     Column   6     Column   7     Column   8
-       2     1.640379D+00   2.121996-314   0.000000D+00   0.000000D+00
-       3     1.043275D+00   0.000000D+00   0.000000D+00   0.000000D+00
-       4     1.640379D+00   4.853949-314   0.000000D+00   0.000000D+00
-       5     1.640379D+00   2.121996-314   0.000000D+00   0.000000D+00
-       6     0.000000D+00   2.121996-314   0.000000D+00   0.000000D+00
-       7     1.758592-313   3.456189-313   0.000000D+00   0.000000D+00
-       8             -nan   4.243992-314   0.000000D+00   0.000000D+00
-       9             -nan   6.365987-314   0.000000D+00   0.000000D+00
-      10     2.121996-314   8.487983-314   0.000000D+00   0.000000D+00
-      12     2.121996-314   0.000000D+00   6.099576-315   0.000000D+00
-
-               Column   9     Column  10     Column  11     Column  12
- hessian  0.0000000000000000E+000
-
 
                              Isotopic Masses
                              ---------------
@@ -11735,7 +11345,7 @@ Atom : H
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.45 seconds
+ >>>> Total CPU  time used in ABACUS:   0.44 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
@@ -11772,7 +11382,7 @@ Atom : H
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.72 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -11783,12 +11393,12 @@ Atom : H
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:30 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:05 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     cs2 geom Amos Battaglia mp                                              
-     cs2                                                                     
+     Vibrational averaging of shieldings, magnetizabilities and polarizabilit
+     (test62)                                                                
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -11893,7 +11503,7 @@ Atom : H
      Final gradient norm:           0.000000000531
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:30 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:05 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -11910,11 +11520,11 @@ Atom : H
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.00 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:30 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:05 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -11922,11 +11532,11 @@ Atom : H
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:30 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:05 2001
      Host name              : slater.uio.no                           
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:30 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:05 2001
      Host name              : slater.uio.no                           
 
 
@@ -11943,9 +11553,9 @@ Atom : H
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:   6.57 seconds
- >>>> Total wall time used in DALTON:   7.00 seconds
+ >>>> Total CPU  time used in DALTON:  16.95 seconds
+ >>>> Total wall time used in DALTON:  18.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:11:30 2001
+     Date and time (Linux)  : Tue Feb 27 16:46:05 2001
      Host name              : slater.uio.no                           

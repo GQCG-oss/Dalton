@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# walk_vibave2
 #*# ------------
 #*# Molecule:         HF
 #*# Wave Function:    SCF
 #*# Test Purpose:     Vibrational average of shieldings
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT
@@ -33,13 +35,9 @@ cat > walk_vibave2.dal <<%EOF%
 .VIBAVE
 .DISPLAC
  0.05
-!0.0075
-!.ANHARM
-!.NORMAL
 .ECKART
  H          0.0000000000            0.0000000000            1.7243524476
  F          0.0000000000            0.0000000000            0.0255388031
-!.RUN PROPERTIES
 **WAVE FUNCTIONS
 .HF
 *HF INPUT
@@ -47,6 +45,8 @@ cat > walk_vibave2.dal <<%EOF%
  1.0D-10
 **START
 .SHIELD
+.PRINT
+ 4
 *LINRES
 .THRESH
 1.0D-6
@@ -55,6 +55,8 @@ cat > walk_vibave2.dal <<%EOF%
 1.0D-6
 **PROPERTIES
 .SHIELD
+.PRINT
+ 4
 *LINRES
 .THRESH
 1.0D-6
@@ -72,7 +74,7 @@ cat > walk_vibave2.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/ksh -vx
+echo '#!/bin/ksh
 log=$1
 
 if [ `uname` = IRIX64 ]; then
@@ -162,7 +164,7 @@ CRIT2=`$GREP "6 * 0\.00000000 * 0\.00000000 * \-0\.6552676[0-9] * 0\.00000000" $
 CRIT3=`$GREP "3 * 0\.00000000 * \-0\.6552676[0-9]" $log | wc -l`
 CRIT4=`$GREP "6 * 0\.00000000 * 0\.6552676[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[10]=8
+CTRL[10]=4
 ERROR[10]="PROJECTED HESSIAN NOT CORRECT"
 
 # Energy at effective geometry

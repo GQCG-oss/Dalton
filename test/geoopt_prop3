@@ -3,15 +3,16 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# geoopt_prop3
 #*# ------------
 #*# Molecule:         O3
 #*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     As geoopt_prop
 #*# Test Purpose:     Geometry optimization using .OPTIMIZE module
 #*#                   (2nd order) with a calculation of quadrupole moment,
 #*#                   magnetizability and nuclear shieldings at the
 #*#                   optimized geometry, along with a vibrational analysis.
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

@@ -4,4 +4,5 @@ linux g77
   test cases rsp_lrso, rsp_lrso2, rsp_phosph, rsp_socorr and rsp_sreslrso
   does not work due to a problem with FASTIO
 
-  test case rsp_soppapolarnosymm produces (some) erroneous results
+  test cases rsp_soppapolarnosymm and walk_vibave2 produces (some)
+  erroneous results

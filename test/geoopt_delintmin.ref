@@ -1,0 +1,3016 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Release 1.2, April 2001)
+
+                          Principal authors:
+
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
+     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
+     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
+     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:06:50 2001
+     Host name              : slater.uio.no                           
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+
+
+ Chosen parameters for OPTIMI:
+ -----------------------------
+
+ 1st order method with DFP update will be used.
+ Optimization will be performed in delocalized internal coordinates.
+ Model Hessian will be used as initial Hessian.
+ The model Hessian parameters of Roland Lindh will be used.
+
+
+ Threshold for symmetry-break set to       :      0.10D-02
+ Trust region method will be used to control step (default).
+
+
+ Baker's convergence criteria will be used.
+
+
+
+          >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+          >>>>>>>>>> 1st Order Geometry Optimization >>>>>>>>>>
+          >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Benzaldehyde                                                            
+  Project: Benchmark                                                      
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 1
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: Cs 
+
+   * The point group was generated by:
+
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   Oxy
+   -----+----------
+     E  |  E 
+    Oxy | Oxy   E 
+
+   * Character table
+
+        |  E   Oxy
+   -----+----------
+    A'  |   1    1
+    A"  |   1   -1
+
+   * Direct product table
+
+        | A'   A" 
+   -----+----------
+    A'  | A' 
+    A"  | A"   A' 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     3
+  Total number of atoms:   14
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                  
+  C           1       6      15       5      [6s3p|2s1p]                                  
+  C           1       6      15       5      [6s3p|2s1p]                                  
+  C           1       6      15       5      [6s3p|2s1p]                                  
+  C           1       6      15       5      [6s3p|2s1p]                                  
+  C           1       6      15       5      [6s3p|2s1p]                                  
+  C           1       6      15       5      [6s3p|2s1p]                                  
+  C           1       6      15       5      [6s3p|2s1p]                                  
+  H           1       1       3       1      [3s|1s]                                      
+  H           1       1       3       1      [3s|1s]                                      
+  H           1       1       3       1      [3s|1s]                                      
+  H           1       1       3       1      [3s|1s]                                      
+  H           1       1       3       1      [3s|1s]                                      
+  H           1       1       3       1      [3s|1s]                                      
+  ----------------------------------------------------------------------
+  total:     14      56     138      46
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 42
+
+
+   1   O        x      6.1169594363
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   C        x     -0.4281183799
+   5            y     -2.2595362151
+   6            z      0.0000000000
+
+   7   C        x     -2.9286935224
+   8            y     -1.4347871225
+   9            z      0.0000000000
+
+  10   C        x     -3.4656164013
+  11            y      1.1411808224
+  12            z      0.0000000000
+
+  13   C        x     -1.5061149145
+  14            y      2.8972276388
+  15            z      0.0000000000
+
+  16   C        x      0.9961412279
+  17            y      2.0785184368
+  18            z      0.0000000000
+
+  19   C        x      1.5529020669
+  20            y     -0.5103443405
+  21            z      0.0000000000
+
+  22   C        x      4.3100239391
+  23            y     -1.4696981757
+  24            z      0.0000000000
+
+  25   H        x      4.6927731310
+  26            y     -3.5243404323
+  27            z      0.0000000000
+
+  28   H        x     -0.0483891239
+  29            y     -4.2673340819
+  30            z      0.0000000000
+
+  31   H        x     -4.4516781974
+  32            y     -2.7942683921
+  33            z      0.0000000000
+
+  34   H        x     -5.4051670195
+  35            y      1.7780840801
+  36            z      0.0000000000
+
+  37   H        x     -1.9265366341
+  38            y      4.8949599174
+  39            z      0.0000000000
+
+  40   H        x      2.4915143918
+  41            y      3.4703378645
+  42            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:  28 14
+
+
+  Symmetry 1
+
+   1   O     x    1
+   2   O     y    2
+   3   C     x    4
+   4   C     y    5
+   5   C     x    7
+   6   C     y    8
+   7   C     x   10
+   8   C     y   11
+   9   C     x   13
+  10   C     y   14
+  11   C     x   16
+  12   C     y   17
+  13   C     x   19
+  14   C     y   20
+  15   C     x   22
+  16   C     y   23
+  17   H     x   25
+  18   H     y   26
+  19   H     x   28
+  20   H     y   29
+  21   H     x   31
+  22   H     y   32
+  23   H     x   34
+  24   H     y   35
+  25   H     x   37
+  26   H     y   38
+  27   H     x   40
+  28   H     y   41
+
+
+  Symmetry 2
+
+  29   O     z    3
+  30   C     z    6
+  31   C     z    9
+  32   C     z   12
+  33   C     z   15
+  34   C     z   18
+  35   C     z   21
+  36   C     z   24
+  37   H     z   27
+  38   H     z   30
+  39   H     z   33
+  40   H     z   36
+  41   H     z   39
+  42   H     z   42
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           C           C           C           C           C   
+
+   O       0.000000
+   C       3.664091    0.000000
+   C       4.846595    1.393364    0.000000
+   C       5.106712    2.412913    1.392440    0.000000
+   C       4.315478    2.787829    2.412844    1.392384    0.000000
+   C       2.924537    2.416158    2.787496    2.412600    1.393211    0.000000
+   C       2.430247    1.398482    2.421487    2.795792    2.423212    1.401290
+   C       1.232543    2.541915    3.830609    4.340456    3.848742    2.569190
+   H       2.011520    2.791291    4.181939    4.973320    4.723118    3.552081
+   H       3.967829    1.081316    2.137737    3.385472    3.869002    3.403267
+   H       5.784854    2.147897    1.080309    2.146926    3.391257    3.867804
+   H       6.169421    3.391419    2.146625    1.080287    2.146601    3.391155
+   H       4.982660    3.868140    3.391279    2.146896    1.080311    2.147859
+   H       2.655768    3.403054    3.868387    3.384765    2.137083    1.081038
+
+            C           C           H           H           H           H   
+
+   C       0.000000
+   C       1.544806    0.000000
+   H       2.303165    1.105974    0.000000
+   H       2.161163    2.740634    2.539536    0.000000
+   H       3.399579    4.689176    4.854433    2.457051    0.000000
+   H       3.876079    5.420723    6.035500    4.274303    2.471634    0.000000
+   H       3.401741    4.715428    5.667384    4.949294    4.282759    2.471648
+   H       2.164252    2.785651    3.880391    4.309552    4.948676    4.273620
+
+            H           H   
+
+   H       0.000000
+   H       2.456472    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    C          C                              1.393364
+  bond distance:    C          C                              1.392440
+  bond distance:    C          C                              1.392384
+  bond distance:    C          C                              1.393211
+  bond distance:    C          C                              1.398482
+  bond distance:    C          C                              1.401290
+  bond distance:    C          O                              1.232543
+  bond distance:    C          C                              1.544806
+  bond distance:    H          C                              1.105974
+  bond distance:    H          C                              1.081316
+  bond distance:    H          C                              1.080309
+  bond distance:    H          C                              1.080287
+  bond distance:    H          C                              1.080311
+  bond distance:    H          C                              1.081038
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       C          C          C                    120.303
+  bond angle:       C          C          H                    118.963
+  bond angle:       C          C          H                    120.734
+  bond angle:       C          C          C                    120.028
+  bond angle:       C          C          H                    119.993
+  bond angle:       C          C          H                    119.980
+  bond angle:       C          C          C                    120.092
+  bond angle:       C          C          H                    119.953
+  bond angle:       C          C          H                    119.955
+  bond angle:       C          C          C                    120.017
+  bond angle:       C          C          H                    119.981
+  bond angle:       C          C          H                    120.002
+  bond angle:       C          C          C                    120.255
+  bond angle:       C          C          H                    118.937
+  bond angle:       C          C          H                    120.809
+  bond angle:       C          C          C                    119.307
+  bond angle:       C          C          C                    119.371
+  bond angle:       C          C          C                    121.323
+  bond angle:       O          C          C                    121.691
+  bond angle:       O          C          H                    118.571
+  bond angle:       C          C          H                    119.738
+
+
+  Nuclear repulsion energy :  318.786099174063
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         38   8
+
+
+  Symmetry  A' ( 1)
+
+    1     O        1s         1
+    2     O        1s         2
+    3     O        2px        3
+    4     O        2py        4
+    5     C        1s         6
+    6     C        1s         7
+    7     C        2px        8
+    8     C        2py        9
+    9     C        1s        11
+   10     C        1s        12
+   11     C        2px       13
+   12     C        2py       14
+   13     C        1s        16
+   14     C        1s        17
+   15     C        2px       18
+   16     C        2py       19
+   17     C        1s        21
+   18     C        1s        22
+   19     C        2px       23
+   20     C        2py       24
+   21     C        1s        26
+   22     C        1s        27
+   23     C        2px       28
+   24     C        2py       29
+   25     C        1s        31
+   26     C        1s        32
+   27     C        2px       33
+   28     C        2py       34
+   29     C        1s        36
+   30     C        1s        37
+   31     C        2px       38
+   32     C        2py       39
+   33     H        1s        41
+   34     H        1s        42
+   35     H        1s        43
+   36     H        1s        44
+   37     H        1s        45
+   38     H        1s        46
+
+
+  Symmetry  A" ( 2)
+
+   39     O        2pz        5
+   40     C        2pz       10
+   41     C        2pz       15
+   42     C        2pz       20
+   43     C        2pz       25
+   44     C        2pz       30
+   45     C        2pz       35
+   46     C        2pz       40
+
+  Symmetries of electric field:  A' (1)  A' (1)  A" (2)
+
+  Symmetries of magnetic field:  A" (2)  A" (2)  A' (1)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.07 seconds
+
+
+ >>> Time used in OVERLA is   0.15 seconds
+
+
+ Number of two-electron integrals written:      326665 ( 55.9% )
+ Megabytes written:                              3.744
+
+
+
+ >>> Time used in TWOINT is   9.23 seconds
+
+
+ >>> Time used in FRMSUP is   0.19 seconds
+
+ >>>> Total CPU  time used in HERMIT:   9.66 seconds
+ >>>> Total wall time used in HERMIT:  11.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:01 2001
+     Host name              : slater.uio.no                           
+
+ Title lines from integral program:
+     Benzaldehyde                                                            
+     Project: Benchmark                                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         56
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 46
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Total number of orbitals          38   8
+     Number of basis functions         38   8
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals              24   4
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  56 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1   -338.345072362372   6.95D+00  -3.38D+02   24  4
+   2   -339.083712801042   7.40D-01  -7.39D-01   24  4
+   3   -339.106423355834   3.95D-01  -2.27D-02   24  4
+   4   -339.117559475374   5.08D-02  -1.11D-02   24  4
+   5   -339.117846614277   1.41D-02  -2.87D-04   24  4
+   6   -339.117870757068   6.08D-03  -2.41D-05   24  4
+   7   -339.117875514939   2.37D-03  -4.76D-06   24  4
+   8   -339.117876406020   5.36D-04  -8.91D-07   24  4
+   9   -339.117876464546   1.67D-04  -5.85D-08   24  4
+  10   -339.117876469432   3.97D-05  -4.89D-09   24  4
+  11   -339.117876469832   1.72D-05  -4.00D-10   24  4
+  12   -339.117876469908   8.70D-06  -7.62D-11   24  4
+  13   -339.117876469926   2.57D-06  -1.82D-11   24  4
+  14   -339.117876469927   4.36D-07  -1.02D-12   24  4
+ DIIS converged in  14 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   56
+ Orbital occupations :   24    4
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.28497827   -11.11845696   -11.04702064   -11.04219506   -11.04167087
+       -11.04119208   -11.03857126   -11.03831301    -1.31772088    -1.10288752
+        -0.97551164    -0.96612558    -0.81763366    -0.78025246    -0.73269292
+        -0.66419548    -0.61291092    -0.57703287    -0.55601115    -0.54405135
+        -0.51850835    -0.45727701    -0.44154902    -0.33588330     0.55316118
+         0.60637302     0.63487338     0.67887663     0.71203379
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.48381704    -0.42303851    -0.29036089    -0.28123574     0.21206446
+         0.25969514     0.33867899     0.50638120
+
+    E(LUMO) :     0.21206446 au (symmetry 2)
+  - E(HOMO) :    -0.28123574 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.49330021 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -339.117876469927
+     Nuclear repulsion:           318.786099174063
+     Electronic energy:          -657.903975643990
+
+     Final gradient norm:           0.000000435812
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:01 2001
+     Host name              : slater.uio.no                           
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  O   1s     0.9943   0.0002   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  O   1s     0.0257  -0.0058  -0.0003   0.0001   0.0000   0.0000   0.0000
+   3  O   2px   -0.0042   0.0014   0.0002  -0.0001   0.0000   0.0000   0.0000
+   4  O   2py   -0.0034   0.0012   0.0000   0.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000  -0.0002  -0.0262  -0.9885  -0.0672  -0.0229  -0.0404
+   6  C   1s     0.0000   0.0001   0.0062  -0.0362  -0.0029  -0.0007  -0.0086
+   7  C   2px   -0.0001   0.0000   0.0033   0.0001  -0.0001  -0.0002   0.0042
+   8  C   2py    0.0001   0.0000   0.0031  -0.0011  -0.0001   0.0001  -0.0015
+   9  C   1s     0.0000  -0.0001   0.0029  -0.0400   0.0121  -0.0553   0.9817
+  10  C   1s     0.0000  -0.0001   0.0000   0.0055   0.0007   0.0053   0.0367
+  11  C   2px    0.0000   0.0000   0.0001   0.0043   0.0005  -0.0007   0.0010
+  12  C   2py    0.0000   0.0000   0.0000  -0.0014  -0.0002   0.0043   0.0009
+  13  C   1s     0.0000   0.0000   0.0069   0.0209   0.0505  -0.9879  -0.0474
+  14  C   1s     0.0000   0.0000   0.0003   0.0007   0.0018  -0.0356  -0.0079
+  15  C   2px    0.0000   0.0000   0.0002   0.0001   0.0002  -0.0009  -0.0006
+  16  C   2py    0.0000   0.0000  -0.0001  -0.0002   0.0001   0.0003   0.0047
+  17  C   1s     0.0000  -0.0001   0.0028   0.0136  -0.0405  -0.0519  -0.1280
+  18  C   1s     0.0000  -0.0001   0.0000   0.0000   0.0053   0.0056  -0.0042
+  19  C   2px    0.0000   0.0000   0.0001  -0.0002   0.0044  -0.0031  -0.0003
+  20  C   2py    0.0000   0.0001   0.0000  -0.0001  -0.0013  -0.0031   0.0000
+  21  C   1s     0.0000  -0.0003  -0.0219   0.0679  -0.9875  -0.0478   0.0176
+  22  C   1s     0.0000   0.0002   0.0063   0.0020  -0.0361  -0.0016   0.0014
+  23  C   2px    0.0000   0.0000   0.0009  -0.0001   0.0007  -0.0002  -0.0004
+  24  C   2py    0.0002   0.0000  -0.0044   0.0001   0.0008   0.0000   0.0003
+  25  C   1s     0.0000  -0.0019  -0.9916   0.0239   0.0230  -0.0056   0.0029
+  26  C   1s     0.0003  -0.0053  -0.0355   0.0075   0.0084   0.0004   0.0005
+  27  C   2px    0.0003  -0.0038   0.0012  -0.0033  -0.0013  -0.0003  -0.0001
+  28  C   2py    0.0004   0.0011  -0.0003  -0.0032   0.0041   0.0002  -0.0003
+  29  C   1s     0.0005   0.9926  -0.0030  -0.0002  -0.0002  -0.0001   0.0001
+  30  C   1s    -0.0070   0.0325   0.0055  -0.0003  -0.0003   0.0001  -0.0001
+  31  C   2px   -0.0048   0.0007  -0.0038   0.0001   0.0002  -0.0001   0.0001
+  32  C   2py   -0.0039   0.0004   0.0015  -0.0001   0.0000   0.0000   0.0000
+  33  H   1s     0.0003  -0.0066   0.0000   0.0000   0.0001   0.0000   0.0000
+  34  H   1s     0.0000  -0.0001   0.0001   0.0068   0.0006   0.0003   0.0004
+  35  H   1s     0.0000   0.0000   0.0001   0.0002   0.0000   0.0003  -0.0068
+  36  H   1s     0.0000   0.0000   0.0000  -0.0001  -0.0003   0.0068   0.0004
+  37  H   1s     0.0000   0.0000   0.0001   0.0000   0.0002   0.0003   0.0008
+  38  H   1s    -0.0002  -0.0003   0.0001  -0.0004   0.0068   0.0004  -0.0002
+
+ Orbital          8        9       10       11       12       13       14
+   1  O   1s     0.0000  -0.2174   0.0214  -0.0365  -0.0104   0.0688   0.0128
+   2  O   1s     0.0000   0.7641  -0.0805   0.1445   0.0413  -0.2953  -0.0560
+   3  O   2px    0.0000  -0.1279  -0.0014   0.0209   0.0094  -0.0781  -0.0462
+   4  O   2py    0.0000  -0.1025   0.0086  -0.0056  -0.0087  -0.0638   0.0309
+   5  C   1s    -0.0046  -0.0044  -0.1064   0.0905  -0.1078   0.0531   0.1088
+   6  C   1s     0.0009   0.0104   0.2696  -0.2442   0.2911  -0.1523  -0.3203
+   7  C   2px   -0.0006   0.0043  -0.0096  -0.0961  -0.0914   0.1336  -0.0729
+   8  C   2py    0.0004   0.0032   0.0603  -0.0323   0.0001   0.0099   0.0730
+   9  C   1s    -0.1262  -0.0011  -0.1036  -0.0480  -0.1394   0.0464  -0.0793
+  10  C   1s    -0.0053   0.0028   0.2612   0.1282   0.3752  -0.1316   0.2327
+  11  C   2px    0.0000   0.0013   0.0468  -0.0668   0.0456  -0.0898  -0.1486
+  12  C   2py   -0.0004   0.0000   0.0400   0.0927  -0.0117   0.1154   0.0840
+  13  C   1s     0.0559  -0.0008  -0.1026  -0.1383  -0.0319  -0.1001  -0.0314
+  14  C   1s     0.0101   0.0017   0.2590   0.3708   0.0859   0.2896   0.0921
+  15  C   2px    0.0036   0.0007   0.0579   0.0379  -0.0341  -0.0420  -0.0896
+  16  C   2py    0.0023  -0.0001  -0.0196   0.0152  -0.1226   0.0585  -0.2013
+  17  C   1s    -0.9816  -0.0015  -0.1021  -0.1005   0.1073   0.0005   0.1110
+  18  C   1s    -0.0369   0.0035   0.2574   0.2689  -0.2886   0.0000  -0.3257
+  19  C   2px   -0.0002   0.0014   0.0126  -0.0777  -0.0902  -0.1698   0.0660
+  20  C   2py    0.0014  -0.0009  -0.0598  -0.0403   0.0024  -0.0250  -0.0671
+  21  C   1s     0.0410  -0.0070  -0.1030   0.0310   0.1398   0.0825  -0.0756
+  22  C   1s     0.0087   0.0169   0.2608  -0.0846  -0.3777  -0.2353   0.2229
+  23  C   2px   -0.0043   0.0038  -0.0451  -0.0772   0.0458   0.0342   0.1538
+  24  C   2py    0.0012  -0.0071  -0.0421   0.0930  -0.0104  -0.0574  -0.0901
+  25  C   1s    -0.0036  -0.0207  -0.1075   0.1409   0.0337  -0.0583  -0.0341
+  26  C   1s    -0.0007   0.0502   0.2744  -0.3831  -0.0921   0.1749   0.1021
+  27  C   2px    0.0000   0.0240  -0.0574   0.0154  -0.0346   0.1469   0.0913
+  28  C   2py   -0.0003  -0.0058   0.0153   0.0333  -0.1229  -0.1075   0.2060
+  29  C   1s    -0.0001  -0.1231  -0.0147   0.0497   0.0053  -0.1292  -0.0046
+  30  C   1s     0.0001   0.2866   0.0428  -0.1460  -0.0161   0.4025   0.0155
+  31  C   2px   -0.0001   0.1180  -0.0529   0.1091   0.0253  -0.1319  -0.0452
+  32  C   2py    0.0000   0.0991  -0.0020   0.0098  -0.0113  -0.0925   0.0662
+  33  H   1s     0.0000   0.0334   0.0085  -0.0387   0.0025   0.1735  -0.0363
+  34  H   1s     0.0001   0.0019   0.0487  -0.0689   0.0813  -0.0440  -0.1733
+  35  H   1s     0.0010   0.0003   0.0462   0.0338   0.1033  -0.0541   0.1205
+  36  H   1s    -0.0005   0.0002   0.0457   0.0985   0.0236   0.1366   0.0480
+  37  H   1s     0.0068   0.0004   0.0453   0.0712  -0.0790   0.0050  -0.1695
+  38  H   1s    -0.0004   0.0054   0.0448  -0.0217  -0.1015  -0.0949   0.1128
+
+ Orbital         15       16       17       18       19       20       21
+   1  O   1s     0.0615  -0.0189   0.0185   0.0489   0.0061  -0.0092   0.0729
+   2  O   1s    -0.2777   0.0911  -0.0912  -0.2468  -0.0339   0.0465  -0.3916
+   3  O   2px   -0.0659  -0.0569  -0.2279  -0.2623   0.1272   0.0072  -0.4566
+   4  O   2py   -0.1417   0.1812   0.1364  -0.0785  -0.2143   0.0646  -0.3403
+   5  C   1s     0.0148  -0.0262   0.0419  -0.0275   0.0071   0.0264  -0.0230
+   6  C   1s    -0.0434   0.0921  -0.1399   0.0938  -0.0270  -0.0838   0.0796
+   7  C   2px   -0.1519   0.0611  -0.1321  -0.2621  -0.1212   0.1388   0.1015
+   8  C   2py   -0.1249  -0.2116   0.1169  -0.1875   0.0521  -0.3174   0.0430
+   9  C   1s    -0.0737   0.0134  -0.0528   0.0228   0.0051   0.0194   0.0155
+  10  C   1s     0.2258  -0.0355   0.1744  -0.0814  -0.0125  -0.0610  -0.0548
+  11  C   2px   -0.0514  -0.1276   0.0139   0.2809  -0.0169  -0.2823  -0.0511
+  12  C   2py   -0.1412  -0.1363  -0.1147  -0.0264  -0.3212  -0.1212   0.0482
+  13  C   1s     0.0609  -0.0217   0.0548  -0.0344   0.0233  -0.0026   0.0058
+  14  C   1s    -0.1812   0.0766  -0.1835   0.1143  -0.0753   0.0073  -0.0159
+  15  C   2px    0.0020  -0.2332   0.2032   0.1484  -0.1550   0.0849  -0.2179
+  16  C   2py   -0.0642   0.1131   0.0205   0.1726   0.2765   0.0469  -0.0872
+  17  C   1s    -0.0364   0.0030  -0.0617   0.0178   0.0002  -0.0264   0.0049
+  18  C   1s     0.1129  -0.0024   0.2040  -0.0642   0.0019   0.0842  -0.0166
+  19  C   2px    0.1349  -0.0899  -0.1010  -0.1720  -0.1613   0.1271   0.2107
+  20  C   2py    0.1155   0.1958   0.0984  -0.2193   0.0697  -0.3153   0.0775
+  21  C   1s    -0.0387  -0.0066   0.0671  -0.0187  -0.0097  -0.0170  -0.0046
+  22  C   1s     0.1203   0.0294  -0.2225   0.0643   0.0297   0.0531   0.0113
+  23  C   2px   -0.0195   0.1942  -0.0687   0.1643   0.0460  -0.2748  -0.1904
+  24  C   2py    0.1964   0.0982  -0.1223  -0.0377  -0.3222  -0.1327   0.0201
+  25  C   1s     0.0749  -0.0154  -0.0399   0.0529  -0.0341   0.0013   0.0071
+  26  C   1s    -0.2204   0.0539   0.1372  -0.1765   0.1125  -0.0035  -0.0264
+  27  C   2px    0.1537   0.1419   0.1659   0.1435  -0.1463   0.0740  -0.1521
+  28  C   2py   -0.0158  -0.0296   0.0171   0.1950   0.2767   0.0497  -0.0439
+  29  C   1s    -0.1088   0.0339  -0.0230  -0.0348   0.0119   0.0033  -0.0239
+  30  C   1s     0.3498  -0.1123   0.0818   0.1181  -0.0441  -0.0107   0.0785
+  31  C   2px    0.0227  -0.1491  -0.1759   0.0662   0.1920  -0.0630   0.2676
+  32  C   2py   -0.1689   0.1913   0.2666   0.1395  -0.1390   0.0283   0.2805
+  33  H   1s     0.2355  -0.1789  -0.1763  -0.0341   0.1000  -0.0260  -0.1773
+  34  H   1s     0.0464   0.1876  -0.1791   0.1569  -0.0736   0.2564   0.0136
+  35  H   1s     0.1725   0.1121   0.1317  -0.1970   0.1877   0.2248  -0.0235
+  36  H   1s    -0.0879   0.2105  -0.2283  -0.0159   0.1623  -0.0541   0.1577
+  37  H   1s     0.0971   0.1430   0.1846  -0.1776   0.0869  -0.2496   0.0218
+  38  H   1s     0.1145   0.1582  -0.1957   0.1063  -0.1482  -0.2222  -0.1118
+
+ Orbital         22       23       24
+   1  O   1s    -0.0158   0.0121   0.0018
+   2  O   1s     0.0906  -0.0682  -0.0123
+   3  O   2px   -0.0400  -0.0947  -0.5426
+   4  O   2py    0.3110  -0.1085   0.6413
+   5  C   1s    -0.0106  -0.0084  -0.0090
+   6  C   1s     0.0313   0.0231   0.0343
+   7  C   2px   -0.2531   0.1755   0.1096
+   8  C   2py    0.1616   0.2416   0.0304
+   9  C   1s     0.0039   0.0076   0.0096
+  10  C   1s    -0.0171  -0.0168  -0.0357
+  11  C   2px    0.2484  -0.1252  -0.0951
+  12  C   2py   -0.1998  -0.2492   0.0239
+  13  C   1s     0.0103  -0.0025   0.0023
+  14  C   1s    -0.0263   0.0073  -0.0115
+  15  C   2px   -0.2752   0.1516   0.0193
+  16  C   2py    0.1737   0.2854  -0.0103
+  17  C   1s     0.0006  -0.0057   0.0081
+  18  C   1s    -0.0094   0.0119  -0.0294
+  19  C   2px    0.2632  -0.1595  -0.0813
+  20  C   2py   -0.1210  -0.2535   0.0365
+  21  C   1s    -0.0099   0.0079  -0.0071
+  22  C   1s     0.0321  -0.0191   0.0238
+  23  C   2px   -0.2720   0.1194   0.0592
+  24  C   2py    0.1199   0.2710  -0.0962
+  25  C   1s     0.0204  -0.0013   0.0353
+  26  C   1s    -0.0670   0.0027  -0.1624
+  27  C   2px    0.0958  -0.1406  -0.3120
+  28  C   2py   -0.0992  -0.3013   0.1094
+  29  C   1s    -0.0254   0.0025   0.0065
+  30  C   1s     0.0991  -0.0115  -0.0341
+  31  C   2px   -0.2121   0.0775   0.1390
+  32  C   2py   -0.0127   0.0568  -0.1281
+  33  H   1s     0.0534  -0.0713   0.3335
+  34  H   1s    -0.1974  -0.2142   0.0440
+  35  H   1s    -0.0642   0.2718   0.0535
+  36  H   1s     0.3166  -0.0556  -0.0376
+  37  H   1s    -0.1850  -0.2262   0.0543
+  38  H   1s    -0.0906   0.2744   0.0408
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3        4
+   1  O   2pz    0.2894   0.5535  -0.0240  -0.2905
+   2  C   2pz    0.2963  -0.1423   0.4788   0.2323
+   3  C   2pz    0.2533  -0.2467   0.4375  -0.2805
+   4  C   2pz    0.2367  -0.2854  -0.0412  -0.4979
+   5  C   2pz    0.2499  -0.2454  -0.4799  -0.2037
+   6  C   2pz    0.2890  -0.1410  -0.4394   0.3013
+   7  C   2pz    0.3647  -0.0103   0.0373   0.5122
+   8  C   2pz    0.3277   0.4956  -0.0098  -0.1166
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.53 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:01 2001
+     Host name              : slater.uio.no                           
+
+- End of Wave Function Section
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:01 2001
+     Host name              : slater.uio.no                           
+
+
+        +---------------------------------------------------------+
+        ! Gradient elements calculated directly and from symmetry !
+        +---------------------------------------------------------+
+
+
+
+        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
+        ------------------------------------------------------------
+
+        O    x        0.0166176658     0.0166176857    -0.0000000199
+        O    y        0.0120914126     0.0120914126     0.0000000000
+        C    x        0.0070980777     0.0070980578     0.0000000199
+
+
+
+ >>> WARNING from TRAROT:
+
+ Largest deviation from tra-rot symmetry is in gradient element  3:  1.99E-08
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:21 2001
+     Host name              : slater.uio.no                           
+
+ WARNING: warnings have been issued, please check the output above !
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          6.1169594363            0.0000000000            0.0000000000
+ C         -0.4281183799           -2.2595362151            0.0000000000
+ C         -2.9286935224           -1.4347871225            0.0000000000
+ C         -3.4656164013            1.1411808224            0.0000000000
+ C         -1.5061149145            2.8972276388            0.0000000000
+ C          0.9961412279            2.0785184368            0.0000000000
+ C          1.5529020669           -0.5103443405            0.0000000000
+ C          4.3100239391           -1.4696981757            0.0000000000
+ H          4.6927731310           -3.5243404323            0.0000000000
+ H         -0.0483891239           -4.2673340819            0.0000000000
+ H         -4.4516781974           -2.7942683921            0.0000000000
+ H         -5.4051670195            1.7780840801            0.0000000000
+ H         -1.9265366341            4.8949599174            0.0000000000
+ H          2.4915143918            3.4703378645            0.0000000000
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy       -339.1178764699 au (Hartrees)
+                         -9227.86655442 eV
+                           -890353.8580 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.4014800225 au
+     Mass-velocity correction:                  -0.5102516258 au
+
+     Total relativistic correction:             -0.1087716033 au (0.0321%)
+     Non-relativistic + relativistic energy:  -339.2266480733 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+                         O    x     0.0166176658
+                         O    y     0.0120914126
+                         C    x     0.0070980777
+                         C    y    -0.0107260097
+                         C    x    -0.0088990133
+                         C    y    -0.0062744859
+                         C    x    -0.0077393363
+                         C    y     0.0034852928
+                         C    x    -0.0045686479
+                         C    y     0.0116288539
+                         C    x     0.0082323892
+                         C    y     0.0055831145
+                         C    x    -0.0083711416
+                         C    y     0.0143936198
+                         C    x    -0.0116867400
+                         C    y    -0.0311743920
+                         H    x     0.0134007770
+                         H    y    -0.0005071367
+                         H    x    -0.0032386072
+                         H    y     0.0011563745
+                         H    x     0.0014315570
+                         H    y     0.0015614770
+                         H    x     0.0024594695
+                         H    y    -0.0007489654
+                         H    x    -0.0000302088
+                         H    y    -0.0021104120
+                         H    x    -0.0047062410
+                         H    y     0.0016412566
+
+
+
+ O          0.0166176658            0.0120914126            0.0000000000
+ C          0.0070980777           -0.0107260097            0.0000000000
+ C         -0.0088990133           -0.0062744859            0.0000000000
+ C         -0.0077393363            0.0034852928            0.0000000000
+ C         -0.0045686479            0.0116288539            0.0000000000
+ C          0.0082323892            0.0055831145            0.0000000000
+ C         -0.0083711416            0.0143936198            0.0000000000
+ C         -0.0116867400           -0.0311743920            0.0000000000
+ H          0.0134007770           -0.0005071367            0.0000000000
+ H         -0.0032386072            0.0011563745            0.0000000000
+ H          0.0014315570            0.0015614770            0.0000000000
+ H          0.0024594695           -0.0007489654            0.0000000000
+ H         -0.0000302088           -0.0021104120            0.0000000000
+ H         -0.0047062410            0.0016412566            0.0000000000
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.739179 au           1.878823 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    x     -0.67941449     -1.72691537
+                    y     -0.29117238     -0.74009322
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           C           C           C           C           C   
+
+   O       0.000000
+   C       3.664091    0.000000
+   C       4.846595    1.393364    0.000000
+   C       5.106712    2.412913    1.392440    0.000000
+   C       4.315478    2.787829    2.412844    1.392384    0.000000
+   C       2.924537    2.416158    2.787496    2.412600    1.393211    0.000000
+   C       2.430247    1.398482    2.421487    2.795792    2.423212    1.401290
+   C       1.232543    2.541915    3.830609    4.340456    3.848742    2.569190
+   H       2.011520    2.791291    4.181939    4.973320    4.723118    3.552081
+   H       3.967829    1.081316    2.137737    3.385472    3.869002    3.403267
+   H       5.784854    2.147897    1.080309    2.146926    3.391257    3.867804
+   H       6.169421    3.391419    2.146625    1.080287    2.146601    3.391155
+   H       4.982660    3.868140    3.391279    2.146896    1.080311    2.147859
+   H       2.655768    3.403054    3.868387    3.384765    2.137083    1.081038
+
+            C           C           H           H           H           H   
+
+   C       0.000000
+   C       1.544806    0.000000
+   H       2.303165    1.105974    0.000000
+   H       2.161163    2.740634    2.539536    0.000000
+   H       3.399579    4.689176    4.854433    2.457051    0.000000
+   H       3.876079    5.420723    6.035500    4.274303    2.471634    0.000000
+   H       3.401741    4.715428    5.667384    4.949294    4.282759    2.471648
+   H       2.164252    2.785651    3.880391    4.309552    4.948676    4.273620
+
+            H           H   
+
+   H       0.000000
+   H       2.456472    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    C          C                              1.393364
+  bond distance:    C          C                              1.392440
+  bond distance:    C          C                              1.392384
+  bond distance:    C          C                              1.393211
+  bond distance:    C          C                              1.398482
+  bond distance:    C          C                              1.401290
+  bond distance:    C          O                              1.232543
+  bond distance:    C          C                              1.544806
+  bond distance:    H          C                              1.105974
+  bond distance:    H          C                              1.081316
+  bond distance:    H          C                              1.080309
+  bond distance:    H          C                              1.080287
+  bond distance:    H          C                              1.080311
+  bond distance:    H          C                              1.081038
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       C          C          C                    120.303
+  bond angle:       C          C          H                    118.963
+  bond angle:       C          C          H                    120.734
+  bond angle:       C          C          C                    120.028
+  bond angle:       C          C          H                    119.993
+  bond angle:       C          C          H                    119.980
+  bond angle:       C          C          C                    120.092
+  bond angle:       C          C          H                    119.953
+  bond angle:       C          C          H                    119.955
+  bond angle:       C          C          C                    120.017
+  bond angle:       C          C          H                    119.981
+  bond angle:       C          C          H                    120.002
+  bond angle:       C          C          C                    120.255
+  bond angle:       C          C          H                    118.937
+  bond angle:       C          C          H                    120.809
+  bond angle:       C          C          C                    119.307
+  bond angle:       C          C          C                    119.371
+  bond angle:       C          C          C                    121.323
+  bond angle:       O          C          C                    121.691
+  bond angle:       O          C          H                    118.571
+  bond angle:       C          C          H                    119.738
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:18      97 %
+
+ TOTAL      00:00:19     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:  18.95 seconds
+ >>>> Total wall time used in ABACUS:  20.00 seconds
+
+- End of Static Property Section
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ O          6.0914472060            0.0356086733            0.0000000000
+ C         -0.4241477868           -2.2616735624            0.0000000000
+ C         -2.9118842209           -1.4403553835            0.0000000000
+ C         -3.4414285627            1.1272792870            0.0000000000
+ C         -1.4810785537            2.8710088121            0.0000000000
+ C          1.0063621303            2.0519820985            0.0000000000
+ C          1.5469540080           -0.5204672126            0.0000000000
+ C          4.2767133117           -1.3922496050            0.0000000000
+ H          4.5355026944           -3.4605798751            0.0000000000
+ H         -0.0184088416           -4.2680736315            0.0000000000
+ H         -4.4385572335           -2.8021970446            0.0000000000
+ H         -5.3842067423            1.7710433360            0.0000000000
+ H         -1.8929757377            4.8748543580            0.0000000000
+ H          2.5357083288            3.4138197498            0.0000000000
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       0
+ End of optimization            :       F 
+ Energy at this geometry is     :    -339.117876
+ Norm of gradient               :       0.051489
+ Norm of step                   :       0.285103
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.07 seconds
+
+
+ Number of two-electron integrals written:      326966 ( 55.9% )
+ Megabytes written:                              3.744
+
+
+
+ >>> Time used in TWOINT is   7.39 seconds
+
+
+ >>> Time used in FRMSUP is   0.19 seconds
+
+ >>>> Total CPU  time used in HERMIT:   7.66 seconds
+ >>>> Total wall time used in HERMIT:   8.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:29 2001
+     Host name              : slater.uio.no                           
+
+ Title lines from integral program:
+     Benzaldehyde                                                            
+     Project: Benchmark                                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         56
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 46
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Occupied HF orbitals              24   4
+     Secondary orbitals                14   4
+     Total number of orbitals          38   8
+     Number of basis functions         38   8
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations         352
+     ---------------------------------------
+     Total number of variables           353
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)
+ ----------------------------------------------------
+    1     -339.120298364653    6.49692D-02   -3.39D+02
+    2     -339.120706218016    1.71811D-02   -4.08D-04
+    3     -339.120744758453    5.63336D-03   -3.85D-05
+    4     -339.120747735957    1.78794D-03   -2.98D-06
+    5     -339.120748263816    7.38300D-04   -5.28D-07
+    6     -339.120748340421    2.60257D-04   -7.66D-08
+    7     -339.120748360097    9.88319D-05   -1.97D-08
+    8     -339.120748362237    3.27646D-05   -2.14D-09
+    9     -339.120748362445    1.00575D-05   -2.08D-10
+   10     -339.120748362470    3.38144D-06   -2.55D-11
+   11     -339.120748362474    1.39908D-06   -3.30D-12
+   12     -339.120748362475    4.13230D-07   -1.25D-12
+ DIIS converged in  12 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   56
+ Orbital occupations :   24    4
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.28924364   -11.12127951   -11.04457570   -11.04368015   -11.04258193
+       -11.04121435   -11.03975788   -11.03854337    -1.32573767    -1.10849522
+        -0.98095596    -0.96932184    -0.82360406    -0.78343207    -0.73283066
+        -0.66560213    -0.61349265    -0.57988294    -0.55662674    -0.54532845
+        -0.52438043    -0.45943871    -0.44184424    -0.33653676     0.56690459
+         0.61552525     0.63127854     0.68496315     0.71390244
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.49059861    -0.42887398    -0.29306744    -0.28366649     0.21057593
+         0.26140878     0.34420940     0.51254661
+
+    E(LUMO) :     0.21057593 au (symmetry 2)
+  - E(HOMO) :    -0.28366649 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.49424242 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -339.120748362475
+     Nuclear repulsion:           320.816825906321
+     Electronic energy:          -659.937574268796
+
+     Final gradient norm:           0.000000413230
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:29 2001
+     Host name              : slater.uio.no                           
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  O   1s     0.9943   0.0002   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  O   1s     0.0259  -0.0058  -0.0002   0.0001   0.0000  -0.0001   0.0000
+   3  O   2px   -0.0044   0.0014   0.0002  -0.0001   0.0000   0.0000   0.0000
+   4  O   2py   -0.0034   0.0010   0.0000   0.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000  -0.0002  -0.1566  -0.9786  -0.0160  -0.0174  -0.0410
+   6  C   1s     0.0001   0.0001   0.0014  -0.0369  -0.0003  -0.0014  -0.0088
+   7  C   2px    0.0000   0.0000   0.0033  -0.0004  -0.0001  -0.0001   0.0043
+   8  C   2py    0.0001   0.0000   0.0029  -0.0016   0.0002  -0.0002  -0.0016
+   9  C   1s     0.0000   0.0000   0.0013  -0.0417  -0.0567   0.0244   0.9890
+  10  C   1s     0.0000   0.0000   0.0008   0.0056   0.0053   0.0012   0.0372
+  11  C   2px    0.0000   0.0000   0.0007   0.0042  -0.0008   0.0003   0.0011
+  12  C   2py    0.0000   0.0000  -0.0002  -0.0014   0.0044   0.0002   0.0010
+  13  C   1s     0.0000   0.0000   0.0227   0.0148  -0.9894  -0.0156  -0.0539
+  14  C   1s     0.0000   0.0000   0.0008   0.0005  -0.0358  -0.0006  -0.0091
+  15  C   2px    0.0000   0.0000   0.0002   0.0001  -0.0010   0.0002  -0.0010
+  16  C   2py    0.0000   0.0000  -0.0001  -0.0001   0.0003   0.0002   0.0045
+  17  C   1s     0.0000  -0.0001   0.0050   0.0084  -0.0371  -0.0628  -0.0260
+  18  C   1s     0.0000  -0.0001   0.0001   0.0002   0.0057   0.0051  -0.0005
+  19  C   2px    0.0000  -0.0001   0.0002   0.0000  -0.0034   0.0042  -0.0004
+  20  C   2py    0.0000   0.0001  -0.0001  -0.0001  -0.0030  -0.0015  -0.0001
+  21  C   1s     0.0000  -0.0003  -0.0412   0.0223   0.0158  -0.9887   0.0280
+  22  C   1s     0.0000   0.0003   0.0056  -0.0006   0.0008  -0.0363   0.0011
+  23  C   2px    0.0000  -0.0001   0.0009  -0.0002  -0.0001   0.0007   0.0000
+  24  C   2py    0.0002   0.0000  -0.0044   0.0007  -0.0001   0.0011   0.0002
+  25  C   1s     0.0000  -0.0014  -0.9787   0.1552  -0.0214   0.0430   0.0054
+  26  C   1s     0.0003  -0.0056  -0.0345   0.0127  -0.0007   0.0089   0.0006
+  27  C   2px    0.0003  -0.0039   0.0006  -0.0035  -0.0002  -0.0011  -0.0001
+  28  C   2py    0.0004   0.0010  -0.0007  -0.0029  -0.0001   0.0043  -0.0003
+  29  C   1s     0.0005   0.9926  -0.0024   0.0002  -0.0001  -0.0003   0.0001
+  30  C   1s    -0.0072   0.0328   0.0057  -0.0011   0.0002  -0.0004  -0.0001
+  31  C   2px   -0.0049   0.0004  -0.0039   0.0006  -0.0001   0.0003   0.0001
+  32  C   2py   -0.0039   0.0003   0.0014  -0.0003   0.0000   0.0001   0.0000
+  33  H   1s     0.0002  -0.0066   0.0000   0.0001   0.0000   0.0001   0.0000
+  34  H   1s     0.0000  -0.0001   0.0010   0.0067   0.0002   0.0002   0.0004
+  35  H   1s     0.0000   0.0000   0.0001   0.0002   0.0003  -0.0001  -0.0068
+  36  H   1s     0.0000   0.0000  -0.0001   0.0000   0.0068   0.0002   0.0005
+  37  H   1s     0.0000   0.0000   0.0001   0.0000   0.0002   0.0003   0.0001
+  38  H   1s    -0.0002  -0.0003   0.0002   0.0000   0.0000   0.0068  -0.0002
+
+ Orbital          8        9       10       11       12       13       14
+   1  O   1s     0.0000  -0.2171   0.0226  -0.0389  -0.0073   0.0672   0.0117
+   2  O   1s     0.0000   0.7603  -0.0846   0.1528   0.0291  -0.2864  -0.0514
+   3  O   2px    0.0000  -0.1329  -0.0011   0.0217   0.0076  -0.0760  -0.0466
+   4  O   2py    0.0000  -0.1022   0.0091  -0.0069  -0.0088  -0.0595   0.0365
+   5  C   1s    -0.0064  -0.0044  -0.1069   0.0751  -0.1181   0.0591   0.1068
+   6  C   1s     0.0001   0.0105   0.2694  -0.2020   0.3176  -0.1684  -0.3132
+   7  C   2px   -0.0001   0.0042  -0.0085  -0.1063  -0.0811   0.1242  -0.0835
+   8  C   2py    0.0003   0.0034   0.0617  -0.0309   0.0050   0.0054   0.0680
+   9  C   1s    -0.0258  -0.0011  -0.1027  -0.0639  -0.1339   0.0403  -0.0822
+  10  C   1s    -0.0015   0.0028   0.2578   0.1698   0.3590  -0.1132   0.2403
+  11  C   2px    0.0001   0.0013   0.0479  -0.0580   0.0550  -0.0980  -0.1446
+  12  C   2py   -0.0002   0.0000   0.0399   0.0908  -0.0214   0.1168   0.0792
+  13  C   1s     0.0390  -0.0008  -0.1011  -0.1403  -0.0168  -0.1031  -0.0284
+  14  C   1s     0.0089   0.0018   0.2541   0.3750   0.0450   0.2972   0.0832
+  15  C   2px    0.0035   0.0007   0.0581   0.0371  -0.0377  -0.0424  -0.0885
+  16  C   2py    0.0028  -0.0001  -0.0201   0.0013  -0.1238   0.0510  -0.2031
+  17  C   1s    -0.9891  -0.0015  -0.1010  -0.0904   0.1170   0.0015   0.1104
+  18  C   1s    -0.0373   0.0037   0.2532   0.2408  -0.3136  -0.0024  -0.3226
+  19  C   2px   -0.0004   0.0015   0.0135  -0.0835  -0.0818  -0.1698   0.0676
+  20  C   2py    0.0015  -0.0009  -0.0601  -0.0412   0.0081  -0.0238  -0.0624
+  21  C   1s     0.0606  -0.0074  -0.1037   0.0425   0.1358   0.0824  -0.0762
+  22  C   1s     0.0096   0.0176   0.2609  -0.1147  -0.3648  -0.2338   0.2233
+  23  C   2px   -0.0044   0.0039  -0.0447  -0.0743   0.0538   0.0381   0.1556
+  24  C   2py    0.0012  -0.0074  -0.0446   0.0924  -0.0181  -0.0507  -0.0897
+  25  C   1s    -0.0058  -0.0214  -0.1101   0.1437   0.0191  -0.0541  -0.0306
+  26  C   1s    -0.0009   0.0518   0.2782  -0.3864  -0.0515   0.1596   0.0904
+  27  C   2px    0.0000   0.0254  -0.0557   0.0028  -0.0384   0.1617   0.0931
+  28  C   2py   -0.0004  -0.0055   0.0160   0.0210  -0.1284  -0.1027   0.2127
+  29  C   1s    -0.0001  -0.1245  -0.0163   0.0535   0.0007  -0.1290  -0.0016
+  30  C   1s     0.0001   0.2853   0.0467  -0.1557  -0.0021   0.3984   0.0051
+  31  C   2px   -0.0001   0.1196  -0.0577   0.1194   0.0159  -0.1413  -0.0453
+  32  C   2py    0.0000   0.0992  -0.0031   0.0118  -0.0134  -0.0940   0.0751
+  33  H   1s     0.0000   0.0330   0.0098  -0.0424   0.0069   0.1724  -0.0451
+  34  H   1s     0.0001   0.0018   0.0480  -0.0574   0.0878  -0.0474  -0.1686
+  35  H   1s     0.0003   0.0003   0.0449   0.0439   0.0977  -0.0442   0.1229
+  36  H   1s    -0.0004   0.0002   0.0440   0.0976   0.0123   0.1371   0.0431
+  37  H   1s     0.0068   0.0004   0.0438   0.0622  -0.0846   0.0043  -0.1648
+  38  H   1s    -0.0005   0.0057   0.0442  -0.0302  -0.0969  -0.0893   0.1152
+
+ Orbital         15       16       17       18       19       20       21
+   1  O   1s     0.0582  -0.0209   0.0210   0.0502   0.0086  -0.0095   0.0749
+   2  O   1s    -0.2622   0.1005  -0.1039  -0.2543  -0.0476   0.0484  -0.4023
+   3  O   2px   -0.0658  -0.0521  -0.2401  -0.2430   0.1169   0.0005  -0.4744
+   4  O   2py   -0.1331   0.1921   0.1390  -0.1081  -0.2375   0.0767  -0.3214
+   5  C   1s     0.0139  -0.0297   0.0365  -0.0325   0.0081   0.0257  -0.0219
+   6  C   1s    -0.0402   0.1039  -0.1221   0.1108  -0.0306  -0.0803   0.0756
+   7  C   2px   -0.1570   0.0601  -0.1594  -0.2520  -0.1053   0.1314   0.1248
+   8  C   2py   -0.1316  -0.2101   0.1061  -0.1852   0.0528  -0.3248   0.0361
+   9  C   1s    -0.0751   0.0153  -0.0489   0.0274   0.0055   0.0187   0.0148
+  10  C   1s     0.2302  -0.0407   0.1609  -0.0972  -0.0131  -0.0578  -0.0517
+  11  C   2px   -0.0518  -0.1177   0.0490   0.2856  -0.0366  -0.2721  -0.0706
+  12  C   2py   -0.1481  -0.1363  -0.1179  -0.0203  -0.3230  -0.1149   0.0631
+  13  C   1s     0.0622  -0.0230   0.0514  -0.0376   0.0239  -0.0039   0.0049
+  14  C   1s    -0.1846   0.0810  -0.1728   0.1254  -0.0764   0.0116  -0.0131
+  15  C   2px    0.0000  -0.2276   0.2161   0.1254  -0.1656   0.0976  -0.2006
+  16  C   2py   -0.0624   0.1218   0.0416   0.1744   0.2711   0.0443  -0.1017
+  17  C   1s    -0.0390   0.0022  -0.0600   0.0230  -0.0001  -0.0260   0.0037
+  18  C   1s     0.1213   0.0010   0.1980  -0.0814   0.0029   0.0814  -0.0127
+  19  C   2px    0.1381  -0.0983  -0.1218  -0.1674  -0.1444   0.1203   0.2064
+  20  C   2py    0.1213   0.1918   0.0811  -0.2172   0.0673  -0.3230   0.0778
+  21  C   1s    -0.0387  -0.0051   0.0677  -0.0233  -0.0105  -0.0161  -0.0024
+  22  C   1s     0.1205   0.0249  -0.2251   0.0799   0.0314   0.0487   0.0040
+  23  C   2px   -0.0198   0.1970  -0.0549   0.1733   0.0246  -0.2695  -0.1843
+  24  C   2py    0.2030   0.0899  -0.1272  -0.0317  -0.3201  -0.1276   0.0313
+  25  C   1s     0.0762  -0.0156  -0.0349   0.0565  -0.0350   0.0030   0.0050
+  26  C   1s    -0.2239   0.0535   0.1193  -0.1885   0.1161  -0.0097  -0.0170
+  27  C   2px    0.1618   0.1353   0.1737   0.1156  -0.1552   0.0854  -0.1464
+  28  C   2py   -0.0173  -0.0249   0.0359   0.1956   0.2656   0.0515  -0.0595
+  29  C   1s    -0.1040   0.0381  -0.0248  -0.0343   0.0097   0.0031  -0.0264
+  30  C   1s     0.3329  -0.1273   0.0861   0.1150  -0.0354  -0.0106   0.0864
+  31  C   2px    0.0131  -0.1453  -0.1690   0.0974   0.1981  -0.0709   0.2607
+  32  C   2py   -0.1618   0.1996   0.2762   0.1075  -0.1365   0.0387   0.2839
+  33  H   1s     0.2231  -0.1834  -0.1758  -0.0108   0.0916  -0.0298  -0.1793
+  34  H   1s     0.0502   0.1899  -0.1677   0.1629  -0.0742   0.2620   0.0219
+  35  H   1s     0.1768   0.1039   0.1069  -0.2096   0.2003   0.2149  -0.0176
+  36  H   1s    -0.0879   0.2096  -0.2267   0.0086   0.1688  -0.0628   0.1375
+  37  H   1s     0.1034   0.1419   0.1714  -0.1841   0.0818  -0.2547   0.0252
+  38  H   1s     0.1150   0.1548  -0.1890   0.1228  -0.1576  -0.2163  -0.1058
+
+ Orbital         22       23       24
+   1  O   1s    -0.0149   0.0108   0.0018
+   2  O   1s     0.0862  -0.0607  -0.0117
+   3  O   2px   -0.0426  -0.1082  -0.5224
+   4  O   2py    0.3028  -0.0642   0.6485
+   5  C   1s    -0.0113  -0.0083  -0.0070
+   6  C   1s     0.0339   0.0212   0.0261
+   7  C   2px   -0.2617   0.1601   0.0990
+   8  C   2py    0.1433   0.2519   0.0261
+   9  C   1s     0.0047   0.0075   0.0088
+  10  C   1s    -0.0213  -0.0158  -0.0327
+  11  C   2px    0.2558  -0.1122  -0.0898
+  12  C   2py   -0.1778  -0.2600   0.0248
+  13  C   1s     0.0096  -0.0018   0.0028
+  14  C   1s    -0.0225   0.0055  -0.0136
+  15  C   2px   -0.2930   0.1365   0.0160
+  16  C   2py    0.1515   0.2927  -0.0129
+  17  C   1s     0.0017  -0.0059   0.0085
+  18  C   1s    -0.0137   0.0119  -0.0305
+  19  C   2px    0.2808  -0.1406  -0.0810
+  20  C   2py   -0.1045  -0.2619   0.0413
+  21  C   1s    -0.0105   0.0070  -0.0079
+  22  C   1s     0.0326  -0.0140   0.0272
+  23  C   2px   -0.2856   0.1039   0.0575
+  24  C   2py    0.1053   0.2794  -0.1092
+  25  C   1s     0.0210   0.0000   0.0360
+  26  C   1s    -0.0699  -0.0008  -0.1663
+  27  C   2px    0.1006  -0.1325  -0.3136
+  28  C   2py   -0.0789  -0.3100   0.1186
+  29  C   1s    -0.0253   0.0005   0.0058
+  30  C   1s     0.0983  -0.0035  -0.0286
+  31  C   2px   -0.2063   0.0590   0.1347
+  32  C   2py   -0.0039   0.0515  -0.1365
+  33  H   1s     0.0516  -0.0607   0.3515
+  34  H   1s    -0.1795  -0.2277   0.0461
+  35  H   1s    -0.0875   0.2691   0.0493
+  36  H   1s     0.3274  -0.0374  -0.0359
+  37  H   1s    -0.1722  -0.2393   0.0598
+  38  H   1s    -0.1121   0.2704   0.0377
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3        4
+   1  O   2pz    0.3073   0.5427  -0.0114  -0.2979
+   2  C   2pz    0.2891  -0.1562   0.4712   0.2448
+   3  C   2pz    0.2424  -0.2577   0.4450  -0.2674
+   4  C   2pz    0.2240  -0.2933  -0.0278  -0.4988
+   5  C   2pz    0.2388  -0.2529  -0.4740  -0.2192
+   6  C   2pz    0.2827  -0.1501  -0.4476   0.2847
+   7  C   2pz    0.3648  -0.0241   0.0205   0.5122
+   8  C   2pz    0.3456   0.4800  -0.0042  -0.1136
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.38 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:29 2001
+     Host name              : slater.uio.no                           
+
+- End of Wave Function Section
+ Trust radius increased due to good ratio.
+ Updated trust radius   0.50000
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:29 2001
+     Host name              : slater.uio.no                           
+
+
+        +---------------------------------------------------------+
+        ! Gradient elements calculated directly and from symmetry !
+        +---------------------------------------------------------+
+
+
+
+        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
+        ------------------------------------------------------------
+
+        O    x        0.0029875989     0.0029875855     0.0000000134
+        O    y        0.0005975701     0.0005975701     0.0000000000
+        C    x        0.0011236924     0.0011237058    -0.0000000134
+
+
+
+ >>> WARNING from TRAROT:
+
+ Largest deviation from tra-rot symmetry is in gradient element  3:  1.34E-08
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:49 2001
+     Host name              : slater.uio.no                           
+
+ WARNING: warnings have been issued, please check the output above !
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:19      97 %
+ REST       00:00:01       6 %
+
+ TOTAL      00:00:19     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:  19.29 seconds
+ >>>> Total wall time used in ABACUS:  20.00 seconds
+
+- End of Static Property Section
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ O          6.0895995388            0.0155707010            0.0000000000
+ C         -0.4126811591           -2.2547409547            0.0000000000
+ C         -2.9004205753           -1.4399090403            0.0000000000
+ C         -3.4386443259            1.1263741857            0.0000000000
+ C         -1.4863026764            2.8774898833            0.0000000000
+ C          1.0006692788            2.0618495135            0.0000000000
+ C          1.5521083944           -0.5098876956            0.0000000000
+ C          4.2680975420           -1.3984143853            0.0000000000
+ H          4.4940259339           -3.4716715491            0.0000000000
+ H          0.0087642901           -4.2582801944            0.0000000000
+ H         -4.4228327509           -2.8064042810            0.0000000000
+ H         -5.3836877543            1.7633531842            0.0000000000
+ H         -1.9060939562            4.8799242146            0.0000000000
+ H          2.5373982201            3.4147464179            0.0000000000
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       1
+ End of optimization            :       F 
+ Energy at this geometry is     :    -339.120748
+ Energy change from last geom.  :      -0.002872
+ Norm of gradient               :       0.008152
+ Norm of step                   :       0.068854
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.07 seconds
+
+
+ Number of two-electron integrals written:      327001 ( 55.9% )
+ Megabytes written:                              3.751
+
+
+
+ >>> Time used in TWOINT is   7.15 seconds
+
+
+ >>> Time used in FRMSUP is   0.20 seconds
+
+ >>>> Total CPU  time used in HERMIT:   7.43 seconds
+ >>>> Total wall time used in HERMIT:   8.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:57 2001
+     Host name              : slater.uio.no                           
+
+ Title lines from integral program:
+     Benzaldehyde                                                            
+     Project: Benchmark                                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         56
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 46
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Occupied HF orbitals              24   4
+     Secondary orbitals                14   4
+     Total number of orbitals          38   8
+     Number of basis functions         38   8
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations         352
+     ---------------------------------------
+     Total number of variables           353
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)
+ ----------------------------------------------------
+    1     -339.120780980242    2.23513D-02   -3.39D+02
+    2     -339.120833039498    5.97281D-03   -5.21D-05
+    3     -339.120837384181    7.36833D-04   -4.34D-06
+    4     -339.120837437368    3.57082D-04   -5.32D-08
+    5     -339.120837451617    1.02732D-04   -1.42D-08
+    6     -339.120837454300    3.89075D-05   -2.68D-09
+    7     -339.120837454772    1.65836D-05   -4.72D-10
+    8     -339.120837454859    4.24901D-06   -8.73D-11
+    9     -339.120837454864    1.48300D-06   -4.55D-12
+   10     -339.120837454865    3.59974D-07   -6.82D-13
+ DIIS converged in  10 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   56
+ Orbital occupations :   24    4
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.28975129   -11.12174030   -11.04395030   -11.04342839   -11.04274736
+       -11.04134421   -11.03965912   -11.03885060    -1.32696238    -1.10888080
+        -0.98171525    -0.96939233    -0.82444976    -0.78364623    -0.73259076
+        -0.66553545    -0.61412595    -0.57989986    -0.55681286    -0.54567944
+        -0.52490720    -0.46004550    -0.44132707    -0.33672231     0.56844586
+         0.61497712     0.63235443     0.68527447     0.71628788
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.49132203    -0.42964044    -0.29340667    -0.28355607     0.21033050
+         0.26170556     0.34493352     0.51313218
+
+    E(LUMO) :     0.21033050 au (symmetry 2)
+  - E(HOMO) :    -0.28355607 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.49388657 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -339.120837454865
+     Nuclear repulsion:           321.027710546829
+     Electronic energy:          -660.148548001693
+
+     Final gradient norm:           0.000000359974
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:57 2001
+     Host name              : slater.uio.no                           
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  O   1s     0.9943   0.0001   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  O   1s     0.0260  -0.0058  -0.0002   0.0002   0.0000  -0.0001   0.0000
+   3  O   2px   -0.0044   0.0013   0.0002  -0.0001   0.0000   0.0000   0.0000
+   4  O   2py   -0.0034   0.0010   0.0000   0.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000  -0.0002  -0.2836  -0.9492  -0.0228  -0.0212  -0.0433
+   6  C   1s     0.0001   0.0001  -0.0035  -0.0368  -0.0005  -0.0016  -0.0089
+   7  C   2px    0.0000   0.0000   0.0032  -0.0009   0.0000  -0.0002   0.0043
+   8  C   2py    0.0001   0.0000   0.0026  -0.0020   0.0002  -0.0002  -0.0016
+   9  C   1s     0.0000   0.0000  -0.0030  -0.0439  -0.0518   0.0209   0.9889
+  10  C   1s     0.0000   0.0000   0.0014   0.0053   0.0055   0.0011   0.0372
+  11  C   2px    0.0000   0.0000   0.0012   0.0041  -0.0008   0.0003   0.0011
+  12  C   2py    0.0000   0.0000  -0.0005  -0.0014   0.0044   0.0002   0.0010
+  13  C   1s     0.0000   0.0000   0.0396   0.0142  -0.9891  -0.0143  -0.0484
+  14  C   1s     0.0000   0.0000   0.0014   0.0005  -0.0358  -0.0005  -0.0088
+  15  C   2px    0.0000   0.0000   0.0002   0.0000  -0.0010   0.0002  -0.0010
+  16  C   2py    0.0000   0.0000  -0.0001  -0.0001   0.0003   0.0002   0.0045
+  17  C   1s     0.0000  -0.0001   0.0070   0.0088  -0.0388  -0.0680  -0.0385
+  18  C   1s     0.0000  -0.0001   0.0001   0.0001   0.0057   0.0049  -0.0010
+  19  C   2px    0.0000  -0.0001   0.0003   0.0000  -0.0033   0.0042  -0.0004
+  20  C   2py    0.0000   0.0001   0.0000  -0.0001  -0.0030  -0.0015  -0.0001
+  21  C   1s     0.0000  -0.0003  -0.0490   0.0347   0.0143  -0.9877   0.0257
+  22  C   1s     0.0000   0.0003   0.0050  -0.0011   0.0008  -0.0363   0.0011
+  23  C   2px    0.0000   0.0000   0.0009  -0.0003  -0.0001   0.0006   0.0000
+  24  C   2py    0.0002   0.0000  -0.0042   0.0013  -0.0002   0.0012   0.0002
+  25  C   1s     0.0000  -0.0013  -0.9489   0.2821  -0.0354   0.0553   0.0064
+  26  C   1s     0.0003  -0.0057  -0.0325   0.0171  -0.0012   0.0094   0.0006
+  27  C   2px    0.0003  -0.0039   0.0001  -0.0036  -0.0002  -0.0012  -0.0001
+  28  C   2py    0.0004   0.0010  -0.0010  -0.0028  -0.0001   0.0043  -0.0003
+  29  C   1s     0.0005   0.9926  -0.0023   0.0004  -0.0001  -0.0002   0.0001
+  30  C   1s    -0.0072   0.0329   0.0055  -0.0019   0.0003  -0.0005  -0.0001
+  31  C   2px   -0.0050   0.0003  -0.0038   0.0011  -0.0002   0.0003   0.0001
+  32  C   2py   -0.0039   0.0003   0.0013  -0.0005   0.0001   0.0000   0.0000
+  33  H   1s     0.0002  -0.0066   0.0000   0.0001   0.0000   0.0001   0.0000
+  34  H   1s     0.0000   0.0000   0.0019   0.0066   0.0002   0.0003   0.0004
+  35  H   1s     0.0000   0.0000   0.0001   0.0002   0.0003  -0.0001  -0.0068
+  36  H   1s     0.0000   0.0000  -0.0002   0.0000   0.0068   0.0002   0.0004
+  37  H   1s     0.0000   0.0000   0.0001   0.0000   0.0002   0.0004   0.0002
+  38  H   1s    -0.0002  -0.0003   0.0003  -0.0001   0.0000   0.0068  -0.0002
+
+ Orbital          8        9       10       11       12       13       14
+   1  O   1s     0.0000  -0.2170   0.0228  -0.0388  -0.0087   0.0667   0.0126
+   2  O   1s     0.0000   0.7597  -0.0850   0.1527   0.0344  -0.2843  -0.0554
+   3  O   2px    0.0000  -0.1341  -0.0010   0.0214   0.0084  -0.0756  -0.0478
+   4  O   2py    0.0000  -0.1016   0.0091  -0.0067  -0.0091  -0.0584   0.0360
+   5  C   1s    -0.0065  -0.0045  -0.1071   0.0792  -0.1149   0.0583   0.1074
+   6  C   1s     0.0002   0.0106   0.2698  -0.2128   0.3089  -0.1661  -0.3147
+   7  C   2px   -0.0002   0.0043  -0.0083  -0.1039  -0.0852   0.1253  -0.0813
+   8  C   2py    0.0003   0.0034   0.0618  -0.0312   0.0037   0.0035   0.0686
+   9  C   1s    -0.0384  -0.0012  -0.1027  -0.0590  -0.1362   0.0414  -0.0810
+  10  C   1s    -0.0019   0.0028   0.2575   0.1569   0.3652  -0.1161   0.2368
+  11  C   2px    0.0001   0.0013   0.0480  -0.0599   0.0527  -0.0976  -0.1457
+  12  C   2py   -0.0003   0.0000   0.0398   0.0909  -0.0177   0.1156   0.0812
+  13  C   1s     0.0413  -0.0008  -0.1010  -0.1394  -0.0221  -0.1032  -0.0302
+  14  C   1s     0.0091   0.0018   0.2537   0.3723   0.0594   0.2973   0.0885
+  15  C   2px    0.0035   0.0007   0.0581   0.0387  -0.0361  -0.0415  -0.0885
+  16  C   2py    0.0027  -0.0001  -0.0198   0.0059  -0.1239   0.0536  -0.2020
+  17  C   1s    -0.9882  -0.0015  -0.1009  -0.0948   0.1136  -0.0007   0.1106
+  18  C   1s    -0.0373   0.0036   0.2529   0.2523  -0.3045   0.0038  -0.3231
+  19  C   2px   -0.0004   0.0015   0.0137  -0.0797  -0.0851  -0.1705   0.0643
+  20  C   2py    0.0015  -0.0009  -0.0603  -0.0421   0.0067  -0.0231  -0.0629
+  21  C   1s     0.0655  -0.0073  -0.1035   0.0366   0.1375   0.0836  -0.0748
+  22  C   1s     0.0098   0.0174   0.2604  -0.0992  -0.3694  -0.2371   0.2194
+  23  C   2px   -0.0044   0.0038  -0.0444  -0.0768   0.0509   0.0353   0.1574
+  24  C   2py    0.0012  -0.0074  -0.0445   0.0921  -0.0144  -0.0474  -0.0912
+  25  C   1s    -0.0069  -0.0215  -0.1103   0.1428   0.0246  -0.0528  -0.0322
+  26  C   1s    -0.0010   0.0520   0.2784  -0.3834  -0.0665   0.1553   0.0950
+  27  C   2px    0.0000   0.0256  -0.0557   0.0034  -0.0377   0.1617   0.0944
+  28  C   2py   -0.0004  -0.0059   0.0150   0.0275  -0.1275  -0.1067   0.2112
+  29  C   1s    -0.0001  -0.1248  -0.0166   0.0540   0.0026  -0.1286  -0.0032
+  30  C   1s     0.0001   0.2852   0.0475  -0.1570  -0.0079   0.3968   0.0103
+  31  C   2px   -0.0001   0.1203  -0.0584   0.1202   0.0202  -0.1427  -0.0466
+  32  C   2py    0.0001   0.0987  -0.0030   0.0121  -0.0132  -0.0935   0.0751
+  33  H   1s     0.0000   0.0329   0.0101  -0.0435   0.0055   0.1724  -0.0435
+  34  H   1s     0.0001   0.0019   0.0481  -0.0605   0.0852  -0.0448  -0.1694
+  35  H   1s     0.0004   0.0003   0.0448   0.0404   0.0993  -0.0452   0.1210
+  36  H   1s    -0.0004   0.0002   0.0439   0.0966   0.0162   0.1369   0.0457
+  37  H   1s     0.0068   0.0004   0.0436   0.0651  -0.0820   0.0073  -0.1650
+  38  H   1s    -0.0006   0.0056   0.0441  -0.0264  -0.0981  -0.0901   0.1141
+
+ Orbital         15       16       17       18       19       20       21
+   1  O   1s     0.0578  -0.0212   0.0216   0.0510   0.0090  -0.0089   0.0747
+   2  O   1s    -0.2606   0.1019  -0.1069  -0.2582  -0.0495   0.0448  -0.4013
+   3  O   2px   -0.0666  -0.0504  -0.2420  -0.2452   0.1165   0.0055  -0.4739
+   4  O   2py   -0.1320   0.1938   0.1405  -0.1121  -0.2423   0.0645  -0.3182
+   5  C   1s     0.0147  -0.0300   0.0362  -0.0328   0.0073   0.0261  -0.0222
+   6  C   1s    -0.0426   0.1047  -0.1215   0.1116  -0.0283  -0.0815   0.0767
+   7  C   2px   -0.1569   0.0600  -0.1597  -0.2520  -0.1090   0.1239   0.1264
+   8  C   2py   -0.1325  -0.2089   0.1078  -0.1837   0.0750  -0.3197   0.0362
+   9  C   1s    -0.0756   0.0151  -0.0489   0.0273   0.0039   0.0189   0.0151
+  10  C   1s     0.2317  -0.0401   0.1605  -0.0970  -0.0079  -0.0581  -0.0527
+  11  C   2px   -0.0531  -0.1164   0.0506   0.2857  -0.0244  -0.2716  -0.0719
+  12  C   2py   -0.1482  -0.1374  -0.1156  -0.0236  -0.3156  -0.1370   0.0631
+  13  C   1s     0.0621  -0.0226   0.0514  -0.0372   0.0248  -0.0024   0.0048
+  14  C   1s    -0.1844   0.0799  -0.1726   0.1242  -0.0795   0.0067  -0.0128
+  15  C   2px   -0.0005  -0.2275   0.2155   0.1222  -0.1704   0.0877  -0.2028
+  16  C   2py   -0.0638   0.1214   0.0405   0.1784   0.2653   0.0632  -0.1029
+  17  C   1s    -0.0387   0.0019  -0.0598   0.0229   0.0007  -0.0256   0.0039
+  18  C   1s     0.1205   0.0021   0.1972  -0.0811   0.0007   0.0800  -0.0134
+  19  C   2px    0.1388  -0.0994  -0.1197  -0.1693  -0.1519   0.1111   0.2080
+  20  C   2py    0.1217   0.1922   0.0805  -0.2150   0.0888  -0.3198   0.0790
+  21  C   1s    -0.0393  -0.0050   0.0677  -0.0230  -0.0085  -0.0168  -0.0028
+  22  C   1s     0.1223   0.0244  -0.2251   0.0787   0.0252   0.0508   0.0052
+  23  C   2px   -0.0197   0.1970  -0.0566   0.1750   0.0397  -0.2666  -0.1855
+  24  C   2py    0.2029   0.0894  -0.1241  -0.0339  -0.3121  -0.1468   0.0320
+  25  C   1s     0.0762  -0.0157  -0.0350   0.0559  -0.0365   0.0009   0.0048
+  26  C   1s    -0.2241   0.0537   0.1194  -0.1862   0.1214  -0.0025  -0.0160
+  27  C   2px    0.1628   0.1345   0.1735   0.1128  -0.1613   0.0767  -0.1470
+  28  C   2py   -0.0164  -0.0240   0.0333   0.1972   0.2586   0.0681  -0.0609
+  29  C   1s    -0.1035   0.0389  -0.0251  -0.0346   0.0091   0.0038  -0.0261
+  30  C   1s     0.3314  -0.1303   0.0868   0.1159  -0.0327  -0.0133   0.0851
+  31  C   2px    0.0111  -0.1433  -0.1667   0.1025   0.1992  -0.0596   0.2626
+  32  C   2py   -0.1611   0.2018   0.2792   0.1056  -0.1410   0.0334   0.2798
+  33  H   1s     0.2220  -0.1843  -0.1762  -0.0095   0.0927  -0.0253  -0.1786
+  34  H   1s     0.0495   0.1891  -0.1695   0.1608  -0.0930   0.2559   0.0228
+  35  H   1s     0.1782   0.1039   0.1047  -0.2072   0.1912   0.2269  -0.0174
+  36  H   1s    -0.0876   0.2090  -0.2265   0.0108   0.1690  -0.0521   0.1396
+  37  H   1s     0.1029   0.1429   0.1704  -0.1814   0.1003  -0.2509   0.0248
+  38  H   1s     0.1156   0.1546  -0.1880   0.1226  -0.1466  -0.2247  -0.1059
+
+ Orbital         22       23       24
+   1  O   1s    -0.0149   0.0107   0.0017
+   2  O   1s     0.0861  -0.0604  -0.0111
+   3  O   2px   -0.0385  -0.1061  -0.5199
+   4  O   2py    0.3001  -0.0676   0.6507
+   5  C   1s    -0.0114  -0.0084  -0.0069
+   6  C   1s     0.0340   0.0217   0.0257
+   7  C   2px   -0.2626   0.1621   0.0989
+   8  C   2py    0.1448   0.2527   0.0287
+   9  C   1s     0.0048   0.0074   0.0087
+  10  C   1s    -0.0220  -0.0156  -0.0324
+  11  C   2px    0.2568  -0.1132  -0.0894
+  12  C   2py   -0.1798  -0.2574   0.0235
+  13  C   1s     0.0095  -0.0019   0.0029
+  14  C   1s    -0.0221   0.0056  -0.0139
+  15  C   2px   -0.2939   0.1368   0.0160
+  16  C   2py    0.1538   0.2907  -0.0116
+  17  C   1s     0.0021  -0.0059   0.0085
+  18  C   1s    -0.0153   0.0119  -0.0305
+  19  C   2px    0.2787  -0.1406  -0.0810
+  20  C   2py   -0.1049  -0.2602   0.0404
+  21  C   1s    -0.0110   0.0071  -0.0079
+  22  C   1s     0.0344  -0.0149   0.0270
+  23  C   2px   -0.2829   0.1056   0.0575
+  24  C   2py    0.1064   0.2809  -0.1076
+  25  C   1s     0.0209  -0.0001   0.0363
+  26  C   1s    -0.0696  -0.0009  -0.1674
+  27  C   2px    0.0993  -0.1328  -0.3146
+  28  C   2py   -0.0796  -0.3122   0.1172
+  29  C   1s    -0.0250   0.0008   0.0058
+  30  C   1s     0.0974  -0.0049  -0.0281
+  31  C   2px   -0.2047   0.0605   0.1333
+  32  C   2py   -0.0037   0.0510  -0.1371
+  33  H   1s     0.0526  -0.0628   0.3522
+  34  H   1s    -0.1821  -0.2273   0.0446
+  35  H   1s    -0.0862   0.2688   0.0501
+  36  H   1s     0.3285  -0.0397  -0.0354
+  37  H   1s    -0.1737  -0.2372   0.0589
+  38  H   1s    -0.1091   0.2723   0.0384
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3        4
+   1  O   2pz    0.3113   0.5399  -0.0207  -0.2982
+   2  C   2pz    0.2880  -0.1580   0.4768   0.2325
+   3  C   2pz    0.2405  -0.2592   0.4382  -0.2790
+   4  C   2pz    0.2217  -0.2951  -0.0402  -0.4977
+   5  C   2pz    0.2367  -0.2556  -0.4796  -0.2063
+   6  C   2pz    0.2807  -0.1534  -0.4401   0.2964
+   7  C   2pz    0.3642  -0.0267   0.0339   0.5117
+   8  C   2pz    0.3498   0.4769  -0.0080  -0.1129
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.32 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:57 2001
+     Host name              : slater.uio.no                           
+
+- End of Wave Function Section
+ Trust radius squarely increased due to very good ratio.
+ Updated trust radius   0.50000
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:07:57 2001
+     Host name              : slater.uio.no                           
+
+
+        +---------------------------------------------------------+
+        ! Gradient elements calculated directly and from symmetry !
+        +---------------------------------------------------------+
+
+
+
+        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
+        ------------------------------------------------------------
+
+        O    x       -0.0005718292    -0.0005718529     0.0000000237
+        O    y       -0.0004763805    -0.0004763805     0.0000000000
+        C    x        0.0007663896     0.0007664133    -0.0000000237
+
+
+
+ >>> WARNING from TRAROT:
+
+ Largest deviation from tra-rot symmetry is in gradient element  3:  2.37E-08
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:17 2001
+     Host name              : slater.uio.no                           
+
+ WARNING: warnings have been issued, please check the output above !
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:18      95 %
+ REST       00:00:01       5 %
+
+ TOTAL      00:00:19     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:  19.49 seconds
+ >>>> Total wall time used in ABACUS:  20.00 seconds
+
+- End of Static Property Section
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ O          6.0923962205            0.0151004551            0.0000000000
+ C         -0.4133043985           -2.2545045979            0.0000000000
+ C         -2.9013919603           -1.4403468129            0.0000000000
+ C         -3.4390031952            1.1260099066            0.0000000000
+ C         -1.4868146566            2.8782668131            0.0000000000
+ C          0.9998653784            2.0629175180            0.0000000000
+ C          1.5525399843           -0.5093462982            0.0000000000
+ C          4.2696657080           -1.3982128866            0.0000000000
+ H          4.4920625273           -3.4716934724            0.0000000000
+ H          0.0106317006           -4.2572796804            0.0000000000
+ H         -4.4243180422           -2.8061292524            0.0000000000
+ H         -5.3841080077            1.7624697827            0.0000000000
+ H         -1.9077846018            4.8802424027            0.0000000000
+ H          2.5395633433            3.4125061224            0.0000000000
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       2
+ End of optimization            :       F 
+ Energy at this geometry is     :    -339.120837
+ Energy change from last geom.  :      -0.000089
+ Norm of gradient               :       0.002165
+ Norm of step                   :       0.010074
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.07 seconds
+
+
+ Number of two-electron integrals written:      326989 ( 55.9% )
+ Megabytes written:                              3.744
+
+
+
+ >>> Time used in TWOINT is   7.18 seconds
+
+
+ >>> Time used in FRMSUP is   0.19 seconds
+
+ >>>> Total CPU  time used in HERMIT:   7.45 seconds
+ >>>> Total wall time used in HERMIT:   7.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:25 2001
+     Host name              : slater.uio.no                           
+
+ Title lines from integral program:
+     Benzaldehyde                                                            
+     Project: Benchmark                                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         56
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 46
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Occupied HF orbitals              24   4
+     Secondary orbitals                14   4
+     Total number of orbitals          38   8
+     Number of basis functions         38   8
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations         352
+     ---------------------------------------
+     Total number of variables           353
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)
+ ----------------------------------------------------
+    1     -339.120841113205    2.36445D-03   -3.39D+02
+    2     -339.120841695640    6.75193D-04   -5.82D-07
+    3     -339.120841756388    1.95132D-04   -6.07D-08
+    4     -339.120841761594    9.33352D-05   -5.21D-09
+    5     -339.120841763156    3.29102D-05   -1.56D-09
+    6     -339.120841763520    1.55359D-05   -3.64D-10
+    7     -339.120841763585    3.19499D-06   -6.48D-11
+    8     -339.120841763588    1.15150D-06   -3.07D-12
+    9     -339.120841763588    4.70375D-07   -1.14D-13
+ DIIS converged in   9 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   56
+ Orbital occupations :   24    4
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.28982821   -11.12178138   -11.04385421   -11.04340991   -11.04275115
+       -11.04132794   -11.03967641   -11.03887852    -1.32681110    -1.10873422
+        -0.98156841    -0.96937030    -0.82440359    -0.78365813    -0.73254416
+        -0.66546481    -0.61406119    -0.57987643    -0.55666137    -0.54571015
+        -0.52495660    -0.46013564    -0.44117276    -0.33676098     0.56843791
+         0.61493177     0.63226306     0.68532636     0.71606672
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.49113880    -0.42957755    -0.29342246    -0.28342736     0.21022808
+         0.26173545     0.34474422     0.51297064
+
+    E(LUMO) :     0.21022808 au (symmetry 2)
+  - E(HOMO) :    -0.28342736 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.49365544 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -339.120841763588
+     Nuclear repulsion:           320.965193969670
+     Electronic energy:          -660.086035733259
+
+     Final gradient norm:           0.000000470375
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:26 2001
+     Host name              : slater.uio.no                           
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  O   1s     0.9943   0.0001   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  O   1s     0.0260  -0.0057  -0.0002   0.0002   0.0000  -0.0001   0.0000
+   3  O   2px   -0.0044   0.0013   0.0002  -0.0001   0.0000   0.0000   0.0000
+   4  O   2py   -0.0034   0.0010   0.0000   0.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000  -0.0002  -0.3362  -0.9319  -0.0228  -0.0213  -0.0435
+   6  C   1s     0.0001   0.0001  -0.0055  -0.0365  -0.0004  -0.0016  -0.0089
+   7  C   2px    0.0000   0.0000   0.0032  -0.0011   0.0000  -0.0002   0.0043
+   8  C   2py    0.0001   0.0000   0.0025  -0.0021   0.0002  -0.0002  -0.0016
+   9  C   1s     0.0000   0.0000  -0.0052  -0.0441  -0.0520   0.0213   0.9888
+  10  C   1s     0.0000   0.0000   0.0017   0.0052   0.0055   0.0011   0.0372
+  11  C   2px    0.0000   0.0000   0.0015   0.0040  -0.0008   0.0003   0.0011
+  12  C   2py    0.0000   0.0000  -0.0006  -0.0013   0.0044   0.0002   0.0010
+  13  C   1s     0.0000   0.0000   0.0437   0.0107  -0.9890  -0.0141  -0.0486
+  14  C   1s     0.0000   0.0000   0.0016   0.0004  -0.0358  -0.0004  -0.0088
+  15  C   2px    0.0000   0.0000   0.0002   0.0000  -0.0010   0.0002  -0.0010
+  16  C   2py    0.0000   0.0000  -0.0001  -0.0001   0.0003   0.0002   0.0045
+  17  C   1s     0.0000  -0.0001   0.0076   0.0084  -0.0387  -0.0694  -0.0388
+  18  C   1s     0.0000  -0.0001   0.0001   0.0001   0.0057   0.0048  -0.0010
+  19  C   2px    0.0000  -0.0001   0.0003  -0.0001  -0.0033   0.0042  -0.0004
+  20  C   2py    0.0000   0.0001   0.0000  -0.0001  -0.0030  -0.0015  -0.0001
+  21  C   1s     0.0000  -0.0003  -0.0485   0.0380   0.0138  -0.9875   0.0262
+  22  C   1s     0.0000   0.0003   0.0049  -0.0014   0.0008  -0.0363   0.0011
+  23  C   2px    0.0000   0.0000   0.0008  -0.0004  -0.0001   0.0006   0.0000
+  24  C   2py    0.0002   0.0000  -0.0041   0.0015  -0.0002   0.0012   0.0002
+  25  C   1s     0.0000  -0.0013  -0.9314   0.3346  -0.0390   0.0569   0.0065
+  26  C   1s     0.0003  -0.0057  -0.0314   0.0188  -0.0013   0.0094   0.0006
+  27  C   2px    0.0003  -0.0039  -0.0001  -0.0036  -0.0002  -0.0012  -0.0001
+  28  C   2py    0.0004   0.0010  -0.0011  -0.0028  -0.0001   0.0043  -0.0003
+  29  C   1s     0.0005   0.9926  -0.0023   0.0006  -0.0001  -0.0002   0.0001
+  30  C   1s    -0.0072   0.0329   0.0054  -0.0022   0.0003  -0.0005  -0.0001
+  31  C   2px   -0.0050   0.0003  -0.0037   0.0013  -0.0002   0.0003   0.0001
+  32  C   2py   -0.0039   0.0003   0.0013  -0.0006   0.0001   0.0000   0.0000
+  33  H   1s     0.0002  -0.0066   0.0000   0.0001   0.0000   0.0001   0.0000
+  34  H   1s     0.0000   0.0000   0.0022   0.0064   0.0002   0.0003   0.0004
+  35  H   1s     0.0000   0.0000   0.0001   0.0002   0.0003  -0.0001  -0.0068
+  36  H   1s     0.0000   0.0000  -0.0002   0.0000   0.0068   0.0002   0.0004
+  37  H   1s     0.0000   0.0000   0.0001   0.0000   0.0002   0.0004   0.0002
+  38  H   1s    -0.0002  -0.0003   0.0003  -0.0001   0.0000   0.0068  -0.0002
+
+ Orbital          8        9       10       11       12       13       14
+   1  O   1s     0.0000  -0.2170   0.0227  -0.0388  -0.0086   0.0667   0.0126
+   2  O   1s     0.0000   0.7598  -0.0848   0.1527   0.0340  -0.2844  -0.0553
+   3  O   2px    0.0000  -0.1340  -0.0010   0.0214   0.0083  -0.0757  -0.0476
+   4  O   2py    0.0000  -0.1015   0.0090  -0.0067  -0.0091  -0.0585   0.0359
+   5  C   1s    -0.0065  -0.0045  -0.1071   0.0790  -0.1150   0.0583   0.1074
+   6  C   1s     0.0002   0.0106   0.2698  -0.2125   0.3093  -0.1662  -0.3147
+   7  C   2px   -0.0002   0.0043  -0.0084  -0.1040  -0.0850   0.1251  -0.0812
+   8  C   2py    0.0003   0.0034   0.0617  -0.0311   0.0037   0.0035   0.0687
+   9  C   1s    -0.0387  -0.0011  -0.1027  -0.0592  -0.1361   0.0413  -0.0809
+  10  C   1s    -0.0020   0.0028   0.2577   0.1574   0.3650  -0.1160   0.2366
+  11  C   2px    0.0001   0.0013   0.0480  -0.0599   0.0528  -0.0976  -0.1457
+  12  C   2py   -0.0003   0.0000   0.0399   0.0909  -0.0178   0.1155   0.0811
+  13  C   1s     0.0413  -0.0008  -0.1010  -0.1393  -0.0219  -0.1031  -0.0302
+  14  C   1s     0.0091   0.0018   0.2539   0.3722   0.0588   0.2972   0.0884
+  15  C   2px    0.0035   0.0007   0.0581   0.0384  -0.0362  -0.0416  -0.0885
+  16  C   2py    0.0027  -0.0001  -0.0198   0.0057  -0.1240   0.0535  -0.2020
+  17  C   1s    -0.9881  -0.0015  -0.1009  -0.0945   0.1138  -0.0007   0.1106
+  18  C   1s    -0.0373   0.0036   0.2530   0.2515  -0.3051   0.0038  -0.3231
+  19  C   2px   -0.0004   0.0015   0.0137  -0.0798  -0.0850  -0.1703   0.0644
+  20  C   2py    0.0015  -0.0009  -0.0603  -0.0421   0.0068  -0.0231  -0.0628
+  21  C   1s     0.0669  -0.0073  -0.1035   0.0369   0.1374   0.0835  -0.0749
+  22  C   1s     0.0098   0.0174   0.2604  -0.1001  -0.3692  -0.2369   0.2196
+  23  C   2px   -0.0044   0.0038  -0.0444  -0.0767   0.0511   0.0353   0.1576
+  24  C   2py    0.0012  -0.0074  -0.0444   0.0921  -0.0146  -0.0472  -0.0910
+  25  C   1s    -0.0071  -0.0214  -0.1102   0.1429   0.0243  -0.0527  -0.0322
+  26  C   1s    -0.0010   0.0519   0.2782  -0.3836  -0.0657   0.1552   0.0951
+  27  C   2px    0.0000   0.0255  -0.0557   0.0034  -0.0376   0.1616   0.0942
+  28  C   2py   -0.0004  -0.0059   0.0150   0.0273  -0.1274  -0.1066   0.2110
+  29  C   1s    -0.0001  -0.1247  -0.0165   0.0541   0.0025  -0.1287  -0.0032
+  30  C   1s     0.0001   0.2852   0.0475  -0.1572  -0.0076   0.3972   0.0103
+  31  C   2px   -0.0001   0.1204  -0.0582   0.1201   0.0199  -0.1426  -0.0465
+  32  C   2py    0.0001   0.0986  -0.0030   0.0121  -0.0132  -0.0937   0.0750
+  33  H   1s     0.0000   0.0329   0.0102  -0.0436   0.0056   0.1727  -0.0434
+  34  H   1s     0.0001   0.0019   0.0481  -0.0605   0.0853  -0.0448  -0.1695
+  35  H   1s     0.0004   0.0003   0.0448   0.0406   0.0992  -0.0451   0.1209
+  36  H   1s    -0.0004   0.0002   0.0440   0.0967   0.0160   0.1369   0.0457
+  37  H   1s     0.0068   0.0004   0.0437   0.0649  -0.0822   0.0073  -0.1649
+  38  H   1s    -0.0006   0.0056   0.0441  -0.0267  -0.0980  -0.0899   0.1145
+
+ Orbital         15       16       17       18       19       20       21
+   1  O   1s     0.0577  -0.0211   0.0215   0.0510   0.0090  -0.0084   0.0747
+   2  O   1s    -0.2602   0.1017  -0.1066  -0.2585  -0.0498   0.0421  -0.4015
+   3  O   2px   -0.0666  -0.0501  -0.2419  -0.2460   0.1165   0.0028  -0.4737
+   4  O   2py   -0.1319   0.1933   0.1410  -0.1116  -0.2430   0.0625  -0.3185
+   5  C   1s     0.0147  -0.0300   0.0362  -0.0328   0.0072   0.0259  -0.0223
+   6  C   1s    -0.0427   0.1047  -0.1214   0.1117  -0.0279  -0.0812   0.0770
+   7  C   2px   -0.1572   0.0603  -0.1592  -0.2524  -0.1098   0.1229   0.1260
+   8  C   2py   -0.1322  -0.2090   0.1083  -0.1826   0.0760  -0.3194   0.0375
+   9  C   1s    -0.0757   0.0151  -0.0489   0.0272   0.0039   0.0190   0.0150
+  10  C   1s     0.2319  -0.0401   0.1606  -0.0965  -0.0079  -0.0583  -0.0525
+  11  C   2px   -0.0529  -0.1167   0.0502   0.2866  -0.0230  -0.2709  -0.0709
+  12  C   2py   -0.1483  -0.1375  -0.1156  -0.0229  -0.3153  -0.1385   0.0634
+  13  C   1s     0.0622  -0.0226   0.0514  -0.0372   0.0248  -0.0024   0.0049
+  14  C   1s    -0.1849   0.0798  -0.1725   0.1241  -0.0793   0.0067  -0.0129
+  15  C   2px   -0.0002  -0.2279   0.2147   0.1225  -0.1699   0.0869  -0.2034
+  16  C   2py   -0.0638   0.1214   0.0404   0.1779   0.2657   0.0649  -0.1030
+  17  C   1s    -0.0388   0.0019  -0.0598   0.0229   0.0009  -0.0255   0.0041
+  18  C   1s     0.1208   0.0020   0.1970  -0.0810   0.0001   0.0796  -0.0139
+  19  C   2px    0.1390  -0.0994  -0.1199  -0.1695  -0.1530   0.1107   0.2075
+  20  C   2py    0.1216   0.1925   0.0812  -0.2141   0.0889  -0.3202   0.0804
+  21  C   1s    -0.0393  -0.0050   0.0678  -0.0228  -0.0084  -0.0169  -0.0028
+  22  C   1s     0.1223   0.0246  -0.2252   0.0781   0.0251   0.0510   0.0052
+  23  C   2px   -0.0200   0.1973  -0.0563   0.1758   0.0412  -0.2665  -0.1844
+  24  C   2py    0.2027   0.0895  -0.1239  -0.0329  -0.3115  -0.1476   0.0323
+  25  C   1s     0.0763  -0.0156  -0.0352   0.0560  -0.0364   0.0009   0.0048
+  26  C   1s    -0.2245   0.0535   0.1204  -0.1865   0.1211  -0.0026  -0.0157
+  27  C   2px    0.1625   0.1342   0.1733   0.1131  -0.1616   0.0761  -0.1474
+  28  C   2py   -0.0162  -0.0239   0.0329   0.1963   0.2585   0.0692  -0.0608
+  29  C   1s    -0.1034   0.0389  -0.0250  -0.0347   0.0090   0.0036  -0.0261
+  30  C   1s     0.3311  -0.1301   0.0865   0.1163  -0.0326  -0.0125   0.0853
+  31  C   2px    0.0112  -0.1427  -0.1668   0.1022   0.1995  -0.0579   0.2632
+  32  C   2py   -0.1611   0.2012   0.2795   0.1062  -0.1413   0.0348   0.2792
+  33  H   1s     0.2219  -0.1837  -0.1765  -0.0100   0.0929  -0.0259  -0.1784
+  34  H   1s     0.0493   0.1893  -0.1700   0.1597  -0.0939   0.2556   0.0217
+  35  H   1s     0.1783   0.1041   0.1049  -0.2079   0.1902   0.2271  -0.0181
+  36  H   1s    -0.0880   0.2092  -0.2260   0.0104   0.1688  -0.0509   0.1400
+  37  H   1s     0.1029   0.1431   0.1710  -0.1805   0.1004  -0.2514   0.0258
+  38  H   1s     0.1153   0.1550  -0.1877   0.1236  -0.1452  -0.2250  -0.1052
+
+ Orbital         22       23       24
+   1  O   1s    -0.0149   0.0107   0.0017
+   2  O   1s     0.0862  -0.0601  -0.0111
+   3  O   2px   -0.0381  -0.1062  -0.5196
+   4  O   2py    0.3002  -0.0667   0.6509
+   5  C   1s    -0.0115  -0.0085  -0.0069
+   6  C   1s     0.0343   0.0222   0.0256
+   7  C   2px   -0.2630   0.1618   0.0988
+   8  C   2py    0.1445   0.2534   0.0288
+   9  C   1s     0.0048   0.0074   0.0087
+  10  C   1s    -0.0220  -0.0155  -0.0324
+  11  C   2px    0.2571  -0.1125  -0.0893
+  12  C   2py   -0.1794  -0.2572   0.0235
+  13  C   1s     0.0095  -0.0019   0.0029
+  14  C   1s    -0.0222   0.0056  -0.0140
+  15  C   2px   -0.2945   0.1362   0.0159
+  16  C   2py    0.1533   0.2906  -0.0116
+  17  C   1s     0.0022  -0.0059   0.0085
+  18  C   1s    -0.0156   0.0120  -0.0305
+  19  C   2px    0.2788  -0.1398  -0.0810
+  20  C   2py   -0.1038  -0.2601   0.0405
+  21  C   1s    -0.0111   0.0072  -0.0079
+  22  C   1s     0.0346  -0.0151   0.0270
+  23  C   2px   -0.2827   0.1052   0.0574
+  24  C   2py    0.1059   0.2818  -0.1079
+  25  C   1s     0.0208   0.0000   0.0364
+  26  C   1s    -0.0693  -0.0013  -0.1676
+  27  C   2px    0.0994  -0.1327  -0.3147
+  28  C   2py   -0.0789  -0.3131   0.1173
+  29  C   1s    -0.0250   0.0008   0.0058
+  30  C   1s     0.0971  -0.0047  -0.0282
+  31  C   2px   -0.2047   0.0600   0.1333
+  32  C   2py   -0.0037   0.0508  -0.1372
+  33  H   1s     0.0526  -0.0625   0.3521
+  34  H   1s    -0.1819  -0.2279   0.0446
+  35  H   1s    -0.0869   0.2681   0.0500
+  36  H   1s     0.3289  -0.0391  -0.0353
+  37  H   1s    -0.1730  -0.2372   0.0590
+  38  H   1s    -0.1094   0.2725   0.0384
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3        4
+   1  O   2pz    0.3113   0.5401  -0.0190  -0.2981
+   2  C   2pz    0.2880  -0.1578   0.4753   0.2355
+   3  C   2pz    0.2408  -0.2591   0.4398  -0.2764
+   4  C   2pz    0.2221  -0.2949  -0.0372  -0.4979
+   5  C   2pz    0.2370  -0.2555  -0.4785  -0.2089
+   6  C   2pz    0.2808  -0.1533  -0.4417   0.2939
+   7  C   2pz    0.3639  -0.0265   0.0311   0.5121
+   8  C   2pz    0.3496   0.4770  -0.0073  -0.1127
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.29 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:26 2001
+     Host name              : slater.uio.no                           
+
+- End of Wave Function Section
+ Trust radius increased due to good ratio.
+ Updated trust radius   0.50000
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:26 2001
+     Host name              : slater.uio.no                           
+
+ Largest deviation from tra-rot symmetry is in gradient element  3:  2.80E-09
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:45 2001
+     Host name              : slater.uio.no                           
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:19      97 %
+
+ TOTAL      00:00:19     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:  19.47 seconds
+ >>>> Total wall time used in ABACUS:  19.00 seconds
+
+- End of Static Property Section
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ O          6.0920860425            0.0157402796            0.0000000000
+ C         -0.4136561643           -2.2547573032            0.0000000000
+ C         -2.9018175880           -1.4404820046            0.0000000000
+ C         -3.4389213587            1.1259029856            0.0000000000
+ C         -1.4866789065            2.8784838973            0.0000000000
+ C          0.9997388330            2.0631606381            0.0000000000
+ C          1.5522562399           -0.5094452042            0.0000000000
+ C          4.2698941880           -1.3982019539            0.0000000000
+ H          4.4929356894           -3.4715133072            0.0000000000
+ H          0.0109567508           -4.2573965042            0.0000000000
+ H         -4.4251685000           -2.8057387137            0.0000000000
+ H         -5.3840043230            1.7624572439            0.0000000000
+ H         -1.9082182707            4.8803041649            0.0000000000
+ H          2.5405973675            3.4114857815            0.0000000000
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       3
+ End of optimization            :       F 
+ Energy at this geometry is     :    -339.120842
+ Energy change from last geom.  :      -0.000004
+ Norm of gradient               :       0.000565
+ Norm of step                   :       0.002594
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.07 seconds
+
+
+ Number of two-electron integrals written:      326988 ( 55.9% )
+ Megabytes written:                              3.744
+
+
+
+ >>> Time used in TWOINT is   7.40 seconds
+
+
+ >>> Time used in FRMSUP is   0.19 seconds
+
+ >>>> Total CPU  time used in HERMIT:   7.67 seconds
+ >>>> Total wall time used in HERMIT:   8.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:54 2001
+     Host name              : slater.uio.no                           
+
+ Title lines from integral program:
+     Benzaldehyde                                                            
+     Project: Benchmark                                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         56
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 46
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Occupied HF orbitals              24   4
+     Secondary orbitals                14   4
+     Total number of orbitals          38   8
+     Number of basis functions         38   8
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations         352
+     ---------------------------------------
+     Total number of variables           353
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)
+ ----------------------------------------------------
+    1     -339.120841951333    1.07917D-03   -3.39D+02
+    2     -339.120842086330    3.28619D-04   -1.35D-07
+    3     -339.120842103367    1.03982D-04   -1.70D-08
+    4     -339.120842104897    4.39510D-05   -1.53D-09
+    5     -339.120842105526    1.54859D-05   -6.29D-10
+    6     -339.120842105630    5.28972D-06   -1.04D-10
+    7     -339.120842105639    1.30961D-06   -8.64D-12
+    8     -339.120842105641    2.44348D-07   -1.82D-12
+ DIIS converged in   8 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   56
+ Orbital occupations :   24    4
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.28984022   -11.12179123   -11.04382416   -11.04340360   -11.04273424
+       -11.04131695   -11.03967781   -11.03888440    -1.32683458    -1.10869027
+        -0.98150080    -0.96936993    -0.82434793    -0.78366205    -0.73252417
+        -0.66546943    -0.61404173    -0.57986502    -0.55661587    -0.54573588
+        -0.52496717    -0.46014533    -0.44113339    -0.33675842     0.56840237
+         0.61490757     0.63223185     0.68534040     0.71602808
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.49109827    -0.42958371    -0.29343479    -0.28338170     0.21024064
+         0.26174867     0.34471316     0.51293323
+
+    E(LUMO) :     0.21024064 au (symmetry 2)
+  - E(HOMO) :    -0.28338170 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.49362233 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -339.120842105641
+     Nuclear repulsion:           320.956836587509
+     Electronic energy:          -660.077678693150
+
+     Final gradient norm:           0.000000244348
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:54 2001
+     Host name              : slater.uio.no                           
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  O   1s     0.9943   0.0001   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  O   1s     0.0260  -0.0057  -0.0002   0.0002   0.0000  -0.0001   0.0000
+   3  O   2px   -0.0044   0.0013   0.0002  -0.0001   0.0000   0.0000   0.0000
+   4  O   2py   -0.0034   0.0010   0.0000   0.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000  -0.0002  -0.3579  -0.9238  -0.0222  -0.0213  -0.0435
+   6  C   1s     0.0001   0.0001  -0.0064  -0.0364  -0.0004  -0.0016  -0.0089
+   7  C   2px    0.0000   0.0000   0.0032  -0.0011   0.0000  -0.0002   0.0043
+   8  C   2py    0.0001   0.0000   0.0025  -0.0022   0.0002  -0.0002  -0.0016
+   9  C   1s     0.0000   0.0000  -0.0061  -0.0440  -0.0523   0.0215   0.9888
+  10  C   1s     0.0000   0.0000   0.0018   0.0052   0.0054   0.0011   0.0372
+  11  C   2px    0.0000   0.0000   0.0016   0.0040  -0.0008   0.0003   0.0011
+  12  C   2py    0.0000   0.0000  -0.0006  -0.0013   0.0044   0.0002   0.0010
+  13  C   1s     0.0000   0.0000   0.0444   0.0088  -0.9890  -0.0141  -0.0490
+  14  C   1s     0.0000   0.0000   0.0016   0.0003  -0.0358  -0.0004  -0.0088
+  15  C   2px    0.0000   0.0000   0.0002   0.0000  -0.0010   0.0002  -0.0010
+  16  C   2py    0.0000   0.0000  -0.0001  -0.0001   0.0003   0.0002   0.0045
+  17  C   1s     0.0000  -0.0001   0.0078   0.0082  -0.0389  -0.0700  -0.0389
+  18  C   1s     0.0000  -0.0001   0.0001   0.0001   0.0057   0.0048  -0.0010
+  19  C   2px    0.0000  -0.0001   0.0003  -0.0001  -0.0033   0.0042  -0.0004
+  20  C   2py    0.0000   0.0001   0.0000  -0.0001  -0.0030  -0.0015  -0.0001
+  21  C   1s     0.0000  -0.0003  -0.0479   0.0392   0.0138  -0.9875   0.0263
+  22  C   1s     0.0000   0.0003   0.0049  -0.0015   0.0008  -0.0363   0.0011
+  23  C   2px    0.0000   0.0000   0.0008  -0.0004  -0.0001   0.0006   0.0000
+  24  C   2py    0.0002   0.0000  -0.0041   0.0016  -0.0002   0.0012   0.0002
+  25  C   1s     0.0000  -0.0013  -0.9233   0.3562  -0.0398   0.0573   0.0065
+  26  C   1s     0.0003  -0.0057  -0.0310   0.0195  -0.0013   0.0095   0.0006
+  27  C   2px    0.0003  -0.0039  -0.0002  -0.0036  -0.0002  -0.0012  -0.0001
+  28  C   2py    0.0004   0.0010  -0.0012  -0.0027  -0.0001   0.0043  -0.0003
+  29  C   1s     0.0005   0.9926  -0.0023   0.0006  -0.0001  -0.0002   0.0001
+  30  C   1s    -0.0072   0.0329   0.0053  -0.0023   0.0003  -0.0005  -0.0001
+  31  C   2px   -0.0050   0.0003  -0.0036   0.0014  -0.0002   0.0003   0.0001
+  32  C   2py   -0.0039   0.0003   0.0013  -0.0006   0.0001   0.0000   0.0000
+  33  H   1s     0.0002  -0.0066   0.0000   0.0001   0.0000   0.0001   0.0000
+  34  H   1s     0.0000   0.0000   0.0024   0.0064   0.0002   0.0003   0.0004
+  35  H   1s     0.0000   0.0000   0.0001   0.0002   0.0003  -0.0001  -0.0068
+  36  H   1s     0.0000   0.0000  -0.0002   0.0000   0.0068   0.0002   0.0004
+  37  H   1s     0.0000   0.0000   0.0001   0.0000   0.0002   0.0004   0.0002
+  38  H   1s    -0.0002  -0.0003   0.0003  -0.0002   0.0000   0.0068  -0.0002
+
+ Orbital          8        9       10       11       12       13       14
+   1  O   1s     0.0000  -0.2170   0.0227  -0.0388  -0.0086   0.0668   0.0126
+   2  O   1s     0.0000   0.7598  -0.0848   0.1527   0.0340  -0.2845  -0.0553
+   3  O   2px    0.0000  -0.1340  -0.0010   0.0214   0.0083  -0.0757  -0.0477
+   4  O   2py    0.0000  -0.1015   0.0090  -0.0067  -0.0091  -0.0586   0.0359
+   5  C   1s    -0.0065  -0.0045  -0.1071   0.0791  -0.1150   0.0584   0.1074
+   6  C   1s     0.0002   0.0106   0.2697  -0.2126   0.3092  -0.1663  -0.3147
+   7  C   2px   -0.0002   0.0043  -0.0084  -0.1040  -0.0849   0.1251  -0.0812
+   8  C   2py    0.0003   0.0034   0.0617  -0.0311   0.0037   0.0035   0.0687
+   9  C   1s    -0.0389  -0.0011  -0.1027  -0.0592  -0.1361   0.0413  -0.0809
+  10  C   1s    -0.0020   0.0028   0.2577   0.1574   0.3650  -0.1160   0.2365
+  11  C   2px    0.0001   0.0013   0.0480  -0.0599   0.0528  -0.0976  -0.1457
+  12  C   2py   -0.0003   0.0000   0.0399   0.0909  -0.0178   0.1155   0.0811
+  13  C   1s     0.0415  -0.0008  -0.1011  -0.1393  -0.0219  -0.1031  -0.0302
+  14  C   1s     0.0091   0.0018   0.2540   0.3722   0.0589   0.2971   0.0883
+  15  C   2px    0.0035   0.0007   0.0581   0.0384  -0.0362  -0.0416  -0.0885
+  16  C   2py    0.0027  -0.0001  -0.0198   0.0057  -0.1240   0.0535  -0.2019
+  17  C   1s    -0.9881  -0.0015  -0.1009  -0.0945   0.1139  -0.0007   0.1106
+  18  C   1s    -0.0373   0.0036   0.2531   0.2515  -0.3052   0.0038  -0.3230
+  19  C   2px   -0.0004   0.0015   0.0137  -0.0798  -0.0850  -0.1703   0.0644
+  20  C   2py    0.0015  -0.0009  -0.0603  -0.0420   0.0068  -0.0230  -0.0628
+  21  C   1s     0.0676  -0.0073  -0.1035   0.0369   0.1374   0.0835  -0.0749
+  22  C   1s     0.0098   0.0174   0.2604  -0.1001  -0.3692  -0.2367   0.2197
+  23  C   2px   -0.0044   0.0038  -0.0445  -0.0767   0.0511   0.0353   0.1577
+  24  C   2py    0.0012  -0.0073  -0.0444   0.0921  -0.0146  -0.0472  -0.0910
+  25  C   1s    -0.0071  -0.0214  -0.1102   0.1429   0.0243  -0.0527  -0.0322
+  26  C   1s    -0.0010   0.0519   0.2781  -0.3837  -0.0657   0.1552   0.0951
+  27  C   2px    0.0000   0.0255  -0.0557   0.0034  -0.0376   0.1616   0.0942
+  28  C   2py   -0.0004  -0.0059   0.0150   0.0273  -0.1274  -0.1065   0.2110
+  29  C   1s    -0.0001  -0.1247  -0.0165   0.0541   0.0025  -0.1288  -0.0032
+  30  C   1s     0.0001   0.2852   0.0474  -0.1572  -0.0076   0.3973   0.0103
+  31  C   2px   -0.0001   0.1203  -0.0582   0.1201   0.0199  -0.1425  -0.0465
+  32  C   2py    0.0001   0.0987  -0.0030   0.0121  -0.0132  -0.0939   0.0749
+  33  H   1s     0.0000   0.0329   0.0101  -0.0436   0.0056   0.1728  -0.0434
+  34  H   1s     0.0001   0.0019   0.0481  -0.0606   0.0853  -0.0448  -0.1695
+  35  H   1s     0.0004   0.0003   0.0448   0.0406   0.0992  -0.0450   0.1210
+  36  H   1s    -0.0004   0.0002   0.0440   0.0967   0.0160   0.1369   0.0457
+  37  H   1s     0.0068   0.0004   0.0437   0.0649  -0.0822   0.0073  -0.1649
+  38  H   1s    -0.0006   0.0056   0.0441  -0.0267  -0.0980  -0.0899   0.1146
+
+ Orbital         15       16       17       18       19       20       21
+   1  O   1s     0.0577  -0.0211   0.0215   0.0510   0.0090  -0.0082   0.0747
+   2  O   1s    -0.2602   0.1015  -0.1066  -0.2586  -0.0496   0.0413  -0.4016
+   3  O   2px   -0.0665  -0.0502  -0.2420  -0.2461   0.1168   0.0019  -0.4734
+   4  O   2py   -0.1320   0.1932   0.1408  -0.1116  -0.2429   0.0619  -0.3191
+   5  C   1s     0.0147  -0.0299   0.0362  -0.0329   0.0071   0.0259  -0.0223
+   6  C   1s    -0.0426   0.1046  -0.1215   0.1118  -0.0277  -0.0810   0.0771
+   7  C   2px   -0.1572   0.0603  -0.1591  -0.2525  -0.1101   0.1227   0.1257
+   8  C   2py   -0.1321  -0.2090   0.1085  -0.1823   0.0763  -0.3193   0.0380
+   9  C   1s    -0.0757   0.0151  -0.0489   0.0271   0.0039   0.0190   0.0150
+  10  C   1s     0.2320  -0.0399   0.1606  -0.0963  -0.0078  -0.0584  -0.0524
+  11  C   2px   -0.0529  -0.1168   0.0502   0.2868  -0.0226  -0.2707  -0.0705
+  12  C   2py   -0.1483  -0.1375  -0.1155  -0.0228  -0.3153  -0.1388   0.0634
+  13  C   1s     0.0623  -0.0225   0.0514  -0.0372   0.0248  -0.0024   0.0049
+  14  C   1s    -0.1851   0.0797  -0.1725   0.1241  -0.0793   0.0067  -0.0130
+  15  C   2px   -0.0001  -0.2278   0.2147   0.1225  -0.1698   0.0865  -0.2036
+  16  C   2py   -0.0639   0.1213   0.0403   0.1778   0.2658   0.0652  -0.1030
+  17  C   1s    -0.0388   0.0019  -0.0597   0.0229   0.0009  -0.0255   0.0041
+  18  C   1s     0.1208   0.0022   0.1969  -0.0809   0.0000   0.0795  -0.0141
+  19  C   2px    0.1390  -0.0994  -0.1198  -0.1695  -0.1533   0.1107   0.2073
+  20  C   2py    0.1216   0.1926   0.0813  -0.2138   0.0889  -0.3203   0.0809
+  21  C   1s    -0.0393  -0.0050   0.0678  -0.0227  -0.0084  -0.0169  -0.0028
+  22  C   1s     0.1223   0.0246  -0.2253   0.0780   0.0251   0.0509   0.0053
+  23  C   2px   -0.0201   0.1974  -0.0564   0.1760   0.0416  -0.2667  -0.1839
+  24  C   2py    0.2026   0.0896  -0.1238  -0.0327  -0.3114  -0.1478   0.0324
+  25  C   1s     0.0764  -0.0156  -0.0353   0.0560  -0.0364   0.0009   0.0047
+  26  C   1s    -0.2246   0.0534   0.1205  -0.1866   0.1212  -0.0027  -0.0156
+  27  C   2px    0.1623   0.1343   0.1731   0.1131  -0.1615   0.0760  -0.1476
+  28  C   2py   -0.0162  -0.0240   0.0327   0.1961   0.2584   0.0694  -0.0608
+  29  C   1s    -0.1034   0.0388  -0.0250  -0.0347   0.0091   0.0035  -0.0261
+  30  C   1s     0.3311  -0.1299   0.0866   0.1164  -0.0327  -0.0123   0.0852
+  31  C   2px    0.0114  -0.1428  -0.1669   0.1021   0.1995  -0.0574   0.2633
+  32  C   2py   -0.1613   0.2011   0.2795   0.1064  -0.1413   0.0353   0.2791
+  33  H   1s     0.2220  -0.1836  -0.1765  -0.0101   0.0928  -0.0262  -0.1783
+  34  H   1s     0.0492   0.1893  -0.1702   0.1594  -0.0942   0.2556   0.0213
+  35  H   1s     0.1783   0.1043   0.1049  -0.2081   0.1900   0.2272  -0.0183
+  36  H   1s    -0.0882   0.2091  -0.2260   0.0103   0.1688  -0.0505   0.1402
+  37  H   1s     0.1029   0.1432   0.1710  -0.1802   0.1005  -0.2514   0.0262
+  38  H   1s     0.1151   0.1551  -0.1877   0.1238  -0.1448  -0.2252  -0.1050
+
+ Orbital         22       23       24
+   1  O   1s    -0.0149   0.0106   0.0017
+   2  O   1s     0.0863  -0.0601  -0.0111
+   3  O   2px   -0.0381  -0.1062  -0.5198
+   4  O   2py    0.3002  -0.0665   0.6506
+   5  C   1s    -0.0115  -0.0085  -0.0069
+   6  C   1s     0.0344   0.0222   0.0257
+   7  C   2px   -0.2631   0.1617   0.0988
+   8  C   2py    0.1445   0.2535   0.0288
+   9  C   1s     0.0048   0.0074   0.0087
+  10  C   1s    -0.0220  -0.0156  -0.0324
+  11  C   2px    0.2571  -0.1124  -0.0893
+  12  C   2py   -0.1793  -0.2571   0.0235
+  13  C   1s     0.0095  -0.0019   0.0029
+  14  C   1s    -0.0222   0.0057  -0.0140
+  15  C   2px   -0.2946   0.1362   0.0158
+  16  C   2py    0.1533   0.2905  -0.0117
+  17  C   1s     0.0022  -0.0059   0.0085
+  18  C   1s    -0.0157   0.0120  -0.0305
+  19  C   2px    0.2788  -0.1396  -0.0809
+  20  C   2py   -0.1036  -0.2601   0.0405
+  21  C   1s    -0.0111   0.0072  -0.0079
+  22  C   1s     0.0346  -0.0151   0.0270
+  23  C   2px   -0.2825   0.1052   0.0572
+  24  C   2py    0.1059   0.2820  -0.1080
+  25  C   1s     0.0208   0.0001   0.0364
+  26  C   1s    -0.0693  -0.0015  -0.1676
+  27  C   2px    0.0993  -0.1327  -0.3148
+  28  C   2py   -0.0788  -0.3132   0.1174
+  29  C   1s    -0.0250   0.0008   0.0058
+  30  C   1s     0.0971  -0.0046  -0.0283
+  31  C   2px   -0.2047   0.0599   0.1334
+  32  C   2py   -0.0038   0.0508  -0.1372
+  33  H   1s     0.0527  -0.0624   0.3521
+  34  H   1s    -0.1819  -0.2280   0.0446
+  35  H   1s    -0.0870   0.2680   0.0500
+  36  H   1s     0.3290  -0.0391  -0.0353
+  37  H   1s    -0.1728  -0.2372   0.0590
+  38  H   1s    -0.1094   0.2725   0.0383
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3        4
+   1  O   2pz    0.3114   0.5401  -0.0186  -0.2980
+   2  C   2pz    0.2880  -0.1579   0.4749   0.2362
+   3  C   2pz    0.2408  -0.2591   0.4402  -0.2759
+   4  C   2pz    0.2221  -0.2949  -0.0364  -0.4980
+   5  C   2pz    0.2371  -0.2554  -0.4782  -0.2094
+   6  C   2pz    0.2807  -0.1534  -0.4421   0.2932
+   7  C   2pz    0.3638  -0.0267   0.0305   0.5122
+   8  C   2pz    0.3496   0.4770  -0.0072  -0.1126
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.26 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:54 2001
+     Host name              : slater.uio.no                           
+
+- End of Wave Function Section
+ Trust radius increased due to good ratio.
+ Updated trust radius   0.50000
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:08:54 2001
+     Host name              : slater.uio.no                           
+
+
+        +---------------------------------------------------------+
+        ! Gradient elements calculated directly and from symmetry !
+        +---------------------------------------------------------+
+
+
+
+        Coordinate    Direct calc.     Tra.-rot. sym.   Difference  
+        ------------------------------------------------------------
+
+        O    x       -0.0000058348    -0.0000058500     0.0000000152
+        O    y       -0.0000058358    -0.0000058358     0.0000000000
+        C    x       -0.0001089797    -0.0001089646    -0.0000000152
+
+
+
+ >>> WARNING from TRAROT:
+
+ Largest deviation from tra-rot symmetry is in gradient element  1:  1.52E-08
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:09:14 2001
+     Host name              : slater.uio.no                           
+
+ WARNING: warnings have been issued, please check the output above !
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:19      97 %
+ REST       00:00:01       6 %
+
+ TOTAL      00:00:19     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:  19.37 seconds
+ >>>> Total wall time used in ABACUS:  20.00 seconds
+
+- End of Static Property Section
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                           Final geometry (au)
+                           -------------------
+
+ O          6.0920860425            0.0157402796            0.0000000000
+ C         -0.4136561643           -2.2547573032            0.0000000000
+ C         -2.9018175880           -1.4404820046            0.0000000000
+ C         -3.4389213587            1.1259029856            0.0000000000
+ C         -1.4866789065            2.8784838973            0.0000000000
+ C          0.9997388330            2.0631606381            0.0000000000
+ C          1.5522562399           -0.5094452042            0.0000000000
+ C          4.2698941880           -1.3982019539            0.0000000000
+ H          4.4929356894           -3.4715133072            0.0000000000
+ H          0.0109567508           -4.2573965042            0.0000000000
+ H         -4.4251685000           -2.8057387137            0.0000000000
+ H         -5.3840043230            1.7624572439            0.0000000000
+ H         -1.9082182707            4.8803041649            0.0000000000
+ H          2.5405973675            3.4114857815            0.0000000000
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       4
+ End of optimization            :       T 
+ Energy at this geometry is     :    -339.120842
+ Energy change from last geom.  :       0.000000
+ Norm of gradient               :       0.000235
+ Norm of step                   :       0.000893
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:09:15 2001
+     Host name              : slater.uio.no                           
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:09:15 2001
+     Host name              : slater.uio.no                           
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ O          6.0920860425            0.0157402796            0.0000000000
+ C         -0.4136561643           -2.2547573032            0.0000000000
+ C         -2.9018175880           -1.4404820046            0.0000000000
+ C         -3.4389213587            1.1259029856            0.0000000000
+ C         -1.4866789065            2.8784838973            0.0000000000
+ C          0.9997388330            2.0631606381            0.0000000000
+ C          1.5522562399           -0.5094452042            0.0000000000
+ C          4.2698941880           -1.3982019539            0.0000000000
+ H          4.4929356894           -3.4715133072            0.0000000000
+ H          0.0109567508           -4.2573965042            0.0000000000
+ H         -4.4251685000           -2.8057387137            0.0000000000
+ H         -5.3840043230            1.7624572439            0.0000000000
+ H         -1.9082182707            4.8803041649            0.0000000000
+ H          2.5405973675            3.4114857815            0.0000000000
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy       -339.1208421056 au (Hartrees)
+                         -9227.94725347 eV
+                           -890361.6442 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.4014811275 au
+     Mass-velocity correction:                  -0.5102606196 au
+
+     Total relativistic correction:             -0.1087794921 au (0.0321%)
+     Non-relativistic + relativistic energy:  -339.2296215978 au
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.753642 au           1.915586 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    x     -0.70330722     -1.78764518
+                    y     -0.27080576     -0.68832596
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           C           C           C           C           C   
+
+   O       0.000000
+   C       3.646328    0.000000
+   C       4.821350    1.385393    0.000000
+   C       5.077691    2.400686    1.387495    0.000000
+   C       4.287086    2.775107    2.405056    1.388300    0.000000
+   C       2.904403    2.404241    2.774910    2.400631    1.384689    0.000000
+   C       2.418396    1.391135    2.407937    2.779375    2.408378    1.392408
+   C       1.220510    2.519536    3.795172    4.292438    3.794912    2.519848
+   H       2.030153    2.675101    4.058050    4.851450    4.615634    3.463385
+   H       3.933030    1.083310    2.144262    3.383490    3.858413    3.385375
+   H       5.762285    2.142731    1.082491    2.144996    3.386118    3.857401
+   H       6.142826    3.381868    2.144315    1.083011    2.145268    3.381877
+   H       4.954773    3.857655    3.385890    2.145524    1.082550    2.142515
+   H       2.600203    3.381518    3.858332    3.387500    2.149726    1.083486
+
+            C           C           H           H           H           H   
+
+   C       0.000000
+   C       1.513062    0.000000
+   H       2.208733    1.103479    0.000000
+   H       2.144490    2.714506    2.407945    0.000000
+   H       3.388494    4.661125    4.732390    2.469989    0.000000
+   H       3.862387    5.375449    5.915160    4.277646    2.470061    0.000000
+   H       3.389391    4.661229    5.568383    4.940963    4.279807    2.470870
+   H       2.139769    2.704689    3.786014    4.273277    4.940820    4.283349
+
+            H           H   
+
+   H       0.000000
+   H       2.479204    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    C          C                              1.385393
+  bond distance:    C          C                              1.387495
+  bond distance:    C          C                              1.388300
+  bond distance:    C          C                              1.384689
+  bond distance:    C          C                              1.391135
+  bond distance:    C          C                              1.392408
+  bond distance:    C          O                              1.220510
+  bond distance:    C          C                              1.513062
+  bond distance:    H          C                              1.103479
+  bond distance:    H          C                              1.083310
+  bond distance:    H          C                              1.082491
+  bond distance:    H          C                              1.083011
+  bond distance:    H          C                              1.082550
+  bond distance:    H          C                              1.083486
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       C          C          C                    120.281
+  bond angle:       C          C          H                    120.092
+  bond angle:       C          C          H                    119.627
+  bond angle:       C          C          C                    119.942
+  bond angle:       C          C          H                    120.011
+  bond angle:       C          C          H                    120.047
+  bond angle:       C          C          C                    120.095
+  bond angle:       C          C          H                    119.942
+  bond angle:       C          C          H                    119.963
+  bond angle:       C          C          C                    119.930
+  bond angle:       C          C          H                    120.024
+  bond angle:       C          C          H                    120.046
+  bond angle:       C          C          C                    120.276
+  bond angle:       C          C          H                    120.658
+  bond angle:       C          C          H                    119.066
+  bond angle:       C          C          C                    119.477
+  bond angle:       C          C          C                    120.292
+  bond angle:       C          C          C                    120.231
+  bond angle:       O          C          C                    124.081
+  bond angle:       O          C          H                    121.670
+  bond angle:       C          C          H                    114.250
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.27 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
+
+- End of Static Property Section
+
+
+     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     <<<<<<<<<<<<<<<<<<<<  End of Optimization  <<<<<<<<<<<<<<<<<<<<
+     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+
+                              Final geometry
+                              --------------
+
+ O          6.0920860425            0.0157402796            0.0000000000
+ C         -0.4136561643           -2.2547573032            0.0000000000
+ C         -2.9018175880           -1.4404820046            0.0000000000
+ C         -3.4389213587            1.1259029856            0.0000000000
+ C         -1.4866789065            2.8784838973            0.0000000000
+ C          0.9997388330            2.0631606381            0.0000000000
+ C          1.5522562399           -0.5094452042            0.0000000000
+ C          4.2698941880           -1.3982019539            0.0000000000
+ H          4.4929356894           -3.4715133072            0.0000000000
+ H          0.0109567508           -4.2573965042            0.0000000000
+ H         -4.4251685000           -2.8057387137            0.0000000000
+ H         -5.3840043230            1.7624572439            0.0000000000
+ H         -1.9082182707            4.8803041649            0.0000000000
+ H          2.5405973675            3.4114857815            0.0000000000
+
+
+
+ Iter     Energy     Change    GradNorm  Index   StepLen    TrustRad #Rej
+ ------------------------------------------------------------------------
+   0  -339.117876   0.000000   0.051489    0    0.285103*   0.500000   0 
+   1  -339.120748  -0.002872   0.008152    0    0.068854*   0.500000   0 
+   2  -339.120837  -0.000089   0.002165    0    0.010074*   0.500000   0 
+   3  -339.120842  -0.000004   0.000565    0    0.002594*   0.500000   0 
+   4  -339.120842   0.000000   0.000235    0    0.000893*   0.500000   0 
+
+ *) Newton step taken.
+
+ Geometry converged in            5 iterations!
+
+ Energy at final geometry is       :    -339.120842 a.u.
+ Energy change during optimization :      -0.002966 a.u.
+                                             -7.786 kJ/mol
+
+ >>>> Total CPU  time used in DALTON:  2 minutes 22 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 25 seconds
+
+ 
+     Date and time (Linux)  : Tue Feb 13 05:09:15 2001
+     Host name              : slater.uio.no                           
