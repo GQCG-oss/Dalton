@@ -241,7 +241,7 @@ C
         KIDXL_EADEN = KIDXL_XIDEN + MXXIDEN
         KIDXR_EADEN = KIDXL_EADEN + MXEADEN
         KIEASTEND   = KIDXR_EADEN + MXEADEN
-        KEND        = KIEASTEND   + MXEALEFT
+        KEND        = KIEASTEND   + 2*MXEALEFT
         LEND        = LWORK       - KEND
         IF (LEND.LT.0) CALL QUIT('Out of memory in CC_XIETA.') 
 
