@@ -556,15 +556,13 @@ calculation of the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. M
 
 Directives to control the calculation of frequency dependent linear
 response\index{frequency}\index{linear response}\index{response!linear}
-functions. At present these directives only affect the 
-calculation of frequency dependent linear response functions appearing
-in connection with Vibrational Raman Optical Activity
-(ROA)\index{Raman optical activity}\index{ROA}.
+functions. 
+%At present these directives only affect the 
+%calculation of frequency dependent linear response functions appearing
+%in connection with Vibrational Raman Optical Activity
+%(ROA)\index{Raman optical activity}\index{ROA}.
 
 \begin{description}
-\item[\Key{ALFA}] Calculates the frequency-dependent
-polarizability.\index{polarizability} 
-
 \item[\Key{FREQUE}]\verb| |\newline
 \verb|READ (LUCMD,*) NFRVAL|\newline
 \verb|READ (LUCMD,*) (FRVAL(I), I = 1, NFRVAL)|
@@ -576,13 +574,14 @@ calculated, and another line reading these frequencies. The
 frequencies are to be entered in atomic units. By default only the
 static case is evaluated.
 
-\item[\Key{IPRINT}]\verb| |\newline
-\verb|READ (LUCMD,*) IPRLNR|
+\item[\Key{LIFETIME}]\verb| |\newline
+\verb|READ (LUCMD,*) LIFETIME|
 
-Set the print level in the calculation of frequency-dependent linear
-response properties. Read one more line containing the print level.
-The default value is the value of \verb|IPRDEF| from the general input
-module. 
+Sets the lifetime of the excited states if absorption is also included
+in the calculation of the linear response functions as described in
+Ref.~\cite{pndmbhjajjojcp115,pnkrthjcp120}. The default is that no
+absorption is included in the calculation. The lifetime is given in
+$cm^{-1}$. 
 
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXITE|
@@ -609,9 +608,17 @@ one more line containing maximum dimension. Default value is~400.
 \item[\Key{OPTORB}] Use optimal orbital trial vectors\index{optimal orbital trial vector} in the 
 iterative solution of the frequency-depen\-dent linear
 response\index{linear response}\index{response!linear}
-equations. These are generate as described in
+equations. These are generated as described in
 Ref.~\cite{tuhjahjajpjjcp84} by solving the orbital response equation
 exact, keeping the configuration part fixed.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRLNR|
+
+Set the print level in the calculation of frequency-dependent linear
+response properties. Read one more line containing the print level.
+The default value is the value of \verb|IPRDEF| from the general input
+module. 
 
 \item[\Key{SKIP}] Skip the calculation of the frequency-dependent
 response functions. This will give wrong results for ROA. Mainly for
@@ -637,10 +644,6 @@ Directives controlling the calculation of contributions to the
 dipole gradient\index{dipole gradient} appear in the \verb|*DIPCTL| section.
 
 \begin{description}
-\item[\Key{AOMAT}]  Print in AO as well as SO basis dipole
-matrices if printing of the latter has been requested. Obsolete keyword.
-Do not use.
-
 \item[\Key{NODC}] Neglect contributions to traces from
 inactive one-electron density matrix. This will give wrong results for
 the dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
@@ -803,8 +806,11 @@ expectation values to the geometric Hessian appear in the
 \verb|*ONEINT| section.
 
 \begin{description}
-\item[\Key{ALL CO}] Indicates that all components of the nuclear
-shieldings\index{nuclear shielding} tensor is to be calculated at the
+\item[\Key{ALL CO}] Indicates that all components of the expectation
+  value contributions to the nuclear
+shielding\index{nuclear shielding} or indirect spin--spin
+  coupling\index{diamagnetic spin-orbit}
+  tensors are to be calculated at the
 same time. This is the 
 default for ordinary calculations. However, in direct and parallel
 calculations on large molecules this may give too large memory
@@ -885,7 +891,7 @@ diamagnetic contribution to
 indirect nuclear spin-spin coupling\index{spin-spin coupling}
 constants. Default value is 
 \verb|TRUE| if spin-spin couplings have been requested in the general
-input module, otherwise false.
+input module, otherwise \verb|FALSE|.
 
 \item[\Key{STOP}] Stop the entire calculation after finishing the
 calculation of one-electron expectation values. Mainly for debugging
@@ -970,8 +976,8 @@ value, but it is overwritten by the keywords \verb|.ANGLES| and
 \subsection{Right-hand sides for response equations: \Sec{GETSGY}}
 
 Directives affecting the construction of the right-hand
-sides~(RHS)\index{property gradient}\index{right-hand side} --- that is,
-gradient terms --- for the response 
+sides~(RHS)\index{property gradient}\index{right-hand side}---that is,
+gradient terms---for the response 
 calculation as well as some matrices needed for reorthonormalization
 contributions appear in the \verb|*GETSGY| section. 
 
@@ -982,13 +988,6 @@ right-hand sides are to be calculated in one batch, and not for each
 symmetry-independent center at a time which is the default. This will
 slightly speed up the calculation, at the cost of significantly larger
 memory requirements.
-
-\item[\Key{AOMAT}] Print AO as well as SO basis derivative
-overlap matrices if printing the latter has been requested. Obsolete
-keyword. Do not use.
-
-\item[\Key{DIAGTD}] Set derivative overlap matrices to diagonal
-form for test purposes. Obsolete keyword. Do not use.
 
 \item[\Key{FCKPRI}]\verb| |\newline
 \verb|READ (LUCMD,*) IPRFCK|
@@ -1038,18 +1037,6 @@ quadruplets can be changed by the keyword \verb|.PRINT |.
 \item[\Key{INTSKI}] Skip the calculation of derivative integrals.
 This will give wrong results for the total molecular Hessian. Mainly
 for debugging purposes.
-
-\item[\Key{MAXSIM}]\verb| |\newline
-\verb|READ (LUCMD,) MAXSIM|
-
-Maximum number of RHS to generate
-simultaneously.  Read one more line specifying this value.
-The default is~3.  This value should not be confused with the same
-keyword entered in the different sections for the solution of response
-equations like  the \verb|*RESPON|, \verb|*LINRES|, \verb|*TRPDRV|,
-\verb|*ABALNR|, and \verb|*EXCITA| sections. Obsolete keyword. Do not use.
-\typeout{>>>>>>>>Har alle responsmodulseksjoner et MAXSIM keyword?
-Foroevrig virker det paa meg som om keyword'et ikke virker.}
 
 \item[\Key{NODC}] Do not calculate contributions from the inactive
 one-electron density matrix. This will give wrong results for the
@@ -1112,7 +1099,7 @@ overlap matrices, two-electron density and derivative integral
 transformation, as well as in the construction of the right-hand sides.
 To set the print level in each of these parts individually, see the
 keywords \verb|.FCKPRI|, \verb|.GDYPRI|, \verb|.INTPRI|,
-\verb|.PTRPRI|, \verb|.SORPRI|, and \verb|.TRAPRI|.
+\verb|.PTRPRI| and \verb|.TRAPRI|.
 
 \item[\Key{PTRPRI}]\verb| |\newline
 \verb|READ (LUCMD,) IPRTRA|
@@ -1168,8 +1155,7 @@ Mainly for debugging purposes.
 
 Set print level for the two-electron density matrix sorting. Read one
 more line containing print level. Default value is the value of
-\verb|IPRDEF| from the general input module. Note also that this print
-level is also controled by the keyword \verb|.PRINT |.
+\verb|IPRDEF| from the general input module. 
 
 \item[\Key{STOP}] Stop the the entire calculation after finishing
 the construction of the right-hand side. Mainly for debugging purposes.
@@ -1191,11 +1177,6 @@ Mainly for debugging purposes.
 \item[\Key{TRATES}] Testing of derivative integral
 transformation. The calculation will not be aborted. Mainly for
 debugging purposes.
-
-\item[\Key{TWOH1}] Obsolete keyword. Do not use.
-
-\item[\Key{UNDIF}] Calculate undifferentiated integrals. Obsolete
-keyword. Do not use.
 \end{description}
 
 \subsection{Linear response calculation: {\tt
@@ -1205,17 +1186,9 @@ Directives to control the calculation of frequency-independent linear
 response functions\index{linear response}\index{response!linear}. At
 present these directives only affect the 
 calculation of frequency-independent linear response functions appearing
-in connection with singlet, magnetic perturbations. This
-whole section will become obsolete and be replaced by \verb|*EXCITA|
-and \verb|*ABALNR|, two sections which furthermore may become one.
+in connection with singlet, magnetic perturbations. 
 
 \begin{description}
-\item[\Key{EXCITA}] Obsolete keyword. Do not use. We refer instead
-to the keyword \verb|.EXCITA| in the \verb|*EXCITA| input module.
-
-\item[\Key{FREQUE}] Obsolete keyword. Do not use. We refer instead
-to the keyword \verb|.FREQUE| in the \verb|*EXCITA| input module.
-
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXITE|
 
@@ -1237,9 +1210,6 @@ containing maximum dimension. Default value is~0.
 Set the maximum dimension of the reduced space to which new basis
 vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
 one more line containing maximum dimension. Default value is~400.
-
-\item[\Key{NEXVAL}] Obsolete keyword. Do not use. We refer instead to
-the keyword \verb|.EXCITA| in the \verb|*EXCITA| input module.
 
 \item[\Key{OPTORB}] Use optimal orbital trial vectors in
 the\index{optimal orbital trial vector}
@@ -1273,7 +1243,7 @@ Set the convergence threshold for the solution
 of the frequency-independent response equations. Read one more line
 containing the convergence threshold. The default value is
 $1.0\cdot10^{-4}$ for calculations which cannot take advantage of Sellers
-formular for quadratic errors in the response
+formula for quadratic errors in the response
 property~\cite{hsijqc30}, and $2.0\cdot10^{-3}$ for those calculations
 that can.
 \end{description}
@@ -1425,7 +1395,8 @@ Default value is~60.
 
 Set the maximum dimension of the reduced space to which new basis
 vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
-one more line containing maximum dimension. Default value is~400.
+one more line containing maximum dimension. Default value is the
+maximum of 400 and 25 times the number of symmetry-independent nuclei.
 
 \item[\Key{MAXSIM}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXSIM|
@@ -1485,6 +1456,21 @@ value is~10$^{-3}$.
 
 \item[\Key{STOP}] Stop the entire calculation after solving all
 the geometric  response equations. Mainly for debugging purposes.
+\end{description}
+
+\subsection{Second-order polarization propagator approximation: {\tt
+*SOPPA}}\label{sec:soppa}
+
+This input module controls the calculation of molecular properties
+using the second-order polarization propagator approximation, see
+Chapter~\ref{ch:soppa}. 
+
+\begin{description}
+\item[\Key{HIRPA}] Use thehigher-order RPA Polarization Propagator
+  Approximation.
+
+\item[\Key{SOPW4}] Requests that the W4 term in the SOPPA expressions
+  are calculated explicitly.
 \end{description}
 
 \subsection{Indirect nuclear spin-spin couplings: {\tt
@@ -1586,10 +1572,6 @@ without the use of translational and rotational invariance. This is
 default in a calculation of vibrational circular dichroism
 (VCD)\index{vibrational circular dichroism}\index{VCD}.
 
-\item[\Key{GD}] Obsolete keyword. Do not use.
-
-\item[\Key{NOROT}] Obsolete keyword. Do not use.
-
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IPRINT|
 
@@ -1597,8 +1579,6 @@ Set print level for the setting up and use of translational and
 rotational invariance.  Read one more line containing print
 level. Default value is the value of \verb|IPRDEF| from the
 general input module.
-
-\item[\Key{RD}] Obsolete keyword. Do not use.
 
 \item[\Key{SKIP}] Skip the setting up and use of translational
 and rotational invariance\index{translational invariance}\index{rotational invariance}.
@@ -1750,7 +1730,7 @@ gradient and Hessian. Mainly for debugging purposes.
 Set print levels.  Read one more line containing the print level for
 this part of the calculation.  This will be the default print
 level in the two-electron density matrix transformation, the 
-symmetry orbital two-electron density matrix sorting, as well as the
+symmetry-orbital two-electron density matrix sorting, as well as the
 print level in the integral derivative evaluation. To set the print
 level in each of these parts individually, see the keywords
 \verb|.INTPRI|, \verb|.PTRPRI|, \verb|.SORPRI|.
@@ -1851,7 +1831,7 @@ geometries}\index{r$_e$ geometries}\index{vibrationally averaged properties}
 \item[\Key{HESFIL}] Read the molecular Hessian\index{Hessian} from the file
 \verb|DALTON.HES|. This file may have been made in an earlier
 calculation using the keyword \Key{HESPUN}, or constructed from a
-calculation with the Gaussian94 program and converted to \siraba\
+calculation with the GaussianXX program and converted to \siraba\
 format using the \verb|FChk2HES.f| program. Useful in VCD and VROA
 analyses\index{VCD}\index{ROA}\index{vibrational circular
 dichroism}\index{Raman optical activity}.
@@ -1863,13 +1843,13 @@ optimizations (see keyword \Key{HESFIL} in the \Sec{OPTIMIZE} input
 module), or for later use in a vibrational analysis (see keyword
 \Key{HESFIL} in this input module)\index{vibrational analysis}.
 
-\item[\Key{NOCID}] Do not calculate the Circular Intensity
-Differentials\index{circular intensity differential}\index{CID} (CIDs)
-as defined by Barron~\cite{barronbook}, but 
-instead print the chirality\index{chirality number} numbers defined by
-Hug~\cite{whc48} in 
-calculation of vibrational Raman Optical Activity
-(VROA)\index{ROA}\index{Raman optical activity}.
+%\item[\Key{NOCID}] Do not calculate the Circular Intensity
+%Differentials\index{circular intensity differential}\index{CID} (CIDs)
+%as defined by Barron~\cite{barronbook}, but 
+%instead print the chirality\index{chirality number} numbers defined by
+%Hug~\cite{whc48} in 
+%calculation of vibrational Raman Optical Activity
+%(VROA)\index{ROA}\index{Raman optical activity}.
 
 \item[\Key{ISOTOP}]
 
