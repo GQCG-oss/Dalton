@@ -13,13 +13,13 @@
 \index{second-order properties, excited states}
 
 In the \Sec{CCEXLR} section input that is specific for 
-second residues of coupled cluster cubic response functions 
+double residues of coupled cluster cubic response functions 
 is read in.
 Results obtained using this functionality should cite
 \cite{Haettig:EXCITED,Haettig:EXLR}. 
 This section includes:
 \begin{itemize}
-\item frequency-depend second-order properties of excited states
+\item frequency-dependent second-order properties of excited states
       $$ \alpha^{(i)}_{AB}(\omega) = 
          -\langle\langle A; B\rangle\rangle^{(i)}_\omega $$
       where $A$ and $B$ can be any of the one-electron operators
@@ -27,12 +27,49 @@ This section includes:
       input part.
 \item two-photon transition moments between excited states.
 \end{itemize}
-Second residues of coupled cluster cubic response functions are
+Double residues of coupled cluster cubic response functions are
 implemented for the models CCS, CC2, and CCSD.
-Publications that report results obtained with second residues
-of CC cubic response functions should cite Ref.\ \cite{Haettig:EXLR}.
+%Publications that report results obtained with double residues
+%of CC cubic response functions should cite Ref.\ \cite{Haettig:EXLR}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item C.~H\"{a}ttig, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 109},\hspace{0.25em}4745, (1998).
+\item C.~H\"{a}ttig, O.~Christiansen, S.~Coriani, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 109},\hspace{0.25em}9237, (1998).
+\end{list}
+}}
+\end{center}
 
 \begin{description}
+\item[\Key{ALLSTA}] 
+Calculate excited-state polarizabilities for all excited states.
+ 
+\item[\Key{DIPOLE}] 
+Evaluate all symmetry-allowed elements of the dipole--dipole tensor
+of the double residues of the cubic response function 
+(a maximum of six components for second-order properties, and a
+ maximum of nine for two-photon transition moments).
+ 
+\item[\Key{FREQ  }]  \verb| |\newline
+%  or \Key{FREQUE}
+\verb|READ (LUCMD,*) MFREQ|\newline
+\verb|READ (LUCMD,*) (BEXLRFR(IDX),IDX=NEXLRFR+1,NEXLRFR+MFREQ)|
+
+Frequency input for $\alpha^{(i)}_{AB}(\omega)$.
+ 
+\item[\Key{HALFFR}] 
+Use half the excitation energy as frequency argument for two-photon
+transition moments.
+Note that the \Key{HALFFR} keyword is incompatible with a 
+user-specified list of frequencies. \\
+For excited-state second-order properties the \Key{HALFFR} keyword is
+equivalent to the \Key{STATIC} keyword.
+ 
 \item[\Key{OPERAT}] \verb| |\newline
 \verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
@@ -40,16 +77,15 @@ of CC cubic response functions should cite Ref.\ \cite{Haettig:EXLR}.
 \verb|END DO|
 
 Read pairs of operator labels.
-For each of these operator pairs the second residues of the cubic response
+For each of these operator pairs, the double residues of the cubic response
 function will be evaluated at all frequencies.
-Operator pairs which do not correspond to symmetry allowed
-combination will be ignored during the calculation.
+Operator pairs which do not correspond to symmetry-allowed
+combinations will be ignored during the calculation.
  
-\item[\Key{DIPOLE}] 
-Evaluate all symmetry allowed elements of the dipole--dipole tensor
-of the second residues of cubic response function 
-(max. 6 components for second-order properties, 
- max. 9 for two-photon transition moments).
+\item[\Key{PRINT }] \verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set print parameter for the \Sec{CCEXLR} section.
  
 \item[\Key{SELSTA}] \verb| |\newline
 \verb|READ (LUCMD,'(A80)') LABHELP|\newline
@@ -59,38 +95,14 @@ of the second residues of cubic response function
 
 Read symmetry and index of the initial state and the final state.
 If initial and final state coincide one obtains excited state
-second-order properties, if they are different one obtains the
+second-order properties (or, more precisely, the difference of the excited state second-order property relative to the ground-state property), if they are different one obtains the
 two-photon transition moments between the two excited states.
- 
-\item[\Key{PRINT }] \verb| |\newline
-\verb|READ (LUCMD,*) IPRINT|
-
-Set print parameter for the \Sec{CCEXLR} section.
- 
-\item[\Key{ALLSTA}] 
-calculate polarizabilities for all excited states.
- 
-\item[\Key{HALFFR}] 
-Use half the excitation energy as frequency argument for two-photon
-transition moments.
-Note, that the \Key{HALFFR} keyword is incompatible with a 
-user-specified list of frequencies. \\
-For excited state second-order properties the \Key{HALFFR} keyword is
-equivalent to the \Key{STATIC} keyword.
- 
-\item[\Key{USELEF}] 
-Use left excited state response vectors instead of the right excited
-state response vectors (default is to use the right excited state
-response vectors).
- 
-\item[\Key{FREQ  }]  \verb| |\newline
-%  or \Key{FREQUE}
-\verb|READ (LUCMD,*) MFREQ|\newline
-\verb|READ (LUCMD,*) (BEXLRFR(IDX),IDX=NEXLRFR+1,NEXLRFR+MFREQ)|
-
-Frequency input for $\alpha^{(i)}_{AB}(\omega)$.
  
 \item[\Key{STATIC}] 
 Add $\omega = 0$ to the frequency list.
+ 
+\item[\Key{USELEF}] 
+Use left excited-state response vectors instead of the right excited-state response vectors (default is to use the right excited-state
+response vectors).
  
 \end{description}

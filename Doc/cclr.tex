@@ -34,54 +34,38 @@ This section includes presently
 \end{itemize}
 Coupled cluster linear response functions and dispersion coefficients
 are implemented for the models CCS, CC2 and CCSD. 
-Publications that report results obtained with CC linear response
-calculations should cite Ref.\ \cite{Christiansen:CCLR}. 
-The theoretical background for the implementation is detailed in Ref.\ \cite{Christiansen:QEL}.
-For dispersion coefficients also a citation of Ref.\ \cite{Haettig:CAUCHY} 
-should be included.
+%Publications that report results obtained with CC linear response
+%calculations should cite Ref.\ \cite{Christiansen:CCLR}. 
+The theoretical background for the implementation is detailed in Ref.\ \cite{Christiansen:CCLR,Christiansen:QEL,Haettig:CAUCHY}.
+%For dispersion coefficients also a citation of Ref.\ \cite{Haettig:CAUCHY} 
+%should be included.
 The properties calculated are in the approach now generally known as coupled cluster 
-linear response - in the frequency independent limit this coincides with so-called 
+linear response---in the frequency-independent limit this coincides with the so-called 
 orbital-unrelaxed energy derivatives (and thus the orbital-unrelaxed finite field result).
 
-\begin{description}
-% \item[\Key{RELAXE}] 
-%
-% \item[\Key{UNRELA}] 
-%
-\item[\Key{FREQUE}] \verb| |\newline
-READ (LUCMD,*) NBLRFR\newline
-READ (LUCMD,*) (BLRFR(I),I=1,NBLRFR)
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Linear response:  O.~Christiansen, A.~Halkier, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}2801, (1998).
+\item Dispersion coefficients: C.~H\"{a}ttig, O.~Christiansen, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 107},\hspace{0.25em}10592, (1997).
+\end{list}
+}}
+\end{center}
 
-Frequency input for $\langle\langle A;B \rangle\rangle_{\omega}$.
- 
-\item[\Key{DIPOLE}] 
-Evaluate all symmetry allowed elements of the dipole polarizability
-(max. 6 components).
-\index{dipole polarizability}
-%
-%\item[\Key{ALLDSP}] 
-%
-% \item[\Key{FTST  }] 
-%
+\begin{description}
 \item[\Key{ASYMSD}] 
 Use an asymmetric formulation of the linear response function which
 does not require the solution of response equations for the operators $A$, 
 but solves two sets of response equations for the operators $B$.
 %
-\item[\Key{DISPCF}] \verb| |\newline
-   \verb|READ (LUCMD,*) NLRDSPE|
-
-   Calculate the dispersion coefficients 
-   $D_{AB}(n)$ up to $n = $ \verb+NLRDSPE+.
+% \item[\Key{RELAXE}] 
 %
-\item[\Key{OPERAT}] \verb| |\newline
-   \verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
-   \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-   \verb|  READ (LUCMD,'(2A)') LABELA, LABELB|\newline
-   \verb|END DO|
-
-Read pairs of operator labels. 
- 
+% \item[\Key{UNRELA}] 
+%
 \item[\Key{AVERAG}] \verb| |\newline
    \verb|READ (LUCMD,'(A)') AVERAGE|\newline
    \verb|READ (LUCMD,'(A)') SYMMETRY|
@@ -99,6 +83,36 @@ evaluated. Available options are
 symmetry axis with $n \ge 3$),  and \verb+GENER+ (use point
 group symmetry from geometry input).
 \index{dipole polarizability}
+ 
+\item[\Key{DIPOLE}] 
+Evaluate all symmetry allowed elements of the dipole polarizability
+(max. 6 components).
+\index{dipole polarizability}
+
+\item[\Key{DISPCF}] \verb| |\newline
+   \verb|READ (LUCMD,*) NLRDSPE|
+
+   Calculate the dispersion coefficients 
+   $D_{AB}(n)$ up to $n = $ \verb+NLRDSPE+.
+%
+\item[\Key{FREQUE}] \verb| |\newline
+READ (LUCMD,*) NBLRFR\newline
+READ (LUCMD,*) (BLRFR(I),I=1,NBLRFR)
+
+Frequency input for $\langle\langle A;B \rangle\rangle_{\omega}$.
+ 
+%
+%\item[\Key{ALLDSP}] 
+%
+% \item[\Key{FTST  }] 
+%
+\item[\Key{OPERAT}] \verb| |\newline
+   \verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+   \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
+   \verb|  READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+   \verb|END DO|
+
+Read pairs of operator labels. 
  
 \item[\Key{PRINT }] \verb| |\newline
    \verb|READ (LUCMD,*) IPRSOP|

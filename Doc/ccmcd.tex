@@ -38,10 +38,31 @@ connection with \Sec{CCEXCI} for the calculation of
 excited states.
 The calculation is implemented for the models CCS, CC2 and CCSD.
 
-\noindent Publications that report results obtained by this module
-should cite Ref.\ \cite{Coriani:MOACC}.
+%\noindent Publications that report results obtained by this module
+%should cite Ref.\ \cite{Coriani:MOACC}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item S.~Coriani, C.~H\"{a}ttig, P.~J{\o}rgensen, and T.~Helgaker \newblock {\em J.~Chem.~Phys.}, {\bf 113},\hspace{0.25em}3561, (2000).
+\end{list}
+}}
+\end{center}
 
 \begin{description}
+\item[\Key{MCD   }] 
+All six triples of operators obtained from the
+permutations of 3 simultaneously different 
+cartesian components of the 3 operators 
+\verb+LABELA,LABELB,LABELC+ are automatically specified.
+Operator triples which do not correspond to symmetry allowed
+combination will be ignored during the calculation.
+Default.
+
 \item[\Key{OPERAT}] \verb| |\newline
 \verb|READ (LUCMD,'(3A)') LABELA, LABELB, LABELC|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
@@ -49,7 +70,7 @@ should cite Ref.\ \cite{Coriani:MOACC}.
 \verb|END DO|
 %
 
-Manually select the triple of operator labels defining the operator
+Manually select the operator label triplets defining the operator
 cartesian components involved in the ${\cal B}$ term. 
 %, or, in general, in the $S^of_AB,C(0)$ strength.
 The first two operators \verb+(LABELA,LABELB)+
@@ -78,15 +99,6 @@ combination will be ignored during the calculation.
 %where \verb+(UNREL)+ refers to unrelaxed operators and 
 %      \verb+(RELAX)+to relaxed operators.
 %
-\item[\Key{MCD   }] 
-All six triples of operators obtained from the
-permutations of 3 simultaneously different 
-cartesian components of the 3 operators 
-\verb+LABELA,LABELB,LABELC+ are automatically specified.
-Operator triples which do not correspond to symmetry allowed
-combination will be ignored during the calculation.
-Default.
-
 %\item[\Key{MCDLAO}] 
 %
 % This keyword turns on the calculation of the B term components

@@ -29,10 +29,10 @@ includes:
 \end{itemize}
 The coupled cluster quadratic response function is at present
 implemented for the coupled cluster models CCS, CC2 and CCSD.
-Publications that report results obtained by CC quadratic response
-calculations should cite Ref.\ \cite{Haettig:CCQR}.
-For dispersion coefficients also a citation of 
-Ref.\ \cite{Haettig:DISPBETA} should be included.
+%Publications that report results obtained by CC quadratic response
+%calculations should cite Ref.\ \cite{Haettig:CCQR}.
+%For dispersion coefficients also a citation of 
+%Ref.\ \cite{Haettig:DISPBETA} should be included.
 
 The response functions are evaluated for a number of 
 operator triples (given using the
@@ -44,7 +44,79 @@ The different frequency keywords are
 compatible and might be arbitrarily combined or repeated.
 For dispersion coefficients use the keyword \Key{DISPCF}.
 
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Quadratic response: C.~H\"{a}ttig, O.~Christiansen, H.~Koch, and P.~J{\o}rgensen \newblock {\em Chem.~Phys.~Lett.}, {\bf 269},\hspace{0.25em}428, (1997).
+\item Dispersion coefficients: C.~H\"{a}ttig, and P.~J{\o}rgensen \newblock {\em Theor.~Chem.~Acc.}, {\bf 100},\hspace{0.25em}230, (1998).
+\end{list}
+}}
+\end{center}
+
+
 \begin{description}
+\item[\Key{AVERAG}] \verb| |\newline
+   \verb|READ (LUCMD,'(A)') LINE|
+
+   Evaluate special tensor averages of quadratic response properties.
+   Presently implemented are only the vector averages of the first
+   dipole hyperpolarizability $\beta_{||}$, $\beta_{\bot}$ and 
+   $\beta_K$. All three of these averages are obtained if 
+   \verb+HYPERPOL+ is specified on the input line that follows
+   \Key{AVERAG}.
+   The \Key{AVERAG} keyword should be used before any \Key{OPERAT} 
+   or \Key{DIPOLE} input in the \Sec{CCQR} section.
+ 
+\item[\Key{DIPOLE}] 
+Evaluate all symmetry allowed elements of the first
+dipole hyperpolarizability (max. 27 components).
+ 
+\item[\Key{DISPCF}]  \verb| |\newline
+   \verb|READ (LUCMD,*) NQRDSPE|
+
+   Calculate the dispersion coefficients
+   $D_{ABC}(n,m)$ up to order $n+m =$\verb+NQRDSPE+. 
+   \index{dispersion coefficients}
+ 
+% \item[\Key{ALLDSP}]  debug option only!
+
+\item[\Key{EOPEFR}]  \verb| |\newline
+   \verb|READ (LUCMD,*) MFREQ|\newline
+   \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
+
+   Input for the electro optical Pockels effect
+   $\beta_{ABC}(-\omega;\omega,0)$:
+   on the first line following \Key{SHGFRE} the number of different
+   frequencies is read, from the second line the input for 
+   $\omega_B = \omega$ is read. $\omega_C$ is set to $0$ and
+   $\omega_A$ to $\omega_A = -\omega$.
+   \index{Pockels effect, electro optical}
+   \index{EOPE}
+
+\item[\Key{MIXFRE}]  \verb| |\newline
+   \verb|READ (LUCMD,*) MFREQ|\newline
+   \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|\newline
+   \verb|READ (LUCMD,*) (CQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
+
+   Input for general frequency mixing 
+   $\beta_{ABC}(-\omega_B-\omega_C;\omega_B,\omega_C)$: on the first line 
+   following \Key{MIXFRE} the number of different frequencies
+   (for this keyword) is read, from the second and third line
+   the frequency arguments $\omega_B$ and $\omega_C$ are read
+   ($\omega_A$ is set to $-\omega_B-\omega_C$).
+
+\item[\Key{NOBMAT}] 
+Test option:
+Do not use B matrix transformations but pseudo F matrix 
+transformations (with the zeroth-order Lagrange multipliers 
+exchanged by first-order responses) to compute the terms
+$\bar{t}^A {\bf B} t^{B} t^{C}$. This is usually less
+efficient.
+
 \item[\Key{OPERAT}] \verb| |\newline
 \verb|READ (LUCMD'(3A)') LABELA, LABELB, LABELC|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
@@ -57,10 +129,18 @@ function will be evaluated at all frequency pairs.
 Operator triples which do not correspond to symmetry allowed
 combination will be ignored during the calculation.
  
-\item[\Key{DIPOLE}] 
-Evaluate all symmetry allowed elements of the first
-dipole hyperpolarizability (max. 27 components).
- 
+\item[\Key{ORFREQ}]  \verb| |\newline
+   \verb|READ (LUCMD,*) MFREQ|\newline
+   \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
+
+   Input for optical rectification $\beta_{ABC}(0;\omega,-\omega)$:
+   on the first line following \Key{SHGFRE} the number of different
+   frequencies is read, from the second line the input for 
+   $\omega_B = \omega$ is read. $\omega_C$ is set to $\omega_C = -\omega$ and
+   $\omega_A$ to $0$.
+   \index{optical rectification}
+   \index{OR}
+
 \item[\Key{PRINT }] \verb| |\newline
      \verb|READ (LUCMD,*) IPRINT|
 
@@ -86,30 +166,6 @@ dipole hyperpolarizability (max. 27 components).
 % $d_{ABC}(l,m,n)$ of the quadratric response function
 % \cite{Haettig:DISPBETA}.
  
-\item[\Key{AVERAG}] \verb| |\newline
-   \verb|READ (LUCMD,'(A)') LINE|
-
-   Evaluate special tensor averages of quadratic response properties.
-   Presently implemented are only the vector averages of the first
-   dipole hyperpolarizability $\beta_{||}$, $\beta_{\bot}$ and 
-   $\beta_K$. All three of these averages are obtained if 
-   \verb+HYPERPOL+ is specified on the input line that follows
-   \Key{AVERAG}.
-   The \Key{AVERAG} keyword should be used before any \Key{OPERAT} 
-   or \Key{DIPOLE} input in the \Sec{CCQR} section.
- 
-\item[\Key{MIXFRE}]  \verb| |\newline
-   \verb|READ (LUCMD,*) MFREQ|\newline
-   \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|\newline
-   \verb|READ (LUCMD,*) (CQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
-
-   Input for general frequency mixing 
-   $\beta_{ABC}(-\omega_B-\omega_C;\omega_B,\omega_C)$: on the first line 
-   following \Key{MIXFRE} the number of differenct frequency
-   (for this keyword) is read, from the second and third line
-   the frequency arguments $\omega_B$ and $\omega_C$ are read
-   ($\omega_A$ is set to $-\omega_B-\omega_C$).
-
 \item[\Key{SHGFRE}]  \verb| |\newline
    \verb|READ (LUCMD,*) MFREQ|\newline
    \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
@@ -123,59 +179,17 @@ dipole hyperpolarizability (max. 27 components).
    \index{second harmonic generation}
    \index{SHG}
 
-\item[\Key{ORFREQ}]  \verb| |\newline
-   \verb|READ (LUCMD,*) MFREQ|\newline
-   \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
-
-   Input for optical rectification $\beta_{ABC}(0;\omega,-\omega)$:
-   on the first line following \Key{SHGFRE} the number of different
-   frequencies is read, from the second line the input for 
-   $\omega_B = \omega$ is read. $\omega_C$ is set to $\omega_C = -\omega$ and
-   $\omega_A$ to $0$.
-   \index{optical rectification}
-   \index{OR}
-
-\item[\Key{EOPEFR}]  \verb| |\newline
-   \verb|READ (LUCMD,*) MFREQ|\newline
-   \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
-
-   Input for the electro optical Pockels effect
-   $\beta_{ABC}(-\omega;\omega,0)$:
-   on the first line following \Key{SHGFRE} the number of different
-   frequencies is read, from the second line the input for 
-   $\omega_B = \omega$ is read. $\omega_C$ is set to $0$ and
-   $\omega_A$ to $\omega_A = -\omega$.
-   \index{Pockels effect, electro optical}
-   \index{EOPE}
-
 \item[\Key{STATIC}] 
    Add $\omega_A = \omega_B = \omega_C = 0$ to the frequency list.
 
-\item[\Key{DISPCF}]  \verb| |\newline
-   \verb|READ (LUCMD,*) NQRDSPE|
-
-   Calculate the dispersion coefficients
-   $D_{ABC}(n,m)$ up to order $n+m =$\verb+NQRDSPE+. 
-   \index{dispersion coefficients}
+\item[\Key{USE R2}] 
+Test option: use second-order response vectors instead of
+first-order Lagrange multiplier responses.
  
-% \item[\Key{ALLDSP}]  debug option only!
-
 \item[\Key{XYDEGE}] 
 Assume X and Y directions as degenerate in the calculation
 of the hyperpolarizability averages (this will prevent
 the program to use the components $\beta_{zyy}$, $\beta_{yzy}$
 $\beta_{yyz}$ for the computation of the vector averages).
 
-\item[\Key{NOBMAT}] 
-Test option:
-Do not use B matrix transformations but pseudo F matrix 
-transformations (with the zeroth-order Lagrange multipliers 
-exchanged by first-order responses) to compute the terms
-$\bar{t}^A {\bf B} t^{B} t^{C}$. This is usually less
-efficient.
-
-\item[\Key{USE R2}] 
-Test option: use second-order response vectors instead of
-first-order Lagrange multiplier responses.
- 
 \end{description}

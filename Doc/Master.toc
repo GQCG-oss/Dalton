@@ -165,8 +165,7 @@
 \contentsline {section}{\numberline {21.11}Transition moments between two excited states: {\normalfont \ttfamily *CCQR2R} }{235}
 \contentsline {section}{\numberline {21.12}Excited state first-order properties: {\normalfont \ttfamily *CCEXGR} }{236}
 \contentsline {section}{\numberline {21.13}Excited state linear response functions and two-photon transition moments between two excited states: {\normalfont \ttfamily *CCEXLR} }{238}
-\contentsline {section}{\numberline {21.14}Coupled-Cluster Calculations with self-consistent reaction field: {\normalfont \ttfamily *CCSLV} }{240}
-\contentsline {section}{\numberline {21.15}Numerical Gradients}{241}
-\contentsline {part}{IV\hspace {1em}Appendix: DALTON Tool box}{242}
-\contentsline {part}{V\hspace {1em}References}{247}
-\contentsline {part}{VI\hspace {1em}Index}{256}
+\contentsline {section}{\numberline {21.14}Numerical Gradients}{240}
+\contentsline {part}{IV\hspace {1em}Appendix: DALTON Tool box}{241}
+\contentsline {part}{V\hspace {1em}References}{246}
+\contentsline {part}{VI\hspace {1em}Index}{255}

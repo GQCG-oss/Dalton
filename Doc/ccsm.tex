@@ -22,9 +22,34 @@ S^{of}_{AB,CD}(\omega) = \frac{1}{2} \{ M^{AB}_{of}(-\omega) M^{CD}_{fo}(\omega)
 and right ($M^{XY}_{fo}(\omega)$) transition moments, and of the transition 
 strength $S^{of}_{AB,CD}(\omega)$.
 The methodology is implemented for the CCS, CC2 and CCSD models.
-Results obtained using this functionality should cite 
-\cite{Haettig:MULTIPHOTON,Haettig:TWOPHOTON}.
+%Results obtained using this functionality should cite 
+%\cite{Haettig:MULTIPHOTON,Haettig:TWOPHOTON}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item C.~H\"{a}ttig, O.~Christiansen, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}8331, (1998).
+\item C.~H\"{a}ttig, O.~Christiansen, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}8355, (1998).
+\end{list}
+}}
+\end{center}
+
 \begin{description}
+\item[\Key{DIPOLE}] 
+Evaluate all symmetry allowed elements of the all--dipole tensor
+of the first residues of quadratic response function
+(81 components). In other words, all four operator labels 
+are set equal to all possible cartesian components of 
+the electric dipole moment operator (\verb+DIPLEN+ in Sec.~\Sec{*INTEGRALS}).
+%
+\item[\Key{HALFFR}] 
+Set the frequency argument for the two-photon transition moments
+equal to  half the excitation energy of the final state $f$. This is the default unless \verb+SMFREQ+ is specified in \Key{SELSTA}.
+%
 \item[\Key{OPERAT}] \verb| |\newline
 \verb|READ (LUCMD,'(4A)') LABELA, LABELB, LABELC, LABELD|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
@@ -35,13 +60,6 @@ For each of these operator quadruples the first residues of the quadratic respon
 function will be evaluated at all frequencies.
 Operator pairs which do not correspond to symmetry allowed
 combinations will be ignored during the calculation.
-%
-\item[\Key{DIPOLE}] 
-Evaluate all symmetry allowed elements of the all--dipole tensor
-of the first residues of quadratic response function
-(81 components). In other words, all four operator labels 
-are set equal to all possible cartesian components of 
-the electric dipole moment operator (\verb+DIPLEN+ in Sec.~\Sec{*INTEGRALS}).
 %
 \item[\Key{PRINT }] \verb| |\newline
 \verb|READ (LUCMD,*) IPRSM|\newline
@@ -64,10 +82,5 @@ laser frequency \verb+SMFREQ+ (in atomic units).
 Default is all states specified in \Sec{CCEXCI}, and for each state 
 a laser frequency equal to half the excitation energy.
 
-%
-\item[\Key{HALFFR}] 
-Set the frequency argument for the two-photon transition moments
-equal to  half the excitation energy to the final state $f$. Default,
-if \verb+SMFREQ+ is not specified in \Key{SELSTA}.
 %
 \end{description}

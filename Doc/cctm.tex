@@ -19,21 +19,33 @@ S^{of}_{ABC,DEF}(\omega_1,\omega_2) = \frac{1}{2}
 where $M^{ABC}_{of}(\omega_1,\omega_2)$ and $M^{ABC}_{fo}(\omega_1,\omega_2)$
 are the left and right three photon transition moments, respectively.
 The methodology is implemented for the CC models CCS, CC2 and CCSD.
-Publications reporting results obtained with this module should 
-cite~\cite{Haettig:MULTIPHOTON}.
+%Publications reporting results obtained with this module should 
+%cite~\cite{Haettig:MULTIPHOTON}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item C.~H\"{a}ttig, O.~Christiansen, and P.~J{\o}rgensen \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}8331, (1998).
+\end{list}
+}}
+\end{center}
 
 \begin{description}
+\item[\Key{DIPOLE}] \verb| |\newline
+Calculate the three-photon moments and strengths for all possible combinations of cartesian 
+components of the electric dipole moment operator (729 combinations).
 \item[\Key{OPERAT}] \verb| |\newline
 \verb|READ (LUCMD,'(6A)') LABELA, LABELB, LABELC, LABELD, LABELE, LABELF|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
 \verb|   READ (LUCMD,'(6A)') LABELA, LABELB, LABELC, LABELD, LABELE, LABELF|\newline
 \verb|ENDDO|\newline   
-Select the hexuples of operator labels for which to calculate the three-photon transition
-moments. Operator hexuples which do not correspond to symmetry allowed combinations will be
+Select the sextuples of operator labels for which to calculate the three-photon transition
+moments. Operator sextuples which do not correspond to symmetry-allowed combinations will be
 ignored during the calculation.
-\item[\Key{DIPOLE}] \verb| |\newline
-Calculate the three photon moments and strengths for all possible combinations of cartesian 
-components of the electric dipole moment operator (729 combinations).
 \item[\Key{PRINT }] \verb| |\newline
 \verb|READ (LUCMD,*) IPRTM|\newline
 Read print level. Default is 0.
@@ -52,12 +64,12 @@ laser frequencies $\omega_1$ and $\omega_2$ (in atomic units).
 
 
 Default is all states specified in \Sec{CCEXCI}, and for each state
-both laser frequencies equal to one third the excitation energy.
+both laser frequencies equal to one third of the excitation energy.
 
 %
 \item[\Key{THIRDF}]
 Set the frequency arguments for the three-photon transition moments
-equal to one third the excitation energy of the (chosen) 
+equal to one third of the excitation energy of the (chosen) 
 final state $f$. Default, if \verb+FREQB,FREQC+ are not specified 
 in \Key{SELSTA}.
 %

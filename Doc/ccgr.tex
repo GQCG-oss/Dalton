@@ -18,15 +18,23 @@ than ground state optimizations), but can fail when there is symmetry lowering
 in the calculation of numerical hessians. 
 For this purpose one can give the excitation energy for the appropriate state at a lower level 
 (for example CCS) and from that find symmetry and number used in the real higher level calculation.
-Solves partially the problem in (i). It is implemented by the keywords in the CCEXCI section.
+%Solves partially the problem in (i). 
+It is implemented by the keywords in the CCEXCI section.
 
 \begin{description}
 
 \item[\Key{NUMGD }] 
 
-Specify calculation of gradients is to be done numerically.
+Specify the the calculation of gradients is to be done numerically.
 All that is required for coupled cluster (in addition to appropriate minimization
-keywords see ).
+keywords see Chapter~\ref{ch:geometrywalks}).
+
+\item[\Key{XSTNUM}] 
+
+\verb|READ (LUCMD,*) IXSTAT|\newline
+
+The number of the excited state for which the  gradient is to be calculated 
+(counted in terms of increasing energy).
 
 \item[\Key{XSTSYM}] 
 
@@ -34,11 +42,5 @@ keywords see ).
 
 Symmetry for excited state for which gradient is to be calculated.
 
-\item[\Key{XSTNUM}] 
-
-\verb|READ (LUCMD,*) IXSTAT|\newline
-
-The number for the excited state for which gradient is to be calculated 
-(counted in terms of increasing energy).
 
 \end{description}
