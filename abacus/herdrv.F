@@ -113,6 +113,7 @@ C
 C
       DIMENSION WORK(LWORK)
 C
+      CALL QENTER('HERCTL')
       CALL GETTIM(TIMHER,WALHER)
 C
 C     *************************
@@ -204,6 +205,7 @@ C
       WALHER = WEND - WALHER
       CALL TIMTXT('>>>> Total CPU  time used in HERMIT:',TIMHER,LUPRI)
       CALL TIMTXT('>>>> Total wall time used in HERMIT:',WALHER,LUPRI)
+      CALL QEXIT('HERCTL')
       RETURN
       END
 C  /* Deck herinp */
@@ -287,6 +289,7 @@ cLig <> added RANGMO and RPSO
 C
 C     Check if input has been processed earlier.
 C
+      CALL QENTER('HERINP')
       IPRDEF = IPRUSR + 1
       IF (HRINPC) THEN
          CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -1359,6 +1362,7 @@ C
       IF (DORLM .AND. .NOT. CAVUSR)
      &   WRITE(LUPRI,'(/A,3F12.6)') ' Cavity center (center of mass):',
      &                               (CAVORG(I), I = 1, 3)
+      CALL QEXIT('HERINP')
       RETURN
 C
       END
@@ -1381,13 +1385,14 @@ C
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
+      CALL QENTER('HR1INP')
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
-         RETURN
+         GOTO 199
       END IF
 C
       SET = .TRUE.
@@ -1463,7 +1468,7 @@ C
             END IF
       END IF
   300 CONTINUE
-      IF (ICHANG .EQ. 0) RETURN
+      IF (ICHANG .EQ. 0) GOTO 199
       IF (NEWDEF) THEN
          CALL HEADER('Changes of defaults for ONEINP:',1)
          IF (.NOT.RUNONE) THEN
@@ -1486,6 +1491,7 @@ C
      &         ' User supplied cavity center',(CAVORG(I),I=1,3)
          END IF
       END IF
+ 199  CALL QEXIT('HR1INP')
       RETURN
       END
 C  /* Deck hr2inp */
@@ -1507,13 +1513,14 @@ C
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.XXXXXX'/
       DATA SET/.FALSE./
 C
+      CALL QENTER('HR2INP')
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
-         RETURN
+         GOTO 199
       END IF
 C
       SET = .TRUE.
@@ -1619,7 +1626,7 @@ C&&& This option only used in DIRAC
       END IF
   300 CONTINUE
       ICEDIF = ICDIFF + 2*IEDIFF
-      IF (ICHANG .EQ. 0.AND.(.NOT.DIRCAL)) RETURN
+      IF (ICHANG .EQ. 0.AND.(.NOT.DIRCAL)) GOTO 199
       IF (NEWDEF) THEN
          CALL HEADER('Changes of defaults for HR2INP:',1)
          IF (.NOT.(RUNTWO.OR.DIRCAL)) THEN
@@ -1671,6 +1678,7 @@ C&&& This option only used in DIRAC
             ENDIF
          END IF
       END IF
+ 199  CALL QEXIT('HR2INP')
       RETURN
       END
 C  /* Deck hrsinp */
@@ -1690,13 +1698,14 @@ C
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
+      CALL QENTER('HRSINP')
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
-         RETURN
+         GOTO 199
       END IF
 C
       SET = .TRUE.
@@ -1768,7 +1777,7 @@ C
             END IF
       END IF
   300 CONTINUE
-      IF (ICHANG .EQ. 0) RETURN
+      IF (ICHANG .EQ. 0) GOTO 199
       IF (RUNSUP. AND. NEWDEF) THEN
          CALL HEADER('Changes of defaults for SUPINT:',1)
          IF (IPRSUP .NE. IPRDEF) WRITE (LUPRI,'(A,I5)')
@@ -1781,6 +1790,7 @@ C
             WRITE (LUPRI,'(A)') ' Symmetry used in SUPINT.'
          END IF
       END IF
+ 199  CALL QEXIT('HRSINP')
       RETURN
       END
 C  /* Deck herint */

@@ -372,6 +372,7 @@ C     of READIN processing. The processing should be performed once every
 C     iteration.
 C
       IF (RDINPC) RETURN
+      CALL QENTER('READIN')
       RDINPC = .TRUE.
 C
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
@@ -474,6 +475,7 @@ C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
 C
       IF (NODDYDF) CALL DENFIT_NODDY_INT
 C
+      CALL QEXIT('READIN')
       RETURN
 C
 C Error messages:
@@ -567,6 +569,7 @@ C
 #include <huckel.h>
 #include <r12int.h>
 #include <ibtfun.h>
+      CALL QENTER('READI1')
       ZMAT = .FALSE.
 C     Initialize auxiliary basis set variables (WK/UniKA/04-11-2002).
       LAUXBS = .FALSE.
@@ -781,6 +784,7 @@ C
       IF (HERMIT) CALL WRONEL(TITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO,
      &                        KANG)
 C
+      CALL QEXIT('READI1')
       RETURN
       END
 C  /* Deck baspar */
