@@ -513,14 +513,23 @@ camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
 static void
 camb3lyp_second_sigma(real rho, real grad, real a, RGSecondDrv *res)
 {
-    real bfactor  = EVALUATOR(a, energy);
-    real b_first  = EVALUATOR(a, first);
-    real b_second = camb3lyp_b_second_medium(a*FAC);
+    real bfactor;
+    real b_first;
+    real b_second;
     RGSecondDrv ader;
     SecondFuncDrv ds;
     DftDensProp dp;
     real ex;
 
+    if(rho<1e-13) {
+        res->df10 = res->df01 = 0;
+        res->df20 = res->df11 =  res->df02 = 0;
+        return;
+    }
+
+    bfactor  = EVALUATOR(a, energy);
+    b_first  = EVALUATOR(a, first);
+    b_second = camb3lyp_b_second_medium(a*FAC);
     fun_a_second(rho, grad, &ader);
     ader.df10 *= FAC; ader.df01 *= FAC;
     ader.df20 *= FAC; ader.df11 *= FAC; ader.df02 *= FAC;
