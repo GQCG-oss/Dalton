@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sircan.F,v 1.2 2001-03-22 14:34:56 hjj Exp $
+C$Id: sircan.F,v 1.3 2001-05-18 07:57:17 hjj Exp $
 C
 #include <single.h>
 C  /* Deck sircan */
@@ -399,12 +399,6 @@ C .. 1.2 .. (FCKMAT)
       KFC    = KWRK1
       KFV    = KFC    + NNORBT
       KWRK2  = KFV    + NNORBT
-CTOND      KGAB   = KWRK2
-CTROND      IF(DIRFCK) THEN
-CTROND         CALL GABDIM(NGAB)
-CTROND         N2GAB = NGAB*NGAB
-CTROND         KWRK2 = KGAB + N2GAB
-CTROND      ENDIF              
       LWRK2  = LWRK   - KWRK2
 C .. 1.3  (2*JACO)
       KBIG   = KWRK2
@@ -453,14 +447,6 @@ C         If active orbitals then add FC and FV.
 C
 C
       IF ( .NOT. TRTOFC ) GO TO 4000
-CTROND      IF(DIRFCK) THEN
-CTROND          IRNTYP = 0
-CTROND          MAXDIF = 0
-CTROND          IGTYP  = 1
-CTROND          IJOB   = 0
-CTROND          CALL GABGEN(IJOB,WORK(KGAB),WORK(KFC),IRNTYP,IGTYP,
-CTROND     &         MAXDIF,0,.FALSE.,WORK(KWRK2),LWRK2,IPRFCK)
-CTROND      ENDIF
       CALL FCKMAT((NASHT.EQ.0),WRK(KDV),CMO,EMY,WRK(KFC),WRK(KFV),
      *            WRK(KWRK2),LWRK2)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
