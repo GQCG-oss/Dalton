@@ -186,9 +186,7 @@ C
 C        DFT contribution
 C
          IF (DFTADD .AND. IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
-            CALL DFT_london(FCD(1,1),FCD(1,2),FCD(1,3),WORK,LWORK,
-     &           IPRINT)
-c            CALL DFTLND(FCD(1,1),FCD(1,2),FCD(1,3),WORK,LWORK,IPRINT)
+             CALL DFTBRHS(FCD,WORK,LWORK,IPRINT)
          END IF
 C
          IF (IATOM .GT. 0) THEN
