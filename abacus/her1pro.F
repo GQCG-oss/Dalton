@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.8 2001-04-26 08:10:14 helgaker Exp $
+C$Id: her1pro.F,v 1.9 2001-04-26 18:42:50 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -213,7 +213,6 @@ C
       TRASPH = .FALSE.
       SQUARE = .FALSE.
       SOLVNT = .FALSE.
-      call flush(2)
       DO 100 I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
