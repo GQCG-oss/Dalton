@@ -868,9 +868,9 @@ C        *** If property is spin-spin ***
 C
          IF (PRPTXT.EQ.'SPIN-SPIN') THEN
             KTNRDR = 2
-            CALL PRPAVE(DERIV,FREQ,SYMCOR,RNNORM,SPSPFV,SPSPDR,WORK,
-     &                  NDIM1,NDIM2,NDIM3,NPPDER,NDERIV,LWORK,KTNRDR,
-     &                  IPRINT,PRPTXT)
+            CALL PRPNVBA(DERIV,FREQ,SYMCOR,RNNORM,SPSPFV,SPSPDR,WORK,
+     &                   NDIM1,NDIM2,NDIM3,NPPDER,NDERIV,LWORK,KTNRDR,
+     &                   IPRINT,PRPTXT)
          END IF
       END DO
 C
@@ -882,10 +882,10 @@ C
       END
 C
 C
-C     /* Deck prpave */
-      SUBROUTINE PRPAVE(FDERIV,FREQ,SYMCOR,RNNORM,FUNVAL,DERIVA,WORK,
-     &                  NDIM1,NDIM2,NDIM3,NPPDER,NDERIV,LWORK,KTNRDR,
-     &                  IPRINT,PRPTXT)
+C     /* Deck prpnvba */
+      SUBROUTINE PRPNVBA(FDERIV,FREQ,SYMCOR,RNNORM,FUNVAL,DERIVA,WORK,
+     &                   NDIM1,NDIM2,NDIM3,NPPDER,NDERIV,LWORK,KTNRDR,
+     &                   IPRINT,PRPTXT)
 C     **************************************************************
 C     *** This sorts out the nescecary information and calculate ***
 C     *** vibrational average of property in funval.             ***
