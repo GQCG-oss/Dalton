@@ -272,9 +272,9 @@ CTRL[19]=4
 ERROR[19]="CIOSLOWSKI CHARGES NOT CORRECT"
 
 # Static polarizabilities
-CRIT1=`$GREP "Ex * 8\.47954[0-9] * (0| )\.000000 * (0| )\.000000" $log | wc -l`
-CRIT2=`$GREP "Ey * (0| )\.000000 * 8\.47953[0-9] * (0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * (0| )\.000000 * (0| )\.000000 * 4\.13429[0-9]" $log | wc -l`
+CRIT1=`$GREP "Ex * 8\.47954[0-9] * (0| |\-0|\-)\.000000 * (0| |\-0|\-)\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * (0| |\-0|\-)\.000000 * 8\.47953[0-9] * (0| )\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * (0| |\-0|\-)\.000000 * (0| )\.000000 * 4\.13429[0-9]" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[20]=3
 ERROR[20]="STATIC POLARIZABILITIES NOT CORRECT"
