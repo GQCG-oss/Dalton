@@ -75,7 +75,7 @@ DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
 dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_lb94 dft_qr_sym dft_qr_nosym \
 dft_lda_molhes_nosym dft_b3lyp_molhes_nosym dft_b3lyp_magsus_nosym \
-dft_pbe dft_camb3lyp"
+dft_pbe dft_camb3lyp dft_cr_sym"
 #
 DPT="dpt_hf dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm \
 dpt_hbr dpt_hbr_finp dpt_h2s_ff"

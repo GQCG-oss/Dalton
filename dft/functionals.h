@@ -22,7 +22,7 @@ typedef double real;
  * zeta_i = |\nabla\rho_i|²
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
-typedef struct FunFirstFuncDrv_ {
+typedef struct {
     real df1000;  /* d/drho F     */
     real df0100;
     real df0010;  /* d/zeta F     */
@@ -30,15 +30,10 @@ typedef struct FunFirstFuncDrv_ {
     real df00001;
 } FunFirstFuncDrv;
 
-/* SecondDrv:  matrix  of  second  order functional  derivatives  with
- * respect  to two  parameters: density  rho and  SQUARE  of the
- * density gradient zeta.  The derivatives are computed for alpha-alpha
- * or beta-beta spin-orbital block (i.e. include triplet flag).
- */
 /* SecondFuncDrv: this structure is used by functional derivative
  * evaluation procedures. Do not include "triplet" transformation.
  */
-typedef struct FunSecondFuncDrv_ {
+typedef struct {
     real df1000;  /* d/drho_alpha F               */
     real df0100;  /* d/drho_beta F                */
     real df0010;  /* d/|zeta_alpha| F             */
@@ -67,53 +62,208 @@ typedef struct FunSecondFuncDrv_ {
    zeta.  and mu.
 */
 
-typedef struct FunThirdFuncDrv_ {
+typedef struct {
     real df1000;   /* d/drho F          */
     real df0100; 
     real df0010;   /* d/|zeta| F        */
     real df0001;
     real df00001;
      
-    real df2000;  /* d/drho_alpha^2 F  */
-    real df0200; 
+    real df2000;  /* d/drho_alpha^2 F             */
     real df1100;  /* d/(drho_alpha drho_beta) F   */
     real df1010;  /* d/drho_alpha d/dzeta_alpha F */
     real df1001;  /* d/drho_alpha d/dzeta_beta F  */
-    real df0101;
-    real df0110;
     real df10001;
-    real df01001;   
-    real df0020;  /* d/dzeta^2 F                  */
-    real df0002;
+    real df0200;  /* d/drho_beta^2 F              */
+    real df0110;  /* d/drho_beta d/dzeta_alpha F  */ 
+    real df0101;  /* d/drho_beta d/dzeta_beta F   */
+    real df01001;
+    real df0020;  /* d/dzeta_alpha^2 F          */
     real df0011;  /* d2/dzeta_a zeta_b F          */
+    real df00101;
+    real df0002;  /* d/dzeta_beta^2 F             */
+    real df00011;
+    real df00002;
 
-    real df3000; /* d/drho_alpha^3 F              */
-    real df0300; 
-    real df2100; /* d/d(rho_alpha^2rho_beta) F    */
-    real df1200;
-    real df2010; /* d/drhoa^2 d/dzetaa F */
+    real df3000;
+    real df2100;
+    real df2010;
     real df2001;
-    real df0201; 
-    real df0210;     
-    real df1110; /* d/drho^2 d/dzeta F */
-    real df1101;
-    real df1020; /* d/drho d/dzeta^2 F */
-    real df1002;
-    real df0102;
-    real df0120; 
-    real df0030; /* d/dzeta^3 F        */
-    real df0003;
-    real df1011;
-    real df0111;
-    real df0021;
-    real df0012;
     real df20001;
+    real df1200;
+    real df1110;
+    real df1101;
+    real df11001;
+    real df1020;
+    real df1011;
+    real df10101;
+    real df1002;
+    real df10011;
+    real df10002;
+    real df0300;
+    real df0210;
+    real df0201;
     real df02001;
-    real df11001;  
-  /* most derivatives for fith variable not included *
-   * this makes functionals valid only to square grad rho 
-   */
+    real df0120;
+    real df0111;
+    real df01101;
+    real df0102;
+    real df01011;
+    real df01002;
+    real df0030;
+    real df0021;
+    real df00201;
+    real df0012;
+    real df00111;
+    real df00102;
+    real df0003;
+    real df00021;
+    real df00012;
+    real df00003;
 } FunThirdFuncDrv;
+
+
+typedef struct {
+  
+  /* First order derivatives with respect to all 5 variables */
+
+    real df1000;
+    real df0100;
+    real df0010;
+    real df0001;
+    real df00001;
+	
+  /* Second order mixed derivatives with respect to all 5 variables */
+
+    real df2000;
+    real df1100;
+    real df1010;
+    real df1001;
+    real df10001;
+    real df0200;
+    real df0110;
+    real df0101;
+    real df01001;
+    real df0020;
+    real df0011;
+    real df00101;
+    real df0002;
+    real df00011;
+    real df00002;
+	
+  /* Third order mixed derivatives with respect to all 5 variables */
+
+    real df3000;
+    real df2100;
+    real df2010;
+    real df2001;
+    real df20001;
+    real df1200;
+    real df1110;
+    real df1101;
+    real df11001;
+    real df1020;
+    real df1011;
+    real df10101;
+    real df1002;
+    real df10011;
+    real df10002;
+    real df0300;
+    real df0210;
+    real df0201;
+    real df02001;
+    real df0120;
+    real df0111;
+    real df01101;
+    real df0102;
+    real df01011;
+    real df01002;
+    real df0030;
+    real df0021;
+    real df00201;
+    real df0012;
+    real df00111;
+    real df00102;
+    real df0003;
+    real df00021;
+    real df00012;
+    real df00003;
+    
+  /* Fourth order mixed derivatives with respect to all 5 variables */
+
+    real df4000;
+    real df3100;
+    real df3010;
+    real df3001;
+    real df30001;
+    real df2200;
+    real df2110;
+    real df2101;
+    real df21001;
+    real df2020;
+    real df2011;
+    real df20101;
+    real df2002;
+    real df20011;
+    real df20002;
+    real df1300;
+    real df1210;
+    real df1201;
+    real df12001;
+    real df1120;
+    real df1111;
+    real df11101;
+    real df1102;
+    real df11011;
+    real df11002;
+    real df1030;
+    real df1021;
+    real df10201;
+    real df1012;
+    real df10111;
+    real df10102;
+    real df1003;
+    real df10021;
+    real df10012;
+    real df10003;
+    real df0400;
+    real df0310;
+    real df0301;
+    real df03001;
+    real df0220;
+    real df0211;
+    real df02101;
+    real df0202;
+    real df02011;
+    real df02002;
+    real df0130;
+    real df0121;
+    real df01201;
+    real df0112;
+    real df01111;
+    real df01102;
+    real df0103;
+    real df01021;
+    real df01012;
+    real df01003;
+    real df0040;
+    real df0031;
+    real df00301;
+    real df0022;
+    real df00211;
+    real df00202;
+    real df0013;
+    real df00121;
+    real df00112;
+    real df00103;
+    real df0004;
+    real df00031;
+    real df00022;
+    real df00013;
+    real df00004;    
+} FunFourthFuncDrv;
+
+
 typedef struct Functional_ Functional;
 
 enum FunError { FUN_OK, FUN_UNKNOWN, FUN_CONF_ERROR };
@@ -150,6 +300,8 @@ typedef void (*SecondOrderFun)(FunSecondFuncDrv *ds, real factor,
 
 typedef void (*ThirdOrderFun)(FunThirdFuncDrv *ds, real factor,
                               const FunDensProp* dens_prop);
+typedef void (*FourthOrderFun)(FunFourthFuncDrv *ds, real factor,
+                               const FunDensProp *dens_prop);
 
 struct Functional_ {
     const char* name; /* descriptive functional name (usually 5 characters) */
@@ -163,11 +315,13 @@ struct Functional_ {
     FirstOrderFun   first;
     SecondOrderFun  second;
     ThirdOrderFun   third;
+    FourthOrderFun  fourth;
 };
 
 void drv1_clear(FunFirstFuncDrv* gga);  /* set all components to 0 */
 void drv2_clear(FunSecondFuncDrv* gga); /* set all components to 0 */
 void drv3_clear(FunThirdFuncDrv* gga);  /* set all components to 0 */
+void drv4_clear(FunFourthFuncDrv* gga); /* set all components to 0 */
 
 /* The list of functionals */
 /* sorted list of generic functionals */

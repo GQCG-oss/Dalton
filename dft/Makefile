@@ -49,12 +49,13 @@ FUNFILES = \
 
 CFILES =\
 	$(FUNFILES)	\
+	basisinfo.c	\
+	cube-fast.c	\
 	functionals.c	\
+	gen-so-int.c	\
 	general.c	\
 	grid-gen.c	\
 	grid-gen2.c	\
-	basisinfo.c	\
-	gen-so-int.c	\
 	integrator.c	\
 	prop-eval.c	\
 	quad-fast.c	\

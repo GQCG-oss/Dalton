@@ -96,9 +96,10 @@ C
 /* INTERFACE PART */
 static int  lda_read(const char* conf_line);
 static real lda_energy(const FunDensProp* dp);
-static void lda_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
-static void lda_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
-static void lda_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void lda_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp* dp);
+static void lda_second(FunSecondFuncDrv *ds, real fac, const FunDensProp* dp);
+static void lda_third(FunThirdFuncDrv *ds,   real fac, const FunDensProp* dp);
+static void lda_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
 static int  ldagauss_read(const char* conf_line);
 static int  blyp_read(const char* conf_line);
 static int  b3lyp_read(const char* conf_line);
@@ -119,17 +120,18 @@ static int  xalpha_read(const char* conf_line);
 static int  gga_key_read(const char* conf_line);
 static void gga_report(void);
 static real gga_energy(const FunDensProp* dp);
-static void gga_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
-static void gga_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
-static void gga_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void gga_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp* dp);
+static void gga_second(FunSecondFuncDrv *ds, real fac, const FunDensProp* dp);
+static void gga_third(FunThirdFuncDrv *ds,   real fac, const FunDensProp* dp);
+static void gga_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
 
 #define LDA_FUNCTIONAL(name,read) { (name), \
     fun_false, (read), NULL, lda_energy, lda_first, lda_second, \
-    lda_third }
+    lda_third, lda_fourth }
 
 #define GGA_FUNCTIONAL(name,read) { (name), \
     gga_isgga, (read), gga_report, gga_energy, gga_first, gga_second, \
-    gga_third }
+    gga_third, gga_fourth }
 
 Functional XAlphaFunctional = GGA_FUNCTIONAL("XAlpha", xalpha_read);
 Functional LDAFunctional =    LDA_FUNCTIONAL("LDA",     lda_read);
@@ -225,6 +227,13 @@ lda_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     SlaterFunctional.third(ds, factor, dp);
     VWNFunctional  .third(ds, factor, dp);
+}
+
+static void
+lda_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    SlaterFunctional.fourth(ds, factor, dp);
+    VWNFunctional   .fourth(ds, factor, dp);
 }
 
 static int
@@ -481,6 +490,15 @@ gga_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 
         lst->func->third(ds, factor*lst->weight, dp);
+}
+
+
+static void
+gga_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    FuncList* lst;
+    for(lst=gga_fun_list; lst; lst=lst->next) 
+        lst->func->fourth(ds, factor*lst->weight, dp);
 }
 
 

@@ -63,6 +63,8 @@ static real vwn_energy(const FunDensProp* dp);
 static void vwn_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
 static void vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn_fourth(FunFourthFuncDrv *ds,   real factor,
+                       const FunDensProp* dp);
 static real vwni_energy(const FunDensProp* dp);
 static void vwni_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void vwni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
@@ -89,7 +91,8 @@ Functional VWN5Functional = {
     vwn_energy, 
     vwn_first,
     vwn_second,
-    vwn_third
+    vwn_third,
+    vwn_fourth
 };
 
 /* VWN is used for backward compatibility only */
@@ -101,7 +104,8 @@ Functional VWNFunctional = {
     vwn_energy, 
     vwn_first,
     vwn_second,
-    vwn_third
+    vwn_third,
+    vwn_fourth
 };
 
 /* VWNIFunctional is a variant of VWN5 functional with another spin
@@ -109,8 +113,6 @@ Functional VWNFunctional = {
 
    F(r,zeta) = (E_p + f(zeta)*(E_f - E_p))*rho
 
-   The implementation is crippled and works only for closed shell
-   systems up to linear response.
  */
 Functional VWNIFunctional = {
     "VWNI",      /* name */
@@ -187,6 +189,11 @@ vwn_en_pot(real* enpot, real rho, int order, const struct vwn_params* p)
     real xfx  = 2*x + BI;
     real yf   = Q/xfx;
     real e1, ex1, exx1, exxx1;
+    real xf_p2, xf_p3, xf_p4, xfx_p2, xfx_p4;
+    real xrho_p2, xrho_p3, xrho_p4, xxrho_p2, xxxrho, xxxxrho;
+    real Q_p2, exxxx1;
+    real x_p4;
+
     e1  = 2*log(x) 
         + ACON*log(xf)
         - BCON*log(x - X0I)
@@ -216,6 +223,36 @@ vwn_en_pot(real* enpot, real rho, int order, const struct vwn_params* p)
         + 0.5*AI*xrho*(2*exx1*xrho 
                        +exx1*xrho + rho*(exxx1*xrho*xrho+exx1*xxrho)
                        -7.0/6.0*exx1*xrho);
+
+    if(order<4) return;
+    x_p4 = pow(x,4.0);
+    xf_p2 = xf*xf;
+    xf_p3 = xf_p2*xf;
+    xf_p4 = xf_p2*xf_p2;
+    xfx_p2 = xfx*xfx;
+    xfx_p4 = xfx_p2*xfx_p2;
+    xrho_p2 = xrho*xrho;
+    xrho_p3 = xrho_p2*xrho;
+    xrho_p4 = xrho_p2*xrho_p2;
+    xxrho_p2 = xxrho*xxrho;
+    xxxrho = (-91.0/216.0)*DCRS/pow(rho,19.0/6.0);
+    xxxxrho =  (1729.0/1296.0)*DCRS/pow(rho,25.0/6.0);
+    Q_p2 = Q*Q;
+    
+    exxxx1 = 6*((-2*ACON)/xf_p2 + (4*xfx_p2*ACON)/xf_p3 -      
+	     (xfx_p4*ACON)/xf_p4 + (64*xfx*CCON*(xfx - Q)*Q*(xfx + Q))/
+	     pow((xfx_p2 + Q_p2),4) - 2/x_p4 + BCON/pow((x - X0I),4));
+
+    enpot[4] = 0.5*AI*(4*exxx1*xrho_p3  + exxxx1*rho*xrho_p4  +
+                       6*exxx1*rho*xrho_p2*xxrho +
+                       3*exx1*rho*xxrho_p2  + 
+                       4*exx1*xrho*(3*xxrho + rho*xxxrho) +
+                       ex1*(4*xxxrho + rho*xxxxrho));
+    /* for fourth derivatives we need also 
+       first derivative of enpot[0] with respect to rho.
+       It is stored in enpot[5] (what a mess!) */
+    enpot[5] = 0.5*AI*ex1*xrho;	
+	
 }
 
 static real
@@ -522,6 +559,340 @@ vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
 {
     par_third(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
 }
+
+static void
+vwn_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    real zeta, zeta2, zeta3,zeta4, f_zeta, f_zet1, f_zet2, f_zet3, vcfp;
+    real delta, ep_p[6], ep_f[6], ep_i[6], d_ef0, d_ei0;
+    real vcfp1, vcfp2, vcfp3, ef0, ef1, ef2, ef3, ei0, ei1, ei2, ei3;
+    real bterm, cterm, dterm, eterm, ctrm1, ctrm2, dtrm1, dtrm2;
+    real ef2bi, ei2bi;
+    real spA, spB, spAA, spAB, spBB;
+    real rhoa = dp->rhoa, rhob = dp->rhob, rho = dp->rhoa + dp->rhob;
+    real rhoa_p2 = rhoa*rhoa, rhob_p2 = rhob*rhob;
+    real rho2 = rho*rho;
+    real rho3 = rho2*rho;
+    real rho4 = rho2*rho2;
+    real zeta_p2, zeta_p3, zeta_p4, zeta_p5;
+    real mzeta, pzeta, mzeta_p2, pzeta_p2;
+    real f_zet4;
+    real ef4, ei4, ef_ei, ef1_ei1, ef2_ei2, ef3_ei3, ef4_ei4, ef, ei;
+    real spAAA, spBBB, spAAB, spABB;
+    real spA_p2, spA_p3, spB_p2, spB_p3;
+    
+    vwn_en_pot(ep_p, rho, 4, &vwn_paramagnetic);
+
+    ds->df1000 += ep_p[1]*factor;
+    ds->df0100 += ep_p[1]*factor;
+    
+    ds->df2000 += ep_p[2]*factor;
+    ds->df0200 += ep_p[2]*factor;
+    ds->df1100 += ep_p[2]*factor;
+
+    ds->df3000 += ep_p[3]*factor;
+    ds->df2100 += ep_p[3]*factor;
+    ds->df1200 += ep_p[3]*factor;
+    ds->df0300 += ep_p[3]*factor;
+
+    ds->df4000 += ep_p[4]*factor;    
+    ds->df3100 += ep_p[4]*factor;    
+    ds->df2200 += ep_p[4]*factor;    
+    ds->df1300 += ep_p[4]*factor;    
+    ds->df0400 += ep_p[4]*factor;    
+
+    //if(dp->rhoa==dp->rhob) return;
+    /* contribution from spin-polarized case; second order */
+    zeta   = (dp->rhoa-dp->rhob)/rho;
+    zeta_p2 = zeta2  = zeta*zeta;
+    zeta_p3 = zeta3  = zeta2*zeta;
+    zeta_p4 = zeta4  = zeta3*zeta;
+    zeta_p5 = zeta4*zeta;
+    mzeta = -1.0+zeta;
+    pzeta = 1.0+zeta;
+    mzeta_p2 = mzeta*mzeta;
+    pzeta_p2 = pzeta*pzeta;
+    f_zeta = SPINPOLF*    (pow(1+zeta,FOURTHREE)+pow(1-zeta,FOURTHREE)-2.0);
+    f_zet1 = SPINPOLF*4.0/3.0 *(pow(1+zeta, 1.0/3.0)-pow(1-zeta, 1.0/3.0));
+    f_zet2 = SPINPOLF*4.0/9.0 *(pow(1+zeta,-2.0/3.0)+pow(1-zeta,-2.0/3.0));
+    f_zet3 =-SPINPOLF*8.0/27.0*(pow(1+zeta,-5.0/3.0)-pow(1-zeta,-5.0/3.0));
+    f_zet4 = SPINPOLF*(40.0/81.0)*(pow(1-zeta,-8.0/3.0)+pow(1+zeta,-8.0/3.0));
+
+    vwn_en_pot(ep_f, rho, 4,&vwn_ferromagnetic);
+    ef0   = ep_f[0] - ep_p[0];
+    ef1   = ep_f[1] - ep_p[1];
+    ef2   = ep_f[2] - ep_p[2];
+    ef3   = ep_f[3] - ep_p[3];
+    ef4   = ep_f[4] - ep_p[4];
+    d_ef0 = ep_f[5] - ep_p[5];
+    vwn_en_pot(ep_i, rho, 4,&vwn_interp);
+    ei0   = ep_i[0]*THREEFTHRD2;
+    ei1   = ep_i[1]*THREEFTHRD2;
+    ei2   = ep_i[2]*THREEFTHRD2;
+    ei3   = ep_i[3]*THREEFTHRD2;
+    ei4   = ep_i[4]*THREEFTHRD2;
+    d_ei0 = ep_i[5]*THREEFTHRD2;
+
+    ef = ef0;
+    ei = ei0;
+    
+    ef_ei = ef - ei;
+    
+    ef1_ei1 = ef1 - ei1;
+    ef2_ei2 = ef2 - ei2;
+    ef3_ei3 = ef3 - ei3;
+    ef4_ei4 = ef4 - ei4;
+    
+
+    bterm = ef1*zeta4 + ei1*(1-zeta4);
+    vcfp  = f_zeta*bterm;
+    delta = (f_zet1*(ef0*zeta4 + ei0*(1-zeta4)) 
+             + 4*f_zeta*(ef0 - ei0)*zeta3);
+
+    spA = 2*rhob/rho2; /* =  2(1-zeta)/rho */
+    spB =-2*rhoa/rho2; /* = -2(1+zeta)/rho */
+    spAA = -4*rhob/rho3;
+    spAB = 2*(rho-2*rhob)/rho3;
+    spBB = 4*rhoa/rho3;
+    spAAA = 12*rhob/rho4;
+    spAAB = -4*(rhoa - 2* rhob)/rho4;
+    spABB = (-8*rhoa + 4*rhob)/rho4;
+    spBBB = -12*rhoa/rho4;
+
+    /* Powers of sp */
+    spA_p2 = spA*spA;
+    spA_p3 = spA_p2*spA;
+	    
+    spB_p2 = spB*spB;
+    spB_p3 = spB_p2*spB;
+	    
+	    
+    /* contribution from spin-polarized case; second order */
+    /* spin independent part of vcfp */
+    vcfp1 = f_zeta*(ef2*zeta4 + ei2*(1-zeta4));
+    /* spin dependent part of vcfp */
+    cterm = 4*f_zeta*(ef1-ei1)*zeta3 + bterm*f_zet1 - delta;
+
+    /* spin dependent part of delta */
+    dterm = (f_zet2*(ef0*zeta4+ei0*(1-zeta4))
+             +8*f_zet1*(ef0-ei0)*zeta3
+             +12*f_zeta*(ef0-ei0)*zeta2)*rho;
+
+    /* third order terms */
+    vcfp2 = f_zeta*(ef3*zeta4+ei3*(1-zeta4));
+
+    eterm = f_zet1*(ef2*zeta4 + ei2*(1-zeta4)) + f_zeta*(ef2-ei2)*4*zeta3;
+    
+    ef2bi = ef2-(ef1-ef0)/rho;
+    ei2bi = ei2-(ei1-ei0)/rho;
+    ctrm1 = 4*f_zeta*(ef2bi-ei2bi)*zeta3 +f_zet1*(ef2bi*zeta4+ei2bi*(1-zeta4));
+
+    ctrm2 = (ef1-ei1-ef0+ei0)*(8*f_zet1*zeta3+12*f_zeta*zeta2)
+        +f_zet2*(bterm-(ef0*zeta4 + ei0*(1-zeta4)));
+
+    dtrm1 = f_zet2*((ef1-ef0)*zeta4+(ei1-ei0)*(1-zeta4))
+        +(8*f_zet1*zeta3+12*f_zeta*zeta2)*(ef1-ei1-ef0+ei0)
+        +dterm/rho;
+    dtrm2 = ((12*f_zet2*zeta3 + 36*f_zet1*zeta2 + 24*f_zeta*zeta)*(ef0-ei0)+
+             f_zet3*(ef0*zeta4+ei0*(1-zeta4)))*rho;
+
+    /* the final section: begin */
+    ds->df1000 += (vcfp + delta*(1-zeta))*factor;
+    ds->df0100 += (vcfp - delta*(1+zeta))*factor;
+
+    ds->df2000 += (vcfp1+ cterm*(spA+spA) + dterm*spA*spA)*factor;
+    ds->df1100 += (vcfp1+ cterm*(spA+spB) + dterm*spA*spB)*factor;
+    ds->df0200 += (vcfp1+ cterm*(spB+spB) + dterm*spB*spB)*factor;
+
+    ds->df3000 += (vcfp2+ eterm*spA + 
+                   ctrm1*(spA+spA)+ ctrm2*spA*(spA+spA) + cterm*(spAA+spAA) +
+                   dtrm1*(spA*spA)+ dtrm2*spA*spA*spA   + dterm*(2*spAA*spA)
+        )*factor;
+    ds->df2100 += (vcfp2+ eterm*spB + 
+                   ctrm1*(spA+spA)+ ctrm2*spB*(spA+spA) + cterm*(spAB+spAB) +
+                   dtrm1*(spA*spA)+ dtrm2*spA*spA*spB   + dterm*(2*spAB*spA)
+        )*factor;
+    ds->df1200 += (vcfp2+ eterm*spA + 
+                   ctrm1*(spB+spB)+ ctrm2*spA*(spB+spB) + cterm*(spAB+spAB) +
+                   dtrm1*(spB*spB)+ dtrm2*spB*spB*spA   + dterm*(2*spAB*spB)
+        )*factor;
+    ds->df0300 += (vcfp2+ eterm*spB + 
+                   ctrm1*(spB+spB)+ ctrm2*spB*(spB+spB) + cterm*(spBB+spBB) +
+                   dtrm1*(spB*spB)+ dtrm2*spB*spB*spB   + dterm*(2*spBB*spB)
+        )*factor;
+
+     real d_ef2bi = ef3 + (-ef0 + ef1)/rho2 - (-d_ef0 + ef2)/rho;
+     real d_ei2bi = ei3 + (-ei0 + ei1)/rho2 - (-d_ei0 + ei2)/rho;
+
+
+     real d_bterm_indep = ei2*(1 - zeta4) +  ef2*zeta4;
+     real d_bterm_dep = (4*ef1*zeta3 - 4*ei1*zeta3); 
+
+
+     real d_delta_indep = 4*(d_ef0 - d_ei0)*f_zeta*zeta3 +
+     d_ei0*f_zet1*(1 - zeta4) + d_ef0*f_zet1*zeta4;
+
+     real d_delta_dep = (12*(ef0 - ei0)*f_zeta*zeta2 + 4*ef0*f_zet1*zeta3 +
+       4*(ef0 - ei0)*f_zet1*zeta3 - 4*ei0*f_zet1*zeta3 +
+       f_zet2*(ei0*(1 - zeta4) + ef0*zeta4));
+
+     real d_vcfp2_indep = ei4*f_zeta*(1 - zeta4) + ef4*f_zeta*zeta4;
+     
+     real d_vcfp2_dep = (4*ef3*f_zeta*zeta3 - 4*ei3*f_zeta*zeta3 +
+       f_zet1*(ei3*(1 - zeta4) + ef3*zeta4));
+
+
+    real d_eterm_indep = 4*(ef3 - ei3)*f_zeta*zeta3 + ei3*f_zet1*(1 - zeta4) +
+     ef3*f_zet1*zeta4;
+
+    real d_eterm_dep = (12*(ef2 - ei2)*f_zeta*zeta2 +
+       4*ef2*f_zet1*zeta3 + 4*(ef2 - ei2)*f_zet1*zeta3 -
+       4*ei2*f_zet1*zeta3 + f_zet2*(ei2*(1 - zeta4) +
+         ef2*zeta4));
+
+
+     real d_ctrm1_indep = 4*(d_ef2bi - d_ei2bi)*f_zeta*zeta3 +
+     d_ei2bi*f_zet1*(1 - zeta4) + d_ef2bi*f_zet1*zeta4;
+
+     real d_ctrm1_dep = (12*(ef2bi - ei2bi)*f_zeta*zeta2 +
+       4*ef2bi*f_zet1*zeta3 + 4*(ef2bi - ei2bi)*f_zet1*zeta3 -
+       4*ei2bi*f_zet1*zeta3 + f_zet2*(ei2bi*(1 - zeta4) +
+         ef2bi*zeta4));
+
+
+     real d_ctrm2_indep = d_bterm_indep*f_zet2 + (-d_ef0 + d_ei0 + ef2 - ei2)*
+      (12*f_zeta*zeta2 + 8*f_zet1*zeta3) +
+      d_ei0*f_zet2*(-1 + zeta4) - d_ef0*f_zet2*zeta4;
+
+     real d_ctrm2_dep = d_bterm_dep*f_zet2 + 
+      (4*(-ef0 + ei0)*f_zet2*zeta3 -
+       4*(ef0 - ef1 - ei0 + ei1)*(6*f_zeta*zeta +
+         9*f_zet1*zeta2 + 2*f_zet2*zeta3) +
+       f_zet3*(bterm + ei0*(-1 + zeta4) - ef0*zeta4));
+
+
+     real d_cterm_indep = -d_delta_indep + d_bterm_indep*f_zet1 +
+          4*(ef2 - ei2)*f_zeta*zeta3;
+
+     real d_cterm_dep = -d_delta_dep + d_bterm_dep*f_zet1 +
+          (bterm*f_zet2 + 12*(ef1 - ei1)*f_zeta*
+        zeta2 + 4*(ef1 - ei1)*f_zet1*zeta3);
+
+
+      real d_dterm_indep = 12*(ef0 - ei0)*f_zeta*zeta2 + 12*d_ef0*f_zeta*rho*
+      zeta2 + 8*(ef0 - ei0)*f_zet1*zeta3 +
+     8*d_ef0*f_zet1*rho*zeta3 + d_ef0*f_zet2*rho*zeta4 +
+     f_zet2*(ei0 + ef0*zeta4 - ei0*zeta4) +
+     d_ei0*rho*(f_zet2 - 12*f_zeta*zeta2 - 8*f_zet1*zeta3 -
+       f_zet2*zeta4);
+
+      real d_dterm_dep = (24*ef0*f_zeta*rho*zeta +
+       36*ef0*f_zet1*rho*zeta2 + 12*ef0*f_zet2*rho*zeta3 -
+       ei0*rho*(12*(2*f_zeta*zeta + 3*f_zet1*zeta2 +
+           f_zet2*zeta3) + f_zet3*(-1 + zeta4)) +
+       ef0*f_zet3*rho*zeta4);
+
+
+     real d_dtrm1_indep = -(d_ei0*f_zet2) + ei2*f_zet2 +
+     (-d_ef0 + d_ei0 + ef2 - ei2)*(12*f_zeta*zeta2 +
+       8*f_zet1*zeta3) - d_ef0*f_zet2*zeta4 +
+     (d_ei0 + ef2 - ei2)*f_zet2*zeta4 -
+      dterm/rho2 + d_dterm_indep/rho;
+
+     real d_dtrm1_dep = (4*(-ef0 + ef1 + ei0 - ei1)*f_zet2*zeta3 -
+       4*(ef0 - ef1 - ei0 + ei1)*(6*f_zeta*zeta +
+         9*f_zet1*zeta2 + 2*f_zet2*zeta3) +
+       f_zet3*(ei1 + ei0*(-1 + zeta4) - (ef0 - ef1 + ei1)*zeta4))
+       + d_dterm_dep/rho;
+
+
+      real d_dtrm2_indep = d_ei0*f_zet3*rho + 12*(ef0 - ei0)*
+      (2*f_zeta*zeta + 3*f_zet1*zeta2 + f_zet2*zeta3) +
+     12*(d_ef0 - d_ei0)*rho*(2*f_zeta*zeta + 3*f_zet1*zeta2 +
+       f_zet2*zeta3) + d_ef0*f_zet3*rho*zeta4 -
+     d_ei0*f_zet3*rho*zeta4 + f_zet3*(ei0 + ef0*zeta4 -
+       ei0*zeta4);
+
+      real d_dtrm2_dep = (4*(ef0 - ei0)*f_zet3*rho*zeta3 +
+       12*(ef0 - ei0)*rho*(2*f_zeta + 8*f_zet1*zeta +
+         6*f_zet2*zeta2 + f_zet3*zeta3) + f_zet4*rho*
+        (ei0 + ef0*zeta4 - ei0*zeta4));
+
+    ds->df4000 += ( d_vcfp2_indep + 2*d_ctrm1_indep*spA + d_eterm_indep*spA +
+     d_vcfp2_dep*spA + 2*d_ctrm1_dep*spA*spA +
+     2*d_ctrm2_indep*spA*spA + d_dtrm1_indep*spA*spA +
+     d_eterm_dep*spA*spA + 2*d_ctrm2_dep*spA*spA*spA +
+     d_dtrm1_dep*spA*spA*spA + d_dtrm2_indep*spA*spA*spA +
+     d_dtrm2_dep*spA*spA*spA*spA + 2*d_cterm_indep*spAA +
+     2*d_cterm_dep*spA*spAA + 2*d_dterm_indep*spA*spAA +
+     2*d_dterm_dep*spA*spA*spAA + 2*spAAA*cterm +
+     2*spAA*ctrm1 + 4*spA*spAA*ctrm2 +
+     2*spAA*spAA*dterm + 2*spA*spAAA*dterm +
+     2*spA*spAA*dtrm1 + 3*spA*spA*spAA*dtrm2 +
+     spAA*eterm
+      )*factor;
+
+    ds->df3100 += ( d_vcfp2_indep + 2*d_ctrm1_indep*spA + d_eterm_indep*spA +
+     2*d_ctrm2_indep*spA*spA + d_dtrm1_indep*spA*spA +
+     d_dtrm2_indep*spA*spA*spA + 2*d_cterm_indep*spAA +
+     2*d_dterm_indep*spA*spAA + d_vcfp2_dep*spB +
+     2*d_ctrm1_dep*spA*spB + d_eterm_dep*spA*spB +
+     2*d_ctrm2_dep*spA*spA*spB + d_dtrm1_dep*spA*spA*spB +
+     d_dtrm2_dep*spA*spA*spA*spB + 2*d_cterm_dep*spAA*spB +
+     2*d_dterm_dep*spA*spAA*spB + 2*spAAB*cterm +
+     2*spAB*ctrm1 + 4*spA*spAB*ctrm2 +
+     2*spA*spAAB*dterm + 2*spAA*spAB*dterm +
+     2*spA*spAB*dtrm1 + 3*spA*spA*spAB*dtrm2 +
+     spAB*eterm
+     )*factor;
+
+    ds->df2200 += (d_vcfp2_indep + 2*d_ctrm1_indep*spA +
+     d_dtrm1_indep*spA*spA + 2*d_cterm_indep*spAB +
+     2*d_dterm_indep*spA*spAB + d_eterm_indep*spB +
+     d_vcfp2_dep*spB + 2*d_ctrm1_dep*spA*spB +
+     2*d_ctrm2_indep*spA*spB + d_dtrm1_dep*spA*spA*spB +
+     d_dtrm2_indep*spA*spA*spB + 2*d_cterm_dep*spAB*spB +
+     2*d_dterm_dep*spA*spAB*spB + d_eterm_dep*spB*spB +
+     2*d_ctrm2_dep*spA*spB*spB + d_dtrm2_dep*spA*spA*spB*spB +
+     2*spABB*cterm + 2*spAB*ctrm1 +
+     2*spAB*spB*ctrm2 + 2*spA*spBB*ctrm2 +
+     2*spAB*spAB*dterm + 2*spA*spABB*dterm +
+     2*spA*spAB*dtrm1 + 2*spA*spAB*spB*dtrm2 +
+     spA*spA*spBB*dtrm2 + spBB*eterm
+     )*factor;
+
+    ds->df1300 += ( d_vcfp2_indep + 2*d_ctrm1_indep*spB + d_eterm_indep*spB +
+     2*d_ctrm2_indep*spB*spB + d_dtrm1_indep*spB*spB +
+     d_dtrm2_indep*spB*spB*spB + 2*d_cterm_indep*spBB +
+     2*d_dterm_indep*spB*spBB + d_vcfp2_dep*spA +
+     2*d_ctrm1_dep*spB*spA + d_eterm_dep*spB*spA +
+     2*d_ctrm2_dep*spB*spB*spA + d_dtrm1_dep*spB*spB*spA +
+     d_dtrm2_dep*spB*spB*spB*spA + 2*d_cterm_dep*spBB*spA +
+     2*d_dterm_dep*spB*spBB*spA + 2*spABB*cterm +
+     2*spAB*ctrm1 + 4*spB*spAB*ctrm2 +
+     2*spB*spABB*dterm + 2*spBB*spAB*dterm +
+     2*spB*spAB*dtrm1 + 3*spB*spB*spAB*dtrm2 +
+     spAB*eterm
+     )*factor;
+
+    ds->df0400 += ( d_vcfp2_indep + 2*d_ctrm1_indep*spB + d_eterm_indep*spB +
+     d_vcfp2_dep*spB + 2*d_ctrm1_dep*spB*spB +
+     2*d_ctrm2_indep*spB*spB + d_dtrm1_indep*spB*spB +
+     d_eterm_dep*spB*spB + 2*d_ctrm2_dep*spB*spB*spB +
+     d_dtrm1_dep*spB*spB*spB + d_dtrm2_indep*spB*spB*spB +
+     d_dtrm2_dep*spB*spB*spB*spB + 2*d_cterm_indep*spBB +
+     2*d_cterm_dep*spB*spBB + 2*d_dterm_indep*spB*spBB +
+     2*d_dterm_dep*spB*spB*spBB + 2*spBBB*cterm +
+     2*spBB*ctrm1 + 4*spB*spBB*ctrm2 +
+     2*spBB*spBB*dterm + 2*spB*spBBB*dterm +
+     2*spB*spBB*dtrm1 + 3*spB*spB*spBB*dtrm2 +
+     spBB*eterm
+      )*factor;
+
+    
+    /* the final section: end */
+}
+
 
 
 /* Other spin interpolation scheme */

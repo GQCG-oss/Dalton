@@ -187,6 +187,7 @@ C
 #include <infcr.h>
 #include <infinp.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       DIMENSION VECA(*),VECB(*),VECC(*),VECD(*)
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
@@ -195,6 +196,9 @@ C
       DIMENSION PV(*)
       DIMENSION WRK(*)
       DIMENSION CMO(*),FC(*)
+
+      LOGICAL   ADDFOCK, DFTSAV
+
 C
 C     Initialise variables and layout some workspace
 C
@@ -210,6 +214,8 @@ C
 C     Direct one-index transformation check
 C
       IF (DIROIT.AND.TDHF) THEN
+         DFTSAV = DFTADD
+         DFTADD = .FALSE.
          CALL C4FOCK(IBCDEQ,WRK(KFI),VECB,VECC,VECD,
      *              WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
      *              KZYVB,KZYVC,KZYVD,
@@ -219,11 +225,32 @@ C
          CALL DZERO(WRK(KDUM),NORBT*NORBT)
          CALL ORBEX(ISYMA,1,KZYVA,WRK(KFI),WRK(KDUM),WRK(KDUM),
      *              WRK(KDUM),ETRS,D1,WRK(KDUM),MJWOP)
+         VAL = DDOT(KZYVA,VECA,1,ETRS,1)
+           WRITE (LUPRI,'(A,F20.12)') 'Contribution from C4FOCK:',
+     *          VAL
+         DFTADD = DFTSAV
       ELSE
+         IF(DFTADD) CALL QUIT('DFT not implemented for this path.')
          CALL E4DRV(VECA,VECB,VECC,VECD,IBCDEQ,ETRS,XINDX,WRK(KFI),
      *       WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),WRK(KDEN1),WRK(KDEN2),
      *              UDV,PV,WRK(KFREE),LFREE,KZYVA,KZYVB,KZYVC,KZYVD,
      *              ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
+      END IF
+
+      IF (DFTADD) THEN
+         CALL DZERO(WRK(KFI),N2ORBX)
+         CALL DFT4DRV(VECB, VECC, VECD,
+     &                   WRK(KFI),WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
+     &                   KZYVB,KZYVC, KZYVD,
+     &                   ISYMB,ISYMC, ISYMD,
+     &                   ISPINB,ISPINC,ISPIND,
+     &                   CMO,MJWOP,WRK(KFREE),LFREE)
+           KDUM = KFREE
+           CALL DZERO(WRK(KDUM),NORBT*NORBT)
+           CALL ORBEX(ISYMA,1,KZYVA,WRK(KFI),WRK(KDUM),WRK(KDUM),
+     *          WRK(KDUM),ETRS,D1,WRK(KDUM),MJWOP)
+           WRITE (LUPRI,'(A,F20.1)') 'Contribution from DFTCRCS:',
+     *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
       IF (FLAG(16)) THEN
@@ -509,6 +536,16 @@ C
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),-FRQ(I,2),
      *' Symmetry, excitation energy:     ','  ',ISYM(I,3),-FRQ(I,3),
      *' Symmetry, excitation energy:     ','  ',ISYM(I,4),FRQ(I,4)
+C    This will set up IEQTO used for output analysis
+                      CALL DIPLAB(LAB(I,1),I1)
+                      CALL DIPLAB(LAB(I,2),I2)
+                      CALL DIPLAB(LAB(I,3),I3)
+                      IEQTO(1)=I1
+                      IEQTO(2)=I2
+                      IEQTO(3)=I3
+                      IEQTO(4)=IDFR
+                      IEQTO(5)=ISYM(I,4)
+C    End of setting up IEQTO
                    END IF
                    DOCAL = .FALSE.
                END IF
@@ -724,4 +761,38 @@ C
       IF (LAB(1:1).EQ.'Z') I=3
 C
       RETURN
+      END
+
+      SUBROUTINE DFT4DRV(VECB, VECC, VECD,
+     &                   FI,ZYMB,ZYMC,ZYMD,
+     &                   KZYVB,KZYVC, KZYVD,
+     &                   ISYMB,ISYMC, ISYMD,
+     &                   ISPINB,ISPINC,ISPIND,
+     &                   CMO,MJWOP,WRK,LFREE)
+#include <implicit.h>
+#include <infvar.h>
+#include <inforb.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <dftcom.h>
+ 
+      DIMENSION VECB(*),VECC(*),VECD(*)
+      DIMENSION ZYMB(*),ZYMC(*),ZYMD(*)
+      DIMENSION WRK(*),CMO(*)
+      DIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
+      LOGICAL ADDFOCK
+c     unpack response vectors.
+      NSIM = 1
+      CALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
+      CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
+      CALL GTZYMT(NSIM,VECD,KZYVD,ISYMD,ZYMD,MJWOP)
+C      ADDFOCK = .NOT.DIRFCK
+      ADDFOCK = .FALSE.
+c     compute dft contribution
+      CALL DFTCRCF(FI,CMO,
+     &             ZYMB,ISYMB,
+     &             ZYMC,ISYMC,
+     &             ZYMD,ISYMD,
+     &             WRK,LFREE)
+c     pack stuff back.
       END

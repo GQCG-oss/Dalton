@@ -179,6 +179,11 @@ drv3_clear(FunThirdFuncDrv* gga)
 {
     memset(gga, 0, sizeof(*gga));
 }
+void
+drv4_clear(FunFourthFuncDrv* gga)
+{
+    memset(gga, 0, sizeof(*gga));
+}
 
 int fun_true(void)  { return 1; }
 int fun_false(void) { return 0; }

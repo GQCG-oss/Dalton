@@ -94,9 +94,10 @@ C
 static int slater_isgga(void) { return 0; }
 static int slater_read(const char* conf_line);
 static real slater_energy(const FunDensProp* dp);
-static void slater_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
-static void slater_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
-static void slater_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void slater_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp*);
+static void slater_second(FunSecondFuncDrv *ds, real fac, const FunDensProp*);
+static void slater_third(FunThirdFuncDrv *ds,   real fac, const FunDensProp*);
+static void slater_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp*);
 
 Functional SlaterFunctional = {
   "Slater",       /* name */
@@ -106,7 +107,8 @@ Functional SlaterFunctional = {
   slater_energy, 
   slater_first,
   slater_second,
-  slater_third
+  slater_third,
+  slater_fourth
 };
 
 /* IMPLEMENTATION PART */
@@ -171,4 +173,39 @@ slater_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
     ds->df0200 += -PREF*pow(dp->rhob, -2.0/3.0)/3*factor;
     ds->df0300 +=  PREF*pow(dp->rhob, -5.0/3.0)*2.0/9.0*factor;
   }
+}
+
+/* slater_fourth:
+   Dirac functional fourth derivatives.
+   by B. Jansik
+*/
+static void
+slater_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp *dp)
+{
+    const real PREF = (-3.0/4.0)*pow(6.0/M_PI, 1.0/3.0);/* Dirac G prefactor */
+    const real DPREF = 40.0/81.0;	  /* Prefactor from 4th derivative */
+    const real JPREF = DPREF*PREF*factor; /* Joined prefactor */
+    const real ROEXP = -8.0/3.0;	  /* Exponent on density (from 4th deriv.) */
+    FunThirdFuncDrv ds_third;
+   
+   
+   // set up lower order derivatives
+   // dirac_third contain third and also lower order derivatives	
+
+   drv3_clear(&ds_third);
+   slater_third(&ds_third, factor, dp);
+   
+   ds->df1000 += ds_third.df1000;
+   ds->df2000 += ds_third.df2000;
+   ds->df3000 += ds_third.df3000;
+
+   ds->df0100 += ds_third.df0100;
+   ds->df0200 += ds_third.df0200;
+   ds->df0300 += ds_third.df0300;
+
+   if (dp->rhoa > SLATER_THRESHOLD)
+     ds->df4000 += JPREF*pow(dp->rhoa, ROEXP);
+   
+   if (dp->rhob > SLATER_THRESHOLD)
+     ds->df0400 += JPREF*pow(dp->rhob, ROEXP);
 }

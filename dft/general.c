@@ -310,6 +310,157 @@ dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
     }
 }
 
+void
+dftpot3ab_(FourthDrv *ds, real *factor, const FunDensProp* dp, int *isgga)
+{
+     FunFourthFuncDrv drvs;
+     
+     /* Initialize drvs */ 
+     drv4_clear(&drvs);
+     selected_func->fourth(&drvs, *factor, dp);
+
+     /* Transform derivatives (drvs -> ds) */
+
+     ds->fR = 0.5*(drvs.df1000 + drvs.df0100);
+     ds->fRR = 0.25*(drvs.df2000 + 2.0*drvs.df1100 + drvs.df0200);
+     ds->fRRR = 0.125*(drvs.df3000 + 3.0*drvs.df2100 + 
+                       3.0*drvs.df1200 + drvs.df0300);
+     ds->fRRRR = 0.0625*(drvs.df4000 + 4.0*drvs.df3100 + 
+                         6.0*drvs.df2200 + 4.0*drvs.df1300 + drvs.df0400);
+     
+     if (*isgga) {
+         real igroa, igrob;
+         real igroa_p2, igrob_p2;
+         real igroa_p3, igrob_p3;
+         real igroa_p4, igrob_p4;
+         real igroa_p5, igrob_p5;
+         real igroa_p6, igrob_p6;
+         real igroa_p7, igrob_p7;
+         
+         /* 1/groa, 1/grob and its powers */
+         igroa = 1.0/(dp->grada);
+         igrob = 1.0/(dp->gradb);
+         
+         igroa_p2=igroa*igroa;
+         igroa_p3=igroa_p2*igroa;
+         igroa_p4=igroa_p3*igroa;
+         igroa_p5=igroa_p4*igroa;
+         igroa_p6=igroa_p5*igroa;
+         igroa_p7=igroa_p6*igroa;
+         
+         igrob_p2=igrob*igrob;
+         igrob_p3=igrob_p2*igrob;
+         igrob_p4=igrob_p3*igrob;
+         igrob_p5=igrob_p4*igrob;
+         igrob_p6=igrob_p5*igrob;
+         igrob_p7=igrob_p6*igrob;
+         
+         
+         /* 1st order */
+         
+         ds->fZ = 0.125*(igroa*drvs.df0010+2.0*drvs.df00001+igrob*drvs.df0001);
+         
+         /* 2nd order */
+         
+         ds->fRZ = 0.0625*(2*drvs.df01001 + 2*drvs.df10001 + drvs.df0110*igroa
+                           +drvs.df1010*igroa + drvs.df0101*igrob
+                           + drvs.df1001*igrob);
+     
+         ds->fZZ = 0.015625*(4*drvs.df00002 + 4*drvs.df00101*igroa + 
+                     drvs.df0020*igroa_p2 - drvs.df0010*igroa_p3 + 
+                     4*drvs.df00011*igrob + 2*drvs.df0011*igroa*igrob + 
+                     drvs.df0002*igrob_p2 - drvs.df0001*igrob_p3);
+
+      /* 3rd order */
+     
+     ds->fRRZ = 0.03125*(2*drvs.df02001 + 4*drvs.df11001 + 2*drvs.df20001 +
+		     drvs.df0210*igroa + 2*drvs.df1110*igroa +
+                     drvs.df2010*igroa + drvs.df0201*igrob +
+                     2*drvs.df1101*igrob + drvs.df2001*igrob);
+
+     ds->fRZZ = 0.0078125*(4*drvs.df01002 + 4*drvs.df10002 + 4*drvs.df01101*igroa + 
+	             4*drvs.df10101*igroa + drvs.df0120*igroa_p2 +       
+	             drvs.df1020*igroa_p2 - drvs.df0110*igroa_p3 -       
+	             drvs.df1010*igroa_p3 + 4*drvs.df01011*igrob +       
+	             4*drvs.df10011*igrob + 2*drvs.df0111*igroa*igrob +       
+	             2*drvs.df1011*igroa*igrob + drvs.df0102*igrob_p2 +       
+	             drvs.df1002*igrob_p2 - drvs.df0101*igrob_p3 -       
+	             drvs.df1001*igrob_p3);
+
+     ds->fZZZ = 0.001953125*(8*drvs.df00003 + 12*drvs.df00102*igroa + 
+		     6*drvs.df00201*igroa_p2 - 6*drvs.df00101*igroa_p3 +       
+		     drvs.df0030*igroa_p3 - 3*drvs.df0020*igroa_p4 +       
+		     3*drvs.df0010*igroa_p5 + 12*drvs.df00012*igrob + 
+		     12*drvs.df00111*igroa*igrob +3*drvs.df0021*igroa_p2*igrob-
+		     3*drvs.df0011*igroa_p3*igrob + 
+		     6*drvs.df00021*igrob_p2 + 3*drvs.df0012*igroa*igrob_p2 - 
+		     6*drvs.df00011*igrob_p3 + drvs.df0003*igrob_p3 - 
+		     3*drvs.df0011*igroa*igrob_p3 - 3*drvs.df0002*igrob_p4 + 
+	  	     3*drvs.df0001*igrob_p5);
+
+     /* 4th order */
+
+     ds->fRRRZ = 0.015625*(2*drvs.df03001 + 6*drvs.df12001 + 6*drvs.df21001 + 
+		     2*drvs.df30001 + drvs.df0310*igroa + 3*drvs.df1210*igroa +
+		     3*drvs.df2110*igroa + drvs.df3010*igroa +
+		     drvs.df0301*igrob + 3*drvs.df1201*igrob + 
+		     3*drvs.df2101*igrob + drvs.df3001*igrob);
+     
+     ds->fRRZZ = 0.00390625*(4*drvs.df02002 + 8*drvs.df11002 + 4*drvs.df20002 +
+	             4*drvs.df02101*igroa + 8*drvs.df11101*igroa + 
+	             4*drvs.df20101*igroa + drvs.df0220*igroa_p2 + 
+ 	             2*drvs.df1120*igroa_p2 + drvs.df2020*igroa_p2 - 
+	             drvs.df0210*igroa_p3 - 2*drvs.df1110*igroa_p3 - 
+	             drvs.df2010*igroa_p3 + 4*drvs.df02011*igrob + 
+	             8*drvs.df11011*igrob + 4*drvs.df20011*igrob + 
+	             2*drvs.df0211*igroa*igrob + 4*drvs.df1111*igroa*igrob + 
+	             2*drvs.df2011*igroa*igrob + drvs.df0202*igrob_p2 + 
+	             2*drvs.df1102*igrob_p2 + drvs.df2002*igrob_p2 - 
+	             drvs.df0201*igrob_p3 - 2*drvs.df1101*igrob_p3 - 
+	             drvs.df2001*igrob_p3);
+
+     ds->fRZZZ = 0.0009765625*(8*drvs.df01003 + 8*drvs.df10003 + 12*drvs.df01102*igroa + 
+		     12*drvs.df10102*igroa + 6*drvs.df01201*igroa_p2 + 
+		     6*drvs.df10201*igroa_p2 - 6*drvs.df01101*igroa_p3 + 
+		     drvs.df0130*igroa_p3 - 6*drvs.df10101*igroa_p3 + 
+		     drvs.df1030*igroa_p3 - 3*drvs.df0120*igroa_p4 - 
+		     3*drvs.df1020*igroa_p4 + 3*drvs.df0110*igroa_p5 + 
+		     3*drvs.df1010*igroa_p5 + 12*drvs.df01012*igrob + 
+		     12*drvs.df10012*igrob + 12*drvs.df01111*igroa*igrob + 
+		     12*drvs.df10111*igroa*igrob +3*drvs.df0121*igroa_p2*igrob+
+		     3*drvs.df1021*igroa_p2*igrob - 
+		     3*drvs.df0111*igroa_p3*igrob-3*drvs.df1011*igroa_p3*igrob+
+		     6*drvs.df01021*igrob_p2 + 6*drvs.df10021*igrob_p2 + 
+		     3*drvs.df0112*igroa*igrob_p2 + 3*drvs.df1012*igroa*igrob_p2 -
+		     6*drvs.df01011*igrob_p3 + drvs.df0103*igrob_p3 - 
+		     6*drvs.df10011*igrob_p3 + drvs.df1003*igrob_p3 - 
+		     3*drvs.df0111*igroa*igrob_p3-3*drvs.df1011*igroa*igrob_p3-
+		     3*drvs.df0102*igrob_p4 - 3*drvs.df1002*igrob_p4 + 
+		     3*drvs.df0101*igrob_p5 + 3*drvs.df1001*igrob_p5);
+
+     ds->fZZZZ = (1.0/4096.0)*(16*drvs.df00004 + 32*drvs.df00103*igroa + 
+		     24*drvs.df00202*igroa_p2 - 24*drvs.df00102*igroa_p3 + 
+		     8*drvs.df00301*igroa_p3 - 24*drvs.df00201*igroa_p4 + 
+		     drvs.df0040*igroa_p4 + 24*drvs.df00101*igroa_p5 - 
+		     6*drvs.df0030*igroa_p5 + 15*drvs.df0020*igroa_p6 - 
+		     15*drvs.df0010*igroa_p7 + 32*drvs.df00013*igrob + 
+		     48*drvs.df00112*igroa*igrob + 24*drvs.df00211*igroa_p2*igrob - 
+		     24*drvs.df00111*igroa_p3*igrob +
+		     4*drvs.df0031*igroa_p3*igrob - 12*drvs.df0021*igroa_p4*igrob + 
+		     12*drvs.df0011*igroa_p5*igrob +
+		     24*drvs.df00022*igrob_p2 + 24*drvs.df00121*igroa*igrob_p2+
+		     6*drvs.df0022*igroa_p2*igrob_p2 - 6*drvs.df0012*igroa_p3*igrob_p2 -
+		     24*drvs.df00012*igrob_p3 + 8*drvs.df00031*igrob_p3 - 
+		     24*drvs.df00111*igroa*igrob_p3 + 
+		     4*drvs.df0013*igroa*igrob_p3 - 6*drvs.df0021*igroa_p2*igrob_p3 +
+		     6*drvs.df0011*igroa_p3*igrob_p3 - 
+		     24*drvs.df00021*igrob_p4 + drvs.df0004*igrob_p4 - 
+		     12*drvs.df0012*igroa*igrob_p4 + 24*drvs.df00011*igrob_p5 -
+		     6*drvs.df0003*igrob_p5 + 12*drvs.df0011*igroa*igrob_p5 + 
+		     15*drvs.df0002*igrob_p6 - 15*drvs.df0001*igrob_p7);
+     }
+}
+
 
 /* =================================================================== */
 /*    DFT density evaluators for restricted and unrestricted cases.    */

@@ -1,3 +1,4 @@
+/*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /*
 C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -32,41 +33,6 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 */
-/*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
-C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-*/
-/* -*- mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-camb3lyp.c:
 
 Pawel Salek, 2004.06, Himmelbjerg.
@@ -126,6 +92,12 @@ typedef struct {
     real df10, df01, df20, df11, df02;
     real df30, df21, df12, df03;
 } RGThirdDrv;
+typedef struct {
+    real df10, df01, df20, df11, df02;
+    real df30, df21, df12, df03;
+    real df40, df31, df22, df13, df04;
+} RGFourthDrv;
+
  
 /* INTERFACE PART */
 static int camb3lyp_isgga(void) { return 1; }
@@ -138,6 +110,8 @@ static void camb3lyp_second(FunSecondFuncDrv *ds, real factor,
                             const FunDensProp* dp);
 static void camb3lyp_third(FunThirdFuncDrv *ds, real factor,
                            const FunDensProp* dp);
+static void camb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
+                            const FunDensProp* dp);
 
 Functional Camb3lypFunctional = {
   "Camb3lyp",       /* name */
@@ -147,7 +121,8 @@ Functional Camb3lypFunctional = {
   camb3lyp_energy,
   camb3lyp_first,
   camb3lyp_second,
-  camb3lyp_third
+  camb3lyp_third,
+  camb3lyp_fourth
 };
  
 /* IMPLEMENTATION PART */
@@ -265,7 +240,7 @@ fun_a_third(real rho, real a, real ex, RGThirdDrv *f3, RGThirdDrv *res)
     f11 = f3->df11/(2*ex) - f3->df10*f3->df01/(2*ex*ex);
     f02 = f3->df02/(2*ex) - f3->df01*f3->df01/(2*ex*ex);
     f30 = f3->df30/(2*ex) - 1.5*f3->df10*f3->df20/(ex*ex)
-        + f3->df10*f3->df10*f3->df10/(ex*ex*ex) - 2/(rho*rho*rho);
+          + f3->df10*f3->df10*f3->df10/(ex*ex*ex) - 2/(rho*rho*rho);
     f21 = f3->df21/(2*ex)
         - f3->df20*f3->df01/(2*ex*ex) - 2*f3->df10*f3->df11/(2*ex*ex)
         + f3->df10*f3->df10*f3->df01/(ex*ex*ex);
@@ -285,6 +260,108 @@ fun_a_third(real rho, real a, real ex, RGThirdDrv *f3, RGThirdDrv *res)
     res->df21 = a*(f10*f10*f01 + f20*f01 + 2*f10*f11 + f21);
     res->df12 = a*(f10*f01*f01 + 2*f11*f01 + f10*f02 + f12);
     res->df03 = a*(f01*f01*f01 + 3*f01*f02 + f03);
+}
+
+/* optimized with help of maxima */
+
+static void
+fun_a_fourth(real rho, real a, real ex, RGFourthDrv *f4, RGFourthDrv *res)
+{
+    real f10, f01, f20, f11, f02, f30, f21, f12, f03, f40, f31, f22, f13, f04;
+
+    memset(res, 0, sizeof(RGFourthDrv));
+    if(fabs(a)<1e-15 || fabs(ex)<1e-15) return;
+    f10 = f4->df10/(2*ex)-1.0/rho;
+    f01 = f4->df01/(2*ex);
+    f20 = f4->df20/(2*ex) - f4->df10*f4->df10/(2*ex*ex) +1/(rho*rho);
+    f11 = f4->df11/(2*ex) - f4->df10*f4->df01/(2*ex*ex);
+    f02 = f4->df02/(2*ex) - f4->df01*f4->df01/(2*ex*ex);
+    f30 = f4->df30/(2*ex) - 1.5*f4->df10*f4->df20/(ex*ex)
+        + f4->df10*f4->df10*f4->df10/(ex*ex*ex) - 2/(rho*rho*rho);
+    f21 = f4->df21/(2*ex)
+        - f4->df20*f4->df01/(2*ex*ex) - 2*f4->df10*f4->df11/(2*ex*ex)
+        + f4->df10*f4->df10*f4->df01/(ex*ex*ex);
+    f12 = f4->df12/(2*ex)
+        - f4->df11*f4->df01/(ex*ex) - f4->df10*f4->df02/(2*ex*ex) 
+        + f4->df10*f4->df01*f4->df01/(ex*ex*ex);
+    f03 = f4->df03/(2*ex) - 1.5*f4->df02*f4->df01/(ex*ex)
+        + f4->df01*f4->df01*f4->df01/(ex*ex*ex);
+
+    f40 = f4->df40/(2*ex) - f4->df10*f4->df30/(2*ex*ex)
+        - 1.5*f4->df20*f4->df20/(ex*ex) - 1.5*f4->df10*f4->df30/(ex*ex)
+        + 3.0*f4->df10*f4->df10*f4->df30/(ex*ex*ex)
+        + 3.0*f4->df20*f4->df10*f4->df10/(ex*ex*ex)
+        - 3.0*f4->df10*f4->df10*f4->df10*f4->df10/(ex*ex*ex*ex)
+        + 6.0/(rho*rho*rho*rho);
+
+    f40 = f4->df40/(2*ex) - f4->df10*f4->df30/(2*ex*ex)
+        - 1.5*f4->df20*f4->df20/(ex*ex) - 1.5*f4->df10*f4->df30/(ex*ex)
+        + 3.0*f4->df10*f4->df10*f4->df20/(ex*ex*ex)
+        + 3.0*f4->df20*f4->df10*f4->df10/(ex*ex*ex)
+        - 3.0*f4->df10*f4->df10*f4->df10*f4->df10/(ex*ex*ex*ex)
+        + 6.0/(rho*rho*rho*rho);
+
+    f31 = f4->df31/(2*ex) - f4->df10*f4->df21/(2*ex*ex)
+        - f4->df30 * f4->df01/(2*ex*ex) - f4->df20 * f4->df11/(2*ex*ex)
+        + f4->df20 * f4->df01 * f4->df10/(ex*ex*ex)
+        - 2*f4->df20 * f4->df11/(2*ex*ex)
+        - 2*f4->df10 * f4->df21/(2*ex*ex)
+        + 2*f4->df10 * f4->df10 * f4->df11/(ex*ex*ex)
+        + 2*f4->df20 * f4->df10 * f4->df01/(ex*ex*ex) 
+        +   f4->df10 * f4->df10 * f4->df11/(ex*ex*ex) 
+        - 3*f4->df10 * f4->df10 * f4->df10 * f4->df01/(ex*ex*ex*ex);
+
+    f22 = f4->df22/(2*ex) - f4->df10*f4->df12/(2*ex*ex)
+        - f4->df21*f4->df01/(ex*ex)
+        - f4->df11*f4->df11/(ex*ex)
+        + 2*f4->df10*f4->df11*f4->df01/(ex*ex*ex)
+        - f4->df20*f4->df02/(2*ex*ex) 
+        - f4->df10*f4->df12/(2*ex*ex) 
+        + f4->df10*f4->df10*f4->df02/(ex*ex*ex)
+        + f4->df20*f4->df01*f4->df01/(ex*ex*ex)
+        + 2*f4->df10*f4->df01*f4->df11/(ex*ex*ex)
+        - 3*f4->df10*f4->df10*f4->df01*f4->df01/(ex*ex*ex*ex);
+
+    f13 = f4->df13/(2*ex) - f4->df10*f4->df03/(2*ex*ex)
+        - 1.5*f4->df12*f4->df01/(ex*ex)
+        - 1.5*f4->df02*f4->df11/(ex*ex)
+        + 3.0*f4->df10*f4->df02*f4->df01/(ex*ex*ex)
+        + 3*f4->df01*f4->df01*f4->df11/(ex*ex*ex)
+        - 3*f4->df10*f4->df01*f4->df01*f4->df01/(ex*ex*ex*ex);
+
+    f04 = f4->df04/(2*ex) - f4->df01*f4->df03/(2*ex*ex)
+        - 1.5*f4->df03*f4->df01/(ex*ex)
+        - 1.5*f4->df02*f4->df02/(ex*ex)
+        + 3.0*f4->df01*f4->df01*f4->df02/(ex*ex*ex)
+        + 3*f4->df01*f4->df01*f4->df02/(ex*ex*ex)
+        - 3*f4->df01*f4->df01*f4->df01*f4->df01/(ex*ex*ex*ex);
+
+    res->df10 = a*f10;
+    res->df01 = a*f01;
+    res->df20 = a*(f10*f10 + f20);
+    res->df11 = a*(f10*f01 + f11);
+    res->df02 = a*(f01*f01 + f02);
+
+    /* See above.... */
+    res->df30 = a*(f10*f10*f10 + 3*f10*f20 + f30);
+    res->df21 = a*(f10*f10*f01 + f20*f01 + 2*f10*f11 + f21);
+
+    res->df12 = a*(f10*f01*f01 + 2*f11*f01 + f10*f02 + f12);
+
+    res->df03 = a*(f01*f01*f01 + 3*f01*f02 + f03);
+
+    res->df40 = a*(f10*f10*f10*f10 + 6*f10*f10*f20 + 3*f20*f20
+                   + 4*f10*f30 + f40);
+    res->df31 = a*(f10*f10*f10*f01 + 3*f10*f01*f20 + 3*f10*f10*f11
+                   + 3*f20*f11 + 3*f10*f21 + f30*f01 + f31);
+        
+    res->df22 = a*(f10*f10*f01*f01 + f10*f10*f02 + f01*f01*f20 + f20*f02
+                   + 4*f10*f01*f11 + 2*f11*f11 + 2*f10*f12 + 2*f01*f21 + f22);
+
+    res->df13 = a*(f10*f01*f01*f01 + 3*f10*f01*f02 + 3*f01*f01*f11
+                   + 3*f02*f11 + 3*f01*f12 + f10*f03 + f13);
+    res->df04 = a*(f01*f01*f01*f01 + 6*f01*f01*f02 + 3*f02*f02 + 
+                   4*f01*f03 + f04);
 }
 
 /* ===================================================================
@@ -445,18 +522,20 @@ camb3lyp_b_third_medium(real a)
 static real
 camb3lyp_b_fourth_medium(real a)
 {
-    real t1, t2, t3, t4, t5, t6, t7, t8, t9;
+    real t1, t2, t3, t4, t5, t6, t7, t8, t9, res;
 
     if(a < 0.05) return -256;
     if(a>=5)  {
         static const double large_coefs[] =
             { 0.3, -8.0/7.0, 80.0/9.0, -1152.0/11.0 };
         real a2 = a*a;
-        return BETA*evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
+        return BETA*
+            evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
             (a2*a2*a2);
     }
     t1 = pow(a,-2.0);
     t2 = exp(-0.25*t1);
+#if 0
     t3 = pow(a,-9.0);
     t4 = pow(a,-7.0);
     t5 = pow(a,-5.0);
@@ -470,6 +549,29 @@ camb3lyp_b_fourth_medium(real a)
                  +8*t8+24*t5*t2-24*t4*t2+15*0.25*t3*t2)/3.0
         -32*(6*(-t1*t2-2*t9*t2+0.25*t7*t2-4.0*(t2-1))+2*a*t8-6*t9*t2
              +7*t7*t2/2-t6*t2/4)/3;
+#else
+    t3 = pow(a, -8.0);
+    t4 = pow(a, -6.0);
+    t5 = pow(a, -9.0);
+    t6 = pow(a, -7.0);
+    t7 = pow(a, -5.0);
+    t8 = 7.5*t7*t2  - 2.5*t6*t2 + 0.125*t5*t2;
+    t9 = pow(a, -4.0);
+    res = -10.66666666666667*
+        (-3.385137501286538*t9*t2*SQRT_PI
+         +1.974663542417147*t4*t2*SQRT_PI
+         -0.14104739588694*t3*t2*SQRT_PI
+         +6.0*(-t1*t2-2.0*t9*t2+0.25*t4*t2
+               -4.0*(t2-1.0))+2.0*a*t8)
+        -2.666666666666667*a*
+        (13.54055000514615*t7*t2*SQRT_PI
+         -13.54055000514615*t6*t2*SQRT_PI
+         +2.115710938304086*t5*t2*SQRT_PI
+         -0.07052369794347*t2*SQRT_PI*pow(a,-11.0)+8.0*t8
+         +2.0*a*(-37.5*t4*t2+21.25*t3*t2-2.375*t2*pow(a,-10.0)
+                 +0.0625*t2*pow(a,-12.0)));
+    return BETA*res;
+#endif
 }
 
 #define FAC M_SQRT2
@@ -494,6 +596,7 @@ camb3lyp_energy(const FunDensProp *dp)
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
+    dsigma.gradab = dsigma.grada*dsigma.gradb;
     ex = 0.5*(SlaterFunctional.func(&dsigma) +
               BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
     
@@ -501,6 +604,7 @@ camb3lyp_energy(const FunDensProp *dp)
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
         dsigma.grada = dsigma.gradb = dp->gradb;
+	dsigma.gradab = dsigma.grada*dsigma.gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
         eb = camb3lyp_energy_sigma(dp->rhob, ex);
@@ -539,6 +643,7 @@ camb3lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
+    dsigma.gradab = dsigma.grada*dsigma.gradb;
     ex = 0.5*(SlaterFunctional.func(&dsigma) +
               BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
 
@@ -555,6 +660,7 @@ camb3lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
         if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
             dsigma.rhoa  = dsigma.rhob  = dp->rhob;
             dsigma.grada = dsigma.gradb = dp->gradb;
+	    dsigma.gradab = dsigma.grada*dsigma.gradb;
             ex = 0.5*(SlaterFunctional.func(&dsigma) +
                       BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
             dfun.df10 = fun1.df0100; dfun.df01 = fun1.df0001;
@@ -613,6 +719,7 @@ camb3lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
+    dsigma.gradab = dsigma.grada*dsigma.gradb;
     ex = 0.5*(SlaterFunctional.func(&dsigma) +
               BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
     memset(&f2, 0, sizeof(f2));
@@ -633,6 +740,7 @@ camb3lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
         dsigma.grada = dsigma.gradb = dp->gradb;
+	dsigma.gradab = dsigma.grada*dsigma.gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
         dfun.df10 = f2.df0100; dfun.df20 = f2.df0200; 
@@ -721,6 +829,7 @@ camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
+    dsigma.gradab = dsigma.grada*dsigma.gradb;
     ex = 0.5*(SlaterFunctional.func(&dsigma) +
               BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
     memset(&f3, 0, sizeof(f3));
@@ -746,6 +855,7 @@ camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
         dsigma.grada = dsigma.gradb = dp->gradb;
+	dsigma.gradab = dsigma.grada*dsigma.gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
         dfun.df10 = f3.df0100; dfun.df20 = f3.df0200; dfun.df30 = f3.df0300; 
@@ -768,6 +878,189 @@ camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 #if ADD_CORRELATION
     LYPFunctional.third(ds, LYP_WEIGHT*factor, dp);
     VWNFunctional.third(ds, VWN_WEIGHT*factor, dp);
+#endif
+}
+
+
+/* ===================================================================
+   Fourth order derivatives specific code.
+   Following maxima code used to generate the expressions:
+   load("pdiff"); display2d: false;f(r,g):=e(r,g)*b(a(r,g));
+   optimize([diff(f(r,g),r),diff(f(r,g),g),
+             diff(f(r,g),r,2),diff(f(r,g),r,1,g,1),diff(f(r,g),g,2),
+             diff(f(r,g),r,3), diff(f(r,g),r,2,g,1),diff(f(r,g),r,1,g,2),
+             diff(f(r,g),g,3),
+             diff(f(r,g),r,4), diff(f(r,g),r,3,g,1),diff(f(r,g),r,2,g,2),
+             diff(f(r,g),r,1,g,3),diff(f(r,g),g,4)]);
+   =================================================================== */
+static void
+camb3lyp_fourth_sigma(real rho, real ex, RGFourthDrv *f4,
+		      RGFourthDrv *res)
+{
+    real bfactor, b_first, b_second, b_third, b_fourth, a_;
+    real a10_2, a01_2, a10_3, a01_3, a10_4, a20_2;
+    RGFourthDrv a;
+
+    a_ = fun_a(rho, ex);
+    bfactor  = EVALUATOR(a_, energy);
+    b_first  = EVALUATOR(a_, first);
+    b_second = camb3lyp_b_second_medium(a_);
+    b_third  = camb3lyp_b_third_medium(a_);
+    b_fourth = camb3lyp_b_fourth_medium(a_);
+    fun_a_fourth(rho, a_, ex, f4, &a);
+    a10_2 = a.df10*a.df10;
+    a01_2 = a.df01*a.df01;
+    a10_3 = a10_2*a.df10;
+    a01_3 = a01_2*a.df01;
+    a10_4 = a10_3*a.df10;
+    a20_2 = a.df20*a.df20;
+
+    res->df10 = a.df10*ex*b_first+f4->df10*bfactor;
+    res->df01 = a.df01*ex*b_first+f4->df01*bfactor;
+    res->df20 = a10_2*ex*b_second+2*a.df10*f4->df10*b_first
+        +a.df20*ex*b_first+f4->df20*bfactor;
+    res->df11 = a.df01*a.df10*ex*b_second+a.df01*f4->df10*b_first
+        +a.df10*f4->df01*b_first+a.df11*ex*b_first+f4->df11*bfactor;
+    res->df02 = a01_2*ex*b_second+2*a.df01*f4->df01*b_first
+        +a.df02*ex*b_first+f4->df02*bfactor;
+    res->df30 = a10_3*ex*b_third+3*a10_2*f4->df10*b_second
+        +3*a.df10*a.df20*ex*b_second+3*a.df10*f4->df20*b_first
+        +3*a.df20*f4->df10*b_first+a.df30*ex*b_first+f4->df30*bfactor;
+    res->df21 = a.df01*a10_2*ex*b_third+2*a.df01*a.df10*f4->df10*b_second
+        +a10_2*f4->df01*b_second+a.df01*a.df20*ex*b_second
+        +2*a.df10*a.df11*ex*b_second+a.df01*f4->df20*b_first
+        +2*a.df10*f4->df11*b_first+2*a.df11*f4->df10*b_first
+        +a.df20*f4->df01*b_first+a.df21*ex*b_first+f4->df21*bfactor;
+    res->df12 = a01_2*a.df10*ex*b_third+a01_2*f4->df10*b_second
+        +2*a.df01*a.df10*f4->df01*b_second+2*a.df01*a.df11*ex*b_second
+        +a.df02*a.df10*ex*b_second+2*a.df01*f4->df11*b_first
+        +a.df02*f4->df10*b_first+a.df10*f4->df02*b_first
+        +2*a.df11*f4->df01*b_first+a.df12*ex*b_first+f4->df12*bfactor;
+    res->df03 = a01_3*ex*b_third+3*a01_2*f4->df01*b_second
+        +3*a.df01*a.df02*ex*b_second+3*a.df01*f4->df02*b_first
+        +3*a.df02*f4->df01*b_first+a.df03*ex*b_first+f4->df03*bfactor;
+    res->df40 = a10_4*ex*b_fourth+4*a10_3*f4->df10*b_third
+        +6*a10_2*a.df20*ex*b_third+6*a10_2*f4->df20*b_second
+        +12*a.df10*a.df20*f4->df10*b_second+4*a.df10*a.df30*ex*b_second
+        +3*a20_2*ex*b_second+4*a.df10*f4->df30*b_first
+        +6*a.df20*f4->df20*b_first+4*a.df30*f4->df10*b_first
+        +a.df40*ex*b_first+f4->df40*bfactor;
+    res->df31 = a.df01*a10_3*ex*b_fourth+3*a.df01*a10_2*f4->df10*b_third
+        +a10_3*f4->df01*b_third+3*a.df01*a.df10*a.df20*ex*b_third
+        +3*a10_2*a.df11*ex*b_third+3*a.df01*a.df10*f4->df20*b_second
+        +3*a10_2*f4->df11*b_second+3*a.df01*a.df20*f4->df10*b_second
+        +6*a.df10*a.df11*f4->df10*b_second+3*a.df10*a.df20*f4->df01*b_second
+        +a.df01*a.df30*ex*b_second+3*a.df10*a.df21*ex*b_second
+        +3*a.df11*a.df20*ex*b_second+a.df01*f4->df30*b_first
+        +3*a.df10*f4->df21*b_first+3*a.df11*f4->df20*b_first
+        +3*a.df20*f4->df11*b_first+3*a.df21*f4->df10*b_first
+        +a.df30*f4->df01*b_first+a.df31*ex*b_first+f4->df31*bfactor;
+    res->df22 = a01_2*a10_2*ex*b_fourth+2*a01_2*a.df10*f4->df10*b_third
+        +2*a.df01*a10_2*f4->df01*b_third+a01_2*a.df20*ex*b_third
+        +4*a.df01*a.df10*a.df11*ex*b_third+a.df02*a10_2*ex*b_third
+        +a01_2*f4->df20*b_second+4*a.df01*a.df10*f4->df11*b_second
+        +4*a.df01*a.df11*f4->df10*b_second+2*a.df02*a.df10*f4->df10*b_second
+        +a10_2*f4->df02*b_second+2*a.df01*a.df20*f4->df01*b_second
+        +4*a.df10*a.df11*f4->df01*b_second+2*a.df01*a.df21*ex*b_second
+        +a.df02*a.df20*ex*b_second+2*a.df10*a.df12*ex*b_second
+        +2*a.df11*a.df11*ex*b_second+2*a.df01*f4->df21*b_first
+        +a.df02*f4->df20*b_first+2*a.df10*f4->df12*b_first
+        +4*a.df11*f4->df11*b_first+2*a.df12*f4->df10*b_first
+        +a.df20*f4->df02*b_first+2*a.df21*f4->df01*b_first+a.df22*ex*b_first
+        +f4->df22*bfactor;
+    res->df13 = a01_3*a.df10*ex*b_fourth+a01_3*f4->df10*b_third
+        +3*a01_2*a.df10*f4->df01*b_third+3*a01_2*a.df11*ex*b_third
+        +3*a.df01*a.df02*a.df10*ex*b_third+3*a01_2*f4->df11*b_second
+        +3*a.df01*a.df02*f4->df10*b_second+3*a.df01*a.df10*f4->df02*b_second
+        +6*a.df01*a.df11*f4->df01*b_second+3*a.df02*a.df10*f4->df01*b_second
+        +3*a.df01*a.df12*ex*b_second+3*a.df02*a.df11*ex*b_second
+        +a.df03*a.df10*ex*b_second+3*a.df01*f4->df12*b_first
+        +3*a.df02*f4->df11*b_first+a.df03*f4->df10*b_first
+        +a.df10*f4->df03*b_first+3*a.df11*f4->df02*b_first
+        +3*a.df12*f4->df01*b_first+a.df13*ex*b_first+f4->df13*bfactor;
+    res->df04 = a01_3*a.df01*ex*b_fourth+4*a01_3*f4->df01*b_third
+        +6*a01_2*a.df02*ex*b_third+6*a01_2*f4->df02*b_second
+        +12*a.df01*a.df02*f4->df01*b_second+4*a.df01*a.df03*ex*b_second
+        +3*a.df02*a.df02*ex*b_second+4*a.df01*f4->df03*b_first
+        +6*a.df02*f4->df02*b_first+4*a.df03*f4->df01*b_first
+        +a.df04*ex*b_first+f4->df04*bfactor;
+}
+
+static void
+camb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
+		const FunDensProp* dp)
+{
+    FunFourthFuncDrv f4;
+    RGFourthDrv res, dfun;
+    FunDensProp dsigma;
+    real ex;
+
+    dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
+    dsigma.grada = dsigma.gradb = dp->grada;
+    dsigma.gradab = dsigma.grada*dsigma.gradb;
+    ex = 0.5*(SlaterFunctional.func(&dsigma) +
+              BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
+    memset(&f4, 0, sizeof(f4));
+    SlaterFunctional.fourth(&f4, 1, dp);
+    BeckeFunctional.fourth(&f4, BECKE88_CORR_WEIGHT, dp);
+
+    dfun.df10 = f4.df1000; dfun.df20 = f4.df2000; dfun.df30 = f4.df3000; 
+    dfun.df01 = f4.df0010; dfun.df02 = f4.df0020; dfun.df03 = f4.df0030;
+    dfun.df11 = f4.df1010; dfun.df21 = f4.df2010; dfun.df12 = f4.df1020;
+    dfun.df40 = f4.df4000; dfun.df31 = f4.df3010; dfun.df22 = f4.df2020;
+    dfun.df13 = f4.df1030; dfun.df04 = f4.df0040;
+    camb3lyp_fourth_sigma(dp->rhoa, ex, &dfun, &res);
+
+    ds->df1000 += factor*res.df10;
+    ds->df0010 += factor*res.df01;
+    ds->df2000 += factor*res.df20;
+    ds->df1010 += factor*res.df11;
+    ds->df0020 += factor*res.df02;
+
+    ds->df3000 += factor*res.df30;
+    ds->df2010 += factor*res.df21;
+    ds->df1020 += factor*res.df12;
+    ds->df0030 += factor*res.df03;
+
+    ds->df4000 += factor*res.df40;
+    ds->df3010 += factor*res.df31;
+    ds->df2020 += factor*res.df22;
+    ds->df1030 += factor*res.df13;
+    ds->df0040 += factor*res.df04;
+
+    if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
+        dsigma.rhoa  = dsigma.rhob  = dp->rhob;
+        dsigma.grada = dsigma.gradb = dp->gradb;
+	dsigma.gradab = dsigma.grada*dsigma.gradb;
+        ex = 0.5*(SlaterFunctional.func(&dsigma) +
+                  BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
+        dfun.df10 = f4.df0100; dfun.df20 = f4.df0200; dfun.df30 = f4.df0300; 
+        dfun.df01 = f4.df0001; dfun.df02 = f4.df0002; dfun.df03 = f4.df0003;
+        dfun.df11 = f4.df0101; dfun.df21 = f4.df0201; dfun.df12 = f4.df0102;
+	dfun.df40 = f4.df0400; dfun.df31 = f4.df0301; dfun.df22 = f4.df0202;
+	dfun.df13 = f4.df0103; dfun.df04 = f4.df0004;
+        camb3lyp_fourth_sigma(dp->rhob, ex, &dfun, &res);
+    }
+
+    ds->df0100 += factor*res.df10;
+    ds->df0001 += factor*res.df01;
+    ds->df0200 += factor*res.df20;
+    ds->df0101 += factor*res.df11;
+    ds->df0002 += factor*res.df02;
+
+    ds->df0300 += factor*res.df30;
+    ds->df0201 += factor*res.df21;
+    ds->df0102 += factor*res.df12;
+    ds->df0003 += factor*res.df03;
+
+    ds->df0400 += factor*res.df40;
+    ds->df0301 += factor*res.df31;
+    ds->df0202 += factor*res.df22;
+    ds->df0103 += factor*res.df13;
+    ds->df0004 += factor*res.df04;
+#if ADD_CORRELATION
+    LYPFunctional.fourth(ds, LYP_WEIGHT*factor, dp);
+    VWNFunctional.fourth(ds, VWN_WEIGHT*factor, dp);
 #endif
 }
 

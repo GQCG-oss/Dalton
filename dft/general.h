@@ -54,9 +54,6 @@
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 
-typedef struct FirstDrv_  FirstDrv;
-typedef struct SecondDrv_ SecondDrv;
-typedef struct ThirdDrv_  ThirdDrv;
 
 /* Density evaluators */
 typedef struct DftDensity_  DftDensity;
@@ -75,17 +72,17 @@ struct DftDensity_ {
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
 
-struct FirstDrv_ {
+typedef struct {
     real fR;  /* d/drho F     */
     real fZ;  /* d/zeta F     */
-};
+} FirstDrv;
 
 /* SecondDrv:  matrix  of  second  order functional  derivatives  with
  * respect  to two  parameters: density  rho and  SQUARE  of the
  * density gradient zeta.  The derivatives are computed for alpha-alpha
  * or beta-beta spin-orbital block (i.e. include triplet flag).
  */
-struct SecondDrv_ {
+typedef struct {
     real fR; /* d/drho  F */
     real fZ; /* d/dzeta F */
     real fRR; /* d/drho%Gï¿¿%@ F */
@@ -97,12 +94,12 @@ struct SecondDrv_ {
     real fZG; /* d/(dzeta dgamma) F */
     real fGG; /* d/dzgamma%Gï¿¿%@ F */
     real fG;  /* d/dgamma F */
-};
+} SecondDrv;
 
 /* ThirdDrv: matrix of third derivatives with respect to two parameters:
    density rho and SQUARE of the density gradient zeta.
 */
-struct ThirdDrv_ {
+typedef struct {
     real fR;   /* d/drho  F */
     real fZ;   /* d/dzeta F */
     real fG;   /* d/dgamma F */
@@ -117,13 +114,37 @@ struct ThirdDrv_ {
     real fRRGX[2][2]; /* d/(drho? dgamma) F */
     real fRZZ[2][2]; /* d/(drho dzeta%Gï¿¿%@) F */
     real fZZZ[2]; /* d/dzeta%Gï¿¿%@ F */
-};
+} ThirdDrv;
+
+
+typedef struct {
+    real fR;   /* d/drho  F */
+    real fZ;   /* d/dzeta F */
+
+    real fRR;  /* d/drho%G￿%@ F */
+    real fRZ;  /* d/(drho dzeta) F */
+    real fZZ;  /* d/dzeta%G￿%@ F */
+
+    real fRRR; /* d/drho%G￿%@ F */
+    real fRRZ; /* d/(drho%G￿%@ dzeta) F */
+    real fRZZ; /* d/(drho dzeta%G￿%@) F */
+    real fZZZ;
+
+    real fRRRR;
+    real fRRRZ;
+    real fRRZZ;
+    real fRZZZ;
+    real fZZZZ;
+} FourthDrv;
 
 void dftpot0_(FirstDrv *ds, const real* weight, const FunDensProp* dp);
 void dftpot1_(SecondDrv *ds, const real* w, const FunDensProp* dp,
               const int* triplet);
 void dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
               int triplet);
+void dftpot3ab_(FourthDrv *ds, real *factor, const FunDensProp* dp,
+                int *isgga);
+
 
 void dft_dens_restricted  (DftDensity* dens, FunDensProp* dp, DftGrid* grid,
                            real* tmp_vec);
@@ -141,6 +162,11 @@ void FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat,
 void dft_mol_grad_(real* dmat, real* work, int* lwork, int* iprint);
 void dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,
               real* kappaZ, int* symZ, int* spinZ, int* addfock,
+              real* work, int* lwork);
+void dftcrcf_(real* fi, real* cmo,
+              real* kappaB, int* symB,
+              real* kappaC, int* symC,
+              real* kappaD, int* symD,
               real* work, int* lwork);
 
 
@@ -160,6 +186,8 @@ void dft_kohn_shamab_slave(real* work, int* lwork, const int* iprint);
 void dft_lin_respab_slave (real* work, int* lwork, const int* iprint);
 void dft_mol_grad_slave (real* work, int* lwork, const int* iprint);
 void dft_qr_resp_slave  (real* work, int* lwork, const int* iprint);
+void dft_cr_resp_slave(real* work, int* lwork, const int* iprint);
+
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
     void*        data;

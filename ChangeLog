@@ -1,3 +1,12 @@
+2005-03-29  Pawel Salek 
+
+	* dft/cube-fast.c: check malloc() results.
+	* dft/fun-becke.c: make fourth order follow same format as lower ones.
+	* dft/fun-{lyp,slater,vwn}.c: ditto.
+	* dft/fun-cam-b3lyp.c: first shot at fourth order (unfinished).
+	* dft/functionals.h: reordering of third and fourth order derivatives.
+	* dft/general.c: ditto.
+	
 2005-01-19  Pawel Salek 
 
 	* dalton.gnr: '==' operator is not standard.

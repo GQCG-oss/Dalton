@@ -122,6 +122,25 @@ $AWK 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
 END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Hyperpol-ties $4"
 }
 
+# check_second_hyperpolarizability
+# check cubic response/second hyperpolarizability
+# $1 - value of frequency B
+# $2 - value of frequency C
+# $3 - value of frequency D
+# $4 - combinations of operators, eg. 'X;Y,Y,X'
+# $5 - expected value
+# $6 - max deviation
+check_second_hyperpolarizabilities() {
+[ "$6" = "" ] &&  echo "not enough parameters to check_hyperpolarizabilities."
+$AWK 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0; isthere=0}
+/B-freq:  / { if($3=='$1') {getline;} else {next;}
+              if($3=='$2') {getline;} else {next;}
+              if($3=='$3') {isthere=1;}
+            }
+/'$4'/ && isthere {if(!e($3,'$5,$6'))s++}
+END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; expected gamma($4)_($1,$2,$3) = $5"
+}
+
 # check_general_lr:
 # check linear response property P=<<X,Y>>
 # $1 - label of X
