@@ -95,7 +95,7 @@ dft_dens_restricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
     if(rho>grid->dfthr0 && grid->dogga) {
         /* compute only half density gradient, i.e only grad_alpha. */
         dgemv_("T", &inforb_.nbast, &THREEI, &ONER,
-               &grid->atv[inforb_.nbast-1], &inforb_.nbast, tmp_vec,
+               &grid->atv[inforb_.nbast], &inforb_.nbast, tmp_vec,
                &ONEI, &ZEROR, grid->grada, &ONEI);
         
         ngrad = sqrt(grid->grada[0]*grid->grada[0]+

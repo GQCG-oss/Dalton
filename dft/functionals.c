@@ -210,36 +210,6 @@ void
 DFTPOT1(SecondDrv *ds, const real* w, const DftDensProp* dp, 
         const int* triplet)
 {
-    real grad = dp->grada + dp->gradb;
-    SecondFuncDrv drvs;
-
-    drv2_clear(&drvs);
-    if(dp->rhoa + dp->rhob>1e-14)
-        selected_func->second(&drvs, *w, dp);
-         
-    /* This could be a separate function. */
-    if (*triplet) {
-        ds->fR  = 0.5*(drvs.df0100 - drvs.df0100);
-        ds->fZ  = drvs.df0010 - 0.5*drvs.df00001* grad;
-        ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
-        ds->fRZ = 0.5*(drvs.df1010 - drvs.df1001);
-        ds->fZZ = 0.5*(drvs.df0020 - drvs.df0011 - drvs.df00001);
-    } else { /* singlet */
-        ds->fR  = 0.5*(drvs.df0100 + drvs.df0100);
-        ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* grad;
-        ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
-        ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* grad);
-        ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001);
-    }
-}
-
-/*  new second derivatives routine */  
-/*  handles arbitrary functionals  */ 
-/*  ZR                             */   
-void
-newdftpot1_(SecondDrv *ds, const real* w, const DftDensProp* dp,
-        const int* triplet)
-{
     
     SecondFuncDrv drvs;
 
@@ -256,14 +226,15 @@ newdftpot1_(SecondDrv *ds, const real* w, const DftDensProp* dp,
         ds->fZG = 0.0; 
         ds->fGG = 0.0; 
     } else { /* singlet */
-        ds->fZ  = drvs.df0010; 
-        ds->fG  = 0.5*drvs.df00001;  
+        ds->fR  = 0.5*(drvs.df1000 + drvs.df0100);
+        ds->fZ  = drvs.df0010;
         ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
         ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001);
-        ds->fRG = 0.5*drvs.df10001;   
         ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011); 
+        ds->fRG = 0.5*drvs.df10001;   
         ds->fZG = 0.5*drvs.df00101;   
         ds->fGG = 0.25*drvs.df00002; 
+        ds->fG  = 0.5*drvs.df00001;  
     }
 }
 

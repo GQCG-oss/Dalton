@@ -453,7 +453,7 @@ C
      &          DMAT(NBAST,NBAST), GAO(NBLEN,NBAST),
      &          GAO1(NBLEN,NBAST,3)
       DIMENSION PHASE(3), RXRHO(3), SUSDFT(3,3)
-      DIMENSION VXC(NBLEN), VXB(NBLEN), VX(5), DENS(5)
+      DIMENSION VXC(NBLEN), VXB(NBLEN), VX(9), DENS(5)
 C
       LOGICAL ACTIVE(NBAST)
       LOGICAL DFT_ISGGA, DOGGA
@@ -472,7 +472,7 @@ C
       END DO
 C     
       CALL DZERO(DENS,5)
-      CALL DZERO(VX,5)
+      CALL DZERO(VX,9)
       IF (DOGGA) THEN
          DO I = 1, NBLEN  
             GRDNRM = SQRT(GRADA(1,I)**2+GRADA(2,I)**2+GRADA(3,I)**2)
@@ -483,7 +483,7 @@ C
             DENS(5) = DENS(3)*DENS(4)
             CALL DFTPOT1(VX,WGHT(I),DENS(1),.FALSE.)
             VXC(I)  = DP25*VX(1)
-            VXB(I)  = DP5*VX(2)/GRDNRM
+            VXB(I)  = DP5*(VX(2)/GRDNRM + VX(9))
          END DO
       ELSE
          DO I = 1, NBLEN

@@ -282,7 +282,7 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
 	   data->dtgao,&ONEI);
     b0 = ddot_(&inforb_.nbast,data->dtgao,&ONEI,grid->atv,&ONEI);
     if(grid->dogga) {
-	real br, facr, bmax, vt[4];
+	real brg, brz, facr, facg, bmax, vt[4];
 	real *atvX = &grid->atv[inforb_.nbast  ];
 	real *atvY = &grid->atv[inforb_.nbast*2];
 	real *atvZ = &grid->atv[inforb_.nbast*3];
@@ -298,15 +298,19 @@ lin_resp_cb(DftGrid* grid, LinRespData* data)
 	       &inforb_.nbast,data->dtgao,&ONEI,&ONER,b3,&ONEI);
 	bmax = max(fabs(b0),max(fabs(b3[0]),max(fabs(b3[1]),fabs(b3[2]))));
 	if(bmax<=grid->dfthri) return;
-	br = (b3[0]*grid->grada[0] + b3[1]*grid->grada[1] + b3[2]*grid->grada[2])/
-            ngrad;
+	brg = (b3[0]*grid->grada[0] +
+               b3[1]*grid->grada[1] +
+               b3[2]*grid->grada[2])*2;
+        brz = brg/ngrad;
 
 	dftpot1_(&vxc, &grid->curr_weight, &grid->dp, &data->trplet);
-	facr  = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*br;
-        vt[0] = vxc.fRR*b0 + vxc.fRZ*br; 
-        vt[1] = (facr*grid->grada[0] + vxc.fZ*b3[0])/ngrad;
-        vt[2] = (facr*grid->grada[1] + vxc.fZ*b3[1])/ngrad;
-        vt[3] = (facr*grid->grada[2] + vxc.fZ*b3[2])/ngrad;
+        facr = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*brz + vxc.fZG*brg;
+        facr = 2*(facr/ngrad + (vxc.fRG*b0+vxc.fZG*brz +vxc.fGG*brg));
+        facg = vxc.fZ/ngrad + vxc.fG;
+        vt[0] = vxc.fRR*b0 + vxc.fRZ*brz+ vxc.fRG*brg;
+        vt[1] = facr*grid->grada[0] + facg*b3[0];
+        vt[2] = facr*grid->grada[1] + facg*b3[1];
+        vt[3] = facr*grid->grada[2] + facg*b3[2];
 	for(isym=0; isym<inforb_.nsym; isym++) {
 	    int istr = inforb_.ibas[isym];
 	    int iend = inforb_.ibas[isym] + inforb_.nbas[isym];
@@ -433,7 +437,7 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
     free(lr_data.dtgao);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f(%9.1g): LR-DFT/B eval. time: %9.1f s", 
+    fort_print("Electrons: %f(%9.1g): LR-DFT eval. time: %9.1f s", 
                electrons, (electrons-2.0*inforb_.nrhft)/(2.0*inforb_.nrhft), 
                utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -1418,7 +1422,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
         dp. rhoa = dp. rhob = 0.5*grid->r.rho[i];
         dp.grada = dp.gradb = 0.5*ngrad;
         dp.gradab = dp.grada*dp.gradb;
-        newdftpot1_(&vxc, &weight, &dp, &data->trplet);
+        dftpot1_(&vxc, &weight, &dp, &data->trplet);
 	facr = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*brz + vxc.fZG*brg;
 	facr = facr/ngrad + (vxc.fRG*b0+vxc.fZG*brz +vxc.fGG*brg);
 	facg = vxc.fZ/ngrad + vxc.fG;
@@ -1502,6 +1506,11 @@ FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
                                      lin_resp_cb_b_gga : lin_resp_cb_b_lda),
                                      &lr_data);
     dft_lin_resp_collect_info(lr_data.res, work);
+    if(DFTLR_DEBUG) {
+        fort_print("AO Fock matrix contribution in dft_lin_respf");
+        outmat_(lr_data.res,&ONEI,&inforb_.nbast,&ONEI,&inforb_.nbast,
+                &inforb_.nbast, &inforb_.nbast);
+    }
     for(i=0; i<inforb_.nbast; i++) {
 	int ioff = i*inforb_.nbast;
 	for(j=0; j<i; j++) {

@@ -1,3 +1,13 @@
+2004-09-25  Pawel Salek 
+
+	* dft/functionals.c: clean up evaluation of second derivatives.
+	* dft/dft_hes.F, dft/dft_mag.F: adjust accordingly.
+	* dft/prop-eval.c: ditto.
+	* dft/fun-cam-b3lyp.c: fixes to second order derivatives.
+	* dft/fun-tester.c: Allow testing of only selected derivative orders.
+	* dft/general.c: fix in test-only gradient code (found by Rafal
+	Podeszwa).
+	
 2004-05-20  Pawel Salek 
 
 	* dft/dft_aux.F: get_ksymop not used any more: remove.

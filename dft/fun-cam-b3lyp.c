@@ -25,10 +25,6 @@ Pawel Salek, 2004.06, Himmelbjerg.
  
 #include "functionals.h"
 
-#ifdef TEST
-#define fort_print printf
-#endif
-
 static real CamMuFactor = 0.33, CamAlpha = 0.19, CamBeta = 0.46;
 #define MU    CamMuFactor
 #define ALPHA CamAlpha
@@ -163,7 +159,7 @@ fun_a_first(real rho, real grad, RGFirstDrv *res)
     DftDensProp dp;
     real ex, a;
 
-    dp.rhoa = dp.rhob = rho;
+    dp.rhoa  = dp.rhob  = rho;
     dp.grada = dp.gradb = grad;
     ex = 0.5*(DiracFunctional.func(&dp) +
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
@@ -178,56 +174,27 @@ fun_a_first(real rho, real grad, RGFirstDrv *res)
 static void
 fun_a_second(real rho, real grad, RGSecondDrv *res)
 {
-  real t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,
-    t16,t17,t18,t19,t20,t21,t22,t23,t24;
-  t1 = 1.414213562373095;
-  t2 = 0.56418958354776;
-  t3 = pow(grad,2.0);
-  t4 = pow(rho,-1.333333333333333);
-  t5 = asinh(grad*t4);
-  t6 = 0.0252*grad*t5*t4+1.0;
-  t7 = pow(t6,-1.0);
-  t8 = pow(rho,-2.666666666666667);
-  t9 = pow(0.00378*t3*t7*t8+0.9305257363491,0.5);
-  t10 = pow(rho,-3.666666666666667);
-  t11 = pow(t3*t8+1.0,0.5);
-  t12 = pow(t11,-1.0);
-  t13 = pow(rho,-2.333333333333334);
-  t14 = -0.0336*grad*t5*t13-0.0336*t3*t12*t10;
-  t15 = pow(t6,-2.0);
-  t16 = -0.00378*t3*t14*t15*t8-0.01008*t3*t7*t10;
-  t17 = pow(t9,-1.0);
-  t18 = pow(rho,-0.33333333333333);
-  t19 = 0.0252*t5*t4+0.0252*grad*t12*t8;
-  t20 = 0.00756*grad*t7*t8-0.00378*t3*t19*t15*t8;
-  t21 = pow(t9,-3.0);
-  t22 = pow(rho,-4.666666666666667);
-  t23 = pow(t6,-3.0);
-  t24 = pow(t11,-3.0);
-  res->df10 = 0.08333333333333*t1*t16*t17*t18*t2-0.05555555555556*t1*t2*t4*t9;
-  res->df01 = 0.08333333333333*t1*t17*t18*t2*t20;
-  res->df20 = 0.08333333333333*t1*t17*t18*t2*
-      (-0.00378*t15*t3*t8*(0.0784*t5*grad*pow(rho,-3.333333333333334)
-                           -0.0448*t24*pow(grad,4.0)
-                           *pow(rho,-7.333333333333333)+0.168*t3*t12*t22)
-       +0.00756*pow(t14,2.0)*t23*t3*t8+0.03696*t3*t7*t22
-       +0.02016*t3*t14*t15*t10)+0.07407407407407*t1*t13*t2*t9
-      -0.05555555555556*t1*t16*t17*t2*t4
-      -0.04166666666667*t1*pow(t16,2.0)*t18*t2*t21;
-  res->df11 = 0.08333333333333*t1*t17*t18*t2
-      *(-0.00378*t15*t3*t8*(0.0336*t24*pow(grad,3.0)
-                            *pow(rho,-6.333333333333333)
-                            -0.0336*t5*t13-0.1008*grad*t12*t10)
-        +0.00756*t3*t14*t19*t23*t8-0.00756*grad*t14*t15*t8
-        -0.02016*grad*t7*t10+0.01008*t3*t19*t15*t10)
-      -0.02777777777778*t1*t17*t2*t20*t4
-      -0.04166666666667*t1*t16*t18*t2*t20*t21;
-  res->df02 = 0.08333333333333*t1*t17*t18*t2
-      *(-0.00378*t15*t3*t8
-        *(0.0504*t12*t8-0.0252*t24*t3*pow(rho,-5.333333333333333))
-        +0.00756*t7*t8+0.00756*pow(t19,2.0)*t23*t3*t8
-        -0.01512*grad*t19*t15*t8)
-      -0.04166666666667*t1*t18*t2*pow(t20,2.0)*t21;
+    SecondFuncDrv ds;
+    DftDensProp dp;
+    real ex, a, fac10, fac01;
+
+    dp.rhoa  = dp.rhob  = rho;
+    dp.grada = dp.gradb = grad;
+    ex = 0.5*(DiracFunctional.func(&dp) +
+              BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
+    a = fun_a(rho, grad);
+    memset(&ds, 0, sizeof(ds));
+    DiracFunctional.second(&ds, 1, &dp);
+    BeckeFunctional.second(&ds, BECKE88_CORR_WEIGHT, &dp);
+    fac10 = ds.df1000/(2*ex)-1.0/rho;
+    fac01 = ds.df0010/(2*ex);
+    res->df10 = a*fac10;
+    res->df01 = a*fac01;
+    res->df20 = a*(fac10*fac10 + ds.df2000/(2*ex) -
+                   ds.df1000*ds.df1000/(2*ex*ex) +1/(rho*rho));
+    res->df11 = a*(fac10*fac01 + ds.df1010/(2*ex) -
+                   ds.df1000*ds.df0010/(2*ex*ex));
+    res->df02 = a*(ds.df0020/(2*ex)-ds.df0010*ds.df0010/(4*ex*ex));
 }
 
 /* ===================================================================
@@ -308,7 +275,8 @@ camb3lyp_b_energy_medium(real a)
     return res;
 }
 
-static __inline__ real
+/* tested version */
+static real
 camb3lyp_b_first_medium(real a)
 {
     real t1 = 1/a;
@@ -342,9 +310,9 @@ camb3lyp_b_second_medium(real a)
     if(a == 0) return 16.0;
     t1 = a*a;
     if(a>=5)  {
-        const double large_coefs[] = {  6, -48, 640,  -11520 };
+        static const double large_coefs[] = {  6, -48, 640,  -11520 };
         return evaluate_series(ELEMENTS(large_coefs), large_coefs, t1)/
-            (t1*t2);
+            (t1*a);
     }
     t2 = 1/t1;
     t3 = exp(-0.25*t2);
@@ -354,7 +322,7 @@ camb3lyp_b_second_medium(real a)
     t7 = -t3/a+0.5*t4*t3-4*a*t5;
     return -(8*a*(2*a*(t3/(4*pow(a,6.0))-2*t3*pow(a,-4.0)+t6-4*t5)
                   -t3/(2*pow(a,5.0))+4*t7+2*t4*t3)/3.0
-             +16*(2.0*a*t7+2.0*(t3-2*t1*t5-1.5)+t6)/3.0);
+             +16*(2.0*a*t7+2.0*(t3-2*t1*t5-1.5)+t6)/3.0)*BETA;
 }
 
 static __inline__ real
@@ -364,7 +332,7 @@ camb3lyp_b_third_medium(real a)
 
     if(a==0) return 0;
     if(a>=5)  {
-        const double large_coefs[] = {  -1.5, 8, -80,  1152 };
+        static const double large_coefs[] = {  -1.5, 8, -80,  1152 };
         real a2 = a*a;
         return evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
             (a2*a2*a);
@@ -377,9 +345,10 @@ camb3lyp_b_third_medium(real a)
     t6 = t2-1;
     t7 = -t1*t2-2*t4*t2+t3*t2/4-4*t6;
     t8 = pow(a,-3.0);
-    return -8*a*(2*a*(t2/(8*pow(a,9))-5*t2/(2*pow(a,7))+15*t5*t2/2)
+    return -8*BETA*
+        (a*(2*a*(t2/(8*pow(a,9))-5*t2/(2*pow(a,7))+15*t5*t2/2)
                  -t2/(4*pow(a,8))+6*t7-6*t4*t2+7*t3*t2/2)/3
-        -8*(4*(-t2/a+t8*t2/2-4*a*t6)+2*a*t7+2*t8*t2-t5*t2/2);
+         +(4*(-t2/a+t8*t2/2-4*a*t6)+2*a*t7+2*t8*t2-t5*t2/2));
 }
 
 static __inline__ real
@@ -455,6 +424,7 @@ camb3lyp_first_sigma(real rho, real grad, real a, RGFirstDrv *res)
     real ex;
 
     fun_a_first(rho, grad, &ader);
+    ader.df10 *= FAC; ader.df01 *= FAC;
     dp.rhoa = dp.rhob = rho;
     dp.grada = dp.gradb = grad;
     ex = 0.5*(DiracFunctional.func(&dp) +
@@ -462,8 +432,9 @@ camb3lyp_first_sigma(real rho, real grad, real a, RGFirstDrv *res)
     memset(&ds, 0, sizeof(ds));
     DiracFunctional.first(&ds, 1, &dp);
     BeckeFunctional.first(&ds, BECKE88_CORR_WEIGHT, &dp);
-    res->df10 = ds.df1000*bfactor + ex*bfactor_first*ader.df10*FAC;
-    res->df01 = ds.df0010*bfactor + ex*bfactor_first*ader.df01*FAC;
+
+    res->df10 = ds.df1000*bfactor + ex*bfactor_first*ader.df10;
+    res->df01 = ds.df0010*bfactor + ex*bfactor_first*ader.df01;
 }
 
 static void
@@ -494,16 +465,37 @@ camb3lyp_second_sigma(real rho, real grad, real a, RGSecondDrv *res)
 {
     real bfactor        = EVALUATOR(a, energy);
     real bfactor_first  = EVALUATOR(a, first);
-    real bfactor_second = camb3lyp_b_second_medium(a);
+    real bfactor_second = camb3lyp_b_second_medium(a*FAC);
     RGSecondDrv ader;
+    SecondFuncDrv ds;
+    DftDensProp dp;
+    real ex;
 
     fun_a_second(rho, grad, &ader);
-    res->df10 = -18*M_PI/(MU*MU)*
-        (2*rho*a*a*bfactor + rho*rho*2*a*bfactor*ader.df10 +
-         rho*rho*a*a*bfactor_first*ader.df10);
-    res->df01 = -18*M_PI/(MU*MU)*rho*rho*
-        (2*a*bfactor*ader.df01 + a*a*bfactor_first*ader.df01);
-    /* FIXME: put remaining derivatives here, too */
+    ader.df10 *= FAC; ader.df01 *= FAC;
+    ader.df20 *= FAC; ader.df11 *= FAC; ader.df02 *= FAC;
+    
+    dp.rhoa  = dp.rhob  = rho;
+    dp.grada = dp.gradb = grad;
+    ex = 0.5*(DiracFunctional.func(&dp) +
+              BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
+    memset(&ds, 0, sizeof(ds));
+    DiracFunctional.second(&ds, 1, &dp);
+    BeckeFunctional.second(&ds, BECKE88_CORR_WEIGHT, &dp);
+
+    res->df10 = ds.df1000*bfactor + ex*bfactor_first*ader.df10;
+    res->df01 = ds.df0010*bfactor + ex*bfactor_first*ader.df01;
+    res->df20 = ds.df2000*bfactor + 2*ds.df1000*bfactor_first*ader.df10 +
+        ex*bfactor_second*ader.df10*ader.df10 +
+        ex*bfactor_first*ader.df20;
+    res->df11 = ds.df1010*bfactor +
+        ds.df1000*bfactor_first*ader.df01 + 
+        ds.df0010*bfactor_first*ader.df10 + 
+        ex*bfactor_second*ader.df10*ader.df01 +
+        ex*bfactor_first*ader.df11;
+    res->df02 = ds.df0020*bfactor + 2*ds.df0010*bfactor_first*ader.df01 +
+        ex*bfactor_second*ader.df01*ader.df01 +
+        ex*bfactor_first*ader.df02;
 }
 
 static void
@@ -544,21 +536,30 @@ int main(int argc, char *argv[])
 {
     DftDensProp dp;
     RGFirstDrv fa;
+    real a, bfactor, bfactor_first, bfactor_second;
     if(argc<4) { printf("rhoa grada mu\n"); return 1;}
     dp.rhoa  = dp.rhob  = atof(argv[1]);
     dp.grada = dp.gradb = atof(argv[2]);
     CamMuFactor = atof(argv[3]);
-    CamAlpha = 0.;
+    CamAlpha = 0.19;
     CamBeta  = 0.46;
     printf("mu=%f: energy(%g,%g) = %g\n", CamMuFactor, dp.rhoa*2, dp.grada*2,
            camb3lyp_energy(&dp));
     fun_a_first(1,1,&fa);
     printf("fun a derivatives: %g %g\n", fa.df10, fa.df01);
+    for(a=0.1; a<10; a += 0.1) {
+        bfactor_first  = camb3lyp_b_second_medium(a*FAC);//EVALUATOR(a, second);
+        real b1 = EVALUATOR((a+1e-6), first);
+        real b2 = EVALUATOR((a-1e-6), first);
+        printf("%20.15g %20.15g %20.15g %20.15g\n", a,
+               bfactor, bfactor_first*FAC, (b1-b2)/2e-6);
+    }
     return 1;
 }
 
 void dftsethf_(real* s) {}
 void dftsetcam_(real* s, real *b) {}
+void fort_print(const char *fmt, ...){}
 #endif
 
 

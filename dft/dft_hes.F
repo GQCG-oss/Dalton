@@ -1184,17 +1184,18 @@ C
       DIMENSION WGHT(NBLEN), RHOA(NBLEN), GRADAT(NBLEN,3) 
       DIMENSION VXCR(NBLEN), VXCRR(NBLEN), 
      &          VXCZ(NBLEN), VXCRZ(NBLEN), VXCZZ(NBLEN)
-      DIMENSION VX(5), DENS(5) 
+      DIMENSION VX(9), DENS(5) 
 #include <dftcom.h>
 #include <energy.h>
 #include <symmet.h>
 #include <shells.h>
 #include "dftmolhes.h"
       CALL DZERO(DENS,5)
-      CALL DZERO(VX,5)
+      CALL DZERO(VX,9)
       IF (DOGGA) THEN
          DO I = 1, NBLEN
             GRDNRM =  SQRT(GRADAT(I,1)**2+GRADAT(I,2)**2+GRADAT(I,3)**2)
+            IF(GRDNRM.LE.1e-40) GDRNRM = 1e-40
             DENS(1) = DP5*RHOA(I)
             DENS(2) = DP5*RHOA(I)
             DENS(3) = DP5*GRDNRM
@@ -1203,10 +1204,10 @@ C
             CALL DFTPOT1(VX,WGHT(I),DENS,.FALSE.)
             GDNRMI   = D1/GRDNRM
             VXCR(I)  = VX(1)
-            VXCZ(I)  = VX(2)*GDNRMI
+            VXCZ(I)  = VX(2)*GDNRMI + VX(9)
             VXCRR(I) = VX(3)
-            VXCRZ(I) = VX(4)*GDNRMI
-            VXCZZ(I) = DP5*(VX(5)*(GDNRMI**2) - VX(2)*(GDNRMI**3))
+            VXCRZ(I) = VX(4)*GDNRMI + VX(6)
+            VXCZZ(I) = DP5*(VX(5)*(GDNRMI**2)-VX(2)*(GDNRMI**3))
          END DO
       ELSE
          DO I = 1, NBLEN
