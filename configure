@@ -405,7 +405,7 @@ cat <<EOF > test.f
       END PROGRAM
 EOF
 $F77 -o test.x test.f >/dev/null 2>&1
-if [ ! -e test.x ]; then
+if [ ! -r test.x ]; then
    f90yes=" -DNO_F90"
     rm -f test.x test.o test.f
 else
