@@ -33,7 +33,7 @@ cc_fop_freeze cc_rsp_gamma cc_rsp_gammafreq cc_rsp_gammafreq2 \
 cc_rsp_mcdbterm cc_rsp_threephot cc_energy_triples cc_energy_triplesdirect \
 cc_energy_triplesdirect2 cc_energy_triplesdirect3 cc_energy_triplet2 \
 cc_rsp_twophot cc_rsp_twophot2 cc_rsp_twophot3 cc_rsp_twophot4 \
-cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2"
+cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3"
 #
 SHORT="$SHORT $SHORTCC"
 #

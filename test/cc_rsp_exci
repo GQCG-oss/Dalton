@@ -77,7 +77,7 @@ cat > cc_rsp_exci.dal <<'%EOF%'
 .THRENR
  1.0d-10
 .PRINT
-  1
+  5
 *CCEXCI
 .NCCEXCI
  1 2 
