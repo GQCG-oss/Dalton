@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamag.F,v 1.7 2001-06-08 11:43:06 hjj Exp $
+C$Id: abamag.F,v 1.8 2001-08-10 11:44:07 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -966,14 +966,14 @@ C  /* Deck shitra */
 #include <mxcent.h>
 #include <mxorb.h>
       DIMENSION STAVEC(NROW,3), EXPVAL(NCOMP), CSTRA(*), SCTRA(*)
-      CHARACTER NSTNUM*2, NSTDIR*1, LABINT(9*MXCENT)*8, WORD*8, INWORD*7
+      CHARACTER NSTNUM*3, NSTDIR*1, LABINT(9*MXCENT)*8, WORD*8, INWORD*7
 #include <sigma.h>
 #include <spinro.h>
 #include <nuclei.h>
 #include <symmet.h>
       DO 10 ICOMP = 1, NCOMP
          WORD = LABINT(ICOMP)
-         NSTNUM = WORD(:2)
+         NSTNUM = WORD(:3)
          NSTDIR = WORD(8:8)
          CALL NCOMTR(NSTNUM,NSTDIR,IROW,MCOMP)
          IF (INWORD .EQ. 'NSTCGOS') THEN
@@ -1014,10 +1014,11 @@ C
 C  /* Deck ncomtr */
       SUBROUTINE NCOMTR(NSTNUM,NSTDIR,IROW,MCOMP)
 #include <implicit.h>
-      CHARACTER NSTNUM*2, NSTDIR*1
+      CHARACTER NSTNUM*3, NSTDIR*1
 C
-      NUMBER = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*10
-      IROW   = NUMBER + ICHAR(NSTNUM(2:2)) - ICHAR('0')
+      NUMBER = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*100
+      NUMBER = NUMBER + (ICHAR(NSTNUM(2:2)) - ICHAR('0'))*10
+      IROW   = NUMBER + ICHAR(NSTNUM(3:3)) - ICHAR('0')
       IF (NSTDIR .EQ. 'X') MCOMP = 1
       IF (NSTDIR .EQ. 'Y') MCOMP = 2
       IF (NSTDIR .EQ. 'Z') MCOMP = 3

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1pro.F,v 1.11 2001-06-07 20:20:05 vebjornb Exp $
+C$Id: her1pro.F,v 1.12 2001-08-10 11:44:07 ruud Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -2189,9 +2189,12 @@ C  /* Deck nsttyp */
                   IF (ISCOOR .GT. 0) THEN
                      DO 400 ICOOR = 1, 3
                         ITYP = ITYP + 1
-                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
-     &                                 CHRNOS(MOD(ISCOOR,10))//LABEL//
-     &                                 ' '//CHRXYZ(ICOOR)
+                        IFIRST = ISCOOR/100
+                        ISECND = MOD(ISCOOR,100)/10
+                        ITHIRD = MOD(MOD(ISCOOR,100),10)
+                        LABINT(ITYP) = CHRNOS(IFIRST)//CHRNOS(ISECND)//
+     &                                 CHRNOS(ITHIRD)//LABEL//
+     &                                 CHRXYZ(ICOOR)
                         INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,2))
                         LSCOOR = 3*(ISCOOR - 1) + ICOOR
                         INTADR(LSCOOR) = ITYP
@@ -2230,8 +2233,11 @@ C  /* Deck psotyp */
                ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,2)
                IF (ISCOOR .GT. 0) THEN
                   ITYP = ITYP + 1
-                  LABINT(ITYP) = 'PSO '//CHRNOS(ISCOOR/10)
-     &                                 //CHRNOS(MOD(ISCOOR,10))//'  '
+                  IFIRST = ISCOOR/100
+                  ISECND = MOD(ISCOOR,100)/10
+                  ITHIRD = MOD(MOD(ISCOOR,100),10)
+                  LABINT(ITYP) = 'PSO '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                                 //CHRNOS(ITHIRD)//' '
                   INTREP(ITYP) = IREP
                   INTADR(ISCOOR) = ITYP
                END IF
