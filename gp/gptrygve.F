@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: gptrygve.F,v 1.5 2001-05-31 06:38:26 vebjornb Exp $
+C$Id: gptrygve.F,v 1.6 2001-06-08 11:23:04 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/05/31 06:38:26  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.4  2001/05/02 18:20:45  ruud
 Changes to make IRC work/kr/
 
@@ -395,15 +398,17 @@ C
 C error branches
 C
  9000 CONTINUE
-      WRITE (LUPRI,'(//A,A/A,I5)')
+      WRITE (LUPRI,'(//2A/2A/A,I5)')
      *   ' *** ERROR (OPENDX) INVALID STATUS KEYWORD: ',STATUS,
+     *   '                    FILE NAME   =',NAME,
      *   '                    FILE NUMBER =',LUDX
       CALL QTRACE(LUPRI)
       CALL QUIT('*** ERROR (OPENDX) INVALID STATUS KEYWORD')
 C
  9100 CONTINUE
-      WRITE (LUPRI,'(//A/A,I5/A)')
+      WRITE (LUPRI,'(//A/2A/A,I5/A)')
      *   ' *** ERROR (OPENDX) OLD FILE NOT FOUND',
+     *   '                    FILE NAME   =',NAME,
      *   '                    FILE NUMBER =',LUDX,
      *   ' --- or wrong record length on old file.'
       CALL QTRACE(LUPRI)
