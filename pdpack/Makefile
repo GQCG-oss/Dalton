@@ -2,7 +2,8 @@ all :	libpdpack.a
 
 include ../Makefile.config
 
-F_OBJS = arhpack.o fastio_g07.o linextra.o printpkg.o jacobi.o gp_zblas.o
+C_OBJS = scatter-io.o
+F_OBJS = arhpack.o linextra.o printpkg.o jacobi.o gp_zblas.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
@@ -11,7 +12,7 @@ pre: $(F_CPPS)
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > pdpack.ftnchek
 
-libpdpack.a: $(F_OBJS) $(PDPACK_EXTRAS)
+libpdpack.a: $(F_OBJS) $(C_OBJS) $(PDPACK_EXTRAS)
 	 $(AR) $(ARFLAGS) $@ $?
 
 # eispack.o has to be compiled without optimization under Linux/pgf77

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsphso.F,v 1.3 2003-11-11 15:43:52 pawsa Exp $
+C$Id: rsphso.F,v 1.4 2003-12-03 20:01:56 pawsa Exp $
 C
 #include <single.h>
 C  /* Deck hsoctl */
@@ -1391,7 +1391,7 @@ C
       ELSE
          INQUIRE(FILE='MOHSOINT',OPENED=FOPEN)
          IF (.NOT.FOPEN) THEN
-            CALL DAINTF(LUMHSO,'MOHSOINT')
+            CALL DAOPEN(LUMHSO,'MOHSOINT')
          END IF
       END IF
       CALL QEXIT('TRANSFORM_HSO')

@@ -161,8 +161,8 @@ case $WHICH in
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux)    liblist='libmkl_p3.a libatlas.a libblas.a'
-              complist='ifc pgf77 g77'
-              ccmplist='icc gcc pgcc';;
+              complist='ifc efc pgf77 g77'
+              ccmplist='icc ecc gcc pgcc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='g77 f77'
 #                       f77 is the Absoft v8.0 compiler
@@ -881,99 +881,104 @@ case "$WHICH" in
 	  inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
           copt='-fast';;
-    linux) if [ "$mesp" = "dummy" -a $F77 != "ifc" ]; then
-	      if [ $split = 'true' ] ; then
-                 cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-	      else
-                 cpp="-DSYS_LINUX -D_FILE_OFFSET_BITS=64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-  	      fi
-	   elif [ "$mesp" = "dummy" -a $F77 = "ifc" ]; then
-	      if [ $split = 'true' ] ; then
-                 cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-	      else
-                 cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-  	      fi
+    linux) 
+          if [ "$mesp" = "dummy" -a $F77 != "ifc" ]; then
+            if [ $split = 'true' ] ; then
+               cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
             else
-	      if [ $split = 'true' ] ; then
-                 cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
-              else
-                 cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
- 	      fi
-	      set_parallel_def $mesp
-	      fi
-      if [ $F77 = 'ifc' ]; then
-          if  grep -q sse2 /proc/cpuinfo 2>/dev/null; then
-              proc='-xW'
-          elif [ $prc = 'i686' ]; then
-	      proc='-tpp6 -xK'
-	  elif [ $prc = 'i586' ]; then
-	      proc='-tpp5 -xi'
-	  else
-	      proc=''
-	  fi
-	  cpp="-DVAR_IFC $cpp"
-	  opt="-O3 $proc -ip -w"
-	  safe_opt="-O1 -w"
-          case $CC in
-              icc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
-              gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
+               cpp="-DSYS_LINUX -D_FILE_OFFSET_BITS=64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+            fi
+          elif [ "$mesp" = "dummy" -a $F77 = "ifc" ]; then
+            if [ $split = 'true' ] ; then
+               cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+            else
+               cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+            fi
+          else
+            if [ $split = 'true' ] ; then
+               cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+            else
+               cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+            fi
+            set_parallel_def $mesp
+          fi
+          case $F77 in
+          [ei]fc)
+             if  grep -q sse2 /proc/cpuinfo 2>/dev/null; then
+                 proc='-xW'
+             elif [ $prc = 'i686' ]; then
+                 proc='-tpp6 -xK'
+             elif [ $prc = 'i586' ]; then
+                 proc='-tpp5 -xi'
+             else
+                 proc=''
+             fi
+             cpp="-DVAR_IFC $cpp"
+             opt="-O3 $proc -ip -w"
+             safe_opt="-O1 -w"
+             case $CC in
+                 [ie]cc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
+                 gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
+             esac
+             LIBS="$LIBS -Vaxlib -lsvml"
+             ;;
+          pgf77)
+             if [ $prc = 'i686' ]; then
+                 proc='-tp p6'
+             elif [ $prc = 'i586' ]; then
+                 proc='-tp p5'
+             else
+                 proc=''
+             fi
+             cpp="-DVAR_PGF77 $cpp"
+             copt="-O3"
+             opt="-O3 $proc -Munroll"; safe_opt="$proc"
+             ;;
+          *)
+              test_linux_g77=false
+              if [ -s /etc/redhat-release ]; then
+                 if [ `grep "Red Hat Linux 7\.0" /etc/redhat-release | wc -l ` != 0 ]; then
+                     test_linux_g77="true"
+                 fi
+              elif [ -d /proc ]; then
+                   if [ `cat /proc/version | grep "Red Hat Linux 7\.0" | wc -l` != "0" ]; then
+                      test_linux_g77="true"
+                   fi
+              fi
+              if [ $test_linux_g77 != "false" ]; then
+                 if [ `which rpm | wc -l ` != 0 ]; then
+                    if [ `rpm -q gcc-g77 | grep '2.96.54' | wc -l` != 0 ]; then
+                       $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                       $ECHO "There are problems with the native Red Hat 7.0 compiler."
+                       $ECHO "You should upgrade your gcc and gcc-g77-2.96.54 compiler to version 2.96.69 or later."
+                       $ECHO "Dalton does NOT run correct with the current compiler."
+                       $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                    fi
+                 else
+                    $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                    $ECHO "I cannot determine if you use the original g77 compiler from Red Hat Linux 7.0."
+                    $ECHO "If you do, upgrade gcc & gcc-g77 to version 2.96.69 or later."
+                    $ECHO "Dalton does NOT run correct with the gcc-g77 2.96.54 compiler"
+                 fi
+              fi
+              cpp="-DVAR_G77 $cpp"
+              if [ "$prc" = alpha ]; then
+                 copt="-mieee"; 
+               else 
+                 copt="-mcpu=$prc -malign-double" 
+              fi
+              copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
+              opt="$copt -fno-globals -Wno-globals -fno-second-underscore"
+              copt="$copt -std=c99 -DRESTRICT=restrict"
+              ;;
           esac
-	  LIBS="$LIBS -Vaxlib -lsvml"
-      elif [ $F77 = 'pgf77' ]; then
-	  if [ $prc = 'i686' ]; then
-	      proc='-tp p6'
-	  elif [ $prc = 'i586' ]; then
-	      proc='-tp p5'
-	  else
-	      proc=''
-	  fi
-	      cpp="-DVAR_PGF77 $cpp"
-                  copt="-O3"
-                  opt="-O3 $proc -Munroll"; safe_opt="$proc"
-              else
-                  test_linux_g77=false
-                  if [ -s /etc/redhat-release ]; then
-                     if [ `grep "Red Hat Linux 7\.0" /etc/redhat-release | wc -l ` != 0 ]; then
-                        test_linux_g77="true"
-                     fi
-                  elif [ -d /proc ]; then
-                     if [ `cat /proc/version | grep "Red Hat Linux 7\.0" | wc -l` != "0" ]; then
-                        test_linux_g77="true"
-                     fi
-                  fi
-                  if [ $test_linux_g77 != "false" ]; then
-                     if [ `which rpm | wc -l ` != 0 ]; then
-                        if [ `rpm -q gcc-g77 | grep '2.96.54' | wc -l` != 0 ]; then
-                          $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                          $ECHO "There are problems with the native Red Hat 7.0 compiler."
-                          $ECHO "You should upgrade your gcc and gcc-g77-2.96.54 compiler to version 2.96.69 or later."
-                          $ECHO "Dalton does NOT run correct with the current compiler."
-                          $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                        fi
-                     else
-                          $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
-                          $ECHO "I cannot determine if you use the original g77 compiler from Red Hat Linux 7.0."
-                          $ECHO "If you do, upgrade gcc & gcc-g77 to version 2.96.69 or later."
-                          $ECHO "Dalton does NOT run correct with the gcc-g77 2.96.54 compiler"
-                     fi
-                  fi
-                  cpp="-DVAR_G77 $cpp"
-		  if [ "$prc" = alpha ]; then
-			copt="-mieee"; 
-		  else 
-			copt="-mcpu=$prc -malign-double" 
-		  fi
-		  copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
-                  opt="$copt -fno-globals -Wno-globals -fno-second-underscore"
-                  copt="$copt -std=c99 -DRESTRICT=restrict"
-              fi
-              if [ "$mesp" = "dummy" ]; then
-                  def='linux.x'
-              else
-                  def='linuxparallel.x'
-              fi
-              inc='-I../include'
-              cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
+          if [ "$mesp" = "dummy" ]; then
+              def='linux.x'
+          else
+              def='linuxparallel.x'
+          fi
+          inc='-I../include'
+          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
     darwin) if [ "$mesp" = "dummy" ]; then
               cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
             else       

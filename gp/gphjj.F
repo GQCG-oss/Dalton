@@ -1103,12 +1103,7 @@ C
 C  /* Deck readdi */
       SUBROUTINE READDI(IT,IU,N,IX)
       DIMENSION IX(N)
-#if !defined (VAR_FASTIO)
       READ(IT,REC=IU) IX
-#endif
-#if defined (VAR_FASTIO)
-      CALL DAFILE(IT,2,IX,N,IU)
-#endif
       RETURN
       END
 C  /* Deck readt */
@@ -1345,12 +1340,7 @@ C
 C  /* Deck writdi */
       SUBROUTINE WRITDI(IT,IU,N,IX)
       DIMENSION IX(N)
-#if !defined (VAR_FASTIO)
       WRITE(IT,REC=IU) IX
-#endif
-#if defined (VAR_FASTIO)
-      CALL DAFILE(IT,1,IX,N,IU)
-#endif
       RETURN
       END
 C  /* Deck writt */

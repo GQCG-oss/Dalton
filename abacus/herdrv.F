@@ -159,9 +159,9 @@ C     Integrals on AOORDINT,
 C     first remove any from previous geometry
 C
       IF (RNINTS) THEN
-         IF (LUORDA .LE. 0) CALL DAINTF(LUORDA,'AOORDINT')
+         IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
                             CALL DARMOV(LUORDA)
-         IF (LUMINT .LE. 0) CALL DAINTF(LUMINT,'MOTWOINT')
+         IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
                             CALL DARMOV(LUMINT)
          CALL TIMER('START ',TIMSTR,TIMEND)
          CALL SORTAO(WORK,LWORK)

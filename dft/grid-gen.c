@@ -1251,7 +1251,14 @@ dftgridinput_(const char *line, int line_len)
   sharing same cube. Within each cube select one that is closest to
   the center. Save cubes.
 */
-typedef unsigned GridPointKey; 
+typedef unsigned GridPointKey;
+#if defined(SYS_DEC)
+#if defined(CHAR_BIT)
+#undef CHAR_BIT
+#endif
+/* other architectures define it properly on their own */
+#define CHAR_BIT 8
+#endif
 #define KEY_BITS (sizeof(GridPointKey)*CHAR_BIT)
 
 struct point_key_t {

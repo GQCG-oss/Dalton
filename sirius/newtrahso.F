@@ -103,7 +103,7 @@ C        CALL FASTIO('ERRFIX=FIRM')
 C        no, ERRFIX=FIRM changes unit number to error code, if error.
       END IF
 C
-      IF (LUMHSO .LT. 0) CALL DAINTF(LUMHSO,'MOHSOINT')
+      IF (LUMHSO .LT. 0) CALL DAOPEN(LUMHSO,'MOHSOINT')
 C
 C     save LUORDA, LUMINT (may point to normal integrals)
       LUORDASV = LUORDA
@@ -459,7 +459,7 @@ C
 C     ... actual dimension: IARDM(3, (36,36) + 1)
 C
 #include <iratdef.h>
-#include <dacodes.h>
+c#include <dacodes.h>
 #include <dalistgs.h>
 C
 C Used from common blocks:
@@ -500,18 +500,23 @@ C
 C        MAERKE put this in a new NX0HSO ???
          IAD13  = 0
          LIADRM = 3*1297
-         CALL DAFILE(LUMHSO,DAREAD,IADRM,LIADRM,IAD13)
+         CALL DAREAD(LUMHSO,IADRM,LIADRM,IAD13)
          NLIST  = 4
+#if 1
+         CALL DARELIST(LUMHSO,IAD13,
+     &                 NLIST,ITRLV1,1,INTSY1,1,MSYM,1,LCMO,1)
+#else
          CALL GSLIST(LISTGS,NLIST,ITRLV1,1,INTSY1,1,MSYM,1,LCMO,1)
 C        NLIST = 10
 C        CALL GSLIST(LISTGS,NLIST,ITRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
 C    &               MFRO,8,MISH,8,MASH,8,MORB,8,MBAS,8,ITRTYP,MXCORB)
          CALL DAFILE(LUMHSO,DASREA,LISTGS,NLIST,IAD13)
+#endif
 C MAERKE: hvad med flg. non-standard?
 C adressen paa ICDTRA er gemt i IADRM(3,"1297")
 C        IADCMO = IADRM(2, 1,37)
          IAD13  = IADRM(3, 1,37)
-         CALL DAFILE(LUMHSO,DAREAD,ICDTRA,NNORBX,IAD13)
+         CALL DAREAD(LUMHSO,ICDTRA,NNORBX,IAD13)
          IF (IPRSIR .GT. 50) THEN
             WRITE (LUPRI,*) 'Test output from NX2HSO for IDIST = 0'
             WRITE (LUPRI,*) 'ITRLVL from LUMHSO :',ITRLV1
@@ -663,11 +668,11 @@ C
             END IF
             IF (ITYPCD.EQ.0) THEN
 C           ... skip this record
-               CALL DAFILE(LUMHSO,DASKIP,DUMMY,LREC,IADCD(ISYMA))
+c               CALL DAFILE(LUMHSO,DASKIP,DUMMY,LREC,IADCD(ISYMA))
+               IADCD(ISYMA) = IADCD(ISYMA) + LREC
             ELSE
                NINT = NINT + 1
-               CALL DAFILE(LUMHSO,DAREAD,BUF(IBUF2),LREC,
-     &                     IADCD(ISYMA))
+               CALL DAREAD(LUMHSO,BUF(IBUF2),LREC,IADCD(ISYMA))
 C              ... BUF(b,a) now contains (ab/cd)
                IF (ISYMB .EQ. ISYMA) THEN
                   CALL DSPTSI(NORBA,BUF(IBUF2),BUF(IBUF1))
