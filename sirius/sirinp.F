@@ -3238,7 +3238,7 @@ C -- local variables and constants
 C
       PARAMETER (NTABLE = 17)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     &          REWORD*12, RWORD*7
+     &          REWORD*12
       PARAMETER (MAXNRT = 40)
       DIMENSION NOR(8),INORO(MAXNRT),NREOR(8),NNOR(8)
       LOGICAL ALLOPT
@@ -3348,40 +3348,39 @@ C        ... to specify that 5D7F9G is now illegal.
 C
 C *** Option 4 >MOSTAR<   Molecular orbital input
  104  CONTINUE
-        READ (LUCMD,'(A12)') REWORD
-Chj-aug99: accept both starting in column 2 (used to be required)
-C          and in column 1 (as some other places).
-          IF (REWORD(1:1) .EQ. ' ' .OR. REWORD(1:1) .EQ. '.') THEN
-             RWORD = REWORD(2:7)
-          ELSE
-             RWORD = REWORD(1:6)
-          END IF
-          IF (RWORD .EQ. 'FORM18') THEN
+        READ (LUCMD,'(A)') REWORD
+          IF (INDEX(REWORD,'FORM18') .GT. 0) THEN
              IRDMO = 3
-          ELSE IF (RWORD .EQ. 'FORM12') THEN
+          ELSE IF (INDEX(REWORD,'FORM12') .GT. 0) THEN
              IRDMO = 4
-          ELSE IF (RWORD .EQ. 'OLDORB') THEN
+          ELSE IF (INDEX(REWORD,'OLDORB') .GT. 0) THEN
              IRDMO = 7
-          ELSE IF (RWORD .EQ. 'H1DIAG') THEN
+          ELSE IF (INDEX(REWORD,'H1DIAG') .GT. 0) THEN
              IRDMO = 8
              DOHUCKEL = .FALSE.
 C         ... make sure Huckel guess is disabled,
 C             although code in GNRLIN in dalton.F takes care of that
-          ELSE IF (RWORD .EQ. 'NEWORB') THEN
+          ELSE IF (INDEX(REWORD,'NEWORB') .GT. 0) THEN
              IRDMO = 9
-          ELSE IF (RWORD .EQ. 'SIRIFC') THEN
+          ELSE IF (INDEX(REWORD,'SIRIFC') .GT. 0) THEN
              IRDMO = 10
-          ELSE IF (RWORD .EQ. 'HUCKEL') THEN
+          ELSE IF (INDEX(REWORD,'HUCKEL') .GT. 0) THEN
+             IRDMO = 8
+             IF (.NOT.DOHUCKEL) THEN
+                WRITE (LUPRI,'(/A)') ' INFO: .MOSTART HUCKEL changed'//
+     &             ' to H1DIAG because Huckel guess not available.'
+             END IF
+          ELSE IF (INDEX(REWORD,'EWMO') .GT. 0) THEN
              IRDMO = 8
              IF (.NOT.DOHUCKEL) THEN
                 WRITE (LUPRI,'(/A)') ' INFO: .MOSTART HUCKEL changed'//
      &             ' to H1DIAG because Huckel guess not available.'
              END IF
           ELSE
-             WRITE(LUPRI,'(3A/A)') '"',REWORD(1:7),
+             WRITE(LUPRI,'(3A/A)') '"',REWORD,
      *          '" is incorrect input after ".MOSTART"',
      *          ' Select from .FORM12, .FORM18, .H1DIAG, .HUCKEL,',
-     *          ' .SIRIFC, .OLDORB, and .NEWORB'
+     *          ' .EWMO, .SIRIFC, .OLDORB, and .NEWORB'
              CALL QUIT(' INPUT ERROR IN ORBINP')
           END IF
           IF (IRDMO .EQ. 8) THEN
@@ -3516,11 +3515,10 @@ C
          WRITE(LUPRI,'(/2A)')
      &   WORD1,' INPUT ERROR: .LOCALI specified more than once'
       END IF
-      READ (LUCMD,*) RWORD
-      REWORD(2:7) = RWORD
-      IF (RWORD .EQ. 'BOYLOC') THEN
+      READ (LUCMD,'(A)') REWORD
+      IF (INDEX(REWORD,'BOYLOC') .GT. 0) THEN
          BOYORB = .TRUE.
-      ELSE IF (RWORD .EQ. 'PIPLOC') THEN
+      ELSE IF (INDEX(REWORD,'PIPLOC') .GT. 0) THEN
          PIPORB = .TRUE.
          CALL QUIT('Pipek-Mezey localization not yet implemented')
       ELSE
@@ -4569,10 +4567,10 @@ C
 #include <dfterg.h>
 #include <dftacb.h>
 C
-      CHARACTER*6 RDMOLB(11)
+      CHARACTER*6 RDMOLB(12)
       DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
-     &            'HUCKEL'/
+     &            'HUCKEL','EWMO  '/
       CHARACTER*33 TXTOCC(0:5)
       DATA TXTOCC/'NOTHING because of error(s).     ',
      &            'user input.                      ',
@@ -4799,8 +4797,14 @@ C
       IF (IRDMO .GT. 0 .AND. IRDMO .LE. 10) THEN
 C
          JRDMO = IRDMO
-         IF (IRDMO.EQ.8 .AND. DOHUCKEL) JRDMO = 11
-C        ... if HUCKEL use JRDMO = 11 to get correct output
+         IF (IRDMO.EQ.8 .AND. DOHUCKEL) THEN
+C        ... if HUCKEL use JRDMO = 11 or 12 to get correct output
+            IF (EWMO) THEN
+               JRDMO = 12
+            ELSE
+               JRDMO = 11
+            END IF
+         END IF
          WRITE (IWUNIT,'(/A/3A)')
      &   ' Initial molecular orbitals are obtained according to',
      &   ' ".MOSTART ',RDMOLB(JRDMO),'" input option.'
@@ -5072,6 +5076,7 @@ C *** End of subroutine PRTINP
 C
       RETURN
       END
+C  /* Deck nevpt2inp */
       SUBROUTINE NEVPT2INP(WORD,INPERR,ALLOPT)
 C
 C  2003 -- input for NEVPT2
