@@ -25,7 +25,7 @@ libsirius.a : $(OBJS)
 #sircino.o snglet.o
 
 sirtra.o: sirtra.F
-	$(F77) $(INCLUDE_DIR) $(CPP_FLAGS) $(SAFEOPTFLAGS) -c $?
+	$(F77) $(INCLUDE_DIR) $(CPP_FLAGS) $(SAFEOPTFLAGS) -c $*.F
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a
 
