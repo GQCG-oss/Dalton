@@ -1,6 +1,6 @@
 /* -*-mode:c; c-style:bsd; c-basic-offset:4;indent-tabs-mode:nil; -*- */
-/* Zilvinas Rinkevicus: single atom integration with GC2 radial grid.
-   Pawel Salek        : all the rest.
+/* Pawel Salek
+   Zilvinas Rinkevicus: single atom integration with GC2 radial grid.
    2002.10.10-10.14
 
    The code consists of four main parts:
@@ -83,10 +83,6 @@ static const real WEIGHT_THRESHOLD = 1e-17;
 enum { GRID_TYPE_STANDARD, GRID_TYPE_CARTESIAN };
     
 static int gridType = GRID_TYPE_STANDARD;
-
-struct point {
-    real x,y,z;
-};
 
 void*
 dal_malloc_(size_t sz, const char *place, int line)
@@ -720,7 +716,7 @@ block_compute_rjs(GGBlockWork *ggw, GridGenMolGrid* mg,
 }
 
 static int
-block_postprocess(GridGenMolGrid *mg, struct point *c,
+block_postprocess(GridGenMolGrid *mg, real *center,
                   int point_cnt, const int *atom_nums,
                   real (*coor)[3], real *w)
 {
@@ -744,9 +740,9 @@ block_postprocess(GridGenMolGrid *mg, struct point *c,
     for(i=0; i<mg->atom_cnt; i++) map2r[i] = -1;
     for(atno=0; atno<mg->atom_cnt; atno++) {
         GridGenAtomGrid *ag = mg->atom_grids[atno];
-        real dx = mg->atom_coords[atno].x - c->x;
-        real dy = mg->atom_coords[atno].y - c->y;
-        real dz = mg->atom_coords[atno].z - c->z;
+        real dx = mg->atom_coords[atno].x - center[0];
+        real dy = mg->atom_coords[atno].y - center[1];
+        real dz = mg->atom_coords[atno].z - center[2];
         real dist2 = dx*dx + dy*dy + dz*dz;
         /* Increase the radius beyond the last point to let the grid
          * time to end.  Adding a scaled-up difference between last
@@ -839,7 +835,7 @@ struct partitioning_scheme_t {
     (GridGenMolGrid* mg, int catom, int point_cnt,
      GridGenWork *ggw, int idx, int verbose);
     int (*postprocess)
-    (GridGenMolGrid* mg, struct point *c, 
+    (GridGenMolGrid* mg, real *center, 
      int point_cnt, const int *atom_nums,
      real (*coor)[3], real *w);
 };
@@ -890,7 +886,7 @@ comp_point_key(const void* a, const void* b)
 }
 
 void FSYM(gtexts)(real* r2);
-void FSYM(getblocks)(real *X,real *Y, real *Z, real *CELLSZ, real RSHEL2[],
+void FSYM(getblocks)(real *center, real *CELLSZ, real RSHEL2[],
                      int *NBLCNT, int (*IBLCKS)[2]);
 static void
 boxify_load_grid(const char *fname, int point_cnt, real *work, int worksz,
@@ -938,33 +934,34 @@ boxify_load_grid(const char *fname, int point_cnt, real *work, int worksz,
     fclose(f);
 }
 
+/* lo and hi point to three-element vectors */
 static void
 boxify_create_index(real cell_size, real (*coor)[3], int point_cnt,
                     struct point_key_t * index,
-                    struct point *lo, struct point *hi)
+                    real *lo, real *hi)
 {
     real fac;
     int i, bpc = KEY_BITS/3; /* bits per coordinate */
-    lo->x = lo->y = lo->z = +1e20;
-    hi->x = hi->y = hi->z = -1e20;
+    lo[0] = lo[1] = lo[2] = +1e20;
+    hi[0] = hi[1] = hi[2] = -1e20;
 
     for(i=0; i<point_cnt; i++) {
-        if(coor[i][0] < lo->x)      lo->x = coor[i][0];
-        else if(coor[i][0] > hi->x) hi->x = coor[i][0];
-        if(coor[i][1] < lo->y)      lo->y = coor[i][1];
-        else if(coor[i][1] > hi->y) hi->y = coor[i][1];
-        if(coor[i][2] < lo->z)      lo->z = coor[i][2];
-        else if(coor[i][2] > hi->z) hi->z = coor[i][2];
+        if(coor[i][0] < lo[0])      lo[0] = coor[i][0];
+        else if(coor[i][0] > hi[0]) hi[0] = coor[i][0];
+        if(coor[i][1] < lo[1])      lo[1] = coor[i][1];
+        else if(coor[i][1] > hi[1]) hi[1] = coor[i][1];
+        if(coor[i][2] < lo[2])      lo[2] = coor[i][2];
+        else if(coor[i][2] > hi[2]) hi[2] = coor[i][2];
     }
-    if( (1<<bpc) < (hi->x - lo->x)/cell_size) fputs("error: x\n", stderr);
-    if( (1<<bpc) < (hi->y - lo->y)/cell_size) fputs("error: y\n", stderr);
-    if( (1<<bpc) < (hi->z - lo->z)/cell_size) fputs("error: z\n", stderr);
+    if( (1<<bpc) < (hi[0] - lo[0])/cell_size) fputs("error: x\n", stderr);
+    if( (1<<bpc) < (hi[1] - lo[1])/cell_size) fputs("error: y\n", stderr);
+    if( (1<<bpc) < (hi[2] - lo[2])/cell_size) fputs("error: z\n", stderr);
 
     fac = 1/cell_size;
     for(i=0; i<point_cnt; i++) {
-        int ix = (coor[i][0] - lo->x)*fac;
-        int iy = (coor[i][1] - lo->y)*fac;
-        int iz = (coor[i][2] - lo->z)*fac;
+        int ix = (coor[i][0] - lo[0])*fac;
+        int iy = (coor[i][1] - lo[1])*fac;
+        int iz = (coor[i][2] - lo[2])*fac;
         if(ix<0) ix = 0; /* correct numerical error, if any */
         if(iy<0) iy = 0; /* correct numerical error, if any */
         if(iz<0) iz = 0; /* correct numerical error, if any */
@@ -980,9 +977,15 @@ boxify_create_index(real cell_size, real (*coor)[3], int point_cnt,
  * code uses different initialization, save_batch and finalize
  * actions. */
 static void
-boxify_save_batch_local(FILE *f, int cnt, int nblocks, int shlblocks[][2],
+boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
+                        int nblocks, int shlblocks[][2],
+                        real *center, const int *atom_nums,
                         real *coor, real *w)
 {
+    if(selected_partitioning->postprocess) {
+        cnt = selected_partitioning->postprocess(mg, center, cnt, atom_nums,
+                                                 (real(*)[3])coor, w);
+    }
     if(cnt == 0) return;
     if(fwrite(&cnt, sizeof(cnt), 1, f)!=1) {
         fprintf(stderr, "GRIDGEN: 'too short write' error.\n");
@@ -1001,12 +1004,30 @@ boxify_save_batch_local(FILE *f, int cnt, int nblocks, int shlblocks[][2],
 #include <mpi.h>
 static int mynum, nodes, last;
 static void
-grid_par_init(void) {
+grid_par_init(real *radint, int *angmin, int *angint) {
+    int arr[3];
     /* Executed by master and all slaves */
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
     MPI_Comm_size(MPI_COMM_WORLD, &nodes);
     last = 0;
+    arr[0] = *angmin;
+    arr[1] = *angint;
+    if(selected_partitioning == &partitioning_becke_orig) arr[2] = 0;
+    else if(selected_partitioning == &partitioning_becke_corr) arr[2] = 1;
+    else if(selected_partitioning == &partitioning_ssf) arr[2] = 2;
+    else /* if(selected_partitioning == &partitioning_block)*/ arr[2] = 3;
+    MPI_Bcast(radint, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(arr,    3, MPI_INT,    0, MPI_COMM_WORLD);
+    *angmin = arr[0];
+    *angint = arr[1];
+    switch(arr[2]) {
+    case 0: selected_partitioning = &partitioning_becke_orig; break;
+    case 1: selected_partitioning = &partitioning_becke_corr; break;
+    case 2: selected_partitioning = &partitioning_ssf; break;
+    default: selected_partitioning = &partitioning_block; break;
+    }
 }
+
 static char*
 grid_get_fname(const char *base, int filenum)
 {
@@ -1021,8 +1042,9 @@ grid_get_fname(const char *base, int filenum)
 
 #define M(s) {if((s) != MPI_SUCCESS) printf("MPI comm failed at %d\n", __LINE__); }
 static void
-boxify_save_batch(FILE *f, int cnt, int nbl, int shlbl[][2],
-                  real *coor, real *w)
+boxify_save_batch(GridGenMolGrid *mg, FILE *f, int cnt, 
+                  int nbl, int shlbl[][2],
+                  real *center, int *atom_nums, real *coor, real *w)
 {
     /* PARBLLEN must be low multiplicity of dftcom:MAXBLLEN
      * for performance reasons. */
@@ -1032,70 +1054,24 @@ boxify_save_batch(FILE *f, int cnt, int nbl, int shlbl[][2],
     for(i=0; i<cnt; i+= PARBLLEN) {
         int bcnt = i+PARBLLEN<cnt ? PARBLLEN : cnt - i;
         last = (last+1) % nodes;
-        if( last == 0)
-            boxify_save_batch_local(f, bcnt, nbl, shlbl, coor + i*3, w+i);
+        if(last == 0)
+            boxify_save_batch_local(mg, f, bcnt, nbl, shlbl,
+                                    center, atom_nums+i, coor + i*3, w+i);
         else {
             int arr[2]; arr[0] = bcnt; arr[1] = nbl;
             M(MPI_Send(arr,     2,      MPI_INT,   last, 1, MPI_COMM_WORLD));
             M(MPI_Send(shlbl,   2*nbl,  MPI_INT,   last, 2, MPI_COMM_WORLD));
             M(MPI_Send(coor+i*3,3*bcnt, MPI_DOUBLE,last, 3, MPI_COMM_WORLD));
             M(MPI_Send(w+i,     bcnt,   MPI_DOUBLE,last, 4, MPI_COMM_WORLD));
+            M(MPI_Send(center,  3,      MPI_DOUBLE,last, 5, MPI_COMM_WORLD));
+            M(MPI_Send(atom_nums+i,bcnt, MPI_INT,  last, 6, MPI_COMM_WORLD));
         }
     }
 }
 
-static void
-grid_par_shutdown(void)
-{
-    unsigned i;
-    int arr[2]; arr[0] = 0; arr[1] = 0;
-    /* Executed by master only */
-    for(i=1; i<nodes; i++)
-         M(MPI_Send(arr, 2, MPI_INT, i, 1, MPI_COMM_WORLD));
-}
-static void
-grid_par_slave(const char *fname)
-{
-    int *shlblocks;
-    MPI_Status s;
-    char *     nm = grid_get_fname(fname, mynum);
-    FILE *f;
-    int ishlcnt = FSYM2(ishell_cnt)();
-    real *dt = NULL;
-    int   dt_sz = 0;
-
-    if((f=fopen(nm, "wb")) == NULL) dalton_quit("Slave could not save.");
-    shlblocks = malloc(ishlcnt*sizeof(int));
-    do {
-        int arr[2];
-        M(MPI_Recv(arr, 2, MPI_INT, 0, 1, MPI_COMM_WORLD, &s));
-        if(arr[0] == 0)break; /* End Of Job */
-
-        M(MPI_Recv(shlblocks, 2*arr[1], MPI_INT, 0, 2, MPI_COMM_WORLD, &s));
-        if(arr[0]>dt_sz) {
-            dt = realloc(dt, 4*arr[0]*sizeof(real));
-            dt_sz = arr[0];
-        }
-        M(MPI_Recv(dt,        3*arr[0], MPI_DOUBLE, 0, 3, MPI_COMM_WORLD, &s));
-        M(MPI_Recv(dt+3*arr[0], arr[0], MPI_DOUBLE, 0, 4, MPI_COMM_WORLD, &s));
-        if(fwrite(arr,       sizeof(int), 2, f) != 2) abort();
-        if(fwrite(shlblocks, sizeof(int), arr[1]*2, f) != arr[1]*2)
-            dalton_quit("write error in %s(), point 2", __FUNCTION__);
-        /* write coords */
-        fwrite(dt, sizeof(real), 3*arr[0], f);
-        /* write weights */
-        fwrite(dt+3*arr[0], sizeof(real), arr[0], f);
-    } while(1);
-    fclose(f);
-    if(dt)
-        free(dt);
-    free(nm);
-    free(shlblocks);
-}
-  
 #else
-#define boxify_save_batch(f,c,b,s,r,w) \
-        boxify_save_batch_local((f),(c),(b),(s),(r),(w)) 
+#define boxify_save_batch(mg,f,c,b,s,center,an,r,w) \
+        boxify_save_batch_local((mg),(f),(c),(b),(s),(center),(an),(r),(w)) 
 #define grid_get_fname(base,num) strdup(base)
 
 #endif
@@ -1107,10 +1083,10 @@ grid_par_slave(const char *fname)
 static int
 boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
            real (*coor)[3], real *w, const int *atom_idx,
-           struct point_key_t *keys, struct point *lo, real cell_size)
+           struct point_key_t *keys, real *lo, real cell_size)
 {
     FILE *f;
-    int idx, cnt, newcnt;
+    int idx, cnt;
     real *rshel2;
     int nblocks, (*shlblocks)[2] = malloc(2*FSYM2(ishell_cnt)()*sizeof(int));
     int bpc = KEY_BITS/3; /* bits per coordinate */
@@ -1127,18 +1103,18 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
     FSYM(gtexts)(rshel2);
     for(idx=0; idx<point_cnt; idx += cnt) {
         int closest = 0, i;
-        struct point c;
+        real center[3];
         real mindist = 4*cell_size, maxdist = 0;
         GridPointKey key = keys[idx].key;
         real sx = 0, sy = 0, sz = 0;
-        c.x = lo->x + (((key >> (bpc*2)) & mask)+0.5)*cell_size;
-        c.y = lo->y + (((key >> bpc)     & mask)+0.5)*cell_size;
-        c.z = lo->z + (((key)            & mask)+0.5)*cell_size;
+        center[0] = lo[0] + (((key >> (bpc*2)) & mask)+0.5)*cell_size;
+        center[1] = lo[1] + (((key >> bpc)     & mask)+0.5)*cell_size;
+        center[2] = lo[2] + (((key)            & mask)+0.5)*cell_size;
         for(cnt=0; idx+cnt<point_cnt &&
                 keys[idx+cnt].key == key; cnt++) {
-            real dx = coor[keys[idx+cnt].index][0]-c.x;
-            real dy = coor[keys[idx+cnt].index][1]-c.y;
-            real dz = coor[keys[idx+cnt].index][2]-c.z;
+            real dx = coor[keys[idx+cnt].index][0]-center[0];
+            real dy = coor[keys[idx+cnt].index][1]-center[1];
+            real dz = coor[keys[idx+cnt].index][2]-center[2];
             real dist2 = dx*dx + dy*dy + dz*dz;
             if(dist2<mindist) { mindist=dist2; closest = cnt; }
             if(dist2>maxdist) { maxdist=dist2; }
@@ -1159,29 +1135,24 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
             dt[cnt*3+i]  = w[j];
             if(atom_idx) atom_nums[i] = atom_idx[j];
         }
-        FSYM(getblocks)(&c.x, &c.y, &c.z, &cell_size, rshel2, &nblocks, shlblocks);
+        FSYM(getblocks)(center, &cell_size, rshel2,
+                        &nblocks, shlblocks);
         if(nblocks==0) continue;        
 
         if(0) {
         printf("box [%5.1f,%5.1f,%5.1f] nt=%5d "
                "%f <r<%f [%5.1f,%5.1f,%5.1f] %d\n",
-               c.x, c.y, c.z, cnt, sqrt(mindist), sqrt(maxdist),
+               center[0], center[1], center[2], cnt,
+               sqrt(mindist), sqrt(maxdist),
                sx/cnt, sy/cnt, sz/cnt, nblocks);
         for(i=0; i<nblocks; i++)
             printf("(%d,%d)",shlblocks[i][0], shlblocks[i][1]);
         puts("");
         }
 
-        if(selected_partitioning->postprocess)
-            newcnt = selected_partitioning->postprocess(mg, &c,cnt, atom_nums,
-                                                        (real(*)[3])dt,
-                                                        dt+3*cnt);
-        else
-            newcnt = cnt;
-
-        boxify_save_batch(f, newcnt, nblocks, shlblocks, 
-                          dt, dt+3*cnt);
-        points_saved += newcnt;
+        boxify_save_batch(mg, f, cnt, nblocks, shlblocks,
+                          center, atom_nums, dt, dt+3*cnt);
+        points_saved += cnt;
     }
     fclose(f);
     free(rshel2);
@@ -1448,7 +1419,7 @@ mgrid_boxify(GridGenMolGrid *mg, const char* fname,
              void* work, int worksz)
 {
     real (*coor)[3], *w;
-    struct point lo, hi;
+    real lo[3], hi[3];
     struct point_key_t * keys =
       dal_malloc(point_cnt*sizeof(struct point_key_t));
     int coorw_allocated = 0;
@@ -1460,16 +1431,16 @@ mgrid_boxify(GridGenMolGrid *mg, const char* fname,
 
     boxify_load_grid(fname, point_cnt, work, worksz,
                      &coor, &w, &coorw_allocated, atom_idx);
-    boxify_create_index(cell_size, coor, point_cnt, keys, &lo, &hi);
+    boxify_create_index(cell_size, coor, point_cnt, keys, lo, hi);
     new_point_cnt = boxify_save(mg, fname, point_cnt, coor, w, atom_idx,
-                                keys, &lo, cell_size);
+                                keys, lo, cell_size);
     free(keys);
     if(coorw_allocated) free(coor);
     if(atom_idx) free(atom_idx);
     return new_point_cnt;
 }
 
-/* grid_gen_generate:
+/* grid_generate:
    returns number of grid points.
 */
 int
@@ -1658,6 +1629,76 @@ grid_gen_atom_new(int* atom_cnt)
  * Two routines are provided. One is designed for blocked approach,
  * the other one is a plain point-by-point grid reader.
  */
+
+#ifdef VAR_MPI
+static void
+grid_par_shutdown(void)
+{
+    unsigned i;
+    int arr[2]; arr[0] = 0; arr[1] = 0;
+    /* Executed by master only */
+    for(i=1; i<nodes; i++)
+         M(MPI_Send(arr, 2, MPI_INT, i, 1, MPI_COMM_WORLD));
+}
+static void
+grid_par_slave(const char *fname, real threshold)
+{
+    int *shlblocks;
+    MPI_Status s;
+    char *     nm = grid_get_fname(fname, mynum);
+    FILE *f;
+    int ishlcnt = FSYM2(ishell_cnt)();
+    real *dt = NULL;
+    int   dt_sz = 0;
+    int atom_cnt, point_cnt=0;
+    GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
+    GridGenMolGrid* mg =  mgrid_new(atom_cnt, atoms);
+    int *atom_nums = NULL;
+
+    if((f=fopen(nm, "wb")) == NULL) dalton_quit("Slave could not save.");
+    mgrid_set_radial(mg, threshold); /* so that it knows the atom radii */
+
+    shlblocks = malloc(ishlcnt*sizeof(int));
+    do {
+        int arr[2], lda;
+        real center[3];
+        M(MPI_Recv(arr, 2, MPI_INT, 0, 1, MPI_COMM_WORLD, &s));
+        if(arr[0] == 0)break; /* End Of Job */
+
+        M(MPI_Recv(shlblocks, 2*arr[1], MPI_INT, 0, 2, MPI_COMM_WORLD, &s));
+        if(arr[0]>dt_sz) {
+            dt = realloc(dt, 4*arr[0]*sizeof(real));
+            atom_nums = realloc(atom_nums, arr[0]*sizeof(int));
+            dt_sz = arr[0];
+        }
+        M(MPI_Recv(dt,        3*arr[0], MPI_DOUBLE, 0, 3, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(dt+3*arr[0], arr[0], MPI_DOUBLE, 0, 4, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(center,           3, MPI_DOUBLE, 0, 5, MPI_COMM_WORLD, &s));
+        M(MPI_Recv(atom_nums,   arr[0], MPI_INT,    0, 6, MPI_COMM_WORLD, &s));
+        lda = arr[0];
+        if(selected_partitioning->postprocess)
+            arr[0] = selected_partitioning->postprocess
+                (mg, center, arr[0], atom_nums,  (real(*)[3])dt, dt + 3*lda);
+        if(fwrite(arr,       sizeof(int), 2, f) != 2) abort();
+        if(fwrite(shlblocks, sizeof(int), arr[1]*2, f) != arr[1]*2)
+            dalton_quit("write error in %s(), point 2", __FUNCTION__);
+        /* write coords */
+        fwrite(dt, sizeof(real), 3*arr[0], f);
+        /* write weights */
+        fwrite(dt+3*lda, sizeof(real), arr[0], f);
+        point_cnt += arr[0];
+    } while(1);
+    fclose(f);
+    if(dt)
+        free(dt);
+    if(atom_nums)
+        free(atom_nums);
+    free(nm);
+    free(shlblocks);
+    mgrid_free(mg);
+    free(atoms);
+}
+#endif /* VAR_MPI */
 /* private definition */
 struct DftGridReader_ {
     FILE *f;
@@ -1686,14 +1727,14 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
                 dt.dmat =  NULL; dt.dmagao = work;
 
 #ifdef VAR_MPI
-                grid_par_init();
+                grid_par_init(&radint, &angmin, &angint);
                 if(mynum == 0) {
                     pnt_cnt = grid_generate("DALTON.QUAD", atom_cnt, atoms,
                                             radint, NULL, &dt,
                                             angmin, angint, work, lwork);
                     grid_par_shutdown();
                 } else 
-                    grid_par_slave("DALTON.QUAD");
+                    grid_par_slave("DALTON.QUAD", radint);
                 /* Stop on barrier here so that we know all nodes managed to save
                  * their files. */
                 MPI_Barrier(MPI_COMM_WORLD);

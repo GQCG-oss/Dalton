@@ -305,9 +305,9 @@ c      CALL DZERO(TMP,NVCLEN*NBAST)
       END DO
       END
 c
-      SUBROUTINE GETBLOCKS(X,Y,Z,CELLSZ,RSHEL,NBLCNT,IBLCKS)
+      SUBROUTINE GETBLOCKS(CENTER,CELLSZ,RSHEL,NBLCNT,IBLCKS)
 c     get blocks of active SHELLS in cube of CELLSZ size centered at
-C     (X,Y,Z).
+C     CENTER.
 c
 c     RSHEL2 - precomputed shell extents (squared).
 C     NBLCNT (output) - number of active blocks
@@ -326,7 +326,7 @@ c
 #include <inforb.h>
 #include <maxaqn.h>
 #include <symmet.h>
-      DIMENSION RSHEL(KMAX), IBLCKS(2,NBAST)
+      DIMENSION CENTER(3), RSHEL(KMAX), IBLCKS(2,NBAST)
       DIMENSION  ISSS(KMAX)
 #include <ibtfun.h>
 #if 0
@@ -350,9 +350,9 @@ c
                CORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                CORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                CORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-               PX = X-CENT(ISHELA,1,1)
-               PY = Y-CENT(ISHELA,2,1)
-               PZ = Z-CENT(ISHELA,3,1)
+               PX = center(1)-CENT(ISHELA,1,1)
+               PY = center(2)-CENT(ISHELA,2,1)
+               PZ = center(3)-CENT(ISHELA,3,1)
                DST = SQRT(PX*PX + PY*PY + PZ*PZ)
 c              RSHEL2(ISHELA)
                IF(DST.LE.RSHEL(ISHELA)+CELLDG) THEN
@@ -379,7 +379,7 @@ c         print "('shell',2I3,' at ',3F6.2,' rad. ',F6.2,' rejected')",
 c     &        ISHELA,ICENT,CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT),
 c     &        SQRT(RSHEL2(ISHELA))
  10   END DO
-c      print "('cell at:',3F15.5,' blocks:',I3)", X,Y,Z,NBLCNT
+c      print "('cell at:',3F15.5,' blocks:',I3)", CENTER,NBLCNT
 c      print "(8('[',2I3,']'))", ((IBLCKS(I,J),I=1,2),J=1,NBLCNT)
       END
 c

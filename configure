@@ -161,8 +161,8 @@ case $WHICH in
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux)    liblist='libacml.a libmkl_p3.a libatlas.a libblas.a'
-              complist='g77 ifc efc pgf77'
-              ccmplist='gcc ecc pgcc icc';;
+              complist='ifc efc pgf77 g77'
+              ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='xlf g77 f77'
 #                       f77 is the Absoft v8.0 compiler

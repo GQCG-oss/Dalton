@@ -1,3 +1,10 @@
+2004-11-13  Pawel Salek 
+
+	* configure: prefer ifc over g77.
+	* dft/dft_rho.F: pass three-element array instead of x,y,z.
+	* dft/grid-gen.c: parallelize blocked grid generation.
+	* dft/prop-eval.c: LR parallelization bug fix from Kenneth.
+
 2004-11-05  Pawel Salek 
 
 	* basis/6-31G: add zinc.
