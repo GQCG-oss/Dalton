@@ -78,8 +78,8 @@
      and O. Vahtras"
 
  
-     Date and time (Linux)  : Sat Jun  8 21:27:56 2002
-     Host name              : slater.uio.no                           
+     Date and time (Linux)  : Tue Sep  3 17:54:29 2002
+     Host name              : theochem01.uio.no                       
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -102,7 +102,7 @@
  The model Hessian parameters of Roland Lindh will be used.
 
 
- Threshold for symmetry-break set to       :      0.10E-02
+ Threshold for symmetry-break set to       :      0.10D-02
  Trust region method will be used to control step (default).
 
 
@@ -140,14 +140,14 @@
 
 
                Column   1     Column   2     Column   3     Column   4
-       1       6.00000000     0.05944710     0.92668881     0.00000000
-       2       6.00000000    -0.05944710    -0.92668881     0.00000000
-       3       1.00000000    -0.94214410     1.35670011     0.00000000
-       4       1.00000000     0.94214410    -1.35670011     0.00000000
-       5       1.00000000     0.59529365     1.25807346     0.88946467
-       6       1.00000000     0.59529365     1.25807346    -0.88946467
-       7       1.00000000    -0.59529365    -1.25807346     0.88946467
-       8       1.00000000    -0.59529365    -1.25807346    -0.88946467
+       1       6.00000000     0.92859362     0.00000000     0.00000000
+       2       6.00000000    -0.92859362     0.00000000     0.00000000
+       3       1.00000000     1.29360255     1.02706529     0.00000000
+       4       1.00000000    -1.29360255    -1.02706529     0.00000000
+       5       1.00000000     1.29360255    -0.51353266     0.88946467
+       6       1.00000000     1.29360255    -0.51353266    -0.88946467
+       7       1.00000000    -1.29360255     0.51353266     0.88946467
+       8       1.00000000    -1.29360255     0.51353266    -0.88946467
 
 
                       Redundant internal coordinates
@@ -189,9 +189,9 @@
                       ### Coordinates determined ###
                       ##############################
 
- >>>> Total CPU  time used in DALTON:   5.25 seconds
- >>>> Total wall time used in DALTON:   5.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.71 seconds
+ >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Sat Jun  8 21:28:01 2002
-     Host name              : slater.uio.no                           
+     Date and time (Linux)  : Tue Sep  3 17:54:30 2002
+     Host name              : theochem01.uio.no                       
