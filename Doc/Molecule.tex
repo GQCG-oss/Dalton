@@ -745,15 +745,15 @@ STO-6G & H--Ar & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
    kddwjhjcc7,kddwjhjcc8-1,kddwjhjcc8-2,edgdfjpc99} \\
 3-21G* & H--Cl & 3-21G, with polariz. functions from
   \cite{wjpmmfwjhdjdjapjsbjacs104}.\\
-  & & Note: Polarization functions only on Na--Cl \\
+  & & \emph{Note}: Polarization functions only on Na--Cl \\
 3-21++G & H; Li--Ar & 3-21G, with diffuse functions from
   \cite{tcjcgwsprsjcc4}.\\
 3-21++G* & H--Cl & 3-21++G and 3-21G*\\
-4-31G & H--Ar & \cite{rdwjhjapjcp54,msgjsbjapwjpwjhjacs104} \\
-  & He, He & Note: He,Ne from Gaussian 90 \\
+4-31G & H--Ar & \cite{rdwjhjapjcp54,msgjsbjapwjpwjhjacs104} 
+   He,Ne from Gaussian 90 \\
 6-31G & H--Ar, Zn & \cite{wjhrdjapjcp56,jddjapjcp62,
-   mmfwjpwjhjsbmsgdjdjapjcp77,vrjapmrtlwjcp109} \\
-  & He, He & Note: He,Ne from Gaussian 90 \\
+   mmfwjpwjhjsbmsgdjdjapjcp77,vrjapmrtlwjcp109} 
+   He,Ne from Gaussian 90 \\
 6-31G* & H--Ar & 6-31G, with polariz. functions from
   \cite{pchjaptca28,mmfwjpwjhjsbmsgdjdjapjcp77}\\
 6-31G** & H--Ar  & 6-31G*, with polariz. functions from
@@ -767,7 +767,6 @@ STO-6G & H--Ar & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
 6-31++G** & H--Ar & 6-31++G and 6-31G**\\
 6-31G(3df,3pd) & H--Ar & 6-31G, with polariz. functions from
   \cite{mjfjapjsbjcp80}.\\
-%
 6-311G & H--Ar, Br, I & \cite{rkjsbrsjapjcp72,admgscjcp72,
    lacmpmjpbnedrcblrjcp103,mngapmpmlrjcp103}\\
 6-311G* & H--Ar, Br, I & 6-311G, with polariz. functions from
@@ -785,25 +784,13 @@ STO-6G & H--Ar & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
 6-311++G(3df,3pd) & H--Ar & 6-311++G, with polariz. functions from
   \cite{mjfjapjsbjcp80}.\\
 \hline
-Huckel & H--Cd & \\
 %
+Huckel & H--Cd & \\
 MINI(Huzinaga) & H--Ca & \cite{huzinagabasis} \\
 MINI(Scaled) & H--Ca & \cite{huzinagabasis,htshjcc1} \\
 \hline
 \newpage
 %
-\bf{\emph{Ahlrich's VXZ basis sets}} & & \\
-Ahlrichs-VXZ (X = D,T) & H--Kr & \cite{ashhrajcp97}\\
-Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} polariz. functions largely unpublished.\\
-%
-\bf{\emph{Huzinaga basis sets}} & & \\
-Huz-II & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} All the Huz basis sets are of\\
-Huz-IIsu2 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} approximate valence TZ quality\\
-Huz-III & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} \\
-Huz-IIIsu3 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
-Huz-IV & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
-Huz-IVsu4 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
-\hline
 \bf{\emph{Dunning-Hay basis sets}} & & \\
 SV(Dunning-Hay) & H, Li--Ne & \cite{thdpjhhfs1977} \\
 SVP(Dunning-Hay) & H, Li--Ne & SV, with polariz. functions from
@@ -831,9 +818,6 @@ TZ(Dunning) & H, Li--Ne & \cite{thdjcp55}\\
 cc-pVXZ (X = D,T,Q,5,6) & H--Ne, Al--Ar, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,
   jkkapjpca106,akwdewkapthdjcp110} \\
   & Ca, Ga--Kr & \emph{Note}: 6Z only includes H,C--O\\
-cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
-  cc-pVXZ re-contracted for \\
-  & Al--Ar, Ga--Kr & Douglas-Kroll calculations.\\
 cc-pCVXZ (X = D,T,Q,5) & H, He, B--Ne, & cc-pVXZ, with core functions from
   \cite{thdjcp90,jkkapjpca106,dewthdjcp103}. \\
   & Na--Ar & \emph{Note}: 5Z only includes H, He, B--Ne. \\
@@ -851,7 +835,24 @@ aug-cc-pCVXZ (X = D,T,Q,5) & H, He, B--F, & aug-cc-pVXZ, cc-pCVXZ and \cite{idew
 $n$-aug-cc-pVXZ ($n$ = d,t,q) & as aug-cc-pVXZ & aug-cc-pVXZ. See Sec.~\ref{sec:molbasis} \\
 $n$-aug-cc-pCVXZ ($n$ = d,t,q) & as aug-cc-pCVXZ & aug-cc-pCVXZ. See Sec.~\ref{sec:molbasis} \\
 \hline
+cc-pVXZdenfit (X=T,Q,5) & H, B--F, Al--Cl & Turbomole program \\
+cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
+  cc-pVXZ re-contracted for \\
+  & Al--Ar, Ga--Kr & Douglas-Kroll calculations.\\
+\hline
 \newpage
+\bf{\emph{Ahlrich's VXZ basis sets}} & & \\
+Ahlrichs-VXZ (X = D,T) & H--Kr & \cite{ashhrajcp97}\\
+Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} polariz. functions largely unpublished.\\
+%
+\bf{\emph{Huzinaga basis sets}} & & \\
+Huz-II & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} All the Huz basis sets are of\\
+Huz-IIsu2 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} approximate valence TZ quality\\
+Huz-III & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} \\
+Huz-IIIsu3 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
+Huz-IV & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
+Huz-IVsu4 & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern}\\
+\hline
 GAMESS-VTZ & H, Be--Ne, Na--Ar & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS program \\
 GAMESS-PVTZ & H, Be--Ne & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS program \\
 %
@@ -863,15 +864,15 @@ Sadlej-pVTZ & H--I & \cite{ajstca79,ajsmujmst234,ajstca81,ajstca81-2} \\
 Sadlej-pVTZ-J & H, C--O, S & \cite{pfpgaaspasjcp115} Sadlej-pVTZ optimized for NMR calcs.\\
 aug-cc-pVTZ-J & H, C--F, S & \cite{pfpgaaspasjcp115} aug-cc-pVTZ optimized for NMR calcs. \\
 \hline
-\bf{\emph{ANO basis sets}} & & \\
-NQvD & & \cite{nqvdref} See Sec.~\ref{sec:molbasis} \\
+\multicolumn{2}{l}{\bf{\emph{ANO basis sets -- see Sec.~\ref{sec:molbasis}.}}} & \\
+NQvD & & \cite{nqvdref} \\
+Almlof-Taylor-ANO & H--Ne & \cite{japrtjcp86} Almlof and Taylor ANO \\
 NASA-Ames-ANO & H, B--Ne, & \cite{japrtjcp86,cwbsrlaktca77} \\
   & Al, P, Ti, Fe, Ni & \\
 ano-1 & H--Ne & \cite{powpambortca77} Roos Augmented ANO basis sets\\
 ano-2 & Na--Ar & \cite{powbjpbortca79} \\
 ano-3 & Sc--Zn & \cite{rpamminpowbortca92} \\
 ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO basis sets\\
-japrtano & H--Ne & \cite{japrtjcp86} Almlof and Taylor ANO, see Sec.~\ref{sec:molbasis}.\\
 \hline
 raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
  & Po, Th, U & \\
