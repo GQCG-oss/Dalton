@@ -123,7 +123,7 @@ C     Transform the integrals to MO basis
       ISYMDM(3) = ISYME - 1
       ISYMDM(4) = ISYME - 1 
 
-      IF (KWRK.GT.LWRK) CALL STOPIT('GETESG_DENMAT','',KWRK,LWRK)
+      IF (KWRK.GT.LWRK) CALL STOPIT('GETESG_DENMAT',' ',KWRK,LWRK)
 
       CALL GPOPEN(LUESG2,'ESG_DMAT',' ',' ',' ',IDUMMY,.FALSE.)
       REWIND (LUESG2)
