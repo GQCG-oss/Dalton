@@ -232,7 +232,7 @@ fi
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -a $DALMPI -a -x $DALMPI ]; then
-         $MPIRUN -np $optn -x SCRATCHDIR,WRKDIR,BASDIR,WRKMEM $DALMPI
+         $MPIRUN -np $optn $DALMPI
       else
          echo "$DALMPI does not exist or is not executeable"
          exit 1
