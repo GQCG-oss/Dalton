@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2drv.F,v 1.3 2001-04-03 14:25:12 vebjornb Exp $
+C$Id: eri2drv.F,v 1.4 2001-04-06 07:00:56 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck er2inp */
@@ -1857,16 +1857,6 @@ C
 C     IF (NREDZ .GT. 1) CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
       CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
 C     Try to avoid zeroing - check sph2 rouintes.
-C
-      IF (BDER) THEN
-         IODDPT(1) = INDHER(0,1,1)
-         IODDPT(2) = INDHER(1,0,1)
-         IODDPT(3) = INDHER(1,1,0)
-      ELSE
-         IODDPT(1) = 0 
-         IODDPT(2) = 0 
-         IODDPT(3) = 0 
-      END IF 
 C
       IOFRST = 0
       DO 100 IOPS = 1, NREDZ 

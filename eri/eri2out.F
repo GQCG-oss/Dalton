@@ -1,4 +1,4 @@
-C
+c
 C...   Copyright (c) 1997 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2out.F,v 1.4 2001-04-03 20:26:34 vebjornb Exp $
+C$Id: eri2out.F,v 1.5 2001-04-06 07:00:56 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck eriout */
@@ -203,7 +203,7 @@ C
 C
 C        loop over Cartesian directions
 C
-         NBCHS = MLTPX*KHKTB*KHKTCD
+         NBCHS = NCTFA*MLTPX*KHKTB*KHKTCD
 C
          ISTART = 1
          IF (UNDIFF) ISTART = 0
@@ -1334,7 +1334,7 @@ C
      &            IPNTCR,IODDCC,IPNTUV,NBITS,NIBUF,JCMPAB,JCMPCD,
      &            JADDAB,JADDCD,INDXBT,IPRINT)
 C
-      NBCHS = MLTPX*KHKTB*KHKTCD
+      NBCHS = NCTFA*MLTPX*KHKTB*KHKTCD
       ICART = 0
       CALL ERIGTH(BIN,IBIN,LBIN,NIBUF,INDORB,SO,
      &            IPNTCR,IODDCC,IPNTUV,IPNCHN,NBITS,NINTS,NBCHS,
@@ -1678,21 +1678,6 @@ C
 C
       IRPDST = 0
 C
-C     IANEW = 0
-C     IDIST = 0
-C     DO 100 I = 1, NCCS
-C        IAOLD = IANEW
-C        IANEW = INDXBT(KNDXBT(IPNTCR(I,1)),IRPDST)
-C        IF (IAOLD. NE. IANEW) THEN
-C           IDIST = IDIST + 1
-C           NCCDST(IDIST) = 1
-C           NCCFST(IDIST) = I
-C        ELSE
-C           NCCDST(IDIST) = NCCDST(IDIST) + 1
-C        END IF
-C100  CONTINUE
-C     NDST = IDIST
-C
       IANEW = 0
       IDIST = 0
       NIJKL = 0
@@ -1723,14 +1708,14 @@ C
      &            IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,IPRINT)
 C
       ISTR = 1
-      DO 500 I = 1, NDISTR
+      DO I = 1, NDISTR
          NBTCH = NBTCHX(I)
          LBTCH = LBTCHX(I)
          CALL ERITRF(BIN(ISTR),IBIN(ISTR,1),NTOT,SO,INDORB,NBTCH,LBTCH,
      &               IPNBCH(1,I),NDISTR,LBIN,NIBUF)
          NINTS(I) = NTOT 
          ISTR = ISTR + NTOT 
-  500 CONTINUE
+      END DO
 C
       RETURN
       END
@@ -1822,16 +1807,28 @@ C
       NCMPX = 0
       MLTAB = MLTPX
       MLTCD = MLTPX*KHKTAB
-      DO 100 ICMPCD = 1, KHKTCD
+      DO ICMPCD = 1, KHKTCD
          IODDCD = IODDCC(IPNTUV(ICMPCD,ICART,2))
-         DO 200 ICMPAB = 1, KHKTAB
+         DO ICMPAB = 1, KHKTAB
             IODDAB = IODDCC(IPNTUV(ICMPAB,0,1))
             IF (IODDAB .EQ. IODDCD) THEN
                NCMPX = NCMPX + 1
                IOFCMP(NCMPX) = (ICMPCD - 1)*MLTCD + (ICMPAB - 1)*MLTAB
             END IF
-  200    CONTINUE
-  100 CONTINUE
+         END DO
+      END DO
+C
+C     Sets up NBTCHX, LBTCHX, and IPNBCH, 
+C     to be used in the following way:
+C
+C     DO I = 1, NDISTR
+C     DO J = 1, NBTCHX(I)
+C        IOFF = IPNBCH(J,I)
+C        DO K = 1, LBTCHX(I)
+C           IADR = IOFF + K
+C        END DO
+C     END DO
+C     END DO
 C
       IBT = 2**NBITS - 1
       IF (NIBUF.EQ.1) THEN
@@ -1840,22 +1837,22 @@ C
          NB3 =   NBITS
       END IF
       CALL IZERO(NBTCHX,NDISTR)
-      DO 300 I = 1, NDST
+      DO I = 1, NDST
          ISTR   = NCCFST(I)
          LENGTH = NCCDST(I)
-         DO 400 ICMPX = 1, NCMPX
+         DO ICMPX = 1, NCMPX
             IOFF = IOFCMP(ICMPX)
             IADR = IOFF*NCCS + ISTR - 1
-            DO 500 K = IOFF + 1, IOFF + MLTPX
+            DO K = IOFF + 1, IOFF + MLTPX
                IDIST = INDXDS(IBTAND(IBTSHR(INDORB(ISTR,K),NB3),IBT))
                IBTCH = NBTCHX(IDIST) + 1
                NBTCHX(IDIST) = IBTCH
                LBTCHX(IDIST) = LENGTH
                IF (IDIST.GT.0) IPNBCH(IBTCH,IDIST) = IADR
                IADR = IADR + NCCS
-  500       CONTINUE
-  400    CONTINUE
-  300 CONTINUE
+            END DO
+         END DO
+      END DO
       RETURN
       END
 C  /* Deck indswp */

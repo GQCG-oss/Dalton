@@ -41,11 +41,11 @@ C
       NDIM = NROWS*NCOLS
       CALL DZERO(CSQ,NDIM)
 C
-      IF ((     GDER.AND.NCOLS.NE.1) .OR.
-     &    (.NOT.GDER.AND.NCOLS.NE.NATOMS)) THEN
-         WRITE (LUPRI,'(1X,A,I5)') ' NCOLS:', NCOLS
-         CALL QUIT('Error in SPHMAT: incorrect NCOLS')
-      END IF 
+C     IF ((     GDER.AND.NCOLS.NE.1) .OR.
+C    &    (.NOT.GDER.AND.NCOLS.NE.NATOMS)) THEN
+C        WRITE (LUPRI,'(1X,A,I5)') ' NCOLS:', NCOLS
+C        CALL QUIT('Error in SPHMAT: incorrect NCOLS')
+C     END IF 
 C
       DO 100 D = 0, NDER
       DO 100 X = D, 0, -1
@@ -66,7 +66,7 @@ C
          CALL MTRSP(NROWS,NCOLS,CSQ,NROWS,WORK,NCOLS)
          CALL HEADER('CSQ in SPHMAT',-1) 
          ISTART = 0
-         DO 300 IATOM = 1, NROWS
+         DO 300 IATOM = 1, NCOLS
             IF (.NOT.GDER) WRITE (LUPRI,'(//,2X,A,I5)')
      &         ' B-field CSQ for atom ', IATOM 
             DO 310 D = 0, NDER
@@ -86,7 +86,7 @@ C
                END IF
   320          CONTINUE
   310       CONTINUE
-            ISTART = ISTART + NCOLS 
+            ISTART = ISTART + NROWS 
   300    CONTINUE         
       END IF
 C
@@ -261,10 +261,10 @@ C  /* Deck sphdim */
 #include <nuclei.h>
 #include <ericom.h>
       NCSQ1 = NSPHER(0,MAXDER+1,0,0) - 1
-      IF (GDER) THEN
-         NCSQ2 = 1
-      ELSE
+      IF (BDER) THEN
          NCSQ2 = NATOMS
+      ELSE
+         NCSQ2 = 1
       END IF 
       RETURN
       END
