@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.5 2001-04-03 14:25:14 vebjornb Exp $
+C$Id: sirinp.F,v 1.6 2001-05-09 12:00:41 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/04/03 14:25:14  vebjornb
+Changes to ERI (symmetry and general contraction) tuh
+
 Revision 1.4  2001/03/22 14:53:40  hjj
 - Changed MWORK form 200 000 000 to 8 000 000; this should ensure
 that it will be unlikely that TRACD has insufficient memory.
@@ -4327,7 +4330,6 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <mxorb.h>
-#include <sirrun.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <infind.h>
@@ -4352,7 +4354,11 @@ C
      &            'diagonal of H1 matrix.           ',
      &            'Huckel guess.                    '/
 C
-#include <identify.h>
+      CHARACTER*70 STARS,RELEAS
+      DATA STARS(1:36)  /'************************************'/
+      DATA STARS(37:70) /'**********************************'/
+      DATA RELEAS(1:36) /'*SIRIUS* a direct, restricted step, '/
+      DATA RELEAS(37:70)/'second order MCSCF program       *'/
 C
 #include <orbtypdef.h>
 C
@@ -4360,23 +4366,22 @@ C     ***** WRITE PROGRAM IDENTIFICATION *****
 C
       WRITE(IWUNIT,200) STARS,RELEAS,STARS
  200  FORMAT(1X,A)
-      IF (SIRRUN) THEN
-         WRITE(IWUNIT,'(/2A)') ' Version ',VERSN
+#ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
- 400     FORMAT(/,T2,'Authors:'
+ 400     FORMAT(/,T2,'Main authors of the SIRIUS module:'
      *    /T5,'Hans Joergen Aa. Jensen, University of Odense,  Denmark',
      *        ' (principal author)',
      *    /T5,'Hans Agren,              University of Uppsala, Sweden')
          CALL CIAUTH(IWUNIT)
          CALL TRAUTH(IWUNIT)
-         WRITE(IWUNIT,410)
- 410     FORMAT(/,T2,'Questions and correspondence should be directed',
-     *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@dou.dk',
-     *        //,T2,'Standard reference:',
-     *        /,T5,'H.J.Aa. Jensen, H. Agren, and J. Olsen,',
-     *        ' Chapter 8 in MOTECC-90')
+c        WRITE(IWUNIT,410)
+c410     FORMAT(/,T2,'Questions and correspondence should be directed',
+c    *        ' to H.J.Aa. Jensen',/,T5,'E-mail: hjj@dou.dk',
+c    *        //,T2,'Standard reference:',
+c    *        /,T5,'H.J.Aa. Jensen, H. Agren, and J. Olsen,',
+c    *        ' Chapter 8 in MOTECC-90')
          IF (FLAG(16)) CALL SOLREF(IWUNIT)
-      END IF
+#endif
 C
 C     stamp date, time and hostname to IWUNIT
 C
