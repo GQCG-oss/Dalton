@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirset.F,v 1.1.1.1 2001-02-08 13:33:31 hjj Exp $
+C$Id: sirset.F,v 1.2 2001-02-16 13:01:28 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1  2001/02/08 13:33:31  hjj
+*** Dalton Master Version *** cvs started 8-Feb-2001.
+
 Revision 1.1.1.1  2001/01/15 13:53:37  vebjornb
 Dalton 1.2
 
@@ -1034,17 +1037,12 @@ C
       JSTT3 = JEND2 + 1
       JEND3 = JEND2 + NAS3(JSYM)
 C
-C     RAS1 to RAS2 and RAS3 rotations (RAS3 provided not CAS in RAS3)
+C     RAS1 to RAS2 and RAS3 rotations
 C
       IF ( .NOT. CAS1 ) THEN
-         IF ( .NOT. CAS3 ) THEN
-            JENDT = JEND3
-         ELSE
-            JENDT = JEND2
-         END IF
          DO 200 IT = ISTT1,IEND1
             IF (NOROT(IT).NE.0) GO TO 200
-            DO 100 JT = JSTT2,JENDT
+            DO 100 JT = JSTT2,JEND3
                IF (NOROT(JT).NE.0) GO TO 100
                IF (ISYM.NE.JSYM .OR. ISSMO(IT) .EQ. ISSMO(JT)) THEN
                   NWOPX = NWOPX + 1
