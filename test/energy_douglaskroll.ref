@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
-     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
-     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
-     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -99,22 +104,31 @@
  >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in KINENE is   0.01 seconds
+ >>> Time used in KINENE is   0.00 seconds
 
 
- >>> Time used in POTENE is   0.00 seconds
+ >>> Time used in POTENE is   0.01 seconds
 
 
- >>> Time used in PVPINT is   0.02 seconds
+ >>> Time used in PVPINT is   0.01 seconds
 
- >>>> Total CPU  time used in DKINT:   0.13 seconds
- >>>> Total wall time used in DKINT:   1.00 seconds
+ >>>> Total CPU  time used in DKINT:   0.14 seconds
+ >>>> Total wall time used in DKINT:   0.00 seconds
 
 
  *************************************************************************
  ****************** Output from HERMIT input processing ******************
  *************************************************************************
 
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ In this run  precalculated two-electron integrals are transformed
+ to P-supermatrix elements.
 
 
  *************************************************************************
@@ -375,7 +389,7 @@ Represented as: D2h
 
 
 
- >>> Time used in TWOINT is   0.19 seconds
+ >>> Time used in TWOINT is   0.14 seconds
 
 
 
@@ -388,20 +402,20 @@ Represented as: D2h
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.28 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.20 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  Title lines from integral program:
      cs2 geom Amos Battaglia mp                                              
@@ -454,16 +468,16 @@ Represented as: D2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -99.640105975059   8.54D+00  -9.96D+01    2  1  1  0  2  1  0  0
-   2   -106.525416162405   6.31D+00  -6.89D+00    3  1  1  0  2  0  0  0
-   3   -108.921739606203   1.19D+00  -2.40D+00    3  1  1  0  2  0  0  0
-   4   -109.006753069581   1.80D-01  -8.50D-02    3  1  1  0  2  0  0  0
-   5   -109.009944987308   3.08D-02  -3.19D-03    3  1  1  0  2  0  0  0
-   6   -109.010030396448   2.92D-03  -8.54D-05    3  1  1  0  2  0  0  0
-   7   -109.010031191984   4.25D-04  -7.96D-07    3  1  1  0  2  0  0  0
-   8   -109.010031204602   5.05D-05  -1.26D-08    3  1  1  0  2  0  0  0
-   9   -109.010031204783   3.24D-06  -1.80D-10    3  1  1  0  2  0  0  0
-  10   -109.010031204784   2.69D-07  -1.02D-12    3  1  1  0  2  0  0  0
+   1    -99.640105966717   8.54D+00  -9.96D+01    2  1  1  0  2  1  0  0
+   2   -106.525416154326   6.31D+00  -6.89D+00    3  1  1  0  2  0  0  0
+   3   -108.921739598316   1.19D+00  -2.40D+00    3  1  1  0  2  0  0  0
+   4   -109.006753061696   1.80D-01  -8.50D-02    3  1  1  0  2  0  0  0
+   5   -109.009944979423   3.08D-02  -3.19D-03    3  1  1  0  2  0  0  0
+   6   -109.010030388563   2.92D-03  -8.54D-05    3  1  1  0  2  0  0  0
+   7   -109.010031184100   4.25D-04  -7.96D-07    3  1  1  0  2  0  0  0
+   8   -109.010031196718   5.05D-05  -1.26D-08    3  1  1  0  2  0  0  0
+   9   -109.010031196898   3.24D-06  -1.80D-10    3  1  1  0  2  0  0  0
+  10   -109.010031196899   2.69D-07  -8.81D-13    3  1  1  0  2  0  0  0
  DIIS converged in  10 iterations !
 
 
@@ -519,14 +533,14 @@ Represented as: D2h
      Spin multiplicity:           1
      Spatial symmetry:            1
 
-     Final    HF energy:         -109.010031204784
+     Final    HF energy:         -109.010031196899
      Nuclear repulsion:            24.257425742574
-     Electronic energy:          -133.267456947358
+     Electronic energy:          -133.267456939473
 
      Final gradient norm:           0.000000269473
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -537,7 +551,7 @@ Represented as: D2h
    4  N   2pz   -0.0022  -0.3309   0.6697
    5  N   2pz    0.0017   0.1183  -0.0999
    6  N   3d0    0.0004   0.0293  -0.0250
-   7  N   3d2+   0.0000   0.0000   0.0000
+   7  N   3d2+  -0.0000  -0.0000   0.0000
 
      Molecular orbitals for symmetry species   2
 
@@ -562,19 +576,19 @@ Represented as: D2h
    4  N   2pz   -0.0037   0.3266
    5  N   2pz    0.0038  -0.0341
    6  N   3d0    0.0012  -0.0135
-   7  N   3d2+   0.0000   0.0000
+   7  N   3d2+  -0.0000   0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.07 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 - End of Wave Function Section
- >>>> Total CPU  time used in DALTON:   0.48 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.41 seconds
+ >>>> Total wall time used in DALTON:   0.00 seconds
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
