@@ -626,7 +626,7 @@ c /* deck CC_RHS_SETUP */
 
 * local parameters:
       CHARACTER*(22) MSGDBG
-      PARAMETER (MSGDBG = '[debug] CC_RHS_SETUP>  ')
+      PARAMETER (MSGDBG = '[debug] CC_RHS_SETUP> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       INTEGER MXORD, MXORD2, MXORD3

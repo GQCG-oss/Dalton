@@ -635,7 +635,7 @@ c /* deck cccm_setup */
 #include <ccrc1rsp.h>
 
 * local parameters:
-      CHARACTER*(19) MSGDBG
+      CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCCM_SETUP> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

@@ -1052,7 +1052,7 @@ C=====================================================================*
 #include <ccexci.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_EXCINP')
 
       LOGICAL LSTVEC
@@ -1510,7 +1510,7 @@ C=====================================================================*
 #include <cclres.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_LRSINP')
 
       INTEGER NTABLE
@@ -1767,7 +1767,7 @@ C=====================================================================*
 #include <ccqr2r.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(10)
       PARAMETER (SECNAM='CC_QR2RINP')
 
       INTEGER NTABLE
@@ -2012,7 +2012,7 @@ C=====================================================================*
 #include <ccfdgeo.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(7)
       PARAMETER (SECNAM='CC_GRIN')
 
       INTEGER NTABLE
@@ -2153,7 +2153,7 @@ C=====================================================================*
 #include <ccexgr.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_EXGRIN')
 
       INTEGER NTABLE
@@ -2413,7 +2413,7 @@ C=====================================================================*
 #include <ccrspprp.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_FOPINP')
 
       INTEGER NTABLE
@@ -3072,7 +3072,7 @@ c /* deck cc_qrinp */
 #include <ccqrinf.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(18)
       PARAMETER (MSGDBG='[debug] CC_QRINP> ')
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_QRINP')
@@ -3630,7 +3630,7 @@ c /* deck cc_crinp */
 C#include <ccrspprp.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(18)
       PARAMETER (MSGDBG='[debug] CC_CRINP> ')
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_CRINP')
@@ -4318,7 +4318,7 @@ c /* deck CC_4RINP */
 #include <cc4rinf.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(18)
       PARAMETER (MSGDBG='[debug] CC_4RINP> ')
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_4RINP')
@@ -4648,7 +4648,7 @@ c /* deck CC_5RINP */
 #include <cc5perm.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(18)
       PARAMETER (MSGDBG='[debug] CC_5RINP> ')
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_5RINP')
@@ -5014,7 +5014,7 @@ c /* deck cc_exlrinp */
 #include <ccexlrinf.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(18)
+      CHARACTER MSGDBG*(20)
       PARAMETER (MSGDBG='[debug] CC_EXLRINP> ')
       CHARACTER SECNAM*(10)
       PARAMETER (SECNAM='CC_EXLRINP')
@@ -6008,7 +6008,7 @@ C           _______________________________________________
 * local parameters:
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_MCDINP')
-      CHARACTER*(20) MSGDBG
+      CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_MCDINP> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -6272,7 +6272,7 @@ C                      RELORB1   = .TRUE.
 *           .XXXXXX : unused labels
 *           -----------------------
 10          CONTINUE
-              WRITE (LUPRI,*)SECNAM,': unused .XXXXXX label... ignored'
+              WRITE (LUPRI,*) SECNAM,': unused .XXXXXX label... ignored'
             GO TO 100
 *
           ELSE
@@ -6354,7 +6354,7 @@ C=====================================================================*
 #include <ccsdsym.h>
 #include <ccslvinf.h>
 
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_SLVINP')
       INTEGER NTABLE
       PARAMETER (NTABLE = 9)

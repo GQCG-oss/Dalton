@@ -538,7 +538,7 @@ c /* deck CC5R_SETUP */
 #include <cclists.h>
 
 * local parameters:
-      CHARACTER*(19) MSGDBG
+      CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC5R_SETUP> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

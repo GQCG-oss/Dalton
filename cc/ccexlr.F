@@ -557,7 +557,7 @@ c /* deck ccexlr_setup */
 
 * local parameters:
       CHARACTER*(22) MSGDBG
-      PARAMETER (MSGDBG = '[debug] CCEXLR_SETUP>  ')
+      PARAMETER (MSGDBG = '[debug] CCEXLR_SETUP> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 

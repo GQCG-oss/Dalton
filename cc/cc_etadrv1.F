@@ -75,7 +75,7 @@ Csonia
 #include <cclists.h>
 
 * local parameters:
-      CHARACTER*(19) MSGDBG
+      CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_ETADRV1> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .false.)
@@ -544,7 +544,7 @@ c /* deck CC_ETA_SETUP1 */
 #include <cclists.h>
 
 * local parameters:
-      CHARACTER*(22) MSGDBG
+      CHARACTER*(23) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_ETA_SETUP1> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .false.)

@@ -114,7 +114,7 @@ c/* Deck CC_HMAT */
 #include <ccorb.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CC_HMAT> ')
 #if defined (SYS_CRAY)
       REAL ZERO, ONE, TWO, THREE

@@ -91,7 +91,7 @@ c /* deck cclr_fa */
 C#include <ccr1rsp.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CCLR_FA> ')
 #if defined (SYS_CRAY)
       REAL ONE, TWO, THREE

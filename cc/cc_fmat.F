@@ -377,7 +377,7 @@ c/* Deck CC_FMATNEW */
 #include <ccslvinf.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CC_FMAT> ')
 
       LOGICAL LOCDBG

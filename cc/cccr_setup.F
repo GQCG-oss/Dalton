@@ -78,7 +78,7 @@ c /* deck cccr_setup */
 #include <cccperm.h>
 
 * local parameters:
-      CHARACTER*(19) MSGDBG
+      CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCCR_SETUP> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

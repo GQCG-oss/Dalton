@@ -4105,7 +4105,7 @@ c/* Deck CCG_TRANS13 */
 #include <ccsdsym.h>
 #include <ccorb.h>
  
-      CHARACTER MSGDBG*(20)
+      CHARACTER MSGDBG*(21)
       PARAMETER (MSGDBG='[debug] CCG_TRANS13> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
