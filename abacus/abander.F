@@ -1849,7 +1849,7 @@ C
                      LUSUPM = -1
                      WORK(IWOFF+1) = WRKDLM
                      CALL ABAINP('**PROPE',WORK(IWOFF+2),LWORK)
-                     CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+                     CALL EXEABA(WORK(1+IWOFF),LWORK,WRKDLM)
 C
                      KTRAMT = 1
                      KCRTPR = KTRAMT + NCOOR**2
@@ -4492,7 +4492,7 @@ C
       LUSUPM = -1
       WORK(IWOFF+1) = WRKDLM
       CALL ABAINP('**PROPE',WORK(IWOFF+2),LWORK)
-      CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+      CALL EXEABA(WORK(1+IWOFF),LWORK,WRKDLM)
 C
 C     *** Transforming the analytical derivatives into ***
 C     ***               cartesian basis.               ***

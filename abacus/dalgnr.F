@@ -381,7 +381,7 @@ C
          RETURN
       END
 C  /* Deck bndchk */
-      SUBROUTINE BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, PROG)
+      SUBROUTINE BNDCHK(WORK, LMWORK, WRKDLM, PROG)
 #include <implicit.h>
       DIMENSION WORK(LMWORK)
       CHARACTER*6 PROG
@@ -390,20 +390,20 @@ C
 C     Check memory traps. Gives error message if any of the programs
 C     have been outside the declared memory area.
 C
-      IF (WORK(IWOFF + 1) .NE. WRKDLM .OR.
-     &    WORK(IWOFF + LMWORK + 2) .NE. WRKDLM) THEN
+      IF (WORK(1) .NE. WRKDLM .OR.
+     &    WORK(LMWORK + 2) .NE. WRKDLM) THEN
          WRITE (LUPRI,'(//A,A6,A)')
      *      ' >>> WARNING, ',PROG,' has been out of bounds.'
-         IF (WORK(IWOFF + 1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
+         IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
      *      ' >>> WORK(0) has been destroyed'
-         IF (WORK(IWOFF + LMWORK + 2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
+         IF (WORK(LMWORK + 2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
      *      ' >>> WORK(LMWORK+1) has been destroyed'
          CALL QUIT('WARNING, ' // PROG // ' has been out of bounds.')
       END IF
       RETURN
       END
 C  /* Deck exeher */
-      SUBROUTINE EXEHER(WORK, LMWORK, IWOFF, WRKDLM)
+      SUBROUTINE EXEHER(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION WORK(LMWORK)
@@ -424,7 +424,7 @@ C     the necessary integrals in the primitive basis.
 C     See further notes in DKINTF routine.
 C
       IF (DKTRAN) THEN
-         CALL DKINTF(WORK(IWOFF+2),LMWORK)
+         CALL DKINTF(WORK(2),LMWORK)
          NEWPRP = .TRUE.
       END IF
 C
@@ -432,18 +432,18 @@ C     Now we generate all requested integrals in the contracted
 C     basis (if DKTRAN: including transformation of the Douglas-
 C     Kroll integrals to contracted basis).
 C
-      CALL HERCTL(WORK(IWOFF+2),LMWORK)
+      CALL HERCTL(WORK(2),LMWORK)
 C     ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C     for transformation control, old AO/MO files cannot be used
 C     any more.
-      CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'HERMIT')
+      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'HERMIT')
       WRITE(LUPRI, '(/A/)') '- End of Integral Section'
       CALL FLSHFO(LUPRI)
       CALL QEXIT('HERMIT')
       RETURN
       END
 C  /* Deck exesir */
-      SUBROUTINE EXESIR(WORK, LMWORK, IWOFF, WRKDLM)
+      SUBROUTINE EXESIR(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
@@ -467,8 +467,8 @@ C
       CALL SIRINI
 C
       WRINDX = .TRUE.
-      CALL SIRCTL(ICONV,WORK(IWOFF+2),LMWORK)
-      CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'SIRIUS')
+      CALL SIRCTL(ICONV,WORK(2),LMWORK)
+      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'SIRIUS')
 C
 C     If not numerical differentiation:
 C     We should now have MO's on file, no need for DOHUCKEL anymore
@@ -501,7 +501,7 @@ C
       RETURN
       END
 C  /* Deck execc */
-      SUBROUTINE EXECC(WORK, LMWORK, IWOFF, WRKDLM)
+      SUBROUTINE EXECC(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
@@ -518,7 +518,7 @@ C
 C     The dollar sign in the previous line may not be standard.
 C     It causes the End of Record to be skipped.
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
-         CALL SETHER(IPRUSR,.FALSE.,WORK(IWOFF+2),LMWORK)
+         CALL SETHER(IPRUSR,.FALSE.,WORK(2),LMWORK)
 #if defined (VAR_MPI) || defined (VAR_PVM)
          CALL QUIT('No CC in parallel code')
 #else
@@ -530,18 +530,18 @@ C     It causes the End of Record to be skipped.
       ISAVITR = ITRNMR
       ITRNMR = 1
 
-      CALL CC_DRV(WORK(IWOFF+2),LMWORK)
+      CALL CC_DRV(WORK(2),LMWORK)
 
       ITRNMR = ISAVITR 
 
-      CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'CC    ')
+      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'CC    ')
       WRITE(LUPRI, '(/A/)') '- End of Coupled Cluster'
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC')
       RETURN
       END
 C  /* Deck exeaba */
-      SUBROUTINE EXEABA(WORK, LMWORK, IWOFF, WRKDLM)
+      SUBROUTINE EXEABA(WORK, LMWORK, WRKDLM)
 #include <implicit.h>
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
@@ -559,8 +559,8 @@ C
       CALL QENTER('ABACUS')
       WRITE(LUPRI, '(/A/)') 'Starting in Static Property Section -'
 C
-      CALL ABACTL(WORK(IWOFF + 2),LMWORK)
-      CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'ABACUS')
+      CALL ABACTL(WORK(2),LMWORK)
+      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'ABACUS')
 C
 C     Several files left open, have to be closed manually.
 C
@@ -598,13 +598,12 @@ C  /* Deck exedrv */
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
       CALL QENTER('DALTON')
-      IWOFF = 0
       CALL GETTIM(CSTR,WSTR)
       WLKREJ = .FALSE.
       IF (OPTNEW) THEN
          RNABAC = .TRUE.
          DOWALK = .FALSE.
-         CALL OPTMIN(WORK,LMWORK,IWOFF,WRKDLM)
+         CALL OPTMIN(WORK,LMWORK,WRKDLM)
       ELSE IF (OPTWLK) THEN
          RNABAC = .TRUE.
          IF (.NOT. NMWALK) THEN
@@ -625,11 +624,11 @@ C  /* Deck exedrv */
             WRITE (LUPRI,'(//5X,A,I5,A//)')
      &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
      &       ' <<<<<<<<<<'
-            CALL EXEHER(WORK,LMWORK,0,WRKDLM)
+            CALL EXEHER(WORK,LMWORK,WRKDLM)
             WLKREJ = .FALSE.
             NEWGEO = .TRUE.
-            CALL EXESIR(WORK,LMWORK,0,WRKDLM)
-            IF (DOCCSD) CALL EXECC(WORK,LMWORK,0,WRKDLM)
+            CALL EXESIR(WORK,LMWORK,WRKDLM)
+            IF (DOCCSD) CALL EXECC(WORK,LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -786,7 +785,7 @@ C     We may have more DOSYM under **START than under **PROPE
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        WORK(2),LMWORK)
                ELSE
-                  CALL EXEABA(WORK,LMWORK,0,WRKDLM)
+                  CALL EXEABA(WORK,LMWORK,WRKDLM)
                END IF
                IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
      &              .OR. (IWKTYP .EQ. 6))) THEN
@@ -853,11 +852,11 @@ C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
-               CALL EXEHER(WORK,LMWORK,IWOFF,WRKDLM)
-               CALL EXESIR(WORK,LMWORK,IWOFF,WRKDLM)
+               CALL EXEHER(WORK,LMWORK,WRKDLM)
+               CALL EXESIR(WORK,LMWORK,WRKDLM)
             END IF
             CALL ABAINP('**FINAL',WORK(2),LMWORK)
-            CALL EXEABA(WORK,LMWORK,0,WRKDLM)
+            CALL EXEABA(WORK,LMWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C     
@@ -890,9 +889,9 @@ C     &       '*** WARNING:  Maximum number of iterations exceeded ***'
       ELSE
 C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
          NEWGEO = .TRUE.
-         IF (RNHERM) CALL EXEHER(WORK,LMWORK,IWOFF,WRKDLM)
-         IF (RNSIRI) CALL EXESIR(WORK,LMWORK,IWOFF,WRKDLM)
-         IF (DOCCSD) CALL EXECC(WORK,LMWORK,IWOFF,WRKDLM)
+         IF (RNHERM) CALL EXEHER(WORK,LMWORK,WRKDLM)
+         IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
+         IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -951,13 +950,12 @@ C
                CALL WLKINP(WORD)
                CALL GPCLOSE(LUCMD,'KEEP')
             END IF
-            CALL EXEABA(WORK,LMWORK,IWOFF,WRKDLM)
+            CALL EXEABA(WORK,LMWORK,WRKDLM)
          END IF
       END IF
  87   CONTINUE
 C
 C     We finally punch information for Gamess-US graphic packages
-C     corrected for IWOFF ne 0 990831-ekd
 C
       IKIND = 2
       IKOL  = IKIND + MXCENT

@@ -2161,6 +2161,7 @@ c /* deck cc_lrind */
 #include <ccsections.h>
 #include <ccroper.h>
 #include <mxcent.h>
+#include <cclr.h>
 
 * local parameters:
       LOGICAL LOCDBG

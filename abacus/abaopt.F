@@ -1112,7 +1112,7 @@ C
       END
 
 C  /* Deck optmin */
-      SUBROUTINE OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE OPTMIN(WORK,LWORK,WRKDLM)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1153,18 +1153,18 @@ C
       IPRSAV = IPRUSR
       IPRUSR = -10
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
-      CALL HERINP(WORK(IWOFF+2),LWORK-2)
+      CALL HERINP(WORK(2),LWORK-2)
       CALL GPCLOSE(LUONEL,' ')
       TSTINP = TSTIN
       IPRUSR = IPRSAV
       HRINPC = .FALSE.
 C
       IF (FINDRE .OR. DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
-         KATARR = IWOFF  + 2
+         KATARR = 2
          KMTMP  = KATARR + 8*MXCENT
          KWRK   = KMTMP  + MXCENT*MXCENT
-         LWRK = LWORK  - (KWRK - IWOFF) + 1
-         IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
+         LWRK = LWORK  - KWRK + 1
+         IF (KWRK .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
          IPSAVE = IPRINT
          IF (.NOT. FINDRE) IPRINT = -1
          CALL FNDRED(WORK(KATARR),WORK(KMTMP))
@@ -1180,10 +1180,10 @@ C
             RETURN
          END IF
       ELSE
-         KATARR = IWOFF  + 2
+         KATARR = 2
          KWRK   = KATARR + 8*MXCENT
-         LWRK = LWORK  - (KWRK - IWOFF) + 1
-         IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
+         LWRK = LWORK  - KWRK + 1
+         IF (KWRK .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
          CALL ATMINI(WORK(KATARR),IATOM,.FALSE.)
          MXRINT = MAX(3*IATOM, 8)
       END IF
@@ -1191,13 +1191,13 @@ C
 C     If visualization is requested, the program stops afterwards.
 C
       IF (VISUAL) THEN
-         CALL VISULZ(WORK,LWORK,IWOFF,WRKDLM)
+         CALL VISULZ(WORK,LWORK,WRKDLM)
          CALL TITLER('End of visualization','#',103)
          CALL QEXIT('OPTMIN')
          RETURN
       END IF
 C
-      KGRAD  = IWOFF + 1
+      KGRAD  = 1
       KSTEP  = KGRAD  + MXCOOR
       KSCLVC = KSTEP  + MXCOOR
       KGRDOL = KSCLVC + MXCOOR
@@ -1212,20 +1212,13 @@ C
       KHSINT = KBMTRN + MXRINT*MXRINT
       KVCMOD = KHSINT + MXRINT*MXRINT
       KWRK   = KVCMOD + MXCOOR
-      LWRK   = LWORK  - (KWRK - IWOFF) + 1
-      IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
-      IWSAV  = IWOFF
-#if defined (SYS_HAL) || defined (VAR_G77)
-      IWOFF  = 0
-#endif
-      CALL RUNOPT(IWOFF,WRKDLM,MXRINT,WORK(KGRAD),WORK(KSTEP),
+      LWRK   = LWORK  - KWRK + 1
+      IF (KWRK .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
+      CALL RUNOPT(WRKDLM,MXRINT,WORK(KGRAD),WORK(KSTEP),
      &     WORK(KSCLVC),WORK(KGRDOL),WORK(KGRDMT),WORK(KSTPMT),
      &     WORK(KHESOL),WORK(KGRDAR), WORK(KSTPAR),WORK(KINFO),
      &     WORK(KWILBM),WORK(KBMTRN),WORK(KHSINT),WORK(KVCMOD),
      &     WORK(KWRK),LWRK)
-#if defined (SYS_HAL) || defined (VAR_G77)
-      IWOFF  = IWSAV
-#endif
       CALL QEXIT('OPTMIN')
 C
 C     Commented out this part, the finalizing is done in the main
@@ -1242,7 +1235,7 @@ C#endif
       END
 
 C  /* Deck runopt */
-      SUBROUTINE RUNOPT(IWOFF,WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
+      SUBROUTINE RUNOPT(WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
 #include "implicit.h"
@@ -1307,10 +1300,11 @@ C
       ACTIVE = .FALSE.
       KEPTIT = 0
       GEINFO(0,5) = TRSTRA
+      IWOFF = 0
 C
 C     Perform preoptimization if requested.
 C
-      IF (DOPRE) CALL INIPRE(WORK,LWORK,IWOFF,WRKDLM)
+      IF (DOPRE) CALL INIPRE(WORK,LWORK,WRKDLM)
 C
 C     Part of the WORK-array is used for storage.
 C
@@ -1819,7 +1813,7 @@ C
 Chj aug 99: reset IPRUSR to original level
          IPRUSR = IPRUS1
          CALL ABAINP('**FINAL',WORK(IWOFF + 2),LWORK)
-         CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+         CALL EXEABA(WORK,LWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C
@@ -2134,7 +2128,7 @@ C
       CALL QENTER('GTNRGY')
       WORK(IWOFF+1) = WRKDLM
       IF (.NOT. EXHER) THEN
-         CALL EXEHER(WORK,LWORK,IWOFF,WRKDLM)
+         CALL EXEHER(WORK,LWORK,WRKDLM)
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
@@ -2154,7 +2148,7 @@ C
             CALL FNDEXS(WORK(KWORD),IPRINT)
          END IF
 C
-         CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
+         CALL EXESIR(WORK,LWORK,WRKDLM)
 C
 C        Reduce gradient criterion for DFT optimization
 C
@@ -2164,7 +2158,7 @@ C
          END IF
          IF (DOCCSD) THEN
             CALL CC_GEOFLAG
-            CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
+            CALL EXECC(WORK,LWORK,WRKDLM)
          ENDIF
          EXSIR = .TRUE.
       END IF
@@ -2313,9 +2307,9 @@ C
 C     
             IF ( DOCCSD ) THEN
                CALL CC_GEOFLAG
-               CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
+               CALL EXECC(WORK,LWORK,WRKDLM)
             ELSE
-               CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+               CALL EXEABA(WORK,LWORK,WRKDLM)
             END IF
             EXABA = .TRUE.
             MOLGRD = .FALSE.
@@ -2377,7 +2371,7 @@ C
          CALL NVBPIN(IPRINT)
       END IF
 C
-      CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+      CALL EXEABA(WORK,LWORK,WRKDLM)
       EXABA = .TRUE.
       START = .FALSE.
       MOLGRD = .FALSE.
@@ -6484,7 +6478,7 @@ C
       END
 
 C  /* Deck visulz */
-      SUBROUTINE VISULZ(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE VISULZ(WORK,LWORK,WRKDLM)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6499,24 +6493,24 @@ C      IPRUSR = -2
 C      CALL HERINP(WORK,LWORK)
 C      CALL GPCLOSE(LUONEL,'KEEP')
 C      IPRUSR = IPRSAV
-C      WORK(IWOFF+1) = WRKDLM
+C      WORK(1) = WRKDLM
 C
 C     Make VRML-file of geometry
 C
-      KATARR = IWOFF  + 2
+      KATARR = 2
       KEVEC  = KATARR + 8*MXCENT
       KEVC1  = KEVEC  + MXCOOR*MXCOOR
       KEVC2  = KEVC1  + MXCOOR
       KWRK   = KEVC2  + MXCOOR
-      LWRK = LWORK  - (KWRK - IWOFF) + 1
-      IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('VISULZ',' ',KWRK,LWORK)
+      LWRK = LWORK  - KWRK + 1
+      IF (KWRK .GT. LWORK) CALL STOPIT('VISULZ',' ',KWRK,LWORK)
       CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
      &     WORK(KEVC1),WORK(KEVC2))
       RETURN
       END
 
 C  /* Deck inipre */
-      SUBROUTINE INIPRE(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE INIPRE(WORK,LWORK,WRKDLM)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6535,7 +6529,7 @@ C
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL HERINP(WORK,LWORK)
       CALL GPCLOSE(LUONEL,'KEEP')
-      WORK(IWOFF+1) = WRKDLM
+      WORK(1) = WRKDLM
 C
 C     Basis set library has to be used for preoptimization to work
 C
@@ -6562,13 +6556,13 @@ C
 C     Make VRML-file of initial geometry if requested
 C
       IF (VRML) THEN
-         KATARR = IWOFF  + 2
+         KATARR = 2
          KEVEC  = KATARR + 8*MXCENT
          KEVC1  = KEVEC  + MXCOOR*MXCOOR
          KEVC2  = KEVC1  + MXCOOR
          KWRK   = KEVC2  + MXCOOR
-         LWRK = LWORK  - (KWRK - IWOFF) + 1
-         IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('INIPRE',' ',KWRK,LWORK)
+         LWRK = LWORK  - KWRK + 1
+         IF (KWRK .GT. LWORK) CALL STOPIT('INIPRE',' ',KWRK,LWORK)
          CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
      &        WORK(KEVC1),WORK(KEVC2))
 
