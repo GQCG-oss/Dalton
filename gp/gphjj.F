@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.7 2001-04-23 11:35:52 vebjornb Exp $
+C$Id: gphjj.F,v 1.8 2001-04-24 16:30:02 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -426,10 +426,14 @@ C
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
 #endif
 #if defined (SYS_HPUX)
-      CALL DATE(CFDATE)
-      CALL DATE_AND_TIME(CDATE,CTIME)
-      WRITE (LUPRIN,'(T6,8A)') 'Date and time (HP-UX)  : ',CFDATE,' ',
-     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
+C
+C     The following lines have been commented out because they
+C     do not work on all HPs
+C
+C      CALL DATE(CFDATE)
+C      CALL DATE_AND_TIME(CDATE,CTIME)
+C      WRITE (LUPRIN,'(T6,8A)') 'Date and time (HP-UX)  : ',CFDATE,' ',
+C     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
 #endif
 #if defined (SYS_DEC)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
