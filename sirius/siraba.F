@@ -1198,7 +1198,7 @@ C
 #include <iratdef.h>
       PARAMETER (D2 = 2.0D0,DM1 = -1.0D0)
 C
-      LOGICAL LONDON, DFTADX
+      LOGICAL LONDON
       DIMENSION TMAT(N2ORBX,NTMAT),CMO(*),UDV(*)
       DIMENSION FXC(NORBT,NORBT,NTMAT), FXV(NORBT,NORBT,NTMAT)
       DIMENSION WRK(LWRK)
@@ -1212,7 +1212,6 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
-#include <dftcom.h>
 C
       PARAMETER (MXTMAT = 50)
       DIMENSION ISYMDM(MXTMAT), IFCTYP(MXTMAT)
@@ -1259,11 +1258,8 @@ CTROND         IFCSET = 1
          ISYMDM(I) = JWOPSY
          IFCTYP(I) = IFCSET
   100 CONTINUE
-      DFTADX = DFTADD
-      IF (LONDON) DFTADD = .FALSE.
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NXMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
-      DFTADD = DFTADX
 #if defined (VAR_OLDCODE)
 C
 CHJAAJ: this is from FCKDIR; change it !

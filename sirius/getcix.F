@@ -34,11 +34,11 @@ C
 #include <single.h>
 C
 #ifdef REV_LOG
-===========================================================================
-Revision 1.2  2000/05/24 12:20:33  hjj
-1) NCDETS new parameter in SETCI
-2) GETDETS new subroutine for getting det. vector from csf vector
-===========================================================================
+c ===========================================================================
+c Revision 1.2  2000/05/24 12:20:33  hjj
+c 1) NCDETS new parameter in SETCI
+c 2) GETDETS new subroutine for getting det. vector from csf vector
+c ===========================================================================
 #endif
 C  /* Deck getcix */
       SUBROUTINE GETCIX(INDXCI,ICSYM,IHCSYM,WRK,LFRSAV,NOSYM)
@@ -80,7 +80,7 @@ C
       LOGICAL     REFSPC
       CHARACTER*8 LAB123(3),LABSTR
       DATA LAB123 /'********','********','********'/
-      DATA LABSTR /'MOLLAB  '/
+      DATA LABSTR /'CISTRING'/
       DATA IFIRST / 1 /
 
 C     
@@ -95,12 +95,12 @@ C
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
          LUSTR = -9999
          IF( FLAG(26) ) THEN
-          IF (IFIRST .EQ. 1 .OR. LUSTR .LT. 0) 
-     &           CALL GPOPEN(LUSTR,'SIRIUS.SYM','UNKNOWN',
+          IF (IFIRST .EQ. 1) 
+     &           CALL GPOPEN(LUSTR,'SIRIUS.STRINGINFO','UNKNOWN',
      &                       ' ','UNFORMATTED',IDUMMY,.FALSE.)
           REWIND(LUSTR)
+          CALL GETDAT(LAB123(2),LAB123(3))
           WRITE(LUSTR) LAB123,LABSTR
-          WRITE(LUPRI,*) ' LUSTR ACCESSED IN GETCIX '
           IFIRST = 0
         END IF
 C
@@ -375,21 +375,21 @@ C           ... do not use CSF expansion
             NCDETS = NDTASM(ICSYM)
 C           NCONMA = MXNCS
             NCONMA = MXNDT
-C              ... we must have sufficient space
-C                  for determinant vectors of different
-C                  symmetries or triplet in ABACUS and RESPONSE
+C           ... we must have sufficient space
+C               for determinant vectors of different
+C               symmetries or triplet in ABACUS and RESPONSE
          END IF
          LACIMX = LACISV
          LBCIMX = LBCISV
          LCINDX = LCINSV
       ELSE
-C     ... NASHT .le. 1 (Hartree-Fock)
-         IF (HSROHF .OR. DOMC) THEN
+C     ... NASHT .le. 1 .or. HSROHF (Hartree-Fock)
+         IF (HSROHF) THEN
+C        ... high spin ROHF
             JCSYM = LSYM
          ELSE IF (NASHT .EQ. 1) THEN
+C        ... one open shell ROHF
             JCSYM = IOPRHF
-         ELSE IF (HSROHF) THEN
-            JCSYM = LSYM
          ELSE 
             JCSYM = 1
          END IF

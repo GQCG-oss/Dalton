@@ -488,7 +488,6 @@ C
 #include <inftap.h>
 #include <infdim.h>
 #include <infpri.h>
-#include <dftcom.h>
 C
       DIMENSION ISYMDM(2), IFCTYP(2)
       SAVE ISYMDM, IFCTYP
@@ -506,10 +505,17 @@ C
             NFMAT = 0
          END IF
          IOFFAO = 1
-      ELSE IF (NISHT .GT. 0) THEN
+      ELSE IF (NISHT .GT. 0 .OR. DODFT .OR. HSROHF) THEN
+C        for DODFT and HSROHF:
+C        "DCAO" is DCAO+DVAO and "DVAO" is -DVAO
+C        thus also needed if NISHT.eq.0 /hjaaj
          NDMAT = 2
          NFMAT = 2
          IOFFAO = 1
+         IF (DODFT .OR. HSROHF) IFCTYP(2) = 12
+C        ... This gives the exchange part of the active Fock matrix
+C        ... we need only the difference between Fa and Q which is
+C        ... negative of the exchange part.
       ELSE
 C        DCAO zero matrix, only FVAO contribution
          NDMAT = 2
@@ -517,22 +523,11 @@ C        DCAO zero matrix, only FVAO contribution
          IOFFAO = 1+N2BASX
 C        ... off-set to FVAO,DVAO in FCAO,DCAO
       END IF
-      IF (DFTADD .AND. (NASHT .EQ. 1)) THEN
 C
-C This gives the exchange part of the active Fock matrix
-C we need only the difference between Fa and Q which is negative
-C of the exchange part
-C
-         IFCTYP(2)=12
-      END IF
-      IF (HSROHF) THEN
-         IFCTYP(2)=12
-      END IF  
-
       CALL DZERO(FCAO,NDMAT*N2BASX)
-CKR   This line read NDMAT instead of NFMAT, 150997
+CKR   ... This line read NDMAT instead of NFMAT, 150997
       IF (NFMAT .GT. 0) THEN
-      IF (LUSUPM .NE. -1 .AND. (.NOT. (HSROHF .OR. DFTRUN))) THEN
+      IF (LUSUPM .NE. -1 .AND. (.NOT. (DODFT .OR. HSROHF))) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,
@@ -544,6 +539,8 @@ C            IFCTYP(1:NFMAT) = 13 : singlet, symmetric Fock matrix
 C            NFMAT is max = 2 here
       END IF
       END IF
+      IFCTYP(NFMAT) = 13
+C     ... restore IFCTYP(NFMAT) after DODFT or HSROHF
 C
 C *** End of subroutine FCK2AO
 C

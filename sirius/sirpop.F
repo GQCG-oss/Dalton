@@ -884,6 +884,9 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
       END IF
  1099 FORMAT (1X)
       LQ     = 0
+      DO NUC = IST,IEND
+         POPTSM(NUC) = D0
+      END DO
       DO 210 ITYP = 1,NTYP
          WRITE (LUPRI,1012) GTOTYP(ITYP),(POPTYP(ITYP,NUC),NUC=IST,IEND)
          IF (LUW4 .NE. LUPRI)
@@ -897,7 +900,7 @@ C
       IF (GTOTYP(ITYP+1)(1:1) .EQ. GTOTYP(ITYP)(1:1)) GO TO 210
 C     for cartesian GTOTYP(*)(1:1) will be 's', 'p', etc.
 C     for spherical GTOTYP(*)(1:1) will be '1', '2', etc.
-C     thus: when char 1 changes no l quantum number and
+C     thus: when char 1 changes so does l quantum number and
 C     using GTOTYP to decide works both for cartesian and spherical
          IF (LQ.GT.0) THEN
             WRITE (LUPRI,1012) SPDCAR(LQ),(POPTSM(NUC), NUC=IST,IEND)
@@ -907,9 +910,9 @@ C     using GTOTYP to decide works both for cartesian and spherical
          END IF
          WRITE (LUPRI,1099)
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1099)
-         DO 212 NUC = IST,IEND
+         DO NUC = IST,IEND
             POPTSM(NUC) = D0
-  212    CONTINUE
+         END DO
          LQ = LQ + 1
   210 CONTINUE
       IF (IEND.LT.NNUC)   GO TO 9

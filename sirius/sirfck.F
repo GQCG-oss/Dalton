@@ -89,7 +89,6 @@ C
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
-#include <dftcom.h>
 C
       LOGICAL SFIRST
       SAVE SFIRST
@@ -108,7 +107,7 @@ C           CALL SETHER(IPRHER,NEWGEO,WORK,LWORK)
          DO I = 1,NDMAT
             ISYMDM(I) = ISYMDM(I) - 1
          END DO
-         IF (NSYM.GT.1 .AND. DFTADD) THEN
+         IF (NSYM.GT.1 .AND. DODFT) THEN
 C           HERFCK destroys DMAT when called with symmetry
             KDMAT = 1
             KLAST = KDMAT + N2BASX*NDMAT
@@ -366,13 +365,12 @@ C
       PARAMETER (DP25 = 0.25D0)
       INTEGER P, Q, R, S
 #include <inforb.h>
-#include <dftcom.h>
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
-      EFAC = DP25
-      IF (DFTRUN) EFAC = DP25*HFXFAC
-C     ... because DMAT is multiplied by extra 2 in SIRFCK
+      EFAC = DP25*HFXFAC
+C     ... 0.25 because DMAT is multiplied by extra 2 in SIRFCK
 C         in order to get full Coulomb contribution:
 C         DINT*(DMAT(R,S) + DMAT(S,R)) = 2*DINT*DMAT(R,S)
 C         Compare general code in FCKD03.
@@ -428,12 +426,11 @@ C
       PARAMETER (D1 = 1.0D00, DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
-#include <dftcom.h>
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), XMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
-      EFAC = D1
-      IF (DFTRUN) EFAC = HFXFAC
+      EFAC = HFXFAC
       DO 100 INT = 1, LENGTH
          P    = IBUF(1,INT)
          Q    = IBUF(2,INT)
@@ -515,13 +512,12 @@ C
       PARAMETER (DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
-#include <dftcom.h>
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include <ibtfun.h>
 C
-      EFAC = DP5
-      IF (DFTRUN) EFAC = DP5*HFXFAC
+      EFAC = DP5*HFXFAC
       DO 100 INT = 1, LENGTH
          P    = IBUF(1,INT)
          Q    = IBUF(2,INT)
@@ -610,7 +606,6 @@ C
       INTEGER P, Q, R, S
       PARAMETER ( DP5 = 0.5D0 )
 #include <inforb.h>
-#include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C

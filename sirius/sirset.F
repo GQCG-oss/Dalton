@@ -33,23 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REVISION_LOG
-===========================================================================
-Revision 1.5  2000/05/24 12:51:55  hjj
-new parameter in call SETCI; removed obsolete parameter in CALL GETCIX
-
-Revision 1.4  2000/05/01 10:19:13  hjj
-Added KLWOP to parameter list for SETWOP, now allocated when needed
-and removed from infvar.h.
-Shorter record with KLWOP on LUINDX.
-
-revision 1.3 2000/05/01 07:00:26 hjj
-removed unimportant print of time used in SIRSET to LUERR
-----------------------------
-revision 1.2 2000/04/14 11:52:10 hjj
-changed warning to info for AOSUPMAT not found
-===========================================================================
-#endif
+C File: sirius/sirset.F
+C ===========================================================================
 C  /* Deck sirini */
       SUBROUTINE SIRINI
 C
@@ -284,7 +269,7 @@ C                  ^- not CI        ^- not RHF      ^- not only grad
          WRITE (LUERR,1730)
          NUMERR = NUMERR + 1
       END IF
-      IF (NASHT.EQ.1 .AND. NACTEL.NE.1 .AND. .NOT. HSROHF) THEN
+      IF (NASHT.EQ.1 .AND. NACTEL.NE.1) THEN
          WRITE (LUW4,1731)
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,1731)
          WRITE (LUERR,1731)
