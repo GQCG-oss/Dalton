@@ -160,11 +160,10 @@ c remco
 #include <infinp.h>
 #include <infvar.h>
 #include <priunit.h>
-#if (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
-      allocatable detvec(:),cvec(:)
-#endif
 #if (defined(VAR_G77))
       dimension detvec(1),cvec(1)
+#elif (defined(VAR_IFC)||defined(VAR_PGF77)||!defined(NO_F90))
+      allocatable detvec(:),cvec(:)
 #endif
 c einde remco
       IF(INCSFB.EQ.0) THEN
