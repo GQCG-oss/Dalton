@@ -32,11 +32,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.13 2001-06-07 20:20:06 vebjornb Exp $
+C$Id: herrdn.F,v 1.14 2001-06-08 11:35:42 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.13  2001/06/07 20:20:06  vebjornb
+Moved several FLUSH statements inside IF..END IF print level tests.
+This to avoid problems when running parallel jobs with slaves not having
+access to a DALTON.OUT (LUPRI < 0) - VB
+
 Revision 1.12  2001/05/31 06:38:08  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -184,9 +189,6 @@ BASINP: major modifications - check it carefully out !!!
         may consider replacing NOORBT with MAXIQM wich has
         more information
 CNTINP: info on angular momentum moved to BASINP
-941114-hjaaj:
-ORBINX: modified CALL SEGORB so no line is longer than 72 char
-        (ORBINX not used)
 940207-hjaaj
 READI1: 'ANG' was not initialized; errors in 'ANG' message format
 931220-hjaaj
@@ -624,7 +626,7 @@ C*****************************************************************************
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Title Cards',1)
          WRITE (LUPRI,'(2X,A,/,2X,A)') TITLE(1),TITLE(2)
-         WRITE (LUCME,'(2X,A,/,2X,A)') TITLE(1),TITLE(2)
+         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A,/,2X,A)') TITLE(1),TITLE(2)
       END IF
 C*****************************************************************************
 C     Card 4:
@@ -1483,8 +1485,10 @@ C
             WRITE (LUPRI,'(3A/)') '  Basis set used is "',
      &      BASNAM(1:ILEN),'" from the basis set library.'
          END IF
-         WRITE (LUCME,'(A,I5 )') '  Number of atom types: ',NONTYP
-         WRITE (LUCME,'(A,I5/)') '  Total number of atoms:',NUCDEP
+         IF (LUCME.GT.0) THEN
+            WRITE (LUCME,'(A,I5 )') '  Number of atom types: ',NONTYP
+            WRITE (LUCME,'(A,I5/)') '  Total number of atoms:',NUCDEP
+         END IF
       END IF
       IBLOCK = 1
       IBLCKS = 1
@@ -1493,9 +1497,11 @@ C
          WRITE (LUPRI,'(2X,A)')
      &        'label    atoms   charge   prim    cont     basis   '
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
-         WRITE (LUCME,'(2X,A)')
+         IF (LUCME.GT.0) THEN
+            WRITE (LUCME,'(2X,A)')
      &        'label    atoms   charge   prim    cont     basis   '
-         WRITE (LUCME,'(2X,70A1)') ('-',I=1,70)
+            WRITE (LUCME,'(2X,70A1)') ('-',I=1,70)
+         END IF
       END IF
       NCHTOT = 0
       DO 100 I = 1,NONTYP
@@ -1526,12 +1532,13 @@ C
                IF(DIRAC) THEN
                   WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
      &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,'L - ',TSTRING
-                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIMS,NBASS,'S - ',TSTRI2
+                  WRITE (LUPRI,'(23X,2I8,6X,2A)')
+     &                   NPRIMS,NBASS,'S - ',TSTRI2
                ELSE
                   WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
      &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
-                  WRITE (LUCME,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
+                  IF (LUCME.GT.0)
+     &               WRITE (LUCME,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
      &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
                ENDIF
             END IF
@@ -1551,16 +1558,18 @@ C
          WRITE (LUPRI,'(2X,A,I7,3I8)')
      &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
-         WRITE (LUCME,'(2X,A,I7,3I8,6X,/)')
+         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A,I7,3I8,6X,/)')
      &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
          IF (NHTYP .GT. 2) THEN
             IF(DOCART) THEN
                WRITE (LUPRI,'(A)') '  Cartesian basis used. ',
      &     '  (Note that d, f, ... atomic GTOs are not all normalized.)'
-               WRITE (LUCME,'(A)') '  Cartesian basis used.'
+               IF (LUCME.GT.0)
+     &         WRITE (LUCME,'(A)') '  Cartesian basis used.'
             ELSE
                WRITE (LUPRI,'(A)') '  Spherical harmonic basis used.'
-               WRITE (LUCME,'(A)') '  Spherical harmonic basis used.'
+               IF (LUCME.GT.0)
+     &         WRITE (LUCME,'(A)') '  Spherical harmonic basis used.'
             ENDIF
          END IF
          WRITE (LUPRI,'(/A,1P,D10.2)')
@@ -1917,97 +1926,6 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> CMBAS  error, number of contracted functions      ',
      *  NRCI,
-     *  '                   current maximum number              ',KPRIM
-        CALL QUIT('Too many contracted functions')
-      END
-C  /* Deck orbinx */
-      SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
-     &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-      PARAMETER (DSM=1.0D-30)
-      CHARACTER*1 SPDCAR, FRMT
-      CHARACTER*8 FMT1
-      CHARACTER*12 FMT2
-      LOGICAL SEG, FREE
-      DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
-     &          ALPHA(KPRIM,KAOVEC),
-     &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
-#include <cbirea.h>
-#include <molinp.h>
-#include <ccom.h>
-C
-      NBLOCK = 0
-      DO 100 I=1,IQM
-         DO 200 J = 1, JCO(I)
-            NBLOCK = NBLOCK + 1
-            IF(NBLOCK.GT.KAOVEC) GOTO 5000
-C
-C           Card 8:
-C
-C           NUC - number of uncontracted shells in AO-block
-C           NRC - number of contracted shells in AO-block
-C
-            CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,A1,I4,I5)')
-     &           FRMT,NUC(NBLOCK),NRC(NBLOCK)
-            IF (INPTST .OR. IPREAD .GT. 3) THEN
-               WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
-               WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUC(NBLOCK),
-     &                                  'Shells    :  ',NRC(NBLOCK)
-            END IF
-            CALL FLSHFO(LUPRI)
-            SEG(NBLOCK) = NRC(NBLOCK).GE.0
-            NUC(NBLOCK) = ABS(NUC(NBLOCK))
-            NRC(NBLOCK) = ABS(NRC(NBLOCK))
-            NUCIJ = NUC(NBLOCK)
-            NRCIJ = NRC(NBLOCK)
-            IF (NUCIJ.GT.KPRIM) GOTO 5010
-            IF (NRCIJ.GT.KPRIM) GOTO 5020
-C
-C           Read in exponents and contraction coefficients
-C
-            CALL ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA(1,NBLOCK),
-     &                  CPRIMU(1,1,NBLOCK),KPRIM)
-C
-C           Identify segmented contractions
-C
-            CALL SEGORB(SEG(NBLOCK),NUCIJ,NRCIJ,CPRIMU(1,1,NBLOCK),
-     &                  KPRIM,DSM)
-C
-C           Reorder primitive orbitals
-C
-            CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
-     &                  SEG(NBLOCK),KPRIM,DSM)
-C
-C           Normalize orbitals
-C
-            CALL NRMORB(I,NRCIJ,NUCIJ,ALPHA(1,NBLOCK),CPRIM(1,1,NBLOCK),
-     &                  CPRIMU(1,1,NBLOCK),KPRIM,NBLOCK)
-C
-  200    CONTINUE
-  100 CONTINUE
-      RETURN
-C
-C       Error messages:
-C
- 5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
-        CALL QUIT('Too many AO-blocks')
- 5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error,'//
-     *  'number of primitives per block      ',NUC(NBLOCK),
-     *  '                   current maximum number              ',KPRIM
-        CALL QUIT('Too many primitives')
- 5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of contracted functions      ',
-     *  NRC(NBLOCK),
      *  '                   current maximum number              ',KPRIM
         CALL QUIT('Too many contracted functions')
       END
@@ -4307,7 +4225,7 @@ C
       CHARACTER*8 CDATE,CTIME
       CHARACTER*8 TABLE1(4), TABLE2(4), TABLE3(4), TABLE4(4), TABLE5(4)
       DIMENSION QPOL(6), QQ(3), IFXYZ(3), JFXYZ(3)
-      DIMENSION CHRN(MXCENT), COOO(MXCENT,3), IPRXYZ(MXCORB),
+      DIMENSION CHRN(MXCENT), COOO(MXCENT,3),
      &          INAMN(MXCORB), IGTO(MXCORB), RTITLE(24)
       DIMENSION NONT(KATOM), IQM(KATOM), JCO2(KANG,KATOM)
 #include <ccom.h>
@@ -4324,7 +4242,6 @@ C
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
       DATA QPOL/6*DUMMY/, QQ/3*DUMMY/, JFXYZ/3*IDUMMY/
-      DATA IPRXYZ/MXCORB*IDUMMY/
 #include <ibtfun.h>
 C
       CALL GETDAT(CDATE,CTIME)
@@ -4389,7 +4306,7 @@ C
      &                       ((ITRAN(I,J), J = 1,8), I = 1,NBASIS),
      &                       ((CTRAN(I,J), J = 1,8), I = 1,NBASIS),
      &               NBASIS, ( INAMN(I),             I = 1,NBASIS),
-     &                       (IPRXYZ(I),             I = 1,NBASIS),
+     &                       ( IGTO(I),              I = 1,NBASIS),
      &               DPNUC,
      &               NUCDEP, ((COOO(I,J),J=1,3),I=1,NUCDEP),
      &               IFXYZ, DUMMY, QPOL, QQ, JFXYZ
@@ -4731,12 +4648,15 @@ C       Group name
 C
         IF (CLASS(1:3) .EQ. 'N/A') THEN
            WRITE(LUPRI,'(A,A3)') 'Point group: ',GROUP
-           WRITE(LUCME,'(A,A3)') 'Point group: ',GROUP
+           IF (LUCME.GT.0)
+     &     WRITE(LUCME,'(A,A3)') 'Point group: ',GROUP
         ELSE
            WRITE(LUPRI,'(A,A)') 'Full group is:  ',CLASS
            WRITE(LUPRI,'(A,A3)') 'Represented as: ',GROUP
-           WRITE(LUCME,'(A,A)') 'Full group is:  ',CLASS
-           WRITE(LUCME,'(A,A3)') 'Represented as: ',GROUP
+           IF (LUCME.GT.0) THEN
+              WRITE(LUCME,'(A,A)') 'Full group is:  ',CLASS
+              WRITE(LUCME,'(A,A3)') 'Represented as: ',GROUP
+           END IF
         END IF
 C
 C       Group generators
