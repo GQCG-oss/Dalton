@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.6 2001-03-28 13:00:53 vebjornb Exp $
+C$Id: gphjj.F,v 1.7 2001-04-23 11:35:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -388,7 +388,7 @@ C
 #include <implicit.h>
       CHARACTER*(*) TEXT
 C
-#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX)
+#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
       CHARACTER*(40) HSTNAM
 #if !defined (VAR_G77)
       CHARACTER*(24) FDATE
@@ -401,6 +401,9 @@ C
 #if defined (SYS_HAL)
       CHARACTER*(24) CFDATE
       CHARACTER*(32) HSTNAM
+#endif
+#if defined (SYS_HPUX)
+      CHARACTER CFDATE*9, CDATE*8, CTIME*10, HSTNAM*40
 #endif
 C
       LTEXT = LEN(TEXT)
@@ -422,8 +425,11 @@ C
       CALL FDATE(CFDATE)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
 #endif
-#if 0 && defined (SYS_HPUX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
+#if defined (SYS_HPUX)
+      CALL DATE(CFDATE)
+      CALL DATE_AND_TIME(CDATE,CTIME)
+      WRITE (LUPRIN,'(T6,8A)') 'Date and time (HP-UX)  : ',CFDATE,' ',
+     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
 #endif
 #if defined (SYS_DEC)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
