@@ -1299,7 +1299,7 @@ C
 #include <pvibav.h>
       LOGICAL CLNRGY, PRTNR, SCND, C2NRGY, DEPFC, FOUND, ALRCAL
       DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK), 
-     &          INDSTP(NMORDR), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
+     &          INDSTP(NTORDR), KDPMTX(LDPMTX,NSTRDR,IFRSTD), 
      &          IRPDEG(NMORDR), IREPST(NMORDR), ICRIRP(NCOOR,2), 
      &          IRPIND(NMORDR), IDXTMP(NMORDR), IDDBTP(NMORDR), 
      &          NPRTNR(MAXINR)
@@ -1314,8 +1314,8 @@ C
 C
          C2NRGY = .FALSE.
          CALL SYMMLT(GRIREP,INDSTP,ICRIRP,IREPST,IRPDEG,WORK(KKIRPD),
-     &               WORK(KIDDEG),WORK(KIDEGI),NMORDR,IRSRDR,IORDR,
-     &               IPRINT,C2NRGY)
+     &               WORK(KIDDEG),WORK(KIDEGI),NMORDR,NTORDR,IRSRDR,
+     &               IORDR,IPRINT,C2NRGY)
 C
 C        *** Checkicng whether this is a dependent force constant ***
 C        *** (as a result of using groups with degenerate ireps)  ***
@@ -1368,8 +1368,8 @@ C
                   C2NRGY = .FALSE.
                   CALL SYMMLT(GRIREP,INDSTP,ICRIRP,IREPST,IRPDEG,
      &                        WORK(KKIRPD),WORK(KIDDEG),WORK(KIDEGI),
-     &                        NMORDR,IRSRDR+2*INUM,IORDR+2*INUM,IPRINT,
-     &                        C2NRGY)
+     &                        NMORDR,NTORDR,IRSRDR+2*INUM,IORDR+2*INUM,
+     &                        IPRINT,C2NRGY)
 C
 C                  *** Checking if this is a dependent component. ***
 C
@@ -1441,8 +1441,8 @@ C
                      C2NRGY = .FALSE.
                      CALL SYMMLT(GRIREP,INDSTP,ICRIRP,IREPST,IRPDEG,
      &                           WORK(KKIRPD),WORK(KIDDEG),WORK(KIDEGI),
-     &                           NMORDR,IRSRDR+IN,IORDR+IN,IPRINT,
-     &                           C2NRGY)
+     &                           NMORDR,NTORDR,IRSRDR+IN,IORDR+IN,
+     &                           IPRINT,C2NRGY)
 C
 C                    *** Checking if this is a dependent component. ***
 C
@@ -1495,7 +1495,7 @@ C
                           C2NRGY = .FALSE.
                           CALL SYMMLT(GRIREP,INDSTP,ICRIRP,IREPST,
      &                                IRPDEG,WORK(KKIRPD),WORK(KIDDEG),
-     &                                WORK(KIDEGI),NMORDR,
+     &                                WORK(KIDEGI),NMORDR,NTORDR,
      &                                IRSRDR+IN+2*INUM,IORDR+IN+2*INUM,
      &                                IPRINT,C2NRGY)
 C
@@ -1543,7 +1543,8 @@ C
 C
 C     /*Deck symmlt*/
       SUBROUTINE SYMMLT(GRIREP,INDSTP,ICRIRP,IREPST,IRPDEG,KIRPDG,
-     &                  IDDEGI,IDEGID,NMORDR,IRSRDR,IORDR,IPRINT,CLNRGY)
+     &                  IDDEGI,IDEGID,NMORDR,NTORDR,IRSRDR,IORDR,IPRINT,
+     &                  CLNRGY)
 #include <implicit.h>
 #include <mxcent.h>
 #include <priunit.h>
@@ -1552,7 +1553,7 @@ C     /*Deck symmlt*/
 #include <fcsym.h>
       LOGICAL CLNRGY
       DIMENSION GRIREP(NGORDR,NGVERT)
-      DIMENSION INDSTP(NMORDR), KIRPDG(NMORDR), IRPDEG(NMORDR), 
+      DIMENSION INDSTP(NTORDR), KIRPDG(NMORDR), IRPDEG(NMORDR), 
      &          IREPST(NMORDR), IDEGID(NMORDR), IDDEGI(NMORDR), 
      &          ICRIRP(NCOOR,2)
 C
@@ -1712,7 +1713,7 @@ C     *******************************************************
 #include <fcsym.h>
       LOGICAL SBDELM, SMEIRP
       DIMENSION GRIREP(NGORDR,NGVERT)
-      DIMENSION INDSTP(NMORDR), IREPST(NMORDR), ICRIRP(NCOOR,2)
+      DIMENSION INDSTP(NTORDR), IREPST(NMORDR), ICRIRP(NCOOR,2)
 C
       IF (NAORDR.EQ.0) THEN
          RTMPCO=D1
@@ -1751,7 +1752,7 @@ C     *********************************************************
 #include <numder.h>
       LOGICAL EXSTEL, TSMEIR
       DIMENSION GRIREP(NGORDR,NGVERT)
-      DIMENSION INDSTP(NMORDR), ICRIRP(NCOOR,2), IREPST(NMORDR)
+      DIMENSION INDSTP(NTORDR), ICRIRP(NCOOR,2), IREPST(NMORDR)
 C
       TSMEIR = .TRUE.
       DO IEL = 1, NGORDR
@@ -1791,7 +1792,7 @@ C     /* Deck ffcdep */
 #include <fcsym.h>
 #include <numder.h>
       LOGICAL DONE, DEPFC
-      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), INDSTP(NMORDR), 
+      DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), INDSTP(NTORDR), 
      &          IDXTMP(NMORDR)
 C
       IDXTMP(1) = INDSTP(1)
@@ -3587,7 +3588,7 @@ C     /* Deck prtnrp */
 #include <numder.h>
       LOGICAL PRTNR, CLNRGY, C2NRGY, TSM, ALRCAL
       DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK)
-      DIMENSION ICRIRP(NDCOOR,2), INDSTP(NMORDR), NPRTNR(MAXINR), 
+      DIMENSION ICRIRP(NDCOOR,2), INDSTP(NTORDR), NPRTNR(MAXINR), 
      &          INDTMP(MXIDCR), IDXTMP(NMORDR)
 C
       PRTNR = .TRUE.
@@ -3668,7 +3669,7 @@ C     ********************************************************
 #include <numder.h>
       LOGICAL PRTNR, C2NRGY
       DIMENSION GRIREP(NGORDR,NGVERT), WORK(LWORK)
-      DIMENSION ICRIRP(NDCOOR,2), INDSTP(NMORDR), INDTMP(MXIDCR)
+      DIMENSION ICRIRP(NDCOOR,2), INDSTP(NTORDR), INDTMP(MXIDCR)
 C
       DO 100 IIRDR3 = 1, IORDR
       DO 100 IIRDR2 = 1, IIRDR3
@@ -3694,11 +3695,12 @@ C
 C
             C2NRGY = .FALSE.
             CALL SYMMLT(GRIREP,INDTMP,ICRIRP,WORK(KIRPST),WORK(KIRPDG),
-     &                  WORK(KKIRPD),WORK(KIDDEG),WORK(KIDEGI),MXIDCR,2,
-     &                  3,IPRINT,C2NRGY)
+     &                  WORK(KKIRPD),WORK(KIDDEG),WORK(KIDEGI),MXIDCR,
+     &                  NTORDR,2,3,IPRINT,C2NRGY)
             PRTNR = PRTNR .AND. .NOT. C2NRGY
          END IF
  100  CONTINUE      
 C
       RETURN
       END
+

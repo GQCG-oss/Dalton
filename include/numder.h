@@ -1,14 +1,15 @@
 C     
-C $Id: numder.h,v 1.4 2001-12-13 08:54:39 ruden Exp $
+C $Id: numder.h,v 1.5 2002-02-12 12:27:28 ruden Exp $
 C
       LOGICAL NWPROP, NOMOVE, FSTPRP, NUMELC, CMPARE, SDRTST,
      &        RESTRT, DRYRUN, FRSTNM, PRPVIB, ADSTBK, NOADSY, 
      &        MANUAL
       DIMENSION KDRYRN(6)
-      COMMON /NUMDER/ KDRYRN, NMORDR, NAORDR, NDCOOR, NMREDU, 
-     &                NUMCAL, MEMOFF, NMDPRP, NMRDRP, NARDRP, 
-     &                NMPCAL, NMEPRP, LUNDPR, NWPROP, NOMOVE, 
-     &                NUMELC, CMPARE, SDRTST, RESTRT, DRYRUN, 
-     &                FRSTNM, PRPVIB, MANUAL, ADSTBK, NOADSY
+      COMMON /NUMDER/ KDRYRN, NMORDR, NAORDR, NTORDR, NDCOOR, 
+     &                NMREDU, NUMCAL, MEMOFF, NMDPRP, NMRDRP,
+     &                NARDRP, NMPCAL, NMEPRP, LUNDPR, NWPROP,
+     &                NOMOVE, NUMELC, CMPARE, SDRTST, RESTRT,
+     &                DRYRUN, FRSTNM, PRPVIB, MANUAL, ADSTBK,
+     &                NOADSY
       COMMON /NMDPRP/ NMEXCI, FSTPRP
 

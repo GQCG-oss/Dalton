@@ -48,7 +48,7 @@ C
          CALL QUIT('Illegal keyword in NVBINP.')
  1       CONTINUE
             NUMVIB = .TRUE.
-            ANALZE = .TRUE.
+            ANALZ1 = .TRUE.
             NMORDR = MAX(NMORDR,3-NAORDR)
             GOTO 100
  2       CONTINUE
@@ -56,17 +56,17 @@ C
             NPRPDR = .TRUE.
             FRSTNM = .TRUE.
             PRPVIB = .TRUE.
-            ANALZE = .TRUE.
+            ANALZ1 = .TRUE.
             NMRDRP = 2
             NARDRP = 0
-            NMORDR = MAX(NMORDR,2-NAORDR)
+            NMORDR = MAX(NMORDR,3-NAORDR)
             FCLASS = 'C1 '
  3       CONTINUE
             NRMCRD = .TRUE.
             NPRPDR = .TRUE.
             FRSTNM = .TRUE.
             PRPVIB = .TRUE.
-            ANALZE = .TRUE.
+            ANALZ1 = .TRUE.
             NMRDRP = 2
             NARDRP = 0
             NMORDR = MAX(NMORDR,3-NAORDR)
