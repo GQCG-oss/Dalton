@@ -32,11 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamolden.F,v 1.3 2001-05-31 06:38:01 vebjornb Exp $
+C$Id: abamolden.F,v 1.4 2001-06-06 15:17:28 vebjornb Exp $
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
 C$Log: not supported by cvs2svn $
+CRevision 1.3  2001/05/31 06:38:01  vebjornb
+CUpdated copyright, authors and reference in all Fortran-files - VB
+C
 CRevision 1.2  2001/03/13 08:43:27  vebjornb
 C- Reshuffled include statements and a couple of common blocks to
 C  more in line with ANSI Fortran (only ABACUS files)
@@ -226,21 +229,21 @@ C     1 'Md', 'No', 'Lr' /
           ICRX = 1
           ICRY = 2
           ICRZ = 3
+          IATOM = 1
           DO 100 ICENT = 1, NUCIND
              MULCNT = ISTBNU(ICENT)
              NAME   = NAMEX(3*ICENT)(1:4)
              IF (MULT(MULCNT) .EQ. 1) THEN
                 ICHARGE = NINT(CHARGE(ICENT))
-                   
-                IF (WORD .EQ. 'ATOM')
-     &               WRITE (LUMOLDEN,'(A,1X,I2,3X,I2,6X,F15.10,
-     &               5X,F15.10,5X,F15.10)')
-     &               NAME,ICENT,ICHARGE,(CORD(K,ICENT),K=1,3)
-
-                IF(WORD .EQ. 'FREQ' .OR. WORD .EQ. 'XYZ ' )
-     &               WRITE (LUMOLDEN,'(A,3(5X,F15.10))')
-     &               NAME,(CORD(K,ICENT),K=1,3)
-
+                IF (WORD .EQ. 'ATOM') THEN
+                   WRITE (LUMOLDEN,'(A,1X,I2,3X,I2,6X,F15.10,
+     &                    5X,F15.10,5X,F15.10)')
+     &                    NAME,IATOM,ICHARGE,(CORD(K,ICENT),K=1,3)
+                   IATOM = IATOM + 1
+                ELSE IF (WORD .EQ. 'FREQ' .OR. WORD .EQ. 'XYZ ') THEN
+                   WRITE (LUMOLDEN,'(A,3(5X,F15.10))')
+     &                    NAME,(CORD(K,ICENT),K=1,3)
+                END IF
                 ICRX = ICRX + 3
                 ICRY = ICRY + 3
                 ICRZ = ICRZ + 3
@@ -250,15 +253,15 @@ C     1 'Md', 'No', 'Lr' /
                    IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                       JATOM = JATOM + 1
                       ICHARGE = NINT(CHARGE(ICENT))
-
-                      IF (WORD .EQ. 'ATOM')
-     &  WRITE (LUMOLDEN,'(A,1X,I2,3X,I2,6X,F15.10,5X,F15.10,5X,F15.10)')
-     &         NAME,ICENT+JATOM-1,ICHARGE,
-     &         ((PT(IBTAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
-
-                      IF(WORD .EQ. 'FREQ')
-     &                     WRITE (LUMOLDEN,'(A,3(5X,F15.10))') NAME,
+                      IF (WORD .EQ. 'ATOM') THEN
+        WRITE (LUMOLDEN,'(A,1X,I2,3X,I2,6X,F15.10,5X,F15.10,5X,F15.10)')
+     &                        NAME,IATOM,ICHARGE,
+     &            ((PT(IBTAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
+                         IATOM = IATOM + 1
+                      ELSE IF (WORD .EQ. 'FREQ') THEN
+                         WRITE (LUMOLDEN,'(A,3(5X,F15.10))') NAME,
      &           ((PT(IBTAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
+                      END IF
                       ICRX = ICRX + 3
                       ICRY = ICRY + 3
                       ICRZ = ICRZ + 3
@@ -341,10 +344,10 @@ C              note OCCUP(NOCCT) only over occupied orbitals
                            END IF
 
                            IF (CHRSGN(NINT(CTRAN(K+IADD,J))).EQ.'+')THEN
-                              WRITE(LUMOLDEN,'(1X,I2,1X,F10.6)')
+                              WRITE(LUMOLDEN,'(1X,I4,1X,F10.6)')
      &                             M,ORVAL(ICMMO)
                            ELSE
-                              WRITE(LUMOLDEN,'(1X,I2,1X,F10.6)')
+                              WRITE(LUMOLDEN,'(1X,I4,1X,F10.6)')
      &                             M,-1.0D0*ORVAL(ICMMO)
                            END IF
                         END IF
@@ -354,7 +357,7 @@ C              note OCCUP(NOCCT) only over occupied orbitals
                   IF(WRTELEM) THEN
                      ICMMO = ICMMO+1
                   ELSE IF(WRTZERO) THEN
-                     WRITE(LUMOLDEN,'(1X,I2,1X,A)')M,'  0.000000'
+                     WRITE(LUMOLDEN,'(1X,I4,1X,A)')M,'  0.000000'
                   END IF
 
  4             CONTINUE
@@ -421,7 +424,7 @@ C              note OCCUP(NOCCT) only over occupied orbitals
         IF(WRITENOW)THEN
             IF (.NOT. DONEIW) THEN 
          
-         WRITE(LUMOLDEN,'(A)') ' [SCFCONV]'
+         WRITE(LUMOLDEN,'(A)') '[SCFCONV]'
          WRITE(LUMOLDEN,'(A,I2)') 'scf-first  1  THROUGH ',ITER
 
          DO 100 I=1,ITER
