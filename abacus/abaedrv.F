@@ -33,20 +33,18 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck abaedrv_log */
-930209-hjaaj: RESMC: defined IPRSOL=IPRINT
-930204-hjaaj: READMC: subtract solvent contribution from FC
-920324-hjaaj: RESINP: increased MAXNR from 20 to 40
-920302-hjaaj: corrected NCONST checks (was .gt. 1, should be .gt. 0)
-900216-hjaaj: reimplementing INGD (not finished)
--- RESST: check for zero norm of GD vectors
-900219-hjaaj:
--- RESST: corrected error (removed unnec., erron. ref. to IBNDX)
-      END
-===========================================================================
-#endif
+c===========================================================================
+c/* old abaedrv_log */
+c930209-hjaaj: RESMC: defined IPRSOL=IPRINT
+c930204-hjaaj: READMC: subtract solvent contribution from FC
+c920324-hjaaj: RESINP: increased MAXNR from 20 to 40
+c920302-hjaaj: corrected NCONST checks (was .gt. 1, should be .gt. 0)
+c900216-hjaaj: reimplementing INGD (not finished)
+c-- RESST: check for zero norm of GD vectors
+c900219-hjaaj:
+c-- RESST: corrected error (removed unnec., erron. ref. to IBNDX)
+c      END
+c===========================================================================
 C  /* Deck resinp */
       SUBROUTINE RESINP(WORD)
 #include <implicit.h>
@@ -176,10 +174,10 @@ C
      *                              MAXSIM
             END IF
             IF (MAXRED .GT. LIROW) THEN
-               WRITE (LUPRI,'(/A,/A,I4,A,I4)')
-     &              ' Too large maximum reduced space requested',
-     &              ' The requested value of ',MAXRED,' is larger '//
-     &              'than LIROW ',LIROW
+               WRITE (LUPRI,'(/A/A,I5,A,I5)')
+     &            ' Too large maximum reduced space requested',
+     &            ' The requested value of',MAXRED,' is larger '//
+     &              'than LIROW parameter in file infind.h:',LIROW
                CALL QUIT('Too large reduced space requested')
             ELSE IF (MAXRED .NE. MAXRDM) THEN
                WRITE(LUPRI,'(A,I5)')
@@ -236,6 +234,7 @@ C
 #include <anrinf.h>
 #include <cbires.h>
 #include <abainf.h>
+#include <nuclei.h>
 C
       IPRINT = IPRDEF
       MAXSIM = 15
@@ -249,7 +248,12 @@ C
       NOAVER = .FALSE.
       D1DIAG = .FALSE.
       PRIL2  = .FALSE.
-      MAXRED = 400
+      MAXRED = MAX(400,25*NUCIND)
+C     hjaaj Jan 2004: try to allocate sufficient dimension of reduced space
+C     for calculation of response contributions to molecular hessian,
+C     also for large molecules in C1 symmetry (for NSYM .gt. 1
+C     the maximum number of nuclear coordinates in any symmetry must
+C     be less than 3*NUCIND).
 C
 C     Initialize /ANRINF/
 C
