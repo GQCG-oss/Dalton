@@ -33,29 +33,29 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REV_LOG
-===========================================================================
-Revision 1.2  2001/01/17 10:41:34  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.5  2000/05/24 12:43:25  hjj
-1) attempted to get WLKREJ true working again (not tested)
-2) new parameter lists to SOLFCK and WRSIFC
-3) write CREF in determinants on SIRIFC in WRSIFC
-
-Revision 1.4  2000/05/01 14:07:33  hjj
-removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
-
-revision 1.3 2000/05/01 07:21:48 hjj
-polishing of warnings so that 'grep WARNING' gets more relevant information.
-----------------------------
-revision 1.2 2000/04/14 10:10:52 hjj
-\hjaaj jan 2000:
-also screening for SIRCNO in OPTST
-\hjaaj dec 1999:
-1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
-2) polishing
-===========================================================================
+#ifdef OLD_REV_LOG
+!===========================================================================
+!Revision 1.2  2001/01/17 10:41:34  vebjornb
+!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
+!
+!Revision 1.5  2000/05/24 12:43:25  hjj
+!1) attempted to get WLKREJ true working again (not tested)
+!2) new parameter lists to SOLFCK and WRSIFC
+!3) write CREF in determinants on SIRIFC in WRSIFC
+!
+!Revision 1.4  2000/05/01 14:07:33  hjj
+!removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
+!
+!revision 1.3 2000/05/01 07:21:48 hjj
+!polishing of warnings so that 'grep WARNING' gets more relevant information.
+!----------------------------
+!revision 1.2 2000/04/14 10:10:52 hjj
+!\hjaaj jan 2000:
+!also screening for SIRCNO in OPTST
+!\hjaaj dec 1999:
+!1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
+!2) polishing
+!===========================================================================
 #endif
 C  /* Deck siropt */
       SUBROUTINE SIROPT(WRK,LFREE,ICONV)
@@ -382,8 +382,8 @@ C
          IF (ITABS .EQ. 0) JTRLVL = KTRLVL
          IF (FLAG(20) .OR. ITMACN .GE. MAXMAC) JTRLVL = 0
 C        ... stop after gradient: only 1. order transform. needed
-         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWRK10),LWRK10,MWORK)
-C        CALL TRACTL(ITRLVL,CMO,WRK,LFREE,MWORK)
+         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWRK10),LWRK10)
+C        CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
          LTRLVL = JTRLVL
       ELSE
          LTRLVL = -999
@@ -627,12 +627,12 @@ Chj-sep99: next 3 lines work, the rest from go to 100 to 'ELSE' does not, why???
                   itrlvl = itrlsv
                   go to 100
 Chj-sep99: previous 3 lines work, the rest from go to 100 to 'ELSE' does not, why???
+#ifdef HJ_CHECK_LATER
                   IF (ITRLSV .GT. ITRLVL) THEN
 C                    need higher int. transf. level for NEO/NR
                      ITRLVL = ITRLSV
                      JTRLVL = ITRLVL
-                     CALL TRACTL(JTRLVL,WRK(KCMO),
-     &                           WRK(KWRK10),LWRK10,MWORK)
+                     CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWRK10),LWRK10)
                      LTRLVL = JTRLVL
                   END IF
                   CALL GRAD (WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
@@ -644,6 +644,7 @@ C                    need higher int. transf. level for NEO/NR
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KERLM),WRK(KWRKG),LWRKG)
                   END IF
+#endif
                ELSE
                   WRITE (LUPRI,'(/A,F10.5)')
      &            ' Local NR disabled because 0.02 .lt. abs(ratio-1) =',
@@ -1054,7 +1055,7 @@ Chj      if walk is rejected: do not update information on SIRIFC
      *   CALL WRSIFC(WRK(KCMO),WRK(KDV),WRK(KPV),WRK(KFCSOL),WRK(KFV),
      *               WRK(KFQ),WRK(KCREF),WRK(KFCAC),WRK(KH2AC),
      *               WRK(KWRKG),LWRKG,WRK(KGTOT+NCONF),WRK(KERLM),
-     *	             .TRUE.,WRK(KCINDX))
+     *              .TRUE.,WRK(KCINDX))
 C        CALL WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
 C    *               GORB,ERLM,ORBHES,XINDX)
 C        ... note: GORB will in a normal macro iteration be
@@ -1080,7 +1081,7 @@ C     ... if (true) this QCHF will be followed by higher wf level
      *         ' Transformation skipped, was already performed.'
          ELSE
             JTRLVL = ITRFIN
-            CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWRK10),LWRK10,MWORK)
+            CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWRK10),LWRK10)
          END IF
       END IF
 C
@@ -1534,8 +1535,8 @@ C        (do it out here unless we later will transform to NO,
 C         CICTL only does an ITRLVL = 0 transformation)
 C
          IF (.NOT.FLAG(14) .AND. .NOT.TRCNO) THEN
-            CALL TRACTL(ITRLVL,WRK(KCMO),WRK(KW21),LW21,MWORK)
-C           CALL TRACTL(ITRLVL,CMO,WRK,LFREE,MWORK)
+            CALL TRACTL(ITRLVL,WRK(KCMO),WRK(KW21),LW21)
+C           CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
             FLAG(14) = .TRUE.
          END IF
 C
