@@ -98,7 +98,7 @@ CTRL[3]=2
 ERROR[3]="HUCKEL GUESS NOT CORRECT"
 
 # SCF energy:
-CRIT1=`$GREP "Final HF energy: * \-76\.0256814839[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy: * \-76\.0256814839[0-9][0-9]" $log | wc -l`
 TEST[4]=`expr $CRIT1`
 CTRL[4]=1
 ERROR[4]="SCF ENERGY NOT CORRECT"

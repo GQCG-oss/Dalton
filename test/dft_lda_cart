@@ -73,7 +73,7 @@ else
 fi
 
 # Energy
-#    Final    HF energy:              -91.339783213015
+#    Final * HF energy:              -91.339783213015
 CRIT1=`$GREP "Final DFT energy\: * \-91\.3397833....." $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
