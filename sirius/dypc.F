@@ -913,7 +913,7 @@ cele      ab2=tint(ii,ij,is-ncoat)
 cele
       
       if (zrs.and.zij) dint=ab1
-      if (zrs.xor.zij) dint=sqrt(2.d0)*ab1
+      if (zrs.neqv.zij) dint=sqrt(2.d0)*ab1
       if (.not.(zrs.or.zij)) dint=2.d0*sqrt(ab1**2+ab2**2-ab1*ab2)
       co=-dint/(fmpb(ir)+fmpb(is)-fmpb(ii)-fmpb(ij))
       e2sc(1)=e2sc(1)+dint*co
