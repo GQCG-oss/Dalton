@@ -13,6 +13,7 @@ IBM-SP2,
 Linux\index{Linux} using g77, pgf77 or ifc,
 SGI-IRIX\index{SGI}\index{SGI-IRIX},
 Sun\index{Sun},
+MacOS X (darwin)\index{MacOSX} using xlf/xlc or g77/gcc,
 and DEC-Alpha\index{DEC-Alpha}.
 We furthermore note that response calculations involving the
 spin--orbit\index{spin-orbit} operator only will work on some of these
@@ -32,6 +33,14 @@ may very well work without change on typical 32-bit UNIX workstations.
 Users who port the codes to other platforms are encouraged to
 communicate any required changes in the original source with the
 appropriate C preprocessor directives to the authors.
+
+For installation under MacOS X\index{MacOSX} with the G5 architecture, note that the 
+current release of \dalton\ requires OSX 10.3, XTools version 1.5 
+and gcc version 3.3, all available from the Apple website. 
+We recommend the use of the IBM xlf (v8.1) and xlc (v6.0) 
+compilers, as development and testing is with these compilers. 
+For installation with a G4 architecture, users are asked to check the
+configure script for installation instructions.
 
 \section{Source files}\label{sec:source}
 
@@ -209,6 +218,24 @@ code is to type
 \begin{verbatim}
 > make
 \end{verbatim}
+
+
+For MacOS X\index{MacOSX} installation with the g77 compiler (v3.3 or later), 
+installation requires the following 3-step process: first type
+\begin{verbatim}
+> make -k
+\end{verbatim}
+then edit the Makefile.config file, changing -O3 to -O2 (optimization level),
+and then type
+\begin{verbatim} 
+> make 
+\end{verbatim} 
+Re-edit the makefile, changing -O2 to -O1 and type
+\begin{verbatim}
+> touch sirius/csfstuff.F
+> make
+\end{verbatim}
+
 %Note to users who want to install a parallel program\index{parallel
 %program} employing PVM3\index{PVM}
 %as message passing interface: Whereas a normal installation will
