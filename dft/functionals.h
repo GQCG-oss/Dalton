@@ -48,10 +48,16 @@ struct FirstFuncDrv_ {
  */
 struct SecondDrv_ {
     real fR; /* d/drho  F */
-    real fZ; /* d/dzeta F */
+    real fZ; /* d/dzeta F */ 
     real fRR; /* d/drho² F */
-    real fRZ; /* d/(drho dzeta) F */
-    real fZZ; /* d/dzeta² F */
+    real fRZ; /* d/(drho dzeta) F */ 
+    real fZZ; /* d/dzeta² F */ 
+    /* additional derivatives required by  */ 
+    /* general linear response scheme     */ 
+    real fRG; /* d/(drho dgamma) F */ 
+    real fZG; /* d/(dzeta dgamma) F */
+    real fGG; /* d/dzgamma² F */  
+    real fG;  /* d/dgamma F */ 
 };
 
 /* SecondFuncDrv: this structure is used by functional derivative
@@ -190,6 +196,8 @@ void dftlistfuncs_(void);
 real dftenergy_(const real* rho, const real* grad);
 void dftpot0_(FirstDrv *ds, const real* w, const DftDensProp* dp);
 void dftpot1_(SecondDrv*ds, const real* w, const DftDensProp* dp,
+              const int* triplet); 
+void newdftpot1_(SecondDrv*ds, const real* w, const DftDensProp* dp,
               const int* triplet);
 void dftpot2_(ThirdDrv *ds, real factor, const DftDensProp* dp, int isgga,
               int triplet);

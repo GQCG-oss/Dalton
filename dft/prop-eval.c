@@ -1390,28 +1390,31 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                         grid->basblocks, &grid->shl_bl_cnt, tmp, &bllen, vt3);
     for(i=blstart; i<blend; i++) {
         SecondDrv vxc;
-	real facr;
+	real facr, facg;
         real weight = grid->weight[grid->curr_point+i];
         real ngrad  = sqrt(grid->g.grad[i][0]*grid->g.grad[i][0]+
                            grid->g.grad[i][1]*grid->g.grad[i][1]+
                            grid->g.grad[i][2]*grid->g.grad[i][2]);
-        real br, b0 = vt3[i][0];
+        real brg, brz, b0 = vt3[i][0];
         if(ngrad<1e-15|| grid->r.rho[i]<1e-15) {
             vt3[i][0] = vt3[i][1] = vt3[i][2] = vt3[i][3] = 0;
             continue;
         }
-        br = (vt3[i][1]*grid->g.grad[i][0] +
-              vt3[i][2]*grid->g.grad[i][1] +
-              vt3[i][3]*grid->g.grad[i][2])/ngrad;
+        brg = (vt3[i][1]*grid->g.grad[i][0] +
+	       vt3[i][2]*grid->g.grad[i][1] +
+	       vt3[i][3]*grid->g.grad[i][2]);
+	brz = brg/ngrad;
         dp. rhoa = dp. rhob = 0.5*grid->r.rho[i];
         dp.grada = dp.gradb = 0.5*ngrad;
         dp.gradab = dp.grada*dp.gradb;
-        dftpot1_(&vxc, &weight, &dp, &data->trplet);
-	facr = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*br;
-        vt3[i][0] = vxc.fRR*b0 + vxc.fRZ*br;
-        vt3[i][1] = (grid->g.grad[i][0]*facr + vxc.fZ*vt3[i][1])/ngrad;
-        vt3[i][2] = (grid->g.grad[i][1]*facr + vxc.fZ*vt3[i][2])/ngrad;
-        vt3[i][3] = (grid->g.grad[i][2]*facr + vxc.fZ*vt3[i][3])/ngrad;
+        newdftpot1_(&vxc, &weight, &dp, &data->trplet);
+	facr = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*brz + vxc.fZG*brg;
+	facr = facr/ngrad + (vxc.fRG*b0+vxc.fZG*brz +vxc.fGG*brg);
+	facg = vxc.fZ/ngrad + vxc.fG;
+        vt3[i][0] = vxc.fRR*b0 + vxc.fRZ*brz+ vxc.fRG*brg;
+        vt3[i][1] = grid->g.grad[i][0]*facr + facg*vt3[i][1];
+        vt3[i][2] = grid->g.grad[i][1]*facr + facg*vt3[i][2];
+        vt3[i][3] = grid->g.grad[i][2]*facr + facg*vt3[i][3];
     }
 
     for(isym=0; isym<grid->nsym; isym++) {
