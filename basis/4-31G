@@ -2,7 +2,16 @@
 
 $
 $  REFERENCE
-A 1
+$  Elements                             References                                
+$  --------                             ----------                                
+$  H, C - F: R. Ditchfield, W.J. Hehre and J.A. Pople, 
+$            J. Chem. Phys. 54, 724 (1971).
+$  He, Ne:   Gaussian 90                                                          
+$  Li, Be:   These are actually 5-21G basis sets.                                 
+$  Na - Ar:  M.S. Gordon, J.S. Binkley, J.A. Pople, W.J. Pietro and W.J. Hehre,   
+$            J. Am. Chem. Soc. 104, 2797 (1983).
+$
+a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ S-TYPE FUNCTIONS
     4    2    0
@@ -10,7 +19,7 @@ $ S-TYPE FUNCTIONS
       2.8253944  0.23472690  0.00000000
       0.6401217  0.81375730  0.00000000
       0.1612778  0.00000000  1.00000000
-A 2
+a 2
 $ HELIUM       (4s) -> [2s]                                      
 $ S-TYPE FUNCTIONS
     4    2    0
@@ -18,7 +27,7 @@ $ S-TYPE FUNCTIONS
       5.7780300  0.15467900  0.00000000
       1.2417740  0.46963000  0.00000000
       0.2979640  0.00000000  1.00000000
-A 3
+a 3
 $ LITHIUM      (8s,3p) -> [3s,2p]                                
 $ S-TYPE FUNCTIONS
     8    3    0
