@@ -22,12 +22,15 @@ optvib=0
 opthes=0
 optloc=0
 optI=0
+optv=0
 optw=0
 frl=rel
 #
 usage (){
-          echo "\nUsage:    dalton [-a] [-A] [-b directory] [-d] [-D] [-ext log] [
--f] [-F] [-i] [-I] \n[-m mem] [-N nodes]  dal{.$DALEXT} mol{.$MOLEXT}\n"
+          echo
+          echo "Usage:    dalton [-a] [-A] [-b directory] [-d] [-D] [-ext log] [-f] [-F] [-i] [-I]"
+          echo  "[-m mem] [-N nodes] [-o file] [-t directory] [-v] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+          echo
           echo 'Options:'
           echo ' a        copy auxiliary files from WRKDIR to TMPDIR before calculation starts'
           echo ' A        copy auxiliary files to WRKDIR after calculation stops'
@@ -40,10 +43,12 @@ usage (){
           echo ' i f1 f2  copy SIRIFCs from WRKDIR to TMPDIR before calculation starts'
           echo ' I        copy SIRIFC from TMPDIR to WRKDIR after calculation stops'
           echo ' m mem    set scratch memory to mem words'
-          echo ' o dir    redirect output from program to this file in WRKDIR'
           echo ' N num    use MPI version with num nodes'
+          echo ' o file   redirect output from program to this file in WRKDIR'
           echo ' t dir    change TMPDIR from default to dir'
-          echo ' w dir    change WRKDIR from default to dir\n'
+          echo ' v        copy Molden and any VRML files from TMPDIR to WRKDIR after the calculation'
+          echo ' w dir    change WRKDIR from default to dir'
+          echo
          }
 while [ -n "`echo $1 | grep '-'`" ]; do
     case $1 in
@@ -92,6 +97,7 @@ while [ -n "`echo $1 | grep '-'`" ]; do
 	   shift;;
       -w ) WRKDIR=`pwd`/$2
 	   shift;;
+      -v ) optv=1;;
       * ) usage; exit 1;;
    esac
    shift
@@ -334,8 +340,13 @@ if [ "$1" = "$2" ]; then
          echo "DALTON.OUT has not been created from the present run"
       fi
    fi
-   if [ -s molden.inp -a -r molden.inp ]; then
-      cp molden.inp $WRKDIR/$1.molden
+   if [ $optv -eq 1 ] ; then
+      if [ -s molden.inp -a -r molden.inp ]; then
+         cp molden.inp $WRKDIR/$1.molden
+      fi
+      if [ -s *.wrl -a -r *.wrl ]; then
+         cp -f *.wrl $WRKDIR/.
+      fi
    fi
 else
    if [ -s $WRKDIR/$1_$2.$OUTEXT ];then
@@ -358,8 +369,13 @@ else
          echo "DALTON.OUT has not been created from the present run"
       fi
    fi
-   if [ -s molden.inp -a -r molden.inp ]; then
-      cp molden.inp $WRKDIR/$1_$2.molden
+   if [ $optv -eq 1 ] ; then
+      if [ -s molden.inp -a -r molden.inp ]; then
+         cp molden.inp $WRKDIR/$1_$2.molden
+      fi
+      if [ -s *.wrl -a -r *.wrl ]; then
+         cp -f *.wrl $WRKDIR/.
+      fi
    fi
 fi
 cd $WRKDIR
