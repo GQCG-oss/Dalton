@@ -228,14 +228,17 @@ C
       ELSE
          IF (MOLHES) THEN
             KHESRL = 1
+#if 0
             IF (DFTRUN) THEN 
                KDFTSH = KHESRL + MXCOOR*MXCOOR
                KLAST  = KDFTSH + MXCOOR*MXCOOR
-               LWRK1  = LWORK - KLAST + 1
             ELSE 
                KLAST  = KHESRL + MXCOOR*MXCOOR
-               LWRK1  = LWORK - KLAST + 1
             END IF
+#else
+            KLAST  = KHESRL + MXCOOR*MXCOOR
+#endif
+            LWRK1  = LWORK - KLAST + 1
             IF (KLAST .GT. LWORK) CALL STOPIT('ADDREL',' ',KLAST,LWORK)
          ELSE
             KLAST  = 1
@@ -535,8 +538,9 @@ C
 CHJ Sep 2001: calc. <0| d2/dx2 |0>
             IF (IOP .EQ. 1) THEN
                D2DQ2 = DDOT(NVARPT,WORK(KJVEC),1,WORK(KJVEC),1)
-               WRITE (LUPRI,'(A,I5,A,1P,D15.7)')
-     &         ' <0| d2/dQ2 |0>, Q =',JOP,' :',D2DQ2
+               IF(IPRINT.GT.1)
+     &              WRITE (LUPRI,'(A,I5,A,1P,D15.7)')
+     &              ' <0| d2/dQ2 |0>, Q =',JOP,' :',D2DQ2
             END IF
 CHJ Sep 2001 end
 

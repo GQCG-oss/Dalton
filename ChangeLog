@@ -1,3 +1,10 @@
+2004-04-30  Pawel Salek 
+
+	* abacus/abarlx.F:
+	some allocations in abacus are not used.
+	disable debugging output.
+	* dft/*.F: NGEODRV parameter makes NEEDLAP parameter redundant.
+
 2004-03-03  Pawel Salek 
 
 	* dalton.gnr: create tar.gz in one step.
