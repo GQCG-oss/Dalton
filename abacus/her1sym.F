@@ -181,7 +181,7 @@ C
          CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
      &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &               GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
+     &               GNUEXP,NCENTC,NCLONE,EXPDER)
 C
 C        *************************************************
 C        ***** Transform to spherical harmonic basis *****

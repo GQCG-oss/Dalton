@@ -38,7 +38,7 @@ C  /* Deck oneprm */
      &                  RLMINT,RLMTAB,FCM,
      &                  WORK,LWORK,IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,
      &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &                  GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
+     &                  GNUEXP,NCENTC,NCLONE,EXPDER)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -49,7 +49,7 @@ C
       DIMENSION STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
-     &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
+     &          ADER(*), FACINT(*), COORC(3,*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*), EXPDER(*)
 #include <onecom.h>
 #include <expopt.h>
@@ -76,7 +76,7 @@ C
      &            RLMINT,RLMTAB,FCM,
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &            FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,NCLONE,
+     &            FACINT,COORC,GNUEXP,NCENTC,NHKTAP,NCLONE,
      &            EXPDER,WORK(KLAST),LWRK)
       RETURN
       END
@@ -85,7 +85,7 @@ C  /* Deck onepr1 */
      &                  RLMINT,RLMTAB,FCM,
      &                  AHGTF,ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT,
      &                  PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &                  FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,NCLONE,
+     &                  FACINT,COORC,GNUEXP,NCENTC,NHKTAP,NCLONE,
      &                  EXPDER,WORK,LWORK)
 C
 #include <implicit.h>
@@ -103,7 +103,7 @@ C
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), AHGTF(*), NCENTC(*), FACINT(*), COORC(3,*),
-     &          GNUEXP(*), JCENTC(*), EXPDER(KCKTAB,2,2,NUCA,NUCB)
+     &          GNUEXP(*), EXPDER(KCKTAB,2,2,NUCA,NUCB)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
 #include <cbisol.h>
@@ -297,9 +297,8 @@ C
                   DIFCPX = COORC(1,IATOMC) - CORPX
                   DIFCPY = COORC(2,IATOMC) - CORPY
                   DIFCPZ = COORC(3,IATOMC) - CORPZ
-                  JJ = JCENTC(IATOMC)
-                  IF(ABS(GNUEXP(JJ)).GT.GNUTHR) THEN
-                    EXPFAC = GNUEXP(JJ)
+                  IF(ABS(GNUEXP(IATOMC)).GT.GNUTHR) THEN
+                    EXPFAC = GNUEXP(IATOMC)
                     EXPFAC = EXPFAC/(EXPFAC + EXPP)
                     EXPPGN = EXPP*EXPFAC
                     FACTOR = FACTOR*(EXPFAC**1.5D0)
