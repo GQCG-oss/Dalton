@@ -129,6 +129,9 @@ C
      &                 LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X,
      &                 WORK(KEND1),LWRK1)
 
+      ! turn sign of Wbar intermediate
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-ONE,WORK(KWBAR),1)
+
       IF (LOCDBG) THEN
         XNORM = DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KWBAR),1,WORK(KWBAR),1)
         WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> Wbar^Y:',XNORM
@@ -292,7 +295,7 @@ C
               KDLFIAN = ((NAN-1)*NT1AMX + NFI-1) * NT1AMX + NDL    
               KDLFNAI = ((NAI-1)*NT1AMX + NFN-1) * NT1AMX + NDL    
               KDLFN   =  (NFN-1)*NT1AMX + NDL    
-
+   
               WORK(KDIAR-1+NAI) = WORK(KDIAR-1+NAI) + 
      &         ( WORK(KTAMP3-1+KDLFNAI) - WORK(KTAMP3-1+KDLFIAN) ) * 
      &           WORK(KL2AMP-1+KDLFN) 
@@ -305,12 +308,12 @@ C
                 KEMDLFN = ((NFN-1)*NT1AMX + NDL-1) * NT1AMX + NEM    
                 KDLAN   =  (NAN-1)*NT1AMX + NDL
                 KEMFI   =  (NFI-1)*NT1AMX + NEM
-
+   
                 WORK(KDIAR-1+NAI) = WORK(KDIAR-1+NAI) - 
      &            WORK(KTBAR3-1+KDLEMFN) *
      &             (  WORK(KT0AMP-1+KEMFI) * WORK(KTYAMP-1+KDLAN) + 
      &                WORK(KTYAMP-1+KEMFI) * WORK(KT0AMP-1+KDLAN)   )
-
+   
               END DO
             END DO
 
@@ -422,7 +425,6 @@ C
      &            ONE,WORK(KT1AMY),NVIRT,WORK(KDIJ0),NRHFT,
      &            ONE,DIA,NVIRT)  
  
-
       IF (HAVETB3T3) THEN
         CALL DGEMM('T','N',NVIRT,NRHFT,NVIRT,
      &             -ONE,WORK(KDAB0R),NVIRT,WORK(KT1AMY),NVIRT,
