@@ -1276,8 +1276,12 @@ C
       IF (MOLHES) WRITE (LUPRI,'(5X,A)') ' The molecular Hessian'
       IF (DIPDER .AND. .NOT.POPULA)
      &            WRITE (LUPRI,'(5X,A)') ' Dipole moment gradient'
-      IF (HELFEY) WRITE (LUPRI,'(5X,A)') ' The Hellman-Feynman '//
+      IF (HELFEY) THEN
+         WRITE (LUPRI,'(5X,A)') ' The Hellman-Feynman '//
      &     ' theorem will be used'
+         WRITE (LUPRI,'(5X,A)') 'This option is currently not working'//
+     &        ' correctly, program will stop'
+         CALL QUIT('Hellmann-Feynman approximation not working')
       IF (POLAR .AND. .NOT.POPULA)
      &            WRITE (LUPRI,'(5X,A)') ' Static polarizabilities'
       IF (HYPER)  WRITE (LUPRI,'(5X,A)') 

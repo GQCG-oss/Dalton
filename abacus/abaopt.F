@@ -609,6 +609,9 @@ C
       IF (HFPROP) THEN
          WRITE(LUPRI,'(A)') ' The Hellmann-Feynman theorem will ' //
      &        'be utilized to calculate derivatives.'
+         WRITE (LUPRI,'(5X,A)') 'This option is currently not working'//
+     &        ' correctly, program will stop'
+         CALL QUIT('Hellmann-Feynman approximation not working')
       END IF
 C
       ITYP = 0
