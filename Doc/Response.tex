@@ -1,22 +1,37 @@
-\chapter{Molecular response functions, RESPONSE}
+\chapter{Molecular linear and non-linear response functions, RESPONSE}
 \label{ch:response}
 
-\section{General}
+\section{Directives for evaluation of molecular response functions}\label{sec:rspinp}
 
-\resp\ is the part of the code for calculating molecular
-response properties.
-
-\section{\Sec{*RESPONSE} directives}\label{sec:rspinp}
-
-The following directives may be included in the input to \resp.
+The directives in the following subsections may be included in the input to \resp.
 They are organized according to the program section names in which they
 appear.
+
+\resp\ is the most general part of the code for calculating 
+many different electronic linear, quadratic, or cubic molecular
+response properties based on SCF or MCSCF or CI wave functions.
+No nuclear contributions are added.
+
+Some of these SCF/MCSCF properties can also be requested
+from \Sec{*PROPERTIES} input modules.
+NOTE: for such properties you should request them either here or
+in \Sec{*PROPERTIES}, otherwise you will calculate them twice!
+Usually the output is nicest in
+the \Sec{*PROPERTIES} module (e.g. collected in tables and in
+often used units, most properties are only given in atomic
+units in \resp), and nuclear contributions are included if relevant.
+Some specific properties, especially those involving nuclear derivatives,
+can only be calculated via \Sec{*PROPERTIES}.
+
+Calculations of coupled cluster response properties are performed
+by different modules and are described
+in the chapter on coupled cluster calculations.
 
 In addition, SOPPA\index{SOPPA}\index{polarization propagator}
 (Second-Order Polarization Propagator 
 approximation) for the calculation of linear response
 \index{linear response}\index{response!linear}
-properties are requested in this input section. The current
+properties may be requested in this input section. The current
 implementation of the SOPPA method is described 
 in Ref.~\cite{mjpekdtehjajjojcp}. Note that a SOPPA calculation
 requires the keyword \Key{SOPPA}.
@@ -24,15 +39,54 @@ requires the keyword \Key{SOPPA}.
 %J. Oddershede, J. Chem. Phys., submitted. 
 
 
-\subsection{End of input: \Sec{END OF}}
-
-The last directive of the \Sec{*RESPONSE} input may be \Sec{END OF}
-
 \subsection{General: \Sec{*RESPONSE}}
 
 General-purpose directives are given in the \Sec{*RESPONSE} section.
 
+After the last directive of the \Sec{*RESPONSE} input group
+should follow another \Sec{*<something>} input group
+(or \Sec{*END OF INPUT} if this was the last input to \dalton).
+
 \begin{description}
+
+\item{\Key{RSPCI}}
+Configuration interaction\index{Configuration Interaction}\index{CI}
+response calculation. 
+This is equivalent to a CI sum-over-states calculation of response properties,
+but of course calculated directly without diagonalization of the full
+CI Hamiltonian matrix.
+The final wave function from \Sec{*WAVE FUNCTIONS} must be \Key{CI}.
+
+\item{\Key{SOPPA}}
+Requests the second order polarization propagator approximation 
+in the linear response module.
+The SOPPA\index{SOPPA}\index{polarization propagator!SOPPA}\index{response!SOPPA}
+flag requires that
+the preceding {\sir} calculation has generated the MP2 correlation
+coefficients and written them to disk (set \Key{RUN RESPONSE} in \Sec{*DALTON}
+input as well as \Key{HF} and \Key{MP2} in \Sec{*WAVE FUNCTIONS}). See
+example input in Chapter~\ref{ch:starting}.
+
+\item{\Key{SOPW4}}
+Calculate explicitly the W4 term described by Odderhede {\it et
+al.\/}~\cite{jopjdlycpr2}. This term is already included in the normal
+SOPPA\index{SOPPA}\index{polarization propagator!SOPPA} result, and used mostly for comparing to older
+calculations. Note that this keyword requires that \Key{SOPPA} is set.
+
+\item{\Key{HIRPA}}
+Invoke the higher RPA approximation for the calculation of linear
+response properties\index{linear response!higher RPA}.
+This approximation is identical to that of McKoy
+and coworkers~\cite{jrtsvmjcp58,tsjrvmjcp58}. The requirements to the
+preceding wave function 
+calculation is the same as for the \Key{SOPPA} keyword.
+This keyword overrides a simultaneous specification of \Key{SOPPA}.
+
+\item{\Key{TRPFLG}}
+Triplet flag. This option is set whenever triplet
+(spin-dependent)\index{triplet response}
+operators must be used in a response calculation
+\cite{jodlypjjcp91,ovhapjhjajthjojcp97}
 
 \item{\Key{NOAVDI}}
 Do not use Fock type decoupling of the two-electron density matrix.
@@ -42,13 +96,6 @@ orbital diagonal.
 \item{\Key{INPTES}}
 Input test. For debugging purposes only. The program stops after the
 input section.
-
-\item{\Key{HIRPA}}
-Invoke the higher RPA approximation for the calculation of linear
-response properties. This approximation is identical to that of McKoy
-and coworkers~\cite{jrtsvmjcp58,tsjrvmjcp58}. The requirements to the
-preceding wave function 
-calculation is the same as for the \Key{SOPPA} keyword.
 
 \item{\Key{MAXPHP}}\\
 \verb|READ *, MAXPHP|\\
@@ -65,13 +112,17 @@ actual dimension will be less if MAXPHP will split degenerate configurations.
 \verb|READ *, MAXRM |\\
 Change the maximum dimension of the reduced space. Default is 200.
 When solving a linear system of equations or an eigenvalue equation,
-the reduced space is increased by 1 in each iteration. For single root
+the reduced space is increased by the number of
+frequencies/excitations in each iteration. For single root
 calculations this should exceed the number of iterations required.
+MAXRM should be increased if many frequencies or excitation energies
+are to be calculated.
+Sharp convergence thresholds also requires
+more iterations and thus larger dimension of reduced space.
 
 \item{\Key{NODOIT}}
 Turns off direct one-index transformation \cite{ovhahjajjcc15}. 
-In this way all one-index
-transformed integrals are stored on disk.
+In this way all one-index transformed integrals are stored on disk.
 
 \item{\Key{NOITRA}}
 No integral transformation. Normally the two-electron integrals are 
@@ -118,49 +169,21 @@ label of the operator given in the integral property file.
 \item{\Key{QRREST}}
 Restart quadratic response\index{quadratic response}\index{response!quadratic}
 calculation.
-
-\item{\Key{RSPCI}}
-Configuration interaction\index{Configuration Interaction}\index{CI}
-response calculation. 
-
-\item{\Key{SOPPA}}
-Required, no defaults. \\
-The SOPPA\index{SOPPA}\index{polarization propagator} flag requires that
-the preceding {\sir} calculation has generated the MP2 correlation
-coefficients and written them to disk (set \Key{RUN RESPONSE} in \Sec{*DALTON}
-input as well as \Key{HF} and \Key{MP2} in \Sec{*WAVE FUNCTIONS}). See
-example input in Chapter~\ref{ch:starting}.
-
-\item{\Key{SOPW4}}
-Calculate explicitly the W4 term described by Odderhede {\it et
-al.\/}~\cite{jopjdlycpr2}. This term is already included in the normal
-SOPPA\index{SOPPA}\index{polarization propagator} result, and used mostly for comparing to older
-calculations. Note that this keyword requires that \Key{SOPPA} is set.
-
-\item{\Key{TRPFLG}}
-Triplet flag. This option is set whenever triplet
-(spin-dependent)\index{triplet response}
-operators must be used in a response calculation
-\cite{jodlypjjcp91,ovhapjhjajthjojcp97}
 \end{description}
 
-\subsection{Linear reponse calculation: \Sec{LINEAR}}
+\subsection{Linear response calculation: \Sec{LINEAR}}
 
 A\index{linear response}\index{response!linear} linear response
 \cite{jodlypjjcp91,pjhjajjojcp89} calculation is performed for a given
-choice of operators, $\langle\!\langle A; B
-\rangle\!\rangle_{\omega}$.
+choice of operators,
+$\langle\!\langle A; B \rangle\!\rangle_{\omega}$.
+
+In the same \resp\ calculation these linear response properties can be calculated
+together with excitation energies
+and with long range dispersion coefficients, but not 
+together with quadratic or cubic response.
 
 \begin{description}
-
-\item{\Key{SINGLE}}
-The single residue\index{single residue} of the linear
-response\index{linear response}\index{response!linear} function is
-computed. Residues of a linear response function correspond to
-transition moments\index{transition moment}.
-
-\item{\Key{DIPMAG}}
-Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
 
 \item{\Key{DIPLEN}}
 Sets $A$ and $B$ to dipole operators\index{dipole length}.
@@ -168,13 +191,52 @@ Sets $A$ and $B$ to dipole operators\index{dipole length}.
 \item{\Key{DIPVEL}}
 Sets $A$ and $B$ to velocity operators\index{dipole velocity}.
 
+\item{\Key{DIPMAG}}
+Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
+
+\item{\Key{QUADMOM}}
+Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
+
 \item{\Key{SPIN-O}}
 Sets $A$ and $B$ to spin-orbit operators\index{spin-orbit}.
 
+\item{\Key{PROPRT}}\\
+\verb|READ '(A)', LABEL|\\
+Sets $A$ and $B$ to a given operator with label; LABEL.
+(The calculation of the operator must be specified to the integral
+module, see section \ref{ch:hermit}.)
+
+\item{\Key{FREQUE}}\\
+\verb|READ *, NFREQ|\\
+\verb|READ *, FREQ(1:NFREQ)|\\
+Response equations are evaluated at given
+frequencies\index{frequency}. Two lines following 
+this option must contain 1) The number of frequencies, 2) Frequencies.
+Remember to increase \Key{MAXRM} if many frequencies are specified.
+
+\item{\Key{THCLR}}\\
+\verb|READ *, THCLR|\\
+Relative convergence threshold for all requested linear response functions.
+Default is 1.0D-3; note that this number should be at least 10 times
+bigger than the final gradient norm in the SCF/MCSCF
+wave function optimization. The accuracy of the linear response 
+properties will be quadratic in this threshold; thus the default
+corresponds to convergence to approximately 6 digits.
+
+\item{\Key{PRINT}}\\
+\verb|READ *,IPRLR|\\
+Sets print level for linear response module. Default is 2.
+ 
+\item{\Key{RESTLR}}
+Restart\index{restart!linear response} of response calculation. This
+can only be used if the  
+operator specified is the same which was used \textit{last} in the previous
+response calculation.
+
 \item{\Key{MAXIT}}\\
-\verb|READ (LUCMDS,*) MAXITP|\\
-Maximum number of iterations for solving the linear response eigenvalue
-equation. Default is 20.
+\verb|READ (LUCMDS,*) MAXITL|\\
+Maximum number of iterations for solving a linear response 
+equation. Default is 60.
 
 \item{\Key{MAXITO}}\\
 \verb|READ (LUCMDS,*) MAXITO|\\
@@ -182,6 +244,31 @@ Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}. 
 Default is 5.
+
+%\item{\Key{OLSEN}}
+%CI trial vectors are obtained with Olsen algorithm (for the single
+%residue calculation only).
+
+\end{description}
+
+\subsection{Linear response excitation energies calculation: \Sec{LINEAR} with \Key{SINGLE RESIDUE}}
+
+Single residues\index{single residue} of the linear
+response\index{linear response!single residue}\index{response!excitations} function is
+computed. Residues of a linear response function correspond to
+transition moments\index{transition moment} and the associated poles
+correspond to vertical electronic excitation energies.
+%\cite{jodlypjjcp91,pjhjajjojcp89}
+
+In the same \resp\ calculation these excitation properties can be calculated
+together with linear response properties
+and with long range dispersion coefficients, but not 
+together with quadratic or cubic response.
+
+\begin{description}
+
+\item{\Key{SINGLE RESIDUE}} Required to get excitation energies, without
+this keyword the linear response function will be evaluated.
 
 \item{\Key{ROOTS}}\\
 \verb|READ '*',(ROOTS(I) I=1,NSYM)|\\
@@ -192,18 +279,44 @@ any operators are given,
 symmetry-allowed transition moments\index{transition moment} are
 calculated between the 
 reference state and the excited states.
+Remember to increase \Key{MAXRM} if many frequencies are specified.
 
-\item{\Key{PRINT}}\\
-\verb|READ *,IPRINT|\\
-Sets print level.
+\item{\Key{DIPLEN}}
+Calculate transition moments for all dipole operators\index{dipole length}.
+
+\item{\Key{DIPVEL}}
+Calculate transition moments for all velocity operators\index{dipole velocity}.
+
+\item{\Key{DIPMAG}}
+Calculate transition moments for all angular momentum operators\index{angular momentum}.
+
+\item{\Key{QUADMOM}}
+Calculate transition moments for all quadrupole\index{quadrupole operator} operators.
+
+\item{\Key{SPIN-O}}
+Calculate transition moments for all spin-orbit operators\index{spin-orbit}.
 
 \item{\Key{PROPRT}}\\
 \verb|READ '(A)', LABEL|\\
-Sets $A$ and $B$ to a given operator with label; LABEL.
-(See section \ref{ch:hermit}.)
+Calculate transition moments for a given operator with label; LABEL.
+(The calculation of the operator must be specified to the integral
+module, see section \ref{ch:hermit}.)
 
-\item{\Key{QUADMO}}
-Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
+\item{\Key{PRINT}}\\
+\verb|READ *,IPRPP|\\
+Sets print level for single residue linear response module. Default is 2.
+
+\item{\Key{MAXIT}}\\
+\verb|READ (LUCMDS,*) MAXITP|\\
+Maximum number of iterations for solving the linear response eigenvalue
+equation. Default is 60.
+
+\item{\Key{MAXITO}}\\
+\verb|READ (LUCMDS,*) MAXITO|\\
+Maximum number of iterations in the optimal orbital
+algorithm\index{optimal orbital trial vector}
+\cite{tuhjahjajpjjcp84}. 
+Default is 5.
 
 \item{\Key{RESTPP}}
 Restart\index{restart!excitation energy} of response
@@ -213,25 +326,16 @@ response calculation.
 
 \item{\Key{THCPP}}\\
 \verb|READ *,|\\
-Threshold for solving the linear response eigenvalue equation. 
-Default is $10^{-3}$.
+Threshold for solving the single residue linear response eigenvalue equation. 
+Default is 1.0D-3; note that this number should be at least 10 times
+bigger than the final gradient norm in the SCF/MCSCF
+wave function optimization.
+The accuracy of the pole (excitation energy) will be 
+quadratic in this threshold, thus the default corresponds to approximately
+6 digits. The accuracy of transition moments will be linear in this threshold.
 
-\item{\Key{FREQUE}}\\
-\verb|READ *, NFREQ|\\
-\verb|READ *, FREQ(1:NFREQ)|\\
-Response equations are evaluated at given
-frequencies\index{frequency}. Two lines following 
-this option must contain 1) The number of frequencies, 2) Frequencies;
- 
-\item{\Key{RESTLR}}
-Restart\index{restart!linear response} of response calculation. This
-can only be used if the  
-operator specified is the same which was used \textit{last} in the previous
-response calculation.
-
-%\item{\Key{OLSEN}}
-%CI trial vectors are obtained with Olsen algorithm (for the single
-%residue calculation only).
+\item{\Key{OLSEN}}
+CI trial vectors are obtained with Olsen algorithm.
 
 \end{description}
 
