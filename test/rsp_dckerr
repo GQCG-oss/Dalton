@@ -43,7 +43,7 @@ OP        1.2641677124            2.0463120050             .0000000000
 #  DALTON INPUT
 #######################################################################
 cat > rsp_dckerr.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .RUN RESPONSE
 **WAVE FUNCTIONS
 .HF
@@ -87,7 +87,7 @@ ZDIPLEN
 ZDIPLEN
 .DPROP
 ZDIPLEN
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

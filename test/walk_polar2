@@ -47,9 +47,9 @@ OP        1.2634502500        2.0449019100         .0000000000             *
 #  DALTON INPUT
 #######################################################################
 cat > walk_polar2.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .WALK
-**SIRIUS
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF
@@ -89,7 +89,7 @@ cat > walk_polar2.dal <<'%EOF%'
 .FREQUE
  2
 0.0 0.0592
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

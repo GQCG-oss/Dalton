@@ -47,17 +47,17 @@ C2    2.283034611         1.318102747         0.00000000               *
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_mp2froz.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .RUN WAVEFUNCTION
 .OPTIMIZE
-**SIRIUS
+**WAVE FUNCTIONS
 .HF
 .MP2
 *SCF INPUT
 *MP2 INPUT
 .MP2 FROZEN
  2 1 2 1 0 0 0 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -45,11 +45,10 @@ F     0.0000000000000000  0.000000000000000   -.08729478000000        *
 #  DALTON INPUT
 #######################################################################
 cat > cc_energy_field.dal <<'%EOF%'
-**GENERAL
-.RUNSIRIUS
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .THETA
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *HAMILTONIAN
@@ -73,7 +72,7 @@ cat > cc_energy_field.dal <<'%EOF%'
 .FROIMP
 1 0 0 0
 0 0 0 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

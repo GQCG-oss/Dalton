@@ -48,7 +48,7 @@ cat > rsp_phosph.dal <<'%EOF%'
 .RUN RESPONS
 **INTEGRALS
 .SPIN-ORBIT
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF
@@ -71,7 +71,7 @@ cat > rsp_phosph.dal <<'%EOF%'
 .PHOSPHORESENCE
 .ROOTS
  1 1 0 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -60,7 +60,7 @@ H     2.4915143918        3.4703378645        0.0000000000             *
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_delintmin.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
 .DELINT
@@ -68,7 +68,7 @@ cat > geoopt_delintmin.dal <<'%EOF%'
 .BAKER
 **WAVE FUNCTION
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -45,7 +45,7 @@ H         -1.1558492311           -1.5260211423            -.1256905447
 #  DALTON INPUT
 #######################################################################
 cat > walk_modeflw.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .WALK
 *WALK
 .INDEX
@@ -58,7 +58,7 @@ cat > walk_modeflw.dal <<'%EOF%'
 **FINAL
 .VIBANA
 .POPANA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

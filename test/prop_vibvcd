@@ -88,7 +88,7 @@ H#4   -1.748934           -2.379468          -2.201879                 *
 #  DALTON INPUT
 #######################################################################
 cat > prop_vibvcd.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .RUN PROPERTIES
 **WAVE FUNCTION
 .HF
@@ -106,7 +106,7 @@ cat > prop_vibvcd.dal <<'%EOF%'
 .ISOTOP
     1    7
  1 1 1 1 2 2 1
-*END OF
+**END OF DALTON INPUT
 
 %EOF%
 #######################################################################

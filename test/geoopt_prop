@@ -48,7 +48,7 @@ H    -1.45235 0.899623 0.0
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_prop.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 **WAVE FUNCTION
 .HF
@@ -57,7 +57,7 @@ cat > geoopt_prop.dal <<'%EOF%'
 .VIBANA
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

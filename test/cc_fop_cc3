@@ -43,8 +43,8 @@ H     0.0000000000000000   0.000000000  -1.64558444
 #  DALTON INPUT
 #######################################################################
 cat > cc_fop_cc3.dal <<%EOF%
-**GENERAL
-.RUNSIRIUS
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .THETA
@@ -52,7 +52,6 @@ cat > cc_fop_cc3.dal <<%EOF%
 .SECMOM
 .DARWIN
 .MASSVELO
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -72,7 +71,7 @@ cat > cc_fop_cc3.dal <<%EOF%
 *CCFOP
 .NONREL
 .ALLONE
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

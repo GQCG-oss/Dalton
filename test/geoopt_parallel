@@ -54,7 +54,7 @@ H    -1.3797298905        2.6031905771       -1.3536182728             *
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_parallel.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .PARALLEL
 .OPTIMIZE
 *OPTIMIZE
@@ -65,7 +65,7 @@ cat > geoopt_parallel.dal <<'%EOF%'
 .RF
 **WAVE FUNCTION
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

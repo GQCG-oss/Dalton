@@ -53,13 +53,13 @@ H     0.0000000000        1.9408721894       -2.4445545504             *
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_constrain1a.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
 .FINDRE
 **WAVE FUNCTION
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

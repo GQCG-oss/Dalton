@@ -47,7 +47,7 @@ H    -1.45235 0.899623 0.0
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_prop2.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
 .2NDORDER
@@ -60,7 +60,7 @@ cat > geoopt_prop2.dal <<'%EOF%'
 .FREQUE
  1
  0.0592
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

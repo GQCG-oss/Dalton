@@ -48,7 +48,7 @@ H    -1.45235 0.899623 0.0
 #  DALTON INPUT
 #######################################################################
 cat > walk_polar.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .WALK
 **WAVE FUNCTION
 .HF
@@ -67,7 +67,7 @@ cat > walk_polar.dal <<'%EOF%'
 .FREQUE
  2
 0.0 0.0592
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

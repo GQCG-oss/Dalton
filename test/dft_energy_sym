@@ -47,7 +47,7 @@ H    -0.6908148895270996 -1.7261489114716695  1.6677746753855953       *
 #######################################################################
 cat > dft_energy_sym.dal <<'%EOF%'
 **DALTON
-.RUN WAVEFUNCTION
+.RUN WAVE FUNCTIONS
 .DIRECT 
 **WAVE FUNCTIONS
 .DFT

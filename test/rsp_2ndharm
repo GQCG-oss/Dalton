@@ -46,7 +46,7 @@ Calculation of Second-Harmonic
 cat > rsp_2ndharm.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF

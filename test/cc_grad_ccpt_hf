@@ -29,8 +29,8 @@ F     0.0000000000000000  0.000000000000000   1.76320000000000        *
 #  DALTON INPUT
 #######################################################################
 cat > cc_grad_ccpt_hf.dal <<%EOF%
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .DEROVL
@@ -58,7 +58,7 @@ cat > cc_grad_ccpt_hf.dal <<%EOF%
 1 0 0 0
 0 0 0 0
 *DERIVA
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

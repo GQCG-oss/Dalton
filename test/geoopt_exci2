@@ -80,7 +80,7 @@ F   4    2
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_exci2.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 **WAVE FUNCTION
 .HF
@@ -108,7 +108,7 @@ cat > geoopt_exci2.dal <<'%EOF%'
 .OPTIMAL ORBITAL TRIAL VECTORS
 **FINAL
 .VIBANA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

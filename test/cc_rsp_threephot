@@ -44,11 +44,11 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_threephot.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
-**SIRIUS
+**WAVE FUNCTIONS
 .CC
 *SCF INPUT 
 .THRESH
@@ -77,8 +77,7 @@ cat > cc_rsp_threephot.dal <<'%EOF%'
 YDIPLEN XDIPLEN ZDIPLEN YDIPLEN XDIPLEN ZDIPLEN
 *CCLRSD
 .DIPOLE
-*END OF
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -46,7 +46,7 @@ OP        1.2634502500        2.0449019100         .0000000000             *
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_prop3.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
 .2NDORDER
@@ -74,7 +74,7 @@ cat > geoopt_prop3.dal <<'%EOF%'
 .VIBANA
 .MAGNET
 .SHIELD
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

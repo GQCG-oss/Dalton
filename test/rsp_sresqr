@@ -46,7 +46,7 @@ Single residue of the quadratic response function
 cat > rsp_sresqr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF
@@ -73,7 +73,7 @@ cat > rsp_sresqr.dal <<'%EOF%'
 .FREQUE
  1
  0.03
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -45,7 +45,7 @@ H    -1.45235 0.899623 0.0
 #  DALTON INPUT
 #######################################################################
 cat > rsp_soppa3excinosymm.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .RUN RESPONSE
 **INTEGRALS
 .FC
@@ -61,7 +61,7 @@ cat > rsp_soppa3excinosymm.dal <<'%EOF%'
 .SINGLE RESIDUE
 .ROOTS
  4
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -46,7 +46,7 @@ Calculation of the polarizability of an excited state
 cat > rsp_excipolar2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF

@@ -46,14 +46,14 @@ H     0.0000000000000000  0.0000000000000000  0.00000000000000         *
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_exci.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .THETA
 .EFGCAR
 .ANGMOM
-**SIRIUS
+**WAVE FUNCTIONS
 .CC
 *OPTIMI
 .DETERM
@@ -97,7 +97,7 @@ YDIPLEN YDIPLEN
 .FREQUE
    2
  0.000 0.0235
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

@@ -63,7 +63,7 @@ H   1    0
 #  DALTON INPUT                                                       #
 #######################################################################
 cat > prop_expgrad.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .RUN PROPERTIES
 **INTEGRALS
 .NOSUP
@@ -73,7 +73,7 @@ cat > prop_expgrad.dal <<'%EOF%'
 .BLYP
 **PROPERTIES
 .EXPGRA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

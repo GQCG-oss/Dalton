@@ -88,7 +88,7 @@ H#4   -1.748934           -2.379468          -2.201879                 *
 #  DALTON INPUT
 #######################################################################
 cat > prop_parallel.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .PARALLEL
 .RUN PROPERTIES
 **WAVE FUNCTION
@@ -107,7 +107,7 @@ cat > prop_parallel.dal <<'%EOF%'
 .ISOTOP
     1    7
  1 1 1 1 2 2 1
-*END OF
+**END OF DALTON INPUT
 
 %EOF%
 #######################################################################

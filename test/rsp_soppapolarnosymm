@@ -45,7 +45,7 @@ H    -1.45235 0.899623 0.0
 #  DALTON INPUT
 #######################################################################
 cat > rsp_soppapolarnosymm.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .RUN RESPONSE
 **WAVE FUNCTION
 .HF
@@ -63,7 +63,7 @@ cat > rsp_soppapolarnosymm.dal <<'%EOF%'
 .DIPLEN
 .MAXMOM
   6
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -45,7 +45,7 @@ H    -1.45235 0.899623 0.0
 #  DALTON INPUT
 #######################################################################
 cat > rsp_soppafcnosymm.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .RUN RESPONSE
 **INTEGRALS
 .FC
@@ -64,7 +64,7 @@ FC O  01
 FC H  02
 .PROPRT
 FC H  03
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

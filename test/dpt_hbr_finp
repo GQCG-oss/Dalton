@@ -43,12 +43,11 @@ H       0.00000000000000    0.00000000000000    2.67207254785060       *
 #  DALTON INPUT
 #######################################################################
 cat > dpt_hbr_finp.dal <<%EOF%
-**GENERAL
-.RUNSIRIUS
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .FINDPT
  0.005
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -64,7 +63,7 @@ cat > dpt_hbr_finp.dal <<%EOF%
 .FROIMP
  5 2 2 0
  0 0 0 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

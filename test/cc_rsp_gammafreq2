@@ -48,8 +48,8 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_gammafreq2.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 **WAVE FUNCTIONS
@@ -93,7 +93,7 @@ ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
 .THGFRE
    1
  0.04282270  
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

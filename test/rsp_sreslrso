@@ -49,7 +49,7 @@ cat > rsp_sreslrso.dal <<'%EOF%'
 .RUN RESPONS
 **INTEGRALS
 .SPIN-ORBIT
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF
@@ -75,7 +75,7 @@ cat > rsp_sreslrso.dal <<'%EOF%'
 .SPIN-ORBIT
 .ROOTS
  1 1 0 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

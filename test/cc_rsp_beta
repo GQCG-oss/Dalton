@@ -46,8 +46,8 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_beta.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 **WAVE FUNCTIONS
@@ -73,7 +73,7 @@ cat > cc_rsp_beta.dal <<'%EOF%'
 HYPERPOLARIZABILITY
 .DISPCF
   4
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

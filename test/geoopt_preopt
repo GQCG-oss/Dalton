@@ -47,7 +47,7 @@ H    -1.5 -0.9 0.0
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_preopt.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
 .PREOPT
@@ -57,7 +57,7 @@ STO-3G
 .BAKER
 **WAVE FUNCTION
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

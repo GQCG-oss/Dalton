@@ -46,7 +46,7 @@ Calculation of third order transition moments
 cat > rsp_3rdmom.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF

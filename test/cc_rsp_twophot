@@ -44,11 +44,11 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_twophot.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
-**SIRIUS
+**WAVE FUNCTIONS
 .CC
 *SCF INPUT 
 .THRESH
@@ -74,7 +74,7 @@ cat > cc_rsp_twophot.dal <<'%EOF%'
 .OPERATOR
 YDIPLEN XDIPLEN YDIPLEN XDIPLEN
 XDIPLEN YDIPLEN XDIPLEN YDIPLEN
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

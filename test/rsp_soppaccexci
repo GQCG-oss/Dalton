@@ -43,7 +43,7 @@ H     1.45235 0.899623 0.0
 #  DALTON INPUT
 #######################################################################
 cat > rsp_soppaccexci.dal <<%EOF%
-**GENERAL
+**DALTON INPUT
 .RUN RESPONSE
 **WAVE FUNCTION
 .HF
@@ -57,7 +57,7 @@ cat > rsp_soppaccexci.dal <<%EOF%
 .DIPLEN
 .ROOTS
  2 2 2 2
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

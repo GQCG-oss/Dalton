@@ -46,8 +46,8 @@ H     1.42717891  0.99868674  0.0
 #  DALTON INPUT
 #######################################################################
 cat > cc_energy_triplet2.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **WAVE FUNCTIONS
 .TITLE
   Triplet excitation energies
@@ -67,7 +67,7 @@ cat > cc_energy_triplet2.dal <<'%EOF%'
 .NCCEXCI
  1 1 1 1 
  5 5 5 5
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

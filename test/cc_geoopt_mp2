@@ -76,14 +76,14 @@ H   1    1
 #  DALTON INPUT
 #######################################################################
 cat > cc_geoopt_mp2.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .DIRECT
 .OPTIMIZE
 **INTEGRAL
 .DIPLEN
 .DEROVL
 .DERHAM
-**SIRIUS
+**WAVE FUNCTION
 .CC
 *SCF INP
 .THRESH
@@ -92,7 +92,7 @@ cat > cc_geoopt_mp2.dal <<'%EOF%'
  5
 *CC INPUT
 .MP2
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -29,7 +29,7 @@ F     0.0000000000000000  0.000000000000000   -.08729478000000        *
 #  DALTON INPUT
 #######################################################################
 cat > cc_geopt_ccpt_hf.dal <<%EOF%
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 **INTEGRAL
 .DIPLEN
@@ -57,7 +57,7 @@ cat > cc_geopt_ccpt_hf.dal <<%EOF%
 .FROIMP
 1 0 0 0
 0 0 0 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

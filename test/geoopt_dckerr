@@ -45,7 +45,7 @@ OP        1.2634502500        2.0449019100         .0000000000             *
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_dckerr.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 **WAVE FUNCTIONS
 .HF
@@ -89,7 +89,7 @@ ZDIPLEN
 ZDIPLEN
 .DPROP
 ZDIPLEN
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

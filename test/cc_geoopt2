@@ -136,14 +136,13 @@ H   2    2
 #  DALTON INPUT
 #######################################################################
 cat > cc_geoopt2.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .DIRECT
 .OPTIMIZE
 **INTEGRAL
 .DIPLEN
 .DEROVL
 .DERHAM
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -165,7 +164,7 @@ cat > cc_geoopt2.dal <<'%EOF%'
 .FROIMP
 2
 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

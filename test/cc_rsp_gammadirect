@@ -48,8 +48,8 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_gammadirect.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
 .DIPLEN
@@ -82,7 +82,7 @@ GAMMA_PAR
 LINEAR
 .DISPCF
   2
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -45,8 +45,8 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_oddisp.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .ANGMOM
@@ -84,7 +84,7 @@ XDIPLEN XDIPLEN ZZTHETA
 .EOPEFR
   2
 0.072002781 0.1
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -43,12 +43,11 @@ H       1.82237883747756    0.00000000000000    1.75080674629681       *
 #  DALTON INPUT
 #######################################################################
 cat > dpt_h2s_finm.dal <<%EOF%
-**GENERAL
-.RUNSIRIUS
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .FINDPT
 -0.1
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -63,7 +62,7 @@ cat > dpt_h2s_finm.dal <<%EOF%
 1.0D-10
 .THRLEQ
 1.0D-07
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

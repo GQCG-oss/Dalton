@@ -85,13 +85,13 @@ H    1.9234220 0.0000000 1.75294370       *
 #  DALTON INPUT
 #######################################################################
 cat > cc_grad2.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .DEROVL
 .DERHAM
-**SIRIUS
+**WAVE FUNCTION
 .CC
 *SCF INPUT
 .THRESH
@@ -107,7 +107,7 @@ cat > cc_grad2.dal <<'%EOF%'
 *CCFOP
 .DIPMOM
 *DERIVATIVES
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -50,14 +50,14 @@ H      5.0413894   1.3219498   0.0000000
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_vrml.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
 .VISUAL
 .VR-BON
 **WAVE FUNCTION
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

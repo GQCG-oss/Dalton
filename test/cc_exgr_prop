@@ -46,12 +46,12 @@ H     0.0000000000000000  -1.44761450000000   1.07875057000000         *
 #  DALTON INPUT
 #######################################################################
 cat > cc_exgr_prop.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRALS
 .DIPLEN
 .SECMOM
-**SIRIUS
+**WAVE FUNCTIONS
 .CC
 *SCF INPUT
 .THRESH
@@ -84,7 +84,7 @@ cat > cc_exgr_prop.dal <<'%EOF%'
 .SECMOM
 *CCLRSD
 .DIPOLE
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

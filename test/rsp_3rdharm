@@ -46,7 +46,7 @@ Calculation of Third-Harmonic
 cat > rsp_3rdharm.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF

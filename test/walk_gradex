@@ -46,7 +46,7 @@ H         -1.1558492311           -1.5260211423            -.1256905447
 #  DALTON INPUT
 #######################################################################
 cat > walk_gradex.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .WALK
 *WALK
 .GRDEXT
@@ -59,7 +59,7 @@ cat > walk_gradex.dal <<'%EOF%'
 **FINAL
 .VIBANA
 .POPANA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

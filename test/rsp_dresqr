@@ -46,7 +46,7 @@ Double residue of the quadratic response function
 cat > rsp_dresqr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF

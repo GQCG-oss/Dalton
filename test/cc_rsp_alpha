@@ -45,8 +45,8 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_rsp_alpha.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .ANGMOM
@@ -81,7 +81,7 @@ YANGMOM XZTHETA
 0.04282270  0.06562487 -0.04282270  -0.06562487
 .DISPCF
   7
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

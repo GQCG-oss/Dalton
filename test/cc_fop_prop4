@@ -44,8 +44,8 @@ O     0.0000000000000000  0.0000000000000000 -.91397310000000000       *
 #  DALTON INPUT
 #######################################################################
 cat > cc_fop_prop4.dal <<'%EOF%'
-**GENERAL
-.RUNSIRIUS
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .THETA
@@ -72,7 +72,7 @@ cat > cc_fop_prop4.dal <<'%EOF%'
 1.0D-07
 *CCFOP
 .ALLONE
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

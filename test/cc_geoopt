@@ -44,13 +44,13 @@ H    1.9234220 0.0000000 1.75294370       *
 #  DALTON INPUT
 #######################################################################
 cat > cc_geoopt.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 **INTEGRAL
 .DIPLEN
 .DEROVL
 .DERHAM
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .CC
 *SCF INPUT
 .THRESH
@@ -61,7 +61,7 @@ cat > cc_geoopt.dal <<'%EOF%'
  1.0D-08
 .THRENR
  1.0D-10
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

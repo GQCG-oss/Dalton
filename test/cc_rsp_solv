@@ -46,7 +46,7 @@ H#2   1.8082633700000000  0.0000000000000000  1.5453841700000000       *
 #######################################################################
 cat > cc_rsp_solv.dal <<'%EOF%'
 **DALTON
-.RUN WAVEFUNCTION
+.RUN WAVE FUNCTIONS
 **INTEGRALS
 .DIPLEN
 .DIPVEL

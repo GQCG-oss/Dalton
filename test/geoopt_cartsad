@@ -51,7 +51,7 @@ H     0.4600000000        1.8308721894       -2.1445545504             *
 #  DALTON INPUT
 #######################################################################
 cat > geoopt_cartsad.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
 .CARTES
@@ -60,7 +60,7 @@ cat > geoopt_cartsad.dal <<'%EOF%'
 .SADDLE
 **WAVE FUNCTION
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -46,7 +46,7 @@ Calculation of excitation energy
 cat > rsp_exci.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF

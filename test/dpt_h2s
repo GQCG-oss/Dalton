@@ -43,8 +43,8 @@ H       1.82237883747756    0.00000000000000    1.75080674629681       *
 #  DALTON INPUT
 #######################################################################
 cat > dpt_h2s.dal <<%EOF%
-**GENERAL
-.RUNSIRIUS
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .THETA
@@ -54,7 +54,6 @@ cat > dpt_h2s.dal <<%EOF%
 .MASSVELO
 .DPTPOT
 .KINENER
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -73,7 +72,7 @@ cat > dpt_h2s.dal <<%EOF%
 .ALLONE
 .DPTECO
 .2ELDAR
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

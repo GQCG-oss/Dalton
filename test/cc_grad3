@@ -63,14 +63,13 @@ H   2    2
 #  DALTON INPUT
 #######################################################################
 cat > cc_grad3.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .DIRECT
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .DEROVL
 .DERHAM
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -92,7 +91,7 @@ cat > cc_grad3.dal <<'%EOF%'
 2
 0
 *DERIVATIVES
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

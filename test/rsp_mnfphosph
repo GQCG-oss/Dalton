@@ -50,7 +50,7 @@ cat > rsp_mnfphosph.dal <<'%EOF%'
 .PROPRI
 .PRINT
  4
-**WAVEFUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 .MCSCF

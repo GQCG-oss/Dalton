@@ -45,7 +45,7 @@ H    -1.3841  -0.9919  0.0
 #  DALTON INPUT
 #######################################################################
 cat > walk_image.dal <<'%EOF%'
-**GENERAL
+**DALTON INPUT
 .WALK
 *WALK
 .IMAGE
@@ -54,7 +54,7 @@ cat > walk_image.dal <<'%EOF%'
 **FINAL
 .VIBANA
 .POPANA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

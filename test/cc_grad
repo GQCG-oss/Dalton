@@ -44,8 +44,8 @@ H     0.0000000000000000  0.0000000000000000 -0.0001000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_grad.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .DEROVL
@@ -69,7 +69,7 @@ cat > cc_grad.dal <<'%EOF%'
 .PRINT
  2
 *DERIVA
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

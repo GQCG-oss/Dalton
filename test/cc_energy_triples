@@ -44,8 +44,8 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > cc_energy_triples.dal <<'%EOF%'
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 **WAVE FUNCTIONS
@@ -61,7 +61,7 @@ cat > cc_energy_triples.dal <<'%EOF%'
  1.0d-10
 .PRINT
  2
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

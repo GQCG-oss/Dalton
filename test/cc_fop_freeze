@@ -43,8 +43,8 @@ N     0.0000000000000000  0.0000000000000000 1.03715750000000000       *
 #  DALTON INPUT
 #######################################################################
 cat > cc_fop_freeze.dal <<'%EOF%'
-**GENERAL
-.RUNSIRIUS
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .THETA
@@ -52,7 +52,6 @@ cat > cc_fop_freeze.dal <<'%EOF%'
 .SECMOM
 .DARWIN
 .MASSVELO
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -74,7 +73,7 @@ cat > cc_fop_freeze.dal <<'%EOF%'
 1.0D-07
 *CCFOP
 .ALLONE
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
