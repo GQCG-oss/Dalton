@@ -130,7 +130,7 @@ c /* deck CC_ETADRV */
          CALL QUIT('CC_ETADRV called for unknown Coupled Cluster.')
       END IF
 
-      IF (TYPE(1:2).EQ.'X1') THEN
+      IF (TYPE(1:3).EQ.'X1 ') THEN
         WRITE (LUPRI,*) 'X1 vectors not implemented in CC_ETADRV,'
         WRITE (LUPRI,*) 'routine CCRHSVEC should be used instead.'
         CALL QUIT('X1 vectors not implemented in CC_ETADRV.')

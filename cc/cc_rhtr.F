@@ -84,9 +84,10 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION RHO1(LRHO1,NSIMTR),C1AM(LRHO1,NSIMTR)
       DIMENSION RHO2(*),C2AM(*),WORK(LWORK)
-      CHARACTER*10 MODEL
-      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM 
-      CHARACTER*6 CFIL,DFIL,CTFIL,DTFIL
+      CHARACTER*10 MODEL, FN3SRTR
+      CHARACTER*8 FRHO1, FRHO2, FC1AM, FC2AM, FNDELDR
+      CHARACTER*8 FNCKJDR, FN3VI2, FNTOC
+      CHARACTER*6 CFIL, DFIL, CTFIL, DTFIL, FNDKBCR, FN3VI
       CHARACTER*1 LR
 C
       LOGICAL FCKCON,NEWGS,CC1BSA,ETRAN
@@ -145,6 +146,30 @@ C
          CALL WOPEN2(LUDIM,DFIL,64,0)
 C
       END IF
+C
+      IF (CCSDT) THEN
+         LU3SRTR = 0
+         LUDELDR = 0
+         LUCKJDR = 0
+         LUDKBCR = 0
+         LUTOC   = 0
+         LU3VI   = 0
+         LU3VI2  = 0
+         FN3SRTR = 'CC3_SORT_R'
+         FNDELDR = 'CKDELD_R'
+         FNCKJDR = 'CKJDEL_R'
+         FNDKBCR = 'DKBC_R'
+         FNTOC   = 'CCSDT_OC'
+         FN3VI   = 'CC3_VI'
+         FN3VI2  = 'CC3_VI12'
+         CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
+         CALL WOPEN2(LUDELDR,FNDELDR,64,0)
+         CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
+         CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
+         CALL WOPEN2(LUTOC,FNTOC,64,0)
+         CALL WOPEN2(LU3VI,FN3VI,64,0)
+         CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+      ENDIF
 C
 C------------------------
 C     Time Initialiation.
@@ -208,7 +233,7 @@ C-----------------------------------------------------------
 C
       IF ( T2TCOR ) N2C2C2 = NT2SQ(ISYMTR)
       IF (CCS.OR.CC2 ) NGAMTO = 2
-      IF (CCS.OR.(CC2.AND..NOT.MCC2)) THEN
+      IF (CCS.OR.CC2) THEN
          NE1TOT = 2
          NE2TOT = 2
       ENDIF
@@ -633,7 +658,8 @@ C
 C
                   DTIME = SECOND()
                   CALL CC3_T3INT(WORK(KXINT),WORK(KLAMDP),WORK(KLAMDH),
-     *                           DUMM,1,WORK(KEND2),LWRK2,IDEL,ISYMD,1)
+     *                           DUMM,1,WORK(KEND2),LWRK2,IDEL,ISYMD,1,
+     *                           LU3SRTR,FN3SRTR,LUCKJDR,FNCKJDR)
                   DTIME   = SECOND() - DTIME
                   TIMT3I  = TIMT3I   + DTIME
 C
@@ -1117,7 +1143,7 @@ C-----------------------------------
 C     For CC2 add Fock contribution.
 C-----------------------------------
 C
-      IF (CC2.AND..NOT.(ONLY21).AND.(.NOT.MCC2)) THEN
+      IF (CC2.AND..NOT.(ONLY21)) THEN
 C
          DTIME = SECOND()
          ISIDE = 1
@@ -1318,23 +1344,7 @@ C-----------------------------------------------------------
 C     Calculate first E contributions to rho2: C2*EI(t1,t2).
 C-----------------------------------------------------------
 C
-      IF (MCC2) THEN
-C
-C---------------------------------------------------------
-C        If MCC2 then put fock matrix into the EI matrices.
-C---------------------------------------------------------
-C
-         FCKCON = .TRUE.
-         ETRAN  = .FALSE.
-         ISYMEI = 1
-         DTIME = SECOND()
-         CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
-     *                   WORK(KFOCK),WORK(KEND2),LWRK2,FCKCON,
-     *                   ETRAN,ISYMEI)
-         DTIME = SECOND() - DTIME
-         TIMEFCK = TIMEFCK + DTIME
-      ENDIF
-      IF (.NOT.(CCS.OR.CC2).OR.MCC2) THEN
+      IF (.NOT.(CCS.OR.CC2)) THEN
 C
          ISYVEC = ISYMTR
          ISYMIM = ISYMOP
@@ -1631,7 +1641,7 @@ C----------------------------------------------------
 C     Calculate E-term: T2*E(C1,C2)
 C----------------------------------------------------
 C
-      IF ( .NOT.(CC2.OR.CCS).OR.MCC2) THEN
+      IF ( .NOT.(CC2.OR.CCS)) THEN
 C
          IF (IPRINT.GT.150) THEN
             CALL AROUND( 'E-intermdiates calc. EI(C1,C2) - ao.')
@@ -1639,7 +1649,6 @@ C
          ENDIF
 C
          ETRAN  = .TRUE.
-         IF (MCC2) ETRAN = .FALSE.
          FCKCON = .TRUE.
          ISYMEI = ISYMTR
          DTIME = SECOND()
@@ -1669,7 +1678,7 @@ C
 C
       ENDIF
 C
-      IF (CC2.AND.(.NOT.MCC2) .AND. (NFIELD .GT. 0)) THEN
+      IF (CC2 .AND. (NFIELD .GT. 0)) THEN
          CALL CC_RCC2FF(RHO2,C2AM,WORK(KLAMDP),WORK(KLAMDH),
      *                  WORK(KLPC1),WORK(KLHC1),
      *                  WORK(KEND1),LWRK1,ISYMTR)
@@ -1912,8 +1921,11 @@ C
          ISYMT2 = ISYMTR
          DTIME   = SECOND()
          CALL CC3_OMEG(RHO1(1,IV),RHO2,C1AM(1,IV),ISYMT1,C2AM,ISYMT2,
-     *                   WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
-     *                   WORK(KEND1),LWRK1)
+     *                 WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
+     *                 WORK(KEND1),LWRK1,LU3SRTR,FN3SRTR,LUDELDR,
+     *                 FNDELDR,LUCKJDR,FNCKJDR,LUDKBCR,FNDKBCR,
+     *                 LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2)
+C
          DTIME   = SECOND() - DTIME
          TIMOM31 = TIMO31 + DTIME
          IF (IPRINT .GT. 120) THEN
@@ -1968,7 +1980,9 @@ C
          DTIME   = SECOND()
          CALL CC3_OMEG(RHO1(1,IV),RHO2,C1AM(1,IV),ISYMT1,C2AM,ISYMT2,
      *                 WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
-     *                 WORK(KEND1),LWRK1)
+     *                 WORK(KEND1),LWRK1,LU3SRTR,FN3SRTR,LUDELDR,
+     *                 FNDELDR,LUCKJDR,FNCKJDR,LUDKBCR,FNDKBCR,
+     *                 LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2)
          DTIME   = SECOND() - DTIME
          TIMOM32 = TIMO32 + DTIME
          ECURR   = ECURR2
@@ -2125,7 +2139,8 @@ C
                   DTIME = SECOND()
                   CALL CC3_T3INT(WORK(KXINT),WORK(KLAMDP),
      *                           WORK(KLAMDH),C1AM(1,IV),ISYMTR,
-     *                           WORK(KEND2),LWRK2,IDEL,ISYMD,2)
+     *                           WORK(KEND2),LWRK2,IDEL,ISYMD,2,
+     *                           LU3SRTR,FN3SRTR,LUCKJDR,FNCKJDR)
                   DTIME = SECOND() - DTIME
                   TIMT3I = TIMT3I + DTIME
 C
@@ -2173,8 +2188,10 @@ C
          ISYMT2 = 1
          DTIME = SECOND()
          CALL CC3_OMEG(RHO1(1,IV),RHO2,WORK(KT1AM),ISYMT1,C2AM,ISYMT2,
-     *                   WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
-     *                   WORK(KEND1),LWRK1)
+     *                 WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
+     *                 WORK(KEND1),LWRK1,LU3SRTR,FN3SRTR,LUDELDR,
+     *                 FNDELDR,LUCKJDR,FNCKJDR,LUDKBCR,FNDKBCR,
+     *                 LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2)
          DTIME = SECOND() - DTIME
          TIMOM33 = TIMO33 + DTIME
 C
@@ -2336,6 +2353,16 @@ C
          CALL WCLOSE2(LUCIM,CFIL,'KEEP')
          CALL WCLOSE2(LUDIM,DFIL,'KEEP')
 C
+      ENDIF
+C
+      IF (CCSDT) THEN
+         CALL WCLOSE2(LU3SRTR,FN3SRTR,'DELETE')
+         CALL WCLOSE2(LUDELDR,FNDELDR,'DELETE')
+         CALL WCLOSE2(LUCKJDR,FNCKJDR,'DELETE')
+         CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
+         CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+         CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+         CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
       ENDIF
 C
 C-------------------------------

@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -41,7 +41,7 @@ C
 C     Purpose: Direct calculation of Coupled Cluster
 C              first order properties
 C
-C              CCS(CIS/HF), MP2, CCD, CCSD, CC3, MCC2
+C              CCS(CIS/HF), MP2, CCD, CCSD, CC3, CCSD(T)
 C
 C              CCSDT-1a, CCSDT-1b
 C
@@ -56,7 +56,6 @@ C     CCSD  one electron FOP by Asger Halkier April 1996.
 C     MP2   one electron FOP by Asger Halkier September 1996.
 C     New CC solvers introduced, Ove Christiansen November 1996.
 C     Frozen core contribution to unrelaxed density Ove Christiansen May 1996.
-C     MCC2, Ove Christiansen, july 1997
 C     Major clean-up of overall structure by Asger Halkier March 1998.
 C     New MP2 & CCSD version based on canonical orbitals throughout the whole
 C     surface by Asger Halkier Spring 1998. This includes frozen core for
@@ -64,6 +63,8 @@ C     the relaxed density.
 C
 C     Relaxed CC2 FOP by A. Halkier & S. Coriani January 2000.
 C     No frozen core possible for Relaxed CC2 initially.
+C
+C     CCSD(T) introduced by Kasper Hald and Sonia Coriani in 2001/2002 
 C
 C-----------------------------------------------------------------------------
 C
@@ -98,13 +99,18 @@ C
 C
       LOGICAL CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
      *        TRPCLC,OOTV, EXCLC, RLORBS, LPROJECT, EX, TRIPLET,
-     *        LDUM
+     *        LDUM, ETASAV, LCCPTSV
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
-      CHARACTER*1 LR, CDUM
-      CHARACTER MODEL*10,ETY1*5
-      CHARACTER MODELPRI*4, MODELPRI2*14
-      CHARACTER*8 LABEL
-      CHARACTER*3 LIST
+      CHARACTER*17 MODELPRI2
+      CHARACTER*10 MODEL
+      CHARACTER*8  LABEL, FNTOC, FN3VI2
+      CHARACTER*6  FN3VI, FN3FOP2, FNDPTIA2, FNDELD, FNCKJD
+      CHARACTER*5  ETY1, FN3FOP, FNDPTIA, FNDPTAB, FNDPTIJ, FNDKBC3
+      CHARACTER*4  MODELPRI, FNDKBC
+      CHARACTER*3  LIST
+      CHARACTER*1  LR, CDUM
+C
+      LOGICAL LTESTE
 C
       INTEGER ISYOF(8)
 C
@@ -142,7 +148,8 @@ C
      *'**********'
 C
       MODEL = 'CCSD'
-      IF (CC2.AND.(.NOT.MCC2)) THEN
+
+      IF (CC2) THEN
          CALL AROUND('Coupled Cluster model is: CC2')
          MODEL = 'CC2'
          MODELPRI = ' CC2'
@@ -171,7 +178,6 @@ C
          CALL AROUND('Coupled Cluster model is: CC3')
          MODEL = 'CC3'
          MODELPRI = ' CC3'
-         CALL QUIT('CC3 first order properties not implemented')
       ENDIF
       IF (CC1A) THEN
          CALL AROUND('Coupled Cluster model is: CCSDT-1a')
@@ -182,6 +188,11 @@ C
          CALL AROUND('Coupled Cluster model is: CCSDT-1b')
          MODEL = 'CCSDT-1b'
          CALL QUIT('CCSDT-1b first order properties not implemented')
+      ENDIF
+      IF (CCPT ) THEN
+         CALL AROUND('Coupled Cluster model is CCSD(T) ')
+         MODEL = 'CCSD'
+         MODELPRI = 'CCSD'
       ENDIF
       IF (CCSD) THEN
          CALL AROUND('Coupled Cluster model is: CCSD')
@@ -299,12 +310,377 @@ C
            ISYOF(I) = 1
          END DO
 
+C--------------------------------
+C        Set logicals for CCSD(T)
+C--------------------------------
+         
+         LCCPTSV = .FALSE.
+         IF (CCPT) THEN
+            LCCPTSV = .TRUE.
+            CCPT = .FALSE.
+            CCSD = .TRUE.
+            ETASAV = ETADSC
+            ETADSC = .TRUE.
+         END IF
+
          CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
      *                  IDUM,IDUM,RDUM,LDUM,
      *                  IDUM,CDUM,RDUM,IDUM,
      *                  ISYOF,1,1,WORK,LWORK)
 
-      ENDIF
+C------------------------------------------------------
+C        Calculate extra contributions from CCSD(T)
+C------------------------------------------------------
+C
+         IF (LCCPTSV) THEN
+C
+C------------------------------------------------------
+C     Start from workspace before call to solver
+C------------------------------------------------------
+C
+            KCMO   = 1
+            KT1AM  = KCMO   + NLAMDS
+            KT2AM  = KT1AM  + NT1AM(1)
+            KDENS  = KT2AM  + NT2SQ(1)
+            KLAMDH = KDENS  + N2BST(ISYMOP)
+            KLAMDP = KLAMDH + NLAMDT
+            KWRK1  = KLAMDP + NLAMDT
+            LWRK1 = LWORK - KWRK1
+C
+            IF (LWRK1 .LT. NT2AM(1)) THEN
+               CALL QUIT('Not enough working space in '
+     *              //'cc_fop (CCSD(T) F.O.P. part')
+            ENDIF
+C
+C--------------------------------------------
+C     Construct the CMO coefficients
+C--------------------------------------------
+C
+
+            CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',
+     &                 'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND LUSIFC
+C
+            CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+            READ (LUSIFC)
+            READ (LUSIFC)
+            READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
+C
+            CALL GPCLOSE(LUSIFC,'KEEP')
+C
+            CALL CMO_REORDER(WORK(KCMO),WORK(KWRK1),LWRK1)
+
+C
+C------------------------------------
+C        Readin T1 amplitudes.
+C------------------------------------
+C
+           IOPT = 1
+           CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
+C
+C----------------------------------
+C     Calculate the lambda matrices.
+C----------------------------------
+C
+           CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
+     *               WORK(KWRK1),LWRK1)
+
+C
+C------------------------------------
+C        Readin T2 amplitude.
+C------------------------------------
+C
+           DTIME = SECOND()
+C
+           IOPT = 2
+           CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KWRK1))
+C
+           IF (IPRINT .GT. 55) THEN
+            XT2TP = DDOT(NT2AM(ISYMOP),WORK(KWRK1),1,WORK(KWRK1),1)
+            WRITE(LUPRI,*) 'Norm of T2 (packed before loop)  = ',XT2TP
+           ENDIF
+C
+           DTIME = SECOND() - DTIME
+           TIMIO = TIMIO + DTIME
+C
+C--------------------------------
+C        Square up T2 amplitudes.
+C--------------------------------
+C
+           DTIME = SECOND()
+           CALL CC_T2SQ(WORK(KWRK1),WORK(KT2AM),1)
+           DTIME = SECOND() - DTIME
+           TIMT2SQ = TIMT2SQ + DTIME
+C
+           IF (IPRINT.GT.55) THEN
+            CALL AROUND('CC_FOP: (T1,T2) vector readin')
+            CALL CC_PRSQ(WORK(KT1AM),WORK(KT2AM),1,1,1)
+           ENDIF
+C
+           IF (IPRINT .GT. 55) THEN
+            XT2TP = DDOT(NT2SQ(ISYMOP),WORK(KT2AM),1,WORK(KT2AM),1)
+            WRITE(LUPRI,*) 'Norm of T2 (squared before loop) = ',XT2TP
+           ENDIF
+C
+C--------------------------------
+C          Open files for CCSD(T)
+C--------------------------------
+C
+           LUTOC   = 0
+           LU3VI   = 0
+           LU3VI2  = 0
+           LU3FOP  = 0
+           LU3FOP2 = 0
+C
+           FNTOC   = 'CCSDT_OC'
+           FN3VI   = 'CC3_VI'
+           FN3VI2  = 'CC3_VI12'
+           FN3FOP  = 'PTFOP'
+           FN3FOP2 = 'PTFOP2'
+C
+           CALL WOPEN2(LUTOC,FNTOC,64,0)
+           CALL WOPEN2(LU3VI,FN3VI,64,0)
+           CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+           CALL WOPEN2(LU3FOP,FN3FOP,64,0)
+           CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+C
+C--------------------------------------------------------------
+C     Calculate the (T) one electron densities.
+C     If (RELORB) calculate also the (T) two-electron densities that
+C     are needed to calculate the KappaBAR orbital multiplier.
+C     Readin T2 again since it is destroyed by CCSDPT_DENS2
+C--------------------------------------------------------------
+C
+           ECURR2 = ECURR
+           ECURR  = ZERO
+C
+           if (.true.) then
+!
+!Sonia: CCSDPT_DENS2 does not work for CCSD(TO Gradient
+!       with symmetry. Used old version ftb
+!
+             write(lupri,*) 'Sonia: I am entering CCSDPT_DENS2_SC'
+             CALL CCSDPT_DENS2_SC(WORK(KT1AM),1,WORK(KT2AM),1,MODEL,
+     *                       DUMMY,IDUMMY,DUMMY,IDUMMY,
+     *                       WORK(KWRK1),LWRK1,IDUMMY,CDUM,IDUMMY,CDUM,
+     *                       IDUMMY,CDUM,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                       LU3VI2,FN3VI2,LU3FOP,FN3FOP,
+     *                       LU3FOP2,FN3FOP2)
+           else
+             CALL CCSDPT_DENS2(WORK(KT1AM),1,WORK(KT2AM),1,MODEL,
+     *                       DUMMY,IDUMMY,DUMMY,IDUMMY,
+     *                       WORK(KWRK1),LWRK1,IDUMMY,CDUM,IDUMMY,CDUM,
+     *                       IDUMMY,CDUM,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                       LU3VI2,FN3VI2,LU3FOP,FN3FOP,
+     *                       LU3FOP2,FN3FOP2)
+           end if
+           ECURR = ECURR2
+C
+C------------------------------------------------
+C          Close (integrals) files
+C------------------------------------------------
+C
+           CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+           CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+           CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
+           CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
+           CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+C
+C-------------------------------------------
+C          Read in ground state T's again
+C-------------------------------------------
+C
+           DTIME = SECOND()
+C
+           IOPT = 2
+           CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KWRK1))
+C
+           DTIME = SECOND() - DTIME
+           TIMIO = TIMIO + DTIME
+C
+           DTIME = SECOND()
+           CALL CC_T2SQ(WORK(KWRK1),WORK(KT2AM),1)
+           DTIME = SECOND() - DTIME
+           TIMT2SQ = TIMT2SQ + DTIME
+C
+C----------------------------------------------------------
+C
+           CCPT = .TRUE.
+           CCSD = .FALSE.
+           ETADSC = ETASAV
+
+         END IF  ! LCCPTSAVE (that is, (T) densities)
+C
+C-----------------------------------------------------
+C        Calculate extra contributions from CC3
+C-----------------------------------------------------
+C
+         IF (CC3) THEN
+C
+C------------------------------------------------------
+C     Start from workspace before call to solver
+C------------------------------------------------------
+C
+            KT1AM  = 1
+            KT2AM  = KT1AM  + NT1AM(1)
+            KL1AM  = KT2AM  + NT2SQ(1)
+            KL2AM  = KL1AM  + NT1AM(ISYMOP)
+            KDENS  = KL2AM  + NT2SQ(ISYMOP)
+            KLAMDH = KDENS  + N2BST(ISYMOP)
+            KLAMDP = KLAMDH + NLAMDT
+            KWRK1  = KLAMDP + NLAMDT
+            LWRK1 = LWORK - KWRK1
+C
+            IF (LWRK1 .LT. NT2AM(1)) THEN
+               CALL QUIT('Not enough working space in '
+     *              //'cc_fop (CCSD(T) F.O.P. part')
+            ENDIF
+C
+C-----------------------------------------------
+C        Readin the T1 and T2 amplitudes.
+C-----------------------------------------------
+C
+            IOPT = 3
+            CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KWRK1))
+C
+            IF (IPRINT .GT. 55) THEN
+              XT2TP = DDOT(NT1AM(1),WORK(KT1AM),1,WORK(KT1AM),1)
+              WRITE(LUPRI,*) 'Norm of T1 (before loop)  = ',XT2TP
+              XT2TP = DDOT(NT2AM(1),WORK(KWRK1),1,WORK(KWRK1),1)
+              WRITE(LUPRI,*) 'Norm of T2 (packed before loop)  = ',XT2TP
+            ENDIF
+C
+            DTIME = SECOND() - DTIME
+            TIMIO = TIMIO + DTIME
+C
+C--------------------------------
+C        Square up T2 amplitudes.
+C--------------------------------
+C
+            DTIME = SECOND()
+            CALL CC_T2SQ(WORK(KWRK1),WORK(KT2AM),1)
+            DTIME = SECOND() - DTIME
+            TIMT2SQ = TIMT2SQ + DTIME
+C
+            IF (IPRINT.GT.110) THEN
+              CALL AROUND('CC_FOP: (T1,T2) vector readin')
+              CALL CC_PRSQ(WORK(KT1AM),WORK(KT2AM),1,1,1)
+            ENDIF
+C
+            IF (IPRINT .GT. 55) THEN
+              XT2TP = DDOT(NT2SQ(1),WORK(KT2AM),1,WORK(KT2AM),1)
+              WRITE(LUPRI,*) 'Norm of T2 (squared before loop) = ',XT2TP
+            ENDIF
+C
+C-----------------------------------------------
+C        Readin the L1 and L2 amplitudes.
+C-----------------------------------------------
+C
+            IOPT = 3
+            CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KL1AM),WORK(KWRK1))
+C
+            IF (IPRINT .GT. 55) THEN
+              XT2TP = DDOT(NT1AM(ISYMOP),WORK(KT1AM),1,WORK(KT1AM),1)
+              WRITE(LUPRI,*) 'Norm of L1 (before loop)  = ',XT2TP
+              XT2TP = DDOT(NT2AM(ISYMOP),WORK(KWRK1),1,WORK(KWRK1),1)
+              WRITE(LUPRI,*) 'Norm of L2 (packed before loop)  = ',XT2TP
+            ENDIF
+C
+            DTIME = SECOND() - DTIME
+            TIMIO = TIMIO + DTIME
+C
+C--------------------------------
+C        Square up L2 amplitudes.
+C--------------------------------
+C
+            DTIME = SECOND()
+            CALL CC_T2SQ(WORK(KWRK1),WORK(KL2AM),ISYMOP)
+            DTIME = SECOND() - DTIME
+            TIMT2SQ = TIMT2SQ + DTIME
+C
+            IF (IPRINT.GT.110) THEN
+              CALL AROUND('CC_FOP: (L1,L2) vector readin')
+              CALL CC_PRSQ(WORK(KL1AM),WORK(KL2AM),ISYMOP,1,1)
+            ENDIF
+C
+            IF (IPRINT .GT. 55) THEN
+              XT2TP = DDOT(NT2SQ(ISYMOP),WORK(KL2AM),1,WORK(KL2AM),1)
+              WRITE(LUPRI,*) 'Norm of L2 (squared before loop) = ',XT2TP
+            ENDIF
+C
+C----------------------------------------
+C           Open triples files
+C----------------------------------------
+C
+            LUDELD  = 0
+            LUCKJD  = 0
+            LUDKBC  = 0
+            LUTOC   = 0
+            LU3VI   = 0
+            LUDKBC3 = 0
+            LU3FOP  = 0
+            LU3FOP2 = 0
+C
+            FNDELD  = 'CKDELD'
+            FNCKJD  = 'CKJDEL'
+            FNDKBC  = 'DKBC'
+            FNTOC   = 'CCSDT_OC'
+            FN3VI   = 'CC3_VI'
+            FNDKBC3 = 'DKBC3'
+            FN3FOP  = 'PTFOP'
+            FN3FOP2 = 'PTFOP2'
+C
+            CALL WOPEN2(LUDELD,FNDELD,64,0)
+            CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+            CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+            CALL WOPEN2(LUTOC,FNTOC,64,0)
+            CALL WOPEN2(LU3VI,FN3VI,64,0)
+            CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
+            CALL WOPEN2(LU3FOP,FN3FOP,64,0)
+            CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+C
+C---------------------------------------------
+C           Calculate densities from triples
+C---------------------------------------------
+C
+            ECURR2 = ECURR
+            ECURR  = ZERO
+
+            CALL CCSDPT_DENS2(WORK(KT1AM),1,WORK(KT2AM),1,MODEL,
+     *                        WORK(KL1AM),ISYMOP,WORK(KL2AM),ISYMOP,
+     *                        WORK(KWRK1),LWRK1,LUDELD,FNDELD,
+     *                        LUCKJD,FNCKJD,LUDKBC,FNDKBC,
+     *                        LUTOC,FNTOC,LU3VI,FN3VI,
+     *                        LUDKBC3,FNDKBC3,LU3FOP,FN3FOP,
+     *                        LU3FOP2,FN3FOP2)
+C
+            CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
+            CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+            CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
+            CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+            CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+            CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
+            CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
+            CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+C
+            ECURR = ECURR2
+C
+            DTIME = SECOND()
+C
+            IOPT = 1
+            CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KWRK1))
+C
+            DTIME = SECOND() - DTIME
+            TIMIO = TIMIO + DTIME
+C
+            DTIME = SECOND()
+            CALL CC_T2SQ(WORK(KWRK1),WORK(KT2AM),1)
+            DTIME = SECOND() - DTIME
+            TIMT2SQ = TIMT2SQ + DTIME
+C
+         ENDIF   ! CC3
+C
+      ENDIF      ! MODEL SELECTION
 C
 C---------------------------------------------------
 C SLV98,OC Solvent part 1
@@ -423,11 +799,14 @@ C
 C
       ENDIF
 C
+         LENDEN = 2*NT1AMX    + NMATIJ(1)   + NMATAB(1)
+     *          + 2*NCOFRO(1) + 2*NT1FRO(1) 
+
       IF (RELORB) THEN
 C
 C---------------------------------------------------------
 C        Set up diagonal block parts of Zeta-kappa-0, for
-C        which no coupled equations needs to be solved,
+C        which no coupled equations need to be solved,
 C        and right hand side for ai-part of the equations.
 C---------------------------------------------------------
 C
@@ -466,6 +845,30 @@ C
             IOPT = 1
             CALL CC_DEN(DUMMY,WORK(KETAAI),WORK(KZKAM),WORK(KWRK2),
      *                  LWRK2,IOPT)
+C
+         ELSE IF (CCPT) THEN
+C
+            IOPT = 2
+            IMODEL = 1
+            LTESTE = .false.
+            CCSD = .TRUE.
+C
+            POTNUC = DUMMY
+            IF (LTESTE) THEN
+               CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+               REWIND LUSIFC
+C
+               CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+               READ (LUSIFC) POTNUC
+               CALL GPCLOSE(LUSIFC,'KEEP')
+            END IF
+
+            CALL CC_DEN_PTFC(POTNUC,WORK(KETAAI),WORK(KZKAM),
+     *              WORK(KWRK2),LWRK2,IOPT,IMODEL,LTESTE)
+C
+            CCSD = .FALSE.
+C
          ENDIF
 C
 C------------------------------------------------------------
@@ -487,10 +890,10 @@ C
      *               IDUMMY,.FALSE.)
          REWIND(LUGDVE)
          CALL WRITT(LUGDVE,NALLAI(1),WORK(KETAAI))
-CCH
+C
+         !do NOT remove. This norm must ALWAYS be calculated! SCH
          RHSNORM = DDOT(NALLAI(1),WORK(KETAAI),1,WORK(KETAAI),1)
          WRITE(LUPRI,*) 'CC_FOP> Norm of RHS vector:',RHSNORM
-CCH
 C
 C        CALL HEADER('RHS vectors, MP2', -1)
 C        CALL OUTPUT(WORK(KETAAI),1,NALLAI(1),1,1,NALLAI(1),1,1,LUPRI)
@@ -503,6 +906,17 @@ C
          NCOSAV = NCONF
 C
          IF (DIRECT) CALL CCDFFOP
+C
+C -----------------------------------------------------------
+C        Direct kappabar, if more than 256 and not all direct
+C        DIRKAPB
+C -----------------------------------------------------------
+C
+         IF ((DIRKAPB).AND.(.NOT. DIRECT)) THEN
+             WRITE(LUPRI,*) 'Warning: in CCFOP: DKABAR = ', DIRKAPB
+             CALL CCDFFOP
+         END IF
+
 C
 C     Close the 'AOTWOINT' file before entering the abarsp.
 C
@@ -597,7 +1011,7 @@ C
 C
          CALL CC_KABRE(WORK(KSOLUT),WORK(KZKAM),WORK(KWRK2),LWRK2)
 C
-         IF (IPRINT .GT. 9) THEN
+         IF (IPRINT .GT. 0) THEN
             ZKNOR = DDOT(LENDEN,WORK(KZKAM),1,WORK(KZKAM),1)
             WRITE(LUPRI,*) ' '
             WRITE(LUPRI,*) 'Norm of zeta-kappa-0:', ZKNOR
@@ -638,7 +1052,7 @@ C
 C
          ENDIF
 C
-      ELSE
+      ELSE    !if RELORB over
 C 
          KWRK2 = 1
 C
@@ -660,10 +1074,9 @@ C----------------------------------------------------------
 C     Calculate one electron AO-density and CC nat.occ.num.
 C----------------------------------------------------------
 C
-
       ILSTNR = 1
-      CALL CC_D1AO(WORK(KDENS),WORK(KZKAM),WORK(KWRK3),LWRK3,MODELPRI,
-     *             LIST,ILSTNR,.TRUE.)
+      CALL CC_D1AO(WORK(KDENS),WORK(KZKAM),WORK(KWRK3),LWRK3,
+     &             MODELPRI, LIST,ILSTNR,.TRUE.)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN
 C
@@ -733,10 +1146,173 @@ C
 C
       MODELPRI2 = '  Relaxed '//MODELPRI
       IF (.NOT. RELORB) MODELPRI2 = 'Unrelaxed '//MODELPRI
+      IF (CCPT) THEN
+         IF (.NOT. RELORB) THEN
+            MODELPRI2 = 'Unrelaxed CCSD(T)'
+         ELSE
+            MODELPRI2 = '  Relaxed CCSD(T)'
+         ENDIF
+      END IF
+
       IF (DIPMOM.OR.QUADRU.OR.NQCC.OR.RELCOR.OR.SECMOM.OR.
      *   (NAFOP.GT.0)) THEN
       CALL AROUND(MODELPRI2//' First-order one-electron properties: ')
       ENDIF
+C
+      IF (CCPT) THEN
+C
+         KCMO   = KWRK3
+         KWRK3  = KCMO   + NLAMDS
+         LWRK3  = LWORK - KWRK3
+C
+         IF (LWRK3 .LT. 0) THEN
+            CALL QUIT('Not enough working space in '
+     *              //'cc_fop (CCSD(T) F.O.P. part')
+         ENDIF
+C
+C--------------------------------------------
+C     Construct the CMO coefficients
+C--------------------------------------------
+C
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',
+     &               'UNFORMATTED',IDUMMY,.FALSE.)
+         REWIND LUSIFC
+C
+         CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
+C
+         CALL GPCLOSE(LUSIFC,'KEEP')
+C
+         CALL CMO_REORDER(WORK(KCMO),WORK(KWRK3),LWRK3)
+
+
+C==========================================================
+C      Add the explicit calculated triples contributions 
+C      to the AO densities from the semi-CCSD terms with
+C      triples amplitudes.
+C==========================================================
+C
+          IF (.NOT. RELORB) THEN
+             KDENS2 = KWRK3
+             KDENS3 = KDENS2 + N2BST(ISYMOP)
+             KWRK3  = KDENS3 + N2BST(ISYMOP)
+             LWRK3  = LWORK - KWRK3
+C
+             CALL DZERO(WORK(KDENS2),N2BST(ISYMOP))
+             CALL DZERO(WORK(KDENS3),N2BST(ISYMOP))
+          ENDIF
+C
+C
+          KONEAI = KWRK3
+          KONEAB = KONEAI + NT1AM(ISYMOP)
+          KONEIJ = KONEAB + NMATAB(ISYMOP)
+          KONEIA = KONEIJ + NMATIJ(ISYMOP)
+          KWRK4  = KONEIA + NT1AM(ISYMOP)
+          LWRK4  = LWORK - KWRK4
+C
+          IF (LWRK4 .LT. 0) THEN
+            CALL QUIT('Not enough workspace in CC_FOP (CCSD(T) part)')
+          ENDIF
+C
+          CALL DZERO(WORK(KONEAI),NT1AM(ISYMOP))
+          CALL DZERO(WORK(KONEAB),NMATAB(ISYMOP))
+          CALL DZERO(WORK(KONEIJ),NMATIJ(ISYMOP))
+          CALL DZERO(WORK(KONEIA),NT1AM(ISYMOP))
+C
+C------------------------
+C      Readin ia part :
+C------------------------
+C
+          LUPTIA = 0
+          FNDPTIA  = 'DPTIA'
+          CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
+C
+          IOFF = 1
+          CALL GETWA2(LUPTIA,FNDPTIA,WORK(KONEIA),IOFF,NT1AM(ISYMOP))
+          CALL WCLOSE2(LUPTIA,FNDPTIA,'KEEP')
+C
+          IF (IPRINT .GT. 55) THEN
+             RHO1N = DDOT(NT1AM(ISYMOP),WORK(KONEIA),1,WORK(KONEIA),1)
+             WRITE(LUPRI,*) 'Norm of first D_{ia} (MO) : ',RHO1N
+          ENDIF
+C
+C--------------------------------
+C      Transform to AO
+C--------------------------------
+C
+          CALL CC_DENAO(WORK(KDENS),ISYMOP,WORK(KONEAI),WORK(KONEAB),
+     *               WORK(KONEIJ),WORK(KONEIA),ISYMOP,WORK(KCMO),1,
+     *               WORK(KCMO),1,WORK(KWRK4),LWRK4)
+C
+C
+C-------------------------------------------------
+C      ia, ab and ij for semirelaxed:
+C      [V,T3] in dens2 and [[V,T2],T2] in dens3
+C-------------------------------------------------
+C
+          IF (.NOT. RELORB) THEN
+C
+             LUPTAB = 0
+             FNDPTAB  = 'DPTAB'
+             CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
+C
+             IOFF = 1
+             CALL GETWA2(LUPTAB,FNDPTAB,WORK(KONEAB),IOFF,
+     *                   NMATAB(ISYMOP))
+             CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
+C
+             LUPTIJ = 0
+             FNDPTIJ  = 'DPTIJ'
+             CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
+C
+             IOFF = 1
+             CALL GETWA2(LUPTIJ,FNDPTIJ,WORK(KONEIJ),IOFF,
+     *                   NMATIJ(ISYMOP))
+             CALL WCLOSE2(LUPTIJ,FNDPTIJ,'KEEP')
+C
+             CALL DZERO(WORK(KONEAI),NT1AM(ISYMOP))
+             CALL DZERO(WORK(KONEIA),NT1AM(ISYMOP))
+C
+             IF (IPRINT .GT. 55) THEN
+                RHO1N = DDOT(NMATAB(ISYMOP),WORK(KONEAB),1,
+     *                       WORK(KONEAB),1)
+                WRITE(LUPRI,*) 'Norm of D_{ab} (MO) : ',RHO1N
+                RHO1N = DDOT(NMATIJ(ISYMOP),WORK(KONEIJ),1,
+     *                       WORK(KONEIJ),1)
+                WRITE(LUPRI,*) 'Norm of D_{ij} (MO) : ',RHO1N
+             ENDIF
+C
+             CALL CC_DENAO(WORK(KDENS2),ISYMOP,WORK(KONEAI),
+     *                     WORK(KONEAB),WORK(KONEIJ),WORK(KONEIA),
+     *                     ISYMOP,WORK(KCMO),1,WORK(KCMO),1,WORK(KWRK4),
+     *                     LWRK4)
+C
+             LUPTIA2 = 0
+             FNDPTIA2 = 'DPTIA2'
+             CALL WOPEN2(LUPTIA2,FNDPTIA2,64,0)
+C
+             IOFF = 1
+             CALL GETWA2(LUPTIA2,FNDPTIA2,WORK(KONEIA),IOFF,
+     *                   NT1AM(ISYMOP))
+             CALL WCLOSE2(LUPTIA2,FNDPTIA2,'KEEP')
+C
+          IF (IPRINT .GT. 55) THEN
+             RHO1N = DDOT(NT1AM(ISYMOP),WORK(KONEIA),1,WORK(KONEIA),1)
+             WRITE(LUPRI,*) 'Norm of second D_{ia} (MO) : ',RHO1N
+          ENDIF
+C
+             CALL DZERO(WORK(KONEAI),NT1AM(ISYMOP))
+             CALL DZERO(WORK(KONEAB),NMATAB(ISYMOP))
+             CALL DZERO(WORK(KONEIJ),NMATIJ(ISYMOP))
+             CALL CC_DENAO(WORK(KDENS3),ISYMOP,WORK(KONEAI),
+     *                     WORK(KONEAB),WORK(KONEIJ),WORK(KONEIA),
+     *                     ISYMOP,WORK(KCMO),1,WORK(KCMO),1,
+     *                     WORK(KWRK4),LWRK4)
+          ENDIF
+C
+      END IF
 C
 C=======================================
 C     Calculate molecular dipole moment.
@@ -787,11 +1363,29 @@ C----------------------------------------------
 C        Calculate the electronic contribution.
 C----------------------------------------------
 C
+            if (.false.) then
+               write(lupri,*)'Norm of dipole integrals in FOP (CCSD)',
+     &                   ddot(n2bst(isymop),work(konep),1,work(konep),1)
+               write(lupri,*)'Norm of density in FOP (CCSD)',
+     &                   ddot(n2bst(isymop),work(kdens),1,work(kdens),1)
+            end if
             IF (ISY .EQ. 1 ) THEN
                DIPME(IDIP) = -DDOT(N2BST(ISYMOP),WORK(KONEP),1,
      *                             WORK(KDENS),1)
+               IF (CCPT .AND. (.NOT. RELORB)) THEN
+                  DIPME2(IDIP) = -DDOT(N2BST(ISYMOP),WORK(KONEP),1,
+     *                                 WORK(KDENS2),1)
+                  DIPME3(IDIP) = -DDOT(N2BST(ISYMOP),WORK(KONEP),1,
+     *                                 WORK(KDENS3),1)
+               ENDIF
             ELSE
                DIPME(IDIP) = 0
+C
+               IF (CCPT .AND. (.NOT. RELORB)) THEN
+                   DIPME2(IDIP) = 0.0D0
+                   DIPME3(IDIP) = 0.0D0
+               ENDIF
+C
             ENDIF
             DIPMN(IDIP) = DIPMN(IDIP) + DIPME(IDIP)
 C
@@ -805,7 +1399,37 @@ C
             CALL HEADER('Electronic contribution to dipole moment',-1)
             CALL DP0PRI(DIPME)
          ENDIF
-         CALL HEADER('Total Molecular Dipole Moment',-1)
+         IF (CCPT .AND. (.NOT. RELORB)) THEN
+            CALL HEADER('Total Molecular Dipole Moment (unrelaxed)',
+     *                     -1)
+            CALL DP0PRI(DIPMN)
+            IF (IASGER .GT. 0) THEN
+               CALL HEADER('[V,T3] contri. to dipole moment',-1)
+               CALL DP0PRI(DIPME2)
+               CALL HEADER('[[V,T2],T2] contri. to dipole moment',-1)
+               CALL DP0PRI(DIPME3)
+            ENDIF
+C
+            DO IDIP = 1, 3
+               DIPMN(IDIP) = DIPMN(IDIP)
+     *                     + DIPME2(IDIP)
+     *                     + DIPME3(IDIP)
+               DIPME(IDIP) = DIPME(IDIP)
+     *                     + DIPME2(IDIP)
+     *                     + DIPME3(IDIP)
+            ENDDO
+C
+            IF (IASGER .GT. 0) THEN
+               CALL HEADER(
+     *         'Semirelaxed electronic contribution to dipole moment'
+     *                        ,-1)
+               CALL DP0PRI(DIPME)
+            ENDIF
+            CALL HEADER('Total Semirelaxed molecular Dipole Moment ',
+     *                  -1)
+         ELSE
+            CALL HEADER('Total Molecular Dipole Moment',-1)
+         ENDIF
          CALL DP0PRI(DIPMN)
 C
          CALL FLSHFO(LUPRI)
@@ -873,6 +1497,13 @@ C
 C
                IF ( ISY .EQ. 1) THEN
                   CALL CCELQUA(WORK(KONEP),WORK(KDENS),LENGTH,I,J,QDREL)
+C
+                  IF (CCPT .AND. (.NOT. RELORB)) THEN
+                     CALL CCELQUA(WORK(KONEP),WORK(KDENS2),LENGTH,
+     *                            I,J,QDREL2)
+                     CALL CCELQUA(WORK(KONEP),WORK(KDENS3),LENGTH,
+     *                            I,J,QDREL3)
+                  ENDIF
                ENDIF
 C
   120       CONTINUE
@@ -897,8 +1528,39 @@ C
             WRITE(LUPRI,474) 'X','Y','Z'
             CALL OUTPUT(SKODE,1,3,1,3,3,3,1,LUPRI)
          ENDIF
+C
          CALL DAXPY(9,-ONE,SKODE,1,SKODN,1)
-         CALL HEADER('Total Molecular quadrupole moment',-1)
+C
+         IF (CCPT .AND. (.NOT. RELORB)) THEN
+            CALL HEADER('Total unrelaxed molecular quadrupole moment',
+     *                    -1)
+            WRITE(LUPRI,474) 'X','Y','Z'
+            CALL OUTPUT(SKODN,1,3,1,3,3,3,1,LUPRI)
+C
+            CALL CC_QUAREO(QDREL2,SKODE)
+            CALL DAXPY(9,-ONE,SKODE,1,SKODN,1)
+C
+            IF (IPRINT .GT. 9) THEN
+               CALL HEADER('[V,T3] contri. to quadrupole moment',-1)
+               WRITE(LUPRI,474) 'X','Y','Z'
+               CALL OUTPUT(SKODE,1,3,1,3,3,3,1,LUPRI)
+            ENDIF
+C
+            CALL CC_QUAREO(QDREL3,SKODE)
+            CALL DAXPY(9,-ONE,SKODE,1,SKODN,1)
+C
+            IF (IPRINT .GT. 9) THEN
+               CALL HEADER('[[V,T2],T2] contri. to quadrupole moment',
+     *                      -1)
+               WRITE(LUPRI,474) 'X','Y','Z'
+               CALL OUTPUT(SKODE,1,3,1,3,3,3,1,LUPRI)
+            ENDIF
+C
+            CALL HEADER('Total semirelaxed molecular quadrupole mom.',
+     *                   -1)
+         ELSE
+            CALL HEADER('Total Molecular quadrupole moment',-1)
+         ENDIF
          WRITE(LUPRI,474) 'X','Y','Z'
          CALL OUTPUT(SKODN,1,3,1,3,3,3,1,LUPRI)
 C
@@ -915,6 +1577,23 @@ C
          CALL AROUND(' Electronic second moment of charge ')
 C
          CALL DZERO(ELSEMO,9)
+C
+         IF (CCPT .AND. (.NOT. RELORB)) THEN
+            KWRK3SAVE = KWRK3
+            KRES2     = KWRK3
+            KRES3     = KRES2 + 9
+            KWRK3     = KRES3 + 9
+            LWRK3     = LWORK - KWRK3
+C
+            IF (LWRK3 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK
+               WRITE(LUPRI,*) 'Needed:', KWRK3
+               CALL QUIT('Out of memory in CC_FOP (semi)')
+            ENDIF
+C
+            CALL DZERO(WORK(KRES2),9)
+            CALL DZERO(WORK(KRES3),9)
+         ENDIF
 C
          IJ = 0
          DO 115 I = 1,3
@@ -960,6 +1639,13 @@ C
 C
                IF (ISY.EQ.1) THEN
                  CALL CCELQUA(WORK(KONEP),WORK(KDENS),LENGTH,I,J,ELSEMO)
+C
+                 IF (CCPT .AND. (.NOT. RELORB)) THEN
+                    CALL CCELQUA(WORK(KONEP),WORK(KDENS2),LENGTH,
+     *                           I,J,WORK(KRES2))
+                    CALL CCELQUA(WORK(KONEP),WORK(KDENS3),LENGTH,
+     *                           I,J,WORK(KRES3))
+                 ENDIF
                ENDIF
 C
   125       CONTINUE
@@ -974,6 +1660,21 @@ C
 C---------------------
 C        Print result.
 C---------------------
+C
+         IF (CCPT .AND. (.NOT. RELORB)) THEN
+            CALL HEADER('Unrelaxed : ',-1)
+            WRITE(LUPRI,474) 'X','Y','Z'
+            CALL OUTPUT(SKODE,1,3,1,3,3,3,1,LUPRI)
+            CALL CC_TNSRAN(SKODE,WORK(KWRK3),LWRK3)
+C
+            CALL DAXPY(9,ONE,WORK(KRES2),1,ELSEMO,1)
+            CALL DAXPY(9,ONE,WORK(KRES3),1,ELSEMO,1)
+            CALL CC_QUAREO(ELSEMO,SKODE)
+C
+            CALL HEADER('Semirelaxed : ',-1)
+C
+            KWRK3 = KWRK3SAVE
+         ENDIF
 C
          WRITE(LUPRI,474) 'X','Y','Z'
          CALL OUTPUT(SKODE,1,3,1,3,3,3,1,LUPRI)
@@ -993,6 +1694,9 @@ C
 C
          CALL AROUND(' Electric Field Gradients ')
 C
+         IF (CCPT .AND. (.NOT. RELORB)) THEN
+            CALL AROUND('Unrelaxed CCSD(T) electric field gradient')
+         ENDIF
 C-------------------------------------------
 C        Calculate the nuclear contribution.
 C-------------------------------------------
@@ -1020,6 +1724,33 @@ C
          IF (LWRK4 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK4
             CALL QUIT('Insufficient memory for EFG-results in CC_FOP')
+         ENDIF
+C
+         IF (CCPT .AND. (.NOT. RELORB)) THEN
+C
+            IASGER = 2
+            ICCPRI = 2
+            CALL NQCRES(IASGER,WORK(KDIAG),WORK(KAXIS),ICCPRI)
+C
+            CALL DZERO(WORK(KDIAG),3*MXCENT)
+            CALL DZERO(WORK(KAXIS),9*MXCENT)
+C
+            CALL AROUND('Semirelaxed CCSD(T) electric field gradient')
+C
+            IOPT   = 2
+            IASGER = IPRINT - 5
+            CALL CCNUCQUA(WORK(KWRK4),LWRK4,IOPT,IASGER)
+C
+            LENGTH = N2BST(ISYMOP)
+            CALL DAXPY(LENGTH,ONE,WORK(KDENS2),1,WORK(KDENS),1)
+            CALL DAXPY(LENGTH,ONE,WORK(KDENS3),1,WORK(KDENS),1)
+C
+            CALL CCELEFG(WORK(KDENS),LENGTH,WORK(KWRK4),LWRK4,
+     *                   IASGER)
+C
+            CALL DAXPY(LENGTH,-ONE,WORK(KDENS2),1,WORK(KDENS),1)
+            CALL DAXPY(LENGTH,-ONE,WORK(KDENS3),1,WORK(KDENS),1)
+C
          ENDIF
 C
          IASGER = 2
@@ -1110,9 +1841,9 @@ C
 C
       ENDIF
 C
-C========================================================================
-C     Standar scalar relativistic corrections to the ground-state energy.
-C========================================================================
+C=========================================================================
+C     Standard scalar relativistic corrections to the ground-state energy.
+C=========================================================================
 C
       IF (RELCOR) THEN
 C
@@ -1154,8 +1885,23 @@ C-------------------------------------
 C
             IF (IRC .EQ. 1) THEN
                DARW = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
+C
+               IF (CCPT .AND. (.NOT. RELORB)) THEN
+                  DARW2 = DDOT(N2BST(ISYMOP),WORK(KONEP),1,
+     *                         WORK(KDENS2),1)
+                  DARW3 = DDOT(N2BST(ISYMOP),WORK(KONEP),1,
+     *                         WORK(KDENS3),1)
+               ENDIF
+C
             ELSE IF (IRC .EQ. 2) THEN
                VELO = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
+C
+               IF (CCPT .AND. (.NOT. RELORB)) THEN
+                  VELO2 = DDOT(N2BST(ISYMOP),WORK(KONEP),1,
+     *                         WORK(KDENS2),1)
+                  VELO3 = DDOT(N2BST(ISYMOP),WORK(KONEP),1,
+     *                         WORK(KDENS3),1)
+               ENDIF
             ENDIF
 C
   130    CONTINUE
@@ -1164,20 +1910,51 @@ C----------------------
 C     Write out result.
 C----------------------
 C
-      WRITE(LUPRI,*) ' '
-      WRITE(LUPRI,131) '1-elec. Darwin term:', DARW
-      WRITE(LUPRI,132) '------------------- '
-      WRITE(LUPRI,*) ' '
-      WRITE(LUPRI,131) 'Mass-Velocity term: ', VELO
-      WRITE(LUPRI,132) '------------------  '
-      WRITE(LUPRI,*) ' '
-      WRITE(LUPRI,133) 'Mass-Velocity + 1-elec. Darwin terms:',DARW+VELO
-      WRITE(LUPRI,134) '------------------------------------ '
+         IF (CCPT .AND. (.NOT. RELORB)) THEN
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,135) 'Unrelaxed   1e Darwin term         :',
+     *                                     DARW
+            WRITE(LUPRI,135) '[V,T3]      1e Darwin term         :',
+     *                                     DARW2
+            WRITE(LUPRI,135) '[[V,T2],T2] 1e  Darwin term        :',
+     *                                     DARW3
+            WRITE(LUPRI,135) 'Semirelaxed 1e Darwin term         :',
+     *                        DARW+DARW2+DARW3
+            WRITE(LUPRI,132) '------------------- '
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,135) 'Unrelaxed Mass-Velocity term       :',
+     *                                     VELO
+            WRITE(LUPRI,135) '[V,T3] Mass-Velocity term          :',
+     *                                     VELO2
+            WRITE(LUPRI,135) '[[V,T2],T2] Mass-Velocity term     :',
+     *                                     VELO3
+            WRITE(LUPRI,135) 'Semirelaxed Mass-Velocity term     :',
+     *                        VELO+VELO2+VELO3
+            WRITE(LUPRI,132) '------------------  '
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,135) 'Unrelaxed Mass-Velocity + 1e Darwin :',
+     *                            DARW+VELO
+            WRITE(LUPRI,135) 'Semirelaxed Mass-Velocity+ 1e Darwin:',
+     *                            DARW+DARW2+DARW3+VELO+VELO2+VELO3
+            WRITE(LUPRI,134) '------------------------------------ '
+         ELSE
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,131) '1-elec. Darwin term:', DARW
+            WRITE(LUPRI,132) '------------------- '
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,131) 'Mass-Velocity term: ', VELO
+            WRITE(LUPRI,132) '------------------  '
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,133) 'Mass-Velocity + 1-elec. Darwin terms:',
+     *                                               DARW+VELO
+            WRITE(LUPRI,134) '------------------------------------ '
+         ENDIF
 C
   131 FORMAT(9X,A20,F17.9)
   132 FORMAT(9X,A20)
   133 FORMAT(9X,A37,1X,F17.9)
-  134 FORMAT(9X,A37)             
+  134 FORMAT(9X,A37)
+  135 FORMAT(9X,A36,1X,F17.9)
 C
       ENDIF
 C
@@ -1237,8 +2014,16 @@ C--------------------------------------------------------------------
 C
          IF (ISY.EQ.1) THEN
             PROP = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
+            IF (CCPT .AND. (.NOT. RELORB)) THEN
+               PROP2 = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS2),1)
+               PROP2 = PROP2 + DDOT(N2BST(ISYMOP),WORK(KONEP),1,
+     *                              WORK(KDENS3),1)
+            ENDIF
          ELSE
             PROP = 0.0D0
+            IF (CCPT .AND. (.NOT. RELORB)) THEN
+               PROP2 = 0.0D0
+            ENDIF
          ENDIF
 C
 C-------------------------
@@ -1246,8 +2031,17 @@ C        Write out result.
 C-------------------------
 C
          WRITE(LUPRI,*) ' '
-         IF (ISY.EQ.1) WRITE(LUPRI,141) LABEL//':', PROP
-         IF (ISY.NE.1) WRITE(LUPRI,142) LABEL//':','zero by symmetry'
+         IF (ISY.EQ.1) THEN
+            IF (CCPT .AND. (.NOT. RELORB)) THEN
+              CALL AROUND('Unrelaxed  : ')
+              WRITE(LUPRI,141) LABEL//':', PROP
+              CALL AROUND('Semirelaxed  : ')
+              PROP = PROP + PROP2
+            ENDIF
+            WRITE(LUPRI,141) LABEL//':', PROP
+         ELSE
+            WRITE(LUPRI,142) LABEL//':','zero by symmetry'
+         ENDIF
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,*) ' '
 C
@@ -1423,6 +2217,7 @@ C
 C              Use F-hat and (iajb) on scratch.
 C
 C     Written by Ove Christiansen 22 November 1994
+C     Triples corrections by K. Hald, Fall 2001.
 C
 C-----------------------------------------------------------------------------
 C
@@ -1435,21 +2230,86 @@ C
 #include <cclr.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
-#include <ccinftap.h>
 #include <ccsdinp.h>
+#include <ccinftap.h>
+C
+!
+!SONIA SONIA SONIA
+!
+#include <grdccpt.h>
 C
       PARAMETER( TWO = 2.0D00 )
+      CHARACTER*5 FN3FOP
+      CHARACTER*6 FN3VI, FN3FOP2
+      CHARACTER*8 FNTOC, FN3VI2
       CHARACTER*10 MODEL
       DIMENSION ETA(*),WORK(LWORK)
 C
+      LOGICAL FIRST
+      SAVE FIRST
+      DATA FIRST /.TRUE./
+!
+!SONIA SONIA SONIA
+!
+      SAVE IGRDCCPT_OLD
+C
       CALL QENTER('CC_ETA')
 C
+!
+!SONIA SONIA SONIA
+!
+      IF (IGRDCCPT.NE.IGRDCCPT_OLD) THEN
+         FIRST = .TRUE.
+         IGRDCCPT_OLD = IGRDCCPT
+      END IF
+!
+!SONIA SONIA SONIA
+!
+
       IF ( IPRINT .GT. 10 ) THEN
-         CALL AROUND( 'IN CC_ETA: Constructing Eta vector ')
+         IF (ETADSC .AND. FIRST) THEN
+            CALL AROUND( 'CC_ETA: Constructing Eta vector '//
+     *                   'and write it to disc' )
+         ELSE IF (ETADSC) THEN
+            CALL AROUND( 'CC_ETA: Reading Eta from disc ')
+         ELSE
+            CALL AROUND( 'CC_ETA: Constructing Eta vector ')
+         ENDIF
       ENDIF
 C
       IF ( CCS ) THEN
          CALL DZERO(ETA,NT1AM(ISYMOP))
+         CALL QEXIT('CC_ETA')
+         RETURN
+      ENDIF
+C
+C----------------------------------------------
+C     If ETA is on disc, read and exit
+C----------------------------------------------
+C
+      IF (ETADSC .AND. (.NOT. FIRST)) THEN
+C
+         LUETA = 0
+         CALL GPOPEN(LUETA,'PT_ETA','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+C
+         REWIND(LUETA)
+         READ(LUETA) (ETA(I), I=1,NT1AMX+NT2AMX)
+         CALL GPCLOSE(LUETA,'KEEP')
+C
+         IF (IPRINT .GT. 40 ) THEN
+            CALL AROUND( 'In CC_ETA:  Eta vector read ' )
+            CALL CC_PRP(ETA(1),ETA(1+NT1AMX),1,1,1)
+         ENDIF
+C
+         IF ( IPRINT .GT. 10 ) THEN
+            ETA1 = DDOT(NT1AMX,ETA(1),1,ETA(1),1)
+            ETA2 = DDOT(NT2AMX,ETA(1+NT1AMX),1,ETA(1+NT1AMX),1)
+            WRITE(LUPRI,*) 'Norm of eta1 read: ',ETA1
+            WRITE(LUPRI,*) 'Norm of eta2 read: ',ETA2
+            CALL AROUND( 'END OF CC_ETA ')
+         ENDIF
+C
          CALL QEXIT('CC_ETA')
          RETURN
       ENDIF
@@ -1536,7 +2396,110 @@ C
 C
   100 CONTINUE
 C
+C-------------------------------------------
+C     Scale the non-triples contributions
+C-------------------------------------------
+C
       CALL DSCAL(NT1AMX+NT2AMX,TWO,ETA,1)
+C
+C----------------------------------------------
+C     If ETADSC calculate triples cont.
+C     Fock matrix and T2 is read from disc.
+C----------------------------------------------
+C
+      IF (ETADSC) THEN
+C
+         KT2AM = KEND1
+         KEND2 = KT2AM + NT2SQ(1)
+         LWRK2 = LWORK- KEND2
+C
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KEND2))
+         CALL CC_T2SQ(WORK(KEND2),WORK(KT2AM),1)
+C
+         LUFCK = 0
+         ISYFAO = 1
+         ISYMPA = 1
+         ISYMHO = 1
+C
+         CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUFCK )
+         READ (LUFCK )(WORK(KFOCK + I-1),I = 1,N2BST(ISYFAO))
+         CALL GPCLOSE(LUFCK,'KEEP')
+C
+         IF (IPRINT .GT. 140) THEN
+            CALL AROUND( 'Usual Fock AO matrix' )
+            CALL CC_PRFCKAO(WORK(KFOCK),ISYFAO)
+         ENDIF
+C
+         CALL CC_FCKMO(WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
+     *                 WORK(KEND2),LWRK2,ISYFAO,ISYMPA,ISYMHO)
+C
+         IF (IPRINT .GT. 50) THEN
+            CALL AROUND( 'In CC_ETA: Triples Fock MO matrix' )
+            CALL CC_PRFCKMO(WORK(KFOCK),ISYMOP)
+         ENDIF
+C
+C--------------------------
+C          Open files :
+C--------------------------
+C
+         LUTOC   = 0
+         LU3VI   = 0
+         LU3VI2  = 0
+         LU3FOP  = 0
+         LU3FOP2 = 0
+C
+         FNTOC   = 'CCSDT_OC'
+         FN3VI   = 'CC3_VI'
+         FN3VI2  = 'CC3_VI12'
+         FN3FOP  = 'PTFOP'
+         FN3FOP2 = 'PTFOP2'
+C
+         CALL WOPEN2(LUTOC,FNTOC,64,0)
+         CALL WOPEN2(LU3VI,FN3VI,64,0)
+         CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+         CALL WOPEN2(LU3FOP,FN3FOP,64,0)
+         CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+C
+         CALL CCSDPT_ETA(ETA,ETA(1+NT1AMX),WORK(KT1AM),1,
+     *                   WORK(KT2AM),1,MODEL,
+     *                   WORK(KEND2),LWRK2,
+     *                   LUTOC,FNTOC,
+     *                   LU3VI,FN3VI,LU3VI2,FN3VI2,
+     *                   LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+C
+C-------------------------------------------
+C        Write the contribution to disc.
+C-------------------------------------------
+C
+         LUETA = 0
+         CALL GPOPEN(LUETA,'PT_ETA','UNKNOWN',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+C
+         REWIND(LUETA)
+         WRITE(LUETA) (ETA(I), I=1,NT1AMX+NT2AMX)
+         CALL GPCLOSE(LUETA,'KEEP')
+C
+C--------------------------------
+C          Close files and end
+C--------------------------------
+C
+         CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+         CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+         CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
+         CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
+         CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+C
+         FIRST = .FALSE.
+C
+      ENDIF
+C
+C-----------------------------------------
+C     Print? and end
+C-----------------------------------------
+C
       IF (IPRINT .GT. 40 ) THEN
          CALL AROUND( 'In CC_ETA:  Eta vector ' )
          CALL CC_PRP(ETA(1),ETA(1+NT1AMX),1,1,1)
@@ -1675,10 +2638,19 @@ C
 #include <abainf.h>
 #include <inftra.h>
 C
+C
+#include <grdccpt.h>
+
       CALL QENTER('CCDFFOP')
 C
       DODRCT = .TRUE.
       USEDRC = .TRUE.
+
+CSONIA SONIA
+CSONIA SONIA
+CSONIA SONIA
+
+      LGRDCCPT = .TRUE.
 C
       CALL QEXIT('CCDFFOP')
 C
@@ -3511,6 +4483,10 @@ C     Calculate the ZK0(ab) and ZK0(ij) blocks
 C     from modified X- and Y-intermediates.
 C---------------------------------------------
 C
+CDEBUGGGG
+         do iii = 1, NMATIJ(1)
+            write(lupri,*)' etaij(',iii,') = ', WORK(KXMAT+iii-1)
+         end do
       CALL MP2_ZKBLO(ZKDIA,WORK(KXMAT),WORK(KYMAT),WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------- 
@@ -3606,8 +4582,15 @@ C
 C
       CALL QENTER('MP2_ZKBLO')
 C
-      IF (MP2) FACT = ONE
-      IF (CC2) FACT = ZERO
+      IF (MP2) THEN
+         FACT = ONE
+      ELSE IF (CC2) THEN
+         FACT = ZERO
+      ELSE IF (CCSD) THEN
+         FACT = -ONE
+      ELSE 
+         FACT = -ONE
+      END IF
 C
 C---------------------------
 C     Work space allocation.

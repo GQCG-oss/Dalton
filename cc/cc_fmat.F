@@ -33,6 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+#define NODDY_CCSDT   .FALSE.
+#define CCSDT_F_ALTER .TRUE.
 *---------------------------------------------------------------------*
 c/* Deck CC_FMATRIX */
 *=====================================================================*
@@ -55,13 +57,19 @@ c/* Deck CC_FMATRIX */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+C<<<<<<< cc_fmat.F
+#include <ccsdinp.h>
+#include "maxorb.h"
+#include "ccsdio.h"
+C=======
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
       CHARACTER*(*) LISTL, LISTR, FILFMA
+      CHARACTER*8 FN3VI2, FNTOC
+      CHARACTER*4 FNDKBC
+      CHARACTER*6 FNDELD, FNCKJD, FN3VI
       INTEGER IOPTRES
       INTEGER NFTRAN, MXVEC, LWORK
       INTEGER IFTRAN(3,NFTRAN)
@@ -73,16 +81,42 @@ c/* Deck CC_FMATRIX */
 #else 
       DOUBLE PRECISION WORK(LWORK) 
       DOUBLE PRECISION FCONS(MXVEC,NFTRAN)
+COMMENT COMMENT
+      DOUBLE PRECISION DDOT
+COMMENT COMMENT
 #endif 
 
+      LOGICAL LADD
       INTEGER MAXFTRAN, NTRAN, ISTART, IBATCH, NBATCH
       INTEGER KIADRBFD, KIADRZ0, KIADRPQ0, KIADRPQR, KIADRPQMO   
       INTEGER KIADRBFI, KRHO1, KRHO2, KFIM, KMGDL, KRIM, KZDEN, KGIM 
       INTEGER KLAMPA, KLAMHA, KCTR2, KLAMP, KLAMH, KDENS, KFOCK
       INTEGER KEND, LEND
+      INTEGER MXRAMP, MXLAMP, MXBTRAN, KB1TRAN, KB1DOTS, KB1CON,
+     &        KB2TRAN, KB2DOTS, KB2CON, NB1TRAN, NB2TRAN
+COMMENT COMMENT
+COMMENT COMMENT
+      INTEGER KHCOUNT
+COMMENT COMMENT
+COMMENT COMMENT
 
       CALL QENTER('CC_FMATRIX')
 
+*---------------------------------------------------------------------*
+* Main section:   CC_FMATNEW, driven by a loop over transformed vectors
+* -------------
+*   singles and doubles models:
+*               calculation of the single and double excitation
+*               parts of the transformed vectors and respective
+*               dot products (IOPTRES=5).
+*
+*   triple models: 
+*               calculation of the effective transformed vectors,
+*               for IOPTRES=5 only singles and doubles contributions
+*               and contributions from <L3|...|HF> are computed here
+*               the remaining contributions <L2|[...,R3]|HF> are
+*               calculated in CCSDT_FMAT_CONT (see below).
+*---------------------------------------------------------------------*
       MAXFTRAN = MAXSIM
 
       NBATCH = (NFTRAN+MAXFTRAN-1)/MAXFTRAN
@@ -144,6 +178,102 @@ c/* Deck CC_FMATRIX */
      &                  MXVEC, WORK(KEND), LEND )
 
       END DO
+*---------------------------------------------------------------------*
+* special triples section:
+* ------------------------
+*               compute the contributions <L2|[...,R3]|HF> to
+*               F matrix contractions 
+*---------------------------------------------------------------------*
+      IF (IOPTRES.EQ.5 .AND. CCSDT .AND. CCSDT_F_ALTER) THEN
+         MXRAMP  = MAX(NFTRAN,MXVEC)
+         MXLAMP  = NFTRAN
+         MXBTRAN = MXRAMP*MXRAMP
+
+         KB1TRAN = 1
+         KB1DOTS = KB1TRAN + MXBTRAN * 3
+         KB1CON  = KB1DOTS + MXBTRAN * MXLAMP
+         KEND    = KB1CON  + MXBTRAN * MXLAMP
+
+         IF (LISTR(1:3).NE.FILFMA(1:3)) THEN
+           KB2TRAN = KEND
+           KB2DOTS = KB2TRAN + MXBTRAN * 3
+           KB2CON  = KB2DOTS + MXBTRAN * MXLAMP
+           KEND    = KB2CON  + MXBTRAN * MXLAMP
+         ELSE
+           KB2TRAN = -999999
+           KB2DOTS = -999999
+           KB2CON  = -999999
+         END IF
+
+         LEND = LWORK - KEND
+         IF (LEND.LE.0) CALL QUIT('Out of memory in CC_FMATRIX.')
+         
+         CALL DZERO(WORK(KB1TRAN),MXBTRAN*3)
+         CALL DZERO(WORK(KB1DOTS),MXBTRAN*MXLAMP)
+         CALL DZERO(WORK(KB1CON), MXBTRAN*MXLAMP)
+         IF (LISTR(1:3).NE.FILFMA(1:3)) THEN
+           CALL DZERO(WORK(KB2TRAN),MXBTRAN*3)
+           CALL DZERO(WORK(KB2DOTS),MXBTRAN*MXLAMP)
+           CALL DZERO(WORK(KB2CON), MXBTRAN*MXLAMP)
+         END IF
+
+         LADD = .FALSE.
+         CALL CCSDT_F2B_SETUP(IFTRAN,IFDOTS,FCONS,NFTRAN,MXVEC,LADD,
+     &                        WORK(KB1TRAN),WORK(KB1DOTS),
+     &                        WORK(KB1CON),NB1TRAN,MXLAMP,
+     &                        WORK(KB2TRAN),WORK(KB2DOTS),
+     &                        WORK(KB2CON),NB2TRAN,MXLAMP,
+     &                        LISTL,LISTR,FILFMA,MXBTRAN,MXBTRAN)
+
+         IF (NODDY_CCSDT) THEN
+             CALL CCSDT_FBC_NODDY(CCSDT_F_ALTER,
+     &                            WORK(KB1TRAN),WORK(KB1DOTS),
+     &                            WORK(KB1CON),NB1TRAN,MXLAMP,
+     &                            LISTL,LISTR,FILFMA,WORK(KEND),LEND) 
+         ELSE
+             FNCKJD = 'CKJDEL'
+             FNDKBC = 'DKBC'
+             FNDELD = 'CKDELD'
+             FNTOC  = 'CCSDT_OC'
+             FN3VI  = 'CC3_VI'
+             FN3VI2 = 'CC3_VI12'
+C
+             CALL CCSDT_FBMAT(WORK(KB1TRAN),WORK(KB1DOTS),
+     *                        WORK(KB1CON),NB1TRAN,MXLAMP,
+     *                        LISTL,LISTR,FILFMA,FNCKJD,FNDKBC,
+     *                        FNDELD,FNTOC,FN3VI,FN3VI2,
+     *                        WORK(KEND),LEND) 
+         END IF
+         IF (LISTR(1:3).NE.FILFMA(1:3)) THEN
+           IF (NODDY_CCSDT) THEN
+             CALL CCSDT_FBC_NODDY(WORK(KB2TRAN),WORK(KB2DOTS),
+     &                            WORK(KB2CON),NB2TRAN,MXLAMP,
+     &                            LISTL,FILFMA,LISTR,WORK(KEND),LEND) 
+           ELSE
+             FNCKJD = 'CKJDEL'
+             FNDKBC = 'DKBC'
+             FNDELD = 'CKDELD'
+             FNTOC  = 'CCSDT_OC'
+             FN3VI  = 'CC3_VI'
+             FN3VI2 = 'CC3_VI12'
+C
+             CALL CCSDT_FBMAT(WORK(KB2TRAN),WORK(KB2DOTS),
+     *                        WORK(KB2CON),NB2TRAN,MXLAMP,
+     *                        LISTL,FILFMA,LISTR,FNCKJD,FNDKBC,
+     *                        FNDELD,FNTOC,FN3VI,FN3VI2,
+     *                        WORK(KEND),LEND)
+           END IF
+         END IF
+
+         LADD = .TRUE.
+         CALL CCSDT_F2B_SETUP(IFTRAN,IFDOTS,FCONS,NFTRAN,MXVEC,LADD,
+     &                        WORK(KB1TRAN),WORK(KB1DOTS),
+     &                        WORK(KB1CON),NB1TRAN,MXLAMP,
+     &                        WORK(KB2TRAN),WORK(KB2DOTS),
+     &                        WORK(KB2CON),NB2TRAN,MXLAMP,
+     &                        LISTL,LISTR,FILFMA,MXBTRAN,MXBTRAN)
+
+      END IF
 
       CALL QEXIT('CC_FMATRIX')
 
@@ -359,7 +489,7 @@ c/* Deck CC_FMATNEW */
 #include <ccslvinf.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(17)
+      CHARACTER MSGDBG*(16)
       PARAMETER (MSGDBG='[debug] CC_FMAT> ')
 
       LOGICAL LOCDBG
@@ -377,11 +507,15 @@ c/* Deck CC_FMATNEW */
       INTEGER LURHO,  LUFIM,  LUMGD,  LUXIM,  LUYIM,  LUBDZ0, LUO3
       INTEGER LUCBAR, LUDBAR, LUPQRR, LUPQR0, LUPQMO, LUFMAT, LUZDN
       INTEGER LUGIM
+      INTEGER LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOP, LU3FOP2
 
       CHARACTER*(8) BFFIL,  FNBFD,  CTFIL, DTFIL, FILFCK, FILRIM, FILO3
       CHARACTER*(8) RHOFIL,FIMFIL,FILMGD,FILXIM,FILYIM,FNBFI,FILZDN
       CHARACTER*(8) CBAFIL, DBAFIL, FNPQRR, FNPQR0, FNPQMO, FNBDZ0
-      CHARACTER*(8) GIMFIL
+      CHARACTER*(8) GIMFIL, FNTOC
+      CHARACTER*(6) FNCKJD, FN3VI, FN3FOP2, FNDELD
+      CHARACTER*(5) FNDKBC3, FN3FOP
+      CHARACTER*(4) FNDKBC
       PARAMETER (BFFIL ='CCFM_BFI', FNBFD ='CCBFDENS',
      &           CBAFIL='CCFM_CBA', DBAFIL='CCFM_DBA',
      &           CTFIL ='CCFM_CIM', DTFIL ='CCFM_DIM', 
@@ -392,7 +526,11 @@ c/* Deck CC_FMATNEW */
      &           FNPQR0='CCFMPQR0', FNPQMO='CCFMPQMO',
      &           FNBDZ0='CCFMBDZ0', FNBFI ='CCFM_BZI',
      &           FILO3 ='CCFM_O3I', FILZDN='CCFM_ZDN',
-     &           GIMFIL='CCFM_GIM'                     )
+     &           GIMFIL='CCFM_GIM', FNCKJD='CKJDEL',
+     &           FNDKBC='DKBC'    , FNTOC ='CCSDT_OC',
+     &           FN3VI ='CC3_VI'  , FNDKBC3='DKBC3',
+     &           FN3FOP='PTFOP'   , FN3FOP2='PTFOP2',
+     &           FNDELD='CKDELD'                      )
 
 
       CHARACTER*(*) LISTL, LISTR, FILFMA
@@ -454,6 +592,7 @@ c/* Deck CC_FMATNEW */
       INTEGER LWRK3, IADRTH, KLAMDPA, KLAMDHA, LENALL, KT2AMPA
       INTEGER ISYCTR, ISYAMP, KLIAJB, KA2IM, KXIDJL, KXJLID
       INTEGER KXIAJB, NDBLE, LENGIM, KGZETA, KFOCK0AO, KXBARA
+      INTEGER KTHETA1EFF, KTHETA2EFF, IOPTWE
 
 * external functions:
       INTEGER ICCSET1
@@ -463,7 +602,10 @@ c/* Deck CC_FMATNEW */
 #if defined (SYS_CRAY) 
       REAL DDOT, SECOND
 #else 
-      DOUBLE PRECISION DDOT, SECOND
+      DOUBLE PRECISION DDOT
+#if !defined (VAR_G77)
+      DOUBLE PRECISION SECOND
+#endif
 #endif 
   
       CALL QENTER('CC_FMATNEW')
@@ -482,7 +624,7 @@ c/* Deck CC_FMATNEW */
         CALL FLSHFO(LUPRI)
       END IF
       
-      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,2a)')'CC_FMAT called for a Coupled Cluster ',
      &          'method not implemented in CC_FMAT...'
         CALL QUIT('Unkown CC method in CC_FMAT.')
@@ -558,6 +700,10 @@ c/* Deck CC_FMATNEW */
       ELSE IF (CCSD) THEN
          MODELW = 'CCSD      '
          IOPTW  = 3
+      ELSE IF (CC3) THEN
+         MODELW = 'CC3       '
+         IOPTW  = 3
+         IOPTWE = 24
       ELSE
          CALL QUIT('Unkown coupled cluster model in CC_FMAT.')
       END IF
@@ -664,7 +810,7 @@ c/* Deck CC_FMATNEW */
       NBATCH = 1
       IF (CCS) THEN
         NSECMAR = 10 * N2BASX
-      ELSE IF (CC2 .OR. CCSD) THEN
+      ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
           CALL QUIT('Unkown CC model in CC_FMAT.')
@@ -680,7 +826,9 @@ c/* Deck CC_FMATNEW */
         ISYM   = ILSTSYM(LISTR,IDLSTR)
  
         NNWORK = 2*NGLMDT(ISYM) + 2*N2BST(ISYM)
-        IF (CCSD) NNWORK = 2*NGLMDT(ISYM)+NT2AOIJ(ISYM)+NEMAT1(ISYM)
+        IF (CCSD .OR. CCSDT) THEN
+          NNWORK = 2*NGLMDT(ISYM)+NT2AOIJ(ISYM)+NEMAT1(ISYM)
+        END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN
           IRHGH(NBATCH) = IINTR - 1
@@ -712,7 +860,7 @@ c/* Deck CC_FMATNEW */
         ELSE IF (CC2) THEN
           NNWORK = 2*N2BST(ISYRES) + 2*NGLMDT(ISYMR) +
      &               NT2SQ(ISYML)  + NT1AM(ISYRES)
-        ELSE IF (CCSD) THEN
+        ELSE IF (CCSD .OR. CCSDT) THEN
           NNWORK = 2*NGLMDT(ISYMR) + 
      &               NT1AO(ISYRES) + NT1AM(ISYRES) + NT2AOIJ(ISYRES)
         ELSE
@@ -810,12 +958,9 @@ c/* Deck CC_FMATNEW */
         FF = EFIELD(IF)
         CALL CC_ONEP(WORK(KFOCK0),WORK(KEND0),LWRK0,FF,1,LFIELD(IF) )
       END DO
-C
-C-----------------------------------------------------------------------------------------
-C     Solvent contribution to one-electron integrals. T^g contribution to transformation.
-C SLV98,OC
-C-----------------------------------------------------------------------------------------
-C
+ 
+* Solvent contribution to one-electron integrals. 
+* T^g contribution to transformation. SLV98,OC
       IF (CCSLV) THEN
          CALL CCSL_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
       ENDIF
@@ -1133,7 +1278,7 @@ C
                KDSRHF  = KEND3
                KDSRHFA = KDSRHF  + NDSRHF(ISYDEL)
                KEND3   = KDSRHFA + MDSRHF
-            ELSE IF (CCSD) THEN
+            ELSE IF (CCSD .OR. CCSDT) THEN
                K3OINT  = KEND3
                KBFRHF  = K3OINT + NMAIJK(ISYDEL)
                KDCRHF  = KBFRHF + NBSRHF(ISYDEL)
@@ -1155,7 +1300,7 @@ C           XNORM = DDOT(NDISAO(ISYDEL),WORK(KXINT),1,WORK(KXINT),1)
 C           WRITE (LUPRI,*) 'IDEL,XNORM:',IDEL,XNORM
 
 
-            IF (CCSD) THEN
+            IF (CCSD .OR. CCSDT) THEN
 C              -----------------------------------------------------
 C              some integral transformations and presortings for
 C              BF, C, and D intermediate and 21G term:
@@ -1611,7 +1756,7 @@ C              CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYRES,1,0)
 *---------------------------------------------------------------------*
 *       for CCSD calculate second 21G contribution
 *---------------------------------------------------------------------*
-        IF (CCSD) THEN
+        IF (CCSD .OR. CCSDT) THEN
 
 C          ----------------------------------------------------------
 C          memory allocation, reusing space for packed (ia|jb) array:
@@ -1820,29 +1965,115 @@ C          ----------------------------------------------
      &               LUD,  DTFIL, LUDBAR, DBAFIL,
      &               IOFFCD(IINTR), WORK(KEND2),LWRK2)
 
-C
-C
-C-------------------------------------------
-C     SLV98,OC
-C     Calculate T^{gB} solvent contribution.
-C     Unsquared T2 is required!
-C-------------------------------------------
-C
-      IF (CCSLV.AND.LSTBTR) THEN
-         KT2AMPA = KEND2
-         KEND3   = KT2AMPA +  NT2AM(ISYAMP)
-         LWRK3   = LWORK - KEND3
-         IF (LWRK3 .LT. 0) THEN
-            CALL QUIT('Insuff. work in CC_FMAT. in CCSLV part')
-         END IF
+*       Calculate T^{gB} solvent contribution.
+*       Unsquared T2 is required!  SLV98,OC
+        IF (CCSLV.AND.LSTBTR) THEN
+           KT2AMPA = KEND2
+           KEND3   = KT2AMPA +  NT2AM(ISYAMP)
+           LWRK3   = LWORK - KEND3
+           IF (LWRK3 .LT. 0) THEN
+              CALL QUIT('Insuff. work in CC_FMAT. in CCSLV part')
+           END IF
+        
+           IOPT = 2
+           CALL CC_RDRSP(LISTR,IDLSTR,ISYAMP,IOPT,MODEL,
+     *                   WORK(KDUM),WORK(KT2AMPA))
+           CALL CCSL_LTRB(WORK(KTHETA1),WORK(KTHETA2),
+     *                    WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
+     *                    WORK(KEND3),LWRK3)
+        ENDIF
+        
+        
+        IF (CCSDT) THEN
+           IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
+             KTHETA1EFF = KEND2
+             KTHETA2EFF = KTHETA1EFF + NT1AM(ISYRES)
+             KEND2      = KTHETA2EFF + NT2AM(ISYRES)
+             LWRK2      = LWORK - KEND2
+             IF (LWRK2 .LE. NT1AM(ISYRES)) THEN
+               CALL QUIT('Insufficient work space in CC_FMAT. (9)')
+             END IF
+           END IF
 
-         IOPT = 2
-         CALL CC_RDRSP(LISTR,IDLSTR,ISYAMP,IOPT,MODEL,
-     *                 WORK(KDUM),WORK(KT2AMPA))
-         CALL CCSL_LTRB(WORK(KTHETA1),WORK(KTHETA2),
-     *                  WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
-     *                  WORK(KEND3),LWRK3)
-      ENDIF
+
+C          for final form with true code for partitioning:
+C          IF ( .NOT. NODDY_CCSDT ) THEN
+
+           IF ( (.NOT. NODDY_CCSDT) .AND. (.NOT. IOPTRES.LT.5) ) THEN
+
+             IF (IOPTRES.LT.5) THEN
+
+               CALL CC3_FT3B(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
+     *                       WORK(KTHETA1),ISYRES,WORK(KEND2),LWRK2,
+     *                       FNCKJD,FNDKBC,FNDELD,FNTOC)
+
+             END IF
+
+             LUCKJD  = 0
+             LUDKBC  = 0
+             LUTOC   = 0
+             LU3VI   = 0
+             LUDKBC3 = 0
+             LU3FOP  = 0
+             LU3FOP2 = 0
+C
+             CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+             CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+             CALL WOPEN2(LUTOC,FNTOC,64,0)
+             CALL WOPEN2(LU3VI,FN3VI,64,0)
+             CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
+             CALL WOPEN2(LU3FOP,FN3FOP,64,0)
+             CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+C
+COMMENT COMMENT
+COMMENT COMMENT
+COMMENT COMMENT Do not use IOPTRES, WORK(KTHETA1EFF),    WORK(KTHETA2EFF)
+COMMENT COMMENT            IFDOTS,  FCONS(MXVEC,NFTRAN)  FILFMA
+COMMENT COMMENT            ITRAN in CC3_FMAT at the moment!!!!!!!   
+COMMENT COMMENT
+COMMENT COMMENT
+             CALL CC3_FMAT(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
+     *                     WORK(KTHETA1),   WORK(KTHETA2),
+     *                     WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     *                     IFDOTS,FCONS,FILFMA,ITRAN,
+     *                     NFTRAN,MXVEC,WORK(KEND2),LWRK2,
+     *                     LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
+     *                     LU3VI,FN3VI,LUDKBC3,FNDKBC3,
+     *                     LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+C
+C            call cc3_fmatsd(...)
+C
+             CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+             CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
+             CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+             CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+             CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
+             CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
+             CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+COMMENT
+COMMENT
+           else
+COMMENT
+COMMENT
+             write(lupri,*) 'Before CCSDT_FMAT_NODDY!!!!!!!'
+             write(lupri,*) 'IOPTRES, LISTL = ',IOPTRES, LISTL
+             CALL CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
+     &                             IOPTRES,CCSDT_F_ALTER,
+     &                             WORK(KTHETA1),   WORK(KTHETA2),
+     &                             WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                             IFDOTS,FCONS,FILFMA,ITRAN,
+     &                             NFTRAN,MXVEC,WORK(KEND2),LWRK2)
+COMMENT
+COMMENT
+           endif
+COMMENT
+COMMENT
+C
+           IF (IPRINT .GT. 110) THEN
+              CALL AROUND('Omega1 and Omega2 after  F(cc3) : ')
+              CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),1,1,1)
+           ENDIF
+        END IF
 
 
 *---------------------------------------------------------------------*
@@ -1892,10 +2123,20 @@ C
            CALL CC_WRRSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LWRK2)
+           IF (CCSDT) THEN
+             CALL CC_WRRSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTWE,MODELW,
+     &                     WORK(KTHETA0),WORK(KTHETA1EFF),
+     &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
+           END IF
          ELSE IF (IOPTRES.EQ.4) THEN
            CALL CC_WARSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LWRK2)
+           IF (CCSDT) THEN
+             CALL CC_WARSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTWE,MODELW,
+     &                     WORK(KTHETA0),WORK(KTHETA1EFF),
+     &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
+           END IF
          END IF
 
          IF (LOCDBG) THEN
@@ -1908,12 +2149,38 @@ C
            IF (.NOT.CCS) XNORM = XNORM +
      &       DDOT(NT2AM(ISYRES),WORK(KTHETA2),1,WORK(KTHETA2),1)
            WRITE (LUPRI,*) 'norm^2 of result vector:',XNORM
+           CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYRES,1,1)
+           IF (CCSDT) THEN
+             WRITE(LUPRI,*) 'effective vector:'
+             XNORM = DDOT(NT1AM(ISYRES),WORK(KTHETA1EFF),1,
+     &         WORK(KTHETA1EFF),1) + DDOT(NT2AM(ISYRES),
+     &           WORK(KTHETA2EFF),1,WORK(KTHETA2EFF),1)
+             WRITE (LUPRI,*) 'norm^2:',XNORM
+             CALL CC_PRP(WORK(KTHETA1EFF),WORK(KTHETA2EFF),ISYRES,1,1)
+           END IF
          END IF
       ELSE IF (IOPTRES.EQ.5) THEN
+         IF (LOCDBG.AND.CCSDT) THEN
+           WRITE(LUPRI,*) 'FCONS TRIPLES CONTRIBUTION:'
+           IVEC = 1
+           DO WHILE (IFDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+            WRITE(LUPRI,*)'FCONS:',IVEC,ITRAN,FCONS(IVEC,ITRAN),IOPTW
+            IVEC = IVEC + 1
+           END DO
+         END IF
+
          IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KTHETA2),TWO,ISYRES)
          CALL CCDOTRSP(IFDOTS,FCONS,IOPTW,FILFMA,ITRAN,NFTRAN,MXVEC,
      &                 WORK(KTHETA1),WORK(KTHETA2),ISYRES,
      &                 WORK(KEND2),LWRK2)
+
+          IF (LOCDBG) THEN
+           IVEC = 1
+           DO WHILE (IFDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+            WRITE(LUPRI,*)'FCONS:',IVEC,ITRAN,FCONS(IVEC,ITRAN),IOPTW
+            IVEC = IVEC + 1
+           END DO
+          END IF
       ELSE
         CALL QUIT('Illegal value for IOPTRES in CC_FMAT.')
       END IF
@@ -1969,7 +2236,7 @@ C
          CALL WCLOSE2(LUYIM,FILYIM, 'DELETE')
          CALL WCLOSE2(LURHO,RHOFIL, 'DELETE')
       END IF
-      IF (CCSD)      CALL WCLOSE2(LUBFD, FNBFD, 'DELETE')
+      IF (CCSD .OR. CCSDT)      CALL WCLOSE2(LUBFD, FNBFD, 'DELETE')
 
 
       TIMIO = TIMIO + SECOND() - DTIME
@@ -2122,7 +2389,10 @@ C  /* Deck ccfpreint */
 #else
       DOUBLE PRECISION WORK(LWORK), XLAMDP(*), XLAMDH(*)
       DOUBLE PRECISION TIMXYM, TIMBF, TIMIO, TIMPQ, DTIME
-      DOUBLE PRECISION TWO, ONE, ZERO, SECOND, DUMMY
+      DOUBLE PRECISION TWO, ONE, ZERO, DUMMY
+#if !defined (VAR_G77)
+      DOUBLE PRECISION SECOND
+#endif
 #endif
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
  
@@ -2186,7 +2456,7 @@ C  /* Deck ccfpreint */
       LUBDZ0 = 0
       LUPQMO = 0
 C
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
         CALL WOPEN2(LUPQ, FILPQ, 64,0)
       END IF
       
@@ -2227,7 +2497,7 @@ C
          KEND1  = KYINT  + LENY
       END IF
 
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
          KCHI   = KEND1
          KMINT  = KCHI  + MAX(LENX,MGLMRH)
          KMGDL  = KMINT + M3ORHF
@@ -2325,7 +2595,7 @@ C
      &             WORK(KEND1),LWRK1)
       END IF
       
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
 
          IF (IOPTRSP.EQ.1) THEN
 
@@ -2368,7 +2638,7 @@ C
 *---------------------------------------------------------------------*
 *     for CCSD calculate also the M intermediates
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
          DTIME = SECOND()
          CALL CC_MI(WORK(KMINT),WORK(KZETA2),ISYML,WORK(KT2AMP),ISYMR,
      &              WORK(KEND1),LWRK1)
@@ -2378,7 +2648,7 @@ C
 *---------------------------------------------------------------------*
 *     calculate the P and Q intermediates and write them to file:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
         DTIME = SECOND()
 
         IF (IOPTRSP.EQ.1) THEN
@@ -2408,7 +2678,7 @@ C
 *---------------------------------------------------------------------*
 *     calculate effective density for left BFZeta intermediate:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
 
          IF (IOPTRSP.EQ.1) THEN
 
@@ -2442,7 +2712,7 @@ C
 *---------------------------------------------------------------------*
 * close direct access files and return:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
         CALL WCLOSE2(LUPQ, FILPQ, 'KEEP')
       END IF
 
@@ -2973,13 +3243,13 @@ c/* Deck CCFPRE2 */
         END IF
 
 *       recover FIM intermediate:
-        IF (CCSD) THEN
+        IF (CCSD .OR. CCSDT) THEN
           LEN = NT1AO(ISYRES)
           CALL CC_RVEC(LUFIM,FIMFIL,LENFIM,LEN,IINT,WORK(KFIM(IINT)))
         END IF
 
 *       recover XMGDL density:
-        IF (CCSD) THEN
+        IF (CCSD .OR. CCSDT) THEN
           LEN = NT2AOIJ(ISYRES)
           CALL CC_RVEC(LUMGD,MGDFIL,LENMGD,LEN,IINT,WORK(KMGDL(IINT)))
         END IF
@@ -3068,7 +3338,10 @@ c/* Deck CCFINT2 */
       DOUBLE PRECISION XLAMP0(*), XLAMH0(*), XLAMPA(*), XLAMHA(*)
       DOUBLE PRECISION XMGDL(*), ZDEN(*), FIM(*), GIM(*), RHO1(*)
       DOUBLE PRECISION TIMBF, TIMGZ, TIMIO, TIMFG, TIMFCK
-      DOUBLE PRECISION DUMMY, DTIME, SECOND
+      DOUBLE PRECISION DUMMY, DTIME
+#if !defined (VAR_G77)
+      DOUBLE PRECISION SECOND
+#endif
 #endif
 
 
@@ -3092,7 +3365,7 @@ c/* Deck CCFINT2 */
 *---------------------------------------------------------------------*
 * calculate BZeta intermediate:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
          DTIME = SECOND()
          CALL CC_BFIF(BFRHF,ISYDEL,XMGDL,ISYRES,LUBFI,FNBFI,
      &                IADRBFI,ISTARTBFI,IDEL,WORK,LWORK)
@@ -3102,7 +3375,7 @@ c/* Deck CCFINT2 */
 *---------------------------------------------------------------------*
 * calculate the GZeta intermediate:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
          DTIME = SECOND()
 
          ISYABK = MULD2H(ISYDEL,ISYMA)
@@ -3133,7 +3406,7 @@ c/* Deck CCFINT2 */
 *---------------------------------------------------------------------*
 * calculate 21F term and one part of the 21G term:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
 
          ISYZT0 = MULD2H(ISYDEL,ISYCTR)
          ISYZT1 = MULD2H(ISYZT0,ISYMA)
@@ -3408,7 +3681,7 @@ C
 *---------------------------------------------------------------------*
 * calculate BZeta contribution and GZeta intermediate:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
          KBZETA = KEND0
          KEND1  = KBZETA + NT2AO(ISYRES)
          LWRK1  = LWORK  - KEND1
@@ -3448,7 +3721,7 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 *---------------------------------------------------------------------*
 * calculate the E1' contribution from the GZeta intermediate:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
 
          CALL CC_T1AM(THETA1,ISYRES,WORK(KGZETA),ISYRES,
      &                XLAMH0,ISYM0,ONE)
@@ -3484,7 +3757,7 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 * for CC2/NONHF and CCSD read double excitation part of the Lagrangian 
 * multipliers and expand to a full square matrix:
 *---------------------------------------------------------------------*
-      IF ((CC2.AND.NONHF) .OR. CCSD) THEN
+      IF ((CC2.AND.NONHF) .OR. CCSD .OR. CCSDT) THEN
         KZETA2 = KEND0
         KEND1  = KZETA2 + NT2SQ(ISYCTR)
         LWRK1  = LWORK  - KEND1
@@ -3524,7 +3797,7 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 *---------------------------------------------------------------------*
 * calculate the first E2 term contribution from the zero-order BF:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
         KZETA2 = KEND0
         KBF    = KZETA2 + NT2SQ(ISYCTR)
         KEND1  = KBF    + 2 * NT2ORT(ISYM0)
@@ -3570,7 +3843,7 @@ C          CALL CC_PRP(THETA1,THETA2,ISYRES,1,1)
 * calculate second E2 term contribution and the GAMMA and G 
 * intermediates from the response BF intermediate: 
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
         KZETA2 = KEND0
         KBF    = KZETA2 + NT2SQ(ISYCTR)
         KGAMMA = KBF    + NT2AOIJ(ISYAMP)
@@ -3624,7 +3897,7 @@ C         CALL CC_PRP(THETA1,THETA2,ISYRES,1,1)
       FCKCON = .TRUE.
       IOPT   = 1
 
-      IF (CCSD) LGCON  = .TRUE.
+      IF (CCSD .OR. CCSDT) LGCON  = .TRUE.
 
       CALL CC_EIM(WORK(KEMAT1),WORK(KEMAT2),
      &            DUMMY,DUMMY,WORK(KGIMA),DUMMY,
@@ -3637,7 +3910,7 @@ C         CALL CC_PRP(THETA1,THETA2,ISYRES,1,1)
          CALL DAXPY(NMATIJ(ISYAMP),ONE,XBARA,1,WORK(KEMAT2),1)
       END IF
 
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
          CALL DAXPY(NMATAB(ISYAMP),ONE,YBARA,1,WORK(KEMAT1),1)
       END IF
 
@@ -3684,7 +3957,7 @@ C         CALL CC_PRP(THETA1,THETA2,ISYRES,1,1)
 *---------------------------------------------------------------------*
 * calculate the A term and add to Theta2 result vector:
 *---------------------------------------------------------------------*
-      IF (CCSD) THEN
+      IF (CCSD .OR. CCSDT) THEN
          CALL CC_GAMMA2(WORK(KGAMMA),WORK(KEMAT2),ISYAMP)
 
          IOPT = 2
@@ -4680,4 +4953,156 @@ C
       END
 *=====================================================================*
 *                  END OF SUBROUTINE CC_MGDTCME                       *
+*=====================================================================*
+*=====================================================================*
+      SUBROUTINE CCSDT_F2B_SETUP(IFTRAN,IFDOTS,FCON,NFTRAN,MXVEC,LADD,
+     &                           IB1TRAN,IB1DOTS,B1CON,NB1TRAN,MXB1VEC,
+     &                           IB2TRAN,IB2DOTS,B2CON,NB2TRAN,MXB2VEC,
+     &                           LISTL,LISTB,LISTC,MXB1TRAN,MXB2TRAN)
+*---------------------------------------------------------------------*
+*
+* Purpose: transform from F matrix like loop structure to a B matrix
+*          like loop structure needed for CCSDT_FBMAT_CONT
+*
+* Christof Haettig, May 2002
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+
+      CHARACTER*(25) MSGDBG
+      PARAMETER (MSGDBG = '[debug] CCSDT_F2B_SETUP> ')  
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+ 
+*--------
+* input:
+*--------
+      CHARACTER LISTL*(3), LISTC*(3), LISTB*(3)
+      LOGICAL LADD
+      INTEGER NFTRAN, MXVEC, MXB1VEC, MXB1TRAN, MXB2VEC, MXB2TRAN
+      INTEGER IFTRAN(3,NFTRAN), IFDOTS(MXVEC,NFTRAN)
+#if defined (SYS_CRAY) 
+      REAL FCON(MXVEC,NFTRAN)
+#else
+      DOUBLE PRECISION FCON(MXVEC,NFTRAN)
+#endif
+      
+*--------
+* output:
+*--------
+      INTEGER NB1TRAN, NB2TRAN
+      INTEGER IB1TRAN(3,MXB1TRAN), IB1DOTS(MXB1VEC,MXB1TRAN)
+      INTEGER IB2TRAN(3,MXB2TRAN), IB2DOTS(MXB2VEC,MXB2TRAN)
+#if defined (SYS_CRAY) 
+      REAL B1CON(MXB1VEC,MXB1TRAN), B2CON(MXB2VEC,MXB2TRAN)
+#else
+      DOUBLE PRECISION B1CON(MXB1VEC,MXB1TRAN), B2CON(MXB2VEC,MXB2TRAN)
+#endif
+
+* local:
+      INTEGER MXVAB1, MXVAB2, ITRAN, IZETA, ITAMPB, ITAMPC, IVEC,
+     *        JVEC, JTRAN
+#if defined (SYS_CRAY) 
+      REAL CONT1, CONT2
+#else
+      DOUBLE PRECISION CONT1, CONT2
+#endif
+
+      CALL QENTER('CCFCSU')
+
+      IF (.NOT. LADD) THEN
+        NB1TRAN = 0
+        NB2TRAN = 0
+      END IF
+      MXVAB1 = 0
+      MXVAB2 = 0
+
+      DO ITRAN = 1, NFTRAN
+
+        IZETA  = IFTRAN(1,ITRAN)
+        IF      (IZETA.EQ.0 .AND. LISTL(1:3).EQ.'L0 ') THEN
+          IZETA = 1
+        ELSE IF (IZETA.EQ.0) THEN
+          CALL QUIT('Illegal index for left vector...')
+        END IF
+
+        ITAMPB = IFTRAN(2,ITRAN)
+
+        IVEC = 1
+        DO WHILE(IFDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+          ITAMPC = IFDOTS(IVEC,ITRAN)
+
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,*) MSGDBG,'IZETA,ITAMPB,ITAMPC:',
+     &                             IZETA,ITAMPB,ITAMPC
+          END IF
+
+          ! R3=ITAMPB, R1=ITAMPC
+          CALL CC_SETF12(IB1TRAN,IB1DOTS,MXB1TRAN,MXB1VEC,
+     &                   ITAMPB,ITAMPC,IZETA,JTRAN,JVEC)
+          NB1TRAN = MAX(NB1TRAN,JTRAN)
+          MXVAB1  = MAX(MXVAB1,JVEC)
+          CONT1   = B1CON(JVEC,JTRAN)
+
+          IF (LISTB(1:3).EQ.LISTC(1:3)) THEN
+           ! R3=ITAMPC, R1=ITAMPB on the same list
+           CALL CC_SETF12(IB1TRAN,IB1DOTS,MXB1TRAN,MXB1VEC,
+     &                    ITAMPC,ITAMPB,IZETA,JTRAN,JVEC)
+           NB1TRAN = MAX(NB1TRAN,JTRAN)
+           MXVAB1  = MAX(MXVAB1,JVEC)
+           CONT2   = B1CON(JVEC,JTRAN)
+          ELSE
+           ! R3=ITAMPC, R1=ITAMPB on a second list
+           CALL CC_SETF12(IB1TRAN,IB1DOTS,MXB1TRAN,MXB1VEC,
+     &                    ITAMPC,ITAMPB,IZETA,JTRAN,JVEC)
+           NB1TRAN = MAX(NB1TRAN,JTRAN)
+           MXVAB2  = MAX(MXVAB2,JVEC)
+           CONT2   = B2CON(JVEC,JTRAN)
+          END IF
+
+          IF (LADD) THEN
+            FCON(IVEC,ITRAN) = FCON(IVEC,ITRAN) + CONT1 + CONT2
+         
+            IF (LOCDBG) THEN
+              WRITE(LUPRI,*)'ITRAN,IVEC:',ITRAN,IVEC
+              WRITE(LUPRI,*)'FCON(before):',FCON(IVEC,ITRAN)-CONT1-CONT2
+              WRITE(LUPRI,'(A,3I5)') 'IZETA,ITAMPB,ITAMPC:',
+     &                                IZETA,ITAMPB,ITAMPC
+              WRITE(LUPRI,*) '<L|[[H,RC_1],RB_3]|HF> = ',CONT1
+              WRITE(LUPRI,*) '<L|[[H,RB_1],RC_3]|HF> = ',CONT2
+              WRITE(LUPRI,*) 'FCON(after):',FCON(IVEC,ITRAN)
+            END IF
+          END IF
+
+          IVEC = IVEC + 1
+        END DO
+
+      END DO
+C
+      IF (LOCDBG) THEN
+        WRITE (LUPRI,*)
+        WRITE (LUPRI,*) 'List of <L2|[[H,RC_1],RB_3]|HF>:'
+        DO ITRAN = 1, NB1TRAN
+          WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
+     &     (IB1TRAN(I,ITRAN),I=1,2),(IB1DOTS(I,ITRAN),I=1,MXVAB1)
+        END DO
+        WRITE (LUPRI,*)
+        IF (LISTB(1:3).NE.LISTC(1:3)) THEN
+          WRITE (LUPRI,*) 'List of <L2|[[H,RB_1],RC_3]|HF>:'
+          DO ITRAN = 1, NB2TRAN
+            WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
+     &       (IB2TRAN(I,ITRAN),I=1,2),(IB2DOTS(I,ITRAN),I=1,MXVAB2)
+          END DO
+        WRITE (LUPRI,*)
+        END IF
+      END IF
+C
+      CALL QEXIT('CCFCSU')
+C
+      RETURN
+      END
+*=====================================================================*
+*                  END OF SUBROUTINE CCSDT_F2B_SETUP                  *
 *=====================================================================*

@@ -139,7 +139,7 @@ C
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
 C
-      IF (.NOT.(CCS.OR.CC2.OR.CCSD)) THEN
+      IF (.NOT.(CCS.OR.CC2.OR.CCSD.OR.CC3)) THEN
          WRITE(LUPRI,'(A)') ' CC_SOLRSP: Do not want to calculate '
      *           //'anything else than CCS, CC2 and CCSD properties '
          CALL QUIT('Model not CCS or CC2 or CCSD in CC_SOLRSP')
@@ -1372,7 +1372,7 @@ C---------------------------------------------------------------------
 C
 C     Test average values for freq = 0 and tot sym vectors.
 C 
-      IF (DEBUG .OR. (IPRINT.GE.5)) THEN
+      IF (DEBUG .OR. (IPRINT.GE.5) .OR. CCSDT) THEN
          DO ILSTNR = 1, NLRTLBL
 C
             ISYM = ISYLRT(ILSTNR)
@@ -1390,9 +1390,37 @@ C
             IF (LEND1 .LE. 0 ) CALL QUIT(
      *       'Insufficient workspace in cc_solrsp ')
             IOPT  = 3
-            CALL CC_RDRSP('R1',ILSTNR,ISYM,IOPT,MODEL1,WORK(KT1),
+            CALL CC_RDRSP('R1 ',ILSTNR,ISYM,IOPT,MODEL1,WORK(KT1),
      *                    WORK(KT2))
-            CALL CC_TSTAV(ILSTNR,WORK(KT1),WORK(KEND1),LEND1)
+            CALL CC_TSTAV(ILSTNR,WORK(KT1),WORK(KEND1),LEND1,0)
+C
+          END IF
+
+         END DO
+      ENDIF
+
+      IF (DEBUG .OR. (IPRINT.GE.5) .OR. CCSDT) THEN
+         DO ILSTNR = 1, NO1LBL
+C
+            ISYM = ISYO1(ILSTNR)
+            FREK = FRQO1(ILSTNR)
+          IF (ISYM.EQ.1 .AND. DABS(FREK).LE.1.0D-10) THEN
+C
+            KT1  = 1
+            KT2  = KT1  + NT1AM(ISYM)
+            IF (.NOT. CCS) THEN
+               KEND1= KT2  + NT2AM(ISYM)
+            ELSE
+               KEND1= KT2
+            ENDIF
+            LEND1= LWORK - KEND1
+            IF (LEND1 .LE. 0 ) CALL QUIT(
+     *       'Insufficient workspace in cc_solrsp ')
+            IOPT  = 3
+            IF (CCSDT) IOPT = 24
+            CALL CC_RDRSP('O1 ',ILSTNR,ISYM,IOPT,MODEL1,WORK(KT1),
+     *                    WORK(KT2))
+            CALL CC_TSTAV(ILSTNR,WORK(KT1),WORK(KEND1),LEND1,1)
 C
           END IF
 

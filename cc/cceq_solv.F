@@ -156,7 +156,6 @@ C
          WRITE(LUPRI,*) 'CCEQ_SOL: NCCVAR  =    ',NCCVAR
       ENDIF
 C
-C
       CALL GETTIM(CSTR,WSTR)
 C
       TIMMIC = SECOND()
@@ -1397,7 +1396,6 @@ C
       END IF
 C
       IF (.NOT. LINQCC ) THEN
-C
 C
 C
 C **************************************************************

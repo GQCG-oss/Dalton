@@ -303,7 +303,7 @@ C      PARAMETER (DUMMY = -12345.67890)
 * calculate F{A} matrix contributions: (F^A*T^B)*RE and (F^B*T^A)*RE
 *                                      FACON1            FACON2
 *---------------------------------------------------------------------*
-      CALL CCQR_FADRV('L0','o1','R1','RE',NFATRAN, MXVEC,
+      CALL CCQR_FADRV('L0 ','o1 ','R1 ','RE ',NFATRAN, MXVEC,
      &                 WORK(KFATRAN),WORK(KFADOTS),WORK(KFACONS),
      &                 WORK(KEND0), LEND0, 'DOTP' )
 *---------------------------------------------------------------------*
@@ -542,7 +542,7 @@ C------------------------------------------------------------------
                  CALL CC_RDRSP('X1 ',IETAC,ISYMC,IOPTRD,MODEL,
      &                         WORK(KETAC_1), WORK(KETAC_2))
                  XLEFTC = XLEFTC + 
-     &                    DDOT(NTAMPC,WORK(KETAC_1),1,WORK(KRE_1),1)              
+     &                    DDOT(NTAMPC,WORK(KETAC_1),1,WORK(KRE_1),1)
                ELSE
                  !Unfinished 
                  WRITE(LUPRI,*)'MCD: LUSE2N1=FALSE not yet implemented'

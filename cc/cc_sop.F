@@ -41,7 +41,7 @@ c /* deck CC_SOP */
 *    Purpose: direct calculation of (frequency-dependent)
 *             second-order properties for the Coupled Cluster models
 *
-*                        CCS, CC2, CCSD
+*                        CCS, CC2, CCSD, CC3
 *
 *             and partially for SCF and CIS
 *
@@ -65,7 +65,7 @@ c /* deck CC_SOP */
 
 * local parameters:
       CHARACTER*(17) MSGDBG
-      PARAMETER (MSGDBG = '[debug] CCLRDRV> ')
+      PARAMETER (MSGDBG = '[debug] CC_SOP> ')
 
 #if defined (SYS_CRAY)
       REAL ZERO
@@ -124,12 +124,12 @@ c /* deck CC_SOP */
      &                               '*******************************' 
 
 *---------------------------------------------------------------------*
-      IF (.NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
-         CALL QUIT('CCLRDRV called for unknown Coupled Cluster.')
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
+         CALL QUIT('CC_SOP called for unknown Coupled Cluster.')
       END IF
 
 * print some debug/info output
-      IF (IPRINT .GT. 10) WRITE(LUPRI,*) 'CCLRDRV Workspace:',LWORK
+      IF (IPRINT .GT. 10) WRITE(LUPRI,*) 'CC_SOP Workspace:',LWORK
   
       TIM0  = SECOND()
 
@@ -170,7 +170,7 @@ c /* deck CC_SOP */
       LEND0   = LWORK   - KEND0
 
       IF (LEND0 .LT. 0) THEN
-        CALL QUIT('Insufficient memory in CCLRDRV. (1)')
+        CALL QUIT('Insufficient memory in CC_SOP. (1)')
       END IF
 
       CALL DZERO(WORK(KRESULT),2*NBSOP)
@@ -346,6 +346,9 @@ c /* deck ccsopprt */
       ELSE IF (CC2) THEN
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:41)//BLANKS )
          MODEL = 'CC2'
+      ELSE IF (CC3) THEN
+         CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:41)//BLANKS )
+         MODEL = 'CC3'
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:41)//BLANKS )
          MODEL = 'CCSD'

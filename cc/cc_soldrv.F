@@ -173,11 +173,12 @@ C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
+      IF (CC3) MODEL = 'CC3       '
 C
-      IF (.NOT.(CCS.OR.CC2.OR.CCSD)) THEN
+      IF (.NOT.(CCS.OR.CC2.OR.CCSD.OR.CC3)) THEN
          WRITE(LUPRI,'(A)') ' CC_SOLRSP: Do not want to calculate '
      *           //'anything else than CCS, CC2 and CCSD properties '
-         CALL QUIT('Model not CCS or CC2 or CCSD in CC_SOLRSP')
+         CALL QUIT('Model not CCS or CC2 or CCSD or CC3 in CC_SOLRSP')
       ENDIF
  
 C-------------------------------------------------------------

@@ -550,7 +550,7 @@ C     END IF
 *---------------------------------------------------------------------*
 * E1 and E2 terms 
 *---------------------------------------------------------------------*
-        IF (.NOT. (CCS.OR.(CC2.AND..NOT.MCC2).OR.CCSTST) ) THEN
+        IF (.NOT. (CCS.OR.CC2.OR.CCSTST) ) THEN
 
 * check available scratch space:
           IF (     LENDE3 .LT. NT2AM(ISYMTA)
@@ -1024,8 +1024,8 @@ c    &                    WORK(KENDF1),LENDF1)
 * end of F term section
 *=====================================================================*
 
-* that's it for CC2 and MCC2
-      IF (CC2 .OR. MCC2) GOTO 8888
+* that's it for CC2 
+      IF (CC2) GOTO 8888
 
 
 *=====================================================================*
@@ -1034,7 +1034,7 @@ c    &                    WORK(KENDF1),LENDF1)
 *
 * All N^6 terms drop out for CCS and CC2.
 *=====================================================================*
-      IF (.NOT. (CCS .OR. CC2 .OR. MCC2 .OR.CCSTST) ) THEN
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
 
 
 *---------------------------------------------------------------------*

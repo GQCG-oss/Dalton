@@ -220,13 +220,9 @@ C
      *'**********'
 C
       MODEL = 'CCSD'
-      IF (CC2.AND.(.NOT.MCC2)) THEN
+      IF (CC2) THEN
          CALL AROUND( ' CC2 Excitation Energies ')
          MODEL = 'CC2'
-      ENDIF
-      IF (MCC2) THEN
-         CALL AROUND( ' MCC2 Excitation Energies ')
-         MODEL = 'MCC2'
       ENDIF
       IF (CCP2) THEN
          CALL AROUND( ' CCS and CC(2) Excitation Energies ')
@@ -352,8 +348,12 @@ C
          LINQCC = .FALSE.
          IF (LIST(1:2) .EQ. 'RE') ISIDE  = +1
          IF (LIST(1:2) .EQ. 'LE') ISIDE  = -1
-         IF ((LIST(1:2) .EQ. 'LE').AND.CCSDT) CALL QUIT( 
-     *    'Left excitation energies and iterative triples not allowed')
+         IF ((LIST(1:2) .EQ. 'LE').AND.CCSDT) THEN
+            IF (.NOT. CC3) THEN
+               CALL QUIT('Left excitation energies and '//
+     *                   '(non cc3) iterative triples not allowed')
+            ENDIF
+         ENDIF
 C
          ISYMTR = ISYM
          NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)

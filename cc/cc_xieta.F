@@ -33,6 +33,9 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+*---------------------------------------------------------------------*
+#define NODDY_XI   .TRUE.
+#define NODDY_ETA  .TRUE.
 *=====================================================================*
        SUBROUTINE CC_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
      &                      FILXI,   IXDOTS, XCONS, 
@@ -55,18 +58,36 @@ C
 #include <priunit.h>
 #include "maxorb.h"
 #include "cclists.h"
+#include <ccsdinp.h>
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG=.FALSE.)
  
       INTEGER MAXXETRAN, MXVEC
       PARAMETER (MAXXETRAN = 100)
+
+      CHARACTER*8 FN3VI2, FNTOC
+      CHARACTER*4 FNDKBC
+      CHARACTER*5 FN3FOP, FNDKBC3
+      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOP2
+
+      PARAMETER (FNDELD  = 'CKDELD'  , FNCKJD  = 'CKJDEL'  )
+      PARAMETER (FNDKBC  = 'DKBC'    , FNTOC   = 'CCSDT_OC')
+      PARAMETER (FN3VI   = 'CC3_VI'  , FN3VI2  = 'CC3_VI12')
+      PARAMETER (FN3FOP  = 'PTFOP'   , FN3FOP2 = 'PTFOP2'  )
+      PARAMETER (FNDKBC3 = 'DKBC3'   )
+
 
       CHARACTER*(*) LISTL, FILXI, FILETA
       INTEGER IOPTRES, IORDER
       INTEGER NXETRAN, LWORK
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN), IEDOTS(MXVEC,NXETRAN)
+COMMENT COMMENT
+COMMENT COMMENT
+      INTEGER KHCOUNT
+COMMENT COMMENT
+COMMENT COMMENT
       
 #if defined (SYS_CRAY) 
       REAL WORK(LWORK) 
@@ -84,9 +105,26 @@ C
       INTEGER KRBIM, KGBIM, KRHO1, KRHO2, KXINT, KYINT, KBFZI, KFBIM
       INTEGER KBFZ0, KF0IM, KRZ0I, KRZBI, KEND,  LEND
       INTEGER KZDPK0, KZDEN0, KZFCK0, KZDPKB, KZDENB, KZFCKB
+      INTEGER KIDXL_XIDEN, KIDXL_EADEN, KIDXR_EADEN, MXXIDEN, MXEALEFT
+      INTEGER MXEADEN, KIEASTEND, NXIDEN, NEADEN, NEALEFT
 
       CALL QENTER('CC_XIETA')
 
+*---------------------------------------------------------------------*
+* Main section:   CC_XIETA1, driven by a loop over Xi/Eta vectors
+* -------------
+*   singles and doubles models:
+*               calculation of the single and double excitation
+*               parts of the Xi and Eta vectors and respective
+*               dot products (IOPTRES=5).
+*
+*   triple models: 
+*               calculation of the effective Xi and Eta vectors,
+*               for IOPTRES=5 only singles and doubles contributions
+*               are computed in CC_XIETA1, the triples contributions
+*               to the dot products are computed in CCSDT_XIETA_CONT
+*               (see below).
+*---------------------------------------------------------------------*
       NBATCH = (NXETRAN+MAXXETRAN-1)/MAXXETRAN
 
       IF (LOCDBG) THEN
@@ -161,8 +199,8 @@ C
           WRITE (LUPRI,*) 'work(0)  :',WORK(IDUM)
         END IF
 
-        CALL CC_XIETA1( IXETRAN(1,IFIRST),NTRAN,
-     &                  IOPTRES,IORDER,LISTL,MXVEC,
+        CALL CC_XIETA1( IXETRAN(1,IFIRST),NTRAN,IOPTRES,
+     &                  IORDER,LISTL,MXVEC,
      &                  FILXI, IXDOTS(1,IFIRST),XCONS(1,IFIRST), 
      &                  FILETA,IEDOTS(1,IFIRST),ECONS(1,IFIRST), 
      &                  WORK(ISTART),   WORK(IEND),    WORK(IADRX0),
@@ -189,6 +227,62 @@ C
         END IF
 
       END DO
+
+*---------------------------------------------------------------------*
+* special triples section:
+* ------------------------
+*     the calculation of the triples contributions to dot products
+*     between a Xi/Eta vector and another response vector are computed
+*     via effective one-electron densities, which requires for
+*     efficiency a different outermost loop structure, which is setup
+*     in CC_XIETA_DENPREP.
+*---------------------------------------------------------------------*
+      IF (IOPTRES.EQ.5 .AND. CCSDT) THEN
+
+        MXXIDEN  = MXVEC
+        MXEALEFT = NXETRAN
+        MXEADEN  = MXVEC * MXEALEFT
+
+        KIDXL_XIDEN = 1
+        KIDXL_EADEN = KIDXL_XIDEN + MXXIDEN
+        KIDXR_EADEN = KIDXL_EADEN + MXEADEN
+        KIEASTEND   = KIDXR_EADEN + MXEADEN
+        KEND        = KIEASTEND   + MXEALEFT
+        LEND        = LWORK       - KEND
+        IF (LEND.LT.0) CALL QUIT('Out of memory in CC_XIETA.') 
+
+        CALL CC_XIETA_DENPREP(IXETRAN,NXETRAN,MXVEC,
+     &                        IXDOTS,FILXI,
+     &                        IEDOTS,FILETA,LISTL,
+     &                        WORK(KIDXL_XIDEN),NXIDEN,MXXIDEN,
+     &                        WORK(KIDXL_EADEN),WORK(KIDXR_EADEN),
+     &                        NEADEN,MXEADEN,
+     &                        WORK(KIEASTEND),NEALEFT,MXEALEFT)
+
+        IF (NXIDEN.GT.0 .AND. (.NOT.NODDY_XI)) THEN
+          CALL QUIT('CCSDT XI densities not yet implemented...')
+        END IF
+
+        IF (NEADEN.GT.0 .AND. (.NOT.NODDY_ETA)) THEN
+
+          CALL CCSDT_ETA_CONT(LISTL,FILETA,
+     &                        IEDOTS,ECONS,
+     &                        NXETRAN,IXETRAN,MXVEC,
+     &                        NEALEFT,WORK(KIEASTEND),
+     &                        NEADEN,
+     &                        WORK(KIDXL_EADEN),WORK(KIDXR_EADEN),
+     &                        WORK(KEND),LEND,
+     &                        FNDELD,FNCKJD,FNDKBC,FNTOC,
+     &                        FN3VI,FNDKBC3,FN3FOP,FN3FOP2)
+        END IF
+COMMENT COMMENT
+COMMENT COMMENT
+       do khcount = 1, IFIRST
+          write(lupri,*) 'ECONS(1,',khcount,') = ',econs(1,khcount)
+       enddo
+COMMENT COMMENT
+COMMENT COMMENT
+      END IF
 
       CALL QEXIT('CC_XIETA')
 
@@ -332,6 +426,7 @@ c /* deck cc_xieta1 */
 #include <ccisao.h>
 #include <ccroper.h>
 #include <ccfro.h>
+#include <cco1rsp.h>
 #include <ccx1rsp.h>
 #include <ccr1rsp.h>
 #include <cclists.h>
@@ -347,10 +442,15 @@ c /* deck cc_xieta1 */
       INTEGER LU1IAJB, LU1IABJ, LU1IJBA, LU1AIBJ, LUHINT1
       INTEGER LUBFDX0, LUBFDX1, LUBFDE0, LUBFDE1, LUPQMO, LUPQ0, LUPQ1
       INTEGER LUDIM, LUCIM, LUBFIM, LUBFZI, LUXI, LUETA,  LUFOCK
+      INTEGER LUDKBC, LUCKJD, LUDELD, LUTOC, LU3VI, LU3VI2
       CHARACTER*8 FN0IAJB, FN0IABJ, FN0IJBA, FN0AIBJ, FNHINT0
       CHARACTER*8 FN1IAJB, FN1IABJ, FN1IJBA, FN1AIBJ, FNHINT1
       CHARACTER*8 FNBFDX0, FNBFDX1, FNBFDE0, FNBFDE1, FNBFIM, FNBFZI
-      CHARACTER*8 FILPQMO, FILPQ0, FILPQ1, FNDIM, FNCIM
+      CHARACTER*8 FILPQMO, FILPQ0, FILPQ1, FNDIM, FNCIM, FNTOC
+      CHARACTER*8 FN3VI2
+      CHARACTER*4 FNDKBC
+      CHARACTER*5 FN3FOP, FNDKBC3
+      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOP2
       PARAMETER (FN0IAJB = 'CCXIAJB0', FN0IABJ = 'CCXIABJ0')
       PARAMETER (FN1IAJB = 'CCXIAJB1', FN1IABJ = 'CCXIABJ1')
       PARAMETER (FN0IJBA = 'CCXIJBA0', FN0AIBJ = 'CCXAIBJ0')
@@ -362,6 +462,12 @@ c /* deck cc_xieta1 */
       PARAMETER (FNCIM   = 'CCXIETAC', FNDIM   = 'CCXIETAD')
       PARAMETER (FNBFIM  = 'CCXEBFIM', FNBFZI  = 'CCXEBFZI')
       PARAMETER (FILPQ1  = 'CCPQINT1')
+      PARAMETER (FNDELD  = 'CKDELD'  , FNCKJD  = 'CKJDEL'  )
+      PARAMETER (FNDKBC  = 'DKBC'    , FNTOC   = 'CCSDT_OC')
+      PARAMETER (FN3VI   = 'CC3_VI'  , FN3VI2  = 'CC3_VI12')
+      PARAMETER (FN3FOP  = 'PTFOP'   , FN3FOP2 = 'PTFOP2'  )
+      PARAMETER (FNDKBC3 = 'DKBC3'   )
+
 
 #if defined (SYS_CRAY)
       REAL DDOT, ONE, TWO, THREE, HALF, ZERO
@@ -404,11 +510,11 @@ c /* deck cc_xieta1 */
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL AVERAGE, XNORM
+      REAL AVERAGE, XNORM, FREQ, FREQLST
       REAL XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION AVERAGE, XNORM
+      DOUBLE PRECISION AVERAGE, XNORM, FREQ, FREQLST
       DOUBLE PRECISION XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
 #endif
 
@@ -431,17 +537,18 @@ c /* deck cc_xieta1 */
       INTEGER IADRPQ, IADRPQI0, IADRPQI1, IADR0, IADRB, IADRDI
       INTEGER IADRZ0, IADRZ1
       INTEGER KONEH0, KFOCK0, KXI1, KXI2, KETA1, KETA2, IOPTW, ISYMJ
-      INTEGER IRELAX, IRELAX1, IRELAX2, IRELAX2_OLD, LEN
+      INTEGER IRELAX, IRELAX1, IRELAX2, IRELAX2_OLD, LEN, IOPTWE
       INTEGER KGAMMA, KEMAT1, KEMAT2, ISY0IAJ, ISY1IAJ, KXIAJB, KDPK0
       INTEGER K1XINT, K0XINT, KEND3, LWRK3, IDLSTL, KXAIBJ
       INTEGER KD1PRHF, KD0PRHF, KD1HRHF, KD0HRHF
       INTEGER KZETA1, KZETA2, KEND2, LWRK2, ISYCTR, ISYETA
-      INTEGER KEND0, LWRK0, KEND1, LWRK1, KG0IM, KR0IM
+      INTEGER KEND0, LWRK0, KEND1, LWRK1, KG0IM, KR0IM, KFOCKBAO
       INTEGER KMINT, KEND4, LWRK4, NGIM, IDLSTL_OLD, MAXDIF, IVEC
       INTEGER ICORE, KLAMH0, KLAMP0, KDENS0, KT1AMP0, KCMO0, KDNSHF0
       INTEGER KKAPPA, KRMAT, IDXR, IERR, KDPKHF0, JCOOR, JSCOOR, ISCOOR
       INTEGER INUM, ISIGNH, IOPER1, IOPER2, ISYOP1, ISYOP2, IREAL
-      INTEGER KRBIMOLD
+      INTEGER KRBIMOLD, KFOCK0MO, KXI1EFF, KXI2EFF, KETA1EFF,KETA2EFF
+      INTEGER LUDKBC3, LU3FOP, LU3FOP2
     
 
 * external functions:
@@ -454,13 +561,13 @@ c /* deck cc_xieta1 */
 *---------------------------------------------------------------------*
 * begin: check wavefunction model and flush print unit
 *---------------------------------------------------------------------*
-      IF (CCSDT) THEN
-        WRITE (LUPRI,'(/1x,a)')
-     &        'CC_XIETA not yet implemented for triples ...'
-        CALL QUIT('Triples not implemented in CC_XIETA.')
-      END IF
+C     IF (CCSDT) THEN
+C       WRITE (LUPRI,'(/1x,a)')
+C    &        'CC_XIETA not yet implemented for triples ...'
+C       CALL QUIT('Triples not implemented in CC_XIETA.')
+C     END IF
 
-      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CC_XIETA Called for a Coupled Cluster '
      &          //'method not implemented in CC_XIETA...'
         CALL QUIT('Unkown CC method in CC_XIETA.')
@@ -511,6 +618,10 @@ c /* deck cc_xieta1 */
       ELSE IF (CCSD) THEN
          MODELW = 'CCSD      '
          IOPTW  = 3
+      ELSE IF (CC3) THEN
+         MODELW = 'CC3       '
+         IOPTW  = 3
+         IOPTWE = 24
       ELSE
          CALL QUIT('Unkown coupled cluster model in CC_XIETA.')
       END IF
@@ -590,7 +701,7 @@ c /* deck cc_xieta1 */
 
       IF (CCS) THEN
         MSCRATCH0 = 2*MDISAO + 10*N2BASX
-      ELSE IF (CC2 .OR. CCSD) THEN
+      ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         MSCRATCH0 = MAX(MT2SQ,MGAMMA,MT2BGD,6*MT2BCD) + 2*MDISAO + 
      &        MAX(MT2SQ,2*MT2ORT) + NEMAT1(ISYM0) + 10*N2BASX
       ELSE
@@ -602,7 +713,7 @@ c /* deck cc_xieta1 */
 
       IF (CCS) THEN
         MSCRATCH1 = 2*M2BST
-      ELSE IF (CC2 .OR. CCSD) THEN
+      ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         MSCRATCH1 = MAX(2*MT2ORT,MT2AM) + MEMAT1 + 2*M2BST
       ELSE
         CALL QUIT('Unkown CC model in CC_XIETA.')
@@ -724,6 +835,11 @@ C     --------------------------------------------------------------
         KEND0   = KCMO0   + NLAMDS
       END IF
 
+      IF (CCSDT) THEN
+        KFOCK0MO = KEND0
+        KEND0    = KFOCK0MO + N2BST(ISYM0)
+      END IF
+
       LWRK0   = LWORK   - KEND0
 
       IF (LWRK0 .LT. 0) THEN
@@ -788,6 +904,16 @@ C     ----------------------------------------------------------------
         REWIND(LUFOCK)
         READ(LUFOCK) (WORK(KFOCK0-1+I),I=1,N2BST(ISYM0))
         CALL GPCLOSE(LUFOCK,'KEEP')
+      END IF
+
+C     ------------------------------------------------
+C     for CC3 precalculate zeroth-order CC Fock matrix 
+C     in Lambda MO basis:
+C     ------------------------------------------------
+      IF (CCSDT) THEN
+        CALL DCOPY(N2BST(1),WORK(KFOCK0),1,WORK(KFOCK0MO),1)
+        CALL CC_FCKMO(WORK(KFOCK0MO),WORK(KLAMP0),WORK(KLAMH0),
+     &                WORK(KEND0),LWRK0,1,1,1)
       END IF
 
 C     -----------------------------------------------------------------
@@ -2248,8 +2374,6 @@ C
         END IF
 
         KEND1 = KEND1SV
-        LWRK1 = LWRK1SV
-
 
         KEMAT1 = KEND1
         KEMAT2 = KEMAT1 + NMATAB(ISYHOP)
@@ -2260,12 +2384,23 @@ C
            KGAMMA = KEND1
            KEND1  = KGAMMA + NGAMMA(ISYHOP)
         END IF
+        IF (CCSDT) THEN
+           KFOCKBAO = KEND1
+COMMENT COMMENT
+COMMENT COMMENT The isyres has not been initialized ... maybe wrong!!!
+COMMENT COMMENT
+           ISYRES = ISYHOP
+COMMENT COMMENT
+COMMENT COMMENT
+COMMENT COMMENT
+           KEND1    = KFOCKBAO + N2BST(ISYRES)
+        END IF
 
         ISYRES = ISYHOP ! symmetry of result vector
 
         KXI1  = KEND1
         KEND2 = KXI1 + NT1AM(ISYRES)
-        IF ( CC2 .OR. CCSD) THEN
+        IF ( CC2 .OR. CCSD .OR. CCSDT) THEN
            KXI2   = KEND2
            KEND2  = KXI2  + NT2AM(ISYRES)
         END IF
@@ -2273,6 +2408,12 @@ C
         LWRK2 = LWORK - KEND2
         IF (LWRK2 .LT. 0) THEN
           CALL QUIT('Insufficient work space in CC_XIETA. (1b)')
+        END IF
+
+        IF (CCSDT) THEN
+           ! save F^B in AO basis needed for test in CCSDT Eta
+           CALL DCOPY(N2BST(ISYRES),WORK(KFOCKB(ITRAN)),1,
+     &                              WORK(KFOCKBAO),1)
         END IF
 
         CALL DZERO(WORK(KXI1),NT1AM(ISYRES))
@@ -2302,6 +2443,75 @@ C
      &             IT2DEL0, IT2DELB(1,ITRAN), IADRI0,
      &             LRELAX,  LTWOEL,  WORK(KEND2), LWRK2)
 
+        IF (CCSDT) THEN
+
+          ! allocate extra memory for the 'effective' CC3 rhs vector
+          KXI1EFF = KEND2
+          KXI2EFF = KXI1EFF + NT1AM(ISYRES)
+          KEND2   = KXI2EFF + NT2AM(ISYRES)
+          LWRK2 = LWORK - KEND2
+          IF (LWRK2 .LT. 0) THEN
+            CALL QUIT('Insufficient work space in CC_XIETA. (1c)')
+          END IF
+
+          ! find the associated frequency
+          IF (IOPTRES.EQ.5) THEN
+            FREQ  = 0.0D0
+          ELSE
+            IFILE = IXETRAN(3,ITRAN)
+            FREQ  = FREQLST(FILXI,IFILE)
+          END IF
+
+          IF (IOPTRES.NE.5 .AND. (.NOT.NODDY_XI)) THEN
+C           -----------
+C           Open files:
+C           -----------
+C
+            LUDELD  = 0
+            LUCKJD  = 0
+            LUDKBC  = 0
+            LUTOC   = 0
+            LU3VI  = 0
+            LU3VI2 = 0
+C
+            CALL WOPEN2(LUDELD,FNDELD,64,0)
+            CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+            CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+            CALL WOPEN2(LUTOC,FNTOC,64,0)
+            CALL WOPEN2(LU3VI,FN3VI,64,0)
+            CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+C
+            CALL DZERO(WORK(KXI2EFF),NT2AM(ISYRES))
+
+            CALL CC3_XI(WORK(KXI1),WORK(KXI2),
+     *                  WORK(KXI1EFF),WORK(KXI2EFF),
+     *                  ISYRES,
+     *                  WORK(KFOCKB(ITRAN)),ISYHOP,FREQ,
+     *                  WORK(KLAMP0),WORK(KLAMH0), 
+     *                  WORK(KFOCK0MO),
+     *                  LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUDELD,FNDELD,
+     *                  LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2,
+     *                  WORK(KEND2),LWRK2)
+C
+            CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
+            CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+            CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+            CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
+            CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+            CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
+C
+          ELSE
+            CALL CCSDT_XI_NODDY(IOPTRES,WORK(KXI1),WORK(KXI2),
+     &                          WORK(KXI1EFF),WORK(KXI2EFF),
+     &                          WORK(KFOCKB(ITRAN)),FREQ,
+     &                          WORK(KLAMP0),WORK(KLAMH0),
+     &                          WORK(KCMO0),WORK(KFOCK0MO),
+     &                          IXDOTS,XCONS,FILXI,ITRAN,
+     &                          NXETRAN,MXVEC,WORK(KEND2),LWRK2)
+          END IF
+
+        END IF
+
 *---------------------------------------------------------------------*
 * transformation finished: scale diagonal of double excitation part
 * and write result vector to file:
@@ -2312,6 +2522,9 @@ C
 
           IF (.NOT.CCS) THEN
             CALL CCLR_DIASCL(WORK(KXI2),HALF,ISYRES)
+            IF (CCSDT) THEN
+              CALL CCLR_DIASCL(WORK(KXI2EFF),HALF,ISYRES)
+            END IF
           END IF
 
           IF (IOPTRES.EQ.0 .OR. IOPTRES.EQ.1) THEN
@@ -2329,6 +2542,10 @@ C
             END IF
             CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                    WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            IF (CCSDT) THEN
+              CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
+     &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
+            END IF
           ELSE IF (IOPTRES.EQ.4) THEN
             IFILE  = IXETRAN(3,ITRAN)
             IF (ILSTSYM(FILXI,IFILE).NE.ISYRES) THEN
@@ -2336,18 +2553,33 @@ C
             END IF
             CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                    WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            IF (CCSDT) THEN
+              CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
+     &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
+            END IF
           ELSE IF (IOPTRES.EQ.5) THEN
+
+            IF (LOCDBG.AND.CCSDT) THEN
+             WRITE(LUPRI,*) 'XCONS TRIPLES CONTRIBUTION:'
+             IVEC = 1
+             DO WHILE (IXDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+              WRITE(LUPRI,*)'XCONS:',IVEC,ITRAN,XCONS(IVEC,ITRAN),IOPTW
+              IVEC = IVEC + 1
+             END DO
+            END IF
+
             IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KXI2),TWO,ISYRES)
             CALL CCDOTRSP(IXDOTS,XCONS,IOPTW,FILXI,ITRAN,NXETRAN,MXVEC,
      &                    WORK(KXI1),WORK(KXI2),ISYRES,
      &                    WORK(KEND2),LWRK2)
+
             IF (LOCDBG) THEN
-              IVEC = 1
-              DO WHILE (IXDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-                 WRITE (LUPRI,*) 'XCONS:',IVEC,ITRAN,XCONS(IVEC,ITRAN),IOPTW
-                 IVEC = IVEC + 1
-              END DO
-            END IF                                   
+             IVEC = 1
+             DO WHILE (IXDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+              WRITE(LUPRI,*)'XCONS:',IVEC,ITRAN,XCONS(IVEC,ITRAN),IOPTW
+              IVEC = IVEC + 1
+             END DO
+            END IF
           ELSE
             CALL QUIT('Illegal value for IOPTRES in CC_XIETA.')
           END IF
@@ -2384,7 +2616,7 @@ C
           KZETA1 = KEND1
           KETA1  = KZETA1 + NT1AM(ISYCTR)
           KEND2  = KETA1  + NT1AM(ISYRES)
-          IF (CC2 .OR. CCSD) THEN
+          IF (CC2 .OR. CCSD .OR. CCSDT) THEN
              KETA2 = KEND2
              KEND2 = KETA2  + NT2AM(ISYRES)
           END IF
@@ -2426,6 +2658,95 @@ C
      &                LISTL,IDLSTL,LABELH,ISYHOP,
      &                LTWOEL,LRELAX,WORK(KEND2), LWRK2)
 
+   
+          IF (CCSDT) THEN
+            ! allocate extra memory for the 'effective' CC3 rhs vector
+            KETA1EFF = KEND2
+            KETA2EFF = KETA1EFF + NT1AM(ISYRES)
+            KEND2    = KETA2EFF + NT2AM(ISYRES)
+            LWRK2    = LWORK - KEND2
+            IF (LWRK2 .LT. 0) THEN
+              CALL QUIT('Insufficient work space in CC_XIETA. (1c)')
+            END IF
+
+            ! check vector type find the associated frequency
+            IF (LISTL(1:2).EQ.'L0') THEN
+              IFILE = IXETRAN(4,ITRAN)
+              FREQ  = FRQX1(IFILE)
+            ELSE
+              CALL QUIT("Don't know how to get freq. in CC_XIETA.")
+            END IF
+
+            ! find the associated frequency
+            IF (IOPTRES.EQ.5) THEN
+              FREQ  = 0.0D0
+            ELSE
+              IFILE = IXETRAN(4,ITRAN)
+              FREQ  = FREQLST(FILETA,IFILE)
+            END IF
+ 
+            IF (IOPTRES.EQ.5 .AND. (.NOT.NODDY_ETA)) THEN
+
+              CONTINUE
+
+            ELSE IF (.NOT.NODDY_ETA) THEN
+
+C             -----------
+C             Open files:
+C             -----------
+ 
+              LUDKBC   = 0
+              LUCKJD   = 0
+              LUTOC    = 0
+              LU3VI    = 0
+              LUDKBC3  = 0  
+              LU3FOP   = 0  
+              LU3FOP2  = 0  
+ 
+              CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+              CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+              CALL WOPEN2(LUTOC,FNTOC,64,0)
+              CALL WOPEN2(LU3VI,FN3VI,64,0)
+              CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
+              CALL WOPEN2(LU3FOP,FN3FOP,64,0)
+              CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+ 
+              CALL CC3_ETASD(LISTL,IDLSTL,WORK(KFOCKB(ITRAN)),
+     *                       ISYHOP,FREQ,WORK(KFOCK0MO),
+     *                       WORK(KETA1),WORK(KETA2),WORK(KETA1EFF),
+     *                       WORK(KETA2EFF),ISYRES,WORK(KEND2),LWRK2,
+     *                       LUDKBC,FNDKBC,LUCKJD,FNCKJD,LUTOC,FNTOC,
+     *                       LU3VI,FN3VI,LUDKBC3,FNDKBC3,
+     *                       LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+ 
+COMMENT
+C      stop'after CC3_ETASD routine'
+COMMENT
+
+C             ------------
+C             Close files:
+C             ------------
+ 
+              CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
+              CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+              CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+              CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+              CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
+              CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
+              CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+ 
+            ELSE
+
+              CALL CCSDT_ETA_NODDY(LISTL,IDLSTL,IOPTRES,
+     &                             WORK(KFOCKB(ITRAN)),WORK(KFOCKBAO),
+     &                             FREQ,WORK(KFOCK0MO),
+     &                             WORK(KETA1),WORK(KETA2),
+     &                             WORK(KETA1EFF),WORK(KETA2EFF),
+     &                             IEDOTS,ECONS,FILETA,ITRAN,
+     &                             NXETRAN,MXVEC,WORK(KEND2),LWRK2 )
+            END IF
+
+          END IF
 
 
           IF (IOPTRES.EQ.0 .OR. IOPTRES.EQ.1) THEN
@@ -2445,6 +2766,10 @@ C
            END IF
            CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                   WORK(KETA1),WORK(KETA2),WORK(KEND2),LWRK2)
+           IF (CCSDT) THEN
+             CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
+     &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
+           END IF
           ELSE IF (IOPTRES.EQ.4) THEN
            IFILE  = IXETRAN(4,ITRAN)
            IF (ILSTSYM(FILETA,IFILE).NE.ISYRES) THEN
@@ -2452,11 +2777,26 @@ C
            END IF
            CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                   WORK(KETA1),WORK(KETA2),WORK(KEND2),LWRK2)
+           IF (CCSDT) THEN
+            CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
+     &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
+           END IF
           ELSE IF (IOPTRES.EQ.5) THEN
+           IF (LOCDBG) THEN
+             IVEC = 1
+             WRITE(LUPRI,*) 'ECONS TRIPLES CONTRIBUTION:'
+             DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+                WRITE (LUPRI,*) 
+     &                'ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
+                IVEC = IVEC + 1
+             END DO
+           END IF                
+
            IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KETA2),TWO,ISYRES)
            CALL CCDOTRSP(IEDOTS,ECONS,IOPTW,FILETA,ITRAN,NXETRAN,MXVEC,
      &                   WORK(KETA1),WORK(KETA2),ISYRES,
      &                   WORK(KEND2),LWRK2)
+
            IF (LOCDBG) THEN
              IVEC = 1
              DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
@@ -2470,7 +2810,7 @@ C
           END IF
 
           ! X1 vectors store <HF|J^(1)|CC> average on common block
-          IF (FILETA(1:2).EQ.'X1') THEN
+          IF (FILETA(1:3).EQ.'X1 ') THEN
             AVEX1(IFILE) = AVERAGE
           END IF
      
@@ -2484,6 +2824,14 @@ C
             I = 1
             IF (CCS) I = 0
             CALL CC_PRP(WORK(KETA1),WORK(KETA2),ISYRES,1,I)
+            IF (CCSDT.AND.IOPTRES.LT.5) THEN
+              XNORM = DDOT(NT1AM(ISYRES),WORK(KETA1EFF),1,
+     &                                   WORK(KETA1EFF),1)
+     &              + DDOT(NT2AM(ISYRES),WORK(KETA2EFF),1,
+     &                                   WORK(KETA2EFF),1)
+              WRITE (LUPRI,*) 'effective Eta vector:',XNORM
+              CALL CC_PRP(WORK(KETA1EFF),WORK(KETA2EFF),ISYRES,1,I)
+            END IF
             CALL FLSHFO(LUPRI)
           END IF
 
@@ -3404,9 +3752,9 @@ c /* deck ccxiintao */
 #endif
 #include <priunit.h>
 #include <ccorb.h>
+#include <maxorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-#include <maxorb.h>
 #include <ccisao.h>
 
       INTEGER ISYM0

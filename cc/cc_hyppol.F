@@ -131,6 +131,7 @@ c /* deck cc_hyppol */
 #else
       DOUBLE PRECISION SECOND
 #endif
+      CALL QENTER('CC_HYPPOL')
 
 *---------------------------------------------------------------------*
 * print header for hyperpolarizability section
@@ -661,6 +662,7 @@ C    &                 0,IOPERC,ITAMPA,ITAMPB,ITRAN,IVEC)
       CALL FLSHFO(LUPRI)
 
       IF (NQRDISP.EQ.0) THEN
+        CALL QEXIT('CC_HYPPOL')
         RETURN
       END IF
   
@@ -926,6 +928,8 @@ C    &                 0,IOPERC,ITAMPA,ITAMPB,ITRAN,IVEC)
      &  'in quadratic response section:', SECOND() - TIM0
 
       CALL FLSHFO(LUPRI)
+
+      CALL QEXIT('CC_HYPPOL')
 
       RETURN
       END

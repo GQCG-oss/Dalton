@@ -215,7 +215,7 @@ c/* Deck CC_DMAT */
      &            'matrix transformations')
       END IF
 
-      IF ( .not. (CCS .or. CC2 .or. MCC2 .or. CCSD) ) THEN
+      IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_DMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_DMAT...'
         CALL QUIT('Unkown CC method in CC_DMAT.')

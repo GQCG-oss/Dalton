@@ -59,7 +59,6 @@ C  /* Deck cc3_triplet */
 #include <dummy.h>
 #include <maxorb.h>
 #include <maxash.h>
-#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>

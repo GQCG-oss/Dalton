@@ -458,7 +458,7 @@ C     -------------------------------------------------
         IOPT = 3
         IVEC = IXETRAN(3,ITRAN)
         WRITE (LUPRI,*) 'CC_XETST: IVEC = ',IVEC
-        CALL CC_RDRSP('O1',IVEC,ISYHOP,IOPT,MODEL,
+        CALL CC_RDRSP('O1 ',IVEC,ISYHOP,IOPT,MODEL,
      &                WORK(KRHS1),WORK(KRHS2))
 
         CALL AROUND('analytical Xi vector:')
@@ -484,7 +484,7 @@ C       -------------------------------------------------
         IF (ISYHOP.EQ.1) THEN
           IOPT = 3
           IVEC = IXETRAN(3,ITRAN)
-          CALL CC_RDRSP('O1',IVEC,ISYHOP,IOPT,MODEL,
+          CALL CC_RDRSP('O1 ',IVEC,ISYHOP,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
           IOPT  = 3
           IVEC  = 0
@@ -632,7 +632,7 @@ C     -------------------------------------------------
         IOPT = 3
         IVEC = IXETRAN(4,ITRAN) 
         WRITE (LUPRI,*) 'CC_XETST: IVEC = ',IVEC
-        CALL CC_RDRSP('X1',IVEC,ISYETA,IOPT,MODEL,
+        CALL CC_RDRSP('X1 ',IVEC,ISYETA,IOPT,MODEL,
      &                WORK(KETA1),WORK(KETA2))
 
         CALL AROUND('analytical Eta vector:')

@@ -461,7 +461,8 @@ C     ---------------------------------
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)
 C     ISYETA = ISYHOP
-C     CALL CC_RDRSP('X1',IVEC,ISYETA,IOPT,MODEL,WORK(KRHO1),WORK(KRHO2))
+C     CALL CC_RDRSP('X1 ',IVEC,ISYETA,IOPT,MODEL,
+C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)
@@ -521,7 +522,8 @@ C     ---------------------------------
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)
 C     ISYETA = ISYHOP
-C     CALL CC_RDRSP('X1',IVEC,ISYETA,IOPT,MODEL,WORK(KRHO1),WORK(KRHO2))
+C     CALL CC_RDRSP('X1 ',IVEC,ISYETA,IOPT,MODEL,
+C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)
@@ -724,7 +726,8 @@ C     ---------------------------------
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)
 C     ISYETA = ISYHOP
-C     CALL CC_RDRSP('X1',IVEC,ISYETA,IOPT,MODEL,WORK(KRHO1),WORK(KRHO2))
+C     CALL CC_RDRSP('X1 ',IVEC,ISYETA,IOPT,MODEL,
+C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)
@@ -784,7 +787,8 @@ C     ---------------------------------
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)
 C     ISYETA = ISYHOP
-C     CALL CC_RDRSP('X1',IVEC,ISYETA,IOPT,MODEL,WORK(KRHO1),WORK(KRHO2))
+C     CALL CC_RDRSP('X1',IVEC,ISYETA,IOPT,MODEL,
+C    &              WORK(KRHO1),WORK(KRHO2))
 
       LEN       = NT1AMX + NT2AMX
       IADRF_ETA = IXETRAN(4,1)

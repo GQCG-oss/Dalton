@@ -121,7 +121,10 @@ C
 #include <ccfop.h>
 #include <ccfro.h>
 #include <eribuf.h>
-C
+!
+!SONIA SONIA
+#include <grdccpt.h>
+!
       PARAMETER(NMODEL = 18)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
@@ -248,7 +251,7 @@ C
       LCCSAV(1)  = CCS
       LCCSAV(2)  = MP2
       LCCSAV(3)  = CCP2
-      LCCSAV(4)  = MCC2
+      LCCSAV(4)  = .FALSE.
       LCCSAV(5)  = CC2
       LCCSAV(6)  = .FALSE.
       LCCSAV(7)  = CCD
@@ -361,7 +364,7 @@ C
          IF (I.EQ.1)  CCS    = LCCSAV(1)
          IF (I.EQ.2)  MP2    = LCCSAV(2)
          IF (I.EQ.3)  CCP2   = LCCSAV(3)
-         IF (I.EQ.4)  MCC2   = LCCSAV(4)
+         IF (I.EQ.4)  GOTO 100
          IF (I.EQ.4)  CC2    = LCCSAV(4)
          IF (I.EQ.5)  CC2    = LCCSAV(5)
          IF (I.EQ.6)  GOTO 100
@@ -459,6 +462,9 @@ C
    31     CONTINUE
 C
 C          ! no energy in gradient step for geometry optimization
+!SONIA SONIA
+!SONIA SONIA Missing integrals then for CCSD(T)?
+!SONIA SONIA
            IF (.NOT.MOLGRD) THEN
 
               CALL CCSD_ENERGY(LSORT,WORK,LWORK)
@@ -479,11 +485,23 @@ C          ***** CC Lambda vector *****
 C          ****************************
 C--------------------------------------
 C
+!
+!SONIA SONIA SONIA: this has changed, but HOW????????????????
+!
+!
+
            IF ((CCFOP.OR.LTBAR0)
      *       .AND.(.NOT.
-     *       (CCSDT.OR.CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
+     *       (CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
 C
-              CALL CC_FOP(WORK,LWORK)
+              IF (.NOT. (CCSDT .AND. (.NOT. CC3))) THEN
+                 !...................................
+                 !SONIA: I am not sure but let us try
+                 !...................................
+                 !IF ( I .EQ. 10 ) CALL CC3_FILOP()
+                 !...................................
+                 CALL CC_FOP(WORK,LWORK)
+              ENDIF
 C
            ENDIF
 C
@@ -520,6 +538,11 @@ C----------------------------------------------------------------------*
 C
          IF (CCDERI .OR. MOLGRD) THEN
             CALL CC_GRADIENT(WORK,LWORK)
+!SONIA SONIA
+!SONIA SONIA
+!SONIA SONIA
+            IGRDCCPT = IGRDCCPT + 1
+
             IF (MOLGRD) GOTO 100
          END IF
 C
@@ -563,7 +586,7 @@ C
 C
                IF (LHTR.OR.CCLRSD.OR.CCQR2R.OR.LPTEXC.OR.CCP2.OR.
      *             LLEFTEIG.OR.CCEXGR) THEN
-                 IF ((I .LT. 16).AND.(.NOT.LESKIP)) THEN
+                 IF ((I .LT. 17).AND.(.NOT.LESKIP)) THEN
                    CALL CC_EXCI(WORK,LWORK,'LE ')
                  ELSE
                    WRITE(LUPRI,*) 'No triples left excitation energies '
@@ -586,7 +609,7 @@ C------------------------------------------------
 C        The rest is not implemented for triples.
 C------------------------------------------------
 C
-         IF (I.GT.9) GOTO 90 
+         IF (I.GT.9 .AND. I.NE.16) GOTO 90 
 C
 C------------------------------------------------------------
 C        ****************************************************
@@ -605,17 +628,24 @@ C        *********************************************
 C-----------------------------------------------------
 C
          IF (CCEXGR) THEN
+           IF (CCS .or. CC2 .or. CCSD) THEN
             CALL CC_EXGR(WORK,LWORK)
+           ELSE
+            WRITE(LUPRI,*) 'Excited state gradient properties'//
+     &         'are not implemented for the requested model.'
+           END IF
          ENDIF 
 C
 C---------------------------------------------------------------
 C        precalculate expectatation values & eff. Fock matrices:
 C---------------------------------------------------------------
 C
-          I1DXORD = 0
-          IOPREL  = 0
-          CALL CC_GRAD2(I1DXORD,WORK,LWORK)
-C         CALL CCEFFFOCK(I1DXORD,IOPREL,WORK,LWORK)
+          IF (CCS .or. CC2 .or. CCSD) THEN
+            I1DXORD = 0
+            IOPREL  = 0
+            CALL CC_GRAD2(I1DXORD,WORK,LWORK)
+C           CALL CCEFFFOCK(I1DXORD,IOPREL,WORK,LWORK)
+          END IF
 
 C
 C-----------------------------------------------
@@ -635,7 +665,12 @@ C        ***************************************
 C-----------------------------------------------
 C
          IF (CCLRSD) THEN 
+           IF (CCS .or. CC2 .or. CCSD) THEN
             CALL CC_LRESID(WORK,LWORK)  
+           ELSE
+            WRITE(LUPRI,*) 'Linear response residues'//
+     &         ' are not implemented for the requested model.'
+           END IF
          END IF
 C
 C--------------------------------------------------------
@@ -645,7 +680,12 @@ C        ************************************************
 C--------------------------------------------------------
 C
          IF (CCQR2R) THEN
+           IF (CCS .or. CC2 .or. CCSD) THEN
             CALL CC_QR2RSD(WORK,LWORK)
+           ELSE
+            WRITE(LUPRI,*) 'Quadratic response residues'//
+     &         ' are not implemented for the requested model.'
+           END IF
          END IF
 C
 C-------------------------------------------------------
@@ -655,7 +695,12 @@ C        ***********************************************
 C-------------------------------------------------------
 C
          IF (CCSM) THEN 
+           IF (CCS .or. CC2 .or. CCSD) THEN
             CALL CC_SMCAL(WORK,LWORK)  
+           ELSE
+            WRITE(LUPRI,*) 'second-order transition moments'//
+     &         ' are not implemented for the requested model.'
+           END IF
          ENDIF
 C
 C------------------------------------------------------
@@ -665,7 +710,12 @@ C        **********************************************
 C------------------------------------------------------
 C
          IF (CCTM) THEN 
+           IF (CCS .or. CC2 .or. CCSD) THEN
             CALL CC_TMCAL(WORK,LWORK)  
+           ELSE
+            WRITE(LUPRI,*) 'third-order transition moments'//
+     &         ' are not implemented for the requested model.'
+           END IF
          ENDIF
 C
 C-------------------------------------------------------
@@ -675,7 +725,12 @@ C        ***********************************************
 C-------------------------------------------------------
 C
          IF (CCMCD) THEN
+           IF (CCS .or. CC2 .or. CCSD) THEN
             CALL CC_MCDCAL(WORK,LWORK)
+           ELSE
+            WRITE(LUPRI,*) 'magnetic circular dichroism'//
+     &         ' is not implemented for the requested model.'
+           END IF
          ENDIF
 C
 C-----------------------------------------
@@ -687,7 +742,7 @@ C
          IF ( CCLR .AND. NBLRFR.GT.0) THEN
 C
             IF (((.NOT. MP2).OR.CCP2).AND.(.NOT.CCD)) THEN
-               IF (OLDLR) THEN
+               IF ((OLDLR .AND. .NOT.CCSDT) .OR. CIS) THEN
                  CALL CC_LR(WORK,LWORK)
                ELSE
                  CALL CC_SOP(WORK,LWORK)
@@ -789,7 +844,12 @@ C        ********************************************
 C----------------------------------------------------
 C
          IF (CCEXLR) THEN 
+           IF (CCS .or. CC2 .or. CCSD) THEN
             CALL CC_EXLR(WORK,LWORK)  
+           ELSE
+            WRITE(LUPRI,*) 'Excited state linear response'//
+     &         ' is not implemented for the requested model.'
+           END IF
          END IF
 C
 C--------------------------------------------------
@@ -838,6 +898,10 @@ C-------------------------------------------------
 C        Close files used in triples calculations.
 C-------------------------------------------------
 C     
+!SONIA SONIA SONIA
+!SONIA SONIA SONIA: take care. Closed files we need for geoopt????
+!SONIA SONIA SONIA
+
       IF ( I .GT. 9 ) CALL CC3_FILCL()
 C
  100  CONTINUE
@@ -851,7 +915,6 @@ C
       CCS    = LCCSAV(1)
       MP2    = LCCSAV(2)
       CCP2   = LCCSAV(3)
-      MCC2   = LCCSAV(4)
       CC2    = LCCSAV(5)
       CCD    = LCCSAV(7)
       CCSD   = LCCSAV(9)
@@ -1105,7 +1168,6 @@ C
       CCS    = .FALSE.
       MP2    = .FALSE.
       CCP2   = .FALSE.
-      MCC2   = .FALSE.
       CC2    = .FALSE.
       CCD    = .FALSE.
       CCSD   = .FALSE.
@@ -1210,54 +1272,10 @@ C
 C
       CALL QENTER('CCTAPINI')
 C
-      LUTOC   = 0
-      LU3VI   = 0
-      LU3VI2  = 0
-      LU3VI3  = 0
-      LU3VI4  = 0
-      LU3SRT  = 0
-      LUDELD  = 0
-      LUDKBC  = 0
-      LUCKJD  = 0
-      LUIAJB  = 0
       LUBFDN  = 0
       LURES   = 0
       LUCSOL  = 0
       LUCTLM  = 0
-      LU3SRT2 = 0
-      LU3SRT3 = 0
-      LUCKJD2 = 0
-      LUCKJD3 = 0
-      LUDELD2 = 0
-      LUDELD3 = 0
-      LUDELD4 = 0
-      LUDELD5 = 0
-      LUDKBC2 = 0
-      LUDKBC3 = 0
-      LUDKBC4 = 0
-      LUDKBC5 = 0
-C
-      FNTOC   = 'CCSDT_OC'
-      FN3VI   = 'CC3_VI'
-      FN3VI2  = 'CC3_VI12'
-      FN3VI3  = 'CC3_VI13'
-      FN3VI4  = 'CC3_VI14'
-      FN3SRT  = 'CC3_SORT'
-      FNDELD  = 'CKDELD'
-      FNDKBC  = 'DKBC'
-      FNCKJD  = 'CKJDEL'
-      FN3SRT2 = 'CC3_SORT2'
-      FN3SRT3 = 'CC3_SORT3'
-      FNCKJD2 = 'CKJDEL2'
-      FNCKJD3 = 'CKJDEL3'
-      FNDELD2 = 'CKDELD2'
-      FNDELD3 = 'CKDELD3'
-      FNDELD4 = 'CKDELD4'
-      FNDELD5 = 'CKDELD5'
-      FNDKBC2 = 'DKBC2'
-      FNDKBC3 = 'DKBC3'
-      FNDKBC4 = 'DKBC4'
-      FNDKBC5 = 'DKBC5'
 C
       CALL QEXIT('CCTAPINI')
 C

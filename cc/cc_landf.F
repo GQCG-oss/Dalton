@@ -887,7 +887,7 @@ C------------------------------------------------
 C
                   NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
 C
-                  IF (.NOT.(CC2.AND..NOT.MCC2)) THEN
+                  IF (.NOT.(CC2)) THEN
 C
                      IF (ISYMBJ .EQ. ISYRES) THEN
 C

@@ -70,7 +70,8 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),WORK(LWORK)
 C
-      CHARACTER*6  CFIL,DFIL
+      CHARACTER CFIL*6,DFIL*6, FN3SRT*8, FNDELD*6
+      CHARACTER FNCKJD*6, FNDKBC*4, FNTOC*8, FN3VI*6, FN3VI2*8
 C
 C
 #include <ccorb.h>
@@ -84,6 +85,8 @@ C
 #include <distcl.h>
 #include <cbieri.h>
 #include <eribuf.h>
+C
+      CALL QENTER('CCRHSN')
 C
 C-----------------------------------------------------------
 C     For energy calculation trial vector is totalsymmetric.
@@ -120,6 +123,33 @@ C
          CALL WOPEN2(LUD,DFIL,64,0)
 C
       END IF
+C
+      IF (CCSDT) THEN
+C
+         LU3SRT = 0
+         LUCKJD = 0
+         LUDELD = 0
+         LUDKBC = 0
+         LUTOC  = 0
+         LU3VI  = 0
+         LU3VI2 = 0
+         FN3SRT = 'CC3_SORT'
+         FNCKJD = 'CKJDEL'
+         FNDELD = 'CKDELD'
+         FNDKBC = 'DKBC'
+         FNTOC  = 'CCSDT_OC'
+         FN3VI  = 'CC3_VI'
+         FN3VI2 = 'CC3_VI12'
+C
+         CALL WOPEN2(LU3SRT,FN3SRT,64,0)
+         CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+         CALL WOPEN2(LUDELD,FNDELD,64,0)
+         CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+         CALL WOPEN2(LUTOC,FNTOC,64,0)
+         CALL WOPEN2(LU3VI,FN3VI,64,0)
+         CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+C
+      ENDIF
 C
 C----------------------------------
 C     Initialize timing parameters.
@@ -465,7 +495,8 @@ C
                IF (CCSDT .AND. ((.NOT. CC1B) .OR. (.NOT. CC1A))) THEN
 C
                   CALL CC3_T3INT(WORK(KXINT),WORK(KLAMDP),WORK(KLAMDH),
-     *                           T1AM,1,WORK(KEND2),LWRK2,IDEL,ISYMD,1)
+     *                           T1AM,1,WORK(KEND2),LWRK2,IDEL,ISYMD,1,
+     *                           LU3SRT,FN3SRT,LUCKJD,FNCKJD)
 C
                ENDIF
 C
@@ -987,13 +1018,28 @@ C     Add connected triples corrections to the vector function.
 C--------------------------------------------------------------
 C
       IF (CCSDT) THEN
-c        CALL CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,WORK(KFOCK),
-c    *                    WORK(KLAMDP),WORK(KLAMDH),WORK(KEND2),
-c    *                    LWRK2)
+COMMENT COMMENT COMMENT
+COMMENT COMMENT COMMENT
+COMMENT COMMENT COMMENT
+C         Unrelaxed noddy
+C          CALL CC_FOPTRIPLES(OMEGA1,DUMMY,DUMMY,T1AM,T2AM,
+C     *                       WORK(KLAMDP),WORK(KLAMDH),
+C     *                       WORK(KEND2),LWRK2)
+C         Original noddy part
+C       CALL CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,WORK(KFOCK),
+C     *                    WORK(KLAMDP),WORK(KLAMDH),WORK(KEND2),
+C     *                    LWRK2)
 C
+C         Normal triples part
          CALL CC3_OMEG(OMEGA1,OMEGA2,T1AM,ISYMTR,T2AM,ISYMTR,
      *                 WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
-     *                 WORK(KEND2),LWRK2)
+     *                 WORK(KEND2),LWRK2,LU3SRT,FN3SRT,LUDELD,
+     *                 FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC,
+     *                 LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2)
+C 
+COMMENT COMMENT COMMENT
+COMMENT COMMENT COMMENT
+COMMENT COMMENT COMMENT
 C
 C----------------------------------------
 C        Reconstruct full square of T2AM.
@@ -1291,11 +1337,23 @@ C
          CALL WCLOSE2(LUD,DFIL,'KEEP')
       END IF
 C
+      IF (CCSDT) THEN
+         CALL WCLOSE2(LU3SRT,FN3SRT,'KEEP')
+         CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+         CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
+         CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
+         CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+         CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+         CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
+      ENDIF
+C
 C-----------------------
 C     Restore CC1B flag.
 C-----------------------
 C
       CC1B = CC1BSA
+C
+      CALL QEXIT('CCRHSN')
 C
       RETURN
       END

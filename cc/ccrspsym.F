@@ -98,7 +98,7 @@ c /* deck ccrspsym */
 #include <ccpl1rsp.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(18)
+      CHARACTER MSGDBG*(16)
       PARAMETER (MSGDBG='[debug] CCRSPSYM> ')
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CCRSPSYM')
@@ -325,7 +325,7 @@ C          ----------------------------------------------------
          END DO
        END IF
 
-      CALL CCLSTSORT('o1',IDUM, IDUM, RDUM, ISYOPR,LBLOPR,RDUM,IDUM,
+      CALL CCLSTSORT('o1 ',IDUM, IDUM, RDUM, ISYOPR,LBLOPR,RDUM,IDUM,
      &                    LDUM, ISYOFO,  NRSOLBL, MAXOLBL, LDUM )
 
 *---------------------------------------------------------------------*
@@ -834,76 +834,76 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
       LPL1OPN  = .FALSE.
 
 * sort lists:
-      CALL CCLSTSORT('O1',IDUM, IDUM, RDUM, ISYO1,LBLO1,FRQO1, IDUM,
+      CALL CCLSTSORT('O1 ',IDUM, IDUM, RDUM, ISYO1,LBLO1,FRQO1, IDUM,
      &                    LORXO1, ISYOFO1,  NO1LBL, MAXO1LBL, LDUM    )
 
-      CALL CCLSTSORT('R1',IDUM, IDUM, RDUM, ISYLRT,LRTLBL,FRQLRT, IDUM,
+      CALL CCLSTSORT('R1 ',IDUM, IDUM, RDUM, ISYLRT,LRTLBL,FRQLRT, IDUM,
      &                    LORXLRT, ISYOFT,  NLRTLBL, MAXTLBL, LDUM    )
 
-      CALL CCLSTSORT('RC',IDUM, IDUM, RDUM, ISYLRC,LRCLBL,RDUM,ILRCAU,
+      CALL CCLSTSORT('RC ',IDUM, IDUM, RDUM, ISYLRC,LRCLBL,RDUM,ILRCAU,
      &                    LDUM, ISYOFC,  NLRCLBL, MAXCLBL, LDUM    )
 
-      CALL CCLSTSORT('X1',IDUM, IDUM, RDUM, ISYX1,LBLX1,FRQX1, IDUM,
+      CALL CCLSTSORT('X1 ',IDUM, IDUM, RDUM, ISYX1,LBLX1,FRQX1, IDUM,
      &                    LORXX1, ISYOFX1,  NX1LBL, MAXX1LBL, LDUM    )
 
-      CALL CCLSTSORT('L1',IDUM, IDUM, RDUM, ISYLRZ,LRZLBL,FRQLRZ, IDUM,
+      CALL CCLSTSORT('L1 ',IDUM, IDUM, RDUM, ISYLRZ,LRZLBL,FRQLRZ, IDUM,
      &                    LORXLRZ, ISYOFZ,  NLRZLBL, MAXZLBL, LDUM    )
 
-      CALL CCLSTSORT('LC',IDUM, IDUM, RDUM, ISYLC1,LBLLC1,RDUM,ILC1CAU,
+      CALL CCLSTSORT('LC ',IDUM, IDUM, RDUM, ISYLC1,LBLLC1,RDUM,ILC1CAU,
      &                    LDUM, ISYOFLC1, NLC1LBL, MAXLC1LBL, LDUM  )
 
-      CALL CCLSTSORT('O2',IDUM, IDUM, RDUM, ISYO2, LBLO2, FRQO2, IDUM,
+      CALL CCLSTSORT('O2 ',IDUM, IDUM, RDUM, ISYO2, LBLO2, FRQO2, IDUM,
      &                    LDUM, ISYOFO2, NO2LBL,  MAXO2LBL, LDUM   )
 
       CALL CCLSTSORT('CO2',IDUM,IDUM, RDUM, ISYCO2,LBLCO2,RDUM,ICO2CAU,
      &                    LDUM, ISYOFCO2,NCO2LBL, MAXCO2LBL,LDUM   )
  
-      CALL CCLSTSORT('X2',IDUM, IDUM, RDUM, ISYX2, LBLX2, FRQX2, IDUM,
+      CALL CCLSTSORT('X2 ',IDUM, IDUM, RDUM, ISYX2, LBLX2, FRQX2, IDUM,
      &                    LDUM, ISYOFX2, NX2LBL,  MAXX2LBL, LDUM   )
 
       CALL CCLSTSORT('CX2',IDUM,IDUM, RDUM, ISYCX2,LBLCX2,RDUM,ICX2CAU,
      &                    LDUM, ISYOFCX2,NCX2LBL, MAXCX2LBL,LDUM   )
  
-      CALL CCLSTSORT('R2',IDUM, IDUM, RDUM, ISYR2T,LBLR2T,FRQR2T,IDUM,
+      CALL CCLSTSORT('R2 ',IDUM, IDUM, RDUM, ISYR2T,LBLR2T,FRQR2T,IDUM,
      &                    LDUM, ISYOFT2, NR2TLBL, MAXT2LBL, LDUM   )
  
       CALL CCLSTSORT('CR2',IDUM,IDUM, RDUM, ISYCR2,LBLCR2,RDUM,ICR2CAU,
      &                    LDUM, ISYOFCR2,NCR2LBL, MAXCR2LBL,LDUM   )
  
-      CALL CCLSTSORT('L2',IDUM, IDUM, RDUM, ISYL2, LBLL2, FRQL2, IDUM,
+      CALL CCLSTSORT('L2 ',IDUM, IDUM, RDUM, ISYL2, LBLL2, FRQL2, IDUM,
      &                    LDUM, ISYOFL2, NL2LBL,  MAXL2LBL, LDUM   )
 
       CALL CCLSTSORT('CL2',IDUM,IDUM, RDUM, ISYCL2,LBLCL2,RDUM,ICL2CAU,
      &                    LDUM, ISYOFCL2,NCL2LBL, MAXCL2LBL,LDUM   )
  
-      CALL CCLSTSORT('O3',IDUM, IDUM, RDUM, ISYO3, LBLO3, FRQO3, IDUM,
+      CALL CCLSTSORT('O3 ',IDUM, IDUM, RDUM, ISYO3, LBLO3, FRQO3, IDUM,
      &                    LDUM, ISYOFO3, NO3LBL,  MAXO3LBL, LDUM   )
 
-      CALL CCLSTSORT('X3',IDUM, IDUM, RDUM, ISYX3, LBLX3, FRQX3, IDUM,
+      CALL CCLSTSORT('X3 ',IDUM, IDUM, RDUM, ISYX3, LBLX3, FRQX3, IDUM,
      &                    LDUM, ISYOFX3, NX3LBL,  MAXX3LBL, LDUM   )
 
-      CALL CCLSTSORT('R3',IDUM, IDUM, RDUM, ISYR3T,LBLR3T,FRQR3T, IDUM,
+      CALL CCLSTSORT('R3 ',IDUM, IDUM, RDUM, ISYR3T,LBLR3T,FRQR3T, IDUM,
      &                    LDUM, ISYOFT3, NR3TLBL, MAXT3LBL, LDUM   )
  
-      CALL CCLSTSORT('L3',IDUM, IDUM, RDUM, ISYL3, LBLL3, FRQL3, IDUM,
+      CALL CCLSTSORT('L3 ',IDUM, IDUM, RDUM, ISYL3, LBLL3, FRQL3, IDUM,
      &                    LDUM, ISYOFL3, NL3LBL,  MAXL3LBL, LDUM   )
 
-      CALL CCLSTSORT('O4',IDUM, IDUM, RDUM, ISYO4, LBLO4, FRQO4, IDUM,
+      CALL CCLSTSORT('O4 ',IDUM, IDUM, RDUM, ISYO4, LBLO4, FRQO4, IDUM,
      &                    LDUM, ISYOFO4, NO4LBL,  MAXO4LBL, LDUM   )
 
-      CALL CCLSTSORT('X4',IDUM, IDUM, RDUM, ISYX4, LBLX4, FRQX4, IDUM,
+      CALL CCLSTSORT('X4 ',IDUM, IDUM, RDUM, ISYX4, LBLX4, FRQX4, IDUM,
      &                    LDUM, ISYOFX4, NX4LBL,  MAXX4LBL, LDUM   )
 
-      CALL CCLSTSORT('R4',IDUM, IDUM, RDUM, ISYR4T,LBLR4T,FRQR4T, IDUM,
+      CALL CCLSTSORT('R4 ',IDUM, IDUM, RDUM, ISYR4T,LBLR4T,FRQR4T, IDUM,
      &                    LDUM, ISYOFT4, NR4TLBL, MAXT4LBL, LDUM   )
  
-      CALL CCLSTSORT('L4',IDUM, IDUM, RDUM, ISYL4, LBLL4, FRQL4, IDUM,
+      CALL CCLSTSORT('L4 ',IDUM, IDUM, RDUM, ISYL4, LBLL4, FRQL4, IDUM,
      &                    LDUM, ISYOFL4, NL4LBL,  MAXL4LBL, LDUM   )
 
-      CALL CCLSTSORT('M1',ISYLRM, ILRM, FRQLRM, IDUM, CDUM, RDUM, IDUM,
+      CALL CCLSTSORT('M1 ',ISYLRM, ILRM, FRQLRM, IDUM, CDUM, RDUM, IDUM,
      &                    LDUM, ISYOFM,  NLRM,    MAXM,     LDUM   )
 
-      CALL CCLSTSORT('N2',ISYSN2, ISTN2, EIGN2, IDUM, CDUM, RDUM, IDUM,
+      CALL CCLSTSORT('N2 ',ISYSN2, ISTN2, EIGN2, IDUM, CDUM, RDUM, IDUM,
      &                    LDUM, ISYOFN2, NQRN2,   MAXQRN2,  LDUM   )
 
       CALL CCLSTSORT('ER1',ISYSER1, ISTER1, EIGER1, 
@@ -1703,6 +1703,7 @@ c /* deck cc_lrind */
 *    CH  nov. 1998: relaxed response.
 *    CH  feb. 1999: missing (anti-)symmetrization in +/- w introduced.
 *    CH  may. 1999: changes for first-order property gradients
+*    CH  apr. 2002: changes for CC3 freq.-dep. polarizabilities
 *
 *=====================================================================*
 #include <implicit.h>
@@ -1740,6 +1741,7 @@ c /* deck cc_lrind */
       INTEGER ILRCAMP
       INTEGER ILC1AMP
       INTEGER IROPER
+      INTEGER IETA1
 
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
@@ -2013,8 +2015,8 @@ c /* deck cc_qrind */
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
       DATA    FIRSTCALL /.TRUE./
-      CHARACTER*7 CISA(-1:1)
-      DATA    CISA /'odd    ','unknown','even   '/
+      CHARACTER*6 CISA(-1:1)
+      DATA    CISA /'odd   ','unknown','even  '/
 
 
 *---------------------------------------------------------------------*
@@ -2037,8 +2039,10 @@ c /* deck cc_qrind */
         LORXB   = LBQLRX(IOPER)
         LORXC   = LCQLRX(IOPER)
 
+        IF (LOCDBG) THEN
           WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
      &     'CHECK TRIPLE:',LABELA, LABELB, LABELC
+        END IF
 
         IF ( IOPA.LT.0 .OR. IOPB.LT.0 .OR. IOPC.LT.0 ) THEN
           WRITE(LUPRI,'(/2X,7A,/2X,2A)')
@@ -2111,8 +2115,10 @@ c /* deck cc_qrind */
           END DO
           NQROPER = NQROPER - 1
         ELSE 
-          WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
-     &     'PUT TRIPLE:',LABELA, LABELB, LABELC,' ON THE LIST.'
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
+     &       'PUT TRIPLE:',LABELA, LABELB, LABELC,' ON THE LIST.'
+          END IF
           IAQROP(IOPER) = IROPER(LABELA,ISYMA) 
           IBQROP(IOPER) = IROPER(LABELB,ISYMB)
           ICQROP(IOPER) = IROPER(LABELC,ISYMC)
@@ -3782,9 +3788,11 @@ c /* deck cc_mcdind */
           IOPB   = IROPER(LABELB,ISYMB)
           IOPC   = IROPER(LABELC,ISYMC)
 
-          WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
-     &     'CHECK TRIPLET:',LABELA, LABELB, LABELC
-          CALL FLSHFO(LUPRI)
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
+     &       'CHECK TRIPLET:',LABELA, LABELB, LABELC
+            CALL FLSHFO(LUPRI)
+          END IF
 
 
           IF ( (IOPA.LT.0) .OR. (IOPB.LT.0) .OR. (IOPC.LT.0) ) THEN
@@ -3852,9 +3860,10 @@ c /* deck cc_mcdind */
             END DO
             NMCDOPER = NMCDOPER - 1        !decrease # of triplets
           ELSE 
-            WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
-     &      'PUT TRIPLET:',LABELA, LABELB, LABELC,' ONTO THE LIST.'
-
+            IF (LOCDBG) THEN
+              WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
+     &        'PUT TRIPLET:',LABELA, LABELB, LABELC,' ONTO THE LIST.'
+            END IF
             IAMCDOP(IOPER) = IROPER(LABELA,ISYMA)
             IBMCDOP(IOPER) = IROPER(LABELB,ISYMB)
             ICMCDOP(IOPER) = IROPER(LABELC,ISYMC)
@@ -3873,7 +3882,8 @@ c /* deck cc_mcdind */
 *
       IF (SELMCDST) THEN
 
-* check if all required states available, if not remove them from the list:
+*       check if all required states available, 
+*       if not remove them from the list:
 
         IDXS = 1
         DO WHILE (IDXS .LE. NMCDST)
@@ -4545,7 +4555,7 @@ C /* Deck ILC1AMP */
       INTEGER FUNCTION ILC1AMP(NEWLBL,ICAUCH,ISYM)
 *---------------------------------------------------------------------*
 C
-C maintain the list of right cauchy vectors. 
+C maintain the list of left cauchy vectors. 
 C
 C   if vector is on the list return list index and set symmetry
 C   if vector is NOT on the list, then
@@ -4796,7 +4806,7 @@ C  /* Deck cclstsort */
 
 * check TYPE and determine number of states involved and resp. order:
       IF      (     TYPE(1:2).EQ.'R1' .OR. TYPE(1:2).EQ.'L1' 
-     &         .OR. TYPE(1:2).EQ.'O1' .OR. TYPE(1:2).EQ.'X1'
+     &         .OR. TYPE(1:3).EQ.'O1 '.OR. TYPE(1:3).EQ.'X1 '
      &         .OR. TYPE(1:2).EQ.'RC' .OR. TYPE(1:2).EQ.'LC'
      &         .OR. TYPE(1:2).EQ.'o1'                        ) THEN
         NSTAT = 0
@@ -4913,10 +4923,10 @@ C  /* Deck cclstcmp */
 *                'RC', 'LC', 'CRn', 'COn', 'CLn', 'CXn'
 *
 *          orbital relaxation flags LORX only used for 
-*                'o1', 'O1', 'R1', 'X1', 'L1' ,'PL1', 'EL1'  
+*                'o1 ', 'O1 ', 'R1 ', 'X1 ', 'L1 ' ,'PL1 ', 'EL1 '  
 *
 *          special treatments: 
-*             'o1'           -- no frequency and no orbital relaxation
+*             'o1 '          -- no frequency and no orbital relaxation
 *
 *
 * Christof Haettig, October 1996, 
@@ -5109,8 +5119,8 @@ C  /* Deck cclstcmp */
 *---------------------------------------------------------------------*
 * compare orbital relaxation flags: 
 *---------------------------------------------------------------------*
-      IF (TYPE(1:2).EQ.'O1' .OR. TYPE(1:2).EQ.'R1' .OR.
-     &    TYPE(1:2).EQ.'X1' .OR. TYPE(1:2).EQ.'L1' .OR.
+      IF (TYPE(1:3).EQ.'O1 '.OR. TYPE(1:2).EQ.'R1' .OR.
+     &    TYPE(1:3).EQ.'X1 '.OR. TYPE(1:2).EQ.'L1' .OR.
      &    TYPE(1:3).EQ.'PL1'.OR. TYPE(1:3).EQ.'EL1'     ) THEN
 
         DO IDX = 1, ORDER
@@ -5158,7 +5168,7 @@ C  /* Deck cclstswap */
 *                'RC', 'LC', 'CRn', 'COn', 'CLn', 'CXn'
 *
 *          orbital relaxation flags LORX only used for 
-*                'o1', 'O1', 'R1', 'X1', 'L1', 'PL1', 'EL1'   
+*                'o1 ', 'O1 ', 'R1 ', 'X1 ', 'L1 ', 'PL1 ', 'EL1 '   
 *
 *          for 'ELn' and 'ERn' and 'PL1' also the projection 
 *                                        flag is swapped
@@ -5273,8 +5283,8 @@ C  /* Deck cclstswap */
 *---------------------------------------------------------------------*
 * swap orbital relaxation flags: 
 *---------------------------------------------------------------------*
-      IF (TYPE(1:2).EQ.'O1' .OR. TYPE(1:2).EQ.'R1' .OR.
-     &    TYPE(1:2).EQ.'X1' .OR. TYPE(1:2).EQ.'L1' .OR.
+      IF (TYPE(1:3).EQ.'O1 '.OR. TYPE(1:2).EQ.'R1' .OR.
+     &    TYPE(1:3).EQ.'X1 '.OR. TYPE(1:2).EQ.'L1' .OR.
      &    TYPE(1:3).EQ.'PL1'.OR. TYPE(1:3).EQ.'EL1'   ) THEN
         DO IDX = 1, ORDER
           LSWAP            = LORX(IVEC,IDX)
@@ -5367,7 +5377,7 @@ C  /* Deck ilstsym */
       IF (LIST(1:2).EQ.'o1') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NRSOLBL) LEOOR = .TRUE.
          ILSTSYM = ISYOPR(INDEX)
-      ELSE IF (LIST(1:2).EQ.'O1') THEN
+      ELSE IF (LIST(1:3).EQ.'O1 '.OR.LIST(1:3).EQ.'O1e') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NO1LBL) LEOOR = .TRUE.
          ILSTSYM = ISYO1(INDEX)
       ELSE IF (LIST(1:2).EQ.'O2' ) THEN
@@ -5385,7 +5395,7 @@ C  /* Deck ilstsym */
       ELSE IF (LIST(1:3).EQ.'CO2') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NCO2LBL) LEOOR = .TRUE.
          ILSTSYM = MULD2H(ISYCO2(INDEX,1),ISYCO2(INDEX,2))
-      ELSE IF (LIST(1:2).EQ.'X1') THEN
+      ELSE IF (LIST(1:3).EQ.'X1 '.OR.LIST(1:3).EQ.'X1e') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NX1LBL) LEOOR = .TRUE.
          ILSTSYM = ISYX1(INDEX)
       ELSE IF (LIST(1:2).EQ.'X2' ) THEN
@@ -5500,6 +5510,194 @@ C        WRITE (LUPRI,*) LIST(-999999:-999999)
       END
 *=====================================================================*
 *=====================================================================*
+C  /* Deck freqlst */
+*=====================================================================*
+#if defined (SYS_CRAY)
+      REAL FUNCTION FREQLST(LIST, INDEX)
+#else
+      DOUBLE PRECISION FUNCTION FREQLST(LIST, INDEX)
+#endif
+*---------------------------------------------------------------------*
+* PURPOSE: return frequency for vector on list
+*
+*          LIST : list type
+*          INDEX: index of the vector on the list
+*
+* Christof Haettig, April 2002
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccroper.h>
+#include <cclrmrsp.h>
+#include <ccer1rsp.h>
+#include <ccer2rsp.h>
+#include <ccel1rsp.h>
+#include <ccel2rsp.h>
+#include <ccr1rsp.h>
+#include <ccr2rsp.h>
+#include <ccr3rsp.h>
+#include <ccr4rsp.h>
+#include <ccx1rsp.h>
+#include <ccx2rsp.h>
+#include <ccx3rsp.h>
+#include <ccx4rsp.h>
+#include <cco1rsp.h>
+#include <cco2rsp.h>
+#include <cco3rsp.h>
+#include <cco4rsp.h>
+#include <ccl1rsp.h>
+#include <ccl2rsp.h>
+#include <ccl3rsp.h>
+#include <ccl4rsp.h>
+#include <ccn2rsp.h>
+#include <ccrc1rsp.h>
+#include <cclc1rsp.h>
+#include <cccr2rsp.h>
+#include <ccco2rsp.h>
+#include <cccx2rsp.h>
+#include <cccl2rsp.h>
+#include <ccexci.h>
+#include <ccpl1rsp.h>
+
+      CHARACTER*(3) LIST
+      INTEGER INDEX
+      LOGICAL LEOOR
+
+      LEOOR = .FALSE.
+
+* begin:
+      IF (LIST(1:2).EQ.'o1') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NRSOLBL) LEOOR = .TRUE.
+         CALL QUIT('Illegal list in function FREQLST.')
+      ELSE IF (LIST(1:3).EQ.'O1 ') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NO1LBL) LEOOR = .TRUE.
+         FREQLST = FRQO1(INDEX)
+      ELSE IF (LIST(1:2).EQ.'O2' ) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NO2LBL) LEOOR = .TRUE.
+         FREQLST = FRQO2(INDEX,1) + FRQO2(INDEX,2)
+      ELSE IF (LIST(1:2).EQ.'O3' ) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NO3LBL) LEOOR = .TRUE.
+         FREQLST = FRQO3(INDEX,1) + FRQO3(INDEX,2) + FRQO3(INDEX,3)
+      ELSE IF (LIST(1:2).EQ.'O4' ) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NO4LBL) LEOOR = .TRUE.
+         FREQLST = FRQO4(INDEX,1) + FRQO4(INDEX,2) + 
+     &             FRQO4(INDEX,3) + FRQO4(INDEX,4)
+      ELSE IF (LIST(1:3).EQ.'CO2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NCO2LBL) LEOOR = .TRUE.
+         FREQLST = 0.0D0
+      ELSE IF (LIST(1:3).EQ.'X1 ') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NX1LBL) LEOOR = .TRUE.
+         FREQLST = FRQX1(INDEX)
+      ELSE IF (LIST(1:2).EQ.'X2' ) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NX2LBL) LEOOR = .TRUE.
+         FREQLST = FRQX2(INDEX,1) + FRQX2(INDEX,2)
+      ELSE IF (LIST(1:2).EQ.'X3' ) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NX3LBL) LEOOR = .TRUE.
+         FREQLST = FRQX3(INDEX,1) + FRQX3(INDEX,2) + FRQX3(INDEX,3)
+      ELSE IF (LIST(1:2).EQ.'X4' ) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NX4LBL) LEOOR = .TRUE.
+         FREQLST = FRQX4(INDEX,1) + FRQX4(INDEX,2) + 
+     &             FRQX4(INDEX,3) + FRQX4(INDEX,4)
+      ELSE IF (LIST(1:3).EQ.'CX2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NCX2LBL) LEOOR = .TRUE.
+         FREQLST = 0.0D0
+      ELSE IF (LIST(1:2).EQ.'L0' .OR. LIST(1:2).EQ.'R0') THEN
+         FREQLST = 0.0D0
+      ELSE IF (LIST(1:2).EQ.'D0') THEN
+         CALL QUIT('Illegal list in function FREQLST.')
+      ELSE IF (LIST(1:2).EQ.'E0' .OR. LIST(1:2).EQ.'BE') THEN
+         FREQLST = 0.0D0
+      ELSE IF (LIST(1:2).EQ.'LE') THEN
+         FREQLST = -EIGVAL(INDEX)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "LE " VECTORS'
+      ELSE IF (LIST(1:2).EQ.'RE') THEN
+         FREQLST = +EIGVAL(INDEX)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "RE " VECTORS'
+      ELSE IF (LIST(1:3).EQ.'ER1'.OR.LIST(1:3).EQ.'EO1') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NER1LBL) LEOOR = .TRUE.
+         FREQLST =  EIGER1(INDEX) + FRQER1(INDEX)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "ER1" VECTORS'
+      ELSE IF (LIST(1:3).EQ.'ER2'.OR.LIST(1:3).EQ.'EO2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NER2LBL) LEOOR = .TRUE.
+         FREQLST =  EIGER2(INDEX) + FRQER2(INDEX,1) + FRQER2(INDEX,2)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "ER2" VECTORS'
+      ELSE IF (LIST(1:3).EQ.'EL1'.OR.LIST(1:3).EQ.'EX1') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NEL1LBL) LEOOR = .TRUE.
+         FREQLST =  EIGEL1(INDEX) + FRQEL1(INDEX)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "EL1" VECTORS'
+      ELSE IF (LIST(1:3).EQ.'EL2'.OR.LIST(1:3).EQ.'EX2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NEL2LBL) LEOOR = .TRUE.
+         FREQLST =  EIGEL2(INDEX) + FRQEL2(INDEX,1) + FRQEL2(INDEX,2)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "EL2" VECTORS'
+      ELSE IF (LIST(1:2).EQ.'L1') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NLRZLBL) LEOOR = .TRUE.
+         FREQLST = FRQLRZ(INDEX)
+      ELSE IF ((LIST(1:2).EQ.'M1').OR.(LIST(1:2).EQ.'FR')) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NLRM   ) LEOOR = .TRUE.
+         FREQLST = FRQLRM(INDEX)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "M1 " VECTORS'
+      ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NLRTLBL) LEOOR = .TRUE.
+         FREQLST = FRQLRT(INDEX)
+      ELSE IF ((LIST(1:2).EQ.'RC').OR.(LIST(1:2).EQ.'FC')) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NLRCLBL) LEOOR = .TRUE.
+         FREQLST = 0.0D0
+      ELSE IF ((LIST(1:2).EQ.'LC').OR.(LIST(1:2).EQ.'XC')) THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NLC1LBL) LEOOR = .TRUE.
+         FREQLST = 0.0D0
+      ELSE IF (LIST(1:3).EQ.'CR2'.OR.LIST(1:3).EQ.'CF2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NCR2LBL) LEOOR = .TRUE.
+         FREQLST = 0.0D0
+      ELSE IF (LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'F2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NR2TLBL) LEOOR = .TRUE.
+         FREQLST = FRQR2T(INDEX,1) + FRQR2T(INDEX,2)
+      ELSE IF (LIST(1:2).EQ.'R3' .OR. LIST(1:2).EQ.'F3') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NR3TLBL) LEOOR = .TRUE.
+         FREQLST = FRQR3T(INDEX,1) + FRQR3T(INDEX,2) + FRQR3T(INDEX,3)
+      ELSE IF (LIST(1:2).EQ.'R4' .OR. LIST(1:2).EQ.'F4') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NR4TLBL) LEOOR = .TRUE.
+         FREQLST = FRQR4T(INDEX,1) + FRQR4T(INDEX,2) + 
+     &             FRQR4T(INDEX,3) + FRQR4T(INDEX,4)
+      ELSE IF (LIST(1:2).EQ.'L2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NL2LBL) LEOOR = .TRUE.
+         FREQLST = FRQL2(INDEX,1) + FRQL2(INDEX,2)
+      ELSE IF (LIST(1:2).EQ.'L3') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NL3LBL) LEOOR = .TRUE.
+         FREQLST = FRQL3(INDEX,1) + FRQL3(INDEX,2) + FRQL3(INDEX,3)
+      ELSE IF (LIST(1:2).EQ.'L4') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NL4LBL) LEOOR = .TRUE.
+         FREQLST = FRQL4(INDEX,1) + FRQL4(INDEX,2) + 
+     &             FRQL4(INDEX,3) + FRQL4(INDEX,4)
+      ELSE IF (LIST(1:3).EQ.'CL2') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NCL2LBL) LEOOR = .TRUE.
+         FREQLST = 0.0D0
+      ELSE IF (LIST(1:2).EQ.'N2' .OR. LIST(1:2).EQ.'BR') THEN
+         IF (INDEX.LT.0 .OR. INDEX.GT.NQRN2 ) LEOOR = .TRUE.
+         FREQLST = -EIGN2(INDEX,1) - EIGN2(INDEX,2)
+         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "N2 " VECTORS'
+      ELSE IF (LIST(1:3).EQ.'PL1') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NPL1LBL) LEOOR = .TRUE.
+         FREQLST = FRQPL1(INDEX)
+      ELSE
+         WRITE(LUPRI,*) 'Unknown LIST in FREQLST:"',LIST(1:3),'"'
+C to force a core dump:
+C        WRITE (LUPRI,*) LIST(999999:999999)
+         CALL QUIT('Unknown LIST in FREQLST.')
+      END IF
+
+      IF (LEOOR) THEN  
+        WRITE (LUPRI,*) 'INDEX out of range in FREQLST:'
+        WRITE (LUPRI,*) 'LIST,INDEX:',LIST(1:3),INDEX
+C to force a core dump:
+C        WRITE (LUPRI,*) LIST(-999999:-999999)
+        CALL QUIT('INDEX out of range in FREQLST.')
+      END IF
+
+      RETURN
+      END
+*=====================================================================*
+*=====================================================================*
 C  /* Deck idxsym */
 *=====================================================================*
       INTEGER FUNCTION IDXSYM(LIST,ISYM,INDEX)
@@ -5574,7 +5772,7 @@ C  /* Deck idxsym */
       ELSE IF (LIST(1:2).EQ.'R4' .OR. LIST(1:2).EQ.'F4') THEN
          IF (INDEX.LT.0 .OR. INDEX.GT.NR4TLBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFT4(ISYM)
-      ELSE IF (LIST(1:2).EQ.'O1') THEN
+      ELSE IF (LIST(1:3).EQ.'O1 '.OR.LIST(1:3).EQ.'O1e') THEN
          IF (INDEX.LT.0 .OR. INDEX.GT.NO1LBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFO1(ISYM)
       ELSE IF (LIST(1:2).EQ.'O2') THEN
@@ -5589,7 +5787,7 @@ C  /* Deck idxsym */
       ELSE IF (LIST(1:3).EQ.'CO2') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NCO2LBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFCO2(ISYM) 
-      ELSE IF (LIST(1:2).EQ.'X1') THEN
+      ELSE IF (LIST(1:3).EQ.'X1 '.OR.LIST(1:3).EQ.'X1e') THEN
          IF (INDEX.LT.0 .OR. INDEX.GT.NX1LBL) LEOOR = .TRUE.
          IDXSYM  = INDEX - ISYOFX1(ISYM)
       ELSE IF (LIST(1:2).EQ.'X2') THEN
@@ -7327,6 +7525,7 @@ C Christof Haettig, Juni 1998
       IMPLICIT NONE
 #include <cco1rsp.h>
 #include <priunit.h>
+#include <ccsdinp.h>
  
       LOGICAL LORX
       INTEGER ISYM
@@ -7342,7 +7541,7 @@ C Christof Haettig, Juni 1998
       INTEGER I
 
 * if LORX false ignore frequency (set to zero internally):
-      IF (LORX) THEN
+      IF (LORX.OR.CCSDT) THEN
         FRQNEW = FRQINP
       ELSE
         FRQNEW = 0.0d0
@@ -7406,6 +7605,7 @@ C Christof Haettig, Juni 1998
       IMPLICIT NONE
 #include <ccx1rsp.h>
 #include <priunit.h>
+#include <ccsdinp.h>
  
       LOGICAL LORX, LORX1
       INTEGER ISYM
@@ -7420,8 +7620,9 @@ C Christof Haettig, Juni 1998
       CHARACTER*8 NEWLBL
       INTEGER I
 
-* if LORX false ignore frequency (set to zero internally):
-      IF (LORX) THEN
+* if LORX false and CCSDT false ignore frequency by setting it
+* to zero internally:
+      IF (LORX.OR.CCSDT) THEN
         FRQNEW = FRQINP
       ELSE
         FRQNEW = 0.0d0

@@ -35,7 +35,8 @@ C
 C
 C  /* Deck cc3_omeg3 */
       SUBROUTINE CC3_OMEG3(OMEGA1,OMEGA2P,OMEGA2M,T1AM,ISYMT1,T2TP,
-     *                     ISYMT2,FOCK,XLAMDP,XLAMDH,WORK,LWORK)
+     *                     ISYMT2,FOCK,XLAMDP,XLAMDH,WORK,LWORK,
+     *                     LU3SRT,FN3SRT,LUTOC,FNTOC,LUCKJD,FNCKJD)
 C
 C     Routine to calculate triplet excitation
 C     energies for triple methods.
@@ -57,7 +58,8 @@ C
       INTEGER KTRVI1, KTRVI2, KTRVI3, KTRVI4, KTRVI5, KTRVI6, KTRVI7
       INTEGER ISYMC, ISYMK, IOPT, IOFF, ISYOPE, LENGTH, LENSQ
       INTEGER ISYMB, ISYALJ, ISAIJ2, ISYMBD, ISCKIJ, ISAIJ1
-      INTEGER ISYMD, ISYCKB, ISCKB1, ISCKB2
+      INTEGER ISYMD, ISYCKB, ISCKB1, ISCKB2, LU3SRT, LUTOC, LUCKJD
+      INTEGER LUDELD, LUDKBC
 !
 #if defined (SYS_CRAY)
       REAL OMEGA1(*),OMEGA2P(*),OMEGA2M(*),T1AM(*),T2TP(*)
@@ -78,7 +80,9 @@ C
       DOUBLE PRECISION RHO2N
       DOUBLE PRECISION DTIME, TITRAN, TISORT, TISMAT, TIQMAT, TICONT
       DOUBLE PRECISION TIOME1, TICONV, TICONO, DDOT, XMONE, ONE, MFACTOR
+#if !defined (SYS_LINUX)
       DOUBLE PRECISION SECOND
+#endif
 #endif
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
 C
@@ -90,6 +94,9 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CHARACTER*(*) FN3SRT, FNTOC, FNCKJD
+      CHARACTER*11 FNDELD, FNDKBC
 C
       CALL QENTER('CC3_OMEG3')
 C
@@ -108,14 +115,9 @@ C
       IPRCC = IPRINT
       ISYMTR = MULD2H(ISYMT1,ISYMT2)
       ISYRES = MULD2H(ISYMTR,ISYMOP)
-      ISINT1 = ISYMOP
-      ISINT2 = MULD2H(ISYMT1,ISYMOP)
-      ISYMIM = MULD2H(ISYMTR,ISYMOP)
-      IF (CC3LR) THEN
-         ISINT1 = MULD2H(ISYMT1,ISYMOP)
-         ISINT2 = ISYMOP
-         ISYMIM = ISYMOP
-      ENDIF
+      ISINT1 = MULD2H(ISYMT1,ISYMOP)
+      ISINT2 = ISYMOP
+      ISYMIM = ISYMOP
 C
       IF (IPRINT .GT. 20 ) THEN
          WRITE(LUPRI,*) ' In CC3_OMEG3: CC1A  = ',CC1A
@@ -138,14 +140,24 @@ C
       TICONT = 0.0D0
       TIOME1 = 0.0D0
 C
+C---------------------------
+C     Open files
+C---------------------------
+C
+      LUDELD = 0
+      LUDKBC = 0
+      FNDELD = 'CC3_OMEG3_1'
+      FNDKBC = 'CC3_OMEG3_2'
+      CALL WOPEN2(LUDELD,FNDELD,64,0)
+      CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+C
 C---------------------------------------------------------
 C     Transform and sort qmat integrals to smat integrals.
 C---------------------------------------------------------
 C
-      IF (.NOT. CC1B) THEN
-         CALL CC3_SORT1(WORK,LWORK,2,ISINT2)
-         CALL CC3_SINT(XLAMDH,WORK,LWORK,1,ISINT2)
-      ENDIF
+      CALL CC3_SORT1(WORK,LWORK,2,ISINT2,LU3SRT,FN3SRT,LUDELD,FNDELD)
+      CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT2,LUDELD,FNDELD,
+     *              LUDKBC,FNDKBC)
 C
 C--------------------------------------
 C     Reorder the t2-amplitudes i T2TP.
@@ -199,36 +211,6 @@ C
       IF (FROIMP .OR. FROEXP)
      *   CALL CCSD_DELFRO(WORK(KFOCKD),WORK(KEND0),LWRK0)
 C
-C------------------------------
-C     Resort Fock matrix F(kc).
-C------------------------------
-C
-      IF (.NOT. CC3LR) THEN
-C
-         DO 50 ISYMC = 1,NSYM
-C
-            ISYMK = MULD2H(ISYMC,ISYMOP)
-C
-            DO 60 K = 1,NRHF(ISYMK)
-C
-               DO 70 C = 1,NVIR(ISYMC)
-C
-                  KOFF1 = IFCVIR(ISYMK,ISYMC) + NORB(ISYMK)*(C - 1) + K
-                  KOFF2 = KFCKAK + IT1AM(ISYMC,ISYMK)
-     *                  + NVIR(ISYMC)*(K - 1) + C - 1
-C
-                  WORK(KOFF2) = FOCK(KOFF1)
-C
-   70          CONTINUE
-   60       CONTINUE
-   50    CONTINUE
-C
-         IF (CC1A) THEN
-            CALL DZERO(WORK(KFCKAK),NT1AM(ISYMOP))
-         ENDIF
-C
-      ENDIF
-C
 C-----------------------------
 C     Read occupied integrals.
 C-----------------------------
@@ -256,26 +238,23 @@ C-----------------------------------------
 C     Calculate Fock matrix used in CC3LR.
 C-----------------------------------------
 C
-      IF (CC3LR) THEN
+      LENGTH = IRAT*NT2AM(ISYMOP)
 C
-         LENGTH = IRAT*NT2AM(ISYMOP)
+      REWIND(LUIAJB)
+      CALL READI(LUIAJB,LENGTH,WORK(KXIAJB))
 C
-         REWIND(LUIAJB)
-         CALL READI(LUIAJB,LENGTH,WORK(KXIAJB))
+      ISYOPE = ISYMOP
+      IOPT = 2
+      CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE,IOPT)
 C
-         ISYOPE = ISYMOP
-         IOPT = 2
-         CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE,IOPT)
+      CALL CC3LR_MFOCK(WORK(KFCKAK),T1AM,WORK(KXIAJB),ISYMT1)
 C
-         CALL CC3LR_MFOCK(WORK(KFCKAK),T1AM,WORK(KXIAJB),ISYMT1)
-C
-         IF (IPRINT .GT. 55) THEN
-            XFD   = DDOT(NT1AM(ISINT1),WORK(KFCKAK),1,
-     *              WORK(KFCKAK),1)
-            WRITE(LUPRI,*) 'Norm of MFOCK',XFD
-         ENDIF
-C
+      IF (IPRINT .GT. 55) THEN
+         XFD   = DDOT(NT1AM(ISINT1),WORK(KFCKAK),1,
+     *           WORK(KFCKAK),1)
+         WRITE(LUPRI,*) 'Norm of MFOCK',XFD
       ENDIF
+C
 C
 C------------------------
 C     Construct L(ia,jb).
@@ -285,12 +264,6 @@ C
 C
       REWIND(LUIAJB)
       CALL READI(LUIAJB,LENGTH,WORK(KXIAJB))
-C
-      IF (.NOT. CC3LR) THEN
-         ISYOPE = ISYMOP
-         IOPT = 1
-         CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE,IOPT)
-      ENDIF
 C
       IF ( IPRINT .GT. 55) THEN
          XIAJB = DDOT(NT2AM(ISYMOP),WORK(KXIAJB),1,
@@ -322,57 +295,39 @@ C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ij,k,a)
 C----------------------------------------------------------------------
 C
       DTIME = SECOND()
-      IF (.NOT. CC3LR) THEN
-         IF (CC1A) THEN
-            CALL CCSDT_TROCC(WORK(KINTOC),WORK(KTROC),WORK(KCMO),
-     *                       WORK(KEND2),LWRK2)
-         ELSE
-            CALL CCSDT_TROCC(WORK(KINTOC),WORK(KTROC),XLAMDH,
-     *                       WORK(KEND2),LWRK2)
-         END IF
-      ELSE
 C
-         CALL DZERO(WORK(KTROC),NTRAOC(ISINT1))
-         CALL CC3LR_QINT(WORK(KTROC),T1AM,WORK(KXIAJB),WORK(KEND2),
-     *                   LWRK2,ISYMT1)
+      CALL DZERO(WORK(KTROC),NTRAOC(ISINT1))
+      CALL CC3LR_QINT(WORK(KTROC),T1AM,WORK(KXIAJB),WORK(KEND2),
+     *                LWRK2,ISYMT1)
 C
-         IF (IPRINT .GT. 55) THEN
-            XTROC = DDOT(NTRAOC(ISINT1),WORK(KTROC),1,
-     *                   WORK(KTROC),1)
-            WRITE(LUPRI,*) 'Norm of TROC after QINT',XTROC
-         ENDIF
-C
-         IF (LWRK2 .LT. NTRAOC(ISINT1)) THEN
-            CALL QUIT('Insufficient space in CC3_OMEG3')
-         END IF
-C
-         CALL CCSDT_SRTOCC(WORK(KTROC),WORK(KEND2),ISINT1)
-         CALL DCOPY(NTRAOC(ISINT1),WORK(KEND2),1,WORK(KTROC),1)
+      IF (IPRINT .GT. 55) THEN
+         XTROC = DDOT(NTRAOC(ISINT1),WORK(KTROC),1,
+     *                WORK(KTROC),1)
+         WRITE(LUPRI,*) 'Norm of TROC after QINT',XTROC
       ENDIF
+C
+      IF (LWRK2 .LT. NTRAOC(ISINT1)) THEN
+         CALL QUIT('Insufficient space in CC3_OMEG3')
+      END IF
+C
+      CALL CCSDT_SRTOCC(WORK(KTROC),WORK(KEND2),ISINT1)
+      CALL DCOPY(NTRAOC(ISINT1),WORK(KEND2),1,WORK(KTROC),1)
 C
 C-----------------------
 C     Read in integrals.
 C-----------------------
 C
-      IF (.NOT. CC1B) THEN
-         IOFF = 1
-         IF (NTOTOC(ISINT2) .GT. 0) THEN
-            CALL GETWA2(LUCKJD,FNCKJD,WORK(KINTOC),IOFF,NTOTOC(ISINT2))
-         ENDIF
-C
+      IOFF = 1
+      IF (NTOTOC(ISINT2) .GT. 0) THEN
+         CALL GETWA2(LUCKJD,FNCKJD,WORK(KINTOC),IOFF,NTOTOC(ISINT2))
       ENDIF
 C
 C----------------------------------------------------------------------
 C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ij,k,a)
 C----------------------------------------------------------------------
 C
-      IF (.NOT. CC1B) THEN
-         CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC0),WORK(KCMO),
-     *                    WORK(KEND2),LWRK2,ISINT2)
-      ELSE
-         CALL CCSDT_TROCC(WORK(KINTOC),WORK(KTROC0),WORK(KCMO),
-     *                    WORK(KEND2),LWRK2)
-      ENDIF
+      CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC0),WORK(KCMO),
+     *                 WORK(KEND2),LWRK2,ISINT2)
 C
       DTIME  = SECOND() - DTIME
       TITRAN = TITRAN   + DTIME
@@ -470,51 +425,14 @@ C
             CALL DZERO(WORK(KRMAT1),NCKI(ISAIJ1))
             CALL DZERO(WORK(KRMAT4),NCKI(ISAIJ1))
 C
-C------------------------------------------------------------
-C           Read and transform integrals used in contraction.
-C------------------------------------------------------------
-C
-            IF (.NOT. CC3LR) THEN
-               IOFF = ICKAD(ISYCKB,ISYMD) + NCKA(ISYCKB)*(D - 1) + 1
-               IF (NCKA(ISYCKB) .GT. 0) THEN
-                  CALL GETWA2(LU3VI2,FN3VI2,WORK(KINTVI),IOFF,
-     &                        NCKA(ISYCKB))
-               ENDIF
-C
-               IF (CC1A) THEN
-                  CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI),WORK(KCMO),
-     *                             ISYMD,D,ISYMOP,WORK(KEND4),LWRK4)
-               ELSE
-                  CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI),XLAMDP,
-     *                             ISYMD,D,ISYMOP,WORK(KEND4),LWRK4)
-               ENDIF
-            ENDIF
-C
 C-----------------------------------------------
 C           Read virtual integrals used in s3am.
 C-----------------------------------------------
 C
-            IF (.NOT. CC1B) THEN
-C
-               IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
-               IF (NCKATR(ISCKB2) .GT. 0) THEN
-                  CALL GETWA2(LUDKBC,FNDKBC,WORK(KTRVI0),IOFF,
-     &                        NCKATR(ISCKB2))
-               ENDIF
-C
-            ELSE
-C
-               IF (CC3LR) THEN
-                  IOFF = ICKAD(ISYCKB,ISYMD) + NCKA(ISYCKB)*(D - 1) + 1
-                  IF (NCKA(ISYCKB) .GT. 0) THEN
-                     CALL GETWA2(LU3VI2,FN3VI2,WORK(KINTVI),IOFF,
-     &                           NCKA(ISYCKB))
-                  ENDIF
-               ENDIF
-C
-               CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI0),WORK(KCMO),
-     *                          ISYMD,D,ISYMOP,WORK(KEND4),LWRK4)
-C
+            IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
+            IF (NCKATR(ISCKB2) .GT. 0) THEN
+               CALL GETWA2(LUDKBC,FNDKBC,WORK(KTRVI0),IOFF,
+     &                     NCKATR(ISCKB2))
             ENDIF
 C
 C---------------------------------------
@@ -540,55 +458,18 @@ C
                WRITE(LUPRI,*) 'Norm of TRVI2 ',XTRVI2
             ENDIF
 C
-C------------------------------------------------------
-C           Read virtual integrals used in contraction.
-C------------------------------------------------------
-C
-            IF (.NOT. CC3LR) THEN
-C
-               IOFF = ICKAD(ISYCKB,ISYMD) + NCKA(ISYCKB)*(D - 1) + 1
-               IF (NCKA(ISYCKB) .GT. 0) THEN
-                  CALL GETWA2(LU3VI,FN3VI,WORK(KINTVI),IOFF,
-     &                        NCKA(ISYCKB))
-               ENDIF
-               IF (CC1A) THEN
-                  CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI1),WORK(KCMO),
-     *                             ISYMD,D,ISYMOP,WORK(KEND4),LWRK4)
-               ELSE
-                  CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI1),XLAMDP,
-     *                             ISYMD,D,ISYMOP,WORK(KEND4),LWRK4)
-               ENDIF
-C
-            ENDIF
-C
-C
 C-----------------------------------------------
 C           Read virtual integrals used in q3am.
 C-----------------------------------------------
 C
-            IF (.NOT. CC1B) THEN
-C
-               IOFF = ICKAD(ISCKB2,ISYMD) + NCKA(ISCKB2)*(D - 1) + 1
-               IF (NCKA(ISCKB2) .GT. 0) THEN
-                  CALL GETWA2(LUDELD,FNDELD,WORK(KINTVI),IOFF,
-     &                        NCKA(ISCKB2))
-               ENDIF
-C
-               CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI3),XLAMDH,
-     *                          ISYMD,D,ISINT2,WORK(KEND4),LWRK4)
-            ELSE
-C
-               IF (CC3LR) THEN
-                  IOFF = ICKAD(ISYCKB,ISYMD) + NCKA(ISYCKB)*(D - 1) + 1
-                  IF (NCKA(ISYCKB) .GT. 0) THEN
-                     CALL GETWA2(LU3VI,FN3VI,WORK(KINTVI),IOFF,
-     &                           NCKA(ISYCKB))
-                  ENDIF
-               ENDIF
-C
-               CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI3),WORK(KCMO),
-     *                          ISYMD,D,ISYMOP,WORK(KEND4),LWRK4)
+            IOFF = ICKAD(ISCKB2,ISYMD) + NCKA(ISCKB2)*(D - 1) + 1
+            IF (NCKA(ISCKB2) .GT. 0) THEN
+               CALL GETWA2(LUDELD,FNDELD,WORK(KINTVI),IOFF,
+     *                     NCKA(ISCKB2))
             ENDIF
+C
+            CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI3),XLAMDH,
+     *                       ISYMD,D,ISINT2,WORK(KEND4),LWRK4)
 C
             IF (LWRK3 .LT. NCKATR(ISYCKB)) THEN
                CALL QUIT('Insufficient space for allocation in '//
@@ -601,21 +482,19 @@ C
             DTIME  = SECOND() - DTIME
             TISORT = TISORT   + DTIME
 C
-           IF (IPRINT .GT. 55) THEN
-               XTRVI3= DDOT(NCKATR(ISCKB2),WORK(KTRVI3),1,
-     *                      WORK(KTRVI3),1)
-               WRITE(LUPRI,*) 'Norm of TRVI3 ',XTRVI3
-           ENDIF
+            IF (IPRINT .GT. 55) THEN
+                XTRVI3= DDOT(NCKATR(ISCKB2),WORK(KTRVI3),1,
+     *                       WORK(KTRVI3),1)
+                WRITE(LUPRI,*) 'Norm of TRVI3 ',XTRVI3
+            ENDIF
 C
 C---------------------------------------------
 C           Construct integrals used in CC3LR.
 C---------------------------------------------
 C
-            IF (CC3LR) THEN
-               CALL CC3LR_PINT(WORK(KTRVI),WORK(KTRVI1),T1AM,
-     *                         WORK(KXIAJB),WORK(KEND4),LWRK4,
-     *                         ISYMD,D,ISYMT1)
-            ENDIF
+            CALL CC3LR_PINT(WORK(KTRVI),WORK(KTRVI1),T1AM,
+     *                      WORK(KXIAJB),WORK(KEND4),LWRK4,
+     *                      ISYMD,D,ISYMT1)
 C
            IF (IPRINT .GT. 55) THEN
                XTRVI= DDOT(NCKATR(ISCKB1),WORK(KTRVI),1,
@@ -842,16 +721,6 @@ C
                      RHO2N = DDOT(NT2AM(ISYRES),OMEGA2M,1,OMEGA2M,1)
                      WRITE(LUPRI,*) 'Norm of Rho2- after CC3_ONEL3',
      *                               RHO2N
-                  ENDIF
-C
-                  IF (IPRINT .GT. 220) THEN
-                     CALL AROUND('After CC3_ONEL3: Rho1 & Rho2+ ')
-                     CALL CC_PRP(OMEGA1,OMEGA2P,ISYRES,1,1)
-                     CALL AROUND('After CC3_ONEL3: Rho2- ')
-                     CALL CC_PRP(OMEGA1,OMEGA2M,ISYRES,0,1)
-                  ENDIF
-C
-                  IF (IPRINT .GT. 55) THEN
                      XRMAT = DDOT(NCKI(ISAIJ1),WORK(KRMAT1),1,
      *                       WORK(KRMAT1),1)
                      WRITE(LUPRI,*) 'Norm of RMAT1 after ONEL',XRMAT
@@ -872,6 +741,12 @@ C
                      WRITE(LUPRI,*) 'Norm of TMAT after ONEL',XTMAT
                   ENDIF
 C
+                  IF (IPRINT .GT. 220) THEN
+                     CALL AROUND('After CC3_ONEL3: Rho1 & Rho2+ ')
+                     CALL CC_PRP(OMEGA1,OMEGA2P,ISYRES,1,1)
+                     CALL AROUND('After CC3_ONEL3: Rho2- ')
+                     CALL CC_PRP(OMEGA1,OMEGA2M,ISYRES,0,1)
+                  ENDIF
 C
                   DTIME  = SECOND() - DTIME
                   TIOME1 = TIOME1   + DTIME
@@ -944,6 +819,13 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+C-----------------------
+C     Close files
+C-----------------------
+C
+      CALL WCLOSE2(LUDELD,FNDELD,'DELETE')
+      CALL WCLOSE2(LUDKBC,FNDKBC,'DELETE')
+C
 C-------------------
 C     Print timings.
 C-------------------
@@ -983,6 +865,8 @@ C     General symmetry: ISYMIM is symmetry of SMAT and TMAT
 C                       intermdiates.(incl isymd,isymb)
 C                       ISYINT is symmetry of FOCKAK and XIAJB
 C                       ISYRES = ISYMIM*ISYINT
+C
+C     K. Hald, Jan. 2001 : Adapted to triplet.
 C
       IMPLICIT NONE
 C
@@ -1364,6 +1248,8 @@ C     Purpose :  Accumulate the R matrix into the Omega vector.
 C
 C     OC: 9-1-1996 general symmetry, ISYRES is symmetry of resulting vector.
 C
+C     K. Hald, Jan 2001 : Adapted to triplet.
+C
       IMPLICIT NONE
 C
       INTEGER ISYMB, ISYRES, ISYAIJ, ISYMJ, ISYMAI, ISYMBJ
@@ -1507,6 +1393,8 @@ C     General symmetry: ISYMIM is symmetry of SMAT and TMAT intermediates.
 C                       (including isymib*isymid)
 C                       ISYINT is symmetry of integrals in TROCC and TROCC1.
 C                       ISYRES = ISYMIM*ISYINT
+C
+C     K. Hald, Jan 2001, Adapted to triplet.
 C
       IMPLICIT NONE
 C
@@ -1853,6 +1741,8 @@ C     General symmetry: ISYMIM is symmetry of SMAT and TMAT intermdiates.
 C                       ISYINT is symmetry of FOCKAK and XIAJB
 C                       ISYRES = ISYMIM*ISYINT
 C
+C     K. Hald, Jan 2001, Adapted to triplet.
+C
       IMPLICIT NONE
 C
       INTEGER ISYMIM, ISYINT, LWORK, LENSQ, ISYMB, ISYMD
@@ -2053,22 +1943,26 @@ C
 C  /* Deck cc3_omeg33 */
       SUBROUTINE CC3_OMEG33(OMEGA1,OMEGA2P,OMEGA2M,T1AM,ISYMT1,T2TP,
      *                      ISYMT2,C2AMP,C2AMM,ISYMC2,ISYMT12,
-     *                      FOCK,XLAMDP,XLAMDH,WORK,LWORK)
+     *                      FOCK,XLAMDP,XLAMDH,WORK,LWORK,LU3SRT,FN3SRT,
+     *                      LU3VI,FN3VI,LU3VI2,FN3VI2,LUCKJD,FNCKJD,
+     *                      LUCKJD2,FNCKJD2,LUCKJD3,FNCKJD3,
+     *                      LU3SRT2,FN3SRT2,LU3SRT3,FN3SRT3,LUTOC,FNTOC)
 C
-C     Henrik Koch and Alfredo Sanchez.         Dec 1994
+C     K. Hald, Spring 2001.
 C
-C     Add the triples contribution to the omega vectors
+C     Based on CC3_OMEG
 C
-C     Ove Christiansen  Jan. 1996:
+C     Add the triples contribution to the result vectors
 C
-C         Generalisation to non-total sym. case for CC3 rsp.
 C
 C         ISYMT2 is symmetry of T2TP
 C         ISYMT1 is symmetry of T1AM input when CC3LR
 C         else ISYMT1 is symmetry of the C1 that the
 C         triples integrals have been transformed with.
+C         ISYMC2 is symmetry of C2+ and C2-.
 C
-C         Isyres = isymt1*isymt2*isymop
+C     FN3VI3 and FN3VI4 are used to store various integrals,
+C     but contains name correct integrals after virtint
 C
       IMPLICIT NONE
 C
@@ -2087,7 +1981,11 @@ C
       INTEGER KXIAJB, KFCKAK, ISYALJ2, ISYALJ3, ISYALJ4
       INTEGER KTROC4, KTROC5, ISYCKD, ISCKD1, ISCKD2, ISCKD3, ISCKB3
       INTEGER KTRVI8, KTRVI9, KXIAJB2
+      INTEGER KRES2P, KRES2M
       INTEGER KR3
+      INTEGER LUDKBC2, LUDKBC3, LUDKBC4, LUDKBC5, LU3VI3, LU3VI4
+      INTEGER LUDELD, LUDKBC, LU3SRT, LU3VI, LU3VI2, LUCKJD
+      INTEGER LUCKJD2, LUCKJD3, LU3SRT2, LU3SRT3, LUTOC
 C
 #if defined (SYS_CRAY)
       REAL OMEGA1(*), OMEGA2P(*), OMEGA2M(*), T1AM(*)
@@ -2096,8 +1994,9 @@ C
       REAL XIAJB, XINT, XTROC, XTROC0, XTROC1, XT2TP
       REAL XTRVI, XTRVI0, XTRVI1, XTRVI2, XTRVI3
       REAL XSMAT, XTMAT, XQMAT, XRMAT, XDIA, XFD
-      REAL TITRAN, TISORT, TISMAT, TIQMAT, TICONV, TICONO
-      REAL TIOME1, XTIME, DTIME, DDOT, XMONE, FACTOR, ONE
+      REAL TITRAN, TISORT, TISMAT, TICONV, TICONO, TIIO, TIVINT, TIOME1
+      REAL TIME1P, TIME2P,TIME3P, TIME1M, TIME2M, TSORTP, TSORTM
+      REAL XTIME, DTIME, DDOT, XMONE, FACTOR, ONE
       REAL SECOND
 #else
       DOUBLE PRECISION OMEGA1(*), OMEGA2P(*), OMEGA2M(*), T1AM(*)
@@ -2106,9 +2005,14 @@ C
       DOUBLE PRECISION XIAJB, XINT, XTROC, XTROC0, XTROC1, XT2TP
       DOUBLE PRECISION XTRVI, XTRVI0, XTRVI1, XTRVI2, XTRVI3
       DOUBLE PRECISION XSMAT, XTMAT, XQMAT, XRMAT, XDIA, XFD
-      DOUBLE PRECISION TITRAN, TISORT, TISMAT, TIQMAT, TICONV, TICONO
-      DOUBLE PRECISION TIOME1, XTIME, DTIME, DDOT, XMONE, FACTOR, ONE
+      DOUBLE PRECISION TITRAN, TISORT, TISMAT, TICONV, TICONO, TIIO
+      DOUBLE PRECISION TIVINT, TIOME1
+      DOUBLE PRECISION TIME1P, TIME2P,TIME3P, TIME1M, TIME2M
+      DOUBLE PRECISION TSORTP, TSORTM
+      DOUBLE PRECISION XTIME, DTIME, DDOT, XMONE, FACTOR, ONE
+#if !defined (SYS_LINUX)
       DOUBLE PRECISION SECOND
+#endif
 #endif
 C
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
@@ -2124,9 +2028,17 @@ C
 C
       LOGICAL LDEBUG
 C
+      CHARACTER*12 FNDKBC2, FNDKBC3, FNDKBC4, FNDKBC5, FN3VI3, FN3VI4
+      CHARACTER*12 FNDELD, FNDKBC
+      CHARACTER*1 CDUMMY
+      CHARACTER*(*) FN3SRT, FN3VI, FN3VI2, FNCKJD, FNCKJD2, FNCKJD3
+      CHARACTER*(*) FN3SRT2, FN3SRT3, FNTOC
+C
       CALL QENTER('CC3_OMEG33')
 C
       LDEBUG = .FALSE.
+C
+      CDUMMY = ' '
 C
 C-------------------------------------------------------------
 C     Set symmetry flags.
@@ -2180,10 +2092,60 @@ C
       TITRAN = 0.0D0
       TISORT = 0.0D0
       TISMAT = 0.0D0
-      TIQMAT = 0.0D0
       TICONO = 0.0D0
+      TIVINT = 0.0D0
+      TIIO   = 0.0D0
       TICONV = 0.0D0
+      TIME1P = 0.0D0
+      TIME2P = 0.0D0
+      TIME3P = 0.0D0
+      TIME1M = 0.0D0
+      TIME2M = 0.0D0
+      TSORTP = 0.0D0
+      TSORTM = 0.0D0
       TIOME1 = 0.0D0
+C
+C-------------------------------
+C     Open temp. files.
+C-------------------------------
+C
+      LUDKBC2 = 0
+      LUDKBC3 = 0
+      LUDKBC4 = 0
+      LUDKBC5 = 0
+      LU3VI3 = 0
+      LU3VI4 = 0
+      LUDELD = 0
+      LUDKBC = 0
+C
+      FNDKBC2 = 'CC3_OMEG33_1'
+      FNDKBC3 = 'CC3_OMEG33_2'
+      FNDKBC4 = 'CC3_OMEG33_3'
+      FNDKBC5 = 'CC3_OMEG33_4'
+      FN3VI3  = 'CC3_OMEG33_5'
+      FN3VI4  = 'CC3_OMEG33_6'
+      FNDELD  = 'CC3_OMEG33_7'
+      FNDKBC  = 'CC3_OMEG33_8'
+C
+      CALL WOPEN2(LUDKBC2,FNDKBC2,64,0)
+      CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
+      CALL WOPEN2(LUDKBC4,FNDKBC4,64,0)
+      CALL WOPEN2(LUDKBC5,FNDKBC5,64,0)
+      CALL WOPEN2(LU3VI3,FN3VI3,64,0)
+      CALL WOPEN2(LU3VI4,FN3VI4,64,0)
+      CALL WOPEN2(LUDELD,FNDELD,64,0)
+      CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+C
+C--------------------------------------------------
+C     Allocate and initialise two result vectors
+C--------------------------------------------------
+C
+      KRES2P  = 1
+      KRES2M  = KRES2P + NT2SQ(ISYRES)
+      KEND0   = KRES2M + NT2SQ(ISYRES)
+C
+      CALL DZERO(WORK(KRES2P),NT2SQ(ISYRES))
+      CALL DZERO(WORK(KRES2M),NT2SQ(ISYRES))
 C
 C---------------------------------------------------------
 C     Transform and sort qmat integrals to smat integrals.
@@ -2193,17 +2155,24 @@ C     IS NECESSARY (MAYBE CALCULATED IN T3 PART)
 C
 C---------------------------------------------------------
 C
-      IF (.NOT. CC1B) THEN
-         CALL CC3_SORT1(WORK,LWORK,2,ISINT22)
-         CALL CC3_SINT(XLAMDH,WORK,LWORK,1,ISINT22)
-         CALL CC3_SORT3(WORK,LWORK,1,ISINT2)
-         CALL CC3_SINT(XLAMDH,WORK,LWORK,2,ISINT2)
-         CALL CC3_SINT(XLAMDH,WORK,LWORK,3,ISINT2)
-         CALL CC3_SORT3(WORK,LWORK,2,ISINT2)
-         CALL CC3_SINT(XLAMDH,WORK,LWORK,4,ISINT2)
-         CALL CC3_SORT2(WORK,LWORK,ISINT22)
-         CALL CC3_SINT(XLAMDH,WORK,LWORK,5,ISINT22)
-      ENDIF
+      CALL CC3_SORT1(WORK,LWORK,2,ISINT22,LU3SRT,FN3SRT,
+     *               LUDELD,FNDELD,IDUMMY,CDUMMY,IDUMMY,CDUMMY,
+     *               IDUMMY,CDUMMY)
+      CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT22,LUDELD,FNDELD,
+     *              LUDKBC,FNDKBC)
+      CALL CC3_SORT3(WORK,LWORK,1,ISINT2,LU3SRT2,FN3SRT2,
+     *               LU3SRT3,FN3SRT3,LU3VI4,FN3VI4,LU3VI3,FN3VI3)
+      CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT2,LU3VI4,FN3VI4,
+     *              LUDKBC2,FNDKBC2)
+      CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT2,LU3VI3,FN3VI3,
+     *              LUDKBC3,FNDKBC3)
+      CALL CC3_SORT3(WORK,LWORK,2,ISINT2,LU3SRT2,FN3SRT2,
+     *               LU3SRT3,FN3SRT3,LU3VI4,FN3VI4,IDUMMY,CDUMMY)
+      CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT2,LU3VI4,FN3VI4,
+     *              LUDKBC4,FNDKBC4)
+      CALL CC3_SORT2(WORK,LWORK,ISINT22,LU3SRT,FN3SRT,LU3VI4,FN3VI4)
+      CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT22,LU3VI4,FN3VI4,
+     *              LUDKBC5,FNDKBC5)
 C
 C---------------------------------------------
 C     Reorder the t2 amplitudes in T2TP.
@@ -2254,7 +2223,7 @@ C---------------------------------------------------------
 C     Read canonical orbital energies and MO coefficients.
 C---------------------------------------------------------
 C
-      KFOCKD = 1
+      KFOCKD = KEND0
       KCMO   = KFOCKD + NORBTS
       KFCKAK = KCMO   + NLAMDS
       KEND0  = KFCKAK + NT1AM(ISINT1)
@@ -2290,38 +2259,35 @@ C------------------------------
 C     Resort Fock matrix F(kc).
 C------------------------------
 C
-      IF (.NOT. CC3LR) THEN
+      DO 50 ISYMC = 1,NSYM
 C
-         DO 50 ISYMC = 1,NSYM
+         ISYMK = MULD2H(ISYMC,ISYMOP)
 C
-            ISYMK = MULD2H(ISYMC,ISYMOP)
+         DO 60 K = 1,NRHF(ISYMK)
 C
-            DO 60 K = 1,NRHF(ISYMK)
+            DO 70 C = 1,NVIR(ISYMC)
 C
-               DO 70 C = 1,NVIR(ISYMC)
+               KOFF1 = IFCVIR(ISYMK,ISYMC) + NORB(ISYMK)*(C - 1) + K
+               KOFF2 = KFCKAK + IT1AM(ISYMC,ISYMK)
+     *               + NVIR(ISYMC)*(K - 1) + C - 1
 C
-                  KOFF1 = IFCVIR(ISYMK,ISYMC) + NORB(ISYMK)*(C - 1) + K
-                  KOFF2 = KFCKAK + IT1AM(ISYMC,ISYMK)
-     *                  + NVIR(ISYMC)*(K - 1) + C - 1
+               WORK(KOFF2) = FOCK(KOFF1)
 C
-                  WORK(KOFF2) = FOCK(KOFF1)
-C
-   70          CONTINUE
-   60       CONTINUE
-   50    CONTINUE
-C
-         IF (CC1A) THEN
-            CALL DZERO(WORK(KFCKAK),NT1AM(ISYMOP))
-         ENDIF
-C
-      ENDIF
+   70       CONTINUE
+   60    CONTINUE
+   50 CONTINUE
 C
 C---------------------------------------------------------
 C     Transform the "virtual" integrals and store them
-C     on file. This should only happen once!
+C     on file.
 C---------------------------------------------------------
 C
-      CALL CC3_VIRTINT(XLAMDP,WORK(KEND0),LWRK0,ISINT1,ISINT2)
+      DTIME = SECOND()
+      CALL CC3_VIRTINT(XLAMDP,WORK(KEND0),LWRK0,ISINT1,ISINT2,
+     *                 LU3VI,FN3VI,LU3VI2,FN3VI2,LU3VI4,FN3VI4,
+     *                 LU3VI3,FN3VI3)
+      DTIME  = SECOND() - DTIME
+      TIVINT = TIVINT   + DTIME
 C
 C-----------------------------
 C     Read occupied integrals.
@@ -2376,10 +2342,13 @@ C------------------------
 C     Occupied integrals.
 C------------------------
 C
+      DTIME = SECOND()
       IOFF = 1
       IF (NTOTOC(ISYMOP) .GT. 0) THEN
          CALL GETWA2(LUTOC,FNTOC,WORK(KINTOC),IOFF,NTOTOC(ISYMOP))
       ENDIF
+      DTIME  = SECOND() - DTIME
+      TIIO = TIIO   + DTIME
 C
 C----------------------------------
 C     Write out norms of Integrals.
@@ -2398,42 +2367,51 @@ C
       DTIME = SECOND()
          CALL CCSDT_TROCC(WORK(KINTOC),WORK(KTROC),XLAMDH,
      *                    WORK(KEND2),LWRK2)
+      DTIME  = SECOND() - DTIME
+      TITRAN = TITRAN   + DTIME
 C
 C------------------------------------
 C     Read in integrals part 2.
 C------------------------------------
 C
+      DTIME = SECOND()
       IOFF = 1
       IF (NTOTOC(ISINT2) .GT. 0) THEN
          CALL GETWA2(LUCKJD2,FNCKJD2,WORK(KINTOC),IOFF,
      *               NTOTOC(ISINT2))
       ENDIF
+      DTIME  = SECOND() - DTIME
+      TIIO = TIIO   + DTIME
 C
 C
 C----------------------------------------------------------------------
 C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ik,j,a)
 C----------------------------------------------------------------------
 C
+      DTIME = SECOND()
       CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC2),WORK(KCMO),
      *                 WORK(KEND2),LWRK2,ISINT2)
-C
       DTIME  = SECOND() - DTIME
-      TITRAN = TITRAN   + DTIME
+      TIIO = TIIO   + DTIME
 C
 C------------------------------------
 C     Read in integrals part 3.
 C------------------------------------
 C
+      DTIME = SECOND()
       IOFF = 1
       IF (NTOTOC(ISINT2) .GT. 0) THEN
          CALL GETWA2(LUCKJD3,FNCKJD3,WORK(KINTOC),IOFF,
      *               NTOTOC(ISINT2))
       ENDIF
+      DTIME  = SECOND() - DTIME
+      TIIO = TIIO   + DTIME
 C
 C----------------------------------------------------------------------
 C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ik,j,a)
 C----------------------------------------------------------------------
 C
+      DTIME = SECOND()
       CALL CC3_TROCC3(WORK(KINTOC),WORK(KTROC3),WORK(KTROC4),
      *                WORK(KCMO),WORK(KEND2),LWRK2,ISINT2)
 C
@@ -2445,25 +2423,33 @@ C     Construct the special occupied integrals.
 C     (g^3 and g^4)
 C---------------------------------------------------
 C
+      DTIME = SECOND()
       CALL DAXPY(NTRAOC(ISINT2),XMONE,WORK(KTROC2),1,WORK(KTROC3),1)
       CALL DAXPY(NTRAOC(ISINT2),XMONE,WORK(KTROC4),1,WORK(KTROC2),1)
 C
       CALL CCSDT_SRTOC3(WORK(KTROC3),WORK(KTROC5),ISINT2,
      *                  WORK(KEND2),LWRK2)
 C
+      DTIME  = SECOND() - DTIME
+      TISORT = TISORT   + DTIME
+C
 C-----------------------
 C     Read in integrals.
 C-----------------------
 C
+      DTIME = SECOND()
       IOFF = 1
       IF (NTOTOC(ISINT22) .GT. 0) THEN
          CALL GETWA2(LUCKJD,FNCKJD,WORK(KINTOC),IOFF,NTOTOC(ISINT22))
       ENDIF
+      DTIME  = SECOND() - DTIME
+      TIIO = TIIO   + DTIME
 C
 C----------------------------------------------------------------------
 C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ik,j,a)
 C----------------------------------------------------------------------
 C
+      DTIME = SECOND()
       CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC0),WORK(KCMO),
      *                 WORK(KEND2),LWRK2,ISINT22)
 C
@@ -2584,6 +2570,13 @@ C
          CALL CC3_INDEX(WORK(KINDEX3),ISYALJ3)
          CALL CC3_INDEX(WORK(KINDEX4),ISYALJ4)
 C
+C-----------------------------------------------------------
+C        Initialise the result vectors for cc3_convir33.
+C-----------------------------------------------------------
+C
+         CALL DZERO(WORK(KRES2P),NT2SQ(ISYRES))
+         CALL DZERO(WORK(KRES2M),NT2SQ(ISYRES))
+C
 C--------------------------
 C        Sum over D.
 C--------------------------
@@ -2597,6 +2590,8 @@ C------------------------------------------------------------
 C           Read and transform integrals used in contraction.
 C           The integrals are stored transformed!
 C------------------------------------------------------------
+C
+            DTIME = SECOND()
 C
             IOFF = ICKBD(ISYCKB,ISYMD) + NCKATR(ISYCKB)*(D - 1) + 1
             IF (NCKATR(ISYCKB) .GT. 0) THEN
@@ -2620,6 +2615,9 @@ C
                ENDIF
             ENDIF
 C
+            DTIME  = SECOND() - DTIME
+            TIIO = TIIO   + DTIME
+C
 C---------------------------------------
 C           Sort the integrals for s3am.
 C---------------------------------------
@@ -2627,9 +2625,6 @@ C
             DTIME = SECOND()
             CALL CCSDT_SRTVIR(WORK(KTRVI0),WORK(KTRVI2),WORK(KEND4),
      *                        LWRK4,ISYMD,ISINT22)
-C
-            DTIME  = SECOND() - DTIME
-            TISORT = TISORT   + DTIME
 C
             IF (IPRINT .GT. 55 .OR. LDEBUG) THEN
                XTRVI0= DDOT(NCKATR(ISCKB3),WORK(KTRVI0),1,
@@ -2641,10 +2636,14 @@ C
                WRITE(LUPRI,*) 'Norm of TRVI2 ',XTRVI2
             ENDIF
 C
+            DTIME  = SECOND() - DTIME
+            TISORT = TISORT   + DTIME
+C
 C-----------------------------------------------------------
 C           Read virtual integrals used in s3am part 2.
 C-----------------------------------------------------------
 C
+            DTIME = SECOND()
             IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
             IF (NCKATR(ISCKB2) .GT. 0) THEN
                CALL GETWA2(LUDKBC2,FNDKBC2,WORK(KTRVI4),IOFF,
@@ -2656,6 +2655,8 @@ C
                   WRITE(LUPRI,*) 'Norm of TRVI4 readin',XTRVI0
                ENDIF
             ENDIF
+            DTIME  = SECOND() - DTIME
+            TIIO = TIIO   + DTIME
 C
 C
 C-------------------------------------------------
@@ -2666,18 +2667,20 @@ C
             CALL CCSDT_SRTVIR(WORK(KTRVI4),WORK(KTRVI5),WORK(KEND4),
      *                        LWRK4,ISYMD,ISINT2)
 C
-            DTIME  = SECOND() - DTIME
-            TISORT = TISORT   + DTIME
-C
             IF (IPRINT .GT. 55 .OR. LDEBUG) THEN
                XTRVI2= DDOT(NCKATR(ISCKB2),WORK(KTRVI5),1,
      *                      WORK(KTRVI5),1)
                WRITE(LUPRI,*) 'Norm of TRVI5 ',XTRVI2
             ENDIF
 C
+            DTIME  = SECOND() - DTIME
+            TISORT = TISORT   + DTIME
+C
 C-----------------------------------------------------------
 C           Read virtual integrals used in s3am part 2b.
 C-----------------------------------------------------------
+C
+            DTIME = SECOND()
 C
             IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
             IF (NCKATR(ISCKB2) .GT. 0) THEN
@@ -2685,6 +2688,8 @@ C
      &                     NCKATR(ISCKB2))
             ENDIF
 C
+            DTIME  = SECOND() - DTIME
+            TIIO = TIIO   + DTIME
 C
 C----------------------------------------------------
 C           Sort the integrals for s3am part 2b.
@@ -2712,12 +2717,17 @@ C           Read virtual integrals used in s3am part 3a.
 C           g integrals. Need only the transformed.
 C-------------------------------------------------------------------
 C
+            DTIME = SECOND()
+C
             CALL DZERO(WORK(KTRVI6),MAX(NCKATR(ISCKB2),NCKATR(ISCKB3)))
             IOFF = ICKBD(ISCKB3,ISYMD) + NCKATR(ISCKB3)*(D - 1) + 1
             IF (NCKATR(ISCKB3) .GT. 0) THEN
                CALL GETWA2(LUDKBC5,FNDKBC5,WORK(KTRVI6),IOFF,
      &                     NCKATR(ISCKB3))
             ENDIF
+C
+            DTIME  = SECOND() - DTIME
+            TIIO = TIIO   + DTIME
 C
 C---------------------------------------
 C           Sort the integrals for s3am.
@@ -2740,6 +2750,8 @@ C-------------------------------------------------------------------
 C           Read virtual integrals used in s3am part 3b.
 C           This is the g^1 integral. Do not need the transformed.
 C-------------------------------------------------------------------
+C
+            DTIME = SECOND()
 C
             CALL DZERO(WORK(KTRVI6),MAX(NCKATR(ISCKB2),NCKATR(ISCKB3)))
             IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
@@ -2768,6 +2780,10 @@ C
      &                     NCKA(ISCKB2))
             ENDIF
 C
+            DTIME  = SECOND() - DTIME
+            TIIO = TIIO   + DTIME
+C
+            DTIME = SECOND()
             CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI3),XLAMDH,
      *                       ISYMD,D,ISINT2,WORK(KEND4),LWRK4)
 C
@@ -2775,6 +2791,9 @@ C
                CALL QUIT('Insufficient space for allocation in '//
      &                   'CC3_OMEG33')
             END IF
+C
+            DTIME  = SECOND() - DTIME
+            TITRAN = TITRAN   + DTIME
 C
             DTIME = SECOND()
             CALL CCSDT_SRVIR3(WORK(KTRVI3),WORK(KEND3),ISYMD,D,ISINT2)
@@ -2901,6 +2920,7 @@ C                 Read the integrals for given B that is
 C                 needed to calculate the SMAT.
 C---------------------------------------------------------
 C
+                  DTIME = SECOND()
                   IOFF = ICKBD(ISCKD3,ISYMB) + NCKATR(ISCKD3)*(B-1) + 1
                   IF (NCKATR(ISCKD3) .GT. 0) THEN
                      CALL GETWA2(LUDKBC,FNDKBC,WORK(KTRVIB0),IOFF,
@@ -2912,6 +2932,8 @@ C
                         WRITE(LUPRI,*) 'Norm of TRVIB0 readin',XTRVI0
                      ENDIF
                   ENDIF
+                  DTIME  = SECOND() - DTIME
+                  TIIO = TIIO   + DTIME
 C
 C---------------------------
 C                 Sort.
@@ -2938,6 +2960,7 @@ C-----------------------------------------
 C                 Readin part2.
 C-----------------------------------------
 C
+                  DTIME = SECOND()
                   IOFF = ICKBD(ISCKD2,ISYMB) + NCKATR(ISCKD2)*(B-1) + 1
                   IF (NCKATR(ISCKD2) .GT. 0) THEN
                      CALL GETWA2(LUDKBC2,FNDKBC2,WORK(KTRVIB4),IOFF,
@@ -2949,6 +2972,8 @@ C
                         WRITE(LUPRI,*) 'Norm of TRVIB4 readin',XTRVI0
                      ENDIF
                   ENDIF
+                  DTIME  = SECOND() - DTIME
+                  TIIO = TIIO   + DTIME
 C
 C-------------------------------------------------
 C                 Sort the integrals part 2.
@@ -2971,11 +2996,14 @@ C-----------------------------------------------------------
 C                 Read virtual integrals part 2b.
 C-----------------------------------------------------------
 C
+                  DTIME = SECOND()
                   IOFF = ICKBD(ISCKD2,ISYMB) + NCKATR(ISCKD2)*(B-1) + 1
                   IF (NCKATR(ISCKD2) .GT. 0) THEN
                      CALL GETWA2(LUDKBC4,FNDKBC4,WORK(KTRVIB6),IOFF,
      &                           NCKATR(ISCKD2))
                   ENDIF
+                  DTIME  = SECOND() - DTIME
+                  TIIO = TIIO   + DTIME
 C
 C----------------------------------------------------
 C                 Sort the integrals for s3am part 2b.
@@ -3002,6 +3030,7 @@ C----------------------------------------------------
 C                 Read some more integrals.
 C----------------------------------------------------
 C
+                  DTIME = SECOND()
                   CALL DZERO(WORK(KTRVIB6),
      &                       MAX(NCKATR(ISCKD2),NCKATR(ISCKD3)))
                   IOFF = ICKBD(ISCKD3,ISYMB) + NCKATR(ISCKD3)*(B-1) + 1
@@ -3009,6 +3038,8 @@ C
                      CALL GETWA2(LUDKBC5,FNDKBC5,WORK(KTRVIB6),IOFF,
      &                           NCKATR(ISCKD3))
                   ENDIF
+                  DTIME  = SECOND() - DTIME
+                  TIIO = TIIO   + DTIME
 C
 C---------------------------------------------------
 C                 Sort again.
@@ -3030,6 +3061,8 @@ C
 C---------------------------------------------
 C                 Read for the last time.
 C---------------------------------------------
+C
+                  DTIME = SECOND()
 C
                   CALL DZERO(WORK(KTRVIB6),
      &                       MAX(NCKATR(ISCKD2),NCKATR(ISCKD3)))
@@ -3053,6 +3086,9 @@ C
                      CALL GETWA2(LU3VI4,FN3VI4,WORK(KTRVI9),IOFF,
      &                           NCKATR(ISYCKD))
                   ENDIF
+C
+                  DTIME  = SECOND() - DTIME
+                  TIIO = TIIO   + DTIME
 C
 C-------------------------------------------------------
 C                 Calculate the part of the R3 matrix
@@ -3088,6 +3124,9 @@ C
                   CALL DAXPY(NCKIJ(ISCKIJ),XMONE,WORK(KSMAT2),1,
      *                       WORK(KSMAT),1)
 C
+                  DTIME  = SECOND() - DTIME
+                  TISMAT = TISMAT   + DTIME
+C
                   IF (LDEBUG) THEN
 C
 CKH   DO NOT REMOVE THIS CALL. USED FOR DEBUGGING.
@@ -3109,25 +3148,34 @@ C-----------------------------------------------
 C                 Contract with integrals.
 C-----------------------------------------------
 C
+C
                   DTIME = SECOND()
                   IOPT = 1
-                  CALL CC3_CONVIR33(OMEGA2P,OMEGA2M,WORK(KRMAT1),
+                  CALL CC3_CONVIR33(OMEGA2P,WORK(KRES2P),OMEGA2M,
+     *                              WORK(KRES2M),WORK(KRMAT1),
      *                              WORK(KRMAT2),WORK(KRMAT3),
      *                              WORK(KRMAT4),WORK(KSMAT),
      *                              WORK(KTMAT),ISYMIM,WORK(KTRVI),
      *                              WORK(KTRVI1),WORK(KTRVI8),
      *                              WORK(KTRVI9),ISINT1,WORK(KEND4),
      *                              LWRK4,WORK(KINDSQ),LENSQ,
-     *                              ISYMB,B,ISYMD,D,IOPT)
+     *                              ISYMB,B,ISYMD,D,IOPT,
+     *                              TIME1P,TIME2P,TIME3P,TIME1M,
+     *                              TIME2M,TSORTP,TSORTM)
+C
                   IOPT = 2
-                  CALL CC3_CONVIR33(OMEGA2P,OMEGA2M,WORK(KRMAT1),
+                  CALL CC3_CONVIR33(OMEGA2P,WORK(KRES2P),OMEGA2M,
+     *                              WORK(KRES2M),WORK(KRMAT1),
      *                              WORK(KRMAT2),WORK(KRMAT3),
      *                              WORK(KRMAT4),WORK(KSMAT),
      *                              WORK(KTMAT),ISYMIM,WORK(KTRVI),
      *                              WORK(KTRVI1),WORK(KTRVI8),
      *                              WORK(KTRVI9),ISINT1,WORK(KEND4),
      *                              LWRK4,WORK(KINDSQ),LENSQ,
-     *                              ISYMB,B,ISYMD,D,IOPT)
+     *                              ISYMB,B,ISYMD,D,IOPT,
+     *                              TIME1P,TIME2P,TIME3P,TIME1M,
+     *                              TIME2M,TSORTP,TSORTM)
+C
 C
                   IF (IPRINT .GT. 55 .OR. LDEBUG) THEN
                      XRMAT = DDOT(NCKI(ISAIJ1),WORK(KRMAT1),1,
@@ -3291,6 +3339,7 @@ C
                   ENDIF
 C
   130          CONTINUE
+C
   120       CONTINUE
 C
 C----------------------------------------------
@@ -3320,7 +3369,32 @@ C
             ENDIF
 C
   110    CONTINUE
+C
+C-----------------------------------------------------------
+C        Accumulate the result vectors from cc3_convir33
+C        and last loop stop.
+C-----------------------------------------------------------
+C
+         DTIME = SECOND()
+         CALL CC3_SORTPLUS(OMEGA2P,WORK(KRES2P),ISYRES)
+         CALL CC3_SORTMINUS(OMEGA2M,WORK(KRES2M),ISYRES)
+         DTIME = SECOND() - DTIME
+         TISORT = TISORT + DTIME
+C
   100 CONTINUE
+C
+C-----------------------------------------
+C     Close and delete files.
+C-----------------------------------------
+C
+      CALL WCLOSE2(LUDKBC2,FNDKBC2,'DELETE')
+      CALL WCLOSE2(LUDKBC3,FNDKBC3,'DELETE')
+      CALL WCLOSE2(LUDKBC4,FNDKBC4,'DELETE')
+      CALL WCLOSE2(LUDKBC5,FNDKBC5,'DELETE')
+      CALL WCLOSE2(LU3VI3,FN3VI3,'DELETE')
+      CALL WCLOSE2(LU3VI4,FN3VI4,'DELETE')
+      CALL WCLOSE2(LUDELD,FNDELD,'DELETE')
+      CALL WCLOSE2(LUDKBC,FNDKBC,'DELETE')
 C
 C----------------------------------------
 C     Print timings and R3 if LDEBUG.
@@ -3343,10 +3417,16 @@ C
          WRITE(LUPRI,1) 'CC3_TRAN  : ',TITRAN
          WRITE(LUPRI,1) 'CC3_SORT  : ',TISORT
          WRITE(LUPRI,1) 'CC3_SMAT  : ',TISMAT
-         WRITE(LUPRI,1) 'CC3_QMAT  : ',TIQMAT
          WRITE(LUPRI,1) 'CC3_CONV  : ',TICONV
+         WRITE(LUPRI,2) '1.ST +    : ',TIME1P
+         WRITE(LUPRI,2) '2.ND +    : ',TIME2P
+         WRITE(LUPRI,2) '3.RD +    : ',TIME3P
+         WRITE(LUPRI,2) '1.ST -    : ',TIME1M
+         WRITE(LUPRI,2) '2.ND -    : ',TIME2M
          WRITE(LUPRI,1) 'CC3_CONO  : ',TICONO
          WRITE(LUPRI,1) 'CC3_OME1  : ',TIOME1
+         WRITE(LUPRI,1) 'CC3_IO    : ',TIIO
+         WRITE(LUPRI,1) 'CC3_IVINT : ',TIVINT
          WRITE(LUPRI,*)
       END IF
 C
@@ -3355,6 +3435,7 @@ C
       RETURN
 C
     1 FORMAT(7X,'Time used in',2X,A12,F12.2,' seconds')
+    2 FORMAT(7X,'CC3_CONV consists of',2X,A12,F12.2,' seconds')
 C
       END
 C  /* Deck cc3_smat3 */
@@ -4115,65 +4196,15 @@ C
          WRITE(LUPRI,*) 'In CC3_SMAT: Norm of SMAT (end) ',XSMAT
       ENDIF
 C
-C--------------------------
-C     Print if desired.
-C     Has NOT been updated to triplet!!!!!!!
-C--------------------------
-C
-      IF (IPRCC .GT. 75) THEN
-C
-         CALL AROUND('The S matrix')
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(2X,A,I4)')  'JSAIKJ ', JSAIKJ
-         WRITE(LUPRI,'(2X,A,4I4)') 'isymb,b,isymc,c',ISYMB,B,ISYMC,C
-         WRITE(LUPRI,*)
-C
-         DO 600 ISYMJ = 1,NSYM
-C
-            ISYAIK = MULD2H(JSAIKJ,ISYMJ)
-C
-            DO 610 J = 1,NRHF(ISYMJ)
-C
-               WRITE(LUPRI,'(5X,A,2I4)') 'isymj,j',ISYMJ,J
-               WRITE(LUPRI,*)
-C
-               DO 620 ISYMK = 1,NSYM
-C
-                  ISYMAI = MULD2H(ISYAIK,ISYMK)
-C
-                  DO 630 K = 1,NRHF(ISYMK)
-C
-                     WRITE(LUPRI,'(8X,A,2I4)') 'isymk,k',ISYMK,K
-                     WRITE(LUPRI,*)
-C
-                     DO 640 ISYMI = 1,NSYM
-C
-                        ISYMA = MULD2H(ISYMAI,ISYMI)
-C
-                        KOFF = ISAIKJ(ISYAIK,ISYMJ)
-     *                       + NCKI(ISYAIK)*(J - 1)
-     *                       + ICKI(ISYMAI,ISYMK)
-     *                       + NT1AM(ISYMAI)*(K - 1)
-     *                       + IT1AM(ISYMA,ISYMI) + 1
-C
-                        CALL OUTPUT(SMAT(KOFF),1,NVIR(ISYMA),1,
-     *                              NRHF(ISYMI),NVIR(ISYMA),
-     *                              NRHF(ISYMI),1,LUPRI)
-C
-  640                CONTINUE
-  630             CONTINUE
-  620          CONTINUE
-  610       CONTINUE
-  600    CONTINUE
-C
-      END IF
 C
       CALL QEXIT('CC3_SMAT3')
 C
       RETURN
       END
 C  /* Deck cc3_sort3 */
-      SUBROUTINE CC3_SORT3(WORK,LWORK,IOPT,ISYINT)
+      SUBROUTINE CC3_SORT3(WORK,LWORK,IOPT,ISYINT,LU3SRT2,FN3SRT2,
+     *                     LU3SRT3,FN3SRT3,LUDELD2,FNDELD2,
+     *                     LUDELD3,FNDELD3)
 C
 C     Written by K. Hald, Feb. 2001.
 C     Based on cc3_sort1 written by
@@ -4187,7 +4218,7 @@ C
       INTEGER NDISTR, NBATCH, KSCR1, KSCR2, KSCR3, KSCR4, KSCR5, KSCR6
       INTEGER KEND1, NUMD, IBATCH, ID1, LENGTH, IOFF, ISYMB, ISYCKD
       INTEGER ID, ISYMK, ISYMC, ISYMBK, NTOTBK, KOFF1, KOFF2
-      INTEGER IOPT
+      INTEGER IOPT, LU3SRT2, LU3SRT3, LUDELD2, LUDELD3
 C      
 !
 #if defined (SYS_CRAY)
@@ -4204,6 +4235,8 @@ C
 #include <ccorb.h>
 #include <ccinftap.h>
 #include <ccsdsym.h>
+!
+      CHARACTER*(*) FN3SRT2, FN3SRT3, FNDELD2, FNDELD3
 !
       CALL QENTER('CC3_SORT3')
 !
@@ -4426,7 +4459,7 @@ C                     THIS IS THE OUTPUT FOR G2
      *                                   IOFF,LENGTH)
                           ELSE IF (IOPT .EQ. 2) THEN
 C                     THIS IS THE OUTPUT FOR THE SPECIAL G2
-                             CALL PUTWA2(LUDELD4,FNDELD4,WORK(KSCR4),
+                             CALL PUTWA2(LUDELD2,FNDELD2,WORK(KSCR4),
      *                                   IOFF,LENGTH)
                           ENDIF
                     ENDIF
@@ -4448,11 +4481,13 @@ C  /* Deck cc3_onel33 */
      *                      ISYINT,INDSQ,LENSQ,WORK,LWORK,ISYMIB,IB,
      *                      ISYMID,ID,IOPT)
 C
+C     K. Hald, Spring 2001
+C
+C     Based on cc3_onel by :
 C     Henrik Koch and Alfredo Sanchez.         Dec 1994
+C     Ove Christiansen 9-1-1996
 C
 C     Calculate Omega1 and Fock contibution to Omega2.
-C
-C     Ove Christiansen 9-1-1996:
 C
 C     General symmetry: ISYMIM is symmetry of SMAT and TMAT 
 C                       intermdiates.(incl isymd,isymb)
@@ -4862,7 +4897,7 @@ CC      SUBROUTINE SUM_R3(SMAT,ISYMB,B,ISYMD,D,NCKIJ,R3SUM)
 CC
 CC     Sum up the R3 amplitudes.
 CC     This routine should only be commented in when debugging
-CC     the CC3 triple amplitudes, since we statically allocate
+CC     the CC3 triplet triple amplitudes, since we statically allocate
 CC     the r3sum array.
 CC
 CC     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
@@ -4930,7 +4965,7 @@ C      SUBROUTINE PRINT_R3(R3SUM,ISYAMP)
 CC
 CC     Print the R3 amplitudes.
 CC     This routine should only be commented in when debugging
-CC     the CC3 triple amplitudes, since we statically allocate
+CC     the CC3 triplet triple amplitudes, since we statically allocate
 CC     the r3sum array.
 CC
 CC     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
@@ -4985,7 +5020,8 @@ CC
 C      RETURN
 C      END
 C  /* Deck cc3_sort2 */
-      SUBROUTINE CC3_SORT2(WORK,LWORK,ISYINT)
+      SUBROUTINE CC3_SORT2(WORK,LWORK,ISYINT,LU3SRT,FN3SRT,
+     *                     LUDELD5,FNDELD5)
 C
 C     KH April 2001 based on cc3_sort1 by
 C     Henrik Koch and Alfredo Sanchez.       28-May-1995
@@ -5401,7 +5437,7 @@ C
 C
 #if defined (SYS_CRAY)
       REAL C2(*), C2TRANS(*)
-#else if
+#else
       DOUBLE PRECISION C2(*), C2TRANS(*)
 #endif
 C
@@ -5974,7 +6010,9 @@ C
       RETURN
       END
 C  /* Deck cc3_virtint */
-      SUBROUTINE CC3_VIRTINT(XLAMDP,WORK,LWRK,ISINT1,ISINT2)
+      SUBROUTINE CC3_VIRTINT(XLAMDP,WORK,LWRK,ISINT1,ISINT2,
+     *                       LU3VI,FN3VI,LU3VI2,FN3VI2,LU3VI4,FN3VI4,
+     *                       LU3VI3,FN3VI3)
 C
 C     Written by Kasper Hald, April 2001.
 C
@@ -5987,10 +6025,9 @@ C
 #include <ccorb.h>
 #include <ccinftap.h>
 C
-      LOGICAL FIRST
-C
       INTEGER LWRK, ISINT1, ISINT2, ISYMD, ISYCKB, ISCKB1
       INTEGER ISCKB2, KENDLO, LWRKLO, IOFF, KTRVI, KINTVI
+      INTEGER LU3VI, LU3VI2, LU3VI4, LU3VI3
 C
 #if defined (SYS_CRAY)
       REAL XLAMDP(*), WORK(LWRK)
@@ -5998,12 +6035,10 @@ C
       DOUBLE PRECISION XLAMDP(*), WORK(LWRK)
 #endif
 C
-      SAVE FIRST
-      DATA FIRST /.TRUE./
+      CHARACTER*(*) FN3VI, FN3VI2, FN3VI4, FN3VI3
 C
       CALL QENTER('CC3_VIRTINT')
 C
-      IF (FIRST) THEN
       DO ISYMD = 1, NSYM
 C
          ISYCKB = MULD2H(ISYMD,ISYMOP)
@@ -6061,18 +6096,17 @@ C
 C
          ENDDO
       ENDDO
-      FIRST = .FALSE.
-      ENDIF
 C
       CALL QEXIT('CC3_VIRTINT')
 C
       RETURN
       END
 C  /* Deck cc3_convir33 */
-      SUBROUTINE CC3_CONVIR33(OMEGA2P,OMEGA2M,RMAT1,RMAT2,RMAT3,RMAT4,
-     *                        SMAT,TMAT,ISYMIM,TRVIR,TRVIR1,TRVIR2,
-     *                        TRVIR3,ISYINT,WORK,LWORK,INDSQ,LENSQ,
-     *                        ISYMB1,B1,ISYMD1,D1,IOPT)
+      SUBROUTINE CC3_CONVIR33(OMEGA2P,RES2P,OMEGA2M,RES2M,RMAT1,RMAT2,
+     *                        RMAT3,RMAT4,SMAT,TMAT,ISYMIM,TRVIR,TRVIR1,
+     *                        TRVIR2,TRVIR3,ISYINT,WORK,LWORK,INDSQ,
+     *                        LENSQ,ISYMB1,B1,ISYMD1,D1,IOPT,TIME1P,
+     *                        TIME2P,TIME3P,TIME1M,TIME2M,TSORTP,TSORTM)
 C
 C     Written by Kasper Hald, April 2001.
 C
@@ -6097,15 +6131,21 @@ C
       INTEGER ISYCKA, ISYDOT, ISYMEL
 C
 #if defined (SYS_CRAY)
+      REAL RES2P(*), RES2M(*)
       REAL OMEGA2P(*), OMEGA2M(*), RMAT1(*), RMAT2(*)
       REAL RMAT3(*), RMAT4(*), SMAT(*), TMAT(*), TRVIR(*), TRVIR1(*)
       REAL TRVIR2(*), TRVIR3(*), WORK(LWORK)
       REAL FACT, FACT2, ZERO, ONE, TWO, XMONE, XDOT, DDOT
+      REAL TIME1P, TIME2P, TIME3P, TIME1M, TIME2M, DTIME
+      REAL TSORTP, TSORTM, SECOND
 #else
+      DOUBLE PRECISION RES2P(*), RES2M(*)
       DOUBLE PRECISION OMEGA2P(*), OMEGA2M(*), RMAT1(*), RMAT2(*)
       DOUBLE PRECISION RMAT3(*), RMAT4(*), SMAT(*), TMAT(*), TRVIR(*)
       DOUBLE PRECISION TRVIR1(*), TRVIR2(*), TRVIR3(*), WORK(LWORK)
       DOUBLE PRECISION FACT, FACT2, ZERO, ONE, TWO, XMONE, XDOT, DDOT
+      DOUBLE PRECISION TIME1P, TIME2P, TIME3P, TIME1M, TIME2M, DTIME
+      DOUBLE PRECISION TSORTP, TSORTM, SECOND
 #endif
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMONE = -1.0D0)
@@ -6129,6 +6169,8 @@ C
 C------------------------------------------
 C     First virtual contribution to (+).
 C------------------------------------------
+C
+      DTIME = SECOND()
 C
       IF (IOPT .EQ. 1) THEN
         ISYMB = ISYMB1
@@ -6220,9 +6262,14 @@ C
          ENDIF
       ENDIF
 C
+      DTIME  = SECOND() - DTIME
+      TIME1P = TIME1P + DTIME
+C
 C--------------------------------------------
 C     Second virtual contribution to (+).
 C--------------------------------------------
+C
+      DTIME = SECOND()
 C
       IF (IOPT .EQ. 1) THEN
         ISYMB = ISYMB1
@@ -6315,9 +6362,14 @@ C
          ENDIF
       ENDIF
 C
+      DTIME  = SECOND() - DTIME
+      TIME2P = TIME2P + DTIME
+C
 C--------------------------------------------
 C     First virtual contribution to (-).
 C--------------------------------------------
+C
+      DTIME = SECOND()
 C
       IF (IOPT .EQ. 1) THEN
         ISYMB = ISYMB1
@@ -6410,9 +6462,14 @@ C
          ENDIF
       ENDIF
 C
+      DTIME  = SECOND() - DTIME
+      TIME1M = TIME1M + DTIME
+C
 C---------------------------------------
 C     Third virtual contribution to (+).
 C---------------------------------------
+C
+      DTIME = SECOND()
 C
       IF (IOPT .EQ. 1) THEN
         ISYME = ISYMB1
@@ -6440,17 +6497,12 @@ C
       ISBIJL = MULD2H(ISYMIM,ISYMED)
 C
       KINT1 = 1
-      KRESP = KINT1 + NMAXAI
-      KEND1 = KRESP + NT2SQ(ISYRES)
+      KEND1 = KINT1 + NMAXAI
       LWRK1 = LWORK - KEND1
-C
-      CALL DZERO(WORK(KRESP),NT2SQ(ISYRES))
 C
       IF (LWRK1 .LE. 0) THEN
          CALL QUIT('Insufficient work space in CC3_CONVIR33 (3)')
       ENDIF
-C
-      CALL DZERO(WORK(KRESP),NT2SQ(ISYRES))
 C
       LENGTH = NCKIJ(ISBIJL)
       DO I = 1,LENGTH
@@ -6500,86 +6552,43 @@ C
          KOFF1  = ISAIKJ(ISYBIJ,ISYML)
      *          + 1
          KOFF2  = KINT1
-         KOFF3  = KRESP 
-     *          + IT2SP(ISYBIJ,ISYMA)
+         KOFF3 = 1
+     *         + IT2SP(ISYBIJ,ISYMA)
 C
          IF (IOPT .EQ. 1) THEN
             CALL DGEMM('N','T',NCKI(ISYBIJ),NVIR(ISYMA),NRHF(ISYML),
      *                 ONE,TMAT(KOFF1),NTOBIJ,WORK(KOFF2),NTOTA,ONE,
-     *                 WORK(KOFF3),NTOBIJ)
+     *                 RES2P(KOFF3),NTOBIJ)
          ELSE
             CALL DGEMM('N','T',NCKI(ISYBIJ),NVIR(ISYMA),NRHF(ISYML),
      *                 ONE,TMAT(KOFF1),NTOBIJ,WORK(KOFF2),NTOTA,ONE,
-     *                 WORK(KOFF3),NTOBIJ)
+     *                 RES2P(KOFF3),NTOBIJ)
          ENDIF
 C
       ENDDO  !ISYML
+C
+      DTIME  = SECOND() - DTIME
+      TIME3P = TIME3P + DTIME
 C
 C---------------------------------------
 C     Sort result into result vector.
 C---------------------------------------
 C
-      DO ISYMA = 1, NSYM
-C
-         DO ISYMB = 1, NSYM
-C
-            ISYMAB = MULD2H(ISYMA,ISYMB)
-C
-            DO ISYMI = 1, NSYM
-C
-               ISYMAI = MULD2H(ISYMA,ISYMI)
-               ISYAIB = MULD2H(ISYMAI,ISYMB)
-               ISYMJ  = MULD2H(ISYAIB,ISYRES)
-               ISYMBJ = MULD2H(ISYMB,ISYMJ)
-               ISYBIJ = MULD2H(ISYMBJ,ISYMI)
-C
-               DO A = 1, NVIR(ISYMA)
-               DO I = 1, NRHF(ISYMI)
-                  NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A
-C
-                  DO B = 1, NVIR(ISYMB)
-                  DO J = 1, NRHF(ISYMJ)
-C
-                     NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
-C
-                     KOFF4 = KRESP-1
-     *                     + IT2SP(ISYBIJ,ISYMA)
-     *                     + NCKI(ISYBIJ)*(A-1)
-     *                     + ISAIK(ISYMBJ,ISYMI)
-     *                     + NT1AM(ISYMBJ)*(I-1) + NBJ
-C
-                     IF (ISYMAI.EQ.ISYMBJ) THEN
-                        KOFF5 = IT2AM(ISYMAI,ISYMBJ)
-     *                       + INDEX(NAI,NBJ)
-                        IF (NAI .EQ. NBJ) THEN
-                           WORK(KOFF4) = ZERO
-                        ENDIF
-                     ELSE IF (ISYMAI .LT. ISYMBJ) THEN
-                        KOFF5 = IT2AM(ISYMAI,ISYMBJ)
-     *                        + NT1AM(ISYMAI)*(NBJ-1) + NAI
-                     ELSE IF (ISYMBJ .LT. ISYMAI) THEN
-                        KOFF5 = IT2AM(ISYMAI,ISYMBJ)
-     *                        + NT1AM(ISYMBJ)*(NAI-1) + NBJ
-                     ENDIF
-C
-                     OMEGA2P(KOFF5) = OMEGA2P(KOFF5) - WORK(KOFF4)
-C
-                  ENDDO  ! J
-                  ENDDO  ! B
-               ENDDO     ! I
-               ENDDO     ! A
-            ENDDO        ! ISYMI
-         ENDDO           ! ISYMB
-      ENDDO              ! ISYMA
+      DTIME = SECOND()
 C
       IF (IPRINT .GT. 55 .OR. LDEBUG) THEN
            XDOT = DDOT(NT2AM(ISYRES),OMEGA2P,1,OMEGA2P,1)
            WRITE(LUPRI,*) 'CC3_CONVIR33 : Norm OMEGA2P (1) = ',XDOT
       ENDIF
 C
+      DTIME  = SECOND() - DTIME
+      TSORTP = TSORTP + DTIME
+C
 C------------------------------------------
 C     Second virtual contribution to (-).
 C------------------------------------------
+C
+      DTIME = SECOND()
 C
       IF (IOPT .EQ. 1) THEN
         ISYME = ISYMB1
@@ -6607,8 +6616,7 @@ C
       ISBIJL = MULD2H(ISYMIM,ISYMED)
 C
       KINT1 = 1
-      KRESP = KINT1 + NMAXAI
-      KEND1 = KRESP + NT2SQ(ISYRES)
+      KEND1 = KINT1 + NMAXAI
       LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LE. 0) THEN
@@ -6616,7 +6624,6 @@ C
       ENDIF
 C
       CALL DZERO(WORK(KINT1),NMAXAI)
-      CALL DZERO(WORK(KRESP),NT2SQ(ISYRES))
 C
       LENGTH = NCKIJ(ISBIJL)
       DO I = 1,LENGTH
@@ -6666,24 +6673,71 @@ C
          KOFF1  = ISAIKJ(ISYBIJ,ISYML)
      *          + 1
          KOFF2  = KINT1
-         KOFF3  = KRESP 
+         KOFF3  = 1
      *          + IT2SP(ISYBIJ,ISYMA)
 C
          IF (IOPT .EQ. 1) THEN
             CALL DGEMM('N','T',NCKI(ISYBIJ),NVIR(ISYMA),NRHF(ISYML),
      *                 ONE,TMAT(KOFF1),NTOBIJ,WORK(KOFF2),NTOTA,ONE,
-     *                 WORK(KOFF3),NTOBIJ)
+     *                 RES2M(KOFF3),NTOBIJ)
          ELSE
             CALL DGEMM('N','T',NCKI(ISYBIJ),NVIR(ISYMA),NRHF(ISYML),
      *                 ONE,TMAT(KOFF1),NTOBIJ,WORK(KOFF2),NTOTA,ONE,
-     *                 WORK(KOFF3),NTOBIJ)
+     *                 RES2M(KOFF3),NTOBIJ)
          ENDIF
 C
       ENDDO  !ISYML
 C
+      DTIME  = SECOND() - DTIME
+      TIME2M = TIME2M + DTIME
+C
 C---------------------------------------
 C     Sort result into result vector.
 C---------------------------------------
+C
+      DTIME = SECOND()
+C
+      IF (IPRINT .GT. 55 .OR. LDEBUG) THEN
+           XDOT = DDOT(NT2AM(ISYRES),OMEGA2M,1,OMEGA2M,1)
+           WRITE(LUPRI,*) 'CC3_CONVIR33 : Norm OMEGA2M (1) = ',XDOT
+      ENDIF
+C
+      DTIME  = SECOND() - DTIME
+      TSORTM = TSORTM + DTIME
+C
+      CALL QEXIT('CC3_CONVIR33')
+C
+      RETURN
+      END
+C  /* Deck cc3_sortminus */
+      SUBROUTINE CC3_SORTMINUS(OMEGA2M,RES2M,ISYRES)
+C
+C     K. Hald, April 2001.
+C
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+C
+      INTEGER ISYMA, ISYMB, ISYMAB, ISYMI, ISYMAI, ISYAIB, ISYMJ
+      INTEGER ISYMBJ, ISYBIJ, NAI, NBJ, KOFF4, KOFF5, INDEX, ISYRES
+C
+#if defined (SYS_CRAY)
+      REAL OMEGA2M(*), RES2M(*), ZERO, ONE, XMONE, FACT2
+#else
+      DOUBLE PRECISION OMEGA2M(*), RES2M(*), ZERO, ONE, XMONE, FACT2
+#endif
+C
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3_SORTMINUS')
+C
+C---------------------------------
+C     Sort the (-) part.
+C---------------------------------
 C
       DO ISYMA = 1, NSYM
 C
@@ -6708,8 +6762,7 @@ C
 C
                      NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
 C
-                     KOFF4 = KRESP-1
-     *                     + IT2SP(ISYBIJ,ISYMA)
+                     KOFF4 =  IT2SP(ISYBIJ,ISYMA)
      *                     + NCKI(ISYBIJ)*(A-1)
      *                     + ISAIK(ISYMBJ,ISYMI)
      *                     + NT1AM(ISYMBJ)*(I-1) + NBJ
@@ -6734,7 +6787,7 @@ C
                         FACT2 = ONE
                      ENDIF
 C
-                     OMEGA2M(KOFF5) = OMEGA2M(KOFF5) - FACT2*WORK(KOFF4)
+                     OMEGA2M(KOFF5) = OMEGA2M(KOFF5) -FACT2*RES2M(KOFF4)
 C
                   ENDDO  ! J
                   ENDDO  ! B
@@ -6744,12 +6797,93 @@ C
          ENDDO           ! ISYMB
       ENDDO              ! ISYMA
 C
-      IF (IPRINT .GT. 55 .OR. LDEBUG) THEN
-           XDOT = DDOT(NT2AM(ISYRES),OMEGA2M,1,OMEGA2M,1)
-           WRITE(LUPRI,*) 'CC3_CONVIR33 : Norm OMEGA2M (1) = ',XDOT
-      ENDIF
+      CALL QEXIT('CC3_SORTMINUS')
 C
-      CALL QEXIT('CC3_CONVIR33')
+      RETURN
+      END
+C  /* Deck cc3_sortplus */
+      SUBROUTINE CC3_SORTPLUS(OMEGA2P,RES2P,ISYRES)
+C
+C     K. Hald, April 2001.
+C
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+C
+      INTEGER ISYMA, ISYMB, ISYMAB, ISYMI, ISYMAI, ISYAIB, ISYMJ
+      INTEGER ISYMBJ, ISYBIJ, NAI, NBJ, KOFF4, KOFF5, INDEX, ISYRES
+C
+#if defined (SYS_CRAY)
+      REAL OMEGA2P(*), RES2P(*), ZERO
+#else
+      DOUBLE PRECISION OMEGA2P(*), RES2P(*), ZERO
+#endif
+C
+      PARAMETER(ZERO = 0.0D0)
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3_SORTPLUS')
+C
+C--------------------------------------
+C     Sort the (+) result.
+C--------------------------------------
+C
+      DO ISYMA = 1, NSYM
+C
+         DO ISYMB = 1, NSYM
+C
+            ISYMAB = MULD2H(ISYMA,ISYMB)
+C
+            DO ISYMI = 1, NSYM
+C
+               ISYMAI = MULD2H(ISYMA,ISYMI)
+               ISYAIB = MULD2H(ISYMAI,ISYMB)
+               ISYMJ  = MULD2H(ISYAIB,ISYRES)
+               ISYMBJ = MULD2H(ISYMB,ISYMJ)
+               ISYBIJ = MULD2H(ISYMBJ,ISYMI)
+C
+               DO A = 1, NVIR(ISYMA)
+               DO I = 1, NRHF(ISYMI)
+                  NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A
+C
+                  DO B = 1, NVIR(ISYMB)
+                  DO J = 1, NRHF(ISYMJ)
+C
+                     NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J - 1) + B
+C
+                     KOFF4 = IT2SP(ISYBIJ,ISYMA)
+     *                     + NCKI(ISYBIJ)*(A-1)
+     *                     + ISAIK(ISYMBJ,ISYMI)
+     *                     + NT1AM(ISYMBJ)*(I-1) + NBJ
+C
+                     IF (ISYMAI.EQ.ISYMBJ) THEN
+                        KOFF5 = IT2AM(ISYMAI,ISYMBJ)
+     *                       + INDEX(NAI,NBJ)
+                        IF (NAI .EQ. NBJ) THEN
+                           RES2P(KOFF4) = ZERO
+                        ENDIF
+                     ELSE IF (ISYMAI .LT. ISYMBJ) THEN
+                        KOFF5 = IT2AM(ISYMAI,ISYMBJ)
+     *                        + NT1AM(ISYMAI)*(NBJ-1) + NAI
+                     ELSE IF (ISYMBJ .LT. ISYMAI) THEN
+                        KOFF5 = IT2AM(ISYMAI,ISYMBJ)
+     *                        + NT1AM(ISYMBJ)*(NAI-1) + NBJ
+                     ENDIF
+C
+                     OMEGA2P(KOFF5) = OMEGA2P(KOFF5) - RES2P(KOFF4)
+C
+                  ENDDO  ! J
+                  ENDDO  ! B
+               ENDDO     ! I
+               ENDDO     ! A
+            ENDDO        ! ISYMI
+         ENDDO           ! ISYMB
+      ENDDO              ! ISYMA
+C
+      CALL QEXIT('CC3_SORTPLUS')
 C
       RETURN
       END

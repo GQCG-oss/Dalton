@@ -1204,7 +1204,7 @@ C     ---------------------------
          ISYMFC = MULD2H(ISYMTC,ISYOVOV)
          ISYFBC = MULD2H(ISYTCTB,ISYOVOV)
 C
-         IF (CCS. OR. (CC2 .AND. (.NOT.MCC2)) ) GOTO 888
+         IF (CCS. OR. CC2) GOTO 888
 C
 C        -------------------------------------------------------
 C        allocate work space for one-index transformed integrals
@@ -1226,7 +1226,7 @@ C
          LEND1   = LWORK   - KEND1
 
 *=====================================================================*
-* MCC2/CCSD part for DELTA1
+* CCSD part for DELTA1
 *=====================================================================*
  
          DTIME = SECOND()
@@ -1351,7 +1351,7 @@ C
          IF (LDOUBL) THEN
 
 *=====================================================================*
-* MCC2/CCSD part for DELTA2
+* CCSD part for DELTA2
 *=====================================================================*
 
          DTIME = SECOND()
@@ -1377,8 +1377,6 @@ C        B term: requires packed multipliers
 C                and squared (ia|jb) integrals
 C        -------------------------------------
 C
-         IF (.NOT.MCC2) THEN
-
            ISYTCTB = MULD2H(ISYMTC,ISYMTB)
            ISYC4O  = MULD2H(ISYTCTB,ISYCTR)
 
@@ -1422,7 +1420,6 @@ C
            Call CCRHS_A(WORK(KDELTA2),WORK(KXIAJB),WORK(KC4O), 
      &                  WORK(KENDB3), LENDB3, ISYC4O, ISYOVOV, IOPT)
 
-         END IF ! (.NOT.MCC2)
 C
 C        -----------------------------------------
 C        A term: requires packed (ia|jb) integrals 
@@ -1461,22 +1458,18 @@ C
          Call CCG_RDIAJB(WORK(KXIAJB),NT2AM(ISYOVOV))
 
 
-         IF (.NOT.MCC2) THEN
-
-*           calculate double one-index transformed (ik|jl) integrals:
-            IOPT = 1
-            Call CCG_4O(WORK(KX4O),ISYX4O, WORK(KXIAJB),ISYOVOV,
-     &                  WORK(KT1AMPB(ITRAN)),ISYMTB,
-     &                  WORK(KT1AMPC(ITRAN)),ISYMTC,
-     &                  WORK(KENDA3),LENDA3,IOPT)
+*        calculate double one-index transformed (ik|jl) integrals:
+         IOPT = 1
+         Call CCG_4O(WORK(KX4O),ISYX4O, WORK(KXIAJB),ISYOVOV,
+     &               WORK(KT1AMPB(ITRAN)),ISYMTB,
+     &               WORK(KT1AMPC(ITRAN)),ISYMTC,
+     &               WORK(KENDA3),LENDA3,IOPT)
 
 
-*           contract them with the multipliers:
-                   IOPT = 2
-                   Call CCRHS_A(WORK(KDELTA2),WORK(KZETA2),WORK(KX4O),
-     &                          WORK(KENDA3),LENDA3,ISYX4O,ISYCTR,IOPT)
-
-         END IF ! (.NOT.MCC2)
+*        contract them with the multipliers:
+                IOPT = 2
+                Call CCRHS_A(WORK(KDELTA2),WORK(KZETA2),WORK(KX4O),
+     &                       WORK(KENDA3),LENDA3,ISYX4O,ISYCTR,IOPT)
 
          IF (LOCDBG) THEN
             WRITE (LUPRI,*) MSGDBG, 'finished A term.'
@@ -1539,7 +1532,6 @@ C
 *---------------------------------------------------------------------*
 * D term & C term:
 *---------------------------------------------------------------------*
-         IF (.NOT.MCC2) THEN
 
 * recover work space from integrals and Lagrangian multipliers,
 * and allocate work space for C & D term as square matrix:
@@ -1558,7 +1550,6 @@ C
      &                    WORK(KZCIAJK),WORK(KCCIAJK),ISYCTC,         
      &                    LSAME, WORK(KEND2), LEND2)
 
-         END IF ! (.NOT.MCC2)
 
          TIMDBL = TIMDBL + SECOND() - DTIME
 
@@ -1573,7 +1564,7 @@ C        ---------------------------------
 C        here we continue for CCS and CC2:
 C        ---------------------------------
  888     CONTINUE
-         IF (CC2 .AND. (.NOT.MCC2)) THEN
+         IF (CC2) THEN
             KDELTA2 = KEND0
             KEND1   = KDELTA2 + NT2AM(ISYRES)
             LEND1   = LWORK   - KEND1
@@ -2013,7 +2004,7 @@ c/* Deck CCG_21CCSD */
      &                        WORK,   LWORK   )! work space
 *---------------------------------------------------------------------*
 *
-*    Purpose: calculate CCSD/MCC2 contribution to DELTA1:
+*    Purpose: calculate CCSD contribution to DELTA1:
 *
 *        DELTA1 = DELTA1 + <Zeta_2| [[tH^B,T2C], tau_1] |HF>
 *
@@ -2154,7 +2145,6 @@ c/* Deck CCG_21CCSD */
       END IF
 
 
-      IF (.NOT.MCC2) THEN
 *---------------------------------------------------------------------*
 * read (ia|jb) integrals from disk and square up:
 *---------------------------------------------------------------------*
@@ -2196,8 +2186,6 @@ c/* Deck CCG_21CCSD */
       CALL CCG_SORT1(XIAJK,EIAJK,ISYMTB,0)
 
       CALL DAXPY(NTAIKJ(ISYMTB),-HALF,EIAJK,1,XIAJK,1)
-
-      END IF ! (.NOT.MCC2)
 
 *---------------------------------------------------------------------*
 * read & unpack lagrangian multipliers and re-read packed integrals:
@@ -2331,8 +2319,6 @@ c/* Deck CCG_21CCSD */
       END IF
 
 *---------------------------------------------------------------------*
-
-      IF (MCC2) RETURN
 
 *---------------------------------------------------------------------*
 * precalculate M^C intermediate: M(i,jkl) = sum_ed Z(ei,dk) T^C(el,dj)

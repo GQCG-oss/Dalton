@@ -318,7 +318,6 @@ C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
-      IF (MCC2) MODEL = 'MCC2      '
 C
       IF (ISYRES .NE. MULD2H(ISYML,ISYMR)) THEN
          WRITE(LUPRI,*) 'Symmetry mismatch in CC_FMATOLD'
@@ -381,7 +380,7 @@ C
 *--------------------------------------------------------------------*
       TIMEZ = SECOND()
 
-      IF (.NOT. (CCS.OR.CC2.OR.MCC2)) THEN
+      IF (.NOT. (CCS.OR.CC2)) THEN
 
         IF (LLIST(1:2).EQ.'L0') THEN
           FILPQR0 = FILPQIM
@@ -690,7 +689,7 @@ C
       NRHOR  = NT2AOIJ(ISYMR)
       NMGD   = NT2AOIJ(ISYRES)
 C
-      IF ((.NOT.((CC2.AND.(.NOT.NONHF)).OR.CCS)).OR.MCC2) THEN
+      IF (.NOT.((CC2.AND.(.NOT.NONHF)).OR.CCS)) THEN
          KXMAT  = KEND1
          KXMATX = KXMAT  + NMATIJ(ISYML)
          KYMAT  = KXMATX + NMATIJ(ISYRES)
@@ -752,7 +751,7 @@ C
          CALL CC_PRLAM(WORK(KLAMPC),WORK(KLAMHC),ISYMR)
       ENDIF
 C
-      IF ((.NOT.(CCS.OR.(CC2.AND.(.NOT.NONHF)))).OR.MCC2) THEN
+      IF (.NOT.(CCS.OR.(CC2.AND.(.NOT.NONHF)))) THEN
 C
          IF ( LLIST(1:2) .EQ. 'L0' ) THEN
 C
@@ -768,7 +767,7 @@ C
 
             REWIND(LUXYM,ERR=999)
 
-            IF ((.NOT.(CCS.OR.(CC2.AND.(.NOT.NONHF)))).OR.MCC2) THEN
+            IF (.NOT.(CCS.OR.(CC2.AND.(.NOT.NONHF)))) THEN
                READ(LUXYM,ERR=999) (WORK(KYMAT-1+I),I=1,NMATAB(ISYML))
                READ(LUXYM,ERR=999) (WORK(KXMAT-1+I),I=1,NMATIJ(ISYML))
             END IF
@@ -921,7 +920,7 @@ C     ------------------------------------------------------------
 C     Include the two LT21A contributions here by 2N^2 operations:
 C     ------------------------------------------------------------
 C
-      IF ((.NOT.(CC2.OR.CCS)).OR.MCC2) THEN
+      IF (.NOT.(CC2.OR.CCS)) THEN
 
         CALL DAXPY(N2BST(ISYRES),ONE,WORK(KYDENX),1,WORK(KL1R2),1)
 
@@ -1304,7 +1303,7 @@ C              Calculate integral batch with three occupied indices.
 C              but C1 independent.
 C-------------------------------------------------------------------
 C
-               IF ((.NOT.(CC2.OR.CCS)).OR.MCC2) THEN
+               IF (.NOT.(CC2.OR.CCS)) THEN
                   DTIME = SECOND()
                   CALL CC_INT3O(WORK(KO3T),WORK(KDSRHF),WORK(KLAMDH),
      *                          ISYMOP,WORK(KLAMDP),WORK(KEND3),
@@ -2109,7 +2108,7 @@ C
      *                 WORK(KLAMDH),ISYMOP,WORK(KXMAT),ISYML,ISYMR,
      *                 WORK(KEND2),LWRK2,LUO3,O3FIL,IOPT)
       ENDIF
-      IF ((.NOT.(CC2.OR.CCS)).OR.MCC2) THEN
+      IF (.NOT.(CC2.OR.CCS)) THEN
         IOPT = 1
         CALL CC_21B12C(WORK(KRHO1),WORK(KRHO2),WORK(KL1AM),ISYML,
      *                 WORK(KLAMDH),ISYMOP,WORK(KXMATX),ISYRES,ISYMOP,
@@ -2128,7 +2127,7 @@ C----------------------------------------
 C     Calculate the LT21EFM contribution.
 C----------------------------------------
 C
-      IF ((NFIELD.GT.0).AND.(CC2.AND.NONHF.AND.(.NOT.MCC2))) THEN
+      IF ((NFIELD.GT.0).AND.(CC2.AND.NONHF)) THEN
          ISYMXY = MULD2H(ISYML,ISYMR)
          IOPT = 1
          CALL CC_LCC2FF(WORK(KRHO1),WORK(KLAMDP),WORK(KLAMDH), 
@@ -2136,7 +2135,7 @@ C
      *                  WORK(KXMATX),WORK(KYMATX),ISYMXY,
      *                  WORK(KEND1),LWRK1,IOPT)
       ENDIF
-      IF ((.NOT.(CC2.OR.CCS)).OR.MCC2) THEN
+      IF (.NOT.(CC2.OR.CCS)) THEN
 C
          DTIME  = SECOND()
          ISYFCK = ISYMR
@@ -2256,19 +2255,8 @@ C
      *                  WORK(KEMAT1),WORK(KEMAT2),
      *                  WORK(KEND1),LWRK1,ISYML,ISYMR,'T')
 C
-      IF ((.NOT. (CCS.OR.CC2)) .OR. MCC2) THEN
+      IF (.NOT. (CCS.OR.CC2)) THEN
 C
-         IF (MCC2) THEN 
-            FCKCON = .TRUE.
-            ETRAN  = .FALSE.
-            ISYMEI = ISYMR
-            DTIME  = SECOND()
-            CALL CCRHS_EFCK(WORK(KEMAT1),WORK(KEMAT2),WORK(KLAMDH),
-     *                      WORK(KFOCKC),WORK(KEND1),LWRK1,FCKCON,
-     *                      ETRAN,ISYMR)
-            DTIME = SECOND() - DTIME
-            TIMEFCK = TIMEFCK + DTIME
-         ENDIF
          ISYVEC = ISYML
          ISYMIM = ISYMR
          DTIME = SECOND()
@@ -2304,7 +2292,7 @@ C
 C
       ENDIF
 C
-      IF ((NFIELD .GT.0).AND.(CC2.AND.NONHF.AND.(.NOT.MCC2))) THEN
+      IF ((NFIELD .GT.0).AND.(CC2.AND.NONHF)) THEN
          IOPT = -1
          CALL CC_FCC2FF(WORK(KRHO2),WORK(KL2AM),ISYML,
      *                  WORK(KLAMDP),WORK(KLAMDH), 

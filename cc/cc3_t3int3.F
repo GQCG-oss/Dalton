@@ -35,7 +35,10 @@ C
 C
 !  /* Deck cc3_t3int3 */
       SUBROUTINE CC3_T3INT3(XINT,XLAMDP,XLAMDH,C1AM,ISYMTR,
-     *                      WORK,LWORK,IDEL,ISYDEL)
+     *                      WORK,LWORK,IDEL,ISYDEL,LU3SRT,FN3SRT,
+     *                      LU3SRT2,FN3SRT2,LU3SRT3,FN3SRT3,
+     *                      LUCKJD,FNCKJD,LUCKJD2,FNCKJD2,
+     *                      LUCKJD3,FNCKJD3)
 !
 !     Symmetry by Henrik Koch and Poul Joergensen. 13-Jan-1995
 !     Purpose: Calculate integrals used in CC3 model T3 amplitudes.
@@ -52,6 +55,7 @@ C
       INTEGER ISYML, ISYMC, ISYMA, NBASA, NVIRC, ISYMK
       INTEGER ISYMD, NVIRD, ID, LENGTH, IOFF
       INTEGER KXCKD2, KXCKJ2, KXCKD3, KXCKJ3
+      INTEGER LU3SRT, LU3SRT2, LU3SRT3, LUCKJD, LUCKJD2, LUCKJD3
 !
 #if defined (SYS_CRAY)
       REAL XINT(*),WORK(LWORK), XDOT, DDOT
@@ -68,6 +72,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+!
+      CHARACTER*(*) FN3SRT, FN3SRT2, FN3SRT3, FNCKJD, FNCKJD2, FNCKJD3
 !
       CALL QENTER('CC3_T3INT3')
 !

@@ -115,6 +115,8 @@ c*DECK CC_RHTR3
       INTEGER INDEXA(MXCORB)
       INTEGER LUFC1, LUFC2, LUFR1, LUFR2, ISIDE
       INTEGER KRHO3, KC2AMP, KC2AMM, KENDCC3, LWRKCC3
+      INTEGER LUSRTT1, LUSRTT2, LUSRTT3, LUCKJDT1, LUCKJDT2, LUCKJDT3
+      INTEGER LU3VI, LU3VI2, LUTOC
 !
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -133,11 +135,14 @@ c*DECK CC_RHTR3
       DOUBLE PRECISION FACTC, FACG, FACH, FAKE, PHONEY, NFACC, PFACC
       DOUBLE PRECISION XNGAM, XMTWO, XMONE
       DOUBLE PRECISION TIMALL, TIMER1, TIMER2, TIMIO, TIMRDAO, FF
-      DOUBLE PRECISION SECOND, DDOT, DTIME, TIMFCK, TIMAOD
+      DOUBLE PRECISION DDOT, DTIME, TIMFCK, TIMAOD
       DOUBLE PRECISION TIMT2SQ, TIMLAM, TIMTRBT, TIMT2AO, TIMD
       DOUBLE PRECISION TIMC, TIMEI, TIMBF, TIMG, TIMH, TIMFCKMO
       DOUBLE PRECISION TIMT2MO, TIMA, TIMCIO, TIMI, TIMDIO, TIMCCSD
       DOUBLE PRECISION TIME1C1, TIMT2TR, ECURR2, TIMOM32, TIMT3I
+#if !defined (SYS_LINUX)
+      DOUBLE PRECISION SECOND
+#endif
 #endif
 !
       PARAMETER (ZERO = 0.0D00, ONE = 1.0D00, TWO = 2.0D00)
@@ -145,10 +150,11 @@ c*DECK CC_RHTR3
       PARAMETER (XMHALF = -0.5D00)
 !
       CHARACTER*8 FRHO1, FRHO2, FC1AM, FC2AM
+      CHARACTER*8 FNCKJDT1, FNCKJDT2, FNCKJDT3, FNTOC, FN3VI2
       CHARACTER*7 PFIL, CTFIL, DTFIL, CSFIL
       CHARACTER*7 DTIMFIL, BFFIL 
-      CHARACTER*6 CSIMFIL
-      CHARACTER*10 MODEL
+      CHARACTER*6 CSIMFIL, FN3VI
+      CHARACTER*10 MODEL, FNSRTT1, FNSRTT2, FNSRTT3
 !
       LOGICAL FCKCON, ETRAN, ANTISYM, NORMALCONT, PIJCONT
       LOGICAL NEWGS, KHLOG, LDEBUG
@@ -209,6 +215,40 @@ c*DECK CC_RHTR3
          ENDIF
 !
       END IF
+!
+      IF (CCSDT) THEN
+!
+         LUSRTT1  = 0
+         LU3VI    = 0
+         LU3VI2   = 0
+         LUCKJDT1 = 0
+         LUCKJDT2 = 0
+         LUCKJDT3 = 0
+         LUSRTT2  = 0
+         LUSRTT3  = 0
+         LUTOC    = 0
+!
+         FNSRTT1  = 'CC3_SORTT1'
+         FN3VI    = 'CC3_VI'
+         FN3VI2   = 'CC3_VI12'
+         FNCKJDT1 = 'CKJDELT1'
+         FNCKJDT2 = 'CKJDELT2'
+         FNCKJDT3 = 'CKJDELT3'
+         FNSRTT2  = 'CC3_SORTT2'
+         FNSRTT3  = 'CC3_SORTT3'
+         FNTOC    = 'CCSDT_OC'
+!
+         CALL WOPEN2(LUSRTT1,FNSRTT1,64,0)
+         CALL WOPEN2(LU3VI,FN3VI,64,0)
+         CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+         CALL WOPEN2(LUCKJDT1,FNCKJDT1,64,0)
+         CALL WOPEN2(LUCKJDT2,FNCKJDT2,64,0)
+         CALL WOPEN2(LUCKJDT3,FNCKJDT3,64,0)
+         CALL WOPEN2(LUSRTT2,FNSRTT2,64,0)
+         CALL WOPEN2(LUSRTT3,FNSRTT3,64,0)
+         CALL WOPEN2(LUTOC,FNTOC,64,0)
+!
+      ENDIF
 !
 !-----------------------------------------------
 !     Time Initialiation.
@@ -970,7 +1010,10 @@ c*DECK CC_RHTR3
                      DTIME = SECOND()
                      CALL CC3_T3INT3(WORK(KXINT),WORK(KLAMDP),
      *                              WORK(KLAMDH),WORK(KAMC1),ISYMTR,
-     *                              WORK(KEND2),LWRK2,IDEL,ISYMD)
+     *                              WORK(KEND2),LWRK2,IDEL,ISYMD,
+     *                              LUSRTT1,FNSRTT1,LUSRTT2,FNSRTT2,
+     *                              LUSRTT3,FNSRTT3,LUCKJDT1,FNCKJDT1,
+     *                              LUCKJDT2,FNCKJDT2,LUCKJDT3,FNCKJDT3)
                      DTIME   = SECOND() - DTIME
                      TIMT3I  = TIMT3I   + DTIME
 !
@@ -3175,12 +3218,14 @@ C
                CALL CC3_OMEG3(WORK(KOFF1),WORK(KRHO2),WORK(KRHO22),
      *                        WORK(KAMC1),ISYMT1,WORK(KC2AM),ISYMT2,
      *                        WORK(KFOCK0),WORK(KLAMDP),WORK(KLAMDH),
-     *                        WORK(KEND1),LWRK1)
+     *                        WORK(KEND1),LWRK1,LUSRTT1,FNSRTT1,
+     *                        LUTOC,FNTOC,LUCKJDT1,FNCKJDT1)
+!
                DTIME   = SECOND() - DTIME
                TIMOM32 = TIMOM32 + DTIME
                ECURR   = ECURR2
 !
-               IF (LDEBUG) THEN
+               IF (IPRINT .GT. 55) THEN
                  RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                  WRITE(LUPRI,1) 'Norm of Rho1  after cc3_omeg3: ',RHO1N
                  RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,
@@ -3261,7 +3306,22 @@ C
      *                        WORK(KAMC1),ISYMT1,WORK(KC2AM),ISYMT2,
      *                        WORK(KC2AMP),WORK(KC2AMM),ISYMC2,ISYMT12,
      *                        WORK(KFOCK0),WORK(KLAMDP),WORK(KLAMDH),
-     *                        WORK(KEND1),LWRK1)
+     *                        WORK(KEND1),LWRK1,LUSRTT1,FNSRTT1,
+     *                        LU3VI,FN3VI,LU3VI2,FN3VI2,
+     *                        LUCKJDT1,FNCKJDT1,LUCKJDT2,FNCKJDT2,
+     *                        LUCKJDT3,FNCKJDT3,LUSRTT2,FNSRTT2,
+     *                        LUSRTT3,FNSRTT3,LUTOC,FNTOC)
+!
+               IF (IPRINT .GT. 55) THEN
+                 RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
+                 WRITE(LUPRI,1) 'Norm of Rho1  after cc3_omeg33: ',RHO1N
+                 RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,
+     *                                      WORK(KRHO2),1)
+                 WRITE(LUPRI,1) 'Norm of Rho2+ after cc3_omeg33: ',RHO2N
+                 RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO22),1,
+     *                                      WORK(KRHO22),1)
+                 WRITE(LUPRI,1) 'Norm of Rho2- after cc3_omeg33: ',RHO2N
+               ENDIF
 !
                IF (IPRINT .GT. 110) THEN
                   CALL AROUND('Omega1 & Omega2+ after CC3')
@@ -3443,6 +3503,18 @@ C
            CALL WCLOSE2(LUCSIM,CSIMFIL,'KEEP')
          ENDIF
 !
+      ENDIF
+!
+      IF (CCSDT) THEN
+         CALL WCLOSE2(LUSRTT1,FNSRTT1,'DELETE')
+         CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+         CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
+         CALL WCLOSE2(LUCKJDT1,FNCKJDT1,'DELETE')
+         CALL WCLOSE2(LUCKJDT2,FNCKJDT2,'DELETE')
+         CALL WCLOSE2(LUCKJDT3,FNCKJDT3,'DELETE')
+         CALL WCLOSE2(LUSRTT2,FNSRTT2,'DELETE')
+         CALL WCLOSE2(LUSRTT3,FNSRTT3,'DELETE')
+         CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
       ENDIF
 !
 !-------------------------------------

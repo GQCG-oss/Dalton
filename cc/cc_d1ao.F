@@ -44,11 +44,13 @@ C     Purpose: To calculate the one electron Coupled Cluster
 C              density matrix and returning it backtransformed
 C              to AO-basis in AODEN!
 C
-C     Current models: MP2, CCD, CCSD, MCC2
+C     Current models: MP2, CCD, CCSD, CCSD(T), CC3
 C
 C     OC: 15-4-1997: general llist.
 C
 C     May 1998: MP2 Frozen core density by Asger Halkier.
+C
+C     Spring 2002 : CC3 section by K. Hald.
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -76,6 +78,8 @@ C
 C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*)
+      CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
+      CHARACTER*6 FNDPTIA2
       LOGICAL NO
 C
 C----------------------------------------
@@ -176,7 +180,8 @@ C
 C
          ENDIF
 C
-      ELSE IF ((CCSD) .OR. ((CC2) .AND. (.NOT. RELORB))) THEN
+      ELSE IF ((CCSD .OR. CCPT .OR. CC3) 
+     *          .OR. ((CC2) .AND. (.NOT. RELORB))) THEN
 C
 C-------------------------------------------------------
 C        Both zeta- and t-vectors are totally symmetric.
@@ -313,6 +318,52 @@ C
          CALL CC_EITR(WORK(KONEAB),WORK(KONEIJ),WORK(KEND1),LWRK1,1)
          CALL DIJGEN(WORK(KONEIJ),WORK(KXMAT))
          CALL DIAGEN(WORK(KONEIA),WORK(KT2AMT),WORK(KONEAI))
+C
+C------------------------------------------------------------
+C        Get the contribution from CC3.
+C------------------------------------------------------------
+C
+         IF (CC3) THEN
+C
+            IF (LWRK1 .LT. MAX(NT1AMX,NMATIJ(1),NMATAB(1))) THEN
+               CALL QUIT('Out of memory in CC_D1AO (CC3)')
+            ENDIF
+C
+            LUPTIA = 0
+            FNDPTIA  = 'DPTIA'
+            CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
+            IOFF = 1
+            CALL GETWA2(LUPTIA,FNDPTIA,WORK(KEND1),IOFF,NT1AMX)
+            CALL WCLOSE2(LUPTIA,FNDPTIA,'KEEP')
+            CALL DAXPY(NT1AMX,1.0D0,WORK(KEND1),1,WORK(KONEIA),1)
+C
+            LUPTAB = 0
+            FNDPTAB  = 'DPTAB'
+            CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
+            IOFF = 1
+            CALL GETWA2(LUPTAB,FNDPTAB,WORK(KEND1),IOFF,
+     *                  NMATAB(1))
+            CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
+            CALL DAXPY(NMATAB(1),1.0D0,WORK(KEND1),1,WORK(KONEAB),1)
+C
+            LUPTIJ = 0
+            FNDPTIJ  = 'DPTIJ'
+            CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
+            IOFF = 1
+            CALL GETWA2(LUPTIJ,FNDPTIJ,WORK(KEND1),IOFF,
+     *                  NMATIJ(1))
+            CALL WCLOSE2(LUPTIJ,FNDPTIJ,'KEEP')
+            CALL DAXPY(NMATIJ(1),1.0D0,WORK(KEND1),1,WORK(KONEIJ),1)
+C
+            LUPTIA2 = 0
+            FNDPTIA2 = 'DPTIA2'
+            CALL WOPEN2(LUPTIA2,FNDPTIA2,64,0)
+            IOFF = 1
+            CALL GETWA2(LUPTIA2,FNDPTIA2,WORK(KEND1),IOFF,
+     *                  NT1AMX)
+            CALL WCLOSE2(LUPTIA2,FNDPTIA2,'KEEP')
+            CALL DAXPY(NT1AMX,1.0D0,WORK(KEND1),1,WORK(KONEIA),1)
+         ENDIF
 C
 C-----------------------------------------------------------
 C        Backtransform the one electron density to AO-basis.

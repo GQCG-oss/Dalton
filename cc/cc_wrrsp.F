@@ -84,7 +84,8 @@ C          'CF2': F-transformed right second-order Cauchy vectors.
 C          'FR' : F-transformed right eigenvectors.
 C
 C
-C          'O1' : rhs for first-order amplitude equations
+C          'O1 ': rhs for first-order amplitude equations
+C          'O1e': effective 'O1' vector for triples models
 C          'O2' : rhs for second-order amplitude equations
 C          'O3' : rhs for third-order amplitude equations
 C          'O4' : rhs for fourth-order amplitude equations
@@ -92,7 +93,8 @@ C          'CO2': rhs for second-order right Cauchy equations
 C          'EO1': rhs for first-order response of right eigenvectors
 C          'EO2': rhs for second-order response of right eigenvectors
 C
-C          'X1' : first-order chi/eta vectors
+C          'X1 ': first-order chi/eta vectors
+C          'X1e': effective 'X1' vector for triples models
 C          'X2' : second-order chi vectors
 C          'X3' : third-order chi vectors
 C          'X4' : fourth-order chi vectors
@@ -166,7 +168,8 @@ C---------------------------------------------------------------------*
       CHARACTER LABELA*(8)
 
       LOGICAL LEXISTS
-      INTEGER IOS, NVEC, LWORK, KORBITAL, KSINGLE, KDOUBLE
+      INTEGER IOS, NVEC, LWORK, KORBITAL, KSINGLE, KDOUBLE,
+     &        KSINGLEFF, KDOUBLEFF, NVECR
       INTEGER IDXLST, ISYM, IMUL, IDXFIL, IOPT, KEND, LWRK, NWRITE
 
 #if defined (SYS_CRAY)
@@ -202,7 +205,7 @@ C----------------------------------------------------------------------
      &     LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'L2' .OR.
      &     LIST(1:2).EQ.'R3' .OR. LIST(1:2).EQ.'L3' .OR.
      &     LIST(1:2).EQ.'R4' .OR. LIST(1:2).EQ.'L4' .OR.
-     &     LIST(1:2).EQ.'O1' .OR. LIST(1:2).EQ.'X1' .OR.
+     &     LIST(1:3).EQ.'O1 '.OR. LIST(1:3).EQ.'X1 '.OR.
      &     LIST(1:2).EQ.'O2' .OR. LIST(1:2).EQ.'X2' .OR.
      &     LIST(1:2).EQ.'O3' .OR. LIST(1:2).EQ.'X3' .OR.
      &     LIST(1:2).EQ.'O4' .OR. LIST(1:2).EQ.'X4' .OR.
@@ -252,8 +255,13 @@ C----------------------------------------------------------------------
         NWRITE = 1
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *    (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
-        IOPT   = IAND(IOPT,5) 
+        IOPT   = IAND(IOPT,1+4) 
         NWRITE = 2
+      ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
+     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
+     *        ) THEN
+        IOPT   = IAND(IOPT,1+2+4)
+        NWRITE = 3
       ELSE IF (MODFIL(1:3).EQ.'CC3'      .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1a' .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1B' .OR.
@@ -264,16 +272,11 @@ C----------------------------------------------------------------------
      *         MODFIL(1:9).EQ.'CCSDR(1A)'.OR.
      *         MODFIL(1:9).EQ.'CCSDR(1B)'   
      *        ) THEN
-        IOPT   = IAND(IOPT,7)
-        NWRITE = 3
-      ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
-     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
-     *        ) THEN
-        IOPT   = IAND(IOPT,7)
-        NWRITE = 3
+        IOPT   = IAND(IOPT,1+2+4+8+16)
+        NWRITE = 5
       ELSE 
         WRITE (LUPRI,*) 'unkown model in CC_WRRSP:',MODFIL
-        CALL QUIT('triples not yet implemented in CC_WRRSP.')
+        CALL QUIT('MODEL not yet implemented in CC_WRRSP.')
       END IF
 
 *---------------------------------------------------------------------*
@@ -332,6 +335,7 @@ C
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
          END IF
+         NVECR = 1
 C
 C        read CC singles vector... 
 C
@@ -346,6 +350,7 @@ C
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
          END IF
+         NVECR = 2
 C
 C        read CC doubles vector... 
 C
@@ -365,9 +370,53 @@ C
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
          END IF
+         NVECR = 3
+C
+C        read CC singles of effective vector... 
+C
+         IF (NVEC.GE.4 .AND. IAND(IOPT,8).EQ.0 ) THEN
+            KSINGLEFF  = KEND
+            KEND       = KSINGLEFF  + NT1AM(ISYM)
+            IF (LWORK.LT.KEND) THEN
+               CALL QUIT('Insufficient memory in CC_WRRSP.')
+            END IF
+            READ(LUSAVE,ERR=888,END=888) 
+     &            (WORK(KSINGLEFF-1+I),I=1,NT1AM(ISYM))
+         ELSE
+            READ(LUSAVE,ERR=888,END=888) 
+         END IF
+         NVECR = 4
+C
+C        read CC doubles of effective vector... 
+C
+         IF (NVEC.GE.5 .AND. IAND(IOPT,16).EQ.0 ) THEN
+            KDOUBLEFF  = KEND
+            KEND       = KDOUBLEFF  + NT2AM(ISYM)
+            IF (LWORK.LT.KEND) THEN
+               CALL QUIT('Insufficient memory in CC_WRRSP.')
+            END IF
+            READ(LUSAVE,ERR=888,END=888) 
+     &            (WORK(KDOUBLEFF-1+I),I=1,NT2AM(ISYM))
+            IF (IMUL.EQ.3) THEN
+              KEND     = KDOUBLEFF  + NT2AM(ISYM)+NT2AMA(ISYM)
+              READ(LUSAVE,ERR=888,END=888) 
+     &            (WORK(KDOUBLEFF+NT2AM(ISYM)-1+I),I=1,NT2AMA(ISYM))
+            END IF
+         ELSE
+            READ(LUSAVE,ERR=888,END=888) 
+         END IF
+         NVECR = 5
 
 888      CONTINUE
+    
+         ! for some vectors we don't have an 'effective' triples part
+         ! and we won't write zero vectors instead:
+         IF (NWRITE.EQ.5 .AND. IOPT.LT.8 .AND. NVEC.LT.4) NWRITE = 3
 
+      ELSE
+         ! for some vectors we don't have an 'effective' triples part
+         ! and we won't write zero vectors instead:
+         IF (NWRITE.EQ.5 .AND. IOPT.LT.8) NWRITE = 3
       END IF
 
       REWIND(LUSAVE,IOSTAT=IOS,ERR=992)
@@ -391,7 +440,7 @@ C
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'R1' .OR. LIST(1:2) .EQ. 'F1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:2), LRTLBL(IDXLST), ISYLRT(IDXLST), FRQLRT(IDXLST),
+     &    LISTI(1:3), LRTLBL(IDXLST), ISYLRT(IDXLST), FRQLRT(IDXLST),
      &    LORXLRT(IDXLST)
 
 *.....................................................................*
@@ -399,7 +448,7 @@ C
 * 'F2' - F transformed second-order response t amplitudes:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'R2' .OR. LIST(1:2) .EQ. 'F2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLR2T(IDXLST,1), ISYR2T(IDXLST,1), FRQR2T(IDXLST,1),
      &       LBLR2T(IDXLST,2), ISYR2T(IDXLST,2), FRQR2T(IDXLST,2)
 
@@ -408,7 +457,7 @@ C
 * 'F3' - F transformed third-order response t amplitudes:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'R3' .OR. LIST(1:2) .EQ. 'F3' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLR3T(IDXLST,1), ISYR3T(IDXLST,1), FRQR3T(IDXLST,1),
      &       LBLR3T(IDXLST,2), ISYR3T(IDXLST,2), FRQR3T(IDXLST,2),
      &       LBLR3T(IDXLST,3), ISYR3T(IDXLST,3), FRQR3T(IDXLST,3)
@@ -418,7 +467,7 @@ C
 * 'F4' - F transformed fourth-order response t amplitudes:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'R4' .OR. LIST(1:2) .EQ. 'F4' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLR4T(IDXLST,1), ISYR4T(IDXLST,1), FRQR4T(IDXLST,1),
      &       LBLR4T(IDXLST,2), ISYR4T(IDXLST,2), FRQR4T(IDXLST,2),
      &       LBLR4T(IDXLST,3), ISYR4T(IDXLST,3), FRQR4T(IDXLST,3),
@@ -429,14 +478,14 @@ C
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'RE' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:2), ISYEXC(IDXLST), IMULTE(IDXLST), EIGVAL(IDXLST)
+     &    LISTI(1:3), ISYEXC(IDXLST), IMULTE(IDXLST), EIGVAL(IDXLST)
 
 *.....................................................................*
 * 'ER1' - Right eigenvector, first-order response
 * 'EO1' - RHS for right eigenvector, first-order response
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'ER1' .OR. LIST(1:3) .EQ. 'EO1' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    ISTER1(IDXLST), ISYSER1(IDXLST), EIGER1(IDXLST),
      &    LBLER1(IDXLST), ISYOER1(IDXLST), FRQER1(IDXLST)
 
@@ -445,7 +494,7 @@ C
 * 'EO2' - RHS for right eigenvector, second-order response
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'ER2' .OR. LIST(1:3) .EQ. 'EO2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    ISTER2(IDXLST),   ISYSER2(IDXLST),   EIGER2(IDXLST),
      &    LBLER2(IDXLST,1), ISYOER2(IDXLST,1), FRQER2(IDXLST,1),
      &    LBLER2(IDXLST,2), ISYOER2(IDXLST,2), FRQER2(IDXLST,2)
@@ -455,7 +504,7 @@ C
 * 'EX1' - chi vector for left eigenvector, first-order response
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'EL1' .OR. LIST(1:3) .EQ. 'EX1' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    ISTEL1(IDXLST), ISYSEL1(IDXLST), EIGEL1(IDXLST),
      &    LBLEL1(IDXLST), ISYOEL1(IDXLST), FRQEL1(IDXLST)
 
@@ -464,7 +513,7 @@ C
 * 'EX2' - chi vector for left eigenvector, second-order response
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'EL2' .OR. LIST(1:3) .EQ. 'EX2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    ISTEL2(IDXLST),   ISYSEL2(IDXLST),   EIGEL2(IDXLST),
      &    LBLEL2(IDXLST,1), ISYOEL2(IDXLST,1), FRQEL2(IDXLST,1),
      &    LBLEL2(IDXLST,2), ISYOEL2(IDXLST,2), FRQEL2(IDXLST,2)
@@ -475,7 +524,7 @@ C
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'RC' .OR. LIST(1:2) .EQ. 'FC' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:2), LRCLBL(IDXLST), ISYLRC(IDXLST), ILRCAU(IDXLST)
+     &    LISTI(1:3), LRCLBL(IDXLST), ISYLRC(IDXLST), ILRCAU(IDXLST)
 
 *.....................................................................*
 * 'Rx' - x-th. order response t amplitudes:
@@ -489,7 +538,7 @@ C
 * 'CF2' - F-transformed second-order right Cauchy vectors
 *.....................................................................*
       ELSE IF (LIST(1:3).EQ.'CR2' .OR. LIST(1:3).EQ.'CF2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    LBLCR2(IDXLST,1), ISYCR2(IDXLST,1), ICR2CAU(IDXLST,1),
      &    LBLCR2(IDXLST,2), ISYCR2(IDXLST,2), ICR2CAU(IDXLST,2)
 
@@ -497,7 +546,7 @@ C
 * 'CO2' - RHS for second-order right Cauchy vectors
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'CO2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    LBLCO2(IDXLST,1), ISYCO2(IDXLST,1), ICO2CAU(IDXLST,1),
      &    LBLCO2(IDXLST,2), ISYCO2(IDXLST,2), ICO2CAU(IDXLST,2)
 
@@ -505,7 +554,7 @@ C
 * 'CL2' - second-order left Cauchy vectors
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'CL2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    LBLCL2(IDXLST,1), ISYCL2(IDXLST,1), ICL2CAU(IDXLST,1),
      &    LBLCL2(IDXLST,2), ISYCL2(IDXLST,2), ICL2CAU(IDXLST,2)
 
@@ -513,7 +562,7 @@ C
 * 'CX2' - second-order Cauchy eta vectors
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'CX2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:3),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &    LBLCX2(IDXLST,1), ISYCX2(IDXLST,1), ICX2CAU(IDXLST,1),
      &    LBLCX2(IDXLST,2), ISYCX2(IDXLST,2), ICX2CAU(IDXLST,2)
 
@@ -527,7 +576,7 @@ C
 * 'N2' and 'LBR' - zeroth order lagrangian multipliers and rhs.
 *.....................................................................*
       ELSE IF ((LIST(1:2).EQ.'N2').OR.(LIST(1:2).EQ.'BR')) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2),
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
      &       IIN2(IDXLST), ISYIN2(IDXLST), FRQIN2(IDXLST),
      &       IFN2(IDXLST), ISYFN2(IDXLST), FRQFN2(IDXLST)
 
@@ -536,14 +585,14 @@ C
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'L1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:2), LRZLBL(IDXLST), ISYLRZ(IDXLST), FRQLRZ(IDXLST),
+     &    LISTI(1:3), LRZLBL(IDXLST), ISYLRZ(IDXLST), FRQLRZ(IDXLST),
      &    LORXLRZ(IDXLST)
 
 *.....................................................................*
 * 'L2' - second-order response lagrangian multipliers:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'L2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLL2(IDXLST,1), ISYL2(IDXLST,1), FRQL2(IDXLST,1),
      &       LBLL2(IDXLST,2), ISYL2(IDXLST,2), FRQL2(IDXLST,2)
 
@@ -551,7 +600,7 @@ C
 * 'L3' - third-order response lagrangian multipliers:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'L3' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLL3(IDXLST,1), ISYL3(IDXLST,1), FRQL3(IDXLST,1),
      &       LBLL3(IDXLST,2), ISYL3(IDXLST,2), FRQL3(IDXLST,2),
      &       LBLL3(IDXLST,3), ISYL3(IDXLST,3), FRQL3(IDXLST,3)
@@ -560,7 +609,7 @@ C
 * 'L4' - third-order response lagrangian multipliers:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'L4' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLL4(IDXLST,1), ISYL4(IDXLST,1), FRQL4(IDXLST,1),
      &       LBLL4(IDXLST,2), ISYL4(IDXLST,2), FRQL4(IDXLST,2),
      &       LBLL4(IDXLST,3), ISYL4(IDXLST,3), FRQL4(IDXLST,3),
@@ -571,14 +620,14 @@ C
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'LE' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:2), ISYEXC(IDXLST), IMULTE(IDXLST), EIGVAL(IDXLST)
+     &    LISTI(1:3), ISYEXC(IDXLST), IMULTE(IDXLST), EIGVAL(IDXLST)
 
 *.....................................................................*
 * 'LC' - first-order left Cauchy vector.
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'LC' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:2), LBLLC1(IDXLST), ISYLC1(IDXLST), ILC1CAU(IDXLST)
+     &    LISTI(1:3), LBLLC1(IDXLST), ISYLC1(IDXLST), ILC1CAU(IDXLST)
 
 *.....................................................................*
 * 'Lx' - x-th. order response lagrangian multipliers:
@@ -591,14 +640,14 @@ C
 * 'O1' - rhs vectors for first-order amplitude equations:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'O1' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &     LBLO1(IDXLST), ISYO1(IDXLST), FRQO1(IDXLST), LORXO1(IDXLST)
 
 *.....................................................................*
 * 'O2' - rhs vectors for second-order amplitude equations:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'O2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLO2(IDXLST,1), ISYO2(IDXLST,1), FRQO2(IDXLST,1),
      &       LBLO2(IDXLST,2), ISYO2(IDXLST,2), FRQO2(IDXLST,2)
 
@@ -606,7 +655,7 @@ C
 * 'O3' - rhs vectors for third-order amplitude equations:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'O3' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLO3(IDXLST,1), ISYO3(IDXLST,1), FRQO3(IDXLST,1),
      &       LBLO3(IDXLST,2), ISYO3(IDXLST,2), FRQO3(IDXLST,2),
      &       LBLO3(IDXLST,3), ISYO3(IDXLST,3), FRQO3(IDXLST,3)
@@ -615,24 +664,24 @@ C
 * 'O4' - rhs vectors for fourth-order amplitude equations:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'O4' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLO4(IDXLST,1), ISYO4(IDXLST,1), FRQO4(IDXLST,1),
      &       LBLO4(IDXLST,2), ISYO4(IDXLST,2), FRQO4(IDXLST,2),
      &       LBLO4(IDXLST,3), ISYO4(IDXLST,3), FRQO4(IDXLST,3),
      &       LBLO4(IDXLST,4), ISYO4(IDXLST,4), FRQO4(IDXLST,4)
 
 *.....................................................................*
-* 'X1' - rhs vectors for first-order amplitude equations:
+* 'X1' - first-order chi/eta vectors
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'X1' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &     LBLX1(IDXLST), ISYX1(IDXLST), FRQX1(IDXLST), LORXX1(IDXLST)
 
 *.....................................................................*
 * 'X2' - second-order chi vectors:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'X2' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLX2(IDXLST,1), ISYX2(IDXLST,1), FRQX2(IDXLST,1),
      &       LBLX2(IDXLST,2), ISYX2(IDXLST,2), FRQX2(IDXLST,2)
 
@@ -640,7 +689,7 @@ C
 * 'X3' - third-order chi vectors:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'X3' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLX3(IDXLST,1), ISYX3(IDXLST,1), FRQX3(IDXLST,1),
      &       LBLX3(IDXLST,2), ISYX3(IDXLST,2), FRQX3(IDXLST,2),
      &       LBLX3(IDXLST,3), ISYX3(IDXLST,3), FRQX3(IDXLST,3)
@@ -649,7 +698,7 @@ C
 * 'X4' - fourth-order chi vectors:
 *.....................................................................*
       ELSE IF ( LIST(1:2) .EQ. 'X4' ) THEN
-        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LIST(1:2), 
+        WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
      &       LBLX4(IDXLST,1), ISYX4(IDXLST,1), FRQX4(IDXLST,1),
      &       LBLX4(IDXLST,2), ISYX4(IDXLST,2), FRQX4(IDXLST,2),
      &       LBLX4(IDXLST,3), ISYX4(IDXLST,3), FRQX4(IDXLST,3),
@@ -660,14 +709,21 @@ C
 *.....................................................................*
       ELSE IF ((LIST(1:2).EQ.'M1').OR.(LIST(1:2).EQ.'FR')) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:2), ILRM(IDXLST), ISYLRM(IDXLST), FRQLRM(IDXLST)
+     &    LISTI(1:3), ILRM(IDXLST), ISYLRM(IDXLST), FRQLRM(IDXLST)
+cch
+        write(lupri,*) 'write vector to file:'
+        write(lupri,*) 'type :',LISTI(1:3)
+        write(lupri,*) 'index:',ILRM(IDXLST)
+        write(lupri,*) 'symm.:',ISYLRM(IDXLST)
+        write(lupri,*) 'freq.:',FRQLRM(IDXLST)
+cch
 
 *.....................................................................*
 * 'PL1' - projected first-order response lagrangian multipliers:
 *.....................................................................*
       ELSE IF ( LIST(1:3) .EQ. 'PL1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LIST(1:3), LBLPL1(IDXLST), ISYPL1(IDXLST), FRQPL1(IDXLST),
+     &    LISTI(1:3), LBLPL1(IDXLST), ISYPL1(IDXLST), FRQPL1(IDXLST),
      &    LORXPL1(IDXLST)
 *.....................................................................*
 * unknown list:
@@ -680,7 +736,8 @@ C
 * write the vectors, close file & return:
 *---------------------------------------------------------------------*
       CALL CC_WVRSP( ISYM, IMUL, IOPT, NWRITE, LUSAVE, VEC0, VEC1, VEC2,
-     &               WORK(KORBITAL),WORK(KSINGLE),WORK(KDOUBLE))
+     &               WORK(KORBITAL),WORK(KSINGLE),WORK(KDOUBLE),
+     &               WORK(KSINGLEFF),WORK(KDOUBLEFF))
 
       CALL GPCLOSE(LUSAVE,'KEEP')
 
@@ -718,7 +775,7 @@ C
 *---------------------------------------------------------------------*
 c/* Deck cc_wvrsp */
       SUBROUTINE CC_WVRSP(ISYM,IMUL,IOPT,NWRITE,LUSAVE,
-     *                    VEC0,VEC1,VEC2,VS0,VS1,VS2)
+     *                    VEC0,VEC1,VEC2,VS0,VS1,VS2,VS3,VS4)
 C---------------------------------------------------------------------*
 C
 C   Purpose:  Write a vector with symmetry ISYM to unit LUSAVE
@@ -734,7 +791,8 @@ C
 C
       INTEGER ISYM, IOPT
 
-      DIMENSION VEC0(*),VEC1(*),VEC2(*),VS0(*),VS1(*),VS2(*)
+      DIMENSION VEC0(*),VEC1(*),VEC2(*)
+      DIMENSION VS0(*),VS1(*),VS2(*),VS3(*),VS4(*)
 C
       INTEGER IOS
 
@@ -783,6 +841,39 @@ C
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
+      IF (NWRITE.GE.4) THEN
+         IF ( IAND(IOPT,8).EQ.8 ) THEN
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
+         ELSE 
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VS3(I),I=1,NT1AM(ISYM))
+         END IF
+      ELSE
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
+      END IF
+
+      IF (NWRITE.GE.5) THEN
+         IF ( IAND(IOPT,16).EQ.16 ) THEN
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AM(ISYM))
+            IF (IMUL.EQ.3) THEN
+              WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
+     &            (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))     
+            ELSE
+              WRITE(LUSAVE,IOSTAT=IOS,ERR=993)   
+            END IF
+         ELSE
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VS4(I),I=1,NT2AM(ISYM))
+            IF (IMUL.EQ.3) THEN
+              WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
+     &            (VS4(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))     
+            ELSE
+              WRITE(LUSAVE,IOSTAT=IOS,ERR=993)   
+            END IF
+         END IF
+      ELSE
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
+      END IF
+
       RETURN
 
 *---------------------------------------------------------------------*
@@ -811,8 +902,10 @@ C
 C             - IOPT is used as bit wise flag to determine 
 C               which parts of the vector are to be written on file:
 C                 1.bit  (1): singles part
-C                 2.bit  (2): double part
+C                 2.bit  (2): doubles part
 C                 3.bit  (4): cphf part
+C                 4.bit  (8): singles part of effective vector
+C                 5.bit (16): doubles part of effective vector
 C
 C             for further input description see routines
 C             CC_RDRSP and CC_WRRSP
@@ -825,8 +918,9 @@ C---------------------------------------------------------------------*
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+#include <ccexci.h>
  
-      INTEGER IDXLST, ISYM, IOPT, IOPTRW
+      INTEGER IDXLST, ISYM, IOPT, IOPTRW, IMUL
       CHARACTER LIST*(*)
 
       INTEGER LWORK
@@ -852,6 +946,18 @@ C---------------------------------------------------------------------*
         CALL QUIT('Symmetry out of range in CC_WARSP.')
       END IF
 
+      ! default is singlett
+      IMUL = 1
+
+      ! for excited states we get it from the common block:
+      IF (LIST(1:2).EQ.'RE'  .OR. LIST(1:2).EQ.'LE') THEN
+         IMUL = IMULTE(IDXLST)
+      END IF                              
+      IF (IMUL .NE. 1) THEN
+        CALL QUIT('CC_WARSP> triplet vector not yet implemented.')
+      END IF
+
+
       KVEC0 = 1
       KVEC1 = KVEC0 + 2*NALLAI(ISYM)
       KVEC2 = KVEC1 + NT1AM(ISYM)
@@ -862,18 +968,21 @@ C---------------------------------------------------------------------*
         CALL QUIT('Insufficient work space in CC_WARSP.')
       END IF
 
-      IF (IOPT.GT.7) THEN
-        CALL QUIT('IOPT > 7 not implemented in CC_WARSP.')
+      IF (IOPT.NE.IAND(IOPT,1+2) .AND. IOPT.NE.IAND(IOPT,8+16))THEN
+        WRITE(LUPRI,*) 'CC_WARSP> IOPT = ',IOPT
+        WRITE(LUPRI,*) 'CC_WARSP> implemented:',1,2,3,8,16,24
+        CALL QUIT('IOPT not implemented in CC_WARSP.')
       END IF
 
       IOPTRW = 3
+      IF (IOPT.GT.7) IOPT = 24
       CALL CC_RDRSP(LIST,IDXLST,ISYM,IOPTRW,MODFIL,
      &              WORK(KVEC1),WORK(KVEC2))
       
-      IF ( IAND(IOPT,4).EQ.4 ) THEN
-         CALL CC_RDHFRSP(LIST,IDXLST,ISYM,MODFIL,WORK(KVEC0))
-         IOPTRW = IOPTRW + 4
-      END IF
+C     IF ( IAND(IOPT,4).EQ.4 ) THEN
+C        CALL CC_RDHFRSP(LIST,IDXLST,ISYM,MODFIL,WORK(KVEC0))
+C        IOPTRW = IOPTRW + 4
+C     END IF
 
 * check return value of read option:
       IF (IOPTRW .LT. IOPT) THEN
@@ -885,12 +994,15 @@ C---------------------------------------------------------------------*
 *---------------------------------------------------------------------*
 * add new vector to old vector and write result back to file:
 *---------------------------------------------------------------------*
-      IF ( IAND(IOPT,1).EQ.1 ) THEN
+      IF ( IAND(IOPT,1+8).NE.0 ) THEN
         CALL DAXPY(NT1AM(ISYM),1.0d0,VEC1,1,WORK(KVEC1),1)
       END IF
-      IF ( IAND(IOPT,2).EQ.2 ) THEN
+      IF ( IAND(IOPT,2+16).NE.0 ) THEN
         CALL DAXPY(NT2AM(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
       END IF
+C     IF ( IAND(IOPT,4).NE.0 ) THEN
+C       CALL DAXPY(2*NALLAI(ISYM),1.0d0,VEC0,1,WORK(KVEC0),1)
+C     END IF
 
       CALL CC_WRRSP(LIST,IDXLST,ISYM,IOPTRW,MODFIL,
      &              WORK(KVEC0),WORK(KVEC1),WORK(KVEC2),

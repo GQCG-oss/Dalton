@@ -70,7 +70,7 @@ c /* deck cclr_setup */
       CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCLR_SETUP> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG = .TRUE.)
 
       LOGICAL LADD
       INTEGER MXVEC, MXTRAN, MXSOP

@@ -86,10 +86,12 @@ C
 #include <eribuf.h>
 #include <ccslvinf.h>
 C
-      CHARACTER*8  FRHO2, FRHO1, FC2AM, FC1AM
-      CHARACTER*6  CFIL, DFIL, PQFIL
-      CHARACTER*1  LR
       CHARACTER*10 MODEL
+      CHARACTER*8  FRHO2, FRHO1, FC2AM, FC1AM, FN3SRT, FNTOC
+      CHARACTER*6  CFIL, DFIL, PQFIL, FN3V, FNCKJD, FN3VI, FN3FOP2
+      CHARACTER*5  FNDKBC3, FN3FOP
+      CHARACTER*4  FN4V, FNDKBC
+      CHARACTER*1  LR
 C
       DIMENSION INDEXA(MXCORB)
       DIMENSION RHO1(LRHO1,NSIMTR), CTR1(LRHO1,NSIMTR)
@@ -166,6 +168,13 @@ C
          KXMAT = KYDEN  + N2BST(ISYRES)*NSIMTR
          KEND0 = KXMAT  + NMATIJ(ISYRES)*NSIMTR
       ENDIF
+C
+      IF (CC3) THEN
+         KOVVO = KEND0
+         KOOVV = KOVVO + NT2SQ(1)
+         KEND0 = KOOVV + NT2SQ(1)
+      ENDIF
+C
       IF (CC2) THEN
          IF (NONHF) THEN
             KFCKHF = KEND0 
@@ -218,6 +227,50 @@ C
 
       END IF
 C
+C--------------------------------------------------
+C     Open files needed for CC3 and initialise 
+C     intermediates allocated earlier
+C--------------------------------------------------
+C
+      IF (CC3) THEN
+C
+         LU3V    = 0
+         LU4V    = 0
+         LU3SRT  = 0
+         LUCKJD  = 0
+         LUDKBC  = 0
+         LUTOC   = 0
+         LU3VI   = 0
+         LUDKBC3 = 0
+         LU3FOP  = 0
+         LU3FOP2 = 0
+C
+         FN3V    = 'ABCDEL'
+         FN4V    = 'ABCD'
+         FN3SRT  = 'CC3_SORT'
+         FNCKJD  = 'CKJDEL'
+         FNDKBC  = 'DKBC'
+         FNTOC   = 'CCSDT_OC'
+         FN3VI   = 'CC3_VI'
+         FNDKBC3 = 'DKBC3'
+         FN3FOP  = 'PTFOP'
+         FN3FOP2 = 'PTFOP2'
+C
+         CALL WOPEN2(LU3V,FN3V,64,0)
+         CALL WOPEN2(LU4V,FN4V,64,0)
+         CALL WOPEN2(LU3SRT,FN3SRT,64,0)
+         CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+         CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+         CALL WOPEN2(LUTOC,FNTOC,64,0)
+         CALL WOPEN2(LU3VI,FN3VI,64,0)
+         CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
+         CALL WOPEN2(LU3FOP,FN3FOP,64,0)
+         CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+C
+         CALL DZERO(WORK(KOVVO),NT2SQ(1))
+         CALL DZERO(WORK(KOOVV),NT2SQ(1))
+C
+      ENDIF
 C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
@@ -695,6 +748,22 @@ C
                AUTIME = SECOND() - AUTIME
                TIME3O = TIME3O + AUTIME
 C
+C--------------------------------------------------------------------
+C              Calculate integrals for CC3.
+C              Integrals with 3 virtual indices are stored on disc
+C--------------------------------------------------------------------
+C
+               IF (CC3) THEN
+                  CALL CC3_INTDEL(WORK(KXINT),1,LU3V,FN3V,WORK(KLAMDP),
+     *                            1,WORK(KLAMDH),1,1,
+     *                            WORK(KEND3),LWRK3,IDEL,ISYMD)
+C
+                  CALL CC3_2O2V(WORK(KXINT),1,WORK(KDSRHF),1,
+     *                          WORK(KOVVO),WORK(KOOVV),
+     *                          WORK(KLAMDP),1,WORK(KLAMDH),1,1,
+     *                          WORK(KEND3),LWRK3,IDEL,ISYMD)
+               ENDIF
+C              
 C----------------------------------------------------------
 C              Calculate the LT12B term in CC2-calculation.
 C----------------------------------------------------------
@@ -1534,6 +1603,117 @@ C
      *                  WORK(KEND1),LWRK1)
       ENDIF
 C
+C------------------------------------------------------------
+C     Calculate the triples part of the left hand side
+C     eigenvalue equation. 
+C     Start by calculating different integrals.
+C     CC3_T3_LHTR calculate the terms from T3 
+C     whereas CC3_L3_LHTR calculate the terms from L3
+C------------------------------------------------------------
+C
+      IF (CC3) THEN
+C
+         KOOOO = KEND1
+         KEND1 = KOOOO + N3ORHF(1)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC_LHTR (CC3)')
+         ENDIF
+C
+         CALL DZERO(WORK(KOOOO),N3ORHF(1))
+C
+         CALL CC3_INTSTORE(LUIN30,'CCINT3O',WORK(KOOOO),1,
+     *                     WORK(KLAMDP),ISYMOP,WORK(KLAMDH),ISYMOP,
+     *                     LU3V,FN3V,LU4V,FN4V,ISYMOP,WORK(KEND1),LWRK1)
+C
+         CALL CC3_SORT4O(WORK(KOOOO),1,WORK(KEND1),LWRK1)
+C
+         KT1AM = KEND1
+         KT2AM = KT1AM + NT1AM(ISYMOP)
+         KEND2 = KT2AM + NT2SQ(ISYMOP)
+         LWRK2 = LWORK - KEND2
+C
+         IF (LWRK2 .LT. NT2AM(ISYMOP)) THEN
+            CALL QUIT('Out of workspace in CC_LHTR (CC3 part)')
+         ENDIF
+C
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KEND2))
+C
+         CALL CC_T2SQ(WORK(KEND2),WORK(KT2AM),1)
+C
+C
+         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,WORK(KEND2))
+         DTIME = SECOND() - DTIME
+         TIMIO = TIMIO + DTIME
+C
+         CALL CC_T2SQ(WORK(KEND2),CTR2,ISYMTR)
+C
+C-----------------------
+C        Calculate
+C-----------------------
+C
+         CALL CC3_T3_LHTR(RHO1(1,IV),WORK(KT1AM),ISYMOP,
+     *                    WORK(KT2AM),ISYMOP,CTR2,ISYMTR,
+     *                    WORK(KLAMDP),WORK(KLAMDH),
+     *                    WORK(KEND2),LWRK2,LU3SRT,FN3SRT,
+     *                    LUCKJD,FNCKJD)
+C
+         IF (IPRINT .GT. 55) THEN
+            RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
+            RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
+            WRITE(LUPRI,1) 'Norm of RHO1 after CC3_T3_LHTR :', RHO1N
+            WRITE(LUPRI,1) 'Norm of RHO2 after CC3_T3_LHTR :', RHO2N
+         ENDIF
+C
+C----------------------------------------------------------------
+C        L2 and T2 are destroyed by CC3_T3_LHTR. 
+C        Readin again.
+C----------------------------------------------------------------
+C
+         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,WORK(KEND2))
+         DTIME = SECOND() - DTIME
+         TIMIO = TIMIO + DTIME
+C
+         CALL CC_T2SQ(WORK(KEND2),CTR2,ISYMTR)
+C
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KEND2))
+C
+         CALL CC_T2SQ(WORK(KEND2),WORK(KT2AM),1)
+C
+         CALL CC3_L3_LHTR(CTR1(1,IV),ISYMTR,CTR2,ISYMTR,
+     *                    WORK(KT2AM),ISYMOP,
+     *                    RHO1(1,IV),RHO2,ISYRES,
+     *                    WORK(KOOOO),WORK(KOVVO),WORK(KOOVV),
+     *                    WORK(KLAMDP),WORK(KLAMDH),
+     *                    WORK(KEND2),LWRK2,
+     *                    LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
+     *                    LU3VI,FN3VI,LU4V,FN4V,LUDKBC3,FNDKBC3,
+     *                    LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+C
+         IF (IPRINT .GT. 55) THEN
+            RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
+            RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
+            WRITE(LUPRI,1) 'Norm of RHO1 after CC3_L3_LHTR :', RHO1N
+            WRITE(LUPRI,1) 'Norm of RHO2 after CC3_L3_LHTR :', RHO2N
+         ENDIF
+COMMENT COMMENT
+COMMENT COMMENT
+C         else
+C            call around('Before CC_LHTR_NODDY')
+C            CALL CC_LHTR_NODDY(RHO1(1,IV),RHO2,WORK(KT1AM),
+C     *                         WORK(KT2AM),CTR1(1,IV),CTR2,
+C     *                         WORK(KLAMDP),WORK(KLAMDH),
+C     *                         WORK(KEND2),LWRK2,0)
+C         endif
+COMMENT COMMENT
+COMMENT COMMENT
+C
+      ENDIF
 C--------------------------------------------------------------------
 C     Print out result vectors - zero out single vectors in CCD-calc.
 C--------------------------------------------------------------------
@@ -1548,8 +1728,8 @@ C
       IF ( DEBUG ) THEN
          RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
          RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
-         WRITE(LUPRI,1) 'Norm af RHO1 coming out of CC_LHTR:', RHO1N
-         WRITE(LUPRI,1) 'Norm af RHO2 coming out of CC_LHTR:', RHO2N
+         WRITE(LUPRI,1) 'Norm of RHO1 coming out of CC_LHTR:', RHO1N
+         WRITE(LUPRI,1) 'Norm of RHO2 coming out of CC_LHTR:', RHO2N
       ENDIF
 C
 C----------------------------------
@@ -1582,6 +1762,26 @@ C
       IF (.TRUE.) THEN
          CALL WCLOSE2(LUPQ,PQFIL,'KEEP')
       END IF
+C
+C----------------------------------------
+C     Close files for CC3.
+C----------------------------------------
+C
+      IF (CC3) THEN
+C
+         CALL WCLOSE2(LU3V,FN3V,'KEEP')
+         CALL WCLOSE2(LU4V,FN4V,'DELETE')
+C
+         CALL WCLOSE2(LU3SRT,FN3SRT,'KEEP')
+         CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+         CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
+         CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+         CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+         CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
+         CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
+         CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+C
+      ENDIF
 C
 C-------------------------------
 C     Delete intermediate files.

@@ -72,7 +72,7 @@ c /* deck ccqr_setup */
 #include <cclists.h>
 
 * local parameters:
-      CHARACTER*(20) MSGDBG
+      CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCQR_SETUP> ')
       LOGICAL LOCDBG, OLD
       PARAMETER (LOCDBG = .FALSE., OLD = .FALSE.)
@@ -561,6 +561,7 @@ c /* deck CCQR_DISP_SETUP */
 #include <ccorb.h>
 #include <ccqrinf.h>
 #include <ccroper.h>
+#include <cclists.h>
 
 * local parameters:
       CHARACTER*(25) MSGDBG
@@ -581,7 +582,7 @@ c /* deck CCQR_DISP_SETUP */
       INTEGER IBTRAN(3,MXTRAN)
       INTEGER IBDOTS(MXVEC,MXTRAN)
   
-      INTEGER IFATRAN(5,MXTRAN)
+      INTEGER IFATRAN(MXDIM_FATRAN,MXTRAN)
       INTEGER IFADOTS(MXVEC,MXTRAN)
 
       INTEGER IEATRAN(3,MXTRAN)
@@ -1440,9 +1441,10 @@ c /* deck ccqr_fadrv */
 #include <ccsdsym.h>
 #include <ccroper.h>
 #include <ccr1rsp.h>
+#include <cclists.h>
 
 * local parameters:
-      CHARACTER*(20) MSGDBG
+      CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCQR_FADRV> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1469,18 +1471,19 @@ c /* deck ccqr_fadrv */
       CHARACTER*(10) MODEL
       CHARACTER*(8)  LABELA, FILFBTA
       LOGICAL LPDBSA
-      INTEGER IFATRAN(5,NFATRAN)
+      INTEGER IFATRAN(MXDIM_FATRAN,NFATRAN)
       INTEGER IFADOTS(MXVEC,NFATRAN)
       INTEGER ISYRES, ISYMTA, ISYMTB, ISYMTC, ISYCTR, IFILE, IRELAX
       INTEGER IVEC, ITRAN, IOPERA, ITAMPB, ITAMPC, IZETAV, IOPT
       INTEGER KGAMMA1, KGAMMA2, KT1AMPC, KT2AMPC, KEND1, LEND1
-      INTEGER KEND1A, LEND1A, IADR,  LEN
+      INTEGER KEND1A, LEND1A, IADR,  LEN, IOPTRES
       INTEGER IFBTRAN(5)
 
 
 * external functions:
       INTEGER ILSTSYM
 
+      CALL QENTER('CCQR_FADRV')
 *---------------------------------------------------------------------*
 * initializations:
 *---------------------------------------------------------------------*
@@ -1526,7 +1529,7 @@ c /* deck ccqr_fadrv */
 * calculate F{A} matrix times a response amplitude vector:
 *      F{A} * t^B = <Lambda| [[A,T^B],tau] |CC>
 *---------------------------------------------------------------------*
-      IF ( (IRELAX.GT.0) .OR. LPDBSA ) THEN
+       IF ( (IRELAX.GT.0) .OR. LPDBSA ) THEN
 
           IF (CC2) THEN
 
@@ -1560,69 +1563,88 @@ c /* deck ccqr_fadrv */
             CALL CC_PRP(WORK(KGAMMA1),WORK(KGAMMA2),ISYRES,1,1)
           END IF
 
-      ELSE
+          IF (OPTION(1:4).EQ.'FILE') THEN
+C            -----------------------
+C             add to vector on file:
+C            -----------------------
+             IF (CCS) THEN
+                MODEL = 'CCS       '
+                IOPT  = 1
+             ELSE IF (CC2) THEN
+                MODEL = 'CC2       '
+                IOPT  = 3
+             ELSE IF (CCSD) THEN
+                MODEL = 'CCSD      '
+                IOPT  = 3
+             ELSE
+                CALL QUIT('Unkown coupled cluster model in CC_FADRV.')
+             END IF
+            
+             CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,
+     &                  WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND1),LEND1)
 
-          CALL CCLR_FA( LABELA, ISYMTA, LISTB, ITAMPB,
-     &                  LISTL,  IZETAV, WORK,  LWORK   )
+           ELSE IF (OPTION(1:4).EQ.'DOTP') THEN
+C            ---------------------------------
+C             calculate required dot products:
+C            ---------------------------------
+             IVEC = 1
+             DO WHILE (IFADOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+             
+               ITAMPC = IFADOTS(IVEC,ITRAN)
+               ISYMTC = ILSTSYM(LISTC,ITAMPC)
+            
+               IF (ISYMTC.NE.ISYRES) THEN
+                 CALL QUIT('symmetry mismatch in CCQR_FADRV.')
+               END IF
+             
+               IOPT = 3
+               CALL CC_RDRSP(LISTC,ITAMPC,ISYMTC,IOPT,MODEL,
+     &                       WORK(KT1AMPC),WORK(KT2AMPC)   )
+             
+               FACON1  = DDOT(NT1AM(ISYRES),WORK(KT1AMPC),1,
+     &                                      WORK(KGAMMA1),1)
+               IF (CC2 .OR. CCSD) THEN
+                FACON2 = DDOT(NT2AM(ISYRES),WORK(KT2AMPC),1,
+     &                                      WORK(KGAMMA2),1)
+               ELSE IF (CCS) THEN
+                FACON2 = ZERO
+               ELSE 
+                CALL QUIT('ERROR> unknown coupled cluster model '//
+     &                 'in CCQR_FADRV.')
+               END IF
+             
+               FACON(IVEC,ITRAN) = FACON1 + FACON2
+             
+               IVEC = IVEC + 1
+             END DO
 
-      END IF
-
-      IF (OPTION(1:4).EQ.'FILE') THEN
-*---------------------------------------------------------------------*
-* add to vector on file:
-*---------------------------------------------------------------------*
-        IF (CCS) THEN
-           MODEL = 'CCS       '
-           IOPT  = 1
-        ELSE IF (CC2) THEN
-           MODEL = 'CC2       '
-           IOPT  = 3
-        ELSE IF (CCSD) THEN
-           MODEL = 'CCSD      '
-           IOPT  = 3
-        ELSE
-           CALL QUIT('Unkown coupled cluster model in CC_FADRV.')
-        END IF
-
-        CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,
-     &                WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND1),LEND1)
-
-      ELSE IF (OPTION(1:4).EQ.'DOTP') THEN
-*---------------------------------------------------------------------*
-* calculate required dot products:
-*---------------------------------------------------------------------*
-        IVEC = 1
-        DO WHILE (IFADOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
-
-          ITAMPC = IFADOTS(IVEC,ITRAN)
-          ISYMTC = ILSTSYM(LISTC,ITAMPC)
-       
-          IF (ISYMTC.NE.ISYRES) THEN
-            CALL QUIT('symmetry mismatch in CCQR_FADRV.')
+          ELSE
+             CALL QUIT('Illegal OPTION in CCQR_FADRV')
           END IF
 
-          IOPT = 3
-          CALL CC_RDRSP(LISTC,ITAMPC,ISYMTC,IOPT,MODEL,
-     &                  WORK(KT1AMPC),WORK(KT2AMPC)   )
+       ELSE
 
-          FACON1  = DDOT(NT1AM(ISYRES),WORK(KT1AMPC),1,WORK(KGAMMA1),1)
-          IF (CC2 .OR. MCC2 .OR. CCSD) THEN
-           FACON2 = DDOT(NT2AM(ISYRES),WORK(KT2AMPC),1,WORK(KGAMMA2),1)
-          ELSE IF (CCS) THEN
-           FACON2 = ZERO
-          ELSE 
-           CALL QUIT('ERROR> unknown coupled cluster model '//
-     &            'in CCQR_FADRV.')
+C         CALL CCLR_FA( LABELA, ISYMTA, LISTB, ITAMPB,
+C    &                  LISTL,  IZETAV, WORK,  LWORK   )
+
+          IF      (OPTION(1:4).EQ.'FILE') THEN
+             IOPTRES = 4
+          ELSE IF (OPTION(1:4).EQ.'DOTP') THEN
+             IOPTRES = 5
+          ELSE
+             CALL QUIT('Illegal OPTION in CCQR_FADRV')
           END IF
 
-          FACON(IVEC,ITRAN) = FACON1 + FACON2
+          CALL CC_FAMAT( LABELA, ISYMTA,  ! inp: label/symmetry A
+     &                   LISTB,  ITAMPB,  ! inp: B resp. amplit.
+     &                   LISTL,  IZETAV,  ! inp: C resp. zeta vec.
+     &                   IOPTRES,IFATRAN, ! output option,indeces
+     &                   IFADOTS,FACON,   ! indeces/dotproducts
+     &                   LISTC,  ITRAN,   ! list,index for dotprods
+     &                   NFATRAN,MXVEC,   ! dimensions for dotprods
+     &                   WORK,   LWORK   )! work space
 
-          IVEC = IVEC + 1
-        END DO
-*---------------------------------------------------------------------*
-      ELSE
-        CALL QUIT('Illegal OPTION in CCQR_FADRV')
-      END IF
+       END IF
 
       END DO
 
@@ -1646,6 +1668,7 @@ c /* deck ccqr_fadrv */
         WRITE (LUPRI,*)
       END IF
 
+      CALL QEXIT('CCQR_FADRV')
       RETURN
       END
 
@@ -1678,7 +1701,7 @@ c /* deck ccqr_eadrv */
 #include <ccroper.h>
 
 * local parameters:
-      CHARACTER*(20) MSGDBG
+      CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCQR_EADRV> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1714,6 +1737,8 @@ c /* deck ccqr_eadrv */
 
 * external functions:
       INTEGER ILSTSYM
+
+      CALL QENTER('CCQR_EADRV')
 
 * print input, if locdbg set:
       IF (LOCDBG) THEN
@@ -1819,7 +1844,7 @@ c /* deck ccqr_eadrv */
      &                  WORK(KT1AMPB),WORK(KT2AMPB)   )
 
           ECON1  = DDOT(NT1AM(ISYRES),WORK(KT1AMPB),1,WORK(KETA1),1)
-          IF (CC2 .OR. MCC2 .OR. CCSD) THEN
+          IF (CC2 .OR. CCSD) THEN
            ECON2 = DDOT(NT2AM(ISYRES),WORK(KT2AMPB),1,WORK(KETA2),1)
           ELSE IF (CCS) THEN
            ECON2 = ZERO
@@ -1859,6 +1884,7 @@ c /* deck ccqr_eadrv */
         CALL FLSHFO(LUPRI)
       END IF
 
+      CALL QEXIT('CCQR_EADRV')
       RETURN
       END
 
@@ -1903,7 +1929,6 @@ c /* deck CC_DOTDRV */
       PARAMETER (MSGDBG = '[debug] CC_DOTDRV> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-cSC      PARAMETER (LOCDBG = .TRUE.)
 
       INTEGER LWORK, NDTRAN, MXVEC
 
@@ -1937,6 +1962,7 @@ cSC      PARAMETER (LOCDBG = .TRUE.)
       INTEGER ILRCAMP
 
 
+      CALL QENTER('CC_DOTDRV')
 *---------------------------------------------------------------------*
 * initializations & checks:
 *---------------------------------------------------------------------*
@@ -2055,9 +2081,6 @@ cSC      PARAMETER (LOCDBG = .TRUE.)
               CALL CC_RDRSP('FC',IFILER,ISYMR,IOPT,MODEL,
      &                      WORK(KVECR1),WORK(KVECR2)   )
             END IF
-C         ELSE IF (LISTR(1:2).EQ.'O1') THEN
-C           CALL CC_XKSI(WORK(KVECR1),LBLOPR(IFILER),ISYOPR(IFILER),0,
-C    &                   DUMMY,WORK(KEND2),LEND2)
           ELSE
             IOPT = 3
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
@@ -2073,7 +2096,7 @@ C    &                   DUMMY,WORK(KEND2),LEND2)
             WRITE(LUPRI,*) '(L1|R1):',
      &        DDOT(NT1AM(ISYMR),WORK(KVECL1),1,WORK(KVECR1),1)
           END IF
-          IF (CC2 .OR. MCC2 .OR. CCSD) THEN
+          IF (CC2 .OR. CCSD) THEN
            DCON2 = DDOT(NT2AM(ISYML),WORK(KVECL2),1,WORK(KVECR2),1)
           ELSE IF (CCS) THEN
            DCON2 = ZERO
@@ -2109,6 +2132,7 @@ C    &                   DUMMY,WORK(KEND2),LEND2)
         CALL FLSHFO(LUPRI)
       END IF
 
+      CALL QEXIT('CC_DOTDRV')
       RETURN
       END
 

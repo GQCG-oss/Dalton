@@ -57,7 +57,6 @@ C
       DIMENSION GD(*),WORK(LWORK)
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-cSC      PARAMETER (LOCDBG = .TRUE.)
 #include <dummy.h>
 #include <iratdef.h>
 #include <cclr.h>
@@ -172,8 +171,18 @@ C          CALL CC_XKSI(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),0,DUMMY,WORK,LWORK)
      &                     FRQLRT(ILSTNR),ISYM1)
 
            IOPT = 3
+           IF (CCSDT) THEN
+             IOPT = 24
+             WRITE(LUPRI,*) 'Triples model... use:',IOPT
+           END IF
+    
            CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPT,MODEL,
      &                    GD(IADR1),GD(IADR2))
+cch
+C          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
+C          write(lupri,*)'cc_getgd> RHS vector:',ISYMGD,NTAMP
+C          CALL OUTPUT(gd(iadr1),1,ntamp,1,1,ntamp,1,1,LUPRI)
+cch
 
 C SLV98, OC
          IF (CCSLV) THEN
@@ -512,6 +521,7 @@ C              equations.
 C
 C     Written by Ove Christiansen 17-10-1996
 C     Changes for orbital relaxed response, Christof Haettig spring '99
+C     Changes for CC3 response, Christof Haettig sping '02
 C
 C----------------------------------------------------------------------
 C
@@ -559,11 +569,14 @@ C
       IOPER = IROPER(LBLC,ISYM)
       IF (ISYM.NE.ISYMC) CALL QUIT('Symmetry mismatch in CC_LGD.')
 C
-      IF ( LORX .OR. LPDBSOP(IOPER) ) THEN
+      IF ( LORX .OR. LPDBSOP(IOPER) .OR. CCSDT) THEN
         ! if the orbitals are allowed to relax in the field or if the
-        ! basis set depends on the perturbation, read ETA from file
+        ! basis set depends on the perturbation, read ETA from file,
+        ! also if we the 'effective' ETA vector for a triples model
+        ! read this vector from file
         ILSTETA = IETA1(LBLC,LORX,FRQ,ISYMC)
         IOPT = 3
+        IF (CCSDT) IOPT = 24
         CALL CC_RDRSP('X1 ',ILSTETA,ISYMC,IOPT,MODEL,GD(1),
      *                GD(1+NT1AM(ISYMC)))
       ELSE
@@ -592,7 +605,6 @@ C
 C
       KFRV1 = KFRV  
       KFRV2 = KFRV  + NT1AM(ISYMC)
-      IOPT  = 3 
 C
 C-----------------------------------------------
 C     Calculate list number.
@@ -610,13 +622,10 @@ C
          WRITE(LUPRI,*) 'In CC_LGD: ILTNR, old NLRTLBL',ILTNR,ISAVE
          CALL QUIT('CC_LGD: Did not find t-response vector ')
       ENDIF
-      IF ( DEBUG ) THEN
-         X    = DDOT(NTAMP,GD,1,GD,1)
-         WRITE(LUPRI,1) 'CC_LGD: Norm of GD -xxxxxxxxxx     ',X
-         X = DDOT(NTAMP,WORK(KFRV),1,WORK(KFRV),1)
-         WRITE(LUPRI,1) 'CC_LGD: Norm of F*Tx xxxxxxx       ',X
-      ENDIF
-      CALL CC_RDRSP('F1',ILTNR,ISYMC,IOPT,MODEL,WORK(KFRV1),
+
+      IOPT  = 3 
+      IF (CCSDT) IOPT = 24
+      CALL CC_RDRSP('F1 ',ILTNR,ISYMC,IOPT,MODEL,WORK(KFRV1),
      *              WORK(KFRV2))
 C
       IF ( DEBUG ) THEN
@@ -642,14 +651,14 @@ C
 c*DECK CC_CAURHS
       SUBROUTINE CC_CAURHS(GD,ILSTNR,LIST,WORK,LWORK)
 C
-C-----------------------------------------------------------------------------
+C-----------------------------------------------------------------------
 C
 C     Purpose: Calculate GD vector - right hand side for Cauchy vector
 C              equations.
 C
 C     Written by Ove Christiansen 8-dec.-1996
 C
-C-----------------------------------------------------------------------------
+C-----------------------------------------------------------------------
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -682,8 +691,7 @@ C-----------------------------------------------------------
 C
         FRQ   = 0.0D0
         INUM  = IR1TAMP(LRCLBL(ILSTNR),.FALSE.,FRQ,ISYM)
-        CALL CC_RDRSP('R1',INUM,ISYM,IOPT,MODEL1,GD(KT1),
-     *                GD(KT2))
+        CALL CC_RDRSP('R1 ',INUM,ISYM,IOPT,MODEL1,GD(KT1),GD(KT2))
       ELSE 
 C
 C---------------------------
@@ -692,8 +700,7 @@ C---------------------------
 C
         KPREV = ILRCAU(ILSTNR)-1
         INUM  = ILRCAMP(LRCLBL(ILSTNR),KPREV,ISYM) 
-        CALL CC_RDRSP('RC',INUM,ISYM,IOPT,MODEL1,GD(KT1),
-     *                GD(KT2))
+        CALL CC_RDRSP('RC ',INUM,ISYM,IOPT,MODEL1,GD(KT1),GD(KT2))
       ENDIF
       TIMEC = SECOND()
       END

@@ -35,7 +35,8 @@ C
 C
 C  /* Deck cc3_t3int */
       SUBROUTINE CC3_T3INT(XINT,XLAMDP,XLAMDH,C1AM,ISYMTR,
-     *                      WORK,LWORK,IDEL,ISYDEL,IOPT)
+     *                     WORK,LWORK,IDEL,ISYDEL,IOPT,
+     *                     LUOUT1,FNOUT1,LUOUT2,FNOUT2)
 C
 C     Symmetry by Henrik Koch and Poul Joergensen. 13-Jan-1995
 C
@@ -49,6 +50,10 @@ C
 #include <ccinftap.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CHARACTER*(*) FNOUT1, FNOUT2
+C
+      CALL QENTER('CC3_T3INT')
 C
       IF (IOPT .EQ. 1) THEN
 C
@@ -176,40 +181,18 @@ C
       IOFF = ICKDAO(ISYCKD,ISYDEL) + NCKATR(ISYCKD)*(ID - 1) + 1
 C
       IF (LENGTH .GT. 0) THEN
-         CALL PUTWA2(LU3SRT,FN3SRT,WORK(KXCKD),IOFF,LENGTH)
+         CALL PUTWA2(LUOUT1,FNOUT1,WORK(KXCKD),IOFF,LENGTH)
       ENDIF
-c     ID = IDEL - IBAS(ISYDEL)
-C
-c     DO 200 ISYMD = 1,NSYM
-C
-c        ISYMCK = MULD2H(ISYCKD,ISYMD)
-c        ISCKID = MULD2H(ISYMCK,ISYDEL)
-C
-c        LENGTH = NT1AM(ISYMCK)
-C
-c        DO 210 D = 1,NVIR(ISYMD)
-C
-c           KOFF1 = KXCKD + ICKATR(ISYMCK,ISYMD)
-c    *            + NT1AM(ISYMCK)*(D - 1)
-C
-c           IOFF  = ICKAD(ISCKID,ISYMD) + NCKA(ISCKID)*(D - 1)
-c    *            + ICKA(ISYMCK,ISYDEL) + NT1AM(ISYMCK)*(ID - 1) + 1
-c
-c           IF (LENGTH .GT. 0) THEN
-c              CALL PUTWA2(LUDELD,FNDELD,WORK(KOFF1),IOFF,LENGTH)
-c           ENDIF
-C
-c 210    CONTINUE
-c 200 CONTINUE
 C
       LENGTH = NCKI(ISYCKJ)
 C
       IOFF  = ICKID(ISYCKJ,ISYDEL) + NCKI(ISYCKJ)*(ID - 1) + 1
 C
       IF (LENGTH .GT. 0) THEN
-         CALL PUTWA2(LUCKJD,FNCKJD,WORK(KXCKJ),IOFF,LENGTH)
+         CALL PUTWA2(LUOUT2,FNOUT2,WORK(KXCKJ),IOFF,LENGTH)
       ENDIF
 C
+      CALL QEXIT('CC3_T3INT')
       RETURN
       END
 C  /* Deck cc3_ckd1 */
@@ -360,7 +343,7 @@ C
      *                    + IT1AM(ISYMD,ISYMK)
      *                    + NVIR(ISYMD)*(K - 1) + D
 C
-                     WORK(NDKC) = XCKD(NCKD)
+                       WORK(NDKC) = XCKD(NCKD)
 C
   140             CONTINUE
   130          CONTINUE

@@ -549,7 +549,7 @@ c      DO ITRAN = 1, NFBTRAN
 c        IOPT = 3
 c        IVEC = IFBTRAN(3,ITRAN)
 c        PRINT *,'CC_FBTST: IVEC = ',IVEC
-c        CALL CC_RDRSP('O1',IVEC,ISYHOP,IOPT,MODEL,
+c        CALL CC_RDRSP('O1 ',IVEC,ISYHOP,IOPT,MODEL,
 c     &                WORK(KRHS1),WORK(KRHS2))
 c
 c        CALL AROUND('analytical F^B T^A vector:')

@@ -52,7 +52,13 @@ C
 C                   1  :  read the single excitation part
 C                   2  :  read the double excitation part
 C                   3  :  read both single and double excitation part
-C                   4  :  read the triple excitation part (not avail.)
+C                   4  :  read the CPHF part
+C                   8  :  read the single excitation part 
+C                         of the 'effective' vector for triples models
+C                  16  :  read the double excitation part 
+C                         of the 'effective' vector for triples models
+C                  24  :  read both single and double excitation part
+C                         of the 'effective' vector for triples models
 C
 C                  33  :  read both single and double excitation part
 C                         SUCCES: IOPT is returned as 1 or 3.
@@ -100,7 +106,7 @@ C          'FC' : F-transformed first-order right Cauchy vectors
 C          'CF2': F-transformed second-order right Cauchy vectors
 C          'FR' : F-transformed right eigenvector
 C
-C          'O1' : rhs for first-order amplitude equations
+C          'O1 ': rhs for first-order amplitude equations
 C          'O2' : rhs for second-order amplitude equations
 C          'O3' : rhs for third-order amplitude equations
 C          'O4' : rhs for fourth-order amplitude equations
@@ -108,6 +114,8 @@ C          'CO2': rhs for second-order cauchy equations
 C          'EO1': rhs for right eigenvector first-order response
 C          'EO2': rhs for right eigenvector second-order response
 C
+C          'X1' : first-order eta vectors
+C          'X2': second-order eta vectors
 C          'X2': second-order eta vectors
 C          'X3': third-order eta vectors
 C          'X4': fourth-order eta vectors
@@ -486,7 +494,7 @@ C
      &     LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'L2' .OR.
      &     LIST(1:2).EQ.'R3' .OR. LIST(1:2).EQ.'L3' .OR.
      &     LIST(1:2).EQ.'R4' .OR. LIST(1:2).EQ.'L4' .OR.
-     &     LIST(1:2).EQ.'O1' .OR. LIST(1:2).EQ.'X1' .OR.
+     &     LIST(1:3).EQ.'O1 '.OR. LIST(1:3).EQ.'X1 '.OR.
      &     LIST(1:2).EQ.'O2' .OR. LIST(1:2).EQ.'X2' .OR.
      &     LIST(1:2).EQ.'O3' .OR. LIST(1:2).EQ.'X3' .OR.
      &     LIST(1:2).EQ.'O4' .OR. LIST(1:2).EQ.'X4' .OR.
@@ -994,9 +1002,9 @@ Cold        LORXLST(IOP) = .FALSE.
             INDLST(IOP)  = 0
           END DO
 *.....................................................................
-* 'X1' -  rhs vector for first-order lagrangian multipliers equations:
+* 'X1_'/'X1e' -  rhs for first-order lagrangian multipliers equations:
 *.....................................................................
-      ELSE IF ( LIST(1:2).EQ.'X1' ) THEN
+      ELSE IF ( LIST(1:3).EQ.'X1_'.OR.LIST(1:3).EQ.'X1e' ) THEN
           ORDER = 1
           FRQLST(1)  = FRQX1(IDXLST)
           LABLST(1)  = LBLX1(IDXLST)
@@ -1110,10 +1118,10 @@ Cold        LORXLST(IOP) = .FALSE.
 *.....................................................................
       ELSE IF ( LIST(1:2).EQ.'M1' .OR. LIST(1:2).EQ.'FR'      ) THEN
 
-        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:2), 
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      INDFIL(1), ISYFIL(1), FRQFIL(1)
 
-        TYPE(3:3)  = '_'
+C       TYPE(3:3)  = '_'
         LABFIL(1)  = LABLST(1)
         LORXFIL(1) = LORXLST(1)
 
@@ -1131,27 +1139,26 @@ Cold        LORXLST(IOP) = .FALSE.
 *.....................................................................
       ELSE IF ( LIST(1:2).EQ.'N2' .OR. LIST(1:2).EQ.'BR'      ) THEN
 
-        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC,MODFIL,TYPE(1:2),
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC,MODFIL,TYPE(1:3),
      &        INDFIL(1), ISYFIL(1), FRQFIL(1), 
      &        INDFIL(2), ISYFIL(2), FRQFIL(2) 
 
-        TYPE(3:3)  = '_'
+C       TYPE(3:3)  = '_'
         LABFIL(1)  = LABLST(1)
         LABFIL(2)  = LABLST(2)
         LORXFIL(1) = LORXLST(1)
         LORXFIL(2) = LORXLST(2)
 
 *.....................................................................
-* R1, L1, O1, X1, F1
+* 'R1 ', 'L1 ', 'O1 ', 'X1 ', 'F1 '
 *.....................................................................
       ELSE IF ( LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'L1' .OR.
      &          LIST(1:2).EQ.'O1' .OR. LIST(1:2).EQ.'X1' .OR.
      &          LIST(1:2).EQ.'F1'                             ) THEN
 
-        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:2), 
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      LABFIL(1), ISYFIL(1), FRQFIL(1), LORXFIL(1)
 
-        TYPE(3:3) = '_'
         INDFIL(1) = 0
       
 *.....................................................................
@@ -1185,7 +1192,7 @@ Cold        LORXLST(IOP) = .FALSE.
       ELSE IF ( LIST(1:2).EQ.'RC' .OR. LIST(1:2).EQ.'LC' .OR.
      &          LIST(1:2).EQ.'FC'                             ) THEN
 
-        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:2), 
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      LABFIL(1), ISYFIL(1), INDFIL(1)
 
         TYPE(3:3)  = '_'
@@ -1215,11 +1222,11 @@ Cold        LORXLST(IOP) = .FALSE.
      &          LIST(1:2).EQ.'O2' .OR. LIST(1:2).EQ.'X2' .OR.
      &          LIST(1:2).EQ.'F2'                             ) THEN
 
-        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:2), 
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      LABFIL(1), ISYFIL(1), FRQFIL(1),
      &      LABFIL(2), ISYFIL(2), FRQFIL(2) 
 
-        TYPE(3:3)  = '_'
+C       TYPE(3:3)  = '_'
         INDFIL(1)  = 0
         INDFIL(2)  = 0
         LORXFIL(1) = LORXLST(1)
@@ -1251,12 +1258,12 @@ Cold        LORXLST(IOP) = .FALSE.
      &          LIST(1:2).EQ.'O3' .OR. LIST(1:2).EQ.'X3' .OR.
      &          LIST(1:2).EQ.'F3'                             ) THEN
 
-        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:2), 
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      LABFIL(1), ISYFIL(1), FRQFIL(1),
      &      LABFIL(2), ISYFIL(2), FRQFIL(2),
      &      LABFIL(3), ISYFIL(3), FRQFIL(3) 
 
-        TYPE(3:3)  = '_'
+C       TYPE(3:3)  = '_'
         INDFIL(1)  = 0
         INDFIL(2)  = 0
         INDFIL(3)  = 0
@@ -1271,14 +1278,14 @@ Cold        LORXLST(IOP) = .FALSE.
      &          LIST(1:2).EQ.'O4' .OR. LIST(1:2).EQ.'X4' .OR.
      &          LIST(1:2).EQ.'F4'                             ) THEN
 
-        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:2), 
+        READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      LABFIL(1), ISYFIL(1), FRQFIL(1),
      &      LABFIL(2), ISYFIL(2), FRQFIL(2),
      &      LABFIL(3), ISYFIL(3), FRQFIL(3),
      &      LABFIL(4), ISYFIL(4), FRQFIL(4) 
 
 
-        TYPE(3:3)  = '_'
+C       TYPE(3:3)  = '_'
         INDFIL(1)  = 0
         INDFIL(2)  = 0
         INDFIL(3)  = 0
@@ -1383,7 +1390,11 @@ Cold        LORXLST(IOP) = .FALSE.
         IOPT = IAND(IOPT,4)
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *      (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
-        IOPT = IAND(IOPT,5)
+        IOPT = IAND(IOPT,1+4)
+      ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
+     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
+     *        ) THEN
+        IOPT = IAND(IOPT,1+2+4)
       ELSE IF (MODFIL(1:3).EQ.'CC3'      .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1a' .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1B' .OR.
@@ -1394,14 +1405,10 @@ Cold        LORXLST(IOP) = .FALSE.
      *         MODFIL(1:9).EQ.'CCSDR(1A)'.OR.
      *         MODFIL(1:9).EQ.'CCSDR(1B)'
      *        ) THEN
-        IOPT   = IAND(IOPT,7)
-      ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
-     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
-     *        ) THEN
-        IOPT = IAND(IOPT,7)
+        IOPT   = IAND(IOPT,1+2+4+8+16)
       ELSE
         WRITE (LUPRI,*) 'MODFIL:"',MODFIL,'"'
-        CALL QUIT('triples not yet implemented in CC_RDRSP.')
+        CALL QUIT('Model not yet implemented in CC_RDRSP.')
       END IF
 
 
@@ -1462,7 +1469,7 @@ C
 
       IF ((IOPT.EQ.1).OR.(IOPT.EQ.3)) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
-      ELSE IF (IOPT.EQ.2) THEN
+      ELSE IF (IOPT.GT.1) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
@@ -1472,13 +1479,32 @@ C
            READ(LUSAVE,IOSTAT=IOS,ERR=993)
      &        (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))
          ELSE
+           READ(LUSAVE,IOSTAT=IOS,ERR=993)
+         END IF                                     
+      ELSE IF (IOPT .GT. 3) THEN
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) 
+         READ(LUSAVE,IOSTAT=IOS,ERR=993)
+      END IF
+
+      IF ((IOPT.EQ.8).OR.(IOPT.EQ.24)) THEN
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
+      ELSE IF (IOPT.GT.8) THEN
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) 
+      END IF
+
+      IF ((IOPT.EQ.16).OR.(IOPT.EQ.24)) THEN
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AM(ISYM))
+         IF (IMUL.EQ.3) THEN
+           READ(LUSAVE,IOSTAT=IOS,ERR=993)
+     &        (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))
+         ELSE
            CONTINUE
          END IF                                     
-      ELSE IF (IOPT .EQ. 1) THEN
+      ELSE 
          CONTINUE
       END IF
 
-      IF (IOPT.LT.1 .OR. IOPT .GT. 4) THEN
+      IF (IOPT.LT.1 .OR. IOPT .GT. 24) THEN
          WRITE (LUPRI,*) 'IOPT = ',IOPT
          KDUM = -9999999
          WRITE (LUPRI,*) VEC(KDUM)
@@ -1495,6 +1521,7 @@ C
       WRITE(LUPRI,'(A)') ' read error on unit LUSAVE in CC_RVRSP:'
       WRITE(LUPRI,'(A,I5)') ' returned IOSTAT:',IOS
       WRITE(LUPRI,'(A,I5)') ' option   IOPT  :',IOPT
+      CALL FLSHFO(LUPRI)
 C     CALL QUIT ('fatal i/o error in CC_RVRSP')
       IOPT = -IOPT
       RETURN

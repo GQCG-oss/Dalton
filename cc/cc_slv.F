@@ -41,7 +41,7 @@ C
 C     Purpose: Direct calculation of Coupled Cluster
 C              solvent effects.
 C
-C              CCS(CIS/HF)(nci), MP2(nci), CC2(nci), CCSD, CC3(nci), MCC2(nci)
+C              CCS(CIS/HF)(nci), MP2(nci), CC2(nci), CCSD, CC3(nci)
 C
 C     SLV98,OC
 C     Ove Christiansen, April 1998.
@@ -96,15 +96,10 @@ C
      * '+=====================================================+'
 C
       MODEL = 'CCSD'
-      IF (CC2.AND.(.NOT.MCC2)) THEN
+      IF (CC2) THEN
          CALL AROUND('Coupled Cluster model is: CC2')
          MODEL = 'CC2'
          MODELPRI = ' CC2'
-      ENDIF
-      IF (MCC2) THEN
-         CALL AROUND('Coupled Cluster model is: MCC2')
-         MODEL = 'MCC2'
-         MODELPRI = 'MCC2'
       ENDIF
       IF (MP2) THEN
          CALL AROUND('Model is second order pert. theory: MP2 ')

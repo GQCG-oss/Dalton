@@ -280,7 +280,7 @@ c/* Deck CC_BMAT */
       INTEGER KBF0, LUBF0, KCBAR0, KDBAR0, KX4O, KSCR, KSCR2
       INTEGER KLAMDPB, KLAMDHB, KLAMDPA, KLAMDHA, IOPTW, IDUMMY
       INTEGER NBSRHF(8), IBSRHF(8,8), ICOUNT, ISYMAK, ISYBET
-      INTEGER IOPTTCME
+      INTEGER IOPTTCME, IOPTWE
 
 * external functions:
       INTEGER ICCSET1
@@ -315,14 +315,7 @@ c/* Deck CC_BMAT */
         CALL FLSHFO(LUPRI)
       END IF
       
-      IF (CCSDT) THEN
-        WRITE(LUPRI,'(/1x,a)') 'B matrix transformations not '
-     &          //'implemented for triples yet...'
-        CALL QUIT('Triples not implemented for B matrix '//
-     &            'transformations')
-      END IF
-
-      IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
+      IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_BMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_BMAT...'
         CALL QUIT('Unkown CC method in CC_BMAT.')
@@ -413,6 +406,10 @@ c/* Deck CC_BMAT */
       ELSE IF (CCSD) THEN
          MODELW = 'CCSD      '
          IOPTW  = 3
+      ELSE IF (CC3) THEN
+         MODELW = 'CC3       '
+         IOPTW  = 3
+         IOPTWE = 24
       ELSE
          CALL QUIT('Unkown coupled cluster model in CC_BMAT.')
       END IF
@@ -499,7 +496,7 @@ c/* Deck CC_BMAT */
 *     + integral arrays + some reserve
 
       MSCRATCH = 5*MT2BGD + MDISAO + 10*N2BASX  
-      IF (CCSD) MSCRATCH = MAX(MSCRATCH,MDISAO+5*MDSRHF) 
+      IF (CCSD.OR.CCSDT) MSCRATCH = MAX(MSCRATCH,MDISAO+5*MDSRHF) 
 
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'CC_BMAT> scratch space estimate MSCRATCH:',
@@ -519,7 +516,7 @@ c/* Deck CC_BMAT */
       NBATCH = 1
       IF (CCS) THEN
         NSECMAR = 10 * N2BASX
-      ELSE IF (CC2 .OR. CCSD) THEN
+      ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
           CALL QUIT('Unkown CC model in CC_BMAT.')
@@ -536,7 +533,9 @@ c/* Deck CC_BMAT */
         ISYM  = ILSTSYM(LIST,IDLST)
  
         NNWORK = 2*NGLMDT(ISYM) + 2*N2BST(ISYM)
-        IF (CCSD) NNWORK = 2*NGLMDT(ISYM)+NT2AOIJ(ISYM)+NEMAT1(ISYM)
+        IF (CCSD.OR.CCSDT) THEN
+          NNWORK = 2*NGLMDT(ISYM)+NT2AOIJ(ISYM)+NEMAT1(ISYM)
+        END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN
           I1HGH(NBATCH) = IINT1 - 1
@@ -569,7 +568,7 @@ c/* Deck CC_BMAT */
           NNWORK = 0
         ELSE IF (CC2) THEN
           NNWORK = NT2AM(ISYMAB) + 2*NGLMDT(ISYMA) + 2*NGLMDT(ISYMB)
-        ELSE IF (CCSD) THEN
+        ELSE IF (CCSD.OR.CCSDT) THEN
           NNWORK = 2*NGLMDT(ISYMA) + 2*NGLMDT(ISYMB)
         ELSE
           CALL QUIT('Unkown CC model in CC_BMAT.')
@@ -962,7 +961,7 @@ C
             KXINT  = KEND2
             KEND3  = KXINT  + NDISAO(ISYDEL)
 
-            IF (CCSD) THEN
+            IF (CCSD.OR.CCSDT) THEN
                KBDRHF = KEND3
                KDCRHF = KBDRHF + NBSRHF(ISYDEL)
                KDSRHF = KDCRHF + NBSRHF(ISYDEL)
@@ -979,7 +978,7 @@ C
      &                  WORK(KRECNR),DIRECT)
             TIMRDAO = TIMRDAO + SECOND() - DTIME
 
-            IF (CCSD) THEN
+            IF (CCSD.OR.CCSDT) THEN
 
                DTIME = SECOND()
 
@@ -1052,7 +1051,7 @@ C
      &                               WORK(KRHO2(IINT1)),1)
                    WRITE (LUPRI,*) 'CC_BMAT> norm of BF int.:',XNORM
                  END IF
-                 IF (.NOT.CCSD) THEN
+                 IF (.NOT.(CCSD.OR.CCSDT)) THEN
                    XNORM = DDOT(N2BST(ISYM1),WORK(KFOCK(IINT1)),1,
      &                                       WORK(KFOCK(IINT1)),1)
                    WRITE (LUPRI,*) 'CC_BMAT> norm of FOCK int.:',XNORM
@@ -1089,7 +1088,7 @@ C
                  WRITE (LUPRI,*) 
      &                 'CC_BMAT> returned form CCBINT2 for IDEL,',
      &                 'ISYDEL,IINT2=',IDEL,ISYDEL,IINT2
-                 IF (.NOT. (CCS.OR.CCSD)) THEN
+                 IF (CC2) THEN
                    XNORM = DDOT(NT2AM(ISYMAB),WORK(KOMEGA2(IINT2)),1,
      &                                        WORK(KOMEGA2(IINT2)),1)
                    WRITE (LUPRI,*) 'CC_BMAT> norm of F int.:',XNORM
@@ -1475,7 +1474,7 @@ C
           CALL QUIT('Insufficient work space in CC_BMAT. (9)')
         END IF
 
-        IF (.NOT.CCSD) THEN
+        IF (.NOT.(CCSD.OR.CCSDT)) THEN
 
 *         Ftilde^{A}, occupied/occupied blocks:
           CALL CCG_1ITROO(WORK(KFCKAOO),ISYMA, 
@@ -1537,7 +1536,7 @@ C
 
       IF (CCSTST.AND.(.NOT.CCS)) CALL DZERO(WORK(KTHETA2),NT2AM(ISYMAB))
 
-      IF ( CCSD ) THEN
+      IF ( CCSD .OR. CCSDT) THEN
 
          KXAIBJ = KEND2
          KEND3  = KXAIBJ + NT2SQ(ISYMAB)
@@ -1701,7 +1700,7 @@ C
 *---------------------------------------------------------------------*
 * CCSD contributions that require the zeroth order double amplitudes:
 *---------------------------------------------------------------------*
-      IF (.NOT. (CCS .OR. (CC2.AND..NOT.MCC2) .OR. CCSTST) ) THEN
+      IF (.NOT. (CCS .OR. CC2) ) THEN
         KT2AMP0 = KEND2
         KEND3   = KT2AMP0 + NT2SQ(ISYM0)
         LWRK3   = LWORK - KEND3 
@@ -1772,7 +1771,7 @@ C
 *------------------------------------
 * E1 & E2 contributions, T^0 x F^AB:
 *------------------------------------
-      IF (.NOT. (CCS .OR. (CC2.AND..NOT.MCC2) .OR. CCSTST) ) THEN
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
         KFCKABOO = KEND3
         KFCKABVV = KFCKABOO + NMATIJ(ISYMAB)
         KSCR     = KFCKABVV + NMATAB(ISYMAB)
@@ -1826,7 +1825,7 @@ C
         END IF
 
 
-      END IF ! (.NOT. (CCS .OR. (CC2.AND..NOT.MCC2) .OR. CCSTST) ) 
+      END IF ! (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) 
 
 *---------------------------------------------------------------------*
 * CC2/CCSD contributions that require the response B double amplitudes,
@@ -2003,7 +2002,7 @@ C
 
       IF (.NOT. CCS) CALL WCLOSE2(LUAIBJ,FNAIBJ,'DELETE') 
       IF (.NOT. CCS) CALL WCLOSE2(LUF,   FFIL,  'DELETE')
-      IF (CCSD)      CALL WCLOSE2(LUBFD, FNBFD, 'DELETE')
+      IF (CCSD.OR.CCSDT)      CALL WCLOSE2(LUBFD, FNBFD, 'DELETE')
 
       CALL WCLOSE2(LUFK, FKFIL, 'DELETE')
 
@@ -2292,7 +2291,7 @@ c/* Deck CCBMAT2 */
 * for CCSD calculate here E intermed. from G, R, YBAR intermediates:
 * This might miss a frozen core term!!!!!!!!
 *-------------------------------------------------------------------
-      IF (CCSD) THEN
+      IF (CCSD.OR.CCSDT) THEN
          KONEHR = KEND1
          KONEHG = KONEHR + MAX(N2BST(ISYM0),N2BST(ISYMA))
          KEND1  = KONEHG + MAX(N2BST(ISYM0),N2BST(ISYMA))
@@ -2425,21 +2424,7 @@ c/* Deck CCBMAT2 */
 
       DTIME = SECOND()
 
-      IF (MCC2) THEN
-
-*        calculate E1^A_{bc} = Ftilde^{A}_{bc} + Ybar^{A}_{bc}
-         CALL DZERO(WORK(KEMAT1A),NMATAB(ISYMA))
-         CALL DAXPY(NMATAB(ISYMA),ONE,FCKAVV,1,WORK(KEMAT1A),1)
-
-*        calculate E2^A_{ij} = Ftilde^{A}_{ij} + Xbar^{A}_{ij}
-         CALL DZERO(WORK(KEMAT2A),NMATIJ(ISYMA))
-         CALL DAXPY(NMATIJ(ISYMA),ONE,FCKAOO,1,WORK(KEMAT2A),1)
-
-*        calculate the contribution to THETA2:
-         CALL CCRHS_E(THETA2,WORK(KT2AMPB),WORK(KEMAT1A),
-     &                WORK(KEMAT2A),WORK(KEND0),LWRK0,ISYMB,ISYMA)
- 
-      ELSEIF(CC2.AND.(.NOT.MCC2).AND.(.NOT.CCSTST).AND.NFIELD.GT.0)THEN
+      IF(CC2.AND.(.NOT.CCSTST).AND.NFIELD.GT.0)THEN
  
          KPERT   = KEND0
          KT1AMPA = KPERT   + N2BST(ISYM0)
@@ -2479,7 +2464,7 @@ c/* Deck CCBMAT2 */
 
       TIME = TIME + SECOND() - DTIME
 
-      IF (LOCDBG .AND. .NOT.CCSD) THEN
+      IF (LOCDBG .AND. .NOT.(CCSD.OR.CCSDT)) THEN
         XNORM=DDOT(NT2SQ(ISYMB),WORK(KT2AMPB),1,WORK(KT2AMPB),1)
         WRITE (LUPRI,*) 'Norm of response T2AMPB amplitudes:',XNORM
         XNORM=DDOT(NMATAB(ISYMA),WORK(KEMAT1A),1,WORK(KEMAT1A),1)
@@ -2581,7 +2566,7 @@ c/* Deck CCBMAT2 */
 *--------------------------
 * J, G and H contributions:
 *--------------------------
-      IF (CCSD) THEN
+      IF (CCSD.OR.CCSDT) THEN
          KT1AMPA = KEND0
          KFCKA   = KT1AMPA + NT1AM(ISYMA)
          KEND0   = KFCKA   + NMATAB(ISYMA)
@@ -2723,7 +2708,7 @@ c/* Deck CCBPRE1 */
           KDENS(IDX)  = KLAMH(IDX) + NGLMDT(ISYM)
           KFOCK(IDX)  = KDENS(IDX) + N2BST(ISYM)
           KENDOUT     = KFOCK(IDX) + N2BST(ISYM)
-        ELSE IF (CCSD) THEN
+        ELSE IF (CCSD.OR.CCSDT) THEN
           KRIM(IDX)   = KENDOUT
           KRHO2(IDX)  = KRIM(IDX)  + NEMAT1(ISYM)
           KLAMP(IDX)  = KRHO2(IDX) + NRHO
@@ -2751,14 +2736,14 @@ c/* Deck CCBPRE1 */
      &                   WORK(KT1AMP),ISYM)
 
 * calculate response density matrix:
-        IF (.NOT.CCSD) THEN
+        IF (.NOT.(CCSD.OR.CCSDT)) THEN
           IC = 0 ! no core contribution
           CALL CC_AODENS(XLAMDP,WORK(KLAMH(IDX)),WORK(KDENS(IDX)),ISYM,
      &                 IC,WORK(KENDOUT),LWORK-KENDOUT)
         END IF
 
 * recover the R and BF intermediates:
-        IF (CCSD) THEN
+        IF (CCSD.OR.CCSDT) THEN
 
           CALL CC_RVEC(LUR,RFIL,LENR,NEMAT1(ISYM),IDX,WORK(KRIM(IDX)))
 
@@ -2767,7 +2752,7 @@ c/* Deck CCBPRE1 */
         END IF
 
 * recover the response Fock matrix:
-        IF (.NOT.CCSD) THEN
+        IF (.NOT.(CCSD.OR.CCSDT)) THEN
            LEN = N2BST(ISYM)
            CALL CC_RVEC(LUFK,FKFIL,LENFK,LEN,IDX,WORK(KFOCK(IDX)))
         END IF
@@ -2781,14 +2766,14 @@ c/* Deck CCBPRE1 */
      &                 WORK(KLAMH(IDX)),1,WORK(KLAMH(IDX)),1)
           WRITE (LUPRI,*) 'Norm of response LAMDH nb. ', IDX, ' is ', 
      &         XNORM
-          IF (.NOT.CCSD) THEN
+          IF (.NOT.(CCSD.OR.CCSDT)) THEN
             XNORM = DDOT(LEN,WORK(KDENS(IDX)),1,WORK(KDENS(IDX)),1)
             WRITE (LUPRI,*) 'Norm of response DENSITY nb. ', IDX,
      &           ' is ',XNORM
             XNORM = DDOT(LEN,WORK(KFOCK(IDX)),1,WORK(KFOCK(IDX)),1)
             WRITE (LUPRI,*) 'Norm of recovered FOCK nb. ', IDX, ' is ',
      &           XNORM
-          ELSE IF (CCSD) THEN
+          ELSE IF (CCSD.OR.CCSDT) THEN
             XNORM = DDOT(NRHO,WORK(KRHO2(IDX)),1,WORK(KRHO2(IDX)),1)
             WRITE (LUPRI,*) 'Norm of recovered BF nb. ', IDX, ' is ',
      &           XNORM
@@ -3034,7 +3019,7 @@ c/* Deck CCBINT1 */
 *---------------------------------------------------------------------*
 * Ftilde^{A,*}:
 *---------------------------------------------------------------------*
-       IF (.NOT. CCSD) THEN
+       IF (.NOT. (CCSD.OR.CCSDT)) THEN
 
           DTIME = SECOND()
           CALL CC_AOFOCK( XINT, DENSA, FOCKA,
@@ -3214,7 +3199,7 @@ c/* Deck CCBINT2 */
           WRITE (LUPRI,*) 'DEBUG_CCBINT2> used CC2 version of F term.'
         END IF
 
-      ELSE IF (CCSD) THEN
+      ELSE IF (CCSD.OR.CCSDT) THEN
 *---------------------------------------------------------------------*
 * for CCSD calculate only (a i^A | b j^B) + (a i^B | b j^A) :
 *---------------------------------------------------------------------*
@@ -3343,7 +3328,7 @@ c/* Deck CCBINT3 */
       KFOCKOV = KENDIN
       KENDOUT = KFOCKOV + NT1AM(ISYMA)
 
-      IF (.NOT.CCSD) THEN
+      IF (.NOT.(CCSD.OR.CCSDT)) THEN
          KFOCK   = KENDOUT
          KFOCKOO = KFOCK   + N2BST(ISYMA)
          KFOCKVV = KFOCKOO + NMATIJ(ISYMA)
@@ -3377,7 +3362,7 @@ c/* Deck CCBINT3 */
       END IF
 
 
-      IF (.NOT.CCSD) THEN
+      IF (.NOT.(CCSD.OR.CCSDT)) THEN
          DTIME  = SECOND()
 
 *        read AO Ftilde^{A,*} matrix:
@@ -3688,7 +3673,7 @@ c/* Deck CCBSAVE*/
         END IF
 
 * Fock intermediate:
-        IF (.NOT.CCSD) THEN
+        IF (.NOT.(CCSD.OR.CCSDT)) THEN
           LEN = N2BST(ISYM)
           CALL  CC_WVEC (LUFK,FKFIL,LENFK,LEN,IINT1,WORK(KFOCK(IINT1)))
           IF (LOCDBG) THEN
@@ -4144,6 +4129,7 @@ C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
+      IF (CC3) MODEL = 'CC3       '
 C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CC_FDB  : MAKING FINITE DIFF. CC B Matrix')

@@ -130,11 +130,11 @@ c /* deck CCRHSVEC */
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
-      IF (.NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
          CALL QUIT('CCRHSVEC called for unknown Coupled Cluster model.')
       END IF
   
-      IF (TYPE(1:2).EQ.'O1') THEN
+      IF (TYPE(1:3).EQ.'O1 ') THEN
         ORDER = 1
         NSTAT = 0
         MPERM = 1
@@ -230,7 +230,7 @@ c /* deck CCRHSVEC */
 *---------------------------------------------------------------------*
 * initialize rhs vector files:
 *---------------------------------------------------------------------*
-      IF( TYPE(1:2).NE.'O1' .AND. TYPE(1:2).NE.'X1' ) THEN
+      IF( TYPE(1:3).NE.'O1 ' .AND. TYPE(1:3).NE.'X1 ' ) THEN
 
         LMAX1 = 0
         LMAX2 = 0
@@ -284,7 +284,7 @@ c /* deck CCRHSVEC */
      &               IDUM, RDUM, 0, WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:2).NE.'O1' .AND. TYPE(1:2).NE.'X1' ) THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after D matrix terms:'
         DO IVEC = 1, NVEC
@@ -317,7 +317,7 @@ c /* deck CCRHSVEC */
      &               IDUM, RDUM, 0, WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:2).NE.'O1' .AND. TYPE(1:2).NE.'X1' ) THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after C matrix terms:'
         DO IVEC = 1, NVEC
@@ -367,7 +367,7 @@ c /* deck CCRHSVEC */
      &                  IDUM, RDUM, 0, WORK(KEND0), LEND0 ) 
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:2).NE.'O1' .AND. TYPE(1:2).NE.'X1' ) THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after B matrix terms:'
         DO IVEC = 1, NVEC
@@ -412,7 +412,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &                TYPE, IDUM, RDUM, 0,WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:2).NE.'O1' .AND. TYPE(1:2).NE.'X1' ) THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after B{O} matrix terms:'
         DO IVEC = 1, NVEC
@@ -465,7 +465,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &                WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:2).NE.'O1' .AND. TYPE(1:2).NE.'X1' ) THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after A{O} matrix terms:'
         DO IVEC = 1, NVEC
@@ -483,7 +483,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
 *---------------------------------------------------------------------*
 * calculate Xi{O} vector contributions:
 *---------------------------------------------------------------------*
-      IF ( TYPE(1:2).EQ.'O1' .OR. TYPE(1:2).EQ.'X1' ) THEN
+      IF ( TYPE(1:3).EQ.'O1 '.OR. TYPE(1:3).EQ.'X1 ') THEN
         IOPT = 3
         CALL CC_XIETA(WORK(KXETRAN),NXETRAN,IOPT, ORDER, 'L0 ',
      &                'O1 ', IDUM, RDUM, 'X1 ', IDUM, RDUM,
@@ -795,7 +795,7 @@ c /* deck CC_RHS_SETUP */
      &                     FREQ(IVEC,IDXA),ISYM(IDXA))
         END DO
       END IF
-      IF (TYPE(1:2).EQ.'O1') THEN
+      IF (TYPE(1:3).EQ.'O1 ') THEN
         DO IDXA = 1, ORDER
          IET1(IDXA) = IETA1(LAB(IVEC,IDXA),LORX(IVEC,IDXA),
      &                      FREQ(IVEC,IDXA),ISYM(IDXA))
@@ -1136,7 +1136,7 @@ c /* deck CC_RHS_SETUP */
 * "operators" or for field-dependent basis sets. For simple unrelaxed
 * one-electron perturbations they are calculated on the fly when needed
 *---------------------------------------------------------------------*
-        IF ( TYPE(1:2).EQ.'O1' ) THEN
+        IF ( TYPE(1:3).EQ.'O1 ') THEN
 C         IF ( IRELAX(A).EQ.1 .OR. LPDBSOP(IOP(A)) ) THEN
             NXETRAN = NXETRAN + 1
             IXETRAN(1,NXETRAN) = IOP(A)

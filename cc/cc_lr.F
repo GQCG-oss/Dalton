@@ -42,7 +42,7 @@ C     Purpose: Direct calculation of Coupled Cluster
 C              polarizabilities.
 C              (without orbital relaxation)
 C
-C              CIS, CCS, CC2, CCSD, MCC2
+C              CIS, CCS, CC2, CCSD
 C
 C     Written by Ove Christiansen februar 1996.
 C     Modified version for general linear response properties
@@ -129,9 +129,6 @@ C
       MODEL = 'CCSD      '
       IF (CC2) THEN
          MODEL = 'CC2'
-      ENDIF
-      IF (MCC2) THEN
-         MODEL = 'MCC2'
       ENDIF
       IF (CCS) THEN
          MODEL = 'CCS'
@@ -1315,13 +1312,12 @@ C
       IF (CCS) MODEL = 'CCS       '
       IF (CIS) MODEL = 'CIS       '
       IF (CC2) MODEL = 'CC2       '
-      IF (MCC2) MODEL = 'MCC2      '
 C
       IF (.NOT.(CCS.OR.CC2.OR.CCSD)) THEN
          WRITE(LUPRI,'(A)')
      &        ' CC_SOLRSP: Do not want to calculate anything'
      *                  //' else than CCS, CC2 and CCSD properties '
-         CALL QUIT('Model not CCS, CC2, MCC2 or CCSD in CC_SOLRSP')
+         CALL QUIT('Model not CCS, CC2, or CCSD in CC_SOLRSP')
       ENDIF
 C
 C--------------------------------------
@@ -1401,7 +1397,7 @@ C
 C     Purpose: Direct calculation of Coupled Cluster
 C              linear response residue calculation.
 C
-C              CCS, CC2, CCSD, MCC2
+C              CCS, CC2, CCSD
 C
 C     Modified version for general linear response properties
 C     Ove Christiansen November 1996.
@@ -1469,9 +1465,6 @@ C
       MODEL = 'CCSD      '
       IF (CC2) THEN
          MODEL = 'CC2'
-      ENDIF
-      IF (MCC2) THEN
-         MODEL = 'MCC2'
       ENDIF
       IF (CCS) THEN
          MODEL = 'CCS'
@@ -2128,7 +2121,7 @@ C
      *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
 C
       END
-      SUBROUTINE CC_TSTAV(ILSTNR,VEC,WORK,LWORK)
+      SUBROUTINE CC_TSTAV(ILSTNR,VEC,WORK,LWORK,IOPTTST)
 C
 C----------------------------------------------------------------------
 C
@@ -2146,8 +2139,11 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 C
+      LOGICAL LOCDBG
+      PARAMETER( LOCDBG = .FALSE. )
       PARAMETER( TWO = 2.0D00,XHALF = 0.5D00 )
       DIMENSION WORK(LWORK),VEC(*)
+      CHARACTER*10 MODEL
 C
 #include <ccorb.h>
 #include <cclr.h>
@@ -2159,9 +2155,9 @@ C
 #include <ccx1rsp.h>
 #include <leinf.h>
 C
-C--------------------------
-C     Calculate eta vector.
-C--------------------------
+C-------------------------------------------------------------
+C        Calculate response contribution to expectation value.
+C-------------------------------------------------------------
 C
       IF (.NOT.CCS) THEN
          KETA   = 1 
@@ -2169,13 +2165,25 @@ C
          LWRK1  = LWORK - KWRK1
          IF (LWRK1 .LT. 0 )
      &        CALL QUIT('Too little workspace in CC_TSTAV-1')
-         CALL CC_ETA(WORK(KETA),WORK(KWRK1),LWRK1)
-C
-C-------------------------------------------------------------
-C        Calculate response contribution to expectation value.
-C-------------------------------------------------------------
-C
+         IF      (IOPTTST.EQ.0) THEN
+            CALL CC_ETA(WORK(KETA),WORK(KWRK1),LWRK1)
+         ELSE IF (IOPTTST.EQ.1) THEN
+            IOPT  = 3
+            CALL CC_RDRSP('L0 ',0,ISYMOP,IOPT,MODEL,WORK(KETA),
+     *                    WORK(KETA+NT1AM(ISYMOP)))
+         ELSE
+            WRITE(LUPRI,*) 'IOPTTST = ',IOPTTST
+            CALL QUIT('ILLEGAL VALUE FOR IOPTTST IN CC_TSTAV.')
+         END IF
          PROPRSP = DDOT(NT1AM(ISYMOP)+NT2AM(ISYMOP),WORK(KETA),1,VEC,1)
+ 
+         IF (LOCDBG) THEN
+           write(lupri,*) 'Input vector:'
+           call cc_prp(vec,vec(nt1am(isymop)+1),1,1,1)
+           write(lupri,*) 'L0/X0 vector:'
+           call cc_prp(work(keta),work(keta+nt1am(isymop)),1,1,1)
+           write(lupri,*) 'PROPRSP:',PROPRSP
+         END IF
       ELSE
          PROPRSP = 0.0D0
          KWRK1   = 1
@@ -2212,6 +2220,7 @@ C
       WRITE(LUPRI,'(1X,A,F16.10)') 'Total expectation value:',
      *                         PROPAVE + PROPRSP
 C
+      CALL FLSHFO(LUPRI)
       END
       SUBROUTINE CC_AVE(XVALUE,LBL,WORK,LWORK,FF)
 C
@@ -2577,7 +2586,6 @@ C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
-      IF (MCC2) MODEL = 'MCC2      '
 C
 C--------------------
 C     Allocate space.

@@ -33,19 +33,20 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-c /* deck cc_gradient */
-*=====================================================================*
+C /* deck cc_gradient */
+C=====================================================================*
        SUBROUTINE CC_GRADIENT(WORK,LWORK)
-*---------------------------------------------------------------------*
-*
-*    Purpose: calculation of the gradient
-*
-*             implemented wavefunctions models:
-*                        CCSD
-*
-*     Written by Asger Halkier and Christof Haettig summer 1996.
-*
-*=====================================================================*
+C---------------------------------------------------------------------*
+C
+C    Purpose: calculation of the gradient
+C
+C             implemented wavefunctions models:
+C                 MP2, CCS, CCD, CC2, CCSD, CCSD(T)
+C
+C     Written by Asger Halkier and Christof Haettig summer 1996.
+C     CCSD(T) added, Sonia Coriani spring 2002
+C
+C=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
@@ -82,7 +83,7 @@ c /* deck cc_gradient */
       DOUBLE PRECISION TIM0, GRDNRM
 #endif
 
-      LOGICAL SYM1ONLY
+      LOGICAL SYM1ONLY, LPTALSO
       INTEGER MAXDIF, IOPT
 
 * external functions
@@ -116,7 +117,12 @@ c /* deck cc_gradient */
 *---------------------------------------------------------------------*
 
 * test for wavefunction model: 
-      IF (.NOT. (CCS. OR. MP2. OR. cc2. OR. CCD .OR. CCSD) ) THEN
+!
+!SONIA: remember to switch these two for release version 
+!      IF (.NOT. (CCS. OR. MP2. OR. CC2. OR. CCD .OR. CCSD) ) THEN
+!
+      IF (.NOT. (CCS. OR. MP2. OR. CC2. OR.
+     &                             CCD .OR. CCSD. OR. CCPT) ) THEN
          CALL QUIT('CC_GRADIENT called for a model '//
      &             'not (yet) implemented.')
       END IF
@@ -178,14 +184,24 @@ C     IF (IPRINT .GT. 10) WRITE(LUPRI,*) 'Home from CC_GRAD2E.'
 C     CALL FLSHFO(LUPRI)
 C==================================================================
 C     SC & CH: Change back to one-step algorithm. Keep CC_GRAD in
-C              two steps as used for DPT
+C              two steps since it is used for DPT
 C==================================================================
 C
-      CALL CC_GRAD0(GRADKE,GRADFS,GRADEE,WORK,LWORK)
-      IF (IPRINT .GT. 10) 
-     &    WRITE(LUPRI,*) ' Home from CC_GRAD0.'
-      CALL FLSHFO(LUPRI)
-C
+!SONIA: CCSD(T) is a "fake" CCSD
+!
+      LPTALSO = .FALSE.
+      IF (CCPT) THEN
+         LPTALSO = .TRUE.
+         CCPT    = .FALSE.
+         CCSD    = .TRUE.
+         CALL CCPT_GRAD0(GRADKE,GRADFS,GRADEE,WORK,LWORK,LPTALSO)
+         CCPT = .TRUE.
+         CCSD = .FALSE.
+      ELSE
+         LPTALSO = .FALSE.
+         CALL CC_GRAD0(GRADKE,GRADFS,GRADEE,WORK,LWORK)
+      END IF
+
 *---------------------------------------------------------------------*
 * zero nuclear attraction contribution since it is included in GRADKE
 *---------------------------------------------------------------------*
@@ -311,7 +327,7 @@ C              END DO
          CALL FLSHFO(LUPRI)
 
        ELSE
-         CALL QUIT('Unkown KEY in CCNUCINI.')
+         CALL QUIT('Unknown KEY in CCNUCINI.')
        END IF
 
        RETURN

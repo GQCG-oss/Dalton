@@ -83,7 +83,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 C     Keywords have been added for R12 method (WK/UniKA/04-11-2002).
-      PARAMETER (NTABLE = 96)
+      PARAMETER (NTABLE = 98)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -127,7 +127,7 @@ C
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
-     &            '.PAIRS '/
+     &            '.PAIRS ','.ETAPTI','.DKABAR'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -149,7 +149,6 @@ C
       CCPT   = .FALSE.
       CCP3   = .FALSE.
       CCRT   = .FALSE.
-      MCC2   = .FALSE.
       CCR3   = .FALSE.
       CCR1A  = .FALSE.
       CCR1B  = .FALSE.
@@ -209,6 +208,7 @@ C
       B0SKIP = .FALSE.
       N2SKIP = .FALSE.
       BRSKIP = .FALSE.
+      ETADSC = .FALSE.
 
       FREEZE = .FALSE.
       CCSLV  = .FALSE.
@@ -237,6 +237,13 @@ C
       CONNECTION = 'SYMMETR'
 C
       MSYMS = MSYM 
+C----------------------------------------------------------------
+C Initialize additional labels for CCSD(T)-gradient optimization
+C and FOP
+C----------------------------------------------------------------
+
+      ETACCPT = .FALSE.
+      DIRKAPB = .FALSE.
 C
 C---------------------------------------------------------------------
 C     CCSAVE is true for all case, but can be turned of in *ccexci
@@ -333,7 +340,7 @@ C
      *                47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
-     *                92,93,94,94,95), I
+     *                92,93,94,94,95,96,97), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -417,7 +424,6 @@ cch
                   READ (LUCMD, '(I5)') MAXITE
                GO TO 100
    18          CONTINUE
-                  ! obsolete
                GO TO 100
    19          CONTINUE
                   E0SKIP = .TRUE.
@@ -713,7 +719,6 @@ C                '.FREEZE'
                   READ(LUCMD,*) NFC,NFV
                   FROIMP = .TRUE.
                GO TO 100
-
    93          CONTINUE
 C                '*CCSLV '
                   CALL CC_SLVINP(WORD)
@@ -725,6 +730,14 @@ C                '*R12   ' OR '*R12 IN'
    95          CONTINUE
 C                '.PAIRS '
                  CCPAIR = .TRUE.
+               GO TO 100
+   96          CONTINUE
+C                '.ETAPTI', extra integrals for CCSD(T) geopt
+                  ETACCPT = .TRUE.
+               GO TO 100
+   97          CONTINUE
+C                '.DKABAR', direct KappaBar calculation in nondir CC
+                  DIRKAPB = .TRUE.
                GO TO 100
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
@@ -794,8 +807,10 @@ C
                END DO
                CALL FLDINP
                IF (CCSDT.AND.NONHF) THEN
-                  WRITE(LUPRI,*) 'No triples unrelaxed FF possibility '
-                  CALL QUIT('No triples unrelaxed FF possibility')
+                  IF (.NOT. CC3) THEN
+                    WRITE(LUPRI,*) 'No triples unrelaxed FF possibility'
+                    CALL QUIT('No triples unrelaxed FF possibility')
+                  ENDIF
                ENDIF
                IF (CCS.AND.NONHF) THEN
                   WRITE(LUPRI,*) 'No CCS unrelaxed FF possibility '
@@ -811,7 +826,7 @@ C
             END IF 
 C
             IF (LHTR.AND.((CCLRSD).OR.
-     *         (CCR3.OR.CCRT.OR.CCR1A.OR.CC1B.OR.CC3.OR.CC1A.OR.CC1B)))
+     *         (CCR3.OR.CCRT.OR.CCR1A.OR.CC1B.OR.CC1A.OR.CC1B)))
      *      THEN
                WRITE(LUPRI,*) 'Input inconsistent due to LHTR '
                CALL QUIT('Do not use LHTR for this '//
@@ -2776,7 +2791,7 @@ c         table look up:
             IJUMP = IJUMP + 1
           END DO
      
-c         jump to the appropiate input section:
+c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
