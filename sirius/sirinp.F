@@ -155,8 +155,11 @@ C
       CALL GPCLOSE(LUCMD,'KEEP')
 C
 C ***** ORTHONORMALIZE ORBITALS, UNLESS RESTART
+C       feb. 2003 hjaaj: now always orthonormalize orbitals,
+C       becuase the user may have used .RESTART with 
+C       SIRIUS.RESTART from another geometry ...
 C
-      IF (IREST.EQ.0 .OR. IORTO.EQ.1) THEN
+Chj   IF (IREST.EQ.0 .OR. IORTO.EQ.1) THEN
          KW1=1
          KW2=KW1+NCMOT
          KW3=KW2+NNBAST
@@ -164,7 +167,7 @@ C
          LW3 = LFREE - KW3
          CALL ORTHO(WORK(1),WORK(KW2),WORK(KW3),LW3)
 C        CALL ORTHO(CMO,S,SIN,LSIN)
-      END IF
+Chj   END IF
 C
 C     If (FLAG(31)) then punch orbitals to LUPNCH
 C
@@ -181,7 +184,8 @@ C
          CALL NEWORB('REORTHO ',WORK,.TRUE.)
          CALL QUIT(
      &      'SIRIUS NORMAL STOP AFTER ORBITAL ORTHONORMALIZATION.')
-      ELSE IF (IREST .EQ. 0) THEN
+Chj   ELSE IF (IREST .EQ. 0) THEN
+      ELSE
          CALL NEWORB('REORTHO ',WORK,.FALSE.)
       END IF
 C
@@ -389,7 +393,7 @@ C
       IF (INPPRC) GOTO 124
 C
       IREST = 0
-C     IREST = 1 for a restart run
+C     IREST .ne. 0 for a restart run
 C
 C********** Default values section GENINP *****
 C
@@ -850,10 +854,10 @@ C
          INPERR = INPERR + 1
       END IF
 C
-C930406-hjaaj: if (IREST.eq.1) then reset options here and not in
+C930406-hjaaj: if (IREST.ne.0) then reset options here and not in
 C     geninp as before, where something may not be defined yet
 C---------------
-      IF (IREST .EQ. 1) THEN
+      IF (IREST .NE. 0) THEN
          IRDMO = 9
          ICI0  = 5
          FLAG(13) = .TRUE.
@@ -1015,8 +1019,11 @@ C    *               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
 C    *               NAS1, NAS2, NAS3
              END IF
 C            IF (XPOTNC .NE. POTNUC) INPERR = INPERR + 1
+C            IF (XPOTNC .NE. POTNUC .AND. IREST .NE. 0) IREST = -1
 C              ... we cannot use this test because we
 C                  may have a new geometry (geometry optimization)
+C                  However, code info in IREST if restarted
+C                  calculation for PRTINP /hjaaj feb. 2003
             ELSE
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/2A/3A)')
@@ -1027,7 +1034,8 @@ C                  may have a new geometry (geometry optimization)
             CALL GPCLOSE(LUSIFC,'KEEP')
          END IF
          IF (NERROR .EQ. -1) THEN
-C           test NSYM,NBAS information from LUIT1 or LUSIFC
+C           test NSYM,NBAS information from LUIT1 or LUSIFC,
+C           are they for same basisset and same no. of symmetries ?
             NERROR = 0
             IF (MSYM .NE. NSYM) THEN
                NERROR = NERROR + 1
@@ -1318,14 +1326,18 @@ C
 C ***  PRINT INPUT DATA *****
 C
       CALL PRTINP(LUPRI,NUMRUN,IRDMO)
-      IF (IREST.EQ.1) WRITE (LUPRI,3050)
+      IF (IREST.NE.0) WRITE (LUPRI,3050)
+      IF (IREST.EQ.-1) WRITE (LUPRI,3052)
       CALL FLSHFO(LUPRI)
       IF (LUW4 .NE. LUPRI .AND. P4FLAG(1)) THEN
          CALL PRTINP(LUW4,NUMRUN,IRDMO)
-         IF (IREST.EQ.1) WRITE (LUW4,3050)
+         IF (IREST.NE.0) WRITE (LUW4,3050)
+         IF (IREST.EQ.-1) WRITE (LUW4,3052)
          CALL FLSHFO(LUW4)
       END IF
  3050 FORMAT(/5X,'This is a restarted calculation.')
+ 3052 FORMAT( 5X,'(Probably from another geometry:'//
+     &       ' nuclear repulsion energy has changed.)')
 C
 C
 C *****  PROCESS AND CHECK INPUT DATA *****
@@ -1804,7 +1816,7 @@ C
 #endif
       DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
-     *            'xxxxxxx','.CC ONL','.WESTA ','.INTERF','.BASIS ',
+     *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   '/
 C
 C
@@ -1974,8 +1986,20 @@ C *** Option  10 >MP2  <  Moller-Pleset PT2 calculation
         FLAG(3)  = .FALSE.
       GO TO 100
 C
-C *** Option 11 
+C *** Option 11 >NSYM  < Number of symmetries.
+C    Specified by integral program, used for consistency check.
+C    (for example in template inputs which are made for
+C     a certain point group symmetry)
   111 CONTINUE
+         READ (LUCMD,*) MSYM
+         IF (MSYM .NE. NSYM) THEN
+            INPERR = INPERR + 1
+            WRITE (LUPRI,'(/A,2I5/A)')
+     *   ' >>> GENINP-ERROR, NSYM from LUONEL .ne. NSYM from input:',
+     *      NSYM,MSYM,
+     &   '     NSYM from input used in reading remaining input.'
+            NSYM = MSYM
+         END IF
       GO TO 100
 C
 C *** Option 12 >CC ONL<  Write information to ABACUS on unit LUSIFC
