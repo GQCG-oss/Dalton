@@ -676,6 +676,7 @@ C
          READ(LU43,'(4E30.20)') QT11
          GOTO 1244
  1243    CONTINUE
+         BACKSPACE LU43
          WRITE(LU43,'(I3)') 2
          WRITE(LU43,'(4E30.20)') VS11
          WRITE(LU43,'(4E30.20)') VT11
@@ -690,6 +691,7 @@ C
          READ(LU43,'(4E30.20)') QT11
          GOTO 1246
  1245    CONTINUE
+         BACKSPACE LU43
          WRITE(LU43,'(I3)') 2
          WRITE(LU43,'(4E30.20)') RS11
          WRITE(LU43,'(4E30.20)') RT11
@@ -758,6 +760,7 @@ C
           END DO
         END IF
       END IF   
+      BACKSPACE LU44
       WRITE(LU44,'(2I3)') 2, IPDD
       WRITE(LU44,'(4E30.20)') US11
       WRITE(LU44,'(4E30.20)') UT11
@@ -866,6 +869,7 @@ C
 c
 c     Write out amplitudes for CC2-R12 model (WK/UniKA/30-12-2003).
 c
+      BACKSPACE LU45
       WRITE(LU45,'(2I3)') 2,IPDD
       WRITE(LU45,'(4E30.20)') CS11
       WRITE(LU45,'(4E30.20)') CT11
