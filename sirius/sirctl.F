@@ -72,7 +72,6 @@ C Used from common blocks:
 C   INFINP : DO*, MAXMAC
 C   INFORB : NCMOT,
 C   INFVAR : NCONF,JWOPSY,?
-C   INFDIM : MWORK
 C   INFTRA : USEDRC
 C   INFPRI : IPRERR, NWARN
 C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF, MAXFCK, MXDIIS, THRRHF
@@ -84,7 +83,6 @@ C
 #include <inforb.h>
 #include <infvar.h>
 #include <inftap.h>
-#include <infdim.h>
 #include <inftra.h>
 #include <infpri.h>
 #include <scbrhf.h>
@@ -342,6 +340,16 @@ C
                CALL QUIT(
      &            'SIRCTL error: SCF threshold below lin.dep. limit')
             END IF
+            IF (SUPSYM) THEN
+C              ... orbital super symmetries may have been reordered
+               WRINDX = .TRUE.
+               OLDWOP = .FALSE.
+               CALL SIRSET(WORK,LWORK,OLDWOP)
+               IAVERR = 0
+               CALL AVECHK(WORK,LWORK,IAVERR)
+               IF (IAVERR .NE. 0) CALL QUIT(
+     &         'SIRCTL QCHF error: inconsistency in sup.sym. averaging')
+         END IF
 C
             CALL SIROPT(WORK,LWORK,ICONV)
             FLAG(15) = FLAGSV(15)
@@ -436,7 +444,13 @@ C            where HSROHF specifications erroneously will be used
 C
 C        Correct orbital information if RHF and/or MP2 was run before.
 C
-         OLDWOP = .TRUE.
+         IF (SUPSYM) THEN
+C           ... orbital super symmetries may have been reordered
+            WRINDX = .TRUE.
+            OLDWOP = .FALSE.
+         ELSE
+            OLDWOP = .TRUE.
+         END IF
          JWOPSY = 1
          MCTYPE = MCTPSV
          CALL SIRSET(WORK,LWORK,OLDWOP)
@@ -474,6 +488,16 @@ C
          CALL NEWORB('FCVORB  ',WORK(KCMO),.TRUE.)
          FLAG(14) = .FALSE.
          FLAGSV(14) = .FALSE.
+         IF (SUPSYM) THEN
+C           ... orbital super symmetries may have been reordered
+            WRINDX = .TRUE.
+            OLDWOP = .FALSE.
+            CALL SIRSET(WORK,LWORK,OLDWOP)
+            IAVERR = 0
+            CALL AVECHK(WORK,LWORK,IAVERR)
+            IF (IAVERR .NE. 0) CALL QUIT(
+     &      'SIRCTL FCVORB error: inconsistency in sup.sym. averaging')
+         END IF
       END IF
 C
 C ***************************************************
@@ -514,6 +538,16 @@ C
          IF (DOCINO) THEN
             FLAG(14) = .FALSE.
             FLAGSV(14) = .FALSE.
+            IF (SUPSYM) THEN
+C              ... orbital super symmetries may have been reordered
+               WRINDX = .TRUE.
+               OLDWOP = .FALSE.
+               CALL SIRSET(WORK,LWORK,OLDWOP)
+               IAVERR = 0
+               CALL AVECHK(WORK,LWORK,IAVERR)
+               IF (IAVERR .NE. 0) CALL QUIT(
+     &         'SIRCTL CINO error: inconsistency in sup.sym. averaging')
+            END IF
          END IF
       END IF
 C
@@ -604,7 +638,7 @@ C
          LWRK1 = LWORK - KWRK1
          CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
          USEDRC = .TRUE.
-         CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1,MWORK)
+         CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL KOOPRO4(WORK,LWORK)
       ENDIF
 C
