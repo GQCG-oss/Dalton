@@ -131,7 +131,8 @@ C
                         GOTO 299
                      END IF
                      CALL GPCLOSE(LUPROP,'KEEP')
-                  ELSE IF (LABEL .EQ. 'PSO     ') THEN
+                  ELSE IF (LABEL(1:3) .EQ. 'PSO' .OR.
+     &                     LABEL(2:4) .EQ. 'PSO') THEN
                      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                           'UNFORMATTED',IDUMMY,.FALSE.)
  399                 CONTINUE
@@ -198,7 +199,8 @@ C
                         GOTO 298
                      END IF
                      CALL GPCLOSE(LUPROP,'KEEP')
-                  ELSE IF (LABEL .EQ. 'PSO     ') THEN
+                  ELSE IF (LABEL(1:3) .EQ. 'PSO' .OR. 
+     &                     LABEL(2:4) .EQ. 'PSO') THEN
                      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                           'UNFORMATTED',IDUMMY,.FALSE.)
  398                 CONTINUE
@@ -265,7 +267,8 @@ C
                         GOTO 297
                      END IF
                      CALL GPCLOSE(LUPROP,'KEEP')
-                  ELSE IF (LABEL .EQ. 'PSO     ') THEN
+                  ELSE IF (LABEL(1:3) .EQ. 'PSO' .OR. 
+     &                     LABEL(2:4) .EQ. 'PSO') THEN
                      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                           'UNFORMATTED',IDUMMY,.FALSE.)
  397                 CONTINUE
