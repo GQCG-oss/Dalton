@@ -23,11 +23,13 @@ orientation towards integral distributions. This code is
 invoked by default in integral-direct coupled-cluster calculations and
 may in other cases be invoked by specifying the \Key{RUNERI} keyword
 in the \Sec{*GENERAL} input section. This keyword ensures that {\eri}
-rather than {\her} is called whenever {\eri} has the required
-functionality. Note that {\eri} cannot be used in
-parallel calculations. Furthermore, {\eri} contains only
-first-derivatives, and it cannot be used to calculate Hessians
-or to calculate MCSCF gradients.
+rather than {\twoint} is called whenever {\eri} has the required
+functionality. {\dalton} will, however, automatically switch to
+{\twoint} for any two-electron integral not available in {\eri}:
+{{\eri} cannot be used in parallel
+calculations and it contains only first-derivatives (for
+the Hartree--Fock gradient), thus it cannot be used to calculate
+Hessians or to calculate MCSCF gradients.}
 
     Input to integral evaluation is
 indicated by the keyword \Sec{*INTEGRALS}, and the section may be
@@ -1198,8 +1200,8 @@ two-electron integral calculation.
 Directives controlling the two-electron integral calculation with {\eri}
 are specified in the \Sec{ER2INT} section.
 
-By default {\eri} is only used for direct coupled-cluster
-calculations. However, {\eri} can also be invoked by setting the
+By default {\eri} is only used for integral-direct coupled-cluster
+calculations. However, {\eri} can also be invoked by specifying the
 \Key{RUNERI} keyword in the \Sec{*GENERAL} input section. Note that
 {\dalton} will automatically use {\her} for all integrals not
 available in {\eri}.

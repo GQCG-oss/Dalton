@@ -105,7 +105,6 @@
 \indexentry{modifications}{15}
 \indexentry{atomic integrals}{18}
 \indexentry{\sc  hermit}{18}
-\indexentry{\sc  eri}{18}
 \indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{18}
 \indexentry{wave function}{18}
 \indexentry{\sc  sirius}{18}
@@ -1458,8 +1457,9 @@
 \indexentry{RUNERI@{\normalfont  \ttfamily  {.RUNERI}}}{148}
 \indexentry{*GENERAL@{\normalfont  \ttfamily  {**GENERAL}}}{148}
 \indexentry{\sc  eri}{148}
-\indexentry{\sc  hermit}{148}
+\indexentry{\sc  twoint}{148}
 \indexentry{\sc  eri}{148}
+\indexentry{\sc  twoint}{148}
 \indexentry{\sc  eri}{148}
 \indexentry{\sc  eri}{148}
 \indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{148}
@@ -3076,7 +3076,7 @@
 \indexentry{POCKEL@{\normalfont  \ttfamily  {.POCKEL}}}{243}
 \indexentry{Pockels effect}{243}
 \indexentry{response!Pockels effect}{243}
-\indexentry{quadratic response|Pockels effect}{243}
+\indexentry{quadratic response!Pockels effect}{243}
 \indexentry{SHG@{\normalfont  \ttfamily  {.SHG}}}{243}
 \indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{243}
 \indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{243}
