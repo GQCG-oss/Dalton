@@ -92,7 +92,7 @@ cat > prop_spinspin.dal <<%EOF%
 **PROPERTIES
 .SPIN-S
 *LINRES
-.MAXITE
+.MAX IT
    45
 .THRESH
 5.0D-5

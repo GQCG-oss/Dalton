@@ -69,7 +69,7 @@ C2H4
   300
 .NEXCIT
     8    8
-.IPRINT
+.PRINT
     1
 .ROTVEL
 *END OF INPUT
