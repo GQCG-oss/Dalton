@@ -866,10 +866,10 @@ C
 #include <inforb.h>
 #include <infmp2.h>
 #include <inftap.h>
-      CHARACTER*8 LAB123(3), LABEOD, LABELN, TABLE
+      CHARACTER*8 LAB123(3), LABEOD, LABELN, LMP2INFO
       DATA LAB123/'********','********','********'/
       DATA LABEOD /'EODATA  '/
-      DATA TABLE /'MP2INFO '/
+      DATA LMP2INFO /'MP2INFO '/
       CALL GETDAT(LAB123(2),LAB123(3))
 C     ... place date in LAB123(2) and time in LAB123(3)
 C
@@ -878,7 +878,7 @@ C Open the file LUSIFC (we must write to the end so check it is open!
      &            .FALSE.)
       CALL MOLLAB(LABEOD,LUSIFC,LUERR)
       BACKSPACE (LUSIFC)
-      WRITE (LUSIFC) LAB123,TABLE
+      WRITE (LUSIFC) LAB123,LMP2INFO
 C Write the correlation coefficients
       CALL WRITT (LUSIFC,NPHTOT(1),COEMP2)
 C
