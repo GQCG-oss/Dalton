@@ -21,8 +21,12 @@
 #define FSYM(a) a ## _
 #endif
 
-#ifdef VAR_PGF77
+#if defined(VAR_PGF77)
 #define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
+#else
+#if defined(SYS_SUN)
+#define __FUNCTION__ "SUNs CC compiler_does_not_define__FUNCTION__"
+#endif
 #endif
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
