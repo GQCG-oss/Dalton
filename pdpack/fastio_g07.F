@@ -1,5 +1,5 @@
 C
-C$Id: fastio_g07.F,v 1.2 2001-03-01 12:41:45 vebjornb Exp $
+C$Id: fastio_g07.F,v 1.3 2001-08-21 09:46:25 vebjornb Exp $
 C
 #ifdef UNDEF
 /* Comdeck notes */
@@ -100,6 +100,13 @@ C
       PARAMETER (MXAUX=230*1024)
       LOGICAL*1 AUXBUF(MXAUX),REFBUF(2)
       LOGICAL   EOF, OLDDX
+C
+C  added by Robert Berger on 21.08.1998
+C
+C  REFBUF must be static, otherwise we'll loose our reference point
+C  on subsequent calls
+C
+      SAVE REFBUF
 C
       PARAMETER (MAXLU = 99)
       CHARACTER ID*6,ERRFIX*4,TRACE*3

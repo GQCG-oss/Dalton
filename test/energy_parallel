@@ -56,9 +56,6 @@ else
    GREP="egrep"
 fi
 
-CRIT1=`$GREP "" $log | wc -l`
-
-
 # Symmetry:
 CRIT1=`$GREP "Symmetry class found: C.2v." $log | wc -l`
 CRIT2=`$GREP "The following elements were found: * X * Y" $log | wc -l`

@@ -1037,7 +1037,7 @@ C
      &             '.RUN AL', '.NMDDRV', '.PARNMD',
      &             '.OPTIMI', '.DOUGLA'/
 C
-      CALL QENTER('GRNLIN')
+      CALL QENTER('GNRLIN')
 C
 C     Initialize /SIRIPC/
 C
@@ -1407,7 +1407,7 @@ C         if reading input from a terminal
       END IF
  8000 CALL FLSHFO(LUPRI)
       CALL GPCLOSE(LUCMD,'KEEP')
-      CALL QEXIT('GRNLIN')
+      CALL QEXIT('GNRLIN')
       RETURN
       END
 #if defined (VAR_MPI)
@@ -1422,7 +1422,6 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <mxorb.h>
-      LOGICAL PARIO
       CHARACTER WORD*7
 #include <priunit.h>
 #include <inftap.h>
@@ -1529,7 +1528,6 @@ C
 #include <mxcent.h>
 #include <mxorb.h>
       INCLUDE 'mpif.h'
-      LOGICAL PARIO
 #include <priunit.h>
 #include <inftap.h>
 #include <molinp.h>

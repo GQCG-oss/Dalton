@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaopt.F,v 1.8 2001-06-21 12:32:56 vebjornb Exp $
+C$Id: abaopt.F,v 1.9 2001-08-21 09:46:23 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -7251,7 +7251,7 @@ C
       FCLASS = GROUP
       IF (NMORDR .LT. 1) NMORDR = 1
       CALL NUMDRV(WORK,LWORK,IWOFF,WRKDLM)
-      IWOFF =IWOTMP
+      IF (IWOTMP .NE. IWOFF) IWOFF = IWOTMP
 C
       RETURN
       END

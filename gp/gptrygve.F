@@ -32,12 +32,19 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: gptrygve.F,v 1.6 2001-06-08 11:23:04 hjj Exp $
+C$Id: gptrygve.F,v 1.7 2001-08-21 09:46:24 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.6.2.1  2001/07/19 11:09:11  vebjornb
+Changes communicated by Jørn Amundsen to make IO work properly on SGI
+with MIPS Fortran 90 compiler - VB
+
+Revision 1.6  2001/06/08 11:23:04  hjj
+write also file name to output if error in OPENDX /hjaaj
+
 Revision 1.5  2001/05/31 06:38:26  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -354,7 +361,7 @@ C     Assume same for DEC    -- 21-May-1992 hjaaj
 C     Assume same for IRIX   --  3-Feb-1994 hjaaj; except recl in *4 words
 C     Assume same for PARAGON-- 13-Oct-1994 hjaaj
 C
-#if defined (SYS_IRIX) || defined (SYS_NEC)
+#if (defined (SYS_IRIX) && defined(NO_F90)) || defined (SYS_NEC)
       LRECL  = NELEM
 #else
       LRECL  = 4*NELEM
@@ -624,6 +631,7 @@ C
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
   100    CONTINUE
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
       ELSE IF (NBITS .EQ. 16) THEN
          DO 200 I = 1,N
             LABEL = IINDPK(I)
@@ -632,6 +640,7 @@ C
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
             IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
   200    CONTINUE
+#endif
       ELSE
 	 CALL QUIT('AOLAB4 error')
       END IF

@@ -311,14 +311,18 @@ C
       DISPLC = 1.0D-2
 C
       IWSAV = IWOFF
+#if defined (SYS_HAL) || defined (VAR_G77)
       IWOFF = 0
+#endif
       CALL NUMDR1(WORK(KDERIV),WORK(KENVAL),WORK(KCOOR),WORK(KCSTAR),
      &            WORK(KSYMCO),WORK(KDCOEF),WORK(KTSTGD),WORK(KTSTSD),
      &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KLAST),
      &            WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),WORK(KMBKLN),
      &            LWRK1,IWOFF,NDERIV,NDIME,MAXADR,LTHTST,LDPMTX,IFRSTD,
      &            WRKDLM)
+#if defined (SYS_HAL) || defined (VAR_G77)
       IWOFF = IWSAV
+#endif
 C
 #if defined (VAR_MPI)
 C

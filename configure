@@ -706,17 +706,23 @@ case $WHICH in
 	       *) opt='-O2 -n32 -mips3 -G 0 -woff 2290 -OPT:Olimit=0'
                   copt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0';;
             esac
+	    if [ $F77 = 'f90' ]; then
+                specopt="-DVAR_MFDS"
+                F77="f90 -cpp"
+            else
+                specopt="-DNO_F90"
+            fi
             if [ "$mesp" = "dummy" ]; then
 	       if [ $split = 'true' ] ; then
-		    cpp="-DSYS_IRIX -DNO_F90 -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+		   cpp="-DSYS_IRIX $specopt -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 	       else
-                   cpp="-DSYS_IRIX -DNO_F90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+                   cpp="-DSYS_IRIX $specopt -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 		fi
 	    else
 	       if [ $split = 'true' ] ; then
-                   cpp="-DSYS_IRIX -DNO_F90 -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+                   cpp="-DSYS_IRIX $specopt -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 		else
-                   cpp="-DSYS_IRIX -DNO_F90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+                   cpp="-DSYS_IRIX $specopt -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 		fi
 		set_parallel_def $mesp
 	    fi
@@ -883,7 +889,11 @@ case $WHICH in
                   copt='-malign-double'
                   opt="-O3 -m$proc -ffast-math -fexpensive-optimizations -malign-double -funroll-loops -fno-globals -Wno-globals"
               fi
-	      def='linux.x'
+              if [ "$mesp" = "dummy" ]; then
+                  def='linux.x'
+              else
+                  def='linuxparallel.x'
+              fi
               inc='-I../include'
               cpp=${cpp}" -DIMPLICIT_NONE";;
     hal) if [ "$mesp" = "dummy" ]; then

@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-C$Id: intsort.F,v 1.2 2001-05-31 06:38:34 vebjornb Exp $
+C$Id: intsort.F,v 1.3 2001-08-21 09:46:25 vebjornb Exp $
 C
 #define VAR_AOCANORDER
 #define VAR_STAR2
@@ -265,7 +265,16 @@ C     2. SECOND ORDER CASSCF: IF SYMMETRY SPECIES I DOES NOT INCLUDE ANY
 C        OCCUPIED (INACTIVE OR ACTIVE) ORBITALS.
 C     3. CI RUNS: IF THERE ARE NO ORBITALS IN USE OF SYMMETRY SPECIES I.
 C
-      WRITE(LUPRI,1150) NSYM,(I,I = 1,NSYM)
+C
+C  changed by Robert Berger on 01.06.2001
+C  If we use 'I' here as a counting index, - for reasons I don't really
+C  understand - g77 with O3 optimization will stumble later when we try to
+C  compute the VECTOR IT(I) = I*(I-1)/2. Thus, I changed 'I' to 'J'.
+C
+C     WRITE(LUPRI,1150) NSYM,(I,I = 1,NSYM)
+C
+      WRITE(LUPRI,1150) NSYM,(J,J = 1,NSYM)
+C
       WRITE(LUPRI,1151) (NBAS(I),I = 1,NSYM)
       WRITE(LUPRI,1152) (KEEP(I),I = 1,NSYM)
  1150 FORMAT(//10X,'NUMBER OF SYMMETRIES',I4,

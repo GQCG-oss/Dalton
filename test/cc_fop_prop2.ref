@@ -1102,7 +1102,7 @@ EFG Principal axis                  N    2
                             au           MHz        Gauss
  N    1 14    Vx =       0.574271     2.758040     0.984137
  N    1 14    Vy =       0.574271     2.758040     0.984137
- N    1 14    Vz =      -1.148542    -5.416080    -1.968275
+ N    1 14    Vz =      -1.148542    -5.516080    -1.968275
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.145448D+00
 
@@ -1114,7 +1114,7 @@ EFG Principal axis                  N    2
                             au           MHz        Gauss
  N    2 14    Vx =       0.574271     2.758040     0.984137
  N    2 14    Vy =       0.574271     2.758040     0.984137
- N    2 14    Vz =      -1.148542    -5.416080    -1.968275
+ N    2 14    Vz =      -1.148542    -5.516080    -1.968275
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.145448D+00
 
