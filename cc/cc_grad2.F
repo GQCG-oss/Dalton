@@ -62,7 +62,6 @@ C
 C
       LOGICAL LOCDBG 
       PARAMETER( LOCDBG = .FALSE. )
-cSC      PARAMETER( LOCDBG = .TRUE. )
       INTEGER INDEXA(MXCORB)
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -695,7 +694,6 @@ C              Work space allocation two.
 C----------------------------------------
 C
                ISYDEN = ISYMD
-               ISYDNB = MULD2H(ISYDEN,ISYRLX)
 C
                KD2IJG = KEND1A
                KD2AIG = KD2IJG + ND2IJG(ISYDEN)
@@ -704,6 +702,8 @@ C
                KEND2  = KD2ABG + ND2ABG(ISYDEN)
 C
                IF (I1DXORD.EQ.1) THEN
+                  ISYDNB = MULD2H(ISYDEN,ISYRLX)
+
                   ! for lambda^q transformed
                   KDB2IJG = KEND2
                   KDB2AIG = KDB2IJG + ND2IJG(ISYDNB)
