@@ -407,7 +407,7 @@ C For direct access find record,
 C when LEN may be greater than maximum record length.
 C
       INTEGER IVEC(LEN)
-      READ (LU, REC=I, IOSTAT=IOS) IVEC
+      READ (LU, REC=I, IOSTAT=IOS, ERR=900) IVEC
       IF (IOS .NE. 0) GO TO 900
       FINDDX = .TRUE.
       RETURN
