@@ -82,9 +82,9 @@ fi
 
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final    HF energy:" $log | $GREP "\-112.75469112" | wc -l`
-CRIT2=`$GREP "Total SCF   energy:                  \-112.75469112" $log | wc -l`
-CRIT3=`$GREP "Total MP2   energy:                  \-113.05873920" $log | wc -l`
-CRIT4=`$GREP "Total CCSD  energy:                  \-113.06527698" $log | wc -l`
+CRIT2=`$GREP "Total SCF   energy: * \-112.75469112" $log | wc -l`
+CRIT3=`$GREP "Total MP2   energy: * \-113.05873920" $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy: * \-113.06527698" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=10
 ERROR[1]="ENERGIES NOT CORRECT"
