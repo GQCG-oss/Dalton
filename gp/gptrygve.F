@@ -248,7 +248,11 @@ C     ... define exit code to the environment for MPI_ABORT
 #endif
 C
       CALL TRACE
+#if defined (SYS_LINUX)
+      CALL EXIT(100)
+#else
       STOP 100
+#endif
       END
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,STATUS,OLDDX)
