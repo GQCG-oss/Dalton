@@ -92,7 +92,7 @@ C
       LWRK1  = LWORK - KEND1
 
       IF (LWRK1 .LT. 0) THEN
-         CALL STOPIT('CC_HFR1DEN','',KEND1,LWORK)
+         CALL STOPIT('CC_HFR1DEN',' ',KEND1,LWORK)
       END IF
 
 *---------------------------------------------------------------------*

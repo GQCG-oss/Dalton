@@ -1149,8 +1149,8 @@ C
                      LWRK4  = LWORK  - KEND4
 C
                      IF (LWRK4 .LT. 0) THEN
-                        WRITE(LUPRI,*) 'Available:', LWORK
-                        WRITE(LUPRI,*) 'Needed:', KEND4
+                        WRITE(LURPI,*) 'Available:', LWORK
+                        WRITE(LURPI,*) 'Needed:', KEND4
                         CALL QUIT( 
      &                    'Insufficient work space in CC_GRAD2E')
                      ENDIF
@@ -1663,7 +1663,7 @@ C
         WRITE(LUPRI,'(A,f10.2))') 'Total time used in CC_GRAD2E:',TIMTOT
 
         IF (IPRINT .GT. 9) THEN
-         WRITE(LUPRI,'(//,6(/A,f10.2))') 
+         WRITE(LUPRI,'(/6(/A,f10.2))') 
      &      'Time used for setting up d(pq,ga,de):',TIMDEN,
      &      'Time used for full AO backtransformation:',TIMDAO,
      &      'Time used for reading 2 e- AO-integrals:',TIRDAO,

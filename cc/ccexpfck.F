@@ -969,7 +969,7 @@ C  /* Deck cc_expfck_init */
       ! require first derivatve integrals: 
       !    1) gradient calc. enforced by DALTON    --> MOLGRD=.TRUE.
       !    2) gradient calc. requested by CC input --> CCDERI=.TRUE.
-      !    3) ask for properties which need '1DHAM **' operators
+      !    3) ask for properties which need '1DHAM***' operators
       L1DHAM = MOLGRD .OR. CCDERI
       DO I = 1, NRSOLBL
          IF ( LBLOPR(I)(1:5).EQ.'1DHAM' ) L1DHAM = .TRUE.
@@ -986,11 +986,12 @@ C  /* Deck cc_expfck_init */
             IF (ISCOOR.GT.0) THEN
                IDX = IDX + 1
                LABEL = '1DHAM'//CHRNOS(ISCOOR/100)
-     &                        //CHRNOS(MOD(ISCOOR,100))
+     &                        //CHRNOS(MOD(ISCOOR,100)/10)
      &                        //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                LBLEXPFCK(IDX)  = LABEL
                ISYEXPFCK(IDX)  = ICORSY
                ORDEXPFCK(IDX)  = 1
+               IF (LOCDBG) WRITE(2,*) 'LABEL:',LABEL
             END IF
 
          END DO
