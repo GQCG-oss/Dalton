@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsphso.F,v 1.8 2004-11-15 14:52:24 ruud Exp $
+C$Id: rsphso.F,v 1.9 2004-11-22 12:55:58 vahtras Exp $
 C
 #include <single.h>
 C  /* Deck hsoctl */
@@ -2265,9 +2265,15 @@ C Generalize GETFMAT to handle non-symmetric densities (quadratic
 C response)
 C
 #include <priunit.h>
+#include <iratdef.h>
 C
 C LOCAL
 C
+#if defined (VAR_SPLITFILES)
+      PARAMETER (LBUF=600*(IRAT+1)+1)
+      PARAMETER (KBUF=1, KIBUF=1 + 600*IRAT)
+      DIMENSION IWRK(LBUF)
+#endif
       DIMENSION BUF(600)
       INTEGER IBUF(600)
       INTEGER IB, LENGTH, I,J,K,L,ICOOR, LUHSOAO, COMPONENT,LABEL,ID
@@ -2293,13 +2299,24 @@ C
       CALL GPOPEN(
      &   LUHSOAO,'AO2SOINT','OLD','SEQUENTIAL','UNFORMATTED',-1,.FALSE.
      &   )
+      CALL REWSPL(LUHSOAO)
+#if defined (VAR_SPLITFILES)
+      JRSP = 0
+#endif
       CALL MOLLAB('AO2SOINT',LUHSOAO,LUPRI)
       IF (WORD(1:1).EQ.'X') COMPONENT = 1
       IF (WORD(1:1).EQ.'Y') COMPONENT = 2
       IF (WORD(1:1).EQ.'Z') COMPONENT = 3
 cF90  READFILE: DO 
  100  CONTINUE
+#if defined (VAR_SPLITFILES)
+         CALL READSI(LUHSOAO,LBUF,IWRK,JRSP,.TRUE.)
+         CALL DCOPY(600,IWRK(KBUF),1,BUF,1)
+         CALL ICOPY(600,IWRK(KIBUF),1,IBUF,1)
+         LENGTH=IWRK(LBUF)
+#else
          READ(LUHSOAO) BUF, IBUF, LENGTH
+#endif
 cF90     IF (LENGTH.LE.0) EXIT
          IF (LENGTH.LE.0) GO TO 300
 cF90     BUFFER: DO IB=1,LENGTH
