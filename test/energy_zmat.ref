@@ -110,7 +110,7 @@
   Z-matrix input                                                          
                                                                           
 
-Atoms and their geometry is read in Z-matrix format.
+Atoms and their geometry are read in Z-matrix format.
 
 
                   SYMADD: Requested addition of symmetry

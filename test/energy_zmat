@@ -64,7 +64,7 @@ else
 fi
 
 # Z-matrix
-CRIT1=`$GREP "Atoms and their geometry is read in Z\-matrix format\." $log | wc -l`
+CRIT1=`$GREP "Atoms and their geometry are read in Z\-matrix format\." $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="Z-MATRIX NOT DETECTED"
