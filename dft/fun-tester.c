@@ -159,7 +159,7 @@ test_second(const char* fname,
 		dt = dp; dt.rhob += drho; first_fun(&p, 1, &dt);
 		num = (p.df0100-m.df0100)/(2*drho);
 		test_var(d.df0200, num, fname, "df0200", &fail);
-		// printf("%g %g %g %g\n", dp.rhoa, dp.rhob, dp.grada, dp.gradb);
+		/* printf("%g %g %g %g\n", dp.rhoa, dp.rhob, dp.grada, dp.gradb); */
 		num = (p.df0010-m.df0010)/(2*drho);
 		test_var(d.df0110, num, fname, "df0110a", &fail);        
 		num = (p.df0001-m.df0001)/(2*drho);
