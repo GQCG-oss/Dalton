@@ -4522,10 +4522,6 @@ C     Calculate the ZK0(ab) and ZK0(ij) blocks
 C     from modified X- and Y-intermediates.
 C---------------------------------------------
 C
-CDEBUGGGG
-         do iii = 1, NMATIJ(1)
-            write(lupri,*)' etaij(',iii,') = ', WORK(KXMAT+iii-1)
-         end do
       CALL MP2_ZKBLO(ZKDIA,WORK(KXMAT),WORK(KYMAT),WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------- 
