@@ -356,9 +356,9 @@ CTRL[27]=5
 ERROR[27]="PARTITION FUNCTION NOT CORRECT"
 
 # Total polarizabilities
-CRIT1=`$GREP "EA * 1\.119315 * (0| )\.000000 * (0| )\.000000" $log | wc -l`
-CRIT2=`$GREP "EB * (0| )\.000000 * (0| )\.988175 * (0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "EC * (0| )\.000000 * (0| )\.000000 * (0| )\.815190" $log | wc -l`
+CRIT1=`$GREP "EA * 1\.119315 * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT2=`$GREP "EB * (\-0|\-|0| )\.000000 * (0| )\.988175 * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT3=`$GREP "EC * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * (0| )\.815190" $log | wc -l`
 TEST[28]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[28]=4
 ERROR[28]="TOTAL POLARIZABILITIES NOT CORRECT"
