@@ -3719,6 +3719,10 @@ C
                CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LBLLR(KSYMOP,IOP),
      *                     BLANK,WRK(KEIVAL-1+IFREQ),D0,KSYMOP,0,D0,
      *                     ANTSYM)
+               IFRSOL = (IOP-1)*NFREQ*2 + (IFREQ-1)*2 + 1
+               IFRRES = IFRSOL + 1
+               CALL WRITDX(LURSP2,IFRSOL,IRAT*KZYVAR,WRK(KBVECS))
+               CALL WRITDX(LURSP2,IFRRES,IRAT*KZYVAR,WRK(KBVECS))
   450       CONTINUE
             GO TO 600
          END IF
