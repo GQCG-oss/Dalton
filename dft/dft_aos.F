@@ -775,6 +775,20 @@ C
          END DO
       END DO
       END DO
+C     if (nder.gt.1) then
+C        write (2,*) ' xx integrals from BLDFTAOS '
+C        call output(gao(1,1,5),1,nvclen,1,nbast,nvclen,nbast,1,2)
+C        write (2,*) ' xy integrals from BLDFTAOS '
+C        call output(gao(1,1,6),1,nvclen,1,nbast,nvclen,nbast,1,2)
+C        write (2,*) ' xz integrals from BLDFTAOS '
+C        call output(gao(1,1,7),1,nvclen,1,nbast,nvclen,nbast,1,2)
+C        write (2,*) ' yy integrals from BLDFTAOS '
+C        call output(gao(1,1,8),1,nvclen,1,nbast,nvclen,nbast,1,2)
+C        write (2,*) ' yz integrals from BLDFTAOS '
+C        call output(gao(1,1,9),1,nvclen,1,nbast,nvclen,nbast,1,2)
+C        write (2,*) ' zz integrals from BLDFTAOS '
+C        call output(gao(1,1,10),1,nvclen,1,nbast,nvclen,nbast,1,2)
+C     end if
       RETURN
       END
 C  /* Deck blgetgao */
@@ -1099,6 +1113,7 @@ C
                CAOXZ(I) = D0          
                CAOYY(I) = D0
                CAOYZ(I) = D0
+               CAOZZ(I) = D0
             END DO
          END IF
          DO IPRIMA = JSTA + 1, JSTA + NUCA
