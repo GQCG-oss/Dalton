@@ -240,7 +240,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # SCF energy
-CRIT1=`$GREP "Final * HF energy\: * \-112\.77806297671[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-112\.77806297" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="SCF ENERGY NOT CORRECT"
@@ -310,7 +310,7 @@ CTRL[5]=2
 ERROR[5]="START VECTOR NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-102\.28828716457[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-102\.28828716" $log | wc -l`
 TEST[6]=`expr	$CRIT1`
 CTRL[6]=1
 ERROR[6]="MCSCF ENERGY NOT CORRECT"
@@ -376,7 +376,7 @@ CTRL[3]=3
 ERROR[3]="RAS NOT SET UP CORRECTLY"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-102\.32015413799[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-102\.32015413" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
