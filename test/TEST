@@ -153,6 +153,10 @@ benchmark=""
 listing="TESTLOG"
 emptystring="                                "
 
+tmpfile=/tmp/dalton-$$.log
+touch "$tmpfile"   || { echo "cannot create temporary file. Aborting execution."; exit 1; }
+test -f "$tmpfile" || { echo "Possible security breach related to temporary file."; exit 1; }
+
 if [ `uname` = Linux ]; then
    GREP="egrep -a"
 else
@@ -232,6 +236,7 @@ if [  -s $listing ]; then
 fi
 
 # create a unique directory for test output /hjaaj
+# nonportable characters in the directory name removed. /pawsa
 if [ "$reftest" = "true" ]; then
    testdir=`pwd`
 else
@@ -336,17 +341,21 @@ do
               gzip -f --best $reffile
           fi
       else
+          failed=false
           if [ "$step" -eq "$numsteps" ]; then
-              $DALTON $paramlist -ext log $dalfile $molfile | \
-              grep -v '\*\*\**' | \
-              grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
-              grep -v '^$' | tee -a $listing
+              $DALTON $paramlist -ext log $dalfile $molfile > "$tmpfile" ||
+                failed=true
           else
-              $DALTON -D $paramlist -ext log $dalfile $molfile | \
-              grep -v '\*\*\**' | \
+              $DALTON -D $paramlist -ext log $dalfile $molfile  > "$tmpfile" ||
+                failed=true
+              grep -v '\*\*\**' "$tmpfile" | \
               grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
               grep -v '^$' | tee -a $listing
           fi
+          grep -v '\*\*\**' /tmp/dalton-$$.log | \
+          grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+          grep -v '^$' | tee -a $listing
+
           if [ "$multi" -eq 1 ]; then
 	      cp $molfile'.log' $logfile
           fi
@@ -354,6 +363,7 @@ do
           myprint "evaluate output file $logfile:"
           myprint "-----------------------------------------------------------"
           checkout=`$checkfile $logfile | tee -a $listing`
+          test x$failed = xtrue && checkout="TEST FAILED ABNORMALLY"
           if [ "$benchmark" = "true" ]; then
               if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
                   CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
@@ -423,5 +433,6 @@ fi
 
 myprint "$passedall"
 myprint "$problems"
+rm "$tmpfile"
 
 exit 0
