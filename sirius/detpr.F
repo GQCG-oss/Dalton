@@ -311,11 +311,11 @@ C. CSF's in this configuration
   800     CONTINUE
   900   CONTINUE
  1000 CONTINUE
-      IF(INRANG .EQ. 0 ) WRITE(IOUT,*) '   ( no coefficients )'
-      IF(NOPRT.NE.0) WRITE(IOUT,*)
-     &' Number of coefficients not printed ', NOPRT
+      IF(INRANG .EQ. 0 ) WRITE(IOUT,'(A)') '   ( no coefficients )'
+      IF(NOPRT.NE.0) WRITE(IOUT,'(A,I10)')
+     &' Number of coefficients not printed', NOPRT
       IF( XMIN .GT. THRES .AND. ILOOP .LE. 30 ) GOTO 2001
-       WRITE(IOUT,'(//A,E15.8)')
+       WRITE(IOUT,'(//A,F15.8)')
      & '  Norm of printed CI vector .. ', CNORM
 C
        WRITE(IOUT,'(/A)') '   Magnitude of CI coefficients '
@@ -474,7 +474,7 @@ C
        IF(IIDET .EQ. 0 ) WRITE(IOUT,*) '   ( no coefficients )'
        IF( XMIN .GT. THRES .AND. ILOOP .LE. 30 ) GOTO 2001
 C
-       WRITE(IOUT,'(//A,E15.8)')
+       WRITE(IOUT,'(//A,F15.8)')
      & '  Norm of printed CI vector .. ', CNORM
 C
 C.. SIZE OF CI-COEFFICIENTS
