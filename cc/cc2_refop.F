@@ -1097,7 +1097,7 @@ C
      *              WORK(KSCRHD),NTOTB)
 C
          CALL DGEMM('N','N',NVIR(ISYMB),NRHF(ISYMI),NVIR(ISYMC),-ONE,
-     *              DAB(KOFF3),NTOTB,XINTAI(KOFF2),NTOTC,ONE,
+     *              DAB(KOFF3),NTOTB,XINTIA(KOFF2),NTOTC,ONE,
      *              WORK(KSCRHD),NTOTB)
 C
          CALL DGEMM('T','N',NRHF(ISYMI),NRHF(ISYMJ),NVIR(ISYMB),ONE,
