@@ -149,7 +149,6 @@ C        Delete old MO integrals and AOSUP integrals
             CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
             IF (FEXIST) THEN
                CALL SYSTEM('rm -f AOSRTINT.DA*')
-               LUINTM = -1
             END IF
             CALL GPINQ('MOTWOINT','EXIST',FEXIST)
             IF (FEXIST) THEN
