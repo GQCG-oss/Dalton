@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.6 2001-05-09 12:00:41 hjj Exp $
+C$Id: sirinp.F,v 1.7 2001-05-14 10:04:42 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.6  2001/05/09 12:00:41  hjj
+Removed SIRRUN and sirrun.h; integrated identify.h in sirinp.F /hjaaj
+
 Revision 1.5  2001/04/03 14:25:14  vebjornb
 Changes to ERI (symmetry and general contraction) tuh
 
@@ -780,7 +783,7 @@ C              defined for CIRSP ??? or ISTACI = NROOCI?
          NWARN  = NWARN + 1
          WRITE (LUW4,'(2(/5X,A),/A,I3)')
      &  'WARNING, reference state is required for CI response and CINO',
-     &  '         ".STATE" was not specified for "*CI CALC"',
+     &  '         ".STATE" was not specified for "*CI INPUT"',
      &  '         reference state is set to be state no.',ISTACI
       END IF
       END IF
@@ -2335,9 +2338,9 @@ C
 C
 C     ***** PROCESS INPUT FOR RHFINP *****
 C
-      IF (SET .AND. WORD .EQ. '*RHF CA') THEN
+      IF (SET .AND. WORD .EQ. '*HF INP') THEN
          INPERR = INPERR + 1
-         WRITE(LUPRI,*)'Input error: *RHF CA specified more than once'
+         WRITE(LUPRI,*)'Input error: *HF INP specified more than once'
       END IF
       NODIIS = .FALSE.
       WORD1 = WORD
@@ -4448,7 +4451,7 @@ C
          ELSE
             WRITE(IWUNIT,1051)
      *      'Type: complete active space calculation (CAS).'
-            WRITE(LUCME,'(A/)')
+            IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *      'Type: complete active space calculation (CAS).'
          END IF
       ELSE IF ( DOMP2 ) THEN
@@ -4459,7 +4462,7 @@ C
          IF (IOPRHF .EQ. 0) THEN
             WRITE(IWUNIT,1050)
      *         'Restricted, closed shell Hartree-Fock calculation.'
-            WRITE(LUCME,'(A/)')
+            IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *         'Restricted, closed shell Hartree-Fock calculation.'
          ELSE
             WRITE(IWUNIT,1050)
@@ -4572,7 +4575,8 @@ C ***** Wave function specifications
 C
       NINEL = 2*NISHT
       WRITE(IWUNIT,1000) NINEL,NACTEL,NASHT,NORBT,ISPIN,NSYM,LSYM
-      WRITE(LUCME,1000) NINEL,NACTEL,NASHT,NORBT,ISPIN,NSYM,LSYM
+      IF (LUCME.GT.0)
+     *WRITE(LUCME,1000) NINEL,NACTEL,NASHT,NORBT,ISPIN,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================',
      *       /5X,'Number of closed shell electrons',7X,I4,
