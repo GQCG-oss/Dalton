@@ -108,12 +108,21 @@ The threshold is the norm of the residual for the eigenvalue equation.
 %\item[\Key{STSD}] 
 %
 \item[\Key{TOLSC}] 
-%
 For CC3 calculations only: 
-Set tolerance for the self-consistent solution for obtaining self-consistent
+Set tolerance for excitation energies for obtaining a self-consistent
 solution to the partitioned CC3 algorithm.
-Tolerance refers to the eigenvalue itself.
-(Default:1.0D-04).
+Tolerance refers to the eigenvalue itself in the self-consistency iterations
+of the default solver for CC3. Not used in DIIS solver (see \Key{R3DIIS}).
+(Default: 1.0D-04).
+
+\item[\Key{R3DIIS}]
+Use DIIS solver for CC3.
+% and for undocumented ccsdt-1a and ccsdt-1b
+This solver only scales linearly with the number of excited states
+in comparison to the default solver which scales quadratically.
+Howver this solver might fail in cases with states dominated by
+double or higher excited determinants. 
+(Default: OFF).
 
 %\item[\Key{STVEC}] 
 %
