@@ -190,7 +190,7 @@ Point group: C2v
   Number of atom types:     2
   Total number of atoms:    2
 
-  Basis set used is "sadlej" from the basis set library.
+  Basis set used is "Sadlej-pVTZ" from the basis set library.
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------

@@ -1163,7 +1163,7 @@ Test Purpose:     Parallel calculation of non-equilibrium solvation
 rsp_phosph
 ----------
 Molecule:         LiH
-Wave Function:    MCSCF (CAS) / sadlej
+Wave Function:    MCSCF (CAS) / Sadlej-pVTZ
 Test Purpose:     Phosphorescence
 
 

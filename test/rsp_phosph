@@ -21,7 +21,7 @@ cat > rsp_phosph.info <<'%EOF%'
    rsp_phosph
    ----------
    Molecule:         LiH
-   Wave Function:    MCSCF (CAS) / sadlej
+   Wave Function:    MCSCF (CAS) / Sadlej-pVTZ
    Test Purpose:     Phosphorescence
 %EOF%
 
@@ -30,7 +30,7 @@ cat > rsp_phosph.info <<'%EOF%'
 #######################################################################
 cat > rsp_phosph.mol <<'%EOF%'
 BASIS
-sadlej
+Sadlej-pVTZ
 Calculation of phosphorescence
 
     2    2  X  Y    1 1.00D-12
