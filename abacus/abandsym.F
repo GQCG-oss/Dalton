@@ -112,9 +112,9 @@ C
 C
       NIREP = N1DIME + N2DIME
 C
-      IF  (FCLASS(1:1).EQ.'D') ROTAX2 = .TRUE.
-      IF  (FCLASS(3:3).EQ.'v') VPLANE = .TRUE.
-      IF  (FCLASS(3:3).EQ.'h') HPLANE = .TRUE.
+      IF ((FCLASS(1:1).EQ.'D').AND.(FCLASS(3:3).NE.'d')) ROTAX2 = .TRUE.
+      IF  (FCLASS(3:3).EQ.'v')                           VPLANE = .TRUE.
+      IF  (FCLASS(3:3).EQ.'h')                           HPLANE = .TRUE.
 C
       RETURN
       END

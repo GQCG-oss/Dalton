@@ -764,6 +764,14 @@ C
          IDIMIN = 2
          CALL RERSTR(FUVAL,SYMCOR,DUMMY,DUMMY,ICRIRP,NDIME,NINTIN,
      &               KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
+C
+C        *** Restart for property derivatives. ***
+C
+         IF (NPRPDR.AND..NOT.NRMCRD) THEN
+            KSTRT = IWOFF + 2
+            LWRK1 = LWORK - KSTRT
+            CALL PRPRER(WORK(KSTRT),IDIMAX,IDIMIN,LURSTR,LWRK1)
+         END IF
       ELSE
 C
 C        *** Open restart file. A zero first in the file ***
@@ -1022,7 +1030,14 @@ C
             IDIMIN = 2
             CALL RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
      &                  KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
-
+C
+C           *** Restart for property derivatives. ***
+C
+            IF (NPRPDR) THEN
+               KSTRT = IWOFF + 2
+               LWRK1 = LWORK - KSTRT
+               CALL PRPRER(WORK(KSTRT),IDIMAX,IDIMIN,LURSTR,LWRK1)
+            END IF
 C     
 C           *** Writing to sepctro file if requested. ***
 C
@@ -1379,7 +1394,6 @@ C
                      NMPRTN = 0
                      CALL IZERO(NPRTNR,MAXINR)
 C
-c                     print *, (indstp(i),I=1,irsrdr+1), idime
                      DO 1500 IINNER = 1, NINNER
 C
 C                    *** Initialize alrcal. ***
@@ -4637,10 +4651,16 @@ C
 C
       READ(LURSTR,*) II
 C
-C     *** The program ended the first time around. ***
+C     *** The program ended the second time around. ***
+C     *** Need to read in additional information.   ***
 C
-      IF ((II.EQ.0) .AND. (II.EQ.KEND)) THEN
-         RSTDON = .TRUE.
+      IF ((II.EQ.1) .AND. (II.EQ.KEND)) THEN
+         CALL RDHDRS(SYMCOR,RNNORM,FREQ,ICRIRP,NCOOR,NDCOOR,LURSTR)
+      END IF
+
+      IF (((II.EQ.0) .AND. (II.EQ.KEND)).OR.
+     &    ((II.EQ.1) .AND. (II.EQ.KEND))) THEN
+         RSTDON = .TRUE. 
 C
 C        *** Reading the function values ***
 C
@@ -4652,51 +4672,160 @@ C
             FUVAL(IINTIN,IDIME) = ENERGY
             GOTO 100
          END IF
-      ELSE IF ((II.EQ.1) .AND. (II.EQ.KEND)) THEN
-         RSTDON = .TRUE.
-C
-C        *** Number of normal coordinates ***
-C
-         READ(LURSTR,FMT='(I8)') NDCOOR
-C
-C        *** The normal coordinates. ***
-C
-         DO 200 IC2 = 1, NDCOOR
-            READ(LURSTR,'(2I5)') (ICRIRP(IC2,I),I=1,2)
-            DO 300 IC1 = 1, NCOOR
-               READ(LURSTR,'(F24.16)') SYMCOR(IC1,IC2)
- 300        CONTINUE
- 200     CONTINUE
-C
-C        *** Norm of the non-normalized normal coordinates. ***
-C         
-         READ(LURSTR,FMT='(A)')
-         DO 400 IC = 1, NDCOOR
-            READ(LURSTR,'(F24.16)') RNNORM(IC) 
- 400     CONTINUE
-C
-C        *** Frequencies. ***
-C         
-         READ(LURSTR,FMT='(A)')
-         DO 500 IC = 1, NDCOOR
-            READ(LURSTR,'(F24.16)') FREQ(IC) 
- 500     CONTINUE
-C
-C        *** Read the function values. ***
-C
- 600     CONTINUE
-         READ(LURSTR,FMT=*,IOSTAT=IOS) IINTIN, IDIME, ENERGY
-         IF (IOS.GE.0) THEN
-            IDIMAX = MAX(IDIMAX,IDIME)
-            IDIMIN = MIN(IDIMIN,IDIME)
-            FUVAL(IINTIN,IDIME) = ENERGY
-            GOTO 600
-         END IF
       END IF
 C
       RETURN
       END
 C
+C     
+C     /*Deck prprer*/
+      SUBROUTINE PRPRER(WORK,IDIMAX,IDIMIN,LURSTR,LWORK)
+C     *************************************************
+C     *** Restart routine for property derivatives. ***
+C     *************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      CHARACTER*9 PRPTXT
+      DIMENSION WORK(LWORK)
+#include <numder.h>
+#include <trkoor.h>
+C
+      KNMPRP = 0
+      INMTCL = 0
+ 100  CONTINUE
+      READ (LUNDPR,FMT='(A9)',IOSTAT=IOS) PRPTXT
+      IF (IOS.GE.0) THEN
+         READ (LUNDPR,'(4I7)') NDIM1, NDIM2, NDIM3, KNMCLC      
+C
+C        *** Figures out which property to read in, and reads it. ***
+C
+         KGRBG = 1
+         CALL CHPRRD(WORK(KGRBG),WORK(KGRBG),WORK(KGRBG),WORK(KGRBG),
+     &               NDIM1,NDIM2,NDIM3,PRPTXT)
+C
+C        *** Another property has been calculated. ***
+C         
+         INMTCL = INMTCL + 1
+C
+C        *** Calculating number of properties per geometry. ***
+C
+         IF (KNMCLC .EQ. 1) THEN
+            KNMPRP = KNMPRP + 1
+         END IF
+C
+         GOTO 100
+      END IF
+C
+      IF (KNMCLC.EQ.1) THEN
+C
+C        *** Only some properties for first geometry has been      ***
+C        *** calculated. Nothing to save, continue from beginning. ***
+C         
+         REWIND(LUNDPR)
+         IDIMAX = IDIMAX - 1 
+      ELSE
+C
+C        *** If not all properties were written for the ***
+C        *** last geometry. We need to make sure that we***
+C        *** are at the end of a geometry.              ***
+C         
+         IF (KNMCLC*KNMPRP.GT.INMTCL) THEN
+C
+C           *** We can only use the restart for the previous ***
+C           *** geometry.                                    ***
+C
+            IF (KNMCLC.EQ.IDIMAX) THEN
+C              *** Original geometry. ***
+               IDIMIN = 2
+            ELSE
+               IDIMAX = IDIMAX -1
+            END IF
+            KNMCLC = KNMCLC - 1
+C
+C           *** Positioning the property file. ***
+C
+            REWIND(LUNDPR)
+            DO INMCLC = 1, KNMCLC
+            DO INMPRP = 1, KNMPRP
+               READ (LUNDPR,FMT='(A9)',IOSTAT=IOS) PRPTXT
+               READ (LUNDPR,'(4I7)') NDIM1, NDIM2, NDIM3, KGRB      
+C
+C              *** Figures out which property to read in, and ***
+C              *** reads it.                                  ***
+C
+               KGRB = 1
+               CALL CHPRRD(WORK(KGRB),WORK(KGRB),WORK(KGRB),WORK(KGRB),
+     &                     NDIM1,NDIM2,NDIM3,PRPTXT) 
+            END DO
+            END DO
+C
+C           *** Positioning the RSTRT.FC file. ***
+C            
+            REWIND(LURSTR)
+            READ(LURSTR,*) II
+            IF (II.EQ.1) THEN
+               KGRB = 1
+               CALL RDHDRS(WORK(KGRB),WORK(KGRB),WORK(KGRB),WORK(KGRB),
+     &                     WORK(KGRB),NCOOR,IDUMMY,LURSTR)
+            END IF
+C
+            DO ID = IDIMIN, IDIMAX 
+               READ(LURSTR,FMT=*,IOSTAT=IOS) KGRBG1, KGRBG2, GARBAG
+            END DO
+         END IF
+      END IF
+C
+C     *** Finally setting number of calculations done. ***
+C
+      NMDPRP = KNMCLC*KNMPRP
+C
+      RETURN
+      END
+C
+C
+C     /* Deck rdhdrs */
+      SUBROUTINE RDHDRS(SYMCOR,RNNORM,FREQ,ICRIRP,NCOOR,NDCOOR,LURSTR)
+C     *********************************************************
+C     *** Subroutine that reads in header of force constant ***
+C     *** restart routine.                                  ***
+C     *********************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION SYMCOR(NCOOR,NCOOR), RNNORM(NCOOR), FREQ(NCOOR)
+      DIMENSION ICRIRP(NCOOR,2)
+
+C
+C     *** Number of normal coordinates ***
+C     
+      READ(LURSTR,FMT='(I8)') NDCOOR
+C
+C     *** The normal coordinates. ***
+C
+      DO IC2 = 1, NDCOOR
+         READ(LURSTR,'(2I5)') (ICRIRP(IC2,I),I=1,2)
+         DO IC1 = 1, NCOOR
+            READ(LURSTR,'(F24.16)') SYMCOR(IC1,IC2)
+         END DO
+      END DO
+C     
+C     *** Norm of the non-normalized normal coordinates. ***
+C         
+      READ(LURSTR,FMT='(A)')
+      DO IC = 1, NDCOOR
+         READ(LURSTR,'(F24.16)') RNNORM(IC) 
+      END DO
+C
+C     *** Frequencies. ***
+C         
+      READ(LURSTR,FMT='(A)')
+      DO IC = 1, NDCOOR
+         READ(LURSTR,'(F24.16)') FREQ(IC) 
+      END DO
+C
+      RETURN
+      END
 C
 C     /*Deck nrmiso*/
       SUBROUTINE NRMISO(TDER,SYMCOR,DKIN,TRNCCR,TRAMSS,TMPGRD,TMPHES,

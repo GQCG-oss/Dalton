@@ -434,7 +434,7 @@ C
       IF (MOD(NDIM1,3).EQ.0) NTCOL = NDIM1/3
 C
       WRITE (LUNDPR,'(A)') PRPTXT
-      WRITE (LUNDPR,'(3I7)') NDIM1, NDIM2, NDIM3
+      WRITE (LUNDPR,'(4I7)') NDIM1, NDIM2, NDIM3, NMPCAL
       DO IDIM3 = 1, NDIM3
          KDIM = 0
          WRITE (LUNDPR,'(A,I4)') 'The third dimension', IDIM3
@@ -518,27 +518,14 @@ C
       DO IMPCAL  = 2, NMPCAL
       DO IMEPRP = 1, NMEPRP
          READ (LUNDPR,'(A9)') PRPTXT
-         READ (LUNDPR,'(3I7)') NDIM1, NDIM2, NDIM3
+         READ (LUNDPR,'(4I7)') NDIM1, NDIM2, NDIM3, KGRB
 C
-C        *** If property is spin-spin. ***
+C        *** Figures out which property read in, and reads it. ***
 C
-         IF (PRPTXT(1:9).EQ.'SPIN-SPIN') THEN
-            CALL RDAVFL(SPSPFV(1,1,1,IMPCAL),NDIM1,NDIM2,NDIM3)
-         ELSE IF (PRPTXT(1:9).EQ.'CART-TRAN') THEN
-            CALL RDAVFL(TRAMAT(1,1,IMPCAL),NDIM1,NDIM2,NDIM3)
-         ELSE IF ((PRPTXT(1:4).EQ.'TRDP').OR.(PRPTXT(1:4).EQ.'EXEN')) 
-     &                                                              THEN
-            IF (PRPTXT(7:7).EQ.' ') THEN
-               READ (PRPTXT(5:6),'(2I1)') ISYM, IEXVAL
-            ELSE
-               READ (PRPTXT(5:7),'(I1,I2)') ISYM, IEXVAL
-            END IF
-            IF (PRPTXT(1:4).EQ.'TRDP') THEN
-               CALL RDAVFL(TRLNFV(1,ISYM,IEXVAL,IMPCAL),3,1,1)
-            ELSE
-               CALL RDAVFL(EXENFV(ISYM,IEXVAL,IMPCAL),1,1,1)
-            END IF
-         END IF
+
+         CALL CHPRRD(SPSPFV(1,1,1,IMPCAL),TRAMAT(1,1,IMPCAL),
+     &               TRLNFV(1,1,1,IMPCAL),EXENFV(1,1,IMPCAL),NDIM1,
+     &               NDIM2,NDIM3,PRPTXT) 
 C
       END DO
       END DO
@@ -547,24 +534,12 @@ C     *** Original geometry at the end of the file. ***
 C
       DO IMEPRP = 1, NMEPRP
          READ (LUNDPR,'(A9)') PRPTXT
-         READ (LUNDPR,'(3I7)') NDIM1, NDIM2, NDIM3
+         READ (LUNDPR,'(4I7)') NDIM1, NDIM2, NDIM3, KGRB
 C
-         IF (PRPTXT(1:9).EQ.'SPIN-SPIN') THEN
-            CALL RDAVFL(SPSPFV(1,1,1,1),NDIM1,NDIM2,NDIM3)
-         ELSE IF (PRPTXT(1:9).EQ.'CART-TRAN') THEN
-            CALL RDAVFL(TRAMAT(1,1,1),NDIM1,NDIM2,NDIM3)
-         ELSE IF((PRPTXT(1:4).EQ.'TRDP').OR.(PRPTXT(1:4).EQ.'EXEN'))THEN
-            IF (PRPTXT(7:7).EQ.' ') THEN
-               READ (PRPTXT(5:6),'(2I1)') ISYM, IEXVAL
-            ELSE
-               READ (PRPTXT(5:7),'(I1,I2)') ISYM, IEXVAL
-            END IF
-            IF (PRPTXT(1:4).EQ.'TRDP') THEN
-               CALL RDAVFL(TRLNFV(1,ISYM,IEXVAL,1),3,1,1)
-            ELSE
-               CALL RDAVFL(EXENFV(ISYM,IEXVAL,1),1,1,1)
-            END IF
-         END IF
+C        *** Figures out which property read in, and reads it. ***
+C
+         CALL CHPRRD(SPSPFV(1,1,1,1),TRAMAT(1,1,1),TRLNFV(1,1,1,1),
+     &               EXENFV(1,1,1),NDIM1,NDIM2,NDIM3,PRPTXT) 
       END DO
 C
 C     *** Transformation of all the matrices/vectors back ***
@@ -633,6 +608,53 @@ C
             WRITE (LUPRI,'(A)') '                             '
             CALL PRTRMA(TRAMAT(1,1,IMPCAL),NCOOR,NCOOR,LUPRI)
          END DO
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck chprrd*/
+      SUBROUTINE CHPRRD(SPSPFV,TRAMAT,TRLNFV,EXENFV,NDIM1,NDIM2,NDIM3,
+     &                  PRPTXT) 
+#include <implicit.h>
+#include <mxcent.h>
+C
+#include <cbilrs.h>
+#include <trkoor.h>
+#include <inforb.h>
+      CHARACTER*9 PRPTXT
+      DIMENSION SPSPFV(NCOOR,NCOOR,6), TRLNFV(3,NSYM,MXNEXI),
+     &          TRAMAT(NCOOR,NCOOR  ), EXENFV(  NSYM,MXNEXI)
+C
+      IF (PRPTXT(1:9).EQ.'SPIN-SPIN') THEN
+C
+C        *** If property is spin-spin. ***
+C
+         CALL RDAVFL(SPSPFV(1,1,1),NDIM1,NDIM2,NDIM3)
+      ELSE IF (PRPTXT(1:9).EQ.'CART-TRAN') THEN
+C
+C        *** If property is the transformation matrix ***
+C        *** to old cartesian coordinates.            ***
+C
+         CALL RDAVFL(TRAMAT(1,1),NDIM1,NDIM2,NDIM3)
+      ELSE IF ((PRPTXT(1:4).EQ.'TRDP').OR.(PRPTXT(1:4).EQ.'EXEN')) THEN
+         IF (PRPTXT(7:7).EQ.' ') THEN
+            READ (PRPTXT(5:6),'(2I1)') ISYM, IEXVAL
+         ELSE
+            READ (PRPTXT(5:7),'(I1,I2)') ISYM, IEXVAL
+         END IF
+         IF (PRPTXT(1:4).EQ.'TRDP') THEN
+C
+C           *** If property is HF transition moments. ***
+C
+            CALL RDAVFL(TRLNFV(1,ISYM,IEXVAL),3,1,1)
+         ELSE
+C
+C           *** If property is HF excitation energies. ***
+C
+            CALL RDAVFL(EXENFV(ISYM,IEXVAL),1,1,1)
+         END IF
       END IF
 C
       RETURN
@@ -826,7 +848,7 @@ C
       IF (NAORDR.EQ.0) KNMPRP = NMEPRP
       DO IEPRP = 1, KNMPRP
          READ (LUNDPR,'(A)') PRPTXT
-         READ (LUNDPR,'(3I7)') NDIM1, NDIM2, NDIM3
+         READ (LUNDPR,'(4I7)') NDIM1, NDIM2, NDIM3, KGRB
 C
 C        *** If property is spin-spin ***
 C
@@ -921,7 +943,7 @@ C
      &        'components in property derivative file.')
 C
          READ (LUNDPR,'(A)') PRPTXT
-         READ (LUNDPR,'(3I7)') ND1, ND2, ND3
+         READ (LUNDPR,'(4I7)') ND1, ND2, ND3, KGRB
 C
 C        *** Test. ***
 C

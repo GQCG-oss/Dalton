@@ -1815,6 +1815,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION TMPARR(5, 0:2), VEC(3)
          LOGICAL GENELM, MIRMOL, ROTAXS, INVMOL
          TMPARR(1,0) = 2.0D0
+	 GENELM = .FALSE.
          DO 100 I = 1,4
             TMPARR(I,1) = ARR(I, IATNO1)
             TMPARR(I,2) = ARR(I, IATNO2)
