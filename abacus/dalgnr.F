@@ -602,7 +602,7 @@ C  /* Deck exedrv */
 #include <cbisol.h>
 #include <taymol.h>
       DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
-      LOGICAL NEWWLK
+      LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7, NAVN*6
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
@@ -838,6 +838,13 @@ C
             RDMLIN = .TRUE.
          IF ((.NOT. GEOCNV).AND.(ITERNR .LE. ITERMX)) THEN
             RDINPC = .FALSE.
+            CALL GPINQ('RSPVEC','EXIST',EX) 
+            IF (EX) THEN 
+               LU = -9982
+               CALL GPOPEN(LU,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
+     &                     .FALSE.)
+               CALL GPCLOSE(LU,'DELETE')
+            END IF
             GOTO 10
          END IF
 C
