@@ -552,6 +552,11 @@ C----------------------------------------------
 C
                  KT1    = KWRK2 + (ICOUNT-1)*LETOT
                  KT2    = KWRK2 + (ICOUNT-1)*LETOT + NT1AM(ISYMTR)
+
+                 IF (CCSTST) THEN
+                   CALL DZERO(WORK(KT2),NT2AM(ISYMTR))
+                 END IF
+
                  IOPT   = 3
                  CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,
      *                  WORK(KT1),WORK(KT2),WORK(KWRK1),NVARPT)

@@ -1358,10 +1358,20 @@ Cold        LORXLST(IOP) = .FALSE.
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
      *      (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT = IAND(IOPT,5)
+      ELSE IF (MODFIL(1:3).EQ.'CC3'      .OR.
+     *         MODFIL(1:8).EQ.'CCSDT-1a' .OR.
+     *         MODFIL(1:8).EQ.'CCSDT-1B' .OR.
+     *         MODFIL(1:7).EQ.'CCSD(T)'  .OR.
+     *         MODFIL(1:5).EQ.'CC(3)'    .OR.
+     *         MODFIL(1:8).EQ.'CCSDR(T)' .OR.
+     *         MODFIL(1:8).EQ.'CCSDR(3)' .OR.
+     *         MODFIL(1:9).EQ.'CCSDR(1A)'.OR.
+     *         MODFIL(1:9).EQ.'CCSDR(1B)'
+     *        ) THEN
+        IOPT   = IAND(IOPT,7)
       ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
-     *         MODFIL(1:4).EQ.'MCC2'.OR.
-     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'.OR.
-     *         MODFIL(1:3).EQ.'CC1'.OR.MODFIL(1:3).EQ.'CC3') THEN
+     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
+     *        ) THEN
         IOPT = IAND(IOPT,7)
       ELSE
         WRITE (LUPRI,*) 'MODFIL:"',MODFIL,'"'
@@ -1657,4 +1667,49 @@ c /* deck CCPRPAO */
       END
 *=====================================================================*
 *                     END OF SUBROUTINE CCPRPAO                       *
+*=====================================================================*
+*=====================================================================*
+      SUBROUTINE CC_GET_CMO(CMO)
+*---------------------------------------------------------------------*
+*     Purpose: read orbital coefficient vector CMO from SIRIFC file
+*     Christof Haettig, spring 2001, Oslo
+*=====================================================================*
+      IMPLICIT NONE
+#include <priunit_dec.h>
+#include <priunit.h>
+#include <ccorb_dec.h>
+#include <ccorb.h>
+#include <inftap_dec.h>
+#include <inftap.h>
+#include <dummy_dec.h>
+#include <dummy.h>
+#include <ccsdinp.h>
+
+      INTEGER I
+
+#if defined (SYS_CRAY) 
+      REAL DDOT, CMO(NLAMDS)
+#else
+      DOUBLE PRECISION DDOT, CMO(NLAMDS)
+#endif
+
+*---------------------------------------------------------------------*
+*     read MO coefficients from file:
+*---------------------------------------------------------------------*
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND(LUSIFC)
+      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+      READ(LUSIFC)
+      READ(LUSIFC)
+      READ(LUSIFC) (CMO(I),I=1,NLAMDS)
+      CALL GPCLOSE(LUSIFC,'KEEP')
+
+      IF (DEBUG) THEN
+        WRITE(LUPRI,*) 'Length of CMO (NLAMDS):',NLAMDS
+        WRITE(LUPRI,*) 'Norm^2 of CMO:',DDOT(NLAMDS,CMO,1,CMO,1)
+      END IF
+
+      RETURN
+      END
 *=====================================================================*

@@ -53,7 +53,7 @@ libcc.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) *.o *~ *.f *.lst *.i tags TAGS *.a
+	$(RM) -f *.o *~ *.f *.lst *.i tags TAGS *.a
 
 tags:;          $(RM) -f tags ; etags  *.F
 

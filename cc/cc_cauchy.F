@@ -188,7 +188,7 @@ c /* deck cc_cauchy */
 *---------------------------------------------------------------------*
 * calculate ETA{O} vector contributions of the type ETA{O} x RC:
 *---------------------------------------------------------------------*
-      CALL CCQR_EADRV('L0','o1','RC',NECTRAN, MXVEC,
+      CALL CCQR_EADRV('L0 ','o1 ','RC ',NECTRAN, MXVEC,
      &                WORK(KECTRAN),WORK(KECDOTS),WORK(KECCONS),
      &                WORK(KEND0), LEND0, 'DOTP' )
 
@@ -196,8 +196,7 @@ c /* deck cc_cauchy */
 * calculate LC x XKSI{O} vector dot products:
 *---------------------------------------------------------------------*
       IF (ASYMSD) THEN
-        WRITE (LUPRI,*) 'CALL CC_DOTDRV:'
-        CALL CC_DOTDRV('LC','o1',NXCTRAN,MXVEC,
+        CALL CC_DOTDRV('LC ','O1 ',NXCTRAN,MXVEC,
      &                 WORK(KXCTRAN), WORK(KXCDOTS), WORK(KXCCONS),
      &                 WORK(KEND0), LEND0 )
       END IF
@@ -278,7 +277,7 @@ c /* deck cc_cauchy */
         CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
      &                  0,IOPERA,IRCVECB,ITRAN,IVEC)
         SMOM = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        WRITE (LUPRI,*) 'Eta{A} x C^B:',
+        IF (LOCDBG) WRITE (LUPRI,*) 'Eta{A} x C^B:',
      &       WORK(KECCONS-1+(ITRAN-1)*MXVEC+IVEC)
 
 * Xksi{A} x Cbar^B(-4)
@@ -286,11 +285,12 @@ c /* deck cc_cauchy */
         CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
      &                ILCVECB,IOPERA,ITRAN,IVEC)
         SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        WRITE (LUPRI,*) 'Xksi{A} x LC^B:',
+        IF (LOCDBG) THEN
+          WRITE (LUPRI,*) 'Xksi{A} x LC^B:',
      &       WORK(KXCCONS-1+(ITRAN-1)*MXVEC+IVEC)
-
-        WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM1: ', LABELA,
+          WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM1: ', LABELA,
      &      LABELB, IDXSMOM,'S(',2,')=', SMOM
+        END IF
 
 
 * Eta{B} x C^A(-4):
@@ -305,8 +305,8 @@ c /* deck cc_cauchy */
      &                ILCVECA,IOPERB,ITRAN,IVEC)
         SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-        WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM2: ', LABELA,
-     &      LABELB, IDXSMOM,'S(',2,')=', SMOM
+        IF (LOCDBG) WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
+     &   'ASYM2: ', LABELA,LABELB, IDXSMOM,'S(',2,')=', SMOM
 
 
         END IF
@@ -362,7 +362,7 @@ c /* deck cc_cauchy */
         CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
      &                  0,IOPERA,IRCVECB,ITRAN,IVEC)
         SMOM = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        WRITE (LUPRI,*) 'Eta{A} x C^B:',
+        IF (LOCDBG) WRITE (LUPRI,*) 'Eta{A} x C^B:',
      &       WORK(KECCONS-1+(ITRAN-1)*MXVEC+IVEC)
 
 * Xksi{A} x Cbar^B(-2)
@@ -370,11 +370,12 @@ c /* deck cc_cauchy */
         CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
      &                ILCVECB,IOPERA,ITRAN,IVEC)
         SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        WRITE (LUPRI,*) 'Xksi{A} x LC^B:',
+        IF (LOCDBG) THEN
+          WRITE (LUPRI,*) 'Xksi{A} x LC^B:',
      &       WORK(KXCCONS-1+(ITRAN-1)*MXVEC+IVEC)
-
-        WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM1: ', LABELA,
-     &      LABELB, IDXSMOM,'S(',0,')=', SMOM
+          WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
+     &       'ASYM1: ', LABELA,LABELB, IDXSMOM,'S(',0,')=', SMOM
+        END IF
 
 
 * Eta{B} x C^A(-2):
@@ -389,11 +390,10 @@ c /* deck cc_cauchy */
      &                ILCVECA,IOPERB,ITRAN,IVEC)
         SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-        WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM2: ', LABELA,
-     &      LABELB, IDXSMOM,'S(',0,')=', SMOM
-
-
+        IF (LOCDBG) WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
+     &     'ASYM2: ', LABELA,LABELB, IDXSMOM,'S(',0,')=', SMOM
         END IF
+
        END IF 
 
 *---------------------------------------------------------------------*
@@ -454,8 +454,10 @@ c /* deck cc_cauchy */
      &                  ILCVECB,IOPERA,ITRAN,IVEC)
           SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-          WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM1: ', LABELA,
-     &      LABELB, IDXSMOM,'S(',-IDISP-2,')=', SMOM
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
+     &       'ASYM1: ', LABELA,LABELB, IDXSMOM,'S(',-IDISP-2,')=', SMOM
+          END IF
 
 
           CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
@@ -466,8 +468,10 @@ c /* deck cc_cauchy */
      &                  ILCVECA,IOPERB,ITRAN,IVEC)
           SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-          WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM1: ', LABELA,
-     &      LABELB, IDXSMOM,'S(',-IDISP-2,')=', SMOM
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
+     &       'ASYM1: ', LABELA,LABELB, IDXSMOM,'S(',-IDISP-2,')=', SMOM
+          END IF
 
         END IF
 
@@ -617,12 +621,14 @@ c /* deck cccm_setup */
       INTEGER ISYMA,  ISYMB, ITRAN, IVEC, ISYML, IDUM, I, N, IDISP
       INTEGER IRCVECA, IRCVECB, IOPERA, IOPERB, ISAMA, ISAMB
       INTEGER ILCVECA, ILCVECB, INUM, IOPER, ILROP, ISAPROP, ISACAU
+      INTEGER IRHSA, IRHSB
 
       CHARACTER LABELA*(8), LABELB*(8)
 
 * external functions:
       INTEGER ILRCAMP
       INTEGER ILC1AMP
+      INTEGER IRHSR1
 
 *---------------------------------------------------------------------*
 * initializations:
@@ -740,13 +746,15 @@ C
             IF (ISACAU.EQ.ISAPROP.OR.ISAPROP.EQ.0.OR.ALLLRDSPCF) THEN
               ILCVECA = ILC1AMP(LABELA,IDISP,IDUM)
               ILCVECB = ILC1AMP(LABELB,IDISP,IDUM)
+              IRHSA   = IRHSR1(LABELA,.FALSE.,0.0D0,IDUM)
+              IRHSB   = IRHSR1(LABELB,.FALSE.,0.0D0,IDUM)
        
               CALL CC_SETDOT(IXCTRAN,IXCDOTS,MXTRAN,MXVEC,
-     &                       ILCVECA,IOPERB,ITRAN,IVEC)
+     &                       ILCVECA,IRHSB,ITRAN,IVEC)
               NXCTRAN = MAX(NXCTRAN,ITRAN)
 
               CALL CC_SETDOT(IXCTRAN,IXCDOTS,MXTRAN,MXVEC,
-     &                       ILCVECB,IOPERA,ITRAN,IVEC)
+     &                       ILCVECB,IRHSA,ITRAN,IVEC)
               NXCTRAN = MAX(NXCTRAN,ITRAN)
             END IF
           END DO
@@ -791,6 +799,14 @@ C
       DO ITRAN = 1, NECTRAN
         WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
      &   (IECTRAN(I,ITRAN),I=1,2),(IECDOTS(I,ITRAN),I=1,MXVEC)
+      END DO
+      WRITE (LUPRI,*)
+
+* XKSI{O} x LC dot products:
+      WRITE (LUPRI,*) 'List O1 x LC dot products:'
+      DO ITRAN = 1, NXCTRAN
+        WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
+     &   IXCTRAN(1,ITRAN),(IXCDOTS(I,ITRAN),I=1,MXVEC)
       END DO
       WRITE (LUPRI,*)
 
@@ -965,7 +981,7 @@ C       IF (CCS) KEND1 = KAXI2
 
 * calculate - F C(-1):
           IVECR = ILRCAMP(LABELA,-1,ISYMA)
-          CALL CC_FTRAN('L0',0,'RC',IVECR,WORK(KAXI1),LWORK)
+          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
           CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
           IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
 
@@ -1011,7 +1027,7 @@ C       IF (CCS) KEND1 = KAXI2
 
 * calculate - F C(-2):
           IVECR = ILRCAMP(LABELA,-2,ISYMA)
-          CALL CC_FTRAN('L0',0,'RC',IVECR,WORK(KAXI1),LWORK)
+          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
           CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
           IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
 
@@ -1057,7 +1073,7 @@ C       IF (CCS) KEND1 = KAXI2
 
 * calculate - F C(-3):
           IVECR = ILRCAMP(LABELA,-3,ISYMA)
-          CALL CC_FTRAN('L0',0,'RC',IVECR,WORK(KAXI1),LWORK)
+          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
           CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
           IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
 
@@ -1153,7 +1169,7 @@ C       IF (CCS) KEND1 = KAXI2
 
 * calculate - F C(-1):
           IVECR = ILRCAMP(LABELB,-1,ISYMB)
-          CALL CC_FTRAN('L0',0,'RC',IVECR,WORK(KAXI1),LWORK)
+          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
           CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
           IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
 
@@ -1199,7 +1215,7 @@ C       IF (CCS) KEND1 = KAXI2
 
 * calculate - F C(-2):
           IVECR = ILRCAMP(LABELB,-2,ISYMB)
-          CALL CC_FTRAN('L0',0,'RC',IVECR,WORK(KAXI1),LWORK)
+          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
           CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
           IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
 
@@ -1245,7 +1261,7 @@ C       IF (CCS) KEND1 = KAXI2
 
 * calculate - F C(-3):
           IVECR = ILRCAMP(LABELB,-3,ISYMB)
-          CALL CC_FTRAN('L0',0,'RC',IVECR,WORK(KAXI1),LWORK)
+          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
           CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
           IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
 

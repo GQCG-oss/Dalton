@@ -529,13 +529,15 @@ C
                ILSTNR = ISTRVE + I - 1
                CALL CC_GETGD(WORK(KV),ILSTNR,ISIDE,LIST,
      *                       WORK(KEND1),LEND1)
-               IF (LIST(1:2).EQ.'L0') THEN
-                 WRITE(LUPRI,'(5X,A)') 
-     *             'Start vector generated from gradient'
-               ELSE
-                 WRITE(LUPRI,'(5X,2A,I3,A,I3,A)') LIST,
-     *             ' start vector nr.',ILSTNR,
-     *             ' of symmetry',ISYMTR,' generated from gradient'
+               IF (IPRLE.GT.0) THEN
+                 IF (LIST(1:2).EQ.'L0') THEN
+                   WRITE(LUPRI,'(5X,A)') 
+     *               'Start vector generated from gradient'
+                 ELSE
+                   WRITE(LUPRI,'(5X,2A,I3,A,I3,A)') LIST,
+     *               ' start vector nr.',ILSTNR,
+     *               ' of symmetry',ISYMTR,' generated from gradient'
+                 END IF
                END IF
 C 
 C--------------------------------------------------------
@@ -1534,7 +1536,7 @@ C
             WRITE (LUPRI,*) ' I, initial norm  of BVECS(1,I) :',I,TT
          END IF
          IF (TT.LT.THRZER) THEN
-            WRITE (LUPRI,3240) I,TT
+            IF (IPRLE.GT.2) WRITE (LUPRI,3240) I,TT
  3240       FORMAT(/' (CCORT) new  b-vector no.',I3,
      *       /' is removed at input because of too small norm;'
      *       /' norm of input vector is',1P,D12.5)
@@ -1615,7 +1617,7 @@ C
      *      I,SQRT(TT)
          END IF
          IF (TT .LE. THRLDP) THEN
-            WRITE (LUPRI,3250) I,TT
+            IF (IPRLE.GT.2) WRITE (LUPRI,3250) I,TT
  3250        FORMAT(/' (CCORT) new  b-vector no.',I3,
      *       /' is removed because of linear dependence;'
      *       /' norm of vector after Gram-Schmidt''s orthogonalization',
@@ -1637,9 +1639,11 @@ C
  2400 CONTINUE
 C
       IF (NBADD.NE.NNUM) THEN
-         WRITE(LUPRI,*)' After Gram Smidt orthonormalization'
-         WRITE(LUPRI,*)NNUM-NBADD,' vectors with norm le:'
-     *                ,THRZER,' REMOVED'
+         IF (IPRLE.GT.2) THEN
+           WRITE(LUPRI,*)' After Gram Smidt orthonormalization'
+           WRITE(LUPRI,*) NNUM-NBADD,' vectors with norm le:'
+     *                  ,THRZER,' REMOVED'
+         END IF
          NBADD = NNUM
       END IF
       IF (IROUND.GT.0  .AND. ITURN.EQ.1 ) GO TO 1500
@@ -1659,9 +1663,9 @@ C
 C
 C
       IF ( NSAVE .NE. NBADD ) THEN
-         WRITE(LUPRI,4310)NSAVE,NBADD
+         IF (IPRLE.GT.2) WRITE(LUPRI,4310)NSAVE,NBADD
+ 4310    FORMAT(/' (CCORT)  trial vectors reduced from',I3,' to',I3)
       END IF
- 4310 FORMAT(/' (CCORT)  trial vectors reduced from',I3,' to',I3)
 C
 C test if trial vectors on disk are orthonormal
 C

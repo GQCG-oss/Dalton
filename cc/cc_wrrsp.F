@@ -222,15 +222,25 @@ C----------------------------------------------------------------------
      *    (.NOT.(MODFIL(1:4).EQ.'CCSD'))) THEN
         IOPT   = IAND(IOPT,5) 
         NWRITE = 2
+      ELSE IF (MODFIL(1:3).EQ.'CC3'      .OR.
+     *         MODFIL(1:8).EQ.'CCSDT-1a' .OR.
+     *         MODFIL(1:8).EQ.'CCSDT-1B' .OR.
+     *         MODFIL(1:7).EQ.'CCSD(T)'  .OR.
+     *         MODFIL(1:5).EQ.'CC(3)'    .OR.
+     *         MODFIL(1:8).EQ.'CCSDR(T)' .OR.
+     *         MODFIL(1:8).EQ.'CCSDR(3)' .OR.
+     *         MODFIL(1:9).EQ.'CCSDR(1A)'.OR.
+     *         MODFIL(1:9).EQ.'CCSDR(1B)'   
+     *        ) THEN
+        IOPT   = IAND(IOPT,7)
+        NWRITE = 3
       ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
-     *         MODFIL(1:4).EQ.'MCC2'.OR.
-     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'.OR.  
-     *         MODFIL(1:3).EQ.'CC1'.OR.MODFIL(1:3).EQ.'CC3') THEN
+     *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
+     *        ) THEN
         IOPT   = IAND(IOPT,7)
         NWRITE = 3
       ELSE 
-        WRITE (LUPRI,*) 'triples not yet implemented in CC_WRRSP:'
-        WRITE (LUPRI,*) 'actual model is:',MODFIL
+        WRITE (LUPRI,*) 'unkown model in CC_WRRSP:',MODFIL
         CALL QUIT('triples not yet implemented in CC_WRRSP.')
       END IF
 

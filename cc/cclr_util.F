@@ -976,13 +976,8 @@ C------------------------------------------------
 C     Read the CC reference amplitudes From disk.
 C------------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KC1AM + I -1 ) , I = 1, NT1AMX)
-      READ(LUTAM) (WORK(KC2AM + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KC1AM),WORK(KC2AM))
 C
 C--------------------------------------------------
 C     Write the jacobian to disk if FDJAC  is done.
@@ -2148,7 +2143,7 @@ C
 C
                MA = IORB(ISYMA) + NRHF(ISYMA) +  A
 C
-               IF (ABS(CAM(NAI)) .GT. THR1 ) THEN
+               IF (ABS(CAM(NAI)) .GE. THR1 ) THEN
 C
                   WRITE(LUPRI,9990) ISYMA,ISYMI,A,I,NAI,CAM(NAI)
 C

@@ -5,34 +5,34 @@ C
 C     Ove Christiansen 14-11-1995
 C
 C
-C     Purpose: Driver routine for coupled cluster modules in
+C     Purpose: Driver routine for coupled cluster modules in 
 C              calculation of
-C              ground state energies, excitation energies,
+C              ground state energies, excitation energies, 
 C              oscilator strenghts,
 C              frequency dependent polarizabilities and first order
 C              properties without orbital relaxation.
 C
 C              Pass control to;
 C
-C              CCSD_ENERGY for (integral direct) calculation of
+C              CCSD_ENERGY for (integral direct) calculation of 
 C                          groundstate energies and amplitudes.
 C
-C              CC_EXCI     for (integral direct) calculation of
-C                          excitation energies and amplitudes.
+C              CC_EXCI     for (integral direct) calculation of 
+C                          excitation energies and amplitudes. 
 C
-C              CC_FOP      for integral direct calculation of first
-C                          order properties.
+C              CC_FOP      for integral direct calculation of first 
+C                          order properties. 
 C                          Also calculates the left amplitudes.
 C
-C              CC_EXGR     for (integral direct) calculation of excited
-C                          state gradient properties.
+C              CC_EXGR     for (integral direct) calculation of excited 
+C                          state gradient properties. 
 C                          Currently only first order properties.
 C
 C              CC_LR       control the calculation of polarizabilities.
-C                          Frequency dependent, without orbital
+C                          Frequency dependent, without orbital 
 C                          relaxation.
 C
-C              CC_LRESID   Control calculation of residues and
+C              CC_LRESID   Control calculation of residues and 
 C                          oscillator strenths.
 C
 C              CC_HYPPOL   calculation of quadratic response properties.
@@ -47,7 +47,7 @@ C              CC_TMCAL    calculation of third order moments
 C
 C              CC_MCDCAL   calculation of B terms in MCD
 C
-C     Loop over all models specified. The order is supposed
+C     Loop over all models specified. The order is supposed 
 C     to be the optimal one from a computational point of view.
 C     Energy calculations are restarted from the preceeding
 C     calculation. Excitation vectors is also saved
@@ -55,7 +55,7 @@ C     and the excitation energy calculation is restarted
 C     from preceeding model solution as well. Similar for
 C     response vectors in property calculations.
 C
-C     (ground state) geometry optimizations using the
+C     (ground state) geometry optimizations using the 
 C     analytic gradient are done for the first (i.e. lowest
 C     order) model specified in the input.
 C
@@ -146,6 +146,12 @@ C
       IF (LUSIFC .GT. 0) CALL GPCLOSE(LUSIFC,'KEEP')
 C
 C----------------------------------------------------------------------
+C     initialize common block for Cray I/O:
+C----------------------------------------------------------------------
+C
+      CALL INITWIO()
+C
+C----------------------------------------------------------------------
 C     Open files needed open throughout entire CC calculation.
 C----------------------------------------------------------------------
 C
@@ -160,13 +166,13 @@ C
 C---------------------------------
 C     Initialize energy variables.
 C---------------------------------
-C
+C   
       ECCGRS = 0.0D0
       OMECCX = 0.0D0
       ECCXST = 0.0D0
 C
 C----------------------------------------------------------------------*
-C     Save information on the number of states etc. for subsequent
+C     Save information on the number of states etc. for subsequent 
 C     calls in numerical differentiations.
 C----------------------------------------------------------------------*
 C
@@ -224,14 +230,14 @@ C
       IMOD   = 0
       LTCEXC = .FALSE.
 C
-      MMOD = 0
+      MMOD = 0 
       DO I = 0, NMODEL
         IF (LCCSAV(I)) MMOD = MMOD + 1
       END DO
-
+ 
 C-----------------------------------------------------------------
 C     set flags controlling AO integral sort for non-direct runs
-C     and AO -> MO transformation to (ia|jb) etc. integrals
+C     and AO -> MO transformation to (ia|jb) etc. integrals 
 C-----------------------------------------------------------------
       LSORT  = .TRUE.
       INTTR  = .TRUE.
@@ -239,7 +245,7 @@ C-----------------------------------------------------------------
 C-----------------------------------------------------------------
 C     flag for ground state zeroth-order Lagrange multiplier:
 C-----------------------------------------------------------------
-      LTBAR0 = (CCLRSD.OR.CCLR.OR.FTST.OR.CCQR.OR.CCCR.OR.CC4R.OR.
+      LTBAR0 = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &          CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCSM.OR.CCTM.OR.
      &          CCMCD.OR.CCEXLR.OR.MOLGRD.OR.CCSLV.OR.CCDERI)
 
@@ -247,7 +253,7 @@ C-----------------------------------------------------------------
 C     flag for kappa-bar-0 Lagrange multiplier:
 C-----------------------------------------------------------------
       RELORB = MOLGRD .OR. CCDERI .OR. RELORB
-
+      
 C-----------------------------------------------------------------
 C     consistency check: no gradient for solvent...
 C-----------------------------------------------------------------
@@ -274,7 +280,7 @@ C-----------------------------------------------------------------
 C-----------------------------------------------------------------
 C     flag for response calculation (-> execute CCRSPSYM routine):
 C-----------------------------------------------------------------
-      LRSPSYM = (CCLRSD.OR.CCLR.OR.FTST.OR.CCQR.OR.CCCR.OR.CC4R.OR.
+      LRSPSYM = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &           CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCSM.OR.CCTM.OR.
      &           CCMCD.OR.CCEXLR)
 
@@ -286,10 +292,10 @@ C-----------------------------------------------------------------
       LLEFTEIG = CCMCD .OR. CCSM .OR. CCTM .OR. CCEXLR
 
 C-----------------------------------------------------------------
-C     LPTEXC  - to control if any perturbative triples corrections
+C     LPTEXC  - to control if any perturbative triples corrections 
 C     to excitation energies and thus calculated left vectors.
 C-----------------------------------------------------------------
-C
+C 
       LPTEXC = .FALSE.
       IF (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) LPTEXC = .TRUE.
 C
@@ -323,7 +329,7 @@ C
          IF (I.EQ.5)  CC2    = LCCSAV(5)
          IF (I.EQ.6)  GOTO 100
          IF (I.EQ.7)  CCD    = LCCSAV(7)
-         IF (I.EQ.8)  GOTO 100
+         IF (I.EQ.8)  GOTO 100 
          IF (I.EQ.9)  CCSD   = LCCSAV(9)
          IF (I.EQ.10) CCPT   = LCCSAV(10)
          IF (I.EQ.11) CCRT   = LCCSAV(11)
@@ -348,7 +354,7 @@ C
          IMOD = IMOD + 1
 C
 C        -----------------------------------------------------------
-C        Save integral transformation (if not triples) and
+C        Save integral transformation (if not triples) and 
 C        restart from previous cc amplitudes and excitation vectors.
 C        -----------------------------------------------------------
          IF (IMOD.GT.1) THEN
@@ -357,19 +363,19 @@ C        -----------------------------------------------------------
      *           CCRSTR  = .TRUE.
          ENDIF
 
-         ! in geometry optimizations we can restart from the
+         ! in geometry optimizations we can restart from the 
          ! amplitudes of the previous points
          IF (MOLGRD) CCRSTR = .TRUE.
-
+ 
          IF (I .GT. 9) INTTR = .TRUE.
 C
          IF ((I.GT.15).AND.(.NOT.CCSD)) THEN
             CCSDT  =  .TRUE.
          ENDIF
-
+ 
 C        -----------------------------------------------------------
 C        in geometry optimization runs compute the gradient only
-C        for the first model
+C        for the first model 
 C        -----------------------------------------------------------
          IF (IMOD.GT.1 .AND. MOLGRD) GOTO 100
 C
@@ -522,7 +528,7 @@ C
                  ENDIF
                ENDIF
             ELSE
-               WRITE(LUPRI,'(/,1X,A)')
+               WRITE(LUPRI,'(/,1X,A)') 
      &              ' No MP2 and CCD excitation energies'
             ENDIF
 C
@@ -538,7 +544,7 @@ C------------------------------------------------
 C        The rest is not implemented for triples.
 C------------------------------------------------
 C
-         IF (I.GT.9) GOTO 90
+         IF (I.GT.9) GOTO 90 
 C
 C------------------------------------------------------------
 C        ****************************************************
@@ -558,7 +564,7 @@ C-----------------------------------------------------
 C
          IF (CCEXGR) THEN
             CALL CC_EXGR(WORK,LWORK)
-         ENDIF
+         ENDIF 
 C
 C---------------------------------------------------------------
 C        precalculate expectatation values & eff. Fock matrices:
@@ -576,8 +582,8 @@ C        ***** Solve CC-response equations.*****
 C        ***************************************
 C-----------------------------------------------
 C
-         IF (LRSPSYM) THEN
-            CALL CC_SOLRSP(WORK,LWORK)
+         IF (LRSPSYM) THEN 
+            CALL CC_SOLRSP(WORK,LWORK)  
          END IF
 C
 C-----------------------------------------------
@@ -586,8 +592,8 @@ C        ***** CC linear response residues *****
 C        ***************************************
 C-----------------------------------------------
 C
-         IF (CCLRSD) THEN
-            CALL CC_LRESID(WORK,LWORK)
+         IF (CCLRSD) THEN 
+            CALL CC_LRESID(WORK,LWORK)  
          END IF
 C
 C--------------------------------------------------------
@@ -606,8 +612,8 @@ C        ***** CC second-order transition moments  *****
 C        ***********************************************
 C-------------------------------------------------------
 C
-         IF (CCSM) THEN
-            CALL CC_SMCAL(WORK,LWORK)
+         IF (CCSM) THEN 
+            CALL CC_SMCAL(WORK,LWORK)  
          ENDIF
 C
 C------------------------------------------------------
@@ -616,8 +622,8 @@ C        ***** CC third-order transition moments  *****
 C        **********************************************
 C------------------------------------------------------
 C
-         IF (CCTM) THEN
-            CALL CC_TMCAL(WORK,LWORK)
+         IF (CCTM) THEN 
+            CALL CC_TMCAL(WORK,LWORK)  
          ENDIF
 C
 C-------------------------------------------------------
@@ -636,14 +642,16 @@ C        ***** CC Polarizabilities *****
 C        *******************************
 C-----------------------------------------
 C
-         IF ( CCLR .OR. FTST) THEN
+         IF ( CCLR .AND. NBLRFR.GT.0) THEN
 C
             IF (((.NOT. MP2).OR.CCP2).AND.(.NOT.CCD)) THEN
-               CALL CC_LR(WORK,LWORK)
-CCH new version
-               CALL CC_SOP(WORK,LWORK)
+               IF (OLDLR) THEN
+                 CALL CC_LR(WORK,LWORK)
+               ELSE
+                 CALL CC_SOP(WORK,LWORK)
+               END IF
             ELSE
-               WRITE(LUPRI,'(/,1X,A)')
+               WRITE(LUPRI,'(/,1X,A)') 
      &              ' No MP2 and CCD Polarizabilities '
             ENDIF
 C
@@ -692,7 +700,7 @@ C
             IF (CCS .or. CC2 .or. CCSD) THEN
                CALL CC_2HYP(WORK,LWORK)
             ELSE
-              WRITE(LUPRI,'(/,1X,A)')
+              WRITE(LUPRI,'(/,1X,A)') 
      &              'requested model not yet implemented'
             ENDIF
 C
@@ -726,7 +734,7 @@ C
             IF (CCS .or. CC2 .or. CCSD) THEN
                CALL CC_4HYP(WORK,LWORK)
             ELSE
-              WRITE(LUPRI,'(/,1X,A)')
+              WRITE(LUPRI,'(/,1X,A)') 
      &              'requested model not yet implemented'
             ENDIF
 C
@@ -738,8 +746,8 @@ C        ***** CC excited state linear response *****
 C        ********************************************
 C----------------------------------------------------
 C
-         IF (CCEXLR) THEN
-            CALL CC_EXLR(WORK,LWORK)
+         IF (CCEXLR) THEN 
+            CALL CC_EXLR(WORK,LWORK)  
          END IF
 C
 C--------------------------------------------------
@@ -772,7 +780,7 @@ C              CALL CC_FBTST(WORK,LWORK)
 C              CALL CC_AATST(WORK,LWORK)
 C              CALL CC_BATST(WORK,LWORK)
             ELSE
-              WRITE(LUPRI,'(/,1X,A)')
+              WRITE(LUPRI,'(/,1X,A)') 
      &              'requested model not yet implemented'
             ENDIF
 C
@@ -787,7 +795,7 @@ C
 C-------------------------------------------------
 C        Close files used in triples calculations.
 C-------------------------------------------------
-C
+C     
       IF ( I .GT. 9 ) CALL CC3_FILCL()
 C
  100  CONTINUE
@@ -820,11 +828,16 @@ C
 C
       CALL GPCLOSE(LURES,'KEEP')
       CALL GPCLOSE(LUIAJB,'KEEP')
-      IF (LUAORC(0) .GT. 0) CALL GPCLOSE(LUAORC(0),'DELETE')
+      IF (LUAORC(0) .GT. 0) CALL GPCLOSE(LUAORC,'DELETE')
       IF (LUINTR.GT.0) CALL GPCLOSE(LUINTR,'DELETE')
       IF (LUINTA.GT.0) THEN
-        IF (MOLGRD.AND.(.NOT.DIRECT)) CALL GPCLOSE(LUINTA,'DELETE')
-      END IF
+        IF (MOLGRD.AND.(.NOT.DIRECT)) THEN
+          CALL GPCLOSE(LUINTA,'DELETE')
+        ELSE
+          CALL GPCLOSE(LUINTA,'KEEP')
+        END IF
+      ENDI F
+    
       DO I = 1, 8
         IF (LUAOIN(I) .GT. 0) THEN
           IF ((.NOT.KEEPAOIN).OR.MOLGRD) THEN
@@ -835,6 +848,8 @@ C
           END IF
         END IF
       END DO
+
+      CALL WCLOSEALL()
 C
 C------------------------------------------------
 C     Restore information on number of roots etc.
@@ -1060,7 +1075,7 @@ C
 C
       END
 C  /* Deck cc_false */
-      SUBROUTINE CC_FDGD
+      SUBROUTINE CC_FDGD   
 C
 C     Ove Christiansen 13-2-1997
 C
@@ -1070,7 +1085,7 @@ C
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccgr.h>
-#include <ccfdgeo.h>
+#include <ccfdgeo.h> 
 #include <infopt.h>
 C
       IF (IPRINT.GT.2) THEN
@@ -1143,7 +1158,6 @@ C
       LUIAJB = 0
       LUBFDN = 0
       LURES  = 0
-      LULAM  = 0
       LUCSOL = 0
       LUCTLM = 0
 C
@@ -1159,7 +1173,7 @@ C
       END
 
 *=====================================================================*
-      SUBROUTINE CC_WPRPC
+      SUBROUTINE CC_WPRPC  
 C
 C     Ove Christiansen Nov. 1999
 C
@@ -1173,10 +1187,10 @@ C
       LUPRP = 0
       CALL GPOPEN(LUPRP,'PRPCOP','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
-
+     
       DO IROPER = 1,NRSOLBL
          WRITE(LUPRP,'(I3,A8,I3)') IROPER,LBLOPR(IROPER),ISYOPR(IROPER)
-      END DO
+      END DO 
 
       CALL GPCLOSE(LUPRP,'KEEP')
       END
@@ -1194,10 +1208,10 @@ C
 C
       DIMENSION FRQ12(MXPRPC),FRQ22(MXPRPC),FRQ32(MXPRPC)
       DIMENSION PRPC2(MXPRPC)
-      CHARACTER*8  LAB02(MXPRPC), LAB12(MXPRPC), LAB22(MXPRPC),
+      CHARACTER*8  LAB02(MXPRPC), LAB12(MXPRPC), LAB22(MXPRPC),       
      *             LAB32(MXPRPC)
       CHARACTER*10 CPRPC2(MXPRPC)
-      DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC)
+      DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC) 
       PARAMETER (TOLPRPFD=1.0D-10,TOLEX=1.0D-02)
 C
       IF (NPRPC.NE.NPRPCO) CALL QUIT('Mistmatch in WPRPC')
@@ -1212,13 +1226,13 @@ C
          FRQ12(I)  = FRQ1(I)
          FRQ22(I)  = FRQ2(I)
          FRQ32(I)  = FRQ3(I)
-         ISAVSY2(I)= ISAVSY(I)
+         ISAVSY2(I)= ISAVSY(I) 
       ENDDO
 C
       DO 100 I = 1, NPRPC
        DO 200 J = 1, NPRPC
         IF (CPRPC2(J).EQ.CPRPCO(I))  THEN
-         IF (IOPRPC2(J).EQ.IOPRPCO(I)) THEN
+         IF (IOPRPC2(J).EQ.IOPRPCO(I)) THEN 
           IF ((LAB02(J).EQ.LAB0O(I)).AND.
      *        (LAB12(J).EQ.LAB1O(I)).AND.
      *        (LAB22(J).EQ.LAB2O(I)).AND.
@@ -1228,7 +1242,7 @@ C Take care with excitation energies !!!!
      *          ((ABS(FRQ12(J)-FRQ1O(I)).LT.TOLPRPFD).AND.
      *           (ABS(FRQ22(J)-FRQ2O(I)).LT.TOLPRPFD).AND.
      *           (ABS(FRQ32(J)-FRQ3O(I)).LT.TOLPRPFD))).OR.
-     *         ((IOPRPCO(I).LT.0).AND.
+     *         ((IOPRPCO(I).LT.0).AND.     
      *          ((ABS(FRQ12(J)-FRQ1O(I)).LT.TOLEX).AND.
      *           (ABS(FRQ22(J)-FRQ2O(I)).LT.TOLEX).AND.
      *           (ABS(FRQ32(J)-FRQ3O(I)).LT.TOLEX)))) THEN
@@ -1242,7 +1256,7 @@ C Take care with excitation energies !!!!
               FRQ1(I)  = FRQ12(J)
               FRQ2(I)  = FRQ22(J)
               FRQ3(I)  = FRQ32(J)
-              ISAVSY(I) = ISAVSY2(J)
+              ISAVSY(I) = ISAVSY2(J) 
               GOTO 100
            ENDIF
           ENDIF

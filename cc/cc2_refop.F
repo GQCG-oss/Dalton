@@ -114,15 +114,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      IF (LULAM .LE. 0) THEN
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *            'UNFORMATTED',IDUMMY,.FALSE.)
-      ENDIF
-      REWIND(LULAM)
-      READ(LULAM) NVEDUM, MODDUM
-      READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-      READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LULAM,'KEEP')
+      IOPTRW   = 3
+      CALL CC_RDRSP('L0',0,1,IOPTRW,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
 C--------------------------------
 C     Square up zeta2 amplitudes.
@@ -135,13 +128,8 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ',
-     *            'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-      READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPTRW = 3
+      CALL CC_RDRSP('R0',0,1,IOPTRW,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C----------------------------------
 C     Calculate the lambda matrices.
@@ -341,7 +329,6 @@ C
       LWRKS2 = LWRK1
 C
       IF (DIRECT) THEN
-         DTIME  = SECOND()
          IF (HERDIR) THEN
             CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
          ELSE
@@ -356,8 +343,6 @@ C
             KEND1 = KFREE
             LWRK1 = LFREE
          ENDIF
-         DTIME  = SECOND() - DTIME
-         TIMHE1 = TIMHE1   + DTIME
          NTOSYM = 1
       ELSE
          NTOSYM = NSYM
@@ -470,8 +455,8 @@ C
      *                      WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      *                      WORK(KT2AMT),WORK(KEND2),WORK(KEND2),
      *                      WORK(KEND2),WORK(KONEAB),WORK(KONEAI),
-     *                      WORK(KONEIA),WORK(KEND2),WORK(KLAMDH),
-     *                      WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,ISYMD)
+     *                      WORK(KONEIA),WORK(KEND2),WORK(KLAMDH),1,
+     *                      WORK(KLAMDP),1,WORK(KEND2),LWRK2,IDEL,ISYMD)
 C
                AUTIME = SECOND() - AUTIME
                TIMDEN = TIMDEN + AUTIME

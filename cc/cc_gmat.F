@@ -1689,14 +1689,15 @@ C
 * print timings and return:
 *---------------------------------------------------------------------*
       TIMALL = SECOND() - TIMALL
-      CONVRT = 100.0D0/TIMALL
 
       IF (IPRINT.GE.0) THEN
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
          WRITE (LUPRI,'(1X,A,I4,A,F10.2,A)')
      &     '| total time for',NGTRAN,' G transforms.:',TIMALL,' secs.|'
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
-         WRITE (LUPRI,
+         IF (TIMALL.GT.1.0D0) THEN
+          CONVRT = 100.0D0/TIMALL
+          WRITE (LUPRI,
      &        '(1X,"|  % of time used in ",A,":",F10.2,"      |")')
      &      'ERI          ', TIMINT*CONVRT,
      &      'CCRDAO       ', TIMRDAO*CONVRT,
@@ -1708,7 +1709,8 @@ C
      &      'doubles part ', TIMDBL*CONVRT,
      &      'I/O          ', TIMIO*CONVRT
 
-         WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
+          WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
+         END IF
       END IF
 
       RETURN

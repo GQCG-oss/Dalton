@@ -349,7 +349,8 @@ C
       RETURN
       END
 C  /* Deck cc_ti */
-      SUBROUTINE CC_TI(TINT,T2AM,ISYMT2,XLAMDH,WORK,LWORK,IDEL,ISYMD)
+      SUBROUTINE CC_TI(TINT,ISYTIN,T2AM,ISYMT2,XLAMDH,ISYMLH,
+     *                 WORK,LWORK,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 26/10 - 1995
 C
@@ -363,6 +364,7 @@ C              Still it is assumed that XLAMDH is total symmetric.
 C
 #include <implicit.h>
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      INTEGER ISYTIN, ISYMT2, ISYMLH, IDEL, ISYMD
       DIMENSION TINT(*), T2AM(*), XLAMDH(*), WORK(LWORK)
 #include <priunit.h>
 #include <ccorb.h>
@@ -371,12 +373,18 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
+      CALL QENTER('CC_TI')
+C
 C-----------------------------
 C     Initialize result array.
 C-----------------------------
 C
-      ISYMF  = MULD2H(ISYMD,ISYMOP)
-      ISYTIN = MULD2H(ISYMT2,ISYMD)
+      ISYMF  = MULD2H(ISYMD,ISYMLH)
+      IF (ISYTIN.NE.MULD2H(ISYMT2,ISYMF)) THEN
+        WRITE(LUPRI,*) 'ISYTIN,ISYMT2,ISYMLH,ISYMD:',
+     &                  ISYTIN,ISYMT2,ISYMLH,ISYMD
+        CALL QUIT('SYMMETRY MISMATCH IN CC_TI')
+      END IF
 C
       CALL DZERO (TINT,NT2BCD(ISYTIN))
 C
@@ -396,7 +404,7 @@ C------------------------------------------
 C     Copy vector out of lamda hole matrix.
 C------------------------------------------
 C
-      KOFF1  = ILMVIR(ISYMF) + IDEL - IBAS(ISYMD)
+      KOFF1  = IGLMVI(ISYMD,ISYMF) + IDEL - IBAS(ISYMD)
 C
       CALL DCOPY(NVIR(ISYMF),XLAMDH(KOFF1),NBAS(ISYMD),WORK(KLAHF),1)
 C
@@ -473,6 +481,8 @@ C
 C
   110    CONTINUE
   100 CONTINUE
+C
+      CALL QEXIT('CC_TI')
 C
       RETURN
       END

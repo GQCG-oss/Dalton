@@ -91,9 +91,9 @@ c*DECK CC_RHTR3
       INTEGER ISYMPA, ISYMHO, LFOCK, KGAMC1, ISYMBF, ISYFCK, LUE1
       INTEGER LUE2, ISYMEI, ISYMIM, ISYVEC, LUGAM, ISYGAM, ISYCIM
       INTEGER IVECNR, ISYDIM, KGAMMC, KFCKAO, LEND2
-      INTEGER KGAMI, LUBF, KHSCOUNTER
+      INTEGER KGAMI, LUBF, KHSCOUNTER, ISYM0
       INTEGER INDEXA(MXCORB)
-      INTEGER LUFC1, LUFC2, LUFR1, LUFR2, ISIDE, LUTAM
+      INTEGER LUFC1, LUFC2, LUFR1, LUFR2, ISIDE
       INTEGER KRHO3, KC2AMP, KC2AMM, KENDCC3, LWRKCC3
 !
 #if defined (SYS_CRAY)
@@ -128,6 +128,7 @@ c*DECK CC_RHTR3
       CHARACTER*7 PFIL, CTFIL, DTFIL, CSFIL
       CHARACTER*7 DTIMFIL, BFFIL 
       CHARACTER*6 CSIMFIL
+      CHARACTER*10 MODEL
 !
       LOGICAL FCKCON, ETRAN, ANTISYM, NORMALCONT, PIJCONT
       LOGICAL NEWGS, KHLOG
@@ -489,19 +490,14 @@ c*DECK CC_RHTR3
 !----------------------------------------------
 !    The T1 amp. are zero for the CCS model.
 !    For CCSD read the T1-amplitudes from file.
-!    N.B. The LUTAM should be outside the if-loop.
 !----------------------------------------------
 !
-       LUTAM = 0
 !
       IF (.NOT. CCS) THEN
 !
          DTIME = SECOND()
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     &               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM - 1 + J), J = 1, NT1AMX )
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 1
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
          DTIME = SECOND() - DTIME
          TIMIO = TIMIO + DTIME
 !
@@ -2186,12 +2182,8 @@ C
 !
             DTIME = SECOND()
 !
-            CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     *                  .FALSE.)
-            REWIND(LUTAM)
-            READ(LUTAM)
-            READ(LUTAM) (WORK(KRHO2 - 1 + J) , J = 1, NT2AM(1))
-            CALL GPCLOSE(LUTAM,'KEEP')
+            IOPT = 2
+            CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KRHO2))
 !
             DTIME = SECOND() - DTIME
             TIMIO = TIMIO + DTIME
@@ -2918,12 +2910,8 @@ C
 !
             DTIME = SECOND()
 !
-            CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     *                  .FALSE.)
-            REWIND(LUTAM)
-            READ(LUTAM)
-            READ(LUTAM) (WORK(KRHO2 + J - 1), J = 1, NT2AM(1))
-            CALL GPCLOSE(LUTAM,'KEEP')
+            IOPT = 2
+            CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KRHO2))
 !
             DTIME = SECOND() - DTIME
             TIMIO = TIMIO + DTIME

@@ -266,7 +266,7 @@ csonia      PARAMETER (LOCDBG = .FALSE.)
       REAL DTIME, CONVRT, TIMALL
       REAL TIMFCK, TIMBF, TIMC, TIMD, TIMIMR, TIMXYM, TIMIO
       REAL TIMPQ, TIMIML, TIMIM2, TIMPRE, TIMINT, TIMRDAO
-      REAL TIMTRBT, TIMIM0, TIMTRN
+      REAL TIMTRBT, TIMIM0, TIMTRN, TIMFG, TIMGZ
       REAL ZERO, ONE, TWO, HALF, FACT
 #else 
       DOUBLE PRECISION WORK(LWORK) 
@@ -275,7 +275,7 @@ csonia      PARAMETER (LOCDBG = .FALSE.)
       DOUBLE PRECISION DTIME, CONVRT, TIMALL
       DOUBLE PRECISION TIMFCK, TIMBF, TIMC, TIMD, TIMIMR, TIMXYM, TIMIO
       DOUBLE PRECISION TIMPQ, TIMIML, TIMIM2, TIMPRE, TIMINT, TIMRDAO
-      DOUBLE PRECISION TIMTRBT, TIMIM0, TIMTRN
+      DOUBLE PRECISION TIMTRBT, TIMIM0, TIMTRN, TIMFG, TIMGZ
       DOUBLE PRECISION ZERO, ONE, TWO, HALF, FACT
 #endif 
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0, HALF = 0.5d0)
@@ -390,6 +390,8 @@ csonia      PARAMETER (LOCDBG = .FALSE.)
       TIMBF   = ZERO
       TIMC    = ZERO
       TIMD    = ZERO
+      TIMFG   = ZERO
+      TIMGZ   = ZERO
       TIMINT  = ZERO
       TIMRDAO = ZERO
       TIMTRBT = ZERO
@@ -1106,7 +1108,8 @@ C           ----------------------------------------------------------
      &                   LUBDZ0,FNBDZ0,IADRZ0(1,IINTL),
      &                   WORK(KLAMPA(IINT2)),WORK(KLAMHA(IINT2)),ISYMR,
      &                   WORK(KLAMP0), WORK(KLAMH0), 
-     &                   WORK(KEND3),  LWRK3                          )
+     &                   WORK(KEND3),  LWRK3,
+     &                   TIMFCK, TIMBF, TIMGZ, TIMIO, TIMFG )
               TIMIM2 = TIMIM2 + SECOND() - DTIME
 
             END DO
@@ -1860,6 +1863,8 @@ C          ----------------------------------------------
      &      'BF term      ', TIMBF*CONVRT,
      &      'C term       ', TIMC*CONVRT,
      &      'D term       ', TIMD*CONVRT,
+     &      'FG terms     ', TIMFG*CONVRT,
+     &      'GZ terms     ', TIMGZ*CONVRT,
      &      'I/O          ', TIMIO*CONVRT
 
          WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'

@@ -812,18 +812,14 @@ C------------------------------------------------
 C     Read the CC reference amplitudes From disk.
 C------------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KC1AM + I -1 ) , I = 1, NT1AMX)
-      READ(LUTAM) (WORK(KC2AM + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KC1AM),WORK(KC2AM))
 C
 C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
+      LUTAM = 0
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -884,6 +880,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
+         LUTAM = 0
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -896,12 +893,9 @@ C
             CALL CC_CORE(WORK(KC1AM),WORK(KC2AM),ISYMTR)
          ENDIF
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         WRITE(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
-         WRITE(LUTAM) (WORK(KC2AM + J -1 ) , J = 1, NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KC1AM),
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2)
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
@@ -983,6 +977,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
+           LUTAM = 0
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -997,12 +992,9 @@ C
              CALL CC_CORE(WORK(KC1AM),WORK(KC2AM),ISYMTR)
            ENDIF
 C
-           CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *                 IDUMMY,.FALSE.)
-           REWIND(LUTAM)
-           WRITE(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
-           WRITE(LUTAM) (WORK(KC2AM + J -1 ) , J = 1, NT2AMX)
-           CALL GPCLOSE(LUTAM,'KEEP')
+           IOPT = 3
+           CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KC1AM),
+     *                   WORK(KC2AM),WORK(KEND2),LWRK2)
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
@@ -1080,14 +1072,14 @@ C
       WRITE(LUPRI,*) '    '
       WRITE(LUPRI,*) '**  FINITE DIFF WITH DELTA ',DELTA, '**'
       WRITE(LUPRI,*) '    '
-      IF ((IPRINT .GT. 4).AND.(FTST)) THEN
+      IF ((IPRINT .GT. 4)) THEN
          CALL AROUND( 'FINITE DIFF. CC K*Tx*Ty-Matrix - 11 & 21 PART ')
          CALL OUTPUT(WORK(KF),1,NTAMP,1,NC1VEC,NTAMP,NC1VEC,1,LUPRI)
          CALL AROUND( 'FINITE DIFF. CC K*Tx*Ty-Matrix - 12 & 22 PART ')
          CALL OUTPUT(WORK(KF+NTAMP*NC1VEC),1,NTAMP,1,NC2VEC,
      *               NTAMP,NC2VEC,1,LUPRI)
       ENDIF
-      IF (FTST) THEN
+      IF (.TRUE.) THEN
          XNJ = X11 + X12 + X21 + X22
          WRITE(LUPRI,*) '  '
          WRITE(LUPRI,*) ' NORM OF FIN. DIFF. K*tx*ty-Matrix.', SQRT(XNJ)
@@ -1113,6 +1105,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
+      LUTAM = 0
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -1120,12 +1113,9 @@ C
       READ(LUTAM) (WORK(KC2AM + I -1 ) , I = 1, NT2AMX)
       CALL GPCLOSE(LUTAM,'DELETE')
 C
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KC1AM + I -1 ) , I = 1, NT1AMX)
-      WRITE(LUTAM) (WORK(KC2AM + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KC1AM),
+     *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),

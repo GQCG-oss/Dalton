@@ -386,7 +386,7 @@ c/* Deck CC_FMATNEW */
       REAL DTIME, CONVRT, TIMALL
       REAL TIMFCK, TIMBF, TIMC, TIMD, TIMIMR, TIMXYM, TIMIO
       REAL TIMPQ, TIMIML, TIMIM2, TIMPRE, TIMINT, TIMRDAO
-      REAL TIMTRBT, TIMIM0, TIMTRN
+      REAL TIMTRBT, TIMIM0, TIMTRN, TIMGZ, TIMFG
       REAL ZERO, ONE, TWO, HALF, FACT
 #else 
       DOUBLE PRECISION WORK(LWORK) 
@@ -395,7 +395,7 @@ c/* Deck CC_FMATNEW */
       DOUBLE PRECISION DTIME, CONVRT, TIMALL
       DOUBLE PRECISION TIMFCK, TIMBF, TIMC, TIMD, TIMIMR, TIMXYM, TIMIO
       DOUBLE PRECISION TIMPQ, TIMIML, TIMIM2, TIMPRE, TIMINT, TIMRDAO
-      DOUBLE PRECISION TIMTRBT, TIMIM0, TIMTRN
+      DOUBLE PRECISION TIMTRBT, TIMIM0, TIMTRN, TIMGZ, TIMFG
       DOUBLE PRECISION ZERO, ONE, TWO, HALF, FACT
 #endif 
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0, HALF = 0.5d0)
@@ -475,14 +475,20 @@ c/* Deck CC_FMATNEW */
         CALL QUIT('Error in CC_FMAT: NFTRAN is larger than MAXSIM.')
       END IF
 
-      IF (IPRINT.GT.0) THEN
+      IF (IPRINT.GT.2) THEN
  
          WRITE (LUPRI,'(//1X,A1,50("="),A1)') '+','+'
 
          WRITE (LUPRI,'(1x,A52)')
      &         '|        F MATRIX TRANSFORMATION SECTION           |'
 
-         IF (IOPTRES.EQ.3) THEN
+         IF (IOPTRES.EQ.0) THEN
+            WRITE (LUPRI,'(1X,A52)')
+     &         '|  (results are written to a direct access file)   |'
+         ELSE IF (IOPTRES.EQ.1) THEN
+            WRITE (LUPRI,'(1X,A52)')
+     &         '|        (results are returned in memory)          |'
+         ELSE IF (IOPTRES.EQ.3) THEN
             WRITE (LUPRI,'(1X,A52)')
      &         '|          (result is written to file)             |'
          ELSE IF (IOPTRES.EQ.4) THEN
@@ -510,6 +516,8 @@ c/* Deck CC_FMATNEW */
       TIMBF   = ZERO
       TIMC    = ZERO
       TIMD    = ZERO
+      TIMFG   = ZERO
+      TIMGZ   = ZERO
       TIMINT  = ZERO
       TIMRDAO = ZERO
       TIMTRBT = ZERO
@@ -1232,7 +1240,8 @@ C           ----------------------------------------------------------
      &                   LUBDZ0,FNBDZ0,IADRZ0(1,IINTL),
      &                   WORK(KLAMPA(IINT2)),WORK(KLAMHA(IINT2)),ISYMR,
      &                   WORK(KLAMP0), WORK(KLAMH0), 
-     &                   WORK(KEND3),  LWRK3                          )
+     &                   WORK(KEND3),  LWRK3,
+     &                   TIMFCK, TIMBF, TIMGZ, TIMIO, TIMFG      )
               TIMIM2 = TIMIM2 + SECOND() - DTIME
 
             END DO
@@ -1407,7 +1416,7 @@ C             ..............................................
 *---------------------------------------------------------------------*
 * do some printout:
 *---------------------------------------------------------------------*
-      IF (IPRINT.GT.0) THEN
+      IF (IPRINT.GT.2) THEN
 
          WRITE (LUPRI,'(1X,A,F10.2,A)')
      &    '| time for zero order intermediat.:',TIMIM0 ,' secs.|'
@@ -1886,7 +1895,7 @@ C
 
       TIMTRN = SECOND() - TIMTRN
 
-      IF (IPRINT.GT.0) THEN
+      IF (IPRINT.GT.2) THEN
 
          IF (IOPTRES.EQ.5) THEN
             IVEC = 1
@@ -1990,9 +1999,10 @@ C
 
       TIMIO  = TIMIO + SECOND() - DTIME
       TIMALL = SECOND() - TIMALL
-      CONVRT = 100.0D0/TIMALL
 
-      IF (IPRINT.GT.0) THEN
+      IF (IPRINT.GT.2) THEN
+        IF (DABS(TIMALL).GT.1.0D0) THEN
+         CONVRT = 100.0D0/TIMALL
          WRITE (LUPRI,'(1X,A1,50("-"),A1)') '+','+'
          WRITE (LUPRI,'(1X,A,I4,A,F10.2,A)')
      &     '| total time for',NFTRAN,' F transforms.:',TIMALL,' secs.|'
@@ -2006,10 +2016,12 @@ C
      &      '(**|k del)   ', TIMTRBT*CONVRT,
      &      'BF term      ', TIMBF*CONVRT,
      &      'C term       ', TIMC*CONVRT,
+     &      'GZ terms     ', TIMGZ*CONVRT,
+     &      'FG terms     ', TIMFG*CONVRT,
      &      'D term       ', TIMD*CONVRT,
      &      'I/O          ', TIMIO*CONVRT
-
-         WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
+        END IF
+        WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
       END IF
 *---------------------------------------------------------------------*
 * that's it; return:
@@ -2960,7 +2972,8 @@ c/* Deck CCFINT2 */
      &                    LUPQRR, FNPQRR,  IADRPQR,
      &                    LUBDZ0, FNBDZ0,  IADRZ0,
      &                    XLAMPA, XLAMHA,  ISYMA,
-     &                    XLAMP0, XLAMH0,  WORK,   LWORK   )
+     &                    XLAMP0, XLAMH0,  WORK,   LWORK,
+     &                    TIMFCK, TIMBF, TIMGZ, TIMIO, TIMFG      )
 *---------------------------------------------------------------------*
 *
 *    Purpose: calculate intermediates for F matrix transformation
@@ -3944,7 +3957,7 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 
       END
 *=====================================================================*
-*            END OF SUBROUTINE CCFINT2
+*            END OF SUBROUTINE CCFMAT2
 *=====================================================================*
 *=====================================================================*
       SUBROUTINE CC_21GMO(THETA1,ISYRES,XILJD,ISYINT,

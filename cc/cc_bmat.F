@@ -616,7 +616,7 @@ c/* Deck CC_BMAT */
 
 * read zeroth order amplitudes:
       IOPT   = 1
-      Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
+      Call CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
 
 * get unperturbed Lambda matrices:
       Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
@@ -4184,18 +4184,14 @@ C------------------------------------------------
 C     Read the CC reference amplitudes From disk.
 C------------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KC1AM + I -1 ) , I = 1, NT1AMX)
-      READ(LUTAM) (WORK(KC2AM + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KC1AM),WORK(KC2AM))
 C
 C----------------------------------------------
 C     Save the CC reference amplitudes on disk.
 C----------------------------------------------
 C
+      LUTAM = 0
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -4247,13 +4243,9 @@ C==================================================
 C calculate intermediates for response vector TXAM:
 C==================================================
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         CALL DCOPY(NTAMP,TXAM,1,WORK(KC1AM),1)
-         WRITE(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
-         WRITE(LUTAM) (WORK(KC2AM + J -1 ) , J = 1, NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KC1AM),
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2)
 C
          WRITE (LUPRI,*) 'NTAMP:',NTAMP
          WRITE (LUPRI,*) 'NORM TXAM:',DDOT(NTAMP,TXAM,1,TXAM,1)
@@ -4305,6 +4297,7 @@ C        Add finite displadement to t and
 C        calculate new intermediates.
 C----------------------------------------
 C
+         LUTAM = 0
          CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -4317,12 +4310,9 @@ C
             CALL CC_CORE(WORK(KC1AM),WORK(KC2AM),ISYMTR)
          ENDIF
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         WRITE(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
-         WRITE(LUTAM) (WORK(KC2AM + J -1 ) , J = 1, NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KC1AM),
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2)
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
@@ -4405,6 +4395,7 @@ C          Add finite displacement to t and
 C          calculate new intermediates.
 C-------------------------------------------
 C
+           LUTAM = 0
            CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
            READ(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
@@ -4419,12 +4410,9 @@ C
              CALL CC_CORE(WORK(KC1AM),WORK(KC2AM),ISYMTR)
            ENDIF
 C
-           CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *                 IDUMMY,.FALSE.)
-           REWIND(LUTAM)
-           WRITE(LUTAM) (WORK(KC1AM + J -1 ) , J = 1, NT1AMX)
-           WRITE(LUTAM) (WORK(KC2AM + J -1 ) , J = 1, NT2AMX)
-           CALL GPCLOSE(LUTAM,'KEEP')
+           IOPT = 3
+           CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KC1AM),
+     *                   WORK(KC2AM),WORK(KEND2),LWRK2)
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
@@ -4555,6 +4543,7 @@ C-------------------------------------------------
 C     Restore the CC reference amplitudes on disk.
 C-------------------------------------------------
 C
+      LUTAM = 0
       CALL GPOPEN(LUTAM,'TAM_SAV','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      *            .FALSE.)
       REWIND(LUTAM)
@@ -4562,12 +4551,9 @@ C
       READ(LUTAM) (WORK(KC2AM + I -1 ) , I = 1, NT2AMX)
       CALL GPCLOSE(LUTAM,'DELETE')
 C
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KC1AM + I -1 ) , I = 1, NT1AMX)
-      WRITE(LUTAM) (WORK(KC2AM + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KC1AM),
+     *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
       CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
