@@ -196,12 +196,7 @@ fi
 opsys=
 if [ $WHICH = 'rs6000' ]; then
    opsys=`uname -v`
-   $ECHO 'The version of the AIX operating system found is '$opsys'\n'
-   $ECHO '\n   NOTE: There appears to be a bug in the newest compiler of IBM'
-   $ECHO '         If the code does not perform correctly on your system'
-   $ECHO '         either reinstall an older compiler or turn off all optimization\n'
 fi
-
 #
 # For SGI and HP we need to know if this is a 64 or 32 bits computer
 # If one wants 32-bit code on a 64-bit machine, just answer 'n' to
