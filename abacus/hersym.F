@@ -800,11 +800,11 @@ ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
          IF ((ITURN .LT. 2) .AND. (I .LE. NTOT)) THEN
             IBEF = I
  250        CONTINUE
-            IF ((ABS(TMPARR(3,I)) .GT. 1.0D-8) .AND. (I .LE. NTOT)) THEN
+            IF (I .GT. NTOT) THEN
+               I = IBEF
+            ELSE IF (ABS(TMPARR(3,I)) .GT. 1.0D-8) THEN
                I = I + 1
                GOTO 250
-            ELSE IF (I .GT. NTOT) THEN
-               I = IBEF
             END IF
             V1(1) = TMPARR(1,I)
             V1(2) = TMPARR(2,I)
