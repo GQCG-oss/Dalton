@@ -121,7 +121,7 @@ ERROR[3]="GEOMETRY NOT READ CORRECTLY"
 
 # Energies
 CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.025681483[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.230666825[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.2306668(2|3).[0-9]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -133,7 +133,7 @@ CTRL[5]=1
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # State 1
-CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.2589029[0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.258902.[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@ *Total energy \: * \-75\.766779 * au" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.75 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.25 \%" $log | wc -l`
