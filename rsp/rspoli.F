@@ -32,12 +32,17 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspoli.F,v 1.3 2001-10-01 13:22:19 vebjornb Exp $
+C$Id: rspoli.F,v 1.4 2001-10-08 11:16:01 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck rev_log */
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/10/01 13:22:19  vebjornb
+Merging the branch dft-1-0 into the main trunk, adding DFT functionality
+among other things. Currently three test cases do not work properly
+(cc_geoopt, cc_geoopt2 and vibave_spinspin), and this should be fixed ASAP - VB
+
 Revision 1.2  2001/05/31 06:38:30  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -597,6 +602,9 @@ C
          IF (IX .EQ. 30) THEN
 C           zero density matrix, do nothing !
             IFCTYP(I) = 0
+         ELSE IF (IX .EQ. 20) THEN
+C           Only exchange if antisymmetric matrix
+            IFCTYP(I) = IX + 2
          ELSE IF (TRPLET) THEN
 C           only exchange
             IFCTYP(I) = IX + 2

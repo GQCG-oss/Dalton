@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspcr9.F,v 1.2 2001-05-31 06:38:29 vebjornb Exp $
+C$Id: rspcr9.F,v 1.3 2001-10-08 11:16:01 vebjornb Exp $
 C
 #include <single.h>
       SUBROUTINE C3FOCK(IBEQC,FDTI,VECB,VECC,
@@ -379,6 +379,9 @@ Chj   IFCTYP = 3
 C
       IF (IX .EQ. 30) THEN
 C        zero density matrix, do nothing !
+      ELSE IF (IX .EQ. 20) THEN
+C        Only exchange if antisymmetric matrix
+         IFCTYP = IX + 2
       ELSE
 C        Coulomb+exchange
          IFCTYP = IX + 3
@@ -417,6 +420,9 @@ Chj   IFCTYP = 3
 C
       IF (IX .EQ. 30) THEN
 C        zero density matrix, do nothing !
+      ELSE IF (IX .EQ. 20) THEN
+C        Only exchange if antisymmetric matrix
+         IFCTYP = IX + 2
       ELSE
 C        Coulomb+exchange
          IFCTYP = IX + 3
@@ -466,6 +472,9 @@ Chj      IFCTYP = 3
 C
          IF (IX .EQ. 30) THEN
 C           zero density matrix, do nothing !
+         ELSE IF (IX .EQ. 20) THEN
+C           Only exchange if antisymmetric matrix
+            IFCTYP = IX + 2
          ELSE
 C           Coulomb+exchange
             IFCTYP = IX + 3

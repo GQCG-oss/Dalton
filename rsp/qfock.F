@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: qfock.F,v 1.2 2001-05-31 06:38:27 vebjornb Exp $
+C$Id: qfock.F,v 1.3 2001-10-08 11:16:01 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -185,6 +185,9 @@ C           zero density matrix, do nothing !
 CCCC     ELSE IF ("triplet Fock matrix") THEN
 C           only exchange !triplet not implemented for DIRFCK yet
 CCCC        IFCTYP(I) = IX + 2
+         ELSE IF (IX .EQ. 20) THEN
+C           Only exchange if antisymmetric matrix
+            IFCTYP(I) = IX + 2
          ELSE
 C           Coulomb+exchange
             IFCTYP(I) = IX + 3
