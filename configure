@@ -802,7 +802,7 @@ case "$WHICH" in
 		opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x80000000 -bmaxstack:0x10000000 -qextname'
 	    else
 		copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto -q64"
-		opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x80000000 -bmaxstack:0x10000000 -qextname -q64'
+		opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -qextname -q64'
 	    fi;;
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0 -woff 2290 -OPT:Olimit=0'
