@@ -52,16 +52,17 @@ int
 FSYM(dftsetfunc)(const char* line, int * inperr, int len)
 {
     char func_name[20];
-    int i;
+    int i, off;
     for(i=len-1; i>=0 && isspace((int)line[i]); i--)
         ;
     if(DftConfString) free(DftConfString);
     i++;
-    DftConfString = malloc(i+1);
-    strncpy(DftConfString, line, i); 
-    DftConfString[i] = '\0';
+    for(off=0; line[off] && isspace((int)line[off]); off++)
+        ;
+    DftConfString = malloc(i+1-off);
+    strncpy(DftConfString, line+off, i-off); 
+    DftConfString[i-off] = '\0';
     sscanf(DftConfString,"%20s", func_name);
-
     for(i=0; available_functionals[i]; i++)
         if(strcasecmp(available_functionals[i]->name, func_name)==0) {
             int ok;

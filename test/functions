@@ -9,15 +9,23 @@
 # $4 - dalton file.
 # $5 - list of test check routines.
 check_gen_input() {
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
     if [ "$5" = "" ]; then echo "empty test check file. Test $1 broken."; fi
     echo "$2" > $1.info
     echo "$3" > $1.mol
     echo "$4" > $1.dal
-    cat >"$1.check" <<'%EOF%'
-#!/bin/sh
+    echo "$CHECK_SHELL" >"$1.check"
+    cat >>"$1.check" <<'%EOF%'
 log=$1
 ERRLIST=""
-. functions || { echo "current dir is not the test dir" ; exit 1; }
+. ./functions || { echo "current dir is not the test dir" ; exit 1; }
 %EOF%
 
     echo "$5" >> "$1.check"
@@ -33,18 +41,23 @@ fi
 %EOF%
 }
 
+# ###################################################################
 # miscellaneous tests listed here.
 
-# check_hf_energy:
-# $1 - expected energy
-# $2 - max deviation
-check_hf_energy() {
-[ "$2" = "" ] &&  echo "not enough parameters to check_hf_energy."
-awk '/Final * HF energy:/{s=($4<'$1-$2'||$4>'$1+$2'); exit 0;} END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; HF energy"
+# check_scf_energy:
+# $1 - calculation type: HF|DFT
+# $2 - expected energy
+# $3 - max deviation
+check_scf_energy() {
+[ "$3" = "" ] &&  echo "not enough parameters to check_scf_energy."
+awk 'function e(v,r){#print "scf_energy: checking ",v, r;
+return(v>r||v<-r)}
+/Final *'$1' *energy:/{c=1;exit (e($4-('$2'),'$3'))} END{if(!c) exit(1)}
+' $log || ERRLIST="$ERRLIST; SCF energy"
 }
 
 # check_dipole:
-# $1 - expected dipole moment
+# $1 - expected dipole moment (au)
 # $2 - max deviation
 check_dipole() {
 [ "$2" = "" ] &&  echo "not enough parameters to check_dipole."
@@ -113,4 +126,70 @@ awk 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
                  else { print substr($0,21) " " '$3'; }
                }
 END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Linear response"
+}
+
+# ###################################################################
+# Geometry optimization functions.
+
+# check_mol_gradient:
+# check N:th molecular gradient in the file for given atom.
+# $1 - which occurence of molecular gradient should be checked.
+# $2 - 6-character atom label including symmetry equivalence number (if any)
+# $3:$5 - gradient components.
+# $6 - tolerance.
+check_mol_gradient() {
+if [ "$6" = "" ]; then
+    echo "not enough parameters to check_mol_gradient."; return 1
+fi
+awk 'function e(v,r){#print "mol_grad: checking " v,",", r;
+return(v>r||v<-r)}
+ BEGIN {s=0;c=0}
+/Molecular gradient/{
+if(++c == '$1') { getline; getline;
+#skip norms
+cemty=0;
+while(cempty<4 && substr($0,2,6)!="'"$2"'") {
+  if($0=="") cempty++;
+  getline;
+}
+if(cempty==4) { print "mol_gradient: Label '"$2"' not found!"; exit 1;}
+split(substr($0,8),a);
+exit( e(a[1]-('$3'),'$6') || e(a[2]-('$4'),'$6') || e(a[3]-('$5'),'$6'))
+}
+}
+' $log || ERRLIST="$ERRLIST; molecular gradient"
+}
+
+
+# check_final_geometry:
+# $1 - 6-character atom label inculding symmetry equivalence number
+# $2:$4 - coordinates.
+# $5    - tolerance
+check_final_geometry() {
+if [ "$5" = "" ]; then
+    echo "not enough parameters to check_final_geometry."; return 1
+fi
+awk 'function e(v,r){#print "final_geometry;checking ",v, r;
+return(v>r||v<-r)}
+BEGIN {s=0;c=0}
+/Final geometry/{ getline; getline;getline;
+while($0 != "" && substr($0,2,6)!="'"$1"'") getline;
+if($0 == "") { print "final_geometry: Label '"$1"' not found!"; exit 1;}
+split(substr($0,8),a);
+exit( e(a[1]-('$2'),'$5') || e(a[2]-('$3'),'$5') || e(a[3]-('$4'),'$5'))
+}
+' $log || ERRLIST="$ERRLIST; final geometry"
+}
+
+# check_final_energy:
+# $1 - final geometry optimization energy
+# $2 - tolerance.
+check_final_energy() {
+if [ "$2" = "" ]; then
+    echo "not enough parameters to check_final_energy."; return 1
+fi
+awk 'function e(v,r){#print "checking ",v, r;
+return(v>r||v<-r)}
+/Energy at final geometry is/ { exit(e($7-('$1'),'$2'))  }
+' $log || ERRLIST="$ERRLIST; final energy"
 }
