@@ -43,7 +43,7 @@ C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
 #include <infvar.h>
 #include <r12int.h>
       DIMENSION CMO(*), WORK(LWORK)
-      LOGICAL ANTIS, DELEMO 
+      LOGICAL ANTIS
  
       CALL TITLER('BOYS LOCALIZATION','*',125)
       CALL NUMLOC(NOC,NBA,NB1,NB2)
