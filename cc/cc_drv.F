@@ -127,7 +127,7 @@ C
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LSORT
-      LOGICAL   CC3RSP
+      LOGICAL   CC3RSP, LONERN
 #if defined CC_AARHUS
       PARAMETER (CC3RSP = .TRUE.)
 #else
@@ -449,6 +449,7 @@ C        Start loop over R12 ansaetze and approximations
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
          IANR12 = 0
          IAPR12 = 0
+	 LONERN = .FALSE.
  9001    IANR12 = IANR12 + 1
  9002    IAPR12 = IAPR12 + 1
          IPDD = IAPR12
@@ -472,6 +473,7 @@ C         Noninvariant forms not implemented: goto 9003
           WRITE(LUPRI,'(//A,I3)') ' CCR12 ANSATZ = ',IANR12
           WRITE(LUPRI,'(/A,I3/)') ' CCR12 APPROX = ',IAPR12
          END IF
+         LONERN = .TRUE.
 
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C        1. Start loop over different solvents.
@@ -952,6 +954,7 @@ C
 C
  9003    CONTINUE
          IF (CCR12) THEN
+          IF (CC2 .OR. CCSD .OR..NOT. LONERN) THEN
            IF (IANR12 .EQ. 1) THEN
              IF (IAPR12 .LE. 6) GOTO 9002
 C for ansatz 2:
@@ -961,6 +964,7 @@ C          ELSE
 C            IF (IAPR12) .LE. 13) GOTO 9002
            END IF
           
+          END IF
          END IF
 C
 C-------------------------------------------------

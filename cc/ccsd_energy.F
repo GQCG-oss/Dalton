@@ -130,6 +130,9 @@ C
       IF (R12CAL) CALL CCSD_R12(WORK,LWORK,WORK,LWORK)
 
       IF (CCR12) THEN
+       ! restore print level
+       IPRINT = IPRSAVE
+       IF (CC2 .OR. CCSD) THEN
 c        read r12 amplitudes from file CCR12_D for present
 c        ansatz and approximation and put on CCR12_C
 c
@@ -150,9 +153,10 @@ c
          WRITE(LU43,'(4E30.20)') (WORK(IOFF1+I),I=1,N2)
          WRITE(LU43,'(4E30.20)') (WORK(IOFF2+I),I=1,N2)
          CALL GPCLOSE(LU43,'KEEP') 
-
-         ! restore print level
-         IPRINT = IPRSAVE
+        ELSE  
+         CALL QEXIT('CCSD_ENERGY')
+         RETURN
+        END IF
       END IF
 
 C     switch off R12-MP12 for future calls
