@@ -309,7 +309,11 @@ C
                NDEG = NUCDEG(I)
                IF (NDEG .GT. NDEGMX) NDEGMX = NDEG
             END DO
-            NCOMP = 9*NDEGMX*NDEGMX
+C
+C     In current worst case scenario we need 9(1,2)+6(1,1)+6(2,2) components
+C     for the spin-spin coupling constants of a pair of nuclei
+C
+            NCOMP = 21*NDEGMX*NDEGMX
          END IF
          CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
      &               MPRINT,MNODC,MNODV,WORD,NCOMP)
@@ -958,7 +962,7 @@ C
 #include <spnout.h>
 #include <inftap.h>
 C
-      LOGICAL DOINT(2,2), TOFILE
+      LOGICAL DOINT(2,2), TOFILE, NOTALL
       CHARACTER WORD*7, LABINT(*)*8
       DIMENSION WORK(LWORK), STHMAT(*), INTREP(*), INTADR(*), SPNDSO(*),
      &          DENMAT(*), EXPVAL(*)
@@ -976,24 +980,34 @@ C
 C
       CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
+      NOTALL = DOSELE .OR. NUCSPI .GT. 0
       DO INUC = 1, NUCIND
-         DO JNUC = 1, INUC
-            KFREE = 1
-            LFREE = LWORK
-            IF (INUC .EQ. JNUC) THEN
-               NPATOM = 1
-            ELSE
-               NPATOM = 2
-               IPATOM(2) = JNUC
+         IF (.NOT. NOTALL .OR. (DOSELE .AND. DOPERT(INUC,2)) 
+     &        .OR. (NUCSPI .GT. 0)) THEN
+         DO JNUC = 1, INUC - 1
+         IF (.NOT. NOTALL .OR. (DOSELE .AND. DOPERT(JNUC,2))
+     &           .OR. (NUCSPI .GT. 0)) THEN
+            IF ((NUCSPI .EQ. 0) .OR. (NUCSPI .GT. 0 .AND. 
+     /           (NCSPNI(INUC) .OR. NCSPNI(JNUC)))) THEN
+               KFREE = 1
+               LFREE = LWORK
+               IF (INUC .EQ. JNUC) THEN
+                  NPATOM = 1
+               ELSE
+                  NPATOM = 2
+                  IPATOM(2) = JNUC
+               END IF
+               IPATOM(1) = INUC
+               ALLATM = .FALSE.
+               CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
+     &                     WORD,IDUMMY,MPQUAD,TRIANG,PROPRI,
+     &                     NPRINT,STHMAT,NCOMP,TOFILE,'TRIANG',DOINT)
+               CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
+     &                     NPRINT,WORD,LABINT,SIGN)
             END IF
-            IPATOM(1) = INUC
-            ALLATM = .FALSE.
-            CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
-     &                  WORD,IDUMMY,MPQUAD,TRIANG,PROPRI,
-     &                  NPRINT,STHMAT,NCOMP,TOFILE,'TRIANG',DOINT)
-            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                  NPRINT,WORD,LABINT,SIGN)
+            END IF
          END DO
+         END IF
       END DO
       CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('GET1DS')
