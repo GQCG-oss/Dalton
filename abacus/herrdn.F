@@ -6196,7 +6196,7 @@ C
 #include <dummy.h>
 #include <priunit.h>
 #include "r12int.h"
-      CHARACTER TMPLN*80, BASNAM*80, FRMT*4
+      CHARACTER TMPLN*80, BASNAM*80, FRMT*5
       LOGICAL BASIS, ATOMBA
       DIMENSION JCO(KANG)
 C
@@ -6272,10 +6272,9 @@ C
                ELSE
                   IPOS3 = INDEX(TMPLN((IPOS+IPOS2):),' ')
                   IF (IPOS3 .LT. 10) THEN
-                     WRITE (FRMT,'(A2,I1,A1)') '(A',IPOS3 - 1,')'
+                     WRITE (FRMT,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
                   ELSE
-                     WRITE (FRMT,'(A2,I2)') '(A',(IPOS3 - 1)/10,
-     &                                           (IPOS3-1),')'
+                     WRITE (FRMT,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
                   END IF
                   READ (TMPLN((IPOS + IPOS2):),FRMT) BASNAM
                END IF
