@@ -165,6 +165,7 @@ fun_a_first(real rho, real grad, RGFirstDrv *res)
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     a = fun_a(rho, grad);
     memset(&ds, 0, sizeof(ds));
+    if(a==0||ex==0) return;
     DiracFunctional.first(&ds, 1, &dp);
     BeckeFunctional.first(&ds, BECKE88_CORR_WEIGHT, &dp);
     res->df10 = (ds.df1000/(2*ex)-1.0/rho)*a;
@@ -184,6 +185,7 @@ fun_a_second(real rho, real grad, RGSecondDrv *res)
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     a = fun_a(rho, grad);
     memset(&ds, 0, sizeof(ds));
+    if(a==0||ex==0) return;
     DiracFunctional.second(&ds, 1, &dp);
     BeckeFunctional.second(&ds, BECKE88_CORR_WEIGHT, &dp);
     fac10 = ds.df1000/(2*ex)-1.0/rho;
