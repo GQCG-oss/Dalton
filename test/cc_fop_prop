@@ -89,7 +89,7 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CCS first order properties :
-CRIT1=`$GREP  "   z      ( |0)\.1022163.      ( |0)\.2598104" $log | wc -l`
+CRIT1=`$GREP  "   z * ( |0)\.1022163[0-9] * ( |0)\.2598080[0-9]" $log | wc -l`
 CRIT2=`$GREP  "   1       ( |0)\.7910107.     ( |0)\.0000000.     ( |0)\.0000000" $log | wc -l`
 CRIT3=`$GREP  "   2       ( |0)\.0000000.     ( |0)\.7910107.     ( |0)\.0000000" $log | wc -l`
 CRIT4=`$GREP  "   3       ( |0)\.0000000.     ( |0)\.0000000.    -1\.5820214" $log | wc -l`
@@ -106,14 +106,13 @@ CRIT14=`$GREP "   3       ( |0)\.0000000.     ( |0)\.0000000.    -1\.0359899" $l
 CRIT15=`$GREP "   1       ( |0)\.2598640.     ( |0)\.0000000.     ( |0)\.0000000" $log | wc -l`
 CRIT16=`$GREP "   2       ( |0)\.0000000.     ( |0)\.2598640.     ( |0)\.0000000" $log | wc -l`
 CRIT17=`$GREP "   3       ( |0)\.0000000.     ( |0)\.0000000.    ( -|-0)\.5197280" $log | wc -l`
-CRIT18=`$GREP "O      17    Vx =       ( |0)\.25986.    -1\.56188.    ( -|-0)\.55732" $log | wc -l`
-CRIT19=`$GREP "O      17    Vy =       ( |0)\.25986.    -1\.56188.    ( -|-0)\.55732" $log | wc -l`
-CRIT20=`$GREP "O      17    Vz =      ( -|-0)\.51972.     3\.12377.     1\.11464" $log | wc -l`
-CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26055220" $log | wc -l`
-CRIT22=`$GREP "   Mass-Velocity term: * ( -|-0)\.32718390" $log | wc -l`
-CRIT23=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.06663169" $log | wc -l`
+CRIT18=`$GREP "O * 17 * Vx = * ( |0)\.25986. * \-1\.56188. * (\-|\-0)\.55796." $log | wc -l`
+CRIT19=`$GREP "O * 17 * Vy = * ( |0)\.25986. * \-1\.56188. * (\-|\-0)\.55796." $log | wc -l`
+CRIT20=`$GREP "O * 17 * Vz = * (\-|\-0)\.51972. * 3\.12377. * 1\.11593." $log | wc -l`
+CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26055216[0-9]" $log | wc -l`
+CRIT22=`$GREP "   Mass-Velocity term: * ( -|-0)\.32718385[0-9]" $log | wc -l`
+CRIT23=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.06663168[0-9]" $log | wc -l`
 CRIT24=`$GREP "Ecorr = * -112\.75469112100" $log | wc -l`
-
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
               $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
@@ -122,9 +121,8 @@ TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
 CTRL[2]=24
 ERROR[2]="CCS FIRST ORDER PROPERTIES NOT CORRECT"
 
-
 # CC2 first order properties :
-CRIT1=`$GREP  "   z     ( -|-0)\.1278271.     ( -|-0)\.3249073" $log | wc -l`
+CRIT1=`$GREP  "   z * (\-|\-0)\.1278271[0-9] * (\-|\-0)\.3249042[0-9]" $log | wc -l`
 CRIT2=`$GREP  "   1       ( |0)\.8017775.     ( |0)\.0000000.     ( |0)\.000000" $log | wc -l`
 CRIT3=`$GREP  "   2       ( |0)\.0000000.     ( |0)\.8017775.     ( |0)\.0000000" $log | wc -l`
 CRIT4=`$GREP  "   3       ( |0)\.0000000.     ( |0)\.0000000.    -1\.6035551" $log | wc -l`
@@ -141,14 +139,13 @@ CRIT14=`$GREP "   3       ( |0)\.0000000.     ( |0)\.0000000.    ( -|-0)\.791862
 CRIT15=`$GREP "   1       ( |0)\.2806310.     ( |0)\.0000000.     ( |0)\.0000000" $log | wc -l`
 CRIT16=`$GREP "   2       ( |0)\.0000000.     ( |0)\.2806310.     ( |0)\.0000000" $log | wc -l`
 CRIT17=`$GREP "   3       ( |0)\.0000000.     ( |0)\.0000000.    ( -|-0)\.5612620" $log | wc -l`
-CRIT18=`$GREP "O      17    Vx =       ( |0)\.28063.    -1\.68670.    ( -|-0)\.60185" $log | wc -l`
-CRIT19=`$GREP "O      17    Vy =       ( |0)\.28063.    -1\.68670.    ( -|-0)\.60185" $log | wc -l`
-CRIT20=`$GREP "O      17    Vz =      ( -|-0)\.56126.     3\.37340.     1\.20371" $log | wc -l`
-CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26048659" $log | wc -l`
-CRIT22=`$GREP "   Mass-Velocity term: * ( -|-0)\.32719557" $log | wc -l`
-CRIT23=`$GREP "   Mass-Velocity \+ 1-elec\. Darwin terms\: * ( -|-0)\.06670898" $log | wc -l`
+CRIT18=`$GREP "O * 17 * Vx = * ( |0)\.28063[0-9] * \-1\.68670[0-9] * (\-|\-0)\.60255[0-9]" $log | wc -l`
+CRIT19=`$GREP "O * 17 * Vy = * ( |0)\.28063[0-9] * \-1\.68670[0-9] * (\-|\-0)\.60255[0-9]" $log | wc -l`
+CRIT20=`$GREP "O * 17 * Vz = * (\-|\-0)\.56126[0-9] * 3\.37340[0-9] * 1\.20511[0-9]" $log | wc -l`
+CRIT21=`$GREP "   1-elec\. Darwin term: * ( |0)\.26048655[0-9]" $log | wc -l`
+CRIT22=`$GREP "   Mass-Velocity term: * (\-|\-0)\.32719552[0-9]" $log | wc -l`
+CRIT23=`$GREP "   Mass-Velocity \+ 1\-elec\. Darwin terms\: * (\-|\-0)\.06670897[0-9]" $log | wc -l`
 CRIT24=`$GREP "Ecorr = * -113\.06579816745" $log | wc -l`
-
 TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
               $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
@@ -156,7 +153,6 @@ TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24`
 CTRL[3]=24
 ERROR[3]="CC2 FIRST ORDER PROPERTIES NOT CORRECT"
-
 
 PASSED=1
 for i in 1 2 3
