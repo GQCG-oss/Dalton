@@ -26,11 +26,11 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
+#include <dummy.h>
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE= -1.0D0)
       DIMENSION XHPQ(*),XHCA(*),XHIK(*),WORK(LWORK)
       LOGICAL LE1,LE2,LFOCKB
-      INTEGER KDUM
-      PARAMETER (KDUM = +99 999 999) ! dummy address in work space
+      CHARACTER LISTR*(*), MODEL*(10)
 * local parameters:
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -52,7 +52,7 @@ C
         
         IOPTRES = 1
         CALL CC_RDRSP(LISTR,IDLSTR,ISYTAM,IOPTRES,MODEL,
-     &                                    WORK(KTAMP),WORK(KDUM))
+     &                                    WORK(KTAMP),DUMMY)
 *
 *       Extract h_ia in memory out of h_pq (store ia and not ai!)       
 *
