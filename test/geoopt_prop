@@ -226,7 +226,7 @@ ERROR[15]="G-TENSORS NOT CORRECT"
 # Chemical shielding:
 CRIT1=`$GREP "Shielding constant\: * 334\.25[3-4][0-9] ppm" $log | wc -l`
 CRIT2=`$GREP "Anisotropy\: * 53\.06[5-6][0-9] ppm" $log | wc -l`
-CRIT3=`$GREP "Asymmetry\: * (0| )\.323{1-2]" $log | wc -l`
+CRIT3=`$GREP "Asymmetry\: * (0| )\.323[1-2]" $log | wc -l`
 CRIT4=`$GREP "S parameter\: * 53\.98[1-2][0-9] ppm" $log | wc -l`
 CRIT5=`$GREP "A parameter\: * (0| )\.0000 ppm" $log | wc -l`
 CRIT6=`$GREP "Shielding constant\: * 31\.8639 ppm" $log | wc -l`
