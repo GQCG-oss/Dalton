@@ -80,7 +80,7 @@ CRIT7=`$GREP "Baker.s convergence criteria will be used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[1]=7
-ERROR[1]="GEOMETRY OPTIMIZATION NOT SEt UP CORRECTLY"
+ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "1 * C * x * \-1\.2039490098" $log | wc -l`
