@@ -61,7 +61,8 @@ C
 #include <ccinftap.h>
 C
       LOGICAL LOCDBG 
-      PARAMETER( LOCDBG = .TRUE. )
+      PARAMETER( LOCDBG = .FALSE. )
+cSC      PARAMETER( LOCDBG = .TRUE. )
       INTEGER INDEXA(MXCORB)
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -650,10 +651,12 @@ C             END IF
  
               CALL RDERILBS(WORK(KRECNR),WORK(KNRECS),NBUFMX,NFILES)
 CCH
+              IF (LOCDBG) THEN
               WRITE(LUPRI,*) 'NUMDIS,NBUFMX:',NUMDIS,NBUFMX
               WRITE(LUPRI,*) 'INDEXA:',(INDEXA(I),I=1,NUMDIS)
               ! WRITE(LUPRI,*) 'NBUFX:', NBUFX
               CALL FLSHFO(LUPRI)
+              END IF
 CCH
   
             ELSE
