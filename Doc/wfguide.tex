@@ -1,4 +1,4 @@
-\chapter{\label{chap:wf-guide}Getting the wave function you want}
+\chapter{\label{ch:wf-guide}Getting the wave function you want}
 
 Currently the following wave function types are implemented in DALTON:
 
@@ -9,7 +9,8 @@ restricted Hartree-Fock (SCF, self-consistent
 field)\index{HF}\index{SCF}\index{Hartree-Fock}.
 
 \item[MP2] M{\o}ller-Plesset second-order perturbation
-theory\index{MP2}\index{M\o ller-Plesset} based on closed-shell
+theory\index{MP2}\index{M\o ller-Plesset} which is based on
+closed-shell
 restricted Hartree-Fock.  Energy, second-order one-electron
 density matrix and first-order wave function (for SOPPA) may be
 calculated, as well as first-order geometry optimizations using
@@ -25,7 +26,7 @@ restricted active space model (RAS).
 
 \item[CC] Coupled Cluster\index{CC}\index{coupled cluster}.
 For information on how to run this kind of calculation, we refer to 
-Chapers~\ref{ec:ccexamples} and~\ref{cc:CC}.
+Chapers~\ref{ch:ccexamples} and~\ref{ch:CC}.
 
 \item[MCSCF] Multiconfiguration self-consistent field based on
 the complete active space model (CASSCF) and
@@ -348,7 +349,7 @@ with frozen core orbital\index{frozen core} and on a core hole
 state with relaxed core\index{relaxed core} orbital. The last
 example shows an MCSCF calculation of non-equilibrium solvation
 energy\index{non-equilibrium solvation}. For examples on how to run CC
-wave functions, we refer to Chapter~\ref{Sec:ccexamples}.
+wave functions, we refer to Chapter~\ref{ch:ccexamples}.
 
 \bigskip
 
@@ -599,30 +600,30 @@ Frozen core orbital calculation.
 .SYMMETRY
   1
 .SPIN MULTIPLICITY
-  2                | doublet spin symmetry because of opened core orbital
+  2                | Doublet spin symmetry because of opened core orbital
 .INACTIVE ORBITALS
  2 0 0 0           | O1s and O2s orbitals are inactive while the
 !                    opened core orbital, C1s, must be active
 .ELECTRONS (active)
- 9                 | all valence electrons plus the core hole electron
+ 9                 | All valence electrons plus the core hole electron
 !                    are active
 .RAS1 SPACE
- 1 0 0 0           | the opened core orbital (NOTE: always only this orbital)
+ 1 0 0 0           | The opened core orbital (NOTE: always only this orb.)
 .RAS1 ELECTRONS
  1 1               | We impose single occupancy for the opened core orbital
 .RAS2 SPACE
- 4 2 2 0           | The same as the CAS space in the ground state calculation
+ 4 2 2 0           | Same as the CAS space in the ground state calculation
 *OPTIMIZATION
 .COREHOLE
- 1 2               | symmetry of core orbital and the orbital in this symmetry
-!                    with the core hole according to list of input orbitals.
-!                    The same thing could be obtained by reordering
-!                    the core orbital to the first active orbital (by .REORDER),
-!                    and specifying .FREEZE and .NEO ALWAYS
+ 1 2               | Symmetry of the core orbital and the orbital in this
+!                    symmetry with the core hole according to list of input
+!                    orbitals. The same thing could be obtained by
+!                    reordering the core orbital to the first active orb.
+!                    (by .REORDER), and specifying .FREEZE and .NEO ALWAYS
 .TRACI
 *ORBITAL INPUT
 .MOSTART
- NEWORB            | start from corresponding MCSCF ground state
+ NEWORB            | Start from corresponding MCSCF ground state
 *CI VECTOR
 .STARTHDIAG
 **END OF DALTON
@@ -670,8 +671,8 @@ H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 \end{center}
 
 This example describes calculations for non-equilibrium
-solvation\index{non-equilibrium solvation}, where the molecule will be
-enclosed in a spherical cavity. Usually one starts
+solvation\index{non-equilibrium solvation}, where the mole\-cule will
+be enclosed in a spherical cavity. Usually one starts
 with a calculation of a reference state (most often the ground
 state) with equilibrium solvation, using keyword \Key{INERSF}. The
 interface file is then used (without user interference) for a

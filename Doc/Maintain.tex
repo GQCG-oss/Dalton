@@ -2,18 +2,18 @@
 
 \section{Memory requirements}\index{memory}
 
-\siraba\ is designed to exit gracefully if there is not enough
+\dalton\ is designed to exit gracefully if there is not enough
 memory at some stage of the calculation.  Wherever possible, it
 will indicate how much additional memory is required for this
 particular section.  This does not exclude the possibility that
 the calculation will use even more memory at later stages of the
-calculation. If \siraba\ aborts in the response calculation, it
+calculation. If \dalton\ aborts in the response calculation, it
 may be possible to proceed by resetting the number of
 perturbations handled simultaneously (see 
 Sec.~\ref{sec:abares}).  Otherwise, some redimensioning will be
 necessary.
 
-The program use approximately 0.8 Mw of memory allocated as common
+The program use approximately 0.8 MW of memory allocated as common
 blocks and similar data structures. Most of the memory used during the
 calculation is taken from a large work array. The size of this work
 array\index{scratch memory},
@@ -31,18 +31,18 @@ determined at installation time from the variable
 \verb|INSTALL_WRKMEM|\index{INSTALL\_WRKMEM} in the preprocessor
 directives\index{scratch memory}.
 
-\subsection{Redimensioning  \siraba}\index{Redimensioning}
+\subsection{Redimensioning \dalton}\index{Redimensioning}
 
-Most of the \siraba\ program has in principle no limitations on
+Most of the \dalton\ program has in principle no limitations on
 the size of the problem one can handle, apart from
-physical memory requirements and available disc space. As
-indicated in the previous chapter, the default version of the
-program can handle 1200 basis functions, 60 nuclei and 180
-occupied orbitals and up to $h$ functions in the basis set. However, most
-such settings are adjustable to suit your own needs, at the expense
-of larger (or smaller of course) static memory requirements. The
-following list contains the parameters it will be most likely that
-you will find a need for changing with the corresponding include
+physical memory requirements and available disc space. The default
+version of the program can handle 1200 basis functions, 80 nuclei and
+400 occupied orbitals and up to $i$ functions in the basis
+set. However, most such settings are adjustable to suit your own
+needs, at the expense of larger (or smaller of course) static memory
+requirements. The following list contains the parameters it will be
+most likely that you will find a need for changing with the
+corresponding include 
 file in which the variable appears and a short description of what
 it defines. However, we note that the program sometimes will
 require the user to change other parameters not included in this
@@ -50,14 +50,16 @@ list, and these variables are then easily found in the include
 directory by ``grep'ing for'' its occurance. We also point out that
 whenever a change is made to one or more include files, it is most
 safe to do \verb|make clean| and rebuild the program from scratch,
-even a file containing the appropriate dependencies are available.
+even though a file containing the appropriate dependencies are
+available.
 
 \bigskip
 
 \begin{tabular}{lll}
 \verb|MAXOCC| & \verb|maxorb.h| & Maximum number of occupied
 orbitals.\index{occupied orbitals}\index{limits}\\
-\verb|MAXORB| & \verb|maxorb.h| & Maximum number of orbitals.\index{orbitals}\index{limits}\\
+\verb|MAXORB| & \verb|maxorb.h| & Maximum number of
+orbitals.\index{orbitals}\index{limits}\\
 \verb|MAXWOP| & \verb|infvar.h| & Maximum number of orbital
 rotations.\index{orbital rotations}\index{limits}\\
 \verb|MXPST| & \verb|mxpdim.h| & The parameter MXPST is the largest
@@ -68,7 +70,7 @@ single string
 type (all elec-\\&&trons in for example RAS2). The number of string types
  \\ & & become large when one allows a large number of electrons
  \\ &&  in  RAS3  and a large number of holes on RAS1. If the
-\\ && number of  string types
+ \\ && number of  string types
 in a given calculation exceeds  \\&&  MXPST the program stops, and
 informs the user to raise\\&& MXPST.\\
 \verb|MXCENT| & \verb|mxcent.h| & Maximum number of nuclear
@@ -88,11 +90,12 @@ in the input processing.  See Sec.~\ref{sec:herrdn}.
 
 \section{New versions, patches}
 
-New versions will be announced on the \siraba\
-homepage (\verb|http://www.kjemi.uio.no/software/dalton/dalton.html| 
+New versions will be announced on the \dalton\
+homepage\\
+(\verb|http://www.kjemi.uio.no/software/dalton/dalton.html| 
 and the American mirror-site at \verb|http://www.sdsc.edu/dalton/dalton.html|) 
 as well
-as the \siraba\ mailing-list
+as the \dalton\ mailing-list
 (\verb|dalton-users@kjemi.uio.no|)\index{mailing list}.
 
 Inbetween releases, bug fixes will be distributed as
@@ -100,10 +103,10 @@ patches\index{patches} to an
 existing version. Although not frequently used in the past, we believe
 this to be a more common approach in the future. New patches will be
 freely available from the 
-\siraba\ homepage, and will be announced on the \siraba\ mailing
+\dalton\ homepage, and will be announced on the \dalton\ mailing
 list. Patches will normally be distributed in order to correct
 significant errors. In case of minor changes, explicit
-instructions on modifying the source file(s) will be given.
+instructions on modifying the source file(s) may be given.
 
 In general, users should not make local
 modifications in the FORTRAN source code, as this usually makes it
@@ -118,7 +121,7 @@ releases.
 
 Often one may be interested in code that is newly developed\index{new
 code} within the
-\siraba\ author group, but not part of any release of the program. In
+\dalton\ author group, but not part of any release of the program. In
 such cases, users are asked to take direct contact with one of the
 authors of that code, and ask for him/her for the new code
 needed. Such requests are {\em not} to be sent to
@@ -128,14 +131,14 @@ signed for a released version of the program.
 
 \section{Reporting bugs and user support}
 
-The \siraba\ program is distributed to the computational chemistry
+The \dalton\ program is distributed to the computational chemistry
 society with no obligations on the side of the
 authors. The authors thus take no responsibility\index{responsibility}
 for the performance
 of the code or for the correctness\index{correctness} of the
 results. This distribution
 policy gives the authors no responsibility for problems experienced by
-the users when using the \siraba\ program.
+the users when using the \dalton\ program.
 
 A mailing-list\index{mailing list} ---
 \verb|dalton-users@kjemi.uio.no| --- has been created for
@@ -143,7 +146,7 @@ the purpose of communication among the authors and the users about
 new patches and releases, and communication between users of the
 program. The authors hope that the
 users will be able to help each others out when problems
-arise. All authors of the \siraba\ program also receive mail from the
+arise. All authors of the \dalton\ program also receive mail from the
 mailing-list, but we do not guarantee that any author will reply to
 requests posted to the mailing-list. By default, all users signing a
 license agreement form will be added to this mailing list. If more
@@ -156,10 +159,10 @@ will be dealt with by one of the authors, although no responsibility
 on the promptness of this response is given. In general, serious bugs
 that have been
 reported and fixed will lead to a new patch\index{patches} of the program, distributed from the
-\siraba\ homepage.
+\dalton\ homepage.
 
-The \siraba\ program is developed in an anarchistic fashion, that is,
-future releases of the \siraba\ program will contain code related to
+The \dalton\ program is developed in an anarchistic fashion, that is,
+future releases of the \dalton\ program will contain code related to
 areas where the authors have had their greatest interest
 lately. Although user feedback on weak points of the code is welcomed, the
 likelyhood that the authors will comply with these are relatively
@@ -172,7 +175,7 @@ users of the program system. The authors will, however, take the
 liberty of deciding whether a supplied extension will be incorporated
 into the Master version of the program or not.
 
-Pre- and postprocessing programs to the \siraba\ program are always
+Pre- and postprocessing programs to the \dalton\ program are always
 welcome, and will, if permitted by the author, be distributed along
-with the \siraba\ distribution with the proper credits to the
-author(s).
+with the \dalton\ distribution with the proper credits to the
+author(s) or be made available from the \dalton\ homepage.

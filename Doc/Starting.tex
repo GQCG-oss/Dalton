@@ -45,11 +45,11 @@ gradient). The input file for such a calculation will look like:
 
 {\ttfamily
 \begin{tabular}{ll}
-**DALTON INPUT\hspace{4cm} & Must start all input files\\
-.OPTIMIZE
+**DALTON INPUT\hspace{3cm} & Must start all input files\\
+.OPTIMIZE\\
 ***WAVE FUNCTIONS & Wave function input\\
 .HF & We start with HF\\
-.MP2 & Then MP2 (for starting orbitals for MCSCF)\\
+.MP2 & Then MP2 (starting orb. for MCSCF)\\
 .MCSCF & Request an MCSCF\\
 **HF INPUT & HF input\\
 .HF OCCUPATION\\
@@ -98,8 +98,8 @@ CAS) and in addition allow single- and double-excitations into
 {\ttfamily
 \begin{tabular}{ll}
 **DALTON INPUT\\
-.RUN PROPERTIES\hspace{3cm} & Only run integrals, wave
-functions and properties\\
+.RUN PROPERTIES\hspace{2cm} & Run integrals, wave
+func.\ and properties\\
 ***WAVE FUNCTIONS\\
 .HF\\
 .MP2\\
@@ -114,13 +114,13 @@ functions and properties\\
  1\\
 .INACTIVE\\
  1 0 0 0\\
-.RAS1 SPACE & Number orbitals in RAS1 space\\
+.RAS1 SPACE & \# orbitals in RAS1 space\\
  0 0 0 0\\
 .RAS2 SPACE & The ``Cas Space''\\
  3 2 1 0\\
 .RAS3 SPACE\\
  3 1 2 1\\
-.RAS1 HOLES & \# electrons that may be removed from RAS1\\
+.RAS1 HOLES & \# elect. that may be removed from RAS1\\
  0 0\\
 .RAS3 ELECTRONS & From 0 to 2 electrons excited into here\\
  0 2\\
@@ -151,14 +151,14 @@ specify that we are to do a Hartree-Fock calculation.
 {\ttfamily
 \begin{tabular}{ll}
 **DALTON INPUT\\
-.RUN RESPONS\hspace{4cm} & Only run integrals, wave functions and
+.RUN RESPONS\hspace{2.5cm} & Run integrals, wave func.\ and
 response\\
 .PARALLEL & This is a parallel run\\
 ***WAVE FUNCTIONS\\
 .HF\\
 ***RESPONSE & Input for the response program\\
 **CUBIC & Input for cubic response calculation\\
-.DIPLNX & We only consider x component of dipole moment\\
+.DIPLNX & Only consider x-comp. of dipole moment\\
 .BFREQ & Two frequencies for B operator\\
  1\\
  0.0 0.0592& Frequencies in atomic units\\
@@ -408,14 +408,12 @@ a restart you will need to keep all files in this directory, and you
 then need to add the -D option when submitting the job.
 \item[-e ext] Change the extension to the output file from \verb|.out|
 to \verb|.ext|.
-\item[-f] Copy the fort.21\index{fort.21}
-\typeout{Sonia: fort.21 should be SIRIUS.RST} file from your home
-directory to the scratch directory before the calculation starts.
-This is needed in order to be able to do a restart in the wave
-function optimization.
-\item[-F] Copy the fort.21\index{fort.21}
-\typeout{Sonia: fort.21 should be SIRIUS.RST}
-file from the
+\item[-f] Copy SIRIUS.RST/RESULTS.RSP/RSPVEC\index{SIRIUS.RST}
+files from your home directory to the scratch directory before the
+calculation starts. This is needed in order to be able to do a restart
+in the wave function optimization.
+\item[-F] Copy SIRIUS.RST/RESULTS.RSP/RSPVEC\index{SIRIUS.RST}
+files from the
 scratch directory to your home directory after the calculation has
 finished. This is needed if you want to (re)start\index{restart}
 from the wave function created in this run.
@@ -464,8 +462,9 @@ Sec.~\ref{sec:irc}\index{IRC}\index{intrinsic reaction coordinate}.
 \item[DALTON.WLK] Contains information from the walk-procedure, and is
 needed when restarting a walk (e.g. a numerical differentiation).
 
-\item[DALTON.TRJ] Contains information from a direct dynamics
-calculation as described in Sec.~\ref{sec:dynamic}\index{dynamics}.
+\item[DALTON.TRJ] Contains trajectory information from a direct
+dynamics calculation as described in
+Sec.~\ref{sec:dynamic}\index{dynamics}.
 
 \item[DALTON.CM] An output file that contains the most essential
 information needed for calculation of shielding polarizabilities
