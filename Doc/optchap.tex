@@ -7,9 +7,9 @@ dichroism, more specifically vibrational circular dichroism
 (VCD)\index{VCD}\index{vibrational circular dichroism} as 
 described in Ref.~\cite{klbpjthkrhjajjcp98}, electronic circular
 dichroism (ECD)\index{ECD}\index{electronic circular dichroism} as
-described in Ref.~\cite{klbaehkrthjopjtca90}, and Raman 
+described in Ref.~\cite{klbaehkrthjopjtca90}, Raman 
 Optical Activity (ROA)\index{ROA}\index{Raman optical activity} as
-described in Ref.~\cite{thkrklbpjjofd99}.  
+described in Ref.~\cite{thkrklbpjjofd99}, and optical rotation~\cite{plpmp91,plpdkckrcpl319}.
 
 By default all calculations of optical properties are done with
 the use of London atomic orbitals\index{London orbitals} in order to
@@ -100,16 +100,15 @@ the calculation of vibrational circular dichroism are:
 \item[\Sec{AAT}] Controls the final calculation of the different
 contributions to the Atomic Axial Tensors.
 \item[\Sec{GETSGY}] Controls the set up of both the magnetic and
-geometric right hand sides.
-(gradient terms)
+geometric right hand sides (gradient terms).
 \item[\Sec{LINRES}] Controls the solution of the magnetic response
 equations.
-\item[\Sec{RELAX}] Controls the adding of solution and right hand
+\item[\Sec{RELAX}] Controls the multiplication of solution and right hand
 side vectors into relaxation contributions.
 \item[\Sec{NUCREP}] Controls the calculation of the nuclear
 contribution to the geometric Hessian.
 \item[\Sec{TROINV}] Controls the use of translation and rotational invariance.
-\item[\Sec{ONEINT}] Controls the calculation of one electron
+\item[\Sec{ONEINT}] Controls the calculation of one-electron
 contributions to the geometric Hessian.
 \item[\Sec{TWOEXP}] Controls the calculation of two-electron
 expectation values to the geometric Hessian.
@@ -118,7 +117,7 @@ terms to the geometric Hessian.
 \item[\Sec{RESPON}] Controls the solution of the geometric response equations.
 \item[\Sec{GEOANA}] Describes what analysis of the molecular geometry
 is to be printed.
-\item[\Sec{VIBANA}] Set up the vibrational and rotational analysis of the
+\item[\Sec{VIBANA}] Sets up the vibrational and rotational analysis of the
 molecule, for instance it's isotopic substitution.
 \item[\Sec{DIPCTL}] Controls the calculation of the Atomic Polar
 Tensors (dipole gradient).
@@ -145,7 +144,7 @@ The calculation of Electronic Circular Dichroism
 the keyword \Key{ECD} in the \aba\ input module. However,
 it is also necessary to specify the number of electronic
 excitations\index{electronic excitation} in 
-each symmetry. As ECD is only observed for chiral molecules, such
+each symmetry. As ECD only is observed for chiral molecules, such
 calculations will in general not employ any symmetry, and a complete
 input for a molecule without symmetry will thus look like:
 
@@ -173,9 +172,9 @@ wanted, this is easily accomplished by adding the keyword
 
 There has so far only been presented one study of Electronic Circular
 Dichroism using London atomic orbitals \cite{klbaehkrthjopjtca90}, and the
-results of this investigations indicate that the aug-cc-pVDZ basis
+results of this investigation indicate that the aug-cc-pVDZ basis
 set, which is supplied with the \siraba\ basis set library, is
-adequate for such calculations. 
+reasonable for such calculations. 
 
 Another property that may often be of interest is the
 oscillatory strength\index{transition moment}. This property can be
@@ -240,6 +239,64 @@ dipole strength or electronic circular dichroism.
 sides.
 \end{description}
 
+\section{Optical Rotation}\label{sec:optrot}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item T.Helgaker, K.Ruud, K.L.Bak, P.{\o}rgensen, and
+J.Olsen. \newblock {\em Faraday Discuss.}, {\bf 99},\hspace{0.25em}165, (1994).
+\item P.~L.~Polavarapu \newblock {\em Mol.~Phys.}, {\bf 91},\hspace{0.25em}551, (1997).
+\end{list}
+}}
+\end{center}
+
+The calculation of optical rotation is a special case of the
+calculation of Vibrational Raman Optical Activity (see
+Sec.~\ref{sec:vroa}), as the tensor determining the optical rotation,
+the mixed electric-magnetic polarizability, also contributes to
+vibrational Raman optical activity, although in the latter case it the
+geometrical derivatives of the tensor which are the central.
+
+Many of the comments made regarding basis set requirments for VROA
+calculations will thus also be applicable for the calculation of
+optical. However, we note that a very extensive basis set
+investigation of the optical rotation have been
+presented~\cite{jrcmjffjdpjsjpca104}.
+
+A typical of an input for the calculation of optical rotation would
+be:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTION
+.HF
+**PROPERTIES
+.OPTROT
+.ABALNR
+*ABALNR
+.FREQUENCY
+ 2
+ 0.001 0.077318
+.THRESH
+ 1.0D-4
+*END OF INPUT
+\end{verbatim}
+
+Dalton will always calculate the optical rotation both with and
+without London atomic orbitals. The optical rotation will only be
+observed for molecules without symmetry, and by definition the optical
+rotation will be zero in the static limit. One can approximate the
+static limit by supplying the program with a very large wavelength
+(small frequency), as in the example above, in order to be able to
+compare with approximations that are only valid in the static
+limit~\cite{rdacpl87,jrcmjffjdpjsjpca104}. 
+
 \section{Vibrational Raman Optical Activity (VROA)}\label{sec:vroa}
 
 \begin{center}
@@ -255,7 +312,7 @@ J.Olsen. \newblock {\em Faraday Discuss.}, {\bf 99},\hspace{0.25em}165, (1994).
 }}
 \end{center}
 
-The calculation of vibrational Raman intensities and Raman optical
+The calculation of vibrational Raman intensities and vibrational Raman optical
 activity (VROA)\index{ROA}\index{Raman intensity}\index{Raman
 optical activity} 
 is one of the more computationally expensive properties that can be
@@ -265,7 +322,7 @@ Due to the time spent in the numerical differentiation\index{numerical
 differentiation}, we have chosen
 to calculate ROA both with and without London atomic
 orbitals\index{London orbitals} in the
-same calculation, because the time used in the setup of the right-hand
+same calculation, because the time used in the set-up of the right-hand
 sides differentiated
 with respect to the external magnetic field is negligible compared to
 the time used in the solution of the time-dependent response
@@ -289,8 +346,8 @@ dipole-electric dipole, the electric
 dipole-magnetic dipole, and the electric dipole-electric quadrupole
 polarizabilities along the normal modes\index{normal mode} of the
 molecule. The procedure 
-is described in Ref.~\cite{thkrklbpjjofd99}. Thus we need to do a
-geometry walk of  type numerical differentiation. In each geometry
+is described in Ref.~\cite{thkrklbpjjofd99}. We thus need to do a
+geometry walk of the type numerical differentiation. In each geometry
 we need to evaluate the electric dipole-electric dipole, the electric
 dipole-magnetic dipole, and the electric dipole-electric quadrupole
 polarizabilities. This may be achieved by the following input:
@@ -314,7 +371,7 @@ polarizabilities. This may be achieved by the following input:
     5
  1 1 1 2 3
 *ABALNR
-.THRLNR
+.THRESH
 1.0D-7
 .FREQUE
      2
@@ -326,7 +383,7 @@ polarizabilities. This may be achieved by the following input:
     5
  1 1 1 2 3
 *ABALNR
-.THRLNR
+.THRESH
 1.0D-7
 .FREQUE
      2
@@ -339,7 +396,7 @@ polarizabilities. This may be achieved by the following input:
     5
  1 1 1 2 3
 *ABALNR
-.THRLNR
+.THRESH
 1.0D-7
 .FREQUE
      2
@@ -420,12 +477,12 @@ once, as the London orbital \index{London orbitals}
 results for ROA does not depend on the choice of gauge origin. This is
 done in the \Sec{*FINAL} input module, but as only one isotopic
 substituted species show optical activity, we have only requested a
-vibrational analysis for one species.
+vibrational analysis for this species.
 
-We note, that just as for Vibrational Circular Dichroism, a different
+We note that as in the case of Vibrational Circular Dichroism, a different
 force field may be used in the estimation of the VROA intensity
-paramaters. Indeed, a number of force fields can be used to estimate
-the VROA paramaters obtained with a given basis set through the input:
+parameters. Indeed, a number of force fields can be used to estimate
+the VROA parameters obtained with a given basis set through the input:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -469,11 +526,11 @@ CHFDT with 31 points that need to be calculated). However, this
 requires that all information is available in the \verb|DALTON.WLK|
 file.
 
-Thus, it is evident that the calculation of Vibrational Raman Optical
+It is evident that the calculation of Vibrational Raman Optical
 Activity\index{ROA}\index{Raman optical activity} is indeed a task for
 connoisseurs. However, the use of London 
 orbitals as well as frequency dependent properties, makes \siraba\ the
-currently most accurate way of calculating Raman optical activity. 
+currently most accurate way of calculating vibrational Raman optical activity. 
 
 Concerning basis sets requirement for Raman Optical Activity, 
 there is yet much work to be done. In the only study
@@ -481,6 +538,5 @@ presented of Raman Optical Activity using London atomic orbitals it is
 argued in favor of the aug-cc-pVDZ basis set supplied with the basis
 set library. However, in order to get Hartree-Fock limit quality of
 the vibrational frequencies as well, a basis set of at least
-aug-cc-pVTZ seems to be necessary. However, this is far to large to
-use in a calculation of ROA of a naturally optical active molecule.
-Further work is thus needed.
+aug-cc-pVTZ seems to be necessary. However, this is far too large to
+be used in a routine calculation of VROA of a naturally optical active molecule.

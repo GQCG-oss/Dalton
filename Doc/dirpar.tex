@@ -2,9 +2,7 @@
 
 In this chapter we briefly discuss aspects connected to
 direct\index{direct calculation} and parallel\index{parallel calculation}
-methods as implemented in the \siraba\ program. The entire 
-SCF code for all molecular properties may be calculated in a direct or
-a parallel manner.
+methods as implemented in the \siraba\ program. 
 
 \section{Direct methods}\label{sec:direct}
 
@@ -15,17 +13,17 @@ a parallel manner.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item H.Koch, H.\AA gren, P.J\o rgensen, T.Helgaker, and
-H.J.Aa.Jensen. \newblock {\em Chem.Phys.Lett.}, {\bf
-172},\hspace{0.25em}13, (1993).
 \item H.\AA gren, O.Vahtras, H.Koch, P.J\o rgensen, and
 T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
 98},\hspace{0.25em}6471, (1993). 
+\item K.~Ruud, D.~Jonsson, P.~Norman, H.~{\AA}gren, T.~Saue,
+H.~J.~Aa.~Jensen, P.~Dahle, and P.~Dahle. \newblock {\em
+J.~Chem.~Phys.} {\bf 108}, 7973 (1998).
 \end{list}
 }}
 \end{center}
 
-As mentioned in the introduction to this chapter, the entire SCF\index{SCF}\index{HF}\index{Hartree-Fock} part
+The entire SCF\index{SCF}\index{HF}\index{Hartree-Fock} part
 of the \siraba\ code is direct, including all derivative two-electron
 integrals, and all the way up to the cubic response function. To
 perform a direct\index{direct calculation} calculation, all that is
@@ -46,7 +44,8 @@ direct fashion:
 *END OF INPUT
 \end{verbatim}
 
-By default the two-electron integrals will be screened, and a integral
+By default the two-electron integrals will be
+screened~\cite{krdjpnhatshjajpdthjcp108}, and a integral 
 threshold of $10^{-10}$ is the default threshold for whether an
 integral will be calculated or not. This can be changed with the
 keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}.
@@ -94,13 +93,13 @@ calculation of vibrational frequencies\index{vibrational frequency}:
 
 The number of nodes\index{node} to be used in the calculation is
 requested to the 
-\verb|dalton| run script after the \verb|-n| option (see
+\verb|dalton| run script after the \verb|-N| option (see
 Section~\ref{sec:firstcalc}), or as stated in local
 documantation. Note that the master/slave\index{master}\index{slave}
 paradigm employed by 
 \siraba\ will leave the master mainly doing sequential parts of the
 calculation and distribution of tasks, thus very little computation
-compared to the \verb|n-1| slaves, see
+compared to the \verb|N-1| slaves, see
 Ref.~\cite{pndjhapdkrthhkcpl253}.
 
 In case of PVM runs, the program will spawn the requested number of
@@ -127,7 +126,7 @@ indicated in the following example:
 Note that this input would correspond to an MPI run with 5 nodes, as
 the master-process has to be added to the number of nodes.
 
-By default the two-electron integrals will be screened, and a integral
+By default the two-electron integrals will be screened, and an integral
 threshold of $10^{-10}$ is the default threshold for whether an
 integral will be calculated or not. This can be changed with the
 keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}.

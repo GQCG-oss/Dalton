@@ -1,11 +1,11 @@
 \chapter{Molecular vibrations and rotations}\label{ch:vibrot}
 
-In this chapter we discuss properties related the
+In this chapter we discuss properties related  to the
 vibrational and rotational motions of a molecule. This includes
 vibrational frequencies and the associated infrared (IR)\index{IR
 intensity} and Raman  intensities\index{Raman intensity}.
 
-\siraba\ is the only quantum chemical software package that can calculate
+To the best of our knowledge, \siraba\ is the only quantum chemical software package that can calculate
  Raman intensities at the frequency of the incident laser light. Thus,
 \siraba\ gives an unique opportunity to study the effect of the
 dispersion on the Raman intensity.
@@ -13,9 +13,9 @@ dispersion on the Raman intensity.
 \section{Vibrational frequencies}\label{sec:vibfreq}
 
 The calculation of vibrational frequencies\index{vibrational
-frequency} and rotation constants\index{rotation constant} are
+frequency} and rotational constants\index{rotation constant} are
 controlled by the keyword \Key{VIBANA}. Thus, in order to
-calculate the vibrational frequencies and the rotation constants
+calculate the vibrational frequencies and the rotational constants
 of a molecule all that is is needed is the input:
 
 \begin{verbatim}
@@ -30,7 +30,7 @@ of a molecule all that is is needed is the input:
 
 This keyword will, in addition to calculating the molecular frequencies
 and rotational constants, also calculate the zero-point vibrational
-energy correction\index{zero-point vibrational energy} and vibrational
+energy corrections\index{zero-point vibrational energy} and vibrational
 and rotational partition functions\index{partition functions}
 at selected temperatures.
 
@@ -50,7 +50,7 @@ constitution}, this may be obtained through an input like:
 **PROPERITES
 .VIBANA
 *VIBANA
-.ISOTOP
+.ISOTOPES
     2
  1 2 1 1 1
  2 1 1 1 1
@@ -59,16 +59,16 @@ constitution}, this may be obtained through an input like:
 
 The keyword \Key{ISOTOP} in the \Sec{VIBANA} input module
 indicates that more than only the isotopic species containing the most
-abundant isotopes are to be calculated, which always will be
+abundant isotopes are to be calculated, which will always be
 calculated. The number on the second line denotes the number of
-isotopically substituted species that is wanted. The following line then
+isotopically substituted species that is requested. The following lines then
 lists the isotopic constitution of each of these species. 1
 corresponds to the most abundant isotope, 2 corresponds to the second
 most abundant isotope and so on. The isotopic substitution have to be
 given for all atoms in the molecule (not only the symmetry
 independent), and the above input could for instance correspond to a
-methane\index{methane} molecule, with the isotopic species $^{13}CH_4$
-and $CH_3D$.
+methane\index{methane} molecule, with the isotopic species $CH_3D$
+and $^{13}CH_4$.
 
 As the isotopic substitution of all atoms in the molecule has to be
 specified, let us mention the way symmetry-dependent atoms will be
@@ -121,7 +121,7 @@ an input may look like:
 *END OF INPUT
 \end{verbatim}
 
-The keyword \Key{DIPGRA} invokes the calculation of the dipole
+\noindent The keyword \Key{DIPGRA} invokes the calculation of the dipole
 gradients.
 
 \section{Dipole gradient based population analysis}
@@ -145,7 +145,7 @@ J.Chem.Phys.}, {\bf 84},\hspace{0.25em}6280, (1986).
 gradient}\index{APT}\index{atomic polar tensor} are readily available in the
 \siraba\ program, the
 population analysis basis on the Atomic Polar Tensor as suggested by
-Cioslowski~\cite{jcjacs111} can be obtained from an input like
+Cioslowski~\cite{jcjacs111,poakrkvmthjpca102} can be obtained from an input like
 
 \begin{verbatim}
 **DALTON INPUT
@@ -196,7 +196,7 @@ polarizability with respect to nuclear distortions), there are
 few theoretical investigations of basis set requirements and
 correlation effects on calculated Raman intensities.
 
-\siraba\ is the only quantum chemical program package capable of
+To the best of our knowledge, \siraba\ is the only quantum chemical program package capable of
 calculating the Raman intensities at the frequency of the incident
 laser beam. \siraba\ also has the same possibilities as other
 common quantum chemical software packages to calculate static
@@ -291,8 +291,7 @@ the iterative solution of the response equations are by default
 stable to one decimal digit.
 
 In the \Sec{WALK} input module we have specified
-that the walk is a numerical differentiation in the \Sec{WALK}
-input module. This will automatically
+that the walk is a numerical differentiation. This will automatically
 turn off the calculation of the geometric Hessian\index{Hessian},
 putting limitations
 on what kind of properties that may be calculated at the same time as
@@ -301,13 +300,13 @@ there will not be any prediction of the energy at the new
 point.
 
 It should also be noted that  in a numerical
-differentiation\index{numerical differentiation} the
+differentiation,\index{numerical differentiation} the
 program will
 step plus and minus one displacement unit along each Cartesian coordinate
 of all nuclei, as well as calculating the property at the reference
 geometry. Thus, for a molecule with $N$ atoms the properties will need
-to be calculated in a total of 2*3*$N$ + 1 points, which for a 5 atom
-molecule will amount to 31 points. The default maximum number of
+to be calculated in a total of 2*3*$N$ + 1 points, which for a 
+molecule with five atoms will amount to 31 points. The default maximum number of
 steps in \siraba\ is 20. Thus one often need to
 change the maximum number of allowed iterations\index{geometry
 iteration} by adding the keyword
@@ -327,8 +326,8 @@ isotopic species containing the most abundant isotope of each element.
 It should be evident that the calculation of Raman intensities is
 a task for connoisseurs. However, the fact that \siraba\ can
 calculate Raman intensities at the frequency of the incident
-light, puts \siraba\ in a special position among {\em ab initio}
-programs, as these only can  at most calculate Raman intensities
+light puts \siraba\ in a special position among {\em ab initio}
+programs, as these  at most  can calculate Raman intensities
 based on static polarizabilities.
 
 Concerning basis sets requirement for Raman intensities,  there is

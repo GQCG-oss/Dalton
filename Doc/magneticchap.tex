@@ -13,7 +13,7 @@ magnetizability\index{magnetizability}. This property
 is of importance in NMR experiments where the reference substance is placed
 in another tube than the sample. We also shortly
 describe two properties very closely related to the magnetizability
-and nuclear shieldings respectively, the rotational {\em g} factor and the
+and nuclear shieldings, respectively, the rotational {\em g} factor and the
 nuclear spin--rotation constants\index{rotational g
 tensor}\index{spin-rotation constant}.
 
@@ -99,7 +99,7 @@ as gauge origin.
 The augmented cc-pVXZ basis sets of Dunning and
 coworkers~\cite{thdjcp90,rakthdrjhjcp96,dewthdjcp98,dewthdjcp100} have
 been shown to give  to give excellent results for
-magnetizabilities~\cite{pdkrthklbpj,krthklbpjhjajjcp99,krthpjklbcpl223,krhsthklbpjjacs116},
+magnetizabilities~\cite{krthklbpjhjajjcp99,krthpjklbcpl223,krhsthklbpjjacs116},
 and these basis sets are obtainable from the basis set library.
 
 Notice that a general print level of 2 or higher is needed in order to
@@ -107,7 +107,7 @@ get the individual contributions (relaxation, one- and
 two-electron expectation values and so on) to the total magnetizability.
 
 If more close control of the different parts of the calculation of the
-magnetizability is wanted we refer the reader to the section
+magnetizability is wanted, we refer the reader to the section
 describing the options available. The modules that controls the
 calculation of molecular magnetizabilities are:
 
@@ -119,7 +119,7 @@ expectation values contributing to the diamagnetic magnetizability.
 expectation values and reorthonormalization terms.
 \item[\Sec{LINRES}] Controls the solution of the magnetic response
 equations
-\item[\Sec{RELAX}] Controls the adding of solution and right-hand
+\item[\Sec{RELAX}] Controls the multiplication of solution and right-hand
 side vectors into relaxation contributions
 \end{list}
 
@@ -171,7 +171,7 @@ origin\index{center of mass}.
 A basis set well suited for the calculation of nuclear shieldings (and
 indirect nuclear spin--spin coupling constants) is the TZ basis set of
 Ahlrichs and coworkers~\cite{ashhrajcp97,aschrajcp100} with two
-polarization functions~\cite{pdkrthklbpj}. This basis set is available
+polarization functions~\cite{thmjkrcr99}. This basis set is available
 from the basis set library as TZ2P.
 
 Notice that a general print level of 2 or higher is needed in order to
@@ -201,8 +201,8 @@ calculations.
 
 The calculation of the rotational  {\em g} tensor\index{rotational g
 tensor} is invoked through the
-keyword \Key{MOLGFA} in the \Sec{*PROPERTIES} input module. Thus a complete
-input file for the calculation of the molecular g tensor is:
+keyword \Key{MOLGFA} in the \Sec{*PROPERTIES} input module. A complete
+input file for the calculation of the molecular g tensor is thus:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -221,7 +221,13 @@ described in \cite{jgkrthjcp105}.
 By default the center of mass\index{center of mass} is chosen as
 rotational origin
 origin, as this corresponds to the point about which the molecule
-rotates. The use of rotational London atomic\index{London orbitals}
+rotates. Note that the isotopic constitution is such that the
+vibrational wave function has a lower symmetry than the electronic
+wave function, the center of mass will not comply with the chosen
+symmetry and the results obtained will be incorrect. In these cases,
+the symmetry of the electronic wave function has to be lowered to the
+same symmetry as that of the vibrational wave function. The use of
+rotational London atomic\index{London orbitals} 
 orbitals can be turned off through
 the keyword \verb|.NOLOND|.
 
@@ -306,7 +312,8 @@ constants}\label{sec:spinspin}
 r, and T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
 96},\hspace{0.25em}6120, (1992).
 \item Solvent effects: P.-O.\AA strand, K.V.Mikkelsen, P.J{\o}rgensen,
-K.Ruud and T.Helgaker. To be published.
+K.Ruud and T.Helgaker.  \newblock {\em J.Chem.Phys.}, {\bf
+108},\hspace{0.25em}2528, (1998)
 \end{list}
 }}
 \end{center}
@@ -314,8 +321,8 @@ K.Ruud and T.Helgaker. To be published.
 As mentioned in the introduction of this chapter, the calculation of
 indirect nuclear
 spin--spin coupling constants is a time consuming task due to the
-large number of contribution to the total spin---spin coupling
-constants. Still, if all spin---spin couplings\index{spin-spin
+large number of contributions to the total spin---spin coupling
+constant. Still, if all spin---spin couplings\index{spin-spin
 coupling} in a molecule are wanted,
 with some restrictions mentioned below, the input will look as
 follows:
@@ -336,7 +343,7 @@ constants between isotopes with non-zero magnetic
 moments\index{magnetic moment} and a
 natural abundance\index{abundance} of more than 1\% . This limit will
 automatically
-include proton and $^{13}$C spin--spin coupling constants. By default
+include proton and $^{13}$C spin--spin coupling constants. By default,
 all contributions to the coupling constants will be calculated.
 
 Often one is interested in only certain kinds of nuclei. For example,
@@ -347,7 +354,7 @@ for proton couplings), or by selecting the particular nuclei of interest.
 
 All the keywords necessary to control such adjustments to the
 calculation is given in the section describing the input for the
-\Sec{SPIN-S} submodule. Thus an input
+\Sec{SPIN-S} submodule. An input
 in which we  have reduced the abundance threshold as well as
 selected three atoms will look as:
 
@@ -392,13 +399,12 @@ done through the use of keywords in the following input modules:
 expectation value contribution to the diamagnetic spin--spin coupling
 constants.
 \item[\Sec{GETSGY}] Controls the set up of the right-hand sides
-(gradient terms)
-expectation values and reorthonormalization terms.
+(gradient terms).
 \item[\Sec{LINRES}] Controls the solution of the singlet magnetic
 response equations.
 \item[\Sec{TRPRSP}] Controls the solution of the triplet magnetic
 response equations (for Fermi-contact and spin--dipole contributions).
-\item[\Sec{RELAX}] Controls the adding of solution and right hand
+\item[\Sec{RELAX}] Controls the multiplication of solution and right hand
 side vectors into relaxation contributions.
 \item[\Sec{SPIN-S}] Controls the choice of nuclei for which the
 spin--spin coupling constants will be calculated, as well as which
