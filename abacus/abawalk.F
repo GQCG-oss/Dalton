@@ -59,7 +59,7 @@ C
       CHARACTER*42 WLKTYP(7)
       DATA TABLE /'.RESTAR', '.PRINT ', '.INDEX ', '.TRUST ',
      &            '.ANHARM', '.DISPLA', '.SCALE ', '.MODE  ',
-     &            '.TOLERA', '.STRICT', '.NOPRED', '.MAXNUC',
+     &            '.TOLERA', '.XXXXXX', '.NOPRED', '.MAXNUC',
      &            '.KEEPSY', '.REJECT', '.RATLIM', '.NEWTON',
      &            '.VIBCNV', '.GRDEXT', '.MODFOL', '.MASSES',
      &            '.REPS  ', '.ZERGRD', '.EIGEN ', '.DYNAMI',
@@ -154,7 +154,6 @@ C
                   READ (LUCMD,*) TOLST
                GO TO 100
    10          CONTINUE
-                  STRICT = .TRUE.
                GO TO 100
    11          CONTINUE
                   WFPRED = .FALSE.
@@ -177,7 +176,6 @@ C
                   IWKVEC(4) = 1
                GO TO 100
    17          CONTINUE
-                  VIBCNV = .TRUE.
                GO TO 100
    18          CONTINUE
 Cpeo mass-scaled coordinates as default
@@ -390,7 +388,7 @@ C
       IF (IMAGE) THEN
          WRITE (LUPRI,'(A)') ' Minimization of image surface '
          IF (START) WRITE (LUPRI,'(A,I2)') ' Initial image mode:',IMODE
-         IF (STRICT) WRITE (LUPRI,'(A)') ' Strict mode following.'
+ckr         IF (STRICT) WRITE (LUPRI,'(A)') ' Strict mode following.'
       END IF
       IF (IWKTYP .EQ.7) TRUSTR = MIN(TRUSTR,TRUMX1)
 C
@@ -444,8 +442,6 @@ C
      *           ' Hessian mode selection :',IMODE
             IF (KEEPSY) WRITE (LUPRI,'(/A)')
      *           ' Symmetry will not be broken.'
-            IF (VIBCNV) WRITE (LUPRI,'(/A)') ' Vibrational analysis'//
-     *         ' will be performed when geometry is converged.'
             IF (ANHFAC .NE. 100.D0) WRITE (LUPRI,'(/A)')
      *         ' Factor for harmonic dominance :', ANHFAC
          ELSE IF (IWKTYP .EQ. 3) THEN
@@ -586,7 +582,7 @@ C
       THRLDP = 1.D-4
       IPRWLK = IPRDEF
       IMAGE  = .FALSE.
-      STRICT = .FALSE.
+ckr      STRICT = .FALSE.
       V3CAL  = .FALSE.
       VIBAVE = .FALSE.
       NMODIF = .FALSE.
@@ -612,7 +608,6 @@ C
       REJECT = WLKREJ
       IF (REJECT) TRUSTD = 0.5D0
       KEEPSY = .FALSE.
-      VIBCNV = .FALSE.
       NZEROG = 0
       ZERGRD = 1.D-5
   410 CONTINUE
@@ -1047,7 +1042,6 @@ C     ============
 C
       IF (STOP) THEN
          IPOINT = IPOINT + 1
-         IF (VIBCNV) VIB = .TRUE.
          IF (IWKTYP .EQ. 6) THEN
             IF (VIBAVE .OR. NMODIF) THEN
                CALL WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,
@@ -1077,7 +1071,7 @@ C
          IF (OLD.AND.(((IWKIND.GT.0).AND.(IWKTYP.LT.3)).OR.IMAGE)) THEN
             CALL WLKMOD(EVAL,EVALX,EVEC,EVECX,GRDDIA,OVLPMA,OVLPWM,
      &                  COFMOD,ANHRAD,TRUSTX,NCART,NINTER,IMODE,IMAGE,
-     &                  STRICT,IPRWLK)
+     &                  IPRWLK)
          ELSE IF (IWKTYP .EQ. 7) THEN
             IMODE = 1
             ANHRAD = D100
@@ -2015,7 +2009,7 @@ C
 C  /* Deck wlkmod */
       SUBROUTINE WLKMOD(EVAL,EVALX,EVEC,EVECX,GRDDIA,OVLPMA,XMAXOV,
      &                  COFMOD,ANHRAD,TRUSTX,NCART,NINTER,IMODE,IMAGE,
-     &                  STRICT,IPRINT)
+     &                  IPRINT)
 C
 C     Determine current mode by comparing eigenvectors with those
 C     of last iteration
@@ -2025,7 +2019,7 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D3 = 3.0D0, D100 = 100.0D0,
      *           XMINOV = 0.7D0)
 C
-      LOGICAL IMAGE, STRICT
+      LOGICAL IMAGE
       DIMENSION EVEC(NCART,NCART), EVECX(NCART,NCART),
      *          OVLPMA(NCART,NCART), EVAL(NCART), EVALX(NCART),
      *          GRDDIA(NCART)
@@ -2034,7 +2028,7 @@ C     **********************************************************
 C     ***** Find largest overlap and identify current mode *****
 C     **********************************************************
 C
-      IF (IMAGE .AND. (IMODE.EQ.1 .AND..NOT.STRICT)) THEN
+      IF (IMAGE .AND. (IMODE.EQ.1)) THEN
          NMODE  = IMODE
          XMAXOV = ABS(DDOT(NCART,EVEC(1,1),1,EVECX(1,1),1))
       ELSE
