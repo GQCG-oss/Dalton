@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 #ifdef UNDEF
-===========================================================================
+========================================================================
 /* Comdeck log */
 970819-hjaaj
 RHSINP: removed CALL SETSIR, has for some time been in ABAINP in
@@ -3536,8 +3536,8 @@ C
             IF (ISCOOR .GT. 0) THEN
 C
                IF (DOSHI) THEN
-                  CALL PSOORT(LABINT(ISCOOR),ISCOOR,WMAT,CMO,WORK,
-     &                           LWORK,IPRALL)
+                  CALL PSOORT(LABINT(ISCOOR),ISCOOR,KSYMOP,WMAT,CMO,
+     &                        WORK,LWORK,IPRALL)
                END IF
                IMGLAB(IREC) = LABINT(ISCOOR)
                CALL GETGPV(LABINT(ISCOOR),DUMMY,CMO,UDV,PVX,XINDX,
@@ -3571,7 +3571,7 @@ C
       RETURN
       END
 C  /* Deck psoort */
-      SUBROUTINE PSOORT(LABEL,ISCOOR,WMAT,CMO,WORK,LWORK,IPRINT)
+      SUBROUTINE PSOORT(LABEL,ISCOOR,KSYMPSO,WMAT,CMO,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER LABEL*8
@@ -3582,13 +3582,14 @@ C
       KLAST = KPSO + N2ORBX
       IF (KLAST .GT. LWORK) CALL STOPIT('PSOORT',' ',KLAST,LWORK)
       LWRK  = LWORK - KLAST + 1
-      CALL PSOOR1(LABEL,ISCOOR,WMAT,WORK(KPSO),CMO,WORK(KLAST),LWRK,
-     &            IPRINT)
+      CALL PSOOR1(LABEL,ISCOOR,KSYMPSO,WMAT,WORK(KPSO),CMO,
+     &            WORK(KLAST),LWRK,IPRINT)
       RETURN
 C
       END
 C  /* Deck psoor1 */
-      SUBROUTINE PSOOR1(LABEL,ISCOOR,WMAT,PSOINT,CMO,WORK,LWORK,IPRINT)
+      SUBROUTINE PSOOR1(LABEL,ISCOOR,KSYMPSO,WMAT,PSOINT,CMO,
+     &                  WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -3600,7 +3601,10 @@ C  /* Deck psoor1 */
 #include <sigma.h>
 #include <chrxyz.h>
 C
-      CALL PRPGET(LABEL,CMO,PSOINT,ANTSYM,WORK,LWORK)
+      KSYMP = -1
+      CALL PRPGET(LABEL,CMO,PSOINT,KSYMP,ANTSYM,WORK,LWORK,IPRINT)
+      IF (KSYMP.NE.KSYMPSO)
+     &   CALL QUIT('ERROR: unexpected property symmetry in PSOOR1')
       DO 100 X = 1, 3
          ORTO = DDOT(N2ORBX,PSOINT,1,WMAT(1,X),1)
          SIGMAS(X,ISCOOR) = ORTO
@@ -4406,7 +4410,7 @@ C
 C
          CALL PRPCMP(FDC,WRK(KPVX),GP,XINDX(KABSAD),
      &               XINDX(KABTAD),XINDX(KIJSAD),XINDX(KIJTAD),
-     &               XINDX(KIADR1),WRK(KFREE),LFREE)
+     &               XINDX(KIADR1),WRK,KFREE,LFREE)
 C
       ENDIF
 C

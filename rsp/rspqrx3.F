@@ -34,15 +34,13 @@ C
 #include <single.h>
 C
 #ifdef REVLOG
-===========================================================================
-Revision 1.2  2000/05/24 19:06:44  hjj
-new getref calls with appropriate NDREF instead of NCREF
-(fixing error for triplet with CSF)
-Polish.
-
-941223-hjaaj: new QFOCK call
-931015-hjaaj: GTZYMT, TRZYMT: stop if NSIM .ne. 1
-===========================================================================
+C===========================================================================
+CRevision 1.2  2000/05/24 19:06:44  hjj
+Cnew getref calls with appropriate NDREF instead of NCREF
+C(fixing error for triplet with CSF)
+C941223-hjaaj: new QFOCK call
+C931015-hjaaj: GTZYMT, TRZYMT: stop if NSIM .ne. 1
+C===========================================================================
 #endif
 C  /* Deck t3drv */
       SUBROUTINE T3DRV(NSIM,ISYMA,ISYMB,ISYMC,VECB,VECC,ATEST,VECA,
@@ -2808,7 +2806,10 @@ C
 C     Get the operator matrix
 C     Put the minus sign in the whole term into the operator
 C
-      CALL PRPGET(OPLBL,CMO,OPMAT,ANTSYM,WRK,LWRK)
+      KSYMP = -1
+      CALL PRPGET(OPLBL,CMO,OPMAT,KSYMP,ANTSYM,WRK,LWRK,IPRRSP)
+      IF (KSYMP .NE. KSYMOP) CALL QUIT(
+     &   'ERROR: Unexpected symmetry of property matrix')
       CALL DSCAL(NORBT*NORBT,DM1,OPMAT,1)
 C
 C     Case 1
@@ -3153,7 +3154,10 @@ C     910408-hjaaj: transpose the operator matrix to
 C                   get right sign for imaginary operators
 C
       KSYMOP = IOPSYM
-      CALL PRPGET(OPLBL,CMO,OPMAT,ANTSYM,WRK,LWRK)
+      KSYMP = -1
+      CALL PRPGET(OPLBL,CMO,OPMAT,KSYMP,ANTSYM,WRK,LWRK,IPRRSP)
+      IF (KSYMP .NE. KSYMOP) CALL QUIT(
+     &   'ERROR: Unexpected symmetry of property matrix')
       CALL DGETRN(OPMAT,NORBT,NORBT)
 C
 C     Case 1:

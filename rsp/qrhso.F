@@ -34,18 +34,11 @@ C
 #include <single.h>
 C
 #ifdef REV_LOG
-===========================================================================
-Revision 1.4  2000/05/24 18:46:04  hjj
-corrected TRAHSO call (ftnchek)
-
-Revision 1.3  2000/05/17 07:29:32  hjj
-bugfix: wrong number of arguments in GPOPEN call (ftnchek)
-
-Revision 1.2  2000/05/17 07:20:37  hjj
-Use MZCONF(1) instead NCREF for CREF (for triplet response w. CSF)
-New GETREF calls.
-Removed delete of LUMHSO which caused trouble because LUMHSO was neeeded later!
-===========================================================================
+C=======================================================================
+C May 2000 hjj:
+C Use MZCONF(1) instead NCREF for CREF (for triplet response w. CSF)
+C Removed delete of LUMHSO which caused trouble because LUMHSO was neeeded later!
+C=======================================================================
 #endif
 C  /* Deck x2hso */
       SUBROUTINE X2HSO(NSIM,KZYVR,KZYV,IGRSYM,IGRSPI,ISYMV,ISPINV,
@@ -189,7 +182,10 @@ C     Get the operator matrix
 C     Put the minus sign in the whole term at the end
 C
       IF (DO1) THEN
-         CALL PRPGET(LABEL,CMO,OPMAT,ANTSYM,WRK,LWRK)
+         KSYMP = -1
+         CALL PRPGET(LABEL,CMO,OPMAT,KSYMP,ANTSYM,WRK,LWRK,IPRHSO)
+         IF (KSYMP .NE. KSYMOP) CALL QUIT(
+     &      'ERROR: Unexpected symmetry of property matrix')
       ELSE
          CALL DZERO(OPMAT,N2ORBX)
       END IF
@@ -516,7 +512,10 @@ C
       KSYMOP = IOPSYM
       IDAX = LUMHSO
       IF (DO1) THEN
-         CALL PRPGET(LABEL,CMO,OPMAT,ANTSYM,WRK,LWRK)
+         KSYMP = -1
+         CALL PRPGET(LABEL,CMO,OPMAT,KSYMP,ANTSYM,WRK,LWRK,IPRHSO)
+         IF (KSYMP .NE. KSYMOP) CALL QUIT(
+     &      'ERROR: Unexpected symmetry of property matrix')
          CALL DGETRN(OPMAT,NORBT,NORBT)
       ELSE
          CALL DZERO(OPMAT,N2ORBX)

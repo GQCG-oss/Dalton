@@ -34,10 +34,10 @@ C
 #include <single.h>
 C
 #ifdef REV_LOG
-===========================================================================
-Revision 1.2  2000/05/24 19:02:25  hjj
-new GETREF calls, fixing CSF problem for triplet
-===========================================================================
+C===========================================================================
+CRevision 1.2  2000/05/24 19:02:25  hjj
+Cnew GETREF calls, fixing CSF problem for triplet
+C===========================================================================
 #endif
       SUBROUTINE A3INIT(KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,
      *                 OPLBL,IOPSYM,VEC1,VEC2,A3TRS,XINDX,UDV,
@@ -112,7 +112,7 @@ C
 #include <inforb.h>
 #include <infvar.h>
 #include <qrinf.h>
-#include <wrkrsp.h>
+#include <infrsp.h>
 C
       CHARACTER*8 OPLBL
 C
@@ -126,11 +126,12 @@ C
       DIMENSION VEC2(KZYV2)
       DIMENSION CMO(*)
 C
-      KSYMOP = IOPSYM
-C
 C     Get the operator matrix
 C
-      CALL PRPGET(OPLBL,CMO,OPMAT,ANTSYM,WRK,LWRK)
+      KSYMP = -1
+      CALL PRPGET(OPLBL,CMO,OPMAT,KSYMP,ANTSYM,WRK,LWRK,IPRRSP)
+      IF (KSYMP.NE.IOPSYM) CALL QUIT(
+     &   'A3DRV: unexpected symmetry of operator matrix')
       CALL DGETRN(OPMAT,NORBT,NORBT)
 C
       CALL ACASE1(KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,
@@ -328,8 +329,7 @@ C
       DIMENSION DEN1(NASHDI,NASHDI)
       DIMENSION UDV(NASHDI,NASHDI)
       DIMENSION WRK(*)
-      DIMENSION VEC1(KZYV1)
-      DIMENSION VEC2(KZYV2)
+      DIMENSION VEC1(KZYV1), VEC2(KZYV2)
 C
       LOGICAL   LCON, LREF
 C
@@ -424,8 +424,7 @@ C
       DIMENSION DEN1(NASHDI,NASHDI)
       DIMENSION UDV(NASHDI,NASHDI)
       DIMENSION WRK(*)
-      DIMENSION VEC1(KZYV1)
-      DIMENSION VEC2(KZYV2)
+      DIMENSION VEC1(KZYV1), VEC2(KZYV2)
 C
       LOGICAL   LCON, LORB, LREF
 C
@@ -522,8 +521,7 @@ C
 C
       DIMENSION WRK(*)
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
-      DIMENSION VEC1(KZYV1)
-      DIMENSION VEC2(KZYV2)
+      DIMENSION VEC1(KZYV1), VEC2(KZYV2)
       DIMENSION XINDX(*)
       DIMENSION CMO(*)
       DIMENSION UDV(NASHDI,NASHDI)
@@ -573,25 +571,25 @@ C
 #include <infdim.h>
 #include <inforb.h>
 #include <infvar.h>
-#include <wrkrsp.h>
+#include <infrsp.h>
 C
       CHARACTER*8 OPLBL
 C
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
       DIMENSION OPMAT(NORBT,NORBT)
-      DIMENSION DEN1(NASHDI,NASHDI)
-      DIMENSION UDV(NASHDI,NASHDI)
+      DIMENSION DEN1(NASHDI,NASHDI), UDV(NASHDI,NASHDI)
       DIMENSION WRK(*)
-      DIMENSION VEC1(KZYV1)
-      DIMENSION VEC2(KZYV2)
+      DIMENSION VEC1(KZYV1), VEC2(KZYV2)
       DIMENSION CMO(*)
 C
 C
 C     Get the operator matrix
 C
-      KSYMOP = IOPSYM
-      CALL PRPGET(OPLBL,CMO,OPMAT,ANTSYM,WRK,LWRK)
+      KSYMP = -1
+      CALL PRPGET(OPLBL,CMO,OPMAT,KSYMP,ANTSYM,WRK,LWRK,IPRRSP)
+      IF (KSYMP.NE.IOPSYM) CALL QUIT(
+     &   'X3DRV: unexpected symmetry of operator matrix')
 C
       CALL XCASE1(KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,
      *            IOPSYM,VEC1,VEC2,X3TRS,OPMAT,
@@ -642,11 +640,9 @@ C
       DIMENSION DEN1(NASHDI,NASHDI)
       DIMENSION UDV(NASHDI,NASHDI)
       DIMENSION WRK(*)
-      DIMENSION VEC1(KZYV1)
-      DIMENSION VEC2(KZYV2)
+      DIMENSION VEC1(KZYV1), VEC2(KZYV2)
 C
-      LOGICAL   LCON, LORB
-      LOGICAL   TDM, NORHO2, LREF
+      LOGICAL   LCON, LORB, TDM, NORHO2, LREF
 C
 C     Initialise variables and layout some workspace
 C
@@ -683,7 +679,7 @@ C
       KZVARR = MZYVAR(ISYMV2)
       LREF   = .FALSE.
       ISYMDN = MULD2H(ILSYM,IRSYM)
-      CALL DZERO(DEN1,NASHT*NASHT)
+      CALL DZERO(DEN1,N2ASHX)
       CALL RSPGDM(NSIM,ILSYM,IRSYM,NCL,NCR,KZVARL,KZVARR,
      *         VEC1,VEC2,OVLAP,DEN1,DUMMY,ISPIN,ISPIN,TDM,NORHO2,
      *         XINDX,WRK,KFREE,LFREE,LREF)
@@ -964,11 +960,9 @@ C
       DIMENSION DEN1(NASHDI,NASHDI)
       DIMENSION UDV(NASHDI,NASHDI)
       DIMENSION WRK(*)
-      DIMENSION VEC1(KZYV1)
-      DIMENSION VEC2(KZYV2)
+      DIMENSION VEC1(KZYV1), VEC2(KZYV2)
 C
-      LOGICAL   LCON, LORB
-      LOGICAL   TDM, LREF
+      LOGICAL   LCON, LORB, TDM, LREF
 C
 C     Initialise variables and layout some workspace
 C

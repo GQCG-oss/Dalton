@@ -402,11 +402,12 @@ C
       CHARACTER*8 LABINT(*)
       DIMENSION DBR(NORBT,NORBT), CMO(*), INTREP(*), INTADR(*),
      &          WORK(LWORK)
-#include <wrkrsp.h>
 #include <inforb.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <abainf.h>
+C
+      CALL QENTER('DBDR1 ')
 C
 C     Construct symmetrized half B-derivative overlap
 C     matrix (DB) and write to file
@@ -417,14 +418,16 @@ C
      &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
 C
       DO 300 X = 1, 3
+         ISCOOR = 3*NUCDEP + IPTAX(X,2)
          IF (NOLOND) THEN
             CALL DZERO(DBR,NORBT*NORBT)
          ELSE
-            KSYMOP = INTREP(X) + 1
-            CALL PRPGET(LABINT(X),CMO,DBR,ANTSYM,WORK,LWORK)
+            KSYMP = -1
+            CALL PRPGET(LABINT(X),CMO,DBR,KSYMP,ASM,WORK,LWORK,IPRINT)
+            IF (KSYMP.NE.INTREP(ISCOOR) + 1)
+     &      CALL QUIT('ERROR: unexpected symmetry of property matrix')
+            CALL DSCAL(N2ORBX,D05,DBR,1)
          ENDIF
-         CALL DSCAL(N2ORBX,D05,DBR,1)
-         ISCOOR = 3*NUCDEP + IPTAX(X,2)
          CALL WRITDX(LUAAT,ISCOOR,IRAT*N2ORBX,DBR)
          IF (IPRINT .GT. 10) THEN
             CALL HEADER('MO matrix '//LABINT(X)//' in DBDR1',-1)
@@ -441,14 +444,17 @@ C
      &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
 C
       DO 200 ISCOOR = 1, 3*NUCDEP
-         KSYMOP = INTREP(ISCOOR) + 1
-         CALL PRPGET(LABINT(ISCOOR),CMO,DBR,ANTSYM,WORK,LWORK)
+         KSYMP = -1
+         CALL PRPGET(LABINT(ISCOOR),CMO,DBR,KSYMP,ASM,WORK,LWORK,IPRINT)
+         IF (KSYMP.NE.INTREP(ISCOOR) + 1)
+     &      CALL QUIT('ERROR: unexpected symmetry of property matrix')
          CALL WRITDX(LUAAT,ISCOOR,IRAT*N2ORBX,DBR)
          IF (IPRINT .GT. 10) THEN
             CALL HEADER('MO matrix '//LABINT(ISCOOR)//' in DBDR1',-1)
             CALL OUTPUT(DBR,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
   200 CONTINUE
+      CALL QEXIT('DBDR1 ')
       RETURN
       END
 C  /* Deck mkdens */
@@ -574,13 +580,13 @@ C
       DIMENSION DTOT(NORBT,NORBT), DBR(NORBT,NORBT), CMO(*),
      &          INTREP(*), INTADR(*), WORK(LWORK), DS1(N2ORBX,3),
      &          CSTRA(*), SCTRA(*)
-#include <wrkrsp.h>
 #include <inforb.h>
 #include <nuclei.h>
 #include <aatens.h>
 #include <symmet.h>
 #include <abainf.h>
 C
+      CALL QENTER('AATSE1')
       KLAST = 1
 C
 C     Construct half B-derivative overlap matrix and write to file
@@ -601,9 +607,11 @@ C           IF (DOATOM(IATOM)) THEN
                      DO 130 X = 1, 3
                      IF (ISYMAX(X,2) .EQ. IREP) THEN
                         LSCOOR = 3*(ISCOOR - 1) + X
-                        KSYMOP = 1
-                        CALL PRPGET(LABINT(LSCOOR),CMO,DBR,ANTSYM,
-     &                              WORK(KLAST),LWORK)
+                        KSYMP = -1
+                        CALL PRPGET(LABINT(LSCOOR),CMO,DBR,KSYMP,ASM,
+     &                              WORK(KLAST),LWORK,IPRINT)
+                        IF (KSYMP.NE.1) CALL QUIT(
+     &                  'ERROR: unexpected symmetry of property matrix')
                         XS = IPTAX(X,2)
                         AAT2ND(XS,ISCOOR) = - DDOT(N2ORBX,DTOT,1,DBR,1)
                      END IF
@@ -624,8 +632,11 @@ C
          CALL GET1IN(DUMMY,'S1MAGR ',NCOMP,WORK(KLAST),LWORK,LABINT,
      &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
          DO 200 X = 1, 3
-            KSYMOP = INTREP(X) + 1
-            CALL PRPGET(LABINT(X),CMO,DBR,ANTSYM,WORK(KLAST),LWORK)
+            KSYMP = -1
+            CALL PRPGET(LABINT(X),CMO,DBR,KSYMP,ASM,
+     &                  WORK(KLAST),LWORK,IPRINT)
+            IF (KSYMP.NE.INTREP(X) + 1)
+     &      CALL QUIT('ERROR: unexpected symmetry of property matrix')
             CALL DGEMM('N','T',NORBT,NORBT,NORBT,1.D0,
      &                 DTOT,NORBT,
      &                 DBR,NORBT,0.D0,
@@ -642,9 +653,11 @@ C           IF (DOATOM(IATOM)) THEN
                DO 320 ICOOR = 1, 3
                   ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
                   IF (ISCOOR .GT. 0) THEN
-                     KSYMOP = IREP + 1
-                     CALL PRPGET(LABINT(ISCOOR),CMO,DBR,ANTSYM,
-     &                           WORK(KLAST),LWORK)
+                     KSYMP = -1
+                     CALL PRPGET(LABINT(ISCOOR),CMO,DBR,KSYMP,ASM,
+     &                           WORK(KLAST),LWORK,IPRINT)
+                     IF (KSYMP.NE.IREP + 1) CALL QUIT(
+     &                  'ERROR: unexpected symmetry of property matrix')
                      DO 330 X = 1, 3
                      IF (ISYMAX(X,2) .EQ. IREP) THEN
                         XS = IPTAX(X,2)
@@ -663,6 +676,7 @@ C
          CALL HEADER('Total AAT2ND in AATSE1',-1)
          CALL FCPRI(AAT2ND,'AAT',CSTRA,SCTRA)
       END IF
+      CALL QEXIT('AATSE1')
       RETURN
       END
 C  /* Deck upwop */
@@ -798,7 +812,9 @@ C
      &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
 C
       DO 100 B = 1, 3
-         CALL PRPGET(LABINT(B),CMO,DB(1,1,B),ANTSYM,WORK,LWORK)
+         KSYMP = -1
+         CALL PRPGET(LABINT(B),CMO,DB(1,1,B),KSYMP,ASM,
+     &               WORK,LWORK,IPRINT)
          CALL DSCAL(N2ORBX,D05,DB(1,1,B),1)
   100 CONTINUE
       CALL AATNPR(DB,LABINT,3,IPRINT)
@@ -811,7 +827,8 @@ C
       CALL GET1IN(DUMMY,'HDO    ',NCOMP,WORK,LWORK,LABINT,
      &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
       DO 200 R = 1, NCART
-         CALL PRPGET(LABINT(R),CMO,DR(1,1,R),ANTSYM,WORK,LWORK)
+        KSYMP = -1
+        CALL PRPGET(LABINT(R),CMO,DR(1,1,R),KSYMP,ASM,WORK,LWORK,IPRINT)
   200 CONTINUE
       CALL AATNPR(DR,LABINT,NCART,IPRINT)
 C
@@ -825,7 +842,9 @@ C
       DO 300 R = 1, NCART
       DO 300 B = 1, 3
          ICOOR = 3*(R - 1) + B
-         CALL PRPGET(LABINT(ICOOR),CMO,HDOBR(1,1,B,R),ANTSYM,WORK,LWORK)
+         KSYMP = -1
+         CALL PRPGET(LABINT(ICOOR),CMO,HDOBR(1,1,B,R),KSYMP,ASM,
+     &               WORK,LWORK,IPRINT)
   300 CONTINUE
       CALL AATNPR(HDOBR,LABINT,3*NCART,IPRINT)
 C
@@ -837,7 +856,9 @@ C
       CALL GET1IN(DUMMY,'S1MAGL ',NCOMP,WORK,LWORK,LABINT,
      &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
       DO 400 B = 1, 3
-         CALL PRPGET(LABINT(B),CMO,S1MAGL(1,1,B),ANTSYM,WORK,LWORK)
+         KSYMP = -1
+         CALL PRPGET(LABINT(B),CMO,S1MAGL(1,1,B),KSYMP,ASM,
+     &               WORK,LWORK,IPRINT)
  400  CONTINUE
       CALL AATNPR(S1MAGL,LABINT,3,IPRINT)
 C
@@ -849,7 +870,9 @@ C
       CALL GET1IN(DUMMY,'SQHDO  ',NCOMP,WORK,LWORK,LABINT,
      &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
       DO 500 R = 1, NCART
-         CALL PRPGET(LABINT(R),CMO,SQHDO(1,1,R),ANTSYM,WORK,LWORK)
+         KSYMP = -1
+         CALL PRPGET(LABINT(R),CMO,SQHDO(1,1,R),KSYMP,ASM,
+     &               WORK,LWORK,IPRINT)
  500  CONTINUE
       CALL AATNPR(SQHDO,LABINT,NCART,IPRINT)
 C

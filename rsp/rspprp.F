@@ -34,16 +34,16 @@ C
 #include <single.h>
 C
 #ifdef REVLOG
-===========================================================================
-Revision 1.2  2000/05/24 19:05:49  hjj
-new getref calls with appropriate NDREF instead of NCREF
-(fixing error for triplet with CSF)
-
-931130-hjaaj
-  merged VCD changes from Oslo with rspprp.u from here
-  renamed GPLON to PRPABA
-  DECK PRPABA moved to abacus 'abarspn.u' because it uses aba.cdk ...
-===========================================================================
+C===========================================================================
+CRevision 1.2  2000/05/24 19:05:49  hjj
+Cnew getref calls with appropriate NDREF instead of NCREF
+C(fixing error for triplet with CSF)
+C
+C931130-hjaaj
+C  merged VCD changes from Oslo with rspprp.u from here
+C  renamed GPLON to PRPABA
+C  DECK PRPABA moved to abacus 'abarspn.u' because it uses aba.cdk ...
+C===========================================================================
 #endif
 C  /* Deck pprst */
       SUBROUTINE PPRST(IBTYP,REDS,REDE,UDV,XINDX,WRK,LWRK)
@@ -60,8 +60,8 @@ C
 #include <implicit.h>
 #include <dummy.h>
 C
-      DIMENSION IBTYP(2),REDS(2),REDE(2),UDV(2)
-      DIMENSION XINDX(2),WRK(2)
+      DIMENSION IBTYP(*),REDS(*),REDE(*),UDV(*)
+      DIMENSION XINDX(*),WRK(*)
 C
 #include <ibndxdef.h>
 C
@@ -316,7 +316,7 @@ C
 C
 #include <implicit.h>
 C
-      DIMENSION PRPMO(NORBT,2),GP(KZYVAR,2),XINDX(2),WRK(2)
+      DIMENSION PRPMO(NORBT,*),GP(KZYVAR,*),XINDX(*),WRK(*)
 C
 #include <priunit.h>
 #include <wrkrsp.h>
@@ -485,7 +485,7 @@ C
 #include <implicit.h>
 #include <maxorb.h>
 C
-      DIMENSION FC(2),CMO(2),UDV(2),PV(2),XINDX(2),WRK(LWRK)
+      DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
       CHARACTER*8 WORD
 C
 #include <infvar.h>
@@ -519,7 +519,7 @@ C
 C 18-Feb-1987
 C
 #include <implicit.h>
-      DIMENSION GP(*),CMO(2),UDV(2),PV(2),XINDX(2),WRK(2)
+      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       CHARACTER*8 WORD
 C-- common blocks:
 #include <priunit.h>
@@ -532,8 +532,8 @@ C-- common blocks:
 C
       CALL QENTER('PRPCTL')
       IF (IPRRSP .GT. 10) WRITE (LUPRI,7010) WORD
- 7010 FORMAT('1',//,' Output from PRPCTL:',/,
-     *              ' ===================',//,' Property label = ',A,/)
+ 7010 FORMAT(//,' Output from PRPCTL:',
+     *        /,' ===================',//,' Property label = ',A,/)
 C
 C ALLOCATE WORK SPACE
 C
@@ -547,31 +547,39 @@ C If SOPPA then make workspace for the second order ph transition moments.
       ELSE
          CALL MEMGET('REAL',KPRPSE,     0,WRK,KFREE,LFREE)
       ENDIF
-      CALL MEMGET('WORK',KWRK1,LWRK1,WRK,KFREE,LFREE)
 C
       CALL DZERO(GP,KZYVAR)
 C
 C Read AO property integrals and transform to MO basis.
 C
-      CALL PRPGET (WORD,CMO,WRK(KPRPMO),ANTSYM,WRK(KWRK1),LWRK1)
-C     CALL PRPGET (WORD,CMO,PRPMO,ANTSYM,WRK,LWRK)
+      KSYMP = -1
+      CALL PRPGET (WORD,CMO,WRK(KPRPMO),KSYMP,ANTSYM,
+     &             WRK(KFREE),LFREE,IPRRSP)
+C     CALL PRPGET (WORD,CMO,PRPMO,KSYMP,ANTSYM,WRK,LWRK,IPRINT)
+      IF (KSYMP.NE.KSYMOP) THEN
+         WRITE (LUPRI,'(/A/2A/A,2I5/A,F10.2)')
+     &      'FATAL ERROR: KSYMOP .ne. KSYMP from PRPGET',
+     &      '   Property label  : ',WORD,
+     &      '   KSYMOP and KSYMP:',KSYMOP,KSYMP,
+     &      '   ANTSYM          :',ANTSYM
+         CALL QUIT('KSYMOP .ne. KSYMP from PRPGET')
+      END IF
 C
 C Print atomic and molecular property integrals, if desired
 C
       IF (IPRRSP.GT.125) THEN
-         WRITE (LUPRI,'(/2A)')' ATOMIC PROPERTY INTEGRALS:', WORD
-         CALL OUTPUT(WRK(KWRK1),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         WRITE (LUPRI,'(/2A)')' MOLECULAR PROPERTY INTEGRALS:', WORD
+         WRITE (LUPRI,'(/2A)')
+     &      'PRPCTL test output: MOLECULAR PROPERTY INTEGRALS: ', WORD
          CALL OUTPUT(WRK(KPRPMO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
 C CALCULATE AVERAGE VALUE OF ONE ELECTRON OPERATOR
 C
       IF ((KSYMOP.EQ.1).AND.(IREFSY.EQ.KSYMST))THEN
-         IPRONE = 60
+         IPRONE = 10
          IF (IPRRSP .GE. IPRONE) THEN
-            WRITE (LUPRI,'(/2A)')
-     *   ' Reference state expectation value property operator : ',WORD
+            WRITE (LUPRI,'(/2A)') 'PRPCTL test output: '//
+     *      ' Reference state expectation value for ',WORD
             CALL PRPONE(WRK(KPRPMO),UDV,ONETOT,IPRONE,WORD)
          END IF
       END IF
@@ -600,15 +608,15 @@ C        ... CONSTRUCT 2P-2H TRANSITION MOMENTS
                CALL PRPTCMP(WRK(KPRPMO),PV,GP,XINDX(KABSAD),
      &                      XINDX(KABTAD),XINDX(KIJ1AD),XINDX(KIJ2AD),
      &                      XINDX(KIJ3AD),XINDX(KIADR1),
-     &                      WRK(KWRK1),LWRK1)
+     &                      WRK,KFREE,LFREE)
             ELSE
                CALL PRPCMP(WRK(KPRPMO),PV,GP,XINDX(KABSAD),
      &                     XINDX(KABTAD),XINDX(KIJSAD),XINDX(KIJTAD),
-     &                     XINDX(KIADR1),WRK(KWRK1),LWRK1)
+     &                     XINDX(KIADR1),WRK,KFREE,LFREE)
             ENDIF
            ENDIF
          ELSE
-            CALL PRPCON(1,WRK(KPRPMO),GP,XINDX,WRK(KWRK1),LWRK1)
+            CALL PRPCON(1,WRK(KPRPMO),GP,XINDX,WRK(KFREE),LFREE)
 C           CALL PRPCON(NSIM,PRPMO,GP,XINDX,WRK,LWRK)
          ENDIF
       ENDIF
@@ -619,47 +627,53 @@ C
       RETURN
       END
 C  /* Deck prpget */
-      SUBROUTINE PRPGET (WORD,CMO,PRPMO,ANTSYM,WRK,LWRK)
+      SUBROUTINE PRPGET (WORD,CMO,PRPMO,KSYMP,ANTSYM,WRK,LWRK,IPRINT)
 C
 C Written 18-Feb-1987 PJ
 C
 C 1. READ IN SYMMETRY TRANSFORMED AO PROPERTY INTEGRALS FROM LUPROP
+C 2. TRANSFORM PROPERTY INTEGRALS FROM AO BASIS TO MO BASIS
 C
-C 2. TRANSFORM PROPERTY INTEGRALS FROM AO BASIS
-C    TO MO BASIS
+C Revised Sep. 2003 hjaaj:  IPRINT in param.list,
+C  if KSYMP .le. 0 then return symmetry in KSYMP, otherwise use
+C  user-specified KSYMP
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <dummy.h>
 C
-      LOGICAL FNDLB2
-C
-      DIMENSION PRPMO(NORBT,2),CMO(2),WRK(2)
+      CHARACTER*8 WORD, RTNLBL(2)
+      DIMENSION PRPMO(NORBT,*), CMO(*), WRK(*)
 C
 C -- common blocks:
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+C inforb.h : N2BASX, ...
+C infind.h : ISAO(*)
+C inftap.h : LUPROP
 #include <inforb.h>
-#include <infdim.h>
+#include <maxorb.h>
+#include <maxash.h>
+#include <infind.h>
 #include <inftap.h>
-#include <infpri.h>
 C -- local constants:
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 =1.0D0 )
 C
-      PARAMETER ( NROW = 3 , NCOL = 3 )
-      CHARACTER*8 WORD,RTNLBL(2)
+      LOGICAL FNDLB2
 C
-C 1. READ IN AO PROPERTY INTEGRALS
+      CALL QENTER('PRPGET')
 C
 C ALLOCATE WORK SPACE
 C
-      KPRPAO = 1
-      KWRK1  = KPRPAO + N2BASX
-      LWRK1  = LWRK   - KWRK1 - NNBASX
-      IF (LWRK1.LT.0) CALL ERRWRK('PRPGET',KWRK1+NNBASX,LWRK)
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWRK
+      CALL MEMGET('REAL',KPRPAO,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KWRK1,NNBASX,WRK,KFREE,LFREE)
+C
+C 1. READ IN AO PROPERTY INTEGRALS
 C
       IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &               'UNFORMATTED',IDUMMY,.FALSE.)
+C
       REWIND LUPROP
       IF ( FNDLB2(WORD,RTNLBL,LUPROP)) THEN
          IF (RTNLBL(2).EQ.'SQUARE  ') THEN
@@ -682,8 +696,9 @@ C
          CALL QUIT('PRPGET: PROPERTY NOT FOUND ON AOPROPER.')
       END IF
       CALL GPCLOSE(LUPROP,'KEEP')
-      IF (IPRRSP.GT.120) THEN
-         WRITE(LUPRI,'(/3A)') ' PROPERTY MATRIX ',WORD,
+C
+      IF (IPRINT.GT.120) THEN
+         WRITE(LUPRI,'(/3A)') ' PRPGET: PROPERTY MATRIX ',WORD,
      *         ' IN AO BASIS AS READ FROM LUPROP'
          IF (ANTSYM .NE. D0) THEN
             CALL OUTPAK(WRK(KWRK1),NBAST,1,LUPRI)
@@ -693,25 +708,37 @@ C
          CALL OUTPUT(WRK(KPRPAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 C
+C     Determine spatial symmetry of property matrix
+C     (as identified by abs largest element)
+C
+C     FIXME TODO  /hjaaj sep 2003:
+C     What if matrix is a zero matrix ? should we return KSYMP = -1 ??
+C
+      IF (KSYMP .LE. 0) THEN
+C        if KSYMP .gt. 0 use user-specified symmetry
+         INDPMX = IDAMAX(N2BASX,WRK(KPRPAO),1)
+         IIND = 1 + (INDPMX-1)/NBAST
+         JIND = INDPMX - (IIND-1)*NBAST
+         KSYMP = MULD2H( ISAO(IIND) , ISAO(JIND) )
+       END IF
+C
 C 2. TRANSFORM PROPERTY INTEGRALS FROM AO SYMMETRY TO MO BASIS
 C
-      CALL DZERO(PRPMO,NORBT*NORBT)
+      CALL DZERO(PRPMO,N2ORBX)
       DO 600 ISYM=1,NSYM
-         JSYM=MULD2H(ISYM,KSYMOP)
-      IF (ANTSYM .NE. D0 .AND. ISYM.LT.JSYM) GO TO 600
-         IF((NORB(ISYM).LE.0).OR.(NORB(JSYM).LE.0))GO TO 600
+         JSYM=MULD2H(ISYM,KSYMP)
+      IF((NORB(ISYM).LE.0).OR.(NORB(JSYM).LE.0))GO TO 600
          CALL UTHV(CMO(ICMO(ISYM)+1),WRK(KPRPAO),CMO(ICMO(JSYM)+1),
      &             ISYM,JSYM,NBAS(ISYM),NBAS(JSYM),
-     &             PRPMO,WRK(KWRK1))
+     &             PRPMO,WRK(KFREE))
 C        CALL UTHV(U,PRPAO,V,ISYM,JSYM,NBASI,NBASJ,PRPMO,WRK)
-         IF (IPRRSP.GT.110) THEN
-            WRITE(LUPRI,750)ISYM,JSYM
- 750        FORMAT(/,' ISYM= ',I5,' JSYM= ',I5)
-            WRITE(LUPRI,'(/4A)')' PROPERTY: ',WORD,' IN MO. BASIS',
-     &                         ' BEFORE (ANTI)SYMMETRIZATION '
+         IF (IPRINT.GT.110) THEN
+            WRITE(LUPRI,'(/3A/A,I5,A,I5)')
+     &         ' PROPERTY: ',WORD,' IN MO. BASIS after',
+     &         ' ISYM=',ISYM,' JSYM=',JSYM
             CALL OUTPUT(PRPMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
-         IF (IPRRSP.GT.140) THEN
+         IF (IPRINT.GT.140) THEN
             WRITE(LUPRI,'(/A,I5,A)')' MO. COEFFICIENTS FOR SYMMETRY',
      &                                ISYM
             CALL OUTPUT(CMO(ICMO(ISYM)+1),1,NBAS(ISYM),1,NORB(ISYM),
@@ -724,10 +751,6 @@ C        CALL UTHV(U,PRPAO,V,ISYM,JSYM,NBASI,NBASJ,PRPMO,WRK)
             END IF
          END IF
  600  CONTINUE
-      IF (ANTSYM.NE.D0 .AND. KSYMOP.GT.1) THEN
-         CALL TRANSA(PRPMO,PRPMO,NORBT,NORBT,ANTSYM)
-C        CALL TRANSA(A,B,NA,NB,ANTSYM)
-      ENDIF
 C
 C     If "Half Differentiated Overlap"
 C     then extract antisymmetric component of matrix
@@ -736,8 +759,8 @@ C
          CALL DGETAP(NORBT,PRPMO,WRK(KPRPAO))
          CALL DAPTGE(NORBT,WRK(KPRPAO),PRPMO)
       END IF
-      IF (IPRRSP.GE.90) THEN
-         WRITE(LUPRI,'(/4A)')' PROPERTY: ',WORD,' IN MO. BASIS'
+      IF (IPRINT.GE.90) THEN
+         WRITE(LUPRI,'(/3A)')' PROPERTY: ',WORD,' IN MO. BASIS'
          CALL OUTPUT(PRPMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
@@ -746,6 +769,8 @@ C     refer to the antisymmetry of the response vector, thus we change sign
 C     on it. K.Ruud, July 10 2000.
 C
       ANTSYM = -ANTSYM
+      CALL MEMREL('PRPGET',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('PRPGET')
       RETURN
       END
 C  /* Deck prporb */
@@ -851,7 +876,7 @@ C
          ENDIF
  1400 CONTINUE
 C
-C *** Perform averaging
+C *** Perform supersymmetry averaging ?
 C
       IF (RSPSUP .AND. (KSYMOP .EQ. 1)) THEN
          CALL RSPAVE(GP(KZCONF+1),KZVAR,2)
@@ -869,27 +894,25 @@ C
 C WRITTEN 28 JAN 1987 PJ
 C
 C TRANSFORM (ISYM,JSYM) SYMMETRY BLOCK OF
-C THE MATRIX H FROM AO SYMMETRY ORBITALS
+C THE MATRIX PRPAO FROM AO SYMMETRY ORBITALS
 C TO MO BASIS
 C
 C Input
-C  H    PACKED ONE-ELECTRON MATRIX OVER SYMMETRY AO'S
-C  U    MO COEFFICIENTS FOR SYMMETRY ISYM
-C  V    MO COEFFICIENTS FOR SYMMETRY JSYM
-C  IROW row index array: IROW(i) = i*(i-1)/2
+C  PRPAO ONE-ELECTRON property MATRIX OVER SYMMETRY AO'S
+C  U     MO COEFFICIENTS FOR SYMMETRY ISYM
+C  V     MO COEFFICIENTS FOR SYMMETRY JSYM
 C
 C Output
-C  HMO  (ISYM,JSYM) BLOCK OF THE ONE-ELECTRON
-C       MATRIX TRANSFORMED TO MO BASIS. HMO HAS
-C       DIMENSION NORBT*NORBT
+C  PRPMO  (ISYM,JSYM) BLOCK OF THE ONE-ELECTRON PRPAO
+C         MATRIX TRANSFORMED TO MO BASIS.
+C         PRPMO HAS DIMENSION NORBT*NORBT
 C
 C Scratch
 C  WRK  dimension: NBAS(ISYM)
 C
 #include <implicit.h>
-      DIMENSION U(NBASI,2)
-      DIMENSION V(NBASJ,2)
-      DIMENSION PRPAO(NBAST,2),PRPMO(NORBT,2),WRK(2)
+      DIMENSION U(NBASI,*), V(NBASJ,*)
+      DIMENSION PRPAO(NBAST,*),PRPMO(NORBT,*),WRK(*)
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -917,34 +940,4 @@ C
  300     CONTINUE
  100  CONTINUE
       RETURN
-      END
-C  /* Deck transa */
-       SUBROUTINE TRANSA(A,B,NA,NB,ANTSYM)
-C
-C WRITTEN 1-FEB-1984 PJ
-C
-C PUT THE TRANSPOSED OF THE MATRIX A IN B
-C
-#include <implicit.h>
-C
-#include <priunit.h>
-#include <infrsp.h>
-C
-       DIMENSION A(NA,2),B(NB,2)
-       IF (IPRRSP.GT.140) THEN
-          WRITE(LUPRI,150)NA,NB
- 150      FORMAT(/,' DIMENSION OF MATRIX A IS ',I5,I5)
-          WRITE(LUPRI,'(/A)')' MATRIX TO BE (ANTI)SYMMETRIZED '
-          CALL OUTPUT(A(1,1),1,NA,1,NB,NA,NB,1,LUPRI)
-       END IF
-       DO 200 I=1,NB
-         DO 100 J=1,I
-         B(J,I)=A(I,J)*ANTSYM
- 100     CONTINUE
- 200   CONTINUE
-       IF (IPRRSP.GT.140) THEN
-          WRITE(LUPRI,'(/A)')' MATRIX AFTER (ANTI)SYMMETRIZATION '
-          CALL OUTPUT(B(1,1),1,NB,1,NA,NB,NA,1,LUPRI)
-       END IF
-       RETURN
       END

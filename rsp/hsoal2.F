@@ -112,9 +112,9 @@ C
 C
 C Allocate work space
 C
-      KGP = 1
-      KVEC = KGP + KZYVAR
-      KFI  = KVEC + 2*IVAR
+      KGP   = 1
+      KVEC  = KGP  + KZYVAR
+      KFI   = KVEC + 2*IVAR
       KFREE = KFI  + N2ORBX
       LFREE = LWRK - KFREE + 1
       IF (LFREE.LT.0) CALL ERRWRK('HSOAL2',KFREE-1,LWRK)
@@ -127,7 +127,11 @@ C
       IF (WORD(2:2).EQ.'1' .OR. WORD(2:2).EQ.' '.AND.DOSO1) THEN
          LABEL = WORD
          LABEL(2:2) = '1'
-         CALL PRPGET(LABEL,CMO,WRK(KFI),ANTSYM,WRK(KFREE),LFREE)
+         KSYMP = -1
+         CALL PRPGET(LABEL,CMO,WRK(KFI),KSYMP,ANTSYM,
+     &               WRK(KFREE),LFREE,IPRRSP)
+         IF (KSYMP .NE. KSYMOP) CALL QUIT(
+     &      'ERROR: Unexpected symmetry of property matrix')
       ELSE
          CALL DZERO(WRK(KFI),N2ORBX)
       END IF

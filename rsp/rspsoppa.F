@@ -65,11 +65,11 @@ C
       KABSAD = 1
       KABTAD = KABSAD + (N2ORBX + 1)/IRAT
       KIJSAD = KABTAD + (N2ORBX + 1)/IRAT
-      KIJTAD = KIJSAD + (NISHT * NISHT * NSYM + 1)/IRAT
-      KIJ1AD = KIJTAD + (NISHT * NISHT * NSYM + 1)/IRAT
-      KIJ2AD = KIJ1AD + (NISHT * NISHT * NSYM + 1)/IRAT
-      KIJ3AD = KIJ2AD + (NISHT * NISHT * NSYM + 1)/IRAT
-      KIADR1 = KIJ3AD + (NISHT * NISHT * NSYM + 1)/IRAT
+      KIJTAD = KIJSAD + (N2ISHX * NSYM + 1)/IRAT
+      KIJ1AD = KIJTAD + (N2ISHX * NSYM + 1)/IRAT
+      KIJ2AD = KIJ1AD + (N2ISHX * NSYM + 1)/IRAT
+      KIJ3AD = KIJ2AD + (N2ISHX * NSYM + 1)/IRAT
+      KIADR1 = KIJ3AD + (N2ISHX * NSYM + 1)/IRAT
       KAB2   = KIADR1 + (MAXOCC * MAXVIR + 1)/IRAT
 C
 C  A(2) matrix does not exist in XINDX yet
@@ -2303,7 +2303,7 @@ C
       END
 C  /* Deck prpcmp */
       SUBROUTINE PRPCMP(PRPMO,COEMP2,GP,ABSADR,ABTADR,IJSADR,IJTADR,
-     &                  IADR1,WRK,LWRK)
+     &                  IADR1,WRK,KFREE,LFREE)
 C
 C  Copyright 8/4-94 by Erik K. Dalskov
 C
@@ -2343,9 +2343,7 @@ C
 C
 C Work space allocation
 C
-      KFRSAV = 1
-      KFREE  = KFRSAV
-      LFREE  = LWRK
+      KFRSAV = KFREE
       CALL MEMGET('REAL',KMPUNP,NORBT*NORBT,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KRESZ,NP*NH,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KRESY,NP*NH,WRK,KFREE,LFREE)
@@ -2430,15 +2428,15 @@ C
                         ENDIF
                         GP(IJSOFF + NABS) =
      *                     GP(IJSOFF + NABS)
-     *                     + WRK(LRESZ+(J-1)*NSSHB+B) * FAC
+     *                     - WRK(LRESZ+(J-1)*NSSHB+B) * FAC
                         GP(KZVAR + IJSOFF + NABS) =
      *                     GP(KZVAR + IJSOFF + NABS)
-     *                     + WRK(LRESY+(J-1)*NSSHB+B) * FAC
+     *                     - WRK(LRESY+(J-1)*NSSHB+B) * FAC
                         IF ((II .NE. JJ) .AND. (AA .NE. BB)) THEN
                            IF (AA .GT .BB) THEN
-                              TSIGN = TIJSGN
-                           ELSE
                               TSIGN = -TIJSGN
+                           ELSE
+                              TSIGN = TIJSGN
                            ENDIF
                            GP(IJTOFF + NABT) = GP(IJTOFF + NABT)
      *                        + TSIGN * WRK(LRESZ+(J-1)*NSSHB+B)
@@ -2453,12 +2451,10 @@ C
          ENDDO
  9999    CONTINUE
       ENDDO
-      CALL DSCAL(KZCONF,-1.0D0,GP,1)
-      CALL DSCAL(KZCONF,-1.0D0,GP(1+KZVAR),1)
       IF ( IPRRSP.GT.110) THEN
          WRITE(LUPRI,'(/A)')
      *   ' 2p-2h transition moments for SOPPA (Z-part and Y-part)'
-         CALL OUTPUT(GP(1),1,KZCONF,1,2,KZVAR,2,1,LUPRI)
+         CALL OUTPUT(GP,1,KZCONF,1,2,KZVAR,2,1,LUPRI)
       END IF
 C
 C  End of PRPCMP
@@ -2468,7 +2464,7 @@ C
       END
 C  /* Deck prpcmpt */
       SUBROUTINE PRPTCMP(PRPMO,COEMP2,GP,ABSADR,ABTADR,IJ1ADR,IJ2ADR,
-     &                   IJ3ADR,IADR1,WRK,LWRK)
+     &                   IJ3ADR,IADR1,WRK,KFREE,LFREE)
 C
 C Written 14-Feb-1995 by Thomas Enevoldsen (tec)
 C
@@ -2512,9 +2508,7 @@ C
 C
 C Work space allocation
 C
-      KFRSAV = 1
-      KFREE  = KFRSAV
-      LFREE  = LWRK
+      KFRSAV = KFREE
       CALL MEMGET('REAL',KMPUNP,NORBT*NORBT,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KRESZ1,NP*NH,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KRESZ2,NP*NH,WRK,KFREE,LFREE)
