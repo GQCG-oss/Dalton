@@ -90,6 +90,8 @@ c/* Deck CC_GMATRIX */
       INTEGER KFBCOO, KFBCVV  
       INTEGER KEND, LEND
 
+      CALL QENTER('CC_GMATRIX')
+
       NBATCH = (NGTRAN+MAXGTRAN-1)/MAXGTRAN
 
       IF (LOCDBG) THEN
@@ -141,6 +143,8 @@ c/* Deck CC_GMATRIX */
      &                WORK(KEND),   LEND,  IOPTRES)
 
       END DO
+
+      CALL QEXIT('CC_GMATRIX')
 
       RETURN
       END
@@ -334,7 +338,9 @@ c/* Deck CC_GMAT */
       INTEGER KXCIAJK, KECIAJK, KZCIAJK, KCCIAJK, KXLMDHC, KXLMDPC
       INTEGER MDISAO,MDSRHF,M2BST,MT2BGD,MT2SQ,MT2AM,MSCRATCH,MFREE
 
-      INTEGER ILSTSYM
+      INTEGER ILSTSYM, IOPTTCME
+
+      CALL QENTER('CC_GMAT')
 
 *---------------------------------------------------------------------*
 * begin:
@@ -493,7 +499,8 @@ c/* Deck CC_GMAT */
 
       Call CCG_RDIAJB(WORK(KLIAJB),NT2AM(ISYOVOV))
  
-      Call CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYOVOV)
+      IOPTTCME = 1
+      Call CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYOVOV,IOPTTCME)
 
 *---------------------------------------------------------------------*
 * allocate work space for zeroth-order amplitudes and Lambda matrices,
@@ -1746,6 +1753,8 @@ C
          END IF
       END IF
 
+      CALL QEXIT('CC_GMAT')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -1789,6 +1798,8 @@ c/* Deck CCG_1ITROO */
 
       INTEGER ISYMI, ISYMJ, ISYMB, NIJ, NBI, NBJ
 
+      CALL QENTER('CCG_1ITROO')
+
 * check symmetries:
       IF (ISYMTF .NE. MULD2H(ISYMFM,ISYMT1)) THEN
         CALL QUIT('Symmetry mismatch in CCG_1ITROO.')
@@ -1816,6 +1827,8 @@ c/* Deck CCG_1ITROO */
 
       END DO
  
+      CALL QEXIT('CCG_1ITROO')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -1868,6 +1881,8 @@ c/* Deck CCG_1ITRVO */
 #endif
 
       INTEGER ISYMI,ISYMJ,ISYMA,ISYMB,NAI,NAB,NBA,NBI,NAJ,NJI,NIJ
+
+      CALL QENTER('CCG_1ITRVO')
 
 * check symmetries:
       IF (ISYMTF .NE. MULD2H(ISYMFM,ISYMT1)) THEN
@@ -1930,6 +1945,8 @@ c/* Deck CCG_1ITRVO */
 
       END DO
  
+      CALL QEXIT('CCG_1ITRVO')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -1971,6 +1988,8 @@ c/* Deck CCG_1ITRVV */
 
       INTEGER ISYMA, ISYMI, ISYMB, NAI, NBI, NAB
 
+      CALL QENTER('CCG_1ITRVV')
+
 * check symmetries:
       IF (ISYMTF .NE. MULD2H(ISYMFM,ISYMT1)) THEN
         CALL QUIT('Symmetry mismatch in CCG_1ITRVV.')
@@ -1998,6 +2017,8 @@ c/* Deck CCG_1ITRVV */
 
       END DO
  
+      CALL QEXIT('CCG_1ITRVV')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -2100,6 +2121,7 @@ c/* Deck CCG_21CCSD */
       INTEGER KT2AMP, ISYMDLK, KOFFAIK, KOFFDKL, ISYMAL, ISYML, ISYMA
       INTEGER KCINT, ISYMDKL, KEND1C, LEND1C, NTOTAI, NTOTB, NTOTJKL
       INTEGER KWTINT, KVTINT, KWHINT, KVHINT, KEXC, NTOTDKL, NTOTA
+      INTEGER IOPTTCME
    
 #if defined (SYS_CRAY)
       REAL DDOT
@@ -2108,6 +2130,8 @@ c/* Deck CCG_21CCSD */
 #endif
 
       INTEGER ILSTSYM
+
+      CALL QENTER('CCG_21CCSD ')
 
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) MSGDBG, 'just entered this routine...'
@@ -2229,7 +2253,8 @@ c/* Deck CCG_21CCSD */
 
 * read packed integrals (ia|jb) and calculate in place L(iajb):
       CALL CCG_RDIAJB(WORK(KXIAJB), NT2AM(ISYOVOV))
-      CALL CCSD_TCMEPK(WORK(KXIAJB),ONE,ISYOVOV)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KXIAJB),ONE,ISYOVOV,IOPTTCME)
 
 *---------------------------------------------------------------------*
 * calculate X^C and Y^C intermediates and evaluate A+B and E terms:
@@ -2619,6 +2644,8 @@ C         ----------------------------------------
         Call CC_PRP(DELTA1,WORK,ISYRES,1,0)
       END IF
 
+      CALL QEXIT('CCG_21CCSD ')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -2738,6 +2765,8 @@ c/* Deck CCG_21CD */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_21CD')
 
 * set & check symmetries:
       ISYLALB = MULD2H(ISYMLA,ISYMLB)    ! Lambda C x Lambda B
@@ -2992,6 +3021,8 @@ C       ----------------------------------------------------
 * that's it! return.
 *---------------------------------------------------------------------*
 
+      CALL QEXIT('CCG_21CD')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -3056,6 +3087,8 @@ c/* Deck CCG_22CD */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_22CD')
 
 * check symmetries:
       IF (MULD2H(ISYMXB,ISYMZC).NE.ISYRES .OR.
@@ -3315,6 +3348,8 @@ C     ---------------------------------------------
 
       END DO 
 
+      CALL QEXIT('CCG_22CD')
+
       RETURN 
       END
 *---------------------------------------------------------------------*
@@ -3380,6 +3415,8 @@ c/* Deck CCG_4O */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_4O')
 
 * begin:
       IF (LOCDBG) THEN
@@ -3455,6 +3492,8 @@ c/* Deck CCG_4O */
         WRITE (LUPRI,*) MSGDBG, 'leaving this routine...'
       END IF
 
+      CALL QEXIT('CCG_4O')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -3507,6 +3546,8 @@ c/* Deck CCG_4OS */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_4OS')
 
 * begin:
       IF (LOCDBG) THEN
@@ -3631,6 +3672,8 @@ c/* Deck CCG_4OS */
         WRITE (LUPRI,*) MSGDBG, 'leaving this routine...'
       END IF
 
+      CALL QEXIT('CCG_4OS')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -3705,6 +3748,8 @@ c/*  Deck CCG_OOVV */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_OOVV')
 
 * check symmetries:
       ISYTCTB = MULD2H(ISYMTC,ISYMTB)
@@ -3870,6 +3915,8 @@ c/*  Deck CCG_OOVV */
           
       END DO ! ISYMJL
 
+      CALL QEXIT('CCG_OOVV')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -3908,6 +3955,8 @@ c/* Deck CCG_RDIAJB */
       DOUBLE PRECISION XIAJB(LIAJB)
 #endif
 
+      CALL QENTER('CCG_RDIAJB')
+
 * check dimension:
       IF (LIAJB .LT. NT2AM(ISYMOP)) THEN
         CALL QUIT(
@@ -3924,6 +3973,8 @@ c/* Deck CCG_RDIAJB */
          CALL AROUND( 'CCG_RDIAJB:  Integrals (ia|jb) ' )
          CALL CC_PRP(0.00,XIAJB,ISYMOP,0,1)
       ENDIF
+
+      CALL QEXIT('CCG_RDIAJB')
 
       RETURN
       END
@@ -3969,6 +4020,8 @@ c/* Deck CCG_TI */
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 
+      CALL QENTER('CCG_TI')
+
 * check symmetries:
       IF (ISYMTI .NE. MULD2H(ISYMTAM,ISYMC)) THEN
         CALL QUIT('SYMMETRY MISMATCH IN CCG_TI.')
@@ -4009,6 +4062,8 @@ c/* Deck CCG_TI */
       END DO ! J
       END DO ! ISYMDK
 
+      CALL QEXIT('CCG_TI')
+C
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -4075,6 +4130,8 @@ c/* Deck CCG_TRANS13 */
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 
+      CALL QENTER('CCG_TRANS13')
+
 * check symmetries and IPOS option:
       IF (MULD2H(ISYMIAE,ISYOVOV) .NE. MULD2H(ISYMB1,ISYMC)) THEN
         CALL QUIT('Symmetry mismatch in CCG_TRANS13.')
@@ -4130,6 +4187,8 @@ c/* Deck CCG_TRANS13 */
       END DO
 
 
+      CALL QEXIT('CCG_TRANS13')
+C
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -4183,6 +4242,8 @@ c/* Deck CCG_TRANS2 */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_TRANS2')
 
 * check symmetries:
       IF (MULD2H(ISYMJLI,ISYMC) .NE. MULD2H(ISYMB1,ISYOVOV)) 
@@ -4277,6 +4338,8 @@ c/* Deck CCG_TRANS2 */
       END DO ! J
       END DO ! ISYMDK
 
+      CALL QEXIT('CCG_TRANS2')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -4324,6 +4387,8 @@ c/* Deck CCG_TRANS4 */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_TRANS4')
 
 *---------------------------------------------------------------------*
 * check symmetries & and set index arrays:
@@ -4373,6 +4438,8 @@ c/* Deck CCG_TRANS4 */
          END DO
       END DO
 
+      CALL QEXIT('CCG_TRANS4')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -4413,6 +4480,8 @@ c/* Deck CCG_SORT1 */
       INTEGER ITAIKJ(8,8), NTAIKJ(8)
       INTEGER ISYM,ICOUNT,ISYMJ,ISYMAIK,ISYMAI,ISYMK,KOFF1,KOFF2,NJK
       INTEGER ISYMJK,ISYMAJ,ISYMI,ISYMA,ISYMAJK,ISYJIK,NAI,NJKI
+
+      CALL QENTER('CCG_SORT1')
 
 *---------------------------------------------------------------------*
 * set index arrays for X integrals:
@@ -4582,6 +4651,8 @@ c/* Deck CCG_SORT1 */
         CALL QUIT('Illegal option in CCG_SORT1.')
       END IF
 
+      CALL QEXIT('CCG_SORT1')
+
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -4630,6 +4701,8 @@ c/* Deck CCG_LXD */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCG_LXD')
 
 * check symmetries:
       IF (ISYFCK .NE. MULD2H(ISYDNS,ISYOVOV)) THEN
@@ -4680,6 +4753,8 @@ c/* Deck CCG_LXD */
 
       END IF
  
+      CALL QEXIT('CCG_LXD')
+
       RETURN
       END
 *---------------------------------------------------------------------*

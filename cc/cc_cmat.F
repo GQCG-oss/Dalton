@@ -183,7 +183,7 @@ c/* Deck CC_CMAT */
       INTEGER KLAMDHB, KLAMDPB, KLAMDPC, KLAMDHC
       INTEGER KENDF1, LENDF1, KENDF2, LENDF2, KEND1, LEND1
       INTEGER KEND2, LEND2, KEND3, LEND3, KENDA3, LENDA3
-      INTEGER KENDB3, LENDB3
+      INTEGER KENDB3, LENDB3, IOPTTCME
       
 #if defined (SYS_CRAY) 
       REAL XNORM
@@ -203,6 +203,8 @@ c/* Deck CC_CMAT */
       DOUBLE PRECISION DDOT
 #endif 
   
+      CALL QENTER('CC_CMAT')
+
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
@@ -311,7 +313,8 @@ C     END IF
 * read packed (ia|jb) integrals and calculate L(ia|jb) in place: 
       Call CCG_RDIAJB(WORK(KLIAJB),NT2AM(ISYOVOV))
       
-      Call CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYOVOV)
+      IOPTTCME = 1
+      Call CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYOVOV,IOPTTCME)
 
 *---------------------------------------------------------------------*
 * start loop over all C matrix transformations
@@ -607,7 +610,8 @@ C     END IF
 * restore L(ia|jb) integrals: 
           IF (ITRAN.LT.NCTRAN) THEN
             Call CCG_RDIAJB(WORK(KLIAJB),NT2AM(ISYOVOV))
-            Call CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYOVOV)
+            IOPTTCME = 1
+            Call CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYOVOV,IOPTTCME)
           END IF
 
         END IF
@@ -1444,6 +1448,8 @@ c    &                  WORK(KEND1),LEND1)
 
 *=====================================================================*
 
+      CALL QEXIT('CC_CMAT')
+
       RETURN
       END
 *=====================================================================*
@@ -1499,6 +1505,8 @@ c/* Deck CC_CTST */
       INTEGER IL1ZETA
       INTEGER ILSTSYM
 
+
+      CALL QENTER('CC_CTST')
 
 
 *---------------------------------------------------------------------*
@@ -1653,6 +1661,8 @@ C       CALL DZERO(WORK(KT2AMPC),NT2AM(ISYMC))
 
       END IF
 
+      CALL QEXIT('CC_CTST')
+
       RETURN
       END 
 *=====================================================================*
@@ -1724,6 +1734,8 @@ c/*  Deck CCC_OVOV */
 * statement function:
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCC_OVOV')
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1862,6 +1874,8 @@ C       WRITE (LUPRI,'(5F14.6)') XKINT
       END DO ! A
       END IF ! NRHF(ISYMK).NE.0
       END DO ! ISYMA
+
+      CALL QEXIT('CCC_OVOV')
 
       RETURN
       END

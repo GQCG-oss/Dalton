@@ -90,6 +90,8 @@ C
 C
 #include <leinf.h>
 C
+      CALL QENTER('CC_EXGR')
+C
 C------------------------------------
 C     Header of Property calculation.
 C------------------------------------
@@ -975,6 +977,8 @@ C------------------------------------
 C
       IF (.NOT. CCS) NSIDE = NSIDIN
 C
+      CALL QEXIT('CC_EXGR')
+C
       RETURN
       END
 C  /* Deck ccx_d1ao */
@@ -1015,6 +1019,8 @@ C
 C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
+C
+      CALL QENTER('CCX_D1AO')
 C
 C---------------------------------------------
 C     Find symmetry of left and right vectors. 
@@ -1095,7 +1101,8 @@ C---------------------------------------
 C
       IF (.NOT. MP2) THEN
          CALL DCOPY(NT2AM(ISYMR),WORK(KR2AM),1,WORK(KR2AMT),1)
-         CALL CCSD_TCMEPK(WORK(KR2AMT),1.0D0,ISYMR)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KR2AMT),1.0D0,ISYMR,IOPTTCME)
       ENDIF
 C
 C---------------------
@@ -1226,6 +1233,8 @@ C
      *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
      *              WORK(KLAMDH),1,WORK(KEND4),LWRK4)
 C
+      CALL QEXIT('CCX_D1AO')
+C
    1  FORMAT(1x,A35,1X,E20.10)
       RETURN
       END
@@ -1244,6 +1253,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC_DXIJ')
 C
 C---------------------------------------------------------
 C     Add contribution.
@@ -1271,6 +1282,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CC_DXIJ')
+C
       END 
 C  /* Deck cc_dxab */
       SUBROUTINE CC_DXAB(DAB,XL1AM,ISYML,XR1AM,ISYMR)
@@ -1287,6 +1300,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC_DXAB')
 C
 C---------------------------------------------------------
 C     Add contribution.
@@ -1314,6 +1329,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CC_DXAB')
+C
       END
 C  /* Deck cc_dxai12 */
       SUBROUTINE CC_DXIA12(DIA,XL1AM,ISYML,XR2AM,ISYMR)
@@ -1335,6 +1352,8 @@ C
       DIMENSION DIA(*), XL1AM(*), XR2AM(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CC_DXIA12')
 C
 C---------------------------------------------------------
 C     Assume ISYMR = ISYML and density is total symmetric.
@@ -1368,6 +1387,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC_DXIA12')
+C
       RETURN
       END
 C  /* Deck cc_dxia21 */
@@ -1390,6 +1411,8 @@ C
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), XL2AM(*), XR1AM(*), T2AM(*),WORK(LWORK)
       CHARACTER*10 MODEL
+C
+      CALL QENTER('CC_DXIA21')
 C
 C---------------------------------------------------------
 C     Assume ISYMR = ISYML and density is total symmetric.
@@ -1456,6 +1479,8 @@ C
       CALL CC_IA21(DIA,WORK(KONEAB),WORK(KONEIJ),ISYML,XR1AM,ISYMR,
      *             WORK(KEND1),LWRK1)
 C
+      CALL QEXIT('CC_DXIA21')
+C
       END
       SUBROUTINE CC_IA21(DIA,DAB,DIJ,ISYMD,XR1AM,ISYMR,WORK,LWORK)
 C
@@ -1472,6 +1497,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC_IA21')
 C
 C-----------------------------------------------------
 C     Assume ISYMR = ISYMD and Dia is total symmetric.
@@ -1513,6 +1540,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CC_IA21')
+C
       END
       SUBROUTINE CCSX_D1AO(AODEN,WORK,LWORK, 
      *                     LLIST,ILLNR,RLIST,ILRNR,L0LIST,ILNRL0)
@@ -1552,6 +1581,8 @@ C
 C
       CHARACTER MODEL*5,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
+C
+      CALL QENTER('CCSX_D1AO')
 C
 C---------------------------------------------
 C     Find symmetry of left and right vectors.
@@ -1645,6 +1676,8 @@ C
      *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
      *              WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
+      CALL QEXIT('CCSX_D1AO')
+C
       END
 c*DECK TNSRAN
       SUBROUTINE CC_TNSRAN(TNSR,WORK,LWORK)
@@ -1665,6 +1698,8 @@ C
       PARAMETER (THR = 1.0D-08)
       DIMENSION TNSR(3,3),PVAL(3),PAXIS(3,3)
 C
+      CALL QENTER('CC_TNSRAN')
+C
       CALL TNSRAN(TNSR,PVAL,PAXIS,ALFSQ,BETSQ,ITST,ITST2,
      *            APAR,APEN,XKAPPA,IPAR)
 C
@@ -1681,5 +1716,7 @@ C
       WRITE(LUPRI,'(1X,A42,F10.6,A)') 'Property anisotropy invariant:'
      *      //'            ',ANINV,' a.u.'
 
+      CALL QEXIT('CC_TNSRAN')
+C
       END 
 

@@ -332,7 +332,7 @@ void PUTWA(unit, source, addr, count, ierr)
   size_t nbytes,con2;
   long long where, con1;
   double start, end;
-  long long jerr;
+/*  long long jerr; */
   struct w_file *file;
 
   if (first_call)

@@ -81,6 +81,8 @@ c/* Deck CC_FMATRIX */
       INTEGER KLAMPA, KLAMHA, KCTR2, KLAMP, KLAMH, KDENS, KFOCK
       INTEGER KEND, LEND
 
+      CALL QENTER('CC_FMATRIX')
+
       MAXFTRAN = MAXSIM
 
       NBATCH = (NFTRAN+MAXFTRAN-1)/MAXFTRAN
@@ -143,6 +145,8 @@ c/* Deck CC_FMATRIX */
 
       END DO
 
+      CALL QEXIT('CC_FMATRIX')
+
       RETURN
       END
 
@@ -195,6 +199,8 @@ c/* Deck CC_FTRAN */
 #else 
       DOUBLE PRECISION WORK(LWORK), RDUM
 #endif 
+
+      CALL QENTER('CC_FTRAN')
 
       NFTRAN      = 1
       IFTRAN(1,1) = IDLSTL
@@ -259,6 +265,8 @@ c/* Deck CC_FTRAN */
       CALL WOPEN2(LUFMAT, FILFMA, 64, 0)
       CALL GETWA2(LUFMAT,FILFMA,WORK(1),1,LENALL) 
       CALL WCLOSE2(LUFMAT, FILFMA, 'DELETE')
+
+      CALL QEXIT('CC_FTRAN')
 
       RETURN
       END
@@ -406,7 +414,7 @@ c/* Deck CC_FMATNEW */
 
 
       CHARACTER*(*) LISTL, LISTR, FILFMA
-      INTEGER IOPTRES
+      INTEGER IOPTRES, IOPTTCME
       INTEGER NFTRAN, MXVEC, LWORK
       INTEGER IFTRAN(3,NFTRAN)
       INTEGER IFDOTS(MXVEC,NFTRAN)
@@ -476,6 +484,8 @@ c/* Deck CC_FMATNEW */
       DOUBLE PRECISION DDOT, SECOND
 #endif 
   
+      CALL QENTER('CC_FMATNEW')
+
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
@@ -1598,7 +1608,8 @@ C          -----------------------------------------------------------
 C          calculate packed L(ia,jb) integrals and evaluate the 
 C          projection contribution <HF|[[H,T],t_mu1]|CC>
 C          -----------------------------------------------------------
-           CALL CCSD_TCMEPK(WORK(KXIAJB),ONE,ISYM0)
+           IOPTTCME = 1
+           CALL CCSD_TCMEPK(WORK(KXIAJB),ONE,ISYM0,IOPTTCME)
 
            IOPT = 0
            CALL CCG_LXD(WORK(KTHETA1),ISYRES,WORK(KT1AMPA),ISYAMP,
@@ -1693,7 +1704,8 @@ C          ----------------------------------------------
 C          ----------------------------------------------
 C          A2IM = sum_bj (2T_aibj - T_ajbi) Zeta_bj
 C          ----------------------------------------------
-           CALL CCSD_TCMEPK(WORK(KT2AMPA),ONE,ISYAMP)
+           IOPTTCME = 1
+           CALL CCSD_TCMEPK(WORK(KT2AMPA),ONE,ISYAMP,IOPTTCME)
            CALL CCG_LXD(WORK(KA2IM),ISYRES,WORK(KZETA1),ISYCTR,
      &                  WORK(KT2AMPA),ISYAMP,0)
 
@@ -2060,6 +2072,8 @@ C
 * that's it; return:
 *---------------------------------------------------------------------*
 
+      CALL QEXIT('CC_FMATNEW')
+
       RETURN
       END
 *=====================================================================*
@@ -2145,10 +2159,13 @@ C  /* Deck ccfpreint */
       INTEGER ILSTSYM, MGLMRH, ISTARTZ0, ISTARTPQMO, IDUMMY
       INTEGER MGLMDT, KLAMPA, KLAMHA, KZDENS
 
+      CALL QENTER('CCFPREINT')
+
 *---------------------------------------------------------------------*
 * set some symmetries & dimensions and do some initializations:
 *---------------------------------------------------------------------*
       IF (CCS .AND. IOPTRSP.EQ.1) THEN
+         CALL QEXIT('CCFPREINT')
          RETURN
       END IF
 
@@ -2466,6 +2483,8 @@ C
         CALL WCLOSE2(LUPQMO,FILPQMO,'KEEP')
       END IF
 
+      CALL QEXIT('CCFPREINT')
+
       RETURN
       END
 *=====================================================================*
@@ -2511,6 +2530,8 @@ c/* Deck CCFOPEN*/
 #else
       DOUBLE PRECISION WORK(LWORK)
 #endif
+
+      CALL QENTER('CCFOPEN')
 
 *---------------------------------------------------------------------*
 * open files for local intermediates:
@@ -2647,6 +2668,8 @@ c/* Deck CCFOPEN*/
 
       END IF
 
+      CALL QEXIT('CCFOPEN')
+
       RETURN
       END
 *=====================================================================*
@@ -2711,6 +2734,8 @@ c/* Deck CCFSAVE*/
 
 * external function:
       INTEGER ILSTSYM
+
+      CALL QENTER('CCFSAVE')
 
 *---------------------------------------------------------------------*
 * Fock, BF, and R intermediates:
@@ -2804,6 +2829,8 @@ c/* Deck CCFSAVE*/
       END DO
 
 
+      CALL QEXIT('CCFSAVE')
+
       RETURN
       END
 *=====================================================================*
@@ -2875,6 +2902,8 @@ c/* Deck CCFPRE2 */
 
 * external functions:
       INTEGER ILSTSYM
+
+      CALL QENTER('CCFPRE2')
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2989,6 +3018,8 @@ c/* Deck CCFPRE2 */
       END DO
 
 
+      CALL QEXIT('CCFPRE2')
+
       RETURN
       END
 *=====================================================================*
@@ -3075,6 +3106,8 @@ c/* Deck CCFINT2 */
       DOUBLE PRECISION DUMMY, DTIME, SECOND
 #endif
 
+
+      CALL QENTER('CCFINT2')
 
   
 *---------------------------------------------------------------------*
@@ -3193,6 +3226,8 @@ c/* Deck CCFINT2 */
 * that's it, return:
 *---------------------------------------------------------------------*
 
+      CALL QEXIT('CCFINT2')
+C
       RETURN
 
       END
@@ -3253,6 +3288,7 @@ c/* Deck CCFMAT2 */
       INTEGER IDLSTL, IDLSTR, ISYRES, ISYCTR, ISYAMP, LWORK
       INTEGER LUBFI, IADRBFI(MAXORB), IOFFCD
       INTEGER LUC, LUCBAR, LUD, LUDBAR, LUBF, LENBF, IINTR
+      INTEGER IOPTTCME
 C
 C
 #if defined (SYS_CRAY)
@@ -3284,6 +3320,8 @@ C
       INTEGER KFIELD, KFIELDR, KFIELDG
 
   
+      CALL QENTER('CCFMAT2')
+
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
@@ -3721,7 +3759,8 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,1,1)
          END IF
       
          CALL CCG_RDIAJB(WORK(KLIAJB),NT2AM(ISYM0))
-         CALL CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYM0)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KLIAJB),ONE,ISYM0,IOPTTCME)
       END IF
 
 *---------------------------------------------------------------------*
@@ -3986,6 +4025,8 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 * that's it, return:
 *---------------------------------------------------------------------*
 
+      CALL QEXIT('CCFMAT2')
+
       RETURN
 
       END
@@ -4029,6 +4070,8 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
       INTEGER IVIRD, ISYALJ, ISYJLI, ISYMD, IADR, LEN, KOFF1
       INTEGER KPINT, KWINT, KQINT, KEND1, LWRK1
  
+      CALL QENTER('CC_21GMO')
+
 *---------------------------------------------------------------------*
 *     check symmetries:
 *---------------------------------------------------------------------*
@@ -4072,6 +4115,8 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
          END DO
 
       END DO
+
+      CALL QEXIT('CC_21GMO')
 
       RETURN
       END
@@ -4126,6 +4171,8 @@ c/* Deck CC_ZETADEN */
 
       INTEGER ISYM12, ISALBE, ISYMAL, ISYMBE, ISYMB, ISYMK
       INTEGER KOFF1, KOFF2, KOFF3, NTOTBE, NTOTAL, NTOTB
+
+      CALL QENTER('CC_ZETADEN')
 
 *---------------------------------------------------------------------*
 *     set symmetries:
@@ -4206,6 +4253,8 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CC_ZETADEN')
+C
       RETURN
       END
 *=====================================================================*
@@ -4234,6 +4283,8 @@ C
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDP(*),CHI(*),XI(*)
+C
+      CALL QENTER('CCLT_CHI')
 C
 C---------------------------------------------
 C     Half-transformation to AO-basis of CTR1.
@@ -4274,6 +4325,8 @@ C
          END IF
 C
       END DO
+C
+      CALL QEXIT('CCLT_CHI')
 C
       RETURN
       END
@@ -4322,6 +4375,8 @@ C
       INTEGER NBFRHF(8), IBFRHF(8,8), ISYM, ICOUNT, ISYMAK, ISYBET
       INTEGER ISYMIJ, ISYMIJB, KOFF1, KOFF2, KOFF3, NBASB, NTOTAK
 C
+      CALL QENTER('CC_BFIF')
+C
 C     --------------------------------------
 C     precalculate symmetry array for BFRHF:
 C     --------------------------------------
@@ -4365,6 +4420,8 @@ C
       CALL PUTWA2(LUBFI,FNBFI,WORK,IADR,ND2IJG(ISYMIJB))
 C
       IADR = IADR + ND2IJG(ISYMIJB)
+C
+      CALL QEXIT('CC_BFIF')
 C
       RETURN
       END
@@ -4411,6 +4468,8 @@ C
       INTEGER NDI, NBJ, NIJ, NDIBJ, KOFF1, IDEL, NDB, INDEX
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CC_BFIFSORT')
 C
       CALL DZERO(BFI,NT2AO(ISYRES))
 C
@@ -4524,6 +4583,8 @@ C
 
       END IF
 C
+      CALL QEXIT('CC_BFIFSORT')
+C
       RETURN
       END
 *=====================================================================*
@@ -4551,6 +4612,8 @@ C
 #include <ccsdsym.h>
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
       DIMENSION DSRHF(*),XMGD(*),GIM(*),WORK(LWORK)
+C
+      CALL QENTER('CC_GIM')
 C
 C     ----------------------------------------------------------
 C     if right-hand-side G requested replace XMGD by 2Cou - Exc:
@@ -4594,6 +4657,8 @@ C
          END DO
       END DO
  
+      CALL QEXIT('CC_GIM')
+C
       RETURN
       END
 *=====================================================================*
@@ -4615,6 +4680,8 @@ C
 C
       PARAMETER(TWO=2.0D0,ONE=1.0D0)
       DIMENSION XMGD(*),WORK(LWORK)
+C
+      CALL QENTER('CC_MGDTCME')
 C
       DO ISYMJ = 1,NSYM
 C
@@ -4660,6 +4727,8 @@ C
           END DO
         END DO
       END DO
+C
+      CALL QEXIT('CC_MGDTCME')
 C
       RETURN
       END

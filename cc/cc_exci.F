@@ -99,6 +99,8 @@ C
 C
 #include <leinf.h>
 C
+      CALL QENTER('CC_EXCI')
+C
       LUFC1 = 0
       LUFC2 = 0
       LUFR1 = 0
@@ -697,7 +699,8 @@ C
             ELSE
                ILSTNR = ISYOFE(ISYM) + ISTATE
             ENDIF
-            ECURR1 = EIGVAL(ISTATE) 
+C            ECURR1 = EIGVAL(ISTATE) 
+            ECURR1 = EIGVAL(ILSTNR) 
             IF (ITSC .EQ. 0 ) THEN
                EITOL = 1.0D-3
                IF (ABS(EOMINP(IOM,ISYMTR,IMULT)).GT.EITOL) THEN
@@ -776,7 +779,11 @@ C
      *   ' Excitation no.       Energy (Hartree) ',
      *   ' ------------------------------------- '
                 WRITE (LUPRI,'(A3,2I5,F30.15)')
-     *         '@@@',ISYM,I,WORK(KEIVAL-1+I)+ECCGRS
+C
+CKH   *         '@@@',ISYM,I,WORK(KEIVAL-1+I)+ECCGRS
+C
+     *         '@@@',ISYM,I-1,EOMINP(IOM,ISYMTR,IMULT)+ECCGRS
+C
 C
             ENDIF
 C
@@ -1284,6 +1291,8 @@ C
          CALL AROUND( ' END OF CC_EXCI   ' )
       ENDIF
 C
+      CALL QEXIT('CC_EXCI')
+C
       RETURN
       END
 c*DECK CCLR_LEINFI
@@ -1305,6 +1314,8 @@ C
 #include <leinf.h>
 C
       LOGICAL TRIPLET
+C
+      CALL QENTER('CCLR_LEINFI')
 C
 C--------------------------
 C     Set COMMON /LEINF/
@@ -1390,6 +1401,8 @@ C
 C
     1 FORMAT(3X,A8,8I8)
 C
+      CALL QEXIT('CCLR_LEINFI')
+C
       END
 c*DECK CC_PCEXCI 
       SUBROUTINE CC_PCEXCI(OMES,OME1,OME2,OME3,OME4,WORK,LWORK)
@@ -1441,6 +1454,8 @@ C
       PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
 C
 #include <leinf.h>
+C
+      CALL QENTER('CC_PCEXCI')
 C
       LUFC1 = 0
       LUFC2 = 0
@@ -1777,6 +1792,8 @@ C
          CCSDT  = CC3SAV
       ENDIF
 C
+      CALL QEXIT('CC_PCEXCI')
+C
       END
 C  /* Deck cc_vscal */
       SUBROUTINE CC_VSCAL(OMEGA1,OMEGA2,OME,WORK,LWORK,ISYMTR)
@@ -1803,6 +1820,8 @@ C
 #include <ccsdinp.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_VSCAL')
 C
 C-----------------------
 C     Memory allocation.
@@ -1937,6 +1956,8 @@ C
          CALL CC_PRP(OMEGA1,OMEGA2,ISYMTR,1,1)
       ENDIF
 C
+      CALL QEXIT('CC_VSCAL')
+C
       RETURN
       END
 C  /* Deck cc_omec */
@@ -1962,6 +1983,8 @@ C
 #include <ccsdinp.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_OMEC')
 C
 C-----------------------
 C     Memory allocation.
@@ -2090,6 +2113,8 @@ C
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
+C
+      CALL QEXIT('CC_OMEC')
 C
       RETURN
       END
@@ -2359,6 +2384,8 @@ C-----------------------------------------------------------------------------
 C
       DIMENSION WORK(LWORK)
 C
+      CALL QENTER('CC_REDEIG')
+C
       WRITE (LUPRI,'(/,1X,A)')
      *'*********************************************************'//
      *'**********'
@@ -2492,5 +2519,7 @@ C
       WRITE (LUPRI,'(/,1X,A)')
      *'*********************************************************'//
      *'**********'
+C
+      CALL QEXIT('CC_REDEIG')
 C
       END

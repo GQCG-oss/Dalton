@@ -105,6 +105,8 @@ C
       CHARACTER*6 FILPQR0, FILPQRR
       INTEGER NBFRHF(8), IBFRHF(8,8), NULL
 C
+      CALL QENTER('CC_FMATTST')
+C
 C-----------------------------------
 C     initialize overall timing
 C-----------------------------------
@@ -1790,7 +1792,8 @@ C
          CALL DZERO(WORK(KXIM),NMATIJ(ISYRES))
          CALL DCOPY(NMATAB(ISYRES),WORK(KYMATX),1,WORK(KYIM),1)
          CALL DSCAL(NMATAB(ISYRES),XHALF,WORK(KYIM),1)
-         CALL CCSD_TCMEPK(WORK(KC2AM),ONE,ISYMOP)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KC2AM),ONE,ISYMOP,IOPTTCME)
 
          CALL CC_22EC(WORK(KRHO2),WORK(KC2AM),WORK(KXIM),
      *                WORK(KYIM),ISYRES,WORK(KEND1),LWRK1)
@@ -2619,6 +2622,8 @@ C
       WRITE (LUPRI,*) 'I/O error in CC_FMAT.'
       CALL QUIT('I/O error in CC_FMAT.')
 
+      CALL QEXIT('CC_FMATTST')
+C
       END
 *=====================================================================*
 *                      END OF SUBROUTINE CC_FMAT                   

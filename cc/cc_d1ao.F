@@ -257,7 +257,8 @@ C------------------------------------------
 C
          CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
          ISYOPE = 1
-         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE,IOPTTCME)
 C
 C----------------------------------
 C        Work space allocation one.
@@ -630,6 +631,8 @@ C--------------------------
 C     Set up density block.
 C--------------------------
 C
+      CALL QENTER('DIJGEN')
+C
       CALL DAXPY(NMATIJ(1),-ONE,XMAT,1,DIJ,1)
 C
       DO 100 ISYMI = 1,NSYM
@@ -645,6 +648,8 @@ C
   110    CONTINUE
 C
   100 CONTINUE
+C
+      CALL QEXIT('DIJGEN')
 C
       RETURN
       END
@@ -669,6 +674,8 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
+      CALL QENTER('DIAGEN')
+C
       ISYMDK = 1
       ISYMAI = ISYMDK
 C
@@ -687,6 +694,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAGEN')
+C
       RETURN
       END
 C  /* Deck dijk01 */
@@ -704,6 +713,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJK01')
 C
       ISYMK  = MULD2H(ISYMD,ISYMLH)
       ISYMIJ = MULD2H(ISYIJK,ISYMK)
@@ -731,6 +742,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIJK01')
+C
       RETURN
       END
 C  /* Deck dijk02 */
@@ -748,6 +761,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJK02')
 C
       ISYMI  = MULD2H(ISYMD,ISYMLH)
 C
@@ -776,6 +791,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIJK02')
+C
       RETURN
       END
 C  /* Deck cc_d2pao */
@@ -796,6 +813,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC_D2PAO')
 C
       ISYMK  = ISYMG
       ISYMPQ = MULD2H(ISYMG,ISYDEN)
@@ -838,6 +857,8 @@ C
       CALL DGEMV('N',NMATAB(ISYMPQ),NRHF(ISYMK),ONE,D2ABI(KOFF3),
      *           NTOTAB,XLAMDP(KOFFGK),NBAS(ISYMG),ZERO,D2AOAB,1)
 C
+      CALL QEXIT('CC_D2PAO')
+C
       RETURN
       END
 C  /* Deck ccsd_d2en */
@@ -858,6 +879,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSD_D2EN')
 C
       ISYINT = ISYMD
       ISYDEN = ISYMD
@@ -1084,6 +1107,8 @@ C
       ECCSD(1) = ECCSD(1) + DDOT(NT1AM(ISYMPQ),WORK(KINTMO),1,
      *                           D2AOIA,1)
 C
+      CALL QEXIT('CCSD_D2EN')
+C
       RETURN
       END
 C  /* Deck dijk11 */
@@ -1103,6 +1128,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJK11')
 C
       ISYMA  = MULD2H(ISYMD,ISYMLH)
       ISYMK  = MULD2H(ISYMA,ISYD1)
@@ -1180,6 +1207,8 @@ C
   140    CONTINUE
   130 CONTINUE
 C
+      CALL QEXIT('DIJK11')
+C
       RETURN
       END
 C  /* Deck dijk13 */
@@ -1197,6 +1226,8 @@ C
       DIMENSION D2IJK(*), DENAI(*), T2TIN(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJK13')
 C
       IF (MULD2H(ISYTIN,ISYD1).NE.ISYIJK)
      &  CALL QUIT('Symmetry mismatch in DIJK13')
@@ -1234,6 +1265,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIJK13')
+C
       RETURN
       END
 C  /* Deck daij11 */
@@ -1251,6 +1284,8 @@ C
       DIMENSION D2AIJ(*), XLAMDH(*), DAI(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DAIJ11')
 C
       ISYMJ  = MULD2H(ISYMD,ISYMLH)
       ISYMAI = ISYD1
@@ -1275,6 +1310,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('DAIJ11')
+C
       RETURN
       END
 C  /* Deck daij12 */
@@ -1294,6 +1331,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DAIJ12')
 C
       ISYMK  = MULD2H(ISYMD,ISYMLH)
       ISYMA  = MULD2H(ISYMK,ISYD1)
@@ -1341,6 +1380,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DAIJ12')
+C
       RETURN
       END
 C  /* Deck diaj11 */
@@ -1358,6 +1399,8 @@ C
       DIMENSION D2IAJ(*), XLAMDH(*), DIA(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIAJ11')
 C
       ISYMJ  = MULD2H(ISYMD,ISYMLH)
       ISYMAI = ISYD1
@@ -1414,6 +1457,8 @@ C
   120    CONTINUE
   110 CONTINUE
 C
+      CALL QEXIT('DIAJ11')
+C
       RETURN
       END
 C  /* Deck dabi11 */
@@ -1431,6 +1476,8 @@ C
       DIMENSION D2ABI(*), DAI(*), T2TDEL(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DABI11')
 C
       IF (MULD2H(ISYMTI,ISYD1).NE.ISYABI)
      &  CALL QUIT('Symmetry in DABI11')
@@ -1468,6 +1515,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DABI11')
+C
       RETURN
       END
 C  /* Deck dijg11 */
@@ -1485,6 +1534,8 @@ C
       DIMENSION D2AOIJ(*), XLAMDH(*), Z1AO(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJG11')
 C
 C--------------------------------------
 C     Calculate the first contribution.
@@ -1538,6 +1589,8 @@ C
   130    CONTINUE
   120 CONTINUE
 C
+      CALL QEXIT('DIJG11')
+C
       RETURN
       END
 C  /* Deck diaj13 */
@@ -1559,6 +1612,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('DIAJ13')
 C
       IF (MULD2H(ISYMLH,ISYMD).NE.MULD2H(ISYIAJ,ISYD1)) THEN
         CALL QUIT('Symmetry mismatch in DIAJ13.')
@@ -1656,6 +1711,8 @@ C
 C
   101 CONTINUE
 C
+      CALL QEXIT('DIAJ13')
+C
       RETURN
       END
 C  /* Deck diag11 */
@@ -1674,6 +1731,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+      CALL QENTER('DIAG11')
+C
       ISYAIM = ISYMD
       ISYMM  = ISYMG
       ISYMAI = MULD2H(ISYMM,ISYAIM)
@@ -1689,6 +1748,8 @@ C
 C
       CALL DGEMV('N',NT1AM(ISYMAI),NRHF(ISYMM),ONE,T2TIN(KOFF1),
      *           NTOTAI,Z1AO(KOFF2),NBAS(ISYMG),ONE,D2AOIA,1)
+C
+      CALL QEXIT('DIAG11')
 C
       RETURN
       END
@@ -1708,6 +1769,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+      CALL QENTER('DIJK25')
+C
       ISYML  = MULD2H(ISYMD,ISYMLH)
       IF (ISYIJK.NE.ISYML) CALL QUIT('Symmetry mismatch in DIJK25')
 C
@@ -1722,6 +1785,8 @@ C
 C
       CALL DGEMV('N',NMAIJK(ISYIJK),NRHF(ISYML),ONE,XMINT(KOFF1),
      *           NTOIJK,XLAMDH(KOFF2),NBAS(ISYMD),ONE,D2IJK,1)
+C
+      CALL QEXIT('DIJK25')
 C
       RETURN
       END
@@ -1740,6 +1805,8 @@ C
       DIMENSION D2IJK(*), XMAT(*), XLAMDH(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJK24')
 C
       ISYMI  = MULD2H(ISYMD,ISYMLH)
       ISYMKJ = 1
@@ -1771,6 +1838,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIJK24')
+C
       RETURN
       END
 C  /* Deck dijk23 */
@@ -1788,6 +1857,8 @@ C
       DIMENSION D2IJK(*), XMAT(*), XLAMDH(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJK23')
 C
       ISYMK  = MULD2H(ISYMD,ISYMLH)
       ISYMIJ = 1
@@ -1810,6 +1881,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('DIJK23')
+C
       RETURN
       END
 C  /* Deck dijk21 */
@@ -1829,6 +1902,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJK21')
 C
       ISYML  = MULD2H(ISYMD,ISYMLH)
       ISYMX1 = ISYML
@@ -1901,6 +1976,8 @@ C
   130    CONTINUE
   120 CONTINUE
 C
+      CALL QEXIT('DIJK21')
+C
       RETURN
       END
 C  /* Deck daij22 */
@@ -1920,6 +1997,8 @@ C
 #include <priunit.h>      
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DAIJ22')
 C
       ISYMB  = MULD2H(ISYMD,ISYMLH)
       ISYMA  = MULD2H(ISYMB,ISYD1)
@@ -1966,6 +2045,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DAIJ22')
+C
       RETURN
       END
 C  /* Deck dabi21 */
@@ -1983,6 +2064,8 @@ C
       DIMENSION D2ABI(*), DAB(*), XLAMDH(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DABI21')
 C
       ISYMI  = MULD2H(ISYMD,ISYMLH)
       ISYMAB = ISYD1
@@ -2006,6 +2089,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('DABI21')
+C
       RETURN
       END
 C  /* Deck diaj21 */
@@ -2023,6 +2108,8 @@ C
       DIMENSION D2IAJ(*), YMAT(*), T2TINT(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIAJ21')
 C
       ISYMAE = 1
 C
@@ -2061,6 +2148,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ21')
+C
       RETURN
       END
 C  /* Deck diaj22 */
@@ -2078,6 +2167,8 @@ C
       DIMENSION D2IAJ(*), XMAT(*), T2TINT(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIAJ22')
 C
       IF (ISYAIJ.NE.ISYMTI) CALL QUIT('Symmetry mismatch in DIAJ22.')
 C
@@ -2114,6 +2205,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ22')
+C
       RETURN
       END
 C  /* Deck diaj23 */
@@ -2131,6 +2224,8 @@ C
       DIMENSION D2IAJ(*), XMAT(*), T2TINT(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIAJ23')
 C
       ISYMJM = 1
 C
@@ -2158,6 +2253,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ23')
+C
       RETURN
       END
 C  /* Deck diaj24 */
@@ -2179,6 +2276,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('DIAJ24')
 C
       ISYMB  = MULD2H(ISYMD,ISYMLH)
       ISYMC  = MULD2H(ISYMB,ISYD1)
@@ -2245,6 +2344,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ24')
+C
       RETURN
       END
 C  /* Deck ccd1reor */
@@ -2263,6 +2364,8 @@ C
       DIMENSION DFOCK(*), DAI(*), DAB(*), DIJ(*), DIA(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCD1REOR')
 C
       DO 100 ISYM = 1,NSYM
 C
@@ -2322,6 +2425,8 @@ C
   140    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCD1REOR')
+C
       RETURN
       END
 C  /* Deck ccd1t1co */
@@ -2342,6 +2447,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCD1T1CO')
 C
 C----------------------------------------------
 C     Add contributions to the (occ,vir) block.
@@ -2457,6 +2564,8 @@ C
 C
   120 CONTINUE
 C
+      CALL QEXIT('CCD1T1CO')
+C
       RETURN
       END
 C  /* Deck sortash */
@@ -2475,6 +2584,8 @@ C
       DIMENSION XARR(*), YARR(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('SORTASH')
 C
 C----------------------
 C     Do the resorting.
@@ -2501,6 +2612,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('SORTASH')
+C
       RETURN
       END 
 C  /* Deck ccnaocan */
@@ -2520,6 +2633,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+C
+      CALL QENTER('CCNAOCAN')
 C
       SUMRHF = ZERO
       SUMALL = ZERO
@@ -2576,6 +2691,8 @@ C
 C
   222 FORMAT(3X,A27,F9.6,1X,A9)
 C
+      CALL QEXIT('CCNAOCAN')
+C
       RETURN
       END
 C  /* Deck cc_fcd1ao */
@@ -2611,6 +2728,8 @@ C
 #include <eribuf.h>
 C
       CHARACTER MODEL*10
+C
+      CALL QENTER('CC_FCD1AO')
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND( 'Calculate core contribution to density')
@@ -2659,6 +2778,8 @@ C
         ICMOI  = ICMOI  + NBAS(ISYMI)*NRHFS(ISYMI)
         ICMOI  = ICMOI  + NBAS(ISYMI)*NVIRS(ISYMI)
       ENDDO
+C
+      CALL QEXIT('CC_FCD1AO')
 C
       END
 C  /* Deck cc2_d1ao */
@@ -2768,7 +2889,8 @@ C     in KT2AM, as we only need T(2c-e) below.
 C-----------------------------------------------
 C
       ISYOPE = 1
-      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
       KT2AMT = KT2AM                  !for safety
 C
 c     write(6,*) 'after initial stuff'

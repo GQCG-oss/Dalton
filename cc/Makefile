@@ -42,7 +42,7 @@ cc_sortz2.o    cc_zkjam.o     cc_int4o.o     \
 ccrhs_ipm1.o   cctrbt2.o      cc_hfr1den.o   \
 cc_gim1.o      cc_bfbsort1.o  cc_int3o2.o    \
 cc_mcdny.o     \
-cc3_trip.o     cc_slv.o
+cc_slv.o       cc3_omeg3.o    cc3_t3int3.o
 
   
 # cc_pckcr8.o    cc_pckutil.o   

@@ -311,7 +311,8 @@ C
       ISYOPE = 1
 C
       CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
-      CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE,IOPTTCME)
 C
 C-------------------------------
 C     Work space allocation one.

@@ -194,7 +194,8 @@ C
       ISYOPE = 1
 C
       CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
-      CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE,IOPTTCME)
 C
 C-------------------------------
 C     Work space allocation one.
@@ -1805,6 +1806,8 @@ C
       INTEGER ISYMK, ISYMG, ISYMA, ISYMB, KOFF1, KOFF2, KOFF3,
      *        NTOTIJ, NTOTAI, NTOTAB, NTOTG, ISYMIJ, ISYMAB, ISYMAI
 C
+      CALL QENTER('CCD2_PQAO')
+C
       IF (MULD2H(ISYDMO,ISYMLP).NE.ISYPQG) THEN
        CALL QUIT('Symmetry mismatch in CCD2_PQAO')
       END IF
@@ -1932,6 +1935,8 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CCD2_PQAO')
+C
       RETURN
       END
 C  /* Deck diac11 */
@@ -1950,6 +1955,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIAC11')
 C
       IF (MULD2H(ISYMTI,ISYD1).NE.ISYIAB)
      &  CALL QUIT('Symmetry mismatch in DIAC11')
@@ -1975,6 +1982,8 @@ C
      *              D2IAB(KOFF3),NTOTAI)
 C
   100 CONTINUE
+C
+      CALL QEXIT('DIAC11')
 C
       RETURN
       END
@@ -2018,6 +2027,8 @@ C
       DOUBLE PRECISION D2IJA(*), DAI(*), XLAMDH(*), WORK(LWORK)
 #endif
 
+      CALL QENTER('DIJA11')
+C
 C
       IF (ISYDAI.NE.1) CALL QUIT('Illegal ISYDAI in DIJA11')
 C
@@ -2109,6 +2120,8 @@ C
   140    CONTINUE
   130 CONTINUE
 C
+      CALL QEXIT('DIJA11')
+C
       RETURN
       END
 C  /* Deck diac21 */
@@ -2128,6 +2141,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIAC21')
 C
       ISYMI  = MULD2H(ISYMD,ISYMLH)
       ISYMAC = ISYMY
@@ -2163,6 +2178,8 @@ C
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
+C
+      CALL QEXIT('DIAC21')
 C
       RETURN
       END
@@ -2205,6 +2222,8 @@ C
 #else
       DOUBLE PRECISION D2IJA(*), DAB(*), XLAMDH(*), WORK(LWORK)
 #endif
+C
+      CALL QENTER('DIJA21')
 C
       IF (ISYDAB.NE.1) CALL QUIT('Illegal ISYDAI in DIJA21')
 C
@@ -2253,6 +2272,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIJA21')
+C
       RETURN
       END
 C  /* Deck dija22 */
@@ -2271,6 +2292,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJA22')
 C
       IF (ISYDEN.NE.ISYMTI) CALL QUIT('Symmetry mismatch in DIJA22')
 C
@@ -2342,6 +2365,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIJA22')
+C
       RETURN
       END
 C  /* Deck dija23 */
@@ -2360,6 +2385,8 @@ C
 #include <priunit.h>      
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIJA23')
 C
       IF (ISYDEN.NE.ISYMTI) CALL QUIT('Symmetry mismatch in DIJA23')
 C
@@ -2488,6 +2515,8 @@ C
   150    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIJA23')
+C
       RETURN
       END
 C  /* Deck daib21 */
@@ -2507,6 +2536,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DAIB21')
 C
       ISYMJ  = MULD2H(ISYMD,ISYMLH)
 C
@@ -2588,6 +2619,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DAIB21')
+C
       RETURN
       END
 C  /* Deck diac22 */
@@ -2608,6 +2641,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('DIAC22')
 C
       DO 100 ISYMI = 1,NSYM
 C
@@ -2685,6 +2720,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAC22')
+C
       RETURN
       END
 C  /* Deck dabi22 */
@@ -2705,6 +2742,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('DABI22')
 C
       DO 100 ISYMI = 1,NSYM
 C
@@ -2783,6 +2822,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DABI22')
+C
       RETURN
       END
 C  /* Deck dabi23 */
@@ -2803,6 +2844,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('DABI23')
 C
       DO 100 ISYMA = 1,NSYM
 C
@@ -2922,6 +2965,8 @@ C
   140    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DABI23')
+C
       RETURN
       END
 C  /* Deck diaj26 */
@@ -2942,6 +2987,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('DIAJ26')
 C
       DO 100 ISYMJ = 1,NSYM
 C
@@ -3006,6 +3053,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ26')
+C
       RETURN
       END
 C  /* Deck diaj27 */
@@ -3026,6 +3075,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('DIAJ27')
 C
       IF (ISYIAJ.NE.ISYMZI) CALL QUIT('Symmetry mismatch in DIAJ27')
 C
@@ -3110,6 +3161,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ27')
+C
       RETURN
       END
 C  /* Deck diaj28 */
@@ -3130,6 +3183,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('DIAJ28')
 C
       DO 100 ISYMI = 1,NSYM
 C
@@ -3199,6 +3254,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ28')
+C
       RETURN
       END
 C  /* Deck cc_mirs */
@@ -3217,6 +3274,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC_MIRS')
 C
       CALL DZERO(XMIRES,N3ORHF(1))
 C
@@ -3266,6 +3325,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC_MIRS')
+C
       RETURN
       END
 C  /* Deck diaj25 */
@@ -3284,6 +3345,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('DIAJ25')
 C
       IF (ISYMTI.NE.ISYIAJ) CALL QUIT('Symmetry mismatch in DIAJ25')
 C
@@ -3360,6 +3423,8 @@ C
   140    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('DIAJ25')
+C
       RETURN
       END
 C  /* Deck dabgao */
@@ -3404,6 +3469,8 @@ C
       INTEGER ISYMA,ISYMAB,ISYMB,ISYMM, ISYMAM, ISYMBM, ISYMMN, ISYMN, 
      &        KZREOR, KTREOR, KEND1, LWRK1, kOFF1, NTOTA, NTOTMN, 
      &        NMN, NAMNN, NAMNR, NBMN, NMNB
+C
+      CALL QENTER('DABGAO')
 C
       IF (MULD2H(ISYMTI,ISYMZI).NE.MULD2H(ISYDEN,ISYMG)) THEN
         WRITE(LUPRI,*) 'ISYMTI,ISYMZI,ISYMG,ISYDEN:',
@@ -3500,6 +3567,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('DABGAO')
+C
       RETURN
       END
 C  /* Deck cc1intmo */
@@ -3524,6 +3593,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCDINTMO')
 C
 C------------------------------
 C     Initialize result arrays.
@@ -3659,6 +3730,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CCDINTMO')
+C
       RETURN
       END
 C  /* Deck ccdenzk0 */
@@ -3687,6 +3760,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCDENZK0')
 C
       DO 100 ISYMA = 1,NSYM
 C
@@ -3983,6 +4058,8 @@ C
 C
   130 CONTINUE
 C
+      CALL QEXIT('CCDENZK0')
+C
       RETURN
       END
 C  /* Deck cc_d2eff */
@@ -4002,6 +4079,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC_D2EFF')
 C
       FACI = ONE
       IF (ICON .EQ. 2) FACI = ONE/TWO
@@ -4038,6 +4117,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CC_D2EFF')
+C
       RETURN
       END
 C  /* Deck ccdiazk0 */
@@ -4063,6 +4144,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCDIAZK0')
 C
 C===================================
 C     First we do the virtual block.
@@ -4518,6 +4601,8 @@ C
 C
   130 CONTINUE
 C
+      CALL QEXIT('CCDIAZK0')
+C
       RETURN
       END
 C  /* Deck ccsd_zkblo */
@@ -4543,6 +4628,8 @@ C
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <ccsdinp.h>
+C
+      CALL QENTER('CCSD_ZKBLO')
 C
 C---------------------------
 C     Work space allocation.
@@ -4630,6 +4717,8 @@ C
   140    CONTINUE
   130 CONTINUE
 C
+      CALL QEXIT('CCSD_ZKBLO')
+C
       RETURN
       END
 C  /* Deck cc_d2gaf */
@@ -4649,6 +4738,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+      CALL QENTER('CC_D2GAF')
+C
       IF (ISYMG .EQ. ISYMD) THEN
 C
          ISYML = ISYMD
@@ -4665,6 +4756,8 @@ C
          CALL DAXPY(NT1AMX,FACT,DIA,1,D2GIA,1)
 C 
       ENDIF
+C
+      CALL QEXIT('CC_D2GAF')
 C
       RETURN
       END
@@ -4685,6 +4778,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+C
+      CALL QENTER('CC_FD2AO')
 C
 C--------------------------------
 C     Do the frozen-frozen block.
@@ -4911,6 +5006,8 @@ C
 C
   140 CONTINUE
 C
+      CALL QEXIT('CC_FD2AO')
+C
       RETURN
       END
 C  /* Deck cc_fd2bl */
@@ -4932,6 +5029,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+C
+      CALL QENTER('CC_FD2BL')
 C
 C-------------------------------
 C     Work space allocation one.
@@ -5227,6 +5326,8 @@ C
 C
   210 CONTINUE
 C
+      CALL QEXIT('CC_FD2BL')
+C
       RETURN
       END
 C  /* Deck ccs_den2 */
@@ -5244,6 +5345,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+C
+      CALL QENTER('CCS_DEN2')
 C
       ISYDEN = ISYMD
 C
@@ -5271,6 +5374,8 @@ C
 C
       CALL F2_PQAO(D2IJG,WORK(KD2IJK),CMO,ISYDEN)
 C
+      CALL QEXIT('CCS_DEN2')
+C
       RETURN
       END
 C  /* Deck mp2_den2 */
@@ -5287,6 +5392,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('MP2_DEN2')
 C
       ISYDEN = ISYMD
 C
@@ -5319,6 +5426,8 @@ C
       ICON = 2
       CALL CCD2_PQAO(D2IAG,ISYDEN,WORK(KD2IAJ),ISYDEN,CMO,1,ICON)
 C
+      CALL QEXIT('MP2_DEN2')
+C
       RETURN
       END
 C  /* Deck ccmp_dao */
@@ -5341,6 +5450,8 @@ C
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccfro.h>
+C
+      CALL QENTER('CCMP_DAO')
 C
       DO 100 ISYM1 = 1,NSYM
 C
@@ -5422,6 +5533,8 @@ C
   110    CONTINUE
       ENDIF
 C
+      CALL QEXIT('CCMP_DAO')
+C
       RETURN
       END
 C  /* Deck fijk01 */
@@ -5440,6 +5553,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+C
+      CALL QENTER('FIJK01')
 C
       ISYDEN = ISYMD
       ISYMK  = ISYMD
@@ -5466,6 +5581,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('FIJK01')
+C
       RETURN
       END
 C  /* Deck fijk02 */
@@ -5484,6 +5601,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+C
+      CALL QENTER('FIJK02')
 C
       ISYDEN = ISYMD
       ISYMI  = ISYMD
@@ -5511,6 +5630,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('FIJK02')
+C
       RETURN
       END
 C  /* Deck f2_pqao */
@@ -5529,6 +5650,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+C
+      CALL QENTER('F2_PQAO')
 C
 C----------------------------------
 C     Calculate the transformation.
@@ -5551,6 +5674,8 @@ C
      *                 ONE,D2IJG(KOFF3),NTOTIJ)
 C
   100    CONTINUE
+C
+      CALL QEXIT('F2_PQAO')
 C
       RETURN
       END

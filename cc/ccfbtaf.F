@@ -160,8 +160,11 @@ c
       INTEGER KGZAIM, KGZQAI, KBFZA, KBFZQA, KCTILD, KDTILD
       INTEGER KXIJCB, KXCJIB, KGAMMAQ, LENGAM, KYPSA,KYPSQA,KXBICJ
       INTEGER ISYMCJ, ISYMBI, NDIM1, NDIM2, ISYIAJB, ITRAN, KTEST
+      INTEGER IOPTTCME
 * external 
       INTEGER ILSTSYM
+
+      CALL QENTER('CCFBTAF')
 
 *---------------------------------------------------------------------*
 * begin:
@@ -830,7 +833,8 @@ c            CALL CC_PRSQ(DUM,WORK(KXIAJB),ISYRES,0,1)
           CALL CC_RDRSP(LISTR,IDLSTR,ISYMTA,IOPT,MODEL,
      &                               WORK(KDUM),WORK(KTA2AM))
           CALL CCLR_DIASCL(WORK(KTA2AM),TWO,ISYMTA)
-          CALL CCSD_TCMEPK(WORK(KTA2AM),ONE,ISYMTA)
+          IOPTTCME = 1
+          CALL CCSD_TCMEPK(WORK(KTA2AM),ONE,ISYMTA,IOPTTCME)
 
 *         -----------------------------------------
 *         contract: A2IM_ai = sum_bj Zeta1_bj (2TA-TA)_aibj
@@ -1425,7 +1429,8 @@ C           CALL CC_PRP(WORK,THETA2,ISYRES,0,1)
 *
             IOPT = 1
             CALL CC_T2PK(WORK(KXPCK),WORK(KXIAJB),ISYRES,1) 
-            CALL CCSD_TCMEPK(WORK(KXPCK),ONE,ISYRES)
+            IOPTTCME = 1
+            CALL CCSD_TCMEPK(WORK(KXPCK),ONE,ISYRES,IOPTTCME)
             !copy on RES vect
             CALL DAXPY(NT2AM(ISYRES),-ONE,WORK(KXPCK),1,THETA2,1)
 c
@@ -1456,6 +1461,8 @@ c
          CALL CC_PRP(THETA1,THETA2,ISYRES,1,1) 
       END IF
      
+      CALL QEXIT('CCFBTAF')
+
       RETURN
       END 
 *=====================================================================*

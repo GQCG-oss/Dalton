@@ -75,6 +75,8 @@ c/* Deck CC_BMATRIX */
 
       INTEGER MAXBTRAN, NTRAN, ISTART, IBATCH, NBATCH
 
+      CALL QENTER('CC_BMATRIX')
+C
       MAXBTRAN = MAXSIM
 
       NBATCH = (NBTRAN+MAXBTRAN-1)/MAXBTRAN
@@ -100,6 +102,8 @@ c/* Deck CC_BMATRIX */
      &                MXVEC, WORK, LWORK )
 
       END DO
+
+      CALL QEXIT('CC_BMATRIX')
 
       RETURN
       END
@@ -290,6 +294,7 @@ c/* Deck CC_BMAT */
       INTEGER KBF0, LUBF0, KCBAR0, KDBAR0, KX4O, KSCR, KSCR2
       INTEGER KLAMDPB, KLAMDHB, KLAMDPA, KLAMDHA, IOPTW, IDUMMY
       INTEGER NBSRHF(8), IBSRHF(8,8), ICOUNT, ISYMAK, ISYBET
+      INTEGER IOPTTCME
 
 * external functions:
       INTEGER ICCSET1
@@ -308,6 +313,8 @@ c/* Deck CC_BMAT */
       DOUBLE PRECISION TIMINT, TIMRDAO, TIMTRBT, TIMIMA, TIMIMAB,TIMFCK
 #endif 
   
+      CALL QENTER('CC_BMAT')
+
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
@@ -1318,7 +1325,8 @@ C
 
       CALL CCG_RDIAJB(WORK(KEND1), NT2AM(ISYOVOV))
 
-      Call CCSD_TCMEPK(WORK(KEND1),ONE,ISYOVOV)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KEND1),ONE,ISYOVOV,IOPTTCME)
 
       CALL CC_T2SQ(WORK(KEND1), WORK(KLIAJB), ISYOVOV)
 
@@ -2094,6 +2102,8 @@ C
       END IF
 *=====================================================================*
 
+      CALL QEXIT('CC_BMAT')
+
       RETURN
       END
 *=====================================================================*
@@ -2182,6 +2192,8 @@ c/* Deck CCBMAT2 */
       DOUBLE PRECISION DDOT, SECOND
 #endif
 
+      CALL QENTER('CCBMAT2')
+
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
@@ -2224,6 +2236,8 @@ c/* Deck CCBMAT2 */
      &                   WORK(KT1AMPB),ISYMB,IOPT)
 
          CALL DAXPY(NT1AM(ISYRES),ONE,WORK(KCON),1,THETA1,1)
+
+         CALL QEXIT('CCBMAT2')
 
          RETURN
 
@@ -2631,6 +2645,8 @@ c/* Deck CCBMAT2 */
 
 *----------------------------------------------------------------------
 
+      CALL QEXIT('CCBMAT2')
+
       RETURN
 
       END
@@ -2704,6 +2720,8 @@ c/* Deck CCBPRE1 */
 
 * external functions:
       INTEGER ILSTSYM
+
+      CALL QENTER('CCBPRE1')
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2799,6 +2817,7 @@ c/* Deck CCBPRE1 */
 
       END DO
 
+      CALL QEXIT('CCBPRE1')
 
       RETURN
       END
@@ -2866,6 +2885,8 @@ c/* Deck CCBPRE2 */
 
 * external functions:
       INTEGER ILSTSYM
+
+      CALL QENTER('CCBPRE2')
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2938,6 +2959,7 @@ c/* Deck CCBPRE2 */
         END IF
       END DO
 
+      CALL QEXIT('CCBPRE2')
 
       RETURN
       END
@@ -3026,6 +3048,8 @@ c/* Deck CCBINT1 */
 #endif
 
 
+      CALL QENTER('CCBINT1')
+
   
 *---------------------------------------------------------------------*
 * begin:
@@ -3111,6 +3135,8 @@ c/* Deck CCBINT1 */
 
 *---------------------------------------------------------------------*
 
+       CALL QEXIT('CCBINT1')
+
        RETURN
        END
 *=====================================================================*
@@ -3182,6 +3208,8 @@ c/* Deck CCBINT2 */
       DOUBLE PRECISION DUMMY
 #endif
 
+
+      CALL QENTER('CCBINT2')
 
   
 *---------------------------------------------------------------------*
@@ -3261,6 +3289,8 @@ c/* Deck CCBINT2 */
         CALL QUIT('UNKOWN COUPLED CLUSTER MODEL IN CCBINT2.')
       END IF
 
+      CALL QEXIT('CCBINT2')
+
       RETURN
       END
 *=====================================================================*
@@ -3333,6 +3363,8 @@ c/* Deck CCBINT3 */
 
 * external functions:
       INTEGER ILSTSYM
+
+      CALL QENTER('CCBINT3')
 
   
 *---------------------------------------------------------------------*
@@ -3434,6 +3466,7 @@ c/* Deck CCBINT3 */
         WRITE (LUPRI,*) 'DEBUG CCBINT3>  NORM^2 of FOCKVV = ',XNORM
       END IF
 
+      CALL QEXIT('CCBINT3')
 
       RETURN
       END
@@ -3479,6 +3512,8 @@ c/* Deck CCBOPEN*/
 #else
       DOUBLE PRECISION WORK(LWORK)
 #endif
+
+      CALL QENTER('CCBOPEN')
 
 *---------------------------------------------------------------------*
 * open files for local intermediates:
@@ -3595,6 +3630,7 @@ c/* Deck CCBOPEN*/
         CALL CC_WVEC(LUFK,FKFIL,LENFK,LEN,IINT1,WORK)
       END DO
 
+      CALL QEXIT('CCBOPEN')
 
       RETURN
       END
@@ -3656,6 +3692,8 @@ c/* Deck CCBSAVE*/
 
 * external function:
       INTEGER ILSTSYM
+
+      CALL QENTER('CCBSAVE')
 
 *---------------------------------------------------------------------*
 * Fock, BF and R intermediates:
@@ -3722,6 +3760,8 @@ c/* Deck CCBSAVE*/
           END IF
         END DO
       END IF
+
+      CALL QEXIT('CCBSAVE')
 
       RETURN
       END
@@ -3800,6 +3840,8 @@ c/* Deck CCB_22CD */
 
       INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+
+      CALL QENTER('CCB_22CD')
 
 * check symmetries:
       ISYTATB = MULD2H(ISYMTA,ISYMTB)
@@ -3914,6 +3956,8 @@ c/* Deck CCB_22CD */
         END DO ! B
       END DO ! ISYMB
 
+      CALL QEXIT('CCB_22CD')
+
       RETURN 
       END
 *---------------------------------------------------------------------*
@@ -3978,7 +4022,9 @@ c/* Deck CCB_CDBAR */
 #endif
       PARAMETER (ONE = 1.0d0)
 
-      INTEGER IOPTZWVI, ISYTIN, ISYCIN
+      INTEGER IOPTZWVI, ISYTIN, ISYCIN, IOPTTCME
+
+      CALL QENTER('CCB_CDBAR')
 
 *---------------------------------------------------------------------*
 * check symmetries:
@@ -4010,7 +4056,8 @@ c/* Deck CCB_CDBAR */
 *       2T(ia|jb)-T(ib|ja) in place:
       
         CALL CCRHS_T2TR(XIAJB,WORK,LWORK,ISYINT)
-        CALL CCSD_TCMEPK(T2AMP,ONE,ISYTAM)
+        IOPTTCME = 1
+        CALL CCSD_TCMEPK(T2AMP,ONE,ISYTAM,IOPTTCME)
 
         IOPTZWVI = 1
 
@@ -4101,6 +4148,8 @@ c/* Deck CCB_CDBAR */
         WRITE (LUPRI,*) 'Norm of ',TYPE,'BAR intermediate is ',XNORM
       END IF
 
+      CALL QEXIT('CCB_CDBAR')
+
       RETURN
       END
 *=====================================================================*
@@ -4133,6 +4182,8 @@ C
       LOGICAL L1TST,L2TST, LETST
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CC_FDB')
 C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
@@ -4594,6 +4645,8 @@ C
 C
       CALL AROUND(' END OF CC_FDB ')
 C
+      CALL QEXIT('CC_FDB')
+C
       RETURN
       END
 *=====================================================================*
@@ -4664,6 +4717,8 @@ c /* deck CCDOTRSP */
 * external functions:
       INTEGER ILSTSYM
 
+
+      CALL QENTER('CCDOTRSP')
 
 *---------------------------------------------------------------------*
 * allocate memory for vectors to be read from file:
@@ -4744,6 +4799,8 @@ c /* deck CCDOTRSP */
 
       END DO
       
+      CALL QEXIT('CCDOTRSP')
+
       RETURN
       END 
 
@@ -4806,6 +4863,8 @@ c/* Deck CC_BTST */
       INTEGER IL1ZETA
       INTEGER ILSTSYM
 
+
+      CALL QENTER('CC_BTST')
 
 
 *---------------------------------------------------------------------*
@@ -4978,6 +5037,7 @@ C       CALL DZERO(WORK(KT2AMPB),NT2AM(ISYMB))
 
       END IF
     
+      CALL QEXIT('CC_BTST')
 
       RETURN
       END 
@@ -5024,6 +5084,8 @@ C  /* Deck ccb_cdsort */
       DOUBLE PRECISION TWO, ONE, ZERO
 #endif
       PARAMETER (TWO = 2.0D0, ONE = 1.0D0, ZERO = 0.0D0)
+C
+      CALL QENTER('CCB_CDSORT')
 C
 C     --------------------------------------
 C     precalculate symmetry array for DDRHF:
@@ -5102,6 +5164,8 @@ C
 C
       END DO
 C
+      CALL QEXIT('CCB_CDSORT')
+C
       RETURN
       END
 *=====================================================================*
@@ -5149,6 +5213,8 @@ C
       INTEGER ISYMI, ISYMA, ISYMAI, KOFF1, KOFF2, KOFF3, KOFF4, KOFF5
       INTEGER NAI, ISYAIK, KSCR1, KSCR2, KEND1, LWRK1, KOFF6, ISYALP
       INTEGER ISYMK, NT1AK, NBASB, NBASA, NRHFK, IADR
+C
+      CALL QENTER('CC_CDB')
 C
 C     --------------------------------------
 C     precalculate symmetry array for BSRHF:
@@ -5316,6 +5382,8 @@ C
 
       END IF
 C
+      CALL QEXIT('CC_CDB')
+C
       RETURN
       END
 *=====================================================================*
@@ -5410,6 +5478,8 @@ c /* deck cc_aibj */
       INTEGER KOFF1, KOFF2, KOFF4, KLAMD
       INTEGER NBASA, NBASB, NVIRA, ISYMA, ISYMI
 
+      CALL QENTER('CC_AIBJ')
+
 *---------------------------------------------------------------------*
 *     work space allocation:
 *
@@ -5500,6 +5570,8 @@ C     --------------------------
       CALL CC_IAJB1(IGAM, WORK(KSCR4), ISYMAI, ISYGAM,
      &              XLAMDHB, ISYXLB, X0AIBJ)
 
+      CALL QEXIT('CC_AIBJ')
+
       RETURN
       END
 *=====================================================================*
@@ -5561,10 +5633,15 @@ C
       INTEGER KT1AMPA, KT2AMPA, KXLAMHA, KXLAMPA, KXIAJB, KEND1, LWRK1
       INTEGER ILSTSYM
 
+      CALL QENTER('CCBPRE1INT')
+
 *---------------------------------------------------------------------*
 * test CC model, open files and do some initializations:
 *---------------------------------------------------------------------*
-      IF (CCS .OR. CC2) RETURN
+      IF (CCS .OR. CC2) THEN
+         CALL QEXIT('CCBPRE1INT')
+         RETURN
+      ENDIF
 
       LUBFD  = 0
       LUCBAR = 0
@@ -5683,6 +5760,8 @@ C        ---------------------------------------------------------
       CALL WCLOSE2(LUCBAR,CBAFIL,'KEEP')
       CALL WCLOSE2(LUDBAR,DBAFIL,'KEEP')
       CALL WCLOSE2(LUBFD, FNBFD, 'KEEP')
+
+      CALL QEXIT('CCBPRE1INT')
 
       RETURN
       END

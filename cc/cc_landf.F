@@ -56,6 +56,8 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
+      CALL QENTER('CC_FHF')
+C
       KI = 1
 C
       IF (LWORK .LT. NT2AM(ISYMOP)) 
@@ -71,7 +73,8 @@ C
          CALL CC_PRP(DUM,WORK(KI),1,0,1)
       ENDIF
 C
-      CALL CCSD_TCMEPK(WORK(KI),1.0D0,ISYMOP)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KI),1.0D0,ISYMOP,IOPTTCME)
 C
       ISYMAI = ISYMV
       ISYMBJ = ISYMV
@@ -87,6 +90,8 @@ C
   200    CONTINUE
 C
   100 CONTINUE
+C
+      CALL QEXIT('CC_FHF')
 C
    1  FORMAT(1x,A35,1X,E20.10)
       RETURN
@@ -130,6 +135,8 @@ C
 #include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CC_C1T2C')
 C
       ISYRES = MULD2H(ISYR,ISYL)
 C
@@ -519,6 +526,8 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CC_C1T2C')
+C
       RETURN
       END
 C  /* Deck cc_L1FCK */
@@ -543,6 +552,8 @@ C
 #include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_L1FCK')
 C
       ISYRES = MULD2H(ISYMV,ISYMF)
 C
@@ -718,6 +729,8 @@ C
   170    CONTINUE
   160 CONTINUE
 C
+      CALL QEXIT('CC_L1FCK')
+C
       RETURN
       END
 C  /* Deck cc_12c */
@@ -756,6 +769,8 @@ C
 #include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_21B12C')
 C
       ISYMLI = MULD2H(ISINT,ISYMH)
       ISYRES = MULD2H(ISYMV,ISYMLI)
@@ -944,6 +959,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC_21B12C')
+C
       RETURN
       END
       SUBROUTINE CC_INT3O(X3OINT,DSRHF,XLAMDH,ISYMH,XLAMDP,
@@ -973,6 +990,8 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
       LOGICAL LWTD
+C
+      CALL QENTER('CC_INT3O')
 C
 C-------------------------------------------
 C     Work space allocation 1 * outer loops.
@@ -1070,6 +1089,8 @@ C
          ENDIF
       ENDIF
 C
+      CALL QEXIT('CC_INT3O')
+C
       RETURN
       END
 C  /* Deck ccll_lamtra */
@@ -1093,6 +1114,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCLL_LAMTRA')
 C
 C---------------------------------------------
 C     Half-transformation to AO-basis of CTR1.
@@ -1120,6 +1143,8 @@ C
      *              CT1AO(KOFF3),NTOBAL)
 C
   100 CONTINUE
+C
+      CALL QEXIT('CCLL_LAMTRA')
 C
       RETURN
       END
@@ -1175,6 +1200,8 @@ C
       DIMENSION RHO1(*),CTR2(*),SCRM(*),SCRCM(*),XINT(*), 
      *          XLMH1(*),XLMP1(*),XLMH2(*),XLMP2(*),
      *          WORK(LWORK)
+C
+      CALL QENTER('CC_21DC')
 C
       ISYML1 = MULD2H(ISYMH1,ISYMP1)
       ISYML2 = MULD2H(ISYMH2,ISYMP2)
@@ -1751,6 +1778,8 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CC_21DC')
+C
       RETURN
       END
 C  /* Deck cc_11a */
@@ -1777,6 +1806,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CC_11A')
 C
       ISYRHO = MULD2H(ISYMFG,ISYMOP)
 C
@@ -1828,6 +1859,8 @@ C
 C
   110 CONTINUE
 C
+      CALL QEXIT('CC_11A')
+C
       RETURN
       END
 C  /* Deck cc_12b */
@@ -1854,6 +1887,8 @@ C
 #include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_12B')
 C
       ISYINT = MULD2H(ISYMD,ISYMOP)
       ISYBCO = ISYMD
@@ -2090,6 +2125,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC_12B')
+C
       RETURN
       END
 C  /* Deck cclt_p21i */
@@ -2108,6 +2145,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCLT_P21I')
 C
       IF (LWORK .LT. NT2BCD(ISYINT)) THEN
          CALL QUIT('Insufficient work space in CCLT_I21P')
@@ -2144,6 +2183,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCLT_P21I')
+C
       RETURN
       END
 C  /* Deck cclt_ct1ao */
@@ -2164,6 +2205,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCLT_CT1AO')
 C
 C---------------------------------------------
 C     Half-transformation to AO-basis of CTR1.
@@ -2189,6 +2232,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CCLT_CT1AO')
+C
       RETURN
       END
 C  /* Deck cclt_s21i */
@@ -2209,6 +2254,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCLT_S21I')
 C
 C-----------------------------
 C     Initialize result array.
@@ -2249,6 +2296,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCLT_S21I')
+C
       RETURN
       END
 C  /* Deck cclt_pi3o */
@@ -2269,6 +2318,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCLT_PI3O')
 C
 C-----------------------------
 C     Initialize result array.
@@ -2306,6 +2357,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCLT_PI3O')
+C
       RETURN
       END
 C  /* Deck ccpinaje */
@@ -2326,6 +2379,8 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
 C
+      CALL QENTER('CCPINAJE')
+C
       DO 100 E = 1,NVIR(ISYME)
 C
          DO 110 J = 1,NRHF(ISYMJ)
@@ -2339,6 +2394,8 @@ C
 C
   110    CONTINUE
   100 CONTINUE
+C
+      CALL QEXIT('CCPINAJE')
 C
       RETURN
       END
@@ -2360,6 +2417,8 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
 C
+      CALL QENTER('CCRINAEJ')
+C
       DO 100 J = 1,NRHF(ISYMJ)
 C
          DO 110 E = 1,NVIR(ISYME)
@@ -2373,6 +2432,8 @@ C
 C
   110    CONTINUE
   100 CONTINUE
+C
+      CALL QEXIT('CCRINAEJ')
 C
       RETURN
       END
@@ -2394,6 +2455,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCLT_11BC')
 C
 C---------------------------
 C     Work space allocation.
@@ -2466,6 +2529,8 @@ C
 C
   170 CONTINUE
 C
+      CALL QEXIT('CCLT_11BC')
+C
       RETURN
       END
 C  /* Deck cc_eitr */
@@ -2485,6 +2550,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CC_EITR')
 C
       IF ((LWORK .LT. NMATAB(ISYINT)) .OR. (LWORK .LT. NMATIJ(ISYINT)))
      &   CALL QUIT('Insufficient work space in CC_EITR')
@@ -2531,6 +2598,8 @@ C
   130    CONTINUE
   120 CONTINUE
 C
+      CALL QEXIT('CC_EITR')
+C
       RETURN
       END
 C  /* Deck cc2_cc2ffc */
@@ -2561,6 +2630,8 @@ C
 #include <leinf.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_RCC2FF')
 C
       IF ((NFIELD.GT.0).AND.NONHF) THEN
 C
@@ -2611,6 +2682,8 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CC_RCC2FF')
+C
       RETURN
       END
       SUBROUTINE CC_LCC2FF(RHO1,XLAMDP,XLAMDH,XLPC1,XLHC1,ISYMLA, 
@@ -2635,6 +2708,8 @@ C
 #include <ccfield.h>
 #include <leinf.h>
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_LCC2FF')
 C
       ONE = 1.0D0
 C
@@ -2665,6 +2740,8 @@ C
       CALL CC_21EFM(RHO1,WORK(KFOCK1),ISYMLA,XI,YI,
      *              ISYMIM,WORK(KEND1),LWRK1)
 C
+      CALL QEXIT('CC_LCC2FF')
+C
       RETURN
       END
       SUBROUTINE CC_FCC2FF(OMEGA2,C2AM,ISYMTR,XLAMDP,XLAMDH,XLPC1,
@@ -2692,6 +2769,8 @@ C
       LOGICAL ETRAN,FCKCON
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_FCC2FF')
 C
       ONE = 1.0D0
 C
@@ -2744,6 +2823,8 @@ C
 C
       CALL CCRHS_E(OMEGA2,C2AM,WORK(KEMAT1),WORK(KEMAT2),
      *             WORK(KEND1),LWRK1,ISYMTR,ISYMEI)
+C
+      CALL QEXIT('CC_FCC2FF')
 C
       RETURN
       END

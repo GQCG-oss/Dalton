@@ -81,6 +81,8 @@ c/* Deck CC_FTST */
       INTEGER ILSTSYM
 
 
+      CALL QENTER('CC_FTST')
+
 
 *---------------------------------------------------------------------*
 * call F matrix transformation:
@@ -185,6 +187,8 @@ c       WRITE (LUPRI,*) 'CC_FTST> can not calculate finite difference B matrix'
 c       WRITE (LUPRI,*) 'CC_FTST> with symmetry.'
 c     END IF
 
+      CALL QEXIT('CC_FTST')
+
       RETURN
       END 
 *=====================================================================*
@@ -261,6 +265,8 @@ C
       CHARACTER*6 FILPQR0, FILPQRR
       INTEGER NBFRHF(8), IBFRHF(8,8)
 C
+      CALL QENTER('CC_FMATOLD')
+
 C-----------------------------------
 C     initialize overall timing
 C-----------------------------------
@@ -1860,7 +1866,8 @@ C
          CALL DZERO(WORK(KXIM),NMATIJ(ISYRES))
          CALL DCOPY(NMATAB(ISYRES),WORK(KYMATX),1,WORK(KYIM),1)
          CALL DSCAL(NMATAB(ISYRES),XHALF,WORK(KYIM),1)
-         CALL CCSD_TCMEPK(WORK(KC2AM),ONE,ISYMOP)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KC2AM),ONE,ISYMOP,IOPTTCME)
 
          CALL CC_22EC(WORK(KRHO2),WORK(KC2AM),WORK(KXIM),
      *                WORK(KYIM),ISYRES,WORK(KEND1),LWRK1)
@@ -2607,6 +2614,8 @@ C
       WRITE (LUPRI,*) 'I/O error in CC_FMAT.'
       CALL QUIT('I/O error in CC_FMAT.')
 
+      CALL QEXIT('CC_FMATOLD')
+
       END
 *=====================================================================*
 *                      END OF SUBROUTINE CC_FMAT                   
@@ -2637,6 +2646,8 @@ C
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <leinf.h>
+C
+      CALL QENTER('CCLR_FTST')
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' START OF CCLR_FTST ')
@@ -2715,6 +2726,8 @@ C
          CALL AROUND(' END OF CCLR_FTST')
       ENDIF
 C
+      CALL QEXIT('CCLR_FTST')
+C
       RETURN
       END
 *=====================================================================*
@@ -2740,6 +2753,8 @@ C
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00 )
       CHARACTER*10 MODEL
       CHARACTER*(*) LLIST
+C
+      CALL QENTER('CCLR_FANA')
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' START OF CCLR_FANA')
@@ -2836,6 +2851,8 @@ C
          CALL AROUND(' END OF CCLR_FANA ')
       ENDIF
 C
+      CALL QEXIT('CCLR_FANA')
+C
       RETURN
       END
 *=====================================================================*
@@ -2866,6 +2883,8 @@ C
       LOGICAL L1TST,L2TST
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCLR_FDF')
 C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
@@ -3284,6 +3303,8 @@ C
          CALL AROUND(' END OF CCLR_FDF ')
       ENDIF
 C
+      CALL QEXIT('CCLR_FDF')
+C
       RETURN
       END
 C----------------------------------------------------------------------
@@ -3354,6 +3375,7 @@ C----------------------------------------------------------------------
       INTEGER ILSTSYM
 
       CALL QENTER('CC_PQIM')
+
 *----------------------------------------------------------------------
 * set symmetries and allocate work space:
 *----------------------------------------------------------------------
@@ -3590,6 +3612,7 @@ C
    1  FORMAT(1x,'Time used for',2x,A18,2x,': ',f10.2,' seconds')
  
       CALL QEXIT('CC_PQIM')
+
       RETURN
       END
 *======================================================================
@@ -3641,6 +3664,8 @@ C
 
 * external function:
       INTEGER ILSTSYM
+
+      CALL QENTER('CC_XYMIM')
 
 *----------------------------------------------------------------------
 * set symmetries and allocate work space:
@@ -3718,6 +3743,8 @@ C
       WRITE (LUPRI,*) 'FILE:',FILNAM
       WRITE (LUPRI,*) 'UNIT:',LUXYM
       CALL QUIT('I/O error for in CC_XYMIM.')
+
+      CALL QEXIT('CC_XYMIM')
 
       END
 *======================================================================

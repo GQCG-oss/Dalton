@@ -85,6 +85,8 @@ C
       INTEGER KBFZ0, KF0IM, KRZ0I, KRZBI, KEND,  LEND
       INTEGER KZDPK0, KZDEN0, KZFCK0, KZDPKB, KZDENB, KZFCKB
 
+      CALL QENTER('CC_XIETA')
+
       NBATCH = (NXETRAN+MAXXETRAN-1)/MAXXETRAN
 
       IF (LOCDBG) THEN
@@ -187,6 +189,8 @@ C
         END IF
 
       END DO
+
+      CALL QEXIT('CC_XIETA')
 
       RETURN
       END
@@ -462,6 +466,8 @@ c /* deck cc_xieta1 */
       INTEGER ILSTSYM
       INTEGER IROPER
       INTEGER IROPER2
+
+      CALL QENTER('CC_XIETA1')
 
 *---------------------------------------------------------------------*
 * begin: check wavefunction model and flush print unit
@@ -2561,6 +2567,8 @@ C          END IF
         CALL FLSHFO(LUPRI)
       END IF
 
+      CALL QEXIT('CC_XIETA1')
+
       RETURN
       END
 *=====================================================================*
@@ -2633,6 +2641,8 @@ C          END IF
 
 * external function:
       INTEGER IROPER2
+
+      CALL QENTER('CCXIINT1')
 
 *---------------------------------------------------------------------*
 * generate lower triangular packed density matrix:
@@ -2729,6 +2739,8 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
 *---------------------------------------------------------------------*
 * that's it; return:
 *---------------------------------------------------------------------*
+      CALL QEXIT('CCXIINT1')
+
       RETURN
 
       END 
@@ -2808,12 +2820,17 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
       LOGICAL DONE_BFDEN, DONE_PQIM
       SAVE IDLSTOLD, DONE_BFDEN, DONE_PQIM
 
+      CALL QENTER('CCETAINT1')
+
 *---------------------------------------------------------------------*
 * do some tests and set symmetries:
 *---------------------------------------------------------------------*
 
 * nothing to do for unrelaxed CCS:
-      IF (CCS .AND. (.NOT.LRELAX)) RETURN
+      IF (CCS .AND. (.NOT.LRELAX)) THEN
+         CALL QEXIT('CCETAINT1')
+         RETURN
+      ENDIF
 
 * if ITRAN=ISTART, make sure that everything will be initialized:
       IF (ITRAN.EQ.ISTART) THEN
@@ -3021,6 +3038,8 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
 *---------------------------------------------------------------------*
       IDLSTOLD = IDLSTL
 
+      CALL QEXIT('CCETAINT1')
+
       RETURN
 
       END 
@@ -3103,6 +3122,8 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
       INTEGER ISYETA, IDUMMY, NSRHF, KDSRHF, KX0IAJB, KX1IAJB
       INTEGER KEND2, LWRK2, ISY0IAJ, ISY1IAJ, ISY0ALBE, ISY1ALBE
       INTEGER JGAM, ISYGAM, KOFF0, KOFF1
+
+      CALL QENTER('CCETAINT2')
 
 *---------------------------------------------------------------------*
 *     set some symmetries:
@@ -3369,6 +3390,8 @@ C        --------------------------------------------
 *     That's it; return:
 *----------------------------------------------------------------------*
 
+      CALL QEXIT('CCETAINT2')
+
       RETURN
       END 
 *======================================================================*
@@ -3472,6 +3495,8 @@ c /* deck ccxiintao */
       INTEGER KX0IAJB, KX0IABJ, KX0IJBA, KX1AIBJ
       INTEGER LEN0, LEN1, IADR0, IADRB, ISYGAM, ISY0ALBE, ISY1ALBE
       INTEGER JGAM, KOFF0, KOFF1, ISYSRH1, KEND5, LWRK5, IOPT, ISYM
+
+      CALL QENTER('CCXIINTAO')
 
 *---------------------------------------------------------------------*
 *     begin:
@@ -3816,6 +3841,8 @@ C     --------------------------------------------
 *---------------------------------------------------------------------*
       IF (LOCDBG) WRITE (LUPRI,*) 'return from CCXIINTAO...'
 
+      CALL QEXIT('CCXIINTAO')
+
       RETURN
       END 
 *=====================================================================*
@@ -3912,6 +3939,8 @@ C     --------------------------------------------
 
 * external functions:
       INTEGER IROPER
+
+      CALL QENTER('CCXI2')
 
 *---------------------------------------------------------------------*
 *     some initializations:
@@ -4623,6 +4652,8 @@ C        ------------------------------------------------------------
           CALL FLSHFO(LUPRI)
       END IF
 
+      CALL QEXIT('CCXI2')
+
       RETURN
       END  
 *======================================================================*
@@ -4723,7 +4754,9 @@ c /* deck cceta2 */
       INTEGER ISYMF, ISYALJ, ISYJLI, IVIRF, KYPS0, KYPS1, LEN
       INTEGER NTAIKJ(9), ITAIKJ(8,8), ICOUNT, ISYM, ISYMAIK, ISYMJ
       INTEGER ISYMBF, KCDBAR, IADR, LENBFZ0, LENBFZ1, KBFZ, IORD
-      INTEGER ILSTSYM
+      INTEGER ILSTSYM, IOPTTCME
+
+      CALL QENTER('CCETA2')
 
 *----------------------------------------------------------------------*
 * begin:
@@ -4922,7 +4955,8 @@ C         ---------------------------------------------------
           IOPT = 2
           CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,
      &                  DUMMY,WORK(KT2AMP))
-          CALL CCSD_TCMEPK(WORK(KT2AMP),ONE,ISYM0)
+          IOPTTCME = 1
+          CALL CCSD_TCMEPK(WORK(KT2AMP),ONE,ISYM0,IOPTTCME)
 
 C         -----------------------------------------
 C         contract: A2IM = sum_bj (2T-T)_aibj L1_bj
@@ -4938,7 +4972,8 @@ C         ----------------------------------------------------------
           IOPT   = 0
           CALL GETWA2(LUMO,FNMO,WORK(KXIAJB),IADRMO,NT2SQ(ISYHOP))
           CALL CC_T2PK(WORK(KXPCK),WORK(KXIAJB),ISYHOP,IOPT)
-          CALL CCSD_TCMEPK(WORK(KXPCK),ONE,ISYHOP)
+          IOPTTCME = 1
+          CALL CCSD_TCMEPK(WORK(KXPCK),ONE,ISYHOP,IOPTTCME)
 
 C         -------------------------------------------
 C         contract: eta_ai = sum_bj L(ia,jb) A2IM(jb)
@@ -4985,7 +5020,8 @@ C         ----------------------------------------------------------
           IOPT   = 0
           CALL GETWA2(LUMO,FNMO,WORK(KXIAJB),IADRMO,NT2SQ(ISYHOP))
           CALL CC_T2PK(RHO2,WORK(KXIAJB),ISYHOP,IOPT)
-          CALL CCSD_TCMEPK(RHO2,ONE,ISYHOP)
+          IOPTTCME = 1
+          CALL CCSD_TCMEPK(RHO2,ONE,ISYHOP,IOPTTCME)
           CALL DSCAL(NT2AM(ISYETA),TWO,RHO2,1)
 
           IF (ISYHOP.EQ.1) THEN
@@ -5569,7 +5605,8 @@ C           apply P^ab_ij, pack the integrals and add to result vector:
 C
             IOPT = 1
             CALL CC_T2PK(WORK(KXPCK),WORK(KXIAJB),ISYETA,1) 
-            CALL CCSD_TCMEPK(WORK(KXPCK),ONE,ISYETA)
+            IOPTTCME = 1
+            CALL CCSD_TCMEPK(WORK(KXPCK),ONE,ISYETA,IOPTTCME)
 
             IF (CC2) THEN
               CALL DAXPY(NT2AM(ISYETA),+ONE,WORK(KXPCK),1,RHO2,1)
@@ -5598,6 +5635,8 @@ C
          CALL CC_PRP(RHO1,RHO2,ISYETA,1,1) 
       END IF
      
+      CALL QEXIT('CCETA2')
+
       RETURN
       END 
 *=====================================================================*
@@ -5650,6 +5689,8 @@ C
 
       INTEGER ISYMM,ISYMDL,ISYMBM,ISYMB,NT1DL,KOFF1,KOFF2,KOFF3,KBM
  
+      CALL QENTER('CC_RIM')
+
  
 *----------------------------------------------------------------------
 *     Contract the integrals in XLDM with T2 amplitudes.
@@ -5680,6 +5721,8 @@ C
  
       END DO
  
+      CALL QEXIT('CC_RIM')
+
       RETURN
       END
 *======================================================================
@@ -5727,6 +5770,8 @@ C
 #include <ccsdsym.h>
 C
       INTEGER IOPT
+C
+      CALL QENTER('CC_GHJ')
 C
 C---------------------------------------------------------
 C     Transform the AO index of R intermediate(s) to i.
@@ -5828,11 +5873,11 @@ C
      *                     ONE,XLAMDPB(KOFF2),NBASD,GAIM(KOFF1),NBASD,
      *                     ONE,OMEGA1(KOFF3),NVIRA)
               END IF
-
+C
             END IF
 C
          END DO
-
+C
       END IF 
 C
 C--------------------------------------
@@ -5840,9 +5885,9 @@ C     Add the Fock matrix contribution:
 C--------------------------------------
 C
       IF (ONHCON) THEN
- 
+C
        IF (TRSPOH) THEN
-
+C
          ! omega1_ai = omega1_ai + h_ia
          DO ISYMI = 1,NSYM
            ISYMA = MULD2H(ISYMI,ISYRES)
@@ -5854,9 +5899,9 @@ C
              END DO
            END DO
          END DO
-
+C
        ELSE
-
+C
          ! omega1_ai = omega1_ai + h_ai
          DO ISYMI = 1,NSYM
            ISYMA = MULD2H(ISYMI,ISYRES)
@@ -5866,12 +5911,13 @@ C
             CALL DAXPY(NVIR(ISYMA),ONE,ONEHAM(KOFF2),1,OMEGA1(KOFF1),1)
            END DO
          END DO
-
+C
        END IF
-
+C
       END IF
- 
- 
+C
+      CALL QEXIT('CC_GHJ')
+C
       RETURN
       END
 *======================================================================*
@@ -5898,6 +5944,8 @@ C
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDH(*),YPS(*),YI(*)
+C
+      CALL QENTER('CCLT_YPS')
 C
 C---------------------------------------------------
 C     Half-transformation to AO-basis of CTR1 and YI
@@ -5936,6 +5984,8 @@ C
          END IF
 C
       END DO
+C
+      CALL QEXIT('CCLT_YPS')
 C
       RETURN
       END
@@ -5995,6 +6045,8 @@ C
       DOUBLE PRECISION ONE, XNORM, DDOT
 #endif
       PARAMETER(ONE=1.0D0)
+
+      CALL QENTER('CC_FCKRLX')
 
  
 *---------------------------------------------------------------------*
@@ -6070,6 +6122,8 @@ C
           CALL FLSHFO(LUPRI)
         END IF
 
+      CALL QEXIT('CC_FCKRLX')
+
       RETURN
 
       END
@@ -6120,6 +6174,8 @@ C
 #endif
       PARAMETER(ONE=1.0D0)
 
+      CALL QENTER('CC_FCKMO2')
+
 *---------------------------------------------------------------------*
 *       transform derivative AO Fock matrix to MO:
 *---------------------------------------------------------------------*
@@ -6152,6 +6208,8 @@ C
      &              WORK(KEND1),LWRK1,ISYFAO,ISYM2,ISYM1)
 
       CALL DAXPY(N2BST(ISYRES),ONE,WORK(KSCR),1,FOCKMO,1)
+
+      CALL QEXIT('CC_FCKMO2')
 
       RETURN
 

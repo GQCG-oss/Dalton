@@ -65,6 +65,8 @@ C
       CHARACTER*5 ETY0, ETY1, ETY2
       CHARACTER MODEL*10
 C
+      CALL QENTER('CCSD_ENERGY')
+C
 C     -------------------------------------------------------------
 C     set model for which the current t-amplitudes were calculated:
 C     -------------------------------------------------------------
@@ -219,6 +221,7 @@ C        write SCF energy to summary file:
          WRITE(LURES,'(/12X,A,A,A,F32.10)')
      *               'Total ',ETY0,' energy: ',ESCF
 C
+         CALL QEXIT('CCSD_ENERGY')
          RETURN
       ENDIF
 C
@@ -584,7 +587,8 @@ C
             CC1A   = CC1ASV
          ENDIF
 C
-         CALL CCSD_TCMEPK(WORK(KT2AM),0.5d0,1)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AM),0.5d0,1,IOPTTCME)
          ECCP1 = TWO*DDOT(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
          ECCP2 = TWO*DDOT(NT2AMX,WORK(KT2AM),1,WORK(KOMEG2),1)
 C
@@ -774,6 +778,8 @@ C
 !
       ENDIF
                                         
+      CALL QEXIT('CCSD_ENERGY')
+C
       RETURN
       END
 C  /* Deck ccsd_guess */
@@ -790,6 +796,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_GUESS')
 C
 C-------------------------------------
 C     Initial guess for t1 amplitudes.
@@ -853,6 +861,8 @@ C
   250    CONTINUE
       ENDIF
 C
+      CALL QEXIT('CCSD_GUESS')
+C
       RETURN
       END
 C  /* Deck ccsd_nxtam */
@@ -871,6 +881,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_NXTAM')
 C
 c     IF (.NOT. (CCD.OR.LBRUK)) THEN
 C
@@ -926,6 +938,8 @@ C
   210    CONTINUE
   200 CONTINUE
 C
+      CALL QEXIT('CCSD_NXTAM')
+C
       RETURN
       END
 C  /* Deck ccsd_eccsd */
@@ -954,6 +968,8 @@ C
 #include <ccinftap.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_ECCSD')
 C
       XECCSD = ESCF
 C
@@ -1088,6 +1104,8 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
+      CALL QEXIT('CCSD_ECCSD')
+C
       RETURN
       END
 C  /* Deck ccsd_iajb */
@@ -1123,6 +1141,8 @@ C
 #include <ccfield.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_IAJB')
 C
 C-----------------------------------------
 C     Initialize the XAIBJ integral array.
@@ -1522,6 +1542,8 @@ C
 C
       END IF
 C
+      CALL QEXIT('CCSD_IAJB')
+C
       RETURN
       END
 C  /* Deck ccsd_aibj2 */
@@ -1541,6 +1563,8 @@ C
 #include <ccsdinp.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_AIBJ2')
 C
       DO 100 J = 1,NRHF(ISYMJ)
 C
@@ -1647,6 +1671,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CCSD_AIBJ2')
+C
       RETURN
       END
 C  /* Deck ccsd_aibj3 */
@@ -1667,6 +1693,8 @@ C
 #include <ccsdinp.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_AIBJ3')
 C
       ISYMKD = ISYMAB
 C
@@ -1759,6 +1787,8 @@ C
          CALL PUTWA2(LU3SRT,FN3SRT,XINT3,IOFF,LENGTH)
       ENDIF
 C
+      CALL QEXIT('CCSD_AIBJ3')
+
       RETURN
       END
 C  /* Deck inidat */
@@ -1808,6 +1838,8 @@ C
 #include <ccisao.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_INIT1')
 C
 C-------------------------------------
 C     Read in information from sirius.
@@ -2763,6 +2795,8 @@ C
          WRITE(LUPRI,1) 'NLMRHF :',NLMRHF
       END IF
 C
+      CALL QEXIT('CCSD_INIT1')
+C
       RETURN
 C
     1 FORMAT(3X,A8,8I8)
@@ -2783,6 +2817,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('FOCK_REORDER')
 C
       IF (LWORK .LT. NORBT) THEN
          CALL QUIT('Insufficient space in FOCK_REORDER')
@@ -2817,6 +2853,8 @@ C
 C
       CALL DCOPY(NORBT,WORK,1,FOCK,1)
 C
+      CALL QEXIT('FOCK_REORDER')
+C
       RETURN
 C
     1 FORMAT(7X,'Sirius order',5X,'CCSD order')
@@ -2838,6 +2876,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CMO_REORDER')
 C
 C-----------------------
 C     Memory allocation.
@@ -2968,6 +3008,8 @@ C
 C
       CALL DCOPY(NLAMDT,WORK(KSCR2),1,CMO,1)
 C
+      CALL QEXIT('CMO_REORDER')
+C
       RETURN
 C
     1 FORMAT(/,/,7X,'Symmetry number :',I5)
@@ -2992,6 +3034,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSD_SYMSQO')
 C
       IF (ISYMAB .EQ. 1) THEN
 C
@@ -3033,6 +3077,8 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CCSD_SYMSQO')
+C
       RETURN
       END
       SUBROUTINE CCSD_SYMSQ(DISTAB,ISYMAB,SCR)
@@ -3048,6 +3094,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <symsq.h>
+C
+      CALL QENTER('CCSD_SYMSQ')
 C
 C
 #if !defined (SYS_CRAY)
@@ -3066,6 +3114,8 @@ C
       CALL GATHER(N2BST(ISYMAB),SCR,DISTAB,IADRPK(KOFF))
 #endif
 C
+      CALL QEXIT('CCSD_SYMSQ')
+C
       RETURN
       END
 C  /* Deck cc3_sort1 */
@@ -3081,6 +3131,8 @@ C
 #include <ccorb.h>
 #include <ccinftap.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC3_SORT1')
 C
 C
       IF ((IOPT .NE. 1) .AND. (IOPT .NE. 2)) THEN
@@ -3259,6 +3311,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC3_SORT1')
+C
       RETURN
       END
 C  /* Deck ccsd_delfro */
@@ -3270,6 +3324,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSD_DELFRO')
 C
       IF (LWORK .LT. NORBT) THEN
          WRITE(LUPRI,*) 'Insufficient space in CCSD_DELFRO'
@@ -3301,6 +3357,8 @@ C
 C
       CALL DCOPY(NORBT,WORK,1,FOCDIA,1)
 C
+      CALL QEXIT('CCSD_DELFRO')
+C
       RETURN
       END
 C  /* Deck CC_freezer*/
@@ -3317,6 +3375,8 @@ C
 #include <priunit.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+C
+      CALL QENTER('CC_FREEZER')
 C
       IF (IPRINT.GT.5) WRITE(LUPRI,*) ' In CC_FREEZER: ' 
       IF (IPRINT.GT.5) WRITE(LUPRI,*) ' Freezing occupied, virtual:',NFC,NFV
@@ -3422,7 +3482,11 @@ C
          ENDDO
 
       ENDDO    
+C
       CALL FLSHFO(LUPRI)
+C
+      CALL QEXIT('CC_FREEZER')
+C
       RETURN
       END
 C  /* Deck CC_SYMHFO*/
@@ -3436,6 +3500,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+      CALL QENTER('CC_SYMHFO(IHFO,ISYMHFO')
+C
 C
       ISYMHFO = 0
       ICOUNT = 0
@@ -3445,5 +3511,8 @@ C
           ICOUNT = ICOUNT + NORBS(ISYM)
       ENDDO
       IF (ISYMHFO.EQ.0) WRITE(LUPRI,*) 'Something is wrong in CC_SYMHFO'
+C
+      CALL QEXIT('CC_SYMHFO(IHFO,ISYMHFO')
+C
       RETURN
       END

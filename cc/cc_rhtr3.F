@@ -117,6 +117,7 @@ c*DECK CC_RHTR3
       INTEGER KFREE, LFREE, ICDEL1, ICDEL2, KENDSV, LWRKSV
       INTEGER ISYMD1, NTOT, ILLL, NUMDIS, KRECNR
       INTEGER KFCKC1, KFCKC2, KEI1, KEI2, IDEL, IDEL2, ISYMD
+      INTEGER ISYMT12, ISYMC2, ISYMT1, ISYMT2
       INTEGER ISYDIS, ISYAIK, ITR, KXINT, KEND2, LWRK2, ISYDEN
       INTEGER KDSRHF, KEND3, LWRK3, ISYMLP, KSCRCM, KSCRCM2
       INTEGER KEND4, LWRK4, ICON, ISYMLH, IOPT, ISYMM, ISYMPC
@@ -138,7 +139,7 @@ c*DECK CC_RHTR3
       REAL RHO1N, DDOT, TIMFCK, TIMAOD, TIMT2SQ, TIMLAM, TIMTRBT
       REAL TIMT2AO, TIMD, TIMC, TIMEI, TIMBF, TIMG, TIMH, TIMFCKMO
       REAL TIMT2MO, TIMA, TIMCIO, TIMI, TIMDIO, TIMCCSD, TIME1C1
-      REAL TIMT2TR
+      REAL TIMT2TR, ECURR2, TIMOM32, TIMT3I
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION ZERO, ONE, TWO, HALF, FACTD, RHO1N, RHO2N
@@ -150,7 +151,7 @@ c*DECK CC_RHTR3
       DOUBLE PRECISION TIMT2SQ, TIMLAM, TIMTRBT, TIMT2AO, TIMD
       DOUBLE PRECISION TIMC, TIMEI, TIMBF, TIMG, TIMH, TIMFCKMO
       DOUBLE PRECISION TIMT2MO, TIMA, TIMCIO, TIMI, TIMDIO, TIMCCSD
-      DOUBLE PRECISION TIME1C1, TIMT2TR
+      DOUBLE PRECISION TIME1C1, TIMT2TR, ECURR2, TIMOM32, TIMT3I
 #endif
 !
       PARAMETER (ZERO = 0.0D00, ONE = 1.0D00, TWO = 2.0D00)
@@ -164,7 +165,11 @@ c*DECK CC_RHTR3
       CHARACTER*10 MODEL
 !
       LOGICAL FCKCON, ETRAN, ANTISYM, NORMALCONT, PIJCONT
-      LOGICAL NEWGS, KHLOG
+      LOGICAL NEWGS, KHLOG, LDEBUG
+!
+      CALL QENTER('CC_RHTR3')
+!
+      LDEBUG = .FALSE.
 !
 !---------------------------------------------------------
 !
@@ -244,11 +249,13 @@ c*DECK CC_RHTR3
       TIMI      = 0.0D00
       TIMIO     = 0.0D00
       TIMLAM    = 0.0D00
+      TIMOM32   = 0.0D00
       TIMRDAO   = 0.0D00
       TIMT2AO   = 0.0D00
       TIMT2MO   = 0.0D00
       TIMT2SQ   = 0.0D00
       TIMT2TR   = 0.0D00
+      TIMT3I    = 0.0D00
       TIMTRBT   = 0.0D00
 !
 !--------------------------------
@@ -360,7 +367,7 @@ c*DECK CC_RHTR3
          CALL CC_PRSQ(WORK(KC1AM),WORK(KC2AM),ISYMTR,0,NC2)
       ENDIF
 !
-      IF (DEBUG) THEN
+      IF (LDEBUG) THEN
          DO IV = 1, NSIMTR
            KAMC1 = KC1AM + NT1AM(ISYMTR)*(IV - 1)
            RHO1N = DDOT(NT1AM(ISYMTR),WORK(KAMC1),1,WORK(KAMC1),1)
@@ -412,7 +419,7 @@ c*DECK CC_RHTR3
             CALL CC_PRSQ(WORK(KC1AM),WORK(KC2AM),ISYMTR,1,NC2)
          ENDIF
 !
-         IF (DEBUG) THEN
+         IF (LDEBUG) THEN
            RHO2N = DDOT(NT2SQ(ISYMTR),WORK(KC2AM),1,
      *                   WORK(KC2AM),1)
            WRITE(LUPRI,1) 'Norm of C2-  first in CC_RHTR3   :',RHO2N
@@ -968,6 +975,21 @@ c*DECK CC_RHTR3
                   DTIME   = SECOND() - DTIME
                   TIMRDAO = TIMRDAO  + DTIME
 !
+!-----------------------------------------------------------
+!              Calculate transformed integrals used in t3am.
+!-----------------------------------------------------------
+!
+                  IF (CCSDT) THEN
+!
+                     DTIME = SECOND()
+                     CALL CC3_T3INT3(WORK(KXINT),WORK(KLAMDP),
+     *                              WORK(KLAMDH),WORK(KAMC1),ISYMTR,
+     *                              WORK(KEND2),LWRK2,IDEL,ISYMD)
+                     DTIME   = SECOND() - DTIME
+                     TIMT3I  = TIMT3I   + DTIME
+!
+               ENDIF
+!
 !------------------------------------------------------------------
 !           Calculate the AO-Fock matrix.
 !           Not neccesary if RSPIM is used. So only for CCS
@@ -1511,21 +1533,21 @@ c*DECK CC_RHTR3
 !
          CALL DCOPY(NT2AMA(ISYMTR),WORK(KC2AM),1,WORK(KRHO2),1)
 !
-         IF ( DEBUG ) THEN
+         IF ( LDEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
             RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
             WRITE(LUPRI,*) 'Norm of Rho1  after loop in MO:    ',RHO1N
             WRITE(LUPRI,*) 'Norm of Rho2- after loop in MO:    ',RHO2N
          ENDIF
 !
-         IF ( DEBUG ) THEN
+         IF ( LDEBUG ) THEN
             XNGAM = DDOT(NGAMMA(ISYMTR),WORK(KGAMC1),1,WORK(KGAMC1),1)
             WRITE(LUPRI,*) 'Norm of GamC :                  ',XNGAM
          ENDIF
 !
          ENDIF
 !
-         IF (IPRINT.GT.120 .OR. DEBUG) THEN
+         IF (IPRINT.GT.120 .OR. LDEBUG) THEN
             CALL AROUND('After  T2MO-1:BF3(C1,C2) ')
             CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,1,1)
          ENDIF
@@ -1588,7 +1610,7 @@ c*DECK CC_RHTR3
 !
       ENDIF
 !
-      IF ( DEBUG ) THEN
+      IF ( LDEBUG ) THEN
          RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
          WRITE(LUPRI,*) 'Norm of Rho1 after loop in mo:     ',RHO1N
          IF ( .NOT. CCS) THEN
@@ -1637,7 +1659,7 @@ c*DECK CC_RHTR3
          CALL CC_PRP(WORK(KOFF1),WORK,ISYMTR,1,0)
       ENDIF
 !
-      IF (DEBUG) THEN
+      IF (LDEBUG) THEN
          RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
          WRITE(LUPRI,*) 'Norm of Rho1 after -g(ak-bar,ki) :',RHO1N
       ENDIF
@@ -1784,7 +1806,7 @@ C
          CALL CC_PRP(WORK(KOFF1),WORK,ISYMTR,1,0)
       ENDIF
 !
-      IF ( DEBUG ) THEN
+      IF ( LDEBUG ) THEN
          RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
          WRITE(LUPRI,*) 'Norm of Rho1 -after Ei*(c1,c2):    ',RHO1N
       ENDIF
@@ -1815,7 +1837,7 @@ C
             CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,NC2)
          ENDIF
 !
-         IF ( DEBUG ) THEN
+         IF ( LDEBUG ) THEN
            RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
            WRITE(LUPRI,*) 'Norm of Rho2- after Ei*(c1,c2-):    ',RHO2N
          ENDIF
@@ -1885,7 +1907,7 @@ C
            CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
         ENDIF
 !
-        IF ( DEBUG ) THEN
+        IF ( LDEBUG ) THEN
            RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
            RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
            WRITE(LUPRI,*) 'Norm of Rho1  after C2*GAM:        ',RHO1N
@@ -1929,7 +1951,7 @@ C
             CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
          ENDIF
 !
-         IF ( DEBUG ) THEN
+         IF ( LDEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
             RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
             WRITE(LUPRI,*) 'Norm of Rho1  after C2*CIM:        ',RHO1N
@@ -1966,7 +1988,7 @@ C
             CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
          ENDIF
 !
-         IF ( DEBUG ) THEN
+         IF ( LDEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
             RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
             WRITE(LUPRI,*) 'Norm of Rho1  after C2*DIM:        ',RHO1N
@@ -2024,7 +2046,7 @@ C
             CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
          ENDIF
 !
-         IF ( DEBUG ) THEN
+         IF ( LDEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
             RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
             WRITE(LUPRI,*) 'Norm of Rho1  after C1*BFIM:       ',RHO1N
@@ -2136,7 +2158,7 @@ C
             CALL AROUND(' AFTER I-term :RHO ')
             CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,1,0)
          ENDIF
-         IF (DEBUG) THEN
+         IF (LDEBUG) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
             RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
             WRITE(LUPRI,*) 'Norm of Rho1  after I-term:    ',RHO1N
@@ -2293,7 +2315,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1  after T2*(-)EI:         ',
@@ -2327,7 +2349,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1  after T2*GAM:        ',
@@ -2376,7 +2398,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1  after T2*CI:         ',
@@ -2414,7 +2436,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1  after T2*DI:         ',
@@ -2457,7 +2479,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1  after T2*DI:         ',
@@ -2485,7 +2507,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,1,0)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AMA(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1  after I-tilde:   ',RHO1N
@@ -2541,7 +2563,7 @@ C
 !
          ENDIF
 !
-         IF ( DEBUG ) THEN
+         IF ( LDEBUG ) THEN
              RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
              WRITE(LUPRI,*) 'Norm of Rho1 for IV = ',IV -1 + IVEC,
      *                  ' -end of cclr_rhtr3 (-part1):    ',RHO1N
@@ -2641,7 +2663,7 @@ C
 !
             CALL DAXPY(NT2AM(ISYMTR),ONE,WORK(KC2AM),1,WORK(KRHO2),1)
 !
-            IF (DEBUG) THEN
+            IF (LDEBUG) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1  after loop in MO:    ',
@@ -2655,7 +2677,7 @@ C
                CALL CC_PRP(WORK(KAMC1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                XNGAM = DDOT(NGAMMA(ISYMTR),WORK(KGAMC1),1,
      *                      WORK(KGAMC1),1)
                WRITE(LUPRI,*) 
@@ -2711,7 +2733,7 @@ C
                DTIME = SECOND() - DTIME
                TIMIO = TIMIO + DTIME
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                WRITE(LUPRI,*) 'Norm of Rho1 after loop in mo:     ',
      &                        RHO1N
@@ -2785,7 +2807,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,NC2)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                WRITE(LUPRI,*) 'Norm of Rho1 -after Ei*(c1,c2):    ',
      &                        RHO1N
@@ -2852,7 +2874,7 @@ C
                   CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
                ENDIF
 !
-               IF ( DEBUG ) THEN
+               IF ( LDEBUG ) THEN
                   RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,
      *                         WORK(KOFF1),1)
                   RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,
@@ -2893,7 +2915,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1 -after C2*DIM:    ',RHO1N
@@ -2993,7 +3015,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 C
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1 -after T2*GAM:        ',
@@ -3039,7 +3061,7 @@ C
                CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,0,1)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
                RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho1 -after T2*CI:     ',RHO1N
@@ -3066,7 +3088,7 @@ C
               DTIME = SECOND() - DTIME
               TIMIO = TIMIO + DTIME
 !
-              IF ( DEBUG ) THEN
+              IF ( LDEBUG ) THEN
                  RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,
      *                                      WORK(KOFF1),1)
                  WRITE(LUPRI,*) 
@@ -3103,7 +3125,8 @@ C
 !
                KC2AMP = KEND1
                KC2AMM = KC2AMP + NC2AM
-               KRHO3  = KC2AMM + NC2AM
+               KRHO22 = KC2AMM + NC2AM
+               KRHO3  = KRHO22 + NT2AMA(ISYMTR)
                KEND1  = KRHO3  + NRHO2
                LWRK1  = LWORK  - KEND1
 !
@@ -3111,6 +3134,101 @@ C
                  WRITE(LUPRI,*)'LWORK :',LWORK
                  WRITE(LUPRI,*)'KEND1 :',KEND1
                  CALL QUIT('Insufficient space in CC3 (cc_rhtr3.F)')
+               ENDIF
+!
+!------------------------------------
+!        Readin T2 amplitude in KRHO3.
+!------------------------------------
+!
+               DTIME = SECOND()
+!
+               IOPT = 2
+               CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KRHO3))
+!
+               DTIME = SECOND() - DTIME
+               TIMIO = TIMIO + DTIME
+!
+!--------------------------------
+!        Square up T2 amplitudes.
+!--------------------------------
+!
+               DTIME = SECOND()
+               CALL CC_T2SQ(WORK(KRHO3),WORK(KC2AM),1)
+               DTIME = SECOND() - DTIME
+               TIMT2SQ = TIMT2SQ + DTIME
+!
+               IF (IPRINT.GT.50) THEN
+                  CALL AROUND('CC_RHTR: (T1,T2) vector readin')
+                  CALL CC_PRSQ(WORK(KT1AM),WORK(KC2AM),1,1,1)
+               ENDIF
+!
+!---------------------------------------------
+!                 Read in (-) result vector.
+!---------------------------------------------
+!
+               DTIME = SECOND()
+               CALL CC_RVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     *                       NT2AMA(ISYMTR),IV + ITR -1,NT2AM(ISYMTR),
+     *                       WORK(KRHO22))
+               DTIME = SECOND() - DTIME
+               TIMIO = TIMIO + DTIME
+!
+!------------------------------------------
+!     Approximative triples correction:
+!     <mu2|[[H,R1],T3(T2)]|HF>
+!     T2AM is in C2AM.
+!------------------------------------------
+!
+               CC3LR   = .TRUE.
+               ECURR2  = ECURR
+               ECURR   = 0.0D0
+               ISYMT1  = ISYMTR
+               ISYMT2  = 1
+               DTIME   = SECOND()
+!
+               CALL CC3_OMEG3(WORK(KOFF1),WORK(KRHO2),WORK(KRHO22),
+     *                        WORK(KAMC1),ISYMT1,WORK(KC2AM),ISYMT2,
+     *                        WORK(KFOCK0),WORK(KLAMDP),WORK(KLAMDH),
+     *                        WORK(KEND1),LWRK1)
+               DTIME   = SECOND() - DTIME
+               TIMOM32 = TIMOM32 + DTIME
+               ECURR   = ECURR2
+!
+               IF (LDEBUG) THEN
+                 RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,WORK(KOFF1),1)
+                 WRITE(LUPRI,1) 'Norm of Rho1  after cc3_omeg3: ',RHO1N
+                 RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,
+     *                                      WORK(KRHO2),1)
+                 WRITE(LUPRI,1) 'Norm of Rho2+ after cc3_omeg3: ',RHO2N
+                 RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO22),1,
+     *                                      WORK(KRHO22),1)
+                 WRITE(LUPRI,1) 'Norm of Rho2- after cc3_omeg3: ',RHO2N
+               ENDIF
+!
+!------------------------------------
+!        Readin T2 amplitude in KRHO3.
+!------------------------------------
+!
+               DTIME = SECOND()
+!
+               IOPT = 2
+               CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KRHO3))
+!
+               DTIME = SECOND() - DTIME
+               TIMIO = TIMIO + DTIME
+!
+!--------------------------------
+!        Square up T2 amplitudes.
+!--------------------------------
+!
+               DTIME = SECOND()
+               CALL CC_T2SQ(WORK(KRHO3),WORK(KC2AM),1)
+               DTIME = SECOND() - DTIME
+               TIMT2SQ = TIMT2SQ + DTIME
+!
+               IF (IPRINT.GT.50) THEN
+                  CALL AROUND('CC_RHTR: (T1,T2) vector readin')
+                  CALL CC_PRSQ(WORK(KT1AM),WORK(KC2AM),1,1,1)
                ENDIF
 !
 !-----------------------------------------------
@@ -3147,22 +3265,40 @@ C
 !     Calc. the cont.
 !-----------------------------------------------
 !
-               CALL CC3_TRIPLET(WORK(KOFF1),WORK(KRHO2),WORK(KC2AM),
-     *                          WORK(KC2AMP),WORK(KC2AMM),WORK(KFOCK0),
-     *                          WORK(KLAMDP),WORK(KLAMDH),WORK(KLPC1),
-     *                          WORK(KLHC1),WORK(KEND1),LWRK1,LUFR2,
-     *                          FRHO2,IV,ITR,WORK(KAMC1))
+               CC3LR   = .FALSE.
+               ISYMT1  = ISYMTR
+               ISYMT12 = 1
+               ISYMT2  = 1
+               ISYMC2  = ISYMTR
+!
+               CALL CC3_OMEG33(WORK(KOFF1),WORK(KRHO2),WORK(KRHO22),
+     *                        WORK(KAMC1),ISYMT1,WORK(KC2AM),ISYMT2,
+     *                        WORK(KC2AMP),WORK(KC2AMM),ISYMC2,ISYMT12,
+     *                        WORK(KFOCK0),WORK(KLAMDP),WORK(KLAMDH),
+     *                        WORK(KEND1),LWRK1)
+!
+               IF (IPRINT .GT. 110) THEN
+                  CALL AROUND('Omega1 & Omega2+ after CC3')
+                  KOFF1 = KRHO1 + NT1AM(ISYMTR)*(IV - 1)
+                  CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,1,1)
+                  CALL AROUND('Omega2- after CC3')
+                  KOFF1 = KRHO1 + NT1AM(ISYMTR)*(IV - 1)
+                  CALL CC_PRP(WORK(KOFF1),WORK(KRHO22),ISYMTR,0,1)
+               ENDIF
 !
 !----------------------------------------
-!     Write omega1 to disk.
+!     Write omega1 and omega2- to disk.
 !----------------------------------------
 !
                CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *                      IV + IVEC -1,WORK(KOFF1)) 
+               CALL CC_WVEC3(LUFR2,FRHO2,NT2AM(ISYMTR)+NT2AMA(ISYMTR),
+     *                       NT2AMA(ISYMTR),IV + ITR -1,NT2AM(ISYMTR),
+     *                       WORK(KRHO22))
 !
-!---------------------------
-!     CC3 ends here
-!---------------------------
+!----------------------------------
+!     CC3 and friends ends here
+!----------------------------------
 !
                KEND1 = KENDCC3
                LWRK1 = LWRKCC3
@@ -3176,7 +3312,7 @@ C
 !
             CALL DSCAL(NT2AM(ISYMTR),HALF,WORK(KRHO2),1)
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                IF (.NOT. CC3) THEN
                   WRITE(LUPRI,*) 
@@ -3198,7 +3334,7 @@ C
             ENDIF
 !
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                RHO2N = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
                WRITE(LUPRI,*) 'Norm of Rho2+ -after CCRHS3_IJ:       ',
      &                        RHO2N
@@ -3227,7 +3363,7 @@ C
                CALL CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYMTR,NSIMTR,NC2)
             ENDIF
 !
-            IF ( DEBUG ) THEN
+            IF ( LDEBUG ) THEN
                 RHO1N = DDOT(NT1AM(ISYMTR),WORK(KOFF1),1,
      *                       WORK(KOFF1),1)
                 WRITE(LUPRI,*) 'Norm of Rho1 for IV = ',IV,
@@ -3287,6 +3423,10 @@ C
          WRITE(LUPRI,9999) 'T2AO            ', TIMT2AO
          WRITE(LUPRI,9999) 'T2MO            ', TIMT2MO
          WRITE(LUPRI,9999) 'T2SQ            ', TIMT2SQ
+         IF (CCSDT) THEN
+            WRITE(LUPRI,9999) 'Triples corr.   ', TIMOM32
+            WRITE(LUPRI,9999) 'Triples integr. ', TIMOM32
+         ENDIF
 !
          WRITE(LUPRI,'(A)')
          WRITE(LUPRI,9999) 'ERIDI1          ', TIMER1
@@ -3306,14 +3446,11 @@ C
 !--------------------------------------------
 !
       IF (DUMPCD .AND. (.NOT. CCS)) THEN
-COMMENT COMMENT
-COMMENT COMMENT THESE FILES SHOULD PROB. BE DELETED!!
-COMMENT COMMENT
-         CALL WCLOSE2(LUB3,BFFIL,'KEEP')
-         CALL WCLOSE2(LUC,CTFIL,'KEEP')
-         CALL WCLOSE2(LUD,DTFIL,'KEEP')
-         CALL WCLOSE2(LUCS,CSFIL,'KEEP')
-         CALL WCLOSE2(LUP,PFIL,'KEEP')
+         CALL WCLOSE2(LUB3,BFFIL,'DELETE')
+         CALL WCLOSE2(LUC,CTFIL,'DELETE')
+         CALL WCLOSE2(LUD,DTFIL,'DELETE')
+         CALL WCLOSE2(LUCS,CSFIL,'DELETE')
+         CALL WCLOSE2(LUP,PFIL,'DELETE')
 !
          IF (.NOT. CC2) THEN
            CALL WCLOSE2(LUDTIM,DTIMFIL,'KEEP')
@@ -3326,10 +3463,11 @@ COMMENT COMMENT
 !     Formats.
 !-------------------------------------
 !
+      CALL QEXIT('CC_RHTR3')
+!
    1  FORMAT(1x,A35,1X,E20.10)
 9998  FORMAT(1x,'Time used in',2x,A20,2x,': ',f10.2,' seconds')
 9999  FORMAT(1x,'Time used in',2x,A18,2x,': ',f10.2,' seconds')
-!
 !
 	RETURN
 	END

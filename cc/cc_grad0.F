@@ -216,7 +216,8 @@ C     in KT2AM, as we only need T(2c-e) below.
 C-----------------------------------------------
 C
          ISYOPE = 1
-         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
          KT2AMT = KT2AM                  !for safety
 C
 C-------------------------------
@@ -384,7 +385,8 @@ C
          ISYOPE = 1
 C
          CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
-         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE,IOPTTCME)
 C
 C-------------------------------
 C     Work space allocation one.
@@ -766,7 +768,8 @@ C        along with the integral distribution in the delta loop.)
 C-----------------------------------------------------------------------
 C
          ISYOPE = 1
-         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
          CALL DSCAL(NT2AMX,TWO,WORK(KT2AM),1)
          CALL DAXPY(NT2AMX,ONE,WORK(KZ2AM),1,WORK(KT2AM),1)
 C

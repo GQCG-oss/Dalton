@@ -1464,7 +1464,8 @@ C
          CALL CC_PRP(DUM,ETA(1+NT1AMX),1,0,1)
       ENDIF
 C
-      CALL CCSD_TCMEPK(ETA(1+NT1AMX),1.0D0,ISYMOP)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(ETA(1+NT1AMX),1.0D0,ISYMOP,IOPTTCME)
 C
       KFOCK  = 1
       KT1AM  = KFOCK  + N2BST(ISYMOP)
@@ -1570,6 +1571,8 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
 C
+      CALL QENTER('CC_D1ORRE')
+C
 C-------------------------------
 C     Work space allocation one.
 C-------------------------------
@@ -1650,6 +1653,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CC_D1ORRE')
+C
       RETURN
       END
 C  /* Deck ccdffop */
@@ -1668,8 +1673,12 @@ C
 #include <abainf.h>
 #include <inftra.h>
 C
+      CALL QENTER('CCDFFOP')
+C
       DODRCT = .TRUE.
       USEDRC = .TRUE.
+C
+      CALL QEXIT('CCDFFOP')
 C
       RETURN
       END
@@ -1693,6 +1702,8 @@ C
 #include <cbiher.h>
 #include <orgcom.h>
 #include <nuclei.h>
+C
+      CALL QENTER('CCNUCQUA')
 C
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
@@ -1718,6 +1729,8 @@ C
          CALL NUCNQC(WORK(KGEOM),LUPRI,IASGER)
       ENDIF
 C
+      CALL QEXIT('CCNUCQUA')
+C
       RETURN
       END
 C  /* Deck ccelqau */
@@ -1740,8 +1753,12 @@ C
 #include <symmet.h>
 #include <quadru.h>
 C
+      CALL QENTER('CCELQUA')
+C
       RESVEC(IPTAX(J,1),IPTAX(I,1)) = DDOT(LENGTH,XONEP,1,DENS,1)
       RESVEC(IPTAX(I,1),IPTAX(J,1)) = DDOT(LENGTH,XONEP,1,DENS,1)
+C
+      CALL QEXIT('CCELQUA')
 C
       RETURN
       END
@@ -1765,6 +1782,8 @@ C
 #include <symmet.h>
 #include <quadru.h>
 C
+      CALL QENTER('CC_QUAREO')
+C
       DO 100 I = 1,3
          DO 110 J = 1,3
             QNEW(I,J) = ZERO
@@ -1777,6 +1796,8 @@ C
             QNEW(J,I) = QORI(IPTAX(I,1),IPTAX(J,1))
   130 CONTINUE
   120 CONTINUE
+C
+      CALL QEXIT('CC_QUAREO')
 C
       RETURN
       END
@@ -1798,6 +1819,8 @@ C
 #include <mxcent.h>
       DIMENSION DENS(*), WORK(LWORK)
 #include <nuclei.h>
+C
+      CALL QENTER('CCELEFG')
 C
       NCOMP = 9*NUCDEP
 C
@@ -1842,6 +1865,8 @@ C
 C
       CALL NQCEL(WORK(KSCR1),WORK(KDOTPR),NCOMP,IASGER)
 C
+      CALL QEXIT('CCELEFG')
+C
       RETURN
       END
 C  /* Deck ccelefg1 */
@@ -1872,6 +1897,8 @@ C
 #include <chrxyz.h>
 #include <chrnos.h>
 #include <ibtfun.h>
+C
+      CALL QENTER('CCELEFG1')
 C
 C---------------------------
 C     Set up loop structure.
@@ -1923,6 +1950,8 @@ C
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
+C
+      CALL QEXIT('CCELEFG1')
 C
       RETURN
       END
@@ -2037,6 +2066,8 @@ C
 #include <ccsdio.h>
 #include <ccsdinp.h>
 C
+      CALL QENTER('MP_LAM')
+C
 C-----------------------------------------------------------------
 C     Read integrals (ia|jb) from disc (file always assumed open).
 C-----------------------------------------------------------------
@@ -2048,7 +2079,8 @@ C-----------------------------------------------
 C     Take two coulomb minus exchange on vector.
 C-----------------------------------------------
 C
-      CALL CCSD_TCMEPK(TBAM(1+NT1AMX),1.0D0,ISYMOP)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(TBAM(1+NT1AMX),1.0D0,ISYMOP,IOPTTCME)
 C
 C---------------------------
 C     Work space allocation.
@@ -2097,6 +2129,8 @@ C     Final scalings for obtaining result.
 C-----------------------------------------
 C
       CALL DSCAL(NT2AM(ISYMOP),TWO,TBAM(1+NT1AMX),1)
+C
+      CALL QEXIT('MP_LAM')
 C
       RETURN
       END
@@ -2229,7 +2263,8 @@ C     Set up 2C-E of cluster amplitudes.
 C---------------------------------------
 C
       ISYOPE = 1
-      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
 C
 C--------------------------------------------------------------------
 C     Set up special modified amplitudes needed in the integral loop.
@@ -2551,6 +2586,8 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
 C
+      CALL QENTER('CCPT_FCK')
+C
       IF (LWORK .LT. NT1AMX) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', NT1AMX
          CALL QUIT('Insufficient memory for allocation in CCPT_FCK')
@@ -2615,6 +2652,8 @@ C
 C
   130 CONTINUE
 C
+      CALL QEXIT('CCPT_FCK')
+C
       RETURN
       END
 C  /* Deck ccpt_3ot */
@@ -2635,6 +2674,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCPT_3OT')
 C
       ISYALK = ISYDIS
       ISYLIK = ISYDIS
@@ -2672,6 +2713,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCPT_3OT')
+C
       RETURN
       END
 C  /* Deck ccpt_3vt */
@@ -2692,6 +2735,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCPT_3VT')
 C
       DO 100 ISYMK = 1,NSYM
 C
@@ -2786,6 +2831,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCPT_3VT')
+C
       RETURN
       END
 C  /* Deck ccpt_nxy */
@@ -2808,6 +2855,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCPT_NXY')
 C
       ISYMA = ISYDEL
       ISYMI = ISYMA
@@ -2941,6 +2990,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CCPT_NXY')
+C
       RETURN
       END
 C  /* Deck ccpt_xto */
@@ -2962,6 +3013,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCPT_XTO')
 C
       ISYMA  = ISYMD
       ISYMI  = ISYMA
@@ -3030,6 +3083,8 @@ C
 C
   120 CONTINUE
 C
+      CALL QEXIT('CCPT_XTO')
+C
       RETURN
       END
 C  /* Deck ccpt_ytv */
@@ -3051,6 +3106,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CCPT_YTV')
 C
       ISYMC = ISYDEL
       ISYMD = ISYMC
@@ -3161,6 +3218,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCPT_YTV')
+C
       RETURN
       END
 C  /* Deck cc_dedian */
@@ -3183,6 +3242,8 @@ C
 #include <ccsdinp.h>
 C
       CHARACTER MODEL*4
+C
+      CALL QENTER('CC_DEDIAN')
 C
 C---------------------------
 C     Work space allocation.
@@ -3273,6 +3334,8 @@ C
       CALL SORTASH(WORK(KNATOC),WORK(KIMANO),NORBT)
 C
       CALL CCNAOCAN(WORK(KNATOC),WORK(KIMANO))
+C
+      CALL QEXIT('CC_DEDIAN')
 C
       RETURN
       END
@@ -3411,7 +3474,8 @@ C     Set up 2C-E of cluster amplitudes.
 C---------------------------------------
 C
       ISYOPE = 1
-      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
 C
 C-------------------------------------------------------------
 C     Set up special modified amplitudes T(2c-e) + Tbar.
@@ -3542,6 +3606,8 @@ C
 #include <ccsdio.h>
 #include <ccsdinp.h>
 C
+      CALL QENTER('MP2_ZKBLO')
+C
       IF (MP2) FACT = ONE
       IF (CC2) FACT = ZERO
 C
@@ -3630,6 +3696,8 @@ C
   150       CONTINUE
   140    CONTINUE
   130 CONTINUE
+C
+      CALL QEXIT('MP2_ZKBLO')
 C
       RETURN
       END
@@ -3736,7 +3804,8 @@ C     Set up 2C-E of cluster amplitudes.
 C---------------------------------------
 C
       ISYOPE = 1
-      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
 C
 C--------------------------------------------------------------------
 C     Set up special modified amplitudes needed in the integral loop.
@@ -4115,6 +4184,8 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
 C
+      CALL QENTER('MP2_NXY')
+C
       ISYMA = ISYDEL
       ISYMI = ISYMA
 C
@@ -4246,6 +4317,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('MP2_NXY')
+C
       RETURN
       END
 C  /* Deck mp2_xto */
@@ -4267,6 +4340,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('MP2_XTO')
 C
       ISYMA  = ISYMD
       ISYMI  = ISYMA
@@ -4334,6 +4409,8 @@ C
 C
   120 CONTINUE
 C
+      CALL QEXIT('MP2_XTO')
+C
       RETURN
       END
 C  /* Deck mp2_ytv */
@@ -4355,6 +4432,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('MP2_YTV')
 C
       ISYMC = ISYDEL
       ISYMD = ISYMC
@@ -4464,6 +4543,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('MP2_YTV')
+C
       RETURN
       END
 C  /* Deck cc_kanew */
@@ -4500,6 +4581,8 @@ C
 #include <eribuf.h>
 #include <cclr.h>
 #include <ccfro.h>
+C
+      CALL QENTER('CC_KANEW')
 C
       CALL HEADER('Calculating diagonal contributions to eta-bar-0',-1)
 C
@@ -4859,6 +4942,8 @@ C
          WRITE(LUPRI,*) 'Total time used in CC_KANEW:', TIMETO
       ENDIF
 C
+      CALL QEXIT('CC_KANEW')
+C
       RETURN
       END
 C  /* Deck cc_2eexp */
@@ -5025,7 +5110,8 @@ C     in KT2AM, as we only need T(2c-e) below.
 C-----------------------------------------------
 C
          ISYOPE = 1
-         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
          KT2AMT = KT2AM                  !for safety
 C
 C-------------------------------
@@ -5198,7 +5284,8 @@ C
          ISYOPE = 1
 C
          CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
-         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE,IOPTTCME)
 C
 C-------------------------------
 C     Work space allocation one.
@@ -5578,7 +5665,8 @@ C        along with the integral distribution in the delta loop.)
 C-----------------------------------------------------------------------
 C
          ISYOPE = 1
-         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
          CALL DSCAL(NT2AMX,TWO,WORK(KT2AM),1)
          CALL DAXPY(NT2AMX,ONE,WORK(KZ2AM),1,WORK(KT2AM),1)
 C
@@ -6191,7 +6279,11 @@ C
 #include <implicit.h>
       DIMENSION DEN(LENDEN)
 C
+      CALL QENTER('DUMP2DEN')
+C
       WRITE(LUDE,REC=NDAD) (DEN(I), I=1,LENDEN)
+C
+      CALL QEXIT('DUMP2DEN')
 C
       RETURN
       END
@@ -6207,7 +6299,11 @@ C
 #include <implicit.h>
       DIMENSION DEN(LENDEN)
 C
+      CALL QENTER('RETR2DEN')
+C
       READ(LUDE,ERR=1000,REC=NDAD) DEN
+C
+      CALL QEXIT('RETR2DEN')
 C
       RETURN
  1000 CALL QUIT('Error reading CCTWODEN')

@@ -68,6 +68,8 @@ C
       SAVE FIRST
       DATA FIRST /.TRUE./
 C
+      CALL QENTER('CC3_OMEG')
+C
 C-------------------------------------------------------------
 C     Set symmetry flags.
 C
@@ -119,7 +121,7 @@ C---------------------------------------------------------
 C
       IF (.NOT. CC1B) THEN
          CALL CC3_SORT1(WORK,LWORK,2,ISINT2)
-         CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT2)
+         CALL CC3_SINT(XLAMDH,WORK,LWORK,1,ISINT2)
       ENDIF
 C
 C--------------------------------------
@@ -239,7 +241,8 @@ C
          CALL READI(LUIAJB,LENGTH,WORK(KXIAJB))
 C
          ISYOPE = ISYMOP
-         CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE,IOPTTCME)
 C
          CALL CC3LR_MFOCK(WORK(KFCKAK),T1AM,WORK(KXIAJB),ISYMT1)
 C
@@ -262,7 +265,8 @@ C
 C
       IF (.NOT. CC3LR) THEN
          ISYOPE = ISYMOP
-         CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE)
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE,IOPTTCME)
       ENDIF
 C
       IF ( IPRINT .GT. 55) THEN
@@ -904,6 +908,8 @@ C
          WRITE(LUPRI,*)
       END IF
 C
+      CALL QEXIT('CC3_OMEG')
+C
       RETURN
 C
     1 FORMAT(7X,'Time used in',2X,A12,F12.2,' seconds')
@@ -924,6 +930,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSDT_TROCC')
 C
       DO 100 ISYMD = 1,NSYM
 C
@@ -987,6 +995,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CCSDT_TROCC')
+C
       RETURN
       END
 C  /* Deck ccsdt_trvir */
@@ -1008,6 +1018,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+      CALL QENTER('CCSDT_TRVIR')
+C
       ISYDIS = MULD2H(ISYMD,ISYINT)
 C
       DO 100 ISYMA = 1,NSYM
@@ -1026,6 +1038,8 @@ C
      *              ZERO,TRINT(KOFF3),NTOTCK)
 C
   100 CONTINUE
+C
+      CALL QEXIT('CCSDT_TRVIR')
 C
       RETURN
       END
@@ -1063,6 +1077,8 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CC3_SMAT')
 C
 C--------------------------------
 C     First virtual contribution.
@@ -1343,6 +1359,8 @@ C
 C
       END IF
 C
+      CALL QEXIT('CC3_SMAT')
+C
       RETURN
       END
 C  /* Deck ccsdt_srtvir */
@@ -1368,6 +1386,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSDT_SRTVIR')
 C
       DO 100 ISYMA = 1,NSYM
 C
@@ -1403,6 +1423,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCSDT_SRTVIR')
+C
       RETURN
       END
 C  /* Deck ccsdt_srtocc */
@@ -1425,6 +1447,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSDT_SRTOCC')
 C
       DO 100 ISYMK = 1,NSYM
 C
@@ -1471,6 +1495,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCSDT_SRTOCC')
+C
       RETURN
       END
 C  /* Deck cc3_index */
@@ -1485,6 +1511,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC3_INDEX')
 C
 C----------------------------------
 C     Calculation of index vectors.
@@ -1521,6 +1549,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC3_INDEX')
+C
       RETURN
       END
 C  /* Deck cc3_qmat */
@@ -1551,6 +1581,8 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CC3_QMAT')
 C
       ISYRES = MULD2H(ISYMT2,ISYINT)
       ISYMBD = MULD2H(ISYMB,ISYMD)
@@ -1709,6 +1741,8 @@ C
 C
       END IF
 C
+      CALL QEXIT('CC3_QMAT')
+C
       RETURN
       END
 C  /* Deck ccsdt_srvir3 */
@@ -1730,6 +1764,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSDT_SRVIR3')
 C
       ISYBKF = MULD2H(ISYMD,ISYINT)
 C
@@ -1760,6 +1796,8 @@ C
   100 CONTINUE
 C
       CALL DCOPY(NCKATR(ISYBKF),SCR,1,TRVIR,1)
+C
+      CALL QEXIT('CCSDT_SRVIR3')
 C
       RETURN
       END
@@ -1792,6 +1830,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3_CONVIR')
 C
       ISYRES = MULD2H(ISYMIM,ISYINT)
 C
@@ -1957,6 +1997,8 @@ C
   310    CONTINUE
   300 CONTINUE
 C
+      CALL QEXIT('CC3_CONVIR')
+C
       RETURN
       END
 C  /* Deck cc3_conocc */
@@ -1988,6 +2030,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3_CONOCC')
 C
       IF (LWORK .LT. LENSQ) THEN
          CALL QUIT('Insufficient core in CONOCC')
@@ -2277,7 +2321,8 @@ C
 C
   600 CONTINUE
 C
-
+      CALL QEXIT('CC3_CONOCC')
+C
       RETURN
       END
 C  /* Deck ccsdt_srtoc2 */
@@ -2300,6 +2345,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCSDT_SRTOC2')
 C
       KOFF2 = 0
       DO 100 ISYMC = 1,NSYM
@@ -2343,14 +2390,22 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCSDT_SRTOC2')
+C
       RETURN
       END
 C  /* Deck ccsd_tcmepk */
-      SUBROUTINE CCSD_TCMEPK(T2AM,SCAL,ISYOPE)
+      SUBROUTINE CCSD_TCMEPK(T2AM,SCAL,ISYOPE,IOPT)
 C
 C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
+C     Kasper Hald Jan. 2001.
+C     Added IOPT and IOPT = 2.
+C
+C     IOPT = 1
 C     Calculate in place two coulomb minus exchange of t2 amplitudes.
+C     IOPT = 2
+C     Calculate in place minus exchange of t2 amplitudes.
 C
 C     N.B.: quick hack to fix symmetry bug, 
 C           but now crappy and propably inefficient...
@@ -2368,6 +2423,16 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CCSD_TCMEPK')
+C
+C----------------------------
+C     Sanity check for IOPT.
+C----------------------------
+C
+      IF ((IOPT .NE. 1) .AND. (IOPT .NE. 2)) THEN
+         CALL QUIT('Wrong IOPT in CCSD_TCMEPK')
+      ENDIF
 C
 C     IF (ISYOPE.NE.1) THEN
 C       WRITE (LUPRI,*) 'He were are in CCSD_TCMEPK...'
@@ -2450,8 +2515,13 @@ C
      *                           + NT1AM(ISYMBI)*(NAJ-1)+NBI
                          END IF
 C
-                           XAIBJ = TWO*T2AM(NAIBJ) - T2AM(NAJBI)
-                           XAJBI = TWO*T2AM(NAJBI) - T2AM(NAIBJ)
+                         IF (IOPT .EQ. 1) THEN
+                            XAIBJ = TWO*T2AM(NAIBJ) - T2AM(NAJBI)
+                            XAJBI = TWO*T2AM(NAJBI) - T2AM(NAIBJ)
+                         ELSE IF (IOPT .EQ. 2) THEN
+                            XAIBJ = - T2AM(NAJBI)
+                            XAJBI = - T2AM(NAIBJ)
+                         ENDIF
 C
                            T2AM(NAIBJ) = XAIBJ
                            T2AM(NAJBI) = XAJBI
@@ -2468,7 +2538,10 @@ C---------------------------------------
 C     Scale diagonal elements of result.
 C---------------------------------------
 C
-      IF (ISYOPE .NE. 1) RETURN
+      IF (ISYOPE .NE. 1) THEN
+         CALL QEXIT('CCSD_TCMEPK')
+         RETURN
+      ENDIF
 C
       DO 200 ISYMAI = 1,NSYM
          DO 210 NAI = 1,NT1AM(ISYMAI)
@@ -2476,6 +2549,8 @@ C
             T2AM(NAIAI) = SCAL*T2AM(NAIAI)
   210    CONTINUE
   200 CONTINUE
+C
+      CALL QEXIT('CCSD_TCMEPK')
 C
       RETURN
       END
@@ -2507,6 +2582,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3_ONEL')
 C
       ISYRES = MULD2H(ISYMIM,ISYINT)
 C
@@ -2832,6 +2909,9 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CC3_ONEL')
+C
+C
       RETURN
       END
 C  /* Deck cc3lr_mfock */
@@ -2853,6 +2933,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3LR_MFOCK')
 C
       ISYMBJ = ISYMTR
       ISYMAI = MULD2H(ISYMBJ,ISYMOP)
@@ -2895,6 +2977,8 @@ C
 C
       ENDIF
 C
+      CALL QEXIT('CC3LR_MFOCK')
+C
       RETURN
       END
 C  /* Deck cc3lr_pint */
@@ -2917,6 +3001,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3LR_PINT')
 C
       ISCKAD = MULD2H(ISYMOP,ISYMTR)
       ISYCKA = MULD2H(ISYMD,ISCKAD)
@@ -3037,6 +3123,8 @@ C
       CALL DSCAL(NCKATR(ISYCKA),-ONE,P1INT,1)
       CALL DSCAL(NCKATR(ISYCKA),-ONE,P2INT,1)
 C
+      CALL QEXIT('CC3LR_PINT')
+C
       RETURN
       END
 C  /* Deck cc3lr_qint */
@@ -3058,6 +3146,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3LR_QINT')
 C
       DO 100 ISYMK = 1,NSYM
 C
@@ -3116,6 +3206,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC3LR_QINT')
+C
       RETURN
       END
 C  /* Deck cc3_sortocc */
@@ -3136,6 +3228,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC3_SORTOCC')
 C
       DO 100 ISYMK = 1,NSYM
 C
@@ -3170,10 +3264,12 @@ C
 C
       CALL DCOPY(NCKIJ(ISYINT),WORK,1,XOCC,1)
 C
+      CALL QEXIT('CC3_SORTOCC')
+C
       RETURN
       END
 C  /* Deck cc3_sint */
-      SUBROUTINE CC3_SINT(XLAMD,WORK,LWORK,ISYINT)
+      SUBROUTINE CC3_SINT(XLAMD,WORK,LWORK,IOPT,ISYINT)
 C
 C     Henrik Koch and Poul Joergensen Jan 1995
 C
@@ -3181,6 +3277,8 @@ C     Construct s-matrix integrals from q-matrix integrals.
 C
 C     Ove Christiansen 11-1-1996: ISYINT; symmetry of integrals.
 C                                 (C1 transformed integrals)
+C
+C     Kasper Hald, Februar 2001 : IOPT => two new possibilities.
 C
 #include <implicit.h>
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
@@ -3192,6 +3290,17 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC3_SINT')
+C
+C----------------------------------
+C     Sanity check of IOPT
+C----------------------------------
+C
+      IF ((IOPT .NE. 1) .AND. (IOPT .NE. 2) .AND.
+     *    (IOPT .NE. 3) .AND. (IOPT .NE. 4) .AND.
+     *    (IOPT .NE. 5))
+     *              CALL QUIT('IOPT error in CC3_SINT')
 C
 C----------------------------------
 C     Read and transform integrals.
@@ -3259,7 +3368,17 @@ C
             LENG = NCKA(ISYCKD)*NUMB
 C
             IF (NCKA(ISYCKD) .GT. 0) THEN
-               CALL GETWA2(LUDELD,FNDELD,WORK(KUNTRA),IOFF,LENG)
+               IF (IOPT .EQ. 1) THEN
+                  CALL GETWA2(LUDELD,FNDELD,WORK(KUNTRA),IOFF,LENG)
+               ELSE IF (IOPT .EQ. 2) THEN
+                  CALL GETWA2(LUDELD2,FNDELD2,WORK(KUNTRA),IOFF,LENG)
+               ELSE IF (IOPT .EQ. 3) THEN
+                  CALL GETWA2(LUDELD3,FNDELD3,WORK(KUNTRA),IOFF,LENG)
+               ELSE IF (IOPT .EQ. 4) THEN
+                  CALL GETWA2(LUDELD4,FNDELD4,WORK(KUNTRA),IOFF,LENG)
+               ELSE IF (IOPT .EQ. 5) THEN
+                  CALL GETWA2(LUDELD5,FNDELD5,WORK(KUNTRA),IOFF,LENG)
+               ENDIF
             ENDIF
 C
 C---------------------------------------
@@ -3359,7 +3478,22 @@ C
      *                  + NT1AM(ISYMDK)*(IFRSTB - 1) + 1
 C
                   IF (LENGT2 .GT. 0) THEN
-                     CALL PUTWA2(LUDKBC,FNDKBC,WORK(KOFF3),IOFF,LENGT2)
+                     IF (IOPT .EQ. 1) THEN
+                        CALL PUTWA2(LUDKBC,FNDKBC,WORK(KOFF3),IOFF,
+     *                              LENGT2)
+                     ELSE IF (IOPT .EQ. 2) THEN
+                        CALL PUTWA2(LUDKBC2,FNDKBC2,WORK(KOFF3),IOFF,
+     *                              LENGT2)
+                     ELSE IF (IOPT .EQ. 3) THEN
+                        CALL PUTWA2(LUDKBC3,FNDKBC3,WORK(KOFF3),IOFF,
+     *                              LENGT2)
+                     ELSE IF (IOPT .EQ. 4) THEN
+                        CALL PUTWA2(LUDKBC4,FNDKBC4,WORK(KOFF3),IOFF,
+     *                              LENGT2)
+                     ELSE IF (IOPT .EQ. 5) THEN
+                        CALL PUTWA2(LUDKBC5,FNDKBC5,WORK(KOFF3),IOFF,
+     *                              LENGT2)
+                     ENDIF
                      KOFF3 = KOFF3 + LENGT2
                   ENDIF
 C
@@ -3368,6 +3502,8 @@ C
 C
   110    CONTINUE
   100 CONTINUE
+C
+      CALL QEXIT('CC3_SINT')
 C
       RETURN
       END
@@ -3387,6 +3523,8 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC3_DIAG')
 C
       KOFF = 0
       DO 100 ISYMJ = 1,NSYM
@@ -3430,6 +3568,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC3_DIAG')
+C
       RETURN
       END
 C  /* Deck cc3_indsq */
@@ -3454,6 +3594,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC3_INDSQ')
 C
       DO 100 ISYMJ = 1,NSYM
 C
@@ -3549,6 +3691,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC3_INDSQ')
+C
       RETURN
       END
 C  /* Deck cc3_t2tp */
@@ -3568,6 +3712,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC3_T2TP')
 C
       DO 100 ISYMB = 1,NSYM
 C
@@ -3600,6 +3746,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC3_T2TP')
+C
       RETURN
       END
 C  /* Deck cc_gather */
@@ -3614,6 +3762,8 @@ C
 C
       DIMENSION VEC1(*),VEC2(*),INDEX(*)
 C
+      CALL QENTER('CC_GATHER')
+C
 #if defined (SYS_CRAY)
       CALL GATHER(LENGTH,VEC1,VEC2,INDEX)
 #endif
@@ -3624,6 +3774,8 @@ C
 C
   100 CONTINUE
 #endif
+C
+      CALL QEXIT('CC_GATHER')
 C
       RETURN
       END
@@ -3646,6 +3798,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC3_RACC')
 C
       ISYAIJ = MULD2H(ISYMB,ISYRES)
 C
@@ -3712,6 +3866,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC3_RACC')
+C
       RETURN
       END
 C  /* Deck cc3_trocc */
@@ -3732,6 +3888,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+C
+      CALL QENTER('CC3_TROCC')
 C
       IF (LWORK .LT. NTRAOC(ISYINT)) THEN
          CALL QUIT('Insufficient space in CC3_TROCC')
@@ -3867,6 +4025,8 @@ C
       ENDIF
 C
 C
+      CALL QEXIT('CC3_TROCC')
+C
       RETURN
       END
 C  /* Deck cc3_filop */
@@ -3885,15 +4045,34 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
+      CALL QENTER('CC3_FILOP')
+C
       IF (IPRINT .GT. 15) CALL AROUND('Open  files for triples ')
 C
       CALL WOPEN2(LUTOC,FNTOC,64,0)
       CALL WOPEN2(LU3VI,FN3VI,64,0)
       CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+      CALL WOPEN2(LU3VI3,FN3VI3,64,0)
+      CALL WOPEN2(LU3VI4,FN3VI4,64,0)
       CALL WOPEN2(LU3SRT,FN3SRT,64,0)
       CALL WOPEN2(LUDELD,FNDELD,64,0)
       CALL WOPEN2(LUDKBC,FNDKBC,64,0)
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+      CALL WOPEN2(LU3SRT2,FN3SRT2,64,0)
+      CALL WOPEN2(LU3SRT3,FN3SRT3,64,0)
+      CALL WOPEN2(LUCKJD2,FNCKJD2,64,0)
+      CALL WOPEN2(LUCKJD3,FNCKJD3,64,0)
+      CALL WOPEN2(LUDELD2,FNDELD2,64,0)
+      CALL WOPEN2(LUDELD3,FNDELD3,64,0)
+      CALL WOPEN2(LUDELD4,FNDELD4,64,0)
+      CALL WOPEN2(LUDELD5,FNDELD5,64,0)
+      CALL WOPEN2(LUDKBC2,FNDKBC2,64,0)
+      CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
+      CALL WOPEN2(LUDKBC4,FNDKBC4,64,0)
+      CALL WOPEN2(LUDKBC5,FNDKBC5,64,0)
+C
+      CALL QEXIT('CC3_FILOP')
+C
       RETURN
       END
 C  /* Deck cc3_filcl */
@@ -3912,14 +4091,32 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
+      CALL QENTER('CC3_FILCL')
+C
       IF (IPRINT .GT. 15) CALL AROUND('Close files for triples ')
 C
       CALL WCLOSE2(LUTOC,FNTOC,'DELETE')
       CALL WCLOSE2(LU3VI,FN3VI,'DELETE')
       CALL WCLOSE2(LU3VI2,FN3VI2,'DELETE')
+      CALL WCLOSE2(LU3VI3,FN3VI3,'DELETE')
+      CALL WCLOSE2(LU3VI4,FN3VI4,'DELETE')
       CALL WCLOSE2(LU3SRT,FN3SRT,'DELETE')
       CALL WCLOSE2(LUDELD,FNDELD,'DELETE')
       CALL WCLOSE2(LUDKBC,FNDKBC,'DELETE')
       CALL WCLOSE2(LUCKJD,FNCKJD,'DELETE')
+      CALL WCLOSE2(LU3SRT2,FN3SRT2,'DELETE')
+      CALL WCLOSE2(LU3SRT3,FN3SRT3,'DELETE')
+      CALL WCLOSE2(LUCKJD2,FNCKJD2,'DELETE')
+      CALL WCLOSE2(LUCKJD3,FNCKJD3,'DELETE')
+      CALL WCLOSE2(LUDELD2,FNDELD2,'DELETE')
+      CALL WCLOSE2(LUDELD3,FNDELD3,'DELETE')
+      CALL WCLOSE2(LUDELD4,FNDELD4,'DELETE')
+      CALL WCLOSE2(LUDELD5,FNDELD5,'DELETE')
+      CALL WCLOSE2(LUDKBC2,FNDKBC2,'DELETE')
+      CALL WCLOSE2(LUDKBC3,FNDKBC3,'DELETE')
+      CALL WCLOSE2(LUDKBC4,FNDKBC4,'DELETE')
+      CALL WCLOSE2(LUDKBC5,FNDKBC5,'DELETE')
+C
+      CALL QEXIT('CC3_FILCL')
 C
       END

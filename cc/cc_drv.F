@@ -136,6 +136,8 @@ C
 C
       INTEGER ISYEXC2(MAXEXCI),IMULTE2(MAXEXCI)
 C
+      CALL QENTER('CC_DRV')
+C
       CALL CCTAPINI
       WRITE (LUPRI,'(A,/)') '  '
       WRITE (LUPRI,'(1x,A)')
@@ -902,6 +904,8 @@ C
          IMULTE(IEX) = IMULTE2(IEX)
       ENDDO
 C
+      CALL QEXIT('CC_DRV')
+C
       END
 C  /* Deck cc_resume */
       SUBROUTINE CC_RESUME(WORK,LWORK)
@@ -934,6 +938,8 @@ C
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
       DATA    FIRSTCALL /.TRUE./
+C
+      CALL QENTER('CC_RESUME')
 C
       REWIND(LURES)
 C
@@ -1072,6 +1078,8 @@ C
      *'*********************************************************'//
      *'**********************'
 C
+      CALL QEXIT('CC_RESUME')
+C
       END
 C  /* Deck cc_false */
       SUBROUTINE CC_FALSE()
@@ -1083,6 +1091,8 @@ C
 #include <implicit.h>
 #include <ccsdinp.h>
 #include <cclr.h>
+C
+      CALL QENTER('CC_FALSE')
 C
       CIS    = .FALSE.
       CCS    = .FALSE.
@@ -1106,6 +1116,8 @@ C
       CCT    = .FALSE.
       STCCS  = .FALSE.
 C
+      CALL QEXIT('CC_FALSE')
+C
       END
 C  /* Deck cc_false */
       SUBROUTINE CC_FDGD   
@@ -1120,6 +1132,8 @@ C
 #include <ccgr.h>
 #include <ccfdgeo.h> 
 #include <infopt.h>
+C
+      CALL QENTER('CC_FDGD')
 C
       IF (IPRINT.GT.2) THEN
         WRITE (LUPRI,'(/,1X,A)')
@@ -1149,6 +1163,8 @@ C
      * '**********'
       END IF
 C
+      CALL QEXIT('CC_FDGD')
+C
       END
 *=====================================================================*
        SUBROUTINE CCRDABAINF(MOLGRDCC)
@@ -1163,7 +1179,11 @@ C
 
       LOGICAL MOLGRDCC
 
+      CALL QENTER('CCRDABAINF')
+
       MOLGRDCC = MOLGRD
+
+      CALL QEXIT('CCRDABAINF')
 
       RETURN
       END
@@ -1181,26 +1201,58 @@ C
 #include <implicit.h>
 #include <ccinftap.h>
 C
-      LUTOC  = 0
-      LU3VI  = 0
-      LU3VI2 = 0
-      LU3SRT = 0
-      LUDELD = 0
-      LUDKBC = 0
-      LUCKJD = 0
-      LUIAJB = 0
-      LUBFDN = 0
-      LURES  = 0
-      LUCSOL = 0
-      LUCTLM = 0
+      CALL QENTER('CCTAPINI')
 C
-      FNTOC  = 'CCSDT_OC'
-      FN3VI  = 'CC3_VI'
-      FN3VI2 = 'CC3_VI12'
-      FN3SRT = 'CC3_SORT'
-      FNDELD = 'CKDELD'
-      FNDKBC = 'DKBC'
-      FNCKJD = 'CKJDEL'
+      LUTOC   = 0
+      LU3VI   = 0
+      LU3VI2  = 0
+      LU3VI3  = 0
+      LU3VI4  = 0
+      LU3SRT  = 0
+      LUDELD  = 0
+      LUDKBC  = 0
+      LUCKJD  = 0
+      LUIAJB  = 0
+      LUBFDN  = 0
+      LURES   = 0
+      LUCSOL  = 0
+      LUCTLM  = 0
+      LU3SRT2 = 0
+      LU3SRT3 = 0
+      LUCKJD2 = 0
+      LUCKJD3 = 0
+      LUDELD2 = 0
+      LUDELD3 = 0
+      LUDELD4 = 0
+      LUDELD5 = 0
+      LUDKBC2 = 0
+      LUDKBC3 = 0
+      LUDKBC4 = 0
+      LUDKBC5 = 0
+C
+      FNTOC   = 'CCSDT_OC'
+      FN3VI   = 'CC3_VI'
+      FN3VI2  = 'CC3_VI12'
+      FN3VI3  = 'CC3_VI13'
+      FN3VI4  = 'CC3_VI14'
+      FN3SRT  = 'CC3_SORT'
+      FNDELD  = 'CKDELD'
+      FNDKBC  = 'DKBC'
+      FNCKJD  = 'CKJDEL'
+      FN3SRT2 = 'CC3_SORT2'
+      FN3SRT3 = 'CC3_SORT3'
+      FNCKJD2 = 'CKJDEL2'
+      FNCKJD3 = 'CKJDEL3'
+      FNDELD2 = 'CKDELD2'
+      FNDELD3 = 'CKDELD3'
+      FNDELD4 = 'CKDELD4'
+      FNDELD5 = 'CKDELD5'
+      FNDKBC2 = 'DKBC2'
+      FNDKBC3 = 'DKBC3'
+      FNDKBC4 = 'DKBC4'
+      FNDKBC5 = 'DKBC5'
+C
+      CALL QEXIT('CCTAPINI')
 C
       RETURN
       END
@@ -1217,15 +1269,20 @@ C
 #include <ccroper.h>
 #include <dummy.h>
 C
+      CALL QENTER('CC_WPRPC  ')
+C
       LUPRP = 0
       CALL GPOPEN(LUPRP,'PRPCOP','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
-     
+C
       DO IROPER = 1,NRSOLBL
          WRITE(LUPRP,'(I3,A8,I3)') IROPER,LBLOPR(IROPER),ISYOPR(IROPER)
       END DO 
-
+C
       CALL GPCLOSE(LUPRP,'KEEP')
+C
+      CALL QEXIT('CC_WPRPC  ')
+C
       END
 
 *=====================================================================*
@@ -1246,6 +1303,8 @@ C
       CHARACTER*10 CPRPC2(MXPRPC)
       DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC) 
       PARAMETER (TOLPRPFD=1.0D-10,TOLEX=1.0D-02)
+C
+      CALL QENTER('CC_WPRPCREORDER')
 C
       IF (NPRPC.NE.NPRPCO) CALL QUIT('Mistmatch in WPRPC')
       DO I = 1, NPRPC
@@ -1299,6 +1358,8 @@ C Take care with excitation energies !!!!
  100  CONTINUE
 C
 C Loop old list
+C
+      CALL QEXIT('CC_WPRPCREORDER')
 C
       END
 

@@ -86,6 +86,8 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
 C
+      CALL QENTER('CC2_DEN')
+C
       TIMETO = SECOND()
 C
       IF ((IPRINT .GT. 3) .AND. (IOPT .EQ. 1)) THEN
@@ -217,7 +219,8 @@ C     in KT2AM, as we only need T(2c-e) below.
 C-----------------------------------------------
 C
       ISYOPE = 1
-      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+      IOPTTCME = 1
+      CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
       KT2AMT = KT2AM                  !for safety
 C
 C-------------------------------
@@ -896,6 +899,8 @@ C
          WRITE(LUPRI,*) 'Total time used in CC2_DEN:', TIMETO
       ENDIF
 C
+      CALL QEXIT('CC2_DEN')
+C
       RETURN
       END
 C  /* Deck cc2_etij */
@@ -923,6 +928,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CC2_ETIJ')
 C
       DO 100 ISYMI = 1,NSYM
 C
@@ -1102,6 +1109,8 @@ C
 C
   120 CONTINUE
 C
+      CALL QEXIT('CC2_ETIJ')
+C
       RETURN
       END
 C  /* Deck cc2_etab */
@@ -1129,6 +1138,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <cclr.h>
+C
+      CALL QENTER('CC2_ETAB')
 C
       DO 100 ISYMA = 1,NSYM
 C
@@ -1306,6 +1317,8 @@ C
      *              ETAAB(KOFFRE),NTOTRE)
 C
   120 CONTINUE
+C
+      CALL QEXIT('CC2_ETAB')
 C
       RETURN
       END

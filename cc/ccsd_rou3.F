@@ -159,6 +159,8 @@ C
 #include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
+      CALL QENTER('CC_BF3')
+!
 !------------------------
 !     Dynamic allocation.
 !------------------------
@@ -262,6 +264,8 @@ C
      *             XLAMD2,ISYML2,WORK(KEND1),LWRK1,
      *             IDEL,ISYMD,IOPT)
 !
+      CALL QEXIT('CC_BF3')
+!
       RETURN
       END
 C  /* Deck cc_bf3_1 */
@@ -311,6 +315,8 @@ C  /* Deck cc_bf3_1 */
       PARAMETER(XTWO = -2.0D00, XHALF= -0.5D00, XONE= -1.0D00)
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+!
+      CALL QENTER('CC_BF31')
 !
       ISYDIS = MULD2H(ISYMOP,ISYMD)
       ISYRES = MULD2H(ISYDIS,ISYMGD)
@@ -654,6 +660,8 @@ C
 !
   100 CONTINUE
 !
+      CALL QEXIT('CC_BF31')
+!
       RETURN
       END
 C  /* Deck ccrhs_d3 */
@@ -705,6 +713,8 @@ C  /* Deck ccrhs_d3 */
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 !
+      CALL QENTER('CCRHS_D3')
+!
       ISYDIS = MULD2H(ISYMD,ISYMOP)
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
       IF (ISYMT2 .NE. ISYMPC) CALL QUIT('Symmetry Mismatch in CCRHS_D3')
@@ -741,6 +751,8 @@ C
      *                XLAMDH,XLAMPC,ISYMPC,XLAMHC,ISYMHC,
      *                WORK(KEND1),LWRK1,ISYDIS,IDEL,
      *                ISYMD,FACTD,ICON,LUD,DFIL,IV)
+C
+      CALL QEXIT('CCRHS_D3')
 C
       RETURN
       END
@@ -834,6 +846,8 @@ C
       CHARACTER DFIL*(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCRHS_D31')
 C
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
 C
@@ -1512,6 +1526,8 @@ C
 C
   999 CONTINUE
 C
+      CALL QEXIT('CCRHS_D31')
+C
       RETURN
       END
 C  /* Deck ccrhs_e */
@@ -1561,6 +1577,8 @@ C
       PARAMETER(ZERO=0.0D00,ONE=1.0D00,TWO=2.0D00)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCRHS_E3')
 C
 C--------------------------------------------------------------
 C     Contract and accumulate the first intermediate in OMEGA2.
@@ -1776,6 +1794,8 @@ C
   410    CONTINUE
   400 CONTINUE
 C
+      CALL QEXIT('CCRHS_E3')
+C
       RETURN
       END
       SUBROUTINE CCRHS_C3(XINT,DSRHF,OMEGA2,T2AM,ISYMT2,
@@ -1821,8 +1841,10 @@ C
       DOUBLE PRECISION WORK(LWORK), XLAMDP(*), XLAMIP(*), SCRM(*)
       DOUBLE PRECISION XLAMPC(*), XLAMHC(*), T2AM(*)
 #endif
-!
+C
       CHARACTER CFIL*(*)
+C
+      CALL QENTER('CCRHS_C3')
 C
       ISYDIS = MULD2H(ISYMD,ISYMOP)
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
@@ -1875,6 +1897,8 @@ C
          ENDIF
          IF (.NOT. DUMPCD) CALL CCSD_T2MTP(SCRM,WORK(KEND1),LWRK1,ISYMD)
       ENDIF
+C
+      CALL QEXIT('CCRHS_C3')
 C
       RETURN
       END
@@ -1979,6 +2003,8 @@ C
       CHARACTER CFIL*(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCRHS_C31')
 C
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
       ISAIK2 = MULD2H(ISYDIS,ISYMT2)
@@ -2493,6 +2519,8 @@ C
 C
   999 CONTINUE
 C
+      CALL QEXIT('CCRHS_C31')
+C
       RETURN
       END
 C  /* Deck ccrhs_t2tr */
@@ -2533,6 +2561,8 @@ C
 #endif
       PARAMETER (ONE = 1.0D00, TWO = 2.0D00, ZERO = 0.0D00)
       PARAMETER (XMONE = -1.0D00)
+C
+      CALL QENTER('CCRHS3_T2TR')
 C
 C----------------------------------------------------------
 C     Calculate two coulomb minus exchange of t2-amplitude,
@@ -2633,6 +2663,8 @@ C
   200    CONTINUE
       END IF
 C
+      CALL QEXIT('CCRHS3_T2TR')
+C
       RETURN
       END
 C  /* Deck ccrhs_cio */
@@ -2709,6 +2741,8 @@ C  /* Deck ccrhs_cio */
       LOGICAL ANTISYM, NORMALCONT, PIJCONT
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+!
+      CALL QENTER('CCRHS3_CIO')
 !
       IF (OMEGSQ) THEN
          WRITE(LUPRI,*) 'I/O in C-term not implemented for '//
@@ -2923,6 +2957,8 @@ C  /* Deck ccrhs_cio */
   110    CONTINUE
   100 CONTINUE
 !
+      CALL QEXIT('CCRHS3_CIO')
+!
       RETURN
       END
 !  /* Deck cc_putc */
@@ -2964,6 +3000,8 @@ C  /* Deck ccrhs_cio */
       PARAMETER (ZERO= 0.0D00, HALF= 0.5D00, ONE= 1.0D00, TWO= 2.0D00)
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+!
+      CALL QENTER('CC_PUTC3')
 !
 !------------------------------
 !     Symmetric cont.
@@ -3211,6 +3249,9 @@ C
 !
       ENDIF
 !
+      CALL QEXIT('CC_PUTC3')
+!
+      RETURN
       END
 C  /* Deck ccrhs_dio */
       SUBROUTINE CCRHS3_DIO(OMEGA2,OM2CONT,T2AM,XLAMDH,WORK,LWORK,
@@ -3281,6 +3322,8 @@ C
       LOGICAL ANTISYM, OM2CONT, LOGIC1
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCRHS3_DIO')
 C
       IF (OMEGSQ) THEN
          WRITE(LUPRI,*) 'I/O in D-term not implemented '//
@@ -3500,6 +3543,8 @@ C--------------------------------------------------
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCRHS3_DIO')
+C
       RETURN
       END
 C  /* Deck cc_putd3 */
@@ -3537,6 +3582,8 @@ C
       LOGICAL ANTISYM
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+!
+      CALL QENTER('CC_PUTD3')
 !
       IF (.NOT. ANTISYM) THEN
 !
@@ -3626,6 +3673,10 @@ C
       ENDIF
 !
       ENDIF
+!
+      CALL QEXIT('CC_PUTD3')
+!
+      RETURN
       END
 C  /* Deck ccrhs_h3 */
       SUBROUTINE CCRHS_H3(DSRHF,OMEGA1,XLAMDP,XLAMDH,SCRM,
@@ -3662,6 +3713,8 @@ C
       DOUBLE PRECISION XLAMDP(*), SCRM(*)
 #endif
 C
+      CALL QENTER('CCRHS_H3')
+C
 C--------------------------------
 C     Calculate the contribution.
 C--------------------------------
@@ -3669,6 +3722,7 @@ C
       CALL CCRHS_H31(DSRHF,OMEGA1,SCRM,XLAMDP,XLAMDH,WORK,LWORK,
      *              ISYDIS,ISYDEL,ISYMTR,FACH)
 C
+      CALL QEXIT('CCRHS_H3')
 C
       RETURN
       END
@@ -3710,6 +3764,8 @@ C
       PARAMETER(ZERO=0.0D00,ONE=1.0D00)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCRHS_H31')
 C
 C--------------------------------------
 C     Calculate contribution.
@@ -3785,6 +3841,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CCRHS_H31')
+C
       RETURN
       END
 C  /* Deck ccrhs_g */
@@ -3840,6 +3898,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DOUBLE PRECISION WORK(LWORK), XLAMH1(*), SCRM(*)
 #endif
 C
+      CALL QENTER('CCRHS_G3')
+C
 C------------------------
 C     Dynamic allocation.
 C------------------------
@@ -3864,6 +3924,8 @@ C
      *              WORK(KSCR1),WORK(KEND1),LWRK1,ISYDIS,ISYDEL,ISYMTR,
      *              FACG)
 C
+C
+      CALL QEXIT('CCRHS_G3')
 C
       RETURN
       END
@@ -3909,6 +3971,8 @@ C
       PARAMETER(TWO=2.0D00)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCRHS_G31')
 C
       ISYINT = MULD2H(ISYMH1,ISYMOP)
       ISYALI = MULD2H(ISYINT,ISYMTR)
@@ -3999,6 +4063,8 @@ C
 C
   200 CONTINUE
 C
+      CALL QEXIT('CCRHS_G31')
+C
       RETURN
       END
 C  /* Deck cc_rvec3 */
@@ -4020,12 +4086,16 @@ C  /* Deck cc_rvec3 */
 #endif
       CHARACTER FIL*(*)
       INTEGER LU, LLEN, LEN, NR, IDISP, IOFF, IERR
-C
+!
+      CALL QENTER('CC_RVEC3')
+!
       IOFF = 1 + LLEN*(NR-1) + IDISP
-C
+!
       IF (LEN .GT. 0) THEN
          CALL GETWA2(LU,FIL,VEC,IOFF,LEN)
       ENDIF
+!
+      CALL QEXIT('CC_RVEC3')
 !
       RETURN
       END
@@ -4048,11 +4118,15 @@ C  /* Deck cc_wvec3 */
       CHARACTER FIL*(*)
       INTEGER LU, LLEN, LEN, NR, IDISP, IOFF, IERR
 !
+      CALL QENTER('CC_WVEC3')
+!
       IOFF = 1 + LLEN*(NR-1) + IDISP
 !
       IF (LEN .GT. 0) THEN
          CALL PUTWA2(LU,FIL,VEC,IOFF,LEN)
       ENDIF
+!
+      CALL QEXIT('CC_WVEC3')
 !
       RETURN
       END
@@ -4093,6 +4167,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym_dec.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CCRHS3_T2BT')
 C
 C----------------------------------
 C     Back transform t2-amplitudes.
@@ -4202,6 +4278,8 @@ C
   200    CONTINUE
       END IF
 C
+      CALL QEXIT('CCRHS3_T2BT')
+C
       RETURN
       END
 C  /* Deck ccrhs3_cd */
@@ -4240,6 +4318,8 @@ C  /* Deck ccrhs3_cd */
 !
       CHARACTER*8 CFIL,DFIL,CDFIL
 !
+      CALL QENTER('CCRHS3_CD')
+!
       ISYDIS = MULD2H(ISYMD,ISYMOP)
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
 !
@@ -4276,6 +4356,9 @@ C  /* Deck ccrhs3_cd */
       IF (NT2BCD(ISYAIK) .GT. 0) THEN
          CALL PUTWA2(LUCD,CDFIL,WORK(KSCR1),IOFF,NT2BCD(ISYAIK))
       ENDIF
+!
+      CALL QEXIT('CCRHS3_CD')
+!
       RETURN
       END
 C  /* Deck ccrhs3_prcd */
@@ -4310,6 +4393,8 @@ C  /* Deck ccrhs3_prcd */
 !
       CHARACTER*8 DFIL
 !    
+      CALL QENTER('CCRHS3_PRCD')
+!
       ISYDIS = MULD2H(ISYMD,ISYMOP)
       ISYAIK = MULD2H(ISYDIS,ISYMPC)
 !
@@ -4345,6 +4430,8 @@ C  /* Deck ccrhs3_prcd */
          ENDDO
 !
       ENDIF
+!
+      CALL QEXIT('CCRHS3_PRCD')
 !
       RETURN
       END
@@ -4388,6 +4475,7 @@ C
 #include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
+      CALL QENTER('CCRHS3_EI')
 !
 !------------------------
 !     Dynamic allocation.
@@ -4412,6 +4500,8 @@ C
      *               WORK(KSCR1),WORK(KSCR2),WORK(KSCR3),
      *               XLAMDP,XLAMDH,WORK(KEND1),LWRK1,IDEL,
      *               ISYMD,ISYDIS,ISYMTR,FACE1,FACE2)
+!
+      CALL QEXIT('CCRHS3_EI')
 !
       RETURN
       END
@@ -4462,6 +4552,7 @@ C
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
+      CALL QENTER('CCRHS3_EI1')
 !
 !===================================
 !     First intermediate I(b,delta).
@@ -4616,6 +4707,8 @@ C
 !
   400 CONTINUE
 !
+      CALL QEXIT('CCRHS3_EI1')
+!
       RETURN
       END
 C  /* Deck cc_aofock3 */
@@ -4654,6 +4747,8 @@ C
 #include <symsq.h>
 #include <ccsdsym_dec.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('CC_AOFOCK3')
 C
       ISYDIS = MULD2H(ISYMD,ISYMOP)
 C
@@ -4720,6 +4815,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC_AOFOCK3')
+C
       RETURN
       END
 C  /* Deck cc_mofcon3 */
@@ -4751,6 +4848,8 @@ C
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_MOFCON3')
 C
       ISYDIS = MULD2H(ISYMD,ISYMOP)
 C
@@ -4961,6 +5060,8 @@ C
 C
   100 CONTINUE
 C
+      CALL QEXIT('CC_MOFCON3')
+C
       RETURN
       END
 C  /* Deck cc_pram */
@@ -4987,6 +5088,8 @@ C
       DIMENSION CAM1(*), CAMP(*), CAMM(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      CALL QENTER('CC_PRAM3')
 C
 C------------------------
 C     Add up the vectors.
@@ -5212,6 +5315,8 @@ C
      *       I3,1X,I3,1X,I3,1X,I3,' | ',
      *       I8,1x,I8,' | (-)',I9,' | ',1x,F10.6,'  |')
 C
+      CALL QEXIT('CC_PRAM3')
+C
       RETURN
       END
 C  /* Deck ccrhs3_ij */
@@ -5258,6 +5363,8 @@ C  /* Deck ccrhs3_ij */
       PARAMETER(ZERO = 0.0D00)
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+!
+      CALL QENTER('CCRHS3_IJ')
 !
 !-----------------------------------
 !     Allocation of workspace.
@@ -5379,6 +5486,8 @@ C  /* Deck ccrhs3_ij */
          ENDIF
   100 CONTINUE
 !
+      CALL QEXIT('CCRHS3_IJ')
+!
       RETURN
       END
 C  /* Deck ccrhs3_r2ij */
@@ -5428,6 +5537,8 @@ C  /* Deck ccrhs3_r2ij */
       PARAMETER(ZERO = 0.0D00)
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+!
+      CALL QENTER('CCRHS3_R2IJ')
 !
 !-----------------------------------
 !     Allocation of workspace.
@@ -5552,6 +5663,8 @@ C  /* Deck ccrhs3_r2ij */
        ENDIF
   100 CONTINUE
 !
+      CALL QEXIT('CCRHS3_R2IJ')
+!
       RETURN
       END
       SUBROUTINE CCRHS_A3(OMEGA2,T2AM,GAMMA,WORK,LWORK,ISYGAM,ISYVEC,
@@ -5598,6 +5711,8 @@ C
       LOGICAL ANTISYM
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CCRHS_A3')
 C
 C----------------------------
 C     Calculate contribution.
@@ -5762,6 +5877,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CCRHS_A3')
+C
       RETURN
       END
 C  /* Deck cc_t2sq3 */
@@ -5789,6 +5906,8 @@ C  /* Deck cc_t2sq3 */
 #include <ccorb.h>
 #include <ccsdsym_dec.h>
 #include <ccsdsym.h>
+!
+      CALL QENTER('CC_T2SQ3')
 !
       IF (ISYM.EQ.1) THEN
          KOFF1 = 1
@@ -5829,6 +5948,8 @@ C  /* Deck cc_t2sq3 */
 !
       ENDIF
 !
+      CALL QEXIT('CC_T2SQ3')
+!
       RETURN
       END
 !  /* Deck trm3 */
@@ -5859,6 +5980,8 @@ C  /* Deck cc_t2sq3 */
 #endif
       PARAMETER(XMONE = -1.0D00)
 !
+      CALL QENTER('TRM3')
+!
       DO 100 I = 1, N
 !
          CALL DSCAL(M,XMONE,A(1,I),1)
@@ -5866,6 +5989,8 @@ C  /* Deck cc_t2sq3 */
          CALL DSCAL(M,XMONE,A(1,I),1)
 !
  100  CONTINUE
+!
+      CALL QEXIT('TRM3')
 !
       RETURN
       END
@@ -5895,6 +6020,8 @@ C  /* Deck sqmatr3 */
 !
       PARAMETER(XMONE = -1.0D00)
 ! 
+      CALL QENTER('SQMATR3')
+!
       DO 100 I = 1,NDIM
          DO 110 J = 1,I
 !
@@ -5904,6 +6031,8 @@ C  /* Deck sqmatr3 */
 !
   110    CONTINUE
   100 CONTINUE
+!
+      CALL QEXIT('SQMATR3')
 !
       RETURN
       END
@@ -6007,6 +6136,8 @@ C
       LOGICAL ANTISYM, RHO22CONT
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      CALL QENTER('CC_T2MOTRIP')
 C
       ISYMO2 = MULD2H(ISYMBF,ISYMPC)
       ISYMO1 = MULD2H(ISYMO2,ISYMC2)
@@ -6517,6 +6648,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+      CALL QEXIT('CC_T2MOTRIP')
+C
       RETURN
       END
 C  /* Deck hescompa */
@@ -6551,6 +6684,8 @@ C  /* Deck hescompa */
       DOUBLE PRECISION REDHES1(*), REDHES2(*), COMTHRES
       DOUBLE PRECISION DIFF1, DIFF2
 #endif
+!
+      CALL QENTER('HESCOMPA')
 !
       WRITE(LUPRI,*)'                         '
       WRITE(LUPRI,*)'THRESHOLD FOR HESCOMPA = ',COMTHRES
@@ -6617,6 +6752,8 @@ C         ENDIF
 !       ENDDO
 !
 !     ENDDO
+!
+      CALL QEXIT('HESCOMPA')
 !
       RETURN
       END
