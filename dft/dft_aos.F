@@ -1577,7 +1577,6 @@ c     (orbital values=O, [dO/dx,dO/dy,dO/dz, [d0/dxx, ..]],
 c      [dO/dBx, dO/dBy, dO/dBz])
 #include <dftinf.h>
 #include <inforb.h>
-#include "dftmolhes.h"
 C
       NDER = GEODRV
       IF (NDER.EQ.0) NTYPSO =  1
