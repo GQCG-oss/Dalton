@@ -10,6 +10,19 @@ H.~J.~Aa. Jensen, H.~{\AA}gren, and J.~Olsen.
 P.~R. Taylor.
 \newblock {\em Theor.~Chim.~Acta}, 69:447, 1986.
 
+\bibitem{poakrprtjcp112}
+{\mbox P.-O.}~{\AA}strand, K.~Ruud, and P.~R. Taylor.
+\newblock {\em J.~Chem.~Phys.}, 112:2655, 2000.
+
+\bibitem{krpoaprtjcp112}
+K.~Ruud, {\mbox P.-O.}~{\AA}strand, and P.~R. Taylor.
+\newblock {\em J.~Chem.~Phys.}, 112:2668, 2000.
+
+\bibitem{Coriani:MCDRSP}
+Sonia Coriani, Poul J{\o}rgensen, Antonio Rizzo, Kenneth Ruud, and Jeppe Olsen.
+\newblock Ab initio determinations of {M}agnetic {C}ircular {D}ichroism.
+\newblock {\em Chem.~Phys.~Lett.}, 300:61--68, 1999.
+
 \bibitem{powpambortca77}
 {\mbox P.-O}.~Widmark, {\mbox P.-{\AA}}.~Malmqvist, and B.~O. Roos.
 \newblock {\em Theor.~Chim.~Acta}, 77:291, 1990.
@@ -48,6 +61,10 @@ P.~J{\o}rgensen, H.~J.~Aa. Jensen, and T.~Helgaker.
 H.~J.~Aa. Jensen, P.~J{\o}rgensen, and T.~Helgaker.
 \newblock {\em J.~Chem.~Phys.}, 85:3917, 1986.
 
+\bibitem{abnajsrsjpc89}
+A.~Banerjee, N.~Adams, J.~Simons, and R.~Shephard.
+\newblock {\em J.~Phys.~Chem.}, 89:52, 1985.
+
 \bibitem{theuhjajcpl173}
 T.~Helgaker, E.~Uggerud, and H.~J.~Aa. Jensen.
 \newblock {\em Chem.~Phys.~Lett.}, 173:145, 1993.
@@ -68,6 +85,14 @@ P.~Pulay and G.~Fogarasi.
 V.~Bakken and T.~Helgaker.
 \newblock To be published.
 
+\bibitem{Baker}
+J.~Baker.
+\newblock {\em J.~Comput.~Chem.}, 14:1085, 1993.
+
+\bibitem{jmbjcc15}
+J.~M. Bofill.
+\newblock {\em J.~Comput.~Chem.}, 15:1, 1994.
+
 \bibitem{cjcwhmjcp75}
 C.~J. Cerjan and W.~H. Miller.
 \newblock {\em J.~Chem.~Phys.}, 75:2800, 1981.
@@ -79,6 +104,10 @@ K.~Fukui.
 \bibitem{jcjacs111}
 J.~Cioslowski.
 \newblock {\em J.~Am.~Chem.~Soc.}, 111:8333, 1989.
+
+\bibitem{poakrkvmthjpca102}
+{\mbox P.-O.}~{\AA}strand, K.~Ruud, K.~V. Mikkelsen, and T.~Helgaker.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 102:7686, 1998.
 
 \bibitem{placzek}
 G.~Placzek.
@@ -113,6 +142,11 @@ M.~Jaszu\'{n}ski, S.~Szym\'{a}nski, O.~Christiansen, P.~J{\o}rgensen,
 J.~Olsen and P.~J{\o}rgensen.
 \newblock {\em J.~Chem.~Phys.}, 82:3235, 1985.
 
+\bibitem{mjpekdtehjajjojcp}
+M.~J. Packer, E.~K. Dalskov, T.~Enevoldsen, H.~J.~Aa. Jensen, and
+  J.~Oddershede.
+\newblock J.~Chem.~Phys., submitted.
+
 \bibitem{kwjfhppjacs112}
 K.~Wolinski, J.~F. Hinton, and P.~Pulay.
 \newblock {\em J.~Am.~Chem.~Soc.}, 112:8251, 1990.
@@ -134,6 +168,14 @@ K.~Ruud, T.~Helgaker, K.~L. Bak, P.~J{\o}rgensen, and J.~Olsen.
 O.~Vahtras, H.~{\AA}gren, P.~J{\o}rgensen, H.~J.~Aa. Jensen, S.~B. Padkj{\ae}r,
   and T.~Helgaker.
 \newblock {\em J.~Chem.~Phys.}, 96:6120, 1992.
+
+\bibitem{spascpl260}
+S.~P.~A. Sauer.
+\newblock {\em Chem.~Phys.~Lett.}, 260:271, 1996.
+
+\bibitem{tejospastcan100}
+T.~Enevoldsen, J.~Oddershede, and S.~P.~A. Sauer.
+\newblock {\em Theor.~Chem.~Acc.}, 100:275, 1998.
 
 \bibitem{joklbkrthpjtca90}
 J.~Olsen, K.~L. Bak, K.~Ruud, T.~Helgaker, and P.~J{\o}rgensen.
@@ -167,9 +209,9 @@ K.~Ruud, H.~Skaane, T.~Helgaker, K.~L. Bak, and P.~J{\o}rgensen.
 A.~Sch\"{a}fer, H.~Horn, and R.~Ahlrichs.
 \newblock {\em J.~Chem.~Phys.}, 97:2571, 1992.
 
-\bibitem{aschrajcp100}
-A.~Sch\"{a}fer, C.~Huber, and R.~Ahlrichs.
-\newblock {\em J.~Chem.~Phys.}, 100:5829, 1994.
+\bibitem{thmjkrcr99}
+T.~Helgaker, M.~Jaszu\'{n}ski, and K.~Ruud.
+\newblock {\em Chem.~Rev.}, 99:293, 1999.
 
 \bibitem{jgkrthjcp105}
 J.~Gauss, K.~Ruud, and T.~Helgaker.
@@ -196,6 +238,14 @@ K.~L. Bak, P.~J{\o}rgensen, T.~Helgaker, K.~Ruud, and H.~J.~Aa. Jensen.
 K.~L. Bak, Aa.~E. Hansen, K.~Ruud, T.~Helgaker, J.~Olsen, and P.~J{\o}rgensen.
 \newblock {\em Theor.~Chim.~Acta}, 90:441, 1995.
 
+\bibitem{plpmp91}
+P.~L. Polavarapu.
+\newblock {\em Mol.~Phys.}, 91:551, 1997.
+
+\bibitem{plpdkckrcpl319}
+P.~L. Polavarapu, D.~K.Chakraborty, and K.~Ruud.
+\newblock {\em Chem.~Phys.~Lett.}, 319:595, 2000.
+
 \bibitem{krthjopjklbcpl235}
 K.~Ruud, T.~Helgaker, J.~Olsen, P.~J{\o}rgensen, and K.~L. Bak.
 \newblock {\em Chem.~Phys.~Lett.}, 235:47, 1995.
@@ -207,6 +257,19 @@ K.~L. Bak, P.~J{\o}rgensen, T.~Helgaker, K.~Ruud, and H.~J.~Aa. Jensen.
 \bibitem{klbpjthkrfd99}
 K.~L. Bak, P.~J\o rgensen, T.~Helgaker, and K.~Ruud.
 \newblock {\em Faraday Discuss.}, 99:121, 1994.
+
+\bibitem{jrcmjffjdpjsjpca104}
+J.~R. Cheeseman, M.~J. Frisch, F.~J. Devlin, and P.~J. Stephens.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 104:1039, 2000.
+
+\bibitem{rdacpl87}
+R.~D. Amos.
+\newblock {\em Chem.~Phys.~Lett.}, 87:23, 1982.
+
+\bibitem{krdjpnhatshjajpdthjcp108}
+K.~Ruud, D.~Jonsson, P.~Norman, H.~{\AA}gren, T.~Saue, H.~J.~Aa. Jensen,
+  P.~Dahle, and T.~Helgaker.
+\newblock {\em J.~Chem.~Phys.}, 108:7973, 1998.
 
 \bibitem{pndjhapdkrthhkcpl253}
 P.~Norman, D.~Jonsson, H.~{\AA}gren, P.~Dahle, K.~Ruud, T.~Helgaker, and
@@ -251,6 +314,10 @@ K.~V. Mikkelsen, P.~J{\o}rgensen, K.~Ruud, and T.~Helgaker.
 {\mbox P.-O.}~{\AA}strand, K.~V. Mikkelsen, K.~Ruud, and T.~Helgaker.
 \newblock {\em J.~Phys.~Chem.}, 100:19771, 1996.
 
+\bibitem{krpoaprtjacs123}
+K.~Ruud, {\mbox P.-O.}~{\AA}strand, and P.~R. Taylor.
+\newblock {\em J.~Am.~Chem.~Soc.}, 123:4826, 2001.
+
 \bibitem{thkrprt95}
 K.~Ruud T.~Helgaker and P.~R. Taylor.
 \newblock Second-order methods for the optimization of molecular potential
@@ -258,13 +325,21 @@ K.~Ruud T.~Helgaker and P.~R. Taylor.
 \newblock In D.~Heidrich, editor, {\em The reaction path in Chemistry: Current
   Approaches and Perspectives}. Kluwer, Netherlands, 1995.
 
+\bibitem{cppyahbsmjfjcc17}
+C.~Peng, P.~Y. Ayala, H.~B. Schlegel, and M.~J. Frisch.
+\newblock {\em J.~Comput.~Chem.}, 17:49, 1996.
+
 \bibitem{VRML}
 A.~J. Robinson.
 \newblock {\em Chem.~Design Automat.~News}, 10:50, 1995.
 
-\bibitem{Baker}
-J.~Baker.
-\newblock {\em J.~Comput.~Chem.}, 14:1085, 1993.
+\bibitem{pcppjms114}
+P.~Csaszar and P.~Pulay.
+\newblock {\em J.~Mol.~Struct.}, 114:31, 1984.
+
+\bibitem{rlabgkpamcpl241}
+R.~Lindh, A.~Bernhardsson, G.~Karlstr\"{o}m, and {\mbox P.-{\AA}}.~Malmqvist.
+\newblock {\em Chem.~Phys.~Lett.}, 241:423, 1995.
 
 \bibitem{Schlegel}
 H.~B. Schlegel.
@@ -277,6 +352,10 @@ P.~E.~M. Siegbahn, J.~Alml\"{o}f, A.~Heiberg, and B.~O. Roos.
 \bibitem{thpjjcp95}
 T.~Helgaker and P.~J{\o}rgensen.
 \newblock {\em J.~Chem.~Phys.}, 95:2595, 1991.
+
+\bibitem{skjohjajjcp103}
+S.~Kirpekar, J.~Oddershede, and H.~J.~Aa. Jensen.
+\newblock {\em J.~Chem.~Phys.}, 103:2983, 1995.
 
 \bibitem{dmtajcp73}
 D.~Matsuoka and T.~Aoyama.
@@ -336,6 +415,19 @@ C.~W. Bauschlicher.
 T.~U. Helgaker, H.~J.~Aa. Jensen, and P.~J{\o}rgensen.
 \newblock {\em J.~Chem.~Phys.}, 182:6280, 1986.
 
+\bibitem{hhbook}
+H.~Hellmann.
+\newblock {\em Einf\"{u}hrung in die Quantenchemie}.
+\newblock Deuticke, Leipzig, 1937.
+
+\bibitem{rpfpr56}
+R.~P. Feynman.
+\newblock {\em Phys.~Rev.}, 56:340, 1939.
+
+\bibitem{vbthwkkrmp96}
+V.~Bakken, T.~Helgaker, W.~Klopper, and K.~Ruud.
+\newblock {\em Mol.~Phys.}, 96:653, 1999.
+
 \bibitem{hsijqc30}
 H.~Sellers.
 \newblock {\em Int.~J.~Quantum Chem.}, 30:433, 1986.
@@ -348,11 +440,6 @@ L.~D. Barron.
 \bibitem{whc48}
 W.~Hug.
 \newblock {\em Chimia}, 48:386, 1994.
-
-\bibitem{mjpekdtehjajjojcp}
-M.~J. Packer, E.~K. Dalskov, T.~Enevoldsen, H.~J.~Aa. Jensen, and
-  J.~Oddershede.
-\newblock J.~Chem.~Phys., submitted.
 
 \bibitem{jrtsvmjcp58}
 J.~Rose, T.~Shibuya, and V.~McKoy.
@@ -393,7 +480,7 @@ H.~{\AA}gren, O.~Vahtras, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker.
 
 \bibitem{haovbmaqc27}
 Hans {\AA}gren, Olav Vahtras, and Boris Minaev.
-\newblock {\em Adv.~ Quantum Chem.}, 27:71, 1996.
+\newblock {\em Adv.~Quantum Chem.}, 27:71, 1996.
 
 \bibitem{pndjovhacpl242}
 P.~Norman, D.~Jonsson, O.~Vahtras, and H.~{\AA}gren.
@@ -411,48 +498,48 @@ D.~Jonsson, P.~Norman, Y.~Liu, and H.~{\AA}gren.
 Ove Christiansen, Henrik Koch, and Poul J{\o}rgensen.
 \newblock The second-order approximate coupled cluster singles and doubles
   model {CC2}.
-\newblock {\em Chem. Phys. Lett.}, 243:409--418, 1995.
+\newblock {\em Chem.~Phys.~Lett.}, 243:409--418, 1995.
 
 \bibitem{Moller34}
 C.~M{\o}ller and M.~S. Plesset.
-\newblock {\em Phys. Rev.}, 46:618, 1934.
+\newblock {\em Phys.~Rev.}, 46:618, 1934.
 
 \bibitem{Head-Gordon:94}
 Martin Head-Gordon, Rudolph~J. Rico, Manaby Oumi, and Timothy~J. Lee.
-\newblock {\em Chem. Phys. Lett.}, 219:21, 1994.
+\newblock {\em Chem.~Phys.~Lett.}, 219:21, 1994.
 
 \bibitem{Purvis82}
 G.~D. Purvis and R.~J. Bartlett.
-\newblock {\em J. Chem. Phys.}, 76:1910, 1982.
+\newblock {\em J.~Chem.~Phys.}, 76:1910, 1982.
 
 \bibitem{Christiansen:PERTURBATIVE_TRIPLES}
 Ove Christiansen, Henrik Koch, and Poul J{\o}rgensen.
 \newblock Perturbative triple excitation corrections to coupled cluster singles
   and doubles excitation energies.
-\newblock {\em J. Chem. Phys.}, 105:1451--1459, 1996.
+\newblock {\em J.~Chem.~Phys.}, 105:1451--1459, 1996.
 
 \bibitem{Raghavachari89}
 K.~Raghavachari, G.~W. Trucks, J.~A. Pople, and M.~Head-Gordon.
-\newblock {\em Chem. Phys. Lett.}, 157:479, 1989.
+\newblock {\em Chem.~Phys.~Lett.}, 157:479, 1989.
 
 \bibitem{Christiansen:JCP103}
 Ove Christiansen, Henrik Koch, and Poul J{\o}rgensen.
 \newblock Response functions in the {CC3} iterative triple excitation model.
-\newblock {\em J. Chem. Phys.}, 103:7429--7441, 1995.
+\newblock {\em J.~Chem.~Phys.}, 103:7429--7441, 1995.
 
 \bibitem{Koch:JCP106}
 Henrik Koch, Ove Christiansen, Poul J{\o}rgensen, Alfredo~S{\'a}nchez {de
   Mer{\'a}s}, , and Trygve Helgaker.
 \newblock The {CC3} model: {A}n iterative coupled cluster approach including
   connected triples.
-\newblock {\em J. Chem. Phys.}, 106:1808, 1997.
+\newblock {\em J.~Chem.~Phys.}, 106:1808, 1997.
 
 \bibitem{Halkier:CCFOP}
 Asger Halkier, Henrik Koch, Ove Christiansen, Poul J{\o}rgensen, and Trygve
   Helgaker.
 \newblock First-order one-electron properties in the integral-direct coupled
   cluster singles and doubles model.
-\newblock {\em J. Chem. Phys.}, 107:849--866, 1997.
+\newblock {\em J.~Chem.~Phys.}, 107:849--866, 1997.
 
 \bibitem{Halkier:CC2RLXFOP}
 Asger Halkier and Sonia Coriani.
@@ -464,80 +551,38 @@ Ove Christiansen, Asger Halkier, Henrik Koch, Poul J{\o}rgensen, and Trygve
   Helgaker.
 \newblock Integral-direct coupled cluster calculations of frequency-dependent
   polarizabilities, transition probailities and excited-state properties.
-\newblock {\em J. Chem. Phys.}, 108:2801, 1998.
+\newblock {\em J.~Chem.~Phys.}, 108:2801, 1998.
 
 \bibitem{Christiansen:QEL}
 Ove Christiansen, Poul J{\o}rgensen, and Christof H\"attig.
 \newblock Response functions from {F}ourier component variational perturbation
   theory applied to a time-averaged quasienergy.
-\newblock {\em Int. J. Quantum Chem.}, 68:1--52, 1998.
+\newblock {\em Int.~J.~Quantum Chem.}, 68:1--52, 1998.
 
 \bibitem{Haettig:CAUCHY}
 Christof H{\"attig}, Ove Christiansen, and Poul J{\o}rgensen.
 \newblock Cauchy moments and dispersion coefficients using coupled cluster
   linear response theory.
-\newblock {\em J. Chem. Phys.}, 107:10592--10596, 1997.
-
-\bibitem{Haettig:CCQR}
-Christof H{\"attig}, Ove Christiansen, Henrik Koch, and Poul J{\o}rgensen.
-\newblock Frequency-dependent first hyperpolarizabilities using coupled cluster
-  quadratic response theory.
-\newblock {\em Chem. Phys. Lett.}, 269:428, 1997.
-
-\bibitem{Haettig:DISPBETA}
-Christof H\"attig and Poul J{\o}rgensen.
-\newblock Dispersion coefficients for first hyperpolarizabilities using coupled
-  cluster cubic response theory.
-\newblock {\em Theor. Chim. Acta}, 100:230--240, 1998.
-
-\bibitem{Haettig:CCCR}
-Christof H{\"attig}, Ove Christiansen, and Poul J{\o}rgensen.
-\newblock Frequency-dependent second hyperpolarizabilities using coupled
-  cluster cubic response theory.
-\newblock {\em Chem. Phys. Lett.}, 282:139--146, 1998.
-
-\bibitem{Haettig:DISPGAMMA}
-Christof H\"attig and Poul J{\o}rgensen.
-\newblock Dispersion coefficients for second hyperpolarizabilities using
-  coupled cluster cubic response theory.
-\newblock {\em Advances in Quantum Chemistry}, 35:111--148, 1999.
+\newblock {\em J.~Chem.~Phys.}, 107:10592--10596, 1997.
 
 \bibitem{Christiansen:JCP105}
 Ove Christiansen, Henrik Koch, Asger Halkier, Poul J{\o}rgensen, Trygve
   Helgaker, and Alfredo~M. {Sanchez de Meras}.
 \newblock Large-scale calculations of excitation energies in coupled cluster
   theory: The singlet excited states of benzene.
-\newblock {\em J. Chem. Phys.}, 105:6921, 1996.
+\newblock {\em J.~Chem.~Phys.}, 105:6921, 1996.
 
 \bibitem{Hald:JCP113}
-C.\~H\"attig K.\~Hald and P.\ J{\o}rgensen.
+C.~H\"{a}ttig K.~Hald and P.~J{\o}rgensen.
 \newblock Triplet excitation energies in the coupled cluster singles and
   doubles model using an explicit triplet spin coupled excitation space.
-\newblock {\em J. Chem. Phys.}, 113:7765--7772, 2000.
-
-\bibitem{Haettig:MULTIPHOTON}
-Christof H{\"attig}, Ove Christiansen, and Poul J{\o}rgensen.
-\newblock Multiphoton transition moments and absorption cross section in
-  coupled cluster response theory employing variational transition moment
-  functionals.
-\newblock {\em J. Chem. Phys.}, 108:8331--8354, 1998.
-
-\bibitem{Haettig:TWOPHOTON}
-Christof H{\"attig}, Ove Christiansen, and Poul J{\o}rgensen.
-\newblock Coupled cluster response calculations of twophoton transition
-  probability rate constants for helium, neon and argon.
-\newblock {\em J. Chem. Phys.}, 108:8355--8359, 1998.
-
-\bibitem{Coriani:MCDRSP}
-Sonia Coriani, Poul J{\o}rgensen, Antonio Rizzo, Kenneth Ruud, and Jeppe Olsen.
-\newblock Ab initio determinations of {M}agnetic {C}ircular {D}ichroism.
-\newblock {\em Chem. Phys. Lett.}, 300:61--68, 1999.
+\newblock {\em J.~Chem.~Phys.}, 113:7765--7772, 2000.
 
 \bibitem{Coriani:MOACC}
 Sonia Coriani, Christof H\"attig, Poul J{\o}rgensen, and Trygve Helgaker.
 \newblock Gauge-origin independent magneto-optical activity within coupled
   cluster response theory.
-\newblock {\em J. Chem. Phys.}, 113:3561--3572, 2000.
+\newblock {\em J.~Chem.~Phys.}, 113:3561--3572, 2000.
 
 \bibitem{Coriani:PHD}
 Sonia Coriani.
@@ -549,13 +594,13 @@ Christof H{\"attig} and Poul J{\o}rgensen.
 \newblock Derivation of coupled cluster excited states response functions and
   multiphoton transition moments between two excited states as derivatives of
   variational functionals.
-\newblock {\em J. Chem. Phys.}, 109:4745--4757, 1998.
+\newblock {\em J.~Chem.~Phys.}, 109:4745--4757, 1998.
 
 \bibitem{Haettig:EXLR}
 Christof H{\"a}ttig, Ove Christiansen, Sonia Coriani, and Poul J{\o}rgensen.
 \newblock Frequency-dependent polarizabilities of excited states using coupled
   cluster response theory.
-\newblock {\em J. Chem. Phys.}, 109:9237--9243, 1998.
+\newblock {\em J.~Chem.~Phys.}, 109:9237--9243, 1998.
 
 \bibitem{wtrrrmp37}
 W.~T. Raynes and R.~Ratcliffe.

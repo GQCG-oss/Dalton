@@ -209,8 +209,8 @@ optimization} (geometry optimization). Most of the Hessian
 updating\index{Hessian update} schemes were taken from
 ref.\cite{thkrprt95} and \cite{Fletcher}. The implementation of
 redundant internal coordinates\index{redundant internal coordinates}
-follows the work of Peng {\it et al.\/}~\cite{Peng}. In addition to
-this, several keywords for VRML visualization are
+follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}. In
+addition to this, several keywords for VRML visualization are
 included~\cite{VRML}.
 
 \begin{description}
@@ -252,7 +252,7 @@ eigenvalue is sought).
 %for minimizations.
 
 \item[\Key{BOFILL}]
-Bofill's update\cite{veb003} is the default updating scheme for
+Bofill's update\cite{jmbjcc15} is the default updating scheme for
 transition state optimizations. It's a linear combination of the
 symmetric rank one and the PSB updating schemes, automatically giving
 more weight to PSB whenever the rank one potentially is numerically
@@ -338,7 +338,7 @@ geometry optimizations, where the numbers of individual primitive
 internal coordinates are needed.
 
 \item[\Key{GDIIS}]
-Use the Geometrical DIIS\cite{veb004} algorithm to control the
+Use the Geometrical DIIS\cite{pcppjms114} algorithm to control the
 step. Works in much the same way as DIIS for wave-functions. However,
 the rational function and level-shifted Newton methods are generally
 more robust and more efficient. Can only be used for minimizations.
@@ -382,8 +382,8 @@ the Hessian from a calculation on the same molecule with another
 and edit the file directly to set up a specific forcefield.
 
 \item[\Key{INIMOD}]
-Use a simple model Hessian\cite{veb005} diagonal in redundant internal
-coordinates as the initial Hessian. All diagonal elements are
+Use a simple model Hessian\cite{rlabgkpamcpl241} diagonal in redundant
+internal coordinates as the initial Hessian. All diagonal elements are
 determined based on an extremely simplified molecular mechanics model,
 yet this model provides Hessians that are good starting points for
 most systems, thus avoiding any calculation of the exact Hessian. This
@@ -602,15 +602,16 @@ constrained geometry optimization, as certain coordinates sometimes
 ``struggle'' against the constraints. See also \Key{NODIHE}.
 
 \item[\Key{RF}]
-Use the rational function method~\cite{vb007} instead of level-shifted
-Newton which is the default. The RF method is often slightly faster
-than the level-shifted Newton, but also slightly less robust.
+Use the rational function method~\cite{abnajsrsjpc89} instead of
+level-shifted Newton which is the default. The RF method is often
+slightly faster than the level-shifted Newton, but also slightly less
+robust.
 
 For saddle point optimizations there's a special partitioned rational
-function method~\cite{vb008} (used automatically when both \Key{RF}
+function method (used automatically when both \Key{RF}
 and \Key{SADDLE} are set). However, this method is both slower and
 less stable than the default trust-region level-shifted image method
-which is the default.
+(which is the default).
 
 \item[\Key{SADDLE}]
 Indicates that a saddle point optimization should be performed rather

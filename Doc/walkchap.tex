@@ -42,7 +42,7 @@ requiring the calculation of the Hessian at every point). These
 options will be discussed in more detail below. The \Sec{OPTIMIZE}
 module also contains the stable second-order trust-region image
 surface minimization (using analytical or approximate Hessians), as
-well as a partitioned rational function method~\cite{vb001}.
+well as a partitioned rational function method~\cite{abnajsrsjpc89}.
 
 Another feature of the \dalton\ program system is the options for
 calculating essential information about the potential energy
@@ -522,10 +522,11 @@ transition state optimization using \Sec{OPTIMIZE} is:
 *END OF INPUT
 \end{verbatim}
 This will calculate the Hessian at the initial geometry, then update
-it using Bofill's update\cite{vb002}\index{Bofill's update}\index{Hessian
-update} (the BFGS update is not suitable since it tends towards a
-positive definite Hessian). As for minimizations, redundant internal
-coordinates are used by default for first-order methods.
+it using Bofill's update\cite{jmbjcc15}\index{Bofill's
+update}\index{Hessian update} (the BFGS update is not suitable since
+it tends towards a positive definite Hessian). As for minimizations,
+redundant internal coordinates are used by default for first-order
+methods.
 
 It is highly recommended that a Hessian calculation/vibrational
 analysis be performed once a stationary point has been found, to
