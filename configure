@@ -786,6 +786,7 @@ case $WHICH in
               opt='+O2 +U77 +E4 +E5'
               safe_opt='+O1 +U77 +E4 +E5'
           fi
+          copt='-D_FILE_OFFSET_BITS=64 +O3'
           LIB="-lV7 $LIB";;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then

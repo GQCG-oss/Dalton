@@ -36,7 +36,7 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),WORK(LWORK)
 C
-      CHARACTER*8  CFIL,DFIL
+      CHARACTER*6  CFIL,DFIL
 C
 C
 #include <ccorb.h>
@@ -77,9 +77,10 @@ C----------------
 C
       LUC = 0
       LUD = 0
-      CFIL = 'PMAT_C  '
-      DFIL = 'PMAT_D  '
+      CFIL = 'PMAT_C'
+      DFIL = 'PMAT_D'
 C
+      IF (DEBUG) WRITE(LUPRI,*) 'DUMPCD = ',DUMPCD
       IF (DUMPCD) THEN
          CALL WOPEN2(LUC,CFIL,64,0)
          CALL WOPEN2(LUD,DFIL,64,0)
@@ -1252,9 +1253,8 @@ C     Close files.
 C-----------------
 C
       IF (DUMPCD) THEN
-         CALL WCLOSE2(LUC,CFIL,'DELETE')
-         CALL WCLOSE2(LUD,DFIL,'DELETE')
-C
+         CALL WCLOSE2(LUC,CFIL,'KEEP')
+         CALL WCLOSE2(LUD,DFIL,'KEEP')
       END IF
 C
 C-----------------------
@@ -4499,7 +4499,7 @@ C
 C
       DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
-      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
+      COMMON/SORTIO/LUAOIN(8)
 C
       CALL QENTER('CCRDAO')
       ISYMD  = ISAO(IDELTA)
@@ -4527,7 +4527,7 @@ C
             DTIME = SECOND()
             CALL UNPCKR8(XINT,LENGTH,XINT,NBYTE,
      &                   IPCKTABINT,LPACKINT)
-            PCKTID = PCKTID + SECOND() - DTIME
+            PCKTIME = PCKTIME + SECOND() - DTIME
          END IF
 C
          GOTO 999

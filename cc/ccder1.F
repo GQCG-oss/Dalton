@@ -136,12 +136,7 @@ C
 *----------------------------------------------------------------------*
       DO ISYM = 1,NSYM
          LUAODR(ISYM) = 0
-C
-         NFILE = 0
-C
-         CALL WOPEN2(NFILE,NAME(ISYM),64,0)
-         LUAODR(ISYM) = NFILE
-C
+         CALL WOPEN2(LUAODR(ISYM),NAME(ISYM),64,0)
       END DO
 
 *----------------------------------------------------------------------*
@@ -380,6 +375,10 @@ C
   200    CONTINUE
 C
   100 CONTINUE
+C
+      DO ISYM = 1,NSYM
+         CALL WCLOSE2(LUAODR(ISYM),NAME(ISYM),'KEEP')
+      END DO
 C
       RETURN
       END

@@ -92,7 +92,7 @@ C  /* Deck ccrhsn3 */
 !
       LOGICAL FCKCON, ETRAN, ANTISYM
 !
-      CHARACTER*8  CSFIL, DTFIL
+      CHARACTER  CSFIL*6, DTFIL*7
       CHARACTER*10 MODEL
 !
 !-----------------------------------------------------------
@@ -107,8 +107,8 @@ C  /* Deck ccrhsn3 */
 !
       LUDTIM  = 0
       LUCSIM  = 0
-      CSFIL   = 'PMAT_C  '
-      DTFIL   = 'PMAT_DT '
+      CSFIL   = 'PMAT_C'
+      DTFIL   = 'PMAT_DT'
 !
       IF (DUMPCD) THEN
          CALL WOPEN2(LUDTIM,DTFIL,64,0)

@@ -53,7 +53,7 @@ C
 #include <ccslvinf.h>
 C
       CHARACTER*8 FRHO2, FRHO1, FC2AM, FC1AM
-      CHARACTER*8 CFIL, DFIL, PQFIL
+      CHARACTER*6 CFIL, DFIL, PQFIL
       CHARACTER*1 LR
 C
       DIMENSION INDEXA(MXCORB)
@@ -162,8 +162,8 @@ C
       LUCIM = 0
       LUDIM = 0
 C
-      CFIL = 'PMAT_C  '
-      DFIL = 'PMAT_D  '
+      CFIL = 'PMAT_C'
+      DFIL = 'PMAT_D'
 C
       CALL WOPEN2(LUCIM,CFIL,64,0)
       CALL WOPEN2(LUDIM,DFIL,64,0)
@@ -175,7 +175,7 @@ C
       IF (.TRUE.) THEN
 
          LUPQ = 0
-         PQFIL = 'CCPQIM  '
+         PQFIL = 'CCPQIM'
 C
          CALL WOPEN2(LUPQ,PQFIL,64,0)
 

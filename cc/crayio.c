@@ -34,7 +34,7 @@
 /* for machines, which don´t have lseek64, we overwrite here
    lseek64 by lseek and off64_t by off_t
 */
-#if defined (SYS_LINUX) || defined (SYS_DEC)
+#if defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_HPUX)
 #define lseek64 lseek
 #define off64_t off_t
 #endif
@@ -48,7 +48,7 @@
 #endif
 
 /* for some machines we have to add an underscore to the routine names:  */
-#if defined (SYS_HP_UX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_AIX)
+#if defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_AIX)
 #define WOPEN wopen_
 #define WCLOSE wclose_
 #define GETWA getwa_
@@ -288,6 +288,12 @@ void GETWA(unit, result, addr, count, ierr)
 
   if ( (where+nbytes) > file->length ) {
     *ierr = -5;
+    (void) fflush(stdout);
+    (void) fprintf(stderr,"GETWA: where %ld \n",where);
+    (void) fprintf(stderr,"GETWA: nbytes %ld \n",nbytes);
+    (void) fprintf(stderr,"GETWA: file->length %ld \n",file->length);
+    (void) PrintFileStats(*unit, file);
+    (void) fflush(stdout);
     return;
   }
 
@@ -326,6 +332,7 @@ void PUTWA(unit, source, addr, count, ierr)
   size_t nbytes,con2;
   long long where, con1;
   double start, end;
+  long long jerr;
   struct w_file *file;
 
   if (first_call)

@@ -7,13 +7,16 @@ c/* Deck WOPEN2 */
 *=====================================================================*
 #include <priunit_dec.h>
 #include <priunit.h>
+#include <ccsdinp.h>
       INTEGER LUNIT, IADR, ILEN, IERR, BLOCKSIZE, STATUS, IUN
-      INTEGER IUNTAB
+      INTEGER IUNTAB, J
       CHARACTER*(*) FILE
       COMMON /UNITAR/ IUNTAB(1:99)
 C
       ILEN=LEN(FILE)
-
+      DO J = LEN(FILE), 1, -1
+        IF (FILE(J:J).EQ.' ') ILEN = MIN(ILEN,J)
+      END DO
 C
       IF (LUNIT .EQ. 0) THEN
          IUN = 0
@@ -27,6 +30,9 @@ C
          IUNTAB(LUNIT) = 1
       END IF
 C
+      IF (DEBUG) WRITE(LUPRI,*) 'OPEN FILE "',FILE(1:ILEN),
+     & '" with unit number ',LUNIT
+C
 #if defined (SYS_AIX)
       CALL WOPEN_(LUNIT,FILE,ILEN,BLOCKSIZE,STATUS,IERR)
 #endif
@@ -39,8 +45,10 @@ C
 C
       IF (IERR.NE.0) THEN
         WRITE (LUPRI,*) 'I/O ERROR IN WOPEN2:'
-        WRITE (LUPRI,*) 'FILE:', FILE
+        WRITE (LUPRI,'(1x,3a)') 'FILE: >', FILE(1:ILEN),'<'
+        WRITE (LUPRI,*) 'ILEN:', ILEN
         WRITE (LUPRI,*) 'UNIT:', LUNIT
+        WRITE (LUPRI,*) 'IERR:', IERR
         WRITE (LUPRI,*) 'STATUS:', STATUS
         WRITE (LUPRI,*) 'BLOCKSIZE:', BLOCKSIZE
         CALL QUIT( 'I/O ERROR IN WOPEN2')
@@ -148,6 +156,7 @@ c/* Deck WCLOSE2 */
 *=====================================================================*
 #include <priunit_dec.h>
 #include <priunit.h>
+#include <ccsdinp.h>
       INTEGER LUNIT, IERR, ILEN
       CHARACTER*(*) FILE, MODE
       CHARACTER*(80) COMMAND
@@ -171,9 +180,12 @@ C
         CALL QUIT('I/O ERROR IN CLOSE2')
       END IF
 
-      IF (MODE(1:6).EQ.'DELETE') THEN
+      ILEN = MIN(LEN(FILE),74)
 
-        ILEN = MIN(LEN(FILE),74)
+      IF (DEBUG) WRITE(LUPRI,*) 'CLOSE FILE "',FILE(1:ILEN),
+     & '" with unit number ',LUNIT
+C
+      IF (MODE(1:6).EQ.'DELETE') THEN
 
         WRITE(COMMAND,'(2A)') 'rm -f ', FILE(1:ILEN)
 

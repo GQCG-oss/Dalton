@@ -94,7 +94,10 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER FILPQIM*(6), FILXYM*(6)
       PARAMETER (FILPQIM = 'CCPQ00', FILXYM = 'CC_XYM')
-      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
+      CHARACTER*8 NAME(8)
+      DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
+     *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
+      COMMON/SORTIO/LUAOIN(8)
 
       INTEGER NCCEXCI2(8,3),ISYOFE2(8),ITROFE2(8)
 C
@@ -825,14 +828,11 @@ C
       DO I = 1, 8
         IF (LUAOIN(I) .GT. 0) THEN
           IF ((.NOT.KEEPAOIN).OR.MOLGRD) THEN
-            CALL GPCLOSE(LUAOIN(I),'DELETE')
+            CALL WCLOSE2(LUAOIN(I),NAME(I),'DELETE')
           ELSE
             ! needed for gradient calculation...
-            CALL GPCLOSE(LUAOIN(I),'KEEP')
+            CALL WCLOSE2(LUAOIN(I),NAME(I),'KEEP')
           END IF
-        END IF
-        IF (LUAODR(I) .GT. 0) THEN
-          CALL GPCLOSE(LUAODR(I),'DELETE')
         END IF
       END DO
 C
@@ -993,7 +993,7 @@ C
      &     'Threshold used for packing of integrals:',THRPCKINT
          WRITE (LUPRI,'(10X,A,F8.2,A)')
      &     'Time used for packing and unpacking:    ',
-     &             PCKTID, ' seconds'
+     &             PCKTIME, ' seconds'
       END IF
       WRITE (LUPRI,'(A,/)') '  '
       WRITE (LUPRI,'(1x,A)')

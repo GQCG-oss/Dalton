@@ -125,8 +125,9 @@ c*DECK CC_RHTR3
       PARAMETER (XMHALF = -0.5D00)
 !
       CHARACTER*8 FRHO1, FRHO2, FC1AM, FC2AM
-      CHARACTER*8 PFIL, MFIL, CTFIL, DTFIL, CSFIL
-      CHARACTER*8 DTIMFIL, CSIMFIL, BFFIL
+      CHARACTER*7 PFIL, CTFIL, DTFIL, CSFIL
+      CHARACTER*7 DTIMFIL, BFFIL 
+      CHARACTER*6 CSIMFIL
 !
       LOGICAL FCKCON, ETRAN, ANTISYM, NORMALCONT, PIJCONT
       LOGICAL NEWGS, KHLOG
@@ -157,11 +158,11 @@ c*DECK CC_RHTR3
          LUCS = 0
          LUP  = 0
 !
-         BFFIL = 'CCLR_B3 '
-         CTFIL = 'CCLR_CT '
-         DTFIL = 'CCLR_DT '
-         CSFIL = 'CCLR_CS '
-         PFIL  = 'CCLR_PT '
+         BFFIL = 'CCLR_B3'
+         CTFIL = 'CCLR_CT'
+         DTFIL = 'CCLR_DT'
+         CSFIL = 'CCLR_CS'
+         PFIL  = 'CCLR_PT'
 !
          CALL WOPEN2(LUB3,BFFIL,64,0)
          CALL WOPEN2(LUC,CTFIL,64,0)
@@ -174,8 +175,8 @@ c*DECK CC_RHTR3
             LUDTIM  = 0
             LUCSIM  = 0
 !
-            DTIMFIL  = 'PMAT_DT '
-            CSIMFIL  = 'PMAT_C  '
+            DTIMFIL  = 'PMAT_DT'
+            CSIMFIL  = 'PMAT_C'
 !
             CALL WOPEN2(LUDTIM,DTIMFIL,64,0)
             CALL WOPEN2(LUCSIM,CSIMFIL,64,0)

@@ -22,7 +22,7 @@ C
       DATA FIRST /.TRUE./ 
       DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
-      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
+      COMMON/SORTIO/LUAOIN(8)
 #include <inftap.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -112,7 +112,7 @@ C
          NTOTPCK  = 0
          NTOTINT  = 0
          PCKRATIO = 1.0D0
-         PCKTID   = SECOND() - DTIME
+         PCKTIME   = SECOND() - DTIME
       END IF
 C
 C------------------------------------
@@ -190,7 +190,7 @@ C
       IF (IPRINT.GT.0 .AND. LPACKINT) THEN
          WRITE (LUPRI,'(//10X,A,F8.2,A)')
      &        'Time needed to pack integrals:   ',
-     &                   PCKTID, ' seconds'
+     &                   PCKTIME, ' seconds'
          WRITE (LUPRI,'(10X,A,G8.2)')
      &        'Threshold used for packing:      ',
      &                   THRPCKINT
@@ -329,7 +329,7 @@ C
       DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
 
-      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
+      COMMON/SORTIO/LUAOIN(8)
 #include <ccorb.h>
 #include <mxorb.h>
 #include <ccpack.h>
@@ -352,7 +352,7 @@ C
             NDWORDS = (NBYTE+7)/8
             NTOTINT = NTOTINT + LENGTH  / NBAST
             NTOTPCK = NTOTPCK + NDWORDS / NBAST
-            PCKTID  = PCKTID  + SECOND() - DTIME
+            PCKTIME = PCKTIME  + SECOND() - DTIME
 
          END IF
 C

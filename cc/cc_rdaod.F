@@ -59,7 +59,7 @@ C
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8',
      *            'CCAODER1','CCAODER2','CCAODER3','CCAODER4',
      *            'CCAODER5','CCAODER6','CCAODER7','CCAODER8'/
-      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
+      COMMON/SORTIO/LUAOIN(8)
 C
       LOGICAL LDUMMY
  
@@ -190,8 +190,9 @@ C
               NFILE  = LUAOIN(ISYMD)
               FNAME  = NAME(ISYMD)
             ELSE IF (ITYPE.EQ.1 .OR. ITYPE.EQ.5) THEN
-              NFILE  = LUAODR(ISYMD)
+              NFILE  = 0
               FNAME  = NAME(8+ISYMD)
+              CALL WOPEN2(NFILE,FNAME,64,0)
             END IF
 
             IF (LOCDBG) THEN
@@ -243,6 +244,11 @@ C
                END IF 
             END DO
             END DO
+
+            IF (ITYPE.EQ.1 .OR. ITYPE.EQ.5) THEN
+              CALL WCLOSE2(NFILE,NAME(ISYM),'KEEP')
+            END IF
+
          END DO
  
       ELSE

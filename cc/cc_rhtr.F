@@ -51,7 +51,7 @@ C
       DIMENSION RHO1(LRHO1,NSIMTR),C1AM(LRHO1,NSIMTR)
       DIMENSION RHO2(*),C2AM(*),WORK(LWORK)
       CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM 
-      CHARACTER*8 CFIL,DFIL,CTFIL,DTFIL
+      CHARACTER*6 CFIL,DFIL,CTFIL,DTFIL
       CHARACTER*1 LR
 C
       LOGICAL FCKCON,NEWGS,CC1BSA,ETRAN
@@ -94,8 +94,8 @@ C
          LUC = 0
          LUD = 0
 C
-         CTFIL = 'CCLR_C  '
-         DTFIL = 'CCLR_D  '
+         CTFIL = 'CCLR_C'
+         DTFIL = 'CCLR_D'
 C
          CALL WOPEN2(LUC,CTFIL,64,0)
          CALL WOPEN2(LUD,DTFIL,64,0)
@@ -103,8 +103,8 @@ C
          LUCIM = 0
          LUDIM = 0
 C
-         CFIL = 'PMAT_C  '
-         DFIL = 'PMAT_D  '
+         CFIL = 'PMAT_C'
+         DFIL = 'PMAT_D'
 C
          CALL WOPEN2(LUCIM,CFIL,64,0)
          CALL WOPEN2(LUDIM,DFIL,64,0)
