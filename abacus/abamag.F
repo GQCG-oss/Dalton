@@ -973,10 +973,10 @@ C
 C
       CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
-      KFREE = 1
-      LFREE = LWORK
       DO INUC = 1, NUCIND
          DO JNUC = 1, INUC
+            KFREE = 1
+            LFREE = LWORK
             IF (INUC .EQ. JNUC) THEN
                NPATOM = 1
             ELSE
