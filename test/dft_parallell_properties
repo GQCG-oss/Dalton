@@ -52,8 +52,8 @@ cat > dft_parallell_properties.dal <<'%EOF%'
 .DIRECT
 **WAVE FUNCTIONS
 .DFT
+ B3LYP
 *SCF INPUT
-.B3LYP
 .THRESH
  1.0d-10
 **PROPERTIES 
