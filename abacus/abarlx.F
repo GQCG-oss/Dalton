@@ -518,12 +518,20 @@ C
      &          IDORCI(IGDREC(JOP,LSYMPT,ITYPE),ITYPE).NE.0) GO TO 200
             CALL READDX(LURD,JREC,IRAT*NVARPT,WORK(KJVEC))
             REL(IOP,JOP) = DDOT(NVARPT,WORK(KIRHS),1,WORK(KJVEC),1)
+CHJ Sep 2001: calc. <0| d2/dx2 |0>
+            IF (IOP .EQ. 1) THEN
+               D2DQ2 = DDOT(NVARPT,WORK(KJVEC),1,WORK(KJVEC),1)
+               WRITE (LUPRI,'(A,I5,A,1P,D15.7)')
+     &         ' <0| d2/dQ2 |0>, Q =',JOP,' :',D2DQ2
+            END IF
+CHJ Sep 2001 end
+
+            IF (IPRINT.GT.10) THEN
+               WRITE (LUPRI,'(A,I5,A,I5,A,D15.7)')
+     &          ' REL(',IOP,',',JOP,') (lin. error): ',REL(IOP,JOP)
+            END IF
             IF (DOSEL) THEN
                IF (IOP .NE. JOP) THEN
-                  IF (IPRINT.GT.30) THEN
-                     WRITE (LUPRI,'(A,I5,A,I5,A,D15.7)')
-     &               ' REL(',IOP,',',JOP,') (lin. error): ',REL(IOP,JOP)
-                  END IF
                   IF (DOTRPL) THEN
                      JREC = 2*ITRREC(JOP,LSYMPT)
                   ELSE                  
@@ -532,17 +540,17 @@ C
                   CALL READDX(LURD,JREC,IRAT*NVARPT,WORK(KJVEC))
                   REL(IOP,JOP) = REL(IOP,JOP)
      &               + DDOT(NVARPT,WORK(KISOL),1,WORK(KJVEC),1)
+                  IF (IPRINT.GT.10) THEN
+                     WRITE (LUPRI,'(A,I5,A,I5,A,D15.7)')
+     &           ' REL(',IOP,',',JOP,') (Seller corr):',REL(IOP,JOP)
+                  END IF
                END IF
             ELSE IF (.NOT.SYMTST) THEN
                REL(JOP,IOP) = REL(IOP,JOP)
             END IF
-            IF (IPRINT.GT.30) THEN
-               WRITE (LUPRI,'(A,I5,A,I5,A,D15.7)')
-     &           ' REL(',IOP,',',JOP,'):              ',REL(IOP,JOP)
-            END IF
  200     CONTINUE
  100  CONTINUE
-      IF (IPRINT .GT. 5) THEN
+      IF (SYMTST .OR. IPRINT .GT. 5) THEN
          CALL HEADER('Relaxation matrix for sym. '//CHRNOS(LSYMPT),-1)
          CALL OUTPUT(REL,1,NOP,1,NOP,NOP,NOP,1,LUPRI)
       END IF

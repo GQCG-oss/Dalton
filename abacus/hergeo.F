@@ -321,13 +321,13 @@ Chjaaj Oct 2003: this output is only useful for small molecules ...
          IF (DIF) THEN
             WRITE(LUPRI,'(/A,F12.6,A/5A)')
      &         '  Max differential change in interatomic separation is',
-     &         DISTMX,' Angstroms','  between atoms ',
-     &         NAMDEP(IDISTMX),' and ',NAMDEP(JDISTMX),'.'
+     &         DISTMX,' Angstroms','  between atoms "',
+     &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
          ELSE
             WRITE(LUPRI,'(/A,F10.4,A/5A)')
      &         '  Max interatomic separation is',
-     &         DISTMX,' Angstroms','  between atoms ',
-     &         NAMDEP(IDISTMX),' and ',NAMDEP(JDISTMX),'.'
+     &         DISTMX,' Angstroms','  between atoms "',
+     &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
          END IF
       END IF
 C

@@ -3890,6 +3890,7 @@ C
 C
          INT = INT + 1
          IF (INTTYP .EQ. 6) THEN
+C           'SECMOM '
             SHLINT(INT,1) = SHLINT(INT,1) - DX2*SY0*SZ0
             SHLINT(INT,2) = SHLINT(INT,2) - DX1*DY1*SZ0
             SHLINT(INT,3) = SHLINT(INT,3) - DX1*SY0*DZ1
@@ -3897,6 +3898,7 @@ C
             SHLINT(INT,5) = SHLINT(INT,5) - SX0*DY1*DZ1
             SHLINT(INT,6) = SHLINT(INT,6) - SX0*SY0*DZ2
          ELSE IF (INTTYP .EQ. 7) THEN
+C           'THETA  '
             X2 = DX2*SY0*SZ0
             Y2 = SX0*DY2*SZ0
             Z2 = SX0*SY0*DZ2
@@ -3908,6 +3910,7 @@ C
             SHLINT(INT,5) = SHLINT(INT,5) - D1P5*SX0*DY1*DZ1
             SHLINT(INT,6) = SHLINT(INT,6) - D1P5*Z2 + R2
          ELSE
+C           'QUADRUP' and various diamagn. susceptibility integrals
             X2 = DX2*SY0*SZ0
             Y2 = SX0*DY2*SZ0
             Z2 = SX0*SY0*DZ2

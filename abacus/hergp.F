@@ -358,8 +358,11 @@ C
 C  /* Deck disotp */
       FUNCTION DISOTP(IATOM,ISOTOP,TYPE)
 C
-C     Extended to Z=54 on march 10, 1994, K.Ruud
+C     NOTE: Isotopes are sorted according to abundance,
+C     i.e. DISOTP(IATOM,1,TYPE) will return the most abundant
+C     isotope etc.
 C
+C     Extended to Z=54 on march 10, 1994, K.Ruud
 C     Extended to Z=86 feb. 1996, S. Kirpekar
 C
 C     Proton mass and electron charge:
@@ -372,7 +375,6 @@ C
 C     Abundancies:
 C        Handbook of Chemistry and Physics, 73rd Edition
 C        
-C
 C     Nuclear moments and spins:
 C
 C        P. Raghavan,

@@ -1702,15 +1702,11 @@ C
 #include <implicit.h>
 #include <priunit.h>
 C
-      WRITE(LUPRI,'(/8(/5X,A))')
+      WRITE(LUPRI,'(//4(/5X,A))')
      &  'FOR RECOMPILATION:',
-     &  'Change parameter in infpar.h and touch',
-     &  'and recompile the following files:',
-     &  ' ',
-     &  'ABACUS : dalton.F, aba2tex.F, abarhs.F, herdirect.F',
-     &  '         herrdn.F, her2drv.F, herpar.F',
-     &  'SIRIUS : sirfck.F',
-     &  'ERI    : eri2drv.F, eri2fck.F, eri2par.F'
+     &  'Change parameter in infpar.h and execute:',
+     &  '   make depend',
+     &  '   make'
 C
       RETURN
       END

@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REVISION_LOG
+#ifdef OLD_REVISION_LOG
 c===========================================================================
 cRevision 1.9  2000/05/03 10:58:51  hjj
 cinclude maxorb.h now needed for molde.h
@@ -455,9 +455,6 @@ C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
 C
 C Error messages:
 C
- 5000 CONTINUE
-      WRITE (LUPRI,'(//A)') ' *** ERROR *** unable to open MOLECULE.INP'
-      CALL QUIT(' *** ERROR (READIN) unable to open input file LUINFO ')
  5010 CONTINUE
       CALL QUIT('Wrong keyword. Expecting INTGRL or BASIS')
  5020 CONTINUE
@@ -3320,13 +3317,19 @@ C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
      &         WRITE (LUPRI,1060) I,NAMN(ICENT),COMP(ICLASS(I)),
      +            GTOTYP(IPTYP(I)), ITRAN(I,1),
      *            (CHRSGN(NINT(CTRAN(I,K))),ITRAN(I,K),K=2,J)
-            IF (IPTYP(I) .EQ. 1) THEN
+C           Write LUSYMF record for amfi:
+            IF (DOCART) THEN
+C hjaaj oct 2003: amfi only for spherical GTO, signal this problem
+C                 to amfi with negative IPL and IPM
+               IPL = -1000
+               IPM = -1000
+            ELSE IF (IPTYP(I) .EQ. 1) THEN
                IPL = 0
                IPM = 0
             ELSE IF (IPTYP(I) .LE. 4) THEN
-               IF (IPTYP(I) .EQ. 4) IPM = 0
                IF (IPTYP(I) .EQ. 2) IPM = 1
                IF (IPTYP(I) .EQ. 3) IPM = -1
+               IF (IPTYP(I) .EQ. 4) IPM = 0
                IPL = 1
             ELSE IF (IPTYP(I) .LE. 9) THEN
                IPM = IPTYP(I) - 7
@@ -3337,6 +3340,16 @@ C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
             ELSE IF (IPTYP(I) .LE. 25) THEN
                IPM = IPTYP(I) - 21
                IPL = 4
+            ELSE
+               IPL = -10000
+               IPM = IPL
+C hjaaj nov 2001: found out that IPL,IPM was only programmed
+C  for s,p,d,f,g orbitals here. In order to avoid wrong results
+C  in amfi/symtra.F I have inserted negative IPL as code for
+C  undefined type such that amfi can stop (hitherto it would
+C  erroneously have used the previous IPL and IPM values!).
+C  We don't want to stop here, because if not amfi it doesn't matter.
+C
             END IF
             IF (IPL .EQ. IPLBKP .AND. .NOT. ICENT .NE. ICNTBK) THEN
                IF (IPTYP(I) .LE. IPLMAX) THEN
@@ -3651,7 +3664,7 @@ C
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NATOMS,NCOOR,IPREAD)
 C
       IF (IPREAD .GT. 0) THEN
-         WRITE(LUPRI,'(//A,F18.12)')'  Nuclear repulsion energy :',
+         WRITE(LUPRI,'(A,F18.12)')'  Nuclear repulsion energy :',
      &                               POTNUC
       END IF
       RETURN
@@ -4499,7 +4512,7 @@ C
      &                       ((ITRAN(I,J), J = 1,8), I = 1,NBASIS),
      &                       ((CTRAN(I,J), J = 1,8), I = 1,NBASIS),
      &               NBASIS, ( INAMN(I),             I = 1,NBASIS),
-     &                       ( IGTO(I),              I = 1,NBASIS),
+     &                       ( IPTYP(I),             I = 1,NBASIS),
      &               DPNUC,
      &               NUCDEP, ((COOO(I,J),J=1,3),I=1,NUCDEP),
      &               IFXYZ, DUMMY, QPOL, QQ, JFXYZ

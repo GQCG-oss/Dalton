@@ -110,12 +110,14 @@ C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('FRMSUP')
-      IF (IPRINT .GT. 0) THEN
+      WRITE (LUPRI,'(/A)') ' Precalculated two-electron integrals'
+     &   //' are transformed to P-supermatrix elements.'
+      IF (IPRINT .GT. 1) THEN
          CALL TITLER('Output from FORMSUP','*',125)
-         WRITE (LUPRI,*) ' NOSYM : ',NOSYM
-         WRITE (LUPRI,'(/A,1P,D10.2)')
-     *   ' Threshold for discarding integrals :',THRESH
+         WRITE (LUPRI,'(A,L10)') ' NOSYM : ',NOSYM
       END IF
+      IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,1P,D10.2)')
+     *   ' Threshold for discarding integrals :',THRESH
 C
 C*** Allocate memory for IT vector in IWORK
 C
@@ -372,8 +374,12 @@ C  /* Deck suprdi */
       DATA LAB123 /'********','        ','        '/
       DATA OLDLBL, NEWLBL /'TWOELSUP','PSUPMAT '/
 C
+      IF (LUONEL .LE. 0)
+     &CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
       REWIND LUONEL
       READ(LUONEL) TITLE,NSYM,(NBAS(I),I = 1,NSYM),POTNUC
+      CALL GPCLOSE(LUONEL,'KEEP')
       NBAST = 0
       DO 10 I = 1,NSYM
   10     NBAST = NBAST+NBAS(I)
@@ -410,7 +416,8 @@ C
 #include <inftap.h>
 #include <ibtfun.h>
 C
-      CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
+      IF (LUINTA .LE. 0)
+     &CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL REWSPL(LUINTA)
       LUDASP = 0

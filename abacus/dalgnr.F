@@ -607,15 +607,12 @@ C  /* Deck exedrv */
             DOWALK = .TRUE.
             MOLGRD = .TRUE.
             MOLHES = .TRUE.
+         ELSE
+            MOLGRD = .FALSE.
          END IF
          START  = .TRUE.
          GEOCNV = .FALSE.
          NEWWLK = .TRUE.
-         IF (NMWALK) THEN
-            MOLGRD = .FALSE.
-         ELSE
-            MOLGRD = .TRUE.
-         END IF
          CALL TITLER('Commencing geometry optimization using .WALK',
      &   '*',111)
  10      CONTINUE
@@ -1297,7 +1294,7 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
      &     '"New" integral transformation used'
-      ELSE
+      ELSE IF (.NOT. DIRCAL) THEN
          WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
      &     ' (limited to max 255 basis functions)'
       END IF

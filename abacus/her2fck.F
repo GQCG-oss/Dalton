@@ -413,7 +413,7 @@ C
 C   FAC is a factor to account for different definiton of
 C   integrals in twoint and eri. Here always 1.0
       IF (R12TRA) THEN
-C        Compute exchange operator for auxilliary basis set
+C        Compute exchange operator for auxiliary basis set
 C        in R12 calculations (WK/UniKA/04-11-2002).
          FAC = -D1
          IY = 2
@@ -421,7 +421,7 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
          FAC = D1
       END IF
       CALL FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,
-     &		  NCCINT,NBUF,NBUF,IX,IY,FAC)
+     &            NCCINT,NBUF,NBUF,IX,IY,FAC)
 C
  400  CONTINUE
 C

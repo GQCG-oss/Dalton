@@ -35,7 +35,7 @@ C
 C
 C  /* Deck fckcon */
       SUBROUTINE FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,
-     &			NINT,NIND,NBUF,IX,IY,FAC)
+     &        NINT,NIND,NBUF,IX,IY1,FAC)
 C
 C     **********************************
 C     ***** Contract Fock matrices *****
@@ -63,21 +63,39 @@ C
 #include <nuclei.h>
 #include <dftcom.h>
 #include <veclen.h>
-      PARAMETER (DP25=0.25D0,DP5=0.5D0)
+      PARAMETER (D0=0.0D0,DP25=0.25D0,DP5=0.5D0)
       INTEGER A,B,C,D
 CNECgh990830
 #if defined (VAR_VECTOR)
-      DIMENSION FMAT(NBASIS+NODD,NBASIS,NDMAT,*),
+      DIMENSION FMAT(NBASIS+NODD,NBASIS,NDMAT,*)
 #else
-      DIMENSION FMAT(NBASIS,NBASIS,NDMAT,*),
+      PARAMETER (K = 1)
+      DIMENSION FMAT(NBASIS,NBASIS,NDMAT,K)
 #endif        
-     &		DMAT(NBASIS,NBASIS,NDMAT),
-     &		AOINT(NINT),IND(NIND,4)
+      DIMENSION DMAT(NBASIS,NBASIS,NDMAT), AOINT(NINT),IND(NIND,4)
 C
-      DP5X  =  DP5*HFXFAC
-      DP25X = DP25*HFXFAC
 C
+      IF (IX.NE.2) THEN
+        IY = IY1
+      ELSE
+C       ... No Coulomb contribution for
+C           antisymmetric density matrix
+        IY = MOD(IY1,2)
+      END IF
+C
+      IF (HFXFAC.EQ.D0) THEN
+        IY = IY - MOD(IY,2)
+C       ... only Coulomb contribution
+      ELSE
+         DP5X  =  DP5*HFXFAC
+         DP25X = DP25*HFXFAC
+      END IF
+      IF (IY .EQ. 0) GO TO 9999
+C     ... nothing to do!
+C
+#if defined (VAR_VECTOR)
         ICHUNK = MAX (IVECLN/NDMAT,1)
+#endif
         IF    (IX.EQ.1.OR.IX.EQ.2) THEN
 C
 C         Symmetric singlet Fock matrix
@@ -85,16 +103,20 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
+#if defined (VAR_VECTOR)
             J=0
             DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
               DO K=1,ICHUNK
                 J = J + 1
+#else
+            DO J = 1,NBUF
+#endif
                 A = IND(J,1)
                 B = IND(J,2)
                 C = IND(J,3)
                 D = IND(J,4)
-		DINT = AOINT(J) * FAC
+                DINT = AOINT(J) * FAC
                 EINT = -DP25X*DINT
                 FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I)
                 FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I)
@@ -103,8 +125,8 @@ C
                 FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
                 FMAT(D,B,I,K) = FMAT(D,B,I,K) + EINT*DMAT(C,A,I)
               END DO
-            END DO
 #if defined (VAR_VECTOR)
+            END DO
 #include <ivdep.h>
               DO K=1,MOD(NBUF,ICHUNK)
                 J = J + 1
@@ -112,7 +134,7 @@ C
                 B = IND(J,2)
                 C = IND(J,3)
                 D = IND(J,4)
-		DINT = AOINT(J) * FAC
+                DINT = AOINT(J) * FAC
                 EINT = -DP25X*DINT
                 FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I)
                 FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I)
@@ -130,24 +152,28 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-            J = 0
+#if defined (VAR_VECTOR)
+            J=0
             DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
               DO K=1,ICHUNK
                 J = J + 1
+#else
+            DO J = 1,NBUF
+#endif
                 A = IND(J,1)
                 B = IND(J,2)
                 C = IND(J,3)
                 D = IND(J,4)
-		DINT = AOINT(J) * FAC
+                DINT = AOINT(J) * FAC
                 EINT = -DP25X*DINT
                 FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
                 FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
                 FMAT(C,B,I,K) = FMAT(C,B,I,K) + EINT*DMAT(D,A,I)
                 FMAT(D,B,I,K) = FMAT(D,B,I,K) + EINT*DMAT(C,A,I)
               END DO
-            END DO
 #if defined (VAR_VECTOR)
+            END DO
 #include <ivdep.h>
               DO K=1,MOD(NBUF,ICHUNK)
                 J = J + 1
@@ -155,7 +181,7 @@ C
                 B = IND(J,2)
                 C = IND(J,3)
                 D = IND(J,4)
-		DINT = AOINT(J) * FAC
+                DINT = AOINT(J) * FAC
                 EINT = -DP25X*DINT
                 FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
                 FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
@@ -168,21 +194,25 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-            J = 0
+#if defined (VAR_VECTOR)
+            J=0
             DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
               DO K=1,ICHUNK
                 J = J + 1
+#else
+            DO J = 1,NBUF
+#endif
                 A = IND(J,1)
                 B = IND(J,2)
                 C = IND(J,3)
                 D = IND(J,4)
-		DINT = AOINT(J) * FAC
+                DINT = AOINT(J) * FAC
                 FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I)
                 FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I)
               END DO
-            END DO
 #if defined (VAR_VECTOR)
+            END DO
 #include <ivdep.h>
             DO K=1,MOD(NBUF,ICHUNK)
                 J = J + 1
@@ -190,7 +220,7 @@ C
                 B = IND(J,2)
                 C = IND(J,3)
                 D = IND(J,4)
-		DINT = AOINT(J) * FAC
+                DINT = AOINT(J) * FAC
                 FMAT(A,B,I,K) = FMAT(A,B,I,K) + DINT*DMAT(C,D,I)
                 FMAT(C,D,I,K) = FMAT(C,D,I,K) + DINT*DMAT(A,B,I)
             END DO
@@ -210,16 +240,20 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-	    J = 0
+#if defined (VAR_VECTOR)
+            J=0
             DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
-	     DO K=1,ICHUNK
-	      J = J + 1
+              DO K=1,ICHUNK
+                J = J + 1
+#else
+            DO J = 1,NBUF
+#endif
               A = IND(J,1)
               B = IND(J,2)
               C = IND(J,3)
               D = IND(J,4)
-	      DINT = AOINT(J) * FAC
+              DINT = AOINT(J) * FAC
               GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I,K) = FMAT(A,B,I,K) + GCD
               FMAT(B,A,I,K) = FMAT(B,A,I,K) + GCD
@@ -236,16 +270,16 @@ C
               FMAT(B,C,I,K) = FMAT(B,C,I,K) + EINT*DMAT(A,D,I)
               FMAT(B,D,I,K) = FMAT(B,D,I,K) + EINT*DMAT(A,C,I)
              ENDDO
-            ENDDO
 #if defined (VAR_VECTOR)
+            ENDDO
 #include <ivdep.h>
-	     DO K=1,MOD(NBUF,ICHUNK)
-	      J = J + 1
+             DO K=1,MOD(NBUF,ICHUNK)
+              J = J + 1
               A = IND(J,1)
               B = IND(J,2)
               C = IND(J,3)
               D = IND(J,4)
-	      DINT = AOINT(J) * FAC
+              DINT = AOINT(J) * FAC
               GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I,K) = FMAT(A,B,I,K) + GCD
               FMAT(B,A,I,K) = FMAT(B,A,I,K) + GCD
@@ -269,16 +303,20 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-            J = 0
-	    DO INT = 1,(NBUF/ICHUNK)
+#if defined (VAR_VECTOR)
+            J=0
+            DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
-            DO K = 1,ICHUNK
-	      J = J + 1
+              DO K=1,ICHUNK
+                J = J + 1
+#else
+            DO J = 1,NBUF
+#endif
               A = IND(J,1)
               B = IND(J,2)
               C = IND(J,3)
               D = IND(J,4)
-	      DINT = AOINT(J) * FAC
+              DINT = AOINT(J) * FAC
               EINT = -DP5X*DINT
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
@@ -289,16 +327,16 @@ C
               FMAT(B,C,I,K) = FMAT(B,C,I,K) + EINT*DMAT(A,D,I)
               FMAT(B,D,I,K) = FMAT(B,D,I,K) + EINT*DMAT(A,C,I)
             END DO
-	    END DO
 #if defined (VAR_VECTOR)
+            END DO
 #include <ivdep.h>
             DO K = 1,MOD(NBUF,ICHUNK)
-	      J = J + 1
+              J = J + 1
               A = IND(J,1)
               B = IND(J,2)
               C = IND(J,3)
               D = IND(J,4)
-	      DINT = AOINT(J) * FAC
+              DINT = AOINT(J) * FAC
               EINT = -DP5X*DINT
               FMAT(C,A,I,K) = FMAT(C,A,I,K) + EINT*DMAT(D,B,I)
               FMAT(D,A,I,K) = FMAT(D,A,I,K) + EINT*DMAT(C,B,I)
@@ -316,16 +354,20 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-            J = 0
-	    DO INT = 1,(NBUF/ICHUNK)
+#if defined (VAR_VECTOR)
+            J=0
+            DO INT = 1,(NBUF/ICHUNK)
 #include <ivdep.h>
-	     DO K=1,ICHUNK
-	      J = J + 1
+              DO K=1,ICHUNK
+                J = J + 1
+#else
+            DO J = 1,NBUF
+#endif
               A = IND(J,1)
               B = IND(J,2)
               C = IND(J,3)
               D = IND(J,4)
-	      DINT = AOINT(J) * FAC
+              DINT = AOINT(J) * FAC
               GCD  = DINT*(DMAT(C,D,I) + DMAT(D,C,I))
               FMAT(A,B,I,K) = FMAT(A,B,I,K) + GCD
               FMAT(B,A,I,K) = FMAT(B,A,I,K) + GCD
@@ -333,11 +375,11 @@ C
               FMAT(C,D,I,K) = FMAT(C,D,I,K) + GAB
               FMAT(D,C,I,K) = FMAT(D,C,I,K) + GAB
             END DO
-	    END DO
 #if defined (VAR_VECTOR)
+            END DO
 #include <ivdep.h>
-	     DO K=1,MOD(NBUF,ICHUNK)
-	      J = J + 1
+             DO K=1,MOD(NBUF,ICHUNK)
+              J = J + 1
               A = IND(J,1)
               B = IND(J,2)
               C = IND(J,3)
@@ -354,20 +396,21 @@ C
           ELSE
             WRITE (LUPRI,'(/A,2(/A,I10))')
      &        'FCKCON ERROR, specified IFCTYP not implemented yet',
-     &        '              specified IFCTYP was',IX*10+IY,
+     &        '              specified IFCTYP was',IX*10+IY1,
      &        '              for F,D matrix no.  ',I
             CALL QUIT(
      &        'ERROR in FCKCON: specified IFCTYP not implemented.')
           ENDIF
         ELSE
           WRITE (LUPRI,'(/A,2(/A,I10))')
-     &      '1 ERROR, specified IFCTYP not implemented yet',
-     &      '              specified IFCTYP was',IX*10+IY,
-     &      '              for F,D matrix no.  ',I
+     &      ' ERROR, specified IFCTYP not implemented yet',
+     &      '        specified IFCTYP was',IX*10+IY1,
+     &      '        for F,D matrix no.  ',I
           CALL QUIT(
      &      'ERROR in FCKCON: specified IFCTYP not implemented.')
         ENDIF
 C
+ 9999 CONTINUE
       RETURN
 C
       END

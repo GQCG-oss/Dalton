@@ -643,7 +643,7 @@ C
      &        ('More than one coordinate system chosen in OPINPU.')
       END IF
       IF (NOAUX) THEN
-            WRITE(LUPRI,'(A)') ' No extra (auxilliary) bonds will ' //
+            WRITE(LUPRI,'(A)') ' No extra (auxiliary) bonds will ' //
      &        'be added.'
       END IF
       IF (NODIHE) THEN

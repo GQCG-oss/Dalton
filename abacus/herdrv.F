@@ -139,7 +139,7 @@ C
      &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      IF ((RUNTWO .OR. RUNERI .OR. RUNSUP) .AND. .NOT. DCCR12)
+      IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12)
      &   CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL HERINT(WORK,LWORK)
 C
@@ -148,25 +148,9 @@ C     ***** P Supermatrix Elements *****
 C     **********************************
 C
 C     Integrals on AOSUPINT
-C     HJAaJ TODO FIXME: CALL FRMSUP should be moved to SIRIUS and
-C     only done when relevant ...
+C     HJAaJ Oct 2003: CALL FRMSUP has been moved to SIRIUS and
+C     is only done when relevant ...
 C
-      IF (RUNSUP) THEN
-         IF (LUSUPM .GT. 0) CALL GPCLOSE(LUSUPM,'DELETE')
-      IF (NBASIS .GT. 255) THEN
-         RUNSUP = .FALSE.
-         SUPMAT = .FALSE.
-         WRITE(LUPRI,'(//A)')
-     &      'INFO: SUPMAT ignored because more than 255 basis functions'
-         NINFO = NINFO + 1
-      ELSE
-         CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL GPOPEN(LUSUPM,'AOSUPINT','NEW',' ',' ',IDUMMY,.FALSE.)
-         CALL FRMSUP(WORK,LWORK,NOSSUP,THRSUP,IPRSUP)
-         CALL TIMER('FRMSUP',TIMSTR,TIMEND)
-      END IF
-         CALL FLSHFO(LUPRI)
-      END IF
 C
 C     **********************************
 C     ***** Integral sorting       *****
@@ -1194,9 +1178,6 @@ cLig <<
       IF (.NOT.HAMILT) WRITE (LUPRI,'(/A)')
      *    ' Ordinary (field-free non-relativistic) Hamiltonian '/
      *     /'integrals not calculated.'
-      IF (SUPMAT) WRITE (LUPRI,'(/A)') 
-     *    ' Precalculated two-electron integrals are transformed'/
-     *     /' to P-supermatrix elements.'
       IF (MGMO2T) THEN
          WRITE (LUPRI,'(/A,D12.6)')
      &    ' Threshold for testing two-electron part of magnetic moment:'
