@@ -22,7 +22,7 @@ Hessians\index{Hessian} cannot be done
 using MCSCF\index{MCSCF} wave functions on DEC-Alphas.}.
 We furthermore note that response calculations involving the
 spin--orbit\index{spin-orbit} operator only will work on some of these
-computers (more details are givin in the file
+computers (more details are given in the file
 \verb|dalton/test/KNOWN_PROBLEMS|).
 
 The program is written in FORTRAN~77\index{FORTRAN~77}, with
@@ -58,8 +58,8 @@ will produce the following subdirectory structure in the current
 directory:
 \begin{verbatim}
 dalton/Doc       dalton/cc         dalton/pdpack    dalton/tools
-dalton/amfi      dalton/eri        dalton/rsp
-dalton/abacus    dalton/gp         dalton/sirius
+dalton/abacus    dalton/eri        dalton/rsp
+dalton/amfi      dalton/gp         dalton/sirius
 dalton/basis     dalton/include    dalton/test
 \end{verbatim}
 Most of the subdirectories contain source code for the different sections
@@ -78,14 +78,14 @@ post-processing programs supplied to us from various users
 In addition to the directories, the main dalton directory will
 contain several files including a shell script (\verb|configure|)
 which will build a suitable \verb|Makefile.config| for use when
-installing the program, a basis from which the \verb|Makefile| is built
-(\verb|Makefile.in|), and a basis for the shell script \verb|dalton|
-that can be used for running \dalton\
-(\verb|dalton.gnr|). \verb|Makefile| and \verb|dalton| are assembled
-by the configure-script.
+installing the program. The configure-script will also create a
+\verb|Makefile| and a script \verb|dalton| from the skeletal files
+(\verb|Makefile.in| and \verb|dalton.gnr|) that are present in the
+directory.
 
 
-\section{Installing the program using the Makefile}\label{sec:Makefile}\index{Makefile}
+\section{Installing the program using the
+Makefile}\label{sec:Makefile}\index{Makefile}
 
 The program is easily installed through the use of the supplied
 \verb|configure| script\index{configure script}. Based on the
@@ -94,7 +94,6 @@ script will try to build a suitable
 \verb|Makefile.config|\index{Makefile.config} on the
 basis of what kind of mathematical libraries are found, and user
 input. Thus, to execute the script, type
-
 \begin{verbatim}
 > ./configure -hosttype
 \end{verbatim}
@@ -112,7 +111,7 @@ cray-t3d         & linux                 & sun\\
 \bigskip
 
 If no hosttype is specified, the script will try to guess what sort of
-machine it is running on. This usually works fine for the most common
+machine it is running on. This usually works fine for most common
 platforms.
 
 Although this script in most cases is capable of making a correct
@@ -213,7 +212,7 @@ the \verb|dalton/test| directory. It is highly recommended that all
 these tests be run once the program has been compiled. Depending on
 your hardware, this usually takes 2---12 hours.
 
-The tests can be run one by one or in groups by using the test script
+The tests can be run one by one or in groups, by using the test script
 \verb|TEST|. Try \verb|TEST -h| to see the different options this
 script takes. Also, have a look at \verb|CONTENTS|
 for short descriptions of the various tests. To run the
@@ -224,11 +223,20 @@ type:
 \end{verbatim}
 You can follow the progress of the tests directly, but all messages
 are also printed to a log (\verb|TESTLOG| by default). After all the
-test jobs have completed you should hopefully be presented with the
+tests have completed you should hopefully be presented with the
 message ``ALL TESTS ENDED PROPERLY!''. If not, you will be given a
-list of tests that failed to run correctly. Please consult the file
+list of the tests that failed to run correctly. Please consult the file
 \verb|KNOWN_PROBLEMS| too see if these tests have documented problems
 on your particular platform.
+
+Any tests that fail will leave behind the \verb|.mol| and \verb|.dal|
+input-files (these are described in more detail in
+chapter~\ref{ch:starting}), and the output-file from the test
+calculation which will have the extension \verb|.log| (\dalton\
+output-files usually have the extension \verb|.out|). For all
+successful tests these files, as well as some other auxiliary files,
+will be deleted as soon as the output has been checked, unless
+\verb|TEST| is being run with the option \verb|-keep|.
 
 If most of the tests fail, it is quite likely that there's something
 wrong with the installation. Look carefully through
@@ -238,8 +246,11 @@ optimization.
 If there's only a few tests that fail, and \dalton\ seems to exit
 normally in each case, there may just be some issues with numerical
 accuracy. Different machines give slightly different results, and
-while we've tried to allow for some slack in these tests, it may be
+while we've tried to allow for some slack in the tests, it may be
 that your machine yields numbers just outside the intervals we've
 specified as acceptable. A closer comparison of the results with
-numbers in the test script (and/or the reference output files) should
-reveal whether this is actually the case.
+numbers in the test script and/or the reference output files should
+reveal whether this is actually the case. If numerical (in)accuracy is
+the culprit, feel free to send your output-file(s) to
+\verb|dalton-admin@kjemi.uio.no| so that we can adjust the numerical
+intervals for various numbers accordingly.

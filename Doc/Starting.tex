@@ -1,7 +1,7 @@
-\chapter{Getting started with \siraba }\label{ch:starting}
+\chapter{Getting started with \dalton }\label{ch:starting}
 
 In this chapter we give an introduction to the two input files needed
-for doing a calculation with the \siraba\ program, as well as the
+for doing a calculation with the \dalton\ program, as well as the
 shell script file that is supplied with the program for moving
 relevant files to the scratch-directory and back to the home directory
 after a the calculation has completed. A couple of examples of
@@ -25,7 +25,7 @@ This input file is described in detail in several of the subsequent chapters,
 and we will  only give a few examples of input files here and shortly
 explain what they do, in order to give the user a flavor of the input
 and the computational possibilities
-of \siraba .
+of \dalton .
 
 \subsection{A CASSCF geometry optimization}
 
@@ -46,7 +46,7 @@ gradient). The input file for such a calculation will look like:
 {\ttfamily
 \begin{tabular}{ll}
 **DALTON INPUT\hspace{3cm} & Must start all input files\\
-.OPTIMIZE\\
+.OPTIMIZE & Request geometry optimization\\
 ***WAVE FUNCTIONS & Wave function input\\
 .HF & We start with HF\\
 .MP2 & Then MP2 (starting orb. for MCSCF)\\
@@ -178,7 +178,7 @@ response\\
 The input is divided into modules\index{module}, which in turn are
 further divided into submodules\index{submodule}. The modules contain
 the input to the different
-sections that constitute the \siraba\ program package. There exists
+sections that constitute the \dalton\ program package. There exists
 four such sections corresponding to respectively the integral
 evaluation\index{atomic integrals}, the choice of wave function, the
 choice of static properties\index{molecular properties} and finally
@@ -193,7 +193,7 @@ that is:
 \item \Sec{*RESPONSE}
 \end{list}
 
-In addition there is a module controlling the \siraba\ program, which
+In addition there is a module controlling the \dalton\ program, which
 has the input card \Sec{*DALTON}. All
 input modules will be described in detail in separate chapters in the
 Reference Manual.
@@ -235,7 +235,7 @@ place in the input, comments\index{comments} may be added using
 \verb|#| or \verb|!|
 in the first position of the command line.
 
-A general input structure for \siraba\ will look like
+A general input structure for \dalton\ will look like
 
 \begin{verbatim}
 **GENERAL
@@ -266,7 +266,7 @@ done at the optimized geometry.
 Examples of input files can be found in the various chapters
 describing the calculation of different molecular properties, and
 these chapters will probably be sufficient for most calculations done
-with \siraba . However, all possible keywords are described in detail
+with \dalton . However, all possible keywords are described in detail
 in separate chapters in the Reference Manual.
 
 \section{The \mol\ input file}
@@ -280,7 +280,7 @@ automatic symmetry detection\index{symmetry detection} and
 the other using Cartesian coordinates and where we explicitly give the
 symmetry elements. Finally we show the \mol\ input for H$_{2}$O$^{2+}$
 using Z-matrix input\index{Z-matrix}. In
-all cases the basis set library of \siraba\ have been used, as we
+all cases the basis set library of \dalton\ have been used, as we
 assume that most users will exploit the basis sets provided in the basis
 set library as opposed to punching them in. The punching
 format for basis sets are described in detail in Sec.~\ref{sec:molcart}.
@@ -292,7 +292,7 @@ and the very popular 6-31G** basis set.
 BASIS
 6-31G**
 Water
-6-31G** basis
+using the 6-31G** basis
     2
         8.    1
 O      .0000000000        -.2249058930         .0000000000
@@ -340,8 +340,8 @@ Z-matrix input\index{Z-matrix}. The  input will then look like:
 \begin{verbatim}
 BASIS
 sadlej
- Water - geometry optimization with pVDZ.
- Project:Raman
+Water - geometry optimization with pVDZ.
+Project - Raman
     3  2 0
 O   1 8.0
 H   2 1 0.97 1.0
@@ -355,16 +355,25 @@ tells that symmetry is not to be used in this calculation. Note that
 unlike Cartesian coordinate input, which by default is in atomic units, the
 Z-matrix input is always to be in \AA ngstr\o ms.
 
-\section{The first calculation with \siraba\ }\label{sec:firstcalc}
+\section{The first calculation with \dalton\ }\label{sec:firstcalc}
 
 If we have made two input files, one corresponding to
 \verb|DALTON.INP|\index{DALTON.INP} and one corresponding to the \mol\
 \index{MOLECULE.INP} input file, we
-are ready to do our first calculation. Examples of input files can be
-found in the \verb|dalton/test| directory in order to give you a
-head-on start with \siraba .
+are ready to do our first calculation. Examples of input files can
+also be found in the \verb|dalton/test| directory hidden inside the
+test jobs. You can execute one of the individual test jobs
+without the \verb|TEST| script, for example:
+\begin{verbatim}
+> ./energy_nosymm
+\end{verbatim}
+This will create four files, but right now we are just interested in
+the \verb|.dal| and the \verb|.mol| files. In this particular example
+they will be \verb|energy_nosymm.dal| and
+\verb|energy_nosymm.mol|. Have a look at some of these input files to
+get a head-on start on running different kinds of \dalton\ jobs.
 
-Calculations with \siraba\ is most conveniently done using the
+Calculations with \dalton\ is most conveniently done using the
 supplied shell-script\index{dalton shell script} \verb|dalton|. Thus,
 to run a calculation of
 $\beta$ (first hyperpolarizability)\index{first hyperpolarizability}
@@ -377,8 +386,9 @@ with input available as
 \end{verbatim}
 assuming \verb|dalton| is available in your path. When the job is
 finished, the output is copied back as \verb|beta_hcl.out|. In case that the
-dalton- and molecule-input has the same name (e.g. \verb|dalton test1 test1|), the output
-will be named \verb|test1.out|.
+dalton- and molecule-input has the same name (e.g.
+\verb|dalton energy_nosymm energy_nosymm|), the output will be named
+\verb|energy_nosymm.out|.
 
 There are several options to this script, which can be viewed by
 typing \verb| dalton -h| or just \verb|dalton|. These options include:
