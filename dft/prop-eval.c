@@ -224,25 +224,24 @@ extern void FSYM(dftlrsync)(void);
 static void
 dft_lin_resp_sync_slaves(real* cmo, int *nvec, real**zymat,
                          int* trplet, int* ksymop,
-                         real *work, int lwork)
+                         real **work, int lwork)
 {
     static SyncData data2[] = 
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT},
       {NULL, 0, MPI_INT} };
     MPI_Bcast(nvec, 1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    FSYM(dftlrsync)();
     if(*zymat == NULL) { /* we are a slave */
         if(lwork<*nvec*inforb_.n2orbx)
             dalton_quit("%s:  slave needs %d words for ZYMAT, available %d",
-                        __FUNC__, *nvec*inforb_.n2orbx, lwork);
-	*zymat = work;
-        work += *nvec*inforb_.n2orbx;
+                        __FUNCTION__, *nvec*inforb_.n2orbx, lwork);
+	*zymat = *work;
+        *work += *nvec*inforb_.n2orbx;
     }
-    data2[0].data = cmo;    data2[0].count = inforb_.norbt*inforb_.nbast;
+    data2[0].data = cmo;    data2[0].count = inforb_.ncmot;
     data2[1].data = *zymat; data2[1].count = *nvec*inforb_.n2orbx;
     data2[2].data = trplet; data2[2].count = 1;
     data2[3].data = ksymop; data2[3].count = 1;
-
-    FSYM(dftlrsync)();
     mpi_sync_data(data2, ELEMENTS(data2));
 }
 
@@ -420,7 +419,6 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
 	    lr_data.res[i+joff] = lr_data.res[j+ioff] = averag;
 	}
     }
-
 
     if(DFTLR_DEBUG) {
         fort_print("MO Fock matrix contribution in dft_lin_resp");
