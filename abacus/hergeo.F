@@ -337,9 +337,9 @@ C
          DO 20 I= 1, J-1
             RADI = RADIUS(ICHARG(I))
             IF (RADI .LT. 0 .OR. RADJ .LT. 0) THEN
-               IF (ICHARG(I).NE.0 .AND. ICHARG(J).NE.0) WRITE(LUPRI,*)
-     &            'RADII FOR ATOMS WITH EITHER/OR ATOMIC NUMBER ',
-     &            ICHARG(I), ' OR ', ICHARG(J), ' ARE UNAVAILABLE '
+               IF (ICHARG(I).GE.0 .AND. ICHARG(J).GE.0) WRITE(LUPRI,*)
+     &            'RADII FOR ATOMS WITH ATOMIC NUMBER ',
+     &            ICHARG(I), ' AND/OR ', ICHARG(J), ' ARE UNAVAILABLE'
                BONDED(I,J) = .FALSE.
                BONDED(J,I) = .FALSE.
             ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
@@ -569,8 +569,11 @@ C     Returns -1 where data is inavailable
      & -100.,   -100.,   -100.,   -100.,   -100.,
      & -100./
 C
-      IF (NCHARGE .EQ. 0) THEN
-Chj      solvent cavity center or floating orbital
+      IF (NCHARGE .GE. -2 .AND. NCHARGE .LE. 0) THEN
+Chj      =  0: solvent cavity center or floating orbital
+Chj      = -1: multiple basis for r12 methods
+Chj      = -2: point charges
+C
          RADIUS = -1.0D0
       ELSE IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
          WRITE (LUPRI,*) 'ERROR, RADIUS called with NCHARGE =',NCHARGE
@@ -610,8 +613,11 @@ C     Returns -1 where data is inavailable
      & -100.,   -100.,   -100.,   -100.,   -100.,
      & -100./
 C
-      IF (NCHARGE .EQ. 0) THEN
-Chj      solvent cavity center or floating orbital
+      IF (NCHARGE .GE. -2 .AND. NCHARGE .LE. 0) THEN
+Chj      =  0: solvent cavity center or floating orbital
+Chj      = -1: multiple basis for r12 methods
+Chj      = -2: point charges
+C
          VDWRAD = -1.0D0
       ELSE IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
          WRITE (LUPRI,*) 'ERROR, VDWRAD called with NCHARGE =',NCHARGE
