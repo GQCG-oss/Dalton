@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirout.F,v 1.1.1.1 2001-02-08 13:33:32 hjj Exp $
+C$Id: sirout.F,v 1.2 2001-05-18 07:56:57 hjj Exp $
 C
 #include <single.h>
 C  /* Deck sirout */
@@ -289,7 +289,7 @@ C
      *      ' Field strength (a.u.)          Field operator',
      *      ' ---------------------          --------------'
 csonia 04/10/95
-         WRITE (LUCME,'(/A/A/A)')
+         IF (LUCME.GT.0) WRITE (LUCME,'(/A/A/A)')
      &         ' The molecule is placed in a static field.',
      &         ' Field strength (a.u.)          Field operator',
      &         ' ---------------------          --------------'
@@ -298,7 +298,7 @@ csonia 04/10/95
             WRITE (LUW4,'(1P,G18.8,18X,A8)')
      *         EFIELD(IFIELD),LFIELD(IFIELD)
 csonia 04/10/95
-            WRITE (LUCME,'(1P,G18.8,18X,A8)')
+            IF (LUCME.GT.0) WRITE (LUCME,'(1P,G18.8,18X,A8)')
      &         EFIELD(IFIELD), LFIELD(IFIELD)
 csonia 04/10/95                                                            
   100    CONTINUE
