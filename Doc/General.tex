@@ -8,13 +8,14 @@ input file for the \siraba\ program.
 \section{General input to DALTON : \Sec{*DALTON INPUT}}\label{sec:general}
 
 This input module describes the overall type of calculation that is to
-be done, and also which of the four programs that \siraba\ consists of,
-that is to be executed. It also contains two submodules describing the
-performance of parallel calculations and the geometry optimization
+be done, and also which of the six programs that \siraba\ consists of
+that is to be executed. It also contains three submodules describing the
+performance of parallel calculations and the control of the two different geometry optimization 
 routines. We note that this input module has to start all input files
 for \siraba .
 
 \begin{description}
+\item[\Key{ABACUS}] Alternative keyword to \verb|.PROPERTIES|. Obsolete, do not use.
 
 \item[\Key{DIRECT}] The calculation is to be done in a direct
 manner\index{direct calculation}, that
@@ -26,6 +27,11 @@ two-electron integrals (and differentiated
 two-electron integrals) will not be written to disc in any part of the
 calculation.
 
+\item[\Key{DOUGLAS-KROLL}] Include scalar relativistic effects by using the
+Douglas-Kroll transformed one-electron potential and kinetic energy Hamiltonian.
+
+\item[\Key{HERMIT}] Alternative keyword to \verb|.INTEGRALS|. Obsolete, do not use.
+
 \item[\Key{INPTES}] Test the input of the \Sec{*GENERAL} input
 module. The program will abort after the completion of the input test,
 and no calculation will be executed.
@@ -35,7 +41,7 @@ and two-electron integrals. See
 Chapter~\ref{ch:hermit}\index{one-electron
 integral}\index{two-electron integral}.
 
-\item[\Key{ITERAT}]\verb| |\newline
+\item[\Key{ITERATION}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERNR|
 
 Tells the program at which iteration to start the geometry
@@ -43,7 +49,9 @@ optimization\index{iteration number}. Note that this will {\em not}
 affect which molecule
 input file that is going to be read, as this has to be handled by the
 shell script\index{shell script}. It only determines what number the
-output of the predicted molecular geometry will be.
+output of the predicted molecular geometry will be, as well as where to start 
+writing information on the files containing informaton about an IRC 
+calculation (\verb|DALTON.IRC|) or a dynamical trajectory walk (\verb|DALTON.TRJ|).
 
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERMX|
@@ -51,23 +59,31 @@ output of the predicted molecular geometry will be.
 Change the maximum number of geometry iterations\index{iteration
 number}\index{geometry iteration} that can be done. Default
 is~20. This number has to be increased in Intrinsic Reaction Coordinate
-(IRC)\index{IRC}\index{intrinsic reaction coordinate} or dynamical
-trajectory studies\index{dynamics}, as these
+(IRC)\index{IRC}\index{intrinsic reaction coordinate}, dynamical
+trajectory studies\index{dynamics} or numerical differentiation/vibrational averaging, as these
 usually require a much larger number of iterations.
 
-\item[\Key{OPTIMI}] Do a geometry walk\index{geometry walk}. If no
+\item[\Key{MINIMIZE}] Alternative keyword to \verb|OPTIMIZE|. Obsolete, do not use.
+
+\item[\Key{OPTIMIZE}] Do a geometry walk\index{geometry walk}. If no
 input is given in the
-\Sec{WALK} input submodule, an optimization of the molecular
+\Sec{MINIMIZE} input submodule, an optimization of the molecular
 geometry\index{geometry optimization} to a stationary point with no
 negative Hessian eigenvalues\index{Hessian} (a
-local minimum) will be done. However, this may changed be appropriate
-keywords in the submodule \Sec{WALK}, and we refer to examples in
+local minimum) will be done using the default first-order methods. However, this may changed be appropriate
+keywords in the submodule \Sec{MINIMIZE}, and we refer to examples in
 the chapter on potential energy surfaces
 (Chapter~\ref{ch:geometrywalks}), and  subsection~\ref{sec:abawalk}
-describing the input cards for the \Sec{WALK} submodule for a more
+describing the input cards for the \Sec{MINIMIZE} submodule for a more
 detailed description of possible options.
 
-\item[\Key{PARALL}] Denotes that the calculation of two-electron
+\item[\Key{NMDDRV}] Calls for a generalized numerical differentiations. These 
+routines will take advantage of the full molecular point group in order
+to minimize the number of point to be calculated. What order of derivatives and 
+whether any analytical derivatives are to be used is determined in the 
+\verb|*NMDDRV| input module.
+
+\item[\Key{PARALL}] Requests that the calculation of two-electron
 integrals\index{two-electron integral}
 is to be done in parallel\index{parallel calculation}. This also
 implies that the calculation is
@@ -130,17 +146,47 @@ calculation.
 Invoke all the programs \her , \sir , and \resp\ for a single point
 calculation.
 
+\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
+
+\item[\Key{RUNERI}] Force the use of the new, vectorized integral code where possible.
+
+\item[\Key{RUNRSP}] Alternative keyword to \verb|.RUN RESPONSE|. Obsolete, do not use.
+
+\item[\Key{RUNSIR}] Alternative keyword to \verb|.RUN WAVE FUNCTION|. Obsolete, do not use.
+
 \item[\Key{TOTSYM}] Consider only totally symmetric
 perturbations\index{symmetry}.
 This option only affects geometric perturbations and static
 electric-field perturbations requested through the keyword \Key{POLARI}.
 
+\item[\Key{VECLEN}]\verb| |
+\newline
+\verb|READ(LUCMD,*) IVECLN|
+
+Set the number of Fock matrices to be used during Fock-matrix constructions in 
+direct calculations. This function is only of interest for vectorized machines.
+The default is 128. The larger the number, the more memory will be required 
+in the calculations.
+
+\item[\Key{WALK}] 
+Do a geometry walk\index{geometry walk}. If no
+input is given in the
+\Sec{WALK} input submodule, an optimization of the molecular
+geometry\index{geometry optimization} to a stationary point with no
+negative Hessian eigenvalues\index{Hessian} (a
+local minimum) will be done using the a second-order method with analytical Hessians. However, this may changed be appropriate
+keywords in the submodule \Sec{WALK}, and we refer to examples in
+the chapter on potential energy surfaces
+(Chapter~\ref{ch:geometrywalks}), and  subsection~\ref{sec:abawalk}
+describing the input cards for the \Sec{WALK} submodule for a more
+detailed description of possible options.
+
 \item[\Key{WAVE FUNCTIONS}]
 
-Invoke the \sir\ program for the evaluation of SCF, MP2, and MCSCF
+Invoke the \sir\ program for the evaluation of SCF, MP2, Coupled Cluster and MCSCF
 wave
 functions\index{SCF}\index{HF}\index{Hartree-Fock}\index{MP2}\index{M\o
-ller-Plesset}\index{MCSCF}. See Chapter~\ref{chap:inpref}.
+ller-Plesset}\index{MCSCF}\index{CC}. See Chapter~\ref{chap:inpref}.
 \end{description}
 
 \subsection{End of General input: \Sec{END OF}}
@@ -152,7 +198,7 @@ may be \Sec{END OF}.
 
 This submodule is driver for geometry optimizations, although we
 note that the \Sec{WALK} module contains another second-order
-geometry optimization driver-\index{geometry optimization}. The
+geometry optimization driver\index{geometry optimization}. The
 \Sec{MINIMIZE} module contains both first and second-order methods
 for energy\index{first-order optimization}\index{second-order
 optimization}\index{geometry optimization} minimization (geometry
@@ -160,7 +206,7 @@ optimization). Most of the Hessian updating\index{Hessian update}
 schemes were taken from ref.\cite{thkrprt95} and \cite{Fletcher}.
 The implementation of redundant internal
 coordinates\index{redundant internal coordinates} follows the work
-done by Peng {\it et al.\/}~\cite{Peng}. In addition to this,
+of Peng {\it et al.\/}~\cite{Peng}. In addition to this,
 several keywords for VRML visualization are included~\cite{VRML}.
 
 \begin{description}
@@ -169,7 +215,7 @@ several keywords for VRML visualization are included~\cite{VRML}.
 
 Use default first-order method\index{first-order optimization}. This
 means that the BFGS update will\index{BFGS update}
-be used, and the optimization carried out in redundant internal
+be used, and that the optimization carried out in redundant internal
 coordinates\index{redundant internal coordinates}. Same effect as the
 combination of the two keywords
 \Key{BFGS} and \Key{REDINT}.
@@ -197,10 +243,16 @@ optimization} with the
 Broyden-Fletcher-Goldfarb-Shanno (BFGS) update\index{BFGS update} formula for
 optimization. This is the preferred first-order method.
 
+\item[\Key{BFGSR1}]\verb| |
+
+\item[\Key{BOFILL}]\verb| |
+
 \item[\Key{CARTES}]\verb| |
 
 Indicates that Cartesian coordinates should be used in the
 optimization. This is the default for second-order methods.
+
+\item[\Key{CMBMOD}]
 
 \item[\Key{CONDIT}]\verb| |
 \newline
@@ -215,6 +267,10 @@ norm\index{norm of step}. The possible values for this variable is
 therefore between 1 and
 3. Default is 2. The three convergence thresholds can be adjusted with
 the keywords \Key{ENERGY}, \Key{GRADIE} and \Key{STEP T}.
+
+\item[\Key{CONSTRAINT}]
+
+\item[\Key{DELINT}]
 
 \item[\Key{DFP}]\verb| |
 
@@ -241,6 +297,10 @@ convergence thresholds\index{convergence criteria} (the keywords
 control the other two). Default value is the maximum of 1.0D-6 and two
 times the threshold for the wave function gradient.
 
+\item[\Key{FINDRE}]
+
+\item[\Key{GDIIS}]
+
 \item[\Key{GRADIE}]\verb| |
 \newline
 \verb|READ(LUCMD,*) THRGRD|
@@ -259,6 +319,8 @@ earlier. This keyword should only be used when it's difficult to
 obtain a good approximation to the Hessian during optimization. Only
 applies to first-order methods\index{first-order optimization}.
 
+\item[\Key{HELLMA}]\verb| |
+
 \item[\Key{HESFIL}]\verb| |
 
 Specifies that the initial Hessian\index{Hessian, initial} should be
@@ -275,6 +337,8 @@ loss of information. Another useful possibility, is to transfer
 the Hessian from a calculation on the same molecule with another
 (smaller) basis. Finally, one can go in and edit the file directly to
 set up a specific forcefield.
+
+\item[\Key{INIMOD}]\verb| |
 
 \item[\Key{INIRED}]\verb| |
 
@@ -301,20 +365,27 @@ non-present.
 
 Specifies that the initial Hessian\index{initial Hessian} should be
 calculated (analytical Hessian), thus yielding a first step that is
-identical to second-order methods. This provides an excellent starting
+identical to that of second-order methods. This provides an excellent starting
 point for first-order methods, but should only be used when the
 Hessian can be calculated within a reasonable amount of time. It has only
 effect for first-order methods and overrides the keywords
 \Key{INITEV} and \Key{INIRED}. It has no effect when \Key{HESFIL} has
 been specified.
 
-\item[\Key{INTERA}]\verb| |
+%\item[\Key{INTERA}]\verb| |
+%
+%Specifies a interactive run\index{interactive geometry
+%optimization}. The energy, gradient
+%norm\index{norm of gradient}, step length\index{norm of step} and
+%Hessian index\index{Hessian index} is then written to the unit LUERR(=0)
+%in each iteration, allowing easy monitoring of the optimization.
+%
 
-Specifies a interactive run\index{interactive geometry
-optimization}. The energy, gradient
-norm\index{norm of gradient}, step length\index{norm of step} and
-Hessian index\index{Hessian index} is then written to the unit LUERR(=0)
-in each iteration, allowing easy monitoring of the optimization.
+\item[\Key{LINE S}]\verb| |
+
+\item[\Key{M-BFGS}]\verb| |
+
+\item[\Key{M-PSB}]\verb| |
 
 \item[\Key{MAX IT}]\verb| |
 \newline
@@ -331,10 +402,16 @@ Read maximum number of rejected steps\index{rejected geometry step} in
 each iterations, default is
 5.
 
+\item[\Key{MODE}]\verb| |
+
+\item[\Key{MODHES}]\verb| |
+
 \item[\Key{NEWTON}]\verb| |
 
 Specifies that a second-order level-shifted Newton method should
-be used for optimization. This is the default method.
+be used for optimization. This is the default secnd-order method.
+
+\item[\Key{NOAUX}]\verb| |
 
 \item[\Key{NOBREA}]\verb| |
 
@@ -343,6 +420,8 @@ be optimized within the given symmetry, even if a non-zero Hessian
 index is found. The default is to let the symmetry be broken until
 a minimum is found with a Hessian index\index{Hessian index} of zero. This option only has
 effect when second-order methods are used.
+
+\item[\Key{NODIHE}]\verb| |
 
 \item[\Key{NOREIN}]\verb| |
 
@@ -368,12 +447,13 @@ global convergence is no longer guaranteed. If long steps are desired,
 it is safer to adjust the initial trust radius and the limits for the
 actual/predicted energy ratio.
 
-\item[\Key{PREOPT}]\verb| |\newline
+\item[\Key{PREOPT}]
+
 \begin{verbatim}
-               READ(LUCMD,*) NUMPRE
-               DO 144 I = 1, NUMPRE
-                  READ(LUCMD,*) PREBTX(I)
- 144           CONTINUE
+          READ(LUCMD,*) NUMPRE
+          DO I = 1, NUMPRE
+             READ(LUCMD,*) PREBTX(I)
+          END DO
 \end{verbatim}
 
 First we read the number of basis sets\index{basis set} that should be used for
@@ -397,6 +477,8 @@ Specifies that a first-order method\index{first-order optimization} with the
 Powell-symmetric-Broyden (PSB)\index{PSB update} update formula should be used
 for optimization.
 
+\item[\Key{QUADSD}]\verb| |
+
 \item[\Key{RANKON}]\verb| |
 
 Specifies that a first-order method\index{first-order optimization}
@@ -418,6 +500,12 @@ rejected step\index{rejected geometry step}, as a rejected step
 indicates that the Hessian models the
 true potential surface poorly. Only applies to first-order
 methods\index{first-order optimization}.
+
+\item[\Key{REMOVE}]\verb| |
+
+\item[\Key{RF}]\verb| |
+
+\item[\Key{SADDLE}]\verb| |
 
 \item[\Key{SCHLEG}]\verb| |
 
@@ -457,7 +545,7 @@ is the lack of Hessian updates.
 Set the convergence\index{convergence criteria} threshold for the step
 norm. This is one of the
 three convergence thresholds (the keywords \Key{ENERGY} and
-\Key{GRADIE} control the other two). Default value is 1.0D-6.
+\Key{GRADIE} control the other two). Default value is 1.0D-5.
 
 \item[\Key{SYMTHR}]\verb| |
 \newline
@@ -470,7 +558,7 @@ drops below this value, the symmetry is broken to avoid unnecessary
 iterations within the wrong symmetry. This option only applies to
 second-order\index{second-order optimization} methods and when the
 keyword \Key{NOBREA} is
-not present. The default value of this threshold is 1.0D-3.
+not present. The default value of this threshold is 5.0D-3.
 
 \item[\Key{TR FAC}]\verb| |
 \newline
@@ -498,7 +586,9 @@ of the step. Finally ratios above \verb|RTENGD| (but below
 a value larger than the step length. The amount the trust radius
 is increased or decreased can be adjusted with \Key{TR FAC}. The
 default values of \verb|RTENBD|, \verb|RTENGD|, \verb|RTRJMN| and
-\verb|RTRJMX| are 0.4D0, 0.8D0, 0.1D0 and 3.0D0 respectively.
+\verb|RTRJMX| are 0.4D0, 0.8D0, -0.1D0 and 3.0D0 respectively.
+
+\item[\Key{TRSTRG}]\verb| |
 
 \item[\Key{TRUSTR}]\verb| |
 \newline
@@ -514,8 +604,8 @@ and actual energy change. The default trust radius is 0.5D0.
 
 Specifies that the molecule should be
 visualized\index{visualization}\index{VRML},
-writing a VRML file of the molecular geometry. {\em{No}} optimization
-will be performed when this keyword is given. See also related
+writing a VRML file of the molecular geometry. {\em{No optimization
+will be performed when this keyword is given}}. See also related
 keywords \Key{VR-BON} and \Key{VR-EIG}.
 
 \item[\Key{VRML}]\verb| |
@@ -539,12 +629,18 @@ spheres representing the different atoms will be drawn.
 
 \item[\Key{VR-EIG}]\verb| |
 
+\item[\Key{VR-CON}]\verb| |
+
 Only has effect together with \Key{VRML} or
 \Key{VISUAL}\index{visualization}\index{VRML}´index{eigenvector}.
 Specifies that the eigenvectors of the molecule (that is the eigenvectors of the
 Hessian, which differs from the normal modes as they are not
 mass-scaled) should be visualized. These are written to the files
 \verb|eigv_###.wrl|.
+
+\item[\Key{VR-SYM}]\verb| |
+
+\item[\Key{VR-VIB}]\verb| |
 
 \end{description}
 
@@ -606,32 +702,32 @@ correspond to the number of slaves the user would like to use in the
 calculation. Note that this number may often have to be adjusted in
 accordance with limits in the queuing system of various computers.
 
-\item[\Key{NTASK}]\verb| |\newline
-\verb|READ (LUCMD,*) NTASK|
-
-The number of tasks to send to each node when distributing the
-calculation of two-electron integrals\index{two-electron
-integral}. The default is 1. A task is
-defined as a shell of atomic integrals\index{basis functions, shell
-of}, a shell being an input
-block. One may therefore increase the number of shells given to each
-node in order to reduce the amount of communication. However, the
-program uses dynamical allocation of work to each
-node, and thus this option should be used with some care, as too large
-tasks may cause the dynamical load balancing to fail\index{load
-balancing}, giving an
-overall decrease in efficiency\index{parallel efficiency}. The
-parallelization is also very
-coarse grained, so that the amount of
-communication\index{communication} seldom represents
-any significant problem. Will be come obsolete, and replaced by \Key{DEGREE}.
-
+%\item[\Key{NTASK}]\verb| |\newline
+%\verb|READ (LUCMD,*) NTASK|
+%
+%The number of tasks to send to each node when distributing the
+%calculation of two-electron integrals\index{two-electron
+%integral}. The default is 1. A task is
+%defined as a shell of atomic integrals\index{basis functions, shell
+%of}, a shell being an input
+%block. One may therefore increase the number of shells given to each
+%node in order to reduce the amount of communication. However, the
+%program uses dynamical allocation of work to each
+%node, and thus this option should be used with some care, as too large
+%tasks may cause the dynamical load balancing to fail\index{load
+%balancing}, giving an
+%overall decrease in efficiency\index{parallel efficiency}. The
+%parallelization is also very
+%coarse grained, so that the amount of
+%communication\index{communication} seldom represents
+%any significant problem. Will be come obsolete, and replaced by \Key{DEGREE}.
+%
 \item[\Key{PRINT}]\verb| |\newline
-\verb|READ (LUCMD, '(A7)') KPRINT|
+\verb|READ (LUCMD, *) IPRPAR|
 
 Read in the print level for the parallel calculation. A print level of
 at least 2 is needed in order to be able to evaluate the
-parallelization efficiency\index{parallel efficiency}. A complete
+parallell efficiency\index{parallel efficiency}. A complete
 timing for all nodes will be
 given if the print level is 4 or higher.
 \end{description}
@@ -649,6 +745,12 @@ intensity}\index{Raman optical activity}\index{ROA},
 appear in the \Sec{WALK} section.
 
 \begin{description}
+\item[\Key{ANHARM}]
+
+Requests that a determination of the cubic force field is to be determined. 
+By default this is done calculating numerical derivatives of analytical 
+Hessians in Cartesian coordinates. 
+
 \item[\Key{DISPLA}]\verb| |\newline
 \verb|READ (LUCMD, *) DISPLC|
 
@@ -671,6 +773,21 @@ analytically on a locally
 quadratic surface. The method is discussed in
 Ref.~\cite{theuhjajcpl173} as well as in Section~\ref{sec:dynamic}.
 
+\item[\Key{ECKART}]
+
+\begin{verbatim}
+      DO I = 1, NUCDEP
+         READ (LUCMD,'(7X,F17.10,2F24.10)') 
+     &        (ECKGEO(J,I), J = 1, 3)
+      END DO
+\end{verbatim}
+
+During a vibrational averaging, ensure that the properties are
+transformed to the appropriate Eckart axis system.  The coordinate
+system given should be that of the equilibrium geometry of the
+molecule. The coordinates should be given in bohr, and should be given
+for all symmetry generated atoms in the order given in the input.
+
 \item[\Key{EIGEN}] Take a step to the boundary of the trust
 region\index{trust radius}
 along the eigenvector mode\index{eigenvector} specified by \Key{MODE}.
@@ -688,7 +805,7 @@ discussion in Sec.~\ref{sec:dynamic}.
 
 \item[\Key{GRDEXT}] Perform a gradient extremal-based\index{gradient
 extremal} optimization. The algorithm used in this kind of optimization is
-thoroughly described in Ref.\cite{pjhjajthtca73}. This is default walk
+thoroughly described in Ref.\cite{pjhjajthtca73}. This is the default walk
 type if the  index of the critical point searched is higher than
 1. See also the discussion in Sec.~\ref{sec:gradext}.
 
@@ -710,7 +827,7 @@ Sec.~\ref{sec:image}.
 \item[\Key{INDEX}]\verb| |\newline
 \verb|READ (LUCMD,*) IWKIND|
 
-Desired Hessian index\index{Hessian index} (strictly, of the
+Desired Hessian index\index{Hessian index} (strictly speaking, of the
 totally symmetric block of the Hessian) at the optimized geometry.
 Read one more line specifying value.  Default is~0 (minimum).
 Note that a stationary point with the wrong Hessian index will not
