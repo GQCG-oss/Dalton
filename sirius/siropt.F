@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: siropt.F,v 1.4 2001-03-20 07:47:49 vebjornb Exp $
+C$Id: siropt.F,v 1.5 2001-03-22 14:42:54 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/03/20 07:47:49  vebjornb
+Changed all references to the old f21-file to "SIRIUS.RST"
+
 Revision 1.3  2001/03/17 17:42:24  vebjornb
 Small bugfix (prevented testcase energy_solv from working on SGI 64-bit)
 
@@ -391,6 +394,8 @@ C
       IF (.NOT.FLAG(14)) THEN
          JTRLVL = ITRLVL
          IF (ITABS .EQ. 0) JTRLVL = KTRLVL
+         IF (FLAG(20) .OR. ITMACN .GE. MAXMAC) JTRLVL = 0
+C        ... stop after gradient: only 1. order transform. needed
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWRK10),LWRK10,MWORK)
 C        CALL TRACTL(ITRLVL,CMO,WRK,LFREE,MWORK)
          LTRLVL = JTRLVL
@@ -606,8 +611,11 @@ C
 C
       IF (FLAG(20)) GO TO 700
 C
+      IF (ITMACN .GE. MAXMAC) ISTEP = -2
+C
       IF ( CHKSTP ) THEN
-C        istep = -2 : converged, get step info for analysis
+C        istep = -2 : converged or stop after gradient,
+C                     get step info for analysis
 C        istep = -1 : restart prediction available
 C        istep =  0 : normal second-order step check
          CALL SIRSTP(ISTEP,WRK(KCMO),WRK(KIBNDX),WRK(KCINDX),
@@ -668,6 +676,8 @@ C                    need higher int. transf. level for NEO/NR
       IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
 C     --- Exit if converged ---
       IF (ICONV .EQ. 1) GO TO 700
+C     --- Exit if max macro iter reached ---
+      IF (ITMACN .GE. MAXMAC) GO TO 700
 C
       IF (ISTEP.GT.0) THEN
          ISTEP  = 0
@@ -774,6 +784,7 @@ C
          CALL SIRUPD(ICONV,MAXUIT,WRK(KREFU),WRK(KGRDU),WRK(KCMO),
      *               WRK(KCINDX),WRK(KWU),LWU)
 C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
+         LTRLVL = ITRLVL
          ITRLVL = ITRLSV
          NWOPH  = NWOPS
          NVARH  = NVARS
