@@ -477,15 +477,22 @@ atom is given with respect to two angles, namely {\tt (A1,A2,A3)} and
 $\overrightarrow{\left(A_{2}A_{1}\right)}\cdot\left[\overrightarrow{\left(A_{2}A_{3}\right)}\times\overrightarrow{\left(A_{2}A_{4}\right)}\right]$
 is positive.
 
-\section{Using the basis set library}\label{sec:molbasis}
+\section{Using basis set libraries}\label{sec:molbasis}
 \index{basis set!library}
 \index{BASIS}
 \index{ATOMBASIS}
 
-The use of the basis set library supplied with \dalton\ is indicated
+The use of predefined basis sets is indicated
 by the word {\tt BASIS} or {\tt ATOMBASIS} on the first line of the
 molecular input.
 (If you want Z-matrix input you must use {\tt BASIS}.)
+
+The specified basis set(s) are searched for in the following directories:
+\begin{itemize}
+\item all user specified basis set directories (with {\tt dalton -b dir1 -b dir2 ...}
+\item the job directory
+\item the basis set library supplied with \dalton.
+\end{itemize}
 
 If {\tt BASIS} is used, a common basis set is used for all atoms in
 the molecule, and the name of this basis set is given on the second line.

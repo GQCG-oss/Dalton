@@ -72,8 +72,8 @@ post-processing programs supplied to us from various users
 In addition to the directories, the main dalton directory will
 contain several files including a shell script (\verb|configure|)
 which will build a suitable \verb|Makefile.config| for use when
-installing the program. The configure-script will also create a
-\verb|Makefile| and a script \verb|dalton| from the skeletal files
+installing the program. The \verb|configure| script will also create a
+\verb|Makefile| and a run script \verb|bin/dalton| from the skeletal files
 (\verb|Makefile.in| and \verb|dalton.gnr|) that are present in the
 directory.
 
@@ -131,7 +131,7 @@ array, from which it allocates space for temporary arrays
 during the execution of the program. This value is given in Words, and
 should be chosen according to available memory on your computer.
 \verb|WRKMEM| may be changed at execution time by supplying a
-different value for \verb|WRKMEM| through the shell-script running
+different value for \verb|WRKMEM| through the shell script running
 {\dalton}.
 
 \item Default basis set library
@@ -143,9 +143,9 @@ changed according to the local directory structure. We recommend
 that the basis sets in this directory are {\em not} changed, but
 that changes to the basis set rather is done in a separate
 directory, and then supply this basis set directory to the program
-at execution time.
+at execution time using the \verb|dalton -b basdir| option.
 
-{\sc NOTE TO SYSTEM-ADMINISTRATORS:} Supplied with {\dalton} is an
+{\sc NOTE TO SYSTEM ADMINISTRATORS:} Supplied with {\dalton} is an
 extensive basis set library. This basis set directory must be made
 readable to all users. {\sc END NOTE}
 
@@ -153,16 +153,17 @@ readable to all users. {\sc END NOTE}
 space\index{scratch space}\index{installation!scratch space}:
 Determines the default head scratch
 directory where temporary files will be placed. This value will be put
-in the \verb|dalton| run-script. However, note that jobs will be run in
+in the \verb|dalton| run script. However, note that jobs will be run in
 a subdirectory of this head scratch-directory, according to the name
 of the job files. If \verb|/work| or \verb|/scratch| is defined in the
 local directory structure, the script will normally suggest
 \verb|/work/$USER| or  \verb|/scratch/$USER| as default head scratch space.
 
-%\item Default install 
-%directory\index{install directory}\index{installation!install directory}:
-%Denotes the directory where the {\dalton} executable and the
-%\verb|dalton| run script will be moved to.
+\item Default install 
+directory\index{install directory}\index{installation!install directory}:
+Denotes the directory where the {\dalton} executable and the
+\verb|dalton| run script will be moved to.
+Default: a subdirectory {\tt ./bin} to the main \dalton\ directory.
 \end{enumerate}
 
 Compiler options will be supplied in \verb|Makefile.config|, in the manner
@@ -179,7 +180,9 @@ available on the system and use them whenever possible. {\dalton} can
 use third-party BLAS and LAPACK libraries or libraries providing
 equivalent functionality like ESSL on AIX, COMPLIB.sgimath on SGI,
 DXML and CXML on Alpha architectures, ATLAS, ACML, MKL on Intel
-architectures, VECLIB on HP/UX. You can point the \verb|configure|
+architectures, VECLIB on HP/UX.
+You will be asked which one you want of the found libraries.
+You can also point the \verb|configure|
 script to the location of the preferred libraries by setting
 \verb|LIBDIR| environment variable before running the script. For
 example, if one has high-performance BLAS routines in \verb|mylibs|

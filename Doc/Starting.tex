@@ -382,7 +382,7 @@ they will be \verb|energy_nosymm.dal| and
 get a head-on start on running different kinds of {\dalton} jobs.
 
 Calculations with {\dalton} is most conveniently done using the
-supplied shell-script\index{dalton shell-script} \verb|dalton|. Thus,
+supplied shell script\index{dalton shell script} \verb|dalton|. Thus,
 to run a calculation of $\beta$ (first
 hyperpolarizability)\index{first hyperpolarizability} 
 with input available as \verb|beta.dal| on the HCl molecule, and with
@@ -405,9 +405,10 @@ There are several options to this script, which can be viewed by
 typing \verb| dalton -h| or just \verb|dalton|. These options include:
 
 \begin{list}{--}{}
-\item[-b directory] Give an alternative directory where the program
+\item[-b directory] Prepend this directory to the list of directories where the program
 should look for basis sets\index{basis set}. Needed in case you want to use local
-modifications of a given basis.
+modifications of a given basis. The job directory and the \dalton\ basis set library
+will always be included in the basis set directory list (in that search order).
 \item[-d] Removes the contents of the scratch directory before a
 calculation starts in order to avoid inconsistencies between files.
 \item[-D] Do not remove the content of the scratch directory. By
@@ -421,16 +422,14 @@ to \verb|.ext|.
   before a calculation starts. This is needed in order to be able to
   restart \dalton\ calculations, or if you want to use converged response
   vectors in a different response calculations for the same molecule.
-\item[-m mem] Change the default size of the scratch
-memory\index{scratch memory} space to
-mem Mwords.
-\item[-M mem] Change the default size of the scratch
-memory\index{scratch memory} space to
-mem Mbytes.
+\item[-M mb] Change the default size of the scratch
+memory\index{scratch memory} space to \verb|mb| Mbytes.
 \item[-N nodes] Number of nodes to be used in a parallel MPI calculation
 controlled by running mpirun (or using mpiexec).
+\item[-lam file] Call "lamboot file" and "wipe file" before and after mpirun.
 \item[-o filename] Redirect the output normally printed in the
-  \verb|DALTON.OUT| file to the file ``filename'' in the WRKDIR
+  \verb|DALTON.OUT| file in the temporary directory
+  to the file ``filename'' in the WRKDIR
   directory. On a computer system with distributed scratch disk but a
   commonly mounted home directory, this allows you to follow the
   calculation without having to log into the compute nodes.

@@ -75,7 +75,7 @@ species~\cite{fjjthcp121}.
 
 \item{\bf Changes to DALTON.INP:} To harmonize the input for
   single-point and geometry optimization calculations, the labels for
-  calculating   molecular properties during a geometry optimization is
+  calculating  molecular properties during a geometry optimization is
   changed such that
 
 \begin{center}
@@ -125,6 +125,12 @@ single filename is given as arguments to the \dalton\ script, that is
 \begin{verbatim}
 > ./dalton foo
 \end{verbatim}
+
+\item{\bf More basis set directories:} \dalton\ will now search for basis sets
+in any user specified directories, the job directory, and in the \dalton\ basis
+set library. \dalton\ 1.2 would search in only one directory,
+either a directory specified by the user
+or the \dalton\ basis set library.
 
 \item{\bf Changes to basis set names:} The following basis sets
 have been renamed from \dalton\ 1.2, largely for consistency with the 
