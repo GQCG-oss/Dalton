@@ -1101,6 +1101,7 @@ C        ************************
 C        ***** New geometry *****
 C        ************************
 C
+         IF (START) CALL DCOPY(NCRIND,CORD,1,COOR0,1)
          IF (.NOT.(START .OR. REJECT)) IPOINT = IPOINT + 1
          IF (IWKTYP .EQ. 6) THEN
 C

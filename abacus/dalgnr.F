@@ -852,7 +852,7 @@ C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6 .AND. NUMHES) THEN
                CALL ABAINP('**FINAL',WORK(2),LMWORK)
-               CALL VIBCTL(WORK,LMWORK)
+               CALL VIBCTL(WORK(2),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
 ckr            IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.

@@ -302,9 +302,8 @@ C
 C     We use the gradient from the first iteration, since we are not in 
 C     the minimum geometry when we end geometry steps using NUMHES
 C
-ckr         CALL REANMHES(WORK(KCOOR0),WORK(KGRAD),WORK(KHESS0),
-ck         CALL REANMHES(WORK(KCOOR0),WORK(KGRAD0),WORK(KHESS0),
-         CALL REANMHES(WORK(KCOOR),WORK(KGRAD),WORK(KHESS0),
+ckr         CALL REANMHES(WORK(KCOOR0),WORK(KGRAD0),WORK(KHESS0),
+         CALL REANMHES(WORK(KGEOM),WORK(KGRAD),WORK(KHESS0),
      &                 WORK(KGRADF),WORK(KHESS),NCORD,3*NUCIND)
 C
 C        Note that the Hessian is not back-transformed to non-symmetry
