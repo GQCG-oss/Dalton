@@ -350,6 +350,10 @@ C
                                  CALL ESG_PVAL(DFTADD,HFXFAC,
      &                                         PVAL,DMAT,A,B,C,D,
      &                                         DP5*FAB*FCD*FCABCD)
+                              ELSE IF (HFXMU .NE. D0) THEN
+                                 PVAL = DP5*FAB*FCD*FCABCD*(
+     &                                - HFXFAC*DP25*
+     &                                  (DTAC*DTBD + DTAD*DTBC))
                               ELSE IF (DFTADD) THEN
                                  PVAL = DP5*FAB*FCD*FCABCD*(DTAB*DTCD
      &                                - HFXFAC*DP25*

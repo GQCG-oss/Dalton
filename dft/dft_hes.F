@@ -208,7 +208,7 @@ C
      &                 WORK,NBAST,D0,V1MAT(1,I,KATOM),NBAST)
             IF (IPRINT.GT.20) THEN
                CALL HEADER('Derivative connection matrix, V1MAT',-1)
-               WRITE (LUPRI,'(2X,A,I,I)') ' atom and coor:',JATOM,I
+               WRITE (LUPRI,'(2X,A,2I5)') ' atom and coor:',JATOM,I
                CALL OUTPUT(V1MAT(1,I,KATOM),1,NBAST,1,NBAST,
      &                     NBAST,NBAST,1,LUPRI)
             END IF

@@ -285,8 +285,10 @@ C
 #include <taysol.h>
 #include <energy.h>
 #include <expopt.h>
+#include <dftcom.h>
 #include <esg.h>
 C
+      PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
       LOGICAL DDFOCK, NOBLK, ZFS2EL
       INTEGER IFCTYP(MXDMAT), ISYMDM(MXDMAT)
@@ -522,6 +524,8 @@ C
                CALL FLSHFO(LUPRI)
             ELSE
                IF (IPRINT .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
+               HFXM0 = HFXMU
+               HFXMU = D0
                CALL TWOINT(WORK(KLAST),LWRK,WORK(KHESEE),WORK(KFMAT),
      &                     WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,DUMMY,IDUMMY,
      &                     NUMDIS,1,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
@@ -529,6 +533,19 @@ C
      &                     RETUR,IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),
      &                     WORK(KNCONT),WORK(KIORBS),IDUMMY,IDUMMY,
      &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+               HFXMU = HFXM0
+               IF (HFXMU.NE.D0) THEN
+                  HFXFC0 = HFXFAC
+                  HFXFAC = HFXATT
+                  CALL TWOINT(WORK(KLAST),LWRK,WORK(KHESEE),WORK(KFMAT),
+     &                     WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,DUMMY,IDUMMY,
+     &                     NUMDIS,1,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
+     &                     TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                     RETUR,IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),
+     &                     WORK(KNCONT),WORK(KIORBS),IDUMMY,IDUMMY,
+     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+                  HFXFAC = HFXFC0
+               END IF
                IF (IPRINT .GE. 2) CALL TIMER('TWOINT',TIMSTR,TIMEND)
             END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
