@@ -26,6 +26,9 @@ F_OBJS = \
 	rspcr9.o	\
 	rspdm.o		\
 	rspe2c.o	\
+	rspesg.o        \
+	rspesg_lag.o    \
+	rspesg_gp.o     \
 	rspfxd.o	\
 	rspmai.o	\
 	rspmc1.o	\

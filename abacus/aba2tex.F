@@ -284,6 +284,7 @@ C
 #include <taysol.h>
 #include <energy.h>
 #include <expopt.h>
+#include <esg.h>
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
       LOGICAL DDFOCK, NOBLK
@@ -416,6 +417,12 @@ C
          ELSE
             NDMAT = 2
          END IF
+C
+C  4 generalised density matrices are needed for excited state gradient
+C  calculations
+
+         IF (ESG) NDMAT=4
+C
          KDMAT = KLAST
          IF (FCKDDR .AND. EXPFCK) THEN
             ITYPE = 6
@@ -463,6 +470,12 @@ C
 C
          CALL GETDMT(WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,NODC,NODV,
      &               .NOT.DOERI,IPRINT)
+C
+C  For excited state gradient calculation we need to read 
+C    3 more generalized density matrices from file
+C
+      IF (ESG) CALL GETESG_DENMAT(WORK(KDMAT),NDMAT,WORK(KLAST),
+     &               LWRK)
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN

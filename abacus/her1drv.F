@@ -337,6 +337,7 @@ C
 #include <dftcom.h>
 #include <gnrinf.h>
 #include <expopt.h>
+#include <esg.h>
 C
 #include <ibtfun.h>
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
@@ -399,8 +400,16 @@ C
          KLAST = KFSO  + NNBAST
          LWRK  = LWORK - KLAST + 1
          IF (KLAST.GT.LWORK) CALL STOPIT('ONEDR1','DSOFSO',KLAST,LWORK)
-         CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,NODC,
-     &               NODV)
+         IF (ESG) THEN
+            CALL GPOPEN(LUESG,'ESG_AOMAT',' ',' ',' ',IDUMMY,.FALSE.)
+            REWIND(LUESG)
+            READ (LUESG) NNBAST
+            CALL GETESG_DENMAT_FOCMAT(WORK(KDSO),WORK(KFSO),NBAST,
+     &                                NNBAST)
+         ELSE
+           CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
+     &                 NODC,NODV)
+         END IF
          CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),NBAST,IPRINT)
       END IF
 C
@@ -786,7 +795,7 @@ C     /* Deck dsofs1 */
       SUBROUTINE DSOFS1(CMO,FT,DV,UDV,DSO,FSO,IPRINT,NODC,NODV)
 C
 C     This subroutine calculates the folded total one-electron density
-C     and Fock matrices in AO basis (contravariant).  Input is
+C     and Fock matrices in SO basis (contravariant).  Input is
 C     one-electron active density matrix and total Fock matrix in
 C     MO basis.
 C

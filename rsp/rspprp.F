@@ -491,6 +491,7 @@ C
 #include <infvar.h>
 #include <wrkrsp.h>
 C
+      CALL QENTER('GETGPV')
       IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO') THEN
          KGP   = 1
          KWRK1 = KGP + KZYVAR
@@ -509,6 +510,7 @@ C
          CALL PRPCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,ANTSYM,
      &               WRK(KWRK1),LWRK1)
       ENDIF
+      CALL QEXIT('GETGPV')
       RETURN
       END
 C  /* Deck prpctl */

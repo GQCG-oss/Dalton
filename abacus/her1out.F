@@ -517,6 +517,7 @@ C
 #include <symmet.h>
 #include <inforb.h>
 #include <ccom.h>
+#include <esg.h>
       PARAMETER (D0 = 0.0D0, D1000 = 1000.0D0)
       DIMENSION WORK(LWORK)
       IF (IPRINT .GE. 5) CALL HEADER('Output from SHDCHK',-1)
@@ -567,7 +568,7 @@ C
      &            - TRACE2
             DFMAX1 = MAX(ABS(DIFF1),DFMAX1)
             DFMAX2 = MAX(ABS(DIFF2),DFMAX2)
-            IF (ABS(DIFF1) .GT. THRS10) THEN
+            IF (ABS(DIFF1) .GT. THRS10 .AND. ( .NOT. ESG ) ) THEN
                WRITE(LUPRI,'(1P,//1X,A,I3,//3X,A/3X,3(D12.4,7X)/)')
      *           ' >>>>> WARNING - diff. between '//
      *           ' AO and SO reorth. gradient for coordinate',ISCOOR,
@@ -575,7 +576,7 @@ C
      *           GRADFS(ISCOOR), TRACE1, DIFF1
                NWNABA = NWNABA + 1
             END IF
-            IF (ABS(DIFF2) .GT. THRS10) THEN
+            IF (ABS(DIFF2) .GT. THRS10 .AND. ( .NOT. ESG ) ) THEN
                WRITE(LUPRI,'(1P,//1X,A,I3,//3X,A/3X,3(D12.4,7X)/)')
      *           ' >>>>> WARNING - diff. between '//
      *           ' AO and SO 1-el. int. gradient for coordinate',ISCOOR,

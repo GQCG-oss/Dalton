@@ -236,6 +236,7 @@ C
 #include <inftpa.h>
 #include <inftmo.h>
 #include <infinp.h>
+#include <esg.h>
 C
       LOGICAL   ATEST
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -261,7 +262,7 @@ C
       CALL MEMGET('REAL',KZYMB,NORBT*NORBT,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KZYMC,NORBT*NORBT,WRK,KFREE,LFREE)
 C
-      IF (DIROIT.AND.TDHF.AND.(CRCAL.OR.TOMOM.OR.TPAMP)) THEN
+      IF (DIROIT.AND.TDHF.AND.(CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG)) THEN
          CALL C3FOCK(IBEQC,WRK(KFI),VECB,VECC,
      *              WRK(KZYMB),WRK(KZYMC),
      *              KZYVB,KZYVC,

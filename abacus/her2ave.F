@@ -124,6 +124,7 @@ C
 #include <expcom.h>
 #include <expopt.h>
 #include <dirprt.h>
+#include <esg.h>
 #include <ibtfun.h>
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
@@ -341,7 +342,11 @@ C
                               ELSE
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                               ENDIF
-                              IF (DFTADD) THEN
+                              IF (ESG) THEN 
+                                 CALL ESG_PVAL(DFTADD,HFXFAC,
+     &                                         PVAL,DMAT,A,B,C,D,
+     &                                         DP5*FAB*FCD*FCABCD)
+                              ELSE IF (DFTADD) THEN
                                  PVAL = DP5*FAB*FCD*FCABCD*(DTAB*DTCD
      &                                - HFXFAC*DP25*
      &                                  (DTAC*DTBD + DTAD*DTBC))

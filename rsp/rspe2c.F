@@ -1460,7 +1460,7 @@ C     CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       NTSIM = 0
       IF (IPRRSP.GT.110) THEN
          WRITE(LUPRI,*)'  GRADIENT VECTOR (Z-part and Y-part)'
-         CALL OUTPUT(GD,1,KZYVAR,1,2,KZYVAR,2,1,LUPRI)
+         CALL OUTPUT(GD,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
       ENDIF
       IF (IPRRSP.GT.150) THEN
          WRITE(LUPRI,*)' DIAGONAL HESSIAN MATRIX WVAL=0.0'
@@ -3269,6 +3269,7 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <inftap.h>
+#include <esg.h>
 C
 C     space allocation for reduced E(2) and reduced S(2)
       KREDE  = 1
@@ -3354,6 +3355,14 @@ C
 C     CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *            LINEQ,GD,REDGD,REDE,REDS,
 C    *            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
+C
+C   Save the excitation energies for excited state gradient 
+C   (singlet only for the moment)
+C
+      ISPN = 1
+      DO I = 1,KEXCNV
+         EXCITA(KSYMOP,I,ISPN) = WRK(KEIVAL-1+I)
+      END DO
 C
 C CALCULATE EIGENVECTORS AND TRANSITION MOMENTS
 C

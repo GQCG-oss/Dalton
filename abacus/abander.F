@@ -1668,9 +1668,9 @@ c#endif
 #include <gnrinf.h>
 #include <nuclei.h>
 c
-#include <huckel.h>
-      LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, XESIR, XEHER, XEABA,
-     &        ALRCAL, PRPCAL
+#include <huckel.h>      
+      LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG, 
+     &        ALRCAL, PRPCAL, FNDKEY
       CHARACTER*80 MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUVAL(NINTIN,NDIME), COOR (NCOOR), SYMCOR(NCOOR,NCOOR),
@@ -1811,11 +1811,14 @@ C
 C              *** Reset nescesary variables ***
 C
                CALL NUMRES(EXHER,EXSIR,EXABA)
-C
+cdj
+               EXESG = FNDKEY('*ESG   ')
+C     
 C              *** Find the energy, gradient or hessian ***
 C
                IF (NAORDR .EQ. 0) THEN
-                  CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+                  CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,
+     $                 WORK,LWORK,IWOFF,WRKDLM)
 c#if defined (VAR_MPI)
 c                  FTVAL(1,IDIME) = ENERGY
 c#else

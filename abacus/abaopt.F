@@ -1848,7 +1848,7 @@ C     Final results are printed, partially through PRIINF.
 C
          IF (MOLDEN) CALL MOGECON(.TRUE.,DUMMY)
          CALL TITLER(' End of Optimization ','<',120)
-         CALL PRIINF(GEINFO)
+         CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
          WRITE(LUPRI,*)
          IF (CONOPT) THEN
             WRITE(LUPRI,*) 'Constrained optimization converged in ',
@@ -1912,7 +1912,7 @@ C     No single point energy has been calculated.
          TMPLOG = DOSPE
          DOSPE = .FALSE.
          CALL TITLER('Optimization Control Center','<',120)
-         CALL PRIINF(GEINFO)
+         CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
          DOSPE = TMPLOG
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'Geometry has NOT converged!'
@@ -2036,16 +2036,17 @@ c      if (itrnmr.eq.1) stop ' '
       END
 
 C  /* Deck priinf */
-      SUBROUTINE PRIINF(GEINFO)
+      SUBROUTINE PRIINF(GEINFO,WORK,LWORK)
 C
 C     Prints important information at the end of an optimization.
 C
 #include <implicit.h>
+#include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <nuclei.h>
 #include <optinf.h>
-      DIMENSION GEINFO(0:ITRMAX,6)
+      DIMENSION GEINFO(0:ITRMAX,6), WORK(LWORK)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
       LOGICAL RED
       TMPNRG = 0.0D0
@@ -2099,11 +2100,12 @@ C
             WRITE(LUPRI,*) '#) Hessian initialized to unity.'
          END IF
       END IF
+      CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,WORK,LWORK)
       RETURN
       END
 
 C  /* Deck gtnrgy */
-      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,IWOFF,WRKDLM)
 C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
@@ -2119,7 +2121,9 @@ C
 #include <siripc.h>
 #include <dftcom.h>
 #include <molinp.h>
-      LOGICAL EXHER, EXSIR, EXABA
+#include <abainf.h>
+#include <esg.h>
+      LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       CALL QENTER('GTNRGY')
       WORK(IWOFF+1) = WRKDLM
@@ -2170,6 +2174,7 @@ C
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
       END IF
+
 ckr#ifdef nohjaug99
 C hjaaj aug99: no reason to update thresholds as it is
 C an equil. optimization in the geometry although excited in MCSCF
@@ -2205,6 +2210,16 @@ ckr#endif
       ELSE
          ENERGY = EMCSCF
       END IF
+
+C     Response excited state calculation
+C     Maybe reset the step control parameters as above
+Cdj moved from gtgrad
+      IF (EXESG) THEN
+         MOLGRD = .TRUE.
+         CALL RSPDRV(WORK,LWORK)
+         ENERGY = ENERGY + EXCITA(ISYME,IESG,1)
+      END IF
+
       CALL QEXIT('GTNRGY')
       RETURN
       END
@@ -2232,15 +2247,17 @@ C
 #include <gnrinf.h>
 #include <optinf.h>
 #include <pvibav.h>
-      LOGICAL EXHER, EXSIR, EXABA
+#include <esg.h>
+      LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
       CALL QENTER('GTGRAD')
       WORK(IWOFF+1) = WRKDLM
       CALL DZERO(EGRAD,MXCOOR)
       
+      EXESG = FNDKEY('*ESG   ')
       IF ((.NOT.PARIO) .OR. (MYNUM .EQ. 0)) THEN
-         CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+         CALL GTNRGY(EXHER,EXSIR,EXABA,EXESG,WORK,LWORK,IWOFF,WRKDLM)
       ELSE
          HRINPC = .FALSE.
          CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
@@ -2249,6 +2266,10 @@ C
          HRINPC = .FALSE.
       END IF
 C
+C     Find out if we are running an excited state calculation
+
+      IF (.NOT. FNDKEY('*ESG   ')) THEN
+C
 C     TR: Using FNDANA to find highest order of analytical 
 C         derivatives (NAORDR). If this is 0, we use numerical 
 C         gradients.
@@ -2256,38 +2277,39 @@ C         NAORDR = 0; Only energies available
 C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
-      CALL FNDANA(NAORDR)
+         CALL FNDANA(NAORDR)
 C
 C      IF ((DOMP2 .AND. .NOT. DOMC) .OR. ((DOCI .OR. DOCINO)
 C     &    .AND. .NOT. DOMC) .OR. (PARIO .AND. MYNUM .GT. 0)) THEN
-      IF (NAORDR.EQ.0) THEN 
-         CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
-      ELSE
-         WRINDX = .TRUE.
-         MOLGRD = .TRUE.
-         IF (HFPROP) HELFEY = .TRUE.
-         IF (ITRNMR .EQ. 0) THEN
-            CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
+         IF (NAORDR.EQ.0) THEN 
+            CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
          ELSE
-            CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
-         END IF
+            WRINDX = .TRUE.
+            MOLGRD = .TRUE.
+            IF (HFPROP) HELFEY = .TRUE.
+            IF (ITRNMR .EQ. 0) THEN
+               CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
+            ELSE
+               CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
+            END IF
 C        *** For numerical differentiation (vibrational ***
 C        *** average), we don't nescesary calculate all ***
 C        *** properties.                                ***
 C
-         IF (.NOT.CNMPRP) THEN
-            CALL NVBPIN(IPRINT)
+            IF (.NOT.CNMPRP) THEN
+               CALL NVBPIN(IPRINT)
+            END IF
+C     
+            IF ( DOCCSD ) THEN
+               CALL CC_GEOFLAG
+               CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
+            ELSE
+               CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
+            END IF
+            EXABA = .TRUE.
+            MOLGRD = .FALSE.
+            HELFEY = .FALSE.
          END IF
-C
-         IF ( DOCCSD ) THEN
-            CALL CC_GEOFLAG
-            CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
-         ELSE
-            CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
-         END IF
-         EXABA = .TRUE.
-         MOLGRD = .FALSE.
-         HELFEY = .FALSE.
       END IF
       CALL TRAGRD(GRDMOL,EGRAD,WORK(IWOFF + 2),
      &            WORK(IWOFF + MXCOOR*MXCOOR + 2),NCRREP(0,1),3*NUCDEP)
@@ -2324,7 +2346,7 @@ C
       WORK(IWOFF+1) = WRKDLM
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
-      CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
       CLOSE (13)
       WRINDX = .TRUE.
       MOLGRD = .TRUE.
@@ -5939,6 +5961,7 @@ C
 #include <optinf.h>
 #include <gnrinf.h>
 #include <priunit.h>
+#include <esg.h>
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT), ICRD(3)
       DIMENSION WORK(LWORK)
@@ -6015,8 +6038,8 @@ C
 C     Calculate energy at new geometry, which is compared to predicted
 C     energy(change) in UPTRAD.
 C
-         CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
-         IF (IREJ .EQ. 0) THEN
+         CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+         IF (IREJ .EQ. 0 .AND. .NOT. ESG) THEN
             CALL UPTRAD(REJGEO)
             IF (.NOT. REJGEO) THEN
                FAILED = .FALSE.
@@ -6026,7 +6049,7 @@ C
 C     After the first failure, we are satisfied if the new energy is below
 C     the last. No comparison with predicted energy is done.
 C
-         ELSE IF (ENERGY .GT. ERGOLD) THEN
+         ELSE IF ((ENERGY .GT. ERGOLD) .AND. .NOT. ESG) THEN
             IF (FAILED .AND. (IFAILD .LE. MAXREJ) .AND.
      &           (ABS(ENERGY-ERGOLD) .LT. 1.0D-5)) THEN
                WRITE(LUPRI,*)
@@ -6185,7 +6208,7 @@ C
 C     Otherwise we give up...
 C
          ELSE
-            CALL PRIINF(GEINFO)
+            CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &        ') reached.'
             WRITE(LUPRI,*) 'No acceptable step found. Aborting.'
@@ -6820,7 +6843,7 @@ C
       WORK(IWOFF+1) = WRKDLM
 C
       NEWSYM = .TRUE.
-      CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+      CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
       GEINFO(ITRNMR+1,1) = ENERGY
       RETURN
       END

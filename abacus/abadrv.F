@@ -607,6 +607,7 @@ C
 #include <past.h>
 #include <exeinf.h>
 #include <inftap.h>
+#include <esg.h>
 #include <cbiwlk.h>
 #include <dftcom.h>
 #include <cbilnr.h>
@@ -743,6 +744,7 @@ C
       SKIPAB = .FALSE.
       CTOCD  = .FALSE.
       EXPGRD = .FALSE.
+      ESG    = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)

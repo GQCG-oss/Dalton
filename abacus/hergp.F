@@ -376,7 +376,7 @@ C
 C     Nuclear moments and spins:
 C
 C        P. Raghavan,
-C        Atomic Data and Nuclear Tables 42 (1989) 189
+C        Atomic Data and Nuclear Data Tables 42 (1989) 189
 C
 C     Quadrupole moments:
 C
@@ -1602,5 +1602,30 @@ C
         WRITE (LUPRI,'(/A,3F12.6)')
      &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
       END IF
+      RETURN
+      END
+      LOGICAL FUNCTION FNDKEY(KEYWRD)
+C
+C     Search DALTON.INP for general key-word KEYWRD
+C
+#include "implicit.h"
+#include "priunit.h"
+      LOGICAL OPENED
+      CHARACTER WORD*7, KEYWRD*7
+C
+      FNDKEY = .FALSE.
+      OPENED = .FALSE.
+      IF (LUCMD.LE.0) THEN
+         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &              .FALSE.)
+         OPENED = .TRUE.
+      END IF
+      REWIND (LUCMD,IOSTAT=IOS)
+ 5000 READ (LUCMD,'(A7)',END=8000) WORD
+      IF (WORD .EQ. KEYWRD) FNDKEY=.TRUE.
+      GOTO 5000
+ 8000 CONTINUE
+      IF (OPENED) CALL GPCLOSE(LUCMD,'KEEP')
+C
       RETURN
       END

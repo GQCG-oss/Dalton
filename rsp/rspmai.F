@@ -120,6 +120,8 @@ C
 #include "gnrinf.h"
 #include "infinp.h"
 #include "absorp.h"
+#include "esg.h"
+#include "numder.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX
 C
@@ -509,6 +511,16 @@ C
             END IF
          END IF
          CALL FLSHFO(LUPRI)
+C
+C  CALCULATE THE EXCITED STATE GRADIENT
+C
+         IF ( ESG .AND. ISYME.EQ.KSYMOP .AND.
+     $        .NOT. (NMORDR.GT.0 .AND. NARDRP.EQ.0)) THEN 
+          ESGTIM_XVECS = TIMPP
+          CALL RSPESG(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
+     *                 WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                 WRK(KINDX),WRK(KWRK1),LWRK1)
+         END IF
   100 CONTINUE
       CALL GPCLOSE(LUSIFC,'KEEP')
       CALL GPCLOSE(LURSP,'KEEP')
@@ -536,7 +548,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER ( NTABLE = 8 )
+      PARAMETER ( NTABLE = 9 )
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -558,7 +570,8 @@ C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
-     *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP'/
+     *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
+     *            '*ESG   '/
 C
 C     Include block data RSPINF which initializes /INFRSP/
 C
@@ -598,7 +611,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8), I
+               GO TO (1,2,3,4,5,6,7,8,9), I
             END IF
          END DO
 C
@@ -626,6 +639,8 @@ C
  7    CALL ESRINP(WORD)
       GO TO 200
  8    CALL ABSORP_INPUT(WORD)
+      GO TO 200
+ 9    CALL ESGINP(WORD)
       GO TO 200
 C
  1    CONTINUE
@@ -894,6 +909,7 @@ C
 #include "mxcent.h"
 #include "elweak.h"
 #include "absorp.h"
+#include "esg.h"
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
@@ -985,6 +1001,10 @@ C  Initializing INFTPA
       DATA IPRTPA/2/
 C  Initializing ABSORP
       DATA ABSORP/.FALSE./
+C  Initializing ESG
+      DATA ESG/.FALSE./
+      DATA IESG/1/
+      DATA ISYME/1/
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
@@ -3844,6 +3864,210 @@ C
       RETURN
 C
  2100 CALL QUIT('**END OF not found in DALTON input after *CUBIC ')
+C
+      RETURN
+      END
+
+      SUBROUTINE ESGINP(WORD)
+C
+C Excited State Gradient input
+C
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <infpri.h>
+#include <esg.h>
+C
+      PARAMETER ( NTABLE = 1 )
+      CHARACTER WORD*7, STRING*7
+      PARAMETER ( STRING = '*ESG' )
+      ESG = .TRUE.
+C
+C A single residue of the linear response function is calculated
+C
+      REWIND (LUCMD,IOSTAT=IOS)
+ 110  READ (LUCMD, '(A7)',END=2100) WORD
+      IF (WORD .NE. STRING) GO TO 110
+      CALL ESGGRINP(WORD)
+      RETURN
+C
+ 2100 CALL QUIT('Final "**<something>" not found in DALTON input')
+C
+      RETURN
+      END
+
+
+      SUBROUTINE ESGGRINP(WORD)
+#include <implicit.h>
+      LOGICAL NEWDEF, SPNDEF
+      PARAMETER ( NTABLE = 8 )
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER*8 LABEL
+C
+#include <priunit.h>
+#include <inforb.h>
+#include <infrsp.h>
+#include <wrkrsp.h>
+#include <infpri.h>
+#include <infpp.h>
+#include <rspprp.h>
+#include <infspi.h>
+#include <infhso.h>
+#include <inflr.h>
+#include <inflin.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <inftap.h>
+#include <esg.h>
+C
+      DATA TABLE /'.ROOTS', '.THCPP ', '.MAXIT ', '.MAXITO', '.THCLR ',
+     *            '.RESTPP','.PRINT ', '.STATE '/
+C
+      DATA SPNDEF/.FALSE./
+C
+C READ IN  INPUT
+C
+      NEWDEF = (WORD.EQ.'*ESG')
+      ICHANG = 0
+      NPPTOT = 0
+      IF (NEWDEF) THEN
+         DO I=1,NSYM
+            NPPCNV(I) = 0
+         END DO
+         NPPTOT = NSYM
+         WORD1  = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
+            IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO I=1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8), I
+                  END IF
+               END DO
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
+     *            '" NOT RECOGNIZED IN ESG.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT(' ILLEGAL KEYWORD IN ESG INPUT ')
+               GO TO 100
+C
+               LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
+               LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
+               LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+C
+ 1             CONTINUE
+               NPPTOT = 0
+               READ (LUCMD,*) (NPPCNV(MULD2H(J,LSYMRF)),J=1,NSYM)
+               DO J=1,NSYM
+                  NPPTOT = NPPTOT + NPPCNV(J)
+               END DO
+               GO TO 100
+ 2             CONTINUE
+               READ (LUCMD,*) THCPP
+               GO TO 100
+ 3             CONTINUE
+               READ (LUCMD,*) MAXITP
+               GO TO 100
+ 4             CONTINUE
+               READ (LUCMD,*) MAXITO
+               GO TO 100
+ 5             CONTINUE
+               READ (LUCMD,*) THCLR
+               GO TO 100
+ 6             CONTINUE
+               RESTPP = .TRUE.
+               GO TO 100
+ 7             CONTINUE
+               READ (LUCMD,*) IPRPP
+               GO TO 100
+ 8             CONTINUE
+               READ (LUCMD,*) IESG, ISYME
+               IF (NPPCNV(MULD2H(ISYME,LSYMRF)).LT.IESG) THEN
+                  NPPTOT = NPPTOT - NPPCNV(MULD2H(ISYME,LSYMRF)) + IESG
+                  NPPCNV(MULD2H(ISYME,LSYMRF)) = IESG
+               END IF
+               GOTO 100
+
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
+     *            '" NOT RECOGNIZED IN ESG INPUT.'
+               CALL QUIT(' ILLEGAL PROMPT IN ESG INPUT ')
+            END IF
+      END IF
+  300 CONTINUE
+      IF (ICHANG .GT. 0) THEN
+      IF (NPPTOT .EQ. 0) THEN
+         NINFO = NINFO + 1
+         WRITE (LUPRI,'(/3A)') '@INFO: ',WORD1,
+     *      ' input ignored because no roots requested.'
+      ELSE
+         CALL HEADER(' Excited State Gradient calculation',0)
+
+         WRITE(LUPRI,'(A,I5)') 
+     *        'Number of roots calculated in response   : ', NPPTOT
+         WRITE(LUPRI,'(A,I5)') 
+     *        'Root selected for excited state gradient : ', IESG
+         WRITE(LUPRI,'(A,I5,/)') 
+     *        'Symmetry of selected root                : ', ISYME
+
+         IF (FLAG(16) .AND. .NOT.INERSI) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Equilibrium solvent model requested            : SOLVNT ='
+     *      ,FLAG(16)
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Dielectric constant                            : EPSOL  ='
+     *      ,EPSOL
+         END IF
+         IF (FLAG(16) .AND. INERSI) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Non-equilibrium solvent model requested        : INERSI ='
+     *      ,INERSI
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Static dielectric constant                     : EPSTAT ='
+     *      ,EPSTAT
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Optical dielectric constant                    : EPSOL  ='
+     *      ,EPSOL
+         END IF
+C
+         WRITE(LUPRI,'(A,I4)')
+     *      ' Print level                                    : IPRPP  ='
+     *       ,IPRPP
+         WRITE(LUPRI,'(A,I4)')
+     *      ' Maximum number of iterations                   : MAXITL ='
+     *       ,MAXITL
+         WRITE(LUPRI,'(A,I4)')
+     *      ' Maximum number of iterations                   : MAXITP ='
+     *       ,MAXITP
+         WRITE(LUPRI,'(A,1P,D10.3)')
+     *      ' Threshold for convergence                      : THCPP  ='
+     *      ,THCPP
+         WRITE(LUPRI,'(A,1P,D10.3)')
+     *      ' Threshold for convergence                      : THCLR  ='
+     *      ,THCLR
+         WRITE(LUPRI,'(A,I4)')
+     *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
+     *      ,MAXITO
+
+         IF (RESTPP) WRITE(LUPRI,'(/A,L1)')
+     *      ' USE TRIAL VECTORS AVAILABLE FOR RESTART. RESTPP =',RESTPP
+         WRITE (LUPRI,'(/A,I5)')' Spin of operator A , ISPINA=',ISPINA
+         WRITE (LUPRI,'( A,I5)')' Spin of operator B ,'//
+     *        ' (Excitation energy) ISPINB=',ISPINB
+         WRITE (LUPRI,'( A,I5)') ' Spin of operator C ,'//
+     *        ' (Excitation energy) ISPINC=',ISPINC
+      END IF
+      END IF
+C
+C  *** END OF ESG
 C
       RETURN
       END
