@@ -195,7 +195,7 @@ cat > energy_corehole__3.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/ksh
+echo '#!/bin/sh
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -259,7 +259,7 @@ fi
 
 ' > energy_corehole__1.check
 #######################################################################
-echo '#!/bin/ksh
+echo '#!/bin/sh
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -338,7 +338,7 @@ fi
 
 ' > energy_corehole__2.check
 #######################################################################
-echo '#!/bin/ksh
+echo '#!/bin/sh
 log=$1
 
 if [ `uname` = Linux ]; then

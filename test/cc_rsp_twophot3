@@ -73,7 +73,7 @@ XDIPLEN YDIPLEN XDIPLEN YDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/ksh
+echo '#!/bin/sh
 log=$1
 
 if [ `uname` = Linux ]; then
