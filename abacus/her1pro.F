@@ -2339,7 +2339,7 @@ C  /* Deck sdtyp */
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
-      NOPTYP = 6*NATOM
+      NOPTYP = 9*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
