@@ -92,6 +92,11 @@ C
          WRITE(LUMOLDEN,'(A)') '[GTO]'
 
          ICENT  = 0
+c
+cPRT   icento is the offset counter for all centres;
+cPRT   icent  counts only symmetry-distinct centres
+c
+         ICENTO = 1
          IBLOCK = 0
          INON   = 0
          IPSTRT = 0
@@ -117,7 +122,7 @@ C
                   DO 400 L = 1, NDEG
 
                      IF (.NOT. INON .EQ. I .OR. .NOT. ILL .EQ. L )
-     &                    WRITE (LUMOLDEN,'(/I5,A2)') ICENT+L-1,' 0'
+     &                    WRITE (LUMOLDEN,'(/I5,A2)') ICENTO+L-1,' 0'
                      INON = I      
                      ILL  = L
 
@@ -136,6 +141,7 @@ C
  200           CONTINUE
  110        CONTINUE
             IBLOCK = IBLOCK + NBLCK(I)
+            ICENTO = ICENTO + NUCDEG(ICENT)
  100     CONTINUE
          
       ENDIF
@@ -169,21 +175,20 @@ C
 #include <ibtfun.h>
 
 
-C      CHARACTER*2 ASYMB
-C
-C      DATA (ASYMB(I),I = 1,103)
-C     1/'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',
-C     2 'Na', 'Mg', 'Al', 'Si', 'P ', 'S ', 'Cl', 'Ar', 'K ', 'Ca',
-C     3 'Sc', 'Ti', 'V ', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
-C     4 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y ', 'Zr',
-C     5 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',
-C     6 'Sb', 'Te', 'I ', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
-C     7 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
-C     8 'Lu', 'Hf', 'Ta', 'W ', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',
-C     9 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
+      CHARACTER*2 ASYMB(103)
 
-C     O 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
-C     1 'Md', 'No', 'Lr' /
+      DATA (ASYMB(I),I = 1,103)
+     1/' H', 'He', 'Li', 'Be', ' B', ' C', ' N', ' O', ' F', 'Ne',
+     2 'Na', 'Mg', 'Al', 'Si', ' P', ' S', 'Cl', 'Ar', ' K', 'Ca',
+     3 'Sc', 'Ti', ' V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
+     4 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', ' Y', 'Zr',
+     5 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',
+     6 'Sb', 'Te', ' I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
+     7 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
+     8 'Lu', 'Hf', 'Ta', ' W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',
+     9 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
+     O 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
+     1 'Md', 'No', 'Lr' /
 
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
@@ -204,15 +209,15 @@ C     1 'Md', 'No', 'Lr' /
                 END IF
              END DO
              IF (MULT(MULCNT) .EQ. 1) THEN
+                ICHARGE = IZATOM(ICENT)
                 IF (WORD .EQ. 'ATOM') THEN
-                   ICHARGE = IZATOM(ICENT)
 C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                    IATOM = IATOM + 1
                    WRITE (LUMOLDEN,'(A,1X,I5,1X,I5,3(1X,F20.10))')
      &                    NAME,IATOM,ICHARGE,(CORD(K,ICENT),K=1,3)
                 ELSE IF (WORD .EQ. 'FREQ') THEN
                    WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
-     &                    NAME,(CORD(K,ICENT),K=1,3)
+     &                    ASYMB(ICHARGE),(CORD(K,ICENT),K=1,3)
                 ELSE IF (WORD .EQ. 'XYZ ') THEN
                    WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
      &                    NAME,(XTANG*CORD(K,ICENT),K=1,3)
@@ -229,14 +234,14 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                       CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                       CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                       CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+                      ICHARGE = IZATOM(ICENT)
                       IF (WORD .EQ. 'ATOM') THEN
-                         ICHARGE = IZATOM(ICENT)
                          IATOM = IATOM + 1
                          WRITE (LUMOLDEN,'(A,1X,I5,1X,I5,3(1X,F20.10))')
      &                        NAME,IATOM,ICHARGE,CRX,CRY,CRZ
                       ELSE IF (WORD .EQ. 'FREQ') THEN
                          WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
-     &                        NAME,CRX,CRY,CRZ
+     &                        ASYMB(ICHARGE),CRX,CRY,CRZ
                       ELSE IF (WORD .EQ. 'XYZ ') THEN
                          WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
      &                        NAME,XTANG*CRX,XTANG*CRY,XTANG*CRZ
