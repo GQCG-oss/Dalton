@@ -91,7 +91,7 @@ else
 fi
 $ECHO ''
 $ECHO '------------------------------------------------------------------'
-$ECHO '   Configuring the DALTON Makefile.config and DALTON run script'
+$ECHO '   Configuring the DALTON Makefile.config and "dalton" run script'
 $ECHO '------------------------------------------------------------------'
 $ECHO ''
 
@@ -384,7 +384,7 @@ for comp in $complist; do
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if test -f $ac_dir/$ac_word; then
-  	  get_yes_or_no "   Compiler $ac_word found, use this compiler?"
+  	  get_yes_or_no "Compiler $ac_word found, use this compiler?"
           if [ $answer = 'y' ]; then
 	    ac_cv_prog_F77=$ac_word
           fi
@@ -430,7 +430,7 @@ for comp in $ccmplist; do
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if test -f $ac_dir/$ac_word; then
-  	  get_yes_or_no "   Compiler $ac_word found, use this compiler?"
+  	  get_yes_or_no "Compiler $ac_word found, use this compiler?"
           if [ $answer = 'y' ]; then
 	    ac_cv_prog_C=$ac_word
           fi
@@ -484,14 +484,14 @@ LIBDIR=''
 $ECHO "\nTesting existence of libraries in this order:"
 $ECHO   " $liblist"
 $ECHO   "Directory search list for libraries:"
-$ECHO   " $dirlist"
+$ECHO   " $dirlist \n"
 if [ -n "$liblist" ]; then
 for testlib in $liblist; do
    for testdir in $dirlist; do
 #     echo "testing existence of $testdir/$testlib"
       if test -f $testdir/$testlib; then
         LIBDIR=$testdir
-	get_yes_or_no "   Found $testdir/$testlib, use it ?"
+	get_yes_or_no "Found $testdir/$testlib, use it ?"
 	if [ $answer = 'y' ]; then
           case $testlib in
             libacml.a) LIB='-lacml'; blas3=true;;
@@ -581,12 +581,12 @@ if [ -z "$LIB" -a -n "$liblist" ]; then
     $ECHO '   No mathematical libraries seem to be available'
     $ECHO '   I will proceed without them\n'
 elif [ -n "$LIB" ]; then
-    $ECHO '   I have found the following mathematical library(ies): '$LIB'\n'
+    $ECHO '   The following mathematical library(ies) will be used:\n   '$LIB'\n'
 fi      
 
 #
-# If necessary, we ask the user if he/she would like Dalton to split the files 
-# for him (if his/her filesystem only files less than 2Gb in size).
+# If necessary, we ask the user if Dalton should split the files 
+# for him/her (if his/her filesystem only files less than 2Gb in size).
 #
 
 split="false"
@@ -601,18 +601,22 @@ fi
 # Determine memory size. 
 #
 
-$ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static allocations'
-$ECHO 'How many million *8 words to use as default for scratch memory ?'
-$ECHO '(we recommend at least 20 million words, larger for correlated calculations)'
-$ECHO 'Note that scratch memory can be changed through the shell variable WRKMEM'
-read memsiz
+$ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static'
+$ECHO 'allocations, in addition to the dynamic allocation.'
+$ECHO 'Maximum amount of work memory for dynamic allocations can be'
+$ECHO 'changed at run time through the environment variable WRKMEM'
+$ECHO 'or using the -M option to the run script: "dalton -M mb ...".'
+$ECHO 'We recommend at least 20 million *8 words work memory,'
+$ECHO 'larger for correlated calculations, but it should for maximum'
+$ECHO 'efficiency NOT exceed available physical memory.\n'
+memsiz=
 while [ "$memsiz" = "" ]
 do
-    $ECHO 'How many million *8 words to use as default for scratch memory? \c'
+    $ECHO 'How many millions of *8 words to use as default for work memory? \c'
     read memsiz
 done
 let memsiz=$memsiz*1000000
-$ECHO '\n   Program will be installed with a default scratch memory of '$memsiz' words\n'
+$ECHO '\n   Program will be installed with a default work memory of '$memsiz' words'
 
 #
 # Determine location for executable and run script
@@ -664,9 +668,9 @@ fi
 
 basdir=$curr'/basis/'
 
-get_yes_or_no 'Use '$basdir' as default basis set directory?'
+get_yes_or_no '\nUse '$basdir' as default basis set directory?'
 if [ "$answer" = "n" ];  then
-    $ECHO 'Please enter default basis set directory (must end with /) \c'
+    $ECHO '\nPlease enter default basis set directory (must end with /) \c'
     read basdir
     $ECHO '\n   Default basis set directory will be '$basdir'\n'
 fi
@@ -684,15 +688,15 @@ elif [ -d '/scr' ]; then
 elif [ -d '/temp' ]; then
     worksp='/temp'
 else
-    $ECHO '\nI did not find /work, /scratch, /scr or /temp. I will use /tmp'
+    $ECHO '\nI did not find /work, /scratch, /scr, or /temp. I will use /tmp'
     worksp='/tmp/'
 fi
 
 answer=
 while [ "$answer" != "y" -a "$answer" != "n" ]
 do
-    $ECHO '\n   Job specific directories under '$worksp'/$USER\n   will be used for temporary files when running DALTON\n'
-    $ECHO 'Use '$worksp' as default root scratch space in DALTON run script? [y/n] \c'
+    $ECHO '\n   Job specific directories under $SCRATCH/$USER\n   will be used for temporary files when running DALTON\n'
+    $ECHO 'Use SCRATCH='$worksp' as default root scratch space in "dalton" run script? [y/n] \c'
     read answer
 done
 if [ "$answer" = "n" ];  then
@@ -708,12 +712,9 @@ fi
 #
 tab=`$ECHO "\t"`
 
-$ECHO '\n   Creating Makefile.config'
+$ECHO '\n   Creating Makefile.config ...'
 
-if [ -f Makefile.config ]; then
-    $ECHO '   Ooops. Makefile.config exists. I take a backup.'
-    backup -v Makefile.config
-fi
+backup -v Makefile.config
 
 #
 # Parallel preprocessor directive need to be set
@@ -1278,8 +1279,9 @@ fi
 # Update the DALTON run-script
 #
 
-$ECHO
-$ECHO '\n   Updating the DALTON run-script in '$INSTALL_DIR
+$ECHO '\n   Creating the DALTON run-script in '$INSTALL_DIR
+
+backup -v $INSTALL_DIR/dalton
 
 #
 # When using PVM the name of the executable is renamed
