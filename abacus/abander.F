@@ -49,10 +49,10 @@ C  /* Deck nmdinp */
 #include <cbivib.h>
       LOGICAL NEWDEF
 C
-      DATA TABDIR/'*VIBANA','*PROPER','*HARMON'/
+      DATA TABDIR/'*PROPAV','*XXXXXX','*VIBANA'/
 C
       DATA TABLE /'.DORDR ', '.SYMMET', '.SDRTST', '.RESTRT', '.DRYRUN',
-     *            '.PARTST', '.NORMAL', '.PRECAL', '.REUSE ', '.XXXXXX',
+     *            '.XXXXXX', '.NORMAL', '.PRECAL', '.REUSE ', '.XXXXXX',
      *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ',
      *            '.MANUAL', '.HARMON', '.SPECTR'/
 C
@@ -203,7 +203,7 @@ C
      &           'conducted as a dry run.'
             WRITE (LUPRI,'(5X,A)') 'No actual derivatives will be' //
      &           'calculated.'
-            WRITE (LUPRI,'(A,I4)') 'Number of rendundant coordinates:',
+            WRITE (LUPRI,'(A,I4)') 'Number of redundant coordinates:',
      &           NMREDU
          END IF
 C
@@ -284,7 +284,6 @@ C
         CALL NVBINP(WORD)
         GOTO 400
  102  CONTINUE
-        CALL NVBINP(WORD)
         GOTO 400
  103  CONTINUE
         CALL VIBINP(WORD)
@@ -1025,7 +1024,7 @@ C
                CALL PRPRER(WORK(KSTRT),IDIMAX,IDIMIN,LURSTR,LWRK1)
             END IF
 C
-C           *** Writing to sepctro file if requested. ***
+C           *** Writing to spectro file if requested. ***
 C
             IF (SPECTR) THEN
                NTIME = 1
@@ -5820,10 +5819,10 @@ C
 C
 C     /* Deck trfcgd */
       SUBROUTINE PRDPTR(TRLEN,EXENG,NSYM,MXNEXI,LUPRI)
-C     **************************************************
-C     *** Subroutine that prints the dipoletransition***
-C     *** moments.                                   ***
-C     **************************************************
+C     ***************************************************
+C     *** Subroutine that prints the dipole transition***
+C     *** moments.                                    ***
+C     ***************************************************
 #include <implicit.h>
 C
 #include <cbiexc.h>
