@@ -1986,44 +1986,44 @@ C    *                           WORK(KEND2),LWRK2)
 
         ELSE
 
-            IF (DO_O2) THEN
-               IF (IOPTRES .LT. 5) THEN
+            IF (IOPTRES .LT. 5) THEN
+               IF (DO_O2) THEN
                   ! OMEGAEFF = OMEGAEFF + contribution from aamat
                   ! We assume that the singles and doubles contirbutions
                   !(sitting in KTHETA1 and KTHETA2) are added in CC3_BMATSD
-                  CALL CC3_AAMATSD(DUMMY,CDUMMY,IDUMMY,
-     *                                LISTA,IDLSTA,
+
+                  !Project triples part of AAMAT into singles and 
+                  !doubles space
+                  CALL CC3_AAMATSD(LISTA,IDLSTA,
      *                                LISTB,IDLSTB,
      &                                DUMMY,DUMMY, 
      &                                WORK(KTHETA1EFF),WORK(KTHETA2EFF),
      &                                ISYMAB,WORK(KEND2),LWRK2)
-               END IF
-            END IF
-            IF (IOPTRES .LT. 5) THEN
-c
-               CALL CC3_AABMAT_DOUB(WORK(KTHETA2),
-     *                            LISTA,IDLSTA,LISTB,IDLSTB,
-     *                            WORK(KEND2),LWRK2)
+C
+                  !Calculate triples contributions that enter directly
+                  !doubles space simultanously for AAMAT and BMAT
+                  CALL CC3_AABMAT_DOUB(WORK(KTHETA2),
+     *                               LISTA,IDLSTA,LISTB,IDLSTB,
+     *                               WORK(KEND2),LWRK2)
 
 c
-               ! OMEGAEFF = OMEGAEFF + contribution from bmatsd
-               ! At the end: OMEGAEFF = OMEGAEFF + OMEGA
 c
-               CALL CC3_BMATSD(WORK(KTHETA1),WORK(KTHETA2),
-     &                         WORK(KTHETA1EFF),WORK(KTHETA2EFF),
-     &                         ISYMAB,
-     *                         LISTA,IDLSTA,LISTB,IDLSTB,
-     *                         WORK(KEND2),LWRK2)
+                  ! OMEGAEFF = OMEGAEFF + contribution from bmatsd
+                  ! At the end: OMEGAEFF = OMEGAEFF + OMEGA
 c
-            ELSE
-              WRITE(LUPRI,*)'BMAT and AMAT contributions are only '
-     *        // 'implemented for explicit symmetrization (i.e. '
-     *        //  'DO_O2 should be .TRUE.) !!! '
-              WRITE(LUPRI,*)
-              WRITE(LUPRI,*)  'If you came here for quadratic response '
-     *        // 'try using .NOBMAT flag in *CCQR input '
-              WRITE(LUPRI,*)'DO_O2 = ', DO_O2
-              CALL QUIT('Wrong DO_O2 value in CC_BMAT ')
+                  CALL CC3_BMATSD(WORK(KTHETA1),WORK(KTHETA2),
+     &                            WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                            ISYMAB,
+     *                            LISTA,IDLSTA,LISTB,IDLSTB,
+     *                            WORK(KEND2),LWRK2)
+               ELSE
+                 WRITE(LUPRI,*)'Second-order rhs equatioons only'
+                 WRITE(LUPRI,*)'implemented for TXY and EfX.'
+                 CALL QUIT('Wrong DO_O2 value in CC_BMAT ')
+               END IF
+            ELSE 
+              WRITE(LUPRI,*)'IOPTRES = ',IOPTRES
+              CALL QUIT('Illegal IOPTRES in CC_BMAT (real CC3 code)')
             END IF
 
 

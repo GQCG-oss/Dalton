@@ -99,7 +99,7 @@ c /* deck CCRHSVEC */
       PARAMETER (ZERO = 0.0d0)
 
       CHARACTER MODEL*(10)
-      LOGICAL NEW_O2
+      LOGICAL NEW_RHS
       INTEGER IOPT, ISYM, IVEC, MPERM, NSTAT, ORDER, IDUM, IOPTE
       INTEGER MXTRAN,MXDTRAN,MXCTRAN,MXBTRAN,MXBATRAN,MXAATRAN,MXXETRAN
       INTEGER MXCATRAN
@@ -136,7 +136,7 @@ c /* deck CCRHSVEC */
          CALL QUIT('CCRHSVEC called for unknown Coupled Cluster model.')
       END IF
 
-      NEW_O2 = .FALSE.
+      NEW_RHS = .FALSE.
   
       IF (TYPE(1:3).EQ.'O1 ') THEN
         ORDER = 1
@@ -147,7 +147,7 @@ c /* deck CCRHSVEC */
         NSTAT = 0
         MPERM = 2
         ! compute complete O2 vector in B matrix module
-        NEW_O2 = .TRUE.
+        NEW_RHS = .TRUE.
       ELSE IF (TYPE(1:2).EQ.'O3') THEN
         ORDER = 3
         NSTAT = 0
@@ -162,6 +162,8 @@ c /* deck CCRHSVEC */
         ORDER = 1
         NSTAT = 1
         MPERM = 1
+        ! compute complete EO1 vector in B matrix module
+        NEW_RHS = .TRUE.
       ELSE IF (TYPE(1:3).EQ.'EO2') THEN
         ORDER = 2
         NSTAT = 1
@@ -222,7 +224,7 @@ c /* deck CCRHSVEC */
 *---------------------------------------------------------------------*
       CALL CC_RHS_SETUP(TYPE,NSTAT,ORDER,LABEL,ISTAT,EIGV,ISYMO,FREQS,
      &                  LORX, ICAU, NVEC, MAXVEC, MXTRAN, 
-     &                  NEW_O2,
+     &                  NEW_RHS,
      &                  WORK(KDTRAN),  NDTRAN,
      &                  WORK(KCTRAN),  NCTRAN,
      &                  WORK(KB1TRAN), NB1TRAN,
@@ -370,7 +372,7 @@ c /* deck CCRHSVEC */
       ELSE IF ( TYPE(1:2).EQ.'O2' ) THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R1 ','R1 ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, NEW_O2,WORK(KEND0), LEND0 )
+     &               IDUM, RDUM, 0, NEW_RHS,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:3).EQ.'EO2') THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R2 ','RE ',IOPT,TYPE,
@@ -381,7 +383,7 @@ c /* deck CCRHSVEC */
       ELSE IF ( TYPE(1:3).EQ.'EO1') THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R1 ','RE ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 ) 
+     &               IDUM, RDUM, 0, NEW_RHS,WORK(KEND0), LEND0 ) 
       ELSE IF ( TYPE(1:3).EQ.'CO2' ) THEN
         IOPT = 4
         CALL CC_BMATRIX(WORK(KB1TRAN), NB1TRAN,'RC ','RC ',IOPT,TYPE,
@@ -467,7 +469,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA2TRAN),NAA2TRAN,'o2 ','R1 ',IOPT,TYPE,
      &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
-      ELSE IF ( TYPE(1:2).EQ.'O2' .AND. (.NOT.NEW_O2)) THEN
+      ELSE IF ( TYPE(1:2).EQ.'O2' .AND. (.NOT.NEW_RHS)) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','R1 ',IOPT,TYPE,
      &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
@@ -478,7 +480,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA2TRAN),NAA2TRAN,'o2 ','RE ',IOPT,TYPE,
      &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
-      ELSE IF ( TYPE(1:3).EQ.'EO1' ) THEN
+      ELSE IF ( TYPE(1:3).EQ.'EO1' .AND. (.NOT.NEW_RHS)) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','RE ',IOPT,TYPE,
      &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
@@ -612,7 +614,7 @@ c /* deck CC_RHS_SETUP */
       SUBROUTINE CC_RHS_SETUP(TYPE,NSTAT,ORDER,LAB,ISTAT,
      &                        EIGV,ISYMO,FREQ,LORX,ICAU,
      &                        NVEC,MAXVEC,MXTRAN, 
-     &                        NEW_O2,
+     &                        NEW_RHS,
      &                        IDTRAN,  NDTRAN,
      &                        ICTRAN,  NCTRAN,
      &                        IB1TRAN, NB1TRAN,
@@ -663,7 +665,7 @@ c /* deck CC_RHS_SETUP */
     
       CHARACTER*(8) LAB(MAXVEC,*)
       INTEGER ISTAT(MAXVEC,*), ICAU(MAXVEC,*), ISYMO(MAXVEC,*)
-      LOGICAL LORX(MAXVEC,*), NEW_O2
+      LOGICAL LORX(MAXVEC,*), NEW_RHS
 
 #if defined (SYS_CRAY)
       REAL FREQ(MAXVEC,*), EIGV(MAXVEC)
@@ -1208,7 +1210,7 @@ C         END IF
      &   ' - ',NBA1TRAN+NBA2TRAN, ' B{O} matrix transformations ',
      &   ' - ',NAA1TRAN+NAA2TRAN, ' A{O} matrix transformations ',
      &   ' - ',NXETRAN,           'Xi{O} vector calculations    ' 
-      IF (NEW_O2) WRITE(LUPRI,'(14X,A)') 
+      IF (NEW_RHS) WRITE(LUPRI,'(14X,A)') 
      &   '(A{O} matrix included in B matrix)'
       WRITE(LUPRI,'(3X,A/,/)') 'will be performed.'
 

@@ -1,7 +1,6 @@
 #include <single.h>
 C Deck /* cc3_aamatsd */
-      SUBROUTINE CC3_AAMATSD(FREQ,LABEL,ISYOPE,
-     *                                LISTRX,IDLSTRX,
+      SUBROUTINE CC3_AAMATSD(LISTRX,IDLSTRX,
      *                                LISTRY,IDLSTRY,
      &                                OMEGA1,OMEGA2,
      &                                OMEGA1EFF,OMEGA2EFF,
@@ -25,9 +24,6 @@ C
       PARAMETER (FN3VI   = 'CC3_VI'  , FN3VI2  = 'CC3_VI12')
       PARAMETER (FN3FOP='PTFOP' )
 C
-      CHARACTER*8 LABEL
-      INTEGER ISYOPE
-C
       CHARACTER*3 LISTRX, LISTRY
       INTEGER IDLSTRX, IDLSTRY
 C
@@ -36,11 +32,9 @@ C
 C
 #if defined (SYS_CRAY)
       REAL OMEGA1(*),OMEGA2(*),OMEGA1EFF(*),OMEGA2EFF(*)
-      REAL FREQ
       REAL WORK(LWORK)
 #else
       DOUBLE PRECISION OMEGA1(*),OMEGA2(*),OMEGA1EFF(*),OMEGA2EFF(*)
-      DOUBLE PRECISION FREQ
       DOUBLE PRECISION WORK(LWORK)
 #endif
 C
@@ -50,23 +44,20 @@ C----------------------
 C     Lists check
 C----------------------
 C
-      ! (FREQ,LABEL,ISYOPE) is equivalent way of addressing (LISTRX,IDLSTRX)
 
-      IF (LISTRY(1:3).EQ.'R1 ') THEN
-        IF (LISTRX(1:3).EQ.'R1 ') THEN
+      IF (LISTRX(1:3).EQ.'R1 ') THEN
+        IF ((LISTRY(1:3).EQ.'R1 ') .OR. (LISTRY(1:3).EQ.'RE ')) THEN
           CONTINUE
         ELSE 
           WRITE(LUPRI,*)'LISTRX = ', LISTRX
           WRITE(LUPRI,*)'LISTRY = ', LISTRY
           WRITE(LUPRI,*)'Only implemented when '
-     *    //'LISTRX = R1 for LISTRY = R1 '
+     *    //'LISTRX = R1 and LISTRY = R1 or LISTRY = RE '
           CALL QUIT('Case not implemented in  CC3_AAMATSD')
         END IF
-      ELSE IF (LISTRY(1:3).EQ.'RE ') THEN
-         CONTINUE
       ELSE
-         WRITE(LUPRI,*)'LISTRY = ', LISTRY
-         WRITE(LUPRI,*)'Only implemented for LISTRY = R1 or RE '
+         WRITE(LUPRI,*)'LISTRX = ', LISTRX
+         WRITE(LUPRI,*)'Only implemented for LISTRX = R1 '
          CALL QUIT('Case not implemented in  CC3_AAMATSD')
       END IF
 C
@@ -90,8 +81,7 @@ C
       CALL WOPEN2(LU3VI,FN3VI,64,0)
       CALL WOPEN2(LU3FOP,FN3FOP,64,0)
 C
-      CALL CC3_AAMATSDVIR(FREQ,LABEL,ISYOPE,
-     *                                LISTRX,IDLSTRX,
+      CALL CC3_AAMATSDVIR(LISTRX,IDLSTRX,
      *                                LISTRY,IDLSTRY,
      &                                OMEGA1,OMEGA2,
      &                                OMEGA1EFF,OMEGA2EFF,
@@ -128,8 +118,7 @@ C
       RETURN
       END
 C    /* Deck cc3_aamatsdvir */ 
-      SUBROUTINE CC3_AAMATSDVIR(FREQ,LABEL,ISYOPE,
-     *                                LISTRX,IDLSTRX,
+      SUBROUTINE CC3_AAMATSDVIR(LISTRX,IDLSTRX,
      *                                LISTRY,IDLSTRY,
      &                                OMEGA1,OMEGA2,
      &                                OMEGA1EFF,OMEGA2EFF,
@@ -187,9 +176,6 @@ C
       PARAMETER(FNCKJDRY  = 'CCSDT_FBMAT22',FNDELDRY  = 'CCSDT_FBMAT33',
      *          FNDKBCRY  = 'CCSDT_FBMAT44')
 C
-      CHARACTER*8 LABEL
-      INTEGER ISYOPE
-
 C
       CHARACTER*3 LISTRX, LISTRY
       CHARACTER*8 LABELRX,LABELRY
@@ -230,13 +216,11 @@ c
 #if defined (SYS_CRAY)
       REAL OMEGA1(*),OMEGA2(*),OMEGA1EFF(*),OMEGA2EFF(*)
       REAL WORK(LWORK)
-      REAL FREQ
       REAL FREQRX,FREQRY,FREQXY
       REAL XNORMVAL,DDOT
 #else
       DOUBLE PRECISION OMEGA1(*),OMEGA2(*),OMEGA1EFF(*),OMEGA2EFF(*)
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION FREQ
       DOUBLE PRECISION FREQRX,FREQRY,FREQXY
       DOUBLE PRECISION XNORMVAL,DDOT
 #endif
@@ -387,40 +371,30 @@ C
 C determining R1 labels
 C
 
-      IF (LISTRY(1:3).EQ.'R1 ') THEN
-         ISYMRY = ISYLRT(IDLSTRY)
-         FREQRY  = FRQLRT(IDLSTRY)
-         LABELRY = LRTLBL(IDLSTRY)
-C
-         IF (LISTRX(1:3).EQ.'R1 ') THEN
+      IF (LISTRX(1:3).EQ.'R1 ') THEN
             ISYMRX = ISYLRT(IDLSTRX)
             FREQRX  = FRQLRT(IDLSTRX)
             LABELRX = LRTLBL(IDLSTRX)
 C
-            FREQXY = FREQRX + FREQRY
-C
+         IF (LISTRY(1:3).EQ.'R1 ') THEN
+            ISYMRY = ISYLRT(IDLSTRY)
+            FREQRY  = FRQLRT(IDLSTRY)
+            LABELRY = LRTLBL(IDLSTRY)
+         ELSE IF (LISTRY(1:3).EQ.'RE ') THEN
+            ISYMRY = ILSTSYM(LISTRY,IDLSTRY)
+            FREQRY  = EIGVAL(IDLSTRY)
+            LABELRY = '- none -'
          ELSE
-           WRITE(LUPRI,*) 'LISTRX = ', LISTRX
-           CALL QUIT('Unkown list for LISTRX in CC3_AAMATSDVIR.')
+           WRITE(LUPRI,*) 'LISTRY = ', LISTRY
+           CALL QUIT('Unkown list for LISTRY in CC3_AAMATSDVIR.')
          END IF
 C
-      ELSE IF (LISTRY(1:3).EQ.'RE ') THEN
-         ISYMRY = ILSTSYM(LISTRY,IDLSTRY)
-         FREQRY  = EIGVAL(IDLSTRY)
-         LABELRY = '- none -'
-C
-         ! (FREQ,LABEL,ISYOPE) is equivalent way of addressing (LISTRX,IDLSTRX)
-         ISYMRX = ISYOPE
-         FREQRX = DUMMY
-         LABELRX = LABEL
-C
-         FREQXY = FREQ 
-C
       ELSE
-         WRITE(LUPRI,*) 'LISTRY = ', LISTRY
-         CALL QUIT('Unkown list for LISTRY in CC3_AAMATSDVIR.') 
+        WRITE(LUPRI,*) 'LISTRX = ', LISTRX
+        CALL QUIT('Unkown list for LISTRX in CC3_AAMATSDVIR.')
       END IF
-C      
+C
+      FREQXY = FREQRX + FREQRY
 C
       ISYMWX   = MULD2H(ISYMT3,ISYMRX)
       ISYMWY   = MULD2H(ISYMT3,ISYMRY)

@@ -221,22 +221,10 @@ C
 
              ELSE
 
-               CALL CC3_AAMATSD(FREQ,LABEL,ISYOPE,
-     *                          CDUMMY,IDUMMY,
-     *                          LISTR,IDLSTR,
-     &                          DUMMY,DUMMY,
-     &                          WORK(KRES1EFF),WORK(KRES2EFF),
-     &                          ISYRES,WORK(KEND1),LWRK1)
-
-               !add singles and doubles contributions
-C
-               DO I = 1,NT2AM(ISYRES)
-                WORK(KRES2EFF+I-1) = WORK(KRES2EFF+I-1)+ WORK(KRES2+I-1)
-               END DO
-C
-               DO I = 1,NT1AM(ISYRES)
-                WORK(KRES1EFF+I-1) = WORK(KRES1EFF+I-1)+ WORK(KRES1+I-1)
-               END DO
+               WRITE(LUPRI,*)'AAMATSD should be called from '
+               WRITE(LUPRI,*)'CC_BMAT module. Check NEW_RHS flag '
+               WRITE(LUPRI,*)'in CCRHSVEC.'
+               CALL QUIT('Real code for AAMATSD not called here...')
 
 
              END IF
