@@ -156,33 +156,37 @@ C           ...  Ga, Ge, As, Se, Br, Kr
             CALL QUIT('BASLIB error: Huckel not defined for Z.gt.36')
          END IF
 #endif   /* STO3G-HUCKEL */
+C djw Feb 2005
+C notation changed from 'd' to 'd-' for consistency with EMSL
       ELSE
-         IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
-            BASTMP(1:79) = BASNAM(2:80)
-            IF (BASNAM(1:1) .EQ. 'd') THEN
+         IF (BASNAM(3:10) .EQ. 'aug-cc-p') THEN
+            write(lupri,*) 'cc basis'
+            call flshfo(lupri)
+            BASTMP(1:79) = BASNAM(3:80)
+            IF (BASNAM(1:2) .EQ. 'd-') THEN
                IAUG = 1
-            ELSE IF (BASNAM(1:1) .EQ. 't') THEN
+            ELSE IF (BASNAM(1:2) .EQ. 't-') THEN
                IAUG = 2
-            ELSE IF (BASNAM(1:1) .EQ. 'q') THEN
+            ELSE IF (BASNAM(1:2) .EQ. 'q-') THEN
                IAUG = 3
             ELSE
-               WRITE (LUPRI,'(/A1,A)') BASNAM(1:1),' is an unknown'//
+               WRITE (LUPRI,'(/A2,A)') BASNAM(1:2),' is an unknown'//
      &              'augmentation level'
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF
          ELSE IF (BASNAM(1:7) .EQ. 'aug-ecp') THEN
             BASTMP(1:75) = BASNAM(5:80)
             IAUG = 1
-         ELSE IF (BASNAM(2:8) .EQ. 'aug-ecp') THEN
-            BASTMP(1:74) = BASNAM(6:80)
-            IF (BASNAM(1:1) .EQ. 'd') THEN
+         ELSE IF (BASNAM(3:9) .EQ. 'aug-ecp') THEN
+            BASTMP(1:74) = BASNAM(7:80)
+            IF (BASNAM(1:2) .EQ. 'd-') THEN
                IAUG = 1
-            ELSE IF (BASNAM(1:1) .EQ. 't') THEN
+            ELSE IF (BASNAM(1:2) .EQ. 't-') THEN
                IAUG = 2
-            ELSE IF (BASNAM(1:1) .EQ. 'q') THEN
+            ELSE IF (BASNAM(1:2) .EQ. 'q-') THEN
                IAUG = 3
             ELSE
-               WRITE (LUPRI,'(/A1,A)') BASNAM(1:1),' is an unknown'//
+               WRITE (LUPRI,'(/A2,A)') BASNAM(1:2),' is an unknown'//
      &              'augmentation level'
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF

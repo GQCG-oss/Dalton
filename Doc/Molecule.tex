@@ -556,15 +556,19 @@ we add a $p$ function with exponent 0.75 to the hydrogen basis
 set. The order of these functions are arbitrary (that is, a $p$
 function can be given before an $s$ function and so on).
 
-Augmenting the correlation-consistent\index{basis!correlation-consistent} 
-sets of Dunning may be done in a simple manner in \dalton. 
-The aug-cc-pVXZ basis sets are extended in an even-tempered manner 
-by including a 'd', 't' or 'q' prefix to give doubly, triply or quadruply 
-augmented basis sets, respectively. For example, specifying Basis=daug-cc-pVDZ will
-produce a doubly augmented cc-pVDZ basis. These basis sets are not listed 
-explicitly in the library\index{basis set!library}, 
+Augmenting\index{basis!augmented} the correlation-consistent\index{basis!correlation-consistent} 
+sets of Dunning~\cite{dewthdjcp100} is a straight-forward process in \dalton. 
+The aug-cc-pVXZ and aug-cc-pCVXZ basis sets are extended in an even-tempered manner 
+(in the manner of Dunning~\cite{dewthdjcp100})
+by including a 'd-', 't-' or 'q-' prefix to give doubly, triply or quadruply 
+augmented basis sets, respectively. For example, specifying t-aug-cc-pVDZ will
+produce a triply augmented cc-pVDZ basis. The aug-ecp basis sets may be augmented 
+in the same manner by using the same prefixes, eg d-aug-ecp. 
+
+Note that these basis sets are not listed 
+explicitly in the basis library directory\index{basis set!library}, 
 but are automatically generated within \dalton from the respective 
-aug-cc-pVXZ basis. 
+aug-cc-pVXZ and aug-ecp basis sets. 
 
 The ANO basis sets require that you give the number of contracted
 functions you would like to use for each of the primitive sets defined

@@ -21,7 +21,7 @@ cat > cc_rsp_alpha2.info <<'%EOF%'
    cc_rsp_alpha2
    -------------
    Molecule:         Ne atom in D2h
-   Wave Function:    CCS, CC2, CCSD / daug-cc-pVDZ
+   Wave Function:    CCS, CC2, CCSD / d-aug-cc-pVDZ
    Test Purpose:     Frequency-dependent polarizabilities and
                      dispersion coefficients
 %EOF%
@@ -31,7 +31,7 @@ cat > cc_rsp_alpha2.info <<'%EOF%'
 #######################################################################
 cat > cc_rsp_alpha2.mol <<'%EOF%'
 BASIS
-daug-cc-pVDZ
+d-aug-cc-pVDZ
 Neon atom
 small test basis
     1    3  Y  X  Z   1.00D-15
