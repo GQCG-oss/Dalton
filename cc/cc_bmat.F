@@ -4274,7 +4274,7 @@ C------------------------------------------
 C
       CALL DCOPY(NTAMP,TXAM,1,WORK(KRHO1D),1)
       ISIDE = +1
-      CALL CC_ATRR(1,ISIDE,WORK(KRHO1D),LWRK1)
+      CALL CC_ATRR(0.0D0,1,ISIDE,WORK(KRHO1D),LWRK1)
 C
 C-------------------------
 C     Zero out components.
@@ -4402,7 +4402,7 @@ C
          CALL DCOPY(NTAMP,TXAM,1,WORK(KRHO1D),1)
 
          ISIDE = +1
-         CALL CC_ATRR(1,ISIDE,WORK(KRHO1D),LWRK1)
+         CALL CC_ATRR(0.0D0,1,ISIDE,WORK(KRHO1D),LWRK1)
 C
          IF (LCOR .OR. LSEC) THEN
             CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -4509,7 +4509,7 @@ C
            CALL DCOPY(NTAMP,TXAM,1,WORK(KRHO1D),1)
 
            ISIDE = +1
-           CALL CC_ATRR(1,ISIDE,WORK(KRHO1D),LWRK1)
+           CALL CC_ATRR(0.0D0,1,ISIDE,WORK(KRHO1D),LWRK1)
 C
            IF (LCOR .OR. LSEC) THEN
               CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)

@@ -1771,7 +1771,7 @@ C            Input vector is first elements in work -
 C            Output vector replaces vector as first elements in work.
 C--------------------------------------------------------------------
 C
-             CALL CC_ATRR(ISYMTR,1,WORK,LWORK)
+             CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK)
 C
              IF (IPRINT .GT.25) THEN
                 CALL AROUND('CC_PCEXCI: partioned A*R(0) vector. ')
@@ -1875,7 +1875,7 @@ C
      *                    ISYMTR,1,1)
            ENDIF
 C
-           CALL CC_ATRR(ISYMTR,1,WORK,LWORK)
+           CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK)
            IF (IPRINT .GT.15) THEN
               CALL AROUND('CC_PCEXCI: A*C(0) vector. ')
               CALL CC_PRP(WORK(KRV1),WORK(KRV1+NT1AM(ISYMTR)),
@@ -2239,7 +2239,7 @@ C
       RETURN
       END
 c*DECK CC_ATRR
-      SUBROUTINE CC_ATRR(ISYMV,ISIDE,WORK,LWORK)
+      SUBROUTINE CC_ATRR(ECURR,ISYMV,ISIDE,WORK,LWORK)
 C
 C----------------------------------------------------------------------
 C     Ove Christiansen December 1996.
@@ -2272,11 +2272,11 @@ C
       NCCVAR = NT1AM(ISYMV)
       IF (.NOT. CCS) NCCVAR = NCCVAR + NT2AM(ISYMV)
 
-      IF (CCS .OR. CC2 .OR. CCSD) THEN
-        ECURR = 0.0D0
-      ELSE
-        CALL QUIT('Entered for unkown model CC_ATRR')
-      END IF
+C     IF (CCS .OR. CC2 .OR. CCSD) THEN
+C       ECURR = 0.0D0
+C     ELSE
+C       CALL QUIT('Entered for unkown model CC_ATRR')
+C     END IF
 C
       NSIMTR = 1
       ISYMTR = ISYMV
