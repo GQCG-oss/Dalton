@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2drv.F,v 1.5 2001-04-03 20:33:52 vebjornb Exp $
+C$Id: her2drv.F,v 1.6 2001-04-06 08:15:43 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck twoint */
@@ -1767,7 +1767,7 @@ C  /* Deck symlop */
 #include <mxcent.h>
 #include <aovec.h>
 #include <mxorb.h>
-      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D4 = 4.0D0)
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
      &        PERTUR, EXPECT, INTS, UNDIFF, CAEQCB, CCEQCD, ABADX,
@@ -1803,6 +1803,7 @@ C  /* Deck symlop */
 #include <nuclei.h>
 #include <twosta.h>
 #include <energy.h>
+#include <drw2el.h>
 #include <doxyz.h>
 #include <ibtfun.h>
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
@@ -1836,6 +1837,7 @@ C     ***** Both distributions *****
 C
       JMAX0  = MAXAB + MAXCD
       HKABCD = FMULT(IBTAND(MULAB,MULCD))
+      IF (FINDPT.OR.DPTINT) HKABCD = D2*HKABCD 
       IF (SPNORB) HKABCD = - HKABCD
       IF (UNDIFF .OR. LONDON .OR. SPNORB .OR. 
      &    DIRFCK .OR. DISTRI .OR. SOFOCK .OR. DIA2SO .OR. ZFS2EL) THEN
