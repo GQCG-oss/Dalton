@@ -37,7 +37,7 @@
       RETURN
       END
       SUBROUTINE MPI_ABORT()
-         CALL QUIT('dummy MPI_ABORT called, exiting ...')
+         STOP 100
       RETURN
       END
       SUBROUTINE MPI_BCAST(i1,i2,i3,i4,i5,IERR)
