@@ -31,29 +31,17 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirdiis.F,v 1.3 2001-10-01 13:22:20 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
+===========================================================================
 se efter HJMAERKE
 HJMAERKE 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
   then check all setting of MXDIIS = 0 and MAXFCK = 0 (I think MAXFCK
   also will work if .FREEZE implemented in FCKEIG).
 
-$Log: not supported by cvs2svn $
-Revision 1.2  2001/05/31 06:38:34  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.1.1.1  2001/02/08 13:33:32  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
 Revision 1.2  2001/01/17 10:41:33  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:35  vebjornb
-Dalton 1.2
 
 Revision 1.6  2000/05/24 12:28:27  hjj
 1) fixed solvent calculations (DIFDEN must be false for solvent)
@@ -118,6 +106,7 @@ SRDIIS: new parameter PROCC .FALSE. in CALL PRORB
 SRDIIS: exit MXDGSS .GT. 0
 930623-hjaaj
 FCKEIG: inserted PARAMETER(D0=0.0D0)
+===========================================================================
 #endif
 C  /* Deck srdiis */
       SUBROUTINE SRDIIS (ICONV,CMO,WRK,KFRSAV,LFRSAV)

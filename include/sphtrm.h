@@ -1,5 +1,2 @@
-C
-C$Id: sphtrm.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
-C
       PARAMETER (NCSP=((MXQN+2)*(MXQN+1)*(3*MXQN**2+6*MXQN+1)*MXQN)/60)
       COMMON /SPHTRM/ CSP(NCSP), ISPADR(MXQN)

@@ -1,5 +1,2 @@
-C
-C$Id: lmns.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
-C
       COMMON /LMNS/ LVALUA(MXAQN), MVALUA(MXAQN), NVALUA(MXAQN),
      *              LVALUB(MXAQN), MVALUB(MXAQN), NVALUB(MXAQN)

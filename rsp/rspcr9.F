@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspcr9.F,v 1.4 2001-10-18 07:41:23 hjj Exp $
-C
 #include <single.h>
+C
       SUBROUTINE C3FOCK(IBEQC,FDTI,VECB,VECC,
      *                 ZYMB,ZYMC,KZYVB,KZYVC,
      *                 ISYMA,ISYMB,ISYMC,

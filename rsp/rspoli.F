@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspoli.F,v 1.5 2001-11-13 19:32:48 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck rev_log */
 Revision 1.2  2000/05/24 19:04:56  hjj
 new GETREF call; LUINTD .gt. 0 check for GPCLOSE call
@@ -50,6 +49,7 @@ new GETREF call; LUINTD .gt. 0 check for GPCLOSE call
 RSPOLI: added call to HRPA which adds A(2) and B(2) matrices to FCONE
 920721-hinne hettema
 RSPOLI: implemented RSPSUP (super symmetry averaging)
+===========================================================================
 #endif
 C  /* Deck rspoli */
       SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,FCONE,

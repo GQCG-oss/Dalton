@@ -31,49 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirinp.F,v 1.10 2002-01-15 12:20:58 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
-$Log: not supported by cvs2svn $
-Revision 1.9  2001/10/01 13:22:21  vebjornb
-Merging the branch dft-1-0 into the main trunk, adding DFT functionality
-among other things. Currently three test cases do not work properly
-(cc_geoopt, cc_geoopt2 and vibave_spinspin), and this should be fixed ASAP - VB
-
-Revision 1.8  2001/05/31 06:38:35  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.7  2001/05/14 10:04:42  hjj
-revised print to correspond to current keywords /hjaaj
-
-Revision 1.6  2001/05/09 12:00:41  hjj
-Removed SIRRUN and sirrun.h; integrated identify.h in sirinp.F /hjaaj
-
-Revision 1.5  2001/04/03 14:25:14  vebjornb
-Changes to ERI (symmetry and general contraction) tuh
-
-Revision 1.4  2001/03/22 14:53:40  hjj
-- Changed MWORK form 200 000 000 to 8 000 000; this should ensure
-that it will be unlikely that TRACD has insufficient memory.
-(MWORK should not be larger than resident memory to avoid paging in
-integral transformation; 64 Mbytes sounds as a good number and the
-integral transformation will hardly be more efficient with a larger number).
-- removed sirdefaults.h and reference in sirinp.F and abaset.F
-  (sirdefaults.h only defined MWORK),
-  instead define MWORK in block data in sirbkd.F
-- removed obsolete LBSYMB in sirset.F
-
-Revision 1.3  2001/03/20 07:47:49  vebjornb
-Changed all references to the old f21-file to "SIRIUS.RST"
-
-Revision 1.2  2001/02/12 18:17:57  vebjornb
-First commit after CC merge
-
-Revision 1.1.1.1  2001/01/15 13:53:36  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.9  2000/05/24 12:39:05  hjj
 1) only MAXCIT=3 as default if MC combination with DORHF or DOMP2
 2) polish of output
@@ -138,6 +99,7 @@ changes from 17/9 1990 (ha)
 -- *MP2 CALC
 -- MP2INP routine included
       END
+===========================================================================
 #endif
 C  /* Deck sirinp */
       SUBROUTINE SIRINP(WORK,LFREE)

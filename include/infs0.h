@@ -1,6 +1,3 @@
-C
-C$Id: infs0.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
-C
       LOGICAL NOS0MX
       CHARACTER*8 LBLS0
       COMMON /INFS0/  NOS0MX, NGPS0(8)

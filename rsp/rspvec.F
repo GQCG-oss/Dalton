@@ -31,40 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspvec.F,v 1.9 2002-02-12 08:17:24 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef REVLOG
-$Log: not supported by cvs2svn $
-Revision 1.8.14.1  2002/01/31 13:34:42  vebjornb
-Changed GETGP to GETGPV everywhere. The former subroutine name caused a
-conflict with the cxperf profiling tool on HP - VB
-
-Revision 1.8  2001/05/31 06:38:31  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.7  2001/04/19 06:25:07  hjj
-bugfix in LRHYP reported by Olav Vahtras. /HJAaJ
-
-Revision 1.6  2001/04/03 20:33:01  vebjornb
-Bugfixes from Patrick - VB
-
-Revision 1.5  2001/04/03 07:26:27  coriani
-MCD in SOMOM, fixed DP5 and argument list in CALL GETGPV. SC
-
-Revision 1.4  2001/03/29 08:06:45  hjj
-Declare MJWOP in LRHYP so compiler knows it is a vector! /HJAaJ.
-
-Revision 1.3  2001/03/18 21:53:36  vebjornb
-Fixed several uninitialized variables
-
-Revision 1.2  2001/02/12 18:17:57  vebjornb
-First commit after CC merge
-
-Revision 1.1.1.1  2001/01/15 13:53:43  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.3  2000/05/24 19:13:28  hjj
 Inserted @ in output of final results
 Polish
@@ -73,6 +43,7 @@ Polish
 930705-hjaaj: lowered IPRRSP from 5 to 2 in QRVEC for print of lr sym.
 910411-hjaaj: RSPPRC and RSPPRO use wrong symmetries in QRSMO,
 QRHYP, and QREXM (it uses the last KSYMOP from QRLRVE). MAERKE
+===========================================================================
 #endif
 C  /* Deck qrcalc */
       SUBROUTINE QRCALC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,

@@ -12,7 +12,6 @@ C    Let's hope that none of this names is used somewhere else!!!
 C
 C                                         Gilbert Hangartner, 24. July 1997
 
-
 #define DASUM  SASUM
 #define DAXPY  SAXPY
 #define DCOPY  SCOPY
@@ -28,7 +27,6 @@ C    Other equivalences, for routines found in the original pdpack/dsp.F and
 C    pdpack/dge.F (inbetween moved to pdpack/linextra.F)
 C    These routines are coming from linpack / eispack
 
-
 #define DGECO  SGECO
 #define DGEDI  SGEDI
 #define DGEFA  SGEFA
@@ -39,6 +37,4 @@ C    These routines are coming from linpack / eispack
 #define DSPFA  SSPFA
 #define DSPSL  SSPSL
 
-
 #endif
-

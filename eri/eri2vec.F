@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: eri2vec.F,v 1.5 2001-05-31 06:38:25 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPE1,RODPE2,IPNTPP,
      &                  IPRINT)

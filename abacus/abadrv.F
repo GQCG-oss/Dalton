@@ -31,17 +31,17 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abadrv.F,v 1.11 2002-02-08 12:25:37 ruud Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 970819-hjaaj:
       transfer IPRIN4,IPRIN6 from RHSINP to 'CALL SETSIR'
 950601-vebjorn:
       Small changes in input processing to allow external control of walks.
 941103-hjaaj: moved ABARUN to herdirect.u (needed for HERMIT)
+===========================================================================
 #endif
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc3_t3int */
       SUBROUTINE CC3_T3INT(XINT,XLAMDP,XLAMDH,C1AM,ISYMTR,
      *                      WORK,LWORK,IDEL,ISYDEL,IOPT)

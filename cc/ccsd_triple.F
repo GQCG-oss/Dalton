@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck ccsd_triple */
       SUBROUTINE CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,FOCK,
      *                       XLAMDP,XLAMDH,WORK,LWORK)

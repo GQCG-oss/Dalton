@@ -1,6 +1,3 @@
-C
-C$Id: pastbk.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
-C
       LOGICAL       PSTWOB, PSORTB, PSDIPB, PSONEB, PSRESB, PSRELB,
      &              PSDPRB, PSCRSB, PSCZRB, PSCTRB, PSCRLB, PSMAGB,
      &              PSAATB, PSRTRB, PSLRSB, PSTRPB, PSLNRB, PSEXCB

@@ -1,6 +1,3 @@
-C
-C$Id: qrinf.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
 #if defined (VAR_STAR2)
       INTEGER*2 MJWOP
 #endif

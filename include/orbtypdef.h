@@ -1,6 +1,3 @@
-C
-C$Id: orbtypdef.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
-C
       DIMENSION   IDBTYP(4,4)
       CHARACTER*9 COBTYP(4)
       SAVE      IDBTYP, COBTYP

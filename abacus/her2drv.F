@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her2drv.F,v 1.8 2001-06-11 07:56:54 hjj Exp $
-C
 #include <single.h>
+C
 C  /* Deck twoint */
       SUBROUTINE TWOINT(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,IREPDM,
      &                  IFCTYP,GMAT,

@@ -32,6 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
+C
 C /* Deck dftdns */
       SUBROUTINE DFTDNS(DMAT,WORK,LWORK,IPRINT)
 C

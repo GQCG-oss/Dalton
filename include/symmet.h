@@ -1,6 +1,3 @@
-C
-C$Id: symmet.h,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
-C
       COMMON /SYMMET/ FMULT(0:7), PT(0:7), MAXREP, MAXOPR, MULT(0:7),
      &                ISYMAX(3,2), ISYMAO(MXQN,MXAQN), NPARSU(8),
      &                NAOS(8), NPARNU(8,8), IPTSYM(MXCORB,0:7),

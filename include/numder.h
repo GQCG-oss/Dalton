@@ -1,6 +1,3 @@
-C     
-C $Id: numder.h,v 1.5 2002-02-12 12:27:28 ruden Exp $
-C
       LOGICAL NWPROP, NOMOVE, FSTPRP, NUMELC, CMPARE, SDRTST,
      &        RESTRT, DRYRUN, FRSTNM, PRPVIB, ADSTBK, NOADSY, 
      &        MANUAL
@@ -12,4 +9,3 @@ C
      &                DRYRUN, FRSTNM, PRPVIB, MANUAL, ADSTBK,
      &                NOADSY
       COMMON /NMDPRP/ NMEXCI, FSTPRP
-

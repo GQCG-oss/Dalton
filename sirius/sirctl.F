@@ -31,19 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirctl.F,v 1.2 2001-05-31 06:38:34 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:35  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.4  2000/05/24 12:25:37  hjj
 1) removed now unneccessary QCHF after DIIS
 2) bugfix for GPOPEN call
@@ -55,6 +46,7 @@ revision 1.2 2000/04/13 13:07:24 hjj
 1) improved rewrite LUINDX test for SRDIIS;
 2) Removed LVLCDK and include sirlvlcdk.h, they were used
 for consistency checks when sirius and abacus were separate programs.
+===========================================================================
 #endif
 C  /* Deck sirctl */
       SUBROUTINE SIRCTL(ICONV,WORK,LWORK)

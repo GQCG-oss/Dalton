@@ -1,6 +1,3 @@
-C
-C$Id: cbiexc.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
-C
       LOGICAL OOTV, SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP
       LOGICAL SUMRUL
       PARAMETER       (MAXPP = 80)

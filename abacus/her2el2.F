@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her2el2.F,v 1.4 2001-10-01 13:22:12 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck c2driv */
       SUBROUTINE C2DRIV(AOINT,HCINT,COEF34,INDHER,CONT3,CONT4,WORK,
      &                  LWORK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,LMNV34,

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abadip.F,v 1.4 2001-06-08 11:43:06 hjj Exp $
-C
 #include <single.h>
+C
 C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)
 #include <implicit.h>

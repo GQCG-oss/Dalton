@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirntra.F,v 1.3 2001-11-04 16:32:19 hjj Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 MAERKE 940727 ITRSIR=10 og USEDRC (som i .HYPCAL) giver fuldt saet
  af Dirac integraler: dvs. alle integraler baade som Coulomb og Dirac !!!!
 MAERKE 940520 Brug DARECL til LUHLFx, hvor recl kendes
@@ -88,6 +87,7 @@ TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
 900320-hjaaj: implemented ICDTRA in TRA2E1
 900316-hjaaj: added NXTH2D and NX2H2D routines
 900314-hjaaj: rewritten NX2H2M to outer loop over symmetries.
+===========================================================================
 #endif
 C /* Deck n_tractl */
       SUBROUTINE N_TRACTL(ITRSIR,CMO,WORK,KWORK,MWORK)

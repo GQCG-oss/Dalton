@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: dalton.F,v 1.13 2001-12-13 08:52:37 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 010131-vebjornb: Old dalton.F split into dalton.F (program) and
                  dalgnr.F (subroutines).
@@ -48,6 +47,7 @@ C
 951009-kenneth : Changed name from PSISTAR to DALTON
 950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 950516-vebjornb: First effort to link all programs: GRAND
+===========================================================================
 #endif
 C  /* Deck dalton */
       PROGRAM DALTON

@@ -1,6 +1,3 @@
-C
-C$Id: n_sort.h,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
-C
 #include <iratdef.h>
 #include <maxorb.h>
       PARAMETER (LRECAO = 28*1024, LRINT=LRECAO)

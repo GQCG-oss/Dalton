@@ -1,6 +1,3 @@
-C
-C$Id: twoao.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
-C
       LOGICAL        TPRI12, TPRI34, TCON12, TCON34,
      &               DIAG12, DIAG34, DIAC12, DIAC34,
      &               GEN12, GEN34, NOCNT, SPIORB, DC10, DC1E, DC2H,

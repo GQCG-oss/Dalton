@@ -1,9 +1,4 @@
 C
-C$Id: inpbak.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
-C
-C
-C     -----------------------------------------------------------------
-C
 C     The following COMDECKS are used for backup of sirius variables
 C
 C     /INPBAK/ is a copy of /INFINP/

@@ -1,6 +1,3 @@
-C
-C$Id: infc6.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
-C
       PARAMETER ( MAXLC6 = 60 )
       LOGICAL LC6OP,PADE,GSLEGN,C6IFC
       CHARACTER*8 LBLC6

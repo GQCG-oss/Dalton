@@ -31,26 +31,17 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sircmo.F,v 1.2 2001-05-31 06:38:34 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REVISION_LOG
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:35  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.3  2000/05/24 12:23:49  hjj
 1) option for printing eigenvalues of overlap matrix
 2) use THROVL instead of fixed THNORM in CALL NORM
 
 Revision 1.2  2000/05/01 13:15:57  hjj
 removed obsolete KAVER references.
-
+===========================================================================
 #endif
 C  /* Deck cmodel */
       SUBROUTINE CMODEL(CMO,GETCMO)

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspcr6.F,v 1.4 2001-05-31 06:38:28 vebjornb Exp $
-C
 #include <single.h>
+C
       SUBROUTINE T4DRV(IBCDEQ,ISYMA,ISYMB,ISYMC,ISYMD,VECA,VECB,VECC,
      *                 VECD,FREQB,FREQC,FREQD,XINDX,UDV,PV,MJWOP,
      &                 WRK,LWRK,CMO,FC)

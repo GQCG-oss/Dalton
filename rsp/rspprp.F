@@ -31,28 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspprp.F,v 1.3 2002-02-12 08:17:24 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef REVLOG
-$Log: not supported by cvs2svn $
-Revision 1.2.14.1  2002/01/31 13:34:42  vebjornb
-Changed GETGP to GETGPV everywhere. The former subroutine name caused a
-conflict with the cxperf profiling tool on HP - VB
-
-Revision 1.2  2001/05/31 06:38:30  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.1.1.1  2001/02/08 13:33:13  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.2  2001/01/30 14:11:20  kenneth
-AMFI integrals now stored on AOPROPER instead AOPROPER_MF
-
-Revision 1.1.1.1  2001/01/15 13:53:42  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.2  2000/05/24 19:05:49  hjj
 new getref calls with appropriate NDREF instead of NCREF
 (fixing error for triplet with CSF)
@@ -61,6 +43,7 @@ new getref calls with appropriate NDREF instead of NCREF
   merged VCD changes from Oslo with rspprp.u from here
   renamed GPLON to PRPABA
   DECK PRPABA moved to abacus 'abarspn.u' because it uses aba.cdk ...
+===========================================================================
 #endif
 C  /* Deck pprst */
       SUBROUTINE PPRST(IBTYP,REDS,REDE,UDV,XINDX,WRK,LWRK)

@@ -1,4 +1,3 @@
-
 C 
 C------------------------------------------------------------
 C information for the packing of the AO integrals on the

@@ -1,6 +1,3 @@
-C
-C$Id: blocks.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
-C
       LOGICAL BIGVEC, SEGMEN, SEGMSH, SPHRSH
       COMMON /BLOCKS/ CENTSH(MXSHEL,3),
      &                MAXSHL, BIGVEC, SEGMEN,NLRGBL,NSMLBL,

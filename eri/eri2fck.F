@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: eri2fck.F,v 1.5 2001-05-31 06:38:24 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck erifck */
       SUBROUTINE HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      *                  CCFBT,INDXBT,FCKTMP,WORK,LWORK)

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abatro.F,v 1.6 2001-10-01 13:22:11 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
 #include <implicit.h>

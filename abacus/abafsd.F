@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abafsd.F,v 1.6 2001-10-01 13:22:09 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck getfd */
       SUBROUTINE GETFD(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,
      &                 DERIV,EMYD,CMO,DV,FCD,FVD,WORK,LWORK,AOMAT,

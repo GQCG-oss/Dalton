@@ -1,6 +1,3 @@
-C
-C$Id: cbilnr.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
       LOGICAL ROAA, ALFA, ROAG
       PARAMETER       (MXFR = 10)
       PARAMETER       (MAXLN = 80)

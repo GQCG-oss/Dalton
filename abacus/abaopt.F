@@ -31,14 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaopt.F,v 1.13 2002-02-14 17:36:24 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 950915-vebjornb: New module taking care of optimizations.
                  It uses both the old cbiwlk.h and the new optinf.h
+===========================================================================
 #endif
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)

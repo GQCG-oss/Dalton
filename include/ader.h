@@ -1,6 +1,3 @@
-C
-C$Id: ader.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
-C
       COMMON /ADER/ IA0000, IA0X00, IA0Y00, IA0Z00,
      &              IAXX00, IAXY00, IAXZ00, IAYY00,
      &              IAYZ00, IAZZ00, IA000X, IA000Y,

@@ -1,4 +1,3 @@
-
       LOGICAL SKIP,   DIRECT, DIRGRD, CCRSTR, 
      &        FROIMP, FROEXP, NOCCIT,
      &        CCSAVE, STOLD,  JACEXP, LHTR,
@@ -25,3 +24,4 @@
      &                  MCC2, CCP2, CCD,  CCSD,  CC3,   CCPT,
      &                  CCP3, CCRT, CCR3, CCR1A, CCR1B, CCT,
      &                  CCSDT
+

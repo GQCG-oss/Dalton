@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *----------------------------------------------------------------*
       SUBROUTINE CC_INT3O2(X3OINT,DSRHF,ISYDRHF,
      *                     XLAMDH,ISYMH,XLAMDP,ISYMP,

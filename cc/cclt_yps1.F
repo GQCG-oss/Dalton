@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cclt_yps1 */
       SUBROUTINE CCLT_YPS1(CTR1,ISYCTR,YI,ISYMYI,XLAMDH1,
      &                     ISYLM1,XLAMDH2,ISYLM2,YPS)

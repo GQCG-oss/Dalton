@@ -31,32 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: lagrang.F,v 1.3 2002-02-12 08:17:23 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.2.14.1  2002/01/31 13:34:41  vebjornb
-Changed GETGP to GETGPV everywhere. The former subroutine name caused a
-conflict with the cxperf profiling tool on HP - VB
-
-Revision 1.2  2001/05/31 06:38:27  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.1.1.1  2001/02/08 13:33:13  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:39  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.4  2000/05/24 18:45:09  hjj
 new getref calls with appropriate NDREF (fixing CSF and triplet)
 stop if solvent and CSF
 bugfix: too little was allocated for KGP2
 other minor changes
-
+===========================================================================
 #endif
 C  /* Deck lagran */
       SUBROUTINE LAGRAN(WORD,FC,CMO,UDV,PV,XINDX,WRK,LWRK)

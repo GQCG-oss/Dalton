@@ -31,39 +31,11 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirtra.F,v 1.6 2001-11-20 13:09:13 hjj Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck rev_log */
-$Log: not supported by cvs2svn $
-Revision 1.5  2001/11/15 10:32:53  hjj
-hjaaj: let SORTA/SORTB use all awailable memory for sorting integrals.
-They have always only used max MWORK memory, but the MWORK restriction
-is in fact primarily relevant for TRAAB/TRACD, i.e. the transformations
-(for TRAAB/TRACD the MWORK restriction is necessary for efficiency
-and in some cases for not running out of memory in later integral
-transformations).
--- This change may fix some reported problems with insufficient memory
-in the integral transformation.
-
-Revision 1.4  2001/05/31 06:38:37  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.3  2001/05/13 14:50:31  ruud
-Fixes to solve CSF and triplet operator problems
-
-Revision 1.2  2001/03/22 14:47:04  hjj
-Safer code: made max no of chains a parameter.
-Corrected calculation of minimum memory for TRACD in sirtra.F
-
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:38  vebjornb
-Dalton 1.2
-
 Revision 1.3  2000/05/24 12:55:16  hjj
 inserted two missing priunit.h (ftnchek)
 
@@ -185,6 +157,7 @@ TRACD,TRAAB,TRACTL: test print for IPRTRA.ge.100 (from Hinne)
  traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 C--- 891117: END is for use of fsplit to extract decks
       END
+===========================================================================
 #endif
 C  /* Deck trauth */
       SUBROUTINE TRAUTH(IWUNIT)

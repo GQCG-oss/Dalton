@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaexc.F,v 1.8 2002-02-14 12:34:16 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck excinp */
       SUBROUTINE EXCINP(WORD)
 #include <implicit.h>

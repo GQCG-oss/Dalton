@@ -1,5 +1,6 @@
 gpdahle.o : gpdahle.F \
-  ../include/implicit.h  ../include/priunit.h
+  ../include/implicit.h  ../include/priunit.h \
+  ../include/single.h
 gphjj.o : gphjj.F \
   ../include/2gbdef.h  ../include/chrnos.h \
   ../include/dummy.h  ../include/implicit.h \
@@ -43,17 +44,20 @@ intf7790.o : intf7790.F \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/molinp.h  ../include/mxcent.h \
   ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/symmet.h
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
 mempkg.o : mempkg.F \
   ../include/implicit.h  ../include/iratdef.h \
   ../include/memcb1.h  ../include/single.h
 mpimacro.o : mpimacro.F \
   ../include/implicit.h  ../include/infpar.h \
-  ../include/mxorb.h  ../include/priunit.h
+  ../include/mxorb.h  ../include/priunit.h \
+  ../include/single.h
 mxmpack.o : mxmpack.F \
   ../include/implicit.h  ../include/single.h
 pvmmacro.o : pvmmacro.F \
-  ../include/implicit.h  ../include/priunit.h
+  ../include/implicit.h  ../include/priunit.h \
+  ../include/single.h
 qpack.o : qpack.F \
   ../include/priunit.h  ../include/single.h
 vcraypack.o : vcraypack.F \

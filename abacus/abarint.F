@@ -31,14 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abarint.F,v 1.5 2001-11-13 19:32:45 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 960818-vebjornb: New module taking care of redundant internal
                  coordinates. The procedures are called from abaopt.F
+===========================================================================
 #endif
 C  /* Deck inired */
       SUBROUTINE INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,BMTINV,PJINMT,

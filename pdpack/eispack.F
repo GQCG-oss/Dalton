@@ -1,6 +1,3 @@
-C
-C$Id: eispack.F,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
-C
       SUBROUTINE CDIV(AR,AI,BR,BI,CR,CI)
       DOUBLE PRECISION AR,AI,BR,BI,CR,CI
 C

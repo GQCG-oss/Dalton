@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc_d1ao */
       SUBROUTINE CC_D1AO(AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,ILLNR,NO)
 C

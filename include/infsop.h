@@ -1,7 +1,4 @@
 C
-C$Id: infsop.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
-C
-C
 C     Variables named ?1/2/3??? are used for triplet properties
 C     calculations. Others are for singlet properties.
 C     To reduce static memory allocations, all large matrices are allocated

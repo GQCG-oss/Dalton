@@ -1,7 +1,5 @@
-C
-C$Id: gp_dblas1.F,v 1.1 2001-02-13 18:35:03 vebjornb Exp $
-C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck comments */
 30-Mar-1993-hjaaj: changed DNORM2 test to ESSL instead of IBM
  (both AIX and IBM systems may have ESSL)
@@ -9,6 +7,7 @@ C
   separate BLAS routines for MOTECC-90
   DNORM2 routine for IBM (=VM/CMS) if no essl library
   (if -def,ibm, DNORM2 is in the gp file).
+===========================================================================
 #endif
 #ifndef SYS_T3D
 C  /* Deck blas */

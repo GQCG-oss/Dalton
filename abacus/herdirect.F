@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: herdirect.F,v 1.5 2001-05-31 06:38:07 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck herdirect_log */
 941206-hjaaj
 HERPAR: new routine for defining parallel hermit calc. of Fock matr.
@@ -58,6 +57,7 @@ outside (SIRIUS and RESPONS).
 921201-hjaaj:
    new Sirius input routine for Hermit parameters ? an extended sether?
    also direct calculation of solvent integrals ?
+===========================================================================
 #endif
 C  /* Deck tstdir */
       SUBROUTINE TSTDIR(FMAT,DMAT,NDMAT,WORK,LWORK,IPRINT)

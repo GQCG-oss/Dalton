@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirmp2.F,v 1.2 2001-05-31 06:38:36 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 NOTE (961114/hjaaj): if solvent is implemented in MP2 then
    IF (DOMP2) FLAG(16) = .FALSE.
 in sirctl.F should be removed.
@@ -58,6 +57,7 @@ MP2FCK: use NRHF instead of IFRMP2 so MP2SET can be called after FCKFRO
 --- Major overhaul of SOPPA code and other code, in particular FCKFRO.
 December 1993-mjp (Martin J. Packer)
 --- Revised module for SOPPA
+===========================================================================
 #endif
 C  /* Deck mp2ctl */
       SUBROUTINE MP2CTL(WRK,LFRSAV)

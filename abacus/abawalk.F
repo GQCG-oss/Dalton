@@ -31,79 +31,18 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abawalk.F,v 1.13 2002-02-12 12:25:33 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef REVLOG
-$Log: not supported by cvs2svn $
-Revision 1.12  2002/02/08 12:25:38  ruud
-Fixes for:
-1) Calculations of spin-rotation constants without shieldings
-2) Vibrational averaging of properties with symmetry (program now stops)
-3) Douglas-Kroll (still has problems with some basis sets)
-\kr\
-
-Revision 1.11  2001/12/13 08:52:37  ruden
-Merged dft-1-0 into dalton for the last time. New updates for numerical derivatives.
-TR.
-
-Revision 1.4.2.3  2001/12/12 10:49:17  ruden
-Merging dft-1-0 into dalton. TR
-
-
-Revision 1.10  2001/05/31 06:38:03  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.9  2001/05/14 19:05:09  ruud
-Small fix to make IRC calculations run on Linux systems. Too short
-record lengths previously. We do not have tests for IRC or trajectories\kr\
-
-Revision 1.8  2001/05/02 18:20:43  ruud
-Changes to make IRC work/kr/
-
-Revision 1.7  2001/05/02 07:34:21  ruud
-Small change to ensure that you can do 2nd-order optimizations with
-Douglas-Kroll. However, the gradients and Hessians are formally not correct
-
-Revision 1.6  2001/04/21 12:11:58  ruud
-Added the possibility of reusing property derivatives in vibrational average
-calculations. Fixed a bug in the temperature part, as well as in the Eckart
-transformations. Fixed huge memory use in herrdn.F. Added SYS_SUN in
-cc/crayio.c and modified a couple of the test cases for accuracy on our
-old HP.
-
-Revision 1.5  2001/03/26 09:37:04  ruud
-Various small bug fixes, among them now allowing for more than 100
-geometry perturbations with natural connection, a OPTORB problem is rsp,
-and inconsistent record length in non-direct response calculations.
-
-In addition, added temperature dependence to the harmonic vibrational average
-and the possibility of reusing property derivatives. In this connection changed
-the name of some ABACUS interface files. K.Ruud
-
-Revision 1.4  2001/03/13 08:43:30  vebjornb
-- Reshuffled include statements and a couple of common blocks to
-  more in line with ANSI Fortran (only ABACUS files)
-- Updated one of the test jobs
-
-Revision 1.3  2001/02/23 15:34:23  ruud
-Added temperature dependence and centrifugal distortions to the calculation of
-effective geometries and (indirectly) vibrational property averages, K.Ruud
-
-Revision 1.2  2001/02/12 18:17:50  vebjornb
-First commit after CC merge
-
+===========================================================================
 Revision 1.2  2001/01/17 10:41:25  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:48  vebjornb
-Dalton 1.2
 
 961019-kruud: Added ROA changes from Gilbert Hangartner
 960417-hjaaj: Rudimentary initial implementation of .RESTART
 950601-vebjorn:
   A flag for geometry convergence has been added in common block GNRINF.
+===========================================================================
 #endif
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)

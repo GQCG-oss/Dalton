@@ -31,38 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirset.F,v 1.5 2001-05-31 06:38:37 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REVISION_LOG
-$Log: not supported by cvs2svn $
-Revision 1.4  2001/03/22 14:53:41  hjj
-- Changed MWORK form 200 000 000 to 8 000 000; this should ensure
-that it will be unlikely that TRACD has insufficient memory.
-(MWORK should not be larger than resident memory to avoid paging in
-integral transformation; 64 Mbytes sounds as a good number and the
-integral transformation will hardly be more efficient with a larger number).
-- removed sirdefaults.h and reference in sirinp.F and abaset.F
-  (sirdefaults.h only defined MWORK),
-  instead define MWORK in block data in sirbkd.F
-- removed obsolete LBSYMB in sirset.F
-
-Revision 1.3  2001/02/16 13:26:25  hjj
-improved comment about RASWOP change
-
-Revision 1.2  2001/02/16 13:01:28  hjj
-bugfix in RASWOP: the old code gave wrong active-active rotations in
-the very special case of RAS3 really being a CAS space, but RAS1 not
-a CAS space. /hjaaj.
-
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:37  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.5  2000/05/24 12:51:55  hjj
 new parameter in call SETCI; removed obsolete parameter in CALL GETCIX
 
@@ -76,7 +48,7 @@ removed unimportant print of time used in SIRSET to LUERR
 ----------------------------
 revision 1.2 2000/04/14 11:52:10 hjj
 changed warning to info for AOSUPMAT not found
-
+===========================================================================
 #endif
 C  /* Deck sirini */
       SUBROUTINE SIRINI

@@ -31,23 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspmc2.F,v 1.2 2001-05-31 06:38:30 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:14  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:41  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.2  2000/05/24 19:03:29  hjj
 new getref calls with appropriate NDREF instead of NCREF
 (fixing error for triplet with CSF)
-
+===========================================================================
 #endif
       SUBROUTINE E4DRV(VECA,VEC1,VEC2,VEC3,IBCDEQ,
      *                 E4TRS,XINDX,H1,ZYM1,ZYM2,ZYM3,DEN1,DEN2,

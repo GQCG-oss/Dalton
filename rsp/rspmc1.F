@@ -31,22 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspmc1.F,v 1.3 2002-01-15 12:20:58 ruden Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.2  2001/05/31 06:38:30  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.1.1.1  2001/02/08 13:33:14  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
+===========================================================================
 Revision 1.2  2000/05/24 19:02:25  hjj
 new GETREF calls, fixing CSF problem for triplet
-
+===========================================================================
 #endif
       SUBROUTINE A3INIT(KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,
      *                 OPLBL,IOPSYM,VEC1,VEC2,A3TRS,XINDX,UDV,

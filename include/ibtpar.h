@@ -1,4 +1,1 @@
-C
-C$Id: ibtpar.h,v 1.1.1.1 2001-02-08 13:33:22 hjj Exp $
-C
       PARAMETER (IBT02=3, IBT08=255, IBT10=1023, IBT16=65535)

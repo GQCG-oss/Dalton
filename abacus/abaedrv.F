@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaedrv.F,v 1.3 2001-05-31 06:38:00 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck abaedrv_log */
 930209-hjaaj: RESMC: defined IPRSOL=IPRINT
 930204-hjaaj: READMC: subtract solvent contribution from FC
@@ -46,6 +45,7 @@ C
 900219-hjaaj:
 -- RESST: corrected error (removed unnec., erron. ref. to IBNDX)
       END
+===========================================================================
 #endif
 C  /* Deck resinp */
       SUBROUTINE RESINP(WORD)

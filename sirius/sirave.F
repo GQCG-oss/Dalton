@@ -31,22 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirave.F,v 1.2 2001-05-31 06:38:34 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
  look for HJMAERKE; (1) symort of UMAT should be done
-
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:30  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
 
 Revision 1.2  2001/01/17 10:41:32  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:35  vebjornb
-Dalton 1.2
 
 Revision 1.4  2000/05/18 13:46:43  hjj
 Bugfix in AVERSS, it is strange if this bug hasn't caused errors before!
@@ -55,7 +47,8 @@ Bugfix in AVERSS, it is strange if this bug hasn't caused errors before!
  bus error.
 
 Revision 1.3  2000/05/01 13:13:37  hjj
-(1) removed AVEOLD, AVECMO, AVECHO connected with old KAVER option (now removed)
+(1) removed AVEOLD, AVECMO, AVECHO connected with old KAVER option
+    (now removed)
 (2) dynamically allocate KLWOP in AVERSS
 
 revision 1.2 dec 1999 hjj
@@ -87,6 +80,7 @@ AVEDEG: define MXDGSS
 AVESET: removed call to AVEPRT (moved to PRTINP)
 930625-hjaaj
   inserted some more print before two stop statements.
+===========================================================================
 #endif
 C  /* Deck averag */
       SUBROUTINE AVERAG (VECS,NVDIM,NVSIM)

@@ -31,25 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspc82.F,v 1.4 2001-05-31 06:38:28 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck rev_log */
-$Log: not supported by cvs2svn $
-Revision 1.3  2001/03/29 07:52:56  hjj
-Undone previous change in rsporp.F (SVEC got wrong dimension!);
-instead fixed the problem by changing RSPSLI in rspc82.F. /HJAaJ.
-
-Revision 1.2  2001/02/12 18:17:56  vebjornb
-First commit after CC merge
-
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:40  vebjornb
-Dalton 1.2
 
 Revision 1.3  2000/05/24 18:48:53  hjj
 new GETREF calls with NDREF (fixing triplet with CSF)
@@ -87,6 +75,7 @@ RSPNEX: 1) fixed error in print statement
 920721-hinne hettema
 RSPRED: moved N vs. MAXNVE test down after ICTL test
 RSPORT,RSPSOR: implemented RSPSUP (super symmetry averaging)
+===========================================================================
 #endif
 C  /* Deck rsplin */
       SUBROUTINE RSPLIN(NCSIM,NOSIM,ZYCVEC,ZYOVEC,

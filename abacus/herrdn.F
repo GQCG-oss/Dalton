@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: herrdn.F,v 1.20 2002-02-22 08:51:49 ruud Exp $
-C
 #include <single.h>
+C
 #ifdef REVISION_LOG
+===========================================================================
 Revision 1.9  2000/05/03 10:58:51  hjj
 include maxorb.h now needed for molde.h
 
@@ -137,6 +136,7 @@ BASINP: changed format for nuclear charge from F4.1 to F4.0
  (such that an entry '6' is read as 6. and not as 0.6 )
 CNTINP: read in old 3F10 format if error reading coordinates
         changed format to 3F20.0 instead of 3F20.15
+===========================================================================
 #endif
 C  /* Deck reainp */
       SUBROUTINE REAINP(WORD,IPRDEF,RELCAL,TSTINP)

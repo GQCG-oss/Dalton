@@ -1,6 +1,3 @@
-C
-C$Id: scalar.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
 #if defined (SYS_ALLIANT)
 CVD$ NOVECTOR
 #endif

@@ -89,14 +89,6 @@ rspave.o : rspave.F \
   ../include/maxash.h  ../include/maxorb.h \
   ../include/priunit.h  ../include/single.h \
   ../include/wrkrsp.h
-rspc8.o : rspc8.F \
-  ../include/codata.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/infc6.h \
-  ../include/infdim.h  ../include/inflr.h \
-  ../include/inforb.h  ../include/infpri.h \
-  ../include/infrsp.h  ../include/iratdef.h \
-  ../include/pi.h  ../include/priunit.h \
-  ../include/single.h  ../include/wrkrsp.h
 rspc82.o : rspc82.F \
   ../include/abares.h  ../include/dummy.h \
   ../include/ibndxdef.h  ../include/implicit.h \
@@ -109,6 +101,14 @@ rspc82.o : rspc82.F \
   ../include/mxcent.h  ../include/phpinf.h \
   ../include/priunit.h  ../include/single.h \
   ../include/thrldp.h  ../include/wrkrsp.h
+rspc8.o : rspc8.F \
+  ../include/codata.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/infc6.h \
+  ../include/infdim.h  ../include/inflr.h \
+  ../include/inforb.h  ../include/infpri.h \
+  ../include/infrsp.h  ../include/iratdef.h \
+  ../include/pi.h  ../include/priunit.h \
+  ../include/single.h  ../include/wrkrsp.h
 rspcr1.o : rspcr1.F \
   ../include/dummy.h  ../include/implicit.h \
   ../include/indcr.h  ../include/indqr.h \
@@ -209,19 +209,22 @@ rspdm.o : rspdm.F \
   ../include/priunit.h  ../include/qrinf.h \
   ../include/single.h  ../include/wrkrsp.h
 rspe2c.o : rspe2c.F \
-  ../include/cbgetdis.h  ../include/codata.h \
-  ../include/dummy.h  ../include/ibndxdef.h \
-  ../include/implicit.h  ../include/infdim.h \
-  ../include/infind.h  ../include/inflr.h \
-  ../include/infopt.h  ../include/inforb.h \
-  ../include/infpp.h  ../include/infpri.h \
-  ../include/infrsp.h  ../include/infs0.h \
-  ../include/infsop.h  ../include/inftap.h \
-  ../include/infvar.h  ../include/iratdef.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/phpinf.h  ../include/priunit.h \
-  ../include/single.h  ../include/thrldp.h \
-  ../include/thrzer.h  ../include/wrkrsp.h
+  ../include/alphac.h  ../include/cbgetdis.h \
+  ../include/chrnos.h  ../include/codata.h \
+  ../include/dummy.h  ../include/elweak.h \
+  ../include/ibndxdef.h  ../include/implicit.h \
+  ../include/infdim.h  ../include/infind.h \
+  ../include/inflr.h  ../include/infopt.h \
+  ../include/inforb.h  ../include/infpp.h \
+  ../include/infpri.h  ../include/infrsp.h \
+  ../include/infs0.h  ../include/infsop.h \
+  ../include/inftap.h  ../include/infvar.h \
+  ../include/iratdef.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/phpinf.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/thrldp.h  ../include/thrzer.h \
+  ../include/wrkrsp.h
 rspfxd.o : rspfxd.F \
   ../include/cbgetdis.h  ../include/implicit.h \
   ../include/infdim.h  ../include/infdis.h \
@@ -232,7 +235,8 @@ rspfxd.o : rspfxd.F \
   ../include/orbtypdef.h  ../include/priunit.h \
   ../include/single.h  ../include/wrkrsp.h
 rspmai.o : rspmai.F \
-  ../include/dummy.h  ../include/gnrinf.h \
+  ../include/chrnos.h  ../include/dummy.h \
+  ../include/elweak.h  ../include/gnrinf.h \
   ../include/implicit.h  ../include/indcr.h \
   ../include/indqr.h  ../include/infave.h \
   ../include/infc6.h  ../include/infcr.h \
@@ -249,7 +253,8 @@ rspmai.o : rspmai.F \
   ../include/inftmo.h  ../include/inftpa.h \
   ../include/inftra.h  ../include/infvar.h \
   ../include/iratdef.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/priunit.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/priunit.h \
   ../include/qrinf.h  ../include/rspprp.h \
   ../include/scbrhf.h  ../include/single.h \
   ../include/trhso.h  ../include/wrkrsp.h
@@ -331,16 +336,6 @@ rspqrx3.o : rspqrx3.F \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/qrinf.h  ../include/single.h \
   ../include/thrzer.h  ../include/wrkrsp.h
-rspsol.o : rspsol.F \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/infdim.h  ../include/infind.h \
-  ../include/infinp.h  ../include/inforb.h \
-  ../include/infpri.h  ../include/infrsp.h \
-  ../include/infslv.h  ../include/inftap.h \
-  ../include/infvar.h  ../include/iratdef.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/rspprp.h \
-  ../include/single.h  ../include/wrkrsp.h
 rspsol1.o : rspsol1.F \
   ../include/dummy.h  ../include/implicit.h \
   ../include/infcr.h  ../include/infden.h \
@@ -361,6 +356,16 @@ rspsol2.o : rspsol2.F \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/qrinf.h  ../include/single.h \
   ../include/wrkrsp.h
+rspsol.o : rspsol.F \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/infdim.h  ../include/infind.h \
+  ../include/infinp.h  ../include/inforb.h \
+  ../include/infpri.h  ../include/infrsp.h \
+  ../include/infslv.h  ../include/inftap.h \
+  ../include/infvar.h  ../include/iratdef.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/rspprp.h \
+  ../include/single.h  ../include/wrkrsp.h
 rspsoppa.o : rspsoppa.F \
   ../include/dummy.h  ../include/implicit.h \
   ../include/infdim.h  ../include/infind.h \

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirneo.F,v 1.2 2001-05-31 06:38:36 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck sirneo */
       SUBROUTINE SIRNEO(CREF,G,CMO,INDXCI,DV,PV,
      *                  FC,FV,FCAC,H2AC,EACTVN,IBNDX,WRK,LFREE)

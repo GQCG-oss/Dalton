@@ -1,5 +1,2 @@
-C
-C$Id: phpinf.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
       COMMON /PHPINF/ KDIACI,KDIAOR,KPNTR,KPEVAL,KPEVEC,
      &                MXPDIM,LPHP,NPCVAR

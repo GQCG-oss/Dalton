@@ -31,16 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her1int.F,v 1.9 2002-02-22 08:51:48 ruud Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 9507-hjaaj: fixed bug in GOSINT ( ODC(...,2) for y and ODC(...,3) for z)
             modified to calc. cos kx/k etc. instead of cos kx.
 930309-Sheela Kirpekar: added MVLINT and DWNINT
 930726-hjaaj: SDINT: factor DFACSD = (GFAC/D2)
+===========================================================================
 #endif
 C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,

@@ -77,7 +77,7 @@ drcctl.o : drcctl.F \
   ../include/infind.h  ../include/inforb.h \
   ../include/infpri.h  ../include/inftap.h \
   ../include/inftra.h  ../include/iratdef.h \
-  ../include/line.h  ../include/maxash.h \
+  ../include/lbmxsq.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h
 getcix.o : getcix.F \

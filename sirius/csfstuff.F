@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: csfstuff.F,v 1.2 2001-05-31 06:38:33 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 961125: GTSXST: added dimension JCLSX(*) to identify as vector
                 for GTSXS2 call (found from SGI compiler message)
         LRFEXD: added dimension SIGN(*) to identify as vector
@@ -58,6 +57,7 @@ C
 C  CSDIAG
 C
 C  CSDTVC
+===========================================================================
 #endif
 C  /* Deck csdtmt */
       SUBROUTINE CSDTMT(IDFTP,ICFTP,DTOC,WORK,IPRINT)

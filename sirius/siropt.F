@@ -31,43 +31,12 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: siropt.F,v 1.7 2001-05-31 06:38:36 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.6  2001/03/26 09:37:07  ruud
-Various small bug fixes, among them now allowing for more than 100
-geometry perturbations with natural connection, a OPTORB problem is rsp,
-and inconsistent record length in non-direct response calculations.
-
-In addition, added temperature dependence to the harmonic vibrational average
-and the possibility of reusing property derivatives. In this connection changed
-the name of some ABACUS interface files. K.Ruud
-
-Revision 1.5  2001/03/22 14:42:54  hjj
-Stop after gradient if max macro iter reached
-(waste of time to calculate step and then exit!)
-
-Revision 1.4  2001/03/20 07:47:49  vebjornb
-Changed all references to the old f21-file to "SIRIUS.RST"
-
-Revision 1.3  2001/03/17 17:42:24  vebjornb
-Small bugfix (prevented testcase energy_solv from working on SGI 64-bit)
-
-Revision 1.2  2001/03/12 14:45:35  vebjornb
-Fixed bug that caused the test energy_solv to crash on SGI
-
-Revision 1.1.1.1  2001/02/08 13:33:32  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
+===========================================================================
 Revision 1.2  2001/01/17 10:41:34  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:37  vebjornb
-Dalton 1.2
 
 Revision 1.5  2000/05/24 12:43:25  hjj
 1) attempted to get WLKREJ true working again (not tested)
@@ -86,7 +55,7 @@ also screening for SIRCNO in OPTST
 \hjaaj dec 1999:
 1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
 2) polishing
-=============================================================================
+===========================================================================
 #endif
 C  /* Deck siropt */
       SUBROUTINE SIROPT(WRK,LFREE,ICONV)

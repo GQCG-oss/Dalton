@@ -8,4 +8,3 @@
 #else
       DOUBLE PRECISION    CHARGE, CORD, GNUEXP
 #endif
-

@@ -1,10 +1,8 @@
-C$Id: elweak.h,v 1.4 2002-01-18 13:16:35 alfch Exp $
-C
 C
 C     Constants for electroweak interaction
 C
       LOGICAL BGWEIL, PVFINL, ELWEAK, PVPSO, PVSO
       PARAMETER (WEINBG = 1D0 - 4D0 * 0.2319D0)
       PARAMETER (GFERMI = 5.73416D-17)
-      COMMON /COMEPV/ PVFINN,BGWEIN, ISOTPV(MXCENT),  BGWEIL, PVFINL, 
-     &       ELWEAK, PVPSO, PVSO
+      COMMON /COMEPV/ PVFINN, BGWEIN, ISOTPV(MXCENT), BGWEIL, PVFINL, 
+     &                ELWEAK, PVPSO,  PVSO

@@ -1,6 +1,3 @@
-C
-C$Id: cbicrs.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
-C
       LOGICAL SKIP, RUNINT,
      *        RUNFCK, TWOH1, NOH1, NOH2, FCKTST, RUNSDR, RUNTRA,
      *        SDRTST, UNDIF, TRATST, RUNGDY, NODC, NODV, NOPV, TESTFS,

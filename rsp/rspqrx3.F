@@ -31,27 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspqrx3.F,v 1.3 2001-05-31 06:38:30 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef REVLOG
-$Log: not supported by cvs2svn $
-Revision 1.2  2001/05/09 11:59:44  hjj
-corrected erroneous use of MAXORB /hjaaj
-
-Revision 1.1.1.1  2001/02/08 13:33:13  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.3  2001/01/17 16:09:34  vebjornb
-Added dimension checks before calls to DGEMM in response module
-
-Revision 1.2  2001/01/17 10:41:31  vebjornb
-Calls to *MPA*B* in arhpack.F has been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:42  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.2  2000/05/24 19:06:44  hjj
 new getref calls with appropriate NDREF instead of NCREF
 (fixing error for triplet with CSF)
@@ -59,6 +42,7 @@ Polish.
 
 941223-hjaaj: new QFOCK call
 931015-hjaaj: GTZYMT, TRZYMT: stop if NSIM .ne. 1
+===========================================================================
 #endif
 C  /* Deck t3drv */
       SUBROUTINE T3DRV(NSIM,ISYMA,ISYMB,ISYMC,VECB,VECC,ATEST,VECA,

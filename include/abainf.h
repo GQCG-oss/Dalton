@@ -1,6 +1,4 @@
 C
-C$Id: abainf.h,v 1.2 2001-03-13 08:43:55 vebjornb Exp $
-C
 C     Parameters NSYML must be updated after changes (for parallelization)
 C     NOTE: DOSYM are sent to slaves in a parallel calculation and
 C           should not be move from this subroutine

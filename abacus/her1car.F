@@ -31,9 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her1car.F,v 1.4 2001-12-13 08:52:37 ruden Exp $
 #include <single.h>
+C
 C  /* Deck oneprm */
       SUBROUTINE ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
      &                  RLMINT,RLMTAB,FCM,

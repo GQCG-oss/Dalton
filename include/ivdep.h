@@ -1,6 +1,3 @@
-C
-C$Id: ivdep.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
-C
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
 CDIR$ IVDEP
 #endif

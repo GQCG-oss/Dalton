@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abavib.F,v 1.9 2001-12-13 08:52:36 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck notes */
 970923-vb
 Improved symmetry classification of normal modes through procedure DETIRP.
@@ -44,6 +43,7 @@ Added VRML visualization of normal modes.
 renamed GETC to GETCMAT to avoid name conflict with system routine GETC
 950501-hjaaj
 move VIBMAS to hergp.u (VIBMAS called by CMMASS called by HERINP)
+===========================================================================
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)

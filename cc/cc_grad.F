@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc_grad */
       SUBROUTINE CC_GRAD(GRADH1,GRADFS,WORK,LWORK,IOPT)
 C

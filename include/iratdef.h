@@ -1,6 +1,3 @@
-C
-C$Id: iratdef.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
-C
 #include <linesep.h>
 C     IRAT  = (real word length) / (integer word length)
 C     IRAT2 = (real word length) / (half-integer word length)

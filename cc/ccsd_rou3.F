@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 !  /* Deck cc_bf3 */
       SUBROUTINE CC_BF3(XINT,OMEGA2,XLAMD1,ISYML1,XLAMD2,
      *                  ISYML2,XLAMD3,ISYML3,

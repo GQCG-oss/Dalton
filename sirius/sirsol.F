@@ -31,12 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirsol.F,v 1.2 2001-05-31 06:38:37 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
+===========================================================================
 TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
 hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
        in Oslo stating
@@ -44,12 +42,6 @@ hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
        I don't see why that should be true so I have removed the change until
        further.  There must be a bug in SOLNC0 if abs(Tn(l,m)) .gt. 1.0D-14
        when symmetry of (l,m) is not totally symmetric.  /950824-hjaaj
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:37  vebjornb
-Dalton 1.2
 
 Revision 1.2  2000/05/24 12:53:44  hjj
 SOLFCK: corrected sign error in FCSOL introduced with AO code;
@@ -72,6 +64,7 @@ SOLFL: EPSLON in parameter list
 920522-hjaaj: added SOLREF deck
 summer 1990-hjaaj: rewritten for determinant CI and symmetry
 fall 1986 Minneapolis: original code
+===========================================================================
 #endif
 #ifdef UNDEF
 /* Comdeck hj_todo */

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: eri2car1.F,v 1.5 2002-02-12 08:19:26 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
      &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,

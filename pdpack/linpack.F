@@ -1,6 +1,3 @@
-C
-C$Id
-C
 C  /* Deck dgelinpack */
 #if !defined (VAR_NOLINPACK)
       SUBROUTINE DGECO(A,LDA,N,IPVT,RCOND,Z)

@@ -1,4 +1,1 @@
-C
-C$Id: symind.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
       COMMON /SYMIND/ INDFA(8,MXAQN),INDFB(8,MXAQN),ISOFRA(8),ISOFRB(8)

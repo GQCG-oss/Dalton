@@ -1,7 +1,4 @@
 C
-C$Id: pribak.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
-C
-C
 C     /PRIBAK/ is a copy of /INFPRI/
 C
       LOGICAL P4FLGB,P6FLGB

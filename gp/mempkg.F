@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: mempkg.F,v 1.2 2001-05-31 06:38:26 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck memlog */
 910110-hjaaj MEMREL: removed non-standard char. concat. in CALL MEMCHK
 901004-hjaaj: NWNMEM introduced, no final check on NWNMEM (yet)
@@ -48,6 +47,7 @@ C
  MEMGET: warning if memid(2) .ne. 0 for work(kfree)
 890429-hjaaj-k10d
  corrected code error in MEMGET for KFREE=1
+===========================================================================
 #endif
 C  /* Deck memini */
       SUBROUTINE MEMINI(LUWME1,LUEME1)

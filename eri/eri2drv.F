@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: eri2drv.F,v 1.8 2002-02-12 08:14:19 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck er2inp */
       SUBROUTINE ER2INP(WORD)
 #include <implicit.h>

@@ -3,4 +3,3 @@
      &                THRTWO, RTNTWO, TKTIME, ICEDIF, IFTHRS, SOFOCK,
      &                USRSCR
       COMMON /CBRHR2/ THRFAC(2)
-

@@ -31,14 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abamag.F,v 1.13 2002-02-12 08:17:22 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck notes */
 950501-hjaaj
 move CMMASS to hergp.u
+===========================================================================
 #endif
 C  /* Deck maginp */
       SUBROUTINE MAGINP(WORD)

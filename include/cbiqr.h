@@ -1,6 +1,3 @@
-C
-C$Id: cbiqr.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
       PARAMETER (NFMAX = 10)
       PARAMETER (MAXPP = 80)
       CHARACTER*8     LABAPP

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
 C  /* Deck cc_int4o */
       SUBROUTINE CC_INT4O(XIJK0,ISYIJK0,XIJK1,ISYIJK1,

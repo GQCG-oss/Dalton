@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: gphjj.F,v 1.11 2001-06-08 11:22:37 hjj Exp $
-C
 #include <single.h>
+C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)
 C

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: drcctl.F,v 1.3 2001-11-20 13:09:13 hjj Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck changes */
 900108-hjaaj
   LBINTD = optimal buffer length .le. 1024 (instead of N2ORBT)
@@ -50,6 +49,7 @@ C
   %s/IS(/ISMO(/
   Use IPRTRA instead of IPRI6
   Print number of passes over LUINTM (= NLOAD)
+===========================================================================
 #endif
 C  /* Deck drcctl */
       SUBROUTINE DRCCTL(LVLDRC,WRK,LWRK)

@@ -1,6 +1,3 @@
-C
-C$Id: arhpack.F,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
-C
 C  /* Deck mpapb */
       SUBROUTINE MPAPB(NDIMA,NCOLB,AP,B,C)
 C

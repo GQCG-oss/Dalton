@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
 C  /* Deck cc_sort4o */
       SUBROUTINE CC_SORT4O(XKJIL,ISYM4O,XJKLI,IOPT)

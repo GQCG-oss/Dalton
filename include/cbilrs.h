@@ -1,6 +1,3 @@
-C
-C$Id: cbilrs.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
       PARAMETER (MXFRQ = 25)
       LOGICAL EXCLC
       COMMON /CBILRS/ THRCLC, FREQUE(MXFRQ),

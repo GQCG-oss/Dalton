@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rsptpa2.F,v 1.2 2001-05-31 06:38:31 vebjornb Exp $
-C
 #include <single.h>
+C
       SUBROUTINE TP1IND
 C
 C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT ONE-INDEX

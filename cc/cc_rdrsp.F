@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 c/* Deck cc_rdrsp */
       SUBROUTINE CC_RDRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,VEC1,VEC2)
 C---------------------------------------------------------------------*

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: dens.F,v 1.2 2001-05-31 06:38:33 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
 /* Comdeck last_changes */
 C modifications by jeppe sunday jan 17  '88  ( DSPDM3 ADDED )

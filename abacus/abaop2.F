@@ -31,14 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaop2.F,v 1.3 2001-12-13 08:52:36 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 971020-vebjornb: Just an extension of abaopt.F which is becoming
                  awkwardly large.
+===========================================================================
 #endif
 C  /* Deck linsrc */
       SUBROUTINE LINSRC(ICRD,MCRD,GRAD,GRADOL,STEP,STEPOL,

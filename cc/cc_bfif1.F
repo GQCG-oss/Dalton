@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
 C  /* Deck cc_bfif1 */
       SUBROUTINE CC_BFIF1(BFRHF0,ISYRHF0,XMGD1,ISYMGD1,

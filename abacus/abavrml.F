@@ -31,13 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abavrml.F,v 1.2 2001-05-31 06:38:03 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 960319-vebjornb: New module for visualization with VRML models.
+===========================================================================
 #endif
 C  /* Deck mkvrml */
       SUBROUTINE MKVRML(LAST, ATMARR, IEDIM, EVEC, EVC1, EVC2)

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
       Subroutine symtrafo(LUPROP,LUPROP2,PROPRI,IPRINT,WRK,LFREE)
 cbs   
 cbs   Purpose: combine SO-integrals from amfi to symmetry-addapted   

@@ -1,6 +1,3 @@
-C
-C$Id: aobtch.h,v 1.5 2001-12-13 08:54:39 ruden Exp $
-C
       LOGICAL ACTVBT
       COMMON /AOBTCH/ EXPBT(MXPRIM),  
      &                CORXBT(MXSHEL), CORYBT(MXSHEL), CORZBT(MXSHEL),
@@ -13,4 +10,3 @@ C
      &                NORBBT(MXSHEL), ACTVBT(MXSHEL,4),
      &                NAOBCH, NBASE, NGAB, IORBRP(0:7),
      &                MAXQN, KQNBT(MXQN), NQNBT(MXQN)
-

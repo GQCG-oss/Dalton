@@ -31,16 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspc8.F,v 1.3 2002-02-12 08:17:23 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck rev_log */
 921011-pj+hjaaj: EFPOLL added C6IFC test
 920722-Hinne Hettema + HJAaJ
 inserted Hinnes changes in EFPOLL,POLIM (DIFMAX test of convergence,
 changed print levels, new format for LURSP7, fixed CFREQ bug)
+===========================================================================
 #endif
 C  /* Deck rspc6 */
       SUBROUTINE RSPC6(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: qpack.F,v 1.2 2001-05-31 06:38:26 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck qpack_log */
  1-Mar-1989 (c) Copyright Hans Joergen Aa. Jensen
  Package for trace back, and maybe later call trees and timing
@@ -97,7 +96,7 @@ C
      *   QTIME(JTREE),TIMCHL,QTIME(JTREE)-TIMCHL
  a summary can also be made, with accumulated values for each called
  module.
-
+===========================================================================
 #endif
 C  /* Deck qpackage */
       SUBROUTINE QENTER(IDENT)

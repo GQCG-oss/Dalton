@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her2ave.F,v 1.3 2001-10-01 13:22:12 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck intexp */
       SUBROUTINE INTEXP(HESSEE,AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,NINDAB,
      &                  NINDCD,NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,

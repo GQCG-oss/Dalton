@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: eri2sym.F,v 1.4 2001-05-31 06:38:25 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck erisym */
       SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IODDCC,IPNTUV,IPRINT)
 #include <implicit.h>

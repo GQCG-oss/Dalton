@@ -31,15 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspmc3.F,v 1.5 2001-11-13 19:32:48 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
+===========================================================================
 Revision 1.2  2000/05/24 19:04:06  hjj
 new getref calls with appropriate NDREF instead of NCREF
 (fixing error for triplet with CSF)
+===========================================================================
 #endif
       SUBROUTINE MELONE(PRPMO,IOPSYM,DEN1,OVLAP,ONETOT,IPRONE,PRPLBL)
 C

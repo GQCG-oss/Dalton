@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: ciham.F,v 1.2 2001-05-31 06:38:32 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck ciham */
       SUBROUTINE CIHAM(IWAY,MXPRDT,ICSYM,IDET,CIDIA,NCONF,
      *                 ECORE,FCAC,H2AC,XNDXCI,WRK,LWRK,IPRINT)

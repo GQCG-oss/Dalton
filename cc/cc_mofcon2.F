@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
       SUBROUTINE CC_MOFCON2(XINT,OMEGA2,
      *                      XLAMPA,XLAMHA,XLAMPB,XLAMHB,XLAMPC,XLAMHD,
      *                      ISYMXLA,ISYMXLB,ISYMXLC,ISYMXLD,

@@ -31,7 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck notes */
 940728-hjaaj: defined IRIX (recl=*4 words, not bytes)
 #include <single.h>
@@ -42,6 +45,7 @@ OITH1X: this routine written by OV is never called currently. It may be
 OITH1X: this routine written by OV is never called currently.
   It may be called in rspoit instead of OITH1 if sec-sec block is
   not needed.
+===========================================================================
 #endif
 C  /* Deck rspoit */
       SUBROUTINE RSPOIT(IDAXO,IDAXN,JTRLVL,LSYOIT,OITMAT,

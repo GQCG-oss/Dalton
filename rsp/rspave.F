@@ -31,21 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspave.F,v 1.2 2001-05-31 06:38:28 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck rev_log */
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:13  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:40  vebjornb
-Dalton 1.2
 
 Revision 1.2  2000/05/01 12:13:01  hjj
 Removed obsolete KAVER test.
@@ -60,6 +52,7 @@ Purpose of routines :
 
 List of updates:
 ================
+===========================================================================
 #endif
 C  /* Deck rspave */
       SUBROUTINE RSPAVE (VECS,NVDIM,NVSIM)

@@ -34,28 +34,9 @@ C
 #include <single.h>
 C
 #ifdef REV_LOG
-Revision 1.3.2.2  2001/12/12 10:49:22  ruden
-Merging dft-1-0 into dalton. TR
-
-Revision 1.4  2001/05/31 06:38:06  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.3  2001/03/18 21:53:34  vebjornb
-Fixed several uninitialized variables
-
-Revision 1.2  2001/03/13 08:43:36  vebjornb
-- Reshuffled include statements and a couple of common blocks to
-  more in line with ANSI Fortran (only ABACUS files)
-- Updated one of the test jobs
-
-Revision 1.1.1.1  2001/02/08 13:33:19  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
+===========================================================================
 Revision 1.2  2001/01/31 17:51:20  vebjornb
 Parallel modifications from pdahle, MPI and PVM
-
-Revision 1.1.1.1  2001/01/15 13:53:50  vebjornb
-Dalton 1.2
 
 Revision 1.3  2000/05/04 12:26:07  hjj
 (1) merged with Dirac version:
@@ -66,7 +47,7 @@ Revision 1.3  2000/05/04 12:26:07  hjj
 Revision 1.2  2000/05/04 10:19:53  hjj
 (1) LUPROP .eq. 0 tests changed to LUPROP .le. 0
 (2) open LUPROP as unknown in GABGEN
-
+===========================================================================
 #endif
 C/* Deck gabdrv */
       SUBROUTINE GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,

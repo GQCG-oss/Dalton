@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 c*DECK CC_RHTR
       SUBROUTINE CC_RHTR(FRHO1,LUFR1,FRHO2,LUFR2,
      *                   FC1AM,LUFC1,FC2AM,LUFC2,

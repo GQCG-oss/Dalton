@@ -1,3 +1,1 @@
-C
       INTEGER MXAOVC, MXCONT
-C

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirci.F,v 1.3 2001-05-31 06:38:34 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck cimain */
       SUBROUTINE CIMAIN(WORK,LFREE,ICONV)
 C

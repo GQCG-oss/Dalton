@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
       subroutine dgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
       dimension a(1), b(1), c(1)
       call sgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)

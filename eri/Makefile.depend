@@ -15,7 +15,7 @@ eri2ave.o : eri2ave.F \
   ../include/iratdef.h  ../include/maxaqn.h \
   ../include/mxcent.h  ../include/mxorb.h \
   ../include/nuclei.h  ../include/priunit.h \
-  ../include/symmet.h
+  ../include/single.h  ../include/symmet.h
 eri2car1.o : eri2car1.F \
   ../include/cbieri.h  ../include/eriao.h \
   ../include/ericom.h  ../include/hertop.h \
@@ -156,11 +156,11 @@ eri2vec.o : eri2vec.F \
   ../include/single.h  ../include/symmet.h
 eriprg.o : eriprg.F \
   ../include/implicit.h  ../include/mtags.h \
-  ../include/priunit.h
+  ../include/priunit.h  ../include/single.h
 erisph.o : erisph.F \
   ../include/ccom.h  ../include/ericom.h \
-  ../include/implicit.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxdr.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h  ../include/ibtfun.h
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/maxaqn.h  ../include/mxcent.h \
+  ../include/mxdr.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h

@@ -31,9 +31,6 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspcr7.F,v 1.2 2001-05-31 06:38:28 vebjornb Exp $
-C
 #include <single.h>
 C
       SUBROUTINE S4INIT(KZYVA,KZYVB,KZYVC,KZYVD,

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: herdrv.F,v 1.20 2002-02-22 08:51:49 ruud Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck notes */
 950602-vebjorn:
       Added flag HRINPC to ensure that HERMIT input processing is done
@@ -45,6 +44,7 @@ C
     (for generating AOSUPINT file from existing AOTWOINT)
     Kenneth: will you put .SUPONLy into HERMIT manual ?
     Done by Kenneth before jan.-96
+===========================================================================
 #endif
 C  /* Deck herctl */
       SUBROUTINE HERCTL(WORK,LWORK)

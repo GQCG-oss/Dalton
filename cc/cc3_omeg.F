@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc3_omeg */
       SUBROUTINE CC3_OMEG(OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,ISYMT2,FOCK,
      *                    XLAMDP,XLAMDH,WORK,LWORK)

@@ -1,6 +1,3 @@
-C
-C$Id: infind.h,v 1.1.1.1 2001-02-08 13:33:27 hjj Exp $
-C
       PARAMETER (LIROW  = 3*MAXORB + 3)
       PARAMETER (JTFRO  = 1, JTINAC = 2, JTACT  = 3, JTSEC  = 4)
       PARAMETER (JTFRFR =-1, JTINFR =-2, JTACFR =-3, JTSEFR =-4,

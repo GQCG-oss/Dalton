@@ -1,5 +1,3 @@
-C
-C
       COMMON /ERISTA/ NPPA,  NCPA,  NPCA,  NCCA,  NODPQ,
      &                NPPXA, NCPXA, NPCXA, NCCXA, NTPAS,
      &                NPPX1, NCPX1, NPCX1, NCCX1,

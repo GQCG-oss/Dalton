@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
       SUBROUTINE CC_HFR1DEN(R1DEN,IOPER,IORDER,ISYMOPR,WORK,LWORK)
 *---------------------------------------------------------------------*

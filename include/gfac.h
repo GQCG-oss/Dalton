@@ -1,4 +1,1 @@
-C
-C$Id: gfac.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
-C
       PARAMETER (GFAC = 2.0023193044D0)

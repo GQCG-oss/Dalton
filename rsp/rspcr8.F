@@ -31,9 +31,6 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspcr8.F,v 1.7 2002-01-15 12:20:58 ruden Exp $
-C
 #include <single.h>
 C
       SUBROUTINE CDENS1(ISYMB,CMO,ZYMB,DXCAO,WRK,LWRK)

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her1sym.F,v 1.3 2001-05-31 06:38:05 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck onesop */
       SUBROUTINE ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,WORK,LWORK,
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,

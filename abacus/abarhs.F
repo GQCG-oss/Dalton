@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abarhs.F,v 1.9 2002-02-12 08:17:22 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 970819-hjaaj
 RHSINP: removed CALL SETSIR, has for some time been in ABAINP in
@@ -54,6 +53,7 @@ MAKEGD: NODIFC in parameter list to ABARHS
   removed open and close of LUONEL in MAKEGD
   removed COP and ICOP in parameterlist to CHKRES and TR1TST
   disabled TR1TST because not used in present version
+===========================================================================
 #endif
 C  /* Deck rhsinp */
       SUBROUTINE RHSINP(WORD)

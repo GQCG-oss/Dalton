@@ -31,28 +31,9 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abamolden.F,v 1.5 2001-06-11 07:52:19 hjj Exp $
+#include <single.h>
 C
 C     Original: abamolden  alex a auer 5.2.99
-C
-C$Log: not supported by cvs2svn $
-CRevision 1.4  2001/06/06 15:17:28  vebjornb
-CSeveral bugfixes. In particular the molecular geometry is now correct
-Cwhether symmetry is used or not. Also fixed printing of MO coefficients
-Cfor systems with more than 100 orbitals (will now work for up to 9999
-Corbitals) - VB
-C
-CRevision 1.3  2001/05/31 06:38:01  vebjornb
-CUpdated copyright, authors and reference in all Fortran-files - VB
-C
-CRevision 1.2  2001/03/13 08:43:27  vebjornb
-C- Reshuffled include statements and a couple of common blocks to
-C  more in line with ANSI Fortran (only ABACUS files)
-C- Updated one of the test jobs
-C
-CRevision 1.1.1.1  2001/02/08 13:33:19  hjj
-C*** Dalton Master Version *** cvs started 8-Feb-2001.
 C
 CRevision 1.2  2001/02/01 19:15:52  vebjornb
 CMinor bugfixes incl. missing line in abaptr.F and optimization of eispack.F

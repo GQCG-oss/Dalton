@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc_hpqta */
       SUBROUTINE CC_HPQTA(XHPQ,ISYHPQ,XHCA,XHIK,ISYRES,LISTR,IDLSTR,
      &                    ISYTAM,LE1,LE2,WORK, LWORK)

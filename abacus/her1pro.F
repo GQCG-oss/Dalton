@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her1pro.F,v 1.14 2002-02-22 08:51:49 ruud Exp $
-C
 #include <single.h>
+C
 C  /* Deck pr1int */
       SUBROUTINE PR1INT(WORD,WORK,LWORK,IORDER,NPQUAD,
      &                  TRIANG,PROPRI,IPRINT)

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: hypinp.F,v 1.5 2001-06-22 13:08:31 hjj Exp $
-C
 #include <single.h>
+C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C

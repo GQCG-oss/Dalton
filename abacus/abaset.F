@@ -31,36 +31,11 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaset.F,v 1.4 2001-12-13 08:52:36 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1.4.3  2001/12/12 10:49:15  ruden
-Merging dft-1-0 into dalton. TR
-
-Revision 1.3  2001/05/31 06:38:03  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.2  2001/03/22 14:53:41  hjj
-- Changed MWORK form 200 000 000 to 8 000 000; this should ensure
-that it will be unlikely that TRACD has insufficient memory.
-(MWORK should not be larger than resident memory to avoid paging in
-integral transformation; 64 Mbytes sounds as a good number and the
-integral transformation will hardly be more efficient with a larger number).
-- removed sirdefaults.h and reference in sirinp.F and abaset.F
-  (sirdefaults.h only defined MWORK),
-  instead define MWORK in block data in sirbkd.F
-- removed obsolete LBSYMB in sirset.F
-
-Revision 1.1.1.1  2001/02/08 13:33:19  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:47  vebjornb
-Dalton 1.2
-
 Revision 1.4  2000/05/01 12:02:22  hjj
 removed obsolete KAVER,KSYM(4) from READ(LUSIFC)
 
@@ -91,6 +66,7 @@ now no parameters to CALL SIRINI
   moved all set /INFDIM/ to NSETUP from SETSIR
 950824-hjaaj: SETSIR: removed initialization of obsolete ORICAV(3)
   s/H1VORB/FCVORB/
+===========================================================================
 #endif
 C  /* Deck setsir */
       SUBROUTINE SETSIR(WORK,LWORK)

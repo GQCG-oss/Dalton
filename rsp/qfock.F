@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: qfock.F,v 1.3 2001-10-08 11:16:01 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 TO DO/941223-hjaaj:
 (1)transpose matrices in QDENS[12]; new QDENS[12] as the new LFKDEN ?
@@ -46,6 +45,7 @@ TO DO/941223-hjaaj:
 941221-hjaaj
  new parameter list (including spin values)
  implemented new SIRFCK
+===========================================================================
 #endif
 C  /* Deck qfock */
       SUBROUTINE QFOCK(NOSIM,MSYMB,MSYMC,IGRSPI,ISPIN1,ISPIN2,

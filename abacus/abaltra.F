@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaltra.F,v 1.2 2001-05-31 06:38:01 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 950102-hjaaj
 TRLTDS: improved vectorization (now not NASHA in inner loop)
@@ -45,6 +44,7 @@ removed TRFDIS (routine was duplicated in abadtra.u)
               option for only FQL if open-shell Hartree-Fock ?
               probably not worth the effort
 no changes made today; abaltra.f and abaltra.o from Nov. 10 is still OK
+===========================================================================
 #endif
 C  /* Deck lontra */
       SUBROUTINE LONTRA(IBXYZ,IBOPSY,H2LAC,FQL,CMO,PVSQ,WRK,LWRK,IPRINT)

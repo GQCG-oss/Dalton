@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: siraba.F,v 1.4 2001-10-01 13:22:20 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck notes */
 >>> lontr1.u >>> London 1-index transformation of regular integrals
 941207-hjaaj:
@@ -61,6 +60,7 @@ LONTR1: integrated into ABATR1
     abaogr, abatr1 with E92 revision for London orbitals (london_sir.u)
 900409-hjaaj: abarhs rev: skip cisigo if rhf (and similar checks).
 891214-hjaaj: this module contains special files for abacus
+===========================================================================
 #endif
 C  /* Deck abarhs */
       SUBROUTINE ABARHS(NGD,DV,PV,FC,FV,CREF,CMO,

@@ -1,4 +1,3 @@
-*Comdeck param $Revision: 1.1.1.1 $
 cbs   
 cbs   this include files hold a lot of dimensioning parameters and arrays for 
 cbs   exponents, contraction coefficients and integrals. 

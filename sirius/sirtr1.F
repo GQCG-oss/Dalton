@@ -31,15 +31,15 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirtr1.F,v 1.6 2001-10-01 13:22:21 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck sirtr1_log */
 900115: TODO goer noget ved PRINRM
                   CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)
       END
+===========================================================================
 #endif
 C  /* Deck sirtr1 */
       SUBROUTINE SIRTR1(NCSIM1,NOSIM,CMO,

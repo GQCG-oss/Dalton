@@ -31,30 +31,12 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspe2c.F,v 1.5 2002-02-12 08:17:23 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
-$Log: not supported by cvs2svn $
-Revision 1.4.2.1  2002/01/31 13:34:41  vebjornb
-Changed GETGP to GETGPV everywhere. The former subroutine name caused a
-conflict with the cxperf profiling tool on HP - VB
-
-Revision 1.4  2002/01/17 09:02:28  alfch
-Keywords and output for parity violation.
-
-Revision 1.3  2001/05/31 06:38:29  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.2  2001/02/12 18:17:56  vebjornb
-First commit after CC merge
-
+===========================================================================
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:41  vebjornb
-Dalton 1.2
 
 Revision 1.3  2000/05/24 19:00:24  hjj
 new GETREF and CREF allocation (fix of triplet problem for CSF's)
@@ -96,6 +78,7 @@ LRST: stop if RSPSUP true and restart (need some additional coding)
 920721-Hinne Hettema
 RSPCTL: "NSIM=0" for RSPRED before GO TO 1000 (2 places)
 ORBDIA: inserted averaging code (if RSPSUP)
+===========================================================================
 #endif
 C  /* Deck e2sym */
       SUBROUTINE E2SYM(IBTYP,CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,

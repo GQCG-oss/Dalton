@@ -31,25 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: cisig.F,v 1.2 2001-05-31 06:38:32 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:33  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.2  2000/05/05 11:19:33  hjj
 bug fix: now always calculate ci diag. in CIDAG, previously it was only
 done if LUIT2 .ge. 0 (must be a leftover, the code LUIT2 .lt. 0 was not
 used anywhere, rather UPDGRD expected diagonal to be calculated with
 LUIT2 .lt. 0 !!!).
-
+===========================================================================
 #endif
 C  /* Deck tpblm2 */
       SUBROUTINE TPBLM2(A,AT,LBLR,NBLR,LBLC,NBLC,IFLAG,IORD)

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirorb.F,v 1.3 2001-10-01 13:22:21 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck sirorb */
       SUBROUTINE SIRORB(MAXITO,NITORB,CMO,GORB,DV,PV,FC,FV,FQ,
      &                  WRK,LFREE)

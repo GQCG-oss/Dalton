@@ -31,19 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: qrhso.F,v 1.2 2001-05-31 06:38:27 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:14  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:40  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.4  2000/05/24 18:46:04  hjj
 corrected TRAHSO call (ftnchek)
 
@@ -54,7 +45,7 @@ Revision 1.2  2000/05/17 07:20:37  hjj
 Use MZCONF(1) instead NCREF for CREF (for triplet response w. CSF)
 New GETREF calls.
 Removed delete of LUMHSO which caused trouble because LUMHSO was neeeded later!
-
+===========================================================================
 #endif
 C  /* Deck x2hso */
       SUBROUTINE X2HSO(NSIM,KZYVR,KZYV,IGRSYM,IGRSPI,ISYMV,ISPINV,

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her2sup.F,v 1.4 2001-10-09 16:40:42 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 950605-vebjornb:
       Added test to check if LUSUPM already open to avoid error message.
@@ -77,6 +76,7 @@ rec n : -2
    implemented NEWSUP = .NOT. OLDSUP format (label "PSUPMAT ");
    removed saving IJ,KL in INDP in SUP1,SUP,SUP1D,SUPD; just
    allocate IT(NP+1) for INDP when not OLDSUP
+===========================================================================
 #endif
 C  /* Deck frmsup */
       SUBROUTINE FRMSUP(WORK,LWORK,NOSYM,OLDSUP,THRESH,IPRINT)

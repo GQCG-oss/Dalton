@@ -31,16 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rsporp.F,v 1.4 2001-05-31 06:38:30 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck rev_log */
 920929-ov    ORPSVE:  work dimension check
 920723-hjaaj ORPLIN: inserted missing CMO in CALL RSPOLI
 920722-hjaaj ORPNEX,ORPST: new THRLDV definition for lin.dep.
 920721-Hinne Hettema ORPORT: inserted averaging code (if RSPSUP)
+===========================================================================
 #endif
 C  /* Deck orpctl */
       SUBROUTINE ORPCTL(MAXORP,KOZRED,AOFREQ,THCORP,A1,REDOE,REDOS,

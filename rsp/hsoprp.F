@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: hsoprp.F,v 1.2 2001-05-31 06:38:27 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck hsoctl */
       SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
 C

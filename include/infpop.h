@@ -1,6 +1,3 @@
-C
-C$Id: infpop.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
-C
       PARAMETER ( MAXTYP = 20 )
       COMMON /INFPOP/ TITLEM(24),DIPOL(3),QPOL(6),QQFAC(3),
      *                IFXYZ(3),JFXYZ(3),NAME(MXCENT),POPNUC(MXCENT),

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspfxd.F,v 1.2 2001-05-31 06:38:29 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck rspfxd */
       SUBROUTINE RSPFXD (FI,FA,QA,QB,H2AX,
      *                  IDAX,INTSYM, ISYMDN,DEN1,DEN2,

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abarspn.F,v 1.4 2001-10-01 13:22:11 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck abarsp */
       SUBROUTINE ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,
      *                  EXVAL,NEXVAL,NABATY,NABAOP,LABEL,LUGDVE,

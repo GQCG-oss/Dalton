@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck ccrhs_cio */
       SUBROUTINE CCRHS_CIO2(OMEGA2,T2AM,XLAMDH,WORK,LWORK,
      *                      ISYVEC,ISYCIM,LUC,CFIL,IV,IOPT,

@@ -31,23 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: getcix.F,v 1.2 2001-05-31 06:38:33 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:35  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.2  2000/05/24 12:20:33  hjj
 1) NCDETS new parameter in SETCI
 2) GETDETS new subroutine for getting det. vector from csf vector
-
+===========================================================================
 #endif
 C  /* Deck getcix */
       SUBROUTINE GETCIX(INDXCI,ICSYM,IHCSYM,WRK,LFRSAV,NOSYM)

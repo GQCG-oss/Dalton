@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abadtra.F,v 1.3 2001-05-31 06:38:00 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 kr/gh970815: Fixed bug in TRDSET, where second loop should go to IBSYM instead
              of IASYM
@@ -51,6 +50,7 @@ from abaltra.u:
               option for only FQD if open-shell Hartree-Fock ?
               probably not worth the effort
 no changes made today; abaltra.f and abaltra.o from Nov. 10 is still OK
+===========================================================================
 #endif
 C  /* Deck dertra */
       SUBROUTINE DERTRA(IATOM,CMO,PV,H2DAC,FQD,WORK,KWORK,MWORK)

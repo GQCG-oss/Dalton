@@ -31,10 +31,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 011002-vebjornb: Interfaces between Fortran 90 code and the
                  old common blocks.
+===========================================================================
 #endif
 C  /* Deck gtunit */
       SUBROUTINE GTUNIT(ILPRI, ILCMD, ILERR, IUSER)

@@ -32,6 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
+C
 C /* Deck dftexc */
       SUBROUTINE DFTEXC(DMAT,NDMAT,EXCMAT,NXCMAT,MAKDEN,DOERG,DOGRD,
      &                  DOLND,DOATR,TRPLET,HES,DOHES,WORK,LWORK,KPRINT)

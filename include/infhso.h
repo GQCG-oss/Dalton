@@ -1,6 +1,3 @@
-C
-C$Id: infhso.h,v 1.1.1.1 2001-02-08 13:33:27 hjj Exp $
-C
       LOGICAL TESTZY, DOSO1, DOSO2, X2MAT, A2MAT, X2GRAD, PHOSPH,
      &        MNFPHO
       PARAMETER (MXPHOS = 10)

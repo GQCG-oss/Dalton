@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abalnr.F,v 1.4 2002-02-12 08:17:22 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck lnrinp */
       SUBROUTINE LNRINP(WORD)
 C

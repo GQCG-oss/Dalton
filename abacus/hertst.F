@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: hertst.F,v 1.4 2002-02-22 08:51:49 ruud Exp $
-C
 #include <single.h>
+C
 C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
 #include <implicit.h>

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaptr.F,v 1.3 2001-05-31 06:38:02 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck comments */
   950505-hjaaj: changed print such that no print if IPRINT .le. 2
   *** PRT_COMMENTS
@@ -62,6 +61,7 @@ C
                   IF (IPQRS .LT. IPQRST) GOTO 40
           which must give problems if multiple passes.
           Determination of NPASS in PSIZE was wrong, has been corrected.
+===========================================================================
 #endif
 C  /* Deck ptran */
       SUBROUTINE PTRAN(NODPTR,WORK,LWORK,JPRINT,ANTI,PANTI,DIA2SO)

@@ -1,6 +1,3 @@
-C
-C$Id: cbitro.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
-C
       LOGICAL         COMPAR, SKIP, NOROT1,
      *                HESTRO, GDTRO, RDTRO, TROGRD, TROHES, TRODIP, CUT
       COMMON /CBITRO/ THRESH, IPRINT, COMPAR, SKIP, NOROT1,

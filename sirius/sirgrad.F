@@ -31,24 +31,12 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirgrad.F,v 1.3 2001-10-01 13:22:21 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REVISION_LOG
-$Log: not supported by cvs2svn $
-Revision 1.2  2001/05/31 06:38:35  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
+===========================================================================
 Revision 1.2  2001/01/17 10:41:33  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.1.1.1  2001/01/15 13:53:36  vebjornb
-Dalton 1.2
 
 Revision 1.7  2000/05/15 12:46:54  hjj
 polished in error messages (undefined LUERR found by ftnchek, call qtrace(LUERR) was removed)
@@ -70,7 +58,7 @@ modified LUSUPM test to LUSUPM .ne. -1 for GPOPEN compatibility
 ----------------------------
 revision 1.2 2000/04/13 14:06:18 hjj
 corrected LUSUPM test for new GPOPEN code
-=============================================================================
+===========================================================================
 #endif
 C  /* Deck cigrad */
       SUBROUTINE CIGRAD(CREF,FCAC,H2AC,INDXCI,GCI,EMCACT,WRK,LFREE)

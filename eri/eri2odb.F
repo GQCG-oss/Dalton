@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: eri2odb.F,v 1.4 2001-05-31 06:38:24 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck odbchs */
       SUBROUTINE ODBCHS(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,

@@ -75,5 +75,6 @@ dftpar.o : dftpar.F \
   ../include/orgcom.h  ../include/pi.h \
   ../include/pincom.h  ../include/primit.h \
   ../include/priunit.h  ../include/shells.h \
-  ../include/sphtrm.h  ../include/symmet.h \
-  ../include/wrkrsp.h  ../include/xyzpow.h
+  ../include/single.h  ../include/sphtrm.h \
+  ../include/symmet.h  ../include/wrkrsp.h \
+  ../include/xyzpow.h

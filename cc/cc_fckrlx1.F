@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *======================================================================
       SUBROUTINE CC_FCKRLX1(FOCK1,FOCK0,ISYFCK1,ISYFCK0,
      &                     XLAMDP0,XLAMDH0,ISYMP0,ISYMH0,

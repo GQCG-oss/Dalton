@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck pckr8 */
       SUBROUTINE PCKR8(BUFFER,NDATA,BUFPCK,NBYTE,IPCKTABLE,LPACK)
 *=====================================================================*

@@ -31,22 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: sirnr.F,v 1.2 2001-05-31 06:38:36 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REVISION_LOG
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1  2001/02/08 13:33:31  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:37  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.2  2000/05/01 14:05:16  hjj
 removed KAVER reference.
-
+===========================================================================
 #endif
 C  /* Deck sirnr */
       SUBROUTINE SIRNR(CREF,G,CMO,INDXCI,DV,PV,

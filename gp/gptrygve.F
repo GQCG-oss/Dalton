@@ -31,12 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: gptrygve.F,v 1.8 2001-11-13 19:32:47 vebjornb Exp $
-C
 #include <single.h>
 C
 #ifdef REV_LOG
+===========================================================================
 Revision 1.5-1.9  2000/05/02  hjj
 (1) changed QUIT so that it calls TSTAMP, prints total cpu and elapsed time,
     and stops with STOP 100
@@ -57,8 +55,9 @@ revision 1.3 2000/04/10 10:52:18 hjj
  the old test would use IUNTAB(100) and the dimension is only 99. /HJAaJ
 ----------------------------
 revision 1.2 2000/04/10 hjj
-changed initialization to -9xxx from 0, because unit 0 is stderr on many systems.
-=============================================================================
+ changed initialization to -9xxx from 0, because unit 0 is stderr on
+ many systems.
+===========================================================================
 #endif
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)

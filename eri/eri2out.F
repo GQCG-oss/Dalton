@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: eri2out.F,v 1.10 2001-11-13 19:32:46 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck eriout */
       SUBROUTINE ERIOUT(SO,ITYPE,IPNTCR,IODDCC,IPNTUV,BUF,IBUF,INDXBT,
      &                  NCOUNT,WORK,LWORK,IPRINT)

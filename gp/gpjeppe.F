@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: gpjeppe.F,v 1.2 2001-05-31 06:38:26 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck istvc2 */
       SUBROUTINE ISTVC2(IVEC,IBASE,IFACT,NDIM)
 C

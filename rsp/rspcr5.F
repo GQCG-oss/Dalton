@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspcr5.F,v 1.2 2001-05-31 06:38:28 vebjornb Exp $
-C
 #include <single.h>
+C
       SUBROUTINE WRTRSP(LU,LEN,VEC,LAB1,LAB2,FREQ1,FREQ2,
      &                  ISYM1,ISYM2,RSD,ANTSYM)
 C

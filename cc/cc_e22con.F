@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
 C  /* Deck cc_e22con */
       SUBROUTINE CC_E22CON(CTR2,ISYCTR,TAMP1,ISYTAM,QGAMMA,ISYGAM,

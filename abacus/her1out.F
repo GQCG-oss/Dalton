@@ -31,13 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her1out.F,v 1.2 2001-05-31 06:38:05 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 930209-hjaaj: add GSOLTT in SHDCHK
+===========================================================================
 #endif
 C  /* Deck wrtund */
       SUBROUTINE WRTUND(STHMAT,NBAST,NNBASX,IPRINT)

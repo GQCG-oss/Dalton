@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her1ave.F,v 1.2 2001-05-31 06:38:04 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck avena1 */
       SUBROUTINE AVENA1(ADER,NATOMC,SECDER,NCENTC,JCENTC,MAXCMP,JSYMC,
      &                  SIGNC,DSHELL,HESSNA)

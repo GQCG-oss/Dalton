@@ -33,12 +33,10 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-C$Id: intsort.F,v 1.4 2001-10-26 14:03:15 hjj Exp $
-C
 #define VAR_AOCANORDER
 #define VAR_STAR2
 #ifdef UNDEF
-/*
+===========================================================================
 961213-hjaaj
     removed check for LSORT .ge. 8*1024**2 (see MAERKE)
     : This check is not necessary, but instead we outght to
@@ -91,7 +89,7 @@ C
   IPRINT,INTSYM,THRQ parameters + more
   save INTSYM as IDATA(2) on LUORD
   set KEEP(I)=1 if NBAS(I)=0  
-*/
+===========================================================================
 #endif
       SUBROUTINE SORTAO(SCR,LSORT)
 C

@@ -1,6 +1,3 @@
-C
-C$Id: cbgetdis.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
-C
 C     -----------------------------------------------------------------
 C     Purpose of /CBGETD/: transfer information to GETINT about
 C     how the "H2AC" integrals are available.  The distribution

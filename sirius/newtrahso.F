@@ -31,16 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: newtrahso.F,v 1.2 2001-05-31 06:38:34 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 C/*COMDECK log */
 950103-hjaaj
 NX2HSO: changed IADRM(x,37,36) to IADRM(x, 1,37)
         and dimension from IARDM(3,36,36) to IADRM(3,36,37)
         however, IADRM(1:3,2:36,37) are not defined nor allocated.
+===========================================================================
 #endif
 C/*deck  trahso*/
       SUBROUTINE TRAHSO(ITRLSO,CMO,WRK,KWORK)

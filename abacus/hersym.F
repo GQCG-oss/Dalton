@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: hersym.F,v 1.6 2001-12-13 08:52:38 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 951116-hjaaj: subroutine sort renamed to SRTATM (sort is very generic)
 950618-kenneth
@@ -47,6 +46,7 @@ Added solvent in FNDSYM, as well as using NUCIND instead ATMARR in loops
 SYMADD: Completely new module to determine molecular symmetry, find the
 	symmetry elements, remove symmetry-dependant atoms and finally
 	return a string containing the full point group.
+===========================================================================
 #endif
 C  /* Deck symadd */
       SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
       SUBROUTINE CCRHS_IPM1(XINT,XINTP,XINTM,SCRAB,INDV1,INDV2,
      *                     ISYMAB,ISYMG,NUMG,IG1,IG2,IOPT)
 C

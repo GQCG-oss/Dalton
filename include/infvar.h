@@ -1,6 +1,3 @@
-C
-C$Id: infvar.h,v 1.2 2001-05-09 13:08:07 hjj Exp $
-C
 #if defined (VAR_STAR2)
       INTEGER*2 JWOP
 #endif

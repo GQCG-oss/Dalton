@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 c/* Deck cc_wrrsp */
       SUBROUTINE CC_WRRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,
      &                    VEC0,VEC1,VEC2,WORK,LWORK)

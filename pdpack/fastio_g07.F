@@ -1,7 +1,5 @@
-C
-C$Id: fastio_g07.F,v 1.4 2002-02-14 17:41:49 vebjornb Exp $
-C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck notes */
 C*  AUTHOR:   Per-Olof Widmark                                         *
 C*            Department of Theoretical Chemistry                      *
@@ -21,6 +19,7 @@ C*  94-08-23 hjaaj: recl in *4 words for IRIX .. LRECL always in bytes
 C*  97-04-09 hjaaj: renamed GETADR to SQGETA to avoid conflict with
 C*           system routine GETADR; renamed SETADR to SQSETA for
 C*           symmetry. Renamed GETERR to FIOERR to avoid future conflict.
+===========================================================================
 #endif
 C  /* Deck fx8io */
 C***********************************************************************

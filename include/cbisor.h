@@ -1,6 +1,3 @@
-C
-C$Id: cbisor.h,v 1.3 2001-12-13 08:54:39 ruden Exp $
-C
       LOGICAL RNINTS, DELAO
       COMMON /CBISOR/ THRQ2,ISKEEP(8),ISPRINT,ISPRFIO,ISNTSYM,
      &                DELAO,RNINTS

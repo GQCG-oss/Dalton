@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 * ==================================================================== *
       SUBROUTINE WFNAO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           NOINT,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,

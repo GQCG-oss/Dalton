@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaenr.F,v 1.3 2001-10-01 13:22:09 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck abaenr_log */
 920325-hjaaj: ANRCTL: increment NWARN if not converged
    ANRNEX: fixed for JCONV .lt. 0 as input parameter
@@ -46,6 +45,7 @@ C
 900216-hjaaj: changed names from NR... to ANR... (A for Abacus).
 - save perturbation symmetry on LUNR1 for restart, new restart label.
       END
+===========================================================================
 #endif
 C  /* Deck anrctl */
       SUBROUTINE ANRCTL(LMAXVE,REDH,REDGD,NREDH,NGD,NLOAD,DOXKAP,

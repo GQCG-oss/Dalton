@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: fone.F,v 1.3 2001-10-01 13:22:19 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck fonedn */
       SUBROUTINE FONEDN(NSIM,FCOCO,FVOCO,FCOEX,FVOEX)
 C 1)

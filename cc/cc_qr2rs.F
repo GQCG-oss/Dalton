@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 c*DECK CC_QR2RSD
        SUBROUTINE CC_QR2RSD(WORK,LWORK)
 C

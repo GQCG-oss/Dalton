@@ -1,6 +1,3 @@
-C
-C$Id: ibtfun.h,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
-C
 #if defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_SUN) || defined (SYS_NEC) || defined (SYS_HAL) || defined (SYS_LINUX)
       IBTAND(I,J) = IAND(I,J)
       IBTOR(I,J)  = IOR(I,J)

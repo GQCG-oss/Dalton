@@ -31,13 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: hergp.F,v 1.5 2001-10-01 13:22:13 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
 /* Comdeck notes */
+===========================================================================
 950501-hjaaj: added CMMASS and VIBMAS
+===========================================================================
 #endif
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD

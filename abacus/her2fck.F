@@ -31,24 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her2fck.F,v 1.3 2001-12-13 08:52:37 ruden Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
-$Log: not supported by cvs2svn $
-Revision 1.1.1.1.4.2  2001/12/12 10:49:22  ruden
-Merging dft-1-0 into dalton. TR
-
-Revision 1.2  2001/05/31 06:38:06  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.1.1.1  2001/02/08 13:33:18  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.1.1.1  2001/01/15 13:53:50  vebjornb
-Dalton 1.2
-
+===========================================================================
 Revision 1.2  2000/05/12 14:01:56  hjj
 changed NFACTR to PTFACT to be sure integer truncation implied by NFACTR
 will not give erroneous results (potential problem found with ftnchek).
@@ -65,8 +51,8 @@ implemented all six IFCTYPes (two was already implemented)
 improved efficiency of INTFCK by moving GINT outside and
  moving common factors to SKLFC1
 halved no. of  operations for IFCTYP=2 in INTFCK
+===========================================================================
 #endif
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck intfck */
       SUBROUTINE INTFCK(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,SYMFAC,

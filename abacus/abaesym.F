@@ -31,16 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: abaesym.F,v 1.2 2001-05-31 06:38:00 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 901023-hjaaj: new parameter list to CIDIAG in ABADIA
 900216-hjaaj: abalr: exit if ingd true (not reimplemented yet)
  -- abalr: set nload = 1 after resst if no trial vectors found
  (will make anrctl check if already converged without calling abalin)
       END
+===========================================================================
 #endif
 C  /* Deck abalr */
       SUBROUTINE ABALR(LMAXVE,INGD,REDH,REDGD,SOLEQ,IBNDX,CMO,UDV,PV,

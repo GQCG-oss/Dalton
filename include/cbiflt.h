@@ -1,5 +1,2 @@
-C
-C$Id: cbiflt.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
-C
       LOGICAL SKIP, RESPRI, CUT
       COMMON /CBIFLT/ IPRINT, SKIP, RESPRI, CUT

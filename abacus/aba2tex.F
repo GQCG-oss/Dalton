@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: aba2tex.F,v 1.4 2001-05-31 06:37:59 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck twoinp */
       SUBROUTINE TWOINP(WORD)
 C

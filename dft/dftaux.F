@@ -32,6 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
+C
 C  /* Deck getrho */
       SUBROUTINE GETRHO(DMAT,GSO,RHO,RHO13,DMAGAO,DFTHRI,IPRINT)
 C

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: hergeo.F,v 1.2 2001-05-31 06:38:08 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck geoana_log */
 950505-hjaaj:
  RADIUS: bug fix - made function double precision instead of real
@@ -45,6 +44,7 @@ CBIANA.
 900207-hjaaj: check for non-existent atoms for .ANGLES and .DIHEDR
 in GEOANA.
 Idea: make angle output as in zmat???
+===========================================================================
 #endif
 C  /* Deck anainp */
       SUBROUTINE ANAINP(WORD)

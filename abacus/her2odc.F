@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her2odc.F,v 1.3 2001-05-31 06:38:06 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck odcvec */
       SUBROUTINE ODCVEC(COOR12,EXP12,FAC12,CONT1,CONT2,JMAX1,JMAX2,
      &                  NSET1,NSET2,NUC1,NUC2,NUCT12,NORB1,NORB2,NPCO1,

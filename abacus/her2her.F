@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her2her.F,v 1.3 2001-05-31 06:38:06 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck hr2drv */
       SUBROUTINE HR2DRV(HERINT,INDHER,COOR12,COOR34,EXP12,EXP34,FAC12,
      &                  FAC34,NTUV,WORK,LWORK,JMAX,MAXDER,NUABCD,IPQ0X,

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc_aodens3 */
       SUBROUTINE CC_AODENS3(XLAMDP1,ISYMP1,XLAMDH2,ISYMH2,
      &                      XLAMDP3,ISYMP3,XLAMDH4,ISYMH4,

@@ -1,5 +1,3 @@
-C
-C
 #if defined (VAR_STAR2)
       INTEGER*2 JWOP, KLWOP
 #else
@@ -7,4 +5,3 @@ C
 #endif
       INTEGER NCONF, NWOPT, NVAR, JWOPSY, NWOP, NWOPH, NVARH, MAXWOP, 
      *        NCDETS
-

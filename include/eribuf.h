@@ -1,5 +1,3 @@
-C
-C
       LOGICAL NEWDIS
       COMMON /ERIBUF/ LBUF, NBUFS, NIBUF, NBITS, NBUFX(0:MXCOOR),
      &                NEWDIS

@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: huckel.F,v 1.3 2001-08-21 09:34:41 hjj Exp $
-C
 #include <single.h>
+C
 C   /* Deck hucdrv */
       SUBROUTINE HUCDRV(WORK,LWORK,CMO)
 C

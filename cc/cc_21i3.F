@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc_21i3 */
 *--------------------------------------------------------------
       SUBROUTINE CC_21I3(RHO1, XINT0, ISYDIS0, XINT1, ISYDIS1,

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: herpar.F,v 1.4 2001-10-01 13:22:13 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck notes */
 950620-kr: Ported to MPI, based on previous efforts by Bjarne Herland at
            Para//ab
@@ -44,6 +43,7 @@ started only once for a given calculation
 (1)  Note: in old HERFCK 'IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD' was
  transferred to TWOINT, do we want to do that in CALINT for ITYPE=3 ???
 (2)  removed JSYMDM,JFCTYP,ITRIPL from /PARINT/ in aba.cdk
+===========================================================================
 #endif
 C  /* Deck her_pardrv */
       SUBROUTINE HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
@@ -1864,7 +1864,6 @@ C     *  no event shall the lines between and including -BEGIN-TERMS-
 C     *  and --END-TERMS-- be modified.
 C     *
 C     *  (C) 1997, Jorn Amundsen, University Administration, NTNU.
-C     *  $Id: herpar.F,v 1.4 2001-10-01 13:22:13 vebjornb Exp $
 C     * --END-TERMS--
 C     *
 C     ******************************************************************

@@ -31,9 +31,6 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: herbas.F,v 1.4 2001-05-31 06:38:07 vebjornb Exp $
-C
 #include <single.h>
 C
 C*************************************************************

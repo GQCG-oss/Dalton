@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspmai.F,v 1.14 2002-01-17 09:02:28 alfch Exp $
-C
 #include <single.h>
+C
 #ifdef REVISIONLOG
+===========================================================================
 /* Comdeck revision_log */
 
 Revision 1.7  2000/05/24 19:01:23  hjj
@@ -77,6 +76,7 @@ polish: print if TRPLET operator (singlet or triplet was
 C6INP : inserted missing GO TO 100; corrected output of FREQUENCIES
 RSPSET: define new RSPSUP variable (use super symmetry)
 RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
+===========================================================================
 #endif
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)

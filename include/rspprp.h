@@ -1,6 +1,3 @@
-C
-C$Id: rspprp.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
-C
       PARAMETER ( MAXLBL = 60 )
       CHARACTER*8 PRPLBL
       COMMON/RSPPRP/ NPRLBL

@@ -1,7 +1,4 @@
 C
-C$Id: trkoor.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
-C
-C
 C     NCOOR  - total number of Cartesian coordinates
 C     NCOORS - number of Cartesian coordinates of each symmetry
 C     DEPEND - true for dependent symmetry coordinates

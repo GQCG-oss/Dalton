@@ -1,6 +1,3 @@
-C
-C$Id: inttra.h,v 1.2 2001-03-22 14:47:03 hjj Exp $
-C
       PARAMETER (MAXCHA = 2500)
       COMMON/INTTRA/ MSYM,MISH(8),MASH(8),MSSH(8),MOCC(8),MORB(8),
      *               MBAS(8),JORB(8),JBAS(8),JCMO(8),

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: vcraypack.F,v 1.2 2001-05-31 06:38:26 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /**COMDECK log
 Define labels used: ESSL for CALL DGEMUL in MXMA
 941223-hjaaj: merged with aauc32:~qcprg/gp/vcraypac.f
@@ -44,6 +43,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
   The lund tarfile is now deleted, this was the only of possible interest.
 *DECK VCRAYPACK
 */
+===========================================================================
 #endif
       SUBROUTINE VSADD(A,LA,S,C,LC,N)
 #include <implicit.h>

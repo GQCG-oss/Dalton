@@ -1,6 +1,3 @@
-C
-C$Id: molinp.h,v 1.1.1.1 2001-02-08 13:33:27 hjj Exp $
-C
       PARAMETER (KMLINE = 500)
       CHARACTER*80 MLINE
       COMMON /MOLINC/ MLINE(KMLINE)

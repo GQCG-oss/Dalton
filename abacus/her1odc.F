@@ -31,10 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: her1odc.F,v 1.3 2001-05-31 06:38:05 vebjornb Exp $
-C
 #include <single.h>
+C
 C  /* Deck getodc */
       SUBROUTINE GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,KINODC,
      &                  ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,WORK,LWORK,

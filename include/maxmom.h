@@ -1,4 +1,1 @@
-C
-C$Id: maxmom.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
-C
       PARAMETER (MXQNM=21, MXAQNM=MXQNM*(MXQNM+1)/2)

@@ -1,6 +1,3 @@
-C
-C$Id: cbisol.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
-C
       LOGICAL SOLVNT
       COMMON /CBISOL/ RCAV(3),EPDIEL,
      &                LCAVMX,LMTOT,LMNTOT,NCNTCV,SOLVNT

@@ -31,11 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id: rspsol.F,v 1.2 2001-05-31 06:38:30 vebjornb Exp $
-C
 #include <single.h>
+C
 #ifdef UNDEF
+===========================================================================
 /* Comdeck log */
 941116-hjaaj: removed tab characters and other formatting
 941109-pj+kvm: corrected code for triplet
@@ -45,6 +44,7 @@ RSPSLV: stop if soppa
 SLVINP: removed extra blank in '.IPRSLV '
 ---
 RSPSOL.u module written by Poul Joergensen and Kurt Mikkelsen, summer 1993
+===========================================================================
 #endif
 C  /* Deck slvinp */
       SUBROUTINE SLVINP(WORD)
