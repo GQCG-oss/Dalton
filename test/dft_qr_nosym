@@ -49,30 +49,30 @@ GC2 SSF
 
 test="
 check_scf_energy DFT -75.880414481864 1e-10
-check_hyperpolarizabilities 0.0 0.0 'X;X,X'   0.24050094 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Y;X,X' -18.79734794 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;X,X'   0.22353149 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -21.30333195 1e-6
-check_hyperpolarizabilities 0.0 0.0 'X;Y,X' -18.79734794 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Y;Y,X'  -1.21571500 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;Y,X' -21.30333195 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;Y,X'  -1.39855872 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Z;Z,X'   0.67575464 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Z;Z,X'   1.04501079 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;X,Y' -21.05567699 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;X,Y'  -1.39862444 1e-6
-check_hyperpolarizabilities 0.0 0.0 'X;Y,Y'  -1.21571500 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y'  -8.23345139 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;Y,Y'  -1.39862444 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -10.33598320 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -4.23714648 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y' -12.95528939 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Z;X,Z'   0.82540802 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Z;Y,Z'  -5.07294547 1e-6
-check_hyperpolarizabilities 0.0 0.0 'X;Z,Z'   0.67575464 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Y;Z,Z'  -4.23714648 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;Z,Z'   0.82540802 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'  -5.07294547 1e-6
+check_hyperpolarizabilities 0.0 0.0 'X;X,X'   0.24050094 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;X,X' -18.79731389 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;X,X'   0.22353149 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -21.30328408 1e-5
+check_hyperpolarizabilities 0.0 0.0 'X;Y,X' -18.79731389 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,X'  -1.21571500 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;Y,X' -21.30328408 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,X'  -1.39855872 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,X'   0.67575464 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,X'   1.04501079 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;X,Y' -21.05563340 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;X,Y'  -1.39862444 1e-5
+check_hyperpolarizabilities 0.0 0.0 'X;Y,Y'  -1.21571500 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y'  -8.23345139 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;Y,Y'  -1.39862444 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -10.33598320 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -4.23714648 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y' -12.95528939 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;X,Z'   0.82540802 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Y,Z'  -5.07294547 1e-5
+check_hyperpolarizabilities 0.0 0.0 'X;Z,Z'   0.67575464 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Y;Z,Z'  -4.23714648 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;Z,Z'   0.82540802 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'  -5.07294547 1e-5
 "
 
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"

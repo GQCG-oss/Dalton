@@ -1,3 +1,13 @@
+2004-11-05  Pawel Salek 
+
+	* basis/6-31G: add zinc.
+	* dft/grid-gen.c: increase box size from 1.25 to 1.5a.u - the
+	difference in performance is small but 1.5 is on the safer side.
+	* test/dft_*: recent changes to grid generation introduced
+	numerical noise. Adjust the thresholds.
+	* test/prop_expgrad: convert to "new" format, update reference values.
+	* test/functions: add check_exp_grad test.
+
 2004-10-26  Pawel Salek 
 
 	* dft/dft_aux.F: 

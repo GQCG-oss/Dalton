@@ -115,7 +115,7 @@ check_hyperpolarizabilities() {
 [ "$5" = "" ] &&  echo "not enough parameters to check_hyperpolarizabilities."
 $AWK 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
 /^@ B-freq/ && $4=='$1' && $7=='$2' && $8=="beta('$3')"{if(!e($10,'$4,$5'))s++}
-END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Hyperpolarizabilities"
+END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Hyperpol-ties $4"
 }
 
 # check_general_lr:
@@ -199,4 +199,20 @@ $AWK 'function e(v,r){#print "checking ",v, r;
 return(v>r||v<-r)}
 /Energy at final geometry is/ { exit(e($7-('$1'),'$2'))  }
 ' $log || ERRLIST="$ERRLIST; final energy"
+}
+
+# check_exp_grad:
+# Check the orbital gradient.
+# $1 - number of the basis function
+# $2 - exponent of the basis function (for input cross-checking)
+# $3 - expected value of the gradient
+# $4 - tolerance
+check_exp_grad() {
+if [ "$4" = "" ]; then
+    echo "not enough parameters to check_exp_grad."; return 1
+fi
+$AWK 'function e(v,r){#print "checking ",v, r;
+return(v>r||v<-r)}
+$1== "##" && $2 == '$1' && $7=='$3' { exit(e($8-('$3'),'$4'))  }
+' $log || ERRLIST="$ERRLIST; ORB. GRADIENT $1"
 }

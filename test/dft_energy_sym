@@ -31,8 +31,8 @@ GGAKey hf=0.5 dirac=0.5 pz81=1
 '
 
 test='
-check_scf_energy DFT  -151.201391837176 1e-10
-'
+check_scf_energy DFT  -151.201391784137 1e-10
+'                     
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"

@@ -74,7 +74,7 @@
 #include "grid-gen.h"
 
 /* common screening for cubes/cells */
-static const real CELL_SIZE = 1.25;
+static const real CELL_SIZE = 1.5;
 /* the weight threshold:: a grid point will be ignored if has a weight
  * lower than the WEIGHT_THRESHOLD. This should probably depend on the
  * calculation's accuracy. */
