@@ -1255,7 +1255,7 @@ void
 dftgridinput_(const char *line, int line_len)
 {
     static const char* keywords[] = {
-        "GC2","LMG", "SSF","BECKE","BECKE2", "BLOCK"
+        "GC2","LMG", "SSF","BECKE","BECKE2","BLOCK","CARTESIAN"
     };
     int st, en, i;
     int start = skip_spaces(line, 0, line_len);
