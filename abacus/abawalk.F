@@ -2199,12 +2199,12 @@ C
          CRX = COONEW(1,N) - CCAVX
          CRY = COONEW(2,N) - CCAVY
          CRZ = COONEW(3,N) - CCAVZ
-         VBIG = (ABS(CRX) .GT. D100 .OR.
-     *           ABS(CRY) .GT. D100 .OR.
-     *           ABS(CRZ) .GT. D100)
-         BIG  = (ABS(CRX) .GT. D10 .OR.
-     *           ABS(CRY) .GT. D10 .OR.
-     *           ABS(CRZ) .GT. D10)
+         VBIG = (ABS(CRX) .GE. D100 .OR.
+     *           ABS(CRY) .GE. D100 .OR.
+     *           ABS(CRZ) .GE. D100)
+         BIG  = (ABS(CRX) .GE. D10 .OR.
+     *           ABS(CRY) .GE. D10 .OR.
+     *           ABS(CRZ) .GE. D10)
          NC = NCLINE(N)
          IF (NC .NE. 0) THEN
             READ  (MLINE(NC),9100) NAME

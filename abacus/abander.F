@@ -1995,9 +1995,9 @@ C
                      CRX = COOR(1,IATOM)
                      CRY = COOR(2,IATOM)
                      CRZ = COOR(3,IATOM)
-                     BIG = (ABS(CRX) .GT. D100 .OR.
-     *                      ABS(CRY) .GT. D100 .OR.
-     *                      ABS(CRZ) .GT. D100)
+                     BIG = (ABS(CRX) .GE. D100 .OR.
+     *                      ABS(CRY) .GE. D100 .OR.
+     *                      ABS(CRZ) .GE. D100)
                      IF (ISYM .GT. 0) THEN
                         DO 400 I = NMLINE, NC+1, -1
                            MLINE(I+1) = MLINE(I)                        
@@ -2072,7 +2072,7 @@ C
 C     
  9100 FORMAT (A4)
  9200 FORMAT (A4,3F20.10,1X,A11)
- 9300 FORMAT (A4,3F20.16,1X,A11)
+ 9300 FORMAT (A4,3F20.15,1X,A11)
 C     
       RETURN
       END
