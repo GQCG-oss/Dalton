@@ -871,7 +871,8 @@ C     Calculate the  term <mu3|[[Y,T2],T2]|HF>
 C     added in W^BD(KWMAT)
 C------------------------------------------------------
 C
-                  CALL WBD_T2(B,ISYMB,D,ISYMD,WORK(KT2AM),ISYMT2,
+                  CALL WBD_T2(.FALSE.,B,ISYMB,D,ISYMD,
+     *                        WORK(KT2AM),ISYMT2,WORK(KT2AM),ISYMT2,
      *                        FOCKY,ISYFKY,
      *                        WORK(KINDSQW),LENSQW,WORK(KWMAT), 
      *                        ISWMAT,WORK(KEND4),LWRK4) 
@@ -1403,37 +1404,85 @@ C
 C
       RETURN
       END
-C
 C  /* Deck wbd_t2 */
-      SUBROUTINE WBD_T2(B,ISYMB,D,ISYMD,T2TP,ISYMT2,FOCKY,ISYFKY,
+      SUBROUTINE WBD_T2(T2XNET2Z,B,ISYMB,D,ISYMD,
+     *                 T2TPX,ISYMT2X,T2TPZ,ISYMT2Z,
+     *                 FOCKY,ISYFKY,
+     *                 INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)
+*
+**********************************************************************
+*
+* Calculate the term <mu3|[[Y,T2X],T2Z]|HF> as the contribution to 
+* WBC intermmediate.
+*
+* If T2XNET2Z = .true. then calculate:
+*
+* WBC(a,i,k,j) = WBC(a,i,k,j) -
+*  P(bj,ck) sum(l,d) focky(l,d)*( t2X(ai,cl)*t2Z(bj,dk) + t2Z(ai,cl)*t2X(bj,dk))
+* 
+* ELSE
+* 
+* WBC(a,i,k,j) = WBC(a,i,k,j) -
+*  2 P(bj,ck) sum(l,d) focky(l,d)*( t2X(ai,cl)*t2Z(bj,dk) )
+*
+*
+* F. Pawlowski, P. Jorgensen, Aarhus 14-May-2003.
+*
+* This is just a little driver which calls WBD_T2_1. 
+* 
+**********************************************************************
+*
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+C
+      LOGICAL T2XNET2Z
+C
+      INTEGER LENSQ, INDSQ(LENSQ,6), LWRK
+      INTEGER ISYMB, ISYMD, ISYMT2X, ISYFKY, ISWMAT, ISYMT2Z
+C
+#if defined (SYS_CRAY)
+      REAL T2TPX(*), FOCKY(*), WMAT(*), WRK(*), T2TPZ(*)
+#else
+      DOUBLE PRECISION T2TPX(*), FOCKY(*), WMAT(*), WRK(*), T2TPZ(*)
+#endif
+C
+      CALL QENTER('WBDT2')
+C
+      CALL WBD_T2_1(B,ISYMB,D,ISYMD,
+     *              T2TPX,ISYMT2X,T2TPZ,ISYMT2Z,
+     *              FOCKY,ISYFKY,
+     *              INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)
+C
+      IF (T2XNET2Z) THEN
+C
+         CALL WBD_T2_1(B,ISYMB,D,ISYMD,
+     *                 T2TPZ,ISYMT2Z,T2TPX,ISYMT2X,
+     *                 FOCKY,ISYFKY,
+     *                 INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)      
+C
+      END IF
+C
+      CALL QEXIT('WBDT2')
+C
+      RETURN
+      END
+C  /* Deck wbd_t2_1 */
+      SUBROUTINE WBD_T2_1(B,ISYMB,D,ISYMD,T2TPX,ISYMT2X,T2TPZ,ISYMT2Z,
+     *                 FOCKY,ISYFKY,
      *                 INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)
 C 
 C WBD(a,i,k,j) = WBD(a,i,k,j) -
-C      sum (f,l) focky(l,f)*( t2(ai,dl)*t2(fk,bj) + t2(ai,bl)*t2(fj,dk) )
+C      sum (f,l) focky(l,f)*( t2X(ai,dl)*t2Z(fk,bj) + t2X(ai,bl)*t2Z(fj,dk) )
 C
 C
 C
 C     Written by P. Jorgensen and F. Pawlowski, Spring 2002.
 C
+C     Modified to handle two different symmetries of T2, 14-May-2003.
 
       IMPLICIT NONE
-C
-      INTEGER LENSQ
-      INTEGER INDSQ(LENSQ,6)
-      INTEGER LWRK, KFCLF, KEND0, LWRK0, KOFF1, KOFF2, KTB, KEND1, LWRK1 
-      INTEGER NL, NF, KOFFY, KOFFT2, KOFFT, KOFFW, KTD, KW
-      INTEGER ISYMB, ISYMD, ISYMT2, ISYFKY, ISWMAT 
-      INTEGER ISYAIL, ISYAI, ISYAIK, NA, NAI, LENGTH
-      INTEGER ISYMF, ISYML, ISYFKJ, ISYTB, ISYMJ, ISYFK, ISYMK, ISYLK
-      INTEGER ISYFJK, ISYTD, ISYLJ, ISYFJ, ISYAIJ 
-C
-#if defined (SYS_CRAY)
-      REAL T2TP(*), FOCKY(*), WMAT(*), WRK(*)
-      REAL HALF, ONE, ZERO
-#else
-      DOUBLE PRECISION T2TP(*), FOCKY(*), WMAT(*), WRK(*)
-      DOUBLE PRECISION HALF, ONE, ZERO
-#endif
 C
 #include <priunit.h>
 #include <dummy.h>
@@ -1444,9 +1493,29 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 C
+      INTEGER LENSQ
+      INTEGER INDSQ(LENSQ,6)
+      INTEGER LWRK, KFCLF, KEND0, LWRK0, KOFF1, KOFF2, KTB, KEND1, LWRK1
+      INTEGER NL, NF, KOFFY, KOFFT2, KOFFT, KOFFW, KTD, KW
+      INTEGER ISYMB, ISYMD, ISYMT2X, ISYFKY, ISWMAT 
+      INTEGER ISYAIL, ISYAI, ISYAIK, NA, NAI, LENGTH
+      INTEGER ISYMF, ISYML, ISYFKJ, ISYTB, ISYMJ, ISYFK, ISYMK, ISYLK
+      INTEGER ISYFJK, ISYTD, ISYLJ, ISYFJ, ISYAIJ 
+      INTEGER ISYMT2Z
+C
+#if defined (SYS_CRAY)
+      REAL T2TPX(*), FOCKY(*), WMAT(*), WRK(*)
+      REAL HALF, ONE, ZERO
+      REAL T2TPZ(*)
+#else
+      DOUBLE PRECISION T2TPX(*), FOCKY(*), WMAT(*), WRK(*)
+      DOUBLE PRECISION HALF, ONE, ZERO
+      DOUBLE PRECISION T2TPZ(*)
+#endif
+C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0)
 C
-      CALL QENTER('WBD_T2')
+      CALL QENTER('WT21')
 C
 C
 C RESORT VIR-OCC  FOCKY ELEMENTS (l,f)
@@ -1461,7 +1530,7 @@ C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWRK0
          WRITE(LUPRI,*) 'Memory needed    : ',KEND0
-         CALL QUIT('Insufficient space in WBD_T2')
+         CALL QUIT('Insufficient space in WBD_T2_1 (1)')
       END IF
 C
       DO ISYMF = 1,NSYM
@@ -1480,9 +1549,9 @@ C
 C
 C    calculate first t2 contribution to W matrix
 C
-C construct tB(l,k,j) = sum (f) focky(l,f)*t2tp(f,k,j,B)
+C construct tZB(l,k,j) = sum (f) focky(l,f)*t2tpZ(f,k,j,B)
 C
-      ISYFKJ   = MULD2H(ISYMT2,ISYMB) 
+      ISYFKJ   = MULD2H(ISYMT2Z,ISYMB) 
       ISYTB    = MULD2H(ISYFKY,ISYFKJ) 
       KTB      = KEND0
       KEND1    = KTB  + NMAIJK(ISYTB)
@@ -1493,7 +1562,7 @@ C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWRK1
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
-         CALL QUIT('Insufficient space in WBD_T2')
+         CALL QUIT('Insufficient space in WBD_T2_1 (2)')
       END IF
 C
       DO ISYMJ = 1,NSYM
@@ -1514,18 +1583,18 @@ C
 C
                CALL DGEMM('N','N',NRHF(ISYML),NRHF(ISYMK),
      *                    NVIR(ISYMF),ONE,WRK(KOFFY),NL,
-     *                    T2TP(KOFFT2),NF,ONE,WRK(KOFFT),NL)
+     *                    T2TPZ(KOFFT2),NF,ONE,WRK(KOFFT),NL)
 C
             END DO
          END DO
       END DO
 C
 C      WBD(a,i,k,j) = WBD(a,i,k,j) -
-C                        sum (f,l) focky(l,f)* t2(ai,Dl)*t2(fk,Bj) 
+C                        sum (f,l) focky(l,f)* t2X(ai,Dl)*t2Z(fk,Bj) 
 C                   = WBD(a,i,k,j) - 
-C                        sum(l) t2tp(a,i,l,D) * tB(l,k,j)
+C                        sum(l) t2tpX(a,i,l,D) * tZB(l,k,j)
 C
-      ISYAIL = MULD2H(ISYMT2,ISYMD)
+      ISYAIL = MULD2H(ISYMT2X,ISYMD)
       DO ISYMJ = 1,NSYM
          ISYLK  = MULD2H(ISYTB,ISYMJ)
          DO J  = 1,NRHF(ISYMJ)
@@ -1542,7 +1611,7 @@ C
                KOFFW  = ISAIKJ(ISYAIK,ISYMJ) + NCKI(ISYAIK)*(J-1)
      *                 + ISAIK(ISYAI,ISYMK) + 1
                CALL DGEMM('N','N',NT1AM(ISYAI),NRHF(ISYMK),
-     *                    NRHF(ISYML),-ONE,T2TP(KOFFT2),NAI,
+     *                    NRHF(ISYML),-ONE,T2TPX(KOFFT2),NAI,
      *                    WRK(KOFFT),NL,ONE,WMAT(KOFFW),NAI)
 
 C
@@ -1552,9 +1621,9 @@ C
 C
 C    calculate second t2 contribution to W matrix
 C
-C construct tD(l,j,k) = sum (f) focky(l,f)*t2tp(f,j,k,D)
+C construct tZD(l,j,k) = sum (f) focky(l,f)*t2tpZ(f,j,k,D)
 C
-      ISYFJK   = MULD2H(ISYMT2,ISYMD) 
+      ISYFJK   = MULD2H(ISYMT2Z,ISYMD) 
       ISYTD    = MULD2H(ISYFKY,ISYFJK) 
       KTD      = KEND0
       KEND1    = KTD  + NMAIJK(ISYTD)
@@ -1565,7 +1634,7 @@ C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWRK1
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
-         CALL QUIT('Insufficient space in WBD_T2')
+         CALL QUIT('Insufficient space in WBD_T2_1 (3)')
       END IF
 C
 
@@ -1586,18 +1655,18 @@ C
      *                      + IMATIJ(ISYML,ISYMJ)
                CALL DGEMM('N','N',NRHF(ISYML),NRHF(ISYMJ),
      *                    NVIR(ISYMF),ONE,WRK(KOFFY),NL,
-     *                    T2TP(KOFFT2),NF,ONE,WRK(KOFFT),NL)
+     *                    T2TPZ(KOFFT2),NF,ONE,WRK(KOFFT),NL)
 C
             END DO
          END DO
       END DO
 C
 C      WBD(a,i,k,j) = WBD(a,i,k,j) -
-C                        sum (f,l) focky(l,f)*t2(ai,Bl)*t2(fj,Dk) )
+C                        sum (f,l) focky(l,f)*t2X(ai,Bl)*t2Z(fj,Dk) )
 C                   = WBD(a,i,k,j) -
-C                        sum(l) t2tp(a,i,l,B) * tD(l,j,k)
+C                        sum(l) t2tpX(a,i,l,B) * tZD(l,j,k)
 C
-      ISYAIL = MULD2H(ISYMT2,ISYMB)
+      ISYAIL = MULD2H(ISYMT2X,ISYMB)
       DO ISYMK = 1,NSYM
          ISYLJ  = MULD2H(ISYTD,ISYMK)
          DO K  = 1,NRHF(ISYMK)
@@ -1614,7 +1683,7 @@ C
                KOFFW  = KW  + ISAIKJ(ISYAIJ,ISYMK) + NCKI(ISYAIJ)*(K-1)
      *                 + ISAIK(ISYAI,ISYMJ) 
                CALL DGEMM('N','N',NT1AM(ISYAI),NRHF(ISYMJ),
-     *                    NRHF(ISYML),-ONE,T2TP(KOFFT2),NAI,
+     *                    NRHF(ISYML),-ONE,T2TPX(KOFFT2),NAI,
      *                    WRK(KOFFT),NL,ONE,WRK(KOFFW),NAI)
 
 C
@@ -1628,10 +1697,11 @@ C
          WMAT(I) = WMAT(I) + WRK(INDSQ(I,3))
       END DO
 C
-      CALL QEXIT('WBD_T2')
+      CALL QEXIT('WT21')
 C
       RETURN
       END
+
 
 C  /* Deck cc3_cY1 */
       SUBROUTINE CC3_CY1(OMEGA1,ISOMG1,WMAT,ISWMAT,TMAT,

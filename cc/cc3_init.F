@@ -1836,7 +1836,8 @@ C     Calculate the  term <mu3|[[X,T2],T2]|HF>
 C     added in W^BD(KWMAT)
 C------------------------------------------------------
 C
-      CALL WBD_T2(B,ISYMB,D,ISYMD,T2TP,ISYMT2,FOCKX,ISYFKX,
+      CALL WBD_T2(.FALSE.,B,ISYMB,D,ISYMD,T2TP,ISYMT2,T2TP,ISYMT2,
+     *                 FOCKX,ISYFKX,
      *                 INDSQ,LENSQ,WMAT,ISWMAT,WORK,LWORK)
 C
 C------------------------------------------------------

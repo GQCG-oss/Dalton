@@ -2496,10 +2496,12 @@ C                  ---------------------------------------------------
 
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of WMAT (WBD_O)',
      *               DDOT(NCKIJ(ISWMAT),WORK(KWMAT),1,WORK(KWMAT),1)
-                  CALL WBD_T2(B,ISYMB,D,ISYMD,WORK(KT2TP),ISYM0,
+C
+                  CALL WBD_T2(.FALSE.,B,ISYMB,D,ISYMD,
+     *                        WORK(KT2TP),ISYM0,WORK(KT2TP),ISYM0,
      *                        WORK(KFOCKY),ISTAMY,WORK(KINDSQW),LENSQW,
      *                        WORK(KWMAT),ISWMAT,WORK(KEND4),LWRK4)
-
+C
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of WMAT (WBD_T2):',
      *               DDOT(NCKIJ(ISWMAT),WORK(KWMAT),1,WORK(KWMAT),1)
 
