@@ -286,7 +286,12 @@ atoms of this kind).
 \item[Basis] \verb|(Character)|. If \verb|ATOMBASIS| has been specified,
   the keyword is required, and have to be followed by the name of the
   basis set that is to be used for this group of atoms, {\it e.g.\/}
-  \verb|Basis=6-31G**|.
+  \verb|Basis=6-31G**|. By specifying
+  \verb|Basis=pointcharge|\index{point charge}, the
+  atoms in this block will be treated as point charges, that is,
+  having only a charge but no basis functions attached to
+  them. Effective core potentials (ECP)\index{effective core
+  potentials}\index{ECD} can also by used by specifying \verb|Basis=ECP|.
 \item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
 basis set for this atom type ($s=1$, $p=2$, etc.).
 Ignored if library basis sets are being used (\verb|BASIS| or
