@@ -30,7 +30,6 @@
 
 #include "functionals.h"
 #include "dftcom.h"
-#include <priunit.h>
 
 #define PW92THR 1e-14 /* PW92 Threshold, denities below this are ignored */
 
@@ -113,12 +112,11 @@ static void
 pw92_report(void)
 {
 #ifndef TESTER
-   void fort_print(const char* format, ...);
    fort_print("\n     WARNING: PW92pe functional does not give total energy,");
    fort_print("             it provides energy per electron instead!");
    fort_print("             Functional is only for internal purposes!!");
    fort_print("             Use PW92 instead! (PW92=num_of_electrons*PW92pe)\n");
-   priunt_.nwarn += 1;
+   exit(1);
 #endif
 }
 

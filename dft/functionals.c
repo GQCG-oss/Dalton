@@ -60,7 +60,6 @@ Functional* available_functionals[] = {
     &PW86xFunctional,
     &P86cFunctional,
     &PW92Functional,
-    &PW92peFunctional,
     &PWggaIIxFunctional,
     &PWggaIIcFunctional,
     &PWggaIIc2Functional,
