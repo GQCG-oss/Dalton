@@ -1,6 +1,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Numerical Gradients}\label{sec:ccgr}
+\section{Numerical Gradients \Sec{CCGR}}\label{sec:ccgr}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 \index{numerical derivatives, coupled cluster}
@@ -16,8 +16,10 @@ This works fine for gradients (though ordering may change in course of the
 optimization, but excited state optimization will inevitably be less black box
 than ground state optimizations), but can fail when there is symmetry lowering
 in the calculation of numerical hessians. 
-For this purpose one can give the excitation energy for the appropriate state at a lower level 
-(for example CCS) and from that find symmetry and number used in the real higher level calculation.
+For this purpose one can give the excitation energy for the 
+appropriate state at a lower level 
+(for example CCS) and from that find symmetry and number used 
+in the real higher level calculation.
 %Solves partially the problem in (i). 
 It is implemented by the keywords in the CCEXCI section.
 
@@ -25,21 +27,17 @@ It is implemented by the keywords in the CCEXCI section.
 
 \item[\Key{NUMGD }] 
 
-Specify the the calculation of gradients is to be done numerically.
-All that is required for coupled cluster (in addition to appropriate minimization
-keywords see Chapter~\ref{ch:geometrywalks}).
+Specify that the calculation of gradients is to be done numerically.
+All that is required for coupled cluster (in addition to appropriate 
+minimization, keywords see Chapter~\ref{ch:geometrywalks}).
 
-\item[\Key{XSTNUM}] 
-
+\item[\Key{XSTNUM}] \verb| | \newline
 \verb|READ (LUCMD,*) IXSTAT|\newline
-
 The number of the excited state for which the  gradient is to be calculated 
 (counted in terms of increasing energy).
 
-\item[\Key{XSTSYM}] 
-
+\item[\Key{XSTSYM}]  \verb| | \newline
 \verb|READ (LUCMD,*) IXSTSY|\newline
-
 Symmetry for excited state for which gradient is to be calculated.
 
 
