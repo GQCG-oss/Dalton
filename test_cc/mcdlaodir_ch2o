@@ -1,3 +1,4 @@
+
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
@@ -170,45 +171,45 @@ else
 fi
 
 # SCF, MP2 AND CCSD ENERGIES
-CRIT1=`$GREP "Total SCF * energy\: * \-113\.8301047880" $log | wc -l`
-CRIT2=`$GREP "Total MP2 * energy\: * \-114\.0644813708" $log | wc -l`
-CRIT3=`$GREP "Total CCSD * energy\: * \-114\.0764651765" $log | wc -l`
+CRIT1=`$GREP "Total SCF * energy\: * \-113\.830104788[0-9]" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy\: * \-114\.064481370[0-9]" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-114\.076465176[0-9]" $log | wc -l`
 TEST[1]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=6
 ERROR[1]="SCF, MP2 OR CCSD ENERGY CORRECT"
 
 
 # Unrelaxed B contributions
-CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.30866294 \(antisym\) " $log | wc -l`
-CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.35299128 \(antisym\) " $log | wc -l`
-CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.57676025 \(antisym\) " $log | wc -l`
-CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.09701056 \(antisym\) " $log | wc -l`
-CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.35349818 \(antisym\) " $log | wc -l`
-CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-3(0| )\.52616167 \(antisym\) " $log | wc -l`
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3086629[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3529912[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.5767602[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0970105[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.3534981[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-3(0| )\.5261616[0-9] \(antisym\) " $log | wc -l`
 TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[2]=6
 ERROR[2]="UNRELAXED B CONTRIBUTIONS AT GAUGE (0,0,0) NOT CORRECT"
 
 
 # Relaxed B contributions
-CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.31809619 \(antisym\) " $log | wc -l`
-CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.37619167 \(antisym\) " $log | wc -l`
-CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.50906654 \(antisym\) " $log | wc -l`
-CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.11252879 \(antisym\) " $log | wc -l`
-CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.43360432 \(antisym\) " $log | wc -l`
-CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-32\.79994281 \(antisym\) " $log | wc -l`
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3180961[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3761916[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.5090665[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.1125287[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.4336043[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-32\.7999428[0-9] \(antisym\) " $log | wc -l`
 TEST[3]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[3]=6
 ERROR[3]="RELAXED B CONTRIBUTIONS AT GAUGE (0,0,0) NOT CORRECT"
 
 
 # LAO+Relaxed B contributions
-CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.08539964 \(antisym\) " $log | wc -l`
-CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.37479354 \(antisym\) " $log | wc -l`
-CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.25200038 \(antisym\) " $log | wc -l`
-CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.07045476 \(antisym\) " $log | wc -l`
-CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.40993364 \(antisym\) " $log | wc -l`
-CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.86514227 \(antisym\) " $log | wc -l`
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0853996[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3747935[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.2520003[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0704547[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.4099336[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.8651422[0-9] \(antisym\) " $log | wc -l`
 TEST[4]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[4]=6
 ERROR[4]="LAO+RELAXED B CONTRIBUTIONS AT GAUGE (0,0,0) NOT CORRECT"
@@ -260,45 +261,45 @@ else
 fi
 
 # SCF, MP2 AND CCSD ENERGIES
-CRIT1=`$GREP "Total SCF * energy\: * \-113\.8301047880" $log | wc -l`
-CRIT2=`$GREP "Total MP2 * energy\: * \-114\.0644813708" $log | wc -l`
-CRIT3=`$GREP "Total CCSD * energy\: * \-114\.0764651765" $log | wc -l`
+CRIT1=`$GREP "Total SCF * energy\: * \-113\.830104788[0-9]" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy\: * \-114\.064481370[0-9]" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-114\.076465176[0-9]" $log | wc -l`
 TEST[1]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=6
 ERROR[1]="SCF, MP2 OR CCSD ENERGY CORRECT"
 
 
 # Unrelaxed B contributions
-CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.30866294 \(antisym\) " $log | wc -l`
-CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.35299128 \(antisym\) " $log | wc -l`
-CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * 3\.10260741 \(antisym\) " $log | wc -l`
-CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.09701056 \(antisym\) " $log | wc -l`
-CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * \-5\.05658383 \(antisym\) " $log | wc -l`
-CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * 5\.17955892 \(antisym\) " $log | wc -l`
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3086629[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3529912[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * 3\.1026074[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0970105[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * \-5\.0565838[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * 5\.1795589[0-9] \(antisym\) " $log | wc -l`
 TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[2]=6
 ERROR[2]="UNRELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
 
 
 # Relaxed B contributions
-CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.31809619 \(antisym\) " $log | wc -l`
-CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.37619167 \(antisym\) " $log | wc -l`
-CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * 2\.78603805 \(antisym\) " $log | wc -l`
-CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.11252879 \(antisym\) " $log | wc -l`
-CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * \-2\.61306102 \(antisym\) " $log | wc -l`
-CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * 16\.40807168 \(antisym\) " $log | wc -l`
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3180961[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3761916[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * 2\.7860380[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.1125287[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * \-2\.6130610[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * 16\.4080716[0-9] \(antisym\) " $log | wc -l`
 TEST[3]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[3]=6
 ERROR[3]="RELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
 
 
 # LAO+Relaxed B contributions
-CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.08539964 \(antisym\) " $log | wc -l`
-CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.37479354 \(antisym\) " $log | wc -l`
-CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.25200038 \(antisym\) " $log | wc -l`
-CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.07045476 \(antisym\) " $log | wc -l`
-CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.40993365 \(antisym\) " $log | wc -l`
-CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.86514225 \(antisym\) " $log | wc -l`
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0853996[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3747935[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.2520003[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0704547[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.4099336[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.8651422[0-9] \(antisym\) " $log | wc -l`
 TEST[4]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[4]=6
 ERROR[4]="LAO+RELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
