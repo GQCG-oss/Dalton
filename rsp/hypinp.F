@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: hypinp.F,v 1.4 2001-05-31 06:38:27 vebjornb Exp $
+C$Id: hypinp.F,v 1.5 2001-06-22 13:08:31 hjj Exp $
 C
 #include <single.h>
 C  /* Deck hypinp */
@@ -51,7 +51,7 @@ C
 #include <infinp.h>
 #include <inftap.h>
 C
-      LOGICAL NEWDEF, BCFREQ
+      LOGICAL NEWDEF, BCFREQ, COMFREQ
       PARAMETER ( NTABLE = 26, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
@@ -71,6 +71,7 @@ C
       IF (NEWDEF) THEN
       HYPCAL = .TRUE.
       BCFREQ = .FALSE.
+      COMFREQ= .FALSE.
       WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -191,6 +192,7 @@ C
                   QRPOCK = .TRUE.
                GO TO 100
    20          CONTINUE
+                  COMFREQ = .TRUE.
                   READ (LUCMD,*) NBQRFR
                   IF (NBQRFR.LE.MBQRFR) THEN
                      READ (LUCMD,*) (BQRFR(J),J=1,NBQRFR)
@@ -203,6 +205,10 @@ C
      *                              (FFFF,J=MBQRFR+1,NBQRFR)
                      NBQRFR = MBQRFR
                   END IF
+                  NCQRFR = NBQRFR
+                  DO J = 1,NBQRFR
+                     CQRFR(J) = BQRFR(J)
+                  END DO
                GO TO 100
    21          CONTINUE
                   LABEL='XDIPLEN'
@@ -285,6 +291,14 @@ C                     IFR.EQ.JFR has already been included under QRPOCK
             ENDIF
 C
          ENDIF
+         IF (COMFREQ .AND. BCFREQ) THEN
+            WRITE (LUPRI,'(/A/A/A)')
+     &  ' *QUADRA ERROR : inconsistent quadratic response input as',
+     &  ' .BFREQ and/or .CFREQ  has been specified together with'//
+     &     ' .FREQUE',
+     &  ' Use either .FREQUE or .BFREQ/.CFREQ !!!!!'
+            CALL QUIT('Inconsistent input for quadratic response')
+         END IF
       END IF
       NQRCAL = MIN(NAQRTO,NBQRTO,NCQRTO,NBQRFR,NCQRFR)
       IF  (HYPCAL .AND. NQRCAL.LE.0)  THEN
@@ -308,6 +322,10 @@ C
          WRITE (LUPRI,'(/A,I5)') ' Spin of operator A , ISPINA=',ISPINA
          WRITE (LUPRI,'( A,I5)') ' Spin of operator B , ISPINB=',ISPINB
          WRITE (LUPRI,'( A,I5)') ' Spin of operator C , ISPINC=',ISPINC
+         IF (ISPINA+ISPINB+ISPINC .GT. 0) THEN
+            TRPLET = .TRUE.
+            TRPFLG = .TRUE.
+         END IF
          WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
      *      NBQRFR,' B-frequencies', (BQRFR(I),I=1,NBQRFR)
          WRITE(LUPRI,'(I3,A,(1P,5D14.6))')
