@@ -390,17 +390,17 @@ C                                      Write out C^(ij)_kl,ab for
 C                                      approximation A, A', B, and *, resp.,
 C                                      for CC2-R12 model (WK/UniKA/30-12-2003).
 C
-c                                      IF (FRSTWR
-c    &                                 .AND. A. LE. NORB1(ISYMA)
-c    &                                 .AND. B. LE. NORB1(ISYMB))
-c    &                                 WRITE (LU46,'(6I5,2E30.20/
-c    &                                               30X,2E30.20)')
-c    &                                 KOFFI,KOFFJ,KOFFK,KOFFL,
-c    &                                 KOFFA,KOFFB,
-c    &                                 - UAKBL,
-c    &                                 -(UAKBL + EIJKL * RAKBL),
-c    &                                 -(UAKBL - SAKBL + EIJKL * RAKBL),
-c    &                                 -(EKLAB * RAKBL + EIJKL * RAKBL)
+C                                      IF (FRSTWR
+C    &                                 .AND. A. LE. NORB1(ISYMA)
+C    &                                 .AND. B. LE. NORB1(ISYMB))
+C    &                                 WRITE (LU46,'(6I5,2E30.20/
+C    &                                               30X,2E30.20)')
+C    &                                 KOFFI,KOFFJ,KOFFK,KOFFL,
+C    &                                 KOFFA,KOFFB,
+C    &                                 - UAKBL,
+C    &                                 -(UAKBL + EIJKL * RAKBL),
+C    &                                 -(UAKBL - SAKBL + EIJKL * RAKBL),
+C    &                                 -(EKLAB * RAKBL + EIJKL * RAKBL)
 C
                                        EIJ = D1 / 
      *                                      (EV(KOFFI) + EV(KOFFJ) -

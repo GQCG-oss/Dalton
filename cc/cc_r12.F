@@ -1569,7 +1569,11 @@ C
 c
 c     Write out B-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
-      WRITE(LU44,'(2I3)') 1,IPDD
+      IF (LUMULX .EQ. LUMULO) THEN
+         WRITE(LU44,'(2I3)') 0,IPDD
+      ELSE
+         WRITE(LU44,'(2I3)') 1,IPDD
+      END IF
       WRITE(LU44,'(4E30.20)') BS11
       WRITE(LU44,'(4E30.20)') BT11
 C
@@ -1779,6 +1783,11 @@ C
 c
 c     Write out amplitudes for CC2-R12 model (HF/UniKA/25-06-2003).
 c
+      IF (LUMULX .EQ. LUMULO) THEN
+         WRITE(LU45,'(2I3)') 0,IPDD
+      ELSE
+         WRITE(LU45,'(2I3)') 1,IPDD
+      END IF
       WRITE(LU45,'(2I3)') 1,IPDD
       WRITE(LU45,'(4E30.20)') CS11
       WRITE(LU45,'(4E30.20)') CT11
@@ -3335,6 +3344,14 @@ C
          END IF
 C
  1096    CONTINUE
+         CALL GPOPEN(LU43,'R12T12',
+     &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
+         WRITE(LU43) (WORK(KS2AM+I-1), I = 1,NH2AMX)
+         CALL GPCLOSE(LU43,'KEEP')  
+         CALL GPOPEN(LU43,'R12K12',
+     &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
+         WRITE(LU43) (WORK(KV2AM+I-1), I = 1,NH2AMX)
+         CALL GPCLOSE(LU43,'KEEP')  
          CALL GPOPEN(LU43,'R12V12',
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          READ(LU43) (WXRK(KT2AM+I-1), I = 1,NH2AMX)
