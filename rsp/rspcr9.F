@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspcr9.F,v 1.3 2001-10-08 11:16:01 vebjornb Exp $
+C$Id: rspcr9.F,v 1.4 2001-10-18 07:41:23 hjj Exp $
 C
 #include <single.h>
       SUBROUTINE C3FOCK(IBEQC,FDTI,VECB,VECC,
@@ -213,7 +213,7 @@ CCCC     ELSE IF ("triplet Fock matrix") THEN
 C           only exchange ! hjaaj 990505: triplet not implemented!
 CCCC        IFCTYP(I) = IX + 2
          ELSE IF (IX .EQ. 20) THEN
-C           Only exchange if antisymmetric matrix
+C           Only exchange if antisymmetric density matrix
             IFCTYP(I) = IX + 2
          ELSE
 C           Coulomb+exchange
@@ -374,17 +374,19 @@ C     Check if density matrix is unsymmetric (IX=0),
 C     symmetric (IX=10), antisymmetric (IX=20), or zero matrix (IX=30)
 C     to threshold THRZER
 C
-Chj   IFCTYP = 3
       IX = 10 * MATSYM(NBAST,NBAST,WRK(KDAO),THRZER)
 C
       IF (IX .EQ. 30) THEN
 C        zero density matrix, do nothing !
+         IFCTYP = 0
       ELSE IF (IX .EQ. 20) THEN
-C        Only exchange if antisymmetric matrix
+C        Only exchange if antisymmetric density matrix
          IFCTYP = IX + 2
       ELSE
 C        Coulomb+exchange
          IFCTYP = IX + 3
+      END IF
+      IF (IFCTYP .NE. 0) THEN
          CALL SIRFCK(WRK(KFAO),WRK(KDAO),NFMATX,ISYMDM,IFCTYP,
      *               DIRFCK,WRK(KFREE),LFREE)
       END IF
@@ -415,17 +417,19 @@ C     Check if density matrix is unsymmetric (IX=0),
 C     symmetric (IX=10), antisymmetric (IX=20), or zero matrix (IX=30)
 C     to threshold THRZER
 C
-Chj   IFCTYP = 3
       IX = 10 * MATSYM(NBAST,NBAST,WRK(KDAO),THRZER)
 C
       IF (IX .EQ. 30) THEN
 C        zero density matrix, do nothing !
+         IFCTYP = 0
       ELSE IF (IX .EQ. 20) THEN
-C        Only exchange if antisymmetric matrix
+C        Only exchange if antisymmetric density matrix
          IFCTYP = IX + 2
       ELSE
 C        Coulomb+exchange
          IFCTYP = IX + 3
+      END IF
+      IF (IFCTYP .NE. 0) THEN
          CALL SIRFCK(WRK(KFAO),WRK(KDAO),NFMATX,ISYMDM,IFCTYP,
      *               DIRFCK,WRK(KFREE),LFREE)
       END IF
@@ -467,17 +471,19 @@ C     Check if density matrix is unsymmetric (IX=0),
 C     symmetric (IX=10), antisymmetric (IX=20), or zero matrix (IX=30)
 C     to threshold THRZER
 C
-Chj      IFCTYP = 3
          IX = 10 * MATSYM(NBAST,NBAST,WRK(KDAO),THRZER)
 C
          IF (IX .EQ. 30) THEN
 C           zero density matrix, do nothing !
+            IFCTYP = 0
          ELSE IF (IX .EQ. 20) THEN
-C           Only exchange if antisymmetric matrix
+C           Only exchange if antisymmetric density matrix
             IFCTYP = IX + 2
          ELSE
 C           Coulomb+exchange
             IFCTYP = IX + 3
+         END IF
+         IF (IFCTYP .NE. 0) THEN
             CALL SIRFCK(WRK(KFAO),WRK(KDAO),NFMATX,ISYMDM,IFCTYP,
      *                  DIRFCK,WRK(KFREE),LFREE)
          END IF
@@ -702,7 +708,6 @@ C
 C
 C Construct Fock matrices in AO basis
 C
-CTROND      IFCTYP = 3
       DO I = 1,7
         IFCTYP(I) = 3
       ENDDO
