@@ -32,10 +32,12 @@
 
 #if defined(VAR_PGF77)
 #define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
-#else
+#endif
 #if defined(SYS_SUN)
 #define __FUNCTION__ "SUNs CC compiler_does_not_define__FUNCTION__"
 #endif
+#if defined(SYS_SGI)
+#define __FUNCTION__ "SGIs CC compiler_does_not_define__FUNCTION__"
 #endif
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))

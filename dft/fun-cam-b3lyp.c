@@ -144,13 +144,13 @@ camb3lyp_report(void)
 /* ===================================================================
  * compute a and its derivatives.
  * =================================================================== */
+/* consider usign M_2_SQRTPI defined as 2/sqrt(pi) */
+#define SQRT_PI 1.77245385090552
 static real
 fun_a(real rho, real ex)
 {
-  real a, k;
-  k = -2.0* ex * pow(rho,-4.0/3.0);
-  a = MU*sqrt(k)/(6.0*sqrt(M_PI)*pow(rho,1.0/3.0));
-  return a;
+    real a = MU*sqrt(-2.0*ex)/(6.0*SQRT_PI*rho);
+    return a;
 }
 
 static void
@@ -221,7 +221,6 @@ fun_a_third(real rho, real a, real ex, RGThirdDrv *f3, RGThirdDrv *res)
  * The expansion of the B-factor and its first derivative for small
  * values of a.
  * =================================================================== */
-#define SQRT_PI 1.77245385090552
 static __inline__ real
 camb3lyp_b_energy_small(real a)
 {
@@ -331,7 +330,8 @@ camb3lyp_b_second_medium(real a)
     t1 = a*a;
     if(a>=5)  {
         static const double large_coefs[] = {  6, -48, 640,  -11520 };
-        return evaluate_series(ELEMENTS(large_coefs), large_coefs, t1)/
+        return BETA*
+            evaluate_series(ELEMENTS(large_coefs), large_coefs, t1)/
             (t1*t1);
     }
     t2 = 1/t1;
@@ -354,7 +354,8 @@ camb3lyp_b_third_medium(real a)
     if(a>=5)  {
         static const double large_coefs[] = {  -1.5, 8, -80,  1152 };
         real a2 = a*a;
-        return evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
+        return BETA*
+            evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
             (a2*a2*a);
     }
     t1 = pow(a,-2.0);
@@ -381,7 +382,7 @@ camb3lyp_b_fourth_medium(real a)
         static const double large_coefs[] =
             { 0.3, -8.0/7.0, 80.0/9.0, -1152.0/11.0 };
         real a2 = a*a;
-        return evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
+        return BETA*evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
             (a2*a2*a2);
     }
     t1 = pow(a,-2.0);
@@ -408,32 +409,31 @@ camb3lyp_b_fourth_medium(real a)
    camb3lyp_b_ ## type ## _large(a)))
 
 static real
-camb3lyp_energy_sigma(real rho, real grad, real a)
+camb3lyp_energy_sigma(real rho, real ex)
 {
+    real a       = fun_a(rho, ex);
     real bfactor = EVALUATOR(a, energy);
-    return -18*M_PI/(MU*MU)*rho*rho*a*a*bfactor;
+    return ex*bfactor;
 }
 
 static real
 camb3lyp_energy(const DftDensProp *dp)
 {
-    real res, ea, eb, a, ex;
+    real res, ea, eb, ex;
     DftDensProp dsigma;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
     ex = 0.5*(SlaterFunctional.func(&dsigma) +
               BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
-    a = fun_a(dp->rhoa, ex);
     
-    ea = camb3lyp_energy_sigma(dp->rhoa, dp->grada, a);
+    ea = camb3lyp_energy_sigma(dp->rhoa, ex);
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
         dsigma.grada = dsigma.gradb = dp->gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
-        a = fun_a(dp->rhob, ex);
-        eb = camb3lyp_energy_sigma(dp->rhob, dp->gradb, a);
+        eb = camb3lyp_energy_sigma(dp->rhob, ex);
     } else eb = ea;
     res = ea + eb;
 #if ADD_CORRELATION
@@ -445,10 +445,11 @@ camb3lyp_energy(const DftDensProp *dp)
 }
 
 static void
-camb3lyp_first_sigma(real rho, real a, real ex,
+camb3lyp_first_sigma(real rho, real ex,
                      RGFirstDrv *ds, RGFirstDrv *res)
 {
-    real bfactor       = EVALUATOR(a, energy);
+    real             a = fun_a(rho, ex);
+    real       bfactor = EVALUATOR(a, energy);
     real bfactor_first = EVALUATOR(a, first);
     RGFirstDrv ader;
 
@@ -463,21 +464,20 @@ camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
 {
     RGFirstDrv res, dfun;
     DftDensProp dsigma;
-    real ex, a;
+    real ex;
     FirstFuncDrv fun1;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
     ex = 0.5*(SlaterFunctional.func(&dsigma) +
               BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
-    a = fun_a(dp->rhoa, ex);
 
     memset(&fun1, 0, sizeof(fun1));
     SlaterFunctional.first(&fun1, 1, dp);
     BeckeFunctional.first(&fun1, BECKE88_CORR_WEIGHT, dp);
 
     dfun.df10 = fun1.df1000; dfun.df01 = fun1.df0010;
-    camb3lyp_first_sigma(dp->rhoa, a, ex, &dfun, &res);
+    camb3lyp_first_sigma(dp->rhoa, ex, &dfun, &res);
     ds->df1000 += factor*res.df10;
     ds->df0010 += factor*res.df01;
 
@@ -487,9 +487,8 @@ camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
             dsigma.grada = dsigma.gradb = dp->gradb;
             ex = 0.5*(SlaterFunctional.func(&dsigma) +
                       BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
-            a = fun_a(dp->rhob, ex);
             dfun.df10 = fun1.df0100; dfun.df01 = fun1.df0001;
-            camb3lyp_first_sigma(dp->rhob, a, ex, &dfun, &res);
+            camb3lyp_first_sigma(dp->rhob, ex, &dfun, &res);
         }
         ds->df0100 += factor*res.df10;
         ds->df0001 += factor*res.df01;

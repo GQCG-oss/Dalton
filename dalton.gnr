@@ -53,7 +53,7 @@ usage (){
 # Define backup function
 #
 backup () {
-  if [ "$1" == "-v" ]; then ekko=1; shift
+  if [ "$1" = "-v" ]; then ekko=1; shift
   else ekko=0;
   fi
   for i in $* ; do

@@ -867,7 +867,7 @@ C
 C
                  !Finally... calculate the integral g_abcd
                  XINT = XINT
-     &                + (-D1)**(DFLOAT(ITAU+INU+IPHI))
+     &                + (-D1)**(ITAU+INU+IPHI)
      &                  *ETUV*ETAUNUPHI
      &                  *RTUV
 C
@@ -2034,7 +2034,7 @@ C
 C
                  !Finally... calculate the integral g_abcd
                  XINT = XINT
-     &                + (-D1)**(DFLOAT(ITAU+INU+IPHI))
+     &                + (-D1)**(ITAU+INU+IPHI)
      &                  *ETUV*ETAUNUPHI
      &                  *RTUV
 C

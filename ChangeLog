@@ -1,3 +1,11 @@
+2005-01-19  Pawel Salek 
+
+	* dalton.gnr: '==' operator is not standard.
+	* densfit/denfit_noddy.F: negative numbers cannot be raised to a
+	real power.
+	* dft/fun-cam-b3lyp.c: clean up, hopefully the last time.
+	* dft/general.h: SGI does not define __FUNCTION__ either.
+
 2004-12-14  Pawel Salek 
 
 	* Doc/wfguide.tex: add DFT example.
