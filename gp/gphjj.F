@@ -31,7 +31,12 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+C
+C VERSION : $Revision: 1.17 $
+C DATE    : $Date: 2003-10-25 14:10:39 $
+C FILE    : gphjj.F
+C
+#include "single.h"
 C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)
@@ -53,7 +58,9 @@ C This subroutine may be a dummy routine.
 C
       IF (IUNIT .GE. 0) THEN
 C     ... do not try to flush unused units (e.g. LUPRI on a slave) /hjaaj
-#if  defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX)
+#if  defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_NEC) \
+  || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) \
+  || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX) || defined (SYS_SX)
 C
 C        Force transfer of all buffered output to the file or device
 C        associated with logical unit IUNIT.
@@ -71,16 +78,18 @@ C
 C     Return date and time as character*8, for labels.
 C
       CHARACTER*(8) CDATE, CTIME
-#if defined (SYS_CRAY) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T90) || defined (SYS_T3D)
       INTEGER IDATE, ITIME, DATE, CLOCK
       IDATE = DATE()
       ITIME = CLOCK()
       WRITE (CDATE,'(A8)') IDATE
       WRITE (CTIME,'(A8)') ITIME
-#endif
-#if defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
+#else
+#if defined (SYS_AIX) || defined (SYS_DEC) || defined (SYS_IRIX)  \
+ || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
+ || defined (SYS_SX) || defined (SYS_DARWIN) || defined (SYS_NEC) 
       CHARACTER*(24) FFDATE
-#if defined (SYS_LINUX) || defined(SYS_AIX)
+#if defined (SYS_LINUX) || defined(SYS_AIX) || defined (SYS_HAL)
       CALL FDATE(FFDATE)
 #else
       CHARACTER*(24) FDATE
@@ -88,16 +97,10 @@ C
 #endif
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
-#endif
-#if defined (SYS_HAL)
-      CHARACTER*(24) FFDATE
-      CALL FDATE(FFDATE)
-      CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
-      CTIME  = FFDATE(12:19)
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_SUN) && !defined (SYS_LINUX) && !defined (SYS_HAL) && !defined (SYS_T90)
+#else
       CDATE = ' -date- '
       CTIME = ' -time- '
+#endif
 #endif
       RETURN
       END
@@ -108,24 +111,8 @@ C Written 18-Dec-1984 Hans Joergen Aa. Jensen
 C
 C Return elapsed CPU time and elapsed real time.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#if defined (SYS_DEC)
-      REAL*4 WALL0,S0,SECNDS
-      PARAMETER (S0 = 0.0E0)
-      LOGICAL FIRST
-      SAVE CPU0,WALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         CPU0  = SECOND()
-         WALL0 = SECNDS(S0)
-      ENDIF
-C
-      TIMCPU = SECOND() - CPU0
-      TIMWAL = SECNDS(WALL0)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
 C...  Cray unicos timing code
       REAL    TCPU0, TWALL0
@@ -138,18 +125,17 @@ C
          FIRST  = .FALSE.
 #if defined (SYS_CRAY) || defined (SYS_T90)
          TCPU0  = SECOND()
-#else
-         TCPU0 = TSECND()
-#endif
          TWALL0 = TIMEF()
       ENDIF
-#if defined (SYS_CRAY) || defined (SYS_T90)
       TIMCPU = SECOND() - TCPU0
 #else
+         TCPU0 = TSECND()
+         TWALL0 = TIMEF()
+      ENDIF
       TIMCPU = TSECND() - TCPU0
 #endif
       TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#endif
+#else
 #if defined (SYS_NEC)
 C...  NEC SX4     timing code
       REAL*8  TCPU0, TWALL0
@@ -171,14 +157,15 @@ C
       call etime(second2)
       TIMCPU = second1 - TCPU0
       TIMWAL = second2 - TWALL0
-#endif
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT)
-#if defined (SYS_IRIX) || defined (SYS_SUN)
-C...  SGI IRIX code
+#else
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
+ || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT) \
+ || defined (SYS_DEC) || defined (SYS_SX)
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_DEC) || defined (SYS_SX) \
+ || defined (SYS_AIX)
+C...  SGI IRIX  etc. code
       external time
 C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
-#else
-C...  HP-UX code
 #endif
       integer time
       real*4  etime, tarray(2)
@@ -194,7 +181,7 @@ C
       TIMCPU = etime(tarray) - TCPU0
       itimwl = time() - iwall0
       TIMWAL = itimwl
-#endif
+#else
 #if (defined (SYS_LINUX) && defined (VAR_IFC))
       integer time,darr(9)
       real*4  etime, tarray(2)
@@ -212,7 +199,7 @@ C
       call gettimeofday(darr,err)
       itimwl = darr(1) - iwall0
       TIMWAL = itimwl
-#endif
+#else
 #if defined (SYS_LINUX) && defined (VAR_G77)
 C 990819-ekd: Use time8() and second() system routines for timings
 C             ONLY available for GNU g77 compiler!!!!!!!!
@@ -227,8 +214,7 @@ C
       end if
       TIMWAL = time8() - TWALL0
       TIMCPU = second() - TCPU0
-#endif
-#if !defined (SYS_DEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
+#else
       PARAMETER (D0 = 0.0D0)
       logical first
       save    TWALL0,TCPU0
@@ -242,7 +228,11 @@ C
 C insert appropriate routine to get elapsed real time (wall time)
 C here
       TIMWAL = D0
-#endif
+#endif  /* VAR_G77 */
+#endif  /* VAR_IFC */
+#endif  /* SYS_AIX, SYS_IRIX, SYS_SUN, SYS_HPUX etc. */
+#endif  /* SYS_NEC */
+#endif  /* SYS_CRAY etc. */
 C
       RETURN
       END
@@ -286,8 +276,8 @@ C
       END
 #else
       SUBROUTINE SETTIM()
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( D0 = 0.0D0 )
 c     WRITE (LUPRI,*) 'DUMMY SETTIM called'
       RETURN
@@ -305,7 +295,7 @@ C  /* Deck timtxt */
 C
 C TIMTXT based on TIMER by TUH //900709-hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) TEXT
       CHARACTER AHOUR*6, ASEC*8, AMIN*8
 C
@@ -352,7 +342,7 @@ C
 C Purpose: To stamp as many as possible of
 C          text, date, time, computer, and hostname to LUPRIN
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) TEXT
 C
 #if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
@@ -398,6 +388,7 @@ C      CALL DATE(CFDATE)
 C      CALL DATE_AND_TIME(CDATE,CTIME)
 C      WRITE (LUPRIN,'(T6,8A)') 'Date and time (HP-UX)  : ',CFDATE,' ',
 C     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
+C      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #endif
 #if defined (SYS_DEC)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (DEC)    : ',FDATE()
@@ -411,6 +402,9 @@ C     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
 #if defined (SYS_SUN)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (SUN)    : ',FDATE()
 #endif
+#if defined (SYS_SX)
+      WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
+#endif
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
@@ -421,6 +415,18 @@ C     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
 #if defined (SYS_HAL)
       IRET = HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
+#endif
+#if defined (SYS_AIX)
+C 930414-hjaaj: apparent error IBM's xlf library routines:
+C    when 'T6' then column 1-5 not blanked but contains text
+C    from a previous print statement!
+C     AIX XL FORTRAN version 2.3+
+      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
+C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
+C     CALL hostnm_(HSTNAM)
+      CALL hostnm(HSTNAM)
+      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
+C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 C
       RETURN
@@ -436,7 +442,7 @@ C          but only within the class of vectors having the
 C          same value in the ISS array (which could be the
 C          supersymmetry of the orbital).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*),ISS(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -470,7 +476,7 @@ C          in EVEC so EVAL(i+1) .le. EVAL(i) using the infomation
 C          in ISS
 C          (this is opposite order of "ORDRSS")
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*),ISS(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -507,7 +513,7 @@ C   29-Jul-1992 hjaaj (only dswap if nevec .gt. 0)
 C    2-Nov-1984 hjaaj (new parameter NEVEC, EVEC(1:NEVEC,1:N))
 C   27-Oct-1984 hjaaj (reduced number of swaps)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -542,7 +548,7 @@ C Revisions:
 C   29-Jul-1992 hjaaj (only dswap if nevec .gt. 0)
 C    5-Aug-1985 hjaaj (first version, based on ORDER)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -571,8 +577,8 @@ C  /* Deck trace */
 C
 C Written 4-Dec-1983 hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined (SYS_HAL) && !defined (SYS_T90)
       INTEGER A,B,C
       SAVE    A,B,C
@@ -607,7 +613,6 @@ C
 C  920522-hjaaj -- ad hoc routine for creating traceback on IBM-AIX
 C  Note: integer divide by zero is the only error which
 C        always will cause an exception
-C  941013-hjaaj: also for PARAGON
 C
       include 'fexcp.h'
       save i,j
@@ -620,7 +625,7 @@ C
       END
 C  /* Deck canon */
       SUBROUTINE CANON(I,J,K,L)
-#include <implicit.h>
+#include "implicit.h"
       IP=MAX(I,J)
       JP=I+J-IP
       KP=MAX(K,L)
@@ -649,7 +654,7 @@ C  SUBROUTINE DUNIT SETS THE REAL SQUARE MATRIX A EQUAL
 C  TO A UNIT MATRIX.
 C  /VER 2/ 14-Sep-1983 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       PARAMETER (D1=1.0D00, D0=0.0D00)
 C
@@ -665,7 +670,7 @@ C
       END
 C  /* Deck dzero */
       SUBROUTINE DZERO(DX,LENGTH)
-#include <implicit.h>
+#include "implicit.h"
 C
 C Last revision 5-May-1984 by Hans Jorgen Aa. Jensen
 C
@@ -682,7 +687,6 @@ C
       RETURN
       END
 C  /* Deck isum */
-C      INTEGER FUNCTION ISUM(N,IA,INCA)
       FUNCTION ISUM(N,IA,INCA)
 C
 C     8-Feb-1987 hjaaj
@@ -691,7 +695,7 @@ C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
 C     -- based on DDOT from LINPACK
 C     DDOT: JACK DONGARRA, LINPACK, 3/11/78.
 C
-      INTEGER IA(*), ITEMP
+      INTEGER ISUM,  IA(*), ITEMP
       INTEGER I,INCA,JA,M,MP1,N
 C
       ISUM  = 0
@@ -750,9 +754,15 @@ C
 C  /* Deck jaco */
       SUBROUTINE JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
 C
+C     F is symmetric packed matrix of dimension NB.
+C     The first block of size NMAX will be diagonalized.
+C     V is for eigenvectors, only V(NROWV,NMAX) will be referenced.
+C     On entry it must correspond the basis vectors corresponding to the
+C       F matrix on entry, e.g. unit matrix or AO coefficients for each MO.
+C
 C Revisions:
 C   2-Nov-1984 hjaaj (new parameter NROWV such that
-C                     dim(V) = (NROWV,NB). This makes
+C                     dim(V) = (NROWV,NMAX). This makes
 C                     it possible to solve eigenproblem
 C                     in a reduced basis but get the
 C                     eigenvectors in the original full
@@ -771,13 +781,13 @@ C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION F(*),V(*)
       DIMENSION BIG(*) ,JBIG(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
-#include <thrzer.h>
+#include "thrzer.h"
       DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
@@ -867,7 +877,7 @@ C
             CX= SQRT(DP5   + T)
             SX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include <ivdep.h>
+#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SX
@@ -945,7 +955,7 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SX
   390       CONTINUE
          JAA=(IA-1)*NROWV
          JBB=(IB-1)*NROWV
-#include <ivdep.h>
+#include "ivdep.h"
          DO 400 I=1,NROWV
             T=V(JBB+I)*SX
             V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
@@ -973,10 +983,10 @@ C         RETURNS
 C              NORMAL RETURN ORTHONORMALIZED SET OBTAINED
 C              RETURN 1       INITIAL VECTORS AT VC LINEARLY
 C                             DEPENDENT WITHIN THRES HOLD (THNORM)
-C         AUXILLIARY ENTRY
+C         AUXILIARY ENTRY
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION S(*), VC(N,M), W(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, THRRND = 0.9D0 )
       IRETUR=0
@@ -1088,12 +1098,27 @@ C
       INTX(N)=-1
       RETURN
       END
+C  /* Deck readdi */
+      SUBROUTINE READDI(IT,IU,N,IX)
+      DIMENSION IX(N)
+#if !defined (VAR_FASTIO)
+      READ(IT,REC=IU) IX
+#endif
+#if defined (VAR_FASTIO)
+      CALL DAFILE(IT,2,IX,N,IU)
+#endif
+      RETURN
+      END
 C  /* Deck readt */
       SUBROUTINE READT (IT,N,X)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(N)
-      READ (IT) X
+      READ (IT,END=10,ERR=20) X
       RETURN
+ 10   CONTINUE
+      CALL QUIT('READT: END reading file')
+ 20   CONTINUE
+      CALL QUIT('READT: Error reading file')
       END
 C  /* Deck writi */
       SUBROUTINE WRITI (IT,N,INTX)
@@ -1110,13 +1135,13 @@ C  /* Deck writsi */
 C
 C     K.Ruud, April 13 2000
 C
-#include <implicit.h>
-#include <2gbdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "2gbdef.h"
+#include "priunit.h"
       DIMENSION INTX(N)
       CHARACTER*80 FNNAME, FNNM2
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
       IF ((JBUF + N) .GT. I2GB) THEN
 C
@@ -1158,13 +1183,13 @@ C
 C
 C     K.Ruud, April 13 2000
 C
-#include <implicit.h>
-#include <2gbdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "2gbdef.h"
+#include "priunit.h"
       DIMENSION X(N)
       CHARACTER*80 FNNAME, FNNM2
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
       WRITE (IT) N
       IF ((JBUF + N + 1) .GT. I2GB) THEN
@@ -1208,13 +1233,13 @@ C  /* Deck readsi */
 C
 C     K.Ruud, April 13 2000
 C
-#include <implicit.h>
-#include <2gbdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "2gbdef.h"
+#include "priunit.h"
       DIMENSION INTX(N)
       CHARACTER*80 FNNAME, FNNM2
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
       IF ((JBUF + N) .GT. I2GB) THEN
 C
@@ -1260,14 +1285,14 @@ C
 C
 C     K.Ruud, Dec 08 2000
 C
-#include <implicit.h>
-#include <2gbdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "2gbdef.h"
+#include "priunit.h"
       DIMENSION X(*)
       LOGICAL READ
       CHARACTER*80 FNNAME, FNNM2
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
       READ (IT, END=30) N
       IF ((JBUF + N + 1) .GT. I2GB) THEN
@@ -1315,9 +1340,20 @@ C
       RETURN
       END
 #endif
+C  /* Deck writdi */
+      SUBROUTINE WRITDI(IT,IU,N,IX)
+      DIMENSION IX(N)
+#if !defined (VAR_FASTIO)
+      WRITE(IT,REC=IU) IX
+#endif
+#if defined (VAR_FASTIO)
+      CALL DAFILE(IT,1,IX,N,IU)
+#endif
+      RETURN
+      END
 C  /* Deck writt */
       SUBROUTINE WRITT (IT,N,X)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(N)
       WRITE (IT) X
       RETURN
@@ -1330,7 +1366,7 @@ C Revision
 C  26-May-1985 hjaaj (error return if LUERR .lt. 0 on input,
 C                     otherwise stop on error as previously)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION B(4)
       DATA C/8H********/
     1 READ(LU,END=3,ERR=6)B
@@ -1379,7 +1415,7 @@ C     Search for MOLECULE labels on file LU
 C
       CHARACTER*8 A, B(4), C
 #if defined (VAR_SPLITFILES)
-#include <dummy.h>
+#include "dummy.h"
       CHARACTER FNNAME*80
 #endif
       DATA C/'********'/
@@ -1571,7 +1607,7 @@ C  (as FNDLB2, but the IVALUE returns the value of the
 C   symmetry representation of the operator SRCLBL and 0 if the
 C   label doesn't exist)
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 SRCLBL, B(4), STAR8
       PARAMETER (STAR8 = '********')
       IRDERR = 0
@@ -1707,7 +1743,7 @@ C
          RETURN
       ELSE
          WRITE (LUERR,'(/3A,I5/A,I7)')
-     &      ' NEWLAB: error writing label "',LABEL,'" to unit',LUERR,
+     &      ' NEWLB2: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLB2: output error writing label')
@@ -1716,8 +1752,11 @@ C
 C  /* Deck second */
 #if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77)
       FUNCTION SECOND ()
-#if defined(SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_SUN) || defined (SYS_T3D) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))||(defined (SYS_LINUX) && defined (VAR_IFC))
-#include <implicit.h>
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
+ || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
+ || defined (SYS_T3D) || defined (SYS_HAL)  || defined (SYS_SX)   \
+ || (defined (SYS_LINUX) && defined (VAR_PGF77))||(defined (SYS_LINUX) && defined (VAR_IFC))
+#include "implicit.h"
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)
       SECOND = etime(tarray)
@@ -1748,9 +1787,9 @@ C
 C    where L and U constitute the LU decomposition of the
 C    orthogonal orbital transformation matrix UMO.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UMO(NMO,NMO)
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( THRESH = 1.D-4 )
 C
@@ -1842,7 +1881,7 @@ C  2-Jul-1992 hjaaj
 C  This function returns the number of off-diagonal elements
 C  with absolute value greater than THREQL.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(NDIM,NDIM)
 C
       CALL QENTER('NOFDIA')
@@ -1874,7 +1913,7 @@ C   2 if the matrix is antisymmetric to threshold THRZER
 C   3 if all elements are below THRZER
 C   0 otherwise (the matrix is unsymmetric about the diagonal)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(NDIM,NDIM)
 C
       CALL QENTER('MATSYM')
@@ -1906,8 +1945,8 @@ C
 #if !defined (VAR_SPLITFILES)
       REWIND (LU)
 #else
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER FNNAME*80
 C
       INQUIRE (UNIT=LU,NAME=FNNAME)
@@ -1930,5 +1969,63 @@ C
  15   CONTINUE
       REWIND (LU)
 #endif
+      RETURN
+      END
+C  /* Deck fndmin */
+      SUBROUTINE FNDMIN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
+C
+C 23-Nov-2000 hjaaj (FNDMIN = CIFNMN from 12-Aug-1990 hjaaj)
+C (Find minimum elemnts)
+C
+C Purpose:
+C   Return in IPLACE addresses on lowest NELMNT elements in VEC.
+C
+#include "implicit.h"
+      DIMENSION VEC(NVEC), IPLACE(NELMNT), WRK(LWRK)
+C
+      IF (LWRK .LT. NELMNT) THEN
+         CALL QUIT('FNDMIN: Insufficient memory (LWRK .lt. NELMNT)')
+      END IF
+      IF (NELMNT .GT. NVEC) THEN
+         CALL QUIT('FNDMIN ERROR: NELMNT .gt. NVEC')
+      END IF
+C
+C     Sort first NELMNT elements of VEC
+C
+      DO 120 I = 1,NELMNT
+         VECI = VEC(I)
+         DO 115 J = 1,(I-1)
+         IF (WRK(J) .GT. VECI) THEN
+            DO 112 K = I,(J+1),-1
+               WRK(K)    = WRK(K-1)
+               IPLACE(K) = IPLACE(K-1)
+  112       CONTINUE
+            IPLACE(J) = I
+            WRK(J)    = VECI
+         GO TO 120
+         END IF
+  115    CONTINUE
+         IPLACE(I) = I
+         WRK(I)    = VECI
+  120 CONTINUE
+C
+C     Find lowest elements by insertion sort
+C
+      XHGH = WRK(NELMNT)
+      DO 140 I = NELMNT+1,NVEC
+      IF (VEC(I).GE.XHGH) GO TO 140
+         DO 130 J = 1,NELMNT
+         IF (VEC(I) .LT. WRK(J)) THEN
+            DO 135 K = NELMNT,(J+1),-1
+               WRK(K) = WRK(K-1)
+               IPLACE(K) = IPLACE(K-1)
+  135       CONTINUE
+            IPLACE(J) = I
+            WRK(J) = VEC(I)
+            XHGH   = WRK(NELMNT)
+            GO TO 140
+         END IF
+  130    CONTINUE
+  140 CONTINUE
       RETURN
       END
