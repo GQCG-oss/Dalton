@@ -21,7 +21,8 @@ C
       PARAMETER( ONE = 1.0D00 ,XMONE = -1.0D0 )
       DIMENSION GD(*),WORK(LWORK)
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
+cSC      PARAMETER (LOCDBG = .TRUE.)
 #include <dummy.h>
 #include <iratdef.h>
 #include <cclr.h>
