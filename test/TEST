@@ -44,7 +44,7 @@ rsp_mnfphosph rsp_solvesr walk_polar2"
 #
 MEDIUMCC="cc_rsp_alpha cc_rsp_gamma2 cc_rsp_gammadirect cc_rsp_oddisp \
 cc_energy_triplet cc_rsp_twophotdirect cc_grad2 cc_grad3 cc_geoopt \
-cc_rsp_solv"
+cc_rsp_solv cc_energy_triplet3"
 #
 MEDIUM="$MEDIUM $MEDIUMCC"
 #
