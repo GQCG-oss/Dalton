@@ -391,8 +391,11 @@ C
       IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD .EQ. 'BASIS ' .OR. 
      &    KEYWRD .EQ. 'ATOMBA') LUMLCL = LUCMD
       IF (CMDOPN) CALL GPCLOSE(LUCMD,'KEEP')
-      IF (ITERNR .EQ. 0 .AND. ITRNMR .EQ. 0 .AND. IPRE .EQ. 0)
-     &    LUINFO = LUMLCL
+      IF (ITERNR .EQ. 0 .AND. ITRNMR .EQ. 0 .AND. IPRE .EQ. 0) THEN
+         LUINFO = LUMLCL
+      ELSE
+         LUINFO = -1
+      END IF
 C
 C Only the master in a parallel calc. reads the input file. The
 C slaves do not read the input file in RDLINE but use the input lines
