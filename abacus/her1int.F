@@ -939,22 +939,27 @@ C
          DIFABZ = CORAZ - CORBZ
          DISTAB = DIFABX*DIFABX + DIFABY*DIFABY + DIFABZ*DIFABZ
 C
+C        Huckel / EWMO information matrix
+C        ...  INTTYP .eq. -1 signals HUCKEL integrals
+C
+         IF (INTTYP .EQ. -1) THEN
+            SCAL = 1.0D0
+            HUCFAC = 1.0D0
+            IF (.NOT. EWMO) THEN
 C     Scale overlap integrals for the Huckel matrix part
 C hj-aug99: basis functions are normalized to MULT[AB],
 C           and HUCMAT was scaled with the 1/sqrt(SCAL) factor.
 C           Code modified so projection vectors are also properly scaled.
 C
-         HUCFAC = 1.0D0
-         IF (INTTYP .EQ. -1) THEN
-C           ...  INTTYP .eq. -1 signals HUCKEL integrals
-            SCAL = 1.0D0
-            IF (LCLASS(ISHELA) .EQ. 2) SCAL = DFLOAT(MULTA)
-            IF (LCLASS(ISHELB) .EQ. 2) SCAL = DFLOAT(MULTB)*SCAL
+               IF (LCLASS(ISHELA) .EQ. 2) SCAL = MULTA
+               IF (LCLASS(ISHELB) .EQ. 2) SCAL = MULTB*SCAL
+            END IF
             IF (LCLASS(ISHELA) .EQ. 2 .AND. LCLASS(ISHELB) .EQ. 2) THEN
                IHUCA = IHUCPT(ISHELA)
                IF (ISHELA .EQ. ISHELB .AND. DISTAB .LT. 1.0D-3) THEN
                   HUCFAC = HUCEXC(IHUCA)
-               ELSE IF (DISTAB .LT. 1.0D-3) THEN
+               ELSE IF (DISTAB .LT. 1.0D-3 .OR. EWMO) THEN
+C                 ... no intercenter terms in Hamiltonian matrix in EWMO
                   HUCFAC = D0
                ELSE
                   IHUCB = IHUCPT(ISHELB)
@@ -1052,9 +1057,9 @@ cLig <> added the call to NSSTRA for INTTYP = 82
                   CALL SYMSQR(SHLINT(1,I),SOINT(1,I),INTREP(I),ISYMOP,
      &                        IORBA,IORBB,-HKAB,NBAST,IPRINT)
                ELSE IF (INTREP(I) .EQ. 0) THEN
-                  CALL SYM1S(SHLINT(1,I),SOINT(1,I),ISYMOP,MULA,MULB,
-     &                       NHKTA,NHKTB,KHKTA,KHKTB,-HKAB,LDIAG,
-     &                       FULMAT,DUM,IDUM,IPRINT)
+                  CALL SYM1S(SHLINT(1,I),SOINT(1,I),ISYMOP,
+     &                       MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,-HKAB,
+     &                       LDIAG,FULMAT,DUM,IDUM,IPRINT)
                ELSE
                   CALL SYM1N(SHLINT(1,I),SOINT(1,I),INTREP(I),ISYMOP,
      &                       MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,-HKAB,
@@ -1351,7 +1356,7 @@ C        -----------------
 C
          IF (ABS(INTTYP) .EQ. 1 .OR. INTTYP .EQ. 45) THEN
             CALL OVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,HUCFAC,
-     &                  SHGTF,SHLINT)
+     &                  SHGTF,SHLINT,INTTYP)
 C
 C        Dipole length integrals
 C        -----------------------
@@ -2171,17 +2176,21 @@ C
       END
 C  /* Deck ovlint */
       SUBROUTINE OVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,HUCFAC,
-     &                  SHGTF,SHLINT)
+     &                  SHGTF,SHLINT,INTTYP)
 C
 C     tuh 1989
+C     revised Jan 2005 hjaaj for NOPTYP=2 for HUCKEL
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
-     &          SHLINT(*)
+     &          SHLINT(KCKTAB,2)
 #include <onecom.h>
 #include <lmns.h>
+      LOGICAL DOHUCMAT
+C
+      DOHUCMAT = INTTYP .LT. 0
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2198,7 +2207,9 @@ C
          SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
          SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
 C
-         SHLINT(INT) = SHLINT(INT) - SX0*SY0*SZ0*HUCFAC
+         SHLINT(INT,1) = SHLINT(INT,1) - SX0*SY0*SZ0
+         IF (DOHUCMAT)
+     &   SHLINT(INT,2) = SHLINT(INT,2) - SX0*SY0*SZ0*HUCFAC
   100 CONTINUE
       RETURN
       END

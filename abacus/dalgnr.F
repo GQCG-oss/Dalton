@@ -1130,7 +1130,8 @@ C
 C     Initialize /HUCKEL/
 C
       DOHUCKEL = .TRUE.
-      HUCCNT = 2.0D0
+      EWMO     = .TRUE.
+      HUCCNT   = 1.75D0
       CALL IZERO(NHUCAO,8)
       CALL IZERO(IHUCPT,MXSHEL)
 C
@@ -1437,8 +1438,15 @@ C         if reading input from a terminal
  400     READ (LUCMD,'(A7)') WORD
          IF (WORD .EQ. '.MOSTAR') THEN
             READ (LUCMD,'(A7)') WORD
-            IF (WORD(1:6) .NE. 'HUCKEL' .AND. WORD(2:7) .NE. 'HUCKEL')
-     &         DOHUCKEL = .FALSE.
+            IF (INDEX(WORD,'EWMO') .GT. 0) THEN
+               EWMO = .TRUE.
+               DOHUCKEL = .TRUE.
+            ELSE IF (INDEX(WORD,'HUCKEL') .GT. 0) THEN
+               EWMO = .FALSE.
+               DOHUCKEL = .TRUE.
+            ELSE
+               DOHUCKEL = .FALSE.
+            END IF
          ELSE IF (WORD(1:1) .EQ. '*') THEN
             GOTO 8000
          ELSE

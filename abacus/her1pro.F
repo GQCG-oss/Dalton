@@ -267,20 +267,24 @@ C     -----------------
 C
     1 CONTINUE
          IF (WORD .EQ. 'HUCKEL') THEN
-            LABINT(1) = 'HUCKEL  '
+            LABINT(1) = 'HUCKOVLP'
+            LABINT(2) = 'HUCKEL  '
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &      ' Calculation of overlap integrals for Huckel.'
+     &      ' Calculation of overlap and Huckel matrices for Huckel.'
             INTTYP = -1
+            NOPTYP = 2
+            INTREP(1) = 0
+            INTREP(2) = 0
          ELSE
             LABINT(1) = 'OVERLAP '
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of overlap integrals.'
             INTTYP = 1
+            NOPTYP = 1
+            INTREP(1) = 0
          END IF
-         NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         INTREP(1) = 0
          ANTI = .FALSE.
       GO TO 200
 C

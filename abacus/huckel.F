@@ -55,26 +55,30 @@ C
  10   CONTINUE
       NNHUCMX = NHUCMX*(NHUCMX + 1)/2
       N2HUCMX = NHUCMX*NHUCMX
+      N2HUCBA = NHUCBA*NHUCBA
       NTRDIM = MAX(NHUCMX*NBASMA,NBASMA*(NBASMA + 1)/2)
 C
       KFREE = 1
       LFREE = LWORK
       CALL MEMGET('REAL',KTOTOV,NELMNT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KHUCMT,NNHUCMX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KHUCOV,N2HUCBA,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVC,N2HUCMX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTRANM,NTRDIM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVL,NHUCBA,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVS,NHUCBA,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KOVERL,NBASMA*NBASMA,WORK,KFREE,LFREE)
       CALL HUCDR1(WORK(KFREE),LFREE,WORK(KTOTOV),NELMNT,NROW,
-     &            WORK(KHUCMT),NHUCMX,WORK(KEIGVC),WORK(KTRANM),
-     &            WORK(KEIGVL),WORK(KEIGVS),WORK(KOVERL),CMO)
+     &            WORK(KHUCMT),WORK(KHUCOV),NHUCMX,WORK(KEIGVC),
+     &            WORK(KTRANM),WORK(KEIGVL),WORK(KEIGVS),WORK(KOVERL),
+     &            CMO)
       CALL MEMREL('HUCDRV',WORK,1,1,KFREE,LFREE)
       CALL QEXIT('HUCDRV')
       RETURN
       END
 C   /* Deck hucdr1 */
-      SUBROUTINE HUCDR1(WORK,LWORK,TOTOVL,NELMNT,NROW,HUCMAT,NHUCMX,
+      SUBROUTINE HUCDR1(WORK,LWORK,TOTOVL,NELMNT,NROW,
+     &                  HUCMAT,HUCOVL,NHUCMX,
      &                  EIGVEC,TRANMT,EIGVAL,EIGVLS,OVERLP,CMO)
 C
 C     Driver routine for solving the extended Huckel problem, and 
@@ -88,7 +92,7 @@ C
       LOGICAL ANTSYM, FNDLB2
       CHARACTER*8 RTNLBL(2)
       DIMENSION WORK(LWORK)
-      DIMENSION TOTOVL(NELMNT), HUCMAT(*), TRANMT(*),
+      DIMENSION TOTOVL(NELMNT), HUCMAT(*), HUCOVL(*), TRANMT(*),
      &          EIGVEC(NHUCMX*NHUCMX), CMO(NCMOT),
      &          EIGVAL(NHUCBA), EIGVLS(NHUCBA), OVERLP(NBASMA*NBASMA)
 C
@@ -100,25 +104,102 @@ C
 #include <scbrhf.h>
 #include <huckel.h>
 C
-      IF (P6FLAG(6) .OR. IPRI6.GT.1 .OR. IPRRHF.GT.1)
-     &   WRITE (LUPRI,'(/A//A,8I5)') ' *** Output from Huckel module :',
-     &      ' Number of Huckel orbitals each symmetry:',
+D     p6flag(6) = .true.
+      IF (P6FLAG(6) .OR. IPRI6.GE.0 .OR. IPRRHF.GE.0 .OR. EWMO)
+     &   WRITE (LUPRI,'(/A/2(/5X,A,L10)/5X,A,8I5)')
+     &      ' *** Output from Huckel module :',
+     &      'Using EWMO model: ',EWMO,
+     &      'Using EHT  model: ',.NOT.EWMO,
+     &      'Number of Huckel orbitals each symmetry:',
      &      (NHUCAO(I),I=1,NSYM)
+      IF (EWMO) THEN
+         WRITE (LUPRI,'(/A/A/A)')
+     &   ' EWMO - Energy Weighted Maximum Overlap - is a Huckel type'//
+     &   ' method,',
+     &   ' which normally is better than Extended Huckel Theory.',
+     &   ' Reference: Linderberg and Ohrm, Propagators in Quantum'//
+     &   ' Chemistry (Wiley, 1973)'
+      END IF
+C
+      NNHUCBA = NHUCBA * (NHUCBA + 1) / 2
 C
 C     Read AO overlap matrix from AOPROPER file
 C
       CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
+      IF (EWMO) THEN
+C
+C     ... read EWMO overlap matrix:
+C
+         REWIND LUPROP
+         IF (FNDLB2('HUCKOVLP',RTNLBL,LUPROP)) THEN
+            CALL READT(LUPROP,NELMNT,TOTOVL)
+            IF (P6FLAG(6)) THEN
+               CALL HEADER(
+     &         'HUCDR1: HUCKOVLP matrix read from AOPROPER',-1)
+               CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
+            END IF
+         ELSE
+            WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: "HUCKOVLP"'//
+     *         ' matrix not found on AOPROPER.'
+            CALL QUIT('HUCDR1 error: HUCKOVLP not found on AOPROPER')
+         END IF
+C
+C     ... extract EWMO overlap matrix from TOTOVL:
+C
+         CALL DZERO(HUCOVL,NNHUCBA)
+         ISTRT  = 0
+         NHUCT  = 0
+         JPOS   = 1
+C
+         DO ISYM = 1, NSYM
+            NHAOSY = NHUCAO(ISYM)
+         IF (NHAOSY .GT. 0) THEN
+            NBASI  = NBAS(ISYM)
+            IBASTO = IBAS(ISYM) + NHUCT
+            IHUCI  = IBASTO + NBASI
+            NORBI  = NORB(ISYM)
+            IF (NORBI .EQ. 0) THEN
+               WRITE (LUPRI,'(/A,I3/I5,A)')
+     &            'HUCDRV error in symmetry',ISYM,
+     &            NHAOSY,' Huckel orbitals, but no orbitals!'
+               CALL QUIT('HUCDRV error, NHAOSY.ne.0 .and. NORBI.eq.0')
+            END IF
+            ISTRT  = (IHUCI*(IHUCI + 1))/2
+C
+C           Copy the Huckel overlap matrix into a lower triangular matrix,
+C           where the elements are sorted in consecutive order
+C
+            IPOS = JPOS
+            DO I = 1, NHAOSY
+               CALL DCOPY(I,TOTOVL(ISTRT + IHUCI + 1),1,HUCOVL(IPOS),1)
+               IPOS = IPOS + I
+               ISTRT = ISTRT + (IHUCI + I)
+            END DO   ! I = 1,NHAOSY
+            IF (P6FLAG(6) .OR. IPRRHF.GE.6) THEN
+               WRITE (LUPRI,'(/A,I3,/A)')
+     &            ' Extracted EWMO overlap matrix of symmetry :',ISYM,
+     &            ' ------------------------------------------------'
+               CALL OUTPAK(HUCOVL(JPOS),NHAOSY,1,LUPRI)
+            END IF
+            JPOS = IPOS
+            NHUCT = NHUCT + NHAOSY
+         END IF
+         END DO   ! ISYM = 1,NSYM
+      END IF
+C
+C     Read Huckel matrix, both for EWMO and EHT
+C
       REWIND LUPROP
       IF (FNDLB2('HUCKEL  ',RTNLBL,LUPROP)) THEN
          CALL READT(LUPROP,NELMNT,TOTOVL)
          IF (P6FLAG(6)) THEN
             CALL HEADER(
-     &      'HUCDR1: Huckel overlap matrix read from AOPROPER',-1)
+     &      'HUCDR1: Huckel matrix read from AOPROPER',-1)
             CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: Huckel overlap'//
+         WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: "HUCKEL  "'//
      *      ' matrix not found on AOPROPER.'
          CALL QUIT('HUCDR1 error: HUCKEL overlap not found on AOPROPER')
       END IF
@@ -136,6 +217,7 @@ C     Extract Huckel matrix, do one symmetry at a time
 C
       ISTRT  = 0
       NHUCT  = 0
+      JPOS   = 1
 C
       DO 100 ISYM = 1, NSYM
          NHAOSY = NHUCAO(ISYM)
@@ -191,12 +273,61 @@ C
             CALL OUTPUT(TRANMT,1,NBASI,1,NHAOSY,NBASI,NHAOSY,1,LUPRI)
          END IF
 C
-C     Diagonalize Huckel matrix (Note: KLAST is not a misprint)
+C        EWMO or EHT ?
+C
+        IF (EWMO) THEN
+C        ... call EISPACK routine RSG
+         N2HAOSY = NHAOSY*NHAOSY
+         IPOS = 1 + (NHUCT*(NHUCT + 1))/2 + NHUCT
+         KHMAT = KWRK
+         KSMAT = KHMAT+ N2HAOSY
+         KFV1  = KSMAT+ N2HAOSY
+         KFV2  = KFV1 + NHAOSY
+         KLAST = KFV2 + NHAOSY
+         IF (KLAST .GT. LWORK) CALL STOPIT('HUCDRV','RSG',KLAST,LWORK)
+         CALL DSPTSI(NHAOSY,HUCMAT,WORK(KHMAT))
+         CALL DSPTSI(NHAOSY,HUCOVL(JPOS),WORK(KSMAT))
+         IF (P6FLAG(6) .OR. IPRRHF.GE.8) THEN
+            WRITE (LUPRI,*) 'EWMO AO Hamiltonian matrix W'//
+     &                      ' corresponding to separate atoms'
+            CALL OUTPUT(WORK(KHMAT),1,NHAOSY,1,NHAOSY,
+     &                  NHAOSY,NHAOSY,1,LUPRI)
+         END IF
+         CALL DGEMM('N','N',NHAOSY,NHAOSY,NHAOSY,1.D0,
+     &              WORK(KHMAT),NHAOSY, WORK(KSMAT),NHAOSY,0.D0,
+     &              EIGVEC,NHAOSY)
+         CALL DGEMM('N','N',NHAOSY,NHAOSY,NHAOSY,1.D0,
+     &              WORK(KSMAT),NHAOSY, EIGVEC,NHAOSY,0.D0,
+     &              WORK(KHMAT),NHAOSY)
+C        HMAT = SWS , SMAT = S
+         IF (P6FLAG(6) .OR. IPRRHF.GE.4) THEN
+            WRITE (LUPRI,*) 'EWMO Hamiltonian matrix SWS'
+            CALL OUTPUT(WORK(KHMAT),1,NHAOSY,1,NHAOSY,
+     &                  NHAOSY,NHAOSY,1,LUPRI)
+            WRITE (LUPRI,*) 'EWMO overlap matrix S'
+            CALL OUTPUT(WORK(KSMAT),1,NHAOSY,1,NHAOSY,
+     &                  NHAOSY,NHAOSY,1,LUPRI)
+         END IF
+         JPOS = JPOS + ( NHAOSY * (NHAOSY+1) ) / 2
+         CALL RSG(NHAOSY,NHAOSY,WORK(KHMAT),WORK(KSMAT),
+     &            EIGVAL(NHUCT+1),1,EIGVEC,WORK(KFV1),WORK(KFV2),IERR)
+         IF ( IERR.NE.0 ) THEN
+            WRITE(LUPRI,'(/A,I10)')
+     *      ' HUCDRV EWMO eigenvalue problem not converged, code: ',IERR
+            CALL QUIT('HUCDRV: EWMO eigenvalue equation not converged')
+         END IF
+C           Save orbital symmetry in EIGVLS
+            DO I = 1, NHAOSY
+               EIGVLS(NHUCT + I) = ISYM
+            END DO
+        ELSE
+C
+C       EHT: Diagonalize Huckel matrix (Note: KLAST is not a misprint)
 C
          KSCRA1 = KWRK
          KSCRA2 = KSCRA1 + NBASI
          KLAST  = KSCRA1 + NBASI*NHAOSY
-         IF (KLAST .GT. LWORK) CALL STOPIT('HUCDRV',' ',KLAST,LWORK)
+         IF (KLAST .GT. LWORK) CALL STOPIT('HUCDRV','JACO',KLAST,LWORK)
          CALL DUNIT(EIGVEC,NHAOSY)
          CALL JACO(HUCMAT,EIGVEC,NHAOSY,NHAOSY,NHAOSY,WORK(KSCRA1),
      &             WORK(KSCRA2))
@@ -211,20 +342,31 @@ C
             EIGVAL(NHUCT + I) = HUCMAT(II)
             EIGVLS(NHUCT + I) = DISYM
  120     CONTINUE 
-C
          CALL ORDER(EIGVEC,EIGVAL(NHUCT + 1),NHAOSY,NHAOSY)
+        END IF
+C
 C
 C     We write the eigenvalues if high enough print level
 C     and also the vectors if even higher print level
 C
-         IF (P6FLAG(6) .OR. IPRRHF.GT.5) THEN
-            WRITE (LUPRI,'(/A,I3)') ' Huckel eigenvalues for '//
-     &           'symmetry (sorted) :',ISYM
+         IF (P6FLAG(6) .OR. IPRI6.GE.0 .OR. IPRRHF.GE.0) THEN
+            IF (EWMO) THEN
+               WRITE (LUPRI,'(/A,I3)') ' Huckel EWMO eigenvalues for'//
+     &           ' symmetry :',ISYM
+            ELSE
+               WRITE (LUPRI,'(/A,I3)') ' Huckel EHT eigenvalues for'//
+     &           ' symmetry :',ISYM
+            END IF
             WRITE (LUPRI,'(5X,5F15.6)') (EIGVAL(NHUCT+I), I = 1, NHAOSY)
          END IF
-         IF (P6FLAG(6) .OR. IPRRHF.GE.8) THEN
-            WRITE (LUPRI,'(/A,I3)') ' Huckel eigenvectors for '//
-     &           'symmetry (sorted) :',ISYM
+         IF (P6FLAG(6) .OR. IPRRHF.GE.2) THEN
+            IF (EWMO) THEN
+               WRITE (LUPRI,'(/A,I3)') ' Huckel EWMO eigenvectors for'//
+     &           ' symmetry :',ISYM
+            ELSE
+               WRITE (LUPRI,'(/A,I3)') ' Huckel EHT eigenvectors for'//
+     &           ' symmetry :',ISYM
+            END IF
             CALL OUTPUT(EIGVEC,1,NHAOSY,1,NHAOSY,NHAOSY,NHAOSY,1,LUPRI)
          END IF
          NHUCT = NHUCT + NHAOSY
@@ -237,6 +379,10 @@ C     For HUCKEL basis to HUCKEL basis this gives the identity matrix
 C
 C     Explicit inversion may take some time.....
 C
+         KSCRA1 = KWRK
+         KSCRA2 = KSCRA1 + NBASI
+         KLAST  = KSCRA1 + NBASI*NHAOSY
+         IF (KLAST.GT.LWORK) CALL STOPIT('HUCDRV','DGEINV',KLAST,LWORK)
          CALL DGEINV(NBASI,OVERLP,OVERLP,WORK(KSCRA1),WORK(KSCRA2),INFO)
          IF (INFO .NE. 0) THEN
             WRITE (LUPRI,'(/A/A)') ' Singular overlap matrix HUCDRV',
@@ -245,12 +391,9 @@ C
      &                'in Huckel')
          END IF
          CALL DGEMM('N','N',NBASI,NHAOSY,NBASI,1.D0,
-     &              OVERLP,NBASI,
-     &              TRANMT,NBASI,0.D0,
-     &              WORK(KSCRA1),NBASI)
+     &              OVERLP,NBASI, TRANMT,NBASI,0.D0, WORK(KSCRA1),NBASI)
          CALL DGEMM('N','N',NBASI,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KSCRA1),NBASI,
-     &              EIGVEC,NHAOSY,0.D0,
+     &              WORK(KSCRA1),NBASI, EIGVEC,NHAOSY,0.D0,
      &              CMO(ICSYM),NBASI)
  100  CONTINUE 
       IF (P6FLAG(6)) THEN

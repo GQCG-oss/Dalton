@@ -551,6 +551,7 @@ C
 #include <orgcom.h>
 #include <infpar.h>
 #include <numder.h>
+#include <huckel.h>
 #include <r12int.h>
 #include <ibtfun.h>
       ZMAT = .FALSE.
@@ -713,6 +714,19 @@ C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &            KAOVEC,DOOWN)
+C
+C     Dec 04 hjaaj: TODO
+C     EWMO is only implemented for case with no
+C     symmetry adapted orbitals (yet)
+C     This is checked with NUCDEP .NE. NUCIND.
+C     (the Hamiltonian matrix must be generated BEFORE
+C      the symmetry transformation, thus it requires a
+C      special output routine in her1int.F, or a backtransformation
+C      from SO basis to AO basis in huckel.F).
+C
+      IF (NUCDEP .NE. NUCIND) THEN
+         EWMO = .FALSE.
+      END IF
 C
 C     Determine center of mass
 C
@@ -1090,9 +1104,10 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  IF (IPOS .NE. 0) THEN
                     IPOS2 = INDEX(MLINE(NMLINE-NONT(I))(IPOS:),'=')
                     IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
-                       WRITE (LUPRI,*) 'Incorrect input for '//
-     &                      'basis set name'
-                       WRITE (LUPRI,*) 'Format is "Basis=?"'
+                       WRITE (LUPRI,'(/A)')
+     &                   ' Incorrect input for basis set name in line:',
+     &                   MLINE(NMLINE-NONT(I)),
+     &                   ' Format is "Basis=?"'
                        CALL QUIT('Incorrect input for basis set name')
                     ELSE
                        IF (ATOMDF) THEN
@@ -1140,7 +1155,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
  34                CONTINUE
                    AUXNAM = AUXNAM(IAUX:)
                  ENDIF
-                 IF (INPTST .OR. IPREAD .GT. 1) THEN
+                 IF (INPTST .OR. IPREAD .GT. 0) THEN
                     IF (DOHUCKEL .AND. J.EQ.2) THEN
                        WRITE (LUPRI,'(/A,I3)')
      &                 ' Huckel basis read for atomic type no.',I
@@ -3685,7 +3700,7 @@ C
   10  CONTINUE
       IF (MAXREP .GT. 0 .AND. IPREAD .GT. 0) THEN
          IF (IPREAD .GT. 10) THEN
-            WRITE(LUPRI,'(10X,A,/)') 'Symmetry pointer indices'
+            WRITE(LUPRI,'(10X,A/)') 'Symmetry pointer indices'
             WRITE(LUPRI,'(4X,8I4)')
      &           ((IPTSYM(I,J),J = 0,MAXREP),I=1,NORBS)
             IF (NFLOAT .GT. 0) WRITE (LUPRI,'(/10X,A,I4)')
@@ -3927,9 +3942,8 @@ C
          END IF
          DO 300 ISYM = 0, MAXREP
          IF (NCRREP(ISYM,1) .GT. 0) THEN
-            IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(//A,I2/)') '  Symmetry', ISYM + 1
-            END IF
+            IF (IPREAD .GT. 0) WRITE (LUPRI,'(/A,2X,A3,A2,I2,A1/)')
+     &          '  Symmetry',REP(ISYM),' (',ISYM+1,')'
             DO 400 IATOM = 1, NUCIND
                DO 500 ICOOR = 1, 3
                   ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM,1)
