@@ -1,7 +1,17 @@
 $cc-pV6Z
-
+$Elements supported
+$H C N O 
 $
 $  REFERENCE
+$Elements                             References
+$--------                             ----------
+$ H     : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+$ He    : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).
+$Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+$Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)
+$Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).
+$Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).
+$
 a 1
 $ HYDROGEN     (10s,5p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]       
 $ S-TYPE FUNCTIONS
@@ -264,7 +274,4 @@ $ I-TYPE FUNCTIONS
       2.6000000  1.00000000
 
 
-$Elements supported
-
-$H C N O 
 
