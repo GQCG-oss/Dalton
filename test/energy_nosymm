@@ -33,9 +33,9 @@ ATOMBASIS
 Energy calculation without symmetry
 Basis set specified with ATOMBASIS
     2    0
-        8.    1      cc-pVDZ
+        8.    1      Basis=cc-pVDZ
 O     0.0 -0.2249058930 0.0
-        1.    2      cc-pVDZ
+        1.    2      Bas=cc-pVDZ
 H     1.45235 0.899623 0.0
 H    -1.45235 0.899623 0.0
 %EOF%

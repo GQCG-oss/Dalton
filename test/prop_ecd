@@ -34,7 +34,7 @@ Electronic circular dichroism parameters
 
     2    1 YZ      *  1.00D-13
         6.    1    2    1    1
-C #1   0.000000            0.000000           0.666000                 *
+C#1   0.000000            0.000000           0.666000                 *
   12   5
 4233.     .001220
 634.9     .009342
@@ -57,8 +57,8 @@ C #1   0.000000            0.000000           0.666000                 *
 0.040                         1.000
 0.016                                   1.000
         1.    2    1    1
-H #1   0.284567           -0.910839           1.192778                 *
-H #3  -0.073654            0.946415           1.229639                 *
+H#1   0.284567           -0.910839           1.192778                 *
+H#3  -0.073654            0.946415           1.229639                 *
     4   2
 19.2384   .032828
 2.89872   .231204
@@ -109,9 +109,9 @@ else
 fi
 
 # Atombasis
-CRIT1=`$GREP "C \#1 * 2 * 6 * 33 * 17 * \[12s7p\|5s4p\]" $log | wc -l`
-CRIT2=`$GREP "H \#1 * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT3=`$GREP "H \#3 * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT1=`$GREP "C\#1 * 2 * 6 * 33 * 17 * \[12s7p\|5s4p\]" $log | wc -l`
+CRIT2=`$GREP "H\#1 * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT3=`$GREP "H\#3 * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
 CRIT4=`$GREP "total\: * 6 * 16 * 82 * 42" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
@@ -120,22 +120,22 @@ ERROR[1]="ATOMBASIS NOT READ CORRECTLY"
 # Geomatry
 CRIT1=`$GREP "Coordinates are entered in Angstroms and converted to atomic units\." $log | wc -l`
 CRIT2=`$GREP "Total number of coordinates\: 18" $log | wc -l`
-CRIT3=`$GREP "1 * C \#1 1 * x * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "1 * C\#1  1 * x * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "2 * y * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "3 * z * 1\.2585576052" $log | wc -l`
-CRIT6=`$GREP "4 * C \#1 2 * x * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "4 * C\#1  2 * x * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "5 * y * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
 CRIT8=`$GREP "6 * z * \-1\.2585576052" $log | wc -l`
-CRIT9=`$GREP "7 * H \#1 1 * x * (0| )\.5377536968" $log | wc -l`
+CRIT9=`$GREP "7 * H\#1  1 * x * (0| )\.5377536968" $log | wc -l`
 CRIT10=`$GREP "8 * y * \-1\.7212362621" $log | wc -l`
 CRIT11=`$GREP "9 * z * 2\.2540237586" $log | wc -l`
-CRIT12=`$GREP "10 * H \#1 2 * x * (0| )\.5377536968" $log | wc -l`
+CRIT12=`$GREP "10 * H\#1  2 * x * (0| )\.5377536968" $log | wc -l`
 CRIT13=`$GREP "11 * y * 1\.7212362621" $log | wc -l`
 CRIT14=`$GREP "12 * z * \-2\.2540237586" $log | wc -l`
-CRIT15=`$GREP "13 * H \#3 1 * x * (\-0|\-)\.1391858887" $log | wc -l`
+CRIT15=`$GREP "13 * H\#3  1 * x * (\-0|\-)\.1391858887" $log | wc -l`
 CRIT16=`$GREP "14 * y * 1\.7884651590" $log | wc -l`
 CRIT17=`$GREP "15 * z * 2\.3236809536" $log | wc -l`
-CRIT18=`$GREP "16 * H \#3 2 * x * (\-0|\-)\.1391858887" $log | wc -l`
+CRIT18=`$GREP "16 * H\#3  2 * x * (\-0|\-)\.1391858887" $log | wc -l`
 CRIT19=`$GREP "17 * y * \-1\.7884651590" $log | wc -l`
 CRIT20=`$GREP "18 * z * \-2\.3236809536" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \

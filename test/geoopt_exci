@@ -37,11 +37,11 @@ BASIS
 aug-cc-pVDZ
 Geometry optimization of excited state. Breaking of symmetry leads to
 error message
-    2
-        1.    2
+Atomtypes=2
+Charge=1.0 Atoms=2
 H     1.45235 0.899623 0.0
 H    -1.45235 0.899623 0.0
-        8.    1
+Charge=8.0 Atoms=1
 O     0.0 -0.2249058930 0.0
 %EOF%
 

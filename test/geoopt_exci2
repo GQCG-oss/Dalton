@@ -34,8 +34,8 @@ cat > geoopt_exci2.mol <<'%EOF%'
 INTGRL
 Geometry optimization of excited state, vibrational analysis at
 optimized geometry
-    2    2  X  Y  Z
-        3.    1    3    1    1    1    1
+Atomtypes=2 Generators=2  X  Y
+Blocks=3 1 1    1 Charge=3.0 Atoms=1
 Li    0.0 0.0 0.0
 F  10    5
 1359.4466  .000844  .00000000 .00000000 .00000000 .00000000
@@ -60,7 +60,7 @@ F   4    2
 0.09271 1.475484  .00000000
 0.02607 .00000000  .370578
 0.007331 .00000000  .017847
-        1.    1    2    1    1    1
+Charge=1.0 Atoms=1 Blocks=2 1 1
 H     0.0 0.0 3.015
 F   6    3
 33.685014 .006068 0.00000 0.00000

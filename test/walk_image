@@ -32,10 +32,10 @@ cat > walk_image.mol <<'%EOF%'
 ATOMBASIS
 Location of saddle point (transition state) using IMAGE method
 
-c   2    0
-        7.    1      6-31G**
+Atomtypes=2 Nosymmetry Cartesian
+Charge=7.0 Atoms=1      Basis=6-31G**
 N     0.0  0.0  0.0
-        1.    3      6-31G**
+Charge=1.0 Atoms=3      Basis=6-31G**
 H     1.7      0.0     0.0
 H    -1.3841   0.9919  0.0
 H    -1.3841  -0.9919  0.0
