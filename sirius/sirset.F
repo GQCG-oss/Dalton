@@ -29,12 +29,17 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirset.F,v 1.2 2001-02-16 13:01:28 hjj Exp $
+C$Id: sirset.F,v 1.3 2001-02-16 13:26:25 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/16 13:01:28  hjj
+bugfix in RASWOP: the old code gave wrong active-active rotations in
+the very special case of RAS3 really being a CAS space, but RAS1 not
+a CAS space. /hjaaj.
+
 Revision 1.1.1.1  2001/02/08 13:33:31  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -1038,6 +1043,8 @@ C
       JEND3 = JEND2 + NAS3(JSYM)
 C
 C     RAS1 to RAS2 and RAS3 rotations
+C     (rotations which are redundant because RAS1 or RAS3 actually is
+C      a CAS space are removed)
 C
       IF ( .NOT. CAS1 ) THEN
          DO 200 IT = ISTT1,IEND1
