@@ -645,7 +645,7 @@ C
 C
          NCOMP  = 0
          NPATOM = 0
-         CALL GET1IN(DUMMY,'SQHDO  ',NCOMP,WORK(KLAST),LWORK,LABINT,
+         CALL GET1IN(DUMMY,'SQHDOL ',NCOMP,WORK(KLAST),LWORK,LABINT,
      &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
          DO 300 IREP = 0, MAXREP
             DO 310 IATOM = 1, NUCIND
@@ -777,7 +777,7 @@ C
 C  /* Deck aatno1 */
 C***********************************************************************
       SUBROUTINE AATNO1(DTOT,CMO,LABINT,INTREP,INTADR,RSPVEC,WORK,LWORK,
-     &                  HDOBR,DB,DR,S1MAGL,SQHDO,RKAPPA,BKAPPA,AATOK,
+     &                  HDOBR,DB,DR,S1MAGL,SQHDOL,RKAPPA,BKAPPA,AATOK,
      &                  AATOD,AATS1,AATS2,AATOT,AATALL,CSTRA,SCTRA,
      &                  NCART,INTPRI,IPRINT)
 C***********************************************************************
@@ -792,7 +792,7 @@ C***********************************************************************
       DIMENSION DTOT(NORBT,NORBT), HDOBR(NORBT,NORBT,3,NCART),
      &          CMO(*), INTREP(*), DB(NORBT,NORBT,3),
      &          DR(NORBT,NORBT,NCART), S1MAGL(NORBT,NORBT,3),
-     &          SQHDO(NORBT,NORBT,NCART), RSPVEC(NVARPT),
+     &          SQHDOL(NORBT,NORBT,NCART), RSPVEC(NVARPT),
      &          RKAPPA(NORBT,NORBT,NCART), BKAPPA(NORBT,NORBT,3),
      &          AATOK(3,NCART), AATOD(3,NCART), AATS1(3,NCART),
      &          AATS2(3,NCART), AATOT(3,NCART), AATALL(3,NCART),
@@ -862,19 +862,19 @@ C
  400  CONTINUE
       CALL AATNPR(S1MAGL,LABINT,3,IPRINT)
 C
-C     SQHDO
-C     =====
+C     SQHDOL
+C     ======
 C
       NCOMP  = 0
       NPATOM = 0
-      CALL GET1IN(DUMMY,'SQHDO  ',NCOMP,WORK,LWORK,LABINT,
+      CALL GET1IN(DUMMY,'SQHDOL ',NCOMP,WORK,LWORK,LABINT,
      &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
       DO 500 R = 1, NCART
          KSYMP = -1
-         CALL PRPGET(LABINT(R),CMO,SQHDO(1,1,R),KSYMP,ASM,
+         CALL PRPGET(LABINT(R),CMO,SQHDOL(1,1,R),KSYMP,ASM,
      &               WORK,LWORK,IPRINT)
  500  CONTINUE
-      CALL AATNPR(SQHDO,LABINT,NCART,IPRINT)
+      CALL AATNPR(SQHDOL,LABINT,NCART,IPRINT)
 C
 C     Responses
 C     =========
@@ -906,7 +906,7 @@ C
      &                                    *BKAPPA(K,I,B)
                TERMO2 = TERMO2 - DTOT(I,J)*(RKAPPA(J,K,R) - DR(J,K,R))
      &                                    *DB(K,I,B)
-               TERMS2 = TERMS2 - DTOT(I,J)*SQHDO(I,K,R)*S1MAGL(J,K,B)
+               TERMS2 = TERMS2 - DTOT(I,J)*SQHDOL(I,K,R)*S1MAGL(J,K,B)
   900       CONTINUE
   800    CONTINUE
          IF (NOLOND) THEN
