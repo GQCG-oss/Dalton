@@ -8,7 +8,7 @@ The following approaches to treat relativistic effects are available in DALTON:
 The Effective Core Potential approach of Pitzer and
 Winter~\cite{rmpnmwijqc40} is available for single-point calculations
 by asking for ECP as the basis set for the chosen element. So far,
-only a limited set of elments is covered by the basis set library. See
+only a limited set of elements is covered by the basis set library. See
 the \verb|rsp_ecp| example in the test-suite. The corresponding spin-orbit
 operators are not implemented.
 
@@ -26,7 +26,7 @@ operators are not implemented.
 \end{center}
 
 
-\item[Douglas-Kroll]\index{Douglas--Kroll} The Douglas--Kroll scalar relatvistic one-electron integrals  
+\item[Douglas-Kroll]\index{Douglas--Kroll} The Douglas--Kroll scalar relativistic one-electron integrals  
 are available by adding the \verb|.DOUGLAS-KROLL|   keyword
 \begin{verbatim}
 **DALTON INPUT
@@ -37,10 +37,10 @@ are available by adding the \verb|.DOUGLAS-KROLL|   keyword
 
 See also the \verb|energy_douglaskroll| example in the test suite.
 
-  NOTE: Exact analytical gradients and hessians are not available 
+  NOTE: Exact analytical gradients and Hessians are not available 
 at the moment, the approximate gradient and Hessians does however give fairly accurate geometries.  For this approach, only basis sets should be used 
 where the contraction coefficients were optimized including the Douglas-Kroll 
-operators. DALTON currently provides:  DK-Pol (relativistic version of Sadlej's POL basis sets), raf-r for some heavy elements, and the relatvistically recontracted correlation-consistent basis sets of Dunning (cc-pVXZ-DK, X=D,T,Q,5). The combination with 
+operators. DALTON currently provides:  DK-Pol (relativistic version of Sadlej's POL basis sets), raf-r for some heavy elements, and the relativistically recontracted correlation-consistent basis sets of Dunning (cc-pVXZ-DK, X=D,T,Q,5). The combination with 
 property operators should be done with care, {\it e.g.\/} the standard
 magnetic property operators are not suitable in this case.
 
@@ -75,8 +75,8 @@ two-electron spin-orbit integrals, and can therefore be used for large systems.
 For properties, the same substitution should be made, in the case of special 
 components, \verb|X1SPNORB| labels are replaced by \verb|X1MNF-SO| and so on, whereas the 
 two-electron terms will be skipped totally. For calculating phosphorescence with 
-the quadratic response scheme, \verb|.PHOSPHORESENCE| should be just resplaced by 
-\verb|.MNFPHO| which takes care of chosing the approriate integrals. 
+the quadratic response scheme, \verb|.PHOSPHORESENCE| should be just replaced by 
+\verb|.MNFPHO| which takes care of choosing the appropriate integrals. 
 
 
 \begin{center}
@@ -96,7 +96,7 @@ NOTE:
 
 The choice between the Breit-Pauli or Douglas-Kroll mean-field operator 
 is done by (not) providing the .DOUGLAS-KROLL keyword. It is therefore 
-not possible to combine {\it e.g.\/} non-relatvistic wave-functions with the 
+not possible to combine {\it e.g.\/} non-relativistic wave-functions with the 
 Douglas-Kroll spin-orbit integrals. 
 
 
