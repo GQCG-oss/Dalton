@@ -2153,6 +2153,13 @@ C
          END IF
 C
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
+C
+C        Reduce gradient criterion for DFT optimization
+C
+         IF (DFTRUN) THEN
+            GRDTHR = MAX(GRDTHR,5.0D-05)
+            THRSTP = MAX(THRSTP,5.0D-05)
+         END IF
          IF (DOCCSD) THEN
 C
             CALL CC_GEOFLAG
