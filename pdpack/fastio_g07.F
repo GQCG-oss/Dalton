@@ -1,5 +1,5 @@
 C
-C$Id: fastio_g07.F,v 1.3 2001-08-21 09:46:25 vebjornb Exp $
+C$Id: fastio_g07.F,v 1.4 2002-02-14 17:41:49 vebjornb Exp $
 C
 #ifdef UNDEF
 /* Comdeck notes */
@@ -771,14 +771,14 @@ C*  ERROR HANDLING SECTION                                             *
 C*                                                                     *
 C***********************************************************************
 900   CONTINUE
-#if defined (SYS_AIX) || defined (SYS_CONVEX) || defined (SYS_LINUX) || defined (SYS_IRIX) || defined (SYS_HAL)
+#if defined (SYS_AIX) || defined (SYS_CONVEX) || defined (SYS_LINUX) || defined (SYS_IRIX) || defined (SYS_HAL) || defined (SYS_HPUX)
       ISTEOF = -1
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T90)
 C     eof value for Cray from Trygve Sep.93 /hjaaj
       ISTEOF = 2
 #endif
-#if !defined (SYS_AIX) && !defined (SYS_CONVEX) && !defined (SYS_CRAY) && !defined (SYS_IRIX) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (SYS_AIX) && !defined (SYS_CONVEX) && !defined (SYS_LINUX) && !defined (SYS_IRIX) && !defined (SYS_HAL) && !defined (SYS_HPUX) && !defined (SYS_CRAY) && !defined (SYS_T90)
       CALL QUIT('FASTIO ERROR: ISTEOF has not been '//
      &          'defined for this computer')
 #endif
