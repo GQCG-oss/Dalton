@@ -1098,24 +1098,24 @@ c--   metto in coef i coefficienti trasformati (for clarity sake)
       call memrelr8(vct(i_vct))
 #endif
 c---costruzione matrice S
-      do a=1,nact
+      do ia=1,nact
          do mu=1,nnew
 #if !defined(VAR_G77)
-            s(a,mu)=0.d0
+            s(ia,mu)=0.d0
 #else
-            s(i_s+(mu-1)*nact+a-1)=0.d0
+            s(i_s+(mu-1)*nact+ia-1)=0.d0
 #endif
-            do ap=1,nact
-               if(ap.ne.a)then
-                  ro=-da(ap,a)
+            do iap=1,nact
+               if(iap.ne.ia)then
+                  ro=-da(iap,ia)
                else
-                  ro=2.d0-da(ap,a)
+                  ro=2.d0-da(iap,ia)
                endif
 #if !defined(VAR_G77)
-               s(a,mu)=s(a,mu)+ro*coef(ap,mu)
+               s(ia,mu)=s(ia,mu)+ro*coef(iap,mu)
 #else
-      s(i_s+(mu-1)*nact+a-1)=s(i_s+(mu-1)*nact+a-1)+ro*coef(i_coef+(mu
-     $-1)*nact+ap-1)
+      s(i_s+(mu-1)*nact+ia-1)=s(i_s+(mu-1)*nact+ia-1)+ro*coef(i_coef+(mu
+     $-1)*nact+iap-1)
 #endif
             enddo
          enddo
