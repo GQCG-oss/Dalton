@@ -1,16 +1,16 @@
 \chapter{NEVPT2 calculations}\label{ch:nevpt2}
 
 \section{General considerations}\label{sec:nevptgeneral}
-NEVPT2 \index{NEVPT2} is a form of second order multireference
+NEVPT2 \index{NEVPT2} is a form of second-order multireference
 perturbation theory \index{multireference PT}
 which can be applied to CAS--SCF wavefunctions or, more generally, to
 CAS--CI wavefunctions. The term NEVPT is an acronym for
 \textit{``n--electron valence state perturbation theory''}. While we
 refer the reader to the pertinent
-literature\cite{nevpt1,nevpt2,nevpt3,nevpt4}, we limit ourselves to
+literature~\cite{nevpt1,nevpt2,nevpt3,nevpt4}, we limit ourselves to
 recalling here that the most relevant feature of NEVPT2 consists in
-that the first order correction to the wavefunction is expanded over a
-set of properly chosen \emph{multirefernce} functions which correctly
+that the first-order correction to the wavefunction is expanded over a
+set of properly chosen \emph{multireference} functions which correctly
 take into consideration the two--electron interactions occurring among
 the active electrons. Among the properties ensured by NEVPT2 we quote:
 
@@ -18,10 +18,10 @@ the active electrons. Among the properties ensured by NEVPT2 we quote:
 \item Strict separability (size consistence): the energy of a
   collection of non--interacting systems equals the sum of the
   energies of the isolated systems
-\item Absence of intruder states: the zero order energies associated
-  to the functions of the outer space are well separated from the zero
-  order energy of the state under study, thus avoiding divergences in
-  the perturbation summation
+\item Absence of intruder states: the zero-order energies associated
+  to the functions of the outer space are well separated from the
+  zero-order energy of the state being studied, thus avoiding
+  divergences in   the perturbation summation
 \item The first order correction to the wavefunction is an
   eigenfunction of the spin operators $S^2$ and $S_z$
 \item Electronically excited states are dealt with at the same level
@@ -36,11 +36,11 @@ the active electrons. Among the properties ensured by NEVPT2 we quote:
 \end{itemize}
 
 NEVPT2 has been implemented in two variants both of which are present
-in \dalton, i.e. the \emph{strongly contracted} (SC) and the
+in \dalton, {\it i.e.\/} the \emph{strongly contracted} (SC) and the
 \emph{partially contracted} (PC) variant. The two variants differ by
 the number of perturber functions employed in the perturbation
 summation. The PC--NEVPT2 uses a richer function space and is
-supposedly more accurate than the SC--NEVPT2. The results of
+in general more accurate than the SC--NEVPT2. The results of
 SC--NEVPT2 and PC--NEVPT2 are anyway usually very close to one
 another.
 
