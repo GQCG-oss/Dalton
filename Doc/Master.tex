@@ -129,18 +129,17 @@
 %
 % New definitions, KR
 %
-\newcommand{\Key}[1]{{\normalfont\ttfamily .#1}
-                     \index{#1@{\normalfont\ttfamily .#1}}}
-\newcommand{\Keym}[1]{{\normalfont\ttfamily .#1}
-                      \index{#1@{\normalfont\ttfamily .#1}|textbf}}
-\newcommand{\Sec}[1]{{\normalfont\ttfamily *#1}
-                     \index{#1@{\normalfont\ttfamily *#1}}}
-\newcommand{\Secm}[1]{{\section{*#1}}
-                      \index{#1@{\normalfont\ttfamily *#1}|textbf}}
-\newcommand{\Subsecm}[1]{{\subsection{*#1}}
-                     \index{#1@{\normalfont\ttfamily *#1}|textbf}}
-\renewcommand{\descriptionlabel}[1]
-	{\hspace{\labelsep}\ttfamily #1}
+\newcommand{\Key}[1]{{\normalfont
+\ttfamily{.#1}}\index{#1@{\normalfont \ttfamily{.#1}}}}
+\newcommand{\Keym}[1]{{\normalfont
+\ttfamily{.#1}}\index{#1@{\normalfont \ttfamily{.#1}}|textbf}}
+\newcommand{\Sec}[1]{{\normalfont
+\ttfamily{*#1}}\index{#1@{\normalfont \ttfamily{*#1}}}}
+\newcommand{\Secm}[1]{{\section{*#1}}\index{#1@{\normalfont
+\ttfamily{*#1}}|textbf}}
+\newcommand{\Subsecm}[1]{{\subsection{*#1}}\index{#1@{\normalfont
+\ttfamily{*#1}}|textbf}}
+\renewcommand{\descriptionlabel}[1]{\hspace{\labelsep}\ttfamily{#1}}
 \begin{document}
 %
 \bibliographystyle{unsrt}
