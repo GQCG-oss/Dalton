@@ -36,6 +36,7 @@ c     DFTINI
 C     intialize DFTCOM common block
       SUBROUTINE DFTINI
 #include <implicit.h>
+	PARAMETER (D0=0D0, D1=1D0)
 #include <dftcom.h>
       HFXFAC = D1
       WDFTX  = D0
