@@ -301,7 +301,14 @@ C
 C
 C Fock matrices
 C
-      IF (TDHF) THEN
+C hj start TODO Mar 2004
+C TODO  hjaaj Mar 2004: calling Q3FOCK gives wrong result in
+C       test rsp_solvhyper, thus it has been disabled until
+C       the error has been found ...
+C     IF (TDHF) THEN
+      IF (TDHF .AND.  (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) ) THEN
+C hj end TODO Mar 2004
+C
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
      *                 WRK(KZYMB),WRK(KZYMC),
@@ -494,13 +501,19 @@ C Gradient flags
 C
 
       ISYMST = MULD2H(IGRSYM,IREFSY)
-      IF ( ISYMST .EQ. IREFSY ) THEN
+      IF ( IGRSYM .EQ. 1 ) THEN
          LCON = ( MZCONF(IGRSYM) .GT. 1 )
-         LCONB = ( MZCONF(ISYMB) .GT. 1 )
-         LCONC = ( MZCONF(ISYMC) .GT. 1 )
       ELSE
          LCON = ( MZCONF(IGRSYM) .GT. 0 )
+      END IF
+      IF ( ISYMB .EQ. 1 ) THEN
+         LCONB = ( MZCONF(ISYMB) .GT. 1 )
+      ELSE
          LCONB = ( MZCONF(ISYMB) .GT. 0 )
+      END IF
+      IF ( ISYMC .EQ. 1 ) THEN
+         LCONC = ( MZCONF(ISYMC) .GT. 1 )
+      ELSE
          LCONC = ( MZCONF(ISYMC) .GT. 0 )
       END IF
       LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
