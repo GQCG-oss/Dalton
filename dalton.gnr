@@ -183,15 +183,13 @@ for i in $filelist ; do
 done
 
 if [ -s "first.wrl" -a -r "first.wrl" ] ; then
-	tar cf $outnam.tar $tarfilelist *wrl
+	tar cf - $tarfilelist *wrl | gzip > $outnam.tar.gz
 else
-	tar cf $outnam.tar $tarfilelist
+	tar cf - $tarfilelist | gzip > $outnam.tar.gz
 fi
 
-if [ -s $outnam.tar ] ; then
-   gzip $outnam.tar
-else
-    echo "$outnam.tar has not been created"
+if [ -s $outnam.tar.gz ] ; then
+    echo "$outnam.tar.gz has not been created"
 fi
 
 if [ -s $outnam.tar.gz ] ; then

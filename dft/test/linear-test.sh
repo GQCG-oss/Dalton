@@ -1,5 +1,6 @@
 #!/bin/sh
-dalton=`pwd`/../../dalton.x
+dalton="mpirun -np 4 `pwd`/../../dalpar.x"; par='.PARALLEL'
+#dalton="`pwd`/../../dalpar.x"; par='!.PARALLEL'
 tmp=/tmp/${USER}
 fld=2e-4
 runenergy=1
@@ -101,6 +102,7 @@ cat > DALTON.INP <<EOF
 **DALTON INPUT
 .RUN PROPERTIES
 .DIRECT
+$par
 **INTEGRALS
 .NOSUP
 .DIPLEN
@@ -142,6 +144,7 @@ cat > DALTON.INP <<EOF
 **DALTON INPUT
 .RUN RESPONSE
 .DIRECT
+$par
 **INTEGRALS
 .NOSUP
 .DIPLEN

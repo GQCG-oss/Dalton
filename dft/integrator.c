@@ -159,17 +159,6 @@ printptr_(const char* str, void* ptr)
 }
 
 
-#if DEF_TYPE==1 || !(defined(VAR_MPI) && 0)
-#define grid_iterator_first(blocksz) 0
-#define grid_iterator_last(blocksz) (blocksz-1)
-#define grid_iterator_step(blocksz) 1
-#else
-#define grid_iterator_first(blocksz) infpar_.mynum
-#define grid_iterator_last(blocksz) (blocksz-1)
-#define grid_iterator_step(blocksz) (infpar_.nodtot+1)
-#endif
-
-
 #if 0 && defined(VAR_MPI)
 static void
 dft_integrate_collect_info(real *electrons)
@@ -208,12 +197,9 @@ dft_integrate(real* cmo, real* work, int* lwork,
     npoints = 0;
     while( (blocksz=grid_getchunk_plain(rawgrid, GRID_BUFF_SZ,
                                         grid->coor, grid->weight)) >=0) {
-	int lo = grid_iterator_first(blocksz);
-	int hi = grid_iterator_last (blocksz);
-	int st = grid_iterator_step (blocksz);
-	npoints += hi-lo+1;
+	npoints += blocksz;
 	
-	for(ipnt= lo; ipnt<=hi; ipnt+=st) {
+	for(ipnt= 0; ipnt<blocksz; ipnt++) {
 	    grid->curr_point  = ipnt;
 	    grid->curr_weight = grid->weight[ipnt];
 
@@ -308,10 +294,7 @@ dft_integrate_ao(DftDensity* dens, real* work, int* lwork,
     npoints = 0;
     while( (blocksz=grid_getchunk_plain(rawgrid, GRID_BUFF_SZ,
                                         grid->coor, grid->weight)) >=0) {
-	int lo = grid_iterator_first(blocksz);
-	int hi = grid_iterator_last (blocksz);
-	int st = grid_iterator_step (blocksz);
-	for(ipnt=lo; ipnt<=hi; ipnt+=st, npoints++) {
+	for(ipnt=0; ipnt<blocksz; ipnt++, npoints++) {
 	    grid->curr_point  = ipnt;
 	    grid->curr_weight = grid->weight[ipnt];
 	    dft_grid_getval(grid, ipnt, work, lwork);
@@ -492,6 +475,9 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
         }
     }
     grid_close(rawgrid);
+#ifdef VAR_MPI
+    FSYM(dftintcollect)(&electrons);
+#endif
     free(dmagao);
     free(ioridx);
     dft_integrator_bl_free(grid);

@@ -136,12 +136,9 @@ dft_dens_unrestricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
   }
 }
 
-#if 0 && defined(VAR_MPI)
+#if defined(VAR_MPI)
 #include <mpi.h>
-
-#include "infpar.h"
-
-
+#define MASTER_NO 0
 /* =================================================================== */
 /* General parallel routines.
  * dft_lifesupport_sync - one-time sync of basic common block data
@@ -150,7 +147,7 @@ dft_dens_unrestricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
  *                   can be generalized?). It gets a registered property
  *                   evaluator address as an argument and broadcasts a
  *                   message that will call corresponding slave code
- *                   via dft_nodstr().
+ *                   via dft_cslave().
  * FIXME: use rather a register approach that does not require modification
  * of this file every time new property evaluator is added.
  */
@@ -159,11 +156,16 @@ struct {
     DFTPropEvalMaster master_func;
     DFTPropEvalSlave  slave_func;
 } PropEvaluatorList[] = {
+#if 0
     { (DFTPropEvalMaster)dft_kohn_sham_,   dft_kohn_sham_slave   },
     { (DFTPropEvalMaster)dft_kohn_shamab_, dft_kohn_shamab_slave },
     { (DFTPropEvalMaster)dft_lin_resp_,    dft_lin_resp_slave    },
+#endif
+    { (DFTPropEvalMaster)dft_lin_respf_,   dft_lin_respf_slave   },
+#if 0
     { (DFTPropEvalMaster)dft_lin_respab_,  dft_lin_respab_slave  },
     { (DFTPropEvalMaster)dft_mol_grad_,    dft_mol_grad_slave    },
+#endif
     { (DFTPropEvalMaster)dftqrcf_,         dft_qr_resp_slave     }
 };
 
@@ -174,26 +176,30 @@ void
 mpi_sync_data(const SyncData* data, int count)
 {
     int i;
-    for(i=0; i<count; i++)
+    for(i=0; i<count; i++) {
         MPI_Bcast(data[i].data, data[i].count, data[i].type,
-                  infpar_.master, MPI_COMM_WORLD);
+                  0, MPI_COMM_WORLD);
+    }
 }
 
 
 void
 dft_wake_slaves(DFTPropEvalMaster evaluator)
 {
-    static int iprtyp = 4; /* magic DFT number */
+    static int iprtyp = 5; /* magic DFT/C number */
     static int iprint = 0;
-    int id;
+    int id, mynum;
 
-    if(infpar_.mynum != infpar_.master)
+    MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
+    if(mynum != 0)
         return; /* slaves do not wake up other slaves */
 
     for(id=0; 
         id<ELEMENTS(PropEvaluatorList) && 
             PropEvaluatorList[id].master_func != evaluator;
-        id++);
+        id++)
+        printf("master %p does not match requested %p\n",
+               PropEvaluatorList[id].master_func, evaluator);
         
     if(id>=ELEMENTS(PropEvaluatorList)) {
         /* this would really be an programming error.... */
@@ -201,36 +207,34 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
         return;
     }
     /* ignore MPI errors */
-    MPI_Bcast(&iprtyp,1, MPI_INT, infpar_.master, MPI_COMM_WORLD);
-    MPI_Bcast(&iprint,1, MPI_INT, infpar_.master, MPI_COMM_WORLD);
-    MPI_Bcast(&id,    1, MPI_INT, infpar_.master, MPI_COMM_WORLD);
-    dft_lifesupport_sync();
+    MPI_Bcast(&iprtyp,1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&iprint,1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&id,    1, MPI_INT, 0, MPI_COMM_WORLD);
+    FSYM(dftintbcast)();
 }
 
-/* dft_nodstr_:
+/* dft_cslave:
    a slave task handler. Receives the task ID and calls apropriate
    property evaluator.
    We broadcast also some basic properties and common block data
    that slaves should absolutely know but for some reason do not.
 */
 void
-dft_nodstr_(real* work,int*lwork,int*iprint)
+FSYM(dft_cslave)(real* work,int*lwork,int*iprint)
 {
     int rank, size;
     if(MPI_Comm_rank(MPI_COMM_WORLD, &rank) ||
        MPI_Comm_size(MPI_COMM_WORLD, &size)) printf("MPI error\n");
     else {
         int id;
-        MPI_Bcast(&id,1,MPI_INT, infpar_.master, MPI_COMM_WORLD);
-        /* printf("Slave %d received task ID:%d\n", rank, id); */
-        dft_lifesupport_sync();
+        MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+        FSYM(dftintbcast)();
         (PropEvaluatorList[id].slave_func)(work, lwork, iprint);
-        /* printf("Slave %d finished task ID:%d\n", rank, id); */
     }
 }
 #else
 void
-dft_nodstr_(real* work,int*lwork,int*iprint)
+FSYM(dft_cslave)(real* work,int*lwork,int*iprint)
 {
    fort_print("DFT slave called but does nothing now.");
 }
@@ -279,7 +283,9 @@ fort_print(const char* format, ...)
 void
 FSYM(dftfuncsync)(int *mynum, int *nodes)
 {
+    static int done = 0;
     int len = DftConfString ? strlen(DftConfString) + 1: 0;
+    if(done) return;
     MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
     if(len>0) {
         int res;
@@ -293,6 +299,7 @@ FSYM(dftfuncsync)(int *mynum, int *nodes)
         }
         free(line);
     }
+    done = 1;
 }
 
 #endif

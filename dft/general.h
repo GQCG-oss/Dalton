@@ -74,6 +74,8 @@ void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
                     real* work, int *lwork, int* ipr);
 void dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet, 
 		   int *ksymop, real* work,int* lwork);
+void FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet, 
+		   int *ksymop, real* work,int* lwork);
 void dft_mol_grad_(real* dmat, real* work, int* lwork, int* iprint);
 void dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,
               real* kappaZ, int* symZ, int* spinZ, int* addfock,
@@ -87,10 +89,11 @@ void dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
 typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, int* lwork, const int* iprint);
-#if 0 && defined(VAR_MPI)
+#if defined(VAR_MPI)
 #include <mpi.h>
 void dft_kohn_sham_slave(real* work, int* lwork, const int* iprint);
 void dft_lin_resp_slave (real* work, int* lwork, const int* iprint);
+void dft_lin_respf_slave (real* work, int* lwork, const int* iprint);
 void dft_kohn_shamab_slave(real* work, int* lwork, const int* iprint);
 void dft_lin_respab_slave (real* work, int* lwork, const int* iprint);
 void dft_mol_grad_slave (real* work, int* lwork, const int* iprint);

@@ -40,6 +40,10 @@ const static int DFTMAG_DEBUG = 0;
 void lrao2mo_(const real* cmo, const int *ksymop, 
               const real*res, real* fmat, real* work, int*lw);
 
+#if defined(VAR_MPI)
+#include <mpi.h>
+#define MASTER_NO 0
+#endif
 #if 0 && defined(VAR_MPI)
 #include <mpi.h>
 #define MASTER_NO 0
@@ -186,11 +190,11 @@ dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
 /* ------------------------------------------------------------------- */
 /* ---------- DFT LINEAR RESPONSE CONTRIBUTION EVALUATOR ------------- */
 /* ------------------------------------------------------------------- */
-void deq27_(const real* cmo, const real* ubo, const real* dv, 
-	    real* dxcao, real* dxvao, real* wrk, int* lfrsav);
-void autpv_(const int*isym,const int*jsym, const real*u,const real* v, 
-	    real*prpao, const int*nbas,const int*nbast,real*prpmo,
-	    const int*norb, const int*norbt, real* wrk,int* lwrk);
+void FSYM(deq27)(const real* cmo, const real* ubo, const real* dv, 
+                 real* dxcao, real* dxvao, real* wrk, int* lfrsav);
+void FSYM(autpv)(const int*isym,const int*jsym, const real*u,const real* v, 
+                 real*prpao, const int*nbas,const int*nbast,real*prpmo,
+                 const int*norb, const int*norbt, real* wrk,int* lwrk);
 
 typedef struct {
     real* dmat, *kappa, *res;
@@ -214,7 +218,9 @@ max(real a, real b)
    floor when we are done.
    FIXME: we can use work for the temp data....
 */
-#if 0 && defined(VAR_MPI)
+#if defined(VAR_MPI)
+
+#if 0
 void
 dft_lin_resp_slave(real* work, int* lwork, const int* iprint)
 {
@@ -227,52 +233,35 @@ dft_lin_resp_slave(real* work, int* lwork, const int* iprint)
     free(cmo);
     free(zymat); 
 }
-
-static void
-dft_lin_resp_sync_conf(void)
-{
-    static const SyncData sync_data[] = {
-	{ &inforb_.nasht,  1,   MPI_INT },
-	{ &inforb_.nisht,  1,   MPI_INT },
-	{ &infvar_.jwopsy, 1,   MPI_INT },
-	{ inforb_.icmo,    8,   MPI_INT },
-	{ inforb_.iorb,    8,   MPI_INT },
-	{ inforb_.iash,    8,   MPI_INT },
-	{ inforb_.nash,    8,   MPI_INT },
-	{ inforb_.nish,    8,   MPI_INT },
-	{ inforb_.norb,    8,   MPI_INT },
-	{ &wrkrsp_.ksymop, 1,   MPI_INT }
-    };
-    mpi_sync_data(sync_data, ELEMENTS(sync_data));
-}
+#endif
 
 static void
 dft_lin_resp_sync_slaves(real* cmo, real* zymat, int* trplet)
 {
 #ifdef C99_COMPILER
     const SyncData data2[] = {
+	{ &inforb_.norbt, 1,                   MPI_INT    },
 	{ cmo,     inforb_.norbt*inforb_.nbast,MPI_DOUBLE },
 	{ zymat,   inforb_.n2orbx,             MPI_DOUBLE },
 	{ trplet,  1,                          MPI_INT    }
     };
 #else
-    /* It is only HP that has such archaic compilers*/
+    /* Is it only HP that has such archaic compilers? */
     static SyncData data2[3] = 
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT} };
     data2[0].data = cmo;    data2[0].count = inforb_.norbt*inforb_.nbast;
     data2[1].data = zymat;  data2[1].count = inforb_.n2orbx;
     data2[2].data = trplet; data2[2].count = 1;
 #endif
-
-    dft_lin_resp_sync_conf();
-    mpi_sync_data(data2,     ELEMENTS(data2));
+    FSYM(dftlrsync)();
+    mpi_sync_data(data2, ELEMENTS(data2));
 }
 
 static __inline__ void
 dft_lin_resp_collect_info(real* fmat, real*work)
 {
-    dcopy_(&inforb_.n2orbx, fmat,&ONEI, work, &ONEI);
-    MPI_Reduce(work, fmat, inforb_.n2orbx, MPI_DOUBLE, MPI_SUM, 
+    dcopy_(&inforb_.n2basx, fmat,&ONEI, work, &ONEI);
+    MPI_Reduce(work, fmat, inforb_.n2basx, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
 }
 
@@ -1073,7 +1062,7 @@ dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
         norbi = inforb_.norb[isym-1];
 	norbj = inforb_.norb[jsym-1];
 	if(norbi>0 && norbj>0)
-	    autpv_(&isym,&jsym,&cmo[inforb_.icmo[isym-1]],
+	    FSYM(autpv)(&isym,&jsym,&cmo[inforb_.icmo[isym-1]],
 		   &cmo[inforb_.icmo[jsym-1]], lr_data.resa,
 		   inforb_.nbas,&inforb_.nbast,fmata,
 		   inforb_.norb,&inforb_.norbt,
@@ -1084,7 +1073,7 @@ dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
         norbi = inforb_.norb[isym-1];
 	norbj = inforb_.norb[jsym-1];
 	if(norbi>0 && norbj>0)
-	    autpv_(&isym,&jsym,&cmo[inforb_.icmo[isym-1]],
+	    FSYM(autpv)(&isym,&jsym,&cmo[inforb_.icmo[isym-1]],
 		   &cmo[inforb_.icmo[jsym-1]], lr_data.resb,
 		   inforb_.nbas,&inforb_.nbast,fmatb,
 		   inforb_.norb,&inforb_.norbt,
@@ -1313,11 +1302,6 @@ dft_kohn_shamf_(real* dmat, real* ksm, real* edfty,
 /* ------------------------------------------------------------------- */
 /* ------ blocked DFT LINEAR RESPONSE CONTRIBUTION EVALUATOR --------- */
 /* ------------------------------------------------------------------- */
-void deq27_(const real* cmo, const real* ubo, const real* dv, 
-	    real* dxcao, real* dxvao, real* wrk, int* lfrsav);
-void autpv_(const int*isym,const int*jsym, const real*u,const real* v, 
-	    real*prpao, const int*nbas,const int*nbast,real*prpmo,
-	    const int*norb, const int*norbt, real* wrk,int* lwrk);
 
 typedef struct {
     real* dmat, *kappa, *res;
@@ -1475,8 +1459,8 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
    trplet - triplet excitation? (bool)
 */
 void
-dft_lin_respf_(real* fmat, real *cmo, real *zymat, int *trplet,
-               int *ksymop, real* work,int* lwork)
+FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
+                    int *ksymop, real* work,int* lwork)
 {
     struct tms starttm, endtm; clock_t utm;
     real electrons;
@@ -1485,9 +1469,8 @@ dft_lin_respf_(real* fmat, real *cmo, real *zymat, int *trplet,
     int i, j;
     
     /* WARNING: NO work MAY BE done before syncing slaves! */
-    dft_wake_slaves((DFTPropEvalMaster)dft_lin_resp_); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,zymat,trplet);        /* NO-OP in serial */
-
+    dft_wake_slaves((DFTPropEvalMaster)dft_lin_respf_); /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,zymat,trplet);         /* NO-OP in serial */
     times(&starttm);
     lr_data.dmat  = dal_malloc(inforb_.n2basx*sizeof(real));
     lr_data.res   = calloc(inforb_.n2basx,sizeof(real));
@@ -1495,15 +1478,15 @@ dft_lin_respf_(real* fmat, real *cmo, real *zymat, int *trplet,
     lr_data.vt    = dal_malloc(DFT_BLLEN*4   *sizeof(real));
     lr_data.dtgao = dal_malloc(inforb_.nbast *sizeof(real));
     lr_data.trplet= *trplet;
-    get_ksymop_(&lr_data.ksymop);
+    FSYM(get_ksymop)(&lr_data.ksymop);
     dft_get_ao_dens_mat_(cmo, lr_data.dmat, work, lwork);
-    deq27_(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
-
+    FSYM(deq27)(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
     electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, 0, 
                                     (DftBlockCallback)
                                     (selected_func->is_gga() ?
                                      lin_resp_cb_b_gga : lin_resp_cb_b_lda),
                                      &lr_data);
+    dft_lin_resp_collect_info(lr_data.res, work);
     for(i=0; i<inforb_.nbast; i++) {
 	int ioff = i*inforb_.nbast;
 	for(j=0; j<i; j++) {
@@ -1513,7 +1496,7 @@ dft_lin_respf_(real* fmat, real *cmo, real *zymat, int *trplet,
 	}
     }
     /* transform to MO Fock matrix contribution  */
-    lrao2mo_(cmo, ksymop, lr_data.res, fmat, work, lwork);
+    FSYM(lrao2mo)(cmo, &lr_data.ksymop, lr_data.res, fmat, work, lwork);
 
     free(lr_data.dmat);
     free(lr_data.kappa);
@@ -1525,6 +1508,20 @@ dft_lin_respf_(real* fmat, real *cmo, real *zymat, int *trplet,
     fort_print("Electrons: %f(%9.3g): LR-DFT/b evaluation time: %9.1f s", 
                electrons, (double)(electrons-(int)(electrons+0.5)),
                utm/(double)sysconf(_SC_CLK_TCK));
+}
+
+void
+dft_lin_respf_slave(real* work, int* lwork, const int* iprint)
+{
+    real *fmat = calloc(inforb_.n2orbx,sizeof(real));              /* OUT */
+    real *cmo  = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
+    real *zymat= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
+    int trplet;                         /* IN: will be synced from master */
+    int ksymop;
+    FSYM(dft_lin_respf)(fmat, cmo, zymat, &trplet, &ksymop, work, lwork);
+    free(fmat);
+    free(cmo);
+    free(zymat); 
 }
 
 /* ================================================================== */

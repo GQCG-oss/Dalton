@@ -26,7 +26,7 @@
 #include <sys/times.h>
 #include <unistd.h>
 
-#if 0 && defined(VAR_MPI)
+#if defined(VAR_MPI)
 #include <mpi.h>
 #endif
 
@@ -592,9 +592,9 @@ fast_callback(DftGrid* grid, QuadFastData* data)
 }
 
 
-#if 0 && defined(VAR_MPI)
+#if defined(VAR_MPI)
 #include <mpi.h>
-#include "infpar.h"
+#define MASTER_NO 0
 /* dft_qr_resp_slave:
    this is a slave driver. It's task is to allocate memory needed by
    the main property evaluator (dftqrcf_ in this case) and call it.
@@ -659,7 +659,7 @@ dft_qr_resp_collect_info(real* fi, real*work)
 {
     dcopy_(&inforb_.n2orbx, fi, &ONEI, work, &ONEI);
     MPI_Reduce(work, fi, inforb_.n2orbx, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       MASTER_NO, MPI_COMM_WORLD);
 }
 #else /* VAR_MPI */
 #define dft_qr_resp_sync_slaves(cmo,kappaY,kappaZ,addfck,symY,symZ,spinY,spinZ)
