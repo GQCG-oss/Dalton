@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.2 2001-02-12 18:17:50 vebjornb Exp $
+C$Id: abawalk.F,v 1.3 2001-02-23 15:34:23 ruud Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/12 18:17:50  vebjornb
+First commit after CC merge
+
 Revision 1.2  2001/01/17 10:41:25  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
@@ -50,7 +53,7 @@ C  /* Deck wlkinp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER ( NTABLE = 38, NWKTYP = 7, NSCTYP = 3,
+      PARAMETER ( NTABLE = 40, NWKTYP = 7, NSCTYP = 3,
      *            D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( TRSTI = 1.2D0, TRSTD = 0.7D0, TRSTDR = 0.5D0 )
 C
@@ -70,7 +73,7 @@ C
      &            '.NOGRAD', '.MOMENT', '.NUMERI', '.HARMON',
      &            '.FRAGME', '.IMAGE ', '.ISOTOP', '.IRC   ',
      &            '.MAXTRU', '.NOORTH', '.NATCON', '.VIBAVE',
-     &            '.NORMAL', '.ECKART'/
+     &            '.NORMAL', '.ECKART', '.TEMPER', '.NO CEN'/
 C
       CHARACTER*42 WLKTYP(7)
       DATA WLKTYP /'Level-shifted Newton walk (mode following)',
@@ -109,7 +112,7 @@ C
                      GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                      11,12,13,14,15,16,17,18,19,20,
      &                      21,22,23,24,25,26,27,28,29,30,
-     &                      31,32,33,34,35,36,37,38), I
+     &                      31,32,33,34,35,36,37,38,39,40), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -266,6 +269,14 @@ C
      &                    (ECKGEO(J,I), J = 1, 3)
                   END DO
                   GO TO 100
+ 39            CONTINUE
+                  DOTEMP = .TRUE.
+                  READ (LUCMD, *) NTEMP
+                  READ (LUCMD, *) (TEMP(ITMP), ITMP=1,NTEMP)
+                  GOTO 100
+ 40            CONTINUE
+                  DOCENT = .FALSE.
+                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -337,16 +348,34 @@ C
          CALL QUIT('ERROR in WLKINP.')
       END IF
       WRITE (LUPRI,'(/2A)') ' Walk type: ', WLKTYP(IWKTYP)
-      IF (V3CAL) WRITE (LUPRI,'(A)') ' Anharmonic force field '//
-     &     'calculated using numerical differentiation'
-      IF (NMODIF) WRITE(LUPRI,'(A)') ' Numerical differentiation '//
-     &     'will be performed in normal coordinates'
-      IF (VIBAVE) WRITE (LUPRI,'(A)') ' Vibrational averaging of '//
-     &     ' molecular properties at an effective geometry'
-      IF (ECKART) THEN
-         WRITE (LUPRI,'(A)') ' Molecular properties transformed to'
-     &        //' the following Eckart frame'
-         CALL PRIGEO(ECKGEO)
+      IF (V3CAL) THEN
+         WRITE (LUPRI,'(A)') ' Anharmonic force field '//
+     &        'calculated using numerical differentiation'
+         IF (NMODIF) WRITE(LUPRI,'(A)') ' Numerical differentiation '//
+     &        'will be performed in normal coordinates'
+         IF (DOTEMP) THEN
+            WRITE (LUPRI,'(/A)') ' Effective geometries for the '//
+     &           'following temperatures will be calculated (in K):'
+            DO ITMP = 1, NTEMP
+               WRITE (LUPRI,'(3X,F8.2)') TEMP(ITMP)
+            END DO
+            IF (DOCENT) THEN
+               WRITE (LUPRI,'(A)') ' Centrifugal distortion effects '//
+     &              'will be included'
+            ELSE
+               WRITE (LUPRI,'(A)') ' Centrifugal distortion effects '//
+     &              'will NOT be included'
+            END IF
+         END IF
+      END IF
+      IF (VIBAVE) THEN
+         WRITE (LUPRI,'(A)') ' Vibrational averaging of '//
+     &        ' molecular properties at an effective geometry'
+         IF (ECKART) THEN
+            WRITE (LUPRI,'(A)') ' Molecular properties transformed to'
+     &           //' the following Eckart frame'
+            CALL PRIGEO(ECKGEO)
+         END IF
       END IF
       IF (IMAGE) THEN
          WRITE (LUPRI,'(A)') ' Minimization of image surface '
@@ -549,6 +578,8 @@ C
       VIBAVE = .FALSE.
       NMODIF = .FALSE.
       ECKART = .FALSE.
+      DOTEMP = .FALSE.
+      DOCENT = .TRUE.
       CALL DZERO(ECKGEO,MXCOOR)
       NSTMOM = 0
       IWKIND = 0
@@ -1169,15 +1200,23 @@ C
          KCORR  = KFMATT + NCART*NCART*NCART
          KPOS   = KCORR  + NUMMOD
          KFREQA = KPOS   + NCART
-         KLAST  = KFREQA + NCART
+         KAMASS = KFREQA + NCART
+         KLAST  = KAMASS + NUCDEP
          LLEFT  = LWORK  - KLAST
          DO I = 1, NUMMOD
             WORK(KFREQA + I - 1) = SQRT(ABS(EVAL(I)))
          END DO
          CALL DCOPY(NCART,COOR,1,CORD,1)
+C
+C     WORK(KFMATF) and WORK(KFMATT) is used as temporary arrays here.
+C     The most important point is that we would like to initialize 
+C     WORK(KAMASS)
+C
+         CALL CMMASS(WORK(KFMATF),WORK(KAMASS),WORK(KFMATT),
+     &               ISOTOP,IPRINT)
          CALL VIBV3(EVEC,WORK(KFREQA),WORK(KFMATF),
-     &              WORK(KFMATT),WORK(KCORR),WORK(KPOS),WORK(KLAST),
-     &              LLEFT,NCART,NUMMOD,NMODIF)
+     &              WORK(KFMATT),WORK(KCORR),WORK(KPOS),WORK(KAMASS),
+     &              WORK(KLAST),LLEFT,NCART,NUMMOD)
       END IF
       RETURN
       END

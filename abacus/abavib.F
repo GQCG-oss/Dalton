@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abavib.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abavib.F,v 1.2 2001-02-23 15:34:23 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -663,7 +663,7 @@ C
      &                  WRK(KIMAG),WRK(KIRP),DIPDER,
      &                  WRK(KROAAF),WRK(KROAGN),WRK(KROAGL),
      &                  WRK(KROAA),WRK(KWRK1),LWRK1,NCORD,NOTALL,
-     &                  DOVCD,IPRINT)
+     &                  DOVCD,LINEAR,IPRINT)
 C
 C              *******************************
 C              ***** Partition functions *****
@@ -819,7 +819,7 @@ C  /* Deck vibana */
      &                  AATX,AATY,AATZ,AATXYZ,ROTSTR,WRK,LWRK,
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
-     &                  WORK,LWORK,NCORD,NOTALL,DOVCD,IPRINT)
+     &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
 #include <implicit.h>
 #include <dummy.h>
 C
@@ -860,7 +860,7 @@ C
       CHARACTER*1 CHRIMG(0:1)
       CHARACTER*5 IRPTXT
       DATA CHRIMG /' ','i'/
-      LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN
+      LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
       DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
 C
 C     *********************************************
@@ -1122,8 +1122,8 @@ C
          KLAST  = KPOS   + NCORD
          LLEFT  = LWRK   - KLAST
          CALL VIBV3(EVEC,FREQAU,WORK(KFMATF),
-     &              WORK(KFMATT),WORK(KCORR),WORK(KPOS),WORK(KLAST),
-     &              LLEFT,NCORD,NUMMOD,NMODIF)
+     &              WORK(KFMATT),WORK(KCORR),WORK(KPOS),AMASS,
+     &              WORK(KLAST),LLEFT,NCORD,NUMMOD)
       END IF
       IF (LINCPL) THEN
 C
@@ -2820,7 +2820,7 @@ C
       END
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
-     &                 POS,WORK,LWORK,NCORD,NUMMOD,NMODIF)
+     &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -2829,16 +2829,16 @@ C  /* Deck vibv3 */
 #include <codata.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
-      LOGICAL NMODIF
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
      &          FMATF(NCORD,NCORD,NCORD), CORR(NUMMOD),
      &          FMATT(NCORD,NCORD,NCORD),
-     &          POS(3,NCORD/3), WORK(LWORK)
+     &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
 #include <nuclei.h>
 #include <abainf.h>
 #include <inftap.h>
 #include <cbivib.h>
+#include <cbiwlk.h>
 C      
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
      &          .FALSE.)
@@ -2912,49 +2912,146 @@ C
 C
 C     Calculate correction to equilibrium geometry in normal coordinates
 C     
-      CALL HEADER('Effective geometry corrections in normal '//
-     &            'coordinates',1)
-      DO IMOD = 1, NUMMOD
-         PFAC = FREQAU(IMOD)*FREQAU(IMOD)*D4*SQRT(XFAMU)
-         PFACI = D1/PFAC
-         TMP = D0
-         DO MMOD = 1, NUMMOD
-            TMP = TMP + FMATT(MMOD,MMOD,IMOD)/FREQAU(MMOD)
-         END DO
-         CORR(IMOD) = - TMP*PFACI
-         WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',IMOD,
-     &        '   Frequency:', FREQAU(IMOD), '   Displacement:',
-     &        CORR(IMOD)
-      END DO
+      IF (DOTEMP) THEN
+         DO ITMP = 1, NTEMP
+C
+C     In case centrifugal distortions are to be included, calculate 
+C     contributions to the effective geometry here
+C     
+            WRITE (LUPRI,'(////A,1X,A,F12.6,A,/A)') 
+     &           '----------------------------'//
+     &           '------------------------------',
+     &           'Vibrational corrections for temperature T = ',
+     &           TEMP(ITMP),' K','----------------------------'//
+     &           '------------------------------'
+            IF (DOCENT) THEN
+               KCCOOR = 1
+               KCCORN = KCCOOR + MXCOOR
+               KQCENT = KCCORN + MXCOOR*MXCOOR
+               KLAST  = KQCENT + MXCOOR
+               IF (KLAST .GT. LWORK) CALL STOPIT('VIBV3 ','CENTRIF',
+     &                                           KLAST,LWORK)
+               LWRK   = LWORK - KLAST + 1
+               CALL CENTRIF(NCORD/3,NUMMOD,CORD,AMASS,WORK(KCCOOR),
+     &           EVEC,WORK(KCCORN),FREQAU,WORK(KQCENT),
+     &           WORK(KLAST),LWRK,TEMP(ITMP),IPRINT)
+               CALL HEADER('Centrifugal corrections to effective '//
+     &                     'geometries in normal coordinates',1)
+               DO IMOD = 1, NUMMOD
+                  WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',
+     &                 IMOD,'   Frequency:', FREQAU(IMOD), 
+     &                 '   Displacement:',WORK(KQCENT + IMOD - 1)
+               END DO
+            END IF
+C
+C     Vibrational effects now being calculated
+C
+            CALL HEADER('Effective geometry corrections in normal '//
+     &                  'coordinates (vibrational) ',1)
+            DO IMOD = 1, NUMMOD
+               PFAC = FREQAU(IMOD)*FREQAU(IMOD)*D4*SQRT(XFAMU)
+               PFACI = D1/PFAC
+               TMP = D0
+               DO MMOD = 1, NUMMOD
+                  TFAC  = FREQAU(MMOD)*AUTK/(D2*TEMP(ITMP))
+                  TFAC2 = D1/DTANH(TFAC)
+                  TMP = TMP + (FMATT(MMOD,MMOD,IMOD)/FREQAU(MMOD))*TFAC2
+               END DO
+               CORR(IMOD) = - TMP*PFACI
+               WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',
+     &              IMOD,'   Frequency:', FREQAU(IMOD), 
+     &              '   Displacement:',CORR(IMOD)
+            END DO
+            IF (DOCENT) THEN
+               CALL HEADER('Total effective geometry corrections '//
+     &              'in normal coordinates ',1)
+               DO IMOD = 1, NUMMOD
+                  CORR(IMOD) = CORR(IMOD) + WORK(KQCENT + IMOD - 1)
+                  WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',
+     &                 IMOD,'   Frequency:', FREQAU(IMOD), 
+     &                 '   Displacement:',CORR(IMOD)
+               END DO
+            END IF
 C
 C     Convert the suggested displacement into Cartesian coordinates
 C
-      CALL DZERO(POS,NCORD)
-      FAC = SQRT(XFAMU)
-      DO IMOD = 1, NUMMOD
-         ICOR = 0
-         DO IATOM = 1, NCORD/3
-            DO ICOOR = 1, 3
-               ICOR = ICOR + 1
-               POS(ICOOR,IATOM) = POS(ICOOR,IATOM) 
-     &                          + CORR(IMOD)*EVEC(ICOR,IMOD)*FAC
+            CALL DZERO(POS,NCORD)
+            FAC = SQRT(XFAMU)
+            DO IMOD = 1, NUMMOD
+               ICOR = 0
+               DO IATOM = 1, NCORD/3
+                  DO ICOOR = 1, 3
+                     ICOR = ICOR + 1
+                     POS(ICOOR,IATOM) = POS(ICOOR,IATOM) 
+     &                                + CORR(IMOD)*EVEC(ICOR,IMOD)*FAC
+                  END DO
+               END DO
+            END DO
+CKR
+CKR      Print out temperature somewhere
+CKR
+            CALL AROUND('Change to effective geometry')
+            CALL HEADER('Cartesian coordinates (au)',-1)
+            CALL PRIGEO(POS)
+C     
+            DO IATOM = 1, NCORD/3
+               DO ICOOR = 1, 3
+                  POS(ICOOR,IATOM) = CORD(ICOOR,IATOM) +POS(ICOOR,IATOM)
+               END DO
+            END DO
+C     
+            CALL AROUND('Estimated effective geometry')
+            CALL HEADER('Cartesian coordinates (au)',-1)
+            CALL PRIGEO(POS)
+            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
+     &                  WORK,LWORK)
+         END DO
+      ELSE
+         CALL HEADER('Effective geometry corrections in normal '//
+     &               'coordinates',1)
+         DO IMOD = 1, NUMMOD
+            PFAC = FREQAU(IMOD)*FREQAU(IMOD)*D4*SQRT(XFAMU)
+            PFACI = D1/PFAC
+            TMP = D0
+            DO MMOD = 1, NUMMOD
+               TMP = TMP + FMATT(MMOD,MMOD,IMOD)/FREQAU(MMOD)
+            END DO
+            CORR(IMOD) = - TMP*PFACI
+            WRITE (LUPRI,'(A,I5,A,F10.4,A,F10.4)') 'Normal mode:',IMOD,
+     &           '   Frequency:', FREQAU(IMOD), '   Displacement:',
+     &           CORR(IMOD)
+         END DO
+C
+C     Convert the suggested displacement into Cartesian coordinates
+C
+         CALL DZERO(POS,NCORD)
+         FAC = SQRT(XFAMU)
+         DO IMOD = 1, NUMMOD
+            ICOR = 0
+            DO IATOM = 1, NCORD/3
+               DO ICOOR = 1, 3
+                  ICOR = ICOR + 1
+                  POS(ICOOR,IATOM) = POS(ICOOR,IATOM) 
+     &                             + CORR(IMOD)*EVEC(ICOR,IMOD)*FAC
+               END DO
             END DO
          END DO
-      END DO
-      CALL AROUND('Change to effective geometry')
-      CALL HEADER('Cartesian coordinates (au)',-1)
-      CALL PRIGEO(POS)
-C
-      DO IATOM = 1, NCORD/3
-         DO ICOOR = 1, 3
-            POS(ICOOR,IATOM) = CORD(ICOOR,IATOM) + POS(ICOOR,IATOM)
+         CALL AROUND('Change to effective geometry')
+         CALL HEADER('Cartesian coordinates (au)',-1)
+         CALL PRIGEO(POS)
+C     
+         DO IATOM = 1, NCORD/3
+            DO ICOOR = 1, 3
+               POS(ICOOR,IATOM) = CORD(ICOOR,IATOM) + POS(ICOOR,IATOM)
+            END DO
          END DO
-      END DO
-C
-      CALL AROUND('Estimated effective geometry')
-      CALL HEADER('Cartesian coordinates (au)',-1)
-      CALL PRIGEO(POS)
-      CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,WORK,LWORK)
+C     
+         CALL AROUND('Estimated effective geometry')
+         CALL HEADER('Cartesian coordinates (au)',-1)
+         CALL PRIGEO(POS)
+         CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
+     &               WORK,LWORK)
+      END IF
 C
 C     Some analysis of the quality of the above predictions
 C     
@@ -4103,5 +4200,161 @@ C
      &           ALPHN0, ALPHNA, ALPHN0+ALPHNA
          END DO
       END IF
+      RETURN
+      END
+C /* Deck centrif */
+      SUBROUTINE CENTRIF(NATM,NINCOR,COOR,AMASS,CCOOR,CORN,CCORN,E,
+     &                   QCENT,WORK,LWORK,TEMP,IPRINT)
+C ***************************************************************************
+C
+C CALLED FROM THE SUBROUTINE EXOUT
+C
+C THIS SUBROUTINE COMPUTES THE CENTRIFUGAL DISTORTION OF THE MOLECULE
+C Juhani Lounila 21.1.1998 
+C
+C ***************************************************************************
+#include <implicit.h>
+#include <pi.h>
+#include <codata.h>
+#include <priunit.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
+      LOGICAL LINEAR
+      DIMENSION COOR(3,NATM), AMASS(NATM), CC(3), AINERT(6), U(3,3)
+      DIMENSION CCOOR(NATM,3), CCORN(NINCOR,3*NATM),
+     &          CORN(3*NATM,3*NATM),QCENT(NINCOR)
+      DIMENSION E(NINCOR), WORK(LWORK)
+C
+C LOCATE THE COORDINATES CC(1), CC(2) AND CC(3)
+C OF THE CENTER OF MASS OF THE MOLECULE
+C
+      CMASS=D0
+      CALL DZERO(CC,3)
+      DO 10 K=1,NATM
+         DO 10 I=1,3
+            CC(I)=CC(I)+AMASS(K)*COOR(I,K)
+ 10   CONTINUE
+      DO K=1,NATM
+         CMASS=CMASS+AMASS(K)
+      END DO
+      DO I=1,3
+         CC(I)=CC(I)/CMASS
+      END DO
+C
+C FORM THE INERTIA TENSOR AINERT(I) (I=1,...,6)
+C IN A COORDINATE SYSTEM WHOSE ORIGIN IS AT THE CENTER OF MASS
+C (ELEMENTS: 1=XX, 2=XY, 3=YY, 4=XZ, 5=YZ, 6=ZZ) 
+C
+      CALL DZERO(AINERT,6)
+      DO K=1,NATM
+         AM=AMASS(K)
+         X=COOR(1,K)-CC(1)
+         Y=COOR(2,K)-CC(2)
+         Z=COOR(3,K)-CC(3)
+         AINERT(1)=AINERT(1)+AM*(Y*Y+Z*Z)
+         AINERT(2)=AINERT(2)-AM*X*Y
+         AINERT(3)=AINERT(3)+AM*(X*X+Z*Z)
+         AINERT(4)=AINERT(4)-AM*X*Z
+         AINERT(5)=AINERT(5)-AM*Y*Z
+         AINERT(6)=AINERT(6)+AM*(X*X+Y*Y)
+      END DO
+      IF (IPRINT .GT. 6) THEN
+         CALL HEADER('Inertia Tensor in CENTRIF',-1)
+         CALL OUTPAK(AINERT,3,1,LUPRI)
+      END IF
+C
+C DIAGONALISE THE INERTIA TENSOR
+C RESULTANT MATRIX OF EIGENVECTORS: TRANS(I) (I=1,...,9) 
+C (STORED COLUMNWISE, IN THE SAME SEQUENCE AS EIGENVALUES)
+C ELEMENTS: 1=XX, 2=YX, 3=ZX, 4=XY, 5=YY, 6=ZY, 7=XZ, 8=YZ, 9=ZZ
+C EIGENVECTORS: U(1,J)=(1,2,3), U(2,J)=(4,5,6), U(3,J)=(7,8,9)
+C
+      CALL DUNIT(U,3)
+      CALL JACO(AINERT,U,3,3,3,WORK,WORK(10))
+C     WRITE (*,*) 'NEW INERTIA TENSOR (XX, XY, YY, XZ, YZ, ZZ)'
+C     WRITE (*,*) AINERT(1), AINERT(2), AINERT(3), AINERT(4),
+C    *AINERT(5), AINERT(6)
+C PRINCIPAL MOMENTS OF INERTIA AIXX, AIYY AND AIZZ
+C IN A COORDINATE SYSTEM WHOSE ORIGIN IS AT THE CENTER OF MASS 
+C
+      AINERT(2) = AINERT(3)
+      AINERT(3) = AINERT(6)
+      CALL ORDER(U,AINERT,3,3)
+      AIXX=AINERT(1)
+      AIYY=AINERT(2)
+      AIZZ=AINERT(3)
+C
+C EIGENVECTORS U(1,J), U(2,J) AND U(3,J) OF THE TENSOR OF INERTIA
+C
+      CALL DGETRN(U,3,3)
+C
+C TRANSFORMATION TO THE NEW COORDINATE SYSTEM
+C WHOSE ORIGIN IS AT THE CENTER OF MASS OF THE MOLECULE
+C AND WHOSE AXES COINCIDE WITH THE PRINCIPAL AXES OF INERTIA:
+C NEW CARTESIAN COORDINATES CCOOR(K,1), CCOOR(K,2) AND CCOOR(K,3)
+C Note that the ordering of atoms and coordinates differ in COOR and CCOOR
+C
+      CALL DZERO(CCOOR,3*NATM)
+      DO 60 K=1,NATM
+         DO 60 I=1,3
+            DO 60 J=1,3
+               CCOOR(K,I)=CCOOR(K,I)+U(I,J)*(COOR(J,K)-CC(J))
+ 60   CONTINUE 
+C
+C NEW 'NORMAL COORDINATES' CCORN(I) (I=1,...,ND**2)
+C ND = THE NUMBER OF NORMAL COORDINATES
+C ND = 3*NATM, NATM = THE NUMBER OF ATOMS
+C ELEMENTS: 1=B(1,1,X), 2=B(1,1,Y), 3=B(1,1,Z), 4=B(1,2,X),...
+C B(K,M,I) = THE MATRIX ELEMENT FOR THE TRANSFORMATION BETWEEN
+C THE NORMAL COORDINATE K AND THE DISPLACEMENT OF THE CARTESIAN
+C COORDINATE I OF THE NUCLEUS M FROM ITS EQUILIBRIUM POSITION
+C (UNIT: U**(-1/2), U = THE ATOMIC MASS UNIT)
+C
+      ND=3*NATM
+      CALL DZERO(CCORN,3*NATM*NINCOR)
+      DO I=1,NINCOR
+         M=ND*(I-1)
+         DO K=1,NATM 
+            DO L=1,3
+               DO J=1,3
+                  NJ = J + 3*(K-1)
+                  NL = L + 3*(K-1)
+                  CCORN(I,NL)=CCORN(I,NL)+U(L,J)*CORN(NJ,I)
+               END DO
+            END DO
+         END DO
+      END DO
+C
+C CENTRIFUGAL CONTRIBUTIONS TO THE AVERAGE VALUES
+C OF THE VIBRATIONAL NORMAL COORDINATES, QCENT(I)
+C (I=1,...,ND-6 OR ND-5)
+C UNIT: U**(1/2) ANGSTROM
+C
+      PREFAC = TEMP/(D2*AUTK*SQRT(XFAMU))
+      DO 90 I=1, NINCOR
+         AXX=D0
+         AYY=D0
+         AZZ=D0
+         DO 100 K=1,NATM
+            AM=AMASS(K)
+            X=CCOOR(K,1)
+            Y=CCOOR(K,2)
+            Z=CCOOR(K,3)
+            NX=1+3*(K-1)
+            NY=2+3*(K-1)
+            NZ=3+3*(K-1)
+            BX=CCORN(I,NX)
+            BY=CCORN(I,NY)
+            BZ=CCORN(I,NZ)
+            AXX=AXX+D2*AM*(Y*BY+Z*BZ)
+            AYY=AYY+D2*AM*(X*BX+Z*BZ)
+            AZZ=AZZ+D2*AM*(X*BX+Y*BY)
+ 100     CONTINUE
+         IF (AIXX .LT. 1.0D-4) THEN
+            FF=AZZ/AIZZ+AYY/AIYY
+         ELSE
+            FF=AXX/AIXX+AYY/AIYY+AZZ/AIZZ
+         ENDIF
+         QCENT(I)=PREFAC*FF/E(I)**2
+ 90   CONTINUE
       RETURN
       END
