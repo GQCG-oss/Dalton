@@ -61,7 +61,7 @@ C
       NCOMP    = 0
       TOFILE   = .TRUE.
       DOINT(1,1) = .TRUE.
-      IF (DOHUCKEL .AND. WORD .EQ. 'OVERLAP') THEN
+      IF (WORD .EQ. 'HUCKEL') THEN
          DOINT(2,1) = .TRUE.
          DOINT(1,2) = .TRUE.
          DOINT(2,2) = .TRUE.
@@ -124,7 +124,7 @@ C
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
      &            DOINT)
       CALL MEMREL('after PR1IN1 '//WORD,WORK,1,1,KFREE,LFREE)
-      IF (DOHUCKEL .AND. WORD .EQ. 'OVERLAP') THEN
+      IF (WORD .EQ. 'HUCKEL') THEN
          KMAX   = NLRGSH
          NBASIS = NLARGE
          NPBAS  = NPLRG
@@ -179,7 +179,7 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 88)
+      PARAMETER (NTABLE = 90)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -211,7 +211,7 @@ cLig <> added RAGMO and RPSO
      &            'DSUSLAN', 'DSUSLH ', 'DIASUS ', 'NUCSNLO',
      &            'NUCSLO ', 'NUCSHI ', 'NEFIELD', 'ELFGRDC',
      &            'ELFGRDS', 'S1MAGL ', 'S1MAGR ', 'HDOBR  ',
-     &            'NUCPOT ', 'HBDO   ', 'SQHDO  ', 'DSUSCGO',
+     &            'NUCPOT ', 'HBDO   ', 'SQHDOL ', 'DSUSCGO',
      &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
      &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ',
@@ -223,7 +223,8 @@ cLig <> added RAGMO and RPSO
      &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA',
      &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ',
      &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ',
-     &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  '/
+     &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ',
+     &            'HUCKEL ', 'SQHD2OR'/
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -252,7 +253,7 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
      &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
-     &             79,80,81,82,83,84,85,86,87,88), I
+     &             79,80,81,82,83,84,85,86,87,88, 1,90), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -260,22 +261,28 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
       CALL PRTAB(NTABLE,TABLE,'PR1IN1 input keywords',LUPRI)
       CALL QUIT('Illegal keyword in PR1IN1.')
 C
-C     Overlap integrals
+C     Overlap integrals OVERLAP or HUCKEL
 C     -----------------
 C
     1 CONTINUE
-         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (WORD .EQ. 'HUCKEL') THEN
+            LABINT(1) = 'HUCKEL  '
+            IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of overlap integrals for Huckel.'
+         ELSE
+            LABINT(1) = 'OVERLAP '
+            IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of overlap integrals.'
+         END IF
          INTTYP = 1
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         LABINT(1) = 'OVERLAP '
          INTREP(1) = 0
          ANTI = .FALSE.
       GO TO 200
 C
-C     Dipole moment (dipole length) integrals
+C     Dipole moment (dipole length) integrals DIPLEN
 C     ---------------------------------------
 C
     2 CONTINUE
@@ -294,7 +301,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Dipole velocity integrals
+C     Dipole velocity integrals DIPVEL
 C     -------------------------
 C
     3 CONTINUE
@@ -313,7 +320,7 @@ C
          ANTI = .TRUE.
       GO TO 200
 C
-C     Quadrupole moment integrals
+C     Quadrupole moment integrals QUADRUP
 C     ---------------------------
 C
     4 CONTINUE
@@ -338,7 +345,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Spin-orbit integrals
+C     Spin-orbit integrals SPNORB
 C     --------------------
 C
     5 CONTINUE
@@ -357,7 +364,7 @@ C
          ANTI = .TRUE.
       GO TO 200
 C
-C     Second moments integrals
+C     Second moments integrals SECMOM
 C     ------------------------
 C
     6 CONTINUE
@@ -382,7 +389,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Traceless theta quadrupole integrals
+C     Traceless theta quadrupole integrals THETA
 C     ------------------------------------
 C
     7 CONTINUE
@@ -407,7 +414,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Cartesian moments integrals
+C     Cartesian moments integrals CARMOM
 C     ---------------------------
 C
     8 CONTINUE
@@ -429,7 +436,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Spherical moments integrals
+C     Spherical moments integrals SPHMOM
 C     ---------------------------
 C
     9 CONTINUE
@@ -452,7 +459,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Electronic solvent integrals
+C     Electronic solvent integrals SOLVENT
 C     ----------------------------
 C
    10 CONTINUE
@@ -477,7 +484,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     One-electron Fermi contact integrals
+C     One-electron Fermi contact integrals FERMI C
 C     ------------------------------------
 C
    11 CONTINUE
@@ -489,7 +496,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Paramagnetic spin-orbit integrals
+C     Paramagnetic spin-orbit integrals PSO
 C     ---------------------------------
 C
    12 CONTINUE
@@ -502,7 +509,7 @@ C
          ANTI = .TRUE.
       GO TO 200
 C
-C     Spin-dipole integrals
+C     Spin-dipole integrals SPIN-DI
 C     ---------------------
 C
    13 CONTINUE
@@ -515,7 +522,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Diamagnetic spin-orbit integrals
+C     Diamagnetic spin-orbit integrals DSO
 C     --------------------------------
 C
    14 CONTINUE
@@ -528,7 +535,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Spin-dipole + Fermi contact integrals
+C     Spin-dipole + Fermi contact integrals SDFC
 C     -------------------------------------
 C
    15 CONTINUE
@@ -541,7 +548,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Half-derivative overlap integrals
+C     Half-derivative overlap integrals HDO
 C     ---------------------------------
 C
    16 CONTINUE
@@ -555,7 +562,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Contribution from overlap matrix to magnetic properties
+C     Contribution from overlap matrix to magnetic properties S1MAG
 C     -------------------------------------------------------
 C
  17   CONTINUE
@@ -574,7 +581,7 @@ C
          ANTI = .TRUE.
       GOTO 200
 C
-C     Second order contribution from overlap matrix to magnetic properties
+C     Second order contribution from overlap matrix to magnetic properties S2MAG
 C     --------------------------------------------------------------------
 C
  18   CONTINUE
@@ -599,7 +606,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Electronic angular momentum around the nuclei
+C     Electronic angular momentum around the nuclei ANGLON
 C     ---------------------------------------------
 C
  19   CONTINUE
@@ -619,7 +626,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Electronic angular momentum around the origin
+C     Electronic angular momentum around the origin ANGMOM
 C     ---------------------------------------------
 C
  20   CONTINUE
@@ -638,7 +645,7 @@ C
          ANTI = .TRUE.
       GO TO 200
 C
-C     London orbital contribution to angular momentum
+C     London orbital contribution to angular momentum LONMOM
 C     -----------------------------------------------
 C
  21   CONTINUE
@@ -658,7 +665,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     One-electron contribution to magnetic moment
+C     One-electron contribution to magnetic moment MAGMOM
 C     --------------------------------------------
 C
  22   CONTINUE
@@ -677,7 +684,7 @@ C
          ANTI = .TRUE.
       GO TO 200
 C
-C     Electronic kinetic energy
+C     Electronic kinetic energy KINENER
 C     -------------------------
 C
  23   CONTINUE
@@ -692,7 +699,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Diamagnetic susceptiblity without London orbital contribution
+C     Diamagnetic susceptiblity without London orbital contribution DSUSNOL
 C     -------------------------------------------------------------
 C
  24   CONTINUE
@@ -719,7 +726,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Angular London orbital contribution to diamagnetic susceptibility
+C     Angular London orbital contribution to diamagnetic susceptibility DSUSLAN
 C     -----------------------------------------------------------------
 C
  25   CONTINUE
@@ -746,7 +753,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Angular London orbital contribution to diamagnetic susceptibility
+C     Angular London orbital contribution to diamagnetic susceptibility DSUSLH
 C     -----------------------------------------------------------------
 C
  26   CONTINUE
@@ -773,8 +780,8 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Angular London orbital contribution to diamagnetic susceptibility
-C     -----------------------------------------------------------------
+C     Diamagnetic susceptibility DIASUS
+C     --------------------------
 C
  27   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -798,7 +805,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Nuclear shielding integrals without London orbital contribution
+C     Nuclear shielding integrals without London orbital contribution NUCSNLO
 C     ---------------------------------------------------------------
 C
  28   CONTINUE
@@ -812,7 +819,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     London orbital contribution to nuclear shielding tensor integrals
+C     London orbital contribution to nuclear shielding tensor integrals NUCSLO
 C     -----------------------------------------------------------------
 C
  29   CONTINUE
@@ -826,7 +833,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Nuclear shielding tensor integrals
+C     Nuclear shielding tensor integrals NUCSHI
 C     ----------------------------------
 C
  30   CONTINUE
@@ -839,7 +846,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Electric field at the individual nuclei
+C     Electric field at the individual nuclei NEFIELD
 C     --------------------------------------
 C
  31   CONTINUE
@@ -852,7 +859,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Electric field gradient at the individual nuclei, cartesian
+C     Electric field gradient at the individual nuclei, cartesian ELFGRDC
 C     -----------------------------------------------------------
 C
  32   CONTINUE
@@ -864,7 +871,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Electric field gradient at the individual nuclei, spherical
+C     Electric field gradient at the individual nuclei, spherical ELFGRDS
 C     -----------------------------------------------------------
 C
  33   CONTINUE
@@ -876,7 +883,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Bra-differentiation of overlap matrix with respect to magnetic field
+C     Bra-differentiation of overlap matrix with respect to magnetic field S1MAGL
 C     --------------------------------------------------------------------
 C
  34   CONTINUE
@@ -896,7 +903,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Ket-differentiation of overlap matrix with respect to magnetic field
+C     Ket-differentiation of overlap matrix with respect to magnetic field S1MAGR
 C     --------------------------------------------------------------------
 C
  35   CONTINUE
@@ -916,7 +923,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Ket-differentiation of HDO-integrals with respect to magnetic field
+C     Ket-differentiation of HDO-integrals with respect to magnetic field HDOBR
 C     -------------------------------------------------------------------
 C
  36   CONTINUE
@@ -929,7 +936,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Potential energy at the nuclei
+C     Potential energy at the nuclei NUCPOT
 C     -----------------------------
 C
  37   CONTINUE
@@ -937,7 +944,7 @@ C
          IF (MAXREP .GT. 0) THEN
             WRITE (LUPRI,'(/A/)')
      &           ' Program cannot calculate potential energy '//
-     &           'with symmetry'
+     &           'at the nuclei with symmetry'
             CALL QUIT('Cannot calculate potential energy with symmetry')
          ELSE
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -948,7 +955,7 @@ C
          END IF
       GOTO 200
 C
-C     Half B-differentiated overlap matrix
+C     Half B-differentiated overlap matrix HBDO
 C     ------------------------------------
 C
  38   CONTINUE
@@ -967,13 +974,13 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Half-derivative overlap integrals not to be antisymmetrized
+C     Half-derivative overlap integrals not to be antisymmetrized SQHDOL
 C     -----------------------------------------------------------
 C
  39   CONTINUE
          INTTYP = 14
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
-     &      ' Calculation of half-derivative overlap integrals.'
+     &      ' Calculation of bra-half-derivative overlap integrals.'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.FALSE.,
      &               INTTYP)
@@ -981,7 +988,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Diamagnetic susceptiblity with common gauge origin
+C     Diamagnetic susceptiblity with common gauge origin DSUSCGO
 C     --------------------------------------------------
 C
  40   CONTINUE
@@ -1007,7 +1014,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Nuclear shielding integrals with common gauge origin
+C     Nuclear shielding integrals with common gauge origin NSTCGO
 C     ----------------------------------------------------
 C
  41   CONTINUE
@@ -1020,7 +1027,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Cosine and Sine integrals
+C     Cosine and Sine integrals EXPIKR
 C     -------------------------
 C
    42 CONTINUE
@@ -1045,7 +1052,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Mass velocity integrals
+C     Mass velocity integrals MASSVEL
 C     -----------------------
 C
   43  CONTINUE
@@ -1060,7 +1067,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Darwin type integrals
+C     Darwin type integrals DARWIN
 C     ---------------------
 C
    44 CONTINUE
@@ -1075,7 +1082,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     First order magnetic field derivatives of electric field
+C     First order magnetic field derivatives of electric field CM1
 C     --------------------------------------------------------
 C
  45   CONTINUE
@@ -1102,7 +1109,7 @@ C
          ANTI      = .TRUE.
       GOTO 200
 C
-C     Second order magnetic field derivatives of electric field
+C     Second order magnetic field derivatives of electric field CM2
 C     ---------------------------------------------------------
 C
  46   CONTINUE
@@ -1138,7 +1145,7 @@ C
          ANTI       = .FALSE.
       GOTO 200
 C
-C     Half-derivative overlap integrals not to be antisymmetrized
+C     Half-derivative overlap integrals not to be antisymmetrized SQHDOR
 C     -----------------------------------------------------------
 C
  47   CONTINUE
@@ -1152,7 +1159,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Square overlap integrals
+C     Square overlap integrals SQOVLAP
 C     ------------------------
 C
  48   CONTINUE
@@ -1168,7 +1175,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     First derivative of solvent Hamiltonian with respect to magnetic field
+C     First derivative of solvent Hamiltonian with respect to magnetic field LONSOL1
 C     ----------------------------------------------------------------------
 C
  49   CONTINUE
@@ -1190,7 +1197,7 @@ C
          ANTI = .TRUE.
       GO TO 200
 C
-C     Second derivative of solvent Hamiltonian with respect to magnetic field
+C     Second derivative of solvent Hamiltonian with respect to magnetic field LONSOL2
 C     -----------------------------------------------------------------------
 C
  50   CONTINUE
@@ -1212,7 +1219,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Diamagnetic contribution integrals to rotational g factors
+C     Diamagnetic contribution integrals to rotational g factors NSTCGOS
 C     ----------------------------------------------------------
 C
  51   CONTINUE
@@ -1225,7 +1232,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Contribution from overlap matrix to electric prop. Type A
+C     Contribution from overlap matrix to electric prop. Type A S1ELE
 C     ---------------------------------------------------------
  52   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1245,7 +1252,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Contribution from overlap matrix to electric prop. Type B
+C     Contribution from overlap matrix to electric prop. Type B S1ELB
 C     ---------------------------------------------------------
  53   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1265,7 +1272,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     First electric deriv. of one-electron Hamiltonian integrals
+C     First electric deriv. of one-electron Hamiltonian integrals ONEELD
 C     ___________________________________________________________
 C
  54   CONTINUE
@@ -1286,7 +1293,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Dipole gradient integrals
+C     Dipole gradient integrals DPLGRA
 C     -------------------------
 C
  55   CONTINUE
@@ -1302,7 +1309,7 @@ CCH
          SQUARE = .FALSE.
       GOTO 200
 C
-C     Quadrupole gradient integrals
+C     Quadrupole gradient integrals QUAGRA
 C     -----------------------------
 C
  56   CONTINUE
@@ -1318,7 +1325,7 @@ CCH
          SQUARE = .FALSE.
       GOTO 200
 C
-C     Octupole gradient integrals
+C     Octupole gradient integrals OCTGRA
 C     ---------------------------
 C
  57   CONTINUE
@@ -1334,7 +1341,7 @@ CCH
          SQUARE = .FALSE.
       GOTO 200
 C
-C     Rotational strength integrals
+C     Rotational strength integrals ROTSTR
 C     -----------------------------
 C
  58   CONTINUE
@@ -1360,7 +1367,7 @@ C
          SQUARE = .FALSE.
       GOTO 200
 C
-C     Third moments integrals
+C     Third moments integrals THRMOM
 C     -----------------------
 C
  59   CONTINUE
@@ -1394,7 +1401,7 @@ C
          SQUARE = .FALSE.
       GO TO 200
 C
-C     Magnetic-field correction to spin-orbit integrals
+C     Magnetic-field correction to spin-orbit integrals SOFIELD
 C     -------------------------------------------------
 C
  60   CONTINUE
@@ -1426,7 +1433,7 @@ C
          SQUARE = .FALSE.
       GOTO 200
 C
-C     Magnetic-moment correction to spin-orbit integrals
+C     Magnetic-moment correction to spin-orbit integrals SOMAGMO
 C     --------------------------------------------------
 C
  61   CONTINUE
@@ -1439,7 +1446,7 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Derivative overlap integrals
+C     Derivative overlap integrals DEROVLP
 C     ----------------------------
 C
  62   CONTINUE
@@ -1453,7 +1460,7 @@ C
          SQUARE = .FALSE.
       GO TO 200
 C
-C     Derivative one-electron Hamiltonian integrals
+C     Derivative one-electron Hamiltonian integrals DERHAMI
 C     ---------------------------------------------
 C
  63   CONTINUE
@@ -1467,7 +1474,7 @@ C
          SQUARE = .FALSE.
       GO TO 200
 C
-C     Diamagnetic one-electron spin-orbit integrals (No-London)
+C     Diamagnetic one-electron spin-orbit integrals (No-London) ELGDIAN
 C     ---------------------------------------------------------
 C
  64   CONTINUE
@@ -1499,7 +1506,7 @@ C
          ANTI      = .FALSE.
       GOTO 200
 C
-C     Nuclear shielding integrals with London orbital contribution
+C     Nuclear shielding integrals with London orbital contribution ELGDIAL
 C     ---------------------------------------------------------------
 C
  65   CONTINUE
@@ -1530,7 +1537,7 @@ C
          INTREP(9) = 0
          ANTI = .FALSE.
       GOTO 200
-C     Overlap integrals for the small component in dpt ( <opG|opG> )
+C     Overlap integrals for the small component in dpt ( <opG|opG> ) DFTOVL
 C     --------------------------------------------------------------
 C     ACH
  66   CONTINUE
@@ -1556,8 +1563,8 @@ C
          ANTI=.FALSE.
       GOTO 200
 C
-C     Pot energy integrals for the small component in dpt ( <opG|V|opG> )
-C     ---------------------------------------------------------------.---
+C     Pot energy integrals for the small component in dpt ( <opG|V|opG> ) DFTPO1
+C     -------------------------------------------------------------------
 C     ACH
  67   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1582,8 +1589,8 @@ C
          ANTI=.FALSE.
       GOTO 200
 C
-C     Pot energy integrals for the small component in dpt ( <opG|V|opG> )
-C     ---------------------------------------------------------------.---
+C     Pot energy integrals for the small component in dpt ( <opG|V|opG> ) DFTPO2
+C     -------------------------------------------------------------------
 C     ACH
  68   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1602,8 +1609,8 @@ C
          ANTI=.TRUE.
       GOTO 200
 C
-C     DPT pso-lookalike integrals <(op)(oA)>
-C     ---------------------------------
+C     DPT pso-lookalike integrals <(op)(oA)> XDDXR3
+C     --------------------------------------
 C
  69   CONTINUE
          INTTYP = 74
@@ -1617,7 +1624,7 @@ C     &        TRIANG)
          SQUARE = .TRUE.
       GO TO 200
 C
-C     pVp integrals for Douglas-Kroll transformation
+C     pVp integrals for Douglas-Kroll transformation PVPINT
 C     ----------------------------------------------
 C
  70   CONTINUE
@@ -1632,8 +1639,8 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Electronic kinetic energy
-C     -------------------------
+C     Electronic one-electron potential energy POTENER
+C     ----------------------------------------
 C
  71   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
@@ -1647,7 +1654,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Parity violation
+C     Parity violation PVIOLA
 C     ----------------
 C
    72 CONTINUE
@@ -1687,7 +1694,7 @@ C
         ANTI = .TRUE.
       GO TO 200
 C
-C     Spherical moments integrals with local origins
+C     Spherical moments integrals with local origins SPHMOML
 C     ----------------------------------------------
 C
    73 CONTINUE
@@ -1711,7 +1718,7 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     First order magnetic field derivatives of electric field gradient
+C     First order magnetic field derivatives of electric field gradient QDBINT
 C     -----------------------------------------------------------------
 C
  74   CONTINUE
@@ -1745,7 +1752,7 @@ C
          ANTI      = .TRUE.
       GOTO 200
 c
-C     Scaled Spin-orbit integrals
+C     Scaled Spin-orbit integrals SOSCALE
 C     --------------------------
 C
  75   CONTINUE
@@ -1768,7 +1775,7 @@ C        Scale charges
          RCHRG = .TRUE.
       GO TO 200
 C
-C     SCALED Diamagnetic one-electron spin-orbit integrals (No-London)
+C     SCALED Diamagnetic one-electron spin-orbit integrals (No-London) ELGDSCA
 C     ---------------------------------------------------------------
 C
  76   CONTINUE
@@ -1804,7 +1811,7 @@ C        Scale charges
          RCHRG = .TRUE.
       GOTO 200
 C
-C     Electronic angular momentum around the electonic center of charge
+C     Electronic angular momentum around the electonic center of charge ANGECC
 C     -----------------------------------------------------------------
 C
  77   CONTINUE
@@ -1828,7 +1835,7 @@ C
       GO TO 200
 cLig >>
 C
-C     (r-r')l' integrals
+C     (r-r')l' integrals RANGMO
 C     ------------------
 C
  78   CONTINUE
@@ -1862,7 +1869,7 @@ c
          SQUARE = .TRUE.
       GO TO 200
 C
-C     (r-r')l'/|r-R_I|**3 integrals
+C     (r-r')l'/|r-R_I|**3 integrals RPSO
 C     ----------------------------
 C
  79   CONTINUE
@@ -1879,6 +1886,9 @@ c
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
+C
+C     PXPINT
+C
  80   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      'Calculation of DPT correction to dipole (1)'
@@ -1894,6 +1904,9 @@ c
          INTREP(3) = ISYMAX(3,1)
          ANTI = .FALSE.
       GO TO 200
+C
+C     PRPINT
+C
  81   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      'Calculation of DPT correction to dipole (2)'
@@ -1911,7 +1924,7 @@ c
       GO TO 200
 cLig <<
 C
-C     Kinetic energy correction to orbital Zeeman
+C     Kinetic energy correction to orbital Zeeman OZKE
 C     -------------------------------------------
 C
  82   CONTINUE
@@ -1930,7 +1943,7 @@ C
          ANTI = .TRUE.
       GO TO 200
 C
-C     Kinetic energy correction to paramagnetic spin-orbit integrals
+C     Kinetic energy correction to paramagnetic spin-orbit integrals PSOKE
 C     --------------------------------------------------------------
 C
  83   CONTINUE
@@ -1945,7 +1958,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Kinetic energy contribution to diamagnetic nuclear shieldings
+C     Kinetic energy contribution to diamagnetic nuclear shieldings DNSKE
 C     -------------------------------------------------------------
 C
  84   CONTINUE
@@ -1960,7 +1973,7 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Kinetic energy correction to spin-dipole integrals
+C     Kinetic energy correction to spin-dipole integrals SDKE
 C     --------------------------------------------------
 C
  85   CONTINUE
@@ -1975,7 +1988,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Kinetic energy correction to Fermi contact integrals
+C     Kinetic energy correction to Fermi contact integrals FCKE
 C     ----------------------------------------------------
 C
  86   CONTINUE
@@ -1989,7 +2002,7 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Kinetic energy correction to diamagnetic spin-orbit integrals
+C     Kinetic energy correction to diamagnetic spin-orbit integrals DSOKE
 C     -------------------------------------------------------------
 C
  87   CONTINUE
@@ -2004,7 +2017,7 @@ C
          SQUARE = .FALSE.
       GO TO 200
 C
-C     Orbital Zeeman correction to paramagnetic spin-orbit integrals
+C     Orbital Zeeman correction to paramagnetic spin-orbit integrals PSOOZ
 C     --------------------------------------------------------------
 C
  88   CONTINUE
@@ -2014,6 +2027,20 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'PSOZ',
      &               INTADR)
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+C     <d2/dx2>, <d2/dy2>, <d2/dz2> integrals for SQHD2OR /hjaaj Oct 2004
+C     -------------------------------------------------
+C
+ 90   CONTINUE
+         INTTYP = 98
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      ' Calculation of second half-derivative overlap integrals.'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL HDOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,.FALSE.,
+     &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GOTO 200
@@ -2038,11 +2065,7 @@ C
 C     ***** Number of basis functions *****
 C
       NBAST = 0
-      IF (DOHUCKEL .AND. INTTYP .EQ. 1) THEN
-         KMAXT = NSMLSH + NLRGSH
-      ELSE
-         KMAXT = KMAX
-      END IF
+      KMAXT = KMAX
       DO 400 ISHELL = 1, KMAXT
          DO 410 KB = 0,MAXREP
             IF (IBTAND(KB,ISTBAO(ISHELL)) .EQ. 0)
@@ -3135,7 +3158,11 @@ C  /* Deck hdotyp */
      &                                    //CHRNOS(MOD(ISCOOR,10))//'  '
                      ELSE
                         IF (INTTYP .EQ. 14) THEN
-                           LABINT(ITYP) = 'SQHDO'//CHRNOS(ISCOOR/100)
+                           LABINT(ITYP) = 'SQHDL'//CHRNOS(ISCOOR/100)
+     &                              //CHRNOS(MOD(ISCOOR,100)/10)
+     &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+                        ELSE IF (INTTYP .EQ. 98) THEN
+                           LABINT(ITYP) = 'HD2OR'//CHRNOS(ISCOOR/100)
      &                              //CHRNOS(MOD(ISCOOR,100)/10)
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE IF (INTTYP .EQ. 59) THEN
@@ -3146,10 +3173,12 @@ C  /* Deck hdotyp */
                            LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
      &                              //CHRNOS(MOD(ISCOOR,100)/10)
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
-                        ELSE
+                        ELSE IF (INTTYP .EQ. 44) THEN
                            LABINT(ITYP) = 'SQHDR'//CHRNOS(ISCOOR/100)
      &                              //CHRNOS(MOD(ISCOOR,100)/10)
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+                        ELSE
+                           CALL QUIT('Unknown INTTYP in HDOTYP')
                         END IF
                      END IF
                      INTREP(ITYP) = IREP

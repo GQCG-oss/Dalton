@@ -65,8 +65,7 @@ C*             Q-QEFF will be described with ECP              *
 C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
-     &                   CPRIMU, NBLOCK, KAOVEC, KPRIM, Q, QEFF,
-     &                   ISET, DSM)
+     &                   CPRIMU, NBLOCK, KAOVEC, KPRIM, Q, QEFF, DSM)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -107,9 +106,8 @@ C
       IAUG   = 0
       ANO    = .FALSE.
       SADLEJ = .FALSE.
-      POLFUN = .FALSE.
       NQVD   = .FALSE.
-      IF (ISET .EQ. 2) THEN
+      IF (BASNAM(1:6) .EQ. 'HUCKEL') THEN
 C jan 2000 hjaaj:
 #ifdef STO3G_HUCKEL
          BASTMP = 'Huckel       '
@@ -199,15 +197,12 @@ C
 C     Determine if there are any user added basis functions/polarization 
 C     functions
 C
-      IF (ISET .EQ. 1) THEN
-         IPOLST = INDEX(BASNAM,'Pol')
-      ELSE
-         POLFUN = .FALSE.
-         IPOLST = 0
-      END IF
+      IPOLST = INDEX(BASNAM,'Pol')
       IF (IPOLST .GT. 0) THEN
          POLFUN = .TRUE.
          IPOLST = IPOLST + 3
+      ELSE
+         POLFUN = .FALSE.
       END IF
 C    
 C Finds the right element in the file. 
@@ -242,7 +237,7 @@ C
                IQCORE = NINT(Q-QEFF)
                CALL REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                     UNCONT,ISET,LUBAS,IQCORE)
+     +                     UNCONT,LUBAS,IQCORE)
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
                   CALL FINPOS(NEWEL,INTEXP,INTORB,LUBAS)
@@ -281,7 +276,7 @@ C           file is proper for the Huckel calculation. Messing with this
 C           does, for instance, give very wrong occupations for C8H10 (took
 C           me half a day to figure out......)
 C
-            IF (ISET .EQ. 1) THEN
+            IF (BASNAM(1:6) .NE. 'HUCKEL') THEN
 #endif
                CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
      +                     ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
@@ -584,7 +579,7 @@ C
 C/* Deck reaano */
       SUBROUTINE REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
      +                  KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                  UNCONT,ISET,LUBAS,IQCORE)
+     +                  UNCONT,LUBAS,IQCORE)
 C
 C     IQCORE is charge of core electrons (.eq. zero if not ECP)
 C     NBLOCK = l_quatum_number + 1 (1 for s, 2 for p, etc.)
@@ -641,7 +636,7 @@ C
             END IF
             J = J + MAXEXP
          END DO
-         IF (UNCONT .AND. ISET .EQ. 1) THEN
+         IF (UNCONT .AND. BASNAM(1:6) .NE. 'HUCKEL') THEN
 C        ... force uncontracted
             DO I = 1, INTEXP
                READ (LUBAS,*)

@@ -110,16 +110,17 @@ C
       CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUPROP
-      IF (FNDLB2('OVERLAP ',RTNLBL,LUPROP)) THEN
+      IF (FNDLB2('HUCKEL  ',RTNLBL,LUPROP)) THEN
          CALL READT(LUPROP,NELMNT,TOTOVL)
          IF (P6FLAG(6)) THEN
-            CALL HEADER('Overlap matrix read from LUPROP',-1)
+            CALL HEADER(
+     &      'HUCDR1: Huckel overlap matrix read from AOPROPER',-1)
             CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: Overlap matrix'//
-     *      ' not found on LUPROP.'
-         CALL QUIT('HUCDR1 error: property not found on LUPROP')
+         WRITE (LUPRI,'(//3A)') ' >>> HUCDR1 error: Huckel overlap'//
+     *      ' matrix not found on AOPROPER.'
+         CALL QUIT('HUCDR1 error: HUCKEL overlap not found on AOPROPER')
       END IF
       CALL GPCLOSE(LUPROP,'KEEP')
 C
@@ -240,7 +241,7 @@ C
          IF (INFO .NE. 0) THEN
             WRITE (LUPRI,'(/A/A)') ' Singular overlap matrix HUCDRV',
      &           ' Huckel guess aborted'
-            CALL QUIT('Inverse overlap matrix when projecting '//
+            CALL QUIT('Singular overlap matrix when projecting '//
      &                'in Huckel')
          END IF
          CALL DGEMM('N','N',NBASI,NHAOSY,NBASI,1.D0,

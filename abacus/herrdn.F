@@ -143,17 +143,12 @@ C  /* Deck reainp */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxsymm.h>
-C
-C     Note that the parameter MAXPRD also must be set in subroutine REAINI
-C
-#if defined (SYS_T3D)
-      PARAMETER ( MAXPRD = 14 )
-#else
-      PARAMETER ( MAXPRD = 25 )
-#endif
       PARAMETER ( NTABLE = 11, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+C
+C     Parameter MAXPRD in cbirea.h is default for MAXPRI
+C
 #include <cbirea.h>
 #include <ccom.h>
 C
@@ -293,14 +288,6 @@ C
 C     Initialize /CBIREA/
 C
 #include <implicit.h>
-C
-C     Note that MAXPRD also must me set in subroutine REAINP
-C
-#if defined (SYS_T3D)
-      PARAMETER (MAXPRD = 14)
-#else
-      PARAMETER (MAXPRD = 25)
-#endif
       LOGICAL RELCAL, TSTINP
 #include <maxaqn.h>
 #include <ccom.h>
@@ -311,6 +298,7 @@ C
       IPREAD = IPRDEF
       LUMLCL = 0
       MAXPRI = MAXPRD
+C     ... parameter MAXPRD is in cbirea.h
       UNCONT = .FALSE.
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
@@ -559,6 +547,8 @@ C*****************************************************************************
          CALL RDLINE(LUINFO)
 C        Read basis set BASNAM (WK/UniKA/04-11-2002).
          CALL BASMUL(MLINE(NMLINE),BASNAM,IPREAD)
+      ELSE
+         BASNAM = ' '
       END IF
 C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
       IF (LMULBS) CALL STCMOM
@@ -679,7 +669,7 @@ C     *****   Returns CLASS, the full symmetry    *****
 C     *************************************************
 C
       CLASS = 'N/A'
-      IF (ADDSYM .AND. (.NOT. LMULBS)) THEN
+      IF (ADDSYM) THEN
          IF (IPREAD .GE. 3) THEN
             CALL HEADER('Copy of input to READIN before ADDSYM',0)
             WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
@@ -834,7 +824,7 @@ C*****************************************************************************
      &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BSNM*80
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BASNAMSAVE*80
       DIMENSION IBLOCK(2)
 #include <molinp.h>
 #include <ccom.h>
@@ -884,13 +874,6 @@ C*****************************************************************************
 C
          CALL RDLINE(LUINFO)
 C
-C     New or old input?
-C
-         IF (INDEX(MLINE(NMLINE),'Cha') .NE. 0) THEN
-            CALL LINE5(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
-     &                JCO(1,I,1),KANG,BASIS,ATOMBA,BSNM)
-         ELSE
-C
 C        Test if Z-matrix for first line (I.eq.1):
 C
          IF (I .EQ. 1) THEN
@@ -910,6 +893,13 @@ C
              CALL RDLINE(LUINFO)
            END IF
          END IF
+C
+C     New or old input?
+C
+         IF (INDEX(MLINE(NMLINE),'Cha') .NE. 0) THEN
+            CALL LINE5(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
+     &                JCO(1,I,1),KANG,BASIS,ATOMBA,BASNAMSAVE)
+         ELSE
 C
 C        Read/process data on centers/blocks
 C        ===================================
@@ -963,6 +953,7 @@ C
 C     End of processing of old input format for line "5"
 C         
          END IF
+C
 C        Check MBSI (WK/UniKA/04-11-2002).
          IF (LMULBS .AND. MBSI .LE. 0) CALL QUIT(
      &      'READI1: Please provide proper basis-set identifier')
@@ -1055,8 +1046,9 @@ C
 C         Get basis set from basis set library
 C         ===================================
 C
-           ELSE IF ((BASIS .OR. ATOMBA .OR. (DOHUCKEL .AND. J .EQ. 2
-     &              .AND. Q .NE. 0.0D0)) .AND. .NOT. DIRAC) THEN
+           ELSE IF ((BASIS .OR. ATOMBA .OR.
+     &               (DOHUCKEL .AND. J .EQ. 2))
+     &              .AND. .NOT. DIRAC) THEN
               IF (BASIS) THEN
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
@@ -1106,9 +1098,24 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                     END IF
                  END IF
               END IF
+              BASNAMSAVE = BASNAM
+              IF (DOHUCKEL .AND. J.EQ.2) THEN
+C                make pseudo-label 'pointcharge' for all cases
+C                where we should not add Huckel basis (to avoid calling BASLIB below)
+                 IF (Q .EQ. D0) BASNAM = 'pointcharge'
+C                ... avoid floating orbitals
+                 IF (IQM(1,1) .EQ. 0) BASNAM = 'pointcharge'
+C                ... avoid point charges (maybe set with INTGRL so BASNAM undefined)
+                 IF (BASNAM(1:11) .NE. 'pointcharge') BASNAM = 'HUCKEL'
+C                ... tell BASLIB that this is for Huckel
+              END IF
               IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
-C                this makes it possible to specify basis sets
+C                This makes it possible to specify basis sets
 C                not in basis library for some atoms.
+C                Use DIRAC style format for specifying IQM and JCO.
+                 CALL RDLINE(LUINFO)
+                 READ (MLINE(NMLINE),'(BN,A5,12I5)')
+     &                BSET,IQM(I,J),(JCO(K,I,J),K=1,IQM(I,J))
                  CALL GTOINP(LUINFO,IQM(I,J),JCO(1,I,J),
      &                NUC(IBLOCK(J),J),NRC(IBLOCK(J),J),
      &                SEG(IBLOCK(J),J),
@@ -1133,13 +1140,14 @@ C     after J=2: reading Huckel basis (if DOHUCKEL)
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),
      &                  CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,J,DSM)
+     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,DSM)
               END IF
+              BASNAM = BASNAMSAVE
 C
             ELSE
 C
-C         Read basis set from file
-C         ========================
+C         Read basis set from .mol file (INTGRL in first line of .mol file)
+C         ==============================
 C
                IF (DIRAC) THEN
                   CALL RDLINE(LUINFO)
@@ -1182,13 +1190,19 @@ C     Currently the program cannot handle symmetry if there is a chance
 C     that the atoms in the input may be different due to different basis
 C     sets
 C     
-         IF (ADDSYM .AND. .NOT. BASIS) THEN
+         IF (ADDSYM .AND. .NOT. BASIS .AND. IZATOM(INUC+1).ge.0) THEN
 C
-C           Check if same nucleus in prior "type" because
+C           Check if same nucleus was in prior "type" because
 C           then it may have a different basis set
 C           and FNDSYM routine can currently not detect that
 C           (e.g. if some Carbon have STO-3G and others have
 C           6-31G**) /hjaaj Mar 2004
+C           We skip point charges (IZATOM -2) and multiple
+C           basis set (IZATOM -1) for this test, because they
+C           cannot destroy symmetry check (either no basis fu.
+C           thus same basis set on all point charges (!)
+C           or - for multiple basis set - already checked for
+C           first set where IZATOM .ge. 0).
 C
             J = 0
             DO K = 1, INUC
@@ -1365,8 +1379,7 @@ C
          MULBSI(NUCIND) = MAX(MBSI,1)
          IF (MBSI .GT. 1) THEN
             CHARGE(NUCIND) = D0
-            IZATOM(NUCIND) = 0
-C           IZATOM(NUCIND) = -1
+            IZATOM(NUCIND) = -1
 C           ... code -1 to tell MBSI
             GNUEXP(NUCIND) = D0
          ELSE
@@ -1483,12 +1496,15 @@ C
 C     Set up a contraction matrix in case of Douglas-Kroll integrals
 C
       IF (DKTRAN) THEN
-         IF (LWORK .LT. NPLRG*NLARGE) CALL STOPIT('READI1 ','BASPRO',
-     &                                             NPLRG*NLARGE,LWORK)
+         KLPRIM = 1
+         KDKWRK = KLPRIM + KPRIM
+         LDKWRK = LWORK - KDKWRK
+         IF (LDKWRK .LT. NPLRG*NLARGE)
+     &      CALL STOPIT('READI1 ','DKPRO',NPLRG*NLARGE,LDKWRK)
          CALL DKPRO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &              NUC(1,1),NRC(1,1),SEG(1,1),ALPHA(1,1,1),
-     &              CPRIM(1,1,1,1),WORK,KATOM,KANG,KBLOCK,KPRIM,
-     &              NPLRG,NLARGE)
+     &              CPRIM(1,1,1,1),WORK(KLPRIM),WORK(KDKWRK),
+     &              KATOM,KANG,KBLOCK,KPRIM,NPLRG,NLARGE)
       END IF
 C*****************************************************************************
 C       Process orbital data for small components
@@ -1699,8 +1715,7 @@ C
             NPRIM = 0
             NBAS  = 0
             CALL BASTYP(IQM(I,1),JCO(1,I,1),NRC(IBLOCK,1),
-     &                  NUC(IBLOCK,1),
-     &                  KAOVEC,NPRIM,NBAS,TSTRING)
+     &                  NUC(IBLOCK,1),KAOVEC,NPRIM,NBAS,TSTRING)
          ELSE
             TSTRING = 'Point Charge'
          END IF
@@ -1715,7 +1730,9 @@ C
          END IF
          DO 20 N = 1,NONT(I)
             ICENT  = ICENT + 1
-            NCHARG = IZATOM(ICENT)
+            NCHARG = MAX(0,IZATOM(ICENT))
+C           hjaaj: do not add code -2 for point charges
+C           and code -1 for multiple basis to total charge
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
             IF (IPREAD .GT. 0) THEN
                IF(DIRAC) THEN
@@ -1898,26 +1915,24 @@ C*****************************************************************************
             NPRIM = NPRIM + NCOMP*NUC(IBLOCK)
   200    CONTINUE
          IF (IPRIM.GT.0) THEN
-            IF (IPRIM.GE.10) THEN
-#if defined (SYS_NEC)
-C NECyuji
-               NDIG = INT(DLOG10(DBLE(IPRIM))+1)
-#else
-               NDIG = INT(LOG10(FLOAT(IPRIM))+1)
-#endif
-               ITEN = 10**NDIG
-               DO 300 K = NDIG,1,-1
-                  ITEN = ITEN/10
+            NDIG = 3
+C           ... i.e. max 999 s-functions per center etc.
+C               for the output to be correct, cannot imagine
+C               anyone having more basis functions per atom/hjaaj
+            ITEN = 10**NDIG
+            J = 0
+            DO 300 K = NDIG,1,-1
+               ITEN = ITEN/10
+               ISHDIG = IPRIM/ITEN
+               IF (ISHDIG .GT. 0 .OR. J .GT. 0) THEN
+                  J = 1
+C                 ... we want next digit, also if zero (!)
+                  IDIG = ICHAR('0') + ISHDIG
                   IND = IND + 1
-                  IDIG = ICHAR('0') + INT(IPRIM/ITEN)
                   TSTRING(IND:IND) = CHAR(IDIG)
                   IPRIM=MOD(IPRIM,ITEN)
-  300          CONTINUE
-            ELSE
-               IND = IND + 1
-               IDIG = ICHAR('0') + IPRIM
-               TSTRING(IND:IND) = CHAR(IDIG)
-            ENDIF
+               END IF
+  300       CONTINUE
             IND = IND + 1
             TSTRING(IND:IND) = SPDCAR(I-1)
          END IF
@@ -1939,28 +1954,26 @@ C*****************************************************************************
             NBAS = NBAS + NCOMP*NRC(IBLOCK)
   500    CONTINUE
          IF(ISHELL.GT.0) THEN
-           IF (ISHELL.GE.10) THEN
-#if defined (SYS_NEC)
-C NECyuji
-              NDIG = INT(DLOG10(DBLE(ISHELL ))+1)
-#else
-              NDIG = INT(LOG10(FLOAT(ISHELL))+1)
-#endif
-              ITEN = 10**NDIG
-              DO 600 K = NDIG,1,-1
-                 ITEN = ITEN/10
-                 IND = IND + 1
-                 IDIG = ICHAR('0') + INT(ISHELL/ITEN)
-                 TSTRING(IND:IND) = CHAR(IDIG)
-                 ISHELL=MOD(ISHELL,ITEN)
-  600         CONTINUE
-           ELSE
-              IND = IND + 1
-              IDIG = ICHAR('0') + ISHELL
-              TSTRING(IND:IND) = CHAR(IDIG)
-           ENDIF
-           IND = IND + 1
-           TSTRING(IND:IND) = SPDCAR(I-1)
+            NDIG = 3
+C           ... i.e. max 999 s-functions per center etc.
+C               for the output to be correct, cannot imagine
+C               anyone having more basis functions per atom/hjaaj
+            ITEN = 10**NDIG
+            J = 0
+            DO 600 K = NDIG,1,-1
+               ITEN = ITEN/10
+               ISHDIG = ISHELL/ITEN
+               IF (ISHDIG .GT. 0) THEN
+                  J = 1
+C                 ... we want next digit, also if zero (!)
+                  IDIG = ICHAR('0') + ISHDIG
+                  IND = IND + 1
+                  TSTRING(IND:IND) = CHAR(IDIG)
+                  ISHELL=MOD(ISHELL,ITEN)
+               END IF
+  600       CONTINUE
+            IND = IND + 1
+            TSTRING(IND:IND) = SPDCAR(I-1)
          ENDIF
   400 CONTINUE
 C*****************************************************************************
@@ -2056,24 +2069,22 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
+     *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error,'//
-     *  'number of primitives per block      ',NUCIJ,
-     *  '                   current maximum number              ',KPRIM
+     *  ' >>> GTOINP error, number of primitives per block      ',NUCIJ,
+     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of contracted functions      ',
-     *  NRCIJ,
-     *  '                   current maximum number              ',KPRIM
+     *  ' >>> GTOINP error, number of contracted functions      ',NRCIJ,
+     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many contracted functions')
       END
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
-     &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+     &                 CPRIMU,NBLOCK,KAOVEC,KPRIM)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2131,19 +2142,17 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> CMBAS  error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
+     *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error,'//
-     *  'number of primitives per block      ',NUCI,
-     *  '                   current maximum number              ',KPRIM
+     *  ' >>> CMBAS  error, number of primitives per block      ',NUCI,
+     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error, number of contracted functions      ',
-     *  NRCI,
-     *  '                   current maximum number              ',KPRIM
+     *  ' >>> CMBAS  error, number of contracted functions      ',NRCI,
+     *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many contracted functions')
       END
 C  /* Deck acporb */
@@ -2440,14 +2449,14 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *   ' >>> ORBPRO error, '//
-     *   'no. of contracted functions per AO-block',NCONT,
-     *   '                  '//
-     *   ' current maximum number                  ',MXCONT
+     *   'no. of contracted functions in an AO-block',NCONT,
+     *   '                   '//
+     *   'current maximum number           MXCONT = ',MXCONT
       CALL QUIT('Too many contracted per AO-block')
       END
 C  /* Deck dkpro */
       SUBROUTINE DKPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           ALPHA,CPRIM,CONTC,KATOM,KANG,KBLOCK,KPRIM,
+     &           ALPHA,CPRIM,LPRIM,CONTC,KATOM,KANG,KBLOCK,KPRIM,
      &           IPRIMD,IORBD)
 C******************************************************************************
 C
@@ -2462,11 +2471,6 @@ C******************************************************************************
 #include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#if defined (SYS_T3D)
-      PARAMETER ( MAXPRD = 14 )
-#else
-      PARAMETER ( MAXPRD = 25 )
-#endif
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
@@ -3289,9 +3293,10 @@ C
                   IPCEN(NSORB)  = NCENT(IA)
                   ICLASS(NSORB) = IC
                   IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
+                     NQ     = IZATOM(NCENT(IA))
+                  IF (NQ .GT. 0) THEN
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
-                     NQ     = IZATOM(NCENT(IA))
 C                    ... atomic charge of this center
                      IQCORE = NINT(CHARGE(NCENT(IA)))
 C                    ... effective charge of this center
@@ -3299,6 +3304,7 @@ C                    ... effective charge of this center
 C                    ... .gt. 0 if ECP otherwise .eq. 0
                      NHUCCO = NUMCF(IA)
                      CALL HUCFUN(NQ,IQCORE,NHKTA,NHUCCO,HUCEXC(IHNMAO))
+                  END IF
                   END IF
                   IRREPN        = IRREP(NAORB)
                   IRREP(NAORB)  = IRREPN + 1
@@ -5606,7 +5612,7 @@ C               for ZMAT
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,J,DSM)
+     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,DSM)
             NBLCK(I,J) = NBLOCK
             IBLOCK(J) = IBLOCK(J) + NBLCK(I,J)
             NOORBI  = NOORBI  .AND. IQM(I,J).EQ.0
@@ -5895,10 +5901,11 @@ C  /* Deck crtest */
 #include <cbieri.h>
 C
       IF (RUNERI.AND.DOCART) THEN
+         NWARN = NWARN + 1
          RUNERI = .FALSE.
-         WRITE (LUPRI,'(1X,2A)')
-     &   ' WARNING: Only spherical-harmonic basis implemented in ERI.',
-     &   ' TWOINT is used instead.'
+         WRITE (LUPRI,'(A)')
+     &' WARNING: Only spherical-harmonic basis is implemented in ERI.'//
+     &' HERMIT module (TWOINT) is used instead.'
       END IF
       RETURN
       END
@@ -5918,8 +5925,8 @@ C
          IF (ANINT(QMASS) .EQ. MASSNM) IORD = I
       END DO
       IF (IORD .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I3)') 'Unknown mass for atom with charge ',
-     &        ICHARG
+         WRITE (LUPRI,'(/A,I4,A,I4)') 'ERROR: unknown mass',MASSNM,
+     &        ' for atom with charge ',ICHARG
          CALL QUIT('Unknown mass for chosen atomic charge')
       ELSE
          ISOMAS = IORD
