@@ -39,6 +39,42 @@ set_parallel_def() {
     fi
 }
 
+# Read of yes/no answer, the output in standarized to 'y' or 'n'. /hjaaj
+get_yes_or_no() {
+    answer=
+    while [ "$answer" != "y" -a "$answer" != "n" ]
+    do
+      $ECHO "$1 [y/n] \c"
+      read answer
+      case $answer in
+	y* | Y*) answer="y" ;;
+	n* | N*) answer="n" ;;
+      esac
+    done
+}
+#
+# Define backup function /hjaaj
+#
+backup () {
+  if [ "$1" = "-v" ]; then ekko=1; shift
+  else ekko=0;
+  fi
+  for i in $* ; do
+     if [ -f "${i}" ]; then
+        for j in 6 5 4 3 2 1 0 ; do
+           let jp=$j+1
+           if [ -f "${i}.${j}" ]; then
+              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
+              mv -f "${i}.${j}" "${i}.${jp}"
+           fi
+        done
+        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
+        mv -f "${i}" "${i}.0"
+     fi
+  done
+}
+
+
 if [ "$2" = "" ]; then pref=dalton; else pref="$2"; fi
 def="$pref.x"
 
@@ -84,12 +120,7 @@ if [ -z "$1" ]; then
         exit;;
     esac
     $ECHO "No architecture specified, attempting auto-configuration:"
-    answer=
-    while [ "$answer" != "y" -a "$answer" != "n" ]
-    do
-      $ECHO "This appears to be a $ARCH architecture. Is this correct? [y/n] \c"
-      read answer
-    done
+    get_yes_or_no "This appears to be a $ARCH architecture. Is this correct? "
     if [ "$answer" = "n" ]; then
         $ECHO "\nPlease configure manually from command line: 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
         exit
@@ -131,11 +162,11 @@ dirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS'
 
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
-              complist='xlf f90 f77'
-              ccmplist='xlc cc';;
+              complist='xlf f90 f77 g77'
+              ccmplist='xlc cc gcc';;
     iris4d)   liblist='libcomplib.sgimath.a libblas.a'
-              complist='f90 f77'
-              ccmplist='cc';;
+              complist='f90 f77 g77'
+              ccmplist='cc gcc';;
     cray)     liblist=''
               complist='cf90 f90 cf77 f77'
               ccmplist='cc';;
@@ -149,19 +180,19 @@ case $WHICH in
               complist='f77sx'
               ccmplist='ccsx';;
     alpha)    liblist='libblas.a libdxml.a'
-              complist='f90 f77'
-              ccmplist='cc';;
+              complist='f90 f77 g77'
+              ccmplist='cc gcc';;
     linux-alpha) liblist='libcxml.a'
-              complist='fort'
-              ccmplist='ccc';;
+              complist='fort g77'
+              ccmplist='ccc gcc';;
     sun4)     liblist='libblas.a'
-              complist='f90 f77'
-              ccmplist='cc';;
+              complist='f90 f77 g77'
+              ccmplist='cc gcc';;
     paragon)  liblist='libmath.a libblas.a'
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux)    liblist='libacml.a libmkl_p3.a libatlas.a libblas.a'
-              complist='ifc efc pgf77 g77'
+              complist='ifort ifc efc pgf77 g77'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='xlf g77 f77'
@@ -174,21 +205,6 @@ case $WHICH in
               complist='f90 fort77 f77'
               ccmplist='cc'
 esac
-#
-if [ $WHICH = "linux" ]; then
-    if  which ifc 1>/dev/null 2>&1; then
-	mkllib=`locate libmkl_p3.a`
-	if [ "$mkllib" != "" ]; then
-	mkllib=`dirname $mkllib`
-	fi
-	dirlist="$mkllib"
-    elif [ ! -z $PGI ]; then
-	if [ $PGI != "" ]; then
-	    dirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $dirlist"
-            echo "dirlist=$dirlist"
-	fi
-    fi
-fi
 #
 # For AIX systems we need to know which version of the operating system we
 # have.
@@ -210,12 +226,7 @@ if [ $WHICH = 'iris4d' ]; then
     else
       bit='64'
     fi
-    answer=
-    while [ "$answer" != "y" -a "$answer" != "n" ]
-    do
-      $ECHO "This appears to be a $bit-bit architecture. Is this correct? [y/n] \c"
-      read answer
-    done
+    get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?"
     if [ "$answer" = "n" ]; then
       if [ $bit = '64' ]; then
         opsys='IRIX'
@@ -236,12 +247,7 @@ elif [ $WHICH = 'hp' ]; then
       arch='hpux'
     fi
     if [ $arch = "hpux" ]; then
-       answer=
-       while [ "$answer" != "y" -a "$answer" != "n" ]
-       do
-         $ECHO "This appears to be a $bit-bit architecture. Is this correct? [y/n] \c"
-         read answer
-       done
+       get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?"
        if [ "$answer" = "n" ]; then
          if [ $bit = '64' ]; then
            bit='32'
@@ -272,13 +278,8 @@ fi
 # Parallel Dalton?
 #
 
-answer=
 mesp='dummy'
-while [ "$answer" != "y" -a "$answer" != "n" ]
-do
-    $ECHO 'Do you want to install the program in a parallel version? [y/n] \c'
-    read answer
-done
+get_yes_or_no 'Do you want to install the program in a parallel version?'
 if [ "$answer" = "y" ]; then
 #
 # Determine message passing protocol to be used
@@ -303,17 +304,19 @@ if [ "$answer" = "y" ]; then
 # The only computer I can think of with a separate compiler for parallel
 # MPI code is IBMs xlf
 #
-        if [ "$WHICH" = "rs6000" ]; then
-            complist='mpxlf'
-            ccmplist='mpcc xlc cc'
+        if [ "$WHICH" = "rs6000" -o "$WHICH" = "darwin" ]; then
+            complist="mpxlf mpif77 $complist"
+            ccmplist="mpcc  mpicc  $complist"
             parlib='no'
         elif [ "$WHICH" = "cray_t3e" ]; then
             parlib='no'
         else
+            complist="mpif77 $complist"
+            ccmplist="mpicc  $complist"
             parlib='yes'
         fi
 #
-        pardir=dirlist
+        pardir=$dirlist
         incdir='/usr/include /usr/local/include /local/include'
 
 #
@@ -372,30 +375,33 @@ fi
 #
 # Test for the existence of the compiler
 #
-$ECHO "\n   Checking for Fortran compiler ...\c"
+$ECHO "\n   Checking for Fortran compiler ..."
+$ECHO   "   from this list: $complist \n"
 
 for comp in $complist; do
     set dummy $comp; ac_word=$2
-    $ECHO " $comp\c"
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if test -f $ac_dir/$ac_word; then
+  	  get_yes_or_no "   Compiler $ac_word found, use this compiler?"
+          if [ $answer = 'y' ]; then
 	    ac_cv_prog_F77=$ac_word
-     	    break
+          fi
+     	  break
         fi  
     done
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
     if test -n "$F77"; then
-	$ECHO "\n   Compiler $F77 found"
+	$ECHO "\n   Compiler $F77 found and accepted."
         break
     fi
 done
 if test -z "$F77"; then
-    $ECHO "\n   No compiler found on this computer"
-    $ECHO "   Cannot proceed without a Fortran compiler in path"
+    $ECHO "\n   No compiler found and accepted on this computer"
+    $ECHO   "   Cannot proceed without a Fortran compiler"
     exit
 fi
 #
@@ -409,36 +415,39 @@ cat <<EOF > test.f
 EOF
 $F77 -o test.x test.f >/dev/null 2>&1
 if [ ! -r test.x ]; then
-   f90yes=" -DNO_F90"
+    f90yes=" -DNO_F90"
     rm -f test.x test.o test.f
 else
     f90yes=""
     rm -f test.x test.o test.f
 fi
 #
-$ECHO "   Checking for C compiler ...\c"
+$ECHO "\n   Checking for C compiler ..."
+$ECHO   "   from this list: $ccmplist \n"
 for comp in $ccmplist; do
     set dummy $comp; ac_word=$2
-    $ECHO " $comp\c"
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if test -f $ac_dir/$ac_word; then
+  	  get_yes_or_no "   Compiler $ac_word found, use this compiler?"
+          if [ $answer = 'y' ]; then
 	    ac_cv_prog_C=$ac_word
-     	    break
+          fi
+          break
 	fi  
     done
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_C" && ac_cv_prog_C=""
     CC="$ac_cv_prog_C"
     if test -n "$CC"; then
-        $ECHO "\n   Compiler $CC found"
+        $ECHO "\n   Compiler $CC found and accepted."
         break
     fi
 done
 if test -z "$CC"; then
-    $ECHO "\n   No C compiler found on this computer"
-    $ECHO "   Cannot proceed without a C compiler in path"
+    $ECHO "\n   No C compiler found and accepted on this computer"
+    $ECHO   "   Cannot proceed without a C compiler in path"
     exit
 fi
 #
@@ -452,13 +461,41 @@ else
     pdpackextras="linpack.o eispack.o"
 fi
 
+# Try to find paths to special libraries
+if [ $WHICH = "linux" ]; then
+	testdir=`locate libmkl_p3.a`
+	if [ "$testdir" != "" ]; then
+	  testdir=`dirname $testdir`
+	  dirlist="$testdir $dirlist"
+          echo "dirlist=$dirlist"
+	fi
+	testdir=`locate libatlas.a`
+	if [ "$testdir" != "" ]; then
+	  testdir=`dirname $testdir`
+	  dirlist="$testdir $dirlist"
+          echo "dirlist=$dirlist"
+	fi
+        if [ ! -z $PGI ]; then
+	if [ $PGI != "" ]; then
+	  dirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $dirlist"
+          echo "dirlist=$dirlist"
+	fi
+        fi
+fi
+
 LIB=''
-for testdir in $dirlist; do
-  if [ -n "$liblist" ]; then
-    for testlib in $liblist; do
-        echo "testing existence of $testdir/$testlib"
+LIBDIR=''
+$ECHO "\n Testing existence of libraries in this order:"
+$ECHO   " $liblist"
+if [ -n "$liblist" ]; then
+for testlib in $liblist; do
+   for testdir in $dirlist; do
+#     echo "testing existence of $testdir/$testlib"
       if test -f $testdir/$testlib; then
-         case $testlib in
+        LIBDIR=$testdir
+	get_yes_or_no "   Found $testdir/$testlib, use it ?"
+	if [ $answer = 'y' ]; then
+          case $testlib in
             libacml.a) LIB='-lacml'; blas3=true;;
 	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
                        pdpackextras="$pdpackextras gp_zlapack.o";;
@@ -497,23 +534,31 @@ for testdir in $dirlist; do
 		       fi;;
             libmath.a) LIB='-lmath -lm -nx';;
 	    libblas0_640.a) LIB="-l-lblas0_640 -l-leispack0_640 -l-llinpack0_640";;
-         esac
-	 break
+          esac
+	  break
+	fi
       fi
-    done
-    test -n "$LIB" && break
-  fi
-done
+      test -n "$LIB" && break
+      done
+   done
+fi
 
 #
 # Look for LAPACK library.
+# Add -L$LIBDIR to be sure compiler can find it.
 #
-for testdir in $dirlist; do
+if test -f $LIBDIR/liblapack.a; then
+  lapack=true; LIB="-L$LIBDIR -llapack $LIB"
+else
+  LIB="-L$LIBDIR $LIB"
+  for testdir in $dirlist; do
     if test -f $testdir/liblapack.a; then
-        lapack=true; LIB="-llapack $LIB"
+        lapack=true; LIB="-L$testdir -llapack $LIB"
         break
     fi
-done
+  done
+fi
+
 
 #
 # Figure out list of needed numerical libraries.
@@ -544,12 +589,7 @@ fi
 
 split="false"
 if [ $WHICH = 'rs6000' -o $WHICH = 'sun4' -o $WHICH = 'iris4d' -o $WHICH = 'linux' ] ; then
-    answer=
-    while [ "$answer" != "y" -a "$answer" != "n" ]
-    do
-      $ECHO "Does your file system allow files bigger than 2 Gb? [y/n] \c"
-      read answer
-    done
+    get_yes_or_no "Does your file system allow files bigger than 2 Gb?"
     if [ "$answer" = "n" ]; then
        split="true"
     fi
@@ -579,12 +619,7 @@ curr=`pwd`
 $ECHO '   Current directory is '$curr'\n'
 
 INSTALL_DIR=$curr
-answer=
-while [ "$answer" != "y" -a "$answer" != "n" ]
-do
-    $ECHO 'Use current directory as installation directory for binaries and scripts? [y/n] \c'
-    read answer
-done
+get_yes_or_no 'Use current directory as installation directory for binaries and scripts?'
 
 while [ "$answer" = "n" ]
 do
@@ -596,7 +631,7 @@ do
 	answer2=
 	while [ "$answer2" != "y" -a "$answer2" != "n" ]
 	do
-	   $ECHO 'Do you want me to creat this directory? [y/n] \c'
+	   $ECHO 'Do you want me to create this directory? [y/n] \c'
 	   read answer2
 	done
         if [ "$answer2" = "y" ]; then
@@ -621,13 +656,9 @@ fi
 # Determine default basis set library location
 #
 
-answer=
 basdir=$curr'/basis/'
-while [ "$answer" != "y" -a "$answer" != "n" ]
-do
-    $ECHO 'Use '$basdir' as default basis set directory? [y/n] \c'
-    read answer
-done
+
+get_yes_or_no 'Use '$basdir' as default basis set directory?'
 if [ "$answer" = "n" ];  then
     $ECHO 'Please enter default basis set directory (must end with /) \c'
     read basdir
@@ -671,29 +702,11 @@ fi
 #
 tab=`$ECHO "\t"`
 
-$ECHO '   Updating Makefile.config'
+$ECHO '   Creating Makefile.config'
 
 if [ -f Makefile.config ]; then
-    $ECHO '   Ooops. Makefile.config exists. I take a backup as Makefile.config.orig'
-    if [ -f Makefile.config.orig -a ! -w Makefile.config.orig ]; then
-        $ECHO '   Makefile.config.orig is write-protected.'
-	answer=
-        while [ "$answer" != "y" -a "$answer" != "n" ]
-        do
-           $ECHO 'Do you want me to overwrite Makefile.config.orig anyway? [y/n]\c'
-           read answer
-        done
-        if [ "$answer" = "n" ];  then
-            $ECHO 'I do not take a backup of Makefile.config. This file will be overwritten'
-        else
-            exec `chmod u+w Makefile.config.orig`
-            exec `mv Makefile.config Makefile.config.orig`
-            exec `chmod u-w Makefile.config.orig`
-        fi
-    else   
-        exec `mv Makefile.config Makefile.config.orig`
-        exec `chmod u-w Makefile.config.orig`
-    fi
+    $ECHO '   Ooops. Makefile.config exists. I take a backup.'
+    backup -v Makefile.config
 fi
 
 #
