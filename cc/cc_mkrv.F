@@ -78,6 +78,7 @@ C
       LOGICAL DOA, DOB, DOAP, DOBP, ASTRIX, DONINV, LDUM
       INTEGER IDUM, JDUM
       CHARACTER*3 APPROX(14,2), IPCC
+      CHARACTER*8 EOFLAB
       LOGICAL FRSTWR
 #include <r12int.h>
 #include <ccorb.h>
@@ -671,43 +672,55 @@ C        Write out V-matrix for CC2-R12 model (WK/UniKA/30-12-2003).
 C
          CALL GPOPEN(LU43,'CCR12_V','UNKNOWN',' ','FORMATTED',
      &                      IDUM,LDUM)
- 1244    READ(LU43,'(I3)',END=1243) IDUM
+ 1244    READ(LU43,'(A8)') EOFLAB
+         IF (EOFLAB .EQ. 'EOFLABEL') GOTO 1243
+         READ(LU43,'(I3)') IDUM
          READ(LU43,'(4E30.20)') QS11
          READ(LU43,'(4E30.20)') QT11
          GOTO 1244
  1243    CONTINUE
          BACKSPACE LU43
+         WRITE (LU43,'(A8)') 'NOTENDLB'
          WRITE(LU43,'(I3)') 2
          WRITE(LU43,'(4E30.20)') VS11
          WRITE(LU43,'(4E30.20)') VT11
+         WRITE(LU43,'(A8)') 'EOFLABEL'
          CALL GPCLOSE(LU43,'KEEP')
 C
 C        Write out X-matrix for CC2-R12 model (WK/UniKA/30-12-2003).
 C
          CALL GPOPEN(LU43,'CCR12_X','UNKNOWN',' ','FORMATTED',
      &                      IDUM,LDUM)
- 1246    READ(LU43,'(I3)',END=1245) IDUM
+ 1246    READ(LU43,'(A8)') EOFLAB
+         IF (EOFLAB .EQ. 'EOFLABEL') GOTO 1245
+         READ(LU43,'(I3)') IDUM
          READ(LU43,'(4E30.20)') QS11
          READ(LU43,'(4E30.20)') QT11
          GOTO 1246
  1245    CONTINUE
          BACKSPACE LU43
+         WRITE (LU43,'(A8)') 'NOTENDLB'
          WRITE(LU43,'(I3)') 2
          WRITE(LU43,'(4E30.20)') RS11
          WRITE(LU43,'(4E30.20)') RT11
+         WRITE(LU43,'(A8)') 'EOFLABEL'
          CALL GPCLOSE(LU43,'KEEP')
 C
 C        Open files for B and C (WK/UniKA/30-12-2003).
 C
          CALL GPOPEN(LU44,'CCR12_B','UNKNOWN',' ','FORMATTED',
      &                    IDUM,LDUM)
- 1248    READ(LU44,'(2I3)',END=1247) IDUM,JDUM
+ 1248    READ (LU44,'(A8)') EOFLAB
+         IF (EOFLAB .EQ. 'EOFLABEL') GOTO 1247
+         READ(LU44,'(2I3)') IDUM,JDUM
          READ(LU44,'(4E30.20)') QS11
          READ(LU44,'(4E30.20)') QT11
          GOTO 1248
  1247    CALL GPOPEN(LU45,'CCR12_D','UNKNOWN',' ','FORMATTED',
      &                    IDUM,LDUM)
- 1250    READ(LU45,'(2I3)',END=1249) IDUM,JDUM
+ 1250    READ (LU45,'(A8)') EOFLAB
+         IF (EOFLAB .EQ. 'EOFLABEL') GOTO 1249
+         READ(LU45,'(2I3)',END=1249) IDUM,JDUM
          READ(LU45,'(4E30.20)') QS11
          READ(LU45,'(4E30.20)') QT11
          GOTO 1250
@@ -761,9 +774,11 @@ C
         END IF
       END IF   
       BACKSPACE LU44
+      WRITE (LU44,'(A8)') 'NOTEOFLB'
       WRITE(LU44,'(2I3)') 2, IPDD
       WRITE(LU44,'(4E30.20)') US11
       WRITE(LU44,'(4E30.20)') UT11
+      WRITE (LU44,'(A8)') 'EOFLABEL'
 C
       IF (IPDD .EQ.  1 .OR. IPDD .EQ.  4 .OR. IPDD .EQ.  7 .OR.
      &    IPDD .EQ.  9 .OR. IPDD .EQ. 11 .OR. IPDD .EQ. 13) THEN
@@ -870,9 +885,11 @@ c
 c     Write out amplitudes for CC2-R12 model (WK/UniKA/30-12-2003).
 c
       BACKSPACE LU45
+      WRITE (LU45,'(A8)') 'NOTEOFLB'
       WRITE(LU45,'(2I3)') 2,IPDD
       WRITE(LU45,'(4E30.20)') CS11
       WRITE(LU45,'(4E30.20)') CT11
+      WRITE (LU45,'(A8)') 'EOFLABEL'
   999 CONTINUE
       CALL GPCLOSE(LU44,'KEEP')
       CALL GPCLOSE(LU45,'KEEP')

@@ -1466,18 +1466,22 @@ c     Write out V-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
       CALL GPOPEN(LU43,'CCR12_V','UNKNOWN',' ','FORMATTED',
      &                   IDUM,LDUM)
+      WRITE (LU43,'(A8)') 'NOTEOFLB'
       WRITE(LU43,'(I3)') 1
       WRITE(LU43,'(4E30.20)') WS11
       WRITE(LU43,'(4E30.20)') WT11
+      WRITE (LU43,'(A8)') 'EOFLABEL'
       CALL GPCLOSE(LU43,'KEEP')
 c
 c     Write out X-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
       CALL GPOPEN(LU43,'CCR12_X','UNKNOWN',' ','FORMATTED',
      &                   IDUM,LDUM)
+      WRITE (LU43,'(A8)') 'NOTEOFLB'
       WRITE(LU43,'(I3)') 1
       WRITE(LU43,'(4E30.20)') RS11
       WRITE(LU43,'(4E30.20)') RT11
+      WRITE (LU43,'(A8)') 'EOFLABEL'
       CALL GPCLOSE(LU43,'KEEP')
 c
 c    Write out orbital energies for CC2-R12 model (HF/UniKA/02-05-2003).
@@ -1569,6 +1573,7 @@ C
 c
 c     Write out B-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
+      WRITE (LU44,'(A8)') 'NOTEOFLB'
       IF (LUMULX .EQ. LUMULO) THEN
          WRITE(LU44,'(2I3)') 0,IPDD
       ELSE
@@ -1881,6 +1886,7 @@ c
      *   E2S+E2T+F2S+F2T  
       END IF
   999 CONTINUE
+      WRITE (LU44,'(A8)') 'EOFLABEL'
       CALL GPCLOSE(LU44,'KEEP')
       CALL GPCLOSE(LU45,'KEEP')
       RETURN
