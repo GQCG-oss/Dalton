@@ -327,7 +327,7 @@ C
       IF (.NOT. DOSELE) THEN
          DO 10 I = 1, MXCENT
             DOPERT(I,2) = .FALSE.
-            NUCCHA = NINT(CHARGE(I))
+            NUCCHA = IZATOM(I)
             IF (NUCCHA .NE. 0) THEN
                DO 20 ISTP = 1, 5
                   GVAL   = DISOTP(NUCCHA,ISTP,'GVAL')

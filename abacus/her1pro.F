@@ -61,7 +61,7 @@ C
       NCOMP    = 0
       TOFILE   = .TRUE.
       DOINT(1,1) = .TRUE.
-      IF (ADDSTO .AND. WORD .EQ. 'OVERLAP') THEN
+      IF (DOHUCKEL .AND. WORD .EQ. 'OVERLAP') THEN
          DOINT(2,1) = .TRUE.
          DOINT(1,2) = .TRUE.
          DOINT(2,2) = .TRUE.
@@ -124,7 +124,7 @@ C
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
      &            DOINT)
       CALL MEMREL('after PR1IN1 '//WORD,WORK,1,1,KFREE,LFREE)
-      IF (ADDSTO .AND. WORD .EQ. 'OVERLAP') THEN
+      IF (DOHUCKEL .AND. WORD .EQ. 'OVERLAP') THEN
          KMAX   = NLRGSH
          NBASIS = NLARGE
          NPBAS  = NPLRG
@@ -1662,11 +1662,10 @@ C
           DO IATOMC=1,NUCIND
              WRITE (LUPRI,'(I4,I7,3X,F9.5,F15.8,6X,I3,F14.6)')
      &             IATOMC,ISOTOP(IATOMC),CHARGE(IATOMC),
-     &             DISOTP(NINT(CHARGE(IATOMC)),
-     &             ISOTOP(IATOMC),'MASS'),
-     &             NINT(DISOTP(NINT(CHARGE(IATOMC)),
+     &             DISOTP(IZATOM(IATOMC),ISOTOP(IATOMC),'MASS'),
+     &             NINT(DISOTP(IZATOM(IATOMC),
      &             ISOTOP(IATOMC),'NEUTRONS')),
-     &             (DISOTP(NINT(CHARGE(IATOMC)),
+     &             (DISOTP(IZATOM(IATOMC),
      &             ISOTOP(IATOMC),'NEUTRONS')-BGWEIN*CHARGE(IATOMC))
           END DO
         END IF
@@ -1746,7 +1745,7 @@ C     --------------------------
 C
  75   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &      ' Calculation of SCALED  one-electron spin-orbit integrals.'
+     &      ' Calculation of SCALED one-electron spin-orbit integrals.'
          INTTYP = 5
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1927,7 +1926,7 @@ C
 C     ***** Number of basis functions *****
 C
       NBAST = 0
-      IF (ADDSTO .AND. INTTYP .EQ. 1) THEN
+      IF (DOHUCKEL .AND. INTTYP .EQ. 1) THEN
          KMAXT = NSMLSH + NLRGSH
       ELSE
          KMAXT = KMAX
@@ -2112,7 +2111,13 @@ C
 C     Charges printout 
       WRITE(LUPRI,'(A)') ' Atom       Scaled charge'
       DO I = 1, NUCIND
-         CHG = CHARGE(I)
+Chjaaj   CHG = CHARGE(I)
+         CHG = IZATOM(I)
+C        ... hjaaj mar 2004: we want true charge, not effective
+C            charge here (effective charge will be less than
+C            true charge if ECP). With this change this
+C            may (???) also work for ECP ???
+C
 c     scaling according to Koseki et al, J.Phys.Chem 1995, 99, 12764
          IF(CHG.GE.CHGLi.AND.CHG.LE.CHGF) THEN
             VLE = CHG - 2D0
@@ -2136,8 +2141,12 @@ c      third-row transition metals
          ELSE
             FAC = 1D0
          END IF
-         IND=NINT(CHARGE(I))
-         CHARGE(I) = CHARGE(I)*FAC
+         IND=IZATOM(I)
+Chjaaj   CHARGE(I) = CHARGE(I)*FAC
+         CHARGE(I) = FAC*CHG
+C        ... use true charge in CHG, not effective
+C            charge in CHARGE(I) /hjaaj mar 2004
+C            
          WRITE(LUPRI,'(A4,11X,F5.2)')ELEMENTS(IND),CHARGE(I)
       END DO
       END

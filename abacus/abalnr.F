@@ -517,7 +517,7 @@ C
      &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
             REWIND LUGDVE
             CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
-            IF (IPRLNR.GT.3) THEN
+            IF (IPRLNR.GT.10) THEN
                WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
                CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,
      &              2,1,LUPRI)
@@ -554,7 +554,7 @@ C
      &                 WORK(KPVX),WORK(KXINDX),ANTSYM,
      &                 WORK(KWRKG1),LWRKG1)
 C     
-                  IF (IPRLNR.GT.3) THEN
+                  IF (IPRLNR.GT.10) THEN
                      WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
                      CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,
      &                    2,1,LUPRI)
@@ -582,18 +582,17 @@ C
      &                       WORK(KGD1),1)
                      END IF
 C     
-                     IF (IPRLNR.GT.3) THEN
+                     IF (IPRLNR.GT.2) THEN
+                        WRITE (LUPRI,'(/A,F15.8,A/4A,F15.8)')
+     &                       ' Frequency = ',FRVAL(IFRVAL),' au',
+     &                       ' Second order property for ',
+     &                       LABEL1,LABEL2,' = ',SNDPRP(1)
+                     ENDIF
+                     IF (IPRLNR.GT.10) THEN
                         WRITE(LUPRI,'(A,I4)') 'Solution Vector no. ',
      &                       IFRVAL
                         CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,
      &                       2,1,LUPRI)
-                     ENDIF
-                     IF (IPRLNR.GT.2) THEN
-                        WRITE (LUPRI,'(/,A,F15.8)')
-     &                       ' Frequency = ',FRVAL(IFRVAL)
-                        WRITE (LUPRI,'(4A,F15.8)')
-     &                       ' Second order property for ',
-     &                       LABEL1,LABEL2,' = ',SNDPRP(1)
                      ENDIF
 C     
 C     Write properties into the various property matrices
@@ -679,6 +678,15 @@ C
                            POLDA(1,IDIP,3,IFRVAL) = -DP5*SNDPRP(1)
                            POLDA(2,IDIP,3,IFRVAL) = -DP5*SNDPRP(2)
                         END IF
+                     ELSE IF (IPRLNR.LE.2) THEN
+C                    ... hjaaj mar 2004: this property is not
+C                        predefined, should never happen, but
+C                        we make sure the value is printed.
+C                        (the value was printed above if IPRLNR.gt.2)
+                        WRITE (LUPRI,'(/A,F15.8,A/4A,F15.8)')
+     &                       ' Frequency = ',FRVAL(IFRVAL),' au',
+     &                       ' Second order property for ',
+     &                       LABEL1,LABEL2,' = ',SNDPRP(1)
                      ENDIF
  100              CONTINUE
                ENDIF
@@ -1121,7 +1129,7 @@ C
             DO ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
-                  NATTYP = NINT(CHARGE(IATOM))
+                  NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
                      AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
                      TMASS = TMASS + AMASS

@@ -550,7 +550,7 @@ C
       IF (INTTYP .EQ. 45) IBCNT = 2
       IORBA = 0
       CALL IZERO(ISOFRA, 8)
-      IF (ADDSTO .AND. INTTYP .EQ. 1) THEN
+      IF (DOHUCKEL .AND. INTTYP .EQ. 1) THEN
          KMAXT = NSMLSH + NLRGSH
       ELSE
          KMAXT = KMAX
@@ -864,7 +864,7 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
                IF (INTTYP .EQ. 80) THEN
                   FACTOR = FACTOR/HKAB*(
-     &            DISOTP(NINT(CHARGE(IATOMC)),ISOTOP(IATOMC),'NEUTRONS')
+     &            DISOTP(IZATOM(IATOMC),ISOTOP(IATOMC),'NEUTRONS')
      &            -BGWEIN*CHARGE(IATOMC))
                END IF
                DO 310 ISYMOP = 0, MAXOPR
@@ -907,7 +907,7 @@ C           and HUCMAT was scaled with the 1/sqrt(SCAL) factor.
 C           Code modified so projection vectors are also properly scaled.
 C
          HUCFAC = 1.0D0
-         IF (ADDSTO .AND. INTTYP.EQ.1) THEN
+         IF (DOHUCKEL .AND. INTTYP.EQ.1) THEN
             SCAL = 1.0D0
             IF (LCLASS(ISHELA) .EQ. 2) SCAL = DFLOAT(MULTA)
             IF (LCLASS(ISHELB) .EQ. 2) SCAL = DFLOAT(MULTB)*SCAL

@@ -33,13 +33,11 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-960818-vebjornb: New module taking care of redundant internal
-                 coordinates. The procedures are called from abaopt.F
-===========================================================================
-#endif
+C File:  abarint.F
+C
+C New module taking care of redundant internal coordinates.
+C The procedures are called from abaopt.F /960818-vebjornb
+C
 C  /* Deck inired */
       SUBROUTINE INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,BMTINV,PJINMT,
      &                TMPMAT,TMPMT2,TMPMT3,TMPMT4)
@@ -143,9 +141,9 @@ C
      &     ((RATFUN .OR. GDIIS) .AND. (IINTCR+1 .GT. 8*MXCENT))) THEN
          WRITE(LUPRI,'(//A//)') '***** CRITICAL ERROR IN OPTIMIZE ' //
      &        'MODULE *****'
-         WRITE(LUPRI,'(A,I4,A)') 'The specified geometry requires ',
+         WRITE(LUPRI,'(A,I6,A)') 'The specified geometry requires',
      &        IINTCR,' internal coordinates.'
-         WRITE(LUPRI,'(A,I4,A)') 'This exceeds the current limit of ',
+         WRITE(LUPRI,'(A,I6,A)') 'This exceeds the current limit of',
      &        8*MXCENT,' coordinates.'
          IF (IINTCR .GT. 15*ICRTCR) THEN
             WRITE(LUPRI,'(/A)') 'WARNING: The molecular geometry has' //
@@ -684,7 +682,7 @@ C
                   VEC1(3) = ATMARR(J,4)-ATMARR(I,4)
                   DO 25 K = J + 1, IATOM
                      IF ((IBOND(I,K) .GT. 0) .AND.
-     &                    (IBOND(I,K) .NE. 4)) THEN
+     &                   (IBOND(I,K) .NE. 4)) THEN
                         IINTCR = IINTCR + 1
                         INTCRD(IINTCR,1) = 11
                         INTCRD(IINTCR,2) = J
@@ -2676,9 +2674,10 @@ C
       DO 1 IREP = 0, MAXREP
          DO 2 ICRD = 1, 3*NUCIND
 #include "scalar.h"
-            IF (IPTCNT(ICRD,IREP,1) .GT. 0) THEN
-               SCLVEC(IPTCNT(ICRD,IREP,1)) =
-     &              SQRT(FMULT(ISTBNU((ICRD-1)/3 + 1)))
+            ISCOOR = IPTCNT(ICRD,IREP,1)
+            IF (ISCOOR .GT. 0) THEN
+               ICENT = (ICRD-1)/3 + 1
+               SCLVEC(ISCOOR) = SQRT(FMULT(ISTBNU(ICENT)))
             END IF
  2       CONTINUE
  1    CONTINUE
@@ -3049,7 +3048,7 @@ C
       DIMENSION SCLVEC(MXCOOR)
       DIMENSION HESINT(MXRCRD,MXRCRD), EVEC(MX2CRD,MX2CRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), TMPMT2(MX2CRD*MX2CRD)
-      DIMENSION TMPMT3(MX2CRD*MX2CRD), TMPMT4(MX2CRD,MX2CRD)
+      DIMENSION TMPMT3(MX2CRD*MX2CRD*2), TMPMT4(MX2CRD,MX2CRD)
       DIMENSION TMPMT5(MX2CRD,MX2CRD)
       DIMENSION CSTEP(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR)
@@ -4056,7 +4055,7 @@ C
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
       NEWSYM = .TRUE.
-      ADDSTO = .TRUE.
+      DOHUCKEL = .TRUE.
       RSTARR = .TRUE.
       KEEPHE = .FALSE.
       ERGOLD =  ENERGY
@@ -4292,17 +4291,31 @@ C
       END
 
 C  /* Deck rhoij */
-      FUNCTION RHOIJ(ATMARR,I,J,ALFA,DIST)
+      FUNCTION RHOIJ(ATMARR,I,J,ALFA,DIST,ORIG_LINDH)
 C
 C     Calculates the function
-C     rho_ij = exp[alfa_ij (r_ref,ij^2 - r_ij^2)]
+C        rho_ij = exp[alfa_ij (r_ref,ij^2 - r_ij^2)]
+C     for the model Hessian by Roland Lindh
+C
+C     Revised Nov 2002 hjaaj for using covalent/metallic radii
+C     instead of simplified values in DIST
+C     (the problem is that they do NOT work for heavier
+C     nuclei - as Roland also notes in his paper;
+C     with covalent/metallic radii we should get reasonable
+C     r_ref for all bonds)
+C
+C     for atom no. I:
+C     ATMARR(I,1) = charge
+C     ATMARR(I,2:4) = (x,y,z) in Bohr
+C     ATMARR(I,5) = covalent/metallic radius in Angstrom
 C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "codata.h"
       DIMENSION ATMARR(MXCENT,8)
-      DIMENSION ALFA(3,3), DIST(3,3)
-      DIMENSION VEC(3)
+      DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
+      LOGICAL   ORIG_LINDH
       IROWI = 2
       IROWJ = 2
       IF (ATMARR(I,1) .LE. 2) IROWI = 1
@@ -4313,50 +4326,44 @@ C
       VEC(2) = ATMARR(I,3) - ATMARR(J,3)
       VEC(3) = ATMARR(I,4) - ATMARR(J,4)
       V2 = VEC(1)*VEC(1) + VEC(2)*VEC(2) + VEC(3)*VEC(3)
-      RHOIJ = EXP(ALFA(IROWI,IROWJ)*
-     &     (DIST(IROWI,IROWJ)*DIST(IROWI,IROWJ) - V2))
+
+      IF (ORIG_LINDH) THEN
+         RREFIJ = DIST(IROWI,IROWJ)
+      ELSE
+         RREFIJ = (ATMARR(I,5) + ATMARR(J,5))/XTANG
+      END IF
+
+      RHOIJ = EXP( ALFA(IROWI,IROWJ)*(RREFIJ*RREFIJ - V2) )
+c     write (lupri,*) 'i,j,rrefij,v2,rhoij',i,j,rrefij,v2,rhoij
       RETURN
       END
 
 C  /* Deck bldhes */
-      SUBROUTINE BLDHES(MXRCRD,ATMARR,HESINT,ALFA,DIST)
+      SUBROUTINE BLDHES(MXRCRD,ATMARR,HESINT)
 C
 C     Builds a simple model Hessian in redundant internal coordinates.
+C     As described by Roland Lindh.
 C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "gnrinf.h"
 #include "optinf.h"
-#include "nuclei.h"
       DIMENSION ATMARR(MXCENT,8), HESINT(MXRCRD,MXRCRD)
-      DIMENSION ALFA(3,3), DIST(3,3)
-      CALL DZERO(HESINT,MXRCRD*MXRCRD)
-      CALL ATMINI(ATMARR,IATOM,.TRUE.)
 C
 C     Here we assign all the necessary parameters
 C
-      STRET = 0.450D0
-      ROTAT = 0.150D0
-      TORSN = 0.005D0
-      ALFA(1,1) = 1.0000D0
-      ALFA(1,2) = 0.3949D0
-      ALFA(2,1) = 0.3949D0
-      ALFA(1,3) = 0.3949D0
-      ALFA(3,1) = 0.3949D0
-      ALFA(2,2) = 0.2800D0
-      ALFA(2,3) = 0.2800D0
-      ALFA(3,2) = 0.2800D0
-      ALFA(3,3) = 0.2800D0
-      DIST(1,1) = 1.35D0
-      DIST(1,2) = 2.10D0
-      DIST(2,1) = 2.10D0
-      DIST(1,3) = 2.53D0
-      DIST(3,1) = 2.53D0
-      DIST(2,2) = 2.87D0
-      DIST(2,3) = 3.40D0
-      DIST(3,2) = 3.40D0
-      DIST(3,3) = 3.40D0
+      PARAMETER (STRET = 0.450D0, ROTAT = 0.150D0, TORSN = 0.005D0)
+      DIMENSION ALFA(3,3), DIST(3,3)
+      SAVE      ALFA, DIST
+      DATA ALFA / 1.0000D0,  0.3949D0,  0.3949D0,
+     &            0.3949D0,  0.2800D0,  0.2800D0,
+     &            0.3949D0,  0.2800D0,  0.2800D0/
+      DATA DIST / 1.35D0, 2.10D0, 2.53D0,
+     &            2.10D0, 2.87D0, 3.40D0,
+     &            2.53D0, 3.40D0, 3.40D0/
+C
+      CALL DZERO(HESINT,MXRCRD*MXRCRD)
+      CALL ATMINI(ATMARR,IATOM,.TRUE.)
 C
 C     We loop over all the internal coordinates and build up the
 C     diagonal Hessian.
@@ -4364,23 +4371,23 @@ C
       NRIC = IINTCR
       IF (DELINT) NRIC = IREDIC
       DO 10 IC = 1, NRIC
-         IF (INTCRD(IC,1) .LT. 10) THEN
-            FAC = STRET
-            RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST)
-            RJK = 1.0D0
-            RKL = 1.0D0
-         ELSE IF (INTCRD(IC,1) .LT. 20) THEN
-            FAC = ROTAT
-            RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST)
-            RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST)
-            RKL = 1.0D0
-         ELSE
-            FAC = TORSN
-            RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST)
-            RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST)
-            RKL = RHOIJ(ATMARR,INTCRD(IC,4),INTCRD(IC,5),ALFA,DIST)
-         END IF
-         HESINT(IC,IC) = FAC*RIJ*RJK*RKL
+        IF (INTCRD(IC,1) .LT. 10) THEN
+          FAC = STRET
+          RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST,LINDHD)
+          RJK = 1.0D0
+          RKL = 1.0D0
+        ELSE IF (INTCRD(IC,1) .LT. 20) THEN
+          FAC = ROTAT
+          RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST,LINDHD)
+          RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST,LINDHD)
+          RKL = 1.0D0
+        ELSE
+          FAC = TORSN
+          RIJ = RHOIJ(ATMARR,INTCRD(IC,2),INTCRD(IC,3),ALFA,DIST,LINDHD)
+          RJK = RHOIJ(ATMARR,INTCRD(IC,3),INTCRD(IC,4),ALFA,DIST,LINDHD)
+          RKL = RHOIJ(ATMARR,INTCRD(IC,4),INTCRD(IC,5),ALFA,DIST,LINDHD)
+        END IF
+        HESINT(IC,IC) = FAC*RIJ*RJK*RKL
  10   CONTINUE
       RETURN
       END

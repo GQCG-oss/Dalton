@@ -2737,7 +2737,7 @@ C
       DO 100 I = 1, NUCIND
          DO 200 J = 0, MAXOPR
             IF (IBTAND(J,ISTBNU(I)) .EQ. 0) THEN
-               ICHRG(IATOM + 1) = NINT(CHARGE(I))
+               ICHRG(IATOM + 1) = IZATOM(I)
                DO 300 K = 1, 3
                   GEOM(3*IATOM+K) = PT(IBTAND(ISYMAX(K,1),J))*CORD(K,I)
   300          CONTINUE
@@ -4300,7 +4300,7 @@ C
             DO ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
-                  NATTYP = NINT(CHARGE(IATOM))
+                  NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
                      AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
                      TMASS = TMASS + AMASS

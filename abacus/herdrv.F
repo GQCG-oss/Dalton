@@ -134,7 +134,7 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      IF (ONEPRP .OR. ADDSTO .OR. DKTRAN) CALL GPOPEN(LUPROP,
+      IF (ONEPRP .OR. DOHUCKEL .OR. DKTRAN) CALL GPOPEN(LUPROP,
      &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -1108,14 +1108,15 @@ cLig <<
      &      '- Magnetic-field correction to one-electron SO integrals'
          IF (SOMM) WRITE (LUPRI,'(10X,A)')
      &      '- Magnetic-moment correction to one-electron SO integrals'
+         IF (POTENE) WRITE (LUPRI,'(10X,A)')
+     &      '- Potential energy Hamiltonian integrals'   
          IF (PVPINT) WRITE (LUPRI,'(10X,A)')
      &      '- pVp integrals of the Douglas-Kroll Hamiltonian'
          IF (PXPINT) WRITE (LUPRI,'(10X,A)')
      &      '- small component dipole lengths integrals for DPT'
-         IF (POTENE) WRITE (LUPRI,'(10X,A)')
-     &      '- Potential energy Hamiltonian integrals'   
          IF (DKTRAN) WRITE (LUPRI,'(10X,A)')
-     &      '- The Douglas-Kroll transformation will be applied'   
+     &      '- The second order Douglas-Kroll transformation'//
+     &      ' will be applied'
          IF (CM1) THEN
             WRITE (LUPRI,'(10X,A)')
      &         '- First order magnetic derivative of electric field'
@@ -1786,7 +1787,7 @@ C        *******************************************
 C        ***** One-electron property integrals *****
 C        *******************************************
 C
-         IF (ONEPRP .OR. ADDSTO) THEN
+         IF (ONEPRP .OR. DOHUCKEL) THEN
 C
 C           ***** Overlap integrals *****
 C
@@ -3214,7 +3215,7 @@ C
 #include <maxorb.h>
 C
       DIMENSION WORK(LWORK)
-      LOGICAL STOBKP
+      LOGICAL HUCKELBKP
 C
 #include <inftap.h>
 #include <cbiher.h>
@@ -3233,20 +3234,21 @@ C
       POTENE = .TRUE.
       KINENE = .TRUE.
       PROPRI = .FALSE.
-      STOBKP = ADDSTO
-      ADDSTO = .FALSE.
+      HUCKELBKP = DOHUCKEL
+      DOHUCKEL = .FALSE.
       ONEPRP = .TRUE.
       RUNONE = .TRUE.
       RUNSUP = .FALSE.
       RUNTWO = .FALSE.
-      CALL DKREIN
 C
 C     Process basis set, although now as a decontracted set without
-C     normalization of the primitive orbitals
+C     normalization of the primitive orbitals (UNCONT .true.)
+C     (READIN will be called again in HERINP and generate the
+C     proper contracted basis and the info necessary to
+C     transform Douglas-Kroll integrals to contracted basis)
 C      
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
-      CALL READIN(WORK,LWORK,.TRUE.)
-      CALL SETDCH
+      CALL DKREIN(WORK,LWORK)
 C
       TIMSTR = SECOND()
       TIMINP = SECOND() - TIMSTR
@@ -3261,7 +3263,7 @@ C     basis
 C
       CALL DKDRIV(WORK,LWORK,IPRDEF)
 C
-      ADDSTO = STOBKP
+      DOHUCKEL = HUCKELBKP
       RDINPC = .FALSE.
       RUNSUP = SUPMAT
       PVPINT = .FALSE.
@@ -3275,7 +3277,10 @@ C
       RETURN
       END
 C/* Deck dkrein */
-      SUBROUTINE DKREIN
+      SUBROUTINE DKREIN(WORK,LWORK)
+C
+C     Read specification of primitive basis (i.e. decontracted)
+C     for calculation of Douglas-Kroll integrals.
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -3284,16 +3289,19 @@ C
 #else
       PARAMETER (MAXPRD = 25)
 #endif
-      LOGICAL RELCAL, TSTINP
+      DIMENSION WORK(LWORK)
+      LOGICAL UNCONTBKP
 #include <maxaqn.h>
 #include <ccom.h>
 #include <mxsymm.h>
 #include <cbirea.h>
+C
+C     Define cbirea.h for call of READIN below
+C
       THRS = 1.0D-15
 C
       LUMLCL = 0
       MAXPRI = MAXPRD
-      UNCONT = .TRUE.
       BIGVC  = .FALSE.
       DIRAC  = .FALSE.
       GENCON = .TRUE.
@@ -3307,6 +3315,16 @@ C
 C     We also need two variables from cbiher.h
 C
       CALL RDCBIH(IPREAD, INPTST)
+C
+C     Now call READIN to get the specification of the primitive basis.
+C     Note that UNCONT = .true., to force decontracted specification
+C     for Douglas-Kroll integrals.
+C
+      UNCONTBKP = UNCONT
+      UNCONT = .TRUE.
+      CALL READIN(WORK,LWORK,.TRUE.)
+      UNCONT = UNCONTBKP
+      CALL SETDCH
       RETURN
       END
 C/* Deck dkdriv */

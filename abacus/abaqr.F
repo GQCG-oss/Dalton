@@ -85,7 +85,7 @@ cs
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+               WRITE (LUPRI,'(/3A/)') ' Keyword "',WORD,
      *            '" not recognized in AQRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in AQRINP.')
@@ -158,7 +158,7 @@ cs idem come sopra
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+               WRITE (LUPRI,'(/3A/)') ' Prompt "',WORD,
      *            '" not recognized in AQRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in AQRINP.')
@@ -182,7 +182,7 @@ cs
             WRITE(LUPRI,'(A,I5)')' Maximum iterations in AQRDRV :',
      &                           MAXITE
             IF (CUT) THEN
-               WRITE (LUPRI,'(/,A)') ' Program is stopped after AQRDRV.'
+               WRITE (LUPRI,'(/A)') ' Program is stopped after AQRDRV.'
             END IF
 cs ricordarsi modificare
             IF (LBFREQ.GT.0) THEN
@@ -407,8 +407,10 @@ cs
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL QUIT('ABARSP call in ABAQR needs to be updated')
+C     hjaaj mar 2004: inserted 'LABEL', then number of arguments fits.
+C      LABEL needs to be defined.
       CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
-     *            DUMMY,NEXENG,NABATY,NABAOP,LUGDVE,LUSOVE,LUREVE,
+     *            DUMMY,NEXENG,NABATY,NABAOP,LABEL,LUGDVE,LUSOVE,LUREVE,
      *            THRESH,MAXITE,IPRQR,MXRM,MXPHP,WORK(KWORK2),
      *            LWORK2)
 C

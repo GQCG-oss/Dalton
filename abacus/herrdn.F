@@ -64,7 +64,7 @@ cDalton with other programs, or comparing AO integrals with other programs).
 c----------------------------
 crevision 1.3 2000/04/14 14:09:48  hjj
 c\hjaaj dec 99-jan 00:
-c1) corrected printout for Huckel basis when ADDSTO
+c1) corrected printout for Huckel basis when DOHUCKEL
 c   (the true basis set name was printed instead of "Huckel")
 c2) corrected output format from I3 to I4 for .gt. 999 primitives
 c3) changed ZMATL format from A6 to A1 to give room for change
@@ -648,19 +648,6 @@ C     .. NMLAU indentifies input line with Angstroms or bohrs indicator.
       ELSE
          ANG = .FALSE.
       ENDIF
-C
-C     Currently the program cannot handle symmetry if there is a chance 
-C     that the atoms in the input may be different due to different basis
-C     sets
-C     
-      IF (ADDSYM .AND. ATOMBA) THEN
-         WRITE (LUPRI,'(A,/A)')' The symmetry of the molecule cannot'//
-     &        ' be determined when ATOMBASIS is used',
-     &        ' Please specify the molecular symmetry in the input'//
-     &        ' and be welcome back'
-         CALL QUIT('Symmetry cannot be determined when ATOMBASIS '//
-     &             'is used')
-      END IF
 C*****************************************************************************
 C Process Cartesian to spherical or your own transformation
 C     note: SPHINP will read additional input lines if DOOWN true
@@ -679,7 +666,7 @@ C     ... now oldnrm only false if sperical, i.e. the only case
 C         where we know the 5 d's have same norm. Used for Huckel.
       CALL BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &            KBLOCK,KPRIM,KAOVEC,ANG,ZMAT,MXSPD)
+     &            KBLOCK,KPRIM,KAOVEC,ANG,ZMAT,MXSPD,ADDSYM)
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -695,7 +682,12 @@ C     *****   Returns CLASS, the full symmetry    *****
 C     *************************************************
 C
       CLASS = 'N/A'
-      IF (ADDSYM .AND. (.NOT. DIRAC) .AND. (.NOT. LMULBS)) THEN
+      IF (ADDSYM .AND. (.NOT. LMULBS)) THEN
+         IF (IPREAD .GE. 3) THEN
+            CALL HEADER('Copy of input to READIN before ADDSYM',0)
+            WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
+            WRITE (LUPRI,'(/)')
+         END IF
          CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,CLASS)
       END IF
 C
@@ -738,6 +730,8 @@ C
 C
       IF (IPREAD .GE. 2) THEN
          CALL HEADER('Copy of input to READIN',0)
+         IF (ADDSYM) WRITE(LUPRI,'(A/)')
+     &   ' - as modified by symmetry addition module:'
          WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
          WRITE (LUPRI,'(/)')
       END IF
@@ -818,8 +812,8 @@ C
       END
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,
-     &                  JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,
-     &                  KANG,KBLOCK,KPRIM,KAOVEC,ANG,ZMTTST,MXSPD)
+     &                  JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &                  KBLOCK,KPRIM,KAOVEC,ANG,ZMTTST,MXSPD,ADDSYM)
 C*****************************************************************************
 C
 C       Read orbital and geometry input data
@@ -836,7 +830,7 @@ C*****************************************************************************
       PARAMETER (DSM = 1.0D-30)
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
-      LOGICAL SEG,ANG,NOORBI,ZMTTST
+      LOGICAL SEG,ANG,NOORBI,ZMTTST, ADDSYM
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
      &          SEG(KBLOCK,2),
@@ -869,8 +863,8 @@ C     NSETS = 1 for Large, = 2 for "Large" and "Small"
 C     and BSET will change to "Large" or "Small".
 C
       NSETS = 1
-      IF (ADDSTO) NSETS = 2
-C     If (ADDSTO) use second set for STO-3G for Huckel guess
+      IF (DOHUCKEL) NSETS = 2
+C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
 C
@@ -988,9 +982,9 @@ C            where we know the 5 d's have same norm.
 Chj - apr00: this has been fixed with normalized spherical GTO's from SPHCOM
             MXQHUCK = 36
          ENDIF
-         IF (ADDSTO .AND. NINT(Q) .GT. MXQHUCK) THEN
+         IF (DOHUCKEL .AND. NINT(Q) .GT. MXQHUCK) THEN
             NSETS = 1
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/A,I3)')
      &           '  INFO: No Huckel start guess due'//
@@ -1002,6 +996,8 @@ C     integral shells
 C
            CALL DZERO(IQM(1,2),KATOM)
         ENDIF
+        QEFF = Q
+C       ... QEFF is effective charge and will be reset if ECP
 C
 C       Read/process data on symmetry independent centers
 C       =================================================
@@ -1009,11 +1005,16 @@ C       (if ZMAT then it is done later)
 C
          IF (ZMTTST) GO TO 100
 C
-         IF (INPTST .OR. IPREAD .GT. 3) THEN
+         IF (INPTST .OR. IPREAD .GT. 3 .OR. NONT(I).LE.0) THEN
             WRITE(LUPRI,'(/A,I5)') 'Atomic type: ',I
             WRITE(LUPRI,'(3X,A,F4.1)') 'Nuclear charge:  ',Q
             WRITE(LUPRI,'(3X,A,I5)') 'Number of symmetry '//
      &           'independent centres: ',NONT(I)
+            IF (NONT(I).LE.0) THEN
+               WRITE(LUPRI,'(/A)') 'INPUT ERROR: '//
+     &         'Number of symmetry independent centres invalid.'
+               CALL QUIT('Input error in .mol file, see output.')
+            ENDIF
          ENDIF
 C        MBSI has been added (WK/UniKA/04-11-2002).
          CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG,MBSI)
@@ -1045,7 +1046,7 @@ C
 C         Get basis set from basis set library
 C         ===================================
 C
-           ELSE IF ((BASIS .OR. ATOMBA .OR. (ADDSTO .AND. J .EQ. 2
+           ELSE IF ((BASIS .OR. ATOMBA .OR. (DOHUCKEL .AND. J .EQ. 2
      &              .AND. Q .NE. 0.0D0)) .AND. .NOT. DIRAC) THEN
               IF (BASIS) THEN
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
@@ -1058,7 +1059,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
  33              CONTINUE
                  BASNAM = BASNAM(ILEN:)
                  IF (INPTST .OR. IPREAD .GT. 1) THEN
-                    IF (ADDSTO .AND. J.EQ.2) THEN
+                    IF (DOHUCKEL .AND. J.EQ.2) THEN
                        WRITE (LUPRI,'(/A,I3)')
      &                 ' Huckel basis read for atomic type no.',I
                     ELSE IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
@@ -1091,19 +1092,11 @@ C                not in basis library for some atoms.
      &                ALPHA(1,IBLOCK(J),J),CPRIM(1,1,IBLOCK(J),J),
      &                CPRIMU(1,1,IBLOCK(J),J),NBLOCK,KAOVEC,KPRIM)
               ELSE IF (BASNAM(1:11) .NE. 'pointcharge') THEN
-                 CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
-     &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
-     &                  ALPHA(1,IBLOCK(J),J),
-     &                  CPRIM(1,1,IBLOCK(J),J),
-     &                  CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,KAOVEC,KPRIM,Q,J,DSM)
-                 IF (BASNAM(1:3) .EQ. 'ECP') THEN
+                 IF (BASNAM(1:3) .EQ. 'ECP' .AND. J.EQ.1) THEN
 C     Read effective core potential information from file for atom. 
-C     The charge of atom type is set to be the effective charge.
+C     The charge of atom type will be set to the effective charge below
+C     after J=2: reading Huckel basis (if DOHUCKEL)
                     CALL ECPINP(Q,QEFF,I,IPREAD)
-                    DO INONT=1,NONT(I)
-                       CHARGE(NUCIND+1 - INONT) = QEFF
-                    END DO
                     INDECP(I) = NUCIND+1 - NONT(I)
                     NECP(I) = NONT(I)
                     IF (NECP(I).GT.MXNONT) THEN
@@ -1112,6 +1105,12 @@ C     The charge of atom type is set to be the effective charge.
                        CALL QUIT('Too many ECP atoms of this type')
                     END IF
                  END IF
+                 CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
+     &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
+     &                  ALPHA(1,IBLOCK(J),J),
+     &                  CPRIM(1,1,IBLOCK(J),J),
+     &                  CPRIMU(1,1,IBLOCK(J),J),
+     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,J,DSM)
               END IF
 C
             ELSE
@@ -1150,7 +1149,41 @@ C
 C
          DO 400 K = 1,NONT(I)
             NOORBT(K+INUC) = NOORBI
+            IF (BASNAM(1:3) .EQ. 'ECP') CHARGE(K+INUC) =  QEFF
+C           reset charge to effective charge for ECP
+            IF (IQM(I,1) .EQ. 0) IZATOM(K+INUC) = -2
+C           ... code to tell this is a point charge (no basis fu.) /hjaaj Nov 2003
  400     CONTINUE
+C
+C     Currently the program cannot handle symmetry if there is a chance 
+C     that the atoms in the input may be different due to different basis
+C     sets
+C     
+         IF (ADDSYM .AND. .NOT. BASIS) THEN
+C
+C           Check if same nucleus in prior "type" because
+C           then it may have a different basis set
+C           and FNDSYM routine can currently not detect that
+C           (e.g. if some Carbon have STO-3G and others have
+C           6-31G**) /hjaaj Mar 2004
+C
+            J = 0
+            DO K = 1, INUC
+               IF (IZATOM(INUC+1) .EQ. IZATOM(K)) J = J + 1
+            END DO
+            IF (J .GT. 0) THEN
+              WRITE (LUPRI,'(/A/A,I4/A/A)')
+     &        ' The symmetry of the molecule cannot'//
+     &        ' be determined when INTGRL or ATOMBASIS is used,',
+     &        ' and different atom types are used for same atom --'//
+     &        ' problem discovered for Z =',IZATOM(INUC+1),
+     &        ' Please specify the molecular symmetry in the input'//
+     &        ' or do not use different atom types for the same atom',
+     &        ' and be welcome back !'
+              CALL QUIT('Symmetry cannot be determined when'//
+     &             ' INTGRL or ATOMBASIS is used')
+            END IF
+         END IF
   100 CONTINUE
       RETURN
 C
@@ -1193,7 +1226,8 @@ C
 #include <r12int.h>
 #include <ibtfun.h>
 C
-      IF (GAUNUC.AND.(NINT(Q).NE.0)) THEN
+      NQ = NINT(Q)
+      IF (GAUNUC.AND.(NQ.GT.0)) THEN
          CALL NUCSIZ(IPREAD,Q,GEXP)
       ELSE
          GEXP = D0
@@ -1243,7 +1277,7 @@ C           e.g. IRIX free format read of char. var. is not defined).
          IF (IPOS .NE. 0) THEN
             IPOS = IPOS + 8
             READ (MLINE(NMLINE)(IPOS:),'(I3)') MASSNM
-            ISOTOP(NUCIND) = ISOMAS(NINT(Q),MASSNM)
+            ISOTOP(NUCIND) = ISOMAS(NQ,MASSNM)
          ELSE
             ISOTOP(NUCIND) = 1
          END IF
@@ -1270,9 +1304,14 @@ C
          MULBSI(NUCIND) = MAX(MBSI,1)
          IF (MBSI .GT. 1) THEN
             CHARGE(NUCIND) = D0
+            IZATOM(NUCIND) = -1
+C           ... code -1 to tell MBSI
             GNUEXP(NUCIND) = D0
          ELSE
             CHARGE(NUCIND) = Q
+            IZATOM(NUCIND) = NQ
+C           ... if point charge this is reset outside to -2
+C               to tell this is a point charge /hjaaj Nov 2003
             GNUEXP(NUCIND) = GEXP
          END IF
   100 CONTINUE
@@ -1398,7 +1437,7 @@ C*****************************************************************************
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
      &            KATOM,KANG,KBLOCK,KPRIM,
      &            ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
-      IF (ADDSTO) THEN
+      IF (DOHUCKEL) THEN
          IF (ISHELL .GT. MXSHEL) GOTO 5040
          IF (IORBD  .GT. MXCORB) GOTO 5050
          IF (IPRIMD .GT. MXPRIM) GOTO 5060
@@ -1614,7 +1653,7 @@ C
          END IF
          DO 20 N = 1,NONT(I)
             ICENT  = ICENT + 1
-            NCHARG = NINT(CHARGE(ICENT))
+            NCHARG = IZATOM(ICENT)
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
             IF (IPREAD .GT. 0) THEN
                IF(DIRAC) THEN
@@ -2727,7 +2766,7 @@ C
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
          NUCDEG(N) = NDEG
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
-         IF (NINT(CHARGE(N)) .EQ. 0 .AND. NAMN(N) .NE. 'cav')
+         IF (CHARGE(N) .EQ. D0 .AND. NAMN(N) .NE. 'cav')
      &        NFLOAT = NFLOAT + 1
          DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
          DPNUC(2) = DPNUC(2) + CORD(2,N)*CHARGE(N)*FMULT(IVARB)
@@ -3187,12 +3226,17 @@ C
                   IPTYP(NSORB)  = NHKOFF(NHKTA) + NA
                   IPCEN(NSORB)  = NCENT(IA)
                   ICLASS(NSORB) = IC
-                  IF (IC .EQ. 2 .AND. ADDSTO) THEN
+                  IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
-                     HUCCHR = CHARGE(NCENT(IA))
+                     NQ     = IZATOM(NCENT(IA))
+C                    ... atomic charge of this center
+                     IQCORE = NINT(CHARGE(NCENT(IA)))
+C                    ... effective charge of this center
+                     IQCORE = NQ - IQCORE
+C                    ... .gt. 0 if ECP otherwise .eq. 0
                      NHUCCO = NUMCF(IA)
-                     CALL HUCFUN(HUCCHR,NHKTA,NHUCCO,HUCEXC(IHNMAO))
+                     CALL HUCFUN(NQ,IQCORE,NHKTA,NHUCCO,HUCEXC(IHNMAO))
                   END IF
                   IRREPN        = IRREP(NAORB)
                   IRREP(NAORB)  = IRREPN + 1
@@ -3547,61 +3591,54 @@ C     *********************************
 C
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Cartesian Coordinates',1)
-         WRITE (LUPRI,'(A,I3,//)') '  Total number of coordinates:',
-     &                                NCOOR
+         WRITE (LUPRI,'(A,I3)')
+     &      '  Total number of coordinates:',NCOOR
       END IF
       ICRX = 1
       ICRY = 2
       ICRZ = 3
       NATOMS = 0
-      KMASS  = ICRX + NCOOR
+      KMASS  = NCOOR + 1
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
             IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(1X,I3,3X,A,5X,A,3X,F15.10)')
+               WRITE (LUPRI,'(/I4,3X,A,5X,A,3X,F15.10)')
      *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
-               WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10)')
-     *               ICRY, CHRXYZ(-2), CORD(2,ICENT)
-               WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10,/)')
+               WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
+     *               ICRY, CHRXYZ(-2), CORD(2,ICENT),
      *               ICRZ, CHRXYZ(-3), CORD(3,ICENT)
             END IF
+            WORK(KMASS + NATOMS) = DISOTP(IZATOM(ICENT),1,'MASS')
+            NATOMS = NATOMS + 1
             WORK(ICRX) = CORD(1,ICENT)
             WORK(ICRY) = CORD(2,ICENT)
             WORK(ICRZ) = CORD(3,ICENT)
-            WORK(KMASS + NATOMS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
 C-----------------(WK/UniKA/14-11-2003)
             ICRX = ICRX + 3
             ICRY = ICRY + 3
             ICRZ = ICRZ + 3
 C--------------------------
-            NATOMS = NATOMS + 1
          ELSE
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                   JATOM  = JATOM + 1
                   WORK(KMASS + NATOMS) = 
-     *                 DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+     *                 DISOTP(IZATOM(ICENT),1,'MASS')
+                  NATOMS = NATOMS + 1
                   WORK(ICRX) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
      *                        *CORD(1,ICENT)
                   WORK(ICRY) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
      *                        *CORD(2,ICENT)
                   WORK(ICRZ) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      *                        *CORD(3,ICENT)
-C-----------------(WK/UniKA/14-11-2003)
-C                 WORK(KMASS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
-                  WORK(KMASS + NATOMS) 
-     *                        = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
-C-------------------------------------------------------------------
-                  NATOMS = NATOMS + 1
                   IF (IPREAD .GT. 0) THEN
-                     WRITE (LUPRI,'(1X,I3,3X,A,I2,3X,A,3X,F15.10)')
+                     WRITE (LUPRI,'(/I4,3X,A,I2,3X,A,3X,F15.10)')
      *                     ICRX, NAME,JATOM,CHRXYZ(-1),WORK(ICRX)
-                     WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10)')
-     *                     ICRY,CHRXYZ(-2),WORK(ICRY)
-                     WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10,/)')
+                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
+     *                     ICRY,CHRXYZ(-2),WORK(ICRY),
      *                     ICRZ,CHRXYZ(-3),WORK(ICRZ)
                   END IF
                   ICRX = ICRX + 3
@@ -3616,7 +3653,7 @@ C     ********************************
 C     ***** Symmetry Coordinates *****
 C     ********************************
 C
-      ISTRT = NCOOR+ NATOMS + 1
+      ISTRT = NCOOR + NATOMS + 1
       IF (LWORK .LT. 2*NCOOR*NCOOR) CALL STOPIT('PRICAR','TRACOR',
      &                                          2*NCOOR*NCOOR,LWORK)
       CALL TRACOR(WORK(ISTRT),WORK(ISTRT + NCOOR*NCOOR),1,NCOOR,IPREAD)
@@ -3665,21 +3702,25 @@ C
   300    CONTINUE
       END IF
 C
-C     Print internuclear distances
+      IF (NUCDEP .EQ. 1) THEN
+         IF (IPREAD .GT. 0)
+     &      WRITE (LUPRI,'(//A)') ' This is an atomic calculation.'
+      ELSE
 C
-      IF ((IPREAD .GT. 0) .OR. (GEOALL)) 
+C        Print internuclear distances
+C
+         IF ((IPREAD .GT. 0) .OR. (GEOALL)) 
      &     CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
      &                 IDUMMY,WORK(ISTRT),LWORK)
 C
-C     As a new default, we (almost) always print a rotational analysis, kr-02
+C        As a new default, we (almost) always print a rotational analysis, kr-02
 C
-      IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
+         IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NATOMS,NCOOR,IPREAD)
-C
-      IF (IPREAD .GT. 0) THEN
-         WRITE(LUPRI,'(//A,F18.12)')'  Nuclear repulsion energy :',
-     &                               POTNUC
       END IF
+C
+      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12)')
+     &   '  Nuclear repulsion energy :',POTNUC
       RETURN
       END
 C  /* Deck priord */
@@ -5250,14 +5291,14 @@ C
 #include <cbisol.h>
 Cjth - these files are included to make Huckel work
 #include <huckel.h>
-    1 FORMAT(/,2X,' INTERNAL COORDINATES'/)
-    2 FORMAT(2X,I3,67X,F15.5)
-    3 FORMAT(2X,I3,I5,F14.7,48X,F15.5)
-    4 FORMAT(2X,I3,I5,F14.7,I5,F14.7,29X,F15.5)
-    5 FORMAT(2X,I3,I5,F14.7,I5,F14.7,I5,F14.7,I5,F15.5)
+    1 FORMAT(/'   INTERNAL COORDINATES'/)
+    2 FORMAT(I5,62X,F15.5)
+    3 FORMAT(I5,I5,F14.7,43X,F15.5)
+    4 FORMAT(I5,I5,F14.7,I5,F14.7,24X,F15.5)
+    5 FORMAT(I5,I5,F14.7,I5,F14.7,I5,F14.7,I5,F15.5)
 C    6 FORMAT(//,25X,' CARTESIAN COORDINATES in Angstrom',
 C     $      /,14X,'X',24X,'Y',24X,'Z'/)
-    7 FORMAT(2X,I3,3(F20.10,5X))
+    7 FORMAT(I5,3(F20.10,5X),F15.5)
     8 FORMAT(//,25X,' CARTESIAN COORDINATES in bohr',
      $      /,14X,'X',24X,'Y',24X,'Z'/)
     9 format(3f20.10)
@@ -5404,7 +5445,7 @@ C
       IF (IPRINT .GT. 2) THEN
          WRITE(LUPRI,8)
          DO 305 I=1,NUCIND
-            WRITE(LUPRI,7) I,(CZ(I,J)/XTANG,J=1,3)
+            WRITE(LUPRI,7) I,(CZ(I,J)/XTANG,J=1,3),CHARGE(I)
  305     CONTINUE
       END IF
 C
@@ -5425,12 +5466,12 @@ C
       NONT(ITYP) = 1
       CHNON(ITYP) = CHARGE(1)
       DO 600 I = 2, NUCIND
-         DO 601 J = 1, I - 1
+         DO 601 J = I-1, 1, -1
             IF (CHARGE(I) .EQ. CHARGE(J)) THEN
                NONTYP = NONTYP - 1
                DO 603 L = 1, ITYP
                   IF (CHARGE(I) .EQ. CHNON(L))
-     &                   NONT(L) = NONT(L) + 1
+     &               NONT(L) = NONT(L) + 1
  603           CONTINUE
                CHARGK = CHARGE(I)
                XCORD  = CORD(1,I)
@@ -5456,6 +5497,10 @@ C
          NONT(ITYP) = 1
          CHNON(ITYP) = CHARGE(I)
  600  CONTINUE
+C     define atom number in IZATOM /hjaaj Mar 2004
+      DO I = 1, NUCIND
+         IZATOM(I) = NINT(CHARGE(I))
+      END DO
       IF (ITYP .NE. NONTYP) CALL QUIT('Problem in BUILDZ')
       IF (DOCART) THEN
          CRT = 'C'
@@ -5464,15 +5509,15 @@ C
       ELSE
          CRT = ' '
       END IF
-      WRITE(MLINE(5),'(A1,I4,I3,I2,10X,D10.2)') CRT,NONTYP,KCHARG,
-     &                                          NSYMOP,THRS
+      WRITE(MLINE(5),'(A1,I4,I3,I2,10X,1P,D10.2)')
+     &     CRT,NONTYP,KCHARG,NSYMOP,THRS
       NMLINE = 6
       NHTYP = 0
       IBLOCK(1) = 1
       IBLOCK(2) = 1
       IATOM = 1
       NSETS = 1
-      IF (ADDSTO) NSETS = 2
+      IF (DOHUCKEL) NSETS = 2
       DO 605 I = 1, NONTYP
          NOORBI  = .TRUE.
          WRITE(MLINE(NMLINE),'(6X,F4.0,I5)') CHARGE(IATOM),NONT(I)
@@ -5491,11 +5536,15 @@ C
 C     Add basis set to newly order atomic set
 C
          DO J = 1,NSETS
+            Q    = CHARGE(IATOM-1)
+            QEFF = Q
+C           ... QEFF is effective charge for ECP, ECP not implemented
+C               for ZMAT
             CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,KAOVEC,KPRIM,CHARGE(IATOM - 1),J,DSM)
+     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,J,DSM)
             NBLCK(I,J) = NBLOCK
             IBLOCK(J) = IBLOCK(J) + NBLCK(I,J)
             NOORBI  = NOORBI  .AND. IQM(I,J).EQ.0

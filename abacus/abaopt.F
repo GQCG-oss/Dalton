@@ -158,6 +158,10 @@ C
       BAKER  = .FALSE.
       NOAUX  = .FALSE.
       NODIHE = .FALSE.
+      LINDHD = .TRUE.
+C     ... hjaaj Mar 2004: disable generalization of Lindh
+C     algorithm for model Hessian as this is not working
+C     satisfactorily yet.
       ITRNMR = 0
       ITRMAX = ITRMX
       MAXREJ = MXREJ
@@ -887,7 +891,6 @@ C
          WRITE(LUPRI,'(A,A60)') '      ',SPBSTX
       END IF
       IF (TRSTCH) THEN
-         WRITE(LUPRI,*)
          WRITE(LUPRI,'(/A/A/,(A,F10.4))')
      &        ' Restricted step control parameters',
      &        ' ----------------------------------',
@@ -910,13 +913,12 @@ C
          WRITE(LUPRI,*)
       END IF
       IF (THRSYM .NE. MIN(5.0D-3,SQRT(DEFTHE))) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+         WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Threshold for symmetry-break set to       : ', THRSYM
          IF ((THRSYM .LT. D0) .OR. (THRSYM .GT. 0.1D0)) THEN
             WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
+            WRITE(LUPRI,'(A,1P,D13.2/)')
      &           ' Threshold reset to:', MIN(5.0D-3,SQRT(DEFTHE))
-            WRITE(LUPRI,*)
             THRSYM = MIN(5.0D-3,SQRT(DEFTHE))
          END IF
       END IF
@@ -2195,13 +2197,13 @@ C     as quadratic as the ground state, and thus we should not walk to far
 C     away. This is necessary for instance to get test15 through....
 C
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
-         WRITE (LUPRI,'(/A)') ' WARNING>>>> As this is an excited '//
+         WRITE (LUPRI,'(/A)') ' WARNING >>>> As this is an excited '//
      &        'optimization I have updated some thresholds'
-         IF (TRSTRA .EQ. 0.50D0) TRSTRA = 0.25D0
-         IF (TRSTIN .EQ. 1.20D0) TRSTIN = 1.0D0
+         IF (TRSTRA .EQ. 0.5D0) TRSTRA = 0.25D0
+         IF (TRSTIN .EQ. 1.2D0) TRSTIN = 1.00D0
          IF (RTENBD .EQ. 0.4D0) RTENBD = 0.85D0
          IF (RTRJMN .EQ. 0.1D0) RTRJMN = 0.80D0
-         IF (RTENGD .EQ. 0.80D0) RTENGD = 0.90D0
+         IF (RTENGD .EQ. 0.8D0) RTENGD = 0.90D0
          IF (RTRJMX .EQ. 3.0D0) RTRJMX = 1.20D0
          WRITE(LUPRI,'(/A/A/,(A,F10.4))')
      &        ' Restricted step control parameters',
@@ -2599,7 +2601,7 @@ C
          CALL DZERO(HESINT,MXRCRD*MXRCRD)
          IF (EVLINI .LE. 0.0D0) THEN
             IF (MODHES .OR. INMDHS .OR. CMBMOD) THEN
-               CALL BLDHES(MXRCRD,TMPMAT,HESINT,TMPMT2,TMPMT3)
+               CALL BLDHES(MXRCRD,TMPMAT,HESINT)
             ELSE
                DO 20 I = 1, NRIC
                   IF (INTCRD(I,1) .LT. 10) THEN
@@ -4291,7 +4293,7 @@ C
 C
 C     A new model Hessian is calculated
 C
-      CALL BLDHES(MXRCRD,TMPMAT,TMPMT5,TMPMT2,TMPMT3)
+      CALL BLDHES(MXRCRD,TMPMAT,TMPMT5)
 C
 C     If we use delocalized internals, we have to transform from
 C     redundant to non-redundant space.
@@ -4368,7 +4370,7 @@ C
 C
 C     A new model Hessian is always calculated as a start
 C
-      CALL BLDHES(MXRCRD,TMPMAT,HESOLD,TMPMT2,TMPMT3)
+      CALL BLDHES(MXRCRD,TMPMAT,HESOLD)
 C
 C     If we use delocalized internals, we have to transform from
 C     redundant to non-redundant space.
@@ -4626,7 +4628,7 @@ C
 C
 C     A new model Hessian is always calculated as a start
 C
-      CALL BLDHES(MXRCRD,TMPMAT,HESNEW,TMPMT2,TMPMT3)
+      CALL BLDHES(MXRCRD,TMPMAT,HESNEW)
 C
 C     If we use delocalized internals, we have to transform from
 C     redundant to non-redundant space.
@@ -5224,7 +5226,10 @@ C
          IF ((ABS(STEP(I)) .GT. TRSTRA) .AND. (.NOT. STPSCL))
      &        STEP(I) = SIGN(TRSTRA,STEP(I))
  30   CONTINUE
+      STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       IF (IPRINT .GE. IPRDBG) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &      'RF-Step length:', STPNRM
          IF (REDINT .OR. DELINT) THEN
             CALL HEADER('RF-Step in internal coordinates',-1) 
          ELSE
@@ -5232,23 +5237,18 @@ C
          END IF
          CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
       END IF
-      STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
 C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C
       IF ((STPNRM .GT. TRSTRA) .AND. STPSCL) THEN
          FAC = TRSTRA/STPNRM
-         IF (IPRINT .GE. IPRDBG) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-     &           'Step too long, scaling step by factor:', FAC
-            WRITE(LUPRI,*)
-         END IF
          DO 32 I = 1, ICRD
             STEP(I) = STEP(I)*FAC
  32      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
+            WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &           'Step too long, step scaled by factor:', FAC
             CALL HEADER('Scaled RF-Step',-1) 
             CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
          END IF
@@ -5409,7 +5409,10 @@ C
          IF ((ABS(STEP(I)) .GT. TRSTRA) .AND. (.NOT. STPSCL))
      &        STEP(I) = SIGN(TRSTRA,STEP(I))
  30   CONTINUE
+      STPNRM = SQRT(DDOT(NCRD,STEP,1,STEP,1))
       IF (IPRINT .GE. IPRDBG) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &      'RF-Step length:', STPNRM
          IF (REDINT .OR. DELINT) THEN
             CALL HEADER('RF-step in internal coordinates',-1)
          ELSE
@@ -5417,23 +5420,18 @@ C
          END IF
          CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
       END IF
-      STPNRM = SQRT(DDOT(NCRD,STEP,1,STEP,1))
 C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C
       IF ((STPNRM .GT. TRSTRA) .AND. STPSCL) THEN
          FAC = TRSTRA/STPNRM
-         IF (IPRINT .GE. IPRDBG) THEN
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-     &           'Step too long, scaling step by factor:', FAC
-            WRITE(LUPRI,*)
-         END IF
          DO 32 I = 1, NCRD
             STEP(I) = STEP(I)*FAC
  32      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
+            WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &           'Step too long, step scaled by factor:', FAC
             CALL HEADER('Scaled RF-Step',-1)
             CALL OUTPUT(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
          END IF
@@ -6062,22 +6060,18 @@ C
          ELSE IF ((ENERGY .GT. ERGOLD) .AND. .NOT. ESG) THEN
             IF (FAILED .AND. (IFAILD .LE. MAXREJ) .AND.
      &           (ABS(ENERGY-ERGOLD) .LT. 1.0D-5)) THEN
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Trouble determining step, ' //
+               WRITE(LUPRI,'(/A)') 'Trouble determining step, ' //
      &              'accepting small energy increase.'
                IFAILD = IFAILD + 1
                REJGEO = .FALSE.
             ELSE
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*)
+               WRITE(LUPRI,'(/A)')
      &              'Step rejected because energy is increasing.'
                WRITE(LUPRI,'(A,F10.5)')' Updated trust radius', TRSTRA
                REJGEO = .TRUE.
             END IF
          ELSE
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-     &           'Acceptable step has been found.'
+            WRITE(LUPRI,'(/A)') 'Acceptable step has been found.'
             REJGEO = .FALSE.
             FAILED = .FALSE.
          END IF
@@ -6191,10 +6185,9 @@ C
             GEINFO(ITRNMR,6) = 0.0D0
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &           ') reached.'
-            WRITE(LUPRI,*) 'No acceptable step found.'
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)'***** NOTE! *****'
-            WRITE(LUPRI,*)'As an emergency solution, ' //
+            WRITE(LUPRI,'(A)') 'No acceptable step found.'
+            WRITE(LUPRI,'(/A)')'***** NOTE! *****'
+            WRITE(LUPRI,'(A)')'As an emergency solution, ' //
      &           'the number of dihedral angles will be reduced!'
             CALL RREDUN
             TRSTRA = 0.5D0
@@ -6206,10 +6199,9 @@ C
             GEINFO(ITRNMR,6) = 0.0D0
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &           ') reached.'
-            WRITE(LUPRI,*) 'No acceptable step found.'
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)'***** NOTE! *****'
-            WRITE(LUPRI,*)'As a last resort, ' //
+            WRITE(LUPRI,'(A)') 'No acceptable step found.'
+            WRITE(LUPRI,'(/A)')'***** NOTE! *****'
+            WRITE(LUPRI,'(A)')'As a last resort, ' //
      &           'the Hessian is initialized to unity!'
             EVLINI = 1.0D0
             TRSTRA = 0.5D0
@@ -6221,7 +6213,7 @@ C
             CALL PRIINF(GEINFO,WORK(IWOFF + 2),LWORK)
             WRITE(LUPRI,*) 'Maximum number of rejected steps (',MAXREJ,
      &        ') reached.'
-            WRITE(LUPRI,*) 'No acceptable step found. Aborting.'
+            WRITE(LUPRI,'(A)') 'No acceptable step found. Aborting.'
             CALL QUIT('*** FNDGEO *** No acceptable step found.')
          END IF
       END IF
@@ -6480,7 +6472,7 @@ C
       RDMLIN = .FALSE.
       HRINPC = .FALSE.
       NEWSYM = .TRUE.
-      ADDSTO = .TRUE.
+      DOHUCKEL = .TRUE.
       KEEPHE = .FALSE.
       RSTARR = .TRUE.
       ERGOLD =  ENERGY

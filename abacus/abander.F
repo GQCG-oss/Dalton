@@ -466,7 +466,7 @@ C 100  CONTINUE
 C
       MOLECU = .TRUE.
       NCOOR  = 3*NUCDEP
-      ADSTBK = ADDSTO.AND.((NMORDR.GT.1).OR.(NMRDRP.GT.0))
+      ADSTBK = DOHUCKEL.AND.((NMORDR.GT.1).OR.(NMRDRP.GT.0))
 C
       NDERIV = 0
       NDIME  = 1
@@ -2164,7 +2164,7 @@ C     *** NOADSY -> If no automatic symmetry detection is requested ***
 C     ***           we need to use Huckel start-guess first time.   ***
 C
 c      IF (ADSTBK) THEN
-         ADDSTO = .TRUE.
+         DOHUCKEL = .TRUE.
 c         NOADSY = .FALSE.
 c      END IF
 C
@@ -6259,7 +6259,7 @@ C     /* Deck fndexs */
 C     ******************************************************
 C     *** Subroutine that sorts out the symmetry of the  ***
 C     *** excited states, and assign them to a new irrep ***
-C     *** in the distroted geometry.                     ***
+C     *** in the distorted geometry.                     ***
 C     ******************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -6282,13 +6282,11 @@ C
 C     *** Print. ***
 C
       IF (IPRINT.GT.0) THEN
-         WRITE (LUPRI,'(A)') '                                   '
-         WRITE (LUPRI,'(A)')
+         WRITE (LUPRI,'(/A)')
      &         'Symmetries of frozen core orbitals in reduced symmetry:'
-         WRITE (LUPRI,'(8A4))') (REP(I), I=0,MAXREP)
-         WRITE (LUPRI,'(I2,7I4)') (NRHFFR(I), I=1,MAXREP+1)
-         WRITE (LUPRI,'(A)') '                                   '
-         WRITE (LUPRI,'(A)') '                                   '
+         WRITE (LUPRI,'(2X,8A4))') (REP(I), I=0,MAXREP)
+         WRITE (LUPRI,'(8I4)') (NRHFFR(I), I=1,MAXREP+1)
+         WRITE (LUPRI,'(/)')
       END IF
 C
       RETURN

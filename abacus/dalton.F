@@ -33,22 +33,14 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-010131-vebjornb: Old dalton.F split into dalton.F (program) and
-                 dalgnr.F (subroutines).
-951129-hjaaj: also CALL EXESOR in geo.opt. when RUNINTS
-              force NEWTRA true if .INTSORT
-              replaced ITMPMB with IMORDB in inpbak.h (IMORDB was not saved)
-              removed CTMPMB in inpbak.h
-              removed ITMPMB and CTMPMB references in SSAVE and SRESTR
-              s/H1VORB/FCVORB/ and s/H1VRBB/FCVRBB/
-951009-kenneth : Changed name from PSISTAR to DALTON
-950621-vebjornb: First working optimization, GRAND changed to PSISTAR
-950516-vebjornb: First effort to link all programs: GRAND
-===========================================================================
-#endif
+C===========================================================================
+C old log:
+C010131-vebjornb: Old dalton.F split into dalton.F (program) and
+C                 dalgnr.F (subroutines).
+C951009-kenneth : Changed name from PSISTAR to DALTON
+C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
+C950516-vebjornb: First effort to link all programs: GRAND
+C===========================================================================
 C  /* Deck dalton */
       PROGRAM DALTON
 C
@@ -94,12 +86,9 @@ C
       LOGICAL FINISH
 #endif
       CHARACTER*12 FILNAM
-      PARAMETER (LWORK = INSTALL_WRKMEM)
+      PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 #if !defined (SYS_HAL) 
       PARAMETER (IWOFF = 0)
-#endif
-#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
-      CHARACTER*20 WRKMEM
 #endif
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
@@ -118,7 +107,7 @@ C
 C
 C     Static memory allocation
 C
-      DIMENSION WORK(LWORK+2)
+      DIMENSION WORK(LWORK_DEF+2)
 #endif
 #endif
 #endif
@@ -138,36 +127,23 @@ C
          LUERR = 0
       END IF
       LMWORK = 0
-c     70 must be in sync with GNRCHR common block
-      CALL GETMMBAS(LMWORK,BASDIR,IDUMMY,WRKMEM)
 C
-C     Either default memory size,
+C     Read environment variables for LMWORK and BASDIR
+C     If LMWORK .le. 0 use default value (LWORK_DEF)
 C
-      IF (LMWORK .LE. 0) THEN
-         WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
-         LMWORK = LWORK
-      ELSE
+      CALL GETMMBAS(LMWORK,BASDIR,IDUMMY)
+      IF (LMWORK .LE. 0) LMWORK = LWORK_DEF
 C
-C     ... or user specified memory size.
-C
-         DO I=20,1,-1
-           IF(WRKMEM(I:I).NE.' ') GOTO 1312
-         ENDDO
-         CALL QUIT('Empty environment variable WRKMEM')
- 1312    LWMEM = I
-         WRITE(LUERR,'(/A/3A)')
-     &   ' DALTON: user specified work memory size used,',
-     &   '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
-      END IF
-      NBYTES = (LMWORK+2) * 8
-      XBYTES = (LMWORK+2) * 8D0
-      GBYTES = XBYTES / (1.024D3**3)
-      IF (GBYTES .GE. 10D0) THEN
+      NBYTES  = (LMWORK+2) * 8
+      XMBYTES = (LMWORK+2) * 8.D0
+      XMBYTES = XMBYTES / (1.024D3**2)
+      GBYTES  = XMBYTES / 1.024D3
+      IF (GBYTES .GE. 1.D0) THEN
         WRITE(LUERR,'(/A,I12,A,F7.3,A)')' Work memory size (LMWORK+2):',
      &        LMWORK+2,' =',GBYTES,' gigabytes.'
       ELSE
-        WRITE(LUERR,'(/A,I12,A,F6.3,A)')' Work memory size (LMWORK+2):',
-     &        LMWORK+2,' =',GBYTES,' gigabytes.'
+        WRITE(LUERR,'(/A,I12,A,F8.2,A)')' Work memory size (LMWORK+2):',
+     &        LMWORK+2,' =',XMBYTES,' megabytes.'
       END IF
 C
 C    Dynamic memory allocation
@@ -490,7 +466,7 @@ C
       END IF
 #endif
       END
-      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR,WRKMEM)
+      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR)
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER*70 BASDIR
@@ -512,12 +488,29 @@ C
       CALL GETENV ('BASDIR',BASDIR)
 #endif
       READ(WRKMEM, '(I20)', ERR=10) LMWORK
-      IF (LMWORK .LT. 0) GOTO 10
-      GOTO 20
+      IF (LMWORK .GE. 0) GOTO 20
    10    WRITE(LUERR,'(/3A)')
      &   ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'
          LMWORK = 0
    20 CONTINUE
+C
+C     Either default memory size,
+C
+      IF (LMWORK .LE. 0) THEN
+         WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
+      ELSE
+C
+C     ... or user specified memory size.
+C
+         DO I=20,1,-1
+           IF(WRKMEM(I:I).NE.' ') GOTO 1312
+         ENDDO
+         CALL QUIT('Empty environment variable WRKMEM')
+ 1312    LWMEM = I
+         WRITE(LUERR,'(/A/3A)')
+     &   ' DALTON: user specified work memory size used,',
+     &   '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
+      END IF
 #if defined(VAR_MPI)
       CALL MPI_BCAST(LMWORK,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
 #endif /* defined(VAR_MPI) */

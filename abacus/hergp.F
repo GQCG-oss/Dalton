@@ -1253,7 +1253,11 @@ C
          CALL QUIT('MAXCHR exceeded in DISOTP')
       END IF
 C
-      IF (TYPE .EQ. 'MASS') THEN
+      IF (IATOM .LE. 0) THEN
+C        This is a floating orbital, a point charge,
+C        or an auxiliary basis set /Mar 2004 hjaaj
+         DISOTP = D0
+      ELSE IF (TYPE .EQ. 'MASS') THEN
          DISOTP = DATNUC(1,ISOTOP,IATOM)
       ELSE IF (TYPE .EQ. 'A') THEN
          DISOTP = NINT(DATNUC(1,ISOTOP,IATOM))
@@ -1280,11 +1284,7 @@ C
       ELSE IF (TYPE .EQ. 'QMOM') THEN
          DISOTP = DATNUC(5,ISOTOP,IATOM)
       ELSE IF (TYPE .EQ. 'NEUTRONS') THEN
-         IF (IATOM .LE. 0) THEN
-            DISOTP = D0
-         ELSE
-            DISOTP = FLOAT(NINT(DATNUC(1,ISOTOP,IATOM)-IATOM))
-         END IF
+         DISOTP = FLOAT(NINT(DATNUC(1,ISOTOP,IATOM)-IATOM))
       ELSE
          WRITE (LUPRI,'(//,3A,/,A)')
      &         ' Keyword ',TYPE,' unknown in DISOTP.',
@@ -1534,7 +1534,7 @@ C
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               ICHARG = NINT(CHARGE(IATOM))
+               ICHARG = IZATOM(IATOM)
                IF ((ICHARG .NE. 0 .AND. .NOT.NOORBT(IATOM))
      &              .OR. (ICHARG .EQ. 0 .AND. SOLVNT 
      &              .AND. (IATOM .EQ. NUCIND))) THEN

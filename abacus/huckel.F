@@ -293,10 +293,19 @@ C
       RETURN
       END
 C   /* Deck hucfun */
-      SUBROUTINE HUCFUN(CHARGE,IQM,ISHL,HUCTER)
+      SUBROUTINE HUCFUN(NQ,IQCORE,IQM,ISHL1,HUCTER)
 C
 C     Ascribed orbital-ionization potential to a shell
 C     Ionization potentials supplied from TURBOMOLE basis sets.
+C
+C     Input:
+C     NQ     = atomic number
+C     IQCORE = number of core electrons described with ECP
+C     IQM    = l_quantum_number + 1
+C     ISHL1  = orbital no. for this IQM
+C
+C     Output:
+C     HUCTER = orbital energy
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -396,16 +405,22 @@ C           1s,2s,3s,4s,2p,3p,4p,3d
      &  -.11458450497054D+01,-.63000574281761D+02,-.83214809593102D+01,
      &  -.51687272108885D+00,-.38104800526990D+01/
 C
-      NQ = NINT(CHARGE)
+      CALL QENTER('HUCFUN')
+      CALL ECPLCORE(IQCORE,IQM,ILOFF)
+      ISHL = ISHL1 + ILOFF
+C     ... calculate off-set for this l_quantum_number for ECP,
+C         where the lowest orbitals are excluded.
+C         (If not ECP, i.e. IQCORE .eq. 0, then ILOFF will be zero)
+C
       IF (NQ .LE. 0) THEN
 C           Output corrected (WK/UniKA/04-11-2002).
-            WRITE (LUPRI,'(/A,F10.5/A,I3,/A)')
-     &           ' WARNING: No Huckel guess for charge of ',CHARGE,
+            WRITE (LUPRI,'(/A,I10/A)')
+     &           ' WARNING: No Huckel guess for charge of',NQ,
      &           ' Hueckel start guess replaced'//
      &           ' with a diagonalization of H1'
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
       ELSE IF (NQ .LE. 10) THEN
-         I = 2*(IQM - 1) + ISHL
+         I = 2*(IQM - 1) + ISHL 
 C        I: 1s,2s,2p
          IF (I .LE. 3) THEN
             HUCTER = EIGVL1(NQ,I)
@@ -414,7 +429,7 @@ C        I: 1s,2s,2p
      &           ' WARNING: quantum number ',I,' not recognised for '//
      &           'nucleus :',NQ, ' Hueckel start guess replaced'//
      &           ' with a diagonalization of H1'
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
          END IF
       ELSE IF (NQ .GT. 10 .AND. NQ .LE. 18) THEN
          IF (IQM .EQ. 1) THEN
@@ -432,7 +447,7 @@ C        I: 1s,2s,3s,2p,3p
      &           ' WARNING: quantum number ',I,' not recognised for '//
      &           'nucleus :',NQ, ' Hueckel start guess replaced'//
      &           ' with a diagonalization of H1'
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
          END IF
       ELSE IF (NQ .GT. 18 .AND. NQ .LE. 30) THEN
          IF (IQM .EQ. 1) THEN
@@ -452,7 +467,7 @@ C        I: 1s,2s,3s,4s,2p,3p,3d
      &           ' WARNING: quantum number ',I,' not recognised for '//
      &           'nucleus :',NQ, ' Hueckel start guess replaced'//
      &           ' with a diagonalization of H1'
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
          END IF
       ELSE IF (NQ .GT. 30 .AND. NQ .LE. 36) THEN
          IF (IQM .EQ. 1) THEN
@@ -472,14 +487,15 @@ C        I: 1s,2s,3s,4s,2p,3p,4p,3d
      &           ' WARNING: quantum number ',I,' not recognised for '//
      &           'nucleus :',NQ, ' Hueckel start guess replaced'//
      &           ' with a diagonalization of H1'
-            ADDSTO = .FALSE.
+            DOHUCKEL = .FALSE.
          END IF
       ELSE
          WRITE (LUPRI,'(/A,I3,/A)') ' No orbital ionization potential'//
      &        ' for nucleus with charge ', NQ, ' Hueckel start guess '//
      &        'replaced with a diagonlization of H1'
-         ADDSTO = .FALSE.
+         DOHUCKEL = .FALSE.
       END IF
+      CALL QEXIT('HUCFUN')
       RETURN
       END
 C   /* Deck hucort */

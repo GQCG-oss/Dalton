@@ -138,9 +138,13 @@ C        END IF
             ATMARR(1,I) = CORD(1,I)
             ATMARR(2,I) = CORD(2,I)
             ATMARR(3,I) = CORD(3,I)
-            ATMARR(4,I) = ANINT(CHARGE(I))
-            ATMARR(5,I) = FLOAT(I)
-            ATMARR(6,I) = FLOAT(ISOTOP(I))
+Chjaaj      ATMARR(4,I) = ANINT(CHARGE(I))
+            ATMARR(4,I) = IZATOM(I)
+C           ... use true charge, not effective charge
+C               (different if ECP, sorting will then not
+C                work for ECP) /hjaaj Mar 2004
+            ATMARR(5,I) = I
+            ATMARR(6,I) = ISOTOP(I)
  100     CONTINUE
          ATMARR(1,0) = NUCLP
          IF (IPREAD .GE. IPRTHR) THEN
@@ -235,6 +239,7 @@ C ::: The reduced coordinates are moved back. :::
             IOLD = NINT(ATMARR(5,I))
 C           ... IOLD .ge. I after CALL SRTOLD
             CHARGE(I) = CHARGE(IOLD)
+            IZATOM(I) = IZATOM(IOLD)
 C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
             GNUEXP(I) = GNUEXP(IOLD)
             MULBSI(I) = MULBSI(IOLD)
@@ -266,6 +271,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
             CORD(2,I) = D0
             CORD(3,I) = D0
             CHARGE(I) = D0
+            IZATOM(I) = 0
             ISOTOP(I) = 1
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
@@ -275,7 +281,7 @@ C ::: We update the coordinates of the input file :::
             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
             WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
             WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
-            QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
+            QMASS = DISOTP(IZATOM(I),ISOTOP(I),'MASS')
             IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
      &                            'Isotope=', NINT(QMASS)
             MLINE(NC) = TMPLN
@@ -332,8 +338,9 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
          UNDER((I+1):40) = '                                        '
          WRITE(LUPRI,'(/1X,A/1X,A)') TEXT, UNDER
          DO 200 I=1,NINT(ARR(1,0))
-            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3), ARR(6,I)
- 11	    FORMAT (1X, T5, I3, T10, 3F15.8,T2,I3)
+            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3),
+     &         NINT(ARR(6,I))
+ 11         FORMAT (I8, 2X, 3F15.8,'  Isotope',I3)
  200     CONTINUE
          RETURN
       END

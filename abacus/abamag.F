@@ -2586,8 +2586,8 @@ C
                IATOM2 = IATOM2 + 1
                IF (DOPERT(I2,2)) THEN
                   IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
-                  NZ1 = NINT(CHARGE(I1))
-                  NZ2 = NINT(CHARGE(I2))
+                  NZ1 = IZATOM(I1)
+                  NZ2 = IZATOM(I2)
                   CALL TITLER('Indirect spin-spin coupling between '//
      &               NAMDEP(IATOM1)//' and '//
      &               NAMDEP(IATOM2)//':','=',-1)
@@ -2760,8 +2760,8 @@ C
                IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 87
                IF (DOPERT(I2,2)) THEN
                   IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
-                  NZ1 = NINT(CHARGE(I1))
-                  NZ2 = NINT(CHARGE(I2))
+                  NZ1 = IZATOM(I1)
+                  NZ2 = IZATOM(I2)
                   CALL TITLER('Indirect spin-spin coupling between '//
      &               NAMDEP(IATOM1)//' and '//
      &               NAMDEP(IATOM2)//':','=',-1)
@@ -3234,7 +3234,7 @@ C     Determine principal moments of inertia
 C
       JATOM = 1
       DO 100 IATOM = 1, NUCIND
-         NATTYP = NINT(CHARGE(IATOM))
+         NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
@@ -3255,10 +3255,9 @@ C     inverse moment of inertia and proton mass
 C
       IF (IPRINT .GE. 0) THEN
          IF (NOLOND) THEN
-            WRITE (LUPRI,'(/,1X,A)')' Calculation without '//
-     &                               'London orbitals.'
+            WRITE (LUPRI,'(/A)') ' Calculation without London orbitals.'
          ELSE
-            WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
+            WRITE (LUPRI,'(/A)')' London orbitals used.'
          END IF
       END IF
 C
@@ -3281,15 +3280,15 @@ C
             GTRAN(1,1) = AVETOT
          END IF
          IF (IPRDEF .GE. 0) THEN
-            WRITE (LUPRI,'(2X,A,F12.6)') 'Moment of inertia :',
+            WRITE (LUPRI,'(A,F12.6)') ' Moment of inertia :',
      &           D1/EIGVAL(3)
             CALL HEADER('Molecular g-factor',1)
-            WRITE(LUPRI,'(4(1X,A,F12.8,/))')
+            WRITE(LUPRI,'(4(A,F12.8/))')
      &           ' Isotropic g-factor          :',AVETOT,
      &           ' Nuclear part of g-factor    :',AVENUC,
      &           ' Diamagnetic part of g-factor:',AVEDIA,
      &           ' Electronic part of g-factor :',AVEEL
-            WRITE (LUPRI,'(1X,A)') 'The molecule is linear'
+            WRITE (LUPRI,'(A)') ' The molecule is linear'
          END IF
       ELSE
          IF (IPRDEF .GE. 0) THEN
@@ -3486,7 +3485,7 @@ C     Determine principal moments of inertia
 C
       JATOM = 1
       DO 100 IATOM = 1, NUCIND
-         NATTYP = NINT(CHARGE(IATOM))
+         NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN

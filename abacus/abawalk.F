@@ -1429,12 +1429,13 @@ C
       IF (ISCTYP .EQ. 3) THEN
          NOCHRG = .FALSE.
          DO 100 INUC = 1, NUCIND
-            NOCHRG = NOCHRG .OR. NINT(CHARGE(INUC)).EQ.0
+            NOCHRG = NOCHRG .OR. IZATOM(INUC).LE.0
  100     CONTINUE
          IF (NOCHRG) THEN
-            WRITE (LUPRI, '(/A/A)')
-     *        ' WARNING: Scaling reset from mass scaling to no scaling',
-     *        '          because at least one center has no charge.'
+            WRITE (LUPRI, '(/A/A/A)')
+     *      ' WARNING: Scaling reset from mass scaling to no scaling',
+     *      '          because at least one center has no charge or is',
+     *      '          a point charge, or multiple basis sets are used'
             ISCTYP = 1
          END IF
       END IF
@@ -1458,7 +1459,7 @@ C
          DO 300 IREP = 0, MAXREP
             IF (DOREP(IREP)) THEN
                DO 310 IATOM = 1, NUCIND
-                  NATTYP = NINT(CHARGE(IATOM))
+                  NATTYP = IZATOM(IATOM)
                   DMASS  = DISOTP(NATTYP,ISOTOP(IATOM),'MASS')
                   DO 320 ICOOR = 1, 3
                      JCOOR = 3*(IATOM - 1) + ICOOR
@@ -2540,7 +2541,7 @@ C
       ICOOR = 0
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
-         DMSS = DISOTP(NINT(CHARGE(ICENT)),ISOTOP(ICENT),'MASS')
+         DMSS = DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
          MULCNT = ISTBNU(ICENT)
          DO 200 IOP = 0, MAXOPR
             IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
@@ -2648,7 +2649,7 @@ C
          CALL HEADER('Atomic masses',1)
          JATOM = 0
          DO 510 IATOM = 1, NUCIND
-            DMASS = DISOTP(NINT(CHARGE(IATOM)),ISOTOP(IATOM),'MASS')
+            DMASS = DISOTP(IZATOM(IATOM),ISOTOP(IATOM),'MASS')
             NDEG  = NUCDEG(IATOM)
             DO 515 IDEG = 1, NDEG
                WRITE (LUPRI,'(2X,A6,2X,F12.6)') NAMDEP(JATOM+IDEG),DMASS
@@ -3173,7 +3174,7 @@ C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
-         NATTYP = NINT(CHARGE(ICENT))
+         NATTYP = IZATOM(ICENT)
          NISOTP = ISOTOP(ICENT)
          AMASS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 200 ISYMOP = 0, MAXOPR
@@ -6723,7 +6724,7 @@ C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
-         NATTYP = NINT(CHARGE(ICENT))
+         NATTYP = IZATOM(ICENT)
          NISOTP = ISOTOP(ICENT)
          ATMAS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 110 ISYMOP = 0, MAXOPR
@@ -7843,7 +7844,7 @@ C  /* Deck wlkcvt */
 #include <cbisol.h>
 #include <nuclei.h>
 #include <symmet.h>
-      AMASS(I) = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
+      AMASS(I) = DISOTP(IZATOM(I),ISOTOP(I),'MASS')
 C
 C     Total mass
 C

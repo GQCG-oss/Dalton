@@ -60,10 +60,12 @@ C*              as IQM                                       *
 C*     KAOVEC, KPRIM, Q, DSM are max (angular quantumnumber  *
 C*             + 1), max number of primitives, nuclear       *
 C*             charge, highest number to be accepted as zero *
+C*     QEFF is eff. nuclear charge which is .le. Q,          *
+C*             Q-QEFF will be described with ECP              *
 C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
-     &                   CPRIMU, NBLOCK, KAOVEC, KPRIM, Q,
+     &                   CPRIMU, NBLOCK, KAOVEC, KPRIM, Q, QEFF,
      &                   ISET, DSM)
 #include <implicit.h>
 #include <priunit.h>
@@ -125,6 +127,8 @@ C        this is restored from BASSAV just before RETURN.
 C
          ANO = .TRUE.
          BASTMP = 'ano-4'
+C        NOTE that ECP Huckel start guess is implemented
+C        in REAANO through the Q-QEFF parameter. 
          ISTART = 6
          IF (INTQ .LE. 2) THEN
 C           ... H and He
@@ -230,14 +234,15 @@ C Setting ALPHA, CPRIMU AND CPRIM to zero.
 C
             CALL DZERO(ALPHA(1, NBLOCK), KPRIM)
             CALL DZERO(CPRIMU(1,1, NBLOCK), KPRIM*KPRIM)
-            CALL DZERO(CPRIM (1, 1, NBLOCK), KPRIM*KPRIM)
+            CALL DZERO(CPRIM (1,1, NBLOCK), KPRIM*KPRIM)
 C
 C Reading the primitives and contraction-coeffecients from file in READNU
 C
             IF (ANO .OR. SADLEJ) THEN
+               IQCORE = NINT(Q-QEFF)
                CALL REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                     UNCONT,ISET,LUBAS)
+     +                     UNCONT,ISET,LUBAS,IQCORE)
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
                   CALL FINPOS(NEWEL,INTEXP,INTORB,LUBAS)
@@ -571,7 +576,11 @@ C
 C/* Deck reaano */
       SUBROUTINE REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
      +                  KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                  UNCONT,ISET,LUBAS)
+     +                  UNCONT,ISET,LUBAS,IQCORE)
+C
+C     IQCORE is charge of core electrons (.eq. zero if not ECP)
+C     NBLOCK = l_quatum_number + 1 (1 for s, 2 for p, etc.)
+C
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -599,7 +608,10 @@ C             in ano-* files (for this consistency check).
          END IF
       END IF
 C
- 20   CONTINUE
+C If ECP calculate number of core orbitals to exclude for each l-shell
+C This time we have l-shell number NBLOCK
+C
+      CALL ECPLCORE(IQCORE,NBLOCK,ILOFF)
 C
 C Reading the primitive and contracted coeffecients
 C
@@ -628,11 +640,19 @@ C        ... force uncontracted
                CPRIMU(I,I,NBLOCK) = 1.0D0
             END DO
             INTORB = INTEXP
+         ELSE IF (ILOFF .GT. 0) THEN
+C           skip core orbitals for Huckel guess for ECP
+            INTORB = INTORB - ILOFF
+            DO I = 1, INTEXP
+               READ (LUBAS,*) (XXX, J = 1,ILOFF),
+     &              (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+            END DO
          ELSE
             DO I = 1, INTEXP
                READ (LUBAS,*) (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
             END DO
          END IF
+  
       ELSE
          DO I = 0, NUMEXP
             READ (LUBAS,*)

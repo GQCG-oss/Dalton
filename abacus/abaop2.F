@@ -33,13 +33,10 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-971020-vebjornb: Just an extension of abaopt.F which is becoming
-                 awkwardly large.
-===========================================================================
-#endif
+C File: abaop2.F
+C
+C 971020-vebjornb: Just an extension of abaopt.F which is becoming awkwardly large.
+C
 C  /* Deck linsrc */
       SUBROUTINE LINSRC(ICRD,MCRD,GRAD,GRADOL,STEP,STEPOL,
      &     TMPVEC,TMPVC2,ACTIVE,EMOD)

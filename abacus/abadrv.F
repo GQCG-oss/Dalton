@@ -1880,7 +1880,7 @@ C
                LVAL = NHKT(ISHELL) - 1
                ICNT = NCENT(ISHELL)
                MLT = MULT(ISTBAO(ISHELL))
-               ICHRG = NINT(CHARGE(ICNT))
+               ICHRG = IZATOM(ICNT)
                IF (JCNT .NE. ICNT) WRITE (LUPRI,'()')
                JCNT = ICNT
                GRAD = ALPGRD(I)/FLOAT(MLT)
@@ -1899,12 +1899,12 @@ C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
 C
             MAXZ = 0
             DO I = 1, KMAX
-               MAXZ = MAX(MAXZ,NINT(CHARGE(NCENT(IPRSHL(I)))))
+               MAXZ = MAX(MAXZ,IZATOM(NCENT(IPRSHL(I))))
             END DO
             DO K = 1, MAXZ
                FIRST = .TRUE.
                DO I = 1, KMAX
-               IF (NINT(CHARGE(NCENT(IPRSHL(I)))).EQ.K) THEN
+               IF (IZATOM(NCENT(IPRSHL(I))).EQ.K) THEN
 C
                   IPRV = -1 
                   IF (I.GT.1) IPRV = NCENT(IPRSHL(I-1))
@@ -1933,7 +1933,7 @@ C
             DO K = 1, MAXZ
                FIRST = .TRUE.
                DO I = 1, KMAX
-               IF (NINT(CHARGE(NCENT(IPRSHL(I)))).EQ.K) THEN
+               IF (IZATOM(NCENT(IPRSHL(I))).EQ.K) THEN
 C
                   ICNT = NCENT(IPRSHL(I))
                   INXT = -1
@@ -2738,7 +2738,7 @@ C
          DO 110 ISYM = 0, MAXOPR
             IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
                NATOM = NATOM + 1
-               NUCCHA = NINT(CHARGE(IATOM))
+               NUCCHA = IZATOM(IATOM)
                IF (NUCCHA  .EQ. 0) GOTO 100
                IF (IPRINT .GE. 0) CALL HEADER('Nuclear quadrupole '//
      &                         'moment for   '//NAMDEP(NATOM),-1)

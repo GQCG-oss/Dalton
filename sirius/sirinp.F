@@ -242,7 +242,7 @@ C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*)
-C   HUCKEL : ADDSTO
+C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
 C
 #include <maxash.h>
@@ -513,7 +513,8 @@ C     ... do not converge to a specific state.
       ICICNO = 0
 C
 C********** Default values section SCFINP *****
-C           and common scbrhf.h (except DIRFCK which is in infinp.h)
+C           and common scbrhf.h
+C           (except DIRFCK and HSROHF which are in infinp.h)
 C
       IOPRHF = 0
       MXDIIS = 60
@@ -922,7 +923,7 @@ C        ... include (ii/aa) and (ia/ia) for orbital diagonal
 C        ... exclude (ii/aa) and (ia/ia) for orbital diagonal
             ITRLVL = 3
          END IF
-	 IF (DONEVPT) ITRLVL=4
+         IF (DONEVPT) ITRLVL=4
       END IF
 C
 C     Set print parameters in /INFTRA/ for TRACTL
@@ -997,12 +998,12 @@ C
          CALL H1MO(CMO,CMO(KSH1),CMO(KSCRA),LSCRA)
 C        CALL H1MO(CMO,SH1,SCRA,LSCRA)
 C
-C        Find Huckel start orbitals if ADDSTO and not AUTOCC
+C        Find Huckel start orbitals if DOHUCKEL and not AUTOCC
 C        (If automatic occupation HUCDRV is called later in this routine)
 C        Note: H1MO called first anyway, to generate symmetry adapted
 C        MO's when supersymmetry exists. /hjaaj
 C
-         IF (ADDSTO .AND. .NOT.AUTOCC)
+         IF (DOHUCKEL .AND. .NOT.AUTOCC)
      &      CALL HUCDRV(CMO(KSCRA),LSCRA,CMO)
 C
          FLAG(13) = .FALSE.
@@ -1126,7 +1127,7 @@ C
             WRITE (LUPRI,*) 'both Hartree-Fock and MCSCF specified.'
          END IF
          IF (NASHT .GT. 1) THEN
-          IF (NELMN1 .EQ. 0 .AND. NELMX1 .EQ. 0) THEN
+          IF (NELMN1 .LE. 0 .AND. NELMX1 .LE. 0) THEN
             NELMN1 = 1
             NELMX1 = 1
           END IF
@@ -1229,7 +1230,7 @@ C
       END IF
 C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
-C              and Huckel start orbitals if ADDSTO
+C              and Huckel start orbitals if DOHUCKEL
 C
       IF (NRHFEL .LE. 0) THEN
          NRHFEL = 2*NRHFT
@@ -1241,12 +1242,12 @@ C
 C        Initial occupation may have been specified in input
 C        or read from LUIT1 or LUSIFC. If not, we find it now
 C        from diagonal elements of the H1 matrix.
-C        If ADDSTO use Huckel guess (INIOCC = 5).
+C        If DOHUCKEL use Huckel guess (INIOCC = 5).
 C
          KSCRA = 1    + NCMOT
          LSCRA = LCMO - KSCRA
          IF (INIOCC .LE. 0) THEN
-            IF (ADDSTO) THEN
+            IF (DOHUCKEL) THEN
                CALL HUCDRV(CMO(KSCRA),LSCRA,CMO(1))
                FLAG(13) = .FALSE.
                INIOCC = 5
@@ -1254,7 +1255,7 @@ C
                CALL H1OCC(CMO,CMO(KSCRA),1,LSCRA)
                INIOCC = 4
             END IF
-         ELSE IF (INIOCC .EQ. 1 .AND. ADDSTO) THEN
+         ELSE IF (INIOCC .EQ. 1 .AND. DOHUCKEL) THEN
             AUTOCC = .FALSE.
 C           ... otherwise HUCDRV will destroy user input
 C               of initial occupation guess
@@ -2065,7 +2066,7 @@ C     a certain point group symmetry)
          END IF
       GO TO 100
 C
-C *** Option 12 >CC ONL<  Write information to ABACUS on unit LUSIFC
+C *** Option 12 >CC ONL<  CC without RHF (restart from RHF)
   112 CONTINUE
          DOCCSD   = .TRUE.
          IREST    = 1
@@ -2098,10 +2099,10 @@ C           ... DORHF may also be set with .CC
          DODFT    = .TRUE.
          DORHF    = .TRUE.
          FLAG(21) = .TRUE.
+C        ... flag for QCSCF -- quadratically convergent HF or DFT
 c     dodft should be enough but it is sometimes to have also dftrun set.
          DFTRUN = .TRUE.
          DFTADD = .TRUE.
-C        ... flag for QCDFT -- quadratically convergent Hartree-Fock
          LUSUPM   = -1
 C        ... no P-supermatrix for DFT
          NUMRUN = NUMRUN + 1
@@ -2256,7 +2257,7 @@ C
      *            '.SYMMET','.RAS1 H','.RAS1 S','.RAS2 S','.RAS3 S',
      *            '.RAS1 E','.RAS3 E'/
 C
-      NHL1MN = 0
+      NHL1MN = -1
       NHL1MX = -1
       RAS1EL = .FALSE.
 C
@@ -2403,7 +2404,7 @@ C
          NASH(I) = NAS1(I) + NAS2(I) + NAS3(I)
          NASHT   = NASHT   + NASH(I)
  2100 CONTINUE
-      IF (NHL1MX .GT. NHL1MN) THEN
+      IF (NHL1MX .NE. -1 .OR. NHL1MN .NE. -1) THEN
          NAS1T = 0
          DO 2200 I = 1,NSYM
             NAS1T = NAS1T + NAS1(I)
@@ -2670,6 +2671,11 @@ C
          END IF
          MXDIIS = 0
          MAXFCK = 0
+      END IF
+      IF (IOPRHF .NE. 0 .AND. HSROHF) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*) 'SCFINP input error:'//
+     &      ' .OPEN SHELL and .HSROHF both specified'
       END IF
       SET = .TRUE.
       RETURN
@@ -3190,7 +3196,7 @@ C Used from common:
 C
 C INFINP : FLAG,IMOORD,CMAXMO,SUPSYM,THRSSY
 C INFORB : NFRO, NBAS
-C HUCKEL : ADDSTO
+C HUCKEL : DOHUCKEL
 C
 #include <maxorb.h>
 #include <infinp.h>
@@ -3312,7 +3318,7 @@ C          and in column 1 (as some other places).
              IRDMO = 7
           ELSE IF (RWORD .EQ. 'H1DIAG') THEN
              IRDMO = 8
-             ADDSTO = .FALSE.
+             DOHUCKEL = .FALSE.
 C         ... make sure Huckel guess is disabled,
 C             although code in GNRLIN in dalton.F takes care of that
           ELSE IF (RWORD .EQ. 'NEWORB') THEN
@@ -3321,7 +3327,7 @@ C             although code in GNRLIN in dalton.F takes care of that
              IRDMO = 10
           ELSE IF (RWORD .EQ. 'HUCKEL') THEN
              IRDMO = 8
-             IF (.NOT.ADDSTO) THEN
+             IF (.NOT.DOHUCKEL) THEN
                 WRITE (LUPRI,'(/A)') ' INFO: .MOSTART HUCKEL changed'//
      &             ' to H1DIAG because Huckel guess not available.'
              END IF
@@ -3337,7 +3343,7 @@ C             although code in GNRLIN in dalton.F takes care of that
           ELSE
              FLAG(13) = .TRUE.
           END IF
-          IF (IRDMO .NE. 8) ADDSTO = .FALSE.
+          IF (IRDMO .NE. 8) DOHUCKEL = .FALSE.
 C         ... make sure Huckel guess is disabled,
 C             although code in GNRLIN in dalton.F takes care of that
       GO TO 100
@@ -4636,15 +4642,14 @@ C     formulation of NEVPT.
          WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
       ELSE IF ( DORHF ) THEN
          IF (.NOT.DODFT) THEN
-            IF (IOPRHF .EQ. 0) THEN
+            IF (HSROHF) THEN
+               WRITE(IWUNIT,1050) 'Restricted,'//
+     *         ' high spin open shell Hartree-Fock calculation.'
+            ELSE IF (IOPRHF .EQ. 0) THEN
                WRITE(IWUNIT,1050)
      *            'Restricted, closed shell Hartree-Fock calculation.'
                IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *            'Restricted, closed shell Hartree-Fock calculation.'
-            ELSE IF (HSROHF) THEN
-                WRITE(IWUNIT,1050)
-     *         'Restricted, high spin open shell Hartree-Fock'//
-     *         ' calculation.'
             ELSE
                WRITE(IWUNIT,1050)
      *            'Restricted, one open shell Hartree-Fock calculation.'
@@ -4653,7 +4658,10 @@ C     formulation of NEVPT.
      *         'Time-dependent Hartree-Fock calculation '//
      *         '(random phase approximation).'
          ELSE
-            IF (IOPRHF .EQ. 0) THEN
+            IF (HSROHF) THEN
+               WRITE(IWUNIT,1050)
+     *         'Restricted, high spin open shell Kohn-Sham calculation.'
+            ELSE IF (IOPRHF .EQ. 0) THEN
                WRITE(IWUNIT,1050)
      *            'Restricted, closed shell Kohn-Sham calculation.'
                IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
@@ -4733,7 +4741,7 @@ C
       IF (IRDMO .GT. 0 .AND. IRDMO .LE. 10) THEN
 C
          JRDMO = IRDMO
-         IF (ADDSTO) JRDMO = 11
+         IF (DOHUCKEL) JRDMO = 11
 C        ... if HUCKEL use JRDMO = 11 to get correct output
          WRITE (IWUNIT,'(/A/3A)')
      &   ' Initial molecular orbitals are obtained according to',
@@ -4788,11 +4796,17 @@ C     ... get total charge
 C
       IF (MCTYPE .EQ. 2) THEN
          WRITE (IWUNIT,1075) NAS1T, NAS2T, NAS3T
-         IF (NAS1T .GT. 0) WRITE (IWUNIT,1071) NELMN1, NELMX1
+         IF (NAS1T .GT. 0) THEN
+            NHLMN1 = 2*NAS1T - NELMX1
+            NHLMX1 = 2*NAS1T - NELMN1
+            WRITE (IWUNIT,1071) NELMN1,NHLMX1, NELMX1,NHLMN1
+         END IF
          IF (NAS3T .GT. 0) WRITE (IWUNIT,1073) NELMN3, NELMX3
       END IF
  1071 FORMAT(/5X,'Minimum number of electrons in RAS1 :',I4,
-     &       /5X,'Maximum number of electrons in RAS1 :',I4)
+     &           ' (maximum',I4,' holes)',
+     &       /5X,'Maximum number of electrons in RAS1 :',I4,
+     &           ' (minimum',I4,' holes)')
  1073 FORMAT(/5X,'Minimum number of electrons in RAS3 :',I4,
      &       /5X,'Maximum number of electrons in RAS3 :',I4)
  1075 FORMAT(/5X,'Number of active orbitals in RAS1, RAS2, and RAS3 :',
@@ -4823,7 +4837,7 @@ C
       ELSE IF (.NOT.AUTOCC) THEN
          WRITE(IWUNIT,1550) (NRHF(I),I=1,NSYM)
          IF (IOPRHF .NE. 0 .OR. HSROHF) 
-     *            WRITE (IWUNIT,1555) (NASH(I),I=1,NSYM)
+     *      WRITE (IWUNIT,1555) (NASH(I),I=1,NSYM)
          WRITE(IWUNIT,1400) (NSSH(I),I=1,NSYM)
       END IF
       WRITE(IWUNIT,1450) (NORB(I),I=1,NSYM)
@@ -4846,6 +4860,7 @@ C
          END IF
          WRITE(IWUNIT,'()')
          WRITE(IWUNIT,1550) (NRHF(I),I=1,NSYM)
+         IF (HSROHF) WRITE (IWUNIT,1555) (NASH(I),I=1,NSYM)
          IF (IOPRHF .NE. 0) WRITE (IWUNIT,1560) IOPRHF
       END IF
       IF (SUPSYM) THEN

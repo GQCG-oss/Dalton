@@ -1028,25 +1028,24 @@ C
       FAC = XTANG
       IF (BOHR) FAC = 1.0D0
 C
-      IATOM = 1
+      IATOM = 0
       DO 10 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-               ATMARR(IATOM,1) = 1.0D0*NINT(CHARGE(ICENT))
+               IATOM = IATOM + 1
+               ATMARR(IATOM,1) = IZATOM(ICENT)
                ATMARR(IATOM,2) =
      &              FAC*PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                ATMARR(IATOM,3) =
      &              FAC*PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                ATMARR(IATOM,4) =
      &              FAC*PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-               RAD = RADIUS(NINT(CHARGE(ICENT)))
+               RAD = RADIUS( IZATOM(ICENT) )
                IF (RAD .LT. 0.0D0) RAD = 1.0D0
                ATMARR(IATOM,5) = RAD
-               IATOM = IATOM + 1
             END IF
  20      CONTINUE
  10   CONTINUE
-      IATOM = IATOM - 1
       RETURN
       END

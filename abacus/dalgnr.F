@@ -410,32 +410,34 @@ C  /* Deck exeher */
 #include <priunit.h>
 #include <gnrinf.h>
 #include <dftcom.h>
-#include <cbirea.h>
 C
 C     Run Integral section
 C
+      CALL QENTER('HERMIT')
       NEWPRP = .TRUE.
       GRDONE = .FALSE.
 C
-      WRITE(LUPRI, '(A/)') '    Starting in Integral Section -'
-C     The dollar sign in the previous line may not be standard.
-C     It causes the End of Record to be skipped.
-      CALL QENTER('HERMIT')
+      WRITE(LUPRI, '(/A/)') 'Starting in Integral Section -'
 C
 C     If we use the Douglas-Kroll transformation, we first generate
-C     the necessary integrals in the primitive basis
+C     the necessary integrals in the primitive basis.
+C     See further notes in DKINTF routine.
 C
       IF (DKTRAN) THEN
          CALL DKINTF(WORK(IWOFF+2),LMWORK)
-         UNCONT = .FALSE.
          NEWPRP = .TRUE.
       END IF
+C
+C     Now we generate all requested integrals in the contracted
+C     basis (if DKTRAN: including transformation of the Douglas-
+C     Kroll integrals to contracted basis).
+C
       CALL HERCTL(WORK(IWOFF+2),LMWORK)
-C     ... Note: HERCTL sets FTRCTL = .TRUE. if RUNTWO or RUNERI
+C     ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C     for transformation control, old AO/MO files cannot be used
 C     any more.
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'HERMIT')
-      WRITE(LUPRI, '(/A)') '- End of Integral Section'
+      WRITE(LUPRI, '(/A/)') '- End of Integral Section'
       CALL FLSHFO(LUPRI)
       CALL QEXIT('HERMIT')
       RETURN
@@ -455,10 +457,10 @@ C  /* Deck exesir */
 C
 C     Run SIRIUS
 C
-      WRITE(LUPRI, '(A/)') '     Starting Wave Function Section -'
+      CALL QENTER('SIRIUS')
+      WRITE(LUPRI, '(/A/)') 'Starting in Wave Function Section -'
 C     The dollar sign in the previous line may not be standard.
 C     It causes the End of Record to be skipped.
-      CALL QENTER('SIRIUS')
 C
 C     SIRINI defines buffer lengths for I/O and IROW()
 C
@@ -469,10 +471,10 @@ C
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'SIRIUS')
 C
 C     If not numerical differentiation:
-C     We should now have MO's on file, no need for ADDSTO anymore
+C     We should now have MO's on file, no need for DOHUCKEL anymore
 C
       IF (.NOT.NMWALK) THEN
-         ADDSTO = .FALSE.
+         DOHUCKEL = .FALSE.
       END IF
 C
 C     Several files left open, have to be closed manually
@@ -487,8 +489,8 @@ C
       CALL GPCLOSE(LUIT3,'DELETE')
       CALL GPCLOSE(LUIT5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
-      WRITE(LUPRI, '(/A)') '- End of Wave Function Section'
       IF (.NOT. USRSCR) IFTHRS = 10
+      WRITE(LUPRI, '(/A/)') '- End of Wave Function Section'
       IF (ICONV .LT. 1 .AND. .NOT.WLKREJ) THEN
          WRITE(LUPRI, '(/A)')
      &      '- DALTON aborted because wave function not converged!'
@@ -509,10 +511,10 @@ C  /* Deck execc */
 C
 C     Run Coupled Cluster program
 C
-      WRITE(LUPRI, '(A/)') '     Starting Coupled Cluster -'
+      CALL QENTER('CC')
+      WRITE(LUPRI, '(/A/)') 'Starting Coupled Cluster -'
 C     The dollar sign in the previous line may not be standard.
 C     It causes the End of Record to be skipped.
-      CALL QENTER('CC')
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(IWOFF+2),LMWORK)
 #if defined (VAR_MPI) || defined (VAR_PVM)
@@ -523,7 +525,7 @@ C     It causes the End of Record to be skipped.
       END IF
       CALL CC_DRV(WORK(IWOFF+2),LMWORK)
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'CC    ')
-      WRITE(LUPRI, '(/A)') '- End of Coupled Cluster'
+      WRITE(LUPRI, '(/A/)') '- End of Coupled Cluster'
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC')
       RETURN
@@ -544,8 +546,8 @@ C
 C     Run ABACUS
 C
       IF (SKIPAB) RETURN
-      WRITE(LUPRI, '(A/)') '      Starting Static Property Section -'
       CALL QENTER('ABACUS')
+      WRITE(LUPRI, '(/A/)') 'Starting in Static Property Section -'
 C
       CALL ABACTL(WORK(IWOFF + 2),LMWORK)
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'ABACUS')
@@ -553,8 +555,8 @@ C
 C     Several files left open, have to be closed manually.
 C
       NEWPRP = .TRUE.
-      WRITE(LUPRI, '(/A)') '- End of Static Property Section'
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
+      WRITE(LUPRI, '(/A/)') '- End of Static Property Section'
       CALL FLSHFO(LUPRI)
       CALL QEXIT('ABACUS')
       RETURN
@@ -585,8 +587,8 @@ C  /* Deck exedrv */
       DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
-      IWOFF = 0
       CALL QENTER('DALTON')
+      IWOFF = 0
       CALL GETTIM(CSTR,WSTR)
       WLKREJ = .FALSE.
       IF (OPTNEW) THEN
@@ -1083,7 +1085,7 @@ C         been calculated.
 C
 C     Initialize /HUCKEL/
 C
-      ADDSTO = .TRUE.
+      DOHUCKEL = .TRUE.
       HUCCNT = 2.0D0
       CALL IZERO(NHUCAO,8)
       CALL IZERO(IHUCPT,MXSHEL)
@@ -1281,24 +1283,10 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #endif
       CALL MOHEAD
-      IF (NEWTRA) THEN
-         WRITE(LUPRI,'(4X,A)')
-     &     '"New" integral transformation used'
-      ELSE IF (.NOT. DIRCAL) THEN
-         WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
-     &     ' (limited to max 255 basis functions)'
-      END IF
-      IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
-     &     'Vector length used in this calculation (assuming vector'//
-     &     'machine)',IVECLN
+      IF (DKTRAN) WRITE (LUPRI,'(3X,A)') 
+     &   ' The second order Douglas-Kroll transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(3X,A)')
      &     ' Integral sections will be executed'
-      IF (RNSIRI) WRITE (LUPRI,'(3X,A)')
-     &     ' Wave function sections will be executed'
-      IF (RNRESP) WRITE (LUPRI,'(3X,A)')
-     &     ' Dynamic molecular property section will be executed'
-      IF (RNABAC) WRITE (LUPRI,'(3X,A)')
-     &     ' Static molecular property section will be executed'
       IF (RUNERI) THEN
          WRITE (LUPRI,'(3X,A)')
      &     ' Integrals are calculated using ERI '//
@@ -1310,14 +1298,24 @@ C     ... default print level for statistics /hjaaj apr 2000
      & ' INFO: NO! ERI is only implemented for direct and not parallel'
          END IF
       END IF
-      IF (NMWALK) THEN
-         WRITE (LUPRI,'(3X,A)') 
-     &                       'Numerical derivatives will be calculated'
+      IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
+     &     'Vector length used in direct Fock matrix calculations '//
+     &     '(assuming vector machine)',IVECLN
+      IF (NEWTRA) THEN
+         WRITE(LUPRI,'(4X,A)')
+     &     '"New" integral transformation used'
+      ELSE IF (.NOT. DIRCAL) THEN
+         WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
+     &     ' (limited to max 255 basis functions)'
       END IF
-      IF (DKTRAN) THEN
-         WRITE (LUPRI,'(3X,A)') 
-     &        ' The Douglas-Kroll transformation is applied'
-      END IF
+      IF (RNSIRI) WRITE (LUPRI,'(3X,A)')
+     &     ' Wave function sections will be executed'
+      IF (RNRESP) WRITE (LUPRI,'(3X,A)')
+     &     ' Dynamic molecular property section will be executed'
+      IF (RNABAC) WRITE (LUPRI,'(3X,A)')
+     &     ' Static molecular property section will be executed'
+      IF (NMWALK) WRITE (LUPRI,'(3X,A)') 
+     &   'Numerical derivatives will be calculated'
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          READ (LUCMD,'(A7)') WORD
@@ -1389,7 +1387,7 @@ C         if reading input from a terminal
          IF (WORD .EQ. '.MOSTAR') THEN
             READ (LUCMD,'(A7)') WORD
             IF (WORD(1:6) .NE. 'HUCKEL' .AND. WORD(2:7) .NE. 'HUCKEL')
-     &         ADDSTO = .FALSE.
+     &         DOHUCKEL = .FALSE.
          ELSE IF (WORD(1:1) .EQ. '*') THEN
             GOTO 8000
          ELSE
