@@ -14,15 +14,6 @@ pre: $(F_CPPS)
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > gp.ftnchek
 
-F_CPPS = $(F_OBJS:.o=.i)
-
-F_CPPS = $(F_OBJS:.o=.i)
-
-pre: $(F_CPPS)
-
-ftnchek: pre
-	ftnchek $(CHEKFLAGS) *.i > gp.ftnchek
-
 all: libgp.a
 
 libgp.a: $(F_OBJS)
