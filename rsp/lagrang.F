@@ -42,7 +42,7 @@ Cbugfix: too little was allocated for KGP2
 C===========================================================================
 #endif
 C  /* Deck lagran */
-      SUBROUTINE LAGRAN(WORD,FC,CMO,UDV,PV,XINDX,WRK,LWRK)
+      SUBROUTINE LAGRAN(WORD,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)
 C
 C 18-AUG-1991
 C
@@ -50,7 +50,7 @@ C Called from GETGPV when label(5:8) = 'LAGR'
 C
 #include "implicit.h"
 #include "dummy.h"
-      DIMENSION CMO(*),UDV(NASHT,*),FC(*),PV(*),XINDX(*),WRK(*)
+      DIMENSION CMO(*),UDV(NASHT,*),FC(*),FV(*),PV(*),XINDX(*),WRK(*)
       CHARACTER*8 WORD
 C-- common blocks:
 #include "maxorb.h"
@@ -62,6 +62,7 @@ C-- common blocks:
 #include "wrkrsp.h"
 #include "infpri.h"
 #include "infinp.h"
+#include <dftcom.h>
 C
       PARAMETER (DHALF=0.5D0,ONE=1.0D0,DMONE=-1.0D0)
 C
@@ -110,13 +111,21 @@ C
          KWRK1  = KH2X   + NORBT * NORBT
          LWRK1  = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('LAGRAN',KWRK1-1,LWRK)
-         CALL RSPOLI(1,0,UDV,WRK(KCREF),FC,DUMMY,PV,DUMMY,
+         IF ((DFTADD.OR.HSROHF).AND.TRPLET) THEN
+            CALL DAXPY(NNORBT,ONE,FC,1,FV,1)
+            CALL DSCAL(NNORBT,DMONE,FV,1)
+         END IF
+         CALL RSPOLI(1,0,UDV,WRK(KCREF),FC,FV,PV,DUMMY,
      *            DUMMY,DUMMY, DUMMY,DUMMY,WRK(KFVTD),
      *            WRK(KQATD),WRK(KQBTD),WRK(KGP),
      *            WRK(KH2),WRK(KH2X),XINDX,CMO,WRK(KWRK1),LWRK1)
 C        CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,FCONE,
 C    *                  FVONE,QAONE,QBONE,FVTD,QATD,QBTD,EVECS,
 C    *                  H2,H2X,XINDX,CMO,WRK,LWRK)
+         IF ((DFTADD.OR.HSROHF).AND.TRPLET) THEN
+            CALL DAXPY(NNORBT,ONE,FC,1,FV,1)
+            CALL DSCAL(NNORBT,DMONE,FV,1)
+         END IF
 C
       END IF
       IF (IPRRSP.GT.120) THEN
@@ -264,7 +273,7 @@ C
       WRITE (LUPRI,'(//A,I3,/2A)')
      & ' RSPLAN -- linear response calculation for symmetry',KSYMOP,
      & ' RSPLAN -- operator label : ',LABEL
-      CALL GETGPV(LABEL,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK(KGP),LWRK1)
+      CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,WRK(KGP),LWRK1)
       IF (IPRRSP.GT.120) THEN
          WRITE(LUPRI,'(/A)') ' RSPLAN: LAGRANGIAN VECTOR '
          CALL OUTPUT(WRK(KGP),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
@@ -282,7 +291,7 @@ C
       CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *            .TRUE.,LABEL,BLANK,WRK(KGP),WRK(KREDGP),
      *            WRK(KREDE),WRK(KREDS),
-     *            WRK(KIBTYP),WRK(KRESID),WRK(KEIVAL),WRK(KEIVEC),
+     *            WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *            XINDX,WRK(KWRK1),LWRK1)
 C     CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *            LINEQ,GP,REDGP,REDE,REDS,
@@ -502,7 +511,7 @@ C                   XINDX,WRK,KFREE,LFREE)
      *              'RSPESR: Lagrangian vector before product'
                   CALL OUTPUT(WRK(KLAGR),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                END IF
-               CALL GETGPV(LBESRT(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,
+               CALL GETGPV(LBESRT(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,
      *                     ANTSYM,WRK(KGP),LWRK1 )
 C              CALL GETGPV(LABELOP,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
                IF (IPRRSP.GT.120) THEN

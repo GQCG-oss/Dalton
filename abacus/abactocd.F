@@ -291,7 +291,7 @@ C
             KSYMOP = ISYM
             TRPLET = .FALSE.
 C
-            CALL GETGPV(LABEL1,DUMMY,WORK(KCMO),WORK(KUDV),
+            CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
      &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
             REWIND LUGDVE
             CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
@@ -331,7 +331,7 @@ C
 C                 Find right hand side for left operator
 C                 ========================================
 C
-                  CALL GETGPV(LABEL2,DUMMY,WORK(KCMO),WORK(KUDV),
+                  CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
      &                       WORK(KPVX),WORK(KXINDX),ANTSYM,
      &                       WORK(KWRKG1),LWRKG1)
 C

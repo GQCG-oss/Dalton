@@ -3664,6 +3664,7 @@ C        read and unpack DV
             WRITE(LUPRI,'(/A)')
      &           ' **** RSPMC **** REFERENCE CONFIGURATION'
             CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
+            IF (NCONRF.EQ.1) READ(LUSIFC)
          ELSE
             READ (LUSIFC)
          END IF

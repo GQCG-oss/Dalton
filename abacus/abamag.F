@@ -1775,7 +1775,7 @@ C
                ICOOR2 = MOD(ICOOR,3)
             END IF
 C
-            CALL GETGPV(LABEL(1),DUMMY,CMO,UDV,PV,XINDX,
+            CALL GETGPV(LABEL(1),DUMMY,DUMMY,CMO,UDV,PV,XINDX,
      &                  ANTSYM,WORK,LWORK)
 C
             TRPLAB(IREC) = LABEL(1)

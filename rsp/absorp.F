@@ -380,6 +380,7 @@ C
 #include <absorp.h>
 #include <inftap.h>
 #include <ibndxdef.h>
+#include <dummy.h>
       PARAMETER (D0 = 0.0D0)
 C
 C PURPOSE:
@@ -401,7 +402,8 @@ C
 C
 C Construct the reduced gradient with trial vectors from  LURSP3
 C
-      CALL GETGPV(LABEL,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK(KFREE),LFREE)
+      CALL GETGPV(LABEL,FC,DUMMY,CMO,UDV,PV,XINDX,ANTSYM,
+     &   WRK(KFREE),LFREE)
       CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
       CALL REWSPL(LURSP3)
       KRSP3 = 0
@@ -643,6 +645,7 @@ C
 #include <absorp.h>
 #include <inftap.h>
 #include <ibndxdef.h>
+#include <dummy.h>
 C
       LOGICAL CONVERGED
       CHARACTER*8 LABEL
@@ -664,7 +667,8 @@ C
 C
 C     Initialize residual vector
 C
-         CALL GETGPV(LABEL,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK(KFREE),LFREE)
+         CALL GETGPV(LABEL,FC,DUMMY,CMO,UDV,PV,XINDX,ANTSYM,
+     &      WRK(KFREE),LFREE)
          CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KRR),1)
          CALL DZERO(WRK(KRI),KZYVAR)
 C
@@ -834,7 +838,8 @@ C
 C
 C     Construct the right-hand-side of equations (i) and (ii)
 C
-         CALL GETGPV(LABEL,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK(KFREE),LFREE)
+         CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
+     &      WRK(KFREE),LFREE)
          CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD1),1)
          CALL DZERO(WRK(KGD2),KZYVAR)
 C

@@ -2714,6 +2714,7 @@ C
 C
       DIMENSION ISNDX(3),DET(2)
 C
+      CALL QENTER('RSPRED')
       IF (KZYRED.GT.MAXRM) THEN
          WRITE(LUPRI,'(//A/A,I5,/A,I5)')
      *   ' >>> ERROR IN RSPRED >>>',
@@ -3120,6 +3121,7 @@ C
 C *** End of subroutine RSPRED
 C
  2000 CONTINUE
+      CALL QEXIT('RSPRED')
       RETURN
       END
 C  /* Deck ppst */

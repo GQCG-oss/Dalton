@@ -1667,6 +1667,7 @@ C
 #include <mxcent.h>
 #include <gtensor.h>
 #include <elweak.h>
+#include <dummy.h>
 C
       DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       DIMENSION SOPR(NFREQ,NOP,*)
@@ -1699,7 +1700,7 @@ C
          ELSE
             JST = IOP
          END IF
-         CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
+         CALL GETGPV(LBLLR(KSYMOP,IOP),FC,DUMMY,CMO,UDV,PV,XINDX,ANTSYM,
      *               WRK(KGP),LWRKGP)
          DO 200 IFREQ = 1,NFREQ
             IFRSOL = (IOP-1)*NFREQ*2 + (IFREQ-1)*2 + 1
@@ -1746,8 +1747,8 @@ C
                JST = IOP
             END IF
             IF (SOPW4) THEN
-               CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
-     *                     WRK(KGP),LWRKGP)
+               CALL GETGPV(LBLLR(KSYMOP,IOP),FC,DUMMY,CMO,UDV,PV,XINDX,
+     &            ANTSYM,WRK(KGP),LWRKGP)
                CALL SOPDW4(WRK(KGP),WRK(KISOL),WRK(KJSOL),FREQ(IFREQ))
             END IF
 c ach
@@ -1756,8 +1757,8 @@ c ach
                WRITE(LUPRI,'(5A,1P,D20.12)')
      * '@ -<< ',LBLLR(KSYMOP,IOP),' ; ',LBLLR(KSYMOP,JOP),' >> =',XPROP
                IF (SOPW4) THEN
-                  CALL GETGPV(LBLLR(KSYMOP,JOP),FC,CMO,UDV,PV,XINDX,
-     *                        ANTSYM,WRK(KGP),LWRKGP)
+                  CALL GETGPV(LBLLR(KSYMOP,JOP),FC,DUMMY,CMO,UDV,PV,
+     &                        XINDX,ANTSYM,WRK(KGP),LWRKGP)
                   W4TERM = DDOT(KZYVAR,WRK(KGP),1,WRK(KISOL),1)
                   WRITE(LUPRI,'(A,1P,D20.12)')
      &            '@ SOPPA W4(E) term  ',W4TERM
@@ -2581,6 +2582,7 @@ C
       DATA LAB123/'********','********','RESPONPP'/
       DATA RESTAR/'RESTART '/
 C
+      CALL QENTER('RSPCTL')
       IF (IPRRSP .GE. 2) THEN
       IF (LINEQ) THEN
          WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
@@ -3079,6 +3081,7 @@ C
 C
 C     END OF RSPCTL
 C
+      CALL QEXIT('RSPCTL')
       RETURN
       END
 C  /* Deck rspdia */
@@ -3390,7 +3393,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          IF ( NGPPP(KSYMOP) .GT. 0 ) THEN
             JOP = 1
             DO 600 IOP = 1,NGPPP(KSYMOP)
-               CALL GETGPV(LBLPP(KSYMOP,IOP),FC,CMO,UDV,PV,
+               CALL GETGPV(LBLPP(KSYMOP,IOP),FC,FV,CMO,UDV,PV,
      *                     XINDX,ANTSYM,WRK(KWRK2),LWRK2 )
                IF (LBLPP(KSYMOP,IOP)(1:3) .EQ. 'HDO') THEN
                   IF (REFST) THEN
@@ -3670,7 +3673,7 @@ C
      &   ' RSPLR -- linear response calculation for symmetry',KSYMOP,
      &   ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
      &   ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
-         CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
+         CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      *               WRK(KGD),LWRK1)
          DNORM = DNRM2(KZYVAR,WRK(KGD),1)
          IF (IPRRSP .GT. 30) THEN
@@ -5229,7 +5232,7 @@ C
 C     Define variables that depend on symmetry
 C
       DO IOPA = 1, NGPLR(KSYMOP)
-         CALL GETGPV(LBLLR(KSYMOP,IOPA),FC,CMO,UDV,PV,XINDX,
+         CALL GETGPV(LBLLR(KSYMOP,IOPA),FC,DUMMY,CMO,UDV,PV,XINDX,
      *               ANTSYM,WRK(KVECA),LWRK)
 C
 C     Loop over solution vectors

@@ -3555,7 +3555,7 @@ C
      &                        WORK,LWORK,IPRALL)
                END IF
                IMGLAB(IREC) = LABINT(ISCOOR)
-               CALL GETGPV(LABINT(ISCOOR),DUMMY,CMO,UDV,PVX,XINDX,
+               CALL GETGPV(LABINT(ISCOOR),DUMMY,DUMMY,CMO,UDV,PVX,XINDX,
      &                     ANTSYM,WORK,LWORK)
 C
 C              Scaled by -2 in accordance with ABARHS

@@ -554,7 +554,7 @@ C             ISYM = Reference state symmetry times excited state symmetry.
 C
               IF (KSYM.EQ.ISYM) THEN
                 KSYMOP = ISYM
-                CALL GETGPV(LABEL,DUMMY,WORK(KCMO),WORK(KUDV),
+                CALL GETGPV(LABEL,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
      &               WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
                 IF (IPREXC.GT.3) THEN
                   WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL

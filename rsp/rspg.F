@@ -1,3 +1,37 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+#include "single.h"
 C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
 #include <implicit.h>
@@ -11,6 +45,9 @@ C /* Deck gdrv */
 #include <inflin.h>
 #include <dummy.h>
 #include <inftap.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <gtensor.h>
       INTEGER KFREE, LFREE, LWRK1, KWRK1
       INTEGER KINDX, KCMO, KUDV, KPVX, KFOCK, KFC, KFV, KFCAC, KH2AC
       INTEGER ISYM
@@ -25,6 +62,8 @@ C
       LFREE=LWORK
       CALL MEMGET('REAL',KINDX,LCINDX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCREF,NCREF,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP,NNASHX,WORK,KFREE,LFREE)   
       CALL MEMGET('REAL',KUDV,N2ASHX,WORK,KFREE,LFREE)
       IF (RSPCI) THEN
          CALL MEMGET('REAL',KPVX,0,WORK,KFREE,LFREE)
@@ -41,33 +80,29 @@ C
       CALL MEMGET('REAL',KH2AC,NNASHX*NNASHX,WORK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1,LWRK1,WORK,KFREE,LFREE)
 C
-C Get wave function , density
-C
-      IF (LUSIFC.LT.0) CALL GPOPEN(
-     &   LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,.FALSE. 
-     &   )
-      REWIND(LUSIFC)
-      CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
-      READ(LUSIFC)
-      READ(LUSIFC)
-      CALL READT(LUSIFC,NCMOT,WORK(KCMO))
-      CALL READT(LUSIFC,N2ASHX,WORK(KUDV))
-      CALL GETCIX(WORK(KINDX),LSYMRF,LSYMRF,WORK(KWRK1),LWRK1,0)
-C
-C Calculate first-order properties
-C
-      CALL GSET(WORK(KCMO),WORK(KUDV),WORK(KINDX),WORK(KWRK1),LWRK1)
-      CALL MEMCHK('GDRV<-GSET',WORK,1)
-C
 C Read interface information
 C
       CALL RSPMC(WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KFOCK),WORK(KFC),
      *           WORK(KFV),WORK(KFCAC),WORK(KH2AC),WORK(KINDX),
      *           WORK(KWRK1),LWRK1)
 C
+      IF (.NOT.TDHF .AND. .NOT.RSPCI) THEN
+         CALL GETREF(WORK(KCREF),NCREF)
+         CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WORK(KCREF),WORK(KCREF),
+     &      WORK(KUDV),WORK(KPVX),0,0,.FALSE.,.FALSE.,WORK(KINDX),
+     &      WORK,KWRK1,LWRK1)
+         CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WORK(KCREF),WORK(KCREF),
+     &     WORK(KUDV),WORK(KPVX+LPVMAT),1,1,.FALSE.,.FALSE.,WORK(KINDX),
+     &      WORK,KWRK1,LWRK1)
+      END IF
+C
+C Calculate first-order properties
+C
+      CALL GSET(WORK(KCMO),WORK(KUDV),WORK(KINDX),WORK(KWRK1),LWRK1)
+      CALL MEMCHK('GDRV<-GSET',WORK,1)
+C
 C Calculate second-order properties
 C
-cF90  DO ISYM=1,NSYM
       DO 100 ISYM=1,NSYM
          KSYMOP = ISYM
 C
@@ -76,20 +111,19 @@ C
          CALL RSPVAR(WORK(KUDV),WORK(KFOCK),WORK(KFC),WORK(KFV),
      &      WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1)
          CALL MEMCHK('GDRV<-RSPVAR',WORK,1)
-cF90     IF (KZVAR.EQ.0) CYCLE
          IF (KZVAR.EQ.0) GO TO 100
 C
 C Solve linear response equations
 C
          IF (NGPLR(ISYM).GT.0) THEN
-
             CALL RSPLR(
      &      WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KFC),WORK(KFV),
      &      WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1
      &      )
             CALL MEMCHK('GDRV<-RSPLR',WORK,1)
+            CALL GSET2(WORK(KCMO),WORK(KUDV),WORK(KPV),WORK(KXINDX),
+     &         WORK(KWRK1),LWRK1)
          END IF
-cF90  END DO
   100 END DO
 C
       CALL GPRINT(WORK(KWRK1),LWRK1)
@@ -101,6 +135,71 @@ C
       CALL MEMREL('GDRV',WORK,1,1,KFREE,LFREE)
       CALL QEXIT('GDRV')
       END
+C
+C Deck /* gset2 */
+C
+      SUBROUTINE GSET2(CMO,UDV,PV,XINDX,WORK,LWORK)
+      IMPLICIT NONE
+      REAL*8 CMO(*), UDV(*), PV(*), XINDX(*), WORK(*)
+      INTEGER LWORK
+C
+      REAL*8 DDOT
+      EXTERNAL DDOT
+#include <gtensor.h>
+#include <qrinf.h>
+#include <inforb.h>
+#include <inflr.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <symmet.h>
+#include <wrkrsp.h>
+      INTEGER KFREE, LFREE
+      LOGICAL LDUMMY, FOUND, CONV
+      INTEGER I, J, KLEN, LU, KANG, ISYM, IPRP, ISO
+      REAL*8 RESID, ANTSYM, D0
+      PARAMETER (D0=0.0D0)
+      CHARACTER*8 BLANK
+      DATA BLANK/'        '/
+      CALL QENTER('GSET2')
+      LU=-1
+      CALL GPOPEN(LU,'RSPVEC','OLD','SEQUENTIAL','UNFORMATTED',0,LDUMMY)
+      REWIND(LU)
+      KFREE=1
+      LFREE=LWORK
+      CALL MEMGET('REAL',KANG,KZYVAR,WORK,KFREE,LFREE)
+      DO IPRP=1,NGPLR(KSYMOP)
+         DO I=1,3
+            IF (ANGLBL(I).EQ.LBLLR(KSYMOP,IPRP)) THEN
+               CALL REARSP(LU,KLEN,WORK(KANG),ANGLBL(I),BLANK,
+     &            D0,DUMMY,KSYMOP, IDUMMY, THCLR,FOUND,CONV,ANTSYM)
+               IF (KLEN.NE.KZYVAR) THEN
+                  CALL QUIT('GSET2:Serious error reading RSPVEC')
+               END IF
+               IF (FOUND .AND. CONV) THEN
+                  DO ISO=1,NSO
+                     DO J=1,3
+                        IF (KSYMOP.EQ.(ISYMAX(J,2)+1)) THEN
+                           CALL GETGPV(
+     &                     SOLBL(J,ISO),DUMMY,DUMMY,CMO,UDV,PV,
+     &                     XINDX,ANTSYM,WORK(KFREE),LFREE
+     &                     )
+                           GOZSO(I,J,ISO) = DDOT(
+     &                     KLEN,WORK(KANG),1,WORK(KFREE),1)
+                           GOZSO(I,J,ISO)=GOZSO(I,J,ISO)/REFSPIN
+                        END IF
+                     END DO
+                  END DO
+               END IF
+            END IF
+         END DO
+      END DO
+      CALL GPCLOSE(LU,'KEEP')
+      CALL MEMREL('GSET2',WORK,KANG,KANG,KFREE,LFREE)
+      CALL QEXIT('GSET2')
+      END
+
 C /* Deck ginit */
       SUBROUTINE GINIT
 #include <implicit.h>
@@ -110,7 +209,6 @@ C /* Deck ginit */
 #include <infinp.h>
 #include <inflr.h>
 #include "infave.h"
-      CHARACTER*8 ANGMOM(3), SPNORB(3,2)
       LOGICAL FNDLB2
       EXTERNAL FNDLB2
       LQRGP = .TRUE.
@@ -123,99 +221,105 @@ C 2. If either is specified in input only that one is calculated
 C 3. If  'MEAN FIELD' or 'SCALED' is specified the two-electron part is replaced
 C
       IF (ECC) THEN
-         ANGMOM(1) = 'XANGECC '
-         ANGMOM(2) = 'YANGECC '
-         ANGMOM(3) = 'ZANGECC '
+         ANGLBL(1) = 'XANGECC '
+         ANGLBL(2) = 'YANGECC '
+         ANGLBL(3) = 'ZANGECC '
 C
 C Make RSPSYM calculate dipole integrals if mising
 C
          I=INDPRP('XDIPLEN ')
       ELSE
-         ANGMOM(1) = 'XANGMOM '
-         ANGMOM(2) = 'YANGMOM '
-         ANGMOM(3) = 'ZANGMOM '
+         ANGLBL(1) = 'XANGMOM '
+         ANGLBL(2) = 'YANGMOM '
+         ANGLBL(3) = 'ZANGMOM '
       END IF
       IF (ADDSO) THEN
          IF (MNFSO) THEN
-            SPNORB(1,1) = 'X1MNF-SO' 
-            SPNORB(2,1) = 'Y1MNF-SO' 
-            SPNORB(3,1) = 'Z1MNF-SO'
+            SOLBL(1,1) = 'X1MNF-SO' 
+            SOLBL(2,1) = 'Y1MNF-SO' 
+            SOLBL(3,1) = 'Z1MNF-SO'
          ELSE IF (SCALED_CHARGES) THEN
-            SPNORB(1,1) = 'X1SPNSCA'
-            SPNORB(2,1) = 'Y1SPNSCA'
-            SPNORB(3,1) = 'Z1SPNSCA'
+            SOLBL(1,1) = 'X1SPNSCA'
+            SOLBL(2,1) = 'Y1SPNSCA'
+            SOLBL(3,1) = 'Z1SPNSCA'
          ELSE
-            SPNORB(1,1) = 'X SPNORB'
-            SPNORB(2,1) = 'Y SPNORB'
-            SPNORB(3,1) = 'Z SPNORB'
+            SOLBL(1,1) = 'X SPNORB'
+            SOLBL(2,1) = 'Y SPNORB'
+            SOLBL(3,1) = 'Z SPNORB'
          END IF
       ELSE
          IF (DOOZSO1) THEN
-            SPNORB(1,1) = 'X1SPNORB'
-            SPNORB(2,1) = 'Y1SPNORB'
-            SPNORB(3,1) = 'Z1SPNORB'
+            SOLBL(1,1) = 'X1SPNORB'
+            SOLBL(2,1) = 'Y1SPNORB'
+            SOLBL(3,1) = 'Z1SPNORB'
          END IF
          IF (DOOZSO2) THEN
             IF (MNFSO) THEN
-               SPNORB(1,2) = 'X1MNF-SO' ! contains x1spnorb - subtracted
-               SPNORB(2,2) = 'Y1MNF-SO' ! in hso
-               SPNORB(3,2) = 'Z1MNF-SO'
+               SOLBL(1,2) = 'X1MNF-SO' ! contains x1spnorb - subtracted
+               SOLBL(2,2) = 'Y1MNF-SO' ! in hso
+               SOLBL(3,2) = 'Z1MNF-SO'
             ELSE IF (SCALED_CHARGES) THEN
-               SPNORB(1,2) = 'X1SPNSCA'
-               SPNORB(2,2) = 'Y1SPNSCA'
-               SPNORB(3,2) = 'Z1SPNSCA'
+               SOLBL(1,2) = 'X1SPNSCA'
+               SOLBL(2,2) = 'Y1SPNSCA'
+               SOLBL(3,2) = 'Z1SPNSCA'
+            ELSE IF (SPLITSO2) THEN
+               SOLBL(1,2) = 'X2SPNOWN'
+               SOLBL(2,2) = 'Y2SPNOWN'
+               SOLBL(3,2) = 'Z2SPNOWN'
+               SOLBL(1,3) = 'X2SPNOTH'
+               SOLBL(2,3) = 'Y2SPNOTH'
+               SOLBL(3,3) = 'Z2SPNOTH'
             ELSE
-               SPNORB(1,2) = 'X2SPNORB'
-               SPNORB(2,2) = 'Y2SPNORB'
-               SPNORB(3,2) = 'Z2SPNORB'
+               SOLBL(1,2) = 'X2SPNORB'
+               SOLBL(2,2) = 'Y2SPNORB'
+               SOLBL(3,2) = 'Z2SPNORB'
             END IF
          END IF
       END IF
       CALL DZERO(GTENSOR,9)
       CALL DZERO(GC1,9)
       CALL DZERO(GC2,9)
-      CALL DZERO(GOZSO1,9)
-      CALL DZERO(GOZSO2,9)
-      CALL DZERO(GOZSO,9)
+      CALL DZERO(GOZSO,9*NSO)
 C
 C Orbital-Zeeman + Spin-orbit contribution
 C
       DO IX=1,3
-         LLROP( INDPRP(ANGMOM(IX))) = .TRUE.
+         LLROP( INDPRP(ANGLBL(IX))) = .TRUE.
       END DO
       NSO=0
       IF (DOOZSO1) NSO=NSO+1
       IF (DOOZSO2) NSO=NSO+1
+      IF (SPLITSO2) NSO=NSO+1
       IF (ADDSO) NSO=1
       DO IX=1,3
          DO J=1,NSO
-            LLROP( INDPRP(SPNORB(IX,J))) = .TRUE.
-            LRRANK( INDPRP(SPNORB(IX,J))) = 1
+            LLROP( INDPRP(SOLBL(IX,J))) = .FALSE.
+            LRRANK( INDPRP(SOLBL(IX,J))) = 1
          END DO
       END DO
       IF (.NOT.G_ALL) THEN
          IF (INDEX(G_LINE,"X").GT.0) THEN
-            LLROP(INDPRP(ANGMOM(1))) = .FALSE.
-            LRRANK(INDPRP(ANGMOM(1))) = 0
+            LLROP(INDPRP(ANGLBL(1))) = .FALSE.
+            LRRANK(INDPRP(ANGLBL(1))) = 0
             DO J=1,NSO
-               LLROP( INDPRP(SPNORB(1,J))) = .FALSE.
-               LRRANK( INDPRP(SPNORB(1,J))) = 0
+C              LLROP( INDPRP(SOLBL(1,J))) = .FALSE.
+C              LRRANK( INDPRP(SOLBL(1,J))) = 0
             END DO
          END IF
          IF (INDEX(G_LINE,"Y").GT.0) THEN
-            LLROP(INDPRP(ANGMOM(2))) = .FALSE.
-            LRRANK(INDPRP(ANGMOM(2))) = 0
+            LLROP(INDPRP(ANGLBL(2))) = .FALSE.
+            LRRANK(INDPRP(ANGLBL(2))) = 0
             DO J=1,NSO
-               LLROP( INDPRP(SPNORB(2,J))) = .FALSE.
-               LRRANK( INDPRP(SPNORB(2,J))) = 0
+C              LLROP( INDPRP(SOLBL(2,J))) = .FALSE.
+C              LRRANK( INDPRP(SOLBL(2,J))) = 0
             END DO
          END IF
          IF (INDEX(G_LINE,"Z").GT.0) THEN
-            LLROP(INDPRP(ANGMOM(3))) = .FALSE.
-            LRRANK(INDPRP(ANGMOM(3))) = 0
+            LLROP(INDPRP(ANGLBL(3))) = .FALSE.
+            LRRANK(INDPRP(ANGLBL(3))) = 0
             DO J=1,NSO
-               LLROP( INDPRP(SPNORB(3,J))) = .FALSE.
-               LRRANK( INDPRP(SPNORB(3,J))) = 0
+C              LLROP( INDPRP(SOLBL(3,J))) = .FALSE.
+C              LRRANK( INDPRP(SOLBL(3,J))) = 0
             END DO
          END IF
       END IF
@@ -270,57 +374,65 @@ C
       CALL QEXIT('GSET')
       END
 C
-      SUBROUTINE SETECC
+      SUBROUTINE SETECC(WORK,KFREE,LFREE)
 #include <implicit.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <gtensor.h>
 #include <priunit.h>
-      DIMENSION D(N2BASX), P(N2BASX)
-c      REAL(DOUBLE) DDOT
-      EXTERNAL DDOT
+      DIMENSION WORK(*)
+      INTEGER KFREE, LFREE  
       CHARACTER*8 RTNLBL(2)
-      INTEGER N
+      INTEGER N, KD, KP
+C       
+      KFRSAV = KFREE  
+      LFRSAV = LFREE 
+      CALL MEMGET('REAL',KD,N2BASX,WORK,KFREE,LFREE)      
+      CALL MEMGET('REAL',KP,N2BASX,WORK,KFREE,LFREE)  
 C
 C Get total density
 C
-      CALL GET_TD(D)
+      CALL GET_TD(WORK(KD),WORK,KFREE,LFREE)
 C
 C Get dipole
 C
-      CALL GET_P('XDIPLEN ',P)
-      ECCORG(1)=DDOT(N2BASX,P,1,D,1)
-      CALL GET_P('YDIPLEN ',P)
-      ECCORG(2)=DDOT(N2BASX,P,1,D,1)
-      CALL GET_P('ZDIPLEN ',P)
-      ECCORG(3)=DDOT(N2BASX,P,1,D,1)
+      CALL GET_P('XDIPLEN ',WORK(KP))
+      ECCORG(1)=DDOT(N2BASX,WORK(KP),1,WORK(KD),1)
+      CALL GET_P('YDIPLEN ',WORK(KP))
+      ECCORG(2)=DDOT(N2BASX,WORK(KP),1,WORK(KD),1)
+      CALL GET_P('ZDIPLEN ',WORK(KP))
+      ECCORG(3)=DDOT(N2BASX,WORK(KP),1,WORK(KD),1)
       N=2*NISHT+NASHT
       CALL HEADER('OUTPUT FROM SETECC',2)
-         WRITE(LUPRI,'(/A,I5    )') '   Number of electrons:',N
-         WRITE(LUPRI,'(A,3F10.6)') '   Dipole moment  :',ECCORG
-         ECCORG(1)=ECCORG(1)/N
-         ECCORG(2)=ECCORG(2)/N
-         ECCORG(3)=ECCORG(3)/N
-         WRITE(LUPRI,'(A,3F10.6)') '   Charge centroid:',ECCORG
+      WRITE(LUPRI,'(/A,I5    )') '   Number of electrons:',N
+      WRITE(LUPRI,'(A,3F10.6)') '   Dipole moment  :',ECCORG
+      ECCORG(1)=ECCORG(1)/N
+      ECCORG(2)=ECCORG(2)/N
+      ECCORG(3)=ECCORG(3)/N
+      WRITE(LUPRI,'(A,3F10.6)') '   Charge centroid:',ECCORG
+      CALL MEMREL('SETECC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       END
 
-      SUBROUTINE GET_TD(D)
-#include <implicit.h>
-      DIMENSION D(*)
+      SUBROUTINE GET_TD(D,WORK,KFREE,LFREE)
+#include <implicit.h>   
+      DIMENSION WORK(*), D(*)
+      INTEGER KFREE, LFREE   
 #include <inforb.h>
 #include <inftap.h>
 #include <dummy.h>
 #include <priunit.h>
-      DIMENSION CMO(NCMOT)
-      DIMENSION UDV(N2ASHX)
-      DIMENSION DV(N2BASX)
-      DIMENSION WRK(N2BASX)
-c      REAL(DOUBLE) D1
       PARAMETER ( D1 = 1.0D0)
       LOGICAL CLOSED
-
+C      
       CALL QENTER('GET_D')
-
+C
+      KFRSAV = KFREE  
+      LFRSAV = LFREE 
+      CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)      
+      CALL MEMGET('REAL',KTMP,NNASHX,WORK,KFREE,LFREE) 
+      CALL MEMGET('REAL',KUDV,N2ASHX,WORK,KFREE,LFREE)  
+      CALL MEMGET('REAL',KDV,N2BASX,WORK,KFREE,LFREE) 
+C
       CLOSED=LUSIFC.LT.0
       IF (CLOSED) CALL GPOPEN(
      &   LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,.FALSE. 
@@ -329,12 +441,16 @@ c      REAL(DOUBLE) D1
       CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       READ(LUSIFC)
       READ(LUSIFC)
-      CALL READT(LUSIFC,NCMOT,CMO)
-      CALL READT(LUSIFC,N2ASHX,UDV)
-      CALL GTDMSO(UDV,CMO,D,DV,WRK)
-      CALL DAXPY(N2BASX,D1,DV,1,D,1)
+      CALL READT(LUSIFC,NCMOT,WORK(KCMO))
+      CALL READT(LUSIFC,NNASHX,WORK(KTMP))
+      CALL DSPTSI(NASHT,WORK(KTMP),WORK(KUDV))
+      CALL GTDMSO(WORK(KUDV),WORK(KCMO),D,WORK(KDV),WORK(KFREE))
+      CALL DAXPY(N2BASX,D1,WORK(KDV),1,D,1)
 
       IF (CLOSED) CALL GPCLOSE(LUSIFC,'KEEP')
+C
+      CALL MEMREL('GET_TD',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C       
       CALL QEXIT('GET_D')
       END
 
@@ -394,8 +510,8 @@ C
 C
 C y
 C
-      KSYMOP = ISYMAX(2,1)+1
-      IF (KSYMOP.EQ.1) THEN
+      KSYMP = ISYMAX(2,1)+1
+      IF (KSYMP.EQ.1) THEN
          CALL PRPGET(
      &      'YDIPLEN ',CMO,WRK(KPRPMO),KSYMP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -405,8 +521,8 @@ C
 C
 C z
 C
-      KSYMOP = ISYMAX(3,1)+1
-      IF (KSYMOP.EQ.1) THEN
+      KSYMP = ISYMAX(3,1)+1
+      IF (KSYMP.EQ.1) THEN
          CALL PRPGET(
      &      'ZDIPLEN ',CMO,WRK(KPRPMO),KSYMP,ANTSYM,
      &      WRK(KFREE),LFREE,IPRG
@@ -452,14 +568,14 @@ C
 #include <priunit.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE =  11 )
+      PARAMETER ( NTABLE =  12 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL NOGC2
       DATA NOGC2/.FALSE./
 C
       DATA TABLE /'.ZERO  ', '.ECC   ', '.RMC   ', '.GC1   ', '.GC2   ',
      &            '.OZSO1 ', '.OZSO2 ', '.MEAN-F', '.TEST A', '.ADD-SO',
-     &            '.SCALED'/
+     &            '.SCALED', '.OWN-OT'/
       NEWDEF = (WORD .EQ. '.G-TENS')
 C
 C Defaults
@@ -478,7 +594,7 @@ C
                ICHANG = ICHANG + 1
                DO I=1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11) , I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12) , I
                   END IF
                END DO
                IF (WORD .EQ. '.OPTION') THEN
@@ -533,6 +649,9 @@ C              CALL QUIT(' ILLEGAL KEYWORD IN GINP ')
                GO TO 100
 11             CONTINUE
                   SCALED_CHARGES = .TRUE.
+               GO TO 100
+12             CONTINUE
+                  SPLITSO2 = .TRUE.
                GO TO 100
             ELSE IF (PROMPT.EQ.'*') THEN
                BACKSPACE LUCMD
@@ -595,6 +714,8 @@ C
 #include <codata.h>
 #include <gfac.h>
 #include <dummy.h>
+#include <maxorb.h>
+#include <infinp.h>
 C
       LOGICAL OLDDX
       LOGICAL FNDLB2
@@ -629,12 +750,16 @@ C
 C
 C Get triplet density
 C
-      CALL MEMGET('REAL',KCREF,NCREF,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KDEN1,N2ASHX,WRK,KFREE,LFREE)
-      CALL GETREF(WRK(KCREF),NCREF)
-      CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
+      IF (HSROHF) THEN  
+         CALL DUNIT(WRK(KDEN1),NASHT) 
+      ELSE 
+         CALL MEMGET('REAL',KCREF,NCREF,WRK,KFREE,LFREE)
+         CALL GETREF(WRK(KCREF),NCREF)
+         CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
      &           WRK(KDEN1),DUMMY,
      &           1,0,.FALSE.,.TRUE.,XINDX,WRK,KFREE,LFREE)
+      END IF 
 C     CALL RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR, RHO1,RHO2,
 C    *                 ISPIN1,ISPIN2,TDM,NORHO2,XINDX,WORK,
 C    *                 KFREE,LFREE)
@@ -667,6 +792,7 @@ C
 #include <codata.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <infinp.h>
 #include <mxcent.h>
 #include <symmet.h>
 #include <dummy.h>
@@ -693,12 +819,16 @@ C Get triplet density
 C
       KFREE=1
       LFREE=LWRK
-      CALL MEMGET('REAL',KCREF,NCREF,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KDEN1,N2ASHX,WRK,KFREE,LFREE)
-      CALL GETREF(WRK(KCREF),NCREF)
-      CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
+       IF (HSROHF) THEN  
+         CALL DUNIT(WRK(KDEN1),NASHT)
+      ELSE   
+         CALL MEMGET('REAL',KCREF,NCREF,WRK,KFREE,LFREE)
+         CALL GETREF(WRK(KCREF),NCREF)
+         CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
      &           WRK(KDEN1),DUMMY,
      &           1,0,.FALSE.,.TRUE.,XINDX,WRK,KFREE,LFREE)
+      END IF 
 C     CALL RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR, RHO1,RHO2,
 C    *                 ISPIN1,ISPIN2,TDM,NORHO2,XINDX,WORK,
 C    *                 KFREE,LFREE)
@@ -790,6 +920,7 @@ C Deck Scaled effective gauge correction
 #include <mxcent.h>
 #include <symmet.h>
 #include <dummy.h>
+#include <infinp.h>
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
@@ -813,12 +944,16 @@ C Get triplet density
 C
       KFREE=1
       LFREE=LWRK
-      CALL MEMGET('REAL',KCREF,NCREF,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDEN1,N2ASHX,WRK,KFREE,LFREE)
-      CALL GETREF(WRK(KCREF),NCREF)
-      CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
+      CALL MEMGET('REAL',KDEN1,N2ASHX,WRK,KFREE,LFREE)   
+      IF (HSROHF) THEN  
+         CALL DUNIT(WRK(KDEN1),NASHT)
+      ELSE 
+          CALL MEMGET('REAL',KCREF,NCREF,WRK,KFREE,LFREE)
+          CALL GETREF(WRK(KCREF),NCREF)
+          CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
      &           WRK(KDEN1),DUMMY,
      &           1,0,.FALSE.,.TRUE.,XINDX,WRK,KFREE,LFREE)
+      END IF
 C     CALL RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR, RHO1,RHO2,
 C    *                 ISPIN1,ISPIN2,TDM,NORHO2,XINDX,WORK,
 C    *                 KFREE,LFREE)
@@ -924,14 +1059,14 @@ C /* Deck gset  */
          IF (BLAB(1:1).EQ.'Y') IB = 2
          IF (BLAB(1:1).EQ.'Z') IB = 3
          IF (ADDSO) THEN
-            GOZSO1(IA,IB) = XPROP/REFSPIN
+            GOZSO(IA,IB,1) = XPROP/REFSPIN
          ELSE
             IF (DOOZSO1.AND.BLAB(2:8).EQ.'1SPNORB') 
-     &         GOZSO1(IA,IB) = XPROP/REFSPIN
+     &         GOZSO(IA,IB,1) = XPROP/REFSPIN
             IF (DOOZSO2.AND.(BLAB(2:8).EQ.'2SPNORB'
      &               .OR. BLAB(2:8).EQ.'1MNF-SO'
      &               .OR. BLAB(2:8).EQ.'1SPNSCA'))
-     &         GOZSO2(IA,IB) = XPROP/REFSPIN
+     &         GOZSO(IA,IB,2) = XPROP/REFSPIN
          END IF
       END IF
       END
@@ -945,11 +1080,22 @@ C  /* Deck gprint  */
 #include <gfac.h>
 #include <orgcom.h>
 #include <priunit.h>
+#include <inforb.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <symmet.h>
+      INTEGER SWRITE
+      EXTERNAL SWRITE
 C
-      PARAMETER (D1=1.0D0, PPM=1.0D6, DP5=0.5D0)
-      DIMENSION GEIG(3)
+      PARAMETER (D1=1.0D0, PPM=1.0D6, DP5=0.5D0, D0=0.0D0)
+      CHARACTER*10 FMT
+      CHARACTER*80 GHEAD
+      LOGICAL LINEAR, DIAG, PR(5)
+      DIMENSION GSHIFT(3,3), GEIG(3)
 C
       IF (.NOT.GCALC) RETURN
+      CALL QENTER('GPRINT')
       IF (REFSPIN.NE.0) THEN
          CALL TITLER(' Electronic g-tensor (ppm)','=',3)
 C
@@ -976,26 +1122,38 @@ C
 C
          IF (ADDSO) THEN
             CALL HEADER('Spin-orbit+orbital-Zeeman contribution',3)
-            WRITE(LUPRI,'(3F10.0)')((PPM*GOZSO1(I,J),J=1,3),I=1,3)
+            WRITE(LUPRI,'(3F10.0)')((PPM*GOZSO(I,J,1),J=1,3),I=1,3)
          ELSE
 C
             IF (DOOZSO1) THEN
                CALL HEADER('One-electron spin-orbit' //
      &         '+orbital-Zeeman contribution',3)
-               WRITE(LUPRI,'(3F10.0)')((PPM*GOZSO1(I,J),J=1,3),I=1,3)
+               WRITE(LUPRI,'(3F10.0)')((PPM*GOZSO(I,J,1),J=1,3),I=1,3)
             END IF
 C
             IF (DOOZSO2) THEN
                IF (MNFSO.OR.SCALED_CHARGES) THEN
                   DO I=1,3
                      DO J=1,3
-                        GOZSO2(I,J)=GOZSO2(I,J)-GOZSO1(I,J)
+                        GOZSO(I,J,2)=GOZSO(I,J,2)-GOZSO(I,J,1)
                      END DO
                   END DO
                END IF
-               CALL HEADER('Two-electron spin-orbit' //
-     &         '+orbital-Zeeman contribution',3)
-               WRITE(LUPRI,'(3F10.0)')((PPM*GOZSO2(I,J),J=1,3),I=1,3)
+               IF (SPLITSO2) THEN
+                  CALL HEADER('Two-electron spin-own-orbit' //
+     &            '+orbital-Zeeman contribution',3)
+                  WRITE(LUPRI,'(3F10.0)')
+     &               ((PPM*GOZSO(I,J,2),J=1,3),I=1,3)
+                  CALL HEADER('Two-electron spin-other-orbit' //
+     &            '+orbital-Zeeman contribution',3)
+                  WRITE(LUPRI,'(3F10.0)')
+     &               ((PPM*GOZSO(I,J,3),J=1,3),I=1,3)
+               ELSE
+                  CALL HEADER('Two-electron spin-orbit' //
+     &            '+orbital-Zeeman contribution',3)
+                  WRITE(LUPRI,'(3F10.0)')
+     &               ((PPM*GOZSO(I,J,2),J=1,3),I=1,3)
+               END IF
             END IF
          END IF
 C
@@ -1010,7 +1168,9 @@ C        IF (DOALL) THEN
                DO J=1,3
                   GTENSOR(I,J)=GTENSOR(I,J)
      &            +GC1(I,J)+GC2(I,J)
-     &            +GOZSO1(I,J)+GOZSO2(I,J)
+                  DO ISO=1,NSO
+                     GTENSOR(I,J)=GTENSOR(I,J)+GOZSO(I,J,ISO)
+                  END DO
                END DO
             END DO
             WRITE(LUPRI,'(3F10.0)')((PPM*GTENSOR(I,J),J=1,3),I=1,3)
@@ -1022,30 +1182,113 @@ C
             WRITE(LUPRI,'(3F10.6)')((GTENSOR(I,J),J=1,3),I=1,3)
             GTRACE=GTENSOR(1,1)+GTENSOR(2,2)+GTENSOR(3,3) 
 C
-C Get principal axes by diagonalizing g
-C Since the tensor may in princple be non-symmetric, we first symmetrize the
-C tensor. Antisymmetric components ignored.
+C All shifts in one table
 C
-#ifdef _HAVE_LAPACK
-            GTENSOR(2,1)=(GTENSOR(1,2)+GTENSOR(2,1))*DP5
-            GTENSOR(3,1)=(GTENSOR(1,3)+GTENSOR(3,1))*DP5
-            GTENSOR(3,2)=(GTENSOR(2,3)+GTENSOR(3,2))*DP5
-            CALL DSYEV('V','L',3,GTENSOR,3,GEIG,WORK,LWORK,INFO)
-            IF (INFO.NE.0) CALL QUIT('LAPACK:DSYEV FAILED')
-#else
-            IJ = 1
-            DO I = 1, 3
-               DO J = 1, I
-                  PVAL(IJ) = (GTENSOR(I,J) + GTENSOR(J,I))*DP5
-                  IJ = IJ + 1
+            LFMT=7
+            FMT='(FX.0)'
+            WRITE(FMT(3:3),'(I1)')LFMT
+            CALL HEADER('G-shift components (ppm)',0)
+            DIAG=NSYM.GE.4
+            LINEAR=DIAG.AND.ABS(GTENSOR(1,1)-GTENSOR(2,2)).LT.1D-8
+            GHEAD='@G'
+            LOFF=14
+            PR(1)=LINEAR
+            PR(2)=DIAG
+            PR(3)=(ISYMAX(1,2).EQ.ISYMAX(2,2)) 
+            PR(4)=(ISYMAX(1,2).EQ.ISYMAX(3,2)) 
+            PR(5)=(ISYMAX(2,2).EQ.ISYMAX(3,2)) 
+            IF (LINEAR) THEN
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'_|_')
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'||')
+            ELSE IF (DIAG) THEN
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'xx')
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'yy')
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'zz')
+            ELSE
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'xx')
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'yy')
+               LOFF=SWRITE(GHEAD,LOFF,LFMT,'zz')
+               IF (PR(3)) THEN
+                  LOFF=SWRITE(GHEAD,LOFF,LFMT,'xy')
+                  LOFF=SWRITE(GHEAD,LOFF,LFMT,'yx')
+               END IF
+               IF (PR(4)) THEN
+                  LOFF=SWRITE(GHEAD,LOFF,LFMT,'xz')
+                  LOFF=SWRITE(GHEAD,LOFF,LFMT,'zx')
+               END IF
+               IF (PR(5)) THEN
+                  LOFF=SWRITE(GHEAD,LOFF,LFMT,'yz')
+                  LOFF=SWRITE(GHEAD,LOFF,LFMT,'zy')
+               END IF
+            END IF
+            WRITE(LUPRI,'(A)') GHEAD
+            CALL FLUSH(LUPRI)
+            GRMC=GRELMC*PPM
+            CALL DZERO(GSHIFT,9)
+            DO I=1,3
+               GSHIFT(I,I)=GSHIFT(I,I)+GRMC
+            END DO
+            IF (DORMC)CALL TENPRI(LUPRI,FMT,'@G RMC',PR,GSHIFT)
+            CALL DSCAL(9,PPM,GC1,1)
+            CALL DSCAL(9,PPM,GC2,1)
+            CALL DSCAL(9*NSO,PPM,GOZSO,1)
+            DO I=1,3
+               DO J=1,3
+                  GSHIFT(I,J) = GSHIFT(I,J) + GC1(I,J)+GC2(I,J)
+     &               + GOZSO(I,J,1) + GOZSO(I,J,2) + GOZSO(I,J,3)
                END DO
             END DO
-            CALL DUNIT(GTENSOR,3)
-            CALL JACO(PVAL,GTENSOR,3,3,3,WORK,LWORK)
-            GEIG(1) = PVAL(1)
-            GEIG(2) = PVAL(3)
-            GEIG(3) = PVAL(6)
-#endif
+            IF (DOGC1) 
+     &         CALL TENPRI(LUPRI,FMT,'@G GC1    ',PR,GC1)
+            IF (DOGC2) 
+     &         CALL TENPRI(LUPRI,FMT,'@G GC2    ',PR,GC2)
+            IF (ADDSO) THEN
+               CALL TENPRI(
+     &            LUPRI,FMT,'@G OZ-SO  ',PR,GOZSO(1,1,1)
+     &            )
+            ELSE
+               IF (DOOZSO1) THEN
+                  CALL TENPRI(
+     &               LUPRI,FMT,'@G OZ-SO1 ',PR,GOZSO(1,1,1)
+     &               )
+               END IF
+               IF (DOOZSO2) THEN
+                  IF (SPLITSO2) THEN
+                     CALL TENPRI(
+     &                  LUPRI,FMT,'@G OZ-SOWN',PR,GOZSO(1,1,2)
+     &                  )
+                     CALL TENPRI(
+     &                  LUPRI,FMT,'@G OZ-SOTH',PR,GOZSO(1,1,3)
+     &                  )
+                  ELSE
+                     CALL TENPRI(
+     &                  LUPRI,FMT,'@G OZ-SO2 ',PR,GOZSO(1,1,2)
+     &                  )
+                  END IF
+               END IF
+            END IF
+            CALL TENPRI(LUPRI,FMT,'@G Total  ',PR,GSHIFT)
+C
+C Get principal axes by diagonalizing g
+C Since the tensor may in princple be non-symmetric, we first symmetrize the
+C tensor. We diagonalize g(T)*g which is the relevant quantity for the
+C energy levels in the ESR spectrum (equivalently we find the right
+C eigenvalues/vectors
+C
+C           GTENSOR(2,1)=(GTENSOR(1,2)+GTENSOR(2,1))*DP5
+C           GTENSOR(3,1)=(GTENSOR(1,3)+GTENSOR(3,1))*DP5
+C           GTENSOR(3,2)=(GTENSOR(2,3)+GTENSOR(3,2))*DP5
+            CALL DCOPY(9,GTENSOR,1,WORK,1)
+            CALL DGEMM('T','N',3,3,3,
+     &         D1,WORK,3,
+     &            WORK,3,
+     &         D0,GTENSOR,3
+     &         )
+            CALL DSYEV('V','L',3,GTENSOR,3,GEIG,WORK,LWORK,INFO)
+            GEIG(1)=SQRT(GEIG(1))
+            GEIG(2)=SQRT(GEIG(2))
+            GEIG(3)=SQRT(GEIG(3))
+            IF (INFO.NE.0) CALL QUIT('LAPACK:DSYEV FAILED')
             CALL HEADER('G-shift/tensor eigenvalues and cosines',0)
             WRITE(LUPRI,'(8X,2A14,A24)')'g-shift','g-tensor',
      &         'direction cosines'
@@ -1064,6 +1307,7 @@ C
      &         GEIGSUM/3-GFAC,GEIGSUM/3
          END IF
       END IF
+      CALL QEXIT('GPRINT')
       END
 C /* Deck bdg */
       BLOCK DATA BDG
@@ -1100,6 +1344,7 @@ C
 #include <codata.h>
 #include <priunit.h>
 #include <blocks.h>
+#include <infinp.h>
 C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8 = 8.0D0 )
       PARAMETER ( D1INF = 0.99999D0 , CKMXPR = 1.0D-6 )
@@ -1144,15 +1389,20 @@ C
       KFREE = 1
       LFREE = LWORK
       CALL MEMGET('REAL',KUDV,N2ASHX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPV, 0 ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCL,NCREF,WORK,KFREE,LFREE)
-C      
-      CALL GETREF(WORK(KCL),NCREF)
-      CALL RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,WORK(KCL),WORK(KCL),
+C     
+      NOPV = NASHT.EQ.1 .OR. HSROHF
+      IF (NOPV) THEN
+         CALL DUNIT(WORK(KUDV),NASHT)
+      ELSE     
+         CALL MEMGET('REAL',KPV, 0 ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KCL,NCREF,WORK,KFREE,LFREE)
+         CALL GETREF(WORK(KCL),NCREF)
+         CALL RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,WORK(KCL),WORK(KCL),
      &           WORK(KUDV),WORK(KPV),
      &           ISPIN1,ISPIN2,TDM,NORHO2,XINDX,WORK,
      &           KFREE,LFREE)
-      CALL MEMREL('AVEDSO:RSPDM',WORK,KCL,KCL,KFREE,LFREE)
+         CALL MEMREL('AVEDSO:RSPDM',WORK,KCL,KCL,KFREE,LFREE)
+      END IF  
       IF (DEBUG) THEN
          CALL HEADER('AVEDSO|One electron spin density',0)
          CALL OUTPUT(WORK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
@@ -1187,7 +1437,7 @@ C
      &      1,LUPRI)
       END IF
 C
-C Write interface file for Lushington's 2ge2c
+C Write interface file for Lushingtons 2ge2c
 C
       IF (NASHT.EQ.1) THEN
          CALL LUSHIF(CMO,WORK(KDMAO),WORK(KDMAO+N2BASX),
@@ -1226,7 +1476,6 @@ C     LWORK = LWORK - KLAST + 1
 C
       CALL MEMREL('AVEDIA:PAOVEC',WORK,KJORBS,KJORBS,KFREE,LFREE)
       
-      NOPV      =  NASHT .LE. 1
       IF (.NOT.NOPV) THEN
 C
 C     Transform two-electron density matrix to SO basis
@@ -1770,4 +2019,67 @@ C
       END DO
       CALL MEMREL('AVEDSO:NPLOOP',WORK,KPAO,KPAO,KFREE,LFREE)
       CALL QEXIT('P2ORG ')
+      END
+
+      SUBROUTINE TENPRI(LU,FMT,LABEL,PR,G)
+      IMPLICIT NONE
+#include <kinds.h>
+      INTEGER LU
+      CHARACTER*(*) FMT,LABEL
+      LOGICAL LINEAR,DIAGONAL,PR(5)
+      REAL(DOUBLE) G(3,3)
+      CHARACTER*80 LINE
+      INTEGER OFFSET, LFMT, SWRITE, RWRITE
+      EXTERNAL SWRITE, RWRITE
+
+      LFMT=7
+      LINE=LABEL
+      IF (PR(1)) THEN
+         OFFSET=10
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(1,1))
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(3,3))
+      ELSEIF (PR(2)) THEN
+         OFFSET=10
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(1,1))
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(2,2))
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(3,3))
+      ELSE
+         OFFSET=10
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(1,1))
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(2,2))
+         OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(3,3))
+         IF (PR(3)) THEN
+            OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(1,2))
+            OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(2,1))
+         END IF
+         IF (PR(4)) THEN
+            OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(1,3))
+            OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(3,1))
+         END IF
+         IF (PR(5)) THEN
+            OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(2,3))
+            OFFSET=RWRITE(LINE,OFFSET,LFMT,FMT,G(3,2))
+         END IF
+      END IF
+      WRITE(LU,'(A)')LINE
+      END
+
+      INTEGER FUNCTION SWRITE(STRING,OFFSET,LENGTH,INSTRING)
+      IMPLICIT NONE
+      CHARACTER*(*) STRING, INSTRING
+      INTEGER OFFSET, LENGTH
+      STRING(OFFSET:OFFSET+LENGTH)=INSTRING 
+      SWRITE=OFFSET+LENGTH
+      END
+
+      INTEGER FUNCTION RWRITE(STRING,OFFSET,LENGTH,FMT,INREAL)
+      IMPLICIT NONE
+      CHARACTER*(*) STRING, FMT
+      REAL*8 INREAL
+      INTEGER OFFSET, LENGTH
+      CHARACTER*80 BUF
+      BUF=' '
+      WRITE(BUF,FMT)INREAL
+      STRING(OFFSET:OFFSET+LENGTH)=BUF(1:LENGTH)
+      RWRITE=OFFSET+LENGTH
       END

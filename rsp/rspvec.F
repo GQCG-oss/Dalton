@@ -681,7 +681,7 @@ C
   410    CONTINUE
          IF (NFREQ .EQ. 0) GOTO 680
 C
-         CALL GETGPV(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,
+         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &               ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
@@ -729,7 +729,7 @@ CTODO        IF (IPRRSP.GE.5) THEN
      *            ' SYMMETRY',KSYMOP
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
                DO JLRLAB = 1, NLRLAB
-               CALL GETGPV(LRLAB(JLRLAB),FC,CMO,UDV,PV,XINDX,
+               CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                     ANTSM2,WRK(KGP2),LGP2)
                VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
                WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
@@ -1998,8 +1998,9 @@ C
                                  ENDDO
 c
                                  !GETGPV uses variables in wrkrsp.h
-                                 CALL GETGPV(CLABEL,FC,CMO,UDV,PV,XINDX,
-     *                                       ANTSYM,WRK(KFREE),LFREE)
+                                 CALL GETGPV(CLABEL,FC,FV,CMO,UDV,PV,
+     &                                       XINDX,ANTSYM,
+     &                                       WRK(KFREE),LFREE)
 
                                  TM1 = DDOT(KZYVAR,WRK(KFREE),1,VECC,1)
                                  BCONTR = SMOM*TM1*DP5
@@ -2670,7 +2671,7 @@ C
   410    CONTINUE
          IF (NFREQ .EQ. 0) GOTO 680
 C
-         CALL GETGPV(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,
+         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &               ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
@@ -3027,7 +3028,7 @@ C
 C
 C     Get gradient
 C
-                  CALL GETGPV(AQRLB(ISYM,IAOP),FC,CMO,UDV,PV,XINDX,
+                  CALL GETGPV(AQRLB(ISYM,IAOP),FC,FV,CMO,UDV,PV,XINDX,
      &                        ANTSYM,WRK(KRES),LFREE)
                   CALL DCOPY(KZYVAR,WRK(KRES),1,VECA,1)
 C

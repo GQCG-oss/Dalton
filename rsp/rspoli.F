@@ -120,7 +120,7 @@ CSONIA SONIA SONIA
 C
 C -- local constants
 C
-      PARAMETER ( D1 = 1D0, DP5 = 0.5D0, D2 = 2.0D0 )
+      PARAMETER ( D1 = 1D0, DP5 = 0.5D0, D2 = 2.0D0, DM1 = -1.0D0 )
       PARAMETER ( MXFMAT = 100 )
       LOGICAL DFTADX, ROKS
       DIMENSION ISYMDM(MXFMAT), IFCTYP(MXFMAT)
@@ -409,11 +409,11 @@ C
          DO 1003 ICSIM = 1,NCSIM
          WRITE(LUPRI,'(/A)') ' MULLIKEN DISTRIBUTION CONTRIBUTION'
          WRITE(LUPRI,'(/A,I5,A)')
-     *      ' QATD FOR',ICSIM,' ORBITAL TRIAL VECTOR'
+     *      ' QATD FOR',ICSIM,' CONFIGURATION TRIAL VECTOR'
          CALL OUTPUT(QATD(1,1,ICSIM),
      *                     1,NORBT,1,NASHT,NORBT,NASHT,1,LUPRI)
          WRITE(LUPRI,'(/A,I5,A)')
-     *      ' QBTD FOR',ICSIM,' ORBITAL TRIAL VECTOR'
+     *      ' QBTD FOR',ICSIM,' CONFIGURATION TRIAL VECTOR'
          CALL OUTPUT(QBTD(1,1,ICSIM),
      *                     1,NORBT,1,NASHT,NORBT,NASHT,1,LUPRI)
  1003    CONTINUE
@@ -688,6 +688,36 @@ C
 C
       CALL MEMREL('RSPOLI.sirfck',WRK,KFRSAV,KWRK0,KFREE,LFREE)
 C
+C
+C The following would comply for a call from LAGRAN in HF
+C
+      IF (NCSIM.EQ.1 .AND. TDHF  .AND. TRPLET) THEN
+C
+C For high spin - dft we just unpack FC and FV
+C
+         IF (HSROHF.OR.DFTADD) THEN
+            CALL MEMGET('REAL',KFC,N2ORBX,WRK,KFREE,LFREE)
+            CALL MEMGET('REAL',KTMP,NNORBX,WRK,KFREE,LFREE)
+            CALL PKSYM1(WRK(KTMP),FV,NORB,NSYM,-1)
+            CALL DSPTSI(NORBT,WRK(KTMP),FVTD)
+            CALL PKSYM1(WRK(KTMP),FC,NORB,NSYM,-1)
+            CALL DSPTSI(NORBT,WRK(KTMP),WRK(KFC))
+         ELSE
+            CALL MEMGET('REAL',KDA,N2BASX,WRK,KFREE,LFREE)
+            CALL MEMGET('REAL',KFA,N2BASX,WRK,KFREE,LFREE)
+            CALL FCKDEN(
+     &         .FALSE.,.TRUE.,DUMMY,WRK(KDA),CMO,WRK(KDVT),
+     &          WRK(KFREE),LFREE
+     &         )
+            CALL DZERO(WRK(KFA),N2BASX)
+            ISYMDM(1)=1
+            IFCTYP(1)=12
+            CALL SIRFCK(
+     &         WRK(KFA),WRK(KDA),1,ISYMDM,IFCTYP,DIRFCK,WRK(KFREE),LFREE
+     &         )
+            CALL AOTOMO(WRK(KFA),FVTD,CMO,1)
+         END IF
+      END IF
  2000 CONTINUE
 C
 C From here the code is as before DIRFCK
@@ -807,8 +837,21 @@ C    *                  EVECS,ZYMAT)
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
  1014       CONTINUE
          END IF
-         CALL RSPORB(.FALSE.,NCSIM,FC,DUMMY,FVTD,QATD,QBTD,WRK(KDVT),
+         IF (HSROHF.OR.DFTADD) THEN
+            CALL RSPORB(.TRUE.,NCSIM,FC,WRK(KFC),FVTD,QATD,QBTD,UDV,
      *               EVECS,DUMMY)
+C
+C Note: This is to cancel the change of sign in RSPORB
+C       In ordinary ROHF/MCSCF, RSPORB is called with negative
+C       matrices (due to negative active densities produced by
+C       the call to RSPTDM above when the CI vector is the reference state)
+C      
+C
+            CALL DSCAL(KZYVAR,DM1,EVECS,1)
+         ELSE
+            CALL RSPORB(.FALSE.,NCSIM,FC,DUMMY,FVTD,QATD,QBTD,WRK(KDVT),
+     *               EVECS,DUMMY)
+         END IF
       END IF
       CALL MEMREL('RSPOLI.bottom',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
 C

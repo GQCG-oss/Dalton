@@ -148,7 +148,7 @@ C
 C     Call RSPCTL to solve linear set of response equations
 C
       DO 680 ILRLAB = 1,NLRLAB
-         CALL GETGPV(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,ANTSYM,
+         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &               WRK(KGD),LWRK1)
          GDNORM = DNRM2(KZYVAR,WRK(KGD),1)
          NFREQ  = 0
