@@ -1393,7 +1393,10 @@ C
 #include <ccsdinp.h>
 C
       PARAMETER( TWO = 2.0D00 )
+      CHARACTER*10 MODEL
       DIMENSION ETA(*),WORK(LWORK)
+C
+      CALL QENTER('CC_ETA')
 C
       IF ( IPRINT .GT. 10 ) THEN
          CALL AROUND( 'IN CC_ETA: Constructing Eta vector ')
@@ -1499,6 +1502,7 @@ C
          CALL AROUND( 'END OF CC_ETA ')
       ENDIF
 C
+      CALL QEXIT('CC_ETA')
       END
 C  /* Deck cc_d1orre */
       SUBROUTINE CC_D1ORRE(D1AO,ZKAM,WORK,LWORK)
@@ -3232,7 +3236,6 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER MODEL*10
       DIMENSION ZKDIA(*), WORK(LWORK)
-      CHARACTER*10 MODEL
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccorb.h>
@@ -3598,7 +3601,6 @@ C
       CHARACTER MODEL*10
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
-      CHARACTER*10 MODEL
 #include <ccorb.h>
 #include <infind.h>
 #include <blocks.h>

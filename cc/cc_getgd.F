@@ -21,7 +21,7 @@ C
       PARAMETER( ONE = 1.0D00 ,XMONE = -1.0D0 )
       DIMENSION GD(*),WORK(LWORK)
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG = .TRUE.)
 #include <dummy.h>
 #include <iratdef.h>
 #include <cclr.h>
@@ -48,8 +48,11 @@ C
       CHARACTER MODEL*(10), LIST*(*)
 C
       CALL QENTER('CC_GETGD')
-      IF ( IPRINT .GT. 10 ) THEN
+C
+      IF ( IPRINT .GT. 10 .OR. LOCDBG) THEN
          CALL AROUND( 'CC_GD: Constructing GD vector ')
+         WRITE(LUPRI,*) 'LIST  :',LIST
+         WRITE(LUPRI,*) 'ILSTNR:',ILSTNR
          CALL FLSHFO(LUPRI)
       ENDIF
 
