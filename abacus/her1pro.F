@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1pro.F,v 1.10 2001-05-31 06:38:05 vebjornb Exp $
+C$Id: her1pro.F,v 1.11 2001-06-07 20:20:05 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -3150,8 +3150,8 @@ C
          WRITE (LUPRI,'(5X,A,I5)') ' NLM   ', NLM
          WRITE (LUPRI,'(5X,A,I5)') ' NXYZ  ', NXYZ
          WRITE (LUPRI,'(5X,A,I5)') ' MINTEG', MINTEG
+         CALL FLSHFO(LUPRI)
       END IF
-      CALL FLSHFO(LUPRI)
 C
       LCS   = 1
       LPC   = LCS + (LVAL + 1)*(LVAL + 1)
@@ -3199,8 +3199,8 @@ C
          CALL OUTPUT(PL(0),1,1,1,LVAL1,1,LVAL1,1,LUPRI)
          CALL AROUND('Cosine and sine factors')
          CALL OUTPUT(COSSIN(0,0),1,LVAL1,1,LVAL1,LVAL1,LVAL1,1,LUPRI)
+         CALL FLSHFO(LUPRI)
       END IF
-      CALL FLSHFO(LUPRI)
 C
 C     Transformation coefficients
 C     ---------------------------
@@ -3256,8 +3256,8 @@ C
          IXYZ = (LVAL+1)*(LVAL+2)/2
          ILM  = 2*LVAL + 1
          CALL OUTPUT(TRAMAT,1,IXYZ,1,ILM,NXYZ,NLM,1,LUPRI)
+         CALL FLSHFO(LUPRI)
       END IF
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck facult */

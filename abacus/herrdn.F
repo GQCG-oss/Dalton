@@ -32,11 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.12 2001-05-31 06:38:08 vebjornb Exp $
+C$Id: herrdn.F,v 1.13 2001-06-07 20:20:06 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.12  2001/05/31 06:38:08  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.11  2001/05/25 14:48:04  ruud
 Removed a little bit of redundant code and keyword\kr\
 
@@ -1787,8 +1790,8 @@ Chj-aug99:     if (uncont) force uncontracted in ACPORB
                IF (UNCONT) MRCIJ = 0
                WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUCIJ,
      &                                  'Shells    :  ',MRCIJ
+               CALL FLSHFO(LUPRI)
             END IF
-            CALL FLSHFO(LUPRI)
             SEGIJ = NRCIJ .GE. 0
             NUCIJ = ABS(NUCIJ)
             NRCIJ = ABS(NRCIJ)
@@ -4242,9 +4245,9 @@ C                    generate normalized s,p,d,f,g,h,i GTO's
                CALL OUTPUT(CSP(ISPADR(I)),1,KHKI,1,KCKI,KHKI,KCKI,1,
      &                     LUPRI)
  400        CONTINUE
+            CALL FLSHFO(LUPRI)
          END IF
       END IF
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C  /* Deck rdcsp */
