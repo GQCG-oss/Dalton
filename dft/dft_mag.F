@@ -387,7 +387,7 @@ C
       IF (IPRINT.GE.5) CALL TITLER('Output from DFTBHES','*',103)
 C     
       KDMAT  = 1 
-      KSUSDF = KDMAT  +  3*N2BASX
+      KSUSDF = KDMAT  +  N2BASX
       KLAST  = KSUSDF +  9 
       LWRK   = LWORK  -  KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('DFTBHES',' ',KLAST,LWORK)
@@ -423,10 +423,10 @@ C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8), NBLOCKS(2,LDAIB,8),
-     &          BDATA(9 + 3*N2BASX)
+     &          BDATA(9 + N2BASX)
 #include <dftinf.h>
       KDMAT  = 1
-      KSUSDF = KDMAT  + 3*N2BASX
+      KSUSDF = KDMAT  + N2BASX
       KLAST  = KSUSDF + 9
       CALL DFTBHES2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO(1,1,1),GAO(1,1,2),
      &              RHOA,GRADA,COORD,WGHT,BDATA(KDMAT),BDATA(KSUSDF))
