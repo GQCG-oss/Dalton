@@ -51,8 +51,8 @@ constitution}, this may be obtained through an input like:
 **PROPERITES
 .VIBANA
 *VIBANA
-.ISOTOPES
-    2
+.ISOTOP
+   2   5
  1 2 1 1 1
  2 1 1 1 1
 *END OF INPUT
@@ -61,8 +61,9 @@ constitution}, this may be obtained through an input like:
 The keyword \Key{ISOTOP} in the \Sec{VIBANA} input module
 indicates that more than only the isotopic species containing the most
 abundant isotopes are to be calculated, which will always be
-calculated. The number on the second line denotes the number of
-isotopically substituted species that is requested. The following lines then
+calculated. The numbers on the second line denotes the number of
+isotopically substituted species that is requested and the number of
+atoms in the system. The following lines then
 lists the isotopic constitution of each of these species. 1
 corresponds to the most abundant isotope, 2 corresponds to the second
 most abundant isotope and so on. The isotopic substitution have to be
@@ -116,7 +117,7 @@ an input may look like:
 .DIPGRA
 *VIBANA
 .ISOTOP
-    2
+   2   5
  1 2 1 1 1
  2 1 1 1 1
 *END OF INPUT
@@ -264,7 +265,7 @@ in Section~\ref{sec:vroa}
 .PRINT
  1
 .ISOTOP
-5
+   1   5
  1 1 1 2 3
 *END OF INPUT
 \end{verbatim}

@@ -73,7 +73,7 @@ for different water isotopomers will look like
 .THRESH
  1.0D-5
 *VIBANA
-.ISOTOPES
+.ISOTOP
  4 3
  1 2 1
  1 2 2
@@ -90,7 +90,7 @@ the evaluation of $6K + 1$ analytical Hessians, where $K$ is the
 number of atoms in the molecules. Although expensive, it allows to
 calculate (ro)vibrationally for any isotopic spicies, in the above
 example for H$_2\;^{16}$O, HD$_2\;^{16}$O, D$_2\;^{16}$O,
-H$_2\;^{18}$O. This is directed by the keyword \verb|.ISOTOPES|. We
+H$_2\;^{18}$O. This is directed by the keyword \verb|.ISOTOP|. We
 note that the most abundant isotope will always be calculated, and are
 therefore not included in the list above.
 
@@ -153,7 +153,7 @@ nuclear shielding constants can be obtained from the following input
  1.0D-10
 **START
 .SHIELD
-.ISOTOPE
+.ISOTOP
  3
  3 2 1
 *LINRES
@@ -164,7 +164,7 @@ nuclear shielding constants can be obtained from the following input
  1.0D-5
 **PROPERTIES
 .SHIELD
-.ISOTOPE
+.ISOTOP
  3
  3 2 1
 *LINRES
