@@ -627,7 +627,7 @@ using \verb|GGAKey| general functional.
 \item[BECKE] Becke exchange correction (Full Becke functional is BECKE +
   SLATER) from \cite{dft:becke88}.
 
-\item[KT] Keal and Tozer functional \cite{dft:kt}
+\item[KT] Keal and Tozer GGA exchange functional \cite{dft:kt12}
 
 \item[LB94] assymptotically correct functional of Leeuwen and
 Baerends\cite{dft:lb94}.
@@ -688,13 +688,18 @@ Baerends\cite{dft:lb94}.
 \item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai and
 Handy\cite{dft:camb3lyp}.
 
-\item[KT1]
+\item[KT1] Slater-VWN5 functional with the KT GGA correction
+ \ref{dft:kt12,dft:kt12a}.
 
-\item[KT2]
+\item[KT2] differs from KT1 only in that the weights of the Slater and
+ VWN5 functionals are from an empirical fit \ref{dft:kt12,dft:kt12a}.
 
-\item[KT3]
+\item[KT3] a hybrid functional of Slater, OPTX and KT exhange with the
+ LYP correlation functional \ref{dft:kt3}. 
 
-\item[OLYP]
+\item[OLYP] is the sum of the OPTX exchange functional with the
+ LYP correlation functional \ref{dft:optx}. Mixed functionals such
+ as OP86 and OPW91 may be constructed with \item[GGAKey].
 
 \item[PBE0] a hybrid functional of Perdew, Burke and Ernzerhof with
   0.2 weight of exact exchange, 0.75 of \verb|PBEx| functional and
