@@ -4593,21 +4593,28 @@ C  /* Deck dpgtra */
 #include <ibtfun.h>
       FULMAT = .TRUE.
       ICOMP = 0
+
+      ! loop over cartesian displacements of the atoms
       DO 100 X = 1, 3
          JCOMP = 0
+ 
+         ! loop over components of the dipole operator
          DO 200 B = 1, 3
             ICOMP = ICOMP + 1
             JCOMP = JCOMP + 1
-            IREPC  = ISYMAX(B,1)
-            DO IREPO = 0, MAXREP
-               ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREPO,1)
+            IREPC  = ISYMAX(B,1) ! irrep of dipole component
+
+            ! loop over possible irreps of symmetry coordinates
+            DO IREP = 0, MAXREP
+               ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREP,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
+ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
+C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
+C     &                         *PT(IBTAND(IREP,ISYMOP))
 ckr                  FACSYM = HKAB
+                  FACSYM = HKAB
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -4619,13 +4626,15 @@ ckr                  FACSYM = HKAB
      &                          IDUM,IPRINT)
                   END IF
                END IF
-               ISCOOR = IPTCNT(3*(NCENTB - 1) + X,IREPO,1)
+               ISCOOR = IPTCNT(3*(NCENTB - 1) + X,IREP,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
-ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
+ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
+C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
+C    &                          *PT(IBTAND(IREP,ISYMOP))
+                   FACSYM = HKAB*PT(IBTAND(ISYMAX(X,1),ISYMOP))
+     &                          *PT(IBTAND(IREP,ISYMOP))
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP + 9),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -4973,7 +4982,7 @@ C
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
             ELSE
-               CALL SYM1N(SHLINT(1,ICOOR,1),SOINT(1,ISCORA),
+               CALL SYM1N(SHLINT(1,ICOORA,1),SOINT(1,ISCORA),
      &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                    FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
             END IF
