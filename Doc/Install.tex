@@ -1,10 +1,11 @@
 \chapter{Installation}\label{ch:install}
 
 \section{Hardware/software
-supported}\label{sec:hardsoft}\index{Hardware/software support|textbf}
+supported}\label{sec:hardsoft}
+\index{hardware/software support}
 
-\dalton\ can be run on a variety of systems running the UNIX operating
-system.  The current release of the program supports
+{\dalton} can be run on a variety of systems running the UNIX
+operating system. The current release of the program supports
 Cray-UNICOS\index{Cray},
 Cray-T3D/E\index{Cray-T3D}\index{Cray-T3E}\index{Cray},
 HP,
@@ -41,8 +42,8 @@ appropriate C preprocessor directives to the authors.
 
 \section{Source files}\label{sec:source}
 
-\dalton\ is distributed as a \verb|tar| file obtainable from
-the \dalton\ homepage\\
+{\dalton} is distributed as a \verb|tar| file obtainable from
+the {\dalton} homepage\\
 (\verb|http://www.kjemi.uio.no/software/dalton/dalton.html|) if the
 license agreement for the program has been completed and returned to
 the authors.  If you have accessed this documentation off the
@@ -85,7 +86,10 @@ directory.
 
 
 \section{Installing the program using the
-Makefile}\label{sec:Makefile}\index{Makefile}
+Makefile}\label{sec:Makefile}
+\index{Makefile}
+\index{installation!Makefile}
+\index{installation!Makefile.config}
 
 The program is easily installed through the use of the supplied
 \verb|configure| script\index{configure script}. Based on the
@@ -107,6 +111,7 @@ cray             & dec-alpha             & nec\\
 cray-t90         & hp                    & sgi\\
 cray-t3d         & linux                 & sun\\
 \end{tabular}
+\index{installation!supported platforms}
 
 \bigskip
 
@@ -126,17 +131,19 @@ asked a few questions, most of which require a quite obvious
 answer. Let us only comment upon four of the questions asked:
 
 \begin{enumerate}
-\item Scratch memory\index{scratch memory} size: Dalton uses
-approximately 0.8 Mwords (6.5 Mbytes)
+\item Scratch memory\index{scratch memory}\index{installation!memory}
+size: Dalton uses approximately 0.8 Mwords (6.5 Mbytes)
 in static memory allocations. The program defines a large scratch-memory
 array, from which it allocates space for temporary arrays
 during the execution of the program. This value is given in Words, and
 should be chosen according to available memory on your computer.
 \verb|WRKMEM| may be changed at execution time by supplying a
 different value for \verb|WRKMEM| through the shell-script running
-\dalton .
+{\dalton}.
 
-\item Default basis set library\index{basis set library} location:
+\item Default basis set library
+\index{basis set library}\index{installation!basis set library}
+location:
 This defines the directory where the program will look for the
 basis sets supplied with the distribution, and this need to be
 changed according to the local directory structure. We recommend
@@ -145,12 +152,13 @@ that changes to the basis set rather is done in a separate
 directory, and then supply this basis set directory to the program
 at execution time.
 
-{\sc NOTE TO SYSTEM-ADMINISTRATORS:} Supplied with \dalton\ is an
+{\sc NOTE TO SYSTEM-ADMINISTRATORS:} Supplied with {\dalton} is an
 extensive basis set library. This basis set directory must be made
 readable to all users. {\sc END NOTE}
 
-\item Default scratch space\index{scratch space}: Determines the
-default head scratch
+\item Default scratch
+space\index{scratch space}\index{installation!scratch space}:
+Determines the default head scratch
 directory where temporary files will be placed. This value will be put
 in the \verb|dalton| run-script. However, note that jobs will be run in
 a subdirectory of this head scratch-directory, according to the name
@@ -158,8 +166,10 @@ of the job files. If \verb|/work| or \verb|/scratch| is defined in the
 local directory structure, the script will normally suggest
 \verb|/work/$USER| or  \verb|/scratch/$USER| as default head scratch space.
 
-\item Default install directory\index{install directory}: Denotes the directory where the \dalton\
-executable and the \verb|dalton| run script will be moved to.
+\item Default install 
+directory\index{install directory}\index{installation!install directory}:
+Denotes the directory where the {\dalton} executable and the
+\verb|dalton| run script will be moved to.
 \end{enumerate}
 
 Compiler options will be supplied in \verb|Makefile.config|, in the manner
@@ -202,10 +212,10 @@ MPI parallel executables will be called \verb|dalpar.x|, PVM parallel
 executables are called \verb|dalpvm.x| and \verb|node.x|, whereas a
 single-processor executable will be called \verb|dalton.x|.
 
-\section{Running the \dalton\ test
-suite}\label{sec:testsuite}\index{Test suite}
+\section{Running the {\dalton} test suite}\label{sec:testsuite}
+\index{test suite}\index{installation!test suite}
 
-To check that \dalton\ has been successfully installed, a fairly
+To check that {\dalton} has been successfully installed, a fairly
 elaborate automatic test suite is provided in the distribution. A test
 script, all the test jobs and reference output files can be found in
 the \verb|dalton/test| directory. It is highly recommended that all
@@ -232,18 +242,19 @@ on your particular platform.
 Any tests that fail will leave behind the \verb|.mol| and \verb|.dal|
 input-files (these are described in more detail in
 chapter~\ref{ch:starting}), and the output-file from the test
-calculation which will have the extension \verb|.log| (\dalton\
+calculation which will have the extension \verb|.log| ({\dalton}
 output-files usually have the extension \verb|.out|). For all
 successful tests these files, as well as some other auxiliary files,
 will be deleted as soon as the output has been checked, unless
 \verb|TEST| is being run with the option \verb|-keep|.
 
 If most of the tests fail, it is quite likely that there's something
+\index{troubleshooting}\index{installation!troubleshooting}
 wrong with the installation. Look carefully through
 \verb|Makefile.config|, and consider turning down or even off
 optimization.
 
-If there's only a few tests that fail, and \dalton\ seems to exit
+If there's only a few tests that fail, and {\dalton} seems to exit
 normally in each case, there may just be some issues with numerical
 accuracy. Different machines give slightly different results, and
 while we've tried to allow for some slack in the tests, it may be
@@ -253,4 +264,4 @@ numbers in the test script and/or the reference output files should
 reveal whether this is actually the case. If numerical (in)accuracy is
 the culprit, feel free to send your output-file(s) to
 \verb|dalton-admin@kjemi.uio.no| so that we can adjust the numerical
-intervals for various numbers accordingly.
+intervals accordingly.

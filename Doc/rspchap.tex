@@ -40,9 +40,9 @@ the presence of one or more perturbations. With our notation (see e.g.
 Ref.~\cite{jopjjcp82}),  $\langle\!\langle A;B\rangle\!\rangle_{\omega_b}$,
 $\langle\!\langle A;B,C\rangle\!\rangle_{\omega_b,\omega_c}$, and 
 $\langle\!\langle A;B,C,D\rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$
-denote linear, quadratic and cubic response functions\index{linear
-response}\index{quadratic response}\index{cubic
-response}\index{response function}, respectively, which
+denote linear, quadratic and cubic response 
+functions\index{linear response}\index{quadratic response}\index{cubic response}\index{response function},
+respectively, which
 provide the first, second, and third-order corrections to the
 expectation-value of $A$, due to the perturbations $B$, $C$, and $D$, each of
 which is associated with a frequency $\omega_b$, $\omega_c$, and
@@ -81,8 +81,9 @@ Martin J. Packer, Erik K. Dalskov, Thomas Enevoldsen, Hans J{\o}rgen Aagaard Jen
 }}
 \end{center}
 
-A well-known example of a linear response\index{linear
-response}\index{polarizability} function is the polarizability. 
+A well-known example of a linear
+response\index{linear response}\index{polarizability} function is the
+polarizability.
 A typical input for SCF static and dynamic polarizability tensors
 $\alpha_{ij}(-\omega;\omega)\equiv-\langle\!\langle
 x_i;x_j\rangle\!\rangle_\omega$ for a few selected frequencies (in
@@ -95,7 +96,7 @@ atomic units) will be:
 **RESPONSE
 *LINEAR
 .DIPLEN
-.FREQUENCY
+.FREQUENCIES
  3
  0.0 0.5 1.0
 *END OF INPUT
@@ -121,7 +122,7 @@ for SOPPA dynamic polarizability tensors  will be:
 .NOITRA
 *LINEAR
 .DIPLEN
-.FREQUENCY
+.FREQUENCIES
  3
  0.0 0.5 1.0
 *END OF INPUT
@@ -273,7 +274,7 @@ residues\index{residue}\index{double residue} of the quadratic
 response function, the interpretation of which is transition
 moments\index{transition moment}\index{excited state}
 between two 
-excited states. Specifying {\tt .DOUBLE} in the example above thus gives
+excited states. Specifying \Key{DOUBLE} in the example above thus gives
 the matrix elements of the $z$-component of the dipole moment between
 all excited states specified in {\tt .ROOTS}. Note that the diagonal contributions
 gives  not the expectation value in the excited state, but rather the
@@ -299,10 +300,11 @@ Dan Jonsson, Patrick Norman, and Hans {\AA}gren, \newblock {\em J. Chem. Phys.} 
 }}
 \end{center}
 
-All components of the static second hyperpolarizability\index{cubic
-response}\index{second hyperpolarizability}
-$\gamma_{ijkl}(-0;0,0,0)\equiv
--\langle\!\langle x_i;x_j,x_k,x_l\rangle\!\rangle_{000}$,
+All components of the static second
+hyperpolarizability\index{cubic response}\index{second
+hyperpolarizability}
+defined as $\gamma_{ijkl}(-0;0,0,0)\equiv$
+$-\langle\!\langle x_i;x_j,x_k,x_l\rangle\!\rangle_{000}$,
  may be obtained by the following input
 
 \begin{verbatim}

@@ -111,6 +111,12 @@ P.~Pulay and G.~Fogarasi.
 V.~Bakken and T.~Helgaker.
 \newblock To be published.
 
+\bibitem{rlabgkpamcpl241}
+R.~Lindh, A.~Bernhardsson, G.~Karlstr\"{o}m, and {\mbox P.-{\AA}}.~Malmqvist.
+\newblock On the use of a {H}essian model function in molecular geometry
+  optimizations.
+\newblock {\em Chem.~Phys.~Lett.}, 241:423, 1995.
+
 \bibitem{Baker}
 J.~Baker.
 \newblock Techniques for geometry optimization: A comparison of {C}artesian and
@@ -361,7 +367,7 @@ K.~L. Bak, P.~J\o rgensen, T.~Helgaker, and K.~Ruud.
 
 \bibitem{jrcmjffjdpjsjpca104}
 J.~R. Cheeseman, M.~J. Frisch, F.~J. Devlin, and P.~J. Stephens.
-\newblock {H}artree-{F}ock and density functional theory {\it{ab initio}}
+\newblock {H}artree--{F}ock and density functional theory {\it{ab initio}}
   calculation of optical rotation using {GIAO}s: Basis set dependence.
 \newblock {\em J.~Phys.~Chem.~{\bf A}}, 104:1039, 2000.
 
@@ -470,12 +476,6 @@ P.~Cs\`asz\`ar and P.~Pulay.
 \newblock Geometry optimization by direct inversion in the iterative subspace.
 \newblock {\em J.~Mol.~Struct.}, 114:31, 1984.
 
-\bibitem{rlabgkpamcpl241}
-R.~Lindh, A.~Bernhardsson, G.~Karlstr\"{o}m, and {\mbox P.-{\AA}}.~Malmqvist.
-\newblock On the use of a {H}essian model function in molecular geometry
-  optimizations.
-\newblock {\em Chem.~Phys.~Lett.}, 241:423, 1995.
-
 \bibitem{Schlegel}
 H.~B. Schlegel.
 \newblock Optimization of equilibrium geometries and transition structures.
@@ -545,7 +545,7 @@ Basis sets were obtained from the Extensible Computational Chemistry
 
 \bibitem{nqvdref}
 K.~F{\ae}gri.
-\newblock Nqvd basis sets.
+\newblock {NQvD} basis sets.
 \newblock Technical report, Department of Chemistry, University of Oslo, 1994.
 
 \bibitem{dbcberkdmdaejcc14}
@@ -650,7 +650,7 @@ H.~{\AA}gren, O.~Vahtras, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker.
 \newblock {\em J.~Chem.~Phys.}, 98:6417, 1993.
 
 \bibitem{haovbmaqc27}
-Hans {\AA}gren, Olav Vahtras, and Boris Minaev.
+H.~{\AA}gren, O.~Vahtras, and B.~Minaev.
 \newblock Response theory and calculations of spin-orbit coupling phenomena in
   molecules.
 \newblock {\em Adv.~Quantum Chem.}, 27:71, 1996.

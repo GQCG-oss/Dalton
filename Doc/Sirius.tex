@@ -1,12 +1,12 @@
-\chapter{\label{chap:inpref} Molecular wave functions, \sir }
+\chapter{\label{chap:inpref} Molecular wave functions, {\sir}}
 
-\section{\label{sec:ref-notes} General notes for the \sir \ input reference
+\section{\label{sec:ref-notes} General notes for the {\sir} input reference
 manual}
 
-\sir is the part of the code that computes the wave function.
+{\sir} is the part of the code that computes the wave function.
 
 The following sections contain a list of all generally relevant keywords to
-\sir, only currently inactive keywords and some special debug
+{\sir}, only currently inactive keywords and some special debug
 options are omitted.
 
 \begin{enumerate}
@@ -39,15 +39,15 @@ options are omitted.
    comment line.  An illegal keyword will cause a dump of all keywords
    for the current input section.
 }
-\item{A dump of keywords can be obtained in any input section with the
-keyword \quotekw{\Key{OPTIONS}}.  For example, the input
+\item{A dump of keywords can be obtained in any input section by
+specifying the keyword \quotekw{\Key{OPTIONS}}.  For example, the input
 
 \begin{inputex} \begin{verbatim}
 **WAVE FUNCTIONS
 .OPTIONS
 **END OF INPUT
 \end{verbatim} \end{inputex}
-   will cause a dump of the labels for the main input groups in SIRIUS,
+   will cause a dump of the labels for the main input groups in {\sir},
    while
 
 \begin{inputex} \begin{verbatim}
@@ -57,9 +57,9 @@ keyword \quotekw{\Key{OPTIONS}}.  For example, the input
 **END OF INPUT
 \end{verbatim} \end{inputex}
    will cause a dump of the labels for the \quotekw{*ORBITAL INPUT} input group
-   in SIRIUS.
+   in {\sir}.
 }
-\item{ The SIRIUS input is finished with a line beginning with two stars,
+\item{ The {\sir} input is finished with a line beginning with two stars,
    e.g.
 
 \begin{inputex} \begin{verbatim}
@@ -97,7 +97,7 @@ effects, respectively:
 
 Section~\ref{ref-haminp} \Sec{HAMILTONIAN}
 
-Section~\ref{ref-solinp} \Sec{SOLVENT CALCULATION}
+Section~\ref{ref-solinp} \Sec{SOLVENT}
 \else
 The following input group describes additional field-dependent
 terms in the Hamiltonian :
@@ -146,7 +146,7 @@ Section~\ref{ref-popinp} \Sec{POPULATION ANALYSIS}
 \noindent
 The next section is used to change the default integral transformation
 and specify any final integral transformation after convergence (a
-program following SIRIUS may need a higher transformation level):
+program following {\sir} may need a higher transformation level):
 
 Section~\ref{ref-trainp} \Sec{TRANSFORMATION}
 
@@ -160,7 +160,7 @@ Section~\ref{ref-auxinp} \Sec{AUXILLIARY INPUT}
 
 \noindent
 Finally we note that there is an input module controling the
-calculation of coupled-cluster wave functions. This is treated in a
+calculation of Coupled Cluster wave functions. This is treated in a
 separate chapter:
 
 Chapter~\ref{ch:CC} \Sec{CC INPUT}
@@ -207,15 +207,15 @@ input.
    Number of basis functions per symmetry.
 
 \item[\Key{CC}]
-  Coupled cluster calculation. After a Hartree-Fock calculation
-  the \cc\ program is called to do a coupled cluster (response) calculation.
+  Coupled Cluster calculation. After a Hartree--Fock calculation
+  the \cc\ program is called to do a Coupled Cluster (response) calculation.
   For further input options for the \cc\ program see
   Section~\ref{sec:ccgeneral}. 
-  \index{coupled cluster}\index{CC}
+  \index{Coupled Cluster}\index{CC}
 
 \item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
-  function, and start directly in the coupled-cluster part. Convenient
-  for restarts in the coupled-cluster module.
+  function, and start directly in the Coupled Cluster part. Convenient
+  for restarts in the Coupled Cluster module.
 
 \item[\Key{CI}]
   Configuration interaction calculation.\index{CI}\index{configuration
@@ -229,7 +229,7 @@ input.
 
 \item[\Key{HF}]
   Restricted closed-shell or one open-shell 
-  Hartree-Fock\index{HF}\index{SCF}\index{Hartree-Fock}\index{open-shell HF} calculation.
+  Hartree--Fock\index{HF}\index{SCF}\index{Hartree--Fock}\index{open-shell HF} calculation.
 
 \item[\Key{INTERFACE}]
   Write the "SIRIFC" interface file\index{interface file} for post-processing programs.
@@ -250,18 +250,18 @@ input.
 
 \item[\Key{PRINT}]
   \verb"READ (LUINP,*) IPRSIR" \\
-  General SIRIUS print level and default for all other print parameters.
+  General {\sir} print level and default for all other print parameters.
 
 \item[\Key{RESTART}]
-  restart SIRIUS\index{restart, wave function},
-  the SIRIUS restart file (\verb|SIRIUS.RST|) must be available
+  restart {\sir}\index{restart, wave function},
+  the {\sir} restart file (\verb|SIRIUS.RST|) must be available
 
 \item[\Key{SCF}]
     Alias for the \quotekw{\Key{HF}} keyword.
 
 \item[\Key{STOP}]
   \kw{READ (LUINP,'(A20)') REWORD} \\
-  Terminate SIRIUS according to the instruction given on the following line.
+  Terminate {\sir} according to the instruction given on the following line.
   Three stop points are defined:
 \begin{enumerate}
 
@@ -302,7 +302,7 @@ input.
 %\fi
 
 BASIS SET is provided such that the number of basis functions in each
-symmetry may be specified if SIRIUS is modified to interface to an
+symmetry may be specified if {\sir} is modified to interface to an
 integral program which doesn't write this information to the integral
 file.
 
@@ -426,7 +426,7 @@ To obtain initial guess for CI vector(s).
   of degenerate   diagonal elements ({\bf STRONGLY RECOMMENDED} for
   calculation of singlet states  with \quotekw{\Key{DETERMINANTS}}).
 
-\item[\Key{SELECT CONFIGURATION}]
+\item[\Key{SELECT}]
   \kw{READ (LUINP,*) ICONF} \\
   Select CSF (or determinant if \quotekw{\Key{DETERMINANTS}}) no.
   ICONF as start configuration.\index{configuration, start}
@@ -570,7 +570,7 @@ The field integrals are read from file \verb|AOPROPER| with the specified label.
 {\bf Purpose:}
 
 This section deals with the closed shell and one open shell
-Hartree-Fock cases\index{SCF}\index{HF}\index{Hartree-Fock}.  The
+Hartree--Fock cases\index{SCF}\index{HF}\index{Hartree--Fock}.  The
 input here will usually only be used if
 \quotekw{\Key{HF}} (or its alias \quotekw{\Key{SCF}}) or
 \quotekw{\Key{MP2}}\index{MP2}\index{M\o ller-Plesset} have been
@@ -581,12 +581,12 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
 
 \begin{description}
 \item[\Key{AUTOCCUPATION}]
-  Default for SCF\index{SCF}\index{HF}\index{Hartree-Fock} and
+  Default for SCF\index{SCF}\index{HF}\index{Hartree--Fock} and
   MP2\index{MP2}\index{M\o ller-Plesset} calculations starting from H\"{u}ckel or H1DIAG
   starting orbitals\index{starting orbital}\index{H\"{u}ckel}.
 
-  Allow the Hartree-Fock occupation\index{Hartree-Fock
-  occupation}\index{HF occupation} to
+  Allow the Hartree--Fock
+occupation\index{Hartree--Fock occupation}\index{HF occupation} to
   change based on changes in
   orbital ordering during DIIS\index{DIIS} optimization.
 
@@ -656,8 +656,8 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
 
 \item[\Key{HF OCCUPATION}]
     \kw{READ (LUINP,*) (NRHF(I),I=1,NSYM)} \\
-  Hartree-Fock occupancy for RHF and MP2
-  calculations\index{HF}\index{SCF}\index{Hartree-Fock}\index{MP2}\index{M\o
+  Hartree--Fock occupancy for RHF and MP2
+  calculations\index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M\o
   ller-Plesset}. This keyword is required is Hartree--Fock or MP2 is
   part of a multistep calculation which includes an MCSCF wave
   function. 
@@ -687,7 +687,7 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
   No transformation to canonical orbitals\index{canonical orbital}
 
 \item[\Key{NOQCHF}]
-  No quadratically convergent Hartree-Fock\index{HF, quadratic convergent} iterations
+  No quadratically convergent Hartree--Fock\index{HF, quadratic convergent} iterations
 
 \item[\Key{OPEN SHELL}]
   Default = no open shell\\
@@ -697,13 +697,13 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
 
 \item[\Key{PRINT}]
   \kw{READ (LUINP,*) IPRRHF} \\
-  Resets general print level to \verb|IPRRHF| in Hartree-Fock calculation
+  Resets general print level to \verb|IPRRHF| in Hartree--Fock calculation
   (if not specified, global print levels will be used).
 
 \item[\Key{THRESHOLD}]
   Default = 1.0D-06\\
   \kw{READ (LUINP,*) THRRHF} \\
-  Hartree-Fock convergence threshold for energy gradient.  The convergence
+  Hartree--Fock convergence threshold for energy gradient.  The convergence
   of the energy will be approximately the square of this number.
 
 \end{description}
@@ -711,7 +711,7 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
 
 \noindent{\bf Comments:}
 
-By default, the RHF part of a SIRIUS calculation will consist of :
+By default, the RHF part of a {\sir} calculation will consist of :
 \begin{enumerate}
 \item {MAXFCK Roothaan Fock iterations (early exit if convergence
     or oscillations). However, the default is that no Roothaan Fock
@@ -721,7 +721,7 @@ iterations are done unless explicitly requested through the keyword
 \item {MXDIIS DIIS iterations (exit if convergence, i.e. gradient norm
     less than THRRHF, and if convergence rate too slow or even diverging).
 }
-\item {Unless NOQCHF, quadratically convergent Hartree-Fock until
+\item {Unless NOQCHF, quadratically convergent Hartree--Fock until
     gradient norm less than THRRHF.
 }
 \item{If \quotekw{.H1VIRT} then transformation of
@@ -743,18 +743,18 @@ iterations are done unless explicitly requested through the keyword
 \end{enumerate}
 
 In general \quotekw{.HF OCCUPATION} should be specified for CI or
-MCSCF\index{HF occupation}\index{Hartree-Fock occupation}\index{CI}\index{MCSCF}\index{configuration
+MCSCF\index{HF occupation}\index{Hartree--Fock occupation}\index{CI}\index{MCSCF}\index{configuration
 interaction} wave function calculations.  If not specified, the HF
 occupation
 will be the number of inactive orbitals in the MCSCF calculation (or
 CI calculation if no MCSCF). For SCF or
-MP2\index{HF}\index{SCF}\index{Hartree-Fock}\index{MP2}\index{M\o
+MP2\index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M\o
 ller-Plesset} calculations the
-Hartree-Fock occupation will be determined on the basis of the nuclear
+Hartree--Fock occupation will be determined on the basis of the nuclear
 charges and molecular charge of the molecule as specified in the
 \verb|MOLECULE.INP| file.
 
-By default, starting orbitals and initial Hartree-Fock occupation will
+By default, starting orbitals and initial Hartree--Fock occupation will
 be determined on the basis of a H\"{u}ckel\index{H\"{u}ckel}
 calculation (for molecules where all nuclear charges are
 less than or equal to 36). If problems is experienced due to the
@@ -763,7 +763,7 @@ starting orbitals (e.g. \verb|H1DIAG|).
 
 %The default convergence threshold is quite sharp (compare with the
 %default for MCSCF), this is done in order to have good orbitals
-%for MP2 calculations.  For Hartree-Fock
+%for MP2 calculations.  For Hartree--Fock
 %calculations with many basis functions
 %which are not to be followed by MP2 or used for finite difference
 %property calculations, some CPU time may be save by lowering the
@@ -777,7 +777,7 @@ Harrell Sellers, Int. J. Quant. Chem. {\bf 45}, 31-41 (1993) is
 also implemented, and may be selected with \quotekw{\Key{C2DIIS}}.
 
 
-H1VIRTUALS: This option can be used without a Hartree-Fock calculation
+H1VIRTUALS: This option can be used without a Hartree--Fock calculation
 to obtain compact virtual orbitals, but \quotekw{\Key{HF OCCUPATION}} must be
 specified anyway in order to identify the virtual orbitals to be transformed.
 
@@ -829,7 +829,7 @@ Coupled Cluster module, see Chapter~\ref{ch:CC}.
 \noindent{\bf Comments:}
 
 
-The MP2 module expects canonical Hartree-Fock orbitals\index{canonical
+The MP2 module expects canonical Hartree--Fock orbitals\index{canonical
 orbital}, the module will
 check the orbitals and exit if the Fock matrix has off-diagonal non-zero
 elements.
@@ -960,8 +960,8 @@ Some of the options also affect a QC-HF optimization.
 
 \item[\Key{MAXABS}]
   \kw{READ (LUINP,*) MAXABS} \\
-  maximum number of macro iterations with absorption\index{orbital
-  absorption} (default = 3).
+  maximum number of macro iterations with 
+  absorption\index{orbital absorption} (default = 3).
 
 \item[\Key{MAXAPM}]
   \kw{READ (LUINP,*) MAXAPM} \\
@@ -1058,7 +1058,7 @@ Some of the options also affect a QC-HF optimization.
   Active orbitals are transformed to natural orbitals and the CI-vectors
   are counter-rotated such that the CI states do not change.  The
   inactive and secondary orbitals are transformed to Fock type orbitals
-  (corresponding to canonical orbitals for closed shell Hartree-Fock).
+  (corresponding to canonical orbitals for closed shell Hartree--Fock).
   For RAS wave functions the active orbitals are only transformed
   within their own class (RAS1, RAS2, or RAS3) as the wave function is
   not invariant to orbital rotations between the classes.  For RAS, the
@@ -1241,11 +1241,11 @@ reordering and punching of orbitals.
         The start density will thus be close to one generated from atomic densities,
         but with molecular valence interaction in the H{\"u}ckel model.
         This works a lot better than using a minimal basis set for H{\"u}ckel.
-   \item[{\tt NEWORB\ }] Input from SIRIUS restart file
+   \item[{\tt NEWORB\ }] Input from {\sir} restart file
                             (\verb|SIRIUS.RST| file) with label \quotekw{NEWORB  }
-   \item[{\tt OLDORB\ }] Input from SIRIUS restart file
+   \item[{\tt OLDORB\ }] Input from {\sir} restart file
                             (\verb|SIRIUS.RST| file) with label \quotekw{OLDORB  }
-   \item[{\tt SIRIFC\ }] Input from SIRIUS interface file ("SIRIFC")
+   \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("SIRIFC")
    \end{description}
 
 \item[\Key{NOSUPSYM}]
@@ -1260,7 +1260,7 @@ reordering and punching of orbitals.
 \item[\Key{PUNCHOUTPUTORBITALS}]
   Punch final orbitals with label \Sec{*MOLORB}, Format (4F18.14)
 
-\item[\Key{REORDER MO'S}]
+\item[\Key{REORDER}]
 Default: no reordering.
 \begin{verbatim}
   READ (LUINP,*) (NREOR(I), I = 1,NSYM)
@@ -1301,7 +1301,7 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
 
 \noindent{\bf Comments:}
 
-\sir\ automatically identifies "super
+{\sir} automatically identifies "super
 symmetry"\index{supersymmetry}, {\it i.e.\/} of irreps of the true point
 group of the molecule\index{symmetry group} which is a
 "supergroup" of the Abelian group used in the calculation.
@@ -1332,7 +1332,7 @@ degeneracies and sufficiently large to ignore small errors in
 geometry and numerical round-off errors.
 
 
-REORDER MO\index{orbital reordering} can for instance be used for
+\Key{REORDER}\index{orbital reordering} can for instance be used for
 linear molecules to interchange
 undesired delta orbitals among the active orbitals in symmetry 1 with
 sigma orbitals.  Another example is movement of the core orbital to the
@@ -1365,8 +1365,7 @@ Requires a set of natural orbitals\index{natural orbital} and their occupation.
   Do gross MO population analysis.\index{population analysis}
 
 \item[\Key{MULLIKEN}]
-  Do Mulliken population analysis.\index{population
-  analysis}s\index{Mulliken population analysis}
+  Do Mulliken population analysis\index{population analysis}\index{Mulliken population analysis}
 
 \item[\Key{NETALL}]
   Do all net population analysis.\index{population analysis}
@@ -1475,7 +1474,7 @@ To control the printing of output.
 
 \ifsolvent
 \pagebreak[3]
-\subsection{\label{ref-solinp}\Sec{SOLVENT INPUT}}
+\subsection{\label{ref-solinp}\Sec{SOLVENT}}
 
 {\bf Purpose:}
 
@@ -1522,8 +1521,9 @@ will activate this model.
 
 \noindent{\bf Comments:}
 
-One and only one of \quotekw{\Key{DIELEC}}, \quotekw{\Key{INERSI}}, and
-\quotekw{\Key{INERSF}} must be specified.
+One and only one of \quotekw{\Key{DIELECTRIC CONSTANT}},
+\quotekw{\Key{INERSINITIAL}}, and \quotekw{\Key{INERSFINAL}} must be
+specified.
 \fi % end of \ifsolvent
 
 
@@ -1653,7 +1653,7 @@ basis\index{molecular orbital}.
 \item[\Key{OLD TRANSFORMATION}]
   Use existing transformed integrals
 
-\item[\Key{PRESORTED}]
+\item[\Key{PRESORT}]
 Indicates that the transformed two-electron integrals are already
 present generated through the keyword \Key{SORT I} in the
 \Sec{*INTEGRALS} input module. This keyword is true if
@@ -1667,7 +1667,7 @@ present generated through the keyword \Key{SORT I} in the
   \kw{READ (LUINP,*) MWORK} \\
   On virtual memory computers, the transformation will run more
   efficiently if it can be kept within the possible resident memory
-  size: the real memory size.  SIRIUS will attempt to only use MWORK
+  size: the real memory size.  {\sir} will attempt to only use MWORK
   double precision words in the transformation.
 \end{description}
 
@@ -1684,7 +1684,7 @@ specified by the two transformation level keywords.
 
    \item[1:] Obsolete, do not use.
 
-   \item[2:] Default for MCSCF optimization. All integrals needed for SIRIUS
+   \item[2:] Default for MCSCF optimization. All integrals needed for {\sir}
              second-order MCSCF optimization, including the integrals
              needed to explicitly construct the diagonal of the orbital
              hessian. Two indices occupied orbitals, two indices all
@@ -1709,6 +1709,6 @@ specified by the two transformation level keywords.
 \section{\label{sec:ref-molorbinp} \Sec{*MOLORB} input module}
 
 If formatted input of the molecular orbitals has been specified in
-the \Sec{ORBITAL INPUT} section, then SIRIUS will attempt to find
+the \Sec{ORBITAL INPUT} section, then {\sir} will attempt to find
 the two-star label "\verb|**MOLORB|" in the input file and read
 the orbital coefficients from the lines following this label.

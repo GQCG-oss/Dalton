@@ -4,7 +4,7 @@ The \mol-style input is originally based on the input for the \mol\
 integral program by Alml\"{o}f~\cite{moleculeref}. However, except for
 some lines still requiring formatted input, there are few remnants of
 the original input structure.
-The program supports both Cartesian\index{cartesian coordinate input}
+The program supports both Cartesian\index{Cartesian coordinate input}
 and Z-matrix input\index{Z-matrix input} of the
 molecular coordinates. However, the Z-matrix input provided is only a
 convenient way of describing the molecular geometry, as the Z-matrix is
@@ -44,7 +44,7 @@ The description of the \mol\ input is divided into four parts.
 Section~\ref{sec:molgeneral} describes the general section of the
 molecule input,
 section~\ref{sec:molcart} describes the Cartesian coordinate
-input\index{cartesian coordinate input},
+input\index{Cartesian coordinate input},
 section~\ref{sec:molzmat} describes the Z-matrix input\index{Z-matrix
 input}, and finally
 Section~\ref{sec:molbasis} describes the basis set library\index{basis
@@ -80,12 +80,13 @@ in parentheses.
 \begin{description}
 \item[1] The word \verb|INTGRL| {\tt (A6)}.
 \item[2-3] Two arbitrary title lines {\tt (A72)}.
-\item[4] \verb|CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3), ID3, THRS|
-{\tt (A1,I4,I3,A2,10A1,D10.2)}.
+\item[4]
+\verb|CRT, NONTYP, KCHARG, SYMTXT, ((KASYM(I,J), I = 1,3), J = 1,3), ID3, THRS|
+\\ \verb|(A1,I4,I3,A2,10A1,D10.2)|.
 \begin{description}
 \item[CRT] By giving a small or capital 'C' in this
 position, the program will use Cartesian Gaussian basis
-functions\index{cartesian basis function} instead of
+functions\index{Cartesian basis function} instead of
 the default, which is Spherical Gaussian basis
 functions\index{spherical basis function}\index{basis function}.
 \item[NONTYP] Number of atom types (number of atoms specified
@@ -93,8 +94,9 @@ in separate blocks). For a Z-matrix input this will be the total
 number of atoms in the molecule.
 \item[KCHARG] The charge of the molecule\index{charge of
 molecule}. Will be used  by
-the program to determine the Hartree-Fock occupation. A zero is
-assumed if no number is given here.
+the program to determine the Hartree--Fock
+occupation\index{HF occupation}\index{Hartree--Fock occupation}. A zero
+is assumed if no number is given here.
 \item[SYMTXT] Number of symmetry generators\index{symmetry
 generator}. If this field is
 left blank, the automatic symmetry detection\index{symmetry detection}
@@ -142,13 +144,12 @@ atoms, in which case the first line should read
 
 The fourth line (fifth in a calculation using the basis set library)
 looks a bit devastating. However, for ordinary
-Hartree-Fock\index{HF}\index{MP2}\index{SCF}\index{Hartree-Fock}\index{M\o
+Hartree--Fock\index{HF}\index{MP2}\index{SCF}\index{Hartree--Fock}\index{M\o
 ller-Plesset} or MP2
 calculations, only the number of different atom types and the charge
 need to be given (if the molecule is charged), as symmetry and
-Hartree-Fock occupation\index{HF occupation}\index{Hartree-Fock
-occupation} will be taken
-care of by the program. Thus
+Hartree--Fock occupation\index{HF occupation}\index{Hartree--Fock occupation}
+will be taken care of by the program. Thus
 this line could in the above example be reduced to
 \begin{verbatim}
  4:    2
@@ -190,9 +191,9 @@ determines the order of the irreducible \typeout{Sonia: it was
 needed when specifying active spaces. Thus, for MCSCF calculations
 we recommend that the symmetry is  explicitly specified through
 the appropriate symmetry generators, as well as the explicit
-Hartree-Fock occupation numbers.
+Hartree--Fock occupation numbers.
 
-\section{Cartesian geometry input}\label{sec:molcart}\index{cartesian
+\section{Cartesian geometry input}\label{sec:molcart}\index{Cartesian
 coordinate input}
 
 Assuming that we have given the general input as indicated above, we
@@ -246,7 +247,7 @@ The different lines are:
 {\tt (BN,A6,F4.0,24I5)}.
 \begin{description}
 \item[ZMATL] This field must be left blank when Cartesian
-coordinate input\index{cartesian coordinate input} is used as the field
+coordinate input\index{Cartesian coordinate input} is used as the field
 is used for checking whether
 Cartesian coordinates or Z-matrix\index{Z-matrix input} input is being
 used. Characters

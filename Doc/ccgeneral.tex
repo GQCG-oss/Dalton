@@ -11,33 +11,33 @@ model(s) and other parameters common to all submodules are specified.
    Skip the calculation of the $B0$-vectors 
    in a restarted run. See comments under \verb|.IMSKIP|.
 %
-\item[\Key{CC(2) }]  
+\item[\Key{CC(2)}]  
         Run calculation for non-iterative CC2 excitation energy model 
         (which is actually the well-known CIS(D) model).
  
-\item[\Key{CC(3) }]  
+\item[\Key{CC(3)}]  
        Run calculation for CC(3) ground state energy model.
 
-\item[\Key{CC(T) }]  
+\item[\Key{CC(T)}]  
         Run calculation for CCSD(T) (Coupled Cluster Singles and 
         Doubles with perturbational treatment of triples) model.
         \index{CCSD(T)}
 %
-\item[\Key{CC2   }]    
+\item[\Key{CC2}]    
         Run calculation for CC2 model. 
         \index{CC2}
  
-\item[\Key{CC3   }]     
+\item[\Key{CC3}]     
         Run calculation for CC3 model.
         \index{CC3}
 %
-\item[\Key{CCD   }]    
+\item[\Key{CCD}]    
         Run calculation for Coupled Cluster Doubles
         (CCD) model. 
         \index{Coupled Cluster Doubles}
         \index{CCD}
 %
-\item[\Key{CIS   }]    
+\item[\Key{CIS}]    
         Run calculation for CI Singles (CIS) method. 
         \index{Configuration Interaction Singles}
         \index{CI Singles}
@@ -46,12 +46,12 @@ model(s) and other parameters common to all submodules are specified.
 \item[\Key{CCR(3)}] 
         Run calculation for CCSDR(3) excitation energy model.
 %
-\item[\Key{CCS   }] 
+\item[\Key{CCS}] 
         Run calculation for Coupled Cluster Singles
         (CCS) model. 
         \index{Coupled Cluster Singles} \index{CCS}
 %
-\item[\Key{CCSD  }]   
+\item[\Key{CCSD}]   
         Run calculation for Coupled Cluster Singles and Doubles
         (CCSD) model. 
         \index{Coupled Cluster Singles and Doubles}
@@ -65,7 +65,7 @@ model(s) and other parameters common to all submodules are specified.
    \index{CCS}
    \index{finite field}
 %
-\item[\Key{DEBUG }]  
+\item[\Key{DEBUG}]  
    Test option: print additional debug output.
 %
 \item[\Key{E0SKIP}] 
@@ -80,7 +80,7 @@ model(s) and other parameters common to all submodules are specified.
    Skip the calculation of F-matrix transformed second-order
    cluster amplitude responses in a restarted run. See comment under \verb|.IMSKIP|.
 %
-\item[\Key{FIELD }] \verb| |\newline
+\item[\Key{FIELD}] \verb| |\newline
     \verb|READ (LUCMD,*) EFIELD|\newline
     \verb|READ (LUCMD,'(1X,A8)') LFIELD|
 
@@ -102,7 +102,7 @@ model(s) and other parameters common to all submodules are specified.
 
      Specify the number of frozen core orbitals and number of frozen virtuals (0 is recommended for the latter).
      The program will automatically freeze the NFC(NFV) orbitals of lowest (highest) orbital energy
-     among the canonical Hartree-Fock orbitals.
+     among the canonical Hartree--Fock orbitals.
      For benzene a relevant choice is for example 6 0.
 
 \item[\Key{FROIMP}] \verb| |\newline
@@ -191,13 +191,13 @@ model(s) and other parameters common to all submodules are specified.
   Maximum dimension of the reduced space for the 
   solution of linear equations (default is \verb+MAXRED = 200+).
  
-%\item[\Key{CC1A  }]   
+%\item[\Key{CC1A}]   
 %        Run calculation for CCSDT-1A model.  Not recommended for general use.
 %
-%\item[\Key{CC1B  }]    
+%\item[\Key{CC1B}]    
 %        Run calculation for CCSDT-1B model.  Not recommended for general use.
 %
-\item[\Key{MP2   }]    
+\item[\Key{MP2}]    
 Run calculation for second-order M{\o}ller-Plesset perturbation theory
 (MP2)\index{M{\o}ller-Plesset, second-order}\index{MP2} method.
 
@@ -230,7 +230,7 @@ Run calculation for second-order M{\o}ller-Plesset perturbation theory
   compatible equations (same equation type and symmetry class) 
   are solved simultaneously.
  
-\item[\Key{NSYM  }] \verb| |\newline
+\item[\Key{NSYM}] \verb| |\newline
        \verb|READ (LUCMD,'(I5)') MSYM2|
 
        Set number of irreducibel representations. 
@@ -256,7 +256,7 @@ Run calculation for second-order M{\o}ller-Plesset perturbation theory
 %\item[\Key{CCR(T)}] 
 %        Run calculation for CCSDR(T) model. Not recommended for general use.
 %
-\item[\Key{PRINT }]  \verb| |\newline
+\item[\Key{PRINT}]  \verb| |\newline
 \verb|READ (LUCMD,'(I5)') IPRINT|
 
        Set print parameter for coupled cluster program
@@ -276,7 +276,7 @@ Run calculation for second-order M{\o}ller-Plesset perturbation theory
    Skip the calculation of the first-order responses of the 
    ground-state Lagrangian multipliers in a restarted run. See comment under \verb|.IMSKIP|.
 %
-\item[\Key{RESTAR}] 
+\item[\Key{RESTART}] 
        Try to restart the calculation from the cluster amplitudes,
        Lagrange multipliers, response amplitudes etc.\ stored on
        disk.

@@ -22,7 +22,7 @@ manner\index{direct calculation}, that
 is, the two-electron integrals\index{two-electron integral} are to be
 constructed ``on the fly''
 and not written to disc as is the default. This keyword will only work
-for SCF\index{SCF}\index{HF}\index{Hartree-Fock} wave functions, and
+for SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave functions, and
 two-electron integrals (and differentiated
 two-electron integrals) will not be written to disc in any part of the
 calculation.
@@ -86,12 +86,12 @@ calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
 module. 
 
-\item[\Key{PARALL}] Requests that the calculation of two-electron
+\item[\Key{PARALLEL}] Requests that the calculation of two-electron
 integrals\index{two-electron integral}
 is to be done in parallel\index{parallel calculation}. This also
 implies that the calculation is
 done without writing two-electron integrals to disc. This keyword only
-applies to SCF\index{SCF}\index{HF}\index{Hartree-Fock} wave
+applies to SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
 functions, but all two-electron integral
 evaluations in an SCF calculation will be done parallel. More details
 about the parallelization strategy in \siraba\ can be found
@@ -107,11 +107,11 @@ interface, no further keywords are
 needed, as the number of nodes will be set equal to the number of
 nodes asked for when submitting the job. However, if PVM\index{PVM} is used as
 message passing interface, the number of nodes needs to be given in the
-\Sec{PARALL} submodule input, and this number have to be equal to
+\Sec{PARALLEL} submodule input, and this number have to be equal to
 the number of nodes asked for when submitting the job. Note also that
 in order to evaluate the parallelization efficiency\index{parallel
 efficiency}, a print level of
-at least 2 is needed in the \Sec{PARALL} submodule.
+at least 2 is needed in the \Sec{PARALLEL} submodule.
 
 \item[\Key{PRESORT}]\index{integral sort} Requests that the
 two-electron integrals should be
@@ -188,7 +188,7 @@ detailed description of possible options.
 
 Invoke the \sir\ program for the evaluation of SCF, MP2, Coupled Cluster and MCSCF
 wave
-functions\index{SCF}\index{HF}\index{Hartree-Fock}\index{MP2}\index{M\o
+functions\index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{M\o
 ller-Plesset}\index{MCSCF}\index{CC}. See Chapter~\ref{chap:inpref}.
 \end{description}
 
@@ -422,8 +422,7 @@ effect for first-order methods and overrides the keywords
 been specified.
 
 %\item[\Key{INTERA}]
-%Specifies a interactive run\index{interactive geometry
-%optimization}. The energy, gradient
+%Specifies a interactive run. The energy, gradient
 %norm\index{norm of gradient}, step length\index{norm of step} and
 %Hessian index\index{Hessian index} is then written to the unit LUERR(=0)
 %in each iteration, allowing easy monitoring of the optimization.
@@ -511,8 +510,8 @@ sometimes benefit from having all dihedral angles removed (assuming no
 dihedral angles needs to be frozen).
 
 \item[\Key{NOREIN}]
-When first-order methods are used, the Hessian\index{Hessian
-reinitialization} is reinitialized every
+When first-order methods are used, the 
+Hessian\index{Hessian reinitialization} is reinitialized every
 time the Hessian index\index{Hessian index} becomes non-zero (due to negative
 eigenvalues). This guarantees that the Hessian describes a minimum,
 but valuable information gathered in the Hessian may be
@@ -651,7 +650,7 @@ step will then be the negative of the gradient vector, and the
 convergence towards the minimum will be extremely slow. However, this
 option can be combined with other initial Hessians in Cartesian or
 redundant internal coordinates\index{Cartesian
-coordinate}\index{redundant internal coordinates}, giving a method
+coordinates}\index{redundant internal coordinates}, giving a method
 where the main feature is the lack of Hessian updates (static
 Hessian).
 
@@ -771,7 +770,7 @@ vibrational analysis has been requested.
 
 \end{description}
 
-\subsection{Numerical differentiation : \Sec{nmddrv}}
+\subsection{Numerical differentiation : \Sec{NMDDRV}}
 
 This submodule controls the calculation of force constants from
 available analytical derivatives (for instance molecular
@@ -813,7 +812,7 @@ field requested with respect to normal coordinates.
 
 \end{description}
 
-\subsection{Parallel calculations : \Sec{PARALL}}
+\subsection{Parallel calculations : \Sec{PARALLEL}}
 
 This submodule controls the performance of the parallel
 version\index{parallel calculation}
@@ -1018,7 +1017,7 @@ Specify the isotopic constitution\index{isotopic constitution} of the
 molecule under investigation.
 This is most interesting in dynamic walks\index{dynamics}, 
 when using mass-scaled atomic coordinates,\index{mass-weighted
-coordinate}. Note that the internal structure of
+coordinates}. Note that the internal structure of
 \aba\ uses Cartesian coordinates, and for vibrational analysis alone
 the keyword \Key{ISOTOP} in the \Sec{VIBANA} input section is to be
 used. Note also that for defining center of mass
@@ -1033,7 +1032,7 @@ broken. The threshold for determining a mode as breaking symmetry is
 controlled by the keyword \Key{ZERGRD}.
 
 \item[\Key{MASSES}] Mass-scale the atomic coordinates\index{mass-weighted
-coordinate}.  This is the
+coordinates}.  This is the
 default for dynamic walks\index{dynamics}, gradient
 extremal\index{gradient extremal} walks and in calculations
 of Intrinsic Reaction Coordinates (IRCs)\index{intrinsic reaction
@@ -1190,7 +1189,7 @@ effective (rovibrationally averaged) geometries are to be
 calculated. Read one more line containing the number of different
 temperatures, and another line containing the list of temperatures.
 
-\item[\Key{TOLERA}]\verb| |\newline
+\item[\Key{TOLERANCE}]\verb| |\newline
 \verb|READ (LUCMD, *) TOLST|
 
 Threshold for convergence of the geometry optimization (on gradient

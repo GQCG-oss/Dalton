@@ -100,7 +100,7 @@ analysis\index{vibrational analysis} at the stationary point, as well
 as determining the nuclear
 shielding\index{nuclear shielding} constants at the optimized
 geometry, will look like
-(assuming a Hartree-Fock wave function):
+(assuming a Hartree--Fock wave function):
 
 \begin{verbatim}
 **DALTON INPUT
@@ -199,12 +199,13 @@ illustrated in the following input:
 This will use the default method of \Key{OPTIMIZE}: a first-order
 optimization~\cite{Fletcher} in redundant internal
 coordinates~\cite{gfxfzpwtppjacs114,ppgfjcp96,vbth}\index{redundant
-internal coordinates} using the BFGS\index{BFGS}\index{Hessian update}
-Hessian update. This means that
+internal coordinates} using the BFGS\index{BFGS update}\index{Hessian
+update} Hessian update. This means that
 only the energy and the gradient is calculated in each iteration, and
 an approximate Hessian is obtained using the gradients and the
 displacements. The initial Hessian is diagonal in the redundant
-internal coordinates. To obtain the properties at the optimized
+internal coordinates~\cite{rlabgkpamcpl241}.
+To obtain the properties at the optimized 
 geometry, the Hessian has to be calculated. By looking at the
 vibrational frequencies one can then verify that a true minimum has
 been reached (as all frequencies should be real, corresponding to a
@@ -212,7 +213,7 @@ positive definite Hessian).
 
 Several first-order methods have been implemented in DALTON, the
 recommended method being the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
-Hessian updating scheme\index{BFGS}\index{Hessian update}. Though other
+Hessian updating scheme\index{BFGS update}\index{Hessian update}. Though other
 updates may perform better in
 certain cases, the BFGS update generally seems to be the most
 reliable and thus is the default method for minimization.
@@ -246,7 +247,7 @@ sensitive to this, and the \Sec{WALK} module thus only uses
 Cartesian coordinates. However, the coordinate system may be crucial
 to the performance of first-order methods, especially when starting
 from approximate Hessians. \Sec{OPTIMIZE} provides the normal Cartesian
-coordinates\index{Cartesian coordinate} and redundant
+coordinates\index{Cartesian coordinates} and redundant
 internal coordinates\index{redundant internal coordinates},
 the latter being highly recommended when using
 first-order methods. Redundant internal coordinates consists of all
@@ -257,8 +258,8 @@ internal coordinates is the default for first-order methods, but it is
 possible to override this with the keywords \Key{REDINT} and
 \Key{CARTES} respectively.
 
-The \Sec{OPTIMIZE} decides when a minimum is reached through a set of
-convergence criteria\index{convergence criteria}. These will be
+The \Sec{OPTIMIZE} module decides when a minimum is reached through a
+set of convergence criteria\index{convergence criteria}. These will be
 set automatically depending on the accuracy of the wave function
 using three different criteria, namely the change in energy
 between two iterations, the norm of the molecular
@@ -346,7 +347,7 @@ when using basis sets from the basis set library.
 It is possible to control the optimization procedure more closely
 by giving the program instructions on how to do the different parts of
 the calculation. Below we have listed all the modules that may
-affect the geometry optimization  as well as a short description of
+affect the geometry optimization, as well as a short description of
 which part of the calculation that module controls. The reader is
 referred to the section describing each module for a closer
 description of the different options. These sections may, with the
@@ -398,7 +399,7 @@ states'' and ``Doing Dynamical walks'').
 on the potential energy surface. \index{image surface} The simplest
 way of locating a first-order transition state, which are the
 chemically most interesting ones, is to use the trust-region
-image\index{image surface,trust region} minimization method
+image\index{image surface}\index{trust region} minimization method
 described in Ref.~\cite{thcpl182}. Such geometry optimizations may
 be considered as a special case of walks on second-order surfaces, and
 can be done using either the \Sec{WALK} module or the \Sec{OPTIMIZE}
@@ -522,8 +523,9 @@ transition state optimization using \Sec{OPTIMIZE} is:
 *END OF INPUT
 \end{verbatim}
 This will calculate the Hessian at the initial geometry, then update
-it using Bofill's update\cite{jmbjcc15}\index{Bofill's
-update}\index{Hessian update} (the BFGS update is not suitable since
+it using Bofill's
+update~\cite{jmbjcc15}\index{Bofill's update}\index{Hessian update!Bofill's update}
+(the BFGS update is not suitable since
 it tends towards a positive definite Hessian). As for minimizations,
 redundant internal coordinates are used by default for first-order
 methods.
@@ -613,7 +615,7 @@ we have chosen to follow the second-lowest mode, as specified by the
 \Key{MODE} keyword.
 
 As the calculation of the gradient extremal uses mass-weighted
-coordinates\index{mass-weighted coordinate}, it is recommended to
+coordinates\index{mass-weighted coordinates}, it is recommended to
 specify the isotopic constitution\index{isotopic constitution} of
 the molecule. If none is specified, the most abundant
 isotope of each atom is used by default. In this example the
@@ -657,7 +659,7 @@ extremal}, and the
 keyword that is needed in order to invoke this kind of calculation is
 \Key{MODFOL}. As for gradient extremals, we need to specify which
 mode we follow. However, a mode following does not use mass-weighted
-molecular coordinates\index{mass-weighted coordinate} as default, and
+molecular coordinates\index{mass-weighted coordinates} as default, and
 isotopic composition of the
 molecule is therefore not needed. Note, however, that mass-weighted
 coordinates can be requested through the keyword \Key{MASSES} as
@@ -730,7 +732,7 @@ most successful ways of doing this is the Intrinsic Reaction Coordinate (IRC)
 approach~\cite{kfacr14,pmjcp88}\index{IRC}\index{intrinsic reaction
 coordinate}. The IRC is calculated by taking small steps along the
 negative gradient in a mass-weighted coordinate\index{mass-weighted
-coordinate} system. In \dalton , the
+coordinates} system. In \dalton , the
 size of the step is adjusted with the use of the trust-region based
 algorithm. In order to get a sufficiently accurate potential energy surface,
 rather small steps must be taken, and the default trust radius is thus reset
@@ -765,7 +767,7 @@ should be stopped and started from the transition state again with a
 different sign for the integer specified after the \Key{IRC} keyword.
 
 As the IRC is defined with respect to mass-weighted
-coordinates\index{mass-weighted coordinate}, care
+coordinates\index{mass-weighted coordinates}, care
 has to be taken in order to specify the correct isotopic substitution
 of the molecule through the keyword \Key{ISOTOP} in the
 \Sec{WALK} input module. In this example we have assumed that the
@@ -1001,9 +1003,10 @@ exploit the facilities of the first-order
 geometry optimization routines in {\dalton}, a numerical
 gradient\index{numerical gradient} based
 on energies will be calculated if a geometry optimization is invoked
-for a non-variational wave function. Thus, for example to optimize the
-MP2 geometry of a molecule using numerical gradients, the only input
-needed is
+for a non-variational wave function. As a simple example, to optimize
+the MP2 geometry of a molecule using numerical gradients\footnote{Note
+that MP2 analytical gradients are now available through the {\cc}
+module}, the only input needed is
 
 \begin{verbatim}
 **DALTON INPUT

@@ -124,8 +124,8 @@ response calculation.
 \item{\Key{SOPPA}}
 Required, no defaults. \\
 The SOPPA\index{SOPPA}\index{polarization propagator} flag requires that
-the preceding SIRIUS calculation has generated the MP2 correlation
-coefficients and written them to disk. (Set \Key{RUN RESPONSE} in \Sec{*DALTON}
+the preceding {\sir} calculation has generated the MP2 correlation
+coefficients and written them to disk (set \Key{RUN RESPONSE} in \Sec{*DALTON}
 input as well as \Key{HF} and \Key{MP2} in \Sec{*WAVE FUNCTION}). See
 example input in Chapter~\ref{ch:starting}.
 
@@ -213,7 +213,7 @@ response calculation.
 Threshold for solving the linear response eigenvalue equation. 
 Default is $10^{-3}$.
 
-\item{\Key{FREQUENCIES}}\\
+\item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
 Response equations are evaluated at given
@@ -254,8 +254,7 @@ moment}\index{transition moment}.
 Computes the double residue\index{double residue} of the quadratic
 response function\index{quadratic response}.
 Double residues of the quadratic repsonse function correspond to transition
-moments between excited states\index{transition moment between excited
-states}. 
+moments between excited states\index{transition moment, excited states}. 
 
 \item{\Key{DIPLEN}}
 Sets $A$, $B$, and $C$ to dipole operators\index{dipole length}.
@@ -273,7 +272,7 @@ Sets $A$, $B$, and $C$ to the $z$ dipole operator\index{dipole length}.
 Only response functions connected to the Kerr effect\index{Kerr effect}, 
 $\beta(-\omega; \omega,0)$, are computed.
 
-\item{\Key{FREQUENCIES}}\\
+\item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
 Response equations are evaluated at given
@@ -317,8 +316,8 @@ Spin information for quadratic response\index{quadratic response} calculations.
 The line following these options contains the spin rank\index{spin
 rank} of the operators 
 $A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
-operators. If \Key{SINGLE RESIDUE} is specified, \Key{CSPIN} denotes the
-spin of the excited state. If \Key{DOUBLE RESIDUE} is specified,
+operators. If \Key{SINGLE} is specified, \Key{CSPIN} denotes the
+spin of the excited state. If \Key{DOUBLE} is specified,
 both \Key{BSPIN} and \Key{CSPIN} denote excited state spins.
 In a triplet response calculations two of these operators are of rank one,
 and the remaining operator of rank zero.
@@ -326,7 +325,7 @@ and the remaining operator of rank zero.
 
 \item[\Key{BFREQ}, \Key{CFREQ}]
 The frequencies $\omega_b$ and $\omega_c$. Input as in
-\Sec{LINEAR}\Key{FREQUENCIES}.
+\Sec{LINEAR}\Key{FREQUE}.
 
 \item{\Key{MAXIT}}
 Maximum number of iterations in this section.
@@ -342,8 +341,8 @@ Default is 5.
 Print level.
 
 \item{\Key{SHG}}
-Only response functions connected with second-harmonic
-generation\index{second-harmonic generation} 
+Only response functions connected with second harmonic
+generation\index{second harmonic generation} 
 are computed, $\beta(-2\omega,\omega,\omega)$ .
 
 \item{\Key{THCLR}}
@@ -382,18 +381,18 @@ The frequencies\index{frequency} $\omega_b$, $\omega_c$ and $\omega_d$. Input as
 \Sec{LINEAR}\Key{FREQUE}.
 
 \item{\Key{THG}}
-Only response functions connected to the third-harmonic
-generation\index{third-harmonic generation} are
+Only response functions connected to the third harmonic
+generation\index{third harmonic generation} are
 computed, $\gamma(-3\omega;\omega,\omega,\omega)$ \cite{djpnylhajcp105}.
 
 \item{\Key{DC-SHG}}
 Only response functions connected to the static electric field-induced
-second harmonic generation\index{electric-field induced SHG} are computed,
+second harmonic generation\index{electric field induced SHG} are computed,
 $\gamma(-2\omega;\omega,\omega,0)$.
 
 \item{\Key{DC-KER}}
 Only response functions connected to the static electric field induced
-Kerr effect\index{electric-field induced Kerr} are computed,
+Kerr effect\index{electric field induced Kerr} are computed,
 $\gamma(-\omega;\omega,0,0)$.
 
 \item{\Key{IDRI}}
@@ -401,7 +400,7 @@ Only response functions connected to the intensity dependent
 refractive\index{refractive index, intensity dependent} index are computed,
 $\gamma(-\omega;\omega,-\omega,\omega)$.
 
-\item{\Key{FREQUENCIES}}\\
+\item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
 Sets the frequencies\index{frequency} whenever a optical process is specified.

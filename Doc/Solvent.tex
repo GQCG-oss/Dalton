@@ -13,7 +13,7 @@ MCSCRF calculations.
 \siraba\ has the possibility of modelling the effect of a
 surrounding linear, homogeneous dielectric medium\index{dielectric
 medium} on a variety of molecular properties using
-SCF\index{SCF}\index{HF}\index{Hartree-Fock}\index{MCSCF} or MCSCF
+SCF\index{SCF}\index{HF}\index{Hartree--Fock}\index{MCSCF} or MCSCF
 wave functions. This is achieved by the Multiconfigurational
 Self-Consistent Reaction Field (MCSCRF)\index{reaction
 field}\index{MCSCRF}
@@ -127,7 +127,7 @@ shielding}\index{dielectric medium}:
 **WAVE FUNCTIONS
 .HF
 *SOLVENT
-.DIELECTRIC
+.DIELECTRIC CONSTANT
  78.5
 .MAX L
  10
@@ -157,8 +157,8 @@ characterized by three parameters; the dielectric
 constant\index{dielectric constant}, the cavity\index{cavity}
 size, and the order of the multipole expansion\index{multipole
 expansion}. In the above input we have
-requested a dielectric constant of 78.5 (corresponding to water\index{water})
-through the keyword \Key{DIELECTRIC}, a cavity radius of 3.98 atomic
+requested a dielectric constant of 78.5 (corresponding to water)
+through the keyword \Key{DIELECTRIC CONSTANT}, a cavity radius of 3.98 atomic
 units with the keyword \Key{CAVITY}, and the multipole expansion is to
 include all terms up to $L=10$, as can be seen from the keyword
 \Key{MAX L}. Note that this number cannot be larger than the number given for
@@ -174,7 +174,7 @@ only through the general \Sec{WALK} module.
 %Furthermore, symmetry
 %cannot be used during the geometry optimization, and care must be
 %exercised in order to turn off automatic symmetry detection in case of
-%Hartree-Fock calculations. 
+%Hartree--Fock calculations. 
 Thus the input for an SCF geometry
 optimization with the solvent model would look like:
 

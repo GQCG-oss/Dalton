@@ -135,7 +135,7 @@ tritium will be isotope 3.
 
 The choice of isotopic substituted molecules will affect the gauge
 origin\index{gauge origin}, as well as dynamical walks\index{dynamics}
-and walks using mass-weighted normal\index{mass-weighted coordinate} 
+and walks using mass-weighted normal\index{mass-weighted coordinates} 
 modes, which depend on the choice of 
 isotopic substitution. We notice that for the vibrational
 analysis\index{vibrational analysis},
@@ -330,7 +330,7 @@ line specifying how many symmetries, then one line listing the
 desired symmetries. This option is currently only implemented
 for geometric perturbations. 
 
-\item[\Key{RESTAR}] Restart in the property evaluation section. This
+\item[\Key{RESTART}] Restart in the property evaluation section. This
 keyword is currently disabled. 
 
 \item[\Key{SELECT}]\verb| |
@@ -580,7 +580,7 @@ one more line containing maximum dimension. Default value is~400.
 
 \item[\Key{OPTORB}] Use optimal orbital trial vectors\index{optimal
 orbital trial vector} in the 
-iterative solution of the frequency-dependent linear
+iterative solution of the frequency-depen\-dent linear
 response\index{linear response}
 equations. These are generate as described in
 Ref.~\cite{tuhjahjajpjjcp84} by solving the orbital response equation
@@ -651,7 +651,7 @@ Directives to control the calculations of electronic
 transition\index{electronic excitation}
 properties and excitation energies\index{excitation energy} appear in
 the \verb|*EXCITA| input 
-module. For SCF\index{SCF}\index{HF}\index{Hartree-Fock} wave
+module. For SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
 functions the properties are calculated using the 
 random phase approximation (RPA) and for MCSCF\index{MCSCF} wave functions the
 multiconfigurational (MC)-RPA is used. Implemented electronic transition
@@ -1215,7 +1215,7 @@ the keyword \verb|.EXCITA| in the \verb|*EXCITA| input module.
 
 \item[\Key{OPTORB}] Use optimal orbital trial vectors in
 the\index{optimal orbital trial vector}
-iterative solution of the frequency-independent linear response
+iterative solution of the frequency-inde\-pen\-dent linear response
 equations. These are generate by solving the orbital response equation
 exact, keeping the configuration part fixed as described in
 Ref.~\cite{tuhjahjajpjjcp84}. 
@@ -1550,7 +1550,9 @@ Directives affecting the use of translational and rotational
 invariance\index{translational invariance}\index{rotational invariance}
 appear in the \verb|*TROINV| section.
 \begin{description}
-\item[\Key{COMPAR}] Use translational and rotational\index{translational invariance}\index{rotational invariance} symmetry
+\item[\Key{COMPAR}] Use both translational and
+ rotational\index{translational invariance}\index{rotational
+ invariance} symmetry 
  and check the molecular Hessian against the Hessian obtained
 without the use of translational and rotational invariance. This is
 default in a calculation of vibrational circular dichroism
