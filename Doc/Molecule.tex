@@ -26,8 +26,8 @@ subsequent calculations. Note that the Z-matrix input can only be
 used together with the basis set library (\quotekw{BASIS} in first line).
 
 The program includes an extensive basis set
-library\index{basis set!library},  and
-additional possibilities for choosing the number of primitive
+library\index{basis set!library}, which are described below. 
+Additional possibilities for choosing the number of primitive
 and contracted orbitals to be used with the Atomic Natural Orbital
 (ANO) basis sets\index{ANO basis set}\index{basis set!ANO}
 and the ``Not Quite van Duijneveldt'' (NQvD) basis
@@ -49,12 +49,12 @@ home-page\index{NQvD basis set}\index{basis set!NQvD}\index{ANO basis set}\index
 by Knut F\ae gri for this distribution~\cite{nqvdref}.
 \end{list}
 
-We note that each file containing a given basis sets contains the
-proper reference to be used when doing a calculation with a given
-basis set. We will give proper references for all basis sets in a
-subsequent chapter describing the input for the basis set library.
+We note that each file containing a given basis set in the BASIS
+directory contains the proper reference to be used when doing a 
+calculation with a given basis set. For convenience we also list 
+these references with the basis sets in Section~\ref{sec:basislist}.
 
-The description of the \mol\ input is divided into four parts.
+The description of the \mol\ input is divided into five parts.
 Section~\ref{sec:molgeneral} describes the general section of the
 molecule input,
 section~\ref{sec:molcart} describes the Cartesian coordinate
@@ -63,6 +63,8 @@ section~\ref{sec:molzmat} describes the Z-matrix
 input\index{Z-matrix input}, and finally
 Section~\ref{sec:molbasis} describes the basis set
 library\index{basis set!library}.
+Section~\ref{sec:basislist} lists the basis sets (including references and supported elements) 
+in the basis set library\index{basis set!library}.
 
 \section{General \mol\ input}\label{sec:molgeneral}
 
@@ -564,7 +566,6 @@ by including a 'd-', 't-' or 'q-' prefix to give doubly, triply or quadruply
 augmented basis sets, respectively. For example, specifying t-aug-cc-pVDZ will
 produce a triply augmented cc-pVDZ basis. The aug-ecp basis sets may be augmented 
 in the same manner by using the same prefixes, eg d-aug-ecp. 
-
 Note that these basis sets are not listed 
 explicitly in the basis library directory\index{basis set!library}, 
 but are automatically generated within \dalton from the respective 
@@ -695,13 +696,18 @@ Note that the keyword \Key{AUXBAS} must be specified in the
 \Sec{*INTEGRALS} input section to be able to read the above inputs.
 
 \section{The basis sets supplied with \dalton }
+\label{sec:basislist}
 
 As mentioned above, all the basis sets supplied with this distribution
 of the \dalton\ program --- with the exception of the ANO,
 sadlej\index{sadlej basis set}\index{ANO basis set}\index{NQvD basis set}\index{basis set!sadlej}\index{basis set!ANO}\index{basis set!NQvD}
 and NQvD basis sets --- have been obtained from the EMSL basis set
-library~\cite{emslref}. In a very few cases we have corrected the
-files as obtained from this site, but we do not take responsibility
+library~\cite{emslref}. 
+Supplied basis sets include the STO-$n$G and Pople style basis sets,
+Dunning's correlation consistent basis sets, 
+Ahlrich's basis sets and Huzinaga basis sets. 
+In a very few cases we have corrected the
+files as obtained from EMSL, however we take no responsibility
 for any errors inherent in these files.
 
 The ANO and sadlej polarization basis sets have been obtained from the
@@ -710,50 +716,121 @@ be free of errors. The NQvD has been provided to us by Knut F\ae gri,
 and has been slightly reformatted for more convenient processing of
 the file, hopefully without having introduced any errors.
 
-%Below we give a a list of all basis set that comes with this
-%distribution along with a list of the elements supported, and the
-%proper reference to be used when employing a given basis set in a
-%calculation. In the basis set directory, we have --- for the
-%convienence of the user --- supplied some files only containing basis
-%functions. Although not possible to use in the \dalton\ program, they
-%may be used when adding polarization functions using the {\tt
-%ATOMBASIS} keyword.
+Below we give a comprehensive list of all basis sets included in 
+the basis set library\index{basis set!library}, together with 
+a list of the elements supported, and the complete reference to be 
+cited when employing a given basis set in a calculation. 
 
 
-%\begin{tabular}{lcl}
-%Basis set name & Elements & References\\\hline
-%3-21G & H---Ne & \cite{jsbjapwjhjacs102}\\
-%3-21G & Na---Ar & \cite{msgjsbjapwjpwjhjacs104}\\
-%3-21G & K, Ca, Ga---Kr & \cite{kddwjhjcc7}\\
-%3-21G & Sc---Zn & \cite{kddwjhjcc8-1}\\
-%3-21G & Rb---Xe & \cite{kddwjhjcc8-2}\\
-%3-21++G & H---Ar & As 3-21G, with diffuse functions from
-%Ref.~\cite{tcjcpvrsjcc4,rkjsbrsjapjcp72,pmwgbgjjapmjfcpl197}.\\
-%3-21G* & H---Cl & As 3-21G, with polarization functions from
-%Ref.\cite{wjpmmfwjhdjdjapjsbjacs104}.\\
-%3-21++G* & H---Cl & As 3-21++G and 3-21G*\\
-%4-31G & H---Ne, P---Cl & \cite{rdwjhjapjcp54}\\
-%6-31G & H---He, Be, C--Ne & \cite{wjhrdjapjcp56}\\
-%6-31G & Li, B & \cite{jddjapjcp62}\\
-%6-31G & Na---Ar & \cite{mmfwjpwjhjsbmsgdjdjapjcp77}\\
-%6-31++G & H---Ar & As 6-31G, with diffuse functions from
-%Ref.~\cite{tcjcpvrsjcc4,rkjsbrsjapjcp72,pmwgbgjjapmjfcpl197}.\\
-%6-31G** & H---Ne & As 6-31G, with polarization functions from
-%Ref.~\cite{pchjaptca28}\\
-%6-31G** & Na---Ar & As 6-31G\\
-%6-31++G** & H---Ar & As 6-31++G and 6-31G**\\
-%6-31G(3df,3pd) & H---Ar & As 6-31G, with polarization functions from
-%Ref.~\cite{mjfjapjsbjcp80}.\\
-%6-311G & H---Ne & \cite{rkjsbrsjapjcp72}\\
-%6-311G & Na---Ar & \cite{admgssjcp72}\\
-%6-311G** & Na---Ar & As 6-311G, with polarization functions from
-%Ref.~\cite{rkjsbrsjapjcp72}.\\
-%6-311G(2df,2pd) & H---Ne & As 6-311G, with polarization functions from
-%Ref.~\cite{mjfjapjsbjcp80}.\\
-%6-311G(3df,3pd) & H---Ne & As 6-311G, with polarization functions from
-%Ref.~\cite{mjfjapjsbjcp80}.\\
-%AhlrichsVDZ & H---Kr & \cite{ashhrajcp97}\\
-%AhlrichsVTZ & H---Kr & \cite{ashhrajcp97}\\
+\setlongtables
+\begin{longtable}{lll}
+Basis set name & Elements & References\\
+\hline
+\endfirsthead
+%\caption[]{} \\
+Basis set name & Elements & References\\
+\hline
+\endhead
+\endfoot \endlastfoot
+ STO-2G & H---He & \cite{wjhrfsjapjcp51} \\
+ & Li---Ne; Na---Ar& \cite{wjhrdrfsjapjcp52} \\
+ & K---Ca; Sr& \cite{wjhrdrfsjapjcp52} \\
+%
+ STO-3G & H---He; Li---Ne & \cite{wjhrfsjapjcp51} \\
+ & Na---Ar & \cite{wjhrdrfsjapjcp52} \\
+ & K---Ca; Ga---Kr & \cite{wjpbalwjhrfsic19} \\
+ & Sc---Zn; Y---Cd & \cite{wjpwjhjcc4} \\
+%
+ STO-6G & H--Ne & \cite{wjhrfsjapjcp51} \\
+ & Na---Ar & \cite{wjhrdrfsjapjcp52} \\
+%
+3-21G & H---Ne & \cite{jsbjapwjhjacs102}\\
+  & Na---Ar & \cite{msgjsbjapwjpwjhjacs104}\\
+  & K, Ca, Ga---Kr & \cite{kddwjhjcc7}\\
+  & Sc---Zn & \cite{kddwjhjcc8-1}\\
+  & Rb---Xe & \cite{kddwjhjcc8-2}\\
+  & Cs & \cite{edgdfjpc99} \\
+%
+3-21G* & H---Cl & 3-21G, with polarization functions from
+  Ref.\cite{wjpmmfwjhdjdjapjsbjacs104}.\\
+  & & Note: Polarization functions only on Na---Cl \\
+3-21++G & H; Li---Ar & 3-21G, with diffuse functions from
+  Ref.~\cite{tcjcgwsprsjcc4}.\\
+3-21++G* & H---Cl & 3-21++G and 3-21G*\\
+%
+4-31G & H; C---F, P---Cl & \cite{rdwjhjapjcp54}\\
+  & He, Ne & Gaussian 90 \\
+  & Li, Be & These are actually 5-21G basis sets \\
+  & Na---Ar & \cite{msgjsbjapwjpwjhjacs104} \\ 
+%
+6-31G & H, Be, C--F & \cite{wjhrdjapjcp56}\\
+  & Li, B & \cite{jddjapjcp62}\\
+  & He, Ne & Gaussian 90 \\
+  & K---Ar & \cite{mmfwjpwjhjsbmsgdjdjapjcp77} \\
+  & Zn & \cite{vrjapmrtlwjcp109} \\
+6-31G* & H---He, Li---Ne & 6-31G, with polarization functions from
+  Ref.~\cite{pchjaptca28}\\
+  & Na---Ar & 6-31G, with polarization functions from 
+  Ref.~\cite{mmfwjpwjhjsbmsgdjdjapjcp77} \\
+6-31G** & H---Ne, Na---Ar  & 6-31G*, with H polarization functions from
+  Ref.~\cite{pchjaptca28}\\
+6-31+G & H---Ar & 6-31G, with diffuse functions from
+  Ref.~\cite{tcjcgwsprsjcc4}.\\
+6-31++G & H---Ar & 6-31G, with diffuse functions from
+  Ref.~\cite{tcjcgwsprsjcc4}.\\
+6-31+G*   & H---Ar & 6-31+G and 6-31G*\\
+6-31++G*  & H---Ar & 6-31++G and 6-31G*\\
+6-31++G** & H---Ar & 6-31++G and 6-31G**\\
+6-31G(3df,3pd) & H---Ar & 6-31G, with polarization functions from
+  Ref.~\cite{mjfjapjsbjcp80}.\\
+%
+6-311G & H---Ne & \cite{rkjsbrsjapjcp72}\\
+  & Na---Ar & \cite{admgscjcp72}\\
+  & Br,I & \cite{lacmpmjpbnedrcblrjcp103,mngapmpmlrjcp103} \\
+6-311G* & H---Ar & 6-311G, with polarization functions from
+  Ref.~\cite{rkjsbrsjapjcp72}.\\
+  & Br, I & 6-311G, with polarization functions from
+  Ref.~\cite{lacmpmjpbnedrcblrjcp103} \\
+6-311G** & H---Ar & 6-311G, with polarization functions from
+  Ref.~\cite{rkjsbrsjapjcp72}.\\
+  & Br, I & 6-311G, with polarization functions from
+  Ref.~\cite{lacmpmjpbnedrcblrjcp103}.\\
+6-311+G* & H---Ne & 6-311G* with diffuse functions from 
+  Ref.~\cite{tcjcgwsprsjcc4}.\\
+6-311++G** & H---Ne & 6-311G** with diffuse functions from
+  Ref.~\cite{tcjcgwsprsjcc4}.\\
+6-311G(2df,2pd) & H---Ne & 6-311G, with polarization functions from
+  Ref.~\cite{mjfjapjsbjcp80}.\\
+6-311++G(2d,2p) & H---Ne & 6-311++G, with polarization functions from
+  Ref.~\cite{mjfjapjsbjcp80}.\\
+6-311++G(3df,3pd) & H---Ar & 6-311++G, with polarization functions from
+  Ref.~\cite{mjfjapjsbjcp80}.\\
+%
+Huckel & & \\
+%
+MINI(Huzinaga) & H---Ca & \cite{huzinagabasis} \\
+MINI(Scaled) & H---Ca & \cite{huzinagabasis,htshjcc1} \\
+%
+SV(Dunning-Hay) & H, Li---Ne & \cite{thdpjhhfs1977} \\
+SVP(Dunning-Hay) & H, Li---Ne & SV, with polarization functions from
+  Ref.~\cite{thdpjhhfs1977,emhfsjcp83}.\\
+SVP+Diffuse(Dunning-Hay) & H, Li---Ne & SVP with diffuse functions from
+  Ref.~\cite{thdpjhhfs1977,emhfsjcp83}.\\
+SV+Rydberg(Dunning-Hay) & H, Li---Ne & SV, with polarization functions from
+  Ref.~\cite{thdpjhhfs1977-2}.\\
+SV+DoubleRydberg(Dunning-Hay) & H, Li---Ne & SV, with polarization functions from
+  Ref.~\cite{thdpjhhfs1977-2}.\\
+DZ(Dunning) & H, B---Ne, Al---Cl & \cite{thdjcp53,thdpjhhfs1977} \\
+DZP(Dunning) & H, B---Ne, Al---Cl & DZ, with polarization functions from 
+  Ref.~\cite{thdpjhhfs1977,emhfsjcp83}.\\
+DZP+Diffuse(Dunning) & H, B---Ne & DZP with diffuse functions from
+  Ref.~\cite{thdpjhhfs1977,emhfsjcp83}.\\
+DZ+Rydberg(Dunning) & H, B---Ne, Al---Cl & DZ, with polarization functions from
+  Ref.~\cite{thdpjhhfs1977-2}.\\
+DZP+Rydberg(Dunning) & H, B---Ne, Al---Cl & DZP, with polarization functions from 
+  Ref.~\cite{thdpjhhfs1977-2}.\\
+TZ(Dunning) & H, Li---Ne & \cite{thdjcp55}\\
+%
 %DunningDZ & H & \cite{thdjcp53}\\
 %DunningDZ & B---F, Al---Cl & \cite{thdpjhmest}\\
 %DunningDZP+diff & H---F & As DunningDZ, with polarization and/or
@@ -761,4 +838,48 @@ the file, hopefully without having introduced any errors.
 %DunningDZP+diff & Si---Cl & As DunningDZ, with polarization and/or
 %diffuse functions from ref.~\cite{emhfsjcp83}\\
 %DunningTZ & H, Li---Ne & \cite{thdjcp55}\\
-%\end{tabular}
+%
+AhlrichsVDZ & H---Kr & \cite{ashhrajcp97}\\
+AhlrichsVTZ & H---Kr & \cite{ashhrajcp97}\\
+%
+Huz-II & H, C---F, P, S & \\
+Huz-IIsu2 & H, C---F, P, S & \\
+Huz-III & H, C---F, P, S & \\
+Huz-IIIsu3 & H, C---F, P, S & \\
+Huz-IV & H, C---F, P, S & \\
+Huz-IVsu4 & H, C---F, P, S & \\
+%
+GAMESS-VTZ & & \\
+GAMESS-PVTZ & & \\
+%
+McLean-Chandler-VTZ & & \\
+Wachtersa+f & & \\
+sadlej & & \\
+%
+NASA-Ames-ANO & & \\
+NQvD & & \\
+%
+ano-1 & & \\
+ano-2 & & \\
+ano-3 & & \\
+ano-4 & & \\
+%
+cc-pVDZ & & \\
+cc-pCVDZ & & \\
+cc-pwCVDZ & & \\
+aug-cc-pVDZ & & \\
+aug-cc-pCVDZ & & \\
+d-aug-cc-pVDZ & & \\
+d-aug-cc-pCVDZ & & \\
+%
+ECP\_pseudo & & \\
+ecp-sdd-DZ & & \\
+ecp-sdd-pseudo & & \\
+%
+japrtano & & \\
+sad-J & & \\
+raf-r & & \\
+\end{longtable}
+
+
+
