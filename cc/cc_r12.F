@@ -1468,7 +1468,8 @@ C
       NOCCT = NRHFT
       LUSIRG = 30
       IF ((NLAMDS + 2*NOCCT*NBAST + 14*NOCCT*NOCCT) .GT. LWORK)
-     *CALL QUIT('Not enough space in MAKEUG')
+     *CALL STOPIT('MAKEUG',' ',LWORK,NLAMDS + 2*NOCCT*NBAST 
+     *                             + 14*NOCCT*NOCCT)
       CALL GPOPEN(LUSIRG,'SIRIFC','OLD',' ','UNFORMATTED',IDUM,LDUM)
       REWIND LUSIRG
 C
@@ -1547,7 +1548,7 @@ C
          CALL AROUND('Primed active orbitals')
          CALL OUTPUT(WORK(ISMO2),1,NBAST,1,NOCCT,NBAST,NOCCT,1,LUPRI)
       END IF
-      IF (LQQ .LT. 0) CALL QUIT('No space for R12QQ')
+      IF (LQQ .LT. 0) CALL STOPIT('MAKEUG','R12QQ',LWORK,IEND)
       CALL R12QQ(QQ,WORK(ISMS0),WORK(ISMX1),WORK(ISMY1),WORK(ISMZ1), 
      *           WORK(ISMX2),WORK(ISMY2),WORK(ISMZ2), 
      *           WORK(ISMO2),WORK(ISMO1),WORK(IEND),LQQ,NBAST,NOCCT)
@@ -1603,7 +1604,7 @@ C
      *          WORK(NBAST,NOCCT),BB(NOCCT,NOCCT,2)
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J    
       IF (NBAST*NOCCT .GT. LWORK) 
-     *      CALL QUIT(' Not enough space in UTHZ')
+     *      CALL STOPIT('UTHZ',' ',LWORK,NBAST*NOCCT)
       CALL DZERO(WORK,NBAST*NOCCT)
       DO 103 K = 1, NBAST 
          DO 102 J = 1, NOCCT
@@ -1679,7 +1680,7 @@ C
       IQT11 = IRT11 + NSPAIR**2
       IEND  = IQT11 + NSPAIR**2 
       IF (IEND .GT. LWORK)
-     *CALL QUIT('Core too small in QCAL') 
+     *CALL STOPIT('QCAL',' ',LWORK,IEND) 
       CALL QCAL1(R2AM,U2AM,QQ,WORK(IR11),WORK(IQ11), 
      *           WORK(IRS11),WORK(IQS11),WORK(IRT11),
      *           WORK(IQT11),NOCDIM,NSPAIR,IFLAG)
@@ -2063,6 +2064,7 @@ C
          ENDIF
          KUGAM = KQQ6M + NRHFT ** 4 
          KFRIN = KUGAM + NOCXBS 
+C
          KS2AM = KFRIN + NT2FRO(1)
          KT2AM = KS2AM + NT2AMX
          KU2AM = KT2AM 
@@ -2071,7 +2073,8 @@ C
          KW2AM = KV2AM + NT2AMX 
          KEND1 = KW2AM + NT2AMX
          LWRK1 = LWORK - KEND1
-         IF (KEND1 .GT. LWORK) CALL QUIT('R12 WORK SPACE')
+         IF (KEND1 .GT. LWORK) CALL STOPIT('CCSD_R12','R12 WORK SPACE',
+     &        LWORK,KEND1)
          IF (R12EOR) THEN
 C
             R12EIN = .TRUE.

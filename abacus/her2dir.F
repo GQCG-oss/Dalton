@@ -51,11 +51,19 @@ C
       IMPLICIT REAL (F,S), LOGICAL(D)
       REAL ONE, TWO, GAMAC, GAMAD
       PARAMETER (ONE = 1.00 E00, TWO = 2.00 E00)
+C
+C     Set r12int.h to real
+C
+      REAL GAMAC, GAMAD
 #endif
 #if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (VAR_REAL) && !defined (SYS_T90)
       IMPLICIT DOUBLE PRECISION (F,S), LOGICAL(D)
       DOUBLE PRECISION ONE, TWO, GAMAC, GAMAD
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00)
+C
+C     Set r12int.h to real
+C
+      DOUBLE PRECISION GAMAC, GAMAD
 #endif
 #include <priunit.h>
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, DIA2SO,

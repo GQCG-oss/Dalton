@@ -760,7 +760,7 @@ C
       END
 C  /* Deck node */
 #if defined (VAR_MPI)
-      SUBROUTINE NODSTR(WORK,MWORK,MASTER,MYNUM)
+      SUBROUTINE NODSTR(WORK,MWORK,WRKDLM,MASTER,MYNUM)
 C
 #include <implicit.h>
 #include <priunit.h>
