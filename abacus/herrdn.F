@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.16 2001-11-13 19:32:45 vebjornb Exp $
+C$Id: herrdn.F,v 1.17 2001-11-24 09:43:50 bernds Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
@@ -5437,35 +5437,43 @@ Chj:  skip any additional comment lines before title lines
                   IPRIM =  IPRIM + NNUC
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
-                  IF (N .EQ. 1) THEN
+                     IF (N.EQ.1) THEN
                      WRITE (LUTMP1,'(A1,I4,I5)') 'H', NNUC, NNRC
+                     ENDIF
                      DO 410 M = 1, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (NNRC.LE.3) THEN
+                        IF (N.EQ.1) THEN
                            WRITE (LUTMP1,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
+                        ENDIF
                            WRITE (LUTMP2,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                         ELSE
+                        IF (N.EQ.1) THEN
                            WRITE (LUTMP1,1050) PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
+                        ENDIF
                            WRITE (LUTMP2,1050) PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
                            DO NLOOP = 1, INT(NNRC/3) - 1
+                           IF (N.EQ.1) THEN
                               WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
+                           ENDIF
                               WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
                            END DO
                            IF (MOD(NNRC,3) .NE. 0) THEN
+                           IF (N.EQ.1) THEN
                               WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
+                           ENDIF
                               WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
                            END IF
                         ENDIF
  410                 CONTINUE
-                  END IF
                   DO MM=1,NNRC
                      II=II+1
                      WRITE(LUSHB,'(I5,A5,I5)')II, SPD(J), NNUC
