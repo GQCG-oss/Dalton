@@ -361,7 +361,7 @@ C     Calculate static contribution to dft magnetic hessian
 C     ******************************************************
 C
       IF (DFTRUN.AND.(MAGSUS.OR.MOLGFA))
-     &                  CALL DFTBHES(WORK(KLAST),LWRK1,IPRINT)
+     &                  CALL DFTBHES(SUSDFT,WORK(KLAST),LWRK1,IPRINT)
 C
 C     ***********************
 C     ***** Close units *****

@@ -366,7 +366,7 @@ C
       END
 C
 C /* Deck dftbhes */
-      SUBROUTINE DFTBHES(WORK,LWORK,IPRINT)
+      SUBROUTINE DFTBHES(SUSCP,WORK,LWORK,IPRINT)
 
 C     This subroutine calculates the static DFT contributions
 C     to the magnetizability (second derivative of the energy
@@ -375,9 +375,9 @@ C
 C     D.J. Wilson, T. Helgaker  May 2004
 C     
 #include <implicit.h>
+      DIMENSION SUSCP(3,3)
 #include <priunit.h>
 #include <inforb.h>
-#include <suscpt.h> 
       DIMENSION WORK(LWORK)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       EXTERNAL DFTBHES1
@@ -394,11 +394,11 @@ C
       CALL DFTINT(WORK(KDMAT),1,0,.TRUE.,WORK(KLAST),LWRK,DFTBHES1,
      &            WORK(KDMAT),ELE)
 C     
-C add dft contribution to SUSDFT and print
+C add dft contribution to the result (SUSCP=SUSDFT probably) and print
 C     
       DO I = 1, 3
       DO J = 1, 3
-         SUSDFT(J,I) = WORK(KSUSDF + (I-1)*3 + J - 1)
+         SUSCP(J,I) = WORK(KSUSDF + (I-1)*3 + J - 1)
       END DO
       END DO
       IF (IPRINT.GT.10) THEN
