@@ -140,10 +140,10 @@ ERROR[6]="TRANSITION MOMENTS NOT CORRECT"
 # Phosphorescence
 CRIT1=`$GREP "Partial rates \(H_SO\)\: X\-polarization * (0| )\.5079[0-9](D|E)\-02" $log | wc -l`
 CRIT2=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * (0| )\.5100[0-9](D|E)\-02" $log | wc -l`
-CRIT3=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * (0| )\.00000(D|E)\+00" $log | wc -l`
+CRIT3=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * (0\.0000|\.0000|0\.00000D\+00|0\.00000E\+00|\.00000D\+00|\.00000E\+00)" $log | wc -l`
 CRIT4=`$GREP "Total transtion * rate * \(H_SO\) 1\.0179[0-9](D|E)\-02 s\-1" $log | wc -l`
 CRIT5=`$GREP "Total phosphorescence lifetime \(H_SO\) * 98\.23[0-9] * s" $log | wc -l`
-CRIT6=`$GREP "Partial rates \(H_SO\)\: X\-polarization * (0| )\.00000(D|E)\+00" $log | wc -l`
+CRIT6=`$GREP "Partial rates \(H_SO\)\: X\-polarization * (0\.0000|\.0000|0\.00000D\+00|0\.00000E\+00|\.00000D\+00|\.00000E\+00)" $log | wc -l`
 CRIT7=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * (0| )\.6778[0-9]" $log | wc -l`
 CRIT8=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * (0| )\.1938[0-9](D|E)\-01" $log | wc -l`
 CRIT9=`$GREP "Total transtion * rate * \(H_SO\) (0| )\.6972[0-9] * s\-1" $log | wc -l`

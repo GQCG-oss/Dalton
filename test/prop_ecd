@@ -105,11 +105,11 @@ ERROR[1]="ATOMBASIS NOT READ CORRECTLY"
 # Geomatry
 CRIT1=`$GREP "Coordinates are entered in Angstroms and converted to atomic units\." $log | wc -l`
 CRIT2=`$GREP "Total number of coordinates\: 18" $log | wc -l`
-CRIT3=`$GREP "1 * C \#1 1 * x * (0| )\.0000000000" $log | wc -l`
-CRIT4=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "1 * C \#1 1 * x * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "2 * y * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "3 * z * 1\.2585576052" $log | wc -l`
-CRIT6=`$GREP "4 * C \#1 2 * x * (0| )\.0000000000" $log | wc -l`
-CRIT7=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "4 * C \#1 2 * x * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "5 * y * (\-0| 0| \-|  )\.0000000000" $log | wc -l`
 CRIT8=`$GREP "6 * z * \-1\.2585576052" $log | wc -l`
 CRIT9=`$GREP "7 * H \#1 1 * x * (0| )\.5377536968" $log | wc -l`
 CRIT10=`$GREP "8 * y * \-1\.7212362621" $log | wc -l`
