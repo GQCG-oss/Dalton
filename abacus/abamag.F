@@ -3177,6 +3177,7 @@ C  /* Deck mgfres */
 #include <molgfa.h>
 #include <orgcom.h>
 #include <ibtfun.h>
+#include <dftcom.h>
 C
       D12 = .FALSE.
       D23 = .FALSE.
@@ -3192,6 +3193,9 @@ C
          DO 10 J = 1, 3
             GFACDI(I,J) = GFACDI(I,J) + SUS2EL(I,J) + SUSFS(I,J)
      &                  + SUSFSY(I,J)
+            IF (DFTRUN) THEN
+               GFACDI(I,J) = GFACDI(I,J) + SUSDFT(I,J)
+            END IF
  10      CONTINUE
       END IF
       DO 200 I = 1, 3

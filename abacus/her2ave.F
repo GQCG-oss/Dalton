@@ -485,20 +485,22 @@ C
                               ENDIF
                               IF (NODV) THEN
                                  PVAL1  = FACTOR*(DTAB*DTCD
-     &                                  - DP25*(DTAC*DTBD + DTAD*DTBC)
+     &                                  - HFXFAC*DP25*
+     &                                    (DTAC*DTBD + DTAD*DTBC)
      &                                  + PAOVL1)
-                                 PVAL2  = FACTOR*(
-     &                                    DP25*(DTAC*DTBD - DTAD*DTBC)
+                                 PVAL2  = FACTOR*(HFXFAC*DP25*
+     &                                    (DTAC*DTBD - DTAD*DTBC)
      &                                  + PAOVL2)
                               ELSE
                                  PVAL1  = FACTOR*
      &                                    (DTAB*DTCD - DVAB*DVCD
-     &                                  - DP25*(DTAC*DTBD - DVAC*DVBD
-     &                                        + DTAD*DTBC - DVAD*DVBC)
+     &                                    - HFXFAC*DP25*(DTAC*DTBD
+     &                                          - DVAC*DVBD + DTAD*DTBC
+     &                                          - DVAD*DVBC)
      &                                  + PAOVL1)
-                                 PVAL2  = FACTOR*(
-     &                                    DP25*(DTAC*DTBD - DVAC*DVBD
-     &                                        - DTAD*DTBC + DVAD*DVBC)
+                                 PVAL2  = FACTOR*(HFXFAC*DP25*
+     &                                    (DTAC*DTBD - DVAC*DVBD
+     &                                     - DTAD*DTBC + DVAD*DVBC)
      &                                  + PAOVL2)
                               END IF
                               IF (ABS(PVAL1) .GT. THRSH) THEN

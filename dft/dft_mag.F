@@ -364,3 +364,201 @@ C
       END DO
       RETURN
       END
+C
+C /* Deck dftbhes */
+      SUBROUTINE DFTBHES(WORK,LWORK,IPRINT)
+
+C     This subroutine calculates the static DFT contributions
+C     to the magnetizability (second derivative of the energy
+C     with respect to the magnetic field).
+C     
+C     D.J. Wilson, T. Helgaker  May 2004
+C     
+#include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <suscpt.h> 
+      DIMENSION WORK(LWORK)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
+      EXTERNAL DFTBHES1
+C
+      IF (IPRINT.GE.5) CALL TITLER('Output from DFTBHES','*',103)
+C     
+      KDMAT  = 1 
+      KSUSDF = KDMAT  +  3*N2BASX
+      KLAST  = KSUSDF +  9 
+      LWRK   = LWORK  -  KLAST + 1
+      IF (KLAST .GT. LWORK) CALL STOPIT('DFTBHES',' ',KLAST,LWORK)
+      CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
+      CALL DZERO(WORK(KSUSDF),9)
+      CALL DFTINT(WORK(KDMAT),1,0,.TRUE.,WORK(KLAST),LWRK,DFTBHES1,
+     &            WORK(KDMAT),ELE)
+C     
+C add dft contribution to SUSDFT and print
+C     
+      DO I = 1, 3
+      DO J = 1, 3
+         SUSDFT(J,I) = WORK(KSUSDF + (I-1)*3 + J - 1)
+      END DO
+      END DO
+      IF (IPRINT.GT.10) THEN
+         CALL HEADER('SUSDFT contribution to magnetizability (au)',-1)
+         CALL DSCAL(9,-D1,WORK(KSUSDF),1)
+         CALL POLPRI(WORK(KSUSDF),'   ',-2)
+         CALL DSCAL(9,-D1,WORK(KSUSDF),1)
+      END IF
+      RETURN
+      END
+C
+C /* Deck dftbhes1 */
+      SUBROUTINE DFTBHES1(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
+     &                    COORD,WGHT,BDATA)
+C
+C     D.J.Wilson May 04
+C
+#include <implicit.h>
+#include <inforb.h>
+      DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
+     &          RHOA(NBLEN), GRADA(3,NBLEN),
+     &          NBLCNT(8), NBLOCKS(2,LDAIB,8),
+     &          BDATA(9 + 3*N2BASX)
+#include <dftinf.h>
+      KDMAT  = 1
+      KSUSDF = KDMAT  + 3*N2BASX
+      KLAST  = KSUSDF + 9
+      CALL DFTBHES2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO(1,1,1),GAO(1,1,2),
+     &              RHOA,GRADA,COORD,WGHT,BDATA(KDMAT),BDATA(KSUSDF))
+      RETURN
+      END
+C
+C /* Deck dftbhes2 */
+      SUBROUTINE DFTBHES2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,GAO1,
+     &                    RHOA,GRADA,COORD,WGHT,DMAT,SUSDFT)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, DP5 = 0.5D0, D2 = 2.0D0)
+#include <inforb.h>
+#include <orgcom.h>
+#include <symmet.h>
+#include <shells.h>
+#include <dftcom.h>
+#include "dftbrhs.h"
+C
+      DIMENSION NBLOCKS(2,LDAIB,8), COORD(3,NBLEN), NBLCNT(8),
+     &          WGHT(NBLEN), RHOA(NBLEN), GRADA(3,NBLEN),
+     &          DMAT(NBAST,NBAST), GAO(NBLEN,NBAST),
+     &          GAO1(NBLEN,NBAST,3)
+      DIMENSION PHASE(3), RXRHO(3), SUSDFT(3,3)
+      DIMENSION VXC(NBLEN), VXB(NBLEN), VX(5), DENS(5)
+C
+      LOGICAL ACTIVE(NBAST)
+      LOGICAL DFT_ISGGA, DOGGA
+      EXTERNAL DFT_ISGGA
+      DOGGA = DFT_ISGGA()
+C
+      DO I = 1, NBAST
+         ACTIVE(I) = .FALSE.
+      END DO
+      DO ISYM = 1, NSYM 
+         DO IBLA = 1, NBLCNT(ISYM)
+         DO I = NBLOCKS(1,IBLA,ISYM), NBLOCKS(2,IBLA,ISYM)
+            ACTIVE(I) = .TRUE.
+         END DO
+         END DO
+      END DO
+C     
+      CALL DZERO(DENS,5)
+      CALL DZERO(VX,5)
+      IF (DOGGA) THEN
+         DO I = 1, NBLEN  
+            GRDNRM = SQRT(GRADA(1,I)**2+GRADA(2,I)**2+GRADA(3,I)**2)
+            DENS(1) = DP5*RHOA(I)
+            DENS(2) = DP5*RHOA(I)
+            DENS(3) = DP5*GRDNRM
+            DENS(4) = DP5*GRDNRM
+            DENS(5) = DENS(3)*DENS(4)
+            CALL DFTPOT1(VX,WGHT(I),DENS(1),.FALSE.)
+            VXC(I)  = DP25*VX(1)
+            VXB(I)  = DP5*VX(2)/GRDNRM
+         END DO
+      ELSE
+         DO I = 1, NBLEN
+            DENS(1) = DP5*RHOA(I)
+            DENS(2) = DP5*RHOA(I)
+            CALL DFTPOT1(VX,WGHT(I),DENS(1),.FALSE.)
+            VXC(I) = DP25*VX(1)
+         END DO
+      END IF
+C 
+      DO ISYM = 1, NSYM 
+         IORBA = 0        
+         DO ISHELA = 1, KMAX
+            CORAX  = CENT(ISHELA,1,1)
+            CORAY  = CENT(ISHELA,2,1)
+            CORAZ  = CENT(ISHELA,3,1)
+            DO ICOMPA = 1, KHKT(ISHELA)
+               IORBA = IORBA + 1
+               IA = IPTSYM(IORBA,ISYM-1)
+               IF (IA.GT.0 .AND. ACTIVE(IA)) THEN
+                  IORBB = 0
+                  DO ISHELB = 1, KMAX
+                     CORBX  = CENT(ISHELB,1,1)
+                     CORBY  = CENT(ISHELB,2,1)
+                     CORBZ  = CENT(ISHELB,3,1)
+                     ABX = CORAX - CORBX
+                     ABY = CORAY - CORBY
+                     ABZ = CORAZ - CORBZ
+                     DO ICOMPB = 1, KHKT(ISHELB)
+                        IORBB = IORBB + 1
+                        IB = IPTSYM(IORBB,ISYM-1)
+                        IF (IB.GT.0 .AND. ACTIVE(IB)) THEN
+                           DBA = DMAT(IB,IA)
+                           DO I = 1, NBLEN
+                              DG   = DBA*GAO(I,IA)
+                              DGVC = VXC(I)*DG*GAO(I,IB)
+                              RX = COORD(1,I) - ORIGIN(1)
+                              RY = COORD(2,I) - ORIGIN(2)
+                              RZ = COORD(3,I) - ORIGIN(3)
+                              PHASE(1) = ABY*RZ - ABZ*RY
+                              PHASE(2) = ABZ*RX - ABX*RZ
+                              PHASE(3) = ABX*RY - ABY*RX
+                              IF (DOGGA) THEN
+                                 DGVB = VXB(I)*DG*GAO(I,IB)
+                                 VGA  = VXB(I)*DG*
+     &                                        (GRADA(1,I)*GAO1(I,IB,1)
+     &                                       + GRADA(2,I)*GAO1(I,IB,2)
+     &                                       + GRADA(3,I)*GAO1(I,IB,3))
+                                 RXRHO(1) = ABY*GRADA(3,I)
+     &                                                  - ABZ*GRADA(2,I)
+                                 RXRHO(2) = ABZ*GRADA(1,I)
+     &                                                  - ABX*GRADA(3,I)
+                                 RXRHO(3) = ABX*GRADA(2,I)
+     &                                                  - ABY*GRADA(1,I)
+                              END IF
+                              DO M = 1, 3
+                              DO N = 1, 3
+                                 SUSDFT(M,N) = SUSDFT(M,N)
+     &                                       - PHASE(M)*PHASE(N)*DGVC
+                                 IF (DOGGA) THEN
+                                    SUSDFT(M,N) = SUSDFT(M,N)
+     &                                   - RXRHO(M)*PHASE(N)*DGVB
+     &                                   - PHASE(M)*PHASE(N)*VGA
+                                 END IF
+                              END DO
+                              END DO
+                           END DO
+                        END IF
+                     END DO
+                  END DO
+               END IF
+            END DO
+         END DO
+      END DO
+C
+      RETURN
+      END
+

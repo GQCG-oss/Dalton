@@ -2249,6 +2249,7 @@ C
      &              ((SIGMAT(I,J), I=1,3), J=1,NCOR)
       READ (LUSTAR) ((SUSDIA(I,J), I=1,3), J=1,3), 
      &              ((SUS2EL(I,J), I=1,3), J=1,3),
+     &              ((SUSDFT(I,J), I=1,3), J=1,3),
      &              ((SUSFS (I,J), I=1,3), J=1,3), 
      &              ((SUSREL(I,J), I=1,3), J=1,3),
      &              ((SUSTOT(I,J), I=1,3), J=1,3),
@@ -2347,6 +2348,7 @@ C
      &               ((SIGMAT(I,J), I=1,3), J=1,NCOR)
       WRITE (LUSTAR) ((SUSDIA(I,J), I=1,3), J=1,3), 
      &               ((SUS2EL(I,J), I=1,3), J=1,3),
+     &               ((SUSDFT(I,J), I=1,3), J=1,3),
      &               ((SUSFS (I,J), I=1,3), J=1,3), 
      &               ((SUSREL(I,J), I=1,3), J=1,3),
      &               ((SUSTOT(I,J), I=1,3), J=1,3),
@@ -2461,6 +2463,7 @@ C  /* Deck susres */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <codata.h>
+#include <dftcom.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, THRESH = 1.0D-5,
      &           SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21,
      &           CGS = SI*XFMOL*1.0D6)
@@ -2488,6 +2491,9 @@ C
      &                                + SUS2EL(I,J)
      &                                + SUSFS (I,J)
      &                                + SUSFSY(I,J)
+            IF (DFTRUN) THEN
+               SUSTOT(I,J) = SUSTOT(I,J) + SUSDFT(I,J)
+            END IF
             PARSUS(I,J) = SUSTOT(I,J) - DIASUS(I,J)
   100    CONTINUE
 C
@@ -2501,6 +2507,13 @@ C
             CALL POLPRI(SUS2EL,'   ',-2)
             AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/D3
             WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+C
+            IF (DFTRUN) THEN
+               CALL HEADER('DFT static contribution',-1)
+               CALL POLPRI(SUSDFT,'   ',-2)
+               AVERAG = (SUSDFT(1,1) + SUSDFT(2,2) + SUSDFT(3,3))/D3
+               WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+            END IF
 C
             CALL HEADER('Highest-order reorthonormalization',-1)
             CALL POLPRI(SUSFS,'   ',-2)
