@@ -43,7 +43,7 @@ C     If (not GETCMO) then calculate NORB(8) but do not construct CMO.
 C
 C     Written 870710-hjaaj
 C     revised 89050 -hjaaj: + GETCMO
-C             890703-hjaaj: LFTUC4
+C             890703-hjaaj: MOLFTUC4
 C
 #include <implicit.h>
 C
@@ -67,7 +67,7 @@ C
 #include <inforb.h>
 #include <infpri.h>
 C
-      CHARACTER*4 LFTUC4, CTMPMO(MXCORB)
+      CHARACTER*4 MOLFTUC4, CTMPMO(MXCORB)
 C
       CALL QENTER('CMODEL')
       IF (IPRERR .GE. 99) THEN
@@ -100,17 +100,17 @@ C
 C
 C           ... CONSTRUCT PROPER D ORBITALS
 C
-               IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XX  ') THEN
+               IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XX  ') THEN
                   NORB(ISYM)=NORB(ISYM)+2
                   JBAS1=JBAS+1
-211               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YY  ') THEN
+211               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YY  ') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 211
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-212               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'ZZ  ') THEN
+212               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'ZZ  ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 212
@@ -131,17 +131,17 @@ C
 C
 C              ... CONSTRUCT PROPER F ORBITALS
 C
-               ELSE IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXX ') THEN
+               ELSE IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXX ') THEN
                   NORB(ISYM)=NORB(ISYM)+2
                   JBAS1=JBAS+1
-221               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XYY ') THEN
+221               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XYY ') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 221
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-222               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XZZ ') THEN
+222               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XZZ ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 222
@@ -159,17 +159,17 @@ C
                   CMO(JBAS2+ITR0)= D4/SQRT(D40)
                   ITR0=ITR0+NBAS(ISYM)
                END IF
-               ELSE IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXY ') THEN
+               ELSE IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXY ') THEN
                   NORB(ISYM)=NORB(ISYM)+2
                   JBAS1=JBAS+1
-231               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YYY ') THEN
+231               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YYY ') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 231
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-232               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'YZZ ') THEN
+232               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'YZZ ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 232
@@ -187,17 +187,17 @@ C
                   CMO(JBAS2+ITR0)= D4/SQRT(D40)
                   ITR0=ITR0+NBAS(ISYM)
                END IF
-               ELSE IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXZ ') THEN
+               ELSE IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXZ ') THEN
                   NORB(ISYM)=NORB(ISYM)+2
                   JBAS1=JBAS+1
-241               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YYZ ') THEN
+241               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YYZ ') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 241
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-242               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'ZZZ ') THEN
+242               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'ZZZ ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 242
@@ -218,38 +218,38 @@ C
 C
 C              ... CONSTRUCT PROPER G ORBITALS
 C
-               ELSE IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXXX') THEN
+               ELSE IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXXX') THEN
                   NORB(ISYM)=NORB(ISYM)+3
                   JBAS1=JBAS+1
-251               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XXYY') THEN
+251               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XXYY') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 251
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-252               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XXZZ') THEN
+252               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XXZZ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 252
                   END IF
                   CTMPMO(JBAS2+JBAS0)='KURT'
                   JBAS3=JBAS2+1
-253               IF(LFTUC4(CTMPMO(JBAS3+JBAS0)).NE.'YYYY') THEN
+253               IF(MOLFTUC4(CTMPMO(JBAS3+JBAS0)).NE.'YYYY') THEN
                      JBAS3=JBAS3+1
                      IF(JBAS3.GT.NBAS(ISYM)) GOTO 901
                      GOTO 253
                   END IF
                   CTMPMO(JBAS3+JBAS0)='KURT'
                   JBAS4=JBAS3+1
-254               IF(LFTUC4(CTMPMO(JBAS4+JBAS0)).NE.'YYZZ') THEN
+254               IF(MOLFTUC4(CTMPMO(JBAS4+JBAS0)).NE.'YYZZ') THEN
                      JBAS4=JBAS4+1
                      IF(JBAS4.GT.NBAS(ISYM)) GOTO 901
                      GOTO 254
                   END IF
                   CTMPMO(JBAS4+JBAS0)='KURT'
                   JBAS5=JBAS4+1
-255               IF(LFTUC4(CTMPMO(JBAS5+JBAS0)).NE.'ZZZZ') THEN
+255               IF(MOLFTUC4(CTMPMO(JBAS5+JBAS0)).NE.'ZZZZ') THEN
                      JBAS5=JBAS5+1
                      IF(JBAS5.GT.NBAS(ISYM)) GOTO 901
                      GOTO 255
@@ -276,17 +276,17 @@ C
                   CMO(JBAS3+ITR0)= -D1/SQRT(D38)
                   ITR0=ITR0+NBAS(ISYM)
                END IF
-               ELSE IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXXY') THEN
+               ELSE IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXXY') THEN
                   NORB(ISYM)=NORB(ISYM)+2
                   JBAS1=JBAS+1
-261               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XYYY') THEN
+261               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XYYY') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 261
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-262               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XYZZ') THEN
+262               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XYZZ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 262
@@ -304,17 +304,17 @@ C
                   CMO(JBAS1+ITR0)=  D1/SQRT(D2)
                   ITR0=ITR0+NBAS(ISYM)
                END IF
-               ELSE IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXXZ') THEN
+               ELSE IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXXZ') THEN
                   NORB(ISYM)=NORB(ISYM)+2
                   JBAS1=JBAS+1
-271               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XYYZ') THEN
+271               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'XYYZ') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 271
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-272               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XZZZ') THEN
+272               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'XZZZ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 272
@@ -332,17 +332,17 @@ C
                   CMO(JBAS1+ITR0)=  D3/SQRT(D10)
                   ITR0=ITR0+NBAS(ISYM)
                END IF
-               ELSE IF(LFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXYZ') THEN
+               ELSE IF(MOLFTUC4(CTMPMO(JBAS+JBAS0)).EQ.'XXYZ') THEN
                   NORB(ISYM)=NORB(ISYM)+2
                   JBAS1=JBAS+1
-281               IF(LFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YYYZ') THEN
+281               IF(MOLFTUC4(CTMPMO(JBAS1+JBAS0)).NE.'YYYZ') THEN
                      JBAS1=JBAS1+1
                      IF(JBAS1.GT.NBAS(ISYM)) GOTO 901
                      GOTO 281
                   END IF
                   CTMPMO(JBAS1+JBAS0)='KURT'
                   JBAS2=JBAS1+1
-282               IF(LFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'YZZZ') THEN
+282               IF(MOLFTUC4(CTMPMO(JBAS2+JBAS0)).NE.'YZZZ') THEN
                      JBAS2=JBAS2+1
                      IF(JBAS2.GT.NBAS(ISYM)) GOTO 901
                      GOTO 282
@@ -395,8 +395,8 @@ C
       CALL QUIT('ERROR CMODEL, INFINITE LOOP (BASIS TYPE NOT FOUND)')
 C     ... end of cmodel.
       END
-C  /* Deck lftuc4 */
-      CHARACTER*4 FUNCTION LFTUC4( TEXT )
+C  /* Deck molftuc4 */
+      CHARACTER*4 FUNCTION MOLFTUC4( TEXT )
 C     ( LEFT-ADJUST IN UPPER CASE )
 C
 C  5-May-1989 -- hjaaj -- force upper case
@@ -453,7 +453,7 @@ C           include only 'X', 'Y', or 'Z' in TEXTUC
             END IF
   100    CONTINUE
       END IF
-      LFTUC4 = TEXTUC
+      MOLFTUC4 = TEXTUC
       RETURN
       END
 C  /* Deck delmo */
@@ -537,6 +537,17 @@ C              secondary basis are zeroed (WK/UniKA/04-11-2002).
             ENDIF
          END IF
 C
+         ITURN = 0
+  100    CONTINUE
+         ITURN = ITURN + 1
+         IF (ITURN .GT. 1) THEN
+            WRITE (LUW4,*) 'DELMO: ISYM, ITURN, NORBISAV, NORBI',
+     &                             ISYM, ITURN, NORBISAV, NORBI
+         END IF
+         NORBISAV = NORBI
+         THRLDP = 1.0D-14
+         CALL ORTVEC(0,NORBI,NBASI,THRLDP,CMO(JCSYM),SCRA(KSCR1))
+C
          IF (NORBI .NE. NBASI) THEN
             CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(JCSYM),SCRA(KSCR1),
      *                NBASI,NORBI)
@@ -547,6 +558,7 @@ C           CALL UTHU(H,HT,U,WRK,NAO,NMO)
             CALL DUNIT(CMO(JCSYM),NBASI)
          END IF
 C
+C        Diagonalize overlap matrix ( S * U = U * Seig )
 C
          CALL JACO(SCRA(KS1T),CMO(JCSYM),NORBI,NORBI,NBASI,
      *             SCRA(KSCR1),SCRA(KSCR2))
@@ -569,7 +581,7 @@ C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
             WRITE (LUPRI,'(1P,5D15.5)') (SCRA(KS1T-1+I),I=1,NORBI)
          END IF
 C
-C Delete orbitals with small ( THROVL) eigenvalues
+C Delete orbitals with small ( THROVL ) eigenvalues
 C
          IDEL = 0
          DO 275 J = 1, NORBI
@@ -619,14 +631,23 @@ C
                 NORB1(ISYM) = NORB(ISYM)
                 NCMOT = NCMOT - IDEL*NBASI
               END IF
-              GO TO 280
+C             We have deleted some orbitals, for numerical stability
+C             we take another turn ... /hjaaj Dec 04
+              NORBI = NORBI - IDEL
+              GO TO 100
            ELSE
-              EIGVAL = D1/SQRT(EIGVAL)
-              CALL DSCAL(NBASI,EIGVAL,CMO(JCSYM+(J-1)*NBASI),1)
               IF (.NOT.LAUXBS) NORB1(ISYM) = NORB(ISYM)
            END IF
   275    CONTINUE
-  280    CONTINUE
+C
+C        Finish canonical orthonormalization by 
+C        normalization (C = S**(-0.5)*U = U * Seig**(-0.5) )
+C
+         DO J = 1, NORB(ISYM)
+           EIGVAL = SCRA(KS1T + J -1)
+           EIGVAL = D1/SQRT(EIGVAL)
+           CALL DSCAL(NBASI,EIGVAL,CMO(JCSYM+(J-1)*NBASI),1)
+         END DO
 C
          JCSYM = JCSYM + NORB2(ISYM)*NBASI       
   200 CONTINUE
