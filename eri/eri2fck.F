@@ -88,10 +88,6 @@ C
       WRTINT = .FALSE.
       FCKINT = .TRUE.
 C
-C     Pi
-C
-      CALL GETPI
-C
 C     AO batches
 C     ==========
 C

@@ -159,8 +159,8 @@ C
 C/* Deck PLTORB */
       SUBROUTINE PLTORB(WORK,LWORK)
 C
-C     Original source code provided by Kim Baldridge at SDSC. Punches
-C     molecule orbital information
+C     Original source code provided by Kim Baldridge at SDSC.
+C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
 #include <implicit.h>
@@ -208,7 +208,7 @@ C
       REWIND (LUIP)
       WRITE(LUIP,8000)
 C
-      PI32 = PI * SQRT(PI)
+      PI32 = PI * SQRTPI
 C
 C     ----- PUNCH THE OPTION CARDS -----
 C

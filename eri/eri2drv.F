@@ -399,10 +399,6 @@ C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
 C
-C     Pi
-C
-      CALL GETPI
-C
 C     AO batches
 C     ==========
 C
@@ -2183,15 +2179,6 @@ C
          IOFRST = IOFRST + MLTPZ
       END DO
 C
-      RETURN
-      END
-C  /* Deck getpi */
-      SUBROUTINE GETPI
-#include <implicit.h>
-      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
-#include <eripi.h>
-      PI = D2*ACOS(D0)
-      R2PI52 = SQRT(D2*(SQRT(PI)**5))
       RETURN
       END
 C  /* Deck pntuv */

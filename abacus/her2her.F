@@ -562,15 +562,14 @@ C  /* Deck getgam */
 #include <pi.h>
       PARAMETER (HALF = 0.5D0)
       PARAMETER (D1 = 1.D0, D10 = 10.D0)
-      PARAMETER (D2 = 2.D0, D4 = 4.D0, D6 = 6.D0, D12 = 12.D0,
-     &           D24 = 24.D0, D120 = 120.D0, D720 = 720.D0, TENTH =.1D0)
-      PARAMETER (COEF2 = D1/D2,  COEF3 = - D1/D6, COEF4 = D1/D24,
-     &           COEF5 = - D1/D120, COEF6 = D1/D720)
+      PARAMETER (D2 = 2.D0, D4 = 4.D0, D12 = 12.D0, TENTH = 0.1D0)
+      PARAMETER (COEF2 = HALF,  COEF3 = - D1/6.D0, COEF4 = D1/24.D0,
+     &           COEF5 = - D1/120.D0, COEF6 = D1/720.D0)
       PARAMETER (GFAC0 =  D2*0.4999489092 D0,
      &           GFAC1 = -D2*0.2473631686 D0,
      &           GFAC2 =  D2*0.321180909  D0,
      &           GFAC3 = -D2*0.3811559346 D0)
-      PARAMETER (SQRPIH = 0.88622 69254 52758 D00)
+      PARAMETER (SQRPIH = SQRTPI/D2)
       PARAMETER (PID4 = PI/D4, PID4I = D4/PI)
 #include <gamcom.h>
       DIMENSION FJWS(NODS,0:JMAX), INDADR(*),

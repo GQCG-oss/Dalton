@@ -555,6 +555,7 @@ C  /* Deck noddim */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxorb.h>
+#include <pi.h>
       PARAMETER (D0 = 0.D0)
       LOGICAL GCNT
       INTEGER A, B, R, R1
@@ -564,7 +565,6 @@ C  /* Deck noddim */
 #include <erithr.h>
 #include <odclss.h>
 #include <aobtch.h>
-#include <eripi.h>
 #include <symmet.h>
 C
 #include <ibtfun.h>

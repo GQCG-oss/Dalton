@@ -45,13 +45,12 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <pi.h>
-      PARAMETER (D1 = 1.D0,  D2 = 2.D0, D3 = 3.D0, D6 = 6.D0,
-     &           D10 = 10.D0, D24 = 24.D0, D120 = 120.D0,
-     &           D720 = 720.D0,
-     &           HALF = D1/D2, TENTH = .1D0, TEN6 = 1.0D6)
-      PARAMETER (COEF2 = D1/D2,  COEF3 = - D1/D6,
-     &           COEF4 = D1/D24, COEF5 = - D1/D120,
-     &           COEF6 = D1/D720)
+      PARAMETER (D1 = 1.D0,  D2 = 2.D0, D10 = 10.D0,
+     &           HALF = 0.5D0, TENTH = 0.1D0, TEN6 = 1.0D6)
+      PARAMETER (SQRPIH = SQRTPI/D2)
+      PARAMETER (COEF2 = HALF,  COEF3 = - D1/6.0D0,
+     &           COEF4 = D1/24.D0, COEF5 = - D1/120.0D0,
+     &           COEF6 = D1/720.D0)
       PARAMETER (GFAC30 =  .4999489092 D0,
      *           GFAC31 = -.2473631686 D0,
      *           GFAC32 =  .321180909  D0,
@@ -65,7 +64,7 @@ C
 C
 #include <gamcom.h>
 C
-      SAVE MAXJ0, SQRPIH
+      SAVE MAXJ0
       DATA MAXJ0 /-1/
 C
 #include <sdpre.h>
@@ -113,7 +112,6 @@ C
 C     ***** Tabulation of incomplete gamma function *****
 C
       ENTRY GAMTAB(JMX)
-      SQRPIH = SQRT(PI)/D2
 C
 C     For J = JMX a power series expansion is used, see for
 C     example Eq.(39) given by V. Saunders in "Computational

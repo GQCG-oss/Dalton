@@ -518,7 +518,7 @@ C    &         NPOINT .EQ. 8 .OR. NPOINT .EQ. 10
             DO 100 IPOINT = 1, NPOINT
                EXPD = DUMMY
                ABSCIS(IPOINT) = ABSCIS(IPOINT)**2
-               WEIGHT(IPOINT) = D4*WEIGHT(IPOINT)*EXPD/SQRT(PI)
+               WEIGHT(IPOINT) = D4*WEIGHT(IPOINT)*EXPD/SQRTPI
   100       CONTINUE
          ELSE
             CALL GAULEG(-D1,D1,ABSCIS,WEIGHT,NPOINT)
@@ -527,7 +527,7 @@ C    &         NPOINT .EQ. 8 .OR. NPOINT .EQ. 10
                D1MA   = D1 - ABSCIS(IPOINT)
                ABSCIS(IPOINT) = (DMTRA*D1PA/D1MA)**2
                WEIGHT(IPOINT) = D8*(DMTRA**3)*WEIGHT(IPOINT)*(D1PA**2)
-     &                                           /(SQRT(PI)*(D1MA**4))
+     &                                           /(SQRTPI*(D1MA**4))
  110        CONTINUE
          END IF
       END IF
