@@ -16,13 +16,14 @@ the excited state $f$.
 The ${\cal{B}}(o\to f)$ term results from an appropriate combination of
 products of electric dipole one-photon transition moments
 and mixed electric dipole-magnetic dipole
-two-photon transition moments,
+two-photon transition moments---
 or, more precisely, a combination of transition strengths
-$S_{AB,C}^{of}(0)$.
-These are related to the single residues of the (linear and) 
+$S_{AB,C}^{of}(0.0)$---
+which are related to the single residues of the (linear and) 
 quadratic response functions~\cite{Coriani:MCDRSP,Coriani:MOACC,Coriani:PHD}:
 \[
-{\cal{B}}(o\to f) = \varepsilon_{\alpha\beta\gamma} ETC
+{\cal{B}}(o\to f) \propto \varepsilon_{\alpha\beta\gamma} 
+        M^{\mu_\gamma m_\beta}_{of}(0.0)M^{\mu_\alpha}_{fo}
 \]
 %
 %re corresponds to an appropriate 
@@ -37,6 +38,7 @@ ${\cal{B}}(o\to f)$ term. \Sec{CCMCD} has to be used in
 connection with \Sec{CCEXCI} for the calculation of 
 excited states.
 The calculation is implemented for the models CCS, CC2 and CCSD.
+Note that the output results refer to the magnetic moment operator.
 
 %\noindent Publications that report results obtained by this module
 %should cite Ref.\ \cite{Coriani:MOACC}.
