@@ -34,7 +34,12 @@ C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
+Revision 1.3.2.2  2001/12/12 10:49:22  ruden
+Merging dft-1-0 into dalton. TR
+
+Revision 1.4  2001/05/31 06:38:06  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.3  2001/03/18 21:53:34  vebjornb
 Fixed several uninitialized variables
 

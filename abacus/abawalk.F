@@ -32,11 +32,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abawalk.F,v 1.10 2001-05-31 06:38:03 vebjornb Exp $
+C$Id: abawalk.F,v 1.11 2001-12-13 08:52:37 ruden Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.4.2.3  2001/12/12 10:49:17  ruden
+Merging dft-1-0 into dalton. TR
+
+
+Revision 1.10  2001/05/31 06:38:03  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.9  2001/05/14 19:05:09  ruud
 Small fix to make IRC calculations run on Linux systems. Too short
 record lengths previously. We do not have tests for IRC or trajectories\kr\

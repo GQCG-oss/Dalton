@@ -32,12 +32,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaset.F,v 1.3 2001-05-31 06:38:03 vebjornb Exp $
+C$Id: abaset.F,v 1.4 2001-12-13 08:52:36 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck log */
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1.4.3  2001/12/12 10:49:15  ruden
+Merging dft-1-0 into dalton. TR
+
+Revision 1.3  2001/05/31 06:38:03  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.2  2001/03/22 14:53:41  hjj
 - Changed MWORK form 200 000 000 to 8 000 000; this should ensure
 that it will be unlikely that TRACD has insufficient memory.

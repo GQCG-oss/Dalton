@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaop2.F,v 1.2 2001-05-31 06:38:01 vebjornb Exp $
+C$Id: abaop2.F,v 1.3 2001-12-13 08:52:36 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -369,6 +369,7 @@ C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C
+         print *, 'er her 11'
          STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
          IF (STPNRM .GT. TRSTRA) THEN
             FAC = TRSTRA/STPNRM
@@ -418,6 +419,7 @@ C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C     
+         print *, 'er her 12'
          STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
          IF (STPNRM .GT. TRSTRA) THEN
             FAC = TRSTRA/STPNRM
@@ -477,6 +479,7 @@ C
          ERGPRD = DDOT(ICRD,GRAD,1,STEP,1)
      &        + 0.5D0*SNDTRM
       END IF
+      print *, 'er her 13'
       STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       RETURN
       END

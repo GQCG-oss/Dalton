@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abavib.F,v 1.8 2001-10-08 18:26:40 vebjornb Exp $
+C$Id: abavib.F,v 1.9 2001-12-13 08:52:36 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -62,7 +62,7 @@ C
      &            '.XXXXXX', '.HESFIL', '.HESPUN'/
       DATA ISOTPD/0/, ISOTHD/0/, DOINT/.FALSE./
 C
-      NEWDEF = (WORD .EQ. '*VIBANA')
+      NEWDEF = ((WORD .EQ. '*VIBANA').OR.(WORD.EQ.'*HARMON'))
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -143,8 +143,8 @@ C
                GO TO 100
  6             CONTINUE
                   HESFIL = .TRUE.
-                  MOLHES = .FALSE.
-                  MOLGRD = .FALSE.
+c                  MOLHES = .FALSE.
+c                  MOLGRD = .FALSE.
                GOTO 100
  7             CONTINUE
                   HESPUN = .TRUE.
@@ -295,7 +295,7 @@ C
       KCAAT  = KDGRAD + 3*NCORD
       KWRK1  = KCAAT  + 3*NCORD
       LWRK1  = LWORK  - KWRK1
-      IF (KWRK1 .GE. LWORK) CALL STOPIT('VIBCTL','GETNOS',KWRK1,LWORK)
+      IF (KWRK1 .GE. LWORK) CALL STOPIT('VIBCTL','GETNOS',KWRK1,LWORK) 
       CALL GETNOS(WORK(KCHRG),WORK(KGEOM),WORK(KGRAD),WORK(KHESS),
      &            WORK(KGRDN),WORK(KDGRAD),WORK(KCAAT),
      &            WORK(KWRK1),LWRK1,NATOMS,NCORD,DIPDER,DOVCD,IPRINT,
@@ -1219,7 +1219,7 @@ C
 #include <mxorb.h>
 #include <codata.h>
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
-     &            THRSH1 = 1.0D-8, THRSH2 = 1.0D-3, THRSH3 = 1.0D-7)
+     &            THRSH1 = 1.0D-14, THRSH2 = 1.0D-3, THRSH3 = 1.0D-7)
       LOGICAL NOTALL
 C
       DIMENSION HESS(NCORD,NCORD),

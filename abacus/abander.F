@@ -32,11 +32,11 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C  /* Deck nmdinp */
-      SUBROUTINE NMDINP(WORD,IPRINT)
+      SUBROUTINE NMDINP(WORD,IDRPRI)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER (NDIR=2,NTABLE = 16)
+      PARAMETER (NDIR=3,NTABLE = 18)
       CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7, 
      &          TABDIR(NDIR)*7, WORD1*7
 #include <numder.h>
@@ -44,22 +44,24 @@ C  /* Deck nmdinp */
 #include <cbinum.h>
 #include <abainf.h>
 #include <cbiwlk.h>
+#include <cbivib.h>
       LOGICAL NEWDEF
 C     
-      DATA TABDIR/'*VIBANA','*PROPER'/
+      DATA TABDIR/'*VIBANA','*PROPER','*HARMON'/
 C
       DATA TABLE /'.DORDR ', '.SYMMET', '.SDRTST', '.RESTRT', '.DRYRUN',
      *            '.PARTST', '.NORMAL', '.PRECAL', '.REUSE ', '.ISOTOP',
      *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ', 
-     *            '.MANUAL'/
+     *            '.MANUAL', '.HARMON', '.SPECTR'/
 C
 C     *** Initializing a few local variables. ***
 C
       NIS = 0
       NATOMS = 0
 C
-C     *** Initializing variables for *VIBANA. ***
+C     *** Initializing variables for *VIBANA and *HARMON. ***
       CALL NVBINI
+      CALL VIBINI
 C
 C
 C     ************************************************
@@ -81,7 +83,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -153,10 +155,18 @@ C
             NMORDR = MAX(NMRDRP,NMORDR-NAORDR)
             GOTO 100
  15      CONTINUE
-            READ (LUCMD, *) IPRINT
+            READ (LUCMD, *) IDRPRI
             GOTO 100
  16      CONTINUE
             MANUAL = .TRUE.
+            GOTO 100
+ 17      CONTINUE
+            HARMON = .TRUE.
+            VIB    = .TRUE.
+            MAXDIF = 2
+            GOTO 100
+ 18      CONTINUE
+            SPECTR = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
@@ -273,7 +283,7 @@ C
          DO 500 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO
-     *         (101,102), I
+     *         (101,102,103), I
             END IF
  500     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 600
@@ -287,11 +297,14 @@ C
          CALL QUIT('Program stopped in ABAINP, error in prompt.')
       END IF
  101  CONTINUE
-      CALL NVBINP(WORD)
-      GOTO 400
+        CALL NVBINP(WORD)
+        GOTO 400
  102  CONTINUE
-      CALL NVBINP(WORD)
-      GOTO 400
+        CALL NVBINP(WORD)
+        GOTO 400
+ 103  CONTINUE
+        CALL VIBINP(WORD)
+        GOTO 400
 C
  600  CONTINUE
 C
@@ -393,6 +406,8 @@ C     /CBINUM/
       ANALZE = .FALSE.
       NUMVIB = .FALSE.
       NPRPDR = .FALSE.
+      HARMON = .FALSE.
+      SPECTR = .FALSE.
 C
 C     /NUMDER/
       NMORDR = 0
@@ -426,6 +441,7 @@ C     /ABAINF/
       DO 100 I = 1, MXCENT
          ISOTOP(I) = 1
  100  CONTINUE
+      VIB    = .FALSE.
 C     
 C     /CBIWLK/
       DISPLC = 1.0D-2
@@ -461,9 +477,11 @@ c#endif
       LOGICAL MOLECU
       CHARACTER WORD*7
 C
+C 100  CONTINUE
+C
       MOLECU = .TRUE.
       NCOOR  = 3*NUCDEP
-      ADSTBK = ADDSTO.AND.(NMORDR.GT.1).AND.(NMRDRP.GT.0)
+      ADSTBK = ADDSTO.AND.((NMORDR.GT.1).OR.(NMRDRP.GT.0))
 C
       NDERIV = 0
       NDIME  = 1
@@ -580,7 +598,7 @@ C
      &            WORK(KLAST) ,WORK(KDPMTX),WORK(KNIDPC),WORK(KICRIR),
      &            WORK(KISOTP),WORK(KMBKLN),LWRK1,IWOFF,NDERIV,NDIME,
      &            NINNER,MAXADR,LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
-
+C
 #if defined (SYS_HAL) || defined (VAR_G77)
       IWOFF = IWSAV
 #endif
@@ -810,10 +828,10 @@ C
      &        WORK(KIDCMP),WORK(KIEQVG),WORK(KICIN),WORK(KIRPID),MBKLIN,
      &        NMBKLN,NDERIV,LWRK,NDIME,NINTIN,MAXADR,LDPMTX,IFRSTD,
      &        MAXINR,IWOFF,LTHTST,IDIMAX,IDIMIN,LURSTR,IPRINT,WRKDLM,
-     &        SYMDET,RSTDON)
 c#if defined (VAR_MPI)
 c     &        WORK(KFTVAL),SYMDET,RSTDON)
 c#else 
+     &        SYMDET,RSTDON)
 c#endif
 C
 C        *** Restoring property derivatives. ***
@@ -863,14 +881,19 @@ C
          ELSE
             NPRRDR = NMORDR+NAORDR
          END IF
-         NDIMT = NCOOR*(NCOOR+1)*(NCOOR+2)/6
-         NDIMF = NCOOR*(NCOOR+1)*(NCOOR+2)*(NCOOR+3)/24
-         KTDRS = 1
-         KFDRS = KTDRS + NDIMT   
+         NDIMT  = NCOOR*(NCOOR+1)*(NCOOR+2)/6
+         NDIMF  = NCOOR*(NCOOR+1)*(NCOOR+2)*(NCOOR+3)/24
+         KTDRS  = 1
+         KFDRS  = KTDRS + NDIMT   
+C
+         KTTMPD = IWOFF + 2
+         KFTMPD = KTTMPD + NCOOR**3
+         KLAST  = KFTMPD + NCOOR**4
+         LWRK   = LWORK - KLAST + 1
 C
          CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &        CSTART,WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTEXT,
-     &        IPRINT,PRTEXT)
+     &        CSTART,WORK(KTTMPD),WORK(KFTMPD),WORK(KLAST),ICRIRP,LWRK,
+     &        NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
 C
          IF (SDRTST) THEN
             KTMPGD = IWOFF + 2
@@ -887,7 +910,27 @@ C
 C     
          IF ((NAORDR+NMORDR).GT.1) THEN
             IF (.NOT.DRYRUN) THEN
-               KEIGNV = IWOFF + 2
+               IF (HARMON) THEN
+                  KBKPHS = IWOFF+2
+                  KTRAMT = KBKPHS + MXCOOR**2
+                  KTMPHS = KTRAMT + NCOOR**2
+                  KLAST  = KTMPHS + NCOOR**2
+                  LWRK = LWORK - KLAST + 1
+                  CALL HARMAN(SYMCOR,WORK(KBKPHS),WORK(KTRAMT),
+     &                        WORK(KTMPHS),WORK(KLAST),NCOOR,LWRK,
+     &                        IPRINT)
+               END IF
+C
+C              *** If we are not doing things in normal coordinates ***
+C              *** we need to save the symmetry coordinates.        ***
+C
+               IF (.NOT. NRMCRD) THEN
+                  KSYCAR = IWOFF + 2
+                  KEIGNV = KSYCAR + NCOOR**2
+                  CALL DCOPY(NCOOR**2,SYMCOR,1,WORK(KSYCAR),1)
+               ELSE
+                  KEIGNV = IWOFF + 2
+               END IF
                KEGNVC = KEIGNV + NCOOR
                KHSMWT = KEGNVC + NCOOR**2
                KMT1TP = KHSMWT + NCOOR**2
@@ -898,15 +941,36 @@ C
                KNMSSP = KNATYP + NATOMS
                KCRTMP = KNMSSP + NCOOR
                KLAST  = KCRTMP + NCOOR
-C
+C     
                LWRK   = LWORK  - KLAST + 1
                IF (KLAST.GT.LWORK)CALL QUIT('Memory exceeded in MKNRMC')
                CALL MKNRMC(SYMCOR,CSTART,TRNCCR,TRAMSS,WORK(KEIGNV),
-     &              WORK(KEGNVC),WORK(KHSMWT),WORK(KMT1TP),
-     &              WORK(KMT2TP),WORK(KAMASS),DKIN,
-     &              WORK(KHTSTM),FREQ,RNNORM,WORK(KCRTMP),
-     &              WORK(KLAST),ICRIRP,WORK(KNATYP),WORK(KNMSSP),
-     &              LWRK,IPRINT)
+     &              WORK(KEGNVC),WORK(KHSMWT),WORK(KMT1TP),WORK(KMT2TP),
+     &              WORK(KAMASS),DKIN,WORK(KHTSTM),FREQ,RNNORM,
+     &              WORK(KCRTMP),WORK(KLAST),ICRIRP,WORK(KNATYP),
+     &              WORK(KNMSSP),LWRK,IPRINT)
+C
+C              *** Debug printing. *** 
+C
+               IF (.NOT.NRMCRD.AND.(IPRINT.GE.50)) THEN
+                  NDIMT  = NCOOR*(NCOOR+1)*(NCOOR+2)/6
+                  NDIMF  = NCOOR*(NCOOR+1)*(NCOOR+2)*(NCOOR+3)/24
+                  KTDRS  = 1
+                  KFDRS  = KTDRS + NDIMT   
+C
+                  KSYCAR = IWOFF + 2
+                  KHSNRM = KSYCAR + NCOOR**2
+                  KCRTNM = KHSNRM + NCOOR**2
+                  KTNRMD = KCRTNM + NCOOR**2
+                  KFNRMD = KTNRMD + NCOOR**3
+                  KLAST  = KFNRMD + NCOOR**4
+                  LWRK   = LWORK - KLAST + 1
+C                  
+                  CALL TRAFRC(DERIV(KTDRS),DERIV(KFDRS),WORK(KHSNRM),
+     &                        SYMCOR,WORK(KCRTNM),WORK(KSYCAR),
+     &                        WORK(KTNRMD),WORK(KFNRMD),WORK(KLAST),
+     &                        NCOOR,NDIMF,NDIMT,LWRK,IPRINT)
+               END IF
             ELSE
                CALL DRNRMC(SYMCOR,ICRIRP,IPRINT)
             END IF
@@ -937,7 +1001,7 @@ C           *** in this run of nmder. Reread fuval  ***
 C           *** values and normal coordinates from  ***
 C           *** file.                               ***
 C     
-            KEND = IWOFF + 2
+            KEND   = 1
             IDIMAX = 0
             IDIMIN = 2
             CALL RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
@@ -981,10 +1045,10 @@ C
      &              WORK(KIRPID),MBKLIN,NMBKLN,NDERIV,LWRK,NDIME,NINTIN,
      &              MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,
      &              IDIMIN,LURSTR,IPRINT,WRKDLM,
-     &              SYMDET,RSTDON)
 c#if defined (VAR_MPI)
 c     &              WORK(KFTVAL),SYMDET,RSTDON)
 c#else
+     &              SYMDET,RSTDON)
 c#endif
 C
 C        *** Close the restart file ***
@@ -1008,23 +1072,29 @@ C
             KTDRS  = 1
             KFDRS  = KTDRS + NDIMT
 C
-            CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &           CSTART,WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTEXT,
-     &           IPRINT,PRTEXT)
+            KTTMPD = IWOFF + 2
+            KFTMPD = KTTMPD + NCOOR**3
+            KLAST  = KFTMPD + NCOOR**4
+            LWRK   = LWORK - KLAST + 1
 C
-C        *** Isotope analysis. ***
+            CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
+     &           CSTART,WORK(KTTMPD),WORK(KFTMPD),WORK(KLAST),ICRIRP,
+     &           LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
+C
+C           *** Isotope analysis. ***
 C         
-c         KTPGRD = IWOFF  + 2
-c         KTPHES = KTPGRD + NCOOR
-c         KTPMSS = KTPHES + NCOOR**2
-c         KTPTD1 = KTPMSS + NCOOR
-c         KTPTD2 = KTPTD1 + NCOOR**3
-c         KLAST  = KTPTD2 + NCOOR**3
-c         LWRK   = LWORK -KLAST + 1
-c         IF (KLAST.GT.LWORK)CALL QUIT('Memory exceeded in NRMISO')
-c         CALL NRMISO(DERIV(KTDRS),SYMCOR,DKIN,TRNCCR,TRAMSS,
-c     &               WORK(KTPGRD),WORK(KTPHES),WORK(KTPMSS),
-c     &               WORK(KTPTD1),WORK(KTPTD2),NDIMT)
+c            KTPGRD = IWOFF  + 2
+c            KTPHES = KTPGRD + NCOOR
+c            KTPMSS = KTPHES + NCOOR**2
+c            KTPTD1 = KTPMSS + NCOOR
+c            KTPTD2 = KTPTD1 + NCOOR**3
+c            KLAST  = KTPTD2 + NCOOR**3
+c            LWRK   = LWORK -KLAST + 1
+c            IF (KLAST.GT.LWORK)CALL QUIT('Memory exceeded in NRMISO')
+c            CALL NRMISO(DERIV(KTDRS),SYMCOR,DKIN,TRNCCR,TRAMSS,
+c     &                  WORK(KTPGRD),WORK(KTPHES),WORK(KTPMSS),
+c     &                  WORK(KTPTD1),WORK(KTPTD2),CSTART,WORK(KLAST),
+c     &                  NDIMT,LWRK)
          END IF
       END IF
 C
@@ -1062,10 +1132,10 @@ C  /* Deck nmder */
      &                 IRPIND,MBKLIN,NMBKLN,NDERIV,LWORK,NDIME,NINTIN,
      &                 MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,
      &                 IDIMIN,LURSTR,IPRINT,WRKDLM,
-     &                 SYMDET,RSTDON)
 c#if defined (VAR_MPI)
 c     &                 FTVAL,SYMDET,RSTDON)
 c#else
+     &                 SYMDET,RSTDON)
 c#endif
 #include <implicit.h>
 #include <priunit.h>
@@ -1306,10 +1376,10 @@ C
      &                       IFRSTD,NLDPMX,IORDR,IRSRDR,IINNER,NMPRTN,
      &                       NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,
      &                       NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
-     &                       RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#if defined (VAR_MPI)
 c     &                       FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
+     &                       RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
 C     
  1500                CONTINUE
@@ -1335,10 +1405,10 @@ C
      &        WRKDLM,INDSTP,ICRIRP,NPRTNR,ICIN,KDPMTX,IRPIND,IDCOMP,
      &        LDPMTX,IFRSTD,NLDPMX,0,IRSRDR,IINNER,NMPRTN,NDIME,
      &        MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,NINTIN,IDIMAX,IDIMIN,
-     &        LURSTR,IWOFF,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#if defined (VAR_MPI)
 c     &        LURSTR,IWOFF,FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
+     &        LURSTR,IWOFF,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
 C
 c#if defined (VAR_MPI)
@@ -1434,8 +1504,8 @@ C        *****************************************
 C        *** Calculating property derivatives. ***
 C        *****************************************
 C
-         IF (NPRPDR.AND.((.NOT.NRMCRD).OR.
-     &                   (NRMCRD.AND..NOT.FRSTNM))) THEN
+         IF ((NPRPDR).AND.((.NOT.NRMCRD).OR.
+     &                          (NRMCRD.AND..NOT.FRSTNM))) THEN
 C
 C           *** Workaround to avoid common commonblock ***
 C           *** variables.                             ***
@@ -1474,7 +1544,7 @@ C
      &           WORK(KLAST),IADRSS,KDPMTX,ICRIRP,INDSTP,IDCOMP,
      &           WORK(KIMAX),WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),
      &           WORK(KIDDCP),MXCOEF,NTYPE,NPPDER,LDPMTX,IFRSTD,NLDPMX,
-     &           NSYM,MXNEXI,LWORK,IPRINT)  
+     &           MXNEXI,NSYM,LWORK,IPRINT,DODIPS)  
          END IF
 C
 C        *******************
@@ -1504,10 +1574,10 @@ C  /* Deck gtnpnt */
      &                  IRPIND,IDCOMP,LDPMTX,IFRSTD,NLDPMX,IORDR,IRSRDR,
      &                  IINNER,NMPRTN,NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,
      &                  IDIME,NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
-     &                  RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#if defined (VAR_MPI)
 c     &                  FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
+     &                  RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
 #include <implicit.h>
 #include <priunit.h>
@@ -1538,7 +1608,6 @@ c#endif
 #include <past.h>
 #include <pvibav.h>
 #include <gnrinf.h>
-#include <nuclei.h>
 c
 #include <huckel.h>      
 c
@@ -1563,10 +1632,11 @@ C     *** If property derivatives are calculated at this ***
 C     *** geometry, som variables needs to be set.       ***
 C
       IF ((.NOT.NRMCRD).OR.(NRMCRD.AND..NOT.FRSTNM)) THEN
-         IF (PRPVIB.AND.(IORDR.LE.1)) THEN
+         IF ((PRPVIB).AND.(IORDR.LE.1)) THEN
             NMPCAL = NMPCAL + 1
             CNMPRP = .TRUE.
-         ELSE IF (NPRPDR.AND.(IORDR.LE.NMRDRP+NARDRP)) THEN
+         ELSE IF ((.NOT.PRPVIB).AND.(IORDR.LE.NMRDRP)
+     &                         .AND.(IORDR.GT.0     )) THEN
             NMPCAL = NMPCAL + 1
             CNMPRP = .TRUE.
          ELSE
@@ -1596,7 +1666,7 @@ C
      &               WORK(KIDTMP),WORK(KIDDBT),WORK(KIRPDG),
      &               WORK(KIRPST),NPRTNR,LWRK,NLDPMX,LDPMTX,IFRSTD,
      &               IORDR,IRSRDR,MAXINR,IINNER,NMPRTN,IPRINT,CLNRGY,
-     &               PRTNR,ALRCAL,.FALSE.)
+     &               PRTNR,ALRCAL,.FALSE.,IDIME)
 C
 C        *** Test print. ***
          IF (IPRINT.GT.10) THEN
@@ -1619,7 +1689,7 @@ C
 C     *** Calculate the energy, gradient or hessian. If ***
 C     *** this is a paralell job, we need to find the   ***
 C     *** proper processor.                             ***
-C         
+C     
       IF (CLNRGY) THEN
 C
 C        *** Another calculation. ***
@@ -1673,10 +1743,6 @@ c     &                     .FALSE.)
 C     
 C              *** Update MOLECULE.INP file. ***
 C
-               KNATOM = 1
-               KNLINE = KNATOM + NUCIND
-               KNATIN = KNLINE + NUCIND
-               KLAST  = KNATIN + NUCIND
                CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
      &                     MBKLIN,NMBKLN,LASTE)
 C
@@ -1787,7 +1853,7 @@ c#endif
                      WRITE(LURSTR,'(2I8,F24.16)') ICOOR12, IDIME, 
      &                                           EHESS(ICOOR1,ICOOR2)
                   END DO
-                  END DO
+                  END DO 
                   IDIME = IDIME + 1
                   CALL FLSHFO(LURSTR)
                END IF
@@ -1935,9 +2001,8 @@ C
 C     Punch MOLECULE input with updated coordinates to LUMOL
 C     (And DALTON.OUT if manual is set.)
 C
-      manual = .true.
       IF (MANUAL) THEN
-         WRITE (LUPRI,'(5X,A)') 'Molecular geometry as requested:'
+         WRITE (LUPRI,'(5X,A,)') 'Molecular geometry as requested:'
          WRITE (LUPRI,'(5X,A,I5)') 'Number of lines printed', NMLINE 
       END IF
       CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -2027,9 +2092,17 @@ C
          ADDSTO = .TRUE.
          NOADSY = .FALSE.
       END IF
+C
+C     *** If there are possibilities for  new symmetry. ***
+C
+      IF (((NMORDR+NAORDR).GT.1).OR.(NPRPDR)) THEN
+         NEWSYM = .TRUE.
+      END IF
+C
+C     *** For higher order derivatives. ****
+C
       IF ((NMORDR+NAORDR).GT.1) THEN
          HRINPC = .FALSE.
-         NEWSYM = .TRUE.
          KEEPHE = .FALSE.
          RSTARR = .TRUE.
          DOWALK = .FALSE.
@@ -2050,7 +2123,7 @@ C
          NCART  = NCOOR
          DO I = 0, 7
             DOREPW(I) = .TRUE.
-         END DO
+        END DO
       END IF
 C
       IF (NPRPDR) THEN
@@ -2131,6 +2204,13 @@ c      END IF
 C
       RETURN
       END
+C
+C
+C     /* Deck nmpres */
+c      SUBROUTINE NMPRES
+c#include <implicit.h>
+c#include <priunit.h>
+c
 C
 C     
       SUBROUTINE PRNHST(KSCOO1,KSCOO2,DISPLC,I,J,NC)
@@ -2489,7 +2569,7 @@ C              *** In some calculations we only need diagonal. ***
 C              *** derivatives.                                ***
 C
                IF ((IORDR.GT.1).AND.DIAGON) THEN
-                  CLFVAL =  CLFVAL .AND.
+                  CLFVAL = (CLFVAL).AND.
      &                     (INDSTP(IORDR-1).EQ.INDSTP(IORDR)) 
                END IF
 C
@@ -2715,7 +2795,7 @@ C
       DO 900 IRS = NRSRDR, 2, -1
          IDISP = 0
          IF (INDCMP(ITCMP(IRS)) .LT. 0) THEN
-            IDISP = 2**IORD
+            IDISP = 2**(IORD)
          END IF
          IORD = IORD - 1
          NDISP = NDISP + IDISP
@@ -2730,8 +2810,8 @@ C
       END
 C
 C    /*Deck pritdr*/  
-      SUBROUTINE PRITDR(TMPTDR,SYMCOR,TDER,SYMTDR,SCTRA,CSTRA,NTMPDM,
-     &                  LTXT,IPRINT,TEXT)
+      SUBROUTINE PRITDR(TMPTDR,SYMCOR,TDER,SYMTDR,NTMPDM,NUMCOR,LTXT,
+     &                  IPRINT,TEXT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2742,10 +2822,9 @@ C
 #include <symmet.h>
 #include <numder.h>
 #include <fcsym.h>
-      character*80 TEXT
+      CHARACTER*80 TEXT
       DIMENSION TDER(NCOOR,NCOOR,NCOOR), TMPTDR(NTMPDM), 
-     &          SYMTDR(NCOOR,NCOOR,NCOOR), CSTRA(NCOOR,NCOOR),
-     &          SCTRA(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
+     &          SYMTDR(NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
 C
 C     *****************************************
 C     *** Assigning values to proper places ***
@@ -2753,7 +2832,7 @@ C     ***  according to permutational sym.  ***
 C     *****************************************
 C
       ITMP = 0
-      DO 100 K = 1, NDCOOR
+      DO 100 K = 1, NUMCOR
       DO 100 J = 1, K
       DO 100 I = 1, J
          ITMP = ITMP + 1
@@ -2770,29 +2849,7 @@ C     *** Printing symmetric coordinates ***
 C     ***    Cartesian if no symmetry    ***
 C     **************************************
 C
-      CALL HEADER('Third derivative of energy in ' // TEXT(1:LTXT) 
-     &            // ' coordinates',-1)
-C      
-      IF (MOD(NDCOOR,6).EQ.0) THEN
-         NLCMAX = NCOOR/6
-      ELSE
-         NLCMAX = INT(NCOOR/6)+1
-      END IF
-C
-      DO 200 ICOL2 = 1, NDCOOR
-         WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
-         WRITE (LUPRI,'(A)') '      -----------------'
-         INLC = 0
-         DO 400 INLCMX = 1, NLCMAX
-            INLC2 = 6*(INLCMX-1) + 1
-            INLC  = MIN(INLC+6,NDCOOR)
-            DO 300 ICOL1 = 1, NDCOOR
-               WRITE (LUPRI,'(A,6F10.6)') '   ', 
-     &                           (SYMTDR(I,ICOL1,ICOL2), I=INLC2, INLC)
- 300        CONTINUE
-            WRITE (LUPRI,'(A)') '                              '
- 400     CONTINUE
- 200  CONTINUE
+      CALL PRTDER(SYMTDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
@@ -2800,31 +2857,15 @@ C     ***  coordinstes, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:LTXT).NE.'normal')) THEN
+         LTXT = 9
+         TEXT(1:9) = 'cartesian'
 C
-         CALL HEADER('Cartesian coordinates',-1)
+         CALL TRATDR(SYMCOR,SYMTDR,TDER,NCOOR,NCOOR,NCOOR,TEXT,LTXT,
+     &               IPRINT)
 C
-         CALL TRATDR(SYMCOR,SYMTDR,TDER,NDCOOR,IPRINT)
-C
-         IF (MOD(NCOOR,6).EQ.0) THEN
-            NLCMAX = NCOOR/6
-         ELSE
-            NLCMAX = INT(NCOOR/6)+1
-         END IF
-C
-         DO 500 ICOL2 = 1, NCOOR
-            WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
-            WRITE (LUPRI,'(A)') '      -----------------'
-            INLC = 0
-            DO 600 INLCMX = 1, NLCMAX
-               INLC2 = 6*(INLCMX-1) + 1
-               INLC  = MIN(INLC+6,NCOOR)
-               DO 700 ICOL1 = 1, NCOOR
-                  WRITE (LUPRI,'(A,6F10.6)') '   ', 
-     &                             (TDER(I,ICOL1,ICOL2), I=INLC2, INLC)
- 700           CONTINUE
-               WRITE (LUPRI,'(A)') '                              '
- 600        CONTINUE
- 500     CONTINUE
+         CALL PRTDER(TDER,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
+      ELSE
+         CALL DCOPY(NCOOR**3,SYMTDR,1,TDER,1)
       END IF
 C
       RETURN
@@ -2832,74 +2873,56 @@ C
 
 C
 C    /*Deck tratdr*/  
-      SUBROUTINE TRATDR(SYMCOR,SYMTDR,TDER,NCOOR,IPRINT)
-C     *********************************************
-C     *** Transforming to cartesian coordinates ***
-C     *********************************************
+      SUBROUTINE TRATDR(TRACOR,CR1TDR,CR2TDR,NMCOR1,NMCOR2,NCOOR,TEXT,
+     &                  LTXT,IPRINT)
+C     ***********************************************************
+C     *** Transforming a third derivative into another set of ***
+C     *** coordinates. Tracor is the transformation matrix.   ***
+C     ***********************************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION SYMTDR(NCOOR,NCOOR,NCOOR), TDER(NCOOR,NCOOR,NCOOR), 
-     &          SYMCOR(NCOOR,NCOOR)
+      CHARACTER*80 TEXT
+      DIMENSION CR1TDR(NCOOR,NCOOR,NCOOR), CR2TDR(NCOOR,NCOOR,NCOOR), 
+     &          TRACOR(NCOOR,NCOOR)
 C
-      CALL DZERO(TDER,NCOOR**3)
+      CALL DZERO(CR2TDR,NCOOR**3)
 C
-      DO 100 ISYCO3 = 1, NCOOR
-      DO 100 ISYCO2 = 1, NCOOR
-      DO 100 ISYCO1 = 1, NCOOR
-      DO 100 ICART1 = 1, NCOOR
-         TDER(ICART1,ISYCO2,ISYCO3) = TDER(ICART1,ISYCO2,ISYCO3)
-     &              + SYMCOR(ICART1,ISYCO1)*SYMTDR(ISYCO1,ISYCO2,ISYCO3)
+      DO 100 ICR1C3 = 1, NMCOR1
+      DO 100 ICR1C2 = 1, NMCOR1
+      DO 100 ICR1C1 = 1, NMCOR1
+      DO 100 ICR2C1 = 1, NMCOR2
+         CR2TDR(ICR2C1,ICR1C2,ICR1C3) = CR2TDR(ICR2C1,ICR1C2,ICR1C3)
+     &              + TRACOR(ICR2C1,ICR1C1)*CR1TDR(ICR1C1,ICR1C2,ICR1C3)
  100  CONTINUE
 C
-      CALL DZERO(SYMTDR,NCOOR**3)
-      DO 200 ISYCO3 = 1, NCOOR
-      DO 200 ISYCO2 = 1, NCOOR
-      DO 200 ICART2 = 1, NCOOR
-      DO 200 ICART1 = 1, NCOOR
-         SYMTDR(ICART1,ICART2,ISYCO3) = SYMTDR(ICART1,ICART2,ISYCO3)
-     &              + SYMCOR(ICART2,ISYCO2)*TDER(ICART1,ISYCO2,ISYCO3)
+      CALL DZERO(CR1TDR,NCOOR**3)
+      DO 200 ICR1C3 = 1, NMCOR1
+      DO 200 ICR1C2 = 1, NMCOR1
+      DO 200 ICR2C2 = 1, NMCOR2
+      DO 200 ICR2C1 = 1, NMCOR2
+         CR1TDR(ICR2C1,ICR2C2,ICR1C3) = CR1TDR(ICR2C1,ICR2C2,ICR1C3)
+     &              + TRACOR(ICR2C2,ICR1C2)*CR2TDR(ICR2C1,ICR1C2,ICR1C3)
  200  CONTINUE
 C
-      CALL DZERO(TDER,NCOOR**3)
-      DO 300 ISYCO3 = 1, NCOOR
-      DO 300 ICART3 = 1, NCOOR
-      DO 300 ICART2 = 1, NCOOR
-      DO 300 ICART1 = 1, NCOOR
-         TDER(ICART1,ICART2,ICART3) = TDER(ICART1,ICART2,ICART3)
-     &              + SYMCOR(ICART3,ISYCO3)*SYMTDR(ICART1,ICART2,ISYCO3)
+      CALL DZERO(CR2TDR,NCOOR**3)
+      DO 300 ICR1C3 = 1, NMCOR1
+      DO 300 ICR2C3 = 1, NMCOR2
+      DO 300 ICR2C2 = 1, NMCOR2
+      DO 300 ICR2C1 = 1, NMCOR2
+         CR2TDR(ICR2C1,ICR2C2,ICR2C3) = CR2TDR(ICR2C1,ICR2C2,ICR2C3)
+     &              + TRACOR(ICR2C3,ICR1C3)*CR1TDR(ICR2C1,ICR2C2,ICR1C3)
  300  CONTINUE
 C
       IF (IPRINT .GT.6) THEN
-         CALL HEADER('Cartesian coordinates',-1)
-C
-         IF (MOD(NCOOR,6).EQ.0) THEN
-            NLCMAX = NCOOR/6
-         ELSE
-            NLCMAX = INT(NCOOR/6)+1
-         END IF
-C
-         DO 400 ICOL2 = 1, NCOOR
-            WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
-            WRITE (LUPRI,'(A)') '      -----------------'
-            INLC = 0
-            DO 500 INLCMX = 1, NLCMAX
-               INLC2 = 6*(INLCMX-1) + 1
-               INLC  = MIN(INLC+6,NCOOR)
-               DO 600 ICOL1 = 1, NCOOR
-                  WRITE (LUPRI,'(A,6F15.6)') '         ', 
-     &                             (TDER(I,ICOL1,ICOL2), I=INLC2, INLC)
- 600           CONTINUE
-               WRITE (LUPRI,'(A)') '                              '
- 500        CONTINUE
- 400     CONTINUE
+         CALL PRTDER(CR2TDR,NCOOR,NMCOR2,TEXT,LTXT,IPRINT)
       END IF
 C
       RETURN
       END
 C
 C    /*Deck prifdr*/  
-      SUBROUTINE PRIFDR(TMPFDR,SYMCOR,FDER,SYMFDR,SCTRA,CSTRA,NTMPDM,
-     &                  LTXT,TEXT)
+      SUBROUTINE PRIFDR(TMPFDR,SYMCOR,FDER,SYMFDR,NTMPDM,NUMCOR,LTXT,
+     &                  IPRINT,TEXT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2912,8 +2935,7 @@ C
 #include <fcsym.h>
       CHARACTER*80 TEXT
       DIMENSION FDER(NCOOR,NCOOR,NCOOR,NCOOR), TMPFDR(NTMPDM), 
-     &          SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), SCTRA(NCOOR,NCOOR),
-     &          CSTRA(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
+     &          SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
 C
 C     *****************************************
 C     *** Assigning values to proper places ***
@@ -2921,7 +2943,7 @@ C     ***  according to permutational sym.  ***
 C     *****************************************
 C
       ITMP = 0
-      DO 100 L = 1, NDCOOR
+      DO 100 L = 1, NUMCOR
       DO 100 K = 1, L
       DO 100 J = 1, K
       DO 100 I = 1, J
@@ -2961,33 +2983,7 @@ C     *** Printing symmetric coordinates ***
 C     ***    Cartesian if no symmetry    ***
 C     **************************************
 C
-      CALL HEADER('Fourth derivative of energy with respect to ' // 
-     &             TEXT(1:LTXT) // ' nuclear coordinates',-1)
-C         
-      IF (MOD(NDCOOR,6).EQ.0) THEN
-         NLCMAX = NDCOOR/6
-      ELSE
-         NLCMAX = INT(NDCOOR/6)+1
-      END IF
-C
-      DO 200 ICOL3 = 1, NDCOOR
-         WRITE (LUPRI,'(A,I4)') '      The fourth dimension', ICOL3
-         WRITE (LUPRI,'(A)') '      ------------------------'
-         WRITE (LUPRI,'(A)') '                                  '
-         DO 300 ICOL2 = 1, NDCOOR
-            WRITE (LUPRI,'(A,I4)') '        The third Dimension', ICOL2
-            INLC = 0
-            DO 400 INLCMX = 1, NLCMAX
-               INLC2 = 6*(INLCMX-1) + 1
-               INLC  = MIN(INLC+6,NDCOOR)
-               DO 500 ICOL1 = 1, NDCOOR
-                  WRITE (LUPRI,'(A,6F10.6)') '   ', 
-     &                 (SYMFDR(I,ICOL1,ICOL2,ICOL3), I=INLC2, INLC)
- 500           CONTINUE
-               WRITE (LUPRI,'(A)') '                              '
- 400        CONTINUE
- 300     CONTINUE
- 200  CONTINUE
+      CALL PRFDER(SYMFDR,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
@@ -2996,95 +2992,137 @@ C     ************************************
 C
       IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:LTXT).NE.'normal')) THEN
 C
-         CALL HEADER('Cartesian coordinates',-1)
+C        *** Coordinate transformation. ***
 C
-         CALL TRAFDR(SYMCOR,SYMFDR,FDER,NCOOR)
+         CALL TRAFDR(SYMCOR,SYMFDR,FDER,NUMCOR,NUMCOR,NCOOR,TEXT,
+     &               LTXT,IPRINT)
 C
-         IF (MOD(NCOOR,6).EQ.0) THEN
-            NLCMAX = NCOOR/6
-         ELSE
-            NLCMAX = INT(NCOOR/6)+1
-         END IF
-C     
-         DO 600 ICOL3 = 1, NCOOR
-            WRITE (LUPRI,'(A,I4)') '      The fourth dimension', ICOL3
-            WRITE (LUPRI,'(A)') '      ------------------------'
-            WRITE (LUPRI,'(A)') '                                  '
-            DO 700 ICOL2 = 1, NCOOR
-               WRITE (LUPRI,'(A,I4)')'        The third Dimension',ICOL2
-               INLC = 0
-               DO 800 INLCMX = 1, NLCMAX
-                  INLC2 = 6*(INLCMX-1) + 1
-                  INLC  = MIN(INLC+6,NCOOR)
-                  DO 900 ICOL1 = 1, NCOOR
-                     WRITE (LUPRI,'(A,6F10.6)') '   ', 
-     &                    (SYMFDR(I,ICOL1,ICOL2,ICOL3), I=INLC2, INLC)
- 900              CONTINUE
-                  WRITE (LUPRI,'(A)') '                              '
- 800           CONTINUE
- 700        CONTINUE
- 600     CONTINUE
+C        *** Printing in cartesian coordinates. ***
+C
+         CALL PRFDER(FDER,NCOOR,NUMCOR,TEXT,LTXT,IPRINT)
+      ELSE
+         CALL DCOPY(NCOOR**4,SYMFDR,1,FDER,1)
       END IF
+C
       RETURN
       END
 C
 C    /*Deck trafdr*/  
-      SUBROUTINE TRAFDR(SYMCOR,SYMFDR,FDER,NCOOR)
-C     *********************************************
-C     *** Transforming to cartesian coordinates ***
-C     *********************************************
+      SUBROUTINE TRAFDR(TRACOR,CR1FDR,CR2FDR,NMCOR1,NMCOR2,NCOOR,TEXT,
+     &                  LTXT,IPRINT)
+C     **********************************************************
+C     *** Transforming quartic force field to another set of ***
+C     *** coordinates                                        ***
+C     **********************************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), 
-     &          FDER  (NCOOR,NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
+      CHARACTER*80 TEXT
+      DIMENSION CR1FDR(NCOOR,NCOOR,NCOOR,NCOOR), 
+     &          CR2FDR(NCOOR,NCOOR,NCOOR,NCOOR), TRACOR(NCOOR,NCOOR)
 C
       KDIM = NCOOR**4
 C
-      CALL DZERO(FDER,KDIM)
-      DO 100 ISYCO4 = 1, NCOOR
-      DO 100 ISYCO3 = 1, NCOOR
-      DO 100 ISYCO2 = 1, NCOOR
-      DO 100 ISYCO1 = 1, NCOOR
-      DO 100 ICART1 = 1, NCOOR
-         FDER(ICART1,ISYCO2,ISYCO3,ISYCO4) = 
-     &         FDER(ICART1,ISYCO2,ISYCO3,ISYCO4)
-     &       + SYMCOR(ICART1,ISYCO1)*SYMFDR(ISYCO1,ISYCO2,ISYCO3,ISYCO4)
+      CALL DZERO(CR2FDR,KDIM)
+      DO 100 ICR1C4 = 1, NMCOR1
+      DO 100 ICR1C3 = 1, NMCOR1
+      DO 100 ICR1C2 = 1, NMCOR1
+      DO 100 ICR1C1 = 1, NMCOR1
+      DO 100 ICR2C1 = 1, NMCOR2
+         CR2FDR(ICR2C1,ICR1C2,ICR1C3,ICR1C4) = 
+     &         CR2FDR(ICR2C1,ICR1C2,ICR1C3,ICR1C4)
+     &       + TRACOR(ICR2C1,ICR1C1)*CR1FDR(ICR1C1,ICR1C2,ICR1C3,ICR1C4)
  100  CONTINUE
 C
-      CALL DZERO(SYMFDR,KDIM)
-      DO 200 ISYCO4 = 1, NCOOR
-      DO 200 ISYCO3 = 1, NCOOR
-      DO 200 ISYCO2 = 1, NCOOR
-      DO 200 ICART2 = 1, NCOOR
-      DO 200 ICART1 = 1, NCOOR
-         SYMFDR(ICART1,ICART2,ISYCO3,ISYCO4) = 
-     &         SYMFDR(ICART1,ICART2,ISYCO3,ISYCO4)
-     &       + SYMCOR(ICART2,ISYCO2)*FDER(ICART1,ISYCO2,ISYCO3,ISYCO4)
+      CALL DZERO(CR1FDR,KDIM)
+      DO 200 ICR1C4 = 1, NMCOR1
+      DO 200 ICR1C3 = 1, NMCOR1
+      DO 200 ICR1C2 = 1, NMCOR1
+      DO 200 ICR2C2 = 1, NMCOR2
+      DO 200 ICR2C1 = 1, NMCOR2
+         CR1FDR(ICR2C1,ICR2C2,ICR1C3,ICR1C4) = 
+     &         CR1FDR(ICR2C1,ICR2C2,ICR1C3,ICR1C4)
+     &       + TRACOR(ICR2C2,ICR1C2)*CR2FDR(ICR2C1,ICR1C2,ICR1C3,ICR1C4)
  200  CONTINUE
 C
-      CALL DZERO(FDER,KDIM)
-      DO 300 ISYCO4 = 1, NCOOR
-      DO 300 ISYCO3 = 1, NCOOR
-      DO 300 ICART3 = 1, NCOOR
-      DO 300 ICART2 = 1, NCOOR
-      DO 300 ICART1 = 1, NCOOR
-         FDER(ICART1,ICART2,ICART3,ISYCO4) = 
-     &         FDER(ICART1,ICART2,ICART3,ISYCO4)
-     &       + SYMCOR(ICART3,ISYCO3)*SYMFDR(ICART1,ICART2,ISYCO3,ISYCO4)
+      CALL DZERO(CR2FDR,KDIM)
+      DO 300 ICR1C4 = 1, NMCOR1
+      DO 300 ICR1C3 = 1, NMCOR1
+      DO 300 ICR2C3 = 1, NMCOR2
+      DO 300 ICR2C2 = 1, NMCOR2
+      DO 300 ICR2C1 = 1, NMCOR2
+         CR2FDR(ICR2C1,ICR2C2,ICR2C3,ICR1C4) = 
+     &         CR2FDR(ICR2C1,ICR2C2,ICR2C3,ICR1C4)
+     &       + TRACOR(ICR2C3,ICR1C3)*CR1FDR(ICR2C1,ICR2C2,ICR1C3,ICR1C4)
  300  CONTINUE
 C
-      CALL DZERO(SYMFDR,KDIM)
-      DO 400 ISYCO4 = 1, NCOOR
-      DO 400 ICART4 = 1, NCOOR
-      DO 400 ICART3 = 1, NCOOR
-      DO 400 ICART2 = 1, NCOOR
-      DO 400 ICART1 = 1, NCOOR
-         SYMFDR(ICART1,ICART2,ICART3,ICART4) = 
-     &        SYMFDR(ICART1,ICART2,ICART3,ICART4)
-     &        + SYMCOR(ICART4,ISYCO4)*FDER(ICART1,ICART2,ICART3,ISYCO4)
+      CALL DZERO(CR1FDR,KDIM)
+      DO 400 ICR1C4 = 1, NMCOR1
+      DO 400 ICR2C4 = 1, NMCOR2
+      DO 400 ICR2C3 = 1, NMCOR2
+      DO 400 ICR2C2 = 1, NMCOR2
+      DO 400 ICR2C1 = 1, NMCOR2
+         CR1FDR(ICR2C1,ICR2C2,ICR2C3,ICR2C4) = 
+     &        CR1FDR(ICR2C1,ICR2C2,ICR2C3,ICR2C4)
+     &       + TRACOR(ICR2C4,ICR1C4)*CR2FDR(ICR2C1,ICR2C2,ICR2C3,ICR1C4)
  400  CONTINUE
 C
-      CALL DCOPY(KDIM,SYMFDR,1,FDER,1)
+      CALL DCOPY(KDIM,CR1FDR,1,CR2FDR,1)
+C
+      IF (IPRINT .GT. 7) THEN
+         CALL PRFDER(CR2FDR,NCOOR,NMCOR2,TEXT,LTXT,IPRINT)
+      END IF
+C
+      RETURN
+      END
+C
+C
+C
+      SUBROUTINE HARMAN(SYMCOR,BKPHES,TRAMAT,TMPHES,WORK,NCOOR,LWORK,
+     &                  IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <taymol.h>
+      DIMENSION BKPHES(MXCOOR,MXCOOR), SYMCOR(NCOOR,NCOOR), 
+     &          TMPHES(NCOOR ,NCOOR ), TRAMAT(NCOOR,NCOOR), 
+     &          WORK(LWORK)
+C
+C     *** Backing up hessian for further use after ***
+C     *** harmonic analysis.                       ***
+C
+      KDIM = MXCOOR**2
+      CALL DCOPY(KDIM,HESMOL,1,BKPHES,1)
+C
+C     *** Transforming the hessian matrix to cartesian ***
+C     *** coordinates.                                 ***
+C      
+      CALL OTRTEN(HESMOL,SYMCOR,TMPHES,MXCOOR,NCOOR,NCOOR,IPRINT,'N',
+     &            'T')  
+C
+C     *** Transforming the hessian matrix to dalton ***
+C     *** symmetry coordinates.                     ***
+C
+C     *** Transformation matrix. ***
+C      
+      ITYPE = 1
+      KTEST = 1
+      CALL TRACOR(TRAMAT,WORK(KTEST),ITYPE,NCOOR,IPRINT)
+C
+C     *** Transformation. ***
+C
+      CALL OTRTEN(HESMOL,TRAMAT,TMPHES,MXCOOR,NCOOR,NCOOR,IPRINT,'N',
+     &            'T') 
+C
+C     *** Run harmonic analysis. ***
+C
+      KSTART = 1
+      CALL VIBCTL(WORK(1),LWORK)
+C      
+C     *** Restoring old hessian. ***
+C
+      KDIM = MXCOOR**2
+      CALL DCOPY(KDIM,BKPHES,1,HESMOL,1)
 C
       RETURN
       END
@@ -3104,13 +3142,15 @@ C     /* Deck mknrmc */
 #include <priunit.h>
 #include <mxcent.h>
 #include <codata.h>
-      PARAMETER (DMTHR = 1.0D-6, D0 = 0.0D0, D1 = 1.0D0, KCOL=6)
+      PARAMETER (DMTHR = 1.0D-7, D0 = 0.0D0, D1 = 1.0D0)
 #include <taymol.h>
 #include <trkoor.h>      
 #include <nuclei.h>
 #include <cbinum.h>
 #include <numder.h>
 #include <abainf.h>
+#include <dummy.h>
+      CHARACTER*6 TXT
       DIMENSION SYMCOR(NCOOR,NCOOR), EIGNVL(NCOOR), EGNVCT(NCOOR,NCOOR), 
      &          HESMWT(NCOOR*(NCOOR+1)/2), AMASS(NATOMS), CSTART(NCOOR), 
      &          DKIN(NCOOR), TM1TMP(NCOOR,NCOOR), TRAMSS(NCOOR),
@@ -3334,6 +3374,19 @@ C
          WRITE (LUPRI,'(A)') '                                        '
       END DO
 C
+C     *** Writing to sepctro file if requested. ***
+C
+      IF (SPECTR) THEN
+         NTIME = 1
+         IF (NRMCRD) THEN
+            TXT  = 'normal'
+         ELSE
+            TXT  = 'cartes'
+         END IF
+         CALL WRISPC(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,NTIME,
+     &               IPRINT)
+      END IF
+C
 C     *** Test printing. ***
 C
       IF (IPRINT .GE. 20) THEN
@@ -3359,8 +3412,8 @@ C
          CALL HEADER('Diagonalized mass weighted hessian.',-1)
 C
          BEGIN = 1
-         LAST  = MIN(NDCOOR,KCOL)
-         KCOOR = NDCOOR
+         KCOL  = 6
+         LAST  = MIN(NCOOR,KCOL)
          NCOL  = NCOOR/KCOL
          IF (MOD(NCOOR,KCOL).NE.0) NCOL = NCOL + 1
 C
@@ -3373,19 +3426,219 @@ C
             END DO
             WRITE (LUPRI,'(A)') '                                 '
             BEGIN = BEGIN + KCOL
-            LAST  = MIN(NDCOOR,KCOL+LAST)
+            LAST  = MIN(NCOOR,KCOL+LAST)
          END DO
  1000    FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
  2000    FORMAT (1X,I4,2X,6F12.6)
       END IF
+C
+      RETURN
+      END
+C
+C
+C     /*Deck trafrc*/
+      SUBROUTINE TRAFRC(TDER,FDER,HESNRM,CORNRM,CRTNRM,SYCART,TNRMDR,
+     &                  FNRMDR,WORK,NCOOR,NDIMF,NDIMT,LWORK,IPRINT)
+#include <implicit.h>
+#include <mxcent.h>
+#include <priunit.h>
+#include <mxorb.h>
+C
+#include <infpar.h>
+#include <taymol.h>
+#include <numder.h>
+      CHARACTER*80 TEXT
+      DIMENSION FDER(NDIMF), TDER(NDIMT), HESNRM(NCOOR,NCOOR), 
+     &          CORNRM(NCOOR,NCOOR), CRTNRM(NCOOR,NCOOR), 
+     &          SYCART(NCOOR,NCOOR), TNRMDR(NCOOR,NCOOR,NCOOR),
+     &          FNRMDR(NCOOR,NCOOR,NCOOR,NCOOR), WORK(LWORK)
+C
+C     *** Transformation of hessians. ***
+C      
+      IF (NAORDR+NMORDR.GE.2) THEN
+         DO 100 J = 1, NCOOR
+         DO 100 I = 1, J
+            HESNRM(I,J) = HESMOL(I,J)
+            HESNRM(J,I) = HESMOL(I,J)
+ 100     CONTINUE
+C
+C        *** Transforming hessian to cartesian coordinates. ***
+C     
+         KTMPHS = 1
+         CALL OTRTEN(HESNRM,SYCART,WORK(KTMPHS),NCOOR,NCOOR,NCOOR,
+     &        IPRINT,'N','T')
+C
+C        *** Then to normal coordinates. ***
+C         
+         CALL OTRTEN(HESNRM,CORNRM,WORK(KTMPHS),NCOOR,NCOOR,NDCOOR,
+     &               IPRINT,'T','N')
+C
+C        *** Printing hessian. ***
+C
+         CALL HEADER('Hessian in normal coordinates',-1)
+         CALL PRTRMA(HESNRM,NCOOR,NCOOR,NDCOOR,NDCOOR,LUPRI)
+      END IF
+C
+C     *** Setting up the transformation (cartesian -> normal) ***
+C     *** matrix needed for cubic and quartic force fields.   ***
+C
+      IF (NAORDR+NMORDR.GE.3) THEN
+         DO 200 J = 1, NCOOR
+         DO 200 I = 1, NCOOR
+            CRTNRM(I,J) = CORNRM(J,I)
+ 200     CONTINUE
+      END IF
+C
+C     *** Transformation of cubic force field. ***
+C      
+      IF (NAORDR+NMORDR.GE.3) THEN
+C
+C        *** Transformation to cartesian coordinates and  ***
+C        *** printing. Force field is returned in TNRMDR. *** 
+C
+         KSYMTD = 1
+         LTXT = 8
+         TEXT(1:8) = 'Symmetry'
+         CALL PRITDR(TDER,SYCART,TNRMDR,WORK(KSYMTD),NDIMT,NCOOR,LTXT,
+     &               IPRINT,TEXT)         
+C
+C        *** Transforming to normal coordinates. ***
+C
+         LTXT = 6
+         TEXT(1:6) = 'normal'
+C
+         KTMPTD = 1
+         CALL DCOPY(NCOOR**3,TNRMDR,1,WORK(KTMPTD),1)
+         CALL TRATDR(CRTNRM,WORK(KTMPTD),TNRMDR,NCOOR,NDCOOR,NCOOR,
+     &               TEXT,LTXT,IPRINT)
+C
+         CALL PRTDER(TNRMDR,NCOOR,NDCOOR,TEXT,LTXT,IPRINT)
+      END IF
+C
+C     *** Transformation of quartic force field. ***
+C      
+      IF (NAORDR+NMORDR.GE.4) THEN
+C
+C        *** Transformation to cartesian coordinates and  ***
+C        *** printing. Force field is returned in FNRMDR. *** 
+C
+         KSYMTD = 1
+         LTXT = 8
+         TEXT(1:8) = 'Symmetry'
+         CALL PRIFDR(FDER,SYCART,FNRMDR,WORK(KSYMTD),NDIMF,NCOOR,LTXT,
+     &               IPRINT,TEXT)         
+C
+C        *** Transforming to normal coordinates. ***
+C
+         LTXT = 6
+         TEXT(1:6) = 'normal'
+C
+         KTMPFD = 1
+         CALL DCOPY(NCOOR**4,FNRMDR,1,WORK(KTMPFD),1)
+         CALL TRAFDR(CRTNRM,WORK(KTMPFD),FNRMDR,NCOOR,NDCOOR,NCOOR,
+     &               TEXT,LTXT,IPRINT)
+C
+C        *** Printing. ***
+C
+         CALL PRFDER(FNRMDR,NCOOR,NDCOOR,TEXT,LTXT,IPRINT)
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck prderv*/
+      SUBROUTINE PRTDER(TDER,NDIM,NCOR,TEXT,LTXT,IPRINT)
+C     **********************************************************
+C     *** Printing of third derivatives in TEXT coordinates. ***
+C     **********************************************************
+#include <implicit.h>
+#include <priunit.h>
+      CHARACTER*80 TEXT
+      DIMENSION TDER(NDIM,NDIM,NDIM)
+C
+C     *** Header print. ***
+C
+      CALL HEADER('Third derivative of energy in ' // TEXT(1:LTXT) 
+     &            // ' coordinates',-1)
+C   
+C     *** Printing of force field. ***
+C   
+      IF (MOD(NCOR,6).EQ.0) THEN
+         NLCMAX = NCOR/6
+      ELSE
+         NLCMAX = INT(NCOR/6)+1
+      END IF
+C
+      DO 100 ICOL2 = 1, NCOR
+         WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
+         WRITE (LUPRI,'(A)') '      -----------------'
+         INLC = 0
+         DO 200 INLCMX = 1, NLCMAX
+            INLC2 = 6*(INLCMX-1) + 1
+            INLC  = MIN(INLC+6,NCOR)
+            DO 300 ICOL1 = 1, NCOR
+               WRITE (LUPRI,'(A,6F10.6)') '   ', 
+     &                           (TDER(I,ICOL1,ICOL2), I=INLC2, INLC)
+ 300        CONTINUE
+            WRITE (LUPRI,'(A)') '                              '
+ 200     CONTINUE
+ 100  CONTINUE
+C
+      RETURN
+      END
+C
+C
+C     /* Deck prfder*/
+      SUBROUTINE PRFDER(FDER,NDIM,NCOR,TEXT,LTXT,IPRINT)
+C     **********************************************************
+C     *** Printing of fourth derivative in TEXT coordinates. ***
+C     **********************************************************
+#include <implicit.h>
+#include <priunit.h>
+      CHARACTER*80 TEXT
+      DIMENSION FDER(NDIM,NDIM,NDIM,NDIM)
+C
+C     *** Header print. ***
+C
+      CALL HEADER('Fourth derivative of energy in ' // TEXT(1:LTXT) 
+     &            // ' coordinates',-1)
+C
+C     *** Printing of derivative. ***
+C
+      IF (MOD(NCOR,6).EQ.0) THEN
+         NLCMAX = NCOR/6
+      ELSE
+         NLCMAX = INT(NCOR/6)+1
+      END IF
+C
+      DO 100 ICOL3 = 1, NCOR
+         WRITE (LUPRI,'(A,I4)') '      The fourth dimension', ICOL3
+         WRITE (LUPRI,'(A)') '      ------------------------'
+         WRITE (LUPRI,'(A)') '                                  '
+         DO 200 ICOL2 = 1, NCOR
+            WRITE (LUPRI,'(A,I4)') '        The third Dimension', ICOL2
+            INLC = 0
+            DO 300 INLCMX = 1, NLCMAX
+               INLC2 = 6*(INLCMX-1) + 1
+               INLC  = MIN(INLC+6,NCOR)
+               DO 400 ICOL1 = 1, NCOR
+                  WRITE (LUPRI,'(A,6F10.6)') '   ', 
+     &                 (FDER(I,ICOL1,ICOL2,ICOL3), I=INLC2, INLC)
+ 400           CONTINUE
+               WRITE (LUPRI,'(A)') '                              '
+ 300        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
       RETURN
       END
 C
 C
 C     /*Deck prderv*/
-      SUBROUTINE PRDERV(TDER,FDER,TSTGDR,TSTSDR,SYMCOR,CSTART,WORK,
-     &                  ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,LTXT,IPRINT,
-     &                  TEXT)
+      SUBROUTINE PRDERV(TDER,FDER,TSTGDR,TSTSDR,SYMCOR,CSTART,TTMPDR,
+     &                  FTMPDR,WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,
+     &                  LTXT,IPRINT,TEXT)
 C     ***************************************************************
 C     **** This routine prints out the derivatives of the energy ****
 C     **** to NPRRDR order. These are done in 'TEXT' coordinates ****
@@ -3405,7 +3658,9 @@ C
 #include <numder.h>
       CHARACTER*80 TEXT
       DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), CSTART(NCOOR),
-     &          TSTSDR(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR), WORK(LWORK)
+     &          TSTSDR(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR), 
+     &          TTMPDR(NCOOR,NCOOR,NCOOR), 
+     &          FTMPDR(NCOOR,NCOOR,NCOOR,NCOOR), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2)
 C
 C     *** Print gradient ***
@@ -3495,13 +3750,11 @@ C
       IF (NPRRDR.GT.2) THEN
          KTDER  = 1
          KSYMTD = KTDER  + NCOOR**3
-         KSCTRA = KSYMTD + NCOOR**3
-         KCSTRA = KSCTRA + NCOOR**2
-         KLAST  = KCSTRA + NCOOR**2
+         KLAST  = KSYMTD + NCOOR**3
          CALL HEADER('Numerical third derivative of energy in ' // 
      &                TEXT(1:LTXT) // 'coordinates',-1)
-         CALL PRITDR(TDER,SYMCOR,WORK(KTDER),WORK(KSYMTD),WORK(KSCTRA),
-     &               WORK(KCSTRA),NDIMT,LTXT,IPRINT,TEXT)
+         CALL PRITDR(TDER,SYMCOR,TTMPDR,WORK(KSYMTD),NDIMT,NDCOOR,LTXT,
+     &               IPRINT,TEXT)
       END IF
 C
 C     *** Print fourth derivative of energy ***
@@ -3514,12 +3767,20 @@ C
          KLAST  = KCSTRA + NCOOR**2
          CALL HEADER('Numerical fourth derivative of energy in ' //
      &                TEXT(1:LTXT) // 'coordinates',-1)
-         CALL PRIFDR(FDER,SYMCOR,WORK(KFDER),WORK(KSYMFD),WORK(KSCTRA),
-     &               WORK(KCSTRA),NDIMF,LTXT,TEXT)
+         CALL PRIFDR(FDER,SYMCOR,FTMPDR,WORK(KSYMFD),NDIMF,NCOOR,LTXT,
+     &               IPRINT,TEXT)
+      END IF
+C
+C     *** Writing to sepctro file if requested. ***
+C
+      IF (SPECTR) THEN
+         NTIME = 2
+         CALL WRISPC(DUMMY,DUMMY,TTMPDR,FTMPDR,TEXT(1:6),NCOOR,NDCOOR,
+     &               NTIME,IPRINT)
       END IF
 C
       IF ((IPRINT .GT. 20).AND.(NPRRDR.EQ.2)) THEN
-         CALL HEADER ('Copy of Hessian for test', -1)
+         CALL HEADER ('Copy of Hessian for test',-1)
          DO IC1 = 1, NCOOR
             WRITE (LUPRI,'(12F12.8)') (TSTSDR(IC1,IC2),IC2=1,NCOOR)
          END DO
@@ -3572,8 +3833,8 @@ C
          IOFF = IOFF + 3
  300  CONTINUE
 C
-C     Transform to symmetry basis used in Dalton in case of 
-C     geometry optimization
+C     *** Transform to symmetry basis used in Dalton in ***
+C     *** case of geometry optimization                 ***
 C
       IF (MAXREP .GT. 0) THEN
          KCSTRA = 1
@@ -3611,8 +3872,8 @@ C
 C
 C
 C     /*Deck gsphes*/
-      SUBROUTINE GSPHES(SYMCOR,SMCINV,CHESS1,CHESS2,WORK,ICRIRP,NDCOOR,
-     &                  LWORK,LTXT,IPRINT,TEXT)
+      SUBROUTINE GSPHES(SYMCOR,SMCINV,CHESS1,CHESS2,WORK,ICRIRP,
+     &                  NDCOOR,LWORK,LTXT,IPRINT,TEXT)
 #include <implicit.h>
 #include <mxcent.h>
 #include <priunit.h>
@@ -3699,17 +3960,31 @@ C              *** Open hessian file. ***
                CALL GPOPEN(LUHES,'DALTON.HES','NEW',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
 C
-C              *** Printing nescecary pre-hessian information. ***
-               WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
-               WRITE(LUHES,*) NCOOR
-               WRITE(LUHES,'(A)') '                                   '
+C              *** Checking if this is going to be used with SPECTRO.***
 C
-               DO 800 ICOOR2 = 1, NCOOR
-                  DO 900 ICOOR1 = 1, NCOOR
-                     WRITE (LUHES,'(F22.12)') CHESS2(ICOOR1,ICOOR2)
- 900              CONTINUE
-                  WRITE (LUHES,'(A)') '                               '
- 800           CONTINUE
+               IF (SPECTR) THEN
+                  NTIMES = NCOOR/3
+                  DO ICOOR2 = 1, NCOOR
+                     DO ITIMES = 1, NTIMES
+                        ISTART = 3*(ITIMES-1) + 1
+                        WRITE (LUHES,'(3F22.12)') 
+     &                    (CHESS2(ICOOR1,ICOOR2),ICOOR1=ISTART,ISTART+2)
+                     END DO
+                  END DO
+               ELSE
+C
+C              *** Printing nescecary pre-hessian information. ***
+                  WRITE(LUHES,'(A)') 'CARTESIAN HESSIAN'
+                  WRITE(LUHES,*) NCOOR
+                  WRITE(LUHES,'(A)') '                                '
+C
+                  DO 800 ICOOR2 = 1, NCOOR
+                     DO 900 ICOOR1 = 1, NCOOR
+                        WRITE (LUHES,'(F22.12)') CHESS2(ICOOR1,ICOOR2)
+ 900                 CONTINUE
+                     WRITE (LUHES,'(A)') '                            '
+ 800              CONTINUE
+               END IF
             ELSE
                WRITE (LUHES,'(A)') '                                '
                WRITE (LUHES,'(A)') 'Hessian file already exist. This' //
@@ -4008,7 +4283,7 @@ C
                      IF ((ICRIRP(IC3,1).EQ.IIREP).AND.
      &                   (ICRIRP(IC3,2).EQ.    1).AND.(.NOT.FOUND)) THEN
                         FOUND = .TRUE.
-                        DO 500 II  =     1,      2
+                        DO 500 II  =     1      2
                         DO 500 IC4 = IC3+1, NDCOOR
                            ICRIRP(IC4-1,II) = ICRIRP(IC4,II)
  500                    CONTINUE
@@ -4158,11 +4433,12 @@ C
 C
 C     /*Deck nrmiso*/
       SUBROUTINE NRMISO(TDER,SYMCOR,DKIN,TRNCCR,TRAMSS,TMPGRD,TMPHES,
-     &                  TMPMSS,TMPTD1,TMPTD2,NDIMT,IPRINT)
-C     *******************************************************************************
-C     *** This routine takes the force constants (with respect to the most normal ***
-C     *** masses) and finds the force constants with respect to other isotopes).  ***
-C     *******************************************************************************
+     &                  TMPMSS,TMPTD1,TMPTD2,CSTART,WORK,NDIMT,LWORK)
+C     ***************************************************************
+C     *** This routine takes the force constants (with respect to ***
+C     *** the most normal masses) and finds the force constants   ***
+C     *** with respect to other isotopes).                        ***
+C     ***************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -4173,7 +4449,7 @@ C
       LOGICAL HESEXS
       DIMENSION TDER(NDIMT), SYMCOR(NCOOR,NCOOR), TRNCCR(NCOOR,NCOOR), 
      &          TRAMSS(NCOOR), DKIN(NCOOR), TMPGRD(NCOOR), 
-     &          TMPHES(NCOOR,NCOOR), TMPMSS(NCOOR), 
+     &          TMPHES(NCOOR,NCOOR), TMPMSS(NCOOR), CSTART(NCOOR),
      &          TMPTD1(NCOOR,NCOOR,NCOOR), TMPTD2(NCOOR,NCOOR,NCOOR)
 C
       KDIMH = NCOOR**2
@@ -4346,21 +4622,59 @@ C
 C
 C     *** Print section. ***
 C
+C     *** Gradient. ***
       WRITE (LUPRI,'(A)') 'Gradient in symmetry coordinates.'
       DO IC =1, NCOOR
          WRITE (LUPRI,'(F12.7)') GRDMOL(IC)
       END DO
-      WRITE (LUPRI,'(A)') 'Hessian in symmetry coordinates.'
-      DO IC1 = 1, NCOOR
-         WRITE (LUPRI,'(12F12.7)') (HESMOL(IC1,IC2), IC2 = 1, NCOOR)
-      END DO
-      WRITE (LUPRI,'(A)') 'Third derivative in symmetry coordinates.'
-      DO IC3 = 1, NCOOR
-         WRITE (LUPRI,'(A,I4)') 'Third dimension:', IC3
-         DO IC1 = 1, NCOOR
-           WRITE (LUPRI,'(12F12.7)') (TMPTD1(IC1,IC2,IC3),IC2= 1, NCOOR)
-         END DO
-      END DO
+C
+C     *** Hessian. ***
+C
+      BEGIN = 1
+      KCOL = 6
+      LAST  = MIN(NCOOR,KCOL)
+      KCOOR = NCOOR
+      NCOL  = NCOOR/KCOL
+      IF (MOD(NCOOR,KCOL).NE.0) NCOL = NCOL + 1
+C
+      DO 101 ICOL = 1, NCOL
+         WRITE (LUPRI,1001) (I,I = BEGIN,LAST)
+C
+         DO 201 ICOOR = BEGIN, NCOOR
+            WRITE (LUPRI,2001) ICOOR,
+     &                        (HESMOL(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
+ 201     CONTINUE
+         WRITE (LUPRI,'(A)') '                                       '
+         BEGIN = BEGIN + KCOL
+         LAST  = MIN(NCOOR,KCOL+LAST)
+ 101  CONTINUE
+ 1001 FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
+ 2001 FORMAT (1X,I4,2X,6F12.6)
+C
+C     *** Qubic force field. ***
+C
+      CALL HEADER('Third derivative in symmetry coordinates.',-1)
+C      
+      IF (MOD(NCOOR,6).EQ.0) THEN
+         NLCMAX = NCOOR/6
+      ELSE
+         NLCMAX = INT(NCOOR/6)+1
+      END IF
+C
+      DO 202 ICOL2 = 1, NCOOR
+         WRITE (LUPRI,'(A,I3)') '      Coloumn number', ICOL2
+         WRITE (LUPRI,'(A)') '      -----------------'
+         INLC = 0
+         DO 402 INLCMX = 1, NLCMAX
+            INLC2 = 6*(INLCMX-1) + 1
+            INLC  = MIN(INLC+6,NCOOR)
+            DO 302 ICOL1 = 1, NCOOR
+               WRITE (LUPRI,'(A,6F10.6)') '   ',
+     &                       (TMPTD1(I,ICOL1,ICOL2),I=INLC2,INLC)
+ 302        CONTINUE
+            WRITE (LUPRI,'(A)') '                              '
+ 402     CONTINUE
+ 202  CONTINUE
 C
       IF (IPRINT .GT. 22) THEN
          WRITE (LUPRI,'(A)') 'Inverse of averaged mass'
@@ -4648,8 +4962,6 @@ C     *** of the numerical derivatives.    ***
 C     ****************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
 #include <cbinum.h>
 #include <prpndr.h>
 C
@@ -4660,7 +4972,7 @@ C
       WRITE (LUPRI,'(A)') '                                      '
       IF (NUMVIB) WRITE (LUPRI,'(A)') ' Frequency analysis and ' //
      &                              'efficient geometry.'
-      IF (SPNSPN) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
+      IF (NSPNSP) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
      &                              ' spin-spin coupling constants'
 C
       RETURN
@@ -4684,7 +4996,7 @@ C     /*Deck prpder*/
       SUBROUTINE PRPDER(SYMCOR,SPSPDR,COEFF,SPSPFV,TRLNFV,TRLNDR,EXENFV,
      &           GRIREP,WORK,IADRSS,KDPMTX,ICRIRP,INDSTP,IDCOMP,IMAX,
      &           IMIN,ICNT,NCVAL,IDDCMP,MXCOEF,NTYPE,NPPDER,LDPMTX,
-     &           IFRSTD,NLDPMX,NSYM,MXNEXI,LWORK,IPRINT)
+     &           IFRSTD,NLDPMX,MXNEXI,NSYM,LWORK,IPRINT,DODIPS)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -4694,7 +5006,7 @@ C     /*Deck prpder*/
 #include <numder.h>
 #include <fcsym.h> 
 #include <cbinum.h>
-      LOGICAL PRIVAL
+      LOGICAL PRIVAL,DODIPS
       DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMRDRP), SYMCOR(NCOOR,NCOOR), 
      &          SPSPDR(NCOOR ,NCOOR,6,NPPDER), GRIREP(NGORDR,NGVERT),
      &          SPSPFV(NCOOR,NCOOR,6,NMPCAL),EXENFV(NSYM,MXNEXI,NMPCAL), 
@@ -4713,7 +5025,7 @@ C
       KLAST  = KTRAMA + NMPCAL*NCOOR**2
       LWRK1  = LWORK - KLAST + 1
       CALL NDRDPP(SPSPFV,TRLNFV,EXENFV,WORK(KTRAMA),SYMCOR,WORK(KLAST),
-     &            LWRK1,IPRINT)
+     &            LWRK1,IPRINT,DODIPS)
       IF (NPRPDR) CALL GPCLOSE(LUNDPR,'DELETE')
 C
 C     ******************************************
@@ -4730,6 +5042,16 @@ C
      &               LDPMTX,IFRSTD,NLDPMX,LWORK,.FALSE.)
       END IF
 C
+C     *** For transition dipole moments. ***
+C      
+      IF (DODIPS) THEN
+         NFINNR = 3*NSYM*MXNEXI
+         CALL NMNDER(TRLNDR,COEFF,TRLNFV,GRIREP,WORK,IADRSS,KDPMTX,
+     &               ICRIRP,INDSTP,IDCOMP,IMAX,IMIN,ICNT,NCVAL,IDDCMP,
+     &               MXCOEF,NMRDRP,NMPCAL,NTYPE,NPPDER*NFINNR,NFINNR,
+     &               LDPMTX,IFRSTD,NLDPMX,LWORK,.FALSE.)
+      END IF
+C     
 C     ***********************************************
 C     *** Write nescesary results to file for the ***
 C     *** for the vibrational analysis.           ***
@@ -4758,8 +5080,8 @@ C
 C     
                      IDERV = IDERV + 1
 C
-                     WRITE (LUPRI,'(A,I4)')
-     &                    '   Derivative with respect to coordinate', 
+                     WRITE (LUPRI,'(5X,A,I4)')
+     &                    'Derivative with respect to coordinate', 
      &                    ICOOR
 C
                      CALL PRSPSP(SPSPDR(1,1,1,IDERV),NCOOR,NCOOR,LUPRI)
@@ -4780,12 +5102,63 @@ C
                      END IF
 C
                      IF (PRIVAL) THEN
-                        WRITE (LUPRI,'(A,I4,A,I4)')
-     &                       '   Derivative with respect to coordinate', 
+                        WRITE (LUPRI,'(5X,A,I4,A,I4)')
+     &                       'Derivative with respect to coordinate', 
      &                       ICOOR2, ' and ', ICOOR1
 C
                         CALL PRSPSP(SPSPDR(1,1,1,IDERV),NCOOR,NCOOR,
      &                              LUPRI)
+                     END IF
+                  END DO
+                  END DO
+               END IF
+            END DO
+         END IF
+C
+C        *** For transition moments ***
+C
+         IF (DODIPS) THEN
+            IDERV = 0
+            CALL TITLER('Transition moment derivatives.','*',118)
+            DO IORDR = 1, NMRDRP
+               IF (IORDR.EQ.1) THEN
+                  CALL HEADER('1. numerical derivative',0)
+                  WRITE (LUPRI,'(5X,A)') 'Excitation energies are' //
+     &                  ' shown for original geometry.'
+                  WRITE (LUPRI,'(5X,A)') '                        '
+                  DO ICOOR = 1, NDCOOR
+C     
+                     IDERV = IDERV + 1
+C
+                     WRITE (LUPRI,'(5X,A,I4)')
+     &                    'Derivative with respect to coordinate', 
+     &                    ICOOR
+C
+                     CALL PRDPTR(TRLNDR(1,1,1,IDERV),EXENFV(1,1,1),NSYM,
+     &                           MXNEXI,LUPRI)
+                  END DO
+               ELSE IF (IORDR.EQ.2) THEN
+C                  
+                  CALL HEADER('2. numerical derivative',0)
+C
+                  DO ICOOR2 = 1, NDCOOR
+                  DO ICOOR1 = 1, ICOOR2
+C
+                     IDERV = IDERV + 1
+C                    
+                     IF ((PRPVIB).AND.((NARDRP+NMRDRP).EQ.2)) THEN
+                        PRIVAL = ICOOR1.EQ.ICOOR2
+                     ELSE
+                        PRIVAL = .TRUE.
+                     END IF
+C
+                     IF (PRIVAL) THEN
+                        WRITE (LUPRI,'(5X,A,I4,A,I4)')
+     &                       'Derivative with respect to coordinate', 
+     &                       ICOOR2, ' and ', ICOOR1
+C
+                        CALL PRDPTR(TRLNDR(1,1,1,IDERV),EXENFV(1,1,1),
+     &                              NSYM,MXNEXI,LUPRI)      
                      END IF
                   END DO
                   END DO
@@ -4839,24 +5212,24 @@ C
 C
 C
 C     /* Deck prtrma */
-      SUBROUTINE PRTRMA(TRAMAT,NDIMT,NDIMP,LPRIUN)
+      SUBROUTINE PRTRMA(TRAMAT,NDIMT1,NDIMT2,NDIMP1,NDIMP2,LPRIUN)
 C     *****************************************************************
 C     *** Subroutine that prints a two dimensional matrix (TRAMAT). ***
 C     *****************************************************************
 #include <implicit.h>
 C
-      DIMENSION TRAMAT(NDIMT,NDIMT)
+      DIMENSION TRAMAT(NDIMT1,NDIMT2)
 C
-      NTCOL = NDIMP/6 + 1
-      IF (MOD(NDIMP,6).EQ.0) NTCOL = NDIMP/6
+      NTCOL = NDIMP2/6 + 1
+      IF (MOD(NDIMP2,6).EQ.0) NTCOL = NDIMP2/6
 C
 C     *** Printing transformation matrix. ***
 C
       KDIM = 0
       DO ITCOL = 1, NTCOL
-         DO IDIM2 = 1, NDIMP
+         DO IDIM2 = 1, NDIMP1
             WRITE(LPRIUN,'(6F10.4)') 
-     &           (TRAMAT(IDIM1,IDIM2), IDIM1 = KDIM+1,MIN(KDIM+6,NDIMP))
+     &           (TRAMAT(IDIM2,IDIM1),IDIM1 = KDIM+1,MIN(KDIM+6,NDIMP2))
          END DO
          WRITE (LPRIUN,'(A)') '                          '
          KDIM = KDIM + 6
@@ -4881,12 +5254,14 @@ C
       CALL HEADER('Electric transition dipole moments (in a.u.)',15)
       WRITE (LUPRI,'(1X,A,A,2(/,1X,A))')
      &   ' Sym.   Mode    Frequency  ',
-     &   '            Length       ',
-     &   'ex. st.  No.      (au)          x       y       z   ',
-     &   '----------------------------------------------------'
+     &   '                   Length       ',
+     &   'ex. st.  No.      (au)             x            y         ' //
+     &   '    z   ',
+     &   '----------------------------------------------------------' //
+     &   '---------'
       DO 200 ISYM = 1, NSYM
          DO 100 IEXVAL = 1,NEXCIT(ISYM)
-            WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,2X,3F8.3)')
+            WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,2X,3F13.5)')
      &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
      &            TRLEN(1,ISYM,IEXVAL),  TRLEN(2,ISYM,IEXVAL),
      &            TRLEN(3,ISYM,IEXVAL)
@@ -5049,9 +5424,9 @@ C     ***********************************************************
 #include <mxcent.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, KCOL = 6)
 C
+      INTEGER BEGIN
       DIMENSION EHESS (MXCOOR,MXCOOR), COOR(NCOOR), CRTPRG(NCOOR),
      &          TMPHES(NCOOR ,NCOOR ), TRAMAT(NCOOR ,NCOOR ) 
-      INTEGER BEGIN
 C
 C     *** Constructing the transformation matrix. ***
 C
@@ -5059,7 +5434,7 @@ C
 C
 C     *** Transforming the hessian matrix. ***
 C      
-      CALL OTRTEN(EHESS,TRAMAT,TMPHES,MXCOOR,NCOOR,IPRINT,'N','T')      
+      CALL OTRTEN(EHESS,TRAMAT,TMPHES,MXCOOR,NCOOR,NCOOR,IPRINT,'N','T')      
 C
 
 C
@@ -5150,9 +5525,9 @@ C     **************************************************************
       PARAMETER (D1 = 1.0D0, DMTHR=1.0D-4)
 #include <symmet.h>
 #include <nuclei.h>
-#include <numder.h>
 #include <pvibav.h>
-      LOGICAL FOUND
+#include <numder.h>
+       LOGICAL FOUND
        CHARACTER*9 PRPTXT
        DIMENSION TRAMAT(NCOOR,NCOOR), COOR(NCOOR), CRTPRG(NCOOR)
 #include <ibtfun.h>
@@ -5202,7 +5577,7 @@ C
 C     *** If property derivative is calculated, we need to save ***
 C     *** the transformation matrix in the property-file.       ***
 C
-      IF (CNMPRP.AND.(NAORDR.EQ.0)) THEN
+      IF (CNMPRP.AND.(NAORDR.GT.0)) THEN
          NDIM3  = 1
          PRPTXT = 'CART-TRAN'
          CALL WRAVFL(TRAMAT,NCOOR,NCOOR,NDIM3,PRPTXT,IPRINT)
@@ -5226,7 +5601,7 @@ C
          WRITE (LUPRI,'(5X,A)') '                       '
          WRITE (LUPRI,'(5X,A)') 'Transformation matrix: '
          WRITE (LUPRI,'(5X,A)') '                       '
-         CALL PRTRMA(TRAMAT,NCOOR,NCOOR,LUPRI)
+         CALL PRTRMA(TRAMAT,NCOOR,NCOOR,NCOOR,NCOOR,LUPRI)
       END IF
 C
       RETURN
@@ -5313,16 +5688,58 @@ C
       LOGICAL SAMIRP
       CHARACTER*80 WORD(KMLINE)
 C
+C     *** Reducing symmetry of frozen orbitals. ***
+C
+      CALL SDCEIP(NRHFFR,NRHFRB,WORD,'.FROINP')
+C
+C     *** Print. ***
+C
+      IF (IPRINT.GT.0) THEN
+         WRITE (LUPRI,'(A)') '                                   '
+         WRITE (LUPRI,'(A)') 
+     &         'Symmetries of frozen core orbitals in reduced symmetry:'
+         WRITE (LUPRI,'(8A4))') (REP(I), I=0,MAXREP)
+         WRITE (LUPRI,'(I2,7I4)') (NRHFFR(I), I=1,MAXREP+1)
+         WRITE (LUPRI,'(A)') '                                   '
+         WRITE (LUPRI,'(A)') '                                   '
+      END IF
+C
+      RETURN
+      END
+C
+C
+C     /* Deck sdceip */
+      SUBROUTINE SDCEIP(NCURNT,NBCKUP,WORD,SWORD)
+C     ************************************************************
+C     *** Subroutine that subduces properties in input file    ***
+C     *** from original symmetry into broken symmetry.         ***
+C     *** Original symmetry needs to be backed up in nmbksym.h.***
+C     ************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+#include <molinp.h>
+C
+#include <symmet.h>
+#include <nmbksym.h>
+#include <pgroup.h>
+      LOGICAL SAMIRP
+      DIMENSION NCURNT(8), NBCKUP(8)
+      CHARACTER*7 SWORD
+      CHARACTER*80 WORD(KMLINE)
+C
       CALL STCCSM(NSYM)
 C
-      CALL IZERO(NRHFFR,8)
+      CALL IZERO(NCURNT,8)
 C
 C     *** Sorting irep's, and assign them to the appropriate ***
-C     *** place in NRHFFR.                                   ***
+C     *** place in NCURNT.                                   ***
 C
       DO 100 IREP = 0, MAXREP
          DO 200 IRPOLD = 0, MAXRPB
-            IF (NRHFRB(IRPOLD+1) .GT. 0) THEN
+            IF (NBCKUP(IRPOLD+1) .GT. 0) THEN
                SAMIRP = .TRUE.
                DO 300 ISYOP2 = 0, MAXREP
                DO 300 ISYOP1 = 0, MAXRPB
@@ -5330,10 +5747,10 @@ C
                      IF (IXVALB(ISOPB(ISYOP1),IRPOLD)  .NE. 
      &                    IXVAL (ISOP (ISYOP2),IREP )) SAMIRP = .FALSE.
                   END IF
-300           CONTINUE
-              IF (SAMIRP) THEN
-                 NRHFFR(IREP+1) = NRHFFR(IREP+1) + NRHFRB(IRPOLD+1)
-              END IF
+ 300           CONTINUE
+               IF (SAMIRP) THEN
+                  NCURNT(IREP+1) = NCURNT(IREP+1) + NBCKUP(IRPOLD+1)
+               END IF
             END IF
  200     CONTINUE
  100  CONTINUE
@@ -5352,8 +5769,8 @@ C
       READ (LUCMD,'(A)') WORD(ILINE)
       IF (WORD(ILINE) .EQ. '.NSYM  ') THEN
          WRITE (WORD(ILINE+1),'(I3)')  NSYM
-      ELSE IF (WORD(ILINE) .EQ. '.FROIMP') THEN
-         WRITE (WORD(ILINE+1),'(8I4)') (NRHFFR(IREP),IREP=1,NSYM)
+      ELSE IF (WORD(ILINE) .EQ. SWORD) THEN
+         WRITE (WORD(ILINE+1),'(8I4)') (NCURNT(IREP),IREP=1,NSYM)
       END IF
       IF (WORD(ILINE) .NE. '*END OF') GOTO 400
 C
@@ -5365,16 +5782,6 @@ C
 C     *** Closing DALTON.INP. ***
 C
       CALL GPCLOSE(LUCMD,'KEEP')
-C
-C     *** Print. ***
-C
-      WRITE (LUPRI,'(A)') '                                   '
-      WRITE (LUPRI,'(A)') 
-     &     'Symmetries of frozen core orbitals in reduced symmetry:'
-      WRITE (LUPRI,'(8A4))') (REP(I), I=0,MAXREP)
-      WRITE (LUPRI,'(I2,7I4)') (NRHFFR(I), I=1,MAXREP+1)
-      WRITE (LUPRI,'(A)') '                                   '
-      WRITE (LUPRI,'(A)') '                                   '
 C
       RETURN
       END
@@ -5391,40 +5798,93 @@ C
 C
       RETURN
       END
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+C
+C
+C     /* Deck wrispc */
+      SUBROUTINE WRISPC(FREQ,RNNORM,QUBIC,QUARTC,TXT,NCOOR,NDCOOR,NTIME,
+     &                  IPRINT)
+**************************************************************
+*** Writes nescesary information to DALTON.SPC in order to ***
+*** run the dal2spectro.pl script.                         ***
+**************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      CHARACTER*6 TXT
+      DIMENSION FREQ(NCOOR), RNNORM(NCOOR), QUBIC(NCOOR,NCOOR,NCOOR),
+     &          QUARTC(NCOOR,NCOOR,NCOOR,NCOOR)
+C
+C     *** Open DALTON.SPC file. ***
+C
+      CALL GPOPEN(LSPECT,'DALTON.SPC','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)      
+C
+C     *** NTIME = 1 -> write the frequencies and norm of ***
+C     ***              the normal coordinates.           ***
+C     *** NTIME = 2 -> write the qubic and quartic force ***
+C     ***              field.                            ***
+C
+      IF (NTIME .EQ. 1) THEN
+C
+C        *** Forwarding to the end of the file if necesary. ***
+C
+         IF (TXT(1:6).EQ.'cartes') THEN
+            KTOT = (NCOOR**3 + 1) + (NCOOR**4 + 1) + 1
+            DO I = 1, KTOT
+               READ(LSPECT,*)
+            END DO
+         ELSE
+            WRITE (LSPECT,*) TXT(1:6)
+         END IF
+C
+C        *** Writing frequencies. ***
+C          
+         WRITE (LSPECT,*) 'Frequencies'
+         DO I = 1, NDCOOR
+            WRITE (LSPECT,'(F18.10)') FREQ(I)
+         END DO
+C
+C        *** Writing norm of normal coordinates. ***
+C     
+         WRITE (LSPECT,*) 'Coordinate norm'
+         DO I = 1, NDCOOR
+            WRITE (LSPECT,'(F18.10)') RNNORM(I)
+         END DO
+      ELSE IF (NTIME .EQ. 2) THEN
+C
+C        *** Forwarding to the end of the file if necesary. ***
+C
+         IF (TXT(1:6).EQ.'normal') THEN
+            KTOT = 2*NDCOOR + 3
+            DO I = 1, KTOT
+               READ(LSPECT,*)
+            END DO
+         ELSE
+            WRITE (LSPECT,*) TXT(1:6)
+         END IF
+C
+C        *** Writing cubic force field. ***
+C          
+         WRITE (LSPECT,*) 'Cubic force field'
+         DO 100 K = 1, NDCOOR
+         DO 100 J = 1, NDCOOR
+         DO 100 I = 1, NDCOOR
+            WRITE (LSPECT,*) QUBIC(I,J,K), I, J, K
+ 100     CONTINUE
+C
+C        *** Writing quartic force field. ***
+C          
+         WRITE (LSPECT,*) 'Quartic force field'
+         DO 200 L = 1, NDCOOR
+         DO 200 K = 1, NDCOOR
+         DO 200 J = 1, NDCOOR
+         DO 200 I = 1, NDCOOR
+            WRITE (LSPECT,*) QUARTC(I,J,K,L), I, J, K, L
+ 200     CONTINUE
+      END IF
+C
+C     *** CLOSING FILE. ***
+C
+      CALL GPCLOSE(LSPECT,'KEEP')
+C
+      RETURN
+      END

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaopt.F,v 1.11 2001-11-13 19:32:44 vebjornb Exp $
+C$Id: abaopt.F,v 1.12 2001-12-13 08:52:36 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1119,6 +1119,15 @@ C  /* Deck optmin */
          CALL TITLER('1st Order Geometry Optimization','>',110)
       END IF
 C
+C     *** Need to figure out which analytical derivatives ***
+C     *** we have. If numerical derivatives, nomove=.true.***
+C        
+c      CALL FNDANA(NAORDR)
+c      IF (NAORDR.EQ.0) THEN
+c         NOMOVE = .TRUE.
+c         NMWALK = .TRUE.
+c      END IF
+C
 C     The number of Cartesian and redundant internal coordinates
 C     are counted to reduce the memory requirement.
 C     The input processing in Hermit has to be run to determine
@@ -1242,6 +1251,7 @@ C  /* Deck runopt */
 #include <trkoor.h>
 #include <cbiwlk.h>
 #include <molde.h>      
+#include <numder.h>
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
       CHARACTER TMPLIN*80, WRDRSP*7
@@ -1956,6 +1966,7 @@ C
       WRITE(LUPRI,678) ' Norm of gradient               : ', GRADNM
       WRITE(LUPRI,678) ' Norm of step                   : ', STPNRM
       WRITE(LUPRI,678) ' Updated trust radius           : ', TRSTRA
+c      if (itrnmr.eq.1) stop ' '
       IF (IPRINT .GE. 3) THEN
          DO 50 I = 0, MAXREP
             IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I1,A,I7)')
@@ -2203,6 +2214,7 @@ C
       CALL QENTER('GTGRAD')
       WORK(IWOFF+1) = WRKDLM
       CALL DZERO(EGRAD,MXCOOR)
+      
       IF ((.NOT.PARIO) .OR. (MYNUM .EQ. 0)) THEN
          CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
       ELSE
@@ -5047,7 +5059,7 @@ C     The ratio between actual and predicted energy change is calculated,
 C     and this ratio is then used to update the trust radius.
 C
       IF (ABS(ERGPRD) .GT. THDE) THEN
-         RATIO = ERGDIF/ERGPRD
+         RATIO = ERGDIF/ERGPRD 
          IF (IPRINT .GT. 2) THEN
             CALL HEADER('Energy difference to previous geometry:',-1)
             WRITE(LUPRI,'(/A),/)')
@@ -5551,7 +5563,7 @@ C     CALL DSWAP(1,GRDDIA(I),1,GRDDIA(JMIN),1)
          CALL HEADER('RF-eigenvectors',-1)
          CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
       END IF
-      CALL PRFSTP(MX2CRD,NCRDHS,NCART,EVEC,STPDIA,EGRAD,
+      CALL PRFSTP(MX2CRD,NCRDHS,MXCOOR,EVEC,STPDIA,EGRAD,
      &     TMPMAT,EHESS,1)
 C
 C     In the case of saddle point optimization, we also need
@@ -5601,7 +5613,7 @@ C
      &        EVAL(I) = EVAL(I) - 1.0D5
  520  CONTINUE
 C
-      CALL PRFSTP(MX2CRD,2,NCART,EVEC,STPDIA,EGRAD,
+      CALL PRFSTP(MX2CRD,2,MXCOOR,EVEC,STPDIA,EGRAD,
      &     TMPMAT,EHESS,2)
       TMPVAL = STPDIA(1)
       IF (ABS(TMPVAL) .GT. CMPLIM)
@@ -5636,7 +5648,7 @@ C
 C     The final call to RFSTP to do scaling with respect to the
 C     trust radius.
 C
-      CALL PRFSTP(MX2CRD,NCRDHS,NCART,EVEC,STPDIA,EGRAD,
+      CALL PRFSTP(MX2CRD,NCRDHS,MXCOOR,EVEC,STPDIA,EGRAD,
      &     TMPMAT,EHESS,3)
       RETURN
       END

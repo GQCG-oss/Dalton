@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: hersym.F,v 1.5 2001-11-13 19:32:46 vebjornb Exp $
+C$Id: hersym.F,v 1.6 2001-12-13 08:52:38 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1058,7 +1058,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION IUSED(2*MXCENT)
 	 IORDR = IORDER
          IF (.NOT. PROPER) IORDR = 2*IORDER
-         CON2PO = 2*PI/IORDR
+         CON2PO = 2.0D0*PI/DBLE(IORDR)
 C ::: If we're looking for improper rotational axes, we have to :::
 C ::: multiply the order by a factor of two.                    :::
          N = NINT(ORGARR(1,0))
@@ -1070,13 +1070,12 @@ C ::: The original matrix is copied. :::
             ATMARR(3,I) = ORGARR(3,I)
             ATMARR(4,I) = ORGARR(4,I)
  100     CONTINUE
-
+C
          TEMP=SQRT(ROTVEC(1)*ROTVEC(1)+ROTVEC(2)*ROTVEC(2)+
      &   ROTVEC(3)*ROTVEC(3))
          ROTVEC(1)=ROTVEC(1)/TEMP
          ROTVEC(2)=ROTVEC(2)/TEMP
          ROTVEC(3)=ROTVEC(3)/TEMP
-
 C ::: The molcule is rotated so that the possible rotational axis :::
 C ::: lies along the Z-axis                                       :::
          V1(1) = 0.0D0
@@ -1254,7 +1253,7 @@ C ::: symmetrical around origo).                                         :::
                   V1(3) = V1(3) + ATMARR(3,K)
  120           CONTINUE
                IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)) .LT.
-     &                                       TOLLRN*TOLLRN) THEN
+     &                                        TOLLRN*TOLLRN) THEN
 C ::: All but the linear case has order higher than two. :::
                   IF (IORD .GT. 2) THEN
                      V1(1) = ATMARR(1,I)
@@ -1748,7 +1747,7 @@ C ::: Number of perpendicular C2 axes is counted. :::
                   V2(3) = DRTAXS(3,I)
                   IF ((NINT(DRTAXS(4,I)).EQ.2) .AND. (ABS(V1(1)*V2(1)+
      &              V1(2)*V2(2)+V1(3)*V2(3)).LT.TOLLRN)) ITEMP = ITEMP+1
- 200           CONTINUE
+ 200           CONTINUE 
                IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
                   IF ((NINT(DMRPLN(1,0)) .GE. 0) .AND.
      &                            (NINT(DMRPLN(4,1)) .EQ. 2)) THEN

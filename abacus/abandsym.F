@@ -928,9 +928,11 @@ C
 C     
       ISYMCO = 0
       IPLACE = 1
+      i = 0
       DO 2100 IREP   = 1, NIREP
       DO 2100 ICENT  = 1, KINDCT
       DO 2100 ICOOR2 = 3*(NSTBCT(ICENT)-1)+1, 3*(NSTBCT(ICENT)-1)+3 
+         i = i + 1
          CALL DZERO(TMPSYM,NCOOR)
          IF (IREP .LE. N1DIME+1) THEN
             IPLACE = IREP
@@ -947,7 +949,7 @@ C
 C
          RNORM2 = 0.0D0
          DO 2300 ICOOR1 = 1, NCOOR
-            RNORM2 = RNORM2 + TMPSYM(ICOOR1)**2
+            RNORM2 = RNORM2 + (TMPSYM(ICOOR1))**2
  2300    CONTINUE
          IF (RNORM2 .LT. DTHR) GOTO 2700
 C
@@ -1262,7 +1264,7 @@ C
      &          IRPIND(NMORDR), IDXTMP(NMORDR), IDDBTP(NMORDR), 
      &          NPRTNR(MAXINR)
 C
-      IF ((FCLASS .NE. 'C1 ').AND.(NAORDR.LE.1).AND.(.NOT.CNMPRP)) THEN
+      IF ((FCLASS .NE. 'C1 ').AND.(NAORDR.LE.1).AND..NOT.CNMPRP) THEN
 C
 C        ***Check symmetry for the original component ***
 C
@@ -1359,7 +1361,8 @@ C
 C
 C              *** Which components do we have to add ***
 C
-               IF ((IRSRDR+1).EQ.1) THEN
+               CALL IZERO(IRPIND,NMORDR)
+               IF (IORDR.EQ.1) THEN
                   IRPIND(1) = 1
                ELSE
                   IRPIND(1) = 0
@@ -1370,15 +1373,19 @@ C
 C     
                DO 800 IRP = 1, NRP
 C     
-                  IF ((IRSRDR+1).GT.1) THEN
-                     FOUND = .FALSE.
-                     DO 900 IIN = 1, IN
-                        IF ((IRPIND(IIN).LE.IRPIND(IIN+1)).AND.
-     &                                                (.NOT.FOUND)) THEN
-                           FOUND = .TRUE.
-                           IRPIND(IIN) = IRPIND(IIN) + 1
-                        END IF
- 900                 CONTINUE
+                  IF (IORDR.GT.1) THEN
+                     IF (IN.GT.1) THEN
+                        FOUND = .FALSE.
+                        DO 900 IIN = 1, IN
+                           IF ((IRPIND(IIN).LE.IRPIND(IIN+1)).AND.
+     &                                           (.NOT.FOUND)) THEN
+                              FOUND = .TRUE.
+                              IRPIND(IIN) = IRPIND(IIN) + 1
+                           END IF
+ 900                    CONTINUE
+                     ELSE
+                        IRPIND(1) = IRPIND(1) + 1
+                     END IF
                   END IF
 C     
 C                 *** Assign the new components already in the array, ***
@@ -1411,7 +1418,7 @@ C
 C
 C                 *** Check if it is possible to construct a force-constant *** 
 C                 *** with two additional equal and arbitary indices. This  ***
-C                 *** force constant will conatin this energy value.        ***
+C                 *** force constant will contain this energy value.        ***
 C 
                   IF (((NMORDR-(IORDR+IN)).GE.2).AND.(.NOT.CLNRGY)) THEN
 C
@@ -3197,7 +3204,8 @@ C
 C
          FOUND = .FALSE.
          DO 900 IDP = 1, NIDEP
-            IF ((MAXDP.GT.INMIDP(IDP)).AND.(.NOT.FOUND)) THEN
+            IF ((MAXDP.GT.INMIDP(IDP)).AND.(.NOT.FOUND).AND.
+     &                           (ABS(DCOEFF(ICMP,IDP)).GT.1.0D-4)) THEN
                FOUND = .TRUE.
                IMIN = 1
                NMIN = INMIDP(1)
@@ -3649,4 +3657,3 @@ C
 C
       RETURN
       END
-

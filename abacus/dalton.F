@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.12 2001-11-13 19:32:45 vebjornb Exp $
+C$Id: dalton.F,v 1.13 2001-12-13 08:52:37 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF

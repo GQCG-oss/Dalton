@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamag.F,v 1.10 2001-11-21 08:41:05 hjj Exp $
+C$Id: abamag.F,v 1.11 2001-12-13 08:52:35 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1153,6 +1153,7 @@ C
             END IF
       END IF
  300  CONTINUE
+      isppri = 10
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for SPIN-S:',0)
          IF (ABUND .NE. 1.0D0) THEN
@@ -1175,6 +1176,7 @@ C
          IF (DOSDFC) WRITE (LUPRI,'(A)')
      &      ' Only the sum of SD and FC will be calculated'
       END IF
+      isppri = 0
       RETURN
       END
 C  /* Deck spnini */

@@ -481,9 +481,12 @@ C
       CALL SIRCTL(ICONV,WORK(IWOFF+2),LMWORK)
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'SIRIUS')
 C
+C     If not numerical differentiation:
 C     We should now have MO's on file, no need for ADDSTO anymore
 C
-      ADDSTO = .FALSE.
+      IF (.NOT.NMWALK) THEN
+         ADDSTO = .FALSE.
+      END IF
 C
 C     Several files left open, have to be closed manually
 C
@@ -641,6 +644,7 @@ C  /* Deck exedrv */
             WLKREJ = .FALSE.
             NEWGEO = .TRUE.
             CALL EXESIR(WORK,LMWORK,IWOFF,WRKDLM)
+            IF (DOCCSD) CALL EXECC(WORK,LMWORK,IWOFF,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -1411,6 +1415,20 @@ C         if reading input from a terminal
          GOTO 5000
       END IF
  8000 CALL FLSHFO(LUPRI)
+C
+C     *** Doing just a survey of the wavefunctions we use. ***
+C     
+c      INPERR = 0
+c      NUMRUN = 0 
+c      IRDMO  = 8
+c      IREST  = 0 
+c      NSYM   = 1
+c      REWIND (LUCMD,IOSTAT=IOS)
+c 8100 READ (LUCMD,'(A7)') WORD
+c      IF (.NOT.((WORD.EQ.'**WAVE ').OR.(WORD.EQ.'**WAVEF')
+c     &                             .OR.(WORD.EQ.'**SIRIUS'))) GOTO 8100
+c      CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
+C
       CALL GPCLOSE(LUCMD,'KEEP')
       CALL QEXIT('GNRLIN')
       RETURN

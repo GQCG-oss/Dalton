@@ -328,6 +328,7 @@ C     ************************************************************
 #include <priunit.h>
 C
 #include <fcsym.h>
+      CHARACTER*80 TEXT
       DIMENSION TDER  (NCOOR,NCOOR,NCOOR), TMPTDR(NCOOR,NCOOR,NCOOR), 
      &          SYMCOR(NCOOR,NCOOR      ), CSTART(NCOOR            ),
      &          WORK  (LWORK            )
@@ -340,7 +341,9 @@ C
       CALL GRPCHR(CSTART,SYMCOR,WORK(KGRREP),WORK(KCHCTR),WORK(KLAST),
      &            WORK(KICRIP),LWRK,IPRINT)
 C
-      CALL TRATDR(SYMCOR,TDER,TMPTDR,NCOOR,IPRINT)
+      LTXT = 9
+      TEXT(1:9) = 'cartesian'
+      CALL TRATDR(SYMCOR,TDER,TMPTDR,NCOOR,NCOOR,NCOOR,TEXT,LTXT,IPRINT)
       CALL DCOPY(NCOOR**3,TMPTDR,1,TDER,1)
 C
       IF (IPRINT .GT.6) THEN
@@ -551,7 +554,8 @@ C
             DO ISPIN  = 1, 6 
 C            
                CALL OTRTEN(SPSPFV(1,1,ISPIN,IMPCAL),TRAMAT(1,1,IMPCAL),
-     &                     WORK(KSPTMP),NCOOR,NCOOR,IPRINT,'N','T')
+     &                     WORK(KSPTMP),NCOOR,NCOOR,NCOOR,IPRINT,'N',
+     &                     'T')
             END DO
          END DO
       END IF
@@ -633,27 +637,31 @@ C
 C
 C     
 C     /* Deck otrten */
-      SUBROUTINE OTRTEN(AMTRIX,TRAMAT,TMPMAT,NDIMA,NDIMT,IPRINT,T1,T2)
+      SUBROUTINE OTRTEN(AMTRIX,TRAMAT,TMPMAT,NDIMA,NDIMT1,NDIMT2,
+     &                  IPRINT,T1,T2)
 #include <implicit.h>
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
+#include <mxorb.h>
+C
+#include <infpar.h>
 #include <priunit.h>
       CHARACTER*1 T1, T2
-      DIMENSION AMTRIX(NDIMA,NDIMA), TMPMAT(NDIMT,NDIMT), 
-     &          TRAMAT(NDIMT,NDIMT)
+      DIMENSION AMTRIX(NDIMA,NDIMA), TMPMAT(NDIMT1,NDIMT1), 
+     &          TRAMAT(NDIMT1,NDIMT2)
 C
-      CALL DZERO(TMPMAT,NDIMT**2)
-      CALL DGEMM(T1,'N',NDIMT,NDIMT,NDIMT,D1,TRAMAT,NDIMT,AMTRIX,
-     &           NDIMA,D0,TMPMAT,NDIMT)
+      CALL DZERO(TMPMAT,NDIMT1*NDIMT2)
+      CALL DGEMM(T1,'N',NDIMT2,NDIMT1,NDIMT1,D1,TRAMAT,NDIMT1,AMTRIX,
+     &           NDIMA,D0,TMPMAT,NDIMT1)
 C
       CALL DZERO(AMTRIX,NDIMA**2)
-      CALL DGEMM('N',T2,NDIMT,NDIMT,NDIMT,D1,TMPMAT,NDIMT,TRAMAT,
-     &           NDIMT,D0,AMTRIX,NDIMA)
+      CALL DGEMM('N',T2,NDIMT2,NDIMT2,NDIMT1,D1,TMPMAT,NDIMT1,TRAMAT,
+     &           NDIMT1,D0,AMTRIX,NDIMA)
 C
       IF (IPRINT.GT.20) THEN
          WRITE (LUPRI,'(A)') 'Transformed tensor: '
-         CALL PRTRMA(AMTRIX,NDIMA,NDIMT,LUPRI)         
+         CALL PRTRMA(AMTRIX,NDIMA,NDIMA,NDIMT2,NDIMT2,LUPRI)         
          WRITE (LUPRI,'(A)') 'Transformation tensor: '
-         CALL PRTRMA(TRAMAT,NDIMA,NDIMT,LUPRI) 
+         CALL PRTRMA(TRAMAT,NDIMT1,NDIMT2,NDIMT1,NDIMT2,LUPRI) 
       END IF
 C
       RETURN
@@ -780,7 +788,7 @@ C
       REWIND(LUNDPR)
 C
       KNMPRP = NMEPRP-1
-      IF (NAORDR.GT.0) KNMPRP = NMEPRP
+      IF (NAORDR.EQ.0) KNMPRP = NMEPRP
       DO IEPRP = 1, KNMPRP
          READ (LUNDPR,'(A)') PRPTXT
          READ (LUNDPR,'(3I7)') NDIM1, NDIM2, NDIM3
