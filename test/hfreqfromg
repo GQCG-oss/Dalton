@@ -59,7 +59,7 @@ cat > hfreqfromg.dal <<'%EOF%'
 .HF
 *SCF INP
 .THRESH
- 1.0D-12
+ 1.0D-8
 **PROPERTIES
 .SPIN-SPIN
 *TRPRSP
