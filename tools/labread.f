@@ -7,7 +7,7 @@ C
       DOUBLE PRECISION TIME, SECOND
       CHARACTER*8 B(4), STARS
       PARAMETER (STARS = '********')
-      PARAMETER (LUINP = 5, LUPPRI = 6)
+      PARAMETER (LUINP = 5, LUPRI = 6)
 C
 C      TIME = SECOND()
       WRITE (LUPRI, '(/A/)') ' MOLECULE labels found on file :'
