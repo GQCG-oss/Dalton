@@ -7,21 +7,20 @@
       DIMENSION WORK(LFREE)
       KDMAT = 1
       KLAST = KDMAT + N2BASX
-      LWRK  = LWORK - KLAST +1
-      IF(KLAST.GT.LWORK) CALL QUIT('NOMEM IN DFTEXPGRAD')
+      LWRK  = LFREE - KLAST +1
+      IF(KLAST.GT.LFREE) CALL QUIT('NOMEM IN DFTEXPGRAD')
       CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
-      CALL DFTINT(WORK(KDMAT),1,0,.FALSE.,WORK(KLAST),LFREE,
+      CALL DFTINT(WORK(KDMAT),1,0,.FALSE.,WORK(KLAST),LWRK,
      &            DEXPGC,WORK(KDMAT),ELE)
       IF(IPRINT.GE.0) WRITE(LUPRI,'(A,F20.14)')
-     &     'Orbital gradient integration, electrons:', ELE
-      print *, "finished..."
+     &     'Orbital-exponent gradient integration, electrons:', ELE
       END
 
 C /* Deck dftexp */
       SUBROUTINE DEXPGC(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
      &                  RHOA,GRADA,COORD,WGHT,DMAT)
 #include <implicit.h>
-      PARAMETER (D2 = 2D0)
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 #include <inforb.h>
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
@@ -29,19 +28,27 @@ C /* Deck dftexp */
      &          DMAT(NBAST,NBAST)
       LOGICAL DFT_ISGGA,DOGGA
       EXTERNAL DFT_ISGGA
-      DIMENSION VX(5)
+      DIMENSION VX(5), VXC(NBLEN), VXB(NBLEN)
 C     
-      RETURN
       DOGGA = DFT_ISGGA()
-c     
-      DO I= 1, NBLEN
-         GRDNRM = SQRT(GRADA(1,I)**2 + GRADA(2,I)**2 + GRADA(3,I)**2)
-         CALL DFTPTF0(RHOA(I),GRDNRM,WGHT(I),VX)
-         VXC = D2*VX(1)
-         VXB = D2*VX(2)/GRDNRM
+C     
+      IF (DOGGA) THEN
+         DO I = 1, NBLEN
+            GRDNRM = SQRT(GRADA(1,I)**2 + GRADA(2,I)**2 + GRADA(3,I)**2)
+            CALL DFTPTF0(RHOA(I),GRDNRM,WGHT(I),VX)
+            VXC(I) = VX(1)
+            VXB(I) = D2*VX(2)/GRDNRM
+         END DO
+      ELSE
+         DO I = 1, NBLEN
+            CALL DFTPTF0(RHOA(I),D0,WGHT(I),VX)
+            VXC(I) = VX(1)
+         END DO
+      END IF
+      DO I = 1, NBLEN
          CALL DFTEXP(DMAT,GAO(I,1,1),GAO(I,1,2),
      &               NBLEN,NBLCNT,NBLOCKS,LDAIB,
-     &               VXC,VXB,
+     &               VXC(I),VXB(I),
      &               GRADA(1,I),GRADA(2,I),GRADA(3,I),
      &               COORD(1,I),COORD(2,I),COORD(3,I),DOGGA)
       END DO
@@ -90,8 +97,6 @@ C
 C
       DO IREPA = 0, MAXREP
       DO IBL = 1, NBLCNT(IREPA+1)
-c         ISTR = IBAS(IREPA+1) + 1
-c         IEND = IBAS(IREPA+1) + NBAS(IREPA+1)
          ISTR  = NBLOCKS(1,IBL,IREPA+1)
          IEND  = NBLOCKS(2,IBL,IREPA+1)
          IORBA = 0
