@@ -1,6 +1,6 @@
 \chapter{Solvent calculations}\label{ch:solvent}
 
-This chapter describes the implementation of the
+This chapter describes the 
 Multiconfigurational Self-Consistent Reaction Field (MCSCRF) model
 as implemented in \siraba \ . The first section describes some
 considerations about the implementation  and the range of
@@ -19,7 +19,7 @@ Self-Consistent Reaction Field (MCSCRF)\index{reaction
 field}\index{MCSCRF}
 approach~\cite{kvmedpsjpc91,kvmhahjajthjcp89}, where the solute is
 placed in a spherical cavity\index{cavity} and surrounded by the
-dielectric medium. The solvent response to the the presence of the
+dielectric medium. The solvent response to the presence of the
 solute is modelled by a multipole expansion\index{multipole
 expansion}, in \siraba\ in principle to infinite order, but
 practical applications show that the multipole expansion is
@@ -32,12 +32,12 @@ MP2 orbitals is requested as starting orbitals for the MCSCF
 optimization, the solvent model will not be added before entering the
 MCSCF optimization stage, so MP2 gas-phase orbitals can be used as
 starting guess even though the solvent model has not been implemented
-for this wave function.
+for this wave function. Note also that differential densities will be
+disabled in direct calculations when the solvent model is employed.
 
 As regards molecular properties, the solvent model has so far been
-extended to linear singlet and triplet response
-properties\index{linear response}\index{triplet response} in the
-\resp\ program. Thus a number of properties and excitation energies can
+extended to singlet linear, quadratic and cubic response, and  triplet linear response\index{linear response}\index{quadratic response}\index{cubic response}\index{triplet response} in the
+\resp\ program, both using equilibrium and no-equilibrium solvation. A number of properties and excitation energies can
 be calculated with the (MC)SCRF model, and several studies of such
 properties have been presented, and we refer to these papers for an
 overview of what can currently be calculated with the
@@ -93,7 +93,7 @@ H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 100},\hspace{0.25em}6597, (1994).
 \item Linear triplet response: P.-O.\AA strand, K.V.Mikkelsen, P.J{\o}rgensen,
-K.Ruud and T.Helgaker. To be published.
+K.Ruud and T.Helgaker. \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em} 2528 (1998).
 \item Hyperfine couplings: B.Fernandez, O.Christensen, O.Bludsky,
 P.J{\o}rgensen,
 K.V.Mikkelsen. \newblock {\em J.Chem.Phys.}, {\bf
@@ -105,7 +105,7 @@ P.J{\o}rgensen, K.Ruud, and T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
 T.Helgaker. \newblock {\em J.Phys.Chem.}, {\bf
 100},\hspace{0.25em}19771, (1996).
 \item Spin-spin couplings: P.-O.\AA strand, K.V.Mikkelsen, P.J{\o}rgensen,
-K.Ruud and T.Helgaker. To be published.
+K.Ruud and T.Helgaker. \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em} 2528 (1998).
 \end{list}
 }}
 \end{center}
@@ -122,7 +122,7 @@ shielding}\index{dielectric medium}:
 .RUN PROPERTIES
 **INTEGRALS
 *ONEINT
-.MAX L
+.SOLVENT
  10
 **WAVE FUNCTIONS
 .HF
@@ -170,10 +170,12 @@ In the present release of the \siraba\ program, there are certain
 limitations imposed on the optimizing geometries using the solvent
 model. Only second-order geometry optimizations \index{geometry
 optimization} are available, and
-only through the general \Sec{WALK} module. Furthermore, symmetry
-cannot be used during the geometry optimization, and care must be
-exercised in order to turn off automatic symmetry detection in case of
-Hartree-Fock calculations. Thus the input for an SCF geometry
+only through the general \Sec{WALK} module. 
+%Furthermore, symmetry
+%cannot be used during the geometry optimization, and care must be
+%exercised in order to turn off automatic symmetry detection in case of
+%Hartree-Fock calculations. 
+Thus the input for an SCF geometry
 optimization with the solvent model would look like:
 
 \begin{verbatim}
@@ -181,7 +183,7 @@ optimization with the solvent model would look like:
 .WALK
 **INTEGRALS
 *ONEINT
-.MAX L
+.SOLVENT
  10
 **WAVE FUNCTIONS
 .HF
@@ -208,15 +210,13 @@ a non-equilibrium excited state calculation; keyword
 .RUN SIRIUS
 **INTEGRALS
 *ONEINT
-.MAX L
+.SOLVENT
  10
 **WAVE FUNCTIONS
 .TITLE
  2-RAS(2p2p') : on F+ (1^D) in Glycol
  Widmark (5432)-ANO Basis set
 .MCSCF
-.NSYM
- 8
 *CONFIGURATION INPUT
 .SPIN MULTIPLICITY
  1
@@ -243,10 +243,10 @@ a non-equilibrium excited state calculation; keyword
  30
 *ORBITAL INPUT
 .NOSUPSYM
-.MOSTART       | Note, we assume the existence of an fort.21 file
+.MOSTART       | Note, we assume the existence of an SIRIUS.RST file
  NEWORB
 *CI VECTOR
-.STARTOLDCI
+.STARTOLDCI    | Note, we assume the existence of an SIRIUS.RST file
 *SOLVENT
 .CAVITY
  2.5133D0
