@@ -37,11 +37,12 @@ C  /* Deck dftinp */
 #include <dftinf.h>
 #include <dftcom.h>
 #include <priunit.h>
-      PARAMETER ( NTABLE = 10 )
+      PARAMETER ( NTABLE = 14 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
       DATA TABLE /'.PRINT ','.DFTELS','.DFTTHR','.RADINT','.ANGINT',
-     &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC ','.CARPAR'/
+     &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC ','.CARPAR',
+     &            '.COARSE','.NORMAL','.FINE  ','.ULTRAF'/
 C
       WORD1 = WORD
 C
@@ -54,7 +55,7 @@ C
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
                   END IF
  200           CONTINUE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -111,8 +112,27 @@ c     >.CARPAR< cartesian grid parameters.
  10   CONTINUE
       READ(LUCMD,'(A80)') LINE
       CALL DFTCARTESIANINPUT(LINE)
-      GO TO 100  
-
+      GO TO 100 
+c     >.COARSE< grid parameters.
+ 11   CONTINUE
+      RADINT = 1D-11
+      ANGINT = 35
+      GO TO 100 
+c     >.NORMAL< grid parameters.
+ 12   CONTINUE
+      RADINT = 1D-13
+      ANGINT = 35
+      GO TO 100 
+c     >.FINE  < grid parameters.
+ 13   CONTINUE
+      RADINT = 1D-13
+      ANGINT = 42
+      GO TO 100 
+c     >.ULTRAF< grid parameters.
+ 14   CONTINUE
+      RADINT = 2D-15
+      ANGINT = 65
+      GO TO 100 
  300  CONTINUE
 
       CALL HEADER('Settings for DFT calculation:',0)

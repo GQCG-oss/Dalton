@@ -606,14 +606,29 @@ To specify the parameters of the DFT integration.
   \kw{READ (LUINP,*) LINE} \\
   Allows specification of different partitioning methods and radial
   schemes. \verb|BECKE| is Becke partitioning scheme with correction
-  for atomic sizes using Bragg sizes, \verb|BECKE2| is the same Becke
-  partitioning scheme but without correction. \verb|SSF| is a
+  for atomic sizes using Bragg sizes, \verb|BECKEORIG| is the same
+  Becke partitioning scheme but without correction. \verb|SSF| is a
   partitioning scheme for large molecules designed to reduce the grid
   generation time. \verb|LMG| select LMG radial scheme adjusted to
   currently used basis set. Gauss-Chebychev radial scheme of second
   order is provided for reference and can be selected by keyword
-  \verb|GC2|. The default is \verb|BECKE LMG| which is optimal for an
-  overwhelming number of cases.
+  \verb|GC2|.
+
+% The default is \verb|BECKE LMG| which is optimal for an
+%  overwhelming number of cases.
+\item[\Key{COARSE}]
+  Shortcut keyword for radial integration accuracy $10^-{11}$ and
+  angular expansion order equal to $35$.
+\item[\Key{NORMAL}]
+  Shortcut keyword for radial integration accuracy $10^-{13}$ and
+  angular expansion order equal to $35$.
+\item[\Key{FINE}]
+  Shortcut keyword for radial integration accuracy $10^-{13}$ and
+  angular expansion order equal to $42$.
+\item[\Key{ULTRAF}]
+  Shortcut keyword for radial integration accuracy $10^-{15}$ and
+  angular expansion order equal to $65$.
+
 \end{description}
 
 \subsection{\label{ref-dft}DFT functionals}
