@@ -54,6 +54,9 @@ cat > rsp_twophot.dal <<'%EOF%'
 .DIPLEN
 **WAVE FUNCTION
 .HF
+*SCF INPUT
+.HF OCC
+11 10 7 6 2 2 1 1
 *ORBITAL
 .MOSTART
  H1DIAG
