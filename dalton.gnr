@@ -50,7 +50,7 @@ usage (){
           echo ' w dir    change WRKDIR from default to dir'
           echo
          }
-while [ -n "`echo $1 | grep '-'`" ]; do
+while [ -n "`echo $1 | grep '^-'`" ]; do
     case $1 in
       -a ) opta=1;;
       -A ) optA=1;;
