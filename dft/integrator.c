@@ -43,7 +43,7 @@
 #include "grid-gen.h"
 #include "inforb.h"
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 #include <mpi.h>
 #include "infpar.h"
 #endif /* VAR_MPI */
@@ -159,7 +159,7 @@ printptr_(const char* str, void* ptr)
 }
 
 
-#if DEF_TYPE==1 || !defined(VAR_MPI)
+#if DEF_TYPE==1 || !(defined(VAR_MPI) && 0)
 #define grid_iterator_first(blocksz) 0
 #define grid_iterator_last(blocksz) (blocksz-1)
 #define grid_iterator_step(blocksz) 1
@@ -170,7 +170,7 @@ printptr_(const char* str, void* ptr)
 #endif
 
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 static void
 dft_integrate_collect_info(real *electrons)
 {

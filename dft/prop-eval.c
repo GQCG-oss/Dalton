@@ -40,7 +40,7 @@ const static int DFTMAG_DEBUG = 0;
 void lrao2mo_(const real* cmo, const int *ksymop, 
               const real*res, real* fmat, real* work, int*lw);
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 #include <mpi.h>
 #include <infvar.h>
 #include "infpar.h"
@@ -215,7 +215,7 @@ max(real a, real b)
    floor when we are done.
    FIXME: we can use work for the temp data....
 */
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 void
 dft_lin_resp_slave(real* work, int* lwork, const int* iprint)
 {
@@ -572,7 +572,7 @@ typedef struct {
     real energy;
 } DftKohnShamU;
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 /* dft_kohn_sham_ab_slave:
    this is a slave driver. It's task is to allocate memory needed by
    the main property evaluator (dft_kohn_shamab in this case) and call it.
@@ -738,7 +738,7 @@ typedef struct {
 } LinRespDataab;
 
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 void
 dft_lin_respab_slave(real* work, int* lwork, const int* iprint)
 {

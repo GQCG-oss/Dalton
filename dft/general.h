@@ -75,7 +75,7 @@ void dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
 typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, int* lwork, const int* iprint);
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 #include <mpi.h>
 void dft_kohn_sham_slave(real* work, int* lwork, const int* iprint);
 void dft_lin_resp_slave (real* work, int* lwork, const int* iprint);

@@ -1,3 +1,8 @@
+2004-01-31  Pawel Salek 
+
+	* dft/{general.[hc],integrator.c,prop-eval.c,quad-fast.c}:
+	enable parallel build of dalton (DFT p-n remains to be done)
+
 2003-10-30  13:50 Pawel Salek  <pawsa@theochem.kth.se>
 
 	* configure: recognize icc.

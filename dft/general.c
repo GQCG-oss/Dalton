@@ -136,7 +136,7 @@ dft_dens_unrestricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
   }
 }
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 #include <mpi.h>
 
 #include "infpar.h"
@@ -329,7 +329,12 @@ dft_nodstr_(real* work,int*lwork,int*iprint)
         /* printf("Slave %d finished task ID:%d\n", rank, id); */
     }
 }
-
+#else
+void
+dft_nodstr_(real* work,int*lwork,int*iprint)
+{
+   fort_print("DFT slave called but does nothing now.");
+}
 #endif /* VAR_MPI */
 
 

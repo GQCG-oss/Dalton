@@ -26,7 +26,7 @@
 #include <sys/times.h>
 #include <unistd.h>
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 #include <mpi.h>
 #endif
 
@@ -592,7 +592,7 @@ fast_callback(DftGrid* grid, QuadFastData* data)
 }
 
 
-#ifdef VAR_MPI
+#if 0 && defined(VAR_MPI)
 #include <mpi.h>
 #include "infpar.h"
 /* dft_qr_resp_slave:
