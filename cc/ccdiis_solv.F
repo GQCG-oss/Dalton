@@ -694,7 +694,7 @@ C     NOTCON : Number of vectors not converged.
 C 
       IF (NOTCON.EQ.0) THEN 
 C        ALL EQUATIONS HAVE CONVERGED
-         IF (IPRLE .GT. 10) WRITE(LUPRI,' *** EQUATIONS CONVERGED')
+         IF (IPRLE .GT. 10) WRITE(LUPRI,'(A)')' *** EQUATIONS CONVERGED'
          JCONV = 1
          RETURN
       ELSE
