@@ -6271,7 +6271,12 @@ C
      &                 'atomic basis set')
                ELSE
                   IPOS3 = INDEX(TMPLN((IPOS+IPOS2):),' ')
-                  WRITE (FRMT,'(A2,I1,A1)') '(A',(IPOS3 - 1)/10,')'
+                  IF (IPOS3 .LT. 10) THEN
+                     WRITE (FRMT,'(A2,I1,A1)') '(A',IPOS3 - 1,')'
+                  ELSE
+                     WRITE (FRMT,'(A2,I2)') '(A',(IPOS3 - 1)/10,
+     &                                           (IPOS3-1),')'
+                  END IF
                   READ (TMPLN((IPOS + IPOS2):),FRMT) BASNAM
                END IF
             ELSE
