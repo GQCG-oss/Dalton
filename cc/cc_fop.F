@@ -75,6 +75,8 @@ C
 C
 #include <leinf.h>
 C
+      CALL QENTER('CC_FOP')
+C
 C------------------------------------
 C     Header of Property calculation.
 C------------------------------------
@@ -1435,9 +1437,9 @@ C
             CALL QUIT('Insufficient memory for allocation in cc_fop')
          ENDIF
 C
-         LULAM = -812
+         LULAM = -148
          CALL GPOPEN(LULAM,FILEX,'UNKNOWN',' ',
-     *        'UNFORMATTED',IDUMMY,.FALSE.)
+     *              'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND(LULAM)
          READ(LULAM)
          READ(LULAM) (WORK(KLAM+I-1), I = 1,NT1AMX)
@@ -1489,6 +1491,7 @@ C
       IF (.NOT. CCS) NSIDE = NSIDIN
       IF ((.NOT.RLORBS).AND.MP2) RELORB = RLORBS 
 C
+      CALL QEXIT('CC_FOP')
       RETURN
       END
 c*DECK CC_ETA
@@ -3382,6 +3385,8 @@ C
 #include <ccinftap.h>
 #include <ccfro.h>
 C
+      CALL QENTER('MP2_ZKDIA')
+C
       TIMETO = SECOND()
 C
       IF (IPRINT .GT. 3) THEN
@@ -3418,9 +3423,9 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      LULAM = -519
-      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *     'UNFORMATTED',IDUMMY,.FALSE.)
+      IF (LULAM .LE. 0)
+     *     CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+     *                'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LULAM)
       READ(LULAM) NVEDUM, MODDUM
       READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
@@ -3595,6 +3600,7 @@ C
          WRITE(LUPRI,*) 'Total time used in MP2_ZKDIA:', TIMETO
       ENDIF
 C
+      CALL QEXIT('MP2_ZKDIA')
       RETURN
       END
 C  /* Deck mp_zkblo */

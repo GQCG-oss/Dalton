@@ -1,0 +1,195 @@
+#!/bin/ksh
+#########################################################################
+#
+# Shell script for running DALTON test suite
+#
+# by Christof Haettig and Kasper Hald, Sep. 2000
+#
+#
+# Usage: TEST ["dalton parameter list"] [-dalton dalton-script] testcase
+#
+#########################################################################
+
+#########################################################################
+# define `short', `medium', `long' and `all' test suites
+#########################################################################
+ESSENTIAL=""
+#
+SHORT="energy_direct energy_nosymm energy_symm geoopt_exci2 \
+geoopt_numgrd geoopt_prop geoopt_prop2 prop_ecd prop_spinspin \
+prop_spinspin2 prop_spinspin3 prop_vibvcd rsp_2ndharm rsp_3rdharm \
+rsp_3rdmom rsp_dresqr rsp_exci rsp_excipolar2 rsp_hyperpolar rsp_lrso \
+rsp_lrso2 rsp_phosph rsp_polar rsp_socorr rsp_soppa1excinosymm \
+rsp_soppa1excisymm rsp_soppa3excinosymm rsp_soppa3excisymm \
+rsp_soppafcnosymm rsp_soppafcsymm rsp_soppapolar rsp_soppapolarnosymm \
+rsp_soppapolarsymm rsp_sreslrso rsp_sresqr walk_polar"
+#
+MEDIUM="geoopt_dckerr geoopt_exci geoopt_prop3 geoopt_symbrk \
+prop_nucquad prop_roa rsp_dckerr rsp_esr rsp_esr2 rsp_solvesr \
+walk_polar2"
+#
+LONG="rsp_excipolar walk_solvmag"
+#
+PARALLEL="energy_parallel"
+#
+ALL="$SHORT $MEDIUM $LONG"
+
+#########################################################################
+# function usage(): print usage information 
+#########################################################################
+usage() {
+ cat << %EOF%
+usage: $0 [-param "option list"] [-h|-help|--help] [-keep] [-reftest] 
+          [-dalton dalton-script] [-list listing-file] testcase
+
+       -keep    : keep *.mol *.dal *.log files
+       -reftest : test reference files; do not run any calculations
+       -h | -help | --help   : show this help description
+       -param "option list"  : pass "option list" to dalton script
+       -list listing-file    : write output into listing-file
+       -dalton dalton-script : use dalton-script instead of default dalton
+
+       where testcase might be one of the following:
+          essential            -- run a minimal set of essential test jobs
+          short                -- run all short test jobs
+          medium               -- run all medium test jobs
+          long                 -- run all long test jobs
+          parallel             -- run all parallel test jobs
+          all                  -- run all non-parallel test jobs
+          <case1 [case2] ...>  -- run only the specified test case(s)
+%EOF%
+exit 1
+}
+
+#########################################################################
+# function mypring(string): print to stdout and $listing
+#########################################################################
+myprint(){
+ echo "$1";
+ echo "$1" >> $listing;
+}
+
+#########################################################################
+#########################################################################
+# start with real work:
+#########################################################################
+#########################################################################
+
+#########################################################################
+# set defaults and evaluate parameters
+#########################################################################
+help=""
+keep="false"
+DALTON="../dalton"
+paramlist=""
+reftest=""
+listing="RESULTS"
+
+while [ -n "`echo $1 | grep '-'`" ]; do
+   case $1 in
+     "-h" | "-help" | "--help" ) help="true" ; break;;
+     "-dalton" )  shift; DALTON=$1; shift;;
+     "-list" ) shift; listing=$1; shift;;
+     "-keep" ) keep="true"; shift;;
+     "-param" ) shift; paramlist="$1"; shift;;
+     "-reftest" ) reftest="true" shift;;
+     * ) usage;;
+   esac
+done
+if [ $help ]; then
+  usage
+fi
+
+#########################################################################
+# set list of test cases:
+#########################################################################
+testcase=$*
+if   [ "$testcase" = "essential" ]; then
+  testcase=$ESSENTIAL
+elif [ "$testcase" = "short" ]; then
+  testcase=$SHORT
+elif [ "$testcase" = "medium" ]; then
+  testcase=$MEDIUM
+elif [ "$testcase" = "long" ]; then
+  testcase=$LONG
+elif [ "$testcase" = "parallel" ]; then
+  testcase=$PARALLEL
+elif [ "$testcase" = "all" ]; then
+  testcase=$ALL
+fi
+
+
+
+#########################################################################
+# check file for test listing:
+#########################################################################
+if [  -s $listing ]; then
+   echo "$listing already exists... should it be deleted first? (y/n)"
+   read answer
+   if [ "$answer" = "yes"  -o  "$answer" = "y" ]; then
+     echo > $listing
+   fi
+fi
+
+myprint "#####################################################################"
+myprint "                          DALTON test suite"
+myprint "#####################################################################"
+myprint "dalton script         : $DALTON"
+myprint "parameter list passed : $paramlist"
+myprint "test listing          : $listing"
+myprint "test cases            : $testcase"
+
+
+#########################################################################
+# loop over test cases:
+#########################################################################
+passedall="ALL TESTS ENDED PROPERLY!"
+problems=""
+for item in ${testcase}
+do
+  myprint "###########################################################"
+  myprint "start now with test $item:"
+  myprint "-----------------------------------------------------------"
+  chmod +x $item
+  $item
+  rm -f $item.log
+  chmod +x $item.check
+
+  if [ "$reftest" = "true" ]; then
+      myprint ""
+      myprint "evaluate reference output file $item.ref:"
+      myprint "-----------------------------------------------------------"
+      checkout=`$item.check $item.ref | tee -a $listing`
+  else
+    $DALTON $paramlist -ext log $item $item | \
+      grep -v '\*\*\**' | \
+      grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+      grep -v '^$' | tee -a $listing
+      myprint ""
+      myprint "evaluate output file $item.log:"
+      myprint "-----------------------------------------------------------"
+      checkout=`$item.check $item.log | tee -a $listing`
+  fi
+  echo $checkout
+  passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
+  if [ -n "$passed" ]; then
+    if [ "$keep" = "false" ]; then
+      rm -f $item.dal $item.mol $item.check $item.log
+    fi
+  else
+    passedall="THERE IS A PROBLEM IN TEST CASE"
+    problems="$problems $item"
+  fi
+done
+
+#########################################################################
+# final result:
+#########################################################################
+
+myprint "#####################################################################"
+myprint "Summary : "
+echo $passedall | tee -a $listing
+echo $problems | tee -a $listing
+
+exit 0
+

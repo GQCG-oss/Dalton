@@ -1,0 +1,207 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+#
+#*# geoopt_exci
+#*# -----------
+#*# Molecule:         H2O
+#*# Wave Function:    MCSCF
+#*# Test Purpose:     Geometry optimization of the first-excited state of A1
+#*#                   symmetry in the molecule using the .OPTIMIZE module
+#*#                   (2nd order). Note that this test will crash, due to
+#*#                   the need for breaking the symmetry, which we do not
+#*#                   allow for an MCSCF wave function.
+#
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > geoopt_exci.mol <<%EOF%
+BASIS
+aug-cc-pVDZ
+Geometry optimization of excited state. Breaking of symmetry leads to
+error message (test15)
+    2
+        1.    2
+H     1.45235 0.899623 0.0
+H    -1.45235 0.899623 0.0
+        8.    1
+O     0.0 -0.2249058930 0.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > geoopt_exci.dal <<%EOF%
+**GENERAL
+.MINIMIZE
+*MINIMIZE
+.2NDORDER
+**WAVE FUNCTION
+.HF
+.MP2
+.MCSCF
+.NSYM
+ 4
+*HF INPUT
+.HF OCC
+ 3 1 1 0
+*CONFIGURATION INPUT
+.SYMMETRY
+ 1
+.SPIN MUL
+ 1
+.INACTIVE
+ 1 0 0 0
+.ELECTRONS
+ 8
+.CAS SPACE
+ 4 2 2 0
+*OPTIMIZATION
+.DETERM
+.SIMULTANEOUS ROOTS
+ 2 2
+.STATE
+ 2
+.OPTIMAL ORBITAL TRIAL VECTORS
+**FINAL
+.VIBANA
+*END OF INPUT                                                                  
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
+
+# Geometry optimization
+CRIT1=`$GREP "2nd Order Geometry Optimization" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=1
+ERROR[1]="GEOMETRY OPTIMIZATION SETUP NOT CORRECT"
+
+# Symmetry
+CRIT1=`$GREP "Full group is\: * C\(2v\)" $log | wc -l`
+CRIT2=`$GREP "Represented as\: C2v" $log | wc -l`
+CRIT3=`$GREP "Reflection in the yz\-plane" $log | wc -l`
+CRIT4=`$GREP "Reflection in the xz\-plane" $log | wc -l`
+CRIT5=`$GREP "Number of coordinates in each symmetry\: * 3 * 2 * 3 * 1" $log | wc -l`
+CRIT6=`$GREP "Number of orbitals in each symmetry\: * 18 * 7 * 12 * 4" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[2]=12
+ERROR[2]="SYMMETRY NOT CORRECT"
+
+# Initial energy
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.0401803723" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.2632882752" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-75\.793931721832" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="INITIAL ENERGY NOT CORRECT"
+
+# Initial gradient
+CRIT1=`$GREP "H * y * \-0\.1445009633" $log | wc -l`
+CRIT2=`$GREP "H * z * 0\.0274284107" $log | wc -l`
+CRIT3=`$GREP "O * z * \-0\.0274284107" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="INITIAL GRADIENT NOT CORRECT"
+
+# Initial Hessian
+CRIT1=`$GREP "H * y * 0\.763250" $log | wc -l`
+CRIT2=`$GREP "H * z * 0\.391205 * 0\.354459" $log | wc -l`
+CRIT3=`$GREP "O * z * \-0\.391205 * \-0\.354459 * 0\.354459" $log | wc -l`
+CRIT4=`$GREP "H * x * 0\.024391" $log | wc -l`
+CRIT5=`$GREP "O * x * \-0\.024391 * 0\.024391" $log | wc -l`
+CRIT6=`$GREP "H * y * 0\.547394" $log | wc -l`
+CRIT7=`$GREP "H * z * 0\.404952 * 0\.214053" $log | wc -l`
+CRIT8=`$GREP "O * y * \-0\.547394 * \-0\.404952 * 0\.547394" $log | wc -l`
+CRIT9=`$GREP "H * x * \-0\.099495" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[5]=9
+ERROR[5]="INITIAL HESSIAN NOT CORRECT"
+
+# First step
+CRIT1=`$GREP "H * 1 * 0\.0000000000 * 1\.6040874834 * 0\.3224797208" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 0\.0000000000 * \-1\.6040874834 * 0\.3224797208" $log | wc -l`
+CRIT3=`$GREP "O * 0\.0000000000 * 0\.0000000000 * \-0\.6449594416" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[6]=3
+ERROR[6]="FIRST STEP NOT CORRECT"
+
+# Second iteration
+CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.816478" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * 0\.076191" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[7]=2
+ERROR[7]="SECOND ITERATION NOT CORRECT"
+
+# Third iteration
+CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.832980" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * 0\.058136" $log | wc -l`
+TEST[8]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[8]=2
+ERROR[8]="THIRD ITERATION NOT CORRECT"
+
+# Last geometry
+CRIT1=`$GREP "H * 1 * 0\.0000000000 * 2\.4776485[4-6][0-9][0-9] * 0\.00003663[4-6][0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 0\.0000000000 * \-2\.4776485[4-6][0-9][0-9] * 0\.00003663[4-6][0-9]" $log | wc -l`
+CRIT3=`$GREP "O * 0\.0000000000 * 0\.0000000000 * \-0\.00007327[0-9][0-9]" $log | wc -l`
+TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[9]=3
+ERROR[9]="LAST GEOMETRY NOT CORRECT"
+
+# Last iteration
+CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.889480" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * 0\.002774" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * 0\.031315" $log | wc -l`
+TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[10]=3
+ERROR[10]="LAST ITERATION NOT CORRECT"
+
+# Breaking of symmetry
+CRIT1=`$GREP "Due to non\-zero index of total Hessian\, symmetry \# * 2" $log | wc -l`
+CRIT2=`$GREP "has to be broken to minimize energy\!" $log | wc -l`
+TEST[11]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[11]=2
+ERROR[11]="BREAKING OF SYMMETRY NOT CORRECT"
+
+# Error message
+CRIT1=`$GREP "HF occupation must be specified when SCF followed by CI or MCSCF" $log | wc -l`
+TEST[12]=`expr	$CRIT1`
+CTRL[12]=1
+ERROR[12]="PROGRAM HALT NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8 9 10 11 12
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > geoopt_exci.check
+#######################################################################

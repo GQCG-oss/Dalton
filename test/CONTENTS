@@ -1,134 +1,448 @@
-TEST1:
-Molecule:	H2O
-Wave Functions:	SCF, MP2, and MCSCF (CAS)
-test purpose:	Check energy calculations without symmetry
+========================================================================
+50 test jobs have been translated to the new automatic test job system
+All these tests have now been given names instead of numbers:
+
+	test1	energy_nosymm
+	test2	energy_symm
+	test3	energy_direct
+	test4	energy_parallel
+	test5	walk_polar
+	test6	geoopt_prop
+	test7	geoopt_prop2
+	test8	prop_vibvcd
+	test9	walk_polar2
+	test10	geoopt_prop3
+	test11	geoopt_dckerr
+	test12	prop_roa
+	test13	rsp_esr
+	test14	rsp_dckerr
+	test15	geoopt_exci
+	test16	prop_nucquad
+	test17	rsp_esr2
+	test18	prop_ecd
+	test19	walk_solvmag
+	test21	rsp_excipolar
+	test22	rsp_lrso
+	test23	rsp_hyperpolar
+	test24	rsp_soppapolar
+	test25	prop_spinspin
+	test26	prop_spinspin2
+	test27	prop_spinspin3
+	test28	geoopt_exci2
+	test29	geoopt_numgrd
+	test30	geoopt_symbrk
+	test32	rsp_soppapolarnosymm
+	test33	rsp_soppapolarsymm
+	test34	rsp_soppafcnosymm
+	test35	rsp_soppafcsymm
+	test36	rsp_soppa1excinosymm
+	test37	rsp_soppa1excisymm
+	test38	rsp_soppa3excinosymm
+	test39	rsp_soppa3excisymm
+	test40	rsp_3rdharm
+	test41	rsp_2ndharm
+	test42	rsp_polar
+	test43	rsp_excipolar2
+	test44	rsp_3rdmom
+	test45	rsp_sresqr
+	test46	rsp_dresqr
+	test47	rsp_exci
+	test48	rsp_phosph
+	test49	rsp_lrso2
+	test50	rsp_sreslrso
+	test51	rsp_solvesr
+	test52	rsp_socorr
+
+========================================================================
+
+energy_direct
+-------------
+Molecule:         H2O
+Wave Function:    Direct SCF
+Test Purpose:     Check energy calculated directly (using TWOINT) and
+                  with symmetry
 
 
-TEST2:
-Molecule:	H2O
-Wave Function:	SCF, MP2, and MCSCF (CAS)
-Test Purpose:	Check energy calculation with symmetry
+energy_nosymm
+-------------
+Molecule:         H2O
+Wave Functions:   SCF, MP2, and MCSCF (CAS)
+Test Purpose:     Check energy calculations without symmetry
 
 
-TEST3:
-Molecule:	H2O
-Wave Function:	Direct SCF
-Test Purpose:	Check energy calculated directly (using TWOINT) and
-		with symmetry
+energy_parallel
+---------------
+Molecule:         H2O
+Wave Function:    Parallel SCF
+Test Purpose:     Check energy calculated in parallel (using TWOINT) and
+                  with symmetry
 
 
-TEST4:
-Molecule:	H2O
-Wave Function:	Parallel SCF
-Test Purpose:	Check energy calculated in parallel (using TWOINT) and
-		with symmetry
+energy_symm
+-----------
+Molecule:         H2O
+Wave Functions:   SCF, MP2, and MCSCF (CAS)
+Test Purpose:     Check energy calculation with symmetry
 
 
-TEST5:
-Molecule:	H2O
-Wave Function:	SCF
-Test Purpose:	Geometry optimization using .WALK module (2nd-order),
-		with a calculation of static and dynamic
-		polarizabilities using all three different ways of
-		calculating them, vibrational analysis and Cioslowski
-		population anaylsis. 
+geoopt_dckerr
+-------------
+Molecule:         O3
+Wave Function:    MCSCF (RAS)
+Test Purpose:     Geometry optimization using .OPTIMIZE module
+                  (1st order) with a calculation of DC-Kerr effect
+                  at the optimized geometry.
 
 
-TEST6:
-Molecule:	H2O
-Wave Function:	SCF
-Test Purpose:	Geometry optimization using .MINIMIZE module
-		(2nd-order) with a calculation of quadrupole moment,
-		magnetizability and nuclear shieldings at the
-		optimizated geometry, along with a vibrational analysis.
+geoopt_exci
+-----------
+Molecule:         H2O
+Wave Function:    MCSCF
+Test Purpose:     Geometry optimization of the first-excited state of A1
+                  symmetry in the molecule using the .OPTIMIZE module
+                  (2nd order). Note that this test will crash, due to
+                  the need for breaking the symmetry, which we do not
+                  allow for an MCSCF wave function.
 
 
-TEST7:
-Molecule:	H2O
-Wave Function:	SCF
-Test Purpose:	Geometry optimization using .MINIMIZE module
-		(1st-order) with a calculation of Third-Harmonic
-		generation at the optimized geometry.
+geoopt_exci2
+------------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Optimization of the first excited state of A1 symmetry
+                  using the .OPTIMIZE module (1st order), and with a
+                  vibrational analysis in the final point.
 
 
-TEST8:
-Molecule:	C2H4O
-Wave Function:	SCF
-Test Purpose:	Single-point calculation checking vibrational analysis
-		and IR and VCD spectral properties.
+geoopt_numgrd
+-------------
+Molecule:         H2O
+Wave Function:    MP2
+Test Purpose:     Geometry optimization (1st order) using numerical
+                  gradients
 
 
-TEST9:
-Molecule:	O3
-Wave Function:	MCSCF (CAS)
-Test Purpose:	As TEST5.
+geoopt_prop
+-----------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Geometry optimization using .OPTIMIZE module
+                  (1st order) with a calculation of quadrupole moment,
+                  magnetizability and nuclear shieldings at the
+                  optimized geometry, along with a vibrational analysis.
 
 
-TEST10:
-Molecule:	O3
-Wave Function:	MCSCF (CAS)
-Test Purpose:	As TEST6
+geoopt_prop2
+------------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Geometry optimization using .OPTIMIZE module
+                  (2nd order) with a calculation of Third-Harmonic
+                  generation at the optimized geometry.
 
 
-TEST11:
-Molecule:	O3
-Wave Function:	MCSCF (RAS)
-Test Purpose:	Geometry optimization using .MINIMIZE module
-		(1st-order) with a calculation of DC-Kerr effect
-		at the optimized geometry.
+geoopt_prop3
+------------
+Molecule:         O3
+Wave Function:    MCSCF (CAS)
+Test Purpose:     As geoopt_prop
+Test Purpose:     Geometry optimization using .OPTIMIZE module
+                  (2nd order) with a calculation of quadrupole moment,
+                  magnetizability and nuclear shieldings at the
+                  optimized geometry, along with a vibrational analysis.
 
 
-TEST12:
-Molecule:	C3H4
-Wave Function:	SCF
-Test Purpose:	Calculation of Raman Optical Activity parameters
+geoopt_symbrk
+-------------
+Molecule:         H2O2
+Wave Function:    SCF
+Test Purpose:     Geometry optimization (2nd order) with symmetry breaking
 
 
-TEST13:
-Molecule:	ClO2
-Wave Function:	Open-shell SCF
-Test Purpose:	Calculation of ESR parameters
+prop_ecd
+--------
+Molecule:         C2H4
+Wave Function:    SCF
+Test Purpose:     Electronic circular dichroism parameters (ECD)
 
 
-TEST14:
-Molecule:	O3
-Wave Function:	MCSCF (RAS)
-Test Purpose:	Single-point calculation of the DC-Kerr effect
+prop_nucquad
+------------
+Molecule:         ClO2
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Nuclear quadrupole coupling constants
 
 
-TEST15:
-Molecule:	H2O
-Wave Function:	MCSCF
-Test Purpose:	Geometry-optimization of the first-excited state of A1
-	    	symmetry in the molecule using the .MINIMIZE module
-		(2nd-order). Note that this test will crash, due to
-		the need for breaking the symmetry, which we do not
-		allow for an MCSCF wave function.
+prop_roa
+--------
+Molecule:         C3H4
+Wave Function:    SCF
+Test Purpose:     Single-point calculation of Raman Optical Activity
+                  parameters
 
 
-TEST16:
-Molecule:	ClO2
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Nuclear quadrupole coupling constants
+prop_spinspin
+-------------
+Molecule:         H2O
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Spin-spin coupling constants
 
 
-TEST17:
-Molecule:	BeOH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	ESR properties
+prop_spinspin2
+--------------
+Molecule:         H2O
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Spin-spin coupling constants calculating only the
+                  normally most dominating contributions to the
+                  isotropic and anisotropic coupling constants, namely
+                  the FC-FC and FC-SD terms, thus only solving one
+                  response equation.
 
 
-TEST18:
-Molecule:	C2H4
-Wave Function:	SCF
-Test Purpose:	Electronic circular dichroism parameters (ECD)
+prop_spinspin3
+--------------
+Molecule:         H2O
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Nuclear shieldings and Fermi-contact contribution to
+                  spin-spin coupling constants, thus note that only
+                  three imaginary singlet response vectors should be
+                  solved.
 
 
-TEST19:
-Molecule:       CH3F
-Wave function:  SCF
-Test purpose:   Geometry walk and shielding and magnetizability for a 
-                solvated molecule (equilibrium solvation)
+prop_vibvcd
+-----------
+Molecule:         C2H4O
+Wave Function:    SCF
+Test Purpose:     Single-point calculation checking vibrational analysis
+                  and IR and VCD spectral properties.
+
+
+rsp_2ndharm
+-----------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Second-Harmonic generation
+
+
+rsp_3rdharm
+-----------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Third-Harmonic generation
+
+
+rsp_3rdmom
+----------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Third moments
+
+
+rsp_dckerr
+----------
+Molecule:          O3
+Wave Function:     MCSCF (RAS)
+Test Purpose:      Single-point calculation of the DC-Kerr effect
+
+
+rsp_dresqr
+----------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Double residue of the quadratic response function
+
+
+rsp_esr
+-------
+Molecule:         ClO2
+Wave Function:    Open-shell SCF
+Test Purpose:     Single-point calculation of ESR parameters
+
+
+rsp_esr2
+--------
+Molecule:         BeOH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     ESR properties
+
+
+rsp_exci
+--------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Excitation energy
+
+
+rsp_excipolar
+-------------
+Molecule:         O3
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Excited-state polarizability
+
+
+rsp_excipolar2
+--------------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Polarizability of an excited state
+
+
+rsp_hyperpolar
+--------------
+Molecule:         H2O
+Wave Function:    MCSCF (CAS)
+Test Purpose:     First hyperpolarizability
+
+
+rsp_lrso
+--------
+Molecule:         O2
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Linear response spin-orbit
+
+
+rsp_lrso2
+---------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Linear response with spin-orbit operator
+
+
+rsp_phosph
+----------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Phosphorescence
+
+
+rsp_polar
+---------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Polarizability
+
+
+rsp_socorr
+----------
+Molecule:         HeH+
+Wave Function:    SCF
+Test Purpose:     Spin-orbit corrections to spin-spin coupling constants
+
+
+rsp_solvesr
+-----------
+Molecule:         CH3 radical
+Wave Function:    MCSCF (CAS)
+Test Purpose:     ESR hyperfine couplings with solvent effects
+
+
+rsp_soppa1excinosymm
+--------------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Singlet excitation energies. No symmetry
+
+
+rsp_soppa1excisymm
+------------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Singlet excitation energies. Symmetry
+
+
+rsp_soppa3excinosymm
+--------------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Triplet excitation energies. No symmetry
+
+
+rsp_soppa3excisymm
+------------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Triplet excitation energies. Symmetry
+
+
+rsp_soppafcnosymm
+-----------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Fermi-contact. No symmetry
+
+
+rsp_soppafcsymm
+---------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Fermi-contact. Symmetry
+
+
+rsp_soppapolar
+--------------
+Molecule:         CH4
+Wave Function:    MP2
+Test Purpose:     SOPPA polarizability
+
+
+rsp_soppapolarnosymm
+--------------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Polarizability and C6/C8. No symmetry
+
+
+rsp_soppapolarsymm
+------------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Polarizability and C6/C8. Symmetry
+
+
+rsp_sreslrso
+------------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Single residue of the linear response function and
+                  spin-orbit operator
+
+
+rsp_sresqr
+----------
+Molecule:         LiH
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Single residue of the quadratic response function
+
+
+walk_polar
+----------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Geometry optimization using .WALK module (2nd order),
+                  with a calculation of static and dynamic
+                  polarizabilities using all three different ways of
+                  calculating them, vibrational analysis and Cioslowski
+                  population anaylsis.
+
+
+walk_polar2
+-----------
+Molecule:         O3
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Geometry optimization using .WALK module (2nd order),
+                  with a calculation of static and dynamic
+                  polarizabilities using all three different ways of
+                  calculating them, vibrational analysis and Cioslowski
+                  population anaylsis.
+
+
+walk_solvmag
+------------
+Molecule:         CH3F
+Wave Function:    SCF
+Test Purpose:     Geometry walk and shielding and magnetizability for a
+                  solvated molecule (equilibrium solvation)
+
 
 TEST20:
 Molecule:	CO
@@ -137,205 +451,10 @@ Test Purpose:	Core-hole excitations using both a frozen and a
 		relaxed core orbital
 
 
-TEST21:
-Molecule:	O3
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Excited-state polarizability
-
-
-TEST22:
-Molecule:	O2
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Linear response spin-orbit
-
-
-TEST23:
-Molecule:	H2O
-Wave Function:	MCSCF (CAS)
-Test Purpose:	First-hyperpolarizability
-
-
-TEST24:
-Molecule:	CH4
-Wave Function:	MP2
-Test Purpose:	SOPPA polarizability
-
-
-TEST25:
-Molecule:	H2O
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Spin-spin coupling constants
-
-
-TEST26:
-Molecule:	H2O
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Spin-spin coupling constants calculating only the
-		normally most dominating contributions to the
-		isotropic and anisotropic coupling constants, namely
-		the FC-FC and FC-SD terms, thus only solving one
-		response equation. 
-
-
-TEST27:
-Molecule:	H2O
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Nuclear shieldings and Fermi-contact contribution to
-		spin-spin coupling constants, thus note that only
-		three imaginary singlett response vectors should be
-		solved. 
-
-
-TEST28:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Optimization of the first excited state of A1 symmetry
-		using the .MINIMIZE module (1st-order), and with a
-		vibrational analysis in the final point.
-
-
-TEST29:
-Molecule:	H2O
-Wave Function:	MP2
-Test Purpose:	Geometry optimization (1st-order) using numerical gradients
-
-
-TEST30:
-Molecule:	H2O2
-Wave Function:	SCF
-Test Purpose:	Geometry optimization with symmetry breaking.
-
-
 TEST31:
 Molecule:	H2O
 Wave Function:	MCSCF (CAS)
 Test Purpose:	Restart an MCSCF wave function.
-
-
-TEST32:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Polarizability and C6/C8. No symmetry
-
-
-TEST33:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Polarizability and C6/C8. Symmetry
-
-
-TEST34:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Fermi-contact. No symmetry
-
-
-TEST35:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Fermi contact. Symmetry
-
-
-TEST36:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Singlet excitation energies. No symmetry
-
-
-TEST37:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Singlet excitation energies. Symmetry
-
-
-TEST38:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Triplet excitation energies. No symmetry
-
-
-TEST39:
-Molecule:	H2O
-Wave Function:	MP2 (SOPPA)
-Test Purpose:	Triplet excitation energy. Symmetry
-
-
-TEST40:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Third-Harmonic generation
-
-
-TEST41:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Second-Harmonic generation
-
-
-TEST42:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Polarizability
-
-
-TEST43:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Polarizability of an excited state
-
-
-TEST44:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Third moments
-
-
-TEST45:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Single residue of the quadratic response function
-
-
-TEST46:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Double residue of the quadratic response function
-
-
-TEST47:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Excitation energy
-
-
-TEST48:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Phosphorescence
-
-
-TEST49:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Linear response with spin-orbit operator
-
-
-TEST50:
-Molecule:	LiH
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Single residue of the linear response function and
-		spin-orbit operator.
-
-TEST51:
-Molecule:	CH3 radical
-Wave Function:	MCSCF (CAS)
-Test Purpose:	ESR hyperfine couplings with solvent effects
-
-
-TEST52:
-Molecule:	HeH+
-Wave Function:	SCF
-Test Purpose:	Spin-orbit corrections to spin-spin coupling constants
 
 
 TEST53:
@@ -395,7 +514,7 @@ Test purpose:   Numerical differentiation and 1.order minimization
 TEST62:
 Molecule:       NH3
 Wave function:  SCF
-Test purpose:   Vibrational average of shieldings, magnetizabilities 
+Test purpose:   Vibrational average of shieldings, magnetizabilities
                 and polarizabilities
 
 

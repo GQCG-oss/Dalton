@@ -59,6 +59,7 @@ C
       CHARACTER NAME1*8
       CHARACTER NAME2*8
 C
+      CALL QENTER('CC_DEN')
 C
       IF ((FROIMP) .AND. (IOPT .EQ. 1)) THEN
 C
@@ -122,7 +123,6 @@ C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
       IF (LULAM .LE. 0) THEN
-        LULAM = 0
         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',
      *            'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
       END IF
@@ -1313,6 +1313,7 @@ C
          WRITE (LUPRI,*) 'Time used for 1 e- density & intermediates:',
      *              TIMONE
       ENDIF
+      CALL QEXIT('CC_DEN')
 C
       RETURN
       END

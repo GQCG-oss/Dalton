@@ -52,6 +52,8 @@ C
 #include <cclr.h>
 #include <ccfro.h>
 C
+      CALL QENTER('CC_GRAD')
+C
 C-----------------------------------------
 C     Initialization of result
 C-----------------------------------------
@@ -113,7 +115,7 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         LULAM = 0
+         LULAM = -876
          CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LULAM)
@@ -1296,6 +1298,7 @@ C
       ENDIF
       CALL FLSHFO(LUPRI)
 C
+      CALL QEXIT('CC_GRAD')
       RETURN
       END
 C  /* Deck cc_grad2e */
@@ -1411,7 +1414,7 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         LULAM = 0
+         LULAM = -123
          CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LULAM)

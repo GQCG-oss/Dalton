@@ -2669,9 +2669,9 @@ C
 C
       LOGICAL LOCDBG
 C
-      LOCDBG=.FALSE.
+      CALL QENTER('CC2_D1AO')
 C
-      write(lupri,*) 'Entered cc2_d1ao'
+      LOCDBG=.FALSE.
       CALL FLSHFO(LUPRI)
 C
 C------------------------------------------------------------------
@@ -2707,7 +2707,6 @@ C----------------------------------------
 C
 C
       IF (LULAM .LE. 0) THEN
-         LULAM = 0
          CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
       ENDIF
@@ -2848,5 +2847,6 @@ C
      *              ZKAM(KOFDIJ),ZKAM(KOFDIA),WORK(KCMO),
      *              WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
 C
+      CALL QEXIT('CC2_D1AO')
       RETURN
       END

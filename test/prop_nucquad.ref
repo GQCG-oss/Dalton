@@ -1,0 +1,1314 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Release 1.2, April 2001)
+
+                          Principal authors:
+
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
+     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
+     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
+     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:20:52 2001
+     Host name              : slater.uio.no                           
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    Wave function sections will be executed
+    Static molecular property section will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  bla. bla.                                                               
+  H2o ano basis Almloef and Taylor.                                       
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  Basis set used is "cc-pVTZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Cl          1      17      59      34      [15s9p2d1f|5s4p2d1f]                         
+  O1          2       8      42      30      [10s5p2d1f|4s3p2d1f]                         
+  ----------------------------------------------------------------------
+  total:      3      33     143      94
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   Cl       x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.0000000000
+
+   4   O1   1   x      0.0000000000
+   5            y      2.3736000000
+   6            z     -0.4431700000
+
+   7   O1   2   x      0.0000000000
+   8            y     -2.3736000000
+   9            z     -0.4431700000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  2  3  1
+
+
+  Symmetry 1
+
+   1   Cl    z    3
+   2   O1    y    [  5  -   8 ]/2
+   3   O1    z    [  6  +   9 ]/2
+
+
+  Symmetry 2
+
+   4   Cl    x    1
+   5   O1    x    [  4  +   7 ]/2
+
+
+  Symmetry 3
+
+   6   Cl    y    2
+   7   O1    y    [  5  +   8 ]/2
+   8   O1    z    [  6  -   9 ]/2
+
+
+  Symmetry 4
+
+   9   O1    x    [  4  -   7 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            Cl          O1 1        O1 2
+
+   Cl      0.000000
+   O1 1    1.470000    0.000000
+   O1 2    1.470000    2.512110    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    O1 1       Cl                             1.470000
+  bond distance:    O1 2       Cl                             1.470000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       O1 1       Cl         O1 2                 117.400
+
+
+  Nuclear repulsion energy :  111.397397857680
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         35  18  28  13
+
+
+  Symmetry  A1 ( 1)
+
+    1     Cl       1s         1
+    2     Cl       1s         2
+    3     Cl       1s         3
+    4     Cl       1s         4
+    5     Cl       1s         5
+    6     Cl       2pz        8
+    7     Cl       2pz       11
+    8     Cl       2pz       14
+    9     Cl       2pz       17
+   10     Cl       3d0       20
+   11     Cl       3d2+      22
+   12     Cl       3d0       25
+   13     Cl       3d2+      27
+   14     Cl       4f0       31
+   15     Cl       4f2+      33
+   16     O1       1s        35  +  36
+   17     O1       1s        37  +  38
+   18     O1       1s        39  +  40
+   19     O1       1s        41  +  42
+   20     O1       2py       45  -  46
+   21     O1       2pz       47  +  48
+   22     O1       2py       51  -  52
+   23     O1       2pz       53  +  54
+   24     O1       2py       57  -  58
+   25     O1       2pz       59  +  60
+   26     O1       3d1-      63  -  64
+   27     O1       3d0       65  +  66
+   28     O1       3d2+      69  +  70
+   29     O1       3d1-      73  -  74
+   30     O1       3d0       75  +  76
+   31     O1       3d2+      79  +  80
+   32     O1       4f3-      81  -  82
+   33     O1       4f1-      85  -  86
+   34     O1       4f0       87  +  88
+   35     O1       4f2+      91  +  92
+
+
+  Symmetry  B1 ( 2)
+
+   36     Cl       2px        6
+   37     Cl       2px        9
+   38     Cl       2px       12
+   39     Cl       2px       15
+   40     Cl       3d1+      21
+   41     Cl       3d1+      26
+   42     Cl       4f1+      32
+   43     Cl       4f3+      34
+   44     O1       2px       43  +  44
+   45     O1       2px       49  +  50
+   46     O1       2px       55  +  56
+   47     O1       3d2-      61  -  62
+   48     O1       3d1+      67  +  68
+   49     O1       3d2-      71  -  72
+   50     O1       3d1+      77  +  78
+   51     O1       4f2-      83  -  84
+   52     O1       4f1+      89  +  90
+   53     O1       4f3+      93  +  94
+
+
+  Symmetry  B2 ( 3)
+
+   54     Cl       2py        7
+   55     Cl       2py       10
+   56     Cl       2py       13
+   57     Cl       2py       16
+   58     Cl       3d1-      19
+   59     Cl       3d1-      24
+   60     Cl       4f3-      28
+   61     Cl       4f1-      30
+   62     O1       1s        35  -  36
+   63     O1       1s        37  -  38
+   64     O1       1s        39  -  40
+   65     O1       1s        41  -  42
+   66     O1       2py       45  +  46
+   67     O1       2pz       47  -  48
+   68     O1       2py       51  +  52
+   69     O1       2pz       53  -  54
+   70     O1       2py       57  +  58
+   71     O1       2pz       59  -  60
+   72     O1       3d1-      63  +  64
+   73     O1       3d0       65  -  66
+   74     O1       3d2+      69  -  70
+   75     O1       3d1-      73  +  74
+   76     O1       3d0       75  -  76
+   77     O1       3d2+      79  -  80
+   78     O1       4f3-      81  +  82
+   79     O1       4f1-      85  +  86
+   80     O1       4f0       87  -  88
+   81     O1       4f2+      91  -  92
+
+
+  Symmetry  A2 ( 4)
+
+   82     Cl       3d2-      18
+   83     Cl       3d2-      23
+   84     Cl       4f2-      29
+   85     O1       2px       43  -  44
+   86     O1       2px       49  -  50
+   87     O1       2px       55  -  56
+   88     O1       3d2-      61  +  62
+   89     O1       3d1+      67  -  68
+   90     O1       3d2-      71  +  72
+   91     O1       3d1+      77  -  78
+   92     O1       4f2-      83  +  84
+   93     O1       4f1+      89  -  90
+   94     O1       4f3+      93  -  94
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.08 seconds
+
+
+ >>> Time used in OVERLA is   0.08 seconds
+
+
+ Number of two-electron integrals written:     2299042 ( 23.1% )
+ Megabytes written:                             26.327
+
+
+
+ >>> Time used in TWOINT is  16.95 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   1.36 seconds
+
+ >>>> Total CPU  time used in HERMIT:  18.50 seconds
+ >>>> Total wall time used in HERMIT:  40.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:21:32 2001
+     Host name              : slater.uio.no                           
+
+ Title lines from integral program:
+     bla. bla.                                                               
+     H2o ano basis Almloef and Taylor.                                       
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     MC-SCF optimization.
+
+               Type: complete active space calculation (CAS).
+
+     This is a combination run starting with
+
+               an open shell RHF calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         14
+     Number of electrons in active shells     19
+     Number of active orbitals                12
+     Total number of orbitals                 94
+
+     Spin multiplicity                         2
+     Total number of symmetries                4
+     Reference state symmetry                  2
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Inactive orbitals                  4   1   2   0
+     Active orbitals                    5   2   4   1
+     Secondary orbitals                26  15  22  12
+     Total number of orbitals          35  18  28  13
+     Number of basis functions         35  18  28  13
+
+     Occupied HF orbitals               8   2   5   1
+
+     plus one open shell HF orbital of symmetry   2
+
+     Optimization information
+     ========================
+     Number of configurations           2106
+     Number of orbital rotations         453
+     ---------------------------------------
+     Total number of variables          2559
+
+     Maximum number of macro iterations      15
+     Maximum number of micro iterations     360
+     Threshold for gradient            1.00D-05
+     Number of initial trial vectors          1
+     Number of initial CI iterations          3
+     Number of simultaneous trial vectors     1
+
+     This calculation converges to the lowest state
+     for the specified symmetry and spin species.
+
+     Maximum number of NEO/NR iterations  24
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)
+ ----------------------------------------------------
+    1     -607.835172348114    6.05880D+00   -6.08D+02
+    2     -608.731228340409    2.59793D+00   -8.96D-01
+    3     -608.997615068778    1.08930D+00   -2.66D-01
+    4     -609.052239254927    1.14205D-01   -5.46D-02
+    5     -609.053444585493    4.02373D-02   -1.21D-03
+    6     -609.053656972455    1.14029D-02   -2.12D-04
+    7     -609.053688493375    4.30276D-03   -3.15D-05
+    8     -609.053694838133    1.41800D-03   -6.34D-06
+    9     -609.053695439746    4.62415D-04   -6.02D-07
+   10     -609.053695535922    2.28845D-04   -9.62D-08
+   11     -609.053695561357    8.28252D-05   -2.54D-08
+   12     -609.053695565497    3.55568D-05   -4.14D-09
+   13     -609.053695566167    2.11044D-05   -6.69D-10
+   14     -609.053695566275    7.70863D-06   -1.08D-10
+   15     -609.053695566288    2.44272D-06   -1.28D-11
+   16     -609.053695566289    1.09537D-06   -1.47D-12
+   17     -609.053695566290    3.45566D-07   -4.41D-13
+ DIIS converged in  17 iterations !
+
+
+        SIRIUS MCSCF optimization (SIROPT)
+ ================================================
+
+
+
+ <<<<< Output from SIRIUS CI module (CICTL) >>>>>
+
+
+
+
+ (CIST1)  4 lowest diagonal elements:
+
+ Element no. Config.no.    Active energy      Total energy
+
+         1 :         29    -83.9158356824   -609.0536955663
+         2 :         34    -83.5695958559   -608.7074557397
+         3 :        643    -83.5572919789   -608.6951518628
+         4 :        644    -83.5572919789   -608.6951518628
+
+
+ Convergence threshold for CI optimization :     0.00000500
+
+
+
+ *** Reached maximum number of CI iterations:    3
+              1 CI roots are not converged.
+
+
+ CI energies and residuals:
+    1     -609.112168625765100       5.08D-02
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.999649746   1.997077928   1.993800703   1.977265031   0.038725330
+
+ Symmetry  2
+
+   1.989718018   1.034220743
+
+ Symmetry  3
+
+   1.999621364   1.992348361   1.975468692   0.029397610
+
+ Symmetry  4
+
+   1.972706474
+
+
+ <<< MACRO ITERATION  1 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -609.112168625763700       (MACRO    1)
+
+ Norm of total gradient   :        0.201796196392
+ -    of CI gradient      :        0.101667198095
+ -    of orbital gradient :        0.174314330190
+
+ Residual norm when dim(red L) =  10
+ NEO root     CSF        orbital          total
+    1     0.03694300     0.01569017     0.04013685 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.998865966   1.995235382   1.977689807   1.939246647   0.109072334
+
+ Symmetry  2
+
+   1.981759205   1.078553080
+
+ Symmetry  3
+
+   1.998704472   1.974238567   1.921961070   0.088690375
+
+ Symmetry  4
+
+   1.935983095
+
+
+ <<< MACRO ITERATION  2 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -609.152686247284400       (MACRO    2)
+
+ Norm of total gradient   :        0.260982773878
+ -    of CI gradient      :        0.239182661366
+ -    of orbital gradient :        0.104420605070
+
+ Residual norm when dim(red L) =   6
+ NEO root     CSF        orbital          total
+    1     0.03616743     0.02828726     0.04591570 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.999204751   1.997040200   1.986243177   1.964211281   0.066067563
+
+ Symmetry  2
+
+   1.990482872   1.047629929
+
+ Symmetry  3
+
+   1.999078672   1.984636716   1.952158276   0.052822102
+
+ Symmetry  4
+
+   1.960424461
+
+
+ <<< MACRO ITERATION  3 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -609.164945066592200       (MACRO    3)
+
+ Norm of total gradient   :        0.048337530037
+ -    of CI gradient      :        0.038496498755
+ -    of orbital gradient :        0.029232454460
+
+ Residual norm when dim(red L) =   9
+ NEO root     CSF        orbital          total
+    1     0.00517080     0.00339818     0.00618747 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.999202731   1.997308755   1.985728568   1.964391335   0.068352375
+
+ Symmetry  2
+
+   1.990575142   1.048649419
+
+ Symmetry  3
+
+   1.999050632   1.984893171   1.949827393   0.052571286
+
+ Symmetry  4
+
+   1.959449195
+
+
+ <<< MACRO ITERATION  4 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -609.165579807365100       (MACRO    4)
+
+ Norm of total gradient   :        0.007435591826
+ -    of CI gradient      :        0.006135359204
+ -    of orbital gradient :        0.004200642003
+
+ Residual norm when dim(red L) =  15
+ NEO root     CSF        orbital          total
+    1     0.00010599     0.00006228     0.00012293 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.999205942   1.997353781   1.985908995   1.964943784   0.067896741
+
+ Symmetry  2
+
+   1.990634677   1.048141529
+
+ Symmetry  3
+
+   1.999057519   1.985136373   1.950150054   0.051680385
+
+ Symmetry  4
+
+   1.959890220
+
+
+ <<< MACRO ITERATION  5 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -609.165589621379100       (MACRO    5)
+
+ Norm of total gradient   :        0.000130503461
+ -    of CI gradient      :        0.000105546619
+ -    of orbital gradient :        0.000076753271
+
+ Residual norm when dim(red L) =  11
+ NEO root     CSF        orbital          total
+    1     0.00000708     0.00000386     0.00000807 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.999205846   1.997354190   1.985910636   1.964944245   0.067893458
+
+ Symmetry  2
+
+   1.990634753   1.048138305
+
+ Symmetry  3
+
+   1.999057487   1.985136546   1.950150950   0.051680133
+
+ Symmetry  4
+
+   1.959893451
+
+
+ <<< MACRO ITERATION  6 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -609.165589624201600       (MACRO    6)
+
+ Norm of total gradient   :        0.000008063635
+ -    of CI gradient      :        0.000007081926
+ -    of orbital gradient :        0.000003855976
+
+ *** Optimization control: MCSCF converged ***
+     Number of macro iterations used            6
+     Number of micro iterations used           41
+     Total number of CPU seconds used         0.00
+
+
+               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:25:51 2001
+     Host name              : slater.uio.no                           
+
+
+  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
+ ---------------------------------------------------------------------
+    1    8   -609.112168625764   0.2017961964  0.000000   0.7592202287
+    2    4   -609.152686247284   0.2609827739  0.515346   0.1722707712
+    3    7   -609.164945066592   0.0483375300  0.992611   0.0737768456
+    4   13   -609.165579807365   0.0074355918  1.000691   0.0068740440
+    5    9   -609.165589621379   0.0001305035  1.001670   0.0001037208
+    6    0   -609.165589624202   0.0000080636  1.001047   0.0000000000
+
+
+  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
+ ------------------------------------------------------------------------------
+    1   1614    0.021955    0.101667    208    0.061030    0.174314    0.201796
+    2     29    0.076611    0.239183    410    0.029682    0.104421    0.260983
+    3    563   -0.006756    0.038496    401   -0.007159    0.029232    0.048338
+    4    563   -0.001281    0.006135    410    0.002282    0.004201    0.007436
+    5    644    0.000027    0.000106    401   -0.000019    0.000077    0.000131
+    6    599   -0.000002    0.000007    305    0.000001    0.000004    0.000008
+
+
+  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
+ ------------------------------------------------------------------------------
+
+    1     8     6     3      0.00      0.00      2.01      0.00      0.25
+    2     4     3     2      0.00      0.00      1.88      0.00      0.47
+    3     7     5     3      0.00      0.00      1.88      0.00      0.27
+    4    13     9     5      0.00      0.00      1.88      0.00      0.14
+    5     9     6     4      0.00      0.00      1.88      0.00      0.21
+    6     0     0     0      0.00      0.00      0.00      0.00
+
+
+ ITER         EMY                 EACTIV              EMCSCF
+
+    1   -636.535257741531    -83.974308741913   -609.112168625764
+    2   -636.532740170401    -84.017343934564   -609.152686247284
+    3   -636.489582160093    -84.072760764180   -609.164945066592
+    4   -636.448860308592    -84.114117356453   -609.165579807365
+    5   -636.442666164618    -84.120321314441   -609.165589621379
+    6   -636.442642004103    -84.120345477779   -609.165589624202
+
+
+ ITER         DEPRED              DEACT               RATIO
+
+    1      0.000000000000      0.000000000000      0.000000000000
+    2     -0.078622149774     -0.040517621521      0.515346141476
+    3     -0.012350079449     -0.012258819308      0.992610562440
+    4     -0.000634302307     -0.000634740773      1.000691257226
+    5     -0.000009797654     -0.000009814014      1.001669825199
+    6     -0.000000002820     -0.000000002823      1.001047456378
+
+
+ ITER    BETA           GAMMA             STPLNG              RTRUST
+
+    1      1.34505581  1.00000000      0.759220228693      0.700000000000
+    2      0.20000000  1.00000000      0.172270771157      0.700000000000
+    3      0.20000000  1.00000000      0.073776845606      0.700000000000
+    4      0.20000000  1.00000000      0.006874043977      0.700000000000
+    5      0.20000000  1.00000000      0.000103720833      0.700000000000
+    6      0.00000000  0.00000000      0.000000000000      0.700000000000
+
+
+ Reduced L root no.  1
+ ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
+ ----------------------------------------------------------------------------
+    1   -0.139258575699   -0.699653825679    0.080111611925    0.676398261781
+    2   -0.000986834895    0.999406983548   -0.017554463865   -0.021421716463
+    3   -0.000050733139    0.999891157314   -0.003975317153   -0.012983886647
+    4   -0.000000783811    0.999999054952   -0.000602564050   -0.000978567870
+    5   -0.000000000226    0.999999999785   -0.000011323064   -0.000014978336
+    6    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           2
+     Spatial symmetry:            2
+     State number:                1
+
+     Final MCSCF energy:         -609.165589624202
+     Nuclear repulsion:           111.397397857680
+     Electronic energy:          -720.562987481882
+
+     Final gradient norm:           0.000008063635
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:25:51 2001
+     Host name              : slater.uio.no                           
+
+
+ Occupancies of natural orbitals
+ -------------------------------
+
+ Symmetry  1
+
+   2.000000000   2.000000000   2.000000000   2.000000000   1.999205846
+   1.997354190   1.985910636   1.964944245   0.067893458
+
+ Sum =          16.015308375
+
+ Symmetry  2
+
+   2.000000000   1.990634753   1.048138305
+
+ Sum =           5.038773058
+
+ Symmetry  3
+
+   2.000000000   2.000000000   1.999057487   1.985136546   1.950150950
+   0.051680133
+
+ Sum =           9.986025116
+
+ Symmetry  4
+
+   1.959893451
+
+ Sum =           1.959893451
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  Cl  1s     1.0000   0.0003   0.0002   0.0004  -0.0011  -0.0012  -0.0028
+   2  Cl  1s     0.0000   0.0024   1.0007   0.0096  -0.0087  -0.0354  -0.0153
+   3  Cl  1s     0.0007  -0.0009  -0.0151  -0.0126   0.3555  -0.8768  -0.3913
+   4  Cl  1s     0.0000  -0.0014  -0.0012  -0.0024  -0.0022  -0.0066  -0.0001
+   5  Cl  1s     0.0001  -0.0018  -0.0018   0.0033  -0.0370   0.0383   0.0884
+   6  Cl  2pz   -0.0001  -0.0017  -0.0069   0.9996   0.0299  -0.0026  -0.0186
+   7  Cl  2pz    0.0001  -0.0007  -0.0086   0.0021   0.0270  -0.3587   0.5233
+   8  Cl  2pz    0.0001   0.0008  -0.0020  -0.0001  -0.0072   0.0000   0.0072
+   9  Cl  2pz    0.0000   0.0003   0.0008  -0.0017   0.0173   0.0520  -0.0935
+  10  Cl  3d0    0.0000   0.0000   0.0001  -0.0015  -0.0014   0.0112  -0.0392
+  11  Cl  3d2+   0.0000   0.0004  -0.0008   0.0002  -0.0185  -0.0032  -0.0169
+  12  Cl  3d0    0.0000  -0.0002   0.0003   0.0004  -0.0012   0.0120  -0.0495
+  13  Cl  3d2+   0.0000   0.0001   0.0003  -0.0003  -0.0150  -0.0075  -0.0371
+  14  Cl  4f0    0.0000   0.0001   0.0001  -0.0002   0.0060  -0.0011   0.0036
+  15  Cl  4f2+   0.0000   0.0001   0.0002  -0.0004   0.0107   0.0022  -0.0045
+  16  O1  1s     0.0000   0.7062   0.0000   0.0004   0.0229   0.0077   0.0020
+  17  O1  1s     0.0001  -0.0265   0.0023  -0.0071   0.6140   0.2675   0.1313
+  18  O1  1s     0.0000   0.0007   0.0000   0.0000  -0.0038   0.0018   0.0043
+  19  O1  1s    -0.0001   0.0005   0.0006   0.0000  -0.0099   0.0495   0.0689
+  20  O1  2py    0.0000  -0.0054  -0.0018   0.0042   0.0334   0.0382   0.3905
+  21  O1  2pz    0.0001   0.0047  -0.0024   0.0020  -0.0357  -0.2011   0.2627
+  22  O1  2py    0.0000   0.0027  -0.0001   0.0002  -0.0064  -0.0035   0.0016
+  23  O1  2pz    0.0000  -0.0016   0.0000   0.0001   0.0040  -0.0007   0.0036
+  24  O1  2py    0.0000   0.0003  -0.0003   0.0001   0.0143  -0.0180  -0.0184
+  25  O1  2pz    0.0000  -0.0001   0.0005   0.0003  -0.0154   0.0184   0.0148
+  26  O1  3d1-   0.0000   0.0000   0.0000   0.0001  -0.0018   0.0035   0.0009
+  27  O1  3d0    0.0000   0.0000   0.0000   0.0001   0.0001  -0.0014   0.0043
+  28  O1  3d2+   0.0000   0.0000   0.0000   0.0001  -0.0013   0.0009   0.0053
+  29  O1  3d1-   0.0000   0.0003   0.0001   0.0000  -0.0030   0.0099   0.0016
+  30  O1  3d0    0.0000   0.0000  -0.0001   0.0003   0.0001  -0.0053   0.0180
+  31  O1  3d2+   0.0000   0.0003  -0.0001   0.0005  -0.0026   0.0015   0.0181
+  32  O1  4f3-   0.0000  -0.0001   0.0000   0.0000   0.0009   0.0000  -0.0035
+  33  O1  4f1-   0.0000   0.0000   0.0001   0.0000  -0.0003   0.0020  -0.0042
+  34  O1  4f0    0.0000   0.0001   0.0000   0.0000  -0.0006   0.0004   0.0023
+  35  O1  4f2+   0.0000   0.0001   0.0001   0.0000  -0.0012   0.0014   0.0019
+
+ Orbital          8        9
+   1  Cl  1s     0.0055   0.0047
+   2  Cl  1s     0.0234   0.0540
+   3  Cl  1s    -0.0495   0.5389
+   4  Cl  1s    -0.0110   0.0134
+   5  Cl  1s    -0.3343   0.0532
+   6  Cl  2pz    0.0138  -0.0356
+   7  Cl  2pz   -0.5366  -0.8159
+   8  Cl  2pz   -0.0211   0.0000
+   9  Cl  2pz    0.1000   0.0943
+  10  Cl  3d0   -0.0392   0.0375
+  11  Cl  3d2+  -0.0738   0.0707
+  12  Cl  3d0   -0.0505   0.0623
+  13  Cl  3d2+  -0.0626   0.0742
+  14  Cl  4f0    0.0104  -0.0200
+  15  Cl  4f2+   0.0110  -0.0180
+  16  O1  1s    -0.0007  -0.0128
+  17  O1  1s     0.0640  -0.2178
+  18  O1  1s    -0.0045   0.0032
+  19  O1  1s    -0.0017  -0.0875
+  20  O1  2py   -0.1568   0.7679
+  21  O1  2pz    0.5479   0.0583
+  22  O1  2py   -0.0050  -0.0072
+  23  O1  2pz    0.0031  -0.0230
+  24  O1  2py    0.0044  -0.1818
+  25  O1  2pz    0.0381  -0.0571
+  26  O1  3d1-  -0.0052   0.0037
+  27  O1  3d0    0.0004  -0.0004
+  28  O1  3d2+  -0.0031   0.0012
+  29  O1  3d1-  -0.0209   0.0159
+  30  O1  3d0    0.0069  -0.0027
+  31  O1  3d2+  -0.0085  -0.0042
+  32  O1  4f3-   0.0015  -0.0010
+  33  O1  4f1-  -0.0029  -0.0004
+  34  O1  4f0   -0.0016   0.0014
+  35  O1  4f2+  -0.0035   0.0029
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3
+   1  Cl  2px    1.0010  -0.0077   0.0222
+   2  Cl  2px    0.0069   0.8249   0.7486
+   3  Cl  2px   -0.0019  -0.0005  -0.0084
+   4  Cl  2px   -0.0015  -0.0977   0.0142
+   5  Cl  3d1+  -0.0011  -0.0205   0.0334
+   6  Cl  3d1+   0.0004  -0.0204   0.0504
+   7  Cl  4f1+   0.0000   0.0024  -0.0030
+   8  Cl  4f3+  -0.0002  -0.0143   0.0171
+   9  O1  2px    0.0030   0.3446  -0.5993
+  10  O1  2px    0.0002   0.0072  -0.0017
+  11  O1  2px   -0.0003  -0.0203  -0.0587
+  12  O1  3d2-  -0.0001  -0.0051   0.0002
+  13  O1  3d1+   0.0001   0.0029   0.0002
+  14  O1  3d2-  -0.0003  -0.0180   0.0081
+  15  O1  3d1+   0.0001   0.0110  -0.0048
+  16  O1  4f2-   0.0000  -0.0033   0.0013
+  17  O1  4f1+   0.0000   0.0001   0.0006
+  18  O1  4f3+   0.0000  -0.0034   0.0009
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3        4        5        6
+   1  Cl  2py    0.0023   0.9980  -0.0329  -0.0324   0.0232   0.0665
+   2  Cl  2py    0.0018   0.0044   0.0846   0.5655  -0.3437   1.1325
+   3  Cl  2py   -0.0020   0.0028   0.0157   0.0177  -0.0245  -0.0228
+   4  Cl  2py   -0.0009  -0.0021  -0.0291  -0.1049   0.1596  -0.1402
+   5  Cl  3d1-   0.0007  -0.0019  -0.0280   0.0004   0.0807   0.0781
+   6  Cl  3d1-  -0.0002   0.0018  -0.0239   0.0244   0.0672   0.0906
+   7  Cl  4f3-  -0.0002  -0.0004  -0.0066  -0.0132  -0.0007   0.0088
+   8  Cl  4f1-   0.0001  -0.0003   0.0031  -0.0193  -0.0229  -0.0020
+   9  O1  1s     0.7062  -0.0001   0.0237  -0.0020   0.0025  -0.0127
+  10  O1  1s    -0.0263   0.0045   0.6765  -0.0594   0.0062  -0.2386
+  11  O1  1s     0.0008  -0.0001  -0.0040  -0.0053   0.0047  -0.0026
+  12  O1  1s     0.0000   0.0001   0.0036  -0.0841   0.0292  -0.1267
+  13  O1  2py   -0.0058  -0.0012   0.0646  -0.0160   0.6050   0.2923
+  14  O1  2pz    0.0041   0.0075  -0.0417   0.5316   0.1660  -0.6524
+  15  O1  2py    0.0029  -0.0003  -0.0085   0.0028   0.0069   0.0268
+  16  O1  2pz   -0.0017   0.0002   0.0055   0.0037   0.0023   0.0275
+  17  O1  2py    0.0006  -0.0002   0.0105   0.0314   0.0013  -0.0181
+  18  O1  2pz   -0.0003   0.0003  -0.0052  -0.0010   0.0260   0.2070
+  19  O1  3d1-   0.0000  -0.0002  -0.0011  -0.0061   0.0046   0.0013
+  20  O1  3d0    0.0000   0.0001  -0.0002   0.0025   0.0028  -0.0003
+  21  O1  3d2+   0.0000  -0.0001  -0.0009  -0.0019   0.0058   0.0009
+  22  O1  3d1-   0.0004  -0.0004  -0.0029  -0.0208   0.0101  -0.0008
+  23  O1  3d0    0.0001   0.0001  -0.0001   0.0132   0.0147   0.0070
+  24  O1  3d2+   0.0004  -0.0001  -0.0028  -0.0032   0.0202   0.0103
+  25  O1  4f3-  -0.0001  -0.0001   0.0009   0.0010  -0.0034  -0.0017
+  26  O1  4f1-   0.0000   0.0000  -0.0004  -0.0038  -0.0019   0.0004
+  27  O1  4f0    0.0001   0.0001  -0.0007  -0.0017   0.0028   0.0024
+  28  O1  4f2+   0.0001   0.0001  -0.0013  -0.0037   0.0035   0.0023
+
+     Molecular orbitals for symmetry species   4
+
+ Orbital          1
+   1  Cl  3d2-   0.0634
+   2  Cl  3d2-   0.0853
+   3  Cl  4f2-  -0.0220
+   4  O1  2px    0.6408
+   5  O1  2px    0.0052
+   6  O1  2px    0.0369
+   7  O1  3d2-  -0.0041
+   8  O1  3d1+   0.0026
+   9  O1  3d2-  -0.0200
+  10  O1  3d1+   0.0129
+  11  O1  4f2-  -0.0036
+  12  O1  4f1+   0.0002
+  13  O1  4f3+  -0.0034
+
+
+ Printout of CI-coefficients larger than 0.05000 for root  1
+
+ (this is the reference state)
+
+
+
+  Printout of coefficients in interval  0.3162     to  1.000    
+  ==============================================================
+
+ Coefficient of CSF no.        29 is -0.95885291    
+ Occupation and spin coupling 
+        1    2    3    4    6    8    9   10   12    7
+        2    2    2    2    2    2    2    2    2    1
+
+
+  Printout of coefficients in interval  0.1000     to 0.3162    
+  ==============================================================
+
+ Coefficient of CSF no.       116 is  0.14736868    
+ Occupation and spin coupling 
+        1    2    3    4    6    7    8    9    5   10
+       12
+        2    2    2    2    2    2    2    2    1   -1
+        1
+
+ Coefficient of CSF no.       204 is -0.11374288    
+ Occupation and spin coupling 
+        1    2    3    6    7    8    9   10    4   11
+       12
+        2    2    2    2    2    2    2    2    1   -1
+        1
+
+
+  Printout of coefficients in interval  5.0000E-02 to 0.1000    
+  ==============================================================
+
+ Coefficient of CSF no.        21 is  7.77743510E-02
+ Occupation and spin coupling 
+        1    2    3    4    5    6    8    9   12    7
+        2    2    2    2    2    2    2    2    2    1
+
+ Coefficient of CSF no.        31 is  5.09260448E-02
+ Occupation and spin coupling 
+        1    2    4    5    6    8    9   10   12    7
+        2    2    2    2    2    2    2    2    2    1
+
+ Coefficient of CSF no.        91 is  5.59237792E-02
+ Occupation and spin coupling 
+        1    2    3    6    8    9   10   11   12    7
+        2    2    2    2    2    2    2    2    2    1
+
+ Coefficient of CSF no.      1457 is -7.19217251E-02
+ Occupation and spin coupling 
+        1    2    3    6    8    9   12    4    5    7
+       10   11
+        2    2    2    2    2    2    2    1    1    1
+       -1   -1
+
+
+  Norm of printed CI vector ..  0.97099638E+00
+
+   Magnitude of CI coefficients 
+  ==============================
+
+   ( Ranges are relative to norm of vector :  1.00E+00 )
+
+  10- 1 to 10- 0         3    0.95405387E+00    0.95405387E+00
+  10- 2 to 10- 1        51    0.41830954E-01    0.99588482E+00
+  10- 3 to 10- 2       280    0.39607890E-02    0.99984561E+00
+  10- 4 to 10- 3       865    0.15262365E-03    0.99999823E+00
+  10- 5 to 10- 4       698    0.17585101E-05    0.99999999E+00
+  10- 6 to 10- 5       186    0.69058807E-08    0.10000000E+01
+  10- 7 to 10- 6        20    0.66022009E-11    0.10000000E+01
+  10- 8 to 10- 7         3    0.71069618E-14    0.10000000E+01
+  Number of coefficients less than 10^-11 times norm is            0
+
+
+
+ >>>> Total CPU  time used in SIRIUS :    110.99 seconds
+ >>>> Total wall time used in SIRIUS :    260.00 seconds
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:25:52 2001
+     Host name              : slater.uio.no                           
+
+- End of Wave Function Section
+
+
+ *************************************************************************
+ ****************** Output from ABACUS input processing ******************
+ *************************************************************************
+
+
+
+ The following molecular properties will be calculated in this run:
+ ------------------------------------------------------------------
+
+      Nuclear quadrupole moments
+
+
+ Default print level:        0
+
+      Starting Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:25:53 2001
+     Host name              : slater.uio.no                           
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:25:59 2001
+     Host name              : slater.uio.no                           
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ Cl         0.0000000000            0.0000000000            1.0000000000
+ O1   1     0.0000000000            2.3736000000           -0.4431700000
+ O1   2     0.0000000000           -2.3736000000           -0.4431700000
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  2     State number       1     Total charge       0
+
+
+     Total energy       -609.1655896242 au (Hartrees)
+                        -16576.23841335 eV
+                          -1599364.0280 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          4.9133757671 au
+     Mass-velocity correction:                  -6.4195864602 au
+
+     Total relativistic correction:             -1.5062106931 au (0.2473%)
+     Non-relativistic + relativistic energy:  -610.6718003173 au
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.773073 au           1.964973 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    z      0.77307253      1.96497257
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+
+  *********************************************************************
+  **************** ABACUS - Nuclear Quadrupole moments ****************
+  *********************************************************************
+
+
+
+                  Nuclear quadrupole moment for   Cl    
+                  --------------------------------------
+
+          Spin     :  1.5          Quadrupole moment:-.08165000
+                            au           MHz        Gauss
+ Cl     35    Vx =      -0.272182     5.221778     1.863261
+ Cl     35    Vy =      -2.394406    45.936363    16.391241
+ Cl     35    Vz =       2.666588   -51.158141   -18.254502
+                 Asymmetry constant eta:      0.795857
+                 Auxiliary value au  1/T  0.574136D-02
+          Spin     :  1.5          Quadrupole moment:-.06435000
+                            au           MHz        Gauss
+ Cl     37    Vx =      -0.272182     4.115388     1.468473
+ Cl     37    Vy =      -2.394406    36.203368    12.918265
+ Cl     37    Vz =       2.666588   -40.318756   -14.386738
+                 Asymmetry constant eta:      0.795857
+                 Auxiliary value au  1/T  0.356615D-02
+
+
+                  Nuclear quadrupole moment for   O1   1
+                  --------------------------------------
+
+          Spin     :  2.5          Quadrupole moment:-.02558000
+                            au           MHz        Gauss
+ O1   1 17    Vx =      -0.494792     2.973893     1.061159
+ O1   1 17    Vy =      -1.185838     7.127358     2.543219
+ O1   1 17    Vz =       1.680630   -10.101251    -3.604379
+                 Asymmetry constant eta:      0.411183
+                 Auxiliary value au  1/T  0.468562D-04
+
+
+                  Nuclear quadrupole moment for   O1   2
+                  --------------------------------------
+
+          Spin     :  2.5          Quadrupole moment:-.02558000
+                            au           MHz        Gauss
+ O1   2 17    Vx =      -0.494792     2.973893     1.061159
+ O1   2 17    Vy =      -1.185838     7.127358     2.543219
+ O1   2 17    Vz =       1.680630   -10.101251    -3.604379
+                 Asymmetry constant eta:      0.411183
+                 Auxiliary value au  1/T  0.468562D-04
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            Cl          O1 1        O1 2
+
+   Cl      0.000000
+   O1 1    1.470000    0.000000
+   O1 2    1.470000    2.512110    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    O1 1       Cl                             1.470000
+  bond distance:    O1 2       Cl                             1.470000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       O1 1       Cl         O1 2                 117.400
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ MAGINT     00:00:02     100 %
+
+ TOTAL      00:00:02     100 %
+
+
+
+ >>>> Total CPU  time used in ABACUS:   1.58 seconds
+ >>>> Total wall time used in ABACUS:   6.00 seconds
+
+- End of Static Property Section
+ >>>> Total CPU  time used in DALTON:  2 minutes 11 seconds
+ >>>> Total wall time used in DALTON:  5 minutes  7 seconds
+
+ 
+     Date and time (Linux)  : Mon Feb 12 23:25:59 2001
+     Host name              : slater.uio.no                           

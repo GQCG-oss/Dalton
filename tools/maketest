@@ -1,0 +1,221 @@
+#!/usr/bin/perl
+use Getopt::Std;
+getopts('hi:o:');
+#
+# Calling the script with -h displays help message.
+#
+if ($opt_h == 1) {
+    print "\nmaketest - script to help set up automatic Dalton test jobs.\n\n";
+    print "Usage: $progname [-h] [-i filename] [-o filename]\n\n";
+    print "-h\tDisplay this help screen, then quit.\n";
+    print "-i\tSpecify modified input file (see comments below).\n";
+    print "\tIf no file is given, the program will ask the user for the filename.\n";
+    print "-o\tSpecify output file.\n";
+    print "\tIf no file is given, the file dalton.test will be used.\n\n";
+    print "The input file should contain all the results to be tested and\n";
+    print "nothing else. Lines grouped together will make up a single set of\n";
+    print "test criteria. Different sets should be separated by a blank line.\n\n";
+    print "In the input file, you can replace the last decimal(s) of a number\n";
+    print "with '_'. These characters will then be replaced by '[0-9]' which\n";
+    print "of course means 'any number' (to avoid problems with precision).\n\n";
+    print "Example:\n--------\n\n** Input file **\n";
+    print "     Total energy       -224.5107485162 au (Hartrees)\n";
+    print "                           -589452.8863 kJ/mol\n\n";
+    print "@ gamma(Z;Z,Z,Z)        207.46__\n";
+    print "@ gamma(Z;Z,Z,Z)        214.81__\n\n";
+    print "** Translates into **\n";
+    print "CRIT1=`".chr(36)."GREP ".chr(34)."Total energy * ".chr(92)."-224".chr(92).".5107485162 au ".chr(92)."(Hartrees".chr(92).")".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "CRIT2=`".chr(36)."GREP ".chr(34)."".chr(92)."-589452".chr(92).".8863 kJ".chr(92)."/mol".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "TEST[1]=`expr	".chr(36)."CRIT1 ".chr(92)."+ ".chr(36)."CRIT2`\n\n";
+    print "CRIT1=`".chr(36)."GREP ".chr(34)."".chr(92)."@ gamma".chr(92)."(Z".chr(92).";Z".chr(92).",Z".chr(92).",Z".chr(92).") * 207".chr(92).".46[0-9][0-9]".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "CRIT2=`".chr(36)."GREP ".chr(34)."".chr(92)."@ gamma".chr(92)."(Z".chr(92).";Z".chr(92).",Z".chr(92).",Z".chr(92).") * 214".chr(92).".81[0-9][0-9]".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "TEST[2]=`expr	".chr(36)."CRIT1 ".chr(92)."+ ".chr(36)."CRIT2`\n\n";
+    exit;
+}
+$filename = $opt_i."\n";
+#
+# If no input file is given with -i, ask user for filename.
+#
+if ($opt_i eq "") {
+    print "Enter name of input file: ";
+    $filename = <STDIN>;
+}
+$outfile = $opt_o."\n";
+if ($opt_o eq "") {
+    $outfile = "dalton.test";
+}
+#
+open(INPFILE,$filename) || die "Sorry, cannot open file $filename\n";
+open(OUTFILE,">$outfile") || die "\nSorry, cannot open output file $outfile\n";
+#
+# Read in tests set by set
+#
+$iset = 0; $icrit = 0;
+while (<INPFILE>) {
+    $readline = $_;
+#
+# Loop over non-empty lines, blank lines separate sets of criteria
+#
+    if ($readline ne "\n") {
+	$chkline = substr($readline,0,length($readline)-1);
+	$lenchk = length($chkline);
+#
+# Remove leading whitespace
+#
+	$char = substr($chkline,0,1);
+	$pos = 0;
+	while ($char eq " " && $pos < $lenchk-1) {
+	    $pos++;
+	    $char = substr($chkline,$pos,1);
+	}
+	$chkline = substr($chkline,$pos,$lenchk-$pos);
+	$lenchk = length($chkline);
+#
+# Process each input line
+#
+	$ielm = 0; $pos = 0;
+	while ($pos <= $lenchk) {
+	    $char = substr($chkline,$pos,1);
+	    if ($char ne " ") {
+	        $ielm++;
+	        @items = split(/  +/,substr($chkline,$pos,$lenchk-$pos));
+#
+# Go through element searching for special characters
+#
+		$args[$ielm] = ""; $pos2 = 0;
+		while ($pos2 < length($items[0])) {
+		    $_ = substr($items[0],$pos2,1);
+#
+# Characters, numbers and space are kept unchanged
+#
+		    if (/\w/ || / / || /</ || />/) {
+			$args[$ielm] = $args[$ielm].$_
+		    }
+#
+# Special characters get an extra '\' in front of them
+#
+		    else {
+			$args[$ielm] = $args[$ielm].chr(92).$_
+		    }
+		    $pos2++;
+		}
+#
+# Scientific notation requires special attention
+#
+		$_ = $args[$ielm];
+		if (/\dD.-\d/ || /\dD\d/ || /\dD.+\d/) {
+		    s/D/(D|E)/;
+		    $args[$ielm] = $_;
+		}
+		elsif (/\dE.-\d/ || /\dE\d/ || /\dE.+\d/) {
+		    s/E/(D|E)/;
+		    $args[$ielm] = $_;
+		}
+#
+# Check numbers for trailing '_'s indicating precision
+#
+		$_ = substr($args[$ielm],0,2);
+		if (/.-/ || /\d/) {
+		    $_ = $args[$ielm];
+		    s/_/[0-9]/g;
+		    $args[$ielm] = $_;
+		}
+#
+# Check if there's more stuff on this line
+#
+		if ($items[1] eq "") {
+		    $pos = $lenchk + 1;
+		}
+		else {
+		    $pos = $pos + length($items[0]);
+		    while ($pos <= $lenchk &&
+			   substr($chkline,$pos,1) eq " " ) {
+			$pos++;
+			$char = substr($chkline,$pos,1);
+		    }
+		}
+	    }  
+	    else {
+		$pos++;
+		$char = substr($chkline,$pos,1);
+	    }
+	}
+	$icrit++;
+#
+# New set of criteria, print comment line
+#
+	if ($icrit == 1) {
+	    print OUTFILE "\n# ?\n";
+	}
+#
+# Print one new subtest (one criterium)
+#
+	print OUTFILE "CRIT$icrit=`".chr(36)."GREP ".chr(34);
+	if ($ielm > 1) {
+	    for ($i = 1; $i < $ielm; $i++) {
+		print OUTFILE "$args[$i] * ";
+	    }
+	}
+	print OUTFILE "$args[$ielm]";
+	print OUTFILE chr(34)." ".chr(36)."log | wc -l`\n";
+    }
+#
+# Unless last line also was empty, this is the end of a set of criterias
+# Print test expression, control sum and error message
+#
+    else {
+	if ($icrit > 0) {
+	    $iset++;
+	    print OUTFILE "TEST[$iset]=`expr\t";
+	    $nbatch = int $icrit/6; $num = 1;
+	    if ($icrit%6 == 0) { $nbatch--; }
+#
+# Print all full lines first
+#
+	    for ($i = 1; $i <= $nbatch; $i++) {
+		for ($j = $num; $j <= $num+4; $j++) {
+		    print OUTFILE chr(36)."CRIT$j ".chr(92)."+ ";
+		}
+		print OUTFILE chr(36)."CRIT$j ".chr(92)."+ ".chr(92)."\n\t\t";
+		$num = $num + 6;
+	    }
+#
+# Then last line of criteria
+#
+	    for ($i = $num; $i < $icrit; $i++) {
+		print OUTFILE chr(36)."CRIT$i ".chr(92)."+ ";
+	    }
+	    print OUTFILE chr(36)."CRIT$icrit`\n";
+#
+# Print control sum and error messages
+#
+	    print OUTFILE "CTRL[$iset]=$icrit\n";
+	    print OUTFILE "ERROR[$iset]=".chr(34)."NOT CORRECT".chr(34)."\n";
+	    $icrit = 0;
+	}
+    }
+}
+#
+# Output for the last set of criteria
+#
+if ($icrit > 0) {
+    $iset++;
+    print OUTFILE "TEST[$iset]=`expr\t";
+    $nbatch = int $icrit/6; $num = 1;
+    if ($icrit%6 == 0) { $nbatch--; }
+    for ($i = 1; $i <= $nbatch; $i++) {
+	for ($j = $num; $j <= $num+4; $j++) {
+	    print OUTFILE chr(36)."CRIT$j ".chr(92)."+ ";
+	}
+	print OUTFILE chr(36)."CRIT$j ".chr(92)."+ ".chr(92)."\n\t\t";
+	$num = $num + 6;
+    }
+    for ($i = $num; $i < $icrit; $i++) {
+	print OUTFILE chr(36)."CRIT$i ".chr(92)."+ ";
+    }
+    print OUTFILE chr(36)."CRIT$icrit`\n";
+    print OUTFILE "CTRL[$iset]=$icrit\n";
+    print OUTFILE "ERROR[$iset]=".chr(34)."NOT CORRECT".chr(34)."\n";
+}
+close(INPFILE);
+close(OUTFILE);

@@ -110,7 +110,7 @@ CRIT3=`$GREP "H * ( \-|\-0)\.00473117.. * ( |0)\.0000000000 * ( |0)\.01404906.."
 CRIT4=`$GREP "H * ( |0)\.00473117.. * ( |0)\.0000000000 * ( |0)\.01404906.." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[2]=4
-ERROR[2]="THE TOTAL MOLECULAR GRADIENT AT THE START GEOMETRY IS NOT ORRECT"
+ERROR[2]="THE TOTAL MOLECULAR GRADIENT AT THE START GEOMETRY IS NOT CORRECT"
 
 # final geometry:
 CRIT1=`$GREP "N * \-1\.1813908627 * ( |0)\.0000000000 * ( \-|\-0)\.10542905.." $log | wc -l`
@@ -119,7 +119,7 @@ CRIT3=`$GREP "H * \-1\.9125271301 * ( |0)\.0000000000 * 1\.73221075.." $log | wc
 CRIT4=`$GREP "H * 1\.9125271301 * ( |0)\.0000000000 * 1\.73221075.." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
 CTRL[3]=8
-ERROR[3]="THE FINAL GEOMETRY IS NOT ORRECT"
+ERROR[3]="THE FINAL GEOMETRY IS NOT CORRECT"
 
 # summary of the geometry optimization:
 CRIT1=`$GREP "Geometry converged in * 6 *iterations!" $log | wc -l`

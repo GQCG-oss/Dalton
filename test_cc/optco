@@ -216,8 +216,8 @@ CRIT1=`$GREP " C * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.234768" $log | wc 
 CRIT2=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.920497" $log | wc -l`
 CRIT3=`$GREP "Energy at final geometry is * : *-113\.061313 a.u." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 + $CRIT3` 
-#        expr 2 + 2 + 1
-CTRL[4]=5
+#        expr 4 + 4 + 1
+CTRL[4]=9
 ERROR[4]="FINAL SUMMARY IS NOT CORRECT"
 
 

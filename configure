@@ -692,6 +692,7 @@ case $WHICH in
 		fi
 		set_parallel_def $mesp
 	    fi
+	    copt="$opt"
 	    inc='-I../include -I../include_cc'
             cpp=${cpp}" -DIMPLICIT_NONE";;
     convex) if [ "$mesp" = "dummy" ]; then

@@ -1,0 +1,161 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+#
+#*# rsp_sresqr
+#*# ----------
+#*# Molecule:         LiH
+#*# Wave Function:    MCSCF (CAS)
+#*# Test Purpose:     Single residue of the quadratic response function
+#
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > rsp_sresqr.mol <<%EOF%
+BASIS
+4-31G
+Single residue of the quadratic response function
+(test45)
+    2    2  X  Y    1 1.00D-12
+        1.0   1
+ H           .0000000000             .0000000000            2.0969699107
+        3.0   1 
+ Li          .0000000000             .0000000000            -.9969699107
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > rsp_sresqr.dal <<%EOF%
+**DALTON INPUT
+.RUN RESPONS
+**WAVEFUNCTION
+.HF
+.MP2
+.MCSCF
+*HF INPUT
+.HF OCCUPATION
+ 2 0 0 0
+*CONFIGURATION INPUT
+.INACTIVE
+ 1 0 0 0
+.ELECTRONS
+ 2
+.CAS SPACE
+ 2 0 0 0
+.SYMMET
+ 1
+.SPIN MULT
+ 1
+**RESPONS
+*QUADRATIC
+.DIPLEN
+.SINGLE
+.ROOTS
+ 2 1 0 0
+.FREQUE
+ 1
+ 0.03
+*END OF
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
+
+# Basis set
+CRIT1=`$GREP "H * 1 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT2=`$GREP "Li * 1 * 3 * 17 * 9 * \[8s3p\|3s2p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 4 * 21 * 11" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=3
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
+CRIT2=`$GREP "1 * H * x * 0\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * 2\.0969699107" $log | wc -l`
+CRIT5=`$GREP "4 * Li * x * 0\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * \-0\.9969699107" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7`
+CTRL[2]=7
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 2 * 2 * 2 * 0" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 7 * 2 * 2 * 0" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.977349367[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.990192719[0-9]" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-7\.99413052963[0-9]" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="ENERGIES NOT CORRECT"
+
+# Response setup
+CRIT1=`$GREP "Quadratic Response single residue calculation" $log | wc -l`
+CRIT2=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
+CRIT3=`$GREP "Spin of operator B \, ISPINB\= * 0" $log | wc -l`
+CRIT4=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 0" $log | wc -l`
+CRIT5=`$GREP "1 B\-frequencies * 3\.000000(D|E)\-02" $log | wc -l`
+CRIT6=`$GREP "1 A OPERATORS OF SYMMETRY NO\: * [1-3] AND LABELS\:" $log | wc -l`
+CRIT7=`$GREP "1 B OPERATORS OF SYMMETRY NO\: * [1-3] AND LABELS\:" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7`
+CTRL[5]=11
+ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
+
+# Transition moments
+CRIT1=`$GREP "omega B\, excitation energy\, moment \: * 0\.030000 * 0\.11958[0-9] (\-| )189\.07675[0-9]" $log | wc -l`
+CRIT2=`$GREP "omega B\, excitation energy\, moment \: * 0\.030000 * 0\.27218[0-9] * (\-| )2\.08206[0-9]" $log | wc -l`
+CRIT3=`$GREP "omega B\, excitation energy\, moment \: * 0\.030000 * 0\.11958[0-9] * (\-| )54\.72755[0-9]" $log | wc -l`
+CRIT4=`$GREP "omega B\, excitation energy\, moment \: * 0\.030000 * 0\.27218[0-9] * (\-| )7\.27779[0-9]" $log | wc -l`
+CRIT5=`$GREP "omega B\, excitation energy\, moment \: * 0\.030000 * 0\.27218[0-9] * (\-| )7\.27780[0-9]" $log | wc -l`
+CRIT6=`$GREP "omega B\, excitation energy\, moment \: * 0\.030000 * 0\.15776[0-9] (\-| )139\.16865[0-9]" $log | wc -l`
+CRIT7=`$GREP "omega B\, excitation energy\, moment \: * 0\.030000 * 0\.15776[0-9] (\-| )174\.16167[0-9]" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7`
+CTRL[6]=8
+ERROR[6]="TRANSITION MOMENTS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > rsp_sresqr.check
+#######################################################################

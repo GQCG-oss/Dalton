@@ -54,6 +54,8 @@ C
 #include <cclr.h>
 #include <ccfro.h>
 C
+      CALL QENTER('CC_GRAD2E')
+C
 C------------------------------
 C     Initialization of result.
 C------------------------------
@@ -117,7 +119,7 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         LULAM = 0
+         LULAM = -645
          CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LULAM)
@@ -1166,6 +1168,7 @@ C
      *              TIMONE
       ENDIF
 C
+      CALL QEXIT('CC_GRAD2E')
       RETURN
   165 CALL QUIT('Error reading CCTWODEN')
       RETURN

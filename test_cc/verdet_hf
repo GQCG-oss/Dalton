@@ -84,33 +84,33 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`egrep "Total SCF   energy: * \-100\.0219696975" $log | wc -l`
-CRIT2=`egrep "Total MP2   energy: * \-100\.1561878288" $log | wc -l`
-CRIT3=`egrep "Total CCSD  energy: * \-100\.1586556745" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy\: * \-100\.021969697[4-6]" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy\: * \-100\.156187828[0-9]" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy\: * \-100\.158655674[0-9]" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=6
 ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
 
 # CCSD (unrelaxed) Verdet constant components:
-CRIT1=`egrep "( |0)\.1139   ZANGMOM  \(unrel\.\)  ( |0)\.[ 0]+ ( |0)\.51782195" $log | wc -l`
-CRIT2=`egrep "( |0)\.1139   YANGMOM  \(unrel\.\)  ( |0)\.[ 0]+ 1\.2780083" $log | wc -l`
-CRIT3=`egrep "( |0)\.1139   XANGMOM  \(unrel\.\)  ( |0)\.[ 0]+ 1\.2780083" $log | wc -l`
+CRIT1=`$GREP "( |0)\.1139   ZANGMOM  \(unrel\.\)  ( |0)\.[ 0]+ ( |0)\.51782195" $log | wc -l`
+CRIT2=`$GREP "( |0)\.1139   YANGMOM  \(unrel\.\)  ( |0)\.[ 0]+ 1\.2780083" $log | wc -l`
+CRIT3=`$GREP "( |0)\.1139   XANGMOM  \(unrel\.\)  ( |0)\.[ 0]+ 1\.2780083" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`  
 CTRL[2]=3
 ERROR[2]="UNRELAXED CCSD VERDET CONSTANT NOT CORRECT"
 
 # CCSD (relaxed) Verdet constant components:
-CRIT1=`egrep "( |0)\.1139   ZANGMOM  \(relax\.\)  ( |0)\.[ 0]+ ( |0)\.51782195" $log | wc -l`
-CRIT2=`egrep "( |0)\.1139   YANGMOM  \(relax\.\)  ( |0)\.[ 0]+ 1\.2728313" $log | wc -l`
-CRIT3=`egrep "( |0)\.1139   XANGMOM  \(relax\.\)  ( |0)\.[ 0]+ 1\.2728313" $log | wc -l`
+CRIT1=`$GREP "( |0)\.1139   ZANGMOM  \(relax\.\)  ( |0)\.[ 0]+ ( |0)\.51782195" $log | wc -l`
+CRIT2=`$GREP "( |0)\.1139   YANGMOM  \(relax\.\)  ( |0)\.[ 0]+ 1\.2728313" $log | wc -l`
+CRIT3=`$GREP "( |0)\.1139   XANGMOM  \(relax\.\)  ( |0)\.[ 0]+ 1\.2728313" $log | wc -l`
 TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`  
 CTRL[3]=3
 ERROR[3]="RELAXED CCSD VERDET CONSTANT NOT CORRECT"
 
 # CCSD (LAO+relaxed) Verdet constant components:
-CRIT1=`egrep "( |0)\.1139   dh/dBZ   \(relax.\)  ( |0)\.[ 0]+ ( |0)\.25891097" $log | wc -l`
-CRIT2=`egrep "( |0)\.1139   dh/dBY   \(relax.\)  ( |0)\.[ 0]+ ( |0)\.75223520" $log | wc -l`
-CRIT3=`egrep "( |0)\.1139   dh/dBX   \(relax.\)  ( |0)\.[ 0]+ ( |0)\.75223520" $log | wc -l`
+CRIT1=`$GREP "( |0)\.1139   dh/dBZ   \(relax.\)  ( |0)\.[ 0]+ ( |0)\.25891097" $log | wc -l`
+CRIT2=`$GREP "( |0)\.1139   dh/dBY   \(relax.\)  ( |0)\.[ 0]+ ( |0)\.75223520" $log | wc -l`
+CRIT3=`$GREP "( |0)\.1139   dh/dBX   \(relax.\)  ( |0)\.[ 0]+ ( |0)\.75223520" $log | wc -l`
 TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3` 
 CTRL[4]=3
 ERROR[4]="LAO+RELAXED CCSD VERDET CONSTANT NOT CORRECT"

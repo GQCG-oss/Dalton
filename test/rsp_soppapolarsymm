@@ -1,0 +1,172 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+#
+#*# rsp_soppapolarsymm
+#*# ------------------
+#*# Molecule:         H2O
+#*# Wave Function:    MP2 (SOPPA)
+#*# Test Purpose:     Polarizability and C6/C8. Symmetry
+#
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > rsp_soppapolarsymm.mol <<%EOF%
+BASIS
+cc-pVDZ
+SOPPA singlet properties with symmetry.
+(test33)
+    2    2  X  Z
+        8.    1
+O     0.0 -0.2249058930 0.0
+        1.    1
+H     1.45235 0.899623 0.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > rsp_soppapolarsymm.dal <<%EOF%
+**GENERAL
+.RUN RESPONSE
+**INTEGRALS
+.DIPLEN
+.DIPVEL
+**WAVE FUNCTION
+.HF
+.MP2
+**RESPONSE
+.S0MIX
+.NOITRA
+.SOPPA
+*LINEAR
+.DIPLEN
+.FREQUE
+ 2
+0.0 0.0592
+*C6
+.DIPLEN
+.MAXMOM
+  6
+*END OF INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
+
+# Basis set
+CRIT1=`$GREP "O * 1 * 8 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10 * 40 * 24" $log | wc -l`
+CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
+CRIT2=`$GREP "1 * O * x * 0\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * \-0\.2249058930" $log | wc -l`
+CRIT4=`$GREP "3 * z * 0\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * H * 1 * x * 1\.4523500000" $log | wc -l`
+CRIT6=`$GREP "5 * y * 0\.8996230000" $log | wc -l`
+CRIT7=`$GREP "6 * z * 0\.0000000000" $log | wc -l`
+CRIT8=`$GREP "7 * H * 2 * x * \-1\.4523500000" $log | wc -l`
+CRIT9=`$GREP "8 * y * 0\.8996230000" $log | wc -l`
+CRIT10=`$GREP "9 * z * 0\.0000000000" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[2]=10
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.02568148[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.23066682[0-9][0-9]" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="ENERGIES NOT CORRECT"
+
+# Static polarizabilites
+CRIT1=`$GREP "\@YDIPLEN * YDIPLEN * 5\.500082089014(D|E)\+00" $log | wc -l`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
+ERROR[4]="STATIC POLARIZABILITIES NOT CORRECT"
+
+# Frequency dependant polarizabilites
+CRIT1=`$GREP "\@ * a\.u\.\: * 5\.9200000(D|E)\-02" $log | wc -l`
+CRIT2=`$GREP "\@YDIPLEN * YDIPLEN * 5\.560573579758(D|E)\+00" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[5]=4
+ERROR[5]="FREQUENCY DEPENDANT POLARIZABILITIES NOT CORRECT"
+
+# Static C6/C8 polarizabilities
+CRIT1=`$GREP "XDIPLEN * XDIPLEN * 7\.396690471[6-8]" $log | wc -l`
+CRIT2=`$GREP "YDIPLEN * YDIPLEN * 5\.500082062[1-3]" $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN * ZDIPLEN * 3\.206925436[4-6]" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[6]=2
+ERROR[6]="STATIC C6/C8 POLARIZABILITIES NOT CORRECT"
+
+# Cauchy moments
+CRIT1=`$GREP "0 * 3\.20692542544[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+00" $log | wc -l`
+CRIT2=`$GREP "2 * 1\.22887973610[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "4 * 1\.40520789516[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+02" $log | wc -l`
+CRIT4=`$GREP "6 * 1\.72246337697[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+03" $log | wc -l`
+CRIT5=`$GREP "8 * 2\.12013502164[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+04" $log | wc -l`
+CRIT6=`$GREP "10 * 2\.61060154318[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+05" $log | wc -l`
+CRIT7=`$GREP "12 * 3\.21466076253[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+06" $log | wc -l`
+CRIT8=`$GREP "14 * 3\.95850920792[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+07" $log | wc -l`
+CRIT9=`$GREP "16 * 4\.87448108535[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+08" $log | wc -l`
+CRIT10=`$GREP "18 * 6\.00240291546[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+09" $log | wc -l`
+CRIT11=`$GREP "20 * 7\.3913182473(4|5)[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+10" $log | wc -l`
+CRIT12=`$GREP "22 * 9\.10161917534[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+11" $log | wc -l`
+CRIT13=`$GREP "24 * 1\.12076721428[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+13" $log | wc -l`
+CRIT14=`$GREP "26 * 1\.38010514879[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+14" $log | wc -l`
+CRIT15=`$GREP "28 * 1\.69945212303[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+15" $log | wc -l`
+CRIT16=`$GREP "30 * 2\.09269382191[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+16" $log | wc -l`
+CRIT17=`$GREP "32 * 2\.57692898370[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+17" $log | wc -l`
+CRIT18=`$GREP "34 * 3\.173212878(7|8)(0|9)[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+18" $log | wc -l`
+CRIT19=`$GREP "36 * 3\.90747282437[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+19" $log | wc -l`
+CRIT20=`$GREP "38 * 4\.81163554302[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9](D|E)\+20" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
+		$CRIT19 \+ $CRIT20`
+CTRL[7]=20
+ERROR[7]="CAUCHY MOMENTS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > rsp_soppapolarsymm.check
+#######################################################################

@@ -1,0 +1,148 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+#
+#*# rsp_soppafcnosymm
+#*# -----------------
+#*# Molecule:         H2O
+#*# Wave Function:    MP2 (SOPPA)
+#*# Test Purpose:     Fermi-contact. No symmetry
+#
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > rsp_soppafcnosymm.mol <<%EOF%
+BASIS
+cc-pVDZ
+SOPPA calculation of Fermi contact contribution to
+spin-spin coupling constants. No symmetry. (test34)
+    2    0
+        8.    1
+O     0.0 -0.2249058930 0.0
+        1.    2
+H     1.45235 0.899623 0.0
+H    -1.45235 0.899623 0.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > rsp_soppafcnosymm.dal <<%EOF%
+**GENERAL
+.RUN RESPONSE
+**INTEGRALS
+.FC
+**WAVE FUNCTION
+.HF
+.MP2
+**RESPONSE
+.S0MIX
+.NOITRA
+.TRPFLG
+.SOPPA
+*LINEAR
+.PROPRT
+FC O  01
+.PROPRT
+FC H  02
+.PROPRT
+FC H  03
+*END OF INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
+
+# Integral setup
+CRIT1=`$GREP "Calculation of one\- and two\-electron Hamiltonian integrals\." $log | wc -l`
+CRIT2=`$GREP "The following one\-electron property integrals are calculated\:" $log | wc -l`
+CRIT3=`$GREP "\- overlap integrals" $log | wc -l`
+CRIT4=`$GREP "\- Fermi contact integrals" $log | wc -l`
+CRIT5=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
+CRIT6=`$GREP "In this run * precalculated two\-electron integrals are transformed" $log | wc -l`
+CRIT7=`$GREP "to P\-supermatrix elements\." $log | wc -l`
+CRIT8=`$GREP "Integrals for all indirect spin\-spin coupling tensors are calculated\." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8`
+CTRL[1]=8
+ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
+
+# Basis set
+CRIT1=`$GREP "O * 1 * 8 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT3=`$GREP "H * 1 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 3 * 10 * 40 * 24" $log | wc -l`
+CRIT5=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[2]=7
+ERROR[2]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
+CRIT2=`$GREP "1 * O * x * 0\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * \-0\.2249058930" $log | wc -l`
+CRIT4=`$GREP "3 * z * 0\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * H * x * 1\.4523500000" $log | wc -l`
+CRIT6=`$GREP "5 * y * 0\.8996230000" $log | wc -l`
+CRIT7=`$GREP "6 * z * 0\.0000000000" $log | wc -l`
+CRIT8=`$GREP "7 * H * x * \-1\.4523500000" $log | wc -l`
+CRIT9=`$GREP "8 * y * 0\.8996230000" $log | wc -l`
+CRIT10=`$GREP "9 * z * 0\.0000000000" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[3]=10
+ERROR[3]="GEOMETRY NOT READ CORRECTLY"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.025681483[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.230666825[0-9]" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="ENERGIES NOT CORRECT"
+
+# Fermi-contact contribution
+CRIT1=`$GREP "\@FC O * 01 * FC O * 01 * 1\.326991474634(D|E)\+04" $log | wc -l`
+CRIT2=`$GREP "\@FC O * 01 * FC H * 02 \-4\.268274556568(D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "\@FC O * 01 * FC H * 03 \-4\.268274556568(D|E)\+01" $log | wc -l`
+CRIT4=`$GREP "\@FC H * 02 * FC H * 02 * 5\.361469600318(D|E)\+01" $log | wc -l`
+CRIT5=`$GREP "\@FC H * 02 * FC H * 03 * 6\.382346558282(D|E)\-01" $log | wc -l`
+CRIT6=`$GREP "\@FC H * 03 * FC H * 03 * 5\.361469600319(D|E)\+01" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[5]=6
+ERROR[5]="FERMI-CONTACT NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > rsp_soppafcnosymm.check
+#######################################################################

@@ -1,58 +1,10 @@
-../dalton test1 test1
-../dalton test2 test2
-../dalton test3 test3
-#../dalton -m 20000000 test4 test4
-../dalton test5 test5
-../dalton test6 test6
-../dalton test7 test7
-../dalton test8 test8
-../dalton test9 test9
-../dalton test10 test10
-../dalton test11 test11
-../dalton test12 test12
-../dalton test13 test13
-../dalton test14 test14
-../dalton test15 test15
-../dalton test16 test16
-../dalton test17 test17
-../dalton test18 test18
-../dalton test19 test19
+TEST all
 ../dalton -D test20 test20
 ../dalton -D test20_1 test20
 ../dalton test20_2 test20
-../dalton test21 test21
-../dalton test22 test22
-../dalton test23 test23
-../dalton test24 test24
-../dalton test25 test25
-../dalton test26 test26
-../dalton test27 test27
-../dalton test28 test28
-../dalton test29 test29
 ../dalton test30 test30
 ../dalton -F test31 test31
 ../dalton -f test31_2 test31
-../dalton test32 test32
-../dalton test33 test33
-../dalton test34 test34
-../dalton test35 test35
-../dalton test36 test36
-../dalton test37 test37
-../dalton test38 test38
-../dalton test39 test39
-../dalton test40 test40
-../dalton test41 test41
-../dalton test42 test42
-../dalton test43 test43
-../dalton test44 test44
-../dalton test45 test45
-../dalton test46 test46
-../dalton test47 test47
-../dalton test48 test48
-../dalton test49 test49
-../dalton test50 test50
-../dalton test51 test51
-../dalton test52 test52
 ../dalton test53 test53
 ../dalton test54 test54
 ../dalton test55 test55

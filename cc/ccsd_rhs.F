@@ -4501,6 +4501,7 @@ C
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
       COMMON/SORTIO/LUAOIN(8),LUAODR(8)
 C
+      CALL QENTER('CCRDAO')
       ISYMD  = ISAO(IDELTA)
       ISYDIS = MULD2H(ISYMD,ISYMOP)
 C
@@ -4508,6 +4509,7 @@ C
 C
          NFILE = LUAOIN(ISYMD)
          IF (NFILE.LE.0) THEN
+           NFILE = 0
            CALL WOPEN2(NFILE,NAME(ISYMD),64,0)
            LUAOIN(ISYMD) = NFILE
          END IF
@@ -4528,7 +4530,7 @@ C
             PCKTID = PCKTID + SECOND() - DTIME
          END IF
 C
-         RETURN
+         GOTO 999
       ENDIF
 C
 C----------------------------
@@ -4565,12 +4567,14 @@ C
       KEND2 = KRBUF + LBUF
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
-         CALL QUIT('Insufiicient work space in CCRDAO')
+         CALL QUIT('Insuficcient work space in CCRDAO')
       ENDIF
 C
       CALL CCRDA1(XINT,WORK(KIBUF),WORK(KRBUF),IDELTA,IDEL2,
      *            WORK(KADR1),WORK(KADR2),IBIT1,IRECNR)
 C
+ 999  CONTINUE
+      CALL QEXIT('CCRDAO')
       RETURN
       END
 C  /* Deck ccrda1 */

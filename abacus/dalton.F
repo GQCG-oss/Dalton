@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: dalton.F,v 1.2 2001-02-12 18:17:51 vebjornb Exp $
+C$Id: dalton.F,v 1.3 2001-02-21 13:22:54 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/12 18:17:51  vebjornb
+First commit after CC merge
+
 Revision 1.2  2001/01/31 17:51:20  vebjornb
 Parallel modifications from pdahle, MPI and PVM
 
@@ -384,15 +387,15 @@ C
      &'If results obtained with this code are published, an',
      &'appropriate citation would be:',
      &' ',
-     &'T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,'//
-     &'H. Aagren,','K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,'//
-     &'P. Dahle, E.K. Dalskov,','T. Enevoldsen, B. Fernandez,'//
-     &'C. Haettig, K. Hald, A. Halkier,',
-     &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,',
-     &'H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden,'//
-     &' T. Saue,',
-     &'S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,'//
-     &'P.R. Taylor, and O. Vahtras:',
+     &'T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,',
+     &'H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,',
+     &'P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, ' //
+     &'C. Haettig,',
+     &'K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,',
+     &'S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,',
+     &'M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, ' //
+     &'B. Schimmelpfennig,',
+     &'K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:',
      &'"Dalton release 1.2 (2001), an electronic structure program"'
 C
 C     Stamp date and time and hostname to output

@@ -70,7 +70,7 @@ myprint(){
 #########################################################################
 help=""
 keep="false"
-DALTON=dalton
+DALTON="../dalton"
 paramlist=""
 reftest=""
 listing="LISTING"

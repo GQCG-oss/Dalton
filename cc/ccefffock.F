@@ -105,9 +105,7 @@ C
       CHARACTER*8 LABEL, LABELH, FILFCK
       CHARACTER*5 MODEL
       CHARACTER*3 LSTRLX
-
       INTEGER LWORK
-
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL RE2DAR, RELCO1, ECCSD
@@ -154,8 +152,9 @@ C
       INTEGER KEND2, LWRK2, NFOCK0LBL, IDLST0, ISYMOPR, ISYFCK, MXCOMP
       INTEGER NVEDUM, MODDUM, NFRL, NII, ICON, ISDEN, IOPER, IORDER
       INTEGER NFOCKLBL, IROPER, IDXRLX
-
       INTEGER IR1TAMP, ILSTSYM
+C
+      CALL QENTER('CCEFFFOCK')
 C
 C------------------------------
 C     check if anything to do:
@@ -164,12 +163,12 @@ C
       LANYTHING = .FALSE.
       LFOCK     = .FALSE.
       LONLYEXP  = .FALSE.
-
+C
       IF (IOPREL.GT.0) THEN
          LANYTHING = .TRUE.
          LONLYEXP  = .TRUE.
       END IF
-
+C
       IF (.NOT.LONLYEXP) THEN
         IF (I1DXORD.EQ.0) THEN
           DO IDLST = 1, NEXPFCKLBL
@@ -181,16 +180,16 @@ C
           IF (N1DXFLBL.GT.0) LFOCK     = .TRUE.
         END IF
       END IF
-
-      IF (.NOT. LANYTHING) RETURN
-
+C
+      IF (.NOT. LANYTHING) GOTO 999
+C
       IF (LFOCK .AND. (.NOT.RELORB)) THEN
         WRITE(LUPRI,*) 
      *     'Calculation of eff. Fock mat. needs RELORB = .TRUE.'
         CALL QUIT(
      *     'Calculation of eff. Fock mat. needs RELORB = .TRUE.')
       END IF
-
+C
       IF (LOCDBG) THEN
          WRITE(LUPRI,*) 'Entering CCEFFFOCK with I1DXORD = ',I1DXORD
       END IF
@@ -249,9 +248,9 @@ C
         NALLAIM = MAX(NALLAIM,NALLAI(ISYM))
         NGLMDTM = MAX(NGLMDTM,NGLMDT(ISYM))
       END DO
-
+C
       LENBAR = 2*NT1AMX+NMATIJ(1)+NMATAB(1)+2*NT1FRO(1)+2*NCOFRO(1)
-
+C
       KEND0 = 1
 C
 C---------------------------------------------------------------------
@@ -281,9 +280,9 @@ C
          KEND0    = KLAMDHQ2 + NGLMDTM  
         END IF
       END IF
-
+C
       LWRK0 = LWORK - KEND0
-
+C
 C
 C------------------------------------------------------------------
 C     if we are going to calculate one-index transformed effective
@@ -296,7 +295,7 @@ C
          CALL RDONEL('OVERLAP ',.TRUE.,WORK(KEND1),NBAST)
          CALL CCSD_SYMSQ(WORK(KEND1),ISYM0,WORK(KOVERLP))
       END IF 
-
+C
 *======================================================================*
 * do model specific initializations for calculating the densities:
 *======================================================================*
@@ -349,7 +348,7 @@ C-------------------------------------------
 C        Read zero'th order zeta amplitudes.
 C-------------------------------------------
 C
-         LULAM = 0
+         LULAM = -765
          CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LULAM)
@@ -1960,6 +1959,8 @@ C
      *              TIMONE
       ENDIF
 C
+ 999  CONTINUE
+      CALL QEXIT('CCEFFFOCK')
       RETURN
   165 CALL QUIT('Error reading CCTWODEN')
       END

@@ -57,6 +57,8 @@ C
 #include <cclr.h>
 #include <ccfro.h>
 C
+      CALL QENTER('CC_GRAD0')
+C
 C------------------------------
 C     Initialization of result.
 C------------------------------
@@ -152,7 +154,6 @@ C        Read zero'th order zeta amplitudes.
 C-------------------------------------------
 C
          IF (LULAM .LE. 0) THEN
-           LULAM = 0
            CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ',
      *               'UNFORMATTED',IDUMMY,.FALSE.)
          END IF
@@ -322,7 +323,7 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         LULAM = 0
+         LULAM = -243
          CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LULAM)
@@ -470,6 +471,7 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
+         LUBAR0 = -904
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LUBAR0)
@@ -1705,6 +1707,7 @@ C     restorte DIRECT flag
 C
       DIRECT = DIRSAV
 C
+      CALL QEXIT('CC_GRAD0')
       RETURN
   165 CALL QUIT('Error reading CCTWODEN')
       RETURN
