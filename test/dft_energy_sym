@@ -26,7 +26,7 @@ dalton='**DALTON
 .DIRECT 
 **WAVE FUNCTIONS
 .DFT
-GGAKey hf=0.5 dirac=0.5 pz81=1
+GGAKey hf=0.5 slater=0.5 pz81=1
 **END OF 
 '
 
