@@ -188,9 +188,7 @@ C
          IF (DFTADD) THEN
             CALL DZERO(FDFTD,3*N2BASX)
             IF (IATOM.GT.0) THEN
-               CALL DFTHED(IATOM,FCD(1,1),FCD(1,2),FCD(1,3),
-     &              FDFTD(1,1),FDFTD(1,2),FDFTD(1,3),
-     &              WORK,LWORK,IPRINT)
+               CALL DFTHED(IATOM,FCD,FDFTD,WORK,LWORK,IPRINT)
             ELSE IF (IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
                CALL DFTBRHS(FCD,WORK,LWORK,IPRINT)
             END IF

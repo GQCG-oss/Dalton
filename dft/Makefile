@@ -11,12 +11,11 @@ FFILES = \
         dft_exp.F    \
         dft_gridLL.F \
         dft_mag.F    \
-        dft_aux.F    \
         dft_grad.F   \
+        dft_hes.F    \
+        dft_aux.F    \
         dft_int.F    \
-        dft_inp.F    \
-        dft_hestat.F \
-        dft_hesfd.F
+        dft_inp.F    
 
 #        dft_ac.F     dft_old.F
 
