@@ -597,7 +597,12 @@ C
       ELSE IF (NASHT.EQ.1) THEN 
 C  one-electron system
          NDMAT = 2
-         NFMAT = 0
+         IF (DFTRUN) THEN
+            NFMAT = 2
+         ELSE
+            NFMAT = 0
+         END IF
+         IOFFAO = 1
       ELSE
 C        DCAO zero matrix, only FVAO contribution
          NDMAT = 2

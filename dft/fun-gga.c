@@ -56,18 +56,18 @@ static void gga_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
 static void gga_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
 
 #define LDA_FUNCTIONAL(name,read) { (name), \
-    fun_false, (read), NULL, gga_energy, gga_first, gga_second, \
-    gga_third }
+    fun_false, (read), NULL, lda_energy, lda_first, lda_second, \
+    lda_third }
 
 #define GGA_FUNCTIONAL(name,read) { (name), \
     gga_isgga, (read), gga_report, gga_energy, gga_first, gga_second, \
     gga_third }
 
-Functional XAlphaFunctional = LDA_FUNCTIONAL("XAlpha", xalpha_read);
+Functional XAlphaFunctional = GGA_FUNCTIONAL("XAlpha", xalpha_read);
 Functional LDAFunctional =    LDA_FUNCTIONAL("LDA",     lda_read);
 /* SVWN5 aliases LDA */
 Functional SVWN5Functional =  LDA_FUNCTIONAL("SVWN5",   lda_read);
-Functional SVWN3Functional =  LDA_FUNCTIONAL("SVWN3",   ldagauss_read);
+Functional SVWN3Functional =  GGA_FUNCTIONAL("SVWN3",   ldagauss_read);
 Functional B3LYPFunctional =  GGA_FUNCTIONAL("B3LYP",   b3lyp_read);
 Functional B3LYPGaussFunctional = GGA_FUNCTIONAL("B3LYP-G", b3lypgauss_read);
 Functional B3P86Functional =  GGA_FUNCTIONAL("B3P86",   b3p86_read);
