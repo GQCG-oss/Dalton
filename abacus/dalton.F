@@ -1,5 +1,5 @@
 C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
@@ -11,9 +11,9 @@ C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
 C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
 C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
-C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Aagren. 
+C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -66,9 +66,10 @@ C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
 C...   H. Heiberg, T. Helgaker, H. Hettema, H. J. Aa. Jensen, 
 C...   D. Jonsson, P. Joergensen, S. Kirpekar, W. Klopper, R.Kobayashi,
 C...   H. Koch, O. B. Lutnaes, K. V. Mikkelsen, P. Norman, J.Olsen,
-C...   M. J. Packer, T. B. Pedersen, Z. Rinkevicius T. A. Ruden, 
-C...   K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor. 
+C...   M. J. Packer, T. B. Pedersen, Z. Rinkevicius, E. Rudberg,
+C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue,
+C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C
 C     This note is not to be removed or altered.
 C
@@ -348,6 +349,8 @@ C
      &                      //'Sweden     ',
      *  'Zilvinas Rinkevicius,     KTH Stockholm,                '
      &                      //'Sweden     ',
+     *  'Elias Rudberg,            KTH Stockholm,                '
+     &                      //'Sweden     ',
      *  'Torgeir A. Ruden,         University of Oslo,           '
      &                      //'Norway     ',
      *  'Kenneth Ruud,             University of Tromsoe,        '
@@ -370,7 +373,7 @@ C
      &                      //'Sweden     ',
      *  'David J. Wilson,          University of Oslo,           '
      &                      //'Norway     ',
-     *  'Hans Aagren,              KTH Stockholm,                '
+     *  'Hans Agren,              KTH Stockholm,                '
      &                      //'Sweden     '
 C
 C        Changed format (WK/UniKA/04-11-2002).

@@ -1,15 +1,19 @@
-C...   Copyright (c) 1997 by the authors of Dalton (see below).
+C
+C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, an ab initio electronic structure program, Release 1.0
-C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
-C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
-C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
-C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,
-C...   P. R. Taylor, and O. Vahtras"
-C...
+C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
+C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
+C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -26,6 +30,7 @@ C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
  
  
 C  /* Deck sirloc */
