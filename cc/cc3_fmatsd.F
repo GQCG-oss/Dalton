@@ -78,7 +78,7 @@ C
 
       INTEGER   ISYRES,ISYCTR,ISYMY,ISINT1,ISINT2,ISINT1Y,ISINT2Y
       INTEGER   ISYFCKY,ISYMD,ISYCKB,ISCKB1,ISCKB2,ISCKB2Y,ISYMB
-      INTEGER   ISYMBD,ISCKIJ,ISWMAT,ISYCKD,ISYALJB,ISYALJC,ISYMIM
+      INTEGER   ISYMBD,ISWMAT,ISYALJB,ISYALJC,ISYMIM
       INTEGER   ISYMT2
       INTEGER   IDLSTL,IDLSTY
       INTEGER   KRBJIA,KLAMP0,KLAMH0,KFOCKD,KT2TP,KL2TP
@@ -110,12 +110,12 @@ COMMENT COMENT
 #if defined (SYS_CRAY)
       REAL OMEGA1(*),OMEGA2(*),OMEGA1EFF(*),OMEGA2EFF(*)
       REAL WORK(*)
-      REAL FREQY
+      REAL FREQY,FREQL,FREQYML
       REAL XNORMVAL,DDOT
 #else
       DOUBLE PRECISION  OMEGA1(*),OMEGA2(*),OMEGA1EFF(*),OMEGA2EFF(*)
       DOUBLE PRECISION  WORK(*)
-      DOUBLE PRECISION  FREQY
+      DOUBLE PRECISION  FREQY,FREQL,FREQYML
       DOUBLE PRECISION  XNORMVAL,DDOT
 #endif
 C
@@ -146,14 +146,18 @@ C------------------------------------------------------------
 C     some initializations:
 C------------------------------------------------------------
 C
-      ISYMT2 = ISYM0
- 
       IF (LISTL(1:3).EQ.'L0 ') THEN
         ISYCTR = ISYM0
+        FREQL  = 0.0D0
+      ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+        ISYCTR = ILSTSYM(LISTL,IDLSTL)
+        FREQL  = EIGVAL(IDLSTL)
       ELSE
         ! ups, probably higher-order response, not yet implemented here
         CALL QUIT('Unknown type of left vector in CC3_FMATSD.')
       END IF
+
+      ISYMT2 = ISYCTR
 
       IF (LISTY(1:3).EQ.'R1 ') THEN
 
@@ -169,6 +173,9 @@ C
       ELSE
         CALL QUIT('Unkown/Illegal list in CC3_FMATSD')
       END IF
+C
+      !frequency asscociated with the L1 and M1 and N2, respectivly.
+      FREQYML = FREQY - FREQL
 C
 C-------------------------------------------------------
 C     initial allocations, orbital energy, fock matrix and T2 and L2 :
@@ -605,9 +612,8 @@ C
             DO ISYMB = 1,NSYM
 
                ISYMBD  = MULD2H(ISYMD,ISYMB)
-               ISCKIJ  = MULD2H(ISYMBD,ISYCTR)
-               ISWMAT  = MULD2H(ISCKIJ,ISYFCKY)
-               ISYCKD  = MULD2H(ISYM0,ISYMB)
+               ISYMIM = MULD2H(ISYFCKY,ISYMT2)
+               ISWMAT  = MULD2H(ISYMIM,ISYMBD)
                ISYALJB = MULD2H(ISYMT2,ISYMB)
                ISYALJC = MULD2H(ISYMT2,ISYMD)
 
@@ -636,7 +642,7 @@ C
 
 C              IF (LOCDBG) THEN
 C                WRITE(LUPRI,*) 'Norm of DIA  ',
-C    *              DDOT(NCKIJ(ISCKIJ),WORK(KDIAGW),1,WORK(KDIAGW),1)
+C    *              DDOT(NCKIJ(ISWMAT),WORK(KDIAGW),1,WORK(KDIAGW),1)
 C              END IF
 C
 C              -----------------------
@@ -675,13 +681,12 @@ C     Divide by the energy difference and
 C     remove the forbidden elements
 C------------------------------------------------
 C
-                  CALL WBD_DIA(B,ISYMB,D,ISYMD,-FREQY,
+                  CALL WBD_DIA(B,ISYMB,D,ISYMD,-FREQYML,
      *                         ISWMAT,WORK(KWMAT),
      *                         WORK(KDIAGW),WORK(KFOCKD))
 C
-                  CALL T3_FORBIDDEN(WORK(KWMAT),ISYFCKY,ISYMB,B,ISYMD,D)
+                  CALL T3_FORBIDDEN(WORK(KWMAT),ISYMIM,ISYMB,B,ISYMD,D)
 C
-                  ISYMIM = MULD2H(ISWMAT,ISYMBD)
                   CALL CC3_W3_OMEGA1(OMEGA1EFF,ISYRES,WORK(KWMAT),
      *                               WORK(KTMAT),ISYMIM,
      *                               WORK(KOIOOOO),WORK(KOIOVVO),
@@ -1389,6 +1394,8 @@ C
 C     T2TP(alkB) put in WORK(akl)
 C
       KOFF = IT2SP(ISYALK,ISYMB) + NCKI(ISYALK)*(B - 1) + 1
+
+
       CALL CC_GATHER(NCKI(ISYALK),WORK(KALK),T2TP(KOFF),INDAJLB)
 C
       DO ISYMI = 1,NSYM

@@ -80,7 +80,7 @@ fi
 
 
 #SCF, MP2, CCSD and CCSD(T) energies of 0 iteration:
-CRIT1=`$GREP "Final    HF energy: * -76\.026804804" $log | wc -l`
+CRIT1=`$GREP "Final *HF energy: * -76\.026804804" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -76\.228449905" $log | wc -l`
 CRIT3=`$GREP "Total CCSD  energy: * -76\.238013267" $log | wc -l`
 CRIT4=`$GREP "Total energy CCSD\(T\): * -76\.241049324" $log | wc -l`
@@ -96,7 +96,7 @@ ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
 
 
 #SCF, MP2, CCSD and CCSD(T) energies of 1 iteration:
-CRIT1=`$GREP "Final    HF energy: * -76\.026439905" $log | wc -l`
+CRIT1=`$GREP "Final *HF energy: * -76\.026439905" $log | wc -l`
 CRIT2=`$GREP "Total RSTAR energy: * -76\.237666054" $log | wc -l`
 CRIT3=`$GREP "Total CCSD  energy: * -76\.238170068" $log | wc -l`
 CRIT4=`$GREP "Total energy CCSD\(T\): * -76\.241243949" $log | wc -l`

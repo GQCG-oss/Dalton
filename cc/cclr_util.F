@@ -821,7 +821,7 @@ C
 #include <cclr.h>
 C
       DIMENSION C1AM(NTAMP,NC1VEC),C2AM(NTAMP,NC2VEC)
-      DIMENSION C12AM(NTAMP,NGAMMA(1))
+      DIMENSION C12AM(NTAMP,*)
 C
 C--------------------------------------
 C     Put up the required unit vectors.

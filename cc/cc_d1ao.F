@@ -34,7 +34,8 @@ C
 #include <single.h>
 C
 C  /* Deck cc_d1ao */
-      SUBROUTINE CC_D1AO(AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,ILLNR,NO)
+      SUBROUTINE CC_D1AO(AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,ILLNR,NO,
+     &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
 C
 C     Written by Asger Halkier January 1996.
 C
@@ -45,6 +46,8 @@ C              density matrix and returning it backtransformed
 C              to AO-basis in AODEN!
 C
 C     Current models: MP2, CCD, CCSD, CCSD(T), CC3
+C
+C     NO = .true.  compute natural occupation numbers
 C
 C     OC: 15-4-1997: general llist.
 C
@@ -78,8 +81,9 @@ C
 C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*)
-      CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
-      CHARACTER*6 FNDPTIA2
+      CHARACTER*(*) FNDPTIA, FNDPTAB, FNDPTIJ, FNDPTIA2
+C     CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
+C     CHARACTER*6 FNDPTIA2
       LOGICAL NO
 C
 C----------------------------------------
@@ -330,37 +334,30 @@ C
             ENDIF
 C
             LUPTIA = 0
-            FNDPTIA  = 'DPTIA'
             CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
-            IOFF = 1
+            IOFF = 1 + NT1AMX*(ILLNR-1)
             CALL GETWA2(LUPTIA,FNDPTIA,WORK(KEND1),IOFF,NT1AMX)
             CALL WCLOSE2(LUPTIA,FNDPTIA,'KEEP')
             CALL DAXPY(NT1AMX,1.0D0,WORK(KEND1),1,WORK(KONEIA),1)
 C
             LUPTAB = 0
-            FNDPTAB  = 'DPTAB'
             CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
-            IOFF = 1
-            CALL GETWA2(LUPTAB,FNDPTAB,WORK(KEND1),IOFF,
-     *                  NMATAB(1))
+            IOFF = 1 + NMATAB(1)*(ILLNR-1)
+            CALL GETWA2(LUPTAB,FNDPTAB,WORK(KEND1),IOFF,NMATAB(1))
             CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
             CALL DAXPY(NMATAB(1),1.0D0,WORK(KEND1),1,WORK(KONEAB),1)
 C
             LUPTIJ = 0
-            FNDPTIJ  = 'DPTIJ'
             CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
-            IOFF = 1
-            CALL GETWA2(LUPTIJ,FNDPTIJ,WORK(KEND1),IOFF,
-     *                  NMATIJ(1))
+            IOFF = 1 + NMATIJ(1)*(ILLNR-1)
+            CALL GETWA2(LUPTIJ,FNDPTIJ,WORK(KEND1),IOFF,NMATIJ(1))
             CALL WCLOSE2(LUPTIJ,FNDPTIJ,'KEEP')
             CALL DAXPY(NMATIJ(1),1.0D0,WORK(KEND1),1,WORK(KONEIJ),1)
 C
             LUPTIA2 = 0
-            FNDPTIA2 = 'DPTIA2'
             CALL WOPEN2(LUPTIA2,FNDPTIA2,64,0)
-            IOFF = 1
-            CALL GETWA2(LUPTIA2,FNDPTIA2,WORK(KEND1),IOFF,
-     *                  NT1AMX)
+            IOFF = 1 + NT1AMX*(ILLNR-1)
+            CALL GETWA2(LUPTIA2,FNDPTIA2,WORK(KEND1),IOFF,NT1AMX)
             CALL WCLOSE2(LUPTIA2,FNDPTIA2,'KEEP')
             CALL DAXPY(NT1AMX,1.0D0,WORK(KEND1),1,WORK(KONEIA),1)
          ENDIF

@@ -30,7 +30,7 @@ O     0.0000000000000000  0.0000000000000000 -.91397310000000000       *
 #######################################################################
 cat > Vlaodirect_co__1.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
 .DIPLEN
@@ -84,7 +84,7 @@ ZDIPLEN XDIPLEN dh/dBY
 #######################################################################
 cat > Vlaodirect_co__2.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
 .DIPLEN

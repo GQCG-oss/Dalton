@@ -189,6 +189,16 @@ C
      *                   LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUDELD,FNDELD,
      *                   WORK(KEND1),LWRK1)
 
+        IF (IPRINT .GT. 55) THEN
+          WRITE(LUPRI,*)'DAB density after CC3_XI_DEN '
+          CALL PRINT_MATAB(WORK(KDAB),ISYML)
+          WRITE(LUPRI,*)'DIJ density after CC3_XI_DEN '
+          CALL PRINT_MATIJ(WORK(KDIJ),ISYML)
+          WRITE(LUPRI,*)'DIA density after CC3_XI_DEN '
+          CALL PRINT_MATAI(WORK(KDIA),ISYML)
+        END IF
+
+
 C
              CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
              CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
@@ -357,6 +367,7 @@ C
 #include <ccr1rsp.h>
 #include <cclrmrsp.h>
 #include <ccexci.h>
+#include <ccn2rsp.h>
 
 C
       INTEGER ISYM0
@@ -410,6 +421,7 @@ C
       INTEGER   IRREP,IERR
       INTEGER   IR1TAMP
       INTEGER   ISYM
+      INTEGER ISYALJLE, ISYALJ2LE, KINDEXLE, KINDEX2LE
 C
 C
 COMMENT COMENT
@@ -442,9 +454,9 @@ C------------------------------------------------------------
 C     some initializations:
 C------------------------------------------------------------
 C
-      LISTL = 'L0 '
-      IDLSTL = 0 
-      ISYCTR = ISYM0
+*     LISTL = 'L0 '
+*     IDLSTL = 0 
+*     ISYCTR = ISYM0
 
       IF (LISTBY(1:3).EQ.'L1 ') THEN
 
@@ -464,6 +476,17 @@ C
         ! defined in ccl1rsp.h
         ISYMY  = ISYLRT(IDLSTY)
         FREQY  = FRQLRT(IDLSTY)
+    
+         !get the associated L0 list
+         LISTL = 'L0 '
+         IDLSTL = 0 
+         ISYCTR = ISYM0
+         IF (FREQ .NE. FREQY) THEN
+            WRITE(LUPRI,*) 'FREQ = ', FREQ
+            WRITE(LUPRI,*) 'FREQY = ', FREQY
+            CALL QUIT('Frequency mismatch in CC3_XI_DEN(0)')
+         END IF
+C
       ELSE IF (LISTBY(1:3).EQ.'M1 ') THEN
 
         ISYMBY = ISYLRM(IDLSTBY)
@@ -478,6 +501,18 @@ Cold
         ! get symmetry and frequency from common blocks
         ISYMY   = ILSTSYM(LISTY,IDLSTY)
         FREQY  = FREQ
+
+         !get the associated L0 list
+         LISTL = 'L0 '
+         IDLSTL = 0 
+         ISYCTR = ISYM0
+C
+         IF (FREQ .NE. FREQY) THEN
+            WRITE(LUPRI,*) 'FREQ = ', FREQ
+            WRITE(LUPRI,*) 'FREQY = ', FREQY
+            CALL QUIT('Frequency mismatch in CC3_XI_DEN(1)')
+         END IF
+
       ELSE IF (LISTBY(1:3).EQ.'LE ') THEN
         ISYMBY = ILSTSYM(LISTBY,IDLSTBY)
         FREQ  = -EIGVAL(IDLSTBY)
@@ -488,6 +523,11 @@ Cold
         ! get symmetry and frequency from common blocks
         ISYMY   = 1
         FREQY  = FREQ
+    
+         !get the associated L0 list WHICH IS NOT REALLY USED IN THIS CASE
+         LISTL = 'L0 '
+         IDLSTL = 0
+         ISYCTR = ISYM0
 ***************************
 *       IMPORTANT !!!
 ***************************
@@ -498,15 +538,37 @@ Cold
         ! and JUMPED places where files are read in using ISYMY
         ! or LISTY.
 ***************************
+         IF (FREQ .NE. FREQY) THEN
+            WRITE(LUPRI,*) 'FREQ = ', FREQ
+            WRITE(LUPRI,*) 'FREQY = ', FREQY
+            CALL QUIT('Frequency mismatch in CC3_XI_DEN(2)')
+         END IF
+      ELSE IF (LISTBY(1:3).EQ.'N2 ') THEN
+         ISYMBY = ILSTSYM(LISTBY,IDLSTBY)
+         FREQ   = FRQIN2(IDLSTBY) + FRQFN2(IDLSTBY)
+         LABELB = '- none -'
+
+        ! LISTY has to be RE when LISTBY is N2 !!!
+        LISTY  = 'RE '
+        IDLSTY = IFN2(IDLSTBY)
+        ! get symmetry and frequency from common blocks
+        ISYMY   = ILSTSYM(LISTY,IDLSTY)
+        FREQY  = FRQFN2(IDLSTBY)
+
+       !get the associated zero-order left list 
+        LISTL = 'LE '
+        IDLSTL = IIN2(IDLSTBY)
+        ISYCTR = ILSTSYM(LISTL,IDLSTL)
+
       ELSE
         CALL QUIT('Unkown list in CC3_XI_DEN')
       END IF
 C
-      IF (FREQ .NE. FREQY) THEN
-         WRITE(LUPRI,*) 'FREQ = ', FREQ
-         WRITE(LUPRI,*) 'FREQY = ', FREQY
-         CALL QUIT('Frequency mismatch in CC3_XI_DEN')
-      END IF
+c     IF (FREQ .NE. FREQY) THEN
+c        WRITE(LUPRI,*) 'FREQ = ', FREQ
+c        WRITE(LUPRI,*) 'FREQY = ', FREQY
+c        CALL QUIT('Frequency mismatch in CC3_XI_DEN')
+c     END IF
 C
 C-------------------------------------------------------
 C     initial allocations, orbital energy, fock matrix and T2 and L2 :
@@ -559,7 +621,7 @@ C---------------------------------------------------------------------
 C
       IF (LISTBY(1:3).EQ.'L1 ') THEN
          CALL GET_FOCKX(WORK(KFOCKY),LABELB,IDLSTBY,ISYMBY,WORK(KLAMP0),
-     *                  WORK(KLAMH0),WORK(KEND1),LWRK1)
+     *                  ISYM0,WORK(KLAMH0),ISYM0,WORK(KEND1),LWRK1)
       END IF
 C
 C-------------------------------------
@@ -592,6 +654,14 @@ C
       IOPT  = 3
       CALL GET_T1_T2(IOPT,.FALSE.,WORK(KL1BY),WORK(KL2TPBY),LISTBY,
      *               IDLSTBY,ISYMBY,WORK(KEND1),LWRK1)
+
+*     write(lupri,*)'nrm KL1BY, LISTBY,IDLSTBY ',
+*    * LISTBY,IDLSTBY,
+*    * ddot(NT1AM(ISYMBY),WORK(KL1BY),1,WORK(KL1BY),1)
+
+*     write(lupri,*)'nrm KL2TPBY, LISTBY,IDLSTBY ',
+*    * LISTBY,IDLSTBY,
+*    * ddot(NT2SQ(ISYMBY),WORK(KL2TPBY),1,WORK(KL2TPBY),1)
 C
 C---------------------------------------------------------------
 C     Read canonical orbital energies and delete frozen orbitals 
@@ -745,7 +815,8 @@ C     Construct occupied integrals which are required to calculate
 C     t3bar_Y multipliers                                             
 C-----------------------------------------------------------------
 C
-      CALL INTOCC_T3BARX(LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,ISINT1,
+      CALL INTOCC_T3BARX(.FALSE.,
+     *                   LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,ISINT1,
      *                   WORK(KLAMHY),ISYMY,ISINT1Y,WORK(KW3BXOG1),
      *                   WORK(KW3BXOL1),WORK(KW3BXOGX1),WORK(KW3BXOLX1),
      *                   WORK(KEND1),LWRK1)
@@ -844,7 +915,8 @@ C           Construct virtual integrals (for fixed D) which are required
 C           to calculate t3bar_X multipliers
 C-----------------------------------------------------------------------
 C
-            CALL INTVIR_T3BARX_D(ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
+            CALL INTVIR_T3BARX_D(.FALSE.,
+     *                           ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                           LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
      *                           WORK(KW3BXVDGX1),WORK(KW3BXVDG1),
      *                           WORK(KW3BXVDGX2),WORK(KW3BXVDG2),
@@ -857,10 +929,17 @@ C
 
                ISYALJ  = MULD2H(ISYMB,ISYM0)
                ISYALJ2 = MULD2H(ISYMD,ISYM0)
+C
+               IF (LISTBY(1:3).EQ.'N2 ') THEN
+                  ISYALJLE  = MULD2H(ISYMB,ISYCTR)
+                  ISYALJ2LE = MULD2H(ISYMD,ISYCTR)
+               END IF
+C
                ISYALJBY  = MULD2H(ISYMB,ISYMBY)
                ISYALJDY = MULD2H(ISYMD,ISYMBY)
                ISYMBD  = MULD2H(ISYMD,ISYMB)
-               ISCKIJ  = MULD2H(ISYMBD,ISYCTR)
+c              ISCKIJ  = MULD2H(ISYMBD,ISYCTR)
+               ISCKIJ  = MULD2H(ISYMBD,ISYM0)
                ISWMAT  = MULD2H(ISCKIJ,ISYMBY)
                ISYCKD  = MULD2H(ISYM0,ISYMB)
 
@@ -880,6 +959,16 @@ C              Can use kend3 since we do not need the integrals anymore.
                KWMAT      = KT3MAT    + NCKIJ(ISCKIJ)
                KEND4      = KWMAT     + NCKIJ(ISWMAT)
                LWRK4      = LWORK     - KEND4
+C
+               IF (LISTBY(1:3).EQ.'N2 ') THEN
+                  KINDEXLE = KEND4
+                  KINDEX2LE = KINDEXLE + (NCKI(ISYALJLE)  - 1)/IRAT + 1
+                  KEND4     = KINDEX2LE + (NCKI(ISYALJ2LE) - 1)/IRAT + 1
+                  LWRK4      = LWORK     - KEND4
+               ELSE 
+                  KINDEXLE = KINDEX
+                  KINDEX2LE = KINDEX2
+               END IF
 
                KS3MAT   = KEND4
                KU3MAT   = KS3MAT  + NCKIJ(ISCKIJ)
@@ -938,7 +1027,12 @@ C
                CALL CC3_INDEX(WORK(KINDEX2),ISYALJ2)
                CALL CC3_INDEX(WORK(KINDEXBY),ISYALJBY)
                CALL CC3_INDEX(WORK(KINDEXDY),ISYALJDY)
-
+C
+               IF (LISTBY(1:3).EQ.'N2 ') THEN
+                  CALL CC3_INDEX(WORK(KINDEXLE),ISYALJLE)
+                  CALL CC3_INDEX(WORK(KINDEX2LE),ISYALJ2LE)
+               END IF
+C
                DO B = 1,NVIR(ISYMB)
 C
                   CALL DZERO(WORK(KWMAT),NCKIJ(ISWMAT))
@@ -1003,30 +1097,30 @@ C---------------------------------------------------------
 C                 Get T3bar_BD multipliers (using S and U)
 C---------------------------------------------------------
 C
-                  CALL GET_T3BAR0_BD(ISYCTR,WORK(KL1AM),ISYCTR,
-     *                               WORK(KL2TP),ISYCTR,WORK(KTMAT),
-     *                               WORK(KFCKBA),WORK(KFOCKD),
-     *                               WORK(KDIAG),WORK(KXIAJB),ISYM0,
-     *                               ISYM0,WORK(KINDSQ),LENSQ,
-     *                               WORK(KSMAT2),WORK(KT3BVDG1),
-     *                               WORK(KT3BVDG2),WORK(KT3BVDL1),
-     *                               WORK(KT3BVDL2),WORK(KT3BOG1),
-     *                               WORK(KT3BOL1),WORK(KINDEX),
-     *                               WORK(KSMAT4),WORK(KT3BVBG1),
-     *                               WORK(KT3BVBG2),WORK(KT3BVBL1),
-     *                               WORK(KT3BVBL2),WORK(KINDEX2),
-     *                               WORK(KUMAT2),WORK(KT3BVDG3),
-     *                               WORK(KT3BVDL3),WORK(KT3BOG2),
-     *                               WORK(KT3BOL2),WORK(KUMAT4),
-     *                               WORK(KT3BVBG3),WORK(KT3BVBL3),
-     *                               ISYMB,B,ISYMD,D,ISCKIJ,
-     *                               WORK(KEND5),LWRK5)
+                  IF (LISTBY(1:3).EQ.'L1 ') THEN
+                   CALL GET_T3BAR0_BD(ISYCTR,WORK(KL1AM),ISYCTR,
+     *                                WORK(KL2TP),ISYCTR,WORK(KTMAT),
+     *                                WORK(KFCKBA),WORK(KFOCKD),
+     *                                WORK(KDIAG),WORK(KXIAJB),ISYM0,
+     *                                ISYM0,WORK(KINDSQ),LENSQ,
+     *                                WORK(KSMAT2),WORK(KT3BVDG1),
+     *                                WORK(KT3BVDG2),WORK(KT3BVDL1),
+     *                                WORK(KT3BVDL2),WORK(KT3BOG1),
+     *                                WORK(KT3BOL1),WORK(KINDEX),
+     *                                WORK(KSMAT4),WORK(KT3BVBG1),
+     *                                WORK(KT3BVBG2),WORK(KT3BVBL1),
+     *                                WORK(KT3BVBL2),WORK(KINDEX2),
+     *                                WORK(KUMAT2),WORK(KT3BVDG3),
+     *                                WORK(KT3BVDL3),WORK(KT3BOG2),
+     *                                WORK(KT3BOL2),WORK(KUMAT4),
+     *                                WORK(KT3BVBG3),WORK(KT3BVBL3),
+     *                                ISYMB,B,ISYMD,D,ISCKIJ,
+     *                                WORK(KEND5),LWRK5)
 C
-COMMENT COMMENT COMMENT
 c      call sum_pt3(work(KTMAT),isymb,b,isymd,d,
 c    *             ISYM0,work(kx3am),4)
-COMMENT COMMENT COMMENT
 C
+                  END IF
 C
 C----------------------------------------------------
 C                 Get T3barX_BD multipliers (using W)
@@ -1042,7 +1136,8 @@ c     call dzero(WORK(KW3BXVDG1),NCKATR(ISYCKB))
 c
 c     call dzero(WORK(KW3BXOL1),NTRAOC(ISYM0))
 c     call dzero(WORK(KW3BXOG1),NTRAOC(ISYM0))
-                  CALL GET_T3BARX_BD(WORK(KTMAT),ISCKIJ,WORK(KFOCKY),
+                  CALL GET_T3BARX_BD(.FALSE.,
+     *                               WORK(KTMAT),ISCKIJ,WORK(KFOCKY),
      *                               ISYMBY,WORK(KWMAT),ISWMAT,
      *                               WORK(KL2TP),ISYCTR,WORK(KFCKYCK),
      *                               ISYFCKY,WORK(KW3BXVDLX2),
@@ -1062,14 +1157,15 @@ c     call dzero(WORK(KW3BXOG1),NTRAOC(ISYM0))
      *                               D,ISYMD,ISYMBY,WORK(KEND5),LWRK5)
                  END IF
 C
-                 IF (LISTBY(1:3).EQ.'M1 ') THEN
+                 IF ( (LISTBY(1:3).EQ.'M1 ') 
+     *               .OR. (LISTBY(1:3).EQ.'N2 ') ) THEN
                  CALL GET_M3BAR_BD(WORK(KTMAT),WORK(KWMAT),ISWMAT,
      *                             WORK(KL2TP),ISYCTR,WORK(KFCKYCK),
      *                             ISYFCKY,WORK(KW3BXVDLX2),
      *                             WORK(KW3BXVDLX1),WORK(KW3BXVDGX2),
      *                             WORK(KW3BXVDGX1),WORK(KW3BXOLX1),
      *                             WORK(KW3BXOGX1),ISINT2Y,
-     *                             WORK(KINDEX),WORK(KINDEX2),
+     *                             WORK(KINDEXLE),WORK(KINDEX2LE),
      *                             WORK(KINDSQW),LENSQW,WORK(KL2TPBY),
      *                             ISYMBY,WORK(KFCKBA),ISYM0,
      *                             WORK(KW3BXVDL2),WORK(KW3BXVDL1),
@@ -1080,6 +1176,10 @@ C
      *                             ISINT1,-FREQ,WORK(KDIAGW),
      *                             WORK(KFOCKD),B,ISYMB,D,ISYMD,ISYMBY,
      *                             WORK(KEND5),LWRK5)
+
+
+*       call sum_pt3(work(kwmat),isymb,b,isymd,d,
+*    *             ISWMAT,work(kx3am),4)
                  END IF 
 C
                  IF (LISTBY(1:3).EQ.'LE ') THEN
@@ -1094,14 +1194,10 @@ C
      *                             ISINT1,-FREQ,WORK(KDIAGW),
      *                             WORK(KFOCKD),B,ISYMB,D,ISYMD,ISYMBY,
      *                             WORK(KEND5),LWRK5)
-                 END IF
-C
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
 c       call sum_pt3(work(kwmat),isymb,b,isymd,d,
 c    *             ISWMAT,work(kx3am),4)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
+                 END IF
+C
 C
 C
 C                 -------------------------------------
@@ -2067,7 +2163,7 @@ C
 C
          WRITE(LUPRI,*) 'Symmetry block number(i,j): ',ISYMI,ISYMJ
 C
-         CALL OUTPUT(MATIJ(KOFF1),1,NRHF(ISYMI),1,NRHF(ISYMJ),
+         CALL OUTPUT_E(MATIJ(KOFF1),1,NRHF(ISYMI),1,NRHF(ISYMJ),
      *               NRHF(ISYMI),NRHF(ISYMJ),1,LUPRI)
 C
          WRITE(LUPRI,*) ' '
@@ -2116,7 +2212,7 @@ C
 C
          WRITE(LUPRI,*) 'Symmetry block number(a,b): ',ISYMA,ISYMB
 C
-         CALL OUTPUT(MATAB(KOFF1),1,NVIR(ISYMA),1,NVIR(ISYMB),
+         CALL OUTPUT_E(MATAB(KOFF1),1,NVIR(ISYMA),1,NVIR(ISYMB),
      *               NVIR(ISYMA),NVIR(ISYMB),1,LUPRI)
 C
          WRITE(LUPRI,*) ' '
@@ -2165,7 +2261,7 @@ C
 C
          WRITE(LUPRI,*) 'Symmetry block number(i,a): ',ISYMI,ISYMA
 C
-         CALL OUTPUT(MATIA(KOFF1),1,NRHF(ISYMI),1,NVIR(ISYMA),
+         CALL OUTPUT_E(MATIA(KOFF1),1,NRHF(ISYMI),1,NVIR(ISYMA),
      *               NRHF(ISYMI),NVIR(ISYMA),1,LUPRI)
 C
          WRITE(LUPRI,*) ' '
@@ -2214,7 +2310,7 @@ C
 C
          WRITE(LUPRI,*) 'Symmetry block number(a,i): ',ISYMA,ISYMI
 C
-         CALL OUTPUT(MATAI(KOFF1),1,NVIR(ISYMA),1,NRHF(ISYMI),
+         CALL OUTPUT_E(MATAI(KOFF1),1,NVIR(ISYMA),1,NRHF(ISYMI),
      *               NVIR(ISYMA),NRHF(ISYMI),1,LUPRI)
 C
          WRITE(LUPRI,*) ' '
@@ -2225,4 +2321,100 @@ C
 C
       RETURN
       END
-
+C  /* Deck output_e */
+      SUBROUTINE OUTPUT_E(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,
+     *                    COLDIM,NCTL,LUPRI)
+C.......................................................................
+C Revised 15-Dec-1983 by Hans Jorgen Aa. Jensen.
+C         16-Jun-1986 hjaaj ( removed Hollerith )
+C
+C OUTPUT PRINTS A REAL MATRIX IN FORMATTED FORM WITH NUMBERED ROWS
+C AND COLUMNS.  THE INPUT IS AS FOLLOWS;
+C
+C        AMATRX(',').........MATRIX TO BE OUTPUT
+C
+C        ROWLOW..............ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        ROWHI...............ROW NUMBER AT WHICH OUTPUT IS TO END
+C
+C        COLLOW..............COLUMN NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        COLHI...............COLUMN NUMBER AT WHICH OUTPUT IS TO END
+C
+C        ROWDIM..............ROW DIMENSION OF AMATRX(',')
+C
+C        COLDIM..............COLUMN DIMENSION OF AMATRX(',')
+C
+C        NCTL................CARRIAGE CONTROL FLAG; 1 FOR SINGLE SPACE
+C                                                   2 FOR DOUBLE SPACE
+C                                                   3 FOR TRIPLE SPACE
+C
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER*4.  THE
+C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
+C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
+C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
+C OF COLUMNS.
+C
+C AUTHOR;  NELSON H.F. BEEBE, QUANTUM THEORY PROJECT, UNIVERSITY OF
+C          FLORIDA, GAINESVILLE
+C REVISED; FEBRUARY 26, 1971
+C
+C.......................................................................
+C
+#include <implicit.h>
+      INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
+      DIMENSION AMATRX(ROWDIM,COLDIM)
+      CHARACTER*1 ASA(3), BLANK, CTL
+      CHARACTER   PFMT*20, COLUMN*8
+      PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
+      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
+C
+      IF (ROWHI.LT.ROWLOW) GO TO 3
+      IF (COLHI.LT.COLLOW) GO TO 3
+C
+      AMAX = ZERO
+      DO 10 J = COLLOW,COLHI
+         DO 10 I = ROWLOW,ROWHI
+            AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
+   10 CONTINUE
+      IF (AMAX .EQ. ZERO) THEN
+         WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
+         GO TO 3
+      END IF
+      IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
+C        use F output format
+         PFMT = '(A1,I7,2X,1P,8D15.6)'
+      ELSE
+C        use 1PD output format
+         PFMT = '(A1,I7,2X,1P,8D15.6)'
+      END IF
+C
+      IF (NCTL .LT. 0) THEN
+         KCOL = KCOLN
+      ELSE
+         KCOL = KCOLP
+      END IF
+      MCTL = ABS(NCTL)
+      IF ((MCTL.LE.3).AND.(MCTL.GT.0)) THEN
+         CTL = ASA(MCTL)
+      ELSE
+         CTL = BLANK
+      END IF
+C
+      LAST = MIN(COLHI,COLLOW+KCOL-1)
+      DO 2 BEGIN = COLLOW,COLHI,KCOL
+         WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
+         DO 1 K = ROWLOW,ROWHI
+            DO 4 I = BEGIN,LAST
+               IF (AMATRX(K,I).NE.ZERO) GO TO 5
+    4       CONTINUE
+         GO TO 1
+    5       WRITE (LUPRI,PFMT) CTL,K,(AMATRX(K,I), I = BEGIN,LAST)
+    1    CONTINUE
+    2 LAST = MIN(LAST+KCOL,COLHI)
+    3 RETURN
+ 1000 FORMAT (/12X,6(3X,A6,I4,2X),(3X,A6,I4))
+C2000 FORMAT (A1,'Row',I4,2X,1P,8D15.6)
+C2000 FORMAT (A1,I7,2X,1P,8D15.6)
+      END

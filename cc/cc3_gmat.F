@@ -1039,6 +1039,7 @@ c             write(lupri,*)'KBCIOOVV',xnormval
 c             XNORMVAL = DDOT(NMAABC(ISCKBBC),WORK(KVVVVBC),1,
 c    *                                        WORK(KVVVVBC),1)
 c             write(lupri,*)'KVVVVBC',xnormval
+                  !<L3|[H^BC,T^{0}_{2}],tau_{1}]|HF>
                   CALL CC3_L3_OMEGA1(WORK(KOME1),ISYRES,WORK(KSMAT),
      *                               WORK(KQMAT),WORK(KTMAT),ISYMIM,
      *                               WORK(KBCIOOOO),WORK(KBCIOVVO),

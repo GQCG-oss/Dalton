@@ -972,6 +972,12 @@ C     in XI2EFF
 C------------------------------------------------------
 C
       CALL CC3_RBJIA(XI2EFF,ISYRES,WORK(KRBJIA))
+c
+c     write(lupri,*)'XI1EFF in CC3_XISD'
+c     call output(XI1EFF,1,nvir(1),1,nrhf(1),nvir(1),nrhf(1),1,lupri)
+c
+c     write(lupri,*)'XI2EFF in CC3_XISD'
+c     call outpak(XI2EFF,NT1AM(isyres),1,lupri)
 C
       IF (IPRINT .GT. 55) THEN
          XXI2EFF = DDOT(NT2AM(ISYRES),XI2EFF,1,XI2EFF,1)
@@ -988,7 +994,7 @@ C
       ENDIF
 C
       DO I = 1,NT1AM(ISYRES)
-         XI1EFF(I) = -XI1EFF(I) + XI1(I)
+         XI1EFF(I) = XI1EFF(I) + XI1(I)
       END DO
 C
       IF (IPRINT .GT. 55) THEN
@@ -1417,13 +1423,23 @@ C  /* Deck wbd_t2 */
 *
 * If T2XNET2Z = .true. then calculate:
 *
+* what is returned is:
+*
 * WBC(a,i,k,j) = WBC(a,i,k,j) -
-*  P(bj,ck) sum(l,d) focky(l,d)*( t2X(ai,cl)*t2Z(bj,dk) + t2Z(ai,cl)*t2X(bj,dk))
+*  P(bj,ck) sum(l,d) focky(l,d)*( t2X(ai,cl)*t2Z(bj,dk)+t2Z(ai,cl)*t2X(bj,dk))
 * 
 * ELSE
 * 
+* <mu3|[[Y,T2],T2]|HF> = P(aibjck) 2 sum(l,d) focky(l,d)*(t2X(ai,cl)*t2Z(bj,dk))
+*
+* what is returned by the routine is WBC contribution corresponding to 
+* (ai,bj,ck) + (ai,ck,bj) permutation.
+*
+* Totally is returned: (note that 2 factor is absorbed usually by 1/2
+*                       in the formula; for example in T3X  !!!)
+*
 * WBC(a,i,k,j) = WBC(a,i,k,j) -
-*  2 P(bj,ck) sum(l,d) focky(l,d)*( t2X(ai,cl)*t2Z(bj,dk) )
+*   P(bj,ck) sum(l,d) focky(l,d)*( t2X(ai,cl)*t2Z(bj,dk) )
 *
 *
 * F. Pawlowski, P. Jorgensen, Aarhus 14-May-2003.
@@ -1444,20 +1460,30 @@ C
 C
 #if defined (SYS_CRAY)
       REAL T2TPX(*), FOCKY(*), WMAT(*), WRK(*), T2TPZ(*)
+      REAL FAC,HALF,ONE
 #else
       DOUBLE PRECISION T2TPX(*), FOCKY(*), WMAT(*), WRK(*), T2TPZ(*)
+      DOUBLE PRECISION FAC,HALF,ONE
 #endif
+C
+      PARAMETER (HALF = 0.5D0, ONE = 1.0D0 )
 C
       CALL QENTER('WBDT2')
 C
-      CALL WBD_T2_1(B,ISYMB,D,ISYMD,
+      IF (T2XNET2Z) THEN
+         FAC = ONE
+      ELSE
+         FAC = ONE
+      END IF
+C
+      CALL WBD_T2_1(FAC,B,ISYMB,D,ISYMD,
      *              T2TPX,ISYMT2X,T2TPZ,ISYMT2Z,
      *              FOCKY,ISYFKY,
      *              INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)
 C
       IF (T2XNET2Z) THEN
 C
-         CALL WBD_T2_1(B,ISYMB,D,ISYMD,
+         CALL WBD_T2_1(FAC,B,ISYMB,D,ISYMD,
      *                 T2TPZ,ISYMT2Z,T2TPX,ISYMT2X,
      *                 FOCKY,ISYFKY,
      *                 INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)      
@@ -1469,7 +1495,8 @@ C
       RETURN
       END
 C  /* Deck wbd_t2_1 */
-      SUBROUTINE WBD_T2_1(B,ISYMB,D,ISYMD,T2TPX,ISYMT2X,T2TPZ,ISYMT2Z,
+      SUBROUTINE WBD_T2_1(FAC,B,ISYMB,D,ISYMD,T2TPX,ISYMT2X,T2TPZ,
+     *                 ISYMT2Z,
      *                 FOCKY,ISYFKY,
      *                 INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)
 C 
@@ -1507,10 +1534,12 @@ C
       REAL T2TPX(*), FOCKY(*), WMAT(*), WRK(*)
       REAL HALF, ONE, ZERO
       REAL T2TPZ(*)
+      REAL FAC 
 #else
       DOUBLE PRECISION T2TPX(*), FOCKY(*), WMAT(*), WRK(*)
       DOUBLE PRECISION HALF, ONE, ZERO
       DOUBLE PRECISION T2TPZ(*)
+      DOUBLE PRECISION FAC 
 #endif
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0)
@@ -1611,7 +1640,7 @@ C
                KOFFW  = ISAIKJ(ISYAIK,ISYMJ) + NCKI(ISYAIK)*(J-1)
      *                 + ISAIK(ISYAI,ISYMK) + 1
                CALL DGEMM('N','N',NT1AM(ISYAI),NRHF(ISYMK),
-     *                    NRHF(ISYML),-ONE,T2TPX(KOFFT2),NAI,
+     *                    NRHF(ISYML),-FAC,T2TPX(KOFFT2),NAI,
      *                    WRK(KOFFT),NL,ONE,WMAT(KOFFW),NAI)
 
 C
@@ -1683,7 +1712,7 @@ C
                KOFFW  = KW  + ISAIKJ(ISYAIJ,ISYMK) + NCKI(ISYAIJ)*(K-1)
      *                 + ISAIK(ISYAI,ISYMJ) 
                CALL DGEMM('N','N',NT1AM(ISYAI),NRHF(ISYMJ),
-     *                    NRHF(ISYML),-ONE,T2TPX(KOFFT2),NAI,
+     *                    NRHF(ISYML),-FAC,T2TPX(KOFFT2),NAI,
      *                    WRK(KOFFT),NL,ONE,WRK(KOFFW),NAI)
 
 C
@@ -1828,7 +1857,7 @@ C
 C
          KOFF1 = ISAIKL(ISYAI,ISYKJ) + 1
 C
-         CALL DGEMV('N',NT1AM(ISYAI),NMATIJ(ISYKJ),ONE,TMAT(KOFF1),
+         CALL DGEMV('N',NT1AM(ISYAI),NMATIJ(ISYKJ),-ONE,TMAT(KOFF1),
      *              NTOTAI,WORK,1,ONE,OMEGA1,1)
 C
 C
@@ -1888,7 +1917,7 @@ C
       KOFF1 = ISAIKJ(ISYBJK,ISYMI) + 1
       KOFF2 = IT1AM(ISYMA,ISYMI) + A
 C
-      CALL DGEMV('T',NCKI(ISYBJK),NRHF(ISYMI),ONE,TMAT(KOFF1),
+      CALL DGEMV('T',NCKI(ISYBJK),NRHF(ISYMI),-ONE,TMAT(KOFF1),
      *           NTOBJK,WORK,1,ONE,OMEGA1(KOFF2),NTOTA)
 C
 C  Calculate  (3):
@@ -1945,7 +1974,7 @@ C
       KOFF1 = ISAIKJ(ISYCKJ,ISYMI) + 1 
       KOFF2 = IT1AM(ISYMA,ISYMI) + A
 C
-      CALL DGEMV('T',NCKI(ISYCKJ),NRHF(ISYMI),ONE,TMAT(KOFF1),
+      CALL DGEMV('T',NCKI(ISYCKJ),NRHF(ISYMI),-ONE,TMAT(KOFF1),
      *           NTOCKJ,WORK,1,ONE,OMEGA1(KOFF2),NTOTA)
 C
       CALL QEXIT('CC3_CY1') 

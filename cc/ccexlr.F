@@ -43,7 +43,9 @@ c /* deck ccexlr */
 *        --  excited state linear response properties
 *        --  two-photon transition moments between two excited states
 *
+
 *     Written by Christof Haettig summer 1997.
+*     Some restructuring and updates for CC3, october 2003, C. Haettig
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -52,6 +54,7 @@ c /* deck ccexlr */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
+#include <dummy.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -62,6 +65,8 @@ c /* deck ccexlr */
 #include <ccel1rsp.h>
 #include <ccn2rsp.h>
 #include <cco2rsp.h>
+#include <cclists.h>
+#include <second.h>
 
 * local parameters:
       CHARACTER*(16) MSGDBG
@@ -73,19 +78,26 @@ c /* deck ccexlr */
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
+      REAL TIM0, TIM1, TIMG, TIMF, TIMB
+      REAL TIMFA, TIMAA, TIMEA, TIMO
+      REAL ZERO
 #else
       DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION TIM0, TIM1, TIMG, TIMF, TIMB
+      DOUBLE PRECISION TIMFA, TIMAA, TIMEA, TIMO
+      DOUBLE PRECISION ZERO
 #endif
+      PARAMETER ( ZERO = 0.0d0 )
 
       INTEGER NBEXLR, MXTRAN, MXVEC 
-      INTEGER MXGTRAN, MXFTRAN, MXFATRAN, MXEATRAN, MXOTRAN
-      INTEGER MXGDOTS, MXFDOTS, MXFADOTS, MXEADOTS, MXODOTS
-      INTEGER MXGCONS, MXFCONS, MXFACONS, MXEACONS, MXOCONS
-      INTEGER NGTRAN,  NFTRAN,  NFATRAN,  NEATRAN,  NOTRAN
-      INTEGER KGTRAN,  KFTRAN,  KFATRAN,  KEATRAN,  KOTRAN
-      INTEGER KGDOTS,  KFDOTS,  KFADOTS,  KEADOTS,  KODOTS
-      INTEGER KGCONS,  KFCONS,  KFACONS,  KEACONS,  KOCONS
-      INTEGER KEND0, LEND0, KEXLRPRP, IOPT
+      INTEGER MXGTRAN, MXFTRAN, MXBTRAN, MXFATRAN, MXEATRAN, MXOTRAN
+      INTEGER MXGDOTS, MXFDOTS, MXBDOTS, MXFADOTS, MXEADOTS, MXODOTS
+      INTEGER NGTRAN,  NFTRAN,  NF1TRAN,  NFATRAN,  NEATRAN,  NOTRAN
+      INTEGER KGTRAN,  KFTRAN,  KF1TRAN,  KFATRAN,  KEATRAN,  KOTRAN
+      INTEGER KGDOTS,  KFDOTS,  KF1DOTS,  KFADOTS,  KEADOTS,  KODOTS
+      INTEGER KGCONS,  KFCONS,  KF1CONS,  KFACONS,  KEACONS,  KOCONS
+      INTEGER MXAATRAN, MXAADOTS, NAATRAN, KAATRAN, KAADOTS, KAACONS
+      INTEGER KEND0, LEND0, KEXLRPRP, IOPT, IORDER
 
 * external functions
 
@@ -109,30 +121,35 @@ c /* deck ccexlr */
      &                               '*******************************' 
 
 *---------------------------------------------------------------------*
-      IF (.NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
          CALL QUIT('CCEXLR called for unknown Coupled Cluster.')
       END IF
 
 * print some debug/info output
       IF (IPRINT .GT. 10) WRITE(LUPRI,*) 'CCEXLR Workspace:',LWORK
   
+      TIM0 = SECOND()
 *---------------------------------------------------------------------*
-* allocate & initialize work space for hyperpolarizabilities
+* allocate & initialize work space for polarizabilities
 *---------------------------------------------------------------------*
       NBEXLR = 2 * NEXLRST * NEXLROPER * NEXLRFREQ
 
       MXTRAN  = NLRTLBL * MAX(NLRTLBL,NER1LBL,NEL1LBL,NQRN2)
-      MXVEC   = MAX(NLRTLBL,NER1LBL,NEL1LBL,NO2LBL)
+      MXVEC   = MAX(NLRTLBL,NER1LBL,NEL1LBL,NO2LBL,NQRN2)
 
-      MXGTRAN  = 4 * MXTRAN
-      MXFTRAN  = 3 * MXTRAN
-      MXFATRAN = 5 * MXTRAN
-      MXEATRAN = 3 * MXTRAN
+      MXGTRAN  = MXDIM_GTRAN  * MXTRAN
+      MXFTRAN  = MXDIM_FTRAN  * MXTRAN
+      MXBTRAN  = MXDIM_BTRAN  * MXTRAN
+      MXFATRAN = MXDIM_FATRAN * MXTRAN
+      MXAATRAN = MXDIM_AATRAN * MXTRAN
+      MXEATRAN = MXDIM_XEVEC  * MXTRAN
       MXOTRAN  = 1 * MXTRAN
 
       MXGDOTS  = MXVEC * MXTRAN
       MXFDOTS  = MXVEC * MXTRAN
+      MXBDOTS  = MXVEC * MXTRAN
       MXFADOTS = MXVEC * MXTRAN
+      MXAADOTS = MXVEC * MXTRAN
       MXEADOTS = MXVEC * MXTRAN
       MXODOTS  = MXVEC * MXTRAN
 
@@ -143,10 +160,30 @@ c /* deck ccexlr */
       KFTRAN  = KGCONS  + MXGDOTS
       KFDOTS  = KFTRAN  + MXFTRAN
       KFCONS  = KFDOTS  + MXFDOTS
-      KFATRAN = KFCONS  + MXFDOTS
+C
+c     KBTRAN  = KFCONS  + MXFDOTS
+c     KBDOTS  = KBTRAN  + MXBTRAN
+c     KBCONS  = KBDOTS  + MXBDOTS
+c     KFATRAN = KBCONS  + MXBDOTS
+C
+      KF1TRAN  = KFCONS  + MXFDOTS
+      KF1DOTS  = KF1TRAN  + MXTRAN * MXDIM_FTRAN
+      KF1CONS  = KF1DOTS  +  MXVEC  * MXTRAN
+      KFATRAN = KF1CONS  +  MXVEC  * MXTRAN
+C
       KFADOTS = KFATRAN + MXFATRAN
       KFACONS = KFADOTS + MXFADOTS
-      KEATRAN = KFACONS + MXFADOTS
+C
+c     KAATRAN = KFACONS + MXFADOTS
+c     KAADOTS = KAATRAN + MXAATRAN
+c     KAACONS = KAADOTS + MXAADOTS 
+c     KEATRAN = KAACONS + MXAADOTS
+C
+      KAATRAN = KFACONS + MXFADOTS
+      KAADOTS = KAATRAN + MXTRAN * MXDIM_XEVEC
+      KAACONS = KAADOTS + MXVEC  * MXTRAN
+      KEATRAN = KAACONS + MXVEC  * MXTRAN
+C
       KEADOTS = KEATRAN + MXEATRAN
       KEACONS = KEADOTS + MXEADOTS
       KOTRAN  = KEACONS + MXEADOTS
@@ -168,7 +205,9 @@ c /* deck ccexlr */
       CALL CCEXLR_SETUP(MXTRAN, MXVEC,
      &            WORK(KGTRAN), WORK(KGDOTS), WORK(KGCONS), NGTRAN,
      &            WORK(KFTRAN), WORK(KFDOTS), WORK(KFCONS), NFTRAN,
+     &            WORK(KF1TRAN), WORK(KF1DOTS), WORK(KF1CONS), NF1TRAN,
      &            WORK(KFATRAN),WORK(KFADOTS),WORK(KFACONS),NFATRAN,
+     &            WORK(KAATRAN),WORK(KAADOTS),WORK(KAACONS),NAATRAN,
      &            WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),NEATRAN,
      &            WORK(KOTRAN), WORK(KODOTS), WORK(KOCONS), NOTRAN,
      &            WORK(KEXLRPRP),NBEXLR, .FALSE.  )
@@ -176,15 +215,24 @@ c /* deck ccexlr */
 *---------------------------------------------------------------------*
 * calculate G matrix contributions:
 *---------------------------------------------------------------------*
+      TIM1 = SECOND()
+
       IOPT = 5
       CALL CC_GMATRIX('LE ','R1 ','RE ','R1 ',NGTRAN, MXVEC,
      &              WORK(KGTRAN),WORK(KGDOTS),WORK(KGCONS),
      &              WORK(KEND0), LEND0, IOPT )
 
+      TIMG = SECOND() - TIM1
+ 
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &  '>>> Time used for',NGTRAN,' G matrix transformations:',TIMG
+      CALL FLSHFO(LUPRI) 
       
 *---------------------------------------------------------------------*
 * calculate F matrix contributions:
 *---------------------------------------------------------------------*
+      TIM1 = SECOND()
+
       IF (.NOT. USE_EL1) THEN
         IOPT = 5
         CALL CC_FMATRIX(WORK(KFTRAN),NFTRAN,'LE ','ER1',IOPT,'R1 ',
@@ -197,33 +245,126 @@ c /* deck ccexlr */
      &                  WORK(KEND0), LEND0, IOPT )
       END IF
 
+      TIMF = SECOND() - TIM1
+ 
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &  '>>> Time used for',NFTRAN,' F matrix transformations:',TIMF
+      CALL FLSHFO(LUPRI) 
+      
+*---------------------------------------------------------------------*
+* calculate B matrix contributions:
+*---------------------------------------------------------------------*
+      TIMB = ZERO
+
+      IF (.NOT. USE_O2) THEN
+        TIM1 = SECOND()
+
+c       IOPT = 5
+c       CALL CC_BMATRIX(WORK(KBTRAN),NBTRAN,'R1 ','R1 ',IOPT,'N2 ',
+c    &               WORK(KBDOTS),WORK(KBCONS),MXVEC,
+c    &               .FALSE.,WORK(KEND0),LEND0) 
+        IOPT = 5
+        CALL CC_FMATRIX(WORK(KF1TRAN),NF1TRAN,'N2 ','R1 ',IOPT,'R1 ',
+     &                  WORK(KF1DOTS),WORK(KF1CONS),MXVEC,
+     &                  WORK(KEND0), LEND0)
+
+        TIMB = SECOND() - TIM1
+ 
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &    '>>> Time used for',NF1TRAN,' F matrix transformations:',TIMB
+        CALL FLSHFO(LUPRI) 
+      END IF
+
 *---------------------------------------------------------------------*
 * calculate F{O} matrix contributions:
 *---------------------------------------------------------------------*
+      TIM1 = SECOND()
+
       CALL CCQR_FADRV('LE ','o1 ','RE ','R1 ',NFATRAN, MXVEC,
      &                 WORK(KFATRAN),WORK(KFADOTS),WORK(KFACONS),
      &                 WORK(KEND0), LEND0, 'DOTP' )
 
+      TIMFA = SECOND() - TIM1
+ 
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     & '>>> Time used for',NFATRAN,' F{O} matrix transformat.:',TIMFA
+      CALL FLSHFO(LUPRI) 
+
 *---------------------------------------------------------------------*
-* calculate ETA{O} vector contributions:
+* calculate A{O} matrix contributions:
 *---------------------------------------------------------------------*
-      IF (.NOT. USE_EL1) THEN
-        CALL CCQR_EADRV('LE ','o1 ','ER1 ',NEATRAN, MXVEC,
-     &                   WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),
-     &                   WORK(KEND0), LEND0, 'DOTP' )
-      ELSE
-        CALL CCQR_EADRV('EL1 ','o1 ','RE ',NEATRAN, MXVEC,
-     &                   WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),
-     &                   WORK(KEND0), LEND0, 'DOTP' )
+      TIMAA = ZERO
+
+      IF (.NOT. USE_O2) THEN
+        TIM1 = SECOND()
+
+        IOPT   = 5
+        IORDER = 1
+c       CALL CC_AAMAT(WORK(KAATRAN),NAATRAN,'o1 ','R1 ',IOPT,'N2 ',
+c    &                WORK(KAADOTS),WORK(KAACONS),
+c    &                MXVEC, WORK(KEND0), LEND0 )
+C
+        CALL CC_XIETA(WORK(KAATRAN), NAATRAN, IOPT, IORDER, 'N2 ',
+     &                '---',IDUMMY,        DUMMY,
+     &                'R1 ',WORK(KAADOTS),WORK(KAACONS),
+     &                MXVEC, WORK(KEND0), LEND0 )
+C
+
+        TIMAA = SECOND() - TIM1
+ 
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &  '>>> Time used for',NAATRAN,' A{O} matrix transformat.:',TIMAA
+        CALL FLSHFO(LUPRI) 
       END IF
 
 *---------------------------------------------------------------------*
+* calculate ETA{O} vector contributions:
+*---------------------------------------------------------------------*
+      TIM1 = SECOND()
+
+      IF (.NOT. USE_EL1) THEN
+C       CALL CCQR_EADRV('LE ','o1 ','ER1 ',NEATRAN, MXVEC,
+C    &                   WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),
+C    &                   WORK(KEND0), LEND0, 'DOTP' )
+        IOPT   = 5
+        IORDER = 1
+        CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'LE ',
+     &                 '---',IDUMMY,       DUMMY,
+     &                 'ER1',WORK(KEADOTS),WORK(KEACONS),
+     &                 MXVEC, WORK(KEND0), LEND0 ) 
+      ELSE
+C       CALL CCQR_EADRV('EL1 ','o1 ','RE ',NEATRAN, MXVEC,
+C    &                   WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),
+C    &                   WORK(KEND0), LEND0, 'DOTP' )
+        IOPT   = 5
+        IORDER = 1
+        CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'EL1',
+     &                 '---',IDUMMY,       DUMMY,
+     &                 'RE ',WORK(KEADOTS),WORK(KEACONS),
+     &                 MXVEC, WORK(KEND0), LEND0 ) 
+      END IF
+
+      TIMEA = SECOND() - TIM1
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     & '>>> Time used for',NEATRAN,' ETA{O} vector calculat.: ',TIMEA
+      CALL FLSHFO(LUPRI)  
+*---------------------------------------------------------------------*
 * calculate N2 x O2 dot products:
 *---------------------------------------------------------------------*
-      CALL CC_DOTDRV('N2 ','O2 ',NOTRAN,MXVEC,
-     &               WORK(KOTRAN), WORK(KODOTS), WORK(KOCONS),
-     &               WORK(KEND0), LEND0 )
+      TIMO = ZERO
 
+      IF (USE_O2) THEN 
+        TIM1 = SECOND()
+
+        CALL CC_DOTDRV('N2 ','O2 ',NOTRAN,MXVEC,
+     &                 WORK(KOTRAN), WORK(KODOTS), WORK(KOCONS),
+     &                 WORK(KEND0), LEND0 )
+
+        TIMO = SECOND() - TIM1
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &     '>>> Time used for',NOTRAN,' N2 x O2 dot products: ', TIMO
+        CALL FLSHFO(LUPRI)
+      END IF
 
 *---------------------------------------------------------------------*
 * collect contributions and add them excited state LR properties
@@ -231,11 +372,19 @@ c /* deck ccexlr */
       CALL CCEXLR_SETUP(MXTRAN, MXVEC,
      &            WORK(KGTRAN), WORK(KGDOTS), WORK(KGCONS), NGTRAN,
      &            WORK(KFTRAN), WORK(KFDOTS), WORK(KFCONS), NFTRAN,
+     &            WORK(KF1TRAN), WORK(KF1DOTS), WORK(KF1CONS), NF1TRAN,
      &            WORK(KFATRAN),WORK(KFADOTS),WORK(KFACONS),NFATRAN,
+     &            WORK(KAATRAN),WORK(KAADOTS),WORK(KAACONS),NAATRAN,
      &            WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),NEATRAN,
      &            WORK(KOTRAN), WORK(KODOTS), WORK(KOCONS), NOTRAN,
      &            WORK(KEXLRPRP),NBEXLR, .TRUE.  )
 
+
+*---------------------------------------------------------------------*
+* print timing:
+*---------------------------------------------------------------------*
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+     & NBEXLR,' excited state linear response func.:', SECOND() - TIM0 
 
 *---------------------------------------------------------------------*
 * print output & return:
@@ -307,6 +456,8 @@ c /* deck ccexlrprt */
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:55)//BLANKS )
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:55)//BLANKS )
+      ELSE IF (CC3) THEN
+         CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:55)//BLANKS )
       ELSE
          CALL QUIT('CCEXLRPRT called for an unknown '//
      &        'Coupled Cluster model.')
@@ -414,6 +565,8 @@ C     IF (IEXCII.EQ.IEXCIF) THEN
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:51)//BLANKS )
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:51)//BLANKS )
+      ELSE IF (CC3) THEN
+         CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:55)//BLANKS )
       ELSE
          CALL QUIT('CCEXLRPRT called for an unknown '//
      &        'Coupled Cluster model.')
@@ -520,7 +673,9 @@ c /* deck ccexlr_setup */
       SUBROUTINE CCEXLR_SETUP(MXTRAN,  MXVEC,
      &                        IGTRAN,  IGDOTS,  WG,  NGTRAN,
      &                        IFTRAN,  IFDOTS,  WF,  NFTRAN,
+     &                        IF1TRAN,  IF1DOTS,  F1CONS,  NF1TRAN,
      &                        IFATRAN, IFADOTS, WFA, NFATRAN,
+     &                        IAATRAN, IAADOTS, WAA, NAATRAN,
      &                        IEATRAN, IEADOTS, WEA, NEATRAN,
      &                        IOTRAN,  IODOTS,  WO,  NOTRAN,
      &                        EXLRPRP, MXPROP,  LADD          )
@@ -537,7 +692,7 @@ c /* deck ccexlr_setup */
 *     LADD = .TRUE.   --> add contributions up to properties
 *
 *     Written by Christof Haettig, july 1997.
-*
+*     Some restructuring and updates for CC3, october 2003, C. Haettig
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -549,6 +704,7 @@ c /* deck ccexlr_setup */
 #include <ccexlrinf.h>
 #include <ccexci.h>
 #include <ccroper.h>
+#include <cclists.h>
 
 * local parameters:
       CHARACTER*(22) MSGDBG
@@ -560,22 +716,29 @@ c /* deck ccexlr_setup */
 
       INTEGER MXVEC, MXTRAN, MXPROP
 
-      INTEGER IGTRAN(4,MXTRAN)
+      INTEGER IGTRAN(MXDIM_GTRAN,MXTRAN)
       INTEGER IGDOTS(MXVEC,MXTRAN)
 
-      INTEGER IFTRAN(3,MXTRAN)
+      INTEGER IFTRAN(MXDIM_FTRAN,MXTRAN)
       INTEGER IFDOTS(MXVEC,MXTRAN)
   
-      INTEGER IFATRAN(5,MXTRAN)
+      INTEGER IF1TRAN(MXDIM_FTRAN,MXTRAN)
+      INTEGER IF1DOTS(MXVEC,MXTRAN)
+  
+      INTEGER IFATRAN(MXDIM_FATRAN,MXTRAN)
       INTEGER IFADOTS(MXVEC,MXTRAN)
 
-      INTEGER IEATRAN(3,MXTRAN)
+      INTEGER IAATRAN(MXDIM_XEVEC,MXTRAN)
+      INTEGER IAADOTS(MXVEC,MXTRAN)
+
+      INTEGER IEATRAN(MXDIM_XEVEC,MXTRAN)
       INTEGER IEADOTS(MXVEC,MXTRAN)
 
       INTEGER IOTRAN(MXTRAN)
       INTEGER IODOTS(MXVEC,MXTRAN)
 
-      INTEGER NGTRAN, NFTRAN, NFATRAN, NEATRAN, NOTRAN, NEXLRPROP
+      INTEGER NGTRAN, NFTRAN, NFATRAN, NEATRAN, NOTRAN, NEXLRPROP,
+     &        NF1TRAN, NAATRAN
 
       CHARACTER*(8) LABELA, LABELB
 
@@ -587,32 +750,36 @@ c /* deck ccexlr_setup */
       INTEGER IOPA,IOPB,ITA,ITB,IERA,IERB,IER,IEL,IN2,IO2,IELA,IELB
       INTEGER IVEC, ITRAN, I, IDX
 
-      INTEGER MXG, MXF, MXFA, MXEA, MXO
+      INTEGER MXG, MXF, MXFA, MXEA, MXO, MXF1VEC, MXAA
 
 #if defined (SYS_CRAY)
       REAL EIGVI, EIGVF, FREQA, FREQB
       REAL EXLRPRP(2*MXPROP)
       REAL WG(MXVEC,MXTRAN)
       REAL WF(MXVEC,MXTRAN)
+      REAL F1CONS(MXVEC,MXTRAN)
       REAL WFA(MXVEC,MXTRAN)
+      REAL WAA(MXVEC,MXTRAN)
       REAL WEA(MXVEC,MXTRAN)
       REAL WO(MXVEC,MXTRAN)
       REAL GCON, FCON1, FCON2, FACON1, FACON2
-      REAL EACON1, EACON2, OCON
-      REAL HALF
+      REAL EACON1, EACON2, OCON, F1CON, AACON1, AACON2
+      REAL HALF, ZERO
 #else
       DOUBLE PRECISION EIGVI, EIGVF, FREQA, FREQB
       DOUBLE PRECISION EXLRPRP(2*MXPROP)
       DOUBLE PRECISION WG(MXVEC,MXTRAN)
       DOUBLE PRECISION WF(MXVEC,MXTRAN)
+      DOUBLE PRECISION F1CONS(MXVEC,MXTRAN)
       DOUBLE PRECISION WFA(MXVEC,MXTRAN)
+      DOUBLE PRECISION WAA(MXVEC,MXTRAN)
       DOUBLE PRECISION WEA(MXVEC,MXTRAN)
       DOUBLE PRECISION WO(MXVEC,MXTRAN)
       DOUBLE PRECISION GCON, FCON1, FCON2, FACON1, FACON2
-      DOUBLE PRECISION EACON1, EACON2, OCON
-      DOUBLE PRECISION HALF
+      DOUBLE PRECISION EACON1, EACON2, OCON, F1CON, AACON1, AACON2
+      DOUBLE PRECISION HALF, ZERO
 #endif
-      PARAMETER ( HALF = 0.5d0 )
+      PARAMETER ( HALF = 0.5d0, ZERO = 0.0d0 )
 
 
 * external functions:
@@ -629,14 +796,29 @@ c /* deck ccexlr_setup */
       IF (.NOT. LADD) THEN
         NGTRAN  = 0
         NFTRAN  = 0
+        NF1TRAN  = 0
         NFATRAN = 0
+        NAATRAN = 0
         NEATRAN = 0
         NOTRAN  = 0
+
+        DO ITRAN = 1, MXTRAN
+          DO I = 1, MXDIM_XEVEC
+            IEATRAN(I,ITRAN) = 0
+            IAATRAN(I,ITRAN) = 0
+          END DO
+          IEATRAN(3,ITRAN) = -1
+          IEATRAN(4,ITRAN) = -1
+          IAATRAN(3,ITRAN) = -1
+          IAATRAN(4,ITRAN) = -1
+        END DO
       END IF
 
       MXG  = 0
-      MXFA = 0
       MXF  = 0
+      MXF1VEC  = 0
+      MXFA = 0
+      MXAA = 0
       MXEA = 0
       MXO  = 0
 
@@ -678,8 +860,7 @@ c /* deck ccexlr_setup */
         FREQB = BEXLRFR(IFREQ)
         IF (IEXCII.EQ.IEXCIF) THEN
           FREQA  = -FREQB
-          LPRJ   = .TRUE.
-C         LPRJ   = .FALSE.
+          LPRJ   = .NOT. NOPROJ
         ELSE
           IF ( HALFFR ) FREQB = HALF * (EIGVI-EIGVF)
           FREQA  = EIGVI - EIGVF -FREQB
@@ -697,8 +878,10 @@ C         LPRJ   = .FALSE.
          IER  = IEXCIF
          IEL  = IEXCII
          IN2  = IN2AMP(IEXCII,-EIGVI,ISYMSI,IEXCIF,EIGVF,ISYMSF)
-         IO2  = IRHSR2(LABELA,.FALSE.,+FREQA,ISYMA,
-     &                 LABELB,.FALSE.,+FREQB,ISYMB)
+         IF (USE_O2) THEN
+           IO2  = IRHSR2(LABELA,.FALSE.,+FREQA,ISYMA,
+     &                   LABELB,.FALSE.,+FREQB,ISYMB)
+         END IF
          IF (.NOT. USE_EL1) THEN
            IERA = IER1AMP(IEXCIF,EIGVF,ISYMSF,LABELA,+FREQA,ISYMA,LPRJ)
            IERB = IER1AMP(IEXCIF,EIGVF,ISYMSF,LABELB,+FREQB,ISYMB,LPRJ)
@@ -707,7 +890,6 @@ C         LPRJ   = .FALSE.
      &                    LABELA,+FREQA,ISYMA,.FALSE.,LPRJ)
            IELB = IEL1AMP(IEXCII,EIGVI,ISYMSI,
      &                    LABELB,+FREQB,ISYMB,.FALSE.,LPRJ)
-csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
          END IF
 
        ELSE ! switch states indices and signs of the frequencies
@@ -717,8 +899,10 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
          IER  = IEXCII
          IEL  = IEXCIF
          IN2  = IN2AMP(IEXCIF,-EIGVF,ISYMSF,IEXCII,EIGVI,ISYMSI)
-         IO2  = IRHSR2(LABELA,.FALSE.,-FREQA,ISYMA,
-     &                 LABELB,.FALSE.,-FREQB,ISYMB)
+         IF (USE_O2) THEN
+           IO2  = IRHSR2(LABELA,.FALSE.,-FREQA,ISYMA,
+     &                   LABELB,.FALSE.,-FREQB,ISYMB)
+         END IF
          IF (.NOT. USE_EL1) THEN
            IERA = IER1AMP(IEXCII,EIGVI,ISYMSI,LABELA,-FREQA,ISYMA,LPRJ)
            IERB = IER1AMP(IEXCII,EIGVI,ISYMSI,LABELB,-FREQB,ISYMB,LPRJ)
@@ -785,22 +969,30 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
 * set up list of ETA{O} vector calculations, 2 permutations
 *---------------------------------------------------------------------*
         IF (.NOT. USE_EL1) THEN
-          CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-     &                    IEL,IOPA,IERB,ITRAN,IVEC)
+C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
+C    &                    IEL,IOPA,IERB,ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
+     &                  IEL,IOPA,0,0,0,0,IERB,ITRAN,IVEC)
         ELSE
-          CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-     &                    IELB,IOPA,IER,ITRAN,IVEC)
+C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
+C    &                    IELB,IOPA,IER,ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
+     &                  IELB,IOPA,0,0,0,0,IER,ITRAN,IVEC)
         END IF
         NEATRAN = MAX(NEATRAN,ITRAN)
         MXEA   = MAX(MXEA,IVEC)
         EACON1 = WEA(IVEC,ITRAN)
 
         IF (.NOT. USE_EL1) THEN
-          CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-     &                    IEL,IOPB,IERA,ITRAN,IVEC)
+C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
+C    &                    IEL,IOPB,IERA,ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
+     &                  IEL,IOPB,0,0,0,0,IERA,ITRAN,IVEC)
         ELSE
-          CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-     &                    IELA,IOPB,IER,ITRAN,IVEC)
+C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
+C    &                    IELA,IOPB,IER,ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
+     &                  IELA,IOPB,0,0,0,0,IER,ITRAN,IVEC)
         END IF
         NEATRAN = MAX(NEATRAN,ITRAN)
         MXEA   = MAX(MXEA,IVEC)
@@ -809,11 +1001,52 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
 *---------------------------------------------------------------------*
 * set up list of N2 x O2 dot products, 1 permutation
 *---------------------------------------------------------------------*
-        CALL CC_SETDOT(IOTRAN,IODOTS,MXTRAN,MXVEC,
-     &                 IN2,IO2,ITRAN,IVEC)
-        NOTRAN = MAX(NOTRAN,ITRAN)
-        MXO    = MAX(MXO,IVEC)
-        OCON   = WO(IVEC,ITRAN)
+        OCON = ZERO
+
+        IF (USE_O2) THEN
+          CALL CC_SETDOT(IOTRAN,IODOTS,MXTRAN,MXVEC,
+     &                   IN2,IO2,ITRAN,IVEC)
+          NOTRAN = MAX(NOTRAN,ITRAN)
+          MXO    = MAX(MXO,IVEC)
+          OCON   = WO(IVEC,ITRAN)
+        END IF
+
+*---------------------------------------------------------------------*
+* set up list of B matrix transformations, 1 permutation
+*---------------------------------------------------------------------*
+        F1CON = ZERO
+
+        IF (.NOT. USE_O2) THEN
+          CALL CC_SETF12(IF1TRAN,IF1DOTS,MXTRAN,MXVEC,
+     &                   IN2,ITB,ITA,ITRAN,IVEC)
+          NF1TRAN = MAX(NF1TRAN,ITRAN)
+          MXF1VEC    = MAX(MXF1VEC,IVEC)
+          F1CON   = F1CONS(IVEC,ITRAN)
+        END IF
+
+*---------------------------------------------------------------------*
+* set up list of A{O} matrix transformations, 2 permutation
+*---------------------------------------------------------------------*
+        AACON1 = ZERO
+        AACON2 = ZERO
+ 
+        IF (.NOT. USE_O2) THEN
+c         CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+c    &                  IN2,IOPA,ITB,ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                   IN2,IOPA,0,0,0,0,ITB,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXAA    = MAX(MXAA,IVEC) 
+          AACON1  = WAA(IVEC,ITRAN)
+
+c         CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+c    &                  IN2,IOPB,ITA,ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                   IN2,IOPB,0,0,0,0,ITA,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXAA    = MAX(MXAA,IVEC) 
+          AACON2  = WAA(IVEC,ITRAN)
+        END IF
 
 *---------------------------------------------------------------------*
 * add contributions up to excited state linear response property:
@@ -823,7 +1056,7 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
           IF (ISIGN.EQ.-1) IDX = IDX + NEXLRST*NEXLROPER*NEXLRFREQ
 
           EXLRPRP(IDX) = GCON + FCON1 + FCON2 + FACON1 + FACON2 +
-     &                    EACON1 + EACON2 + OCON
+     &                 EACON1 + EACON2 + OCON + F1CON + AACON1 + AACON2
  
           IF (LOCDBG) THEN
             WRITE (LUPRI,*)
@@ -841,8 +1074,11 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
             WRITE (LUPRI,*) MSGDBG, 'FACON:',FACON1,FACON2
             WRITE (LUPRI,*) MSGDBG, 'EACON:',EACON1,EACON2
             WRITE (LUPRI,*) MSGDBG, 'OCON:',OCON
+            WRITE (LUPRI,*) MSGDBG, 'F1CON:',F1CON
+            WRITE (LUPRI,*) MSGDBG, 'AACON:',AACON1,AACON2
             WRITE (LUPRI,*) MSGDBG, 'SUM:',
-     &           GCON+FCON1+FCON2+FACON1+FACON2+EACON1+EACON2+OCON
+     &           GCON+FCON1+FCON2+FACON1+FACON2+EACON1+EACON2+OCON+
+     &           F1CON+AACON1+AACON2
             WRITE (LUPRI,*)
           END IF
         END IF
@@ -866,7 +1102,9 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
         WRITE(LUPRI,'((8X,A,I3,A))') 
      &     ' - ',NGTRAN,  ' generalized G matrix transformations ',
      &     ' - ',NFTRAN,  ' generalized F matrix transformations ',
+     &     ' - ',NF1TRAN, ' B matrix as F matrix transformations ',
      &     ' - ',NFATRAN, ' generalized F{O} matrix transformations ',
+     &     ' - ',NAATRAN, ' ETA{O} replaces A{O} matrix transform. ',
      &     ' - ',NEATRAN, ' generalized ETA{O} vector calculations ',
      &     ' - ',NOTRAN,  ' N2 x O2 dot products calculations '
         WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
@@ -878,7 +1116,7 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
         WRITE (LUPRI,*) MSGDBG, 'List of G matrix transformations:'
         DO ITRAN = 1, NGTRAN
           WRITE(LUPRI,'(A,3I5,5X,(12I5,20X))') MSGDBG,
-     &     (IGTRAN(I,ITRAN),I=1,3),(IGDOTS(I,ITRAN),I=1,MXVEC)
+     &     (IGTRAN(I,ITRAN),I=1,3),(IGDOTS(I,ITRAN),I=1,MXG)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -888,7 +1126,17 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
         WRITE (LUPRI,*) MSGDBG, 'List of F matrix transformations:'
         DO ITRAN = 1, NFTRAN
           WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
-     &     (IFTRAN(I,ITRAN),I=1,2),(IFDOTS(I,ITRAN),I=1,MXVEC)
+     &     (IFTRAN(I,ITRAN),I=1,2),(IFDOTS(I,ITRAN),I=1,MXF)
+        END DO
+        WRITE (LUPRI,*)
+      END IF
+
+* B matrix transformations:
+      IF (LOCDBG .AND. .NOT.LADD) THEN
+        WRITE (LUPRI,*) MSGDBG, 'List of F matrix transformations:'
+        DO ITRAN = 1, NF1TRAN
+          WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
+     &     (IF1TRAN(I,ITRAN),I=1,2),(IF1DOTS(I,ITRAN),I=1,MXF1VEC)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -898,7 +1146,17 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
         WRITE (LUPRI,*) MSGDBG, 'List of F{O} matrix transformations:'
         DO ITRAN = 1, NFATRAN
           WRITE(LUPRI,'(A,5I5,5X,(12I5,20X))') MSGDBG,
-     &     (IFATRAN(I,ITRAN),I=1,5),(IFADOTS(I,ITRAN),I=1,MXVEC)
+     &     (IFATRAN(I,ITRAN),I=1,5),(IFADOTS(I,ITRAN),I=1,MXFA)
+        END DO
+        WRITE (LUPRI,*)
+      END IF
+
+* A{O} matrix transformations:
+      IF (LOCDBG .AND. .NOT.LADD) THEN
+        WRITE (LUPRI,*) MSGDBG, 'List of A{O} as ETA{0} matrix trans:'
+        DO ITRAN = 1, NAATRAN
+          WRITE(LUPRI,'(A,5I5,5X,(12I5,20X))') MSGDBG,
+     &     (IAATRAN(I,ITRAN),I=1,5),(IAADOTS(I,ITRAN),I=1,MXAA)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -908,7 +1166,7 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
         WRITE (LUPRI,*) MSGDBG, 'List of ETA{O} vector calculations:'
         DO ITRAN = 1, NEATRAN
           WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
-     &     (IEATRAN(I,ITRAN),I=1,2),(IEADOTS(I,ITRAN),I=1,MXVEC)
+     &     (IEATRAN(I,ITRAN),I=1,2),(IEADOTS(I,ITRAN),I=1,MXEA)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -928,5 +1186,5 @@ csorig     &                    LABELB,+FREQB,ISYMA,LPRJ)
       END
 
 *---------------------------------------------------------------------*
-*              END OF SUBROUTINE CCQR_SETUP                           *
+*              END OF SUBROUTINE CCEXLR_SETUP                         *
 *---------------------------------------------------------------------*

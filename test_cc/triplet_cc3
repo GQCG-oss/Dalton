@@ -31,7 +31,7 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #######################################################################
 cat > triplet_cc3.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **WAVE FUNCTIONS
 .TITLE
   CC3 Triplet excitation energies

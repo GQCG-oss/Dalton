@@ -120,21 +120,65 @@ C
      *          FNDKBCR4 = 'CCSDT_FBMAT5')
 C
       CALL QENTER('CCSDT_FBMAT')
+cfp
+c     write(lupri,*)'entered CCSDT_FBMAT with: '
+c     WRITE(LUPRI,*)'LISTL = ', LISTL
+c     WRITE(LUPRI,*)'LISTB = ', LISTB
+c     WRITE(LUPRI,*)'LISTC = ', LISTC
+
+cfp
 C
 C     Lists check
 C
-      IF (LISTL(1:3).EQ.'L1 ')  THEN
-         IF ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'R1 ') ) THEN
-            CONTINUE
-         ELSE
-            WRITE(LUPRI,*)'LISTL = ', LISTL
-            WRITE(LUPRI,*)'LISTB = ', LISTB
-            WRITE(LUPRI,*)'LISTC = ', LISTC
-            WRITE(LUPRI,*)'Only implemented when LISTL = L1 '
-     *      //'and LISTB = R1 and LISTC = R1 '
-            CALL QUIT('Case not implemented in CCSDT_FBMAT')
-         END IF
-      END IF
+*     IF (LISTL(1:3).EQ.'L1 ')  THEN
+*        IF ( (LISTB(1:3).EQ.'R1 ') .AND. 
+*    *        ( (LISTC(1:3).EQ.'R1 ') .OR. (LISTC(1:3).EQ.'R2 ') )) THEN
+*           CONTINUE
+*        ELSE IF ( (LISTB(1:3).EQ.'RE ') .AND.
+*    *        (LISTC(1:3).EQ.'R1 ') ) THEN
+*        ELSE IF ( (LISTB(1:3).EQ.'R1 ') .AND.
+*    *        (LISTC(1:3).EQ.'RE ') ) THEN
+*           CONTINUE
+*        ELSE
+*           WRITE(LUPRI,*)'LISTL = ', LISTL
+*           WRITE(LUPRI,*)'LISTB = ', LISTB
+*           WRITE(LUPRI,*)'LISTC = ', LISTC
+*           WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this set'
+*    *                     //' of lists(1) '
+*           CALL QUIT('Case not implemented in CCSDT_FBMAT(1)')
+*        END IF
+*     ELSE IF  (LISTL(1:3).EQ.'LE ')  THEN
+*        IF ( ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'R1 ') )
+*    *     .OR. ( (LISTB(1:3).EQ.'RE ') .AND. (LISTC(1:3).EQ.'R1 ') )
+*    *     .OR. ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'RE ') ) ) 
+*    *   THEN
+*            CONTINUE
+*        ELSE
+*           WRITE(LUPRI,*)'LISTL = ', LISTL
+*           WRITE(LUPRI,*)'LISTB = ', LISTB
+*           WRITE(LUPRI,*)'LISTC = ', LISTC
+*           WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this set'
+*    *                     //' of lists(2) '
+*           CALL QUIT('Case not implemented in CCSDT_FBMAT(2)')
+*        END IF
+*     ELSE IF (LISTL(1:3).EQ.'M1 ') THEN
+*        IF ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'R1 ') ) THEN
+*           CONTINUE
+*        ELSE
+*           WRITE(LUPRI,*)'LISTL = ', LISTL
+*           WRITE(LUPRI,*)'LISTB = ', LISTB
+*           WRITE(LUPRI,*)'LISTC = ', LISTC
+*           WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this set'
+*    *                     //' of lists(2) '
+*           CALL QUIT('Case not implemented in CCSDT_FBMAT(3)')
+*        END IF
+*     ELSE
+*        WRITE(LUPRI,*)'LISTL = ', LISTL
+*        WRITE(LUPRI,*)'LISTB = ', LISTB
+*        WRITE(LUPRI,*)'LISTC = ', LISTC
+*        WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this LISTL '
+*        CALL QUIT('Unknown LISTL in CCSDT_FBMAT')
+*     END IF
 C
 C--------------------------
 C     Save and set flags.
@@ -235,6 +279,8 @@ C----------------------------------------------------------------
 C
       IOPT   = 1
       CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
+cfff
+c     write(lupri,*)'passed 1'
 C
       CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
      &            WORK(KEND01),LWRK01)
@@ -245,6 +291,8 @@ C-------------------------------------------
 C
       IOPT = 2
       CALL CC_RDRSP('R0',0,ISYMT2,IOPT,MODEL,DUMMY,WORK(KEND00))
+cfff
+c     write(lupri,*)'passed 2'
       CALL CC_T2SQ(WORK(KEND00),WORK(KT2TP),ISYMT2)
       IF (LWRK00 .LT. NT2SQ(ISYMT2)) THEN
          CALL QUIT('Not enough memory to construct T2TP in CCSDT_FBMAT') 
@@ -314,7 +362,12 @@ C
          END IF
 C
          IF (LISTB(1:3).EQ.'R1 ') THEN
-            ISYMRB = ISYLRT(IDLSTB)
+cfp here was the problem
+c originally I had:
+c           ISYMRB = ISYLRT(IDLSTB)
+c but now I put:
+            ISYMRB = ILSTSYM(LISTB,IDLSTB)
+cfp
             FREQB  = FRQLRT(IDLSTB)
             LABELB = LRTLBL(IDLSTB)
          ELSE IF (LISTB(1:3).EQ.'RE ') THEN
@@ -325,13 +378,22 @@ C
             CALL QUIT('Unkown list for LISTB in CCSDT_FBMAT.')
          END IF
 C
-         IF (LISTC(1:3).EQ.'R1 ') THEN
-            ISYMRC = ISYLRT(IDLSTC)
+         IF ( (LISTC(1:3).EQ.'R1 ') .OR. (LISTC(1:3).EQ.'R2 ') ) THEN
+cfp here was the problem
+c originally I had:
+c           ISYMRC = ISYLRT(IDLSTC)
+c but now I put:
+            ISYMRC = ILSTSYM(LISTC,IDLSTC)
+cfp
             FREQC  = FRQLRT(IDLSTC)
             LABELC = LRTLBL(IDLSTC)
          ELSE IF (LISTC(1:3).EQ.'RE ') THEN
             ISYMRC = ILSTSYM(LISTC,IDLSTC)
             FREQC  = EIGVAL(IDLSTC)
+            LABELC = '- none -'
+         ELSE IF (LISTC(1:3).EQ.'ER1') THEN
+            ISYMRC = ILSTSYM(LISTC,IDLSTC)
+            FREQC  = DUMMY
             LABELC = '- none -'
          ELSE
             CALL QUIT('Unkown list for LISTC in CCSDT_FBMAT.')
@@ -371,6 +433,8 @@ C
          IOPT = 3
          CALL CC_RDRSP(LISTB,IDLSTB,ISYMRB,IOPT,MODEL,
      *                 WORK(KT1B),WORK(KT2B))
+cfff
+c     write(lupri,*)'passed 3'
          CALL CCLR_DIASCL(WORK(KT2B),TWO,ISYMRB)
          CALL CC_T2SQ(WORK(KT2B),WORK(KEND1),ISYMRB)
          CALL CC3_T2TP(WORK(KT2B),WORK(KEND1),ISYMRB)
@@ -448,6 +512,8 @@ C
          IOPT = 1
          CALL CC_RDRSP(LISTC,IDLSTC,ISYMRC,IOPT,MODEL,
      *                 WORK(KT1C),DUMMY)
+cfff
+c     write(lupri,*)'passed 4'
 C
          CALL CCLR_LAMTRA(WORK(KLAMDP),WORK(KLAMPC),WORK(KLAMDH),
      *                    WORK(KLAMHC),WORK(KT1C),ISYMRC)
@@ -1118,8 +1184,8 @@ C     remove the forbidden elements
 C------------------------------------------------
 C
 COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
-C    *             isckij,work(kx3am),4)
+c      call sum_pt3(work(kwmat),isymb,b,isymd,d,
+c    *             isckij,work(kx3am),4)
 COMMENT COMMENT COMMENT
                      CALL WBD_DIA(B,ISYMB,D,ISYMD,FREQB, 
      *                            ISWMAT,WORK(KWMAT), 
@@ -1134,8 +1200,8 @@ C     added in WORK(KOMEG2)
 C----------------------------------------------------------------------
 C
 COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
-C    *             isckij,work(kx3am),4)
+c      call sum_pt3(work(kwmat),isymb,b,isymd,d,
+c    *             isckij,work(kx3am),4)
 COMMENT COMMENT COMMENT
                      CALL CC3_CY2F(WORK(KOMEG2),ISYRES,WORK(KWMAT),
      *                             ISWMAT,WORK(KTMAT),WORK(KFCKC),
@@ -1174,8 +1240,8 @@ C
 C
 COMMENT COMMENT
 COMMENT COMMENT
-C      write(lupri,*) 'The summed W terms in ccsdt_fbmat: '
-C      call print_pt3(work(kx3am),1,4)
+c      write(lupri,*) 'The summed W terms in ccsdt_fbmat: '
+c      call print_pt3(work(kx3am),1,4)
 C      write(lupri,*) 'The summed S terms : '
 C      call print_pt3(work(kx3am),1,1)
 COMMENT COMMENT
@@ -1193,6 +1259,9 @@ C
             XNORMVAL = DDOT(NT2AM(ISYRES),WORK(KOMEG2),1,WORK(KOMEG2),1)
             WRITE(LUPRI,*) 'Norm of final WORK(KOMEG2) ',XNORMVAL
          ENDIF
+c     write(lupri,*)'OMEGA2 in ccsdt_fbmat : '
+c     call outpak(WORK(KOMEG2),NT1AM(1),1,lupri)
+
 C
 C--------------------------------------------
 C     Multiply the result vector with L2
@@ -1201,8 +1270,13 @@ C--------------------------------------------
 C
          IOPT = 2
          CALL CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,DUMMY,WORK(KEND1))
+cfff
+c     write(lupri,*)'passed 5'
 C
-         CALL CCLR_DIASCL(WORK(KEND1),HALF,ISYML)
+c        IF ( (LISTL(1:3).NE.'LE ') .AND. (LISTL(1:3).NE.'ME ') ) THEN
+            CALL CCLR_DIASCL(WORK(KEND1),HALF,ISYML)
+c        END IF
+C
          TCON = DDOT(NT2AM(ISYRES),WORK(KOMEG2),1,WORK(KEND1),1)
 C
          DOTPROD(IVEC,ITRAN) = DOTPROD(IVEC,ITRAN)

@@ -63,21 +63,20 @@ c /* deck cc_hyppol */
 #include <ccroper.h>
 #include <cclists.h>
 #include <second.h>
+#include <dummy.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_HYPPOL> ')
-      LOGICAL LOCDBG, LFINDIFF, OLD
-      PARAMETER (LOCDBG = .FALSE. , LFINDIFF = .FALSE., OLD = .FALSE.)
-      INTEGER IDUMMY
-      PARAMETER (IDUMMY = -999999999)
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 
 #if defined (SYS_CRAY)
-      REAL ZERO, DUMMY
+      REAL ZERO
 #else
-      DOUBLE PRECISION ZERO, DUMMY
+      DOUBLE PRECISION ZERO
 #endif
-      PARAMETER (ZERO = 0.0d0, DUMMY = -12345.67890)
+      PARAMETER (ZERO = 0.0d0)
 
       CHARACTER*10 MODEL
       CHARACTER*8  LABSOP
@@ -100,6 +99,7 @@ c /* deck cc_hyppol */
       INTEGER KEATRAN, KEADOTS, KEACONS, NEATRAN, MXEATRAN, MXEADOTS
       INTEGER KR2TRAN, KR2DOTS, KR2CONS, NR2TRAN, MXR2TRAN, MXR2DOTS
       INTEGER KXETRAN, KEDOTS,  KECONS,  NXETRAN, MXXETRAN, MXXEDOTS
+      INTEGER KAATRAN, KAADOTS, KAACONS, NAATRAN, MXAATRAN, MXAADOTS
       INTEGER KXDOTS, KXCONS
 
 #if defined (SYS_CRAY)
@@ -110,7 +110,7 @@ c /* deck cc_hyppol */
       REAL X2CON1, X2CON2, X2CON3, E2CON1, E2CON2, E2CON3
       REAL SIGN
       REAL TIMTOT, TIM0, TIM1, TIMG, TIMF, TIMB, TIMFA, TIMEA, TIM2
-      REAL TIMR2, TIMXE
+      REAL TIMR2, TIMXE, TIMAA
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION GCON, FACON1,FACON2,FACON3, FCON1,FCON2,FCON3
@@ -119,7 +119,7 @@ c /* deck cc_hyppol */
       DOUBLE PRECISION X2CON1, X2CON2, X2CON3, E2CON1, E2CON2, E2CON3
       DOUBLE PRECISION SIGN
       DOUBLE PRECISION TIMTOT,TIM0,TIM1,TIMG,TIMF,TIMB,TIMFA,TIMEA,TIM2
-      DOUBLE PRECISION TIMR2, TIMXE
+      DOUBLE PRECISION TIMR2, TIMXE, TIMAA
 #endif
 
 * external functions
@@ -172,6 +172,7 @@ c /* deck cc_hyppol */
       MXFTRAN  = MXDIM_FTRAN  * MXTRAN
       MXBTRAN  = MXDIM_BTRAN  * MXTRAN
       MXFATRAN = MXDIM_FATRAN * MXTRAN
+      MXAATRAN = MXDIM_AATRAN * MXTRAN
       MXEATRAN = MXDIM_XEVEC  * MXTRAN
       MXR2TRAN = 1 * MXTRAN
       MXXETRAN = MXDIM_XEVEC  * MXTRAN
@@ -183,6 +184,7 @@ c /* deck cc_hyppol */
       MXEADOTS = MXVEC * MXTRAN
       MXR2DOTS = MXVEC * MXTRAN
       MXXEDOTS = MXVEC * MXTRAN
+      MXAADOTS = MXVEC * MXTRAN
 
       KHYPPOL = 1
       KGTRAN  = KHYPPOL + 2 * NBHYPPOL
@@ -208,7 +210,10 @@ c /* deck cc_hyppol */
       KXCONS  = KXDOTS  + MXXEDOTS
       KEDOTS  = KXCONS  + MXXEDOTS
       KECONS  = KEDOTS  + MXXEDOTS
-      KEND0   = KECONS  + MXXEDOTS
+      KAATRAN = KECONS  + MXXEDOTS
+      KAADOTS = KAATRAN + MXAATRAN
+      KAACONS = KAADOTS + MXAADOTS
+      KEND0   = KAACONS + MXAADOTS
       LEND0   = LWORK   - KEND0
 
       IF (LEND0 .LT. 0) THEN
@@ -225,6 +230,7 @@ c /* deck cc_hyppol */
      &                WORK(KFTRAN), WORK(KFDOTS), NFTRAN,
      &                WORK(KBTRAN), WORK(KBDOTS), NBTRAN,
      &                WORK(KFATRAN),WORK(KFADOTS),NFATRAN,
+     &                WORK(KAATRAN),WORK(KAADOTS),NAATRAN,
      &                WORK(KEATRAN),WORK(KEADOTS),NEATRAN,
      &                WORK(KR2TRAN),WORK(KR2DOTS),NR2TRAN,
      &                WORK(KXETRAN),WORK(KXDOTS),WORK(KEDOTS),NXETRAN,
@@ -256,7 +262,8 @@ c /* deck cc_hyppol */
 
         IOPT = 5
         CALL CC_BMATRIX(WORK(KBTRAN),NBTRAN,'R1 ','R1 ',IOPT,'L1 ',
-     &               WORK(KBDOTS),WORK(KBCONS),MXVEC,WORK(KEND0),LEND0)
+     &               WORK(KBDOTS),WORK(KBCONS),MXVEC,
+     &               .FALSE.,WORK(KEND0),LEND0)
 
         TIMB = SECOND() - TIM1
 
@@ -307,10 +314,10 @@ c /* deck cc_hyppol */
 *---------------------------------------------------------------------*
 * calculate ETA{O} vector contributions:
 *---------------------------------------------------------------------*
-      IF ( .NOT. USE_R2 ) THEN
-        TIM1 = SECOND()
+      CALL DZERO(WORK(KEACONS),MXEADOTS)
 
-        CALL DZERO(WORK(KEACONS),MXEADOTS)
+      IF ((.NOT. USE_R2) .AND. (.NOT. USE_AAMAT)) THEN
+        TIM1 = SECOND()
 
         IOPT   = 5
         IORDER = 1
@@ -330,11 +337,37 @@ c /* deck cc_hyppol */
       END IF
 
 *---------------------------------------------------------------------*
+* calculate A{O} matrix contributions:
+*---------------------------------------------------------------------*
+      CALL DZERO(WORK(KAACONS),MXAADOTS)
+
+      IF ((.NOT. USE_R2) .AND. USE_AAMAT) THEN
+        TIM1 = SECOND()
+
+        IOPT   = 5
+        CALL CC_AAMAT(WORK(KAATRAN),NAATRAN,'o1 ','R1 ',IOPT,'L1 ',
+     &                WORK(KAADOTS),WORK(KAACONS),
+     &                MXVEC, WORK(KEND0), LEND0 )        
+
+        TIMAA = SECOND() - TIM1
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &       '>>> Time used for',
+     &    NAATRAN,' A{O} matrix transform. : ', SECOND() - TIM1
+        CALL FLSHFO(LUPRI)
+
+      ELSE
+        TIMAA = 0.0d0
+      END IF
+
+*---------------------------------------------------------------------*
 * calculate X1 x R2 dots products:
 *---------------------------------------------------------------------*
       IF ( USE_R2 ) THEN
         TIM1 = SECOND()
 
+c       CALL CC_DOTDRV('O2 ','L1 ',NR2TRAN,MXVEC,
+c    &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
+c    &                 WORK(KEND0), LEND0 )
         CALL CC_DOTDRV('R2 ','X1B',NR2TRAN,MXVEC,
      &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
      &                 WORK(KEND0), LEND0 )
@@ -513,30 +546,60 @@ c /* deck cc_hyppol */
 *---------------------------------------------------------------------*
 
         IF ( .NOT. USE_R2 ) THEN
-         CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
-     &                 IZETVA,IOPERB,IKAPB,0,0,0,ITAMPC,ITRAN,IVEC)
-         EACON1 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         IF (USE_AAMAT) THEN
+          IF (LOCDBG) WRITE(LUPRI,*) 'Use A{O} matrix transformation.'
+          IF (IKAPA.NE.0 .OR. IKAPB.NE.0 .OR. IKAPC.NE.0) THEN
+            CALL QUIT('A{O} matrix transformation not yet relaxed.')
+          END IF
+ 
+          CALL CC_SETAA(WORK(KAATRAN),WORK(KAADOTS),MXTRAN,MXVEC,
+     &                  IZETVA,IOPERB,ITAMPC,ITRAN,IVEC)
+          EACON1 = WORK(KAACONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-         CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
-     &                 IZETVA,IOPERC,IKAPC,0,0,0,ITAMPB,ITRAN,IVEC)
-         EACON2 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          CALL CC_SETAA(WORK(KAATRAN),WORK(KAADOTS),MXTRAN,MXVEC,
+     &                  IZETVA,IOPERC,ITAMPB,ITRAN,IVEC)
+          EACON2 = WORK(KAACONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-         CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
-     &                 IZETVB,IOPERC,IKAPC,0,0,0,ITAMPA,ITRAN,IVEC)
-         EACON3 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          CALL CC_SETAA(WORK(KAATRAN),WORK(KAADOTS),MXTRAN,MXVEC,
+     &                  IZETVB,IOPERC,ITAMPA,ITRAN,IVEC)
+          EACON3 = WORK(KAACONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-         CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
-     &                 IZETVB,IOPERA,IKAPA,0,0,0,ITAMPC,ITRAN,IVEC)
-         EACON4 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          CALL CC_SETAA(WORK(KAATRAN),WORK(KAADOTS),MXTRAN,MXVEC,
+     &                  IZETVB,IOPERA,ITAMPC,ITRAN,IVEC)
+          EACON4 = WORK(KAACONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-         CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
-     &                 IZETVC,IOPERA,IKAPA,0,0,0,ITAMPB,ITRAN,IVEC)
-         EACON5 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          CALL CC_SETAA(WORK(KAATRAN),WORK(KAADOTS),MXTRAN,MXVEC,
+     &                  IZETVC,IOPERA,ITAMPB,ITRAN,IVEC)
+          EACON5 = WORK(KAACONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-         CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
-     &                 IZETVC,IOPERB,IKAPB,0,0,0,ITAMPA,ITRAN,IVEC)
-         EACON6 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
-       
+          CALL CC_SETAA(WORK(KAATRAN),WORK(KAADOTS),MXTRAN,MXVEC,
+     &                  IZETVC,IOPERB,ITAMPA,ITRAN,IVEC)
+          EACON6 = WORK(KAACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         ELSE
+          CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
+     &                  IZETVA,IOPERB,IKAPB,0,0,0,ITAMPC,ITRAN,IVEC)
+          EACON1 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         
+          CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
+     &                  IZETVA,IOPERC,IKAPC,0,0,0,ITAMPB,ITRAN,IVEC)
+          EACON2 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         
+          CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
+     &                  IZETVB,IOPERC,IKAPC,0,0,0,ITAMPA,ITRAN,IVEC)
+          EACON3 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         
+          CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
+     &                  IZETVB,IOPERA,IKAPA,0,0,0,ITAMPC,ITRAN,IVEC)
+          EACON4 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         
+          CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
+     &                  IZETVC,IOPERA,IKAPA,0,0,0,ITAMPB,ITRAN,IVEC)
+          EACON5 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         
+          CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,MXVEC,
+     &                  IZETVC,IOPERB,IKAPB,0,0,0,ITAMPA,ITRAN,IVEC)
+          EACON6 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
+         END IF
         ELSE
 
          EACON1 = 0.0d0
@@ -547,6 +610,7 @@ c /* deck cc_hyppol */
          EACON6 = 0.0d0
 
         END IF
+
 
 *---------------------------------------------------------------------*
         IF (LPDBSA.OR.LORXA .OR. LPDBSB.OR.LORXB) THEN
@@ -616,7 +680,7 @@ c /* deck cc_hyppol */
 
 *---------------------------------------------------------------------*
 
-        IF (LOCDBG) THEN
+        IF (LOCDBG .OR. IPRQHYP.GE.15) THEN
          WRITE(LUPRI,*) 'ITAMPA,ITAMPB,ITAMPC:',ITAMPA,ITAMPB,ITAMPC
          WRITE(LUPRI,*) 'IZETVA,IZETVB,IZETVC:',IZETVA,IZETVB,IZETVC
          WRITE(LUPRI,*) 'IOPERA,IOPERB,IOPERC:',IOPERA,IOPERB,IOPERC
@@ -629,6 +693,7 @@ c /* deck cc_hyppol */
      &                           EACON4,EACON5,EACON6
          WRITE(LUPRI,*) 'E2CON:',E2CON1,E2CON2,E2CON3
          WRITE(LUPRI,*) 'X2CON:',X2CON1,X2CON2,X2CON3
+         WRITE(LUPRI,*) 'R2CON:',R2CON1,R2CON2,R2CON3
          WRITE(LUPRI,*) 'HYPPOL:',WORK(KHYPPOL-1+IDX)
         END IF
 
@@ -754,7 +819,8 @@ c /* deck cc_hyppol */
 
         IOPT = 5
         CALL CC_BMATRIX(WORK(KBTRAN),NBTRAN,'RC ','RC ',IOPT,'LC ',
-     &               WORK(KBDOTS),WORK(KBCONS),MXVEC,WORK(KEND0),LEND0)
+     &               WORK(KBDOTS),WORK(KBCONS),MXVEC,
+     &               .FALSE.,WORK(KEND0),LEND0)
 
         TIMB = TIMB + SECOND() - TIM1
 

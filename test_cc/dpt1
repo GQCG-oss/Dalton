@@ -28,7 +28,7 @@ Ne    0.0000000000000000  0.0000000000000000 0.00000000000000000       *
 #######################################################################
 cat > dpt1.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
 .DIPLEN
@@ -90,7 +90,7 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final    HF energy: * \-128.53186163" $log | wc -l`
+CRIT1=`$GREP "Final *HF energy: * \-128.53186163" $log | wc -l`
 CRIT2=`$GREP "Total SCF   energy: * \-128.53186163" $log | wc -l`
 CRIT3=`$GREP "Total MP2   energy: * \-128.79618442" $log | wc -l`
 CRIT4=`$GREP "Total CCSD  energy: * \-128.79820860" $log | wc -l`

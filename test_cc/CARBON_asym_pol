@@ -6,7 +6,7 @@ cat > CARBON_asym_pol.info <<%EOF%
    CARBON_asym_pol
    -----------
    Molecule:         Carbon ATOM
-   Thoery Level:     CC3 / (three-function basis)
+   Theory Level:     CC3 / (three-function basis)
    Test Purpose:     Polarizability (asymmetric form) for 0.00 and 0.50 
                      frequencies for non-totally symmetric operator
 %EOF%
@@ -32,7 +32,7 @@ C     0.0     0.0      0.0
 #######################################################################
 cat > CARBON_asym_pol.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .NOSUP
 .DIPLEN

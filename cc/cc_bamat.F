@@ -141,7 +141,7 @@ c/* Deck CC_BAMAT */
 
       INTEGER KEND1, KEND2, LEND2, LENALL, KEND3, LEND3
       INTEGER ISYMTA, ISYMTB, ISYMO, ISYRES, ISYMAO, ISYMBO, IOPTW
-      INTEGER IDLSTO, IDLSTA, IDLSTB
+      INTEGER IDLSTO, IDLSTA, IDLSTB, IOPTWE
       INTEGER KPERT, KOO, KOV, KVV, KAOO, KBOO, KAVV, KBVV, KSCR
       INTEGER KT1AMPA, KT1AMPB, KT1AMP0, KLAMDP0, KLAMDH0
       INTEGER KTHETA0, KTHETA1, KTHETA2, KT2AMPA, KT2AMPB
@@ -170,6 +170,8 @@ c/* Deck CC_BAMAT */
         CALL FLSHFO(LUPRI)
       END IF
       
+      ! well, this is no longer true, since CC3 is implemented
+      ! but it is not yet debugged... though, be aware!!
       IF (CCSDT) THEN
         WRITE(LUPRI,'(/1x,a)') 'B{O} matrix transformations not '
      &          //'implemented for triples yet...'
@@ -177,7 +179,7 @@ c/* Deck CC_BAMAT */
      &            'matrix transformations')
       END IF
 
-      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_BAMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_BAMAT...'
         CALL QUIT('Unkown CC method in CC_BAMAT.')
@@ -204,6 +206,10 @@ c/* Deck CC_BAMAT */
       ELSE IF (CCSD) THEN
          MODELW = 'CCSD      '
          IOPTW  = 3
+      ELSE IF (CC3) THEN
+         MODELW = 'CC3       '
+         IOPTW  = 3
+         IOPTWE = 24
       ELSE
          CALL QUIT('Unkown coupled cluster model in CC_BAMAT.')
       END IF
@@ -514,7 +520,7 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
            FREQB = FREQLST(FILBAM,IBATRAN(4,ITRAN))
          END IF
 
-         CALL CCSDT_BAMAT_NODDY(IOPTRES,LABEL,FREQB,ISYMO,
+         CALL CCSDT_BAMAT_NODDY(IOPTRES,FREQB,LABEL,ISYMO,
      &                          LISTA,IDLSTA,
      &                          LISTB,IDLSTB,
      &                          WORK(KTHETA1),WORK(KTHETA2),
@@ -568,10 +574,20 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
            CALL CC_WRRSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LEND2)
+           IF (CCSDT) THEN
+            CALL CC_WRRSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTWE,MODEL,
+     &                    WORK(KTHETA0),WORK(KTHETA1EFF),
+     &                    WORK(KTHETA2EFF),WORK(KEND2),LEND2)
+           END IF
          ELSE IF (IOPTRES.EQ.4) THEN
            CALL CC_WARSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LEND2)
+           IF (CCSDT) THEN
+            CALL CC_WARSP(FILBAM,IBATRAN(4,ITRAN),ISYRES,IOPTWE,MODELW,
+     &                    WORK(KTHETA0),WORK(KTHETA1EFF),
+     &                    WORK(KTHETA2EFF),WORK(KEND2),LEND2)
+           END IF
          END IF
 
          IF (LOCDBG) THEN

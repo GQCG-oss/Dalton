@@ -327,16 +327,16 @@ c         -----------------------------------------------------------
            if (locdbg) write(lupri,*)'entering overlap calc'
            IF (NODDY_OVLP) THEN 
               if (locdbg) write(lupri,*)'noddy overlap'
-              call ccovlp_noddy(listl,listr,ovlptlr,
-     &                           ilstnrst,ilstnrnd,istartend,
-     &                           work,lwork)
+              call ccovlp_noddy(listl,listr,1,ovlptlr,
+     &                          ilstnrst,ilstnrnd,istartend,
+     &                          1,1,1,1,dummy,work,lwork)
            ELSE 
               if (listl.eq.'RE ') call quit('error in CCEXNORM: '//
      &           '(RE|RE) overlap for not yet available for triples')
               if (locdbg) write(lupri,*)'non-noddy overlap'
-              call cc3_lr_ovlp(listl,listr,ovlptlr,
+              call cc3_lr_ovlp(listl,listr,1,ovlptlr,
      &                         ilstnrst,ilstnrnd,istartend,
-     &                         work,lwork)
+     &                         1,1,1,1,dummy,work,lwork)
            END IF
          end if
 #endif
@@ -540,12 +540,21 @@ c         --------------------------------------------------
 *---------------------------------------------------------------------*
 #if defined CC_AARHUS
 *=====================================================================*
-      subroutine ccovlp_noddy(listl,listr,overlap,
-     &                        ilstnrst,ilstnrnd,istartend,
-     &                        work,lwork)     
+      subroutine ccovlp_noddy(listl,listr,imode,
+     &                        overlap,ilstnrst,ilstnrnd,istartend,
+     &                        ndtran,mxvec,idtran,iddots,dotcon,
+     &                        work,lwork)
 *---------------------------------------------------------------------*
 *
 *    Purpose: compute overlap (L|R) between two triples vectors
+*
+*             imode=1  use ilstnrst,ilstnrnd, and istartend to
+*                      set up the loops over left and right vectors
+*                      result is returned in overlap
+*
+*             imode=2  use ndtran,idtran,iddots to set up the loops
+*                      over left and right vectors and return result
+*                      in dotcon
 *
 *    Written by Christof Haettig, November 2002, Friedrichstal
 *
@@ -568,14 +577,18 @@ c         --------------------------------------------------
       parameter (isym0 = 1)
  
       character listl*3, listr*3
-      integer lwork, ilstnrst,ilstnrnd
+      integer lwork, ilstnrst,ilstnrnd, ndtran, mxvec, imode
       integer istartend(maxexci,2)
+      integer idtran(ndtran), iddots(mxvec,ndtran)
+
 #if defined (SYS_CRAY) 
       real work(lwork), overlap(*)
       real tcon, sixth, freql, freqr, xcon(3)
+      real dotcon(mxvec,ndtran)
 #else 
       double precision work(lwork), overlap(*)
       double precision tcon, sixth, freql, freqr, xcon(3)
+      double precision dotcon(mxvec,ndtran)
 #endif 
       parameter( sixth = 1.0d0/6.0d0 ) 
 
@@ -586,7 +599,8 @@ c         --------------------------------------------------
      &        ileft, isyml, imull, iright, isymr, imulr, iopt,
      &        kscr1,kint1sc,kint2sc,klampc,klamhc,kfockc,kwrk2,lwrk2,
      &        lufock,iovlp, kint1s, kint2s, isymd, illl, idel, isydis,
-     &        kxint, idxai, idxbj, idxck, idiag, idxt3, kdum
+     &        kxint, idxai, idxbj, idxck, idiag, idxt3, kdum,
+     &        istart, iend, istartr, iendr, ivec, itran
 
 
       integer ilstsym
@@ -605,20 +619,26 @@ c         --------------------------------------------------
       nt3amp = nt1amx * nt1amx * nt1amx
 
       ! check if XIAJB and/or YIAJB integrals needed
-      if (listl(1:2).eq.'LE ' .or. listl(1:3).eq.'L1 ' .or.
-     &    listr(1:2).eq.'LE ' .or. listr(1:3).eq.'L1 '     ) then
+      if (listl.eq.'LE ' .or. listl.eq.'L1 ' .or.
+     &    listr.eq.'LE ' .or. listr.eq.'L1 ' .or.        
+     &    listl.eq.'X1B' .or. listr.eq.'X1B'     ) then
         do_intxy = .true.
       end if
 
       ! check if XINT1T and XINT2T integrals needed
-      if (listl(1:2).eq.'LE ' .or. listl(1:3).eq.'L1 ' .or.
-     &    listr(1:2).eq.'LE ' .or. listr(1:3).eq.'L1 '     ) then
+      if (listl.eq.'LE ' .or. listl.eq.'L1 ' .or.
+     &    listr.eq.'LE ' .or. listr.eq.'L1 ' .or.       
+     &    listl.eq.'X1B' .or. listr.eq.'X1B'     ) then
         do_intt0 = .true.
       end if
 
       ! check if XINT1S and XINT2S integrals needed
-      if (listl(1:2).eq.'RE ' .or. listl(1:3).eq.'R1 ' .or.
-     &    listr(1:2).eq.'RE ' .or. listr(1:3).eq.'R1 '     ) then
+      if (listl.eq.'RE ' .or. listl.eq.'R1 ' .or.
+     &    listr.eq.'RE ' .or. listr.eq.'R1 ' .or.
+     &    listl.eq.'ER1' .or. listl.eq.'R2 ' .or.
+     &    listr.eq.'ER1' .or. listr.eq.'R2 ' .or.
+     &    listl.eq.'EO1' .or. listl.eq.'O2 ' .or.
+     &    listr.eq.'EO1' .or. listr.eq.'O2 '     ) then
         do_ints0 = .true.
       end if
 
@@ -773,7 +793,25 @@ C           ----------------------------------
 *     overlap matrix contributions in loop over "right" vectors
 *---------------------------------------------------------------------*
       iovlp = 0
-      do ileft = ilstnrst, ilstnrnd
+
+      if      (imode.eq.1) then
+        istart = ilstnrst
+        iend   = ilstnrnd
+      else if (imode.eq.2) then
+        istart = 1
+        iend   = ndtran
+      else
+        call quit('illegal imode in ccovlp_noddy.')
+      end if
+
+      do itran = istart, iend
+        if      (imode.eq.1) then
+           ileft = itran
+        else if (imode.eq.2) then
+           ileft = idtran(itran)
+        else
+          call quit('illegal imode in ccovlp_noddy.')
+        end if
 
         isyml   = ilstsym(listl,ileft)
         imull   = imulte(ileft)
@@ -784,7 +822,9 @@ C           ----------------------------------
      &                                  istartend(ileft,2)
         end if
 
-        if      (listl(1:2).eq.'LE ' .or. listl(1:3).eq.'L1 ') then
+        if      (listl.eq.'LE ' .or. listl.eq.'L1 ' .or.
+     &           listl.eq.'X1B' .or. listl.eq.'BE ' .or.
+     &           listl.eq.'N2 ' .or. listl.eq.'M1 '     ) then
           kscr1 = kwrk1
           kwrk2 = kscr1 + nt1amx
           lwrk2 = lwork - kwrk2
@@ -794,14 +834,13 @@ C           ----------------------------------
           end if
 
           call ccsdt_tbar31_noddy(work(kl3am),freql,listl,ileft,
-     &                            work(klamp0),work(klamh0),
-     &                            work(kfock0),work(kfockd),work(kscr1),
-     &                            .false.,work(kxiajb),work(kyiajb),
-     &                            .false.,work(kint1t),work(kint2t),
-     &                            work(kwrk2),lwrk2)  
+     &                          work(klamp0),work(klamh0),
+     &                          work(kfock0),work(kfockd),work(kscr1),
+     &                          work(kxiajb),work(kint1t),work(kint2t),
+     &                          work(kwrk2),lwrk2)  
 
 
-        else if (listl(1:2).eq.'RE ' .or. listl(1:3).eq.'R1 ') then
+        else if (listl.eq.'RE ' .or. listl.eq.'R1 ') then
           kint1sc = kwrk1
           kint2sc = kint1sc + nt1amx*nvirt*nvirt
           klampc  = kint2sc + nt1amx*nrhft*nrhft
@@ -825,9 +864,49 @@ C           ----------------------------------
      &                         dummy,work(kfockd),
      &                         work(kwrk2),lwrk2)
 
+        else if (listl.eq.'O2 ' .or. listl.eq.'R2 ' .or.
+     &           listl.eq.'EO1' .or. listl.eq.'ER1'     ) then
+          kscr1 = kwrk1
+          kwrk2 = kscr1 + nt1amx
+          lwrk2 = lwork - kwrk2
+
+          if (locdbg) then
+            write(lupri,*) 'call ccsdt_t32_noddy for:',listl,ileft
+          end if
+
+          call ccsdt_t32_noddy(work(kl3am),listl,ileft,freql,
+     &                         work(kint1s),work(kint2s),
+     &                         work(klamp0),work(klamh0),work(kfock0),
+     &                         work(kfockd),
+     &                         dummy,dummy,
+     &                         work(kscr1),work(kwrk2),lwrk2)
+
         end if
 
-        do iright = istartend(ileft,1), istartend(ileft,2)
+
+        if      (imode.eq.1) then
+          istartr = istartend(ileft,1)
+          iendr   = istartend(ileft,2)
+        else if (imode.eq.2) then
+          istartr = 1
+          iendr   = 1
+          do while (iddots(iendr,itran).ne.0 .and. iendr.le.mxvec)
+            iendr = iendr + 1
+          end do
+          iendr = iendr - 1
+        else
+          call quit('illegal imode in ccovlp_noddy.')
+        end if
+
+        do ivec = istartr, iendr
+          if      (imode.eq.1) then
+             iright = ivec
+          else if (imode.eq.2) then
+             iright = iddots(ivec,itran)
+          else
+            call quit('illegal imode in ccovlp_noddy.')
+          end if
+          
           isymr   = ilstsym(listr,iright)
           imulr   = imulte(iright)
 
@@ -837,7 +916,9 @@ C           ----------------------------------
 
           if (isymr.eq.isyml .and. imulr.eq.imull) then
 
-            if      (listr(1:2).eq.'LE ' .or. listr(1:3).eq.'L1 ') then
+            if      (listr.eq.'LE ' .or. listr.eq.'L1 ' .or.
+     &               listr.eq.'X1B' .or. listr.eq.'BE ' .or.
+     &               listr.eq.'N2 ' .or. listr.eq.'M1 '     ) then
               kscr1 = kwrk1
               kwrk2 = kscr1 + nt1amx
               lwrk2 = lwork - kwrk2
@@ -847,11 +928,10 @@ C           ----------------------------------
               end if
 
               call ccsdt_tbar31_noddy(work(kr3am),freqr,listr,iright,
-     &                            work(klamp0),work(klamh0),
-     &                            work(kfock0),work(kfockd),work(kscr1),
-     &                            .false.,work(kxiajb),work(kyiajb),
-     &                            .false.,work(kint1t),work(kint2t),
-     &                            work(kwrk2),lwrk2)  
+     &                          work(klamp0),work(klamh0),
+     &                          work(kfock0),work(kfockd),work(kscr1),
+     &                          work(kxiajb),work(kint1t),work(kint2t),
+     &                          work(kwrk2),lwrk2)  
             
               do_intxy = .false.
               do_intt0 = .false.
@@ -880,12 +960,35 @@ C           ----------------------------------
      &                          dummy,work(kfockd),
      &                          work(kwrk2),lwrk2)
             
+            else if (listr.eq.'O2 ' .or. listr.eq.'R2 ' .or.
+     &               listr.eq.'EO1' .or. listr.eq.'ER1'     ) then
+
+              kscr1 = kwrk1
+              kwrk2 = kscr1 + nt1amx
+              lwrk2 = lwork - kwrk2
+            
+              if (locdbg) then
+                write(lupri,*) 'call ccsdt_t32_noddy for:',listr,iright
+              end if
+            
+              call ccsdt_t32_noddy(work(kr3am),listr,iright,freqr,
+     &                          work(kint1s),work(kint2s),
+     &                          work(klamp0),work(klamh0),work(kfock0),
+     &                          work(kfockd),dummy,dummy,
+     &                          work(kscr1),work(kwrk2),lwrk2)
+
             end if
 
             tcon = - sixth * ddot(nt3amp,work(kl3am),1,work(kr3am),1)
             
-            iovlp = iovlp + 1
-            overlap(iovlp) = overlap(iovlp) + tcon
+            if      (imode.eq.1) then
+              iovlp = iovlp + 1
+              overlap(iovlp) = overlap(iovlp) + tcon
+            else if (imode.eq.2) then
+              dotcon(ivec,itran) = dotcon(ivec,itran) + tcon
+            else
+              call quit('illegal imode in ccovlp_noddy.')
+            end if
 
             if (locdbg) then
               write(lupri,*) 'iovlp:',iovlp
@@ -894,7 +997,10 @@ C           ----------------------------------
      &          sixth*ddot(nt3amp,work(kr3am),1,work(kr3am),1)
               write(lupri,*) 'ccovlp_noddy> norm^2(L3):',
      &          sixth*ddot(nt3amp,work(kl3am),1,work(kl3am),1)
-              write(lupri,*) 'tcon,overlap:',tcon,overlap(iovlp)
+              if (imode.eq.1)
+     &          write(lupri,*) 'tcon,overlap:',tcon,overlap(iovlp)
+              if (imode.eq.2)
+     &          write(lupri,*) 'tcon,dotcon:',tcon,dotcon(ivec,itran)
             end if
 
           end if
@@ -911,9 +1017,10 @@ C           ----------------------------------
 *              end of subroutine ccovlp_noddy                         *
 *---------------------------------------------------------------------*
 C  /* Deck cc3_lr_ovlp */
-      subroutine cc3_lr_ovlp(listl,listr,overlap,
+      subroutine cc3_lr_ovlp(listl,listr,imode,overlap,
      &                       ilstnrst,ilstnrnd,istartend,
-     &                         work,lwork)     
+     &                       ndtran,mxvec,idtran,iddots,dotcon,
+     &                       work,lwork)     
 *---------------------------------------------------------------------*
 *
 *    Purpose: compute overlap (L|R) = (EBAR3!E3) between triples part 
@@ -928,7 +1035,9 @@ C
 C
       INTEGER ilstnrst,ilstnrnd,istartend(maxexci,2),lwork
       INTEGER LU3VI,LU3VI2,LU3FOP,LU3FOP2,LUCKJD,LUTOC,LUDKBC
-      INTEGER iovlp,ileft,isyml,imull,iright,isymr,imulr
+      INTEGER iovlp,ileft,isyml,imull,iright,isymr,imulr,
+     &        imode,ndtran,mxvec
+      integer idtran(ndtran), iddots(mxvec,ndtran)
 C
       CHARACTER*(*) listl,listr
       CHARACTER*8 FN3VI2,FNTOC
@@ -948,10 +1057,12 @@ C
       REAL overlap(*),work(lwork)
       REAL tcon
       REAL d0,dsixth
+      REAL dotcon(mxvec,ndtran)
 #else 
       DOUBLE PRECISION overlap(*),work(lwork)
       DOUBLE PRECISION tcon
       DOUBLE PRECISION d0,dsixth
+      DOUBLE PRECISION dotcon(mxvec,ndtran)
 #endif 
       PARAMETER (d0 = 0.0d0)
       PARAMETER (dsixth = 1.0d0/6.0d0)
@@ -963,14 +1074,18 @@ C
 *---------------------------------------------------------------------*
 *     Initializations and work space allocation:
 *---------------------------------------------------------------------*
+      if (imode.ne.1) then
+        call quit('illegal imode in CC3_LR_OVLP.')
+      end if
+
       if (listl(1:2).ne.'LE ' ) then
          WRITE(LUPRI,*) 'LISTL:',LISTL
-         CALL QUIT('Unkown/Illegal list in EBAR3_E3_OVLP.')
+         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
       end if
 !
       if ( listr(1:2).ne.'RE ') then
          WRITE(LUPRI,*) 'LISTR:',LISTR
-         CALL QUIT('Unkown/Illegal list in EBAR3_E3_OVLP.')
+         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
       end if
 C
 C-------------------
@@ -1057,7 +1172,9 @@ C
 C
       return
       end
+*---------------------------------------------------------------------*
 C  /* Deck eb3_e3_ovlp */
+*=====================================================================*
       SUBROUTINE EB3_E3_OVLP(LISTEB,IDLSTEB,ISYMEB,LISTE,IDLSTE,ISYME, 
      *                       LU3VI,FN3VI,LU3VI2,FN3VI2,LU3FOP,FN3FOP,
      *                       LU3FOP2,FN3FOP2,LUCKJD,FNCKJD,LUTOC,FNTOC,
@@ -1068,6 +1185,8 @@ C  /* Deck eb3_e3_ovlp */
 *             of left and right eigenvectors 
 *
 *    Poul Jorgensen and Filip Pawlowski, 18-Dec-2002, Aarhus
+*
+*    fixed for the memory leakage, 07-Oct-2003, Aarhus, FP.
 *=====================================================================*
 C
       IMPLICIT NONE 
@@ -1576,21 +1695,21 @@ C
                KINDSQWE  = KINDSQWEB  + (6*NCKIJ(ISWEBMAT) - 1)/IRAT + 1
                KINDEXBY  = KINDSQWE  + (6*NCKIJ(ISWEMAT) - 1)/IRAT + 1
                KINDEXCY  = KINDEXBY  + (NCKI(ISYALJBY)  - 1)/IRAT + 1
-               KEND1     = KINDEXCY  + (NCKI(ISYALJCY) - 1)/IRAT + 1
+               KEND2     = KINDEXCY  + (NCKI(ISYALJCY) - 1)/IRAT + 1
 C
-               KDIAGEB = KEND1 
+               KDIAGEB = KEND2 
                KDIAGE  = KDIAGEB + NCKIJ(ISWEBMAT)
                KWEBMAT = KDIAGE  + NCKIJ(ISWEMAT)
                KWEMAT  = KWEBMAT + NCKIJ(ISWEBMAT)
                KTMAT   = KWEMAT  + NCKIJ(ISWEMAT)
-               KEND1   = KTMAT   + MAX(NCKIJ(ISWEBMAT),NCKIJ(ISWEMAT))
+               KEND2   = KTMAT   + MAX(NCKIJ(ISWEBMAT),NCKIJ(ISWEMAT))
 C
-               KTRVI8  = KEND1
-               KEND1   = KTRVI8  + NCKATR(ISCKD2)
+               KTRVI8  = KEND2
+               KEND2   = KTRVI8  + NCKATR(ISCKD2)
 C
-               KTRVI8Y = KEND1
-               KEND1   = KTRVI8Y + NCKATR(ISCKD2E)
-               LWRK1   = LWORK - KEND1
+               KTRVI8Y = KEND2
+               KEND2   = KTRVI8Y + NCKATR(ISCKD2E)
+               LWRK2   = LWORK - KEND2
 C
 C---------------------------------------------
 C           Construct part of the diagonal.
@@ -1651,7 +1770,7 @@ C
      *                             WORK(KVLDKCB0),
      *                             WORK(KVGDKBC0),WORK(KVGDKCB0),
      *                             WORK(KTROCCL0),WORK(KTROCCG0),
-     *                             ISYM0,WORK(KEND1),LWRK1,
+     *                             ISYM0,WORK(KEND2),LWRK2,
      *                             WORK(KINDEXBY),WORK(KINDEXCY),
      *                             WORK(KINDSQWEB),LENSQWEB,ISYMB,B,
      *                             ISYMC,C)
@@ -1662,7 +1781,7 @@ C--------------------------------------------------------------
 C
                   CALL WBARBD_L1(WORK(KEB1),ISYMEB,WORK(KTMAT),
      *                           WORK(KXIAJB),ISYM0,
-     *                           WORK(KWEBMAT),WORK(KEND1),LWRK1,
+     *                           WORK(KWEBMAT),WORK(KEND2),LWRK2,
      *                           WORK(KINDSQWEB),LENSQWEB,ISYMB,B,
      *                           ISYMC,C)
 C
@@ -1694,7 +1813,7 @@ C
                   CALL WBD_GROUND(WORK(KT2TP),ISYM0,WORK(KTMAT),
      *                            WORK(KTRVI0Y),WORK(KTRVI8Y),
      *                            WORK(KTROC0Y),ISINTETR,WORK(KWEMAT),
-     *                            WORK(KEND1),LWRK1,
+     *                            WORK(KEND2),LWRK2,
      *                            WORK(KINDSQWE),LENSQWE,
      *                            ISYMB,B,ISYMC,C)
 C
@@ -1703,7 +1822,7 @@ C
                   CALL WBD_GROUND(WORK(KE2TP),ISYME,WORK(KTMAT),
      *                            WORK(KTRVI0),WORK(KTRVI8),
      *                            WORK(KTROC0),ISYM0,WORK(KWEMAT),
-     *                            WORK(KEND1),LWRK1,
+     *                            WORK(KEND2),LWRK2,
      *                            WORK(KINDSQWE),LENSQWE,
      *                            ISYMB,B,ISYMC,C)
 C
@@ -1783,6 +1902,8 @@ C------------------------
 C              Allocation 
 C------------------------
 C
+cfp memory leakage fix.
+               !reuse KEND1 since stuff from B-loop is not needed any more
                KEBAIBJ = KEND1
                KEBJAI  = KEBAIBJ + NT2SQ(ISAIBJ)
                KEAIBJ  = KEBJAI  + NT2SQ(ISBJAI)
@@ -1878,6 +1999,7 @@ C
 C
       RETURN
       END
+C
 C
 C  /* Deck we_tilde */
       SUBROUTINE WE_TILDE(WEMAT,ISWEMAT,TMAT,INDSQ,LENSQ)

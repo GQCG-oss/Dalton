@@ -1491,6 +1491,9 @@ c /* deck CCPRPAO */
 *
 *  Written by Christof Haettig, April 1997.
 *
+*  Thomas Bondo Pedersen, April 2003:
+*     Correct sign error in *ANGMOM integrals.
+*
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -1643,6 +1646,16 @@ c /* deck CCPRPAO */
         END DO
         END DO
       END DO
+
+*---------------------------------------------------------------------*
+* Correct sign error in *ANGMOM squaring:
+*---------------------------------------------------------------------*
+C  Taken out, because we were not sure if it is correct
+C  C.H., P.J., F.P. Aarhus, April 04
+C
+C     IF (LABEL(2:7) .EQ. 'ANGMOM') THEN
+C        CALL DSCAL(N2BST(IRREP),-1.0D0,PRPAO,1)
+C     ENDIF
 
       RETURN
       END

@@ -110,7 +110,7 @@ C  /* Deck cc_bfden */
 *
 *     IOPT .EQ. 5: relaxation contrib. to Jacobian right trans. -->
 *
-*        M^{g,d}_{i,j} = T^{g,d}_{i,j}(1,2) + T^{g,d}_{ci,j}(2,1)
+*        M^{g,d}_{i,j} = T^{g,d}_{i,j}(1,2) + T^{g,d}_{i,j}(2,1)
 *                        + XLAMD1(g,i)*XLAMD3(d,j) 
 *                        + XLAMD2(g,i)*XLAMD4(d,j)
 *

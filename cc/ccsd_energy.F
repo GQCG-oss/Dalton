@@ -64,8 +64,8 @@ C
 #include <ccslvinf.h>
 #include <ccfdgeo.h>
 #include <r12int.h>
-!Sonia
 #include <ccfop.h>
+#include <ccnoddy.h>
       LOGICAL LCONVG,RSPIM2,EX,LEXIST
       CHARACTER*5 ETY0, ETY1, ETY2
       CHARACTER MODEL*10, ETYPE*24
@@ -452,7 +452,7 @@ C       read R12 amplitudes
       END IF 
 C
       IT1 = 0
-      IF ( CCRSTR ) IT1 = 1
+      IF ( ETY1.EQ.'RSTAR' ) IT1 = 1
       CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
      *                WORK(KTAMP12S),WORK(KTAMP12T),
      *                WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
@@ -1013,6 +1013,15 @@ C
      &        'Triplet D and CD intermediate calculated '
 !
       ENDIF
+ 
+C--------------------------------------------------
+C     Precompute some integrals and amplitudes for
+C     the CC3 noddy response code:
+C--------------------------------------------------
+      IF (NODDY_INIT) THEN
+        CALL CCSDT_INIT_NODDY(WORK,LWORK,.FALSE.) 
+      END IF
+
  9999 CALL QEXIT('CCSD_ENERGY')
 C
       RETURN
@@ -3002,6 +3011,9 @@ C
          ICOUN6 = 0
          ICOUN7 = 0
          ICOUN8 = 0
+         ICOUN9 = 0!added by FP 16-03-04, needed for new CC3 LHTR
+         ICOUN10 = 0!added by FP 16-03-04, needed for new CC3 LHTR
+         ICOUN11 = 0!added by FP 16-03-04, needed for new CC3 LHTR
 
 C
          DO 580 ISYMD = 1,NSYM
@@ -3014,6 +3026,9 @@ C
             I3VOOO(ISYIJK,ISYMD) = ICOUN6
             IMAABCI(ISYIJK,ISYMD) = ICOUN7
             IMAAB_CI(ISYIJK,ISYMD) = ICOUN8
+            I3AORHF(ISYIJK,ISYMD) = ICOUN9!added by FP 16-03-04 (new CC3 LHTR)
+            I3AO(ISYIJK,ISYMD) = ICOUN10!added by FP 16-03-04 (new CC3 LHTR)
+            IRHF3O(ISYIJK,ISYMD) = ICOUN11!added by FP 29-03-04 (new CC3 LHTR)
 
             ICOUN1 = ICOUN1 + NMAIJK(ISYIJK)*NBAS(ISYMD)
             ICOUN2 = ICOUN2 + NMAIJK(ISYIJK)*NRHF(ISYMD)
@@ -3023,6 +3038,9 @@ C
             ICOUN6 = ICOUN6 + NVIR(ISYIJK)*NMAIJK(ISYMD)
             ICOUN7 = ICOUN7 + NMAABC(ISYIJK)*NRHF(ISYMD)
             ICOUN8 = ICOUN8 + NMATAB(ISYIJK)*NT1AM(ISYMD)
+            ICOUN9 = ICOUN9 + NDISAOSQ(ISYIJK)*NRHF(ISYMD)!FP 16-03-04(CC3 LHTR)
+            ICOUN10 = ICOUN10 + N2BST(ISYIJK)*NBAS(ISYMD)!FP (CC3 LHTR)
+            ICOUN11 = ICOUN11 + NRHF(ISYIJK)*NMAIJK(ISYMD)!FP (CC3 LHTR)
 C
   580    CONTINUE
          N3ODEL(ISIJKD) = ICOUN1
@@ -3033,6 +3051,9 @@ C
          N3VOOO(ISIJKD) = ICOUN6
          NMAABCI(ISIJKD) = ICOUN7
          NMAAB_CI(ISIJKD) = ICOUN8
+         N3AORHF(ISIJKD) = ICOUN9!FP 16-03-04(CC3 LHTR)
+         N3AO(ISIJKD) = ICOUN10!FP 16-03-04(CC3 LHTR)
+         NRHF3O(ISIJKD) = ICOUN11!FP 29-03-04(CC3 LHTR)
 
   570 CONTINUE
 C

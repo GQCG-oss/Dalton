@@ -71,7 +71,7 @@ C
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
-      CHARACTER*8 FS12AM
+      CHARACTER*8 FS12AM, FRHO12, FC12AM
       CHARACTER*(*) LIST
       DIMENSION REDH(*), REDS(*), SOLEQ(*)
       DIMENSION EIVAL(*), AMAT((MXDIIS+1)*(MXDIIS+1),*)
@@ -158,9 +158,9 @@ C
      *      TRIPLET
          ENDIF                      
 C
-         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
-     *                 .TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
+         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                       FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 TRIPLET,.TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
      *                 ISIDE,0,NUPVEC,WRK,LWRK)
 C
          CALL FLSHFO(LUPRI)
@@ -351,6 +351,7 @@ C
       PARAMETER (D1 = 1.0D0 , D0 = 0.0D0 , THRZER = 1.0D-99)
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
+      CHARACTER*(8)  FC12AM, FRHO12
       LOGICAL   TRIPLET, DEBUG
       DIMENSION REDH(*), REDS(*), SOLEQ(MAXRED,*)
       DIMENSION EIVAL(*),WRK(*)
@@ -381,14 +382,14 @@ C
          LBVEC = KBVEC
          DO INUM = 1,NSIM
             I = IVEC - 1 + INUM
-            CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,
+            CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUC12AM,FC12AM,
      *                     TRIPLET,I,WRK(KBVEC+(INUM-1)*NCCVAR))
          END DO
 C
 C        read in s vectors and extend projected jacobian matrix
 C
          DO J = 1,NREDH
-            CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,
+            CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                           TRIPLET,J,WRK(KSVEC))
             DO INUM = 1,NSIM
                I = IVEC - 1 + INUM
@@ -400,7 +401,7 @@ C
 C        read in b vectors and extend projected overlap matrix
 C
          DO J = 1,NREDH
-            CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,
+            CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUC12,FC12AM,
      *                     TRIPLET,J,WRK(KSVEC))
             DO INUM = 1,NSIM
                I = IVEC -1 + INUM
@@ -526,6 +527,7 @@ C
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
       CHARACTER*(*) LIST
+      CHARACTER*(8) FC12AM
       CHARACTER*(16) FILDIISS, FILDIIST
       LOGICAL   CCRSTRS,TRIPLET
       DIMENSION EIVAL(*), SOLEQ(MAXRED,*),WRK(*),RNORM(*)
@@ -577,7 +579,8 @@ C
 C
          CALL DZERO(WRK(KRES),NBX*NCCVAR)
 C
-         CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,NREDH,
+         CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LFC12,FC12AM,
+     &               TRIPLET,.FALSE.,NREDH,
      *               ISIMC,NBX,SOLEQ,WRK(KSOL),WRK(KWRK1))
 C
 C        Set norm of solution vector to 1 and save on file
@@ -623,7 +626,8 @@ C I'th set of Newton-Raphson equations
 C------------------------------------------------
 C
          DO 900 K = 1,NREDH
-            CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,TRIPLET,K,WRK(KWRK1))
+            CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
+     &                     TRIPLET,K,WRK(KWRK1))
             DO 700 JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
                EVAL1  = SOLEQ(K,JROOTJ)
@@ -686,8 +690,8 @@ C
                XNRM = DNORM2(NCCVAR,WRK(KSOL1),1)
                CALL DSCAL(NCCVAR,1.0D0/XNRM,WRK(KSOL1),1)
 
-               CALL CC_PUTVEC(LUFC1,FILC1,LUFC2,FILC2,TRIPLET,JROOTJ,
-     *                        WRK(KSOL1))
+               CALL CC_PUTVEC(LUFC1,FILC1,LUFC2,FILC2,LUFC12,FILC12,
+     &                        TRIPLET,JROOTJ,WRK(KSOL1))
              END IF
             ELSE
              CONVERGED(JROOTJ) = .TRUE.

@@ -31,7 +31,7 @@ HL    -1.000000           0.899623572        0.000000
 #######################################################################
 cat > mcd_lao.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .ANGMOM

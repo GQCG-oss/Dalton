@@ -35,7 +35,7 @@ C
 #include <single.h>
 C
 *=====================================================================*
-      SUBROUTINE CCSDT_BAMAT_NODDY(IOPTRES,LABELB,FREQB,ISYMB,
+      SUBROUTINE CCSDT_BAMAT_NODDY(IOPTRES,FREQRES,LABELB,ISYMB,
      &                             LISTC,IDLSTC,
      &                             LISTD,IDLSTD,
      &                             OMEGA1,OMEGA2,
@@ -44,13 +44,13 @@ C
      &                             NXTRAN,MXVEC,WORK,LWORK)
 *---------------------------------------------------------------------*
 *
-*    Purpose: compute triples contribution to A{B} transformed vector
+*    Purpose: compute triples contribution to B{A} transformed vector
 *
-*    (A{B} T^C)^eff_1,2 = (A{B} T^C)_1,2(CCSD) + (A{B} T^C)_1,2(T3)
-*                            - A_1,2;3 (w_3 - w)^1 (A{B} T^C)_3
+*    (B{A} T^C T^D)^eff_1,2 = (B{A} T^C T^D)_1,2(CCSD) 
+*                            - A_1,2;3 (w_3 - w_res)^1 (B{A} T^C T^D)_3
 *
 *        
-*   Written by Christof Haettig, April 2002, based on CCSDT_XI_NODDY
+*   Written by Christof Haettig, April 2002, based on CCSDT_AAMAT_NODDY
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -75,14 +75,14 @@ C
       INTEGER IDOTS(MXVEC,NXTRAN)
 
 #if defined (SYS_CRAY)
-      REAL DOTPROD(MXVEC,NXTRAN), FREQC, FREQE, FREQ, FREQB
+      REAL DOTPROD(MXVEC,NXTRAN), FREQC, FREQE, FREQ, FREQRES
       REAL WORK(LWORK), SIXTH, ONE, TWO, DUMMY, TCON, DDOT
-      REAL OMEGA1(*), OMEGA2(*), FREQD
+      REAL OMEGA1(*), OMEGA2(*), FREQD, FF, SIGN
       REAL OMEGA1EFF(*), OMEGA2EFF(*)
 #else
-      DOUBLE PRECISION DOTPROD(MXVEC,NXTRAN), FREQC, FREQE, FREQ, FREQB
+      DOUBLE PRECISION DOTPROD(MXVEC,NXTRAN), FREQC, FREQE, FREQRES
       DOUBLE PRECISION WORK(LWORK), SIXTH, ONE, TWO, DUMMY, TCON, DDOT
-      DOUBLE PRECISION OMEGA1(*), OMEGA2(*), FREQD
+      DOUBLE PRECISION OMEGA1(*), OMEGA2(*), FREQD, FF, SIGN
       DOUBLE PRECISION OMEGA1EFF(*), OMEGA2EFF(*)
 #endif
       PARAMETER( SIXTH = 1.0D0/6.0D0, ONE = 1.0D0, TWO = 2.0D0 )
@@ -96,7 +96,7 @@ C
      &        KFOCKBD, KTC1AM, KLAMPD, KLAMHD, KPERTD, KTD1AM
       INTEGER IJ, NIJ, LUSIFC, INDEX, IDUMMY, ILSTSYM, ISYMC, LUFOCK, 
      &        IRREP, IERR, ILLL, IDEL, ISYDIS, IOPT, ISYMD, IVEC,
-     &        IDLSTE, KFCKBUF
+     &        IDLSTE, KFCKBUF, KINT1S, KINT2S, KFIELD, KFIELDAO
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
@@ -107,6 +107,7 @@ C
 *---------------------------------------------------------------------*
 *     Memory allocation:
 *---------------------------------------------------------------------*
+      KEND1   = 1
 
       KOMEGA1 = KEND1
       KOMEGA2 = KOMEGA1 + NT1AMX
@@ -115,11 +116,17 @@ C
 
       KSCR1   = KEND1 
       KFOCKD  = KSCR1  + NT1AMX
-      KLAMP0  = KSCR1  + NORBT
+      KLAMP0  = KFOCKD + NORBT
       KLAMH0  = KLAMP0 + NLAMDT
       KFOCK0  = KLAMH0 + NLAMDT
       KT1AMP0 = KFOCK0 + NORBT*NORBT
       KEND1   = KT1AMP0+ NT1AMX
+ 
+      IF (NONHF) THEN
+        KFIELD   = KEND1
+        KFIELDAO = KFIELD   + NORBT*NORBT
+        KEND1    = KFIELDAO + NORBT*NORBT
+      END IF 
 
       KFOCKB    = KEND1 
       KFOCKB_AO = KFOCKB    + NORBT*NORBT
@@ -154,6 +161,10 @@ C
       KINT1T = KEND1
       KINT2T = KINT1T + NT1AMX*NVIRT*NVIRT
       KEND1  = KINT2T + NRHFT*NRHFT*NT1AMX 
+
+      KINT1S = KEND1
+      KINT2S = KINT1S + NT1AMX*NVIRT*NVIRT
+      KEND1  = KINT2S + NRHFT*NRHFT*NT1AMX 
 
       LWRK1  = LWORK  - KEND1
       IF (LWRK1 .LT. 0) THEN
@@ -211,6 +222,21 @@ C
      &              WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0)
 
 *---------------------------------------------------------------------*
+*     If needed get external field:
+*---------------------------------------------------------------------*
+      IF ((NONHF) .AND. NFIELD .GT. 0) THEN
+         CALL DZERO(WORK(KFIELDAO),NORBT*NORBT)
+         DO I = 1, NFIELD
+          FF = EFIELD(I)
+          CALL CC_ONEP(WORK(KFIELDAO),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
+         ENDDO
+ 
+         CALL DCOPY(NORBT*NORBT,WORK(KFIELDAO),1,WORK(KFIELD),1)
+         CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMP0),WORK(KLAMH0),
+     *                 WORK(KEND1),LWRK1,1,1,1)
+      ENDIF
+
+*---------------------------------------------------------------------*
 *     Matrix with property integrals in MO basis:
 *---------------------------------------------------------------------*
       ! read property integrals from file:
@@ -228,49 +254,22 @@ C
      &              WORK(KEND1),LWRK1,ISYMB,1,1)
 
 *---------------------------------------------------------------------*
-*     Loop over distributions of integrals:
+*     Compute some integrals:
+*           XINT1T  =  (KC|BD)
+*           XINT2T  =  (KC|LJ)
+*           XIAJB   = 2(IA|JB) - (IB|JA)
+*           YIAJB   =  (IA|JB)
 *---------------------------------------------------------------------*
-      CALL DZERO(WORK(KINT1T),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT2T),NT1AMX*NRHFT*NRHFT)
-      CALL DZERO(WORK(KXIAJB),NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KYIAJB),NT1AMX*NT1AMX)
-
-      DO ISYMD = 1, NSYM
-         DO ILLL = 1,NBAS(ISYMD)
-            IDEL   = IBAS(ISYMD) + ILLL
-            ISYDIS = MULD2H(ISYMD,ISYMOP)
- 
-C           ----------------------------
-C           Work space allocation no. 2.
-C           ----------------------------
-            KXINT  = KEND1
-            KEND2  = KXINT + NDISAO(ISYDIS)
-            LWRK2  = LWORK - KEND2
-            IF (LWRK2 .LT. 0) THEN
-               WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
-               CALL QUIT('Insufficient space in CCSDT_BAMAT_NODDY')
-            ENDIF
- 
-C           ---------------------------
-C           Read in batch of integrals.
-C           ---------------------------
-            CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
- 
-C           ----------------------------------
-C           Calculate integrals needed in CC3:
-C           ----------------------------------
-            CALL CCSDT_TRAN1(WORK(KINT1T),WORK(KINT2T),
-     &                       WORK(KLAMP0),WORK(KLAMH0),WORK(KXINT),IDEL)
-
-            CALL CC3_TRAN2(WORK(KXIAJB),WORK(KYIAJB),WORK(KLAMP0),
-     &                     WORK(KLAMH0),WORK(KXINT),IDEL)
- 
-         END DO   
-      END DO  
+      CALL CCSDT_INTS0_NODDY(.TRUE.,WORK(KXIAJB),WORK(KYIAJB),
+     &                       .TRUE.,WORK(KINT1S),WORK(KINT2S),
+     &                       .TRUE.,WORK(KINT1T),WORK(KINT2T),
+     &                       WORK(KLAMP0),WORK(KLAMH0),
+     &                       WORK(KEND1),LWRK1)
 
 *---------------------------------------------------------------------*
-*     End Loop over distributions of integrals.
+*     allocate work space for a triples and two doubles vectors and
+*     read zeroth-order and response doubles amplitudes from file,
+*     compute response Lambda matrices:
 *---------------------------------------------------------------------*
       KT3AM  = KEND1
       KT2AMD = KT3AM  + NT1AMX*NT1AMX*NT1AMX
@@ -282,33 +281,36 @@ C           ----------------------------------
       ENDIF
 
       ISYMC = ILSTSYM(LISTC,IDLSTC)
-      IOPT = 2
+      IOPT  = 2
       CALL CC_RDRSP(LISTC,IDLSTC,ISYMC,IOPT,MODEL,DUMMY,WORK(KT3AM))
       Call CCLR_DIASCL(WORK(KT3AM),TWO,ISYMC)
       CALL CC_T2SQ(WORK(KT3AM),WORK(KT2AMC),ISYMC)
 
       ISYMD = ILSTSYM(LISTD,IDLSTD)
-      IOPT = 2
+      IOPT  = 2
       CALL CC_RDRSP(LISTD,IDLSTD,ISYMD,IOPT,MODEL,DUMMY,WORK(KT3AM))
       Call CCLR_DIASCL(WORK(KT3AM),TWO,ISYMD)
       CALL CC_T2SQ(WORK(KT3AM),WORK(KT2AMD),ISYMD)
 
-C     ---------------------------------
-C     Initialize triples result vector:
-C     ---------------------------------
+*---------------------------------------------------------------------*
+*     compute the three contributions to the triples result vector:
+*---------------------------------------------------------------------*
+      ! initialize triples result vector:
       CALL DZERO(WORK(KOMEGA3),NT1AMX*NT1AMX*NT1AMX)
 
 C     ---------------------------------------------------
 C     add triples contribution: <mu_3|[[B,T2^D],T2^C]|HF>
 C     ---------------------------------------------------
       CALL CCSDT_XKSI3_1(WORK(KOMEGA3),WORK(KFOCKB),
-     &                   WORK(KT2AMD),WORK(KT2AMC),TWO)
+     &                   WORK(KT2AMD),WORK(KT2AMC),ONE)
+      CALL CCSDT_XKSI3_1(WORK(KOMEGA3),WORK(KFOCKB),
+     &                   WORK(KT2AMC),WORK(KT2AMD),ONE)
 
 C     -------------------------------------------------
 C     calculate the first-order triples amplitudes T^C:
 C     -------------------------------------------------
       CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTC,IDLSTC,FREQC,.FALSE.,
-     &                     .TRUE. ,WORK(KINT1SC),WORK(KINT2SC),
+     &                     .FALSE.,WORK(KINT1S),WORK(KINT2S),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
      &                             WORK(KINT1SC),WORK(KINT2SC),
@@ -316,6 +318,8 @@ C     -------------------------------------------------
      &                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                     WORK(KDUM),WORK(KFOCKD),
      &                     WORK(KEND2),LWRK2)
+
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM))
 
 C     --------------------------------------------------------------
 C     calculate one-index transf. property integrals: B^D = [B,T1^D]
@@ -331,14 +335,13 @@ C     --------------------------------------------------------------
 C     ----------------------------------------------
 C     add triples contribution: <mu_3|[B^D,T3^C]|HF>
 C     ----------------------------------------------
-      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM))
       CALL CCSDT_XKSI3_2(WORK(KOMEGA3),WORK(KFOCKBD),WORK(KT3AM))
 
 C     -------------------------------------------------
 C     calculate the first-order triples amplitudes T^D:
 C     -------------------------------------------------
       CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTD,IDLSTD,FREQD,.FALSE.,
-     &                     .TRUE. ,WORK(KINT1SD),WORK(KINT2SD),
+     &                     .FALSE.,WORK(KINT1S),WORK(KINT2S),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
      &                             WORK(KINT1SD),WORK(KINT2SD),
@@ -346,6 +349,8 @@ C     -------------------------------------------------
      &                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                     WORK(KDUM),WORK(KFOCKD),
      &                     WORK(KEND2),LWRK2)
+
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM))
 
 C     --------------------------------------------------------------
 C     calculate one-index transf. property integrals: B^C = [B,T1^C]
@@ -361,8 +366,13 @@ C     --------------------------------------------------------------
 C     ----------------------------------------------
 C     add triples contribution: <mu_3|[B^C,T3^D]|HF>
 C     ----------------------------------------------
-      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM))
       CALL CCSDT_XKSI3_2(WORK(KOMEGA3),WORK(KFOCKBC),WORK(KT3AM))
+
+C     ---------------------------------------------------------
+C     we have no contributions to the singles and doubles part:
+C     ---------------------------------------------------------
+      CALL DZERO(WORK(KOMEGA1),NT1AMX)
+      CALL DZERO(WORK(KOMEGA2),NT1AMX*NT1AMX)
 
 *---------------------------------------------------------------------*
 *     Now we split:
@@ -371,96 +381,29 @@ C     ----------------------------------------------
 *---------------------------------------------------------------------*
       IF (IOPTRES.GE.1 .AND. IOPTRES.LE.4) THEN
 
-C        -----------------------------------------------------------
-C        Calculate -O_nu_3 = O_nu_3 / (eps_nu_3 - w)
-C        -----------------------------------------------------------
-         FREQ = FREQB + FREQC + FREQD
-
-         IF (LWRK1.LT.NT1AMX) CALL QUIT('OUT OF MEMORY - CCSDT_BAMAT')
-         IF (NONHF) CALL QUIT('No NONHF in CCSDT_BAMAT_NODDY')
-         CALL CCSDT_3AM(WORK(KOMEGA3),FREQ,WORK(KEND1),WORK(KFOCKD),
-     &                  NONHF,DUMMY,.FALSE.,DUMMY)
-
-C        --------------------------------------------------------
-C        Add contributions to the effective result vector:
-C        --------------------------------------------------------
-         CALL DZERO(WORK(KOMEGA2),NT1AMX*NT1AMX)
-         CALL DZERO(WORK(KOMEGA1),NT1AMX)
-
-         CALL CCSDT_OMEGA1(WORK(KOMEGA1),WORK(KXIAJB),WORK(KOMEGA3))
+         CALL DCOPY(NT1AMX,OMEGA1,1,OMEGA1EFF,1)
+         CALL DCOPY(NT2AMX,OMEGA2,1,OMEGA2EFF,1)
  
-         CALL CCSDT_OMEGA2(WORK(KOMEGA2),WORK(KINT1T),WORK(KINT2T),
-     *                     WORK(KOMEGA3),WORK(KFOCK0))
- 
-         DO I = 1,NT1AMX
-            OMEGA1EFF(I) = OMEGA1(I) + WORK(KOMEGA1+I-1)
-         END DO
- 
-         DO I = 1,NT1AMX
-            DO J = 1,I
-               IJ = NT1AMX*(I-1) + J
-               NIJ = INDEX(I,J)
-               OMEGA2EFF(NIJ) = OMEGA2(NIJ) + WORK(KOMEGA2+IJ-1)
-            END DO
-         END DO
+         CALL CC_RHPART_NODDY(OMEGA1EFF,OMEGA2EFF,WORK(KOMEGA3),FREQRES,
+     &                        WORK(KFOCKD),WORK(KFOCK0),WORK(KFIELD),
+     &                        WORK(KXIAJB),WORK(KINT1T),WORK(KINT2T),
+     &                        WORK(KEND1),LWRK1)
 
       ELSE IF (IOPTRES.EQ.5) THEN
-*---------------------------------------------------------------------*
-*       for IOPTRES = 5 we compute the contractions L^E B{B} T^C T^D:
-*       here in the triples code we compute only the contribution 
-*       from the triples result vector: 
-*---------------------------------------------------------------------*
-        KT3AM = KEND1
-        KEND2 = KT3AM + NT1AMX*NT1AMX*NT1AMX
-        LWRK2 = LWORK - KEND2
-        IF (LWRK2 .LT. 0) THEN
-           CALL QUIT('Insufficient space in CCSDT_BAMAT_NODDY')
-        ENDIF
 
-        IVEC = 1
-        DO WHILE (IDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+ 
+        SIGN = -1.0D0
+        CALL CCDOTRSP_NODDY(WORK(KOMEGA1),WORK(KOMEGA2),
+     &                      WORK(KOMEGA3),SIGN,
+     &                      ITRAN,LISTDP,IDOTS,DOTPROD,MXVEC,
+     &                      WORK(KLAMP0),WORK(KLAMH0),
+     &                      WORK(KFOCK0),WORK(KFOCKD),
+     &                      WORK(KXIAJB),WORK(KYIAJB),
+     &                      WORK(KINT1T),WORK(KINT2T),
+     &                      WORK(KINT1S),WORK(KINT2S),
+     &                      'CCSDT_BAMAT_NODDY',LOCDBG,LOCDBG,.FALSE.,
+     &                      WORK(KEND1),LWRK1)
 
-          IDLSTE = IDOTS(IVEC,ITRAN)
-          ISYMD  = ILSTSYM(LISTDP,IDLSTE)
-
-          IF (LISTDP(1:3).EQ.'L1 ' .OR. LISTDP(1:3).EQ.'LE ') THEN
-
-             CALL CCSDT_TBAR31_NODDY(WORK(KL3AM),FREQE,LISTDP,IDLSTE,
-     &                               WORK(KLAMP0),WORK(KLAMH0),
-     &                               WORK(KFOCK0),WORK(KFOCKD),
-     &                               WORK(KSCR1),
-     &                               .FALSE.,WORK(KXIAJB),DUMMY,
-     &                               .FALSE.,WORK(KINT1T),WORK(KINT2T),
-     &                               WORK(KEND2),LWRK2)
-          ELSE
-            CALL QUIT('Unknown or illegal list in CCSDT_BAMAT_NODDY.')
-          END IF
-
-          IF (LOCDBG) THEN
-            WRITE(LUPRI,*) 'CCSDT_BAMAT_NODDY> IVEC,ITRAN:',IVEC,ITRAN
-            WRITE(LUPRI,*) 'NORM^2(OMEGA3):',
-     &        DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KOMEGA3),1,WORK(KOMEGA3),1)
-            WRITE(LUPRI,*) 'NORM^2(L3AM):',
-     &        DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KL3AM),1,WORK(KL3AM),1)
-          END IF
-
-          TCON = - SIXTH *
-     &      DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KL3AM),1,WORK(KOMEGA3),1)
-
-          DOTPROD(IVEC,ITRAN) = DOTPROD(IVEC,ITRAN) + TCON
-
-          IF (LOCDBG) THEN
-            WRITE(LUPRI,*) 'CCSDT_BAMAT_NODDY:'
-            WRITE(LUPRI,*) 'L_3  x (B{B} T^C T^D)_3:',TCON
-          END IF
-
-          IVEC = IVEC + 1
-
-        END DO
-
-
-      ELSE
-        CALL QUIT('Illegal value for IOPTRES IN CCSDT_BAMAT_NODDY')
       END IF
 
       CALL QEXIT('CCSDT_BAMAT_NODDY')

@@ -76,6 +76,7 @@ c /* deck cccr_setup */
 #include <cccrinf.h>
 #include <ccroper.h>
 #include <cccperm.h>
+#include <cclists.h>
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -85,28 +86,29 @@ c /* deck cccr_setup */
 
       INTEGER MXVEC2, MXTRAN2, MXVEC1, MXTRAN3
 
-      INTEGER I0HTRAN(5,MXTRAN3)
+      INTEGER I0HTRAN(MXDIM_HTRAN,MXTRAN3)
       INTEGER I0HDOTS(MXVEC1,MXTRAN3)
 
-      INTEGER I0GTRAN(4,MXTRAN2)
+      INTEGER I0GTRAN(MXDIM_GTRAN,MXTRAN2)
       INTEGER I0GDOTS(MXVEC2,MXTRAN2)
 
-      INTEGER IAGTRAN(4,MXTRAN3)
+      INTEGER IAGTRAN(MXDIM_GTRAN,MXTRAN3)
       INTEGER IAGDOTS(MXVEC1,MXTRAN3)
 
-      INTEGER I0FTRAN(3,MXTRAN2)
+      INTEGER I0FTRAN(MXDIM_FTRAN,MXTRAN2)
       INTEGER I0FDOTS(MXVEC2,MXTRAN2)
   
-      INTEGER IAFTRAN(3,MXTRAN2)
+      INTEGER IAFTRAN(MXDIM_FTRAN,MXTRAN2)
       INTEGER IAFDOTS(MXVEC2,MXTRAN2)
   
-      INTEGER I0FATRAN(5,MXTRAN2)
+      INTEGER I0FATRAN(MXDIM_FATRAN,MXTRAN2)
       INTEGER I0FADOTS(MXVEC2,MXTRAN2)
 
-      INTEGER IAFATRAN(5,MXTRAN3)
+      INTEGER IAFATRAN(MXDIM_FATRAN,MXTRAN3)
       INTEGER IAFADOTS(MXVEC1,MXTRAN3)
 
-      INTEGER IAEATRAN(3,MXTRAN2)
+C     INTEGER IAEATRAN(3,MXTRAN2)
+      INTEGER IAEATRAN(MXDIM_XEVEC,MXTRAN2)
       INTEGER IAEADOTS(MXVEC2,MXTRAN2)
 
       INTEGER IXTRAN(MXTRAN2)
@@ -136,7 +138,7 @@ c /* deck cccr_setup */
 #endif
 
       INTEGER IOP(4), ISY(4), IZT(4), IR1(4), IR2(6), IX2(6)
-      INTEGER IO3(4), IO2(6), IL2(6), IE1(4)
+      INTEGER IO3(4), IO2(6), IL2(6), IE1(4), IKAP(4)
 
 * external functions:
       INTEGER IR3TAMP
@@ -178,6 +180,10 @@ c /* deck cccr_setup */
       MXO      = 0
       MXL      = 0
 
+      DO ITRAN = 1, MXTRAN2
+        IAEATRAN(3,ITRAN) = -1
+      END DO
+
 *---------------------------------------------------------------------*
 * start loop over all requested second hyperpolarizabilities
 *---------------------------------------------------------------------*
@@ -187,6 +193,11 @@ c /* deck cccr_setup */
         IOP(B) = IBCROP(IOPER)
         IOP(C) = ICCROP(IOPER)
         IOP(D) = IDCROP(IOPER)
+
+        IKAP(A)= 0
+        IKAP(B)= 0
+        IKAP(C)= 0
+        IKAP(D)= 0
 
         ISY(A) = ISYOPR(IOP(A))
         ISY(B) = ISYOPR(IOP(B))
@@ -437,13 +448,19 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
         IF ((USE_L2BC.AND.P.EQ.4) .OR. (USE_LBCD.AND.P.GT.3) ) THEN
           CONTINUE
         ELSE 
-          CALL CCQR_SETEA(IAEATRAN,IAEADOTS,MXTRAN2,MXVEC2, ! 1x2x3,4
-     &                    IZT(I1(P)),IOP(I2(P)),IR2(IP(P)),ITRAN,IVEC)
+C         CALL CCQR_SETEA(IAEATRAN,IAEADOTS,MXTRAN2,MXVEC2, ! 1x2x3,4
+C    &                    IZT(I1(P)),IOP(I2(P)),IR2(IP(P)),ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IAEATRAN,IAEADOTS,MXTRAN2,MXVEC2,!1x2x3,4
+     &                  IZT(I1(P)),IOP(I2(P)),IKAP(I2(P)),0,0,0,
+     &                  IR2(IP(P)),ITRAN,IVEC)
           NAEATRAN = MAX(NAEATRAN,ITRAN)
           MXVAEA   = MAX(MXVAEA,IVEC) 
 
-          CALL CCQR_SETEA(IAEATRAN,IAEADOTS,MXTRAN2,MXVEC2, ! 2x1x3,4
-     &                    IZT(I2(P)),IOP(I1(P)),IR2(IP(P)),ITRAN,IVEC)
+C         CALL CCQR_SETEA(IAEATRAN,IAEADOTS,MXTRAN2,MXVEC2, ! 2x1x3,4
+C    &                    IZT(I2(P)),IOP(I1(P)),IR2(IP(P)),ITRAN,IVEC)
+          CALL CC_SETXE('Eta',IAEATRAN,IAEADOTS,MXTRAN2,MXVEC2,!2x1x3,4
+     &                  IZT(I2(P)),IOP(I1(P)),IKAP(I1(P)),0,0,0,
+     &                  IR2(IP(P)),ITRAN,IVEC)
           NAEATRAN = MAX(NAEATRAN,ITRAN)
           MXVAEA   = MAX(MXVAEA,IVEC) 
         END IF
@@ -1805,6 +1822,97 @@ c /* deck CC_SETF12 */
 
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CC_SETF12                            *
+*---------------------------------------------------------------------*
+c /* deck CC_SETAA */
+*=====================================================================*
+      SUBROUTINE CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                    IZETAV,IOPER,ITAMPB,ITRAN,IVEC)
+*---------------------------------------------------------------------*
+*
+*    Purpose: maintain a list of dot products of A{O} matrix 
+*             transformations with right amplitude vectors
+*                       Z * A{O} * T^B
+*
+*             IAATRAN - list of A{O} matrix transformations
+*             IAADOTS - list of vectors it should be dottet on
+*        
+*             MXTRAN - maximum list dimension
+*             MXVEC  - maximum second dimension for IFDOTS
+*      
+*             IZETAV - index of lagrangian multiplier vector
+*             IOPER  - index of operator O
+*             ITAMPB - index of amplitude vector B
+*
+*             ITRAN - index in IAATRAN list
+*             IVEC  - second index in IAADOTS list
+*
+*    Written by Christof Haettig, Mai 2003.
+*
+*=====================================================================*
+      IMPLICIT NONE  
+#include <priunit.h>
+#include <cclists.h>
+
+      INTEGER MXVEC, MXTRAN
+      INTEGER IAATRAN(MXDIM_AATRAN,MXTRAN)
+      INTEGER IAADOTS(MXVEC,MXTRAN)
+
+      LOGICAL LFNDB
+      INTEGER IZETAV, IOPER, ITAMPB
+      INTEGER ITRAN, IVEC, I, IDX
+
+* statement  functions:
+      LOGICAL LAATST, LFEND
+      INTEGER IO, IB
+      LAATST(ITRAN,IO,IB) = 
+     &      IAATRAN(1,ITRAN).EQ.IO .AND. IAATRAN(2,ITRAN).EQ.IB
+      LFEND(ITRAN) = ITRAN.GT.MXTRAN .OR.
+     &   (IAATRAN(1,ITRAN)+IAATRAN(2,ITRAN)).LE.0
+
+*---------------------------------------------------------------------*
+* set up list of A{O} matrix transformations
+*---------------------------------------------------------------------*
+      ITRAN = 1
+      LFNDB = LAATST(ITRAN,IOPER,ITAMPB)
+
+      DO WHILE ( .NOT. (LFNDB.OR.LFEND(ITRAN)) )
+       ITRAN = ITRAN + 1
+       LFNDB = LAATST(ITRAN,IOPER,ITAMPB)
+      END DO
+
+      IF (.NOT.LFNDB) THEN
+        IAATRAN(1,ITRAN) = IOPER
+        IAATRAN(2,ITRAN) = ITAMPB
+      END IF
+
+      IVEC = 1
+      DO WHILE (IAADOTS(IVEC,ITRAN).NE.IZETAV .AND.
+     &          IAADOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+        IVEC = IVEC + 1
+      END DO
+
+      IAADOTS(IVEC,ITRAN) = IZETAV
+
+*---------------------------------------------------------------------*
+      IF (IVEC.GT.MXVEC .OR. ITRAN.GT.MXTRAN) THEN
+        WRITE (LUPRI,*) 'IVEC :',IVEC
+        WRITE (LUPRI,*) 'ITRAN:',ITRAN
+        WRITE (LUPRI,*) 'IOPER,ITAMPB:',IOPER,ITAMPB
+        IDX = 1
+        DO WHILE ( .NOT. LFEND(IDX) )
+          WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') 'CC_SETAA>',
+     &       (IAATRAN(I,IDX),I=1,2),(IAADOTS(I,IDX),I=1,MXVEC)
+          IDX = IDX + 1
+        END DO
+        CALL FLSHFO(LUPRI)
+        CALL QUIT('Overflow error in CC_SETAA.')
+      END IF
+      
+      RETURN
+      END 
+
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CC_SETAA                             *
 *---------------------------------------------------------------------*
 c /* deck CC_SETFA12 */
 *=====================================================================*

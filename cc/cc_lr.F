@@ -3282,3 +3282,239 @@ C
       ENDIF
 C
       END
+*---------------------------------------------------------------------*
+      SUBROUTINE CC_AVE2(VALUE,IDLSTX,IDLSTY,WORK,LWORK)
+C-----------------------------------------------------------------------
+C     Purpose: Calculate <HF|[[H,T^x],T^y]+[X,T^y]+[Y,T^x]|CC> 
+C              contribution to second order property.
+C              IDLSTX,IDLSTY - indeces of first-order amplitudes
+C     Written by Christof Haettig, Mai 2003
+C-----------------------------------------------------------------------
+      IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <maxorb.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccr1rsp.h>
+
+      INTEGER ISYM0
+      PARAMETER ( ISYM0 = 1 )
+ 
+      CHARACTER LISTR1*3, LISTR2*3, MODEL*10, LABELX*8, LABELY*8
+      INTEGER IDLSTX, IDLSTY, LWORK
+
+#if defined (SYS_CRAY)  
+      REAL WORK(LWORK), VALUE, DDOT
+      REAL ZERO, ONE, TWO
+#else
+      DOUBLE PRECISION WORK(LWORK), VALUE, DDOT
+      DOUBLE PRECISION ZERO, ONE, TWO
+#endif
+      PARAMETER (ZERO=0.0D0, ONE=1.0D0, TWO=2.0D0)
+  
+      INTEGER ISYMX, ISYMY, ISYMXY, KT1AM0, KLAMP0, KLAMH0, KT1AMX,
+     &        KT1AMY, KEND1, LWRK1, IOPT, KFOCKX, KXIA, KEND2, LWRK2,
+     &        KFOCKY, KYIA, KXIAJB, KT1AM, IRREP, ISYMM, IERR
+
+
+      VALUE = ZERO
+
+      ISYMX  = ISYLRT(IDLSTX)
+      ISYMY  = ISYLRT(IDLSTY)
+      ISYMXY = MULD2H(ISYMX,ISYMY)
+
+      LABELX = LRTLBL(IDLSTX)
+      LABELY = LRTLBL(IDLSTY)
+
+      IF (ISYMXY.NE.1) RETURN
+C
+      KT1AM0 = 1
+      KLAMP0 = KT1AM0 + NT1AM(ISYM0)
+      KLAMH0 = KLAMP0 + NLAMDT
+      KT1AMX = KLAMH0 + NLAMDT
+      KT1AMY = KT1AMX + NT1AM(ISYMX)
+      KEND1  = KT1AMY + NT1AM(ISYMY)
+      LWRK1  = LWORK  - KEND1
+      IF (LWRK1.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
+
+C     -----------------------------------------------------------
+C     read amplitudes:
+C     -----------------------------------------------------------
+      IOPT = 1
+      CALL CC_RDRSP('R1',IDLSTX,ISYMX,IOPT,MODEL,WORK(KT1AMX),DUMMY)
+      CALL CC_RDRSP('R1',IDLSTY,ISYMY,IOPT,MODEL,WORK(KT1AMY),DUMMY)
+
+      ! read zeroth-order singles amplitudes and compute Lambda
+      IOPT = 1
+      CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AM0),DUMMY)
+      CALL LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AM),
+     *            WORK(KEND1),LWRK1)
+ 
+C     -----------------------------------------------------------
+C     compute <HF|[X,T^Y]|HF>
+C     -----------------------------------------------------------
+      KFOCKX = KEND1
+      KXIA   = KFOCKX + N2BST(ISYMX)
+      KEND2  = KXIA   + NT1AM(ISYMX)
+      LWRK2  = LWORK  - KEND2
+      IF (LWRK2.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
+
+      ! get X integrals:
+      CALL CCPRPAO(LABELX,WORK(KFOCKX),IRREP,ISYMM,IERR,
+     &              WORK(KEND2),LWRK2)
+      IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
+        CALL QUIT('CC_AVE2: error reading operator '//LABELX)
+      ELSE IF (IERR.LT.0) THEN
+        CALL DZERO(WORK(KFOCKX),N2BST(ISYMX))
+      END IF
+      CALL CC_FCKMO(WORK(KFOCKX),WORK(KLAMP0),WORK(KLAMH0),
+     &              WORK(KEND2),LWRK2,ISYMX,1,1)
+      CALL CC_FOCK_RESORT(DUMMY,.FALSE.,WORK(KXIA),.TRUE.,
+     &      DUMMY,.FALSE.,DUMMY,.FALSE.,WORK(KFOCKX),ISYMX) 
+ 
+
+      VALUE = VALUE + TWO * 
+     &   DDOT(NT1AM(ISYMX),WORK(KXIA),1,WORK(KT1AMY),1)
+
+C     -----------------------------------------------------------
+C     compute <HF|[Y,T^X]|HF>
+C     -----------------------------------------------------------
+      KFOCKY = KEND1
+      KYIA   = KFOCKY + N2BST(ISYMX)
+      KEND2  = KYIA   + NT1AM(ISYMX)
+      LWRK2  = LWORK  - KEND2
+      IF (LWRK2.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
+
+      ! get Y integrals:
+      CALL CCPRPAO(LABELY,WORK(KFOCKY),IRREP,ISYMM,IERR,
+     &              WORK(KEND2),LWRK2)
+      IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMY)) THEN
+        CALL QUIT('CC_AVE2: error reading operator '//LABELY)
+      ELSE IF (IERR.LT.0) THEN
+        CALL DZERO(WORK(KFOCKY),N2BST(ISYMY))
+      END IF
+      CALL CC_FCKMO(WORK(KFOCKY),WORK(KLAMP0),WORK(KLAMH0),
+     &              WORK(KEND2),LWRK2,ISYMY,1,1)
+      CALL CC_FOCK_RESORT(DUMMY,.FALSE.,WORK(KYIA),.TRUE.,
+     &      DUMMY,.FALSE.,DUMMY,.FALSE.,WORK(KFOCKY),ISYMY) 
+ 
+      VALUE = VALUE + TWO * 
+     &   DDOT(NT1AM(ISYMX),WORK(KYIA),1,WORK(KT1AMX),1)
+
+C     -----------------------------------------------------------
+C     get packed L(ia,jb) integrals and evaluate the 
+C     projection contribution <HF|[[H,T^X],T^Y]|CC>
+C     -----------------------------------------------------------
+      KXIAJB = KEND1
+      KXIA   = KXIAJB + NT2AM(ISYM0)
+      KEND2  = KXIA   + NT1AM(ISYMX)
+      LWRK2  = LWORK  - KEND2
+      IF (LWRK2.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
+
+      CALL CCG_RDIAJB(WORK(KXIAJB),NT2AM(ISYM0))
+
+      IOPT = 1
+      Call CCSD_TCMEPK(WORK(KXIAJB),ONE,ISYM0,IOPT) 
+
+      IOPT = 0
+      CALL DZERO(WORK(KXIA),NT1AM(ISYMX))
+      CALL CCG_LXD(WORK(KXIA),ISYMX,WORK(KT1AMX),ISYMX,
+     &             WORK(KXIAJB),ISYM0,IOPT)
+
+      VALUE = VALUE + TWO * 
+     &   DDOT(NT1AM(ISYMX),WORK(KXIA),1,WORK(KT1AMY),1)
+ 
+      RETURN
+      END
+*---------------------------------------------------------------------*
+      SUBROUTINE CC_TSTAV2(IDLSTR2,VEC,WORK,LWORK,IOPTTST)
+C----------------------------------------------------------------------
+C     Purpose: Calculate second-order properties from the second-order
+C              amplitude response to test these
+C     Written by Christof Haettig, May 2003
+C----------------------------------------------------------------------
+      IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <maxorb.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+#include <ccr1rsp.h>
+#include <ccr2rsp.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      INTEGER IDLSTR2, LWORK, IOPTTST, ISYM0
+      PARAMETER (ISYM0 = 1)
+
+#if defined (SYS_CRAY)  
+      REAL PROPAVE, PROPRSP, WORK(*), VEC(*), DDOT
+#else
+      DOUBLE PRECISION PROPAVE, PROPRSP, WORK(*), VEC(*), DDOT
+#endif
+
+      LOGICAL LORX
+      CHARACTER*10 MODEL
+      INTEGER KETA, KEND1, LWRK1, IOPT, IDLSTX, IDLSTY,
+     &        IR1TAMP
+
+      IF (CCS) THEN
+         PROPRSP = 0.0D0
+      ELSE
+         KETA   = 1 
+         KEND1  = KETA  + NT1AM(ISYM0) + NT2AM(ISYM0)
+         LWRK1  = LWORK - KEND1 
+         IF (LWRK1.LT.0) CALL QUIT('Too little workspace in CC_TSTAV2')
+         IF      (IOPTTST.EQ.0) THEN
+            CALL CC_ETA(WORK(KETA),WORK(KEND1),LWRK1)
+         ELSE IF (IOPTTST.EQ.1) THEN
+            IOPT  = 3
+            CALL CC_RDRSP('L0 ',0,ISYM0,IOPT,MODEL,WORK(KETA),
+     *                    WORK(KETA+NT1AM(ISYMOP)))
+         ELSE
+            WRITE(LUPRI,*) 'IOPTTST = ',IOPTTST
+            CALL QUIT('ILLEGAL VALUE FOR IOPTTST IN CC_TSTAV2.')
+         END IF
+         PROPRSP = DDOT(NT1AM(ISYMOP)+NT2AM(ISYMOP),WORK(KETA),1,VEC,1)
+ 
+         IF (LOCDBG) THEN
+           write(lupri,*) 'Input vector:'
+           call cc_prp(vec,vec(nt1am(isymop)+1),1,1,1)
+           write(lupri,*) 'L0/X0 vector:'
+           call cc_prp(work(keta),work(keta+nt1am(isymop)),1,1,1)
+           write(lupri,*) 'PROPRSP:',PROPRSP
+         END IF
+      ENDIF
+
+      IDLSTX = IR1TAMP(LBLR2T(IDLSTR2,1),LORXR2T(IDLSTR2,1),
+     &                 FRQR2T(IDLSTR2,1), ISYR2T(IDLSTR2,1))
+      IDLSTY = IR1TAMP(LBLR2T(IDLSTR2,2),LORXR2T(IDLSTR2,2),
+     &                 FRQR2T(IDLSTR2,2), ISYR2T(IDLSTR2,2))
+
+      LORX = LORXR2T(IDLSTR2,1) .OR. LORXR2T(IDLSTR2,2)
+
+      IF ( LORX ) THEN
+        CALL QUIT('No relaxation implemented in CC_TSTAV2.')
+      ELSE
+        ! if it is a simple unrelaxed one-electron perturbation
+        ! calculate the average value contribution in CC_AVE
+        CALL CC_AVE2(PROPAVE,IDLSTX,IDLSTY,WORK,LWORK)
+      END IF
+
+      WRITE(LUPRI,'(1X,3A)') 'Operators   : ',
+     *  LBLR2T(IDLSTR2,1),LBLR2T(IDLSTR2,2)
+      WRITE(LUPRI,'(1X,A,2F16.4)') 'Frequencies : ',
+     *  FRQR2T(IDLSTR2,1),FRQR2T(IDLSTR2,2)
+      WRITE(LUPRI,'(1X,A,F16.10)') 'Average contribution:   ',
+     *                         PROPAVE
+      WRITE(LUPRI,'(1X,A,F16.10)') 'Response contribution:  ',
+     *                         PROPRSP
+      WRITE(LUPRI,'(1X,A,F16.10)') 'Total second-order property:',
+     *                         PROPAVE + PROPRSP
+
+      RETURN
+      END 
+*---------------------------------------------------------------------*

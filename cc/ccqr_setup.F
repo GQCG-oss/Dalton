@@ -40,6 +40,7 @@ c /* deck ccqr_setup */
      &                      IFTRAN, IFDOTS, NFTRAN,
      &                      IBTRAN, IBDOTS, NBTRAN,
      &                      IFATRAN,IFADOTS,NFATRAN,
+     &                      IAATRAN,IAADOTS,NAATRAN,
      &                      IEATRAN,IEADOTS,NEATRAN,
      &                      IR2TRAN,IR2DOTS,NR2TRAN,
      &                      IXETRAN,IXDOTS, IEDOTS, NXETRAN,
@@ -91,6 +92,9 @@ c /* deck ccqr_setup */
       INTEGER IFATRAN(MXDIM_FATRAN,MXTRAN)
       INTEGER IFADOTS(MXVEC,MXTRAN)
 
+      INTEGER IAATRAN(MXDIM_AATRAN,MXTRAN)
+      INTEGER IAADOTS(MXVEC,MXTRAN)
+
       INTEGER IEATRAN(MXDIM_XEVEC,MXTRAN)
       INTEGER IEADOTS(MXVEC,MXTRAN)
 
@@ -101,7 +105,7 @@ c /* deck ccqr_setup */
       INTEGER IXDOTS(MXVEC,MXTRAN), IEDOTS(MXVEC,MXTRAN)
 
       INTEGER NGTRAN,NFTRAN,NR2TRAN,NBTRAN,NFATRAN,NEATRAN,NXETRAN
-      INTEGER NQRRESF
+      INTEGER NQRRESF,NAATRAN
 
       INTEGER ISYMA, ISYMB, ISYMC, ISYML, ISYML1, ISYML2
       INTEGER IFREQ, IOPER, ISIGN
@@ -110,7 +114,7 @@ c /* deck ccqr_setup */
       INTEGER IZETVA, IZETVB, IZETVC
       INTEGER ITAMPA, ITAMPB, ITAMPC
       INTEGER IKAPA,  IKAPB,  IKAPC
-      INTEGER IR2AB, IR2BC, IR2AC, IETAA, IETAB, IETAC
+      INTEGER IR2AB, IR2BC, IR2AC, IETAA, IETAB, IETAC, MXVAA
       INTEGER IVEC, ITRAN, I, ISYSOP, IOPSOP, ISGNSOP, INUM
       INTEGER MXV0G, MXVAF, MXVAEA, MXVXE, MXVAB, MXV0FA, MXVR2
 
@@ -153,18 +157,25 @@ c /* deck ccqr_setup */
           IFATRAN(I,ITRAN) = 0
         END DO
 
+        DO I = 1, MXDIM_AATRAN
+          IAATRAN(I,ITRAN) = 0
+        END DO
+
         DO I = 1, MXDIM_XEVEC
           IXETRAN(I,ITRAN) = 0
           IEATRAN(I,ITRAN) = 0
         END DO
-          if (.not.old) IXETRAN(3,ITRAN) = -1
-          if (.not.old) IEATRAN(3,ITRAN) = -1
+        IXETRAN(3,ITRAN) = -1
+        IXETRAN(4,ITRAN) = -1
+        IEATRAN(3,ITRAN) = -1
+        IEATRAN(4,ITRAN) = -1
 
         DO IVEC  = 1, MXVEC
           IGDOTS(IVEC,ITRAN)  = 0
           IFDOTS(IVEC,ITRAN)  = 0
           IBDOTS(IVEC,ITRAN)  = 0
           IFADOTS(IVEC,ITRAN) = 0
+          IAADOTS(IVEC,ITRAN) = 0
           IEADOTS(IVEC,ITRAN) = 0
           IR2DOTS(IVEC,ITRAN) = 0
           IXDOTS(IVEC,ITRAN)  = 0
@@ -176,6 +187,7 @@ c /* deck ccqr_setup */
       NFTRAN  = 0
       NBTRAN  = 0
       NFATRAN = 0
+      NAATRAN = 0
       NEATRAN = 0
       NR2TRAN = 0
       NXETRAN = 0
@@ -188,6 +200,7 @@ c /* deck ccqr_setup */
       MXV0FA = 0
       MXVR2  = 0
       MXVAEA = 0
+      MXVAA  = 0
 
 *---------------------------------------------------------------------*
 * start loop over all requested hyperpolarizabilities
@@ -337,7 +350,7 @@ c /* deck ccqr_setup */
 *---------------------------------------------------------------------*
 * set up list of ETA{O} vector calculations, 6 permutations
 *---------------------------------------------------------------------*
-        IF ( .NOT. USE_R2 ) THEN
+        IF (( .NOT. USE_R2 ) .AND. (.NOT. USE_AAMAT)) THEN
           CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
      &                  IZETVA,IOPERB,IKAPB,0,0,0,ITAMPC,ITRAN,IVEC)
           NEATRAN = MAX(NEATRAN,ITRAN)
@@ -370,12 +383,48 @@ c /* deck ccqr_setup */
         END IF
 
 *---------------------------------------------------------------------*
+* set up list of A{O} matrix transformations, 6 permutations
+*---------------------------------------------------------------------*
+        IF ((.NOT.USE_R2) .AND. USE_AAMAT) THEN
+          IF (IKAPA.NE.0 .OR. IKAPB.NE.0 .OR. IKAPC.NE.0) THEN
+            CALL QUIT('A{O} matrix transformation not yet relaxed.')
+          END IF
+ 
+          CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                  IZETVA,IOPERB,ITAMPC,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXVAA   = MAX(MXVAA,IVEC)
+
+          CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                  IZETVA,IOPERC,ITAMPB,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXVAA   = MAX(MXVAA,IVEC)
+
+          CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                  IZETVB,IOPERC,ITAMPA,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXVAA   = MAX(MXVAA,IVEC)
+
+          CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                  IZETVB,IOPERA,ITAMPC,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXVAA   = MAX(MXVAA,IVEC)
+
+          CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                  IZETVC,IOPERA,ITAMPB,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXVAA   = MAX(MXVAA,IVEC)
+
+          CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
+     &                  IZETVC,IOPERB,ITAMPA,ITRAN,IVEC)
+          NAATRAN = MAX(NAATRAN,ITRAN)
+          MXVAA   = MAX(MXVAA,IVEC)
+        END IF
+
+*---------------------------------------------------------------------*
 * set up list of Xksi{O2} and Eta{O2} vector calculations, 3 permut.
 *---------------------------------------------------------------------*
         IF (LPDBSA.OR.LORXA .OR. LPDBSB.OR.LORXB) THEN
-c
-c Use asymmetric form of LR
-c
           CALL CC_FIND_SO_OP(LBLOPR(IOPERA),LBLOPR(IOPERB),
      &                       LABSOP,ISYSOP,ISGNSOP,INUM,WORK,LWORK)
           IOPSOP = IROPER(LABSOP,ISYSOP)
@@ -453,7 +502,8 @@ c
         WRITE (LUPRI,*) 'List of G matrix transformations:'
         DO ITRAN = 1, NGTRAN
           WRITE(LUPRI,'(A,3I5,5X,(12I5,20X))') MSGDBG,
-     &     (IGTRAN(I,ITRAN),I=1,3),(IGDOTS(I,ITRAN),I=1,MXV0G)
+     &     (IGTRAN(I,ITRAN),I=1,MXDIM_GTRAN),
+     &     (IGDOTS(I,ITRAN),I=1,MXV0G)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -463,7 +513,8 @@ c
         WRITE (LUPRI,*) 'List of B matrix transformations:'
         DO ITRAN = 1, NBTRAN
           WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
-     &     (IBTRAN(I,ITRAN),I=1,2),(IBDOTS(I,ITRAN),I=1,MXVAB)
+     &     (IBTRAN(I,ITRAN),I=1,MXDIM_BTRAN),
+     &     (IBDOTS(I,ITRAN),I=1,MXVAB)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -473,7 +524,8 @@ c
         WRITE (LUPRI,*) 'List of F matrix transformations:'
         DO ITRAN = 1, NFTRAN
           WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
-     &     (IFTRAN(I,ITRAN),I=1,2),(IFDOTS(I,ITRAN),I=1,MXVAF)
+     &     (IFTRAN(I,ITRAN),I=1,MXDIM_FTRAN),
+     &     (IFDOTS(I,ITRAN),I=1,MXVAF)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -493,7 +545,19 @@ c
         WRITE (LUPRI,*) 'List of ETA{O} vector calculations:'
         DO ITRAN = 1, NEATRAN
           WRITE(LUPRI,'(A,8I5,5X,(12I5,20X))') MSGDBG,
-     &     (IEATRAN(I,ITRAN),I=1,8),(IEADOTS(I,ITRAN),I=1,MXVAEA)
+     &     (IEATRAN(I,ITRAN),I=1,MXDIM_XEVEC),
+     &     (IEADOTS(I,ITRAN),I=1,MXVAEA)
+        END DO
+        WRITE (LUPRI,*)
+      END IF
+
+* A{O} vector calculations:
+      IF (LOCDBG) THEN
+        WRITE (LUPRI,*) 'List of A{O} vector calculations:'
+        DO ITRAN = 1, NAATRAN
+          WRITE(LUPRI,'(A,8I5,5X,(12I5,20X))') MSGDBG,
+     &     (IAATRAN(I,ITRAN),I=1,MXDIM_AATRAN),
+     &     (IAADOTS(I,ITRAN),I=1,MXVAA)
         END DO
         WRITE (LUPRI,*)
       END IF
@@ -1440,6 +1504,7 @@ c /* deck ccqr_fadrv */
 #include <ccr1rsp.h>
 #include <cclists.h>
 #include <ccnoddy.h>
+#include <ccfield.h>
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -1481,7 +1546,7 @@ c /* deck ccqr_fadrv */
       CHARACTER LISTL*(*), LISTO*(*), LISTB*(*), LISTC*(*), OPTION*(*)
       CHARACTER*(10) MODEL
       CHARACTER*(8)  LABELA, FILFBTA
-      LOGICAL LPDBSA
+      LOGICAL LPDBSA, FADEN_NODDY, NODDY_CCSDT
       INTEGER IFATRAN(MXDIM_FATRAN,NFATRAN)
       INTEGER IFADOTS(MXVEC,NFATRAN)
       INTEGER ISYRES, ISYMTA, ISYMTB, ISYMTC, ISYCTR, IFILE, IRELAX
@@ -1498,10 +1563,31 @@ c /* deck ccqr_fadrv */
       INTEGER ILSTSYM
 
       CALL QENTER('CCQR_FADRV')
+
 *---------------------------------------------------------------------*
 * initializations:
 *---------------------------------------------------------------------*
       IF (MXVEC*NFATRAN.NE.0) CALL DZERO(FACON,MXVEC*NFATRAN)
+
+      IF (CCSDT .AND. NONHF .AND. NFIELD.GT.0 .AND. (.NOT.NODDY_FAMAT))
+     &  CALL QUIT('No finite field in CC3 for F{O} module.')
+
+      FADEN_NODDY = .FALSE.
+      IF (CCSDT .AND. OPTION(1:4).EQ.'DOTP' .AND. 
+     &    NODDY_FAMAT .AND. NODDY_FA_ALTER) THEN
+        ! we compute 'dot products' for CC3, which is via densities
+        ! and the noddy flag is switched on and we want to use
+        ! the noddy code for the densities (not for the transformation)
+        ! check for which cases this is possible:
+        IF ( (LISTO(1:3).EQ.'o1 ') 
+     &       .AND. (LISTL(1:3).EQ.'L0 '.OR.
+     &              LISTL(1:3).EQ.'L1 '.OR.LISTL(1:3).EQ.'LE ') 
+     &       .AND. (LISTB(1:3).EQ.'R1 '.OR.LISTB(1:3).EQ.'RE '.OR.
+     &              LISTB(1:3).EQ.'R2 '.OR.LISTB(1:3).EQ.'ER1'    ) 
+     &       .AND. (LISTC(1:3).EQ.'R1 '.OR.LISTC(1:3).EQ.'RE '.OR.
+     &              LISTC(1:3).EQ.'R2 '.OR.LISTC(1:3).EQ.'ER1'    ) )
+     &    FADEN_NODDY = .TRUE. 
+      END IF
 
 *---------------------------------------------------------------------*
 * start loop over all requested F{O} matrix transformations
@@ -1649,6 +1735,11 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
              CALL QUIT('Illegal OPTION in CCQR_FADRV')
           END IF
 
+          ! the noddy code which goes via transformations is only
+          ! used if we do transformations or if we do dot products
+          ! and FADEN_NODDY is not set.
+          NODDY_CCSDT = NODDY_FAMAT .AND. (.NOT.FADEN_NODDY)
+
           CALL CC_FAMAT( LABELA, ISYMTA,  ! inp: label/symmetry A
      &                   LISTB,  ITAMPB,  ! inp: B resp. amplit.
      &                   LISTL,  IZETAV,  ! inp: C resp. zeta vec.
@@ -1656,6 +1747,7 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
      &                   IFADOTS,FACON,   ! indeces/dotproducts
      &                   LISTC,  ITRAN,   ! list,index for dotprods
      &                   NFATRAN,MXVEC,   ! dimensions for dotprods
+     &                   NODDY_CCSDT,     ! flag for noddy triples code
      &                   WORK,   LWORK   )! work space
 
        END IF
@@ -1665,7 +1757,8 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
 *---------------------------------------------------------------------*
 * add triples contributions for contractions (IOPTRES=5):
 *---------------------------------------------------------------------*
-      IF (CCSDT .AND. IOPTRES.EQ.5 .AND. (.NOT.NODDY_FAMAT)) THEN
+      IF (CCSDT .AND. IOPTRES.EQ.5 .AND. 
+     &    .NOT. ( NODDY_FAMAT .AND. .NOT. FADEN_NODDY ) ) THEN
 #if !defined CC_AARHUS
         CALL QUIT('No triples (yet) in CCQR_FADRV.')
 #else
@@ -1698,7 +1791,7 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
      &                      WORK(KLSTR_INTER),NINTER,MXINTER,
      &                      LISTL,LISTO,LISTB,LISTC)
 
-        CALL CCSDT_FA_DEN(LISTL,LISTO,LISTB,LISTC,
+        CALL CCSDT_FA_DEN(LISTL,LISTO,LISTB,LISTC,FADEN_NODDY,
      &                    NFATRAN,MXVEC,IFATRAN,IFADOTS,FACON,
      &                    FNDELD,FNCKJD,FNDKBC,FNTOC,
      &                    FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X,
@@ -1987,6 +2080,7 @@ c /* deck CC_DOTDRV */
 #include <ccl1rsp.h>
 #include <cclc1rsp.h>
 #include <dummy.h>
+#include <ccnoddy.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -2083,26 +2177,28 @@ c /* deck CC_DOTDRV */
         END IF
 
 * read left vector:
+        IOPT = 3
         IF (LISTL(1:2).EQ.'O3') THEN
-          IOPT = 3
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
      &                  WORK(KVECL1),WORK(KVECL2)     )
           CALL CCLR_DIASCL(WORK(KVECL2),0.5d0,ISYML)
-        ELSE IF (LISTL(1:3).EQ.'CO2') THEN
-          IOPT = 3
+        ELSE IF (LISTL(1:3).EQ.'CO2'.OR.LISTL(1:3).EQ.'O2 ') THEN
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
      &                  WORK(KVECL1),WORK(KVECL2)     )
           CALL CCLR_DIASCL(WORK(KVECL2),0.5d0,ISYML)
+        ELSE IF (LISTL(1:3).EQ.'X1B') THEN
+          CALL CC_LGD(WORK(KVECL1),LRZLBL(IFILEL),ISYLRZ(IFILEL),
+     &         FRQLRZ(IFILEL),LORXLRZ(IFILEL),IOPT,WORK(KEND2),LEND2)
         ELSE IF (LISTL(1:3).EQ.'X2B') THEN
           CALL CC_L2GD(WORK(KVECL1),IFILEL,WORK(KEND2),LEND2)
         ELSE
-          IOPT = 3
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
      &                  WORK(KVECL1),WORK(KVECL2)     )
         END IF
 
 *---------------------------------------------------------------------*
-* calculate required dot products:
+* calculate singles and doubles contributions of the required dot 
+* products (the vectors are mainly read from file)
 *---------------------------------------------------------------------*
         IVEC = 1
         DO WHILE (IDDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
@@ -2120,33 +2216,31 @@ c /* deck CC_DOTDRV */
             CALL QUIT('symmetry mismatch in CC_DOTDRV.')
           END IF
 
+          IOPT = 3
+
           IF (LISTR(1:2).EQ.'O2') THEN
-            IOPT = 3
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
      &                    WORK(KVECR1),WORK(KVECR2)   )
             CALL CCLR_DIASCL(WORK(KVECR2),0.5d0,ISYMR)
           ELSE IF (LISTR(1:3).EQ.'CO2') THEN
-            IOPT = 3
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
      &                    WORK(KVECR1),WORK(KVECR2)   )
             CALL CCLR_DIASCL(WORK(KVECR2),0.5d0,ISYMR)
           ELSE IF (LISTR(1:3).EQ.'X1B') THEN
             CALL CC_LGD(WORK(KVECR1),LRZLBL(IFILER),ISYLRZ(IFILER),
-     &              FRQLRZ(IFILER),LORXLRZ(IFILER),WORK(KEND2),LEND2)
+     &           FRQLRZ(IFILER),LORXLRZ(IFILER),IOPT,WORK(KEND2),LEND2)
           ELSE IF (LISTR(1:2).EQ.'XC') THEN
             LABEL = LBLLC1(IFILER)
             ICAU  = ILC1CAU(IFILER)
             IF (ICAU.EQ.0) THEN ! return ( F x R1(0) + eta )
               CALL CC_LGD(WORK(KVECR1),LABEL,ISYMR,
-     &                    0.0d0,.FALSE.,WORK(KEND2),LEND2)
+     &                    0.0d0,.FALSE.,IOPT,WORK(KEND2),LEND2)
             ELSE ! return F x RC
               IFILER = ILRCAMP(LABEL,ICAU,ISYMR)
-              IOPT = 3
               CALL CC_RDRSP('FC',IFILER,ISYMR,IOPT,MODEL,
      &                      WORK(KVECR1),WORK(KVECR2)   )
             END IF
           ELSE
-            IOPT = 3
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
      &                    WORK(KVECR1),WORK(KVECR2)   )
           END IF
@@ -2160,7 +2254,7 @@ c /* deck CC_DOTDRV */
             WRITE(LUPRI,*) '(L1|R1):',
      &        DDOT(NT1AM(ISYMR),WORK(KVECL1),1,WORK(KVECR1),1)
           END IF
-          IF (CC2 .OR. CCSD) THEN
+          IF (CC2 .OR. CCSD .OR. CC3) THEN
            DCON2 = DDOT(NT2AM(ISYML),WORK(KVECL2),1,WORK(KVECR2),1)
           ELSE IF (CCS) THEN
            DCON2 = ZERO
@@ -2174,6 +2268,26 @@ c /* deck CC_DOTDRV */
         END DO
 
       END DO
+
+*---------------------------------------------------------------------*
+* calculate the triples contributions by explicitly setting up the 
+* triples part of the vectors:
+*---------------------------------------------------------------------*
+      IF (CCSDT) THEN
+#if !defined CC_AARHUS
+        CALL QUIT('No triples (yet) in CC_DOTDRV.')
+#else
+        IF (NODDY_OVLP) THEN  
+          CALL CCOVLP_NODDY(LISTL,LISTR,2,DUMMY,1,1,1,
+     &                      NDTRAN,MXVEC,IDTRAN,IDDOTS,DCON,
+     &                      WORK,LWORK) 
+        ELSE
+          CALL CC3_LR_OVLP(LISTL,LISTR,2,DUMMY,1,1,1,
+     &                     NDTRAN,MXVEC,IDTRAN,IDDOTS,DCON,
+     &                     WORK,LWORK)  
+        END IF
+#endif
+      END IF
 
 *---------------------------------------------------------------------*
 * print the results: 

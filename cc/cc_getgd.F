@@ -260,7 +260,7 @@ C----------------------------------------------------------------------
      *            ISYLRZ(ILSTNR)
          ENDIF
          CALL CC_LGD(GD,LRZLBL(ILSTNR),ISYLRZ(ILSTNR),
-     *               FRQLRZ(ILSTNR),LORXLRZ(ILSTNR),WORK,LWORK)
+     *               FRQLRZ(ILSTNR),LORXLRZ(ILSTNR),IOPTRDG,WORK,LWORK)
          NTAMP = NT1AM(ISYLRZ(ILSTNR)) + NT2AM(ISYLRZ(ILSTNR))
          IF ( CCS ) NTAMP = NT1AM(ISYLRZ(ILSTNR))
          ISYMGD = ISYLRZ(ILSTNR)
@@ -524,7 +524,7 @@ C----------------------------------------------------------------------
      *            ISYPL1(ILSTNR)
          ENDIF
          CALL CC_LGD(GD,LBLPL1(ILSTNR),ISYPL1(ILSTNR),
-     *               FRQPL1(ILSTNR),LORXPL1(ILSTNR),WORK,LWORK)
+     *               FRQPL1(ILSTNR),LORXPL1(ILSTNR),WORK,IOPTRDG,LWORK)
          NTAMP = NT1AM(ISYPL1(ILSTNR)) + NT2AM(ISYPL1(ILSTNR))
          IF ( CCS ) NTAMP = NT1AM(ISYPL1(ILSTNR))
          IF ( CCR12 ) CALL QUIT('No R12 for X1+F1 as used for PL1')
@@ -558,7 +558,7 @@ C
       RETURN
       END
 c*DECK CC_LGD 
-      SUBROUTINE CC_LGD(GD,LBLC,ISYMC,FRQ,LORX,WORK,LWORK)
+      SUBROUTINE CC_LGD(GD,LBLC,ISYMC,FRQ,LORX,IOPTR,WORK,LWORK)
 C
 C----------------------------------------------------------------------
 C
@@ -621,8 +621,7 @@ C
         ! also if we the 'effective' ETA vector for a triples model
         ! read this vector from file
         ILSTETA = IETA1(LBLC,LORX,FRQ,ISYMC)
-        IOPT = 3
-        IF (CCSDT) IOPT = 24
+        IOPT    = IOPTR
         CALL CC_RDRSP('X1 ',ILSTETA,ISYMC,IOPT,MODEL,GD(1),
      *                GD(1+NT1AM(ISYMC)))
       ELSE
@@ -669,8 +668,7 @@ C
          CALL QUIT('CC_LGD: Did not find t-response vector ')
       ENDIF
 
-      IOPT  = 3 
-      IF (CCSDT) IOPT = 24
+      IOPT = IOPTR 
       CALL CC_RDRSP('F1 ',ILTNR,ISYMC,IOPT,MODEL,WORK(KFRV1),
      *              WORK(KFRV2))
 C
@@ -843,6 +841,7 @@ c /* deck cc_r2gd */
 * 1. contribution: B * R1(A) * R1(B), should be stored on file        *
 *---------------------------------------------------------------------*
       IOPT = 3
+      IF (CCSDT) IOPT = 24
       CALL CC_RDRSP('O2',IDLSTO2,ISYMO2,IOPT,MODEL,GD(IADR1),GD(IADR2))
       CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMO2)
 

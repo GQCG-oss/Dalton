@@ -37,7 +37,8 @@
      &        IMAIAB,NMAIAB,IMAIAJ,NMAIAJ,
      &        IMAAOBI,NMAAOBI,IG1AM,NG1AM,
      &        NH1AMX,NH1AM,IH1AM,NH2AMX,NH2AM,IH2AM,
-     &        NVAJKL,IVAJKL
+     &        NVAJKL,IVAJKL,
+     &        I3AORHF,N3AORHF,I3AO,N3AO,IRHF3O,NRHF3O
       LOGICAL OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,NEWGAM,INTTR,
      &        TRIPIM
       COMMON /CCSDSYM/ NT1AMX, NT2AMX, NT1AM(8), NT2AM(8), NT2AMA(8),
@@ -86,6 +87,8 @@
      &                 IMAAOBI(8,8),NMAAOBI(8),NH1AMX,NH1AM(8),
      &                 IH1AM(8,8),NH2AMX,NH2AM(8),IH2AM(8,8),
      &                 IG1AM(8,8),NG1AM(8),
-     &                 NVAJKL(8),IVAJKL(8,8)
+     &                 NVAJKL(8),IVAJKL(8,8),
+     &                 I3AORHF(8,8),N3AORHF(8),
+     &                 I3AO(8,8),N3AO(8),IRHF3O(8,8),NRHF3O(8)
 C
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N

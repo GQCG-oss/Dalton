@@ -1593,12 +1593,14 @@ C
              CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
              CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
 
-               CALL CC3_GMAT(LISTA,IDLSTA,LISTB,IDLSTB,
-     &                    LISTC,IDLSTC,WORK(KDELTA1(ITRAN)),
-     *                    WORK(KDELTA2),ISYRES,WORK(KEND1),LEND1,
-     *                    LUCKJD,FNCKJD,LUTOC,FNTOC,
-     *                    LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-     *                    LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
+             CALL CC3_GMATNEW(LISTA,IDLSTA,LISTB,IDLSTB,
+     *                        LISTC,IDLSTC,
+     *                        WORK(KDELTA1(ITRAN)),WORK(KDELTA2),
+     *                        ISYRES,
+     *                        WORK(KEND1),LEND1,
+     *                        LUTOC,FNTOC,
+     *                        LU3VI,FN3VI,LUDKBC3,FNDKBC3,
+     *                        LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 
              CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
              CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
@@ -4791,14 +4793,15 @@ c/* Deck CCG_LXD */
 
       CHARACTER*3 LISTL, LISTB, LISTC
       INTEGER LWORK, IDLSTL, IDLSTB, IDLSTC
+
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL OMEGA1(NT1AMX), OMEGA2(NT2AMX)
-      REAL DDOT, TWO, XNORMVAL
+      REAL DDOT, TWO, XNORMVAL, FREQL
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION OMEGA1(NT1AMX), OMEGA2(NT2AMX)
-      DOUBLE PRECISION DDOT, TWO, XNORMVAL
+      DOUBLE PRECISION DDOT, TWO, XNORMVAL, FREQL
 #endif
       PARAMETER (TWO = 2.0D0)
 
@@ -4810,7 +4813,7 @@ c/* Deck CCG_LXD */
      &        KCIOVVO, KCIOOVV, KCIOOOO, KCIVVVV,
      &        KBCIOVVO, KBCIOOVV, KBCIOOOO, KBCIVVVV,
      &        KOME1, KOME2, KL1AM, KL2AM, KL3AM, KT2AM, KFOCKD,
-     &        KSCR1, KDUM
+     &        KSCR1, KDUM, KFIELD, KFIELDAO
       INTEGER ISYMD, ILLL, IDEL, ISYDIS, IJ, NIJ, LUSIFC, INDEX,
      &        ISYMC, ISYMB, LUFOCK, KEND2, LWRK2, IOPT, ILSTSYM, ISYML
 
@@ -4830,6 +4833,12 @@ c/* Deck CCG_LXD */
 
       KFOCK0  = KEND1
       KEND1   = KFOCK0  + NORBT*NORBT
+
+      IF (NONHF) THEN
+        KFIELD   = KEND1
+        KFIELDAO = KFIELD   + NORBT*NORBT
+        KEND1    = KFIELDAO + NORBT*NORBT
+      END IF
 
       KT1AMP0 = KEND1
       KLAMP0  = KT1AMP0 + NT1AMX
@@ -4941,6 +4950,22 @@ c/* Deck CCG_LXD */
 
       CALL CC_FCKMO(WORK(KFOCK0),WORK(KLAMP0),WORK(KLAMH0),
      &              WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0)      
+
+*---------------------------------------------------------------------*
+*     Get the one electron integrals from the fields
+*---------------------------------------------------------------------*
+      IF (NONHF) THEN
+         CALL DZERO(WORK(KFIELDAO),NORBT*NORBT)
+         DO I = 1, NFIELD
+            CALL CC_ONEP(WORK(KFIELDAO),WORK(KEND1),LWRK1,
+     *                   EFIELD(I),1,LFIELD(I))
+         ENDDO
+         CALL DCOPY(NORBT*NORBT,WORK(KFIELDAO),1,WORK(KFIELD),1)
+
+         ! calculate external field in zero-order lambda basis
+         CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMP0),WORK(KLAMH0),
+     *                 WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0)
+      ENDIF
 
 *---------------------------------------------------------------------*
 *     Compute integrals needed for the following contributions:
@@ -5152,37 +5177,48 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *     Compute L^0_3 multipliers:
 *---------------------------------------------------------------------*
-      IF (LWRK1 .LT. NT2AMX) THEN
-         CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
-      ENDIF
-
       ISYML = ILSTSYM(LISTL,IDLSTL)
 
-      ! read left amplitudes from file and square up the doubles part
-      IOPT   = 3
-      Call CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,
-     &              WORK(KL1AM),WORK(KEND1))
-      CALL CC_T2SQ(WORK(KEND1),WORK(KL2AM),ISYML)
+      CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
 
       IF (LISTL(1:3).EQ.'L0 ') THEN
-        CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
+        ! read left amplitudes from file and square up the doubles part
+        IF (LWRK1 .LT. NT2AMX) 
+     *     CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
+        IOPT = 3
+        Call CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,
+     *                WORK(KL1AM),WORK(KEND1))
+        CALL CC_T2SQ(WORK(KEND1),WORK(KL2AM),ISYML)
+
+        IF (NONHF .AND. LWRK1.LT.NT1AMX*NT1AMX*NT1AMX) 
+     *     CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
 
         CALL CCSDT_L03AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
      *                   WORK(KXIAJB),WORK(KFOCK0),WORK(KL1AM),
      *                   WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),
-     *                   DUMMY,DUMMY)
+     *                   WORK(KFIELD),WORK(KEND1))
 
-        CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
-  
-        if (locdbg) then
-          write(lupri,*) 'norm^2(l3am):',
-     *      ddot(nt1amx*nt1amx*nt1amx,work(kl3am),1,work(kl3am),1)
-        end if
+      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ' .OR.
+     &         LISTL(1:3).EQ.'M1 ' .OR. LISTL(1:3).EQ.'N2 ' .OR.
+     &         LISTL(1:3).EQ.'E0 '                              ) THEN
+
+        CALL CCSDT_TBAR31_NODDY(WORK(KL3AM),FREQL,LISTL,IDLSTL,
+     &                        WORK(KLAMP0),WORK(KLAMH0),
+     &                        WORK(KFOCK0),WORK(KFOCKD),WORK(KSCR1),
+     &                        WORK(KXIAJB),WORK(KINT1T0),WORK(KINT2T0),
+     &                        WORK(KEND1),LWRK1)
 
       ELSE
 
         CALL QUIT('CCSDT_GMAT_NODDY> LISTL NOT AVAILABLE:'//LISTL)
       
+      END IF
+
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
+  
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'NORM^2(L3AM):',
+     *    DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KL3AM),1,WORK(KL3AM),1)
       END IF
 
 *---------------------------------------------------------------------*

@@ -223,7 +223,7 @@ C
       ENDIF
 
       IOPT = 2
-      CALL GET_T1_T2(IOPT,.FALSE.,DUMMY,WORK(KL2TP),LISTL,0,1,
+      CALL GET_T1_T2(IOPT,.FALSE.,DUMMY,WORK(KL2TP),LISTL,IDLSTL,ISYML2,
      *               WORK(KEND01),LWRK01)
 C
 C------------------------
@@ -311,13 +311,14 @@ C
          CALL QUIT('Unkown list in CC3_FT3B.') 
       END IF
 C
-      ISYMW   = MULD2H(ISYMT3,ISYMRB)
-      IF (ISYRES.NE.MULD2H(ISYMW,ISINT3)) THEN
-         WRITE(LUPRI,*) 'INCONSISTENT SYMMETRY SPECIFICATION'
-         WRITE(LUPRI,*) 
-     *      'ISYRES =',ISYRES,'ISYMW =',ISYMW,'ISINT3 =',ISINT3
-         STOP' CC3_FT3B inconsistent symmetry specification' 
-      END IF
+      !symmetry check
+c     ISYMW   = MULD2H(ISYMT3,ISYMRB)
+c     IF (ISYRES.NE.MULD2H(ISYMW,ISINT3)) THEN
+c        WRITE(LUPRI,*) 'INCONSISTENT SYMMETRY SPECIFICATION'
+c        WRITE(LUPRI,*) 
+c    *      'ISYRES =',ISYRES,'ISYMW =',ISYMW,'ISINT3 =',ISINT3
+c        STOP' CC3_FT3B inconsistent symmetry specification' 
+c     END IF
 C
       ISYFCKB = MULD2H(ISYMOP,ISYMRB)
 C
@@ -388,8 +389,8 @@ C     Calculate the F^B matrix
 C------------------------------------------
 C
       IF ( .NOT.(LISTB(1:3).EQ.'RE ') ) THEN
-         CALL GET_FOCKX(WORK(KFCKB),LABELB,IDLSTB,ISYMRB,WORK(KLAMDP),
-     *                  WORK(KLAMDH),WORK(KEND1),LWRK1)
+         CALL GET_FOCKX(WORK(KFCKB),LABELB,IDLSTB,ISYMRB,WORK(KLAMDP),1,
+     *                  WORK(KLAMDH),1,WORK(KEND1),LWRK1)
       END IF
 C
 C-----------------------------

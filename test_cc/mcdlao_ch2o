@@ -31,7 +31,7 @@ H     1.7657146600000000  0.0000000000000000  2.2348856500000000       *
 #######################################################################
 cat > mcdlao_ch2o__1.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .THETA
 .DIPLEN
@@ -97,7 +97,7 @@ ZDIPLEN dh/dBY  XDIPLEN
 #######################################################################
 cat > mcdlao_ch2o__2.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .THETA
 .DIPLEN

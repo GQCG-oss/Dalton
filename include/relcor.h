@@ -1,1 +1,6 @@
+#if defined (SYS_CRAY) 
+      REAL  DARWN, RMASSV
+#else
+      DOUBLE PRECISION DARWN, RMASSV
+#endif
       COMMON /RELCOR/ DARWN, RMASSV

@@ -30,7 +30,7 @@ F     0.0000000000000000  0.000000000000000   -.08727570600000        *
 #######################################################################
 cat > verdet_hf.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .ANGMOM

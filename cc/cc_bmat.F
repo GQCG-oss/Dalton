@@ -37,7 +37,8 @@ C
 c/* Deck CC_BMATRIX */
 *=====================================================================*
       SUBROUTINE CC_BMATRIX( IBTRAN, NBTRAN, LISTA, LISTB, IOPTRES,
-     &                    FILBMA, IBDOTS, BCONS, MXVEC, WORK, LWORK )
+     &                       FILBMA, IBDOTS, BCONS, MXVEC, 
+     &                       DO_O2,  WORK,   LWORK )
 *---------------------------------------------------------------------*
 *
 *    Purpose: batched loop over B matrix transformations
@@ -59,6 +60,7 @@ c/* Deck CC_BMATRIX */
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
+      LOGICAL DO_O2
       CHARACTER*(*) LISTA, LISTB, FILBMA
       INTEGER IOPTRES
       INTEGER NBTRAN, MXVEC, LWORK
@@ -99,7 +101,7 @@ C
         CALL CC_BMAT( IBTRAN(1,ISTART), NTRAN,
      &                LISTA, LISTB, IOPTRES, FILBMA, 
      &                IBDOTS(1,ISTART), BCONS(1,ISTART), 
-     &                MXVEC, WORK, LWORK )
+     &                MXVEC, DO_O2, WORK, LWORK )
 
       END DO
 
@@ -116,7 +118,8 @@ C
 c/* Deck CC_BMAT */
 *=====================================================================*
       SUBROUTINE CC_BMAT( IBTRAN, NBTRAN, LISTA, LISTB, IOPTRES,
-     &                    FILBMA, IBDOTS, BCONS, MXVEC, WORK, LWORK )
+     &                    FILBMA, IBDOTS, BCONS, MXVEC, DO_O2,
+     &                    WORK, LWORK )
 *---------------------------------------------------------------------*
 *
 *    Purpose: AO-direct calculation of a linear transformation of two
@@ -192,6 +195,8 @@ c/* Deck CC_BMAT */
 #include "aovec.h"
 #include "blocks.h"
 #include "second.h"
+#include "ccnoddy.h"
+#include "ccr1rsp.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -222,6 +227,7 @@ c/* Deck CC_BMAT */
 
 
       CHARACTER*(*) LISTA, LISTB, FILBMA
+      LOGICAL DO_O2
       INTEGER IOPTRES
       INTEGER NBTRAN, MXVEC, LWORK
       INTEGER IBTRAN(3,NBTRAN)
@@ -229,12 +235,12 @@ c/* Deck CC_BMAT */
 
 #if defined (SYS_CRAY) 
       REAL WORK(LWORK) 
-      REAL ZERO, ONE, TWO
+      REAL ZERO, ONE, TWO, FREQ
       REAL DUM, XNORM, FF, DUMMY
       REAL BCONS(MXVEC,NBTRAN)
 #else 
       DOUBLE PRECISION WORK(LWORK) 
-      DOUBLE PRECISION ZERO, ONE, TWO
+      DOUBLE PRECISION ZERO, ONE, TWO, FREQ
       DOUBLE PRECISION DUM, XNORM, FF, DUMMY
       DOUBLE PRECISION BCONS(MXVEC,NBTRAN)
 #endif 
@@ -266,7 +272,7 @@ c/* Deck CC_BMAT */
       INTEGER IINT1, IINT2, ISYM1, ISYCDBAR, IDXA, ISYX4O, IOPTG
       INTEGER IINT1A, IINT1B, IINTA, ICDEL2, NTOT, ILLL, NUMDIS
       INTEGER IBATCH, IDEL2, IADRTH, IERR, IOFFCDB, IOPTB, IADRBFD
-      INTEGER MT2BGD, MDISAO, MDSRHF, KINDXB, KCCFB1
+      INTEGER MT2BGD, MDISAO, MDSRHF, KINDXB, KCCFB1, NVEC2
       INTEGER MSCRATCH, MEMAVAIL, NNWORK, NWORK, NSECMAR
       INTEGER KFOCK0, KDENS0, KT1AMP0, KLAMP0, KLAMH0, KEND0, LWRK0
       INTEGER KEND, LWRK, KENDSV, LWRKSV, KFREE, LFREE, JEND1, KEND1
@@ -282,7 +288,7 @@ c/* Deck CC_BMAT */
       INTEGER KBF0, LUBF0, KCBAR0, KDBAR0, KX4O, KSCR, KSCR2
       INTEGER KLAMDPB, KLAMDHB, KLAMDPA, KLAMDHA, IOPTW, IDUMMY
       INTEGER NBSRHF(8), IBSRHF(8,8), ICOUNT, ISYMAK, ISYBET
-      INTEGER IOPTTCME, IOPTWE, KTHETA1EFF, KTHETA2EFF
+      INTEGER IOPTTCME, IOPTWE, KTHETA1EFF, KTHETA2EFF, KATRAN2
 
 * external functions:
       INTEGER ICCSET1
@@ -293,9 +299,9 @@ c/* Deck CC_BMAT */
       REAL DTIME, CONVRT, TIMALL, TIMTRN, TIMIO, TIMPRE
       REAL TIMA, TIMBF, TIMF, TIME, TIMI, TIMC, TIMD, TIMIM0
       REAL TIMINT, TIMRDAO, TIMTRBT, TIMIMA, TIMIMAB, TIMFCK
-      REAL DDOT
+      REAL DDOT, FREQLST
 #else 
-      DOUBLE PRECISION DDOT
+      DOUBLE PRECISION DDOT, FREQLST
       DOUBLE PRECISION DTIME, CONVRT, TIMALL, TIMTRN, TIMIO, TIMPRE
       DOUBLE PRECISION TIMA,TIMBF,TIMF,TIME,TIMI,TIMC,TIMD,TIMIM0
       DOUBLE PRECISION TIMINT, TIMRDAO, TIMTRBT, TIMIMA, TIMIMAB,TIMFCK
@@ -333,12 +339,6 @@ c/* Deck CC_BMAT */
         WRITE(LUPRI,*) 'DUMPCD = ',DUMPCD
         WRITE(LUPRI,*) 'CC_BMAT requires DUMPCD=.TRUE.'
         CALL QUIT('DUMPCD=.FALSE. , CC_BMAT requires DUMPCD=.TRUE.')
-      END IF
-
-      IF (.NOT. RSPIM) THEN
-        WRITE(LUPRI,*) 'RSPIM = ',RSPIM
-        WRITE(LUPRI,*) 'CC_BMAT requires RSPIM=.TRUE.'
-        CALL QUIT('RSPIM=.FALSE. , CC_BMAT requires RSPIM=.TRUE.')
       END IF
 
       IF (ISYMOP .NE. 1) THEN
@@ -1887,11 +1887,47 @@ C
         IF (.NOT. (CCS .OR. CCSTST) ) THEN
           XNORM=DDOT(NT2AM(ISYMAB),WORK(KTHETA2),1,WORK(KTHETA2),1)
           WRITE (LUPRI,*) 'Norm of THETA2 after these contributions:',
-     7                    XNORM
+     &                    XNORM
         END IF
         CALL FLSHFO(LUPRI)
       END IF
 
+
+*---------------------------------------------------------------------*
+* if DO_O2 flag is set include A{x} t^y + A{y} t^x contribution
+* to the second-order rhs vector (here we do the CCS/CC2/CCSD parts):
+*---------------------------------------------------------------------*
+      IF (DO_O2) THEN
+         IF ((FILBMA(1:3).NE.'O2 ' .AND. FILBMA(1:3).NE.'EO1') .OR.
+     &       IOPTRES.GE.5) THEN
+           CALL QUIT('Illegal result type for DO_O2 flag in CC_BMAT')
+         END IF
+
+         KATRAN2 = KEND2 + NT1AM(ISYMAB)
+
+         IF (LISTA.EQ.'R1 ') THEN
+            CALL CCCR_AA(LRTLBL(IDLSTA),ISYMA,LISTB,IDLSTB,
+     &                   WORK(KEND2),LWRK2)
+            CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KEND2),1,WORK(KTHETA1),1)
+            IF (.NOT.CCS) THEN
+              CALL CCLR_DIASCL(WORK(KATRAN2),2.0D0,ISYMAB)
+              CALL DAXPY(NT2AM(ISYMAB),ONE,WORK(KATRAN2),1,
+     &                                     WORK(KTHETA2),1)
+            END IF
+         END IF
+
+         IF (LISTB.EQ.'R1 ') THEN
+            CALL CCCR_AA(LRTLBL(IDLSTB),ISYMB,LISTA,IDLSTA,
+     &                   WORK(KEND2),LWRK2)
+            CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KEND2),1,WORK(KTHETA1),1)
+            IF (.NOT.CCS) THEN
+              CALL CCLR_DIASCL(WORK(KATRAN2),2.0D0,ISYMAB)
+              CALL DAXPY(NT2AM(ISYMAB),ONE,WORK(KATRAN2),1,
+     &                                     WORK(KTHETA2),1)
+            END IF
+         END IF
+
+      END IF 
 
 *---------------------------------------------------------------------*
 * add CC3 contribution
@@ -1905,17 +1941,97 @@ C
             KTHETA2EFF = KTHETA1EFF + NT1AM(ISYMAB)
             KEND2      = KTHETA2EFF + NT2AM(ISYMAB)
             LWRK2      = LWORK - KEND2
+C
+            CALL DZERO(WORK(KTHETA1EFF),NT1AM(ISYMAB))
+            CALL DZERO(WORK(KTHETA2EFF),NT2AM(ISYMAB))
          END IF
 
-         CALL CCSDT_BMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,IOPTRES,
-     &                         WORK(KLAMP0),WORK(KLAMH0),
-     &                         WORK(KTHETA1),WORK(KTHETA2),
+         IF (NODDY_BMAT) THEN
+         
+           ! Old style noddy code:
+           CALL CCSDT_BMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,IOPTRES,
+     &                           WORK(KLAMP0),WORK(KLAMH0),
+     &                           WORK(KTHETA1),WORK(KTHETA2),
+     &                           WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                           IBDOTS,BCONS,FILBMA,ITRAN,
+     &                           NBTRAN,MXVEC,WORK(KEND2),LWRK2)
+    
+           IF (DO_O2) THEN
+             FREQ = FREQLST(FILBMA,IBTRAN(3,ITRAN))
+             IF (LISTA.EQ.'R1 ') THEN
+               CALL CCSDT_AAMAT_NODDY(IOPTRES,FREQ,LRTLBL(IDLSTA),ISYMA,
+     &                                LISTB,IDLSTB,.FALSE.,
+     &                                WORK(KTHETA1),WORK(KTHETA2),
+     &                                WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                                IBDOTS,BCONS,FILBMA,ITRAN,
+     &                                NBTRAN,MXVEC,WORK(KEND2),LWRK2)
+             END IF
+             IF (LISTB.EQ.'R1 ') THEN
+               CALL CCSDT_AAMAT_NODDY(IOPTRES,FREQ,LRTLBL(IDLSTB),ISYMB,
+     &                                LISTA,IDLSTA,.FALSE.,
+     &                                WORK(KTHETA1),WORK(KTHETA2),
+     &                                WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                                IBDOTS,BCONS,FILBMA,ITRAN,
+     &                                NBTRAN,MXVEC,WORK(KEND2),LWRK2)
+             END IF
+C            ! noddy code based on similar intermediates as real code:
+C            ! is here called as dummy routine (which means, that it
+C            ! actually doesn't change the result vectors theta*)
+C            write(lupri,*) 'call now ccsdt_o32_noddy...'
+C            CALL CCSDT_O32_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,
+C    *                           FILBMA,IBTRAN(3,ITRAN),
+C    *                           WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+C    *                           WORK(KEND2),LWRK2)
+           END IF 
+
+        ELSE
+
+            IF (DO_O2) THEN
+               IF (IOPTRES .LT. 5) THEN
+                  ! OMEGAEFF = OMEGAEFF + contribution from aamat
+                  ! We assume that the singles and doubles contirbutions
+                  !(sitting in KTHETA1 and KTHETA2) are added in CC3_BMATSD
+                  CALL CC3_AAMATSD(DUMMY,CDUMMY,IDUMMY,
+     *                                LISTA,IDLSTA,
+     *                                LISTB,IDLSTB,
+     &                                DUMMY,DUMMY, 
+     &                                WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                                ISYMAB,WORK(KEND2),LWRK2)
+               END IF
+            END IF
+            IF (IOPTRES .LT. 5) THEN
+c
+               CALL CC3_AABMAT_DOUB(WORK(KTHETA2),
+     *                            LISTA,IDLSTA,LISTB,IDLSTB,
+     *                            WORK(KEND2),LWRK2)
+
+c
+               ! OMEGAEFF = OMEGAEFF + contribution from bmatsd
+               ! At the end: OMEGAEFF = OMEGAEFF + OMEGA
+c
+               CALL CC3_BMATSD(WORK(KTHETA1),WORK(KTHETA2),
      &                         WORK(KTHETA1EFF),WORK(KTHETA2EFF),
-     &                         IBDOTS,BCONS,FILBMA,ITRAN,
-     &                         NBTRAN,MXVEC,WORK(KEND2),LWRK2)
+     &                         ISYMAB,
+     *                         LISTA,IDLSTA,LISTB,IDLSTB,
+     *                         WORK(KEND2),LWRK2)
+c
+            ELSE
+              WRITE(LUPRI,*)'BMAT and AMAT contributions are only '
+     *        // 'implemented for explicit symmetrization (i.e. '
+     *        //  'DO_O2 should be .TRUE.) !!! '
+              WRITE(LUPRI,*)
+              WRITE(LUPRI,*)  'If you came here for quadratic response '
+     *        // 'try using .NOBMAT flag in *CCQR input '
+              WRITE(LUPRI,*)'DO_O2 = ', DO_O2
+              CALL QUIT('Wrong DO_O2 value in CC_BMAT ')
+            END IF
+
+
+        END IF
 
 #endif
       END IF
+
 *---------------------------------------------------------------------*
 * write result vector to output:
 *---------------------------------------------------------------------*
@@ -1982,10 +2098,22 @@ C
            WRITE (LUPRI,*) 'index of inp. A vector:',IBTRAN(1,ITRAN)
            WRITE (LUPRI,*) 'index of inp. B vector:',IBTRAN(2,ITRAN)
            WRITE (LUPRI,*) 'index of result vector:',IBTRAN(3,ITRAN)
-           LEN = NT1AM(ISYMAB) + NT2AM(ISYMAB)
-           IF (CCS) LEN = NT1AM(ISYMAB)
+           NVEC2 = 1
+           LEN   = NT1AM(ISYMAB) + NT2AM(ISYMAB)
+           IF (CCS) THEN
+             NVEC2 = 0
+             LEN   = NT1AM(ISYMAB)
+           END IF
            XNORM = DDOT(LEN,WORK(KTHETA1),1,WORK(KTHETA1),1)
            WRITE (LUPRI,*) 'norm^2 of result vector:',XNORM
+           WRITE (LUPRI,*) 'Listing of the result vector:'
+           CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,1,NVEC2)
+           IF (CCSDT) THEN
+             XNORM = DDOT(LEN,WORK(KTHETA1EFF),1,WORK(KTHETA1EFF),1)
+             WRITE (LUPRI,*) 'norm^2 of eff. result vector:',XNORM
+             WRITE (LUPRI,*) 'Listing of the eff. result vector:'
+             CALL CC_PRP(WORK(KTHETA1EFF),WORK(KTHETA2EFF),ISYMAB,1,1)
+           END IF
          END IF
       ELSE IF (IOPTRES.EQ.5) THEN
          CALL CCDOTRSP(IBDOTS,BCONS,IOPTW,FILBMA,ITRAN,NBTRAN,MXVEC,
@@ -2340,6 +2468,10 @@ c/* Deck CCBMAT2 */
          DTIME = SECOND()
 
          CALL CCRHS_ONEAO(WORK(KONEHR),WORK(KEND1),LWRK1)
+         DO IF= 1, NFIELD
+           FF = EFIELD(IF)
+           CALL CC_ONEP(WORK(KONEHR),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
+         END DO
          IF (FROIMP.OR.FROEXP) THEN
            CALL DAXPY(N2BST(ISYM0),ONE,FCKC0,1,WORK(KONEHR),1)
          END IF
@@ -4856,8 +4988,8 @@ c/* Deck CC_BTST */
       IOPTRES = 1
       FILBMA  = 'CC__BMAT'
 
-      CALL CC_BMAT(IBTRAN,  NBTRAN, LISTA,  LISTB, 
-     &             IOPTRES, FILBMA, IDUM, RDUM, 0, WORK, LWORK )
+      CALL CC_BMAT(IBTRAN,  NBTRAN, LISTA,  LISTB, IOPTRES, 
+     &             FILBMA, IDUM, RDUM, 0, .FALSE., WORK, LWORK )
 
       KTHETA1 = IBTRAN(3,1)
       KTHETA2 = KTHETA1 + NT1AM(ISYMAB)

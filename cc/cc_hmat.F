@@ -112,18 +112,21 @@ c/* Deck CC_HMAT */
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
+#include <ccnoddy.h>
 
 * local parameters:
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
       CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CC_HMAT> ')
+
 #if defined (SYS_CRAY)
       REAL ZERO, ONE, TWO, THREE
 #else
       DOUBLE PRECISION ZERO, ONE, TWO, THREE
 #endif
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0, THREE = 3.0d0)
-      LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+
       INTEGER KDUM
       PARAMETER (KDUM   = +99 999 999)  ! dummy address
       INTEGER ISYOVOV
@@ -151,7 +154,7 @@ c/* Deck CC_HMAT */
       INTEGER KT1AMPA, KT1AMPB, KT1AMPC, KT1AMPD, KEPSI1, KSTART
       INTEGER ISYRES, ISYCTR, ISYMTA, ISYMTB, ISYMTC, ISYABCD
       INTEGER KXIAJB, KCTR2, KEND1, LEND1, IOPT, IOPTW, KEND0, LEND0,
-     &        KEPSI2
+     &        KEPSI2, ILEN, IDBL
 
       INTEGER ILSTSYM
 
@@ -362,10 +365,22 @@ c/* Deck CC_HMAT */
 
           Call DZERO (WORK(KEPSI2), NT2AM(ISYRES))
 
-          CALL CCSDT_HMAT_NODDY(LISTL,IZETAV,LISTA,ITAMPA,
+          IF (NODDY_HMAT) THEN
+
+             CALL CCSDT_HMAT_NODDY(LISTL,IZETAV,LISTA,ITAMPA,
      &                          LISTB,ITAMPB,LISTC,ITAMPC,
      &                          WORK(KEPSI1),WORK(KEPSI2),
      &                          WORK(KEND0),LEND0)
+
+          ELSE 
+
+             CALL CC3_HMAT(LISTL,IZETAV,LISTA,ITAMPA,
+     &                     LISTB,ITAMPB,LISTC,ITAMPC,
+     &                     WORK(KEPSI1),WORK(KEPSI2),ISYRES,
+     &                     WORK(KEND0),LEND0)
+
+          END IF
+
 #endif
         END IF
 *=====================================================================*
@@ -398,6 +413,7 @@ c/* Deck CC_HMAT */
 
 *         calculate list of dot products
 
+          IF (IOPTW.GE.2) CALL CCLR_DIASCL(WORK(KEPSI2),TWO,ISYRES)
           CALL CCDOTRSP(IHDOTS,HCON,IOPTW,LISTD,ITRAN,NHTRAN,MXVEC,
      &                  WORK(KEPSI1),WORK(KEPSI2),ISYRES,
      &                  WORK(KEND0),LEND0)
@@ -415,9 +431,15 @@ c/* Deck CC_HMAT */
           WRITE (LUPRI,*) MSGDBG, ' B amplitude vector: ',LISTB,ITAMPB
           WRITE (LUPRI,*) MSGDBG, ' C amplitude vector: ',LISTC,ITAMPC
           WRITE (LUPRI,*) MSGDBG, ' epsilon vector:'
-          Call CC_PRP(WORK(KEPSI1),WORK(KDUM),ISYRES,1,0)
+          ILEN = NT1AM(ISYRES)
+          IDBL = 0
+          IF (IOPTW.GE.2) THEN
+            ILEN = ILEN + NT2AM(ISYRES)
+            IDBL = 1
+          END IF
+          Call CC_PRP(WORK(KEPSI1),WORK(KEPSI2),ISYRES,1,IDBL)
           WRITE (LUPRI,*) MSGDBG, ' Norm^2 of EPSI1:',
-     &       DSQRT(DDOT(NT1AM(ISYRES),WORK(KEPSI1),1,WORK(KEPSI1),1))
+     &       DSQRT(DDOT(ILEN,WORK(KEPSI1),1,WORK(KEPSI1),1))
           Call FLSHFO(LUPRI)
         END IF
 
@@ -1213,11 +1235,12 @@ C
 
       CHARACTER*3 LISTL, LISTB, LISTC, LISTD
       INTEGER LWORK, IDLSTL, IDLSTB, IDLSTC, IDLSTD
+
 #if defined (SYS_CRAY)
-      REAL WORK(LWORK), TWO
+      REAL WORK(LWORK), TWO, FREQL, DDOT
       REAL OMEGA1(NT1AMX), OMEGA2(NT2AMX)
 #else
-      DOUBLE PRECISION WORK(LWORK), TWO
+      DOUBLE PRECISION WORK(LWORK), TWO, FREQL, DDOT
       DOUBLE PRECISION OMEGA1(NT1AMX), OMEGA2(NT2AMX)
 #endif
       PARAMETER ( TWO = 2.0D0 )
@@ -1543,31 +1566,47 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *     Compute L^0_3 multipliers:
 *---------------------------------------------------------------------*
-      IF (LWRK1 .LT. NT2AMX) THEN
-         CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
-      ENDIF
-
       ISYML = ILSTSYM(LISTL,IDLSTL)
 
-      ! read left amplitudes from file and square up the doubles part
-      IOPT   = 3
-      Call CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,
-     &              WORK(KL1AM),WORK(KEND1))
-      CALL CC_T2SQ(WORK(KEND1),WORK(KL2AM),ISYML)
-
+      CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
 
       IF (LISTL(1:3).EQ.'L0 ') THEN
-        CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
+
+        IF (LWRK1 .LT. NT2AMX) 
+     *     CALL QUIT('Insufficient space in CCSDT_HMAT_NODDY')
+
+        ! read left amplitudes from file and square up the doubles part
+        IOPT   = 3
+        Call CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,
+     *                WORK(KL1AM),WORK(KEND1))
+        CALL CC_T2SQ(WORK(KEND1),WORK(KL2AM),ISYML)
 
         CALL CCSDT_L03AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
      *                  WORK(KXIAJB),WORK(KFOCK0),WORK(KL1AM),
      *                  WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),
      *                  DUMMY,DUMMY)
 
+      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ' .OR.
+     &         LISTL(1:3).EQ.'M1 ' .OR. LISTL(1:3).EQ.'N2 ' .OR.
+     &         LISTL(1:3).EQ.'E0 '                              ) THEN
+
+        CALL CCSDT_TBAR31_NODDY(WORK(KL3AM),FREQL,LISTL,IDLSTL,
+     &                        WORK(KLAMP0),WORK(KLAMH0),
+     &                        WORK(KFOCK0),WORK(KFOCKD),WORK(KSCR1),
+     &                        WORK(KXIAJB),WORK(KINT1T0),WORK(KINT2T0),
+     &                        WORK(KEND1),LWRK1)
+
       ELSE
 
         CALL QUIT('CCSDT_HMAT_NODDY> LISTL NOT AVAILABLE:'//LISTL)
       
+      END IF
+
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
+
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'NORM^2(L3AM):',
+     *    DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KL3AM),1,WORK(KL3AM),1)
       END IF
 
 *---------------------------------------------------------------------*

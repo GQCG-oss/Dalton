@@ -62,6 +62,7 @@ C
 #include <ccorb.h>
 #include <inftap.h>
 #include <dummy.h>
+#include <ccnoddy.h>
 
       LOGICAL LOCDBG, FD_TEST, XI_ONLY
       PARAMETER (LOCDBG=.FALSE., FD_TEST=.FALSE., XI_ONLY=.FALSE.)
@@ -117,10 +118,12 @@ C
 
       SKIP_T3_CONT = .FALSE.
       IF (NEW_NODDY_F_CONT) THEN
-        SKIP_T3_CONT = (IOPTRES.EQ.5)
+       SKIP_T3_CONT = (IOPTRES.EQ.5)
+       IF (LOCDBG .OR. DEBUG) THEN
         WRITE(LUPRI,*) 'Use new noddy F matrix implementation...'
         IF (SKIP_T3_CONT)
      &   WRITE(LUPRI,*) 'Contributions from T3 will be skipped here...'
+       END IF
       ENDIF
 *---------------------------------------------------------------------*
 *     Memory allocation:
@@ -184,17 +187,6 @@ C
       CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
 
 *---------------------------------------------------------------------*
-*     Read SCF orbital energies from file:
-*---------------------------------------------------------------------*
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUSIFC
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
-      CALL GPCLOSE(LUSIFC,'KEEP')
-
-*---------------------------------------------------------------------*
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
@@ -204,39 +196,7 @@ C
      &            WORK(KEND1),LWRK1)
 
 *---------------------------------------------------------------------*
-*     read zeroth-order AO Fock matrix from file: 
-*---------------------------------------------------------------------*
-      LUFOCK = 0
-      CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUFOCK)
-      READ(LUFOCK) (WORK(KFOCK0-1+I),I=1,N2BST(ISYM0))
-      CALL GPCLOSE(LUFOCK,'KEEP')
-
-      CALL CC_FCKMO(WORK(KFOCK0),WORK(KLAMP0),WORK(KLAMH0),
-     &              WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0)
-
-*---------------------------------------------------------------------*
-*     If needed get external field:
-*---------------------------------------------------------------------*
-      IF (NONHF) THEN
-        CALL DZERO(WORK(KFIELDAO),NORBT*NORBT)
-        DO I = 1, NFIELD
-          FF = EFIELD(I)
-          CALL CC_ONEP(WORK(KFIELDAO),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
-        ENDDO
-        CALL DCOPY(NORBT*NORBT,WORK(KFIELDAO),1,WORK(KFIELD),1)
-
-        ! calculate external field in zero-order lambda basis
-        CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMP0),WORK(KLAMH0),
-     *                WORK(KEND1),LWRK1,1,1,1)
-
-        IF (LOCDBG) WRITE(LUPRI,*) 'NORM^2(FIELD):',
-     &     DDOT(NORBT*NORBT,WORK(KFIELD),1,WORK(KFIELD),1)
-      ENDIF
-
-*---------------------------------------------------------------------*
-*     Compute some integrals:
+*     Read precalculated integrals from file:
 *           XINT1S0 =  (CK|BD)
 *           XINT2S0 =  (CK|LJ)
 *           XINT1T0 =  (KC|BD)
@@ -244,36 +204,32 @@ C
 *           XIAJB   = 2(IA|JB) - (IB|JA)
 *           YIAJB   =  (IA|JB)
 *---------------------------------------------------------------------*
-      CALL CCSDT_INTS0_NODDY(.TRUE.,WORK(KXIAJB), WORK(KYIAJB),
-     &                       .TRUE.,WORK(KINT1S0),WORK(KINT2S0),
-     &                       .TRUE.,WORK(KINT1T0),WORK(KINT2T0),
-     &                       WORK(KLAMP0),WORK(KLAMH0),
-     &                       WORK(KEND1),LWRK1)
+      CALL CCSDT_READ_NODDY(.TRUE.,WORK(KFOCKD),WORK(KFOCK0),
+     &                             WORK(KFIELD),WORK(KFIELDAO),
+     &                      .TRUE.,WORK(KXIAJB),WORK(KYIAJB),
+     &                      .TRUE.,WORK(KINT1S0),WORK(KINT2S0),
+     &                      .TRUE.,WORK(KINT1T0),WORK(KINT2T0),
+     &                      .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                      NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
 *---------------------------------------------------------------------*
 *     If needed, compute zeroth-order triples amplitudes:
 *---------------------------------------------------------------------*
       IF (NONHF) THEN
-        KT02AM = KEND1
-        KT03AM = KT02AM + NT1AMX*NT1AMX
-        KT3SCR = KT03AM + NT1AMX*NT1AMX*NT1AMX
-        KEND2  = KT3SCR + NT1AMX*NT1AMX*NT1AMX
+        KT03AM = KEND1
+        KEND2  = KT03AM + NT1AMX*NT1AMX*NT1AMX
+
         LWRK2  = LWORK  - KEND2
         IF (LWRK2 .LT. 0) THEN
           CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (T03)')
         END IF
 
-        ! read T^0 doubles amplitudes from file and square up 
-        IOPT   = 2
-        Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KT03AM))
-        CALL CC_T2SQ(WORK(KT03AM),WORK(KT02AM),ISYM0)
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        READ(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
+        CALL GPCLOSE(LUTEMP,'KEEP')
 
-        ! compute triples amplitudes
-        CALL CCSDT_T03AM(WORK(KT03AM),WORK(KINT1S0),WORK(KINT2S0),
-     *                   WORK(KT02AM),WORK(KSCR1),WORK(KFOCKD),
-     *                   WORK(KFIELD),WORK(KT3SCR))
-
-        CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT03AM),1)
 
         ! store triples amplitudes on file
         LUTEMP = 0
@@ -304,7 +260,7 @@ C
          CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (2)')
       ENDIF
 
-      IF (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ') THEN
+      IF      (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ') THEN
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,XI_ONLY,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
@@ -314,6 +270,22 @@ C
      &                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                       WORK(KDUM),WORK(KFOCKD),
      &                       WORK(KEND2),LWRK2)
+      ELSE IF (LISTB(1:3).EQ.'R2 ' .OR. LISTB(1:3).EQ.'ER1') THEN
+        CALL CCSDT_T32_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,
+     &                       WORK(KINT1S0),WORK(KINT2S0),
+     &                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     &                       WORK(KFOCKD),WORK(KFIELDAO),WORK(KFIELD),
+     &                       WORK(KSCR1),WORK(KEND2),LWRK2)
+        IOPT = 1
+        ISYMB = ILSTSYM(LISTB,IDLSTB)
+        CALL CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,WORK(KTB1AM),DUMMY)
+        CALL CCLR_LAMTRA(WORK(KLAMP0),WORK(KLAMPB),WORK(KLAMH0),
+     &                   WORK(KLAMHB),WORK(KTB1AM),ISYMB)
+        CALL CCSDT_INTS1_NODDY(.TRUE.,WORK(KINT1SB),WORK(KINT2SB),
+     &                         .FALSE.,DUMMY,DUMMY,
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KEND2),LWRK2)
       ELSE
         CALL QUIT('Unknown or illegal list in CCSDT_FMAT_NODDY.')
       END IF
@@ -325,6 +297,8 @@ C
         REWIND LUTEMP
         WRITE (LUTEMP) (WORK(KTB3AM-1+IDX),IDX=1,NT1AMX*NT1AMX*NT1AMX)
         CALL GPCLOSE(LUTEMP,'KEEP')
+        IF (LOCDBG) WRITE(LUPRI,*) 'Dumped R1_3... norm^2=',
+     &    DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KTB3AM),1,WORK(KTB3AM),1)
       END IF
 
 *---------------------------------------------------------------------*
@@ -379,10 +353,14 @@ C
          CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (4)')
       ENDIF
 
-      CALL DZERO(WORK(K0IOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
-      CALL DZERO(WORK(K0IOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
-      CALL DZERO(WORK(K0IOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
-      CALL DZERO(WORK(K0IVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
+      CALL CCSDT_READ_NODDY(.FALSE.,WORK(KFOCKD),WORK(KFOCK0),
+     &                              WORK(KFIELD),WORK(KFIELDAO),
+     &                      .FALSE.,WORK(KXIAJB),WORK(KYIAJB),
+     &                      .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
+     &                      .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
+     &                      .TRUE.,WORK(K0IOVVO),WORK(K0IOOVV),
+     &                             WORK(K0IOOOO),WORK(K0IVVVV),
+     &                      NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
       CALL DZERO(WORK(KBIOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
       CALL DZERO(WORK(KBIOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
@@ -423,13 +401,6 @@ C           ----------------------------------
      &                         WORK(KLAMPB),WORK(KLAMHB),
      &                         WORK(KXINT),IDEL)
 
-            CALL CCFOP_TRAN1_R(WORK(K0IOVVO),WORK(K0IOOVV),
-     &                         WORK(K0IOOOO),WORK(K0IVVVV),
-     &                         WORK(KLAMP0),WORK(KLAMH0),
-     &                         WORK(KLAMP0),WORK(KLAMH0),
-     &                         WORK(KLAMP0),WORK(KLAMH0),
-     &                         WORK(KXINT),IDEL)
-
             CALL CCFOP_TRAN1_R(WORK(KBIOVVO),WORK(KBIOOVV),
      &                         WORK(KBIOOOO),WORK(KBIVVVV),
      &                         WORK(KLAMP0),WORK(KLAMH0),
@@ -448,7 +419,7 @@ C           ----------------------------------
       END DO  
 
 *---------------------------------------------------------------------*
-*     Compute L^0_3 multipliers:
+*     Compute L_3 multipliers:
 *---------------------------------------------------------------------*
       KEND3  = KEND2
 
@@ -475,14 +446,15 @@ C           ----------------------------------
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
 
-      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ') THEN
+      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ' .OR.
+     &         LISTL(1:3).EQ.'M1 ' .OR. LISTL(1:3).EQ.'N2 ' .OR.
+     &         LISTL(1:3).EQ.'E0 '                              ) THEN
 
         CALL CCSDT_TBAR31_NODDY(WORK(KL3AM),FREQL,LISTL,IDLSTL,
-     &                          WORK(KLAMP0),WORK(KLAMH0),
-     &                          WORK(KFOCK0),WORK(KFOCKD),WORK(KSCR1),
-     &                          .FALSE.,WORK(KXIAJB),DUMMY,
-     &                          .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
-     &                          WORK(KEND3),LWRK3)
+     &                        WORK(KLAMP0),WORK(KLAMH0),
+     &                        WORK(KFOCK0),WORK(KFOCKD),WORK(KSCR1),
+     &                        WORK(KXIAJB),WORK(KINT1T0),WORK(KINT2T0),
+     &                        WORK(KEND3),LWRK3)
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
 
@@ -625,6 +597,8 @@ c       -------------------------------------------
         CALL CC_FCKMO(WORK(KFIELDAO),WORK(KLAMPB),WORK(KLAMH0),
      *                WORK(KEND3),LWRK3,1,1,1)
         CALL DAXPY(NORBT*NORBT,ONE,WORK(KFIELDAO),1,WORK(KFLDB1),1)
+        IF (LOCDBG) WRITE(LUPRI,*) 'Norm^2(FLDB1):',
+     *    DDOT(NORBT*NORBT,WORK(KFLDB1),1,WORK(KFLDB1),1)
 
         L2INCL = .FALSE.
         CALL CCSDT_E3AM(WORK(KF3AM),WORK(KDUM),WORK(KL3AM),
@@ -924,6 +898,7 @@ C------------------------------------------------------
       INTEGER KT1AM, KT2AM, KT3AM, KL1AM, KL2AM, KL3AM, KFOCK,
      &        KLAMDP, KLAMDH, KEND1, LWRK1, LUSIFC, IOPT, IDUMMY
 
+      CALL QUIT('CCSDT_FMAT_FD not adapted for intermediates!')
 *---------------------------------------------------------------------*
 *     memory allocations:
 *---------------------------------------------------------------------*
@@ -1057,37 +1032,22 @@ C------------------------------------------------------
 *=====================================================================*
       SUBROUTINE CCSDT_TBAR31_NODDY(TBAR3AM,FREQB,LISTB,IDLSTB,
      &                              XLAMDP,XLAMDH,FOCK0,FOCKD,SCR1,
-     &                              DO_INT2,XIAJB,YIAJB,
-     &                              DO_INT1,XINT1T0,XINT2T0,
+     &                              XIAJB,XINT1T0,XINT2T0,
      &                              WORK,LWORK)
 *---------------------------------------------------------------------*
 *
 *  Purpose: compute triples part of first-order response multipliers
 *
-*   Implemented for L1, BE, N2, M1 and LE vectors.
-*
-*             if (do_int1) compute also
-*                 XINT1T0 = (kc|bd) and 
-*                 XINT2T0 = (kc|lj)
-*             else these integrals must be input
-*
-*             if (do_int2) compute also
-*                 XIAJB  = 2(kc|ld) - (kd|lc)
-*                 YIAJB  =  (kc|ld)
-*             else XIAJB must be input
+*   Implemented for L1, X1B, E0, N2, M1 and LE vectors.
 *
 *   Input:   LISTB,   IDLSTB
 *            XLAMDP,  XLAMDH
 *            FOCK0,   FOCKD
 *            XIAJB
 *            XINT1T0, XINT2T0
-*            DO_INT1, DO_INT2
 *            
 *   Output:  TBAR3AM
 *            FREQB
-*            XIAJB
-*            XINT1T0, XINT2T0
-*            DO_INT1, DO_INT2
 *
 *   Scratch: SCR1
 *
@@ -1108,11 +1068,11 @@ C------------------------------------------------------
 #include <ccfield.h>
 
       LOGICAL LOCDBG, PRINT_T3
-      PARAMETER (LOCDBG=.FALSE.,PRINT_T3=.false.)
+      PARAMETER (LOCDBG=.false.,PRINT_T3=.false.)
 
 
       CHARACTER LISTB*3
-      LOGICAL DO_INT1, DO_INT2
+      LOGICAL RHS_ONLY
       INTEGER LWORK, IDLSTB
 #if defined (SYS_CRAY)
       REAL WORK(LWORK), FOCKD(*), FOCK0(*), SCR1(*)
@@ -1125,7 +1085,7 @@ C------------------------------------------------------
       DOUBLE PRECISION FREQB, DUMMY, DDOT, ZERO, FF, ONE
       DOUBLE PRECISION XLAMDP(*), XLAMDH(*)
       DOUBLE PRECISION TBAR3AM(NT1AMX,NT1AMX,NT1AMX)
-      DOUBLE PRECISION XINT1T0(*), XINT2T0(*), XIAJB(*), YIAJB(*)
+      DOUBLE PRECISION XINT1T0(*), XINT2T0(*), XIAJB(*)
 #endif
       LOGICAL L2INCL
       INTEGER ISYM0
@@ -1141,6 +1101,7 @@ C------------------------------------------------------
      &        KFLDB1, KT3SCR
       
 
+      CALL QENTER('CCTBAR31')
 *---------------------------------------------------------------------*
 *     Do some initial tests and memory allocations:
 *---------------------------------------------------------------------*
@@ -1156,7 +1117,8 @@ C------------------------------------------------------
 c     ------------------------------------------------------------
 c     first-order response of ground state lagrangian multipliers:
 c     ------------------------------------------------------------
-      IF (LISTB(1:3).EQ.'L1 ') THEN
+      IF (LISTB(1:3).EQ.'L1 '.OR.LISTB(1:3).EQ.'X1B') THEN
+        RHS_ONLY = LISTB.EQ.'X1B'
 
         ! get symmetry, frequency and integral label from common blocks
         ! defined in ccl1rsp.h
@@ -1179,6 +1141,7 @@ c     zero-order lagrangian multipliers for ground to excited
 c     state transitions:
 c     -------------------------------------------------------
       ELSE IF (LISTB(1:3).EQ.'M1 ') THEN
+        RHS_ONLY = .FALSE.
 
         FREQB  = FRQLRM(IDLSTB)
         LABELB = '- none -'
@@ -1198,6 +1161,7 @@ c      latter does here only contribute indirectly via the
 c      singles and doubles part of the solution vector "E0")
 c     --------------------------------------------------------
       ELSE IF (LISTB(1:3).EQ.'E0 ') THEN
+        RHS_ONLY = .FALSE.
 
         FREQB  = ZERO
         LABELB = '- none -'
@@ -1215,6 +1179,7 @@ c     zero-order lagrangian multipliers for excited to excited
 c     state transitions:
 c     --------------------------------------------------------
       ELSE IF (LISTB(1:3).EQ.'N2 ') THEN
+        RHS_ONLY = .FALSE.
 
         FREQB  = FRQIN2(IDLSTB) + FRQFN2(IDLSTB)
         LABELB = '- none -'
@@ -1231,6 +1196,7 @@ c     -----------------------------
 c     zero-order left eigenvectors:
 c     -----------------------------
       ELSE IF (LISTB(1:3).EQ.'LE ') THEN
+        RHS_ONLY = .FALSE.
 
         FREQB = -EIGVAL(IDLSTB)
         LABELB = '- none -'
@@ -1326,20 +1292,10 @@ c     -----------------------------
 *---------------------------------------------------------------------*
 *     Compute integrals needed for the following contributions:
 *---------------------------------------------------------------------*
-      IF (DO_INTR .OR. DO_INT1 .OR. DO_INT2) THEN
+      IF (DO_INTR) THEN
 
-        IF (DO_INTR) THEN
-          CALL DZERO(WORK(KINT1TB),NT1AMX*NVIRT*NVIRT)
-          CALL DZERO(WORK(KINT2TB),NRHFT*NRHFT*NT1AMX)
-        END IF
-        IF (DO_INT1) THEN
-           CALL DZERO(XINT1T0,NT1AMX*NVIRT*NVIRT)
-           CALL DZERO(XINT2T0,NT1AMX*NRHFT*NRHFT)
-        END IF
-        IF (DO_INT2) THEN
-           CALL DZERO(XIAJB,NT1AMX*NT1AMX)
-           CALL DZERO(YIAJB,NT1AMX*NT1AMX)
-        END IF
+        CALL DZERO(WORK(KINT1TB),NT1AMX*NVIRT*NVIRT)
+        CALL DZERO(WORK(KINT2TB),NRHFT*NRHFT*NT1AMX)
 
         DO ISYMD = 1, NSYM
           DO ILLL = 1,NBAS(ISYMD)
@@ -1366,36 +1322,27 @@ C           ---------------------------
 C           ----------------------------------
 C           Calculate integrals needed in CC3:
 C           ----------------------------------
-            IF (DO_INTR) THEN
-               CALL CCSDT_TRAN1_R(WORK(KINT1TB),WORK(KINT2TB),
-     &                            XLAMDP,XLAMDH,
-     &                            WORK(KLAMPB),WORK(KLAMHB),
-     &                            WORK(KXINT),IDEL)
-            END IF
-
-            IF (DO_INT1) THEN
-               CALL CCSDT_TRAN1(XINT1T0,XINT2T0,XLAMDP,XLAMDH,
-     *                          WORK(KXINT),IDEL)
-            END IF
-
-            IF (DO_INT2) THEN
-               CALL CC3_TRAN2(XIAJB,YIAJB,XLAMDP,XLAMDH,
-     *                        WORK(KXINT),IDEL)
-            END IF
-
+            CALL CCSDT_TRAN1_R(WORK(KINT1TB),WORK(KINT2TB),
+     &                         XLAMDP,XLAMDH,
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KXINT),IDEL)
           END DO   
         END DO  
-
       END IF
-
 
 *---------------------------------------------------------------------*
 *     triples part of the zero-order lagrangian multipliers:
 *     (note: in case of non-HF external fields TBAR3AM is used
 *            here as scratch array)
 *---------------------------------------------------------------------*
-      IF ( LISTB(1:3).EQ.'L1 ' .OR.
+      IF ( LISTB(1:3).EQ.'L1 ' .OR. LISTB(1:3).EQ.'X1B' .OR.
      &    (LISTB(1:3).NE.'LE '.AND.NONHF) ) THEN
+
+C       IF (.NOT.( LISTB(1:3).EQ.'L1 ' .OR. LISTB(1:3).EQ.'X1B' ))
+C    &    CALL QUIT('CCSDT_TBAR31_NODDY not tested for this case!')
+
+        IF (LWRK1 .LT. NT2AMX) 
+     &    CALL QUIT('Insufficient space in CCSDT_TBAR31_NODDY')
 
         ! read L^0 multipliers from file and square up doubles part
         IOPT  = 3
@@ -1422,7 +1369,7 @@ C           ----------------------------------
 *     of the ground state zero-order lagrangian multipliers L^0_3
 *     and one-electron property integral matrix:
 *=====================================================================*
-      IF (LISTB(1:3).EQ.'L1 ') THEN
+      IF (LISTB(1:3).EQ.'L1 '.OR.LISTB(1:3).EQ.'X1B') THEN
 
 c       -------------------------------------------
 c       Matrix with property integrals in MO basis:
@@ -1486,57 +1433,76 @@ c       -------------------------------
       END IF
 
 *=====================================================================*
-*     Compute contribution from 
-*                 <Tbar^B_1|[H,tau_nu_3]|HF>/eps_3:
-*                + <Tbar^B_2|[H,tau_nu_3]|HF>/eps_3:
+*     Compute contribution from jacobian transformation:
+*                 <Tbar^B_1|[H,tau_nu_3]|HF>/eps_3
+*                + <Tbar^B_2|[H,tau_nu_3]|HF>/eps_3
 *     Note: here we overwrite L1AM and L2AM with response multipliers
 *=====================================================================*
-      IOPT  = 3
-      Call CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
-     &              WORK(KL1AM),WORK(KEND1))
-      if (locdbg) write(lupri,*)'ccsdt_tbar31_noddy> norm^2 of L2:',
-     &   ddot(nt2amx,work(kend1),1,work(kend1),1) 
-      CALL CC_T2SQ(WORK(KEND1),WORK(KL2AM),ISYMB)   
+      IF (.NOT. RHS_ONLY) THEN
+        IOPT  = 3
+        Call CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
+     &                WORK(KL1AM),WORK(KEND1))
+        if (locdbg) write(lupri,*)'ccsdt_tbar31_noddy> norm^2 of L2:',
+     &     ddot(nt2amx,work(kend1),1,work(kend1),1) 
+        CALL CC_T2SQ(WORK(KEND1),WORK(KL2AM),ISYMB)   
 
-      IF (LOCDBG) THEN
-        WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(F3AM+E3AM)-2:',
+        IF (LOCDBG) THEN
+          WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(F3AM+E3AM)-2:',
+     &          DDOT(NT1AMX*NT1AMX*NT1AMX,TBAR3AM,1,TBAR3AM,1)
+        END IF
+
+        CALL CCSDT_L3AM_R(TBAR3AM,-FREQB,XINT1T0,XINT2T0,XIAJB,FOCK0,
+     &                    WORK(KL1AM),WORK(KL2AM),SCR1,FOCKD,.FALSE.)
+
+        IF (LOCDBG) THEN
+          WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> FREQB:',FREQB
+          WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(XIAJB):',
+     &        DDOT(NT1AMX*NT1AMX,XIAJB,1,XIAJB,1)
+          WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(XINT1T0):',
+     &        DDOT(NT1AMX*NVIRT*NVIRT,XINT1T0,1,XINT1T0,1)
+          WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(XINT2T0):',
+     &        DDOT(NT1AMX*NRHFT*NRHFT,XINT1T0,1,XINT1T0,1)
+          WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(FOCK0):',
+     &        DDOT(NORBT*NORBT,FOCK0,1,FOCK0,1)
+          WRITE(LUPRI,*) 
+     &     'CCSDT_TBAR31_NODDY> norm^2(F3AM+E3AM+L3AM(Tbar)):',
      &        DDOT(NT1AMX*NT1AMX*NT1AMX,TBAR3AM,1,TBAR3AM,1)
-      END IF
-
-      CALL CCSDT_L3AM_R(TBAR3AM,-FREQB,XINT1T0,XINT2T0,XIAJB,FOCK0,
-     &                  WORK(KL1AM),WORK(KL2AM),SCR1,FOCKD,.FALSE.)
-
-      IF (LOCDBG) THEN
-        WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> FREQB:',FREQB
-        WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(XIAJB):',
-     &      DDOT(NT1AMX*NT1AMX,XIAJB,1,XIAJB,1)
-        WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(XINT1T0):',
-     &      DDOT(NT1AMX*NVIRT*NVIRT,XINT1T0,1,XINT1T0,1)
-        WRITE(LUPRI,*) 'CCSDT_TBAR31_NODDY> norm^2(XINT2T0):',
-     &      DDOT(NT1AMX*NRHFT*NRHFT,XINT1T0,1,XINT1T0,1)
-        WRITE(LUPRI,*) 
-     &   'CCSDT_TBAR31_NODDY> norm^2(F3AM+E3AM+L3AM(Tbar)):',
-     &      DDOT(NT1AMX*NT1AMX*NT1AMX,TBAR3AM,1,TBAR3AM,1)
+        END IF
       END IF
 
 *=====================================================================*
 *     Divide by orbital energy differences and frequency:
 *     (for finite difference we solve the equations iteratively)
 *=====================================================================*
-      KT3SCR = KL3AM ! scratch array for NONHF case
+      IF (RHS_ONLY) THEN
+        CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,TBAR3AM,1)
+      ELSE
+        KT3SCR = KL3AM ! scratch array for NONHF case
 
-      CALL CCSDT_3AM(TBAR3AM,-FREQB,SCR1,FOCKD,
-     &               NONHF,WORK(KFIELD),.TRUE.,WORK(KT3SCR))
+        CALL CCSDT_3AM(TBAR3AM,-FREQB,SCR1,FOCKD,
+     &                 NONHF,WORK(KFIELD),.TRUE.,WORK(KT3SCR))
 
+      END IF
 *---------------------------------------------------------------------*
-*     print, if required and return:
+*     clean forbidden elements, print, if required and return:
 *---------------------------------------------------------------------*
+      CALL CCSDT_CLEAN_T3(TBAR3AM,NT1AMX,NVIRT,NRHFT)
+
       IF (PRINT_T3) THEN
         WRITE(LUPRI,*)'CCSDT_TBAR31_AM> first-order T3-bar vector:'
         WRITE(LUPRI,*)'CCSDT_TBAR31_AM> list,idlst:',LISTB,IDLSTB
         WRITE(LUPRI,*)'CCSDT_TBAR31_AM> freq,label:',FREQB,LABELB
         CALL PRINT_PT3_NODDY(TBAR3AM)
       END IF
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'CCSDT_TBAR31_AM> LISTB,IDLSTB:',LISTB,IDLSTB
+        WRITE(LUPRI,*) 'CCSDT_TBAR31_AM> FREQB,RHS_ONLY:',FREQB,RHS_ONLY
+        WRITE(LUPRI,*) 'CCSDT_TBAR31_AM> LISTL,LISTR:',LISTL,LISTR
+        WRITE(LUPRI,*) 'CCSDT_TBAR31_AM> norm^2(TBAR3AM):',
+     &   DDOT(NT1AMX**3,TBAR3AM,1,TBAR3AM,1)
+      END IF
+
+      CALL QEXIT('CCTBAR31')
 
       RETURN
       END
@@ -1586,19 +1552,21 @@ c       -------------------------------
       REAL DOTPROD(MXVEC,NBTRAN), DDOT
       REAL WORK(LWORK)
       REAL FREQB, TCON
+      REAL FREQLST
 #else
       DOUBLE PRECISION DOTPROD(MXVEC,NBTRAN), DDOT
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION FREQB, TCON
+      DOUBLE PRECISION FREQLST
 #endif
 
-      CHARACTER MODEL*(10), LABELB*(8)
+      CHARACTER MODEL*(10)
       INTEGER KEND1, ITRAN, IDLSTB, IDLSTC, ISYMRB, KSCR1,
      &        KFOCKD, KFOCK0, KT1AMP0, KLAMP0, KLAMH0, KFOCKB, 
      &        KLAMPB, KLAMHB, KOME1, KLAM2, KINT1T0, KINT2T0, KDUM,
      &        KXIAJB, KYIAJB, KINT1SB, KINT2SB, LWRK1, IOPT, KTB3AM,
      &        KEND2, LWRK2, IVEC, IDLSTL, ISYML, ISYMRC, KL2AM,
-     &        LUFOCK, KRC1AM, KINT1S0, KINT2S0
+     &        LUFOCK, KRC1AM, KINT1S0, KINT2S0, KFIELD, KFIELDAO
 
       INTEGER ILSTSYM
 
@@ -1613,35 +1581,6 @@ c       -------------------------------
       IF (LOCDBG) WRITE(LUPRI,*) 'entered CCSDT_FBC_NODDY...'
 
 *---------------------------------------------------------------------*
-*     Loop over left and right amplitude vectors:
-*---------------------------------------------------------------------*
-      DO ITRAN = 1, NBTRAN
-        IDLSTB = IBTRAN(1,ITRAN)
-        IDLSTC = IBTRAN(2,ITRAN)
-
-        ISYMRB = ILSTSYM(LISTB,IDLSTB)
-        ISYMRC = ILSTSYM(LISTC,IDLSTC)
-
-        IF      (LISTB(1:3).EQ.'R1 ') THEN
-          FREQB  = FRQLRT(IDLSTB)
-          LABELB = LRTLBL(IDLSTB)
-        ELSE IF (LISTB(1:3).EQ.'RE ') THEN
-          FREQB  = EIGVAL(IDLSTB)
-          LABELB = '- none -'
-        ELSE
-          CALL QUIT('Unkown list in CCSDT_FBC_NODDY.')
-        END IF
-
-        IF (LOCDBG) THEN
-          WRITE(LUPRI,*) 'IDLSTB:',IDLSTB
-          WRITE(LUPRI,*) 'FREQB:',FREQB
-          WRITE(LUPRI,*) 'LABELB:',LABELB
-          WRITE(LUPRI,*) 'ISYMRB:',ISYMRB
-          WRITE(LUPRI,*) 'IDLSTC:',IDLSTC
-          WRITE(LUPRI,*) 'ISYMRC:',ISYMRC
-        END IF
-
-*---------------------------------------------------------------------*
 *     Memory allocation:
 *---------------------------------------------------------------------*
       KSCR1   = 1
@@ -1650,6 +1589,12 @@ c       -------------------------------
 
       KFOCK0  = KEND1
       KEND1   = KFOCK0  + NORBT*NORBT
+
+      IF (NONHF) THEN
+        KFIELD   = KEND1
+        KFIELDAO = KFIELD   + NBAST*NBAST
+        KEND1    = KFIELDAO + NBAST*NBAST
+      END IF
 
       KT1AMP0 = KEND1
       KLAMP0  = KT1AMP0 + NT1AMX
@@ -1690,17 +1635,6 @@ c       -------------------------------
       ENDIF
 
 *---------------------------------------------------------------------*
-*     Read SCF orbital energies from file:
-*---------------------------------------------------------------------*
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUSIFC
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
-      CALL GPCLOSE(LUSIFC,'KEEP')
-
-*---------------------------------------------------------------------*
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
@@ -1710,31 +1644,38 @@ c       -------------------------------
      &            WORK(KEND1),LWRK1)
 
 *---------------------------------------------------------------------*
-*     read zeroth-order AO Fock matrix from file: 
+*     Read precalculated integrals from file:
 *---------------------------------------------------------------------*
-      LUFOCK = 0
-      CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUFOCK)
-      READ(LUFOCK) (WORK(KFOCK0-1+I),I=1,N2BST(ISYM0))
-      CALL GPCLOSE(LUFOCK,'KEEP')
-
-      CALL CC_FCKMO(WORK(KFOCK0),WORK(KLAMP0),WORK(KLAMH0),
-     &              WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0)
+      CALL CCSDT_READ_NODDY(.TRUE.,WORK(KFOCKD),WORK(KFOCK0),
+     &                             WORK(KFIELD),WORK(KFIELDAO),
+     &                      .TRUE.,WORK(KXIAJB),WORK(KYIAJB),
+     &                      .TRUE.,WORK(KINT1S0),WORK(KINT2S0),
+     &                      .TRUE.,WORK(KINT1T0),WORK(KINT2T0),
+     &                      .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                      NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
 *---------------------------------------------------------------------*
-*     Precompute some integrals:
+*     Loop right amplitude vectors:
 *---------------------------------------------------------------------*
-      CALL CCSDT_INTS0_NODDY(.TRUE.,WORK(KXIAJB), WORK(KYIAJB),
-     &                       .TRUE.,WORK(KINT1S0),WORK(KINT2S0),
-     &                       .TRUE.,WORK(KINT1T0),WORK(KINT2T0),
-     &                       WORK(KLAMP0),WORK(KLAMH0),
-     &                       WORK(KEND1),LWRK1) 
+      DO ITRAN = 1, NBTRAN
+        IDLSTB = IBTRAN(1,ITRAN)
+        IDLSTC = IBTRAN(2,ITRAN)
+
+        ISYMRB = ILSTSYM(LISTB,IDLSTB)
+        ISYMRC = ILSTSYM(LISTC,IDLSTC)
+
+        FREQB  = FREQLST(LISTB,IDLSTB)
+
+        IF (LOCDBG) THEN
+          WRITE(LUPRI,*) 'IDLSTB:',IDLSTB
+          WRITE(LUPRI,*) 'FREQB:',FREQB
+          WRITE(LUPRI,*) 'ISYMRB:',ISYMRB
+          WRITE(LUPRI,*) 'IDLSTC:',IDLSTC
+          WRITE(LUPRI,*) 'ISYMRC:',ISYMRC
+        END IF
 
 *---------------------------------------------------------------------*
-*     Compute first-order response amplitudes and some more integrals:
-*           XINT1SB =  (CK|BD)-bar
-*           XINT2SB =  (CK|LJ)-bar
+*     Compute response amplitudes:
 *---------------------------------------------------------------------*
       KTB3AM = KEND1
       KEND2  = KTB3AM + NT1AMX*NT1AMX*NT1AMX
@@ -1754,6 +1695,12 @@ c       -------------------------------
      &                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                       WORK(KDUM),WORK(KFOCKD),
      &                       WORK(KEND2),LWRK2)
+      ELSE IF (LISTB(1:3).EQ.'R2 ' .OR. LISTB(1:3).EQ.'ER1') THEN
+        CALL CCSDT_T32_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,
+     &                       WORK(KINT1S0),WORK(KINT2S0),
+     &                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     &                       WORK(KFOCKD),DUMMY,DUMMY,
+     &                       WORK(KSCR1),WORK(KEND2),LWRK2)
       ELSE
         CALL QUIT('Unknown or illegal list in CCSDT_FBC_NODDY.')
       END IF

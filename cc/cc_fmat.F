@@ -91,11 +91,6 @@ COMMENT COMMENT
       INTEGER KEND, LEND
       INTEGER MXRAMP, MXLAMP, MXBTRAN, KB1TRAN, KB1DOTS, KB1CON,
      &        KB2TRAN, KB2DOTS, KB2CON, NB1TRAN, NB2TRAN
-COMMENT COMMENT
-COMMENT COMMENT
-      INTEGER KHCOUNT
-COMMENT COMMENT
-COMMENT COMMENT
 
       CALL QENTER('CC_FMATRIX')
 
@@ -237,13 +232,24 @@ COMMENT COMMENT
              FNTOC  = 'CCSDT_OC'
              FN3VI  = 'CC3_VI'
              FN3VI2 = 'CC3_VI12'
-C
-             CALL CCSDT_FBMAT(WORK(KB1TRAN),WORK(KB1DOTS),
+
+             IF (LISTR(1:3).EQ.'R1 '.OR.LISTR(1:3).EQ.'RE ') THEN
+                CALL CCSDT_FBMAT(WORK(KB1TRAN),WORK(KB1DOTS),
      *                        WORK(KB1CON),NB1TRAN,MXLAMP,
      *                        LISTL,LISTR,FILFMA,FNCKJD,FNDKBC,
      *                        FNDELD,FNTOC,FN3VI,FN3VI2,
      *                        WORK(KEND),LEND) 
+             ELSE IF (LISTR(1:3).EQ.'R2 '.OR.LISTR(1:3).EQ.'ER1') THEN
+                CALL CC3_FBMATT3ZU(WORK(KB1TRAN),WORK(KB1DOTS),
+     *                        WORK(KB1CON),NB1TRAN,MXLAMP,
+     *                        LISTL,LISTR,FILFMA,
+     *                        WORK(KEND),LEND) 
+             ELSE
+                CALL QUIT('Unknown LISTR in CC_FMAT.')
+             END IF
+
          END IF
+
          IF (LISTR(1:3).NE.FILFMA(1:3)) THEN
            IF (NODDY_FMAT) THEN
              CALL CCSDT_FBC_NODDY(CCSDT_F_ALTER,
@@ -257,12 +263,22 @@ C
              FNTOC  = 'CCSDT_OC'
              FN3VI  = 'CC3_VI'
              FN3VI2 = 'CC3_VI12'
-C
-             CALL CCSDT_FBMAT(WORK(KB2TRAN),WORK(KB2DOTS),
+
+             IF (FILFMA(1:3).EQ.'R1 '.OR.FILFMA(1:3).EQ.'RE ') THEN
+                CALL CCSDT_FBMAT(WORK(KB2TRAN),WORK(KB2DOTS),
      *                        WORK(KB2CON),NB2TRAN,MXLAMP,
      *                        LISTL,FILFMA,LISTR,FNCKJD,FNDKBC,
      *                        FNDELD,FNTOC,FN3VI,FN3VI2,
      *                        WORK(KEND),LEND)
+             ELSE IF (FILFMA(1:3).EQ.'R2 '.OR.FILFMA(1:3).EQ.'ER1') THEN
+                CALL CC3_FBMATT3ZU(WORK(KB2TRAN),WORK(KB2DOTS),
+     *                        WORK(KB2CON),NB2TRAN,MXLAMP,
+     *                        LISTL,FILFMA,LISTR,
+     *                        WORK(KEND),LEND)
+             ELSE
+                CALL QUIT('Unknown FILFMA in CC_FMAT.')
+             END IF
+
            END IF
          END IF
 
@@ -2143,6 +2159,7 @@ C            ------------------------------------------
 
 #endif
         END IF
+
 
 
 *---------------------------------------------------------------------*

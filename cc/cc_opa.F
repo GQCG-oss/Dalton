@@ -127,9 +127,13 @@ c /* deck CC_OPA */
       NBOPA   = 2 * NLRSOP * NXLRSST
 
       ! maximum number of transformations or vector calculations
+      ! NLRSOP    Eta{X} and Xi{X} vectors
+      ! NXLRSST   F x RE transformations
       MXTRAN   = MAX(NXLRSST,NLRSOP)
 
       ! maximum number of vectors to dot on 
+      ! NXLRSST   LE, RE, M1 vectors dotted on a Eta{X} or Xi{X}
+      ! NLRSOP    R1 vectors dotted on a F x RE transformation
       MXVEC    = MAX(NXLRSST,NLRSOP)
 
 
@@ -252,7 +256,7 @@ c /* deck CC_OPA */
 *---------------------------------------------------------------------*
 * print one-photon absorption properties and return:
 *---------------------------------------------------------------------*
-      CALL  CCOPAPRT(WORK(KRESULT))
+      CALL  CCOPAPRT(WORK(KRESULT),.FALSE.,NLRSOP,NXLRSST)
 
       CALL FLSHFO(LUPRI)
 
@@ -264,7 +268,7 @@ c /* deck CC_OPA */
 *=====================================================================*
 c /* deck ccopaprt */
 *=====================================================================*
-      SUBROUTINE CCOPAPRT(TRANMOM)
+      SUBROUTINE CCOPAPRT(TRANMOM,XST,NOPERAT,NTRANSIT)
 *---------------------------------------------------------------------*
 *
 *    Purpose: print transition momens and different one-photon 
@@ -278,9 +282,11 @@ c /* deck ccopaprt */
 #include <pgroup.h>
 #include <ccroper.h>
 #include <ccopainf.h>
+#include <ccxopainf.h>
 #include <ccsdinp.h>
 #include <ccexci.h>
 #include <codata.h>
+#include <ccorb.h>
 
 
       CHARACTER*5  BLANKS
@@ -288,18 +294,20 @@ c /* deck ccopaprt */
       CHARACTER*10 MODEL
       CHARACTER*80 STRING
 
+      LOGICAL XST
+      INTEGER NOPERAT, NTRANSIT
 
 #if defined (SYS_CRAY)
-      REAL TRANMOM(2,NLRSOP,NXLRSST)
+      REAL TRANMOM(2,NOPERAT,NTRANSIT)
       REAL DIPLEN(3,2), DIPVEL(3,2), ANGMOM(3,2)
       REAL ZERO, HALF, ONE, TWO, THREE, EIGV, SIGN
-      REAL TMF0, TM0F, STRN
+      REAL TMF0, TM0F, STRN, EIGVI, EIGVF
       REAL OSCILEN, OSCIVEL, OSCIMIX, ROTALEN, ROTAVEL
 #else
-      DOUBLE PRECISION TRANMOM(2,NLRSOP,NXLRSST)
+      DOUBLE PRECISION TRANMOM(2,NOPERAT,NTRANSIT)
       DOUBLE PRECISION DIPLEN(3,2), DIPVEL(3,2), ANGMOM(3,2)
       DOUBLE PRECISION ZERO, HALF, ONE, TWO, THREE, EIGV, SIGN
-      DOUBLE PRECISION TMF0, TM0F, STRN
+      DOUBLE PRECISION TMF0, TM0F, STRN, EIGVI, EIGVF
       DOUBLE PRECISION OSCILEN, OSCIVEL, OSCIMIX, ROTALEN, ROTAVEL
 #endif
       PARAMETER (ZERO=0.0d0, HALF=0.5d0, ONE=1.0d0, THREE=3.0d0)
@@ -307,7 +315,8 @@ c /* deck ccopaprt */
 
       LOGICAL LDIPLEN,LDIPL(3), LDIPVEL, LDIPV(3), LANGMOM, LANGM(3)
       INTEGER IRSD, ISTATE, ISYME, IMULE, ISTSY, IOPER, ISYMO, ISAMO,
-     &        IDX
+     &        IDX, ISTATEI, ISTATEF, ISYMI, ISYMF, IMULI, IMULF,
+     &        ISTISY, ISTFSY, IOPERAT
 
 #if defined (SYS_CRAY)
       REAL DDOT
@@ -338,19 +347,51 @@ c /* deck ccopaprt */
      &             'Cluster model.')
       END IF
 
-      DO IRSD = 1, NXLRSST
-       ISTATE = ILRSST(IRSD)
-       ISYME  = ISYEXC(ISTATE)
-       IMULE  = 1
-       ISTSY  = ISTATE - ISYOFE(ISYME)
-       EIGV   = EIGVAL(ISTATE)
+      DO IRSD = 1, NTRANSIT
+       
+       IF (XST) THEN
 
-       WRITE(LUPRI,'(//5X,A)') 'Transition:'
-       WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
-     &   'number, multiplicity, symmetry :',ISTATE,IMULE,REP(ISYME-1)
-       WRITE(LUPRI,'(5X,A,F15.10,A,F10.5,A,F10.1,A)')
-     &   'frequency :',EIGV, ' a.u.  ',
-     &          EIGV*XTEV,' e.V.  ',EIGV*XTKAYS,' cm^-1'
+        ! excited to excited state transition:
+        ISTATEI = IQR2ST(IRSD,1)
+        ISTATEF = IQR2ST(IRSD,2)
+        ISYMI   = ISYEXC(ISTATEI)
+        ISYMF   = ISYEXC(ISTATEF)
+        ISYME   = MULD2H(ISYMI,ISYMF)
+        IMULI   = 1
+        IMULF   = 1
+        ISTISY  = ISTATEI - ISYOFE(ISYMI)
+        ISTFSY  = ISTATEF - ISYOFE(ISYMF)
+        EIGVI   = EIGVAL(ISTATEI)
+        EIGVF   = EIGVAL(ISTATEF)
+        EIGV    = DABS(EIGVI-EIGVF)
+
+        WRITE(LUPRI,'(//5X,A)') 'Transition from excited state:'
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+     &    'number, multiplicity, symmetry :',ISTATEI,IMULI,REP(ISYMI-1)
+        WRITE(LUPRI,'(5X,A)') 'to state:'
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+     &    'number, multiplicity, symmetry :',ISTATEF,IMULF,REP(ISYMF-1)
+        WRITE(LUPRI,'(5X,A,F15.10,A,F10.5,A,F10.1,A)')
+     &    'transition frequency :',EIGV, ' a.u.  ',
+     &           EIGV*XTEV,' e.V.  ',EIGV*XTKAYS,' cm^-1'
+
+       ELSE
+
+        ! ground to excited state transition:
+        ISTATE = ILRSST(IRSD)
+        ISYME  = ISYEXC(ISTATE)
+        IMULE  = 1
+        ISTSY  = ISTATE - ISYOFE(ISYME)
+        EIGV   = EIGVAL(ISTATE)
+        
+        WRITE(LUPRI,'(//5X,A)') 'Transition from ground state to:'
+        WRITE(LUPRI,'(5X,A,I5,2X,"^",I1,A3,X,I1)')
+     &    'number, multiplicity, symmetry :',ISTATE,IMULE,REP(ISYME-1)
+        WRITE(LUPRI,'(5X,A,F15.10,A,F10.5,A,F10.1,A)')
+     &    'frequency :',EIGV, ' a.u.  ',
+     &           EIGV*XTEV,' e.V.  ',EIGV*XTKAYS,' cm^-1'
+
+       END IF
 
        WRITE(LUPRI,'(3(/5x,a,a))')
      &    '+-----------+-----------------+-----------------+',
@@ -366,10 +407,15 @@ c /* deck ccopaprt */
          LANGM(IDX) = .FALSE.
        END DO 
 
-       DO IOPER = 1, NLRSOP
-         ISYMO = ISYOPR(ILRSOP(IOPER))
-         ISAMO = ISYMAT(ILRSOP(IOPER))
-         LABEL = LBLOPR(ILRSOP(IOPER))
+       DO IOPER = 1, NOPERAT
+         IF (XST) THEN
+           IOPERAT = IQR2OP(IOPER)
+         ELSE
+           IOPERAT = ILRSOP(IOPER)
+         END IF
+         ISYMO = ISYOPR(IOPERAT)
+         ISAMO = ISYMAT(IOPERAT)
+         LABEL = LBLOPR(IOPERAT)
 
          SIGN  = DBLE(ISAMO)
          IF (ISAMO.EQ.0) SIGN = +ONE
@@ -630,7 +676,7 @@ c /* deck ccopa_setup */
               WXIM1    = X2CONS(IVEC,ITRAN)
             ELSE
               IR1VEC = IR1TAMP(LABEL,LORX,-EIGV,IDUM)
-              CALL CCQR_SETF(IFTRAN,IFDOTS,MXTRAN,MXVEC,
+              CALL CC_SETF12(IFTRAN,IFDOTS,MXTRAN,MXVEC,
      &                       0,ISTATE,IR1VEC,ITRAN,IVEC)
               NFTRAN = MAX(NFTRAN,ITRAN)
               MFVEC  = MAX(MFVEC, IVEC)
@@ -659,7 +705,7 @@ c /* deck ccopa_setup */
                  WRITE (LUPRI,*) 'Eta{X} x R^f :',WETARE
                  WRITE (LUPRI,*) 'M^f x Xksi{X}:',WXIM1
                  WRITE (LUPRI,*) 'F x R^f x M^f:',WF
-                 WRITE (LUPRI,*) '<Lambda|[X,R^f]|CC>:',RESULT(ITM0F)
+                 WRITE (LUPRI,*) '<Lambda|X|R^f>:',RESULT(ITM0F)
               END IF
 
            END IF

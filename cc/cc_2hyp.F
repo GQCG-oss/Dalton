@@ -61,6 +61,8 @@ c /* deck CC_2HYP */
 #include <ccrc1rsp.h>
 #include <cccperm.h>
 #include <second.h>
+#include <cclists.h>
+#include <dummy.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -80,7 +82,7 @@ c /* deck CC_2HYP */
       INTEGER LWORK
       INTEGER IZT(4),IAM(4),IOP(4),IR2(6),IX2(6),IO3(4),IL2(6),IO2(6)
       INTEGER ISYML, ISYM1, ISYM2, ISYM3, ISYMA, ISYMB, ISYMC, ISYMD
-      INTEGER KHYPPOL, NBHYPPOL
+      INTEGER KHYPPOL, NBHYPPOL, IKAP(4)
       INTEGER ITRAN, IVEC, IDX, I, ISIGN, IFREQ, IOPER, IOPT
       INTEGER K0HTRAN, K0HDOTS, K0HCONS, KXCONS, KXDOTS, KXTRAN
       INTEGER K0GTRAN, K0GDOTS, K0GCONS, KAGTRAN, KAGDOTS, KAGCONS
@@ -94,7 +96,7 @@ c /* deck CC_2HYP */
       INTEGER MX0FATRAN, MXAFATRAN, MXAEATRAN, MXXTRAN, MXOTRAN,MXLTRAN
       INTEGER MX0HDOTS, MX0GDOTS, MXAGDOTS, MX0FDOTS, MXAFDOTS
       INTEGER MX0FADOTS, MXAFADOTS, MXAEADOTS, MXXDOTS, MXODOTS,MXLDOTS
-      INTEGER MXTRAN3, MXTRAN2, MXVEC1, MXVEC2
+      INTEGER MXTRAN3, MXTRAN2, MXVEC1, MXVEC2, IORDER
       INTEGER KEND0, LEND0
       INTEGER P
       INTEGER NTRINOM, KTRINOM, KEND0A, KEND1, LEND1
@@ -106,7 +108,7 @@ c /* deck CC_2HYP */
       REAL WORK(LWORK)
       REAL TIM0, TIM1, TIMH, TIMG, TIMF, TIMFA, TIMEA, TIMX2, TIMO2
       REAL TIM2, TIML2
-      REAL K0CON, G0CON(6), GACON(4), F0CON(3), FACON(12)
+      REAL H0CON, G0CON(6), GACON(4), F0CON(3), FACON(12)
       REAL F0ACON(12), FAACON(12), EAACON(12), XCON(6)
       REAL OCON(4), LCON(3)
       REAL SIGN
@@ -114,7 +116,7 @@ c /* deck CC_2HYP */
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION TIM0,TIM1,TIMH,TIMG,TIMF,TIMFA,TIMEA,TIMX2,TIMO2
       DOUBLE PRECISION TIM2,TIML2
-      DOUBLE PRECISION K0CON, G0CON(6), GACON(4), F0CON(3), FACON(12)
+      DOUBLE PRECISION H0CON, G0CON(6), GACON(4), F0CON(3), FACON(12)
       DOUBLE PRECISION F0ACON(12), FAACON(12), EAACON(12), XCON(6)
       DOUBLE PRECISION OCON(4), LCON(3)
       DOUBLE PRECISION SIGN
@@ -151,7 +153,7 @@ c /* deck CC_2HYP */
      &                               '*******************************' 
 
 *---------------------------------------------------------------------*
-      IF (.NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
          CALL QUIT('CC_2HYP called for unknown Coupled Cluster.')
       END IF
 
@@ -184,14 +186,14 @@ c /* deck CC_2HYP */
       MXVEC2  = MIN(MXVEC2,2*12*NBHYPPOL)  ! 12 = max. # of permut.
       MXVEC1  = MIN(MXVEC1,2*12*NBHYPPOL)  ! 12 = max. # of permut.
 
-      MX0HTRAN  = 5 * MXTRAN3
-      MX0GTRAN  = 4 * MXTRAN2
-      MXAGTRAN  = 4 * MXTRAN3
-      MX0FTRAN  = 3 * MXTRAN2
-      MXAFTRAN  = 3 * MXTRAN2
-      MX0FATRAN = 5 * MXTRAN2
-      MXAFATRAN = 5 * MXTRAN3
-      MXAEATRAN = 3 * MXTRAN2
+      MX0HTRAN  = MXDIM_HTRAN  * MXTRAN3
+      MX0GTRAN  = MXDIM_GTRAN  * MXTRAN2
+      MXAGTRAN  = MXDIM_GTRAN  * MXTRAN3
+      MX0FTRAN  = MXDIM_FTRAN  * MXTRAN2
+      MXAFTRAN  = MXDIM_FTRAN  * MXTRAN2
+      MX0FATRAN = MXDIM_FATRAN * MXTRAN2
+      MXAFATRAN = MXDIM_FATRAN * MXTRAN3
+      MXAEATRAN = MXDIM_XEVEC  * MXTRAN2
       MXXTRAN   = 1 * MXTRAN2
       MXOTRAN   = 1 * MXTRAN3
       MXLTRAN   = 1 * MXTRAN2
@@ -305,7 +307,7 @@ c /* deck CC_2HYP */
       TIM1 = SECOND()
 
       IOPT = 5
-      CALL CC_HMAT('L0','R1','R1','R1','R1',N0HTRAN, MXVEC1,
+      CALL CC_HMAT('L0 ','R1 ','R1 ','R1 ','R1 ',N0HTRAN, MXVEC1,
      &             WORK(K0HTRAN),WORK(K0HDOTS),WORK(K0HCONS),
      &             WORK(KEND0), LEND0, IOPT )
 
@@ -371,13 +373,16 @@ c /* deck CC_2HYP */
       TIM1 = SECOND()
 
       IF (.NOT.L_USE_CHI2) THEN
-       CALL CCQR_FADRV('L0','o1','R1','R2',N0FATRAN, MXVEC2,
+       CALL CCQR_FADRV('L0 ','o1 ','R1 ','R2 ',N0FATRAN, MXVEC2,
      &                  WORK(K0FATRAN),WORK(K0FADOTS),WORK(K0FACONS),
      &                  WORK(KEND0), LEND0, 'DOTP' )
+C      CALL CCQR_FADRV('L0 ','o1 ','R2 ','R1 ',N0FATRAN, MXVEC2,
+C    &                  WORK(K0FATRAN),WORK(K0FADOTS),WORK(K0FACONS),
+C    &                  WORK(KEND0), LEND0, 'DOTP' )
       END IF
 
       IF (.NOT.L_USE_XKS3) THEN
-        CALL CCQR_FADRV('L1','o1','R1','R1',NAFATRAN, MXVEC1,
+        CALL CCQR_FADRV('L1 ','o1 ','R1 ','R1 ',NAFATRAN, MXVEC1,
      &                   WORK(KAFATRAN),WORK(KAFADOTS),WORK(KAFACONS),
      &                   WORK(KEND0), LEND0, 'DOTP' )
       END IF
@@ -394,9 +399,17 @@ c /* deck CC_2HYP */
       TIM1 = SECOND()
 
       IF (.NOT. (L_USE_CHI2 .OR. L_USE_XKS3) ) THEN
-       CALL CCQR_EADRV('L1','o1','R2',NAEATRAN, MXVEC2,
-     &                  WORK(KAEATRAN),WORK(KAEADOTS),WORK(KAEACONS),
-     &                  WORK(KEND0), LEND0, 'DOTP' )
+
+C      CALL CCQR_EADRV('L1 ','o1 ','R2 ',NAEATRAN, MXVEC2,
+C    &                  WORK(KAEATRAN),WORK(KAEADOTS),WORK(KAEACONS),
+C    &                  WORK(KEND0), LEND0, 'DOTP' )
+       IOPT   = 5
+       IORDER = 1
+       CALL CC_XIETA( WORK(KAEATRAN), NAEATRAN, IOPT, IORDER, 'L1 ',
+     &                '---',IDUMMY,       DUMMY,
+     &                'R2 ',WORK(KAEADOTS),WORK(KAEACONS),
+     &                MXVEC2, WORK(KEND0), LEND0 )        
+
       END IF
 
       TIMEA = SECOND() - TIM1
@@ -430,7 +443,7 @@ C    &                 WORK(KEND0), LEND0 )
       IF (USE_L2BC .OR. USE_LBCD) THEN
         TIM1 = SECOND()
 
-        CALL CC_DOTDRV('L2','O2',NLTRAN,MXVEC2,
+        CALL CC_DOTDRV('L2 ','O2 ',NLTRAN,MXVEC2,
      &                 WORK(KLTRAN), WORK(KLDOTS), WORK(KLCONS),
      &                 WORK(KEND0), LEND0 )
 
@@ -447,7 +460,7 @@ C    &                 WORK(KEND0), LEND0 )
 
         TIM1 = SECOND()
 
-        CALL CC_DOTDRV('R3','X1B',NOTRAN,MXVEC1,
+        CALL CC_DOTDRV('R3 ','X1B',NOTRAN,MXVEC1,
      &                 WORK(KOTRAN), WORK(KODOTS), WORK(KOCONS),
      &                 WORK(KEND0), LEND0 )
 
@@ -467,6 +480,11 @@ C    &                 WORK(KEND0), LEND0 )
         IOP(B) = IBCROP(IOPER)
         IOP(C) = ICCROP(IOPER)
         IOP(D) = IDCROP(IOPER)
+
+        IKAP(A)= 0
+        IKAP(B)= 0
+        IKAP(C)= 0
+        IKAP(D)= 0
 
         ISYMB  = ISYOPR(IOP(B))
         ISYMC  = ISYOPR(IOP(C))
@@ -578,7 +596,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 *---------------------------------------------------------------------*
         CALL CC_SETH1111(WORK(K0HTRAN),WORK(K0HDOTS),MXTRAN3,MXVEC1,
      &                   0,IAM(A),IAM(B),IAM(C),IAM(D),ITRAN,IVEC)
-        K0CON = WORK(K0HCONS-1 + (ITRAN-1)*MXVEC1 + IVEC)
+        H0CON = WORK(K0HCONS-1 + (ITRAN-1)*MXVEC1 + IVEC)
 
 *---------------------------------------------------------------------*
 * get G^0 matrix transformations, 6 permutations
@@ -696,12 +714,20 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
           EAACON(P)   = ZERO
           EAACON(6+P) = ZERO
         ELSE
-          CALL CCQR_SETEA(WORK(KAEATRAN),WORK(KAEADOTS),MXTRAN2,MXVEC2, 
-     &                    IZT(I1(P)),IOP(I2(P)),IR2(IP(P)),ITRAN,IVEC)
+C         CALL CCQR_SETEA(WORK(KAEATRAN),WORK(KAEADOTS),MXTRAN2,MXVEC2, 
+C    &                    IZT(I1(P)),IOP(I2(P)),IR2(IP(P)),ITRAN,IVEC)
+          CALL CC_SETXE('Eta',WORK(KAEATRAN),WORK(KAEADOTS), !1x2x3,4
+     &                  MXTRAN2,MXVEC2,
+     &                  IZT(I1(P)),IOP(I2(P)),IKAP(I2(P)),0,0,0,
+     &                  IR2(IP(P)),ITRAN,IVEC)
           EAACON(P) = WORK(KAEACONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
 
-          CALL CCQR_SETEA(WORK(KAEATRAN),WORK(KAEADOTS),MXTRAN2,MXVEC2, 
-     &                    IZT(I2(P)),IOP(I1(P)),IR2(IP(P)),ITRAN,IVEC)
+C         CALL CCQR_SETEA(WORK(KAEATRAN),WORK(KAEADOTS),MXTRAN2,MXVEC2, 
+C    &                    IZT(I2(P)),IOP(I1(P)),IR2(IP(P)),ITRAN,IVEC)
+          CALL CC_SETXE('Eta',WORK(KAEATRAN),WORK(KAEADOTS), !2x1x3,4
+     &                  MXTRAN2,MXVEC2,
+     &                  IZT(I2(P)),IOP(I1(P)),IKAP(I1(P)),0,0,0,
+     &                  IR2(IP(P)),ITRAN,IVEC)
           EAACON(6+P) = WORK(KAEACONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
         END IF
       END DO
@@ -801,7 +827,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
       IF (ISIGN.EQ.-1) IDX = IDX + NCRFREQ*NCROPER
 
       WORK(KHYPPOL-1+IDX) = WORK(KHYPPOL-1+IDX) + 
-     &  K0CON    +
+     &  H0CON    +
      &  G0CON(1) +G0CON(2) +G0CON(3) +G0CON(4)  +G0CON(5)  +G0CON(6)  + 
      &  GACON(1) +GACON(2) +GACON(3) +GACON(4)  +
      &  F0CON(1) +F0CON(2) +F0CON(3) +
@@ -824,7 +850,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
         WRITE(LUPRI,'(A,6I5)') 'IR2:',(IR2(I),I=1,6)
         IF (L_USE_CHI2) WRITE(LUPRI,'(A,6I5)') 'IX2:',(IX2(I),I=1,6)
         IF (L_USE_XKS3) WRITE(LUPRI,'(A,6I5)') 'IO3:',(IO3(I),I=1,4)
-        WRITE(LUPRI,*) 'K0CON: ',K0CON
+        WRITE(LUPRI,*) 'H0CON: ',H0CON
         WRITE(LUPRI,*) 'G0CON: ',(G0CON(I),I=1,6)
         WRITE(LUPRI,*) 'GACON: ',(GACON(I),I=1,4)
         WRITE(LUPRI,*) 'F0CON: ',(F0CON(I),I=1,3)
@@ -1020,7 +1046,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
       TIM1 = SECOND()
 
       IOPT = 5
-      CALL CC_HMAT('L0','RC','RC','RC','RC',N0HTRAN, MXVEC1,
+      CALL CC_HMAT('L0 ','RC ','RC ','RC ','RC ',N0HTRAN, MXVEC1,
      &             WORK(K0HTRAN),WORK(K0HDOTS),WORK(K0HCONS),
      &             WORK(KEND0), LEND0, IOPT )
 
@@ -1311,6 +1337,8 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:45)//BLANKS )
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
+      ELSE IF (CC3) THEN
+         CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
          CALL QUIT('CCCHYPPRT called for an unknown Coupled '//
      &             'Cluster model.')
@@ -1606,6 +1634,8 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:45)//BLANKS )
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
+      ELSE IF (CC3) THEN
+         CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
          CALL QUIT('CCCEXPPRT called for an unknown Coupled '//
      &             'Cluster model.')
@@ -2554,7 +2584,7 @@ C
             LERROR = .TRUE.
           END IF
           IF (LOCDBG) THEN
-            WRITE (LUPRI,*) " B, B'                   coefficients:",B,BP
+           WRITE(LUPRI,*)" B, B'                   coefficients:",B,BP
           END IF
 
 
@@ -2942,6 +2972,8 @@ C
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:45)//BLANKS )
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
+      ELSE IF (CC3) THEN
+         CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
          CALL QUIT('CCCDISPRT called for an unknown Coupled '//
      &             'Cluster model.')

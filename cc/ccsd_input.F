@@ -102,7 +102,7 @@ C
 #include <cbieri.h>
 #include <ccroper.h>
 #include <cch2d.h>
-      PARAMETER (NTABLE = 101)
+      PARAMETER (NTABLE = 110)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -112,24 +112,25 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
       DATA TABLE /'.SKIP  ','.PRINT ','.DIRECT','.RESTAR','.CC3   ',
      &            '*CCEXCI','*CCLRSD','.CCSTST','.NSYM  ','.MAXRED',
      &            '*CCEXGR','.R1SKIP','.L1SKIP','.RESKIP','.LESKIP',
-     &            '.F1SKIP','.MAX IT','.DIRDER','.E0SKIP','.L0SKIP',
+     &            '.F1SKIP','.MAX IT','*CCXOPA','.E0SKIP','.L0SKIP',
      &            '.LISKIP','.CC2   ','.MP2   ','.CC(2) ','.CC1B  ',
      &            '.CC(T) ','.CC(3) ','.CCS   ','.FCORE ','.FSECON',
      &            '.CCD   ','.CC1A  ','.CIS   ','.THRENR','.NOCCIT',
      &            '.IMSKIP','.M1SKIP','.FRSKIP','.MINSCR','.MINMEM',
-     &            '.B0SKIP','.NEWCAU','.NOT2TC','*CCGR  ','.FROEXP',
+     &            '.BESKIP','.NEWCAU','.NOT2TC','*CCGR  ','.FROEXP',
      &            '.FROIMP','.MXDIIS','.CCSD  ','.CCR(A)','.CCR(B)',
      &            '*CCFOP ','.SOPPA(','.CCR(3)','.CCR(T)','.FIELD ',
      &            '.DEBUG ','*CCQR2R','.HERDIR','.BUFLEN','*CCLR  ',
      &            '*CCEXLR','.NSIMLE','.THRLEQ','.MXLRV ','*CCTM  ',
-     &            '*CCSM  ','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
+     &            '.XXXXXX','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
      &            '.O2SKIP','.R2SKIP','.X2SKIP','.F2SKIP','.L2SKIP',
      &            '*CCMCD ','.ANAAOD','.PACK  ','.CONNEC','.THRLDP',
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
-     &            '.NOEONL'/
+     &            '.NOEONL','.DIRDER','*CCTPA ','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -171,11 +172,13 @@ C
       CCCR   = .FALSE.
       CC4R   = .FALSE.
       CC5R   = .FALSE.
-      CCSM   = .FALSE.
       CCTM   = .FALSE.
       CCMCD  = .FALSE.
       CCLRSD = .FALSE.
       CCQR2R = .FALSE.
+      CCOPA  = .FALSE.
+      CCXOPA = .FALSE.
+      CCTPA  = .FALSE.
       CCEXLR = .FALSE.
       CCDERI = .FALSE.
 
@@ -208,7 +211,7 @@ C
       LISKIP = .FALSE.
       M1SKIP = .FALSE.
       FRSKIP = .FALSE.
-      B0SKIP = .FALSE.
+      BESKIP = .FALSE.
       N2SKIP = .FALSE.
       BRSKIP = .FALSE.
       ETADSC = .FALSE.
@@ -353,7 +356,8 @@ C
      *                47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
-     *                92,93,94,95,96,97,98,99,100,101), I
+     *                92,93,94,95,96,97,98,99,100,101,102,103,104,
+     *                105,106,107,108,109,110), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -436,7 +440,8 @@ C
                   READ (LUCMD, '(I5)') MAXITE
                GO TO 1000
    18          CONTINUE
-                  DIRGRD = .TRUE. 
+C                '*CCXOPA'
+                  CALL CC_OPAINP(WORD)
                GO TO 1000
    19          CONTINUE
                   E0SKIP = .TRUE.
@@ -511,7 +516,7 @@ C
                   ITEST = ITEST + 1
                GO TO 1000
    41          CONTINUE
-                  B0SKIP = .TRUE.
+                  BESKIP = .TRUE.
                GO TO 1000
    42          CONTINUE
                   NEWCAU = .TRUE.
@@ -635,7 +640,6 @@ CKeinSPASmehr
                   CALL CC_TMINP(WORD)
                GO TO 1000
    66          CONTINUE
-                  CALL CC_SMINP(WORD)
                GO TO 1000
    67          CONTINUE
                   CALL CC_5RINP(WORD)
@@ -759,7 +763,7 @@ C                '.DKABAR', direct KappaBar calculation in nondir CC
                   DIRKAPB = .TRUE.
                GO TO 1000
    99          CONTINUE
-C                '*CCOPA '
+C                '*CCOPA ' one-photon absorption strengths
                   CALL CC_OPAINP(WORD)
                GO TO 1000
   100          CONTINUE
@@ -768,6 +772,22 @@ C                '*NODDY '
                GO TO 1000
  101           CONTINUE
                   NOEONL = .TRUE.
+               GO TO 1000
+ 102           CONTINUE
+C                 '.DIRDER' direct calculation of derivative integrals
+                  DIRGRD = .TRUE. 
+               GO TO 1000
+ 103           CONTINUE
+C                 '.CCTPA ' two-photon absorption strengths
+                  CALL CC_OPAINP(WORD)
+               GO TO 1000
+ 104           CONTINUE
+ 105           CONTINUE
+ 106           CONTINUE
+ 107           CONTINUE
+ 108           CONTINUE
+ 109           CONTINUE
+ 110           CONTINUE
                GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
@@ -874,8 +894,10 @@ C
      *         ' Debug printout activated '
             IF ( CCEXCI ) WRITE(LUPRI,'(/A)')
      *         ' Excitation energies calculated'
-            IF ( CCLRSD ) WRITE(LUPRI,'(/A)')
-     *         ' Residues of the linear response functions calculated'
+            IF ( CCLRSD .OR. CCOPA) WRITE(LUPRI,'(/A)')
+     *         ' One-photon absorption strengths will be calculated'
+            IF ( CCTPA ) WRITE(LUPRI,'(/A)')
+     *         ' Two-photon absorption strengths will be calculated'
             IF ( JACTST ) WRITE(LUPRI,'(/A)')
      *         ' Jacobian tested agains finite difference Jacobian'
             IF ( JACEXP ) WRITE(LUPRI,'(/A)')
@@ -892,8 +914,9 @@ C
      *         ' Cubic response properties calculated'
             IF ( OSCSTR) WRITE(LUPRI,'(/A)')
      *         ' Oscillator strengths calculated'
-            IF ( CCQR2R) WRITE(LUPRI,'(/A)')
-     *        ' Transition strengths between excited states calculated.'
+            IF ( CCQR2R .OR. CCXOPA) WRITE(LUPRI,'(/A)')
+     *        ' Transition strengths between two excited states '//
+     *          'will calculated.'
             IF (CCEXGR) WRITE(LUPRI,'(/A)')
      *         ' Excited state properties calculated '
             IF ( CCMCD  ) WRITE(LUPRI,'(/A)')
@@ -912,13 +935,9 @@ C
      *         ' Relativistic two-electron Darwin term calculated'
             IF (DPTECO) WRITE(LUPRI,'(/A)')
      *         ' First-order DPT energy corrections calculated'
-CSPAS 22.10.2003 implementing SOPPA(CCSD)
             IF (SIRSOP) WRITE (LUPRI,'(/A,A)')
      *         ' CCSD Amplitudes appended to Sirius interface',
      *         ' for SOPPA(CCSD)'
-CKeinSPASmehr
-
-
 C
          END IF
          WRITE (LUPRI,'(A)') '  '
@@ -1873,9 +1892,12 @@ c/* deck cc_opainp */
       SUBROUTINE CC_OPAINP(WORD)
 C---------------------------------------------------------------------*
 C
-C    Purpose: Read input one-photon absorption strenghts
+C    Purpose: Read input for absorption strenghts
+C             WORD='*CCOPA '  ground  to ex. state one-photon transit.
+C             WORD='*CCTPA '  ground  to ex. state two-photon transit.
+C             WORD='*CCXOPA'  excited to ex. state one-photon transit.
 C
-C    Christof Haettig, Dec 2002
+C    Christof Haettig, Dec 2002 / Oct 2003
 C
 C=====================================================================*
       IMPLICIT NONE
@@ -1883,47 +1905,89 @@ C=====================================================================*
 #include <ccsections.h>
 #include <ccrspprp.h>
 #include <ccopainf.h>
+#include <cctpainf.h>
+#include <ccxopainf.h>
 
 * local parameters:
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 6)
+      PARAMETER (NTABLE = 15)
 
 * variables:
-      LOGICAL SET
-      SAVE SET
+      LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
+      SAVE SETGSTOPA, SETGSTTPA, SETXSTOPA
 
       CHARACTER WORD*(7)
-      CHARACTER LABEL*(8), LABHELP*(80)
+      CHARACTER LABEL*(8), LABHELP*(80), LABELA*(8), LABELB*(8)
       CHARACTER TABLE(NTABLE)*(8)
 
-      INTEGER IXSYM, IXSTATE, IJUMP
+      LOGICAL GSTOPA, GSTTPA, XSTOPA
+      INTEGER IXSYM, IXSTATE, IXSYM2, IXSTATE2, IJUMP
       INTEGER INDPRPCC
 
-* data:
-      DATA SET /.FALSE./
-      DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
-     *             '.ANGMOM'/
+#if defined (SYS_CRAY)
+      REAL SMFREQ
+#else
+      DOUBLE PRECISION SMFREQ
+#endif
 
-*--------------------------------------------------------------------*
+* data:
+      DATA SETGSTOPA /.FALSE./
+      DATA SETGSTTPA /.FALSE./
+      DATA SETXSTOPA /.FALSE./
+      DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
+     *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
+     *             '.SELSTA','.STATES','.TRANSI','.XXXXXX','.XXXXXX'/
+
+*---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
-      IF (WORD(1:7) .NE. '*CCOPA') CALL 
-     &  QUIT('CC_OPAINP was call for wrong input section:'//WORD(1:7))
-
-      IF (SET) RETURN
-      SET = .TRUE.
+      IF (WORD(1:7) .EQ. '*CCOPA ') THEN
+         GSTOPA = .TRUE.
+         GSTTPA = .FALSE.
+         XSTOPA = .FALSE.
+         IF (SETGSTOPA) RETURN
+         SETGSTOPA = .TRUE.
+      ELSE IF (WORD(1:7) .EQ. '*CCXOPA') THEN
+         GSTOPA = .FALSE.
+         GSTTPA = .FALSE.
+         XSTOPA = .TRUE.
+         IF (SETXSTOPA) RETURN
+         SETXSTOPA = .TRUE.
+      ELSE IF (WORD(1:7) .EQ. '*CCTPA ') THEN
+         GSTTPA = .TRUE.
+         GSTOPA = .FALSE.
+         XSTOPA = .FALSE.
+         IF (SETGSTTPA) RETURN
+         SETGSTTPA = .TRUE.
+      ELSE
+         CALL QUIT('CC_OPAINP called for wrong section:'//WORD(1:7))
+      END IF
 
 *---------------------------------------------------------------------*
 * initializations & defaults:
 *---------------------------------------------------------------------*
-      SELLRS = .FALSE.
-      LRS2N1 = .TRUE. 
- 
-      NSELRS   = 0
-      NLRSOP   = 0
+      IF (GSTOPA) THEN
+        SELLRS = .FALSE.
+        LRS2N1 = .TRUE. 
+        NSELRS = 0
+        NLRSOP = 0
+      ELSE IF (XSTOPA) THEN
+        SELQR2  = .FALSE.
+        QR22N1  = .TRUE.
+        NSEQR2  = 0 
+        NQR2OP  = 0 
+      ELSE IF (GSTTPA) THEN
+        NSMSEL   = 0
+        NSMOPER  = 0
+        IPRSM    = 0
+        HALFFR   = .FALSE.
+        SELSMST  = .FALSE.
+        LTPA_USE_X2 = .FALSE.
+        LTPA_USE_O2 = .FALSE.
+      END IF
  
 *---------------------------------------------------------------------*
 * read input:
@@ -1947,13 +2011,23 @@ c         table look up:
 
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
-C           ------------------------------
-C           .SELSTA: select excited states
-C           ------------------------------
+C           ---------------------------------------------------------
+C           .SELEXC, .SELSTA, .STATES, .TRANSI: 
+C            select excited states / transitions
+C           ---------------------------------------------------------
 1           CONTINUE
+11          CONTINUE
+12          CONTINUE
+13          CONTINUE
+
+             IF (GSTOPA) THEN
+              ! ground to excited state one-photon transition:
+              !   READ IXSYM, IXSTATE    
+              !   IXSYM   : symmetry class
+              !   IXSTATE : state number within symmetry class
               SELLRS = .TRUE.
               READ (LUCMD,'(A80)') LABHELP
               DO WHILE (LABHELP(1:1).NE.'.' .AND. LABHELP(1:1).NE.'*')
@@ -1972,36 +2046,126 @@ C           ------------------------------
                 END IF
                 READ (LUCMD,'(A80)') LABHELP
               END DO
-              BACKSPACE(LUCMD)
+             ELSE IF (XSTOPA) THEN
+              ! excited to excited state one-photon transition:
+              !   READ IXSYM, IXSTATE, IXSYM2, IXSTATE2
+              !   IXSYM, IXSYM2     : symmetry classes
+              !   IXSTATE, IXSTATE2 : state numbers within sym. classes
+              SELQR2 = .TRUE.
+              READ (LUCMD,'(A80)') LABHELP
+              DO WHILE (LABHELP(1:1).NE.'.' .AND. LABHELP(1:1).NE.'*')
+                IF (LABHELP(1:1).NE.'!') THEN
+                  READ(LABHELP,*) IXSYM,IXSTATE,IXSYM2,IXSTATE2
+                  IF (NSEQR2.LT.MXQR2ST) THEN
+                   NSEQR2 = NSEQR2 + 1
+                   ISEQR2SYM(NSEQR2,1) = IXSYM
+                   ISEQR2STA(NSEQR2,1) = IXSTATE
+                   ISEQR2SYM(NSEQR2,2) = IXSYM2
+                   ISEQR2STA(NSEQR2,2) = IXSTATE2
+                  ELSE
+                   WRITE(LUPRI,'(/2A,I5,/)')
+     &              ' NB. OF STATE PAIRS SPECIFIED',
+     &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQR2ST
+                   WRITE(LUPRI,'(A,2I5,/)')'IGNORE STATE PAIR',
+     &              IXSYM,IXSTATE,IXSYM2,IXSTATE2
+                  END IF
+                END IF
+                READ (LUCMD,'(A80)') LABHELP
+              END DO
+             ELSE IF (GSTTPA) THEN
+              ! ground to excited state two-photon transition:
+              !   READ IXSYM, IXSTATE, SMFREQ
+              !   IXSYM   : symmetry class
+              !   IXSTATE : state number within symmetry class
+              !   SMFREQ  : photon energies associated with 2. operators
+              SELSMST =.TRUE. 
+              READ (LUCMD,'(A70)') LABHELP
+              DO WHILE (LABHELP(1:1).NE.'.' .AND. LABHELP(1:1).NE.'*')
+                IF (LABHELP(1:1).NE.'!') THEN
+                  READ(LABHELP,*) IXSYM,IXSTATE,SMFREQ
+                  IF (NSMSEL.LT.MXSMSEL) THEN
+                    NSMSEL = NSMSEL + 1
+                    ISMSEL(NSMSEL,1) = IXSYM
+                    ISMSEL(NSMSEL,2) = IXSTATE
+                    BSMFR(NSMSEL)    = SMFREQ
+                  ELSE
+                    WRITE(LUPRI,'(/2A,I5,/)')
+     &               ' NB. OF STATES SPECIFIED',
+     &               ' IS GREATER THAN THE ALLOWED NUMBER : ' ,MXSMSEL 
+                    CALL QUIT('TO MANY STATES SPECIFIED BY .SELSTA')
+                  END IF
+                END IF
+                READ (LUCMD,'(A70)') LABHELP
+              END DO
+             END IF
+
+             BACKSPACE(LUCMD)
             GO TO 100
 
 C           -----------------------------
 C           .NO2N+1: do NOT use 2n+1 rule
 C           -----------------------------
 2           CONTINUE
-              LRS2N1 = .FALSE.
+              IF (GSTOPA) LRS2N1 = .FALSE.
+              IF (XSTOPA) QR22N1 = .FALSE.
+              IF (GSTTPA) CONTINUE
             GO TO 100
  
 C           ------------------------
 C           .OPERAT: operator labels 
 C           ------------------------
 3           CONTINUE
+             IF ( GSTOPA .OR. XSTOPA ) THEN
               READ (LUCMD,'(A)') LABEL
               DO WHILE (LABEL(1:1).NE.'.' .AND. LABEL(1:1).NE.'*')
                 IF (LABEL(1:1).NE.'!') THEN
+
+                 IF (GSTOPA) THEN
                   IF (NLRSOP.LT.MXLRSO) THEN
                     NLRSOP = NLRSOP + 1
                     ILRSOP(NLRSOP) = INDPRPCC(LABEL)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5,/)')
-     &               ' NB. OF OPERATOR DOUBLES SPECIFIED',
+     &               ' NB. OF OPERATORS SPECIFIED',
      &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
                     CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
                   END IF
+                 ELSE IF (XSTOPA) THEN
+                  IF (NQR2OP.LT.MXQR2O) THEN
+                    NQR2OP = NQR2OP + 1
+                    IQR2OP(NQR2OP) = INDPRPCC(LABEL)
+                  ELSE
+                    WRITE(LUPRI,'(/2A,I5,/)')
+     &               ' NB. OF OPERATORS SPECIFIED',
+     &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXQR2O
+                    CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
+                  END IF
+                 END IF
+
                 END IF
                 READ (LUCMD,'(A)') LABEL
               END DO
-              BACKSPACE(LUCMD)
+             ELSE IF (GSTTPA) THEN
+              READ (LUCMD,'(2A)') LABELA, LABELB
+              DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')
+                IF (LABELA(1:1).NE.'!') THEN
+                  IF (NSMOPER.LT.MXSMOP) THEN
+                    NSMOPER = NSMOPER + 1
+                    IASMOP(NSMOPER) = INDPRPCC(LABELA)
+                    IBSMOP(NSMOPER) = INDPRPCC(LABELB)
+                  ELSE
+                    WRITE(LUPRI,'(/2A,I5,/)') 
+     &               ' NB. OF OPERATOR PAIRS SPECIFIED',
+     &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXSMOP
+                    CALL QUIT('TO MANY OPERATOR PAIRS IN CC_OPAINP.')
+                  END IF
+                END IF
+                READ (LUCMD,'(2A)') LABELA, LABELB
+              END DO
+             ELSE
+              CALL QUIT('Error in CC_OPAINP.')
+             END IF
+             BACKSPACE(LUCMD)
             GO TO 100
  
 C           -----------------------------------------------------
@@ -2009,16 +2173,14 @@ C           .DIPLEN: calculate complete dipole transition vectors
 C                    in length gauge 
 C           -----------------------------------------------------
 4           CONTINUE
-              IF (NLRSOP+3 .GT. MXLRSO) THEN
-                WRITE(LUPRI,'(2(/,A,I5),/)')
-     &          ' NB. OF OPERATORS SPECIFIED         : ',NLRSOP+3,
-     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
-                CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
-              END IF
-              ILRSOP(NLRSOP+1) = INDPRPCC('XDIPLEN ')
-              ILRSOP(NLRSOP+2) = INDPRPCC('YDIPLEN ')
-              ILRSOP(NLRSOP+3) = INDPRPCC('ZDIPLEN ')
-              NLRSOP = NLRSOP + 3
+            IF (GSTOPA) THEN
+              CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'DIPLEN','CC_OPAINP')
+            ELSE IF (XSTOPA) THEN
+              CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'DIPLEN','CC_OPAINP')
+            ELSE IF (GSTTPA) THEN
+              CALL CC_PUT2OP(IASMOP,IBSMOP,NSMOPER,MXSMOP,
+     &                       'DIPLEN','CC_OPAINP')
+            END IF
             GO TO 100
 
 C           -----------------------------------------------------
@@ -2026,16 +2188,14 @@ C           .DIPVEL: calculate complete dipole transition vectors
 C                    in velocity gauge 
 C           -----------------------------------------------------
 5           CONTINUE
-              IF (NLRSOP+3 .GT. MXLRSO) THEN
-                WRITE(LUPRI,'(2(/,A,I5),/)')
-     &          ' NB. OF OPERATORS SPECIFIED         : ',NLRSOP+3,
-     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
-                CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
-              END IF
-              ILRSOP(NLRSOP+1) = INDPRPCC('XDIPVEL ')
-              ILRSOP(NLRSOP+2) = INDPRPCC('YDIPVEL ')
-              ILRSOP(NLRSOP+3) = INDPRPCC('ZDIPVEL ')
-              NLRSOP = NLRSOP + 3
+            IF (GSTOPA) THEN
+              CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'DIPVEL','CC_OPAINP')
+            ELSE IF (XSTOPA) THEN
+              CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'DIPVEL','CC_OPAINP')
+            ELSE IF (GSTTPA) THEN
+              CALL CC_PUT2OP(IASMOP,IBSMOP,NSMOPER,MXSMOP,
+     &                       'DIPVEL','CC_OPAINP')
+            END IF
             GO TO 100
 
 C           ------------------------------------------------------
@@ -2043,17 +2203,71 @@ C           .ANGMOM: calculate complete magnetic dipole transition
 C                    vectors and if possible rotatory strenghts
 C           ------------------------------------------------------
 6           CONTINUE
-              IF (NLRSOP+3 .GT. MXLRSO) THEN
-                WRITE(LUPRI,'(2(/,A,I5),/)')
-     &          ' NB. OF OPERATORS SPECIFIED         : ',NLRSOP+3,
-     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
-                CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
-              END IF
-              ILRSOP(NLRSOP+1) = INDPRPCC('XANGMOM ')
-              ILRSOP(NLRSOP+2) = INDPRPCC('YANGMOM ')
-              ILRSOP(NLRSOP+3) = INDPRPCC('ZANGMOM ')
-              NLRSOP = NLRSOP + 3
+            IF (GSTOPA) THEN
+              CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'ANGMOM','CC_OPAINP')
+            ELSE IF (XSTOPA) THEN
+              CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'ANGMOM','CC_OPAINP')
+            ELSE IF (GSTTPA) THEN
+              CALL CC_PUT2OP(IASMOP,IBSMOP,NSMOPER,MXSMOP,
+     &                       'ANGMOM','CC_OPAINP')
+            END IF
             GO TO 100
+
+C           ------------------------------------------------
+C           .HALFFR : impose condition of equal frequencies
+C                      for the two lasers 
+C           ------------------------------------------------
+7           CONTINUE
+              IF (GSTTPA) THEN
+                HALFFR =.TRUE.
+              ELSE
+                WRITE(LUPRI,*) 'No .HALFFR keyword in section ',WORD
+                WRITE(LUPRI,*) 'input will be ignored...'
+              END IF
+            GO TO 100
+
+C           ------------
+C           .PRINT 
+C           ------------
+8           CONTINUE
+              IF (GSTTPA) THEN
+                READ (LUCMD,*) IPRSM
+              ELSE
+                WRITE(LUPRI,*) 'No .PRINT keyword in section ',WORD
+                WRITE(LUPRI,*) 'input will be ignored...'
+              END IF
+            GO TO 100
+
+C           ------------
+C           .USE X2
+C           ------------
+9           CONTINUE
+              IF (GSTTPA) THEN
+                LTPA_USE_X2 = .TRUE.
+              ELSE
+                WRITE(LUPRI,*) 'No .USE X2 keyword in section ',WORD
+                WRITE(LUPRI,*) 'input will be ignored...'
+              END IF
+            GO TO 100
+
+C           ------------
+C           .USE O2
+C           ------------
+10          CONTINUE
+              IF (GSTTPA) THEN
+                LTPA_USE_O2 = .TRUE.
+              ELSE
+                WRITE(LUPRI,*) 'No .USE O2 keyword in section ',WORD
+                WRITE(LUPRI,*) 'input will be ignored...'
+              END IF
+            GO TO 100
+
+C           --------------
+C           .XXXXXX unused 
+C           --------------
+14          CONTINUE
+15          CONTINUE
+
 C
           ELSE
            WRITE (LUPRI,'(/,5A,/)') ' Prompt "',WORD,
@@ -2075,22 +2289,51 @@ C
 
 200   CONTINUE
 *---------------------------------------------------------------------*
-* check, if any operator labels specified:
-* if not, use default: complete dipole (length) vector
+* warning if for GSTTPA both .SELST AND .SELHLF are specified
 *---------------------------------------------------------------------*
-      IF (NLRSOP.EQ.0) THEN
-        IF (NLRSOP+3 .LE. MXLRSO) THEN
-          ILRSOP(NLRSOP+1) = INDPRPCC('XDIPLEN ')
-          ILRSOP(NLRSOP+2) = INDPRPCC('YDIPLEN ')
-          ILRSOP(NLRSOP+3) = INDPRPCC('ZDIPLEN ')
-          NLRSOP = NLRSOP + 3
-        END IF
+      IF (GSTTPA .AND. SELSMST .AND. HALFFR) THEN
+         WRITE (LUPRI,*)
+     &        ' WARNING: BOTH .SELST and .HALFFR are specified'
+         WRITE (LUPRI,*) ' .HALFFR is used to obtain frequences'
+      END IF
+
+*---------------------------------------------------------------------*
+* check, if any operator labels specified:
+* if not, use default: dipole length and velocity and angular momentum
+*---------------------------------------------------------------------*
+      IF (GSTOPA .AND. NLRSOP.EQ.0) THEN
+
+        IF (NLRSOP+3 .LE. MXLRSO) 
+     &    CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'DIPLEN','CC_OPAINP')
+        IF (NLRSOP+3 .LE. MXLRSO) 
+     &    CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'DIPVEL','CC_OPAINP')
+        IF (NLRSOP+3 .LE. MXLRSO) 
+     &    CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'ANGMOM','CC_OPAINP')
+
+      ELSE IF (XSTOPA .AND. NQR2OP.EQ.0) THEN
+
+        IF (NQR2OP+3 .LE. MXQR2O) 
+     &    CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'DIPLEN','CC_OPAINP')
+        IF (NQR2OP+3 .LE. MXQR2O) 
+     &    CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'DIPVEL','CC_OPAINP')
+        IF (NQR2OP+3 .LE. MXQR2O) 
+     &    CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'ANGMOM','CC_OPAINP')
+
+
+      ELSE IF (GSTTPA .AND. NSMOPER.EQ.0) THEN
+
+        IF (NSMOPER+9 .LE. MXSMOP) 
+     &    CALL CC_PUT2OP(IASMOP,IBSMOP,NSMOPER,MXSMOP,
+     &                       'DIPLEN','CC_OPAINP')
+        
       END IF
 
 *---------------------------------------------------------------------*
 * set CCOPA flag and return:
 *---------------------------------------------------------------------*
-      CCOPA = .TRUE.
+      IF (GSTOPA) CCOPA  = .TRUE.
+      IF (GSTTPA) CCTPA  = .TRUE.
+      IF (XSTOPA) CCXOPA = .TRUE.
 
       RETURN
       END
@@ -2114,7 +2357,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_NODINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 20)
 
 * variables:
       LOGICAL SET
@@ -2130,32 +2373,39 @@ C=====================================================================*
       DATA SET /.FALSE./
       DATA TABLE /'.XI    ','.XIDEN ','.ETA   ','.ETADEN','.FMAT  ',
      *            '.FNOALT','.OVLP  ','.OMEGA ','.LHTR  ','.RHTR  ',
-     *            '.FOPDEN','.FINDIF','.FAMAT ','.GMAT  ','.XXXXXX'/
+     *            '.FOPDEN','.FINDIF','.FAMAT ','.GMAT  ','.BMAT  ',
+     *            '.AAMAT ','.HMAT  ','.FADEN ','.XXXXXX','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * set defaults:
 *---------------------------------------------------------------------*
+      NODDY_INIT  = .FALSE.
+
       NODDY_OMEGA = .FALSE.
       NODDY_RHTR  = .FALSE.
       NODDY_LHTR  = .FALSE.
       NODDY_DEN   = .FALSE.
-      NODDY_FAMAT = .FALSE.
+      NODDY_BMAT  = .FALSE.
+      NODDY_FMAT  = .FALSE.
       NODDY_GMAT  = .FALSE.
+      NODDY_HMAT  = .FALSE.
 
-      NODDY_XI  = .FALSE.
-      NODDY_ETA = .FALSE. 
+      NODDY_XI    = .FALSE.
+      NODDY_ETA   = .FALSE. 
+      NODDY_AAMAT = .FALSE.
+      NODDY_FAMAT = .FALSE.
 
       NODDY_XI_ALTER  = .FALSE.
       NODDY_ETA_ALTER = .FALSE. 
+      NODDY_FA_ALTER  = .FALSE.
 
-      NODDY_FMAT    = .FALSE.
       CCSDT_F_ALTER = .TRUE.
 
       NODDY_OVLP = .FALSE.
  
       IF (INIT_ONLY) RETURN
 
-*--------------------------------------------------------------------*
+*---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
       IF (WORD(1:7) .NE. '*NODDY') CALL 
@@ -2163,6 +2413,8 @@ C=====================================================================*
 
       IF (SET) RETURN
       SET = .TRUE.
+
+      NODDY_INIT  = .TRUE. ! triggers precalculation of integrals etc.
 
 *---------------------------------------------------------------------*
 * read input:
@@ -2183,7 +2435,8 @@ c         table look up:
 
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), 
+     &            IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_NODINP.')
 
 C           ---------------------------------------
@@ -2274,13 +2527,19 @@ C           --------------------------------------------------------
               NODDY_RHTR   = .TRUE.
               NODDY_LHTR   = .TRUE.
               NODDY_DEN    = .TRUE.
+              NODDY_OVLP   = .TRUE.
               NODDY_ETA    = .TRUE.
               NODDY_XI     = .TRUE.
               NODDY_FMAT   = .TRUE.
               NODDY_FAMAT  = .TRUE.
+              NODDY_GMAT   = .TRUE.
+              NODDY_HMAT   = .TRUE.
+              NODDY_BMAT   = .TRUE.
+              NODDY_AAMAT  = .TRUE.
 
               NODDY_XI_ALTER  = .FALSE.
               NODDY_ETA_ALTER = .FALSE. 
+              NODDY_FA_ALTER  = .FALSE.
             GO TO 100
 C
 C           ------------------------------------------------
@@ -2298,9 +2557,43 @@ C           ------------------------------------------------
             GO TO 100
 C
 C           ------------------------------------------------
-C           .XXXXXX: unused
+C           .BMAT  : use noddy code for B matrix
 C           ------------------------------------------------
 15          CONTINUE
+              NODDY_BMAT = .TRUE.
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .AAMAT : use noddy code for A{A} matrix
+C           ------------------------------------------------
+16          CONTINUE
+              NODDY_AAMAT = .TRUE.
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .HMAT  : use noddy code for H matrix
+C           ------------------------------------------------
+17          CONTINUE
+              NODDY_HMAT = .TRUE.
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .FADEN : use noddy code for F{A} densities
+C           ------------------------------------------------
+18          CONTINUE
+              NODDY_FA_ALTER  = .TRUE.
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .XXXXXX: unused
+C           ------------------------------------------------
+19          CONTINUE
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .XXXXXX: unused
+C           ------------------------------------------------
+20          CONTINUE
             GO TO 100
 C
           ELSE
@@ -2324,8 +2617,9 @@ C
 *---------------------------------------------------------------------*
 * Check flags for consistency and print some output:
 *---------------------------------------------------------------------*
-      IF (NODDY_XI_ALTER)  NODDY_XI  = .TRUE.
-      IF (NODDY_ETA_ALTER) NODDY_ETA = .TRUE.
+      IF (NODDY_XI_ALTER)  NODDY_XI    = .TRUE.
+      IF (NODDY_ETA_ALTER) NODDY_ETA   = .TRUE.
+      IF (NODDY_FA_ALTER)  NODDY_FAMAT = .TRUE.
 
       WRITE(LUPRI,*) 'The Triples section in the response will use '//
      &               'the following modules:'
@@ -2411,17 +2705,39 @@ C
 
       WRITE(LUPRI,'(/1x,a)') ' in CCQR_FADRV/CC_FAMAT:'
       IF (NODDY_FAMAT) THEN
-       WRITE(LUPRI,*) '    F matrix transformation: CCSDT_FAMAT_NODDY'
-       WRITE(LUPRI,*) '    F matrix contraction   : CCSDT_FAMAT_NODDY'
+       WRITE(LUPRI,*) '    F{A} matrix transform.  : CCSDT_FAMAT_NODDY'
+       IF (NODDY_FA_ALTER) THEN
+        WRITE(LUPRI,*) ' F{A} matrix contraction : CCSDT_FA_DEN/noddy'
+       ELSE
+        WRITE(LUPRI,*) '    F{A} matrix contraction : CCSDT_FAMAT_NODDY'
+       END IF 
       ELSE
-       WRITE(LUPRI,*) '    F matrix transformation: CCSDT_FAMAT_NODDY'
-       WRITE(LUPRI,*) '    F matrix contraction   : CCSDT_FA_DEN'
+       WRITE(LUPRI,*) '    F{A} matrix transform.  : CCSDT_FAMAT_NODDY'
+       WRITE(LUPRI,*) '    F{A} matrix contraction : CCSDT_FA_DEN'
       END IF
 
       IF (NODDY_GMAT) THEN
        WRITE(LUPRI,*)'    G matrix calculation: CCSDT_GMAT_NODDY'
       ELSE
        WRITE(LUPRI,*)'    G matrix calculation: CC3_GMAT'
+      END IF
+
+      IF (NODDY_BMAT) THEN
+       WRITE(LUPRI,*)'    B matrix calculation: CCSDT_BMAT_NODDY'
+      ELSE
+       WRITE(LUPRI,*)'    B matrix calculation: CC3_BMAT'
+      END IF
+
+      IF (NODDY_AAMAT) THEN
+       WRITE(LUPRI,*)'    A{A} matrix calculation: CCSDT_AAMAT_NODDY'
+      ELSE
+       WRITE(LUPRI,*)'    A{A} matrix calculation: CC3_AAMAT'
+      END IF
+
+      IF (NODDY_HMAT) THEN
+       WRITE(LUPRI,*)'    H matrix calculation: CCSDT_HMAT_NODDY'
+      ELSE
+       WRITE(LUPRI,*)'    H matrix calculation: CC3_HMAT'
       END IF
 
       RETURN
@@ -3382,13 +3698,14 @@ C#endif
 #include <ccrspprp.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <codata.h>
 
 * local parameters:
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_LRINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 25)
 
 #if defined (SYS_CRAY)
       REAL ZERO, TOLFRQ
@@ -3404,19 +3721,26 @@ C#endif
 
       CHARACTER WORD*(7), LINE*(80)
       CHARACTER*8 LABELA,LABELB
+      CHARACTER*8 LABDIP(3), LABDPV(3), LABANG(3)
       CHARACTER TABLE(NTABLE)*(8)
 
-      LOGICAL LRELAX, LRELAS
+      LOGICAL LRELAX, LRELAS, LOCSTAT
       INTEGER IDX, IJUMP, IDIP(3), IGRA(MXCOOR)
 
 * external function:
       INTEGER INDPRPCC
 
 * data:
+      DATA LABDIP /'XDIPLEN ','YDIPLEN ','ZDIPLEN '/
+      DATA LABDPV /'XDIPVEL ','YDIPVEL ','ZDIPVEL '/
+      DATA LABANG /'XANGMOM ','YANGMOM ','ZANGMOM '/
+
       DATA SET /.FALSE./
       DATA TABLE /'.RELAXE','.UNRELA','.FREQUE','.DIPOLE','.ALLDSP',
      *            '.OLD_LR','.ASYMSD','.DISPCF','.OPERAT','.AVERAG',
-     *            '.PRINT ','.STATIC','.DIPGRA','.XXXXXX','.XXXXXX'/ 
+     *            '.PRINT ','.STATIC','.DIPGRA','.OR LEN','.OR VEL', 
+     *            '.OR    ','.OR MVE','.ORGANL','.ORIGIN','.WAVELE', 
+     *            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/ 
 
 *---------------------------------------------------------------------*
 * begin:
@@ -3439,14 +3763,23 @@ C
       NBLRFR = 0
       NLROP  = 0
       NDIPFR = 0
+      NORGIN = 0
       IPRSOP = IPRINT
       DIPPOL = .FALSE.
+      ORLEN  = .FALSE.
+      ORVEL  = .FALSE.
+      ORMVE  = .FALSE.
+      ORGANL = .FALSE.
       ASYMSD = .FALSE.
       LRELAX = .FALSE.
       IDIGRA = 0
       ICHANG = 0
 
       OLDLR  = .FALSE.
+
+      CALL DZERO(ORGIN,MORGIN+1)
+
+      LOCSTAT = .FALSE.
 
 *---------------------------------------------------------------------*
 * read input:
@@ -3472,7 +3805,8 @@ c         table look up:
 c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+     &            21,22,23,24,25), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_LRINP.')
 C
 C-----------------------
@@ -3496,15 +3830,18 @@ C           .FREQUE
 C-----------------------
 C
 3           CONTINUE
-              READ (LUCMD,*) NBLRFR
-              IF (NBLRFR .GT. MBLRFR) THEN
-                WRITE(LUPRI,'(3(/A,I5),/)') 
-     &          ' NUMBER OF FREQUENCIES SPECIFIED    : ',NBLRFR,
+              READ (LUCMD,*) NRDFR
+              NFTOT = NRDFR + NBLRFR
+              IF (NFTOT .GT. MBLRFR) THEN
+                WRITE(LUPRI,'(3(/A,I5),/)')
+     &          ' NUMBER OF FREQUENCIES SPECIFIED    : ',NFTOT,
      &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MBLRFR,
      &          ' THE NUMBER IS RESET TO THE MAXIMUM : ',MBLRFR
-                NBLRFR = MBLRFR
-              END IF
-              READ (LUCMD,*) (BLRFR(I),I=1,NBLRFR)
+                NFTOT = MBLRFR
+                NRDFR = NFTOT - NBLRFR
+              END IF 
+              READ (LUCMD,*) (BLRFR(NBLRFR+I),I=1,NRDFR)
+              NBLRFR = NBLRFR + NRDFR
             GO TO 100
 C
 C-----------------------------------
@@ -3513,25 +3850,7 @@ C-----------------------------------
 C
 4           CONTINUE
               DIPPOL =.TRUE. 
-              IF (NLROP+9 .GT. MXLROP) THEN
-                WRITE(LUPRI,'(2(/A,I5),/)') 
-     &          ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLROP+9,
-     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLROP
-                CALL QUIT('TO MANY OPERATOR DOUBLES IN CCLR.')
-              END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
-              DO IDXA=1,3
-                 DO IDXB=1,3
-                   IDX = NLROP + (IDXA-1)*3+IDXB
-                   IALROP(IDX) = IDIP(IDXA)
-                   IBLROP(IDX) = IDIP(IDXB)
-                   LALORX(IDX) = LRELAX
-                   LBLORX(IDX) = LRELAX
-                 END DO
-              END DO
-              NLROP = NLROP + 9 
+              CALL CC_LRINPREQ(LABDIP,LABDIP,3,3,.FALSE.,LRELAX)
             GO TO 100
 C
 C           --------------------------------------------------------
@@ -3583,20 +3902,16 @@ C           -------------------------------------------
               DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NLROP.LT.MXLROP) THEN
-                    NLROP = NLROP + 1
-                    IALROP(NLROP) = INDPRPCC(LABELA)
-                    IBLROP(NLROP) = INDPRPCC(LABELB)
-                    LALORX(NLROP) = LRELAX
-                    LBLORX(NLROP) = LRELAX
+                    CALL CC_LRINPREQ(LABELA,LABELB,1,1,.TRUE.,LRELAX)
                   ELSE
                     WRITE(LUPRI,'(/2A,I5,/)')
      &               ' NB. OF OPERATOR DOUBLES SPECIFIED',
      &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLROP
-                    CALL QUIT('TO MANY OPERATOR DOUBLES IN CCLR.')
+                    CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLR.')
                   END IF
                 END IF
                 READ (LUCMD,'(2A)') LABELA, LABELB
-              END DO
+              END DO 
               BACKSPACE(LUCMD)
             GO TO 100
 C
@@ -3686,15 +4001,18 @@ C           .STATIC
 C-----------------------
 C
 12          CONTINUE
-              IF (NBLRFR .GE. MBLRFR) THEN
-                WRITE(LUPRI,'(3(/A,I5),/)') 
-     &          ' NUMBER OF FREQUENCIES SPECIFIED         : ',NBLRFR,
-     &          ' IS ALREADY EQUAL TO THE MAXIMUM ALLOWED : ',MBLRFR,
-     &          ' THE .STATIC KEYWORD UNDER *CCLR WILL BE IGNORED...'
-              ELSE
-                NBLRFR = NBLRFR + 1
-                BLRFR(NBLRFR) = 0.0D0
-              END IF
+              IF (.NOT. LOCSTAT) THEN
+                 IF (NBLRFR .GE. MBLRFR) THEN
+                   WRITE(LUPRI,'(3(/A,I5),/)')
+     &             ' NUMBER OF FREQUENCIES SPECIFIED         : ',NBLRFR,
+     &             ' IS ALREADY EQUAL TO THE MAXIMUM ALLOWED : ',MBLRFR,
+     &             ' THE .STATIC KEYWORD UNDER *CCLR WILL BE IGNORED...'
+                 ELSE
+                   LOCSTAT = .TRUE.
+                   NBLRFR = NBLRFR + 1
+                   BLRFR(NBLRFR) = 0.0D0
+                 END IF
+              ENDIF
             GO TO 100
 C
 C           -------------------------------------------------
@@ -3745,13 +4063,143 @@ C
                ENDDO
                NLROP = NLROP + NTOT
             GO TO 100
+C
+C------------------------------------------------------
+C           '.OR LEN': Optical Rotation - LENgth gauge.
+C------------------------------------------------------
+C
+14          CONTINUE
+              IF (.NOT. ORLEN) THEN
+                 ORLEN =.TRUE.
+                 CALL CC_LRINPREQ(LABDIP,LABANG,3,3,.TRUE.,LRELAX)
+              ENDIF
+            GO TO 100
+C
+C--------------------------------------------------------
+C           '.OR VEL': Optical Rotation - VELocity gauge.
+C--------------------------------------------------------
+C
+15          CONTINUE
+              IF (.NOT. ORVEL) THEN
+                 ORVEL  = .TRUE.
+                 CALL CC_LRINPREQ(LABDPV,LABANG,3,3,.TRUE.,LRELAX)
+              ENDIF
+ 
+C------------------------------------------------
+C           '.OR    ': Synonymous with '.OR LEN'.
+C------------------------------------------------
+C
+16          CONTINUE
+              GO TO 14
+            GO TO 100
+C
+C-------------------------------------------------------------------
+C           '.OR MVE': Opt. Rot., modified velocity gauge.
+C                      I.e. correct for unphysical static component.
+C-------------------------------------------------------------------
+C
+17          CONTINUE
+               IF (.NOT. ORMVE) THEN
+                  ORMVE = .TRUE.
+                  CALL CC_LRINPREQ(LABDPV,LABANG,3,3,.TRUE.,LRELAX)
+                  IF (.NOT. LOCSTAT) THEN
+                     IF (NBLRFR .GE. MBLRFR) THEN
+                        WRITE(LUPRI,'(2(/A,I5),/)')
+     &             ' NUMBER OF FREQUENCIES SPECIFIED         : ',NBLRFR,
+     &             ' IS ALREADY EQUAL TO THE MAXIMUM ALLOWED : ',MBLRFR
+                        CALL QUIT('Request for .STATIC under .OR MVE '
+     &                            //'failed in CCLR.')
+                     ELSE
+                        LOCSTAT = .TRUE.
+                        NBLRFR  = NBLRFR + 1
+                        BLRFR(NBLRFR) = 0.0D0
+                     END IF
+                  END IF
+               END IF
+            GO TO 100
+C
+C------------------------------------------------------------------------
+C           '.ORGANL': Calculate OR LEN origin dependence (Delta-vector).
+C------------------------------------------------------------------------
+C
+18          CONTINUE
+              IF (.NOT. ORGANL) THEN
+                 ORGANL = .TRUE.
+                 CALL CC_LRINPREQ(LABDIP,LABDPV,3,3,.FALSE.,LRELAX)
+              ENDIF
+            GO TO 100
+C
+C------------------------------------------------------------------------
+C           '.ORIGIN': Additional origins for evaluating OR length gauge.
+C                      Implies '.ORGANL' and '.OR LEN'.
+C------------------------------------------------------------------------
+C
+19          CONTINUE
+              READ(LUCMD,*) NORGIN
+              NORGSV = NORGIN
+              IF (NORGIN .GT. MORGIN) THEN
+                WRITE(LUPRI,'(3(/A,I5),/)')
+     &          ' NUMBER OF OR ORIGINS  SPECIFIED    : ',NORGIN,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MORGIN,
+     &          ' THE NUMBER IS RESET TO THE MAXIMUM : ',MORGIN
+                NORGIN = MORGIN
+              ENDIF
+              DO J = 1,NORGIN
+                 READ(LUCMD,*) (ORGIN(I,J), I=1,3)
+              ENDDO
+              DO J = NORGIN+1,NORGSV
+                 READ(LUCMD,*) SCR1,SCR2,SCR3
+              ENDDO
+              IF (.NOT. ORGANL) THEN
+                 ORGANL = .TRUE.
+                 CALL CC_LRINPREQ(LABDIP,LABDPV,3,3,.FALSE.,LRELAX)
+              ENDIF
+              IF (.NOT. ORLEN) THEN
+                 ORLEN = .TRUE.
+                 CALL CC_LRINPREQ(LABDIP,LABANG,3,3,.TRUE.,LRELAX)
+              ENDIF
+            GO TO 100
+C
+C-----------------------------------------------------------------------
+C           '.WAVELE': Wavelengths in nm (instead of frequencies in au).
+C-----------------------------------------------------------------------
+C
+20          CONTINUE
+              READ (LUCMD,*) NWAVEL
+              NFTOT = NWAVEL + NBLRFR
+              IF (NFTOT .GT. MBLRFR) THEN
+                WRITE(LUPRI,'(3(/A,I5),/)')
+     &          ' NUMBER OF FREQUENCIES SPECIFIED    : ',NFTOT,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MBLRFR,
+     &          ' THE NUMBER IS RESET TO THE MAXIMUM : ',MBLRFR
+                NFTOT  = MBLRFR
+                NWAVEL = NFTOT - NBLRFR
+              END IF
+              READ (LUCMD,*) (BLRFR(NBLRFR+I),I=1,NWAVEL)
+              DO I = 1,NWAVEL
+                 IF (DABS(BLRFR(NBLRFR+I)) .LE. 1.0D-7) THEN
+                    WRITE(LUPRI,'(/,A,I5,A,1P,D22.15,A)')
+     &              'Wavelength number',I,' too small: ',
+     &              BLRFR(NBLRFR+I),' nm'
+                    WRITE(LUPRI,'(A,/)')
+     &              'Input frequency (in au) instead (.FREQUE keyword).'
+                    CALL QUIT('Input wavelength too small in '//SECNAM)
+                 ENDIF
+                 XWAV = BLRFR(NBLRFR+I)
+                 BLRFR(NBLRFR+I) = XTNM/XWAV
+              ENDDO
+              NBLRFR = NBLRFR + NWAVEL
+            GO TO 100
 C                                                                     
 C           -------------------------------------------------
 C           .XXXXXXX unused keywords
 C           -------------------------------------------------
 C
-14          CONTINUE
-15          CONTINUE
+21          CONTINUE
+22          CONTINUE
+23          CONTINUE
+24          CONTINUE
+25          CONTINUE
             GO TO 100                 
 C
           ELSE
@@ -3805,6 +4253,108 @@ C
       RETURN
       END
 *---------------------------------------------------------------------*
+C  /* Deck cc_lrinpreq */
+      SUBROUTINE CC_LRINPREQ(LABELA,LABELB,NA,NB,LDIAGO,LRELAX)
+C
+C     Thomas Bondo Pedersen, April 2003.
+C
+C     Purpose: Request linear response calculation of the tensor
+C              <<LABELA(i),LABELB(j)>> for i = 1,NA and j=1,NB.
+C
+C              If LDIAGO: request diagonal only (NA=NB only!).
+C
+C              LRELAX is the flag that will be associated with
+C              each perturbation operator for relaxation.
+C
+#include <implicit.h>
+      CHARACTER*8 LABELA(NA), LABELB(NB)
+      LOGICAL     LDIAGO, LRELAX
+#include <cclrinf.h>
+#include <priunit.h>
+
+      CHARACTER*11 SECNAM
+      PARAMETER (SECNAM = 'CC_LRINPREQ')
+
+      INTEGER IOPA(MXLROP), IOPB(MXLROP)
+
+      IF ((NA.GT.MXLROP) .OR. (NB.GT.MXLROP)) THEN
+         WRITE(LUPRI,'(//,1X,A,A,A)')
+     &   'Too many operators in ',SECNAM,':'
+         WRITE(LUPRI,'(1X,A,I10,/,1X,A,I10)')
+     &   'NA =',NA,'NB =',NB
+         CALL QUIT('Too many operators in '//SECNAM)
+      ELSE IF ((NA.LE.0) .OR. (NB.LE.0)) THEN
+         RETURN
+      ENDIF
+
+      IF (LDIAGO) THEN
+
+         IF (NA .NE. NB) THEN
+            WRITE(LUPRI,'(//,1X,A,A,A)')
+     &      'Error in ',SECNAM,':'
+            WRITE(LUPRI,'(1X,A,I10,/,1X,A,I10)')
+     &      'NA =',NA,'NB =',NB
+            WRITE(LUPRI,'(1X,A)')
+     &      'NA = NB must hold for LDIAGO option.'
+            CALL QUIT('NA != NB in '//SECNAM)
+         ENDIF
+
+         IF (NLROP+NA .GT. MXLROP) THEN
+             WRITE(LUPRI,'(2(/A,I5),/)')
+     &       ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLROP+NA,
+     &       ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLROP
+             CALL QUIT('TOO MANY OPERATOR DOUBLES IN '//SECNAM)
+         ENDIF
+
+         DO I = 1,NA
+            IOPA(I) = INDPRPCC(LABELA(I))
+            IOPB(I) = INDPRPCC(LABELB(I))
+         ENDDO
+
+         DO IDXAB = 1,NA
+            IDX = NLROP + IDXAB
+            IALROP(IDX) = IOPA(IDXAB)
+            IBLROP(IDX) = IOPB(IDXAB)
+            LALORX(IDX) = LRELAX
+            LBLORX(IDX) = LRELAX
+         ENDDO
+
+         NLROP = NLROP + NA
+
+      ELSE
+
+         NTOT = NA*NB
+
+         IF (NLROP+NTOT .GT. MXLROP) THEN
+             WRITE(LUPRI,'(2(/A,I5),/)')
+     &       ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLROP+NTOT,
+     &       ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLROP
+             CALL QUIT('TOO MANY OPERATOR DOUBLES IN '//SECNAM)
+         ENDIF
+
+         DO I = 1,NA
+            IOPA(I) = INDPRPCC(LABELA(I))
+         ENDDO
+         DO I = 1,NB
+            IOPB(I) = INDPRPCC(LABELB(I))
+         ENDDO
+
+         DO IDXA=1,NA
+            DO IDXB=1,NB
+               IDX = NLROP + (IDXA - 1)*NB + IDXB
+               IALROP(IDX) = IOPA(IDXA)
+               IBLROP(IDX) = IOPB(IDXB)
+               LALORX(IDX) = LRELAX
+               LBLORX(IDX) = LRELAX
+            ENDDO
+         ENDDO
+
+         NLROP = NLROP + NTOT
+
+      ENDIF
+
+      RETURN
+      END
 c /* deck cc_qrinp */
 *=====================================================================*
        SUBROUTINE CC_QRINP(WORD)
@@ -3865,7 +4415,7 @@ c /* deck cc_qrinp */
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.EXPCOF','.AVERAG',
      &            '.MIXFRE','.SHGFRE','.ORFREQ','.EOPEFR','.STATIC',
      &            '.DISPCF','.ALLDSP','.XYDEGE','.NOBMAT','.USE R2',
-     &            '.RELAXE','.UNRELA','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &            '.RELAXE','.UNRELA','.USE AA','.XXXXXX','.XXXXXX' /
 
       INTEGER INDPRPCC
 
@@ -3890,6 +4440,7 @@ c /* deck cc_qrinp */
       XY_DEGENERAT = .FALSE.
       USEBTRAN     = .TRUE.
       USE_R2       = .FALSE.
+      USE_AAMAT    = .FALSE.
       ALLDSPCF     = .FALSE.
       LALRX        = .FALSE.
       LBLRX        = .FALSE.
@@ -4282,10 +4833,16 @@ C           ------------------------------------------------------------
               LRELAX = .FALSE.
             GO TO 100
 
+C           ------------------------------------------------------------
+C           .USE AA : Use A{O} transformation instead of Eta{O} vectors:
+C           ------------------------------------------------------------
+18          CONTINUE
+              USE_AAMAT = .TRUE.
+            GO TO 100
+
 C           -----------------------
 C           .XXXXXX : unused labels
 C           -----------------------
-18          CONTINUE
 19          CONTINUE
 20          CONTINUE
               WRITE (LUPRI,*) 'unused .XXXXXX label... ignored'
@@ -5744,6 +6301,117 @@ C
       END
 *---------------------------------------------------------------------*
 *---------------------------------------------------------------------*
+      SUBROUTINE CC_PUT1OP(INDOP,NOP,MAXOP,OPERATOR,ROUTINE)
+C
+      CHARACTER*(*) ROUTINE, OPERATOR
+      LOGICAL FAILED
+      INTEGER MAXOP, NEWOP
+      INTEGER INDOP(MAXOP)
+
+      FAILED = .FALSE.
+      IF (OPERATOR(1:6).EQ.'DIPLEN') THEN
+        NEWOP = 3
+        IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          INDOP(NOP+1) = INDPRPCC('XDIPLEN ')
+          INDOP(NOP+2) = INDPRPCC('YDIPLEN ')
+          INDOP(NOP+3) = INDPRPCC('ZDIPLEN ')
+        END IF
+      ELSE IF (OPERATOR(1:6).EQ.'DIPVEL') THEN
+        NEWOP = 3
+        IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          INDOP(NOP+1) = INDPRPCC('XDIPVEL ')
+          INDOP(NOP+2) = INDPRPCC('YDIPVEL ')
+          INDOP(NOP+3) = INDPRPCC('ZDIPVEL ')
+        END IF
+      ELSE IF (OPERATOR(1:6).EQ.'ANGMOM') THEN
+        NEWOP = 3
+        IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          INDOP(NOP+1) = INDPRPCC('XANGMOM ')
+          INDOP(NOP+2) = INDPRPCC('YANGMOM ')
+          INDOP(NOP+3) = INDPRPCC('ZANGMOM ')
+        END IF
+      ELSE
+        CALL QUIT('Unkown OPERATOR in CC_PUT1OP')
+      END IF
+
+      IF (FAILED) THEN
+        WRITE(LUPRI,'(2(/,A,I5),/)')
+     &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
+     &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
+        CALL QUIT('TO MANY OPERATORS IN ',ROUTINE,'.')
+      ELSE
+        NOP = NOP + NEWOP
+      END IF
+
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*---------------------------------------------------------------------*
+      SUBROUTINE CC_PUT2OP(INDOP1,INDOP2,NOP,MAXOP,OPERATOR,ROUTINE)
+C
+      CHARACTER*(*) ROUTINE, OPERATOR
+      LOGICAL FAILED
+      INTEGER MAXOP, NEWOP
+      INTEGER INDOP1(MAXOP), INDOP2(MAXOP), IOP(10)
+
+      FAILED = .FALSE.
+      IF (OPERATOR(1:6).EQ.'DIPLEN') THEN
+        NEWOP = 3
+        IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          IOP(1) = INDPRPCC('XDIPLEN ')
+          IOP(2) = INDPRPCC('YDIPLEN ')
+          IOP(3) = INDPRPCC('ZDIPLEN ')
+        END IF
+      ELSE IF (OPERATOR(1:6).EQ.'DIPVEL') THEN
+        NEWOP = 3
+        IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          IOP(1) = INDPRPCC('XDIPVEL ')
+          IOP(2) = INDPRPCC('YDIPVEL ')
+          IOP(3) = INDPRPCC('ZDIPVEL ')
+        END IF
+      ELSE IF (OPERATOR(1:6).EQ.'ANGMOM') THEN
+        NEWOP = 3
+        IF ( (NOP+NEWOP*NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          IOP(1) = INDPRPCC('XANGMOM ')
+          IOP(2) = INDPRPCC('YANGMOM ')
+          IOP(3) = INDPRPCC('ZANGMOM ')
+        END IF
+      ELSE
+        CALL QUIT('Unkown OPERATOR in CC_PUT1OP')
+      END IF
+
+      IF (FAILED) THEN
+        WRITE(LUPRI,'(2(/,A,I5),/)')
+     &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
+     &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
+        CALL QUIT('TO MANY OPERATORS IN ',ROUTINE,'.')
+      ELSE
+        DO IDX1 = 1, NEWOP
+          DO IDX2 = 1, NEWOP
+            IDX12 = NOP + (IDX1 - 1)*NEWOP + IDX2
+            INDOP1(IDX12) = IOP(IDX1)
+            INDOP2(IDX12) = IOP(IDX2)
+          END DO
+        END DO
+        NOP = NOP + NEWOP*NEWOP
+      END IF
+
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*---------------------------------------------------------------------*
 c /* deck cc_exlrinp */
 *=====================================================================*
        SUBROUTINE CC_EXLRINP(WORD)
@@ -5774,7 +6442,7 @@ c /* deck cc_exlrinp */
       PARAMETER (SECNAM='CC_EXLRINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 10)
+      PARAMETER (NTABLE = 12)
 
 #if defined (SYS_CRAY)
       REAL ZERO
@@ -5799,7 +6467,8 @@ c /* deck cc_exlrinp */
       DATA SET /.FALSE./
 
       DATA TABLE /'.OPERAT','.DIPOLE','.SELSTA','.PRINT ','.ALLSTA',
-     &            '.HALFFR','.USELEF','.FREQ  ','.FREQUE','.STATIC'/
+     &            '.HALFFR','.USELEF','.FREQ  ','.FREQUE','.STATIC',
+     &            '.USE O2','.NOPROJ'/
 
       INTEGER INDPRPCC
 
@@ -5819,8 +6488,8 @@ c /* deck cc_exlrinp */
       ALLSTATES  = .FALSE.
       HALFFR     = .FALSE.
       USE_EL1    = .FALSE.
-      WARNEXLR1  = .FALSE.
-      WARNEXLR2  = .FALSE.
+      USE_O2     = .FALSE.
+      NOPROJ     = .FALSE.
 
       CCEXLR = .FALSE.
 
@@ -5852,7 +6521,7 @@ c /* deck cc_exlrinp */
 *         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_EXLRINP.')
       
 C           --------------------------------------
@@ -5954,17 +6623,15 @@ C                     energy' is zero)
 C           --------------------------------------------------------
 6           CONTINUE
                HALFFR = .TRUE.
-               IF (NEXLRFREQ.EQ.0) THEN
-                 NEXLRFREQ  = 1
-                 BEXLRFR(1) = ZERO
-               ELSE IF (NEXLRFREQ.EQ.1 .AND. BEXLRFR(1).EQ.ZERO) THEN
-                 CONTINUE
-                 WARNEXLR1 = .TRUE.
-               ELSE IF (NEXLRFREQ.GT.1) THEN
-                 NEXLRFREQ  = 1
-                 BEXLRFR(1) = ZERO
-                 WARNEXLR2 = .TRUE.
+               IF (NEXLRFREQ.NE.0) THEN
+                 WRITE(LUPRI,'(/2x,2a,/)')
+     &           'Warning: in *CCEXLR on one of the Keywords',
+     &           ' .HALFFR and .FREQ/FREQUE',
+     &           '         can be specified...',
+     &           ' .FREQ/.FREQUE input will be ignored.'
                END IF
+               NEXLRFREQ  = 1
+               BEXLRFR(1) = ZERO
             GO TO 100
 
 C           -----------------------
@@ -5996,6 +6663,13 @@ C           ------------------------------------------------
               WRITE (LUPRI,*) 'CC_EXLRINP> ', BEXLRFR(NEXLRFREQ),
      &             NEXLRFREQ
               NEXLRFREQ = NEXLRFREQ+MFREQ
+              IF (HALFFR .AND. MFREQ.GT.0) THEN
+                WRITE(LUPRI,'(/2x,2a,/)')
+     &          'Warning: in *CCEXLR on one of the Keywords',
+     &          ' .HALFFR and .FREQ/FREQUE',
+     &          '         can be specified...',
+     &          ' option .HALFFR will be ignored.'
+              END IF
             GO TO 100
 
 C           ---------------------------------------------------
@@ -6013,6 +6687,26 @@ C           ---------------------------------------------------
               END IF
             GO TO 100
 
+C           -----------------------------------------------------------
+C           .USE O2 : use rhs vectors for second-order amplitude 
+C                     response (might save some time at the 
+C                     CCS/CC2/CCSD levels if combined with other 
+C                     properties, but is not (yet) implemented for CC3)
+C           -----------------------------------------------------------
+11          CONTINUE
+              USE_O2 = .TRUE.
+            GO TO 100
+
+C           -----------------------------------------------------------
+C           .NOPROJ: switch off projection onto the orthogonal 
+C                    complement for the EL1/ER1 equations for
+C                    excited state polarizabilities
+C                    (Note that this will cause numerical problems in 
+C                     the static limit)
+C           -----------------------------------------------------------
+12          CONTINUE
+              NOPROJ = .TRUE.
+            GO TO 100
 
           ELSE
            WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
@@ -6081,324 +6775,6 @@ C           ---------------------------------------------------
       RETURN
       END
 *---------------------------------------------------------------------*
-*---------------------------------------------------------------------*
-       SUBROUTINE CC_SMINP(WORD)
-*---------------------------------------------------------------------*
-*
-*    Purpose: read input for CC second moment
-*             two photon is a special case
-*
-*    if (WORD .eq '*CCSM  ') read & process input and set defaults, 
-*    else set only defaults 
-*
-*=====================================================================*
-C#if defined (IMPLICIT_NONE)
-C      IMPLICIT NONE  
-C#else
-#  include <implicit.h>
-C#endif
-#include <priunit.h>
-#include <ccsm.h>
-#include <ccsminf.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-
-* local parameters:
-      CHARACTER SECNAM*(8)
-      PARAMETER (SECNAM='CC_SMINP')
-
-      INTEGER NTABLE
-      PARAMETER (NTABLE = 10)
-
-#if defined (SYS_CRAY)
-      REAL ZERO
-#else
-      DOUBLE PRECISION ZERO
-#endif
-
-      PARAMETER (ZERO = 0.0d00)
-
-
-* variables:
-      LOGICAL SET
-      SAVE SET
-
-      CHARACTER WORD*(7)
-      CHARACTER*8 LABELA, LABELB, LABELC, LABELD
-      CHARACTER*70 LABHELP
-      CHARACTER TABLE(NTABLE)*(7)
-
-#if defined (SYS_CRAY)
-      REAL SMFREQ
-#else
-      DOUBLE PRECISION  SMFREQ
-#endif
-
-
-      INTEGER IDX, IJUMP
-      INTEGER  IDXA, IDXB, IDXC, IDXD, IDIP(3)
-      INTEGER  IXSYM , IXST
-      DATA SET /.FALSE./
-
-      DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.XXXXXX','.XXXXXX',
-     &            '.SELSTA','.HALFFR','.XXXXXX','.XXXXXX','.XXXXXX'/
-
-      INTEGER INDPRPCC
-
-*---------------------------------------------------------------------*
-* begin:
-*---------------------------------------------------------------------*
-      IF (SET) RETURN
-      SET = .TRUE.
-
-*---------------------------------------------------------------------*
-* initializations & defaults:
-*---------------------------------------------------------------------*
-      NSMSEL   = 0
-
-      NSMOPER  = 0
-
-      CCSM = .FALSE.
-
-      IPRSM = 0
-
-      ICHANG = 0
-    
-      HALFFR = .FALSE.
- 
-      SELSMST  = .FALSE.
- 
-
-*---------------------------------------------------------------------*
-* read input:
-*---------------------------------------------------------------------*
-      IF (WORD(1:7) .EQ. '*CCSM  ') THEN
-
-100   CONTINUE
-       
-* get new input line:
-        READ (LUCMD,'(A7)') WORD
-        DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
-          READ (LUCMD,'(A7)') WORD
-        END DO
-
-        IF (WORD(1:1) .EQ. '.') THEN
-C         WRITE (LUPRI,*) WORD
-C         CALL FLSHFO(LUPRI)
-
-c         table look up:
-          IJUMP = 1
-          DO WHILE ( IJUMP .LE. NTABLE .AND. TABLE(IJUMP) .NE. WORD)
-            IJUMP = IJUMP + 1
-          END DO
-     
-c         jump to the appropiate input section:
-          IF (IJUMP .LE. NTABLE) THEN
-            ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10), IJUMP
-            CALL QUIT('Illegal address in computed GOTO in CC_SMINP.')
-      
-C           ------------------------------------------
-C           .OPERAT : quadruples of operator lables A,B,C,D
-C           ------------------------------------------
-1           CONTINUE
-              READ (LUCMD,'(4A)') LABELA, LABELB, LABELC, LABELD 		
-              DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')
-                IF (LABELA(1:1).NE.'!') THEN
-                  IF (NSMOPER.LT.MXSMOP) THEN
-                    NSMOPER = NSMOPER + 1
-                    IASMOP(NSMOPER) = INDPRPCC(LABELA)
-                    IBSMOP(NSMOPER) = INDPRPCC(LABELB)
-                    ICSMOP(NSMOPER) = INDPRPCC(LABELC)
-                    IDSMOP(NSMOPER) = INDPRPCC(LABELD)
-                  ELSE
-                    WRITE(LUPRI,'(/2A,I5,/)') 
-     &               ' NB. OF OPERATOR QUADRUPLES SPECIFIED',
-     &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXSMOP
-                    CALL QUIT('TO MANY OPERATOR IN CCSM.')
-                  END IF
-                END IF
-                READ (LUCMD,'(4A)') LABELA, LABELB, LABELC, LABELD
-              END DO
-              BACKSPACE(LUCMD)
-            GO TO 100
-
-C           -------------------------------------------------------
-C           .DIPOL : calculate full dipole-dipole-dipole-dipole tensor
-C           -------------------------------------------------------
-2           CONTINUE
-              IF (NSMOPER+81 .GT. MXSMOP) THEN
-                WRITE(LUPRI,'(2(/A,I5)/)') 
-     &          ' NB. OF OPERATOR QUADRUPLES SPECIFIED  : ',NSMOPER+81,
-     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXSMOP
-                CALL QUIT('TO MANY OPERATOR QUADRUPLES IN CCSM.')
-
-              END IF
-              IDIP(1) = INDPRPCC('XDIPLEN ')
-              IDIP(2) = INDPRPCC('YDIPLEN ')
-              IDIP(3) = INDPRPCC('ZDIPLEN ')
-              DO IDXA=1,3
-              DO IDXB=1,3
-              DO IDXC=1,3
-              DO IDXD=1,3
-                IDX = NSMOPER + (IDXA-1)*27+(IDXB-1)*9+(IDXC-1)*3+IDXD
-                IASMOP(IDX) = IDIP(IDXA)
-                IBSMOP(IDX) = IDIP(IDXB)
-                ICSMOP(IDX) = IDIP(IDXC)
-                IDSMOP(IDX) = IDIP(IDXD)
-              END DO
-              END DO
-              END DO
-              END DO
-              NSMOPER = NSMOPER + 81
-            GO TO 100
-
-C           ------------
-C           .PRINT 
-C           ------------
-3           CONTINUE
-              READ (LUCMD,*) IPRSM
-            GO TO 100
-
-C           -----------------------
-C           .XXXXXX : unused labels
-C           -----------------------
-4           CONTINUE
-5           CONTINUE
-              WRITE (LUPRI,*) 'unused .XXXXXX label... ignored'
-            GO TO 100
-C
-C-------------------------
-C           Select states.
-C-------------------------
-C   .SELSTAtes    Select states and frequences
-C                 frequencies are overwritten if .SELHALF is specified
-C
-6           CONTINUE
-              SELSMST =.TRUE. 
-              READ (LUCMD,'(A70)') LABHELP
-              DO WHILE (LABHELP(1:1).NE.'.' .AND. LABHELP(1:1).NE.'*')
-                IF (LABHELP(1:1).NE.'!') THEN
-                  READ(LABHELP,*) IXSYM,IXST,SMFREQ
-                  IF (NSMSEL.LT.MXSMSEL) THEN
-                    NSMSEL = NSMSEL + 1
-                    ISMSEL(NSMSEL,1) = IXSYM
-                    ISMSEL(NSMSEL,2) = IXST
-                    BSMFR(NSMSEL)   = SMFREQ
-                  ELSE
-                    WRITE(LUPRI,'(/2A,I5,/)')
-     &               ' NB. OF STATES SPECIFIED',
-     &               ' IS GREATER THAN THE ALLOWED NUMBER : ' ,MXSMSEL 
-                    CALL QUIT('TO MANY STATES SPECIFIED BY .SELST')
-                  END IF
-                END IF
-                READ (LUCMD,'(A70)') LABHELP
-              END DO
-              BACKSPACE(LUCMD)
-            GO TO 100
-C
-C           ------------------------------------------------
-C           .HALFFR : impose condition of equal frequencies
-C                      for the two lasers 
-C           ------------------------------------------------
-7           CONTINUE
-               HALFFR =.TRUE.
-            GO TO 100
-
-C           ------------------------------------------------
-8           CONTINUE
-              WRITE (LUPRI,*) 'unused .XXXXXX label... ignored'
-            GO TO 100
-C           ------------------------------------------------
-9           CONTINUE
-              WRITE (LUPRI,*) 'unused .XXXXXX label... ignored'
-            GO TO 100
-C           _______________________________________________
-10          CONTINUE
-              WRITE (LUPRI,*) 'unused .XXXXXX label... ignored'
-            GO TO 100
-
-
-          ELSE
-           WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
-     &             '" not recognized in ',SECNAM,'.'
-           CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',LUPRI)
-           CALL QUIT('Illegal Keyword in '//SECNAM//'.')
-          END IF
-
-        ELSE IF (WORD(1:1) .NE. '*') THEN
-          WRITE (LUPRI,'(/5A,/)') 'PROMPT "',WORD,
-     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
-          CALL QUIT('Illegal prompt in '//SECNAM//'.')
-
-        ELSE IF (WORD(1:1) .EQ.'*') THEN
-          BACKSPACE (LUCMD)
-          GO TO 200
-        END IF
-
-      END IF
-
-200   CONTINUE
-
-*---------------------------------------------------------------------*
-* warning if both .SELST AND .SELHLF is specified
-* 
-      IF (SELSMST.AND.HALFFR) THEN
-         WRITE (LUPRI,*)
-     &        ' WARNING: BOTH .SELST and .HALFFR are specified'
-         WRITE (LUPRI,*) ' .HALFFR is used to obtain frequences'
-      END IF
-*---------------------------------------------------------------------*
-* check, if any quadruples of operator labels specified:
-* if not, use default: complete dipole-dipole-dipole-dipole tensor
-*---------------------------------------------------------------------*
-      IF (NSMOPER .EQ. 0) THEN 
-          IF (NSMOPER+81 .GT. MXSMOP) THEN
-            WRITE(LUPRI,'(2(/A,I5)/)') 
-     &      ' NB. OF OPERATOR QUADRUPLES SPECIFIED  : ',NSMOPER+81,
-     &      ' IS GREATER THAN THE ALLOWED NUMBER : ',MXSMOP
-            CALL QUIT('TO MANY OPERATOR TRIPLES IN CCQR.')
-          END IF
-          IDIP(1) = INDPRPCC('XDIPLEN ')
-          IDIP(2) = INDPRPCC('YDIPLEN ')
-          IDIP(3) = INDPRPCC('ZDIPLEN ')
-          DO IDXA=1,3
-          DO IDXB=1,3
-          DO IDXC=1,3
-          DO IDXD=1,3
-            IDX = NSMOPER + (IDXA-1)*27+(IDXB-1)*9+(IDXC-1)*3+IDXD
-            IASMOP(IDX) = IDIP(IDXA)
-            IBSMOP(IDX) = IDIP(IDXB)
-            ICSMOP(IDX) = IDIP(IDXC)
-            IDSMOP(IDX) = IDIP(IDXC)
-          END DO
-          END DO
-          END DO
-          END DO
-          NSMOPER = NSMOPER + 81
-      END IF
-
-*---------------------------------------------------------------------*
-* check, if frequencies are specified; if not, use default: .HALFFR
-*---------------------------------------------------------------------*
-      IF ( .NOT. SELSMST ) THEN
-         IF ( .NOT. HALFFR ) HALFFR = .TRUE.
-         WRITE(LUPRI,'(/2A)')
-     &      ' *WARNING: NO FREQUENCIES SPECIFIED IN SECOND MOMENT CALC',
-     &      ' DEFAULT  .HALFFR  USED '
-      END IF
-*---------------------------------------------------------------------*
-* set CCSM flags:
-*---------------------------------------------------------------------*
-      WRITE (LUPRI,*) 'SET CCSM TO TRUE'
-      CCSM  = .TRUE.
-
-      RETURN
-      END
-*---------------------------------------------------------------------*
-
-*---------------------------------------------------------------------*
-
        SUBROUTINE CC_TMINP(WORD)
 *---------------------------------------------------------------------*
 *

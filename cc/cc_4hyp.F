@@ -309,7 +309,8 @@ c /* deck CC_4HYP */
 *---------------------------------------------------------------------*
       IOPT = 5
       CALL CC_BMAT(WORK(KBTRAN),NBTRAN,'R2 ','R2 ',IOPT,'L2 ',
-     &             WORK(KBDOTS),WORK(KBCONS),MXVEC2,WORK(KEND0),LEND0)
+     &             WORK(KBDOTS),WORK(KBCONS),MXVEC2,
+     &             .FALSE.,WORK(KEND0),LEND0)
 
 *---------------------------------------------------------------------*
 * calculate B{O} matrix contributions:

@@ -47,7 +47,7 @@ C      SLV98,OC: Self consistent solution of 1-order response equations.
 C
 C---------------------------------------------------------------------*
 C
-#include <implicit.h>
+      IMPLICIT NONE
 #include <priunit.h>
 #include <maxorb.h>
 #include <dummy.h>
@@ -58,6 +58,7 @@ C
 #include <ccsdio.h>
 #include <ccsdinp.h>
 #include <ccsections.h>
+#include <ccexci.h>
 #include <cclrmrsp.h>
 #include <ccer1rsp.h>
 #include <ccer2rsp.h>
@@ -86,11 +87,11 @@ C
 #include <cccl2rsp.h>
 #include <ccco2rsp.h>
 #include <cccx2rsp.h>
+#include <ccexgr.h>
 #include <leinf.h>
 #include <ccpl1rsp.h>
 #include <ccslvinf.h>
 C
-      PARAMETER (ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0,TOLFRQ=1.0D-08)
 C
       LOGICAL LOCDBG, lold
       PARAMETER (LOCDBG = .FALSE., lold = .false.)
@@ -99,22 +100,29 @@ C
       PARAMETER (FC1AM='CCR_C1AM',FC2AM='CCR_C2AM')
       PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
 
+      INTEGER LWORK
+
 #if defined (SYS_CRAY)
-      REAL TOL
+      REAL TOL, ONE, TWO, WORK(LWORK), DDOT, X1, X2, FREK
 #else
-      DOUBLE PRECISION TOL
+      DOUBLE PRECISION TOL, ONE, TWO, WORK(LWORK), DDOT, X1, X2, FREK
 #endif
-      PARAMETER(TOL=1.0D-12)
+      LOGICAL LDUMMY
+      INTEGER ISYM0, IZERO
 
+      PARAMETER(TOL=1.0D-12, ISYM0 = 1, LDUMMY = .FALSE.)
+      PARAMETER(ONE = 1.0D0, IZERO = 0, TWO = 2.0D0)
 
-      LOGICAL LDUM
-      DIMENSION WORK(LWORK)
       CHARACTER MODEL*10,MODEL1*10
       CHARACTER*3 LIST 
       INTEGER MAXFDIM
       PARAMETER (MAXFDIM = 500)
       INTEGER IFTRAN(3,MAXFDIM)
-      INTEGER ORDER
+      INTEGER ORDER, I1DXORD, IOPREL, NSTAT, ISIDE, IDXR1, IOPT,
+     &        ILSTNR, ISYM, KT1, KT2, KEND1, LEND1, IDXM, IDXRE, IDXF,
+     &        NTAMP, KETA, LWRK1, KBEVC, KEND2, LWRK2, IDXRC, KVEC1,
+     &        KVEC2, NCAU, IVEC, INUM, IDXLC, IDXL2, IDXR2, IDXL3, 
+     &        IDXR3
 C
       LOGICAL R1HFSKIP, O1SKIP, X1SKIP
       SAVE    R1HFSKIP, O1SKIP, X1SKIP
@@ -122,19 +130,16 @@ C
       DATA O1SKIP   / .FALSE. /
       DATA X1SKIP   / .FALSE. /
 
-C
+* external functions:
+      INTEGER IR1TAMP, ILRCAMP, ILC1AMP, ICR2AMP, IRHSCR2, IR2TAMP,
+     &        ICL2AMP, IETACL2, IR3TAMP, ILSTSYM
 
 C-------------------------------------
-C     Initialize Leinfi and variables.
+C     Some initializations:
 C-------------------------------------
 C
       CALL QENTER('CC_SOLRSP')
-      LUFC1 = 0
-      LUFC2 = 0
-      LUFR1 = 0
-      LUFR2 = 0
 C
-      IPRLE = IPRINT 
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
@@ -185,8 +190,10 @@ C======================================================================
      &   'third-order amplitude equations                    ','|'
       IF (NX3LBL.GT.0) WRITE(LUPRI,2) '|',' X3 ','|',   NX3LBL,'|',
      &   'third-order multiplier equations                   ','|'
+      IF (NXGRST.GT.0) WRITE(LUPRI,2) '|',' BE ','|',   NXGRST,'|',
+     &   'zeroth-order excited-state Lagrange multiplier     ','|'
       IF (NQRN2.GT.0)  WRITE(LUPRI,2) '|',' BR ','|',    NQRN2,'|',
-     &   'first-order excited-state Lagrange multiplier      ','|'
+     &   'zeroth-order excited-state transition Lagr. multip.','|'
       IF (NER1LBL.GT.0) WRITE(LUPRI,2)'|',' EO1','|',  NER1LBL,'|',
      &   'first-order excited state right response equations ','|'
       IF (NEL1LBL.GT.0) WRITE(LUPRI,2)'|',' EX1','|',  NEL1LBL,'|',
@@ -235,8 +242,10 @@ C======================================================================
      &   'third-order multiplier response                    ','|'
       IF (NLRM.GT.0)    WRITE(LUPRI,2) '|',' M1 ','|',    NLRM,'|',
      &   'first-order ground - excited state multipliers     ','|'
+      IF (NXGRST.GT.0)  WRITE(LUPRI,2) '|',' E0 ','|',  NXGRST,'|',
+     &   'zeroth-order excited-state Lagrange multiplier     ','|'
       IF (NQRN2.GT.0)   WRITE(LUPRI,2) '|',' N2 ','|',   NQRN2,'|',
-     &   'first-order excited-state Lagrange multiplier      ','|'
+     &   'zeroth-order excited-state transition Lagr. multip.','|'
       IF (NER1LBL.GT.0) WRITE(LUPRI,2) '|',' ER1','|', NER1LBL,'|',
      &   'first-order right excited state response           ','|'
       IF (NEL1LBL.GT.0) WRITE(LUPRI,2) '|',' EL1','|', NEL1LBL,'|',
@@ -285,8 +294,8 @@ C      we solve them only the first time we enter this routine)
 C======================================================================
       IF ( .NOT. R1HFSKIP ) THEN
 
-         CALL CC_CPHF('R1 ',LRTHFLBL,IDUM,IDUM,RDUM,
-     &                ISYLRTHF,FRQLRTHF,IDUM,NLRTHFLBL,MAXTLBL,
+         CALL CC_CPHF('R1 ',LRTHFLBL,IDUMMY,IDUMMY,DUMMY,
+     &                ISYLRTHF,FRQLRTHF,IDUMMY,NLRTHFLBL,MAXTLBL,
      &                WORK,LWORK)
 
          R1HFSKIP = .TRUE.
@@ -319,8 +328,8 @@ C     precalculate first-order chi vectors "X1" for those first-order
 C======================================================================
       IF ( .NOT. O1SKIP ) THEN
  
-          CALL CCRHSVEC('O1 ',LBLO1,IDUM,IDUM,RDUM,ISYO1,
-     &                  FRQO1,LORXO1,IDUM,NO1LBL,MAXO1LBL,WORK,LWORK)
+          CALL CCRHSVEC('O1 ',LBLO1,IDUMMY,IDUMMY,DUMMY,ISYO1,
+     &                  FRQO1,LORXO1,IDUMMY,NO1LBL,MAXO1LBL,WORK,LWORK)
  
       ELSE
         WRITE (LUPRI,*)
@@ -346,8 +355,8 @@ C======================================================================
 
       IF ( .NOT. R1SKIP ) THEN
          CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                  IDUM, IDUM, RDUM, LDUM,
-     &                  ISYLRT, LRTLBL, FRQLRT, IDUM,
+     &                  IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                  ISYLRT, LRTLBL, FRQLRT, IDUMMY,
      &                  ISYOFT, NLRTLBL, MAXTLBL, WORK, LWORK)
 
       ELSE
@@ -357,8 +366,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
          CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                  IDUM, IDUM, RDUM, LDUM,
-     &                  ISYLRT, LRTLBL, FRQLRT, IDUM,
+     &                  IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                  ISYLRT, LRTLBL, FRQLRT, IDUMMY,
      &                  ISYOFT, NLRTLBL, MAXTLBL, WORK, LWORK)
       END IF
 
@@ -393,7 +402,7 @@ C           call CC_FMATRIX to do the F * R1 transformations:
 C
             IOPT = 3
             CALL CC_FMATRIX(IFTRAN, NLRTLBL, 'L0 ', 'R1 ', IOPT, 'F1 ',
-     &                      IDUM, RDUM, 0, WORK, LWORK )
+     &                      IDUMMY, DUMMY, 0, WORK, LWORK )
 
          END IF
 
@@ -405,8 +414,8 @@ C
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
          CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                  IDUM, IDUM, RDUM, LDUM,
-     &                  ISYLRT, LRTLBL, FRQLRT, IDUM,
+     &                  IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                  ISYLRT, LRTLBL, FRQLRT, IDUMMY,
      &                  ISYOFT, NLRTLBL, MAXTLBL, WORK, LWORK)
       END IF
 
@@ -420,8 +429,8 @@ C======================================================================
 
       IF ( .NOT. L1SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYLRZ, LRZLBL, FRQLRZ, IDUM,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYLRZ, LRZLBL, FRQLRZ, IDUMMY,
      &                 ISYOFZ, NLRZLBL, MAXZLBL, WORK, LWORK)
 
       ELSE
@@ -432,8 +441,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYLRZ, LRZLBL, FRQLRZ, IDUM,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYLRZ, LRZLBL, FRQLRZ, IDUMMY,
      &                 ISYOFZ, NLRZLBL, MAXZLBL, WORK, LWORK)
       END IF
 
@@ -446,6 +455,8 @@ C     CCSLV98, OC
 C------------------------------------------------------------------
 C
       IF (CCSLV) THEN
+C
+         IF (CC3) CALL QUIT('No solvent for CC3...')
 C
          LSLTCVG = .TRUE.
          LSLLCVG = .TRUE.
@@ -552,7 +563,7 @@ C======================================================================
       IF ( .NOT. L1SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSPL1, ISTPL1, EIGPL1, LPRPL1,
-     &                 ISYPL1,  LBLPL1, FRQPL1, IDUM,
+     &                 ISYPL1,  LBLPL1, FRQPL1, IDUMMY,
      &                 ISYOFPL1, NPL1LBL, MAXPL1LBL, WORK, LWORK)
 
       ELSE
@@ -564,7 +575,7 @@ C======================================================================
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSPL1, ISTPL1, EIGPL1, LPRPL1,
-     &                 ISYPL1,  LBLPL1, FRQPL1, IDUM,
+     &                 ISYPL1,  LBLPL1, FRQPL1, IDUMMY,
      &                 ISYOFPL1, NPL1LBL, MAXPL1LBL, WORK, LWORK)
       END IF
 
@@ -600,7 +611,7 @@ C           call CC_FMATRIX to do the F * RE transformations:
 C
             IOPT = 3
             CALL CC_FMATRIX(IFTRAN, NLRM, 'L0 ', 'RE ', IOPT, 'FR ',
-     &                      IDUM, RDUM, 0, WORK, LWORK )
+     &                      IDUMMY, DUMMY, 0, WORK, LWORK )
 
 
          END IF
@@ -612,8 +623,8 @@ C
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 ISYLRM, ILRM, FRQLRM, LDUM,
-     &                 IDUM,   IDUM, RDUM, IDUM,
+     &                 ISYLRM, ILRM, FRQLRM, LDUMMY,
+     &                 IDUMMY,   IDUMMY, DUMMY, IDUMMY,
      &                 ISYOFM, NLRM, MAXM, WORK, LWORK)
       END IF
 
@@ -627,8 +638,8 @@ C======================================================================
 
       IF ( .NOT. M1SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 ISYLRM, ILRM, FRQLRM, LDUM,
-     &                 IDUM,   IDUM, RDUM, IDUM,
+     &                 ISYLRM, ILRM, FRQLRM, LDUMMY,
+     &                 IDUMMY,   IDUMMY, DUMMY, IDUMMY,
      &                 ISYOFM, NLRM, MAXM, WORK, LWORK)
       ELSE
         WRITE (LUPRI,*) 'Skipped first-order M vector (M1) equations'
@@ -637,9 +648,112 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 ISYLRM, ILRM, FRQLRM, LDUM,
-     &                 IDUM,   IDUM, RDUM, IDUM,
+     &                 ISYLRM, ILRM, FRQLRM, LDUMMY,
+     &                 IDUMMY,   IDUMMY, DUMMY, IDUMMY,
      &                 ISYOFM, NLRM, MAXM, WORK, LWORK)
+      END IF
+
+C======================================================================
+C     Make rhs for excited state Lagrangian multipliers E0:
+C======================================================================
+
+      LIST = 'BE '
+      NSTAT = 0
+      ORDER = 0
+      ISIDE = -1
+
+      IF (.NOT.BESKIP) THEN
+
+         IF (NXGRST .GT. 0) THEN
+
+            IF (NXGRST .GT. MAXFDIM) 
+     &        CALL QUIT('Dimension MAXFDIM to small in CC_SOLRSP.')
+
+            ! set up list of 'F matrix' transformations:
+            DO IDXF = 1, NXGRST
+              IFTRAN(1,IDXF) = IXGRST(IDXF)
+              IFTRAN(2,IDXF) = IXGRST(IDXF)
+              IFTRAN(3,IDXF) = IDXF
+            END DO
+
+            ! call CC_FMATRIX to do the LE * B * RE transformations:
+            IOPT = 3
+            CALL CC_FMATRIX(IFTRAN, NXGRST, 'LE ', 'RE ', IOPT, LIST,
+     &                      IDUMMY, DUMMY, 0, WORK, LWORK )
+
+            ! add eta^(0) to complete rhs vectors:
+            NTAMP = NT1AMX
+            IF (.NOT.CCS) NTAMP = NTAMP + NT2AMX
+            KETA  = 1
+            KEND1 = KETA  + NTAMP
+            LWRK1 = LWORK - KEND1
+
+            KBEVC = KEND1
+            KEND2 = KBEVC + NTAMP
+            LWRK2 = LWORK - KEND2
+            IF (LWRK2.LT.0) CALL QUIT('Out of memory in CC_SOLRSP.')
+
+            CALL CC_ETA(WORK(KETA),WORK(KEND1),LWRK1)
+
+            DO IDXF = 1, NXGRST
+              IOPT = 3
+              CALL CC_RDRSP('BE ',IDXF,ISYM0,IOPT,MODEL,
+     &                       WORK(KBEVC),WORK(KBEVC+NT1AMX))
+              CALL DAXPY(NTAMP,ONE,WORK(KETA),1,WORK(KBEVC),1) 
+              IOPT = 3
+              CALL CC_WRRSP('BE ',IDXF,ISYM0,IOPT,MODEL,DUMMY,
+     &               WORK(KBEVC),WORK(KBEVC+NT1AMX),WORK(KEND2),LWRK2)
+              IF (CC3) THEN
+                ! for CC3 also correct the effective RHS vectors
+                IOPT = 24
+                CALL CC_RDRSP('BE ',IDXF,ISYM0,IOPT,MODEL,
+     &                        WORK(KBEVC),WORK(KBEVC+NT1AMX))
+                CALL DAXPY(NTAMP,ONE,WORK(KETA),1,WORK(KBEVC),1) 
+                IOPT = 24
+                CALL CC_WRRSP('BE ',IDXF,ISYM0,IOPT,MODEL,DUMMY,
+     &                WORK(KBEVC),WORK(KBEVC+NT1AMX),WORK(KEND2),LWRK2)
+              END IF
+            END DO
+         END IF
+
+      ELSE
+        WRITE (LUPRI,*) 'Skipped of LE x B x RE transformations'
+        BESKIP = .FALSE.
+      END IF
+
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
+        NSTAT = 1
+        CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
+     &                 IDUMMY,  IXGRST, EIGVAL, LDUMMY,
+     &                 IDUMMY,  IDUMMY, DUMMY, IDUMMY,
+     &                 ISYOFXG, NXGRST, MXXGST, WORK, LWORK)
+      END IF
+
+C======================================================================
+C     Solve equations for excited state lagrange multipliers E0:
+C======================================================================
+
+      LIST = 'E0 '
+      NSTAT = 0
+      ORDER = 0
+      ISIDE = -1
+
+      IF ( .NOT. E0SKIP ) THEN
+        CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
+     &                 IDUMMY,  IDUMMY, DUMMY,  LDUMMY,
+     &                 IDUMMY,  IDUMMY, DUMMY,  IDUMMY,
+     &                 ISYOFXG, NXGRST, MXXGST, WORK, LWORK)
+      ELSE
+        WRITE (LUPRI,*) 'Skipped exc. st. Lagr. mult.  (E0) equations'
+        E0SKIP = .FALSE.
+      END IF
+
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
+        NSTAT = 1
+        CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
+     &                 IDUMMY,  IXGRST, EIGVAL, LDUMMY,
+     &                 IDUMMY,  IDUMMY, DUMMY,  IDUMMY,
+     &                 ISYOFXG, NXGRST, MXXGST, WORK, LWORK)
       END IF
 
 C======================================================================
@@ -673,7 +787,7 @@ C           call CC_FMATRIX to do the LE * B * RE transformations:
 C
             IOPT = 3
             CALL CC_FMATRIX(IFTRAN, NQRN2, 'LE ', 'RE ', IOPT, LIST,
-     &                      IDUM, RDUM, 0, WORK, LWORK )
+     &                      IDUMMY, DUMMY, 0, WORK, LWORK )
 
          END IF
 
@@ -684,8 +798,8 @@ C
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 ISYSN2, ISTN2, EIGN2, LDUM,
-     &                 IDUM,   IDUM, RDUM, IDUM,
+     &                 ISYSN2, ISTN2, EIGN2, LDUMMY,
+     &                 IDUMMY,   IDUMMY, DUMMY, IDUMMY,
      &                 ISYOFN2, NQRN2, MAXQRN2, WORK, LWORK)
       END IF
 
@@ -700,8 +814,8 @@ C======================================================================
 
       IF ( .NOT. N2SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 ISYSN2, ISTN2, EIGN2, LDUM,
-     &                 IDUM,   IDUM, RDUM, IDUM,
+     &                 ISYSN2, ISTN2, EIGN2, LDUMMY,
+     &                 IDUMMY,   IDUMMY, DUMMY, IDUMMY,
      &                 ISYOFN2, NQRN2, MAXQRN2, WORK, LWORK)
       ELSE
         WRITE (LUPRI,*) 'Skipped second-order N vector (N2) equations'
@@ -710,8 +824,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 ISYSN2, ISTN2, EIGN2, LDUM,
-     &                 IDUM,   IDUM, RDUM, IDUM,
+     &                 ISYSN2, ISTN2, EIGN2, LDUMMY,
+     &                 IDUMMY,   IDUMMY, DUMMY, IDUMMY,
      &                 ISYOFN2, NQRN2, MAXQRN2, WORK, LWORK)
       END IF
 
@@ -764,8 +878,8 @@ C======================================================================
 
 
        CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                IDUM, IDUM, RDUM, LDUM,
-     &                ISYLRC, LRCLBL, RDUM, ILRCAU,
+     &                IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                ISYLRC, LRCLBL, DUMMY, ILRCAU,
      &                ISYOFC, NLRCLBL, MAXCLBL, WORK, LWORK)
 
       ELSE
@@ -791,8 +905,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
        CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                IDUM, IDUM, RDUM, LDUM,
-     &                ISYLRC, LRCLBL, RDUM, ILRCAU,
+     &                IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                ISYLRC, LRCLBL, DUMMY, ILRCAU,
      &                ISYOFC, NLRCLBL, MAXCLBL, WORK, LWORK)
       END IF
 
@@ -830,7 +944,7 @@ C          call CC_FMATRIX to do the F * RC transformations:
 C
            IOPT = 3
            CALL CC_FMATRIX(IFTRAN, NLC1LBL, 'L0 ', 'RC ', IOPT, 'FC ',
-     &                     IDUM, RDUM, 0, WORK, LWORK )
+     &                     IDUMMY, DUMMY, 0, WORK, LWORK )
 
          ENDIF
 
@@ -849,8 +963,8 @@ C==================================================================
 
       IF ( .NOT. LCSKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYLC1, LBLLC1, RDUM, ILC1CAU,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYLC1, LBLLC1, DUMMY, ILC1CAU,
      &                 ISYOFLC1, NLC1LBL, MAXLC1LBL, WORK, LWORK)
       ELSE
         WRITE (LUPRI,*) 'Skipped first-order left Cauchy equations'
@@ -875,8 +989,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYLC1, LBLLC1, RDUM, ILC1CAU,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYLC1, LBLLC1, DUMMY, ILC1CAU,
      &                 ISYOFLC1, NLC1LBL, MAXLC1LBL, WORK, LWORK)
       END IF
 
@@ -891,8 +1005,8 @@ C======================================================================
 
       IF ( .NOT. O2SKIP ) THEN
 
-      CALL CCRHSVEC('O2 ',LBLO2,IDUM,IDUM,RDUM,ISYO2,
-     &              FRQO2,LORXO2,IDUM,NO2LBL,MAXO2LBL,WORK,LWORK)
+      CALL CCRHSVEC('O2 ',LBLO2,IDUMMY,IDUMMY,DUMMY,ISYO2,
+     &              FRQO2,LORXO2,IDUMMY,NO2LBL,MAXO2LBL,WORK,LWORK)
 
       ELSE
         WRITE (LUPRI,*)
@@ -902,8 +1016,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYO2, LBLO2, FRQO2, IDUM,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYO2, LBLO2, FRQO2, IDUMMY,
      &                 ISYOFO2, NO2LBL, MAXO2LBL, WORK, LWORK)
       END IF
 
@@ -917,8 +1031,8 @@ C======================================================================
 
       IF ( .NOT. R2SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYR2T, LBLR2T, FRQR2T, IDUM,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYR2T, LBLR2T, FRQR2T, IDUMMY,
      &                 ISYOFT2, NR2TLBL, MAXT2LBL, WORK, LWORK)
       ELSE
         WRITE (LUPRI,*) 'Skipped second-order response (R2) equations'
@@ -927,8 +1041,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYR2T, LBLR2T, FRQR2T, IDUM,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYR2T, LBLR2T, FRQR2T, IDUMMY,
      &                 ISYOFT2, NR2TLBL, MAXT2LBL, WORK, LWORK)
       END IF
 
@@ -944,8 +1058,8 @@ C======================================================================
 
       IF ( .NOT. CO2SKIP ) THEN
 
-        CALL CCRHSVEC('CO2',LBLCO2,IDUM,IDUM,RDUM,ISYCO2,
-     &                RDUM,LDUM,ICO2CAU,NCO2LBL,MAXCO2LBL,WORK,LWORK)
+        CALL CCRHSVEC('CO2',LBLCO2,IDUMMY,IDUMMY,DUMMY,ISYCO2,
+     &                DUMMY,LDUMMY,ICO2CAU,NCO2LBL,MAXCO2LBL,WORK,LWORK)
 
       ELSE
         WRITE (LUPRI,*)
@@ -963,8 +1077,8 @@ C===================================================================
 
       IF ( .NOT. CR2SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYCR2, LBLCR2, RDUM, ICR2CAU,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYCR2, LBLCR2, DUMMY, ICR2CAU,
      &                 ISYOFCR2, NCR2LBL, MAXCR2LBL, WORK, LWORK)
       ELSE
         WRITE (LUPRI,*)
@@ -993,8 +1107,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYCR2, LBLCR2, RDUM, ICR2CAU,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYCR2, LBLCR2, DUMMY, ICR2CAU,
      &                 ISYOFCR2, NCR2LBL, MAXCR2LBL, WORK, LWORK)
       END IF
 
@@ -1018,8 +1132,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYCO2, LBLCO2, RDUM, ICO2CAU,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYCO2, LBLCO2, DUMMY, ICO2CAU,
      &                 ISYOFCO2, NCO2LBL, MAXCO2LBL, WORK, LWORK)
       END IF
 
@@ -1029,8 +1143,8 @@ C     right hande side vector for the second-order multiplier equations
 C======================================================================
       IF ( .NOT. X2SKIP ) THEN
 
-        CALL CC_ETADRV('X2 ',LBLX2,IDUM,IDUM,RDUM,
-     &                 ISYX2,FRQX2,IDUM,NX2LBL,MAXX2LBL,WORK,LWORK)
+        CALL CC_ETADRV('X2 ',LBLX2,IDUMMY,IDUMMY,DUMMY,
+     &                 ISYX2,FRQX2,IDUMMY,NX2LBL,MAXX2LBL,WORK,LWORK)
 
       ELSE
         WRITE (LUPRI,*)
@@ -1070,7 +1184,7 @@ C          call CC_FMATRIX to do the F * R2 transformations:
 C
            IOPT = 3
            CALL CC_FMATRIX(IFTRAN, NL2LBL, 'L0 ', 'R2 ', IOPT, 'F2 ',
-     &                     IDUM, RDUM, 0, WORK, LWORK )
+     &                     IDUMMY, DUMMY, 0, WORK, LWORK )
 
          ENDIF
 
@@ -1089,8 +1203,8 @@ C==================================================================
 
       IF ( .NOT. L2SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYL2, LBLL2, FRQL2, IDUM,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYL2, LBLL2, FRQL2, IDUMMY,
      &                 ISYOFL2, NL2LBL, MAXL2LBL, WORK, LWORK)
       ELSE
         WRITE (LUPRI,*)
@@ -1100,8 +1214,8 @@ C==================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYL2, LBLL2, FRQL2, IDUM,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYL2, LBLL2, FRQL2, IDUMMY,
      &                 ISYOFL2, NL2LBL, MAXL2LBL, WORK, LWORK)
       END IF
 
@@ -1112,8 +1226,8 @@ C     equations
 C======================================================================
       IF ( .NOT. CX2SKIP ) THEN
 
-      CALL CC_ETADRV('CX2',LBLCX2,IDUM,IDUM,RDUM,
-     &               ISYCX2,RDUM,ICX2CAU,NCX2LBL,MAXCX2LBL,WORK,LWORK)
+      CALL CC_ETADRV('CX2',LBLCX2,IDUMMY,IDUMMY,DUMMY,
+     &               ISYCX2,DUMMY,ICX2CAU,NCX2LBL,MAXCX2LBL,WORK,LWORK)
 
       ELSE
         WRITE (LUPRI,*)
@@ -1152,7 +1266,7 @@ C          call CC_FMATRIX to do the F * CR2 transformations:
 C
            IOPT = 3
            CALL CC_FMATRIX(IFTRAN, NCL2LBL, 'L0 ', 'CR2', IOPT, 'CF2',
-     &                     IDUM, RDUM, 0, WORK, LWORK )
+     &                     IDUMMY, DUMMY, 0, WORK, LWORK )
 
          ENDIF
 
@@ -1171,8 +1285,8 @@ C==================================================================
 
       IF ( .NOT. CL2SKIP ) THEN
         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYCL2, LBLCL2, RDUM, ICL2CAU,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYCL2, LBLCL2, DUMMY, ICL2CAU,
      &                 ISYOFCL2, NCL2LBL, MAXCL2LBL, WORK, LWORK)
       ELSE
         WRITE (LUPRI,*)
@@ -1201,8 +1315,8 @@ C======================================================================
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
-     &                 IDUM, IDUM, RDUM, LDUM,
-     &                 ISYCL2, LBLCL2, RDUM, ICL2CAU,
+     &                 IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &                 ISYCL2, LBLCL2, DUMMY, ICL2CAU,
      &                 ISYOFCL2, NCL2LBL, MAXCL2LBL, WORK, LWORK)
       END IF
 
@@ -1223,8 +1337,8 @@ C===================================================================
 C     precalculate right hand side vectors for third-order
 C     cluster amplitude response equations.
 C===================================================================
-      CALL CCRHSVEC('O3 ',LBLO3,IDUM,IDUM,RDUM,ISYO3,
-     &              FRQO3,LORXO3,IDUM,NO3LBL,MAXO3LBL,WORK,LWORK)
+      CALL CCRHSVEC('O3 ',LBLO3,IDUMMY,IDUMMY,DUMMY,ISYO3,
+     &              FRQO3,LORXO3,IDUMMY,NO3LBL,MAXO3LBL,WORK,LWORK)
 
 
 C===================================================================
@@ -1236,8 +1350,8 @@ C===================================================================
       ISIDE = +1  
 
       CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &               IDUM, IDUM, RDUM, LDUM,
-     &               ISYR3T, LBLR3T, FRQR3T, IDUM,
+     &               IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &               ISYR3T, LBLR3T, FRQR3T, IDUMMY,
      &               ISYOFT3, NR3TLBL, MAXT3LBL, WORK, LWORK)
 
 
@@ -1246,8 +1360,8 @@ C     precalculate third-order chi vectors required to set up the
 C     right hande side vector for the third-order multiplier equations
 C======================================================================
 
-      CALL CC_ETADRV('X3 ',LBLX3,IDUM,IDUM,RDUM,
-     &               ISYX3,FRQX3,IDUM,NX3LBL,MAXX3LBL,WORK,LWORK)
+      CALL CC_ETADRV('X3 ',LBLX3,IDUMMY,IDUMMY,DUMMY,
+     &               ISYX3,FRQX3,IDUMMY,NX3LBL,MAXX3LBL,WORK,LWORK)
 
 C======================================================================
 C     precalculate F * R3 transformations required to solve for
@@ -1279,7 +1393,7 @@ C       call CC_FMATRIX to do the F * R3 transformations:
 C
         IOPT = 3
         CALL CC_FMATRIX(IFTRAN, NL3LBL, 'L0 ', 'R3 ', IOPT, 'F3 ',
-     &                  IDUM, RDUM, 0, WORK, LWORK )
+     &                  IDUMMY, DUMMY, 0, WORK, LWORK )
 
       ENDIF
 
@@ -1292,8 +1406,8 @@ C==================================================================
       ISIDE = -1  
 
       CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &               IDUM, IDUM, RDUM, LDUM,
-     &               ISYL3, LBLL3, FRQL3, IDUM,
+     &               IDUMMY, IDUMMY, DUMMY, LDUMMY,
+     &               ISYL3, LBLL3, FRQL3, IDUMMY,
      &               ISYOFL3, NL3LBL, MAXL3LBL, WORK, LWORK)
 
 
@@ -1302,7 +1416,7 @@ C     precalculate right hand side vectors for first-order
 C     right eigenvector response equations.
 C===================================================================
       CALL CCRHSVEC('EO1',LBLER1,ISYSER1,ISTER1,EIGER1,ISYOER1,
-     &              FRQER1,LORXER1,IDUM,NER1LBL,MAXER1LBL,WORK,LWORK)
+     &              FRQER1,LORXER1,IDUMMY,NER1LBL,MAXER1LBL,WORK,LWORK)
 
 
 C===================================================================
@@ -1315,13 +1429,13 @@ C===================================================================
 
       CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
      &               ISYSER1, ISTER1, EIGER1, LPRER1,
-     &               ISYOER1, LBLER1, FRQER1, IDUM,
+     &               ISYOER1, LBLER1, FRQER1, IDUMMY,
      &               ISYOFER1, NER1LBL, MAXER1LBL, WORK, LWORK)
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSER1, ISTER1, EIGER1, LPRER1,
-     &                 ISYOER1, LBLER1, FRQER1, IDUM,
+     &                 ISYOER1, LBLER1, FRQER1, IDUMMY,
      &                 ISYOFER1, NER1LBL, MAXER1LBL, WORK, LWORK)
       END IF
 
@@ -1330,7 +1444,7 @@ C     precalculate right hand side vectors for second-order
 C     right eigenvector response equations.
 C===================================================================
       CALL CCRHSVEC('EO2',LBLER2,ISYSER2,ISTER2,EIGER2,ISYOER2,
-     &              FRQER2,LORXER2,IDUM,NER2LBL,MAXER2LBL,WORK,LWORK)
+     &              FRQER2,LORXER2,IDUMMY,NER2LBL,MAXER2LBL,WORK,LWORK)
 
 
 C===================================================================
@@ -1343,7 +1457,7 @@ C===================================================================
 
       CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
      &               ISYSER2, ISTER2, EIGER2, LPRER2,
-     &               ISYOER2, LBLER2, FRQER2, IDUM,
+     &               ISYOER2, LBLER2, FRQER2, IDUMMY,
      &               ISYOFER2, NER2LBL, MAXER2LBL, WORK, LWORK)
 
 C===================================================================
@@ -1353,10 +1467,10 @@ C===================================================================
       if (lold) then
       WRITE(LUPRI,*) 'CC_SOLRSP: use old CC_ETADRV for EX1...'
       CALL CC_ETADRV('EX1',LBLEL1,ISYSEL1,ISTEL1,EIGEL1,
-     &             ISYOEL1,FRQEL1,IDUM,NEL1LBL,MAXEL1LBL,WORK,LWORK)
+     &             ISYOEL1,FRQEL1,IDUMMY,NEL1LBL,MAXEL1LBL,WORK,LWORK)
       else
        CALL CC_ETADRV1('EX1',LBLEL1,ISYSEL1,ISTEL1,EIGEL1,
-     &               ISYOEL1,FRQEL1,LORXEL1,IDUM,NEL1LBL,MAXEL1LBL,
+     &               ISYOEL1,FRQEL1,LORXEL1,IDUMMY,NEL1LBL,MAXEL1LBL,
      &               WORK,LWORK)
       end if
 
@@ -1370,14 +1484,14 @@ C===================================================================
 
       CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
      &               ISYSEL1, ISTEL1, EIGEL1, LPREL1,
-     &               ISYOEL1, LBLEL1, FRQEL1, IDUM,
+     &               ISYOEL1, LBLEL1, FRQEL1, IDUMMY,
      &               ISYOFEL1, NEL1LBL, MAXEL1LBL, WORK, LWORK)
 
 
       IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSEL1, ISTEL1, EIGEL1, LPREL1,
-     &                 ISYOEL1, LBLEL1, FRQEL1, IDUM,
+     &                 ISYOEL1, LBLEL1, FRQEL1, IDUMMY,
      &                 ISYOFEL1, NEL1LBL, MAXEL1LBL, WORK, LWORK)
       END IF
 
@@ -1386,7 +1500,7 @@ C     precalculate right hand side vectors for second-order
 C     left eigenvector response equations.
 C===================================================================
       CALL CC_ETADRV('EX2',LBLEL2,ISYSEL2,ISTEL2,EIGEL2,
-     &               ISYOEL2,FRQEL2,IDUM,NEL2LBL,MAXEL2LBL,WORK,LWORK)
+     &               ISYOEL2,FRQEL2,IDUMMY,NEL2LBL,MAXEL2LBL,WORK,LWORK)
 
 
 C===================================================================
@@ -1399,7 +1513,7 @@ C===================================================================
 
       CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
      &               ISYSEL2, ISTEL2, EIGEL2, LPRER2,
-     &               ISYOEL2, LBLEL2, FRQEL2, IDUM,
+     &               ISYOEL2, LBLEL2, FRQEL2, IDUMMY,
      &               ISYOFEL2, NEL2LBL, MAXEL2LBL, WORK, LWORK)
 
 C---------------------------------------------------------------------
@@ -1462,6 +1576,23 @@ C
 
          END DO
       ENDIF
+C
+      IF (DEBUG .OR. (IPRINT.GE.5)) THEN
+         DO ILSTNR = 1, NR2TLBL
+            ISYM  = ILSTSYM('R2 ',ILSTNR)
+            KT1   = 1
+            KT2   = KT1  + NT1AM(ISYM)
+            KEND1 = KT2
+            IF (.NOT. CCS) KEND1 = KT2  + NT2AM(ISYM)
+            LEND1 = LWORK - KEND1
+            IF (LEND1.LE.0) CALL QUIT('Out of workspace in cc_solrsp')
+            IOPT  = 3
+            CALL CC_RDRSP('R2 ',ILSTNR,ISYM,IOPT,MODEL1,WORK(KT1),
+     *                    WORK(KT2))
+            CALL CC_TSTAV2(ILSTNR,WORK(KT1),WORK(KEND1),LEND1,0)
+         END DO
+      ENDIF
+
 C
       WRITE (LUPRI,*) 
       WRITE (LUPRI,*) 'Solution of CC response equations completed.'
@@ -1644,16 +1775,21 @@ C
 
              ! cauchy expansion of ground state second order response
              WRITE (LUPRI,'(1X,I5,5X,2(A8,2X),I4,2I10,2X,E20.10,
-     7             E20.10)')
+     &             E20.10)')
      &            ILSTNR,LABEL(ILSTNR,1),LABEL(ILSTNR,2),ISYM,
      &                     ICAU(ILSTNR,1), ICAU(ILSTNR,2),X1,X2
 
            ELSEIF (ORDER.EQ.0 .AND. NSTAT.EQ.1) THEN
 
-             ! excited state vectors, no response
-             WRITE (LUPRI,'(1X,I5,5X,I4,4X,I4,6X,F15.10,F15.10,
-     &             F15.10)')
+            ! excited state vectors, no response
+            IF (LIST(1:3).EQ.'E0 '.OR.LIST(1:3).EQ.'BE ') THEN
+             WRITE (LUPRI,'(1X,I5,5X,I4,4X,I4,6X,F15.10,F15.10,F15.10)')
+     &            ILSTNR,ISTAT(ILSTNR,1),ISYM,
+     &            EIGVAL(ISTAT(ILSTNR,1),1),X1,X2
+            ELSE
+             WRITE (LUPRI,'(1X,I5,5X,I4,4X,I4,6X,F15.10,F15.10,F15.10)')
      &            ILSTNR,ISTAT(ILSTNR,1),ISYM,EIGVAL(ILSTNR,1),X1,X2
+            END IF
 
            ELSEIF (ORDER.EQ.1 .AND. NSTAT.EQ.1) THEN
 

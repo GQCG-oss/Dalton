@@ -30,7 +30,7 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #######################################################################
 cat > hyp4_ccsd.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 **WAVE FUNCTIONS
@@ -90,7 +90,7 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final    HF energy:" $log | $GREP "\-100.00891992" | wc -l`
+CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-100.00891992" | wc -l`
 CRIT2=`$GREP "Total SCF   energy:                  \-100.00891992" $log | wc -l`
 CRIT3=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
 CRIT4=`$GREP "Total CCSD  energy:                  \-100.19779093" $log | wc -l`

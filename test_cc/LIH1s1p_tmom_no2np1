@@ -6,7 +6,7 @@ cat > LIH1s1p_tmom_no2np1.info <<%EOF%
    LIH1s1p_tmom_no2np1
    -----------
    Molecule:         LIH
-   Thoery Level:     CC3 / (two-function basis)
+   Theory Level:     CC3 / (two-function basis)
    Test Purpose:     Transition moment between the ground and an
                      excited state; non-totally symmetric operator.
                      (NOT exploitng 2n+1 rule!)
@@ -39,7 +39,7 @@ f   3    1
 #######################################################################
 cat > LIH1s1p_tmom_no2np1.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .NOSUP
 .DIPLEN

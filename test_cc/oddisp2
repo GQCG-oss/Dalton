@@ -29,7 +29,7 @@ Ne    0.0000000000000000  0.0000000000000000 0.00000000000000000
 #######################################################################
 cat > oddisp2.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .ANGMOM
@@ -77,7 +77,7 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final    HF energy:" $log | $GREP "\-128.49634973" | wc -l`
+CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-128.49634973" | wc -l`
 CRIT2=`$GREP "Total SCF   energy:                  \-128.49634973" $log | wc -l`
 CRIT3=`$GREP "Total MP2   energy:                  \-128.70540959" $log | wc -l`
 CRIT4=`$GREP "Total CCSD  energy:                  \-128.70848783" $log | wc -l`

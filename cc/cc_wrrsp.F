@@ -46,8 +46,8 @@ C             - MODFILE is written to file header as a Label to
 C               identify the CC model.
 C             - IOPT is used as bit wise flags to determine 
 C               which parts of the vector are to be written on file:
-C                 1.bit  (1): singles part   VEC2
-C                 2.bit  (2): doubles part   VEC1
+C                 1.bit  (1): singles part   VEC1
+C                 2.bit  (2): doubles part   VEC2
 C                 3.bit  (4): cphf part      VEC0
 C                 4.bit  (8): CC3 eff. singles part VEC1
 C                 5.bit (16): CC3 eff. doubles part VEC2
@@ -166,6 +166,8 @@ C---------------------------------------------------------------------*
       CHARACTER SUBRNAME*(8)
       INTEGER LUSAVE
       PARAMETER (SUBRNAME = 'CC_WRRSP')
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
  
       CHARACTER LIST*(*), LISTI*(4)
       CHARACTER FILEX*(10)
@@ -309,10 +311,12 @@ C----------------------------------------------------------------------
 
       REWIND(LUSAVE,IOSTAT=IOS,ERR=992)
 
-      KORBITAL = 1
-      KSINGLE  = 1
-      KDOUBLE  = 1
-      KEND     = 1
+      KORBITAL  = 1
+      KSINGLE   = 1
+      KDOUBLE   = 1
+      KSINGLEFF = 1
+      KDOUBLEFF = 1
+      KEND      = 1
 
       IF (LEXISTS .AND. LIST(1:2).NE.'R0') THEN
 C
@@ -340,8 +344,10 @@ C
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KORBITAL-1+I),I=1,2*NALLAI(ISYM))
+            IF (LOCDBG) WRITE(LUPRI,*) 'read orbital part'
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
+            IF (LOCDBG) WRITE(LUPRI,*) 'skipped orbital part'
          END IF
          NVECR = 1
 C
@@ -355,8 +361,10 @@ C
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KSINGLE-1+I),I=1,NT1AM(ISYM))
+            IF (LOCDBG) WRITE(LUPRI,*) 'read singles part'
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
+            IF (LOCDBG) WRITE(LUPRI,*) 'skipped singles part'
          END IF
          NVECR = 2
 C
@@ -377,9 +385,11 @@ C
             ELSE
               READ(LUSAVE,ERR=888,END=888) 
             END IF
+            IF (LOCDBG) WRITE(LUPRI,*) 'read doubles part'
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
             READ(LUSAVE,ERR=888,END=888) 
+            IF (LOCDBG) WRITE(LUPRI,*) 'skipped doubles part'
          END IF
          NVECR = 3
 C
@@ -401,6 +411,8 @@ C    &            (WORK(KDOUBLE+NT2AM(ISYM)-1+I),I=1,NT2AMA(ISYM))
             END IF
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
+            READ(LUSAVE,ERR=888,END=888) 
+            IF (LOCDBG) WRITE(LUPRI,*) 'read r12 doubles part'
          END IF
          NVECR = 4
 C
@@ -414,8 +426,10 @@ C
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KSINGLEFF-1+I),I=1,NT1AM(ISYM))
+            IF (LOCDBG) WRITE(LUPRI,*) 'read eff. singles part'
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
+            IF (LOCDBG) WRITE(LUPRI,*) 'skipped eff. singles part'
          END IF
          NVECR = 5
 C
@@ -434,8 +448,11 @@ C
               READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KDOUBLEFF+NT2AM(ISYM)-1+I),I=1,NT2AMA(ISYM))
             END IF
+            IF (LOCDBG) WRITE(LUPRI,*) 'read eff. doubles part'
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
+            READ(LUSAVE,ERR=888,END=888) 
+            IF (LOCDBG) WRITE(LUPRI,*) 'skipped eff. doubles part'
          END IF
          NVECR = 6
 
@@ -987,6 +1004,9 @@ C---------------------------------------------------------------------*
 #include <ccsdsym.h>
 #include <ccfro.h>
 #include <ccexci.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
  
       INTEGER IDXLST, ISYM, IOPT, IOPTRW, IMUL
       CHARACTER LIST*(*)
@@ -994,15 +1014,15 @@ C---------------------------------------------------------------------*
       INTEGER LWORK
 
 #if defined (SYS_CRAY)
-      REAL WORK(LWORK)
+      REAL WORK(LWORK), DDOT
       REAL VEC0(*), VEC1(*),VEC2(*)
 #else
-      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION WORK(LWORK), DDOT
       DOUBLE PRECISION VEC0(*), VEC1(*),VEC2(*)
 #endif
  
       CHARACTER MODFIL*(10)
-      INTEGER KVEC0, KVEC1, KVEC2, KEND, LEND
+      INTEGER KVEC0, KVEC1, KVEC2, KEND, LEND, NTAMP
 
 *---------------------------------------------------------------------*
 * allocate work space and read old vector from file:
@@ -1068,10 +1088,21 @@ C        CALL CC_RDHFRSP(LIST,IDXLST,ISYM,WORK(KVEC0))
 C        IOPTRW = IOPTRW + 4
 C     END IF
 
+      IF (LOCDBG) THEN
+        NTAMP = NT1AM(ISYM)
+        IF (IOPT.NE.1 .AND. IOPT.NE.8) NTAMP = NTAMP + NT2AM(ISYM)
+        WRITE(LUPRI,*) 'CC_WARSP> LIST,IDXLST,IOPT:',LIST,IDXLST,IOPTRW
+        WRITE(LUPRI,*) 'CC_WARSP> norm^2(vec-old):',
+     &    DDOT(NTAMP,WORK(KVEC1),1,WORK(KVEC1),1)
+        WRITE(LUPRI,*) 'CC_WARSP> norm^2(vec-new):',
+     &    DDOT(NTAMP,VEC1,1,VEC1,1)
+      END IF
+
 * check return value of read option:
       IF (IOPTRW .LT. IOPT) THEN
         WRITE (LUPRI,*) 'IOPT in CC_WARSP incompatible with vector '//
      &                  'on file.'
+        WRITE (LUPRI,*) 'IOPTRW, IOPT:',IOPTRW,IOPT
         CALL QUIT('IOPT in CC_WARSP incompatible with vector on file.')
       END IF
 
@@ -1095,6 +1126,11 @@ C     END IF
      &              WORK(KVEC0),WORK(KVEC1),WORK(KVEC2),
      &              WORK(KEND),LEND)
   
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'CC_WARSP> norm^2(vec-written):',
+     &    DDOT(NTAMP,WORK(KVEC1),1,WORK(KVEC1),1)
+      END IF
+
       RETURN
 
       END 

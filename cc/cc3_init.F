@@ -181,15 +181,15 @@ C
       RETURN
       END
 C  /* Deck get_fockx */
-      SUBROUTINE GET_FOCKX(FOCKX,LABELX,IDLSTX,ISYMX,LAMP0,LAMH0,
-     *                     WORK,LWORK)
+      SUBROUTINE GET_FOCKX(FOCKX,LABELX,IDLSTX,ISYMX,LAMPY,ISYMPY,
+     *                         LAMHZ,ISYMHZ,WORK,LWORK)
 *
 ***********************************************************************
 *                                                                     *
-*     Read in matrix with property integrals and transform to         *
-*     Lambda_0 basis.                                                *
+*     Read in matrix with property integrals (FOCKX) in AO basis      *
+*     and transform using Lambda_pY and Lambda_hZ.
 *                                                                     *
-*     Filip Pawlowski, 05-Dec-2002, Aarhus                            *
+*     Poul Jorgensen, Filip Pawlowski, Spring-2003, Aarhus
 *                                                                     *
 ***********************************************************************
 C
@@ -198,53 +198,72 @@ C
 #include <priunit.h>
 #include <ccsdsym.h>
 #include <ccl1rsp.h>
+#include <ccorb.h>
 C
       INTEGER ISYMX,IRREP,ISYM
       INTEGER LWORK,KEND1,LWRK1
       INTEGER IERR
       INTEGER IDLSTX
+      INTEGER ISYMPY,ISYMHZ
+C
+      INTEGER ISYMYZ,ISYMXYZ,LENFCKX,KFOCKX
 C
       CHARACTER LABELX*(*)
 C
 #if defined (SYS_CRAY) 
-      REAL FOCKX(*),LAMP0(*),LAMH0(*),WORK(LWORK)
+      REAL FOCKX(*),LAMPY(*),LAMHZ(*),WORK(LWORK)
 #else
-      DOUBLE PRECISION FOCKX(*),LAMP0(*),LAMH0(*),WORK(LWORK)
+      DOUBLE PRECISION FOCKX(*),LAMPY(*),LAMHZ(*),WORK(LWORK)
 #endif
 C
-      CALL QENTER('GET_FOCKX')
+      CALL QENTER('FCKX')
 C
-C--------------------------------
-C     Initial test of consistency
-C--------------------------------
+      ISYMYZ  = MULD2H(ISYMPY,ISYMHZ)
+      ISYMXYZ = MULD2H(ISYMX,ISYMYZ)
 C
-C     IF ( ((ISYMX.NE.ISYLRZ(IDLSTX)).OR.(LABELX.NE.LRZLBL(IDLSTX))) ) THEN
-C        CALL QUIT('Symmetry/operator-label inconsistency in GET_FOCKX')
-C     END IF
+      LENFCKX = MAX(N2BST(ISYMX),N2BST(ISYMXYZ))
+C
+      KFOCKX = 1
+      KEND1  = KFOCKX + LENFCKX
+      LWRK1  = LWORK - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,*)'Memory available: LWORK = ', LWORK
+         WRITE(LUPRI,*)'Memory needed:    KEND1 = ', KEND1
+         CALL QUIT('Insufficient memory in GET_FOCKX')
+      END IF
 C
 C--------------------------------------
-C     Read property integrals from file
+C     Read property integrals (FOCKX) in AO basis from file
 C--------------------------------------
 C
-      CALL CCPRPAO(LABELX,FOCKX,IRREP,ISYM,IERR,WORK,LWORK)
+      CALL CCPRPAO(LABELX,WORK(KFOCKX),IRREP,ISYM,IERR,
+     *             WORK(KEND1),LWRK1)
 C
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
           CALL QUIT('GET_FOCKX: error reading oper. ',LABELX)
       ELSE IF (IERR.LT.0) THEN
-          CALL DZERO(FOCKX,N2BST(ISYMX))
+          CALL DZERO(WORK(KFOCKX),LENFCKX)
       END IF
 C
 C---------------------------------------------------
-C     Transform property integrals to Lambda_0 basis
+C     Transform property integrals (FOCKX) using Lambda_pY and Lambda_hZ
 C---------------------------------------------------
 C
-      CALL CC_FCKMO(FOCKX,LAMP0,LAMH0,WORK,LWORK,ISYMX,1,1)
+      CALL CC_FCKMO(WORK(KFOCKX),LAMPY,LAMHZ,WORK(KEND1),LWRK1,
+     *              ISYMX,ISYMPY,ISYMHZ)
+C
+C---------------------------------
+C     Copy result to FOCKX array
+C---------------------------------
+C
+      CALL DCOPY(N2BST(ISYMXYZ),WORK(KFOCKX),1,FOCKX,1)
 C
 C-------------
 C     End
 C-------------
 C
-      CALL QEXIT('GET_FOCKX')
+      CALL QEXIT('FCKX')
 C
       RETURN
       END
@@ -697,7 +716,8 @@ C
       RETURN
       END
 C  /* Deck intocc_t3barx */
-      SUBROUTINE INTOCC_T3BARX(LUTOC,FNTOC,ISYHAM,LAMH0,ISYM0,ISYINT0,
+      SUBROUTINE INTOCC_T3BARX(LSKIPL1R,
+     *                         LUTOC,FNTOC,ISYHAM,LAMH0,ISYM0,ISYINT0,
      *                         LAMHY,ISYMY,ISYINTY,W3BXOG1,W3BXOL1,
      *                         W3BXOGX1,W3BXOLX1,WORK,LWORK)
 *
@@ -725,6 +745,8 @@ C
 C
 #include <priunit.h>
 #include <ccsdsym.h>
+C
+      LOGICAL LSKIPL1R
 C
       INTEGER ISYHAM,ISYM0,ISYINT0,ISYMY,ISYINTY,LWORK,LUTOC
       INTEGER KINTOC,KEND1,LWRK1,IOFF
@@ -778,8 +800,10 @@ C-----------------------------
 C     LambdaH_Y transformation
 C-----------------------------
 C
-      CALL INTOCC_T3BARX2(WORK(KINTOC),LAMHY,ISYMY,ISYINTY,W3BXOGX1,
-     *                    W3BXOLX1,WORK(KEND1),LWRK1)
+      IF (.NOT. LSKIPL1R) THEN
+        CALL INTOCC_T3BARX2(WORK(KINTOC),LAMHY,ISYMY,ISYINTY,W3BXOGX1,
+     *                      W3BXOLX1,WORK(KEND1),LWRK1)
+      END IF
 C
 C-------------
 C     End
@@ -1157,7 +1181,8 @@ C
       RETURN
       END
 C  /* Deck intvir_t3barx_d */
-      SUBROUTINE INTVIR_T3BARX_D(ISYINT,LU3VI,FN3VI,LU3VI2,FN3VI2,
+      SUBROUTINE INTVIR_T3BARX_D(LSKIPL1R,
+     *                           ISYINT,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                           LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
      *                           W3BXVDGX1,W3BXVDG1,W3BXVDGX2,W3BXVDG2,
      *                           W3BXVDLX1,W3BXVDL1,W3BXVDLX2,W3BXVDL2,
@@ -1190,6 +1215,8 @@ C
 #include <ccsdsym.h>
 #include <ccorb.h>
 C
+      LOGICAL LSKIPL1R
+C
       INTEGER ISYINT,ISYM0,ISYMY,ISYMD,LWORK
       INTEGER LU3VI2,LU3FOP,LU3FOP2,LU3VI
       INTEGER KINTVI,KEND1,LWRK1,IOFF
@@ -1212,10 +1239,16 @@ C
       CALL QENTER('INTVIR_T3BARX_D')
 C
       ISYCKB  = MULD2H(ISYINT,ISYMD)
-      ISYCKBY = MULD2H(ISYMY,ISYMD)
+      IF (.NOT. LSKIPL1R) THEN
+         ISYCKBY = MULD2H(ISYMY,ISYMD)
+      END IF
 C
       KINTVI = 1
-      KEND1  = KINTVI + MAX(NCKA(ISYCKB),NCKA(ISYCKBY))
+      IF (.NOT. LSKIPL1R) THEN
+         KEND1  = KINTVI + MAX(NCKA(ISYCKB),NCKA(ISYCKBY))
+      ELSE
+         KEND1  = KINTVI + NCKA(ISYCKB)
+      ENDIF
       LWRK1  = LWORK  - KEND1 
 C
       IF (LWRK1 .LT. 0) THEN
@@ -1240,8 +1273,10 @@ C
 C     Transform g(c1^h k1^p | delta b2^h) integrals
 C     to g(c1^h k1^p | d2^pY b2^h) with lampY
 C
-      CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDGX1,
-     *                      ISYMD,D,WORK(KEND1),LWRK1)
+      IF (.NOT. LSKIPL1R) THEN
+        CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDGX1,
+     *                        ISYMD,D,WORK(KEND1),LWRK1)
+      END IF
 C
 C       -----------------
 C       LAMP0 TRANSFORMED
@@ -1268,8 +1303,10 @@ C       LAMPY TRANSFORMED
 C       -----------------
 C
 C
-      CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDGX2,
-     *                      ISYMD,D,WORK(KEND1),LWRK1)
+      IF (.NOT. LSKIPL1R) THEN
+       CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDGX2,
+     *                       ISYMD,D,WORK(KEND1),LWRK1)
+      END IF
 C
 C       -----------------
 C       LAMP0 TRANSFORMED
@@ -1292,8 +1329,10 @@ C
 C          Transform L(c1^h k1^p | delta b2^h) integrals
 C          to L(c1^h k1^p | d2^pY b2^h) 
 C
-      CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDLX1,
-     *                      ISYMD,D,WORK(KEND1),LWRK1)
+      IF (.NOT. LSKIPL1R) THEN
+       CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDLX1,
+     *                       ISYMD,D,WORK(KEND1),LWRK1)
+      END IF
 C
 C                     -----------------
 C                     LAMP0 TRANSFORMED
@@ -1316,8 +1355,10 @@ C                     -----------------
 C                     LAMPY TRANSFORMED
 C                     -----------------
 C
-      CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDLX2,
-     *                      ISYMD,D,WORK(KEND1),LWRK1)
+      IF (.NOT. LSKIPL1R) THEN
+       CALL INTVIR_T3BARX_D2(WORK(KINTVI),LAMPY,ISYMY,ISYINT,W3BXVDLX2,
+     *                       ISYMD,D,WORK(KEND1),LWRK1)
+      END IF
 C
 C
 C                     -----------------
@@ -1645,7 +1686,8 @@ C
       RETURN
       END
 C  /* Deck get_t3barx_bd */
-      SUBROUTINE GET_T3BARX_BD(TMAT,ISTMAT,FOCKY,ISYFKY,WMAT,ISWMAT,
+      SUBROUTINE GET_T3BARX_BD(NOVIRT,
+     *                         TMAT,ISTMAT,FOCKY,ISYFKY,WMAT,ISWMAT,
      *                         L2TP,ISYML2,FCKYCK,ISYFCKY,W3BXVDLX2,
      *                         W3BXVDLX1,W3BXVDGX2,W3BXVDGX1,W3BXOLX1,
      *                         W3BXOGX1,ISINT2Y,INDAJLB,INDAJLC,INDSQ,
@@ -1672,6 +1714,7 @@ C
 #include <ccsdsym.h>
 #include <ccorb.h>
 C
+      LOGICAL NOVIRT
       INTEGER ISTMAT,ISYFKY,ISWMAT,ISYML2,ISYFCKY,ISINT2Y,ISYML2Y
       INTEGER ISYFCKBA,ISINT2,ISYML1Y,ISINT1,ISYMB,ISYMD,ISYMT3
       INTEGER INDAJLB,INDAJLC,LENSQ,INDSQ(LENSQ,6),INDAJLBY,INDAJLCY
@@ -1713,8 +1756,12 @@ C
 C
 C    calculate     <L3|[Y^,tau3]|HF>
 C
-      CALL WBARBD_V(TMAT,ISTMAT,FOCKY,ISYFKY,WMAT,ISWMAT,WORK,LWORK)
+      IF (.NOT.NOVIRT) THEN
+         !virtual part
+         CALL WBARBD_V(TMAT,ISTMAT,FOCKY,ISYFKY,WMAT,ISWMAT,WORK,LWORK)
+      END IF
 C
+      !occupied part
       CALL WBARBD_O(TMAT,ISTMAT,FOCKY,ISYFKY,WMAT,ISWMAT,WORK,LWORK)
 C 
 C    calculate     <L2|[Y,tau3]|HF>
@@ -1868,6 +1915,92 @@ C
 C
       RETURN
       END
+C  /* Deck get_e3_bd */
+      SUBROUTINE GET_E3_BD(ISYMT3,WMAT,ISWMAT,TMAT,
+     *                      T2TP,ISYMT2,T2TPX,ISYMT2X,
+     *                      W3XVDG1,W3XVDG2,W3XOG1,ISYINT,
+     *                      W3XVDGX1,W3XVDGX2,W3XOGX1,ISYINTX,
+     *                      FREQX,DIAG,FOCKD,
+     *                      INDSQ,LENSQ,B,ISYMB,D,ISYMD,WORK,LWORK)
+*
+***********************************************************************
+*                                                                     *
+*     Construct e3 eigenvectors for fixed B an D using W              *
+*     intermediates 
+*                                                                     *
+*     USE ONLY INSIDE BD-LOOPS
+*                                                                     *
+*     Filip Pawlowski, 12-Nov-2003, Aarhus                            *
+*                                                                     *
+***********************************************************************
+C
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER ISYMT3,ISWMAT,ISYMT2,ISYMT2X,ISYINT
+      INTEGER ISYINTX,LENSQ,INDSQ(LENSQ,6),ISYMB,ISYMD,LWORK
+      INTEGER ISYMBD
+C
+#if defined (SYS_CRAY) 
+      REAL WMAT(*),TMAT(*),T2TP(*),T2TPX(*),DIAG(*),FOCKD(*)
+      REAL W3XVDG1(*),W3XVDG2(*),W3XOG1(*)
+      REAL W3XVDGX1(*),W3XVDGX2(*),W3XOGX1(*)
+      REAL WORK(LWORK)
+      REAL FREQX
+#else
+      DOUBLE PRECISION WMAT(*),TMAT(*),T2TP(*),T2TPX(*)
+      DOUBLE PRECISION DIAG(*),FOCKD(*)
+      DOUBLE PRECISION W3XVDG1(*),W3XVDG2(*),W3XOG1(*)
+      DOUBLE PRECISION W3XVDGX1(*),W3XVDGX2(*),W3XOGX1(*)
+      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION FREQX
+#endif
+C
+      CALL QENTER('E3BD')
+C
+C------------------------------------------
+C     Initital test of symmetry consistency
+C------------------------------------------
+C
+      ISYMBD = MULD2H(ISYMB,ISYMD)
+C
+      IF (MULD2H(ISYMT3,ISYMBD) .NE. ISWMAT) THEN
+         WRITE(LUPRI,*)'ISYMT3 = ', ISYMT3
+         WRITE(LUPRI,*)'ISWMAT = ', ISWMAT
+         CALL QUIT('Symmetry inconsistency in GET_E3_BD')
+      END IF
+C
+C------------------------------------------------------
+C     <mu3|[H,E2]|HF> + <mu3|[[H,E1],T20]|HF> 
+C------------------------------------------------------
+C
+      CALL WBD_GROUND(T2TPX,ISYMT2X,TMAT,W3XVDG1,W3XVDG2,W3XOG1,ISYINT,
+     *                WMAT,WORK,LWORK,INDSQ,LENSQ,ISYMB,B,ISYMD,D)
+C
+      CALL WBD_GROUND(T2TP,ISYMT2,TMAT,W3XVDGX1,W3XVDGX2,W3XOGX1,
+     *                ISYINTX,WMAT,WORK,LWORK,INDSQ,LENSQ,ISYMB,B,
+     *                ISYMD,D)
+C
+C------------------------------------------------
+C     Divide by the energy difference and
+C     remove the forbidden elements
+C------------------------------------------------
+C
+      CALL WBD_DIA(B,ISYMB,D,ISYMD,FREQX,ISWMAT,WMAT,DIAG,FOCKD) 
+C
+      CALL T3_FORBIDDEN(WMAT,ISYMT3,ISYMB,B,ISYMD,D) 
+C
+C-------------
+C     End
+C-------------
+C
+      CALL QEXIT('E3BD')
+C
+      RETURN
+      END
 C  /* Deck get_m3bar_bd */
       SUBROUTINE GET_M3BAR_BD(TMAT,WMAT,ISWMAT,L2TP,ISYML2,FCKYCK,
      *                        ISYFCKY,W3BXVDLX2,W3BXVDLX1,W3BXVDGX2,
@@ -1954,6 +2087,7 @@ C    calculate     <M1|[H^,tau3]|HF>
 C
       CALL WBARBD_L1(M1,ISYMM1,TMAT,XIAJB,ISINT1,WMAT,WORK,LWORK,
      *               INDSQ,LENSQ,ISYMB,B,ISYMD,D)
+
 C
 C------------------------------------------------
 C     Divide by the energy difference and

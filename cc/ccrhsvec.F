@@ -73,7 +73,8 @@ c /* deck CCRHSVEC */
       CHARACTER*(18) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCRHSVEC> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE. )
+      PARAMETER (LOCDBG = .TRUE. )
+
 
       CHARACTER TYPE*(*)
 
@@ -98,7 +99,8 @@ c /* deck CCRHSVEC */
       PARAMETER (ZERO = 0.0d0)
 
       CHARACTER MODEL*(10)
-      INTEGER IOPT, ISYM, IVEC, MPERM, NSTAT, ORDER, IDUM
+      LOGICAL NEW_O2
+      INTEGER IOPT, ISYM, IVEC, MPERM, NSTAT, ORDER, IDUM, IOPTE
       INTEGER MXTRAN,MXDTRAN,MXCTRAN,MXBTRAN,MXBATRAN,MXAATRAN,MXXETRAN
       INTEGER MXCATRAN
       INTEGER KDTRAN,KCTRAN,KB1TRAN,KB2TRAN,KBA1TRAN,KAA1TRAN,KXETRAN
@@ -133,6 +135,8 @@ c /* deck CCRHSVEC */
       IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
          CALL QUIT('CCRHSVEC called for unknown Coupled Cluster model.')
       END IF
+
+      NEW_O2 = .FALSE.
   
       IF (TYPE(1:3).EQ.'O1 ') THEN
         ORDER = 1
@@ -142,6 +146,8 @@ c /* deck CCRHSVEC */
         ORDER = 2
         NSTAT = 0
         MPERM = 2
+        ! compute complete O2 vector in B matrix module
+        NEW_O2 = .TRUE.
       ELSE IF (TYPE(1:2).EQ.'O3') THEN
         ORDER = 3
         NSTAT = 0
@@ -216,6 +222,7 @@ c /* deck CCRHSVEC */
 *---------------------------------------------------------------------*
       CALL CC_RHS_SETUP(TYPE,NSTAT,ORDER,LABEL,ISTAT,EIGV,ISYMO,FREQS,
      &                  LORX, ICAU, NVEC, MAXVEC, MXTRAN, 
+     &                  NEW_O2,
      &                  WORK(KDTRAN),  NDTRAN,
      &                  WORK(KCTRAN),  NCTRAN,
      &                  WORK(KB1TRAN), NB1TRAN,
@@ -262,6 +269,11 @@ c /* deck CCRHSVEC */
         ELSE IF (CCSD) THEN
            MODEL = 'CCSD      '
            IOPT  = 3
+        ELSE IF (CC3) THEN
+           MODEL = 'CC3       '
+           ! intialize usual and effective rhs vector
+           IOPT  = 3
+           IOPTE = 24
         ELSE
            CALL QUIT('Unkown coupled cluster model in CCRHSVEC.')
         END IF
@@ -270,6 +282,14 @@ c /* deck CCRHSVEC */
          ISYM = ILSTSYM(TYPE,IVEC)
          CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPT,MODEL,IDUMMY,
      &                 WORK(KRHS1),WORK(KRHS2),WORK(KEND1),LEND1)
+         IF (CCSDT) THEN
+           CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTE,MODEL,IDUMMY,
+     &                   WORK(KRHS1),WORK(KRHS2),WORK(KEND1),LEND1)
+           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTE,MODEL,
+     &                   WORK(KRHS1),WORK(KRHS2))
+*          write(lupri,*) 'initialized effective vector:',
+*    &      ddot(nt1am(isym)+nt2am(isym),work(krhs1),1,work(krhs1),1)
+         END IF
         END DO
       
       END IF
@@ -322,6 +342,7 @@ c /* deck CCRHSVEC */
      &        'NORM^2 of RHS vectors after C matrix terms:'
         DO IVEC = 1, NVEC
           IOPT = 3
+          IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
@@ -338,33 +359,33 @@ c /* deck CCRHSVEC */
       IF      ( TYPE(1:2).EQ.'O4' ) THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R3 ','R1 ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, WORK(KEND0), LEND0  )
+     &               IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0  )
         IOPT = 4
         CALL CC_BMAT(WORK(KB2TRAN), NB2TRAN,'R2 ','R2 ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, WORK(KEND0), LEND0 )
+     &               IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:2).EQ.'O3' ) THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R2 ','R1 ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, WORK(KEND0), LEND0 )
+     &               IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:2).EQ.'O2' ) THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R1 ','R1 ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, WORK(KEND0), LEND0 ) 
+     &               IDUM, RDUM, 0, NEW_O2,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:3).EQ.'EO2') THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R2 ','RE ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, WORK(KEND0), LEND0 ) 
+     &               IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 ) 
         IOPT = 4
         CALL CC_BMAT(WORK(KB2TRAN), NB2TRAN,'R1 ','ER1',IOPT,TYPE,
-     &               IDUM, RDUM, 0, WORK(KEND0), LEND0 ) 
+     &               IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 ) 
       ELSE IF ( TYPE(1:3).EQ.'EO1') THEN
         IOPT = 4
         CALL CC_BMAT(WORK(KB1TRAN), NB1TRAN,'R1 ','RE ',IOPT,TYPE,
-     &               IDUM, RDUM, 0, WORK(KEND0), LEND0 ) 
+     &               IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 ) 
       ELSE IF ( TYPE(1:3).EQ.'CO2' ) THEN
         IOPT = 4
         CALL CC_BMATRIX(WORK(KB1TRAN), NB1TRAN,'RC ','RC ',IOPT,TYPE,
-     &                  IDUM, RDUM, 0, WORK(KEND0), LEND0 ) 
+     &                  IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 ) 
       END IF
 
       IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
@@ -372,6 +393,7 @@ c /* deck CCRHSVEC */
      &        'NORM^2 of RHS vectors after B matrix terms:'
         DO IVEC = 1, NVEC
           IOPT = 3
+          IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
@@ -417,6 +439,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &        'NORM^2 of RHS vectors after B{O} matrix terms:'
         DO IVEC = 1, NVEC
           IOPT = 3
+          IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
@@ -433,36 +456,36 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
       IF      ( TYPE(1:2).EQ.'O4' ) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','R3 ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA2TRAN),NAA2TRAN,'o2 ','R2 ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:2).EQ.'O3' ) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','R2 ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA2TRAN),NAA2TRAN,'o2 ','R1 ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
-      ELSE IF ( TYPE(1:2).EQ.'O2' ) THEN
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
+      ELSE IF ( TYPE(1:2).EQ.'O2' .AND. (.NOT.NEW_O2)) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','R1 ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:3).EQ.'EO2' ) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','ER1',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA2TRAN),NAA2TRAN,'o2 ','RE ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:3).EQ.'EO1' ) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','RE ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
       ELSE IF ( TYPE(1:3).EQ.'CO2' ) THEN
         IOPT = 4
         CALL CC_AAMAT(WORK(KAA1TRAN),NAA1TRAN,'o1 ','RC ',IOPT,TYPE,
-     &                WORK(KEND0), LEND0 )
+     &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
       END IF
 
       IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
@@ -470,6 +493,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &        'NORM^2 of RHS vectors after A{O} matrix terms:'
         DO IVEC = 1, NVEC
           IOPT = 3
+          IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
@@ -518,6 +542,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &       'NORM^2 of RHS vectors after Xi{O} matrix terms:'
         DO IVEC = 1, NVEC
           IOPT = 3
+          IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
@@ -587,6 +612,7 @@ c /* deck CC_RHS_SETUP */
       SUBROUTINE CC_RHS_SETUP(TYPE,NSTAT,ORDER,LAB,ISTAT,
      &                        EIGV,ISYMO,FREQ,LORX,ICAU,
      &                        NVEC,MAXVEC,MXTRAN, 
+     &                        NEW_O2,
      &                        IDTRAN,  NDTRAN,
      &                        ICTRAN,  NCTRAN,
      &                        IB1TRAN, NB1TRAN,
@@ -637,7 +663,7 @@ c /* deck CC_RHS_SETUP */
     
       CHARACTER*(8) LAB(MAXVEC,*)
       INTEGER ISTAT(MAXVEC,*), ICAU(MAXVEC,*), ISYMO(MAXVEC,*)
-      LOGICAL LORX(MAXVEC,*)
+      LOGICAL LORX(MAXVEC,*), NEW_O2
 
 #if defined (SYS_CRAY)
       REAL FREQ(MAXVEC,*), EIGV(MAXVEC)
@@ -1182,7 +1208,9 @@ C         END IF
      &   ' - ',NBA1TRAN+NBA2TRAN, ' B{O} matrix transformations ',
      &   ' - ',NAA1TRAN+NAA2TRAN, ' A{O} matrix transformations ',
      &   ' - ',NXETRAN,           'Xi{O} vector calculations    ' 
-      WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
+      IF (NEW_O2) WRITE(LUPRI,'(14X,A)') 
+     &   '(A{O} matrix included in B matrix)'
+      WRITE(LUPRI,'(3X,A/,/)') 'will be performed.'
 
 
 * D matrix transformations:

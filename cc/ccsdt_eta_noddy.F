@@ -60,9 +60,10 @@ C
 #include <ccsdsym.h>
 #include <ccfield.h>
 #include <ccorb.h>
+#include <ccnoddy.h>
 
       LOGICAL LOCDBG, FD_TEST, XI_ONLY
-      PARAMETER (LOCDBG=.true., FD_TEST=.false., 
+      PARAMETER (LOCDBG=.FALSE., FD_TEST=.false., 
      &           XI_ONLY = .FALSE.)
 
       INTEGER ISYM0
@@ -100,7 +101,7 @@ C
      &        K3AM, KEND3, LWRK3, KINT1SC, KINT2SC, KLAMPC, KLAMHC,
      &        KFOCKC, LWRK1, KRECNR, KE3AM, KTC3AM, KTC1AM, KTC2AM,
      &        KFDETA1, KFDETA2, KFDETA3, KEND4, LWRK4, KMMAT, KDIAM,
-     &        KT3SCR
+     &        KT3SCR, KFIELDAO, KFOCK0
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
@@ -119,11 +120,13 @@ C
 *---------------------------------------------------------------------*
       KSCR1   = 1
       KFOCKD  = KSCR1  + NT1AMX
-      KEND1   = KFOCKD + NORBT
+      KFOCK0  = KFOCKD + NORBT
+      KEND1   = KFOCK0 + NORBT*NORBT
 
       IF (NONHF) THEN
-        KFIELD = KEND1
-        KEND1  = KFIELD + NORBT*NORBT
+        KFIELD   = KEND1
+        KFIELDAO = KFIELD   + NBAST*NBAST
+        KEND1    = KFIELDAO + NBAST*NBAST
       END IF
 
       KT1AMP0 = KEND1
@@ -159,17 +162,6 @@ C
       ENDIF
 
 *---------------------------------------------------------------------*
-*     Read SCF orbital energies from file:
-*---------------------------------------------------------------------*
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUSIFC
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
-      CALL GPCLOSE(LUSIFC,'KEEP')
-
-*---------------------------------------------------------------------*
 *     Get zeroth-order Lambda matrices:
 *---------------------------------------------------------------------*
       IOPT   = 1
@@ -179,82 +171,16 @@ C
      &            WORK(KEND1),LWRK1)
 
 *---------------------------------------------------------------------*
-*     If needed get external field:
+*     Read precalculated integrals from file:
 *---------------------------------------------------------------------*
-      IF ((NONHF) .AND. NFIELD .GT. 0) THEN
-         CALL DZERO(WORK(KFIELD),NORBT*NORBT)
-         DO I = 1, NFIELD
-            FF = EFIELD(I)
-            CALL CC_ONEP(WORK(KFIELD),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
-         ENDDO
-         CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMP0),WORK(KLAMH0),
-     *                 WORK(KEND1),LWRK1,1,1,1)
-      ENDIF
-
-*---------------------------------------------------------------------*
-*     Compute some integral intermediates:
-*---------------------------------------------------------------------*
-
-      CALL DZERO(WORK(KINT1T0),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT2T0),NRHFT*NRHFT*NT1AMX)
-
-      CALL DZERO(WORK(KINT1S0),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT2S0),NRHFT*NRHFT*NT1AMX)
-
-      CALL DZERO(WORK(KXIAJB), NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KYIAJB), NT1AMX*NT1AMX)
-
-      CALL DZERO(WORK(K0IOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
-      CALL DZERO(WORK(K0IOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
-      CALL DZERO(WORK(K0IOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
-      CALL DZERO(WORK(K0IVVVV),NVIRT*NVIRT*NVIRT*NVIRT )
-
-
-      DO ISYMD = 1, NSYM
-         DO ILLL = 1,NBAS(ISYMD)
-            IDEL   = IBAS(ISYMD) + ILLL
-            ISYDIS = MULD2H(ISYMD,ISYMOP)
- 
-C           ----------------------------
-C           Work space allocation no. 2.
-C           ----------------------------
-            KXINT  = KEND1
-            KEND2  = KXINT + NDISAO(ISYDIS)
-            LWRK2  = LWORK - KEND2
-            IF (LWRK2 .LT. 0) THEN
-               WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
-               CALL QUIT('Insufficient space in CCSDT_ETA_NODDY')
-            ENDIF
- 
-C           ---------------------------
-C           Read in batch of integrals.
-C           ---------------------------
-            CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
- 
-C           ----------------------------------
-C           Calculate integrals needed in CC3:
-C           ----------------------------------
-            CALL CCSDT_TRAN1(WORK(KINT1T0),WORK(KINT2T0),
-     &                       WORK(KLAMP0),WORK(KLAMH0),
-     &                       WORK(KXINT),IDEL)
-
-            CALL CC3_TRAN2(WORK(KXIAJB),WORK(KYIAJB),
-     &                     WORK(KLAMP0),WORK(KLAMH0),
-     &                     WORK(KXINT),IDEL)
-
-            CALL CCSDT_TRAN3(WORK(KINT1S0),WORK(KINT2S0),WORK(KLAMP0),
-     &                       WORK(KLAMH0),WORK(KXINT),IDEL)
-
-            CALL CCFOP_TRAN1_R(WORK(K0IOVVO),WORK(K0IOOVV),
-     &                         WORK(K0IOOOO),WORK(K0IVVVV),
-     &                         WORK(KLAMP0),WORK(KLAMH0),
-     &                         WORK(KLAMP0),WORK(KLAMH0),
-     &                         WORK(KLAMP0),WORK(KLAMH0),
-     &                         WORK(KXINT),IDEL)
-
-         END DO   
-      END DO  
+      CALL CCSDT_READ_NODDY(.TRUE.,WORK(KFOCKD),WORK(KFOCK0),
+     &                             WORK(KFIELD),WORK(KFIELDAO),
+     &                      .TRUE.,WORK(KXIAJB),WORK(KYIAJB),
+     &                      .TRUE.,WORK(KINT1S0),WORK(KINT2S0),
+     &                      .TRUE.,WORK(KINT1T0),WORK(KINT2T0),
+     &                      .TRUE.,WORK(K0IOVVO),WORK(K0IOOVV),
+     &                             WORK(K0IOOOO),WORK(K0IVVVV),
+     &                      NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
 *---------------------------------------------------------------------*
 *     Some more memory allocations:
@@ -298,11 +224,11 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
 *     Compute zeroth-order triples amplitudes:
 *---------------------------------------------------------------------*
-      CALL CCSDT_T03AM(WORK(KT3AM),WORK(KINT1S0),WORK(KINT2S0),
-     *                 WORK(KT2AM),WORK(KSCR1),WORK(KFOCKD),
-     *                 WORK(KFIELD),WORK(KT3SCR))
-
-      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM),1)
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      READ(LUTEMP) (WORK(KT3AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
+      CALL GPCLOSE(LUTEMP,'KEEP')
 
       IF (NONHF) THEN
         LUTEMP = 0
@@ -325,14 +251,15 @@ C           ----------------------------------
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
 
-      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ') THEN
+      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ' .OR.
+     &         LISTL(1:3).EQ.'M1 ' .OR. LISTL(1:3).EQ.'N2 ' .OR.
+     &         LISTL(1:3).EQ.'E0 '                              ) THEN
 
         CALL CCSDT_TBAR31_NODDY(WORK(KL3AM),FREQL,LISTL,IDLSTL,
-     &                          WORK(KLAMP0),WORK(KLAMH0),
-     &                          FOCK0,WORK(KFOCKD),WORK(KSCR1),
-     &                          .FALSE.,WORK(KXIAJB),DUMMY,
-     &                          .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
-     &                          WORK(KEND3),LWRK3)
+     &                        WORK(KLAMP0),WORK(KLAMH0),
+     &                        FOCK0,WORK(KFOCKD),WORK(KSCR1),
+     &                        WORK(KXIAJB),WORK(KINT1T0),WORK(KINT2T0),
+     &                        WORK(KEND3),LWRK3)
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
 
@@ -871,6 +798,8 @@ C------------------------------------------------------
      &        KFOCKA, KLAMP0, KLAMH0, KFOCKD, NA, NI, NB, NBI, NC, 
      &        NCI, NJ, NAJ, NK, NAK, KL3AM
 
+
+      CALL QUIT('CCSDT_ETA_FD needs to be addapted for intermediates.')
 *---------------------------------------------------------------------*
 *     Allocations:
 *---------------------------------------------------------------------*

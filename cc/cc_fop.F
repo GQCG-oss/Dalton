@@ -112,6 +112,8 @@ C
       CHARACTER*4  MODELPRI, FNDKBC
       CHARACTER*3  LIST
       CHARACTER*1  LR, CDUM
+      PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
+     *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  ) 
 C
       LOGICAL LTESTE
 C
@@ -338,6 +340,14 @@ C--------------------------------
      *                  IDUM,CDUM,RDUM,IDUM,
      *                  ISYOF,1,1,WORK,LWORK)
 
+C        ---------------------------------------------------
+C        If this is a CC3 code using noddy code (p)recompute
+C        the triples L0 multipliers and save them on file:
+C        ---------------------------------------------------
+         IF (NODDY_INIT) THEN
+           CALL CCSDT_INIT_NODDY(WORK,LWORK,.TRUE.) 
+         END IF
+
 C------------------------------------------------------
 C        Calculate extra contributions from CCSD(T)
 C------------------------------------------------------
@@ -548,8 +558,9 @@ c            --------------------------------------------------------
 c            call simple noddy routine (needed f.x. for finite diff.)
 c            --------------------------------------------------------
              CALL CCSDT_XI_CONT_NODDY('L0 ',DUMMY,1,1,
-     &                                IDUMMY,IDUMMY,0,0,
-     &                                .TRUE.,WORK,LWORK)
+     &                                IDUMMY,IDUMMY,0,0,.TRUE.,
+     &                                FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ,
+     &                                WORK,LWORK)
 
            ELSE 
 C
@@ -1125,7 +1136,8 @@ C----------------------------------------------------------
 C
       ILSTNR = 1
       CALL CC_D1AO(WORK(KDENS),WORK(KZKAM),WORK(KWRK3),LWRK3,
-     &             MODELPRI, LIST,ILSTNR,.TRUE.)
+     &             MODELPRI, LIST,ILSTNR,.TRUE.,
+     &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN
 C
@@ -1275,7 +1287,6 @@ C      Readin ia part :
 C------------------------
 C
           LUPTIA = 0
-          FNDPTIA  = 'DPTIA'
           CALL WOPEN2(LUPTIA,FNDPTIA,64,0)
 C
           IOFF = 1
@@ -1304,7 +1315,6 @@ C
           IF (.NOT. RELORB) THEN
 C
              LUPTAB = 0
-             FNDPTAB  = 'DPTAB'
              CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
 C
              IOFF = 1
@@ -1313,7 +1323,6 @@ C
              CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
 C
              LUPTIJ = 0
-             FNDPTIJ  = 'DPTIJ'
              CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
 C
              IOFF = 1
@@ -1339,7 +1348,6 @@ C
      *                     LWRK4)
 C
              LUPTIA2 = 0
-             FNDPTIA2 = 'DPTIA2'
              CALL WOPEN2(LUPTIA2,FNDPTIA2,64,0)
 C
              IOFF = 1

@@ -29,7 +29,7 @@ H1    0.626887      0.626887      0.626887
 #######################################################################
 cat > Vlao_ch4.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .THETA
 .DIPLEN

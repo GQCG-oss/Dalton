@@ -93,9 +93,11 @@ c /* deck ccrspsym */
 #include <ccco2rsp.h>
 #include <cccl2rsp.h>
 #include <cccx2rsp.h>
+#include <ccexgr.h>  
 #include <ccn2rsp.h>  
 #include <cclres.h>  
 #include <ccpl1rsp.h>
+#include <ccexci.h>
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -393,15 +395,17 @@ C          ----------------------------------------------------
       L1DXFOPN = .TRUE.
       LPL1OPN  = .TRUE.
 
-* linear response equations for t or M vectors 
-* required for linear response residues.
-* (one-photon transition moments)
+* linear response equations for R1 or M1 vectors required for linear 
+* response residues (one-photon transition moments for ground
+* to excited state transitions)
       CALL CC_LRSIND
       IF (CCOPA) CALL CC_OPAIND
 
-* response equations for t or N vectors
-* required for quadratic response second residues.
+* linear response equations for R1 or N2 vectors required for quadratic 
+* response second residues (one-photon transition moments for
+* excited to excited state transitions)
       IF (CCQR2R) CALL CC_QR2IND
+      IF (CCXOPA) CALL CC_XOPAIND
 
 * test input for excited state first-order property calculation.
       IF (CCEXGR) CALL CC_EXGRIND  
@@ -410,7 +414,7 @@ C          ----------------------------------------------------
       IF (CCEXLR) CALL CC_EXLRIND 
 
 * set equations required for second-order transition moments:
-      CALL CC_SMIND
+      IF (CCTPA)  CALL CC_TPAIND
 
 * set equations required for third-order transition moments:
       CALL CC_TMIND
@@ -1336,6 +1340,14 @@ C          ----------------------------------------------------
          WRITE(LUPRI,'(3x,69("-"),//)')
        END IF
        
+       IF (NXGRST.GT.0) THEN
+         WRITE(LUPRI,'(/A)')' LIST OF REQUIRED ZEROTH-ORDER E0 MULTIP.:'
+         DO I = 1, NXGRST   
+            WRITE(LUPRI,'(I5,3X,I8,I5,2X,1P,D15.6)') 
+     &            I, IXGRST(I), ISYEXC(IXGRST(I)), EIGVAL(IXGRST(I))
+         END DO
+       END IF
+
        IF (NQRN2.GT.0) THEN
          CALL AROUND('REQUESTED N(i,f) VECTORS:')
          WRITE(LUPRI,'(/3x,69("-"),/3x,2A,/3x,69("-"))')
@@ -1485,6 +1497,11 @@ C
   200  CONTINUE
   100 CONTINUE
 C
+      ISYOFXG(1) = 0
+      DO ISYM = 2, NSYM
+        ISYOFXG(ISYM) = NXGRST
+      END DO
+C
       END
 *---------------------------------------------------------------------*
 c /* deck cc_opaind */
@@ -1493,21 +1510,24 @@ c /* deck cc_opaind */
 *---------------------------------------------------------------------*
 *
 *    Purpose: Control input and equations for calculation of 
-*             one-photon absorption strengths
+*             one-photon absorption strengths for ground to
+*             excited state transitions
 *
 *    Christof Haettig, December 2002, Friedrichstal
 *
 *=====================================================================*
-#include <implicit.h>
+      IMPLICIT NONE
+C#include <implicit.h>
+C#include <cclrinf.h>
+C#include <cclr.h>  
+C#include <ccsdsym.h>  
 #include <priunit.h>
 #include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
 #include <ccexci.h>  
+#include <ccexcinf.h>  
+#include <ccrspprp.h>
 #include <ccopainf.h>  
 #include <ccsdinp.h>  
-#include <ccsdsym.h>  
-#include <cclr.h>  
 #include <ccroper.h>  
 
       LOGICAL LOCDBG
@@ -1523,7 +1543,7 @@ c /* deck cc_opaind */
       DOUBLE PRECISION EIGV
 #endif
 * functions:
-      INTEGER IR1TAMP,ILRMAMP
+      INTEGER IR1TAMP,ILRMAMP,IROPER
 C
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
@@ -1614,6 +1634,170 @@ C
        END DO
       END DO
 C
+      RETURN
+      END
+*---------------------------------------------------------------------*
+c /* deck cc_xopaind */
+*=====================================================================*
+       SUBROUTINE CC_XOPAIND
+*---------------------------------------------------------------------*
+*
+*    Purpose: Control input and equations for calculation of 
+*             one-photon absorption strengths for excited to
+*             to excited state transitions
+*
+*    Christof Haettig, October 2003, Friedrichstal
+*
+*=====================================================================*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccexci.h>  
+#include <ccexcinf.h>  
+#include <ccrspprp.h>
+#include <ccxopainf.h>  
+#include <ccsdinp.h>  
+#include <ccroper.h>  
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      CHARACTER*8 LABEL
+      LOGICAL TAKE_STATE_PAIR
+      INTEGER ISYMO, INUM, ISYMI, ISYMF, ISTATEI, ISTATEF, IEXI, IEXF,
+     &        IDX, ISYMFI, IOPER, I, NSYMF, NEXF
+
+#if defined (SYS_CRAY)
+      REAL EIGVI, EIGVF
+#else
+      DOUBLE PRECISION EIGVI, EIGVF
+#endif
+* functions:
+      INTEGER IROPER, IR1TAMP, IN2AMP
+
+      LOGICAL FIRSTCALL
+      SAVE    FIRSTCALL
+      DATA    FIRSTCALL /.TRUE./
+
+*------------------------------------------------------------------
+* test if operators are available and translate IQR2OP array
+* from the PRPLBL list to the new list maintained by IROPER:
+*------------------------------------------------------------------
+      IF (FIRSTCALL) THEN
+       IOPER = 1
+       DO WHILE (IOPER .LE. NQR2OP)
+        LABEL = PRPLBL(IQR2OP(IOPER))
+        IF (DEBUG) WRITE(LUPRI,'(/2X,2A)') 'CHECK OPERATOR: ',LABEL
+        IF (IROPER(LABEL,ISYMO) .LT. 0) THEN
+          WRITE(LUPRI,'(/2X,3A,/2X,2A)')
+     &     ' WARNING: THE OPERATOR WITH THE LABEL "',
+     &         LABEL,'" IS NOT AVAILABLE.',
+     &     ' CALCULATION OF TRANSITION MOMENTS IS CANCELED FOR THIS',
+     &     ' OPERATOR.'
+          DO IDX = IOPER, NQR2OP-1
+            IQR2OP(IDX) = IQR2OP(IDX+1)
+          END DO
+          NQR2OP = NQR2OP - 1
+        ELSE
+          IF(DEBUG)WRITE(LUPRI,'(/2X,3A)')'PUT: ',LABEL,' ON THE LIST.'
+          IQR2OP(IOPER) = IROPER(LABEL,ISYMO)
+          IOPER = IOPER + 1
+        END IF
+       END DO
+       FIRSTCALL = .FALSE.
+      END IF ! (FIRSTCALL)
+C
+      IF (LOCDBG) THEN
+         WRITE(LUPRI,'(/,A)') ' Updated list in CC_XOPAIND:'
+         DO IOPER = 1, NQR2OP
+            WRITE(LUPRI,*) IOPER,IQR2OP(IOPER),' ',
+     *              LBLOPR(IQR2OP(IOPER)),ISYOPR(IQR2OP(IOPER))
+         ENDDO
+      ENDIF
+C
+C------------------------------------
+C     Fill in equations to be solved.
+C------------------------------------
+C
+      IF (LOCDBG) WRITE(LUPRI,*) 'SELQR2:',SELQR2
+C
+      NXQR2ST = 0
+C
+      DO ISYMI = 1, NSYM
+
+       NSYMF = NSYM
+       IF (.NOT.SELQR2) NSYMF = ISYMI
+       DO ISYMF = 1, NSYMF
+
+        DO IEXI = 1, NCCEXCI(ISYMI,1)
+         NEXF = NCCEXCI(ISYMF,1)
+         IF ((.NOT.SELQR2).AND.(ISYMI.EQ.ISYMF)) NEXF = IEXI - 1
+         DO IEXF = 1, NEXF
+
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,*) 'check for:',ISYMI,IEXI,ISYMF,IEXF
+          END IF
+
+          IF (SELQR2) THEN
+           ! check, if state pair has been selected
+           TAKE_STATE_PAIR = .FALSE.
+           DO I = 1,NSEQR2
+            IF (ISYMI.EQ.ISEQR2SYM(I,1).AND.IEXI.EQ.ISEQR2STA(I,1).AND.
+     *          ISYMF.EQ.ISEQR2SYM(I,2).AND.IEXF.EQ.ISEQR2STA(I,2)    )
+     *      THEN
+             TAKE_STATE_PAIR = .TRUE.
+            ENDIF 
+           END DO
+          ELSE
+           TAKE_STATE_PAIR = .TRUE.
+          END IF
+
+          IF (LOCDBG) WRITE(LUPRI,*) 'TAKE_STATE_PAIR:',TAKE_STATE_PAIR
+
+          IF (TAKE_STATE_PAIR) THEN
+            NXQR2ST = NXQR2ST + 1
+            IF (NXQR2ST.GT.MXQR2ST)  THEN
+              WRITE(LUPRI,*) 'NXQR2ST =',NXQR2ST,'MXQR2ST= ',MXQR2ST
+              CALL QUIT(' Too many states in CC_XOPAIND')
+            ENDIF
+            ISTATEI = ISYOFE(ISYMI)+IEXI
+            ISTATEF = ISYOFE(ISYMF)+IEXF  
+            IQR2ST(NXQR2ST,1) = ISTATEI
+            IQR2ST(NXQR2ST,2) = ISTATEF
+
+            IF (.NOT.CIS) THEN
+              ISYMFI = MULD2H(ISYMI,ISYMF)
+              EIGVI = EIGVAL(ISTATEI)
+              EIGVF = EIGVAL(ISTATEF)
+
+              DO IOPER = 1, NQR2OP
+               LABEL = LBLOPR(IQR2OP(IOPER))
+               ISYMO = ISYOPR(IQR2OP(IOPER))
+               IF (ISYMO.EQ.ISYMFI) THEN
+                IF (.NOT.QR22N1) THEN
+                 INUM=IR1TAMP(LABEL,.FALSE.,EIGVI-EIGVF,ISYMO)
+                 INUM=IR1TAMP(LABEL,.FALSE.,EIGVF-EIGVI,ISYMO)
+                ELSE
+                 INUM=IN2AMP(ISTATEI,-EIGVI,ISYMI,ISTATEF,+EIGVF,ISYMF)
+                 INUM=IN2AMP(ISTATEF,-EIGVF,ISYMF,ISTATEI,+EIGVI,ISYMI)
+                END IF
+               END IF
+              END DO
+            END IF 
+          END IF 
+
+         END DO
+        END DO
+       END DO
+      END DO
+C
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,'(a,i3,a)') 
+     &    'Transition strengths will be computed for',NXQR2ST,
+     &    'transitions'
+      END IF
+C
+      RETURN
       END
 *---------------------------------------------------------------------*
 c /* deck cc_lrsind */
@@ -2067,6 +2251,17 @@ c /* deck cc_lrind */
 *      b) effective Fock operators to be calculated
 *      c) nuclear contributions to be calculated
 *---------------------------------------------------------------------*
+      IF (CC3) THEN
+        WRITE(LUPRI,'(/5x,A/)')
+     &   'Prepare CC3 linear response calculation.'
+        IF (CAUCHY) THEN
+          CAUCHY  = .FALSE.
+          NLRDISP = 0
+          WRITE(LUPRI,'(/5x,A//)') 
+     &    'Cauchy moments are switched off for CC3.'
+        END IF
+      END IF
+
       DIFDIP = .FALSE.
 
       DO IOPER = 1, NLROP
@@ -2081,6 +2276,9 @@ c /* deck cc_lrind */
 
         LPDBSA = LPDBSOP(IALROP(IOPER))
         LPDBSB = LPDBSOP(IBLROP(IOPER))
+
+        IF ((LRLXA.OR.LRLXB.OR.LPDBSA.OR.LPDBSB) .AND. CC3)
+     &    CALL QUIT('Relaxed CC3 linear response no implemented.')
 
         IF (ISYMA.EQ.ISYMB) THEN
 
@@ -2240,6 +2438,7 @@ c /* deck cc_qrind */
 #include <ccqrinf.h>
 #include <ccrspprp.h>
 #include <ccroper.h>
+#include <ccsdinp.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2392,6 +2591,21 @@ c /* deck cc_qrind */
 *---------------------------------------------------------------------*
 * set list entries for the required response vectors:
 *---------------------------------------------------------------------*
+      IF (CC3) THEN
+        WRITE(LUPRI,'(/5x,A/)')
+     &   'Prepare CC3 quadratic response calculation.'
+        IF (NQRDISP.GT.0) THEN
+          NQRDISP = 0
+          WRITE(LUPRI,'(/5x,A//)') 
+     &    'Dispersion coefficients (.DISPCF) are switched off for CC3.'
+        END IF
+        IF (USE_R2) THEN
+          WRITE(LUPRI,'(2(/5x,A),/)') 
+     &    'Note: .USE R2 option will for CC3 call noddy code routines,',
+     &    '      which keep triples amplitudes in memory!!!'
+        END IF
+      END IF
+
       DO IOPER = 1, NQROPER
         LABELA = LBLOPR(IAQROP(IOPER))
         LABELB = LBLOPR(IBQROP(IOPER))
@@ -2420,6 +2634,7 @@ c /* deck cc_qrind */
         LORXC  = LCQLRX(IOPER)
 
         LRELAX = LORXA.OR.LORXB.OR.LORXC.OR.LPDBSA.OR.LPDBSB.OR.LPDBSC
+        IF (LRELAX.AND.CC3) CALL QUIT('No relaxed CC3 quadratic resp.')
 
 c         WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
 c    &     'require responses for triple:',LABELA, LABELB, LABELC
@@ -2570,6 +2785,7 @@ c /* deck cc_crind */
 #include <ccrspprp.h>
 #include <ccroper.h>
 #include <cccperm.h>
+#include <ccsdinp.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2670,6 +2886,35 @@ c /* deck cc_crind */
 *---------------------------------------------------------------------*
 * set list entries for the required response vectors:
 *---------------------------------------------------------------------*
+      IF (CC3) THEN
+        WRITE(LUPRI,'(/5x,A/)')'Prepare CC3 cubic response calculation.'
+        IF (USE_LBCD) THEN
+          USE_LBCD = .FALSE.
+          WRITE(LUPRI,'(/5x,A//)') 
+     &       'USE_LBCD flag (.L2 BCD) is switched off for CC3.'
+        END IF
+        IF (USE_L2BC) THEN
+          USE_L2BC = .FALSE.
+          WRITE(LUPRI,'(/5x,A//)') 
+     &       'USE_L2BC flag (.L2 BC ) is switched off for CC3.'
+        END IF
+        IF (L_USE_CHI2) THEN
+          L_USE_CHI2 = .FALSE.
+          WRITE(LUPRI,'(/5x,A//)') 
+     &       'L_USE_CHI2 flag (.USECHI) is switched off for CC3.'
+        END IF
+        IF (L_USE_XKS3) THEN
+          L_USE_XKS3 = .FALSE.
+          WRITE(LUPRI,'(/5x,A//)') 
+     &       'L_USE_XKS3 flag (.USEXKS) is switched off for CC3.'
+        END IF
+        IF (NCRDISP.GT.0) THEN
+          NCRDISP = 0
+          WRITE(LUPRI,'(/5x,A//)') 
+     &    'Dispersion coefficients (.DISPCF) are switched off for CC3.'
+        END IF
+      END IF
+
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'USE_L2BC:',USE_L2BC
         WRITE (LUPRI,*) 'USE_LBCD:',USE_LBCD
@@ -3548,15 +3793,13 @@ C         WRITE (LUPRI,*) 'I5ROP:',(I5ROP(IOPER,IDX),IDX=1,6)
       RETURN
       END
 *---------------------------------------------------------------------*
-c /* deck cc_smind */
+c /* deck cc_tpaind */
 *=====================================================================*
-       SUBROUTINE CC_SMIND 
+       SUBROUTINE CC_TPAIND 
 *---------------------------------------------------------------------*
 *
-*    Purpose: Determine which vectors are needed in second moment
-*             calculations, flags are set for the following :
-*             chi vectors , second order rhs vectors,
-*             first order t and zeta respons vectors, m vectors
+*    Purpose: Determine which vectors are needed for the calculation
+*             of two-photon absorption strength
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -3566,25 +3809,26 @@ c /* deck cc_smind */
 #endif
 #include <priunit.h>
 #include <ccorb.h>
-#include <ccsm.h>
-#include <ccsminf.h>
+#include <cctpainf.h>
 #include <ccrspprp.h>
 #include <ccexci.h>
+#include <ccexcinf.h>
 #include <ccroper.h>
+#include <ccsdinp.h>
 
 * local parameters:
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
 * variables:
-      CHARACTER*8 LABELA, LABELB, LABELC, LABELD
-      INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYMAB
-      INTEGER IFREQ, INUM, IOPER, IDX, IOFFST, I
+      CHARACTER*8 LABELA, LABELB
+      INTEGER ISYMB, ISYMA, ISYMAB, ISYME
+      INTEGER INUM, IOPPAIR, IDX, ISTATE, IEXCI, IRSD
       
 #if defined (SYS_CRAY)
-      REAL FREQEX, FREQB, EIGV 
+      REAL FREQA, FREQB, EIGV 
 #else
-      DOUBLE PRECISION FREQEX, FREQB, EIGV
+      DOUBLE PRECISION FREQA, FREQB, EIGV
 #endif
 
 * external functions:
@@ -3602,52 +3846,38 @@ c /* deck cc_smind */
 
 
       IF (LOCDBG) THEN
-        WRITE (LUPRI,*) 'DEBUG_CC_SMIND> NSMOPER = ',NSMOPER
+        WRITE (LUPRI,*) 'DEBUG_CC_TPAIND> NSMOPER = ',NSMOPER
       END IF
-
-      IF (FIRSTCALL) THEN
 
 *---------------------------------------------------------------------*
 * test if operators are available and translate IASMOP, IBSMOP, ICSMOP
 * and IDSMOP arrays from the PRPLBL list to the new list maintained 
 * by IROPER.
 *---------------------------------------------------------------------*
-       IOPER = 1
-       DO WHILE (IOPER .LE. NSMOPER)
+      IF (FIRSTCALL) THEN
 
-        LABELA = PRPLBL(IASMOP(IOPER))
-        LABELB = PRPLBL(IBSMOP(IOPER))
-        LABELC = PRPLBL(ICSMOP(IOPER))
-        LABELD = PRPLBL(IDSMOP(IOPER))
+       IOPPAIR = 1
+       DO WHILE (IOPPAIR .LE. NSMOPER)
+
+        LABELA = PRPLBL(IASMOP(IOPPAIR))
+        LABELB = PRPLBL(IBSMOP(IOPPAIR))
 
         IF (      (IROPER(LABELA,ISYMA) .LT. 0)
-     &       .OR. (IROPER(LABELB,ISYMB) .LT. 0)
-     &       .OR. (IROPER(LABELC,ISYMC) .LT. 0) 
-     &       .OR. (IROPER(LABELD,ISYMD) .LT. 0) ) THEN
-
-          WRITE(LUPRI,'(/2X,9A,/2X,2A)')
+     &       .OR. (IROPER(LABELB,ISYMB) .LT. 0) ) THEN
+          WRITE(LUPRI,'(/2X,5A,/2X,2A)')
      &     ' WARNING: ONE OF THE OPERATORS WITH THE LABELS "',
-     &     LABELA,'", "', LABELB,'", "', LABELC,'", "',LABELD,
-     &     '" IS NOT AVAILABLE.',
+     &     LABELA,'", "', LABELB,'" IS NOT AVAILABLE.',
      &     ' SECOND MOMENT CROSS SECTION CALCULATION IS CANCELED ',
-     &     ' FOR THIS OPERATOR QUADRUPLE.'
-
-          DO IDX = IOPER, NSMOPER-1
+     &     ' FOR THIS OPERATOR PAIR.'
+          DO IDX = IOPPAIR, NSMOPER-1
             IASMOP(IDX) = IASMOP(IDX+1)
             IBSMOP(IDX) = IBSMOP(IDX+1)
-            ICSMOP(IDX) = ICSMOP(IDX+1)
-            IDSMOP(IDX) = IDSMOP(IDX+1)
           END DO
-
           NSMOPER = NSMOPER - 1
-
         ELSE 
-          IASMOP(IOPER) = IROPER(LABELA,ISYMA) 
-          IBSMOP(IOPER) = IROPER(LABELB,ISYMB)
-          ICSMOP(IOPER) = IROPER(LABELC,ISYMC)
-          IDSMOP(IOPER) = IROPER(LABELD,ISYMD)
-
-          IOPER = IOPER + 1
+          IASMOP(IOPPAIR) = IROPER(LABELA,ISYMA) 
+          IBSMOP(IOPPAIR) = IROPER(LABELB,ISYMB)
+          IOPPAIR = IOPPAIR + 1
         END IF
 
        END DO
@@ -3656,98 +3886,110 @@ c /* deck cc_smind */
 
       END IF ! (FIRSTCALL)
 
-*--------------------------------------------------------------------*
-* sort list of selected states according to symmetry and canonical
-* order within each symmetry
-*--------------------------------------------------------------------*
+*---------------------------------------------------------------------*
+* if no states were selected use by default all states:
+*---------------------------------------------------------------------*
+      IF ( .NOT. SELSMST ) THEN
+         NSMSEL = 0
+         DO ISYME = 1, NSYM
+           DO IEXCI = 1, NCCEXCI(ISYME,1)
+             NSMSEL = NSMSEL + 1
+             ISMSEL(NSMSEL,1) = ISYME
+             ISMSEL(NSMSEL,2) = IEXCI
+           END DO
+         END DO
+      END IF
 
-      CALL CC_SMSORT
+*---------------------------------------------------------------------*
+* if HALFFR flag is given, set here the laser frequency:
+*---------------------------------------------------------------------*
+      IF ( HALFFR .OR. (.NOT. SELSMST) ) THEN
+        DO IRSD = 1, NSMSEL
+          ISYME = ISMSEL(IRSD,1)        
+          IEXCI = ISMSEL(IRSD,2)        
+          EIGV  = EIGVAL(ISYOFE(ISYME) + IEXCI)        
+          
+          BSMFR(IRSD) = 0.5d0 * EIGV 
+        END DO
+      END IF
+
+*---------------------------------------------------------------------*
+* for CC3 we can switch off LTPA_USE_O2 & LTPA_USE_X2:
+*---------------------------------------------------------------------*
+      IF (CC3 .AND. LTPA_USE_O2) THEN
+        WRITE(LUPRI,*) 'Info: the .USE O2 option cannot be use for '
+        WRITE(LUPRI,*) '      in *CCTPA for CC3... it is turned off' 
+        LTPA_USE_O2 = .FALSE.
+      END IF
+
+      IF (CC3 .AND. LTPA_USE_X2) THEN
+        WRITE(LUPRI,*) 'Info: the .USE X2 option cannot be use for '
+        WRITE(LUPRI,*) '      in *CTPA for CC3... it is turned off' 
+        LTPA_USE_X2 = .FALSE.
+      END IF
 
 *---------------------------------------------------------------------*
 * set list entries for the required response vectors:
+* note that for S^0f_AB,AB(w_B) we need M^AB_0f(-w_B) and M^AB_f0(w_B)
 *---------------------------------------------------------------------*
-      DO IOPER = 1, NSMOPER
-        LABELA = LBLOPR(IASMOP(IOPER))
-        LABELB = LBLOPR(IBSMOP(IOPER))
-        LABELC = LBLOPR(ICSMOP(IOPER))
-        LABELD = LBLOPR(IDSMOP(IOPER))
+      DO IOPPAIR = 1, NSMOPER
+       LABELA = LBLOPR(IASMOP(IOPPAIR))
+       LABELB = LBLOPR(IBSMOP(IOPPAIR))
 
-        ISYMA  = ISYOPR(IASMOP(IOPER))
-        ISYMB  = ISYOPR(IBSMOP(IOPER))
-        ISYMC  = ISYOPR(ICSMOP(IOPER))
-        ISYMD  = ISYOPR(IDSMOP(IOPER))
+       ISYMA  = ISYOPR(IASMOP(IOPPAIR))
+       ISYMB  = ISYOPR(IBSMOP(IOPPAIR))
+       ISYMAB = MULD2H(ISYMA,ISYMB)
 
-        
-        IF (MULD2H(ISYMA,ISYMB).EQ.MULD2H(ISYMC,ISYMD)) THEN
-      
-          ISYMAB = MULD2H(ISYMA,ISYMB)
-          DO I = 1, NSMSELX(ISYMAB)  
-              IFREQ  = ISMSELX( MULD2H(ISYMA,ISYMB) ) + I
-              FREQEX = EXSMFR(IFREQ)
-              FREQB  = BSMFR(IFREQ)
-              IF (LOCDBG) THEN
-                WRITE (LUPRI,*) 'CC_SMIND> put on the list:',
-     &            LABELA,'(',FREQEX,'),  ', LABELB,'(',FREQB,'),  ',
-     &           IFREQ,FREQEX
-              END IF
+       DO IRSD = 1, NSMSEL
+ 
+        ISYME = ISMSEL(IRSD,1) ! irrep
 
+        IF (ISYME.EQ.ISYMAB) THEN
+         
+         IEXCI  = ISMSEL(IRSD,2)        ! state number within irrep
+         ISTATE = ISYOFE(ISYME) + IEXCI ! number over all irreps
+         EIGV   = EIGVAL(ISTATE)        ! excitation energie
 
-*           request second order chi vectors:
-  
-           INUM = ICHI2(LABELA,.FALSE.,-FREQEX+FREQB,ISYMA,
+         FREQB  = BSMFR(IRSD)  ! frequency for field B
+         FREQA  = EIGV-FREQB   ! frequency for field A
+
+         IF (LOCDBG) THEN
+           WRITE (LUPRI,*) 'CC_TPAIND> put on the list:',
+     &       LABELA,'(',FREQA,'),  ', LABELB,'(',FREQB,'),  ',
+     &      ISTATE,EIGV
+         END IF
+
+         IF (LTPA_USE_X2) THEN
+*          request second order chi vectors:
+           INUM = ICHI2(LABELA,.FALSE.,-FREQA,ISYMA,
      &                  LABELB,.FALSE.,-FREQB,ISYMB)
-           INUM = ICHI2(LABELC,.FALSE.,-FREQEX+FREQB,ISYMC,
-     &                  LABELD,.FALSE.,-FREQB,ISYMD)
+         END IF
  
-*           request second-order rhs vectors 
- 
-           INUM =IRHSR2(LABELA,.FALSE.,-FREQEX+FREQB,ISYMA,
+         IF (LTPA_USE_O2) THEN
+*          request second-order rhs vectors 
+           INUM =IRHSR2(LABELA,.FALSE.,-FREQA,ISYMA,
      &                  LABELB,.FALSE.,-FREQB,ISYMB) 
-           INUM =IRHSR2(LABELA,.FALSE.,+FREQEX-FREQB,ISYMA,
+           INUM =IRHSR2(LABELA,.FALSE.,+FREQA,ISYMA,
      &                  LABELB,.FALSE.,+FREQB,ISYMB) 
-           INUM =IRHSR2(LABELC,.FALSE.,-FREQEX+FREQB,ISYMC,
-     &                  LABELD,.FALSE.,-FREQB,ISYMD) 
-           INUM =IRHSR2(LABELC,.FALSE.,+FREQEX-FREQB,ISYMC,
-     &                  LABELD,.FALSE.,+FREQB,ISYMD) 
+         END IF
 
-*           request first order t response vectors:
-
-             INUM = IR1TAMP(LABELA,.FALSE.,-FREQEX+FREQB,ISYMA)
-             INUM = IR1TAMP(LABELB,.FALSE.,-FREQB,ISYMB)
-             INUM = IR1TAMP(LABELB,.FALSE.,+FREQB,ISYMB)
-             INUM = IR1TAMP(LABELA,.FALSE.,+FREQEX-FREQB,ISYMA)
-             INUM = IR1TAMP(LABELD,.FALSE.,-FREQB,ISYMD)
-             INUM = IR1TAMP(LABELC,.FALSE.,-FREQEX+FREQB,ISYMC)
-             INUM = IR1TAMP(LABELD,.FALSE.,+FREQB,ISYMD)
-             INUM = IR1TAMP(LABELC,.FALSE.,+FREQEX-FREQB,ISYMC)
+*        request first order t response vectors:
+         INUM = IR1TAMP(LABELA,.FALSE.,-FREQA,ISYMA)
+         INUM = IR1TAMP(LABELB,.FALSE.,-FREQB,ISYMB)
+         INUM = IR1TAMP(LABELB,.FALSE.,+FREQB,ISYMB)
+         INUM = IR1TAMP(LABELA,.FALSE.,+FREQA,ISYMA)
 
 
-*           request unrelaxed first order zeta response vectors:
+*        request unrelaxed first order zeta response vectors:
+         INUM = IL1ZETA(LABELA,.FALSE.,-FREQA,ISYMA)
+         INUM = IL1ZETA(LABELB,.FALSE.,-FREQB,ISYMB)
 
-            INUM = IL1ZETA(LABELA,.FALSE.,-FREQEX+FREQB,ISYMA)
-            INUM = IL1ZETA(LABELB,.FALSE.,-FREQB,ISYMB)
-            INUM = IL1ZETA(LABELC,.FALSE.,-FREQEX+FREQB,ISYMC)
-            INUM = IL1ZETA(LABELD,.FALSE.,+FREQB,ISYMD)
-
-*           request m vectors for different excitation energies
-
-
-            IOFFST = ISYOFE(ISYMAB) +  ISMSEL(IFREQ,2)
-            EIGV  =  EIGVAL(IOFFST)
-            INUM   = ILRMAMP(IOFFST,EIGV,ISYMAB)
-
-            IF (LOCDBG) THEN
-               WRITE(LUPRI,*) ' ioffst,eigv,inum,isymab,ifreq',
-     *                      ioffst,eigv,inum,isymab,ifreq
-               CALL FLSHFO(LUPRI)
-            END IF
-
-          END DO
+*        request M1 lagrangian multipliers:
+         INUM = ILRMAMP(ISTATE,EIGV,ISYME)
 
         END IF
-
+       END DO
       END DO
-
 
       RETURN
       END
@@ -4422,6 +4664,21 @@ c /* deck cc_exlrind */
       END IF
 
 *---------------------------------------------------------------------*
+* for CC3 we can switch off USE_O2/USE_EL1 since it can not be used: 
+*---------------------------------------------------------------------*
+      IF (CC3 .AND. USE_O2) THEN
+        WRITE(LUPRI,*) 'Info: the .USE O2 option cannot be used for '
+        WRITE(LUPRI,*) '      in *CCEXLR for CC3... it is turned off' 
+        USE_O2 = .FALSE.
+      END IF
+
+      IF (CC3 .AND. USE_EL1) THEN
+        WRITE(LUPRI,*) 'Info: the .USELEF option cannot be used for '
+        WRITE(LUPRI,*) '      in *CCEXLR for CC3... it is turned off' 
+        USE_EL1 = .FALSE.
+      END IF
+
+*---------------------------------------------------------------------*
 * set list entries for the required response vectors:
 *---------------------------------------------------------------------*
       DO IOPER = 1, NEXLROPER
@@ -4452,8 +4709,7 @@ C    &     'require responses for pair:',LABELA, LABELB
             FREQB  = BEXLRFR(IFREQ)
             IF (IEXCII.EQ.IEXCIF) THEN
               FREQA  = -FREQB
-              LPRJ   = .TRUE.
-C             LPRJ   = .FALSE.
+              LPRJ   = .NOT. NOPROJ
             ELSE
               IF ( HALFFR )  FREQB = HALF * (EIGVI-EIGVF)
               FREQA  = EIGVI - EIGVF -FREQB
@@ -4485,10 +4741,12 @@ C             LPRJ   = .FALSE.
             INUM = IN2AMP(IEXCIF,-EIGVF,ISYMSF,IEXCII,EIGVI,ISYMSI)
 
 *           request right hand side vector for T2:
-            INUM = IRHSR2(LABELA,.FALSE.,+FREQA,ISYMA,
-     &                    LABELB,.FALSE.,+FREQB,ISYMB)
-            INUM = IRHSR2(LABELA,.FALSE.,-FREQA,ISYMA,
-     &                    LABELB,.FALSE.,-FREQB,ISYMB)
+            IF (USE_O2) THEN
+              INUM = IRHSR2(LABELA,.FALSE.,+FREQA,ISYMA,
+     &                      LABELB,.FALSE.,+FREQB,ISYMB)
+              INUM = IRHSR2(LABELA,.FALSE.,-FREQA,ISYMA,
+     &                      LABELB,.FALSE.,-FREQB,ISYMB)
+            END IF
 
           END DO
         END IF
@@ -5763,10 +6021,10 @@ C  /* Deck ilstsym */
          IF (INDEX.LE.0 .OR. INDEX.GT.NEL2LBL) LEOOR = .TRUE.
          ILSTSYM = MULD2H(ISYSEL2(INDEX),ISYOEL2(INDEX,1))
          ILSTSYM = MULD2H(ILSTSYM,ISYOEL2(INDEX,2))
-      ELSE IF (LIST(1:2).EQ.'L1') THEN
+      ELSE IF (LIST(1:2).EQ.'L1'.OR.LIST(1:3).EQ.'X1B') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRZLBL) LEOOR = .TRUE.
          ILSTSYM = ISYLRZ(INDEX)
-      ELSE IF ((LIST(1:2).EQ.'M1').OR.(LIST(1:2).EQ.'FR')) THEN
+      ELSE IF (LIST(1:2).EQ.'M1'.OR.LIST(1:2).EQ.'FR') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRM   ) LEOOR = .TRUE.
          ILSTSYM = ISYLRM(INDEX)
       ELSE IF (LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'F1') THEN
@@ -5993,10 +6251,8 @@ C  /* Deck freqlst */
          FREQLST = 0.0D0
       ELSE IF (LIST(1:2).EQ.'LE') THEN
          FREQLST = -EIGVAL(INDEX)
-         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "LE " VECTORS'
       ELSE IF (LIST(1:2).EQ.'RE') THEN
          FREQLST = +EIGVAL(INDEX)
-         WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "RE " VECTORS'
       ELSE IF (LIST(1:3).EQ.'ER1'.OR.LIST(1:3).EQ.'EO1') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NER1LBL) LEOOR = .TRUE.
          FREQLST =  EIGER1(INDEX) + FRQER1(INDEX)
@@ -6013,10 +6269,10 @@ C  /* Deck freqlst */
          IF (INDEX.LE.0 .OR. INDEX.GT.NEL2LBL) LEOOR = .TRUE.
          FREQLST =  EIGEL2(INDEX) + FRQEL2(INDEX,1) + FRQEL2(INDEX,2)
          WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "EL2" VECTORS'
-      ELSE IF (LIST(1:2).EQ.'L1') THEN
+      ELSE IF (LIST(1:2).EQ.'L1'.OR.LIST(1:3).EQ.'X1B') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRZLBL) LEOOR = .TRUE.
          FREQLST = FRQLRZ(INDEX)
-      ELSE IF ((LIST(1:2).EQ.'M1').OR.(LIST(1:2).EQ.'FR')) THEN
+      ELSE IF (LIST(1:2).EQ.'M1'.OR.LIST(1:2).EQ.'FR') THEN
          IF (INDEX.LE.0 .OR. INDEX.GT.NLRM   ) LEOOR = .TRUE.
          FREQLST = FRQLRM(INDEX)
          WRITE(LUPRI,*)'FUNCTION FREQLST NOT DEBUGED FOR "M1 " VECTORS'

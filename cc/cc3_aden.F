@@ -36,7 +36,8 @@ C
 C  /* Deck cc3_aden */
       SUBROUTINE CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,
      *                            XLAMDP0,XLAMDH0,FOCK0,
-     *                            DIJ,DAB,DIA,ISYDEN,
+     *                            DIJ,DAB,DO_DIA,DIA,ISYDEN,
+     *                            DO_YMMAT,YMMAT,
      *                            WORK,LWORK,
      *                            LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
      *                            FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
@@ -49,6 +50,8 @@ C
 #include <ccsdsym.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
+C
+      LOGICAL DO_YMMAT, DO_DIA
 C
       CHARACTER LISTL*3, LISTR*3
       CHARACTER*(*) FNTOC, FN3VI, FNDKBC3, FN3FOPX, FN3FOP2X
@@ -72,10 +75,12 @@ C
 #if defined (SYS_CRAY)
       REAL XLAMDP0(*),XLAMDH0(*),FOCK0(*)
       REAL DAB(*),DIJ(*),DIA(*)
+      REAL YMMAT(*)
       REAL WORK(LWORK)
 #else
       DOUBLE PRECISION XLAMDP0(*),XLAMDH0(*),FOCK0(*)
       DOUBLE PRECISION DAB(*),DIJ(*),DIA(*)
+      DOUBLE PRECISION YMMAT(*)
       DOUBLE PRECISION WORK(LWORK)
 #endif
 C
@@ -106,7 +111,9 @@ C
 C
       CALL DZERO(DAB,NMATAB(ISYDEN))
       CALL DZERO(DIJ,NMATIJ(ISYDEN))
-      CALL DZERO(DIA,NT1AM(ISYDEN))
+      IF (DO_DIA) THEN
+         CALL DZERO(DIA,NT1AM(ISYDEN))
+      END IF
 C
 C     Open the file
 C
@@ -117,7 +124,9 @@ C
       CALL WOPEN2(LU3VI2,FN3VI2,64,0)
       CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
 C
-      CALL CC3_ADENVIR(DIJ,DAB,DIA,ISYDEN,LISTL,IDLSTL,LISTR,IDLSTR,
+      CALL CC3_ADENVIR(DIJ,DAB,DO_DIA,DIA,ISYDEN,
+     *                 DO_YMMAT,YMMAT,
+     *                   LISTL,IDLSTL,LISTR,IDLSTR,
      *                   LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                   LUDKBC3,FNDKBC3,
      *                   LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X,
@@ -130,27 +139,34 @@ C
          CALL PRINT_MATAB(DAB,ISYDEN)
          WRITE(LUPRI,*)'DIJ density after CC3_ADENVIR '
          CALL PRINT_MATIJ(DIJ,ISYDEN)
-         WRITE(LUPRI,*)'DIA density after CC3_ADENVIR '
-         CALL PRINT_MATAI(DIA,ISYDEN)
+         IF (DO_DIA) THEN
+            WRITE(LUPRI,*)'DIA density after CC3_ADENVIR '
+            CALL PRINT_MATAI(DIA,ISYDEN)
+         END IF
       END IF
 C
-      CALL CC3_ADENOCC(LISTL,IDLSTL,LISTR,IDLSTR,
-     *                            WORK(KLAMP0),WORK(KLAMH0),FOCK0,
-     *                            DIJ,DAB,DIA,ISYDEN,
-     *                            WORK(KEND1),LWRK1,
-     *                            LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
-     *                            FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
-     *                            LUDKBC3,FNDKBC3,LU3FOP,FN3FOP,
-     *                            LU3FOPX,FN3FOPX,
-     *                            LU3FOP2X,FN3FOP2X)
-C
-      IF (IPRINT .GT. 55) THEN
-         WRITE(LUPRI,*)'DAB density after CC3_ADENOCC '
-         CALL PRINT_MATAB(DAB,ISYDEN)
-         WRITE(LUPRI,*)'DIJ density after CC3_ADENOCC '
-         CALL PRINT_MATIJ(DIJ,ISYDEN)
-         WRITE(LUPRI,*)'DIA density after CC3_ADENOCC '
-         CALL PRINT_MATAI(DIA,ISYDEN)
+      IF (LISTR(1:3).EQ.'R1 ') THEN
+         CALL CC3_ADENOCC(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                               WORK(KLAMP0),WORK(KLAMH0),FOCK0,
+     *                               DIJ,DAB,DO_DIA,DIA,ISYDEN,
+     *                               WORK(KEND1),LWRK1,
+     *                               LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                               FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                               LUDKBC3,FNDKBC3,LU3FOP,FN3FOP,
+     *                               LU3FOPX,FN3FOPX,
+     *                               LU3FOP2X,FN3FOP2X)
+ 
+         IF (IPRINT .GT. 55) THEN
+            WRITE(LUPRI,*)'DAB density after CC3_ADENOCC '
+            CALL PRINT_MATAB(DAB,ISYDEN)
+            WRITE(LUPRI,*)'DIJ density after CC3_ADENOCC '
+            CALL PRINT_MATIJ(DIJ,ISYDEN)
+            IF (DO_DIA) THEN 
+               WRITE(LUPRI,*)'DIA density after CC3_ADENOCC '
+               CALL PRINT_MATAI(DIA,ISYDEN)
+            END IF
+         END IF
+ 
       END IF
 C
       CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
@@ -168,7 +184,7 @@ C
 C  /* Deck cc3_adenocc */
       SUBROUTINE CC3_ADENOCC(LISTL,IDLSTL,LISTR,IDLSTR,
      *                            XLAMDP0,XLAMDH0,FOCK0,
-     *                            DIJ,DAB,DIA,ISYDEN,
+     *                            DIJ,DAB,DO_DIA,DIA,ISYDEN,
      *                            WORK,LWORK,
      *                            LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
      *                            FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
@@ -200,6 +216,12 @@ C
 #include<iratdef.h>
 #include<ccinftap.h>
 #include <ccsdinp.h>
+#include <cclrmrsp.h>
+#include <ccexci.h>
+#include <ccn2rsp.h>
+C
+      LOGICAL DO_DIA
+      LOGICAL LSKIPL1R
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -223,8 +245,10 @@ C
       INTEGER KTETAXKL
       INTEGER IDLSTL1R,ISYML1R
       INTEGER ISINT2L1R,KT1L1R
+      INTEGER KEND2,LWRK2
 C
       INTEGER IR1TAMP
+      INTEGER ILSTSYM
 C
       CHARACTER LISTL*3, LISTR*3, LISTL0*3, LISTL1R*3
       CHARACTER*(*) FNTOC, FN3VI, FNDKBC3, FN3FOPX, FN3FOP2X, FN3FOP
@@ -261,9 +285,9 @@ C------------------------------------------------------------
 C     some initializations:
 C------------------------------------------------------------
 C
-      LISTL0 = 'L0 '
-      IDLSTL0 = 0
-      ISYML0 = ISYM0
+*     LISTL0 = 'L0 '
+*     IDLSTL0 = 0
+*     ISYML0 = ISYM0
 C
       ISYMT3 = ISYM0
       ISYMT3B = ISYM0
@@ -285,12 +309,69 @@ C
         ISYML1R  = ISYLRT(IDLSTL1R)
         FREQL1R  = FRQLRT(IDLSTL1R)
 C
+        !LITSL0 corresponding to LISTL
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0 = ISYM0
+C
         IF (FREQL1R .NE. FREQL1) THEN
            WRITE(LUPRI,*)'FREQL1R: ', FREQL1R
            WRITE(LUPRI,*)'FREQL1: ', FREQL1
-           CALL QUIT('Frequency mismatch in CC3_ADENOCC')
+           CALL QUIT('Frequency mismatch in CC3_ADENOCC(L1)')
         END IF
 
+      ELSE IF (LISTL(1:3).EQ.'M1 ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = FRQLRM(IDLSTL)
+        LABELL1 = '- none -'
+C
+        ! find corresponding right eigenvector
+        LISTL1R = 'RE '
+        IDLSTL1R = ILRM(IDLSTL)
+        ISYML1R = ISYML1
+        FREQL1R = EIGVAL(IDLSTL1R)
+C
+        !LITSL0 corresponding to LISTL
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0 = ISYM0
+C
+        IF (FREQL1R .NE. FREQL1) THEN
+           WRITE(LUPRI,*)'FREQL1R: ', FREQL1R
+           WRITE(LUPRI,*)'FREQL1: ', FREQL1
+           CALL QUIT('Frequency mismatch in CC3_ADENOCC(M1)')
+        END IF
+C
+      ELSE IF (LISTL(1:3).EQ.'N2 ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = FRQIN2(IDLSTL) + FRQFN2(IDLSTL)
+        LABELL1 = '- none -'
+C
+        ! find corresponding right eigenvector
+        LISTL1R = 'RE '
+        IDLSTL1R = IFN2(IDLSTL)
+        ISYML1R = ILSTSYM(LISTL1R,IDLSTL1R)
+        FREQL1R = FRQFN2(IDLSTL)
+C
+        !LITSL0 corresponding to LISTL
+        LISTL0 = 'LE '
+        IDLSTL0 = IIN2(IDLSTL)
+        ISYML0 = ILSTSYM(LISTL0,IDLSTL0)
+C
+      ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = -EIGVAL(IDLSTL)
+        LABELL1 = '- none -'
+C
+        !we don't have any "right" vector entering a right hand side
+        LISTL1R = '---'
+        IDLSTL1R = -99
+C
+        !LITSL0 corresponding to LISTL (not used for LE)
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0 = ISYM0
+C
       ELSE 
          CALL QUIT('Unkown left list in CC3_ADENOCC')
       END IF
@@ -378,16 +459,17 @@ C     basis (unsorted - need in WBX_JK_ETA)
 C---------------------------------------------------------------------
 C
          CALL GET_FOCKX(WORK(KFOCKL1),LABELL1,IDLSTL,ISYML1,XLAMDP0,
-     *                  XLAMDH0,WORK(KEND1),LWRK1)
+     *                  ISYM0,XLAMDH0,ISYM0,WORK(KEND1),LWRK1)
+
+      END IF
 C
 C-------------------------------------
 C     Read L1 and L2 multipliers 
 C-------------------------------------
 C
-         IOPT  = 3
-         CALL GET_T1_T2(IOPT,.FALSE.,WORK(KL1),WORK(KL2),LISTL,
-     *                  IDLSTL,ISYML1,WORK(KEND1),LWRK1)
-      END IF
+      IOPT  = 3
+      CALL GET_T1_T2(IOPT,.FALSE.,WORK(KL1),WORK(KL2),LISTL,
+     *               IDLSTL,ISYML1,WORK(KEND1),LWRK1)
 C
 C---------------------------------------------------------------------
 C     Read information for R1 list
@@ -401,7 +483,7 @@ C     basis
 C---------------------------------------------------------------------
 C        
          CALL GET_FOCKX(WORK(KFOCKR1),LABELR1,IDLSTR,ISYMR1,XLAMDP0,
-     *                  XLAMDH0,WORK(KEND1),LWRK1)
+     *                  ISYM0,XLAMDH0,ISYM0,WORK(KEND1),LWRK1)
 C
 C-------------------------------------
 C     Read R1 and R2 amplitudes 
@@ -440,15 +522,18 @@ C                  with LambdaH_R1
       ISINT1    = 1
       ISINT2    = 1
       ISINTR1   = MULD2H(ISINT1,ISYMR1)
-      ISINT2L1R = MULD2H(ISYML1R,ISINT2)
-      ISYFCKL1R  = MULD2H(ISYMOP,ISYML1R)
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         ISINT2L1R = MULD2H(ISYML1R,ISINT2)
+         ISYFCKL1R  = MULD2H(ISYMOP,ISYML1R)
+      END IF
 
       KXIAJB    = KEND1
       KEND1     = KXIAJB    + NT2AM(ISYM0)
 
       KT3BOG1   = KEND1
-      KT3BOL1   = KT3BOG1   + MAX(NTRAOC(ISINT2L1R),NTRAOC(ISYM0))
-      KT3BOG2   = KT3BOL1   + MAX(NTRAOC(ISINT2L1R),NTRAOC(ISYM0))
+      KT3BOL1   = KT3BOG1   + NTRAOC(ISYM0)
+      KT3BOG2   = KT3BOL1   + NTRAOC(ISYM0)
       KT3BOL2   = KT3BOG2   + NTRAOC(ISYM0)
       KT3OG1    = KT3BOL2   + NTRAOC(ISYM0)
       KT3OG2    = KT3OG1    + NTRAOC(ISINT2)
@@ -456,28 +541,35 @@ C                  with LambdaH_R1
       KLAMHL1R   = KLAMPL1R   + NLAMDT
       KEND1     = KLAMHL1R   + NLAMDT
 C
-      KFOCKL1RCK  = KEND1
-      KT3VIJG1  = KFOCKL1RCK  + NT1AM(ISYFCKL1R)
-      KEND1     = KT3VIJG1  + NMAABCI(ISYM0)
+      KT3VIJG1 = KEND1
+      KEND1    = KT3VIJG1  + NMAABCI(ISYM0)
       LWRK1     = LWORK     - KEND1
 C
-      KT3BOG2X   = KEND1
-      KT3BOL2X   = KT3BOG2X + NTRAOC(ISINT2L1R)
-      KEND1      = KT3BOL2X + NTRAOC(ISINT2L1R)
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         KFOCKL1RCK  = KEND1
+         KEND1  = KFOCKL1RCK  + NT1AM(ISYFCKL1R)
+         LWRK1     = LWORK     - KEND1
+C
+         KT3BOG2X   = KEND1
+         KT3BOL2X   = KT3BOG2X + NTRAOC(ISINT2L1R)
+         KEND1      = KT3BOL2X + NTRAOC(ISINT2L1R)
+C
+         KXGADCKX   = KEND1 
+         KXLADCKX   = KXGADCKX + NMAABCI(ISINT2L1R)
+         KEND1     = KXLADCKX + NMAABCI(ISINT2L1R)
+         LWRK1     = LWORK     - KEND1
+C
+         KT1L1R  = KEND1
+         KEND1  = KT1L1R + NT1AM(ISYML1R)
+         LWRK1   = LWORK  - KEND1
+C
+      END IF
 C
       KXGADCK   = KEND1 
       KXLADCK   = KXGADCK + NMAABCI(ISYM0)
       KEND1     = KXLADCK + NMAABCI(ISYM0)
       LWRK1     = LWORK     - KEND1
-C
-      KXGADCKX   = KEND1 
-      KXLADCKX   = KXGADCKX + NMAABCI(ISINT2L1R)
-      KEND1     = KXLADCKX + NMAABCI(ISINT2L1R)
-      LWRK1     = LWORK     - KEND1
-C
-      KT1L1R  = KEND1
-      KEND1  = KT1L1R + NT1AM(ISYML1R)
-      LWRK1   = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -505,6 +597,8 @@ C----------------------------------------------------------
 C     Get Lambda for right list depended on left LISTL list
 C----------------------------------------------------------
 C
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
          CALL GET_LAMBDAX(WORK(KLAMPL1R),WORK(KLAMHL1R),LISTL1R,
      *                    IDLSTL1R,
      *                    ISYML1R,XLAMDP0,XLAMDH0,WORK(KEND1),LWRK1)
@@ -520,6 +614,8 @@ C
      *                  ISYML1R,WORK(KEND1),LWRK1)
          CALL CC3LR_MFOCK(WORK(KFOCKL1RCK),WORK(KT1L1R),WORK(KXIAJB),
      *                    ISYFCKL1R)
+C
+      END IF
 C
 C-----------------------------------------------------------------
 C     Construct occupied integrals which are required to calculate    
@@ -547,7 +643,8 @@ C
 C     KW3BXOG1 and KW3BXOL1 have to be taken out
 C     and ccfop_sort included
 C
-!     CALL INTOCC_T3BARX(LUTOC,FNTOC,ISYMOP,XLAMDH0,ISYM0,ISINT2,
+!     CALL INTOCC_T3BARX(.FALSE.,
+!    *                   LUTOC,FNTOC,ISYMOP,XLAMDH0,ISYM0,ISINT2,
 !    *                   WORK(KLAMHL1R),ISYML1R,ISINT2L1R,
 !    *                   WORK(KW3BXOG1),WORK(KW3BXOL1),
 !    *                   WORK(KT3BOG2X1),WORK(KT3BOL2X1),
@@ -556,11 +653,14 @@ C
 c     CALL CCFOP_SORT(WORK(KT3BOG2X1),WORK(KT3BOG2X),ISINT2L1R,1)
 c     CALL CCFOP_SORT(WORK(KT3BOL2X1),WORK(KT3BOL2X),ISINT2L1R,1)
 c
-      CALL INTOCC_T3BARX_JK(LUTOC,FNTOC,ISYMOP,
-     *                   WORK(KLAMHL1R),ISYML1R,ISINT2L1R,
-     *                   DUMMY,DUMMY,.TRUE.,
-     *                   WORK(KT3BOG2X),WORK(KT3BOL2X),
-     *                   WORK(KEND1),LWRK1)
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         CALL INTOCC_T3BARX_JK(LUTOC,FNTOC,ISYMOP,
+     *                      WORK(KLAMHL1R),ISYML1R,ISINT2L1R,
+     *                      DUMMY,DUMMY,.TRUE.,
+     *                      WORK(KT3BOG2X),WORK(KT3BOL2X),
+     *                      WORK(KEND1),LWRK1)
+      END IF
 C
 C----------------------------------------------
 C     Get virtual integrals for t30 amplitudes
@@ -576,7 +676,8 @@ C     KXGADCK g(kcad) = (kc ! ad) sorted as I(adck)
 C     KXLADCK L(kcad) sorted as I(adck)
 C----------------------------------------------
 C
-      CALL INTVIR_T3B0_JK(WORK(KXGADCK),WORK(KXLADCK),ISYM0,XLAMDP0,
+      CALL INTVIR_T3B0_JK(2,WORK(KXGADCK),WORK(KXLADCK),ISYM0,XLAMDP0,
+     *                    ISYM0,
      *                         LU3VI,FN3VI,LU3FOP,FN3FOP,
      *                         WORK(KEND1),LWRK1)
 C
@@ -584,10 +685,13 @@ C----------------------------------------------
 C     Get virtual integrals for t3b0 multipliers
 C----------------------------------------------
 C
-      CALL INTVIR_T3BX_JK(WORK(KXGADCKX),WORK(KXLADCKX),ISINT2L1R,
-     *                    WORK(KLAMPL1R),ISYML1R,
-     *                    LU3VI,FN3VI,LU3FOP,FN3FOP,
-     *                    WORK(KEND1),LWRK1)
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         CALL INTVIR_T3BX_JK(WORK(KXGADCKX),WORK(KXLADCKX),ISINT2L1R,
+     *                       WORK(KLAMPL1R),ISYML1R,
+     *                       LU3VI,FN3VI,LU3FOP,FN3FOP,
+     *                       WORK(KEND1),LWRK1)
+      END IF
 C
 C----------------------------
 C     Loop over K
@@ -612,12 +716,12 @@ C
                KW3BXKL  = KT3B0KL + MAX( NMAABCI(ISYT3B0KL),
      *                                   NMAABCI(ISTETAXKL))
                KTETAXKL    = KW3BXKL + NMAABCI(ISYW3BXKL)
-               KEND1   = KTETAXKL + NMAABCI(ISTETAXKL)
-               LWRK1  = LWORK  - KEND1
+               KEND2   = KTETAXKL + NMAABCI(ISTETAXKL)
+               LWRK2  = LWORK  - KEND2
 
-               IF (LWRK1 .LT. 0) THEN
+               IF (LWRK2 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Memory available : ',LWORK
-                  WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+                  WRITE(LUPRI,*) 'Memory needed    : ',KEND2
                   CALL QUIT('Insufficient space in CC3_ADENOCC (4)')
                END IF
 C
@@ -633,12 +737,12 @@ C
                   CALL GET_T30_IJ_O(WORK(KT30KL),ISYT30KL,WORK(KT2TP),
      *                              ISYM0,
      *                              WORK(KT3OG2),ISYM0,ISYML,L,ISYMK,K,
-     *                              WORK(KEND1),LWRK1)
+     *                              WORK(KEND2),LWRK2)
 C
                   CALL GET_T30_IJ_V(WORK(KT30KL),ISYT30KL,WORK(KT2TP),
      *                              ISYM0,WORK(KT3VIJG1),
      *                              ISYM0,ISYML,L,ISYMK,K,
-     *                              WORK(KEND1),LWRK1)
+     *                              WORK(KEND2),LWRK2)
 C
 C--------------------------------------------------------------
 C                 Divide by orbital energy difference and remove 
@@ -665,58 +769,76 @@ C-------------------------------------------
 C                 Get T3BAR0^KL multipliers
 C-------------------------------------------
 C
-                  CALL DZERO(WORK(KT3B0KL),NMAABCI(ISYT3B0KL))
-C
-                  CALL GET_T3B0_JK_O(WORK(KT3B0KL),ISYT3B0KL,
-     *                           WORK(KL2TP),ISYML0,
-     *                           WORK(KT3BOL2),WORK(KT3BOG2),ISYM0,
-     *                           ISYML,L,ISYMK,K,
-     *                           WORK(KEND1),LWRK1)
-                  CALL GET_T3B0_JK_V(WORK(KT3B0KL),ISYT3B0KL,
-     *                               WORK(KL2TP),ISYML0,
-     *                               WORK(KXGADCK),WORK(KXLADCK),
-     *                               ISYM0,ISYML,L,ISYMK,K,
-     *                               WORK(KEND1),LWRK1)
-C
-                  CALL GET_T3B0_JK_L1F(WORK(KT3B0KL),ISYT3B0KL,
-     *                            WORK(KL1AM),ISYML0,
-     *                            WORK(KXIAJB),ISYM0,
-     *                            WORK(KL2TP),ISYML0,
-     *                            WORK(KFCKBA),ISYM0,
-     *                            ISYML,L,ISYMK,K)
-C
-C--------------------------------------------------------------
-C                 Divide by orbital energy difference and remove 
-C                 forbidden elements
-C--------------------------------------------------------------
-C
-                  CALL T3JK_DIA(WORK(KT3B0KL),ISYT3B0KL,ISYML,L,ISYMK,K,
-     *                          WORK(KFOCKD))
-                  CALL T3_FORBIDDEN_JK(WORK(KT3B0KL),ISYMT3B,ISYML,L,
-     *                                 ISYMK,K)
-c
-c                call sum_pt3_jk(work(kt3b0kl),isyml,l,isymk,k,isyt3b0kl,
-c    *                           work(kx3am),7)
-C
-                  IF (IPRINT .GT. 55) THEN
-                     XNORMVAL = DDOT(NMAABCI(ISYT3B0KL),WORK(KT3B0KL),1,
-     *                               WORK(KT3B0KL),1)
-                     WRITE(LUPRI,*)'NORM OF KT3B0KL CC3_ADENOCC ',
-     *                              XNORMVAL
-                  END IF
-C
-C-------------------------------------------
-C                 Get W3BARX^KL multipliers
-C-------------------------------------------
-C
                   CALL DZERO(WORK(KW3BXKL),NMAABCI(ISYW3BXKL))
-C           
-C                 <L2|[Y,tau3]|HF> + <L3|[Y^,tau3]|HF>
+
+                  IF  (LISTL(1:3).EQ.'L1 ') THEN
+                    CALL DZERO(WORK(KT3B0KL),NMAABCI(ISYT3B0KL))
 C
-                  CALL WBX_JK_ETA(WORK(KT3B0KL),ISYT3B0KL,WORK(KFOCKL1),
-     *                            ISYML1,WORK(KW3BXKL),ISYW3BXKL,
-     *                            WORK(KL2TP),ISYML0,ISYML,L,ISYMK,K,
-     *                            WORK(KEND1),LWRK1)
+                    CALL GET_T3B0_JK_O(WORK(KT3B0KL),ISYT3B0KL,
+     *                             WORK(KL2TP),ISYML0,
+     *                             WORK(KT3BOL2),WORK(KT3BOG2),ISYM0,
+     *                             ISYML,L,ISYMK,K,
+     *                             WORK(KEND2),LWRK2)
+                    CALL GET_T3B0_JK_V(WORK(KT3B0KL),ISYT3B0KL,
+     *                                 WORK(KL2TP),ISYML0,
+     *                                 WORK(KXGADCK),WORK(KXLADCK),
+     *                                 ISYM0,ISYML,L,ISYMK,K,
+     *                                 WORK(KEND2),LWRK2)
+C
+                    CALL GET_T3B0_JK_L1F(WORK(KT3B0KL),ISYT3B0KL,
+     *                              WORK(KL1AM),ISYML0,
+     *                              WORK(KXIAJB),ISYM0,
+     *                              WORK(KL2TP),ISYML0,
+     *                              WORK(KFCKBA),ISYM0,
+     *                              ISYML,L,ISYMK,K)
+C
+C----------------------------------------------------------------
+C                   Divide by orbital energy difference and remove 
+C                   forbidden elements
+C----------------------------------------------------------------
+C
+                    CALL T3JK_DIA(WORK(KT3B0KL),ISYT3B0KL,ISYML,L,ISYMK,
+     *                            K,WORK(KFOCKD))
+                    CALL T3_FORBIDDEN_JK(WORK(KT3B0KL),ISYMT3B,ISYML,L,
+     *                                   ISYMK,K)
+c
+c                c  all sum_pt3_jk(work(kt3b0kl),isyml,l,isymk,k,isyt3b0kl,
+c    *                             work(kx3am),7)
+C
+                    IF (IPRINT .GT. 55) THEN
+                     XNORMVAL = DDOT(NMAABCI(ISYT3B0KL),WORK(KT3B0KL),1,
+     *                                 WORK(KT3B0KL),1)
+                       WRITE(LUPRI,*)'NORM OF KT3B0KL CC3_ADENOCC ',
+     *                                XNORMVAL
+                    END IF
+C
+C---------------------------------------------
+C                   Get W3BARX^KL multipliers
+C---------------------------------------------
+C
+C           
+C                   <L2|[Y,tau3]|HF> + <L3|[Y^,tau3]|HF>
+C
+                    CALL WBX_JK_ETA(WORK(KT3B0KL),ISYT3B0KL,
+     *                             WORK(KFOCKL1),
+     *                             ISYML1,WORK(KW3BXKL),ISYW3BXKL,
+     *                             WORK(KL2TP),ISYML0,ISYML,L,ISYMK,K,
+     *                             WORK(KEND2),LWRK2)
+                   END IF
+C
+C                 <L2|[H^Y,tau3]|HF>
+C
+                   IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ')
+     *                 .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+                     CALL WBX_JK_FMAT(WORK(KW3BXKL),ISYW3BXKL,
+     *                               WORK(KL2TP),ISYML0,
+     *                               WORK(KFOCKL1RCK),ISYFCKL1R,
+     *                               WORK(KT3BOL2X),WORK(KT3BOG2X),
+     *                               WORK(KXGADCKX),WORK(KXLADCKX),
+     *                               ISINT2L1R,
+     *                               ISYML,L,ISYMK,K,
+     *                               WORK(KEND2),LWRK2)
+                   END IF
 C
 C                 <L2Y|[H^,tau3]|HF>
 C
@@ -726,18 +848,7 @@ C
      *                            WORK(KT3BOL2),WORK(KT3BOG2),
      *                            WORK(KXGADCK),WORK(KXLADCK),ISYM0,
      *                            ISYML,L,ISYMK,K,
-     *                            WORK(KEND1),LWRK1)
-C
-C                 <L2|[H^Y,tau3]|HF>
-C
-                  CALL WBX_JK_FMAT(WORK(KW3BXKL),ISYW3BXKL,
-     *                            WORK(KL2TP),ISYML0,
-     *                            WORK(KFOCKL1RCK),ISYFCKL1R,
-     *                            WORK(KT3BOL2X),WORK(KT3BOG2X),
-     *                            WORK(KXGADCKX),WORK(KXLADCKX),
-     *                            ISINT2L1R,
-     *                            ISYML,L,ISYMK,K,
-     *                            WORK(KEND1),LWRK1)
+     *                            WORK(KEND2),LWRK2)
 C
 C                 <L1Y|[H^,tau3]|HF>
 C
@@ -778,7 +889,7 @@ C
 C
                   CALL TETAX_JK_BC(WORK(KT30KL),ISYT30KL,WORK(KFOCKR1),
      *                             ISYMR1,WORK(KTETAXKL),ISTETAXKL,
-     *                             WORK(KEND1),LWRK1)
+     *                             WORK(KEND2),LWRK2)
 C
                   CALL DZERO(WORK(KT3B0KL),NMAABCI(ISTETAXKL))
 C
@@ -816,7 +927,7 @@ C
 C
                   CALL TETAX_JK_A(WORK(KT30KL),ISYT30KL,WORK(KFOCKR1),
      *                             ISYMR1,WORK(KT3B0KL),ISTETAXKL,
-     *                             WORK(KEND1),LWRK1)
+     *                             WORK(KEND2),LWRK2)
 C
                   CALL W3JK_DIA(WORK(KT3B0KL),ISTETAXKL,ISYML,L,ISYMK,K,
      *                           WORK(KFOCKD),FREQR1)
@@ -836,7 +947,7 @@ C
 C
                   CALL ADEN_DAB_LM(DAB,WORK(KT3B0KL),ISTETAXKL,
      *                             WORK(KW3BXKL),ISYW3BXKL,
-     *                             WORK(KEND1),LWRK1)
+     *                             WORK(KEND2),LWRK2)
 C
                   IF (IPRINT .GT. 55) THEN
                     XNORMVAL = DDOT(NMATAB(ISYDEN),DAB,1,DAB,1)
@@ -844,16 +955,18 @@ C
      *                             XNORMVAL
                   END IF
 C
-                  CALL ADEN_DAI_LM(DIA,WORK(KL2),ISYML1,
-     *                       WORK(KT3B0KL),ISTETAXKL,
-     *                       ISYML,L,ISYMK,K,
-     *                       WORK(KEND1),LWRK1)
+                  IF (DO_DIA) THEN
+                     CALL ADEN_DAI_LM(DIA,WORK(KL2),ISYML1,
+     *                          WORK(KT3B0KL),ISTETAXKL,
+     *                          ISYML,L,ISYMK,K,
+     *                          WORK(KEND2),LWRK2)
 C
-                  IF (IPRINT .GT. 55) THEN
-                    XNORMVAL = DDOT(NT1AM(ISYDEN),DIA,1,DIA,1)
-                    WRITE(LUPRI,*)'NORM OF DIA AFTER ADEN_DAI_LM ',
-     *                             XNORMVAL
-                  END IF
+                     IF (IPRINT .GT. 55) THEN
+                       XNORMVAL = DDOT(NT1AM(ISYDEN),DIA,1,DIA,1)
+                       WRITE(LUPRI,*)'NORM OF DIA AFTER ADEN_DAI_LM ',
+     *                                XNORMVAL
+                     END IF
+                 END IF
 C
                ENDDO   ! L
             ENDDO      ! ISYML
@@ -1189,6 +1302,8 @@ C                    - sum_l t^(cb)_(kl) (ai|lj)
 C
 C
 C     Filip Pawlowski, Aarhus, Winter 2003
+*
+*     The memory bug fixed on 27-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
 #include<ccsdsym.h>
@@ -1242,16 +1357,29 @@ C
       ISYKJ = MULD2H(ISYMK,ISYMJ)
       ISYCL = MULD2H(ISYINT,ISYKJ)
 C
-      KT2LBAI = 1
-      KINTCL  = KT2LBAI + NT2SQ(ISYMT2)
-      KCBAI   = KINTCL  + NT1AM(ISYCL)
+*     KT2LBAI = 1
+*     KINTCL  = KT2LBAI + NT2SQ(ISYMT2)
+*     KCBAI   = KINTCL  + NT1AM(ISYCL)
+*     KEND1   = KCBAI   + NMAAOBCI(ISYT30JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KCBAI   = 1
       KEND1   = KCBAI   + NMAAOBCI(ISYT30JK)
       LWRK1   = LWORK - KEND1
-C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_O (1)')
+      END IF
+C
+      KT2LBAI = KEND1
+      KINTCL  = KT2LBAI + NT2SQ(ISYMT2)
+      KEND2   = KINTCL  + NT1AM(ISYCL)
+      LWRK2   = LWORK - KEND2
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_O (1x)')
       END IF
 C
       CALL DZERO(WORK(KCBAI),NMAAOBCI(ISYT30JK))
@@ -1326,9 +1454,13 @@ C
       ISYT2BAL = MULD2H(ISYMT2,ISYMJ)
       ISYINTLCI = MULD2H(ISYINT,ISYMK)
 C
-      KT2BAL = 1
-      KINTLCI  = KT2BAL + NMAABI(ISYT2BAL)
-      KBACI   = KINTLCI + NCKI(ISYINTLCI)
+*     KT2BAL = 1
+*     KINTLCI  = KT2BAL + NMAABI(ISYT2BAL)
+*     KBACI   = KINTLCI + NCKI(ISYINTLCI)
+*     KEND1 = KBACI + NMAAB_CI(ISYT30JK)
+*     LWRK1  = LWORK - KEND1 
+C
+      KBACI   = 1
       KEND1 = KBACI + NMAAB_CI(ISYT30JK)
       LWRK1  = LWORK - KEND1 
 C
@@ -1336,6 +1468,16 @@ C
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_O (2)')
+      END IF
+C
+      KT2BAL = KEND1
+      KINTLCI  = KT2BAL + NMAABI(ISYT2BAL)
+      KEND2   = KINTLCI + NCKI(ISYINTLCI)
+      LWRK2  = LWORK - KEND2 
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_O (2x)')
       END IF
 C
       CALL DZERO(WORK(KBACI),NMAAB_CI(ISYT30JK))
@@ -1416,9 +1558,13 @@ C
       ISYT2BCL = MULD2H(ISYMT2,ISYMJ)
       ISYINTLAI = MULD2H(ISYINT,ISYMK)
 C
-      KT2BCL = 1
-      KINTLAI  = KT2BCL + NMAABI(ISYT2BCL)
-      KBCAI   = KINTLAI + NCKI(ISYINTLAI)
+*     KT2BCL = 1
+*     KINTLAI  = KT2BCL + NMAABI(ISYT2BCL)
+*     KBCAI   = KINTLAI + NCKI(ISYINTLAI)
+*     KEND1  = KBCAI + NMAABCI(ISYT30JK)
+*     LWRK1  = LWORK - KEND1 
+C
+      KBCAI   = 1
       KEND1  = KBCAI + NMAABCI(ISYT30JK)
       LWRK1  = LWORK - KEND1 
 C
@@ -1426,6 +1572,17 @@ C
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_O (3)')
+      END IF
+C
+      KT2BCL = KEND1
+      KINTLAI  = KT2BCL + NMAABI(ISYT2BCL)
+      KEND2   = KINTLAI + NCKI(ISYINTLAI)
+      LWRK2  = LWORK - KEND2 
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_O (3x)')
       END IF
 C
       CALL DZERO(WORK(KBCAI),NMAABCI(ISYT30JK))
@@ -1480,9 +1637,13 @@ C
       ISYJK = MULD2H(ISYMJ,ISYMK)
       ISYBL = MULD2H(ISYINT,ISYJK)
 C
-      KT2LCAI = 1
-      KINTBL  = KT2LCAI + NT2SQ(ISYMT2)
-      KBCAI   = KINTBL  + NT1AM(ISYBL)
+*     KT2LCAI = 1
+*     KINTBL  = KT2LCAI + NT2SQ(ISYMT2)
+*     KBCAI   = KINTBL  + NT1AM(ISYBL)
+*     KEND1 = KBCAI + NMAABCI(ISYT30JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KBCAI   = 1
       KEND1 = KBCAI + NMAABCI(ISYT30JK)
       LWRK1   = LWORK - KEND1
 C
@@ -1490,6 +1651,17 @@ C
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_O (4)')
+      END IF
+C
+      KT2LCAI = KEND1
+      KINTBL  = KT2LCAI + NT2SQ(ISYMT2)
+      KEND2   = KINTBL  + NT1AM(ISYBL)
+      LWRK2   = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_O (4x)')
       END IF
 C
       CALL DZERO(WORK(KBCAI),NMAABCI(ISYT30JK))
@@ -1561,9 +1733,13 @@ C
       ISYT2CAL = MULD2H(ISYMT2,ISYMK)
       ISYINTLBI = MULD2H(ISYINT,ISYMJ)
 C
-      KT2CAL = 1
-      KINTLBI  = KT2CAL + NMAABI(ISYT2CAL)
-      KCABI   = KINTLBI + NCKI(ISYINTLBI)
+*     KT2CAL = 1
+*     KINTLBI  = KT2CAL + NMAABI(ISYT2CAL)
+*     KCABI   = KINTLBI + NCKI(ISYINTLBI)
+*     KEND1 = KCABI + NMAAB_CI(ISYT30JK)
+*     LWRK1  = LWORK - KEND1 
+C
+      KCABI   = 1
       KEND1 = KCABI + NMAAB_CI(ISYT30JK)
       LWRK1  = LWORK - KEND1 
 C
@@ -1571,6 +1747,17 @@ C
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_O (5)')
+      END IF
+C
+      KT2CAL = KEND1
+      KINTLBI  = KT2CAL + NMAABI(ISYT2CAL)
+      KEND2   = KINTLBI + NCKI(ISYINTLBI)
+      LWRK2  = LWORK - KEND2 
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_O (5x)')
       END IF
 C
       CALL DZERO(WORK(KCABI),NMAAB_CI(ISYT30JK))
@@ -1647,9 +1834,13 @@ C
       ISYT2CBL = MULD2H(ISYMT2,ISYMK)
       ISYINTLAI = MULD2H(ISYINT,ISYMJ)
 C
-      KT2CBL = 1
-      KINTLAI  = KT2BCL + NMAABI(ISYT2CBL)
-      KCBAI   = KINTLAI + NCKI(ISYINTLAI)
+*     KT2CBL = 1
+*     KINTLAI  = KT2CBL + NMAABI(ISYT2CBL)
+*     KCBAI   = KINTLAI + NCKI(ISYINTLAI)
+*     KEND1   = KCBAI   + NMAAB_CI(ISYT30JK)
+*     LWRK1  = LWORK - KEND1 
+C
+      KCBAI   = 1
       KEND1   = KCBAI   + NMAAB_CI(ISYT30JK)
       LWRK1  = LWORK - KEND1 
 C
@@ -1658,6 +1849,18 @@ C
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_O (6)')
       END IF
+C
+      KT2CBL = KEND1
+      KINTLAI  = KT2CBL + NMAABI(ISYT2CBL)
+      KEND2   = KINTLAI + NCKI(ISYINTLAI)
+      LWRK2  = LWORK - KEND2 
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_O (6x)')
+      END IF
+C
 C
       CALL DZERO(WORK(KCBAI),NMAAB_CI(ISYT30JK))
 C
@@ -1759,6 +1962,8 @@ C 5)            +  t^cd_ki (bj!ad)
 C
 C 6)            +  t^cd_kj (ai!bd)
 C
+*
+* Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
 C
@@ -1810,6 +2015,7 @@ C
 
       ISYMDAI = MULD2H(ISYMT2,ISYMJ)
       ISYMBCD = MULD2H(ISYINT,ISYMK)
+C
       KDAI  = 1
       KBCD  = KDAI  + NMAABI(ISYMDAI)
       KEND1 = KBCD  + NMAABC(ISYMBCD)
@@ -1877,6 +2083,7 @@ C
       ISYMDBI = MULD2H(ISYMT2,ISYMJ)
       ISYMACD = MULD2H(ISYINT,ISYMK)
       ISYMACBI = MULD2H(ISYMACD,ISYMDBI)
+C
       KDBI   = 1
       KACD   = KDBI  +  NMAABI(ISYMDBI)
       KACBI  = KACD  +  NMAABC(ISYMACD)
@@ -1956,16 +2163,32 @@ C symmetry and work allocation
 C
       ISYMJK = MULD2H(ISYMJ,ISYMK)
       ISYMBD = MULD2H(ISYMT2,ISYMJK)
-      KBD    = 1
-      KBCAI  = KBD + NMATAB(ISYMBD)
-      KDCAI  = KBCAI + NMAABCI(ISYT30JK)
-      KEND1  = KDCAI + NMAABCI(ISYINT)
+C
+*     KBD    = 1
+*     KBCAI  = KBD + NMATAB(ISYMBD)
+*     KDCAI  = KBCAI + NMAABCI(ISYT30JK)
+*     KEND1  = KDCAI + NMAABCI(ISYINT)
+*     LWRK1  = LWORK - KEND1
+C
+      KBCAI  = 1
+      KEND1  = KBCAI + NMAABCI(ISYT30JK)
       LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_V (3)')
+      END IF
+C
+      KBD    = KEND1
+      KDCAI  = KBD + NMATAB(ISYMBD)
+      KEND2  = KDCAI + NMAABCI(ISYINT)
+      LWRK2  = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_V (3x)')
       END IF
 C
       CALL DZERO(WORK(KBCAI),NMAABCI(ISYT30JK))
@@ -2033,6 +2256,7 @@ C symmetry and work allocation
 C
       ISYMDAI = MULD2H(ISYMT2,ISYMK)
       ISYMBCD = MULD2H(ISYINT,ISYMJ)
+C
       KDAI  = 1
       KBCD  = KDAI  + NMAABI(ISYMDAI)
       KEND1 = KBCD  + NMAABC(ISYMBCD)
@@ -2098,6 +2322,7 @@ C
       ISYMDCI = MULD2H(ISYMT2,ISYMK)
       ISYMBAD = MULD2H(ISYINT,ISYMJ)
       ISYMBACI = MULD2H(ISYMBAD,ISYMDCI)
+C
       KDCI   = 1
       KBAD   = KDCI  +  NMAABI(ISYMDCI)
       KBACI  = KBAD  +  NMAABC(ISYMBAD)
@@ -2172,16 +2397,32 @@ C
       ISYMKJ  = MULD2H(ISYMK,ISYMJ)
       ISYMCD  = MULD2H(ISYMT2,ISYMKJ)
       ISYMCBAI = MULD2H(ISYINT,ISYMCD)
-      KCD    = 1
-      KCBAI  = KCD   +  NMATAB(ISYMCD)
-      KDBAI  = KCBAI +  NMAABCI(ISYMCBAI)
-      KEND1  = KDBAI +  NMAABCI(ISYINT)
+C
+*     KCD    = 1
+*     KCBAI  = KCD   +  NMATAB(ISYMCD)
+*     KDBAI  = KCBAI +  NMAABCI(ISYMCBAI)
+*     KEND1  = KDBAI +  NMAABCI(ISYINT)
+*     LWRK1  = LWORK -  KEND1
+C
+      KCBAI  = 1
+      KEND1  = KCBAI + NMAABCI(ISYMCBAI)
       LWRK1  = LWORK -  KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T30_IJ_V (6)')
+      END IF
+C
+      KCD    = KEND1
+      KDBAI  = KCD   +  NMATAB(ISYMCD)
+      KEND2  = KDBAI +  NMAABCI(ISYINT)
+      LWRK2  = LWORK -  KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T30_IJ_V (6x)')
       END IF
 C
       CALL DZERO(WORK(KCBAI),NMAABCI(ISYMCBAI))
@@ -3770,6 +4011,8 @@ C     IOPT = 4: w (=divide by 2)
 C     IOPT = 5: Start from (ck,ai,bj)
 C     IOPT = 6: t (=divide by 6)
 C
+C     IOPT = 7: Sum up the T3 amplitudes only with aibjck_perm
+C
       IMPLICIT NONE
 C
 #include <priunit.h>
@@ -3797,7 +4040,7 @@ C
 C
       CALL QENTER('SUM_PT3_JK')
 C
-      LDEBUG = .true.
+      LDEBUG = .false.
 C
 C
       IF ( (IOPT .GE. 1) .AND. (IOPT .LE. 3) ) THEN
@@ -3806,6 +4049,8 @@ C
          FACT = HALF
       ELSE IF ((IOPT .EQ. 6) ) THEN
          FACT = SIXTH
+      ELSE IF ((IOPT .EQ. 7) ) THEN
+         FACT = ONE
       ELSE
          CALL QUIT('Wrong IOPT in SUM_PT3_JK')
       ENDIF
@@ -3849,7 +4094,7 @@ C
                DO C = 1, NVIR(ISYMC)
                DO B = 1, NVIR(ISYMB)
 C
-               IF ( (IOPT .GE. 1) .AND. (IOPT .LE. 6) ) THEN
+               IF ( (IOPT .GE. 1) .AND. (IOPT .LE. 7) ) THEN
                  KOFF7 = IMAABCI(ISYMBCA,ISYMI)
      *                 + NMAABC(ISYMBCA)*(I - 1)
      *                 + IMAABC(ISYMBC,ISYMA) + NMATAB(ISYMBC)*(A-1)
@@ -3858,7 +4103,7 @@ C
 C
          IF (LDEBUG) THEN
             IF (ABS(TMAT(KOFF7)) .GT. 1.0d-12) THEN
-              IF ( (IOPT .GE. 1) .AND. (IOPT .LE. 6) ) THEN
+              IF ( (IOPT .GE. 1) .AND. (IOPT .LE. 7) ) THEN
                  WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
      *                              KOFF7,' WITH TMAT = ',
      *                              TMAT(KOFF7)
@@ -3875,6 +4120,8 @@ C
          T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) = 
      *   T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) +
      *   FACT*TMAT(KOFF7)
+C
+         IF (IOPT .NE. 7) THEN
 C
          T3SUM(A+KOFF1,C+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) = 
      *   T3SUM(A+KOFF1,C+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) +
@@ -3895,6 +4142,8 @@ C
          T3SUM(C+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) = 
      *   T3SUM(C+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) +
      *   FACT*TMAT(KOFF7)
+C
+         END IF
 C
                  ENDDO
                  ENDDO
@@ -4234,6 +4483,8 @@ C  /* Deck get_t3b0_jk_o */
 *         - t^(cb)_(kn) L(jn|ia) + t^(cb)_(ni) g(kn|ja)
 *
 * Filip Pawlowski, Aarhus, Winter 2003
+C
+C Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 *
 ********************************************************************
       IMPLICIT NONE
@@ -4267,6 +4518,8 @@ C
       INTEGER KTEMP
 c
       integer isyabc,isymi,ioff
+C
+      INTEGER KEND2,LWRK2
 c
 C
 #if defined (SYS_CRAY)
@@ -4297,17 +4550,32 @@ C
       ISYKJ = MULD2H(ISYMK,ISYMJ)
       ISYCN = MULD2H(ISYINT,ISYKJ)
 C
-      KL2NBAI = 1
-      KINTCN  = KL2NBAI + NT2SQ(ISYML2)
-      KCBAI   = KINTCN  + NT1AM(ISYCN)
-      KTEMP   = KCBAI   + NMAAOBCI(ISYT3B0JK)
-      KEND1   = KTEMP + NMAAOBCI(ISYT3B0JK)
+*     KL2NBAI = 1
+*     KINTCN  = KL2NBAI + NT2SQ(ISYML2)
+*     KCBAI   = KINTCN  + NT1AM(ISYCN)
+*     KTEMP   = KCBAI   + NMAAOBCI(ISYT3B0JK)
+*     KEND1   = KTEMP + NMAAOBCI(ISYT3B0JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KCBAI   = 1
+      KEND1   = KCBAI   + NMAAOBCI(ISYT3B0JK)
       LWRK1   = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T3B0_JK_O (1a)')
+      END IF
+C
+      KL2NBAI = KEND1
+      KINTCN  = KL2NBAI + NT2SQ(ISYML2)
+      KEND2   = KINTCN  + NT1AM(ISYCN)
+      LWRK2   = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_O (1x)')
       END IF
 C
       CALL DZERO(WORK(KCBAI),NMAAOBCI(ISYT3B0JK))
@@ -4349,6 +4617,17 @@ C
 C  bar_occ(1a)
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP   = KEND1
+         KEND1   = KTEMP + NMAAOBCI(ISYT3B0JK)
+         LWRK1   = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3B0_JK_O (1y)')
+         END IF
+C
          ! Sort from KCBAI(c,bai) to TABCI(c,b,a,i)
          CALL FA_BCI(WORK(KTEMP),WORK(KCBAI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KCBAI),1)
@@ -4370,12 +4649,16 @@ C
       ISYL2BAN = MULD2H(ISYML2,ISYMK)
       ISYINTNCI = MULD2H(ISYINT,ISYMJ)
 C
-      KL2BAN = 1
-      KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
-      KBACI   = KINTNCI + NCKI(ISYINTNCI)
-      KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAAB_CI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2BAN = 1
+*     KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
+*     KBACI   = KINTNCI + NCKI(ISYINTNCI)
+*     KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAAB_CI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KBACI   = 1
+      KEND1   = KBACI + NMAAB_CI(ISYT3B0JK)
+      LWRK1   = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -4383,8 +4666,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (1b)')
       END IF
 C
+      KL2BAN   = KEND1
+      KINTNCI  = KL2BAN  + NMAABI(ISYL2BAN)
+      KEND2    = KINTNCI + NCKI(ISYINTNCI)
+      LWRK2    = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (1bx)')
+      END IF
+C
       CALL DZERO(WORK(KBACI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAAB_CI(ISYT3B0JK))
 C
       CALL SORT_T2_ABJ(WORK(KL2BAN),ISYMK,K,L2TP,ISYML2)
 C
@@ -4419,6 +4712,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAAB_CI(ISYT3B0JK)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (1by)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAAB_CI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KBACI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KBACI),1)
       END IF
@@ -4445,12 +4751,16 @@ C
       ISYL2BAN = MULD2H(ISYML2,ISYMJ)
       ISYINTNCI = MULD2H(ISYINT,ISYMK)
 C
-      KL2BAN = 1
-      KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
-      KBACI   = KINTNCI + NCKI(ISYINTNCI)
-      KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2BAN = 1
+*     KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
+*     KBACI   = KINTNCI + NCKI(ISYINTNCI)
+*     KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KBACI = 1
+      KEND1 = KBACI + NMAAB_CI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -4458,8 +4768,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (2a)')
       END IF
 C
+      KL2BAN   = KEND1
+      KINTNCI  = KL2BAN  + NMAABI(ISYL2BAN)
+      KEND2    = KINTNCI + NCKI(ISYINTNCI)
+      LWRK2    = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (2ax)')
+      END IF
+C
       CALL DZERO(WORK(KBACI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABJ(WORK(KL2BAN),ISYMJ,J,L2TP,ISYML2)
 C
@@ -4494,6 +4814,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (2ay)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KBACI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KBACI),1)
       END IF
@@ -4520,12 +4853,16 @@ C
       ISYL2BAN = MULD2H(ISYML2,ISYMK)
       ISYINTNCI = MULD2H(ISYINT,ISYMJ)
 C
-      KL2BAN = 1
-      KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
-      KBACI   = KINTNCI + NCKI(ISYINTNCI)
-      KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2BAN = 1
+*     KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
+*     KBACI   = KINTNCI + NCKI(ISYINTNCI)
+*     KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KBACI = 1
+      KEND1 = KBACI + NMAAB_CI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -4533,8 +4870,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (2b)')
       END IF
 C
+      KL2BAN   = KEND1
+      KINTNCI  = KL2BAN  + NMAABI(ISYL2BAN)
+      KEND2    = KINTNCI + NCKI(ISYINTNCI)
+      LWRK2    = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (2bx)')
+      END IF
+C
       CALL DZERO(WORK(KBACI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABI(WORK(KL2BAN),ISYMK,K,L2TP,ISYML2)
 C
@@ -4569,6 +4916,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (2by)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KBACI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KBACI),1)
       END IF
@@ -4595,12 +4955,16 @@ C
       ISYL2CBN = MULD2H(ISYML2,ISYMJ)
       ISYINTNAI = MULD2H(ISYINT,ISYMK)
 C
-      KL2CBN = 1
-      KINTNAI  = KL2CBN + NMAABI(ISYL2CBN)
-      KCBAI   = KINTNAI + NCKI(ISYINTNAI)
-      KTEMP   = KCBAI   + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2CBN = 1
+*     KINTNAI  = KL2CBN + NMAABI(ISYL2CBN)
+*     KCBAI   = KINTNAI + NCKI(ISYINTNAI)
+*     KTEMP   = KCBAI   + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KCBAI = 1
+      KEND1 = KCBAI + NMAAB_CI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -4608,8 +4972,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (3a)')
       END IF
 C
+      KL2CBN   = KEND1
+      KINTNAI  = KL2CBN  + NMAABI(ISYL2CBN)
+      KEND2    = KINTNAI + NCKI(ISYINTNAI)
+      LWRK2    = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (3ax)')
+      END IF
+C
       CALL DZERO(WORK(KCBAI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABI(WORK(KL2CBN),ISYMJ,J,L2TP,ISYML2)
 C
@@ -4644,6 +5018,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (3ay)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KCBAI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KCBAI),1)
       END IF
@@ -4668,17 +5055,32 @@ C
       ISYKJ = MULD2H(ISYMK,ISYMJ)
       ISYAN = MULD2H(ISYINT,ISYKJ)
 C
-      KL2NBCI = 1
-      KINTAN  = KL2NBCI + NT2SQ(ISYML2)
-      KABCI   = KINTAN  + NT1AM(ISYAN)
-      KTEMP   = KABCI   + NMAAOBCI(ISYT3B0JK)
-      KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
-      LWRK1   = LWORK - KEND1
+*     KL2NBCI = 1
+*     KINTAN  = KL2NBCI + NT2SQ(ISYML2)
+*     KABCI   = KINTAN  + NT1AM(ISYAN)
+*     KTEMP   = KABCI   + NMAAOBCI(ISYT3B0JK)
+*     KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KABCI = 1
+      KEND1 = KABCI + NMAAOBCI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T3B0_JK_O (3b)')
+      END IF
+C
+      KL2NBCI = KEND1
+      KINTAN  = KL2NBCI + NT2SQ(ISYML2)
+      KEND2   = KINTAN  + NT1AM(ISYAN)
+      LWRK2   = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_O (3bx)')
       END IF
 C
       CALL DZERO(WORK(KABCI),NMAAOBCI(ISYT3B0JK))
@@ -4716,6 +5118,17 @@ C
       END DO ! ISYMN
 
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP   = KEND1
+         KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+         LWRK1   = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3B0_JK_O (3by)')
+         END IF
+C
          ! Sort from KABCI(a,bci) to KTEMP(a,b,c,i)
          CALL FA_BCI(WORK(KTEMP),WORK(KABCI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KABCI),1)
@@ -4742,17 +5155,32 @@ C
       ISYJK = MULD2H(ISYMJ,ISYMK)
       ISYBN = MULD2H(ISYINT,ISYJK)
 C
-      KL2NCAI = 1
-      KINTBN  = KL2NCAI + NT2SQ(ISYML2)
-      KBCAI   = KINTBN  + NT1AM(ISYBN)
-      KTEMP   = KBCAI   + NMAABCI(ISYT3B0JK)
-      KEND1   = KTEMP   + NMAABCI(ISYT3B0JK)
-      LWRK1   = LWORK - KEND1
+*     KL2NCAI = 1
+*     KINTBN  = KL2NCAI + NT2SQ(ISYML2)
+*     KBCAI   = KINTBN  + NT1AM(ISYBN)
+*     KTEMP   = KBCAI   + NMAABCI(ISYT3B0JK)
+*     KEND1   = KTEMP   + NMAABCI(ISYT3B0JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KBCAI = 1
+      KEND1 = KBCAI + NMAABCI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T3B0_JK_O (4a)')
+      END IF
+C
+      KL2NCAI = KEND1
+      KINTBN  = KL2NCAI + NT2SQ(ISYML2)
+      KEND2   = KINTBN  + NT1AM(ISYBN)
+      LWRK2   = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_O (4ax)')
       END IF
 C
       CALL DZERO(WORK(KBCAI),NMAABCI(ISYT3B0JK))
@@ -4792,6 +5220,17 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP   = KEND1
+         KEND1   = KTEMP   + NMAABCI(ISYT3B0JK)
+         LWRK1   = LWORK   - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3B0_JK_O (4ay)')
+         END IF
+C
          ! Sort from KBCAI(b,cai) to KTEMP(b,c,a,i)
          CALL FA_BCI(WORK(KTEMP),WORK(KBCAI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KBCAI),1)
@@ -4815,12 +5254,16 @@ C
       ISYL2CAN = MULD2H(ISYML2,ISYMJ)
       ISYINTNBI = MULD2H(ISYINT,ISYMK)
 C
-      KL2CAN = 1
-      KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
-      KCABI   = KINTNBI + NCKI(ISYINTNBI)
-      KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2CAN = 1
+*     KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
+*     KCABI   = KINTNBI + NCKI(ISYINTNBI)
+*     KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KCABI = 1
+      KEND1 = KCABI + NMAAB_CI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -4828,8 +5271,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (4b)')
       END IF
 C
+      KL2CAN   = KEND1
+      KINTNBI  = KL2CAN  + NMAABI(ISYL2CAN)
+      KEND2    = KINTNBI + NCKI(ISYINTNBI)
+      LWRK2    = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (4bx)')
+      END IF
+C
       CALL DZERO(WORK(KCABI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABJ(WORK(KL2CAN),ISYMJ,J,L2TP,ISYML2)
 C
@@ -4864,6 +5317,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (4by)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KCABI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KCABI),1)
       END IF
@@ -4890,12 +5356,16 @@ C
       ISYL2CAN = MULD2H(ISYML2,ISYMK)
       ISYINTNBI = MULD2H(ISYINT,ISYMJ)
 C
-      KL2CAN = 1
-      KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
-      KCABI   = KINTNBI + NCKI(ISYINTNBI)
-      KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2CAN = 1
+*     KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
+*     KCABI   = KINTNBI + NCKI(ISYINTNBI)
+*     KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KCABI = 1
+      KEND1 = KCABI + NMAAB_CI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -4903,8 +5373,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (5a)')
       END IF
 C
+      KL2CAN  = KEND1
+      KINTNBI = KL2CAN  + NMAABI(ISYL2CAN)
+      KEND2   = KINTNBI + NCKI(ISYINTNBI)
+      LWRK2   = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (5ax)')
+      END IF
+C
       CALL DZERO(WORK(KCABI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABJ(WORK(KL2CAN),ISYMK,K,L2TP,ISYML2)
 C
@@ -4939,6 +5419,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (5ay)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KCABI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KCABI),1)
       END IF
@@ -4965,12 +5458,16 @@ C
       ISYL2CAN = MULD2H(ISYML2,ISYMJ)
       ISYINTNBI = MULD2H(ISYINT,ISYMK)
 C
-      KL2CAN = 1
-      KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
-      KCABI   = KINTNBI + NCKI(ISYINTNBI)
-      KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2CAN = 1
+*     KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
+*     KCABI   = KINTNBI + NCKI(ISYINTNBI)
+*     KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KCABI = 1
+      KEND1 = KCABI + NMAAB_CI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -4978,8 +5475,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (5b)')
       END IF
 C
+      KL2CAN  = KEND1
+      KINTNBI = KL2CAN  + NMAABI(ISYL2CAN)
+      KEND2   = KINTNBI + NCKI(ISYINTNBI)
+      LWRK2   = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (5bx)')
+      END IF
+C
       CALL DZERO(WORK(KCABI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABI(WORK(KL2CAN),ISYMJ,J,L2TP,ISYML2)
 C
@@ -5014,6 +5521,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (5by)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KCABI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KCABI),1)
       END IF
@@ -5040,12 +5560,16 @@ C
       ISYL2BCN = MULD2H(ISYML2,ISYMK)
       ISYINTNAI = MULD2H(ISYINT,ISYMJ)
 C
-      KL2BCN = 1
-      KINTNAI  = KL2BCN + NMAABI(ISYL2BCN)
-      KBCAI   = KINTNAI + NCKI(ISYINTNAI)
-      KTEMP = KBCAI + NMAABCI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
-      LWRK1  = LWORK - KEND1
+*     KL2BCN = 1
+*     KINTNAI  = KL2BCN + NMAABI(ISYL2BCN)
+*     KBCAI   = KINTNAI + NCKI(ISYINTNAI)
+*     KTEMP = KBCAI + NMAABCI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KBCAI = 1
+      KEND1 = KBCAI + NMAABCI(ISYT3B0JK)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -5053,8 +5577,18 @@ C
          CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (6a)')
       END IF
 C
+      KL2BCN  = KEND1
+      KINTNAI = KL2BCN  + NMAABI(ISYL2BCN)
+      KEND2   = KINTNAI + NCKI(ISYINTNAI)
+      LWRK2   = LWORK   - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (6ax)')
+      END IF
+C
       CALL DZERO(WORK(KBCAI),NMAABCI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABI(WORK(KL2BCN),ISYMK,K,L2TP,ISYML2)
 C
@@ -5091,6 +5625,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3BAR0_IJ_O (6ay)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KBCAI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KBCAI),1)
       END IF
@@ -5113,17 +5660,32 @@ C
       ISYJK = MULD2H(ISYMJ,ISYMK)
       ISYAN = MULD2H(ISYINT,ISYJK)
 C
-      KL2NCBI = 1
-      KINTAN  = KL2NCBI + NT2SQ(ISYML2)
-      KACBI   = KINTAN  + NT1AM(ISYAN)
-      KTEMP   = KACBI   + NMAAOBCI(ISYT3B0JK)
-      KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+*     KL2NCBI = 1
+*     KINTAN  = KL2NCBI + NT2SQ(ISYML2)
+*     KACBI   = KINTAN  + NT1AM(ISYAN)
+*     KTEMP   = KACBI   + NMAAOBCI(ISYT3B0JK)
+*     KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KACBI   = 1
+      KEND1   = KACBI + NMAAOBCI(ISYT3B0JK)
       LWRK1   = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T3B0_JK_O (6b)')
+      END IF
+C
+      KL2NCBI = KEND1
+      KINTAN  = KL2NCBI + NT2SQ(ISYML2)
+      KEND2   = KINTAN  + NT1AM(ISYAN)
+      LWRK2   = LWORK - KEND2
+C
+       IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_O (6bx)')
       END IF
 C
       CALL DZERO(WORK(KACBI),NMAAOBCI(ISYT3B0JK))
@@ -5161,6 +5723,18 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP   = KEND1
+         KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+         LWRK1   = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3B0_JK_O (6by)')
+         END IF
+C
+
          CALL FA_BCI(WORK(KTEMP),WORK(KACBI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KACBI),1)
       END IF
@@ -5180,7 +5754,7 @@ C
       RETURN
       END
 C  /* Deck intvir_t3b0_jk */
-      SUBROUTINE INTVIR_T3B0_JK(XGADCK,XLADCK,ISYINT,XLAMP,
+      SUBROUTINE INTVIR_T3B0_JK(IOPT,XGADCK,XLADCK,ISYINT,XLAMP,ISYMLP,
      *                         LU3VI,FN3VI,LU3FOP,FN3FOP,
      *                         WORK,LWORK) 
 **********************************************************
@@ -5194,6 +5768,9 @@ C  /* Deck intvir_t3b0_jk */
 *     OUTPUT (XGADCK) : g(kcad) = (kc ! ad) sorted as I(adck) 
 *     OUTPUT (XLADCK) : L(kcad) sorted as I(adck) 
 *
+*     IF IOPT = 1 do only g integrals
+*     IF IOPT = 2 do both 
+*
 *     P. Jorgensen, F. Pawlowski, 31-01-2003, Aarhus.
 **********************************************************
 C Integrals (kc ! ad) stored as I^D(cka) sorted as I(adck)
@@ -5203,8 +5780,10 @@ C
 #include <ccorb.h>
 #include <priunit.h>
 C
-      INTEGER ISYINT, LU3VI, LU3FOP, LWORK
+      INTEGER ISYINT, LU3VI, LU3FOP, LWORK, ISYMLP
       INTEGER ISYMD, ISYCKA, KINTVI, KTRVI1, KEND1, LWRK1, IOFF
+      INTEGER ISYCKALP
+      INTEGER IOPT
 C
       CHARACTER*(*) FN3VI, FN3FOP 
 C
@@ -5216,16 +5795,24 @@ C
 C
       CALL QENTER('INTVIR_T3B0_JK')
 C
+      !check the option
+      IF ( (IOPT .LT. 1) .OR. (IOPT .GT. 2) ) THEN
+         WRITE(LUPRI,*)'IOPT = ', IOPT
+         WRITE(LUPRI,*)'Only 1 or 2 are allowed values for IOPT'
+         CALL QUIT('Wrong option IOPT in INTVIR_T3B0_JK')
+      END IF
+C
 C***********************************************************'
 C     Get  (XGBDCK) : g(kcad) = (kc ! ad) sorted as I(adck) 
 C***********************************************************'
 C
       DO ISYMD = 1, NSYM
          ISYCKA = MULD2H(ISYINT,ISYMD)
+         ISYCKALP = MULD2H(ISYCKA,ISYMLP)
 C
          KINTVI = 1
          KTRVI1 = KINTVI + NCKA(ISYCKA)
-         KEND1  = KTRVI1 + NCKATR(ISYCKA)
+         KEND1  = KTRVI1 + NCKATR(ISYCKALP)
          LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -5244,19 +5831,23 @@ C
 C
 C     Transform to           (kc ! ad)      stored as I^D(cka)
 C 
-            CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI1),XLAMP,
-     *                       ISYMD,D,ISYMOP,WORK(KEND1),LWRK1)
+c           CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI1),XLAMP,
+c    *                       ISYMD,D,ISYMOP,WORK(KEND1),LWRK1)
+C
+            CALL CCLR_TRVIR(WORK(KINTVI),WORK(KTRVI1),XLAMP,ISYMLP,
+     *                       ISYMD,D,ISYINT,WORK(KEND1),LWRK1)
 C
 C     Final sort (kc ! ad)  as I(adck) 
 C
             CALL SORT_INTVIR_T3B0(XGADCK,WORK(KTRVI1),
-     *                           D,ISYMD,ISYCKA,WORK(KEND1),LWRK1)
+     *                           D,ISYMD,ISYCKALP,WORK(KEND1),LWRK1)
 C
 C     OUTPUT (XGADCK) : g(kcad) = (kc ! ad) sorted as I(adck) 
 C
          END DO !  D
       END DO !  ISYMD
 C
+      IF (IOPT .EQ. 2) THEN
 C
 C***********************************************************'
 C     Get (XLBDCK) : L(kcad) sorted as I(adck) 
@@ -5264,10 +5855,11 @@ C***********************************************************'
 C
       DO ISYMD = 1, NSYM
          ISYCKA = MULD2H(ISYINT,ISYMD)
+         ISYCKALP = MULD2H(ISYCKA,ISYMLP)
 C
          KINTVI = 1
          KTRVI1 = KINTVI + NCKA(ISYCKA)
-         KEND1  = KTRVI1 + NCKATR(ISYCKA)
+         KEND1  = KTRVI1 + NCKATR(ISYCKALP)
          LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -5286,18 +5878,22 @@ C
 C
 C     Transform to           L(kc ! ad)      stored as L^D(cka)
 C 
-            CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI1),XLAMP,
-     *                       ISYMD,D,ISYMOP,WORK(KEND1),LWRK1)
+c           CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI1),XLAMP,
+c    *                       ISYMD,D,ISYMOP,WORK(KEND1),LWRK1)
+            CALL CCLR_TRVIR(WORK(KINTVI),WORK(KTRVI1),XLAMP,ISYMLP,
+     *                       ISYMD,D,ISYINT,WORK(KEND1),LWRK1)
 C
 C     Final sort L(kc ! ad)  as I(adck) 
 C
             CALL SORT_INTVIR_T3B0(XLADCK,WORK(KTRVI1),
-     *                           D,ISYMD,ISYCKA,WORK(KEND1),LWRK1)
+     *                           D,ISYMD,ISYCKALP,WORK(KEND1),LWRK1)
 C
 C     OUTPUT (XLADCK) : L(kcad) sorted as I(adck) 
 C
          END DO !  D
       END DO !  ISYMD
+C
+      END IF
 C
       CALL QEXIT('INTVIR_T3B0_JK')
 C
@@ -5389,6 +5985,8 @@ C 5)  l^cd_ki L(dajb) - l^cd_ij g(kadb)
 C
 C 6)  l^cd_kj L(dbia) - l^cd_ji g(kbda) 
 C
+*
+* Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
 C
@@ -5410,6 +6008,8 @@ C
       INTEGER ISYMBAI
       INTEGER KDCBI,KDCAI,KDBCI,KDBAI
       INTEGER KTEMP
+C
+      INTEGER KEND2,LWRK2
 C
 #if defined (SYS_CRAY)
       REAL T30JK(*), L2TP(*), XGADCK(*), XLADCK(*), WORK(LWORK)
@@ -5442,6 +6042,7 @@ C
       ISYMDAI = MULD2H(ISYML2,ISYMJ)
       ISYMBCD = MULD2H(ISYINT,ISYMK)
       ISYMBCAI = MULD2H(ISYMBCD,ISYMDAI)
+C
       KDAI  = 1
       KBCD  = KDAI  + NMAABI(ISYMDAI)
       KEND1 = KBCD  + NMAABC(ISYMBCD)
@@ -5509,17 +6110,33 @@ C symmetry and work allocation
 C
       ISYMJK = MULD2H(ISYMJ,ISYMK)
       ISYMAD = MULD2H(ISYML2,ISYMJK)
-      KAD    = 1
-      KACBI  = KAD + NMATAB(ISYMAD)
-      KTEMP  = KACBI + NMAABCI(ISYT30JK) 
-      KDCBI   = KTEMP   + NMAAOBCI(ISYT30JK)
-      KEND1  = KDCBI + NMAABCI(ISYINT)
+C
+*     KAD    = 1
+*     KACBI  = KAD + NMATAB(ISYMAD)
+*     KTEMP  = KACBI + NMAABCI(ISYT30JK) 
+*     KDCBI   = KTEMP   + NMAAOBCI(ISYT30JK)
+*     KEND1  = KDCBI + NMAABCI(ISYINT)
+*     LWRK1  = LWORK - KEND1
+C
+      KACBI  = 1
+      KEND1  = KACBI + NMAABCI(ISYT30JK) 
       LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in GET_T3B0_JK_V (1g)')
+      END IF
+C
+      KAD    = KEND1
+      KDCBI  = KAD + NMATAB(ISYMAD)
+      KEND2  = KDCBI + NMAABCI(ISYINT)
+      LWRK2  = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_V (1gx)')
       END IF
 C
       CALL DZERO(WORK(KACBI),NMAABCI(ISYT30JK))
@@ -5551,6 +6168,17 @@ C
       END DO
 C
       IF (NSYM .GT. 1) THEN
+C
+      KTEMP  = KEND1
+      KEND1  = KTEMP + NMAAOBCI(ISYT30JK)
+      LWRK1  = LWORK - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+         CALL QUIT('Insufficient space in GET_T3B0_JK_V (1gy)')
+      END IF
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KACBI),ISYT30JK,1)
          CALL DCOPY(NMAAOBCI(ISYT30JK),WORK(KTEMP),1,WORK(KACBI),1)
       END IF
@@ -5576,6 +6204,7 @@ C
       ISYMDBI = MULD2H(ISYML2,ISYMJ)
       ISYMACD = MULD2H(ISYINT,ISYMK)
       ISYMACBI = MULD2H(ISYMACD,ISYMDBI)
+C
       KDBI   = 1
       KACD   = KDBI  +  NMAABI(ISYMDBI)
       KACBI  = KACD  +  NMAABC(ISYMACD)
@@ -5650,6 +6279,7 @@ C
       ISYMDBI = MULD2H(ISYML2,ISYMK)
       ISYMACD = MULD2H(ISYINT,ISYMJ)
       ISYMACBI = MULD2H(ISYMACD,ISYMDBI)
+C
       KDBI  = 1
       KACD  = KDBI  + NMAABI(ISYMDBI)
       KACBI = KACD  + NMAABC(ISYMACD)
@@ -5721,11 +6351,16 @@ C symmetry and work allocation
 C
       ISYMJK = MULD2H(ISYMJ,ISYMK)
       ISYMBD = MULD2H(ISYML2,ISYMJK)
-      KBD    = 1
-      KDCAI  = KBD + NMATAB(ISYMBD)
-      KBCAI  = KDCAI + NMAABCI(ISYINT)
-      KTEMP  = KBCAI + NMAABCI(ISYT30JK)
-      KEND1   = KTEMP   + NMAAOBCI(ISYT30JK)
+*
+*     KBD    = 1
+*     KDCAI  = KBD + NMATAB(ISYMBD)
+*     KBCAI  = KDCAI + NMAABCI(ISYINT)
+*     KTEMP  = KBCAI + NMAABCI(ISYT30JK)
+*     KEND1   = KTEMP   + NMAAOBCI(ISYT30JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KBCAI  = 1
+      KEND1  = KBCAI + NMAABCI(ISYT30JK)
       LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -5734,10 +6369,20 @@ C
          CALL QUIT('Insufficient space in GET_T3B0_JK_V (3L)')
       END IF
 C
-      CALL DZERO(WORK(KBCAI),NMAABCI(ISYT30JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT30JK))
+      KBD    = KEND1
+      KDCAI  = KBD + NMATAB(ISYMBD)
+      KEND2  = KDCAI + NMAABCI(ISYINT)
+      LWRK2  = LWORK - KEND2
 C
-C  Sort integrals from XGADCK(d,c,b,i) to KDCBI(d,cbi)
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_V (3Lx)')
+      END IF
+C
+      CALL DZERO(WORK(KBCAI),NMAABCI(ISYT30JK))
+C
+C  Sort integrals from XGADCK(d,c,b,i) to KDCAI(d,cai)
 C
       CALL FA_BCI(WORK(KDCAI),XLADCK,ISYINT,2)
 C
@@ -5767,6 +6412,19 @@ C
       END DO
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP  = KEND1
+         KEND1  = KTEMP   + NMAAOBCI(ISYT30JK)
+         LWRK1  = LWORK   - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3B0_JK_V (3Ly)')
+         END IF
+C
+*        CALL DZERO(WORK(KTEMP),NMAABCI(ISYT30JK))
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KBCAI),ISYT30JK,1)
          CALL DCOPY(NMAAOBCI(ISYT30JK),WORK(KTEMP),1,WORK(KBCAI),1)
       END IF
@@ -5788,6 +6446,7 @@ C
       ISYMDBI = MULD2H(ISYML2,ISYMK)
       ISYMACD = MULD2H(ISYINT,ISYMJ)
       ISYMACBI = MULD2H(ISYMACD,ISYMDBI)
+C
       KDBI   = 1
       KACD   = KDBI  +  NMAABI(ISYMDBI)
       KACBI  = KACD  +  NMAABC(ISYMACD)
@@ -5866,6 +6525,7 @@ C
       ISYMDAI = MULD2H(ISYML2,ISYMK)
       ISYMBCD = MULD2H(ISYINT,ISYMJ)
       ISYMBCAI = MULD2H(ISYMBCD,ISYMDAI)
+C
       KDAI  = 1
       KBCD  = KDAI  + NMAABI(ISYMDAI)
       KEND1 = KBCD  + NMAABC(ISYMBCD)
@@ -5929,12 +6589,17 @@ C
       ISYMJK = MULD2H(ISYMJ,ISYMK)
       ISYMAD = MULD2H(ISYML2,ISYMJK)
       ISYMABCI = MULD2H(ISYINT,ISYMAD)
-      KAD    = 1
-      KABCI  = KAD + NMATAB(ISYMAD)
-      KDBCI  = KABCI + NMAABCI(ISYMABCI)
-      KTEMP  = KDBCI + NMAABCI(ISYINT)
-      KEND1 = KTEMP + NMAABCI(ISYT30JK)
-      LWRK1  = LWORK - KEND1
+C
+*     KAD    = 1
+*     KABCI  = KAD + NMATAB(ISYMAD)
+*     KDBCI  = KABCI + NMAABCI(ISYMABCI)
+*     KTEMP  = KDBCI + NMAABCI(ISYINT)
+*     KEND1 = KTEMP + NMAABCI(ISYT30JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KABCI = 1
+      KEND1 = KABCI + NMAABCI(ISYMABCI)
+      LWRK1 = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -5942,10 +6607,20 @@ C
          CALL QUIT('Insufficient space in GET_T3B0_JK_V (4g)')
       END IF
 C
-      CALL DZERO(WORK(KABCI),NMAABCI(ISYMABCI))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT30JK))
+      KAD    = KEND1
+      KDBCI  = KAD + NMATAB(ISYMAD)
+      KEND2  = KDBCI + NMAABCI(ISYINT)
+      LWRK2  = LWORK - KEND2
 C
-C  Sort integrals from XGADCK(d,b,c,i) to KDCBI(d,bci)
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_V (4gx)')
+      END IF
+C
+      CALL DZERO(WORK(KABCI),NMAABCI(ISYMABCI))
+C
+C  Sort integrals from XGADCK(d,b,c,i) to KDBCI(d,bci)
 C
       CALL FA_BCI(WORK(KDBCI),XGADCK,ISYINT,2)
 C
@@ -5974,6 +6649,19 @@ C
       END DO
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP  = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT30JK)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3B0_JK_V (4gy)')
+         END IF
+C
+*        CALL DZERO(WORK(KTEMP),NMAABCI(ISYT30JK))
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KABCI),ISYT30JK,1)
          CALL DCOPY(NMAAOBCI(ISYT30JK),WORK(KTEMP),1,WORK(KABCI),1)
       END IF
@@ -6000,6 +6688,7 @@ C
       ISYMDCI = MULD2H(ISYML2,ISYMK)
       ISYMBAD = MULD2H(ISYINT,ISYMJ)
       ISYMBACI = MULD2H(ISYMBAD,ISYMDCI)
+C
       KDCI   = 1
       KBAD   = KDCI  +  NMAABI(ISYMDCI)
       KBACI  = KBAD  +  NMAABC(ISYMBAD)
@@ -6073,6 +6762,7 @@ C
       ISYMDCI = MULD2H(ISYML2,ISYMJ)
       ISYMBAD = MULD2H(ISYINT,ISYMK)
       ISYMBACI = MULD2H(ISYMBAD,ISYMDCI)
+C
       KDCI   = 1
       KBAD   = KDCI  +  NMAABI(ISYMDCI)
       KBACI  = KBAD  +  NMAABC(ISYMBAD)
@@ -6147,11 +6837,16 @@ C
       ISYMKJ  = MULD2H(ISYMK,ISYMJ)
       ISYMCD  = MULD2H(ISYML2,ISYMKJ)
       ISYMCBAI = MULD2H(ISYINT,ISYMCD)
-      KCD    = 1
-      KCBAI  = KCD   +  NMATAB(ISYMCD)
-      KDBAI  = KCBAI +  NMAABCI(ISYMCBAI)
-      KTEMP  = KDBAI + NMAABCI(ISYINT)
-      KEND1  = KTEMP + NMAAOBCI(ISYT30JK)
+C
+*     KCD    = 1
+*     KCBAI  = KCD   +  NMATAB(ISYMCD)
+*     KDBAI  = KCBAI +  NMAABCI(ISYMCBAI)
+*     KTEMP  = KDBAI + NMAABCI(ISYINT)
+*     KEND1  = KTEMP + NMAAOBCI(ISYT30JK)
+*     LWRK1  = LWORK -  KEND1
+C
+      KCBAI = 1
+      KEND1 = KCBAI +  NMAABCI(ISYMCBAI)
       LWRK1  = LWORK -  KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -6160,8 +6855,18 @@ C
          CALL QUIT('Insufficient space in GET_T3B0_JK_V (6L)')
       END IF
 C
+      KCD    = KEND1
+      KDBAI  = KCD   +  NMATAB(ISYMCD)
+      KEND2  = KDBAI + NMAABCI(ISYINT)
+      LWRK2  = LWORK -  KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in GET_T3B0_JK_V (6Lx)')
+      END IF
+C
       CALL DZERO(WORK(KCBAI),NMAABCI(ISYMCBAI))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT30JK))
 C
 C  Sort integrals from XLADCK(d,b,a,i) to KDBAI(d,bai)
 C
@@ -6189,6 +6894,19 @@ C  work(cbai) =  I^KJ(cd) * I(dbai)
       END DO
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP  = KEND1
+         KEND1  = KTEMP + NMAAOBCI(ISYT30JK)
+         LWRK1  = LWORK -  KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in GET_T3B0_JK_V (6Ly)')
+         END IF
+C
+*        CALL DZERO(WORK(KTEMP),NMAABCI(ISYT30JK))
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KCBAI),ISYT30JK,1)
          CALL DCOPY(NMAAOBCI(ISYT30JK),WORK(KTEMP),1,WORK(KCBAI),1)
       END IF
@@ -6214,6 +6932,7 @@ C
       ISYMDCI = MULD2H(ISYML2,ISYMJ)
       ISYMBAD = MULD2H(ISYINT,ISYMK)
       ISYMBACI = MULD2H(ISYMBAD,ISYMDCI)
+C
       KDCI   = 1
       KBAD   = KDCI  +  NMAABI(ISYMDCI)
       KBACI  = KBAD  +  NMAABC(ISYMBAD)
@@ -6945,6 +7664,8 @@ C  /* Deck wbx_jk_fmat */
 *
 * Filip Pawlowski, Aarhus, Winter 2003
 *
+C Fixed memory problem, 29-Oct-2003, Aarhus, FP.
+C
 ********************************************************************
 C
       IMPLICIT NONE
@@ -6985,6 +7706,8 @@ C
       INTEGER ISYMABCI
       INTEGER KDCBI,KDBCI
       INTEGER KTEMP
+C
+      INTEGER KEND2,LWRK2
 C
 #if defined (SYS_CRAY)
       REAL T3B0JK(*),T2AM(*),FOCKCK(*),T3BOL2(*),T3BOG2(*)
@@ -7131,17 +7854,32 @@ C
       ISYKJ = MULD2H(ISYMK,ISYMJ)
       ISYCN = MULD2H(ISYINT,ISYKJ)
 C
-      KL2NBAI = 1
-      KINTCN  = KL2NBAI + NT2SQ(ISYMT2)
-      KCBAI   = KINTCN  + NT1AM(ISYCN)
-      KTEMP   = KCBAI   + NMAAOBCI(ISYT3B0JK)
-      KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+*     KL2NBAI = 1
+*     KINTCN  = KL2NBAI + NT2SQ(ISYMT2)
+*     KCBAI   = KINTCN  + NT1AM(ISYCN)
+*     KTEMP   = KCBAI   + NMAAOBCI(ISYT3B0JK)
+*     KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KCBAI   = 1
+      KEND1   = KCBAI   + NMAAOBCI(ISYT3B0JK)
       LWRK1   = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in WBX_JK_FMAT (1L)')
+      END IF
+C
+      KL2NBAI = KEND1
+      KINTCN  = KL2NBAI + NT2SQ(ISYMT2)
+      KEND2   = KINTCN  + NT1AM(ISYCN)
+      LWRK2   = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in WBX_JK_FMAT (1Lx)')
       END IF
 C
       CALL DZERO(WORK(KCBAI),NMAAOBCI(ISYT3B0JK))
@@ -7179,6 +7917,17 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP   = KEND1
+         KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+         LWRK1   = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WBX_JK_FMAT (1Ly)')
+         END IF
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KCBAI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KCBAI),1)
       END IF
@@ -7203,11 +7952,15 @@ C
       ISYL2BAN = MULD2H(ISYMT2,ISYMK)
       ISYINTNCI = MULD2H(ISYINT,ISYMJ)
 C
-      KL2BAN = 1
-      KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
-      KBACI   = KINTNCI + NCKI(ISYINTNCI)
-      KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     KL2BAN = 1
+*     KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
+*     KBACI   = KINTNCI + NCKI(ISYINTNCI)
+*     KTEMP = KBACI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KBACI   = 1
+      KEND1   = KBACI + NMAAB_CI(ISYT3B0JK)
       LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -7216,8 +7969,18 @@ C
          CALL QUIT('Insufficient space in WBX_JK_FMAT (1g)')
       END IF
 C
+      KL2BAN = KEND1
+      KINTNCI  = KL2BAN + NMAABI(ISYL2BAN)
+      KEND2   = KINTNCI + NCKI(ISYINTNCI)
+      LWRK2  = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in WBX_JK_FMAT (1gx)')
+      END IF
+C
       CALL DZERO(WORK(KBACI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABJ(WORK(KL2BAN),ISYMK,K,T2AM,ISYMT2)
 C
@@ -7252,6 +8015,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WBX_JK_FMAT (1gy)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KBACI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KBACI),1)
       END IF
@@ -7278,17 +8054,32 @@ C
       ISYJK = MULD2H(ISYMJ,ISYMK)
       ISYBN = MULD2H(ISYINT,ISYJK)
 C
-      KL2NCAI = 1
-      KINTBN  = KL2NCAI + NT2SQ(ISYMT2)
-      KBCAI   = KINTBN  + NT1AM(ISYBN)
-      KTEMP   = KBCAI   + NMAAOBCI(ISYT3B0JK)
-      KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+*     KL2NCAI = 1
+*     KINTBN  = KL2NCAI + NT2SQ(ISYMT2)
+*     KBCAI   = KINTBN  + NT1AM(ISYBN)
+*     KTEMP   = KBCAI   + NMAAOBCI(ISYT3B0JK)
+*     KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+*     LWRK1   = LWORK - KEND1
+C
+      KBCAI = 1
+      KEND1 = KBCAI   + NMAAOBCI(ISYT3B0JK)
       LWRK1   = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in WBX_JK_FMAT (2L)')
+      END IF
+C
+      KL2NCAI = KEND1
+      KINTBN  = KL2NCAI + NT2SQ(ISYMT2)
+      KEND2   = KINTBN  + NT1AM(ISYBN)
+      LWRK2   = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in WBX_JK_FMAT (2Lx)')
       END IF
 C
       CALL DZERO(WORK(KBCAI),NMAAOBCI(ISYT3B0JK))
@@ -7328,6 +8119,17 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP   = KEND1
+         KEND1   = KTEMP   + NMAAOBCI(ISYT3B0JK)
+         LWRK1   = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WBX_JK_FMAT (2Ly)')
+         END IF
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KBCAI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KBCAI),1)
       END IF
@@ -7350,11 +8152,15 @@ C
       ISYL2CAN = MULD2H(ISYMT2,ISYMJ)
       ISYINTNBI = MULD2H(ISYINT,ISYMK)
 C
-      KL2CAN = 1
-      KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
-      KCABI   = KINTNBI + NCKI(ISYINTNBI)
-      KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
-      KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     KL2CAN = 1
+*     KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
+*     KCABI   = KINTNBI + NCKI(ISYINTNBI)
+*     KTEMP = KCABI + NMAAB_CI(ISYT3B0JK)
+*     KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KCABI = 1
+      KEND1 = KCABI + NMAAB_CI(ISYT3B0JK)
       LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -7363,8 +8169,18 @@ C
          CALL QUIT('Insufficient space in WBX_JK_FMAT (2g)')
       END IF
 C
+      KL2CAN = KEND1
+      KINTNBI  = KL2CAN + NMAABI(ISYL2CAN)
+      KEND2   = KINTNBI + NCKI(ISYINTNBI)
+      LWRK2  = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in WBX_JK_FMAT (2gx)')
+      END IF
+C
       CALL DZERO(WORK(KCABI),NMAAB_CI(ISYT3B0JK))
-      CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
 C
       CALL SORT_T2_ABJ(WORK(KL2CAN),ISYMJ,J,T2AM,ISYMT2)
 C
@@ -7399,6 +8215,19 @@ C
       END DO ! ISYMN
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP = KEND1
+         KEND1 = KTEMP + NMAABCI(ISYT3B0JK)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WBX_JK_FMAT (2gy)')
+         END IF
+C
+         CALL DZERO(WORK(KTEMP),NMAABCI(ISYT3B0JK))
+C
          CALL FAB_CI(WORK(KTEMP),WORK(KCABI),ISYT3B0JK,2)
          CALL DCOPY(NMAABCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KCABI),1)
       END IF
@@ -7432,6 +8261,7 @@ C
       ISYMDAI = MULD2H(ISYMT2,ISYMJ)
       ISYMBCD = MULD2H(ISYINT,ISYMK)
       ISYMBCAI = MULD2H(ISYMBCD,ISYMDAI)
+C
       KDAI  = 1
       KBCD  = KDAI  + NMAABI(ISYMDAI)
       KEND1 = KBCD  + NMAABC(ISYMBCD)
@@ -7496,17 +8326,33 @@ C
       ISYMJK = MULD2H(ISYMJ,ISYMK)
       ISYMAD = MULD2H(ISYMT2,ISYMJK)
       ISYMACBI = MULD2H(ISYINT,ISYMAD)
-      KAD    = 1
-      KACBI  = KAD + NMATAB(ISYMAD)
-      KDCBI  = KACBI + NMAABCI(ISYMACBI) 
-      KTEMP  = KDCBI + NMAABCI(ISYINT)
-      KEND1  = KTEMP + NMAAOBCI(ISYT3B0JK)
+C
+*     KAD    = 1
+*     KACBI  = KAD + NMATAB(ISYMAD)
+*     KDCBI  = KACBI + NMAABCI(ISYMACBI) 
+*     KTEMP  = KDCBI + NMAABCI(ISYINT)
+*     KEND1  = KTEMP + NMAAOBCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KACBI = 1
+      KEND1 = KACBI + NMAABCI(ISYMACBI)
       LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND1
          CALL QUIT('Insufficient space in WBX_JK_FMAT (1gv)')
+      END IF
+C
+      KAD    = KEND1
+      KDCBI  = KAD + NMATAB(ISYMAD)
+      KEND2  = KDCBI + NMAABCI(ISYINT)
+      LWRK2  = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in WBX_JK_FMAT (1gvx)')
       END IF
 C
       CALL DZERO(WORK(KACBI),NMAABCI(ISYMACBI))
@@ -7538,6 +8384,17 @@ C
       END DO
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP  = KEND1
+         KEND1  = KTEMP + NMAAOBCI(ISYT3B0JK)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WBX_JK_FMAT (1gvy)')
+         END IF
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KACBI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KACBI),1)
       END IF
@@ -7563,6 +8420,7 @@ C
       ISYMDAI = MULD2H(ISYMT2,ISYMK)
       ISYMBCD = MULD2H(ISYINT,ISYMJ)
       ISYMBCAI = MULD2H(ISYMBCD,ISYMDAI)
+C
       KDAI  = 1
       KBCD  = KDAI  + NMAABI(ISYMDAI)
       KEND1 = KBCD  + NMAABC(ISYMBCD)
@@ -7627,11 +8485,16 @@ C
       ISYMJK = MULD2H(ISYMJ,ISYMK)
       ISYMAD = MULD2H(ISYMT2,ISYMJK)
       ISYMABCI = MULD2H(ISYINT,ISYMAD)
-      KAD    = 1
-      KABCI  = KAD + NMATAB(ISYMAD)
-      KDBCI  = KABCI + NMAABCI(ISYMABCI)
-      KTEMP  = KDBCI + NMAABCI(ISYINT)
-      KEND1  = KTEMP + NMAAOBCI(ISYT3B0JK)
+C
+*     KAD    = 1
+*     KABCI  = KAD + NMATAB(ISYMAD)
+*     KDBCI  = KABCI + NMAABCI(ISYMABCI)
+*     KTEMP  = KDBCI + NMAABCI(ISYINT)
+*     KEND1  = KTEMP + NMAAOBCI(ISYT3B0JK)
+*     LWRK1  = LWORK - KEND1
+C
+      KABCI = 1
+      KEND1 = KABCI + NMAABCI(ISYMABCI)
       LWRK1  = LWORK - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -7640,9 +8503,20 @@ C
          CALL QUIT('Insufficient space in WBX_JK_FMAT (2gv)')
       END IF
 C
+      KAD = KEND1
+      KDBCI = KAD + NMATAB(ISYMAD)
+      KEND2 = KDBCI + NMAABCI(ISYINT)
+      LWRK2 = LWORK - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available : ',LWORK
+         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         CALL QUIT('Insufficient space in WBX_JK_FMAT (2gvx)')
+      END IF
+C
       CALL DZERO(WORK(KABCI),NMAABCI(ISYMABCI))
 C
-C  Sort integrals from XGADCK(d,b,c,i) to KDCBI(d,bci)
+C  Sort integrals from XGADCK(d,b,c,i) to KDBCI(d,bci)
 C
       CALL FA_BCI(WORK(KDBCI),XGADCK,ISYINT,2)
 C
@@ -7671,6 +8545,17 @@ C
       END DO
 C
       IF (NSYM .GT. 1) THEN
+C
+         KTEMP  = KEND1
+         KEND1  = KTEMP + NMAAOBCI(ISYT3B0JK)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WBX_JK_FMAT (2gvy)')
+         END IF
+C
          CALL FA_BCI(WORK(KTEMP),WORK(KABCI),ISYT3B0JK,1)
          CALL DCOPY(NMAAOBCI(ISYT3B0JK),WORK(KTEMP),1,WORK(KABCI),1)
       END IF
@@ -8299,7 +9184,7 @@ C
          CALL QUIT('Insufficient space in ADEN_DAI_LM')
       END IF
 C
-      CALL DZERO(WORK(KT2DE),NT2SQ(ISYMT2))
+      CALL DZERO(WORK(KT2DE),NMATAB(ISYDE))
       CALL DZERO(WORK(KTHDAEI),NMAABCI(ISTETAXKL))      
 C
       CALL SORT_T2_AB(WORK(KT2DE),ISYML,L,ISYMM,M,T2TP,ISYMT2)
@@ -8340,8 +9225,9 @@ C
       RETURN
       END
 C  /* Deck cc3_adenvir */
-      SUBROUTINE CC3_ADENVIR(DIJ,DAB,DIA,ISYDEN,LISTL,IDLSTL,LISTR,
-     *                   IDLSTR,
+      SUBROUTINE CC3_ADENVIR(DIJ,DAB,DO_DIA,DIA,ISYDEN,
+     *                   DO_YMMAT,YMMAT,
+     *                   LISTL,IDLSTL,LISTR,IDLSTR,
      *                   LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                   LUDKBC3,FNDKBC3,
      *                   LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X,
@@ -8380,7 +9266,12 @@ C
 #include <ccr1rsp.h>
 #include <cclrmrsp.h>
 #include <ccexci.h>
-
+#include <ccn2rsp.h>
+C
+      CHARACTER*10 MODEL
+C
+      LOGICAL DO_YMMAT,DO_DIA
+      LOGICAL LSKIPL1R
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -8402,10 +9293,14 @@ C
       INTEGER LUDKBC,LUDELD,LU3VI2,LU3FOP,LU3FOP2,LUCKJD
       INTEGER LUT3,LUWBMAT,LUTHETA
 C
+      CHARACTER*12 FNT2Y
+      PARAMETER ( FNT2Y = 'CC3_R2TP_TMP' )
+      INTEGER LUT2Y
+C
       LOGICAL   LOCDBG,LORXL1
       PARAMETER (LOCDBG = .FALSE.)
 C
-      LOGICAL BJCK_PERM
+      INTEGER  AIBJCK_PERM
       LOGICAL QUADR
       LOGICAL T2XNET2Y
 C
@@ -8440,7 +9335,7 @@ C
       INTEGER ISYMB,ISYALJB0,ISYALJD0,ISYALJBL1,ISYALJDL1,ISYMBD
       INTEGER ISCKIJ,ISWBMAT,ISWMAT,ISYCKD,ISYCKDBR1
       INTEGER KSMAT2,KUMAT2,KDIAG,KDIAGWB,KDIAGW,KINDSQ,KINDSQWB
-      INTEGER KINDSQW,KINDEX,KINDEX2,KINDEXBL1,KINDEXDL1,KTMAT
+      INTEGER KINDSQW,KINDEXB,KINDEXD,KINDEXBL1,KINDEXDL1,KTMAT
       INTEGER KT3MAT,KW3BMAT,KW3MAT,KWTEMP,KS3MAT,KU3MAT,KS3MAT3
       INTEGER KU3MAT3,KT3VBG1,KT3VBG2,KT3VBG3,KT3BVBG1,KT3BVBG2
       INTEGER KT3BVBG3,KSMAT4,KUMAT4,KT3BVBL1,KT3BVBL2,KT3BVBL3
@@ -8452,8 +9347,12 @@ C
       INTEGER KW3MATD
       INTEGER KDAB0,KDIJ0
       INTEGER KT3VBGX3
+      INTEGER KR2TP
+      INTEGER ISYML0
+      INTEGER ISYALJBL0,ISYALJDL0,KINDEXBL0,KINDEXDL0
 C
       INTEGER IR1TAMP
+      INTEGER ILSTSYM
 C
       integer kx3am
 C
@@ -8463,16 +9362,18 @@ C
       REAL      WORK(LWORK)
       REAL      XNORMVAL
       REAL      DAB(*),DIJ(*),DIA(*)
-      REAL      DDOT,HALF,ONE
+      REAL      YMMAT(*)
+      REAL      DDOT,HALF,ONE,TWO
 #else
       DOUBLE PRECISION      FREQL1,FREQL1R,FREQR1
       DOUBLE PRECISION      WORK(LWORK)
       DOUBLE PRECISION      XNORMVAL
       DOUBLE PRECISION      DAB(*),DIJ(*),DIA(*)
-      DOUBLE PRECISION      DDOT,HALF,ONE
+      DOUBLE PRECISION      YMMAT(*)
+      DOUBLE PRECISION      DDOT,HALF,ONE,TWO
 #endif
 C
-      PARAMETER(HALF = 0.5D0, ONE = 1.0D0)
+      PARAMETER(HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       CALL QENTER('CC3_ADENVIR')
 C
@@ -8494,8 +9395,8 @@ C------------------------------------------------------------
 C     some initializations:
 C------------------------------------------------------------
 C
-      LISTL0 = 'L0 '
-      IDLSTL0 = 0 
+*     LISTL0 = 'L0 '
+*     IDLSTL0 = 0 
 
       IF (LISTL(1:3).EQ.'L1 ') THEN
 
@@ -8505,7 +9406,6 @@ C
          FREQL1  = FRQLRZ(IDLSTL)
          LABELL1 = LRZLBL(IDLSTL)
          LORXL1  = LORXLRZ(IDLSTL)
-c
 
          IF (LORXL1) CALL QUIT('NO ORBITAL RELAX. IN CC3_ADENVIR')
 
@@ -8516,6 +9416,11 @@ c
         ISYML1R  = ISYLRT(IDLSTL1R)
         FREQL1R  = FRQLRT(IDLSTL1R)
 C
+        !LITSL0 corresponding to LISTL
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0 = 1
+C
         IF (ISYML1 .NE. ISYML1R) THEN
            WRITE(LUPRI,*)'ISYML1: ', ISYML1
            WRITE(LUPRI,*)'ISYML1R: ', ISYML1R
@@ -8525,8 +9430,60 @@ C
         IF (FREQL1R .NE. FREQL1) THEN
            WRITE(LUPRI,*)'FREQL1R: ', FREQL1R
            WRITE(LUPRI,*)'FREQL1: ', FREQL1
-           CALL QUIT('Frequency mismatch in CC3_ADENVIR')
+           CALL QUIT('Frequency mismatch in CC3_ADENVIR(L1)')
         END IF
+C
+      ELSE IF (LISTL(1:3).EQ.'M1 ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = FRQLRM(IDLSTL)
+        LABELL1 = '- none -'
+C
+        ! find corresponding right eigenvector
+        LISTL1R = 'RE '
+        IDLSTL1R = ILRM(IDLSTL)
+        ISYML1R = ISYML1
+        FREQL1R = EIGVAL(IDLSTL1R)
+C
+        !LITSL0 corresponding to LISTL
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0 = 1
+C
+        IF (FREQL1R .NE. FREQL1) THEN
+           WRITE(LUPRI,*)'FREQL1R: ', FREQL1R
+           WRITE(LUPRI,*)'FREQL1: ', FREQL1
+           CALL QUIT('Frequency mismatch in CC3_ADENVIR(M1)')
+        END IF
+C
+      ELSE IF (LISTL(1:3).EQ.'N2 ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = FRQIN2(IDLSTL) + FRQFN2(IDLSTL)
+        LABELL1 = '- none -'
+C
+        ! find corresponding right eigenvector
+        LISTL1R = 'RE '
+        IDLSTL1R = IFN2(IDLSTL)
+        ISYML1R = ILSTSYM(LISTL1R,IDLSTL1R)
+        FREQL1R = FRQFN2(IDLSTL)
+C
+        !LITSL0 corresponding to LISTL
+        LISTL0 = 'LE '
+        IDLSTL0 = IIN2(IDLSTL)
+        ISYML0 = ILSTSYM(LISTL0,IDLSTL0)
+C
+      ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = -EIGVAL(IDLSTL)
+        LABELL1 = '- none -'
+C
+        !we don't have any "right" vector entering a right hand side
+        LISTL1R = '---'
+        IDLSTL1R = -99
+C
+        !LITSL0 corresponding to LISTL (not used for LE)
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0 = 1
 C
       ELSE
          CALL QUIT('Unkown left list in CC3_ADENVIR')
@@ -8539,7 +9496,12 @@ C
         FREQR1  = FRQLRT(IDLSTR)
         LABELR1 = LRTLBL(IDLSTR)
 c
+      ELSE IF (LISTR(1:3).EQ.'RE ') THEN
+         ISYMR1 = ILSTSYM(LISTR,IDLSTR)
+         FREQR1 = EIGVAL(IDLSTR)
+         LABELR1 = '- none -'
       ELSE
+         WRITE(LUPRI,*)'LISTR ',LISTR
          CALL QUIT('Unkown right list in CC3_ADENVIR')
       END IF
 C
@@ -8558,8 +9520,8 @@ C
       KFOCK0CK  = KFOCKD  + NORBTS
       KT2TP   = KFOCK0CK  + NT1AMX 
       KL1AM   = KT2TP   + NT2SQ(ISYM0)
-      KL2TP   = KL1AM   + NT1AM(ISYM0)
-      KEND0   = KL2TP   + NT2SQ(ISYM0)
+      KL2TP   = KL1AM   + NT1AM(ISYML0)
+      KEND0   = KL2TP   + NT2SQ(ISYML0)
       LWRK0   = LWORK   - KEND0
 C
       KL1L1   = KEND0
@@ -8572,13 +9534,15 @@ C
       KEND1    = KFOCKR1 + N2BST(ISYMR1)
       LWRK1    = LWORK - KEND1
 C
-      KDAB0 = KEND1
-      KDIJ0 = KDAB0 + NMATAB(ISYML1)
-      KEND1 = KDIJ0 + NMATIJ(ISYML1)
-      LWRK1 = LWORK - KEND1
+      IF (DO_DIA) THEN
+         KDAB0 = KEND1
+         KDIJ0 = KDAB0 + NMATAB(ISYML1)
+         KEND1 = KDIJ0 + NMATIJ(ISYML1)
+         LWRK1 = LWORK - KEND1
 C
-      CALL DZERO(WORK(KDAB0),NMATAB(ISYML1))
-      CALL DZERO(WORK(KDIJ0),NMATIJ(ISYML1))
+         CALL DZERO(WORK(KDAB0),NMATAB(ISYML1))
+         CALL DZERO(WORK(KDIJ0),NMATIJ(ISYML1))
+      END IF
 C
 C-------------------------------------
 C     Read in lamdap and lamdh
@@ -8601,14 +9565,14 @@ C---------------------------------------------------------------------
 C
       IF (LISTL(1:3).EQ.'L1 ') THEN
          CALL GET_FOCKX(WORK(KFOCKL1),LABELL1,IDLSTL,ISYML1,
-     *                  WORK(KLAMP0),
-     *                  WORK(KLAMH0),WORK(KEND1),LWRK1)
+     *                  WORK(KLAMP0),ISYM0,
+     *                  WORK(KLAMH0),ISYM0,WORK(KEND1),LWRK1)
       END IF
 C
       IF (LISTR(1:3).EQ.'R1 ') THEN
          CALL GET_FOCKX(WORK(KFOCKR1),LABELR1,IDLSTR,ISYMR1,
-     *                  WORK(KLAMP0),
-     *                  WORK(KLAMH0),WORK(KEND1),LWRK1)
+     *                  WORK(KLAMP0),ISYM0,
+     *                  WORK(KLAMH0),ISYM0,WORK(KEND1),LWRK1)
       END IF
 C
 C-------------------------------------
@@ -8629,10 +9593,10 @@ C
       IOPT = 3
       CALL GET_T1_T2(IOPT,.FALSE.,WORK(KL1AM),WORK(KL2TP),LISTL0,
      *                IDLSTL0,
-     *               ISYM0,WORK(KEND1),LWRK1)
+     *               ISYML0,WORK(KEND1),LWRK1)
 C
       IF (LOCDBG) WRITE(LUPRI,*) 'Norm of L2TP ',
-     *    DDOT(NT2SQ(ISYM0),WORK(KL2TP),1,WORK(KL2TP),1)
+     *    DDOT(NT2SQ(ISYML0),WORK(KL2TP),1,WORK(KL2TP),1)
 
 C
 C-------------------------------------
@@ -8650,6 +9614,30 @@ C
       IOPT  = 3
       CALL GET_T1_T2(IOPT,.TRUE.,WORK(KT1R1),WORK(KT2R1),LISTR,
      *               IDLSTR,ISYMR1,WORK(KEND1),LWRK1)
+C
+C------------------------------------------------------
+C     If calculating M(imfN) 
+C     get T2 amplitudes for R1 list in a special manner
+C------------------------------------------------------
+C     
+      IF (DO_YMMAT) THEN
+          LUT2Y = 0
+          CALL WOPEN2(LUT2Y,FNT2Y,64,0)
+
+          KR2TP = KEND1
+          KEND1 = KR2TP + NT2SQ(ISYMR1)
+          LWRK1 = LWORK - KEND1
+          IF (LWRK1.LT.NT2AM(ISYMR1))
+     &      CALL QUIT('Out of memory in CC3_ADENVIR (special T2)')
+
+          IOPT = 2
+          CALL CC_RDRSP(LISTR,IDLSTR,ISYMR1,IOPT,MODEL,
+     &                  DUMMY,WORK(KEND1))
+          CALL CCLR_DIASCL(WORK(KEND1),TWO,ISYMR1)
+          CALL CC_T2SQ(WORK(KEND1),WORK(KR2TP),ISYMR1)
+
+          CALL PUTWA2(LUT2Y,FNT2Y,WORK(KR2TP),1,NT2SQ(ISYMR1))
+      END IF
 C
 C----------------------------------------
 C     Integrals [H,T1Y] where Y is LISTR
@@ -8705,8 +9693,11 @@ C-----------------------------
 C     Memory allocation.
 C-----------------------------
 C
-      ISINT2L1R = MULD2H(ISYML1R,ISINT2)
-      ISYFCKL1R = MULD2H(ISYMOP,ISYML1R)
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         ISINT2L1R = MULD2H(ISYML1R,ISINT2)
+         ISYFCKL1R = MULD2H(ISYMOP,ISYML1R)
+      END IF
 
       KXIAJB   = KEND1
       KEND1   = KXIAJB  + NT2AM(ISYM0)
@@ -8717,25 +9708,40 @@ C
       KT3BOL2 = KT3BOG2 + NTRAOC(ISYM0)
       KT3OG1  = KT3BOL2 + NTRAOC(ISYM0)
       KT3OG2 = KT3OG1  + NTRAOC(ISINT2)
-      KLAMPL1R  = KT3OG2 + NTRAOC(ISINT2)
-      KLAMHL1R  = KLAMPL1R  + NLAMDT
-      KEND1   = KLAMHL1R  + NLAMDT
+      KEND1  = KT3OG2 + NTRAOC(ISINT2)
       LWRK1   = LWORK   - KEND1
 C
       KW3XOGX1 = KEND1
       KEND1   = KW3XOGX1 + NTRAOC(ISINT2R1)
 C
-      KFOCKL1RCK    = KEND1
-      KW3BXOG1   = KFOCKL1RCK    + NT1AM(ISYFCKL1R)
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         KFOCKL1RCK    = KEND1
+         KW3BXOGX1   = KFOCKL1RCK    + NT1AM(ISYFCKL1R)
+         KW3BXOLX1   = KW3BXOGX1   + NTRAOC(ISINT2L1R)
+         KEND1      = KW3BXOLX1   + NTRAOC(ISINT2L1R)
+         LWRK1      = LWORK      - KEND1
+      END IF
+C
+      KW3BXOG1   = KEND1
       KW3BXOL1   = KW3BXOG1   + NTRAOC(ISYM0)
-      KW3BXOGX1   = KW3BXOL1   + NTRAOC(ISYM0)
-      KW3BXOLX1   = KW3BXOGX1   + NTRAOC(ISINT2L1R)
-      KEND1      = KW3BXOLX1   + NTRAOC(ISINT2L1R)
+      KEND1      = KW3BXOL1   +  NTRAOC(ISYM0)
       LWRK1      = LWORK      - KEND1
 C
-      KT1L1R  = KEND1
-      KEND2  = KT1L1R + NT1AM(ISYML1R)
-      LWRK2   = LWORK  - KEND2
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         KLAMPL1R  = KEND1
+         KLAMHL1R  = KLAMPL1R  + NLAMDT
+         KEND1   = KLAMHL1R  + NLAMDT
+         LWRK1   = LWORK   - KEND1
+C
+         KT1L1R  = KEND1
+         KEND2  = KT1L1R + NT1AM(ISYML1R)
+         LWRK2   = LWORK  - KEND2
+      ELSE
+         KEND2 = KEND1
+         LWRK2 = LWRK1
+      END IF
 C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -8765,7 +9771,10 @@ C        ISINT1L1R - symmetry of integrals in standard H, transformed
 C                  with LambdaH_L1R
 
       ISINT1  = 1
-      ISINT1L1R = MULD2H(ISINT1,ISYML1R)
+
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         ISINT1L1R = MULD2H(ISINT1,ISYML1R)
 C
 C--------------------------
 C     Get Lambda for right list depended on left LISTL list
@@ -8787,6 +9796,8 @@ C
      *                  ISYML1R,WORK(KEND2),LWRK2)
          CALL CC3LR_MFOCK(WORK(KFOCKL1RCK),WORK(KT1L1R),WORK(KXIAJB),
      *                    ISYFCKL1R)
+C
+      END IF
 C
          ! From now on WORK(KEND1) is used again, since we do not need
          ! KT1L1R amplitudes any more...
@@ -8813,11 +9824,26 @@ C     Construct occupied integrals which are required to calculate
 C     t3bar_Y multipliers                                             
 C-----------------------------------------------------------------
 C
-      CALL INTOCC_T3BARX(LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,ISINT1,
+       
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                           .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+       LSKIPL1R = .FALSE.
+       CALL INTOCC_T3BARX(LSKIPL1R,
+     *                   LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,ISINT1,
      *                   WORK(KLAMHL1R),ISYML1R,ISINT1L1R,
      *                   WORK(KW3BXOG1),
      *                   WORK(KW3BXOL1),WORK(KW3BXOGX1),WORK(KW3BXOLX1),
      *                   WORK(KEND1),LWRK1)
+      ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+       LSKIPL1R = .TRUE.
+       CALL INTOCC_T3BARX(LSKIPL1R,
+     *                   LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,ISINT1,
+     *                   DUMMY,IDUMMY,IDUMMY,
+     *                   WORK(KW3BXOG1),
+     *                   WORK(KW3BXOL1),DUMMY,DUMMY,
+     *                   WORK(KEND1),LWRK1)
+      END IF
+
 C
 C------------------------------------------------------------------
 C     Read occupied integrals [H,T1Y] where Y is LISTR1 (used in W)
@@ -8845,8 +9871,12 @@ C
       DO ISYMD = 1,NSYM
 
          ISYCKBD0  = MULD2H(ISYMD,ISYM0)
-         ISYCKBDL1R  = MULD2H(ISYMD,ISYML1R)
          ISYCKBDR1  = MULD2H(ISYMD,ISINT2R1)
+C
+         IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                              .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+            ISYCKBDL1R  = MULD2H(ISYMD,ISYML1R)
+         END IF
 C
          DO D = 1,NVIR(ISYMD)
 C
@@ -8877,12 +9907,15 @@ C
             KEND3     = KW3BXVDL2  + NCKATR(ISYCKBD0)
             LWRK3     = LWORK     - KEND3
 
-            KW3BXVDGX1  = KEND3
-            KW3BXVDGX2  = KW3BXVDGX1  + NCKATR(ISYCKBDL1R)
-            KW3BXVDLX1  = KW3BXVDGX2  + NCKATR(ISYCKBDL1R)
-            KW3BXVDLX2  = KW3BXVDLX1  + NCKATR(ISYCKBDL1R)
-            KEND3     = KW3BXVDLX2  + NCKATR(ISYCKBDL1R)
-            LWRK3     = LWORK     - KEND3
+            IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                                 .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+              KW3BXVDGX1  = KEND3
+              KW3BXVDGX2  = KW3BXVDGX1  + NCKATR(ISYCKBDL1R)
+              KW3BXVDLX1  = KW3BXVDGX2  + NCKATR(ISYCKBDL1R)
+              KW3BXVDLX2  = KW3BXVDLX1  + NCKATR(ISYCKBDL1R)
+              KEND3     = KW3BXVDLX2  + NCKATR(ISYCKBDL1R)
+              LWRK3     = LWORK     - KEND3
+            END IF
 C
             KW3XVDGX1  = KEND3
             KEND3    = KW3XVDGX1  + NCKATR(ISYCKBDR1)
@@ -8925,14 +9958,30 @@ C           Construct virtual integrals (for fixed D) which are required
 C           to calculate t3bar_X multipliers
 C-----------------------------------------------------------------------
 C
-            CALL INTVIR_T3BARX_D(ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
-     *                           LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
-     *                           WORK(KW3BXVDGX1),WORK(KW3BXVDG1),
-     *                           WORK(KW3BXVDGX2),WORK(KW3BXVDG2),
-     *                           WORK(KW3BXVDLX1),WORK(KW3BXVDL1),
-     *                           WORK(KW3BXVDLX2),WORK(KW3BXVDL2),
-     *                           WORK(KLAMPL1R),ISYML1R,WORK(KLAMP0),
-     *                           ISYM0,ISYMD,D,WORK(KEND4),LWRK4)
+            IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ') 
+     *                                 .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+             LSKIPL1R = .FALSE.
+             CALL INTVIR_T3BARX_D(LSKIPL1R,
+     *                            ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
+     *                            LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
+     *                            WORK(KW3BXVDGX1),WORK(KW3BXVDG1),
+     *                            WORK(KW3BXVDGX2),WORK(KW3BXVDG2),
+     *                            WORK(KW3BXVDLX1),WORK(KW3BXVDL1),
+     *                            WORK(KW3BXVDLX2),WORK(KW3BXVDL2),
+     *                            WORK(KLAMPL1R),ISYML1R,WORK(KLAMP0),
+     *                            ISYM0,ISYMD,D,WORK(KEND4),LWRK4)
+            ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+             LSKIPL1R = .TRUE.
+             CALL INTVIR_T3BARX_D(LSKIPL1R,
+     *                            ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
+     *                            LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
+     *                            DUMMY,WORK(KW3BXVDG1),
+     *                            DUMMY,WORK(KW3BXVDG2),
+     *                            DUMMY,WORK(KW3BXVDL1),
+     *                            DUMMY,WORK(KW3BXVDL2),
+     *                            DUMMY,IDUMMY,WORK(KLAMP0),
+     *                            ISYM0,ISYMD,D,WORK(KEND4),LWRK4)
+            END IF
 C
 C-----------------------------------------------------------------------
 C        Read virtual integrals [H,T1Y] where Y is LISTR1 (used in W)
@@ -8949,6 +9998,8 @@ C
 
                ISYALJB0  = MULD2H(ISYMB,ISYM0)
                ISYALJD0 = MULD2H(ISYMD,ISYM0)
+               ISYALJBL0  = MULD2H(ISYMB,ISYML0)
+               ISYALJDL0 = MULD2H(ISYMD,ISYML0)
                ISYALJBL1  = MULD2H(ISYMB,ISYML1)
                ISYALJDL1 = MULD2H(ISYMD,ISYML1)
                ISYMBD  = MULD2H(ISYMD,ISYMB)
@@ -8968,9 +10019,9 @@ C              Can use kend3 since we do not need the integrals anymore.
                KINDSQ     = KDIAGW    + NCKIJ(ISWMAT)
                KINDSQWB    = KINDSQ    + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
                KINDSQW     = KINDSQWB  + (6*NCKIJ(ISWBMAT) - 1)/IRAT + 1
-               KINDEX     = KINDSQW   + (6*NCKIJ(ISWMAT) - 1)/IRAT + 1
-               KINDEX2    = KINDEX    + (NCKI(ISYALJB0)  - 1)/IRAT + 1
-               KINDEXBL1   = KINDEX2   + (NCKI(ISYALJD0) - 1)/IRAT + 1
+               KINDEXB     = KINDSQW   + (6*NCKIJ(ISWMAT) - 1)/IRAT + 1
+               KINDEXD    = KINDEXB    + (NCKI(ISYALJB0)  - 1)/IRAT + 1
+               KINDEXBL1   = KINDEXD   + (NCKI(ISYALJD0) - 1)/IRAT + 1
                KINDEXDL1   = KINDEXBL1 + (NCKI(ISYALJBL1)  - 1)/IRAT + 1
                KTMAT      = KINDEXDL1  + (NCKI(ISYALJDL1) - 1)/IRAT + 1
                KT3MAT     = KTMAT    + MAX(NCKIJ(ISCKIJ),NCKIJ(ISWBMAT))
@@ -8980,7 +10031,12 @@ C              Can use kend3 since we do not need the integrals anymore.
                KW3MATD      = KWTEMP     + NCKIJ(ISWMAT)
                KEND4        = KW3MATD    + NCKIJ(ISWMAT)
                LWRK4      = LWORK     - KEND4
-
+C
+               KINDEXBL0     = KEND4
+               KINDEXDL0    = KINDEXBL0 + (NCKI(ISYALJBL0) - 1)/IRAT + 1
+               KEND4   = KINDEXDL0   + (NCKI(ISYALJDL0) - 1)/IRAT + 1
+               LWRK4      = LWORK     - KEND4
+C
                KS3MAT   = KEND4
                KU3MAT   = KS3MAT  + NCKIJ(ISCKIJ)
                KS3MAT3  = KU3MAT  + NCKIJ(ISCKIJ)
@@ -9043,8 +10099,10 @@ C
                LENSQW = NCKIJ(ISWMAT)
                CALL CC3_INDSQ(WORK(KINDSQW),LENSQW,ISWMAT) 
 C
-               CALL CC3_INDEX(WORK(KINDEX),ISYALJB0)
-               CALL CC3_INDEX(WORK(KINDEX2),ISYALJD0)
+               CALL CC3_INDEX(WORK(KINDEXB),ISYALJB0)
+               CALL CC3_INDEX(WORK(KINDEXD),ISYALJD0)
+               CALL CC3_INDEX(WORK(KINDEXBL0),ISYALJBL0)
+               CALL CC3_INDEX(WORK(KINDEXDL0),ISYALJDL0)
                CALL CC3_INDEX(WORK(KINDEXBL1),ISYALJBL1)
                CALL CC3_INDEX(WORK(KINDEXDL1),ISYALJDL1)
 
@@ -9113,9 +10171,9 @@ C
      *                            WORK(KT3MAT),WORK(KFOCKD),WORK(KDIAG),
      *                            WORK(KINDSQ),LENSQ,WORK(KS3MAT),
      *                            WORK(KT3VDG1),WORK(KT3VDG2),
-     *                            WORK(KT3OG1),WORK(KINDEX),
+     *                            WORK(KT3OG1),WORK(KINDEXB),
      *                            WORK(KS3MAT3),WORK(KT3VBG1),
-     *                            WORK(KT3VBG2),WORK(KINDEX2),
+     *                            WORK(KT3VBG2),WORK(KINDEXD),
      *                            WORK(KU3MAT),WORK(KT3VDG3),
      *                            WORK(KT3OG2),WORK(KU3MAT3),
      *                            WORK(KT3VBG3),ISYMB,B,ISYMD,D,ISCKIJ,
@@ -9128,24 +10186,32 @@ C---------------------------------------------------------
 C                 Get T3bar_BD multipliers (using S and U)
 C---------------------------------------------------------
 C
-                  CALL GET_T3BAR0_BD(ISYM0,WORK(KL1AM),ISYM0,
-     *                               WORK(KL2TP),ISYM0,WORK(KTMAT),
-     *                               WORK(KFOCK0CK),WORK(KFOCKD),
-     *                               WORK(KDIAG),WORK(KXIAJB),ISYM0,
-     *                               ISYM0,WORK(KINDSQ),LENSQ,
-     *                               WORK(KSMAT2),WORK(KT3BVDG1),
-     *                               WORK(KT3BVDG2),WORK(KT3BVDL1),
-     *                               WORK(KT3BVDL2),WORK(KT3BOG1),
-     *                               WORK(KT3BOL1),WORK(KINDEX),
-     *                               WORK(KSMAT4),WORK(KT3BVBG1),
-     *                               WORK(KT3BVBG2),WORK(KT3BVBL1),
-     *                               WORK(KT3BVBL2),WORK(KINDEX2),
-     *                               WORK(KUMAT2),WORK(KT3BVDG3),
-     *                               WORK(KT3BVDL3),WORK(KT3BOG2),
-     *                               WORK(KT3BOL2),WORK(KUMAT4),
-     *                               WORK(KT3BVBG3),WORK(KT3BVBL3),
-     *                               ISYMB,B,ISYMD,D,ISCKIJ,
-     *                               WORK(KEND5),LWRK5)
+                  IF (LISTL(1:3).EQ.'L1 ') THEN
+                    CALL GET_T3BAR0_BD(ISYM0,WORK(KL1AM),ISYML0,
+     *                                 WORK(KL2TP),ISYML0,WORK(KTMAT),
+     *                                 WORK(KFOCK0CK),WORK(KFOCKD),
+     *                                 WORK(KDIAG),WORK(KXIAJB),ISYM0,
+     *                                 ISYM0,WORK(KINDSQ),LENSQ,
+     *                                 WORK(KSMAT2),WORK(KT3BVDG1),
+     *                                 WORK(KT3BVDG2),WORK(KT3BVDL1),
+     *                                 WORK(KT3BVDL2),WORK(KT3BOG1),
+     *                                 WORK(KT3BOL1),WORK(KINDEXBL0),
+     *                                 WORK(KSMAT4),WORK(KT3BVBG1),
+     *                                 WORK(KT3BVBG2),WORK(KT3BVBL1),
+     *                                 WORK(KT3BVBL2),WORK(KINDEXDL0),
+     *                                 WORK(KUMAT2),WORK(KT3BVDG3),
+     *                                 WORK(KT3BVDL3),WORK(KT3BOG2),
+     *                                 WORK(KT3BOL2),WORK(KUMAT4),
+     *                                 WORK(KT3BVBG3),WORK(KT3BVBL3),
+     *                                 ISYMB,B,ISYMD,D,ISCKIJ,
+     *                                 WORK(KEND5),LWRK5)
+C Solely for debugging !!!
+*                 IF (DO_YMMAT) THEN
+*                    CALL WRITE_T3_DL(LUWBMATX,FNWBMATX,WORK(KTMAT),
+*    *                                ISYM0,ISYMD,ISYMB,B)
+*                 END IF
+C
+C
 c
 c       call sum_pt3(work(KTMAT),isymb,b,isymd,d,
 c    *             ISYM0,work(kx3am),4)
@@ -9154,24 +10220,67 @@ C----------------------------------------------------
 C                 Get T3barX_BD multipliers (using W)
 C----------------------------------------------------
 C
-                  CALL GET_T3BARX_BD(WORK(KTMAT),ISCKIJ,WORK(KFOCKL1),
-     *                               ISYML1,WORK(KW3BMAT),ISWBMAT,
-     *                               WORK(KL2TP),ISYM0,WORK(KFOCKL1RCK),
-     *                               ISYFCKL1R,WORK(KW3BXVDLX2),
-     *                               WORK(KW3BXVDLX1),WORK(KW3BXVDGX2),
-     *                               WORK(KW3BXVDGX1),WORK(KW3BXOLX1),
-     *                               WORK(KW3BXOGX1),ISINT2L1R,
-     *                               WORK(KINDEX),WORK(KINDEX2),
-     *                               WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
-     *                               ISYML1,WORK(KFOCK0CK),ISYM0,
-     *                               WORK(KW3BXVDL2),WORK(KW3BXVDL1),
-     *                               WORK(KW3BXVDG2),WORK(KW3BXVDG1),
-     *                               WORK(KW3BXOL1),WORK(KW3BXOG1),
-     *                               ISINT2,WORK(KINDEXBL1),
-     *                               WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
-     *                               WORK(KXIAJB),ISINT1,-FREQL1,
-     *                               WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
-     *                               D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+                   CALL GET_T3BARX_BD(.FALSE.,
+     *                              WORK(KTMAT),ISCKIJ,WORK(KFOCKL1),
+     *                              ISYML1,WORK(KW3BMAT),ISWBMAT,
+     *                              WORK(KL2TP),ISYML0,WORK(KFOCKL1RCK),
+     *                              ISYFCKL1R,WORK(KW3BXVDLX2),
+     *                              WORK(KW3BXVDLX1),WORK(KW3BXVDGX2),
+     *                              WORK(KW3BXVDGX1),WORK(KW3BXOLX1),
+     *                              WORK(KW3BXOGX1),ISINT2L1R,
+     *                              WORK(KINDEXBL0),WORK(KINDEXDL0),
+     *                              WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
+     *                              ISYML1,WORK(KFOCK0CK),ISYM0,
+     *                              WORK(KW3BXVDL2),WORK(KW3BXVDL1),
+     *                              WORK(KW3BXVDG2),WORK(KW3BXVDG1),
+     *                              WORK(KW3BXOL1),WORK(KW3BXOG1),
+     *                              ISINT2,WORK(KINDEXBL1),
+     *                              WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
+     *                              WORK(KXIAJB),ISINT1,-FREQL1,
+     *                              WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
+     *                              D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+c       call sum_pt3(work(KW3BMAT),isymb,b,isymd,d,
+c    *             ISWBMAT,work(kx3am),4)
+                  ELSE IF ( (LISTL(1:3).EQ.'M1 ') 
+     *                     .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+                     CALL GET_M3BAR_BD(WORK(KTMAT),WORK(KW3BMAT),
+     *                      ISWBMAT,WORK(KL2TP),ISYML0,WORK(KFOCKL1RCK),
+     *                      ISYFCKL1R,WORK(KW3BXVDLX2),
+     *                      WORK(KW3BXVDLX1),WORK(KW3BXVDGX2),
+     *                      WORK(KW3BXVDGX1),WORK(KW3BXOLX1),
+     *                      WORK(KW3BXOGX1),ISINT2L1R,
+     *                      WORK(KINDEXBL0),WORK(KINDEXDL0),
+     *                      WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
+     *                      ISYML1,WORK(KFOCK0CK),ISYM0,
+     *                      WORK(KW3BXVDL2),WORK(KW3BXVDL1),
+     *                      WORK(KW3BXVDG2),WORK(KW3BXVDG1),
+     *                      WORK(KW3BXOL1),WORK(KW3BXOG1),
+     *                      ISINT2,WORK(KINDEXBL1),
+     *                      WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
+     *                      WORK(KXIAJB),ISINT1,-FREQL1,
+     *                      WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
+     *                      D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+
+c
+c       call sum_pt3(work(KW3BMAT),isymb,b,isymd,d,
+c    *             ISWBMAT,work(kx3am),4)
+                  ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+                     CALL GET_L3BAR_BD(WORK(KTMAT),WORK(KW3BMAT),
+     *                       ISWBMAT,
+     *                       WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
+     *                       ISYML1,WORK(KFOCK0CK),ISYM0,
+     *                       WORK(KW3BXVDL2),WORK(KW3BXVDL1),
+     *                       WORK(KW3BXVDG2),WORK(KW3BXVDG1),
+     *                       WORK(KW3BXOL1),WORK(KW3BXOG1),
+     *                       ISINT2,WORK(KINDEXBL1),
+     *                       WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
+     *                       WORK(KXIAJB),ISINT1,-FREQL1,
+     *                       WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
+     *                       D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+c
+c       call sum_pt3(work(KW3BMAT),isymb,b,isymd,d,
+c    *             ISWBMAT,work(kx3am),4)
+                  END IF
 C
                   !To conform with real sign of t3b multipliers
                   !(noddy code definition)
@@ -9185,38 +10294,41 @@ C     Calculate the  term <mu3|[X,T3]|HF> occupied contribution
 C     added in W^BD(KW3MAT)
 C------------------------------------------------------
 C
-                  BJCK_PERM = .TRUE.
+                  AIBJCK_PERM = 1
 C
-                  CALL WXBD_O(BJCK_PERM,WORK(KT3MAT),ISCKIJ,
-     *                       WORK(KFOCKR1),ISYMR1,
-     *                       WORK(KW3MAT),ISWMAT,WORK(KEND5),LWRK5)
+                  IF (LISTR(1:3).EQ.'R1 ') THEN
+                   CALL WXBD_O(AIBJCK_PERM,WORK(KT3MAT),ISCKIJ,
+     *                        WORK(KFOCKR1),ISYMR1,
+     *                        WORK(KW3MAT),ISWMAT,WORK(KEND5),LWRK5)
 C
 C------------------------------------------------------
 C     Calculate the  term <mu3|[[X,T2],T2]|HF> 
 C     added in W^BD(KW3MAT)
 C------------------------------------------------------
 C
-                  CALL WXBD_T2(BJCK_PERM,B,ISYMB,D,ISYMD,WORK(KT2TP),
-     *                        ISYM0,
-     *                        WORK(KFOCKR1),ISYMR1,
-     *                        WORK(KINDSQW),LENSQW,WORK(KW3MAT),ISWMAT,
-     *                        WORK(KEND5),LWRK5)
+                   CALL WXBD_T2(AIBJCK_PERM,B,ISYMB,D,ISYMD,WORK(KT2TP),
+     *                         ISYM0,
+     *                         WORK(KFOCKR1),ISYMR1,
+     *                         WORK(KINDSQW),LENSQW,WORK(KW3MAT),ISWMAT,
+     *                         WORK(KEND5),LWRK5)
+                  END IF
 C
 C------------------------------------------------------
 C     To get the entire T3^X add the two terms
 C------------------------------------------------------
 C
-                  CALL WXBD_GROUND(BJCK_PERM,WORK(KT2R1),ISYMR1,
+                  CALL WXBD_GROUND(AIBJCK_PERM,WORK(KT2R1),ISYMR1,
      *                            WORK(KWTEMP),
      *                            WORK(KT3VDG1),WORK(KT3VBG1),DUMMY,
+     *                            DUMMY,
      *                            WORK(KT3OG1),ISINT2,
      *                            WORK(KW3MAT),WORK(KEND5),LWRK5,
      *                            WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D)
  
-                  CALL WXBD_GROUND(BJCK_PERM,WORK(KT2TP),ISYM0,
+                  CALL WXBD_GROUND(AIBJCK_PERM,WORK(KT2TP),ISYM0,
      *                            WORK(KWTEMP),
      *                            WORK(KW3XVDGX1),WORK(KW3XVDGX2),
-     *                            DUMMY,
+     *                            DUMMY,DUMMY,
      *                            WORK(KW3XOGX1),ISINT2R1,
      *                            WORK(KW3MAT),WORK(KEND5),LWRK5,
      *                            WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D)
@@ -9239,39 +10351,41 @@ C     Calculate the  term <mu3|[X,T3]|HF> occupied contribution
 C     added in W^BD(KW3MATD)
 C------------------------------------------------------
 C
-                  BJCK_PERM = .FALSE.
+                  AIBJCK_PERM = 3
 C
-                  CALL WXBD_O(BJCK_PERM,WORK(KT3MAT),ISCKIJ,
-     *                       WORK(KFOCKR1),ISYMR1,
-     *                       WORK(KW3MATD),ISWMAT,WORK(KEND5),LWRK5)
+                  IF (LISTR(1:3).EQ.'R1 ') THEN
+                   CALL WXBD_O(AIBJCK_PERM,WORK(KT3MAT),ISCKIJ,
+     *                        WORK(KFOCKR1),ISYMR1,
+     *                        WORK(KW3MATD),ISWMAT,WORK(KEND5),LWRK5)
 C
 C------------------------------------------------------
 C     Calculate the  term <mu3|[[X,T2],T2]|HF> 
 C     added in W^BD(KW3MATD)
 C------------------------------------------------------
 C
-                  CALL WXBD_T2(BJCK_PERM,B,ISYMB,D,ISYMD,WORK(KT2TP),
-     *                        ISYM0,
-     *                        WORK(KFOCKR1),ISYMR1,
+                   CALL WXBD_T2(AIBJCK_PERM,B,ISYMB,D,ISYMD,WORK(KT2TP),
+     *                         ISYM0,
+     *                         WORK(KFOCKR1),ISYMR1,
      *                        WORK(KINDSQW),LENSQW,WORK(KW3MATD),ISWMAT,
-     *                        WORK(KEND5),LWRK5)
+     *                         WORK(KEND5),LWRK5)
+                  END IF
 C
 C------------------------------------------------------
 C     To get the entire T3^X add the two terms
 C------------------------------------------------------
 C
-                  CALL WXBD_GROUND(BJCK_PERM,WORK(KT2R1),ISYMR1,
+                  CALL WXBD_GROUND(AIBJCK_PERM,WORK(KT2R1),ISYMR1,
      *                            WORK(KWTEMP),
      *                            WORK(KT3VDG1),WORK(KT3VBG1),
-     *                            WORK(KT3VBG3),
+     *                            WORK(KT3VBG3),DUMMY,
      *                            WORK(KT3OG1),ISINT2,
      *                            WORK(KW3MATD),WORK(KEND5),LWRK5,
      *                            WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D)
  
-                  CALL WXBD_GROUND(BJCK_PERM,WORK(KT2TP),ISYM0,
+                  CALL WXBD_GROUND(AIBJCK_PERM,WORK(KT2TP),ISYM0,
      *                            WORK(KWTEMP),
      *                            WORK(KW3XVDGX1),WORK(KW3XVDGX2),
-     *                            WORK(KT3VBGX3),
+     *                            WORK(KT3VBGX3),DUMMY,
      *                            WORK(KW3XOGX1),ISINT2R1,
      *                            WORK(KW3MATD),WORK(KEND5),LWRK5,
      *                            WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D)
@@ -9299,13 +10413,12 @@ C
 c
 c       call sum_pt3(work(KW3MAT),isymb,b,isymd,d,
 c    *             ISWMAT,work(kx3am),6)
-C
+ 
 C--------------------------------------------------------
 C                 Write WBMAT as WBMAT^D(ai,bj,l) to disc
 C--------------------------------------------------------
                   CALL WRITE_T3_DL(LUWBMAT,FNWBMAT,WORK(KW3BMAT),ISYML1,
      *                             ISYMD,ISYMB,B)
-C
 C
                   !To conform with real sign of t3 amplitudes
                   CALL DSCAL(NCKIJ(ISCKIJ),-ONE,WORK(KT3MAT),1)
@@ -9328,36 +10441,67 @@ C--------------------------------------------------------
 C                 Get T2X T2Y contribution to DIA density 
 C--------------------------------------------------------
 C
-                  T2XNET2Y = .TRUE.
-                  CALL CC_XI_DEN_IA(T2XNET2Y,DIA,WORK(KW3BMAT),ISWBMAT,
-     *                              WORK(KT2R1),ISYMR1,
-     *                               WORK(KT2TP),ISYM0,WORK(KINDSQWB),
-     *                               LENSQWB,
-     *                               B,ISYMB,D,ISYMD,WORK(KEND5),LWRK5)
+                  IF (DO_DIA) THEN
+                   T2XNET2Y = .TRUE.
+                   CALL CC_XI_DEN_IA(T2XNET2Y,DIA,WORK(KW3BMAT),ISWBMAT,
+     *                               WORK(KT2R1),ISYMR1,
+     *                                WORK(KT2TP),ISYM0,WORK(KINDSQWB),
+     *                                LENSQWB,
+     *                                B,ISYMB,D,ISYMD,WORK(KEND5),LWRK5)
+                  END IF
 C
                ENDDO   ! B
             ENDDO      ! ISYMB
+C
+C--------------------------------------------------------------------
+C          y^M(fn,im) <- M(fn,im)+ sum_em y^T2(dl,ei) tbar(dl,em,fn)
+C--------------------------------------------------------------------
+C
+           IF (DO_YMMAT) THEN
+              
+              !if tbar30 (all W intermediates are contained in t3bar)
+              !for t3barx it is only a part of W intermediates
+              CALL MMATX(YMMAT,LISTL,
+     *                   LUWBMAT,FNWBMAT,ISYML1,
+     *                   LUT2Y,FNT2Y,ISYMR1,
+     *                   ISYMD,D,
+     *                   WORK(KEND5),LWRK5)
+C
+              IF ( (LISTL(1:3) .EQ. 'L1 ') .OR. (LISTL(1:3) .EQ. 'M1 ')
+     *            .OR. (LISTL(1:3) .EQ. 'N2 ')
+     *            .OR. (LISTL(1:3) .EQ. 'LE ') ) THEN
+                 ! for t3barx calculate the remaining one W intermediate
+                 CALL MMATXL1(YMMAT,LISTL,LISTR,IDLSTR,
+     *                        LUWBMAT,FNWBMAT,ISYML1,
+     *                        ISYMD,D,
+     *                        WORK(KEND5),LWRK5)
+              END IF
+           END IF
+
 C
 C-------------------------------------------------------
 C          Get DAB0 and DIJ0 densities
 C-------------------------------------------------------
 C
-            QUADR = .FALSE.
-            CALL CC_XI_DEN_ABIJ(QUADR,WORK(KDAB0),WORK(KDIJ0),DUMMY,
-     *                          DUMMY,IDUMMY,
-     *                          IDUMMY,DUMMY,
-     *                          ISYM0,ISYML1,IDUMMY,
-     *                          LUT3,FNT3,LUWBMAT,FNWBMAT,
-     *                          IDUMMY,CDUMMY,
-     *                          DUMMY,DUMMY,
-     *                          WORK(KEND5),LWRK5,ISYMD,D)
+            IF (DO_DIA) THEN
+               QUADR = .FALSE.
+               CALL CC_XI_DEN_ABIJ(QUADR,LISTR,WORK(KDAB0),WORK(KDIJ0),
+     *                             .FALSE.,DUMMY,
+     *                             DUMMY,IDUMMY,
+     *                             IDUMMY,DUMMY,
+     *                             ISYM0,ISYML1,IDUMMY,
+     *                             LUT3,FNT3,LUWBMAT,FNWBMAT,
+     *                             IDUMMY,CDUMMY,
+     *                             DUMMY,DUMMY,
+     *                             WORK(KEND5),LWRK5,ISYMD,D)
+            END IF
 C
 C--------------------------------------------------------------------------
 C           Get DAB,DIJ,DIA densities contributions for quadratice response
 C--------------------------------------------------------------------------
 C
             QUADR = .TRUE.
-            CALL CC_XI_DEN_ABIJ(QUADR,DAB,DIJ,DIA,
+            CALL CC_XI_DEN_ABIJ(QUADR,LISTR,DAB,DIJ,DO_DIA,DIA,
      *                          WORK(KL2L1),ISYML1,
      *                          ISYMR1,WORK(KFOCKR1),
      *                          ISYM0,ISYML1,ISYMR1,
@@ -9369,16 +10513,19 @@ C
          ENDDO       ! D
       ENDDO          ! ISYMD 
 C
-      CALL CC3_XI_DEN_AI_T1(DIA,ISYDEN,WORK(KDAB0),WORK(KDIJ0),ISYML1,
-     *                            WORK(KT1R1),ISYMR1)
+      IF (DO_DIA) THEN
+        CALL CC3_XI_DEN_AI_T1(DIA,ISYDEN,WORK(KDAB0),WORK(KDIJ0),ISYML1,
+     *                              WORK(KT1R1),ISYMR1)
+      END IF
 C
 COMMENT COMMENT
 c      write(lupri,*) 'w3x (usual) in CC3_ADENVIR'
 c      write(lupri,*) 'w3xD  in CC3_ADENVIR'
 c      write(lupri,*) 'w3bx  in CC3_ADENVIR'
+c      write(lupri,*) 'DO_YMMAT = ', DO_YMMAT
 c      write(lupri,*) 'w3x + 0.5w3xD in CC3_ADENVIR'
 c      call print_pt3(work(kx3am),ISYM0,4)
-COMMENT COMMENT
+cOMMENT COMMENT
 C
 C---------------------------------
 C     Close the files
@@ -9387,6 +10534,10 @@ C
       CALL WCLOSE2(LUT3,FNT3,'DELETE')
       CALL WCLOSE2(LUWBMAT,FNWBMAT,'DELETE')
       CALL WCLOSE2(LUTHETA,FNTHETA,'DELETE')
+C
+      IF (DO_YMMAT) THEN 
+         CALL WCLOSE2(LUT2Y,FNT2Y,'DELETE')
+      END IF
 C
 C--------------------------------
 C     Close files for "response"
@@ -9407,36 +10558,44 @@ C
       RETURN
       END
 C  /* Deck wxbd_o */
-      SUBROUTINE WXBD_O(BJCK_PERM,TMAT,ISTMAT,FOCKY,ISYFKY,
+      SUBROUTINE WXBD_O(AIBJCK_PERM,TMAT,ISTMAT,FOCKY,ISYFKY,
      *                 WMAT,ISWMAT,WRK,LWRK)
 C 
-C If (BJCK_PERM) then (bjdk) permutation symmetry 
+C If (AIBJCK_PERM.eq.1) then (bjdk) permutation symmetry 
 C
 C     WBD(aikj) = WBD(aikj) - t(aBD,ljk) * fock(li)
 C
 C                            tmatBD(alkj)
 C
-C else (aibj) permutation symmetry
+C else if (AIBJCK_PERM.eq.2) then (aidk) permutation symmetry
+C
+C     WBD(aikj) = WBD(aikj) - t(aBD,ilk) * fock(lj)
+C
+C                            tmatBD(aikl)
+C
+C else if (AIBJCK_PERM.eq.3) then (aibj) permutation symmetry
 C
 C     WBD(aikj) = WBD(aikj) - t(aBD,ijl) * fock(lk)
 C
 C                            tmatBD(ailj)
+C
+C else if (AIBJCK_PERM.eq.4) then calculate all terms
 C 
 C
 C Written by P. Jorgensen and F. Pawlowski, Spring 2002.
-C (modyfied for BJCK_PERM flag - winter 2003.)
+C (modyfied for AIBJCK_PERM flag - spring 2003.)
 C
 
       IMPLICIT NONE
 C
-      LOGICAL BJCK_PERM
+      INTEGER AIBJCK_PERM
 C
       INTEGER LWRK, KFCLI, KEND0, LWRK0, KOFF1, KOFF2 
       INTEGER NL, KOFFY, KOFFT, KOFFW 
       INTEGER ISTMAT, ISYFKY, ISWMAT, ISALKJ
       INTEGER ISYMA, ISYAI, ISYAIK, ISYALK, ISYAL, NA
       INTEGER ISYMJ, ISYMK, ISYMI, ISYML, ISYFI
-      INTEGER ISYAIL,NAI
+      INTEGER ISYAIL,NAI,NAIK
 C
 #if defined (SYS_CRAY)
       REAL TMAT(*), FOCKY(*), WMAT(*), WRK(*)
@@ -9459,9 +10618,17 @@ C
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0)
 C
-      CALL QENTER('WXBD_O')
+      CALL QENTER('WXBDO')
 C
-
+C---------------------------------------
+C     Initial test of AIBJCK_PERM option
+C---------------------------------------
+C
+      IF ( (AIBJCK_PERM .LT. 1) .OR. (AIBJCK_PERM .GT. 4) ) THEN
+         WRITE(LUPRI,*)'AIBJCK_PERM = ',AIBJCK_PERM
+         WRITE(LUPRI,*)'should be between 1 and 4 '
+         CALL QUIT('Illegal value of AIBJCK_PERM option in WXBD_O')
+      END IF
 C
 C RESORT OCC-OCC  FOCKY ELEMENTS (L,I)
 C
@@ -9485,7 +10652,7 @@ C
          END DO
       END DO
 C
-      IF (BJCK_PERM) THEN
+      IF ((AIBJCK_PERM.EQ.1) .OR. (AIBJCK_PERM.EQ.4)) THEN
 C
 C CARRY OUT MATRIX MULTIPLICATION
 C WBD(a,i,k,j) = WBD(a,i-,k,j) - sum (l) tmatBD(a,l,k,j)*focky(l,i)
@@ -9528,7 +10695,35 @@ C
             END DO
          END DO
 C
-      ELSE 
+      END IF
+      IF ((AIBJCK_PERM.EQ.2) .OR. (AIBJCK_PERM.EQ.4)) THEN
+C
+C     WBD(aikj) = WBD(aikj) - t(aBD,ilk) * fock(lj)
+C
+C                            tmatBD(aikl)
+C
+C WBD(a,i,k,j) = WBD(a,i,k-,j) - sum (l) tmatBD(a,i,k,l)*focky(l,j)
+C
+         DO ISYMJ = 1,NSYM
+            ISYML = MULD2H(ISYFKY,ISYMJ)
+            ISYAIK =MULD2H(ISTMAT,ISYML)
+            NAIK    = MAX(1,NCKI(ISYAIK))
+            NL    = MAX(1,NRHF(ISYML))
+            KOFFY = KFCLI + IMATIJ(ISYML,ISYMJ)
+            KOFFT = ISAIKJ(ISYAIK,ISYML)
+     *            + 1
+            KOFFW = ISAIKJ(ISYAIK,ISYMJ)
+     *            + 1
+C
+C DENOTE t3 IS CALCULATED WITH NEGATIVE SIGN
+C
+            CALL DGEMM('N','N',NCKI(ISYAIK),NRHF(ISYMJ),
+     *                 NRHF(ISYML),ONE,TMAT(KOFFT),NAIK,
+     *                 WRK(KOFFY),NL,ONE,WMAT(KOFFW),NAIK)
+         END DO
+
+      END IF
+      IF ((AIBJCK_PERM.EQ.3) .OR. (AIBJCK_PERM.EQ.4)) THEN
 C
 C CARRY OUT MATRIX MULTIPLICATION
 C WBD(a,i,k,j) = WBD(a,i,k-,j) - sum (l) tmatBD(a,i,l,j)*focky(l,k)
@@ -9563,34 +10758,43 @@ C
 C
       END IF
 C
-      CALL QEXIT('WXBD_O')
+      CALL QEXIT('WXBDO')
 C
       RETURN
       END
 C
 C  /* Deck wxbd_t2 */
-      SUBROUTINE WXBD_T2(BJCK_PERM,B,ISYMB,D,ISYMD,T2TP,ISYMT2,FOCKY,
+      SUBROUTINE WXBD_T2(AIBJCK_PERM,B,ISYMB,D,ISYMD,T2TP,ISYMT2,FOCKY,
      *                   ISYFKY,INDSQ,LENSQ,WMAT,ISWMAT,WRK,LWRK)
 C 
 C 
-C If (BJCK_PERM) then (aibjdk) + (aidkbj)  permutation 
+C If (AIBJCK_PERM.eq.1) then (aibjdk) + (aidkbj)  permutation 
 C
 C     WBD(aikj) = WBD(aikj)  -  focky(l,f)* t2(ai,dl)*t2(fk,bj) 
 C
 C                            - focky(l,f)*t2(ai,bl)*t2(fj,dk)
 C
-C else                (dkbjai) + (dkaibj)  permutation
+C else (AIBJCK_PERM.eq.2)  then  (bjdkai) + (bjaidk)  permutation
+C
+C     WBD(aikj) = WBD(aikj)  -  focky(l,f)* t2(bj,al)*t2(fi,dk)
+C 
+C                            -  focky(l,f)* t2(bj,dl)*t2(fk,ai)
+C 
+
+C else (AIBJCK_PERM.eq.3)  then  (dkbjai) + (dkaibj)  permutation
 C
 C     WBD(aikj) = WBD(aikj)  -  focky(l,f)* t2(dk,al)*t2(fi,bj)
 C 
 C                            -  focky(l,f)* t2(dk,bl)*t2(fj,ai)
+C
+C else if (AIBJCK_PERM.eq.4) then calculate all terms
 C 
 C     Written by P. Jorgensen and F. Pawlowski, Spring 2002.
 C
 
       IMPLICIT NONE
 C
-      LOGICAL BJCK_PERM
+      INTEGER AIBJCK_PERM
 C
       INTEGER LENSQ
       INTEGER INDSQ(LENSQ,6)
@@ -9603,6 +10807,9 @@ C
       INTEGER ISYAK,ISYAKI,NAK
       INTEGER ISYBD,ISYLK,ISYFK,ISYAIJ,NAIJ,ISYLI
       INTEGER KLIJ,KAKL,KLK,KFK
+      INTEGER ISYFIK,ISYLIK,ISYAJL,KLIK,KAJL
+      INTEGER ISYAJ,ISYAJI,NAJ
+      INTEGER KLJ,KFJ,NAIK
 C
       INTEGER KOFF1,KOFF2,KOFF3
 C
@@ -9625,7 +10832,17 @@ C
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0)
 C
-      CALL QENTER('WXBD_T2')
+      CALL QENTER('WXBDT2')
+C
+C---------------------------------------
+C     Initial test of AIBJCK_PERM option
+C---------------------------------------
+C
+      IF ( (AIBJCK_PERM .LT. 1) .OR. (AIBJCK_PERM .GT. 4) ) THEN
+         WRITE(LUPRI,*)'AIBJCK_PERM = ',AIBJCK_PERM
+         WRITE(LUPRI,*)'should be between 1 and 4 '
+         CALL QUIT('Illegal value of AIBJCK_PERM option in WXBD_T2')
+      END IF
 C
 C
 C RESORT VIR-OCC  FOCKY ELEMENTS (l,f)
@@ -9656,7 +10873,8 @@ C
             END DO
          END DO
       END DO
-      IF (BJCK_PERM) THEN
+C
+      IF ((AIBJCK_PERM.EQ.1) .OR. (AIBJCK_PERM.EQ.4)) THEN
 C
 C    calculate first t2 contribution to W matrix
 C
@@ -9814,7 +11032,176 @@ C
             WMAT(I) = WMAT(I) + WRK(INDSQ(I,3))
          END DO
 C
-      ELSE
+C
+      END IF
+      IF ((AIBJCK_PERM.EQ.2) .OR. (AIBJCK_PERM.EQ.4)) THEN
+C
+C
+C     WBD(aikj) = WBD(aikj)  -  focky(l,f)* t2(bj,al)*t2(fi,dk)
+C
+C                                          T^B(ajl)    t(fikD)
+C                  
+C                work(lik) = focky(lf) * t(fikD) 
+C
+C                work(ajik) = T^B(ajl) * work(lik)
+
+C
+C                work(lij) = focky(lf) * T^B(fij)
+C
+         ISYFIK     = MULD2H(ISYMT2,ISYMD)
+         ISYLIK     = MULD2H(ISYFKY,ISYFIK)
+         ISYAJL     = MULD2H(ISYMT2,ISYMB)
+         KLIK       = KEND0
+         KAJL       = KLIK  + NMAIJK(ISYLIK)
+         KEND1      = KAJL  + NCKI(ISYAJL)
+         LWRK1      = LWRK   - KEND1
+C
+         CALL DZERO(WRK(KLIK),NMAIJK(ISYLIK))
+C
+         CALL DZERO(WRK(KW),NCKIJ(ISWMAT))
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWRK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WXBD_T2 (4)')
+         END IF
+C
+C
+
+         DO ISYMK = 1,NSYM
+            ISYFI  = MULD2H(ISYFIK,ISYMK)
+            DO K  = 1,NRHF(ISYMK)
+               DO ISYMI = 1,NSYM
+                  ISYMF = MULD2H(ISYFI,ISYMI)
+                  ISYML = MULD2H(ISYFKY,ISYMF)
+                  ISYLI  = MULD2H(ISYMI,ISYML)
+                  NL = MAX(1,NRHF(ISYML))
+                  NF = MAX(1,NVIR(ISYMF))
+                  KOFF1  = KFCLF + IT1AMT(ISYML,ISYMF)
+                  KOFF2 = IT2SP(ISYFIK,ISYMD) + NCKI(ISYFIK)*(D-1)
+     *                    + ISAIK(ISYFI,ISYMK) + NT1AM(ISYFI)*(K-1)
+     *                    + IT1AM(ISYMF,ISYMI) + 1
+                  KOFF3 =  KLIK + IMAIJK(ISYLI,ISYMK)
+     *                    + NMATIJ(ISYLI)*(K-1)
+     *                    + IMATIJ(ISYML,ISYMI)
+C
+C                work(lik) = focky(lf) * t(fikD) 
+C
+                  CALL DGEMM('N','N',NRHF(ISYML),NRHF(ISYMI),
+     *                       NVIR(ISYMF),ONE,WRK(KOFF1),NL,
+     *                       T2TP(KOFF2),NF,ONE,WRK(KOFF3),NL)
+C
+               END DO
+            END DO
+         END DO
+C
+C        T^B(ajl) =     t2(bj,al)
+C
+         CALL SORT_T2_AJI(WRK(KAJL),ISYMB,B,T2TP,ISYMT2)
+C
+C
+         DO ISYMK = 1,NSYM
+            ISYLI  = MULD2H(ISYLIK,ISYMK)
+            DO K  = 1,NRHF(ISYMK)
+               DO ISYMI = 1,NSYM
+                  ISYML = MULD2H(ISYLI,ISYMI)
+                  ISYAJ = MULD2H(ISYAJL,ISYML)
+                  ISYAJI = MULD2H(ISYAJ,ISYMI)
+                  NAJ = MAX(1,NT1AM(ISYAJ))
+                  NL = MAX(1,NRHF(ISYML))
+                  KOFF1 = KAJL + ISAIK(ISYAJ,ISYML)
+                  KOFF2 = KLIK + IMAIJK(ISYLI,ISYMK)
+     *                         + NMATIJ(ISYLI)*(K-1)
+     *                         + IMATIJ(ISYML,ISYMI)
+                  KOFF3  = KW  + ISAIKJ(ISYAJI,ISYMK)
+     *                         + NCKI(ISYAJI)*(K-1)
+     *                         + ISAIK(ISYAJ,ISYMI)
+C
+C                work(ajik) = T^B(ajl) * work(lik)
+C
+                  CALL DGEMM('N','N',NT1AM(ISYAJ),NRHF(ISYMI),
+     *                       NRHF(ISYML),-ONE,WRK(KOFF1),NAJ,
+     *                       WRK(KOFF2),NL,ONE,WRK(KOFF3),NAJ)
+
+C
+               END DO
+            END DO
+         END DO
+C
+C     change order ajik to aikj
+C
+         DO I = 1,NCKIJ(ISWMAT)
+            WMAT(I) = WMAT(I) + WRK(INDSQ(I,4))
+         END DO
+C
+C     WBD(aikj) = WBD(aikj) - focky(l,f)* t2(bj,dl)*t2(fk,ai)
+C                                                     
+C                                           T^DB(lj)  t(aikf)
+C             
+C                work(fj) = focky(l,f) * T^DB(lj)
+C                
+C              WMAT(aikj) = WMAT(aikj) - t(aikf) * work(fj) 
+C
+         ISYBD    = MULD2H(ISYMB,ISYMD)
+         ISYLJ    = MULD2H(ISYBD,ISYMT2)
+         ISYFJ    = MULD2H(ISYFKY,ISYLJ)
+C
+         KLJ      = KEND0
+         KFJ      = KLJ  + NMATIJ(ISYLJ)
+         KEND1    = KFJ  + NT1AM(ISYFJ)
+         LWRK1    = LWRK  - KEND1
+C
+         CALL DZERO(WRK(KFJ),NT1AM(ISYFJ))
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWRK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in WXBD_T2 (5)')
+         END IF
+C
+C
+         CALL  SORT_T2_IJ(WRK(KLJ),ISYMD,D,ISYMB,B,T2TP,ISYMT2)
+C
+C                work(fj) = focky(l,f) * T^DB(lj)
+C
+         DO ISYMJ = 1,NSYM
+            ISYML = MULD2H(ISYMJ,ISYLJ)
+            ISYMF = MULD2H(ISYFKY,ISYML)
+C
+            KOFF1  = KFCLF + IT1AMT(ISYML,ISYMF)
+            KOFF2  = KLJ   + IMATIJ(ISYML,ISYMJ)
+            KOFF3 =  KFJ   + IT1AM(ISYMF,ISYMJ)
+C
+            NF = MAX(1,NVIR(ISYMF))
+            NL = MAX(1,NRHF(ISYML))
+C
+            CALL DGEMM('T','N',NVIR(ISYMF),NRHF(ISYMJ),
+     *                 NRHF(ISYML),ONE,WRK(KOFF1),NL,
+     *                 WRK(KOFF2),NL,ONE,WRK(KOFF3),NF)
+C
+         END DO
+C                
+C              WMAT(aikj) = WMAT(aikj) - t(aikf) * work(fj) 
+C
+         DO ISYMJ = 1,NSYM
+            ISYMF = MULD2H(ISYMJ,ISYFJ)
+            ISYAIK = MULD2H(ISYMT2,ISYMF)
+C
+            KOFF1 =  IT2SP(ISYAIK,ISYMF) + 1
+            KOFF2 =  KFJ +  IT1AM(ISYMF,ISYMJ)
+            KOFF3 =  ISAIKJ(ISYAIK,ISYMJ) + 1
+C
+            NAIK = MAX(1,NCKI(ISYAIK))
+            NF = MAX(1,NVIR(ISYMF))
+
+            CALL DGEMM('N','N',NCKI(ISYAIK),NRHF(ISYMJ),
+     *                 NVIR(ISYMF),-ONE,T2TP(KOFF1),NAIK,
+     *                 WRK(KOFF2),NF,ONE,WMAT(KOFF3),NAIK)
+C
+         END DO
+C
+      END IF
+      IF ((AIBJCK_PERM.EQ.3) .OR. (AIBJCK_PERM.EQ.4)) THEN
 C
 C     WBD(aikj) = WBD(aikj)  -  focky(l,f)* t2(dk,al)*t2(fi,bj)
 C 
@@ -9844,7 +11231,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Memory available : ',LWRK
             WRITE(LUPRI,*) 'Memory needed    : ',KEND1
-            CALL QUIT('Insufficient space in WXBD_T2 (4)')
+            CALL QUIT('Insufficient space in WXBD_T2 (6)')
          END IF
 C
 
@@ -9933,7 +11320,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Memory available : ',LWRK
             WRITE(LUPRI,*) 'Memory needed    : ',KEND1
-            CALL QUIT('Insufficient space in WXBD_T2 (5)')
+            CALL QUIT('Insufficient space in WXBD_T2 (7)')
          END IF
 C
          CALL  SORT_T2_IJ(WRK(KLK),ISYMB,B,ISYMD,D,T2TP,ISYMT2)
@@ -9982,18 +11369,17 @@ C
             WMAT(I) = WMAT(I) + WRK(INDSQ(I,3))
          END DO
 C
-
       END IF
 C
 
-      CALL QEXIT('WXBD_T2')
+      CALL QEXIT('WXBDT2')
 C
       RETURN
       END
 C  /* Deck wxbd_ground */
-      SUBROUTINE WXBD_GROUND(BJCK_PERM,
+      SUBROUTINE WXBD_GROUND(AIBJCK_PERM,
      *                       T2TP,ISYMT2,TMAT,
-     *                       TRVIR,TRVIR2,TRVIR3,
+     *                       TRVIR,TRVIR2,TRVIR3,TRVIR4,
      *                       TROCC,ISYINT,
      *                       WMAT,WORK,LWORK,
      *                       INDSQ,LENSQ,
@@ -10001,7 +11387,7 @@ C  /* Deck wxbd_ground */
 C
 C     Kasper Hald, Summer 2002
 C
-C     Modified: Filip Pawlowski, Spring 2003. (BJCK_PERM)
+C     Modified: Filip Pawlowski, Spring 2003. (AIBJCK_PERM)
 C
 C
 C     ISYINT is the symmetry of the integrals.
@@ -10009,7 +11395,7 @@ C     ISYMT2 is the symmetry of T2TP.
 C
 C
 C
-C If (BJCK_PERM) then (aibjck) + (aickbj)  permutation 
+C If (AIBJCK_PERM.eq.1) then (aibjck) + (aickbj)  permutation 
 C
 C     WBD(ai,k,j) = WBD(ai,k,j)
 C                 + t(ai,dj) (Ck|Bd) 
@@ -10019,13 +11405,26 @@ C                 - t(ai,Bl) (Ck|lj)
 C                 - t(ai,Cl) (Bk|lj)   ! right array is obtained using INDSQ(3)
 C                                      ! after DGEMM
 C
-C else                (ckbjai) + (ckaibj)  permutation
+C else if (AIBJCK_PERM.eq.2) then (bjckai) + (bjaick)  permutation
+C
+C     WBD(ai,k,j) = WBD(ai,k,j)
+C                 + t(Bj,dk) (ai|Cd) 
+C                 + t(Bj,di) (Ck|ad)   
+C                 - t(Bj,Cl) (ai|lk) 
+C                 - t(Bj,al) (Ck|li)   
+C
+C else if (AIBJCK_PERM.eq.3) then (ckbjai) + (ckaibj)  permutation
 C
 C     WBD(ai,k,j) = WBD(ai,k,j)
 C                 + t(Ck,dj) (ai|Bd) 
 C                 + t(Ck,di) (Bj|ad)   
 C                 - t(Ck,Bl) (ai|lj) 
 C                 - t(Ck,al) (Bj|li)   
+C
+C else if (AIBJCK_PERM.eq.4) then calculate all terms:
+C
+C      WBD(ai,k,j) = (aibjck) + (aickbj) + (bjckai) + (bjaick)
+C                  + (ckbjai) + (ckaibj)
 C
 C
 C
@@ -10037,7 +11436,7 @@ C
 #include <ccsdsym.h>
 C#include <cclr.h>
 C
-      LOGICAL BJCK_PERM
+      INTEGER AIBJCK_PERM
 C
       INTEGER ISYMT2, ISYINT, LWORK, LENSQ, ISYMB, ISYMC
       INTEGER INDSQ(LENSQ,6)
@@ -10056,25 +11455,40 @@ C
       INTEGER NTOTAJI,NTOTL
       INTEGER ISYALK,ISYLJI,ISYMAL,ISYMLJ,ISYMA
       INTEGER NTOTA
+      INTEGER ISYDKJ
+      INTEGER ISYAKD,ISYDIJ,ISYAKIJ,KAKD
+      INTEGER ISYMAK,ISYAKI,NTOTAK,ISYAKIL,ISYMCB,KLJ,KAKIL,NTOTAKI
+      INTEGER ISYALJ,ISYLKI
 C
 #if defined (SYS_CRAY)
       REAL T2TP(*), TRVIR(*), TRVIR2(*), TRVIR3(*), TROCC(*)
+      REAL TRVIR4(*)
       REAL TMAT(*), WMAT(*), WORK(LWORK)
       REAL ZERO, ONE, DDOT, XNORM
 #else
       DOUBLE PRECISION T2TP(*), TRVIR(*), TRVIR2(*), TRVIR3(*), TROCC(*)
+      DOUBLE PRECISION TRVIR4(*)
       DOUBLE PRECISION TMAT(*), WMAT(*), WORK(LWORK)
       DOUBLE PRECISION ZERO, ONE, DDOT, XNORM
 #endif
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
 C
-      CALL QENTER('WXBD_GROUND')
-
+      CALL QENTER('WXBDGR')
+C
+C---------------------------------------
+C     Initial test of AIBJCK_PERM option
+C---------------------------------------
+C
+      IF ( (AIBJCK_PERM .LT. 1) .OR. (AIBJCK_PERM .GT. 4) ) THEN
+         WRITE(LUPRI,*)'AIBJCK_PERM = ',AIBJCK_PERM
+         WRITE(LUPRI,*)'should be between 1 and 4 '
+         CALL QUIT('Illegal value of AIBJCK_PERM option in WXBD_GROUND')
+      END IF
 C
 C************************
 C************************
-      IF (BJCK_PERM) THEN 
+      IF ((AIBJCK_PERM.EQ.1) .OR. (AIBJCK_PERM.EQ.4)) THEN 
 C************************
 C************************
 
@@ -10270,9 +11684,298 @@ C
             XNORM = DDOT(NCKIJ(JSAIKJ),WMAT,1,WMAT,1)
             WRITE(LUPRI,*) 'In WXBD_GROUND: 4. Norm of WMAT ',XNORM
          ENDIF
+C
 C**********
 C**********
-      ELSE 
+      END IF
+      IF ( (AIBJCK_PERM .EQ. 2) .OR. (AIBJCK_PERM .EQ. 4)) THEN
+C**********
+C**********
+C    (bjckai) + (bjaick)  permutation
+C
+C     WBD(ai,k,j) = WBD(ai,k,j)
+C                 + t(Bj,dk) (ai|Cd) 
+C                 + t(Bj,di) (Ck|ad)   
+C                 - t(Bj,Cl) (ai|lk) 
+C                 - t(Bj,al) (Ck|li)   
+C-----------------------------------
+C        First virtual contribution
+C-----------------------------------
+C
+C WBD(ai,k,j) = WBD(ai,k,j) + t(Cj,dk) (ai|Cd)
+C
+C                         tmat(aikj) = TRVIR4^C(aid)*T2TP^B(dkj)
+C
+C WBD(ai,k,j) = WBD(ai,k,j) + tmat(aikj)
+C
+         ISYAID  = MULD2H(ISYINT,ISYMC)
+         ISYDKJ  = MULD2H(ISYMT2,ISYMB)
+C
+C--------------------------------------------------------
+C        tmat(aikj) = TRVIR4^C(aid)*T2TP^B(dkj)
+C--------------------------------------------------------
+C
+         DO ISYMJ = 1,NSYM
+            ISYMDK = MULD2H(ISYDKJ,ISYMJ)
+            DO ISYMD = 1,NSYM
+               ISYMK  = MULD2H(ISYMDK,ISYMD)
+               ISYMAI = MULD2H(ISYAID,ISYMD)
+               ISYAIK = MULD2H(ISYMAI,ISYMK)
+               DO J = 1,NRHF(ISYMJ)
+C
+                  KOFF1 = ICKATR(ISYMAI,ISYMD)
+     *                  + 1
+                  KOFF2 = IT2SP(ISYDKJ,ISYMB)
+     *                  + NCKI(ISYDKJ)*(B-1)
+     *                  + ICKI(ISYMDK,ISYMJ)
+     *                  + NT1AM(ISYMDK)*(J-1)
+     *                  + IT1AM(ISYMD,ISYMK)
+     *                  + 1
+                  KOFF3 = ISAIKJ(ISYAIK,ISYMJ)
+     *                  + NCKI(ISYAIK)*(J-1)
+     *                  + ICKI(ISYMAI,ISYMK)
+     *                  + 1
+C
+                  NTOTAI = MAX(NT1AM(ISYMAI),1)
+                  NTOTD  = MAX(NVIR(ISYMD),1)
+C
+                  CALL DGEMM('N','N',NT1AM(ISYMAI),NRHF(ISYMK),
+     *                       NVIR(ISYMD),ONE,TRVIR4(KOFF1),NTOTAI,
+     *                       T2TP(KOFF2),NTOTD,ONE,WMAT(KOFF3),
+     *                       NTOTAI)
+C
+               END DO
+            END DO
+         END DO
+C
+C-----------------------------------
+C        Second virtual contribution
+C-----------------------------------
+C
+C WBD(ai,k,j) = WBD(ai,k,j) + t(Bj,di) (Ck|ad)
+C
+C                         tmat(akij) = work(akd)*T2TP^B(dij)
+C
+C WBD(ai,k,j) = WBD(ai,k,j) + tmat(akij)
+C
+         ISYAKD  = MULD2H(ISYINT,ISYMC)
+         ISYDIJ  = MULD2H(ISYMT2,ISYMB)
+         ISYAKIJ = MULD2H(ISYAKD,ISYDIJ)
+C
+         KAKD  = 1
+         KEND1 = KAKD  + NCKATR(ISYAKD)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*)'Memory available : ', LWORK
+            WRITE(LUPRI,*)'Memory needed    : ', KEND1
+            CALL QUIT('Insufficient core in WXBD_GROUND (3)')
+         ENDIF
+C
+         CALL DZERO(TMAT,NCKIJ(ISYAKIJ))
+C
+C-------------------------------------------------------
+C        Sort (Ck|ad) integrals sitting as TRVIR^C(dka)
+C        to WORK(akd)
+C-------------------------------------------------------
+C
+         CALL CCSDT_SRTVIR(TRVIR,WORK(KAKD),WORK(KEND1),LWRK1,
+     *                     ISYMC,ISYINT)
+C
+C--------------------------------------------------------
+C        tmat(akij) = work(akd)*T2TP^B(dij)
+C--------------------------------------------------------
+C
+         DO ISYMJ = 1,NSYM
+            ISYMDI = MULD2H(ISYDIJ,ISYMJ)
+            DO ISYMD = 1,NSYM
+               ISYMI  = MULD2H(ISYMDI,ISYMD)
+               ISYMAK = MULD2H(ISYAKD,ISYMD)
+               ISYAKI = MULD2H(ISYMAK,ISYMI)
+               DO J = 1,NRHF(ISYMJ)
+C
+                  KOFF1 = KAKD
+     *                  + ICKATR(ISYMAK,ISYMD)
+                  KOFF2 = IT2SP(ISYDIJ,ISYMB)
+     *                  + NCKI(ISYDIJ)*(B-1)
+     *                  + ICKI(ISYMDI,ISYMJ)
+     *                  + NT1AM(ISYMDI)*(J-1)
+     *                  + IT1AM(ISYMD,ISYMI)
+     *                  + 1
+                  KOFF3 = ISAIKJ(ISYAKI,ISYMJ)
+     *                  + NCKI(ISYAKI)*(J-1)
+     *                  + ICKI(ISYMAK,ISYMI)
+     *                  + 1
+C
+                  NTOTAK = MAX(NT1AM(ISYMAK),1)
+                  NTOTD  = MAX(NVIR(ISYMD),1)
+C
+                  CALL DGEMM('N','N',NT1AM(ISYMAK),NRHF(ISYMI),
+     *                       NVIR(ISYMD),ONE,WORK(KOFF1),NTOTAK,
+     *                       T2TP(KOFF2),NTOTD,ONE,TMAT(KOFF3),
+     *                       NTOTAK)
+C
+               END DO
+            END DO
+         END DO
+C
+C----------------------------------------------
+C        WBD(ai,k,j) = WBD(ai,k,j) + tmat(akij)
+C----------------------------------------------
+C
+c add_wbdx_2va
+         DO I = 1,NCKIJ(ISYAKIJ)
+            WMAT(I) = WMAT(I) + TMAT(INDSQ(I,1))
+         ENDDO
+C
+C-----------------------------------
+C        First occupied contribution
+C-----------------------------------
+C
+C WBD(ai,k,j) = WBD(ai,k,j) - t(Bj,Cl) (ai|lk)
+C
+C               tmat(akij) = -         work(akil) * work(lj) 
+C
+C WBD(ai,k,j) = WBD(ai,k,j) + tmat(akij)
+C
+         ISYAKIL = ISYINT
+         ISYMCB  = MULD2H(ISYMC,ISYMB)
+         ISYMLJ  = MULD2H(ISYMT2,ISYMCB)
+         ISYAKIJ = MULD2H(ISYAKIL,ISYMLJ)
+C
+         KLJ   = 1
+         KAKIL = KLJ   + NMATIJ(ISYMLJ)
+         KEND1 = KAKIL + NTRAOC(ISYAKIL)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*)'Memory available : ', LWORK
+            WRITE(LUPRI,*)'Memory needed    : ', KEND1
+            CALL QUIT('Insufficient core in WXBD_GROUND (4)')
+         ENDIF
+C
+         CALL DZERO(TMAT,NCKIJ(ISYAKIJ))
+C
+C------------------------------------------------------
+C        Sort integrals (ai|lk) sitting as TROCC(lik,a)
+C        to WORK(aki,l)
+C------------------------------------------------------
+C
+         CALL CCFOP_SORT(TROCC,WORK(KAKIL),ISYINT,1)
+C
+C-------------------------------------------------------
+C        Sort T2 amplitudes from T2TP(Cl,jB) to WORK(lj)
+C-------------------------------------------------------
+C
+         CALL SORT_T2_IJ(WORK(KLJ),ISYMC,C,ISYMB,B,T2TP,ISYMT2)
+C
+C--------------------------------------------
+C        tmat(akij) = - work(akil) * work(lj) 
+C--------------------------------------------
+C
+         DO ISYML = 1,NSYM
+            ISYAKI = MULD2H(ISYAKIL,ISYML)
+            ISYMJ  = MULD2H(ISYMLJ,ISYML)
+C
+            KOFF1 = KAKIL
+     *            + ISAIKJ(ISYAKI,ISYML)
+            KOFF2 = KLJ
+     *            + IMATIJ(ISYML,ISYMJ)
+            KOFF3 = ISAIKJ(ISYAKI,ISYMJ)
+     *            + 1
+C
+            NTOTAKI = MAX(NCKI(ISYAKI),1)
+            NTOTL   = MAX(NRHF(ISYML),1)
+C
+            CALL DGEMM('N','N',NCKI(ISYAKI),NRHF(ISYMJ),NRHF(ISYML),
+     *                 -ONE,WORK(KOFF1),NTOTAKI,WORK(KOFF2),NTOTL,
+     *                 ONE,TMAT(KOFF3),NTOTAKI)
+C
+         END DO
+C
+C----------------------------------------------
+C        WBD(ai,k,j) = WBD(ai,k,j) + tmat(akij)
+C----------------------------------------------
+C
+c add_wbdx_1oa
+         DO I = 1,NCKIJ(ISYAKIJ)
+            WMAT(I) = WMAT(I) + TMAT(INDSQ(I,1))
+         ENDDO 
+C
+C-----------------------------------
+C        Second occupied contribution
+C-----------------------------------
+C
+C WBD(ai,k,j) = WBD(ai,k,j) - t(Bj,al) (Ck|li)
+C
+C               tmat(akij) = - T2TP^B(alj) * TROCC(lki,C)
+C
+C WBD(ai,k,j) = WBD(ai,k,j) + tmat(akij)
+C
+         ISYALJ  = MULD2H(ISYMT2,ISYMB)
+         ISYLKI  = MULD2H(ISYINT,ISYMC)
+         ISYAKIJ = MULD2H(ISYALJ,ISYLKI)
+C
+         CALL DZERO(TMAT,NCKIJ(ISYAKIJ))
+C
+         DO ISYMJ = 1,NSYM
+            ISYMAL = MULD2H(ISYALJ,ISYMJ)
+            ISYAKI = MULD2H(ISYAKIJ,ISYMJ)
+            DO ISYMI = 1,NSYM
+               ISYMLK = MULD2H(ISYLKI,ISYMI)
+               ISYMAK = MULD2H(ISYAKI,ISYMI)
+               DO ISYML = 1,NSYM
+                  ISYMA = MULD2H(ISYMAL,ISYML)
+                  ISYMK = MULD2H(ISYMLK,ISYML)
+                  DO J = 1,NRHF(ISYMJ)
+                     DO I = 1,NRHF(ISYMI)
+C
+                        KOFF1 = IT2SP(ISYALJ,ISYMB)
+     *                        + NCKI(ISYALJ)*(B-1)
+     *                        + ICKI(ISYMAL,ISYMJ)
+     *                        + NT1AM(ISYMAL)*(J-1)
+     *                        + IT1AM(ISYMA,ISYML)
+     *                        + 1
+                        KOFF2 = ISJIKA(ISYLKI,ISYMC)
+     *                        + NMAJIK(ISYLKI)*(C-1)
+     *                        + ISJIK(ISYMLK,ISYMI)
+     *                        + NMATIJ(ISYMLK)*(I-1)
+     *                        + IMATIJ(ISYML,ISYMK)
+     *                        + 1
+                        KOFF3 = ISAIKJ(ISYAKI,ISYMJ)
+     *                        + NCKI(ISYAKI)*(J-1)
+     *                        + ICKI(ISYMAK,ISYMI)
+     *                        + NT1AM(ISYMAK)*(I-1)
+     *                        + IT1AM(ISYMA,ISYMK)
+     *                        + 1
+C
+                        NTOTA = MAX(NVIR(ISYMA),1)
+                        NTOTL = MAX(NRHF(ISYML),1)
+C
+                        CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMK),
+     *                             NRHF(ISYML),-ONE,T2TP(KOFF1),
+     *                             NTOTA,TROCC(KOFF2),NTOTL,ONE,
+     *                             TMAT(KOFF3),NTOTA)
+C
+                     END DO
+                  END DO
+               END DO
+            END DO
+         END DO
+C
+C----------------------------------------------
+C        WBD(ai,k,j) = WBD(ai,k,j) + tmat(akij)
+C----------------------------------------------
+C
+c add_wbdx_2oa
+         DO I = 1,NCKIJ(ISYAKIJ)
+            WMAT(I) = WMAT(I) + TMAT(INDSQ(I,1))
+         ENDDO
+C
+C**********
+C**********
+      END IF
+      IF ( (AIBJCK_PERM .EQ. 3) .OR. (AIBJCK_PERM .EQ. 4)) THEN
 C**********
 C**********
 C    (ckbjai) + (ckaibj)  permutation
@@ -10365,7 +12068,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*)'Memory available : ', LWORK
             WRITE(LUPRI,*)'Memory needed    : ', KEND1
-            CALL QUIT('Insufficient core in WXBD_GROUND (3)')
+            CALL QUIT('Insufficient core in WXBD_GROUND (5)')
          ENDIF
 C
          CALL DZERO(TMAT,NCKIJ(ISYAJIK))
@@ -10447,7 +12150,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*)'Memory available : ', LWORK
             WRITE(LUPRI,*)'Memory needed    : ', KEND1
-            CALL QUIT('Insufficient core in WXBD_GROUND (4)')
+            CALL QUIT('Insufficient core in WXBD_GROUND (6)')
          ENDIF
 C
          CALL DZERO(TMAT,NCKIJ(ISYAJIK))
@@ -10568,9 +12271,6 @@ c add_wbdx_2oa
             WMAT(I) = WMAT(I) + TMAT(INDSQ(I,4))
          ENDDO
 C
-
-
-C
 C**********
 C**********
       END IF
@@ -10581,7 +12281,7 @@ C-----------
 C     End.
 C-----------
 C
-      CALL QEXIT('WXBD_GROUND')
+      CALL QEXIT('WXBDGR')
 C
       RETURN
       END
@@ -11210,7 +12910,7 @@ C
       RETURN
       END
 C  /* Deck cc3_xi_den_abij */
-      SUBROUTINE CC_XI_DEN_ABIJ(QUADR,DAB,DIJ,DAI,
+      SUBROUTINE CC_XI_DEN_ABIJ(QUADR,LISTR,DAB,DIJ,DO_DIA,DAI,
      *                           L2L1,ISYML1,
      *                           ISYFCK,FOCK,
      *                           ISYMT3,ISWMAT,ISTHETA,
@@ -11286,6 +12986,10 @@ C
 #include <ccorb.h>
 #include <cc3t3d.h>
 C
+      LOGICAL DO_DIA
+
+      CHARACTER LISTR*3
+
       INTEGER ISYMT3,ISWMAT,LUT3,LUWBMAT,LWORK,ISYMD
       INTEGER ISYML,ISYMDL,ISWMATDL,ISYMT3DL,ISYMN,ISYEMF,ISYMBN,ISYMEM
       INTEGER ISYMB,ISYMF,ISYMFI,ISYMI,ISYEMB,ISYMFN
@@ -11382,9 +13086,11 @@ C-----------------------------------------------------------------------
 C
                ISYMDAI = MULD2H(ISTHETA,ISYML1)
 C
-               CALL ADEN_DAI_T2_D(DAI,ISYMDAI,L2L1,ISYML1,
-     *                            WORK(KTHETA),ISTHETADL,ISYMD,D,
-     *                            ISYML,L,WORK(KEND1),LWRK1)
+               IF (DO_DIA) THEN
+                  CALL ADEN_DAI_T2_D(DAI,ISYMDAI,L2L1,ISYML1,
+     *                               WORK(KTHETA),ISTHETADL,ISYMD,D,
+     *                               ISYML,L,WORK(KEND1),LWRK1)
+               END IF
             END IF
 C
 C           ------------------------------------------------
@@ -11396,6 +13102,7 @@ C
      *                  NT2SQ(ISWMATDL))
 C
             CALL CC_T2MOD(WORK(KWMAT),ISWMATDL,HALF)
+
 C
 C           -----------------------------------
 C           Loop over outermost occupied index:
@@ -11448,9 +13155,11 @@ C
                END DO ! N
             END DO    ! ISYMN
 C
-            IF (QUADR) THEN
+            IF (QUADR .AND. (LISTR(1:3).EQ.'R1 ') ) THEN
                ! Construct THETA^DL(em,f- i)
                CALL DZERO(WORK(KTHETAF),NT2SQ(ISTHETAF))
+
+
                IOPT = 1
                CALL WXDL_V(IOPT,WORK(KT3),ISYMT3DL,FOCK,ISYFCK,
      *                 WORK(KTHETAF),ISTHETAF,WORK(KEND1),LWRK1)
@@ -11459,6 +13168,7 @@ C
      *                       FOCKD,FREQ)
                CALL T3_FORBIDDEN_DL(WORK(KTHETAF),ISTHETA,ISYMD,D,
      *                              ISYML,L)
+
 C
                ! add THETA^DL(em,f- i) to THETA^DL-(em-,fi-) sitting in 
                ! KTHETA
@@ -11491,6 +13201,9 @@ C
                   END DO
                END DO
 C
+
+
+
             END IF
 C
             DO ISYMN = 1, NSYM
@@ -11530,6 +13243,9 @@ C
 
                      NNEMF  = MAX(NT1AM(ISYMEM)*NVIR(ISYMF),1)
 C
+
+
+
                      CALL DGEMV('T',NT1AM(ISYMEM)*NVIR(ISYMF),
      *                         NRHF(ISYMI),-ONE,WORK(KOFF1),NNEMF,
      *                         WORK(KOFF2),1,ONE,DIJ(KOFF3),1)
@@ -11539,7 +13255,7 @@ C
                END DO ! N 
             END DO    ! ISYMN 
 C
-            IF (QUADR) THEN
+            IF (QUADR .AND. (LISTR(1:3).EQ.'R1 ') ) THEN
        ! Calculate the extra contribution to D(ij) density:
        ! D(ij) = D(ij) + W^Df(emlj) * [theta^(Def-)_(iml) + theta^(De-f)_(iml)]
 C
@@ -11632,9 +13348,12 @@ C  /* Deck wxdl_v */
 *    WDL(em,f-i) = - TDL(em,di) * X(f,d)
 * else if (iopt .eq. 2) then calculate ADDITIONALLY :
 *    WDL(e-m,fi) = - TDL(dm,fi) * X(e,d)
+* else if (iopt .eq. 3) then calculate ONLY :
+*    WDL(e-m,fi) = - TDL(dm,fi) * X(e,d)
 * end if
 *
 *     F. Pawlowski, Winter 2003, Aarhus.
+*     (modified IOPT = 3, 14-Sep-2003, Aarhus.)
 ********************************************************
 *
       IMPLICIT NONE
@@ -11675,7 +13394,7 @@ C
 C
 C Initial test of iopt
 C
-      IF ( (IOPT .NE. 1) .AND. (IOPT .NE. 2) ) THEN
+      IF ( (IOPT .NE. 1) .AND. (IOPT .NE. 2) .AND. (IOPT .NE. 3)) THEN
          WRITE(LUPRI,*)'IOPT : ', IOPT
          CALL QUIT('Wrong option in WXDL_V')
       END IF
@@ -11705,44 +13424,47 @@ C
       END DO
 
 
+      IF (IOPT .LE. 2) THEN
 C
 C
 C CARRY OUT MATRIX MULTIPLICATION
 C WDL(em,fi) = TDL(em,di) * X(f,d)
 C              I(em,d)      X(f,d)
 C 
-      DO ISYMI = 1,NSYM
-         DO ISYMD = 1,NSYM
-            ISYMDI = MULD2H(ISYMD,ISYMI)
-            ISYMEM = MULD2H(ISYMDI,ISTMAT)
-            ISYMF  = MULD2H(ISYFKY,ISYMD)
-            ISYMFI = MULD2H(ISYMF,ISYMI)
-            DO I = 1,NRHF(ISYMI)
+         DO ISYMI = 1,NSYM
+            DO ISYMD = 1,NSYM
+               ISYMDI = MULD2H(ISYMD,ISYMI)
+               ISYMEM = MULD2H(ISYMDI,ISTMAT)
+               ISYMF  = MULD2H(ISYFKY,ISYMD)
+               ISYMFI = MULD2H(ISYMF,ISYMI)
+               DO I = 1,NRHF(ISYMI)
 C
-               NDI   = IT1AM(ISYMD,ISYMI)+NVIR(ISYMD)*(I-1)+1
-               NFI   = IT1AM(ISYMF,ISYMI)+NVIR(ISYMF)*(I-1)+1
+                  NDI   = IT1AM(ISYMD,ISYMI)+NVIR(ISYMD)*(I-1)+1
+                  NFI   = IT1AM(ISYMF,ISYMI)+NVIR(ISYMF)*(I-1)+1
 C
-               KOFF1 = IT2SQ(ISYMEM,ISYMDI)
-     *               + NT1AM(ISYMEM)*(NDI-1)
-     *               + 1
-               KOFF2 = KFCFD 
-     *               + IMATAB(ISYMF,ISYMD) 
-               KOFF3 = IT2SQ(ISYMEM,ISYMFI)
-     *               + NT1AM(ISYMEM)*(NFI-1)
-     *               + 1
+                  KOFF1 = IT2SQ(ISYMEM,ISYMDI)
+     *                  + NT1AM(ISYMEM)*(NDI-1)
+     *                  + 1
+                  KOFF2 = KFCFD 
+     *                  + IMATAB(ISYMF,ISYMD) 
+                  KOFF3 = IT2SQ(ISYMEM,ISYMFI)
+     *                  + NT1AM(ISYMEM)*(NFI-1)
+     *                  + 1
 C
-               NTOTEM = MAX(NT1AM(ISYMEM),1)
-               NTOTF  = MAX(NVIR(ISYMF),1)
-C                    
-               CALL DGEMM('N','T',NT1AM(ISYMEM),NVIR(ISYMF), 
-     *                    NVIR(ISYMD),-ONE,TMAT(KOFF1),NTOTEM,
-     *                    WRK(KOFF2),NTOTF,ONE,WMAT(KOFF3),NTOTEM)
+                  NTOTEM = MAX(NT1AM(ISYMEM),1)
+                  NTOTF  = MAX(NVIR(ISYMF),1)
+C                       
+                  CALL DGEMM('N','T',NT1AM(ISYMEM),NVIR(ISYMF), 
+     *                       NVIR(ISYMD),-ONE,TMAT(KOFF1),NTOTEM,
+     *                       WRK(KOFF2),NTOTF,ONE,WMAT(KOFF3),NTOTEM)
 c
+               END DO
             END DO
          END DO
-      END DO
 C
-      IF (IOPT .EQ. 2) THEN
+      END IF
+C
+      IF (IOPT .GE. 2) THEN
 C
 C CARRY OUT MATRIX MULTIPLICATION
 C WDL(em,fi) = TDL(dm,fi) * X(e,d)
@@ -12318,3 +14040,336 @@ C
 C
       RETURN
       END
+C  /* Deck mmatx */
+      SUBROUTINE MMATX(YMMAT,LISTL,
+     *                LUWBAR,FNWBAR,ISWBAR,
+     *                LUT2Y,FNT2Y,IST2Y,
+     *                ISYMD,D,
+     *                WORK,LWORK)
+*
+***************************************************************************
+* Prupose: calculate M intermediate:
+*
+* y^M(fn,im) <- M(fn,im)+ sum_em y^t^DL(ei) tbar^DL(em,fn)
+*
+* F. Pawlowski, 20-Oct-2003, Aarhus.
+***************************************************************************
+*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <cc3t3d.h>
+C
+      CHARACTER LISTL*3
+      CHARACTER FNWBAR*(*),FNT2Y*(*)
+C
+      INTEGER LUWBAR,LUT2Y
+      INTEGER ISWBAR,IST2Y
+      INTEGER ISYMD,LWORK
+C
+      INTEGER ISYML,ISYMDL,IST2YDL,ISWBARDL,KT2Y,KWBAR,KEND1,LWRK1
+      INTEGER NDL,IADR,ISYMF,ISYMN,ISYMFN,ISYMEM,ISYMM,ISYME,ISYMI
+      INTEGER ISYMIM
+      INTEGER KOFF1,KFN,KOFF2,KOFF3,NVIRE,NRHFI
+#if defined (SYS_CRAY)
+      REAL YMMAT(*)
+      REAL ONE,FAC
+      REAL WORK(LWORK)
+#else
+      DOUBLE PRECISION YMMAT(*)
+      DOUBLE PRECISION ONE,FAC
+      DOUBLE PRECISION WORK(LWORK)
+#endif
+C
+      PARAMETER (ONE = 1.0D0)
+
+C
+      CALL QENTER('MMATX')
+C
+      !check the list and set the factor
+      IF (LISTL(1:3) .EQ. 'L0 ') THEN
+         FAC = ONE
+      ELSE IF ( (LISTL(1:3) .EQ. 'L1 ') .OR. (LISTL(1:3) .EQ. 'M1 ') 
+     *         .OR. (LISTL(1:3) .EQ. 'N2 ')
+     *         .OR. (LISTL(1:3) .EQ. 'LE ') ) THEN
+         FAC = -ONE
+      ELSE
+         WRITE(LUPRI,*)'LISTL = ', LISTL(1:3)
+         WRITE(LUPRI,*)'Case not implemented in MMATX'
+         CALL QUIT('Wrong LISTL in MMATX')
+      END IF
+C
+      DO ISYML = 1,NSYM
+C
+         ISYMDL   = MULD2H(ISYMD,ISYML)
+         IST2YDL  = MULD2H(IST2Y,ISYMDL)
+         ISWBARDL = MULD2H(ISWBAR,ISYMDL)
+C
+         KT2Y = 1
+         KWBAR = KT2Y  + NT1AM(IST2YDL)
+         KEND1 = KWBAR + NT2SQ(ISWBARDL)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*)'Memory available: ', LWORK
+            WRITE(LUPRI,*)'Memory needed   : ', KEND1
+            CALL QUIT('Insufficient memory in MMATX (1)')
+         END IF
+C
+         DO L = 1,NRHF(ISYML)
+
+C           --------------------------------------------
+C           Read response doubles amplitudes T2^y,DL:
+C           --------------------------------------------
+            NDL  = IT1AM(ISYMD,ISYML) + NVIR(ISYMD)*(L-1) + D
+            IADR = IT2SQ(IST2YDL,ISYMDL) + NT1AM(IST2YDL)*(NDL-1) + 1
+
+            CALL GETWA2(LUT2Y,FNT2Y,WORK(KT2Y),IADR,NT1AM(IST2YDL))
+
+C           --------------------------------------------
+C           Read WMAT from file and generate WMAT-tilde:
+C           --------------------------------------------
+            IADR = ISWTL(ISWBARDL,ISYML) + NT2SQ(ISWBARDL)*(L-1) + 1
+            CALL GETWA2(LUWBAR,FNWBAR,WORK(KWBAR),IADR,NT2SQ(ISWBARDL))
+
+            IF ( (LISTL(1:3) .EQ. 'L1 ') .OR. (LISTL(1:3) .EQ. 'M1 ') 
+     *         .OR. (LISTL(1:3) .EQ. 'N2 ')
+     *         .OR. (LISTL(1:3) .EQ. 'LE ') ) THEN
+               CALL CC_T2MOD(WORK(KWBAR),ISWBARDL,ONE)
+            END IF
+
+C           -------------------------------------------------------
+C           y^M(imfn) <- M(imfn)+ sum_em y^t^DL(ei) tbar^DL(em,fn)
+C           -------------------------------------------------------
+
+            DO ISYMF = 1,NSYM
+               DO ISYMN = 1,NSYM
+                  ISYMFN = MULD2H(ISYMF,ISYMN)
+                  ISYMEM = MULD2H(ISWBARDL,ISYMFN)
+C
+                  DO ISYMM  = 1,NSYM
+                     ISYME  = MULD2H(ISYMEM,ISYMM)
+                     ISYMI  = MULD2H(IST2YDL,ISYME)
+                     ISYMIM = MULD2H(ISYMI,ISYMM)
+C
+                     DO N = 1,NRHF(ISYMN)
+                        DO F = 1,NVIR(ISYMF)
+                           KOFF1 = KT2Y 
+     *                           + IT1AM(ISYME,ISYMI)
+C
+                           KFN    = IT1AM(ISYMF,ISYMN)+NVIR(ISYMF)*(N-1)
+     *                            + F 
+C
+                           KOFF2 = KWBAR
+     *                           + IT2SQ(ISYMEM,ISYMFN)
+     *                           + NT1AM(ISYMEM)*(KFN-1)
+     *                           + IT1AM(ISYME,ISYMM)
+C
+                           KOFF3 = 1
+     *                           + ISAIKL(ISYMFN,ISYMIM)
+     *                           + NMATIJ(ISYMIM)*(KFN-1)
+     *                           + IMATIJ(ISYMI,ISYMM)
+C
+                           NVIRE  = MAX(NVIR(ISYME),1)
+                           NRHFI  = MAX(NRHF(ISYMI),1)
+C
+                           CALL DGEMM('T','N',NRHF(ISYMI),NRHF(ISYMM),
+     *                                NVIR(ISYME),FAC,WORK(KOFF1),NVIRE,
+     *                                WORK(KOFF2),NVIRE,
+     *                                ONE,YMMAT(KOFF3),NRHFI)
+C
+                        END DO
+                     END DO
+                  END DO
+               END DO
+            END DO
+C
+         END DO !L
+      END DO !ISYML
+C
+      CALL QEXIT('MMATX')
+C
+      RETURN
+      END
+C  /* Deck mmatxl1 */
+      SUBROUTINE MMATXL1(YMMAT,LISTL,LISTR,IDLSTR,
+     *                LUWBAR,FNWBAR,ISWBAR,
+     *                ISYMD,D,
+     *                WORK,LWORK)
+*
+***************************************************************************
+* Prupose: calculate a special contribution to M intermediate
+* (i.e. the one which occurs when LISTL = 'L1 '):
+*
+* y^M(fn,im) <- M(fn,im)+ sum_em y^T2(dl,ei) tbar(dl,em,fn)
+*
+* for 'L1 ' (first-order multipliers) we have:
+* tbar(dl,em,fn) = W^ef(dlnm) + W^df(emnl) + W^de(fnml)
+*
+* The contractions of last two W's (W^df and W^de) with T2(dl,ei) are
+* corried out in MMATX routine.
+*
+* In THIS ROUTINE we calculate the contraction of the first W (W^ef)
+* with T2(dl,ei):
+*
+* W^ef(dlnm)*T2(dl,ei) 
+* = W^df(elnm)*T2(el,di)     -> M(fn,im).
+*
+* This is calculated as:
+*
+*  M(fn,iM) <- M(fn,iM) + I^DM(el,fn) * I^D(el,i)
+*
+* F. Pawlowski, 20-Oct-2003, Aarhus.
+***************************************************************************
+*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <cc3t3d.h>
+#include <ccr1rsp.h>
+#include <dummy.h>
+C
+      CHARACTER LISTL*3, LISTR*3
+      CHARACTER FNWBAR*(*)
+C
+      INTEGER LUWBAR
+      INTEGER ISWBAR
+      INTEGER ISYMD,LWORK
+      INTEGER IDLSTR
+C
+      INTEGER ISYMR1,KT2R1,KEND1,LWRK1
+      INTEGER IOPT,ISYMM,ISYMDM,ISWBARDM,KWBAR,KEND2,LWRK2
+      INTEGER IADR,ISYMFN,ISYMEL,ISYMELI,ISYMI,ISYMIM,KOFF1,KOFF2
+      INTEGER NMI,KOFF3,NEL,NFN
+      integer kim,kfn,Kel,NI
+      INTEGER ISYMF,ISYMN
+#if defined (SYS_CRAY)
+      REAL YMMAT(*)
+      REAL ONE
+      REAL WORK(LWORK)
+      real xtmp
+#else
+      DOUBLE PRECISION YMMAT(*)
+      DOUBLE PRECISION ONE
+      DOUBLE PRECISION WORK(LWORK)
+      double precision xtmp
+#endif
+C
+      PARAMETER (ONE = 1.0D0)
+C
+      CALL QENTER('MMATXL1')
+C
+      !check the list 
+      IF ( (LISTL(1:3) .NE. 'L1 ') .AND. (LISTL(1:3) .NE. 'M1 ') 
+     *     .AND. (LISTL(1:3) .NE. 'N2 ')
+     *     .AND. (LISTL(1:3) .NE. 'LE ') ) THEN
+         WRITE(LUPRI,*)'LISTL = ', LISTL(1:3)
+         WRITE(LUPRI,*)'MMATXL1 routine is designed for LISTL = '
+     *   //'L1 or M1 or N2 or LE '
+         CALL QUIT('Wrong LISTL in MMATXL1')
+      END IF
+C
+      !get symmetry of right list (doubles amplitudes)
+      ISYMR1  = ISYLRT(IDLSTR)
+C
+      KT2R1 = 1
+      KEND1 = KT2R1 + NT2SQ(ISYMR1)
+      LWRK1 = LWORK - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,*)'Memory available: ', LWORK
+         WRITE(LUPRI,*)'Memory needed   : ', KEND1
+         CALL QUIT('Insufficient memory in MMATXL1 (1)')
+      END IF
+C     --------------------
+C     Construct T2TP(elid)
+C     --------------------
+      IOPT  = 2
+      CALL GET_T1_T2(IOPT,.TRUE.,DUMMY,WORK(KT2R1),LISTR,
+     *               IDLSTR,ISYMR1,WORK(KEND1),LWRK1)
+C
+      DO ISYMM = 1,NSYM
+C
+         ISYMDM   = MULD2H(ISYMD,ISYMM)
+         ISWBARDM = MULD2H(ISWBAR,ISYMDM)
+C
+         KWBAR = KEND1
+         KEND2 = KWBAR + NT2SQ(ISWBARDM)
+         LWRK2 = LWORK - KEND2
+C
+         IF (LWRK2 .LT. 0) THEN
+            WRITE(LUPRI,*)'Memory available: ', LWORK
+            WRITE(LUPRI,*)'Memory needed   : ', KEND2
+            CALL QUIT('Insufficient memory in MMATXL1 (2)')
+         END IF
+C
+         DO M = 1,NRHF(ISYMM)
+
+C           --------------------
+C           Read WMAT from file 
+C           --------------------
+            IADR = ISWTL(ISWBARDM,ISYMM) + NT2SQ(ISWBARDM)*(M-1) + 1
+            CALL GETWA2(LUWBAR,FNWBAR,WORK(KWBAR),IADR,NT2SQ(ISWBARDM))
+C
+C           We have now sitting the following arrays:
+C           KT2R1(elid) of symmetry ISYMR1
+C           KWBAR^DM(el,fn) of symmetry ISWBARDM
+C
+
+C           ----------------------------------------------
+C           Calculate:
+C           M(iM,fn) <- M(iM,fn) +  I^D(el,i) * I^DM(el,fn)
+C           ----------------------------------------------
+
+            DO ISYMN = 1,NSYM
+              DO ISYMF = 1,NSYM
+               ISYMFN = MULD2H(ISYMF,ISYMN)
+               ISYMEL = MULD2H(ISWBARDM,ISYMFN)
+               ISYMELI = MULD2H(ISYMR1,ISYMD)
+               ISYMI   = MULD2H(ISYMELI,ISYMEL)
+               ISYMIM  = MULD2H(ISYMI,ISYMM)
+C
+               DO N = 1,NRHF(ISYMN)
+                 DO F = 1,NVIR(ISYMF)
+C
+                  KOFF1 = KT2R1
+     *                  + IT2SP(ISYMELI,ISYMD)
+     *                  + NCKI(ISYMELI)*(D-1)
+     *                  + ISAIK(ISYMEL,ISYMI)
+C
+                  KFN = IT1AM(ISYMF,ISYMN) + NVIR(ISYMF)*(N-1) + F
+C
+                  KOFF2 = KWBAR
+     *                  + IT2SQ(ISYMEL,ISYMFN)
+     *                  + NT1AM(ISYMEL)*(KFN-1)
+C
+                  KOFF3  = 1 + ISAIKL(ISYMFN,ISYMIM) 
+     *                   + NMATIJ(ISYMIM)*(KFN-1)
+     *                   + IMATIJ(ISYMI,ISYMM) + NRHF(ISYMI)*(M-1)
+
+C
+                  NEL = MAX(NT1AM(ISYMEL),1)
+                  NI = MAX(NRHF(ISYMI),1)
+C
+                  CALL DGEMM('T','N',NRHF(ISYMI),1,
+     *                       NT1AM(ISYMEL),-ONE,WORK(KOFF1),NEL,
+     *                       WORK(KOFF2),NEL,ONE,YMMAT(KOFF3),NI)
+C
+               END DO
+              END DO
+             END DO
+            END DO
+
+         END DO !M
+      END DO !ISYMM
+
+C
+      CALL QEXIT('MMATXL1')
+C
+      RETURN
+      END
+

@@ -111,14 +111,7 @@ C#include <ccr1rsp.h>
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
-      IF (CCSDT) THEN
-        WRITE(LUPRI,'(/1x,a)') 'A{A} matrix transformations not '
-     &          //'implemented for triples yet...'
-        CALL QUIT('Triples not implemented for A{A} '//
-     &       'matrix transformations')
-      END IF
-
-      IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
+      IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CCCR_AA called for a Coupled Cluster '
      &          //'method not implemented in CCCR_AA...'
         CALL QUIT('Unkown CC method in CCCR_AA.')

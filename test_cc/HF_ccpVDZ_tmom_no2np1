@@ -6,7 +6,7 @@ cat > HF_ccpVDZ_tmom_no2np1.info <<%EOF%
    HF_ccpVDZ_tmom_no2np1
    -----------
    Molecule:         HF
-   Thoery Level:     CC3 / cc-pVDZ
+   Theory Level:     CC3 / cc-pVDZ
    Test Purpose:     Transition moment between the ground and an
                      excited state; non-totally symmetric operator.
                      (NOT exploiting 2n+1 rule!)
@@ -32,7 +32,7 @@ H     0.0000000000000000   0.000000000  -1.64558444
 #######################################################################
 cat > HF_ccpVDZ_tmom_no2np1.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .NOSUP
 .DIPLEN

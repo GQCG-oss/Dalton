@@ -91,11 +91,22 @@ C
      *        LWRK1, IOPT, ILEFT, IDLSTL, IDENS, IDLSTR, ISYMR, ISYML,
      *        ISYDEN, KDAB, KDIJ, KDIA, IADRIJ, IADRAB, IADRIA, IOPER,
      *        ISYHOP, ISYCTR, ISYETA, IVEC, IDX, M2BST, ITRAN, ISYM
+C
 
       INTEGER ILSTSYM
 
+*---------------------------------------------------------------------*
+*     begin
+*---------------------------------------------------------------------*
       CALL QENTER('CCSDT_ETA_CONT')
+#if !defined CC_AARHUS
+      CALL QUIT('No triples (yet) in CCSDT_ETA_CONT.')
+#else
 
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'entered CCSDT_ETA_CONT... NODDY=',NODDY
+        WRITE(LUPRI,*) 'LISTL,LISTR:',LISTL,LISTR
+      END IF
 
       LUDEFF  = 0
       CALL WOPEN2(LUDEFF,FNDEFF,64,0)
@@ -195,25 +206,41 @@ C         --------------------
            IF (NODDY) THEN
              CALL CCSDT_ADEN_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
      *                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
-     *                       WORK(KDIJ),WORK(KDAB),WORK(KDIA),
-     *                       WORK(KEND1),LWRK1,
+     *                       WORK(KDIJ),WORK(KDAB),.TRUE.,WORK(KDIA),
+     *                       .FALSE.,DUMMY,WORK(KEND1),LWRK1,
      *                       LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
      *                       FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
      *                       LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
      *                       LU3FOP2X,FN3FOP2X)
            ELSE
-             CALL CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,
-     *                      WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
-     *                      WORK(KDIJ),WORK(KDAB),WORK(KDIA),ISYDEN,
-     *                      WORK(KEND1),LWRK1,
-     *                      LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
-     *                      FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
-     *                      LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
-     *                      LU3FOP2X,FN3FOP2X)
+              IF (LISTR(1:3).EQ.'R1 '.OR.LISTR(1:3).EQ.'RE ') THEN
+                CALL CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                         WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     *                         WORK(KDIJ),WORK(KDAB),
+     *                         .TRUE.,WORK(KDIA),ISYDEN,
+     *                         .FALSE.,DUMMY,
+     *                         WORK(KEND1),LWRK1,
+     *                         LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                         FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                         LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                         LU3FOP2X,FN3FOP2X)
+              ELSEIF (LISTR(1:3).EQ.'R2 '.OR.LISTR(1:3).EQ.'ER1') THEN
+                 CALL CC3_ADEN_CUB(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                         WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     *                         WORK(KDIJ),WORK(KDAB),WORK(KDIA),ISYDEN,
+     *                         WORK(KEND1),LWRK1,
+     *                         LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                         FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                         LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                         LU3FOP2X,FN3FOP2X)
+              ELSE
+                 CALL QUIT('Unknown LISTR in CCSDT_ETA_CONT.')
+              ENDIF
 
            END IF
 
          END IF
+
 
 
          IADRIJ = 1 + M2BST*(IDENS-1)
@@ -297,6 +324,7 @@ C         --------------------
 
       CALL WCLOSE2(LUDEFF,FNDEFF,'DELETE')
 
+#endif
       CALL QEXIT('CCSDT_ETA_CONT')
       RETURN
       END 
@@ -533,6 +561,7 @@ C
       CALL DZERO(WORK(KMMAT), NIMFN(ISYCTR))
       CALL DZERO(WORK(KYMMAT),NIMFN(ISYDEN))
 
+      !frequency of LISTL is handled inside
       CALL CCSDT_ETA_FA_DEN(LISTL,IDLSTL,ISYCTR,
      *                      LISTR,IDLSTR,ISTAMY,FREQY,LABELY,
      *                      XLAMDP,XLAMDH,FOCK0,
@@ -652,7 +681,7 @@ C-----------------------------------------
       END 
 *=====================================================================*
 *=====================================================================*
-      SUBROUTINE CCSDT_ETA_FA_DEN(LISTL,IDLSTL,ISYCTR,
+      SUBROUTINE CCSDT_ETA_FA_DEN(LISTL,IDLSTL,ISYMBL,
      *                            LISTR,IDLSTR,ISTAMY,FREQY,LABELY,
      *                            XLAMDP,XLAMDH,FOCK0,
      *                            T2TP,ZL2TP,ZL1AM,
@@ -685,6 +714,7 @@ C
 #include <ccsdinp.h>
 #include <ccinftap.h>
 #include <inftap.h>
+#include <ccexci.h>
 C
       LOGICAL LOCDBG, TOT_T3Y
       PARAMETER(LOCDBG = .FALSE., TOT_T3Y = .TRUE.)
@@ -712,22 +742,22 @@ C
      *        LENGTH, IOFF, ISYMD, ISYCKB, ISTAMY,
      *        KTRVI1, KTRVI2, KTRVI0,
      *        KTRVI3, KEND3, LWRK3, KINTVI, KEND4, LWRK4, 
-     *        ISYALJ, ISYMBD, ISCKIJ, KSMAT2, KSMAT,
+     *        ISALJB, ISYMBD, ISCKIJ, KBLSMATBD, KSMATBD,
      *        KDIAG, KDIAGW, ISYMC, ISYMK, KOFF1, KOFF2, KOFF3,
-     *        KINDSQ, KINDEX, KTMAT, LENSQ, KINDSQW,
+     *        KINDSQ, KINDEXB, KTMAT, LENSQ, KINDSQW,
      *        KFCKBA, KTRVI4, KTRVI5, KTRVI6,
-     *        KUMAT,  KUMAT2, 
+     *        KUMATBD,  KBLUMATBD, 
      *        KTROC02, KTRVI7, KTRVI8, KTRVI9, KTRVI10,
      *        KTRVI11, KTRVI12, KTRVI13,
-     *        ISYCKD, KSMAT3, KUMAT3, KEND5, LWRK5,
-     *        ISYALJ2, KINDEX2, KSMAT4, KUMAT4,
+     *        ISYCKD, KSMATDB, KUMATDB, KEND5, LWRK5,
+     *        ISALJD, KINDEXD, KBLSMATDB, KBLUMATDB,
      *        KTRVI14, KTRVI15, KTRVI16, KTRVI17, KTRVI18, KTRVI19,
      *        KTRVI20, ISYTMP, KTROC01, KTROC21, KTROC03, KTROC23,
      *        LUDELD, LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOP,
      *        LU3FOP2, LUTBAR, LUWMAT, LUT2Y, 
      *        ISYMAI, ISYML, ISYAIL, ISAIBJ, ISYMDL, ISYMBJ,
      *        KOFFA, IOPT, NBJ, IADR, ISYMJ, ISYMB, ISYMI, NRHFI,
-     *        ISYCTR, ISAIB, ISYM, ILEN, ISYMFN, ISYMIM, ISYDEN,
+     *        ISYMBL, ISAIB, ISYM, ILEN, ISYMFN, ISYMIM, ISYDEN,
      *        ISWMAT, KFOCKY, IRREP, NVIRB,
      *        IERR, KWMAT, LENSQW, ISTBAR, NDL, ISYMN, ISYEMF, KTBAR,
      *        ISYMBN, ISYMEM, ISYMF, KT2Y, KOFFD, NTOTEM, NNVIRF,
@@ -738,6 +768,9 @@ C
      *        IMAT, ISCKBY, KTRVI8Y,
      *        ISCKDY
       INTEGER ISWTL(8,8), ISTLN(8,8), NIMFN(8)
+
+      INTEGER ISBLALJB,ISBLALJD,ISBLCKIJ,KBLINDEXB,KBLINDEXD
+      INTEGER KBLDIAG,LENSQBL,KBLINDSQ
 C
       INTEGER ILSTSYM
  
@@ -749,6 +782,7 @@ C
       REAL DAB(*),DIJ(*),DIA(*)
       REAL XMMAT(*),YMMAT(*)
       REAL T2TP(*),ZL2TP(*),ZL1AM(*)
+      REAL FREQL
 #else
       DOUBLE PRECISION XLAMDP(*), XLAMDH(*), FOCK0(*)
       DOUBLE PRECISION WORK(LWORK)
@@ -757,6 +791,7 @@ C
       DOUBLE PRECISION DAB(*),DIJ(*),DIA(*)
       DOUBLE PRECISION XMMAT(*),YMMAT(*)
       DOUBLE PRECISION T2TP(*),ZL2TP(*),ZL1AM(*)
+      DOUBLE PRECISION FREQL
 #endif
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -766,6 +801,17 @@ C     some initializations:
 C     set offset arrays ISWTL and ISTLN and dimensions NIMFN:
 C------------------------------------------------------------
       CALL QENTER('CTETAFAD')
+C
+      !read frequency for listl
+      IF (LISTL(1:3) .EQ. 'L0 ') THEN
+         FREQL = 0.0D0
+      ELSE IF (LISTL(1:3) .EQ. 'LE ') THEN
+         FREQL = EIGVAL(IDLSTL)
+      ELSE
+        WRITE(LUPRI,*) 'LISTL = ', LISTL(1:3) 
+        WRITE(LUPRI,*) 'CCSDT_ETA_FA_DEN handles only L0 or LE as LISTL'
+        CALL QUIT('Unkown left list in CCSDT_ETA_FA_DEN')
+      END IF
 C
       DO ISYMDL = 1, NSYM
         IOFF = 0        
@@ -1215,10 +1261,16 @@ C
 C
             DO ISYMB = 1,NSYM
 
-               ISYALJ  = MULD2H(ISYMB,ISYM0)
-               ISYALJ2 = MULD2H(ISYMD,ISYM0)
                ISYMBD  = MULD2H(ISYMB,ISYMD)
-               ISCKIJ  = MULD2H(ISYMBD,ISYCTR)
+
+               ISALJB  = MULD2H(ISYMB,ISYM0)
+               ISALJD = MULD2H(ISYMD,ISYM0)
+               ISBLALJB  = MULD2H(ISYMB,ISYMBL)
+               ISBLALJD = MULD2H(ISYMD,ISYMBL)
+C
+               ISCKIJ  = MULD2H(ISYMBD,ISYM0)
+               ISBLCKIJ  = MULD2H(ISYMBD,ISYMBL)
+C
                ISYCKD  = MULD2H(ISYM0,ISYMB)
                ISCKDY  = MULD2H(ISTAMY,ISYMB)
                ISWMAT  = MULD2H(ISCKIJ,ISTAMY)
@@ -1226,31 +1278,44 @@ C
                IF (LOCDBG) THEN
                   WRITE(LUPRI,*) 'In CCSDT_ETA_FA_DEN: ISYMD :',ISYMD
                   WRITE(LUPRI,*) 'In CCSDT_ETA_FA_DEN: ISYMB :',ISYMB
-                  WRITE(LUPRI,*) 'In CCSDT_ETA_FA_DEN: ISYALJ:',ISYALJ
+                  WRITE(LUPRI,*) 'In CCSDT_ETA_FA_DEN: ISALJB:',ISALJB
                   WRITE(LUPRI,*) 'In CCSDT_ETA_FA_DEN: ISYMBD:',ISYMBD
                   WRITE(LUPRI,*) 'In CCSDT_ETA_FA_DEN: ISCKIJ:',ISCKIJ
                ENDIF
 C
 C              Can use kend3 since we do not need the integrals anymore.
-               KSMAT   = KEND3
-               KSMAT2  = KSMAT   + NCKIJ(ISCKIJ)
-               KSMAT3  = KSMAT2  + NCKIJ(ISCKIJ)
-               KUMAT   = KSMAT3  + NCKIJ(ISCKIJ)
-               KUMAT2  = KUMAT   + NCKIJ(ISCKIJ)
-               KUMAT3  = KUMAT2  + NCKIJ(ISCKIJ)
-               KDIAG   = KUMAT3  + NCKIJ(ISCKIJ)
+               KSMATBD   = KEND3
+               KBLSMATBD  = KSMATBD   + NCKIJ(ISCKIJ)
+               KSMATDB  = KBLSMATBD  + NCKIJ(ISBLCKIJ)
+               KUMATBD   = KSMATDB  + NCKIJ(ISCKIJ)
+               KBLUMATBD  = KUMATBD   + NCKIJ(ISCKIJ)
+               KUMATDB  = KBLUMATBD  + NCKIJ(ISBLCKIJ)
+               KDIAG   = KUMATDB  + NCKIJ(ISCKIJ)
                KDIAGW  = KDIAG   + NCKIJ(ISCKIJ)
                KINDSQW = KDIAGW  + NCKIJ(ISWMAT)
                KINDSQ  = KINDSQW + (6*NCKIJ(ISWMAT) - 1)/IRAT + 1
-               KINDEX  = KINDSQ  + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
-               KINDEX2 = KINDEX  + (NCKI(ISYALJ)  - 1)/IRAT + 1
-               KTMAT   = KINDEX2 + (NCKI(ISYALJ2) - 1)/IRAT + 1
-               KTRVI8  = KTMAT   + NCKIJ(ISCKIJ)
+               KINDEXB  = KINDSQ  + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
+               KINDEXD = KINDEXB  + (NCKI(ISALJB)  - 1)/IRAT + 1
+               KTMAT   = KINDEXD + (NCKI(ISALJD) - 1)/IRAT + 1
+               KTRVI8  = KTMAT   + MAX(NCKIJ(ISCKIJ),NCKIJ(ISBLCKIJ))
                KTRVI9  = KTRVI8  + NCKATR(ISYCKD)
                KTRVI10 = KTRVI9  + NCKATR(ISYCKD)
                KEND4   = KTRVI10 + NCKATR(ISYCKD)
                LWRK4   = LWORK   - KEND4
-
+C
+               KBLINDEXB  = KEND4
+               KBLINDEXD = KBLINDEXB  + (NCKI(ISBLALJB)  - 1)/IRAT + 1
+               KEND4   = KBLINDEXD + (NCKI(ISBLALJD) - 1)/IRAT + 1
+               LWRK4   = LWORK   - KEND4
+C
+               KBLINDSQ  = KEND4
+               KEND4  = KBLINDSQ  + (6*NCKIJ(ISBLCKIJ) - 1)/IRAT + 1
+               LWRK4   = LWORK   - KEND4
+C
+               KBLDIAG   = KEND4
+               KEND4  = KBLDIAG   + NCKIJ(ISBLCKIJ)
+               LWRK4   = LWORK   - KEND4
+C
                KTRVI16 = KEND4
                KTRVI17 = KTRVI16 + NCKATR(ISYCKD)
                KTRVI20 = KTRVI17 + NCKATR(ISYCKD)
@@ -1261,9 +1326,9 @@ C              Can use kend3 since we do not need the integrals anymore.
                   KEND4   = KTRVI8Y + NCKATR(ISCKDY)
                ENDIF
 
-               KSMAT4  = KEND4
-               KUMAT4  = KSMAT4  + NCKIJ(ISCKIJ)
-               KTRVI11 = KUMAT4  + NCKIJ(ISCKIJ)
+               KBLSMATDB  = KEND4
+               KBLUMATDB  = KBLSMATDB  + NCKIJ(ISBLCKIJ)
+               KTRVI11 = KBLUMATDB  + NCKIJ(ISBLCKIJ)
                KTRVI12 = KTRVI11 + NCKATR(ISYCKD)
                KTRVI13 = KTRVI12 + NCKATR(ISYCKD)
                KEND4   = KTRVI13 + NCKATR(ISYCKD)
@@ -1287,7 +1352,9 @@ C              -------------------------------
 C              Construct part of the diagonal.
 C              -------------------------------
 C
-               CALL CC3_DIAG(WORK(KDIAG), WORK(KFOCKD),ISCKIJ)
+               CALL CC3_DIAG(WORK(KDIAG),WORK(KFOCKD),ISCKIJ)
+               CALL CC3_DIAG(WORK(KBLDIAG),WORK(KFOCKD),ISBLCKIJ)
+C
                CALL CC3_DIAG(WORK(KDIAGW),WORK(KFOCKD),ISWMAT)
 
                IF (LOCDBG) THEN
@@ -1302,11 +1369,17 @@ C              Construct index arrays.
 C              -----------------------
 C
                LENSQ  = NCKIJ(ISCKIJ)
-               LENSQW = NCKIJ(ISWMAT)
                CALL CC3_INDSQ(WORK(KINDSQ),LENSQ,ISCKIJ)
-               CALL CC3_INDEX(WORK(KINDEX),ISYALJ)
-               CALL CC3_INDEX(WORK(KINDEX2),ISYALJ2)
+               LENSQBL  = NCKIJ(ISBLCKIJ)
+               CALL CC3_INDSQ(WORK(KBLINDSQ),LENSQBL,ISBLCKIJ)
+C
+               LENSQW = NCKIJ(ISWMAT)
                CALL CC3_INDSQ(WORK(KINDSQW),LENSQW,ISWMAT) 
+C
+               CALL CC3_INDEX(WORK(KBLINDEXB),ISBLALJB)
+               CALL CC3_INDEX(WORK(KBLINDEXD),ISBLALJD)
+               CALL CC3_INDEX(WORK(KINDEXB),ISALJB)
+               CALL CC3_INDEX(WORK(KINDEXD),ISALJD)
 
                DO B = 1,NVIR(ISYMB)
                   IF (LOCDBG) write(lupri,*) 'For B, D : ',B,D
@@ -1361,96 +1434,104 @@ C
 C                 ----------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for B,D for T3-BAR:
 C                 ----------------------------------------------------
-                  CALL DZERO(WORK(KSMAT2),NCKIJ(ISCKIJ))
+                  CALL DZERO(WORK(KBLSMATBD),NCKIJ(ISBLCKIJ))
  
-                  CALL CCFOP_SMAT(0.0D0,ZL1AM,ISYCTR,ZL2TP,
-     *                            ISYCTR,WORK(KTMAT),
+                  CALL CCFOP_SMAT(FREQL,ZL1AM,ISYMBL,ZL2TP,
+     *                            ISYMBL,WORK(KTMAT),
      *                            WORK(KFCKBA),WORK(KXIAJB),ISYM0,
      *                            WORK(KTRVI14),WORK(KTRVI15),
      *                            WORK(KTRVI4),WORK(KTRVI5),
      *                            WORK(KTROC01),WORK(KTROC21),
-     *                            ISYM0,WORK(KFOCKD),WORK(KDIAG),
-     *                            WORK(KSMAT2),WORK(KEND4),LWRK4,
-     *                            WORK(KINDEX),WORK(KINDSQ),LENSQ,
+     *                            ISYM0,WORK(KFOCKD),WORK(KBLDIAG),
+     *                            WORK(KBLSMATBD),WORK(KEND4),LWRK4,
+     *                            WORK(KBLINDEXB),
+     *                            WORK(KBLINDSQ),LENSQBL,
      *                            ISYMB,B,ISYMD,D)
 
-                  CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KSMAT2),1)
+                  CALL DSCAL(NCKIJ(ISBLCKIJ),HALF,WORK(KBLSMATBD),1)
 
-                  CALL T3_FORBIDDEN(WORK(KSMAT2),ISYCTR,ISYMB,B,ISYMD,D)
+                  CALL T3_FORBIDDEN(WORK(KBLSMATBD),ISYMBL,ISYMB,B,
+     *                              ISYMD,D)
 C
 C                 ----------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for D,B for T3-BAR:
 C                 ----------------------------------------------------
-                  CALL DZERO(WORK(KSMAT4),NCKIJ(ISCKIJ))
+                  CALL DZERO(WORK(KBLSMATDB),NCKIJ(ISBLCKIJ))
 
-                  CALL CCFOP_SMAT(0.0D0,ZL1AM,ISYCTR,ZL2TP,
-     *                            ISYCTR,WORK(KTMAT),WORK(KFCKBA),
+                  CALL CCFOP_SMAT(FREQL,ZL1AM,ISYMBL,ZL2TP,
+     *                            ISYMBL,WORK(KTMAT),WORK(KFCKBA),
      *                            WORK(KXIAJB),ISYM0,
      *                            WORK(KTRVI16),WORK(KTRVI17),
      *                            WORK(KTRVI11),WORK(KTRVI12),
      *                            WORK(KTROC01),WORK(KTROC21),
-     *                            ISYM0,WORK(KFOCKD),WORK(KDIAG),
-     *                            WORK(KSMAT4),WORK(KEND4),LWRK4,
-     *                            WORK(KINDEX2),WORK(KINDSQ),
-     *                            LENSQ,ISYMD,D,ISYMB,B)
+     *                            ISYM0,WORK(KFOCKD),WORK(KBLDIAG),
+     *                            WORK(KBLSMATDB),WORK(KEND4),LWRK4,
+     *                            WORK(KBLINDEXD),WORK(KBLINDSQ),
+     *                            LENSQBL,ISYMD,D,ISYMB,B)
 
-                  CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KSMAT4),1)
+                  CALL DSCAL(NCKIJ(ISBLCKIJ),HALF,WORK(KBLSMATDB),1)
 C
 C
-                  CALL T3_FORBIDDEN(WORK(KSMAT4),ISYCTR,ISYMD,D,ISYMB,B)
+                  CALL T3_FORBIDDEN(WORK(KBLSMATDB),ISYMBL,ISYMD,D,
+     *                              ISYMB,B)
 C
 C                 ------------------------------------------------
 C                 Calculate U(ci,jk) for fixed b,d for t3-bar.
 C                 ------------------------------------------------
-                  CALL DZERO(WORK(KUMAT2),NCKIJ(ISCKIJ))
+                  CALL DZERO(WORK(KBLUMATBD),NCKIJ(ISBLCKIJ))
 
-                  CALL CCFOP_UMAT(0.0D0,ZL1AM,ISYCTR,ZL2TP,
-     *                            ISYCTR,
+                  CALL CCFOP_UMAT(FREQL,ZL1AM,ISYMBL,ZL2TP,
+     *                            ISYMBL,
      *                            WORK(KXIAJB),ISYM0,WORK(KFCKBA),
      *                            WORK(KTRVI19),WORK(KTRVI7),
      *                            WORK(KTROC03),WORK(KTROC23),ISYM0,
-     *                            WORK(KFOCKD),WORK(KDIAG),
-     *                            WORK(KUMAT2),
+     *                            WORK(KFOCKD),WORK(KBLDIAG),
+     *                            WORK(KBLUMATBD),
      *                            WORK(KTMAT),WORK(KEND4),LWRK4,
-     *                            WORK(KINDSQ),LENSQ,ISYMB,B,ISYMD,D)
+     *                            WORK(KBLINDSQ),LENSQBL,
+     *                            ISYMB,B,ISYMD,D)
 
-                  CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KUMAT2),1)
+                  CALL DSCAL(NCKIJ(ISBLCKIJ),HALF,WORK(KBLUMATBD),1)
 C
 C
-                  CALL T3_FORBIDDEN(WORK(KUMAT2),ISYCTR,ISYMB,B,ISYMD,D)
+                  CALL T3_FORBIDDEN(WORK(KBLUMATBD),ISYMBL,ISYMB,B,
+     *                              ISYMD,D)
 C
 C                 ------------------------------------------------
 C                 Calculate U(ci,jk) for fixed d,b for t3-bar.
 C                 ------------------------------------------------
-                  CALL DZERO(WORK(KUMAT4),NCKIJ(ISCKIJ))
+                  CALL DZERO(WORK(KBLUMATDB),NCKIJ(ISBLCKIJ))
 
-                  CALL CCFOP_UMAT(0.0D0,ZL1AM,ISYCTR,ZL2TP,
-     *                            ISYCTR,WORK(KXIAJB),ISYM0,
+                  CALL CCFOP_UMAT(FREQL,ZL1AM,ISYMBL,ZL2TP,
+     *                            ISYMBL,WORK(KXIAJB),ISYM0,
      *                            WORK(KFCKBA),WORK(KTRVI20),
      *                            WORK(KTRVI13),WORK(KTROC03),
      *                            WORK(KTROC23),ISYM0,
-     *                            WORK(KFOCKD),WORK(KDIAG),
-     *                            WORK(KUMAT4),WORK(KTMAT),
-     *                            WORK(KEND4),LWRK4,WORK(KINDSQ),
-     *                            LENSQ,ISYMD,D,ISYMB,B)
+     *                            WORK(KFOCKD),WORK(KBLDIAG),
+     *                            WORK(KBLUMATDB),WORK(KTMAT),
+     *                            WORK(KEND4),LWRK4,WORK(KBLINDSQ),
+     *                            LENSQBL,ISYMD,D,ISYMB,B)
 
-                  CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KUMAT4),1)
+                  CALL DSCAL(NCKIJ(ISBLCKIJ),HALF,WORK(KBLUMATDB),1)
 
-                  CALL T3_FORBIDDEN(WORK(KUMAT4),ISYCTR,ISYMD,D,ISYMB,B)
+                  CALL T3_FORBIDDEN(WORK(KBLUMATDB),ISYMBL,ISYMD,D,
+     *                              ISYMB,B)
 C
 C                 -------------------------------------------
 C                 Sum up the S-bar and U-bar to get a real T3-bar
 C                 -------------------------------------------
-                  CALL CC3_T3BD(ISCKIJ,WORK(KSMAT2),WORK(KSMAT4),
-     *                                 WORK(KUMAT2),WORK(KUMAT4),
-     *                                 WORK(KTMAT),WORK(KINDSQ),LENSQ)
+                  CALL CC3_T3BD(ISBLCKIJ,WORK(KBLSMATBD),
+     *                                 WORK(KBLSMATDB),
+     *                                 WORK(KBLUMATBD),WORK(KBLUMATDB),
+     *                                 WORK(KTMAT),WORK(KBLINDSQ),
+     *                                 LENSQBL)
 C
 C                 -------------------------------------
 C                 Write T3-bar as T3^D(ai,bj,l) to disc
 C                 -------------------------------------
                   DO ISYML = 1, NSYM
                    ISYMDL = MULD2H(ISYMD,ISYML)
-                   ISAIBJ = MULD2H(ISYCTR,ISYMDL)
+                   ISAIBJ = MULD2H(ISYMBL,ISYMDL)
                    DO L = 1, NRHF(ISYML)
                     DO ISYMJ = 1, NSYM
                      ISYMBJ = MULD2H(ISYMJ,ISYMB)
@@ -1524,14 +1605,14 @@ C                 --------------------------------------------------
      *                          WORK(KTRVI0),WORK(KTRVI2),
      *                          WORK(KTROC0),ISYM0,
      *                          WORK(KFOCKD),WORK(KDIAG),
-     *                          WORK(KSMAT),WORK(KEND4),LWRK4,
-     *                          WORK(KINDEX),WORK(KINDSQ),LENSQ,
+     *                          WORK(KSMATBD),WORK(KEND4),LWRK4,
+     *                          WORK(KINDEXB),WORK(KINDSQ),LENSQ,
      *                          ISYMB,B,ISYMD,D)
 
-                  CALL T3_FORBIDDEN(WORK(KSMAT),ISYCTR,ISYMB,B,ISYMD,D)
+                  CALL T3_FORBIDDEN(WORK(KSMATBD),ISYM0,ISYMB,B,ISYMD,D)
 C
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of SMAT :',
-     *               DDOT(NCKIJ(ISCKIJ),WORK(KSMAT),1,WORK(KSMAT),1)
+     *               DDOT(NCKIJ(ISCKIJ),WORK(KSMATBD),1,WORK(KSMATBD),1)
 C
 C                 --------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for D,B.
@@ -1540,48 +1621,48 @@ C                 --------------------------------------------------
      *                          WORK(KTRVI8),WORK(KTRVI9),
      *                          WORK(KTROC0),ISYM0,
      *                          WORK(KFOCKD),WORK(KDIAG),
-     *                          WORK(KSMAT3),WORK(KEND4),LWRK4,
-     *                          WORK(KINDEX2),WORK(KINDSQ),LENSQ,
+     *                          WORK(KSMATDB),WORK(KEND4),LWRK4,
+     *                          WORK(KINDEXD),WORK(KINDSQ),LENSQ,
      *                          ISYMD,D,ISYMB,B)
 
-                  CALL T3_FORBIDDEN(WORK(KSMAT3),ISYCTR,ISYMD,D,ISYMB,B)
+                  CALL T3_FORBIDDEN(WORK(KSMATDB),ISYM0,ISYMD,D,ISYMB,B)
 C
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of SMAT3:',
-     *               DDOT(NCKIJ(ISCKIJ),WORK(KSMAT3),1,WORK(KSMAT3),1)
+     *               DDOT(NCKIJ(ISCKIJ),WORK(KSMATDB),1,WORK(KSMATDB),1)
 C
 C                 ---------------------------------
 C                 Calculate U(ci,jk) for fixed b,d.
 C                 ---------------------------------
                   CALL CC3_UMAT(0.0D0,T2TP,ISYM0,WORK(KTRVI1),
      *                          WORK(KTROC02),ISYM0,WORK(KFOCKD),
-     *                          WORK(KDIAG),WORK(KUMAT),WORK(KTMAT),
+     *                          WORK(KDIAG),WORK(KUMATBD),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
      *                          ISYMB,B,ISYMD,D)
 
-                  CALL T3_FORBIDDEN(WORK(KUMAT),ISYCTR,ISYMB,B,ISYMD,D)
+                  CALL T3_FORBIDDEN(WORK(KUMATBD),ISYM0,ISYMB,B,ISYMD,D)
 C
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of UMAT :',
-     *               DDOT(NCKIJ(ISCKIJ),WORK(KUMAT),1,WORK(KUMAT),1)
+     *               DDOT(NCKIJ(ISCKIJ),WORK(KUMATBD),1,WORK(KUMATBD),1)
 C
 C                 ---------------------------------
 C                 Calculate U(ci,jk) for fixed d,b.
 C                 ---------------------------------
                   CALL CC3_UMAT(0.0D0,T2TP,ISYM0,WORK(KTRVI10),
      *                          WORK(KTROC02),ISYM0,WORK(KFOCKD),
-     *                          WORK(KDIAG),WORK(KUMAT3),WORK(KTMAT),
+     *                          WORK(KDIAG),WORK(KUMATDB),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
      *                          ISYMD,D,ISYMB,B)
 
-                  CALL T3_FORBIDDEN(WORK(KUMAT3),ISYCTR,ISYMD,D,ISYMB,B)
+                  CALL T3_FORBIDDEN(WORK(KUMATDB),ISYM0,ISYMD,D,ISYMB,B)
 
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of UMAT3:',
-     *               DDOT(NCKIJ(ISCKIJ),WORK(KUMAT3),1,WORK(KUMAT3),1)
+     *               DDOT(NCKIJ(ISCKIJ),WORK(KUMATDB),1,WORK(KUMATDB),1)
 C
 C                 -----------------------------------
 C                 Sum up the S and U to get a real T3
 C                 -----------------------------------
-                  CALL CC3_T3BD(ISCKIJ,WORK(KSMAT),WORK(KSMAT3),
-     *                                 WORK(KUMAT),WORK(KUMAT3),
+                  CALL CC3_T3BD(ISCKIJ,WORK(KSMATBD),WORK(KSMATDB),
+     *                                 WORK(KUMATBD),WORK(KUMATDB),
      *                                 WORK(KTMAT),WORK(KINDSQ),LENSQ)
 C
 C                 ---------------------------------
@@ -1673,7 +1754,7 @@ C                 -------------------------------------
 
              ISYMDL = MULD2H(ISYMD,ISYML)
              ISWMAT = MULD2H(ISYMDL,ISTAMY)
-             ISTBAR = MULD2H(ISYCTR,ISYMDL)
+             ISTBAR = MULD2H(ISYMBL,ISYMDL)
 
              KWMAT  = KEND1
              KT2Y   = KWMAT + NT2SQ(ISWMAT)
@@ -1856,7 +1937,7 @@ C                ------------------------------------------------------
 C                D(Lb) <-- D(Lb) - sum_em tbar^DN(em) Wtilde^DL(em,bN):
 C                ------------------------------------------------------
                  ISYMDN = MULD2H(ISYMD,ISYMN)
-                 ISYMEM = MULD2H(ISYCTR,ISYMDN)
+                 ISYMEM = MULD2H(ISYMBL,ISYMDN)
                  ISYMBN = MULD2H(ISWMAT,ISYMEM)
                  ISYMB  = MULD2H(ISYMBN,ISYMN)
                  ISYEMN = MULD2H(ISYMEM,ISYMN)
@@ -1884,7 +1965,7 @@ C                -----------------------------------------------------
                  DO ISYMBN = 1, NSYM
                    ISYMEM = MULD2H(ISWMAT,ISYMBN)
                    ISYMB  = MULD2H(ISYMBN,ISYMN)
-                   ISYMEN = MULD2H(ISYCTR,ISYMDL)
+                   ISYMEN = MULD2H(ISYMBL,ISYMDL)
                    ISYME  = MULD2H(ISYMEN,ISYMN)
                    ISYMM  = MULD2H(ISYMEM,ISYME)
                    ISYENL = MULD2H(ISYMEN,ISYML)
@@ -1920,7 +2001,7 @@ C                -----------------------------------------------------
 C              --------------------------------------------------------
 C              D(nb) <-- D(nb) + 2 sum_em tbar^DL(em) Wtilde^DL(em,bN):
 C              --------------------------------------------------------
-               ISYMEM = MULD2H(ISYCTR,ISYMDL)
+               ISYMEM = MULD2H(ISYMBL,ISYMDL)
                ISYMBN = MULD2H(ISWMAT,ISYMEM)
                ISYEML = MULD2H(ISYMEM,ISYML)
 

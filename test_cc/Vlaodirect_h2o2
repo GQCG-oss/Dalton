@@ -30,7 +30,7 @@ H      1.6850730466   -1.4805134201   0.4999836950
 ####################################################################
 cat > Vlaodirect_h2o2.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
 .DIPLEN

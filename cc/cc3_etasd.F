@@ -344,10 +344,10 @@ C
          ENDDO
       ENDDO
 
-      IF (LOCDBG) THEN
-         CALL AROUND('In CC3_ETASD: FOCKY MO matrix (sort)')
-         CALL CC_PRFCKMO(WORK(KFCKYCK),ISYFKY)
-      ENDIF
+*     IF (LOCDBG) THEN
+*        CALL AROUND('In CC3_ETASD: FOCKY MO matrix (sort)')
+*        CALL CC_PRFCKMO(WORK(KFCKYCK),ISYFKY)
+*     ENDIF
 
 
 C
@@ -439,8 +439,8 @@ C
          CALL GETWA2(LUCKJD,FNCKJD,WORK(KINTOC),IOFF,NTOTOC(ISYM0))
       ENDIF
 
-      IF (LOCDBG) WRITE(LUPRI,*) 'Norm of OCC-INT ',
-     *    DDOT(NTOTOC(ISYM0),WORK(KINTOC),1,WORK(KINTOC),1)
+*     IF (LOCDBG) WRITE(LUPRI,*) 'Norm of OCC-INT ',
+*    *    DDOT(NTOTOC(ISYM0),WORK(KINTOC),1,WORK(KINTOC),1)
 C
 C-----------------------------------------------------------
 C     Construct 2*C-E of the integrals.
@@ -454,8 +454,8 @@ C
  
       CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC01),WORK(KLAMH0),
      *               WORK(KEND2),LWRK2,ISYM0)
-      IF (LOCDBG) WRITE(LUPRI,*) 'Norm of CKJDEL-INT  ',
-     *    DDOT(NTOTOC(ISYM0),WORK(KINTOC),1,WORK(KINTOC),1)
+*     IF (LOCDBG) WRITE(LUPRI,*) 'Norm of CKJDEL-INT  ',
+*    *    DDOT(NTOTOC(ISYM0),WORK(KINTOC),1,WORK(KINTOC),1)
  
       CALL CCSDT_TCMEOCC(WORK(KTROC01),WORK(KTROC21),ISYM0)
  
@@ -468,7 +468,7 @@ C-----------------------------------------------------
 C     Calculate <L3|[[X,tau_ai],T_3]|HF>
 C-----------------------------------------------------     
 C
-      CALL CC3_ETA_1(WORK(KFCKYCK),ISYFKY,ETA1EFF,ISYRES,
+      CALL CC3_ETA_1(WORK(KFCKYCK),ISYFKY,ETA1,ISYRES,
      *                     WORK(KEND2),LWRK2)
 
 C
@@ -865,7 +865,7 @@ C
                   ISYMT2 = ISYM0
 C
                   CALL CC3_ETA_2(WORK(KTMAT),ISCKIJ,WORK(KFCKYCK),
-     *                           ISYFKY,WORK(KT2TP),ISYMT2,ETA2EFF,
+     *                           ISYFKY,WORK(KT2TP),ISYMT2,ETA2,
      *                           ISYRES,WORK(KRAIJB),WORK(KINDSQ),
      *                           LENSQ,WORK(KINDEX2),ISYALJ2,
      *                           ISYMB,B,ISYMD,D,WORK(KEND4),LWRK4)
@@ -1599,6 +1599,11 @@ C
      *              ONE,WORK(KOFF3),NTOTIJ)
 C
       ENDDO
+c
+*     write(lupri,*)'kscr1(on,m) in cc3_w3_lhtr ib,id ',ib,id
+*     call output(work(kscr1),1,nmatij(1),1,nrhf(1),
+*    *            nmatij(1),nrhf(1),
+*    *            1,lupri)
 C
 C--------------------------------------------
 C     Second contribution to intermediate
@@ -1685,6 +1690,11 @@ C
          ENDDO
 C
       END IF
+c
+*     write(lupri,*)'kscr1(on,m) in cc3_w3_lhtr ib,id ',ib,id
+*     call output(work(kscr1),1,nmatij(1),1,nrhf(1),
+*    *            nmatij(1),nrhf(1),
+*    *            1,lupri)
 C
 C------------------------------------------------
 C     Contract the intermediate with g_{oooo}
@@ -1781,6 +1791,11 @@ C
      *                 WORK(KOFFTP),NL,ZERO,WORK(KOFFRE),NAON) 
 C
          END DO
+*     write(lupri,*)'krmat(aon,m) in cc3_w3_lhtr ib,id ',ib,id
+*     call output(work(krmat),1,ncki(1),1,nrhf(1),
+*    *            ncki(1),nrhf(1),
+*    *            1,lupri)
+
 C
 C        omega(ai) = sum_onm ( R(aonm) * G(onmi) )
 C       
@@ -3215,6 +3230,12 @@ C
      *              -ONE,TMAT(KOFF1),NTOTDL,T2TP(KOFF2),NTOTDL,
      *              ONE,WORK(KOFF3),NTOTIN)
       ENDDO
+c
+*     write(lupri,*)'kscr1(on,m) in cc3_w3_lhtr ib,id ',ib,id
+*     call output(work(kscr1),1,nmatij(1),1,nrhf(1),
+*    *            nmatij(1),nrhf(1),
+*    *            1,lupri)
+
 C
 C-----------------------------------------------
 C     Second contribution to intermediate
@@ -3290,6 +3311,12 @@ C
      *              -ONE,TMAT(KOFF1),NTOTDL,WORK(KOFF2),NTOTDL,
      *              ONE,WORK(KOFF3),NTOTIN)
          ENDDO
+c
+*     write(lupri,*)'kscr1(on,m) in cc3_w3_lhtr ib,id ',ib,id
+*     call output(work(kscr1),1,nmatij(1),1,nrhf(1),
+*    *            nmatij(1),nrhf(1),
+*    *            1,lupri)
+
 C
       END IF
 C

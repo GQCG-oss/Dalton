@@ -31,7 +31,7 @@ H     0.0000000000000000   0.000000000   1.30000000
 #######################################################################
 cat > cc3_hyp_HF631g.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .NOSUP
 .DIPLEN

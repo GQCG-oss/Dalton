@@ -180,7 +180,9 @@ c /* deck cc_tmcal */
           K2VEC2   = K2VEC1 + NCCVAR1
      
           DO I = 1, NTMSELX(ISYMABC)  
-              IFREQ  = ITMSELX( MULD2H(ISYMA,ISYMB) ) + I
+C bug fix
+c             IFREQ  = ITMSELX( MULD2H(ISYMA,ISYMB) ) + I
+              IFREQ  = ITMSELX(ISYMABC) + I
               FREQEX  = EXTMFR(IFREQ)
               FREQB  = BTMFR(IFREQ)
               FREQC  = CTMFR(IFREQ)

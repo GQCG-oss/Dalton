@@ -35,8 +35,7 @@ C
 C
 *=====================================================================*
       SUBROUTINE CCSDT_XI_NODDY(IOPTRES,XI1,XI2,XI1EFF,XI2EFF,
-     &                          FOCKB,FREQ,
-     &                          XLAMDP,XLAMDH,CMO,FOCK0,
+     &                          FOCKB,FREQ,XLAMDP,XLAMDH,
      &                          IDOTS,DOTPROD,LISTDP,ITRAN,
      &                          NXTRAN,MXVEC,WORK,LWORK)
 *---------------------------------------------------------------------*
@@ -71,19 +70,19 @@ C
       REAL WORK(LWORK)
       REAL XI1(NT1AMX), XI2(NT2AMX), FREQ
       REAL XI1EFF(NT1AMX), XI2EFF(NT2AMX), DDOT, FF, SIGN
-      REAL FOCKB(*), CMO(*), XLAMDP(*), XLAMDH(*), FOCK0(*)
+      REAL FOCKB(*), CMO, XLAMDP(*), XLAMDH(*)
 #else
       DOUBLE PRECISION DOTPROD(MXVEC,NXTRAN)
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION XI1(NT1AMX), XI2(NT2AMX), FREQ, FF, SIGN
       DOUBLE PRECISION XI1EFF(NT1AMX), XI2EFF(NT2AMX), DDOT
-      DOUBLE PRECISION FOCKB(*), CMO(*), XLAMDP(*), XLAMDH(*), FOCK0(*)
+      DOUBLE PRECISION FOCKB(*), CMO, XLAMDP(*), XLAMDH(*)
 #endif
 
       CHARACTER*10 MODEL
       INTEGER KEND1, LWRK1, KFOCKD, KIAJB, KYIAJB, KINT1T, KINT2T, 
      &        KXKSI3, KINT1S, KINT2S, IVEC, KEND2, LWRK2, NDOTS, KFIELD
-      INTEGER IJ, NIJ, LUSIFC, INDEX, ILSTSYM
+      INTEGER IJ, NIJ, LUSIFC, INDEX, ILSTSYM, KFIELDAO, KFOCK0
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
@@ -112,7 +111,8 @@ C
 *     Memory allocation:
 *---------------------------------------------------------------------*
       KFOCKD = 1
-      KINT1T = KFOCKD + NORBT
+      KFOCK0 = KFOCKD + NORBT
+      KINT1T = KFOCK0 + NORBT*NORBT
       KINT2T = KINT1T + NT1AMX*NVIRT*NVIRT
       KIAJB  = KINT2T + NRHFT*NRHFT*NT1AMX
       KYIAJB = KIAJB  + NT1AMX*NT1AMX
@@ -121,8 +121,9 @@ C
       KEND1  = KINT2S + NRHFT*NRHFT*NT1AMX
 
       IF (NONHF) THEN
-        KFIELD = KEND1
-        KEND1  = KFIELD + NORBT*NORBT
+        KFIELD   = KEND1
+        KFIELDAO = KFIELD   + NORBT*NORBT
+        KEND1    = KFIELDAO + NORBT*NORBT
       END IF
 
       KXKSI3 = KEND1 
@@ -130,43 +131,26 @@ C
 
       LWRK1  = LWORK  - KEND1
       IF (LWRK1 .LT. 0) THEN
+         write(lupri,*)'LWORK,KEND1 ', LWORK,KEND1
          CALL QUIT('Insufficient space in CCSDT_XI_NODDY')
       ENDIF
 
 *---------------------------------------------------------------------*
-*     Read SCF orbital energies from file:
+*     Read precalculated integrals from file:
 *---------------------------------------------------------------------*
-      LUSIFC = 0
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUSIFC
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
-      CALL GPCLOSE(LUSIFC,'KEEP')
-
-*---------------------------------------------------------------------*
-*     If needed get external field:
-*---------------------------------------------------------------------*
-      IF ((NONHF) .AND. NFIELD .GT. 0) THEN
-         CALL DZERO(WORK(KFIELD),NORBT*NORBT)
-         DO I = 1, NFIELD
-            FF = EFIELD(I)
-            CALL CC_ONEP(WORK(KFIELD),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
-         ENDDO
-         CALL CC_FCKMO(WORK(KFIELD),XLAMDP,XLAMDH,
-     *                 WORK(KEND1),LWRK1,1,1,1)
-      ENDIF
+      CALL CCSDT_READ_NODDY(.TRUE.,WORK(KFOCKD),WORK(KFOCK0),
+     &                             WORK(KFIELD),WORK(KFIELDAO),
+     &                      .TRUE.,WORK(KIAJB),WORK(KYIAJB),
+     &                      .TRUE.,WORK(KINT1S),WORK(KINT2S),
+     &                      .TRUE.,WORK(KINT1T),WORK(KINT2T),
+     &                      .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                      NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
 
 *---------------------------------------------------------------------*
 *     Compute xksi_3 and add xksi_1,2(T3) contribution:
 *---------------------------------------------------------------------*
       CALL CCSDT_XI3_NODDY(WORK(KXKSI3),FOCKB,.TRUE.,XI2,
-     &                    .TRUE.,WORK(KINT1S),WORK(KINT2S),
-     &                    .TRUE.,WORK(KINT1T),WORK(KINT2T),
-     &                    .TRUE.,WORK(KIAJB), WORK(KYIAJB),
-     &                    XLAMDP,XLAMDH,CMO,FOCK0,WORK(KFOCKD),
-     &                    WORK(KFIELD),WORK(KEND1),LWRK1)
+     &                     WORK(KEND1),LWRK1)
 
 *---------------------------------------------------------------------*
 *     Now we split:
@@ -179,7 +163,7 @@ C
          CALL DCOPY(NT2AMX,XI2,1,XI2EFF,1)
 
          CALL CC_RHPART_NODDY(XI1EFF,XI2EFF,WORK(KXKSI3),FREQ,
-     &                        WORK(KFOCKD),FOCK0,WORK(KFIELD),
+     &                        WORK(KFOCKD),WORK(KFOCK0),WORK(KFIELD),
      &                        WORK(KIAJB),WORK(KINT1T),WORK(KINT2T),
      &                        WORK(KEND1),LWRK1)
 
@@ -188,7 +172,7 @@ C
         SIGN = -1.0D0
         CALL CCDOTRSP_NODDY(DUMMY,DUMMY,WORK(KXKSI3),SIGN,
      &                      ITRAN,LISTDP,IDOTS,DOTPROD,MXVEC,
-     &                      XLAMDP,XLAMDH,FOCK0,WORK(KFOCKD),
+     &                      XLAMDP,XLAMDH,WORK(KFOCK0),WORK(KFOCKD),
      &                      WORK(KIAJB), WORK(KYIAJB),
      &                      WORK(KINT1T),WORK(KINT2T),
      &                      WORK(KINT1S),WORK(KINT2S),
@@ -207,28 +191,10 @@ C
 *              END OF SUBROUTINE CCSDT_XI_NODDY                       *
 *---------------------------------------------------------------------*
 *=====================================================================*
-      SUBROUTINE CCSDT_XI3_NODDY(XI3,FOCKB,ADD_DOUBLE,XI2,
-     &                           DO_INT0,XINT1S,XINT2S,
-     &                           DO_INT1,XINT1T,XINT2T,
-     &                           DO_INT2,XIAJB,YIAJB,
-     &                           XLAMDP,XLAMDH,CMO,FOCK0,FOCKD,
-     &                           FIELD,WORK,LWORK)
+      SUBROUTINE CCSDT_XI3_NODDY(XI3,FOCKB,ADD_DOUBLE,XI2,WORK,LWORK)
 *---------------------------------------------------------------------*
 *
-*    Purpose: compute triples part of XKSI vector and some integrals
-*
-*             if (do_int0) compute also
-*                 XINT1S = (ck|bd) and 
-*                 XINT2S = (ck|lj)
-*             else these integrals must be input
-*
-*             if (do_int1) compute also
-*                 XINT1T = (kc|bd) and 
-*                 XINT2T = (kc|lj)
-*
-*             if (do_int2) compute also
-*                 XIAJB  = 2(kc|ld) - (kd|lc)
-*                 YIAJB  =  (kc|ld)
+*    Purpose: compute triples part of XKSI vector 
 *
 *             if (add_double) compute also
 *                XKSI_1,2(CC3) = XSKI_1,2(CCSD) + XKSI_1,2(T3)
@@ -236,56 +202,41 @@ C
 *     Written by Christof Haettig, April 2002, based on CCSDT_TRIPLE.
 *
 *=====================================================================*
-#if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#else
-#  include <implicit.h>
-#endif
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <maxorb.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
+#include <ccnoddy.h>
+#include <dummy.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
 
-      LOGICAL ADD_DOUBLE, DO_INT0, DO_INT1, DO_INT2
+      LOGICAL ADD_DOUBLE
       INTEGER LWORK
+
 #if defined (SYS_CRAY)
-      REAL WORK(LWORK), FOCKD(*)
-      REAL XI2(NT2AMX), DUMMY, DDOT
+      REAL WORK(LWORK)
+      REAL XI2(NT2AMX), DDOT
       REAL XI3(NT1AMX,NT1AMX,NT1AMX)
-      REAL XINT1T(NT1AMX*NVIRT*NVIRT)
-      REAL XINT2T(NRHFT*NRHFT*NT1AMX)
-      REAL XINT1S(NT1AMX*NVIRT*NVIRT)
-      REAL XINT2S(NRHFT*NRHFT*NT1AMX)
-      REAL XIAJB(NT1AMX*NT1AMX)
-      REAL YIAJB(NT1AMX*NT1AMX), FIELD(*)
-      REAL FOCKB(*), CMO(*), XLAMDP(*), XLAMDH(*), FOCK0(*)
+      REAL FOCKB(*)
 #else
-      DOUBLE PRECISION WORK(LWORK), FOCKD(*)
-      DOUBLE PRECISION XI2(NT2AMX), DUMMY, DDOT
+      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION XI2(NT2AMX), DDOT
       DOUBLE PRECISION XI3(NT1AMX,NT1AMX,NT1AMX)
-      DOUBLE PRECISION XINT1T(NT1AMX*NVIRT*NVIRT)
-      DOUBLE PRECISION XINT2T(NRHFT*NRHFT*NT1AMX)
-      DOUBLE PRECISION XINT1S(NT1AMX*NVIRT*NVIRT)
-      DOUBLE PRECISION XINT2S(NRHFT*NRHFT*NT1AMX)
-      DOUBLE PRECISION XIAJB(NT1AMX*NT1AMX)
-      DOUBLE PRECISION YIAJB(NT1AMX*NT1AMX), FIELD(*)
-      DOUBLE PRECISION FOCKB(*), CMO(*), XLAMDP(*), XLAMDH(*), FOCK0(*)
+      DOUBLE PRECISION FOCKB(*)
 #endif
 
       CHARACTER*10 MODEL
-      INTEGER KXINT, KEND1, LWRK1, KEND2, LWRK2, KT3AM,
-     &        KSCR1, KRECNR, KT2AM, KXKSI2, IOPT
-      INTEGER ISYMD, ILLL, IDEL, ISYDIS, IDUMMY, IJ, NIJ, LUSIFC, INDEX
+      INTEGER KEND1, LWRK1, KEND2, LWRK2, KT3AM,
+     &        KSCR1, KT2AM, KXKSI2, IOPT, LUTEMP
+      INTEGER IJ, NIJ, INDEX
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
       CALL QENTER('CCXI3NOD')
-
-      IF (DIRECT) CALL QUIT('DIRECT NOT IMPLEMENTED IN CCSDT_XI_NODDY')
 
 *---------------------------------------------------------------------*
 *     Memory allocation:
@@ -306,64 +257,6 @@ C
       ENDIF
 
 *---------------------------------------------------------------------*
-*     Loop over distributions of integrals:
-*---------------------------------------------------------------------*
-      IF (DO_INT0) THEN
-        CALL DZERO(XINT1S,NT1AMX*NVIRT*NVIRT)
-        CALL DZERO(XINT2S,NT1AMX*NRHFT*NRHFT)
-      END IF
-      IF (DO_INT1) THEN
-         CALL DZERO(XINT1T,NT1AMX*NVIRT*NVIRT)
-         CALL DZERO(XINT2T,NT1AMX*NRHFT*NRHFT)
-      END IF
-      IF (DO_INT2) THEN
-         CALL DZERO(XIAJB,NT1AMX*NT1AMX)
-         CALL DZERO(YIAJB,NT1AMX*NT1AMX)
-      END IF
-
-      DO ISYMD = 1, NSYM
-         DO ILLL = 1,NBAS(ISYMD)
-            IDEL   = IBAS(ISYMD) + ILLL
-            ISYDIS = MULD2H(ISYMD,ISYMOP)
- 
-C           ----------------------------
-C           Work space allocation no. 2.
-C           ----------------------------
-            KXINT  = KEND1
-            KEND2  = KXINT + NDISAO(ISYDIS)
-            LWRK2  = LWORK - KEND2
-            IF (LWRK2 .LT. 0) THEN
-               WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
-               CALL QUIT('Insufficient space in CCSDT_XI3_NODDY')
-            ENDIF
- 
-C           ---------------------------
-C           Read in batch of integrals.
-C           ---------------------------
-            CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
- 
-C           ----------------------------------
-C           Calculate integrals needed in CC3:
-C           ----------------------------------
-            IF (DO_INT1) THEN
-               CALL CCSDT_TRAN1(XINT1T,XINT2T,XLAMDP,XLAMDH,
-     *                          WORK(KXINT),IDEL)
-            END IF
-
-            IF (DO_INT2) THEN
-               CALL CC3_TRAN2(XIAJB,YIAJB,XLAMDP,XLAMDH,
-     *                        WORK(KXINT),IDEL)
-            END IF
- 
-            IF (DO_INT0) THEN
-              CALL CCSDT_TRAN3(XINT1S,XINT2S,XLAMDP,XLAMDH,
-     *                         WORK(KXINT),IDEL)
-            END IF
- 
-         END DO   
-      END DO  
-*---------------------------------------------------------------------*
 *     End Loop over distributions of integrals.
 *---------------------------------------------------------------------*
       IOPT = 2
@@ -375,8 +268,13 @@ C     Calculate the zero-order triples amplitudes:
 C     (Note: in case of finite difference calculations
 C      we use here XI3 as scratch array!)
 C     --------------------------------------------
-      CALL CCSDT_T03AM(WORK(KT3AM),XINT1S,XINT2S,WORK(KT2AM),
-     *                 WORK(KSCR1),FOCKD,FIELD,XI3)
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      READ(LUTEMP) (WORK(KT3AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
+      CALL GPCLOSE(LUTEMP,'KEEP')
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT3AM),1)
+
 
 C     ------------------------------------------------------
 C     Calculate triples contribution to doubles xksi vector:
@@ -473,11 +371,7 @@ C     ----------------------------------------------
 *   Written by Christof Haettig, April 2002, based on CCSDT_XI3_NODDY.
 *
 *=====================================================================*
-#if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#else
-#  include <implicit.h>
-#endif
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <maxorb.h>
@@ -486,9 +380,11 @@ C     ----------------------------------------------
 #include <ccr1rsp.h>
 #include <ccexci.h>
 #include <ccfield.h>
+#include <ccnoddy.h>
+#include <dummy.h>
 
       LOGICAL LOCDBG, PRINT_T3
-      PARAMETER (LOCDBG=.FALSE.,PRINT_T3=.false.)
+      PARAMETER (LOCDBG=.false.,PRINT_T3=.false.)
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -499,7 +395,7 @@ C     ----------------------------------------------
       INTEGER LWORK, IDLSTB
 #if defined (SYS_CRAY)
       REAL WORK(LWORK), FOCKD(*)
-      REAL FREQB, DUMMY, DDOT
+      REAL FREQB, DDOT
       REAL TB3AM(NT1AMX,NT1AMX,NT1AMX)
       REAL XINT1T(NT1AMX*NVIRT*NVIRT)
       REAL XINT2T(NRHFT*NRHFT*NT1AMX)
@@ -513,7 +409,7 @@ C     ----------------------------------------------
       REAL XLAMPB(*), XLAMHB(*), ONE, TWO, FF
 #else
       DOUBLE PRECISION WORK(LWORK), FOCKD(*)
-      DOUBLE PRECISION FREQB, DUMMY, DDOT
+      DOUBLE PRECISION FREQB, DDOT
       DOUBLE PRECISION TB3AM(NT1AMX,NT1AMX,NT1AMX)
       DOUBLE PRECISION XINT1T(NT1AMX*NVIRT*NVIRT)
       DOUBLE PRECISION XINT2T(NRHFT*NRHFT*NT1AMX)
@@ -532,9 +428,11 @@ C     ----------------------------------------------
       INTEGER KTB1AM, KEND0, KSCR1, KTB2AM, KEND1, NAI, NBJ, NCK,
      &        LWRK1, IOPT, KXINT, ISYMD, ILLL, IDEL, KEND2, LWRK2,
      &        KT02AM, ISYDIS, ISYMB, KRECNR, IERR, IRREP, NAIBJCK,
-     &        ISYMM, ILSTSYM, LWRK0, KT3SCR, KFIELD, KFLDB1,
-     &        KFIELDAO, KT03AM
+     &        ISYMM, ILSTSYM, LWRK0, KFIELD, KFLDB1,
+     &        KFIELDAO, KT03AM, KT3SCR, LUTEMP
 
+
+      CALL QENTER('CCT31NOD')
 *---------------------------------------------------------------------*
 *     Do some initializations:
 *---------------------------------------------------------------------*
@@ -595,17 +493,11 @@ c     ----------------------------------------------
         ! transform property integrals to Lambda-MO basis
         CALL CC_FCKMO(FOCKB,XLAMDP,XLAMDH,WORK(KEND0),LWRK0,ISYMB,1,1)
 
-        CALL CCSDT_XI3_NODDY(TB3AM,FOCKB,.FALSE.,DUMMY,
-     &                       DO_INT0,XINT1S,XINT2S,
-     &                       DO_INT1,XINT1T,XINT2T,
-     &                       DO_INT2,XIAJB, YIAJB,
-     &                       XLAMDP,XLAMDH,CMO,FOCK0,FOCKD,
-     &                       WORK(KFIELD),WORK(KEND0),LWRK0)
+        IF (DO_INT0 .OR. DO_INT1 .OR. DO_INT2)
+     &    CALL QUIT('CCSDT_XI3_NODDY does no longer compute integrals')
 
-C       IF (LWORK.LT.NT1AMX) CALL QUIT('OUT OF MEMORY - CCSDT_TI3')
-C       IF (NONHF) CALL QUIT('No NONHF in CCSDT_T31_NODDY')
-C       CALL CCSDT_3AM(TB3AM,FREQB,WORK,FOCKD,
-C    &                 NONHF,FIELD,.FALSE.,DUMMY)
+        CALL CCSDT_XI3_NODDY(TB3AM,FOCKB,.FALSE.,DUMMY,
+     &                       WORK(KEND0),LWRK0)
 
         IF (LOCDBG) THEN
           WRITE(LUPRI,*) 'CCSDT_T31_NODDY: LISTB,IDLSTB =',LISTB,IDLSTB
@@ -613,27 +505,8 @@ C    &                 NONHF,FIELD,.FALSE.,DUMMY)
           WRITE(LUPRI,*) 'CCSDT_T31_NODDY:  FREQB =',FREQB
           WRITE(LUPRI,*) 'NORM^2(TB3AM/XKI3)',
      &     DDOT(NT1AMX*NT1AMX*NT1AMX,TB3AM,1,TB3AM,1)
-          WRITE(LUPRI,*) 'NORM^2(FOCK0):',
-     &     DDOT(NORBT*NORBT,FOCK0,1,FOCK0,1)
           WRITE(LUPRI,*) 'NORM^2(FOCKB):',
      &     DDOT(NORBT*NORBT,FOCKB,1,FOCKB,1)
-          WRITE(LUPRI,*) 'NORM^2(XINT1S):',
-     &     DDOT(NT1AMX*NVIRT*NVIRT,XINT1S,1,XINT1S,1)
-          WRITE(LUPRI,*) 'NORM^2(XINT2S):',
-     &     DDOT(NT1AMX*NRHFT*NRHFT,XINT2S,1,XINT2S,1)
-          IF (DO_INT1) WRITE(LUPRI,*) 'NORM^2(XINT2T):',
-     &     DDOT(NT1AMX*NVIRT*NVIRT,XINT1T,1,XINT1T,1)
-          IF (DO_INT1) WRITE(LUPRI,*) 'NORM^2(XINT2T):',
-     &     DDOT(NT1AMX*NRHFT*NRHFT,XINT2T,1,XINT2T,1)
-          IF (DO_INT2) WRITE(LUPRI,*) 'NORM^2(XIAJB):',
-     &     DDOT(NT1AMX*NT1AMX,XIAJB,1,XIAJB,1)
-          IF (DO_INT2) WRITE(LUPRI,*) 'NORM^2(YIAJB):',
-     &     DDOT(NT1AMX*NT1AMX,YIAJB,1,YIAJB,1)
-          WRITE(LUPRI,*) 'NORM^2(XLAMDP):',
-     &     DDOT(NLAMDT,XLAMDP,1,XLAMDP,1)
-          WRITE(LUPRI,*) 'NORM^2(XLAMDH):',
-     &     DDOT(NLAMDT,XLAMDH,1,XLAMDH,1)
-
 C         WRITE(LUPRI,*) 'TB3AM after CCSDT_XI3_NODDY:'
 C         CALL OUTPUT(TB3AM,1,NT1AMX*NT1AMX,1,NT1AMX,
 C    &                        NT1AMX*NT1AMX,NT1AMX,1,LUPRI)
@@ -656,6 +529,10 @@ C    &                        NT1AMX*NT1AMX,NT1AMX,1,LUPRI)
         CALL QUIT('Unknown/Illegal LIST in CCSDT_T31_NODDY.')
       END IF
 
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'NORM^2(TB3AM) at 1:',
+     &   DDOT(NT1AMX*NT1AMX*NT1AMX,TB3AM,1,TB3AM,1)
+      END IF
 *---------------------------------------------------------------------*
 *     Some allocations:
 *---------------------------------------------------------------------*
@@ -672,56 +549,7 @@ C    &                        NT1AMX*NT1AMX,NT1AMX,1,LUPRI)
       ENDIF
 
 *---------------------------------------------------------------------*
-*     Compute contribution from <mu_3|[H,T^B_2]|HF>/eps_3:
-*---------------------------------------------------------------------*
-      IF (LWRK1.LT.NT2AMX) 
-     &   CALL QUIT('Insufficient space in CCSDT_T31_NODDY (2) ')
-
-      IOPT = 3 ! read singles and doubles amplitudes
-      CALL CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
-     &              WORK(KTB1AM),WORK(KEND1))
-      Call CCLR_DIASCL(WORK(KEND1),TWO,ISYMB)
-      CALL CC_T2SQ(WORK(KEND1),WORK(KTB2AM),ISYMB)
-
-      IF (.NOT. XI_ONLY) THEN
-        CALL CCSDT_T3AM_R(TB3AM,FREQB,XINT1S,XINT2S,WORK(KTB2AM),
-     &                    WORK(KSCR1),FOCKD,
-     &                    .FALSE.,DUMMY,.FALSE.)
-      END IF
-
-      IF (LOCDBG) THEN
-        WRITE(LUPRI,*) 'CCSDT_T31_NODDY:  FREQB =',FREQB
-        WRITE(LUPRI,*) 'CCSDT_T31_NODDY:  after <mu_3|[H,T^B_2]|HF>'
-        WRITE(LUPRI,*) 'NORM^2(TB3AM)',
-     &   DDOT(NT1AMX*NT1AMX*NT1AMX,TB3AM,1,TB3AM,1)
-        WRITE(LUPRI,*) 'NORM^2(TB2AM)',
-     &   DDOT(NT1AMX*NT1AMX,WORK(KTB2AM),1,WORK(KTB2AM),1)
-        WRITE(LUPRI,*) 'NORM^2(FOCKD)',
-     &   DDOT(NT1AMX,FOCKD,1,FOCKD,1)
-        WRITE(LUPRI,*) 'NORM^2(XINT1S):',
-     &   DDOT(NT1AMX*NVIRT*NVIRT,XINT1S,1,XINT1S,1)
-        WRITE(LUPRI,*) 'NORM^2(XINT2S):',
-     &   DDOT(NT1AMX*NRHFT*NRHFT,XINT2S,1,XINT2S,1)
-C       WRITE(LUPRI,*) 'TB3AM after CCSDT_XI3_NODDY:'
-C       CALL OUTPUT(TB3AM,1,NT1AMX*NT1AMX,1,NT1AMX,
-C    &                      NT1AMX*NT1AMX,NT1AMX,1,LUPRI)
-      END IF
-*---------------------------------------------------------------------*
-*     Calculate response Lambda matrices:
-*---------------------------------------------------------------------*
-      CALL CCLR_LAMTRA(XLAMDP,XLAMPB,XLAMDH,XLAMHB,WORK(KTB1AM),ISYMB)
-
-*---------------------------------------------------------------------*
-*     Loop over distributions of integrals and compute first-order
-*     response versions XINT1SB=(ck|db)-bar and XINT2SB=(ck|lj)-bar
-*---------------------------------------------------------------------*
-      CALL CCSDT_INTS1_NODDY(.TRUE.,XINT1SB,XINT2SB,
-     &                       .FALSE.,DUMMY,DUMMY,
-     &                       XLAMDP,XLAMDH,XLAMPB,XLAMHB,
-     &                       WORK(KEND1),LWRK1)
-
-*---------------------------------------------------------------------*
-*     Compute contribution from <mu_3|[H^B,T^0_2]|HF>/eps_3:
+*     Read amplitudes and calculate response Lambda matrices:
 *---------------------------------------------------------------------*
       IF (LWRK1.LT.NT2AMX) 
      &   CALL QUIT('Insufficient space in CCSDT_T31_NODDY (2) ')
@@ -730,52 +558,50 @@ C    &                      NT1AMX*NT1AMX,NT1AMX,1,LUPRI)
       CALL CC_RDRSP('R0',0,ISYMOP,IOPT,MODEL,DUMMY,WORK(KEND1))
       CALL CC_T2SQ(WORK(KEND1),WORK(KT02AM),ISYMOP)
 
+      IOPT = 3 ! read singles and doubles amplitudes
+      CALL CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
+     &              WORK(KTB1AM),WORK(KEND1))
+      Call CCLR_DIASCL(WORK(KEND1),TWO,ISYMB)
+      CALL CC_T2SQ(WORK(KEND1),WORK(KTB2AM),ISYMB)
+
+      CALL CCLR_LAMTRA(XLAMDP,XLAMPB,XLAMDH,XLAMHB,WORK(KTB1AM),ISYMB)
+
+*---------------------------------------------------------------------*
+*     Compute contribution from jacobian transformation:
+*       <mu_3|[H^B,T^0_2]|HF> + <mu_3|[H,T^B_2]|HF>   
+*---------------------------------------------------------------------*
       IF (.NOT. XI_ONLY) THEN
-        CALL CCSDT_T3AM_R(TB3AM,FREQB,XINT1SB,XINT2SB,
-     &                    WORK(KT02AM),WORK(KSCR1),FOCKD,
-     &                    .FALSE.,DUMMY,.FALSE.)
-      END IF
 
-*---------------------------------------------------------------------*
-*     Add finite difference contributions:
-*---------------------------------------------------------------------*
-      IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
-c       -------------------------------------------
-c       compute one-index transformed field [V,R1]:
-c       -------------------------------------------
-        CALL DCOPY(NORBT*NORBT,WORK(KFIELDAO),1,WORK(KFLDB1),1)
-        CALL CC_FCKMO(WORK(KFLDB1),XLAMDP,XLAMHB,
-     *                WORK(KEND1),LWRK1,1,1,1)
-        CALL CC_FCKMO(WORK(KFIELDAO),XLAMPB,XLAMDH,
-     *                WORK(KEND1),LWRK1,1,1,1)
-        CALL DAXPY(NORBT*NORBT,ONE,WORK(KFIELDAO),1,WORK(KFLDB1),1)
+        IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
+c         --------------------------
+c         get zero-order amplitudes:
+c         --------------------------
+          KT03AM = KEND1
+          KEND2  = KT03AM + NT1AMX*NT1AMX*NT1AMX
+          LWRK2  = LWORK  - KEND2
+          IF (LWRK2 .LT. 0) THEN
+             CALL QUIT('Insufficient space in CCSDT_T31_NODDY (nonhf)')
+          ENDIF
 
-c       --------------------------
-c       get zero-order amplitudes:
-c       --------------------------
-        KT03AM = KEND1
-        KT3SCR = KT03AM + NT1AMX*NT1AMX*NT1AMX
-        KEND2  = KT3SCR + NT1AMX*NT1AMX*NT1AMX
-        IF (LWRK2 .LT. 0) THEN
-           CALL QUIT('Insufficient space in CCSDT_T31_NODDY (nonhf)')
-        ENDIF
+          LUTEMP = 0
+          CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
+     &                IDUMMY,.FALSE.)
+          READ(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
+          CALL GPCLOSE(LUTEMP,'KEEP')
+          CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT03AM),1)
 
-        CALL CCSDT_T03AM(WORK(KT03AM),XINT1S,XINT2S,
-     &                   WORK(KT02AM),WORK(KSCR1),FOCKD,
-     &                   WORK(KFIELD),WORK(KT3SCR))
+        ELSE
+          KEND2 = KEND1
+          LWRK2 = LWRK1
+        END IF
 
-c       -----------------------------
-c       add <mu_3|[[V,R1],T^0_3]|HF>:
-c       -----------------------------
-        CALL CCSDT_XKSI3_2(TB3AM,WORK(KFLDB1),WORK(KT03AM))
+        CALL CCSDT_A3AM(TB3AM,WORK(KTB1AM),WORK(KTB2AM),FREQB,ISYMB,
+     &                  WORK(KT02AM),WORK(KT03AM),
+     &                  XINT1S,XINT2S,XINT1SB,XINT2SB,
+     &                  FOCKD,XLAMDP,XLAMDH,
+     &                  WORK(KFIELDAO),WORK(KFIELD),WORK(KSCR1),
+     &                  WORK(KEND2),LWRK2)
 
-c       -----------------------------
-c       add <mu_3|[[V,R2],T^0_2]|HF>:
-c       -----------------------------
-        CALL CCSDT_XKSI3_1(TB3AM,WORK(KFIELD),
-     &                     WORK(KT02AM),WORK(KTB2AM),ONE)
-        CALL CCSDT_XKSI3_1(TB3AM,WORK(KFIELD),
-     &                     WORK(KTB2AM),WORK(KT02AM),ONE)
       END IF
 
 *---------------------------------------------------------------------*
@@ -800,19 +626,19 @@ c       -----------------------------
 
       CALL CCSDT_CLEAN_T3(TB3AM,NT1AMX,NVIRT,NRHFT)
 
-      IF (LOCDBG) THEN
-        WRITE(LUPRI,*) 'Final NORM^2(TB3AM)',
+      IF (LOCDBG.OR.PRINT_T3) THEN
+        WRITE(LUPRI,*)'CCSDT_T31_NODDY> first-order T3 vector:'
+        WRITE(LUPRI,*)'CCSDT_T31_NODDY> xi_only:',xi_only
+        WRITE(LUPRI,*)'CCSDT_T31_NODDY> list,idlst:',listb,idlstb
+        WRITE(LUPRI,*)'CCSDT_T31_NODDY> freq,label:',freqb,labelb
+        WRITE(LUPRI,*) 'NORM^2(TB3AM)',
      &   DDOT(NT1AMX*NT1AMX*NT1AMX,TB3AM,1,TB3AM,1)
       END IF
-
       IF (PRINT_T3) THEN
-        WRITE(LUPRI,*)'CCSDT_T31_AM> first-order T3 vector:'
-        WRITE(LUPRI,*)'CCSDT_T31_AM> xi_only:',xi_only
-        WRITE(LUPRI,*)'CCSDT_T31_AM> list,idlst:',listb,idlstb
-        WRITE(LUPRI,*)'CCSDT_T31_AM> freq,label:',freqb,labelb
         CALL PRINT_PT3_NODDY(TB3AM)
       END IF
 
+      CALL QEXIT('CCT31NOD')
       RETURN
       END
 *---------------------------------------------------------------------*
@@ -970,7 +796,11 @@ C           ---------------------------------------
 *=====================================================================*
       SUBROUTINE CCSDT_XKSI3_1(XKSI3,FOCKA,T2AMB,T2AMC,FAC)
 *---------------------------------------------------------------------*
-* Purpose: add fac*<mu_3|[[F^A,T2^B],T2^C]|HF> do XKSI3 result vector
+* Purpose: add fac/2 *<mu_3|[[F^A,T2^B],T2^C]|HF> 
+*          to XKSI3 result vector
+*          Note: assumes T2AMB and T2AMC to be identical, it this
+*                is not the case, the routine must be called twice
+*                with T2AMB and T2AMC interchanged in second call
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -1280,6 +1110,7 @@ C
      &                               IDXL_XIDEN,NXIDEN,
      &                               IXDOTS,IXETRAN,MXVEC,NXETRAN,
      &                               EMULATE_CCSDPT_DENS2,
+     &                               FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ,
      &                               WORK,LWORK)
 *---------------------------------------------------------------------*
 *     Purpose: compute density corresponding to a contraction of      *
@@ -1302,10 +1133,12 @@ C
       CHARACTER*12 FNDEFF
       PARAMETER( FNDEFF = 'TMP-XIETADEN' )
 
-      CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
-      CHARACTER*6 FNDPTIA2 
-      PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
-     *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  )
+      CHARACTER*(*) FNDPTIA, FNDPTAB, FNDPTIJ, FNDPTIA2
+
+C     CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
+C     CHARACTER*6 FNDPTIA2 
+C     PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
+C    *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  )
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1317,7 +1150,7 @@ C
       LOGICAL EMULATE_CCSDPT_DENS2
       INTEGER LWORK
 
-      INTEGER NXETRAN, MXVEC, NXIDEN
+      INTEGER NXETRAN, MXVEC, NXIDEN, IRECORD
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN)
       INTEGER IDXL_XIDEN(NXIDEN)
@@ -1405,6 +1238,7 @@ C
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
+      LUSIFC = 0
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -1584,12 +1418,10 @@ C     --------------------------------------------
      &           LISTL(1:3).EQ.'N2 '                              )THEN
 
           CALL CCSDT_TBAR31_NODDY(WORK(KLC3AM),FREQL,LISTL,IDLSTL,
-     &                            WORK(KLAMP0),WORK(KLAMH0),
-     &                            WORK(KFOCK0),WORK(KFOCKD),
-     &                            WORK(KSCR1),
-     &                            .FALSE.,WORK(KXIAJB),DUMMY,
-     &                            .FALSE.,WORK(KINT1T),WORK(KINT2T),
-     &                            WORK(KEND2),LWRK2)
+     &                          WORK(KLAMP0),WORK(KLAMH0),
+     &                          WORK(KFOCK0),WORK(KFOCKD),WORK(KSCR1),
+     &                          WORK(KXIAJB),WORK(KINT1T),WORK(KINT2T),
+     &                          WORK(KEND2),LWRK2)
 
         ELSE
           WRITE(LUPRI,*) 'LISTL,IDLSTL:',LISTL(1:3),IDLSTL
@@ -1604,38 +1436,44 @@ C     --------------------------------------------
      &                          WORK(KMINT),NT1AMX,NVIRT,NRHFT)
 
         IF (EMULATE_CCSDPT_DENS2) THEN
+
+          IRECORD = IDLSTL
+
 c         -----------------------------------------------
 c         write different blocks of the density matrix to 
 c         special files as is also done by CCSDPT_DENS2:
 c         (they will be read in by CC_D1AO)
 c         -----------------------------------------------
           LUDEFF = 0
-          IADRIA = 1
+          IADRIA = 1 + NT1AM(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTIA,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTIA,WORK(KDIA),IADRIA,NT1AM(ISYDEN))
           CALL WCLOSE2(LUDEFF,FNDPTIA,'KEEP') 
 
           LUDEFF = 0
-          IADRAB = 1
+          IADRAB = 1 + NMATAB(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTAB,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTAB,WORK(KDAB),IADRAB,NMATAB(ISYDEN))
           CALL WCLOSE2(LUDEFF,FNDPTAB,'KEEP') 
  
           LUDEFF = 0
-          IADRIJ = 1
+          IADRIJ = 1 + NMATIJ(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTIJ,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTIJ,WORK(KDIJ),IADRIJ,NMATIJ(ISYDEN))
           CALL WCLOSE2(LUDEFF,FNDPTIJ,'KEEP') 
  
           LUDEFF = 0
-          IADRIA = 1
+          IADRIA = 1 + NT1AM(ISYDEN)*(IRECORD-1)
           CALL WOPEN2(LUDEFF,FNDPTIA2,64,0)  
           CALL PUTWA2(LUDEFF,FNDPTIA2,WORK(KDIA2),IADRIA,NT1AM(ISYDEN))
           CALL WCLOSE2(LUDEFF,FNDPTIA2,'KEEP') 
+
         ELSE
+
 c         ---------------------------------------------------------
 c         write the blocks of the density matrix to a scratch file:
 c         ---------------------------------------------------------
+
           IADRIJ = 1 + M2BST*(IDENS-1)
           CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDIJ),IADRIJ,NMATIJ(ISYDEN))
 
@@ -1645,6 +1483,7 @@ c         ---------------------------------------------------------
           CALL DAXPY(NT1AM(ISYDEN),1.0D0,WORK(KDIA2),1,WORK(KDIA),1)
           IADRIA = IADRAB + NMATAB(ISYDEN)
           CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDIA),IADRIA,NT1AM(ISYDEN))
+
         END IF
 
       END DO

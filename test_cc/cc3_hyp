@@ -6,7 +6,7 @@ cat > cc3_hyp.info <<%EOF%
    cc3_hyp
    -----------
    Molecule:         LIH
-   Thoery Level:     CC3 / 6-31G
+   Theory Level:     CC3 / 6-31G
    Test Purpose:     static and freq.-dep. first hyperpolarizability
 %EOF%
 
@@ -30,7 +30,7 @@ H     0.0000000000000000   0.000000000   0.00000000
 #######################################################################
 cat > cc3_hyp.dal <<%EOF%
 **GENERAL
-.RUNSIRIUS
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .NOSUP
 .DIPLEN

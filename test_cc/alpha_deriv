@@ -32,7 +32,7 @@ H     0.0000000000000000 -1.4476145000000000   1.07875057000
 #######################################################################
 cat > alpha_deriv.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .DIPGRA

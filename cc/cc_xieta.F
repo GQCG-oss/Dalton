@@ -262,7 +262,7 @@ C
             CALL CCSDT_XI_CONT_NODDY(FILXI,XCONS,
      &                               WORK(KIDXL_XIDEN),NXIDEN,
      &                               IXDOTS,IXETRAN,MXVEC,NXETRAN,
-     &                               .FALSE.,
+     &                               .FALSE.,'X','X','X','X',
      &                               WORK(KEND),LEND)
 
           ELSEIF (.NOT.NODDY_XI) THEN
@@ -2569,7 +2569,6 @@ C
      &                          WORK(KXI1EFF),WORK(KXI2EFF),
      &                          WORK(KFOCKB(ITRAN)),FREQ,
      &                          WORK(KLAMP0),WORK(KLAMH0),
-     &                          WORK(KCMO0),WORK(KFOCK0MO),
      &                          IXDOTS,XCONS,FILXI,ITRAN,
      &                          NXETRAN,MXVEC,WORK(KEND2),LWRK2)
           END IF
@@ -3119,7 +3118,7 @@ C          END IF
           LABEL2 = '?'
           INUM = IROPER2(LABEL1,LABEL2,LABELH,ISIGNH,ISYM)
           IF (ISIGNH.NE.1) THEN
-c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
+            WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
             CALL DSCAL(N2BST(ISYHOP),DBLE(ISIGNH),ONEHQ,1)
           END IF
         END IF
@@ -4550,7 +4549,7 @@ C         ---------------------------------------------------
 
 C         ---------------------------------------------------------
 C         read first-order BF intermediate from file and initialize
-C         GAMMA and G intermediates and result vector with zero:
+C         GAMMA and G intermediates with zero:
 C         ---------------------------------------------------------
           CALL GETWA2(LUBFDX1,FNBFDX1,WORK(KBF),IADRX1,LENBF1)
 

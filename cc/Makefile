@@ -18,7 +18,7 @@ cccr_aa.o      cccr_util.o    cc_etadrv.o    ccexpfck.o    \
 cc_cmat.o      cc_fdc.o       cc_qr2rs.o     cc_dmat.o     \
 cc_fdd.o       ccrhsvec.o     cc_bamat.o     cc_ftst.o     \
 cc_aamat.o     cc_soldrv.o    cc_batst.o     cc_fdba.o     \
-cc_4hyp.o      cc_smcal.o     cc_cauchy.o    cc_bfden.o    \
+cc_4hyp.o           cc_cauchy.o    cc_bfden.o    \
 cc_hmat.o      cc_tmcal.o     ccexlr.o                     \
 cc_aofock2.o   crayio2.o      ccder1.o       cc_pckutil.o  \
 cc_iajb.o      cc_xieta.o     cc_xetst.o     \
@@ -43,21 +43,24 @@ ccrhs_ipm1.o   cctrbt2.o      cc_hfr1den.o   \
 cc_gim1.o      cc_bfbsort1.o  cc_int3o2.o    \
 cc_mcdny.o     ccsd_triple.o  \
 cc_slv.o       cc3_omeg3.o    cc3_t3int3.o   ccdiis_solv.o \
-cc_foppt.o     cc3_xisd.o \
-cc3_lhtr.o     ccetacor.o     cc_den2_pt.o \
+cc_foppt.o     cc3_xisd.o     cc3_gmat.o     cc3_gmatnew.o \
+cc3_lhtr.o     cc3_aamat.o    cc3_aabmat_doub.o  cc3_bmatsd.o \
 cc_den_pt2.o   ccpt_symmback.o     ccpt_resort_den.o \
-ccpt_btrden.o  \
-ccpt_den.o     ccpt_eta.o     ccpt_fropro.o \
-ccpt_grad0.o  \
-cc_lhtr_noddy.o ccsdt_xi_noddy.o \
+ccpt_btrden.o  ccpt_den.o     ccpt_eta.o     ccpt_fropro.o \
+ccpt_grad0.o   ccetacor.o     cc_den2_pt.o \
+cc_lhtr_noddy.o ccsdt_xi_noddy.o    ccsdt_aa_noddy.o \
 ccsdt_f_noddy.o ccsdt_ints_noddy.o \
 ccsdt_eta_noddy.o ccsdt_b_noddy.o ccsdt_ba_noddy.o \
-ccsdt_eta_cont.o cc3_fmat.o     ccsdt_fbmat.o  \
+ccsdt_eta_cont.o cc3_bfmat.o  cc3_fmat.o   ccsdt_fbmat.o  \
 cc3_etasd.o cc3_ft3b.o cc3_fmatsd.o cc3_xi_cont.o \
 cc3_init.o ccexnorm.o cc_opa.o ccsdt_aden_noddy.o cc3_aden.o \
+cc3_fbmatt3zu.o cc3_hmat.o \
+cc3_aden_cub.o cc3_aden_cub_t0.o \
 cc_foppt_sc.o cc_r12.o  cc_mkrv.o cc_rhtr_noddy.o \
 cc_2eexp_1.o  cc_grad_1.o   cc_2eexp_2.o   asqr.o \
-cc3_gmat.o cc3_bfmat.o  ccsoppa.o  cc_r12dummies.o
+ccsdt_t32_noddy.o ccsdt_o32_noddy.o \
+cc_tpa.o cc_xopa.o \
+ccsoppa.o  cc_r12dummies.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
@@ -80,4 +83,9 @@ tags:;          $(RM) -f tags ; etags  *.F
 depend: 
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
+######################################################################
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
 include Makefile.depend
+######################################################################

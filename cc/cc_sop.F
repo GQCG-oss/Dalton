@@ -95,6 +95,7 @@ c /* deck CC_SOP */
       INTEGER KRESULT, KFTRAN, KFDOTS, KFCONS, KXITRAN, KXIDOTS, KXICONS
       INTEGER KXETRAN, KXDOTS, KXCONS, KEDOTS, KECONS
       INTEGER KEND0, LEND0, IOPT, KRCONS, KRDOTS, KRTRAN, IORDER
+      INTEGER KEND1, LWRK1, LRESULT
 
 * external functions:
       INTEGER IR1TAMP
@@ -147,8 +148,10 @@ c /* deck CC_SOP */
       MXRDOTS  = MXVEC * MXTRAN
       MXXEDOTS = MXVEC * MXTRAN
 
+      LRESULT = 2*NBSOP
+
       KRESULT = 1
-      KFTRAN  = KRESULT + 2 * NBSOP
+      KFTRAN  = KRESULT + LRESULT
       KFDOTS  = KFTRAN  + MXFTRAN
       KFCONS  = KFDOTS  + MXFDOTS
       KXITRAN = KFCONS  + MXFDOTS
@@ -263,13 +266,16 @@ c /* deck CC_SOP */
 * print timing:
 *---------------------------------------------------------------------*
       WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
-     &  NBSOP,' quadratic response func.:', SECOND() - TIM0
+     &  NBSOP,' linear response function:', SECOND() - TIM0
 
 *---------------------------------------------------------------------*
 * print frequency-dependent polarizabilities:
 *---------------------------------------------------------------------*
 
-      CALL  CCSOPPRT(WORK(KRESULT))
+      KEND1 = KRESULT + LRESULT
+      LWRK1 = LWORK   - KEND1 + 1
+
+      CALL  CCSOPPRT(WORK(KRESULT),WORK(KEND1),LWRK1)
 
       CALL FLSHFO(LUPRI)
 
@@ -306,7 +312,7 @@ C     END IF
 *=====================================================================*
 c /* deck ccsopprt */
 *=====================================================================*
-       SUBROUTINE CCSOPPRT(SOPROP)
+       SUBROUTINE CCSOPPRT(SOPROP,WORK,LWORK)
 *---------------------------------------------------------------------*
 *
 *    Purpose: print (frequency-dependent) second-order properties
@@ -328,20 +334,27 @@ c /* deck ccsopprt */
 
 
       CHARACTER*5  BLANKS
+      CHARACTER*8  LABA, LABB
       CHARACTER*10 MODEL, RLXA, RLXB
       CHARACTER*80 STRING
+      INTEGER LWORK
       INTEGER ISYMA, ISYMB, ISAMA, ISAMB, ISAPROP, IRELAX, M
       INTEGER IFREQ, IOPER, ICMP, ITURN, MXTURN, ITST, ITST2, IPAR
+      INTEGER IFRZER, IBLRFR
 
 
 #if defined (SYS_CRAY)
-      REAL SOPROP(NBLRFR,NLROP,2)
+      REAL SOPROP(NBLRFR,NLROP,2), WORK(LWORK)
+      REAL GLEN(3,MBLRFR), GVEL(3,MBLRFR), DELTA(3,MBLRFR)
+      REAL GTST(3,MBLRFR)
       REAL SIGN, ANI, ALPHA, PROP, ERROR, ALPHASI, ANISI
       REAL ALFSQ, BETSQ, APAR, APEN, XKAPPA
       REAL TENS(3,3), PVALUES(3), PAXIS(3,3)
       REAL ZERO, HALF, ONE, DPOLAUTSI
 #else
-      DOUBLE PRECISION SOPROP(NBLRFR,NLROP,2)
+      DOUBLE PRECISION SOPROP(NBLRFR,NLROP,2), WORK(LWORK)
+      DOUBLE PRECISION GLEN(3,MBLRFR), GVEL(3,MBLRFR), DELTA(3,MBLRFR)
+      DOUBLE PRECISION GTST(3,MBLRFR)
       DOUBLE PRECISION SIGN, ANI, ALPHA, PROP, ERROR, ALPHASI, ANISI
       DOUBLE PRECISION ALFSQ, BETSQ, APAR, APEN, XKAPPA
       DOUBLE PRECISION TENS(3,3), PVALUES(3), PAXIS(3,3)
@@ -642,6 +655,747 @@ c /* deck ccsopprt */
         END DO
          
       END IF
+
+C     Optical rotation:
+C     Set up diagonal elements of G' tensor and call print routine.
+C     -------------------------------------------------------------
+
+      IF (ORLEN .OR. ORVEL .OR. ORMVE) THEN
+
+         CALL DZERO(GLEN,3*NBLRFR)
+         CALL DZERO(GVEL,3*NBLRFR)
+
+         IF (ORMVE) THEN
+            CALL DZERO(GTST,3*NBLRFR)
+            IFRZER = 0
+            IBLRFR = 1
+            DO WHILE ((IBLRFR.LE.NBLRFR) .AND. (IFRZER.EQ.0))
+               IF (ABS(BLRFR(IBLRFR)) .LT. 1.0D-10) IFRZER = IBLRFR
+               IBLRFR = IBLRFR + 1
+            END DO
+            IF (IFRZER .EQ. 0) THEN
+               CALL QUIT('Zero freq. not found for .OR MVE')
+            END IF
+         END IF
+
+         DO IOPER = 1,NLROP
+
+            LABA  = LBLOPR(IALROP(IOPER))
+            ISYMA = ISYOPR(IALROP(IOPER))
+            ISAMA = ISYMAT(IALROP(IOPER))
+
+            LABB  = LBLOPR(IBLROP(IOPER))
+            ISYMB = ISYOPR(IBLROP(IOPER))
+            ISAMB = ISYMAT(IBLROP(IOPER))
+
+            IF (LABA(2:4) .NE. 'DIP') GO TO 999
+            IF (LABB(2:7) .NE. 'ANGMOM') GO TO 999
+            IF (ISYMA .NE. ISYMB) GO TO 999
+
+            ISAPROP = ISAMA * ISAMB
+            SIGN    = DBLE(ISAPROP)
+            IF (ISAPROP.EQ.0) SIGN = +ONE
+
+            IF (ORLEN) THEN
+               IF ((LABA(1:7).EQ.'XDIPLEN') .AND.
+     &             (LABB(1:7).EQ.'XANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                            SIGN * SOPROP(IFREQ,IOPER,2))
+                     GLEN(1,IFREQ) = -HALF*PROP
+                  ENDDO
+               ELSE IF ((LABA(1:7).EQ.'YDIPLEN') .AND.
+     &                  (LABB(1:7).EQ.'YANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                            SIGN * SOPROP(IFREQ,IOPER,2))
+                     GLEN(2,IFREQ) = -HALF*PROP
+                  ENDDO
+               ELSE IF ((LABA(1:7).EQ.'ZDIPLEN') .AND.
+     &                  (LABB(1:7).EQ.'ZANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                            SIGN * SOPROP(IFREQ,IOPER,2))
+                     GLEN(3,IFREQ) = -HALF*PROP
+                  ENDDO
+               ENDIF
+            ENDIF
+
+            IF (ORVEL) THEN
+               IF ((LABA(1:7).EQ.'XDIPVEL') .AND.
+     &             (LABB(1:7).EQ.'XANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        GVEL(1,IFREQ) = -HALF*PROP/BLRFR(IFREQ)
+                     ELSE
+                        GVEL(1,IFREQ) = 1.0D15
+                     ENDIF
+                  ENDDO
+               ELSE IF ((LABA(1:7).EQ.'YDIPVEL') .AND.
+     &                  (LABB(1:7).EQ.'YANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        GVEL(2,IFREQ) = -HALF*PROP/BLRFR(IFREQ)
+                     ELSE
+                        GVEL(2,IFREQ) = 1.0D15
+                     ENDIF
+                  ENDDO
+               ELSE IF ((LABA(1:7).EQ.'ZDIPVEL') .AND.
+     &                  (LABB(1:7).EQ.'ZANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        GVEL(3,IFREQ) = -HALF*PROP/BLRFR(IFREQ)
+                     ELSE
+                        GVEL(3,IFREQ) = 1.0D15
+                     ENDIF
+                  ENDDO
+               ENDIF
+            ENDIF
+
+            IF (ORMVE) THEN
+               IF ((LABA(1:7).EQ.'XDIPVEL') .AND.
+     &             (LABB(1:7).EQ.'XANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) -
+     &                               SOPROP(IFRZER,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2) -
+     &                               SIGN * SOPROP(IFRZER,IOPER,2))
+                        GTST(1,IFREQ) = -HALF*PROP/BLRFR(IFREQ)
+                     ELSE
+                        GTST(1,IFREQ) = 1.0D15
+                     ENDIF
+                  ENDDO
+               ELSE IF ((LABA(1:7).EQ.'YDIPVEL') .AND.
+     &                  (LABB(1:7).EQ.'YANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) -
+     &                               SOPROP(IFRZER,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2) -
+     &                               SIGN * SOPROP(IFRZER,IOPER,2))
+                        GTST(2,IFREQ) = -HALF*PROP/BLRFR(IFREQ)
+                     ELSE
+                        GTST(2,IFREQ) = 1.0D15
+                     ENDIF
+                  ENDDO
+               ELSE IF ((LABA(1:7).EQ.'ZDIPVEL') .AND.
+     &                  (LABB(1:7).EQ.'ZANGMOM')) THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) -
+     &                               SOPROP(IFRZER,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2) -
+     &                               SIGN * SOPROP(IFRZER,IOPER,2))
+                        GTST(3,IFREQ) = -HALF*PROP/BLRFR(IFREQ)
+                     ELSE
+                        GTST(3,IFREQ) = 1.0D15
+                     ENDIF
+                  ENDDO
+               ENDIF
+            ENDIF
+
+  999       CONTINUE
+
+         ENDDO
+         CALL CC_OROUT(GLEN,GVEL,GTST,WORK,LWORK,IPRSOP,MODEL)
+
+      ENDIF
+
+C     Optical activity: Origin analysis.
+C     ----------------------------------
+
+      IF (ORGANL) THEN
+
+         CALL DZERO(DELTA,3*NBLRFR)
+
+         DO IOPER = 1,NLROP
+
+            LABA  = LBLOPR(IALROP(IOPER))
+            ISYMA = ISYOPR(IALROP(IOPER))
+            ISAMA = ISYMAT(IALROP(IOPER))
+
+            LABB  = LBLOPR(IBLROP(IOPER))
+            ISYMB = ISYOPR(IBLROP(IOPER))
+            ISAMB = ISYMAT(IBLROP(IOPER))
+
+            IF (ISYMA .NE. ISYMB) GO TO 1000
+
+            ISAPROP = ISAMA * ISAMB
+            SIGN    = DBLE(ISAPROP)
+            IF (ISAPROP.EQ.0) SIGN = +ONE
+
+            IF (LABA(1:7) .EQ. 'XDIPLEN') THEN
+               IF (LABB(1:7) .EQ. 'YDIPVEL') THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        DELTA(3,IFREQ) = DELTA(3,IFREQ)
+     &                                 + PROP/(6.0D0*BLRFR(IFREQ))
+                     ELSE
+                        DELTA(3,IFREQ) = DELTA(3,IFREQ) + 1.0D15
+                     ENDIF
+                  ENDDO
+               ELSE IF (LABB(1:7) .EQ. 'ZDIPVEL') THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        DELTA(2,IFREQ) = DELTA(2,IFREQ)
+     &                                 - PROP/(6.0D0*BLRFR(IFREQ))
+                     ELSE
+                        DELTA(2,IFREQ) = DELTA(2,IFREQ) - 1.0D15
+                     ENDIF
+                  ENDDO
+               ENDIF
+            ELSE IF (LABA(1:7) .EQ. 'YDIPLEN') THEN
+               IF (LABB(1:7) .EQ. 'XDIPVEL') THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        DELTA(3,IFREQ) = DELTA(3,IFREQ)
+     &                                 - PROP/(6.0D0*BLRFR(IFREQ))
+                     ELSE
+                        DELTA(3,IFREQ) = DELTA(3,IFREQ) - 1.0D15
+                     ENDIF
+                  ENDDO
+               ELSE IF (LABB(1:7) .EQ. 'ZDIPVEL') THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        DELTA(1,IFREQ) = DELTA(1,IFREQ)
+     &                                 + PROP/(6.0D0*BLRFR(IFREQ))
+                     ELSE
+                        DELTA(1,IFREQ) = DELTA(1,IFREQ) + 1.0D15
+                     ENDIF
+                  ENDDO
+               ENDIF
+            ELSE IF (LABA(1:7) .EQ. 'ZDIPLEN') THEN
+               IF (LABB(1:7) .EQ. 'XDIPVEL') THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        DELTA(2,IFREQ) = DELTA(2,IFREQ)
+     &                                 + PROP/(6.0D0*BLRFR(IFREQ))
+                     ELSE
+                        DELTA(2,IFREQ) = DELTA(2,IFREQ) + 1.0D15
+                     ENDIF
+                  ENDDO
+               ELSE IF (LABB(1:7) .EQ. 'YDIPVEL') THEN
+                  DO IFREQ = 1,NBLRFR
+                     IF (DABS(BLRFR(IFREQ)).GT.ZERO) THEN
+                        PROP = HALF*(SOPROP(IFREQ,IOPER,1) +
+     &                               SIGN * SOPROP(IFREQ,IOPER,2))
+                        DELTA(1,IFREQ) = DELTA(1,IFREQ)
+     &                                 - PROP/(6.0D0*BLRFR(IFREQ))
+                     ELSE
+                        DELTA(1,IFREQ) = DELTA(1,IFREQ) - 1.0D15
+                     ENDIF
+                  ENDDO
+               ENDIF
+            ENDIF
+
+C           Escape point.
+C           -------------
+
+ 1000       CONTINUE
+
+         ENDDO
+
+C        Call print routine.
+C        -------------------
+
+         CALL CC_ORANL(DELTA,IPRSOP,MODEL)
+
+      ENDIF
+
+C     Optical activity: Calculate and print specific rotation
+C                       in length gauge at specified origins.
+C     --------------------------------------------------------
+
+      IF (NORGIN .GT. 0) THEN
+
+         IF ((.NOT.ORLEN) .OR. (.NOT.ORGANL)) THEN
+            WRITE(LUPRI,'(//,1X,A,I4,A)')
+     &      'NORGIN =',NORGIN,' requires ORLEN and ORGANL!'
+            CALL QUIT('Inconsistence in CC_SOP')
+         ENDIF
+
+         CALL CC_ORGIN(GLEN,DELTA,IPRINT,MODEL)
+
+      ENDIF
+
+      RETURN
+      END
+C  /* Deck cc_orgin */
+      SUBROUTINE CC_ORGIN(GLEN,DELTA,IPRINT,MODEL)
+C
+C     Thomas Bondo Pedersen, April 2003.
+C
+C     Purpose: Origin-dependence of length gauge OR.
+C
+#include <implicit.h>
+      DIMENSION GLEN(3,*), DELTA(3,*)
+      CHARACTER*10 MODEL
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <codata.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <cclrinf.h>
+#include <cbiher.h>
+
+      CHARACTER*8 SECNAM
+      PARAMETER (SECNAM = 'CC_ORGIN')
+
+      PARAMETER (TINY = 1.0D-7)
+      PARAMETER (ZERO = 0.0D0, THREE = 3.0D0)
+      PARAMETER (HALF = 0.5D0)
+      PARAMETER (HUNDRD = 1.0D2)
+      PARAMETER (EHTGHZ = XTHZ*1.0D-9)
+C FACTOR = 28800 * pi**2 * bohr**4 * Avogadro, with bohr in cm
+C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
+      PARAMETER
+     & (FACTOR = (288.0D-30)*(PI**2)*(XTANG**4)*XFMOL)
+
+      CHARACTER*15 INFITY, UNDEF
+      PARAMETER (INFITY = '        oo     ')
+      PARAMETER (UNDEF  = '      undefined')
+#include <ibtfun.h>
+
+C     Print title.
+C     ------------
+
+      IF (NORGIN .GT. 0) THEN
+         CALL AROUND('Length Gauge Specific Rotation in'
+     &               //' Requested Origins')
+         WRITE(LUPRI,'(25X,A,A,/)') 'Coupled cluster model: ',MODEL
+      ELSE
+         RETURN
+      ENDIF
+
+C     Calculate total mass.
+C     ---------------------
+
+      DO I = 1,MXCENT
+         ISOTOP(I) = 1
+      ENDDO
+
+      TMASS = ZERO
+      JATOM = 0
+      DO IATOM = 1, NUCIND
+         DO ISYM = 0, MAXOPR
+            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+               JATOM = JATOM + 1
+               NATTYP = NINT(CHARGE(IATOM))
+               IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
+                  AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
+                  TMASS = TMASS + AMASS
+               ENDIF
+            ENDIF
+         ENDDO
+      ENDDO
+
+      WRITE(LUPRI,'(5X,A,/,5X,A,/,5X,A)')
+     &' Wavelength               Origin                     [alpha]',
+     &'      nm        X/bohr      Y/bohr      Z/bohr deg/[dm g/cm**3]',
+     &'---------------------------------------------------------------'
+      DO IFREQ = 1,NBLRFR
+         IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+            BETA  = -(GLEN(1,IFREQ) + GLEN(2,IFREQ) + GLEN(3,IFREQ))
+     &             /(THREE*BLRFR(IFREQ))
+            FRCM1 = BLRFR(IFREQ)*XTKAYS
+            ALPHA = FACTOR*FRCM1*FRCM1*BETA/TMASS
+            WVLEN = XTNM/BLRFR(IFREQ)
+            DO IORGIN = 0,NORGIN
+               ALPHO = ALPHA
+               DO I = 1,3
+                  ALPHO = ALPHO + ORGIN(I,IORGIN)*DELTA(I,IFREQ)
+               ENDDO
+           WRITE(LUPRI,'(5X,F11.3,1X,F11.5,1X,F11.5,1X,F11.5,1X,F15.6)')
+     &         WVLEN,ORGIN(1,IORGIN),ORGIN(2,IORGIN),ORGIN(3,IORGIN),
+     &         ALPHO
+            ENDDO
+         ELSE
+            WRITE(LUPRI,'(5X,A,1X,A,1X,A,1X,A)')
+     &      INFITY,UNDEF,UNDEF,UNDEF
+         ENDIF
+      ENDDO
+      WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+
+      RETURN
+      END
+C  /* Deck cc_oranl */
+      SUBROUTINE CC_ORANL(DELTA,IPRINT,MODEL)
+C
+C     Thomas Bondo Pedersen, April 2003.
+C
+C     Purpose: Origin-dependence of length gauge OR.
+C
+#include <implicit.h>
+      DIMENSION DELTA(3,*)
+      CHARACTER*10 MODEL
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <codata.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <cclrinf.h>
+#include <cbiher.h>
+
+      CHARACTER*8 SECNAM
+      PARAMETER (SECNAM = 'CC_ORANL')
+
+      PARAMETER (TINY = 1.0D-7)
+      PARAMETER (ZERO = 0.0D0, THREE = 3.0D0)
+      PARAMETER (HALF = 0.5D0)
+      PARAMETER (HUNDRD = 1.0D2)
+      PARAMETER (EHTGHZ = XTHZ*1.0D-9)
+C FACTOR = 28800 * pi**2 * bohr**4 * Avogadro, with bohr in cm
+C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
+      PARAMETER
+     & (FACTOR = (288.0D-30)*(PI**2)*(XTANG**4)*XFMOL)
+
+      CHARACTER*15 INFITY, UNDEF
+      PARAMETER (INFITY = '         oo    ')
+      PARAMETER (UNDEF  = '      undefined')
+#include <ibtfun.h>
+
+C     Print title.
+C     ------------
+
+      IF (ORGANL) THEN
+         CALL AROUND('Origin-Dependence of Length Gauge'
+     &               //' Specific Rotation')
+         WRITE(LUPRI,'(10X,A,A)')
+     &   'Coupled cluster model: ',MODEL
+         WRITE(LUPRI,'(10X,A,/)')
+     &   'Translation: r -> r - a; [alpha] -> [alpha] + a.Delta'
+      ELSE
+         RETURN
+      ENDIF
+
+C     Calculate total mass.
+C     ---------------------
+
+      DO I = 1,MXCENT
+         ISOTOP(I) = 1
+      ENDDO
+
+      TMASS = ZERO
+      JATOM = 0
+      DO IATOM = 1, NUCIND
+         DO ISYM = 0, MAXOPR
+            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+               JATOM = JATOM + 1
+               NATTYP = NINT(CHARGE(IATOM))
+               IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
+                  AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
+                  TMASS = TMASS + AMASS
+               ENDIF
+            ENDIF
+         ENDDO
+      ENDDO
+
+C     Get and print delta in units of deg [dm g/cm**3]**(-1) per bohr.
+C     ----------------------------------------------------------------
+
+      WRITE(LUPRI,'(5X,A,/,5X,A,/,5X,A)')
+     & '     Wavelength                       Delta',
+     & '         nm             X               Y               Z',
+     & '---------------------------------------------------------------'
+      DO IFREQ = 1,NBLRFR
+         IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+            FRCM1  = BLRFR(IFREQ)*XTKAYS
+            FACTOT = FACTOR*FRCM1*FRCM1/TMASS
+            DO I = 1,3
+               DELTA(I,IFREQ) = FACTOT*DELTA(I,IFREQ)
+            ENDDO
+            WVLEN = XTNM/BLRFR(IFREQ)
+            WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &      WVLEN,DELTA(1,IFREQ),DELTA(2,IFREQ),DELTA(3,IFREQ)
+         ELSE
+            WRITE(LUPRI,'(5X,A,1X,A,1X,A,1X,A)')
+     &      INFITY,UNDEF,UNDEF,UNDEF
+         ENDIF
+      ENDDO
+      WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+
+      CALL FLSHFO(LUPRI)
+
+      RETURN
+      END
+C  /* Deck cc_orout */
+      SUBROUTINE CC_OROUT(GLEN,GVEL,GTST,WORK,LWORK,IPRINT,MODEL)
+C
+C     Thomas Bondo Pedersen, April 2003.
+C     - based on ABACUS routine lnrout.
+C
+C     Purpose: Optical activity print, length and/or velocity gauge.
+C
+#include <implicit.h>
+      DIMENSION GLEN(3,*), GVEL(3,*), GTST(3,*), WORK(LWORK)
+      CHARACTER*10 MODEL
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <codata.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <cclrinf.h>
+#include <cbiher.h>
+
+      CHARACTER*8 SECNAM
+      PARAMETER (SECNAM = 'CC_OROUT')
+
+      PARAMETER (INFOM = 0)
+      PARAMETER (TINY = 1.0D-7)
+      PARAMETER (ZERO = 0.0D0, THREE = 3.0D0)
+      PARAMETER (HALF = 0.5D0)
+      PARAMETER (HUNDRD = 1.0D2)
+      PARAMETER (EHTGHZ = XTHZ*1.0D-9)
+C FACTOR = 28800 * pi**2 * bohr**4 * Avogadro, with bohr in cm
+C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
+      PARAMETER
+     & (FACTOR = (288.0D-30)*(PI**2)*(XTANG**4)*XFMOL)
+
+      CHARACTER*15 INFITY, UNDEF
+      PARAMETER (INFITY = '        oo     ')
+      PARAMETER (UNDEF  = '      undefined')
+#include <ibtfun.h>
+
+C     Print title.
+C     ------------
+
+      IF (ORLEN .OR. ORVEL .OR. ORMVE) THEN
+         CALL AROUND('Optical Rotation')
+         WRITE(LUPRI,'(25X,A,A,/)') 'Coupled cluster model: ',MODEL
+         CALL FLSHFO(LUPRI)
+      ELSE
+         RETURN
+      ENDIF
+
+C     Calculate total mass.
+C     ---------------------
+
+      DO I = 1,MXCENT
+         ISOTOP(I) = 1
+      ENDDO
+
+      IF (IPRINT .GE. INFOM) CALL HEADER('Isotopic Masses',-1)
+
+      TMASS = ZERO
+      JATOM = 0
+      DO IATOM = 1, NUCIND
+         DO ISYM = 0, MAXOPR
+            IF (IBTAND(ISYM,ISTBNU(IATOM)) .EQ. 0) THEN
+               JATOM = JATOM + 1
+               NATTYP = NINT(CHARGE(IATOM))
+               IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
+                  AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
+                  TMASS = TMASS + AMASS
+                  IF (IPRINT .GE. INFOM) THEN
+                     WRITE(LUPRI,'(27X,A6,2X,F12.6)')
+     &               NAMDEP(JATOM),AMASS
+                  ENDIF
+               ENDIF
+            ENDIF
+         ENDDO
+      ENDDO
+
+      IF (IPRINT .GE. INFOM) THEN
+         WRITE (LUPRI,'(/,23X,A,F12.6,A)') 'Total mass: ',TMASS,' amu'
+      ENDIF
+
+C     Print frequency table.
+C     ----------------------
+
+      CALL HEADER('Frequencies',-1)
+      WRITE(LUPRI,'(5X,A,/,5X,A)')
+     & '        Hartree           cm-1             GHz             nm',
+     & '---------------------------------------------------------------'
+      DO IFREQ = 1,NBLRFR
+         FINCM1 = BLRFR(IFREQ)*XTKAYS
+         FINGHZ = BLRFR(IFREQ)*EHTGHZ
+         IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+            FINNM  = XTNM/BLRFR(IFREQ)
+            WRITE(LUPRI,'(5X,F15.8,1X,F15.2,1X,F15.2,1X,F15.2)')
+     &      BLRFR(IFREQ),FINCM1,FINGHZ,FINNM
+         ELSE
+            WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,A)')
+     &      BLRFR(IFREQ),FINCM1,FINGHZ,INFITY
+         ENDIF
+      ENDDO
+      WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+
+C     Print units.
+C     ------------
+
+      CALL HEADER('Units',-1)
+      WRITE(LUPRI,'(20X,A)')
+     & 'Wavelength                : nm'
+      WRITE(LUPRI,'(20X,A)')
+     & 'G tensor elements and beta: bohr**4'
+      WRITE(LUPRI,'(20X,A)')
+     & 'Specific Rotation, [alpha]: deg [dm g/cm**3]**(-1)'
+      WRITE(LUPRI,'(20X,A)')
+     & 'Molar    Rotation, [M]    : deg [mol dm/cm**3]**(-1)'
+
+C     Print diagonal of G tensor.
+C     ---------------------------
+
+      IF (ORLEN) THEN
+         CALL HEADER('G Tensor Diagonal, Length Gauge',-1)
+         WRITE(LUPRI,'(5X,A,/,5X,A)')
+     & '     Wavelength         Gxx             Gyy             Gzz',
+     & '---------------------------------------------------------------'
+         DO IFREQ = 1,NBLRFR
+            IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+               WVLEN = XTNM/BLRFR(IFREQ)
+               WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &         WVLEN,GLEN(1,IFREQ),GLEN(2,IFREQ),GLEN(3,IFREQ)
+            ELSE
+               WRITE(LUPRI,'(5X,A,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &         INFITY,GLEN(1,IFREQ),GLEN(2,IFREQ),GLEN(3,IFREQ)
+            ENDIF
+         ENDDO
+         WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+      END IF
+
+      IF (ORVEL) THEN
+         CALL HEADER('G Tensor Diagonal, Velocity Gauge',-1)
+         WRITE(LUPRI,'(5X,A,/,5X,A)')
+     & '     Wavelength         Gxx             Gyy             Gzz',
+     & '---------------------------------------------------------------'
+         DO IFREQ = 1,NBLRFR
+            IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+               WVLEN = XTNM/BLRFR(IFREQ)
+               WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &         WVLEN,GVEL(1,IFREQ),GVEL(2,IFREQ),GVEL(3,IFREQ)
+            ELSE
+               WRITE(LUPRI,'(5X,A,1X,A,1X,A,1X,A)')
+     &         INFITY,UNDEF,UNDEF,UNDEF
+            ENDIF
+         ENDDO
+         WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+      END IF
+
+      IF (ORMVE) THEN
+         CALL HEADER('G Tensor Diagonal, Modified Velocity Gauge',-1)
+         WRITE(LUPRI,'(5X,A,/,5X,A)')
+     & '     Wavelength         Gxx             Gyy             Gzz',
+     & '---------------------------------------------------------------'
+         DO IFREQ = 1,NBLRFR
+            IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+               WVLEN = XTNM/BLRFR(IFREQ)
+               WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &         WVLEN,GTST(1,IFREQ),GTST(2,IFREQ),GTST(3,IFREQ)
+            ELSE
+               WRITE(LUPRI,'(5X,A,1X,A,1X,A,1X,A)')
+     &         INFITY,UNDEF,UNDEF,UNDEF
+            ENDIF
+         ENDDO
+         WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+      END IF
+
+C     Print specific rotation.
+C     ------------------------
+
+      IF (ORLEN) THEN
+         CALL HEADER('Specific Rotation, Length Gauge',-1)
+         WRITE(LUPRI,'(5X,A,/,5X,A)')
+     & '     Wavelength         beta            [alpha]         [M]',
+     & '---------------------------------------------------------------'
+         DO IFREQ = 1,NBLRFR
+            IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+               BETA  = -(GLEN(1,IFREQ) + GLEN(2,IFREQ) + GLEN(3,IFREQ))
+     &                /(THREE*BLRFR(IFREQ))
+               FRCM1 = BLRFR(IFREQ)*XTKAYS
+               ALPHA = FACTOR*FRCM1*FRCM1*BETA/TMASS
+               BRMBR = ALPHA*TMASS/HUNDRD
+               WVLEN = XTNM/BLRFR(IFREQ)
+               WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &         WVLEN,BETA,ALPHA,BRMBR
+            ELSE
+               WRITE(LUPRI,'(5X,A,1X,A,1X,A,1X,A)')
+     &         INFITY,UNDEF,UNDEF,UNDEF
+            ENDIF
+         ENDDO
+         WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+      ENDIF
+
+      IF (ORVEL) THEN
+         CALL HEADER('Specific Rotation, Velocity Gauge',-1)
+         WRITE(LUPRI,'(5X,A,/,5X,A)')
+     & '     Wavelength         beta            [alpha]         [M]',
+     & '---------------------------------------------------------------'
+         DO IFREQ = 1,NBLRFR
+            IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+               BETA  = -(GVEL(1,IFREQ) + GVEL(2,IFREQ) + GVEL(3,IFREQ))
+     &                /(THREE*BLRFR(IFREQ))
+               FRCM1 = BLRFR(IFREQ)*XTKAYS
+               ALPHA = FACTOR*FRCM1*FRCM1*BETA/TMASS
+               BRMBR = ALPHA*TMASS/HUNDRD
+               WVLEN = XTNM/BLRFR(IFREQ)
+               WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &         WVLEN,BETA,ALPHA,BRMBR
+            ELSE
+               WRITE(LUPRI,'(5X,A,1X,A,1X,A,1X,A)')
+     &         INFITY,UNDEF,UNDEF,UNDEF
+            ENDIF
+         ENDDO
+         WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+      ENDIF
+
+      IF (ORMVE) THEN
+         CALL HEADER('Specific Rotation, Modified Velocity Gauge',-1)
+         WRITE(LUPRI,'(5X,A,/,5X,A)')
+     & '     Wavelength         beta            [alpha]         [M]',
+     & '---------------------------------------------------------------'
+         DO IFREQ = 1,NBLRFR
+            IF (DABS(BLRFR(IFREQ)) .GT. TINY) THEN
+               BETA  = -(GTST(1,IFREQ) + GTST(2,IFREQ) + GTST(3,IFREQ))
+     &                /(THREE*BLRFR(IFREQ))
+               FRCM1 = BLRFR(IFREQ)*XTKAYS
+               ALPHA = FACTOR*FRCM1*FRCM1*BETA/TMASS
+               BRMBR = ALPHA*TMASS/HUNDRD
+               WVLEN = XTNM/BLRFR(IFREQ)
+               WRITE(LUPRI,'(5X,F15.6,1X,F15.6,1X,F15.6,1X,F15.6)')
+     &         WVLEN,BETA,ALPHA,BRMBR
+            ELSE
+               WRITE(LUPRI,'(5X,A,1X,A,1X,A,1X,A)')
+     &         INFITY,UNDEF,UNDEF,UNDEF
+            ENDIF
+         ENDDO
+         WRITE(LUPRI,'(5X,A)')
+     & '---------------------------------------------------------------'
+      ENDIF
+
+      WRITE(LUPRI,*)
+      CALL FLSHFO(LUPRI)
 
       RETURN
       END

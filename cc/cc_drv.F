@@ -295,9 +295,9 @@ C-----------------------------------------------------------------
 C     flag for ground state zeroth-order Lagrange multiplier:
 C-----------------------------------------------------------------
       LTBAR0 = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
-     &          CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCSM.OR.CCTM.OR.
+     &          CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCTM.OR.
      &          CCMCD.OR.CCEXLR.OR.MOLGRD.OR.CCSLV.OR.CCDERI.OR.
-     &          CCOPA)
+     &          CCOPA.OR.CCTPA.OR.CCXOPA)
 
 C-----------------------------------------------------------------
 C     flag for kappa-bar-0 Lagrange multiplier:
@@ -331,15 +331,16 @@ C-----------------------------------------------------------------
 C     flag for response calculation (-> execute CCRSPSYM routine):
 C-----------------------------------------------------------------
       LRSPSYM = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
-     &           CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCSM.OR.CCTM.OR.
-     &           CCMCD.OR.CCEXLR.OR.CCOPA)
+     &           CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCTM.OR.
+     &           CCMCD.OR.CCEXLR.OR.CCOPA.OR.CCTPA.OR.CCXOPA)
 
       RSPIM   = RSPIM .OR. LRSPSYM .OR. LTBAR0
 
 C-----------------------------------------------------------------
 C     flag for left eigenvector calculation:
 C-----------------------------------------------------------------
-      LLEFTEIG = CCMCD .OR. CCSM .OR. CCTM .OR. CCEXLR
+      LLEFTEIG = CCOPA .OR. CCTPA .OR. CCXOPA .OR.
+     &           CCMCD .OR. CCTM .OR. CCEXLR
 
 C-----------------------------------------------------------------
 C     LPTEXC  - to control if any perturbative triples corrections
@@ -633,7 +634,7 @@ C
                IF (CCSDPI.AND.CCSD) CALL CC_REDEIG(WORK,LWORK,OMPCCSD)
 C
                IF (LHTR.OR.CCLRSD.OR.CCQR2R.OR.LPTEXC.OR.CCP2.OR.
-     *             LLEFTEIG.OR.CCEXGR.OR.CCOPA) THEN
+     *             LLEFTEIG.OR.CCEXGR) THEN
                  IF ((I .LT. 17).AND.(.NOT.LESKIP)) THEN
                    CALL CC_EXCI(WORK,LWORK,'LE ')
                  ELSE
@@ -669,21 +670,6 @@ C
            Call CCRSPSYM(MOLGRD,WORK,LWORK)
          END IF
 C
-C-----------------------------------------------------
-C        *********************************************
-C        ***** Excited state gradient properties *****
-C        *********************************************
-C-----------------------------------------------------
-C
-         IF (CCEXGR) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_EXGR(WORK,LWORK)
-           ELSE
-            WRITE(LUPRI,*) 'Excited state gradient properties'//
-     &         'are not implemented for the requested model.'
-           END IF
-         ENDIF
-C
 C---------------------------------------------------------------
 C        precalculate expectatation values & eff. Fock matrices:
 C---------------------------------------------------------------
@@ -705,6 +691,21 @@ C
          IF (LRSPSYM) THEN
             CALL CC_SOLRSP(WORK,LWORK)
          END IF
+C
+C-----------------------------------------------------
+C        *********************************************
+C        ***** Excited state gradient properties *****
+C        *********************************************
+C-----------------------------------------------------
+C
+         IF (CCEXGR) THEN
+           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+            CALL CC_EXGR(WORK,LWORK)
+           ELSE
+            WRITE(LUPRI,*) 'Excited state gradient properties'//
+     &         'are not implemented for the requested model.'
+           END IF
+         ENDIF 
 C
 C-----------------------------------------------
 C        ***************************************
@@ -746,18 +747,29 @@ C
      &         ' are not implemented for the requested model.'
            END IF
          END IF
-C
-C-------------------------------------------------------
-C        ***********************************************
-C        ***** CC second-order transition moments  *****
-C        ***********************************************
-C-------------------------------------------------------
-C
-         IF (CCSM) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_SMCAL(WORK,LWORK)
+
+#if defined CC_AARHUS
+         IF (CCXOPA) THEN
+           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+            CALL CC_XOPA(WORK,LWORK)
            ELSE
-            WRITE(LUPRI,*) 'second-order transition moments'//
+            WRITE(LUPRI,*) 'One-photon absorption strengths'//
+     &         ' are not implemented for the requested model.'
+           END IF
+         END IF
+#endif
+C
+C-------------------------------------------------------
+C        ***********************************************
+C        *****  CC two-photon transition moments   *****
+C        ***********************************************
+C-------------------------------------------------------
+C
+         IF (CCTPA) THEN 
+           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+            CALL CC_TPA(WORK,LWORK)  
+           ELSE
+            WRITE(LUPRI,*) 'two-photon absorption strengths'//
      &         ' are not implemented for the requested model.'
            END IF
          ENDIF
@@ -829,11 +841,26 @@ C
            ENDIF
          ENDIF
 C
-C--------------------------------------------
+C----------------------------------------------------
+C        ********************************************
+C        ***** CC excited state linear response *****
+C        ********************************************
+C----------------------------------------------------
+C
+         IF (CCEXLR) THEN 
+           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
+            CALL CC_EXLR(WORK,LWORK)  
+           ELSE
+            WRITE(LUPRI,*) 'Excited state linear response'//
+     &         ' is not implemented for the requested model.'
+           END IF
+         END IF
+C
+C--------------------------------------------------
 C        ******************************************
 C        ***** CC first Hyperpolarizabilities *****
 C        ******************************************
-C--------------------------------------------
+C--------------------------------------------------
 C
          IF ( CCQR ) THEN
 C
@@ -846,15 +873,15 @@ C
 C
          ENDIF
 C
-C--------------------------------------------
+C---------------------------------------------------
 C        *******************************************
 C        ***** CC second Hyperpolarizabilities *****
 C        *******************************************
-C--------------------------------------------
+C---------------------------------------------------
 C
          IF ( CCCR ) THEN
 C
-            IF (CCS .or. CC2 .or. CCSD) THEN
+            IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
                CALL CC_2HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')
@@ -896,21 +923,6 @@ C
             ENDIF
 C
          ENDIF
-C
-C----------------------------------------------------
-C        ********************************************
-C        ***** CC excited state linear response *****
-C        ********************************************
-C----------------------------------------------------
-C
-         IF (CCEXLR) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_EXLR(WORK,LWORK)
-           ELSE
-            WRITE(LUPRI,*) 'Excited state linear response'//
-     &         ' is not implemented for the requested model.'
-           END IF
-         END IF
 C
 C--------------------------------------------------
 C        ******************************************

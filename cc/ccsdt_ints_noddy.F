@@ -418,3 +418,441 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_INTS0_NODDY                    *
 *---------------------------------------------------------------------*
+      SUBROUTINE CCSDT_INIT_NODDY(WORK,LWORK,DO_L03AM)
+*---------------------------------------------------------------------*
+*
+* Purpose: precompute some intermediates for CC3
+*
+*          for DO_L03AM=.true. the triples part of the zeroth-order
+*          langrangian multipliers will be computed and save on file.
+*          for this case it will be assumed that all integrals
+*          are already present of file
+*  
+* Written by Christof Haettig, Mai 2003
+*
+*=====================================================================*
+      IMPLICIT NONE  
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccfield.h>
+#include <ccorb.h>
+#include <ccnoddy.h>
+#include <dummy.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG=.FALSE.)
+      INTEGER ISYM0
+      PARAMETER (ISYM0=1)
+
+      INTEGER LWORK
+#if defined (SYS_CRAY)
+      REAL WORK(LWORK), FF, DDOT
+#else
+      DOUBLE PRECISION WORK(LWORK), FF, DDOT
+#endif
+
+      LOGICAL DO_L03AM
+
+      CHARACTER*10 MODEL
+      INTEGER KSCR1, KFOCKD, KEND1, LWRK1, KFOCK0, KFIELD, KFIELDAO,
+     &        KLAMP0, KLAMH0, KINT1T0, KINT2T0, KINT1S0, KINT2S0,
+     &        KXIAJB, KYIAJB, K0IOVVO, K0IOOVV, K0IOOOO, K0IVVVV,
+     &        KT01AM, KT02AM, KT03AM, KT3SCR, LUSIFC, IOPT, LUFOCK,
+     &        LUTEMP, ILLL, IDEL, ISYMD, KRECNR, ISYDIS, KEND2, LWRK2,
+     &        KXINT
+
+      CALL QENTER('CCTINI')
+
+      IF (DIRECT) 
+     &  CALL QUIT('DIRECT NOT IMPLEMENTED IN CCSDT_INIT_NODDY')
+
+*---------------------------------------------------------------------*
+*     Memory allocation:
+*---------------------------------------------------------------------*
+      KSCR1   = 1
+      KFOCKD  = KSCR1  + NT1AMX
+      KEND1   = KFOCKD + NORBT
+
+      KFOCK0  = KEND1
+      KEND1   = KFOCK0  + NORBT*NORBT
+     
+      IF (NONHF) THEN
+        KFIELD   = KEND1
+        KFIELDAO = KFIELD   + NORBT*NORBT
+        KEND1    = KFIELDAO + NORBT*NORBT
+      END IF
+      
+      KLAMP0  = KEND1
+      KLAMH0  = KLAMP0  + NLAMDT
+      KEND1   = KLAMH0  + NLAMDT
+
+      KINT1T0 = KEND1
+      KINT2T0 = KINT1T0 + NT1AMX*NVIRT*NVIRT
+      KEND1   = KINT2T0 + NRHFT*NRHFT*NT1AMX
+
+      KINT1S0 = KEND1
+      KINT2S0 = KINT1S0 + NT1AMX*NVIRT*NVIRT
+      KEND1   = KINT2S0 + NRHFT*NRHFT*NT1AMX
+
+      KXIAJB  = KEND1
+      KYIAJB  = KXIAJB  + NT1AMX*NT1AMX
+      KEND1   = KYIAJB  + NT1AMX*NT1AMX
+
+      K0IOVVO = KEND1
+      K0IOOVV = K0IOVVO + NRHFT*NVIRT*NVIRT*NRHFT
+      K0IOOOO = K0IOOVV + NRHFT*NVIRT*NVIRT*NRHFT
+      K0IVVVV = K0IOOOO + NRHFT*NRHFT*NRHFT*NRHFT
+      KEND1   = K0IVVVV + NVIRT*NVIRT*NVIRT*NVIRT
+
+      KT01AM  = KEND1
+      KT02AM  = KT01AM + NT1AMX
+      KT03AM  = KT02AM + NT1AMX*NT1AMX
+      KT3SCR  = KT03AM + NT1AMX*NT1AMX*NT1AMX
+      KEND1   = KT3SCR + NT1AMX*NT1AMX*NT1AMX
+              
+      LWRK1   = LWORK  - KEND1
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Insufficient space in CCSDT_INIT_NODDY')
+      ENDIF
+
+*---------------------------------------------------------------------*
+*     Read SCF orbital energies from file:
+*---------------------------------------------------------------------*
+      LUSIFC = 0
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND LUSIFC
+      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+      READ (LUSIFC)
+      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
+      CALL GPCLOSE(LUSIFC,'KEEP')
+
+*---------------------------------------------------------------------*
+*     Get zeroth-order Lambda matrices:
+*---------------------------------------------------------------------*
+      IOPT   = 1
+      Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT01AM),DUMMY)
+
+      Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT01AM),
+     &            WORK(KEND1),LWRK1)
+
+*---------------------------------------------------------------------*
+*     read zeroth-order AO Fock matrix from file: 
+*---------------------------------------------------------------------*
+      LUFOCK = 0
+      CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND(LUFOCK)
+      READ(LUFOCK) (WORK(KFOCK0-1+I),I=1,N2BST(ISYM0))
+      CALL GPCLOSE(LUFOCK,'KEEP')
+
+      CALL CC_FCKMO(WORK(KFOCK0),WORK(KLAMP0),WORK(KLAMH0),
+     &              WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0)
+
+*---------------------------------------------------------------------*
+*     If needed get external field:
+*---------------------------------------------------------------------*
+      IF (NONHF) THEN
+        CALL DZERO(WORK(KFIELDAO),NORBT*NORBT)
+        DO I = 1, NFIELD
+          FF = EFIELD(I)
+          CALL CC_ONEP(WORK(KFIELDAO),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
+        ENDDO
+        CALL DCOPY(NORBT*NORBT,WORK(KFIELDAO),1,WORK(KFIELD),1)
+
+        ! calculate external field in zero-order lambda basis
+        CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMP0),WORK(KLAMH0),
+     *                WORK(KEND1),LWRK1,1,1,1)
+
+        IF (LOCDBG) WRITE(LUPRI,*) 'NORM^2(FIELD):',
+     &     DDOT(NORBT*NORBT,WORK(KFIELD),1,WORK(KFIELD),1)
+      ENDIF
+
+*---------------------------------------------------------------------*
+*     Compute some integrals:
+*           XINT1S0 =  (CK|BD)
+*           XINT2S0 =  (CK|LJ)
+*           XINT1T0 =  (KC|BD)
+*           XINT2T0 =  (KC|LJ)
+*           XIAJB   = 2(IA|JB) - (IB|JA)
+*           YIAJB   =  (IA|JB)
+*---------------------------------------------------------------------*
+      IF (DO_L03AM) THEN
+        CALL CCSDT_READ_NODDY(.FALSE.,WORK(KFOCKD),WORK(KFOCK0),
+     &                                WORK(KFIELD),WORK(KFIELDAO),
+     &                        .TRUE., WORK(KXIAJB),WORK(KYIAJB),
+     &                        .TRUE., WORK(KINT1S0),WORK(KINT2S0),
+     &                        .TRUE., WORK(KINT1T0),WORK(KINT2T0),
+     &                        .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                        NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX) 
+
+      ELSE
+        CALL CCSDT_INTS0_NODDY(.TRUE.,WORK(KXIAJB), WORK(KYIAJB),
+     &                         .TRUE.,WORK(KINT1S0),WORK(KINT2S0),
+     &                         .TRUE.,WORK(KINT1T0),WORK(KINT2T0),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KEND1),LWRK1)
+      END IF
+
+*---------------------------------------------------------------------*
+*     compute and save zeroth-order triples amplitudes:
+*---------------------------------------------------------------------*
+      IF (.NOT. DO_L03AM) THEN
+        ! read T^0 doubles amplitudes from file and square up 
+        IOPT   = 2
+        Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,DUMMY,WORK(KT03AM))
+        CALL CC_T2SQ(WORK(KT03AM),WORK(KT02AM),ISYM0)
+
+        ! compute triples amplitudes
+        CALL CCSDT_T03AM(WORK(KT03AM),WORK(KINT1S0),WORK(KINT2S0),
+     *                   WORK(KT02AM),WORK(KSCR1),WORK(KFOCKD),
+     *                   WORK(KFIELD),WORK(KT3SCR))
+
+        CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT03AM),1)
+
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        WRITE(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
+        CALL GPCLOSE(LUTEMP,'KEEP')
+      END IF
+
+*---------------------------------------------------------------------*
+*     compute and save zeroth-order triples multipliers:
+*     (note that this section overwrite the cluster amplitudes on
+*      KT01AM, KT02AM and KT03AM...)
+*---------------------------------------------------------------------*
+      IF (DO_L03AM) THEN
+        ! read L^0 singles and doubles multipliers from file 
+        IOPT   = 3
+        Call CC_RDRSP('L0',0,ISYM0,IOPT,MODEL,
+     *                 WORK(KT01AM),WORK(KT03AM))
+        CALL CC_T2SQ(WORK(KT03AM),WORK(KT02AM),ISYM0)
+
+        ! compute triples multipliers
+        CALL CCSDT_L03AM(WORK(KT03AM),WORK(KINT1T0),WORK(KINT2T0),
+     *                   WORK(KXIAJB),WORK(KFOCK0),WORK(KT01AM),
+     *                   WORK(KT02AM),WORK(KSCR1),WORK(KFOCKD),
+     *                   WORK(KFIELD),WORK(KT3SCR))
+
+        CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KT03AM),1)
+
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODL30,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        WRITE(LUTEMP) (WORK(KT03AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
+        CALL GPCLOSE(LUTEMP,'KEEP')
+
+        CALL QEXIT('CCTINI')
+        RETURN
+      END IF
+
+*---------------------------------------------------------------------*
+*     Compute integrals needed for the following contributions:
+*---------------------------------------------------------------------*
+      CALL DZERO(WORK(K0IOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(K0IOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(K0IOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
+      CALL DZERO(WORK(K0IVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
+
+      DO ISYMD = 1, NSYM
+         DO ILLL = 1,NBAS(ISYMD)
+            IDEL   = IBAS(ISYMD) + ILLL
+            ISYDIS = MULD2H(ISYMD,ISYMOP)
+ 
+C           ----------------------------
+C           Work space allocation no. 2.
+C           ----------------------------
+            KXINT  = KEND1
+            KEND2  = KXINT + NDISAO(ISYDIS)
+            LWRK2  = LWORK - KEND2
+            IF (LWRK2 .LT. 0) THEN
+               CALL QUIT('Insufficient space in CCSDT_INIT_NODDY')
+            ENDIF
+ 
+C           ---------------------------
+C           Read in batch of integrals.
+C           ---------------------------
+            CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
+     *                  WORK(KRECNR),DIRECT)
+ 
+            CALL CCFOP_TRAN1_R(WORK(K0IOVVO),WORK(K0IOOVV),
+     &                         WORK(K0IOOOO),WORK(K0IVVVV),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KXINT),IDEL)
+
+         END DO   
+      END DO  
+
+*---------------------------------------------------------------------*
+*     Save fock-like intermediates and Lambda matrices
+*---------------------------------------------------------------------*
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODFOCK,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(LUTEMP) (WORK(KFOCKD+I-1),  I=1,NORBT)
+      WRITE(LUTEMP) (WORK(KFOCK0+I-1),  I=1,NORBT*NORBT)
+      IF (NONHF) THEN
+        WRITE(LUTEMP) (WORK(KFIELD+I-1),   I=1,NORBT*NORBT)
+        WRITE(LUTEMP) (WORK(KFIELDAO+I-1), I=1,NORBT*NORBT)
+      END IF
+      CALL GPCLOSE(LUTEMP,'KEEP')
+
+*---------------------------------------------------------------------*
+*     Save integrals XINT1T0 and XINT2T0
+*---------------------------------------------------------------------*
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODINTT,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(LUTEMP) (WORK(KINT1T0+I-1), I=1,NT1AMX*NVIRT*NVIRT)
+      WRITE(LUTEMP) (WORK(KINT2T0+I-1), I=1,NT1AMX*NRHFT*NRHFT)
+      CALL GPCLOSE(LUTEMP,'KEEP')
+
+*---------------------------------------------------------------------*
+*     Save integrals XINT1S0 and XINT2S0
+*---------------------------------------------------------------------*
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODINTS,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(LUTEMP) (WORK(KINT1S0+I-1), I=1,NT1AMX*NVIRT*NVIRT)
+      WRITE(LUTEMP) (WORK(KINT2S0+I-1), I=1,NT1AMX*NRHFT*NRHFT)
+      CALL GPCLOSE(LUTEMP,'KEEP')
+ 
+*---------------------------------------------------------------------*
+*     Save integrals XIAJB and YIAJB
+*---------------------------------------------------------------------*
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODINTX,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(LUTEMP) (WORK(KXIAJB+I-1),  I=1,NT1AMX*NT1AMX)
+      WRITE(LUTEMP) (WORK(KYIAJB+I-1),  I=1,NT1AMX*NT1AMX)
+      CALL GPCLOSE(LUTEMP,'KEEP')
+ 
+*---------------------------------------------------------------------*
+*     Save integrals XOOOO, XOVVO, XOOVV and XVVVV
+*---------------------------------------------------------------------*
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODINTV,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE(LUTEMP) (WORK(K0IOVVO+I-1), I=1,NRHFT*NVIRT*NVIRT*NRHFT)
+      WRITE(LUTEMP) (WORK(K0IOOVV+I-1), I=1,NRHFT*NVIRT*NVIRT*NRHFT)
+      WRITE(LUTEMP) (WORK(K0IOOOO+I-1), I=1,NRHFT*NRHFT*NRHFT*NRHFT)
+      WRITE(LUTEMP) (WORK(K0IVVVV+I-1), I=1,NVIRT*NVIRT*NVIRT*NVIRT)
+      CALL GPCLOSE(LUTEMP,'KEEP')
+
+      CALL QEXIT('CCTINI')
+      RETURN
+      END
+
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_INIT_NODDY                     *
+*---------------------------------------------------------------------*
+      SUBROUTINE CCSDT_READ_NODDY(RD_FOCK0,FOCKD,FOCK0,FIELD,FIELDAO,
+     &                            RD_INTXY,XIAJB,YIAJB,
+     &                            RD_INTS0,XINT1S0,XINT2S0,
+     &                            RD_INTT0,XINT1T0,XINT2T0,
+     &                            RD_INTV0,XOVVO,XOOVV,XOOOO,XVVVV,
+     &                            NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
+*---------------------------------------------------------------------*
+*
+* Purpose: read precomputed intermediates for CC3
+*
+* Written by Christof Haettig, Mai 2003
+*
+*=====================================================================*
+      IMPLICIT NONE  
+#include <priunit.h>
+#include <ccfield.h>
+#include <ccnoddy.h>
+#include <ccsdinp.h>
+#include <dummy.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG=.FALSE.)
+
+      INTEGER NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX, LUTEMP, I
+
+      LOGICAL RD_FOCK0, RD_INTXY, RD_INTS0, RD_INTT0, RD_INTV0, RD_XLAM0
+
+#if defined (SYS_CRAY)
+      REAL FOCKD(*), FOCK0(*)
+      REAL FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
+      REAL XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
+      REAL XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
+#else
+      DOUBLE PRECISION FOCKD(*), FOCK0(*)
+      DOUBLE PRECISION FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
+      DOUBLE PRECISION XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
+      DOUBLE PRECISION XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
+#endif
+
+      CALL QENTER('CCTRDI')
+
+      IF (DIRECT) 
+     &  CALL QUIT('DIRECT NOT IMPLEMENTED IN CCSDT_READ_NODDY')
+
+*---------------------------------------------------------------------*
+*     Read integrals and triples cluster amplitudes on file
+*---------------------------------------------------------------------*
+      IF (RD_FOCK0) THEN
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODFOCK,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        READ(LUTEMP) (FOCKD(I),I=1,NORBT)
+        READ(LUTEMP) (FOCK0(I),I=1,NORBT*NORBT)
+        IF (NONHF) THEN
+          READ(LUTEMP) (FIELD(I),  I=1,NORBT*NORBT)
+          READ(LUTEMP) (FIELDAO(I),I=1,NORBT*NORBT)
+        END IF
+        CALL GPCLOSE(LUTEMP,'KEEP')
+      END IF
+
+      IF (RD_INTT0) THEN
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODINTT,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        READ(LUTEMP) (XINT1T0(I),I=1,NT1AMX*NVIRT*NVIRT)
+        READ(LUTEMP) (XINT2T0(I),I=1,NT1AMX*NRHFT*NRHFT)
+        CALL GPCLOSE(LUTEMP,'KEEP')
+      ENDIF
+
+      IF (RD_INTS0) THEN
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODINTS,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        READ(LUTEMP) (XINT1S0(I),I=1,NT1AMX*NVIRT*NVIRT)
+        READ(LUTEMP) (XINT2S0(I),I=1,NT1AMX*NRHFT*NRHFT)
+        CALL GPCLOSE(LUTEMP,'KEEP')
+      END IF
+ 
+      IF (RD_INTXY) THEN
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODINTX,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        READ(LUTEMP) (XIAJB(I),I=1,NT1AMX*NT1AMX)
+        READ(LUTEMP) (YIAJB(I),I=1,NT1AMX*NT1AMX)
+        CALL GPCLOSE(LUTEMP,'KEEP')
+      END IF
+ 
+      IF (RD_INTV0) THEN
+        LUTEMP = 0
+        CALL GPOPEN(LUTEMP,FILNODINTV,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        READ(LUTEMP) (XOVVO(I),I=1,NRHFT*NVIRT*NVIRT*NRHFT)
+        READ(LUTEMP) (XOOVV(I),I=1,NRHFT*NVIRT*NVIRT*NRHFT)
+        READ(LUTEMP) (XOOOO(I),I=1,NRHFT*NRHFT*NRHFT*NRHFT)
+        READ(LUTEMP) (XVVVV(I),I=1,NVIRT*NVIRT*NVIRT*NVIRT)
+        CALL GPCLOSE(LUTEMP,'KEEP')
+      END IF
+
+      CALL QEXIT('CCTRDI')
+      RETURN
+      END
+
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_READ_NODDY                     *
+*---------------------------------------------------------------------*

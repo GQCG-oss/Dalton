@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-c /* deck cc_famata */
+c /* deck cc_famat */
 *=====================================================================*
        SUBROUTINE CC_FAMAT( LABELA, ISYMTA,  ! inp: label/symmetry A
      &                      LISTB,  ITAMPB,  ! inp: B resp. amplit.
@@ -42,6 +42,7 @@ c /* deck cc_famata */
      &                      IFADOTS,FACON,   ! indeces/dotproducts
      &                      FILFA,  ITRAN,   ! list,index for dotprods
      &                      NFATRAN,MXVEC,   ! dimensions for dotprods
+     &                      NODDY_CCSDT,     ! flag for noddy triples 
      &                      WORK,   LWORK   )! work space
 *---------------------------------------------------------------------*
 *
@@ -86,8 +87,6 @@ c /* deck cc_famata */
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <cclists.h>
-#include <ccnoddy.h>
-C#include <ccr1rsp.h>
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -106,6 +105,7 @@ C#include <ccr1rsp.h>
       CHARACTER*8 LABELA
       CHARACTER*10 MODEL, MODELW
       CHARACTER LISTB*(*), LISTC*(*), FILFA*(*)
+      LOGICAL NODDY_CCSDT 
       INTEGER ISYRES, ISYCTR, ISYMTA, ISYMTB, LWORK
       INTEGER ITAMPB, IZETVC
 
@@ -554,7 +554,7 @@ C#include <ccr1rsp.h>
           CALL QUIT('Illegal value for IOPTRES in CC_FAMAT.')
         END IF
 
-        IF (IOPTRES.NE.5 .OR. NODDY_FAMAT) THEN
+        IF (IOPTRES.NE.5 .OR. NODDY_CCSDT) THEN
 
           CALL CCSDT_FAMAT_NODDY(LISTC,IZETVC,LISTB,ITAMPB,IOPTRES,
      &                           LABELA,FREQA,
@@ -678,6 +678,7 @@ C#include <ccr1rsp.h>
 *        
 *     Written by Christof Haettig, April 2002 
 *     based on CCSDT_ETA_NODDY
+*     Extensions for cubic response, CCH, May 2003
 *
 *=====================================================================*
       IMPLICIT NONE  
@@ -727,7 +728,7 @@ C#include <ccr1rsp.h>
      &        KFOCKC, LWRK1, KE3AM, KTC3AM, KTC1AM, KTC2AM,
      &        ISYMA, KINT1SB, KINT2SB, KLAMPB, KLAMHB, KFOCKB, ISYMB,
      &        KFOCKA, KFOCKA_AO, KFOCK0, IRREP, ISYM, IERR, KFOCKAB1,
-     &        KFIELD, KFIELDAO
+     &        KFIELD, KFIELDAO, KT1AMB
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
@@ -802,6 +803,7 @@ C#include <ccr1rsp.h>
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
+      LUSIFC = 0
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
@@ -966,13 +968,14 @@ C           ----------------------------------
       CALL CC_T2SQ(WORK(KT3AM),WORK(KL2AM),ISYM0)   
 
 *---------------------------------------------------------------------*
-*     Compute first-order response amplitudes:
+*     Compute triples amplitude response:
 *---------------------------------------------------------------------*
       KINT1SB = KEND3
       KINT2SB = KINT1SB + NT1AMX*NVIRT*NVIRT
       KEND3   = KINT2SB + NRHFT*NRHFT*NT1AMX
 
-      KLAMPB  = KEND3
+      KT1AMB  = KEND3
+      KLAMPB  = KT1AMB + NT1AMX
       KLAMHB  = KLAMPB + NLAMDT
       KFOCKB  = KLAMHB + NLAMDT
       KEND3   = KFOCKB + NORBT*NORBT
@@ -982,18 +985,39 @@ C           ----------------------------------
          CALL QUIT('Insufficient space in CCSDT_FAMAT_NODDY')
       ENDIF
 
-      CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTB,IDLSTB,FREQB,.FALSE.,
-     &                     .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
-     &                     .FALSE.,WORK(KDUM),WORK(KDUM),
-     &                     .FALSE.,WORK(KDUM),WORK(KDUM),
-     &                             WORK(KINT1SB),WORK(KINT2SB),
-     &                     WORK(KLAMPB),WORK(KLAMHB),WORK(KFOCKB),
-     &                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
-     &                     WORK(KDUM),WORK(KFOCKD),
-     &                     WORK(KEND3),LWRK3)
+      IF      (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ') THEN
+
+        CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTB,IDLSTB,FREQB,.FALSE.,
+     &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
+     &                       .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                       .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                               WORK(KINT1SB),WORK(KINT2SB),
+     &                       WORK(KLAMPB),WORK(KLAMHB),WORK(KFOCKB),
+     &                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     &                       WORK(KDUM),WORK(KFOCKD),
+     &                       WORK(KEND3),LWRK3)
+
+      ELSE IF (LISTB(1:3).EQ.'R2 ' .OR. LISTB(1:3).EQ.'ER1') THEN
+
+        CALL CCSDT_T32_NODDY(WORK(KT3AM),LISTB,IDLSTB,FREQB,
+     &                       WORK(KINT1S0),WORK(KINT2S0),
+     &                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     &                       WORK(KFOCKD),WORK(KFIELDAO),WORK(KFIELD),
+     &                       WORK(KSCR1),WORK(KEND3),LWRK3)
+
+        IOPT = 1
+        Call CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,WORK(KT1AMB),DUMMY)
+
+        CALL CCLR_LAMTRA(WORK(KLAMP0),WORK(KLAMPB),WORK(KLAMH0),
+     &                   WORK(KLAMHB),WORK(KT1AMB),ISYMB)
+      ELSE
+        
+        CALL QUIT('Unkown list '//LISTB//' in CCSDT_FAMAT_NODDY.')
+    
+      END IF
 
 *---------------------------------------------------------------------*
-*     Compute L^0_3 multipliers:
+*     Compute triples multipliers L_3:
 *---------------------------------------------------------------------*
       IF (LISTL(1:3).EQ.'L0 ') THEN
 
@@ -1001,11 +1025,28 @@ C           ----------------------------------
 
         CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
 
+        IF (NONHF .AND. LWRK3.LT.NT1AMX*NT1AMX*NT1AMX)
+     *    CALL QUIT('Out of memory in CCSDT_FAMAT_NODDY.')
+
         ! remember that CCSDT_L03AM returns -L3 !!
         CALL CCSDT_L03AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
      *                   WORK(KXIAJB),WORK(KFOCK0),WORK(KL1AM),
      *                   WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),
-     *                   DUMMY,DUMMY)
+     *                   WORK(KFIELD),WORK(KEND3))
+
+        CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
+
+      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ' .OR.
+     &         LISTL(1:3).EQ.'M1 ' .OR. LISTL(1:3).EQ.'N2 ' .OR.
+     &         LISTL(1:3).EQ.'E0 '                              ) THEN
+
+        CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
+
+        CALL CCSDT_TBAR31_NODDY(WORK(KL3AM),FREQL,LISTL,IDLSTL,
+     &                        WORK(KLAMP0),WORK(KLAMH0),
+     &                        WORK(KFOCK0),WORK(KFOCKD),WORK(KSCR1),
+     &                        WORK(KXIAJB),WORK(KINT1T0),WORK(KINT2T0),
+     &                        WORK(KEND3),LWRK3)
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
 
@@ -1028,6 +1069,21 @@ C           ----------------------------------
          OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
       END DO
 
+ctest
+C     LUFOCK = 0
+C     CALL GPOPEN(LUFOCK,'CCTEST'//LISTL(1:2)//LISTB(1:2),
+C    &            'UNKNOWN',' ','FORMATTED',IDUMMY,.FALSE.)
+C     REWIND(LUFOCK)
+C     WRITE(LUFOCK,'(A)') 'OMEGA1:'
+C     WRITE(LUFOCK,'(F20.16)') (WORK(KOME1-1+I),I=1,NT1AMX)
+C     WRITE(LUFOCK,'(A)') 'FOCKA:'
+C     WRITE(LUFOCK,'(F20.16)') (WORK(KFOCKA-1+I),I=1,NORBT*NORBT)
+C     WRITE(LUFOCK,'(A)') 'L3AM:'
+C     WRITE(LUFOCK,'(F20.16)')(WORK(KL3AM-1+I),I=1,NT1AMX*NT1AMX*NT1AMX)
+C     WRITE(LUFOCK,'(A)') 'T3AM:'
+C     WRITE(LUFOCK,'(F20.16)')(WORK(KT3AM-1+I),I=1,NT1AMX*NT1AMX*NT1AMX)
+C     CALL GPCLOSE(LUFOCK,'KEEP')
+ctest
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'CCSDT_FAMAT_NODDY> Contribution to F{A} T^B:'
         CALL CC_PRP(WORK(KOME1),WORK,1,1,0)
@@ -1038,6 +1094,8 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
       CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
 
+cqf This is the counterpart of (6) in notes if L0 is used and after 
+cqf contraction in CCDOTRSP_NODDY (result in DOTPROD).
       CALL CCSDT_E2AM(WORK(KOME2),WORK(KL3AM),WORK(KT2AM),WORK(KFOCKA))
 
       DO I = 1,NT1AMX
@@ -1175,10 +1233,10 @@ C           ----------------------------------
 C     ------
 C     begin:
 C     ------
-      IF (LISTL.NE.'L0') THEN
-        CALL QUIT('CCSDT_FA_DEN can not yet treat '//LISTL//
-     &            ' type vectors.')
-      END IF
+C     IF (LISTL.NE.'L0') THEN
+C       CALL QUIT('CCSDT_FA_DEN can not yet treat '//LISTL//
+C    &            ' type vectors.')
+C     END IF
 
 C     ------------------------------------------------
 C     set up list of effective F{A} t^B t^C densities:
@@ -1319,7 +1377,7 @@ C     -------------------------
 *              END OF SUBROUTINE CCSDT_FA_SETUP                       *
 *---------------------------------------------------------------------*
 *=====================================================================*
-      SUBROUTINE CCSDT_FA_DEN(LISTL,LISTO,LISTB,LISTC,
+      SUBROUTINE CCSDT_FA_DEN(LISTL,LISTO,LISTB,LISTC,FADEN_NODDY,
      &                        NFATRAN,MXVEC,IFATRAN,IFADOTS,FACON,
      &                        FNDELD,FNCKJD,FNDKBC,FNTOC,
      &                        FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X,
@@ -1366,6 +1424,7 @@ C     -------------------------
       CHARACTER*3 LISTL, LISTO, LISTB, LISTC, LSTR_INTER(*)
       CHARACTER*(*) FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3
       CHARACTER*(*) FN3FOPX, FN3FOP2X 
+      LOGICAL FADEN_NODDY
       INTEGER NINTETA, NFADEN, MXVEC, NFATRAN, LWORK
       INTEGER IDXL_INTER(*), IDXR_INTER(*), IDXL_FADEN(*),
      *        IDXB_FADEN(*), IDXC_FADEN(*),
@@ -1382,7 +1441,8 @@ C     -------------------------
 
 * local:
       CHARACTER MODEL*(10), LISTR*3, LABELR*8, LABELA*8
-      LOGICAL LPDBSA
+      LOGICAL LPDBSA, CALL_ETA_FA_DEN, NEED_L1AM, NEED_L2TP,
+     &        NEED_T2TP, NEED_R2TP
       INTEGER ISYM, ILEN, ISYMFN, ISYMIM, NIMFN(8)
       INTEGER LUFOCK, LUINTER, LUR2TP, LU3SRTR, LUCKJDR, LUDELDR,
      &        LUDKBCR, LUDKBCR4, LUDELD, LUDKBC, LUTOC, LU3VI,
@@ -1426,6 +1486,10 @@ C     -------------------------
         NIMFN(ISYM) = ILEN
       END DO 
 
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'Entered CCSDT_FA_DEN...'
+        WRITE(LUPRI,*) 'LISTL,LISTB,LISTC:',LISTL,LISTB,LISTC
+      END IF
 *---------------------------------------------------------------------*
 *     allocate some zeroth-order intermediates:
 *---------------------------------------------------------------------*
@@ -1439,9 +1503,6 @@ C     -------------------------
       KFOCK0 = KEND0
       KEND1  = KFOCK0 + N2BAST
  
-      KT2TP = KEND1
-      KEND1 = KT2TP + NT2SQ(ISYM0)
-
       LWRK1 = LWORK - KEND1
 
       IF (LWRK1 .LT. 0) THEN
@@ -1471,72 +1532,10 @@ C     -------------------------
      &              WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0) 
 
 *---------------------------------------------------------------------*
-*     read and resort zeroth-order doubles amplitudes:
+*     open some files:
 *---------------------------------------------------------------------*
-      IF (LWRK1 .LT. NT2SQ(ISYM0)) 
-     &  CALL QUIT('Insufficient work space CCSDT_FA_DEN (2)')
-
-      IOPT = 2
-      CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,DUMMY,WORK(KT2TP))
- 
-      CALL CC_T2SQ(WORK(KT2TP),WORK(KEND1),ISYM0)
- 
-      CALL CC3_T2TP(WORK(KT2TP),WORK(KEND1),ISYM0)
- 
-      IF (LOCDBG) WRITE(LUPRI,*) 'Norm of T2TP ',
-     *    DDOT(NT2SQ(ISYM0),WORK(KT2TP),1,WORK(KT2TP),1)
-
-
-*---------------------------------------------------------------------*
-*     here can loop over left vectors... 
-*     at present only 'L0 ' is implemented...
-*---------------------------------------------------------------------*
-
-      IF (LISTL.EQ.'L0 ') THEN
-         IDLSTL = 0
-         ISYML  = 1
-      ELSE
-         ! IDLSTL = IDXL_INTER(INTETA)
-         ! ISYML  = ILSTSYM(LISTL,IDLSTL)
-         CALL QUIT('non-implemented case in CCSDT_FA_DEN.')
-      END IF
-
-
-c     -------------------------------
-c     allocate space for multipliers:
-c     -------------------------------
-      KL1AM = KEND1 
-      KL2TP = KL1AM + NT1AM(ISYML)
-      KEND2 = KL2TP + NT2SQ(ISYML)
-
-      LWRK2 = LWORK - KEND2
-
-      IF (LWRK2 .LT. NT2SQ(ISYML)) THEN
-        CALL QUIT('Insufficient work space CCSDT_FA_DEN (3)')
-      END IF
-
-c     ------------------------------------
-c     read and resort doubles multipliers:
-c     ------------------------------------
-      IOPT = 3
-      CALL CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,
-     *              WORK(KL1AM),WORK(KL2TP))
- 
-      CALL CC_T2SQ(WORK(KL2TP),WORK(KEND2),ISYML)
- 
-      CALL CC3_T2TP(WORK(KL2TP),WORK(KEND2),ISYML)
- 
-      IF (LOCDBG) WRITE(LUPRI,*) 'Norm of L2TP ',
-     *    DDOT(NT2SQ(ISYML),WORK(KL2TP),1,WORK(KL2TP),1)  
-
-c     ---------------
-c     open some file:
-c     ---------------
       LUINTER = 0
       CALL WOPEN2(LUINTER,FNINTER,64,0)
-
-      LUR2TP = 0
-      CALL WOPEN2(LUR2TP,FNR2TP,64,0)
 
       LU3SRTR  = 0
       LUCKJDR  = 0
@@ -1569,44 +1568,120 @@ c     ---------------
       CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)  
 
 *---------------------------------------------------------------------*
-*     loop over all right vectors and compute intermediates:
+*     loop over the intermediates that need to be computed:
 *---------------------------------------------------------------------*
       IADRINT = 1
 
       DO INTETA = 1, NINTETA
+
+        IF (LISTL.EQ.'L0 ') THEN
+          IDLSTL = 0
+          ISYML  = 1
+        ELSE
+          IDLSTL = IDXL_INTER(INTETA)
+          ISYML  = ILSTSYM(LISTL,IDLSTL)
+        END IF
  
         LISTR  = LSTR_INTER(INTETA)
         IDLSTR = IDXR_INTER(INTETA)
         ISYMR  = ILSTSYM(LISTR,IDLSTR)
 
-        IF (LISTR(1:3).EQ.'R1 ') THEN
-          FREQR  = FRQLRT(IDLSTR)
-          LABELR = LRTLBL(IDLSTR)
-          IF (LORXLRT(IDLSTR)) CALL QUIT('NO ORBITAL RELAXED '//
-     &       'PERTURBATION IMPLEMENTED IN CCSDT_FA_DEN.')
-        ELSE IF (LISTR(1:3).EQ.'RE ') THEN
-          FREQR  = EIGVAL(IDLSTR)
-          LABELR = '- none -'
-        ELSE
-          CALL QUIT('Unknown type of right vector in CCSDT_FA_DEN.')
+        ! check for modules which needed extra arrays / preparations
+        CALL_ETA_FA_DEN = ( (LISTL.EQ.'L0 ' .OR. LISTL.EQ.'LE ') .AND. 
+     *                     (LISTR.EQ.'R1 ' .OR. LISTR.EQ.'RE '
+     *                     .OR. LISTR.EQ.'R2 ') )
+
+        NEED_L1AM = CALL_ETA_FA_DEN
+        NEED_L2TP = CALL_ETA_FA_DEN
+        NEED_T2TP = CALL_ETA_FA_DEN
+        NEED_R2TP = CALL_ETA_FA_DEN
+
+
+c       -------------------------------
+c       allocate space for multipliers:
+c       -------------------------------
+        KEND2 = KEND1
+    
+        IF (NEED_T2TP) THEN
+          KT2TP = KEND2
+          KEND2 = KT2TP + NT2SQ(ISYM0)
+        END IF
+
+        IF (NEED_L1AM) THEN
+          KL1AM = KEND2 
+          KEND2 = KL1AM + NT1AM(ISYML)
+        END IF
+          
+        IF (NEED_L2TP) THEN
+          KL2TP = KEND2
+          KEND2 = KL2TP + NT2SQ(ISYML)
+        END IF
+
+        LWRK2 = LWORK - KEND2
+        IF (LWRK2 .LT. NT2SQ(ISYML)) THEN
+          CALL QUIT('Insufficient work space CCSDT_FA_DEN (3)')
+        END IF
+
+c       ------------------------------------------------
+c       read and resort zeroth-order doubles amplitudes:
+c       ------------------------------------------------
+        IF (NEED_T2TP) THEN
+          IF (LWRK2 .LT. NT2SQ(ISYM0)) 
+     &      CALL QUIT('Insufficient work space CCSDT_FA_DEN (2a)')
+          
+          IOPT = 2
+          CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,DUMMY,WORK(KT2TP))
+          CALL CC_T2SQ(WORK(KT2TP),WORK(KEND2),ISYM0)
+          CALL CC3_T2TP(WORK(KT2TP),WORK(KEND2),ISYM0)
+          IF (LOCDBG) WRITE(LUPRI,*) 'Norm of T2TP ',
+     *        DDOT(NT2SQ(ISYM0),WORK(KT2TP),1,WORK(KT2TP),1)
+        END IF
+
+c       -------------------------
+c       read singles multipliers:
+c       -------------------------
+        IF (NEED_L1AM) THEN
+          IOPT = 1
+          CALL CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,WORK(KL1AM),DUMMY)
+        END IF
+       
+c       ------------------------------------
+c       read and resort doubles multipliers:
+c       ------------------------------------
+        IF (NEED_L2TP) THEN
+          IF (LWRK2 .LT. NT2SQ(ISYM0)) 
+     &      CALL QUIT('Insufficient work space CCSDT_FA_DEN (2b)')
+
+          IOPT = 3
+          CALL CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,
+     *                  WORK(KL1AM),WORK(KL2TP))
+          CALL CC_T2SQ(WORK(KL2TP),WORK(KEND2),ISYML)
+          CALL CC3_T2TP(WORK(KL2TP),WORK(KEND2),ISYML)
+          IF (LOCDBG) WRITE(LUPRI,*) 'Norm of L2TP ',
+     *        DDOT(NT2SQ(ISYML),WORK(KL2TP),1,WORK(KL2TP),1)  
         END IF
 
 c       ---------------------------------------------
 c       read and resort doubles response multipliers:
 c       ---------------------------------------------
-        KR2TP = KEND2
-        KEND3 = KR2TP + NT2SQ(ISYMR)
-        LWRK3 = LWORK - KEND3
-        IF (LWRK3.LT.NT2AM(ISYMR))
-     &    CALL QUIT('Out of memory in CCSDT_FA_DEN. (4a)')
+        IF (NEED_R2TP) THEN
+          LUR2TP = 0
+          CALL WOPEN2(LUR2TP,FNR2TP,64,0)
 
-        IOPT = 2
-        CALL CC_RDRSP(LISTR,IDLSTR,ISYMR,IOPT,MODEL,
-     &                DUMMY,WORK(KEND3))
-        CALL CCLR_DIASCL(WORK(KEND3),TWO,ISYMR)
-        CALL CC_T2SQ(WORK(KEND3),WORK(KR2TP),ISYMR)
- 
-        CALL PUTWA2(LUR2TP,FNR2TP,WORK(KR2TP),1,NT2SQ(ISYMR))
+          KR2TP = KEND2
+          KEND3 = KR2TP + NT2SQ(ISYMR)
+          LWRK3 = LWORK - KEND3
+          IF (LWRK3.LT.NT2AM(ISYMR))
+     &      CALL QUIT('Out of memory in CCSDT_FA_DEN. (4a)')
+         
+          IOPT = 2
+          CALL CC_RDRSP(LISTR,IDLSTR,ISYMR,IOPT,MODEL,
+     &                  DUMMY,WORK(KEND3))
+          CALL CCLR_DIASCL(WORK(KEND3),TWO,ISYMR)
+          CALL CC_T2SQ(WORK(KEND3),WORK(KR2TP),ISYMR)
+         
+          CALL PUTWA2(LUR2TP,FNR2TP,WORK(KR2TP),1,NT2SQ(ISYMR))
+        END IF
 
 c       ------------------------------------------------------
 c       allocate memory for intermediates and initialize them:
@@ -1628,21 +1703,112 @@ c       ------------------------------------------------------
 c       ------------------------------------------------------
 c       compute triples intermediates: D(ab), D(ij), M(imfn)
 c       ------------------------------------------------------
-        CALL CCSDT_ETA_FA_DEN(LISTL,IDLSTL,ISYML,
-     *                        LISTR,IDLSTR,ISYMR,FREQR,LABELR,
-     *                        WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
-     *                        WORK(KT2TP),WORK(KL2TP),WORK(KL1AM),
-     *                        ISYETA,WORK(KDAB),WORK(KDIJ),
-     *                        .FALSE.,DUMMY,
-     *                        .FALSE.,DUMMY,.TRUE.,WORK(KMMAT),
-     *                        WORK(KEND3),LWRK3,
-     *                        LUDELD,  FNDELD,  LUCKJD, FNCKJD,
-     *                        LUDKBC,  FNDKBC,  LUTOC,  FNTOC,
-     *                        LU3VI,   FN3VI,   LUDKBC3,FNDKBC3,
-     *                        LU3FOPX, FN3FOPX, LU3FOP2X,FN3FOP2X,
-     *                        LU3SRTR, FN3SRTR, LUCKJDR,FNCKJDR,
-     *                        LUDELDR, FNDELDR, LUDKBCR,FNDKBCR,
-     *                        LUDKBCR4,FNDKBCR4,LUR2TP, FNR2TP  )
+        IF ( ( (LISTL(1:3).EQ.'L0 ') .OR. (LISTL(1:3).EQ.'LE ') ) .AND. 
+     *      ( (LISTR(1:3).EQ.'R1 ') .OR. (LISTR(1:3).EQ.'RE ') ) ) THEN
+
+          IF (LISTR(1:3).EQ.'R1 ') THEN
+            FREQR  = FRQLRT(IDLSTR)
+            LABELR = LRTLBL(IDLSTR)
+            IF (LORXLRT(IDLSTR)) CALL QUIT('NO ORBITAL RELAXED '//
+     &         'PERTURBATION IMPLEMENTED IN CCSDT_FA_DEN.')
+          ELSE IF (LISTR(1:3).EQ.'RE ') THEN
+            FREQR  = EIGVAL(IDLSTR)
+            LABELR = '- none -'
+          ELSE
+            CALL QUIT('Illegal right vector in CCSDT_FA_DEN.')
+          END IF
+
+
+          IF (FADEN_NODDY) THEN
+           WRITE(LUPRI,*) 'No noddy code for the case in CCSDT_FA_DEN:'
+           WRITE(LUPRI,*) 'LISTL,LISTR:',LISTL,LISTR
+           WRITE(LUPRI,*) 'the real code will be used instead...'
+          END IF
+
+          !frequency of LISTL is handled inside
+          CALL CCSDT_ETA_FA_DEN(LISTL,IDLSTL,ISYML,
+     *                          LISTR,IDLSTR,ISYMR,FREQR,LABELR,
+     *                          WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     *                          WORK(KT2TP),WORK(KL2TP),WORK(KL1AM),
+     *                          ISYETA,WORK(KDAB),WORK(KDIJ),
+     *                          .FALSE.,DUMMY,
+     *                          .FALSE.,DUMMY,.TRUE.,WORK(KMMAT),
+     *                          WORK(KEND3),LWRK3,
+     *                          LUDELD,  FNDELD,  LUCKJD, FNCKJD,
+     *                          LUDKBC,  FNDKBC,  LUTOC,  FNTOC,
+     *                          LU3VI,   FN3VI,   LUDKBC3,FNDKBC3,
+     *                          LU3FOPX, FN3FOPX, LU3FOP2X,FN3FOP2X,
+     *                          LU3SRTR, FN3SRTR, LUCKJDR,FNCKJDR,
+     *                          LUDELDR, FNDELDR, LUDKBCR,FNDKBCR,
+     *                          LUDKBCR4,FNDKBCR4,LUR2TP, FNR2TP  )
+C
+
+        ELSE IF (  LISTL.EQ.'L0 '.AND.
+     *            (LISTR.EQ.'R2 '.OR. LISTR.EQ.'ER1')       ) THEN
+
+C
+
+          IF (FADEN_NODDY) THEN
+
+            CALL CCSDT_ADEN_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                            WORK(KLAMP0),WORK(KLAMH0),
+     *                            WORK(KFOCK0),
+     *                            WORK(KDIJ),WORK(KDAB),
+     *                            .FALSE.,DUMMY,.TRUE.,WORK(KMMAT),
+     *                            WORK(KEND3),LWRK3,
+     *                            LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                            FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                            LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                            LU3FOP2X,FN3FOP2X)
+C
+          ELSE
+
+       !FIX LISTL WITH IF STATEMENTS INSIDE !!!!
+             CALL CC3_ADEN_CUB_T0('L1 ',1,LISTR,IDLSTR,
+     *                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     *                     WORK(KDIJ),WORK(KDAB),ISYETA,
+     *                     .TRUE.,WORK(KMMAT),
+     *                     WORK(KEND3),LWRK3,
+     *                     LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                     FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                     LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                     LU3FOP2X,FN3FOP2X)
+C
+          END IF
+
+        ELSE IF ( (LISTL.EQ.'L1 '.OR. LISTL.EQ.'LE ') .AND. 
+     *            (LISTR.EQ.'R1 '.OR. LISTR.EQ.'RE ')       ) THEN
+
+          IF (FADEN_NODDY) THEN
+            CALL CCSDT_ADEN_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                            WORK(KLAMP0),WORK(KLAMH0),
+     *                            WORK(KFOCK0),
+     *                            WORK(KDIJ),WORK(KDAB),
+     *                            .FALSE.,DUMMY,.TRUE.,WORK(KMMAT),
+     *                            WORK(KEND3),LWRK3,
+     *                            LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                            FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                            LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                            LU3FOP2X,FN3FOP2X)
+C
+
+          ELSE
+             CALL CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     *                     WORK(KDIJ),WORK(KDAB),
+     *                     .FALSE.,DUMMY,ISYETA,
+     *                     .TRUE.,WORK(KMMAT),
+     *                     WORK(KEND3),LWRK3,
+     *                     LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                     FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                     LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                     LU3FOP2X,FN3FOP2X)
+C
+          END IF
+
+        ELSE
+          CALL QUIT('Encountered non-implemented case in CCSDT_FA_DEN.')
+        END IF
 
 c       -------------------------------------------------
 c       put intermediates on file and remember addresses:
@@ -1659,6 +1825,9 @@ c       -------------------------------------------------
         CALL PUTWA2(LUINTER,FNINTER,WORK(KMMAT),IADRINT,NIMFN(ISYETA))
         IADRINT = IADRINT + NIMFN(ISYETA)
 
+
+        IF (NEED_R2TP) CALL WCLOSE2(LUR2TP,FNR2TP,'DELETE')
+ 
       END DO
 
 *---------------------------------------------------------------------*
@@ -1673,8 +1842,6 @@ c       -------------------------------------------------
       CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
       CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP') 
 
-      CALL WCLOSE2(LUR2TP,FNR2TP,'DELETE')
- 
       CALL WCLOSE2(LU3SRTR,FN3SRTR,'DELETE')
       CALL WCLOSE2(LUCKJDR,FNCKJDR,'DELETE')
       CALL WCLOSE2(LUDELDR,FNDELDR,'DELETE')

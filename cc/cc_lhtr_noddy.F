@@ -73,6 +73,7 @@ C
 #include <mxcent.h>
 #include <eribuf.h>
 #include <ccfield.h>
+#include <ccnoddy.h>
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG = .FALSE.)
@@ -100,7 +101,8 @@ C
 
       IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
          KONEP  = KEND1
-         KEND1  = KONEP + N2BST(ISYMOP)
+         KONEPAO= KONEP + N2BST(ISYMOP)
+         KEND1  = KONEPAO+N2BST(ISYMOP)
          LWRK1  = LWORK  - KEND1
       ENDIF
 
@@ -146,174 +148,25 @@ C--------------------------------
 C     Initialize integral arrays.
 C--------------------------------
 C
-      CALL DZERO(WORK(KINT1T),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT2T),NT1AMX*NRHFT*NRHFT)
-      CALL DZERO(WORK(KINT1S),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT2S),NT1AMX*NRHFT*NRHFT)
-      CALL DZERO(WORK(KT3AM),NT1AMX*NT1AMX*NT1AMX)
       CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KIAJB),NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KYIAJB),NT1AMX*NT1AMX)
-C
-      CALL DZERO(WORK(KIOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
-      CALL DZERO(WORK(KIOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
-      CALL DZERO(WORK(KIOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
-      CALL DZERO(WORK(KIVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
-C
-C-------------------------------------
-C     Read canonical orbital energies.
-C-------------------------------------
-C
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUSIFC
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
-      CALL GPCLOSE(LUSIFC,'KEEP')
-C
-C--------------------------------------------------
-C     Read in AO fock matrix and transform to MO
-C--------------------------------------------------
-C
-      LUFCK = 0
-      CALL GPOPEN(LUFCK,'CC_FCKH','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-C
-      REWIND(LUFCK)
-      READ(LUFCK)(WORK(KFOCK + I-1),I = 1,N2BST(ISYMOP))
-      CALL GPCLOSE(LUFCK,'KEEP' )
-C
-      CALL CC_FCKMO(WORK(KFOCK),XLAMDP,XLAMDH,
-     *              WORK(KEND1),LWRK1,1,1,1)
-C
-C---------------------------------------------------
-C     Get the one electron integrals from the fields
-C---------------------------------------------------
-C
-      IF ((NONHF) .AND. NFIELD .GT. 0) THEN
-         CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
-         DO I = 1, NFIELD
-            FF = EFIELD(I)
-            CALL CC_ONEP(WORK(KONEP),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
-         ENDDO
-         CALL CC_FCKMO(WORK(KONEP),XLAMDP,XLAMDH,
-     *                 WORK(KEND1),LWRK1,1,1,1)
-      ENDIF
-C
-C====================================================
-C     Start the loop over distributions of integrals.
-C====================================================
-C
-      IF (DIRECT) THEN
-         NTOSYM = 1
-         DTIME  = SECOND()
-c        CALL HERDI1(WORK(KEND1),LWRK1,IPRINT)
-         CALL QUIT('Direct not implemented')
-         DTIME  = SECOND() - DTIME
-         TIMHER1 = TIMHER1 + DTIME
-      ELSE
-         NTOSYM = NSYM
-      ENDIF
-C
-      DO 100 ISYMD1 = 1,NTOSYM
-C
-         IF (DIRECT) THEN
-            NTOT = MAXSHL
-         ELSE
-            NTOT = NBAS(ISYMD1)
-         ENDIF
-C
-         DO 110 ILLL = 1,NTOT
-C
-C-----------------------------------------------------------------
-C           If direct calculate the integrals 
-C-----------------------------------------------------------------
-C
-            IF (DIRECT) THEN
-               DTIME  = SECOND()
-c              CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,IPRINT)
-               CALL QUIT('Direct not implemented')
-               DTIME  = SECOND() - DTIME
-               TIMHER2 = TIMHER2 + DTIME
-               KRECNR = KEND1
-               KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
-               LWRK1  = LWORK  - KEND1
-               IF (LWRK1 .LT. 0) THEN
-                  CALL QUIT('Insufficient core in CC_FOP3')
-               END IF
-            ELSE
-               NUMDIS = 1
-            ENDIF
-C
-C-----------------------------------------------------
-C           Loop over number of distributions in disk.
-C-----------------------------------------------------
-C
-            DO 120 IDEL2 = 1,NUMDIS
-C
-               IF (DIRECT) THEN
-                  IDEL  = INDEXA(IDEL2)
-                  ISYMD = ISAO(IDEL)
-               ELSE
-                  IDEL  = IBAS(ISYMD1) + ILLL
-                  ISYMD = ISYMD1
-               ENDIF
-C
-               ISYDIS = MULD2H(ISYMD,ISYMOP)
-C
-C------------------------------------------
-C              Work space allocation no. 2.
-C------------------------------------------
-C
-               KXINT  = KEND1
-               KEND2  = KXINT + NDISAO(ISYDIS)
-               LWRK2  = LWORK - KEND2
-C
-               IF (LWRK2 .LT. 0) THEN
-                  WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
-                  CALL QUIT('Insufficient space in CCSD_TRIPLE')
-               ENDIF
-C
-C
-C-----------------------------------------
-C              Read in batch of integrals.
-C-----------------------------------------
-C
-               DTIME   = SECOND()
-               CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
-     *                     WORK(KRECNR),DIRECT)
-               DTIME   = SECOND() - DTIME
-               TIMRDAO = TIMRDAO  + DTIME
-C
-C----------------------------------------------------
-C              Calculate integrals needed in CCSD[T].
-C----------------------------------------------------
-C
-               CALL CCSDT_TRAN1(WORK(KINT1T),WORK(KINT2T),XLAMDP,
-     *                          XLAMDH,WORK(KXINT),IDEL)
-C
-               CALL CC3_TRAN2(WORK(KIAJB),WORK(KYIAJB),XLAMDP,
-     *                          XLAMDH,WORK(KXINT),IDEL)
-C
-               CALL CCSDT_TRAN3(WORK(KINT1S),WORK(KINT2S),XLAMDP,
-     *                          XLAMDH,WORK(KXINT),IDEL)
-C
-               CALL CCFOP_TRAN1(WORK(KIOVVO),WORK(KIOOVV),
-     *                          WORK(KIOOOO),WORK(KIVVVV),
-     *                          XLAMDP,XLAMDH,WORK(KXINT),IDEL)
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
-C
-C-------------------------------------
-C     Calculate the T3 amplitudes.
-C-------------------------------------
-C
-      CALL CCSDT_T03AM(WORK(KT3AM),WORK(KINT1S),WORK(KINT2S),T2AM,
-     *                WORK(KSCR1),WORK(KFOCKD),WORK(KONEP),WORK(KL3AM))
 
-      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0d0,WORK(KT3AM),1)
+      CALL CCSDT_READ_NODDY(.TRUE.,WORK(KFOCKD),WORK(KFOCK),
+     &                             WORK(KONEP), WORK(KONEPAO),
+     &                      .TRUE.,WORK(KIAJB), WORK(KYIAJB),
+     &                      .TRUE.,WORK(KINT1S),WORK(KINT2S),
+     &                      .TRUE.,WORK(KINT1T),WORK(KINT2T),
+     &                      .TRUE.,WORK(KIOVVO),WORK(KIOOVV),
+     &                             WORK(KIOOOO),WORK(KIVVVV),
+     &                      NORBT,NLAMDT,NRHFT,NVIRT,NT1AMX)
+C
+C-------------------------------------
+C     Get the T3 amplitudes.
+C-------------------------------------
+      LUTEMP = 0
+      CALL GPOPEN(LUTEMP,FILNODT30,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+      READ(LUTEMP) (WORK(KT3AM+I-1), I=1,NT1AMX*NT1AMX*NT1AMX)
+      CALL GPCLOSE(LUTEMP,'KEEP')
 C
       IF (IOPT .EQ. 1 .OR. (NONHF .AND. NFIELD.GT.0)) THEN
          LUSIFC = 0

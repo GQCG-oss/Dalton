@@ -30,7 +30,7 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #######################################################################
 cat > alpha_relax.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .ANGMOM

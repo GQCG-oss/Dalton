@@ -71,6 +71,11 @@ C
 #include <dummy.h>
 #include <iratdef.h>
 #include <ccinftap.h>
+#include <cclrmrsp.h>
+#include <ccexci.h>
+#include <ccn2rsp.h>
+C
+      LOGICAL LSKIPL1R
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -102,7 +107,7 @@ C
       INTEGER KOIOOOO,KOIOVVO,KOIOOVV,KBIOOOO,KBIOVVO,KBIOOVV
       INTEGER ISINT2L1R,ISYFCKL1R,KXIAJB,KT3BOG1,KT3BOL1,KT3BOG2
       INTEGER KT3BOL2,KLAMPL1R,KLAMHL1R
-      INTEGER KW3XOGX1,KFOCKL1RCK,KW3BXOGX1,KW3BXOLX1
+      INTEGER KFOCKL1RCK,KW3BXOGX1,KW3BXOLX1
       INTEGER KW3BXOG1,KW3BXOL1,KT1L1R
       INTEGER LENGTH
       INTEGER ISINT1,ISINT1L1R
@@ -123,6 +128,7 @@ C
       INTEGER KT3BVBG1,KT3BVBG2,KT3BVBG3,KSMAT4,KUMAT4,KT3BVBL1
       INTEGER KT3BVBL2,KT3BVBL3,KEND5,LWRK5
       INTEGER KINTOC,KTROCR,KTROCR1 
+      INTEGER ISYML0
 
       INTEGER LENSQ,LENSQWB
       INTEGER ISTBD,KTB,LENSQTB,KINDSQTB,ISTB
@@ -189,8 +195,9 @@ C------------------------------------------------------------
 C     lists handling
 C------------------------------------------------------------
 C
-      LISTL0 = 'L0 '
-      IDLSTL0 = 0
+c     LISTL0 = 'L0 '
+c     IDLSTL0 = 0
+c     ISYML0  = ISYM0
 C
       IF (LISTL(1:3).EQ.'L1 ') THEN
 
@@ -200,9 +207,6 @@ C
          FREQL1  = FRQLRZ(IDLSTL)
          LABELL1 = LRZLBL(IDLSTL)
          LORXL1  = LORXLRZ(IDLSTL)
-c
-c        write(lupri,*)'LABELL1 in CC3_BFMAT ', LABELL1
-c
 
          IF (LORXL1) CALL QUIT('NO ORBITAL RELAX. IN CC3_BFMAT')
 
@@ -213,6 +217,10 @@ c
         ISYML1R  = ISYLRT(IDLSTL1R)
         FREQL1R  = FRQLRT(IDLSTL1R)
 C
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0  = ISYM0
+C
         IF (ISYML1 .NE. ISYML1R) THEN
            WRITE(LUPRI,*)'ISYML1: ', ISYML1
            WRITE(LUPRI,*)'ISYML1R: ', ISYML1R
@@ -222,11 +230,64 @@ C
         IF (FREQL1R .NE. FREQL1) THEN
            WRITE(LUPRI,*)'FREQL1R: ', FREQL1R
            WRITE(LUPRI,*)'FREQL1: ', FREQL1
-           CALL QUIT('Frequency mismatch in CC3_BFMAT')
+           CALL QUIT('Frequency mismatch in CC3_BFMAT(L1)')
         END IF
 C
+      ELSE IF (LISTL(1:3).EQ.'M1 ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = FRQLRM(IDLSTL)
+        LABELL1 = '- none -'
+C
+        ! find corresponding right eigenvector
+        LISTL1R = 'RE '
+        IDLSTL1R = ILRM(IDLSTL)
+        ISYML1R = ISYML1
+        FREQL1R = EIGVAL(IDLSTL1R)
+C
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0  = ISYM0
+C
+        IF (FREQL1R .NE. FREQL1) THEN
+           WRITE(LUPRI,*)'FREQL1R: ', FREQL1R
+           WRITE(LUPRI,*)'FREQL1: ', FREQL1
+           CALL QUIT('Frequency mismatch in CC3_BFMAT(M1)')
+        END IF
+C
+      ELSE IF (LISTL(1:3).EQ.'N2 ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = FRQIN2(IDLSTL) + FRQFN2(IDLSTL)
+        LABELL1 = '- none -'
+C
+        ! find corresponding right eigenvector
+        LISTL1R = 'RE '
+        IDLSTL1R = IFN2(IDLSTL)
+        ISYML1R = ILSTSYM(LISTL1R,IDLSTL1R)
+        FREQL1R = FRQFN2(IDLSTL)
+C
+        !LITSL0 corresponding to LISTL
+        LISTL0 = 'LE '
+        IDLSTL0 = IIN2(IDLSTL)
+        ISYML0 = ILSTSYM(LISTL0,IDLSTL0)
+C
+      ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+        ISYML1 = ILSTSYM(LISTL,IDLSTL)
+        FREQL1 = -EIGVAL(IDLSTL)
+        LABELL1 = '- none -'
+C
+        !we don't have any "right" vector entering a right hand side
+        LISTL1R = '---'
+        IDLSTL1R = -99
+
+C       !LISTL0 not used for LE (...but does not hurt ot have them defined)
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0  = ISYM0
+C
       ELSE IF (LISTL(1:3).EQ.'L0 ') THEN
-         CONTINUE
+        LISTL0 = 'L0 '
+        IDLSTL0 = 0
+        ISYML0  = ISYM0
       ELSE
          CALL QUIT('Unkown left list in CC3_BFMAT')
       END IF
@@ -250,11 +311,13 @@ C
       KFOCK0CK  = KFOCKD  + NORBTS
       KT2TP   = KFOCK0CK  + NT1AMX
       KL1AM   = KT2TP   + NT2SQ(ISYM0)
-      KL2TP   = KL1AM   + NT1AM(ISYM0)
-      KEND1   = KL2TP   + NT2SQ(ISYM0)
+      KL2TP   = KL1AM   + NT1AM(ISYML0)
+      KEND1   = KL2TP   + NT2SQ(ISYML0)
       LWRK1   = LWORK   - KEND1
 C
-      IF (LISTL(1:3).EQ.'L1 ') THEN 
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ') 
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN 
          KL1L1   = KEND1
          KL2L1   = KL1L1   + NT1AM(ISYML1)
          KFOCKL1   = KL2L1   + NT2SQ(ISYML1)
@@ -297,8 +360,8 @@ C---------------------------------------------------------------------
 C
       IF (LISTL(1:3).EQ.'L1 ') THEN
          CALL GET_FOCKX(WORK(KFOCKL1),LABELL1,IDLSTL,ISYML1,
-     *                  WORK(KLAMP0),
-     *                  WORK(KLAMH0),WORK(KEND1),LWRK1)
+     *                  WORK(KLAMP0),ISYM0,
+     *                  WORK(KLAMH0),ISYM0,WORK(KEND1),LWRK1)
       END IF
 C
 C-------------------------------------
@@ -318,16 +381,18 @@ C--------------------------------------------
 C
       IOPT = 3
       CALL GET_T1_T2(IOPT,.FALSE.,WORK(KL1AM),WORK(KL2TP),LISTL0,
-     *               IDLSTL0,ISYM0,WORK(KEND1),LWRK1)
+     *               IDLSTL0,ISYML0,WORK(KEND1),LWRK1)
 C
       IF (LOCDBG) WRITE(LUPRI,*) 'Norm of L2TP ',
-     *    DDOT(NT2SQ(ISYM0),WORK(KL2TP),1,WORK(KL2TP),1)
+     *    DDOT(NT2SQ(ISYML0),WORK(KL2TP),1,WORK(KL2TP),1)
 C
 C---------------------------------------------
 C     Read L1L1 and L2L1 multipliers (L1 list)
 C---------------------------------------------
 C
-      IF (LISTL(1:3).EQ.'L1 ') THEN
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ') 
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN 
          IOPT  = 3
          CALL GET_T1_T2(IOPT,.FALSE.,WORK(KL1L1),WORK(KL2L1),LISTL,
      *                  IDLSTL,ISYML1,WORK(KEND1),LWRK1)
@@ -456,7 +521,9 @@ C-----------------------------
 C     Memory allocation.
 C-----------------------------
 C
-      IF (LISTL(1:3).EQ.'L1 ') THEN
+      IF ( (LISTL(1:3).EQ.'L1 ') 
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
          ISINT2L1R = MULD2H(ISYML1R,ISINT2)
          ISYFCKL1R = MULD2H(ISYMOP,ISYML1R)
       END IF
@@ -471,30 +538,36 @@ C
       KEND1  = KT3BOL2 + NTRAOC(ISYM0)
       LWRK1   = LWORK   - KEND1
 C
-      IF (LISTL(1:3).EQ.'L1 ') THEN
-         KW3XOGX1 = KEND1
-         KFOCKL1RCK   = KW3XOGX1 + NTRAOC(ISINT2R1)
+      IF ( (LISTL(1:3).EQ.'L1 ') 
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         KFOCKL1RCK   = KEND1
          KW3BXOGX1    = KFOCKL1RCK    + NT1AM(ISYFCKL1R)
          KW3BXOLX1   = KW3BXOGX1   + NTRAOC(ISINT2L1R)
          KEND1      = KW3BXOLX1   + NTRAOC(ISINT2L1R)
          LWRK1      = LWORK      - KEND1
+      END IF
 C
+      IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
          KW3BXOG1   = KEND1
          KW3BXOL1   = KW3BXOG1   + NTRAOC(ISYM0)
          KEND1   = KW3BXOL1   + NTRAOC(ISYM0)
          LWRK1      = LWORK      - KEND1
+      END IF
+C
+      IF ( (LISTL(1:3).EQ.'L1 ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         KT1L1R  = KEND1
+         KEND1  = KT1L1R + NT1AM(ISYML1R)
+         LWRK1   = LWORK  - KEND1
 C
          KLAMPL1R = KEND1
          KLAMHL1R  = KLAMPL1R  + NLAMDT
          KEND1   = KLAMHL1R  + NLAMDT
          LWRK1   = LWORK   - KEND1
-C
-      END IF
-C
-      IF (LISTL(1:3).EQ.'L1 ') THEN
-         KT1L1R  = KEND1
-         KEND1  = KT1L1R + NT1AM(ISYML1R)
-         LWRK1   = LWORK  - KEND1
       END IF
 C
       KINTOC = KEND1
@@ -536,7 +609,9 @@ C--------------------------
 C     Get Lambda for right list depended on left LISTL list
 C--------------------------
 C
-      IF (LISTL(1:3).EQ.'L1 ') THEN
+      IF ( (LISTL(1:3).EQ.'L1 ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
 C
          ISINT1L1R = MULD2H(ISINT1,ISYML1R)
 C
@@ -573,13 +648,27 @@ C     Construct occupied integrals which are required to calculate
 C     t3bar_Y multipliers                                             
 C-----------------------------------------------------------------
 C
-      IF (LISTL(1:3).EQ.'L1 ') THEN
-         CALL INTOCC_T3BARX(LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,
+      IF ( (LISTL(1:3).EQ.'L1 ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+         LSKIPL1R = .FALSE.
+         CALL INTOCC_T3BARX(LSKIPL1R,
+     *                      LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,
      *                      ISINT1,
      *                      WORK(KLAMHL1R),ISYML1R,ISINT1L1R,
      *                      WORK(KW3BXOG1),
      *                      WORK(KW3BXOL1),WORK(KW3BXOGX1),
      *                      WORK(KW3BXOLX1),
+     *                      WORK(KEND1),LWRK1)
+      ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+         LSKIPL1R = .TRUE.
+         CALL INTOCC_T3BARX(LSKIPL1R,
+     *                      LUTOC,FNTOC,ISYMOP,WORK(KLAMH0),ISYM0,
+     *                      ISINT1,
+     *                      DUMMY,IDUMMY,IDUMMY,
+     *                      WORK(KW3BXOG1),
+     *                      WORK(KW3BXOL1),DUMMY,
+     *                      DUMMY,
      *                      WORK(KEND1),LWRK1)
       END IF
 C
@@ -605,7 +694,9 @@ C
          ISYCKBD0  = MULD2H(ISYMD,ISYM0)
          ISYCKBDR1  = MULD2H(ISYMD,ISINT2R1)
 C
-         IF (LISTL(1:3).EQ.'L1 ') THEN
+         IF ( (LISTL(1:3).EQ.'L1 ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
             ISYCKBDL1R  = MULD2H(ISYMD,ISYML1R)
          END IF
 C
@@ -634,14 +725,20 @@ C
             KEND3   = KT3BVDG3 + NCKATR(ISYCKBD0)
             LWRK3   = LWORK  - KEND3
 
-            IF (LISTL(1:3).EQ.'L1 ') THEN
+            IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                KW3BXVDG1  = KEND3
                KW3BXVDG2  = KW3BXVDG1  + NCKATR(ISYCKBD0)
                KW3BXVDL1  = KW3BXVDG2  + NCKATR(ISYCKBD0)
                KW3BXVDL2  = KW3BXVDL1  + NCKATR(ISYCKBD0)
                KEND3     = KW3BXVDL2  + NCKATR(ISYCKBD0)
                LWRK3     = LWORK     - KEND3
+            END IF
 C
+            IF ( (LISTL(1:3).EQ.'L1 ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                KW3BXVDGX1  = KEND3
                KW3BXVDGX2  = KW3BXVDGX1  + NCKATR(ISYCKBDL1R)
                KW3BXVDLX1  = KW3BXVDGX2  + NCKATR(ISYCKBDL1R)
@@ -703,14 +800,29 @@ C           Construct virtual integrals (for fixed D) which are required
 C           to calculate t3bar_X multipliers
 C-----------------------------------------------------------------------
 C
-            IF (LISTL(1:3).EQ.'L1 ') THEN
-               CALL INTVIR_T3BARX_D(ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
+            IF ( (LISTL(1:3).EQ.'L1 ')
+     *      .OR. (LISTL(1:3).EQ.'M1 ')
+     *      .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+               LSKIPL1R = .FALSE.
+               CALL INTVIR_T3BARX_D(LSKIPL1R,
+     *                           ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                           LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
      *                           WORK(KW3BXVDGX1),WORK(KW3BXVDG1),
      *                           WORK(KW3BXVDGX2),WORK(KW3BXVDG2),
      *                           WORK(KW3BXVDLX1),WORK(KW3BXVDL1),
      *                           WORK(KW3BXVDLX2),WORK(KW3BXVDL2),
      *                           WORK(KLAMPL1R),ISYML1R,WORK(KLAMP0),
+     *                           ISYM0,ISYMD,D,WORK(KEND4),LWRK4)
+            ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+               LSKIPL1R = .TRUE.
+               CALL INTVIR_T3BARX_D(LSKIPL1R,
+     *                           ISYMOP,LU3VI,FN3VI,LU3VI2,FN3VI2,
+     *                           LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
+     *                           DUMMY,WORK(KW3BXVDG1),
+     *                           DUMMY,WORK(KW3BXVDG2),
+     *                           DUMMY,WORK(KW3BXVDL1),
+     *                           DUMMY,WORK(KW3BXVDL2),
+     *                           DUMMY,IDUMMY,WORK(KLAMP0),
      *                           ISYM0,ISYMD,D,WORK(KEND4),LWRK4)
             END IF
 C
@@ -752,12 +864,14 @@ C
 C
             DO ISYMB = 1,NSYM
 C
-               ISYALJB0  = MULD2H(ISYMB,ISYM0)
-               ISYALJD0 = MULD2H(ISYMD,ISYM0)
+               ISYALJB0  = MULD2H(ISYMB,ISYML0)
+               ISYALJD0 = MULD2H(ISYMD,ISYML0)
                ISYMBD  = MULD2H(ISYMD,ISYMB)
                ISCKIJ  = MULD2H(ISYMBD,ISYM0)
                ISYCKD  = MULD2H(ISYM0,ISYMB)
-               IF (LISTL(1:3).EQ.'L1 ') THEN
+               IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *             .OR. (LISTL(1:3).EQ.'M1 ')
+     *             .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                   ISYALJBL1  = MULD2H(ISYMB,ISYML1)
                   ISYALJDL1 = MULD2H(ISYMD,ISYML1)
                   ISWBMAT  = MULD2H(ISCKIJ,ISYML1)
@@ -769,7 +883,9 @@ C
                KINDSQ     = KDIAG     + NCKIJ(ISCKIJ)
                KEND4      = KINDSQ    + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
 
-               IF (LISTL(1:3).EQ.'L1 ') THEN
+               IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *             .OR. (LISTL(1:3).EQ.'M1 ')
+     *             .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                   KDIAGWB     = KEND4
                   KINDSQWB     = KDIAGWB    + NCKIJ(ISWBMAT)
                   KEND4    = KINDSQWB  + (6*NCKIJ(ISWBMAT) - 1)/IRAT + 1
@@ -779,7 +895,9 @@ C
                KINDEX2    = KINDEX    + (NCKI(ISYALJB0)  - 1)/IRAT + 1
                KEND4      = KINDEX2   + (NCKI(ISYALJD0) - 1)/IRAT + 1
 C
-               IF (LISTL(1:3).EQ.'L1 ') THEN
+               IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *             .OR. (LISTL(1:3).EQ.'M1 ')
+     *             .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                   KINDEXBL1   = KEND4
                   KINDEXDL1  = KINDEXBL1 + (NCKI(ISYALJBL1)-1)/IRAT + 1
                   KTMAT      = KINDEXDL1  + (NCKI(ISYALJDL1)-1)/IRAT + 1
@@ -817,7 +935,9 @@ C              Construct part of the diagonal
 C--------------------------------------------
 C
                CALL CC3_DIAG(WORK(KDIAG),WORK(KFOCKD),ISCKIJ)
-               IF (LISTL(1:3).EQ.'L1 ') THEN
+               IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *             .OR. (LISTL(1:3).EQ.'M1 ')
+     *             .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                   CALL CC3_DIAG(WORK(KDIAGWB),WORK(KFOCKD),ISWBMAT)
                END IF
 C
@@ -827,21 +947,27 @@ C------------------------------------
 C
                LENSQ  = NCKIJ(ISCKIJ)
                CALL CC3_INDSQ(WORK(KINDSQ),LENSQ,ISCKIJ)
-               IF (LISTL(1:3).EQ.'L1 ') THEN
+               IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *             .OR. (LISTL(1:3).EQ.'M1 ')
+     *             .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                   LENSQWB  = NCKIJ(ISWBMAT)
                   CALL CC3_INDSQ(WORK(KINDSQWB),LENSQWB,ISWBMAT)
                END IF
 C
                CALL CC3_INDEX(WORK(KINDEX),ISYALJB0)
                CALL CC3_INDEX(WORK(KINDEX2),ISYALJD0)
-               IF (LISTL(1:3).EQ.'L1 ') THEN
+               IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *             .OR. (LISTL(1:3).EQ.'M1 ')
+     *             .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                   CALL CC3_INDEX(WORK(KINDEXBL1),ISYALJBL1)
                   CALL CC3_INDEX(WORK(KINDEXDL1),ISYALJDL1)
                END IF
 C
                DO B = 1,NVIR(ISYMB)
 C
-                  IF (LISTL(1:3).EQ.'L1 ') THEN
+                  IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'LE ')
+     *                .OR. (LISTL(1:3).EQ.'M1 ')
+     *                .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
                      CALL DZERO(WORK(KW3BMAT),NCKIJ(ISWBMAT))
                   END IF
 C
@@ -863,24 +989,27 @@ C---------------------------------------------------------
 C                 Get T3bar_BD multipliers (using S and U)
 C---------------------------------------------------------
 C
-                  CALL GET_T3BAR0_BD(ISYM0,WORK(KL1AM),ISYM0,
-     *                               WORK(KL2TP),ISYM0,WORK(KTMAT),
-     *                               WORK(KFOCK0CK),WORK(KFOCKD),
-     *                               WORK(KDIAG),WORK(KXIAJB),ISYM0,
-     *                               ISYM0,WORK(KINDSQ),LENSQ,
-     *                               WORK(KSMAT2),WORK(KT3BVDG1),
-     *                               WORK(KT3BVDG2),WORK(KT3BVDL1),
-     *                               WORK(KT3BVDL2),WORK(KT3BOG1),
-     *                               WORK(KT3BOL1),WORK(KINDEX),
-     *                               WORK(KSMAT4),WORK(KT3BVBG1),
-     *                               WORK(KT3BVBG2),WORK(KT3BVBL1),
-     *                               WORK(KT3BVBL2),WORK(KINDEX2),
-     *                               WORK(KUMAT2),WORK(KT3BVDG3),
-     *                               WORK(KT3BVDL3),WORK(KT3BOG2),
-     *                               WORK(KT3BOL2),WORK(KUMAT4),
-     *                               WORK(KT3BVBG3),WORK(KT3BVBL3),
-     *                               ISYMB,B,ISYMD,D,ISCKIJ,
-     *                               WORK(KEND5),LWRK5)
+                  IF ( (LISTL(1:3).EQ.'L1 ') 
+     *             .OR. (LISTL(1:3).EQ.'L0 ') ) THEN
+                    CALL GET_T3BAR0_BD(ISYM0,WORK(KL1AM),ISYML0,
+     *                                 WORK(KL2TP),ISYML0,WORK(KTMAT),
+     *                                 WORK(KFOCK0CK),WORK(KFOCKD),
+     *                                 WORK(KDIAG),WORK(KXIAJB),ISYM0,
+     *                                 ISYM0,WORK(KINDSQ),LENSQ,
+     *                                 WORK(KSMAT2),WORK(KT3BVDG1),
+     *                                 WORK(KT3BVDG2),WORK(KT3BVDL1),
+     *                                 WORK(KT3BVDL2),WORK(KT3BOG1),
+     *                                 WORK(KT3BOL1),WORK(KINDEX),
+     *                                 WORK(KSMAT4),WORK(KT3BVBG1),
+     *                                 WORK(KT3BVBG2),WORK(KT3BVBL1),
+     *                                 WORK(KT3BVBL2),WORK(KINDEX2),
+     *                                 WORK(KUMAT2),WORK(KT3BVDG3),
+     *                                 WORK(KT3BVDL3),WORK(KT3BOG2),
+     *                                 WORK(KT3BOL2),WORK(KUMAT4),
+     *                                 WORK(KT3BVBG3),WORK(KT3BVBL3),
+     *                                 ISYMB,B,ISYMD,D,ISCKIJ,
+     *                                 WORK(KEND5),LWRK5)
+                  END IF
 c
 c       call sum_pt3(work(KTMAT),isymb,b,isymd,d,
 c    *             ISYM0,work(kx3am),5)
@@ -890,24 +1019,64 @@ C                 Get T3barX_BD multipliers (using W)
 C----------------------------------------------------
 C
                   IF (LISTL(1:3).EQ.'L1 ') THEN
-                    CALL GET_T3BARX_BD(WORK(KTMAT),ISCKIJ,WORK(KFOCKL1),
-     *                               ISYML1,WORK(KW3BMAT),ISWBMAT,
-     *                               WORK(KL2TP),ISYM0,WORK(KFOCKL1RCK),
-     *                               ISYFCKL1R,WORK(KW3BXVDLX2),
-     *                               WORK(KW3BXVDLX1),WORK(KW3BXVDGX2),
-     *                               WORK(KW3BXVDGX1),WORK(KW3BXOLX1),
-     *                               WORK(KW3BXOGX1),ISINT2L1R,
-     *                               WORK(KINDEX),WORK(KINDEX2),
-     *                               WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
-     *                               ISYML1,WORK(KFOCK0CK),ISYM0,
-     *                               WORK(KW3BXVDL2),WORK(KW3BXVDL1),
-     *                               WORK(KW3BXVDG2),WORK(KW3BXVDG1),
-     *                               WORK(KW3BXOL1),WORK(KW3BXOG1),
-     *                               ISINT2,WORK(KINDEXBL1),
-     *                               WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
-     *                               WORK(KXIAJB),ISINT1,-FREQL1,
-     *                               WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
-     *                               D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+                    CALL GET_T3BARX_BD(.FALSE.,
+     *                              WORK(KTMAT),ISCKIJ,WORK(KFOCKL1),
+     *                              ISYML1,WORK(KW3BMAT),ISWBMAT,
+     *                              WORK(KL2TP),ISYML0,WORK(KFOCKL1RCK),
+     *                              ISYFCKL1R,WORK(KW3BXVDLX2),
+     *                              WORK(KW3BXVDLX1),WORK(KW3BXVDGX2),
+     *                              WORK(KW3BXVDGX1),WORK(KW3BXOLX1),
+     *                              WORK(KW3BXOGX1),ISINT2L1R,
+     *                              WORK(KINDEX),WORK(KINDEX2),
+     *                              WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
+     *                              ISYML1,WORK(KFOCK0CK),ISYM0,
+     *                              WORK(KW3BXVDL2),WORK(KW3BXVDL1),
+     *                              WORK(KW3BXVDG2),WORK(KW3BXVDG1),
+     *                              WORK(KW3BXOL1),WORK(KW3BXOG1),
+     *                              ISINT2,WORK(KINDEXBL1),
+     *                              WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
+     *                              WORK(KXIAJB),ISINT1,-FREQL1,
+     *                              WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
+     *                              D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+c
+c       call sum_pt3(work(KW3BMAT),isymb,b,isymd,d,
+c    *             ISWBMAT,work(kx3am),4)
+                  ELSE IF ( (LISTL(1:3).EQ.'M1 ') 
+     *                     .OR. (LISTL(1:3).EQ.'N2 ') ) THEN
+                     CALL GET_M3BAR_BD(WORK(KTMAT),WORK(KW3BMAT),
+     *                      ISWBMAT,WORK(KL2TP),ISYML0,WORK(KFOCKL1RCK),
+     *                      ISYFCKL1R,WORK(KW3BXVDLX2),
+     *                      WORK(KW3BXVDLX1),WORK(KW3BXVDGX2),
+     *                      WORK(KW3BXVDGX1),WORK(KW3BXOLX1),
+     *                      WORK(KW3BXOGX1),ISINT2L1R,
+     *                      WORK(KINDEX),WORK(KINDEX2),
+     *                      WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
+     *                      ISYML1,WORK(KFOCK0CK),ISYM0,
+     *                      WORK(KW3BXVDL2),WORK(KW3BXVDL1),
+     *                      WORK(KW3BXVDG2),WORK(KW3BXVDG1),
+     *                      WORK(KW3BXOL1),WORK(KW3BXOG1),
+     *                      ISINT2,WORK(KINDEXBL1),
+     *                      WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
+     *                      WORK(KXIAJB),ISINT1,-FREQL1,
+     *                      WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
+     *                      D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+
+c
+c       call sum_pt3(work(KW3BMAT),isymb,b,isymd,d,
+c    *             ISWBMAT,work(kx3am),4)
+                  ELSE IF (LISTL(1:3).EQ.'LE ') THEN
+                     CALL GET_L3BAR_BD(WORK(KTMAT),WORK(KW3BMAT),
+     *                       ISWBMAT,
+     *                       WORK(KINDSQWB),LENSQWB,WORK(KL2L1),
+     *                       ISYML1,WORK(KFOCK0CK),ISYM0,
+     *                       WORK(KW3BXVDL2),WORK(KW3BXVDL1),
+     *                       WORK(KW3BXVDG2),WORK(KW3BXVDG1),
+     *                       WORK(KW3BXOL1),WORK(KW3BXOG1),
+     *                       ISINT2,WORK(KINDEXBL1),
+     *                       WORK(KINDEXDL1),WORK(KL1L1),ISYML1,
+     *                       WORK(KXIAJB),ISINT1,-FREQL1,
+     *                       WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
+     *                       D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
 c
 c       call sum_pt3(work(KW3BMAT),isymb,b,isymd,d,
 c    *             ISWBMAT,work(kx3am),4)
@@ -927,7 +1096,9 @@ C
 C Inside the routines CC3_W3_OMEGA1, CC3_W3_CY2V, CC3_W3_CY2O terms 
 C are selected depending on WB3X
 
-                  IF (LISTL(1:3).EQ.'L1 ') THEN
+                  IF ( (LISTL(1:3).EQ.'L1 ') .OR. (LISTL(1:3).EQ.'M1 ')
+     *                 .OR. (LISTL(1:3).EQ.'N2 ')
+     *                 .OR. (LISTL(1:3).EQ.'LE ') ) THEN
                      WB3X = .TRUE.
                      ISTBD = ISWBMAT
                      KTB   = KW3BMAT
@@ -1021,6 +1192,8 @@ C
 c     write(lupri,*)'AFTER '
 c     write(lupri,*)'omega1eff after CC3_BFMAT,LISTL  ', LISTL
 c     call PRINT_MATAI(OMEGA1EFF,ISYRES)
+c     xnormval = ddot(NT1AM(ISYRES),OMEGA1EFF,1,OMEGA1EFF,1)
+c     write(lupri,*)'norm omega1eff after CC3_BFMAT ', xnormval
 c     xnormval = ddot(NT2AM(ISYRES),OMEGA2EFF,1,OMEGA2EFF,1)
 c     write(lupri,*)'norm omega2eff after CC3_BFMAT ', xnormval
 c     CALL OUTPAK(OMEGA2EFF,NT1AMX,1,LUPRI)

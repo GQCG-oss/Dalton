@@ -570,12 +570,12 @@ C
 C
          ENDIF
 C
-         WRITE (LUPRI,'(A//A/A/)')
+         WRITE (LUPRI,'(A//A/A)')
      *   ' (conversion factor used: 1 au = 27.2113957 eV)',
      *   ' Excitation no.       Hartree               eV ',
      *   ' --------------       -------               --'
          DO 400 I = 1,NCCEXCI(ISYM,IMULT)
-            WRITE (LUPRI,'(I10,2F20.6)')
+            WRITE (LUPRI,'(I10,4X,2F20.10)')
      *         I,WORK(KEIVAL-1+I),WORK(KEIVAL-1+I)*XTEV
   400    CONTINUE
 C

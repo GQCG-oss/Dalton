@@ -29,7 +29,7 @@ H1     2.29605         1.77708         .155470
 #######################################################################
 cat > mcdlao_c2h4tw.dal <<%EOF%
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .THETA
 .DIPLEN
