@@ -2455,20 +2455,56 @@ C
       END
 C  /* Deck qdrres */
       SUBROUTINE QDRRES(IPRINT)
+C Feb 05 djw - principal axis displays included.
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mxcent.h>
-      PARAMETER (DM1 = -1.0D0, D1 = 1.0D0)
-      DIMENSION QUADRT(3,3)
+#include <codata.h>
+      PARAMETER (DM1 = -1.0D0, D1 = 1.0D0,
+     &           CGS = (ECHARGE*XTANG**2*CCM*1.D11),
+     &           SI  = ECHARGE*XTANGM10**2*1.0D+40)
+      DIMENSION QUADRT(3,3) 
+      DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6)
 #include <symmet.h>
 #include <quadru.h>
 #include <abainf.h>
+      CHARACTER*6 ABC(3)
+      DATA ABC /'Q_aa','Q_bb','Q_cc'/ 
 C
       CALL TITLER('ABACUS - Molecular quadrupole moments','*',113)
       CALL DCOPY(9,QDREL,1,QUADRT,1)
       CALL DSCAL(9,DM1,QUADRT,1)
+C
+C     Principal values
+C     ================
+C
+      CALL DUNIT(AXES,3)
+      IJ = 1
+      DO 100 I = 1, 3
+         DO 110 J = 1, I
+            PVAL (IJ) = QUADRT(I,J) + QDRNUC(I,J)
+            IJ = IJ + 1
+ 110     CONTINUE
+ 100  CONTINUE
+      CALL JACO(PVAL,AXES,3,3,3,WRK,IWRK)
+      PVAL(1) = PVAL(1)
+      PVAL(2) = PVAL(3)
+      PVAL(3) = PVAL(6)
+      CALL ORDER2(AXES,PVAL,3,3)
+C
+      WRITE (LUPRI,'(2(/1X,A)),/')
+     &      ' Units:  C m**2/(10**(-40))   (SI) ',
+     &      '         Debye*AAngstroem     (cgs)'
+C
+      CALL HEADER('Principal values (au, SI and cgs) and axes:',1)
+      DO 200 I = 1, 3
+         WRITE (LUPRI,'(2X,A,1X,3F12.4,2X,3F10.4)')
+     &          ABC(I),PVAL(I),SI*PVAL(I),CGS*PVAL(I),
+     &          (AXES(IPTAX(J,2),I),J=1,3)
+ 200  CONTINUE
+C
       IF (IPRINT .GE. 2) THEN
          CALL HEADER('Nuclear contribution (au)',-1)
          CALL POLPRI(QDRNUC,'   ',1)
@@ -2480,8 +2516,12 @@ C
       CALL POLPRI(QUADRT,'   ',1)
       CALL HEADER('Total quadrupole moments (cgs, Debye*AAngstroem)',-1)
       CALL POLPRI(QUADRT,'CGS',1)
+      CALL HEADER('Total quadrupole moments (SI)',-1)
+      CALL POLPRI(QUADRT,'SIU',1)
+C
       RETURN
       END
+C
 C  /* Deck susres */
       SUBROUTINE SUSRES(IPRINT)
 #include <implicit.h>

@@ -389,6 +389,8 @@ C
          FAC = XTANG*XTANG*XTANG
       ELSE IF (INDEX(SPC,'CGS') .NE. 0) THEN
          FAC = XTANG*DEBYE
+      ELSE IF (INDEX(SPC,'SIU') .NE. 0) THEN
+         FAC = XTANGM10*XTANGM10*ECHARGE*1.0D+40
       ELSE
          FAC = D1
       END IF
