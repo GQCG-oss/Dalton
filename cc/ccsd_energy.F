@@ -280,9 +280,8 @@ C
              IF (.NOT.CCS) WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
              CALL GPCLOSE(LUTAM,'KEEP')
              IOPT = 3
-           ELSE
-990          CONTINUE ! nothing to restart from ...
            END IF
+990        CONTINUE ! nothing to restart from ...
          END IF
       ENDIF
    
