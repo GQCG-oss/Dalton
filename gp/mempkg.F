@@ -34,20 +34,11 @@ C
 #include <single.h>
 C
 #ifdef UNDEF
-===========================================================================
-/* Comdeck memlog */
-910110-hjaaj MEMREL: removed non-standard char. concat. in CALL MEMCHK
-901004-hjaaj: NWNMEM introduced, no final check on NWNMEM (yet)
-900420-hjaaj: MEMPKG.U: corrected errors for IRAT=1 (e.g. Cray)
-891208-hjaaj:
- MEMINI: new routine to define output units in MEM* routines
-         (makes MEM* routines indep. of sirius, uses LUWMEM not LUWSIR)
-891114-hjaaj:
- MEMREL: new routine to release memory
- MEMGET: warning if memid(2) .ne. 0 for work(kfree)
-890429-hjaaj-k10d
- corrected code error in MEMGET for KFREE=1
-===========================================================================
+!===========================================================================
+!/* Comdeck memlog */
+!910110-hjaaj MEMREL: removed non-standard char. concat. in CALL MEMCHK
+!901004-hjaaj: NWNMEM introduced, no final check on NWNMEM (yet)
+!===========================================================================
 #endif
 C  /* Deck memini */
       SUBROUTINE MEMINI(LUWME1,LUEME1)
@@ -91,11 +82,11 @@ C
       DATA          MEMID(1) /1234567890/
 C
 Chj1  CALL QENTER('MEMGET  ')
-      IF (TYPE(1:4) .EQ. 'REAL') THEN
+      IF (TYPE(1:4) .EQ. 'REAL' .OR. TYPE(1:4) .EQ. 'INT8') THEN
          LREAL = LENGTH
       ELSE IF (TYPE(1:4) .EQ. 'COMP') THEN
          LREAL = 2*LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
+      ELSE IF (TYPE(1:4) .EQ. 'INTE' .OR. TYPE(1:4) .EQ. 'INT4') THEN
          LREAL = (LENGTH-1)/IRAT + 1
       ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
