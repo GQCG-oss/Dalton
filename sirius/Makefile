@@ -2,7 +2,7 @@ include ../Makefile.config
 
 all : libsirius.a
 
-libsirius.a :	ciauth.o          ciham.o           cioff.o\
+OBJS = ciauth.o          ciham.o           cioff.o\
 cisig.o           csfstuff.o        dens.o\
 detfi.o           detpr.o           dets0.o\
 dets1.o           drcctl.o          getcix.o\
@@ -18,10 +18,14 @@ sirset.o          sirtest.o         sirtr1.o\
 sirtra.o          sirupd.o\
 sirsol.o          symchk.o\
 newtrahso.o       sirntra.o         intsort.o
+
+libsirius.a : $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 #sircino.o snglet.o
 
+sirtra.o: sirtra.F
+	$(F77) $(INCLUDE_DIR) $(CPP_FLAGS) $(SAFEOPTFLAGS) -c $?
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a
 

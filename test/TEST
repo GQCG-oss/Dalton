@@ -175,7 +175,7 @@ do
   ./$item
 # Check if this is a multistep job
   numsteps=1
-  if [ -e ./$item'__'1.dal ]; then
+  if [ -r ./$item'__'1.dal ]; then
       multi=1
       numsteps=`ls ./$item\_\_[0-9].dal | wc -l`
       myprint "This is a multi-step job consisting of $numsteps steps"
@@ -215,8 +215,8 @@ do
           myprint "evaluate reference output file $reffile:"
           myprint "-----------------------------------------------------------"
           compressed="false"
-          if [ ! -e $reffile ]; then
-              if [ -e $reffile.gz ]; then
+          if [ ! -r $reffile ]; then
+              if [ -r $reffile.gz ]; then
                   compressed="true"
                   gunzip -f $reffile.gz
               fi

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
+C$Id: gphjj.F,v 1.3 2001-03-15 14:45:06 ruud Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -388,7 +388,7 @@ C
 #include <implicit.h>
       CHARACTER*(*) TEXT
 C
-#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
+#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX)
       CHARACTER*(40) HSTNAM
 #if !defined (VAR_G77)
       CHARACTER*(24) FDATE
@@ -1118,7 +1118,7 @@ C
 C (30-Jan-1984) hjaaj
 C
       DIMENSION INTX(N)
-      READ (IT,END = 10) INTX
+      IF (N .GT. 0) READ (IT,END = 10) INTX
       RETURN
    10 CONTINUE
       INTX(N)=-1
