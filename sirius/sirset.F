@@ -357,7 +357,7 @@ C  Purpose: set common block /INFORB/ based on
 C           NSYM, MULD2H, NISH(*), NASH(*), NORB(*), NBAS(*)
 C           and           NRHF(*), NFRO(*)
 C
-C           and ISW ISX LOC ISMO ISAO  NSM ICH  IOBTYP IACTYP
+C           and ISW ISX ISMO ISAO  NSM ICH  IOBTYP IACTYP
 C           in common block /INFIND/
 C
 C           and max dimensions in /INFDIM/
@@ -476,7 +476,7 @@ C
 C     (2) common /INFIND/
 C
 C     Orbital index arrays:
-C     ISW ISX LOC ISMO ISAO JWOP NSM ICH  IOBTYP IACTYP
+C     ISW ISX ISMO ISAO JWOP NSM ICH  IOBTYP IACTYP
 C
 C     setup of IOBTYP and IACTYP
 C     (JTFRO=frozen, JTINAC=inactive, JTACT=active, JTSEC=secondary)
@@ -526,8 +526,6 @@ C
 C     Compute reordering indices for molecular orbitals.
 C      ISW reorders to inactive-active-secondary ordering
 C      ISX reorders back
-C
-C     and the LOC vector
 C
 C     ICH and NSM from old CASSCF CICTL
 C
@@ -699,11 +697,15 @@ C
       END IF
 C
 C     If .NOT.FLAG(11) we only want the totally symmetric operator
+C     .. maybe, but now generalized so it should work ok also for
+C        jwopsy .ne. 1 /hjaaj aug 2004
 C
-      IF (FLAG(11)) THEN
+      IF (FLAG(11) .AND. WRINDX) THEN
+         IOPSY1 = 1
          NOPSY = NSYM
       ELSE
-         NOPSY = 1
+         IOPSY1 = JWOPSY
+         NOPSY = JWOPSY
       END IF
       MAKABS = (FLAG(51) .OR. FLAG(52) .OR. FLAG(53))
 Cold  WRINDX = (FLAG(11) .OR. MAKABS)
@@ -720,7 +722,7 @@ C
          REWIND LUINDX
       END IF
 C
-      DO 1295 IOPSY = 1,NOPSY
+      DO 1295 IOPSY = IOPSY1,NOPSY
          LVLABS = 0
  1292    CONTINUE
          NWOPX  = NWOPA
@@ -914,17 +916,18 @@ C        reinitialize NWOP(*) for next operator symmetry
          CALL IZERO(NWOP,8)
  1295 CONTINUE
 C
-C     recover totally symmetric operator
+C     recover operator of symmetry JWOPSY
 C
       REWIND LUINDX
-      CALL MOLLAB(OPLBL(1),LUINDX,LUERR)
-      READ (LUINDX) NWOPT, NWOP, NWOPH, JWOPSY, NKLWOP
+      CALL MOLLAB(OPLBL(JWOPSY),LUINDX,LUERR)
+      READ (LUINDX) NWOPT, NWOP, NWOPH, JWOPSY1, NKLWOP
+      IF (JWOPSY1 .NE. JWOPSY) CALL QUIT
+     &   'PROGRAM ERROR: JWOPSY on LUINDX does not correspond to label')
       CALL READI  (LUINDX,(2*NWOPH),JWOP)
       CALL READI  (LUINDX,NKLWOP,KLWOP)
 C
       CALL GPCLOSE(LUINDX,'KEEP')
  1299 CONTINUE
-      JWOPSY = 1
 C
 C     Define NWOPDI for /INFDIM/:
 C
