@@ -339,7 +339,7 @@ if [ "$answer" = "y" ]; then
 	    incfile='mpif.h'
 	    for testdir in $pardir; do
 	        for testlib in $tmplib; do
-       	            if test -f $testdir/$testlib; then
+       	            if [ -f $testdir/$testlib ]; then
 	                parlib='-lmpi'
 		        parlibp=-L$testdir
 		        break
@@ -351,7 +351,7 @@ if [ "$answer" = "y" ]; then
 # Now we try to find an include directory
 #
 	    for testdir in $incdir; do
-	        if test -f $testdir/$incfile; then
+	        if [ -f $testdir/$incfile ]; then
 	            parinc=$testdir
 		    break
 	        fi
@@ -386,7 +386,7 @@ for comp in $complist; do
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
-	if test -f $ac_dir/$ac_word; then
+	if [ -f $ac_dir/$ac_word ]; then
   	  get_yes_or_no "Compiler $ac_word found, use this compiler?"
           if [ $answer = 'y' ]; then
 	    ac_cv_prog_F77=$ac_word
@@ -397,12 +397,12 @@ for comp in $complist; do
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
-    if test -n "$F77"; then
+    if [ -n "$F77" ]; then
 	$ECHO "\n   Compiler $F77 found and accepted."
         break
     fi
 done
-if test -z "$F77"; then
+if [ -z "$F77" ]; then
     $ECHO "\n   No compiler found and accepted on this computer"
     $ECHO   "   Cannot proceed without a Fortran compiler"
     exit 1
@@ -447,7 +447,7 @@ for comp in $ccmplist; do
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
-	if test -f $ac_dir/$ac_word; then
+	if [ -f $ac_dir/$ac_word ]; then
   	  get_yes_or_no "Compiler $ac_word found, use this compiler?"
           if [ $answer = 'y' ]; then
 	    ac_cv_prog_C=$ac_word
@@ -458,12 +458,12 @@ for comp in $ccmplist; do
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_C" && ac_cv_prog_C=""
     CC="$ac_cv_prog_C"
-    if test -n "$CC"; then
+    if [ -n "$CC" ]; then
         $ECHO "\n   Compiler $CC found and accepted."
         break
     fi
 done
-if test -z "$CC"; then
+if [ -z "$CC" ]; then
     $ECHO "\n   No C compiler found and accepted on this computer"
     $ECHO   "   Cannot proceed without a C compiler in path"
     exit 1
@@ -507,10 +507,10 @@ if [ -n "$liblist" ]; then
 for testlib in $liblist; do
    for testdir in $dirlist; do
 #     echo "testing existence of $testdir/$testlib"
-      if test -f $testdir/$testlib; then
-        LIBDIR=$testdir
+      if [ -f $testdir/$testlib ]; then
 	get_yes_or_no "Found $testdir/$testlib, use it ?"
 	if [ $answer = 'y' ]; then
+          LIBDIR=$testdir
           case $testlib in
             libacml.a) LIB='-lacml'; blas3=true;;
 	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
@@ -565,13 +565,13 @@ fi
 # Look for LAPACK library.
 # Add -L$LIBDIR to be sure compiler can find it.
 #
-if test -n "$LIBDIR"; then
-   if test -f $LIBDIR/liblapack.a; then
+if [ -n "$LIBDIR" ]; then
+   if [ -f $LIBDIR/liblapack.a ]; then
       lapack=true; LIB="-L$LIBDIR -llapack $LIB"
    else
       LIB="-L$LIBDIR $LIB"
       for testdir in $dirlist; do
-         if test -f $testdir/liblapack.a; then
+         if [ -f $testdir/liblapack.a ]; then
             lapack=true; LIB="-L$testdir -llapack $LIB"
             break
          fi
@@ -599,7 +599,7 @@ if [ -z "$LIB" -a -n "$liblist" ]; then
     $ECHO '   No mathematical libraries seem to be available'
     $ECHO '   I will proceed without them\n'
 elif [ -n "$LIB" ]; then
-    $ECHO '   The following mathematical library(ies) will be used:\n   '$LIB'\n'
+    $ECHO '\n   The following mathematical library(ies) will be used:\n   '$LIB'\n'
 fi      
 
 #
