@@ -310,8 +310,6 @@ C
      *          ' Diagonal overlap matrices (TD(I,I) = 0.25)'
             IF (SDRTST) WRITE (LUPRI, '(A)')
      *         ' AO printing of SO overlap matrices.'
-            IF (AOMAT) WRITE (LUPRI, '(A)')
-     *       ' SO overlap matrices transformed and printed in AO basis.'
          ELSE
             WRITE (LUPRI,'(A)') ' GETSD skipped in this run.'
          END IF
@@ -1011,7 +1009,7 @@ C
                   END IF
                END IF
                CALL GETSD(DERIV,WORK(KCMO),WORK(KTD),
-     &                    WORK(KGETSD),LGETSD,IATOM,DIAGTD,AOMAT,
+     &                    WORK(KGETSD),LGETSD,IATOM,DIAGTD,
      &                    KEY,DOTD,IPRSDR,IPRINT)
                IF (IPRSDR .GT. 2)
      &            CALL TIMER('GETSD ',TIMSTR,TIMEND)
@@ -1459,6 +1457,11 @@ C
                READ (LUSIFC)
                READ (LUSIFC)
                READ (LUSIFC)
+               IF (NCONRF .GT. 0) THEN
+                  CALL READI(LUSIFC,IRAT*NCONRF,WORK(KCREF))
+               ELSE
+                  READ (LUSIFC)
+               END IF
                READ (LUSIFC)
                READ (LUSIFC)
                READ (LUSIFC)
@@ -1468,11 +1471,6 @@ C
                ELSE
                   READ (LUSIFC)
                   CALL DZERO(WORK(KFV),NNORBT)
-               END IF
-               IF (NCONRF .GT. 0) THEN
-                  CALL READI(LUSIFC,IRAT*NCONRF,WORK(KCREF))
-               ELSE
-                  READ (LUSIFC)
                END IF
                IF (IPRGDY .GT. 10) THEN
                   CALL HEADER('Inactive undiff. Fock matrix',-1)
@@ -3428,6 +3426,7 @@ C
       READ (LUSIFC)
       READ (LUSIFC)
       CALL READI(LUSIFC,IRAT*NCMOT,CMO)
+      READ (LUSIFC)
       IF (NASHT .GT. 0) THEN
          IF (NODV) THEN
             READ (LUSIFC)
