@@ -22,7 +22,7 @@ libgp.a: $(F_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
-depend:
+Makefile.depend depend: ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend

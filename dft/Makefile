@@ -1,4 +1,4 @@
-all : libdft.a
+all: libdft.a
 
 include ../Makefile.config
 
@@ -79,7 +79,7 @@ OBJS = $(FFILES:.F=.o) $(CFILES:.c=.o)
 clean :
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
-depend:
+Makefile.depend depend: *.h ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 libdft.a: $(OBJS) Makefile

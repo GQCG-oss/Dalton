@@ -1,4 +1,4 @@
-all : libcc.a
+all: libcc.a
 
 include ../Makefile.config
 
@@ -79,7 +79,7 @@ clean :
 
 tags:;          $(RM) -f tags ; etags  *.F
 
-depend: 
+Makefile.depend depend: ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 ######################################################################
