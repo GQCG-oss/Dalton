@@ -79,9 +79,9 @@ C
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
-C   INFINP : ISPIN,LSYM,ISTATE, POTNUC, THRPWF, DOCINO
+C   INFINP : ISPIN,LSYM,ISTATE, NACTEL,POTNUC, THRPWF, DOCINO
 C   INFVAR : NCONF,NWOPT
-C   INFORB : NCMOT,NORBT,NNASHX,?
+C   INFORB : NCMOT,NORBT,NNASHX,NISHT,?
 C   INFDIM : LCINDX
 C
 #include <maxash.h>
@@ -283,7 +283,9 @@ C           CALL SIRCAN(IPRCAN,CREF,CMO,OCC,WRK,KFREE,LFREE)
 C
 C *** FINAL RESULTS
 C
-      WRITE (LUW4,5000) ISPIN,LSYM
+      CALL MOLCHR(ICHRG)
+C     ... get total molecular charge
+      WRITE (LUW4,5000) ISPIN,LSYM,ICHRG
       IF (NFIELD .GT. 0) THEN
          WRITE (LUW4,'(/A/A/A)')
      *      ' The molecule is placed in a static field.',
@@ -339,7 +341,8 @@ C     ... DIIS-HF or QC-HF optimization
 
  5000 FORMAT(//T21,'>>> FINAL RESULTS FROM SIRIUS <<<',
      *       //T6,'Spin multiplicity:',T31,I5,
-     *        /T6,'Spatial symmetry:',T31,I5)
+     *        /T6,'Spatial symmetry:',T31,I5,
+     *        /T6,'Total charge of molecule:',T31,I5)
  5010 FORMAT(/T6,'This was a CI-NO calculation.')
  5012 FORMAT(/T6,'This was a CI calculation.')
  5020 FORMAT( T6,'State number:',T31,I5,

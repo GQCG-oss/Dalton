@@ -520,7 +520,7 @@ C
       MXHFMA = 15
       MXHFMI = 12
 C 960625-hjaaj: NISHT and NACTEL used in MOLCHR in
-C                       ICHRG = ICHRGNU - (2*NISHT+NACTEL)
+C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
       NISHT  = 0
       NACTEL = 0
       CALL MOLCHR(ICHRG)
@@ -1800,7 +1800,7 @@ C
       INTEGER NPATH(NPDIM)
 C
 C Used from common:
-C  INFINP : FLAG(*), IORTO, ICI0, DO*
+C  INFINP : FLAG(*), IORTO, DO*
 C  INFORB : NSYM
 C  INFPRI : P6FLAG,
 C
@@ -4712,16 +4712,19 @@ C
 C ***** Wave function specifications
 C
       NINEL = 2*NISHT
-      WRITE(IWUNIT,1000) NINEL,NACTEL,NASHT,NORBT,ISPIN,NSYM,LSYM
+      CALL MOLCHR(ICHRG)
+C     ... get total charge
+      WRITE(IWUNIT,1000) NINEL,NACTEL,ICHRG,NASHT,NORBT,ISPIN,NSYM,LSYM
       IF (LUCME.GT.0)
-     *WRITE(LUCME,1000) NINEL,NACTEL,NASHT,NORBT,ISPIN,NSYM,LSYM
+     *WRITE(LUCME ,1000) NINEL,NACTEL,ICHRG,NASHT,NORBT,ISPIN,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================',
-     *       /5X,'Number of closed shell electrons',7X,I4,
-     *       /5X,'Number of electrons in active shells',4X,I3,
-     *       /5X,'Number of active orbitals',14X,I4,
+     *       /5X,'Number of closed shell electrons',I11,
+     *       /5X,'Number of electrons in active shells',I7,
+     *       /5X,'Total charge of the molecule',I15,
+     *      //5X,'Number of active orbitals',I18,
      *       /5X,'Total number of orbitals',I19,
-     *      //5X,'Spin multiplicity',22X,I4,
+     *      //5X,'Spin multiplicity',I26,
      *       /5X,'Total number of symmetries',I17,
      *       /5X,'Reference state symmetry',I19)
 C
