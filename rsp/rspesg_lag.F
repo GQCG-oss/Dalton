@@ -282,15 +282,15 @@ C
         CALL PRINTMAT('D2AO           ',1,NORBT,WRK(KD2AO))
       END IF
 C
-C     Calculate the active fock matreces for the generalized 
+C     Calculate the active fock matrices for the generalized 
 C     density matrices
 C
 C     Both in one call (note: corresponding matrices must be consecutive
 C     in memory)
 C
       NDMAT=2
-      ISYMDM(1)=ISYME-1
-      ISYMDM(2)=0
+      ISYMDM(1)=ISYME
+      ISYMDM(2)=1
       IFCTYP(1)=03
       IFCTYP(2)=03
 
@@ -766,8 +766,8 @@ C
       END IF 
 
       NDMAT = 2
-      ISYMDM(1)=ISYME-1
-      ISYMDM(2)=0
+      ISYMDM(1)=ISYME
+      ISYMDM(2)=1
       IFCTYP(1)=03
       IFCTYP(2)=03
 
