@@ -432,6 +432,7 @@ C
 #include <dftcom.h>
 #include <parint.h>
 #include <blocks.h>
+#include <r12int.h>
 #if defined (SYS_T3e)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER on
@@ -514,6 +515,9 @@ C  /dorps/
          CALL MPIXBCAST(DOREPS(0),NDORL,'LOGICAL',MASTER)
 C  dosym()
          CALL MPIXBCAST(DOSYM,NSYML,'LOGICAL',MASTER)
+C  comr12
+         CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
 C
 C  /parint/
@@ -557,6 +561,9 @@ C  /dorps/
          CALL PVMXPACK(DOREPS(0),NDORL,'LOGICAL')      
 C  dosym()
          CALL PVMXPACK(DOSYM,NSYML,'LOGICAL')      
+C  comr12
+         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
+         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
       END IF
 C  /parint/
       CALL PVMXPACK(JATOM,NINTI,'INTEGER')
@@ -958,6 +965,7 @@ C
 #include <dftcom.h>
 #include <inftap.h>
 #include <parint.h>
+#include <r12int.h>
 C
 #if defined (SYS_T3E)
 C
@@ -1002,6 +1010,9 @@ C  /dorps/
             CALL MPIXBCAST(DOREPS(0),NDORL,'LOGICAL',MASTER)
 C  dosym()
             CALL MPIXBCAST(DOSYM,NSYML,'LOGICAL',MASTER)
+C  /comr12/
+            CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+            CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
 C  /parint/
       CALL MPIXBCAST(JATOM,NINTI,'INTEGER',MASTER)
@@ -1041,6 +1052,9 @@ C  /dorps/
          CALL PVMXUNPACK(DOREPS(0),NDORL,'LOGICAL')
 C  dosym()
          CALL PVMXUNPACK(DOSYM,NSYML,'LOGICAL')
+C  comr12
+         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
+         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
       END IF
 C  /parint/
       CALL PVMXUNPACK(JATOM,NINTI,'INTEGER')

@@ -364,6 +364,7 @@ C
 #include <molinp.h>
 #include <inforb.h>
 #include <infpar.h>
+#include <r12int.h>
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER on
@@ -408,6 +409,9 @@ C   /cbieri/ integers
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
 C   /cbieri/ logicals
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
+C  comr12
+         CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
@@ -438,6 +442,9 @@ C   /infpar/
 C   /cbieri/ 
          CALL PVMXPACK(NDMAT ,NCBII,'INTEGER')      
          CALL PVMXPACK(RUNERI,NCBIL,'LOGICAL')      
+C  comr12
+         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
+         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
       END IF
       CALL PVMXPACK(ISYMDM,NDMAT,'INTEGER')
       CALL PVMXPACK(IFCTYP,NDMAT,'INTEGER')
@@ -982,6 +989,7 @@ C
 #include <molinp.h>
 #include <infpar.h>
 #include <inforb.h>
+#include <r12int.h>
 #include <cbieri.h>
 #if defined (SYS_T3D)
 C
@@ -1025,6 +1033,9 @@ C   /infpar/
 C   /cbieri/
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
+C  comr12
+         CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
@@ -1062,6 +1073,9 @@ C   /infpar/
 C   /cbieri/
          CALL PVMXUNPACK(NDMAT ,NCBII,'INTEGER')
          CALL PVMXUNPACK(RUNERI,NCBIL,'LOGICAL')
+C  comr12
+         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
+         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
       END IF
       CALL PVMXUNPACK(ISYMDM,NDMAT,'INTEGER')
       CALL PVMXUNPACK(IFCTYP,NDMAT,'INTEGER')
