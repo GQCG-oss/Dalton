@@ -9,15 +9,16 @@ calculated in the \resp\ program, but given that a large number of
 standard calculations usually are carried out in a similar fashion, some
 applications have a simplified input (under {\tt **PROPERTIES}), 
 and an appealing output that meets common demands 
-(e.g. customary unit conversions). In this chapter we
+({\it e.g.\/} customary unit conversions). In this chapter we
 describe how to set up the input for calculating a general property that
-can be defined in terms of electronic response functions. A very
-helpful document detailing various linear and nonlinear properties
-that can be calculated with the response program, and the conversion
-of the results obtain to other units have been written by
-Jaszu\'{n}ski and Rizzo~\cite{}, and this document is available on the
-dalton homepage
-(\verb|http://www.kjemi.uio.no/software/dalton/dalton.html| or \verb|http://www.sdsc.edu/dalton/dalton.html|).
+can be defined in terms of electronic response functions. 
+%A very
+%helpful document detailing various linear and nonlinear properties
+%that can be calculated with the response program, and the conversion
+%of the results obtain to other units have been written by
+%Jaszu\'{n}ski and Rizzo~\cite{}, and this document is available on the
+%dalton homepage
+%(\verb|http://www.kjemi.uio.no/software/dalton/dalton.html| or \verb|http://www.sdsc.edu/dalton/dalton.html|).
 
 \section{General considerations}
 \label{sec:rspgen}
@@ -46,7 +47,7 @@ provide the first, second, and third-order corrections to the
 expectation-value of $A$, due to the perturbations $B$, $C$, and $D$, each of
 which is associated with a frequency $\omega_b$, $\omega_c$, and
 $\omega_d$. Often the perturbations are considered to be 
-external monochromatic fields, or static (e.g. relativistic) perturbations,
+external monochromatic fields, or static ({\it e.g.\/} relativistic) perturbations,
 in which case the frequency is zero.   In general, the perturbations $B$,
 $C$, and $D$ represent Fourier components of an arbitrary time-dependent
 perturbation.
@@ -57,7 +58,7 @@ perturbation.
 In this section we describe a few minimal input examples for calculating some
 molecular properties that can be expressed in terms of linear, quadratic, and
 cubic response functions.
-Note that only one of these three types of response functions can be
+Note that only one of these three different orders of response functions can be
 requested in the same calculation.
 
 For more information on keywords, see the Reference Manual, chapter~\ref{ch:response}.
@@ -209,7 +210,7 @@ is the first
 hyperpolarizability\index{first hyperpolarizability}. If we are
 interested in
 $\beta_{zzz}\equiv-\langle\!\langle z;z,z\rangle\!\rangle_{0,0}$ 
-only we may use the following input:
+only, we may use the following input:
 \begin{verbatim}
 **DALTON INPUT
 .RUN RESPONSE
@@ -258,7 +259,7 @@ $A$ to electric dipole operators and $B$ to spin-orbit operators.
 The residue of a quadratic response function can be used to identify
 the two-photon transition amplitudes. The input below refers to the
 calculation of the two-photon absorption from the ground state to the
-first 3 excited states in point symmetry group one. In the program
+first 3 excited states in point group symmetry one. In the program
 output the two-photon transition matrix element is given as well as
 the two-photon transition probability relevant for an isotropic gas or
 liquid. The evaluation of the transition probabilities can be done based
@@ -297,9 +298,9 @@ for final state $f$ times the dipole one-photon moment for the same state $f$.
 Note that in the current implementation (for SCF and MCSCF) degeneracies between
 excited states may lead to numerical divergencies. 
 The final ${\cal{B}}(0\to f)$ must be obtained from a combination 
-of the individual components, see the original paper~\cite{Coriani:MCDRSP},
-or the document by Jaszu\'{n}ski and Rizzo on the Dalton
-homepage. 
+of the individual components, see the original paper~\cite{Coriani:MCDRSP}.
+%, or the document by Jaszu\'{n}ski and Rizzo on the Dalton
+%homepage. 
 
 It is possible to construct double
 residues\index{residue}\index{double residue} of the quadratic
