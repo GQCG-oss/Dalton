@@ -57,6 +57,10 @@ perturbation.
 In this section we describe a few minimal input examples for calculating some
 molecular properties that can be expressed in terms of linear, quadratic, and
 cubic response functions.
+Note that only one of these three types of response functions can be
+requested in the same calculation.
+
+For more information on keywords, see the Reference Manual, chapter~\ref{ch:response}.
  
 \subsection{Linear response}
 \label{subsec:linrsp}
@@ -144,8 +148,8 @@ modification of the input above will suffice;
 \begin{verbatim}
 **RESPONSE
 *LINEAR
-.DIPLEN
 .SINGLE RESIDUE
+.DIPLEN
 .ROOTS
  0 0 0 3
 *END OF INPUT
@@ -178,7 +182,7 @@ is the first
 hyperpolarizability\index{first hyperpolarizability}. If we are
 interested in
 $\beta_{zzz}\equiv-\langle\!\langle z;z,z\rangle\!\rangle_{0,0}$ 
-onlym we may use the following input:
+only we may use the following input:
 \begin{verbatim}
 **DALTON INPUT
 .RUN RESPONSE
@@ -194,6 +198,11 @@ default. If we wish to calculate dynamic hyperpolarizabilities we supply
 frequencies\index{frequency}, but in this case we have two frequencies
 $\omega_b, \omega_c$ which are given by the keywords \texttt{.BFREQ} and
 {\tt .CFREQ} (see the Reference Manual, chapter~\ref{ch:response}).
+%LRHYP module in rspvec.F:
+The non-zero linear response functions from the operators can be
+generated with no additional computational costs, and all
+$\langle\!\langle A;B\rangle\!\rangle_{\omega_b}$ results
+will also be printed (in this example $\alpha_{zz}$).
 
 The residue of a quadratic response function gives two-photon
 transition amplitudes\index{two-photon!amplitude}. For such a
