@@ -1248,7 +1248,7 @@ touch sirius/Makefile.depend
 # Intel compiler seems to be a bit less optimized for certain routines, at
 # least Itanium processors
 #
-if [ $F77 = 'ifc' -o $F77 = 'efc' ]; then
+if [ $F77 = 'ifc' -o $F77 = 'efc' -o $F77 = 'ifort' ]; then
 cat <<EOF>>abacus/Makefile
 her2el2.o: her2el2.F
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
