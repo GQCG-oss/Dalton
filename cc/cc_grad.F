@@ -83,6 +83,12 @@ C
       TIMREO = ZERO
       TIMONE = SECOND()
 C
+C----------------------------------
+C     Initialization of file units.
+C----------------------------------
+C
+      LUBAR0 = -324
+C
 C----------------------------------------------------
 C     Both zeta- and t-vectors are totally symmetric.
 C----------------------------------------------------
@@ -234,7 +240,6 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUBAR0 = -324
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LUBAR0)
