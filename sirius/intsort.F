@@ -832,7 +832,7 @@ C
           NBUFX = (IPQE-IPQS)/LPQ+1
 C         NBUFX IS NUMBER OF BUFFERS ACTUALLY USED IN THIS STEP
           LX    = NBUFX*LBUF
-          CALL VCLR(X,1,LX)
+          CALL DZERO(X,LX)
           IDA   = LADX
           IF (IPRINT .GE. 5) THEN
              WRITE(LUPRI,*) '% IPQS,IPQE,NBUFX,LX',IPQS,IPQE,NBUFX,LX
@@ -914,14 +914,3 @@ C
       CALL QUIT('INTSORT ERROR: buffersize too small in N_ORDER')
 C
       END
-#if !defined (VAR_CRAY)
-      SUBROUTINE VCLR(A,LA,N)
-#include <implicit.h>
-      PARAMETER (D0 = 0.0D0)
-      DIMENSION A(*)
-      DO 10 I=0,N-1
-         A(1+I*LA)=D0
-10    CONTINUE
-      RETURN
-      END
-#endif
