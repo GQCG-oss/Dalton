@@ -11,42 +11,36 @@ C
       EXTERNAL DFTKSMGGA,DFTKSMLDA
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
+      COMMON /DKSMPRIV/ ENERGY
 C      
-      KENER = 1
-      KKSM  = KENER + 1
-      KLST  = KKSM  + NBAST*NBAST
-      LWRK  = LWORK - KLST +1
-      IF(KLST.GT.LWORK) CALL QUIT('NOMEM IN DFTKSM')
       CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
       DOGGA = DFT_ISGGA()
-      CALL DZERO(WORK(KENER),NBAST*NBAST+1)
+      ENERGY = 0D0
       IF(DOGGA) THEN
-         CALL DFTINT(DMAT,1,0,.FALSE.,WORK(KLST),LWRK,
-     &               DFTKSMGGA,WORK(KENER),ELE)
+         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
+     &               DFTKSMGGA,FKSM,ELE)
       ELSE
-         CALL DFTINT(DMAT,1,0,.FALSE.,WORK(KLST),LWRK,
-     &               DFTKSMLDA,WORK(KENER),ELE)
+         CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
+     &               DFTKSMLDA,FKSM,ELE)
 C
       END IF
-      CALL KSMCOLLECT(WORK(KENER),WORK(KLST),LWORK)
+      CALL KSMCOLLECT(FKSM,ENERGY,WORK,LWORK)
       DO I = 1, NBAST
-         DO J = 1, NBAST
-            AVERAG = 0.5*(WORK(KKSM+(J-1)+(I-1)*NBAST)
-     &                  + WORK(KKSM+(I-1)+(J-1)*NBAST))
-            WORK(KKSM+(J-1)+(I-1)*NBAST) = AVERAG
-            WORK(KKSM+(I-1)+(J-1)*NBAST) = AVERAG
+         DO J = 1, I-1
+            AVERAG = 0.5*(FKSM(J,I) + FKSM(I,J))
+            FKSM(J,I) = AVERAG
+            FKSM(I,J) = AVERAG
          END DO
       END DO
-      EDFTY = WORK(KENER)
-      CALL DAXPY(N2BASX,1D0,WORK(KKSM),1, FKSM,1)
+      EDFTY = ENERGY
       IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14,A,E8.2)')
-     &     'K-S electrons/energy :', ELE, WORK(KENER),
+     &     'K-S electrons/energy :', ELE, EDFTY,
      &     ' err:', ELE-2D0*NRHFT
       RETURN
       END
 C
       SUBROUTINE DFTKSMLDA(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
-     &                     RHOA,GRADA,COORD,WGHT,CBDATA)
+     &                     RHOA,GRADA,COORD,WGHT,FKSM)
 C
 C     P. Salek and T. Helgaker oct 2003
 C
@@ -56,29 +50,28 @@ C
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
-     &     CBDATA(*)
+     &     FKSM(*)
       EXTERNAL DFTENE
+      COMMON /DKSMPRIV/ ENERGY
 C
       DIMENSION VXC(NBLEN),VX(5)
       PARAMETER (DUMMY = 0D0)
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
-      KENERG = 1
-      KKOHN  = 2
       DO IPNT = 1, NBLEN
          CALL DFTPTF0(RHOA(IPNT),DUMMY,WGHT(IPNT),VX)
-         CBDATA(KENERG) = CBDATA(KENERG)
+         ENERGY = ENERGY
      &        + DFTENE(RHOA(IPNT),DUMMY)*WGHT(IPNT)
          VXC(IPNT) = 2D0*VX(1)
       END DO
       CALL DISTRLDA(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
-     &     VXC,GAO,CbDATA(KKOHN))
+     &     VXC,GAO,FKSM)
       RETURN
       END
 c
       SUBROUTINE DFTKSMGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
-     &                     RHOA,GRADA,COORD,WGHT,CBDATA)
+     &                     RHOA,GRADA,COORD,WGHT,FKSM)
 C
 C     P. Salek and T. Helgaker oct 2003
 C
@@ -87,19 +80,18 @@ C
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
-     &     CBDATA(*)
+     &     FKSM(*)
       EXTERNAL DFTENE
 C
       DIMENSION VXC(2,NBLEN),VX(5)
+      COMMON /DKSMPRIV/ ENERGY
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
-      KENERG = 1
-      KKOHN  = 2
       DO IPNT = 1, NBLEN
          GRD = SQRT(GRADA(1,IPNT)**2+GRADA(2,IPNT)**2+GRADA(3,IPNT)**2)
          CALL DFTPTF0(RHOA(IPNT),GRD,WGHT(IPNT),VX)
-         CBDATA(KENERG) = CBDATA(KENERG)
+         ENERGY = ENERGY
      &        + DFTENE(RHOA(IPNT),GRD)*WGHT(IPNT)
          VXC(1,IPNT) = VX(1)
          IF(GRD.GT.1D-40) THEN
@@ -109,7 +101,7 @@ C
          END IF
       END DO
       CALL DISTRGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
-     &              VXC,GAO,GRADA,CbDATA(KKOHN))
+     &              VXC,GAO,GRADA,FKSM)
       RETURN
       END
 c     
@@ -218,8 +210,6 @@ c     do nothing when running serial code.
       IF(MYNUM.EQ.MASTER) THEN
 c        IPRTYP=4 is registered for KSM Slave driver.
          IPRTYP = 4
-      WRITE(40+MYNUM,*)
-     &     "master blows the horn!",mynum,master
          CALL MPI_Bcast(iprtyp,1, MPI_INTEGER,
      &                  MASTER, MPI_COMM_WORLD,IERR)
          CALL MPI_Bcast(iprint,1, MPI_INTEGER,
@@ -227,8 +217,6 @@ c        IPRTYP=4 is registered for KSM Slave driver.
          CALL DFTINTBCAST
          CALL KSMSYNC(DMAT)
       END IF
-      WRITE(40+MYNUM,*)
-     &     "Slave checked status!",mynum,master
 #endif
       END
 c
@@ -261,7 +249,7 @@ c
      &               0, MPI_COMM_WORLD,ierr)
       END
 #endif
-      SUBROUTINE KSMCOLLECT(FMAT,WRK,LFREE)
+      SUBROUTINE KSMCOLLECT(FMAT,ENERGY,WRK,LFREE)
 #ifdef VAR_MPI
 c
 #include <implicit.h>
@@ -272,8 +260,12 @@ c
       DIMENSION FMAT(N2BASX)
       DIMENSION WRK(LFREE)
       IF(LFREE.LE.N2BASX) CALL STOPIT('KSMCOLLECT','',LFREE,N2BASX)
-      CALL DCOPY(N2BASX+1,FMAT,1,WRK,1)
-      CALL MPI_Reduce(WRK,FMAT,N2BASX+1,MPI_DOUBLE_PRECISION,MPI_SUM,
+      ETMP = ENERGY
+      CALL MPI_Reduce(ETMP,ENERGY,1,MPI_DOUBLE_PRECISION,MPI_SUM,
      &                0,MPI_COMM_WORLD,IERR)
+      CALL DCOPY(N2BASX,FMAT,1,WRK,1)
+      CALL MPI_Reduce(WRK,FMAT,N2BASX,MPI_DOUBLE_PRECISION,MPI_SUM,
+     &                0,MPI_COMM_WORLD,IERR)
+      
 #endif
       END

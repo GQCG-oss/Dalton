@@ -698,11 +698,38 @@ C
          CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
 C
          IPRTYP = 1
+         HFXM0 = HFXMU
+         HFXMU = D0
          CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+         HFXMU = HFXM0
+C
+C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
+C
+         IF (HFXMU.NE.D0) THEN
+            IPRTYP = 1
+            IATOM  = 1
+            HFXFC0 = HFXFAC
+            HFXFAC = HFXATT 
+            CALL MEMGET('REAL',KFCTMP,N2BASX,WORK,KFREE,LFREE)
+c           We have to use a temporary array because PARDRV
+c           overwrites the matrix from the phase one destroying 
+c           entirely the Coulomb contribution.
+c           This does not solve problems for LR phase of a QR
+c           calculation.
+
+            CALL DCOPY(N2BASX,FMAT,1,WORK(KFCTMP),1)
+            CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
+     &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
+     &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
+     &               ICEDIF,IFTHRS,
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+            CALL DAXPY(N2BASX,1D0,WORK(KFCTMP),1,FMAT,1)
+            HFXFAC = HFXFC0
+         END IF
 
          CALL MEMREL('HERFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
          IF (IPRINT .GT. 0)
