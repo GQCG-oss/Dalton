@@ -5316,35 +5316,46 @@ C
 #include <alphac.h>
 #include <inflr.h>
 #include <mxcent.h>
+#include <elweak.h>
 #include <nuclei.h>
 #include <chrnos.h>
-#include <elweak.h>
+
       dimension sopr(1,nop,nop),pvodd(natoms)
       character*8 lab1, lab2
       character*3 prelab,num
-      write(lupri,*) pvso,pvpso,natoms      
-      tot=0.0d0
+      write(lupri,*) 'pvso,pvso2,pvpso,natoms'
+      write(lupri,*) pvso,pvso2,pvpso,natoms
       if (PVSO) THEN
-      do I=1,NOP
-         do j=1,NOP
-            lab1=lbllr(ksymop,i)
-            lab2=lbllr(ksymop,j)
-            if (lab1.eq.'X1SPNORB' .and. lab2 .eq.'PVIOLA X') then
-               tot=tot+sopr(ksymop,i,j)
-            endif
-            if (lab1.eq.'Y1SPNORB' .and. lab2 .eq.'PVIOLA Y') then
-               tot=tot+sopr(ksymop,i,j)
-            endif
-            if (lab1.eq.'Z1SPNORB' .and. lab2 .eq.'PVIOLA Z') then
-               tot=tot+sopr(ksymop,i,j)
-            endif
+         tot=0.0d0
+         do I=1,NOP
+            do j=1,NOP
+               lab1=lbllr(ksymop,i)
+               lab2=lbllr(ksymop,j)
+               if ((lab2.eq.'X1SPNORB' .and. lab1 .eq.'PVIOLA X')) then
+
+C     &             (lab1.eq.'X1SPNORB' .and. lab2 .eq.'PVIOLA X')
+                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+               endif
+               if ((lab2.eq.'Y1SPNORB' .and. lab1 .eq.'PVIOLA Y')) then
+C     .or.
+C     &             (lab1.eq.'Y1SPNORB' .and. lab2 .eq.'PVIOLA Y')) then
+                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+               endif
+               if ((lab2.eq.'Z1SPNORB' .and. lab1 .eq.'PVIOLA Z')) then 
+c     .or.
+C     &             (lab1.eq.'Z1SPNORB' .and. lab2 .eq.'PVIOLA Z')) then
+                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+               endif
+            enddo
          enddo
-      enddo
-      write(lupri,*)
-      write(lupri,*) 'PV-interaction:'
-      write(lupri,*) tot*2867.081D0,' *10^-20 Eh'
-      write(lupri,*)
+         
+         tot1el=tot
+         call around('One-el pv term based on one-el so-operator')
+         write(lupri,'(F20.8,A10)') tot,'  10^-20 Eh'
+         write(lupri,*) 
+
       endif
+
       IF (PVPSO) THEN
          tot=0.0d0
          call dzero(pvodd,natoms)
@@ -5381,19 +5392,51 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
             enddo
          enddo
          write(lupri,*) 
-         write(lupri,*) 'PV-interaction:'
+         call around('One-el term based on pso-integrals')
          write(lupri,*) 
-         write(lupri,*) 'Name  Charge     PV '
+         write(lupri,*) 'Name   Charge             PV '
          do iatom=1,natoms
             pvodd(iatom) = pvodd(iatom)*charge(iatom)/4.0d0
             pvodd(iatom) = pvodd(iatom)*2867.081D0*alpha2
-            write(lupri,*) namn(iatom),' ',charge(iatom)
-     &           ,' ',pvodd(iatom),' * 10^-20 Eh'
+            write(lupri,'(A7,F8.0,F20.8,A10)') namn(iatom),charge(iatom)
+     &           ,pvodd(iatom),' 10^-20 Eh'
             tot = tot +  pvodd(iatom)
          enddo
+         call around('Total One-el term based on the pso integrals')
+         write(lupri,'(F20.8,A10)') tot,'  10^-20 Eh'
          write(lupri,*) 
-         write(lupri,*) tot,' * 10^-20 Eh'
+
+         if (.not. pvso) tot1el = tot
       endif
+
+      if (PVSO2) THEN
+         tot = 0.0d0
+         do I=1,NOP
+            do j=1,NOP
+               lab1=lbllr(ksymop,i)
+               lab2=lbllr(ksymop,j)
+               if (lab2.eq.'X2SPNORB' .and. lab1 .eq.'PVIOLA X') then
+                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+               endif
+               if (lab2.eq.'Y2SPNORB' .and. lab1 .eq.'PVIOLA Y') then
+                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+               endif
+               if (lab2.eq.'Z2SPNORB' .and. lab1 .eq.'PVIOLA Z') then
+                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+               endif
+            enddo
+         enddo      
+         
+         tot2el=tot
+         call around('Two-el term based on two-el spin orbit operator')
+         write(lupri,'(F20.8,A10)') tot,'  10^-20 Eh'
+         write(lupri,*)
+      endif
+
+      call around('Total PV-INTERACTION')
+      write(lupri,'(F20.8,A10)') (tot1el+tot2el),' 10^-20 Eh'
+      write(lupri,*)
+
       return 
       end
 

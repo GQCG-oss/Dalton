@@ -230,7 +230,7 @@ C
      &             '.MGMO2T', '.MGMTHR', '.HBDO  ', '.SUSCGO',
      &             '.NSTCGO', '.EXPIKR', '.MASSVE', '.DARWIN',
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
-     &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.XXXXXX',
+     &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.NO2SO ',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
      &             '.NUCMOD', '.SORT I', '.DIPGRA', '.QUAGRA',
      &             '.OCTGRA', '.ROTSTR', '.THIRDM', '.SOFIEL',
@@ -635,6 +635,8 @@ C
             READ (LUCMD, *) (DIPORG(I),I=1,3)
             GO TO 100
  172     CONTINUE
+c ach
+            no2so=.true.
             GOTO 100
  173     CONTINUE
             S1ELE  = .TRUE.
@@ -837,6 +839,9 @@ C&&& Nuclear model
          IF (THRMOM) WRITE (LUPRI,'(10X,A)')'- third moment integrals'
          IF (SPNORB) WRITE (LUPRI,'(10X,A)')
      &                         '- spatial spin-orbit integrals'
+c ach
+         IF (no2so) WRITE (LUPRI,'(10X,A)')
+     &                        'but no two-electron spin-orbit integrals'
          IF (OCTUPO) WRITE (LUPRI,'(10X,A)')
      &                         '- octupole moment integrals'
          IF (CARMOM) THEN
@@ -2569,7 +2574,7 @@ C        *****************************************************
 C        ***** Spatial two-electron spin-orbit integrals *****
 C        *****************************************************
 C
-         IF (SPNORB) THEN
+         IF (SPNORB.and..not.no2so) THEN
             NPAO = MXSHEL*MXAOVC
             CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
             CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
@@ -2833,6 +2838,7 @@ CTSAUE
       DIPLEN = .FALSE.
       QUADRU = .FALSE.
       SPNORB = .FALSE.
+      no2so  = .false.
       SOTEST = .FALSE.
       NOTWO  = DIRCAL
       SECMOM = .FALSE.

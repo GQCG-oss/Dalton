@@ -152,7 +152,7 @@ C
 #else
       PARAMETER ( MAXPRD = 25 )
 #endif
-      PARAMETER ( NTABLE = 10, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 11, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <cbirea.h>
@@ -160,7 +160,7 @@ C
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
      *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.XXXXXX', '.UNCONT'/
+     *            '.WRTLIN', '.UNCONT','.ANGSTR'/
 C
       NEWDEF = (WORD .EQ. '*READIN')
       ICHANG = 0
@@ -175,7 +175,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -214,9 +214,14 @@ C
                   READ (LUCMD,*) ZCMVAL
                GO TO 100
  9             CONTINUE
+c ach easier to debug intgrl input. 
+                  WRTLIN= .TRUE.
                GO TO 100
    10          CONTINUE
                   UNCONT = .TRUE.
+               GO TO 100
+ 11            CONTINUE
+                  ANGS = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -315,6 +320,7 @@ C
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
       OLDNRM = .FALSE.
+      WRTLIN  = .FALSE.
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
@@ -628,7 +634,7 @@ C*****************************************************************************
       END IF
       NMLAU = NMLINE
 C     .. NMLAU indentifies input line with Angstroms or bohrs indicator.
-      IF (ID3 .NE. ' ') THEN
+      IF (ID3 .NE. ' ' .or. ANGS ) THEN
         ANG = .TRUE.
         IF (.NOT. SLAVE .AND. IPREAD .GT. 0)
      &      WRITE (LUPRI,'(/2X,A/10X,A,F11.8,A2)')
@@ -877,6 +883,11 @@ C
          ELSE IF (ATOMBA .OR. BASIS) THEN
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
          ELSE
+C ach 
+            if (wrtlin) then 
+               write(lupri,*) mline(nmline)
+               call flush(lupri)
+            endif
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,24I5)') Q,NONT(I),
      &                          IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
          END IF
@@ -1923,6 +1934,11 @@ C
      &                       CPRIMU(L,M),'REA')
               END DO
 #else
+              if (wrtlin) then 
+                 write(lupri,*) mline(nmline)
+                 call flush(lupri)
+              endif
+              
               READ (MLINE(NMLINE),*) ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)
 #endif
            ELSE

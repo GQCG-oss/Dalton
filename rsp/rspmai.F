@@ -889,6 +889,8 @@ C     Initialization of RSPINP
       DATA X2TEST/.FALSE./
 C     Initialization of INFRSP for both PPINP and LRINP
       DATA MAXITO/5/, ANTTES/.FALSE./, IPRRSP/2/
+C INITIALIZING ELWEAK
+      DATA PVSO/.FALSE./, PVPSO/.FALSE./,ELWEAK/.FALSE./
 C     Initialization of INFRSP for LRINP
       DATA ABOCHK/.FALSE./
       DATA ISTOCK/1/, MAXOCK/6/
@@ -957,8 +959,6 @@ C  Initializing INFTPA
       DATA NBTPFR/1/
       DATA BTPFR(1)/0.0D0/
       DATA IPRTPA/2/
-C INITIALIZING ELWEAK
-      DATA PVSO/.FALSE./, PVPSO/.FALSE./,ELWEAK/.FALSE./
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
@@ -1336,13 +1336,14 @@ C
 #include <inftap.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <gnrinf.h>
 #include <chrnos.h>
 #include <elweak.h>
 C
       LOGICAL NEWDEF, SPNDEF
-      PARAMETER ( NTABLE = 38 )
+      PARAMETER ( NTABLE = 39 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER*8 LABEL,psolab
+      CHARACTER*8 LABEL,PSOLAB
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
@@ -1353,7 +1354,7 @@ C
      *            '.MAXIT ', '.THCLR ', '.MAXITO', 
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE', '.PV PSO', '.PV SO' /
+     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2'/
 C
       DATA SPNDEF/.FALSE./
 C
@@ -1374,7 +1375,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
-     *                      28,29,30,31,32,33,34,35,36,37,38),I
+     *                      28,29,30,31,32,33,34,35,36,37,38,39),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1534,7 +1535,7 @@ c ach
  37            CONTINUE
                   TRPLET=.TRUE.
                   TRPFLG=.TRUE.
-                  ELWEAK= .TRUE.
+                  ELWEAK=.TRUE.
                   PVPSO =.TRUE.
 C PV from pso                                  
 
@@ -1564,19 +1565,37 @@ C PV from spin-orbit
                   TRPLET=.TRUE.
                   TRPFLG=.TRUE.
                   ELWEAK = .TRUE.
-                  LLROP( INDPRP('X1SPNORB')) = .TRUE.
-                  LLROP( INDPRP('Y1SPNORB')) = .TRUE.
-                  LLROP( INDPRP('Z1SPNORB')) = .TRUE.
+C
                   LLROP( INDPRP('PVIOLA X')) = .TRUE.
                   LLROP( INDPRP('PVIOLA Y')) = .TRUE.
                   LLROP( INDPRP('PVIOLA Z')) = .TRUE.
+C
+                  LLROP( INDPRP('X1SPNORB')) = .TRUE.
+                  LLROP( INDPRP('Y1SPNORB')) = .TRUE.
+                  LLROP( INDPRP('Z1SPNORB')) = .TRUE.
                GO TO 100
 C
+ 39            CONTINUE
+C PV from spin-orbit 2 el
+               PVSO2 =.TRUE.
+               TRPLET=.TRUE.
+               TRPFLG=.TRUE.
+               ELWEAK = .TRUE.
+               
+               LLROP( INDPRP('PVIOLA X')) = .TRUE.
+               LLROP( INDPRP('PVIOLA Y')) = .TRUE.
+               LLROP( INDPRP('PVIOLA Z')) = .TRUE.
+               DOSO1 = .TRUE.
+               DOSO2 = .TRUE.
+               LLROP( INDPRP('X2SPNORB')) = .TRUE.
+               LLROP( INDPRP('Y2SPNORB')) = .TRUE.
+               LLROP( INDPRP('Z2SPNORB')) = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
-     *            '" NOT RECOGNIZED IN LRINP.'
+     *              '" NOT RECOGNIZED IN LRINP.'
                CALL QUIT(' ILLEGAL PROMPT IN LRINP ')
             END IF
       END IF
