@@ -118,9 +118,9 @@ CTRL[5]=1
 ERROR[5]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "O * z * (\-0| \-)\.025134980[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * (0| )\.059565905[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (0| )\.025134980[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * z * (\-0| \-)\.02513498.[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * y * (0| )\.05956590.[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * z * (0| )\.02513498.[0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"

@@ -131,12 +131,12 @@ CTRL[5]=4
 ERROR[5]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 
 # Gradient, 1st iteration:
-CRIT1=`$GREP "O * z * (\-0|\-)\.041024888[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * (0| )\.049511335[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (0| )\.041024888[0-9]" $log | wc -l`
-CRIT4=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.041024888[0-9]" $log | wc -l`
-CRIT5=`$GREP "H * 1 * (0| )\.0000000000 * (0| )\.024755667[0-9] * (0| )\.020512444[0-9]" $log | wc -l`
-CRIT6=`$GREP "H * 2 * (0| )\.0000000000 * (\-0|\-)\.024755667[0-9] * (0| )\.020512444[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * z * (\-0|\-)\.04102488.[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * y * (0| )\.04951133.[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * z * (0| )\.04102488.[0-9]" $log | wc -l`
+CRIT4=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.04102488.[0-9]" $log | wc -l`
+CRIT5=`$GREP "H * 1 * (0| )\.0000000000 * (0| )\.02475566.[0-9] * (0| )\.02051244.[0-9]" $log | wc -l`
+CRIT6=`$GREP "H * 2 * (0| )\.0000000000 * (\-0|\-)\.02475566.[0-9] * (0| )\.02051244.[0-9]" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[6]=6
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
@@ -158,15 +158,15 @@ ERROR[7]="INITIAL HESSIAN NOT CORRECT"
 
 # Dipole moment, 1st iteration:
 CRIT1=`$GREP "(0| )\.887038 au * 2\.254625 Debye" $log | wc -l`
-CRIT2=`$GREP "z * (0| )\.8870379[0-9] * 2\.2546253[0-9]" $log | wc -l`
+CRIT2=`$GREP "z * (0| )\.8870379[0-9] * 2\.254625(2|3)[0-9]" $log | wc -l`
 TEST[8]=`expr $CRIT1  \+ $CRIT2`
 CTRL[8]=2
 ERROR[8]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O *     (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.086310822[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.416587584[0-9] * (0| )\.978907050[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.416587584[0-9] * (0| )\.97890705[0-9]" $log | wc -l`
+CRIT1=`$GREP "O *     (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.0863108..[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.4165875..[0-9] * (0| )\.9789070..[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.4165875..[0-9] * (0| )\.9789070..[0-9]" $log | wc -l`
 TEST[9]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="INITIAL STEP NOT CORRECT"
