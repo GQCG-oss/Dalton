@@ -1801,13 +1801,13 @@ C
       RETURN
       END
 
-      SUBROUTINE WRFMTD(LU,FMT,MAT,N)
+      SUBROUTINE WRFMTD(LU,FMT,RMAT,N)
 #include <implicit.h>
       INTEGER LU, N
       DIMENSION RMAT(N,N)
       CHARACTER*(*) FMT
       DO I=1,N
-         WRITE(LU,FMT)(MAT(I,J),J=1,N)
+         WRITE(LU,FMT)(RMAT(I,J),J=1,N)
       END DO
       RETURN
       END
