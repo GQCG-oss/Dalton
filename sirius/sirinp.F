@@ -509,7 +509,7 @@ C********** Default values section RHFINP *****
 C
       IOPRHF = 0
       DIRFCK = DIRCAL
-      MXDIIS = 30
+      MXDIIS = 60
       MAXEVC = -1
       RHFCAN = .TRUE.
       MAXFCK = 0
