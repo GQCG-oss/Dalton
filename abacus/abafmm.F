@@ -482,7 +482,7 @@ C
       RETURN
       END
 C  /* Deck sphave */
-      SUBROUTINE SPHAVE(SPHINT,DENMAT,LMAX,DIS,LWORK,IPRINT)
+      SUBROUTINE SPHAVE(SPHINT,DENMAT,LMAX,DIS,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -520,7 +520,7 @@ C
 C     Electronic information
 C     ======================
 C
-      ERFAC = ERFCIV(THRCSL)
+      ERFAC = ERFCIV(THRCLS)
       WRITE (LUINTM) NBAST, LMAX, THRCLS, ERFAC 
 C
       ICOMP = 0
