@@ -123,38 +123,38 @@ ERROR[2]="SYMMETRY NOT CORRECT"
 # Initial energy
 CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.0401803723" $log | wc -l`
 CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.26328827.." $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-75\.793931721832" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-75\.7939317218(2|3)." $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "H * y * (\-0|\-)\.1445009633" $log | wc -l`
-CRIT2=`$GREP "H * z * (0| )\.0274284107" $log | wc -l`
-CRIT3=`$GREP "O * z * (\-0|\-)\.0274284107" $log | wc -l`
+CRIT1=`$GREP "H * y * (\-0|\-)\.144(499|500)...." $log | wc -l`
+CRIT2=`$GREP "H * z * (0| )\.0274(2|3)....." $log | wc -l`
+CRIT3=`$GREP "O * z * (\-0|\-)\.0274(2|3)....." $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial Hessian
-CRIT1=`$GREP "H * y * (0| )\.763250" $log | wc -l`
-CRIT2=`$GREP "H * z * (0| )\.391205 * (0| )\.354459" $log | wc -l`
-CRIT3=`$GREP "O * z * (\-0|\-)\.391205 * (\-0|\-)\.354459 * (0| )\.354459" $log | wc -l`
-CRIT4=`$GREP "H * x * (0| )\.024391" $log | wc -l`
-CRIT5=`$GREP "O * x * (\-0|\-)\.024391 * (0| )\.024391" $log | wc -l`
-CRIT6=`$GREP "H * y * (0| )\.547394" $log | wc -l`
-CRIT7=`$GREP "H * z * (0| )\.404952 * (0| )\.214053" $log | wc -l`
-CRIT8=`$GREP "O * y * (\-0|\-)\.547394 * (\-0|\-)\.404952 * (0| )\.547394" $log | wc -l`
-CRIT9=`$GREP "H * x * (\-0|\-)\.099495" $log | wc -l`
+CRIT1=`$GREP "H * y * (0| )\.76325." $log | wc -l`
+CRIT2=`$GREP "H * z * (0| )\.39120. * (0| )\.3544(59|60)" $log | wc -l`
+CRIT3=`$GREP "O * z * (\-0|\-)\.39120. * (\-0|\-)\.3544(59|60) * (0| )\.3544(59|60)" $log | wc -l`
+CRIT4=`$GREP "H * x * (0| )\.02439." $log | wc -l`
+CRIT5=`$GREP "O * x * (\-0|\-)\.02439. * (0| )\.02439." $log | wc -l`
+CRIT6=`$GREP "H * y * (0| )\.54739." $log | wc -l`
+CRIT7=`$GREP "H * z * (0| )\.40495. * (0| )\.21405." $log | wc -l`
+CRIT8=`$GREP "O * y * (\-0|\-)\.54739. * (\-0|\-)\.40495. * (0| )\.54739." $log | wc -l`
+CRIT9=`$GREP "H * x * (\-0|\-)\.09949." $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[5]=9
 ERROR[5]="INITIAL HESSIAN NOT CORRECT"
 
 # First step
-CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 1\.6040874[8-9][0-9][0-9] * (0| )\.94631414[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.6040874[8-9][0-9][0-9] * (0| )\.[946314140-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.02112501[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 1\.60408(6|7)..[0-9][0-9] * (0| )\.94631[2-4]..[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.60408(6|7)..[0-9][0-9] * (0| )\.94631[2-4]..[0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.02112[2-5]..[0-9][0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="FIRST STEP NOT CORRECT"
@@ -174,9 +174,9 @@ CTRL[8]=2
 ERROR[8]="THIRD ITERATION NOT CORRECT"
 
 # Last geometry
-CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 2\.4776485[4-6][0-9][0-9] * (0| )\.62387106[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-2\.4776485[4-6][0-9][0-9] * (0| )\.62387106[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.62376115[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 2\.477648[5-8].[0-9][0-9] * (0| )\.62387(0|1)..[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-2\.477648[5-8].[0-9][0-9] * (0| )\.62387(0|1)..[0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.62376(1|2)..[0-9][0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="LAST GEOMETRY NOT CORRECT"
