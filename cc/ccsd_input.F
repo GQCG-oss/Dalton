@@ -387,7 +387,7 @@ C
                   SKIP = .TRUE.
                GO TO 1000
     2          CONTINUE
-                  READ (LUCMD, '(I5)') IPRINT
+                  READ (LUCMD,*) IPRINT
                GO TO 1000
     3          CONTINUE
                   DIRECT = .TRUE.
@@ -409,7 +409,7 @@ C
                   CCSTST = .TRUE.
                GO TO 1000
     9          CONTINUE
-                  READ (LUCMD, '(I5)') MSYM2 
+                  READ (LUCMD,*) MSYM2 
                   IF (((MSYM.LT.8).AND.(MSYM.GT.0))
      *               .AND.(MSYM2.NE.MSYM)) THEN
                     CALL QUIT(' Symmetry mismatch in input')
@@ -418,7 +418,7 @@ C
                   ENDIF 
                GO TO 1000
    10          CONTINUE
-                  READ (LUCMD, '(I5)') MAXRED
+                  READ (LUCMD, *) MAXRED
                GO TO 1000
    11          CONTINUE
                   CALL CC_EXGRIN(WORD,MSYM)
@@ -439,7 +439,7 @@ C
                   F1SKIP = .TRUE.
                GO TO 1000
    17          CONTINUE
-                  READ (LUCMD, '(I5)') MAXITE
+                  READ (LUCMD,*) MAXITE
                GO TO 1000
    18          CONTINUE
 C                '*CCXOPA'
@@ -598,7 +598,7 @@ CKeinSPASmehr
                   NFIELD = NFIELD + 1
                   IF (NFIELD .LE. MXFELT) THEN
                      READ(LUCMD,*) EFIELD(NFIELD)
-                     READ(LUCMD,'(1X,A8)') LFIELD(NFIELD)
+                     READ(LUCMD,*) LFIELD(NFIELD)
                      NHFFIELD(NFIELD) = .TRUE.
                   ELSE
                      WRITE(LUPRI,*) 'Too many fields in cc input'
