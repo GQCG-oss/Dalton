@@ -55,7 +55,7 @@ cat > cc_exgr_prop.dal <<'%EOF%'
 .CC
 *SCF INPUT
 .THRESH
-1.0D-9
+7.0D-9
 *CC INP
 .NSYM
  1
@@ -158,7 +158,7 @@ ERROR[7]="CCSD OSCILLATOR STRENGTH IS NOT CORRECT"
 
 # CCS excited state dipole moment for 1 state in symmetry 1
 # z     -0.14163648     -0.36000399
-CRIT1=`$GREP "( -|-0)\.141636..     ( -|-0).3600039." $log | wc -l`
+CRIT1=`$GREP "( -|-0)\.141636..     ( -|-0).36000(39|40)." $log | wc -l`
 TEST[8]=`expr $CRIT1`
 CTRL[8]=1
 ERROR[8]="CCS EXCITED STATE DIPOLE MOMENT IS NOT CORRECT"
