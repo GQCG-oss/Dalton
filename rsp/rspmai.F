@@ -29,12 +29,17 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspmai.F,v 1.4 2001-05-03 13:14:05 hjj Exp $
+C$Id: rspmai.F,v 1.5 2001-05-04 08:52:39 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/05/03 13:14:05  hjj
+- bugfix: define MZCONF(1) properly for cref vector in qr and cr calculations
+  with no totally symmetric perturbations /hjaaj
+  (previous bugfix did not cover when TDHF and when triplet perturbations)
+
 Revision 1.3  2001/03/08 13:49:36  hjj
 - bugfix: define MZCONF(1) for cref vector qr and cr calculations
   (was undefined if no totally symmetric perturbations!)
@@ -90,6 +95,11 @@ RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
 #endif
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
+C
+C Driver for RESPONS.
+C
+C We assume that either the SIRIUS module or the SETSIR
+C subroutine has been called before RSPDRV.
 C
 #include <implicit.h>
 C
@@ -215,9 +225,9 @@ C
          IF (LWTRA.LT.0) CALL ERRWRK('RSPDRV 1',KWTRA-1,LWRK)
          REWIND LUSIFC
          IF (RSPCI) THEN
-            CALL MOLLAB('CIRESPON',LUSIFC,LUERR)
+            CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
          ELSE
-            CALL MOLLAB(LBSIFC,LUSIFC,LUERR)
+            CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
          END IF
          READ (LUSIFC)
          READ (LUSIFC)
@@ -292,10 +302,11 @@ C
      *                  WRK(KINDX+KIJ3AD-1),WRK(KINDX+KIADR1-1))
       ENDIF
 C
+C
       CALL RSPMC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),WRK(KFC),
      *           WRK(KFV),WRK(KFCAC),WRK(KH2AC),WRK(KINDX),
-     *           WRK(KWRK1))
-C     CALL RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,WRK)
+     *           WRK(KWRK1),LWRK1)
+C     CALL RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,WRK,LWRK)
 C
       IF ( .NOT.TDHF ) THEN
          CALL GETCIX(WRK(KINDX),IREFSY,IREFSY,WRK(KFREE),LFREE,0)
@@ -2964,7 +2975,7 @@ C
             CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
             REWIND LUINDX
-            CALL MOLLAB(OPLBL(KSYMOP),LUINDX,LUERR)
+            CALL MOLLAB(OPLBL(KSYMOP),LUINDX,LUPRI)
             READ (LUINDX) NWOPT,NWOP,NWOPH
             CALL READI(LUINDX,(2*NWOPT),JWOP)
             CALL GPCLOSE(LUINDX,'KEEP')
@@ -3189,13 +3200,16 @@ C
       RETURN
       END
 C  /* Deck rspmc */
-      SUBROUTINE RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK)
+      SUBROUTINE RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 C 28 JAN 87 BASED ON READMC
 C
 C Purpose:
 C   Read that MC information written by WRSIFC in SIRIUS which
 C   is needed for RESPONSE calculation.
+C
+C   We assume that either the SIRIUS module or the SETSIR
+C   subroutine has been called before RSPMC.
 C
 #include <implicit.h>
 #include <infdim.h>
@@ -3225,9 +3239,9 @@ C
 C
       REWIND LUSIFC
       IF (RSPCI) THEN
-         CALL MOLLAB('CIRESPON',LUSIFC,LUERR)
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
       ELSE
-         CALL MOLLAB(LBSIFC,LUSIFC,LUERR)
+         CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
       END IF
       READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF
       READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
@@ -3235,15 +3249,38 @@ C
 C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
 C    *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
 C
+C     Find out if TDHF or not :
+C
+      TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1))
+C
+C     If any triplet operators, then we must use determinants
+C     in RESPONS also for the reference symmetry, even if
+C     CSF's were used in SIRIUS. /hjaaj May 2001
+C
+      MCONRF = NCONRF
+      IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
+         FLAG(27) = .TRUE.
+C        ... call setsir to reset Sirius common blocks to determinants
+         CALL SETSIR(WRK,LWRK)
+      END IF
+C
 C     Transfer information
 C
       NCREF  = NCONRF
       IREFSY = LSYMRF
       DETERM = FLAG(27)
 C
-C     Find out if TDHF or not :
+C     Define MZCONF(1)
+C     ... MZCONF(1) is used in qr and cr for cref vector and
+C         it will not be defined in qr/cr modules if no
+C         perturbation operators of symmetry 1. /hjaaj Mar 2001
 C
-      TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1))
+      IF (TDHF) THEN
+         MZCONF(1) = 0
+      ELSE
+         MZCONF(1) = NCREF
+      END IF
+C
       IF (IPRRSP .GT. 0) THEN
       IF (NASHT.EQ.0) THEN
          WRITE (LUPRI,'(//,(A,F25.15))')
@@ -3271,73 +3308,59 @@ C
       IF (RSPSUP) WRITE (LUPRI,'(/A)')
      &   '@ Super symmetry will be used in perturbation symmetry 1'
 C
-C     Define MZCONF(1)
-C     ... MZCONF(1) is used in qr and cr for cref vector and
-C         it will not be defined in qr/cr modules if no
-C         perturbation operators of symmetry 1. /hjaaj Mar 2001
-C
-      IF (TDHF) THEN
-         MZCONF(1) = 0
-      ELSE
-         CALL SETCI2(NDETX,IREFSY,TRPFLG,0)
-C...     TRPFLG and not TRPLET because we must use determinants
-C        in qr and cr if any operator is triplet ! /hjaaj-may2001
-         MZCONF(1) = NDETX
-      END IF
-C
 C CHECK INFORMATION FROM LUSIFC WITH CORRESPONDING INFORMATION FROM
 C SIRINP
 C
       NUMERR = 0
       IF ( MISHT .NE. NISHT ) THEN
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,I5,A,I5)')
+         WRITE(LUPRI,'(A/A,I5,A,I5)')
      *   '@ *** FATAL ERROR IN RSPMC ***',
      *   '@ TOTAL NUMBER OF INACTIVE ORBITALS FROM SIRINP:',NISHT,
-     *   '@ FROM LUSIFC:',MISHT
+     *   '@ FROM SIRIFC:',MISHT
       END IF
       IF (TDHF .AND. NASHT .EQ. 0 .AND. EACTIV .NE. D0) THEN
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,F25.15)')
+         WRITE(LUPRI,'(A/A,F25.15)')
      *   '@ *** FATAL ERROR IN RSPMC ***',
      *   '@ TDHF calculation, but EACTIV .ne. 0; EACTIV is',EACTIV
       END IF
       IF ( MASHT .NE. NASHT ) THEN
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,I5,/A,I5)')
+         WRITE(LUPRI,'(A/A,I5,/A,I5)')
      *   '@ *** FATAL ERROR IN RSPMC ***',
      *   '@ TOTAL NUMBER OF ACTIVE ORBITALS FROM SIRINP:',NASHT,
-     *   '@ FROM LUSIFC:',MASHT
+     *   '@ FROM SIRIFC:',MASHT
       END IF
       IF ( MOCCT .NE. NOCCT ) THEN
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,I5,/A,I5)')
+         WRITE(LUPRI,'(A/A,I5,/A,I5)')
      *   '@ *** FATAL ERROR IN RSPMC ***',
      *   '@ TOTAL NUMBER OF OCCUPIED ORBITALS FROM SIRINP:',NOCCT,
-     *   '@ FROM LUSIFC:',MOCCT
+     *   '@ FROM SIRIFC:',MOCCT
       END IF
       IF ( MORBT .NE. NORBT ) THEN
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,I5,/A,I5)')
+         WRITE(LUPRI,'(A/A,I5,/A,I5)')
      *   '@ *** FATAL ERROR IN RSPMC ***',
      *   '@ TOTAL NUMBER OF  ORBITALS FROM SIRINP:',NORBT,
-     *   '@ FROM LUSIFC ',MORBT
+     *   '@ FROM SIRIFC ',MORBT
       END IF
       IF ( MBAST .NE. NBAST ) THEN
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,I5,/A,I5)')
+         WRITE(LUPRI,'(A/A,I5,/A,I5)')
      *   '@ *** FATAL ERROR IN RSPMC ***',
      *   '@ TOTAL NUMBER OF ATOMIC ORBITALS FROM SIRINP:',NBAST,
-     *   '@ FROM LUSIFC ',MBAST
+     *   '@ FROM SIRIFC ',MBAST
       END IF
-      IF ( NCONRF .NE. MCONF ) THEN
-      IF (.NOT.TDHF .OR. (MCONF .GT. 1 .AND. NCONRF .GT. 1)) THEN
+      IF ( MCONRF .NE. MCONF .OR. (TDHF .AND. MCONF .GT. 1)) THEN
+      IF (.NOT.TDHF .OR. MCONF .GT. 1 .OR. MCONRF .GT. 1) THEN
 C     ... abacus sets NCONRF=0 when "ABAHF" true.
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,I5,/A,I5)')
+         WRITE(LUPRI,'(A/A,I5/A,I5A,L5)')
      *  '@ *** FATAL ERROR IN RSPMC ***',
      *  '@ TOTAL NUMBER OF REFERENCE CONFIGURATIONS FROM SIRINP:',
-     *  NCONRF,'@ FROM LUSIFC ',MCONF
+     *  MCONRF,'@ AND FROM SIRIFC',MCONF,';  TDHF flag is',TDHF
       END IF
       END IF
 C     NWOPT test disabled because RSPMC may be called from ABACUS
@@ -3346,10 +3369,10 @@ C     30-Nov-93 hjaaj: test reactivated with JWOPSY = 1 check
 C                      (this should also catch SUPSYM inconsistencies)
       IF ( JWOPSY .EQ. 1 .AND. NWOPT .NE. MWOPT ) THEN
          NUMERR = NUMERR + 1
-         WRITE(LUERR,'(A/A,I5,/A,I5)')
+         WRITE(LUPRI,'(A/A,I5,/A,I5)')
      *   '@ *** FATAL ERROR IN RSPMC ***',
      *   '@ TOTAL NUMBER OF sym 1 orb. rot. FROM SIRINP:',NWOPT,
-     *   '@ FROM LUSIFC ',MWOPT
+     *   '@ FROM SIRIFC ',MWOPT
       END IF
       IF (NUMERR .GT. 0)
      *   CALL QUIT('RSPMC ERROR, SIRIFC file inconsistent '//
@@ -3369,7 +3392,7 @@ C        read and unpack DV
             CALL READT (LUSIFC,NNORBT,FV)
          END IF
          IF ( IPRRSP.GT.110 ) THEN
-            CALL READT (LUSIFC,NCONRF,WRK)
+            CALL GETREF(WRK,NCONRF)
             WRITE(LUPRI,'(/A)')
      &           ' **** RSPMC **** REFERENCE CONFIGURATION'
             CALL OUTPUT(WRK,1,NCONRF,1,1,NCONRF,1,1,LUPRI)
@@ -3492,9 +3515,9 @@ C        ... Hartree-Fock case ....
       ELSE
          REWIND LUSIFC
          IF (RSPCI) THEN
-            CALL MOLLAB('CIRESPON',LUSIFC,LUERR)
+            CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
          ELSE
-            CALL MOLLAB(LBSIFC,LUSIFC,LUERR)
+            CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
          END IF
          READ (LUSIFC)
          READ (LUSIFC) MISHT,MASHT,MOCCT,MORBT,MBAST,
@@ -3510,7 +3533,7 @@ C
                READ (LUSIFC)
             END IF
          ELSE IF (LCREF .EQ. MDETS) THEN
-            CALL MOLLAB('CREFDETS',LUSIFC,LUERR)
+            CALL MOLLAB('CREFDETS',LUSIFC,LUPRI)
          ELSE
             WRITE(LUPRI,'(/A/3I20)')
      &         'GETREF error, LCREF .ne. NCONF/NCDETS from SIRIFC:',
