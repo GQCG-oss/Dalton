@@ -679,8 +679,10 @@ case $WHICH in
             copt="-I../include -DSYS_AIX"
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000';;
     iris4d) case $opsys in
-               IRIX64) opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;
-	       *) opt='-O2 -n32 -mips3 -G 0 -woff 2290';;
+               IRIX64) opt='-O2 -64 -mips4 -G 0 -woff 2290 -OPT:Olimit=0'
+                       copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;
+	       *) opt='-O2 -n32 -mips3 -G 0 -woff 2290 -OPT:Olimit=0'
+                  copt='-O2 -n32 -mips3 -G 0 -OPT:Olimit=0';;
             esac
             if [ "$mesp" = "dummy" ]; then
 	       if [ $split = 'true' ] ; then
@@ -696,7 +698,6 @@ case $WHICH in
 		fi
 		set_parallel_def $mesp
 	    fi
-	    copt="$opt"
 	    inc='-I../include'
             cpp=${cpp}" -DIMPLICIT_NONE";;
     convex) if [ "$mesp" = "dummy" ]; then
