@@ -355,11 +355,14 @@ C
            WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
          END IF
          IF (ISYTLM(L+M+1) .NE. 1) THEN
-            IF (ABS(ETLM(LM,2)) .GT. THRZER) THEN
+Chj         IF (ABS(ETLM(LM,2)) .GT. THRZER) THEN
+Chj numerical errors have seen to give 1.0D-12,
+Chj so we now use 1.0D-10 for test /Feb 2005
+            IF (ABS(ETLM(LM,2)) .GT. 1.0D-10) THEN
               WRITE(LUPRI,*) 'ERROR CC_SLVE for l,m',L,M
               WRITE(LUPRI,*) 'Symmetry :',ISYTLM(L+M+1)
               WRITE(LUPRI,*) 'Tn(l,m) .ne. 0, but =',ETLM(LM,2)
-C              CALL QUIT( 'ERROR CC_SLVE: Tn(l,m) not 0 as expected')
+              CALL QUIT( 'ERROR CC_SLVE: Tn(l,m) not 0 as expected')
             END IF
             ETLM(LM,2) = ZERO
 C           ... to fix round-off errors in Tn(l,m) calculation

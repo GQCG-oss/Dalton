@@ -712,11 +712,14 @@ C
             WRITE (LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYRLM(L+M+1))
          END IF
          IF (ISYRLM(L+M+1) .NE. 1) THEN
-            IF (ABS(ERLM(LM,2)) .GT. THRZER) THEN
+Chj         IF (ABS(ERLM(LM,2)) .GT. THRZER) THEN
+Chj numerical errors have seen to give 1.0D-12,
+Chj so we now use 1.0D-10 for test /Feb 2005
+            IF (ABS(ERLM(LM,2)) .GT. 1.0D-10) THEN
                WRITE (LUPRI,*) 'ERROR SOLGRD for l,m',L,M
                WRITE (LUPRI,*) 'Symmetry :',ISYRLM(L+M+1)
                WRITE (LUPRI,*) 'Tn(l,m) .ne. 0, but =',ERLM(LM,2)
-Ckr               CALL QUIT( 'ERROR SOLGRD: Tn(l,m) not 0 as expected')
+               CALL QUIT( 'ERROR SOLGRD: Tn(l,m) not 0 as expected')
             END IF
             ERLM(LM,2) = D0
 C           ... to fix round-off errors in Tn(l,m) calculation
