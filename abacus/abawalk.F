@@ -1189,15 +1189,16 @@ C
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,POLDA,POLDL,ROAGND,
      &                  ROAGLD,ROAGNU,ROAGLU,ERGMOL,ESTART,WORK,LWORK,
      &                  NCART,NCRTOT,NUMMOD,IPOINT,IPRWLK)
-         ELSE IF (.NOT.(VROA .OR. RAMAN)) THEN
+         ELSE
             CALL WLKNUM(GRDCAR,HESCAR,DIPG0,GRAD0,HESS0,GRADF,HESSF,
      &                  DIPGF,WORK,ERGMOL,ESTART,DIPM,DIPM0,DISPLC,
      &                  LWORK,DODIP,NXYZ,NCRTOT,N2CRT,NCART,IPOINT,
      &                  NUMHES,IPRWLK)
-         ELSE
+            IF (VROA .OR. RAMAN) THEN
             CALL WLKROA(ROAAFD,ROAGND,ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,
      &                  ROAAU,POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,NXYZ,
      &                  NCART,IPOINT,DISPLC,IPRWLK)
+            END IF
          END IF
          IF (STOP) THEN
             WRITE (LUPRI,'(/A)')' Numerical differentiation complete.'

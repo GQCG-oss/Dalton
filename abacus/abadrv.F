@@ -897,7 +897,7 @@ cLig <> added goto 151
             VIB    = .TRUE.
             IF (IWKTYP .EQ. 6) THEN
                MOLGRD = .TRUE.
-               MOLHES = .NOT.NUMHES
+               MOLHES = .TRUE.
             ELSE
                MOLGRD = .NOT.((WRDSRC .EQ. '**FINAL') .AND. OPTWLK)
                MOLHES = .NOT.((WRDSRC .EQ. '**FINAL') .AND. OPTWLK 
@@ -1096,6 +1096,10 @@ C .D2DQ2
       END IF
   999 CONTINUE
       IF (MOLHES .AND. .NOT. DODRCT) EXPFCK = .TRUE.
+      IF (NUMHES) THEN
+         MOLHES = .FALSE.
+         IF (.NOT. POLAR) DIPDER = .FALSE.
+      END IF
       IF (FCKEXP) EXPFCK = .TRUE.
       IF (.NOT.(SHIELD.OR.SPNSPN)) THEN
          DO 65 I = 1, 3*MXCENT
