@@ -2,16 +2,15 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_vibave
-#*# -----------
-#*# Molecule:         NH3
-#*# Wave Function:    SCF
-#*# Test Purpose:     Vibrational average of shieldings, magnetizabilities
-#*#                   and polarizabilities
-#*#
-#
+cat > walk_vibave.info <<%EOF%
+   walk_vibave
+   -----------
+   Molecule:         NH3
+   Wave Function:    SCF / STO-3G
+   Test Purpose:     Vibrational average of shieldings, magnetizabilities
+                     and polarizabilities
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -19,8 +18,8 @@ cat > walk_vibave.mol <<%EOF%
 BASIS
 STO-3G
 Vibrational averaging of shieldings, magnetizabilities and polarizabilities
-(test62)
-    2    0  X  Y  Z    
+
+    2    0  X  Y  Z
        7.    1
 N          0.6023400            0.00000000              0.00000000
         1.    3

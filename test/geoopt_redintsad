@@ -2,18 +2,17 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_redintsad
-#*# ----------------
-#*# Molecule:         Acrolein
-#*# Wave Function:    SCF
-#*# Test Purpose:     Second order transition state optimization in redundant
-#*#                   internal coordinates. The partitioned rational function
-#*#                   method controls the steps and Baker's convergence
-#*#                   criteria are used
-#*#
-#
+cat > geoopt_redintsad.info <<%EOF%
+   geoopt_redintsad
+   ----------------
+   Molecule:         Acrolein
+   Wave Function:    SCF / 3-21G
+   Test Purpose:     Second order transition state optimization in redundant
+                     internal coordinates. The partitioned rational function
+                     method controls the steps and Baker's convergence
+                     criteria are used
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -21,7 +20,7 @@ cat > geoopt_redintsad.mol <<%EOF%
 BASIS
 3-21G
 Locating the rotational transition state of acrolein
-(test72)
+
     3    0
         6.    3
 C    -1.2039490098         .6299819763       -1.8443710751             *

@@ -2,24 +2,23 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_exci2
-#*# ------------
-#*# Molecule:         LiH
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     Optimization of the first excited state of A1 symmetry
-#*#                   using the .OPTIMIZE module (1st order), and with a
-#*#                   vibrational analysis in the final point.
-#*#
-#
+cat > geoopt_exci2.info <<%EOF%
+   geoopt_exci2
+   ------------
+   Molecule:         LiH
+   Wave Function:    MCSCF (CAS)
+   Test Purpose:     Optimization of the first excited state of A1
+                     symmetry using the .OPTIMIZE module (1st order),
+                     and with a vibrational analysis at the final point
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > geoopt_exci2.mol <<%EOF%
 INTGRL
 Geometry optimization of excited state, vibrational analysis at
-optimized geometry (test28)
+optimized geometry
     2    2  X  Y  Z
         3.    1    3    1    1    1    1
 Li    0.0 0.0 0.0
@@ -67,9 +66,7 @@ F   4    2
 #######################################################################
 cat > geoopt_exci2.dal <<%EOF%
 **GENERAL
-.MINIMIZE
-*MINIMIZE
-.1STORDER
+.OPTIMIZE
 **WAVE FUNCTION
 .HF
 .MP2
@@ -98,7 +95,7 @@ cat > geoopt_exci2.dal <<%EOF%
 .OPTIMAL ORBITAL TRIAL VECTORS
 **FINAL
 .VIBANA
-*END OF INPUT                                                                  
+*END OF INPUT
 %EOF%
 #######################################################################
 

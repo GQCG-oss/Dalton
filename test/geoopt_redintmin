@@ -2,30 +2,29 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_redintmin
-#*# ----------------
-#*# Molecule:         C2H6
-#*# Wave Function:    SCF
-#*# Test Purpose:     Minimization in redundant internal coordinates using
-#*#                   a model Hessian. The BFGS-formula is used for updating
-#*#                   the Hessians
-#*#
-#
+cat > geoopt_redintmin.info <<%EOF%
+   geoopt_redintmin
+   ----------------
+   Molecule:         C2H6
+   Wave Function:    SCF / STO-3G
+   Test Purpose:     Minimization in redundant internal coordinates using
+                     a model Hessian. The BFGS-formula is used for updating
+                     the Hessians
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > geoopt_redintmin.mol <<%EOF%
-BASIS                                                                           
+BASIS
 STO-3G
 First order minimization in redundant internal coordinates
-(test69)
-    2     
-        6.    2                                                                 
+
+    2
+        6.    2
 C     0.0000000000        0.0000000000        1.4547876282             *
 C     0.0000000000        0.0000000000       -1.4547876282             *
-        1.    6                                                                 
+        1.    6
 H     1.6808445513        0.9704360937        2.1445545504             *
 H    -1.6808445513        0.9704360937        2.1445545504             *
 H     0.0000000000       -1.9408721894        2.1445545504             *

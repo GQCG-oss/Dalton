@@ -2,16 +2,15 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_numgrd
-#*# -------------
-#*# Molecule:         H2O
-#*# Wave Function:    MP2
-#*# Test Purpose:     Geometry optimization (1st order) using numerical
-#*#                   gradients
-#*#
-#
+cat > geoopt_numgrd.info <<%EOF%
+   geoopt_numgrd
+   -------------
+   Molecule:         H2O
+   Wave Function:    MP2 / 6-31G
+   Test Purpose:     Geometry optimization (1st order) using numerical
+                     gradients
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -19,7 +18,7 @@ cat > geoopt_numgrd.mol <<%EOF%
 BASIS
 6-31G
 MP2 geometry optimization using numerical gradients
-(test29)
+
     2    2  X  Y
         1.    1
 H1        0.00000000    -1.44761450     1.07875057
@@ -33,9 +32,7 @@ H2        0.00000000     1.44761450     1.07875057
 #######################################################################
 cat > geoopt_numgrd.dal <<%EOF%
 **DALTON INPUT
-.MINIMIZE
-*MINIMIZATION
-.1STORDER
+.OPTIMIZE
 **WAVE FUNCTIONS
 .HF
 .MP2

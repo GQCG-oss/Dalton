@@ -2,18 +2,16 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_preopt
-#*# -------------
-#*# Molecule:         H2O
-#*# Wave Function:    SCF
-#*# Test Purpose:     Demonstrate pre-optimization using smaller
-#*#                   basis sets. The molecule is optimized using
-#*#                   using STO-3G, then 4-31G before finally
-#*#                   optimizing with cc-pVDZ
-#*#
-#
+cat > geoopt_preopt.info <<%EOF%
+   geoopt_preopt
+   -------------
+   Molecule:         H2O
+   Wave Function:    SCF / STO-3G, 4-31G and cc-pVDZ
+   Test Purpose:     Demonstrate pre-optimization using smaller
+                     basis sets. The molecule is optimized using
+                     STO-3G, then 4-31G and finally cc-pVDZ
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -22,7 +20,7 @@ BASIS
 cc-pVTZ
 Geometry optimization utilizing pre-optimization with smaller
 basis sets
-    2    
+    2
         8.    1
 O     0.0 0.3 0.0
         1.    2

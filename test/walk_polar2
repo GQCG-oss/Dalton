@@ -2,19 +2,18 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_polar2
-#*# -----------
-#*# Molecule:         O3
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     Geometry optimization using .WALK module (2nd order),
-#*#                   with a calculation of static and dynamic
-#*#                   polarizabilities using all three different ways of
-#*#                   calculating them, vibrational analysis and Cioslowski
-#*#                   population anaylsis.
-#*#
-#
+cat > walk_polar2.info <<%EOF%
+   walk_polar2
+   -----------
+   Molecule:         O3
+   Wave Function:    MCSCF (CAS) / aug-cc-pVDZ
+   Test Purpose:     Geometry optimization using .WALK module (2nd order),
+                     with a calculation of static and dynamic
+                     polarizabilities using all three different ways of
+                     calculating them, vibrational analysis and Cioslowski
+                     population anaylsis
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -22,7 +21,7 @@ cat > walk_polar2.mol <<%EOF%
 BASIS
 aug-cc-pVDZ
 Geometry optimization using WALK module plus
-static and dynamic polarizabilities (test9)
+static and dynamic polarizabilities
     1    2  Y  Z
         8.    2
 OS         .0000000000        0.0000000000         .0000000000             *

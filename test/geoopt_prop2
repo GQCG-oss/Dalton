@@ -2,17 +2,16 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_prop2
-#*# ------------
-#*# Molecule:         H2O
-#*# Wave Function:    SCF
-#*# Test Purpose:     Geometry optimization using .OPTIMIZE module
-#*#                   (2nd order) with a calculation of Third-Harmonic
-#*#                   generation at the optimized geometry.
-#*#
-#
+cat > geoopt_prop2.info <<%EOF%
+   geoopt_prop2
+   ------------
+   Molecule:         H2O
+   Wave Function:    SCF / 6-311++G**
+   Test Purpose:     Geometry optimization using .OPTIMIZE module
+                     (2nd order) with a calculation of Third-Harmonic
+                     generation at the optimized geometry
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -20,7 +19,7 @@ cat > geoopt_prop2.mol <<%EOF%
 BASIS
 6-311++G**
 Geometry optimization(2nd order), calculation of Third-Harmonic
-generation at the optimized geometry (test7)
+generation at the optimized geometry
     2
         8.    1
 O     0.0 -0.2249058930 0.0
@@ -34,8 +33,8 @@ H    -1.45235 0.899623 0.0
 #######################################################################
 cat > geoopt_prop2.dal <<%EOF%
 **GENERAL
-.MINIMIZE
-*MINIMIZE
+.OPTIMIZE
+*OPTIMIZE
 .2NDORDER
 **WAVE FUNCTION
 .HF

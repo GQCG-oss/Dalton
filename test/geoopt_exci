@@ -2,19 +2,18 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_exci
-#*# -----------
-#*# Molecule:         H2O
-#*# Wave Function:    MCSCF
-#*# Test Purpose:     Geometry optimization of the first-excited state of A1
-#*#                   symmetry in the molecule using the .OPTIMIZE module
-#*#                   (2nd order). Note that this test will crash, due to
-#*#                   the need for breaking the symmetry, which we do not
-#*#                   allow for an MCSCF wave function.
-#*#
-#
+cat > geoopt_exci.info <<%EOF%
+   geoopt_exci
+   -----------
+   Molecule:         H2O
+   Wave Function:    MCSCF / aug-cc-pVDZ
+   Test Purpose:     Geometry optimization of the first-excited state
+                     of A1 symmetry in the molecule using the .OPTIMIZE
+                     module (2nd order). Note that this test will crash,
+                     due to the need for breaking the symmetry, which we
+                     do not allow for an MCSCF wave function
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -22,7 +21,7 @@ cat > geoopt_exci.mol <<%EOF%
 BASIS
 aug-cc-pVDZ
 Geometry optimization of excited state. Breaking of symmetry leads to
-error message (test15)
+error message
     2
         1.    2
 H     1.45235 0.899623 0.0
@@ -68,7 +67,7 @@ cat > geoopt_exci.dal <<%EOF%
 .OPTIMAL ORBITAL TRIAL VECTORS
 **FINAL
 .VIBANA
-*END OF INPUT                                                                  
+*END OF INPUT
 %EOF%
 #######################################################################
 

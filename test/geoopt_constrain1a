@@ -2,31 +2,30 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_constrain1a
-#*# ------------------
-#*# Molecule:         C2H6
-#*# Wave Function:    N/A
-#*# Test Purpose:     Demonstrates a run were nothing but determination of
-#*#                   redundant internal coordinates is performed. This is
-#*#                   needed to get the coordinate numbers required for
-#*#                   constraints
-#*#
-#
+cat > geoopt_constrain1a.info <<%EOF%
+   geoopt_constrain1a
+   ------------------
+   Molecule:         C2H6
+   Wave Function:    N/A
+   Test Purpose:     Demonstrates a run were nothing but determination of
+                     redundant internal coordinates is performed. This is
+                     needed to get the coordinate numbers required for
+                     constraints
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > geoopt_constrain1a.mol <<%EOF%
-BASIS                                                                           
+BASIS
 STO-3G
 Determination of redundant internal coordinates
-(test75)
-    2     
-        6.    2                                                                 
+
+    2
+        6.    2
 C     0.0000000000        0.0000000000        1.7547876282             *
 C     0.0000000000        0.0000000000       -1.7547876282             *
-        1.    6                                                                 
+        1.    6
 H     1.6808445513        0.9704360937        2.4445545504             *
 H    -1.6808445513        0.9704360937        2.4445545504             *
 H     0.0000000000       -1.9408721894        2.4445545504             *

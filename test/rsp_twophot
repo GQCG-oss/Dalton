@@ -17,7 +17,7 @@ cat > rsp_twophot.mol <<%EOF%
 BASIS
 3-21G
 Two-photon absorption
-(modified version of test66)
+
     2    3  X  Y  Z1
       6.0    4
 C      0.6289236   0.0000000   0.0000000

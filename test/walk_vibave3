@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_vibave3
-#*# ------------
-#*# Molecule:         H2O
-#*# Wave Function:    SCF
-#*# Test Purpose:     Vibrational average of shieldings
-#*#
-#
+cat > walk_vibave3.info <<%EOF%
+   walk_vibave3
+   ------------
+   Molecule:         H2O
+   Wave Function:    SCF / STO-3G
+   Test Purpose:     Vibrational average of shieldings
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,11 +17,11 @@ cat > walk_vibave3.mol <<%EOF%
 BASIS
 STO-3G
 Vibrational averaging of shieldings
-(test64)
+
     2  0 0X  Y        0.10D-14
-        8.    1 
+        8.    1
 O          0.0000000000            0.0000000029           -0.1576517875
-        1.    2 
+        1.    2
 H          0.0000000000            1.4500287658            1.0560138735
 H          0.0000000000           -1.4500287779            1.0560138735
 %EOF%

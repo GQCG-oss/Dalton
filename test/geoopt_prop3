@@ -2,18 +2,17 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_prop3
-#*# ------------
-#*# Molecule:         O3
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     Geometry optimization using .OPTIMIZE module
-#*#                   (2nd order) with a calculation of quadrupole moment,
-#*#                   magnetizability and nuclear shieldings at the
-#*#                   optimized geometry, along with a vibrational analysis.
-#*#
-#
+cat > geoopt_prop3.info <<%EOF%
+   geoopt_prop3
+   ------------
+   Molecule:         O3
+   Wave Function:    MCSCF (CAS) / aug-cc-pVDZ
+   Test Purpose:     Geometry optimization using .OPTIMIZE module
+                     (2nd order) with a calculation of quadrupole moment,
+                     magnetizability and nuclear shieldings at the
+                     optimized geometry, along with a vibrational analysis
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -21,7 +20,7 @@ cat > geoopt_prop3.mol <<%EOF%
 BASIS
 aug-cc-pVDZ
 Geometry optimization, calculation of magnetizabilities
-and nuclear shieldings at the optimized geometry (test10)
+and nuclear shieldings at the optimized geometry
     1    2  Y  Z
         8.    2
 OS         .0000000000        0.0000000000         .0000000000             *
@@ -33,8 +32,8 @@ OP        1.2634502500        2.0449019100         .0000000000             *
 #######################################################################
 cat > geoopt_prop3.dal <<%EOF%
 **GENERAL
-.MINIMIZE
-*MINIMIZE
+.OPTIMIZE
+*OPTIMIZE
 .2NDORDER
 **WAVE FUNCTIONS
 .HF

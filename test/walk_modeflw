@@ -2,22 +2,21 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_modeflw
-#*# ------------
-#*# Molecule:         NH3
-#*# Wave Function:    SCF
-#*# Test Purpose:     Locating a transition state using mode following
-#*#
-#
+cat > walk_modeflw.info <<%EOF%
+   walk_modeflw
+   ------------
+   Molecule:         NH3
+   Wave Function:    SCF / 6-31G** (Atombasis)
+   Test Purpose:     Locating a transition state using mode following
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > walk_modeflw.mol <<%EOF%
 ATOMBASIS
 Location of saddle point (transition state) by following
-a specific eigenmode (test55)
+a specific eigenmode
 c   2    0
         7.    1      6-31G**
 N          -.2402098951            -.0000003109             .5147128871

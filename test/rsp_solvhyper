@@ -2,23 +2,22 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_solvhyper
-#*# -------------
-#*# Molecule:         H2O
-#*# Wave Function:    SCF
-#*# Test Purpose:     Non-equilibrium solvation first hyper-
-#*#                   polarizabilities
-#*#
-#
+cat > rsp_solvhyper.info <<%EOF%
+   rsp_solvhyper
+   -------------
+   Molecule:         H2O
+   Wave Function:    SCF / ANO (Atombasis)
+   Test Purpose:     Non-equilibrium solvation first hyper-
+                     polarizabilities
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > rsp_solvhyper.mol <<%EOF%
 ATOMBASIS
 Calculation of non-equilibrium solvation first hyperpolarizabilities
-(test60)
+
     2    2  X  Z
         8.    1 ano-1 5 4 3 0
 O     0.0  1.0 0.0

@@ -19,33 +19,45 @@ geoopt_prop2 geoopt_redintmin geoopt_vrml prop_ecd prop_exci \
 prop_nolondon prop_spinspin prop_spinspin2 prop_spinspin3 prop_spinspin4 \
 prop_vibvcd rsp_2ndharm rsp_3rdharm rsp_3rdmom rsp_dresqr rsp_exci \
 rsp_excipolar2 rsp_hyperpolar rsp_lrso rsp_lrso2 rsp_phosph rsp_polar \
-rsp_mcdbterm \
-rsp_propave rsp_socorr rsp_solvhyper rsp_soppa1excinosymm \
+rsp_mcdbterm rsp_propave rsp_socorr rsp_solvhyper rsp_soppa1excinosymm \
 rsp_soppa1excisymm rsp_soppa3excinosymm rsp_soppa3excisymm \
 rsp_soppafcnosymm rsp_soppafcsymm rsp_soppapolar rsp_soppapolarnosymm \
 rsp_soppapolarsymm rsp_sreslrso rsp_sresqr walk_gradex walk_image \
 walk_modeflw walk_polar walk_vibave walk_vibave2 walk_vibave3"
 #
-SHORTCC="alpha alpha3 beta beta2 beta_freq beta_freq2 cc2drw2e \
-cc2refop cc2rf exgr1 exlr_ccsd exlr_ccsd_2 field fop1 fop2 freeze1 \
-gamma_ccs gamma_ccsd gamma_direct gamma_freq gamma_freq2 mcd_nonlao \
-oddisp threephot triples triples_direct triples_direct2 triples_direri \
-triplet triplet3 twophot twophot_c2v twophot_cc2_cs twophot_direct \
-twophotb"
+SHORTCC="cc_rsp_alpha2 cc_rsp_beta cc_rsp_beta2 cc_rsp_betafreq \
+cc_rsp_betafreq2 cc_fop_drw2e cc_fop_prop cc_fop_prop2 cc_exgr_prop \
+cc_rsp_excipolar cc_rsp_exci cc_energy_field cc_fop_prop3 cc_fop_prop4 \
+cc_fop_freeze cc_rsp_gamma cc_rsp_gammafreq cc_rsp_gammafreq2 \
+cc_mcd_nonlao cc_rsp_threephot cc_energy_triples cc_energy_triplesdirect \
+cc_energy_triplesdirect2 cc_energy_triplesdirect3 cc_energy_triplet2 \
+cc_rsp_twophot cc_rsp_twophot2 cc_rsp_twophot3 cc_rsp_twophot4 \
+cc_rsp_twophot5 cc_rsp_twophotb"
 #
 SHORT="$SHORT $SHORTCC"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
-geoopt_symbrk prop_nucquad prop_roa rsp_dckerr rsp_esr rsp_esr2"
+geoopt_symbrk prop_nucquad prop_roa rsp_dckerr rsp_esr rsp_esr2 \
+rsp_solvesr walk_polar2"
 #
-LONG="geoopt_prop3 prop_vibana rsp_excipolar rsp_solvesr rsp_twophot \
-walk_polar2 walk_solvmag"
+MEDIUMCC="cc_rsp_alpha cc_rsp_gamma2 cc_rsp_gammadirect cc_rsp_oddisp \
+cc_energy_triplet cc_rsp_twophotdirect"
+#
+MEDIUM="$MEDIUM $MEDIUMCC"
+#
+LONG="geoopt_prop3 prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
+#
+LONGCC=""
+#
+LONG="$LONG $LONGCC"
 #
 PARALLEL="energy_parallel"
 #
 ALL="$SHORT $MEDIUM $LONG"
-
+#
+ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
+#
 #########################################################################
 # function usage(): print usage information 
 #########################################################################
@@ -70,8 +82,8 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
        where testcase might be one of the following:
           essential            -- run a minimal set of essential testcases
           parallel             -- run all parallel testcases
+          allcc                -- run all coupled-cluster testcases
           short                -- run all short testcases
-          shortcc              -- run all short cc testcases
           medium               -- run all medium length testcases
           long                 -- run all long testcases
           all                  -- run all non-parallel testcases
@@ -147,8 +159,8 @@ elif [ "$testcase" = "parallel" ]; then
   testcase=$PARALLEL
 elif [ "$testcase" = "all" ]; then
   testcase=$ALL
-elif [ "$testcase" = "shortcc" ]; then
-  testcase=$SHORTCC
+elif [ "$testcase" = "allcc" ]; then
+  testcase=$ALLCC
 fi
 
 
@@ -194,7 +206,7 @@ do
   if [ -r ./$item'__'1.dal ]; then
       multi=1
       numsteps=`ls ./$item\_\_[0-9].dal | wc -l`
-      myprint "This is a multi-step job consisting of $numsteps steps"
+      myprint "   This is a multi-step job consisting of $numsteps steps"
       rm -f ./$item'__'[0-9]'_'$item.log
       chmod +x ./$item'__'[0-9].check
   else

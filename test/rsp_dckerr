@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_dckerr
-#*# ----------
-#*# Molecule:          O3
-#*# Wave Function:     MCSCF (RAS)
-#*# Test Purpose:      Single-point calculation of the DC-Kerr effect
-#*#
-#
+cat > rsp_dckerr.info <<%EOF%
+   rsp_dckerr
+   ----------
+   Molecule:         O3
+   Wave Function:    MCSCF (RAS)
+   Test Purpose:     Single-point calculation of the DC-Kerr effect
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > rsp_dckerr.mol <<%EOF%
 BASIS
 aug-cc-pVDZ
 Calculation of DC-Kerr effect
-(test14)
+
     1    2  Y  Z
         8.    2
 OS         -.0014349248             .0000000000             .0000000000
@@ -54,7 +53,7 @@ cat > rsp_dckerr.dal <<%EOF%
 .RAS1 HOLES
  0 2
 .RAS2 SPACE
- 0 0 1 1 
+ 0 0 1 1
 .RAS3 SPACE
  1 1 0 0
 .RAS3 ELECTRONS

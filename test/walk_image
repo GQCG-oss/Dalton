@@ -2,22 +2,21 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_image
-#*# ----------
-#*# Molecule:         NH3
-#*# Wave Function:    SCF
-#*# Test Purpose:     Locating a transition state using the IMAGE method
-#*#
-#
+cat > walk_image.info <<%EOF%
+   walk_image
+   ----------
+   Molecule:         NH3
+   Wave Function:    SCF / 6-31G** (Atombasis)
+   Test Purpose:     Locating a transition state using the IMAGE method
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > walk_image.mol <<%EOF%
 ATOMBASIS
 Location of saddle point (transition state) using IMAGE method
-(test53)
+
 c   2    0
         7.    1      6-31G**
 N     0.0  0.0  0.0

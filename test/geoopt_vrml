@@ -2,17 +2,16 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_vrml
-#*# -----------
-#*# Molecule:         KUM1
-#*# Wave Function:    N/A
-#*# Test Purpose:     VRML visualization of input geometry. A ball-and-stick
-#*#                   representation of the molecule is written to the file
-#*#                   'first.wrl'
-#*#
-#
+cat > geoopt_vrml.info <<%EOF%
+   geoopt_vrml
+   -----------
+   Molecule:         KUM1
+   Wave Function:    N/A
+   Test Purpose:     VRML visualization of input geometry. A ball-and-stick
+                     representation of the molecule is written to the file
+                     'first.wrl'
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -20,7 +19,7 @@ cat > geoopt_vrml.mol <<%EOF%
 BASIS
 6-31++G
 VRML visualization
-(test77)
+
     2    3  X  Y  Z1
       6.0    4
 C      0.6289236   0.0000000   0.0000000

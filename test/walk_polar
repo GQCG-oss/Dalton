@@ -2,26 +2,25 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_polar
-#*# ----------
-#*# Molecule:         H2O
-#*# Wave Function:    SCF
-#*# Test Purpose:     Geometry optimization using .WALK module (2nd order),
-#*#                   with a calculation of static and dynamic
-#*#                   polarizabilities using all three different ways of
-#*#                   calculating them, vibrational analysis and Cioslowski
-#*#                   population anaylsis.
-#*#
-#
+cat > walk_polar.info <<%EOF%
+   walk_polar
+   ----------
+   Molecule:         H2O
+   Wave Function:    SCF
+   Test Purpose:     Geometry optimization using .WALK module (2nd order),
+                     with a calculation of static and dynamic
+                     polarizabilities using all three different ways of
+                     calculating them, vibrational analysis and Cioslowski
+                     population anaylsis
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > walk_polar.mol <<%EOF%
 ATOMBASIS
 Geometry optimization using WALK module plus
-static and dynamic polarizabilities (test5)
+static and dynamic polarizabilities
     2    2  X  Z
         8.    1 6-311G Pol 1 0.0845D0 3 1.292D0 2 0.0845D0
 O     0.0 -0.2249058930 0.0

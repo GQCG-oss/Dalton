@@ -2,22 +2,21 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# prop_ecd
-#*# --------
-#*# Molecule:         C2H4
-#*# Wave Function:    SCF
-#*# Test Purpose:     Electronic circular dichroism parameters (ECD)
-#*#
-#
+cat > prop_ecd.info <<%EOF%
+   prop_ecd
+   --------
+   Molecule:         C2H4
+   Wave Function:    SCF
+   Test Purpose:     Electronic circular dichroism parameters (ECD)
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > prop_ecd.mol <<%EOF%
 INTGRL
 Electronic circular dichroism parameters
-(test18)
+
     2    1 YZ      *  1.00D-13
         6.    1    2    1    1
 C #1   0.000000            0.000000           0.666000                 *

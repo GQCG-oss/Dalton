@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# energy_restart
-#*# --------------
-#*# Molecule:         H2O
-#*# Wave Functions:   MCSCF (RAS)
-#*# Test Purpose:     Restart an MCSCF wave function
-#*#
-#
+cat > energy_restart.info <<%EOF%
+   energy_restart
+   --------------
+   Molecule:         H2O
+   Wave Functions:   MCSCF (RAS) / cc-pVDZ
+   Test Purpose:     Restart an MCSCF wave function
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > energy_restart.mol <<%EOF%
 BASIS
 cc-pVDZ
 Restarting an MCSCF wave function
-(test31)
+
     2
         8.    1
 O     0.0 -0.2249058930 0.0
@@ -78,7 +77,7 @@ cat > energy_restart__2.dal <<%EOF%
 %EOF%
 #######################################################################
 
- 
+
 
 #######################################################################
 
@@ -144,19 +143,19 @@ ERROR[5]="OCCUPANCIES NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5
-do 
+do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
      PASSED=0
    fi
-done 
+done
 
 if [ $PASSED -eq 1 ]
 then
   echo TEST ENDED PROPERLY
   exit 0
 else
-  echo THERE IS A PROBLEM 
+  echo THERE IS A PROBLEM
   exit 1
 fi
 
@@ -227,19 +226,19 @@ ERROR[6]="FINAL OCCUPANCY NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6
-do 
+do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
      PASSED=0
    fi
-done 
+done
 
 if [ $PASSED -eq 1 ]
 then
   echo TEST ENDED PROPERLY
   exit 0
 else
-  echo THERE IS A PROBLEM 
+  echo THERE IS A PROBLEM
   exit 1
 fi
 

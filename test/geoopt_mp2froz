@@ -2,16 +2,15 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_mp2froz
-#*# --------------
-#*# Molecule:         C6H6
-#*# Wave Function:    MP2 with frozen core
-#*# Test Purpose:     1st order geometry optimization using MP2 frozen
-#*#                   core numerical gradients
-#*#
-#
+cat > geoopt_mp2froz.info <<%EOF%
+   geoopt_mp2froz
+   --------------
+   Molecule:         C6H6
+   Wave Function:    MP2 with frozen core / STO-3G
+   Test Purpose:     1st order geometry optimization using MP2 frozen
+                     core numerical gradients
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -19,7 +18,7 @@ cat > geoopt_mp2froz.mol <<%EOF%
 BASIS
 STO-3G
 1st order geometry optimization using MP2 frozen core
-numerical gradients (test61)
+numerical gradients
     2    3  X  Y  Z   1.00D-15
         1.0   2    2    1    1    1
 H1    0.00000000          4.686595943         0.00000000               *
@@ -35,9 +34,7 @@ C2    2.283034611         1.318102747         0.00000000               *
 cat > geoopt_mp2froz.dal <<%EOF%
 **GENERAL
 .RUN WAVEFUNCTION
-.MINIMIZE
-*MINIMIZE
-.1STORD
+.OPTIMIZE
 **SIRIUS
 .HF
 .MP2

@@ -2,23 +2,22 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_vibave2
-#*# ------------
-#*# Molecule:         HF
-#*# Wave Function:    SCF
-#*# Test Purpose:     Vibrational average of shieldings
-#*#
-#
+cat > walk_vibave2.info <<%EOF%
+   walk_vibave2
+   ------------
+   Molecule:         HF
+   Wave Function:    SCF / ANO (Atombasis)
+   Test Purpose:     Vibrational average of shieldings
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > walk_vibave2.mol <<%EOF%
 ATOMBASIS
 Vibrational averaging of shieldings
-(test63)
-    2  0 0X  Y        0.10D-14 
+
+    2  0 0X  Y        0.10D-14
         1.    1 ano-4 3 2 0
 H          0.0000000000            0.0000000000            1.7497928937
         9.    1 ano-4 4 3 2 0

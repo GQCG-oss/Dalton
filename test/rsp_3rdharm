@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_3rdharm
-#*# -----------
-#*# Molecule:         LiH
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     Third-Harmonic generation
-#*#
-#
+cat > rsp_3rdharm.info <<%EOF%
+   rsp_3rdharm
+   -----------
+   Molecule:         LiH
+   Wave Function:    MCSCF (CAS) / 4-31G
+   Test Purpose:     Third-Harmonic generation
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,11 +17,11 @@ cat > rsp_3rdharm.mol <<%EOF%
 BASIS
 4-31G
 Calculation of Third-Harmonic
-(test40)
+
     2    2  X  Y    1 1.00D-12
         1.0   1
  H           .0000000000             .0000000000            2.0969699107
-        3.0   1 
+        3.0   1
  Li          .0000000000             .0000000000            -.9969699107
 %EOF%
 

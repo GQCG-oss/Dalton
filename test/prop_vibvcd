@@ -2,23 +2,22 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# prop_vibvcd
-#*# -----------
-#*# Molecule:         C2H4O
-#*# Wave Function:    SCF
-#*# Test Purpose:     Single-point calculation checking vibrational analysis
-#*#                   and IR and VCD spectral properties.
-#*#
-#
+cat > prop_vibvcd.info <<%EOF%
+   prop_vibvcd
+   -----------
+   Molecule:         C2H4O
+   Wave Function:    SCF / DZ
+   Test Purpose:     Single-point calculation checking vibrational analysis
+                     and IR and VCD spectral properties
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > prop_vibvcd.mol <<%EOF%
 INTGRL
  DZ (9S5P/4S)-[4S2P/2S].  Scalingfactor for H is 1.2.
- Basis of T. H. Dunning, Jr., J. Chem. Phys. 53, 2823 (1970). (test8)
+ Basis of T. H. Dunning, Jr., J. Chem. Phys. 53, 2823 (1970)
     3    2  X  Y
 #
         8.    1    2    1    1

@@ -2,18 +2,17 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_prop
-#*# -----------
-#*# Molecule:         H2O
-#*# Wave Function:    SCF
-#*# Test Purpose:     Geometry optimization using .OPTIMIZE module
-#*#                   (1st order) with a calculation of quadrupole moment,
-#*#                   magnetizability and nuclear shieldings at the
-#*#                   optimized geometry, along with a vibrational analysis.
-#*#
-#
+cat > geoopt_prop.info <<%EOF%
+   geoopt_prop
+   -----------
+   Molecule:         H2O
+   Wave Function:    SCF / 6-311++G**
+   Test Purpose:     Geometry optimization using .OPTIMIZE module
+                     (1st order) with a calculation of quadrupole moment,
+                     magnetizability and nuclear shieldings at the
+                     optimized geometry, along with a vibrational analysis
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -21,7 +20,7 @@ cat > geoopt_prop.mol <<%EOF%
 BASIS
 6-311++G**
 Geometry optimization, calculation of quadrupole moment, magnetizabilities
-and nuclear shieldings at the optimized geometry (test6)
+and nuclear shieldings at the optimized geometry
     2
         8.    1
 O     0.0 -0.2249058930 0.0
@@ -35,7 +34,7 @@ H    -1.45235 0.899623 0.0
 #######################################################################
 cat > geoopt_prop.dal <<%EOF%
 **GENERAL
-.MINIMIZE
+.OPTIMIZE
 **WAVE FUNCTION
 .HF
 **FINAL

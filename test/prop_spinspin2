@@ -2,26 +2,25 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# prop_spinspin2
-#*# --------------
-#*# Molecule:         H2O
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     Spin-spin coupling constants calculating only the
-#*#                   normally most dominating contributions to the
-#*#                   isotropic and anisotropic coupling constants, namely
-#*#                   the FC-FC and FC-SD terms, thus only solving one
-#*#                   response equation. 
-#*#
-#
+cat > prop_spinspin2.info <<%EOF%
+   prop_spinspin2
+   --------------
+   Molecule:         H2O
+   Wave Function:    MCSCF (CAS)
+   Test Purpose:     Spin-spin coupling constants calculating only the
+                     normally most dominating contributions to the
+                     isotropic and anisotropic coupling constants, namely
+                     the FC-FC and FC-SD terms, thus only solving one
+                     response equation
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > prop_spinspin2.mol <<%EOF%
 INTGRL
 Calculation of only the dominating contributions to the isotropic and
-anisotropic coupling constants (test26)
+anisotropic coupling constants
     2    2  X  Y      1.0D-12
         8.    1    3    1    1    1
 O      .0000000000 0.0        -.2249058930
@@ -50,16 +49,16 @@ O      .0000000000 0.0        -.2249058930
 0.35                1.0
         1.    1    2    1    1    1
 H1    1.4523499293        0.0  .8996235720
-    6    4                                                                     
-68.1600   0.00255                                                              
-10.2465   0.01938                                                              
-2.34648   0.09280                                                              
-0.673320            1.0                                                        
-0.224660                      1.0                                              
-0.082217                                1.0                                    
-    2    2                                                                     
-1.3       1.0                                                                  
-0.33                1.0                                                       
+    6    4
+68.1600   0.00255
+10.2465   0.01938
+2.34648   0.09280
+0.673320            1.0
+0.224660                      1.0
+0.082217                                1.0
+    2    2
+1.3       1.0
+0.33                1.0
 %EOF%
 
 #######################################################################
@@ -73,25 +72,21 @@ cat > prop_spinspin2.dal <<%EOF%
 **WAVE FUNCTIONS
 .NSYM
     4
-.TITLE
- h2o spin
- first test
- try scf+RESPONSE
 .HF
 .MP2
 .MCSCF
 *HF INPUT
 .HF OCCUPATION
-  3 1 1 0 
+  3 1 1 0
 *CONFIGURATION INPUT
 .SPIN MULTIPLICITY
     1
 .SYMMETRY
     1
 .INACTIVE ORBITALS
-  1  0  0  0 
+  1  0  0  0
 .ELECTRONS (active)
-    8 
+    8
 .CAS SPACE
  4 2 2 0
 *OPTIMIZATION
@@ -100,7 +95,7 @@ cat > prop_spinspin2.dal <<%EOF%
 .ABSORPTION
  LEVEL 3
 .OPTIMAL ORBITAL TRIAL VECTORS
-**PROPERTIES                                                           
+**PROPERTIES
 .SPIN-S
 *LINRES
 .MAXITE
@@ -109,7 +104,7 @@ cat > prop_spinspin2.dal <<%EOF%
 5.0D-5
 *SPIN-S
 .SDxFC
-*END OF INPUT                                                                   
+*END OF INPUT
 %EOF%
 #######################################################################
 

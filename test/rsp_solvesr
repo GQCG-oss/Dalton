@@ -2,40 +2,39 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_solvesr
-#*# -----------
-#*# Molecule:         CH3 radical
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     ESR hyperfine couplings with solvent effects
-#*#
-#
+cat > rsp_solvesr.info <<%EOF%
+   rsp_solvesr
+   -----------
+   Molecule:         CH3 radical
+   Wave Function:    MCSCF (CAS)
+   Test Purpose:     ESR hyperfine couplings with solvent effects
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > rsp_solvesr.mol <<%EOF%
 INTGRL
 Calculation of ESR hyperfine couplings with solvent for the CH3 radical
-(test51)
+
     2    1  Y         1.00D-15
         6.    1    4    3    1    1    1
 C     0.00000    0.00000   0.0000
     2    0
-74124.    
-24708.    
+74124.
+24708.
     7    0
-8236.000  
-1235.000  
-280.8000  
-79.27000  
-25.59000  
-8.997000  
-3.319000  
+8236.000
+1235.000
+280.8000
+79.27000
+25.59000
+8.997000
+3.319000
     3    0
-.9059000  
-.3643000  
-.1285000  
+.9059000
+.3643000
+.1285000
     5    3
 18.71000  .01403100 .00000000 .00000000
 4.133000  .08686600 .00000000 .00000000
@@ -47,21 +46,21 @@ C     0.00000    0.00000   0.0000
 .31800000 .00000000 1.0000000
     1    1
 .76100000 1.00000000
-        1.    2    3    2    1    1    
+        1.    2    3    2    1    1
 H1    -.118598   0.00000  2.036247
 H2    -.118598  1.763441 -1.018124
     2    0
-304.83    
-101.61    
+304.83
+101.61
     5    0
-33.87000  
-5.095000  
-1.159000  
-0.325800  
-0.102700  
+33.87000
+5.095000
+1.159000
+0.325800
+0.102700
     2    0
-1.407000  
-.3880000  
+1.407000
+.3880000
     1    1
 1.057000  1.00000000
 %EOF%
@@ -92,9 +91,9 @@ cat > rsp_solvesr.dal <<%EOF%
 .INACTIVE
  1 0
 .CAS SPACE
- 5 2      
+ 5 2
 .ELECTRONS
- 7 
+ 7
 .SPIN MULTIPLICITY
  2
 .SYMMETRY
@@ -103,7 +102,7 @@ cat > rsp_solvesr.dal <<%EOF%
 .CAVITY
  4.119
 .DIELEC
- 1.70 
+ 1.70
 .MAX L
  12
 *OPTIMIZATION
@@ -115,85 +114,85 @@ cat > rsp_solvesr.dal <<%EOF%
 .TRPFLG
 *ESR
 .TRPPRP
-FC C  01 
+FC C  01
 .TRPPRP
-FC H1 02 
+FC H1 02
 .TRPPRP
-FC H2 03 
+FC H2 03
 .TRPPRP
-FC H2 04 
+FC H2 04
 .TRPPRP
-SD  01 x 
+SD  01 x
 .TRPPRP
-SD  01 y 
+SD  01 y
 .TRPPRP
-SD  01 z 
+SD  01 z
 .TRPPRP
-SD  02 x 
+SD  02 x
 .TRPPRP
-SD  02 y 
+SD  02 y
 .TRPPRP
-SD  02 z 
+SD  02 z
 .TRPPRP
-SD  03 x 
+SD  03 x
 .TRPPRP
-SD  03 y 
+SD  03 y
 .TRPPRP
-SD  03 z 
+SD  03 z
 .TRPPRP
-SD  04 x 
+SD  04 x
 .TRPPRP
-SD  04 y 
+SD  04 y
 .TRPPRP
-SD  04 z 
+SD  04 z
 .TRPPRP
-SD  05 x 
+SD  05 x
 .TRPPRP
-SD  05 y 
+SD  05 y
 .TRPPRP
-SD  05 z 
+SD  05 z
 .TRPPRP
-SD  06 x 
+SD  06 x
 .TRPPRP
-SD  06 y 
+SD  06 y
 .TRPPRP
-SD  06 z 
+SD  06 z
 .TRPPRP
-SD  07 x 
+SD  07 x
 .TRPPRP
-SD  07 y 
+SD  07 y
 .TRPPRP
-SD  07 z 
+SD  07 z
 .TRPPRP
-SD  08 x 
+SD  08 x
 .TRPPRP
-SD  08 y 
+SD  08 y
 .TRPPRP
-SD  08 z 
+SD  08 z
 .TRPPRP
-SD  09 x 
+SD  09 x
 .TRPPRP
-SD  09 y 
+SD  09 y
 .TRPPRP
-SD  09 z 
+SD  09 z
 .TRPPRP
-SD  10 x 
+SD  10 x
 .TRPPRP
-SD  10 y 
+SD  10 y
 .TRPPRP
-SD  10 z 
+SD  10 z
 .TRPPRP
-SD  11 x 
+SD  11 x
 .TRPPRP
-SD  11 y 
+SD  11 y
 .TRPPRP
-SD  11 z 
+SD  11 z
 .TRPPRP
-SD  12 x 
+SD  12 x
 .TRPPRP
-SD  12 y 
+SD  12 y
 .TRPPRP
-SD  12 z 
+SD  12 z
 *END OF
 %EOF%
 #######################################################################

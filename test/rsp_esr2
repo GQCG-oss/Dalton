@@ -2,22 +2,21 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_esr2
-#*# --------
-#*# Molecule:         BeOH
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     ESR properties
-#*#
-#
+cat > rsp_esr2.info <<%EOF%
+   rsp_esr2
+   --------
+   Molecule:         BeOH
+   Wave Function:    MCSCF (CAS)
+   Test Purpose:     ESR properties
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > rsp_esr2.mol <<%EOF%
 INTGRL
 ESR parameters for BeOH
-(test17)
+
    3    1  Z         1.00D-15
        4.    1    4    1    1    1    1
 Be     0.00000    0.00000   0.00000
@@ -124,27 +123,27 @@ cat > rsp_esr2.dal <<%EOF%
 .SD
 **WAVE FUNCTIONS
 .TITLE
-beoh           
+beoh
 .HF
 .MCSCF
 .NSYM
  2
 *HF INPUT
 .HF OCCUPATION
- 4 2       
+ 4 2
 .OPEN SHELL
  1
 *CONFIGURATION INPUT
 .SYMMETRY
- 1    
+ 1
 .SPIN MULT
  2
 .ELECTRONS
  9
 .INACTIVE
- 2 0 
+ 2 0
 .CAS SPACE
- 7 2     
+ 7 2
 *OPTIMIZATION
 .DETERMI
 .TRACI
@@ -156,65 +155,65 @@ beoh
 .MAXIT
  95
 .TRPPRP
-FC Be 01 
+FC Be 01
 .TRPPRP
-FC O  02 
+FC O  02
 .TRPPRP
-FC H  03 
+FC H  03
 .TRPPRP
-SD  01 x 
+SD  01 x
 .TRPPRP
-SD  01 y 
+SD  01 y
 .TRPPRP
-SD  01 z 
+SD  01 z
 .TRPPRP
-SD  02 x 
+SD  02 x
 .TRPPRP
-SD  02 y 
+SD  02 y
 .TRPPRP
-SD  02 z 
+SD  02 z
 .TRPPRP
-SD  03 x 
+SD  03 x
 .TRPPRP
-SD  03 y 
+SD  03 y
 .TRPPRP
-SD  03 z 
+SD  03 z
 .TRPPRP
-SD  04 x 
+SD  04 x
 .TRPPRP
-SD  04 y 
+SD  04 y
 .TRPPRP
-SD  04 z 
+SD  04 z
 .TRPPRP
-SD  05 x 
+SD  05 x
 .TRPPRP
-SD  05 y 
+SD  05 y
 .TRPPRP
-SD  05 z 
+SD  05 z
 .TRPPRP
-SD  06 x 
+SD  06 x
 .TRPPRP
-SD  06 y 
+SD  06 y
 .TRPPRP
-SD  06 z 
+SD  06 z
 .TRPPRP
-SD  07 x 
+SD  07 x
 .TRPPRP
-SD  07 y 
+SD  07 y
 .TRPPRP
-SD  07 z 
+SD  07 z
 .TRPPRP
-SD  08 x 
+SD  08 x
 .TRPPRP
-SD  08 y 
+SD  08 y
 .TRPPRP
-SD  08 z 
+SD  08 z
 .TRPPRP
-SD  09 x 
+SD  09 x
 .TRPPRP
-SD  09 y 
+SD  09 y
 .TRPPRP
-SD  09 z 
+SD  09 z
 *END OF
 %EOF%
 #######################################################################

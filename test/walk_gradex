@@ -2,23 +2,22 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# walk_gradex
-#*# -----------
-#*# Molecule:         NH3
-#*# Wave Function:    SCF
-#*# Test Purpose:     Locating a transition state following a gradient
-#*#                   extremal
-#*#
-#
+cat > walk_gradex.info <<%EOF%
+   walk_gradex
+   -----------
+   Molecule:         NH3
+   Wave Function:    SCF / 6-31G** (Atombasis)
+   Test Purpose:     Locating a transition state following a gradient
+                     extremal
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > walk_gradex.mol <<%EOF%
 ATOMBASIS
 Location of saddle point (transition state) by following
-a gradient extremal (test54)
+a gradient extremal
 c   2    0
         7.    1      6-31G**
 N          -.2402098951            -.0000003109             .5147128871

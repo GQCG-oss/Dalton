@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_propave
-#*# -----------
-#*# Molecule:         LiH
-#*# Wave Function:    SCF
-#*# Test Purpose:     Check that AVEPRP in response works properly
-#*#
-#
+cat > rsp_propave.info <<%EOF%
+   rsp_propave
+   -----------
+   Molecule:         LiH
+   Wave Function:    SCF / STO-3G
+   Test Purpose:     Check that AVEPRP in response works properly
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > rsp_propave.mol <<%EOF%
 BASIS
 STO-3G
 Calculation to verify that AVEPRP in response works properly
-(test67)
+
     2    2  X  Y
         3.    1
 Li   0.000000   0.000000    0.7581192283

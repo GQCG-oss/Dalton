@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_hyperpolar
-#*# --------------
-#*# Molecule:         H2O
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     First hyperpolarizability
-#*#
-#
+cat > rsp_lrso.info <<%EOF%
+   rsp_hyperpolar
+   --------------
+   Molecule:         H2O
+   Wave Function:    MCSCF (CAS) / 6-31++G**
+   Test Purpose:     First hyperpolarizability
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > rsp_hyperpolar.mol <<%EOF%
 BASIS
 6-31++G**
 Calculation of first hyperpolarizability
-(test23)
+
     2
         8.    1
 O     0.0 -0.2249058930 0.0

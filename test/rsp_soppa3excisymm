@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_soppa3excisymm
-#*# ------------------
-#*# Molecule:         H2O
-#*# Wave Function:    MP2 (SOPPA)
-#*# Test Purpose:     Triplet excitation energies. Symmetry
-#*#
-#
+cat > rsp_soppa3excisymm.info <<%EOF%
+   rsp_soppa3excisymm
+   ------------------
+   Molecule:         H2O
+   Wave Function:    MP2 (SOPPA) / cc-pVDZ
+   Test Purpose:     Triplet excitation energies. Symmetry
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > rsp_soppa3excisymm.mol <<%EOF%
 BASIS
 cc-pVDZ
 SOPPA calculation of triplet excitation energies. Symmetry
-(test39)
+
     2    2  X  Z
         8.    1
 O     0.0 -0.2249058930 0.0

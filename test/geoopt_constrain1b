@@ -2,17 +2,16 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_constrain1b
-#*# ------------------
-#*# Molecule:         C2H6
-#*# Wave Function:    SCF
-#*# Test Purpose:     Shows a constrained optimization of ethane, keeping the
-#*#                   C-C bond distance fixed (coordinate #1 as determined
-#*#                   from geoopt_constrain1a)
-#*#
-#
+cat > geoopt_constrain1b.info <<%EOF%
+   geoopt_constrain1b
+   ------------------
+   Molecule:         C2H6
+   Wave Function:    SCF / STO-3G
+   Test Purpose:     Shows a constrained optimization of ethane, keeping the
+                     C-C bond distance fixed (coordinate #1 as determined
+                     from geoopt_constrain1a)
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -20,12 +19,12 @@ cat > geoopt_constrain1b.mol <<%EOF%
 BASIS
 STO-3G
 Constrained geometry optimization of ethane
-(test76)
-    2     
-        6.    2                                                                 
+
+    2
+        6.    2
 C     0.0000000000        0.0000000000        1.7547876282             *
 C     0.0000000000        0.0000000000       -1.7547876282             *
-        1.    6                                                                 
+        1.    6
 H     1.6808445513        0.9704360937        2.4445545504             *
 H    -1.6808445513        0.9704360937        2.4445545504             *
 H     0.0000000000       -1.9408721894        2.4445545504             *

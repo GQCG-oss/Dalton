@@ -2,16 +2,15 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# energy_direct
-#*# -------------
-#*# Molecule:         H2O
-#*# Wave Function:    Direct SCF
-#*# Test Purpose:     Check energy calculated directly (using TWOINT) and
-#*#                   with symmetry
-#*#
-#
+cat > energy_direct.info <<%EOF%
+   energy_direct
+   -------------
+   Molecule:         H2O
+   Wave Function:    Direct SCF / cc-pVDZ
+   Test Purpose:     Check energy calculated directly (using TWOINT)
+                     and with symmetry
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -19,7 +18,7 @@ cat > energy_direct.mol <<%EOF%
 BASIS
 cc-pVDZ
 Direct SCF calculation using symmetry
-(test3)
+
     2
         8.    1 
 O     0.0 -0.2249058930 0.0

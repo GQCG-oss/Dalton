@@ -2,15 +2,15 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# geoopt_symbrk
-#*# -------------
-#*# Molecule:         H2O2
-#*# Wave Function:    SCF
-#*# Test Purpose:     Geometry optimization (2nd order) with symmetry breaking
-#*#
-#
+cat > geoopt_symbrk.info <<%EOF%
+   geoopt_symbrk
+   -------------
+   Molecule:         H2O2
+   Wave Function:    SCF / cc-pVDZ
+   Test Purpose:     Geometry optimization (2nd order) with symmetry
+                     breaking
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +18,7 @@ cat > geoopt_symbrk.mol <<%EOF%
 BASIS
 cc-pVDZ
 Geometry optimization (2nd order) with automatic breaking of symmetry
-(test30)
+
     2    2  X YZ   1
         8.    1
 O     0.0  0.73 0.0
@@ -31,8 +31,8 @@ H     0.0 0.73 0.95
 #######################################################################
 cat > geoopt_symbrk.dal <<%EOF%
 **DALTON INPUT
-.MINIMIZE
-*MINIMIZE
+.OPTIMIZE
+*OPTIMIZE
 .2NDORDER
 **WAVE FUNCTIONS
 .HF

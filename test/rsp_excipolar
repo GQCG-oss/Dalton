@@ -2,26 +2,25 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_excipolar
-#*# -------------
-#*# Molecule:         O3
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     Excited-state polarizability
-#*#
-#
+cat > rsp_excipolar.info <<%EOF%
+   rsp_excipolar
+   -------------
+   Molecule:         O3
+   Wave Function:    MCSCF (CAS)
+   Test Purpose:     Excited-state polarizability
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > rsp_excipolar.mol <<%EOF%
 INTGRL
 Excited state polarizability of ozone (exp geometry from Lanholt-Boernstein)
-(test21)
+
     1    2  X  Z      1.00D-12
         8.0   2    3    1    1    1
 O      0.000000           0.000000           0.000000
-O      2.05743749931276   1.24132156150274   0.0000000000000 
+O      2.05743749931276   1.24132156150274   0.0000000000000
     8    3
 883.27286 0.0175506 0.0000000 0.00000000
 133.12928 0.1228292 0.0000000 0.00000000

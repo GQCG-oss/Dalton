@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_soppa1excisymm
-#*# ------------------
-#*# Molecule:         H2O
-#*# Wave Function:    MP2 (SOPPA)
-#*# Test Purpose:     Singlet excitation energies. Symmetry
-#*#
-#
+cat > rsp_soppa1excisymm.info <<%EOF%
+   rsp_soppa1excisymm
+   ------------------
+   Molecule:         H2O
+   Wave Function:    MP2 (SOPPA) / cc-pVDZ
+   Test Purpose:     Singlet excitation energies. Symmetry
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > rsp_soppa1excisymm.mol <<%EOF%
 BASIS
 cc-pVDZ
 SOPPA calculation of singlet excitation energies. Symmetry
-(test37)
+
     2    2  X  Z
         8.    1
 O     0.0 -0.2249058930 0.0

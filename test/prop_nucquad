@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# prop_nucquad
-#*# ------------
-#*# Molecule:         ClO2
-#*# Wave Function:    MCSCF (CAS)
-#*# Test Purpose:     Nuclear quadrupole coupling constants
-#*#
-#
+cat > prop_nucquad.info <<%EOF%
+   prop_nucquad
+   ------------
+   Molecule:         ClO2
+   Wave Function:    MCSCF (CAS) / cc-pVTZ
+   Test Purpose:     Nuclear quadrupole coupling constants
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > prop_nucquad.mol <<%EOF%
 BASIS
 cc-pVTZ
 Calculation of nuclear quadrupole coupling constants
-(test16)
+
     2    2  X  Y      1.00D-15
       17.     1
 Cl    0.00000    0.00000   1.0000

@@ -2,15 +2,14 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-#
-#*#
-#*# rsp_soppapolarsymm
-#*# ------------------
-#*# Molecule:         H2O
-#*# Wave Function:    MP2 (SOPPA)
-#*# Test Purpose:     Polarizability and C6/C8. Symmetry
-#*#
-#
+cat > rsp_soppapolarsymm.info <<%EOF%
+   rsp_soppapolarsymm
+   ------------------
+   Molecule:         H2O
+   Wave Function:    MP2 (SOPPA) / cc-pVDZ
+   Test Purpose:     Polarizability and C6/C8. Symmetry
+%EOF%
+
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
@@ -18,7 +17,7 @@ cat > rsp_soppapolarsymm.mol <<%EOF%
 BASIS
 cc-pVDZ
 SOPPA singlet properties with symmetry.
-(test33)
+
     2    2  X  Z
         8.    1
 O     0.0 -0.2249058930 0.0
