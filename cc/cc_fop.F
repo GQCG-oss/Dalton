@@ -3136,7 +3136,7 @@ C
 #include <cclr.h>
 #include <ccsdinp.h>
 C
-      CHARACTER MODEL*5
+      CHARACTER MODEL*4
 C
 C---------------------------
 C     Work space allocation.
