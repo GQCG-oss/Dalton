@@ -1,0 +1,119 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > benchmark_her_atzs.info <<'%EOF%'
+   benchmark_her_atzs
+   -------
+   Molecule:         Benzene-Hydrogen
+   Wave Function:    CCSD(T)(FC) / aug-cc-pVDZ
+   Test Purpose:     Benchmark
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > benchmark_her_atzs.mol <<'%EOF%'
+ATOMBASIS
+Bz-H2
+
+    3    2  X  Y      0.10E-14
+       6.0    2 aug-cc-pVTZ
+ c    -2.280975753816550   1.316921965481000  -0.828533763538630       *
+ c     0.000000000000000  -2.633843930961990  -0.828533763538630       *
+       1.0    2 cc-pVDZ
+ h    -4.050862034195410   2.338766285892760  -0.827341558915540       *
+ h     0.000000000000000  -4.677532571785510  -0.827341558915540       *
+       1.0    2 aug-cc-pVTZ
+ h     0.000000000000000   0.000000000000000   4.269368512040260       *
+ h     0.000000000000000   0.000000000000000   5.665841687355411       *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > benchmark_her_atzs.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTION
+.DIRECT
+**WAVE FUNCTION
+.CC
+*ORBITALS
+.NOSUPSYM
+*HF INPUT
+.THRESH
+1.0D-9
+*CC INPUT
+.HERDIR
+.CC(T)
+.NSYM
+4
+.PRINT
+ 0
+.FROIMP
+ 2  1  2  1
+ 0  0  0  0
+*END OF
+%EOF%
+
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >benchmark_her_atzs.check
+cat >>benchmark_her_atzs.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+#
+#             Total energy CCSD(T):                -232.9727753123
+#
+CRIT1=`$GREP "Total energy CCSD(T):                \-232.972775" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=2
+ERROR[1]="CCSD(T) ENERGY NOT CORRECT"
+
+PASSED=1
+for i in 1 
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

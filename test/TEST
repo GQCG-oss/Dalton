@@ -73,6 +73,9 @@ ALL="$SHORT $MEDIUM $LONG $DFT $NUMDER $R12 $DPT"
 #
 ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
 #
+BENCHMARK="benchmark_eri_r12 benchmark_eri_r12xl \
+benchmark_eri_adzs benchmark_her_adzs benchmark_eri_adz benchmark_her_adz"
+#
 #########################################################################
 # function usage(): print usage information 
 #########################################################################
@@ -103,6 +106,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           long                 -- run all long testcases
           dft                  -- run all DFT testcases
           r12                  -- run all R12 testcases
+          benchmark            -- run all BENCHMARK testcases
           dpt                  -- run all DPT testcases
           numder               -- run all numerical derivatives testcases
           all                  -- run all non-parallel testcases
@@ -195,6 +199,8 @@ elif [ "$testcase" = "dpt" ]; then
   testcase=$DPT
 elif [ "$testcase" = "r12" ]; then
   testcase=$R12
+elif [ "$testcase" = "benchmark" ]; then
+  testcase=$BENCHMARK
 elif [ "$testcase" = "numder" ]; then
   testcase=$NUMDER
 fi
