@@ -405,7 +405,7 @@ C
       NMLINE = 0
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A6)') KEYWRD
-      IF (KEYWRD .EQ. 'BASIS ') THEN
+      IF (KEYWRD(1:5) .EQ. 'BASIS') THEN
          BASIS = .TRUE.
       ELSE IF (KEYWRD .EQ. 'ATOMBA') THEN
          ATOMBA = .TRUE.

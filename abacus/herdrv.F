@@ -3093,7 +3093,7 @@ C
 #if defined (SYS_T3D)
       PARAMETER (MAXPRD = 14)
 #else
-      PARAMETER (MAXPRD = 22)
+      PARAMETER (MAXPRD = 25)
 #endif
       LOGICAL RELCAL, TSTINP
 #include <maxaqn.h>

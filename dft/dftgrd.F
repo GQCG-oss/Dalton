@@ -138,8 +138,8 @@ C     *******************************************
 C     ***** Prepare arguments for CONSTRUCT *****
 C     *******************************************
 C
-      IBIG  = 100000
-      IVECL = 100
+      IBIG  = 200000
+      IVECL = 200
 C
       KSP    = 1
       KX8    = KSP    + 4*NUM
@@ -243,7 +243,8 @@ C     Following Becke, the hydrogen radius is 0.35.
 C     For the noble gases, the values have been guessed.
 C
       DIMENSION RBC(NAT,NAT)
-      DIMENSION BRAGG(0:54)
+COLAV      DIMENSION BRAGG(0:54)
+      DIMENSION BRAGG(0:103)	
       DIMENSION RVEC(IVECL,3)
       DIMENSION RADWT(2000), RADNDE(2000)
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
@@ -276,7 +277,17 @@ C
      11.60D0,1.40D0,1.35D0,1.40D0,1.40D0,
      11.40D0,1.35D0,1.35D0,1.35D0,1.35D0,
      1              1.30D0,1.25D0,1.15D0,1.15D0,1.15D0,1.15D0,
-     2        18*1.3D0/
+     2        18*1.3D0,
+C
+COLAV For Z=55-103 the data are taken from DIRAC's dftgrd.F:
+     &2.60D0,2.15D0,1.95D0,
+     &1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.80D0,
+     &1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
+     &1.55D0,1.45D0,1.35D0,1.30D0,1.30D0,1.35D0,1.35D0,1.35D0,1.50D0,
+     &1.90D0,1.75D0,1.60D0,1.90D0,1.50D0,1.50D0,
+     &2.15D0,2.15D0,1.95D0,
+     &1.80D0,1.80D0,1.37D0,1.75D0,1.75D0,1.75D0,1.75D0,
+     &1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/
 C
 #include <sdpre.h>
 #include <ibtfun.h>
