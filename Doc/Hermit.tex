@@ -620,7 +620,7 @@ atom's name must be unique.
 
 \item[\Key{OCTGRA}]\verb| |\newline
 Calculate octupole gradient integrals, that is, the geometrical first
-derivatives of the octupole moment integrals.
+derivatives of the third moment integrals (\Key{THIRDM}).
 
 \begin{list}{}{}
 \item Integral: $\frac{\partial}{\partial {\mathbf
@@ -628,7 +628,7 @@ R}_K}\left<\chi_{\mu}\left|{\mathbf r}^3\right|\chi_{\nu}\right>$
 \item Property labels: \verb|abODGcde|
 \end{list}
 where \verb|ab| is the symmetry adapted nuclear coordinate, and \verb|cde| the
-component (x/y/z) of the octupole moment tensors.
+component (x/y/z) of the third moment tensor.
 
 
 \item[\Key{PHASEO}]\verb| |\newline
@@ -683,15 +683,18 @@ moment} integrals. For traceless quadrupole moment integrals as
 defined by Buckingham~\cite{adbacp12}, see the keyword \Key{THETA}.
 
 \begin{list}{}{}
-\item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|{\bf r}_{O}{\bf
-r}_{O}^{T} - r^{2}_{O}I\right|\chi_{\nu}\right>$
+\item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|
+r^{2}_{O}I_3 - {\bf r}_{O}{\bf r}_{O}^{T}
+%HJAAJ July 2001: acc. to hermit code
+\right|\chi_{\nu}\right>$
 \item Property label: \verb|XXQUADRU|, \verb|XYQUADRU|,
 \verb|XZQUADRU|, \verb|YYQUADRU|, \verb|YZQUADRU|, \verb|ZZQUADRU|
 \end{list}
 
 \item[\Key{QUAGRA}]\verb| |\newline
 Calculate quadrupole gradient integrals, that is, the geometrical first
-derivatives of the second moment integrals.
+derivatives of the second moment integrals
+(i.e. \Key{SECMOM}, note: it is NOT the gradient of the \Key{QUADRU} integrals).
 
 \begin{list}{}{}
 \item Integral: $\frac{\partial}{\partial {\mathbf
@@ -699,7 +702,7 @@ R}_K}\left<\chi_{\mu}\left|{\mathbf r}{\mathbf r}^T\right|\chi_{\nu}\right>$
 \item Property labels: \verb|abQDG cd|
 \end{list}
 where \verb|ab| is the symmetry adapted nuclear coordinate, and \verb|cd| the
-component (x/y/z) of the octupole moment tensors.
+component (x/y/z) of the second moment tensor.
 
 \item[\Key{QUASUM}] Calculate all atomic integrals as square
 matrices, irrespective of their inherent Hermiticity or
@@ -924,11 +927,13 @@ can be controlled by the keyword \Key{GAUGEO}.
 \end{list}
 
 \item[\Key{THETA}] Traceless quadrupole moment\index{quadrupole
-moment traceless} integrals as defined by Buckingham~\cite{adbacp12}.
+moment!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
 
 \begin{list}{}{}
-\item Integral: $\frac{1}{2}\left<\chi_{\mu}\left|r^{2}I - 3{\bf r}
-{\bf r}^{T}\right|\chi_{\nu}\right>$
+\item Integral: $\frac{1}{2}\left<\chi_{\mu}\left|
+3{\bf r} {\bf r}^{T} - r^{2}I_3
+\right|\chi_{\nu}\right>$
+%HJAAJ July 2001: acc. to hermit code
 \item Property labels: \verb|XXTHETA |, \verb|XYTHETA |,
 \verb|XZTHETA |, \verb|YYTHETA |, \verb|YZTHETA |, \verb|ZZTHETA |
 
@@ -1072,33 +1077,37 @@ calculation you will in general not need to change any of the
 default settings.
 
 \begin{description}
-\item[\Key{COMND}]
 
 \item[\Key{DELAO}]
+
+Delete AOTWOINT file from Hermit after the integrals have been sorted.
 
 \item[\Key{INTSYM}]\verb| |\newline
 \verb|READ (LUCMD, *) ISNTSYM|
 
 Symmetry of the two-electron integrals that are to be sorted.
-Default is totally-symmetric two-electron integrals (\verb|INTSYM|
-= 1).
+Default is totally-symmetric two-electron integrals
+(\verb|ISNTSYM| = 1).
 
 \item[\Key{IO PRI}]\verb| |\newline
 \verb|READ (LUCMD, *) ISPRFIO|
 
 Set the print level in the fast-I/O routines. Default is a print level of 0.
 
-\item[\Key{KEEP}]
+\item[\Key{KEEP}]\verb| |\newline
+\verb|READ (LUCMD, *) (ISKEEP(I),I=1,8)|
+Allowed values: 0 and 1.
+A value of "1" indicates that the basis functions of this symmetry will
+not be used and the integrals with these basis functions are omitted.
+
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD, *) ISPRINT|
 
 Print level in the integral sorting routines.
 
-\item[\Key{SORST}]
-
 \item[\Key{THRQ}]\verb| |\newline
-\verb|READ (LUCMD, *) THRQ|
+\verb|READ (LUCMD, *) THRQ2|
 
 Threshold for setting an integral to zero. By default this threshold
 is 1.0D-15.
