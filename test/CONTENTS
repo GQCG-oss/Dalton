@@ -103,7 +103,7 @@ The CC testjobs have been given new names:
 	gamma_direct	cc_rsp_gammadirect
 	gamma_freq	cc_rsp_gammafreq
 	gamma_freq2	cc_rsp_gammafreq2
-	mcd_nonlao	cc_mcd_nonlao
+	mcd_nonlao	cc_rsp_mcdbterm
 	oddisp		cc_rsp_oddisp
 	threephot	cc_rsp_threephot
 	triples		cc_energy_triples
@@ -228,13 +228,6 @@ Wave Function:    CCS, MP2, CCSD / aug-cc-pVDZ
 Test Purpose:     First-order one-electron properties
 
 
-cc_mcd_nonlao
--------------
-Molecule:         H3+ in C2v
-Wave Function:    CCSD (FCI) / STO-3G
-Test Purpose:     B-term (components) of Magnetic circular dichroism
-
-
 cc_rsp_alpha
 ------------
 Molecule:         HF in C1
@@ -354,6 +347,13 @@ Test Purpose:     Second hyperpolarizability (cubic response):
                     components
                   - ESHG & THG for one frequency
                   - No use of special symmetries
+
+
+cc_rsp_mcdbterm
+-------------
+Molecule:         H3+ in C2v
+Wave Function:    CCSD (FCI) / STO-3G
+Test Purpose:     B-term (components) of Magnetic circular dichroism
 
 
 cc_rsp_oddisp
