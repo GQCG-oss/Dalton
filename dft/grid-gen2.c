@@ -543,7 +543,7 @@ get_distribution_box(BoxStruct* box,
   targetError = targetRhoError;
   arg = distr->coeff / targetError;
   if(arg < 0) arg *= -1;
-  if(arg == 0)
+  if(arg < 1e-30)
     {
       do_output_2(0, "error in get_distribution_box: (arg == 0)");
       return -1;

@@ -90,12 +90,34 @@ Functional* available_functionals[] = {
     NULL
 };
 Functional* selected_func = &LDAFunctional;
+int (*fun_printf)(const char *fmt, ...) = printf;
 
-#ifdef NO_BACKWARD_COMP
-#define fort_print printf
-#endif
+static void set_hf_weight(real w)         {}
+static real get_hf_weight(void)           {return 0;}
+static void set_cam_param(real w, real b) {}
+
+void (*fun_set_hf_weight)(real w)         = set_hf_weight;
+real (*fun_get_hf_weight)(void)           = get_hf_weight;
+void (*fun_set_cam_param)(real w, real b) = set_cam_param;
 
 /* =================================================================== */
+enum FunError
+fun_select_by_name(const char *conf_string)
+{
+    int ok, i;
+    char func_name[20];
+
+    sscanf(conf_string,"%20s", func_name);
+    for(i=0; available_functionals[i]; i++)
+        if(strcasecmp(available_functionals[i]->name, func_name)==0) {
+            selected_func = available_functionals[i];
+            ok = selected_func->read ?
+                selected_func->read(conf_string+strlen(func_name)) : 1;
+            return ok ? FUN_OK : FUN_CONF_ERROR;
+        }
+    return FUN_UNKNOWN;
+}
+
 void
 drv1_clear(FirstFuncDrv* gga)
 {
@@ -143,7 +165,7 @@ FSYM2(dft_isgga)(void)
 void
 dftreport_(void)
 {
-    fort_print("\n     This is a DFT calculation of type: %s",
+    fun_printf("\n     This is a DFT calculation of type: %s",
                selected_func->name);
     if(selected_func->report)
         selected_func->report();
@@ -155,9 +177,9 @@ void
 dftlistfuncs_(void)
 {
     int i;
-    fort_print("\nAvailable functionals:");
+    fun_printf("\nAvailable functionals:");
     for(i=0; available_functionals[i]; i++)
-        fort_print(available_functionals[i]->name);
+        fun_printf(available_functionals[i]->name);
 }
 
 real

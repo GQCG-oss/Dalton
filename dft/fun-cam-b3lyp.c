@@ -95,7 +95,7 @@ parse_table(const char *func, const char *str,
       if(strncasecmp(keywords[i], str, len)==0 &&
          str[len] == '=') {
         if(sscanf(str+len+1,"%g", &weights[i]) != 1) {
-          fort_print("%s: %s not followed by the weight: ",
+          fun_printf("%s: %s not followed by the weight: ",
                      func, keywords[i]);
           res = 0;
         }
@@ -103,7 +103,7 @@ parse_table(const char *func, const char *str,
       }
     }
     if(i==cnt) {
-      fort_print("%s: unknown string: '%s'", func, str);
+      fun_printf("%s: unknown string: '%s'", func, str);
       res = 0;
     }
     while(*str && !isspace((int)*str)) str++; /* skip nonws */
@@ -125,8 +125,8 @@ camb3lyp_read(const char *conf_line)
         return 0;
     /* sanity checks */
     if(weights[2]<=0) weights[2] = 1e-30;
-    dft_set_hf_weight(weights[0]);
-    dft_set_cam_param(weights[2], weights[1]);
+    fun_set_hf_weight(weights[0]);
+    fun_set_cam_param(weights[2], weights[1]);
     CamMuFactor = weights[2]; CamBeta = weights[1];
 
     CamAlpha = weights[0];
@@ -137,7 +137,7 @@ camb3lyp_read(const char *conf_line)
 static void
 camb3lyp_report(void)
 {
-    fort_print("CAM-B3LYP functional with alpha=%5.3f beta=%5.3f mu=%5.3f",
+    fun_printf("CAM-B3LYP functional with alpha=%5.3f beta=%5.3f mu=%5.3f",
                ALPHA, BETA, MU);
 }
 
@@ -734,7 +734,7 @@ int main(int argc, char *argv[])
 
 void dftsethf_(real* s) {}
 void dftsetcam_(real* s, real *b) {}
-void fort_print(const char *fmt, ...){}
+void fun_printf(const char *fmt, ...){}
 #endif
 
 

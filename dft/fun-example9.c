@@ -35,7 +35,7 @@ Functional Example9Functional = {
 static int
 example9_read(const char* conf_line)
 {
-  dft_set_hf_weight(0.0);
+  fun_set_hf_weight(0.0);
   return 1;
 }
 

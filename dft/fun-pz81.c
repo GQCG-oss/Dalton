@@ -54,7 +54,7 @@ static const real gp = -0.0843, b1p = 1.3981, b2p = 0.2611,
 static int
 pz81_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 

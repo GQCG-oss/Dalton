@@ -66,10 +66,12 @@ Functional VWNFunctional = {
 };
 
 /* IMPLEMENTATION PART */
+#define VWN_ZERO 1e-40
+
 static int
 vwn_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 
@@ -164,12 +166,12 @@ par_energy(const DftDensProp* dp, const struct vwn_params* para,
     real ep_p[2], ep_f[2], ep_i[2], zeta, zeta4, f_zeta, delta;
     real rhoa = dp->rhoa, rhob = dp->rhob, rho;
 
-    if(rhoa==0) rhoa = 1e-40;
-    if(rhob==0) rhob = 1e-40;
+    if(rhoa<VWN_ZERO) rhoa = VWN_ZERO;
+    if(rhob<VWN_ZERO) rhob = VWN_ZERO;
     rho = rhoa + rhob;
     vwn_en_pot(ep_p, rho, 0, para);
 
-    if(dp->rhoa == dp->rhob) return ep_p[0]*rho;
+    if(fabs(dp->rhoa-dp->rhob)<VWN_ZERO) return ep_p[0]*rho;
     vwn_en_pot(ep_f, rho, 0, ferro);
     vwn_en_pot(ep_i, rho, 0, &vwn_interp);
 
@@ -189,15 +191,15 @@ par_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp,
     real delta, ep_p[2], ep_f[2], ep_i[2];
     real rhoa = dp->rhoa, rhob = dp->rhob, rho;
 
-    if(rhoa==0) rhoa = 1e-40;
-    if(rhob==0) rhob = 1e-40;
+    if(rhoa<VWN_ZERO) rhoa = VWN_ZERO;
+    if(rhob<VWN_ZERO) rhob = VWN_ZERO;
     rho = rhoa + rhob;
     vwn_en_pot(ep_p, rho, 1, para);
 
     ds->df1000 += ep_p[1]*factor;
     ds->df0100 += ep_p[1]*factor;
 
-    if(dp->rhoa==dp->rhob) return;
+    if(fabs(dp->rhoa-dp->rhob)<VWN_ZERO) return;
 
     /* contribution from spin-polarized case; first order */
     zeta   = (dp->rhoa-dp->rhob)/rho;
@@ -245,7 +247,7 @@ par_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp,
     ds->df0200 += ep_p[2]*factor;
     ds->df1100 += ep_p[2]*factor;
 
-    if(0&&dp->rhoa==dp->rhob) return;
+    /* if(0&&dp->rhoa==dp->rhob) return; */
     /* contribution from spin-polarized case; second order */
     zeta   = (dp->rhoa-dp->rhob)/rho;
     zeta2  = zeta*zeta;
@@ -282,9 +284,9 @@ par_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp,
              +8*f_zet1*(ef0-ei0)*zeta3
              +12*f_zeta*(ef0-ei0)*zeta2)*rho;
 
-    dAA = (spA)        ? dterm*spA*spA : 0;
-    dAB = (spA && spB) ? dterm*spA*spB : 0;
-    dBB = (spA)        ? dterm*spB*spB : 0;
+    dAA =  dterm*spA*spA;
+    dAB =  dterm*spA*spB;
+    dBB =  dterm*spB*spB;
 
     /* the final section: begin */
     ds->df1000 += (vcfp + delta*(1-zeta))*factor;
@@ -309,8 +311,8 @@ par_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp,
     real spA, spB, spAA, spAB, spBB;
     real rhoa = dp->rhoa, rhob = dp->rhob, rho, rho2, rho3;
 
-    if(rhoa==0) rhoa = 1e-40;
-    if(rhob==0) rhob = 1e-40;
+    if(rhoa<VWN_ZERO) rhoa = VWN_ZERO;
+    if(rhob<VWN_ZERO) rhob = VWN_ZERO;
     rho = rhoa + rhob;
     rho2 = rho*rho; rho3 = rho2*rho;
     
@@ -327,7 +329,7 @@ par_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp,
     ds->df1200 += ep_p[3]*factor;
     ds->df0300 += ep_p[3]*factor;
 
-    if(0&&dp->rhoa==dp->rhob) return;
+    /* if(0&&dp->rhoa==dp->rhob) return; */
     /* contribution from spin-polarized case; second order */
     zeta   = (dp->rhoa-dp->rhob)/rho;
     zeta2  = zeta*zeta;

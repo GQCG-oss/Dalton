@@ -61,7 +61,7 @@ Functional P86cFunctional = {
 static int
 p86c_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 

@@ -9,7 +9,7 @@ freq=${1:-0.5}
 c_op=ZDIPLEN
 run_linear=1
 grid=1e-9
-direct='!.DIRECT'
+direct='.DIRECT'
 thresholds="1e-16 1e-16 1e-17"
 thresholds="1e-10 1e-12 1e-14"
 
@@ -261,33 +261,12 @@ cd $tmp || exit 1
 
 rm SIRIUS.RST
 #run_test gen_LiH  1  "GGAKey"
-run_test gen_LiH  1  LDA
-run_test gen_LiH  1  "GGAKey becke=1 dirac=1 lyp=1"
-run_test gen_LiH  1  "BLYP"
+run_test gen_LiH  1  "GGAKey PBEx=1 vwn=1"
 rm SIRIUS.RST
-run_test gen_CO   ""  "GGAKey becke=1 dirac=1 lyp=1"
-run_test gen_CO   ""  BLYP
-run_test gen_CO   ""  "GGAKey hf=0.2 dirac=0.8 vwn=0.19 becke=0.72 lyp=0.81"
-run_test gen_CO   ""  B3LYP
-run_test gen_CO   ""  Becke
-exit 0
-run_test gen_CO   ""  Example2
-run_test gen_CO   ""  Example3
-run_test gen_CO   ""  Example4
-#run_test gen_H2O   "3 1 1 0"  "GGAKey hf=1"
+run_test gen_CO   ""  "PBE"
 rm SIRIUS.RST
-#run_test gen_HF    ""  "LDA"
-run_test gen_HF    ""  "BLYP"
+run_test gen_HF    ""  "PBE"
 run_test gen_HF    ""  "B3LYP"
-exit 0
-exit 0
 rm SIRIUS.RST
-run_test gen_CO2  11 GGAKey
-run_test gen_CO2  11 Example4
-run_test gen_CO2  11 Becke
-run_test gen_LiH  1  "GGA 0 1 0 0 0"
-run_test gen_LiH  1  "0 0 1 0 0"
-run_test gen_CO2  11 "1 0 0 0 0"
-run_test gen_CO2  11 "0 1 1 0 0"
-run_test gen_C3H4 11 "1 0 0 0 0"
-run_test gen_C3H4 11 "0 1 1 0 0"
+run_test gen_CO2  11 B3LYP
+run_test gen_CO2  11 CAMB3LYP

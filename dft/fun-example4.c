@@ -38,7 +38,7 @@ Functional Example4Functional = {
 static int
 example4_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 

@@ -53,7 +53,7 @@ Functional PWggaIIc2Functional = {
 static int
 pwggaIIc2_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 

@@ -108,7 +108,7 @@ static void pbe_cd4(FourthFuncDrv *ds, real factor, const DftDensProp *dp);
 static int
 pbe_read(const char* conf_line)
 {
-    dft_set_hf_weight(0);
+    fun_set_hf_weight(0);
     return 1;
 }
 

@@ -159,6 +159,14 @@ struct ThirdFuncDrv_ {
    */
 };
 
+enum FunError { FUN_OK, FUN_UNKNOWN, FUN_CONF_ERROR };
+enum FunError fun_select_by_name(const char *conf_string);
+extern Functional *selected_func;
+extern int (*fun_printf)(const char *fmt, ...);
+extern void (*fun_set_hf_weight)(real w);
+extern real (*fun_get_hf_weight)(void);
+extern void (*fun_set_cam_param)(real w, real b);
+
 /* EnergyFunc: the function returning the energy for given densities
    and gradients. Note that some functionals(like LYP) depend explicitely
    on separately alpha and beta densities
@@ -203,7 +211,6 @@ void dftpot2_(ThirdDrv *ds, real factor, const DftDensProp* dp, int isgga,
 void drv1_clear(FirstFuncDrv* gga);  /* set all components to 0 */
 void drv2_clear(SecondFuncDrv* gga); /* set all components to 0 */
 void drv3_clear(ThirdFuncDrv* gga);  /* set all components to 0 */
-void dft_set_hf_weight(real w);
 
 /* The list of functionals */
 /* sorted list of generic functionals */
@@ -261,14 +268,8 @@ extern Functional SVWN5Functional;
 /* the list of the functionals */
 extern Functional* available_functionals[];
 
-int fun_true(void);
-int fun_false(void);
-extern void dftsethf_(real *);
-extern real dftgethf_(void);
-extern void dftsetcam_(real *, real *);
-#define dft_get_hf_weight() dftgethf_()
-#define dft_set_hf_weight(w) do{real x=w;dftsethf_(&x);}while(0)
-#define dft_set_cam_param(w,b) do{real x=w,be=b;dftsetcam_(&x, &be);}while(0)
+extern int fun_true(void);
+extern int fun_false(void);
 #endif /* _FUNCTIONALS_H_ */
 #else /* THE FORTRAN VERSION OF THE HEADERS; out of date as of 20021120 */
 

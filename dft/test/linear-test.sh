@@ -2,9 +2,8 @@
 #dalton="mpirun -np 4 `pwd`/../../dalpar.x"; par='.PARALLEL'
 dalton="`pwd`/../../dalton.x"; par='!.PARALLEL'
 tmp=/tmp/${USER}
-fld=2e-4
 runenergy=1
-grid=1e-5
+grid=1e-7
 
 gen_LiH() {
 cat > MOLECULE.INP <<EOF
@@ -52,7 +51,7 @@ EOF
 gen_CO() {
 cat > MOLECULE.INP <<EOF
 BASIS
-cc-pVDZ
+AhlrichsVDZ
 CO with STO-2G basis set
 --------
     2    0
@@ -95,7 +94,7 @@ EOF
 
 finite_run() {
 dftwg="$1"
-field=$2
+finite_run_field=$2
 
 [ `pwd` = "$tmp" ] && rm -f AO* D* R* U*
 cat > DALTON.INP <<EOF
@@ -111,19 +110,21 @@ $par
 $dftwg
 *SCF INPUT
 .THRESHOLD
-1e-9
+1e-8
 $hfocccommand
 $hfocc
 *DFT INPUT
 .RADINT
 $grid
+.GRID TYPE
+BECKECORR
 .DFTTHRESHOLD
 0 0 0
 .DFTELS
 1
 *HAMILTONIAN
 .FIELD
-$field
+$finite_run_field
  YDIPLEN
 *ORBITAL INPUT
 .MOSTART
@@ -163,6 +164,8 @@ $grid
 0 0 0
 .DFTELS
 1
+.GRID TYPE
+BECKECORR
 *ORBITAL INPUT
 .MOSTART
 $mostart
@@ -201,32 +204,33 @@ run_test() {
     echo "*** RUNNING $mol with functional '$weights'"
     rm -f SIRIUS.RST; mostart=HUCKEL
     if [ "$runenergy" = 1 ]; then 
-	finite_run "$weights" -$fld
-	mostart=NEWORB
+	finite_run "$weights" -$field
+	#mostart=NEWORB
 	min=`extr_dip DALTON.OUT`
 	if [ -z "$min" ]; then echo "failed"; exit 1; fi
-	finite_run "$weights" +$fld
+	finite_run "$weights" +$field
 	plu=`extr_dip DALTON.OUT`
 	if [ -z "$plu" ]; then echo "failed"; exit 1; fi
-	str="-(($min)-($plu))/(2*($fld))"
+	str="-(($min)-($plu))/(2*($field))"
 	echo "(min=$min plu=$plu)"
 	echo "Finite field returns   :" `awk "BEGIN{print $str};"</dev/null`
     fi
     linear_run "$weights"
-    awk '/@.*YDIPLEN/ {gsub("[dD]","e",$3);print "Linear response returns: " $8+0}' DALTON.OUT
+    awk '/@.*YDIPLEN/ {gsub("[dD]","e",$8);print "Linear response returns: " $8+0}' DALTON.OUT
 }
 
-run_test 3e-4 gen_LiH    1  "GGAKey dirac=1"  || exit 1
+run_test 1e-4 gen_LiH    1  "PBE"  || exit 1
 #run_test 2e-4 gen_BeH    "" "BP86"           || exit 1
-#run_test 1e-4 gen_BeH    "" "LDA"             || exit 1
+run_test 1e-5 gen_CO    "" "CAMb3LYP"             || exit 1
 #run_test 5e-5 gen_H2Oion "" "BLYP"            || exit 1
 #run_test 2e-4 gen_H2Oion "" "B3LYP"           || exit 1
-run_test 2e-4 gen_CO  "" LDA                  || exit 1
-run_test 2e-4 gen_CO  "" B3LYP                || exit 1
-run_test 2e-4 gen_LiH "" "LDA"                || exit 1
+run_test 1e-5 gen_CO  "" "PBE"     || exit 1
+exit 0
+run_test 1e-4 gen_CO  "" B3LYP                || exit 1
+run_test 1e-4 gen_LiH "" "LDA"                || exit 1
 exit 0
 #run_test 3e-4 gen_LiH    1  "GGAKey p86c=1"  || exit 1
-run_test 2e-4 gen_BeH   ""  "GGAKey dirac=1 pw91cl=1"  || exit 1
+run_test 2e-4 gen_BeH   ""  "GGAKey slater=1 pw91cl=1"  || exit 1
 exit 0
 run_test 1e-4 gen_BeH    "" "LDA"             || exit 1
 run_test 5e-5 gen_H2Oion "" "BLYP"            || exit 1

@@ -37,6 +37,19 @@
 const int  ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
 const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 
+
+/* stub subroutines for the functional code */
+extern real dftgethf_(void);
+extern void dftsethf_(real *w);
+extern void dftsetcam_(real *w, real *b);
+
+static real
+dal_get_hf_weight(void) { return dftgethf_(); }
+static void
+dal_set_hf_weight(real w) { dftsethf_(&w); }
+static void
+dal_set_cam_param(real w, real be) { dftsetcam_(&w, &be);}
+
 /* =================================================================== */
 /* dftinput:
 
@@ -51,8 +64,16 @@ static char* DftConfString = NULL;
 int
 FSYM(dftsetfunc)(const char* line, int * inperr, int len)
 {
-    char func_name[20];
     int i, off;
+
+    /* set the functional code printf function and HF weight setting
+       functions to the dalton version that appends the output to the
+       DALTON.OUT file. */
+    fun_printf        = fort_print;
+    fun_set_hf_weight = dal_set_hf_weight;
+    fun_get_hf_weight = dal_get_hf_weight;
+    fun_set_cam_param = dal_set_cam_param;
+
     for(i=len-1; i>=0 && isspace((int)line[i]); i--)
         ;
     if(DftConfString) free(DftConfString);
@@ -62,18 +83,18 @@ FSYM(dftsetfunc)(const char* line, int * inperr, int len)
     DftConfString = malloc(i+1-off);
     strncpy(DftConfString, line+off, i-off); 
     DftConfString[i-off] = '\0';
-    sscanf(DftConfString,"%20s", func_name);
-    for(i=0; available_functionals[i]; i++)
-        if(strcasecmp(available_functionals[i]->name, func_name)==0) {
-            int ok;
-            selected_func = available_functionals[i];
-            ok = selected_func->read ?
-                selected_func->read(DftConfString+strlen(func_name)) : 1;
-            if(!ok) (*inperr)++;
-            return ok;
-        }
-    fort_print("Unknown functional '%s'. Aborting.\n", func_name);
-    dftlistfuncs_();
+    
+    switch(fun_select_by_name(DftConfString)) {
+    case FUN_OK: return 1; /* SUCCESS! */
+    case FUN_UNKNOWN:
+        fort_print("Unknown functional '%s'. Aborting.\n", DftConfString);
+        dftlistfuncs_();
+        break;
+    case FUN_CONF_ERROR:
+        fort_print("Functional configuration '%s' is not understood. "
+                   "Aborting.\n", DftConfString);
+        break;
+    }
     (*inperr)++;
     return 0; /* failed to find */
 }
@@ -114,8 +135,8 @@ dft_dens_unrestricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
     getrho_(dens->dmata, grid->atv, &dp->rhoa, tmpa, &grid->dfthri);
     getrho_(dens->dmatb, grid->atv, &dp->rhob, tmpb, &grid->dfthri);
 
-    if(dp->rhoa==0) dp->rhoa = 1e-40;
-    if(dp->rhob==0) dp->rhob = dp->rhoa*1e-15;
+    if(dp->rhoa<1e-40)          dp->rhoa = 1e-40;
+    if(dp->rhob<dp->rhoa*1e-15) dp->rhob = dp->rhoa*1e-15;
 
     if( (dp->rhoa+dp->rhob)>grid->dfthr0 && grid->dogga) {
         /* transform grad vectors to molecular orbitals */
@@ -258,7 +279,7 @@ dalton_quit(const char* format, ...)
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
 extern void FSYM2(fort_wrt)(const char* str, const int* len, int ln);
-void
+int
 fort_print(const char* format, ...)
 {
     char line[128];
@@ -270,6 +291,7 @@ fort_print(const char* format, ...)
     va_end(a);
     len = strlen(line);
     FSYM2(fort_wrt)(line, &len, len);
+    return len;
 }
 
 /* ===================================================================

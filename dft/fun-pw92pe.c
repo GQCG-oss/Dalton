@@ -102,7 +102,7 @@ const GfitParams minA_brpa= { 1.00, 0.01688690, 0.111250, 10.3570, 3.6231, 0.880
 static int
 pw92_read(const char* conf_line)
 {
-/*  dft_set_hf_weight(0.0); */
+/*  fun_set_hf_weight(0.0); */
     return 1;
 }
 
@@ -111,10 +111,10 @@ static void
 pw92_report(void)
 {
 #ifndef TESTER
-   fort_print("\n     WARNING: PW92pe functional does not give total energy,");
-   fort_print("             it provides energy per electron instead!");
-   fort_print("             Functional is only for internal purposes!!");
-   fort_print("             Use PW92 instead! (PW92=num_of_electrons*PW92pe)\n");
+   fun_printf("\n     WARNING: PW92pe functional does not give total energy,");
+   fun_printf("             it provides energy per electron instead!");
+   fun_printf("             Functional is only for internal purposes!!");
+   fun_printf("             Use PW92 instead! (PW92=num_of_electrons*PW92pe)\n");
    exit(1);
 #endif
 }

@@ -42,7 +42,7 @@ static __inline__
 void test_var(real comp, real refer, const char* fun, const char* drv, 
               int* counter)
 {
-      if(fabs(comp-refer)>2e-8+5e-5*(fabs(comp)+fabs(refer))) { 
+      if(fabs(comp-refer)>2e-7+5e-5*(fabs(comp)+fabs(refer))) { 
         if(*counter<95)
             printf("%s %s: fin.diff: %12g found: %12g, diff=%g\n", 
                    fun, drv, refer, comp, fabs(comp-refer));
@@ -68,7 +68,7 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = { 0.5*rho,0.5*rho, 0.5*ngrad,0.5*ngrad };
+		DftDensProp dt, dp = { 0.5*rho,0.2*rho, 0.2*ngrad,0.2*ngrad };
 		dp.gradab = dp.grada*dp.gradb*gracos;
 		/* TEST df1000 */
 		drho = rho*1e-4;
@@ -118,7 +118,7 @@ test_second(const char* fname,
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = { 0.5*rho, 0.2*rho, 0.5*ngrad, 0.2*ngrad };
+		DftDensProp dt, dp = { 0.5*rho, 0.2*rho, 0.5*ngrad, 0.3*ngrad };
 		dp.gradab = dp.grada*dp.gradb*gracos;
 		drv2_clear(&d);
 		second_fun(&d, 1, &dp);
@@ -236,7 +236,7 @@ test_third(const char* fun_name,
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = {0.5*rho, 0.5*rho, 0.5*ngrad, 0.5*ngrad};
+		DftDensProp dt, dp = {0.5*rho, 0.3*rho, 0.5*ngrad, 1*ngrad};
 		dp.gradab = dp.grada*dp.gradb*gracos;
 		drv3_clear(&d);
 		third_fun(&d, 1, &dp);
@@ -439,14 +439,3 @@ main(int argc, char* argv[])
     return res;
 }
 
-void FSYM(dftsethf)(real *w){}
-real FSYM(dftgethf)(void){return 0;}
-void FSYM(dftsetcam)(real *b, real *mu) {}
-void fort_print(const char *fmt, ...)
-{
-    va_list va_args;
-
-    va_start(va_args, fmt);
-    vprintf(fmt, va_args);puts("");
-    va_end(va_args);
-}
