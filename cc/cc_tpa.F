@@ -797,6 +797,7 @@ c /* deck cctpa_setup */
 * initialize lists of transformations and dots products:
 *---------------------------------------------------------------------*
       IF (.NOT. LADD) THEN
+
         NGTRAN   = 0
         NFATRAN  = 0
         NF1TRAN  = 0
@@ -857,18 +858,19 @@ c /* deck cctpa_setup */
          END DO
         END DO
         
-        MXGVEC   = 0
-        MXFAVEC  = 0
-        MXF1VEC  = 0
-        MXF2VEC  = 0
-        MXF3VEC  = 0
-        MXAA1VEC = 0
-        MXAA2VEC = 0
-        MXAA3VEC = 0
-        MXXVEC   = 0
-        MXO1VEC  = 0
-        MXO2VEC  = 0
       END IF
+        
+      MXGVEC   = 0
+      MXFAVEC  = 0
+      MXF1VEC  = 0
+      MXF2VEC  = 0
+      MXF3VEC  = 0
+      MXAA1VEC = 0
+      MXAA2VEC = 0
+      MXAA3VEC = 0
+      MXXVEC   = 0
+      MXO1VEC  = 0
+      MXO2VEC  = 0
 
 *---------------------------------------------------------------------*
 * initialize array with final results:
