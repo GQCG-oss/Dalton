@@ -140,7 +140,7 @@ c
          LU43  = 43
          CALL GPOPEN(LU43,'CCR12_D','UNKNOWN',' ','FORMATTED',
      &                     IDUM,LDUM)
- 1816    READ(LU43,'(2I3)') IAN,IAP
+ 1816    READ(LU43,'(2I3)',end=1817) IAN,IAP
          READ(LU43,'(4E30.20)') (WORK(IOFF1+I),I=1,N2)
          READ(LU43,'(4E30.20)') (WORK(IOFF2+I),I=1,N2)
          IF ((IAN.NE.IANR12).OR.(IAP.NE.IAPR12)) GOTO 1816
@@ -1016,6 +1016,7 @@ C
  9999 CALL QEXIT('CCSD_ENERGY')
 C
       RETURN
+ 1817 CALL QUIT('R12 amplitudes not found on disk')
       END
 C  /* Deck ccsd_guess */
       SUBROUTINE CCSD_GUESS(T1AM,T2AM,FCDIAG,IPRINT)

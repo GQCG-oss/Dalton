@@ -1788,7 +1788,6 @@ c
       ELSE
          WRITE(LU45,'(2I3)') 1,IPDD
       END IF
-      WRITE(LU45,'(2I3)') 1,IPDD
       WRITE(LU45,'(4E30.20)') CS11
       WRITE(LU45,'(4E30.20)') CT11
 c
