@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspc82.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
+C$Id: rspc82.F,v 1.3 2001-03-29 07:52:56 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck rev_log */
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/12 18:17:56  vebjornb
+First commit after CC merge
+
 Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
@@ -177,7 +180,10 @@ C
 C
 C ALLOCATE WORK SPACE
 C
-      IF (IREFSY .EQ. KSYMST) THEN
+      IF (TDHF .OR. KZCONF.EQ.0) THEN
+C        ... no CREF needed for TDHF and for "OPTORB" /HJAaJ
+         NDREF = 0
+      ELSE IF (IREFSY .EQ. KSYMST) THEN
          NDREF = KZCONF
 C        ... if KZCONF .ne. NCREF, we need CREF in determinants
       ELSE
@@ -188,9 +194,9 @@ C        ... if KZCONF .ne. NCREF, we need CREF in determinants
       KCREF  = KDVT   + NCSIM * N2ASHX
       KUFCAC = KCREF  + NDREF
       KFREE  = KUFCAC + N2ASHX
-      LFREE  = LWRK  - KFREE
+      LFREE  = LWRK   - KFREE
       IF (LFREE.LT.0) CALL ERRWRK('RSPSLI',KFREE-1,LWRK)
-      IF(.NOT.TDHF) CALL GETREF(WRK(KCREF),NDREF)
+      IF(NDREF.GT.0) CALL GETREF(WRK(KCREF),NDREF)
       KSTRT  = 1
 C
 C CONSTRUCT CONFIGURATION PART OF LINEAR TRANSFORMED

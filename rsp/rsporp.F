@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsporp.F,v 1.2 2001-03-26 09:37:06 ruud Exp $
+C$Id: rsporp.F,v 1.3 2001-03-29 07:52:56 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -260,10 +260,6 @@ C
      *            DUMMY,DUMMY,WRK(KEVECS),
      *            WRK(KH2),WRK(KH2X),XINDX,CMO,
      &            WRK(KWRK1),LWRK1)
-      KZCONF = KZCSAV
-      KZYCON = 2*KZCONF
-      KZVAR  = KZTSAV
-      KZYVAR = 2*KZVAR
 C     CALL RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,FC,FV,PVX,ZYMAT,
 C    *            FCONE,FVONE,
 C    *            QAONE,QBONE,FVTD,
@@ -273,6 +269,10 @@ C
       CALL DZERO(WRK(KSVECS),KZYWOP)
       CALL RSPSLI(0,NOSIM,DUMMY,ZYOVEC,UDV,WRK(KSVECS),XINDX,
      *            WRK(KWRK1),LWRK1)
+      KZCONF = KZCSAV
+      KZYCON = 2*KZCONF
+      KZVAR  = KZTSAV
+      KZYVAR = 2*KZVAR
 C
 C *** END OF ORPLIN
 C
