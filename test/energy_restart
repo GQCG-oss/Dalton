@@ -143,7 +143,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-76\.14761413597[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-76\.14761413597" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
@@ -221,7 +221,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Old MCSCF energy
-CRIT1=`$GREP "\(OPTST\) RESTART\, Old MCSCF energy\: * \-76\.147613731046[2-4][0-9][0-9]" $log | wc -l`
+# (hjaaj: the remaining digits in "Old MCSCF en" are beyond convergence
+# and can be anything, that is, small changes in implementation can change them)
+CRIT1=`$GREP "\(OPTST\) RESTART\, Old MCSCF energy\: * \-76\.14761373104" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="OLD MCSCF ENERGY (FROM RESTART) NOT CORRECT"

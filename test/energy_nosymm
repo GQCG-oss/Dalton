@@ -133,7 +133,8 @@ CTRL[5]=1
 ERROR[5]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
-CRIT1=`$GREP "MP2 second order energy : * \-76\.230666825[0-9]" $log | wc -l`
+# hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
+CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l`
 TEST[6]=`expr $CRIT1`
 CTRL[6]=1
 ERROR[6]="MP2 ENERGY NOT CORRECT"
@@ -144,12 +145,12 @@ TEST[7]=`expr $CRIT1`
 CTRL[7]=1
 ERROR[7]="MCSCF ENERGY NOT CORRECT"
 
-# Occupancy of naturalorbitals:
+# Occupancy of natural orbitals:
 CRIT1=`$GREP "2.00000000[0-9] * 1.98908074[0-9] * 1.98138083[0-9] * 1.97643675[0-9] * 1.97462771[0-9]" $log | wc -l`
 CRIT2=`$GREP "(0| ).02521490[0-9] * (0| ).02420935[0-9] * (0| ).01779858[0-9] * (0| ).01125111[0-9]" $log | wc -l`
 TEST[8]=`expr $CRIT1 \+ $CRIT2`
 CTRL[8]=2
-ERROR[8]="OCCUPANCY NOT CORRECT"
+ERROR[8]="NATORB OCCUPANCY NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7 8

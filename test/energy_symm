@@ -144,7 +144,9 @@ CTRL[6]=1
 ERROR[6]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
-CRIT1=`$GREP "MP2 second order energy : * \-76\.230666825[0-9]" $log | wc -l`
+# hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
+CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l`
+
 TEST[7]=`expr $CRIT1`
 CTRL[7]=1
 ERROR[7]="MP2 ENERGY NOT CORRECT"
@@ -162,7 +164,7 @@ CRIT3=`$GREP "1.97462771[0-9] * (0| ).02521490[0-9]" $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[9]=6
-ERROR[9]="OCCUPANCY NOT CORRECT"
+ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7 8 9
