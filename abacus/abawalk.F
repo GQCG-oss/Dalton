@@ -32,11 +32,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abawalk.F,v 1.12 2002-02-08 12:25:38 ruud Exp $
+C$Id: abawalk.F,v 1.13 2002-02-12 12:25:33 ruden Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.12  2002/02/08 12:25:38  ruud
+Fixes for:
+1) Calculations of spin-rotation constants without shieldings
+2) Vibrational averaging of properties with symmetry (program now stops)
+3) Douglas-Kroll (still has problems with some basis sets)
+\kr\
+
 Revision 1.11  2001/12/13 08:52:37  ruden
 Merged dft-1-0 into dalton for the last time. New updates for numerical derivatives.
 TR.
@@ -702,7 +709,7 @@ C
       CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
       IF (IPRWLK .GT. 2) CALL TITLER('Output from WLKDRV','*',103)
-      IF (V3CAL .OR. VIBAVE .AND. IREP .GT. 0) THEN
+      IF ((V3CAL .OR. VIBAVE) .AND. (MAXREP .GT. 0)) THEN
          WRITE (LUPRI,'(/A)') ' Program cannot use symmetry when '//
      &        'doing vibrational averaging'
          CALL QUIT('Symmetry not implemented for vibrational '//
