@@ -961,6 +961,8 @@ C        CALL H1MO(CMO,SH1,SCRA,LSCRA)
 C
 C        Find Huckel start orbitals if ADDSTO and not AUTOCC
 C        (If automatic occupation HUCDRV is called later in this routine)
+C        Note: H1MO called first anyway, to generate symmetry adapted
+C        MO's when supersymmetry exists. /hjaaj
 C
          IF (ADDSTO .AND. .NOT.AUTOCC)
      &      CALL HUCDRV(CMO(KSCRA),LSCRA,CMO)
