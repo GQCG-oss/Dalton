@@ -1568,6 +1568,42 @@ C 940510-hjaaj: same change for Cray's multifile datasets
 C
    10 RETURN
       END
+C  /* Deck fndlb3 */
+      SUBROUTINE FNDLB3(SRCLBL,IVALUE,LU)
+C
+C  06-Jun-2000 ALig
+C  (as FNDLB2, but the IVALUE returns the value of the
+C   symmetry representation of the operator SRCLBL and 0 if the
+C   label doesn't exist)
+C
+#include <implicit.h>
+      CHARACTER*8 SRCLBL, B(4), STAR8
+      PARAMETER (STAR8 = '********')
+      IRDERR = 0
+      REWIND(LU)
+    1 READ (LU,END=3,ERR=6) B
+      IRDERR = 0
+      IF (B(1).NE.STAR8)  GO TO 1 
+      IF (B(4).NE.SRCLBL) GO TO 1 
+      IVALUE    = (ICHAR(B(2)(2:2))-ICHAR('0'))
+      GO TO 10
+C
+    6 IRDERR = IRDERR + 1
+      IF (IRDERR .LT. 5) GO TO 1 
+      GO TO 8 
+    3 CONTINUE
+#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D) || defined (SYS_T90)
+C 880916-hjaaj -- attempt to fix an IBM problem
+C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+C     of FTxxF001), backspace makes LU ready for append.
+C 940510-hjaaj: same change for Cray's multifile datasets
+      BACKSPACE LU
+#endif
+    8 IVALUE = 0
+C
+   10 CONTINUE
+      END   
+C
 C  /* Deck nxtlab */
       LOGICAL FUNCTION NXTLAB(SRCLBL, RTNLBL, LU)
 C

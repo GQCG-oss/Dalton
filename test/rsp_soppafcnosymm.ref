@@ -106,7 +106,7 @@
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
 
- Integrals for all indirect spin-spin coupling tensors are calculated.
+ Integrals for all indirect spin-spin coupling and/or shielding tensors are calculated.
 
 
  *************************************************************************

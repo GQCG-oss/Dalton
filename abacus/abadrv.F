@@ -273,6 +273,20 @@ C
       END IF
       CALL GETTIM(TIMLRS,TIMDUM)
       TIMLRS = TIMLRS - TIMSTR
+cLig >> added the call to CTOABA
+C
+C     *****************************
+C     ***** CTOCD-DZ response *****
+C     *****************************
+C
+      CALL GETTIM(TIMSTR,TIMDUM)
+      IF (CTOCD) THEN
+        CALL CTOABA(WORK(KLAST),LWRK) 
+        CALL FLSHFO(LUPRI)  
+      END IF
+      CALL GETTIM(TIMCTO,TIMDUM)
+      TIMCTO = TIMCTO - TIMSTR   
+cLig <<
 C
 C     **************************************
 C     ***** Relaxation terms (singlet) *****
@@ -555,9 +569,10 @@ C
       CALL GETTIM(TIMALL,TIMDUM)
       TIMALL = TIMALL - TSTART
 #if !defined (SYS_T3D)
+cLig <> added the TIMCTO
       CALL TIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,TIMDRC,
      &     TIMORT,TIMDIP,TIMRES,TIMREL,TIMTST,TIMVIB,TIMWLK,
-     &     TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR)
+     &     TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCTO)
 #endif
       CALL GETTIM(TEND,WEND)
       TIMABA = TEND - TIMABA
@@ -582,7 +597,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <priunit.h>
-      PARAMETER (NDIR = 28, NTABLE = 51, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 52, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP, GAGT
       LOGICAL   GRDINP
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -627,6 +642,7 @@ C
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
      &             '*ABALNR'/
+cLig <> added CTOCD in the 51st position
       DATA TABLE  /'.PRINT ', '.MOLGRA', '.SELECT',
      &             '.DIPGRA', '.POLARI', '.MOLHES',
      &             '.INPTES', '.VIBANA', '.RESTAR',
@@ -643,7 +659,8 @@ C
      &             '.EXPFCK', '.GAUGEO', '.DIPORG',
      &	           '.RAMAN ', '.QUADRU', '.NQCC  ',
      &             '.CAVORG', '.HYPER ', '.VERDET',
-     &             '.MCD   ', '.SOPPA ', '.EXPGRA'/
+     &             '.MCD   ', '.SOPPA ', '.EXPGRA',
+     &             '.CTOCD '/
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA'/
@@ -734,6 +751,7 @@ C
       OPTROT = .FALSE.
       LINCPL = .FALSE.
       SKIPAB = .FALSE.
+      CTOCD  = .FALSE.
       EXPGRD = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
@@ -821,12 +839,13 @@ C
       ELSE IF (PROMPT .EQ. '.') THEN
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
+cLig <> added goto 151
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151),I
+     &                151,152),I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1052,6 +1071,10 @@ cs
  151     CONTINUE 
             EXPGRD = .TRUE.
          GOTO 100
+ 152     CONTINUE 
+            NOLOND = .TRUE.
+            CTOCD  = .TRUE.
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1242,6 +1265,17 @@ C
       IF (SPNSPN) WRITE (LUPRI,'(5X,A)')
      &               ' Nuclear spin-spin coupling constants'
       IF (MAGSUS) WRITE (LUPRI,'(5X,A)') ' Magnetic susceptibilities'
+cLig >> added what to print when the CTOCD option is set true
+      IF (CTOCD) THEN
+         WRITE (LUPRI,'(5X,A)') ' CTOCD-DZ: '
+         WRITE (LUPRI,'(5X,A)')
+     &'  Continuous Transformation of the Origin of the Current Density'
+         IF(MAGSUS) WRITE(LUPRI,'(5X,A)')
+     &     ' CTOCD-DZ Magnetic susceptibilities'
+         IF(SHIELD) WRITE(LUPRI,'(5X,A)')
+     &     ' CTOCD-DZ Nuclear magnetic shieldings' 
+      END IF
+cLig <<
       IF (VCD)    WRITE (LUPRI,'(5X,A)')
      &               ' Vibrational circular dichroism (VCD)'
       IF (NACME)  WRITE (LUPRI,'(5X,A)')
@@ -1371,6 +1405,15 @@ C
      &      ' constants are likely to give', 
      &      ' qualitatively incorrect results !!!'
       END IF
+cLig >> added the control to right CTOCD input
+      IF ((CTOCD).AND.(.NOT.(MAGSUS .OR. SHIELD))) THEN
+         WRITE(LUPRI,'(2X,A,/,2X,A)')
+     &      ' Inconsistent input - CTOCD-DZ method',
+     &      ' the .CTOCD option only works if the .MAGNET and/or',
+     &      ' .SHIELD options are also used'
+         CALL QUIT('Inconsistent input in CABAINP')
+      ENDIF
+cLig <<
       IF (ABASOP) THEN
          IF (MOLGRD) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MOLGRD '//
@@ -2045,6 +2088,25 @@ C
      &        STOPIT('RESULT','NQCRES',KLAST,LWORK)
          CALL NQCRES(IPRDEF,WORK(KAXIS))
       END IF
+cLig >> added the call to SUSRES and SHIRES for CTOCD
+C
+C     CTOCD-DZ Susceptibilities and Nuclear Shieldings
+C
+      IF (IPRDEF .GE. 0) THEN
+        IF (CTOCD) THEN
+           IF(MAGSUS) THEN
+              CALL SUSRES(IPRDEF)
+           ENDIF
+           IF(SHIELD) THEN
+              DONS = .TRUE.
+              CALL SHIRES(WORK,LWORK,IPRDEF)
+              DONS = .FALSE.
+              CALL SHIRES(WORK,LWORK,IPRDEF)
+           ENDIF
+           CTOCD = .FALSE.
+        ENDIF
+      ENDIF
+cLig <<
 C
 C     Susceptibilities
 C
@@ -2396,7 +2458,8 @@ C  /* Deck susres */
       CHARACTER*6 ABC(3)
       DATA ABC /'khi_aa','khi_bb','khi_cc'/
       CALL TITLER('ABACUS - MAGNETIZABILITIES','*',124)
-      IF (.NOT.NOLOND) THEN
+cLig <> added the .NOT. CTOCD
+      IF ((.NOT.NOLOND).AND.(.NOT.CTOCD)) THEN
 C
          CALL DZERO(SUSTOT,9)
          CALL DZERO(DIASUS,9)
@@ -2439,6 +2502,21 @@ C
             WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
 C
          END IF
+cLig >> what to do for CTOCD
+      ELSE IF(CTOCD) THEN
+cDEBUG
+c 	write(LUPRI,*) 'Dentro SUSRES'
+c	write(LUPRI,*) 'SUSDZD= ',SUSDZD
+        CALL DZERO(SUSTOT,9)
+        CALL DZERO(DIASUS,9)
+        CALL DZERO(PARSUS,9)
+        DO 110 I = 1, 3
+        DO 110 J = 1, 3
+          DIASUS(I,J) = SUSDZD(I,J)
+          PARSUS(I,J) = SUSREL(I,J)
+          SUSTOT(I,J) = DIASUS(I,J) + PARSUS(I,J)
+ 110    CONTINUE
+cLig <<
       ELSE
 C
          DO 200 J = 1, 3
@@ -2484,6 +2562,11 @@ C
       ELSE
          WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
       END IF
+cLig >> added a print statement
+      IF (CTOCD) THEN
+        WRITE (LUPRI,'(/,1X,A)')'CTOCD-DZ results:'   
+      ENDIF 
+cLig <<
       IF (D12 .AND. D23) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
          WRITE (LUPRI,'(3(/,1X,A,3(F12.4,A)))')

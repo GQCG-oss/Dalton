@@ -38,6 +38,13 @@ center of mass\index{center of mass}. Should by used with care, as it
 has to correspond to the center used in the evaluation of the
 undifferentiated solvent integrals in the {\her} section.
 
+\item[\Key{CTOCD}] Starts the calculation of the magnetic properties with the
+CTOCD-DZ\index{CTOCD-DZ} method (Ref.~\cite{paololazz1,paololazz2,ctocd}). This sets also 
+automatically the .NOLOND option since the CTOCD-DZ formalism is already truely gauge 
+independent (for Nuclear Magnetic Shieldings). The default gauge origin is choosen to be 
+the center of mass.  \Key{CTOCD} and \Key{SOPPA} can be combined to perform CTOCD calculations 
+at the SOPPA level.\index{SOPPA}
+
 \item[\Key{DIPGRA}] Invokes the calculation of dipole moment
 gradients\index{dipole gradient}\index{atomic polar tensor}\index{APT}
 (commonly known also as Atomic Polar Tensors 
@@ -91,7 +98,7 @@ invoking this option.
 
 Reads in a user defined gauge origin\index{gauge origin} and overwrite
 both the \Key{NOCMC} option, as well as the default value of
-center-of-mass coordinates. Not that an unsymmetric position of the
+center-of-mass coordinates. Note that an unsymmetric position of the
 gauge origin will lead to wrong results in calculations employing
 symmetry. 
 
@@ -174,6 +181,11 @@ only the size of the dia- and paramagnetic terms.
 Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
 calculation of the magnetizability and the rotational {\em g} tensor. London 
 orbitals are automatically disabled in SOPPA\index{SOPPA} calculations.
+
+\Key{MAGNET} in combination with the keyword \Key{CTOCD}\index{CTOCD-DZ} invokes a 
+calculation without the use of London orbitals both with the CTOCD-DZ method 
+(Ref~\cite{paololazz1,paololazz2}) and with the common origin method. 
+Changing the default value of the gauge origin could give wrong results!
 
 %\item[\Key{MCD}] Requests the calculation of Magnetic Circular
 %Dichroism~\cite{}.
@@ -365,13 +377,24 @@ This origin can be changed by the two keywords \verb|.GAUGEO| and
 \verb|.NOCMC |. This choice of gauge origin will not affect
 the final shieldings if London orbitals are used, only the size of the
 dia- and paramagnetic contributions.
+
 Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
-calculation of the magnetizability and the rotational {\em g} tensor. London 
-orbitals are automatically disabled in SOPPA\index{SOPPA} calculations.
+calculation of the Nuclear Magnetic Shieldings. London 
+orbitals are automatically disabled in SOPPA\index{SOPPA} calculations. Gauge origin
+independent SOPPA calcualtions of Nuclear Magnetic Shieldings can be carried
+out with the CTOCD-DZ method\index{CTOCD-DZ} (Ref.~\cite{paololazz1,paololazz2,ctocd}) 
+(keyword \Key{CTOCD}).
+
+In combination with the keyword \Key{CTOCD}\index{CTOCD-DZ} this invokes a calculation of the
+Nuclear Magnetic Shieldings without the use of London orbitals but with both 
+the CTOCD-DZ method (Ref.~\cite{paololazz1,paololazz2,ctocd}) and with the common 
+origin method. For the CTOCD-DZ method the Nuclear Magnetic Shieldings are given in
+the output file for both the origin at the center of mass and at the respective atoms.
+Changing the default value of the gauge origin could give wrong results!
 
 \item[\Key{SOPPA}] Indicates that the requested molecular properties
 be calculated using the second-order polarization-propagator
-approach~\cite{mjpekdtehjajjojcp}. This requires that the MP2 energy and wave
+approach~\cite{mjpekdtehjajjojcp}.\index{SOPPA} This requires that the MP2 energy and wave
 function have been calculated. London orbitals can not be used
 together with the SOPPA approximation.
 

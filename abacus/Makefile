@@ -20,7 +20,8 @@ F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abaopt.o     abavrml.o    abaqr.o      abarint.o\
 	abander.o    abandsym.o   herfckcon.o  abaop2.o\
 	abasop.o     abamolden.o  eckart.o     ecp.o\
-	abafmm.o     abanvib.o    aba2r12.o    aba2eth.o
+	abafmm.o     abanvib.o    aba2r12.o    aba2eth.o\
+	abactocd.o
 
 F_CPPS = $(F_OBJS:.o=.i) dalton.i 
 

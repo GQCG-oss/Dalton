@@ -5,6 +5,7 @@ C           should not be move from this subroutine
 C
       INTEGER NSYML, IPRDEF, NWNABA, NTCSY, NSCSY
       PARAMETER (NSYML = 8)
+cLig <> added CTOCD
       LOGICAL MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
      &        H2MO,   DOSYM,  DOLRES, DOEXCI, SHIELD,
@@ -14,7 +15,7 @@ C
      &        DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &        RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
-     &        ABA_ALPHA, EXPGRD
+     &        ABA_ALPHA, EXPGRD, CTOCD
       COMMON /ABAINF/ NTCSY(8), NSCSY(8), IPRDEF, NWNABA, 
      &                MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &                VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -25,4 +26,4 @@ C
      &                DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &                RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &                MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
-     &                ABA_ALPHA, EXPGRD
+     &                ABA_ALPHA, EXPGRD, CTOCD

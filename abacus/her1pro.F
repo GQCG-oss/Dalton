@@ -178,7 +178,8 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 74)
+cLig <> changed NTABLE from 74 to 76
+      PARAMETER (NTABLE = 76)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -197,6 +198,7 @@ C
 #include <elweak.h>
 #include <orgcom.h>
 C
+cLig <> added RAGMO and RPSO
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
      &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ',
      &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ',
@@ -215,7 +217,7 @@ C
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
      &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
      &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
-     &            'SPHMOML', 'QDBINT '/
+     &            'SPHMOML', 'QDBINT ', 'RANGMO ', 'RPSO   '/
 C
 #include <ibtfun.h>
 C
@@ -231,11 +233,12 @@ C
       SOLVNT = .FALSE.
       DO 100 I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
+cLig <> added goto 75 and 76 for RANGMO and RPSO
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69,70,71,72,73,74), I
+     &             64,65,66,67,68,69,70,71,72,73,74,75,76), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1727,6 +1730,60 @@ C
          END IF
          ANTI      = .TRUE.
       GOTO 200
+cLig >>
+C
+C     (r-r')l' integrals
+C     ------------------
+C
+ 75   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      'Calculation of (r-r_go)l_go integrals for the '/
+     &   /'determination of magnetizability in analytcal way'
+         INTTYP = 81
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XXRANG'
+         LABINT(2) = 'XYRANG'
+         LABINT(3) = 'XZRANG'
+         LABINT(4) = 'YXRANG'
+         LABINT(5) = 'YYRANG'
+         LABINT(6) = 'YZRANG'
+         LABINT(7) = 'ZXRANG'
+         LABINT(8) = 'ZYRANG'
+         LABINT(9) = 'ZZRANG'
+         INTREP(1) = IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
+         INTREP(2) = ISYMAX(3,1)
+         INTREP(3) = ISYMAX(2,1)
+         INTREP(4) = ISYMAX(3,1)
+         INTREP(5) = IBTXOR(ISYMAX(2,1),IBTXOR(ISYMAX(1,1),ISYMAX(3,1)))
+         INTREP(6) = ISYMAX(1,1)
+         INTREP(7) = ISYMAX(2,1)
+         INTREP(8) = ISYMAX(1,1)
+         INTREP(9) = IBTXOR(ISYMAX(3,1),IBTXOR(ISYMAX(1,1),ISYMAX(2,1)))
+c        
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GO TO 200
+C
+C     (r-r')l'/|r-R_I|**3 integrals
+C     ----------------------------
+C
+ 76   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      'Calculation of (r-r_go)l_I integrals for the '/
+     &   /'determination of nuclear shielding in analitcal way'
+         INTTYP = 82
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'RPSO',
+     &               INTADR)
+c        
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GO TO 200
+cLig <<
 C
 C
   200 CONTINUE
@@ -1846,6 +1903,8 @@ C
                      CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
                   END IF
                END IF
+cLig <> Replace data information with the symmetry of the operator
+               WRITE(RTNLBL(1),*) (INTREP(I)+1),' ',REP(INTREP(I))
                CALL WRTPRO(WORK(IADR),NELMNT,LABINT(I),RTNLBL)
                IADR = IADR + NELMNT
   600       CONTINUE
@@ -1924,10 +1983,12 @@ C
 #include <cbiher.h>
 C
       CALL QENTER('SETATM')
+cLig <> added SPIN = .TRUE. for INTTYP = 82
       SPIN = INTTYP .EQ.  9 .OR. INTTYP .EQ. 10 .OR.
      &       INTTYP .EQ. 11 .OR. INTTYP .EQ. 12 .OR. INTTYP .EQ. 13 .OR.
      &       INTTYP .EQ. 26 .OR. INTTYP .EQ. 27 .OR. INTTYP .EQ. 28 .OR.
-     &       INTTYP .EQ. 34 .OR. INTTYP .EQ. 38 .OR. INTTYP .EQ. 48
+     &       INTTYP .EQ. 34 .OR. INTTYP .EQ. 38 .OR. INTTYP .EQ. 48 .OR.
+     &       INTTYP .EQ. 82
       IF (.NOT.SPIN .OR. ALLATM) THEN
          NATOM = NUCDEP
          DO 100 I = 1, NUCIND
@@ -2288,6 +2349,10 @@ C  /* Deck nsttyp */
      &                                 CHRNOS(ITHIRD)//LABEL//
      &                                 CHRXYZ(ICOOR)
                         INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,2))
+cLig >> changed the symmetri for RPSO
+                        IF(LABEL.EQ.'RPSO')
+     &                    INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1)) 
+cLig <<    
                         LSCOOR = 3*(ISCOOR - 1) + ICOOR
                         INTADR(LSCOOR) = ITYP
  400                 CONTINUE

@@ -1972,9 +1972,20 @@ C  /* Deck shires */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+cLig <> added include abainf.h
+#include <abainf.h>
       DIMENSION WORK(LWORK)
 #include <nuclei.h>
-      KCMAT  = 1
+cLig >> changed the values of the memory for CTOCD 
+      KSPMAT = 1
+      IF(CTOCD) THEN
+        KSMMAT = KSPMAT + 9*MXCENT
+        KCMAT  = KSMMAT + 9*MXCENT
+      ELSE
+        KSMMAT = 1
+        KCMAT =  1
+      ENDIF
+cLig >>
       KDMAT  = KCMAT  + 9*MXCENT
       KPMAT  = KDMAT  + 9*MXCENT
       KAVET  = KPMAT  + 9*MXCENT
@@ -1992,7 +2003,9 @@ C  /* Deck shires */
       KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
       KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
       IF (KLAST .GT. LWORK) CALL STOPIT('SHIRES',' ',KLAST,LWORK)
-      CALL SHIRE1(WORK(KCMAT),WORK(KDMAT),WORK(KPMAT),WORK(KAVET),
+cLig <> added work(kspmat) and work (ksmmat) for CTOCD
+      CALL SHIRE1(WORK(KSPMAT),WORK(KSMMAT),
+     &            WORK(KCMAT),WORK(KDMAT),WORK(KPMAT),WORK(KAVET),
      &            WORK(KAVED),WORK(KAVEP),WORK(KANIS),WORK(KASYM),
      &            WORK(KSPAR),WORK(KAPAR),WORK(KANIS2),WORK(KASYM2),
      &            WORK(KSKEW),WORK(KSPAN),WORK(KCSTRA),WORK(KSCTRA),
@@ -2000,7 +2013,9 @@ C  /* Deck shires */
       RETURN
       END
 C  /* Deck shire1 */
-      SUBROUTINE SHIRE1(TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
+cLig <> added sftpmat and sftmmat
+      SUBROUTINE SHIRE1(SFTPMAT,SFTMMAT,
+     &                  TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SPAR,APAR,ANIS2,ASYM2,SKEW,SPAN,CSTRA,SCTRA,
      &                  IPRINT)
 #include <implicit.h>
@@ -2011,28 +2026,65 @@ C  /* Deck shire1 */
 #include <nuclei.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER DIAPAR*12
+cLig <> added the dimensions of sftpmat and sftmmat
       DIMENSION TMAT(3,3,MXCENT), DMAT(3,3,MXCENT), PMAT(3,3,MXCENT),
      &          AVETOT(NUCDEP), AVEDIA(NUCDEP), AVEPAR(NUCDEP),
      &          ANIS(NUCDEP), ASYM(NUCDEP), SPAR(NUCDEP), APAR(NUCDEP),
      &          ANIS2(NUCDEP), ASYM2(NUCDEP), SKEW(NUCDEP),
-     &          SPAN(NUCDEP), CSTRA(*), SCTRA(*)
+     &          SPAN(NUCDEP), CSTRA(*), SCTRA(*),
+     &          SFTPMAT(3,3,MXCENT),SFTMMAT(3,3,MXCENT)
+cLig >> added include abainf.h and trkoor.h
+#include <abainf.h>
+#include <trkoor.h>
+cLig <<
 #include <symmet.h>
 #include <sigma.h>
 #include <cbisol.h>
 #include <ibtfun.h>
 C
       CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
+cLig >> added CTOCD-DZ results title
+      IF (CTOCD) THEN
+        CALL HEADER('CTOCD-DZ results',1)
+      ENDIF
+cLig <<
       CALL HEADER('Shielding tensors in symmetry coordinates (ppm)',-1)
-      CALL FCPRI(SIGMAT,'SIGMAS',CSTRA,SCTRA)
+cLig >> added call to FCPRI for shieldings
+      IF (CTOCD) THEN
+        CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
+      ELSE
+cLig <<
+        CALL FCPRI(SIGMAT,'SIGMAS',CSTRA,SCTRA)
+cLig <> ENDIF
+      ENDIF
       NUCINS = NUCIND
       IF (SOLVNT) NUCINS = NUCINS - 1
 C
 C     Transform to non-symmetry basis
 C
-      CALL TRADIP(SIGMAT,TMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-      CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-      CALL DCOPY(9*NUCDEP,TMAT,1,DMAT,1)
-      CALL DAXPY(9*NUCDEP,-D1,PMAT,1,DMAT,1)
+cLig >> added the call to TRADIP ... for CTOCD
+      IF (CTOCD) THEN
+         CALL TRADIP(SIGMADZ,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+         CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+         IF (DONS) THEN
+            CALL DZERO(SFTPMAT,9*NUCDEP)
+            CALL DZERO(SFTMMAT,9*NUCDEP)
+            CALL TRADIP(SIGMASFTP,SFTPMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+            CALL TRADIP(SIGMASFTM,SFTMMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+            CALL DONSSHIFT(SFTPMAT,SFTMMAT)
+            CALL DAXPY(9*NUCDEP,D1,SFTPMAT,1,PMAT,1)
+            CALL DAXPY(9*NUCDEP,-D1,SFTPMAT,1,DMAT,1)
+         ENDIF
+         CALL DCOPY(9*NUCDEP,DMAT,1,TMAT,1)
+         CALL DAXPY(9*NUCDEP,D1,PMAT,1,TMAT,1)
+      ELSE
+cLig <<
+        CALL TRADIP(SIGMAT,TMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+        CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+        CALL DCOPY(9*NUCDEP,TMAT,1,DMAT,1)
+        CALL DAXPY(9*NUCDEP,-D1,PMAT,1,DMAT,1)
+cLig <> closed the IF
+      ENDIF
       IATOM = 0
       DO 100 I = 1, NUCINS
          DO 200 ISYMOP = 0, MAXOPR
@@ -2112,6 +2164,11 @@ C  /* Deck shiana */
 #include <thrzer.h>
 #include <inftap.h>
 #include <codata.h>
+cLig >> added include mxcent abainf and sigma
+#include <mxcent.h>
+#include <abainf.h>
+#include <sigma.h>
+cLig <<
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
@@ -2199,8 +2256,20 @@ C
       END IF
       APAR = SQRT(DDOT(9,ANTI,1,ANTI,1)/D2)
       SPAR = ABS(ANIS)*SQRT(D1 + (ASYM**2)/D3)
+cLig >> added title for CTOCD shieldings
+      IF (CTOCD) THEN
+         CALL TITLER('CTOCD-DZ: Chemical shielding for '
+     &               //NAME//':','=',1)
+      ELSE
+cLig <<
 C
-      CALL TITLER('Chemical shielding for '//NAME//':','=',1)
+        CALL TITLER('Chemical shielding for '//NAME//':','=',1)
+cLig >> added title for the Gauge Origin
+      ENDIF
+      IF(DONS) THEN
+        CALL HEADER('Gauge Origin set on the atom',1)
+      ENDIF
+cLig <<
       WRITE (LUPRI,'(3(/,1X,A,F12.4,A),/,2(/,1X,A,F12.4,A))')
      &   ' Shielding constant:',AVETOT,' ppm',
      &   ' Anisotropy:        ',ANIS,  ' ppm',

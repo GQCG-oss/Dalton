@@ -191,7 +191,8 @@ C
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
-      PARAMETER (NDIR = 7, NTABLE = 110)
+cLig <> changed NTABLE from 111 to 112
+      PARAMETER (NDIR = 7, NTABLE = 112)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -216,6 +217,7 @@ C
 #include <r12int.h>
 #include <codata.h>
 C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-11-2002).
+cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
@@ -245,7 +247,7 @@ C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-1
      &             '.FINDPT', '.FNPROP', '.PVP   ', '.1ELPOT',
      &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
-     &             '.U21INT', '.DCCR12'/
+     &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  '/
 C
 C     Check if input has been processed earlier.
 C
@@ -298,6 +300,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
 C              Labels 203-209 have been added (WK/UniKA/04-11-2002).
+cLig <> added go to 211 and 212
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
@@ -308,7 +311,8 @@ C              Labels 203-209 have been added (WK/UniKA/04-11-2002).
      &                171,172,173,174,175,176,177,178,179,180,
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
-     &                201,202,203,204,205,206,207,208,208,209), I
+     &                201,202,203,204,205,206,207,208,208,209,
+     &                211,212), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -795,10 +799,10 @@ C&&& Nuclear model
             ONEPRP = .TRUE.
             GOTO 100
  202     CONTINUE
-         QDBTST = .TRUE.
-         THETA  = .TRUE.
-         ONEPRP = .TRUE.
-         GOTO 100
+            QDBTST = .TRUE.
+            THETA  = .TRUE.
+            ONEPRP = .TRUE.
+            GOTO 100
  203     CONTINUE
 C           R12 calculation requested with linear r12 terms (WK/UniKA/04-11-2002).
             R12CAL = .TRUE.
@@ -841,6 +845,16 @@ C           Integrals are computed for DIRCCR12 program (WK/UniKA/25-11-2002).
             DCCR12 = .TRUE.
             SUPMAT = .FALSE.
             GOTO 100
+cLig >> added what to do for RANGMO and RPSO options
+ 211     CONTINUE
+            RANGMO = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 212     CONTINUE
+            RPSO   = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+cLig <<
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -850,7 +864,9 @@ C           Integrals are computed for DIRCCR12 program (WK/UniKA/25-11-2002).
       END IF
  299  CONTINUE
       IF (.NOT. BGWEIL) BGWEIN = WEINBG 
-      NMRISS = FERMI .OR. PSO .OR. SPIDIP .OR. DSO .OR. SDFC
+cLig <>
+      NMRISS = FERMI .OR. PSO .OR. SPIDIP .OR. DSO .OR. SDFC 
+     &               .OR. RPSO
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' @@ Input test run only !!!'
       WRITE (LUPRI,'(/A,I5)') ' Default print level:    ',IPRDEF
       IF(GAUNUC) THEN
@@ -961,6 +977,12 @@ c ach
                WRITE (LUPRI,'(10X,A)')
      &             '  (electron spin - nuclear magnetic field coupling)'
             END IF
+cLig >>
+            IF (RPSO) THEN
+               WRITE (LUPRI,'(10X,A)')
+     &              '- CTOCD-DZ diamagnetic shielding integrals'
+            END IF
+cLig <<
          END IF
          IF (HDO) WRITE (LUPRI,'(10X,A)')
      &                            '- half-derivative overlap integrals'
@@ -1113,6 +1135,12 @@ c ach
          ENDIF
          IF (PVIOLA) WRITE (LUPRI,'(10X,A)')
      &       '- parity violation electroweak interaction'
+cLig >> added message to display for RPSO and RAGNMO optiion
+         IF (RANGMO) WRITE (LUPRI,'(10X,A)')
+     &      '- Product between (r - r_go) and l_go for the'//
+     &      '  computation of CTOCD-DZ magnetizability in an'//
+     &      '  analytical way'
+cLig <<
       END IF
       IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/A,3F20.15)')
      &    ' Operator center:', (ORIGIN(I),I=1,3)
@@ -1139,7 +1167,7 @@ c ach
          IF (ALLATM) THEN
             WRITE (LUPRI,'(/2A)')
      &         ' Integrals for all indirect spin-spin',
-     &         ' coupling tensors are calculated.'
+     &         ' coupling and/or shielding tensors are calculated.'
          ELSE
             WRITE (LUPRI,'(/2A/)')
      &         ' Indirect spin-spin integrals involving the following',
@@ -2554,6 +2582,29 @@ C
                CALL TIMER('XDDXR3',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END  IF
+cLig >> call to PR1INT form RANGMO and RPSO options
+C
+C           ***** (r-r')l' integrals, for calculation of
+C           magetizability  *****
+C
+            IF (RANGMO) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('RANGMO ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('RANGMO ',TIMSTR,TIMEND) 
+               CALL FLSHFO(LUPRI)  
+            END IF
+C
+C           ***** (r-r')l'/|r-R_I|**3 integrals, for shieldings *****
+C
+            IF (RPSO) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('RPSO   ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE) 
+               CALL TIMER('RPSO  ',TIMSTR,TIMEND)  
+               CALL FLSHFO(LUPRI) 
+            END IF
+cLig <<
          END IF
       END IF
 C
@@ -3050,6 +3101,10 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       COMBSS = .FALSE.
       LAUXBS = .FALSE.
       LMULBS = .FALSE.
+cLig >> setting RANGMO and RPSO false
+      RANGMO = .FALSE.
+      RPSO   = .FALSE.
+cLig <<
 C
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)

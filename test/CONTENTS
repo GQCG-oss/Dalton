@@ -331,6 +331,15 @@ Test Purpose:     First hyperpolarizabilities
                   - Static and for two non-zero frequencies
 
 
+cc_rsp_ctocd
+-----------
+Molecule:         HF
+Wave Function:    CCS, CCSD / 6-31G**
+Test Purpose:     Static nuclear magnetic shielding and
+                  z-component (in the electric field) of
+                  shielding polarizability in the CTOCD-DZ formalism
+
+
 cc_rsp_exci
 -----------
 Molecule:         HeH+ in C2
@@ -862,6 +871,14 @@ Test Purpose:     Harmonic frequencies calculated numerically from
                   gradients
 
 
+prop_ctocd
+----------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Calculation of CTOCD-DZ magnetizability and
+                  shielding constants through ABACUS
+
+
 prop_ecd
 --------
 Molecule:         C2H4
@@ -905,6 +922,14 @@ Molecule:         C3H4
 Wave Function:    SCF / DunningDZ
 Test Purpose:     Single-point calculation of Raman Optical Activity
                   parameters
+
+
+prop_soppactocd
+---------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Calculation of CTOCD-DZ magnetizability and
+                  shielding constants through ABACUS
 
 
 prop_spinspin
@@ -977,6 +1002,14 @@ rsp_3rdmom
 Molecule:         LiH
 Wave Function:    MCSCF (CAS) / 4-31G
 Test Purpose:     Third moments
+
+
+rsp_ctocdhyper
+--------------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Calculation of CTOCD-DZ diamagnetic part of
+                  hypermagnetizability through RESPONSE
 
 
 rsp_dckerr

@@ -1394,6 +1394,17 @@ C
          ITYPEC = 2
          FIELD  = 'B'
          FACTOR = D10E6*ALPHA2
+cLig >> added instructions how to print shieldings with CTOCD
+C
+C     Nuclear shieldings (ctocd)
+C
+      ELSE IF (KEY .EQ. 'CTOCD') THEN
+         CARTRA = .FALSE.
+         ITYPEF = 2
+         ITYPEC = 2
+         FIELD  = 'B'
+         FACTOR = D1
+cLig <<
 C
 C     Nuclear shieldings (unscaled)
 C

@@ -89,7 +89,7 @@ CRIT4=`$GREP "\- Fermi contact integrals" $log | wc -l`
 CRIT5=`$GREP "\(Dirac delta function integrals\)" $log | wc -l`
 CRIT6=`$GREP "In this run * precalculated two\-electron integrals are transformed" $log | wc -l`
 CRIT7=`$GREP "to P\-supermatrix elements\." $log | wc -l`
-CRIT8=`$GREP "Integrals for all indirect spin\-spin coupling tensors are calculated\." $log | wc -l`
+CRIT8=`$GREP "Integrals for all indirect spin\-spin coupling and/or shielding tensors are calculated\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[1]=8
