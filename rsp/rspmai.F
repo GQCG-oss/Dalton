@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmai.F,v 1.8 2001-05-31 06:38:29 vebjornb Exp $
+C$Id: rspmai.F,v 1.9 2001-06-22 11:51:22 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.8  2001/05/31 06:38:29  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.7  2001/05/14 09:09:39  hjj
 changed RSPMC to fix CSF and triplet problems without destroying CIRESPONS option./hjaaj
 
@@ -804,15 +807,17 @@ C
             WRITE(LUPRI,'(/A)')
      *   ' Second Order Polarization Propagator Approximation -- SOPPA'
          ELSE IF (SOPPA .AND. CCPPA) THEN
-            WRITE(LUPRI,'(/A,A,/,14X,A,/,A)')
+            WRITE(LUPRI,'(/2A/14X,A/A)')
      *   ' SOPPA(CCSD) :',
      *   ' Second Order Polarization Propagator Approximation',
      *   ' with Coupled Cluster Singles and Doubles Amplitudes',
      *   ' Reference : S. P. A. Sauer, to be published'
          END IF
-         IF (RSPCI) WRITE(LUPRI,'(/A,L1)')
-     *      ' CONFIGURATION INTERACTION RESPONSE CALCULATION.  RSPCI= '
-     *      ,RSPCI
+         IF (RSPCI) WRITE(LUPRI,'(/A,L1/A)')
+     *      ' Configuration interaction response calculation.  RSPCI= '
+     *      ,RSPCI,
+     *      '   Note: this is equivalent to a CI sum-over-states'//
+     *      ' calculation of properties.'
          IF (NOITRA) WRITE(LUPRI,'(/2A,L1)')
      *      ' MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.'
      *      ,'  NOITRA = ',NOITRA
@@ -843,7 +848,7 @@ C
      *      ' H(0) SUBSPACE SELECTED FROM SIZE OF RESIDUAL ELEMENTS',
      *      ' PHPRES = ',PHPRES
          IF (MAXRM.NE.200) WRITE(LUPRI,'(/A,I6)')
-     *      ' DIMENSION OF REDUCED SPACE. MAXRM =',MAXRM
+     *      ' MAX DIMENSION OF REDUCED SPACE. MAXRM =',MAXRM
          IF (QRREST) WRITE(LUPRI,'(/A/A)')
      *      ' QUADRATIC RESPONSE CALCULATION RESTARTED',
      *      '    FROM PREVIOUSLY CALCULATED SOLUTION VECTORS'
@@ -854,6 +859,10 @@ C
       IF (CCPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
      &      ' Input ERROR: ".RSPCI " and ".SOPPCC" are incompatible.'
+         CALL QUIT('RSPINP: Input error')
+      ELSEIF (HIRPA .AND. RSPCI) THEN
+         WRITE (LUPRI,'(/A)')
+     &      ' Input ERROR: ".RSPCI " and ".HIRPA " are incompatible.'
          CALL QUIT('RSPINP: Input error')
       ELSEIF (SOPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
@@ -963,7 +972,7 @@ C  Initializing INFCR
       DATA IPRCR/2/
       DATA NBCRFR/1/, NCCRFR/1/, NDCRFR/1/
       DATA BCRFR(1)/0.0D0/, CCRFR(1)/0.0D0/, DCRFR(1)/0.0D0/
-      DATA INVEXP/.FALSE./,OLDVEC/.FALSE./
+      DATA INVEXP/.FALSE./
       DATA CRTHG/.FALSE./,CRSHG/.FALSE./,CRKERR/.FALSE./,CRIDRI/.FALSE./
       DATA CRSPEC/.FALSE./
       DATA GAMALL/.TRUE./
@@ -1012,8 +1021,8 @@ C
      *            '.ABCHK ', '.ABSYM ', '.PRINT ',
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC',
      *            '.NODOIT', '.X2TEST', '.A2TEST',
-     *            '.SINGLE', '.DOUBLE', '.THCLR ', '.MAXIT',
-     *            '.MAXITO', '.NSIMUL', '.NSTART'/
+     *            '.SINGLE', '.DOUBLE', '.THCLR ', '.MAXITL',
+     *            'xxxxxxx', '.NSIMUL', '.NSTART'/
 C
       DATA SPNDEF/.FALSE./
 C
@@ -1206,17 +1215,22 @@ C
                A2TEST = .TRUE.
                GO TO 100
  43            CONTINUE
+               IF (EXMOM) THEN
+                 CALL QUIT('PPINP implementation ERROR: please report')
+               END IF
                GO TO 100
  44            CONTINUE
+               IF (.NOT.EXMOM) THEN
+                 CALL QUIT('PPINP implementation ERROR: please report')
+               END IF
                GO TO 100
  45            CONTINUE
-                  READ (LUCMD,*) MAXITL
-               GO TO 100
- 46            CONTINUE
                   READ (LUCMD,*) THCLR
                GO TO 100
+ 46            CONTINUE
+                  READ (LUCMD,*) MAXITL
+               GO TO 100
  47            CONTINUE
-                  READ (LUCMD,*) MAXITO
                GO TO 100
  48            CONTINUE
                   READ (LUCMD,*) (NPPSIM(J),J=1,NSYM)
@@ -1580,7 +1594,7 @@ C
      *      ' Maximum number of iterations                   : MAXITL ='
      *       ,MAXITL
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence                      : THCLR  ='
+     *      ' Threshold for relative convergence             : THCLR  ='
      *      ,THCLR
          WRITE(LUPRI,'(A,I4)')
      *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
