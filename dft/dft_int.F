@@ -99,7 +99,7 @@ C
 C
 C     Test on the number of electrons
 C   
-D     WRITE(2,*) ' node ', mynum,' knows of ', electrons
+C     WRITE(2,*) ' node ', mynum,' knows of ', electrons
       CALL  DFTINTCOLLECT(ELECTRONS)
 #ifdef VAR_MPI
       CHECKELS = MYNUM.EQ.0
@@ -286,14 +286,7 @@ c     /XYZPOW/
       CALL MPI_Bcast(nval, MXAQNM, MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
 c     /DFTCOM/
-      IF (DFTADD) THEN
-         IDFT = 1
-      ELSE
-         IDFT = 0
-      END IF
-      CALL MPI_Bcast(IDFT,1,MPI_INTEGER,0,MPI_COMM_WORLD,ie)
-      DFTADD = .FALSE.
-      IF (IDFT.EQ.1) DFTADD = .TRUE.
+      CALL MPI_Bcast(DFTADD,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
 c
 c     sync functionals, too.
       CALL DFTFUNCSYNC(MYNUM,NODTOT)

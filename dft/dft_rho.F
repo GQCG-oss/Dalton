@@ -207,6 +207,7 @@ c     CALL DZERO(TMP,NVCLEN*NBAST)
       END DO
       END DO
       END DO
+      RETURN
       END
       SUBROUTINE getrho_blocked_gga(DMAT,GAO,NBLOCKS,IBLOCKS,LDAIB,
      &                              TMP,NVCLEN,RHO,GRAD)

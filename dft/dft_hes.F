@@ -91,8 +91,11 @@ C    &                   WORK(KTKAP),WORK(KLAST),LWRK,IPRINT)
 C     END IF
 C
       CALL DZERO(WORK(KDFTHS),MXCOOR*MXCOOR)
+      CALL KICK_SLAVES_HESSTAT(NBAST,WORK(KDMAT),WORK(KV1MAT),NUCDEP,
+     &                         IPRINT)
       CALL DFTINT(WORK(KDMAT),1,2,.FALSE.,WORK(KLAST),LWRK,
      &            DFTSTATHES,WORK(KDMAT),ELE)
+      CALL DFT_HESSTAT_COLLECT(WORK(KDFTHS),WORK(KLAST),LWRK)
       CALL DFTHSSYM(WORK(KDFTHS),MXCOOR)
       CALL ADDHES(WORK(KDFTHS))
 C
@@ -582,8 +585,11 @@ C
 C
       CALL DZERO(WORK(KFCD),  3*N2BASX)
       CALL DZERO(WORK(KDFTFD),3*N2BASX)
+      CALL KICK_SLAVES_HED(IATOM,NBAST,WORK(KDMAT),WORK(KV1MAT),IPRINT)
       CALL DFTINT(WORK(KDMAT),1,1,.FALSE.,WORK(KLAST),LWRK,
      &            DFTKSD,WORK(KDMAT),ELE)
+      CALL DFT_HED_COLLECT(WORK(KFCD),WORK(KDFTFD),N2BASX,
+     &                     WORK(KLAST),LWRK)
       CALL DFTFDSYM(WORK(KFCD),WORK(KDFTFD),NBAST)
       CALL DAXPY(3*N2BASX,D1,WORK(KFCD),1,FCD,1)
       DO I = 1, 3
@@ -1276,4 +1282,173 @@ C
       END DO
 C
       RETURN
+      END
+C
+      SUBROUTINE KICK_SLAVES_HESSTAT(NBAST,DMAT,V1MAT,NUCDEP,IPRINT)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST*NUCDEP)
+C
+      IF (MYNUM .EQ. MASTER) THEN
+         IPRTYP = 8
+         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL DFTINTBCAST
+         CALL KSMSYNC(DMAT)
+         CALL MPI_BCAST(V1MAT,3*NBAST*NBAST*NUCDEP,MPI_DOUBLE_PRECISION,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+      END IF
+      RETURN
+#endif
+      END
+C
+#if defined (VAR_MPI)
+      SUBROUTINE DFT_HESSTAT_SLAVE(WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "dftmolhes.h"
+#include "nuclei.h"
+C
+      DIMENSION WORK(LWORK)
+#include "dftcom.h"
+#include "mpif.h"
+      EXTERNAL DFTSTATHES
+      LOGICAL DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+C     
+      KCMO   = 1 
+      KDMAT  = KCMO   + NCMOT
+      KV1MAT = KDMAT  + N2BASX
+      KDFTHS = KV1MAT + 3*N2BASX*NUCDEP
+      KLAST  = KDFTHS + MXCOOR*MXCOOR
+      LWRK   = LWORK  -  KLAST + 1
+      IF (KLAST .GT. LWORK) CALL 
+     &     STOPIT('DFT_HESSTAT_SLAVE',' ',KLAST,LWORK)
+C
+      CALL DFTINTBCAST
+      CALL KSMSYNC(WORK(KDMAT))
+      CALL MPI_BCAST(WORK(KV1MAT),3*N2BASX*NUCDEP,MPI_DOUBLE_PRECISION,
+     &               0,MPI_COMM_WORLD,IERR)
+      CALL DZERO(WORK(KDFTHS),MXCOOR*MXCOOR)
+      CALL DFTINT(WORK(KDMAT),1,2,.FALSE.,WORK(KLAST),LWRK,
+     &            DFTSTATHES,WORK(KDMAT),ELE)
+      CALL DFT_HESSTAT_COLLECT(WORK(KDFTHS),WORK(KLAST),LWRK)
+      RETURN
+      END
+#endif
+C
+      SUBROUTINE DFT_HESSTAT_COLLECT(DFTHES,WORK,LWORK)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "mxcent.h"
+#include "mpif.h"
+      DIMENSION DFTHES(MXCOOR,MXCOOR), WORK(LWORK)
+      CALL DCOPY(MXCOOR*MXCOOR,DFTHES,1,WORK,1)
+      CALL MPI_REDUCE(WORK,DFTHES,MXCOOR*MXCOOR,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      RETURN
+#endif
+      END
+C
+      SUBROUTINE KICK_SLAVES_HED(IATOM,NBAST,DMAT,V1MAT,IPRINT)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      LOGICAL DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST)
+C
+      IF (MYNUM .EQ. MASTER) THEN
+         IPRTYP = 9
+         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IATOM,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL DFTINTBCAST
+         CALL KSMSYNC(DMAT)
+         CALL MPI_BCAST(V1MAT,3*NBAST*NBAST,MPI_DOUBLE_PRECISION,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+      END IF
+      RETURN
+#endif
+      END
+#if defined (VAR_MPI)
+C /* Deck dfthed */
+      SUBROUTINE DFTHED_SLAVE(WORK,LWORK,IPRINT)
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <nuclei.h>
+#include <inforb.h>
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      DIMENSION FCD(N2BASX,3), FDFTD(N2BASX,3), WORK(LWORK)
+#include <symmet.h>
+#include <symind.h>
+#include <dftcom.h>
+#include "infpar.h"
+#include "dftmolhes.h"
+#include <mpif.h>
+C
+      EXTERNAL DFTKSD
+      LOGICAL DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+C
+      KDMAT  = 1
+      KV1MAT = KDMAT  +   N2BASX
+      KFCD   = KV1MAT + 3*N2BASX
+      KDFTFD = KFCD   + 3*N2BASX
+      KLAST  = KDFTFD + 3*N2BASX
+      IF (KLAST .GT. LWORK) CALL STOPIT('DFTHED_SLAVES',' ',KLAST,LWORK)
+      LWRK   = LWORK - KLAST + 1
+      DOGGA = DFT_ISGGA()
+C
+C     Construct V1MAT = Sa * DMAT in AO basis from Sa in MO basis
+C
+      CALL MPI_BCAST(IATOM,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+      CALL DFTINTBCAST
+      CALL KSMSYNC(WORK(KDMAT))
+      CALL MPI_BCAST(WORK(KV1MAT),3*N2BASX,MPI_DOUBLE_PRECISION,
+     &               0,MPI_COMM_WORLD,IERR)
+C
+      CALL DZERO(WORK(KFCD),  3*N2BASX)
+      CALL DZERO(WORK(KDFTFD),3*N2BASX)
+      CALL DFTINT(WORK(KDMAT),1,1,.FALSE.,WORK(KLAST),LWRK,
+     &            DFTKSD,WORK(KDMAT),ELE)
+      CALL DFT_HED_COLLECT(WORK(KFCD),WORK(KDFTFD),N2BASX,
+     &                     WORK(KLAST),LWRK)
+      RETURN
+      END
+#endif
+C
+      SUBROUTINE DFT_HED_COLLECT(FCD,DFTFD,N2BASX,WORK,LWORK)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mpif.h"
+      DIMENSION FCD(3*N2BASX), DFTFD(3*N2BASX), WORK(LWORK)
+      CALL DCOPY(3*N2BASX,FCD,1,WORK,1)
+      CALL MPI_REDUCE(WORK,FCD,3*N2BASX,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      CALL DCOPY(3*N2BASX,DFTFD,1,WORK,1)
+      CALL MPI_REDUCE(WORK,DFTFD,3*N2BASX,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      RETURN
+#endif
       END
