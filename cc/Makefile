@@ -39,10 +39,9 @@ cc_ijcb.o      cc_bfif1.o                                  \
 cc_21i3.o      cc_fckrlx1.o   cc_hpqta.o     cc_e1aim.o    \
 cc_e21con.o    cc_e22con.o    cclt_yps1.o    cc_sort4o.o   \
 cc_sortz2.o    cc_zkjam.o     cc_int4o.o     \
-cc_iajbnew.o   ccfmatsc.o     cc_21i20.o     \
 ccrhs_ipm1.o   cctrbt2.o      cc_hfr1den.o   \
 cc_gim1.o      cc_bfbsort1.o  cc_int3o2.o    \
-ccmcdinp1.o    ccmcdind1.o    cc_mcdny.o     \
+cc_mcdny.o     \
 cc3_trip.o     cc_slv.o
 
   
