@@ -179,7 +179,7 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 81)
+      PARAMETER (NTABLE = 88)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -222,7 +222,9 @@ cLig <> added RAGMO and RPSO
      &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
      &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA',
      &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ',
-     &            'PRPINT '/
+     &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ',
+     &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  '/
+C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
 C
@@ -250,7 +252,7 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
      &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
-     &             79,80,81), I
+     &             79,80,81,82,83,84,85,86,87,88), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -483,7 +485,7 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of one-electron Fermi contact integrals.'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL FRMTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
+         CALL FRMTYP(INTTYP,NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
          ANTI = .FALSE.
       GO TO 200
 C
@@ -495,7 +497,8 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of paramagnetic spin-orbit integrals.'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         CALL PSOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),INTADR,NATOM)
+         CALL PSOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),INTADR,NATOM,
+     &               INTTYP)
          ANTI = .TRUE.
       GO TO 200
 C
@@ -521,7 +524,7 @@ C
      &      ' Calculation of diamagnetic spin-orbit integrals.'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
-     &               TRIANG)
+     &               TRIANG,INTTYP)
          ANTI = .FALSE.
       GO TO 200
 C
@@ -1908,6 +1911,113 @@ c
       GO TO 200
 cLig <<
 C
+C     Kinetic energy correction to orbital Zeeman
+C     -------------------------------------------
+C
+ 82   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &      ' Kinetic energy correction to orbital Zeeman'
+         INTTYP = 91
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XOZKE   '
+         LABINT(2) = 'YOZKE   '
+         LABINT(3) = 'ZOZKE   '
+         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         ANTI = .TRUE.
+      GO TO 200
+C
+C     Kinetic energy correction to paramagnetic spin-orbit integrals
+C     --------------------------------------------------------------
+C
+ 83   CONTINUE
+         INTTYP = 92
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      ' Calculation of kinetic energy correction to'//
+     &      ' paramagnetic spin-orbit integrals.'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL PSOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),INTADR,NATOM,
+     &               INTTYP)
+         ANTI = .TRUE.
+         SQUARE = .TRUE.
+      GO TO 200
+C
+C     Kinetic energy contribution to diamagnetic nuclear shieldings
+C     -------------------------------------------------------------
+C
+ 84   CONTINUE
+         INTTYP = 93
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        ' Calculation of kinetic energy contribution to'//
+     &        ' diamagnetic shieldings'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'NSKE',
+     &               INTADR)
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+C     Kinetic energy correction to spin-dipole integrals
+C     --------------------------------------------------
+C
+ 85   CONTINUE
+         INTTYP = 94
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      ' Calculation of kinetic energy correction to spin-dipole'//
+     &      ' integrals.'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),
+     &              NATOM)
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GO TO 200
+C
+C     Kinetic energy correction to Fermi contact integrals
+C     ----------------------------------------------------
+C
+ 86   CONTINUE
+         INTTYP = 95
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      ' Calculation of kinetic energy correction to Fermi '//
+     &      ' contact integrals.'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL FRMTYP(INTTYP,NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GO TO 200
+C
+C     Kinetic energy correction to diamagnetic spin-orbit integrals
+C     -------------------------------------------------------------
+C
+ 87   CONTINUE
+         INTTYP = 96
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      ' Calculation of kinetic energy correction to '//
+     &        'diamagnetic spin-orbit integrals.'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
+     &               TRIANG,INTTYP)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GO TO 200
+C
+C     Orbital Zeeman correction to paramagnetic spin-orbit integrals
+C     --------------------------------------------------------------
+C
+ 88   CONTINUE
+         INTTYP = 97
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        ' Orbital Zeeman correction to PSO integrals'
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'PSOZ',
+     &               INTADR)
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
 C
   200 CONTINUE
 C
@@ -2002,6 +2112,29 @@ C
          CALL EFGSPH(WORK(KSOINT),WORK(KFREE),LFREE,NELMNT,NBAST,
      &               NOPTYP,WORK(KATOM),NATOM,IPRINT)
          CALL FGSTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
+      END IF
+C
+C     ****************************************************
+C     ****** (Anti)symmetrize relativistic integrals *****
+C     ****************************************************
+C
+      IF (INTTYP .EQ. 92 .OR. INTTYP .EQ. 93 .OR. INTTYP .EQ. 94
+     &.OR.INTTYP .EQ. 95 .OR. INTTYP .EQ. 97) THEN
+         IADR  = KSOINT
+         IADRL = KSOINT
+         DO ICOMP = 1, NOPTYP
+            IF (INTTYP .EQ. 97) THEN
+               CALL DGETAP(NBAST,WORK(IADR),WORK(KFREE))
+            ELSE
+               CALL DGETSP(NBAST,WORK(IADR),WORK(KFREE))
+            END IF
+            CALL DCOPY(NBAST*(NBAST + 1)/2,WORK(KFREE),1,WORK(IADRL),1)
+            CALL DSCAL(NBAST*(NBAST + 1)/2,2.0D0,WORK(IADRL),1)
+            IADR  = IADR  + NELMNT
+            IADRL = IADRL + NBAST*(NBAST + 1)/2
+         END DO
+         SQUARE = .FALSE.
+         NELMNT = NBAST*(NBAST + 1)/2
       END IF
 C
 C     *************************************************
@@ -2204,7 +2337,9 @@ cLig <> added SPIN = .TRUE. for INTTYP = 82
      &       INTTYP .EQ. 11 .OR. INTTYP .EQ. 12 .OR. INTTYP .EQ. 13 .OR.
      &       INTTYP .EQ. 26 .OR. INTTYP .EQ. 27 .OR. INTTYP .EQ. 28 .OR.
      &       INTTYP .EQ. 34 .OR. INTTYP .EQ. 38 .OR. INTTYP .EQ. 48 .OR.
-     &       INTTYP .EQ. 82
+     &       INTTYP .EQ. 82 .OR. INTTYP .EQ. 92 .OR. INTTYP .EQ. 93 .OR.
+     &       INTTYP .EQ. 94 .OR. INTTYP .EQ. 95 .OR. INTTYP .EQ. 96 .OR.
+     &       INTTYP .EQ. 97
       IF (.NOT.SPIN .OR. ALLATM) THEN
          NATOM = NUCDEP
          DO 100 I = 1, NUCIND
@@ -2501,7 +2636,7 @@ C
       RETURN
       END
 C  /* Deck frmtyp */
-      SUBROUTINE FRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      SUBROUTINE FRMTYP(INTTYP,NOPTYP,INTREP,LABINT,DOATOM,NATOM)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -2521,9 +2656,15 @@ C  /* Deck frmtyp */
             IF (DOATOM(IATOM)) THEN
                IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
-                  LABINT(ITYP) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+                  IF (INTTYP .EQ. 9) THEN
+                     LABINT(ITYP) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &	                              CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  ELSE IF (INTTYP .EQ. 69) THEN
+                     LABINT(ITYP) = 'FCKE'//NAMDEP(NUCPRE(IATOM)+1)(1:2)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                                CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  END IF
                   INTREP(ITYP) = IREP
                END IF
             END IF
@@ -2582,7 +2723,7 @@ cLig <<
       RETURN
       END
 C  /* Deck psotyp */
-      SUBROUTINE PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM)
+      SUBROUTINE PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM,INTTYP)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -2607,8 +2748,13 @@ C  /* Deck psotyp */
                   IFIRST = ISCOOR/100
                   ISECND = MOD(ISCOOR,100)/10
                   ITHIRD = MOD(MOD(ISCOOR,100),10)
-                  LABINT(ITYP) = 'PSO '//CHRNOS(IFIRST)//CHRNOS(ISECND)
-     &                                 //CHRNOS(ITHIRD)//' '
+                  IF (INTTYP .EQ. 10) THEN
+                     LABINT(ITYP) = 'PSO '//CHRNOS(IFIRST)//
+     &                               CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+                  ELSE
+                     LABINT(ITYP) = 'PSOKE'//CHRNOS(IFIRST)//
+     &                               CHRNOS(ISECND)//CHRNOS(ITHIRD)
+                  END IF
                   INTREP(ITYP) = IREP
                   INTADR(ISCOOR) = ITYP
                END IF
@@ -2653,11 +2799,15 @@ C  /* Deck sdtyp */
      &                                      //CHRNOS(ISECND)
      &                                      //CHRNOS(ITHIRD)//' '
      &                                      //CHRXYZ(-ICOOR2)
-                     ELSE
+                     ELSE IF (INTTYP .EQ. 13) THEN
                         LABINT(ITYP) = 'SDC'//CHRNOS(IFIRST)
      &                                      //CHRNOS(ISECND)
      &                                      //CHRNOS(ITHIRD)//' '
      &                                      //CHRXYZ(-ICOOR2)
+                     ELSE IF (INTTYP .EQ. 68) THEN
+                        LABINT(ITYP) = 'SDKE'//CHRNOS(ISCOR1/10)
+     &                                       //CHRNOS(MOD(ISCOR1,10))
+     &                                       //' '//CHRXYZ(-ICOOR2)
                      END IF
                      INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR2,2))
                      ISCOOR = 3*(ISCOR1 - 1) + ICOOR2
@@ -2677,7 +2827,8 @@ C
       RETURN
       END
 C  /* Deck dsotyp */
-      SUBROUTINE DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,TRIANG)
+      SUBROUTINE DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,TRIANG,
+     &                  INTTYP)
 C
 C     helgaker
 C
@@ -2734,9 +2885,15 @@ C
                            ELSE
                               ISCOOR = 3*NUCDEP*(ISCOR1 - 1) + ISCOR2
                            END IF
-                           LABINT(ITYP) = 'DSO '
+                           IF (INTTYP .EQ. 12) THEN
+                              LABINT(ITYP) = 'DSO '
      &                       //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
      &                       //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
+                           ELSE
+                              LABINT(ITYP) = 'DSOK'
+     &                       //CHRNOS(ISCOR1/10)//CHRNOS(MOD(ISCOR1,10))
+     &                       //CHRNOS(ISCOR2/10)//CHRNOS(MOD(ISCOR2,10))
+                           END IF
                            INTREP(ITYP)   = 0
                            INTADR(ISCOOR) = ITYP
                         END IF

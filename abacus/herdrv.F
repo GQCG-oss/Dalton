@@ -208,7 +208,7 @@ C
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
 cLig <> changed NTABLE from 111 to 112
 C     NTABLE has been increased 114 (WK/UniKA/09-03-2004).
-      PARAMETER (NDIR = 7, NTABLE = 114)
+      PARAMETER (NDIR = 7, NTABLE = 121)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -264,7 +264,9 @@ cLig <> added RANGMO and RPSO
      &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
      &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  ',
-     &             '.DPTPXP', '.NOPICH'/
+     &             '.DPTPXP', '.NOPICH', '.OZ-KE ', '.PSO-KE', 
+     &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
+     &             '.PSO-OZ'/
 C
 C     Check if input has been processed earlier.
 C
@@ -329,7 +331,8 @@ cLig <> added go to 211 and 212
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
      &                201,202,203,204,205,206,207,208,209,210,
-     &                211,212,213,214), I
+     &                211,212,213,214,215,216,217,218,219,220,
+     &                221), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -876,6 +879,35 @@ cLig >> added what to do for RANGMO and RPSO options
             NOPICH = .TRUE.
             GO TO 100
 cLig <<
+ 215     CONTINUE
+            OZKE   = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 216     CONTINUE
+            PSOKE  = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 217     CONTINUE
+            DNSKE  = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+
+ 218     CONTINUE
+            SDKE   = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 219     CONTINUE
+            FCKE   = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 220     CONTINUE
+            DSOKE  = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 221     CONTINUE
+            PSOOZ = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -1144,6 +1176,22 @@ cLig <<
          IF (DERHAM) WRITE (LUPRI,'(10X,A)')
      &        '- Geometrical derivatives of one-electron Hamiltonian '//
      &        'integrals'
+         IF (PSOKE) WRITE (LUPRI,'(10X,A)')
+     &      '- kinetic energy correction to paramagnetic spin-orbit'
+         IF (DNSKE) WRITE (LUPRI,'(10X,A)')
+     &      '- kinetic energy correction to diamagnetic shielding'
+         IF (OZKE) WRITE (LUPRI,'(10X,A)')
+     &      '- kinetic energy correction to orbital Zeeman'
+         IF (SDKE) WRITE (LUPRI,'(10X,A)')
+     &      '- kinetic energy correction to spin-dipole operator'
+         IF (FCKE) WRITE (LUPRI,'(10X,A)')
+     &      '- kinetic energy correction to Fermi Contact operator'
+         IF (DSOKE) WRITE (LUPRI,'(10X,A)')
+     &      '- kinetic energy correction to diamagnetic spin-orbit '//
+     &        'operator'
+         IF (PSOOZ) WRITE (LUPRI,'(10X,A)')
+     &      '- orbital Zeeman correction to paramagnetic spin-orbit'//
+     &        ' integral'
          IF (DPTPOT) WRITE (LUPRI,'(10X,A,A)')
      &        '- small component potential energy for DPT'
          IF (DPTOVL) WRITE (LUPRI,'(10X,A)')
@@ -2279,6 +2327,75 @@ C
                LABELT(2) = 'YANGLON '
                LABELT(3) = 'ZANGLON '
                CALL SUSTST(WORK,LWORK,IPRONE,LABELT,LABELS)
+            END IF
+C
+C           ***** Kinetic energy correction to orbital Zeeman *****
+C
+            IF (OZKE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('OZKE   ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('OZKE  ',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Kinetic energy correction to paramagnetic SO integrals *****
+C
+            IF (PSOKE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('PSOKE  ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('PSOKE ',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Kinetic energy correction to diamagnetic shielding *****
+C
+            IF (DNSKE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('DNSKE  ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('DNSKE ',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Kinetic energy correction to spin-dipole integrals *****
+C
+            IF (SDKE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('SDKE   ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('SDKE  ',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Kinetic energy correction to Fermi contact integrals *****
+C
+            IF (FCKE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('FCKE   ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('FCKE  ',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ***** Kinetic energy correction to diamagnetic spin-orbit *****
+C
+            IF (DSOKE) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('DSOKE  ',WORK,LWORK,IDUMMY,
+     &                     NPQUAD,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('DSOKE ',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ****  Magnetic-field corrected spin-orbit  ****
+C
+            IF (PSOOZ) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('PSOOZ  ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('PSO-OZ ',TIMSTR,TIMEND)
             END IF
 C
 C     ***** Potential energy at the individual nuclei *****
