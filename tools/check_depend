@@ -1,52 +1,45 @@
-#!/bin/csh -f
+#!/bin/sh
+# (c) Multiple contributors.
+# Rewritten by pawsa to contain only one awk invocation per processed file.
+#
+ORI=`pwd`
+DIR='/tmp'
 
-set ORI = `pwd`
-set DIR = '/tmp'
+dirlist=`echo '.' $* | sed -e 's/-WF//g' -e 's/-I//g' -e 's/,/ /g' `
 
-set dirlist = `echo '.' $* | sed -e 's/-WF//g' -e 's/-I//g' -e 's/,/ /g' `
-
-echo 'BEGIN{'  > $DIR/awk.tmp$$
-foreach dir ( $dirlist )
+echo 'BEGIN{r=f;sub("\\.[^.]$","",r);
+      printf("%s.o %s.i : %s",r,r,f);'  > $DIR/awk.tmp$$
+for dir in $dirlist; do
   cd $dir
-  set list = `find . -name "*.h" -print | sed -e 's/\.\///g'`
-  foreach file ( $list )
-   echo 'dir["'$file'"]="'$dir'/";'  >> $DIR/awk.tmp$$
-  end
+  list=`find . -name "*.h" -print | sed -e 's/\.\///g'`
+  for file in $list; do
+    echo 'dir["'$file'"]="'$dir'/";'  >> $DIR/awk.tmp$$
+  done
   cd $ORI
-end
+done
 echo ' n = 3 }'  >> $DIR/awk.tmp$$
 
 cat >> $DIR/awk.tmp$$ <<!
-  { path = dir[\$1];
-    if       ( n < 3 && path ) {printf("  %s%s",path,\$1);       n++  }
-    else {if ( n == 3 && path ) {printf(" \\\\\n  %s%s",path,\$1); n = 1}} }
+/^ *# *include/{sub("include","");gsub("[#<>\" ]","");inc[\$0]++}
 
-END{printf("\n");}
+END {
+  n=3;
+  for(i in inc) {
+    sub(".*/","",i); path = dir[i];
+    if(path) {
+      if ( n < 3 ) {printf("  %s%s",path,i); n++  }
+      else  {printf(" \\\\\n  %s%s",path,i); n = 1}
+    }
+  }
+  printf "\n\n\n";
+}
 !
 
 # search all Fortran and C source files for includes
-foreach file (*.F *.f *.c *.cc)
-  set root   = $file:r
-  #  use awk to remove newline character from echo
-  echo "$root.o $root.i $file" | awk '{printf("%s %s : %s ",$1,$2,$3)}'
-  sed -n -e '/^ *# *include/p' $file | \
-           sed -e 's/include//g' -e 's/[#<>" ]//g' -e 's/\.h.*/.h/g' | \
-           sort | uniq > $DIR/tmp.$$
-  # strip path information from the strings extracted from the source files
-  # by passing the file names through 'basename' (this needs a for loop since
-  # for some reasons 'basename' doesn't work if invoked between pipes...)
-  set myincludes=`cat $DIR/tmp.$$`
-  rm $DIR/tmp.$$
-  foreach entry ($myincludes);
-    basename $entry >> $DIR/tmp.$$
-  end
-  touch $DIR/tmp.$$
-  # invoke awk script to select those includes files which are part of DALTON,
-  # i.e. are not e.g. standard includes from the C library etc.
-  awk -f $DIR/awk.tmp$$ $DIR/tmp.$$
-  echo " "
-  echo " "
-end
+for file in *.F *.f *.c *.cc; do
+    if [ -f "$file" ]; then
+        awk -v f=$file -f $DIR/awk.tmp$$ $file || exit 1
+    fi
+done
 
-rm -f $DIR/awk.tmp$$ $DIR/tmp.$$ 
-
+rm -f $DIR/awk.tmp$$
