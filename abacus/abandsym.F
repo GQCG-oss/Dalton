@@ -934,14 +934,12 @@ C
 C     
       ISYMCO = 0
       IPLACE = 1
-      i = 0      
       DO 2100 IREP   = 1, NIREP
          NSDIM = 1
          IF (IREP.GT.N1DIME) NSDIM = 2
       DO 2101 IPL = 1, NSDIM
       DO 2101 ICENT  = 1, KINDCT
       DO 2101 ICOOR2 = 3*(NSTBCT(ICENT)-1)+1, 3*(NSTBCT(ICENT)-1)+3 
-         i = i + 1
          CALL DZERO(TMPSYM,NCOOR)
          IF (IREP .LE. N1DIME) THEN
             IPLACE1 = IREP
@@ -984,6 +982,10 @@ C
 C
                IF (DIFF2 .GT. DTHR) EXIST = .FALSE.
  2500       CONTINUE
+C
+C           *** If we already have a full set of coordinates. ***
+C
+            IF (ISYMCO.GE.NCOOR) EXIST=.TRUE.
 C
             IF (EXIST) GOTO 2700
  2400    CONTINUE
@@ -2032,11 +2034,11 @@ C     *** Test print ***
 C
       IF (IPRINT .GT. 20) THEN
          CALL HEADER('The rows are placed as follows',-1)
-         WRITE (LUPRI,'(12I6)') (ICRIRP(IC,1), IC = 1, NCOOR)
-         WRITE (LUPRI,'(12I6)') (ICRIRP(IC,2), IC = 1, NCOOR)
+         WRITE (LUPRI,'(15I6)') (ICRIRP(IC,1), IC = 1, NCOOR)
+         WRITE (LUPRI,'(15I6)') (ICRIRP(IC,2), IC = 1, NCOOR)
          CALL HEADER('Symmetry coordinates after sorting',-1)
          DO 900 IC1 = 1, NCOOR
-            WRITE (LUPRI,'(12F12.8)') (SYMCOR(IC1,IC2),IC2=1,NCOOR)
+            WRITE (LUPRI,'(12F15.8)') (SYMCOR(IC1,IC2),IC2=1,NCOOR)
  900     CONTINUE
       END IF
 C

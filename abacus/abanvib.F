@@ -47,7 +47,7 @@ C     ************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER (NTABLE = 4)
+      PARAMETER (NTABLE = 5)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, 
      &          WORD1*7
 #include <numder.h>
@@ -57,7 +57,7 @@ C     ************************************************
 #include <abainf.h>
 #include <cbiwlk.h>
 C
-      DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S'/
+      DATA TABLE /'.EFFECT','.HARM-P','.ANHA-P','.SPIN-S','.MODE A'/
 C
       ICHANG = 0
       WORD1 = WORD
@@ -70,7 +70,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (1,2,3,4), I
+               GO TO (1,2,3,4,5), I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -108,6 +108,9 @@ C
             GOTO 100
  4       CONTINUE
             NSPNSP = .TRUE.
+            GOTO 100
+ 5       CONTINUE
+            MDEANA = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
@@ -149,6 +152,10 @@ C
             WRITE (LUPRI,'(5x,A)') 'Group used in calculations: ' // 
      &                          FCLASS
 
+         END IF
+         IF (MDEANA) THEN
+            WRITE (LUPRI,'(5X,A)') 'A analysis of the vibrational ' //
+     &            'modes will be performed.'
          END IF
       END IF
 C
@@ -1047,12 +1054,24 @@ C     /* Deck clcvba */
      &          AHRMCO(NDIM1,NDIM2,NDIM3), VIBAVE(NDIM1,NDIM2,NDIM3), 
      &          SYMCOR(NCOOR,NCOOR), WORK(LWORK)
 C
+      CALL TITLER('Vibrational average of properties.','*',118)
+C
       CALL DZERO(HARMCO,NDIM1*NDIM2*NDIM3)
       CALL DZERO(AHRMCO,NDIM1*NDIM2*NDIM3)
 C
 C     *** Arranging the force constants. ***
 C
       CALL STTDER(FDERIV,TDER,RNNORM,NDERIV,IPRINT)
+C
+C     *** Analysis of the contributing modes. ***
+C     
+      IF (MDEANA) THEN
+         KCMPVB = 1
+         KLAST  = KCMPVB + NDIM1*NDIM2*NDIM3*NDCOOR
+         LWRK1  = LWORK  - KLAST + 1
+         CALL MODEAN(DERIVA,FREQ,TDER,VIBAVE,RNNORM,FUNVAL,WORK(KCMPVB),
+     &               WORK(KLAST),NDIM1,NDIM2,NDIM3,NPPDER,LWRK1,PRPTXT)
+      END IF
 C
 C     *** Contribution from the harmonic part ***
 C     *** of the vibration.                   ***
@@ -1116,7 +1135,6 @@ C
 C
 C     *** Results. ***
 C
-      CALL TITLER('Vibrational average of property ' // PRPTXT,'*',118)
       IF (PRPTXT.EQ.'SPIN-SPIN') THEN
          CALL HEADER('Vibrational averaged ' // PRPTXT //' couplings',0)
          KAVEIS = 1
@@ -1255,4 +1273,134 @@ C
 C
       RETURN
       END
-
+C
+C
+C     /* Deck modean */
+      SUBROUTINE MODEAN(DERIVA,FREQ,TDER,VIBAVE,RNNORM,FUNVAL,CMPVIB,
+     &                  WORK,NDIM1,NDIM2,NDIM3,NPPDER,LWORK,PRPTXT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER (D0=0.0D0, D025 = 0.25D0, D2 = 2.0D0)
+#include <trkoor.h>
+#include <numder.h>
+#include <nuclei.h>
+#include <spnout.h>
+      CHARACTER*9 PRPTXT
+      DIMENSION CMPVIB(NDIM1,NDIM2,NDIM3,NDCOOR), 
+     &          DERIVA(NDIM1,NDIM2,NDIM3,NPPDER), FREQ(NCOOR), 
+     &          TDER(NDCOOR,NDCOOR,NDCOOR), VIBAVE(NDIM1,NDIM2,NDIM3), 
+     &          RNNORM(NCOOR), FUNVAL(NDIM1,NDIM2,NDIM3), WORK(LWORK)
+C
+      CALL DZERO(CMPVIB,NDIM1*NDIM2*NDIM3*NDCOOR)      
+C
+      IDERV = NDCOOR
+      IADD  = 0
+      DO ICOOR1 = 1, NDCOOR
+         IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
+            IDERV = IDERV + 1
+         ELSE
+            IADD  = IADD  + 1
+            IDERV = IDERV + IADD
+         END IF
+C
+         PFAC = D025*(RNNORM(ICOOR1)**2)/FREQ(ICOOR1)
+C
+         DO IDIM3 = 1, NDIM3
+         DO IDIM2 = 1, NDIM2
+         DO IDIM1 = 1, NDIM1
+C
+            CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR1) = 
+     &                                 CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR1)
+     &                          + PFAC*DERIVA(IDIM1,IDIM2,IDIM3,IDERV )
+         END DO
+         END DO
+         END DO
+      END DO
+C
+C     *** Contribution from the anharmonic part ***
+C     *** of the vibration.                     ***
+C
+      DO ICOOR2 = 1, NDCOOR
+         TMP = D0
+         DO ICOOR1 = 1, NDCOOR
+            TMP = TMP 
+     &          + TDER(ICOOR1,ICOOR1,ICOOR2)/FREQ(ICOOR1)
+         END DO
+         PFAC = -D025*TMP*RNNORM(ICOOR2)/(FREQ(ICOOR2)**D2)
+C
+         DO IDIM3 = 1, NDIM3
+         DO IDIM2 = 1, NDIM2
+         DO IDIM1 = 1, NDIM1
+            CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR2) = 
+     &                                  CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR2)
+     &                           + PFAC*DERIVA(IDIM1,IDIM2,IDIM3,ICOOR2)
+         END DO
+         END DO
+         END DO
+      END DO
+C
+C     *** Calculating the vibrational average of ***
+C     *** the property                           ***
+C
+c      DO IDIM3 = 1, NDIM3
+c      DO IDIM2 = 1, NDIM2
+c      DO IDIM1 = 1, NDIM1
+c         VIBAVE(IDIM1,IDIM2,IDIM3) = FUNVAL(IDIM1,IDIM2,IDIM3)
+c     &                             + HARMCO(IDIM1,IDIM2,IDIM3)
+c     &                             + AHRMCO(IDIM1,IDIM2,IDIM3)
+c      END DO
+c      END DO
+c      END DO
+C
+C     *** Results. ***
+C
+      IF (PRPTXT.EQ.'SPIN-SPIN') THEN
+         CALL HEADER('Mode analysis for spin-spin coupling const.',0)
+         KAVEIS = 1
+         KANISO = KAVEIS + 5*NUCDEP*(NUCDEP+1)/2
+         KASYM  = KANISO +   NUCDEP*(NUCDEP+1)/2
+         KSPAR  = KASYM  +   NUCDEP*(NUCDEP+1)/2
+         KAPAR =  KSPAR  +   NUCDEP*(NUCDEP+1)/2
+         DO ICOOR = 1, NDCOOR
+            WRITE (LUPRI,'(10X,A)') '                   '
+            WRITE (LUPRI,'(10X,A)') '                   '
+            WRITE (LUPRI,'(10X,A,I4)') 'Mode number:  ', ICOOR
+            WRITE (LUPRI,'(10X,A)') '------------------' 
+            WRITE (LUPRI,'(10X,A)') '                   '
+            WRITE (LUPRI,'(10X,A)') '                   '
+            IF (SPNISO) THEN
+               CALL ISOSPN(CMPVIB(1,1,1,ICOOR),WORK(KAVEIS),
+     &              WORK(KANISO),WORK(KASYM),WORK(KSPAR),WORK(KAPAR))
+            ELSE
+               CALL FNLSPN(CMPVIB(1,1,1,ICOOR),WORK(KAVEIS),
+     &              WORK(KANISO),WORK(KASYM),WORK(KSPAR),WORK(KAPAR))
+            END IF
+         END DO
+      END IF
+C
+C     *** Debug print ***
+C
+      IF (IPRINT .GT.10) THEN
+         DO IDIM4 = 1, NDCOOR
+            WRITE (LUPRI,'(A)') '                               '
+            WRITE (LUPRI,'(A)') '                               '
+            WRITE (LUPRI,'(A,I4)') 'Coordinate:   ', IDIM4
+            DO IDIM3 = 1, NDIM3
+               IF (NDIM3.GT.1) THEN
+                  WRITE (LUPRI,'(A)') '                               '
+                  WRITE (LUPRI,'(A)') '                               '
+                  WRITE (LUPRI,'(A,I4)') 'Third dimension:   ', IDIM3
+               END IF
+C
+               CALL OUTPUT(CMPVIB(1,1,IDIM3,IDIM4),1,NDIM1,1,NDIM2,
+     &                     NDIM1,NDIM2,1,LUPRI)
+C
+            END DO
+            WRITE (LUPRI,'(A)') '                               '
+            WRITE (LUPRI,'(A)') '                               '
+         END DO
+      END IF
+C
+      RETURN
+      END
