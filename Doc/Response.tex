@@ -516,7 +516,7 @@ as they can be obtained at no extra computational cost.
 
 \begin{description}
 
-\item[\Key{APROP}, \Key{BPROP}, \Key{CPROP}]\\
+\item{\Key{APROP}, \Key{BPROP}, \Key{CPROP}}\\
 \verb|READ(LUCMD,'( A )')LABEL|\\
 Specify the operators $A$, $B$, and $C$. The line following this
 option should be the label of the operator as it appears in the file
@@ -533,7 +533,7 @@ paramagnetic spin--orbit integrals that can be found on the file
 \verb|AOPROPER| will be selected. These integrals are selected by the
 appropriate keywords in the \Sec{*INTEGRALS} input module.
 
-\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]\\
+\item{\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}}\\
 \verb|READ(LUCMD,*)ISPINA|\\
 Spin information for quadratic response calculations.
 The line following these options contains the spin
@@ -543,7 +543,7 @@ operators.
 In a triplet response calculations two of these operators are of rank one,
 and the remaining operator of rank zero.
 
-\item[\Key{BFREQ}, \Key{CFREQ}]\\
+\item{\Key{BFREQ}, \Key{CFREQ}}\\
 \verb|READ (LUCMD,*) NBQRFR|\\
 \verb|READ (LUCMD,*) (BQRFR(J),J=1,NBQRFR)|\\
 Individual specification of the frequencies $\omega_b$ and $\omega_c$.
