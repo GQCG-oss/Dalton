@@ -1,3 +1,5 @@
+c     -*- mode: fortran -*-
+c     see abacus/herrdn.F for description.
       LOGICAL SHARE, SEGM, SPHR
       COMMON /SHELLS/ CENT(MXSHEL,3,2), NHKT(MXSHEL),   KHKT(MXSHEL),
      &                KCKT(MXSHEL),     ISTBAO(MXSHEL), NUCO(MXSHEL),

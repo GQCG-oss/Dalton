@@ -1,6 +1,6 @@
-include ../Makefile.config
-
 all : libabacus.a
+
+include ../Makefile.config
 
 F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abadrv.o     abadtra.o    abaedrv.o    abaenr.o\
