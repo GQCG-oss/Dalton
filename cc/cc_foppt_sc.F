@@ -475,6 +475,7 @@ C----------------------------------------------------------------------
 C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ij,k,a)
 C----------------------------------------------------------------------
 C
+      DTIME = SECOND()
       IF (CC3) THEN
          CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC0),WORK(KLAMDP),
      *                    WORK(KEND2),LWRK2,ISINT2)

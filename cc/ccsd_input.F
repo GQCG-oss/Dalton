@@ -1819,7 +1819,7 @@ C=====================================================================*
 #include <ccopainf.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
@@ -2044,7 +2044,7 @@ C=====================================================================*
 #include <ccnoddy.h>
 
 * local parameters:
-      CHARACTER SECNAM*(8)
+      CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_NODINP')
 
       INTEGER NTABLE

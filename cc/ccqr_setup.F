@@ -72,7 +72,7 @@ c /* deck ccqr_setup */
 #include <cclists.h>
 
 * local parameters:
-      CHARACTER*(19) MSGDBG
+      CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCQR_SETUP> ')
       LOGICAL LOCDBG, OLD
       PARAMETER (LOCDBG = .FALSE., OLD = .FALSE.)
@@ -1441,7 +1441,7 @@ c /* deck ccqr_fadrv */
 #include <ccnoddy.h>
 
 * local parameters:
-      CHARACTER*(19) MSGDBG
+      CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCQR_FADRV> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1760,7 +1760,7 @@ c /* deck ccqr_eadrv */
 #include <ccroper.h>
 
 * local parameters:
-      CHARACTER*(19) MSGDBG
+      CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCQR_EADRV> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

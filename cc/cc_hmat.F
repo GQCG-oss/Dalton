@@ -114,7 +114,7 @@ c/* Deck CC_HMAT */
 #include <ccorb.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CC_HMAT> ')
 #if defined (SYS_CRAY)
       REAL ZERO, ONE, TWO, THREE
@@ -1227,12 +1227,13 @@ C
      &        KCDIOVVO, KCDIOOVV, KCDIOOOO, KCDIVVVV,
      &        KBCIOVVO, KBCIOOVV, KBCIOOOO, KBCIVVVV,
      &        KOME1, KOME2, KL1AM, KL2AM, KL3AM, KT2AM, KFOCKD,
-     &        KDUM, KRECNR, KSCR1
+     &        KSCR1, KDUM
       INTEGER ISYMD, ILLL, IDEL, ISYDIS, IJ, NIJ, LUSIFC, INDEX,
      &        ISYMC, ISYMB, LUFOCK, KEND2, LWRK2, IOPT, ILSTSYM, ISYML
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
+      KDUM = 1
       CALL QENTER('CCSDT_HMAT_NODDY')
 
       IF (DIRECT) CALL QUIT('CCSDT_HMAT_NODDY: DIRECT NOT IMPLEMENTED')
@@ -1419,7 +1420,7 @@ C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
+     *                  WORK(KDUM),DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:

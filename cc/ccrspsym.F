@@ -98,7 +98,7 @@ c /* deck ccrspsym */
 #include <ccpl1rsp.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(18)
       PARAMETER (MSGDBG='[debug] CCRSPSYM> ')
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CCRSPSYM')
@@ -2146,8 +2146,8 @@ c /* deck cc_qrind */
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
       DATA    FIRSTCALL /.TRUE./
-      CHARACTER*6 CISA(-1:1)
-      DATA    CISA /'odd   ','unknown','even  '/
+      CHARACTER*7 CISA(-1:1)
+      DATA    CISA /'odd    ','unknown','even   '/
 
 
 *---------------------------------------------------------------------*

@@ -1368,6 +1368,7 @@ C
          IF (HERDIR) THEN
             CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
          ELSE
+            TIMHE1 = 0.0D0
             KCCFB1 = KEND1
             KINDXB = KCCFB1 + MXPRIM*MXCONT
             KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT

@@ -585,7 +585,7 @@ c         --------------------------------------------------
      &        ileft, isyml, imull, iright, isymr, imulr, iopt,
      &        kscr1,kint1sc,kint2sc,klampc,klamhc,kfockc,kwrk2,lwrk2,
      &        lufock,iovlp, kint1s, kint2s, isymd, illl, idel, isydis,
-     &        kxint, krecnr, idxai, idxbj, idxck, idiag, idxt3
+     &        kxint, idxai, idxbj, idxck, idiag, idxt3, kdum
 
 
       integer ilstsym
@@ -595,6 +595,7 @@ c         --------------------------------------------------
       double precision ddot
 #endif 
 
+      kdum = 1
       call qenter('ccov-nod')
 
 *---------------------------------------------------------------------*
@@ -725,7 +726,7 @@ C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
             call ccrdao(work(kxint),idel,1,work(kwrk2),lwrk2,
-     *                  work(krecnr),direct)
+     *                  work(kdum),direct)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:

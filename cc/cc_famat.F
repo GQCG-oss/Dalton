@@ -719,7 +719,7 @@ C#include <ccr1rsp.h>
      &        K0IOVVO, K0IOOVV, K0IOOOO, K0IVVVV, KOME1, KOME2, KDUM,
      &        KXINT, KEND2, LWRK2, KL1AM, KL2AM, KL3AM, KT3AM, KT2AM,
      &        KEND3, LWRK3, KINT1SC, KINT2SC, KLAMPC, KLAMHC,KFOCKAB,
-     &        KFOCKC, LWRK1, KRECNR, KE3AM, KTC3AM, KTC1AM, KTC2AM,
+     &        KFOCKC, LWRK1, KE3AM, KTC3AM, KTC1AM, KTC2AM,
      &        ISYMA, KINT1SB, KINT2SB, KLAMPB, KLAMHB, KFOCKB, ISYMB,
      &        KFOCKA, KFOCKA_AO, KFOCK0, IRREP, ISYM, IERR, KFOCKAB1,
      &        KFIELD, KFIELDAO
@@ -728,6 +728,7 @@ C#include <ccr1rsp.h>
 
       CALL QENTER('CCSDT_FAMAT_NODDY')
 
+      KDUM = 1
       IF (DIRECT) CALL QUIT('CCSDT_FAMAT_NODDY: DIRECT NOT IMPLEMENTED')
 
       IF (LOCDBG) THEN
@@ -900,7 +901,7 @@ C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
+     *                  WORK(KDUM),DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:

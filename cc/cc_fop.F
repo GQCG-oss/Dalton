@@ -221,6 +221,9 @@ C
          RELORB = .TRUE. 
       ENDIF
 C
+      TIMIO = 0.0D0
+      TIMT2SQ = 0.0D0
+C
       IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CC_FOP-1: Workspace:',LWORK
 C
 C-----------------------------

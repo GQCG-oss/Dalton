@@ -194,7 +194,7 @@ c/* Deck CC_BMAT */
 #include "second.h"
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CC_BMAT> ')
 
       LOGICAL LOCDBG
