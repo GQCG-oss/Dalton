@@ -32,11 +32,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.9 2001-10-01 13:22:21 vebjornb Exp $
+C$Id: sirinp.F,v 1.10 2002-01-15 12:20:58 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.9  2001/10/01 13:22:21  vebjornb
+Merging the branch dft-1-0 into the main trunk, adding DFT functionality
+among other things. Currently three test cases do not work properly
+(cc_geoopt, cc_geoopt2 and vibave_spinspin), and this should be fixed ASAP - VB
+
 Revision 1.8  2001/05/31 06:38:35  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -1728,6 +1733,7 @@ C
       LOGICAL   ALLOPT, PTABMO
 C
 #include <priunit.h>
+#include <gnrinf.h>
 C
       CALL QENTER('NEWINP')
 C

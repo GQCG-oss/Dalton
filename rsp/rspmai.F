@@ -32,11 +32,12 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmai.F,v 1.12 2001-11-13 19:32:48 vebjornb Exp $
+C$Id: rspmai.F,v 1.13 2002-01-15 12:20:58 ruden Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
+
 Revision 1.7  2000/05/24 19:01:23  hjj
 polish; fixing FNDLB2 parameter lists (ftnchek)
 
