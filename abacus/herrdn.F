@@ -6304,8 +6304,8 @@ C
          WRITE (LINE(I:),'(A10)') '          '
       END DO
 C
-      WRITE (LINE,'(A7,F6.4)') 'Charge=', Q
-      ISTART = 15
+      WRITE (LINE,'(A7,F8.4)') 'Charge=', Q
+      ISTART = 17
 C
       IF (NONT .LT. 10) THEN
          WRITE (LINE(ISTART:),'(A6,I1)') 'Atoms=', NONT

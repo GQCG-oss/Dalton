@@ -852,8 +852,38 @@ C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
+               SOLVNT = .FALSE.
                CALL EXEHER(WORK,LMWORK,WRKDLM)
                CALL EXESIR(WORK,LMWORK,WRKDLM)
+            SOLVNT = FLAG(16)
+            IF (SOLVNT) THEN
+               NEWGEO = .TRUE.
+               NUCIND = NUCIND + 1
+               NUCDEP = NUCDEP + 1
+               NATOMS = NATOMS + 1
+               NCNTCV = NUCIND
+               NCLINE(NUCIND) = 0
+               NAMN(NUCIND)       = 'cav '
+               NAMEX(3*NUCIND-2)  = 'cav  x'
+               NAMEX(3*NUCIND-1)  = 'cav  y'
+               NAMEX(3*NUCIND)    = 'cav  z'
+               NAMDEP(NUCDEP)     = 'cavity'
+               NAMDPX(3*NUCDEP-2) = 'cavity x'
+               NAMDPX(3*NUCDEP-1) = 'cavity y'
+               NAMDPX(3*NUCDEP  ) = 'cavity z'
+               IF (NUCDEP .GT. MXCENT) THEN
+                  WRITE (LUPRI,'(//2A,/A,I5)')
+     &         ' Too many atomic centers: MXCENT exceed in READIN for',
+     &         ' solvent cavity,',' Current limit:',MXCENT
+                  CALL QUIT('*** ERROR *** MXCENT exceeded in READIN')
+               END IF
+               CORD(1,NUCIND) = D0
+               CORD(2,NUCIND) = D0
+               CORD(3,NUCIND) = D0
+               ISTBNU(NUCIND) = 7
+               CHARGE(NUCIND) = D0
+               CALL NUCPRO(WORK(2),LMWORK)
+            END IF
             END IF
             CALL ABAINP('**FINAL',WORK(2),LMWORK)
             CALL EXEABA(WORK,LMWORK,WRKDLM)
