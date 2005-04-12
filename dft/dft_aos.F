@@ -875,32 +875,46 @@ C
             END DO
          END IF
       ELSE
-         IF (SPHRA) THEN
-            DO I = 1, KHKTA
-               DO K = 1, NVCLEN
-                  GAO(K,I) = D0
-               END DO
+         DO I = 1, KHKTA
+            DO K = 1, NVCLEN
+               GAO(K,I) = D0
             END DO
-            DO J = 1, KCKTA
+         END DO
+         DO J = 1, KCKTA
+            L = LVALUA(J)
+            M = MVALUA(J)
+            N = NVALUA(J)
+            DO K = 1, NVCLEN
+               CINT(K)  = GA(K)
+            END DO
+            IF(L.GT.0) THEN
                DO K = 1, NVCLEN
-                  CINT(K) = (PA(1,K)**LVALUA(J))*(PA(2,K)**MVALUA(J))
-     &                 *(PA(3,K)**NVALUA(J))*GA(K)
+                  CINT(K) = CINT(K)*(PA(1,K)**L)
                END DO
-c              do a dgemm here?
+            END IF
+            IF(M.GT.0) THEN
+               DO K = 1, NVCLEN
+                  CINT(K) = CINT(K)*(PA(2,K)**M)
+               END DO 
+            END IF
+            IF(N.GT.0) THEN
+               DO K = 1, NVCLEN
+                  CINT(K) = CINT(K)*(PA(3,K)**N)
+               END DO
+            END IF
+c     do a dgemm here?
+            IF (SPHRA) THEN
                DO I = 1, KHKTA
                   DO K = 1, NVCLEN
                      GAO(K,I) = GAO(K,I) + CSP(I,J)*CINT(K)
                   END DO
                END DO
-            END DO
-         ELSE
-            DO I = 1, KCKTA
+            ELSE 
                DO K = 1, NVCLEN
-                  GAO(K,I) = (PA(1,K)**LVALUA(I))*(PA(2,K)**MVALUA(I))
-     &                 *(PA(3,K)**NVALUA(I))*GA(K)
+                  GAO(K,J) = CINT(K)
                END DO
-            END DO
-         END IF
+            END IF
+         END DO
       END IF
       RETURN
       END
@@ -993,19 +1007,52 @@ C
             M = MVALUA(ICOMPA)
             N = NVALUA(ICOMPA)
             DO K = 1, NVCLEN
-               P0(K)  = (PA(1,K)**L)*(PA(2,K)**M)*(PA(3,K)**N)
-               GAX(K) = FX(K)*P0(K)
-               GAY(K) = FY(K)*P0(K)
-               GAZ(K) = FZ(K)*P0(K)
-               IF(L.GT.0) GAX(K) = GAX(K)
-     &              + SDPRE(L)*(PA(1,K)**(L-1))*(PA(2,K)**M)*
-     &              (PA(3,K)**N)*GA(K)
-               IF(M.GT.0) GAY(K) = GAY(K)
-     &              + SDPRE(M)*(PA(1,K)**L)*(PA(2,K)**(M-1))*
-     &              (PA(3,K)**N)*GA(K)
-               IF(N.GT.0) GAZ(K) = GAZ(K)
-     &              + SDPRE(N)*(PA(1,K)**L)*(PA(2,K)**M)*
-     &              (PA(3,K)**(N-1))*GA(K)
+               P0(K)  = 1D0
+               GAX(K) = GA(K)*SDPRE(L)
+               GAY(K) = GA(K)*SDPRE(M)
+               GAZ(K) = GA(K)*SDPRE(N)
+            END DO
+            IF(L.GT.0) THEN
+               DO K = 1, NVCLEN
+                  P0(K) = P0(K)*(PA(1,K)**L)
+                  GAY(K) = GAY(K)*(PA(1,K)**L)
+                  GAZ(K) = GAZ(K)*(PA(1,K)**L)
+               END DO
+               IF(L.GT.1) THEN
+                  DO K = 1, NVCLEN
+                     GAX(K) = GAX(K)*(PA(1,K)**(L-1))
+                  END DO
+               END IF
+            END IF
+            IF(M.GT.0) THEN
+               DO K = 1, NVCLEN
+                  P0(K) = P0(K)*(PA(2,K)**M)
+                  GAX(K) = GAX(K)*(PA(2,K)**M)
+                  GAZ(K) = GAZ(K)*(PA(2,K)**M)
+               END DO 
+               IF(M.GT.1) THEN
+                  DO K = 1, NVCLEN
+                     GAY(K) = GAY(K)*(PA(2,K)**(M-1))
+                  END DO
+               END IF
+            END IF
+            IF(N.GT.0) THEN
+               DO K = 1, NVCLEN
+                  P0(K) = P0(K)*(PA(3,K)**N)
+                  GAX(K) = GAX(K)*(PA(3,K)**N)
+                  GAY(K) = GAY(K)*(PA(3,K)**N)
+               END DO
+               IF(N.GT.1) THEN
+                  DO K = 1, NVCLEN
+                     GAZ(K) = GAZ(K)*(PA(3,K)**(N-1))
+                  END DO
+               END IF
+            END IF
+
+            DO K = 1, NVCLEN
+               GAX(K) = GAX(K) + FX(K)*P0(K)
+               GAY(K) = GAY(K) + FY(K)*P0(K)
+               GAZ(K) = GAZ(K) + FZ(K)*P0(K)
             END DO
             IF (SPHRA) THEN
                DO K = 1, NVCLEN
