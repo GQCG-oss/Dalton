@@ -178,22 +178,22 @@ ERROR[6]="MAGNETIZABILITIES NOT CORRECT"
 # Total magnetizability tensor
 CRIT1=`$GREP "Bx * \-3\.0537786(3|4)...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
 CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.9953640(1|2)...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.06222578...[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.0622257(7|8)...[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.50938594...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-3\.12301628...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.3015076(1|2)...[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * \-3\.5093859....[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-3\.1230162(7|8)...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.3015076....[0-9]" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * (0| )\.455607(29|30)...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.12765226...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT1=`$GREP "Bx * (0| )\.455607(28|29|30)...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.1276522(5|6)...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
 CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.2392818(3|4)...[0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
@@ -213,13 +213,13 @@ ERROR[10]="MOLECULAR G-TENSOR NOT CORRECT"
 # Molecular g-factor in principal axis system
 CRIT1=`$GREP "A * (0| )\.7105399[0-9] (\-0| \-| 0|  )\.00000000 (\-0| \-| 0|  )\.00000000" $log | wc -l`
 CRIT2=`$GREP "B * (\-0| \-| 0|  )\.00000000 * (0| )\.7660549[0-9] (\-0| \-| 0|  )\.00000000" $log | wc -l`
-CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 (\-0| \-| 0|  )\.00000000 * (0| )\.6903369[0-9]" $log | wc -l`
+CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 (\-0| \-| 0|  )\.00000000 * (0| )\.69033(69|70)[0-9]" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
 ERROR[11]="MOLECULAR G-TENSOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
-CRIT1=`$GREP "O * y * 355\.21834..[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * 355\.2183(4|5)..[0-9]" $log | wc -l`
 CRIT2=`$GREP "H * y * 78\.24710..[0-9]" $log | wc -l`
 CRIT3=`$GREP "H * z * \-15\.20512..[0-9]" $log | wc -l`
 CRIT4=`$GREP "H * x * 46\.81780..[0-9]" $log | wc -l`
@@ -250,7 +250,7 @@ CTRL[14]=3
 ERROR[14]="TOTAL SHIELDING TENSOR FOR OXYGEN NOT CORRECT"
 
 # Diamagnetic and paramagnetic contributions
-CRIT1=`$GREP "Diamagnetic contribution\: * 414\.92569[0-9] * Paramagnetic\: * \-95\.88039[0-9]" $log | wc -l`
+CRIT1=`$GREP "Diamagnetic contribution\: * 414\.92569[0-9] * Paramagnetic\: * \-95\.8803(8|9)[0-9]" $log | wc -l`
 TEST[15]=`expr	$CRIT1`
 CTRL[15]=1
 ERROR[15]="DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR OXYGEN NOT CORRECT"
