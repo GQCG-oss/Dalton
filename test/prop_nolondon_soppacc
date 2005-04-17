@@ -187,9 +187,9 @@ CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * \-3\.48442468...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT1=`$GREP "Bx * \-3\.4844246(7|8)...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
 CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-3\.09608072...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.27615337...[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-3\.2761533(6|7)...[0-9]" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
@@ -222,17 +222,17 @@ CTRL[11]=3
 ERROR[11]="MOLECULAR G-FACTOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
-CRIT1=`$GREP "O * y * 354\.861046.[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * 354\.86104..[0-9]" $log | wc -l`
 CRIT2=`$GREP "H * y * 78\.112319.[0-9]" $log | wc -l`
 CRIT3=`$GREP "H * z * \-15\.328071.[0-9]" $log | wc -l`
 CRIT4=`$GREP "O * x * 297\.18073..[0-9]" $log | wc -l`
 CRIT5=`$GREP "H * x * 46\.48050..[0-9]" $log | wc -l`
-CRIT6=`$GREP "O * z * 303\.44872..[0-9]" $log | wc -l`
+CRIT6=`$GREP "O * z * 303\.4487(2|3)..[0-9]" $log | wc -l`
 CRIT7=`$GREP "H * y * \-19\.22718..[0-9]" $log | wc -l`
 CRIT8=`$GREP "H * z * 59\.78655..[0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
-CTRL[12]=8
+CTRL[12]=9
 ERROR[12]="SHIELDING TENSORS IN SYMMETRY COORDINATES NOT CORRECT"
 
 # Chemical shielding for O
