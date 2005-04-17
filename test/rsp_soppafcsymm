@@ -123,14 +123,14 @@ ERROR[3]="GEOMETRY NOT READ CORRECTLY"
 
 # Energies
 CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.025681483[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.230666825[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.23066682.[0-9]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
 
 # Fermi-contact contribution
 CRIT1=`$GREP "\@.*FC O * 01 .* FC O * 01 .* 1\.326991.....[0-9](D|E)\+04" $log | wc -l`
-CRIT2=`$GREP "\@.*FC O * 01 .* FC H * 02 .* \-8\.536550.....[0-9](D|E)\+01" $log | wc -l`
+CRIT2=`$GREP "\@.*FC O * 01 .* FC H * 02 .* \-8\.5365(4|5)......[0-9](D|E)\+01" $log | wc -l`
 CRIT3=`$GREP "\@.*FC H * 02 .* FC H * 02 .* 1\.085058.....[0-9](D|E)\+02" $log | wc -l`
 CRIT4=`$GREP "\@.*FC H * 03 .* FC H * 03 .* 1\.059529.....[0-9](D|E)\+02" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`

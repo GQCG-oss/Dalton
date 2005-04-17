@@ -166,9 +166,9 @@ CTRL[4]=3
 ERROR[4]="ENERGY NOT CORRECT"
 
 # Gradient:
-CRIT1=`$GREP "O\#1 * z * (\-0|\-)\.03476808.[0-9]" $log | wc -l`
+CRIT1=`$GREP "O\#1 * z * (\-0|\-)\.0347680(7|8).[0-9]" $log | wc -l`
 CRIT2=`$GREP "C\#2 * y * (0| )\.05866439.[0-9]" $log | wc -l`
-CRIT3=`$GREP "C\#2 * z * (0| )\.03777671.[0-9]" $log | wc -l`
+CRIT3=`$GREP "C\#2 * z * (0| )\.0377767(0|1).[0-9]" $log | wc -l`
 CRIT4=`$GREP "H\#4 * x * (\-0|\-)\.04405407.[0-9]" $log | wc -l`
 CRIT5=`$GREP "H\#4 * y * (\-0|\-)\.01034732.[0-9]" $log | wc -l`
 CRIT6=`$GREP "H\#4 * z * (\-0|\-)\.00300863.[0-9]" $log | wc -l`
@@ -208,7 +208,7 @@ ERROR[6]="HESSIAN NOT CORRECT"
 
 # Dipole moment:
 CRIT1=`$GREP "1\.104664 au * 2\.807776 Debye" $log | wc -l`
-CRIT2=`$GREP "z * \-1\.1046640[0-9] * \-2\.8077756[0-9]" $log | wc -l`
+CRIT2=`$GREP "z * \-1\.1046640[0-9] * \-2\.807775(5|6)[0-9]" $log | wc -l`
 TEST[7]=`expr $CRIT1  \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="DIPOLE MOMENT NOT CORRECT"
@@ -335,7 +335,7 @@ CRIT25=`$GREP "10 * 1076\.92 *  80\.327 * \-48\.115" $log | wc -l`
 CRIT26=`$GREP "11 * 1013\.35 *  25\.174 * \-4\.309" $log | wc -l`
 CRIT27=`$GREP "12 *  982\.94 * 121\.308 * 20\.457" $log | wc -l`
 CRIT28=`$GREP "13 *  940\.46 *  20\.212 * \-1\.619" $log | wc -l`
-CRIT29=`$GREP "14 *  855\.57 * 209\.036 * 8\.995" $log | wc -l`
+CRIT29=`$GREP "14 *  855\.57 * 209\.03(5|6) * 8\.995" $log | wc -l`
 CRIT30=`$GREP "15 *  778\.37 *   6\.071 * (0| )\.054" $log | wc -l`
 TEST[12]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \

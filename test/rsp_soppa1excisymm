@@ -105,7 +105,7 @@ ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Energies
 CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.025681483[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.230666825[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.23066682.[0-9]" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
 ERROR[3]="ENERGIES NOT CORRECT"
@@ -133,7 +133,7 @@ CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.3820220[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@ *Total energy \: * \-75\.643659 * au" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.22 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.78 \%" $log | wc -l`
-CRIT5=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 9\.5282735[0-9](D|E)\-02" $log | wc -l`
+CRIT5=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 9\.52827..[0-9](D|E)\-02" $log | wc -l`
 CRIT6=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.611657.[0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[6]=6
@@ -155,7 +155,7 @@ CRIT1=`$GREP "\@ *Excitation energy \: * (0| )\.4580878[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@ *Total energy \: * \-75\.567594 * au" $log | wc -l`
 CRIT3=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.54 \%" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.46 \%" $log | wc -l`
-CRIT5=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 7\.6536842[0-9](D|E)\-02" $log | wc -l`
+CRIT5=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 7\.65368..[0-9](D|E)\-02" $log | wc -l`
 CRIT6=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.500618.[0-9]" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[8]=6
