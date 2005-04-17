@@ -171,7 +171,7 @@ CTRL[9]=3
 ERROR[9]="INITIAL STEP NOT CORRECT"
 
 # Second energy
-CRIT1=`$GREP "Final * HF energy\: * \-56\.16532887...[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-56\.1653288(7|8)...[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1`
 CTRL[10]=1
 ERROR[10]="SECOND ENERGY NOT CORRECT"
@@ -210,10 +210,10 @@ CTRL[12]=18
 ERROR[12]="SECOND HESSIAN NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final * HF energy\: * \-56\.18653735(39|40).[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-56\.18653735(39|40|41).[0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1`
 CTRL[13]=1
-ERROR[13]="FINAL ENERGY NOT CORRECT"
+ERROR[13]="THIRD ENERGY NOT CORRECT"
 
 # Convergence
 CRIT1=`$GREP "\@ * Geometry optimization has converged\." $log | wc -l`
