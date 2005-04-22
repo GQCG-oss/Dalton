@@ -309,8 +309,8 @@ kt_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
 {       
     real ra, xa, ra43, ra13, ra23, ram1, ram2;
     real rb, xb, rb43, rb13, rb23, rbm1, rbm2;
-    real xad2, t1a, t2a, t3a;
-    real xbd2, t1b, t2b, t3b;
+    real xad2, xa2d2, t1a, t2a, t3a; 
+    real xbd2, xb2d2, t1b, t2b, t3b;
     real denoma, denoma2, denoma3;
     real denomb, denomb2, denomb3;
     real faR, faZ, faRR, faZZ, faRZ;
@@ -332,9 +332,11 @@ kt_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
         denoma2= denoma*denoma;
         denoma3= denoma2*denoma;
         xad2 = xa/denoma2;
-        t1a = 8.0/9.0*xad2*xa*ram1;
+        xa2d2 = xa*xa/denoma2;
+        t1a = 1.0/(3.0*ra43) + 4.0/denoma 
+               - 16.0*ra43/denoma2;
         t2a = 1.0 - 8.0*ra43/denoma;
-        t3a = 8.0/27.0*xad2*ram1;
+        t3a = -8.0/27.0*xa2d2*ram1;
         faR  = -4.0/3.0*xad2*xa*ra13;
         faZ  = 2.0*xa/denoma;
         faRR = -4.0/9.0*xad2*xa*ram2;
@@ -344,13 +346,15 @@ kt_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
         faRZZ = -8.0/3.0*ra13/denoma2;
         faRRZ =  -8.0/9.0*xad2*ram2;
         faRZZ = -8.0/3.0*ra13/denoma2;
-        faRRR = 1.0/(3.0*ra43) + 4.0/denoma -
-                16.0*ra43/denoma2;
+        faRRR = 8.0/9.0*xad2*xa*ram1;
         faZZZZ = 0.0;
         faRZZZ = 0.0;
-        faRRZZ = 1.0/xa*faRZZ;
-        faRRRR = -5.0/(3.0*ra*ra43) -20.0*ra/(3.0*denoma) 
-                 -96.0*ra13/denoma2 +256.0*ra*ra23/denoma3;
+        faRRZZ = -8.0/(9.0*ra23*denoma2);
+        faRRRZ = 16.0/9.0*xad2*ram1;
+        faRRRR = 5.0/(3.0*ra*ra43) 
+                 + 20.0/(3.0*ra*denoma) 
+                 + 96.0*ra13/denoma2 
+                 - 256.0*ra*ra23/denoma3;
         ds->df1000 += factor*faR;
         ds->df0010 += factor*faZ;
         ds->df1010 += factor*faRZ;
@@ -362,9 +366,9 @@ kt_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
         ds->df1020 += factor*faRZZ;
         ds->df4000 += factor*faRRRR*t3a;
         ds->df0040 += factor*faZZZZ;
-        ds->df3010 += factor*faRRRZ;
+        ds->df3010 += factor*faRRRZ*t1a;
         ds->df1030 += factor*faRZZZ;
-        ds->df2020 += factor*faRRZZ;
+        ds->df2020 += factor*faRRZZ*t2a;
     }
     if (dp->rhob >KT_THRESHOLD) {
         xb = dp->gradb;
@@ -378,9 +382,11 @@ kt_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
         denomb2= denomb*denomb;
         denomb3= denomb2*denomb;
         xbd2 = xb/denomb2;
-        t1b = 8.0/9.0*xbd2*xb*rbm1;
+        xb2d2 = xb*xb/denomb2;
+        t1b = 1.0/(3.0*rb43) +  4.0/denomb 
+                - 16.0*rb43/denomb2;
         t2b = 1.0 - 8.0*rb43/denomb;
-        t3b = 8.0/27.0*xbd2*rbm1;
+        t3b = -8.0/27.0*xb2d2/rb13;
         fbR  = -4.0/3.0*xbd2*xb*rb13;
         fbZ  = 2.0*xb/denomb; 
         fbRR = -4.0/9.0*xbd2*xb*rbm2;
@@ -389,13 +395,15 @@ kt_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
         fbZZZ = 0.0;
         fbRRZ = -8.0/9.0*xbd2*rbm2;
         fbRZZ = -8.0/3.0*rb13/denomb2;
-        fbRRR = 1.0/(3.0*rb43) +  4.0/denomb -
-                16.0*rb43/denomb2;
+        fbRRR = 8.0/9.0*xbd2*xb*rbm1;
         fbZZZZ = 0.0;
         fbRZZZ = 0.0;
-        fbRRZZ = 1.0/xb*fbRZZ;
-        fbRRRR = -5.0/(3.0*rb*rb43) - 20.0*rb/(3.0*denomb) -
-                 96.0*rb13/denomb2 + 256.0*rb*rb23/denomb3;
+        fbRRZZ = -8.0/(9.0*rb23*denomb2);
+        fbRRRZ = 16.0/9.0*xbd2*rbm1; 
+        fbRRRR = +5.0/(3.0*rb*rb43) 
+                 + 20.0/(3.0*rb*denomb) 
+                 + 96.0*rb13/denomb2 
+                 - 256.0*rb*rb23/denomb3;
         ds->df0100 += factor*fbR;
         ds->df0001 += factor*fbZ;
         ds->df0101 += factor*fbRZ;
@@ -407,9 +415,9 @@ kt_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
         ds->df0102 += factor*fbRZZ;
         ds->df0400 += factor*fbRRRR*t3b;
         ds->df0004 += factor*fbZZZZ;
-        ds->df0301 += factor*fbRRRZ;
+        ds->df0301 += factor*fbRRRZ*t1b;
         ds->df0103 += factor*fbRZZZ;
-        ds->df0202 += factor*fbRRZZ;
+        ds->df0202 += factor*fbRRZZ*t2b;
     }
 }
 #endif
