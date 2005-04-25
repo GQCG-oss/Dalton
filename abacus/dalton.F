@@ -366,7 +366,7 @@ C
      *  'Stephan P. A. Sauer,      University of Copenhagen,     '
      &                      //'Denmark    ',
      *  'Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  '
-     &                      //'Sweden     ',
+     &                      //'Germany     ',
      *  'K. O. Sylvester-Hvid,     University of Copenhagen,     '
      &                      //'Denmark    ',
      *  'Peter R. Taylor,          University of Warwick,        '
