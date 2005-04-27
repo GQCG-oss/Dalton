@@ -636,7 +636,7 @@ To specify the parameters of the DFT integration.
 Functionals in \siraba\ can be divided into two groups: generic and
 combined functionals. Combined functionals are a linear combination of
 generic ones. One can always create own combined functionals by
-using \verb|GGAKey| general functional. 
+using \verb|Combine| general functional. 
 
 \subsubsection{Generic functionals}
 \providecommand\fn[1]{#1}
@@ -684,45 +684,55 @@ valence.\index{LB94}
 \subsubsection{Combined functionals}
 \providecommand\funexample[1]{\\{\tt #1 }}
 \begin{description}
-\item[GGAKey] it is an universal keyword allowing to manually
-  construct arbitrary linear combinations of other functionals. Even\index{GGAKey}
+\item[Combine] it is an universal keyword allowing to manually
+  construct arbitrary linear combinations of other functionals. Even\index{Combine}
   fractional Hartree--Fock exchange can be specified. This keyword is
   to be followed by a string of functionals with associated
   weights. The syntax is \verb|NAME=WEIGHT ...|. Example:
 \begin{verbatim}
 .DFT
- GGAKey hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19
+ Combine hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19
 \end{verbatim}
 
 \item[BLYP] is a sum of Slater functional, Becke88 correction and LYP
   correlation functional.  It is equivalent to 
-  \funexample{GGAKey slater=1 becke=1 lyp=1}
+  \funexample{Combine slater=1 becke=1 lyp=1}
   \index{BLYP}
 
 \item[B3LYP] hybrid functional \cite{dft:b3lyp} equivalent to:
-  \funexample{GGAKey hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn=0.19}.
+  \funexample{Combine hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn=0.19}.
   \index{B3LYP}
 
 \item[B3LYP-G] hybrid functional with VWN3 form used for
 correlation---this is the form used by the Gaussian quantum chemistry
 program.\index{B3LYP-G} This functional can be explicitely set up by
-\funexample{GGAKey hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19}
+\funexample{Combine hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19}
 \index{B3LYP, Gaussian version}
 
 \item[BP86] Becke88 exchange functional and Perdew86 correlation
   functional. The explicit form is:
-  \funexample{GGAKey slater=1 becke=1 pz81=1 p86c=1}
+  \funexample{Combine slater=1 becke=1 pz81=1 p86c=1}
   \index{BP86}
 
 
 \item[B3P86] variant of \verb|B3LYP| with VWN3 used for local
   correlation  and P86 for the nonlocal part.
-  \funexample{GGAKey hf=0.2 slater=0.8 becke=0.72 p86c=0.81 vwn3=1}
+  \funexample{Combine hf=0.2 slater=0.8 becke=0.72 p86c=0.81 vwn3=1}
   \index{B3P86}
+
+\item[BHandH] is an simple Half-and-half functional included for
+  compatibility with Gaussian program
+  \funexample{Combine hf=0.5 slater=0.5 lyp=1}
+  \index{BHandH}
+
+\item[BHandH] is another simple Half-and-half functional included for
+  compatibility with Gaussian program
+  \funexample{Combine hf=0.5 slater=0.5 becke=0.5 lyp=1}
+  \index{BHandH}
 
 \item[BPW91] is a sum of Slater functional, Becke correction and
   PW91 correlation functional.\index{BPW91}
-  \funexample{GGAKey slater=1 becke=1 pw91c=1}
+  \funexample{Combine slater=1 becke=1 pw91c=1}
 
 \item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai, Tew and
 Handy\cite{dft:camb3lyp}. This functional accepts additional arguments
@@ -738,47 +748,47 @@ factor $\mu$. This input can be specified as follows:
 
 \item[KT1] Slater-VWN5 functional with the KT GGA correction
   \cite{dft:kt12,dft:kt12a}.\index{KT1}
- \funexample{GGAKey slater=1 vwn=1 kt=-0.006}
+ \funexample{Combine slater=1 vwn=1 kt=-0.006}
 
 \item[KT2] differs from KT1 only in that the weights of the Slater and
   VWN5 functionals are from an empirical fit
   \cite{dft:kt12,dft:kt12a}.\index{KT2}
-  \funexample{GGAKey slater=1.07173 vwn=0.576727 kt=-0.006}
+  \funexample{Combine slater=1.07173 vwn=0.576727 kt=-0.006}
 
 \item[KT3] a hybrid functional of Slater, OPTX and KT exhange with the
   LYP correlation functional \cite{dft:kt3}. The explicit form is
-  \funexample{GGAKey slater=1.092 kt=-0.004 lyp=0.864409 optx=-0.925452}
+  \funexample{Combine slater=1.092 kt=-0.004 lyp=0.864409 optx=-0.925452}
   \index{KT3}
 
 \item[OLYP] is the sum of the OPTX exchange functional with the
   LYP correlation functional \cite{dft:optx}.
-  \funexample{GGAKey slater=1.05151 optx=-1.43169 lyp=1}\\
+  \funexample{Combine slater=1.05151 optx=-1.43169 lyp=1}\\
   Mixed functionals such as OP86 and OPW91 may be constructed with
-  \verb|GGAKey|.\index{OLYP}
+  \verb|Combine|.\index{OLYP}
 
 \item[PBE0] a hybrid functional of Perdew, Burke and Ernzerhof with
   0.25 weight of exact exchange, 0.75 of \verb|PBEx| functional and
   \verb|PBEC| correlation functional \cite{dft:pbe0}.\index{PBE0}
-  \funexample{GGAKey hf=0.25 pbex=0.75 pbec=1}
+  \funexample{Combine hf=0.25 pbex=0.75 pbec=1}
 
 \item[PBE] same as above but with exchange estimated exclusively by
   \verb|PBEx| functional \cite{dft:pbe}.\index{PBE} This is the form
   used by eg. CADPAC and NWChem quantum chemistry programs.
-  \funexample{GGAKey pbex=1 pbec=1}\\
+  \funexample{Combine pbex=1 pbec=1}\\
   Observe that quantum chemistry program Molpro uses \verb|PW91c|
   correlation functional instead of \verb|PBEC| which is equivalent to
   following:
-  \funexample{GGAKey pbex=1 PW91c=1}.
+  \funexample{Combine pbex=1 PW91c=1}.
 
 \item[SVWN3] is a sum of Slater functional and VWN3 correlation
   functional.  It is equivalent to Gaussian's LSDA functional and can
   alternatively by selected by following set of keywords
-  \funexample{GGAKey slater=1 vwn3=1}
+  \funexample{Combine slater=1 vwn3=1}
   \index{SVWN3}
 
 \item[SVWN5] is a sum of Slater functional and VWN5 correlation
   functional.  It is equivalent to
-  \funexample{GGAKey slater=1 vwn5=1}
+  \funexample{Combine slater=1 vwn5=1}
   \index{SVWN5}
 
 \end{description}
