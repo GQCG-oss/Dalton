@@ -212,7 +212,7 @@ void outmat_(const real* mat, const int* rowlow, const int* rowhi,
 void getrho_(const real*dmat, const real* atv, real* rho, real* dmagao, 
 	     const real* densthr);
 void dftgrd_(real* work, int* lwork, const int* d1, const int* log1);
-void dftdns_(real* dmat, real* work,int *lwork,int* iprint);
+void dftdns_(real* dmat, real* work,int *lwork, const int* iprint);
 void gtdmso_(real* udv, real* cmo, real* di, real* dv, real* work);
 void dftdnsab_(real* dmata,real* dmatb, real* work, int* lwork, int* iprint);
 void udftmolgrdab_(real* gao, real* damta, real* dmatb, real* rha, real* rhb, 

@@ -32,40 +32,6 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 */
-/*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
-C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-*/
 /* this is true spare-enabled code (well, mostly). 
  * This file contains property evaluators, that is, modules that
  * setup the stage for numerical integration, call the integrator,
@@ -121,9 +87,9 @@ static void
 dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
        int bllen, int blstart, int blend, struct dso_data* dso)
 {
-    extern void dsocb_(real*, const int*, real (*coor)[3],
-                       const real*rho,const real* wght,
-                       real(*rvec)[3], real*r3i);
+    extern void FSYM(dsocb)(real*, const int*, real (*coor)[3],
+                            const real*rho,const real* wght,
+                            real(*rvec)[3], real*r3i);
     int off = grid->curr_point;
     FSYM(dsocb)(dso->dso, &bllen,
            grid->coor+off, grid->r.rho,
@@ -141,8 +107,7 @@ dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  * except for memory usage.
  */
 void
-FSYM(numdso)(real* dmat_folded, real* spndso, int *nucind,
-             real* work, int* lwork)
+FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork)
 {
     extern void dunfld_(const int* n, const real* dsp, real* dge);
     extern void numdso_finish_(real* spndso);
@@ -155,14 +120,13 @@ FSYM(numdso)(real* dmat_folded, real* spndso, int *nucind,
     dso.r3i  = malloc(DFT_BLLEN*(*nucind)*sizeof(real));
     dmat = malloc(inforb_.n2basx*sizeof(real));
     if(!dso.rvec || !dso.r3i || !dmat) dalton_quit("ABORT!!!");
-
-    dunfld_(&inforb_.nbast, dmat_folded, dmat);
+    FSYM(dftdns)(dmat, work, lwork, &ZEROI);
 
     times(&starttm);
-    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 1,
-                                    (DftBlockCallback)dso_cb,&dso);
+    electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0,
+                                    (DftBlockCallback)dso_cb, &dso);
 
-    numdso_finish_(spndso);
+    FSYM2(numdso_finish)(spndso);
     times(&endtm);
     free(dso.rvec);
     free(dso.r3i);

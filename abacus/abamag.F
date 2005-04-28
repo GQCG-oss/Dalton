@@ -236,6 +236,8 @@ C
 #include <spnout.h>
 #include <relcor.h>
 #include <dipole.h>
+#include <maxorb.h>
+#include <symmet.h>
       IF (MSKIP .OR. ((.NOT. DODSO) .AND. (SST
      &          .AND. .NOT. (NST .OR. MDIASU)))) RETURN
       CALL QENTER('MAGINT')
@@ -315,8 +317,19 @@ C     for the spin-spin coupling constants of a pair of nuclei
 C
             NCOMP = 21*NDEGMX*NDEGMX
          END IF
-         CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
-     &               MPRINT,MNODC,MNODV,WORD,NCOMP)
+c        Numerical dso integration is faster for large molecules
+c        but currently, it is implemented only without symmetry.
+c        In case of no symmetry present, both methods should give
+c        identical results.
+         IF(NSYM.GT.1) THEN
+            WRITE(LUPRI,*)"Symmetry -> DSO by analytical integration."
+            CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),
+     &           WORK(KLAST),LWRK,MPRINT,MNODC,MNODV,WORD,NCOMP)
+         ELSE
+            WRITE(LUPRI,*)"No symmetry -> DSO by numerical integration."
+            CALL DZERO(SPNDSO,MXCOOR*MXCOOR)
+            CALL NUMDSO(SPNDSO,NUCIND,WORK(KLAST),LWRK)
+         ENDIF
       END IF
       IF (MDIASU) THEN
          IF (NOLOND) THEN

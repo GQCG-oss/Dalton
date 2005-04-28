@@ -104,7 +104,6 @@ c                 analytical version.
                      END DO
                   END IF
                END DO
-               IDL = 3*(IL-1)+IX
             END DO
  10      continue
          END DO

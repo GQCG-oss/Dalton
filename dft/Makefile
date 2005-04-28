@@ -15,7 +15,8 @@ FFILES = \
         dft_hes.F    \
         dft_aux.F    \
         dft_int.F    \
-        dft_inp.F    
+        dft_inp.F    \
+	dso_cb.F
 
 #        dft_ac.F     dft_old.F
 
@@ -51,6 +52,7 @@ CFILES =\
 	$(FUNFILES)	\
 	basisinfo.c	\
 	cube-fast.c	\
+	eval-dso.c	\
 	functionals.c	\
 	gen-so-int.c	\
 	general.c	\
