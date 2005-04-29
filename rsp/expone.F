@@ -92,6 +92,7 @@ C
       PARAMETER ( D0 = 0.0D0 ,  CKMXPR = 1.0D-12 )
 C
 #include "inforb.h"
+#include "wrkrsp.h"
 C
       CHARACTER*8 LBLAVE
       DIMENSION CMO(*),UDV(*),WRK(*)
@@ -122,6 +123,7 @@ C
      &      ' and has therefore average value ZERO'
       ELSE IF ( KSYMP .EQ. 1 ) THEN
           IPRONE = 0
+          KSYMOP = 1
           CALL PRPONE(WRK(KPMO),UDV,AVEVAL,IPRONE,LBLAVE)
       ELSE
          AVEVAL = D0
