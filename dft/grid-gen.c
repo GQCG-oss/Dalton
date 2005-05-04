@@ -256,7 +256,15 @@ static int
 gc2_rad_cnt(int Z, real thrl)
 {
     static const int MIN_RAD_PT = 20;
-    int ta=1, ri;
+    int ta, ri;
+    if(Z<=2) ta=0;
+    else if(Z<=10) ta=1;
+    else if(Z<=18) ta=2;
+    else if(Z<=36) ta=3;
+    else if(Z<=54) ta=4;
+    else if(Z<=86) ta=5;
+    else ta=6;
+    
     real nr=-5.0*(3*log10(thrl)-ta+8);
     ri = rint(nr); 
     return ri>MIN_RAD_PT ? ri : MIN_RAD_PT;
