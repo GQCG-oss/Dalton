@@ -2249,8 +2249,8 @@ C *** Option 1 >FIELD TERM<   Field dependent Hamiltonian term
   101 CONTINUE
          NFIELD = NFIELD + 1
          IF (NFIELD .LE. MXFELT) THEN
-            READ(LUCMD,*) EFIELD(NFIELD)
-            READ(LUCMD,*) LFIELD(NFIELD)
+            READ(LUCMD,ERR=103,FMT=*)     EFIELD(NFIELD)
+            READ(LUCMD,ERR=104,FMT='(A)') LFIELD(NFIELD)
          ELSE
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A,I5/)')
@@ -2266,6 +2266,11 @@ C *** Option 2 >PRINT <  General print level in SIRH1
       IF (IPRH1 .GT. 0) P6FLAG(18) = .TRUE.
       GO TO 100
 C
+ 103  WRITE(LUPRI,*) '.FIELD: could not read field strength.'
+      CALL QUIT('.FIELD: could not read field strength.')
+ 104  WRITE(LUPRI,*) '.FIELD: could not read field operator.'
+      CALL QUIT('.FIELD: could not read field operator.')
+      RETURN
       END
 C  /* Deck wavinp */
       SUBROUTINE WAVINP(WORD,INPERR,ALLOPT)
@@ -2700,6 +2705,7 @@ C High spin orbitals input
       GO TO 100
 C Shift level
  125  READ(LUCMD,*) DEFLVL
+      DEFLVL = -ABS(DEFLVL)
        GO TO 100
 C
  2000 CONTINUE

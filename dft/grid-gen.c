@@ -66,44 +66,6 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 */
-/* -*-mode:c; c-style:bsd; c-basic-offset:4;indent-tabs-mode:nil; -*- */
-/* Pawel Salek
-   Zilvinas Rinkevicus: single atom integration with GC2 radial grid.
-   2002.10.10-10.14
-
-   The code consists of four main parts:
-   1. angular grid generation.
-   2. radial grid generation.
-   3. partitioning.
-   4. box-based screening code.
-
-   Grid is generated as follows:
-   A. list of atoms is created.
-
-   B. radial grids are created for each atom (FIXME: generate them
-   only for grid type just to have nicer code, no performance impact).
-
-   C. radial grid is multiplied with the angular one. Angular can be
-   pruned for small R in order to avoid too many grid points with
-   small weights.
-
-   D. partitioning preprocessing is performed (if any) and grid points
-   are dumped to a file (phase A).
-   
-   E. grid is read back and it is sorted to boxes. All the grid points
-   in the box share same screening parameters (active orbitals).
-
-   F. grid point batches are distributed to different processing units
-   (thread, mpi processes - if more than one) and postprocessing phase
-   of the partitioning is applied.
-
-   G. Final grid is saved.
-
-   Code layout follows this scheme as well: general atom/grid
-   manipulation routines, radial grid routines, angular grid routines,
-   partitioning routines, phase A routines, boxing routines, phase B
-   routines.
-*/
 /* define VAR_MPI if you want to use parallel grid generation 
  * for later parallel MPI calculation.
  *
@@ -142,7 +104,7 @@ C
 #include "grid-gen.h"
 
 /* common screening for cubes/cells */
-static const real CELL_SIZE = 1.5;
+static const real CELL_SIZE = 2.25;
 /* the weight threshold:: a grid point will be ignored if has a weight
  * lower than the WEIGHT_THRESHOLD. This should probably depend on the
  * calculation's accuracy. */
@@ -471,6 +433,8 @@ leb_get_from_order(int poly_order)
     guessed/interpolated
 */
 static const real bragg_radii[] = {
+/*     dummy         */
+       0.75,
 /*       H      He*   */
        0.35,  0.35,  
 /*       Li     Be     B      C      N      O      F      Ne*  */
@@ -1284,7 +1248,7 @@ mgrid_new(int atom_cnt, const GridGenAtom* atoms)
     for(i=0; i<atom_cnt; i++) {
         mg->atom_grids[i] = agrid_new(atoms[i].icent, atoms[i].Z);
         for(j=0; j<i; j++) {
-            real chi = bragg_radii[atoms[i].Z-1]/bragg_radii[atoms[j].Z-1];
+            real chi = bragg_radii[atoms[i].Z]/bragg_radii[atoms[j].Z];
             real temp = (chi-1)/(chi+1);
             real dx = atoms[i].x - atoms[j].x;
             real dy = atoms[i].y - atoms[j].y;
@@ -1343,9 +1307,10 @@ mgrid_set_angular_fixed(GridGenMolGrid* mgrid, real thrl,
     int atom, i = 0;
 
     for(atom=0; atom<mgrid->atom_cnt; atom++) {
-        GridGenAtomGrid* grid = mgrid->atom_grids[atom];
-        real rbragg = bragg_radii[grid->Z-1]/(5.0*BOHR);
         int current_ang = maxang;
+        GridGenAtomGrid* grid = mgrid->atom_grids[atom];
+        real rbragg = bragg_radii[grid->Z]/(5.0*BOHR);
+
         for (i=0; i<grid->pnt; i++) {
             if(grid->rad[i]<rbragg) {
                 /* prune */

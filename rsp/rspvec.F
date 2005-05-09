@@ -2248,6 +2248,7 @@ C
             IF ( (NPPCNV(MSYMC) .GT. 0) .AND. (NPPCNV(MSYMB) .GT. 0)
      *          .AND. (NGPPP(MSYMA).GT.0) ) THEN
                DO 900 IC = 1,NPPCNV(MSYMC)
+                  IF(.NOT.LCMEXC(IC,MSYMC)) GO TO 900
                   IF (ISPINC.EQ.ISPINB) THEN
                      ICEXNU = INQREX(MSYMC,IC)
                   ELSE
@@ -2306,6 +2307,7 @@ C
                      IBE = IC
                   END IF
                   DO 1000 IB = 1,IBE
+                     IF(.NOT.LCMEXC(IB,MSYMB)) GO TO 1000
                      IF (ISPINC.EQ.ISPINB) THEN
                         IBEXNU = INQREX(MSYMB,IB)
                      ELSE

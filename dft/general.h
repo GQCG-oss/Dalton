@@ -150,6 +150,16 @@ void dft_dens_restricted  (DftDensity* dens, FunDensProp* dp, DftGrid* grid,
                            real* tmp_vec);
 void dft_dens_unrestricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
                            real* tmp_vec);
+extern void
+FSYM2(getexp_blocked_lda)(const int *idsym, real*dmat, const real* atv, 
+                    const int *nblocks, int (*orbblocks)[2], const int *lda,
+                    real *tmp, const int * bllen, real *rho);
+
+extern void
+FSYM2(getexp_blocked_gga)(const int *idsym, real*dmat, const real* atv, 
+                    const int *nblocks, int (*orbblocks)[2], const int *lda,
+                    real *tmp, const int * bllen, real (*grad)[4]);
+
 
 
 /* Property evaluators */
@@ -163,6 +173,10 @@ void dft_mol_grad_(real* dmat, real* work, int* lwork, int* iprint);
 void dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,
               real* kappaZ, int* symZ, int* spinZ, int* addfock,
               real* work, int* lwork);
+void FSYM2(dft_qr_respons)(real* fi, real* cmo,
+                           real* kappaY, int* symY, int* spinY,
+			   real* kappaZ, int* symZ, int* spinZ,
+                           int* addfock, real* work, int* lwork);
 void dftcrcf_(real* fi, real* cmo,
               real* kappaB, int* symB,
               real* kappaC, int* symC,
@@ -186,6 +200,7 @@ void dft_kohn_shamab_slave(real* work, int* lwork, const int* iprint);
 void dft_lin_respab_slave (real* work, int* lwork, const int* iprint);
 void dft_mol_grad_slave (real* work, int* lwork, const int* iprint);
 void dft_qr_resp_slave  (real* work, int* lwork, const int* iprint);
+void dft_qrbl_slave     (real* work, int* lwork, const int* iprint);
 void dft_cr_resp_slave(real* work, int* lwork, const int* iprint);
 
 void dft_wake_slaves(DFTPropEvalMaster);

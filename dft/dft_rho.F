@@ -139,9 +139,7 @@ c
       CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
 c      CALL DZERO(TMP,NVCLEN*NBAST)
       DO ISYM=1,NSYM
-c         print *, "symmetry ", ISYM, " Has ", NBLOCKS(ISYM)," BLOCKS"
          DO IBL=1, NBLOCKS(ISYM)
-c         print *,"block ", IBL,IBLOCKS(1,IBL,ISYM),IBLOCKS(2,IBL,ISYM)
          DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
             DO JBL=1, NBLOCKS(ISYM)
             JTOP = MIN(IBLOCKS(2,JBL,ISYM),IDX-1)
@@ -224,19 +222,20 @@ c     assert(NTYPSO>=NRHO)
 #include <priunit.h>
 c
       CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
-c      CALL DZERO(TMP,NVCLEN*NBAST)
+c     CALL DZERO(TMP,NVCLEN*NBAST)
       DO ISYM = 1, NSYM
-      DO IBL=1, NBLOCKS(ISYM)
-      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
-         DO JBL=1, NBLOCKS(ISYM)
-         DO JDX=IBLOCKS(1,JBL,ISYM), IBLOCKS(2,JBL,ISYM)
-            DO K = 1, NVCLEN
-               TMP(K,JDX) = TMP(K,JDX) + GAO(K,IDX,1)*DMAT(IDX,JDX)
+         DO IBL=1, NBLOCKS(ISYM)
+            ISTART=IBLOCKS(1,IBL,ISYM)
+            ILEN=IBLOCKS(2,IBL,ISYM)-ISTART+1
+            DO JBL=1, NBLOCKS(ISYM)
+               JSTART=IBLOCKS(1,JBL,ISYM)
+               JLEN=IBLOCKS(2,JBL,ISYM)-JSTART+1
+               call dgemm('N','N',NVCLEN,JLEN,ILEN,1.0d0,
+     &                    GAO(1,ISTART,1),NVCLEN,
+     &                    DMAT(ISTART,JSTART),NBAST,1.0d0,
+     &                    TMP(1,JSTART),NVCLEN)
             END DO
          END DO
-         END DO
-      END DO
-      END DO
       END DO
       call dzero(RHO, NVCLEN)
       call dzero(GRAD, 3*NVCLEN)
@@ -272,18 +271,17 @@ c
 c      CALL DZERO(TMP,NVCLEN*NBAST)
       DO ISYM = 1, NSYM
       DO IBL=1, NBLOCKS(ISYM)
-      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
          JSYM = MULD2H(ISYM,IDSYM)
          DO JBL=1, NBLOCKS(JSYM)
-         DO JDX=IBLOCKS(1,JBL,JSYM), IBLOCKS(2,JBL,JSYM)
-            DO K = 1, NVCLEN
-               TMP(K,JDX) = TMP(K,JDX) +
-     &              GAO(K,IDX,1)*DMAT(IDX,JDX) +
-     &              GAO(K,IDX,1)*DMAT(JDX,IDX)
+            DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+               DO JDX=IBLOCKS(1,JBL,JSYM), IBLOCKS(2,JBL,JSYM)
+                  DIJSYM = DMAT(IDX,JDX) + DMAT(JDX,IDX)
+                  DO K = 1, NVCLEN
+                     TMP(K,JDX) = TMP(K,JDX) + GAO(K,IDX,1)*DIJSYM
+                  END DO
+               END DO
             END DO
          END DO
-         END DO
-      END DO
       END DO
       END DO
       call dzero(GRAD, 4*NVCLEN)

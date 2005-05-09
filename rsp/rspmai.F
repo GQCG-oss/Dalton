@@ -663,6 +663,9 @@ C
          NTPCN1(I) = 0
          NTPCN2(I) = 0
          NTMCNV(I) = 0
+         DO J=1,MAXLPP
+            LCMEXC(J,I) = .TRUE.
+         END DO
       END DO
 C
 C Non-equilibrium solvent parameter read in SIRIUS needs to be reset
@@ -1118,19 +1121,17 @@ C
 #include "infinp.h"
 #include "inftap.h"
 C
-      DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
-     *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
-     *            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
-     *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
-     *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
-     *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.ROOTS ', '.MAX IT', '.THCPP ', '.OLSEN ',
-     *            '.MAXITO', '.XXXXXX', '.ANTTES', '.RESTPP',
-     *            '.ABCHK ', '.ABSYM ', '.PRINT ',
-     *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC',
-     *            '.XXXXXX', '.X2TEST', '.A2TEST',
-     *            '.SINGLE', '.DOUBLE', '.THCLR ', '.MAXITL',
-     *            '.TRIPLE', '.NSIMUL', '.NSTART'/
+      DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ','.DIPVEL',
+     *            '.DIPVLX', '.DIPVLY', '.DIPVLZ', '.DIPMAG','.DIPMGX',
+     *            '.DIPMGY', '.DIPMGZ', '.QUADMO', '.QUADXX','.QUADXY',
+     *            '.QUADXZ', '.QUADYY', '.QUADYZ', '.QUADZZ','.SPIN-O',
+     *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT','.ROOTS ',
+     *            '.MAX IT', '.THCPP ', '.OLSEN ', '.MAXITO','.SROOTS',
+     *            '.ANTTES', '.RESTPP', '.ABCHK ', '.ABSYM ','.PRINT ',
+     *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC','.XXXXXX',
+     *            '.X2TEST', '.A2TEST', '.SINGLE', '.DOUBLE','.THCLR ',
+     *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART'/
+      INTEGER IXARR(MAXLPP)
 C
 C
 C READ IN  INPUT
@@ -1287,6 +1288,29 @@ C
                READ (LUCMD,*) MAXITO
                GO TO 100
  30            CONTINUE
+c              SROOTS: compute transition moments between
+c              selected excited states
+               NPPTOT = 0
+               WRITE(LUPRI,*)'Will compute transition moments between ',
+     *              ' selected roots'
+               WRITE(LUPRI,*) 'Symmetry : Roots '
+               DO JSYM=1,NSYM
+                  READ (LUCMD,*) IXL, (IXARR(J), J=1,IXL)
+                  IMAX = 0
+                  DO J = 1, MAXLPP
+                     LCMEXC(J,MULD2H(JSYM,LSYMRF)) = .FALSE.
+                  END DO
+                  DO J = 1, IXL
+                     LCMEXC(IXARR(J),MULD2H(JSYM,LSYMRF)) = .TRUE.
+                     IMAX = MAX(IMAX,IXARR(J))
+                  END DO
+                  WRITE(LUPRI,'(I9," : ",20I3)')
+     &                 JSYM,(IXARR(J),J=1,IXL)
+                  NPPCNV(MULD2H(JSYM,LSYMRF)) = IMAX + 1
+               END DO
+               DO JSYM=1,NSYM
+                  NPPTOT = NPPTOT + NPPCNV(JSYM)
+               END DO
                GO TO 100
  31            CONTINUE
                ANTTES = .TRUE.

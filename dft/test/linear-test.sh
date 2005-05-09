@@ -22,7 +22,7 @@ EOF
 gen_BeH() {
 cat > MOLECULE.INP <<EOF
 BASIS
-AhlrichsVTZ
+Ahlrichs-VTZ
 BeH AhlrichsVDZ
 --------
     2    0
@@ -51,7 +51,7 @@ EOF
 gen_CO() {
 cat > MOLECULE.INP <<EOF
 BASIS
-AhlrichsVDZ
+Ahlrichs-VDZ
 CO with STO-2G basis set
 --------
     2    0

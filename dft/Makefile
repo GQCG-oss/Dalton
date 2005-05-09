@@ -61,6 +61,7 @@ CFILES =\
 	integrator.c	\
 	prop-eval.c	\
 	quad-fast.c	\
+	quad-faster.c	\
 	quad-strict.c
 
 EXTRA_FILES = fun-tester.c

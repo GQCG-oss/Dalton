@@ -1,3 +1,24 @@
+2005-05-09  Pawel Salek 
+
+	merge dft-qr-faster.
+	* abacus/herdirect.F: fix CAM-B3LYP parallelization.
+	* abacus/herpar.F: no need to pass HFXATT to slaves.
+	* dft/Makefile: add quad-faster.c 
+	* dft/dft_aux.F: add ability to set KSYMOP.
+	* dft/dft_ksm.F: partial BLASification from Rafal Podeszwa.
+	* dft/dft_rho.F: ditto.
+	* dft/general.[hc]: DFT-CR parallelization.
+	* dft/grid-gen.c: support for dummy atoms (R. Podeszwa).
+	* dft/test/{linear-test,quad-dynamic}.sh: basis sets renamed.
+	* include/infpp.h: .SROOTS support.
+	* rsp/hypinp.F: compute transition moments only between selected
+	excited states.
+	* rsp/rspmai.F: related: initialize LCMEXC array.
+	* rsp/rspvec.F: use it.
+	* rsp/rspqrx3.F: connect quad-faster.
+	* sirius/sirinp.F: be professional: check that finite-field
+	input.
+
 2005-03-29  Pawel Salek 
 
 	* dft/cube-fast.c: check malloc() results.

@@ -545,13 +545,13 @@ struct {
     { (DFTPropEvalMaster)dft_kohn_sham_,   dft_kohn_sham_slave   },
     { (DFTPropEvalMaster)dft_kohn_shamab_, dft_kohn_shamab_slave },
     { (DFTPropEvalMaster)dft_lin_resp_,    dft_lin_resp_slave    },
-#endif
-    { (DFTPropEvalMaster)FSYM2(dft_lin_respf),   dft_lin_respf_slave   },
-#if 0
     { (DFTPropEvalMaster)dft_lin_respab_,  dft_lin_respab_slave  },
     { (DFTPropEvalMaster)dft_mol_grad_,    dft_mol_grad_slave    },
 #endif
-    { (DFTPropEvalMaster)dftqrcf_,         dft_qr_resp_slave     }
+    { (DFTPropEvalMaster)FSYM2(dft_lin_respf),  dft_lin_respf_slave },
+    { (DFTPropEvalMaster)dftqrcf_,              dft_qr_resp_slave   },
+    { (DFTPropEvalMaster)FSYM2(dft_qr_respons), dft_qrbl_slave      },
+    { (DFTPropEvalMaster)FSYM(dftcrcf),         dft_cr_resp_slave   }
 };
 
 /* mpi_sync_data:

@@ -62,6 +62,7 @@ C
             FKSM(J,I) = AVERAG
             FKSM(I,J) = AVERAG
          END DO
+         IF(.NOT.DOGGA) FKSM(I,I) = FKSM(I,I)*0.5D0
       END DO
       EDFTY = ENERGY
       IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14,A,E8.2)')
@@ -96,7 +97,7 @@ C
      &        + DFTENE(RHOA(IPNT),DUMMY)*WGHT(IPNT)
          VXC(IPNT) = 2D0*VX(1)
       END DO
-      CALL DISTRLDA(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
+      CALL DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &     VXC,GAO,FKSM)
       RETURN
       END
@@ -131,15 +132,19 @@ C
             VXC(2,IPNT) = 0D0
          END IF
       END DO
-      CALL DISTRGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
+      CALL DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &              VXC,GAO,GRADA,FKSM)
       RETURN
       END
+c     ================================================================
+c     DISTLDAI AND DISTGGAI are matrix element distribution routines
+c     using inline versions of the loops. This make sense for very fast
+c     compilers and slow BLAS routines.
 c     
-c     DISTRLDA - helper subroutine to distribute given Omega with
+c     DISTRLDAI - helper subroutine to distribute given Omega with
 c     given set of rho-dependent coefficients.
 c
-      SUBROUTINE DISTRLDA(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
+      SUBROUTINE DISTLDAI(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,EXCMAT)
 #include <implicit.h>
 c
@@ -162,15 +167,12 @@ c
                   TMP(K) = GAOS(K,J)*coef(K)
                END DO
                DO IBL = 1, NBLCNT(ISYM)
-                  ITOP = MIN(J-1,NBLOCKS(2,IBL,ISYM))
+                  ITOP = MIN(J,NBLOCKS(2,IBL,ISYM))
                   DO I = NBLOCKS(1,IBL,ISYM),ITOP
                      DO K = IBLSTART, IBLEND
                         EXCMAT(I,J) = EXCMAT(I,J) + GAOS(k,I)*TMP(k)
                      END DO
                   END DO
-               END DO
-               DO K = IBLSTART, IBLEND
-                  EXCMAT(J,J) = EXCMAT(J,J) + 0.5*GAOS(k,J)*TMP(k)
                END DO
             END DO
          END DO
@@ -178,10 +180,10 @@ c
       RETURN
       END
 c     
-c     DISTRGGA - helper subroutine to distribute given Omega with
+c     DISTGGAI - helper subroutine to distribute given Omega with
 c     given set of rho and grad-dependent coefficients.
 c
-      SUBROUTINE DISTRGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
+      SUBROUTINE DISTGGAI(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,GRAD,EXCMAT)
 #include <implicit.h>
 c
@@ -219,6 +221,112 @@ c
       END DO
       RETURN
       END
+c     ================================================================
+c     DISTLDAB AND DISTGGAB are matrix element distribution routines
+c     using BLAS routines for the kernel operations. This make sense for
+c     hardware-optimized BLAS routines only that are able to compensate
+c     for the call overhead.
+c     
+      SUBROUTINE DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
+     &                    COEF,GAOS,EXCMAT)
+#include <implicit.h>
+c
+c     NBLEN - number of grid points in the batch.
+c     NBLCNT - number of "active" blocks in each symmetry.
+c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
+c
+#include <inforb.h>
+c
+      DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
+      DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
+      DIMENSION EXCMAT(NBAST,NBAST)
+c
+      DIMENSION TMP(NBLEN,NBAST)
+c
+      NK=IBLEND-IBLSTART+1
+      DO ISYM = 1, NSYM         
+         DO JBL = 1, NBLCNT(ISYM)
+            DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
+               DO K = IBLSTART, IBLEND
+                  TMP(K,J) = GAOS(K,J)*coef(K)
+               END DO
+            END DO
+         END DO
+         DO JBL = 1, NBLCNT(ISYM)
+            JSTART=NBLOCKS(1,JBL,ISYM)
+            JLEN=NBLOCKS(2,JBL,ISYM)-JSTART+1
+            DO IBL = 1, JBL-1
+               ISTART=NBLOCKS(1,IBL,ISYM)
+               ILEN=NBLOCKS(2,IBL,ISYM)-ISTART+1
+               call dgemm('T','N',ILEN,JLEN,NK,1.0d0,
+     &              GAOS(IBLSTART,ISTART),NBLEN,
+     &              TMP(IBLSTART,JSTART),NBLEN,1.0d0,
+     &              EXCMAT(ISTART,JSTART),NBAST)
+            END DO
+c           the diagonal block which always exists (functions always
+c           overlap with themselves without diagonal)
+            DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
+               DO I = NBLOCKS(1,JBL,ISYM), J
+                  DO K = IBLSTART, IBLEND
+                     EXCMAT(I,J) = EXCMAT(I,J) + GAOS(k,I)*TMP(k,J)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END DO
+      RETURN
+      END
+c
+c     DISTGGAB - helper subroutine to distribute given Omega with
+c     given set of rho and grad-dependent coefficients.
+c
+      SUBROUTINE DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
+     &                    COEF,GAOS,GRAD,EXCMAT)
+#include <implicit.h>
+c
+c     NBLEN - number of grid points in the batch.
+c     NBLCNT - number of "active" blocks in each symmetry.
+c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
+c
+#include <inforb.h>
+c
+      DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
+      DIMENSION GAOS(NBLEN,NBAST,4), COEF(2,NBLEN),GRAD(3,NBLEN)
+      DIMENSION EXCMAT(NBAST,NBAST)
+c
+      DIMENSION TMP(NBLEN,NBAST)
+c
+      NK=IBLEND-IBLSTART+1
+      DO ISYM = 1, NSYM
+         DO JBL = 1, NBLCNT(ISYM)
+            DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
+               DO K = IBLSTART, IBLEND
+                  TMP(K,J) =
+     &                   coef(1,K)* GAOS(K,J,1)
+     &                 + coef(2,K)*(GAOS(K,J,2)*GRAD(1,K)+
+     &                              GAOS(K,J,3)*GRAD(2,K)+
+     &                              GAOS(K,J,4)*GRAD(3,K))
+               END DO
+            END DO
+         END DO
+         DO JBL = 1, NBLCNT(ISYM)
+            JSTART=NBLOCKS(1,JBL,ISYM)
+            JLEN=NBLOCKS(2,JBL,ISYM)-JSTART+1
+            DO IBL = 1, NBLCNT(ISYM)
+               ISTART=NBLOCKS(1,IBL,ISYM)
+               ILEN=NBLOCKS(2,IBL,ISYM)-ISTART+1
+               call dgemm('T','N',ILEN,JLEN,NK,1.0d0,
+     &              GAOS(IBLSTART,ISTART,1),NBLEN,
+     &              TMP(IBLSTART,JSTART),NBLEN,1.0d0,
+     &              EXCMAT(ISTART,JSTART),NBAST)
+            END DO
+         END DO
+      END DO
+      RETURN
+      END
+c     ================================================================
+c     Parallelization-related part of the exchange-correlation
+c     evaluation module.
 c
       SUBROUTINE KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRINT)
 #include <implicit.h>

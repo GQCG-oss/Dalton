@@ -166,6 +166,12 @@ c
       CHARACTER str(len)
       WRITE(LUPRI,*) str
       END
+      FUNCTION ISETKSYMOP(IKSYM)
+#include <implicit.h>
+#include <wrkrsp.h>
+      ISETKSYMOP = KSYMOP
+      KSYMOP = IKSYM
+      END
       SUBROUTINE LRAO2MO(CMO,KSYMOP,FAOMAT,FMAT,WORK,LWORK)
 #include <implicit.h>
 #include <inforb.h>

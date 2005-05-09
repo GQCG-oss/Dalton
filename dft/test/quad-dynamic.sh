@@ -14,7 +14,7 @@ thresholds="1e-16 1e-16 1e-17"
 thresholds="1e-10 1e-12 1e-14"
 
 # OTHER CONFIGURATION VARIABLES ------------------------------------
-dalton=`pwd`/../../dalton.x
+dalton=`pwd`/../../bin/dalton.x
 tmp=${TMPDIR:-/tmp}/${USER}
 
 # MOLECULE GENERATION ----------------------------------------------
@@ -23,7 +23,7 @@ gen_LiH() {
 cat > MOLECULE.INP <<EOF
 BASIS
 STO-2G
-LiH STO-2G or AhlrichsVDZ
+LiH STO-2G or Ahlrichs-VDZ
 --------
     2    0
         2.    1
@@ -36,7 +36,7 @@ EOF
 gen_CO() {
 cat > MOLECULE.INP <<EOF
 BASIS
-AhlrichsVDZ
+Ahlrichs-VDZ
 CO molecule (geometry from O. Christiansen et al. /CPL 305 (1999) 147-155.)
 ------------
     2    2  X  Y
@@ -79,7 +79,7 @@ gen_CO2() {
 cat > MOLECULE.INP <<EOF
 BASIS
 cc-pVTZ
-CO2 STO-2G or AhlrichsVDZ
+CO2 STO-2G or Ahlrichs-VDZ
 --------
     2    0
         6.    1
@@ -140,6 +140,8 @@ $hfocc
 $thresholds
 .RADINT
 $grid
+.GRID TYPE
+BECKE
 *HAMILTONIAN
 .FIELD
 $field
@@ -151,7 +153,7 @@ $mostart
 *LINEAR
 .DIPLNZ
 .THCLR 
-1e-8
+1e-4
 .FREQUENCIES
 $freq_cnt
 $freq
@@ -190,6 +192,8 @@ $hfocc
 $grid
 .DFTTHR
 $thresholds
+.GRID TYPE
+BECKE
 *ORBITAL INPUT
 .MOSTART
 $mostart
@@ -197,7 +201,7 @@ $mostart
 *QUADRATIC
 .DIPLNZ
 .THCLR 
-1e-8
+1e-4
 .BFREQ
 $freq_cnt
 $freq
@@ -263,7 +267,8 @@ rm SIRIUS.RST
 #run_test gen_LiH  1  "GGAKey"
 run_test gen_LiH  1  "GGAKey PBEx=1 vwn=1"
 rm SIRIUS.RST
-run_test gen_CO   ""  "PBE"
+run_test gen_CO   ""  "CAMb3LYP"
+exit 0
 rm SIRIUS.RST
 run_test gen_HF    ""  "PBE"
 run_test gen_HF    ""  "B3LYP"

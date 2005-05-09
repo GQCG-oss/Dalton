@@ -1356,16 +1356,6 @@ typedef struct {
     int   trplet, ksymop, vecs_in_batch;
 } LinRespBlData;
 
-extern void
-FSYM2(getexp_blocked_lda)(const int *idsym, real*dmat, const real* atv, 
-                    const int *nblocks, int (*orbblocks)[2], const int *lda,
-                    real *tmp, const int * bllen, real *rho);
-
-extern void
-FSYM2(getexp_blocked_gga)(const int *idsym, real*dmat, const real* atv, 
-                    const int *nblocks, int (*orbblocks)[2], const int *lda,
-                    real *tmp, const int * bllen, real (*grad)[4]);
-
 static void
 lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
                   int bllen, int blstart, int blend,

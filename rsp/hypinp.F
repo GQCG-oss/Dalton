@@ -1231,7 +1231,8 @@ C
                      CEXMBE = EXCITA(ICSYM,IC,ISPINC+1) -
      *                        EXCITA(IBSYM,IB,ISPINB+1)
                      DO 1100 IAOP = 1,NGPPP(IASYM)
-                        IF (.NOT.RSPCI) THEN
+                        IF (.NOT.RSPCI.AND.
+     *                       LCMEXC(IB,IBSYM).AND.LCMEXC(IC,ICSYM)) THEN
                            IF (ISPINA .EQ. 0) THEN
                               INUM = INQRLR
      *                               (LBLPP(IASYM,IAOP),CEXMBE,IASYM)
