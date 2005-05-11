@@ -109,7 +109,6 @@ static const real CONSTPI = M_PI;
 int global_useHiCu = 0;
 
 static int    global_maxNoOfShells     = 44444;
-static int    global_maxNoOfDistrs     = 6000000;
 
 /* This variable is used to keep track of when it is time to 
    create a new grid, together with parameter global_nFreeze. */
@@ -2917,7 +2916,7 @@ do_merge_sort_distrs(int n,
 
 
 
-int
+static int
 compute_extent_for_shells(BasisInfoStruct* basisInfo, real targetRhoError)
 {
   int i;
@@ -2958,9 +2957,67 @@ compute_extent_for_shells(BasisInfoStruct* basisInfo, real targetRhoError)
 
 
 
-int
-get_density(DistributionSpecStruct* rho,
-	    int maxCountRho,
+
+
+static int
+get_no_of_primitives_for_density(real cutoff,
+				 const real *dmat,
+				 BasisInfoStruct* basisInfo)
+{
+#define MAX_DISTR_IN_TEMP_LIST 888
+
+  int i, j;
+  int symmetryFactor;
+  int nBasisFuncs, nn;
+  
+  do_output_2(2, "entering function get_no_of_primitives_for_density, cutoff = %22.15f", cutoff);
+
+  nBasisFuncs = basisInfo->noOfBasisFuncs;
+  nn = 0;
+  for(i = 0; i < nBasisFuncs; i++)
+    {
+      for(j = 0; j < nBasisFuncs; j++)
+	{
+	  DistributionSpecStruct tempList[MAX_DISTR_IN_TEMP_LIST];
+	  int nPrimitives, k;
+	  /* the matrix M is symmetric: include diagonal terms once, */
+	  /* and include upper off-diagonal terms multiplied by 2 */
+	  if(i == j)
+              symmetryFactor = 1;
+	  else
+	    symmetryFactor = 2;
+	  if(i > j)
+	    continue;
+          nPrimitives = 
+	    get_product_simple_primitives(basisInfo, i,
+					  basisInfo, j,
+					  tempList,
+					  MAX_DISTR_IN_TEMP_LIST);
+	  do_output_2(3, "get_product_simple_primitives returned %i",
+		      nPrimitives);
+	  if(nPrimitives <= 0)
+	    {
+	      do_output_2(0, "error in get_product_simple_primitives");
+	      return -1;
+	    }
+	  for(k = 0; k < nPrimitives; k++)
+	    {
+	      DistributionSpecStruct* currDistr = &tempList[k];
+	      real Mij = dmat[i*nBasisFuncs+j];
+	      real newCoeff = currDistr->coeff * Mij * symmetryFactor;
+	      if(fabs(newCoeff) > cutoff)
+		nn++;
+	    }
+	}
+    }
+  return nn;
+}
+
+
+
+
+static int
+get_density(DistributionSpecStruct** rhoPtr,
 	    int maxCountShellList,
 	    int* noOfShellsReturn,
 	    real cutoffInp, 
@@ -2972,9 +3029,6 @@ get_density(DistributionSpecStruct* rho,
 {
 #define MAX_DISTR_IN_TEMP_LIST 888
   real cutoff = cutoffInp;
-
-  /*DistributionSpecStruct* rho2 =  */
-  /*malloc(maxCountRho * sizeof(DistributionSpecStruct)); */
 
   /*char s[888]; */
   int i, j, k, kk;
@@ -3019,6 +3073,21 @@ get_density(DistributionSpecStruct* rho,
     }
   do_output_2(2, "get_simple_primitives_all returned OK, n = %i",
 	      basisInfo.noOfSimplePrimitives);
+
+
+  /* find out how much space is needed for rho */
+  int nNeededForRho = get_no_of_primitives_for_density(cutoff,
+						       dmat,
+						       &basisInfo);
+  if(nNeededForRho <= 0)
+    {
+      do_output_2(0, "error in get_no_of_primitives_for_density");
+      return -1;
+    }
+  
+  /* allocate rho */
+  DistributionSpecStruct* rho = dal_malloc_safe(nNeededForRho * sizeof(DistributionSpecStruct));
+  *rhoPtr = rho;
   
   nBasisFuncs = basisInfo.noOfBasisFuncs;
   nn = 0;
@@ -3061,16 +3130,20 @@ get_density(DistributionSpecStruct* rho,
 	      do_output_2(4, "newCoeff = %33.22f", newCoeff);
 	      if(fabs(newCoeff) > cutoff)
 		{
-                    /* add to final list */
+		  /* add to final list */
+		  if(nn > nNeededForRho)
+		    {
+		      do_output_2(0, "error: (nn > nNeededForRho)");
+		      return -1;
+		    }
 		  memcpy(&rho[nn], currDistr, 
 			 sizeof(DistributionSpecStruct));
 		  rho[nn].coeff = newCoeff;
-		  nn++;
+		  nn++;  
 		}
 	    }
 	}
     }
-
 
   *noOfShellsReturn = basisInfo.noOfShells;
 
@@ -3293,15 +3366,11 @@ do_cartesian_grid(int nbast, const real* dmat, DftGridReader* res)
       shellList = 
 	dal_malloc(global_maxNoOfShells * 
 		   sizeof(ShellSpecStruct));
-      rho = 
-	dal_malloc(global_maxNoOfDistrs * 
-		   sizeof(DistributionSpecStruct));
       basisFuncList = 
 	dal_malloc(nbast * sizeof(BasisFuncStruct));
                     
       noOfDistributions = 
-	get_density(rho, 
-		    global_maxNoOfDistrs, 
+	get_density(&rho, 
 		    global_maxNoOfShells, 
 		    &noOfShells, 
 		    global_distrCutoff, 
