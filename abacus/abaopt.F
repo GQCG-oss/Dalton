@@ -2121,6 +2121,9 @@ C
 #include "abainf.h"
 #include "rspprp.h"
 #include "esg.h"
+Cef begin
+#include <incore.h>
+Cef end
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       CALL QENTER('GTNRGY')
@@ -2130,6 +2133,25 @@ C
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
+Cef begin
+      IF (AOSAVE) THEN
+         LINTSV = .FALSE.
+         LINTMP = .FALSE.
+         INITX = .FALSE.
+         MSAVE = .TRUE.
+         MMCORE = MMWORK
+         LMCORE = MMCORE
+         ISCORE = 1
+         JSCORE = ISCORE
+         N_SHL = 1
+         I_SHL = 1
+         INDX_SHL1 = 0
+         INDX_SHL2 = 0
+         INDX_SHL3 = 0
+         INDX_SHL4 = 0
+C     CALL CLEAR_INCOREMEM()
+      END IF
+Cef end
 C ach 
       IF (DFTRUN) GRDONE = .FALSE.
       IF (.NOT. EXSIR) THEN

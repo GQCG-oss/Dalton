@@ -492,9 +492,10 @@ C
 #include <maxorb.h>
 #include <mtags.h>
 C
+Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL FIRST
       DIMENSION FMAT(*), DMAT(*), NSTAT(NODTOT), TMPMAT(*),
-     &          TIMES(MXCLS2), INDEX(NINDEX), IWHICH(MXCLS2),
+     &          TIMES(MXCLS2), INDEX(3,NINDEX), IWHICH(MXCLS2),
      &          CLSCPU(MXCLS2), WORK(LWORK)
 C
 C Used from common blocks
@@ -507,6 +508,9 @@ C
 #include <gnrinf.h>
 #include <siripc.h>
 #include <infpar.h>
+Cef begin
+#include <incore.h>
+Cef end
 C
 C     NPOS must be saved and therefore statically allocated.
 C
@@ -527,6 +531,9 @@ C
       CALL INDEKS(TIMING,INDEX,NINDEX,MXCLS2,NODTOT,NTASK,NBATCH,
      &            NPOS,IPRINT)
 C
+Cef begin
+C  10.mai    INITX = .TRUE.
+Cef end
 C-----------------------
 C     Start calculation.
 C-----------------------
@@ -551,44 +558,137 @@ C
       CALL QEXIT('ERI_PARDR1')
       RETURN
       END
-C  /* Deck dopar */
+C     /* Deck dopar */
+Cef begin 
       SUBROUTINE DOPAR(INDEX,MXBTCH,NBATCH,NSTAT,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
 #include <mtags.h>
+#include <incore.h>
 C
-      LOGICAL DONE
-      DIMENSION INDEX(MXBTCH), NSTAT(NODTOT)
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
 C
+C
+      LOGICAL DONE, TDONE
+      DIMENSION INDEX(3,MXBTCH), NSTAT(NODTOT), IQUEUE(2,NODTOT,1000),
+     &     NQUEUE(NODTOT)
+C  
 C Used from common blocks
 C
 C  MXORB  : MXSHEL (for INFPAR)
 C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
 C
 #include <infpar.h>
+C   
+C For MPE event logging
+C      evIDb1 = MPE_Log_get_event_number()
+C      evIDe1 = MPE_Log_get_event_number()
+C      call MPE_Describe_state(evIDb1,evIDe1,
+C     &     "DOPAR","magenta")
+C   
+C Begin logging the event
+C      call MPE_Log_event(evIDb1,0,'')
 C
       CALL QENTER('DOPAR')
       IF (IPRINT .GT. 3) CALL TITLER('Output from DOPAR','*',103)
 C
       CALL IZERO(NSTAT,NODTOT)
 C
+      CALL IZERO(IQUEUE,(2*1000*NODTOT))
+C     
+      CALL IZERO(NQUEUE,NODTOT)
+      
 C     Start loop over integrals (class1|class2).
 C
+      IQSIZE = 1000
       IPLACE = 1
+      IPLACQ = 0
+      ITOTNT = 0
       DONE   = .FALSE.
+      TDONE  = .FALSE.
+      IDONE = 0
 C
-      DO 100, I = 1,NBATCH
-C
+      IF (AOSAVE) THEN
+C     
+C         do ii=1,mxbtch
+C            write(lupri,*) 'i,INDEX(1..3,i):',ii,INDEX(1,ii), 
+C     &           INDEX(2,ii),  INDEX(3,ii)
+C         end do
+         IF (NTASK .GT. 1) THEN
+            CALL QUIT('NTASK > 1 is not ported to AOSAVE = TRUE.')
+         END IF
+C               
+ 110     CONTINUE 
+C     
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
+         CALL MPIXRECV(IPLAC2,1,'INTEGER',NWHO,MTAG51)
+C         CALL MPI_BARRIER(MPI_COMM_WORLD)
+         IF (IPLAC2 .NE. 0) THEN
+            CALL MPIXRECV(ISAVED,1,'INTEGER',NWHO,MTAG52)
+            INDEX(3,IPLAC2) = ISAVED
+         END IF
 C
-C        Send (I|J) batch to NODEID
+C     Send (I|J) batch to NODEID
+C     
+         IF (IPLACE .GT. NBATCH .AND. NQUEUE(NWHO) .EQ. 0) THEN
+            TDONE = .TRUE.
+            CALL MPIXSEND(TDONE,1,'LOGICAL',NWHO,MTAG6)
+            TDONE = .FALSE.
+            IDONE = IDONE + 1
+         ELSE
+            CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
+            IF (NQUEUE(NWHO) .GT. 0) THEN 
+               CALL MPIXSEND(IQUEUE(1,NWHO,1),NTASK,
+     &              'INTEGER',NWHO,MTAG61)
+               CALL MPIXSEND(INDEX(3,IQUEUE(2,NWHO,1)),NTASK,'INTEGER', 
+     &              NWHO,MTAG64) 
+               CALL MPIXSEND(IQUEUE(2,NWHO,1),1,'INTEGER',
+     &              NWHO,MTAG62)
+               NQUEUE(NWHO) = NQUEUE(NWHO) - 1
+               CALL ICOPY((NQUEUE(NWHO)+1),IQUEUE(1,NWHO,2),(2*NODTOT),
+     &              IQUEUE(1,NWHO,1),(2*NODTOT))
+               CALL ICOPY((NQUEUE(NWHO)+1),IQUEUE(2,NWHO,2),(2*NODTOT),
+     &              IQUEUE(2,NWHO,1),(2*NODTOT))
+C     
+               IPLACQ = IPLACQ - 1  
+            ELSE IF ((INDEX(3,IPLACE) .EQ. 1 
+     &              .AND. INDEX(2,IPLACE) .EQ. NWHO)
+     &              .OR. (INDEX(3,IPLACE) .EQ. 0)) THEN
+            
 C
-         CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
-         CALL MPIXSEND(INDEX(IPLACE),NTASK,'INTEGER',NWHO,MTAG6)
+               CALL MPIXSEND(INDEX(1,IPLACE),NTASK,'INTEGER',NWHO,
+     &              MTAG61)
+               CALL MPIXSEND(INDEX(3,IPLACE),NTASK,'INTEGER',NWHO,
+     &              MTAG64)
+C
+               INDEX(2,IPLACE) = NWHO
+C     
+               CALL MPIXSEND(IPLACE,1,'INTEGER',NWHO,MTAG62)
+               IPLACE = IPLACE + NTASK
+            ELSE     
+C     
+               NQUEUE(INDEX(2,IPLACE)) = NQUEUE(INDEX(2,IPLACE)) + 1
+               IF (NQUEUE(INDEX(2,IPLACE)) .GT. IQSIZE) THEN
+                  CALL QUIT('The queue array IQUEUE must be enlarged.')
+               END IF
+               IQUEUE(1,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) = 
+     &              INDEX(1,IPLACE)
+               IQUEUE(2,INDEX(2,IPLACE),NQUEUE(INDEX(2,IPLACE))) = 
+     &              IPLACE
+               IPLACQ = IPLACQ + 1
+               IPLACE = IPLACE + NTASK
+               ITMP = 0
+C     Tell the unemployed node to try again
+               CALL MPIXSEND(ITMP,1,'INTEGER',NWHO,MTAG61)
+            END IF
+         END IF
+C     
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG5)
@@ -598,7 +698,85 @@ C        Send (I|J) batch to NODEID
 C
          CALL PVMXINITSEND(NCODE)
          CALL PVMXPACK(DONE,1,'LOGICAL')
-         CALL PVMXPACK(INDEX(IPLACE),NTASK,'INTEGER')
+         CALL PVMXPACK(INDEX(1,IPLACE),NTASK,'INTEGER')
+         CALL PVMXSEND(NODEID(NWHO),MTAG6)
+#endif
+C
+C        Who-got-the-last-batch statistics
+C
+         NSTAT(NWHO) = NSTAT(NWHO) + 1
+C
+         IF (IPRINT .GT. 4) THEN
+            WRITE(LUPRI,'(5X,A10,I5,A8,I4)')
+     &              'Send batch', I, 'to node', NWHO
+         END IF
+C
+         IF (IPLACE .LE. NBATCH .OR. IPLACQ .GT. 0) THEN
+            GOTO 110
+         END IF
+C
+C     Instruct nodes to return the final results.
+C
+      DONE = .TRUE.
+C
+      DO 210 I = 1,(NODTOT-IDONE)
+C
+#if defined (VAR_MPI)
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
+C
+         CALL MPIXRECV(IPLAC2,1,'INTEGER',NWHO,MTAG51)
+C
+         IF (IPLAC2 .NE. 0) THEN
+            CALL MPIXRECV(ISAVED,1,'INTEGER',NWHO,MTAG52)
+            INDEX(3,IPLAC2) = ISAVED
+         END IF
+         CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
+C         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+#endif
+#if defined (VAR_PVM)
+         CALL PVMXRECV(-1,MTAG5)
+         CALL PVMXUNPACK(NWHO,1,'INTEGER')
+C
+         CALL PVMXINITSEND(NCODE)
+         CALL PVMXPACK(DONE,1,'LOGICAL')
+         CALL PVMXSEND(NODEID(NWHO),MTAG6)
+#endif
+ 210  CONTINUE
+C
+      IF (MXBTCH .GT. MIN(MXTSK,IEIR)) THEN
+          CALL QUIT('INDX_C must be enlarged.')
+       END IF
+       CALL ICOPY((3*MXBTCH),INDEX(1,1),1,INDX_C(1,1),1)
+C      write(lupri,*) 'INDX_C'
+C      DO J=1,MXBTCH
+C         write(lupri,*) j,(INDX_C(I,J),i=1,3)
+C      END DO
+C
+C  ELSE below is for the compability to old code: AOSAVE = FALSE
+      ELSE 
+C
+         DO 100, I = 1,NBATCH
+C     
+#if defined (VAR_MPI)
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
+C
+C        Send (I|J) batch to NODEID
+C
+         CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
+         CALL MPIXSEND(INDEX(MOD(IPLACE-1,3)+1,INT((IPLACE-1)/3)+1),
+     &        NTASK,'INTEGER',NWHO,MTAG6)
+#endif
+#if defined (VAR_PVM)
+         CALL PVMXRECV(-1,MTAG5)
+         CALL PVMXUNPACK(NWHO,1,'INTEGER')
+C     
+C     Send (I|J) batch to NODEID
+C     
+         CALL PVMXINITSEND(NCODE)
+         CALL PVMXPACK(DONE,1,'LOGICAL')
+         CALL PVMXPACK(INDEX(1,IPLACE),NTASK,'INTEGER')
          CALL PVMXSEND(NODEID(NWHO),MTAG6)
 #endif
 C
@@ -635,10 +813,15 @@ C
          CALL PVMXSEND(NODEID(NWHO),MTAG6)
 #endif
   200 CONTINUE
+C  ENDIF below ends if-test on AOSAVE   
+      END IF
 C
+C End logging the event
+C     call MPE_Log_event(evIDe1,0,'')
       CALL QEXIT('DOPAR')
       RETURN
       END
+Cef end
 C  /* Deck eri_rvres */
       SUBROUTINE ERI_RVRES(FMAT,TMPMAT,MXCLS2,TIMES,IWHICH,CLSCPU,
      &                     IPRINT)

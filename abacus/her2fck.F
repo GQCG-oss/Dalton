@@ -105,7 +105,10 @@ C
       ENDIF
       CALL MEMGET('INTE',KIND ,4*NBUF  ,WORK,KFREE,LFREE)
 C
-      CALL INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
+Cef begin
+      CALL MEMGET('REAL',KAOINT,(NCCINT*NINTYP),WORK,KFREE,LFREE)
+Cef end
+      CALL INTFC1(FMAT,AOINT,WORK(KAOINT),DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,WORK(KIND),NBUF)
@@ -118,7 +121,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck intfc1 */
-      SUBROUTINE INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
+Cef begin
+C Added argument AOINT2 to subroutine INTFC1
+Cef end
+      SUBROUTINE INTFC1(FMAT,AOINT,AOINT2,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,IND,NNBUF)
@@ -144,7 +150,8 @@ C*****************************************************************************
       INTEGER A,B,C,D
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
-     &          AOINT(NCCINT), FMAT(NBASIS,NBASIS,NDMAT,*),
+     &          AOINT(NCCINT), AOINT2(NCCINT),
+     &          FMAT(NBASIS,NBASIS,NDMAT,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(NNBUF,4),DINTSKP(2,4)
@@ -212,7 +219,9 @@ C
                         IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
                         IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = AINT
+Cef begin                      
+                        AOINT2(NBUF) = AINT
+Cef end
                         IND(NBUF,1) = A
                         IND(NBUF,2) = B
                         IND(NBUF,3) = ICORBC(IORBC) + ICOMPC
@@ -225,7 +234,9 @@ C
               ENDDO
             ENDDO
           ENDDO
-          IF(SFAC.NE.D1) CALL DSCAL(NBUF,SFAC,AOINT,1)
+Cef begin
+          IF(SFAC.NE.D1) CALL DSCAL(NBUF,SFAC,AOINT2,1)
+Cef end
         ELSE
           DO ICOMPA = 1,KHKTA
                         KHKTBB = KHKTB
@@ -259,7 +270,9 @@ C
                         IF (TCONCD.AND.IORBC.NE.IORBD) 
      &                     FABCD = FABCD+FABCD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = FABCD*AINT
+Cef begin                         
+                        AOINT2(NBUF) = FABCD*AINT
+Cef end
                         IND(NBUF,1) = A
                         IND(NBUF,2) = B
                         IND(NBUF,3) = ICORBC(IORBC) + ICOMPC
@@ -293,7 +306,9 @@ C
                         IORBC = NINDCD(IORBCD,1)
                         IORBD = NINDCD(IORBCD,2)
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = AINT
+Cef begin                   
+                        AOINT2(NBUF) = AINT
+Cef end
                         IND(NBUF,1) = A
                         IND(NBUF,2) = B
                         IND(NBUF,3) = ICORBC(IORBC) + ICOMPC
@@ -306,7 +321,9 @@ C
               ENDDO
             ENDDO
           ENDDO
-          IF(SFAC.NE.D1) CALL DSCAL(NBUF,SFAC,AOINT,1)
+Cef end
+          IF(SFAC.NE.D1) CALL DSCAL(NBUF,SFAC,AOINT2,1)
+Cef end
         ELSE
           DO ICOMPA = 1,KHKTA
                         KHKTBB = KHKTB
@@ -340,7 +357,9 @@ C
                         IF (TCONCD.AND.IORBC.NE.IORBD) 
      &                    FABCD = FABCD+FABCD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = FABCD*AINT
+Cef begin                        
+                        AOINT2(NBUF) = FABCD*AINT
+Cef end
                         IND(NBUF,1) = A
                         IND(NBUF,2) = B
                         IND(NBUF,3) = ICORBC(IORBC) + ICOMPC
@@ -370,7 +389,9 @@ C     **********************************
 C
       IF(IPRINT.GE.15) THEN
         DO INT = 1,NBUF
-          WRITE (LUPRI,'(1X,A,F16.12)') 'GINT,A,B,C,D',AOINT(INT)
+Cef begin 
+          WRITE (LUPRI,'(1X,A,F16.12)') 'GINT,A,B,C,D',AOINT2(INT)
+Cef end
         ENDDO
       ENDIF
 C
@@ -426,8 +447,10 @@ C        in R12 calculations (WK/UniKA/04-11-2002).
       ELSE
          FAC = D1
       END IF
-      CALL FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,
+Cef begin
+      CALL FCKCON(FMAT,DMAT,NDMAT,I,AOINT2,IND,
      &            NCCINT,NBUF,NBUF,IX,IY,FAC)
+Cef end
 C
  400  CONTINUE
 C

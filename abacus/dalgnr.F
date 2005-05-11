@@ -594,6 +594,9 @@ C  /* Deck exedrv */
 #include <cbiwlk.h>
 #include <cbisol.h>
 #include <taymol.h>
+Cef begin
+#include <incore.h>
+Cef end
       DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
@@ -627,6 +630,25 @@ C  /* Deck exedrv */
             CALL EXEHER(WORK,LMWORK,WRKDLM)
             WLKREJ = .FALSE.
             NEWGEO = .TRUE.
+Cef begin
+            IF (AOSAVE) THEN
+               LINTSV = .FALSE.
+               LINTMP = .FALSE.
+               INITX = .FALSE.
+               MSAVE = .TRUE.
+               MMCORE = MMWORK
+               LMCORE = MMCORE
+               ISCORE = 1
+               JSCORE = ISCORE
+               N_SHL = 1
+               I_SHL = 1
+               INDX_SHL1 = 0
+               INDX_SHL2 = 0
+               INDX_SHL3 = 0
+               INDX_SHL4 = 0
+C     CALL CLEAR_INCOREMEM()
+            END IF
+Cef end
             CALL EXESIR(WORK,LMWORK,WRKDLM)
             IF (DOCCSD) CALL EXECC(WORK,LMWORK,WRKDLM)
 C

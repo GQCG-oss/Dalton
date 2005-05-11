@@ -325,6 +325,7 @@ C
 #include <dftcom.h>
 #include <dfterg.h>
 #include <r12int.h>
+#include "incore.h"
 C
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -460,8 +461,15 @@ C       keep vectors until GRDNRM fallen a factor 100
       ITNOCC = 0
       NEWOCC = 0
       NOSCIL = 0
-      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
-     &.AND..NOT.HSROHF
+Cef begin
+      IF (AOSAVE) THEN
+C	IF (.TRUE.) THEN
+         DODIFDEN = .FALSE.
+      ELSE
+         DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
+     &         .AND..NOT. HSROHF
+      END IF
+Cef end
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
@@ -559,6 +567,10 @@ C
 C  ***** Calculate 2-electron part of Fock matrix with
 C        differential density
 C
+Cef begin
+C         write(lupri,*) 'DCAO: '
+C         call output(DCAO,1,nbast,1,nbast,nbast,nbast,1,lupri)
+Cef end
          CALL FCK2AO(ONLYFC,FCAO,FCAO(1+N2BASX),
      *               DCAO,DCAO(1+N2BASX),WRK,KFREE,LFREE)
          IF (HSFOCK) THEN

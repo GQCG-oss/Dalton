@@ -59,6 +59,9 @@ C
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxorb.h>
+Cef begin
+#include <incore.h>
+Cef end
 C
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
@@ -126,8 +129,15 @@ C     Derivative Fock matrix for specified atom
       END IF
 C
 C     Determine number of tasks pr. batch - NTASK.
-C
-      NTASK = MAX(1,MIN(MTOTTK,INT(NDEGDI*MTOTTK/(100*NODTOT))))
+Cef begin
+C     The case of incore calculations does not support NTASK > 1 yet.
+C     The routines DOPAR and PARLOP must be modified to support NTASK > 1.
+      IF (AOSAVE) THEN
+         NTASK = 1
+      ELSE
+         NTASK = MAX(1,MIN(MTOTTK,INT(NDEGDI*MTOTTK/(100*NODTOT))))
+      END IF
+Cef end
 C
 C     Determine dimension of array INDEX
 C
@@ -254,10 +264,14 @@ C
 #include <siripc.h>
 #include <inforb.h>
 #include <infpar.h>
+Cef begin
+#include <incore.h>
+Cef end
 C
+Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
-     &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(NINDEX),
+     &          NSTAT(NODTOT), TMPMAT(NTMPMT), INDEX(3,NINDEX),
      &          TIMES(MTOTTK), TSKCPU(MTOTTK), IWHICH(MTOTTK),
      &          WORK(LWORK), NPOS(0:MAXTSK+1), HESSEE(*)
 CTROND
@@ -283,6 +297,9 @@ C
       CALL INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,NTASK,NBATCH,
      &            NPOS,IPRINT)
 C
+Cef begin
+C 10.mai     INITX = .TRUE.
+Cef end
 C---------------------------------------
 C     Send initialization data to nodes.
 C---------------------------------------
@@ -291,6 +308,17 @@ C
      &                NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST,IPRINT,
      &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO)
 C
+Cef begin
+C---------------------------------------------------------------
+C   INDEX may need to be reinitialized after CALL HER_SDINIT.  
+C---------------------------------------------------------------
+C
+      IF (AOSAVE .AND. (.NOT. INITX)) THEN
+         CALL INDEKS(TIMING,INDEX,NINDEX,MTOTTK,NODTOT,NTASK,NBATCH,
+     &        NPOS,IPRINT)
+C 10.mai         INITX = .TRUE.
+      END IF
+Cef end
 C-----------------------
 C     Start calculation.
 C-----------------------
@@ -326,15 +354,31 @@ C  /* Deck indeks */
 C
 #include <implicit.h>
 #include <priunit.h>
+Cef begin
+#include <maxorb.h>
+#include <incore.h>
+Cef end
 C
-      DIMENSION INDEX(NINDEX), NPOS(0:MTOTTK+1)
+Cef Dimension of array INDEX changed from INDEX(NINDEX) to INDEX(3,NINDEX)
+C
+      DIMENSION INDEX(3,NINDEX), NPOS(0:MTOTTK+1)
       LOGICAL TIMING
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from INDEKS','*',103)
 C
 C     This subroutine determines in which order integrals will be calculated.
 C
-      CALL IZERO(INDEX,NINDEX)
+      IF (AOSAVE .AND. NINDEX .GT. (MIN(MXTSK,IEIR))) THEN
+         CALL QUIT('INDX_C must be enlarged.')
+      END IF
+C     Avoid reinitialization of INDEX when it has been initialized in
+C     a previous iteration
+      IF (AOSAVE .EQ. .FALSE. .OR. INITX .EQ. .FALSE.) THEN
+         CALL IZERO(INDEX(1,1),(3*NINDEX))
+      ELSE IF (AOSAVE .EQ. .TRUE. .AND. INITX .EQ. .TRUE.) THEN
+         CALL ICOPY((3*NINDEX),INDX_C(1,1),1,INDEX(1,1),1)
+Cef 10.mai:
+      END IF
 C
       ICOUNT = 0
       IBLOCK = NODTOT*NTASK
@@ -345,14 +389,26 @@ C
          MORE3  = ((ICOUNT-MORE1)/NODTOT) + 1
          IPLACE = MORE1+MORE2+MORE3
 C
-         IF (TIMING) THEN
-            INDEX(IPLACE) = I
-         ELSE
-            INDEX(IPLACE) = NPOS(I)
-        END IF
-C
+         IF (AOSAVE .EQ. .FALSE.) THEN
+            IF (TIMING) THEN
+               INDEX(1,IPLACE) = I
+            ELSE
+               INDEX(1,IPLACE) = NPOS(I)
+            END IF
+         ELSE IF (AOSAVE .EQ. .TRUE. .AND. INITX .EQ. .FALSE.) THEN
+            INDEX(1,IPLACE) = I
+         END IF
+C     
          ICOUNT=ICOUNT+1
  100  CONTINUE
+C
+C The code piece below is a trick to make the 2-dim INDEX-array work with old code for 
+C the routines PARLOP()/DOPAR() which assume a 1-dim INDEX array
+      IF (AOSAVE .EQ. .FALSE.) THEN
+         DO 111 I = 1, NINDEX
+            INDEX(1+MOD(I-1,3),1+INT((I-1)/3)) = INDEX(1,I) 
+ 111     CONTINUE
+      END IF
 C
 C     Determine number of batches (NBATCH).
 C
@@ -380,10 +436,22 @@ C
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
             WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
-     &           'I =',I,'index(i) =',INDEX(I)
+Cef begin
+     &           'I =',I,'index(i) =',INDEX(1,I)
+Cef end
  400      CONTINUE
       END IF
 C
+C      do 314 jj = 1,nbatch*ntask
+C         do 315 ii = 1,3
+C            write(lupri,*),'i,j = ',ii,jj,'INDEX(i,j)=',INDEX(ii,jj)
+C         write(lupri,*),'j = ',jj,'INDEX(1,j)=',INDEX(1,jj)
+C 315     continue
+C 314  continue
+C
+Cef 10.mai begin
+      INITX = .TRUE.
+Cef 10.mai end
       RETURN
       END
 C  /* Deck her_sdinit */
@@ -398,6 +466,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mtags.h>
+C
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR,FIRST
       DIMENSION DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*)
 CTROND
@@ -446,6 +515,9 @@ C
 C
 #include <cbisol.h>
 C
+Cef begin
+#include <incore.h>
+Cef end
       CALL QENTER('HER_SDINIT')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDINIT','*',103)
 C
@@ -500,6 +572,27 @@ C
       CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER)
 C
+Cef begin 
+      IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
+C      IF (AOSAVE .AND. NEWGEO) THEN
+C         CALL IZERO(INDX_SHL,MXSHL_KEEP)
+         LINTSV = .FALSE.
+         LINTMP = .FALSE.
+         INITX = .FALSE.
+         MSAVE = .TRUE.
+         MMCORE = MMWORK
+         LMCORE = MMCORE
+         ISCORE = 1
+         JSCORE = ISCORE
+         N_SHL = 1
+         I_SHL = 1
+         INDX_SHL1 = 0
+         INDX_SHL2 = 0
+         INDX_SHL3 = 0
+         INDX_SHL4 = 0
+C         CALL CLEAR_INCOREMEM()
+      END IF
+Cef end
       IF (FIRST .OR. NEWBAS .OR. NEWGEO) THEN
          IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
      &        ' Sending new orbital inf.',
@@ -982,6 +1075,9 @@ C
       EQUIVALENCE (ITMP,MLINE)
 #endif
 #include <cbisol.h>
+Cef begin
+#include <incore.h>
+Cef end
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVINIT','*',103)
 C
@@ -996,6 +1092,27 @@ C
       CALL MPIXBCAST(HFXFAC,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(HFXMU, 1,'DOUBLE',MASTER)
 C
+Cef begin
+      IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
+C     IF (AOSAVE .AND. NEWGEO) THEN
+C     CALL IZERO(INDX_SHL,MXSHL_KEEP)
+         LINTSV = .FALSE.
+         LINTMP = .FALSE.
+         INITX = .FALSE.
+         MSAVE = .TRUE.
+         MMCORE = MMWORK
+         LMCORE = MMCORE
+         ISCORE = 1
+         JSCORE = ISCORE
+         N_SHL = 1
+         I_SHL = 1
+         INDX_SHL1 = 0
+         INDX_SHL2 = 0
+         INDX_SHL3 = 0
+         INDX_SHL4 = 0
+C         CALL CLEAR_INCOREMEM()
+      END IF
+Cef end
       TIMING = FIRST .OR. NEWBAS .OR. NEWGEO
 C
       IF (TIMING) THEN
@@ -1180,17 +1297,18 @@ C
 C
       RETURN
       END
-C  /* Deck parlop */
+C     /* Deck parlop */
+Cef begin
       SUBROUTINE PARLOP(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,
-     &                  MAXDER,EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,
-     &                  SOFOCK,DISTRI,LONDON,SPNORB,DIA2SO,ZFS2EL,
-     &                  PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
-     &                  THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
-     &                  SQ12EL,INDHER,INDHSQ,IODDHR,TSKCPU,IWHICH,IJS,
-     &                  ISYMDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
-     &                  IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
-C
+     &     MAXDER,EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,
+     &     SOFOCK,DISTRI,LONDON,SPNORB,DIA2SO,ZFS2EL,
+     &     PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,
+     &     THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
+     &     SQ12EL,INDHER,INDHSQ,IODDHR,TSKCPU,IWHICH,IJS,
+     &     ISYMDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
+     &     IORBSH,I2TYP,ICEDIF,IFTHRS,
+     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
+C     
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C
 #include <implicit.h>
@@ -1206,8 +1324,8 @@ C
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
      &        SOFOCK,RELCAL
-      DIMENSION DMAT(*), FMAT(*), GMAT(*), INDHSQ(*), IODDHR(*),
-     &          INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
+      DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
+     & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),
      &          GABRAO(*), DMRAO(*),DMRSO(*),DINTSKP(2,4), HESSEE(*)
@@ -1223,6 +1341,19 @@ C
 #include <infpar.h>
 #include <inftap.h>
 #include <inforb.h>
+#include <incore.h>
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+C
+C For MPE event logging
+C      evIDb2 = MPE_Log_get_event_number()
+C      evIDe2 = MPE_Log_get_event_number()
+C      call MPE_Describe_state(evIDb2,evIDe2,
+C     &     "PARLOP","red")
+C
+C Begin logging the event
+C      call MPE_Log_event(evIDb2,0,'')
 C
       CALL QENTER('PARLOP')
       IF (JPRINT .GT. 3) CALL TITLER('Output from PARLOP','*',103)
@@ -1327,46 +1458,123 @@ C     ***********************************
 C     ***** Send request for a task *****
 C     ***********************************
 C
+C      
       ICOUNT = 0
       CALL IZERO(IWHICH,MTOTTK)
       CALL DZERO(TSKCPU,MTOTTK)
 C
-  100 CONTINUE
+      IPLACE = 0
+      ITOTNT = 1
+      LINTMP = .FALSE.
+      I_SHL = 1
+C     
+C     
+ 100  CONTINUE
 C
+      IF (AOSAVE) THEN 
+C     
+         IF (NTASK .GT. 1) THEN
+            CALL QUIT('NTASK > 1 is not ported to AOSAVE = TRUE.')
+         END IF
+C     
 #if defined (VAR_MPI)
-      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
+         CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
+         CALL MPIXSEND(IPLACE,1,'INTEGER',MASTER,MTAG51)
+C     
+         IF (IPLACE .NE. 0) THEN
+            INTSAV = 0
+            IF (LINTSV) THEN 
+               INTSAV = 1
+            END IF
+            CALL MPIXSEND(INTSAV,1,'INTEGER',MASTER,MTAG52)
+         END IF
+         LINTSV = .FALSE.
+C     
 #endif
 #if defined (VAR_PVM)
-      CALL PVMXINITSEND(NCODE)
-      CALL PVMXPACK(MYNUM,1,'INTEGER')
-      CALL PVMXSEND(MASTER,MTAG5)
+         CALL PVMXINITSEND(NCODE)
+         CALL PVMXPACK(MYNUM,1,'INTEGER')
+         CALL PVMXSEND(MASTER,MTAG5)
 #endif
 C
 C     Receive IJ labels for NTASK new (IJ|**) integrals 
 C
-      CALL IZERO(IJS,NTASK)
-C
+         CALL IZERO(IJS,NTASK)
+C     
 #if defined (VAR_MPI)
-      CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)
-      IF (DONE) GOTO 300
-      CALL MPIXRECV(IJS,NTASK,'INTEGER',MASTER,MTAG6)
+         CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)     
+         IF (DONE) GOTO 300
+         CALL MPIXRECV(IJS,NTASK,'INTEGER',MASTER,MTAG61)
+         IF (IJS(1) .EQ. 0) THEN
+            IPLACE = 0
+            GOTO 100
+         END IF
+         CALL MPIXRECV(IINTSV,NTASK,'INTEGER',MASTER,MTAG64)
+C         write(lupri,*) 'MYNUM,IJS(1),IINTSV',MYNUM,IJS,IINTSV
+C     
+         IF (IINTSV .EQ. 1) THEN
+            LINTSV = .TRUE.
+         ELSE
+            LINTSV = .FALSE.
+         END IF
+         CALL MPIXRECV(IPLACE,1,'INTEGER',MASTER,MTAG62)
+C     
 #endif
 #if defined (VAR_PVM)
-      CALL PVMXRECV(MASTER,MTAG6)
-      CALL PVMXUNPACK(DONE,1,'LOGICAL')
-      IF (DONE) GOTO 300
-      CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
+         CALL PVMXRECV(MASTER,MTAG6)
+         CALL PVMXUNPACK(DONE,1,'LOGICAL')
+         IF (DONE) GOTO 300
+         CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
 #endif
+C     
+C ELSE below is for the compability to old code: AOSAVE = FALSE
+C
+      ELSE
+C     
+#if defined (VAR_MPI)
+         CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
+#endif
+#if defined (VAR_PVM)
+         CALL PVMXINITSEND(NCODE)
+         CALL PVMXPACK(MYNUM,1,'INTEGER')
+         CALL PVMXSEND(MASTER,MTAG5)
+#endif
+C     
+C     Receive IJ labels for NTASK new (IJ|**) integrals 
+C     
+         CALL IZERO(IJS,NTASK)
+C     
+#if defined (VAR_MPI)
+         CALL MPIXRECV(DONE,1,'LOGICAL',MASTER,MTAG6)
+         IF (DONE) GOTO 300
+         CALL MPIXRECV(IJS,NTASK,'INTEGER',MASTER,MTAG6)
+#endif
+#if defined (VAR_PVM)
+         CALL PVMXRECV(MASTER,MTAG6)
+         CALL PVMXUNPACK(DONE,1,'LOGICAL')
+         IF (DONE) GOTO 300
+         CALL PVMXUNPACK(IJS,NTASK,'INTEGER')
+#endif
+C     
+C     END IF below corresponds to: IF (AOSAVE)... ELSE
+      END IF
 C
       IF (JPRINT .GT. 4) THEN
          WRITE(LUPRI,'(5X,A,I4)')
-     &      'Receiving IJ-batches: ',(IJS(KK),KK=1,NTASK)
+     &        'Receiving IJ-batches: ',(IJS(KK),KK=1,NTASK)
       END IF
-C
+C     
       DO 200, I = 1,NTASK
-C
+C     
          IJSHEL = IJS(I)
-C
+C     
+C        print *,'MYNUM,NTASK',MYNUM,NTASK 
+C	print *,'IJS(1:NTASK)'
+C         write(lupri,*), 'NTASK',NTASK
+C   DO 299 LL=1,NTASK
+C       DO 299 LL=1,55
+C        write(lupri,*),'MYNUM, LL =  ',MYNUM,LL,'IJS(LL) = ',IJS(LL)
+C 299     CONTINUE 
          IF (IJSHEL .EQ. 0) THEN
             ICOUNT = ICOUNT + I - 1
             GO TO 100
@@ -1507,8 +1715,7 @@ C              *******************************
 C
 c               IPRINT = 0
                IPRINT = JPRINT
-C
-C
+C               
 C     Note DUMMY should be HESSEE, K.Ruud-96
 C
                CALL TWOODS(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,
@@ -1527,24 +1734,28 @@ C
      &                 ISHELC .EQ. IPRNTC .AND.
      &                 ISHELD .EQ. IPRNTD) GOTO 9999
                END IF
- 500        CONTINUE
- 400     CONTINUE
 C
+ 500        CONTINUE
+C
+ 400  CONTINUE
+C     
          IF (TIMING) THEN
             CPUTK2 = SECOND()
             CPUTSK = CPUTK2 - CPUTK1
-            IPLACE = ICOUNT + I
-C
+            IF (AOSAVE .EQ. .FALSE.) IPLACE = ICOUNT + I
+C            IPLACE = ICOUNT + I     
             IWHICH(IPLACE) = IJSHEL
             TSKCPU(IPLACE) = CPUTSK
          END IF
  200  CONTINUE
 C
       ICOUNT = ICOUNT + NTASK
+      LINTSV = LINTMP
+      LINTMP = .FALSE.
       GOTO 100
 C
  300  CONTINUE
-C
+C     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
 C     Note that DUMMY here should be HESSEE,K.Ruud, Jan.-97
 C
 CTROND      IF (DIRFCK .OR. DDFOCK .OR. EXPECT) THEN
@@ -1609,11 +1820,20 @@ C
 C     Send final results to master
 C
       CALL HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,ICOUNT,
-     &               ITYPE,JPRINT)
+     &     ITYPE,JPRINT)
+Cef 10.mai begin
+C This is a fix for an unresolved error in the AOSAVE-related code. 
+C The price of the fix is a bit lower memory efficiency.
+        MSAVE = .FALSE.
+Cef 10.mai end
+C
+C End logging the event
+C      call MPE_Log_event(evIDe2,0,'')
 C
  9999 CALL QEXIT('PARLOP')
       RETURN
       END
+Cef end
 C  /* Deck her_sdres */
       SUBROUTINE HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,
      &                     ICOUNT,ITYPE,IPRINT)

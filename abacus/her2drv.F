@@ -32,8 +32,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
-C
+
 C  /* Deck twoint */
+
       SUBROUTINE TWOINT(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,IREPDM,
      &                  IFCTYP,GMAT,
      &                  INDXAB,NUMDIS,MAXDIS,ITYPE,MAXDIF,JATOM,NODV,
@@ -445,6 +446,9 @@ C
 #include "gtensor.h"
 #include "r12int.h"
 #include "zfs.h"
+Cef begin
+#include "incore.h"
+Cef end
       DIMENSION FMAT(NBASIS,NBASIS,*)
 #if defined (VAR_VECTOR)
 C NECgh Dimensioning TFMAT adapted to always odd first dimension
@@ -563,6 +567,20 @@ C
         CALL QUIT('Unknown I2TYP !!!')
       ENDIF
 C
+Cef begin
+#if defined(VAR_MPI)
+      LINTSV = .FALSE.
+#else
+      LINTSV = LINTMP
+#endif
+Cef end
+      I_SHL = 1
+      IPREVA = -1
+      IPREVB = 0
+      IPREVC = 0
+      IPREVD = 0
+      
+C
 C     *****************************
 C     ***** First Shell Index *****
 C     *****************************
@@ -680,6 +698,7 @@ C
                IF (.NOT.(SPNORB .OR. DIA2SO) .AND.
      &                  (ISHELA.EQ.ISHELC)) IDMAX = ISHELB
                DO 400 ISHELD = IDSTRT,IDMAX
+               
 C
 C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
                   MBSABCD = MBSABC + MBSISH(ISHELD)
@@ -1627,6 +1646,7 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('TWOODS',' ',KLAST,LWORK)
       LWTOT  = LWTOT + KLAST
       MWTOT  = MAX(MWTOT,LWTOT)
+C
       CALL TWOOD1(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK(KLAST),LWRK,
      &            WORK(KPSO),WORK(KPSA),NPMAT,WORK(KCORAB),WORK(KCORCD),
      &            WORK(KEXPAB),WORK(KEXPCD),WORK(KFACAB),WORK(KFACCD),
@@ -1642,10 +1662,11 @@ C
      &            IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,WRKBUF,
      &            GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,
      &            WORK(KIXPAB),WORK(KIXPCD))
+C
       LWTOT  = LWTOT - KLAST
       RETURN
       END
-C  /* Deck twood1 */
+C  /* Deck twood1 */      
       SUBROUTINE TWOOD1(FMAT,DMAT,NDMAT,GMAT,HESSEE,WORK,LWORK,PSO,PSA,
      &                  NPMAT,COORAB,COORCD,EXPAB,EXPCD,FACAB,FACCD,
      &                  CONTA,CONTB,CONTC,CONTD,UNDIFF,PERTUR,LONDON,
@@ -1698,6 +1719,7 @@ C  /* Deck twood1 */
 #include "nuclei.h"
 #include "twosta.h"
 #include "ibtfun.h"
+  
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from TWOOD1','*',103)
 C
@@ -1737,12 +1759,14 @@ C     Overlap distributions for first electron
 C     ========================================
 C
       TPRAB = .FALSE.
+C
       CALL ODCVEC(COORAB,EXPAB,FACAB,CONTA,CONTB,JMAXA,JMAXB,NSETA,
      &            NSETB,NUCA,NUCB,NUCTAB,NORBA,NORBB,NPCOA,NPCOB,NUCSAB,
      &            JSTRA,JSTRB,TCONAB,TPRAB,GENAB,12,THRESH,MAXDER,
      &            MULA,MULB,NODCAB,NORTAB,NINDAB,NPNTAB,NREDAB,
      &            KHKTA,KHKTB,EXPECT,DIRFCK,WORK,LWORK,RPRIAB,RCNTAB,
      &            IXPAB,IPRINT)
+C
       IF (ISUM(NODCAB,NUCTAB,1).EQ.0.AND..NOT.LAST) RETURN
 C
 C     Overlap distributions for second electron
@@ -1855,6 +1879,7 @@ C
          MWSOIN = MAX(MWSOIN,KPNTAO - KSOINT)
          LWTOT  = LWTOT + KLAST
          MWTOT  = MAX(MWTOT,LWTOT)
+C
          CALL SYMLOP(WORK(KSOINT),FMAT,DMAT,NDMAT,GMAT,PSO,PSA,HESSEE,
      &               WORK(KLAST),LWRK,WORK(KCOFAB),WORK(KCOFCD),COORAB,
      &               COORCD,EXPAB,EXPCD,FACAB,FACCD,CONTA,CONTB,CONTC,
@@ -1871,11 +1896,13 @@ C
      &               IFCTYP,ADISTR,IORBSH,WRKBUF,
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               IXPAB,IXPCD)
+C
          LWTOT = LWTOT - KLAST
       END IF
       RETURN
       END
 C  /* Deck symlop */
+Cef begin
       SUBROUTINE SYMLOP(SOINT,FMAT,DMAT,NDMAT,GMAT,PSO,PSA,HESSEE,WORK,
      &                  LWORK,COEFAB,COEFCD,COORAB,COORCD,EXPAB,EXPCD,
      &                  FACAB,FACCD,CONTA,CONTB,CONTC,CONTD,NSOINT,
@@ -1908,6 +1935,7 @@ C  /* Deck symlop */
 #include "r12int.h"
 #include "doxyz.h"
 #include "blocks.h"
+#include "incore.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -1944,6 +1972,10 @@ C  /* Deck symlop */
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
+      
+C
+      LMCORE = MMCORE
+      JSCORE = ISCORE
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
 C
@@ -2026,6 +2058,7 @@ C
       END IF
       NSYMR = 0
       DO 100 ISYMR = 0,MAXOPR
+C
       IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
          NSYMR = NSYMR + 1
          ICENTB = NUCNUM(NCNTSH(ISHELB),IBTAXO(ISYMR,MULB)+1)
@@ -2073,6 +2106,7 @@ C
             SIGNDY = YAND(ISYMS)
             SIGNDZ = ZAND(ISYMS)
             NUCCD = NUCTCD(NSYMS)
+C
             CALL ODCOEF(COEFCD,COORCD(1,1,1,NSYMS),EXPCD(1,1,NSYMS),
      &                  WORK,LWORK,JMAXC,JMAXD,NHKTC,NHKTD,NSETC,NSETD,
      &                  NUCC,NUCD,NUCCD,MXUCCD,NORBC,NORBD,NPCOC,NPCOD,
@@ -2120,8 +2154,8 @@ C
                SIGNDY = YAND(ISYMTS)
                SIGNDZ = ZAND(ISYMTS)
                CCEQCD = .NOT.BIGVEC .AND. (ICENTC .EQ. ICENTD)
-     &                              .AND. (NCENTC .NE. IATOM)
-C
+     &              .AND. (NCENTC .NE. IATOM)
+C     
 C              If necessary change sign of expansion coefficients
 C              ==================================================
 C
@@ -2187,8 +2221,10 @@ C
                IF (PERTUR .AND. MAXDER .GT. 0) THEN
                   IF (IATOM .NE. NCENTA .AND. IATOM .NE. NCENTB
      &                                  .AND. IATOM .NE. NCENTC
-     &                                  .AND. IATOM .NE. NCENTD)
-     &                    GO TO 300
+     &                                  .AND. IATOM .NE. NCENTD) THEN
+                     LINTMP = LINTSV
+                     GO TO 300
+                  END IF
                END IF
 C
 C              c) one-center integrals
@@ -2199,20 +2235,34 @@ C
      &                  (ICENTA .NE. 0)
                IF (ONECEN) THEN
                   IF (MAXDER .EQ. 0 .OR. EXPGRA) THEN
-                     IF (IBTAND(JMAX0,1).EQ.1)              GO TO 300
+C                     print *, 'onecenter integral,n_shl',
+C     &                    ibtand(jmax0,1),n_shl
+                     IF (IBTAND(JMAX0,1).EQ.1) THEN
+                        LINTMP = LINTSV
+                        GO TO 300
+                     END IF
                   ELSE
-                     IF (PERTUR .OR. EXPECT .OR. LONDON)    GO TO 300
+                     IF (PERTUR .OR. EXPECT .OR. LONDON) THEN
+                        LINTMP = LINTSV 
+                        GO TO 300
+                     END IF
                   END IF
                END IF
                IF (LONDON) THEN
                   IF ((ICENTA .EQ. ICENTB) .AND.
-     &                (ICENTC .EQ. ICENTD)) GO TO 300
+     &                (ICENTC .EQ. ICENTD)) THEN
+                     LINTMP = LINTSV
+                     GO TO 300
+                  END IF
                END IF
 C
 C              d) none of the directions are requested
 C
-               IF (.NOT. (DOX .OR. DOY .OR. DOZ)) GO TO 300
-C
+               IF (.NOT. (DOX .OR. DOY .OR. DOZ)) THEN
+                  LINTMP = LINTSV
+                  GO TO 300
+               END IF          
+C     
 C              Integral contributes
 C              ====================
 C
@@ -2262,22 +2312,111 @@ C
    85             CONTINUE
                END IF
 C
+#if defined (VAR_MPI)
+               IF (AOSAVE .AND. DIRFCK .AND. MAXDER .EQ. 0) THEN
+C
+                  NINTYP = 1
+                  IF (LINTSV) THEN
+C
+C                      write(lupri,*) 'LINTSV,ISHELA/B/C/D,ISYMR,ISYMS',
+C     &                 LINTSV,ISHELA,ISHELB,ISHELC,ISHELD,
+C     &                 ISYMR,ISYMS
+                     LINTMP = .TRUE.
+                     KAOINT = 1
+C
+                     CALL DCOPY(NCCINT*NINTYP,
+     &                    CORE(INDX_SHL(I_SHL)),1,WORK(KAOINT),1)  
+C                     write(lupri,*) 'I_SHL,INDX_SHL(I_SHL)', 
+C     &                    I_SHL,INDX_SHL(I_SHL)
+C
+C                     write(lupri,*) 'WORK(KAOINT): ',(WORK(KAOINT+II-1),
+C     &                    II=1,NCCINT)
+                     CALL INTFCK(FMAT,WORK(KAOINT),DMAT,NDMAT,
+     &                    NCCINT,NINTYP,ICORBA,ICORBB,ICORBC,ICORBD,
+     &                    HKABCD,IPRINT,NODV,NINDAB,NINDCD,SUSCEP,
+     &                    IFCTYP,DNSBUF,DINTSKP,
+     &                    WORK(KAOINT+NCCINT*NINTYP),
+     &                    (LWORK-NCCINT*NINTYP))
+C
+                     I_SHL = I_SHL + 1
+                     IF (I_SHL .GT. MXSHL_KEEP) THEN
+                        write(lupri,*) 'Received quit because'//
+     &                       'I_SHL exceeds MXSHL_KEEP'
+                        CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+                     END IF
+C
+                     GOTO 300
+                  END IF
+C
+               ELSE IF (MAXDER .GT. 0) THEN
+C                  write(lupri,*) 'lintmp,lintsv,maxder',lintmp,lintsv,
+C     &                 maxder
+                  LINTMP = LINTSV
+               END IF
+#else
+               IF (AOSAVE .AND. DIRFCK .AND. MAXDER .EQ. 0) THEN
+                  NINTYP = 1
+C                  IF (INDX_SHL(1,1) .GE. ISHELA .AND. 
+C     &                 INDX_SHL(2,1) .GE. ISHELB .AND.
+C     &                 INDX_SHL(3,1) .GE. ISHELC .AND. 
+C     &                 INDX_SHL(4,1) .GE. ISHELD) THEN
+                  IF (INDX_SHL1 .GE. ISHELA .AND. 
+     &                 INDX_SHL2 .GE. ISHELB .AND.
+     &                 INDX_SHL3 .GE. ISHELC .AND. 
+     &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1) THEN
+C
+C                  IF (LINTSV) THEN
+C                   write(lupri,*)'ISHELA/B/C/D,INDX_SHL1/2/3/4,lintsv',
+C     &                    ishela,ishelb,ishelc,isheld,indx_shl1,
+C     &                    indx_shl2,indx_shl3,indx_shl4,lintsv
+C
+                     LINTMP = .TRUE.
+                     KAOINT = 1 
+C
+                     CALL DCOPY(NCCINT*NINTYP,
+     &                    CORE(INDX_SHL(I_SHL)),1,WORK(KAOINT),1)   
+C
+                     CALL INTFCK(FMAT,WORK(KAOINT),DMAT,NDMAT,
+     &                    NCCINT,NINTYP,ICORBA,ICORBB,ICORBC,ICORBD,
+     &                    HKABCD,IPRINT,NODV,NINDAB,NINDCD,SUSCEP,
+     &                    IFCTYP,DNSBUF,DINTSKP,
+     &                    WORK(KAOINT+NCCINT*NINTYP),
+     &                    (LWORK-NCCINT*NINTYP))
+C
+                     I_SHL = I_SHL + 1
+                     IF (I_SHL .GT. MXSHL_KEEP) THEN
+                        write(lupri,*) 'Received quit because'//
+     &                       'I_SHL exceeds MXSHL_KEEP'
+                        CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+                     END IF
+C
+                     GOTO 300
+                  END IF
+C
+               ELSE IF (MAXDER .GT. 0) THEN
+C                 print *,'lintmp,lintsv,maxder',lintmp,lintsv,
+C     &                 maxder
+                  LINTMP = LINTSV
+               END IF
+#endif
+C
+C
 C              *******************************
 C              ***** Integral Directives *****
 C              *******************************
 C
                CALL DIRECT(BIGVEC,ICENTA,ICENTB,ICENTC,ICENTD,
-     &                     NCENTA,NCENTB,NCENTC,NCENTD,
-     &                     0,     ISYMR, ISYMT, ISYMTS,
-     &                     SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
-     &                     SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
-     &                     NCCINT,MAXDER,EXPECT,LONDON,SPNORB,DIA2SO,
-     &                     ZFS2EL,EXPGRA,IATOM,MULTE,NINTYP,IPRINT)
+     &              NCENTA,NCENTB,NCENTC,NCENTD,
+     &              0,     ISYMR, ISYMT, ISYMTS,
+     &              SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
+     &              SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
+     &              NCCINT,MAXDER,EXPECT,LONDON,SPNORB,DIA2SO,
+     &              ZFS2EL,EXPGRA,IATOM,MULTE,NINTYP,IPRINT)
 C
 C              ************************
 C              ***** AO integrals *****
 C              ************************
-C
+C     
                KAOINT = 1
                LAOINT = NCCINT*NINTYP
                KLAST  = KAOINT + LAOINT
@@ -2286,40 +2425,101 @@ C
                MWAOIN = MAX(MWAOIN,KLAST - KAOINT)
                LWTOT  = LWTOT + KLAST
                MWTOT  = MAX(MWTOT,LWTOT)
+C
                CALL CAOINT(SOINT,DMAT,NDMAT,PSO,PSA,FMAT,WORK(KAOINT),
-     &                     WORK(KLAST),LWRK,COEFAB,COEFCD,
-     &                     COORAB(1,1,1,NSYMR),COORCD(1,1,1,NSYMS),
-     &                     EXPAB(1,1,NSYMR),EXPCD(1,1,NSYMS),
-     &                     FACAB(1,NSYMR),FACCD(1,NSYMS),
-     &                     CONTA(1,1,NSYMR),CONTB(1,1,NSYMR),
-     &                     CONTC(1,1,NSYMS),CONTD(1,1,NSYMS),
-     &                     NCCINT,NINTYP,UNDIFF,PERTUR,LONDON,SPNORB,
-     &                     DIA2SO,ZFS2EL,EXPECT,SUSCEP,DDFOCK,DIRFCK,
-     &                     SOFOCK,DISTRI,IATOM,
-     &                     MULE,MULTE,MAXDER,BIGVEC,NOCONT,NODV,NOPV,
-     &                     ISMXYZ,THRESH,ONECEN,IPRINT,ICORBA,ICORBB,
-     &                     ICORBC,ICORBD,INTS,HKABCD,JMAX0,ISYMR,ISYMS,
-     &                     ISYMT,ISYMTS,SQ12EL,SOP000,IPNTAO,IPNTOP,
-     &                     NPCOA(1,1,NSYMR),NPCOB(1,1,NSYMR),
-     &                     NPCOC(1,1,NSYMS),NPCOD(1,1,NSYMS),
-     &                     NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
-     &                     SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
-     &                     NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                     NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP,
-     &                     NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS))
+     &              WORK(KLAST),LWRK,COEFAB,COEFCD,
+     &              COORAB(1,1,1,NSYMR),COORCD(1,1,1,NSYMS),
+     &              EXPAB(1,1,NSYMR),EXPCD(1,1,NSYMS),
+     &              FACAB(1,NSYMR),FACCD(1,NSYMS),
+     &              CONTA(1,1,NSYMR),CONTB(1,1,NSYMR),
+     &              CONTC(1,1,NSYMS),CONTD(1,1,NSYMS),
+     &              NCCINT,NINTYP,UNDIFF,PERTUR,LONDON,SPNORB,
+     &              DIA2SO,ZFS2EL,EXPECT,SUSCEP,DDFOCK,DIRFCK,
+     &              SOFOCK,DISTRI,IATOM,
+     &              MULE,MULTE,MAXDER,BIGVEC,NOCONT,NODV,NOPV,
+     &              ISMXYZ,THRESH,ONECEN,IPRINT,ICORBA,ICORBB,
+     &              ICORBC,ICORBD,INTS,HKABCD,JMAX0,ISYMR,ISYMS,
+     &              ISYMT,ISYMTS,SQ12EL,SOP000,IPNTAO,IPNTOP,
+     &              NPCOA(1,1,NSYMR),NPCOB(1,1,NSYMR),
+     &              NPCOC(1,1,NSYMS),NPCOD(1,1,NSYMS),
+     &              NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
+     &              SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
+     &              NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
+     &              NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP,
+     &              NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS))
                LWTOT  = LWTOT - KLAST
+C               
+C               write(lupri,*) 'WORK(KAOINT)2: ',(WORK(KAOINT+II-1),
+C     &                    II=1,NCCINT)
+               IF (N_SHL .GT. (MXSHL_KEEP)) THEN
+                  CALL QUIT('N_SHL exceeds MXSHL_KEEP')
+               END IF 
+               ITOTNT = ITOTNT + NINTYP*NCCINT
+               IF (AOSAVE .AND. MMCORE .GT. (NCCINT*NINTYP)
+     &              .AND. N_SHL .LE. MXSHL_KEEP 
+     &              .AND. MSAVE .EQ. .TRUE. .AND. MAXDER .EQ. 0) THEN
+C     &              .AND. MSAVE .EQ. .TRUE.) THEN
+                  
+C
+C                  write(lupri,*) 'SAV:LINTSV,ISHELA/B/C/D,ISYMR,ISYMS',
+C     &                 LINTSV,ISHELA,ISHELB,ISHELC,ISHELD,
+C     &                 ISYMR,ISYMS
+                  LINTMP = .TRUE.
+                  MMCORE = MMCORE - (NCCINT*NINTYP)
+                  CALL DCOPY((NCCINT*NINTYP),WORK(KAOINT),1,
+     &                 CORE(ISCORE),1)
+                  INDX_SHL(N_SHL) = ISCORE
+                  ISCORE = ISCORE + (NINTYP*NCCINT)
+C                  INDX_SHL(1,1) = ISHELA
+C                  INDX_SHL(2,1) = ISHELB
+C                  INDX_SHL(3,1) = ISHELC
+C                  INDX_SHL(4,1) = ISHELD
+                  IPREVA = INDX_SHL1
+                  IPREVB = INDX_SHL2
+                  IPREVC = INDX_SHL3
+                  IPREVD = INDX_SHL4
+                  INDX_SHL1 = ISHELA
+                  INDX_SHL2 = ISHELB
+                  INDX_SHL3 = ISHELC
+                  INDX_SHL4 = ISHELD
+                  N_SHL = N_SHL + 1
+                  IF (N_SHL .GT. (MXSHL_KEEP+1)) THEN
+                     write(lupri,*) 'Received quit because'//
+     &                    'N_SHL exceeds MXSHL_KEEP+1'
+                     CALL QUIT('N_SHL exceeds MXSHL_KEEP+1.')
+                  END IF
+C     Lagrer integraler i minne: Oppdaterer array med beregnede ishela/b/c/d
+               ELSE
+C                  print *,'Hm, I got here!'
+                  IF (MAXDER .GT. 0) THEN
+                     LINTMP = LINTSV
+C                     print *,'maxder',maxder
+                  ELSE
+                     LINTMP = .FALSE.
+                     INDX_SHL1 =IPREVA
+                     INDX_SHL2 =IPREVB
+                     INDX_SHL3 =IPREVC
+                     INDX_SHL4 =IPREVD
+                  END IF
+                  MSAVE = .FALSE.
+C        Reset MMCORE,ISCORE since we did not save anything useful in this call.
+                  MMCORE = LMCORE
+                  ISCORE = JSCORE
+C
+               END IF
             END IF
-  300       CONTINUE
-         END IF
-  200    CONTINUE
+ 300     CONTINUE
       END IF
-  100 CONTINUE
+ 200  CONTINUE
+      END IF
+C
+ 100  CONTINUE
 C
 C     ********************************
 C     ***** Process SO integrals *****
 C     ********************************
 C
-  400 CONTINUE
+ 400  CONTINUE
       IF (.NOT. (EXPECT.OR.DIRFCK.OR.DDFOCK.OR. DIA2SO .OR. ZFS2EL)
      &    .AND. (INTS.OR.LAST)) THEN
 C
@@ -2414,11 +2614,13 @@ C    &                  FIRST,LAST,THRESH,SQ12EL,IPRINT)
          END IF
       ELSE IF (EXPECT) THEN
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE,WORK,
-     &                                  WORK(1+MXCOOR*MXCOOR))
+     & 	                                  WORK(1+MXCOOR*MXCOOR))
       END IF
-      RETURN
 C
+      RETURN
+C     
       END
+Cef end
 C  /* Deck caoint */
       SUBROUTINE CAOINT(SOINT,DMAT,NDMAT,PSO,PSA,FMAT,AOINT,WORK,LWORK,
      &                  COEFAB,COEFCD,COORAB,COORCD,EXPAB,EXPCD,FACAB,
@@ -4609,3 +4811,28 @@ C
 C
       RETURN
       END
+C
+C  /* Deck CLEARMEM */
+      SUBROUTINE CLEAR_INCOREMEM()
+C
+#include "maxorb.h"
+#include "incore.h"
+C
+      LINTSV = .FALSE.
+      LINTMP = .FALSE.
+      INITX = .FALSE.
+      MSAVE = .TRUE.
+      MMCORE = MMWORK
+      LMCORE = MMCORE
+      ISCORE = 1
+      JSCORE = ISCORE
+      N_SHL = 1
+      I_SHL = 1
+      INDX_SHL1 = 0
+      INDX_SHL2 = 0
+      INDX_SHL3 = 0
+      INDX_SHL4 = 0
+C
+      RETURN
+      END
+      

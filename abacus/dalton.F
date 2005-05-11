@@ -83,6 +83,9 @@ C
 #include <infpri.h>
 #include <gnrinf.h>
 #include <inftap.h>
+Cef begin
+#include <incore.h>
+Cef end
       EXTERNAL EXEDRV
 #if defined (VAR_MPI)
       EXTERNAL NODSTR
@@ -197,7 +200,39 @@ C
          CALL QUIT(' DALTON: Core HPALLOC failure')
       END IF
 #endif
+Cef begin
+C To run the incore-version of dalton where integrals are stored in memory
+C on each slave for reuse, just set AOSAVE = .TRUE. below, and take a look
+C at the header file DALTON_SOURCE_DIR/include/incore.h  and the variables:
+C MMWORK and IEIR. 
+C MMWORK (we used MMWORK=80000000 when testing ) determines the size of 
+C the chunk of array WORK which is reserved for incore-calculations. 
+C The variable IEIR in incore.h must also be set to a large enough positive 
+C integer (we used IEIR=3000000). Also, screening of integrals must not be used
+C when running DALTON with AOSAVE = .TRUE.  
+
+      JSCORE = 1
+      LMCORE = MMWORK 
+      ISCORE = JSCORE
+      MMCORE = LMCORE
+      N_SHL = 1
+      AOSAVE = .FALSE.
+      INITX = .FALSE.
+      MSAVE = .TRUE.
+      LINTSV = .FALSE.
+      LINTMP = .FALSE.
+C      CALL IZERO(INDX_SHL,(5*MXSHL_KEEP))
+	INDX_SHL1 = 0
+	INDX_SHL2 = 0
+	INDX_SHL3 = 0
+	INDX_SHL4 = 0
+     	CALL IZERO(INDX_SHL,MXSHL_KEEP)
+C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
 C
+	IF (MMWORK .NE. MMCORE) THEN
+	CALL QUIT('MMCORE must equal MMWORK.')
+	END IF
+Cef end
       IF (INDEX(BASDIR,
      &INSTALL_BASDIR
      &) .LE. 0) THEN
