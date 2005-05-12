@@ -2457,8 +2457,8 @@ C     &                    II=1,NCCINT)
                ITOTNT = ITOTNT + NINTYP*NCCINT
                IF (AOSAVE .AND. MMCORE .GT. (NCCINT*NINTYP)
      &              .AND. N_SHL .LE. MXSHL_KEEP 
-     &              .AND. MSAVE .EQ. .TRUE. .AND. MAXDER .EQ. 0) THEN
-C     &              .AND. MSAVE .EQ. .TRUE.) THEN
+     &              .AND. MSAVE .AND. MAXDER .EQ. 0) THEN
+C    &              .AND. MSAVE ) THEN
                   
 C
 C                  write(lupri,*) 'SAV:LINTSV,ISHELA/B/C/D,ISYMR,ISYMS',

@@ -373,9 +373,9 @@ C
       END IF
 C     Avoid reinitialization of INDEX when it has been initialized in
 C     a previous iteration
-      IF (AOSAVE .EQ. .FALSE. .OR. INITX .EQ. .FALSE.) THEN
+      IF (.NOT.AOSAVE .OR. .NOT.INITX ) THEN
          CALL IZERO(INDEX(1,1),(3*NINDEX))
-      ELSE IF (AOSAVE .EQ. .TRUE. .AND. INITX .EQ. .TRUE.) THEN
+      ELSE IF (AOSAVE .AND. INITX) THEN
          CALL ICOPY((3*NINDEX),INDX_C(1,1),1,INDEX(1,1),1)
 Cef 10.mai:
       END IF
@@ -389,13 +389,13 @@ C
          MORE3  = ((ICOUNT-MORE1)/NODTOT) + 1
          IPLACE = MORE1+MORE2+MORE3
 C
-         IF (AOSAVE .EQ. .FALSE.) THEN
+         IF (.NOT.AOSAVE) THEN
             IF (TIMING) THEN
                INDEX(1,IPLACE) = I
             ELSE
                INDEX(1,IPLACE) = NPOS(I)
             END IF
-         ELSE IF (AOSAVE .EQ. .TRUE. .AND. INITX .EQ. .FALSE.) THEN
+         ELSE IF (AOSAVE .AND. .NOT.INITX) THEN
             INDEX(1,IPLACE) = I
          END IF
 C     
@@ -404,7 +404,7 @@ C
 C
 C The code piece below is a trick to make the 2-dim INDEX-array work with old code for 
 C the routines PARLOP()/DOPAR() which assume a 1-dim INDEX array
-      IF (AOSAVE .EQ. .FALSE.) THEN
+      IF (.NOT.AOSAVE) THEN
          DO 111 I = 1, NINDEX
             INDEX(1+MOD(I-1,3),1+INT((I-1)/3)) = INDEX(1,I) 
  111     CONTINUE
@@ -1742,7 +1742,7 @@ C
          IF (TIMING) THEN
             CPUTK2 = SECOND()
             CPUTSK = CPUTK2 - CPUTK1
-            IF (AOSAVE .EQ. .FALSE.) IPLACE = ICOUNT + I
+            IF (.NOT.AOSAVE) IPLACE = ICOUNT + I
 C            IPLACE = ICOUNT + I     
             IWHICH(IPLACE) = IJSHEL
             TSKCPU(IPLACE) = CPUTSK
