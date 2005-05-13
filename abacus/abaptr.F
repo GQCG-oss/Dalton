@@ -2526,7 +2526,7 @@ C  /* Deck makpv3 */
 #include <inftap.h>
 #include <infinp.h>
 C
-      CALL QENTER('MAKPV3')
+      CALL QENTER('MAKPVQ')
 C
       REWIND LUSIFC
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
@@ -2587,7 +2587,7 @@ ckr      PVSQ=RESHAPE(PVSQ,(/NASHT,NASHT,NASHT,NASHT/),ORDER=(/1,4,3,2/))
          CALL HEADER('Complete PV matrix MAKPVM',-1)
          CALL OUTPUT(PVSQ,1,N2ASHX,1,N2ASHX,N2ASHX,N2ASHX,1,LUPRI)
       END IF
-      CALL MEMREL('MAKPV3',WORK,1,1,KFREE,LFREE)
+      CALL MEMREL('MAKPVQ',WORK,1,1,KFREE,LFREE)
 C
       TU = 0
       DO 100 T = 1, NASHT
