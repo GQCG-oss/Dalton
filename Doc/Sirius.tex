@@ -1594,7 +1594,7 @@ orbitals).
 Single configuration cases with more than one open shell\index{open shell}
 are handled by the general \Sec{CONFIGURATION INPUT} section, although
 high-spin restricted open-shell Hartree--Fock or Kohn--Sham DFT calculations can be done
-using the \quotekw{.HSROHF} described here.
+using the \quotekw{.SINGLY OCCUPIED} described here.
 
 \begin{description}
 \item[\Key{AUTOCCUPATION}]
@@ -1604,7 +1604,7 @@ using the \quotekw{.HSROHF} described here.
   Allow the distribution of the Hartree--Fock occupation numbers over
   symmetries\index{Hartree--Fock occupation}\index{HF occupation} to
   change based on changes in orbital ordering during DIIS\index{DIIS} optimization.
-  This keyword is incompatible with \quotekw{.HSROHF} and \quotekw{.COREHOLE}, or
+  This keyword is incompatible with \quotekw{.SINGLY OCCUPIED} and \quotekw{.COREHOLE}, or
   if the HF calculation is followed by CI or MCSCF..
 
 %\item[\Key{EDIIS}]
@@ -1663,7 +1663,7 @@ using the \quotekw{.HSROHF} described here.
   charges and the total charge of the molecule\index{charge of molecule}
   as specified in the \verb|MOLECULE.INP| file.
   The keyword is incompatible with the keywords \quotekw{.DOUBLY OCCUPIED},
-  \quotekw{.OPEN SHELL}, and \quotekw{.HSROHF}.
+  \quotekw{.OPEN SHELL}, and \quotekw{.SINGLY OCCUPIED}.
 
 \item[\Key{FC MVO}]
   \kw{READ (LUINP,*) (NMVO(I), I = 1,NSYM)} \\
@@ -1694,7 +1694,7 @@ using the \quotekw{.HSROHF} described here.
 \item[\Key{H1VIRT}] Use the virtual orbitals that diagonalize the
   one-electron Hamiltonian operator.
 
-\item[\Key{HSROHF}]
+\item[\Key{SINGLY OCCUPIED}]
     \kw{READ (LUINP,*) (NROHF(I),I=1,NSYM)} \\
   High spin restricted open-shell Hartree--Fock. Specify the number of
   singly occupied orbitals in each irreducible representation
@@ -1735,7 +1735,7 @@ using the \quotekw{.HSROHF} described here.
   Default = no open shell\\
   \kw{READ (LUINP,*) IOPRHF} \\
   Symmetry of the open shell in a one open shell\index{open shell!HF}\index{HF!open shell}
-  calculation. See also \quotekw{.HSROHF} for high-spin ROHF with more than one
+  calculation. See also \quotekw{.SINGLY OCCUPIED} for high-spin ROHF with more than one
   singly occupied orbital.
 
 \item[\Key{PRINT}]
