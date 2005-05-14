@@ -198,6 +198,9 @@ static void
 dft_integrate_collect_info(real *electrons)
 {
     real tmp = *electrons;
+    int sz = 0;
+    MPI_comm_size(MPI_COMM_WORLD, &sz);
+    if(sz<=1) return;
     MPI_Reduce(&tmp, electrons, 1, MPI_DOUBLE, MPI_SUM, 
 	       infpar_.master, MPI_COMM_WORLD);
 }

@@ -2,6 +2,8 @@ all: libcc.a
 
 include ../Makefile.config
 
+C_OBJS = crayio.o
+
 F_OBJS = herdirect_cc.o  cc_drv.o       ccsd_input.o   ccsd_energy.o \
 ccsd_sortao.o  ccsd_rhs.o     cc3_t3int.o    cc3_omeg.o    \
 cc_exci.o      cc_lr.o        cc_fop.o       cc_pqi.o      \
@@ -67,11 +69,8 @@ pre: $(F_CPPS)
 
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > cc.ftnchek
-  
-# cc_pckcr8.o    cc_pckutil.o   
-io : crayio.o
 
-libcc.a: $(F_OBJS)
+libcc.a: $(F_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 

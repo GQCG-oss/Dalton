@@ -1057,8 +1057,10 @@ C
 #include <cbieri.h>
 #include <veclen.h>
 #include <numder.h>
-CSONIA
 #include <grdccpt.h>
+#ifdef VAR_MPI
+#include <infpar.h>
+#endif
       PARAMETER (NDIR = 7, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
@@ -1139,6 +1141,13 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       DKTRAN = .FALSE.
       GEOALL = .FALSE.
       PANAS  = 0.0D0
+#ifdef VAR_MPI
+      IF(NODTOT.GE.1) THEN
+         PARCAL = .TRUE.
+         DIRCAL = .TRUE.
+         WRITE(LUPRI,'(A)') "MPI: Using ", NODTOT+1, " CPUs."
+      END IF
+#endif
 C
 C     Initialize /EXEINF/
 C

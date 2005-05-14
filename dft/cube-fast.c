@@ -1269,6 +1269,9 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
 static __inline__ void
 dft_cr_resp_collect_info(real* fi, real*work)
 {
+    int sz = 0;
+    MPI_Comm_size(MPI_COMM_WORLD, &sz);
+    if(sz<=1) return;
     dcopy_(&inforb_.n2orbx, fi, &ONEI, work, &ONEI);
     MPI_Reduce(work, fi, inforb_.n2orbx, MPI_DOUBLE, MPI_SUM,
                infpar_.master, MPI_COMM_WORLD);

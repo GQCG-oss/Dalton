@@ -1,5 +1,6 @@
 include ./Makefile.config
 
+# DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
 DALTON_LIBS = \
 -Labacus -labacus	\
 -Lrsp -lrsp 		\
@@ -12,44 +13,43 @@ DALTON_LIBS = \
 -Lgp -lgp		\
 -Lpdpack -lpdpack
 
-PDLIB = pdpack/pdlib.a
+MODULES = MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ
 
-OBJPRG = abacus/dalton.o
+SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi 
 
 OBJSLAVE = abacus/herpar.o eri/eri2par.o
 
 OBJNODE = eri/eriprg.o
 
-OBJSIO = cc/crayio.o
-
 OBJSAMFI = amfi/amfi.o amfi/symtra.o
 
 OBJSMEM = abacus/linux_mem_allo.o
+
+OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
 #
 #     Most common build of Dalton
 #
-dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+dalton.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) \
-	$(OBJSAMFI) gp/mpi_dummy.o $(DALTON_LIBS) $(LIBS)
+	-o $(INSTALLDIR)/dalton.x $(OBJSLAVE) \
+	$(OBJSAMFI) $(OBJS_MPI_DUMMY) $(DALTON_LIBS) $(LIBS)
 #
 #       Linux version of the program
 #
-linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+linux.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
-	$(OBJSLAVE) $(OBJSAMFI) gp/mpi_dummy.o $(DALTON_LIBS) $(LIBS)
+	-o $(INSTALLDIR)/dalton.x $(OBJSMEM) \
+	$(OBJSLAVE) $(OBJSAMFI) $(OBJS_MPI_DUMMY) $(DALTON_LIBS) $(LIBS)
 #
 #     Linux MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
 linuxparallel.x: linux.x
 	@echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
+	-o $(INSTALLDIR)/dalpar.x $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIBS) \
 	$(MPI_LIB_PATH) $(MPI_LIB) 
 #
@@ -58,17 +58,16 @@ linuxparallel.x: linux.x
 parallel.x: dalton.x
 	@echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) $(OBJSAMFI) \
+	-o $(INSTALLDIR)/dalpar.x $(OBJSLAVE) $(OBJSAMFI) \
 	$(DALTON_LIBS) $(LIBS) $(MPI_LIB_PATH) $(MPI_LIB)
 #
 #	Build with PVMe
 #	We will never need MPILIB when using PVM
 #       First build master, then slave
 #
-dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+dalpvm.x: $(MODULES)
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpvm.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
+	-o $(INSTALLDIR)/dalpvm.x $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) \
 	$(DALTON_LIBS) $(PVM_LIB_PATH) \
 	$(PVM_LIBS) $(PVM_INC_PATH)
@@ -79,52 +78,31 @@ dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #	Not tested MPI on Cray yet. Thus no MPILIB, and no OBJSMXM nor
 #	OBJSEIS
 #
-cray.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ \
-	DFIT_OBJ ERI_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
-	$(F77) $(FFLAGS) -o $(INSTALLDIR)/dalton.x $(OBJPRG) \
+cray.x: $(MODULES)
+	$(F77) $(FFLAGS) -o $(INSTALLDIR)/dalton.x \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) $(DALTON_LIBS)
 #
 #	This is a proper build for the Cray-T3D
 #
-t3d.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+t3d.x: $(MODULES)
 	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
-	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSLAVE) \
+	-o $(INSTALLDIR)/dalpar.x $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
 
-t90.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+t90.x: $(MODULES)
 	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
-	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) (IO_OBJS) $(OBJSLAVE) \
+	-o $(INSTALLDIR)/dalpar.x $(IO_OBJS) $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
 #
 #	Update all dependencies
 #
 depend :
-	cd abacus  && $(MAKE) depend
-	cd amfi    && $(MAKE) depend
-	cd cc      && $(MAKE) depend
-	cd dft     && $(MAKE) depend
-	cd eri     && $(MAKE) depend
-	cd densfit && $(MAKE) depend
-	cd gp      && $(MAKE) depend
-	cd pdpack  && $(MAKE) depend
-	cd rsp     && $(MAKE) depend
-	cd sirius  && $(MAKE) depend
+	for i in $(SUBDIRS); do ( cd $$i  && $(MAKE) $@ ); done
 #
 #	Make it a bit cleaner, remover all .o/.lst/*.f -files
 #
 clean :
-	cd abacus  && $(MAKE) clean
-	cd amfi    && $(MAKE) clean
-	cd cc      && $(MAKE) clean
-	cd dft     && $(MAKE) clean
-	cd eri     && $(MAKE) clean
-	cd densfit && $(MAKE) clean
-	cd gp      && $(MAKE) clean
-	cd pdpack  && $(MAKE) clean
-	cd rsp     && $(MAKE) clean
-	cd sirius  && $(MAKE) clean
+	for i in $(SUBDIRS); do ( cd $$i  && $(MAKE) $@ ); done
 	$(RM) -f *~
 #
 #	We remove the entire source code as well if we do not plan to debug
@@ -182,13 +160,4 @@ ftnchek: pre
 	ftnchek $(CHEKFLAGS) */*.i > dalton.ftnchek
 
 pre :
-	cd abacus && $(MAKE) pre
-	cd amfi   && $(MAKE) pre
-	cd cc     && $(MAKE) pre
-	cd dft    && $(MAKE) pre
-	cd eri    && $(MAKE) pre
-	cd densfit && $(MAKE) pre
-	cd gp     && $(MAKE) pre
-	cd pdpack && $(MAKE) pre
-	cd rsp    && $(MAKE) pre
-	cd sirius && $(MAKE) pre
+	for i in $(SUBDIRS); do ( cd $$i  && $(MAKE) $@ ); done

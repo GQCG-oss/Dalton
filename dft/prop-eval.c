@@ -108,6 +108,9 @@ static __inline__ void
 dft_kohn_sham_collect_info(real*ksm, real* energy, real* work)
 {
     real tmp = *energy;
+    int sz = 0;
+    MPI_comm_size(MPI_COMM_WORLD, &sz);
+    if(sz <=1) return;
     dcopy_(&inforb_.n2basx, ksm,&ONEI, work, &ONEI);
     MPI_Reduce(work, ksm, inforb_.n2basx, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
