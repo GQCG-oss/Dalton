@@ -24,8 +24,6 @@ OBJNODE = eri/eriprg.o
 
 OBJSAMFI = amfi/amfi.o amfi/symtra.o
 
-OBJSMEM = abacus/linux_mem_allo.o
-
 OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
 #
 #     Most common build of Dalton
@@ -33,7 +31,7 @@ OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
 dalton.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalton.x $(OBJSLAVE) \
+	-o $(INSTALLDIR)/dalton.x abacus/dalton.o $(OBJSLAVE) \
 	$(OBJSAMFI) $(OBJS_MPI_DUMMY) $(DALTON_LIBS) $(LIBS)
 #
 #       Linux version of the program
@@ -41,7 +39,7 @@ dalton.x: $(MODULES)
 linux.x: $(MODULES)
 	@echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalton.x $(OBJSMEM) \
+	-o $(INSTALLDIR)/dalton.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(OBJS_MPI_DUMMY) $(DALTON_LIBS) $(LIBS)
 #
 #     Linux MPI parallel build (first create sequential build dalton.x, then dalpar.x)
@@ -49,7 +47,7 @@ linux.x: $(MODULES)
 linuxparallel.x: linux.x
 	@echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpar.x $(OBJSMEM) \
+	-o $(INSTALLDIR)/dalpar.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIBS) \
 	$(MPI_LIB_PATH) $(MPI_LIB) 
 #
@@ -58,7 +56,7 @@ linuxparallel.x: linux.x
 parallel.x: dalton.x
 	@echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpar.x $(OBJSLAVE) $(OBJSAMFI) \
+	-o $(INSTALLDIR)/dalpar.x abacus/dalton.o $(OBJSLAVE) $(OBJSAMFI) \
 	$(DALTON_LIBS) $(LIBS) $(MPI_LIB_PATH) $(MPI_LIB)
 #
 #	Build with PVMe
@@ -67,7 +65,7 @@ parallel.x: dalton.x
 #
 dalpvm.x: $(MODULES)
 	$(F77) $(FFLAGS) \
-	-o $(INSTALLDIR)/dalpvm.x $(OBJSMEM) \
+	-o $(INSTALLDIR)/dalpvm.x abacus/dalton.o \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) \
 	$(DALTON_LIBS) $(PVM_LIB_PATH) \
 	$(PVM_LIBS) $(PVM_INC_PATH)
@@ -149,9 +147,6 @@ IO_OBJ	:
 
 PD_OBJ	:
 	cd pdpack && $(MAKE) all
-
-MEM_OBJ :
-	cd abacus && $(MAKE) linuxmem
 
 AMFI_OBJ :
 	cd amfi && $(MAKE) all

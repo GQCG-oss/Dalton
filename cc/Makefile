@@ -70,7 +70,7 @@ pre: $(F_CPPS)
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > cc.ftnchek
 
-libcc.a: $(F_OBJS) $(C_OBJS)
+libcc.a: $(C_OBJS) $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
