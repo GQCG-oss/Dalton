@@ -132,7 +132,7 @@ END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Hyperpol-ties $4 ($1 $2, $3)"
 # $6 - max deviation
 check_second_hyperpolarizabilities() {
 [ "$6" = "" ] &&  echo "not enough parameters to check_hyperpolarizabilities."
-$AWK 'function e(a,b,r){return(a-b>=r||a-b=<-r)} BEGIN {s=0; isthere=0}
+$AWK 'function e(a,b,r){return(a-b>=r||a-b<=-r)} BEGIN {s=0; isthere=0}
 /B-freq:  / { if($3=='$1') {getline;} else {next;}
               if($3=='$2') {getline;} else {next;}
               if($3=='$3') {isthere=1;}
