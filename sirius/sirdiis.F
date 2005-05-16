@@ -462,13 +462,13 @@ C       keep vectors until GRDNRM fallen a factor 100
       NEWOCC = 0
       NOSCIL = 0
 Cef begin
-      IF (AOSAVE) THEN
+Ckr      IF (AOSAVE) THEN
 C	IF (.TRUE.) THEN
-         DODIFDEN = .FALSE.
-      ELSE
+Ckr         DODIFDEN = .FALSE.
+Ckr      ELSE
          DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
      &         .AND..NOT. HSROHF
-      END IF
+Ckr      END IF
 Cef end
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -476,7 +476,9 @@ Ctuh:   DIFDEN does not work with DFT either
 Cov:    DIFDEN disabled for high spin HF
       DIFDEN   = DODIFDEN
       IF (.NOT. USRSCR) THEN
-         IF (FLAG(13)) THEN
+         IF (AOSAVE) THEN
+            IFTHRS = 14
+         ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
             IFTHRS = 14
          ELSE

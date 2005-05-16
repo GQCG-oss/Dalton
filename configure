@@ -628,11 +628,39 @@ if [ $WHICH = 'rs6000' -o $WHICH = 'sun4' -o $WHICH = 'iris4d' -o $WHICH = 'linu
 fi
 
 #
-# Determine memory size. 
+# Determine memory size, also ask whether user would like to active the
+# possibility of storing the two-electron integrals in memory 
 #
-
 $ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static'
 $ECHO 'allocations, in addition to the dynamic allocation.'
+$ECHO '\nDALTON has the possibility to reserve a certain amount of memory'
+$ECHO 'for storing two-electron integrals in direct and parallell calculations'
+$ECHO 'Storing some or all of the 2-el. integrals in memory will speed up'
+$ECHO 'direct and parallel calculations (and in particular the latter).'
+$ECHO 'NOTE: This will increase the static memory allocation used by DALTON'
+
+storeint="false"
+get_yes_or_no "\nWould you like to activate the possibility of storing 2-el.int. in memory?"
+if [ "$answer" = "y" ]; then
+    storeint="true"
+    sed -i.bak "s/AOSAVE = .FALSE./AOSAVE = .TRUE./" abacus/dalton.F
+    sed -i.bak "5c\      PARAMETER \(MXTSK=\(MXSHEL\*\(MXSHEL+1\)\/2\), IEIR=3000000," include/incore.h
+    incoresiz=
+    while [ "$incoresiz" = "" ]
+    do
+       $ECHO 'How many millions of *8 words to use for storing 2-el.integrals? \c'
+       read incoresiz
+    done
+    incoresiz=`expr $incoresiz \* 1000000`
+    $ECHO '\n   Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
+    sed -ibak "6c\     &          MMWORK=$incoresiz," include/incore.h;
+else
+    storeint="false"
+    sed -i.bak "s/AOSAVE = .TRUE./AOSAVE = .FALSE./" abacus/dalton.F
+    sed -i.bak "5c\      PARAMETER \(MXTSK=\(MXSHEL\*\(MXSHEL+1\)\/2\), IEIR=1," include/incore.h
+    sed -ibak "6c\     &          MMWORK=1," include/incore.h;
+fi
+
 $ECHO 'Maximum amount of work memory for dynamic allocations can be'
 $ECHO 'changed at run time through the environment variable WRKMEM'
 $ECHO 'or using the -M option to the run script: "dalton -M mb ...".'

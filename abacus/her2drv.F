@@ -2165,57 +2165,6 @@ C
 ckr           Do we need anything fancy changing of sign for ZFS2EL
 C
 C
-C              Check whether this integral gives zero contribution
-C              ===================================================
-C
-C              a) no contribution to direct Fock matrix construction
-C
-C              Screening: pretty thorough, taking care also of
-C                         non-symmetric density matrices
-                  IF(DIRFCK.OR.SOFOCK) THEN
-                    DINTSKP(1,1) = DINTSKP(1,1) + NCCINT
-                    IF(DOSCRN) THEN
-                      ULINT = GABRAO(ISYBLA,ISYBLB)*
-     &                        GABRAO(ISYBLC,ISYBLD)
-                      DNSMAX   = D0
-                      DO I = 1,NDMAT
-C Largest Coulomb contribution
-                        DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
-     &                                    DMRAO(ISYBLB,ISYBLA,I),
-     &                                    DMRAO(ISYBLC,ISYBLD,I),
-     &                                    DMRAO(ISYBLD,ISYBLC,I))
-C Largest exchange contribution
-                        DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
-     &                                    DMRAO(ISYBLA,ISYBLC,I),
-     &                                    DMRAO(ISYBLC,ISYBLB,I),
-     &                                    DMRAO(ISYBLB,ISYBLC,I),
-     &                                    DMRAO(ISYBLD,ISYBLA,I),
-     &                                    DMRAO(ISYBLA,ISYBLD,I),
-     &                                    DMRAO(ISYBLB,ISYBLD,I),
-     &                                    DMRAO(ISYBLD,ISYBLB,I))
-                        DNSMAX = MAX(DNSMAX,D4*DNSBUF(1,I),DNSBUF(2,I))
-                      ENDDO
-                      FCKMAX = DNSMAX*ULINT
-                      IF(FCKMAX.LT.FCKTHR) THEN
-                        DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
-                        IF(IPRINT.GE.5) THEN
-                   WRITE(LUPRI,
-     &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
-     &        '*Skip: ',FCKMAX,
-     &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
-     &        SPDCAR(NHKTSH(ISHELA)-1),')',
-     &        ISHELB,'(',NAMDEP(ICENTB),COMP(LCLASH(ISHELB)),
-     &        SPDCAR(NHKTSH(ISHELB)-1),')',
-     &        ISHELC,'(',NAMDEP(ICENTC),COMP(LCLASH(ISHELC)),
-     &        SPDCAR(NHKTSH(ISHELC)-1),')',
-     &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
-     &        SPDCAR(NHKTSH(ISHELD)-1),')'
-                        ENDIF
-                        GOTO 300
-                      ENDIF
-                    ENDIF
-                  ENDIF
-C
 C              b) atom to be differentiated does not enter integral
 C
                IF (PERTUR .AND. MAXDER .GT. 0) THEN
@@ -2262,6 +2211,73 @@ C
                   LINTMP = LINTSV
                   GO TO 300
                END IF          
+C
+C              Check whether this integral gives zero contribution
+C              ===================================================
+C
+C              a) no contribution to direct Fock matrix construction
+C
+C              Screening: pretty thorough, taking care also of
+C                         non-symmetric density matrices
+                  IF(DIRFCK.OR.SOFOCK) THEN
+                    DINTSKP(1,1) = DINTSKP(1,1) + NCCINT
+                    IF(DOSCRN) THEN
+                      ULINT = GABRAO(ISYBLA,ISYBLB)*
+     &                        GABRAO(ISYBLC,ISYBLD)
+                      DNSMAX   = D0
+                      DO I = 1,NDMAT
+C Largest Coulomb contribution
+                        DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
+     &                                    DMRAO(ISYBLB,ISYBLA,I),
+     &                                    DMRAO(ISYBLC,ISYBLD,I),
+     &                                    DMRAO(ISYBLD,ISYBLC,I))
+C Largest exchange contribution
+                        DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
+     &                                    DMRAO(ISYBLA,ISYBLC,I),
+     &                                    DMRAO(ISYBLC,ISYBLB,I),
+     &                                    DMRAO(ISYBLB,ISYBLC,I),
+     &                                    DMRAO(ISYBLD,ISYBLA,I),
+     &                                    DMRAO(ISYBLA,ISYBLD,I),
+     &                                    DMRAO(ISYBLB,ISYBLD,I),
+     &                                    DMRAO(ISYBLD,ISYBLB,I))
+                        DNSMAX = MAX(DNSMAX,D4*DNSBUF(1,I),DNSBUF(2,I))
+                      ENDDO
+                      FCKMAX = DNSMAX*ULINT
+                      IF(FCKMAX.LT.FCKTHR) THEN
+                        DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
+                        IF(IPRINT.GE.5) THEN
+                   WRITE(LUPRI,
+     &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
+     &        '*Skip: ',FCKMAX,
+     &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
+     &        SPDCAR(NHKTSH(ISHELA)-1),')',
+     &        ISHELB,'(',NAMDEP(ICENTB),COMP(LCLASH(ISHELB)),
+     &        SPDCAR(NHKTSH(ISHELB)-1),')',
+     &        ISHELC,'(',NAMDEP(ICENTC),COMP(LCLASH(ISHELC)),
+     &        SPDCAR(NHKTSH(ISHELC)-1),')',
+     &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
+     &        SPDCAR(NHKTSH(ISHELD)-1),')'
+                        ENDIF
+#if defined (VAR_MPI)
+          IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND. DIRFCK) THEN
+#else
+                  IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND. 
+     &                 INDX_SHL2 .GE. ISHELB .AND.
+     &                 INDX_SHL3 .GE. ISHELC .AND. 
+     &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1) THEN
+#endif
+                        LINTMP = .TRUE.
+                        I_SHL = I_SHL + 1
+                        IF (I_SHL .GT. MXSHL_KEEP) THEN
+                           write(lupri,*) 'Received quit because'//
+     &                          'I_SHL exceeds MXSHL_KEEP'
+                           CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+                        END IF
+                     END IF
+                        GOTO 300
+                      ENDIF
+                    ENDIF
+                  ENDIF
 C     
 C              Integral contributes
 C              ====================
