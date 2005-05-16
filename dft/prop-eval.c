@@ -105,12 +105,13 @@ dft_kohn_sham_sync_slaves(real* dmat)
 }
 
 static __inline__ void
-dft_kohn_sham_collect_info(real*ksm, real* energy, real* work)
+dft_kohn_sham_collect_info(real*ksm, real* energy, real* work, int lwork)
 {
     real tmp = *energy;
     int sz = 0;
     MPI_comm_size(MPI_COMM_WORLD, &sz);
     if(sz <=1) return;
+    CHECK_WRKMEM(inforb_.n2basx, lwork);
     dcopy_(&inforb_.n2basx, ksm,&ONEI, work, &ONEI);
     MPI_Reduce(work, ksm, inforb_.n2basx, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
@@ -120,7 +121,7 @@ dft_kohn_sham_collect_info(real*ksm, real* energy, real* work)
 
 #else /* VAR_MPI */
 #define dft_kohn_sham_sync_slaves(dmat)
-#define dft_kohn_sham_collect_info(myksm, ksm, energy)
+#define dft_kohn_sham_collect_info(myksm, ksm, energy,lwork)
 #endif /* VAR_MPI */
 
 static real energy = 0.0;
@@ -212,7 +213,7 @@ dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
 	    ksm_exch[i+joff] = ksm_exch[j+ioff] = averag;
 	}
     }
-    dft_kohn_sham_collect_info(ksm_exch, &energy, work);
+    dft_kohn_sham_collect_info(ksm_exch, &energy, work, *lwork);
     *edfty = energy;
     daxpy_(&inforb_.n2basx, &ONER, ksm_exch, &ONEI, ksm, &ONEI);
     
@@ -285,9 +286,13 @@ dft_lin_resp_sync_slaves(real* cmo, int *nvec, real**zymat,
 static __inline__ void
 dft_lin_resp_collect_info(int nvec, real* fmat, real*work, int lwork)
 {
-    int sz = nvec*inforb_.n2basx;
+    int sz = 0;
+    MPI_Comm_size(MPI_COMM_WORLD, &sz);
+    if(sz<=1) return;
+
+    sz = nvec*inforb_.n2basx;
     if(sz>lwork) {
-        if(inforb_.n2basx>lwork) dalton_quit("not enough mem to collect data");
+        CHECK_WRKMEM(inforb_.n2basx,lwork);
         for(sz=0; sz<nvec; sz++) {
             dcopy_(&inforb_.n2basx, fmat + sz*inforb_.n2basx,
                    &ONEI, work, &ONEI);
@@ -295,6 +300,7 @@ dft_lin_resp_collect_info(int nvec, real* fmat, real*work, int lwork)
                        MPI_DOUBLE, MPI_SUM, MASTER_NO, MPI_COMM_WORLD);
         }
     } else {
+        CHECK_WRKMEM(sz, lwork);
         dcopy_(&sz, fmat, &ONEI, work, &ONEI);
         MPI_Reduce(work, fmat, sz, MPI_DOUBLE, MPI_SUM, 
                    MASTER_NO, MPI_COMM_WORLD);
@@ -597,7 +603,7 @@ typedef struct {
     real energy;
 } DftKohnShamU;
 
-#if 0 && defined(VAR_MPI)
+#if defined(VAR_MPI)
 /* dft_kohn_sham_ab_slave:
    this is a slave driver. It's task is to allocate memory needed by
    the main property evaluator (dft_kohn_shamab in this case) and call it.
@@ -608,7 +614,8 @@ dft_kohn_shamab_slave(real* work, int* lwork, const int* iprint)
     real* dmat = malloc(2*inforb_.n2basx*sizeof(real));
     real* ksm  = calloc(2*inforb_.n2basx,sizeof(real));
     int iprfck = 0;
-    FSYM2(dft_kohn_shamab)(dmat, ksm,  work, lwork, &iprfck);
+    real edfty;
+    FSYM2(dft_kohn_shamab)(dmat, ksm, &edfty, work, lwork, &iprfck);
     free(dmat);
     free(ksm);
 }
@@ -621,10 +628,15 @@ dft_kohn_shamab_sync_slaves(real* dmat)
 }
 
 static __inline__ void
-dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work)
+dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work, int lwork)
 {
     real tmp = *energy;
-    int sz = 2*inforb_.n2basx;
+    int sz = 0;
+    MPI_Comm_size(MPI_COMM_WORLD, &sz);
+    if(sz<=1) return;
+
+    sz = 2*inforb_.n2basx;
+    CHECK_WRKMEM(sz,lwork);
     dcopy_(&sz, ksm,&ONEI, work, &ONEI);
     MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
@@ -634,7 +646,7 @@ dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work)
 
 #else /* VAR_MPI */
 #define dft_kohn_shamab_sync_slaves(dmat)
-#define dft_kohn_shamab_collect_info(myksm, ksm, energy)
+#define dft_kohn_shamab_collect_info(myksm, ksm, energy,lwork)
 #endif /* VAR_MPI */
 
 static void
@@ -707,7 +719,7 @@ kohn_shamab_cb(DftGrid* grid, DftKohnShamU* exc)
  */
 void
 FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
-                 real* work, int *lwork, int* iprfck)
+		       real* work, int *lwork, int* iprfck)
 {
     int nbast2, i, j, sz;
     DftCallbackData cbdata[1];
@@ -731,7 +743,7 @@ FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
     res.energy = 0.0;
     electrons = dft_integrate_ao(&dens, work, lwork, 0, 0,0,
                                  cbdata, ELEMENTS(cbdata));
-    dft_kohn_shamab_collect_info(res.ksma, &res.energy, work);
+    dft_kohn_shamab_collect_info(res.ksma, &res.energy, work, *lwork);
 
     for(i=0; i<inforb_.nbast; i++) {
 	int ioff = i*inforb_.nbast;
@@ -763,7 +775,7 @@ typedef struct {
 } LinRespDataab;
 
 
-#if 0 && defined(VAR_MPI)
+#if defined(VAR_MPI)
 void
 dft_lin_respab_slave(real* work, int* lwork, const int* iprint)
 {
@@ -771,24 +783,30 @@ dft_lin_respab_slave(real* work, int* lwork, const int* iprint)
     real *cmo  = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
     real *zymat= malloc(2*inforb_.n2orbx*sizeof(real));            /* IN  */
     int trplet;                         /* IN: will be synced from master */
+    int ksymop;                         /* IN: will be synced from master */
     FSYM2(dft_lin_respab)(fmat, fmat+inforb_.n2orbx, cmo, zymat, &trplet,
-                    work, lwork);
+			  &ksymop, work, lwork);
     free(fmat);
     free(cmo);
     free(zymat); 
 }
 
 static __inline__ void
-dft_lin_respab_collect_info(real* fmat, real*work)
+dft_lin_respab_collect_info(real* fmat, real*work, int lwork)
 {
-    int sz = 2*inforb_.n2orbx; 
+    int sz = 0;
+    MPI_Comm_size(MPI_COMM_WORLD, &sz);
+    if(sz<=1) return;
+
+    sz = 2*inforb_.n2orbx; 
+    CHECK_WRKMEM(sz,lwork);
     dcopy_(&sz, fmat,&ONEI, work, &ONEI);
     MPI_Reduce(work, fmat, sz, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
 }
 
 #else  /* VAR_MPI */
-#define dft_lin_respab_collect_info(fmat,work)
+#define dft_lin_respab_collect_info(fmat,work, lwork)
 #endif /* VAR_MPI */
 
 
@@ -1031,7 +1049,7 @@ lin_resp_cbab_nogga(DftGrid* grid, LinRespDataab* data)
 
 void
 FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat, 
-                int *trplet, int *ksymop, real* work,int* lwork)
+		      int *trplet, int *ksymop, real* work,int* lwork)
 {
     const real DP5R = 0.5;
     const real MONER = -1.0;
@@ -1047,7 +1065,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respab)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop,
+    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet, ksymop,
                              &work, *lwork);              /* NO-OP in serial */
 
     times(&starttm);
@@ -1081,7 +1099,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
     electrons = dft_integrate_ao(&dens,work, lwork,0, 0,0, 
                                  cbdata,ELEMENTS(cbdata));
 
-    dft_lin_respab_collect_info(lr_data.resa, work);/*serial:NO-OP*/
+    dft_lin_respab_collect_info(lr_data.resa, work, *lwork);/*serial:NO-OP*/
 
     for(i=0; i<inforb_.nbast; i++) {
 	ioff = i*inforb_.nbast;

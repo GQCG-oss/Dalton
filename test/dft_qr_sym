@@ -27,8 +27,6 @@ dalton="**DALTON INPUT
 .DFT
  B3LYP
 *SCF INPUT
-.THRESHOLD
-1e-10
 *DFT INPUT
 .GRID TYPE
 LMG BLOCK
@@ -42,23 +40,23 @@ LMG BLOCK
 "
 
 test="
-check_scf_energy DFT -75.935846161571 4e-10
+check_scf_energy DFT -75.935846161893 4e-2
                      
-check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y' -15.36429168 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -17.25784278 1e-6
-check_hyperpolarizabilities 0.1 0.1 'Y;Y,Y' -22.61648759 1e-6
-check_hyperpolarizabilities 0.0 0.0 'X;X,Y' -21.38431647 1e-6
-check_hyperpolarizabilities 0.1 0.0 'X;X,Y' -22.86902621 1e-6
-check_hyperpolarizabilities 0.0 0.1 'X;X,Y' -23.17289705 1e-6
-check_hyperpolarizabilities 0.1 0.1 'X;X,Y' -26.80628365 1e-6
-check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -1.29486623 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y'  -1.65167088 1e-6
-check_hyperpolarizabilities 0.0 0.1 'Z;Z,Y'  -1.50265463 1e-6
-check_hyperpolarizabilities 0.1 0.1 'Z;Z,Y'  -2.82632583 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -23.17289705 1e-6
-check_hyperpolarizabilities 0.1 0.1 'Y;X,X' -28.37917557 1e-6
-check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'  -1.50265463 1e-6
-check_hyperpolarizabilities 0.1 0.1 'Y;Z,Z'  -1.92233260 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y' -15.36429168 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y' -17.25784278 1e-5
+check_hyperpolarizabilities 0.1 0.1 'Y;Y,Y' -22.61648759 1e-5
+check_hyperpolarizabilities 0.0 0.0 'X;X,Y' -21.38431647 1e-5
+check_hyperpolarizabilities 0.1 0.0 'X;X,Y' -22.86902621 1e-5
+check_hyperpolarizabilities 0.0 0.1 'X;X,Y' -23.17289705 1e-5
+check_hyperpolarizabilities 0.1 0.1 'X;X,Y' -26.80628365 1e-5
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'  -1.29486623 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y'  -1.65167088 1e-5
+check_hyperpolarizabilities 0.0 0.1 'Z;Z,Y'  -1.50265463 1e-5
+check_hyperpolarizabilities 0.1 0.1 'Z;Z,Y'  -2.82632583 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;X,X' -23.17289705 1e-5
+check_hyperpolarizabilities 0.1 0.1 'Y;X,X' -28.37917557 1e-5
+check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'  -1.50265463 1e-5
+check_hyperpolarizabilities 0.1 0.1 'Y;Z,Z'  -1.92233260 1e-5
 "
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

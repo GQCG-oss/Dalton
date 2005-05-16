@@ -662,18 +662,20 @@ qrbl_sync_slaves(real* cmo, real* kappaY, real* kappaZ, int* addfock,
     mpi_sync_data(data2,     ELEMENTS(data2));
 }
 static __inline__ void
-qrbl_collect_info(real* fi, real*work)
+qrbl_collect_info(real* fi, real*work, int lwork)
 {
     int sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
+
+    CHECK_WRKMEM(inforb_.n2orbx,lwork);
     dcopy_(&inforb_.n2orbx, fi, &ONEI, work, &ONEI);
     MPI_Reduce(work, fi, inforb_.n2orbx, MPI_DOUBLE, MPI_SUM, 
 	       MASTER_NO, MPI_COMM_WORLD);
 }
 #else /* VAR_MPI */
 #define qrbl_sync_slaves(cmo,kappaY,kappaZ,addfck,symY,symZ,spinY,spinZ)
-#define qrbl_collect_info(fi,work)
+#define qrbl_collect_info(fi,work,lwork)
 #endif /* VAR_MPI */
 
 /* ===================================================================
@@ -759,7 +761,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
     dzero_(tmp2, &inforb_.n2orbx);
     FSYM(lrao2mo)(cmo, &qr_data.symY, qr_data.res_omZ, tmp2, work, lwork);
     commute_matrices(inforb_.norbt, tmp2, kappaZ, tmp1, 1);
-    qrbl_collect_info(tmp1, work);  /* NO-OP in serial */
+    qrbl_collect_info(tmp1, work, *lwork);  /* NO-OP in serial */
     daxpy_(&inforb_.n2orbx, &HALFR, tmp1, &ONEI, fi, &ONEI);
     if(DFTQR_DEBUG) {
         fort_print("DFT quadratic contribution (MO)");

@@ -115,12 +115,12 @@ enum { GRID_TYPE_STANDARD, GRID_TYPE_CARTESIAN };
 static int gridType = GRID_TYPE_STANDARD;
 
 void*
-dal_malloc_(size_t sz, const char *place, int line)
+dal_malloc_(size_t sz, const char *place, unsigned line)
 {
     void* res = malloc(sz);
     if(!res) {
-        fprintf(stderr, "dal_malloc(sz=%d bytes) at %s (line %u) failed.\n",
-                sz, place, line);
+        fprintf(stderr, "dal_malloc(sz=%u bytes) at %s (line %u) failed.\n",
+                (unsigned)sz, place, line);
         exit(1);
     }
     return res;
@@ -938,14 +938,14 @@ boxify_load_grid(const char *fname, int point_cnt, real *work, int worksz,
     FILE *f;
 
     if(worksz<4*point_cnt*sizeof(real)) {
-        fprintf(stderr, "wrkmem too small (%d, needed %d) trying malloc.\n",
-                worksz, 4*point_cnt*sizeof(real));
+        fprintf(stderr, "wrkmem too small (%d, needed %u) trying malloc.\n",
+                worksz, (unsigned)(4*point_cnt*sizeof(real)) );
         *x_allocated = 1;
         chunk = malloc(4*point_cnt*sizeof(real));
         if(!chunk) {
             fprintf(stderr, "loading grid into mem failed, too.\n"
-                    "worksz=%d needed size=%d\n", worksz,
-                    4*point_cnt*sizeof(real));
+                    "worksz=%d needed size=%u\n", worksz,
+                    (unsigned) (4*point_cnt*sizeof(real)) );
             dalton_quit("no mem in load_grid: 2");
         }
     } else chunk = work;
