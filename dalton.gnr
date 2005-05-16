@@ -140,7 +140,7 @@ ierr=0
 if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    if [ -d "$SCRATCHDIR" ]; then
       if [ $optd -eq 1 ] ; then
-         rm -rf $SCRATCHDIR
+         rm -rf $SCRATCHDIR/*
       fi
    else
       mkdir -p $SCRATCHDIR
