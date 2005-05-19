@@ -2132,7 +2132,7 @@ C               anyone having more basis functions per atom/hjaaj
             DO 600 K = NDIG,1,-1
                ITEN = ITEN/10
                ISHDIG = ISHELL/ITEN
-               IF (ISHDIG .GT. 0) THEN
+               IF (ISHDIG .GT. 0 .OR. J .GT. 0) THEN
                   J = 1
 C                 ... we want next digit, also if zero (!)
                   IDIG = ICHAR('0') + ISHDIG
