@@ -63,7 +63,7 @@ cat > dpt_h2s_ff.dal <<%EOF%
 *HAMILTONIAN
 .FIELD
  0.1
- ZDIPLEN
+ZDIPLEN
 *SCF INP
 .THRESH
  1.0D-10
