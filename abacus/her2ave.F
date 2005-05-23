@@ -645,22 +645,19 @@ C                          Expectation values of diamagnetic spin-orbit
 C                          ============================================
 C
                            IF (NOPMAT) THEN
-                              PAOVAL = D0
+                              PAOVAL =  3*(
+     &                           2*DVAB*DVCD - DVAD*DVBC - DVAC*DVBD
+     &                           )
                            ELSE
                               PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                            ENDIF
-                           IF (NODV) THEN
-                              PVAL = DP5*FAB*FCD*FCABCD*PAOVAL
-                           ELSE
-                              PVAL = DP5*FAB*FCD*FCABCD*(
-     &                           D2*DTCD*DVAB + D4*DTAB*DVCD 
+                           PVAL= 
+     &                         D2*DTCD*DVAB + D4*DTAB*DVCD 
      &                         - D3*DP5*(
      &                              DTBC*DVAD + DTBD*DVAC
      &                            + DTAD*DVBC + DTAC*DVBD
-     &                              )
-     &                           + PAOVAL
-     &                           )     
-                           END IF
+     &                              ) + PAOVAL
+                           PVAL = DP5*FAB*FCD*FCABCD*PVAL
                            IF (ABS(PVAL) .GT. THRSH) THEN
                               NODER = .FALSE.
                               DO 799 I = 1, NINTYP
