@@ -1770,9 +1770,10 @@ C
      &                     'UNFORMATTED',IDUMMY,.FALSE.)
  198           CONTINUE
                IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                  print *, 'labfnd',labfnd
                   IF (LABFND(1:3) .EQ. 'SD ')
      &                 LLROP(INDPRP(LABFND)) = .TRUE.
-                  GOTO 199
+                  GOTO 198
                END IF
                CALL GPCLOSE(LUPROP,'KEEP')
                GO TO 100
