@@ -38,6 +38,7 @@ FUNFILES = \
 	fun-kt.c	\
 	fun-lb94.c	\
 	fun-lyp.c	\
+	fun-hcth.c	\
 	fun-optx.c	\
 	fun-p86c.c	\
 	fun-pbec.c	\

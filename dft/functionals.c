@@ -92,6 +92,7 @@ Functional* available_functionals[] = {
     &KTFunctional,
     &LB94Functional,
     &LYPFunctional,
+    &HcthFunctional,
     &OPTXFunctional,
     &P86cFunctional,
     &PW86xFunctional,
