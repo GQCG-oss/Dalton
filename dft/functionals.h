@@ -326,12 +326,18 @@ void drv4_clear(FunFourthFuncDrv* gga); /* set all components to 0 */
 /* The list of functionals */
 /* sorted list of generic functionals */
 extern Functional BeckeFunctional;
+extern Functional B97Functional;
+extern Functional B97_1Functional;
+extern Functional B97_2Functional;
 extern Functional Example2Functional;
 extern Functional ExampleFunctional;
 extern Functional KTFunctional;
 extern Functional LB94Functional;
 extern Functional LYPFunctional;
-extern Functional HcthFunctional;
+extern Functional Hcth120Functional;
+extern Functional Hcth147Functional;
+extern Functional Hcth407Functional;
+extern Functional Hcth93Functional;
 extern Functional OPTXFunctional;
 extern Functional P86cFunctional;
 extern Functional PW86xFunctional;

@@ -24,6 +24,9 @@ FFILES = \
 # for the fun-tester.
 FUNFILES = \
 	fun-becke.c	\
+	fun-b97.c	\
+	fun-b97-1.c	\
+	fun-b97-2.c	\
 	fun-cam-b3lyp.c \
 	fun-example.c	\
 	fun-example2.c	\
@@ -38,7 +41,10 @@ FUNFILES = \
 	fun-kt.c	\
 	fun-lb94.c	\
 	fun-lyp.c	\
-	fun-hcth.c	\
+	fun-hcth120.c	\
+	fun-hcth147.c	\
+	fun-hcth407.c	\
+	fun-hcth93.c	\
 	fun-optx.c	\
 	fun-p86c.c	\
 	fun-pbec.c	\
