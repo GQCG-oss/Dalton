@@ -227,8 +227,7 @@ gc2_rad_cnt(int Z, real thrl)
     else if(Z<=86) ta=5;
     else ta=6;
     
-    real nr=-5.0*(3*log10(thrl)-ta+8);
-    ri = rint(nr); 
+    ri = rint( -5.0*(3*log10(thrl)-ta+8) );
     return ri>MIN_RAD_PT ? ri : MIN_RAD_PT;
 }
 
@@ -1144,7 +1143,7 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
     rshel2 = dal_malloc(FSYM2(ishell_cnt)()*sizeof(real));
     FSYM(gtexts)(rshel2);
     for(idx=0; idx<point_cnt; idx += cnt) {
-        int closest = 0, i;
+        int i;
         real center[3];
         real mindist = 4*cell_size, maxdist = 0;
         GridPointKey key = keys[idx].key;
@@ -1158,7 +1157,7 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
             real dy = coor[keys[idx+cnt].index][1]-center[1];
             real dz = coor[keys[idx+cnt].index][2]-center[2];
             real dist2 = dx*dx + dy*dy + dz*dz;
-            if(dist2<mindist) { mindist=dist2; closest = cnt; }
+            if(dist2<mindist) { mindist=dist2; }
             if(dist2>maxdist) { maxdist=dist2; }
             sx += dx; sy += dy; sz += dz;
         }
@@ -1762,75 +1761,75 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
     real radint;
     char *fname;
 
-    switch(gridType)
-        {
-        case GRID_TYPE_STANDARD:
-            FSYM2(get_grid_paras)(&grdone, &radint, &angmin, &angint);
+    switch(gridType) {
+    case GRID_TYPE_STANDARD:
+        FSYM2(get_grid_paras)(&grdone, &radint, &angmin, &angint);
 #ifdef VAR_MPI
-            grid_par_init(&radint, &angmin, &angint, &grdone);
+        grid_par_init(&radint, &angmin, &angint, &grdone);
 #endif
-            if(!grdone) {
-                int atom_cnt, pnt_cnt;
-                int lwrk = *lwork - nbast;
-                GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
-                struct RhoEvalData dt; /* = { grid, work, lwork, dmat, dmgao}; */
-                dt.grid =  NULL; dt.work = work+nbast; dt.lwork = &lwrk;
-                dt.dmat =  NULL; dt.dmagao = work;
-
+        if(!grdone) {
+            int atom_cnt;
+            int lwrk = *lwork - nbast;
+            GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
+            struct RhoEvalData dt; /* = { grid, work, lwork, dmat, dmgao}; */
+            dt.grid =  NULL; dt.work = work+nbast; dt.lwork = &lwrk;
+            dt.dmat =  NULL; dt.dmagao = work;
+            
 #ifdef VAR_MPI
-                if(mynum == 0) {
-                    pnt_cnt = grid_generate("DALTON.QUAD", atom_cnt, atoms,
-                                            radint, NULL, &dt,
-                                            angmin, angint, work, lwork);
-                    grid_par_shutdown();
-                } else 
-                    grid_par_slave("DALTON.QUAD", radint);
-                /* Stop on barrier here so that we know all nodes managed to save
-                 * their files. */
-                MPI_Barrier(MPI_COMM_WORLD);
+            if(mynum == 0) {
+                grid_generate("DALTON.QUAD", atom_cnt, atoms,
+                              radint, NULL, &dt,
+                              angmin, angint, work, lwork);
+                grid_par_shutdown();
+            } else 
+                grid_par_slave("DALTON.QUAD", radint);
+            /* Stop on barrier here so that we know all nodes managed to save
+             * their files. */
+            MPI_Barrier(MPI_COMM_WORLD);
 #else
-                pnt_cnt = grid_generate("DALTON.QUAD", atom_cnt, atoms,
-                                        radint, NULL, &dt,
-                                        angmin, angint, work, lwork);
+            grid_generate("DALTON.QUAD", atom_cnt, atoms,
+                          radint, NULL, &dt,
+                          angmin, angint, work, lwork);
 #endif
-                free(atoms);
-                FSYM2(set_grid_done)();
-            }
-            fname = grid_get_fname("DALTON.QUAD", mynum);
-            res->f=fopen(fname, "rb");
-            free(fname);
-            if(res == NULL) {
-                perror("DFT quadrature grid file DALTON.QUAD not found.");
-                free(res);
-                abort();
-            }
-            return res;
-        case GRID_TYPE_CARTESIAN:
+            free(atoms);
+            FSYM2(set_grid_done)();
+        }
+        fname = grid_get_fname("DALTON.QUAD", mynum);
+        res->f=fopen(fname, "rb");
+        free(fname);
+        if(res == NULL) {
+            perror("DFT quadrature grid file DALTON.QUAD not found.");
+            free(res);
+            abort();
+        }
+        return res;
+    case GRID_TYPE_CARTESIAN:
 #ifdef VAR_MPI
-            perror("Error: cartesian grid not implemented for MPI.\n");
-            free(res);
-            abort();
+        perror("Error: cartesian grid not implemented for MPI.\n");
+        free(res);
+        abort();
 #endif            
-            if(dmat == NULL)
-                {
-                    perror("Error: cartesian grid requested without dmat.\n");
-                    perror("(cartesian grid not implemented "
-                           "for open shell).\n");
-                    free(res);
-                    abort();
-                }
-            do_cartesian_grid(nbast, dmat, res);
-            if( (res->f=fopen("DALTON.QUAD", "rb")) == NULL) {
-                perror("DFT quadrature grid file DALTON.QUAD not found.");
-                free(res);
-                abort();
-            }
-            return res;
-        default:
-            perror("Error in grid_open: unknown grid type\n");
+        if(dmat == NULL)
+        {
+            perror("Error: cartesian grid requested without dmat.\n");
+            perror("(cartesian grid not implemented "
+                   "for open shell).\n");
             free(res);
             abort();
-        } // END SWITCH
+        }
+        do_cartesian_grid(nbast, dmat, res);
+        if( (res->f=fopen("DALTON.QUAD", "rb")) == NULL) {
+            perror("DFT quadrature grid file DALTON.QUAD not found.");
+            free(res);
+            abort();
+        }
+        return res;
+    default:
+        perror("Error in grid_open: unknown grid type\n");
+        free(res);
+        abort();
+    } /* END SWITCH */
+    return NULL; /* to keep some compilers quiet */
 }
 
 

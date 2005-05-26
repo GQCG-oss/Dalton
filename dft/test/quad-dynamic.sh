@@ -36,7 +36,7 @@ EOF
 gen_CO() {
 cat > MOLECULE.INP <<EOF
 BASIS
-Ahlrichs-VDZ
+cc-pVTZ
 CO molecule (geometry from O. Christiansen et al. /CPL 305 (1999) 147-155.)
 ------------
     2    2  X  Y
@@ -145,7 +145,7 @@ BECKE
 *HAMILTONIAN
 .FIELD
 $field
- $c_op
+$c_op
 *ORBITAL INPUT
 .MOSTART
 $mostart
@@ -233,7 +233,7 @@ run_test() {
         hfocccommand='!no enforced occupation'
         hfocc='!.'
     else
-        hfocccommand='.HF OCCUPATION'
+        hfocccommand='.DOUBLY-OCC'
     fi
     echo "===================================================="
     echo "Running calculations with DFT weights=$dft_weight molecule: $mol"

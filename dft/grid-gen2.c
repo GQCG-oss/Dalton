@@ -100,7 +100,6 @@ C
 static const int CUBATURE_RULE = 3;
 static const int CUBATURE_RULE_2 = 6;
 static const int NO_OF_DIMENSIONS = 3;  /* 1, 2 or 3 */
-static const int kMaxDim = 44;
 static const real CONSTPI = M_PI;
 
 
@@ -3041,8 +3040,9 @@ get_density(DistributionSpecStruct** rhoPtr,
   real coeffSum;
   int* markList;
   int symmetryFactor;
-  int nBasisFuncs, nn;
+  int nBasisFuncs, nn, nNeededForRho;
   BasisInfoStruct basisInfo;
+  DistributionSpecStruct* rho;
 
   do_output_2(2, "entering function get_density, cutoff = %22.15f", cutoff);
 
@@ -3076,9 +3076,9 @@ get_density(DistributionSpecStruct** rhoPtr,
 
 
   /* find out how much space is needed for rho */
-  int nNeededForRho = get_no_of_primitives_for_density(cutoff,
-						       dmat,
-						       &basisInfo);
+  nNeededForRho = get_no_of_primitives_for_density(cutoff,
+                                                   dmat,
+                                                   &basisInfo);
   if(nNeededForRho <= 0)
     {
       do_output_2(0, "error in get_no_of_primitives_for_density");
@@ -3086,7 +3086,7 @@ get_density(DistributionSpecStruct** rhoPtr,
     }
   
   /* allocate rho */
-  DistributionSpecStruct* rho = dal_malloc_safe(nNeededForRho * sizeof(DistributionSpecStruct));
+  rho = dal_malloc_safe(nNeededForRho * sizeof(DistributionSpecStruct));
   *rhoPtr = rho;
   
   nBasisFuncs = basisInfo.noOfBasisFuncs;
