@@ -37,6 +37,7 @@ c /* deck cclr_setup */
 *=====================================================================*
       SUBROUTINE CCLR_SETUP(MXTRAN,  MXVEC,
      &                     IFTRAN,  IFDOTS,  FCONS,  NFTRAN,
+     &                     IJTRAN,  IJDOTS,  CJCON,  NJTRAN,
      &                     IXITRAN, IXIDOTS, XICONS, NXITRAN,
      &                     IRTRAN,  IRDOTS,  RCONS,  NRTRAN,
      &                     IXETRAN,IXDOTS,IEDOTS,XCONS,ECONS,NXETRAN,
@@ -65,6 +66,8 @@ c /* deck cclr_setup */
 #include <ccsdinp.h>
 #include <ccexpfck.h>
 #include <cclists.h>
+#include <ccsections.h>
+#include <ccslvinf.h>
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -77,6 +80,8 @@ c /* deck cclr_setup */
 
       INTEGER IFTRAN(MXDIM_FTRAN,MXTRAN)
       INTEGER IFDOTS(MXVEC,MXTRAN)
+      INTEGER IJTRAN(MXDIM_JTRAN,MXTRAN)
+      INTEGER IJDOTS(MXVEC,MXTRAN)
       INTEGER IXITRAN(1,MXTRAN)
       INTEGER IXIDOTS(MXVEC,MXTRAN)
       INTEGER IRTRAN(1,MXTRAN)
@@ -85,25 +90,28 @@ c /* deck cclr_setup */
       INTEGER IXDOTS(MXVEC,MXTRAN), IEDOTS(MXVEC,MXTRAN)
 
       INTEGER NFTRAN, NXITRAN, NRTRAN, NXETRAN, LWORK
+      INTEGER NJTRAN
 
 #if defined (SYS_CRAY)
       REAL RESULT(MXSOP)
       REAL FCONS(MXVEC,MXTRAN)
+      REAL CJCON(MXVEC,MXTRAN)
       REAL XICONS(MXVEC,MXTRAN)
       REAL RCONS(MXVEC,MXTRAN)
       REAL XCONS(MXVEC,MXTRAN), ECONS(MXVEC,MXTRAN)
       REAL WORK(LWORK)
       REAL ZERO, SIGN
-      REAL WSTAT, WNUCL, WREO, WXE1, WXE2, WXI1, WXI2, WF
+      REAL WSTAT, WNUCL, WREO, WXE1, WXE2, WXI1, WXI2, WF, WJ
 #else
       DOUBLE PRECISION RESULT(MXSOP)
       DOUBLE PRECISION FCONS(MXVEC,MXTRAN)
+      DOUBLE PRECISION CJCON(MXVEC,MXTRAN)
       DOUBLE PRECISION XICONS(MXVEC,MXTRAN)
       DOUBLE PRECISION RCONS(MXVEC,MXTRAN)
       DOUBLE PRECISION XCONS(MXVEC,MXTRAN), ECONS(MXVEC,MXTRAN)
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION ZERO, SIGN
-      DOUBLE PRECISION WSTAT, WNUCL, WREO, WXE1, WXE2, WXI1, WXI2, WF
+      DOUBLE PRECISION WSTAT, WNUCL, WREO, WXE1, WXE2, WXI1, WXI2, WF,WJ
 #endif
       PARAMETER (ZERO = 0.0D0)
 
@@ -112,6 +120,7 @@ c /* deck cclr_setup */
       INTEGER IR1VECA,IR1VECB,IOPERA,IOPERB,IEATA1A,IEATA1B, ISGNSOP
       INTEGER IL1VECB, INUM, IOPER, NBSOP, ISIGN, ISYOP, IKAPA, IKAPB
       INTEGER MEAVEC,MFVEC,MXAVEC,MXIVEC,MXRVEC,MXEVEC, IDX, IEXPV
+      INTEGER MJVEC, IL1VECA
 
       CHARACTER LABELA*(8), LABELB*(8), LABSOP*(8)
 
@@ -137,6 +146,9 @@ c /* deck cclr_setup */
        DO I = 1, MXDIM_FTRAN
         IFTRAN(I,ITRAN)  = 0
        END DO
+       DO I = 1, MXDIM_JTRAN
+        IJTRAN(I,ITRAN)  = 0
+       END DO
        DO I = 1, 1
         IXITRAN(I,ITRAN) = 0
         IRTRAN(I,ITRAN)  = 0
@@ -144,6 +156,7 @@ c /* deck cclr_setup */
 
        DO IVEC  = 1, MXVEC
         IFDOTS(IVEC,ITRAN)  = 0
+        IJDOTS(IVEC,ITRAN)  = 0
         IXIDOTS(IVEC,ITRAN) = 0
         IRDOTS(IVEC,ITRAN)  = 0
         IXDOTS(IVEC,ITRAN)  = 0
@@ -152,11 +165,13 @@ c /* deck cclr_setup */
       END DO
 
       NFTRAN  = 0
+      NJTRAN  = 0
       NXITRAN = 0
       NRTRAN  = 0
       NXETRAN = 0
  
       MFVEC   = 0 
+      MJVEC   = 0
       MXIVEC  = 0
       MXRVEC  = 0
       MXEVEC  = 0
@@ -228,6 +243,19 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
                  NFTRAN = MAX(NFTRAN,ITRAN)
                  MFVEC  = MAX(MFVEC, IVEC)
                  WF     = FCONS(IVEC,ITRAN)
+C
+                 IF (CCSLV) THEN
+                 IL1VECA = IL1ZETA(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
+                 IL1VECB = IL1ZETA(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
+C                Here, we substitute amplitudes <-> multipilers 
+                   CALL CCQR_SETF(IJTRAN,IJDOTS,MXTRAN,MXVEC,
+     &                            0,IL1VECA,IL1VECB,ITRAN,IVEC)
+                   NJTRAN = MAX(NJTRAN,ITRAN)
+                   MJVEC  = MAX(MJVEC, IVEC)
+                   WJ     = CJCON(IVEC,ITRAN)
+                 ELSE
+                   WJ = ZERO
+                 END IF
               END IF
 
               CALL CC_SETXE('Eta',IXETRAN,IEDOTS,MXTRAN,MXVEC,
@@ -241,6 +269,7 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 *             asymmetric approach: add L1^B x Xksi{A}
 *---------------------------------------------------------------------*
               WF      = ZERO
+              WJ      = ZERO
 
               IL1VECB = IL1ZETA(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 
@@ -336,7 +365,7 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
               IDX = NBLRFR*(IOPER-1) + IFREQ
               IF (ISIGN.EQ.-1) IDX = IDX + NBLRFR*NLROP
 
-              RESULT(IDX) = WXE1+WXE2+WF + WXI1+WXI2+WREO - WSTAT-WNUCL
+              RESULT(IDX) = WXE1+WXE2+WF-WJ+WXI1+WXI2+WREO-WSTAT-WNUCL
 
               IF (LOCDBG) THEN
                  WRITE (LUPRI,*) 'LABELA,LABELB:',LABELA,LABELB
@@ -344,7 +373,8 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
                  WRITE (LUPRI,*) 'IDX = ',IDX
                  WRITE (LUPRI,*) 'WSTAT,WNUCL:',WSTAT,WNUCL
                  WRITE (LUPRI,*) 'WXI1,WXI2,WREO:', WXI1, WXI2, WREO
-                 WRITE (LUPRI,*) 'WXE1, WXE2, WF:', WXE1, WXE2, WF
+                 WRITE (LUPRI,*) 'WXE1, WXE2, WF, WJ :', 
+     &                            WXE1, WXE2, WF, WJ
                  WRITE (LUPRI,*) 'RESULT:',RESULT(IDX)
               END IF
 
@@ -367,6 +397,8 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
          CALL QUIT('MXIVEC has been out of bounds in CCLR_SETUP.')
       ELSE IF (MXRVEC.GT.MXVEC) THEN
          CALL QUIT('MXRVEC has been out of bounds in CCLR_SETUP.')
+      ELSE IF (MJVEC.GT.MXVEC) THEN
+          CALL QUIT('MJVEC has been out of bounds in CCLR_SETUP.')
       END IF
 
 *---------------------------------------------------------------------*
@@ -378,6 +410,7 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
      &      ' second-order properties'
        WRITE(LUPRI,'((8X,A,I3,A))') 
      & ' - ',NFTRAN,' F matrix transformations with R1 vectors',
+     & ' - ',NJTRAN,' J matrix transformations with L1 vectors',
      & ' - ',NXETRAN,' ETA and XKSI vector calculations ',
      & ' - ',NXITRAN,' X intermediate calculations ',
      & ' - ',NRTRAN, ' 2. order reortho./relax. contributions' 
@@ -391,6 +424,14 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
          DO ITRAN = 1, NFTRAN
            WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
      &      (IFTRAN(I,ITRAN),I=1,2),(IFDOTS(I,ITRAN),I=1,MFVEC)
+         END DO
+         WRITE(LUPRI,*)
+
+         ! J matrix transformations:
+         WRITE(LUPRI,*)'List of J matrix transformations:'
+         DO ITRAN = 1, NJTRAN
+           WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
+     &      (IJTRAN(I,ITRAN),I=1,2),(IJDOTS(I,ITRAN),I=1,MJVEC)
          END DO
          WRITE(LUPRI,*)
 

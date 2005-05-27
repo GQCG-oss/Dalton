@@ -128,13 +128,19 @@ C          from common LEINF
 C  MAXRED  MAXIMUM DIMENSION OF REDUCED SPACE from common CCLR   
 C----------------------------------------------------------------
 C
+C----------------------------------------------------------------
+C
+C JK&OC 080802:
+C Dirty hack to allow small number of iterations for CCSLV/MM calc.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <ccsdinp.h>
+#include <ccsections.h>
 #include <cclr.h>
 #include <leinf.h>
+#include <ccslvinf.h>
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*) FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM
@@ -305,6 +311,8 @@ C           (CONVERGED)
      *         ' SOLUTION VECTORS',
      *         ' IN',ITLE,' ITERATIONS.'
             END IF
+            IF (CCSLV) NSLVINIT = NSLVINIT + NREDH
+            IF (CCSLV) LRSPFUL = .TRUE.
          ELSE IF (NREDH + NUPVEC .GT. MAXRED) THEN
 C           (NOT CONVERGED)
                WRITE(LUPRI,'(/A,I5,A)')
@@ -314,7 +322,21 @@ C           (NOT CONVERGED)
                CALL QUIT(' ALL SOLUTION VECTORS NOT CONVERGED ')
          ELSE IF (ITLE .LT. MAXLE) THEN
             CALL FLSHFO(LUPRI)
-            GO TO 100
+              IF (LINQCC.AND.CCSLV.AND.(ITLE.GE.MXLINIT).AND.
+     *           (LIST(1:1) .EQ. 'L')) THEN
+C             additions to reduced space should be ignored.
+C
+               NREDH = NREDH-NUPVEC
+               NSLVINIT = NSLVINIT + NREDH
+               LRSPFUL = .FALSE.
+               WRITE(LUPRI,*)
+     *        ' CCSLV: We stop for now though not fully converged yet'
+                WRITE(LUPRI,*)
+     *        ' Accumulated inner iterations are:', NSLVINIT
+C               WRITE(LUPRI,*) 'last - NREDH,NUPVEC:',NREDH,NUPVEC
+              ELSE
+                GO TO 100
+              END IF
          ELSE
             WRITE(LUPRI,'(/A,I5,A)')
      *         ' *** CCEQ_SOL-MAXIMUM NUMBER OF MICROITERATIONS',

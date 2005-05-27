@@ -1521,6 +1521,7 @@ C
 #include <implicit.h>
 #include <codata.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nuclei.h>
@@ -1533,26 +1534,52 @@ C
 C
       ICHTOT = 0
       JATOM = 0
-      DO 10 IATOM = 1, NUCIND
-         DO 20 ISYMOP = 0, MAXOPR
+C
+      IF (.NOT. QM3) THEN
+        DO 10 IATOM = 1, NUCIND
+          DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               ICHARG = IZATOM(IATOM)
-               IF ((ICHARG .NE. 0 .AND. .NOT.NOORBT(IATOM))
-     &              .OR. (ICHARG .EQ. 0 .AND. SOLVNT 
-     &              .AND. (IATOM .EQ. NUCIND))) THEN
+              ICHARG = IZATOM(IATOM)
+              IF ((ICHARG .NE. 0 .AND. .NOT.NOORBT(IATOM))
+     &           .OR. (ICHARG .EQ. 0 .AND. SOLVNT 
+     &           .AND. (IATOM .EQ. NUCIND))) THEN
+                NATTYP(JATOM + 1) = ICHARG
+                ICHTOT = ICHTOT + ICHARG
+                DO 30 KCOOR = 1, 3
+                  GEOM(3*JATOM + KCOOR) =
+     &            PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &            *CORD(KCOOR,IATOM)
+ 30             CONTINUE
+                JATOM = JATOM + 1
+                NUMIS(JATOM) = ISOTOP(IATOM)
+              END IF
+            END IF
+ 20       CONTINUE
+ 10     CONTINUE
+      ELSE
+      DO 40 IATOM = 1, NUCIND
+        IF ( (ISUBSY(IATOM) .EQ. 0) .AND.
+     &     (ISUBSI(IATOM) .LE. NSISY(0)) )THEN
+          DO 50 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+              ICHARG = IZATOM(IATOM)
+                IF ((ICHARG .NE. 0 .AND. .NOT.NOORBT(IATOM))
+     &            .OR. (ICHARG .EQ. 0 .AND. SOLVNT
+     &            .AND. (IATOM .EQ. NUCIND))) THEN
                   NATTYP(JATOM + 1) = ICHARG
-                  ICHTOT = ICHTOT + ICHARG
-                  DO 30 KCOOR = 1, 3
-                     GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
-     &                    *CORD(KCOOR,IATOM)
- 30               CONTINUE
+                  DO 60 KCOOR = 1, 3
+                    GEOM(3*JATOM + KCOOR) =
+     &              PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &              *CORD(KCOOR,IATOM)
+ 60               CONTINUE
                   JATOM = JATOM + 1
                   NUMIS(JATOM) = ISOTOP(IATOM)
-               END IF
-            END IF
- 20      CONTINUE
- 10   CONTINUE
+                END IF
+              END IF
+ 50         CONTINUE
+          END IF
+ 40     CONTINUE
+      END IF
 C
       CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
       TELCMAS = ICHTOT/XFAMU

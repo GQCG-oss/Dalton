@@ -62,6 +62,7 @@ C
 #include <inftap.h>
 #include <cclr.h>
 #include <ccslvinf.h>
+#include <qm3.h>
 #include <ccfdgeo.h>
 #include <r12int.h>
 #include <ccfop.h>
@@ -69,6 +70,7 @@ C
       LOGICAL LCONVG,RSPIM2,EX,LEXIST
       CHARACTER*5 ETY0, ETY1, ETY2
       CHARACTER MODEL*10, ETYPE*24
+      CHARACTER*8 LABEl1
 C
       CALL QENTER('CCSD_ENERGY')
 C
@@ -279,6 +281,11 @@ C
 C        write SCF energy to summary file:
          WRITE(LURES,'(/12X,A,A,A,F32.10)')
      *               'Total ',ETY0,' energy: ',ESCF
+C
+         LABEL1 = 'CCS/SCF'
+         CALL CC_PRPC(ESCF,MODEL,0,
+     *                LABEL1,LABEL1,LABEL1,LABEL1,
+     *                ZERO,ZERO,ZERO,1,0,0,0)
 C
          CALL QEXIT('CCSD_ENERGY')
          RETURN
@@ -631,7 +638,19 @@ C
      &           ' iterations'
            CALL QUIT('CC equations not converged.')
          ENDIF
-      IF (.NOT. LCONVG) GOTO 200
+C
+         NSLVINIT = NSLVINIT + 1
+         IF (CCSLV.AND.((ITER-1).GE.MXTINIT)) THEN
+           WRITE(LUPRI,241) ETY2
+ 241       FORMAT(/,1x,A5,
+     *    'energy will not be converged further'
+     *     //' right now in CCSLV calc.')
+           WRITE(LUPRI,242) NSLVINIT
+ 242       FORMAT(' Accumulated inner iterations at this point are ',I5)
+C
+         ELSE
+           IF (.NOT. LCONVG) GOTO 200
+         ENDIF
 C
       IF (CCR12) THEN
         CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5)
@@ -891,6 +910,7 @@ C------------------------------------------------------------
 C     Print and save (in ECCGRS) final ground state energies.
 C------------------------------------------------------------
 C
+      IF (.NOT. QM3) THEN
       WRITE(LUPRI,'(//)')
       CALL AROUND
      * ('Final results from the Coupled Cluster energy program')
@@ -920,7 +940,21 @@ C
         WRITE(LURES,'(12X,A,A,A,F32.10)') 'Total ',ETYPE(1:LENET),
      &     ' energy: ',EN2
       END IF
+      END IF
       ECCGRS = EN2
+      IF ( (.NOT.CCSLV) .OR. (ICCSLIT.EQ.1)) THEN
+         LABEL1 = 'SCF '
+         CALL CC_PRPC(ESCF,MODEL,0,
+     *                LABEL1,LABEL1,LABEL1,LABEL1,
+     *                ZERO,ZERO,ZERO,1,0,0,0)
+      ENDIF
+      IF (.NOT.CCSLV) THEN
+         LABEL1 = ETYPE(1:LENET)//'    '
+         CALL CC_PRPC(EN2,MODEL,0,
+     *                LABEL1,LABEL1,LABEL1,LABEL1,
+     *                ZERO,ZERO,ZERO,1,0,0,0)
+      ENDIF
+C
       IF (CCPTSV .OR. CCP3SV) THEN
          WRITE(LUPRI,'(//,21X,A)') 'Perturbative triples corrections'
          WRITE(LUPRI,'(21X,A,/)')  '--------------------------------'

@@ -194,7 +194,6 @@ C----------------------------------------------------------------------
          END IF
 
          IF (CCSLV) THEN
-            ! SLV98, OC
             IF (CCSDT) CALL QUIT('Solvent not implemented for triples')
             IF (CCR12) CALL QUIT('Solvent not implemented for CCR12')
             CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
@@ -1299,6 +1298,7 @@ C
 #include <ccexgr.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
+#include <ccsections.h>
 #include <ccsdsym.h>
 C
       PARAMETER( TOLFRQ=1.0D-08 )
@@ -1331,12 +1331,15 @@ CCH
          CALL CC_FTRAN('LE ',IE,'RE ',IE,WORK,LWORK)
 CCH      CALL CC_FGL('LE',IE,'RE',IE,'--',0,.TRUE.,WORK,LWORK)
 CCH
-         KVEC  = 1
-         KGD   = KVEC  + NTAMP
-         KEND1 = KGD   + NTAMP
-         LWRK1 = LWORK - KEND1
-         CALL CC_ETA(WORK(KGD),WORK(KEND1),LWRK1)
-         CALL DAXPY(NTAMP,ONE,WORK(KGD),1,WORK(KVEC),1)
+         IF (.NOT. (CCSLV)) THEN
+           KVEC  = 1
+           KGD   = KVEC  + NTAMP
+           KEND1 = KGD   + NTAMP
+           LWRK1 = LWORK - KEND1
+           CALL CC_ETA(WORK(KGD),WORK(KEND1),LWRK1)
+           CALL DAXPY(NTAMP,ONE,WORK(KGD),1,WORK(KVEC),1)
+         END IF
+C
          K1    = 1
          K2    = K1 + NT1AMX
          KEND1 = K2 + NT2AMX
@@ -1785,6 +1788,8 @@ c=====================================================================*
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccn2rsp.h>
+#include <ccslvinf.h>
+#include <qm3.h>
 
       PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
       DIMENSION GD(*),WORK(LWORK)
@@ -1840,9 +1845,12 @@ C---------------------------
 C     Make P-transformation.
 C---------------------------
 C
-      LR = 'P'
-      CALL CCSL_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),WORK(K2),
-     *               ISY,LR,WORK(KWRK1),LWRK1)
+       LR = 'P'
+       IF (.NOT. CCMM) CALL CCSL_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
+     *                 WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
+       IF (CCMM) CALL CCMM_LTRB(GD(1),GD(1+NT1AM(ISY)),WORK(K1),
+     *                WORK(K2),ISY,LR,WORK(KWRK1),LWRK1)
+C
 C
       END
 

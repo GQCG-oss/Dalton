@@ -1381,6 +1381,14 @@ C
          WRITE(LUPRI,'(/,1X,A,E18.8,A,/)')
      *      'Conversion factor (a.u. - S.I.):',DPOLAUTSI,' (C^2m^2J^-1)'
 C
+            CALL CC_PRPC(SHPAL,MODEL,2,
+     *                   'isoalpha','isoalpha','isoalpha','isoalpha',
+     *                   FRQ,DUMMY,DUMMY,1,0,0,0)
+C
+            CALL CC_PRPC(ANINV,MODEL,2,
+     *                   'anis_inv','anis_inv','anis_inv','anis_inv',
+     *                   FRQ,DUMMY,DUMMY,1,0,0,0)
+C
       END
 c*DECK CC_LRESID
        SUBROUTINE CC_LRESID(WORK,LWORK)

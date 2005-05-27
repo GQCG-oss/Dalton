@@ -80,8 +80,10 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 #include <ccslvinf.h>
+#include <qm3.h>
 #include <ccnoddy.h>
 #include <r12int.h>
+
 C
       DIMENSION INDEXA(MXCORB)
       DIMENSION RHO1(LRHO1,NSIMTR),C1AM(LRHO1,NSIMTR)
@@ -436,10 +438,13 @@ C     integrals. T^g contribution to transformation.
 C SLV98,OC
 C----------------------------------------------------
 C
-      IF (CCSLV) THEN
+      IF (CCSLV .AND. (.NOT. CCMM )) THEN
          CALL CCSL_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
       ENDIF
 C
+      IF (CCMM) THEN
+         CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+      ENDIF
 C====================================================
 C     Start the loop over distributions of integrals.
 C====================================================
@@ -1887,7 +1892,7 @@ C
 C
       ENDIF
 C
-      IF (CC2 .AND. (NFIELD .GT. 0)) THEN
+      IF (CC2 .AND. ((NFIELD .GT. 0) .OR. CCSLV)) THEN
          CALL CC_RCC2FF(RHO2,C2AM,WORK(KLAMDP),WORK(KLAMDH),
      *                  WORK(KLPC1),WORK(KLHC1),
      *                  WORK(KEND1),LWRK1,ISYMTR)
@@ -2052,7 +2057,7 @@ C     Calculate T^{gC} solvent contribution.
 C     Unsquared T2 is required!
 C-------------------------------------------
 C
-      IF (CCSLV.AND.LSTBTR.AND.(.NOT.JACTST)) THEN
+      IF (CCSLV.AND.LSTBTR.AND.(.NOT.JACTST).AND.(.NOT.CCMM)) THEN
          CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      *                IVEC+IV-1,C2AM)
          LR = 'R'
@@ -2060,6 +2065,13 @@ C
      *                  C2AM,ISYMTR,LR,WORK(KEND1),LWRK1)
       ENDIF
 C
+      IF (CCMM.AND.LSTBTR.AND.(.NOT.JACTST)) THEN
+         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,C2AM)
+         LR = 'R'
+         CALL CCMM_LTRB(RHO1(1,IV),RHO2,C1AM(1,IV),
+     *                  C2AM,ISYMTR,LR,WORK(KEND1),LWRK1)
+      ENDIF
 C---------------------------------------------------------
 C        And finally scale diagonal (if not triples cont.)
 C---------------------------------------------------------

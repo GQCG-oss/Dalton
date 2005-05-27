@@ -39,6 +39,7 @@ c /* deck ccqr_setup */
      &                      IGTRAN, IGDOTS, NGTRAN,
      &                      IFTRAN, IFDOTS, NFTRAN,
      &                      IBTRAN, IBDOTS, NBTRAN,
+     &                      IKTRAN, IKDOTS, NKTRAN,
      &                      IFATRAN,IFADOTS,NFATRAN,
      &                      IAATRAN,IAADOTS,NAATRAN,
      &                      IEATRAN,IEADOTS,NEATRAN,
@@ -54,6 +55,7 @@ c /* deck ccqr_setup */
 *                - list of ETA{O} vector calculations 
 *                - list of X1 x R2 dot products
 *                - list of Xksi{O2} x L1 and Eta{O2} x R1 dot products
+*    CCMM JK+OC  - list of K matrix transformations
 *
 *     Written by Christof Haettig, november 1996.
 *     (option for B matrix transformation introduced in 12/97)
@@ -71,6 +73,8 @@ c /* deck ccqr_setup */
 #include <ccqrinf.h>
 #include <ccroper.h>
 #include <cclists.h>
+#include <ccsections.h>
+#include <ccslvinf.h>
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -85,6 +89,9 @@ c /* deck ccqr_setup */
 
       INTEGER IBTRAN(MXDIM_BTRAN,MXTRAN)
       INTEGER IBDOTS(MXVEC,MXTRAN)
+
+      INTEGER IKTRAN(MXDIM_KTRAN,MXTRAN)
+      INTEGER IKDOTS(MXVEC,MXTRAN)
   
       INTEGER IFTRAN(MXDIM_FTRAN,MXTRAN)
       INTEGER IFDOTS(MXVEC,MXTRAN)
@@ -105,7 +112,7 @@ c /* deck ccqr_setup */
       INTEGER IXDOTS(MXVEC,MXTRAN), IEDOTS(MXVEC,MXTRAN)
 
       INTEGER NGTRAN,NFTRAN,NR2TRAN,NBTRAN,NFATRAN,NEATRAN,NXETRAN
-      INTEGER NQRRESF,NAATRAN
+      INTEGER NKTRAN,NQRRESF,NAATRAN
 
       INTEGER ISYMA, ISYMB, ISYMC, ISYML, ISYML1, ISYML2
       INTEGER IFREQ, IOPER, ISIGN
@@ -117,6 +124,7 @@ c /* deck ccqr_setup */
       INTEGER IR2AB, IR2BC, IR2AC, IETAA, IETAB, IETAC, MXVAA
       INTEGER IVEC, ITRAN, I, ISYSOP, IOPSOP, ISGNSOP, INUM
       INTEGER MXV0G, MXVAF, MXVAEA, MXVXE, MXVAB, MXV0FA, MXVR2
+      INTEGER MXVAK
 
       LOGICAL LORXA, LORXB, LORXC, LPDBSA, LPDBSB, LPDBSC
 
@@ -147,6 +155,7 @@ c /* deck ccqr_setup */
         DO I = 1, 3
           IFTRAN(I,ITRAN) = 0
           IBTRAN(I,ITRAN) = 0
+          IKTRAN(I,ITRAN) = 0
         END DO
 
         DO I = 1, 4
@@ -174,6 +183,7 @@ c /* deck ccqr_setup */
           IGDOTS(IVEC,ITRAN)  = 0
           IFDOTS(IVEC,ITRAN)  = 0
           IBDOTS(IVEC,ITRAN)  = 0
+          IKDOTS(IVEC,ITRAN)  = 0
           IFADOTS(IVEC,ITRAN) = 0
           IAADOTS(IVEC,ITRAN) = 0
           IEADOTS(IVEC,ITRAN) = 0
@@ -186,6 +196,7 @@ c /* deck ccqr_setup */
       NGTRAN  = 0
       NFTRAN  = 0
       NBTRAN  = 0
+      NKTRAN  = 0
       NFATRAN = 0
       NAATRAN = 0
       NEATRAN = 0
@@ -197,6 +208,7 @@ c /* deck ccqr_setup */
       MXVAF  = 0
       MXVXE  = 0
       MXVAB  = 0
+      MXVAK  = 0
       MXV0FA = 0
       MXVR2  = 0
       MXVAEA = 0
@@ -327,6 +339,22 @@ c /* deck ccqr_setup */
        ELSE 
           CALL QUIT('Error in CC_HYPPOL.')
        END IF
+* K matrix transformations:
+      IF (CCSLV) THEN
+        CALL CC_SETB11(IKTRAN,IKDOTS,MXTRAN,MXVEC,
+     &                 ITAMPA,IZETVB,IZETVC,ITRAN,IVEC)
+        NKTRAN = MAX(NKTRAN,ITRAN)
+        MXVAK  = MAX(MXVAK,IVEC)
+        CALL CC_SETB11(IKTRAN,IKDOTS,MXTRAN,MXVEC,
+     &                 ITAMPB,IZETVC,IZETVA,ITRAN,IVEC)
+        NKTRAN = MAX(NKTRAN,ITRAN)
+        MXVAK  = MAX(MXVAK,IVEC)
+        CALL CC_SETB11(IKTRAN,IKDOTS,MXTRAN,MXVEC,
+     &                 ITAMPC,IZETVA,IZETVB,ITRAN,IVEC)
+
+        NKTRAN = MAX(NKTRAN,ITRAN)
+        MXVAK  = MAX(MXVAK,IVEC)
+      END IF
 
 *---------------------------------------------------------------------*
 * set up list of F{O} matrix transformations, 3 permutations
@@ -489,6 +517,7 @@ c /* deck ccqr_setup */
       WRITE(LUPRI,'((8X,A,I3,A))') 
      &   ' - ',NGTRAN,  ' G matrix transformations ',
      &   ' - ',NBTRAN,  ' B matrix transformations ',
+     &   ' - ',NKTRAN,  ' K matrix transformations ',
      &   ' - ',NFTRAN,  ' F matrix transformations ',
      &   ' - ',NFATRAN, ' F{O} matrix transformations ',
      &   ' - ',NEATRAN, ' ETA{O} vector calculations ',
@@ -515,6 +544,17 @@ c /* deck ccqr_setup */
           WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
      &     (IBTRAN(I,ITRAN),I=1,MXDIM_BTRAN),
      &     (IBDOTS(I,ITRAN),I=1,MXVAB)
+        END DO
+        WRITE (LUPRI,*)
+      END IF
+
+* K matrix transformations:
+      IF (LOCDBG) THEN
+        WRITE (LUPRI,*) 'List of K matrix transformations:'
+        DO ITRAN = 1, NKTRAN
+          WRITE(LUPRI,'(A,2I5,5X,(12I5,20X))') MSGDBG,
+     &     (IKTRAN(I,ITRAN),I=1,MXDIM_KTRAN),
+     &     (IKDOTS(I,ITRAN),I=1,MXVAK)
         END DO
         WRITE (LUPRI,*)
       END IF

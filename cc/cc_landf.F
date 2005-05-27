@@ -2628,6 +2628,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+#include <ccsections.h>
+#include <qm3.h>
 #include <ccfield.h>
 #include <leinf.h>
 C
@@ -2635,7 +2637,7 @@ C
 C
       CALL QENTER('CC_RCC2FF')
 C
-      IF ((NFIELD.GT.0).AND.NONHF) THEN
+      IF (((NFIELD.GT.0).OR.CCSLV).AND.NONHF) THEN
 C
          KFOCK1 = 1
          KFOCK2 = KFOCK1 + MAX(N2BST(ISYMTR),N2BST(ISYMOP))
@@ -2656,6 +2658,38 @@ C
             FF =  EFIELD(IF)
             CALL CC_ONEP(WORK(KFOCK2),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
  13      CONTINUE
+C
+C-------------------------------------
+C        Solvent contribution.
+C        Put into one-electron integrals.
+C       SLV02,OC
+C-------------------------------------
+C
+         IF (CCSLV .AND. (.NOT. CCMM )) THEN
+            DTIME = SECOND()
+            CALL CCSL_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            IF (IPRINT .GT. 5) THEN
+              WRITE(LUPRI,*)'Time used in CCSL_RHSTG (CC_RCC2FF) 1',
+     *                       SECOND() - DTIME
+            END IF
+         ENDIF
+C
+C-------------------------------------
+C        Solvent contribution.
+C        Put into one-electron integrals.
+C       CCMM02,JA+AO
+C-------------------------------------
+C
+         IF (CCMM) THEN
+            DTIME = SECOND()
+            CALL CCMM_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+            IF (IPRINT .GT. 5) THEN
+              WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
+     *                       SECOND() - DTIME
+            END IF
+         ENDIF
+C
+C--------------------------------------
 C
          CALL DCOPY(N2BST(ISYMOP),WORK(KFOCK2),1,WORK(KFOCK1),1)
          ISYFAO = 1
@@ -2707,8 +2741,10 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+#include <ccsections.h>
 #include <ccfield.h>
 #include <leinf.h>
+#include <qm3.h>
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CC_LCC2FF')
@@ -2730,6 +2766,38 @@ C
          FF =  EFIELD(IF)
          CALL CC_ONEP(WORK(KFOCK1),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
  13   CONTINUE
+C
+C-------------------------------------
+C        Solvent contribution.
+C        Put into one-electron integrals.
+C       SLV02,OC
+C-------------------------------------
+C
+         IF (CCSLV .AND. (.NOT. CCMM )) THEN
+            DTIME = SECOND()
+            CALL CCSL_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            IF (IPRINT .GT. 5) THEN
+              WRITE(LUPRI,*)'Time used in CCSL_RHSTG (CC_RCC2FF) 1',
+     *                       SECOND() - DTIME
+            END IF
+         ENDIF
+C
+C-------------------------------------
+C        Solvent contribution.
+C        Put into one-electron integrals.
+C       CCMM02,JA+AO
+C-------------------------------------
+C
+         IF (CCMM) THEN
+            DTIME = SECOND()
+            CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            IF (IPRINT .GT. 5) THEN
+              WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
+     *                       SECOND() - DTIME
+            END IF
+         ENDIF
+C
+C--------------------------------------
 C
       IF (IOPT .EQ.1) THEN
          ISYFAO = 1
@@ -2765,8 +2833,10 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+#include <ccsections.h>
 #include <ccfield.h>
 #include <leinf.h>
+#include <qm3.h>
 C
       LOGICAL ETRAN,FCKCON
 C
@@ -2796,6 +2866,40 @@ C
          FF =  EFIELD(IF)
          CALL CC_ONEP(WORK(KFOCK1),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
  13   CONTINUE
+C
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C SLV02,OC
+C-------------------------------------
+C
+      IF (CCSLV .AND. (.NOT. CCMM )) THEN
+         DTIME = SECOND()
+         CALL CCSL_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         IF (IPRINT .GT. 5) THEN
+           WRITE(LUPRI,*)'Time used in CCSL_RHSTG (CC_FCC2FF) 1',
+     *                    SECOND() - DTIME
+         END IF
+      ENDIF
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C CCMM02,JA+AO
+C-------------------------------------
+C
+      IF (CCMM) THEN
+         DTIME = SECOND()
+         CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+         IF (IPRINT .GT. 5) THEN
+           WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_FCC2FF) 1',
+     *                    SECOND() - DTIME
+         END IF
+
+      ENDIF
+C
+C-------------------------------------
 C
       CALL DCOPY(N2BST(ISYMOP),WORK(KFOCK1),1,WORK(KFOCK2),1)
       ISYFAO = 1

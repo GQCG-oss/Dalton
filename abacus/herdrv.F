@@ -94,6 +94,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
 C
 #include <cbiher.h>
@@ -137,6 +138,18 @@ C     ************************************
 C
       IF (ONEPRP .OR. DOHUCKEL .OR. DKTRAN) CALL GPOPEN(LUPROP,
      &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C
+      IF (QM3) THEN
+         QM3LO1 = .TRUE.
+         QM3LO2 = .TRUE.
+         LONUPO = .FALSE.
+         LOELFD = .FALSE.
+         CALL GPOPEN(LUQM3E,'ELFDMM','UNKNOWN',' ',' ',
+     &               IDUMMY,.FALSE.)
+         CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',' ',
+     &               IDUMMY,.FALSE.)
+      END IF
+C
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
@@ -167,6 +180,24 @@ C        Open LUINTA for new integrals
 C
       CALL HERINT(WORK,LWORK)
 C
+      IF (QM3) THEN
+        DO 752 KI = 1, ISYTP
+        IF (MDLWRD(KI)(1:3) .EQ. 'SPC') THEN
+          IF ( .NOT. (LONUPO) ) THEN
+            CALL QUIT('Error, NUCPOT integrals not computed')
+          END IF
+        END IF
+  752   CONTINUE
+C
+        DO 753 KI = 1, ISYTP
+        IF (MDLWRD(KI)(1:5) .EQ. 'SPC_E') THEN
+          IF ( .NOT. (LOELFD) ) THEN
+            CALL QUIT('Error, NELFLD integrals not computed')
+          END IF
+        END IF
+  753   CONTINUE
+      END IF
+C
 C     **********************************
 C     ***** P Supermatrix Elements *****
 C     **********************************
@@ -195,6 +226,8 @@ C
       CALL GPCLOSE(LUONEL,'KEEP')
       IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
+      IF (LUQM3E .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
+      IF (LUQM3P .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
 C
       IF (RUNTWO .OR. RUNERI) FTRCTL = .TRUE.
 C     ..transformation control, old AO/MO files cannot be used any more.
@@ -220,13 +253,14 @@ C
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
 cLig <> changed NTABLE from 111 to 112
 C     NTABLE has been increased 114 (WK/UniKA/09-03-2004).
-      PARAMETER (NDIR = 8, NTABLE = 123)
+      PARAMETER (NDIR = 9, NTABLE = 123)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -254,7 +288,8 @@ C
 C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
-     &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT'/
+     &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',
+     &             '*QM3INP'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
@@ -1313,7 +1348,7 @@ C
          IF (WORD(1:2) .EQ. '**') GO TO 1
          DO 310 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8), I
+               GO TO (1,2,3,4,5,6,7,8,9), I
             END IF
   310    CONTINUE
          WRITE (LUPRI,'(/3A/)') ' Directory ',WORD,' nonexistent.'
@@ -1340,6 +1375,8 @@ C
         !Density-fitting input keywords
     8   CALL DFIINP(WORD)
       GO TO 301
+    9   CALL QM3INP(WORD)
+      GO TO 301
 C
     1 CONTINUE
 C
@@ -1350,10 +1387,44 @@ C
       CALL SRTINP(WORD)
  1000 CONTINUE
 C
+C     ***************************************************************
+C     Reading in the interaction parameters for the MM system types:
+C     ***************************************************************
+C
+      IF (QM3) THEN
+        IF (.NOT. (ONLYOV)) CALL RDPOT()
+      END IF
+C
+C     ***************************************************************
 C     Read geometry, orbital spec., etc. (MOLECULE format).
 C     Parameter .TRUE. in call indicates that LUONEL must be written.
+C     ***************************************************************
 C
       CALL READIN(WORK,LWORK,.TRUE.)
+C
+C     ***************************************************************
+C     Calculating the classical interaction terms from the given
+C     geometry and interaction terms:
+C     ***************************************************************
+C
+      IF (.NOT. (ONLYOV)) THEN
+        IF (QM3) THEN
+          CALL MMFLDS()
+          CALL ELNUC(ENUQM3)
+        END IF
+C
+        IF ( (QM3) .AND. (OLDTG) ) THEN
+          DO 873 I= 1, ISYTP
+           DO 874 J = NSYSBG(I), NSYSED(I)
+              DO 875 K = 1, NUCIND
+                 IF (ISUBSY(K) .EQ. J) CHAOLD(K) = CHARGE(K)
+                 IF (ISUBSY(K) .EQ. J) CHARGE(K) = 0.0
+  875         CONTINUE
+  874      CONTINUE
+  873     CONTINUE
+        END IF
+      END IF
+C
       CALL SETDCH
       CALL GPCLOSE(LUCMD,'KEEP')
       IF (TSTINP) CALL GPCLOSE(LUONEL,' ')
@@ -1890,6 +1961,10 @@ C
      &                  IDUMMY,TRIANG,PROPRI,IPRONE)
             CALL TIMER('OVERLAP',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
+C
+            IF (ONLYOV) THEN
+              CALL QUITMM('Overlap integrals calculated')
+            END IF
 C
 C           ***** Dipole length integrals *****
 C
@@ -2815,12 +2890,14 @@ C
 C        Integrals written on LUONEL -
 C        Some previous information has been written in READIN
 C
-         IF (HAMILT) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                  .TRUE.,.FALSE.,.FALSE.,.FALSE.)
-            CALL TIMER('ONEDRV',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
+         IF (.NOT. ONLYOV) THEN
+           IF (HAMILT) THEN
+             CALL TIMER('START ',TIMSTR,TIMEND)
+             CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
+     &                   .TRUE.,.FALSE.,.FALSE.,.FALSE.)
+             CALL TIMER('ONEDRV',TIMSTR,TIMEND)
+             CALL FLSHFO(LUPRI)
+           END IF
          END IF
       END IF
 C

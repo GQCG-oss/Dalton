@@ -97,7 +97,10 @@ C
 #include <ccinftap.h>
 #include <ccslvinf.h>
 #include <ccnoddy.h>
+#include <qm3.h>
+#include <ccqrinf.h>
 C
+      LOGICAL CCMMCONV,DIELCONV,CCDC
       LOGICAL CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
      *        TRPCLC,OOTV, EXCLC, RLORBS, LPROJECT, EX, TRIPLET,
      *        LDUM, ETASAV, LCCPTSV
@@ -122,6 +125,7 @@ C
 #include <leinf.h>
 C
       CALL QENTER('CC_FOP')
+      CCDC = CCSLV .AND. (.NOT. CCMM)
 C
 C------------------------------------
 C     Header of Property calculation.
@@ -490,7 +494,6 @@ C
 !Sonia: CCSDPT_DENS2 does not work for CCSD(T) Gradient
 !       with symmetry. Used old version ftb
 !
-             write(lupri,*) 'Sonia: I am entering CCSDPT_DENS2_SC'
              CALL CCSDPT_DENS2_SC(WORK(KT1AM),1,WORK(KT2AM),1,MODEL,
      *                       DUMMY,IDUMMY,DUMMY,IDUMMY,
      *                       WORK(KWRK1),LWRK1,IDUMMY,CDUM,IDUMMY,CDUM,
@@ -747,7 +750,7 @@ C SLV98,OC Solvent part 1
 C           Calculate norm and test for convergence.
 C---------------------------------------------------
 C
-      IF (CCSLV) THEN
+      IF (CCSLV .AND. (.NOT. CCMM )) THEN
 C
               KLAM   = 1
               KLAM2  = 1 + NT1AMX
@@ -827,6 +830,101 @@ C---------------------------------------------------
 C SLV98,OC solvent part 1 end
 C---------------------------------------------------
 C
+C---------------------------------------------------
+C CCMM02,JK+AO qm/mm part 1 start
+C---------------------------------------------------
+C
+      IF (CCMM) THEN
+C
+              KLAM   = 1
+              KLAM2  = 1 + NT1AMX
+C
+              IOPT = 3
+              CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KLAM),WORK(KLAM2))
+C
+              XLNCCCU = DDOT(NT1AMX+NT2AMX,WORK(KLAM),1,WORK(KLAM),1)
+C
+              IF (ABS(XLNCCPR-XLNCCCU).LT.CVGLSOL.AND.LRSPFUL)
+     *            LSLLCVG = .TRUE.
+              IF (IPRINT.GT.2) THEN
+                WRITE(LUPRI,*)
+     *          'Norm of L-amplitudes in this ccmm it.:',XLNCCCU
+                WRITE(LUPRI,*)
+     *          'Norm of L-amplitudes in prev ccmm it.:',XLNCCPR
+                WRITE(LUPRI,*) 'LSLLCVG: ',LSLLCVG
+              ENDIF
+              WRITE(LUPRI,*)
+     *        ' Change in norm^2 of L-amplitudes in this ccmm it.:',
+     *        XLNCCCU-XLNCCPR
+
+              XLNCCPR = XLNCCCU
+C
+              KWRK3  = KLAM  + NT1AMX + NT2AMX
+              KRHO1  = KWRK3
+              KRHO2  = KRHO1 + NT1AMX
+              KWRK4  = KRHO2 + NT2AMX
+              LWRK4  = LWORK - KWRK4
+C
+              IF (LWRK4.LE.0) CALL QUIT(' Too little work in cc_fop')
+              CALL DZERO(WORK(KRHO1),NT1AMX)
+              IF (.NOT.CCS) CALL DZERO(WORK(KRHO2),NT2AMX)
+              LR = '0'
+              DTIME = SECOND()
+              CALL CCMM_LTRB(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2,
+     *                       ISYMOP,LR,WORK(KWRK4),LWRK4)
+              IF (IPRINT .GT. 5) THEN
+                WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_FOP):',
+     *                         SECOND() - DTIME
+              END IF
+              CALL TIMER('LR=R',TIMSTR,TIMEND)
+              CALL FLSHFO(LUPRI)
+C
+              KOMEG1 = KWRK4
+              KOMEG2 = KWRK4 + NT1AMX
+              LUOME = -9000
+              CALL GPOPEN(LUOME,'CC_OME','UNKNOWN',' ',
+     *            'UNFORMATTED',IDUMMY,.FALSE.)
+              REWIND (LUOME)
+              READ(LUOME) (WORK(KOMEG1+K-1), K = 1,NT1AMX)
+              IF (.NOT.CCS) THEN
+                 READ(LUOME) (WORK(KOMEG2+K-1), K = 1,NT2AMX)
+              ENDIF
+              CALL GPCLOSE(LUOME,'KEEP')
+C
+              CALL DAXPY(NT1AM(ISYMOP),-ONE,WORK(KRHO1),1,
+     *                   WORK(KOMEG1),1)
+              IF (.NOT. CCS ) THEN
+                CALL DAXPY(NT2AM(ISYMOP),-ONE,WORK(KRHO2),1,
+     *                     WORK(KOMEG2),1)
+              ENDIF
+C
+              ECCP1 = DDOT(NT1AMX,WORK(KLAM),1,WORK(KOMEG1),1)
+              ECCP2 = 0.0D0
+              IF (.NOT.CCS) THEN
+c                CALL CCLR_DIASCL(WORK(KOMEG2),0.5D0,ISYMTR)
+                 ECCP2 = DDOT(NT2AMX,WORK(KLAM2),
+     *                        1,WORK(KOMEG2),1)
+              ENDIF
+              IF (IPRINT .GE. 3) THEN
+                 WRITE(LUPRI,*) 'Norm of omega1 in cc_fop:',
+     *               DDOT(NT1AM(ISYMOP),WORK(KOMEG1),1,WORK(KOMEG1),1)
+                 WRITE(LUPRI,*) 'Norm of omega2 in cc_fop:',
+     *               DDOT(NT2AM(ISYMOP),WORK(KOMEG2),1,WORK(KOMEG2),1)
+              ENDIF
+              ECCL = ECCP1 + ECCP2
+              ECCGRS = ECCGRS + ECCL
+              WRITE(LUPRI,*)'Total <Lambda|H|CC> energy: ',ECCGRS
+              WRITE(LUPRI,'(12X,A,F25.10)')
+     *        'The singles contribution is:', ECCP1
+              WRITE(LUPRI,'(12X,A,F25.10)')
+     *        'The doubles contribution is:', ECCP2
+C
+      ENDIF
+C
+C---------------------------------------------------
+C CCMM02,JA+AO qm/mm part 1 end
+C---------------------------------------------------
+
       CALL FLSHFO(LUPRI)
 C
   46  CONTINUE 
@@ -1127,7 +1225,7 @@ C
          CALL QUIT('Insufficient memory for one e- density in CC_FOP')
       ENDIF
 C
-      IF (.NOT.(CCSLV.OR.DIPMOM.OR.QUADRU.OR.NQCC.OR.
+      IF (.NOT.(CCSLV.OR.CCMM.OR.DIPMOM.OR.QUADRU.OR.NQCC.OR.
      *    RELCOR.OR.DPTECO.OR.SECMOM.OR.TSTDEN.OR.(NAFOP.GT.0))) GOTO 47
 C
 C----------------------------------------------------------
@@ -1159,7 +1257,7 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C     SLV98,OC Solvent section 2
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
-      IF (CCSLV) THEN
+      IF (CCSLV .AND. (.NOT. CCMM )) THEN
 C
         KETLM  = KWRK3
         KWRK4  = KETLM + 2*NLMCU
@@ -1168,7 +1266,7 @@ C
           WRITE(LUPRI,*) 'Needed:', KWRK4, 'Available:', LWORK
           CALL QUIT('Insufficient memory for solvent alloc in cc_fop')
         ENDIF
-        CALL CC_SLV(WORK(KDENS),WORK(KETLM),WORK(KWRK4),LWRK4)
+        CALL CC_SLV(WORK(KDENS),WORK(KETLM),DIELCONV,WORK(KWRK4),LWRK4)
 C
       ENDIF
 C
@@ -1176,6 +1274,22 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C     SLV98,OC End of solvent section 2.
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
+C--------------------------------------------------------------
+C CCMM02,JA+AO qm/mm part 2 start
+C--------------------------------------------------------------
+C
+      IF (CCMM) THEN
+        DTIME = SECOND()
+        CALL CC_QM3(WORK(KDENS),CCMMCONV,WORK(KWRK3),LWRK3)
+        IF (IPRINT .GT. 5) THEN
+         WRITE(LUPRI,*)'Time used in CC_QM3 (CC_FOP):',
+     *                  SECOND()-DTIME
+        END IF
+      ENDIF
+C
+C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+C CCMM02,JAND qm/mm part 2 end
+C--------------------------------------------------------------
 C---------------------------------------------------------------------
 C     Calculate the simple one electron AO-density in CCS calculation.
 C---------------------------------------------------------------------
@@ -1446,6 +1560,23 @@ C
             ENDIF
             DIPMN(IDIP) = DIPMN(IDIP) + DIPME(IDIP)
 C
+C--------------------------------------------------------
+C        Saving the dipole moment vector for use in
+C        cc_hyppol.F when printing results:
+C--------------------------------------------------------
+C
+            IF (LAVANEW) THEN
+              DIPSAVE(IDIP) = DIPMN(IDIP)
+            END IF
+C
+C--------------------------------
+C           Store on prpc common.
+C--------------------------------
+C
+            IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
+     *                     .OR.(CCDC.AND.DIELCONV))
+     *         CALL CC_PRPC(DIPMN(IDIP),MODEL,1,LABEL,LABEL,LABEL,LABEL,
+     *                   DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   100    CONTINUE
 C
 C---------------------
@@ -1627,6 +1758,33 @@ C
          CALL OUTPUT(SKODN,1,3,1,3,3,3,1,LUPRI)
 C
          CALL FLSHFO(LUPRI)
+C
+C--------------------------------
+C           Store on prpc common.
+C--------------------------------
+C
+         IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV) 
+     *      .OR.(CCDC.AND.DIELCONV)) THEN
+         IJ = 0
+         DO 678 I = 1, 3
+            DO 679 J = I, 3
+C
+               IJ = IJ + 1
+C
+               IF (IJ .EQ. 1) LABEL = 'XXTHETA '
+               IF (IJ .EQ. 2) LABEL = 'XYTHETA '
+               IF (IJ .EQ. 3) LABEL = 'XZTHETA '
+               IF (IJ .EQ. 4) LABEL = 'YYTHETA '
+               IF (IJ .EQ. 5) LABEL = 'YZTHETA '
+               IF (IJ .EQ. 6) LABEL = 'ZZTHETA '
+C
+               CALL CC_PRPC(SKODN(I,J),MODEL,1,LABEL,
+     *                                 LABEL,LABEL,LABEL,
+     *                                 DUMMY,DUMMY,DUMMY,ISY,0,0,0)
+
+  679       CONTINUE
+  678    CONTINUE
+      END IF
 C
       ENDIF
 C
@@ -2045,6 +2203,16 @@ C
                ENDIF
             ENDIF
 C
+C--------------------------------
+C           Store on prpc common.
+C--------------------------------
+C
+            IF (IRC.EQ.1) PROP = DARW
+            IF (IRC.EQ.2) PROP = VELO
+            IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
+     *             .OR.(CCDC.AND.DIELCONV)) 
+     *          CALL CC_PRPC(PROP,MODEL,1,LABEL,LABEL,LABEL,LABEL,
+     *                   DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   130    CONTINUE
 C
 C----------------------
@@ -2200,7 +2368,8 @@ C
                PROP2 = 0.0D0
             ENDIF
          ENDIF
-C
+         CALL CC_PRPC(PROP,MODEL,1,LABEL,LABEL,LABEL,LABEL,
+     *                DUMMY,DUMMY,DUMMY,ISY,0,0,0)
 C-------------------------
 C        Write out result.
 C-------------------------
@@ -2848,6 +3017,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <qm3.h>
       DIMENSION WORK(LWORK)
 #include <cbiher.h>
 #include <orgcom.h>
@@ -2875,6 +3045,13 @@ C
       ELSE IF (IOPT .EQ. 2) THEN
          CALL NUCNQC(WORK(KGEOM),LUPRI,IASGER)
       ENDIF
+C
+      IF (IOPT .EQ. 2) THEN
+        IF ( (QM3) .AND. (.NOT. (SKIPNC)) ) THEN
+          CALL QM3QCC1(LUPRI,IASGER)
+          IF ( .NOT. (LOSPC) ) CALL QM3QCC2(LUPRI,IASGER)
+        END IF
+      END IF
 C
       CALL QEXIT('CCNUCQUA')
 C
@@ -3036,6 +3213,7 @@ C
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
       DIMENSION DENS(*), EFGINT(*), DOTPRO(NCOMP), WORK(LWORK)
       CHARACTER*8 LABEL
@@ -3054,6 +3232,8 @@ C
       ITYP = 0
 C
       DO 100 IATOM = 1,NUCIND
+       IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
+     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
          DO 110 ICOOR1 = 1,3
             DO 120 ICOOR2 = ICOOR1,3
 C
@@ -3096,6 +3276,7 @@ C
   130          CONTINUE
   120       CONTINUE
   110    CONTINUE
+       END IF
   100 CONTINUE
 C
       CALL QEXIT('CCELEFG1')

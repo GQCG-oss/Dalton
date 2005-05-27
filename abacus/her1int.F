@@ -793,6 +793,7 @@ C
 #include <shells.h>
 #include <huckel.h>
 #include <symmet.h>
+#include <qm3.h>
 #include <elweak.h>
 C
 #include <ibtfun.h>
@@ -900,6 +901,17 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
                CORCZ0 =  CORD(3,IATOMC)
                FACTOR = - FMULT(IBTAND(MULC,KAB))
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
+               IF ( (QM3) .AND. (.NOT. (OLDTG) ) 
+     &                    .AND. (INTTYP .EQ. 35) ) THEN 
+                 IF (ISUBSY(IATOMC) .NE. 0) THEN
+                   FACTOR = - FACTOR*CHARGE(IATOMC)/HKAB
+                 END IF 
+               END IF
+               IF ( (QM3) .AND. (OLDTG) .AND. (INTTYP .EQ. 35) ) THEN
+                 IF (ISUBSY(IATOMC) .NE. 0) THEN
+                   FACTOR = - FACTOR*CHAOLD(IATOMC)/HKAB
+                 END IF
+               END IF  
                IF (INTTYP .EQ. 80) THEN
                   FACTOR = FACTOR/HKAB*(
      &            DISOTP(IZATOM(IATOMC),ISOTOP(IATOMC),'NEUTRONS')

@@ -1,19 +1,19 @@
 C
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -31,13 +31,12 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
-C
 c /* deck cclr_fa */
 *=====================================================================*
        SUBROUTINE CCLR_FA ( LABELA, ISYMTA,  ! inp: label/symmetry A
      &                      LISTB,  ITAMPB,  ! inp: B resp. amplit.
      &                      LISTC,  IZETVC,  ! inp: C resp. zeta vec.
+     &                      XINT,            ! inp: integrals of operator
      &                      WORK,   LWORK   )! work space
 *---------------------------------------------------------------------*
 *
@@ -47,6 +46,8 @@ c /* deck cclr_fa */
 *
 *             F^C{A} * t^B = <lambda^C|[[A,t^B],tau_nu]|CC>
 *
+*             JK+OC. CCMM: Allow for input of integrals if
+*             LABELA .eq. 'GIVE INT' 
 *
 *    symmetries/variables:
 *              
@@ -80,15 +81,14 @@ c /* deck cclr_fa */
 #include <ccisao.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-C#include <ccr1rsp.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(17)
+      CHARACTER MSGDBG*(16)
       PARAMETER (MSGDBG='[debug] CCLR_FA> ')
 #if defined (SYS_CRAY)
-      REAL ONE, TWO, THREE
+      REAL ONE, TWO, THREE 
 #else
-      DOUBLE PRECISION ONE, TWO, THREE
+      DOUBLE PRECISION ONE, TWO, THREE 
 #endif
       PARAMETER (ONE = 1.0d0, TWO = 2.0d0, THREE = 3.0d0)
       LOGICAL LOCDBG
@@ -112,15 +112,14 @@ C#include <ccr1rsp.h>
 #if defined (SYS_CRAY)
       REAL FREQB
       REAL SWAP
-      REAL WORK(LWORK)
+      REAL WORK(LWORK), XINT(*)
 #else
       DOUBLE PRECISION FREQB
       DOUBLE PRECISION SWAP
-      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION WORK(LWORK), XINT(*)
 #endif
 
       INTEGER ILSTSYM
-
   
 *---------------------------------------------------------------------*
 * begin:
@@ -235,15 +234,19 @@ C#include <ccr1rsp.h>
       IF (LEND1A .LT. 0) THEN
         CALL QUIT('Insufficient work space in CCLR_FA.')
       END IF
-
+C
+C     JK+OC, CCSLV
+      IF (LABELA.EQ.'GIVE INT') THEN 
+        CALL DCOPY(N2BST(ISYMTA),XINT(1),1,WORK(KCTMO),1)
+      ELSE
 * read the AO integrals:
-      CALL CCPRPAO(LABELA,WORK(KCTMO),IRREP,ISYM,IERR,
-     &             WORK(KEND1A),LEND1A)
-      IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
-         CALL QUIT('CCLR_FA: error while reading operator '//LABELA)
+        CALL CCPRPAO(LABELA,WORK(KCTMO),IRREP,ISYM,IERR,
+     &               WORK(KEND1A),LEND1A)
+        IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
+           CALL QUIT('CCLR_FA: error while reading operator '//LABELA)
+        END IF
       END IF
-
-
+C
 * get MO coefficients:
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
       CALL LAMMAT(WORK(KLAMDP0),WORK(KLAMDH0),WORK(KT1AMP0),
@@ -514,7 +517,7 @@ C#include <ccr1rsp.h>
         WRITE (LUPRI,*) MSGDBG, 'GAMMA:'
         Call CC_PRP(WORK(KGAMMA1),WORK(KGAMMA2),ISYRES,1,1)
       END IF
-
+C
       RETURN
       END
 *=====================================================================*

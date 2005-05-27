@@ -9,6 +9,9 @@
       INTEGER MXDIM_FTRAN  ! F matrix transformation, CC_FMATRIX
       PARAMETER (MXDIM_FTRAN  = 3)
 
+      INTEGER MXDIM_JTRAN  ! J matrix transformation, CC_JMATRIX
+      PARAMETER (MXDIM_JTRAN  = 3)
+
       INTEGER MXDIM_GTRAN  ! G matrix tranformation, CC_GMAT
       PARAMETER (MXDIM_GTRAN  = 4)
 
@@ -18,6 +21,9 @@
 
       INTEGER MXDIM_BTRAN  ! B matrix tranformation, CC_BMATRIX
       PARAMETER (MXDIM_BTRAN  = 3)
+
+      INTEGER MXDIM_KTRAN  ! K matrix tranformation, CC_KMATRIX
+      PARAMETER (MXDIM_KTRAN  = 3)
 
       INTEGER MXDIM_CTRAN  ! C matrix tranformation, CC_CMAT
       PARAMETER (MXDIM_CTRAN  = 4)

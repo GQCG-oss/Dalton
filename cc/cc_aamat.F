@@ -184,7 +184,7 @@ c /* deck CC_AAMAT */
 c          --------------------------------------------------
 c          do the CCS/CC2/CCSD parts:
 c          --------------------------------------------------
-           CALL CCCR_AA(LABEL,ISYOPE,LISTR,IDLSTR,WORK,LWORK)
+           CALL CCCR_AA(LABEL,ISYOPE,LISTR,IDLSTR,DUMMY,WORK,LWORK)
            CALL CCLR_DIASCL(WORK(KRES2),2.0d0,ISYRES)
 
 c          --------------------------------------------------

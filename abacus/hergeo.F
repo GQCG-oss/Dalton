@@ -226,6 +226,7 @@ C
 C
 #include <gnrinf.h>
 #include <inftap.h>
+#include <qm3.h>
 #include <nuclei.h>
 #include <symmet.h>
 C
@@ -306,98 +307,102 @@ C
   300    CONTINUE
   400 CONTINUE
 C
-      IF (PRINT) THEN
-         IF (NUCDEP .LE. 12*(IPRUSR+1)) THEN
-Chjaaj Oct 2003: this output is only useful for small molecules ...
+      IF (.NOT. QM3) THEN
+        IF (PRINT) THEN
+          IF (NUCDEP .LE. 12*(IPRUSR+1)) THEN
+C hjaaj Oct 2003: this output is only useful for small molecules ...
             IF (DIF) THEN
-               CALL HEADER
+              CALL HEADER
      *        ('Differential interatomic separations (in Angstroms):',2)
             ELSE
-               CALL HEADER('Interatomic separations (in Angstroms):',2)
+              CALL HEADER('Interatomic separations (in Angstroms):',2)
             END IF
-         CALL PRIDIS(NAMDEP,DIST,NUCDEP)
-         END IF
-         IF (DIF) THEN
+            CALL PRIDIS(NAMDEP,DIST,NUCDEP)
+          END IF
+          IF (DIF) THEN
             WRITE(LUPRI,'(/A,F12.6,A/5A)')
      &         '  Max differential change in interatomic separation is',
      &         DISTMX,' Angstroms','  between atoms "',
      &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
-         ELSE
+          ELSE
             WRITE(LUPRI,'(/A,F10.4,A/5A)')
      &         '  Max interatomic separation is',
      &         DISTMX,' Angstroms','  between atoms "',
      &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
-         END IF
+          END IF
+        END IF
       END IF
 C
       IF (PRINT .AND. .NOT. DIF) THEN
 
-         DO 10 J= 1,NUCDEP
-         RADJ = RADIUS(ICHARG(J))
-         DO 20 I= 1, J-1
+        DO 10 J= 1,NUCDEP
+          RADJ = RADIUS(ICHARG(J))
+          DO 20 I= 1, J-1
             RADI = RADIUS(ICHARG(I))
             IF (RADI .LT. 0 .OR. RADJ .LT. 0) THEN
-C              do not print if cavity center or floating orbital /hjaaj
-               IF (ICHARG(I).GT.0 .AND. ICHARG(J).GT.0) WRITE(LUPRI,*)
-     &            'RADII FOR ATOMS WITH ATOMIC NUMBER ',
-     &            ICHARG(I), ' AND/OR ', ICHARG(J), ' ARE UNAVAILABLE'
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
+C               do not print if cavity center or floating orbital /hjaaj
+              IF (ICHARG(I).GT.0 .AND. ICHARG(J).GT.0) WRITE(LUPRI,*)
+     &        'RADII FOR ATOMS WITH ATOMIC NUMBER ',
+     &        ICHARG(I), ' AND/OR ', ICHARG(J), ' ARE UNAVAILABLE'
+              BONDED(I,J) = .FALSE.
+              BONDED(J,I) = .FALSE.
             ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
-               NBONDS = NBONDS + 1
-               IPAIRS(1,NBONDS) = I
-               IPAIRS(2,NBONDS) = J
-               BONDED(I,J) = .TRUE.
-               BONDED(J,I) = .TRUE.
+              NBONDS = NBONDS + 1
+              IPAIRS(1,NBONDS) = I
+              IPAIRS(2,NBONDS) = J
+              BONDED(I,J) = .TRUE.
+              BONDED(J,I) = .TRUE.
             ELSE
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
+              BONDED(I,J) = .FALSE.
+              BONDED(J,I) = .FALSE.
             END IF
- 20      CONTINUE
-         BONDED(J,J) = .FALSE.
- 10      CONTINUE
-C
-         CALL HEADER('Bond distances (angstroms):',1)
-         WRITE (LUPRI,'(18X,A/18X,A)')
-     $     'atom 1     atom 2       distance',
-     $     '------     ------       --------'
-         DO 500 I = 1, NUCDEP
+ 20       CONTINUE
+          BONDED(J,J) = .FALSE.
+ 10     CONTINUE
+        IF (.NOT. QM3) THEN
+          CALL HEADER('Bond distances (angstroms):',1)
+          WRITE (LUPRI,'(18X,A/18X,A)')
+     $          'atom 1     atom 2       distance',
+     $          '------     ------       --------'
+          DO 500 I = 1, NUCDEP
             DO 510 J = 1, I-1
-               IF (BONDED(I,J)) THEN
-                  NUCNAM(1) = NAMDEP(I)
-                  NUCNAM(2) = NAMDEP(J)
-                  WRITE(LUPRI,'(A,2X,A6,5X,A6,F15.6)')
-     $                 '  bond distance:',
-     &                  NUCNAM(1), NUCNAM(2), DIST2(I,J)
-               END IF
+              IF (BONDED(I,J)) THEN
+                NUCNAM(1) = NAMDEP(I)
+                NUCNAM(2) = NAMDEP(J)
+                WRITE(LUPRI,'(A,2X,A6,5X,A6,F15.6)')
+     $               '  bond distance:',
+     &               NUCNAM(1), NUCNAM(2), DIST2(I,J)
+              END IF
  510        CONTINUE
- 500     CONTINUE
+ 500      CONTINUE
 C
-      IF (NUCDEP .GT. 2 .AND. NANG .LE. 0) THEN
-         CALL HEADER('Bond angles (degrees):',1)
-         WRITE (LUPRI,'(18X,A/18X,A)')
-     $   'atom 1     atom 2     atom 3         angle',
-     $   '------     ------     ------         -----'
+          IF (NUCDEP .GT. 2 .AND. NANG .LE. 0) THEN
+            CALL HEADER('Bond angles (degrees):',1)
+            WRITE (LUPRI,'(18X,A/18X,A)')
+     $            'atom 1     atom 2     atom 3         angle',
+     $            '------     ------     ------         -----'
 C
-         IJK = 0
-         DO 40, I= 1,NUCDEP
-            DO 50, J= 1, NUCDEP - 1
-               DO 60, K= J + 1, NUCDEP
+            IJK = 0
+            DO 40, I= 1,NUCDEP
+              DO 50, J= 1, NUCDEP - 1
+                DO 60, K= J + 1, NUCDEP
                   IF (BONDED(I,J) .AND. BONDED(I,K)) THEN
-                     IJK = IJK + 1
-                     NUCNAM(1) = NAMDEP(J)
-                     NUCNAM(2) = NAMDEP(I)
-                     NUCNAM(3) = NAMDEP(K)
-                     ANG = VECANG(VEC(1,I,J),VEC(1,I,K))
-                     ANG = ANG*FACANG
-                     WRITE(LUPRI,'(A,5X,A6,5X,A6,5X,A6,F14.3)')
-     *                 '  bond angle:',NUCNAM(1),NUCNAM(2),NUCNAM(3),ANG
+                    IJK = IJK + 1
+                    NUCNAM(1) = NAMDEP(J)
+                    NUCNAM(2) = NAMDEP(I)
+                    NUCNAM(3) = NAMDEP(K)
+                    ANG = VECANG(VEC(1,I,J),VEC(1,I,K))
+                    ANG = ANG*FACANG
+                    WRITE(LUPRI,'(A,5X,A6,5X,A6,5X,A6,F14.3)')
+     *                    '  bond angle:',NUCNAM(1),NUCNAM(2),
+     *                    NUCNAM(3),ANG
                   END IF
- 60            CONTINUE
- 50         CONTINUE
- 40      CONTINUE
-         IF (IJK .EQ. 0) WRITE(LUPRI,'(5X,A)') 'No angles found'
-      END IF
+ 60             CONTINUE
+ 50           CONTINUE
+ 40         CONTINUE
+            IF (IJK .EQ. 0) WRITE(LUPRI,'(5X,A)') 'No angles found'
+          END IF
+        END IF
       END IF
 C
 C     Punch bonding information in Gamess output format
@@ -544,6 +549,7 @@ C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
 #include <implicit.h>
 #include <priunit.h>
+#include <qm3.h>
 C     Based on covalent radii and metallic radii in Angstrom.
 C     Returns -1 where data is inavailable
       DIMENSION RAD(100)
@@ -577,10 +583,13 @@ Chj      = -2: point charges
 C
          RADIUS = -1.0D0
       ELSE IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
-         WRITE (LUPRI,*) 'ERROR, RADIUS called with NCHARGE =',NCHARGE
-         CALL QUIT('RADIUS called with illegal NCHARGE')
+        IF (.NOT. QM3) THEN
+          WRITE (LUPRI,*) 
+     &          'ERROR, RADIUS called with NCHARGE =',NCHARGE
+          CALL QUIT('RADIUS called with illegal NCHARGE')
+        END IF
       ELSE
-         RADIUS = 0.01D0 * RAD(NCHARGE)
+        RADIUS = 0.01D0 * RAD(NCHARGE)
       END IF
       RETURN
       END

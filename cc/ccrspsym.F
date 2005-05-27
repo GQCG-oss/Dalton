@@ -3810,6 +3810,8 @@ c /* deck cc_tpaind */
 #include <ccexcinf.h>
 #include <ccroper.h>
 #include <ccsdinp.h>
+#include <ccsections.h>
+#include <ccslvinf.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3976,8 +3978,15 @@ c /* deck cc_tpaind */
 
 
 *        request unrelaxed first order zeta response vectors:
-         INUM = IL1ZETA(LABELA,.FALSE.,-FREQA,ISYMA)
-         INUM = IL1ZETA(LABELB,.FALSE.,-FREQB,ISYMB)
+         IF (CCSLV) THEN
+           INUM = IL1ZETA(LABELA,.FALSE.,-FREQA,ISYMA)
+           INUM = IL1ZETA(LABELB,.FALSE.,-FREQB,ISYMB)
+           INUM = IL1ZETA(LABELA,.FALSE.,FREQA,ISYMA)
+           INUM = IL1ZETA(LABELB,.FALSE.,FREQB,ISYMB)
+         ELSE
+           INUM = IL1ZETA(LABELA,.FALSE.,-FREQA,ISYMA)
+           INUM = IL1ZETA(LABELB,.FALSE.,-FREQB,ISYMB)
+         END IF
 
 *        request M1 lagrangian multipliers:
          INUM = ILRMAMP(ISTATE,EIGV,ISYME)

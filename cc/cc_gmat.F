@@ -64,6 +64,8 @@ c/* Deck CC_GMATRIX */
 #endif
 #include <priunit.h>
 #include <maxorb.h>
+#include <ccslvinf.h>
+#include <qm3.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -258,6 +260,9 @@ c/* Deck CC_GMAT */
 #include <blocks.h>
 #include <second.h>
 #include <ccnoddy.h>
+#include <ccsections.h>
+#include <ccslvinf.h>
+#include <qm3.h>
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -1620,7 +1625,33 @@ C
 * end CCSD part for DELTA2; save result vector on file or calculate
 * the required dot products:
 *=====================================================================*
-
+C
+C       CCSLV part, JK+OC
+C       The result vectors are ind WORK(KDELTA1(ITRAN)) and WORK(KDELTA2)
+C       Futhermore, we need to know the list numbers, their ID's and symmetries
+C       For the zeta (A) vector these are: LISTA,IDLSTA,ISYCTR
+C       For the B trial vector these are : LISTB,IDLSTB,ISYMTB
+C       For the C trial vector these are : LISTC,IDLSTC,ISYMTC
+C       Also, we have as arguments the symmetry of B x C : ISYTCTB
+C       and the symmetry of A x B X C : ISYRES
+C       work arrays used are WORK(KEND2) and LEND2
+C
+        IF (CCSLV) THEN
+          IF (.NOT. CCMM) CALL CCSL_GTR(WORK(KDELTA1(ITRAN)),
+     *                    WORK(KDELTA2),ISYRES,
+     *                    LISTA,IDLSTA,ISYCTR,
+     *                    LISTB,IDLSTB,ISYMTB,
+     *                    LISTC,IDLSTC,ISYMTC,
+     *                    MODEL,WORK(KEND2),LEND2)
+C
+          IF (CCMM) CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
+     *              WORK(KDELTA2),ISYRES,
+     *              LISTA,IDLSTA,ISYCTR,
+     *              LISTB,IDLSTB,ISYMTB,
+     *              LISTC,IDLSTC,ISYMTC,
+     *              MODEL,WORK(KEND2),LEND2)
+        END IF
+C
 C        ---------------------------------
 C        here we continue for CCS and CC2:
 C        ---------------------------------
@@ -1636,8 +1667,24 @@ C        ---------------------------------
             END IF
 
             CALL DZERO(WORK(KDELTA2),NT2AM(ISYRES))
+C
+            IF (CCSLV) THEN
+              IF (.NOT. CCMM) CALL CCSL_GTR(WORK(KDELTA1(ITRAN)),
+     *                        WORK(KDELTA2),ISYRES,
+     *                        LISTA,IDLSTA,ISYCTR,
+     *                        LISTB,IDLSTB,ISYMTB,
+     *                        LISTC,IDLSTC,ISYMTC,
+     *                        MODEL,WORK(KEND1),LEND1)
+C
+              IF (CCMM) CALL CCMM_GTR(WORK(KDELTA1(ITRAN)),
+     *                  WORK(KDELTA2),ISYRES,
+     *                  LISTA,IDLSTA,ISYCTR,
+     *                  LISTB,IDLSTB,ISYMTB,
+     *                  LISTC,IDLSTC,ISYMTC,
+     *                  MODEL,WORK(KEND1),LEND1)
+            END IF
          END IF
-
+C
          IF (LOCDBG) THEN
             WRITE (LUPRI,*) 
      &           'Final result for G matrix transformation ',ITRAN

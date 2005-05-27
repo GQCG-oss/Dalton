@@ -2940,6 +2940,7 @@ C     Nuclear contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nuclei.h>
@@ -2950,51 +2951,107 @@ C
 #include <ibtfun.h>
 C
       CALL DZERO(UCNNQC,9*MXCENT)
+C
       KK = 1
       NATOM = 1
-      DO 10 I = 1, NUCIND
-         DO 20 ISYMOP = 0, MAXOPR
+C
+      IF (.NOT. QM3) THEN
+        DO 10 I = 1, NUCIND
+          DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
-               LL = 1
-               DO 100 I2 = 1, NUCIND
-                  IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
-                  DO 110 ISYM = 0, MAXOPR
-                     IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+              LL = 1
+              DO 100 I2 = 1, NUCIND
+                IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
+                DO 110 ISYM = 0, MAXOPR
+                  IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+                    IF (LL .NE. KK) THEN
+                      XCOOR = GEOM(LL) - GEOM(KK)
+                      YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
+                      ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
+                      R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                      R5 = R2*R2*SQRT(R2)
+                      UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
+     &                       + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
+                      UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
+     &                       + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
+                      UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
+     &                       + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
+                      UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
+     &                       + CHARGE(I2)*D3*XCOOR*YCOOR/R5
+                      UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
+     &                       + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
+                      UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
+     &                       + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
+                    END IF
+                    LL = LL + 3
+                  END IF
+ 110            CONTINUE
+ 100          CONTINUE
+              UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
+              UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
+              UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
+              NATOM = NATOM + 1
+              KK = KK + 3
+            END IF
+ 20       CONTINUE
+ 10     CONTINUE
+        IF (IPRINT .GE. 5) THEN
+          CALL HEADER('Nuclear contribution to electric field gradient',
+     &                -1)
+          CALL EFGPRI(UCNNQC,'                                 ')
+        END IF
+      ELSE
+        DO 30 I = 1, NUCIND
+          IF ( (ISUBSY(I) .EQ. 0) .AND.
+     &      (ISUBSI(I) .LE. NSISY(0)) )THEN
+            DO 40 ISYMOP = 0, MAXOPR
+              IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+                LL = 1
+                DO 130 I2 = 1, NUCIND
+                  IF ( (ISUBSY(I2) .EQ. 0) .AND.
+     &              (ISUBSI(I2) .LE. NSISY(0)) ) THEN
+                    IF (CHARGE(I2) .EQ. 0.0D0) GOTO 130
+                    DO 140 ISYM = 0, MAXOPR
+                      IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
                         IF (LL .NE. KK) THEN
-                           XCOOR = GEOM(LL) - GEOM(KK)
-                           YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
-                           ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
-                           R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-                           R5 = R2*R2*SQRT(R2)
-                           UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
-     &                             + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
-                           UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
-     &                             + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
-                           UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
-     &                             + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
-                           UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
-     &                             + CHARGE(I2)*D3*XCOOR*YCOOR/R5
-                           UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
-     &                             + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
-                           UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
-     &                             + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
+                          XCOOR = GEOM(LL) - GEOM(KK)
+                          YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
+                          ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
+                          R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                          R5 = R2*R2*SQRT(R2)
+                          UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
+     &                           + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
+                          UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
+     &                           + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
+                          UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
+     &                           + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
+                          UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
+     &                           + CHARGE(I2)*D3*XCOOR*YCOOR/R5
+                          UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
+     &                           + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
+                          UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
+     &                           + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
                         END IF
                         LL = LL + 3
-                     END IF
- 110              CONTINUE
- 100           CONTINUE
-               UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
-               UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
-               UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
-               NATOM = NATOM + 1
-               KK = KK + 3
-            END IF
- 20      CONTINUE
- 10   CONTINUE
-      IF (IPRINT .GE. 5) THEN
-         CALL HEADER('Nuclear contribution to electric field gradient',
-     &               -1)
-         CALL EFGPRI(UCNNQC,'                                 ')
+                      END IF
+ 140                CONTINUE
+                  END IF 
+ 130            CONTINUE
+                UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
+                UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
+                UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
+                NATOM = NATOM + 1
+                KK = KK + 3
+              END IF
+ 40         CONTINUE
+          END IF
+ 30     CONTINUE
+        write(lupri,*)'NATOM',NATOM
+        IF (IPRINT .GE. 5) THEN
+          CALL HEADER('Nuclear contribution to electric field gradient',
+     &                -1)
+          CALL EFGPRI(UCNNQC,'                                 ')
+        END IF
       END IF
       RETURN
       END
@@ -3006,6 +3063,7 @@ C     K.Ruud, nov.-94
 C
 #include <implicit.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nuclei.h>
@@ -3016,40 +3074,79 @@ C
 #include <ibtfun.h>
 C
       CALL DZERO(QDRNUC,9)
+C
       KK = 1
       NATOM = 1
       IX = IPTAX(1,1)
       IY = IPTAX(2,1)
       IZ = IPTAX(3,1)
-      DO 10 I = 1, NUCIND
-         DO 20 ISYMOP = 0, MAXOPR
+C
+      IF (.NOT. QM3) THEN
+        DO 10 I = 1, NUCIND
+          DO 20 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
-               XCOOR = GEOM(KK) - ORIGIN(1)
-               YCOOR = GEOM(KK + 1) - ORIGIN(2)
-               ZCOOR = GEOM(KK + 2) - ORIGIN(3)
-               R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-               QDRNUC(IX,IX) = QDRNUC(IX,IX) + DP5*CHARGE(I)*
+              XCOOR = GEOM(KK) - ORIGIN(1)
+              YCOOR = GEOM(KK + 1) - ORIGIN(2)
+              ZCOOR = GEOM(KK + 2) - ORIGIN(3)
+              R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+              QDRNUC(IX,IX) = QDRNUC(IX,IX) + DP5*CHARGE(I)*
      &                        (D3*XCOOR*XCOOR - R2)
-               QDRNUC(IY,IY) = QDRNUC(IY,IY) + DP5*CHARGE(I)*
+              QDRNUC(IY,IY) = QDRNUC(IY,IY) + DP5*CHARGE(I)*
      &                        (D3*YCOOR*YCOOR - R2)
-               QDRNUC(IZ,IZ) = QDRNUC(IZ,IZ) + DP5*CHARGE(I)*
+              QDRNUC(IZ,IZ) = QDRNUC(IZ,IZ) + DP5*CHARGE(I)*
      &                        (D3*ZCOOR*ZCOOR - R2)
-               QDRNUC(IX,IY) = QDRNUC(IX,IY) + DP5*CHARGE(I)*
+              QDRNUC(IX,IY) = QDRNUC(IX,IY) + DP5*CHARGE(I)*
      &                         D3*XCOOR*YCOOR
-               QDRNUC(IX,IZ) = QDRNUC(IX,IZ) + DP5*CHARGE(I)*
+              QDRNUC(IX,IZ) = QDRNUC(IX,IZ) + DP5*CHARGE(I)*
      &                         D3*XCOOR*ZCOOR
-               QDRNUC(IY,IZ) = QDRNUC(IY,IZ) + DP5*CHARGE(I)*
+              QDRNUC(IY,IZ) = QDRNUC(IY,IZ) + DP5*CHARGE(I)*
      &                         D3*YCOOR*ZCOOR
-               KK = KK + 3
+              KK = KK + 3
             END IF
- 20      CONTINUE
- 10   CONTINUE
-      QDRNUC(IY,IX) = QDRNUC(IX,IY)
-      QDRNUC(IZ,IX) = QDRNUC(IX,IZ)
-      QDRNUC(IZ,IY) = QDRNUC(IY,IZ)
-      IF (IPRINT .GE. 5) THEN
-         CALL HEADER('Nuclear contribution to quadrupole moment',-1)
-         CALL POLPRI(QDRNUC,'   ',1)
+ 20       CONTINUE
+ 10     CONTINUE
+        QDRNUC(IY,IX) = QDRNUC(IX,IY)
+        QDRNUC(IZ,IX) = QDRNUC(IX,IZ)
+        QDRNUC(IZ,IY) = QDRNUC(IY,IZ)
+        IF (IPRINT .GE. 5) THEN
+          CALL HEADER('Nuclear contribution to quadrupole moment',-1)
+          CALL POLPRI(QDRNUC,'   ',1)
+        END IF
+      ELSE
+        DO 30 I = 1, NUCIND
+          IF ( (ISUBSY(I) .EQ. 0) .AND.
+     &      (ISUBSI(I) .LE. NSISY(0)) )THEN
+            DO 40 ISYMOP = 0, MAXOPR
+              IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+                XCOOR = GEOM(KK) - ORIGIN(1)
+                YCOOR = GEOM(KK + 1) - ORIGIN(2)
+                ZCOOR = GEOM(KK + 2) - ORIGIN(3)
+                R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                QDRNUC(IX,IX) = QDRNUC(IX,IX) + DP5*CHARGE(I)*
+     &                          (D3*XCOOR*XCOOR - R2)
+                QDRNUC(IY,IY) = QDRNUC(IY,IY) + DP5*CHARGE(I)*
+     &                          (D3*YCOOR*YCOOR - R2)
+                QDRNUC(IZ,IZ) = QDRNUC(IZ,IZ) + DP5*CHARGE(I)*
+     &                          (D3*ZCOOR*ZCOOR - R2)
+                QDRNUC(IX,IY) = QDRNUC(IX,IY) + DP5*CHARGE(I)*
+     &                          D3*XCOOR*YCOOR
+                QDRNUC(IX,IZ) = QDRNUC(IX,IZ) + DP5*CHARGE(I)*
+     &                          D3*XCOOR*ZCOOR
+                QDRNUC(IY,IZ) = QDRNUC(IY,IZ) + DP5*CHARGE(I)*
+     &                          D3*YCOOR*ZCOOR
+                KK = KK + 3
+              END IF
+ 40         CONTINUE
+          END IF
+ 30     CONTINUE
+        QDRNUC(IY,IX) = QDRNUC(IX,IY)
+        QDRNUC(IZ,IX) = QDRNUC(IX,IZ)
+        QDRNUC(IZ,IY) = QDRNUC(IY,IZ)
+        IF (IPRINT .GE. 5) THEN
+          CALL HEADER('Nuclear contrib. to quadrupole moment (QM/MM)',
+     &                 -1)
+          CALL POLPRI(QDRNUC,'   ',1)
+        END IF
       END IF
       RETURN
       END
@@ -3646,6 +3743,7 @@ C     Collect and arrange electronic contribution to electric field gradients
 C
 #include <implicit.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nqcc.h>
@@ -3655,38 +3753,48 @@ C
 #include <ibtfun.h>
 C
       ITYP = 0
+C
       CALL DZERO(TEMP,9*NUCDEP)
+C
       DO 100 IATOM = 1, NUCIND
-         DO 200 ICOOR1 = 1, 3
+        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
+     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+          DO 200 ICOOR1 = 1, 3
             DO 210 ICOOR2 = ICOOR1, 3
-               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-               DO 300 IREPC = 0, MAXREP
-                  IF (IBTAND(ISTBNU(IATOM),
-     &                IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
-                     ITYP = ITYP + 1
-                     TEMP(ICOOR1,ICOOR2,IATOM) =
-     &                  TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(ITYP)
-     &                                             /NUCDEG(IATOM)
-                  END IF
- 300           CONTINUE
+              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+              DO 300 IREPC = 0, MAXREP
+                IF (IBTAND(ISTBNU(IATOM),
+     &            IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  TEMP(ICOOR1,ICOOR2,IATOM) =
+     &            TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(ITYP)
+     &                                       /NUCDEG(IATOM)
+                END IF
+ 300          CONTINUE
  210        CONTINUE
- 200     CONTINUE
+ 200      CONTINUE
+        END IF
  100  CONTINUE
+C
       NATOM = 1
+C
       DO 110 IATOM = 1, NUCIND
-         DO 310 IREPC = 0, MAXREP
+        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
+     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+          DO 310 IREPC = 0, MAXREP
             IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
-               DO 220 I = 1, 3
-                  DO 230 J = I, 3
-                     ELNQC(I,J,NATOM) = TEMP(I,J,IATOM)*
-     &                         PT(IBTAND(IBTXOR(ISYMAX(I,1),
-     &                            ISYMAX(J,1)),IREPC))
-                     IF (I .NE. J) ELNQC(J,I,NATOM) = ELNQC(I,J,NATOM)
- 230              CONTINUE
- 220           CONTINUE
-               NATOM = NATOM + 1
+              DO 220 I = 1, 3
+                DO 230 J = I, 3
+                  ELNQC(I,J,NATOM) = TEMP(I,J,IATOM)*
+     &            PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &            ISYMAX(J,1)),IREPC))
+                  IF (I .NE. J) ELNQC(J,I,NATOM) = ELNQC(I,J,NATOM)
+ 230            CONTINUE
+ 220          CONTINUE
+              NATOM = NATOM + 1
             END IF
- 310     CONTINUE
+ 310      CONTINUE
+        END IF
  110  CONTINUE
       IF (IPRINT .GE. 5) THEN
          CALL HEADER('Electronic contribution to electric field '//

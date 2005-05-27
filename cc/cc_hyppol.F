@@ -64,6 +64,8 @@ c /* deck cc_hyppol */
 #include <cclists.h>
 #include <second.h>
 #include <dummy.h>
+#include <ccsections.h>
+#include <ccslvinf.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -95,6 +97,7 @@ c /* deck cc_hyppol */
       INTEGER KGTRAN, KGDOTS, KGCONS, NGTRAN, MXGTRAN, MXGDOTS
       INTEGER KFTRAN, KFDOTS, KFCONS, NFTRAN, MXFTRAN, MXFDOTS
       INTEGER KBTRAN, KBDOTS, KBCONS, NBTRAN, MXBTRAN, MXBDOTS
+      INTEGER KKTRAN, KKDOTS, KKCONS, NKTRAN, MXKTRAN, MXKDOTS
       INTEGER KFATRAN, KFADOTS, KFACONS, NFATRAN, MXFATRAN, MXFADOTS
       INTEGER KEATRAN, KEADOTS, KEACONS, NEATRAN, MXEATRAN, MXEADOTS
       INTEGER KR2TRAN, KR2DOTS, KR2CONS, NR2TRAN, MXR2TRAN, MXR2DOTS
@@ -107,19 +110,21 @@ c /* deck cc_hyppol */
       REAL GCON, FACON1,FACON2,FACON3, FCON1,FCON2,FCON3
       REAL EACON1, EACON2, EACON3, EACON4, EACON5, EACON6
       REAL BCON1, BCON2, BCON3, R2CON1, R2CON2, R2CON3
+      REAL SLVKCON1, SLVKCON2, SLVKCON3
       REAL X2CON1, X2CON2, X2CON3, E2CON1, E2CON2, E2CON3
       REAL SIGN
       REAL TIMTOT, TIM0, TIM1, TIMG, TIMF, TIMB, TIMFA, TIMEA, TIM2
-      REAL TIMR2, TIMXE, TIMAA
+      REAL TIMR2, TIMXE, TIMAA, TIMK
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION GCON, FACON1,FACON2,FACON3, FCON1,FCON2,FCON3
       DOUBLE PRECISION EACON1, EACON2, EACON3, EACON4, EACON5, EACON6
       DOUBLE PRECISION BCON1, BCON2, BCON3, R2CON1, R2CON2, R2CON3
+      DOUBLE PRECISION SLVKCON1, SLVKCON2, SLVKCON3
       DOUBLE PRECISION X2CON1, X2CON2, X2CON3, E2CON1, E2CON2, E2CON3
       DOUBLE PRECISION SIGN
       DOUBLE PRECISION TIMTOT,TIM0,TIM1,TIMG,TIMF,TIMB,TIMFA,TIMEA,TIM2
-      DOUBLE PRECISION TIMR2, TIMXE, TIMAA
+      DOUBLE PRECISION TIMR2, TIMXE, TIMAA, TIMK
 #endif
 
 * external functions
@@ -176,6 +181,7 @@ c /* deck cc_hyppol */
       MXEATRAN = MXDIM_XEVEC  * MXTRAN
       MXR2TRAN = 1 * MXTRAN
       MXXETRAN = MXDIM_XEVEC  * MXTRAN
+      MXKTRAN  = MXDIM_KTRAN  * MXTRAN
 
       MXGDOTS  = MXVEC * MXTRAN
       MXFDOTS  = MXVEC * MXTRAN
@@ -185,6 +191,7 @@ c /* deck cc_hyppol */
       MXR2DOTS = MXVEC * MXTRAN
       MXXEDOTS = MXVEC * MXTRAN
       MXAADOTS = MXVEC * MXTRAN
+      MXKDOTS  = MXVEC * MXTRAN
 
       KHYPPOL = 1
       KGTRAN  = KHYPPOL + 2 * NBHYPPOL
@@ -196,7 +203,10 @@ c /* deck cc_hyppol */
       KBTRAN  = KFCONS  + MXFDOTS
       KBDOTS  = KBTRAN  + MXBTRAN
       KBCONS  = KBDOTS  + MXBDOTS
-      KFATRAN = KBCONS  + MXBDOTS
+      KKTRAN  = KBCONS  + MXBDOTS
+      KKDOTS  = KKTRAN  + MXKTRAN
+      KKCONS  = KKDOTS  + MXKDOTS
+      KFATRAN = KKCONS  + MXKDOTS
       KFADOTS = KFATRAN + MXFATRAN
       KFACONS = KFADOTS + MXFADOTS
       KEATRAN = KFACONS + MXFADOTS
@@ -229,6 +239,7 @@ c /* deck cc_hyppol */
      &                WORK(KGTRAN), WORK(KGDOTS), NGTRAN,
      &                WORK(KFTRAN), WORK(KFDOTS), NFTRAN,
      &                WORK(KBTRAN), WORK(KBDOTS), NBTRAN,
+     &                WORK(KKTRAN), WORK(KKDOTS), NKTRAN,
      &                WORK(KFATRAN),WORK(KFADOTS),NFATRAN,
      &                WORK(KAATRAN),WORK(KAADOTS),NAATRAN,
      &                WORK(KEATRAN),WORK(KEADOTS),NEATRAN,
@@ -239,6 +250,7 @@ c /* deck cc_hyppol */
 *---------------------------------------------------------------------*
 * calculate G matrix contributions:
 *---------------------------------------------------------------------*
+
       TIM1 = SECOND()
 
       IOPT = 5
@@ -273,6 +285,25 @@ c /* deck cc_hyppol */
 
       ELSE
         TIMB = 0.0d0
+      END IF
+*---------------------------------------------------------------------*
+* calculate K matrix contributions:
+*---------------------------------------------------------------------*
+      IF (CCSLV) THEN
+        TIM1 = SECOND()
+
+        IOPT = 5
+        CALL CC_KMATRIX(WORK(KKTRAN),NKTRAN,'L1 ','L1 ',IOPT,'R1 ',
+     &               WORK(KKDOTS),WORK(KKCONS),MXVEC,WORK(KEND0),LEND0)
+
+        TIMK = SECOND() - TIM1
+
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &   '>>> Time used for',NKTRAN,' K matrix transformations:',TIMK
+        CALL FLSHFO(LUPRI)
+
+      ELSE
+        TIMK = 0.0d0
       END IF
 
 *---------------------------------------------------------------------*
@@ -476,8 +507,31 @@ c    &                 WORK(KEND0), LEND0 )
      &                0,IOPERC,IKAPC,ITAMPA,ITAMPB,ITRAN,IVEC)
         FACON3 = WORK(KFACONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-*---------------------------------------------------------------------*
+C--------------------------------------------------------------------*
+C     K-Matrix contribution:
+C--------------------------------------------------------------------*
+C
+        IF (CCSLV) THEN
+          CALL CC_SETB11(WORK(KKTRAN),WORK(KKDOTS),NKTRAN,MXVEC,
+     &                   ITAMPA,IZETVB,IZETVC,ITRAN,IVEC)
 
+          SLVKCON1 = WORK(KKCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+
+          CALL CC_SETB11(WORK(KKTRAN),WORK(KKDOTS),NKTRAN,MXVEC,
+     &                   ITAMPB,IZETVC,IZETVA,ITRAN,IVEC)
+          SLVKCON2 = WORK(KKCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+
+          CALL CC_SETB11(WORK(KKTRAN),WORK(KKDOTS),NKTRAN,MXVEC,
+     &                   ITAMPC,IZETVA,IZETVB,ITRAN,IVEC)
+          SLVKCON3 = WORK(KKCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        ELSE
+           SLVKCON1 = 0.0d0
+           SLVKCON2 = 0.0d0
+           SLVKCON3 = 0.0d0
+        END IF
+C
+C---------------------------------------------------------------------*
+C
         IF ( USEBTRAN .AND. (.NOT.USE_R2) ) THEN
           CALL CC_SETB11(WORK(KBTRAN),WORK(KBDOTS),NBTRAN,MXVEC,
      &                   IZETVA,ITAMPB,ITAMPC,ITRAN,IVEC)
@@ -674,6 +728,7 @@ c    &                 WORK(KEND0), LEND0 )
      &         FACON1 + FACON2 + FACON3 +
      &         FCON1  + FCON2  + FCON3  +
      &         BCON1  + BCON2  + BCON3  +
+     &         SLVKCON1  + SLVKCON2  + SLVKCON3  +
      &         R2CON1 + R2CON2 + R2CON3 +
      &         EACON1 + EACON2 + EACON3 + EACON4 + EACON5 + EACON6 +
      &         E2CON1 + E2CON2 + E2CON3 + X2CON1 + X2CON2 + X2CON3
@@ -689,6 +744,7 @@ c    &                 WORK(KEND0), LEND0 )
          WRITE(LUPRI,*) 'FACON:',FACON1,FACON2,FACON3
          WRITE(LUPRI,*) 'FCON :',FCON1,FCON2,FCON3
          WRITE(LUPRI,*) 'BCON :',BCON1,BCON2,BCON3
+         WRITE(LUPRI,*) 'SLVKCON :',SLVKCON1,SLVKCON2,SLVKCON3
          WRITE(LUPRI,*) 'EACON:',EACON1,EACON2,EACON3,
      &                           EACON4,EACON5,EACON6
          WRITE(LUPRI,*) 'E2CON:',E2CON1,E2CON2,E2CON3
@@ -1660,19 +1716,31 @@ c /* deck ccqhypprt */
       CHARACTER*15  BLANKS
       CHARACTER*10 RLXA, RLXB, RLXC
       CHARACTER*80 STRING
+      CHARACTER*8 BETALAB
       INTEGER ISYMA, ISYMB, ISYMC, ISAMA, ISAMB, ISAMC, ISAPROP
-      INTEGER IFREQ, IOPER, ICMP
+      INTEGER IFREQ, IOPER, ICMP, I, J, K, L
 
 
 #if defined (SYS_CRAY)
       REAL HYPERPOL(NQRFREQ,NQROPER,2)
-      REAL HALF, ONE, SIGN, BETA, PROP, ERROR
+      REAL HALF, ONE, SIGN, BETA, PROP, ERROR, THIRD, ZERO
+      REAL FACTOR
+      REAL BETANEW(NQRFREQ,3,3,3)
+      REAL MEANBETA, MUBETANORM, MU_DOT_BETA
+      REAL BETAVEC(3), MUBETA(3)
 #else
       DOUBLE PRECISION HYPERPOL(NQRFREQ,NQROPER,2)
-      DOUBLE PRECISION HALF, ONE, SIGN, BETA, PROP, ERROR
+      DOUBLE PRECISION HALF, ONE, SIGN, BETA, PROP, ERROR, THIRD, ZERO
+      DOUBLE PRECISION FACTOR
+      DOUBLE PRECISION BETANEW(NQRFREQ,3,3,3)
+      DOUBLE PRECISION MEANBETA, MUBETANORM, MU_DOT_BETA
+      DOUBLE PRECISION BETAVEC(3), MUBETA(3)
 #endif
-      PARAMETER (HALF = 0.5d0, ONE = 1.0d0)
+      PARAMETER (HALF = 0.5d0, ONE = 1.0d0, THIRD = 1.0d0/3.0d0)
+      PARAMETER (ZERO = 0.0d0, FACTOR = 1.0d0/6.0d0)
 
+      CHARACTER*10  MODEL
+      INTEGER ISYMAB,ISYMABC
 *---------------------------------------------------------------------*
 * print header for first hyperpolarizabilities: 
 *---------------------------------------------------------------------*
@@ -1691,6 +1759,11 @@ c /* deck ccqhypprt */
          CALL QUIT('CCQHYPPRT called for an unkown '//
      &             'Coupled Cluster model.')
       END IF
+      IF (CCSD) MODEL = 'CCSD'
+      IF (CIS) MODEL  = 'CIS'
+      IF (CCS) MODEL  = 'CCS'
+      IF (CC2) MODEL  = 'CC2'
+      IF (CC3) MODEL  = 'CC3'
 
       IF (IPRQHYP.GT.5) THEN
        WRITE(LUPRI,'(/1X,3(1X,A," operator",17X),4X,A,6X,A,/,130("-"))')
@@ -1769,7 +1842,13 @@ c /* deck ccqhypprt */
      &        '---'
            END IF
          END IF
-
+         ISYMAB  = MULD2H(ISYMA,ISYMB)
+         ISYMABC = MULD2H(ISYMAB,ISYMC)
+         CALL CC_PRPC(PROP,MODEL,3,
+     &                LBLOPR(IAQROP(IOPER)),LBLOPR(IBQROP(IOPER)),
+     &                LBLOPR(ICQROP(IOPER)),LBLOPR(ICQROP(IOPER)),
+     &                BQRFR(IFREQ),CQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     &                0,0,0)
          DO IFREQ = 2, NQRFREQ
            IF (MULD2H(ISYMA,ISYMB).EQ.ISYMC) THEN
 
@@ -1786,6 +1865,11 @@ c /* deck ccqhypprt */
      &           AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), PROP
              END IF
            END IF
+          CALL CC_PRPC(PROP,MODEL,3,
+     &                  LBLOPR(IAQROP(IOPER)),LBLOPR(IBQROP(IOPER)),
+     &                  LBLOPR(ICQROP(IOPER)),LBLOPR(ICQROP(IOPER)),
+     &                  BQRFR(IFREQ),CQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     &                  0,0,0)
          END DO
 
       END DO
@@ -1810,8 +1894,13 @@ c /* deck ccqhypprt */
 
        WRITE(LUPRI,'(/1X,A8,3X,3(F7.4,2X),G16.8)')
      &   ' beta_||', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
-    
-
+C
+       BETALAB='beta_|| '
+       CALL CC_PRPC(BETA,MODEL,3,
+     *                BETALAB,BETALAB,BETALAB,BETALAB,
+     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                0,0,0)
+C
        DO IFREQ = 2, NQRFREQ
         BETA = -0.3d0*(HYPERPOL(IFREQ,1,1)+HYPERPOL(IFREQ,1,2))
         IF (XY_DEGENERAT) THEN
@@ -1828,6 +1917,13 @@ c /* deck ccqhypprt */
 
         WRITE(LUPRI,'(1X,A8,3X,3(F7.4,2X),G16.8)')
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
+C
+       BETALAB='beta_|| '
+       CALL CC_PRPC(BETA,MODEL,3,
+     *                BETALAB,BETALAB,BETALAB,BETALAB,
+     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                0,0,0)
+C
        END DO
    
 * calculate & print beta^K:
@@ -1848,8 +1944,13 @@ c /* deck ccqhypprt */
 
        WRITE(LUPRI,'(/1X,A8,3X,3(F7.4,2X),G16.8)')
      &   ' beta^K ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
-    
-
+C
+       BETALAB='beta^K  '
+       CALL CC_PRPC(BETA,MODEL,3,
+     *                BETALAB,BETALAB,BETALAB,BETALAB,
+     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                0,0,0)
+C
        DO IFREQ = 2, NQRFREQ
         BETA = -0.3d0*(HYPERPOL(IFREQ,1,1)+HYPERPOL(IFREQ,1,2))
         BETA = BETA + 0.15d0*(HYPERPOL(IFREQ,2,1)+HYPERPOL(IFREQ,2,2))
@@ -1867,6 +1968,13 @@ c /* deck ccqhypprt */
 
         WRITE(LUPRI,'(1X,A8,3X,3(F7.4,2X),G16.8)')
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
+C
+        BETALAB='beta^K  '
+        CALL CC_PRPC(BETA,MODEL,3,
+     *                 BETALAB,BETALAB,BETALAB,BETALAB,
+     *                 AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                 0,0,0)
+C
        END DO
    
 
@@ -1888,8 +1996,13 @@ c /* deck ccqhypprt */
 
        WRITE(LUPRI,'(/1X,A8,3X,3(F7.4,2X),G16.8)')
      &   ' beta_|_', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
-    
-
+C
+       BETALAB='beta_|_ '
+       CALL CC_PRPC(BETA,MODEL,3,
+     *                BETALAB,BETALAB,BETALAB,BETALAB,
+     *                AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                0,0,0)
+C
        DO IFREQ = 2, NQRFREQ
         BETA = -0.1d0*(HYPERPOL(IFREQ,1,1)+HYPERPOL(IFREQ,1,2))
         BETA = BETA - 0.2d0*(HYPERPOL(IFREQ,2,1)+HYPERPOL(IFREQ,2,2))
@@ -1905,6 +2018,13 @@ c /* deck ccqhypprt */
 
         WRITE(LUPRI,'(1X,A8,3X,3(F7.4,2X),G16.8)')
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
+C
+        BETALAB='beta_|_ '
+        CALL CC_PRPC(BETA,MODEL,3,
+     *                 BETALAB,BETALAB,BETALAB,BETALAB,
+     *                 AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                 0,0,0)
+C
        END DO
    
 * calculate & print beta_ms:
@@ -1925,6 +2045,13 @@ c /* deck ccqhypprt */
 
        WRITE(LUPRI,'(/1X,A11,3(F7.4,2X),G16.8)')
      &   ' beta_ms   ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
+C
+        BETALAB='beta_ms '
+        CALL CC_PRPC(BETA,MODEL,3,
+     *                 BETALAB,BETALAB,BETALAB,BETALAB,
+     *                 AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                 0,0,0)
+C
     
 
        DO IFREQ = 2, NQRFREQ
@@ -1942,8 +2069,202 @@ c /* deck ccqhypprt */
 
         WRITE(LUPRI,'(1X,A8,3X,3(F7.4,2X),G16.8)')
      &    '        ', AQRFR(IFREQ), BQRFR(IFREQ), CQRFR(IFREQ), BETA
+C
+         BETALAB='beta_ms '
+         CALL CC_PRPC(BETA,MODEL,3,
+     *                  BETALAB,BETALAB,BETALAB,BETALAB,
+     *                  AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                  0,0,0)
+C
        END DO
-   
+      END IF
+C-----------------------------------------------------------------------
+C     June 04: AO+JK
+C     .AVANEW in input block *CCQR -> LAVANEW =.TRUE.
+C     Calculates:
+C     i)   Beta_i; i=x,y,z
+C     ii)  Mu_i*Beta_i -> |Mu*Beta|
+C     iii) <Beta>
+C-----------------------------------------------------------------------
+C
+      IF (LAVANEW) THEN
+C
+        BLANKS = '               '
+        STRING = '   AVERAGES FOR SECOND HARMONIC GENERATION   '
+C
+        IF (CCS) THEN
+           CALL AROUND120( BLANKS//'FINAL CCS'//STRING(1:45)//BLANKS )
+        ELSE IF (CC2) THEN
+           CALL AROUND120( BLANKS//'FINAL CC2'//STRING(1:45)//BLANKS )
+        ELSE IF (CCSD) THEN
+           CALL AROUND120( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
+        ELSE
+           CALL QUIT('CCQHYPPRT called for an unkown '//
+     &             'Coupled Cluster model.')
+        END IF
+C
+C----------------------------------
+C       Reset BETANEW(IFREQ,I,J,K):
+C----------------------------------
+C
+        DO IFREQ=1,NQRFREQ
+          DO I=1,3
+            DO J=1,3
+              DO K=1,3
+                BETANEW(IFREQ,I,J,K) = ZERO
+              END DO
+            END DO
+          END DO
+        END DO
+C
+C---------------------------------------
+C       Rearrange the components of beta
+C---------------------------------------
+C
+        WRITE(LUPRI,'(/////20X,A)')
+     *  '+----------+----------+----------+----------+----------+'
+        WRITE(LUPRI,'(20X,A)')
+     *  '| Property:| Freq_A:  | Freq_B:  | Freq_C:  | Value:   |'
+        WRITE(LUPRI,'(20X,A)')
+     *  '|----------+----------+----------+----------+----------|'
+        WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *  '| ','Dipole_x',' | ',ZERO,' | ',ZERO,' | ',ZERO,' | ',
+     *  DIPSAVE(1),' |'
+        WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *  '| ','Dipole_y',' | ',ZERO,' | ',ZERO,' | ',ZERO,' | ',
+     *  DIPSAVE(2),' |'
+        WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *  '| ','Dipole_z',' | ',ZERO,' | ',ZERO,' | ',ZERO,' | ',
+     *  DIPSAVE(3),' |'
+        WRITE(LUPRI,'(20X,A)')
+     *  '|----------+----------+----------+----------+----------|'
+C
+        L = 0
+        DO I = 1, 3
+          DO J = 1, 3
+            DO K = 1, 3
+              L = L + 1
+              ISAMA = ISYMAT(IAQROP(L))
+              ISAMB = ISYMAT(IBQROP(L))
+              ISAMC = ISYMAT(ICQROP(L))
+              ISYMA = ISYOPR(IAQROP(L))
+              ISYMB = ISYOPR(IBQROP(L))
+              ISYMC = ISYOPR(ICQROP(L))
+              ISYMAB  = MULD2H(ISYMA,ISYMB)
+              ISYMABC = MULD2H(ISYMAB,ISYMC)
+              ISAPROP = ISAMA * ISAMB * ISAMC
+              SIGN = DBLE(ISAPROP)
+              IF (ISAPROP .EQ. 0) SIGN = +ONE
+              DO IFREQ = 1, NQRFREQ
+                BETANEW(IFREQ,I,J,K) = -HALF*(HYPERPOL(IFREQ,L,1)
+     *                               +  SIGN * HYPERPOL(IFREQ,L,2))
+              END DO
+            END DO
+          END DO
+        END DO
+C
+C
+C----------------------------------------------------------------
+C         Calculate the components of the beta_i; i=x,y,z vector:
+C----------------------------------------------------------------
+C
+        DO IFREQ = 1, NQRFREQ
+          MUBETANORM = ZERO
+          MU_DOT_BETA= ZERO
+          MEANBETA   = ZERO
+          DO I = 1, 3
+            BETAVEC(I) = ZERO
+            MUBETA(I)  = ZERO
+            DO J = 1, 3
+              BETAVEC(I) = BETAVEC(I) + THIRD * (BETANEW(IFREQ,I,J,J) + 
+     *                     BETANEW(IFREQ,J,J,I) + BETANEW(IFREQ,J,I,J))
+            END DO
+              MUBETA(I)  = DIPSAVE(I) * BETAVEC(I) 
+C
+            IF (I .EQ. 1) BETALAB='beta_x  '
+            IF (I .EQ. 2) BETALAB='beta_y  '
+            IF (I .EQ. 3) BETALAB='beta_z  '
+C
+            WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *                  '| ',BETALAB,' | ',AQRFR(IFREQ),' | ',
+     *                  BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
+     *                  BETAVEC(I),' |'
+C
+            CALL CC_PRPC(BETAVEC(I),MODEL,3,
+     *                   BETALAB,BETALAB,BETALAB,BETALAB,
+     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                   0,0,0)
+C 
+          END DO
+C
+          WRITE(LUPRI,'(20X,A)')
+     *    '+----------+----------+----------+----------+----------+'
+C
+          DO I = 1, 3
+            MUBETANORM = MUBETANORM + MUBETA(I)*MUBETA(I)
+            MU_DOT_BETA= MU_DOT_BETA+ MUBETA(I)
+            IF (I .EQ. 1) BETALAB='mu*bet_x'
+            IF (I .EQ. 2) BETALAB='mu*bet_y'
+            IF (I .EQ. 3) BETALAB='mu*bet_z'
+            WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *                  '| ',BETALAB,' | ',AQRFR(IFREQ),' | ',
+     *                  BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
+     *                  MUBETA(I),' |' 
+C
+            CALL CC_PRPC(MUBETA(I),MODEL,3,
+     *                   BETALAB,BETALAB,BETALAB,BETALAB,
+     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                   0,0,0)
+          END DO
+C
+          WRITE(LUPRI,'(20X,A)')
+     *    '+----------+----------+----------+----------+----------+'
+C
+          BETALAB = ' mu*bet '
+          WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *                '| ',BETALAB,' | ',AQRFR(IFREQ),' | ',
+     *                BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
+     *                MU_DOT_BETA,' |'
+C
+            CALL CC_PRPC(MU_DOT_BETA,MODEL,3,
+     *                   BETALAB,BETALAB,BETALAB,BETALAB,
+     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                   0,0,0)
+C
+          WRITE(LUPRI,'(20X,A)')
+     *    '+----------+----------+----------+----------+----------+'
+          MUBETANORM = SQRT(MUBETANORM)
+          BETALAB = '|mu*bet|'
+          WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *                '| ',BETALAB,' | ',AQRFR(IFREQ),' | ',
+     *                BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
+     *                MUBETANORM,' |'
+C
+            CALL CC_PRPC(MUBETANORM,MODEL,3,
+     *                   BETALAB,BETALAB,BETALAB,BETALAB,
+     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                   0,0,0)
+C
+          WRITE(LUPRI,'(20X,A)')
+     *    '+----------+----------+----------+----------+----------+'
+          MEANBETA   = FACTOR * ( BETANEW(IFREQ,1,2,3) -
+     *                 BETANEW(IFREQ,1,3,2) + BETANEW(IFREQ,2,3,1) -
+     *                 BETANEW(IFREQ,2,1,3) + BETANEW(IFREQ,3,1,2) -
+     *                 BETANEW(IFREQ,3,2,1) )
+          BETALAB = '<beta>  '
+          WRITE(LUPRI,'(20X,A,A,A,F8.4,A,F8.4,A,F8.4,A,F8.4,A)')
+     *                '| ',BETALAB,' | ',AQRFR(IFREQ),' | ',
+     *                BQRFR(IFREQ),' | ',CQRFR(IFREQ),' | ',
+     *                MEANBETA,' |'
+C
+            CALL CC_PRPC(MEANBETA,MODEL,3,
+     *                   BETALAB,BETALAB,BETALAB,BETALAB,
+     *                   AQRFR(IFREQ),BQRFR(IFREQ),CQRFR(IFREQ),ISYMABC,
+     *                   0,0,0)
+C
+          WRITE(LUPRI,'(20X,A)')
+     *    '+----------+----------+----------+----------+----------+'
+        END DO
       END IF
 
       WRITE(LUPRI,'(//,102("-"),///)')

@@ -4,15 +4,15 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -38,7 +38,7 @@ C  /* Deck nmdinp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER (NDIR=3,NTABLE = 18)
+      PARAMETER (NDIR=3,NTABLE = 19)
       CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7,
      &          TABDIR(NDIR)*7, WORD1*7
 #include <numder.h>
@@ -54,7 +54,7 @@ C
       DATA TABLE /'.DORDR ', '.SYMMET', '.SDRTST', '.RESTRT', '.DRYRUN',
      *            '.XXXXXX', '.NORMAL', '.PRECAL', '.REUSE ', '.XXXXXX',
      *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ',
-     *            '.MANUAL', '.HARMON', '.SPECTR'/
+     *            '.MANUAL', '.HARMON', '.SPECTR', '.MIDAS '/
 C
 C     *** Initializing variables for *VIBANA and *HARMON. ***
       CALL NVBINI
@@ -80,7 +80,8 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
+     *          I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -157,6 +158,9 @@ C
             GOTO 100
  18      CONTINUE
             SPECTR = .TRUE.
+            GOTO 100
+ 19      CONTINUE
+            MIDAS  = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
@@ -888,8 +892,8 @@ C
          LWRK   = LWORK - KLAST + 1
 C
          CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &        CSTART,WORK(KTTMPD),WORK(KFTMPD),WORK(KLAST),ICRIRP,LWRK,
-     &        NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
+     &       CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),ICRIRP,
+     &       LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
 C
          IF (SDRTST) THEN
             KTMPGD = IWOFF + 2
@@ -1036,6 +1040,16 @@ C
                CALL WRISPC(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,
      &                     NTIME,IPRINT)
             END IF
+            IF (MIDAS) THEN
+               NTIME = 1
+               IF (NRMCRD) THEN
+                  TXT  = 'normal'
+               ELSE
+                  TXT  = 'cartes'
+               END IF
+               CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,
+     &                     NTIME,IPRINT)
+            END IF
          ELSE
 C
 C           *** Open restart file. A 1 first in the file ***
@@ -1110,8 +1124,8 @@ C
             LWRK   = LWORK - KLAST + 1
 C
             CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &           CSTART,WORK(KTTMPD),WORK(KFTMPD),WORK(KLAST),ICRIRP,
-     &           LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
+     &           CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),
+     &           ICRIRP,LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
 C
 C           *** Isotope analysis. ***
 C
@@ -3709,6 +3723,16 @@ C
          CALL WRISPC(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,NTIME,
      &               IPRINT)
       END IF
+      IF (MIDAS) THEN
+         NTIME = 1
+         IF (NRMCRD) THEN
+            TXT  = 'normal'
+         ELSE
+            TXT  = 'cartes'
+         END IF
+         CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,NTIME,
+     &               IPRINT)
+      END IF
 C
 C     *** Test printing. ***
 C
@@ -3972,8 +3996,8 @@ C
 C
 C     /*Deck prderv*/
       SUBROUTINE PRDERV(TDER,FDER,TSTGDR,TSTSDR,SYMCOR,CSTART,TTMPDR,
-     &                  FTMPDR,WORK,ICRIRP,LWORK,NPRRDR,NDIMT,NDIMF,
-     &                  LTXT,IPRINT,TEXT)
+     &                  FTMPDR,RNNORM,WORK,ICRIRP,LWORK,NPRRDR,NDIMT,
+     &                  NDIMF,LTXT,IPRINT,TEXT)
 C     ***************************************************************
 C     **** This routine prints out the derivatives of the energy ****
 C     **** to NPRRDR order. These are done in 'TEXT' coordinates ****
@@ -3998,6 +4022,7 @@ C
       DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), CSTART(NCOOR),
      &          TSTSDR(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR),
      &          TTMPDR(NCOOR,NCOOR,NCOOR),
+     &          RNNORM(NCOOR),
      &          FTMPDR(NCOOR,NCOOR,NCOOR,NCOOR), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2)
 C
@@ -4124,6 +4149,11 @@ C
       IF (SPECTR) THEN
          NTIME = 2
          CALL WRISPC(DUMMY,DUMMY,TTMPDR,FTMPDR,TEXT(1:6),NCOOR,NDCOOR,
+     &               NTIME,IPRINT)
+      END IF
+      IF (MIDAS) THEN
+         NTIME = 2
+         CALL WRIMOP(DUMMY,RNNORM,TTMPDR,FTMPDR,TEXT(1:6),NCOOR,NDCOOR,
      &               NTIME,IPRINT)
       END IF
 C
@@ -6954,3 +6984,179 @@ C
       RETURN
       END
 
+C
+C
+C     /* Deck wrispc */
+      SUBROUTINE WRIMOP(FREQ,RNNORM,QUBIC,QUARTC,TXT,NCOOR,NDCOOR,NTIME,
+     &                  IPRINT)
+**************************************************************
+*** Writes nescesary information to DALTON.MOP :           ***
+*** An operator file to be read in by MidasCpp             ***
+*** Ove Christiansen based on Torgeirs WRISPC 
+**************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      CHARACTER*6 TXT
+      DIMENSION FREQ(NCOOR), RNNORM(NCOOR), QUBIC(NCOOR,NCOOR,NCOOR),
+     &          QUARTC(NCOOR,NCOOR,NCOOR,NCOOR)
+      LOGICAL USESYM
+      USESYM = .TRUE. 
+
+C
+C     *** Open DALTON.MOP file. ***
+C
+      LMIDAS = 0
+      CALL GPOPEN(LMIDAS,'DALTON.MOP','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+C     *** NTIME = 1 -> write the frequencies and norm of ***
+C     ***              the normal coordinates.           ***
+C     *** NTIME = 2 -> write the qubic and quartic force ***
+C     ***              field.                            ***
+C
+      FAC = 0.5D0
+      IF (NTIME .EQ. 1) THEN
+C
+C        *** Forwarding to the end of the file if necesary. ***
+C
+         IF (TXT(1:6).EQ.'cartes') THEN
+            KTOT = (NCOOR**3 + 1) + (NCOOR**4 + 1) + 1
+            DO I = 1, KTOT
+               READ(LMIDAS,*)
+            END DO
+         ELSE
+C           WRITE (LMIDAS,*) TXT(1:6)
+            WRITE (LMIDAS,*) "DALTON_FOR_MIDAS "
+         END IF
+C
+C        *** Writing frequencies. ***
+C
+C        WRITE (LMIDAS,*) 'Frequencies'
+         DO I = 1, NDCOOR
+            WRITE (LMIDAS,'(E23.16,2(1X,I5))') 
+     *            FAC*FREQ(I)*FREQ(I),I,I 
+c            WRITE (LMIDAS,'(F18.10)') FREQ(I)
+         END DO
+C
+C        *** Writing norm of normal coordinates. ***
+C
+C         WRITE (LMIDAS,*) 'Coordinate norm'
+C         DO I = 1, NDCOOR
+C            WRITE (LMIDAS,'(E23.16)') RNNORM(I)
+C         END DO
+      ELSE IF (NTIME .EQ. 2) THEN
+C
+C        *** Forwarding to the end of the file if necesary. ***
+
+         IF (TXT(1:6).EQ.'normal') THEN
+            KTOT = NDCOOR + 1
+            DO I = 1, KTOT
+               READ(LMIDAS,*)
+            END DO
+         ELSE
+            WRITE (LMIDAS,*) TXT(1:6)
+         END IF
+C
+C        *** Writing cubic force field. ***
+C        Note scaling with norms and symmetry factors!
+C
+C         WRITE (LMIDAS,*) 'Cubic force field'
+         IF (.NOT.USESYM) THEN 
+            FAC=1.0D0/6.0D0
+            DO 100 K = 1, NDCOOR
+            DO 100 J = 1, NDCOOR
+            DO 100 I = 1, NDCOOR
+               WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+     *           FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K), I, J, K
+ 100        CONTINUE
+C
+C           *** Writing quartic force field. ***
+C
+C           WRITE (LMIDAS,*) 'Quartic force field'
+            FAC=1.0D0/24.0D0
+            DO 200 L = 1, NDCOOR
+            DO 200 K = 1, NDCOOR
+            DO 200 J = 1, NDCOOR
+            DO 200 I = 1, NDCOOR
+               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *          FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
+     *           RNNORM(K)*RNNORM(L)
+     *          ,I, J, K, L
+ 200        CONTINUE
+         ELSE 
+C one mode 
+            FAC=1.0D0/6.0D0
+            DO 110 I = 1, NDCOOR
+               WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+     *           FAC*QUBIC(I,I,I)*RNNORM(I)*RNNORM(I)*RNNORM(I), I, I, I
+ 110        CONTINUE
+            FAC=1.0D0/24.0D0
+            DO 210 I = 1, NDCOOR
+               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *           FAC*QUARTC(I,I,I,I)*RNNORM(I)*RNNORM(I)*
+     *           RNNORM(I)*RNNORM(I),I,I,I,I
+ 210        CONTINUE
+C two mode coupling
+            FAC=1.0D0/2.0D0
+            DO 120 J = 1, NDCOOR 
+            DO 120 I = 1, NDCOOR 
+               IF (I.NE.J)
+     *         WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+     *           FAC*QUBIC(I,J,J)*RNNORM(I)*RNNORM(J)*RNNORM(J), I, J, J
+ 120        CONTINUE
+            FAC=1.0D0/4.0D0
+            DO 220 J = 1, NDCOOR 
+            DO 220 I = 1, J-1 
+               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *           FAC*QUARTC(I,I,J,J)*RNNORM(I)*RNNORM(I)*
+     *           RNNORM(J)*RNNORM(J), I, I, J, J
+ 220        CONTINUE
+            FAC=1.0D0/6.0D0
+            DO 221 J = 1, NDCOOR 
+            DO 221 I = 1, NDCOOR 
+               IF (I.NE.J)
+     *         WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *           FAC*QUARTC(I,J,J,J)*RNNORM(I)*RNNORM(J)*
+     *           RNNORM(J)*RNNORM(J), I, J, J, J
+ 221        CONTINUE
+C three mode coupling
+            FAC=1.0D0
+            DO 130 K = 1, NDCOOR
+            DO 130 J = 1, K-1
+            DO 130 I = 1, J-1
+               WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+     *            FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K), 
+     *            I, J, K
+ 130        CONTINUE
+            FAC=1.0D0/2.0D0
+            DO 230 K = 1, NDCOOR
+            DO 230 J = 1, K-1
+            DO 230 I = 1, NDCOOR
+               IF ((I.NE.J).AND.(I.NE.K))
+     *            WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *             FAC*QUARTC(I,I,J,K)*RNNORM(I)*RNNORM(I)*
+     *             RNNORM(J)*RNNORM(K), I, I, J, K
+ 230        CONTINUE
+C
+C           *** Writing quartic force field. ***
+C
+C four mode coupling
+            FAC=1.0D0
+            DO 240 L = 1, NDCOOR
+            DO 240 K = 1, L-1
+            DO 240 J = 1, K-1
+            DO 240 I = 1, J-1
+               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *          FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
+     *           RNNORM(K)*RNNORM(L)
+     *          ,I, J, K, L
+ 240        CONTINUE
+         END IF
+      END IF
+C
+C     *** CLOSING FILE. ***
+C
+      CALL GPCLOSE(LMIDAS,'KEEP')
+C
+      RETURN
+      END

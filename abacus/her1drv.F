@@ -1103,6 +1103,7 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
@@ -1118,18 +1119,37 @@ C
 C     Dipole moment
 C
       CALL DZERO(DIPMN,3)
-      DO 100 IATOM = 1, NUCIND
-         CHA = CHARGE(IATOM)
-         IF (ABS(CHA) .LT. D100) THEN
+C
+      IF (.NOT. QM3) THEN 
+        DO 100 IATOM = 1, NUCIND
+          CHA = CHARGE(IATOM)
+          IF (ABS(CHA) .LT. D100) THEN
             FAC = FMULT(ISTBNU(IATOM))*CHA
             DO 200 ICOOR = 1, 3
-               IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
-                  DIPMN(ICOOR) = DIPMN(ICOOR) 
-     &                         + FAC*(CORD(ICOOR,IATOM) - DIPORG(ICOOR))
-               END IF
+              IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
+                 DIPMN(ICOOR) = DIPMN(ICOOR) 
+     &                        + FAC*(CORD(ICOOR,IATOM) - DIPORG(ICOOR))
+              END IF
   200       CONTINUE
-         END IF
-  100 CONTINUE
+          END IF
+  100   CONTINUE
+      ELSE
+        DO 101 IATOM = 1, NUCIND
+          IF ( (ISUBSY(IATOM) .EQ. 0) .AND.  
+     &      (ISUBSI(IATOM) .LE. NSISY(0)) )THEN
+            CHA = CHARGE(IATOM)
+            IF (ABS(CHA) .LT. D100) THEN
+              FAC = FMULT(ISTBNU(IATOM))*CHA
+              DO 201 ICOOR = 1, 3
+                IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
+                  DIPMN(ICOOR) = DIPMN(ICOOR)
+     &                         + FAC*(CORD(ICOOR,IATOM) - DIPORG(ICOOR))
+                END IF
+ 201          CONTINUE
+            END IF
+          END IF
+ 101    CONTINUE
+      END IF
 C
 C     Dipole moment gradient
 C

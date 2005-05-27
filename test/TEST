@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh    
 #########################################################################
 #
 # Shell script for running DALTON test suite
@@ -59,9 +59,14 @@ rsp_esr2 rsp_mnfphosph rsp_solvesr walk_polar2"
 #
 MEDIUMCC="cc_rsp_alpha cc_rsp_gamma2 cc_rsp_gammadirect cc_rsp_oddisp \
 cc_energy_triplet cc_rsp_twophotdirect cc_grad2 cc_grad3 cc_geoopt \
-cc_rsp_solv cc_energy_triplet3"
+cc_rsp_solv cc_energy_triplet3 cc2dc_energy cc2dc_resp cc2dc_exci cc2dc_resp_newlr \
+cc_beta_solv" 
 #
-MEDIUM="$MEDIUM $MEDIUMCC"
+QM3="ccsdmm_spc_fop cc2mm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
+ccsdmm_ec3_fop ccsdmm_e01_fop ccsdmm_modelmix cc2mm_exci \
+cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta"
+#
+MEDIUM="$MEDIUM $MEDIUMCC $QM3"
 #
 LONG="geoopt_prop3 prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
 #
@@ -246,6 +251,8 @@ while [ -n "$1" ]; do
    testcase="$testcase $BENCHMARK"; shift ;;
    "numder" )
    testcase="$testcase $NUMDER"; shift ;;
+   "qm3" )
+   testcase="$testcase $QM3"; shift ;;
    * )
    testcase="$testcase $1"; shift ;;
    esac
@@ -332,6 +339,7 @@ do
               myprint "-----------------------------------------------------------"
           fi
           molfile=$item
+          potfile=$item
 	  cp $item'__'$step'.dal' $item'.dal'
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
@@ -340,6 +348,7 @@ do
           moldenfile=./$item'__'$step'_'$item.molden
       else
           molfile=$item
+          potfile=$item
           dalfile=$item
 	  if [ "$multi" -eq 0 ]; then
              logfile=./$item.log
@@ -379,10 +388,10 @@ do
       else
           failed=false
           if [ "$step" -eq "$numsteps" ]; then
-              $DALTON $paramlist -ext log $dalfile $molfile > "$tmpfile"
+              $DALTON $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           else
-              $DALTON -D $paramlist -ext log $dalfile $molfile  > "$tmpfile"
+              $DALTON -D $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           fi
           grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
@@ -452,6 +461,7 @@ do
   if [ "$trouble" -eq 0 ]; then
       if [ "$keep" = "false" ]; then
           rm -f $molfile.mol
+          rm -f $potfile.pot
       fi
   fi
 done

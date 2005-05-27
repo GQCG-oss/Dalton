@@ -4,15 +4,15 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -475,11 +475,15 @@ c /* deck cctpaprt */
 #if defined (SYS_CRAY)
       REAL TRANMOM(2,NOPPAIRS,NTRANSIT)
       REAL ZERO, THIRTY, DELTAF, DELTAG, DELTAH
+      REAL DELTA_TPlpa, DELTA_TPlpe, DELTA_TPc
+      REAL AUTIME, K_1, K_2, K_3, K_lpa, K_lpe, K_c
       REAL SMFREQ, EIGV, SIGN, STRN, TMF0, TM0F
       REAL DIPLEN(3,3,2)
 #else
       DOUBLE PRECISION TRANMOM(2,NOPPAIRS,NTRANSIT)
-      DOUBLE PRECISION ZERO, THIRTY, DELTAF, DELTAG, DELTAH
+      DOUBLE PRECISION ZERO, THIRTY, DELTAF, DELTAG, DELTAH 
+      DOUBLE PRECISION DELTA_TPlpa, DELTA_TPlpe, DELTA_TPc
+      DOUBLE PRECISION AUTIME, K_1, K_2, K_3, K_lpa, K_lpe, K_c
       DOUBLE PRECISION SMFREQ, EIGV, SIGN, STRN, TMF0, TM0F
       DOUBLE PRECISION DIPLEN(3,3,2)
 #endif
@@ -663,6 +667,66 @@ C          IF (ISAMA*ISAMB.EQ.0) SIGN = +ONE
      &     ' delta_G = S^0f_ijij/30   (length gauge)   : ',DELTAG,
      &     ' delta_H = S^0f_ijji/30   (length gauge)   : ',DELTAH
        END IF
+
+*********************************************************************
+*                                                                   *
+*                 Compute rotationally averaged                     *
+*                 two-photon transition strengths                   *
+*                 for different light beam polarizations            *
+*                                                                   *
+*	Martin J. Paterson	22/02/05                            *
+*                                                                   *
+*********************************************************************
+         WRITE(LUPRI,'(a)')
+     &    ' ' 
+         WRITE(LUPRI,'(6x,a)')
+     &    ' Rotationally averaged two-photon transition strengths',
+     &    '                 and rate constants'
+ 
+         DELTA_TPlpa = ZERO 
+         DELTA_TPlpa = 2 * (DELTAF + DELTAG + DELTAH)
+         DELTA_TPlpe = ZERO
+         DELTA_TPlpe = ((-1 * DELTAF ) + (4 * DELTAG) + DELTAH)
+         DELTA_TPc = ZERO
+         DELTA_TPc = ((-2 * DELTAF ) + (3 * DELTAG) + (3 * DELTAH))
+         AUTIME = HBAR/XTJ 
+         K_1 = ZERO
+         K_1 = (XTANG * XTANG * XTANG * XTANG) * AUTIME  
+         K_2 = ZERO
+         K_2 = (8 * PI * PI *PI) * (ALPHAC * ALPHAC)
+         K_3 = ZERO
+         K_3 = (SMFREQ * (EIGV-SMFREQ))
+         K_lpa = ZERO
+         K_lpa = K_1 * K_2 * K_3 * DELTA_TPlpa
+         K_lpe = ZERO
+         K_lpe = K_1 * K_2 * K_3 * DELTA_TPlpe
+         K_c = ZERO
+         K_c = K_1 * K_2 * K_3 * DELTA_TPc 
+
+         WRITE(LUPRI,'(a)')
+     &    ' '
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' |   Polarization    |    DELTA_TP    |   K (0 -> f)   |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+     &    ' |  linear (para)    |', DELTA_TPlpa, '   |', K_lpa,'  |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+     &    ' |  linear (perp)    |', DELTA_TPlpe, '   |', K_lpe,'  |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+     &    ' |    circular       |', DELTA_TPc,   '   |', K_c,'  |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+
+
+*********************************************************************
+
 
       END DO ! IRSD
 

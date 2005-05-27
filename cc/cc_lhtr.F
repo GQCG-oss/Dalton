@@ -85,6 +85,7 @@ C
 #include <cclr.h>
 #include <eribuf.h>
 #include <ccslvinf.h>
+#include <qm3.h>
 #include <ccnoddy.h>
 C
       CHARACTER*10 MODEL
@@ -1492,6 +1493,42 @@ C
      *                   LFIELD(IF))
           END IF
         END DO
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C SLV98,OC
+C-------------------------------------
+C
+C
+        IF (CCSLV .AND. (.NOT. CCMM )) THEN
+           DTIME = SECOND()
+           CALL CCSL_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+           TIMMLT = TIMMLT + SECOND() - DTIME
+           IF (IPRINT .GT. 5) THEN
+             WRITE(LUPRI,*)'Time used in CCSL_RHSTG (CC_LHTR) 1',
+     *                      SECOND() - DTIME
+           END IF
+        ENDIF
+C
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C CCMM02,JA+AO
+C-------------------------------------
+C
+        IF (CCMM) THEN
+           DTIME = SECOND()
+           CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+           TIMMLT = TIMMLT + SECOND() - DTIME
+           IF (IPRINT .GT. 5) THEN
+             WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_LHTR) 1',
+     *                      SECOND() - DTIME
+           END IF
+        ENDIF
+C
+C-------------------------------------
+C
         ! unrelaxed fields are transformed using the Lambda matrices
         CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMDP),WORK(KLAMDH),
      *                WORK(KEND2),LWRK2,1,1,1)
@@ -1588,7 +1625,7 @@ C
          TIMEEM = SECOND() - TIMEEM
 C
       ENDIF
-      IF ((NFIELD .GT.0) .AND. (CC2 .AND. NONHF)) THEN
+      IF (((NFIELD .GT.0).OR.CCSLV) .AND. (CC2 .AND. NONHF)) THEN
          IOPT = 1
          CALL CC_LCC2FF(RHO1(1,IV),WORK(KLAMDP),WORK(KLAMDH),
      *                  WORK(KLAMDP),WORK(KLAMDH),ISYMOP,
@@ -1602,12 +1639,39 @@ C     Calculate T^{gB} solvent contribution.
 C     Unsquared T2 is required!
 C-------------------------------------------
 C
-      IF (CCSLV.AND.LSTBTR) THEN
+      IF (CCSLV.AND.LSTBTR.AND. (.NOT. CCMM)) THEN
          CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      *                IVEC+IV-1,CTR2)
          LR = 'L'
+         DTIME = SECOND()
          CALL CCSL_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,ISYMTR,LR,
      *                  WORK(KEND1),LWRK1)
+         TIMMLT = TIMMLT + SECOND() - DTIME
+         IF (IPRINT .GT. 5) THEN
+            WRITE(LUPRI,*)'Time used in CCSL_LTRB (CC_LHTR) 1',
+     *                     SECOND() - DTIME
+         END IF
+      ENDIF
+C
+C
+C-------------------------------------------
+C     CCMM02,JA+AO
+C     Calculate T^{gB} solvent contribution.
+C     Unsquared T2 is required!
+C-------------------------------------------
+C
+      IF (CCMM.AND.LSTBTR) THEN
+         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,CTR2)
+         LR = 'L'
+         DTIME = SECOND()
+         CALL CCMM_LTRB(RHO1(1,IV),RHO2,CTR1(1,IV),CTR2,
+     *                  ISYMTR,LR,WORK(KEND1),LWRK1)
+         TIMMLT = TIMMLT + SECOND() - DTIME
+         IF (IPRINT .GT. 5) THEN
+            WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_LHTR) 1',
+     *                     SECOND() - DTIME
+         END IF
       ENDIF
 C
 C------------------------------------------------------------

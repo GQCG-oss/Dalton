@@ -197,6 +197,9 @@ c/* Deck CC_BMAT */
 #include "second.h"
 #include "ccnoddy.h"
 #include "ccr1rsp.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -671,7 +674,20 @@ c/* Deck CC_BMAT */
         FF = EFIELD(IF)
         CALL CC_ONEP(WORK(KFOCK0),WORK(KEND0),LWRK0,FF,1,LFIELD(IF) )
       END DO
-
+C
+C------------------------------------------------------------------------
+C     CCMM, 03 JK+OC
+C     Solvent/QMMM  contribution to one-electron integrals.
+C     T^g contribution to transformation.
+C------------------------------------------------------------------------
+C
+      IF (CCSLV) THEN
+         IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+         IF (CCMM) CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+      ENDIF
+C
+C------------------------------------------------------------------------
+C
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'norm of T1AMP0:',
      &        DDOT(NT1AMX,WORK(KT1AMP0),1,WORK(KT1AMP0),1)
@@ -1891,8 +1907,18 @@ C
         END IF
         CALL FLSHFO(LUPRI)
       END IF
-
-
+C
+      IF (CCSLV) THEN
+        IF (.NOT. CCMM) CALL CCSL_BTR(WORK(KTHETA1),WORK(KTHETA2),
+     *                                ISYMAB,LISTA,IDLSTA,ISYMA,
+     *                                LISTB,IDLSTB,ISYMB,
+     *                                MODEL,WORK(KEND2),LWRK2)
+C
+        IF (CCMM) CALL CCMM_BTR(WORK(KTHETA1),WORK(KTHETA2),
+     *                          ISYMAB,LISTA,IDLSTA,ISYMA,
+     *                          LISTB,IDLSTB,ISYMB,
+     *                          MODEL,WORK(KEND2),LWRK2)
+      END IF
 *---------------------------------------------------------------------*
 * if DO_O2 flag is set include A{x} t^y + A{y} t^x contribution
 * to the second-order rhs vector (here we do the CCS/CC2/CCSD parts):
@@ -1906,7 +1932,7 @@ C
          KATRAN2 = KEND2 + NT1AM(ISYMAB)
 
          IF (LISTA.EQ.'R1 ') THEN
-            CALL CCCR_AA(LRTLBL(IDLSTA),ISYMA,LISTB,IDLSTB,
+            CALL CCCR_AA(LRTLBL(IDLSTA),ISYMA,LISTB,IDLSTB,DUMMY,
      &                   WORK(KEND2),LWRK2)
             CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KEND2),1,WORK(KTHETA1),1)
             IF (.NOT.CCS) THEN
@@ -1917,7 +1943,7 @@ C
          END IF
 
          IF (LISTB.EQ.'R1 ') THEN
-            CALL CCCR_AA(LRTLBL(IDLSTB),ISYMB,LISTA,IDLSTA,
+            CALL CCCR_AA(LRTLBL(IDLSTB),ISYMB,LISTA,IDLSTA,DUMMY,
      &                   WORK(KEND2),LWRK2)
             CALL DAXPY(NT1AM(ISYMAB),ONE,WORK(KEND2),1,WORK(KTHETA1),1)
             IF (.NOT.CCS) THEN
@@ -2288,6 +2314,9 @@ c/* Deck CCBMAT2 */
 #include <ccorb.h>
 #include <ccfield.h>
 #include <second.h>
+#include <ccsections.h>
+#include <ccslvinf.h>
+#include <qm3.h>
 
 
 * local parameters:
@@ -2472,6 +2501,20 @@ c/* Deck CCBMAT2 */
            FF = EFIELD(IF)
            CALL CC_ONEP(WORK(KONEHR),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
          END DO
+C
+C------------------------------------------------------------------------
+C     CCMM, 03 JK+OC
+C     Solvent/QMMM  contribution to one-electron integrals.
+C     T^g contribution to transformation.
+C------------------------------------------------------------------------
+C
+      IF (CCSLV) THEN
+         IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
+         IF (CCMM) CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
+      ENDIF
+C
+C------------------------------------------------------------------------
+C
          IF (FROIMP.OR.FROEXP) THEN
            CALL DAXPY(N2BST(ISYM0),ONE,FCKC0,1,WORK(KONEHR),1)
          END IF
@@ -2592,7 +2635,8 @@ c/* Deck CCBMAT2 */
 
       DTIME = SECOND()
 
-      IF(CC2.AND.(.NOT.CCSTST).AND.NFIELD.GT.0)THEN
+      IF(CC2.AND.(.NOT.CCSTST).AND.
+     &   ((NFIELD.GT.0) .OR. CCSLV)) THEN
  
          KPERT   = KEND0
          KT1AMPA = KPERT   + N2BST(ISYM0)
@@ -2610,6 +2654,20 @@ c/* Deck CCBMAT2 */
             FF = EFIELD(IF)
             CALL CC_ONEP(WORK(KPERT),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
          END DO
+C
+C----------------------------------------------------------------------
+C        CCMM, 03 JK+OC
+C        Solvent/QMMM  contribution to one-electron integrals.
+C        T^g contribution to transformation.
+C----------------------------------------------------------------------
+C
+         IF (CCSLV) THEN
+           IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
+           IF (CCMM) CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
+         ENDIF
+C
+C------------------------------------------------------------------------
+C
          CALL CC_FCKMO(WORK(KPERT),XLAMP0,XLAMH0,WORK(KEND1),LWRK1,
      &                 ISYM0,1,1)
 
@@ -5089,7 +5147,7 @@ C       CALL DZERO(WORK(KT2AMPB),NT2AM(ISYMB))
           CALL QUIT('Insufficient work space in CC_BTST.')
         END IF
 
-      CALL CCCR_AA(LABELA,ISYMA,LISTB,IDLSTB,WORK,LWORK)
+      CALL CCCR_AA(LABELA,ISYMA,LISTB,IDLSTB,DUMMY,WORK,LWORK)
 
 
       IOPT = 3

@@ -1305,13 +1305,15 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
 #if defined (SYS_CRAY)
       REAL HYPERPOL(NCRFREQ,NCROPER,2)
-      REAL HALF, GAMMA
+      REAL HALF, GAMMA, PROP
 #else
       DOUBLE PRECISION HYPERPOL(NCRFREQ,NCROPER,2)
-      DOUBLE PRECISION HALF, GAMMA
+      DOUBLE PRECISION HALF, GAMMA, PROP
 #endif
       PARAMETER (HALF = 0.5D0)
 
+      CHARACTER MODEL*10
+      INTEGER ISYMABCD
 *---------------------------------------------------------------------*
 * print header for hyperpolarizability section
 *---------------------------------------------------------------------*
@@ -1330,6 +1332,11 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
          CALL QUIT('CCCHYPPRT called for an unknown Coupled '//
      &             'Cluster model.')
       END IF
+      IF (CCSD) MODEL = 'CCSD'
+      IF (CIS) MODEL  = 'CIS'
+      IF (CCS) MODEL  = 'CCS'
+      IF (CC2) MODEL  = 'CC2'
+      IF (CC3) MODEL  = 'CC3'
 
       IF (IPRCHYP.GT.5) THEN
        WRITE(LUPRI,'(/1X,4(1X,A," operator",7X),4X,A,8X,A,/,107("-"))')
@@ -1346,10 +1353,12 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
          ISYMB = ISYOPR(IBCROP(IOPER))
          ISYMC = ISYOPR(ICCROP(IOPER))
          ISYMD = ISYOPR(IDCROP(IOPER))
+         ISYMABCD = MULD2H(MULD2H(ISYMA,ISYMB),MULD2H(ISYMC,ISYMD))
 
 
          IFREQ = 1
          IF (MULD2H(ISYMA,ISYMB).EQ.MULD2H(ISYMC,ISYMD)) THEN
+          PROP = HALF*(HYPERPOL(IFREQ,IOPER,1)+HYPERPOL(IFREQ,IOPER,2))
           IF (IPRCHYP.GT.5) THEN
             WRITE(LUPRI,'(/1X,4(A8,F7.4,3X),G18.10," (",G18.10,")")')
      &        LBLOPR(IACROP(IOPER)),ACRFR(IFREQ),
@@ -1388,9 +1397,17 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
           END IF
           ISYOLD = 0
          END IF
+         CALL CC_PRPC(PROP,MODEL,4,
+     &                LBLOPR(IACROP(IOPER)),LBLOPR(IBCROP(IOPER)),
+     &                LBLOPR(ICCROP(IOPER)),LBLOPR(IDCROP(IOPER)),
+     &                BCRFR(IFREQ),CCRFR(IFREQ),DCRFR(IFREQ),ISYMABCD,
+     &                0,0,0)
+
 
          DO IFREQ = 2, NCRFREQ
+          PROP = 0.0D0
           IF (MULD2H(ISYMA,ISYMB).EQ.MULD2H(ISYMC,ISYMD)) THEN
+           PROP = HALF*(HYPERPOL(IFREQ,IOPER,1)+HYPERPOL(IFREQ,IOPER,2))
            IF (IPRCHYP.GT.5) THEN
             WRITE(LUPRI,'(1X,4(8X,F7.4,3X),G18.10," (",G18.10,")")')
      &        ACRFR(IFREQ), BCRFR(IFREQ), CCRFR(IFREQ), DCRFR(IFREQ),

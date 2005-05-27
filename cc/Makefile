@@ -61,7 +61,8 @@ cc3_aden_cub.o cc3_aden_cub_t0.o \
 cc_foppt_sc.o cc_r12.o  cc_mkrv.o cc_rhtr_noddy.o \
 cc_2eexp_1.o  cc_grad_1.o   cc_2eexp_2.o   asqr.o \
 ccsdt_t32_noddy.o ccsdt_o32_noddy.o \
-ccsoppa.o  cc_r12dummies.o
+ccsoppa.o  cc_r12dummies.o cc_qm3.o cc_jmat.o \
+cc_kmat.o cc_setk11.o cclr_fa.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

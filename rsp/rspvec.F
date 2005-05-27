@@ -2179,6 +2179,64 @@ C
                D=-2*DF+6*DG
                WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMC,IC,
      &              RESFRE(IC,ISYMC)*XTEV,'Circular   ',DF,DG,D,R
+*********************************************************************
+*                                                                   *
+*                 Compute rotationally averaged                     *
+*                 two-photon transition strengths                   *
+*                 for different light beam polarizations            *
+*                                                                   *
+*       Martin J. Paterson      22/02/05                            *
+*                                                                   *
+*********************************************************************
+         WRITE(LUPRI,'(a)')
+     &    ' '
+         WRITE(LUPRI,'(6x,a)')
+     &    ' Rotationally averaged two-photon transition strengths',
+     &    '                 and rate constants'
+
+         DELTA_TPlpa = ZERO
+         DELTA_TPlpa = ((2*DF)+(4*DG))
+         DELTA_TPlpe = ZERO
+         DELTA_TPlpe = ((-1*DF)+(5*DG))
+         DELTA_TPc = ZERO
+         DELTA_TPc = ((-2*DF)+(6*DG))
+         AUTIME = HBAR/XTJ
+         dK_1 = ZERO
+         dK_1 = (XTANG*XTANG*XTANG*XTANG)*AUTIME
+         dK_2 = ZERO
+         dK_2 = (8*PI*PI*PI)*(ALPHAC*ALPHAC)
+         dK_3 = ZERO
+         dK_3 = RESFRE(IC,ISYMC)*RESFRE(IC,ISYMC)
+         dK_lpa = ZERO
+         dK_lpa = dK_1*dK_2*dK_3*DELTA_TPlpa
+         dK_lpe = ZERO
+         dK_lpe = dK_1*dK_2*dK_3*DELTA_TPlpe
+         dK_c = ZERO
+         dK_c = dK_1*dK_2*dK_3*DELTA_TPc
+
+         WRITE(LUPRI,'(a)')
+     &    ' '
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' |   Polarization    |    DELTA_TP    |   K (0 -> f)   |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+     &    ' |  linear (para)    |', DELTA_TPlpa, '   |', dK_lpa,'  |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+     &    ' |  linear (perp)    |', DELTA_TPlpe, '   |', dK_lpe,'  |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+     &    ' |    circular       |', DELTA_TPc,   '   |', dK_c,'  |'
+         WRITE(LUPRI,'(6x,a)')
+     &    ' +-------------------+----------------+----------------+'
+
+
+*********************************************************************
             ELSE
                WRITE(LUPRI,'(/A)') 
      &              'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'

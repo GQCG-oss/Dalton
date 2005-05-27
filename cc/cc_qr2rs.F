@@ -345,6 +345,15 @@ C
                 WORK(IOSCS2) = RESIDUE     
               ENDIF
             ENDIF
+          ELSE
+            SQRRES  = 0.0D0
+            RESIDUE = 0.0D0
+          ENDIF
+          IF (LABELA.EQ.LABELB) THEN
+             CALL CC_PRPC(SQRRES,MODELP,-110,
+     *                    LABELA,LABELB,LABELA,LABELB,
+     *                    EIGVI,EIGVF,EIGVF-EIGVI,MULD2H(ISYMAI,ISYMF),
+     *                    0,0,0)
           ENDIF
         END DO  
 c       WRITE(LUPRI,*) ' ' 

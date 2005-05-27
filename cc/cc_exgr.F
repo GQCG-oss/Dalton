@@ -373,6 +373,13 @@ C
             ENDIF
             DIPMN(IDIP) = DIPMN(IDIP) + DIPME(IDIP)
 C
+C--------------------------------
+C           Store on prpc list.
+C--------------------------------
+C
+            CALL CC_PRPC(DIPMN(IDIP),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *                   EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+C
   100    CONTINUE
 C
 C---------------------
@@ -539,6 +546,13 @@ C
                IF (ISY.EQ.1) THEN
                  CALL CCELQUA(WORK(KONEP),WORK(KDENS),LENGTH,I,J,ELSEMO)
                ENDIF
+C
+C--------------------------------
+C           Store on prpc list.
+C--------------------------------
+C
+            CALL CC_PRPC(ELSEMO(I,J),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *                   EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
 C
   125       CONTINUE
   115    CONTINUE
@@ -720,6 +734,9 @@ C        Calculate the electronic contribution to the given property.
 C--------------------------------------------------------------------
 C
          PROP = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
+         CALL CC_PRPC(PROP,MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *                EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+
 C
 C----------------------
 C        Write out result.

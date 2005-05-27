@@ -515,6 +515,7 @@ c/* Deck CC_FMATNEW */
 #include <ccslvinf.h>
 #include <ccnoddy.h>
 #include <second.h>
+#include <qm3.h>
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -990,11 +991,12 @@ C     DOUBLE PRECISION ECURRSAV
       END DO
  
 * Solvent contribution to one-electron integrals. 
-* T^g contribution to transformation. SLV98,OC
+* T^g contribution to transformation. SLV98,OC, CCMM JK
       IF (CCSLV) THEN
-         CALL CCSL_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+         IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+         IF (CCMM) CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
       ENDIF
-
+C
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) MSGDBG, 'norm of T1AMP0:',
      &        DDOT(NT1AMX,WORK(KT1AMP0),1,WORK(KT1AMP0),1)
@@ -1994,25 +1996,54 @@ C          ----------------------------------------------
      &               LUC,  CTFIL, LUCBAR, CBAFIL,
      &               LUD,  DTFIL, LUDBAR, DBAFIL,
      &               IOFFCD(IINTR), WORK(KEND2),LWRK2)
-
-*       Calculate T^{gB} solvent contribution.
-*       Unsquared T2 is required!  SLV98,OC
-        IF (CCSLV.AND.LSTBTR) THEN
-           KT2AMPA = KEND2
-           KEND3   = KT2AMPA +  NT2AM(ISYAMP)
-           LWRK3   = LWORK - KEND3
-           IF (LWRK3 .LT. 0) THEN
-              CALL QUIT('Insuff. work in CC_FMAT. in CCSLV part')
-           END IF
-        
+C
+C-------------------------------------------
+C     SLV98,OC, CCMM JK
+C     Calculate T^{gB} solvent contribution.
+C     Unsquared T2 is required!
+C-------------------------------------------
+C
+      IF (CCSLV.AND.LSTBTR) THEN
+C
+         KT2AMPA = KEND2
+         KEND3   = KT2AMPA +  NT2AM(ISYAMP)
+         LWRK3   = LWORK - KEND3
+         IF (LWRK3 .LT. 0) THEN
+            CALL QUIT('Insuff. work in CC_FMAT. in CCSLV part')
+         END IF
+C
+C
+         IF (LISTL(1:2).EQ.'L0') THEN
            IOPT = 2
            CALL CC_RDRSP(LISTR,IDLSTR,ISYAMP,IOPT,MODEL,
      *                   WORK(KDUM),WORK(KT2AMPA))
-           CALL CCSL_LTRB(WORK(KTHETA1),WORK(KTHETA2),
+
+           IF (.NOT. CCMM) CALL CCSL_LTRB(WORK(KTHETA1),WORK(KTHETA2),
      *                    WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
      *                    WORK(KEND3),LWRK3)
-        ENDIF
-        
+           IF (CCMM) CALL CCMM_LTRB(WORK(KTHETA1),WORK(KTHETA2),
+     *                    WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
+     *                    WORK(KEND3),LWRK3)
+         ELSE IF (LISTL(1:2).NE.'L0') THEN
+           IF (.NOT. CCMM) CALL CCSL_PBTR(WORK(KTHETA1),WORK(KTHETA2),
+     *                                    ISYRES,
+     *                                    LISTL,IDLSTL, WORK(KZETA1),
+     *                                    ISYCTR,
+     *                                    LISTR,IDLSTR, WORK(KT1AMPA),
+     *                                    ISYAMP,MODEL,
+     *                                    WORK(KEND2),LWRK2)
+           IF (CCMM) CALL CCMM_PBTR(WORK(KTHETA1),WORK(KTHETA2),
+     *                              ISYRES,
+     *                              LISTL,IDLSTL, WORK(KZETA1),
+     *                              ISYCTR,
+     *                              LISTR,IDLSTR, WORK(KT1AMPA),
+     *                              ISYAMP,MODEL,
+     *                              WORK(KEND2),LWRK2)
+         END IF
+      ENDIF
+C
+C----------------------------------------------------------
+C
         
         IF (CCSDT) THEN
 #if !defined CC_AARHUS
@@ -3581,6 +3612,8 @@ c/* Deck CCFMAT2 */
 #include <maxorb.h>
 #include <ccorb.h>
 #include <ccfield.h>
+#include <ccslvinf.h>
+#include <qm3.h>
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -3697,14 +3730,20 @@ C
            CALL CC_ONEP(WORK(KONEH),WORK(KEND0),LWRK0,FF,1,LFIELD(IF))
          END DO
 C
-C-----------------------------------------------------------------------------------------
-C     Solvent contribution to one-electron integrals. T^g contribution to transformation.
-C SLV98,OC
-C-----------------------------------------------------------------------------------------
+C---------------------------------------------------------------------------
+C     Solvent contribution to one-electron integrals. 
+C     T^g contribution to transformation.
+C    SLV98,OC
+C------------------------------------------------------------------------------
 C
-         IF (CCSLV) THEN
+         IF (CCSLV .AND. (.NOT. CCMM)) THEN             
             CALL CCSL_RHSTG(WORK(KONEH),WORK(KEND0),LWRK0)
          ENDIF
+C
+         IF (CCMM) THEN
+            CALL CCMM_RHSTG(WORK(KONEH),WORK(KEND0),LWRK0)
+         ENDIF
+C-----------------------------------------------------------------
 
          IF (FROIMP.OR.FROEXP) THEN
            CALL DAXPY(N2BST(ISYM0),ONE,FCKC0,1,WORK(KONEH),1)
@@ -3733,14 +3772,20 @@ C
 
 C
 C-----------------------------------------------------------------------------------------
-C     Solvent contribution to one-electron integrals. T^g contribution to transformation.
-C SLV98,OC NBNBNBNBNB!!!! CC2-solvent never tested thoroughly
-C-----------------------------------------------------------------------------------------
+C     Solvent contribution to one-electron integrals. 
+C     T^g contribution to transformation.
+C     SLV98,OC
+C------------------------------------------------------------------------------
 C
-         IF (CCSLV) THEN
+         IF (CCSLV .AND. (.NOT. CCMM)) THEN
             CALL CCSL_RHSTG(WORK(KFIELD),WORK(KEND0),LWRK0)
          ENDIF
-
+C
+         IF (CCMM) THEN
+            CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND0),LWRK0)
+         ENDIF
+C------------------------------------------------------------------------------
+C
          CALL DCOPY(N2BST(ISYM0),WORK(KFIELD),1,WORK(KFIELDR),1)
          CALL DCOPY(N2BST(ISYM0),WORK(KFIELD),1,WORK(KFIELDG),1)
     

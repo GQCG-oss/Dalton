@@ -48,6 +48,7 @@ C
 #include <nuclei.h>
 #include <shells.h>
 #include <symmet.h>
+#include <ccom.h>
 #include <r12int.h>
 C
       LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2),resetcharges
@@ -55,6 +56,13 @@ C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PR1INT')
+C
+C     If ONLYOV is true we do not want the "ghost" part of
+C     the overlap matrix.
+C
+      IF (ONLYOV) THEN
+        DOHUCKEL = .FALSE.
+      END IF
 C
       NCOMP    = 0
       TOFILE   = .TRUE.
@@ -173,8 +181,10 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
+#include <ccom.h>
 #include <maxmom.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
@@ -187,6 +197,9 @@ C
      &          EFDIR*1
       CHARACTER*8  RTNLBL(2), TMPTXT
       DIMENSION WORK(*), INTREP(*), INTADR(*), SINTMA(*)
+      CHARACTER*6 FILMME
+C
+      DIMENSION QMTEST(NMMBA1)
 C
 #include <shells.h>
 #include <symmet.h>
@@ -855,6 +868,7 @@ C     --------------------------------------
 C
  31   CONTINUE
          INTTYP = 29
+         IF (QM3) LOELFD = .TRUE.
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
@@ -945,6 +959,7 @@ C     -----------------------------
 C
  37   CONTINUE
          INTTYP = 35
+         IF (QM3) LONUPO = .TRUE.
          IF (MAXREP .GT. 0) THEN
             WRITE (LUPRI,'(/A/)')
      &           ' Program cannot calculate potential energy '//
@@ -2179,50 +2194,211 @@ C     ***** Write integrals on file *****
 C     ***********************************
 C
       IF (TOFILE) THEN
-         IF (SOLVNT) THEN
-            CALL  WRTSOL(WORK(KSOINT),IORDER,NBAST,NELMNT,NOPTYP,
-     &                   INTREP,.NOT.ALLRLM,IPRINT)
-C        ... for non-symmtric response (in ABACUS or RESPONS) and
-C            Direct Reaction Field ALLRLM must be .true.
-         ELSE
-            CALL GETDAT(RTNLBL(1),RTNLBL(2))
-C           Replace time information with symmetry information
-            IF (SQUARE) THEN
-               RTNLBL(2)='SQUARE  '
-            ELSE
-               IF (ANTI) THEN
-                  RTNLBL(2)='ANTISYMM'
-               ELSE
-                  RTNLBL(2)='SYMMETRI'
-               END IF
+        IF (SOLVNT) THEN
+          CALL  WRTSOL(WORK(KSOINT),IORDER,NBAST,NELMNT,NOPTYP,
+     &                 INTREP,.NOT.ALLRLM,IPRINT)
+C         ... for non-symmtric response (in ABACUS or RESPONS) and
+C             Direct Reaction Field ALLRLM must be .true.
+        ELSE
+          CALL GETDAT(RTNLBL(1),RTNLBL(2))
+C         Replace time information with symmetry information
+        IF (SQUARE) THEN
+          RTNLBL(2)='SQUARE  '
+        ELSE
+          IF (ANTI) THEN
+            RTNLBL(2)='ANTISYMM'
+          ELSE
+            RTNLBL(2)='SYMMETRI'
+          END IF
+        END IF
+        IF (.NOT. QM3) THEN
+          IADR = KSOINT
+          DO 600 I = 1, NOPTYP
+            IF (PROPRI .OR. IPRINT .GT. 4) THEN
+              CALL AROUND('Integrals of operator: '//LABINT(I))
+              WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
+     &                     ' Symmetry of operator:',
+     &        REP(INTREP(I)),'(',(INTREP(I) + 1),')'
+              IF (SQUARE) THEN
+                CALL OUTPUT(WORK(IADR),1,NBAST,1,NBAST,NBAST,NBAST,
+     &                      1,LUPRI)
+              ELSE
+                CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
+              END IF
             END IF
 C
-            IADR = KSOINT
-            DO 600 I = 1, NOPTYP
-               IF (PROPRI .OR. IPRINT .GT. 4) THEN
-                  CALL AROUND('Integrals of operator: '//LABINT(I))
-                  WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
-     &               ' Symmetry of operator:',
-     &               REP(INTREP(I)),'(',(INTREP(I) + 1),')'
-                  IF (SQUARE) THEN
-                     CALL OUTPUT(WORK(IADR),1,NBAST,1,NBAST,NBAST,NBAST,
-     &                           1,LUPRI)
-                  ELSE
-                     CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
-                  END IF
-               END IF
 cLig <> Replace data information with the symmetry of the operator
 cVB Free format write does not work with all compilers
-C               WRITE(RTNLBL(1),*) (INTREP(I)+1),' ',REP(INTREP(I))
-               TMPTXT = RTNLBL(1)
-               WRITE(TMPTXT(1:5),'(I1,A1,A3)')
-     &              (INTREP(I)+1), ' ', REP(INTREP(I))
-               RTNLBL(1) = TMPTXT
-               CALL WRTPRO(WORK(IADR),NELMNT,LABINT(I),RTNLBL)
-               IADR = IADR + NELMNT
-  600       CONTINUE
+C           WRITE(RTNLBL(1),*) (INTREP(I)+1),' ',REP(INTREP(I))
 C
-         END IF
+            TMPTXT = RTNLBL(1)
+            WRITE(TMPTXT(1:5),'(I1,A1,A3)')
+     &           (INTREP(I)+1), ' ', REP(INTREP(I))
+            RTNLBL(1) = TMPTXT
+            CALL WRTPRO(WORK(IADR),NELMNT,LABINT(I),RTNLBL)
+            IADR = IADR + NELMNT
+  600     CONTINUE
+          ELSE IF (QM3) THEN
+            IF ( (INTTYP .NE. 29) .AND.
+     &         (INTTYP .NE. 35) ) THEN 
+              IADR = KSOINT
+              DO 721 I = 1, NOPTYP
+                IF (PROPRI .OR. IPRINT .GT. 4) THEN
+                  CALL AROUND('Integrals of operator: '//LABINT(I))
+                  WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
+     &                         ' Symmetry of operator:',
+     &            REP(INTREP(I)),'(',(INTREP(I) + 1),')'
+                  IF (SQUARE) THEN
+                    CALL OUTPUT(WORK(IADR),1,NBAST,1,NBAST,NBAST,NBAST,
+     &                          1,LUPRI)
+                  ELSE
+                    CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
+                  END IF
+                END IF
+                IF (ONLYOV) THEN
+                  IQMBA1 = IQMBAS*(IQMBAS-1)/2 + IQMBAS
+                  IMMBAS = NBAST - IQMBAS
+                  IF (IPRINT .GT. 4) THEN
+                    WRITE(LUPRI,'(//5X,A6,I10)')'IQMBAS',IQMBAS
+                    WRITE(LUPRI,'(5X,A6,I10)')'NBAST',NBAST
+                    WRITE(LUPRI,'(5X,A6,I10)')'NELMNT',NELMNT
+                    WRITE(LUPRI,'(5X,A6,I10)')'IQMBA1',IQMBA1
+                    WRITE(LUPRI,'(5X,A6,I10//)')'IMMBAS',IMMBAS
+                  END IF
+                  CALL GPOPEN(LUOVER,'MMOVER_INFO','UNKNOWN',' ',
+     &                       'FORMATTED',IDUMMY,.FALSE.)
+                  WRITE(LUOVER,'(I10,5X,I10)') IMMBAS, IQMBAS
+                  CALL GPCLOSE(LUOVER,'KEEP')
+                  IF (INTTYP .NE. 1) THEN
+                    CALL QUIT('Error in INTTYP in ONLYOV stuff')
+                  END IF
+                  FILMME  = 'MMOVER'
+                  LUMMOV  = 0
+                  IOFFMEM = IQMBA1
+                  IADRFIL = 1
+                  NDATA   = IQMBAS
+                  CALL WOPEN2(LUMMOV,FILMME,64,0)
+                  DO 389 LK=1,IMMBAS
+                    CALL PUTWA2(LUMMOV,FILMME,WORK(IADR+IOFFMEM),
+     *                          IADRFIL,NDATA)
+                    IOFFMEM = IOFFMEM + NDATA + LK
+                    IADRFIL = IADRFIL + NDATA
+  389             CONTINUE
+                  IF ((IQMBAS*IMMBAS) .GT. NMMBA1) THEN
+                    ITEMP = (IQMBAS*IMMBAS) - NMMBA1
+                    WRITE(LUPRI,'(/A,I10)')
+     *              'Overlap sums not correct because QMTEST array is'//
+     *              ' too small. Increase NMMBA1 with at least',ITEMP
+                    WRITE(LUPRI,'(A/)')'PROGRAM CONTINUES !!'
+                  END IF
+                  TEMP = 0.0D0
+                  DO 391 LJ=1,NMMBA1
+                    QMTEST(LJ) = 0.0D0
+  391             CONTINUE
+                  IADRFIL = 1
+                  CALL GETWA2(LUMMOV,FILMME,QMTEST,IADRFIL,NDATA*IMMBAS)
+                  DO 390 LI = 1,NMMBA1
+                    TEMP = TEMP + QMTEST(LI)**2
+  390             CONTINUE
+                  WRITE(LUPRI,'(/A,F12.6/)')
+     *                        'Sum_{mu nu} <mu 1 nu>^2 :',TEMP
+                  TEMP1 = 0.0D0
+                  DO 393 IK = 1,NMMBA1
+                    DO 392 IL = 1,NMMBA1
+                      TEMP1 = TEMP1 + QMTEST(IK)*QMTEST(IL)
+  392               CONTINUE
+  393             CONTINUE
+                  WRITE(LUPRI,'(/A,F12.6)')'Sum_{mu nu sigma tau}'//
+     *            ' <mu 1 nu><aigma 1 tau> :',TEMP1
+                  CALL WCLOSE2(LUMMOV,FILMME, 'KEEP')
+                ELSE
+                  CALL WRTPRO(WORK(IADR),NELMNT,LABINT(I),RTNLBL)
+                  IADR = IADR + NELMNT
+                END IF
+  721         CONTINUE
+            ELSE IF ( (INTTYP .EQ. 29) .OR.
+     &              (INTTYP .EQ. 35) ) THEN
+              LM3TMP = NOPTYP/NUCIND
+              IF (INTTYP .EQ. 29) THEN
+                NCOMS = 0
+              ELSE IF (INTTYP .EQ. 35) THEN
+                NUSITE = 0
+              END IF
+              DO 715 I = 0, ISYTP
+                DO 716 J = NSYSBG(I), NSYSED(I)
+                  DO 717 K = 1, NUCIND
+                    IF (ISUBSY(K) .EQ. J) THEN
+                      L = LM3TMP*(K-1)
+                      DO 718 M = (L + 1), (L + LM3TMP)
+                        IADR = KSOINT + (M-1)*NELMNT
+                        IF ( (ISUBSY(K) .EQ. 0) .AND.
+     &                     (ISUBSI(K) .LE. NSISY(I)) ) THEN
+                          IF (PROPRI .OR. IPRINT .GT. 4) THEN
+                            CALL AROUND(
+     &                      'Integrals of operator: '//LABINT(M))
+                            WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
+     &                      ' Symmetry of operator:',
+     &                      REP(INTREP(M)),'(',(INTREP(M) + 1),')'
+                            IF (SQUARE) THEN
+                              CALL OUTPUT(WORK(IADR),1,NBAST,1,
+     &                        NBAST,NBAST,NBAST,1,LUPRI)
+                            ELSE
+                              CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
+                            END IF
+                          END IF
+                          CALL WRTPRO(WORK(IADR),NELMNT,LABINT(M),
+     &                    RTNLBL)
+                        ELSE IF ( (ISUBSY(K) .NE. 0) .AND.
+     &                          (ISUBSI(K) .LE. NSISY(I))
+     &                         .AND. (INTTYP .EQ. 35) .AND.
+     &                          (MDLWRD(I)(1:3) .EQ. 'SPC') ) THEN
+                          NUSITE = NUSITE + 1
+                          IF (PROPRI .OR. IPRINT .GT. 4) THEN
+                            CALL AROUND(
+     &                      'Integrals of operator: '//LABINT(M))
+                            WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
+     &                      ' Symmetry of operator:',
+     &                      REP(INTREP(M)),'(',(INTREP(M) + 1),')'
+                            write(lupri,*)'CHARGE(K)=',CHARGE(K)
+                            IF (SQUARE) THEN
+                              CALL OUTPUT(WORK(IADR),1,NBAST,1,
+     &                        NBAST,NBAST,NBAST,1,LUPRI)
+                            ELSE
+                              CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
+                            END IF
+                          END IF
+                          CALL WRTQM3(WORK(IADR),NELMNT,INTTYP)
+                        ELSE IF ( (ISUBSY(K) .NE. 0) .AND.
+     &                          (ISUBSI(K) .GT. NSISY(I))
+     &                         .AND. (INTTYP .EQ. 29) .AND.
+     &                         (MDLWRD(I)(1:5) .EQ. 'SPC_E') )THEN
+                          NCOMS = NCOMS + 1
+                          IF (PROPRI .OR. IPRINT .GT. 4) THEN
+                            CALL AROUND(
+     &                      'Integrals of operator: '//LABINT(M))
+                            WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
+     &                      ' Symmetry of operator:',
+     &                      REP(INTREP(M)),'(',(INTREP(M) + 1),')'
+                            IF (SQUARE) THEN
+                              CALL OUTPUT(WORK(IADR),1,NBAST,1,
+     &                        NBAST,NBAST,NBAST,1,LUPRI)
+                            ELSE
+                              CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
+                            END IF
+                          END IF
+                          CALL WRTQM3(WORK(IADR),NELMNT,INTTYP)
+                        END IF
+  718                 CONTINUE
+                    END IF
+  717             CONTINUE
+  716           CONTINUE
+  715         CONTINUE
+              IF (INTTYP .EQ. 29) THEN
+                NCOMS = NCOMS/LM3TMP
+              END IF
+            END IF
+          END IF
+        END IF
       END IF
 C
 C     If integrals requested from ABACUS, copy matrices from SOINT to
@@ -2380,6 +2556,7 @@ C  /* Deck setatm */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
 #include <maxaqn.h>
 C
@@ -2418,7 +2595,60 @@ cLig <> added SPIN = .TRUE. for INTTYP = 82
             DOATOM(IATOM) = .TRUE.
   300    CONTINUE
       END IF
+C
       CALL QEXIT('SETATM')
+C
+      IF (QM3 .AND. (INTTYP .EQ. 29)) THEN
+        DO 111 N = 1, NUCIND
+          DOATOM(N) = .FALSE.
+ 111    CONTINUE
+        DO 120 I = 0, ISYTP
+          DO 121 J = NSYSBG(I), NSYSED(I)
+            DO 122 K = 1, NUCIND
+              IF ( (ISUBSY(K) .EQ. 0) .AND.
+     &           (ISUBSI(K) .LE. NSISY(0)) ) THEN
+                DOATOM(K) = .TRUE.
+              END IF
+              IF ( (ISUBSY(K) .GT. 0) .AND.
+     &           (ISUBSI(K) .GT. NSISY(I)) .AND.
+     &           (MDLWRD(I)(1:5) .EQ. 'SPC_E') ) THEN
+                DOATOM(K) = .TRUE.
+              END IF
+ 122        CONTINUE
+ 121      CONTINUE
+ 120    CONTINUE
+      END IF
+      IF (QM3 .AND. (INTTYP .EQ. 35)) THEN
+        DO 113 N = 1, NUCIND
+          DOATOM(N) = .FALSE.
+ 113    CONTINUE
+        DO 114 I=0,ISYTP
+          DO 115 J = NSYSBG(I), NSYSED(I)
+            DO 116 K = 1, NUCIND
+              IF ( (ISUBSY(K) .EQ. 0) .AND.
+     &           (ISUBSI(K) .LE. NSISY(I)) ) THEN
+                DOATOM(K) = .TRUE.
+              END IF
+              IF ( (ISUBSY(K) .GT. 0) .AND.
+     &           (ISUBSI(K) .LE. NSISY(I)) .AND.
+     &           (MDLWRD(I)(1:3) .EQ. 'SPC') ) THEN
+                DOATOM(K) = .TRUE.
+              END IF
+ 116        CONTINUE
+ 115      CONTINUE
+ 114    CONTINUE
+      END IF
+      IF (QM3 .AND. (INTTYP .EQ. 30)) THEN
+        DO 117 N = 1, NUCIND
+          DOATOM(N) = .FALSE.
+ 117    CONTINUE
+        DO 123 K = 1, NUCIND
+          IF ( (ISUBSY(K) .EQ. 0) .AND.
+     &       (ISUBSI(K) .LE. NSISY(0)) ) THEN
+            DOATOM(K) = .TRUE.
+          END IF
+ 123    CONTINUE
+      END IF
       RETURN
       END
 C  /* Deck ntypts */
@@ -3230,6 +3460,7 @@ C  /* Deck npetyp */
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -3244,19 +3475,35 @@ C
       CALL DZERO(NPETBL,NUCIND*(MAXREP + 1))
 C
       ITYP = 0
-      DO 100 IATOM = 1, NUCIND
-         IF (DOATOM(IATOM)) THEN
+C
+      IF (.NOT. QM3) THEN
+        DO 100 IATOM = 1, NUCIND
+          IF (DOATOM(IATOM)) THEN
             NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
             DO 200 IREP = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
-                  ITYP = ITYP + 1
-                  NPETBL(IATOM,IREP) = ITYP
-                  LABINT(ITYP) = 'POT.E '//NAME
-                  INTREP(ITYP) = IREP
-               END IF
+              IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
+                ITYP = ITYP + 1
+                NPETBL(IATOM,IREP) = ITYP
+                LABINT(ITYP) = 'POT.E '//NAME
+                INTREP(ITYP) = IREP
+              END IF
  200        CONTINUE
-         END IF
- 100  CONTINUE
+          END IF
+ 100    CONTINUE
+      ELSE
+        ITYP = 0
+        DO 300 IATOM = 1, NUCIND
+          NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
+          DO 400 IREP = 0, MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
+              ITYP = ITYP + 1
+              NPETBL(IATOM,IREP) = ITYP
+              LABINT(ITYP) = 'POT.E '//NAME
+              INTREP(ITYP) = IREP
+            END IF
+ 400      CONTINUE
+ 300    CONTINUE
+      END IF
       RETURN
       END
 C  /* Deck efntyp */
@@ -3266,6 +3513,7 @@ C  /* Deck efntyp */
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
 #include <nuclei.h>
       DIMENSION INTREP(9*MXCENT), INTADR(*)
@@ -3278,29 +3526,54 @@ C  /* Deck efntyp */
       CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
-      DO 50 IREP = 0, MAXREP
-         DO 100 IATOM = 1, NUCIND
+C
+      IF (.NOT. QM3) THEN
+        DO 50 IREP = 0, MAXREP
+          DO 100 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-               DO 200 ICOOR = 1, 3
-                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
-                  IF (ISCOOR .GT. 0) THEN
-                     ITYP = ITYP + 1
-                     IF (INTTYP .EQ. 70) THEN
-                        LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
-     &                           //CHRNOS(MOD(ISCOOR,100)/10)
-     &                           //CHRNOS(MOD(ISCOOR,10))
-                     ELSE
-                        LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/100)
-     &                           //CHRNOS(MOD(ISCOOR,100)/10)
-     &                           //CHRNOS(MOD(ISCOOR,10))//' '
-                     END IF
-                     INTREP(ITYP) = IREP
-                     INTADR(ISCOOR) = ITYP
+              DO 200 ICOOR = 1, 3
+                ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                IF (ISCOOR .GT. 0) THEN
+                  ITYP = ITYP + 1
+                  IF (INTTYP .EQ. 70) THEN
+                    LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
+     &                       //CHRNOS(MOD(ISCOOR,100)/10)
+     &                       //CHRNOS(MOD(ISCOOR,10))
+                  ELSE
+                    LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/100)
+     &                       //CHRNOS(MOD(ISCOOR,100)/10)
+     &                       //CHRNOS(MOD(ISCOOR,10))//' '
                   END IF
- 200           CONTINUE
+                  INTREP(ITYP) = IREP
+                  INTADR(ISCOOR) = ITYP
+                END IF
+ 200          CONTINUE
             END IF
- 100     CONTINUE
- 50   CONTINUE
+ 100      CONTINUE
+ 50     CONTINUE
+      ELSE
+        DO 60 IREP = 0, MAXREP
+          DO 110 IATOM = 1, NUCIND
+            DO 210 ICOOR = 1, 3
+              ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+              IF (ISCOOR .GT. 0) THEN
+                ITYP = ITYP + 1
+                IF (INTTYP .EQ. 70) THEN
+                  LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
+     &                     //CHRNOS(MOD(ISCOOR,100)/10)
+     &                     //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+                ELSE
+                  LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/100)
+     &                     //CHRNOS(MOD(ISCOOR,100)/10)
+     &                     //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+                END IF
+                INTREP(ITYP) = IREP
+                INTADR(ISCOOR) = ITYP
+              END IF
+ 210        CONTINUE
+ 110      CONTINUE
+ 60     CONTINUE
+      END IF
       RETURN
       END
 C  /* Deck efgtyp */
@@ -3310,6 +3583,7 @@ C  /* Deck efgtyp */
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -3324,29 +3598,75 @@ C
       CALL NTYPTS(NOPTYP)
       CALL IZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
 C
-      ITYP = 0
-      DO 100 IATOM = 1, NUCIND
-      IF (DOATOM(IATOM)) THEN
-         IJ = 0
-         DO 200 ICOOR1 = 1, 3
-         DO 200 ICOOR2 = ICOOR1, 3
-            IJ = IJ + 1
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-            IOFF = 0
-            DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+      IF (.NOT.QM3) THEN
+        ITYP = 0
+        DO 100 IATOM = 1, NUCIND
+          IF (DOATOM(IATOM)) THEN
+            IJ = 0
+            DO 200 ICOOR1 = 1, 3
+            DO 200 ICOOR2 = ICOOR1, 3
+              IJ = IJ + 1
+              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+              IOFF = 0
+              DO 300 IREPC = 0, MAXREP
+                IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+     &            .EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   IFGTBL(IATOM,IJ,IREPC) = ITYP
                   LABINT(ITYP) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
-     &               CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
-     &               CHRNOS(IOFF)
+     &            CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
+     &            CHRNOS(IOFF)
                   INTREP(ITYP) = IREPC
-               END IF
- 300        CONTINUE
- 200     CONTINUE
+                END IF
+ 300          CONTINUE
+ 200        CONTINUE
+          END IF
+ 100    CONTINUE
+      ELSE
+        ITYP = 0
+        DO 101 IATOM = 1, NUCIND
+          IF (DOATOM(IATOM)) THEN
+            IJ = 0
+            DO 201 ICOOR1 = 1, 3
+            DO 201 ICOOR2 = ICOOR1, 3
+              IJ = IJ + 1
+              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+              IOFF = 0
+              DO 301 IREPC = 0, MAXREP
+                IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+     &            .EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+                  IFGTBL(IATOM,IJ,IREPC) = ITYP
+                  LABINT(ITYP) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &            CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
+     &            CHRNOS(IOFF)
+                  INTREP(ITYP) = IREPC
+                END IF
+ 301          CONTINUE
+ 201        CONTINUE
+          ELSE 
+            IJ = 0
+            DO 202 ICOOR1 = 1, 3
+            DO 202 ICOOR2 = ICOOR1, 3
+              IJ = IJ + 1
+              ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+              IOFF = 0
+              DO 302 IREPC = 0, MAXREP
+                IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ))
+     &            .EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+                  IFGTBL(IATOM,IJ,IREPC) = ITYP
+                  LABINT(ITYP) =CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'MMMEFG'
+                  INTREP(ITYP) = IREPC
+                END IF
+ 302          CONTINUE
+ 202        CONTINUE
+          END IF
+ 101    CONTINUE
       END IF
- 100  CONTINUE
       RETURN
       END
 C  /* Deck efgsph */

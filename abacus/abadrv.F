@@ -635,7 +635,7 @@ C
      &             '*EXCITA', '*REORT ', '*RESPON',
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
-     &             '*FLOAT ', '*XXXXXX', '*XXXXXX',
+     &             '*FLOAT ', '*QM3INP', '*XXXXXX',
      &             '*XXXXXX', '*XXXXXX', '*SOPPA ',
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
@@ -646,7 +646,7 @@ Caug04-hjaaj: disabled currently inactive .NACME
      &             '.DIPGRA', '.POLARI', '.MOLHES',
      &             '.INPTES', '.VIBANA', '.RESTAR',
      &             '.OPTROT', '.LINEAR', '.REPS  ',
-     &             '.NUMHES', '.POPANA', '.XXXXXX',
+     &             '.NUMHES', '.POPANA', '.OECD  ',
      &             '.EXCITA', '.SHIELD', '.VCD   ',
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
      &             'xNACME ', '.NOLOND', '.NOHESS',
@@ -731,6 +731,7 @@ C
       NOLOND = .FALSE.
       NOHESS = .FALSE.
       ECD    = .FALSE.
+      OECD   = .FALSE.
       SUPMAT = .FALSE.
       VROA   = .FALSE.
       NODIFC = .FALSE.
@@ -957,6 +958,8 @@ cLig <> added goto 151
             POLAR  = .TRUE.
          GO TO 100
   115    CONTINUE
+            OECD   = .TRUE.
+            GO TO 126   ! set .ECD also!!!
          GO TO 100
   116    CONTINUE
             DOEXCI = .TRUE.
@@ -1335,6 +1338,8 @@ cLig <<
       END IF
       IF (ABA_ALPHA) WRITE (LUPRI,'(5X,A)')
      &            ' Dynamic electric dipole polarizability'
+      IF (OECD)   WRITE (LUPRI,'(5X,A)')
+     &            ' Oriented electronic circular dichroism'
       IF (ECD)    WRITE (LUPRI,'(5X,A)')
      &            ' Electronic circular dichroism'
       IF (MCD)    WRITE (LUPRI,'(5X,A)')
@@ -1610,6 +1615,7 @@ cs
    16   CALL FLTINP(WORD)
       GO TO 200
    17   CONTINUE
+        CALL QM3INP(WORD)
       GO TO 200
    18   CONTINUE
       GO TO 200
@@ -2766,6 +2772,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <codata.h>
@@ -2794,11 +2801,14 @@ C
 C     Add nuclear and electronic contribution. Keep in electronic part
 C
       DO 70 I = 1, NUCDEP
-         DO 60 J = 1, 3
+        IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
+     &     (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+          DO 60 J = 1, 3
             DO 50 K = 1, 3
                ELNQC(J,K,I) = ELNQC(J,K,I) + UCNNQC(J,K,I)
  50         CONTINUE
- 60      CONTINUE
+ 60       CONTINUE
+        END IF
  70   CONTINUE
       IF (IPRINT .GE. 2) THEN
          TEXT = 'Total non-diagonalized EFG Tensor'
@@ -2808,18 +2818,21 @@ C
 C     Diagonalize each atomic EFG tensor
 C
       DO 10 IATOM = 1, NUCDEP
-         CALL DUNIT(AXIS(1,1,IATOM),3)
-         IJ = 1
-         DO 20 I = 1, 3
+        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
+     &     (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+          CALL DUNIT(AXIS(1,1,IATOM),3)
+          IJ = 1
+          DO 20 I = 1, 3
             DO 30 J = 1, I
-               PVAL(IJ) = ELNQC(I,J,IATOM)
-               IJ = IJ + 1
+              PVAL(IJ) = ELNQC(I,J,IATOM)
+              IJ = IJ + 1
  30         CONTINUE
- 20      CONTINUE
-         CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,WRK,IWRK)
-         DIANQC(1,IATOM) = PVAL(1)
-         DIANQC(2,IATOM) = PVAL(3)
-         DIANQC(3,IATOM) = PVAL(6)
+ 20       CONTINUE
+          CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,WRK,IWRK)
+          DIANQC(1,IATOM) = PVAL(1)
+          DIANQC(2,IATOM) = PVAL(3)
+          DIANQC(3,IATOM) = PVAL(6)
+        END IF
  10   CONTINUE
       IF (IPRINT .GE. 2) THEN
          TEXT = 'EFG Principal axis               '
@@ -2830,71 +2843,72 @@ C     Calculate the nuclear quadrupole moments
 C
       NATOM = 0
       DO 100 IATOM = 1, NUCIND
-         DO 110 ISYM = 0, MAXOPR
+        IF (( (QM3) .AND. (ISUBSY(IATOM) .EQ. 0) .AND.
+     &    (ISUBSI(IATOM) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+          DO 110 ISYM = 0, MAXOPR
             IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
-               NATOM = NATOM + 1
-               NUCCHA = IZATOM(IATOM)
-               IF (NUCCHA  .EQ. 0) GOTO 100
-               IF (IPRINT .GE. 0) CALL HEADER('Nuclear quadrupole '//
+              NATOM = NATOM + 1
+              NUCCHA = IZATOM(IATOM)
+              IF (NUCCHA  .EQ. 0) GOTO 100
+              IF (IPRINT .GE. 0) CALL HEADER('Nuclear quadrupole '//
      &                         'moment for   '//NAMDEP(NATOM),-1)
-               DO 120 ISO = 1, 5
-                  QMOM = DISOTP(NUCCHA,ISO,'QMOM')
-                  IF (QMOM .NE. 0.D0) THEN
-                     SPIN = DISOTP(NUCCHA,ISO,'SPIN')
-                     MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
-                     FACT = CONV*QMOM
-                     FACT2 = FACT/CONV2
-                     IF (IPRINT .GE. 0) THEN
-                        WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F10.8)')
-     &                       'Spin     :',SPIN,'Quadrupole moment:',QMOM
-                        WRITE (LUPRI,'(28X,A2,11X,A3,8X,A5)')
-     &                       'au','MHz','Gauss'
-                     END IF
-                     IZ = IDAMAX(3,DIANQC(1,NATOM),1)
-                     CALL DSWAP(1,DIANQC(3,NATOM),1,DIANQC(IZ,NATOM),1)
-                     IX = IDAMIN(3,DIANQC(1,NATOM),1)
-                     CALL DSWAP(1,DIANQC(1,NATOM),1,DIANQC(IX,NATOM),1)
-                     IF (IPRINT .GE. 0) THEN
-                        WRITE(LUPRI,'(1X,A6,I3,2X,A11,F10.6,3X,F10.6,3X,
-     &                                F10.6)')
-     &                       NAMDEP(NATOM),MASS,'Vx =     ',
-     &                       DIANQC(1,NATOM),DIANQC(1,NATOM)*FACT,
-     &                       DIANQC(1,NATOM)*FACT2
-                        WRITE(LUPRI,'(1X,A6,I3,2X,A11,F10.6,3X,F10.6,3X,
-     &                                F10.6)')
-     &                       NAMDEP(NATOM),MASS,'Vy =     ',
-     &                       DIANQC(2,NATOM),DIANQC(2,NATOM)*FACT,
-     &                       DIANQC(2,NATOM)*FACT2
-                        WRITE(LUPRI,'(1X,A6,I3,2X,A11,F10.6,3X,F10.6,3X,
-     &                                F10.6)')
-     &                       NAMDEP(NATOM),MASS,'Vz =     ',
-     &                       DIANQC(3,NATOM),DIANQC(3,NATOM)*FACT,
-     &                       DIANQC(3,NATOM)*FACT2
-                     END IF
-                     IZ = IDAMAX(3,DIANQC(1,NATOM),1)
-                     CALL DSWAP(1,DIANQC(3,NATOM),1,DIANQC(IZ,NATOM),1)
-                     IX = IDAMIN(3,DIANQC(1,NATOM),1)
-                     CALL DSWAP(1,DIANQC(1,NATOM),1,DIANQC(IX,NATOM),1)
-                     ETA = (DIANQC(1,NATOM) - DIANQC(2,NATOM))/
-     &                      DIANQC(3,NATOM)
-                     IF (IPRINT .GE. 0) THEN
-                        WRITE (LUPRI,'(1X,A39,F14.6)')
-     &                       'Asymmetry constant eta:', ETA
-CMJ   A,Abragam, Principles of Nuclear Magnetism
-                        IF (SPIN .NE. 0.D0.AND.SPIN.NE.0.5) THEN
-                           AUXILM = 3.D0 * (2.D0*SPIN + 3.D0)*QMOM*QMOM*
-     &                          ( 1.D0 + ETA*ETA/3.D0 ) *
-     &                          DIANQC(3,NATOM)*DIANQC(3,NATOM)/
-     &                          ( 40.D0 * SPIN*SPIN *(2.D0*SPIN - 1.D0))
-                           WRITE (LUPRI,'(1X,A39,D14.6)')
-     &                          'Auxiliary value au  1/T', AUXILM
-                        END IF
-                     END IF
-CMJ                  
+              DO 120 ISO = 1, 5
+                QMOM = DISOTP(NUCCHA,ISO,'QMOM')
+                IF (QMOM .NE. 0.D0) THEN
+                  SPIN = DISOTP(NUCCHA,ISO,'SPIN')
+                  MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
+                  FACT = CONV*QMOM
+                  FACT2 = FACT/CONV2
+                  IF (IPRINT .GE. 0) THEN
+                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F10.8)')
+     &                   'Spin     :',SPIN,'Quadrupole moment:',QMOM
+                    WRITE (LUPRI,'(28X,A2,11X,A3,8X,A5)')
+     &                   'au','MHz','Gauss'
                   END IF
+                  IZ = IDAMAX(3,DIANQC(1,NATOM),1)
+                  CALL DSWAP(1,DIANQC(3,NATOM),1,DIANQC(IZ,NATOM),1)
+                  IX = IDAMIN(3,DIANQC(1,NATOM),1)
+                  CALL DSWAP(1,DIANQC(1,NATOM),1,DIANQC(IX,NATOM),1)
+                  IF (IPRINT .GE. 0) THEN
+                    WRITE(LUPRI,'(1X,A6,I3,2X,A11,F10.6,3X,F10.6,3X,
+     &                            F10.6)')
+     &              NAMDEP(NATOM),MASS,'Vx =     ',
+     &              DIANQC(1,NATOM),DIANQC(1,NATOM)*FACT,
+     &              DIANQC(1,NATOM)*FACT2
+                    WRITE(LUPRI,'(1X,A6,I3,2X,A11,F10.6,3X,F10.6,3X,
+     &                            F10.6)')
+     &              NAMDEP(NATOM),MASS,'Vy =     ',
+     &              DIANQC(2,NATOM),DIANQC(2,NATOM)*FACT,
+     &              DIANQC(2,NATOM)*FACT2
+                    WRITE(LUPRI,'(1X,A6,I3,2X,A11,F10.6,3X,F10.6,3X,
+     &                            F10.6)')
+     &              NAMDEP(NATOM),MASS,'Vz =     ',
+     &              DIANQC(3,NATOM),DIANQC(3,NATOM)*FACT,
+     &              DIANQC(3,NATOM)*FACT2
+                   END IF
+                   IZ = IDAMAX(3,DIANQC(1,NATOM),1)
+                   CALL DSWAP(1,DIANQC(3,NATOM),1,DIANQC(IZ,NATOM),1)
+                   IX = IDAMIN(3,DIANQC(1,NATOM),1)
+                   CALL DSWAP(1,DIANQC(1,NATOM),1,DIANQC(IX,NATOM),1)
+                   ETA = (DIANQC(1,NATOM) - DIANQC(2,NATOM))/
+     &                    DIANQC(3,NATOM)
+                   IF (IPRINT .GE. 0) THEN
+                     WRITE (LUPRI,'(1X,A39,F14.6)')
+     &                     'Asymmetry constant eta:', ETA
+                     IF (SPIN .NE. 0.D0.AND.SPIN.NE.0.5) THEN
+                       AUXILM = 3.D0 * (2.D0*SPIN + 3.D0)*QMOM*QMOM*
+     &                        ( 1.D0 + ETA*ETA/3.D0 ) *
+     &                 DIANQC(3,NATOM)*DIANQC(3,NATOM)/
+     &                        ( 40.D0 * SPIN*SPIN *(2.D0*SPIN - 1.D0))
+                       WRITE (LUPRI,'(1X,A39,D14.6)')
+     &                        'Auxiliary value au  1/T', AUXILM
+                     END IF
+                   END IF
+                 END IF
  120           CONTINUE
-            END IF
- 110     CONTINUE
+             END IF
+ 110       CONTINUE
+         END IF
  100  CONTINUE
       RETURN
       END
@@ -2903,6 +2917,7 @@ C  /* Deck efgpri */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <maxaqn.h>
 #include <maxorb.h>
       DIMENSION VMAT(3,3,MXCENT)
@@ -2913,13 +2928,16 @@ C  /* Deck efgpri */
 C
       NATOM = 1
       DO 10 I = 1, NUCIND
-         DO 20 J = 0, MAXOPR
+        IF (( (QM3) .AND. (ISUBSY(I) .EQ. 0) .AND.
+     &    (ISUBSI(I) .LE. NSISY(0)) ) .OR. (.NOT. QM3)) THEN
+          DO 20 J = 0, MAXOPR
             IF (IBTAND(ISTBNU(I),J) .EQ. 0) THEN
-               WRITE (LUPRI,'(/A,3X,A)') TEXT,NAMDEP(NATOM)
-               CALL OUTPUT(VMAT(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
-               NATOM = NATOM + 1
+              WRITE (LUPRI,'(/A,3X,A)') TEXT,NAMDEP(NATOM)
+              CALL OUTPUT(VMAT(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
+              NATOM = NATOM + 1
             END IF
- 20      CONTINUE
+ 20       CONTINUE
+        END IF
  10   CONTINUE
       RETURN
       END

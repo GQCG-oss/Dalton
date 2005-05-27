@@ -129,7 +129,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
-     &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V','.XXXXXX',
+     &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V','.ONLYMO',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -219,6 +219,7 @@ C
       ETADSC = .FALSE.
 
       FREEZE = .FALSE.
+      ONLYMO = .FALSE.
       CCSLV  = .FALSE.
       NCCSLV = 0
 
@@ -788,6 +789,8 @@ C                 '.INT4V ' use VVVV integrals in CC3 left transformation
                   LVVVV = .TRUE.
                GO TO 1000
  105           CONTINUE
+                  ONLYMO = .TRUE.
+               GO TO 1000
  106           CONTINUE
  107           CONTINUE
  108           CONTINUE
@@ -4420,7 +4423,7 @@ c /* deck cc_qrinp */
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.EXPCOF','.AVERAG',
      &            '.MIXFRE','.SHGFRE','.ORFREQ','.EOPEFR','.STATIC',
      &            '.DISPCF','.ALLDSP','.XYDEGE','.NOBMAT','.USE R2',
-     &            '.RELAXE','.UNRELA','.USE AA','.XXXXXX','.XXXXXX' /
+     &            '.RELAXE','.UNRELA','.USE AA','.AVANEW','.XXXXXX' /
 
       INTEGER INDPRPCC
 
@@ -4451,6 +4454,7 @@ c /* deck cc_qrinp */
       LBLRX        = .FALSE.
       LCLRX        = .FALSE.
       LRELAX       = .FALSE.    
+      LAVANEW      = .FALSE.
 
       IPRQHYP = 0
 
@@ -4844,11 +4848,19 @@ C           ------------------------------------------------------------
 18          CONTINUE
               USE_AAMAT = .TRUE.
             GO TO 100
-
+C
+C           ------------------------------------------------------------
+C           .AVANEW: Calculates:
+C           beta_i = 1/3 Sum_j=x,y,z [ B_ijj + B_jji + B_jij ]
+C           |beta_i*mu_i| for (i=x,y,z) (mu is the dipole moment)
+C           <beta>=1/6( B_xyz - B_xzy + B_yzx - B_yxz + B_zxy - B_zyx )
+C           ------------------------------------------------------------
+19          CONTINUE
+              LAVANEW = .TRUE.
+            GO TO 100 
 C           -----------------------
 C           .XXXXXX : unused labels
 C           -----------------------
-19          CONTINUE
 20          CONTINUE
               WRITE (LUPRI,*) 'unused .XXXXXX label... ignored'
             GO TO 100
@@ -7489,12 +7501,14 @@ C=====================================================================*
 #include <ccsdinp.h>
 #include <ccsections.h>
 #include <ccsdsym.h>
+#include <ccfield.h>
 #include <ccslvinf.h>
+#include <qm3.h>
 
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_SLVINP')
       INTEGER NTABLE
-      PARAMETER (NTABLE = 9)
+      PARAMETER (NTABLE = 15)
  
       LOGICAL SET
       SAVE SET
@@ -7505,7 +7519,8 @@ C=====================================================================*
 
       DATA SET /.FALSE./
       DATA TABLE /'.SOLVAT','.MXSLIT','.ETOLSL','.TTOLSL','.LTOLSL',
-     *            '.PTSOLV','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.PTSOLV','.CCMM','.DISCEX','.REPTST','.RELMOM',
+     *            '.SLOTH '  ,'.MXINIT','.SKIPNC','.XXXXXX','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -7525,9 +7540,19 @@ C=====================================================================*
       CVGTSOL  = 1.0D-07
       CVGLSOL  = 1.0D-07
       PTSOLV   = .FALSE.
-      ECCCU    = 0.0D0 
+      CCMM     = .FALSE.
+      DISCEX   = .FALSE.
+      ECCCU    = 0.0D0
       XTNCCCU  = 0.0D0
       XLNCCCU  = 0.0D0
+      MXTINIT  = 200
+      MXLINIT  = 200
+      LOITER = .FALSE.
+      REPTST = .FALSE.
+      NREPMT = 0
+      RELMOM = .FALSE.
+      SLOTH = .FALSE.
+      SKIPNC = .FALSE.
 
 *---------------------------------------------------------------------*
 * read input:
@@ -7552,7 +7577,7 @@ C=====================================================================*
 
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_SLVINP.')
 C
 C-----------------------
@@ -7615,7 +7640,8 @@ C-----------------------
 C
 C-----------------------
 C
-7           CONTINUE
+7           CONTINUE 
+               CCMM = .TRUE.
             GO TO 100
 C
 C-----------------------
@@ -7623,6 +7649,7 @@ C
 C-----------------------
 C
 8           CONTINUE
+               DISCEX = .TRUE.
             GO TO 100
 C
 C-----------------------
@@ -7630,8 +7657,57 @@ C
 C-----------------------
 C
 9           CONTINUE
+               READ(LUCMD,*) NREPMT 
+               REPTST = .TRUE.
             GO TO 100
-
+C
+C-----------------------
+C
+C-----------------------
+C
+10          CONTINUE
+               RELMOM = .TRUE.
+            GO TO 100
+C
+C-----------------------
+C
+C-----------------------
+C
+11          CONTINUE
+              SLOTH = .TRUE.
+            GO TO 100
+C
+C-----------------------
+C
+C-----------------------
+C
+12          CONTINUE
+              READ(LUCMD,*) MXTINIT, MXLINIT
+              LOITER = .TRUE.
+            GO TO 100
+C
+C-----------------------
+C
+C-----------------------
+C
+13           CONTINUE
+               SKIPNC = .TRUE.
+            GO TO 100
+C
+C-----------------------
+C
+C-----------------------
+C
+14          CONTINUE
+            GO TO 100
+C
+C-----------------------
+C
+C-----------------------
+C
+15           CONTINUE
+            GO TO 100
+C
           ELSE
            WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -7659,9 +7735,11 @@ C-------------------------------------------------------------------
 C
       CCSLV  = (ICHANG.GT.0)
       IF (CCSLV) RSPIM = .TRUE.
+      IF (CC2) NONHF = .TRUE.
 C
       RETURN
       END
+
 c/* deck cc_r12in */
       SUBROUTINE CC_R12IN(WORD)
 C     Purpose: Read input for R12 calculations.

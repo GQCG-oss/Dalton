@@ -122,6 +122,7 @@ C
 #include <eribuf.h>
 #include <r12int.h>
 #include <grdccpt.h>
+#include <qm3.h>
 
       PARAMETER(NMODEL = 18)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
@@ -147,6 +148,7 @@ C
 C
       CALL QENTER('CC_DRV')
 C
+      IF (.NOT. (ONLYMO)) THEN
       CALL CCTAPINI
       WRITE (LUPRI,'(A,/)') '  '
       WRITE (LUPRI,'(1x,A)')
@@ -180,7 +182,28 @@ C
       IDUM = 0
 C
       IF (IPRINT.GE.5) WRITE(LUPRI,'(/1X,A,I15,/)') 'LWORK = ',LWORK
+      END IF
 C
+      IF (ONLYMO) THEN
+        CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+        REWIND LUSIFC
+C
+        CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+        READ (LUSIFC) NSYM, NORBTS, NBAST, NLAMDS, (NRHFS(I),I=1,NSYM),
+     &                (NORBS(I),I=1,NSYM), (NBAS(I),I=1,NSYM), DUM, DUM
+C
+        CALL GPCLOSE(LUSIFC,'KEEP')
+C
+        CALL CCMM_REP1(WORK,LWORK)
+C
+C       Unit no. for info file set to zero
+C
+        LUMMMO = 0
+C
+        CALL QUITMM('SCF orbitals and energies calculated')
+C
+      END IF
 C----------------------------------------------------
 C     read some flags from /ABAINF/ common block
 C     and close SIRIFC in case of gradient requested.
@@ -488,7 +511,7 @@ C
 C     Dummy assignment to avoid weird bug on SUN.
 C     This should only be a temporary solution - VB
 C
-         NN = NSLV + NCCSLV
+C         NN = NSLV + NCCSLV
          DO 9999 ISLV = 1, NSLV
 C
           LMAXCU = LMAXCC(ISLV)
@@ -559,6 +582,17 @@ C
               GOTO 31
             ENDIF
          ENDIF
+C
+         IF (CCSLV .AND. DISCEX) THEN
+C           IF (CCEXCI .OR. CCEXGR .OR. LRSPSYM .OR. CCLRSD .OR.
+C     *         CCQR2R .OR. CCSM .OR. CCLR .OR. CCQR ) THEN
+             IF (.NOT. CCMM) THEN
+               CALL CCSL_XIETA(WORK,LWORK)
+             ELSE IF (CCMM) THEN
+               CALL CCMM_XIETA(WORK,LWORK)
+             END IF
+C           END IF
+         END IF
 C
 C----------------------------------------------------------------------*
 C
@@ -685,12 +719,17 @@ C        *********************************************
 C-----------------------------------------------------
 C
          IF (CCEXGR) THEN
-           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
-            CALL CC_EXGR(WORK,LWORK)
-           ELSE
-            WRITE(LUPRI,*) 'Excited state gradient properties'//
+           IF (.NOT. CCSLV) THEN
+             IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+              CALL CC_EXGR(WORK,LWORK)
+             ELSE
+              WRITE(LUPRI,*) 'Excited state gradient properties'//
      &         'are not implemented for the requested model.'
-           END IF
+             END IF
+           ELSE 
+            WRITE(LUPRI,*) 'Solvent model not implemented for'//
+     &                     'excited state gradients.'
+           ENDIF
          ENDIF 
 C
 C-----------------------------------------------
@@ -767,7 +806,7 @@ C        **********************************************
 C------------------------------------------------------
 C
          IF (CCTM) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
+           IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
             CALL CC_TMCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'third-order transition moments'//
@@ -782,7 +821,7 @@ C        ***********************************************
 C-------------------------------------------------------
 C
          IF (CCMCD) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
+           IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
             CALL CC_MCDCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'magnetic circular dichroism'//
@@ -819,7 +858,8 @@ C        *****************************
 C-----------------------------------------
 C
          IF ( CCLR .AND. CAUCHY) THEN
-           IF (CCS .or. CC2 .or. CCSD .OR. (CC3.AND.CC3RSP)) THEN
+           IF ( (CCS .or. CC2 .or. CCSD .OR. (CC3.AND.CC3RSP)) 
+     &        .AND. (.NOT. CCSLV) ) THEN
              CALL CC_CAUCHY(WORK,LWORK)
            ELSE
              WRITE(LUPRI,'(/,1X,2A)') 'Cauchy moments',
@@ -834,7 +874,8 @@ C        ********************************************
 C----------------------------------------------------
 C
          IF (CCEXLR) THEN 
-           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
+           IF ( (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) 
+     &        .AND. (.NOT. CCSLV) ) THEN
             CALL CC_EXLR(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'Excited state linear response'//
@@ -867,7 +908,8 @@ C---------------------------------------------------
 C
          IF ( CCCR ) THEN
 C
-            IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
+            IF ( (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) 
+     &         .AND. (.NOT. CCSLV) ) THEN
                CALL CC_2HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')
@@ -884,7 +926,7 @@ C--------------------------------------------------
 C
          IF ( CC4R ) THEN
 C
-            IF (CCS .or. CC2 .or. CCSD) THEN
+            IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
                CALL CC_3HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')
@@ -901,7 +943,7 @@ C---------------------------------------------------
 C
          IF ( CC5R ) THEN
 C
-            IF (CCS .or. CC2 .or. CCSD) THEN
+            IF ( (CCS .or. CC2 .or. CCSD) .AND. (.NOT. CCSLV) ) THEN
                CALL CC_4HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')
@@ -1067,8 +1109,10 @@ C
 #include <iratdef.h>
 #include <dummy.h>
       DIMENSION WORK(LWORK)
-      CHARACTER*80  STR,STHELP*10
-C
+      CHARACTER*80  STR
+      CHARACTER STHELP*10
+      CHARACTER LABEL1*8
+      
 #include <codata.h>
 #include <ccorb.h>
 #include <maxorb.h>
@@ -1189,7 +1233,7 @@ C
 C     Writeout the list of properties to summary section of output file.
 C
       CALL FLSHFO(LUPRI)
-      IF ((NPRPC.GT.0).AND.(IPRINT.GT.0)) THEN
+      IF ((NPRPC.GT.0).AND.(IPRINT.GT.8)) THEN
         CALL PRPRPC(LUPRPC,1,DUMMY)
       ENDIF
 C
@@ -1229,6 +1273,12 @@ C
      *'*********************************************************'//
      *'**********************'
 C
+      LABEL1 = 'ALL_DONE'
+      STHELP = 'THE_END '
+      CALL CC_PRPC(ESCF,STHELP,666,
+     *             LABEL1,LABEL1,LABEL1,LABEL1,
+     *             ZERO,ZERO,ZERO,1,0,0,0)
+
       CALL QEXIT('CC_RESUME')
 C
       END
@@ -1416,7 +1466,9 @@ c     DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC)
 C
       CALL QENTER('CC_WPRPCREORDER')
 C
-      IF (NPRPC.NE.NPRPCO) CALL QUIT('Mistmatch in WPRPC')
+C  TEST TEST
+C     IF (NPRPC.NE.NPRPCO) CALL QUIT('Mistmatch in WPRPC')
+C  TEST TEST
 C
 C-----------------------------------------------
 C     Save the current list on ("prpc_tmp") on file.

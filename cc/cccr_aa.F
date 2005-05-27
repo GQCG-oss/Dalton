@@ -37,6 +37,7 @@ c /* deck cccr_aa */
 *=====================================================================*
        SUBROUTINE CCCR_AA ( LABELA, ISYMTA,  ! inp: label/symmetry A
      &                      LISTB,  ITAMPB,  ! inp: B resp. amplit.
+     &                      XINT,
      &                      WORK,   LWORK   )! work space
 *---------------------------------------------------------------------*
 *
@@ -58,6 +59,9 @@ c /* deck cccr_aa */
 *           ISYRES : result vector RHO1, RHO2, i.e. ISYMTA x ISYMTB
 *
 *     Written by Christof Haettig, Februar 1997.
+*
+*             JK+OC. CCSLV: Allow for input of integrals if
+*             LABELA .eq. 'GIVE INT'
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -98,10 +102,10 @@ C#include <ccr1rsp.h>
 
 #if defined (SYS_CRAY)
       REAL FREQB
-      REAL WORK(LWORK)
+      REAL WORK(LWORK), XINT(*)
 #else
       DOUBLE PRECISION FREQB
-      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION WORK(LWORK), XINT(*)
 #endif
 
 * external functions:
@@ -202,14 +206,18 @@ C#include <ccr1rsp.h>
       IF (LEND2 .LT. 0) THEN
         CALL QUIT('Insufficient work space in CCCR_AA.')
       END IF
-
+C
+C     JK+OC, CCSLV 
+      IF (LABELA.EQ.'GIVE INT') THEN
+        CALL DCOPY(N2BST(ISYMTA),XINT(1),1,WORK(KPERTA),1)
+      ELSE
 * read the AO integrals:
-      CALL CCPRPAO(LABELA,WORK(KPERTA),IRREP,ISYM,IERR,
-     &             WORK(KEND2),LEND2)
-      IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
-        CALL QUIT('CCCR_AA: error while reading operator '//LABELA)
+        CALL CCPRPAO(LABELA,WORK(KPERTA),IRREP,ISYM,IERR,
+     &               WORK(KEND2),LEND2)
+        IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
+          CALL QUIT('CCCR_AA: error while reading operator '//LABELA)
+        END IF
       END IF
-
 * get single excitation part of the zeroth order amplitudes:
       IOPT = 1
       CALL CC_RDRSP('R0',1,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))

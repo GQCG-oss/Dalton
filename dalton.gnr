@@ -9,6 +9,7 @@ paramlist="$*"
 OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
+POTEXT="pot"
 
 #default values for options
 optd=0
@@ -26,7 +27,8 @@ usage (){
 	  echo
 	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
 	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
-	  echo
+          echo  "pot{.$POTEXT} (if QM3 calculation)"
+          echo
 	  echo 'Options:'
 	  echo ' -b dir    prepend dir to directory list for basis set searches.'
 	  echo '           Current directory and dalton basis library are included automatically.'
@@ -110,6 +112,17 @@ else
    fi
    input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
 fi
+#  Added option for including a potential.inp file for QM3 calculations
+if [ -n "$3" ]; then
+#  remove .pot, if added by user
+   potfil=`echo $3 | sed "s/\.$POTEXT//"`
+   if [ "$potfil" = "$molfil" ] && [ "$potfil" = "$dalfil" ]; then
+      outnam=$potfil
+   else
+      outnam=${dalfil}_${molfil}_${potfil}
+   fi
+   input_files="input files: $dalfil.$DALEXT ,$molfil.$MOLEXT and $potfil.$POTEXT"
+fi
 #
 export TMPDIR
 if [ ! -d "$TMPDIR" ]; then
@@ -156,6 +169,13 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
    else
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
+#      ierr=1
+   fi
+   if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
+      cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
+   else
+      echo "$WRKDIR/$potfil.$POTEXT does not exist or is not readable"
+      echo "A file with the extension $POTEXT only exist in QM/MM calc."
 #      ierr=1
    fi
    if [ "$optf" != "0" ] ; then

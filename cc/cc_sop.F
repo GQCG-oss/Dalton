@@ -63,6 +63,9 @@ c /* deck CC_SOP */
 #include <ccroper.h>
 #include <cclists.h>
 #include <second.h>
+#include <dummy.h>
+#include <ccsections.h>
+#include <ccslvinf.h>
 
 * local parameters:
       CHARACTER*(17) MSGDBG
@@ -81,19 +84,20 @@ c /* deck CC_SOP */
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL TIM0, TIM1, TIMF, TIMXE, TIMXI, TIMR
+      REAL TIM0, TIM1, TIMF, TIMXE, TIMXI, TIMR, TIMJ
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION TIM0, TIM1, TIMF, TIMXE, TIMXI, TIMR
+      DOUBLE PRECISION TIM0, TIM1, TIMF, TIMXE, TIMXI, TIMR, TIMJ
 #endif
 
       INTEGER NBSOP, MXTRAN, MXVEC
-      INTEGER MXFTRAN, MXXITRAN, MXRTRAN
-      INTEGER MXFDOTS, MXXIDOTS, MXRDOTS
+      INTEGER MXFTRAN, MXXITRAN, MXRTRAN, MXJTRAN
+      INTEGER MXFDOTS, MXXIDOTS, MXRDOTS, MXJDOTS
       INTEGER MXXETRAN, MXXEDOTS
-      INTEGER NFTRAN, NXITRAN, NRTRAN, NXETRAN
+      INTEGER NFTRAN, NXITRAN, NRTRAN, NXETRAN, NJTRAN
       INTEGER KRESULT, KFTRAN, KFDOTS, KFCONS, KXITRAN, KXIDOTS, KXICONS
       INTEGER KXETRAN, KXDOTS, KXCONS, KEDOTS, KECONS
+      INTEGER KJTRAN, KJDOTS, KJCONS
       INTEGER KEND0, LEND0, IOPT, KRCONS, KRDOTS, KRTRAN, IORDER
       INTEGER KEND1, LWRK1, LRESULT
 
@@ -139,11 +143,13 @@ c /* deck CC_SOP */
       MXVEC   = MAX(NLRTLBL,NLRTHFLBL)
 
       MXFTRAN  = MXDIM_FTRAN * MXTRAN
+      MXJTRAN  = MXDIM_JTRAN * MXTRAN
       MXXITRAN = 1 * MXTRAN
       MXRTRAN  = 1 * MXTRAN
       MXXETRAN = MXDIM_XEVEC * MXTRAN
 
       MXFDOTS  = MXVEC * MXTRAN
+      MXJDOTS  = MXVEC * MXTRAN
       MXXIDOTS = MXVEC * MXTRAN
       MXRDOTS  = MXVEC * MXTRAN
       MXXEDOTS = MXVEC * MXTRAN
@@ -154,7 +160,10 @@ c /* deck CC_SOP */
       KFTRAN  = KRESULT + LRESULT
       KFDOTS  = KFTRAN  + MXFTRAN
       KFCONS  = KFDOTS  + MXFDOTS
-      KXITRAN = KFCONS  + MXFDOTS
+      KJTRAN  = KFCONS  + MXFDOTS
+      KJDOTS  = KJTRAN  + MXJTRAN
+      KJCONS  = KJDOTS  + MXJDOTS
+      KXITRAN = KJCONS  + MXJDOTS
       KXIDOTS = KXITRAN + MXXITRAN
       KXICONS = KXIDOTS + MXXIDOTS
       KRTRAN  = KXICONS + MXXIDOTS
@@ -181,6 +190,7 @@ c /* deck CC_SOP */
 
       CALL CCLR_SETUP(MXTRAN, MXVEC,
      &           WORK(KFTRAN), WORK(KFDOTS), WORK(KFCONS), NFTRAN,
+     &           WORK(KJTRAN), WORK(KJDOTS), WORK(KJCONS), NJTRAN,
      &           WORK(KXITRAN),WORK(KXIDOTS),WORK(KXICONS),NXITRAN,
      &           WORK(KRTRAN), WORK(KRDOTS), WORK(KRCONS), NRTRAN,
      &           WORK(KXETRAN),WORK(KXDOTS), WORK(KEDOTS),
@@ -202,7 +212,23 @@ c /* deck CC_SOP */
       IF (NFTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
      & '>>> Time used for',NFTRAN,' F matrix transformations:',TIMF
       CALL FLSHFO(LUPRI)
+*---------------------------------------------------------------------*
+* calculate J matrix contributions:
+*---------------------------------------------------------------------*
+      IF (CCSLV) THEN
+        TIM1 = SECOND()
 
+        IOPT = 5
+        CALL CC_JMATRIX(WORK(KJTRAN),NJTRAN,'L1 ',IOPT,'L1 ',
+     &                  WORK(KJDOTS),WORK(KJCONS),MXVEC,
+     &                  WORK(KEND0), LEND0)
+
+        TIMF = SECOND() - TIM1
+
+        IF (NJTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     &   '>>> Time used for',NJTRAN,' J matrix transformations:',TIMF
+        CALL FLSHFO(LUPRI)
+      END IF
 *---------------------------------------------------------------------*
 * calculate ETA{O} x R1 and Xksi{O} x L1 vector contributions:
 *---------------------------------------------------------------------*
@@ -256,6 +282,7 @@ c /* deck CC_SOP */
 
       CALL CCLR_SETUP(MXTRAN, MXVEC,
      &           WORK(KFTRAN), WORK(KFDOTS), WORK(KFCONS), NFTRAN,
+     &           WORK(KJTRAN), WORK(KJDOTS), WORK(KJCONS), NJTRAN,
      &           WORK(KXITRAN),WORK(KXIDOTS),WORK(KXICONS),NXITRAN,
      &           WORK(KRTRAN), WORK(KRDOTS), WORK(KRCONS), NRTRAN,
      &           WORK(KXETRAN),WORK(KXDOTS), WORK(KEDOTS),
@@ -334,11 +361,11 @@ c /* deck ccsopprt */
 
 
       CHARACTER*5  BLANKS
-      CHARACTER*8  LABA, LABB
+      CHARACTER*8  LABA, LABB, ALPHLAB
       CHARACTER*10 MODEL, RLXA, RLXB
       CHARACTER*80 STRING
       INTEGER LWORK
-      INTEGER ISYMA, ISYMB, ISAMA, ISAMB, ISAPROP, IRELAX, M
+      INTEGER ISYMA, ISYMB, ISYMAB, ISAMA, ISAMB, ISAPROP, IRELAX, M
       INTEGER IFREQ, IOPER, ICMP, ITURN, MXTURN, ITST, ITST2, IPAR
       INTEGER IFRZER, IBLRFR
 
@@ -454,7 +481,14 @@ c /* deck ccsopprt */
      &        '---'
            END IF
          END IF
+         ISYMAB = MULD2H(ISYMA,ISYMB)
+         CALL CC_PRPC(PROP,MODEL,2,
+     &                LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &                LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &                BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     &                0,0,0)
 
+C
          DO IFREQ = 2, NBLRFR
            IF (ISYMA.EQ.ISYMB) THEN
 
@@ -471,6 +505,11 @@ c /* deck ccsopprt */
      &           ALRFR(IFREQ), BLRFR(IFREQ), PROP
              END IF
            END IF
+           CALL CC_PRPC(PROP,MODEL,2,
+     &                  LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &                  LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &                  BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     &                  0,0,0)
          END DO
 
       END DO
@@ -526,7 +565,13 @@ c /* deck ccsopprt */
               WRITE(LUPRI,'(/1X,9X,10X,4X,2(F7.4,3X),G16.8,3X,G16.8)')
      &                          ALRFR(IFREQ),BLRFR(IFREQ),ALPHA,ALPHASI
             END IF
-
+C
+            ALPHLAB='isoalpha'
+            CALL CC_PRPC(ALPHA,MODEL,2,
+     *                   ALPHLAB,ALPHLAB,ALPHLAB,ALPHLAB,
+     *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     *                   0,0,0)
+C
           END DO
           END IF
           END DO
@@ -644,7 +689,13 @@ c /* deck ccsopprt */
               END IF
               WRITE(LUPRI,'(80("-"))')
           END IF
-
+C
+            ALPHLAB='anis_inv'
+            CALL CC_PRPC(ANI,MODEL,2,
+     *                   ALPHLAB,ALPHLAB,ALPHLAB,ALPHLAB,
+     *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     *                   0,0,0)
+C
         END DO
         END IF
         END DO

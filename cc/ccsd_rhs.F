@@ -75,6 +75,7 @@ C
 #include <eribuf.h>
 #include <ccnoddy.h>
 #include <r12int.h>
+#include <qm3.h>
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (XMHALF = -0.5D0, XMONE= -1.0D0 )
@@ -370,8 +371,23 @@ C     Put into one-electron integrals.
 C SLV98,OC
 C-------------------------------------
 C
-      IF (CCSLV) THEN
+      IF (CCSLV .AND. (.NOT. CCMM )) THEN
          CALL CCSL_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+      ENDIF
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C CCMM02,JA+AO
+C-------------------------------------
+C
+      IF (CCMM) THEN
+         CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+      ENDIF
+C
+      IF (IPRINT .GT.15) THEN
+         CALL AROUND( 'Fock AO matrix after ff/slv/mm contribution' )
+         CALL CC_PRFCKAO(WORK(KFOCK),1)
       ENDIF
 C
 C====================================================
@@ -1051,6 +1067,29 @@ C
      *                   LFIELD(IF))
           END IF
         END DO 
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C SLV98,OC
+C-------------------------------------
+C
+        IF (CCSLV .AND. (.NOT. CCMM )) THEN
+           CALL CCSL_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+        ENDIF
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C CCMM02,JA+AO
+C-------------------------------------
+C
+        IF (CCMM) THEN
+           CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+        ENDIF
+C
+C----------------------------------
+C
         ! unrelaxed fields are transformed using the Lambda matrices
         CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMDP),WORK(KLAMDH),
      *                WORK(KEND2),LWRK2,1,1,1)
@@ -7420,6 +7459,8 @@ C
 #include <ccsdinp.h>
 #include <ccfield.h>
 #include <leinf.h>
+#include <ccsections.h>
+#include <qm3.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -7526,7 +7567,8 @@ C
   110    CONTINUE
   100 CONTINUE
 C
-      IF ((NFIELD.GT.0).AND.NONHF.AND.(ISIDE.NE.0)) THEN
+      IF (((NFIELD.GT.0).OR.CCSLV)
+     *     .AND.NONHF.AND.(ISIDE.NE.0)) THEN
 C
          KFOCK  = 1
          KEMAT1 = KFOCK  + N2BST(ISYMOP)
@@ -7541,6 +7583,29 @@ C
             FF =  EFIELD(IF)
             CALL CC_ONEP(WORK(KFOCK),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
  13      CONTINUE
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C SLV98,OC
+C-------------------------------------
+C
+         IF (CCSLV .AND. (.NOT. CCMM )) THEN
+            CALL CCSL_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+         ENDIF
+C
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C CCMM02,JA+AO
+C-------------------------------------
+C
+         IF (CCMM) THEN
+            CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
+         ENDIF
+C
+C-------------------------------------
 C
          CALL CC_FCKMO(WORK(KFOCK),XLAMDP,XLAMDH,WORK(KEND1),
      *                 LWRK1,ISYMOP,1,1)

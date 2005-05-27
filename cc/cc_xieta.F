@@ -451,6 +451,8 @@ c /* deck cc_xieta1 */
 #include <cclists.h>
 #include <chrxyz.h>
 #include <dummy.h>
+#include <ccsections.h>
+#include <qm3.h>
 #include <ccnoddy.h>
 #include <cch2d.h>
 #include <ccrc1rsp.h>
@@ -941,7 +943,23 @@ C     ----------------------------------------------------------------
         CALL CC_ONEP(WORK(KONEH0),WORK(KEND0),LWRK0,
      &               EFIELD(IFIELD),ISYM0,LFIELD(IFIELD)) 
       END DO
-
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C SLV98,OC
+C CCMM02,JA+AO
+C-------------------------------------
+C
+      IF (CCSLV .AND. (.NOT. CCMM )) THEN
+         CALL CCSL_RHSTG(WORK(KONEH0),WORK(KEND0),LWRK0)
+      ENDIF
+      IF (CCMM) THEN
+         CALL CCMM_RHSTG(WORK(KONEH0),WORK(KEND0),LWRK0)
+      ENDIF
+C
+C---------------------------------------------
+C
       IF (CCS .OR. CC2) THEN
         CALL DCOPY(N2BST(ISYM0),WORK(KONEH0),1,WORK(KFOCK0),1)
       ELSE

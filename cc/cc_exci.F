@@ -104,6 +104,7 @@ C
       PARAMETER (TWO = 2.0D00,TF=1.0D-04, TLOVLP = 0.5D0 )
       PARAMETER (XMONE = -1.0D00 , THRLDP = 1.0D-20)
       PARAMETER (THRDEGEN = 1.0D-8)
+      CHARACTER*8 LABEL,LABEL1
 C
 #include <leinf.h>
 C
@@ -119,6 +120,8 @@ C
 C
       IF (CCP2)   CCS = .TRUE.
       TRIPLET = .FALSE.
+      LABEL  = "Excita  "
+      LABEL1 = "ExcTot  "
 C
 C----------------------------------------------------------
 C     Reinit NEXCI: Necessary if symmetry has been reduced.
@@ -1239,6 +1242,14 @@ c              WRITE(LURES,9991) IEX,WORK(KEXCIS+IEX-1),
 c    *            WORK(KEXCIS+IEX-1)*XTEV,WORK(KEXCIS+IEX-1)*XTKAYS,
 c    *            WORK(KT1PS+IEX-1)
 c           ENDIF
+            OME   = WORK(KEXCIS+IEX-1)
+            ETOT  = ECCGRS+OME
+            CALL CC_PRPC(OME,MODELP,0,
+     *             LABEL,LABEL,LABEL,LABEL,
+     *             ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
+            CALL CC_PRPC(ETOT,MODELP,0,
+     *             LABEL1,LABEL1,LABEL1,LABEL1,
+     *             ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
  9200    CONTINUE
 C
          DO 9220 IEX =  1, NCCEXSAV(ISYM,IMULT)
@@ -1399,6 +1410,14 @@ c                 ELSE
 c                    WRITE(LURES,9993) IEX,OME,
 c    *                  OME*XTEV,OME*XTKAYS
 c                 ENDIF
+                  ETOT  = ECCGRS+OME
+                  CALL CC_PRPC(OME,MODEL1,0,
+     *                         LABEL,LABEL,LABEL,LABEL,
+     *                         ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
+                  CALL CC_PRPC(ETOT,MODEL1,0,
+     *                         LABEL1,LABEL1,LABEL1,LABEL1,
+     *                         ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
+C
                   IF ((ISYM .EQ. IXSTSY).AND.(IEX.EQ.IXSTAT)) THEN
                      OMECCX = OME
                      ECCXST = ECCGRS + OMECCX
