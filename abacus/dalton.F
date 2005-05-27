@@ -236,7 +236,17 @@ Cef end
       IF (INDEX(BASDIR,
      &INSTALL_BASDIR
      &) .LE. 0) THEN
-         IEND = INDEX(BASDIR,' ') - 1
+
+Chjaaj   IEND = INDEX(BASDIR,' ') - 1
+Chjaaj   not good, will give wrong IEND if any directories
+Chjaaj   contains blanks, as in '/home/my basdir/'); thus
+         DO I = LBASDIR,1,-1
+            IF (BASDIR(I:I) .NE. ' ') THEN
+               IEND = I
+               GO TO 20
+            END IF
+         END DO
+   20    CONTINUE
 C
 #if defined (VAR_ABSOFT)
          BASDIR="Insert basis-directory path here"

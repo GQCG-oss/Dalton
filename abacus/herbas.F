@@ -107,8 +107,17 @@ C
       ANO    = .FALSE.
       SADLEJ = .FALSE.
       NQVD   = .FALSE.
+
+C     control print in herbas, IPREAD = IPRUSR + 1 = 1
+C     by default
+      IPRINT = IPREAD
+
       IF (BASNAM(1:6) .EQ. 'HUCKEL') THEN
-C jan 2000 hjaaj:
+
+C        by default do not print which basis set directory
+C        is used for huckel (IPREAD .EQ. 1 by default) /hjaaj
+         IPRINT = IPREAD - 1
+
 C
 C hjaaj jan 2000:
 C        New Huckel based on ano-4 instead of STO-3G.
@@ -294,11 +303,14 @@ C
 C    
 C Finds the right element in the file. 
 C
+      IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,I4,A)')
+     &   '  Used basis set file for basis set for elements with Z =',
+     &   INTQ,' :'
       IF (NQVD) THEN
          CALL FINNQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,SEG,
-     &               KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS)
+     &               KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
       ELSE
-         CALL FINDEL(BASTMP,INTQ,LUBAS)
+         CALL FINDEL(BASTMP,INTQ,LUBAS,IPRINT)
 C
 C Finds the number of primitives and columns of contraction coeffecients
 C
@@ -821,7 +833,7 @@ C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck findel */
-      SUBROUTINE FINDEL(BASNAM,INTQ,LUBAS)
+      SUBROUTINE FINDEL(BASNAM,INTQ,LUBAS,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 C*********************************************************
@@ -835,7 +847,7 @@ C
       CHARACTER*140 STRING
       CHARACTER SIGN
 C
-      CALL  FIND_BASFIL(BASNAM,LUBAS)
+      CALL  FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C Searching the file for the element.
 C
@@ -867,7 +879,7 @@ C
 C/* Deck finnqd */
       SUBROUTINE FINNQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
      &                  NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
-     &                  UNCONT,LUBAS)
+     &                  UNCONT,LUBAS,IPRINT)
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -906,7 +918,7 @@ C     ... force uncontracted irrespective of .mol file
          END IF
       END IF
 C
-      CALL  FIND_BASFIL('NQvD',LUBAS)
+      CALL  FIND_BASFIL('NQvD',LUBAS,IPRINT)
 C
 C Searching the file for the element.
 C
@@ -1150,7 +1162,7 @@ C
       CALL QUIT('Incomplete basis set file in HERBAS')
       END
 C/* Deck FIND_BASFIL */
-      SUBROUTINE FIND_BASFIL(BASNAM,LUBAS)
+      SUBROUTINE FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C     Joern Thyssen and Hans Joergen Aa. Jensen.
 C     Last revision Feb. 2005
@@ -1190,41 +1202,64 @@ C     Find next colon in BASDIR
 C
       ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
 C
-C     In there are no colons, we are the last directory in BASDIR
+C     In there are no colons, we are at the last directory in BASDIR
 C
       IF ( ICOLON .EQ. ISTART - 1 ) THEN
 C
 C        Find end of string
+C        (done this way, because user may have specifed
+C        a directory name with one or more blanks in it,
+C        as /home/xxx/My jobs/My basdir/ )
 C
-         ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ' ' )
+         DO I = LBASDIR,ISTART,-1
+            IF (BASDIR(I:I) .NE. ' ') THEN
+               ICOLON = I
+               GO TO 20
+            END IF
+         END DO
 C
 C        If end of string = start of string there are no more
 C        directories, so we gracefully die...
 C
-         IF ( ICOLON .EQ. ISTART ) GOTO 300
+   20    IF ( ICOLON .LE. ISTART ) GOTO 300
       END IF
       IEND = ICOLON - 1
+      IF (IEND .LT. ISTART) THEN
+C        User has started with ':',
+C        or has two consecutivec colons as '::',
+C        we skip to next item.
+         ISTART = ICOLON + 1
+         GO TO 10
+      END IF
       STRING = BASDIR(ISTART:IEND)
+      LSTR   = IEND + 1 - ISTART
       ISTART = ICOLON + 1
 C
 C     Add trailing slash if not present.
 C
-      IEND = INDEX ( STRING(1:), ' ') - 1
-      IF ( STRING(IEND:IEND) .NE. '/' ) THEN
-         IEND = IEND + 1
-         STRING(IEND:IEND) = '/'
+      IF ( STRING(LSTR:LSTR) .NE. '/' ) THEN
+         LSTR = LSTR + 1
+         STRING(LSTR:LSTR) = '/'
       END IF
-      STRING = STRING(1:IEND)//BASNAM
-      IEND = INDEX(STRING(1:),' ') - 1
-Cluuk Activate when debugging basis set search (should not be on by default)
-CLuuk WRITE(LUPRI,'(A/,A1,A,A1)')
-CLuuk&     ' Searching basis : trying file: ','"',STRING(1:IEND),'"'
+      STRING = STRING(1:LSTR)//BASNAM
+      LSTR = LSTR + INDEX(BASNAM,' ') - 1
+      IF (IPRINT .GT. 1) WRITE(LUPRI,'(4A)')
+     &   '  Trying file: ','"',STRING(1:LSTR),'"'
 C
 C     Inquire if "/path/basis-set" exists.
 C
-      INQUIRE (FILE = STRING(1:IEND), EXIST = EXST)
+      INQUIRE (FILE = STRING(1:LSTR), EXIST = EXST)
       IF (EXST) THEN
-         CALL GPOPEN(LUBAS,STRING(1:IEND),'OLD',' ','FORMATTED',IDUMMY,
+C        We print which basis set is used, user may have
+C        specified several basis set directories, and
+C        without this output there is not documentation
+C        for which is used.
+C        This text is continuation of text in BASLIB.½
+C        (By default suppressed for HUCKEL basis by setting
+C         IPRINT = IPREAD - 1 for HUCKEL) /hjaaj
+         IF (IPRINT .GE. 1) WRITE (LUPRI,'(3A)')
+     &     '     "',STRING(1:LSTR),'"'
+         CALL GPOPEN(LUBAS,STRING(1:LSTR),'OLD',' ','FORMATTED',IDUMMY,
      &               .TRUE.)
          RETURN
       ELSE
