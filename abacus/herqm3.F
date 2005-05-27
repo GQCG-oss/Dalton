@@ -1,0 +1,3834 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+C
+C------------------------------------------------------------------------
+C||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+C------------------------------------------------------------------------
+C written by JK+AO 2002
+C
+C-------------------------------------------------------------------------
+C  /* Deck qm3inp */
+      SUBROUTINE QM3INP(WORD)
+C-------------------------------------------------------------------------
+C
+C INPUT FROM ABACUS TO QM3 CALCULATIONS 
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxsymm.h>
+#include <qm3.h>
+C
+      PARAMETER ( NTABLE = 14, D1 = 1.0D0)
+      LOGICAL NEWDEF
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER TSTCHA*1,WORD2*6,WORD3*6
+      CHARACTER*80 INLINE
+#include <cbirea.h>
+#include <ccom.h>
+C
+      DATA TABLE /'.QM3'   , '.THRDIP', '.MAXDIP', '.FIXMOM',
+     *            '.OLDTG', '.PRINT', '.ATMVDW', '.CLONLY',
+     *            '.VDWSKP', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+     *            '.XXXXXX', '.XXXXXX'/
+C
+C     Initializing QM3 keywords
+C
+      QM3 = .FALSE.
+      THDISC = 1.0D-9 
+      MXDIIT = 80
+      FIXMOM = .FALSE.
+      OLDTG  = .FALSE.
+      LONEPAR = .FALSE.
+      LTWOPAR = .FALSE.
+      LEPSADD = .FALSE.
+      LSIGADD = .FALSE.
+      LOCLAS  = .FALSE.
+      IQM3PR = 0
+      VDWSKP = .FALSE.
+C
+C
+C     CRUCIAL TEST : MXENT has to be equal to MXQM3
+C
+      IF (MXCENT .NE. MXQM3) THEN
+        CALL QUIT('MXCENT has to be equal to MXQM3')
+      END IF
+C
+      NEWDEF = (WORD .EQ. '*QM3INP')
+      ICHANG = 0
+C
+      IF (NEWDEF) THEN
+        WORD1 = WORD
+C
+  100   CONTINUE
+C
+        READ (LUCMD, '(A7)') WORD
+        PROMPT = WORD(1:1)
+C
+        IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+          GO TO 100
+        ELSE IF (PROMPT .EQ. '.') THEN
+          ICHANG = ICHANG + 1
+          DO 200 I = 1, NTABLE
+            IF (TABLE(I) .EQ. WORD) THEN
+              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
+            END IF
+  200     CONTINUE
+          IF (WORD .EQ. '.OPTION') THEN
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            GO TO 100
+          END IF
+C
+          WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *                             '" not recognized in QM3INP.'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal keyword in REAINP.')
+C
+    1     CONTINUE
+            QM3 = .TRUE.
+          GO TO 100
+C
+    2     CONTINUE
+            READ(LUCMD,*) THDISC
+          GO TO 100
+C
+    3     CONTINUE
+            READ(LUCMD,*) MXDIIT
+          GO TO 100
+C
+    4     CONTINUE
+            FIXMOM = .TRUE.
+          GO TO 100
+C
+    5     CONTINUE
+            OLDTG = .TRUE.
+          GO TO 100
+C
+    6     CONTINUE
+            READ(LUCMD,*) IQM3PR
+          GO TO 100
+C
+    7     CONTINUE 
+            READ(LUCMD,'(A)') INLINE
+            DO 500 K=1,80
+              TSTCHA = INLINE(K:K)
+              IF (TSTCHA .NE. ' ') THEN
+                WORD2 = INLINE(K:K+5)
+              GOTO 501
+              END IF
+  500       CONTINUE
+  501       CONTINUE
+C
+          IF (WORD2 .EQ. 'TWOPAR') THEN
+            LTWOPAR = .TRUE.
+            GOTO 100
+          ELSE
+            LONEPAR = .TRUE.
+            IF (WORD2 .EQ. 'EPSADD') THEN
+              LEPSADD = .TRUE.
+            ELSE IF (WORD2 .EQ. 'EPSMLT') THEN
+              LEPSADD = .FALSE.
+            ELSE IF (WORD2 .EQ. 'SIGADD') THEN
+              LSIGADD = .TRUE.
+            ELSE IF (WORD2 .EQ. 'SIGMLT') THEN
+              LSIGADD = .FALSE.
+            ELSE
+              CALL QUIT('Error 1 in .ATMVDW input i DALTON.INP')
+            END IF
+C
+            WORD3 = WORD2
+C
+            READ(LUCMD,'(A)') INLINE
+            DO 510 K=1,80
+              TSTCHA = INLINE(K:K)
+              IF (TSTCHA .NE. ' ') THEN
+                WORD2 = INLINE(K:K+5)
+              GOTO 511
+              END IF
+  510       CONTINUE
+  511       CONTINUE
+C
+            IF (WORD2 .EQ. 'EPSADD') THEN
+              LEPSADD = .TRUE.
+            ELSE IF (WORD2 .EQ. 'EPSMLT') THEN
+              LEPSADD = .FALSE.
+            ELSE IF (WORD2 .EQ. 'SIGADD') THEN
+              LSIGADD = .TRUE.
+            ELSE IF (WORD2 .EQ. 'SIGMLT') THEN
+              LSIGADD = .FALSE.
+            ELSE
+              CALL QUIT('Error 2 in .ATMVDW input i DALTON.INP')
+            END IF
+C
+            IF (WORD2(1:3) .EQ. WORD3(1:3)) THEN
+            CALL QUIT('Needs a rule for both Eps and sigma in .ATMVDW!')
+            END IF
+          END IF
+C
+          GO TO 100
+C
+    8     CONTINUE
+            LOCLAS = .TRUE. 
+          GO TO 100
+C
+    9     CONTINUE
+            VDWSKP = .TRUE.
+          GO TO 100
+C
+   10     CONTINUE
+          GO TO 100
+C
+   11     CONTINUE
+          GO TO 100
+C
+   12     CONTINUE
+          GO TO 100
+C
+   13     CONTINUE
+          GO TO 100
+C
+   14     CONTINUE
+          GO TO 100
+C
+        ELSE IF (PROMPT .EQ. '*') THEN
+          GO TO 300
+        ELSE
+          WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *                             '" not recognized in QM3INP.'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal prompt in QM3INP.')
+        END IF
+      END IF
+C
+  300 CONTINUE
+C
+      IF (ICHANG .GT. 0) THEN
+        CALL HEADER('Changes of defaults for QM3INP:',0)
+C
+        WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        WRITE (LUPRI,'(1X,A2,A6,A3,A7,A2)')
+     *         '| ',' WORD:',' | ','CHANGE:',' |'
+        WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+C
+        IF (QM3) THEN
+          WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *           '| ','   QM3',' | ',QM3,' |'
+          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        END IF
+C
+        IF (THDISC .NE. 1.0D-9) THEN
+          WRITE (LUPRI,'(1X,A2,A6,A3,D7.1,A2)')
+     *           '| ','THDISC',' | ',THDISC,' |'
+          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        END IF
+C
+        IF (MXDIIT .NE. 80) THEN
+          WRITE (LUPRI,'(1X,A2,A6,A3,I7,A2)')
+     *           '| ','MXDIIT',' | ',MXDIIT,' |'
+          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        END IF
+C
+        IF (FIXMOM) THEN
+          WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *           '| ','FIXMOM',' | ',FIXMOM,' |'
+          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        END IF
+C
+        IF (OLDTG) THEN
+          WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *           '| ',' OLDTG',' | ',OLDTG,' |'
+          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        END IF
+C
+        IF (IQM3PR .NE. 0) THEN
+          WRITE (LUPRI,'(1X,A2,A6,A3,I7,A2)')
+     *           '| ','PRINT',' | ',IQM3PR,' |'
+          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        END IF
+C
+        IF (LONEPAR) THEN
+          WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *           '| ','ATMVDW',' | ',LONEPAR,' |'
+          IF (LEPSADD) THEN
+            WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *             '| ','EPSADD',' | ',LEPSADD,' |'
+          ELSE IF (.NOT. LEPSADD) THEN
+            WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *             '| ','EPSMLT',' | ',(.NOT.LEPSADD),' |'
+          END IF
+          IF (LSIGADD) THEN
+            WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *             '| ','SIGADD',' | ',LSIGADD,' |'
+          ELSE IF (.NOT. LSIGADD) THEN
+            WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *             '| ','SIGMLT',' | ',(.NOT.LSIGADD),' |'
+          END IF
+          WRITE(LUPRI,'(1X,A1,30A,A1)') '+',('-',J=1,18),'+'
+        END IF
+C
+      END IF
+C
+      END
+C
+C------------------------------------------------------------------------
+C  /* Deck rdpot */
+      SUBROUTINE RDPOT()
+C------------------------------------------------------------------------
+C
+C <<< General Input for MM potentials>>>
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <abainf.h>
+#include <inftap.h>
+#include <qm3.h>
+C
+      PARAMETER (NTABLE = 24,NTAB1 = 16)
+      PARAMETER (DHALF = 0.5D0, D0 = 0.0D0)
+C
+      CHARACTER WORD*7, WORD1*7, PROMPT*1,TSTCHA*1,
+     &          TABLE(NTABLE)*7, TABLE1(NTAB1)*7
+      CHARACTER*80 INLINE
+      LOGICAL   LOALIS, LOALTE
+      LOGICAL   LOTEST(0:MXTYPE)
+C
+#if defined (SYS_CRAY)
+      REAL TEMP,TEMP1
+      REAL QM3SIG(0:MXTYPE,MXQM3),QM3EPS(0:MXTYPE,MXQM3)
+#else
+      DOUBLE PRECISION TEMP,TEMP1
+      DOUBLE PRECISION QM3SIG(0:MXTYPE,MXQM3)
+      DOUBLE PRECISION QM3EPS(0:MXTYPE,MXQM3)
+#endif
+C
+      DATA TABLE  /'.TYPE', '.MODEL', '.ALPISO','.ALPTSR',
+     &             '.CHARGS', '.FILINP', '.SHAWFC', '.SIGEPS',
+     &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+     &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+     &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX',
+     &             '.XXXXXX', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
+C
+C     Initialization
+C    
+      ISYTP = 0
+C
+      DO 909 I = 0, MXTYPE
+        ALTXX(I) = D0
+        ALTXY(I) = D0
+        ALTXZ(I) = D0
+        ALTYY(I) = D0
+        ALTYZ(I) = D0
+        ALTZZ(I) = D0
+        ICHRGS(I) = 0
+        ISIGEPS(I)= 0
+        NUALIS(I) = 0
+        DISMOD(I) = .FALSE.
+        RDFILE(I) = .FALSE.
+        SHAWFC(I) = .FALSE.
+        LOTEST(I)= .FALSE.
+C
+        DO 908 J = 1, MXQM3
+          QM3CHG(I,J) = D0
+          QM3SIG(I,J) = D0
+          QM3EPS(I,J) = D0
+          ALPIMM(I,J) = D0
+  908   CONTINUE 
+C
+  909 CONTINUE   
+C
+      CALL TITLER('Output from RDPOT input processing','*',118)
+C
+C     **** Find potential input *****
+C
+      CALL GPOPEN(LUPOT,'POTENTIAL.INP','OLD',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+      REWIND (LUPOT,IOSTAT=IOS)
+C
+C     ... IOSTAT to avoid program abort on some systems
+C         if reading input from a terminal
+C
+      READ (LUPOT,'(A7)',ERR=910) WORD
+C
+      IF (WORD .EQ. '**SYSTP') THEN
+        GOTO 930 
+      ELSE
+        CALL QUIT('**SYSTP has to be the first keyword' //
+     &            ' in POTENTIAL.INP')
+      END IF
+C
+  910 CONTINUE
+C
+      NWARN = NWARN + 1
+      WRITE (LUPRI,*) 'WARNING RDPOT: error reading potential input' 
+C
+  930 CONTINUE
+C
+      WORD1 = WORD
+      READ (LUPOT, '(A7)') WORD
+C
+      IF (WORD .EQ. '.NUMMTP') THEN
+        READ (LUPOT,'(I5)',ERR=940) ISYTP
+      ELSE
+        CALL QUIT('Illegal keyword in POTENTIAL.INP.
+     &  (**SYSTP has to be followed by .NUMMTP)') 
+      END IF
+C
+      GOTO 100
+C
+  940 CONTINUE
+C
+      WRITE (LUPRI,*) 'WARNING RDPOT: error reading
+     &                 number of system types'
+      CALL QUIT('Wrong input for number of system types.')
+C
+C     ***** Process input for COMMON  /QM3SYS/  *****
+C
+C
+  100 DO 555 J=0,ISYTP
+C
+        LOALIS = .FALSE.
+        LOALTE = .FALSE.
+C
+  156   CONTINUE 
+C
+        READ (LUPOT, '(A7)') WORD
+C
+        PROMPT = WORD(1:1)
+C
+        IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+          GO TO 156
+        ELSE IF (PROMPT .EQ. '.') THEN
+C
+          DO 99 I = 1, NTABLE
+            IF (TABLE(I) .EQ. WORD) THEN
+              GO TO (101,102,103,104,105,106,107,108,109,110,111,
+     *               112,113,114,115,116,117,118,119,120,121,122,
+     *               123,124), I
+            END IF
+  99      CONTINUE
+C
+          IF (WORD .EQ. '.OPTION') THEN
+            CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+            GO TO 100
+          END IF
+C
+          WRITE (LUPRI,'(/,3A,/)')
+     *      ' Keyword ',WORD,' not recognized in RDPOT(1).'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal keyword in POTENTIAL.INP 1.')
+C
+  101     CONTINUE
+C
+          IF (J .EQ. 0) THEN
+            READ (LUPOT,'(A)') INLINE
+            DO 344 K=1,80
+              TSTCHA = INLINE(K:K) 
+              IF (TSTCHA .NE. ' ') THEN
+C
+                READ(INLINE(K:K),*) KNUL
+C
+                IF (KNUL .NE. 0) THEN
+                  CALL QUIT('The QM syst. has to be the first system')
+                ELSE
+                  NSYSBG(J) = 0
+                  NSYSED(J) = 0
+                  LSTART =  NSYSED(J) + 1
+                  GOTO 156
+                END IF 
+C
+              END IF
+  344       CONTINUE
+          ELSE
+            READ (LUPOT,'(A)') INLINE
+            DO 343 K= 1,80
+              TSTCHA = INLINE(K:K)
+              IF (TSTCHA .EQ. '-') THEN
+                READ(INLINE(1:K-1),*) NSYSBG(J)
+                READ(INLINE(K+1:80),*) NSYSED(J)
+C
+                IF (.NOT. NSYSBG(J) .LE. NSYSED(J) ) THEN
+                  CALL QUIT('The MM types has been given' //
+     &                      ' in wrong order')
+                END IF
+C
+                IF ( NSYSBG(J) .NE. LSTART ) THEN
+                  CALL QUIT('The MM types has to be given' //
+     &                      ' in continously order')
+                ELSE
+                  LSTART = NSYSED(J) + 1
+                END IF
+                GOTO 156
+              END IF
+  343       CONTINUE
+            CALL QUIT('The MM types has to be seperated by a "-"')
+          END IF
+          GO TO 156
+C
+  102     CONTINUE
+          READ (LUPOT,'(A)') INLINE
+          DO 346 K = 1, 80
+            TSTCHA = INLINE(K:K)
+            IF (INLINE(K:K) .NE. ' ') THEN
+              MDLWRD(J) = INLINE(K:K+6)
+              GOTO 156
+            END IF
+  346     CONTINUE
+C
+  103     CONTINUE
+          LOALIS = .TRUE.
+          READ(LUPOT,*) NUALIS(J)
+          IF (NUALIS(J) .GT. 1) THEN
+            DISMOD(J) = .TRUE.
+          END IF
+          DO 319 MN = 1 ,NUALIS(J)
+            READ (LUPOT,*) ALPIMM(J,MN)
+  319     CONTINUE
+          GO TO 156
+C
+  104     CONTINUE
+          LOALTE = .TRUE.
+          READ (LUPOT,*) ALTXX(J),ALTXY(J),ALTXZ(J),
+     &                  ALTYY(J),ALTYZ(J),ALTZZ(J)
+          GO TO 156
+C
+  105     CONTINUE
+          READ (LUPOT,*) ICHRGS(J)
+          DO 418 L = 1, ICHRGS(J)
+            READ(LUPOT,*) QM3CHG(J,L)
+  418     CONTINUE
+          GO TO 156
+C
+  106     CONTINUE
+          RDFILE(J) = .TRUE.
+          GO TO 156
+C
+  107     CONTINUE
+          SHAWFC(J) = .TRUE.
+          GO TO 156
+C
+  108     CONTINUE
+            IF (.NOT. LONEPAR) THEN
+              CALL QUIT('Atomic vdW-par. not specified in *QM3INP')
+            END IF
+            LOTEST(J) = .TRUE.
+            READ(LUPOT,*) ISIGEPS(J)
+            DO 515 L = 1,ISIGEPS(J)
+              READ(LUPOT,*) QM3SIG(J,L), QM3EPS(J,L)
+  515       CONTINUE
+          GO TO 156
+C
+  109     CONTINUE
+          GO TO 156
+C
+  110     CONTINUE
+          GO TO 156
+C
+  111     CONTINUE
+          GO TO 156
+C
+  112     CONTINUE
+          GO TO 156
+C
+  113     CONTINUE
+          GO TO 156
+C
+  114     CONTINUE
+          GO TO 156
+C
+  115     CONTINUE
+          GO TO 156
+C
+  116     CONTINUE
+          GO TO 156
+C
+  117     CONTINUE
+          GO TO 156
+C
+  118     CONTINUE
+          GO TO 156
+C
+  119     CONTINUE
+          GO TO 156
+C
+  120     CONTINUE
+          GO TO 156
+C
+  121     CONTINUE
+          GO TO 156
+C
+  122     CONTINUE
+          GO TO 156
+C
+  123     CONTINUE
+          GO TO 156
+C
+  124     CONTINUE
+          GO TO 156
+C
+        ELSE IF (WORD .EQ. '*******') THEN
+          GO TO 444 
+        ELSE
+          WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
+          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+          CALL QUIT('Illegal prompt in POTENTIAL.INP 2.')
+        END IF
+C
+C       Testing input according to chosen model
+C
+  444   IF ( (MDLWRD(J) .EQ. 'SPC    ') .AND. 
+     &    ( (LOALIS) .OR. (LOALTE) ) ) THEN
+          CALL QUIT('Wrong input for SPC model')
+        END IF
+C
+        IF ( (MDLWRD(J) .EQ. 'SPC    ') .AND. (RDFILE(J)) ) THEN
+          CALL QUIT('.FILINP can only be used with SPC_E models')
+        END IF
+C
+        IF (NUALIS(J) .GT. 1) THEN
+          IF ((MDLWRD(J) .EQ. 'SPC_E02') .OR.
+     &      (MDLWRD(J) .EQ. 'SPC_EC2') .OR.
+     &      (MDLWRD(J) .EQ. 'SPC_EC4') .OR.
+     &      (MDLWRD(J) .EQ. 'SPC    ')) THEN
+            CALL QUIT('No distributed alpha allowed for this model.')
+          END IF
+        END IF
+C
+        IF ( (MDLWRD(J) .EQ. 'SPC_E01') .AND.
+     &    (LOALTE) .AND. (.NOT. (LOALIS)) ) THEN    
+          CALL QUIT('Wrong input for SPC_E01 model 1')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_E01') .AND.
+     &    (.NOT. (LOALIS)) ) THEN
+          CALL QUIT('Wrong input for SPC_E01 model 2')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_E01') .AND.
+     &    (LOALTE) .AND. (LOALIS) ) THEN
+          CALL QUIT('Wrong input for SPC_E01 model 3')
+        END IF
+C
+        IF ( (MDLWRD(J) .EQ. 'SPC_EC1') .AND.
+     &    (LOALTE) .AND. (.NOT. (LOALIS)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC1 model 1')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC1') .AND.
+     &    (.NOT. (LOALIS)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC1 model 2')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC1') .AND.
+     &    (LOALTE) .AND. (LOALIS) ) THEN
+          CALL QUIT('Wrong input for SPC_EC1 model 3')
+        END IF
+C
+        IF ( (MDLWRD(J) .EQ. 'SPC_E02') .AND.
+     &    (LOALIS) .AND. (.NOT. (LOALTE)) ) THEN
+          CALL QUIT('Wrong input for SPC_E02 model 1')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_E02') .AND.
+     &    (.NOT. (LOALTE)) ) THEN
+          CALL QUIT('Wrong input for SPC_E02 model 2')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_E02') .AND.
+     &    (LOALTE) .AND. (LOALIS) ) THEN
+          CALL QUIT('Wrong input for SPC_E02 model 3')
+        END IF
+C
+        IF ( (MDLWRD(J) .EQ. 'SPC_EC2') .AND.
+     &    (LOALIS) .AND. (.NOT. (LOALTE)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC2 model 1')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC2') .AND.
+     &    (.NOT. (LOALTE)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC2 model 2')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC2') .AND.
+     &    (LOALTE) .AND. (LOALIS) ) THEN
+          CALL QUIT('Wrong input for SPC_EC2 model 3')
+        END IF
+C
+        IF ( (MDLWRD(J) .EQ. 'SPC_EC3') .AND.
+     &    (LOALTE) .AND. (.NOT. (LOALIS)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC3 model 1')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC3') .AND.
+     &    (.NOT. (LOALIS)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC3 model 2')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC3') .AND.
+     &    (LOALTE) .AND. (LOALIS) ) THEN
+          CALL QUIT('Wrong input for SPC_EC3 model 3')
+        END IF
+C
+        IF ( (MDLWRD(J) .EQ. 'SPC_EC4') .AND.
+     &    (LOALIS) .AND. (.NOT. (LOALTE)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC4 model 1')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC4') .AND.
+     &    (.NOT. (LOALTE)) ) THEN
+          CALL QUIT('Wrong input for SPC_EC4 model 2')
+        ELSE IF ( (MDLWRD(J) .EQ. 'SPC_EC4') .AND.
+     &    (LOALTE) .AND. (LOALIS) ) THEN
+          CALL QUIT('Wrong input for SPC_EC4 model 3')
+        END IF
+C
+        IF (J .EQ. ISYTP) NTOTIN = NSYSED(J) 
+C
+C Testing for atomic sigma and epsilon vdw-parameters:
+C
+        IF ( (LONEPAR) .AND. (.NOT. LOTEST(J)) ) THEN
+          CALL QUIT('No sigma and epsilon par. '//
+     *              'given for system')
+        END IF
+C
+  555 CONTINUE
+C
+C***********************************
+C Interaction parameter input table:
+C***********************************
+C
+      DATA TABLE1  /'.LJ_A', '.LJ_B', '.LJ_Aa','.LJ_Ba',
+     &             '.SIGEPS', '.XXXXXX', 'XXXXXX', '.XXXXXX',
+     &             'XXXXXX', '.XXXXXX', 'XXXXXX', '.XXXXXX',
+     &             'XXXXXX', '.XXXXXX', 'XXXXXX', '.XXXXXX'/
+C
+C Initialization of Two-body interaction parameters:
+C
+      DO 1400 IBG = 0,MXTYPE
+        DO 1410 JBG = 0,MXTYPE
+          QM3LJA(IBG,JBG) = D0
+          QM3LJB(IBG,JBG) = D0
+ 1410   CONTINUE
+ 1400 CONTINUE
+C
+      READ (LUPOT,'(A7)') WORD
+C
+      IF (WORD .EQ. '**TWOIA') THEN
+        IF (LONEPAR) THEN
+          CALL QUIT('No twobody interaction terms needed '//
+     *    'when atomic van der Wall parameters given!')
+        END IF
+        GOTO 911
+      ELSE IF ((WORD .EQ. '**END O') .AND.
+     &         (LONEPAR)) THEN
+        GOTO 666
+      ELSE
+        CALL QUIT('**TWOIA NOT FOUND in POTENTIAL.INP')
+      END IF
+C
+  911 CONTINUE
+C
+      WORD1 = WORD
+      NWARN = NWARN + 1
+C
+      ISYTP1 = (ISYTP+1)*ISYTP/2 + ISYTP
+C
+  700 READ (LUPOT, '(A7)') WORD
+C
+      PROMPT = WORD(1:1)
+C
+      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+        GO TO 700
+      ELSE IF (PROMPT .EQ. '.') THEN
+        DO 98 I = 1, NTAB1
+          IF (TABLE1(I) .EQ. WORD) THEN
+            GO TO (250,251,252,253,254,255,256,257,
+     *             258,259,260,261,262,263,264,265), I
+          END IF
+  98    CONTINUE
+C
+        IF (WORD .EQ. '.OPTION') THEN
+          CALL PRTAB(NTAB1,TABLE1,WORD1//' input keywords',LUPRI)
+          GO TO 700
+        END IF
+C
+        WRITE (LUPRI,'(/,3A,/)')
+     *         ' Keyword ',WORD,' not recognized in RDPOT(2).'
+        CALL PRTAB(NTAB1,TABLE1,WORD1//' input keywords',LUPRI)
+        CALL QUIT('Illegal keyword in POTENTIAL.INP 3.')
+C
+  250   CONTINUE
+        IF (LTWOPAR) THEN
+          CALL QUIT('Needs atomic parameters in **TWOIA')
+        END IF
+C
+        READ(LUPOT,*) M
+C
+        IF (M .NE. ISYTP1) THEN
+          WRITE(6,'(1X,A36,I3)')
+     *    'Numbers of LJ_A parameters needed: ',ISYTP1
+           CALL QUIT('Error in number of Lennard-Jones parameters A')
+        END IF
+C
+        DO 22 I = 0,ISYTP
+          DO 33 J = I,ISYTP
+            IF (J .EQ. 0) GOTO 33
+            READ(LUPOT,*) QM3LJA(I,J)
+  33      CONTINUE
+  22    CONTINUE 
+        GO TO 700
+C
+  251   CONTINUE
+        IF (LTWOPAR) THEN
+          CALL QUIT('Needs atomic parameters in **TWOIA')
+        END IF
+C
+        READ(LUPOT,*) M
+C
+        IF (M .NE. ISYTP1) THEN
+          WRITE(6,'(1X,A36,I3)')
+     *    'Numbers of LJ_A parameters needed: ',ISYTP1
+          CALL QUIT('Error in number of Lennard-Jones parameters B')
+        END IF
+C
+        DO 44 I = 0,ISYTP 
+          DO 55 J = I,ISYTP
+            IF (J .EQ. 0) GOTO 55
+            READ(LUPOT,*) QM3LJB(I,J)
+  55      CONTINUE      
+  44    CONTINUE
+        GO TO 700
+C
+  252   CONTINUE
+        IF (LTWOPAR) THEN
+          CALL QUIT('Needs atomic parameters in **TWOIA')
+        END IF
+C
+        READ(LUPOT,*) M
+        GO TO 700
+C
+  253   CONTINUE
+        IF (LTWOPAR) THEN
+          CALL QUIT('Needs atomic parameters in **TWOIA')
+        END IF
+C
+        READ(LUPOT,*) M
+        GO TO 700
+C
+  254   CONTINUE
+          IF (LONEPAR) THEN
+            CALL QUIT('Needs no input from **TWOIA')
+          END IF
+          READ(LUPOT,*) NSIGEPS
+          CALL GPOPEN(LUVDWSE,'VDWSIEP','UNKNOWN',' ','FORMATTED',
+     &                IDUMMY,.FALSE.)
+          DO 1500 KL = 1, NSIGEPS
+            READ(LUPOT,*) I,K,J,L,TEMP,TEMP1
+            WRITE(LUVDWSE,'(4I6,2E22.15)')
+     *            I,K,J,L,TEMP,TEMP1
+ 1500     CONTINUE
+          CALL GPCLOSE(LUVDWSE,'KEEP')
+        GO TO 700
+C
+  255   CONTINUE
+        GO TO 700
+C
+  256   CONTINUE
+        GO TO 700
+C
+  257   CONTINUE
+        GO TO 700
+C
+  258   CONTINUE
+        GO TO 700
+C
+  259   CONTINUE
+        GO TO 700
+C
+  260   CONTINUE
+        GO TO 700
+C
+  261   CONTINUE
+        GO TO 700
+C
+  262   CONTINUE
+        GO TO 700
+C
+  263   CONTINUE
+        GO TO 700
+C
+  264   CONTINUE
+        GO TO 700
+C
+  265   CONTINUE
+        GO TO 700
+C
+      ELSE IF (WORD .EQ. '**END O') THEN
+        GO TO 666
+      ELSE
+        WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
+        CALL PRTAB(NTAB1,TABLE1,WORD1//' input keywords',LUPRI)
+        CALL QUIT('Illegal prompt in POTENTIAL.INP 4.')
+      END IF
+C
+  666 CONTINUE
+C
+      CALL GPCLOSE(LUPOT,'KEEP')
+C
+C----------------------------------------------------
+C Changing the atomic sigma and epsilon parameters to
+C diatomic parameters and saving these on disc:
+C----------------------------------------------------
+C
+      IF (LONEPAR) THEN
+        LCOUNT = 0
+        TEMP = D0
+        TEMP1= D0
+        CALL GPOPEN(LUVDWSE,'VDWSIEP','UNKNOWN',' ','FORMATTED',
+     &              IDUMMY,.FALSE.)
+        DO 1600 I = 0, ISYTP
+          DO 1610 K = 1, ISIGEPS(I)
+            DO 1620 J = I, ISYTP
+              IF ((I .EQ. 0) .AND. (J .EQ. 0)) THEN
+                GOTO 1620
+              ELSE
+                IF (I .EQ. J) THEN
+                  M = K
+                ELSE
+                  M = 1
+                END IF
+                DO 1630 L = M, ISIGEPS(J)
+                  LCOUNT = LCOUNT + 1
+                  IF (LSIGADD) THEN
+                    TEMP = DHALF*(QM3SIG(I,K)+QM3SIG(J,L))
+                  ELSE IF (.NOT. LSIGADD) THEN
+                    TEMP = SQRT(QM3SIG(I,K)*QM3SIG(J,L))
+                  END IF
+                  IF (LEPSADD) THEN
+                    TEMP1 = DHALF*(QM3EPS(I,K)+QM3EPS(J,L))
+                  ELSE IF (.NOT. LEPSADD) THEN
+                    TEMP1 = SQRT(QM3EPS(I,K)*QM3EPS(J,L))
+                  END IF
+                  WRITE(LUVDWSE,'(4I6,2E22.15)')
+     *                  I,K,J,L,TEMP,TEMP1
+ 1630           CONTINUE
+              END IF
+ 1620       CONTINUE
+ 1610     CONTINUE
+ 1600   CONTINUE
+        NSIGEPS = LCOUNT
+        CALL GPCLOSE(LUVDWSE,'KEEP')
+      END IF
+C
+C***************************************
+C  Output design for MM potential input:
+C***************************************
+C
+      DO 818 I = 0, ISYTP
+C
+        IF (I .EQ. 0) THEN
+          WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72) 
+          WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,A1,A31,A1)')
+     *                '|',' QM-sys type: ','|',
+     *                ' Systems:    ','|',' Model:  ','|',
+     *                ' Electric properties:           ',
+     *                '|'
+          WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        END IF
+C
+        IF (I .EQ. 1) THEN
+          WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+          WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,A1,A31,A1)')
+     *                '|',' MM-sys type: ','|',
+     *                ' Systems:    ','|',' Model:  ','|',
+     *                ' Electric properties:           ',
+     *               '|'
+          WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+        END IF
+C
+        IF ( (I .EQ. 0) .AND.
+     &    (MDLWRD(I) .EQ. 'SPC    ') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,
+     &                  A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *          '|','      ',I,'   ',
+     *          '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *          MDLWRD(I),' |',
+     *          ' No classical polarization ','|'
+        ELSE IF ( (I .NE. 0) .AND.
+     &    (MDLWRD(I) .EQ. 'SPC    ') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,
+     &                  A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *          '|','      ',I,'   ',
+     *          '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *          MDLWRD(I),' |',
+     *          ' No polarization in this model!','|'
+        ELSE IF ( (I .EQ. 0) .AND.
+     &    (MDLWRD(I) .EQ. 'SPC_EC1') .OR.
+     &    (MDLWRD(I) .EQ. 'SPC_EC3') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,
+     &                  A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *          '|','      ',I,'   ',
+     *          '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *          MDLWRD(I),' |',
+     *          ' Charges for classical calc.:  ','|'
+C
+          DO 616 L = 1,ICHRGS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','  Q(',L,')=',
+     *                  QM3CHG(I,L),'|'
+  616     CONTINUE
+C
+          IF (.NOT. (DISMOD(I))) THEN
+            WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,
+     &                    A1,A31,A1)')
+     *            '|','             ','|','            ',
+     *            '|','         ','|',
+     *            ' Isotropic perturb. pol.:      ','|'
+          ELSE
+            WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,
+     &                    A1,A31,A1)')
+     *            '|','             ','|','            ',
+     *            '|','         ','|',
+     *            ' Distributed pert. pol.:       ','|'
+          END IF
+C
+          DO 780 L = 1, NUALIS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','alp(',L,')=',
+     *                  ALPIMM(I,L),'|'
+  780     CONTINUE
+C
+        ELSE IF ( (I .NE. 0) .AND.
+     &    (MDLWRD(I) .EQ. 'SPC_EC1') .OR.
+     &    (MDLWRD(I) .EQ. 'SPC_EC3') ) THEN
+          IF (.NOT. (DISMOD(I))) THEN
+            WRITE(LUPRI,'(1X,A1,A6,I5,A3,A2,A1,I4,
+     &                    A1,I4,A1,A2,A8,A2,A31,A1)')
+     *            '|','      ',I,'   ',
+     *            '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *            MDLWRD(I),' |',
+     *            ' Isotropic perturb. pol.:      ','|'
+          ELSE
+            WRITE(LUPRI,'(1X,A1,A6,I5,A3,A2,A1,I4,
+     &                    A1,I4,A1,A2,A8,A2,A31,A1)')
+     *            '|','      ',I,'   ',
+     *            '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *            MDLWRD(I),' |',
+     *            ' Distributed pert. pol.:       ','|'
+          END IF
+C
+          DO 781 L = 1, NUALIS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','alp(',L,')=',
+     *                  ALPIMM(I,L),'|'
+  781     CONTINUE
+C
+        ELSE IF ( (I .EQ. 0) .AND.
+     &    (MDLWRD(I) .EQ. 'SPC_E01') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,
+     &                  A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *          '|','      ',I,'   ',
+     *          '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *          MDLWRD(I),' |',
+     *          '                               ','|'
+C
+          DO 617 L = 1,ICHRGS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','  Q(',L,')=',
+     *                  QM3CHG(I,L),'|'
+  617     CONTINUE
+C
+          IF (.NOT. (DISMOD(I))) THEN
+            WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,
+     &                    A1,A31,A1)')
+     *            '|','             ','|','            ',
+     *            '|','         ','|',
+     *            ' Isotropic polarizability:     ','|'
+          ELSE
+            WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,
+     &                    A1,A31,A1)')
+     *            '|','             ','|','            ',
+     *            '|','         ','|',
+     *            ' Distributed polarizability:   ','|'
+          END IF
+C
+          DO 782 L = 1, NUALIS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','alp(',L,')=',
+     *                  ALPIMM(I,L),'|'
+  782     CONTINUE
+C
+        ELSE IF ( (I .NE. 0) .AND.
+     &    (MDLWRD(I) .EQ. 'SPC_E01') ) THEN
+          IF (.NOT. (DISMOD(I))) THEN
+            WRITE(LUPRI,'(1X,A1,A6,I5,A3,A2,A1,I4,A1,I4,
+     &                    A1,A2,A8,A2,A31,A1)')
+     *            '|','      ',I,'   ',
+     *            '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *            MDLWRD(I),' |',
+     *            ' Isotropic polarizability:     ','|'
+          ELSE
+            WRITE(LUPRI,'(1X,A1,A6,I5,A3,A2,A1,I4,A1,I4,
+     &                    A1,A2,A8,A2,A31,A1)')
+     *            '|','      ',I,'   ',
+     *            '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *            MDLWRD(I),' |',
+     *            ' Distributed polarizability:   ','|'
+          END IF
+C
+          DO 783 L = 1, NUALIS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','alp(',L,')=',
+     *                  ALPIMM(I,L),'|'
+  783     CONTINUE
+C
+        ELSE IF ( (I .EQ. 0) .AND. 
+     &    (MDLWRD(I) .EQ. 'SPC_EC2') .OR.
+     &    (MDLWRD(I) .EQ. 'SPC_EC4') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,
+     &                  A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *          '|','      ',I,'   ',
+     *          '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *          MDLWRD(I),' |',
+     *          '                               ','|'
+C
+          DO 618 L = 1,ICHRGS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','  Q(',L,')=',
+     *                  QM3CHG(I,L),'|'
+  618     CONTINUE
+C
+          WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,
+     &                  A1,A31,A1)')
+     *          '|','             ','|','            ',
+     *          '|','         ','|',
+     *          ' Tensor pertur. polarizability:','|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXX(I),ALTXY(I),ALTXZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXY(I),ALTYY(I),ALTYZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXZ(I),ALTYZ(I),ALTZZ(I),'|'
+C
+        ELSE IF ( (I .NE. 0) .AND. 
+     &    (MDLWRD(I) .EQ. 'SPC_EC2') .OR.
+     &    (MDLWRD(I) .EQ. 'SPC_EC4') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *                '|','      ',I,'   ',
+     *                '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *                MDLWRD(I),' |',
+     *                ' Tensor pertur. polarizability:','|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXX(I),ALTXY(I),ALTXZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXY(I),ALTYY(I),ALTYZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXZ(I),ALTYZ(I),ALTZZ(I),'|'
+C
+        ELSE IF ( (I .EQ. 0) .AND. 
+     &    (MDLWRD(I) .EQ. 'SPC_E02') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,
+     &                  A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *          '|','      ',I,'   ',
+     *          '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *          MDLWRD(I),' |',
+     *          '                               ','|'
+C
+          DO 619 L = 1,ICHRGS(I)
+            WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,1X,
+     &                    A4,I2,A2,F8.4,14X,A1)')
+     *                  '|','|','|','|','  Q(',L,')=',
+     *                  QM3CHG(I,L),'|'
+  619     CONTINUE
+C
+          WRITE(LUPRI,'(1X,A1,A14,A1,A13,A1,A9,
+     &                  A1,A31,A1)')
+     *          '|','             ','|','            ',
+     *          '|','         ','|',
+     *          ' Tensor polarizability:        ','|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXX(I),ALTXY(I),ALTXZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXY(I),ALTYY(I),ALTYZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXZ(I),ALTYZ(I),ALTZZ(I),'|'
+C
+        ELSE IF ( (I .NE. 0) .AND. 
+     &    (MDLWRD(I) .EQ. 'SPC_E02') ) THEN
+          WRITE(LUPRI,'(1X,A1,A6,I5,A3,A2,A1,I4,A1,I4,A1,A2,
+     &                  A8,A2,A31,A1)')
+     *                '|','      ',I,'   ',
+     *                '| ','[',NSYSBG(I),';',NSYSED(I),']',' |',
+     *                MDLWRD(I),' |',
+     *                ' Tensor polarizability:        ','|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXX(I),ALTXY(I),ALTXZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXY(I),ALTYY(I),ALTYZ(I),'|'
+          WRITE(LUPRI,'(1X,A1,14X,A1,13X,A1,9X,A1,
+     &                  1X,F8.4,2X,F8.4,2X,F8.4,2X,A1)')
+     *          '|','|','|','|',ALTXZ(I),ALTYZ(I),ALTZZ(I),'|'
+C
+        ELSE
+          CALL QUIT('No such MM representations implemented')
+        END IF
+C
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+  818 CONTINUE
+C
+      WRITE(LUPRI,'(/)')
+C
+C     Testing for any shadow wavefunctions 
+C
+      LG = 0
+      DO 87 I=1,ISYTP
+       IF (SHAWFC(I)) LG = LG +1
+  87  CONTINUE
+C
+      IF (LG .GE. 1) THEN
+        LOSHAW = .TRUE.
+        WRITE(LUPRI,*)'-----------------------------------------'
+        WRITE(LUPRI,*)'**** Shadow wavefunction calculation ****'
+        WRITE(LUPRI,*)'-----------------------------------------'
+      END IF
+      END
+C
+C----------------------------------------------------------------
+C  /* Deck qm3mas */
+C----------------------------------------------------------------
+      SUBROUTINE QM3MAS(NONT,NONTYP)
+#include <implicit.h>
+C
+C JK+AO nov. 2002
+#include <priunit.h>
+#include <mxcent.h>
+#include <inftap.h>
+#include <qm3.h>
+C
+      PARAMETER  (D0 = 0.0D0)
+      INTEGER    NUALTS, KUTEST
+      CHARACTER  TMPNAM*4, ID3*1
+      LOGICAL    ANGQM3
+      DIMENSION  NONT(*)
+C
+#include <nuclei.h>
+#include <chrnos.h>
+#include <codata.h>
+C
+      TOTMAS = D0
+      LTEMP1 = 0
+C
+C-----------------------------------------------------
+C     First we find the total number of molecules:
+C     In this implementation it is essential that the
+C     MM molecule-numbers enters the programme as
+C     (n + 1) not missing any numbers in between!
+C-----------------------------------------------------
+C
+      NTOTQM3 = 0
+C
+      DO 11 I = 1,NUCIND
+        IF (ISUBSY(I) .GT. NTOTQM3) THEN
+          NTOTQM3 = ISUBSY(I)
+        END IF
+  11  CONTINUE
+C
+C--------------------------------------------------
+C     Testing if type numbers are correctly given:
+C--------------------------------------------------
+C
+      IF (NTOTIN .NE. NTOTQM3) THEN
+        CALL QUIT('Error in total no. of MM molecules')
+      END IF
+C
+C-------------------------------------------------------
+C     Testing if number of coordinates will be exceeded:
+C-------------------------------------------------------
+C
+      KTEMP = 0
+C
+      DO 111 I = 0, ISYTP
+        KTEMP = KTEMP + NUALIS(I) * ( NSYSED(I) - NSYSBG(I) + 1)
+  111 CONTINUE
+C
+      IF ((KTEMP + NUCIND) .GT. MXCENT) THEN
+        WRITE(LUPRI,'(//1X,A32,I5)')'Number of coordinates',
+     &        ' required:',(NUCIND + KTEMP)
+        WRITE(LUPRI,'(1X,A32,I5)')
+     &        'Maximum number of atoms allowed:',MXCENT
+        CALL QUIT('Maximum number of coordinates exceeded')
+      END IF
+C
+C---------------------------------------------------------------
+C     Checking if any coordinate input is to be read from file.
+C---------------------------------------------------------------
+C
+      KG = 0
+      DO 43 I=0,ISYTP
+        IF (RDFILE(I)) KG = KG + 1
+   43 CONTINUE
+C
+      IF (KG .GT. 0) THEN
+         CALL GPOPEN(LUOSCR,'QM3CORD','OLD',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND(LUOSCR)
+      END IF
+C
+C-------------------------------------------------------
+C     Calculating the center of mass of each MM molecule
+C     which does not have a distributed alpha.
+C-------------------------------------------------------
+C
+      KURT = 0
+      KURT1 = 0
+C
+      DO 44 L = 0, ISYTP
+        IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
+          IF ( (.NOT. (DISMOD(L))) .AND. 
+     &      (.NOT. (RDFILE(L))) ) THEN
+            DO 45 M = NSYSBG(L), NSYSED(L)
+C
+              TOTALM = D0
+              COMX = D0
+              COMY = D0
+              COMZ = D0
+              LTEMP = 0
+C
+              DO 55 J=1,NUCIND
+                IF (ISUBSY(J) .EQ. M) THEN
+                  LTEMP = LTEMP + 1
+C
+                  CALL MASFIND(TMPMAS,J)
+C
+                  COMX   = COMX   + TMPMAS * CORD(1,J)
+                  COMY   = COMY   + TMPMAS * CORD(2,J)
+                  COMZ   = COMZ   + TMPMAS * CORD(3,J)
+                  TOTALM = TOTALM + TMPMAS
+                END IF
+  55          CONTINUE
+C
+              KURT = KURT + 1
+              KURT1 = KURT1 + 1
+              TMINV = 1 / TOTALM
+C
+              CORD(1,NUCIND+KURT) = TMINV * COMX
+              CORD(2,NUCIND+KURT) = TMINV * COMY
+              CORD(3,NUCIND+KURT) = TMINV * COMZ
+              CHARGE(NUCIND+KURT) = 0.0000
+              ISUBSY(NUCIND+KURT) = M
+              ISUBSI(NUCIND+KURT) = LTEMP + 1
+              LTEMP1 = LTEMP
+C
+              IF ((KURT - 1) .LT. 10) THEN
+                NAMN(NUCIND+KURT) = 
+     *               'A  '//CHRNOS(MOD((KURT1-1),10))
+              ELSE IF (((KURT-1) .GT. 9) .AND. 
+     &          ((KURT-1) .LT. 100)) THEN
+                NAMN(NUCIND+KURT) = 
+     *               'A '//CHRNOS((KURT1-1)/10)
+     &                   //CHRNOS(MOD((KURT1-1),10))
+              ELSE IF (((KURT-1) .GT. 99) .AND.
+     &          ((KURT-1) .LT. 1000)) THEN
+                NAMN(NUCIND+KURT) = 
+     *               'A'//CHRNOS((KURT1-1)/100)
+     &                  //CHRNOS(MOD((KURT1-1),100)/10)
+     &                  //CHRNOS(MOD((MOD((KURT1-1),100)),10))
+              END IF
+C
+              NAMEX(3*(NUCIND+KURT))   = 
+     *                 NAMN(NUCIND+KURT)//' z'
+              NAMEX(3*(NUCIND+KURT)-1) = 
+     *                 NAMN(NUCIND+KURT)//' y'
+              NAMEX(3*(NUCIND+KURT)-2) = 
+     *                 NAMN(NUCIND+KURT)//' x'
+  45        CONTINUE
+C
+            NSISY(L) = LTEMP1
+C
+          ELSE IF (DISMOD(L) .AND. (.NOT. RDFILE(L)) ) THEN
+            DO 46 M = NSYSBG(L), NSYSED(L)
+C
+              LTEMP = 0
+C
+              DO 47 J = 1, NUCIND
+                IF (ISUBSY(J) .EQ. M ) THEN
+C
+                  LTEMP = LTEMP + 1 
+                  KURT = KURT + 1
+                  KURT1 = KURT1 + 1
+C
+                  CORD(1,NUCIND+KURT) = CORD(1,J)
+                  CORD(2,NUCIND+KURT) = CORD(2,J)
+                  CORD(3,NUCIND+KURT) = CORD(3,J)
+                  CHARGE(NUCIND+KURT) = 0.0000
+                  ISUBSY(NUCIND+KURT) = M
+                  ISUBSI(NUCIND+KURT) = NUALIS(L) + LTEMP
+C
+                  IF ((KURT - 1) .LT. 10) THEN
+                    NAMN(NUCIND+KURT) = 
+     &                   'A  '//CHRNOS(MOD((KURT1-1),10))
+                  ELSE IF (((KURT-1) .GT. 9) .AND.
+     &              ((KURT-1) .LT. 100)) THEN
+                    NAMN(NUCIND+KURT) = 
+     &                   'A '//CHRNOS((KURT1-1)/10)
+     &                   //CHRNOS(MOD((KURT1-1),10))
+                  ELSE IF (((KURT-1) .GT. 99) .AND.
+     &              ((KURT-1) .LT. 1000)) THEN
+                    NAMN(NUCIND+KURT) = 
+     &                   'A'//CHRNOS((KURT1-1)/100)
+     &                   //CHRNOS(MOD((KURT1-1),100)/10)
+     &                   //CHRNOS(MOD((MOD((KURT1-1),100)),10))
+                  END IF
+C
+                  NAMEX(3*(NUCIND+KURT))   = 
+     *                                  NAMN(NUCIND+KURT)//' z'
+                  NAMEX(3*(NUCIND+KURT)-1) = 
+     *                                  NAMN(NUCIND+KURT)//' y'
+                  NAMEX(3*(NUCIND+KURT)-2) = 
+     *                                  NAMN(NUCIND+KURT)//' x'
+                END IF
+  47          CONTINUE
+C
+              NSISY(L) = LTEMP
+C
+  46        CONTINUE
+C
+          ELSE IF ( RDFILE(L) ) THEN
+            READ (LUOSCR,'(2I3,A1)') KUTEST, NUALTS, ID3
+C
+C---------------------------------------------------
+C           Testing if fileinput is correctly given:
+C---------------------------------------------------
+C
+            KTEMP1 = 0  
+            KTEMP1 = NUALIS(L) * ( NSYSED(L) - NSYSBG(L) + 1)
+C
+            IF (KUTEST .NE. L) CALL QUIT('Error in QM3CORD file')
+C
+            IF ( NUALTS .NE. KTEMP1 ) THEN 
+              CALL QUIT('Error in QM3CORD file (no. of alpha sites).')
+            END IF
+C
+            IF (ID3 .NE. ' ') THEN
+              ANGQM3 = .TRUE.
+              WRITE(LUPRI,'(/1X,A15,I4)')'Molecule type: ', L
+              WRITE (LUPRI,'(/1X,A/10X,A,F11.8,A2)')
+     &            'Alpha sites are entered in Angstroms'//
+     &            ' and converted to atomic units.',
+     &            '- Conversion factor : 1 bohr =',XTANG,' A'
+            ELSE
+              ANGQM3 = .FALSE.
+            END IF
+C
+            DO 48 M = NSYSBG(L), NSYSED(L)
+C
+              LTEMP = 0
+              LTEMP1 = 0
+C
+              DO 49 JL = 1, NUCIND
+                IF (ISUBSY(JL) .EQ. M) THEN
+                  LTEMP = LTEMP + 1
+                END IF
+   49         CONTINUE
+C
+              LTEMP1 = LTEMP
+C
+              DO 50 KJ = 1, NUALIS(L)
+C
+                LTEMP1 = LTEMP1 + 1
+                KURT = KURT + 1
+                KURT1 = KURT1 + 1
+C
+                READ (LUOSCR,*)
+     *          CORD(1,NUCIND+KURT),CORD(2,NUCIND+KURT),
+     *          CORD(3,NUCIND+KURT)
+C      
+                IF (ANGQM3) THEN
+                  CORD(1,NUCIND+KURT) = CORD(1,NUCIND+KURT)/XTANG
+                  CORD(2,NUCIND+KURT) = CORD(2,NUCIND+KURT)/XTANG
+                  CORD(3,NUCIND+KURT) = CORD(3,NUCIND+KURT)/XTANG
+                END IF
+C
+                CHARGE(NUCIND+KURT) = 0.0000
+                ISUBSY(NUCIND+KURT) = M
+                ISUBSI(NUCIND+KURT) = LTEMP1
+C
+                IF ((KURT - 1) .LT. 10) THEN
+                  NAMN(NUCIND+KURT) = 
+     &                 'A  '//CHRNOS(MOD((KURT1-1),10))
+                ELSE IF (((KURT-1) .GT. 9) .AND.
+     &            ((KURT-1) .LT. 100)) THEN
+                  NAMN(NUCIND+KURT) = 
+     &                 'A '//CHRNOS((KURT1-1)/10)
+     &                 //CHRNOS(MOD((KURT1-1),10))
+                ELSE IF (((KURT-1) .GT. 99) .AND.
+     &            ((KURT-1) .LT. 1000)) THEN
+                  NAMN(NUCIND+KURT) = 
+     &                 'A'//CHRNOS((KURT1-1)/100)
+     &                 //CHRNOS(MOD((KURT1-1),100)/10)
+     &                 //CHRNOS(MOD((MOD((KURT1-1),100)),10))
+                END IF
+C
+                NAMEX(3*(NUCIND+KURT))   =
+     *                                NAMN(NUCIND+KURT)//' z'
+                NAMEX(3*(NUCIND+KURT)-1) =
+     *                                NAMN(NUCIND+KURT)//' y'
+                NAMEX(3*(NUCIND+KURT)-2) =
+     *                                NAMN(NUCIND+KURT)//' x'
+  50          CONTINUE
+C
+              NSISY(L) = LTEMP
+C
+  48        CONTINUE
+          END IF
+C
+        ELSE IF (MDLWRD(L) .EQ. 'SPC    ') THEN
+          DO 97 M = NSYSBG(L), NSYSED(L)
+C
+            LTEMP = 0
+            KURT1 = KURT1 + 1
+C
+            DO 98 J=1,NUCIND
+              IF (ISUBSY(J) .EQ. M) THEN
+                LTEMP = LTEMP + 1
+              END IF
+  98        CONTINUE
+  97      CONTINUE
+C
+          NSISY(L) = LTEMP
+        END IF
+C
+  44  CONTINUE
+C
+      NUCIND = NUCIND + KTEMP
+      NONTYP = NONTYP + 1
+      NONT(NONTYP) = KTEMP
+C
+      IF (KG .GT. 0) THEN
+        CALL GPCLOSE(LUOSCR,'KEEP')
+      END IF
+C
+C----------------------------------------------------------
+C     Testing if number of distributed polarizabilities are
+C     correctly given:
+C----------------------------------------------------------
+C
+      DO 51 L = 0, ISYTP
+        IF ( DISMOD(L) .AND. (.NOT. RDFILE(L)) ) THEN 
+          IF ( NSISY(L) .NE. NUALIS(L) ) THEN
+            CALL QUIT('Error in no. of distributed pol. in input') 
+          END IF
+        END IF
+   51 CONTINUE
+C
+C---------------------------------------------------------------------
+C Testing if the number of QM nuclei is consistent with the allocation 
+C in READIN in herrdn.F. This is not the most consistent way to do
+C it and we have to return to this issue later on. IMPORTANT if the
+C code has to be a part of the released DALTON code!!A
+C---------------------------------------------------------------------
+C     
+      IF (NSISY(0) .GT. MXNEW) THEN
+        WRITE(LUPRI,'(/1X,A,I3,A/)')'Maximum number of QM atoms '
+     *                 //'allowed is MXNEW = ',MXNEW,
+     *                 '. Turn up the number in "mxcent.h" FILE.' 
+        CALL QUIT('The max. number of QM atoms allowed is exceeded.')
+      END IF
+C
+      END
+C
+C     ******************************************************
+C  /* Deck mmflds */
+      SUBROUTINE MMFLDS()
+C     ******************************************************
+C     This routine calculates the electric fields from the 
+C     different contributers at given positions in the MM
+C     medium.
+C     ******************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+#include <inftap.h>
+C
+      DIMENSION  ENUC(3,MXQM3), ESITE(3,MXQM3)
+      DIMENSION  EQMCLF(3,MXQM3), EELEC(3,MXQM3)
+      DIMENSION  EIND(3,MXQM3), MYIND(3,MXQM3)
+      PARAMETER  (D0 = 0.0D0)
+C
+      LOGICAL    DIPCON, LOEC3L, LOMIND 
+C
+#if defined (SYS_CRAY)
+      REAL              DIST, DISM1, DISM3, ESITE
+      REAL              ENUC, EQMCLF, EIND, MYIND
+      REAL              XDIP1, XDIP2
+#else
+      DOUBLE PRECISION  DIST, DISM1, DISM3, ESITE
+      DOUBLE PRECISION  ENUC, EQMCLF, EIND, MYIND
+      DOUBLE PRECISION  XDIP1, XDIP2
+#endif
+C 
+C-------------------------
+C     Initializing fields:
+C-------------------------
+C
+      DO 19 I = 1, MXQM3
+        DO 26 J = 1, 3
+          ENUC(J,I) = D0
+          ESITE(J,I)= D0
+          EQMCLF(J,I)= D0
+          EIND(J,I) = D0
+          MYIND(J,I) = D0
+   26   CONTINUE
+   19 CONTINUE
+C
+C     **********************************************************
+C     Calculates the static electric fields 
+C     due to the QM nuclei and the partial
+C     charges on the MM nuclei. Also the classical field from
+C     the "QM" system is calculated from the classical charges
+C     given in the input file. If IPRINT .GT. 1 the electric
+C     fields are printed in the output. 
+C     **********************************************************
+C
+      NU = 0
+C      
+      DO 12 KI = 0, ISYTP
+        IF (MDLWRD(KI)(1:5) .EQ. 'SPC_E') THEN
+          DO 13 I = NSYSBG(KI), NSYSED(KI)
+            DO 14 J = 1,NUCIND
+              IF ( (ISUBSY(J) .EQ. I) .AND. 
+     &          (ISUBSI(J) .GT. NSISY(KI)) ) THEN
+C
+                NU = NU + 1
+C
+                DO 15 K = 0, ISYTP
+                  DO 21 LM = NSYSBG(K), NSYSED(K)
+                    IF (LM .NE. I) THEN
+                      DO 16 L = 1, NUCIND
+C
+                        DIST = D0
+                        DISM1 = D0
+                        DISM3 = D0
+C
+                        IF (ISUBSY(L) .EQ. LM) THEN
+                          IF ( (ISUBSY(L) .EQ. 0) .AND.
+     &                      (ISUBSI(L) .LE. NSISY(K)) ) THEN
+C
+                            DIST = (CORD(1,J)-CORD(1,L))**2 +
+     &                             (CORD(2,J)-CORD(2,L))**2 + 
+     &                             (CORD(3,J)-CORD(3,L))**2
+                            DIST = SQRT(DIST)
+                            DISM1 = 1/DIST
+                            DISM3 = DISM1**3
+C
+                            DO 17 M = 1, 3
+                              ENUC(M,NU) = ENUC(M,NU) + 
+     &                        CHARGE(L)*(CORD(M,J)-CORD(M,L))*DISM3
+                              EQMCLF(M,NU) = EQMCLF(M,NU) +
+     &                        QM3CHG(ISUBSY(L),ISUBSI(L))*
+     &                        (CORD(M,J)-CORD(M,L))*DISM3
+  17                        CONTINUE
+C
+                          ELSE IF ( (ISUBSY(L) .GT. 0)
+     &                      .AND. (ISUBSI(L) .LE. NSISY(K)) ) THEN 
+C
+                            DIST = (CORD(1,J)-CORD(1,L))**2 +
+     &                             (CORD(2,J)-CORD(2,L))**2 +
+     &                             (CORD(3,J)-CORD(3,L))**2
+                            DIST = SQRT(DIST)
+                            DISM1 = 1/DIST
+                            DISM3 = DISM1**3
+C                              
+                            DO 18 M = 1, 3
+                              ESITE(M,NU) = ESITE(M,NU) + 
+     &                        CHARGE(L)*(CORD(M,J)-CORD(M,L))*DISM3
+  18                        CONTINUE
+C
+                          END IF
+                        END IF
+  16                  CONTINUE
+                    END IF
+  21              CONTINUE
+  15            CONTINUE
+              END IF
+  14        CONTINUE
+  13      CONTINUE
+        END IF
+  12  CONTINUE
+C
+      KTEMP2 = NU
+C      
+C--------------------------------------
+C testing for special choice of models:
+C--------------------------------------
+C
+        LG = 0
+        LH = 0
+        LOEC3 = .FALSE.
+        LOEC3L = .FALSE.
+        LOMIND = .FALSE.
+C
+        DO 87 I=1,ISYTP
+          IF (MDLWRD(I) .EQ. 'SPC    ') LG = LG +1
+  87    CONTINUE
+C
+        DO 88 I=0,ISYTP
+          IF (MDLWRD(I) .EQ. 'SPC_EC3') LH = LH +1
+  88    CONTINUE
+C
+        IF (LH .GT. 0) THEN
+          LOEC3 = .TRUE.
+          LOEC3L = .TRUE.
+          LOMIND = .FALSE.
+        END IF
+C
+        IF (LG .EQ. ISYTP)  THEN
+          WRITE(LUPRI,*)'All MM models are SPC'
+          LOSPC = .TRUE.
+          IF (MDLWRD(0) .EQ. 'SPC    ') THEN
+            GOTO 117
+          END IF
+        END IF
+C
+C****************************************************************
+C If fixmom is true we do not want to calculate new fields
+C from the induced dipole moments. In such a run we have to 
+C restart from a set of known induced dipole moments. This option
+C is cruzial when testing the response functions as compared to
+C finite field calculations.
+C**************************************************************** 
+C 
+      IF (FIXMOM) THEN
+        WRITE(LUPRI,'(1X,A38)')'Induced dipole moments are kept fixed.'
+        WRITE(LUPRI,'(1X,A9,L2)')'FIXMOM = ',FIXMOM
+      ELSE
+C
+  116   CONTINUE
+C
+        IF (LOMIND) THEN
+          LOEC3L = .FALSE.
+        END IF
+C
+        DIPCON = .FALSE.
+        XDIP1 = D0
+        LM = 0
+C
+        DO 999 ITER = 1, MXDIIT
+C
+          XDIP2 = D0
+          LM = LM +1
+          NUM = 0
+C
+          DO 10 I= 0, ISYTP
+            IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+              DO 20 J = NSYSBG(I), NSYSED(I)
+                DO 101 K = 1, NUALIS(I)
+                  NUM = NUM + 1
+                  DO 40 M = 1, 3
+                    IF ( .NOT. (LOMIND)) THEN
+                      IF ( (MDLWRD(I) .EQ. 'SPC_E01') .OR.
+     &                  (MDLWRD(I) .EQ. 'SPC_EC1') ) THEN
+                        MYIND(M,NUM) = ALPIMM(I,K) *
+     &                  ( EQMCLF(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) )
+                        XDIP2 = XDIP2 + MYIND(M,NUM)**2
+                      ELSE IF (MDLWRD(I) .EQ. 'SPC_EC3') THEN
+                        MYIND(M,NUM) = D0
+                      END IF
+                    ELSE 
+                      IF (MDLWRD(I) .EQ. 'SPC_EC3') THEN
+                        MYIND(M,NUM) = ALPIMM(I,K) *
+     &                  ( EQMCLF(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) )
+                        XDIP2 = XDIP2 + MYIND(M,NUM)**2
+                      END IF 
+                    END IF 
+  40              CONTINUE
+ 101            CONTINUE
+C
+                IF ( (MDLWRD(I) .EQ. 'SPC_E02') .OR.
+     &            (MDLWRD(I) .EQ. 'SPC_EC2') .OR.
+     &            (MDLWRD(I) .EQ. 'SPC_EC4') ) THEN
+                  CALL QUIT('SPC_EX2 model not implemented yet')
+                END IF
+C
+  20          CONTINUE
+            END IF
+  10      CONTINUE
+C
+          NUM = 0
+C
+          DO 50 I= 0, ISYTP
+            IF  (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+              DO 60 J = NSYSBG(I), NSYSED(I)
+                DO 70 K = 1, NUCIND
+                  IF ( (ISUBSY(K) .EQ. J) .AND.
+     &              (ISUBSI(K) .GT. NSISY(I)) ) THEN
+C
+                    NUM = NUM + 1
+C
+                    IF (LOMIND) THEN
+                      IF (MDLWRD(I) .EQ. 'SPC_EC3') THEN
+C
+                        TEMPX = D0
+                        TEMPY = D0
+                        TEMPZ = D0
+                        KURT = 0
+C
+                        DO 80 L = 0, ISYTP
+                          IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
+                            DO 90 M = NSYSBG(L), NSYSED(L)
+                              DO 100 N = 1, NUCIND
+                                IF ( (ISUBSY(N) .EQ. M) .AND.
+     &                            (ISUBSI(N) .GT. NSISY(L)) ) THEN
+C
+                                  KURT = KURT + 1
+C
+                                  IF (J .NE. M)  THEN
+                                    DIST2 =((CORD(1,K)-CORD(1,N))**2 +
+     *                                     (CORD(2,K)-CORD(2,N))**2 +
+     *                                     (CORD(3,K)-CORD(3,N))**2)
+C
+                                    DIST = SQRT(DIST2)
+                                    DIST3 = DIST2*DIST
+                                    DIST4 = DIST2**2
+                                    DIST5 = DIST4*DIST
+C
+                                    DOTPR = (CORD(1,K)-CORD(1,N))*
+     &                                      MYIND(1,KURT) +
+     &                                      (CORD(2,K)-CORD(2,N))*
+     &                                      MYIND(2,KURT) +
+     &                                      (CORD(3,K)-CORD(3,N))*
+     &                                      MYIND(3,KURT)
+C
+                                    TEMPX = TEMPX +
+     &                                      3.0*(CORD(1,K)-CORD(1,N)) *
+     &                                      DOTPR/DIST5 - 
+     &                                      MYIND(1,KURT)/DIST3
+                                    TEMPY = TEMPY +
+     &                                      3.0*(CORD(2,K)-CORD(2,N)) *
+     &                                      DOTPR/DIST5 - 
+     &                                      MYIND(2,KURT)/DIST3
+                                    TEMPZ = TEMPZ +
+     &                                      3.0*(CORD(3,K)-CORD(3,N)) *
+     &                                      DOTPR/DIST5 - 
+     &                                      MYIND(3,KURT)/DIST3
+C
+                                  END IF
+                                END IF
+  100                         CONTINUE
+  90                        CONTINUE
+                          END IF
+  80                    CONTINUE
+C
+                        EIND(1,NUM) = TEMPX
+                        EIND(2,NUM) = TEMPY
+                        EIND(3,NUM) = TEMPZ
+C
+                      END IF
+                    ELSE
+                      IF (MDLWRD(I) .NE. 'SPC_EC3') THEN
+C
+                        TEMPX = D0
+                        TEMPY = D0
+                        TEMPZ = D0
+                        LARS = 0
+C
+                        DO 81 L = 0, ISYTP
+                          IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
+                            DO 91 M = NSYSBG(L), NSYSED(L)
+                              DO 102 N = 1, NUCIND
+                                IF ( (ISUBSY(N) .EQ. M) .AND.
+     &                            (ISUBSI(N) .GT. NSISY(L)) ) THEN
+C
+                                  LARS = LARS + 1
+C
+                                  IF (J .NE. M) THEN
+C
+                                    DIST2 =((CORD(1,K)-CORD(1,N))**2 +
+     *                                     (CORD(2,K)-CORD(2,N))**2 +
+     *                                     (CORD(3,K)-CORD(3,N))**2)
+C
+                                    DIST = SQRT(DIST2)
+                                    DIST3 = DIST2*DIST
+                                    DIST4 = DIST2**2
+                                    DIST5 = DIST4*DIST
+C
+                                    DOTPR = (CORD(1,K)-CORD(1,N))*
+     &                                      MYIND(1,LARS) +
+     &                                      (CORD(2,K)-CORD(2,N))*
+     &                                      MYIND(2,LARS) +
+     &                                      (CORD(3,K)-CORD(3,N))*
+     &                                      MYIND(3,LARS)
+C
+                                    TEMPX = TEMPX +
+     &                                      3.0*(CORD(1,K)-CORD(1,N)) *
+     &                                      DOTPR/DIST5 - 
+     &                                      MYIND(1,LARS)/DIST3
+                                    TEMPY = TEMPY +
+     &                                      3.0*(CORD(2,K)-CORD(2,N)) *
+     &                                      DOTPR/DIST5 - 
+     &                                      MYIND(2,LARS)/DIST3
+                                    TEMPZ = TEMPZ +
+     &                                      3.0*(CORD(3,K)-CORD(3,N)) *
+     &                                      DOTPR/DIST5 - 
+     &                                      MYIND(3,LARS)/DIST3
+C
+                                  END IF
+                                END IF
+  102                         CONTINUE
+  91                        CONTINUE
+                          END IF
+  81                    CONTINUE
+C
+                        EIND(1,NUM) = TEMPX
+                        EIND(2,NUM) = TEMPY
+                        EIND(3,NUM) = TEMPZ
+C
+                      END IF
+                    END IF
+                  END IF
+  70            CONTINUE
+  60          CONTINUE
+            END IF
+  50      CONTINUE
+C
+          WRITE(LUPRI,'(1X,A31,F20.15)')
+     *          'Norm2 of dipole moment vector: ',XDIP2
+C
+          IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
+            DIPCON = .TRUE.
+            WRITE(LUPRI,'(/1X,A27,I3,A12)')
+     *            'Dipole vector converged in ',LM,' iterations.'
+            GOTO 1000
+          ELSE
+            XDIP1 = XDIP2
+          END IF
+C
+  999   CONTINUE
+C
+ 1000   CONTINUE
+C
+        IF (LOEC3L) THEN
+          LOMIND = .TRUE.
+          WRITE(LUPRI,'(/1X,A/)')
+     *    'Epol is calculated according to scheme C3'
+          GOTO 116
+        END IF
+C
+      END IF
+C
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(1X,A/)')
+     *   'Dipole moment not converged self-consistently'
+C
+ 117  CONTINUE
+C
+C     **********************************************************
+C     Print section. Printing if PRINT .GT. 1.
+C     **********************************************************
+C
+      IF (IQM3PR .GE. 2) THEN
+C
+C     --------------------------
+C      The classical 'QM' field:
+C     --------------------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' Field ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0
+        DO 753 I = 0, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 754 J = NSYSBG(I), NSYSED(I)
+              DO 755 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' E(QM) ','|',J,',',L,
+     &          '|',EQMCLF(1,NUM),'|',EQMCLF(2,NUM),
+     &          '|',EQMCLF(3,NUM),'|'
+  755         CONTINUE
+  754       CONTINUE
+          END IF
+  753   CONTINUE
+C
+        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C
+C       ----------------
+C        The site field:
+C       ----------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' Field ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0
+        DO 756 I = 0, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 757 J = NSYSBG(I), NSYSED(I)
+              DO 758 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' Esite ','|',J,',',L,
+     &          '|',ESITE(1,NUM),'|',ESITE(2,NUM),
+     &          '|',ESITE(3,NUM),'|'
+  758         CONTINUE 
+  757       CONTINUE
+          END IF
+  756   CONTINUE
+C
+        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C
+C       ----------------------
+C        The nuclear QM field:
+C       ----------------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' Field ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0 
+        DO 759 I = 0, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 767 J = NSYSBG(I), NSYSED(I)
+              DO 791 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' Enuc. ','|',J,',',L,
+     &          '|',ENUC(1,NUM),'|',ENUC(2,NUM),
+     &          '|',ENUC(3,NUM),'|'
+  791         CONTINUE 
+  767       CONTINUE
+          END IF
+  759   CONTINUE
+C
+        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C
+C       ------------------------------------
+C        The field from the induced dipoles:
+C       ------------------------------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' Field ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0
+        DO 761 I = 0, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 762 J = NSYSBG(I), NSYSED(I)
+              DO 768 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' Eind  ','|',J,',',L,
+     &          '|',EIND(1,NUM),'|',EIND(2,NUM),
+     &          '|',EIND(3,NUM),'|'
+  768         CONTINUE
+  762       CONTINUE
+          END IF
+  761   CONTINUE
+C
+        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C
+C       ----------------------------
+C        The induced dipole moments:
+C       ----------------------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' Field ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0
+        DO 763 I = 0, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 764 J = NSYSBG(I), NSYSED(I)
+              DO 769 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' Dipole','|',J,',',L,
+     &          '|',MYIND(1,NUM),'|',MYIND(2,NUM),
+     &          '|',MYIND(3,NUM),'|'
+  769         CONTINUE 
+  764       CONTINUE
+          END IF
+  763   CONTINUE
+C
+        WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C
+      END IF
+C
+C     **********************************************************
+C     Calculating the 'classical' polarization energy:
+C     **********************************************************
+C
+      ECLPOL = D0
+      EMMPOL = D0
+      NUM = 0
+C
+      DO 200 I = 0, ISYTP
+        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+          DO 210 J = NSYSBG(I), NSYSED(I)
+            DO 220 K = 1, NUALIS(I)
+              NUM = NUM + 1
+                IF (I .NE. 0) THEN
+                  DO 230 M = 1, 3
+                    ECLPOL = ECLPOL -
+     *              0.5*MYIND(M,NUM)*EQMCLF(M,NUM)
+                    EMMPOL = EMMPOL -
+     *              0.5*MYIND(M,NUM)*ESITE(M,NUM)
+  230             CONTINUE
+                END IF
+  220       CONTINUE
+  210     CONTINUE
+        END IF
+  200 CONTINUE
+C
+C     **********************************************************
+C     Writing the calculated fields to files:
+C     **********************************************************
+C
+C     NB NB NB NB !!!!
+C
+C     If FIXMOM is true non of the fields are written to
+C     files. This means that both the ENUCFILE, ESITFILE and
+C     the EINDFILE from a previous run must be used.
+C
+      IF ( .NOT. (FIXMOM) ) THEN
+        IF (MDLWRD(0) .EQ. 'SPC    ') THEN
+          CALL QM3_PUT3(LUENUC,'ENUCFILE',ENUC,KTEMP2)
+          CALL QM3_PUT3(LUSITE,'ESITFILE',ESITE,KTEMP2)
+          CALL QM3_PUT3(LUEIND,'EINDFILE',EIND,KTEMP2)
+          CALL QM3_PUT3(LUPMOM,'CLIND   ',MYIND,KTEMP2)
+        ELSE
+          LTEMP = MXQM3 - NUALIS(0)
+          DO 911 I = 1, LTEMP
+            DO 912 J = 1, 3
+              ENUC(J,I)  = ENUC(J,NUALIS(0) + I)
+              ESITE(J,I) = ESITE(J,NUALIS(0) + I)
+              EIND(J,I)  = EIND(J,NUALIS(0) + I)
+              MYIND(J,I) = MYIND(J,NUALIS(0) + I)
+  912       CONTINUE
+  911     CONTINUE
+          DO 913 I = (LTEMP+1),MXQM3
+            DO 914 J = 1,3
+              ENUC(J,I)  = D0
+              ESITE(J,I) = D0
+              EIND(J,I)  = D0
+              MYIND(J,I) = D0
+  914       CONTINUE
+  913     CONTINUE
+          KTEMP2 = KTEMP2 - NUALIS(0)
+          CALL QM3_PUT3(LUENUC,'ENUCFILE',ENUC,KTEMP2)
+          CALL QM3_PUT3(LUSITE,'ESITFILE',ESITE,KTEMP2)
+          CALL QM3_PUT3(LUEIND,'EINDFILE',EIND,KTEMP2)
+          CALL QM3_PUT3(LUPMOM,'CLIND   ',MYIND,KTEMP2)
+        END IF
+      END IF
+C
+      END
+C
+C  /* Deck indmom */
+      SUBROUTINE INDMOM(EELEC,LOINDM,FFJ)
+C
+C     Calculates the induced dipole moments by an iterative
+C     procedure.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <inftap.h>
+C
+      LOGICAL    DIPCON, LOINDM 
+      DIMENSION  MYIND(3,MXQM3), EIND1(3,MXQM3)
+      DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
+      DIMENSION  ENUC(3,MXQM3),EQMCLF(3,MXQM3)
+      DIMENSION  EELEC(3,MXQM3)
+      DIMENSION  FFJ(*)
+      PARAMETER  (D0 = 0.0D0)
+C
+#if defined (SYS_CRAY)
+      REAL              DIST, DISM1, DISM2, DISM3, DISM5
+      REAL              XDIP1, XDIP2, MYIND, EIND
+      REAL              TEMPX, TEMPY, TEMPZ
+      REAL              ESITE,ENUC,EQMCLF
+#else
+      DOUBLE PRECISION  DIST, DISM1, DISM2, DISM3, DISM5
+      DOUBLE PRECISION  XDIP1, XDIP2, MYIND, EIND1
+      DOUBLE PRECISION  TEMPX, TEMPY, TEMPZ
+      DOUBLE PRECISION  ESITE,ENUC,EQMCLF
+#endif
+C
+      DO 879 I = 1,MXQM3 
+         DO 880 J = 1, 3
+           ENUC(J,I) = D0
+           ESITE(J,I) = D0
+           EIND(J,I) = D0
+           EIND1(J,I) = D0
+           MYIND(J,I) = D0
+  880    CONTINUE
+  879 CONTINUE
+C
+       IF (.NOT.(RELMOM)) PEDIP1 = 0.0D0
+C
+       IF (RELMOM) THEN
+         WRITE(LUPRI,*)'External electric fields added to ind. mom.!!'
+         IF (FFJ(1).NE.D0) WRITE(LUPRI,*)'X-Field:',FFJ(1)
+         IF (FFJ(2).NE.D0) WRITE(LUPRI,*)'Y-Field:',FFJ(2)
+         IF (FFJ(3).NE.D0) WRITE(LUPRI,*)'Z-Field:',FFJ(3)
+       END IF
+C
+C     Get electric fields from files
+C
+      CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
+      CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
+      CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
+C
+      DIPCON = .FALSE.
+      XDIP1 = D0
+      LM = 0
+      DO 999 ITER = 1, MXDIIT
+        XDIP2 = D0
+        LM = LM +1
+C
+        NUM = 0
+        DO 10 I= 1, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 20 J = NSYSBG(I), NSYSED(I)
+             DO 102 K = 1, NUALIS(I)
+               NUM = NUM + 1
+               DO 40 M = 1, 3
+                 IF ( (MDLWRD(I) .EQ. 'SPC_E01') .OR. 
+     &             (MDLWRD(I) .EQ. 'SPC_EC1') ) THEN 
+                   MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
+     &             + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
+                   XDIP2 = XDIP2 + MYIND(M,NUM)**2
+                 ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
+     &             (LOINDM) )THEN
+                   MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
+     &             + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
+                   XDIP2 = XDIP2 + MYIND(M,NUM)**2
+                 ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
+     &             (.NOT. (LOINDM)) )THEN
+                   MYIND(M,NUM) = D0
+                 END IF
+   40          CONTINUE
+  102        CONTINUE
+C
+             IF ( (MDLWRD(I) .EQ. 'SPC_E02') .OR.
+     &          (MDLWRD(I) .EQ. 'SPC_EC2') .OR.
+     &          (MDLWRD(I) .EQ. 'SPC_EC4') ) THEN
+                CALL QUIT('SPC_EX2 model not implemented yet')
+             END IF
+  20        CONTINUE
+          END IF
+  10    CONTINUE
+C
+        NUM = 0
+        DO 50 I= 1, ISYTP
+          IF  (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 60 J = NSYSBG(I), NSYSED(I)
+             DO 70 K = 1, NUCIND
+              IF ( (ISUBSY(K) .EQ. J) .AND.
+     &          (ISUBSI(K) .GT. NSISY(I)) ) THEN
+                NUM = NUM + 1
+                IF  (LOINDM) THEN  
+                IF (MDLWRD(I) .EQ. 'SPC_EC3') THEN
+C
+                  TEMPX = D0
+                  TEMPY = D0
+                  TEMPZ = D0
+C
+                  KURT = 0
+                  DO 80 L = 1, ISYTP
+                    IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
+                      DO 90 M = NSYSBG(L), NSYSED(L)
+                        DO 100 N = 1, NUCIND
+                          IF ( (ISUBSY(N) .EQ. M) .AND.
+     &                      (ISUBSI(N) .GT. NSISY(L)) ) THEN
+                            KURT = KURT + 1
+                            IF (J .NE. M) THEN
+C
+                            DIST2 =((CORD(1,K)-CORD(1,N))**2 +
+     *                      (CORD(2,K)-CORD(2,N))**2 +
+     *                      (CORD(3,K)-CORD(3,N))**2)
+C
+                            DIST = SQRT(DIST2)
+                            DIST3 = DIST2*DIST
+                            DIST4 = DIST2**2
+                            DIST5 = DIST4*DIST
+C
+                            DOTPR =
+     &                      (CORD(1,K)-CORD(1,N))*MYIND(1,KURT) +
+     &                      (CORD(2,K)-CORD(2,N))*MYIND(2,KURT) +
+     &                      (CORD(3,K)-CORD(3,N))*MYIND(3,KURT)
+C
+                            TEMPX = TEMPX +
+     &                      3.0*(CORD(1,K)-CORD(1,N)) *
+     &                      DOTPR/DIST5 - MYIND(1,KURT)/DIST3
+                            TEMPY = TEMPY +
+     &                      3.0*(CORD(2,K)-CORD(2,N)) *
+     &                      DOTPR/DIST5 - MYIND(2,KURT)/DIST3
+                            TEMPZ = TEMPZ +
+     &                      3.0*(CORD(3,K)-CORD(3,N)) *
+     &                      DOTPR/DIST5 - MYIND(3,KURT)/DIST3
+                            END IF
+                          END IF
+  100                   CONTINUE
+  90                  CONTINUE
+                    END IF
+  80              CONTINUE
+C
+                  EIND(1,NUM) = TEMPX
+                  EIND(2,NUM) = TEMPY
+                  EIND(3,NUM) = TEMPZ
+C
+                END IF
+                ELSE 
+                  IF (MDLWRD(I) .NE. 'SPC_EC3') THEN
+C
+                    TEMPX = D0
+                    TEMPY = D0
+                    TEMPZ = D0
+C
+                    LARS = 0
+                    DO 81 L = 1, ISYTP
+                      IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
+                        DO 91 M = NSYSBG(L), NSYSED(L)
+                          DO 101 N = 1, NUCIND
+                            IF ( (ISUBSY(N) .EQ. M) .AND.
+     &                        (ISUBSI(N) .GT. NSISY(L)) ) THEN
+                              LARS = LARS + 1
+                              IF (J .NE. M) THEN
+C
+                              DIST2 =((CORD(1,K)-CORD(1,N))**2 +
+     *                        (CORD(2,K)-CORD(2,N))**2 +
+     *                        (CORD(3,K)-CORD(3,N))**2)
+C
+                              DIST = SQRT(DIST2)
+                              DIST3 = DIST2*DIST
+                              DIST4 = DIST2**2
+                              DIST5 = DIST4*DIST
+C
+                              DOTPR =
+     &                        (CORD(1,K)-CORD(1,N))*MYIND(1,LARS) +
+     &                        (CORD(2,K)-CORD(2,N))*MYIND(2,LARS) +
+     &                        (CORD(3,K)-CORD(3,N))*MYIND(3,LARS)
+                              TEMPX = TEMPX +
+     &                        3.0*(CORD(1,K)-CORD(1,N)) *
+     &                        DOTPR/DIST5 - MYIND(1,LARS)/DIST3
+                              TEMPY = TEMPY +
+     &                        3.0*(CORD(2,K)-CORD(2,N)) *
+     &                        DOTPR/DIST5 - MYIND(2,LARS)/DIST3
+                              TEMPZ = TEMPZ +
+     &                        3.0*(CORD(3,K)-CORD(3,N)) *
+     &                        DOTPR/DIST5 - MYIND(3,LARS)/DIST3
+                              END IF
+                            END IF
+  101                     CONTINUE
+  91                    CONTINUE
+                      END IF
+  81                CONTINUE
+C
+                    EIND(1,NUM) = TEMPX
+                    EIND(2,NUM) = TEMPY
+                    EIND(3,NUM) = TEMPZ
+C
+                  END IF
+                END IF
+              END IF
+  70         CONTINUE
+  60        CONTINUE
+         END IF
+  50    CONTINUE
+C
+        WRITE(LUPRI,'(1X,A31,F20.15)')
+     *        'Norm2 of dipole moment vector: ',XDIP2
+        IF (ABS(XDIP1 - XDIP2) .LT. THDISC) THEN
+          DIPCON = .TRUE.
+          WRITE(LUPRI,'(/1X,A27,I3,A12)')
+     *          'Dipole vector converged in ',LM,' iterations.'
+          GOTO 1000
+        ELSE
+          XDIP1 = XDIP2
+        END IF
+C
+  999 CONTINUE
+ 1000 CONTINUE
+C
+      IF (.NOT. DIPCON) WRITE(LUPRI,'(1X,A/)')
+     *   'Dipole moment not converged self-consistently'
+C
+C     **********************************************************
+C     Print section. Printing if PRINT .GT. 1.
+C     **********************************************************
+C
+      IF (IQM3PR .GE. 2) THEN
+C
+C       ------------------------------------
+C        The field from the induced dipoles:
+C       ------------------------------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' Field ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0
+        DO 761 I = 1, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 762 J = NSYSBG(I), NSYSED(I)
+              DO 768 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' Eind  ','|',J,',',L,
+     &          '|',EIND(1,NUM),'|',EIND(2,NUM),
+     &          '|',EIND(3,NUM),'|'
+  768         CONTINUE
+  762       CONTINUE
+           END IF
+  761    CONTINUE
+C
+         WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C
+C       ------------------------------------
+C        The total electric field:
+C       ------------------------------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' E_tot ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0
+        DO 361 I = 1, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 362 J = NSYSBG(I), NSYSED(I)
+              DO 368 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' Etot  ','|',J,',',L,
+     &          '|',(EELEC(1,NUM)+ENUC(1,NUM)+ESITE(1,NUM)+EIND(1,NUM)+
+     &              FFJ(1)),'|',(EELEC(2,NUM)+ENUC(2,NUM)+ESITE(2,NUM)+
+     &              EIND(2,NUM)+FFJ(2)),
+     &          '|',(EELEC(3,NUM)+ENUC(1,NUM)+ESITE(1,NUM)+
+     &              EIND(1,NUM)+FFJ(1)),'|'
+  368         CONTINUE
+  362       CONTINUE
+           END IF
+  361    CONTINUE
+C
+         WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C       ----------------------------
+C        The induced dipole moments:
+C       ----------------------------
+C
+        WRITE(LUPRI,'(//,1X,72A)') ('-',J=1,72)
+        WRITE(LUPRI,'(1X,A1,A7,A1,A16,A1,A14,A1,A14,
+     &  A1,A14,A2)')
+     &  '|',' Field ','|',' sys, alpha site','|',
+     &  '      X       ','|','      Y       ',
+     &  '|','      Z       ',' |'
+        WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+C
+        NUM = 0
+        DO 763 I = 1, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 764 J = NSYSBG(I), NSYSED(I)
+              DO 769 L = 1, NUALIS(I)
+                NUM = NUM + 1
+                WRITE(LUPRI,'(1X,A1,A7,A1,I4,A1,I4,7X,
+     &          A1,F14.10,A1,F14.10,A1,F14.10,A2)')
+     &          '|',' Dipole','|',J,',',L,
+     &          '|',MYIND(1,NUM),'|',MYIND(2,NUM),
+     &          '|',MYIND(3,NUM),'|'
+  769         CONTINUE 
+  764       CONTINUE
+           END IF
+  763    CONTINUE
+C
+         WRITE(LUPRI,'(1X,72A,//)') ('-',J=1,72)
+C
+        END IF
+C
+        CALL QM3_PUT3(LUEIND,'EINDFILE',EIND,NCOMS)
+        CALL QM3_PUT3(LUMOM,'QMIND   ',MYIND,NCOMS)
+C
+        IF (SLOTH) THEN
+          NUM = 0
+          TEMMY1 = 0.0D0
+          TEMMY2 = 0.0D0
+          TEMMY3 = 0.0D0
+C
+          DO 263 I = 1, ISYTP
+            IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+              DO 264 J = NSYSBG(I), NSYSED(I)
+                DO 269 L = 1, NUALIS(I)
+                  NUM = NUM + 1
+                  TEMMY1 = TEMMY1 + MYIND(1,NUM)
+                  TEMMY2 = TEMMY2 + MYIND(2,NUM)
+                  TEMMY3 = TEMMY3 + MYIND(3,NUM)
+  269           CONTINUE
+  264         CONTINUE
+            END IF
+  263     CONTINUE
+C
+          WRITE(LUPRI,*)
+     &    'TOTAL IND. DIPOLE MOMENT OF THE MM SYSTEM (x,y,z)'
+          WRITE(LUPRI,*) TEMMY1,'au', TEMMY2,'au', TEMMY3,'au'
+          WRITE(LUPRI,*)
+C
+          TEMPX = 0.0D0
+          TEMPY = 0.0D0
+          TEMPZ = 0.0D0
+C
+          DO 800 I = 1, ISYTP
+            IF (MDLWRD(I)(1:3) .NE. 'SPC') GOTO 800
+            DO 810 J = NSYSBG(I), NSYSED(I)
+              DO 820 K = 1, NUCIND
+                IF ( (ISUBSY(K) .EQ. J) .AND.
+     *            (ISUBSI(K) .LE. NSISY(I)) ) THEN
+                  TEMPX = TEMPX + CORD(1,K)*CHARGE(K)
+                  TEMPY = TEMPY + CORD(2,K)*CHARGE(K)
+                  TEMPZ = TEMPZ + CORD(3,K)*CHARGE(K)
+                END IF
+  820         CONTINUE
+  810       CONTINUE
+  800     CONTINUE
+C
+          WRITE(LUPRI,*)
+     &    'TOTAL PERM. DIPOLE MOMENT OF THE MM SYSTEM (x,y,z)'
+          WRITE(LUPRI,*) TEMPX,'au', TEMPY,'au', TEMPZ,'au'
+          WRITE(lUPRI,*)
+C
+          WRITE(LUPRI,*)'TOTAL DIPOLE MOMENT OF THE MM SYSTEM (x,y,z)'
+          WRITE(LUPRI,*) 
+     &    TEMPX+TEMMY1,'au', TEMPY+TEMMY2,'au', TEMPZ+TEMMY3,'au'
+          WRITE(lUPRI,*)
+        END IF
+C
+        IF (RELMOM) THEN
+          IF (.NOT.(SLOTH)) CALL QUIT('PUT IN .SLOTH in *CCSLV and do'//
+     &    ' another run. Error from INDMOM.'//
+     &    ' MM dipoles not calculated !')
+          PEDIP1 = -(TEMPX*FFJ(1) + TEMPY*FFJ(2) + TEMPZ*FFJ(3))
+        END IF  
+
+      END
+C    
+C*******************************************************
+C  /* Deck elnuc */
+	      SUBROUTINE ELNUC(ENUCLE)
+C*******************************************************
+C
+C     Calculate the nuclear part of the electrostatic
+C     QM/MM interaction, the classical electrostatic
+C     "QM"/MM interaction, the van der Waal interaction
+C     and the total classical "QM"/MM interaction.
+C*******************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+C
+      PARAMETER  (D0 = 0.0D0)
+C
+      EMMVDW = D0
+      EMMELC = D0
+      ENUCLE = D0
+      ECULCL = D0
+      TEMP   = D0
+      TEMP1  = D0
+      TEMP2  = D0
+      TEMP3  = D0
+      DIST   = D0
+C
+C******************************************************
+C The classical MM/MM interaction energy is calculated:
+C******************************************************
+C
+C The electrostatic interaction energy:
+C
+      DO 500 I = 1, ISYTP
+        IF (MDLWRD(I)(1:3) .NE. 'SPC') GOTO 500
+        DO 510 J = NSYSBG(I), NSYSED(I)
+          DO 520 K = 1, NUCIND
+            IF ( (ISUBSY(K) .EQ. J) .AND.
+     *           (ISUBSI(K) .LE. NSISY(I)) ) THEN
+              DO 530 IM = 1, ISYTP
+                IF (MDLWRD(IM)(1:3) .NE. 'SPC') GOTO 530
+                DO 540 JM = NSYSBG(IM), NSYSED(IM)
+                  IF (JM .GT. J) THEN
+                    DO 550 KM = 1, NUCIND
+                      IF ( (ISUBSY(KM) .EQ. JM) .AND.
+     *                  (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
+                        DIST = SQRT((CORD(1,K)-CORD(1,KM))**2 +
+     *                        (CORD(2,K)-CORD(2,KM))**2 +
+     *                        (CORD(3,K)-CORD(3,KM))**2)
+                        TEMP3 = TEMP3 +
+     *                          CHARGE(K)*CHARGE(KM)/DIST
+                      END IF
+  550               CONTINUE
+                  END IF
+  540           CONTINUE
+  530         CONTINUE
+            END IF
+  520     CONTINUE
+  510   CONTINUE
+  500 CONTINUE
+C
+      EMMELC = TEMP3
+C
+C The van der Waals interaction energy:
+C
+      TEMP3 = D0
+C
+      IF ((LONEPAR) .OR. (LTWOPAR)) THEN
+        CALL QM3ATM_VDW(TEMP3,DUMMY,1)
+      ELSE
+        CALL QM3VDW(TEMP3,DUMMY,1)
+      END IF
+C
+      EMMVDW = TEMP3
+C
+      EMM_MM = EMMELC + EMMVDW + EMMPOL
+C
+C*******************************************************
+C The classical "QM"/MM electrostatic energy calculated:
+C*******************************************************
+C
+      DO 300 K=1,NUCIND
+        IF ( (ISUBSY(K) .EQ. 0) .AND.
+     &    (ISUBSI(K) .LE. NSISY(0)) ) THEN
+          DO 310 I = 1, ISYTP
+C
+            IF (MDLWRD(I)(1:3) .NE. 'SPC') GOTO 310
+C
+            DO 320 J = NSYSBG(I), NSYSED(I)
+              DO 330 L=1,NUCIND
+                IF ( (ISUBSY(L) .EQ. J) .AND.
+     &            (ISUBSI(L) .LE. NSISY(I)) ) THEN
+                  DIST = SQRT((CORD(1,K)-CORD(1,L))**2 +
+     *                   (CORD(2,K)-CORD(2,L))**2 +
+     *                   (CORD(3,K)-CORD(3,L))**2)
+                  TEMP = TEMP + CHARGE(K)*CHARGE(L)/DIST
+                  TEMP1 = TEMP1 +
+     *                    QM3CHG(ISUBSY(K),ISUBSI(K))*
+     *                    CHARGE(L)/DIST
+                END IF
+  330         CONTINUE
+  320       CONTINUE
+  310     CONTINUE
+        END IF
+  300 CONTINUE
+C
+C The QM/MM Van der Waal energy calculated:
+C
+      IF ((LONEPAR) .OR. (LTWOPAR)) THEN
+        CALL QM3ATM_VDW(TEMP2,EVDWSH,0)
+      ELSE
+        CALL QM3VDW(TEMP2,EVDWSH,0)
+      END IF
+C
+      ENUCLE = TEMP
+      ECULCL = TEMP1
+      ECLVDW = TEMP2  
+      ECLQM3 = ECULCL + ECLPOL + ECLVDW
+C
+C***********************************************************
+C MM/MM energy output design:
+C***********************************************************
+C
+      CALL TITLER('The MM/MM classical interaction energy',
+     *             '*',117)
+C
+      WRITE(LUPRI,'(//1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
+     *'|      ',EMMELC,' |'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  Epol  = - 1/2*Sum_a[ Pind_a*E^site_a ]          ',
+     *'|      ',EMMPOL,' |'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] ',
+     *'|      ',EMMVDW,' |'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,50A,A1,A20)')
+     *             '|',('*',J=1,50),'|',
+     *             '*******************|'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  E(MM/MM) = Eelec + Epol + Evdw                  ',
+     *'|      ',EMM_MM,' |'
+      WRITE(LUPRI,'(1X,72A//)') ('-',J=1,72)
+C
+C***********************************************************
+C "QM"/MM energy output design:
+C***********************************************************
+C
+      CALL TITLER('The "QM"/MM classical interaction energy',
+     *             '*',115)
+C
+      WRITE(LUPRI,'(//1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
+     *'|      ',ECULCL,' |'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  Epol  = - 1/2*Sum_a[ Pind_a*E^(QMclassic)_a ]   ',
+     *'|      ',ECLPOL,' |'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  Evdw  = Sum_a[ A_ma/|R_ma|^12 - B_ma/|R_ma|^6 ] ',
+     *'|      ',ECLVDW,' |'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,50A,A1,A20)')
+     *             '|',('*',J=1,50),'|',
+     *             '*******************|'
+      WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
+      WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
+     *'  E("QM"/MM) = Eelec + Epol + Evdw                ',
+     *'|      ',ECLQM3,' |'
+      WRITE(LUPRI,'(1X,72A//)') ('-',J=1,72)
+C
+C    If we have any shadow wave-functions substitute
+C    ECLWDV with EVDWSH
+C
+      IF (LOSHAW) THEN
+        ECLVDW = EVDWSH
+      ENDIF
+C
+      IF (LOCLAS) THEN
+        CALL QUIT('Exit dalton forced by keyword CLONLY in QM3INP')
+      END IF
+C
+      END
+C
+C*******************************************************
+C  /* Deck qm3_put3*/
+      SUBROUTINE QM3_PUT3(NMBU,FLNAME,PUTNU,NULOOP)
+C*******************************************************
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <inftap.h>
+C
+      CHARACTER FLNAME*8
+      INTEGER   NMBU,NULOOP
+      DIMENSION PUTNU(3,MXQM3) 
+C
+      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+      DO 930 LM = 1,NULOOP
+        WRITE(NMBU,'(I5,3X,3E22.15)') LM,
+     *  PUTNU(1,LM),PUTNU(2,LM),PUTNU(3,LM)
+  930 CONTINUE
+C
+      CALL GPCLOSE(NMBU,'KEEP')
+C
+      END
+C
+C*******************************************************
+C  /* Deck qm3_get3*/
+      SUBROUTINE QM3_GET3(NMBU,FLNAME,PUTNU,NULOOP)
+C*******************************************************
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <inftap.h>
+C
+      CHARACTER FLNAME*8
+      INTEGER   NMBU,NULOOP
+      DIMENSION PUTNU(3,MXQM3)
+C
+      CALL GPOPEN(NMBU,FLNAME,'UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+      REWIND(NMBU)
+C
+      DO 920 LM = 1,NULOOP
+        READ (NMBU,'(I5,3X,3E22.15)',END=101) I,
+     *        PUTNU(1,LM),PUTNU(2,LM),PUTNU(3,LM)
+C
+        IF (I.NE.LM) STOP 'There is a problem in QM3_GET'
+C
+        GOTO 920
+  101   PUTNU(1,LM) = 1.0D0
+        PUTNU(2,LM) = 1.0D0
+        PUTNU(3,LM) = 1.0D0
+  920 CONTINUE
+C
+      CALL GPCLOSE(NMBU,'KEEP')
+C
+      END
+C
+C*******************************************************
+C  /* Deck qm3_obar */
+      SUBROUTINE QM3_OBAR(FFJ)
+C*******************************************************
+C
+C     Calculates the o-bar vector and the E^ns_a vector
+C     entering the optimization condition of the
+C     wave-function. o-bar and E^ns_a are written to 
+C     files.
+C
+C*******************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <inftap.h>
+C
+      DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
+      DIMENSION  ENUC(3,MXQM3)
+      DIMENSION  OBAR(3,MXQM3),ENSA(3,MXQM3)
+      DIMENSION  FFJ(*)
+      PARAMETER  (D0 = 0.0D0)
+C
+#if defined (SYS_CRAY)
+      REAL              EIND,ESITE,ENUC
+      REAL              OBAR,ENSA,FFJ
+#else
+      DOUBLE PRECISION  EIND,ESITE,ENUC 
+      DOUBLE PRECISION  OBAR,ENSA,FFJ
+#endif
+C
+C
+      DO 19 I = 1, MXQM3
+         DO 20 J = 1, 3
+            OBAR(J,I) = D0
+            ENSA(J,I)= D0
+   20    CONTINUE
+   19 CONTINUE
+C
+C---------------------------
+C     get fields from files:
+C---------------------------
+C
+C     See if external fields are to be added 
+C      IF (RELMOM) THEN
+C        WRITE(LUPRI,*)'External electric fields added in QM3_OBAR'
+C      END IF
+C
+      CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
+      CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
+      CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
+C
+      CALL GPOPEN(LUEOBAR,'OBARFILE','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &           .FALSE.)
+C
+      CALL GPOPEN(LUENSA,'ENSAFILE','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &           .FALSE.)
+C
+      NUM = 0
+C
+      DO 100 I=1,ISYTP
+        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+          DO 200 J=NSYSBG(I),NSYSED(I)
+            DO 300 K=1,NUALIS(I)
+              NUM = NUM + 1
+              DO 400 L=1,3
+                OBAR(L,NUM) = 2*ENUC(L,NUM)+ESITE(L,NUM)+
+     &                      EIND(L,NUM) + FFJ(L)
+                ENSA(L,NUM) = OBAR(L,NUM) + ESITE(L,NUM)+ FFJ(L) 
+  400         CONTINUE
+              WRITE(LUEOBAR,'(I5,3X,3E22.15)') NUM,
+     *              OBAR(1,NUM),OBAR(2,NUM),OBAR(3,NUM)
+              WRITE(LUENSA,'(I5,3X,3E22.15)') NUM,
+     *              ENSA(1,NUM),ENSA(2,NUM),ENSA(3,NUM)
+  300       CONTINUE
+  200     CONTINUE
+        END IF
+  100 CONTINUE 
+C
+C
+      CALL GPCLOSE(LUEOBAR,'KEEP')
+      CALL GPCLOSE(LUENSA,'KEEP')
+C
+      END
+C
+C***************************************************
+C  /* Deck qm3_otilde */
+      SUBROUTINE QM3_OTILDE(OTILDE,FFJ)
+C***************************************************
+C
+C     Calculates the o-tilde contribution to the
+C     QM/MM interaction energy. 
+C***************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <inftap.h>
+C
+      DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
+      DIMENSION  ENUC(3,MXQM3),RHS(3,MXQM3)
+      DIMENSION  FFJ(*)
+      PARAMETER  (D0 = 0.0D0)
+C
+#if defined (SYS_CRAY)
+      REAL              EIND,ESITE,ENUC,RHS
+      REAL              DOTPR,OTILDE,FFJ
+#else
+      DOUBLE PRECISION  EIND,ESITE,ENUC,RHS
+      DOUBLE PRECISION  DOTPR,OTILDE,FFJ
+#endif
+C
+C
+      TEMP = D0
+      DOTPR = D0
+      OTILDE = D0
+C
+C     See if external fields are to be added
+C      IF (RELMOM) THEN
+C        WRITE(LUPRI,*)'External electric fields added in QM3_OTILDE'
+C      END IF  
+C
+C----------------------
+C get field from files:
+C----------------------
+C
+      CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
+      CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
+      CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
+C
+C
+      NUM = 0
+C
+      DO 100 I=1,ISYTP
+        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+          DO 200 J=NSYSBG(I),NSYSED(I)
+            DO 300 K = 1, NUALIS(I)
+              DOTPR = D0
+              NUM = NUM + 1
+              DO 400 L=1,3
+                RHS(L,NUM) = ENUC(L,NUM)+ESITE(L,NUM)+
+     &                       EIND(L,NUM)+FFJ(L)
+                DOTPR = DOTPR + ENUC(L,NUM)*RHS(L,NUM) 
+  400         CONTINUE
+              OTILDE = OTILDE -0.5*ALPIMM(I,K)*DOTPR
+  300       CONTINUE
+  200     CONTINUE
+        END IF
+  100 CONTINUE
+C
+      END
+C
+C**************************************************************
+C  /* Deck wrtqm3 */
+      SUBROUTINE WRTQM3(AINT,LENGTH,INTTYP)
+C**************************************************************
+C
+C     Purpose: Write MM integrals on property files.
+C     Then electric field integrals are written on file
+C     LUQM3E whereas the potential energy integrals are written
+C     on file LUQM3P.
+C     14.05.03 JK. Modified also to include overlap inegrals.
+C**************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <gnrinf.h>
+#include <qm3.h>
+C
+      DIMENSION AINT(*)
+
+C
+      IF ( (INTTYP .EQ. 29) .AND. (QM3LO1) ) THEN
+         QM3LO1 = .FALSE.
+         REWIND (LUQM3E)
+      ELSE IF ( (INTTYP .EQ. 35) .AND. (QM3LO2) ) THEN
+         QM3LO2 = .FALSE.
+         REWIND (LUQM3P)
+      ELSE IF (INTTYP .EQ. 1) THEN
+         REWIND (LUMMOV) 
+      END IF
+C
+C----------------------------------
+C     Write integrals to the files:
+C----------------------------------
+C
+      IF ( INTTYP .EQ. 29) THEN
+        WRITE (LUQM3E) (AINT(J), J=1,LENGTH)
+      ELSE IF ( INTTYP .EQ. 35) THEN
+        WRITE (LUQM3P) (AINT(J), J=1,LENGTH)
+      ELSE IF ( INTTYP .EQ. 1) THEN
+        WRITE (LUMMOV) (AINT(J), J=1,LENGTH)
+      END IF
+C
+      END
+C
+C*************************************************************
+C  /* Deck qm3_emmmm */
+      SUBROUTINE QM3_EMMMM(DEMMMM,TEMPOL,FFJ)
+C*************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <inftap.h>
+C
+      DIMENSION  PIND(3,MXQM3),MYIND(3,MXQM3)
+      DIMENSION  ESITE(3,MXQM3),FFJ(*)
+      PARAMETER  (D0 = 0.0D0)
+C
+#if defined (SYS_CRAY)
+      REAL              PIND,MYIND,DEMMMM
+      REAL              ESITE, TEMPOL,FFJ
+#else
+      DOUBLE PRECISION  PIND,MYIND,DEMMMM
+      DOUBLE PRECISION  ESITE, TEMPOL,FFJ
+#endif
+C
+C     See if external fields are to be added
+C      IF (RELMOM) THEN
+C       WRITE(LUPRI,*)'External electric fields added in QM3_EMMMM'
+C      END IF
+C
+C---------------------------------------
+C get induced dipole moments from files:
+C---------------------------------------
+C
+      CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
+      CALL QM3_GET3(LUPMOM,'CLIND   ',PIND,NCOMS)
+      CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
+C
+      DEMMMM = D0
+      TEMPOL = D0
+      NUM = 0
+C
+      DO 100 I = 1, ISYTP
+        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+          DO 110 J = NSYSBG(I), NSYSED(I)
+            DO 120 L= 1, NUALIS(I)
+              NUM = NUM + 1
+              DO 130 K = 1, 3
+                DEMMMM = DEMMMM - 0.5D0*(MYIND(K,NUM)-PIND(K,NUM))*
+     *                   ESITE(K,NUM)
+                TEMPOL = TEMPOL - 0.5D0*MYIND(K,NUM)*(ESITE(K,NUM)+
+     *                   FFJ(K))
+  130         CONTINUE
+  120       CONTINUE
+  110     CONTINUE
+        END IF
+  100 CONTINUE
+C
+      END
+C
+C**************************************************************
+C  /* Deck qm3vdw */
+      SUBROUTINE QM3VDW(TEMP2,TEMP3,LBEGIN)
+C**************************************************************
+C
+C     Calculate the van der Waal interaction between the QM
+C     system and the MM systems when LBEGIN=0 and the Van der
+C     Waal interaction between the MM systems when LBEGIN = 1.
+C
+C**************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+C
+      PARAMETER  (D0 = 0.0D0)
+C
+      TEMP2 = D0
+      TEMP3 = D0
+      TOTALM = D0
+      TOTALM2 = D0
+C
+      IF (VDWSKP) RETURN
+C
+      DO 200 I = LBEGIN, ISYTP
+        DO 210 J = NSYSBG(I), NSYSED(I)
+          IF (DISMOD(I) .OR. (MDLWRD(I) .EQ. 'SPC    ') ) THEN
+C
+            QMCORX = D0
+            QMCORY = D0
+            QMCORZ = D0
+            TOTALM = D0
+C
+            DO 220 K = 1, NUCIND
+C
+              QMMASS = D0
+C
+              IF ( (ISUBSY(K) .EQ. J) .AND.
+     &          (ISUBSI(K) .LE. NSISY(I)) ) THEN
+                CALL MASFIND(QMMASS,K)
+                QMCORX = QMCORX + QMMASS * CORD(1,K)
+                QMCORY = QMCORY + QMMASS * CORD(2,K)
+                QMCORZ = QMCORZ + QMMASS * CORD(3,K)
+                TOTALM = TOTALM + QMMASS
+              END IF
+  220       CONTINUE
+C
+            QMCORX = QMCORX/TOTALM
+            QMCORY = QMCORY/TOTALM
+            QMCORZ = QMCORZ/TOTALM
+C
+          ELSE
+C
+            QMCORX = D0
+            QMCORY = D0
+            QMCORZ = D0
+C
+            DO 230 K = 1, NUCIND
+              IF ( (ISUBSY(K) .EQ. J) .AND.
+     &          (ISUBSI(K) .GT. NSISY(I)) ) THEN
+                QMCORX = CORD(1,K)
+                QMCORY = CORD(2,K)
+                QMCORZ = CORD(3,K)
+              END IF
+  230       CONTINUE
+          END IF
+C
+          DO 240 IM = 1, ISYTP
+            DO 250 JM = NSYSBG(IM), NSYSED(IM)
+              IF (JM .GT. J) THEN
+C
+                DIST = D0
+                DISM1  = D0
+                DISM6  = D0
+                DISM12 = D0
+                TMCORX = D0
+                TMCORY = D0
+                TMCORZ = D0
+C
+                IF (DISMOD(IM) .OR. 
+     &            (MDLWRD(IM) .EQ. 'SPC    ')) THEN
+C
+                  TOTALM2 = D0
+C
+                  DO 260 KM = 1, NUCIND
+                    IF ( (ISUBSY(KM) .EQ. JM) .AND.
+     &                (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
+C
+                      CALL MASFIND(TMMASS,KM)
+                  
+                      TMCORX = TMCORX + TMMASS * CORD(1,KM)
+                      TMCORY = TMCORY + TMMASS * CORD(2,KM)
+                      TMCORZ = TMCORZ + TMMASS * CORD(3,KM)
+                      TOTALM2 = TOTALM2 + TMMASS
+                    END IF
+  260             CONTINUE
+C
+                  TMCORX = TMCORX/TOTALM2
+                  TMCORY = TMCORY/TOTALM2
+                  TMCORZ = TMCORZ/TOTALM2
+C
+                ELSE IF (.NOT. (DISMOD(IM)) ) THEN
+                  DO 270 KM = 1, NUCIND
+                    IF ( (ISUBSY(KM) .EQ. JM) .AND.
+     &                (ISUBSI(KM) .GT. NSISY(IM)) ) THEN
+                      TMCORX = CORD(1,KM)
+                      TMCORY = CORD(2,KM)
+                      TMCORZ = CORD(3,KM)
+                    END IF
+  270             CONTINUE
+                END IF
+C
+                DIST = SQRT((QMCORX-TMCORX)**2 +
+     *                 (QMCORY-TMCORY)**2 +
+     *                 (QMCORZ-TMCORZ)**2)
+                DISTM1 = 1/DIST
+                DISTM6 = DISTM1**6
+                DSTM12 = DISTM6**2
+                TEMP2 = TEMP2 + QM3LJA(I,IM)*DSTM12 -
+     *                  QM3LJB(I,IM)*DISTM6
+                IF (I .EQ. 0) THEN
+                  IF (SHAWFC(IM)) THEN
+                    TEMP3 = TEMP3 
+                  ELSE
+                    TEMP3 = TEMP3 + QM3LJA(I,IM)*DSTM12 -
+     *                      QM3LJB(I,IM)*DISTM6
+                  END IF
+                END IF
+                TEMJA1 = TEMJA1 + QM3LJA(I,IM)*DSTM12
+                TEMJA2 = TEMJA2 + QM3LJB(I,IM)*DISTM6
+              END IF
+  250       CONTINUE
+  240     CONTINUE
+          IF (LBEGIN .EQ. 0) GOTO 999
+  210   CONTINUE
+  200 CONTINUE
+  999 CONTINUE
+C
+      END
+C
+C**************************************************************
+C  /* Deck qm3atm_vdw */
+      SUBROUTINE QM3ATM_VDW(TEMP2,TEMP3,LBEGIN)
+C**************************************************************
+C
+C     Calculate the van der Waal interaction between the QM
+C     system and the MM systems when LBEGIN=0 and the Van der
+C     Waal interaction between the MM systems when LBEGIN = 1.
+C     Contrary to the QM3VDW ROUTINE this routine calculates
+C     the van der Waal interaction from atomic interactions
+C     according to:
+C     Evdw = Sum(i<j)[ 4*Eps(ij)*[ (Sig(ij)/R(ij))**12 -
+C                                  (Sig(ij)/R(ij))**6 ]]
+C
+C**************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+C
+      PARAMETER  (D0 = 0.0D0)
+C
+      SIG_IJ = D0
+      EPS_IJ = D0
+C
+      CALL GPOPEN(LUVDWSE,'VDWSIEP','UNKNOWN',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      REWIND (LUVDWSE)
+C
+      DO 100 IVDW = 1, NSIGEPS
+        READ(LUVDWSE,'(4I6,2E22.15)')
+     *       I,K,J,L,SIG_IJ,EPS_IJ
+        IF (LBEGIN .NE. 0) THEN
+          IF (I .EQ. 0) GOTO 100
+        ELSE IF (LBEGIN .EQ. 0) THEN
+          IF (I .NE. 0) GOTO 100
+        END IF
+        DO 110 JVDW = 1, NUCIND
+          IF ( (ISUBSY(JVDW) .GE. NSYSBG(I)) .AND.
+     *         (ISUBSY(JVDW) .LE. NSYSED(I)) .AND.
+     *         (ISUBSI(JVDW) .EQ. K) ) THEN
+            DO 120 KVDW = 1, NUCIND
+C
+            DIST = D0
+            SIG_RM1 = D0
+            SIG_RM6 = D0
+            SIG_RM12= D0
+C
+              IF ( (ISUBSY(KVDW) .GE. NSYSBG(J)) .AND.
+     *             (ISUBSY(KVDW) .LE. NSYSED(J)) .AND.
+     *             (ISUBSY(KVDW) .GT. ISUBSY(JVDW)) .AND.
+     *             (ISUBSI(KVDW) .EQ. L) ) THEN
+C
+                DIST = (CORD(1,JVDW)-CORD(1,KVDW))**2 +
+     *                 (CORD(2,JVDW)-CORD(2,KVDW))**2 +
+     *                 (CORD(3,JVDW)-CORD(3,KVDW))**2
+                DIST = SQRT(DIST)
+                SIG_RM1 = SIG_IJ/DIST
+                SIG_RM6 = SIG_RM1**6
+                SIG_RM12= SIG_RM6**2
+C
+                TEMP2 = TEMP2 +
+     *                  4.0D0*EPS_IJ*(SIG_RM12-SIG_RM6)
+                IF (I .EQ. 0) THEN
+                  IF (SHAWFC(J)) THEN
+                    TEMP3 = TEMP3
+                  ELSE
+                    TEMP3 = TEMP3 +
+     *                      4.0D0*EPS_IJ*(SIG_RM12-SIG_RM6)
+                  END IF
+                END IF
+                TEMJA1 = TEMJA1 + 4.0D0*EPS_IJ*SIG_RM12
+                TEMJA2 = TEMJA2 + 4.0D0*EPS_IJ*SIG_RM6
+C
+              END IF
+ 120        CONTINUE
+          END IF
+ 110    CONTINUE
+ 100  CONTINUE
+C
+      IF (LBEGIN .NE. 0) THEN
+        CALL GPCLOSE(LUVDWSE,'KEEP')
+      ELSE IF (LBEGIN .EQ. 0) THEN
+        CALL GPCLOSE(LUVDWSE,'DELETE')
+      END IF
+C
+      END
+C
+C*************************************************************
+C  /* Deck masfind */
+      SUBROUTINE MASFIND(TMPMAS,J)
+C*************************************************************
+C
+C     This routine finds the mass from the name of the atom
+C     given in the MOLECULE.INP file.
+C
+C*************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <nuclei.h>
+C
+      PARAMETER  (D0 = 0.0D0)
+C
+      IF (NAMN(J)(1:2) .EQ. 'H ') THEN
+        TMPMAS = DISOTP(1,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'He') THEN
+        TMPMAS = DISOTP(2,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Li') THEN
+        TMPMAS = DISOTP(3,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Be') THEN
+        TMPMAS = DISOTP(4,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'B ') THEN
+        TMPMAS = DISOTP(5,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'C ') THEN
+        TMPMAS = DISOTP(6,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'N ') THEN
+        TMPMAS = DISOTP(7,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'O ') THEN
+        TMPMAS = DISOTP(8,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'F ') THEN
+        TMPMAS = DISOTP(9,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ne') THEN
+        TMPMAS = DISOTP(10,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Na') THEN
+        TMPMAS = DISOTP(11,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Mg') THEN
+        TMPMAS = DISOTP(12,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Al') THEN
+        TMPMAS = DISOTP(13,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Si') THEN
+        TMPMAS = DISOTP(14,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'P ') THEN
+        TMPMAS = DISOTP(15,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'S ') THEN
+        TMPMAS = DISOTP(16,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Cl') THEN
+        TMPMAS = DISOTP(17,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ar') THEN
+        TMPMAS = DISOTP(18,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'K ') THEN
+        TMPMAS = DISOTP(19,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ca') THEN
+        TMPMAS = DISOTP(20,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Sc') THEN
+        TMPMAS = DISOTP(21,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ti') THEN
+        TMPMAS = DISOTP(22,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'V ') THEN
+        TMPMAS = DISOTP(23,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Cr') THEN
+        TMPMAS = DISOTP(24,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Mn') THEN
+        TMPMAS = DISOTP(25,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Fe') THEN
+        TMPMAS = DISOTP(26,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Co') THEN
+        TMPMAS = DISOTP(27,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ni') THEN
+        TMPMAS = DISOTP(28,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Cu') THEN
+        TMPMAS = DISOTP(29,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Zn') THEN
+        TMPMAS = DISOTP(30,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ga') THEN
+        TMPMAS = DISOTP(31,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ge') THEN
+        TMPMAS = DISOTP(32,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'As') THEN
+        TMPMAS = DISOTP(33,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Se') THEN
+        TMPMAS = DISOTP(34,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Br') THEN
+        TMPMAS = DISOTP(35,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Kr') THEN
+        TMPMAS = DISOTP(36,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Rb') THEN
+        TMPMAS = DISOTP(37,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Sr') THEN
+        TMPMAS = DISOTP(38,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Y ') THEN
+        TMPMAS = DISOTP(39,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Zr') THEN
+        TMPMAS = DISOTP(40,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Nb') THEN
+        TMPMAS = DISOTP(41,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Mo') THEN
+        TMPMAS = DISOTP(42,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Tc') THEN
+        TMPMAS = DISOTP(43,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ru') THEN
+        TMPMAS = DISOTP(44,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Rh') THEN
+        TMPMAS = DISOTP(45,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Pd') THEN
+        TMPMAS = DISOTP(46,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ag') THEN
+        TMPMAS = DISOTP(47,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Cd') THEN
+        TMPMAS = DISOTP(48,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'In') THEN
+        TMPMAS = DISOTP(49,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Sn') THEN
+        TMPMAS = DISOTP(50,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Sb') THEN
+        TMPMAS = DISOTP(51,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Te') THEN
+        TMPMAS = DISOTP(52,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'I ') THEN
+        TMPMAS = DISOTP(53,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Xe') THEN
+        TMPMAS = DISOTP(54,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Cs') THEN
+        TMPMAS = DISOTP(55,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ba') THEN
+        TMPMAS = DISOTP(56,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'La') THEN
+        TMPMAS = DISOTP(57,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ce') THEN
+        TMPMAS = DISOTP(58,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Pr') THEN
+        TMPMAS = DISOTP(59,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Nd') THEN
+        TMPMAS = DISOTP(60,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Pm') THEN
+        TMPMAS = DISOTP(61,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Sm') THEN
+        TMPMAS = DISOTP(62,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Eu') THEN
+        TMPMAS = DISOTP(63,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Gd') THEN
+        TMPMAS = DISOTP(64,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Tb') THEN
+        TMPMAS = DISOTP(65,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Dy') THEN
+        TMPMAS = DISOTP(66,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ho') THEN
+        TMPMAS = DISOTP(67,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Er') THEN
+        TMPMAS = DISOTP(68,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Tm') THEN
+        TMPMAS = DISOTP(69,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Yb') THEN
+        TMPMAS = DISOTP(70,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Lu') THEN
+        TMPMAS = DISOTP(71,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Hf') THEN
+        TMPMAS = DISOTP(72,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ta') THEN
+        TMPMAS = DISOTP(73,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'W ') THEN
+        TMPMAS = DISOTP(74,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Re') THEN
+        TMPMAS = DISOTP(75,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Os') THEN
+        TMPMAS = DISOTP(76,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Ir') THEN
+        TMPMAS = DISOTP(77,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Pt') THEN
+        TMPMAS = DISOTP(78,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Au') THEN
+        TMPMAS = DISOTP(79,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Hg') THEN
+        TMPMAS = DISOTP(80,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Tl') THEN
+        TMPMAS = DISOTP(81,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Pb') THEN
+        TMPMAS = DISOTP(82,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Bi') THEN
+        TMPMAS = DISOTP(83,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Po') THEN
+        TMPMAS = DISOTP(84,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'At') THEN
+        TMPMAS = DISOTP(85,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'Rn') THEN
+        TMPMAS = DISOTP(86,1,'MASS')
+      ELSE IF (NAMN(J)(1:2) .EQ. 'XX') THEN
+        TMPMAS = D0
+      ELSE
+        WRITE(LUPRI,*) 'Check atom no.',J,' in input file.'
+        CALL QUIT('This atom not recognized.')
+      END IF
+C
+      END
+C
+C*************************************************************
+C  /* Deck qm3qcc1 */
+      SUBROUTINE QM3QCC1(LUPRI,IPRINT)
+C
+C     Nuclear contribution to electric field gradients 
+C     from the MM system. 1. contribution from the partial charges.
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <qm3.h>
+      PARAMETER (D3 = 3.0D0)
+      PARAMETER (ZERO = 0.0D0)
+#include <nuclei.h>
+#include <nqcc.h>
+C
+      IF (OLDTG)  THEN
+        DO 873 I= 1, ISYTP
+         DO 874 J = NSYSBG(I), NSYSED(I)
+           DO 875 K = 1, NUCIND
+              IF (ISUBSY(K) .EQ. J) CHARGE(K) = CHAOLD(K)
+  875      CONTINUE
+  874    CONTINUE
+  873   CONTINUE
+      END IF
+C
+      NATOM = 1
+      DO 30 I = 1, NUCIND
+        IF ( (ISUBSY(I) .EQ. 0) .AND.
+     &       (ISUBSI(I) .LE. NSISY(0)) )THEN
+           DO 40 I2 =1, ISYTP
+           IF (MDLWRD(I2)(1:3) .NE. 'SPC') GOTO 40 
+             DO 50 J = NSYSBG(I2), NSYSED(I2) 
+               DO 60 L=1,NUCIND
+                 IF ( (ISUBSY(L) .EQ. J) .AND.
+     &                 (ISUBSI(L) .LE. NSISY(I2)) ) THEN
+                   IF (CHARGE(L) .EQ. 0.0D0) GOTO 60 
+                   XCOOR = CORD(1,L) - CORD(1,I)
+                   YCOOR = CORD(2,L) - CORD(2,I)
+                   ZCOOR = CORD(3,L) - CORD(3,I)
+                   R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                   R5 = R2*R2*SQRT(R2)
+                   UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
+     &                     + CHARGE(L)*(D3*XCOOR*XCOOR - R2)/R5
+                   UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
+     &                     + CHARGE(L)*(D3*YCOOR*YCOOR - R2)/R5
+                   UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
+     &                     + CHARGE(L)*(D3*ZCOOR*ZCOOR - R2)/R5
+                   UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
+     &                     + CHARGE(L)*D3*XCOOR*YCOOR/R5
+                   UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
+     &                     + CHARGE(L)*D3*XCOOR*ZCOOR/R5
+                   UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
+     &                     + CHARGE(L)*D3*YCOOR*ZCOOR/R5
+                 END IF
+ 60            CONTINUE
+ 50          CONTINUE
+ 40        CONTINUE
+         UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
+         UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
+         UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
+         NATOM = NATOM + 1
+        END IF
+ 30   CONTINUE
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('electric field gradient after QM/MM charges',
+     &               -1)
+         CALL EFGPRI(UCNNQC,'                                 ')
+      END IF
+C
+C     Finally, we set the charges to zero if OLDTG
+C
+      IF (OLDTG) THEN
+       DO 876 I= 1, ISYTP
+          DO 877 J = NSYSBG(I), NSYSED(I)
+            DO 878 K = 1, NUCIND
+               IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
+  878       CONTINUE
+  877    CONTINUE
+  876   CONTINUE
+      END IF
+      RETURN
+C
+      END
+C*************************************************************
+C  /* Deck qm3qcc2 */
+      SUBROUTINE QM3QCC2(LUPRI,IPRINT)
+C
+C     Nuclear contribution to electric field gradients
+C     from the MM system. 2. Contribution from the induced dipoles.
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+#include <nqcc.h>
+C
+      PARAMETER (D3 = 3.0D0)
+      PARAMETER (ZERO = 0.0D0)
+      DIMENSION  MYIND(3,MXQM3)
+C
+#if defined (SYS_CRAY)
+      REAL              MYIND
+#else
+      DOUBLE PRECISION  MYIND
+#endif
+C
+C     get induced dipole moments from files:
+C
+      CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
+C
+      IF (OLDTG)  THEN
+        DO 873 I= 1, ISYTP
+         DO 874 J = NSYSBG(I), NSYSED(I)
+           DO 875 K = 1, NUCIND
+              IF (ISUBSY(K) .EQ. J) CHARGE(K) = CHAOLD(K)
+  875      CONTINUE
+  874    CONTINUE
+  873   CONTINUE
+      END IF
+C
+      NATOM = 1
+      DO 30 I = 1, NUCIND
+        IF ( (ISUBSY(I) .EQ. 0) .AND.
+     &       (ISUBSI(I) .LE. NSISY(0)) )THEN
+           NUM = 0
+           DO 40 I2 =1, ISYTP
+           IF (MDLWRD(I2)(1:5) .NE. 'SPC_E') GOTO 40
+             DO 50 J = NSYSBG(I2), NSYSED(I2)
+               DO 60 L=1,NUCIND
+                 IF ( (ISUBSY(L) .EQ. J) .AND.
+     &                 (ISUBSI(L) .GT. NSISY(I2)) ) THEN
+                   TEXXX = 0.0D0
+                   TEXXY = 0.0D0
+                   TEXXZ = 0.0D0
+                   TEYYX = 0.0D0
+                   TEYYY = 0.0D0
+                   TEYYZ = 0.0D0
+                   TEZZX = 0.0D0
+                   TEZZY = 0.0D0
+                   TEZZZ = 0.0D0
+                   TEXYZ = 0.0D0
+                   NUM = NUM +1
+                   XCOOR = CORD(1,L) - CORD(1,I)
+                   YCOOR = CORD(2,L) - CORD(2,I)
+                   ZCOOR = CORD(3,L) - CORD(3,I)
+                   R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                   R5 = R2*R2*SQRT(R2)
+                   R7 = R5*R2
+                   TEXXX = -(15*XCOOR*XCOOR*XCOOR-D3*R2*D3*XCOOR)/R7
+                   TEXXY = -(15*XCOOR*XCOOR*YCOOR-D3*R2*YCOOR)/R7
+                   TEXXZ = -(15*XCOOR*XCOOR*ZCOOR-D3*R2*ZCOOR)/R7
+                   TEYYX = -(15*YCOOR*YCOOR*XCOOR-D3*R2*XCOOR)/R7
+                   TEYYY = -(15*YCOOR*YCOOR*YCOOR-D3*R2*D3*YCOOR)/R7
+                   TEYYZ = -(15*YCOOR*YCOOR*ZCOOR-D3*R2*ZCOOR)/R7
+                   TEZZX = -(15*ZCOOR*ZCOOR*XCOOR-D3*R2*XCOOR)/R7
+                   TEZZY = -(15*ZCOOR*ZCOOR*YCOOR-D3*R2*YCOOR)/R7
+                   TEZZZ = -(15*ZCOOR*ZCOOR*ZCOOR-D3*R2*D3*ZCOOR)/R7
+                   TEXYZ = -(15*XCOOR*YCOOR*ZCOOR)/R7
+                   UCNNQC(1,1,NATOM) = UCNNQC(1,1,NATOM)
+     &                        + TEXXX*MYIND(1,NUM) + TEXXY*MYIND(2,NUM)
+     &                        + TEXXZ*MYIND(3,NUM)
+                   UCNNQC(2,2,NATOM) = UCNNQC(2,2,NATOM)
+     &                        + TEYYX*MYIND(1,NUM) + TEYYY*MYIND(2,NUM)
+     &                        + TEYYZ*MYIND(3,NUM)
+                   UCNNQC(3,3,NATOM) = UCNNQC(3,3,NATOM)
+     &                        + TEZZX*MYIND(1,NUM) + TEZZY*MYIND(2,NUM)
+     &                        + TEZZZ*MYIND(3,NUM)
+                   UCNNQC(1,2,NATOM) = UCNNQC(1,2,NATOM)
+     &                        + TEXXY*MYIND(1,NUM) + TEYYX*MYIND(2,NUM)
+     &                        + TEXYZ*MYIND(3,NUM)
+                   UCNNQC(1,3,NATOM) = UCNNQC(1,3,NATOM)
+     &                        + TEXXZ*MYIND(1,NUM) + TEXYZ*MYIND(2,NUM)
+     &                        + TEZZX*MYIND(3,NUM)
+                   UCNNQC(2,3,NATOM) = UCNNQC(2,3,NATOM)
+     &                        + TEXYZ*MYIND(1,NUM) + TEYYZ*MYIND(2,NUM)
+     &                        + TEZZY*MYIND(3,NUM)
+                 END IF
+ 60            CONTINUE
+ 50          CONTINUE
+ 40        CONTINUE
+         UCNNQC(2,1,NATOM) = UCNNQC(1,2,NATOM)
+         UCNNQC(3,1,NATOM) = UCNNQC(1,3,NATOM)
+         UCNNQC(3,2,NATOM) = UCNNQC(2,3,NATOM)
+         NATOM = NATOM + 1
+        END IF
+ 30   CONTINUE
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('electric field gradient after QM/MM ind. dipoles',
+     &               -1)
+         CALL EFGPRI(UCNNQC,'                                 ')
+      END IF
+C
+C     Finally, we set the charges to zero if OLDTG
+C
+      IF (OLDTG) THEN
+       DO 876 I= 1, ISYTP
+          DO 877 J = NSYSBG(I), NSYSED(I)
+            DO 878 K = 1, NUCIND
+               IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
+  878       CONTINUE
+  877    CONTINUE
+  876   CONTINUE
+      END IF
+      RETURN
+C
+      END
+C*************************************************************
+C*******************************************************
+C  /* Deck elnuc */
+              SUBROUTINE EQMNTEST()
+C*******************************************************
+C
+C     Calculate the QM nuclear part of the electric field
+C     at specific points. If the field is requested at 
+C     at specific nuclei the contribution due to that nuclei
+C     is omitted.
+C
+C*******************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qm3.h>
+#include <nuclei.h>
+C
+      PARAMETER  (D0 = 0.0D0)
+C
+      DIST   = D0
+      DIST2  = D0
+      DIST3  = D0
+C
+      DO 100 K = 1, NUCIND
+        TEMPX  = D0
+        TEMPY  = D0
+        TEMPZ  = D0
+        DO 101 KM = 1, NUCIND
+          IF (K .NE. KM) THEN 
+            DIST = SQRT((CORD(1,K)-CORD(1,KM))**2 +
+     *             (CORD(2,K)-CORD(2,KM))**2 +
+     *             (CORD(3,K)-CORD(3,KM))**2)
+            DIST2 = DIST**2
+            DIST3 = DIST2*DIST
+            TEMPX = TEMPX +
+     *              CHARGE(KM)*( (CORD(1,K)-CORD(1,KM)) )/DIST3
+            TEMPY = TEMPY +
+     *              CHARGE(KM)*( (CORD(2,K)-CORD(2,KM)) )/DIST3
+            TEMPZ = TEMPZ +
+     *              CHARGE(KM)*( (CORD(3,K)-CORD(3,KM)) )/DIST3
+          END IF 
+  101   CONTINUE
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*)'Nuclear electric field for atom/site no.',K
+            WRITE(LUPRI,*) TEMPX, TEMPY, TEMPZ
+            WRITE(LUPRI,*)
+  100 CONTINUE
+C
+      RETURN 
+      END
+C**********************************************************************
+C  /* Deck rdqm3 */
+      SUBROUTINE RDQM3(AINT,LOFRST,INTTYP)
+C**************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <inforb.h>
+#include <gnrinf.h>
+#include <qm3.h>
+C
+      DIMENSION AINT(*)
+      LOGICAL LOFRST
+
+C
+      IF ( (INTTYP .EQ. 29) .AND. (LOFRST) ) THEN
+         LOFRST = .FALSE.
+         REWIND (LUQM3E)
+      ELSE IF ( (INTTYP .EQ. 35) .AND. (LOFRST) ) THEN
+         LOFRST = .FALSE.
+         REWIND (LUQM3P)
+      END IF
+C
+C----------------------------------
+C     Read integrals from files:
+C----------------------------------
+C
+      IF ( INTTYP .EQ. 29) THEN
+        READ (LUQM3E) (AINT(J), J=1,NNBASX)
+      ELSE IF ( INTTYP .EQ. 35) THEN
+        READ (LUQM3P) (AINT(J), J=1,NNBASX)
+      END IF
+C
+      END
+C*********************************************************************
