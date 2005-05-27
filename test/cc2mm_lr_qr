@@ -1,0 +1,281 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc2mm_lr_qr.info <<%EOF%
+   cc2mm_lr_qr
+   ---------------
+   Molecule:            SO2 (QM) and 10 water molecules (MM)
+   Wave Function:       CC2 / STO-2G
+   Molecular Mechanics: SPCE01 model: Point charges and isotropic
+                        polarizability introduced in the optimization of 
+                        the CC wave function. OLDTG=.TRUE. meaning that
+                        point charge relaxed HF orbitals are used.
+   Test Purpose:        Run checks energy, dipole moment, static polari-
+                        zability and first hyperpolarizability.
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > cc2mm_lr_qr.mol <<%EOF%
+ATOMBASIS
+QM SO2 and 10 MM H2O
+------------------------
+    5    0         1 1.00D-15
+        8.0   3     Bas=STO-2G
+O          -1.244255        0.015216        1.446161   0   1
+O           1.225543        0.015216        1.446161   0   2
+O          -0.009356        0.015216       -3.215161   0   3
+       16.0   1     Bas=STO-2G
+S          -0.009356        0.015216        0.723517   0   4
+        1.0   2     Bas=STO-2G
+H          -0.337034       -0.861284       -3.013896   0   5
+H           0.931113       -0.104860       -3.346471   0   6
+   -0.669    10     Bas=MM
+O           2.543086        0.015216       -3.215161   1   1
+O          -1.711821        3.656054       -3.809337   2   1
+O           4.750087        1.740904       -3.215161   3   1
+O          -1.535616       -3.045201       -5.129700   4   1
+O          -4.323567        0.173260       -4.438854   5   1
+O           0.476982        1.003399       -6.576047   6   1
+O           3.578812       -2.211164       -6.301631   7   1
+O           1.303306        5.846732       -4.593178   8   1
+O          -3.133907       -0.195303       -6.839533   9   1
+O          -0.817964       -1.743628       -7.383815  10   1
+   0.3345    20     Bas=MM
+H           3.192255        0.717473       -3.254630   1   2
+H           2.995826       -0.705262       -2.776876   1   3
+H          -2.194154        4.104531       -4.503853   2   2
+H          -2.292227        2.946393       -3.534285   2   3
+H           4.526471        2.629799       -2.939477   3   2
+H           4.905819        1.814083       -4.156721   3   3
+H          -1.403489       -2.834139       -4.205504   4   2
+H          -2.419432       -3.410644       -5.168051   4   3
+H          -3.732668       -0.212062       -5.085771   5   2
+H          -4.910036        0.729601       -4.951374   5   3
+H           1.034155        1.773903       -6.685660   6   2
+H           0.028344        1.148638       -5.743119   6   3
+H           4.499434       -1.982099       -6.174587   7   2
+H           3.126187       -1.802458       -5.563919   7   3
+H           0.846243        5.744481       -3.758442   8   2
+H           0.697083        6.348015       -5.138475   8   3
+H          -3.818051       -0.401640       -7.476340   9   2
+H          -2.497452       -0.903983       -6.933511   9   3
+H          -0.358151       -0.941431       -7.136458  10   2
+H          -1.188882       -2.069739       -6.563926  10   3
+%EOF%
+#######################################################################
+#  QM/MM INTERACTION INPUT
+#######################################################################
+cat > cc2mm_lr_qr.pot <<%EOF%
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC_E01
+.CHARGS
+ 6
+ -0.606
+ -0.606
+ -0.669
+ 1.212
+ 0.3345
+ 0.3345
+.ALPISO
+ 1
+ 9.718
+*******
+.TYPE
+ 1-10
+.MODEL
+ SPC_E01
+.ALPISO
+ 1
+ 9.718
+*******
+**TWOIA
+.LJ_A
+ 2
+ 0.00
+ 0.00
+.LJ_B
+ 2
+ 0.000
+ 0.000
+**END OF
+%EOF%
+#
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc2mm_lr_qr.dal <<%EOF%
+**DALTON
+.RUN WAVEFUNCTION
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+*QM3INP
+.QM3
+.THRDIP
+ 1.0D-9
+.MAXDIP
+ 80
+.OLDTG
+*END OF HERMIT
+**WAVE FUNCTIONS
+.CC
+*HF INP
+.THRESH
+1.0D-10
+*CC INP
+.FREEZE
+ 3 0
+.CC2
+.THRLEQ
+ 1.0D-09
+.THRENR
+ 1.0D-09
+.MAX IT
+ 100
+.MXLRV
+ 180
+*CCSLV
+.CCMM
+.ETOLSL
+ 1.0D-08
+.LTOLSL
+ 1.0D-08
+.MXSLIT
+ 150
+.MXINIT
+ 5 5
+*CCFOP
+.DIPMOM
+.NONREL
+*CCLR
+.DIPOLE
+*CCQR
+.AVANEW  # This calculates beta_i = sum_j(beta_ijj + beta_jij + beta_jji)
+.DIPOLE  # and the dot product of beta nad the dipole moment.
+**END OF
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc2mm_lr_qr.check
+cat >>cc2mm_lr_qr.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#  The classical and QM/MM interaction energies compared:
+CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.03404007" $log | wc -l`
+CRIT2=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00944547" $log | wc -l`
+CRIT3=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma\|\^12 \- B_ma\/\|R_ma\|\^6 \] \| * ( |0)\.00000000" $log | wc -l`
+CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.04348553" $log | wc -l`
+CRIT5=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n \- R_s\| \]        \| * (\-|\-0)\.01098929" $log | wc -l`
+CRIT6=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * (\-|\-0).00277913" $log | wc -l`
+CRIT7=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * (\-|\-0)\.01376842" $log | wc -l`
+CRIT8=`$GREP "Epol  \= \- 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * (\-|\-0)\.00931089" $log | wc -l`
+CRIT9=`$GREP "(\-|\-0)\.00908282.. \| * (\-|\-0)\.00186631.. \| * ( |0)\.00000000.. \| * (\-|\-0)\.01094914.." $log | wc -l`
+CRIT10=`$GREP "\-598\.35480142.. \| \-598\.36575057.. \|    ( |0)\.00013457.. \|   ( |0)\.00000000.." $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[1]=13
+ERROR[1]="THE CLASSICAL OR QM/MM ENERGY TERMS ARE NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=` $GREP "x * ( |0)\.39849697 * 1\.01287814" $log | wc -l`
+CRIT2=` $GREP "y * (\-|\-0)\.43901603 * \-1\.11586733" $log | wc -l`
+CRIT3=` $GREP "z * ( |0)\.09512696 * ( |0)\.24178860" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
+
+# Static dipole-dipole polarizability compared:
+CRIT1=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 19\.929439" $log | wc -l`
+CRIT2=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.2158392" $log | wc -l`
+CRIT3=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.87462360" $log | wc -l`
+CRIT4=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.2158392" $log | wc -l`
+CRIT5=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 7\.1122762" $log | wc -l`
+CRIT6=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.70640980" $log | wc -l`
+CRIT7=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.87462360" $log | wc -l`
+CRIT8=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.70640980" $log | wc -l`
+CRIT9=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * 5\.5869192" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[3]=9
+ERROR[3]="STATIC POLARIZABILITY COMPONENTS ARE NOT CORRECT"
+
+# Static dipole-dipole-dipole hyperpolarizability compared:
+CRIT1=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * \-7\.51330.." $log | wc -l`
+CRIT2=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.70959.." $log | wc -l`
+CRIT3=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * \-17\.1970.." $log | wc -l`
+CRIT4=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.70959.." $log | wc -l`
+CRIT5=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 2\.04433.." $log | wc -l`
+CRIT6=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT7=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * \-17\.1970.." $log | wc -l`
+CRIT8=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT9=` $GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.768385..E-01" $log | wc -l`
+CRIT10=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 1\.70959.." $log | wc -l`
+CRIT11=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 2\.04433.." $log | wc -l`
+CRIT12=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT13=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * 2\.04433.." $log | wc -l`
+CRIT14=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * 5\.86555.." $log | wc -l`
+CRIT15=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * \-8\.33858.." $log | wc -l`
+CRIT16=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT17=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * \-8\.33858.." $log | wc -l`
+CRIT18=` $GREP "YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * ( |0)\.383191.." $log | wc -l`
+CRIT19=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * \-17\.1970.." $log | wc -l`
+CRIT20=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT21=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.768385..E-01" $log | wc -l`
+CRIT22=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.569230.." $log | wc -l`
+CRIT23=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * \-8\.33858.." $log | wc -l`
+CRIT24=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * ( |0)\.383191.." $log | wc -l`
+CRIT25=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   XDIPLEN  \(unrel.\)  ( |0)\.0000 * (\-|\-0)\.768385..E-01" $log | wc -l`
+CRIT26=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000 * ( |0)\.383191.." $log | wc -l`
+CRIT27=` $GREP "ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000   ZDIPLEN  \(unrel.\)  ( |0)\.0000 * 3\.41060.." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ $CRIT25 \+ $CRIT26 \+ $CRIT27`
+CTRL[4]=27
+ERROR[4]="STATIC HYPERPOLARIZABILITY COMPONENTS ARE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################
