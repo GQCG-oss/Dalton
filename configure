@@ -643,8 +643,7 @@ storeint="false"
 get_yes_or_no "\nWould you like to activate the possibility of storing 2-el.int. in memory?"
 if [ "$answer" = "y" ]; then
     storeint="true"
-    sed -i.bak "s/AOSAVE = .FALSE./AOSAVE = .TRUE./" abacus/dalton.F
-    sed -i.bak "5c\      PARAMETER \(MXTSK=\(MXSHEL\*\(MXSHEL+1\)\/2\), IEIR=3000000," include/incore.h
+    sed "s/AOSAVE = .FALSE./AOSAVE = .TRUE./" abacus/dalton.F > tmp && mv tmp abacus/dalton.F
     incoresiz=
     while [ "$incoresiz" = "" ]
     do
@@ -653,13 +652,24 @@ if [ "$answer" = "y" ]; then
     done
     incoresiz=`expr $incoresiz \* 1000000`
     $ECHO '\n   Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
-    sed -ibak "6c\     &          MMWORK=$incoresiz," include/incore.h;
+cat <<EOF > sed1.txt
+5c\\
+      PARAMETER (MXTSK=(MXSHEL*(MXSHEL + 1)/2), IEIR=3000000,
+6c\\
+     &           MMWORK=$incoresiz,
+EOF
 else
     storeint="false"
-    sed -i.bak "s/AOSAVE = .TRUE./AOSAVE = .FALSE./" abacus/dalton.F
-    sed -i.bak "5c\      PARAMETER \(MXTSK=\(MXSHEL\*\(MXSHEL+1\)\/2\), IEIR=1," include/incore.h
-    sed -ibak "6c\     &          MMWORK=1," include/incore.h;
+    sed "s/AOSAVE = .TRUE./AOSAVE = .FALSE./" abacus/dalton.F > tmp && mv tmp abacus/dalton.F
+cat <<EOF > sed1.txt
+5c\\
+      PARAMETER (MXTSK=(MXSHEL*(MXSHEL + 1)/2), IEIR=1,
+6c\\
+     &           MMWORK=1,
+EOF
 fi
+sed -fsed1.txt include/incore.h > tmp && mv tmp include/incore.h
+rm sed1.txt
 
 $ECHO 'Maximum amount of work memory for dynamic allocations can be'
 $ECHO 'changed at run time through the environment variable WRKMEM'

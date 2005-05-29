@@ -216,7 +216,7 @@ C when running DALTON with AOSAVE = .TRUE.
       ISCORE = JSCORE
       MMCORE = LMCORE
       N_SHL = 1
-      AOSAVE = .FALSE.
+      AOSAVE = .TRUE.
       INITX = .FALSE.
       MSAVE = .TRUE.
       LINTSV = .FALSE.
@@ -378,6 +378,8 @@ C
      &                      //'Germany    ',
      *  'Rika Kobayashi,           ANU Supercomputer Facility,   '
      &                      //'Australia  ',
+     *  'Jakob Kongsted,           Aarhus University,            '
+     &                      //'Denmark    ',
      *  'Henrik Koch,              University of Trondheim,      '
      &                      //'Norway     ',
      *  'Andrea Ligabue,           University of Modena,         '
@@ -389,6 +391,8 @@ C
      *  'Patrick Norman,           University of Linkoeping,     '
      &                      //'Sweden     ',
      *  'Jeppe Olsen,              Aarhus University,            '
+     &                      //'Denmark    ',
+     *  'Anders Osted,             Copenhagen University,        '
      &                      //'Denmark    ',
      *  'Martin J. Packer,         University of Sheffield,      '
      &                      //'UK         ',
