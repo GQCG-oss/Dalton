@@ -115,9 +115,9 @@ ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 
 # The component of the static polarizability tensor compared:
-CRIT1=`$GREP "XDIPLEN  * \(unrel\.\) * ( |0)\.0000   XDIPLEN * \(unrel\.\) * ( |0)\.0000      7\.1400573" $log | wc -l`
-CRIT2=`$GREP "YDIPLEN  * \(unrel\.\) * ( |0)\.0000   YDIPLEN * \(unrel\.\) * ( |0)\.0000      3\.2131716" $log | wc -l`
-CRIT3=`$GREP "ZDIPLEN  * \(unrel\.\) * ( |0)\.0000   ZDIPLEN * \(unrel\.\) * ( |0)\.0000      5\.3202736" $log | wc -l`
+CRIT1=`$GREP "XDIPLEN  * \(unrel\.\) * ( |0|\-|\-0)\.0000   XDIPLEN * \(unrel\.\) * ( |0)\.0000      7\.1400573" $log | wc -l`
+CRIT2=`$GREP "YDIPLEN  * \(unrel\.\) * ( |0|\-|\-0)\.0000   YDIPLEN * \(unrel\.\) * ( |0)\.0000      3\.2131716" $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN  * \(unrel\.\) * ( |0|\-|\-0)\.0000   ZDIPLEN * \(unrel\.\) * ( |0)\.0000      5\.3202736" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="STATIC POLARIZABILITY NOT CORRECT"
