@@ -38,7 +38,7 @@ C  /* Deck nmdinp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER (NDIR=3,NTABLE = 19)
+      PARAMETER (NDIR=3,NTABLE = 20)
       CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7,
      &          TABDIR(NDIR)*7, WORD1*7
 #include <numder.h>
@@ -54,7 +54,7 @@ C
       DATA TABLE /'.DORDR ', '.SYMMET', '.SDRTST', '.RESTRT', '.DRYRUN',
      *            '.XXXXXX', '.NORMAL', '.PRECAL', '.REUSE ', '.XXXXXX',
      *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ',
-     *            '.MANUAL', '.HARMON', '.SPECTR', '.MIDAS '/
+     *            '.MANUAL', '.HARMON', '.SPECTR', '.MIDAS ', '.THRMID'/
 C
 C     *** Initializing variables for *VIBANA and *HARMON. ***
       CALL NVBINI
@@ -80,8 +80,8 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
-     *          I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
+     *                20),I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -161,6 +161,10 @@ C
             GOTO 100
  19      CONTINUE
             MIDAS  = .TRUE.
+            GOTO 100
+ 20      CONTINUE
+            READ (LUCMD, *) XTHR
+            THRMID = ABS(XTHR)
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
@@ -255,6 +259,14 @@ C
      &              'differentiation is equal to: ', NMORDR
             END IF
          END IF
+         IF (MIDAS) THEN 
+            WRITE (LUPRI,'(5X,A)') 
+     &                  'Operator file for MidasCpp interface '//
+     &                  'will be generated.'
+            WRITE (LUPRI,'(5x,A,A,E24.10)')
+     &             'Threshold for term coefficient relative to largest',
+     &             ' harmonic term: ',THRMID 
+         ENDIF 
       END IF
 C
 C
@@ -399,6 +411,8 @@ C     /CBINUM/
       NPRPDR = .FALSE.
       HARMON = .FALSE.
       SPECTR = .FALSE.
+      MIDAS  = .FALSE.
+      THRMID = 1.0D-15 
 C
 C     /NUMDER/
       NMORDR = 0
@@ -1047,8 +1061,8 @@ C
                ELSE
                   TXT  = 'cartes'
                END IF
-               CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,
-     &                     NTIME,IPRINT)
+               IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,
+     &                                 NDCOOR,NTIME,IPRINT)
             END IF
          ELSE
 C
@@ -3730,8 +3744,8 @@ C
          ELSE
             TXT  = 'cartes'
          END IF
-         CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,NTIME,
-     &               IPRINT)
+         IF (NRMCRD) CALL WRIMOP(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,
+     &                           NDCOOR,NTIME,IPRINT)
       END IF
 C
 C     *** Test printing. ***
@@ -6993,15 +7007,21 @@ C     /* Deck wrispc */
 *** Writes nescesary information to DALTON.MOP :           ***
 *** An operator file to be read in by MidasCpp             ***
 *** Ove Christiansen based on Torgeirs WRISPC 
+*** At this stage it makes only sense with norm. coord. 
 **************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <cbinum.h>
       CHARACTER*6 TXT
       DIMENSION FREQ(NCOOR), RNNORM(NCOOR), QUBIC(NCOOR,NCOOR,NCOOR),
      &          QUARTC(NCOOR,NCOOR,NCOOR,NCOOR)
       LOGICAL USESYM
+      SAVE FRQLAR
       USESYM = .TRUE. 
 
+      NTOT  = 0
+      NWRIT = 0
+      THRTRM = 0.0D0
 C
 C     *** Open DALTON.MOP file. ***
 C
@@ -7009,24 +7029,18 @@ C
       CALL GPOPEN(LMIDAS,'DALTON.MOP','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
 C
-C     *** NTIME = 1 -> write the frequencies and norm of ***
-C     ***              the normal coordinates.           ***
-C     *** NTIME = 2 -> write the qubic and quartic force ***
-C     ***              field.                            ***
+C     *** NTIME = 1 -> write the frequencies 
+C     *** NTIME = 2 -> write the qubic and quartic force field. 
+C
 C
       FAC = 0.5D0
       IF (NTIME .EQ. 1) THEN
 C
-C        *** Forwarding to the end of the file if necesary. ***
 C
-         IF (TXT(1:6).EQ.'cartes') THEN
-            KTOT = (NCOOR**3 + 1) + (NCOOR**4 + 1) + 1
-            DO I = 1, KTOT
-               READ(LMIDAS,*)
-            END DO
-         ELSE
-C           WRITE (LMIDAS,*) TXT(1:6)
+         IF (TXT(1:6).EQ.'normal') THEN
             WRITE (LMIDAS,*) "DALTON_FOR_MIDAS "
+         ELSE
+            RETURN 
          END IF
 C
 C        *** Writing frequencies. ***
@@ -7038,13 +7052,17 @@ C        WRITE (LMIDAS,*) 'Frequencies'
 c            WRITE (LMIDAS,'(F18.10)') FREQ(I)
          END DO
 C
-C        *** Writing norm of normal coordinates. ***
+C        Find largest frequency.
 C
-C         WRITE (LMIDAS,*) 'Coordinate norm'
-C         DO I = 1, NDCOOR
-C            WRITE (LMIDAS,'(E23.16)') RNNORM(I)
-C         END DO
+         FRQLAR=0.0D0
+         DO I = 1, NDCOOR
+            IF (ABS(FREQ(I)).GT.FRQLAR) FRQLAR = FREQ(I)
+         END DO
+C
+C
+C
       ELSE IF (NTIME .EQ. 2) THEN
+C
 C
 C        *** Forwarding to the end of the file if necesary. ***
 
@@ -7054,8 +7072,20 @@ C        *** Forwarding to the end of the file if necesary. ***
                READ(LMIDAS,*)
             END DO
          ELSE
-            WRITE (LMIDAS,*) TXT(1:6)
+            RETURN 
          END IF
+C
+C        Prepare screening and count of significant terms 
+C        Threshold: do not write out things that are
+C        THRMID times smaller than the larges frequency. 
+C
+         NTOT   = NDCOOR 
+         NWRIT  = NDCOOR 
+         THRTRM = FAC*FRQLAR*FRQLAR*THRMID
+C        WRITE(LUPRI,'(X,A,E23.16)') " FRQLAR " ,FRQLAR
+C        WRITE(LUPRI,'(X,A,E23.16)') " FAC    " ,FAC
+C        WRITE(LUPRI,'(X,A,E23.16)') " THRMID " ,THRMID
+C        WRITE(LUPRI,'(X,A,E23.16)') " THRTRM " ,THRTRM  
 C
 C        *** Writing cubic force field. ***
 C        Note scaling with norms and symmetry factors!
@@ -7066,8 +7096,14 @@ C         WRITE (LMIDAS,*) 'Cubic force field'
             DO 100 K = 1, NDCOOR
             DO 100 J = 1, NDCOOR
             DO 100 I = 1, NDCOOR
-               WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
-     *           FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K), I, J, K
+               QUANT =  FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K)
+               NTOT=NTOT+1
+               IF (ABS(QUANT).GE.THRTRM) THEN 
+                  
+                  WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+     *              QUANT, I, J, K
+                  NWRIT=NWRIT+1
+               ENDIF
  100        CONTINUE
 C
 C           *** Writing quartic force field. ***
@@ -7078,67 +7114,106 @@ C           WRITE (LMIDAS,*) 'Quartic force field'
             DO 200 K = 1, NDCOOR
             DO 200 J = 1, NDCOOR
             DO 200 I = 1, NDCOOR
-               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
-     *          FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
+               QUANT = FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
      *           RNNORM(K)*RNNORM(L)
-     *          ,I, J, K, L
+               NTOT=NTOT+1
+               IF (ABS(QUANT).GE.THRTRM) THEN 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *            QUANT,I, J, K, L
+                  NWRIT=NWRIT+1
+               ENDIF
  200        CONTINUE
          ELSE 
 C one mode 
             FAC=1.0D0/6.0D0
             DO 110 I = 1, NDCOOR
-               WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
-     *           FAC*QUBIC(I,I,I)*RNNORM(I)*RNNORM(I)*RNNORM(I), I, I, I
+               QUANT =  FAC*QUBIC(I,I,I)*RNNORM(I)*RNNORM(I)*RNNORM(I)
+               NTOT=NTOT+1
+               IF (ABS(QUANT).GE.THRTRM) THEN 
+                  WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+     *               QUANT, I, I, I
+                  NWRIT=NWRIT+1
+               ENDIF
  110        CONTINUE
             FAC=1.0D0/24.0D0
             DO 210 I = 1, NDCOOR
-               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
-     *           FAC*QUARTC(I,I,I,I)*RNNORM(I)*RNNORM(I)*
-     *           RNNORM(I)*RNNORM(I),I,I,I,I
+               NTOT=NTOT+1
+               QUANT = FAC*QUARTC(I,I,I,I)*RNNORM(I)*RNNORM(I)*
+     *              RNNORM(I)*RNNORM(I)
+               IF (ABS(QUANT).GE.THRTRM) THEN 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *              QUANT,I,I,I,I
+                  NWRIT=NWRIT+1
+               ENDIF
  210        CONTINUE
 C two mode coupling
             FAC=1.0D0/2.0D0
             DO 120 J = 1, NDCOOR 
             DO 120 I = 1, NDCOOR 
-               IF (I.NE.J)
-     *         WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
-     *           FAC*QUBIC(I,J,J)*RNNORM(I)*RNNORM(J)*RNNORM(J), I, J, J
+               IF (I.NE.J) THEN 
+                  NTOT=NTOT+1
+                  QUANT = FAC*QUBIC(I,J,J)*RNNORM(I)
+     *                       *RNNORM(J)*RNNORM(J)
+                  IF (ABS(QUANT).GE.THRTRM) THEN 
+                     WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
+     *                 QUANT, I, J, J
+
+                     NWRIT=NWRIT+1
+                  ENDIF 
+               ENDIF 
  120        CONTINUE
             FAC=1.0D0/4.0D0
             DO 220 J = 1, NDCOOR 
             DO 220 I = 1, J-1 
-               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
-     *           FAC*QUARTC(I,I,J,J)*RNNORM(I)*RNNORM(I)*
-     *           RNNORM(J)*RNNORM(J), I, I, J, J
+               NTOT=NTOT+1
+               QUANT = FAC*QUARTC(I,I,J,J)*RNNORM(I)*RNNORM(I)*
+     *           RNNORM(J)*RNNORM(J)
+               IF (ABS(QUANT).GE.THRTRM) THEN 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *               QUANT, I, I, J, J
+                  NWRIT=NWRIT+1
+               ENDIF 
  220        CONTINUE
             FAC=1.0D0/6.0D0
             DO 221 J = 1, NDCOOR 
             DO 221 I = 1, NDCOOR 
-               IF (I.NE.J)
-     *         WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
-     *           FAC*QUARTC(I,J,J,J)*RNNORM(I)*RNNORM(J)*
-     *           RNNORM(J)*RNNORM(J), I, J, J, J
+               IF (I.NE.J) THEN 
+                  NTOT=NTOT+1
+                  QUANT = FAC*QUARTC(I,J,J,J)*RNNORM(I)*RNNORM(J)*
+     *                    RNNORM(J)*RNNORM(J)
+                  IF (ABS(QUANT).GE.THRTRM) THEN 
+                     WRITE (LMIDAS,'(E23.16,4(1X,I5))') QUANT,I,J,J,J
+                     NWRIT=NWRIT+1
+                  ENDIF 
+               ENDIF 
  221        CONTINUE
 C three mode coupling
             FAC=1.0D0
             DO 130 K = 1, NDCOOR
             DO 130 J = 1, K-1
             DO 130 I = 1, J-1
-               WRITE (LMIDAS,'(E23.16,3(1X,I5))') 
-     *            FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K), 
-     *            I, J, K
+               NTOT=NTOT+1
+               QUANT = FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K)
+               IF (ABS(QUANT).GE.THRTRM) THEN 
+                  WRITE (LMIDAS,'(E23.16,3(1X,I5))') QUANT,I,J,K
+                  NWRIT=NWRIT+1
+               ENDIF 
  130        CONTINUE
             FAC=1.0D0/2.0D0
             DO 230 K = 1, NDCOOR
             DO 230 J = 1, K-1
             DO 230 I = 1, NDCOOR
-               IF ((I.NE.J).AND.(I.NE.K))
-     *            WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
-     *             FAC*QUARTC(I,I,J,K)*RNNORM(I)*RNNORM(I)*
-     *             RNNORM(J)*RNNORM(K), I, I, J, K
+               IF ((I.NE.J).AND.(I.NE.K)) THEN 
+                  NTOT=NTOT+1
+                  QUANT = FAC*QUARTC(I,I,J,K)*RNNORM(I)*RNNORM(I)*
+     *               RNNORM(J)*RNNORM(K)
+                  IF (ABS(QUANT).GE.THRTRM) THEN 
+                     WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *               QUANT, I, I, J, K
+                     NWRIT=NWRIT+1
+                  ENDIF 
+               ENDIF 
  230        CONTINUE
-C
-C           *** Writing quartic force field. ***
 C
 C four mode coupling
             FAC=1.0D0
@@ -7146,12 +7221,39 @@ C four mode coupling
             DO 240 K = 1, L-1
             DO 240 J = 1, K-1
             DO 240 I = 1, J-1
-               WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
-     *          FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
+               NTOT=NTOT+1
+               QUANT = FAC*QUARTC(I,J,K,L)*RNNORM(I)*RNNORM(J)*
      *           RNNORM(K)*RNNORM(L)
-     *          ,I, J, K, L
+               IF (ABS(QUANT).GE.THRTRM) THEN 
+                  WRITE (LMIDAS,'(E23.16,4(1X,I5))') 
+     *             QUANT,I, J, K, L
+                  NWRIT=NWRIT+1
+               ENDIF 
  240        CONTINUE
          END IF
+C
+C Count terms if permut symmetry was not used 
+C
+         NUNCON=0
+         DO 250 L = 1, NDCOOR
+            DO 260 K = 1, NDCOOR
+               DO 270 J = 1, NDCOOR
+                  DO 280 I = 1, NDCOOR
+                     NUNCON=NUNCON+1
+ 280              ENDDO 
+                  NUNCON=NUNCON+1
+ 270           ENDDO 
+ 260        ENDDO 
+            NUNCON=NUNCON+1
+ 250     ENDDO 
+         WRITE (LUPRI,'(/,A,3(/,A,I8))')
+     *    " Force field has been written to Midas Operator File " , 
+     *    " Number of terms without use of perm sym =    " , NUNCON, 
+     *    " Number of terms in total using pert sym =    " , NTOT,
+     *    " Number of signficant terms written      =    " , NWRIT
+         WRITE (LUPRI,'(A,E20.13,/,A,/)')
+     *    " Only terms with coefficients greater than    " ,THRTRM , 
+     *    " is written to operator file "
       END IF
 C
 C     *** CLOSING FILE. ***
