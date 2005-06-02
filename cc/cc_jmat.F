@@ -171,6 +171,7 @@ c/* Deck CC_JMAT */
 #include "iratdef.h"
 #include "eribuf.h"
 #include "ccslvinf.h"
+#include "second.h"
 #include "qm3.h"
 
 * local parameters:
