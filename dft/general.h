@@ -184,10 +184,10 @@ void dftcrcf_(real* fi, real* cmo,
               real* work, int* lwork);
 
 
-void dft_kohn_shamab_(real* dmat, real* ksm, real *edfty, 
-                      real* work, int *lwork, int* ipr);
-void dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat, 
-                     int *trplet, int *ksymop, real* work,int* lwork);
+void FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
+                            real* work, int *lwork, int* iprfck);
+void FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat, 
+                           int *trplet, int *ksymop, real* work,int* lwork);
 void dftmolgradab_(real* work, int* lwork, int* iprint);
 typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, int* lwork, const int* iprint);
@@ -276,8 +276,7 @@ extern const real ZEROR, ONER, TWOR, FOURR;
 #define __inline__
 #endif
 #define CHECK_WRKMEM(req,lwork)\
- if((req)>(lwork)){dalton_quit(__FUNCTION__ \
-                   " requires %u words but only %u available\n",\
-                   (unsigned)(req), (unsigned)(lwork));}
+ if((req)>(lwork)){dalton_quit("%s requires %u words but only %u available\n",\
+                   __FUNCTION__, (unsigned)(req), (unsigned)(lwork));}
 
 #endif

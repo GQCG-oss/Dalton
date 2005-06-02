@@ -37,6 +37,7 @@
 
 #include "integrator.h"
 #include "functionals.h"
+#include "general.h"
 
 #include "inforb.h"
 #include "priunit.h" 
@@ -1323,7 +1324,7 @@ dftcrcf_(real* fi, real* cmo,
 
     dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
 
-    dft_cr_resp_collect_info(data->dftcontr, work,lwork); /* NO-OP in serial */
+    dft_cr_resp_collect_info(data->dftcontr,work,*lwork); /* NO-OP in serial */
     daxpy_(&norbt2, &ONER, data->dftcontr, &ONEI, fi, &ONEI);
 
     cubefast_data_free(data);
