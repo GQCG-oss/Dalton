@@ -57,13 +57,6 @@ C
 C
       CALL QENTER('PR1INT')
 C
-C     If ONLYOV is true we do not want the "ghost" part of
-C     the overlap matrix.
-C
-      IF (ONLYOV) THEN
-        DOHUCKEL = .FALSE.
-      END IF
-C
       NCOMP    = 0
       TOFILE   = .TRUE.
       DOINT(1,1) = .TRUE.
