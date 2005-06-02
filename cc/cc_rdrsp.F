@@ -1650,6 +1650,9 @@ c /* deck CCPRPAO */
 *---------------------------------------------------------------------*
 C  Taken out, because we were not sure if it is correct
 C  C.H., P.J., F.P. Aarhus, April 04
+C  TODO/FIXME: KR has promised to look at the signs of *all* one-el.
+C              integrals. For now, the sign of rot. strengths and
+C              optical rotations is changed in the CC code.
 C
 C     IF (LABEL(2:7) .EQ. 'ANGMOM') THEN
 C        CALL DSCAL(N2BST(IRREP),-1.0D0,PRPAO,1)

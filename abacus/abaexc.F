@@ -243,7 +243,8 @@ C
       RETURN
       END
 C  /* Deck excita */
-      SUBROUTINE EXCITA(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,FONAC,
+      SUBROUTINE EXCITA(TRLEN,TRVEL,TQLEN,TQVEL,
+     &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
      &                  FONA2,WORK,LWORK,PASS)
 #include <implicit.h>
 #include <priunit.h>
@@ -255,6 +256,7 @@ C  /* Deck excita */
       LOGICAL PASS
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
@@ -267,7 +269,8 @@ C
 C
       IPRRSP = IPREXC
 C
-      CALL EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
+      CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
+     &            TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
      &            WORK,LWORK)
 C
       CALL TIMER ('EXCITA',TIMEIN,TIMOUT)
@@ -281,7 +284,8 @@ C
       RETURN
       END
 C  /* Deck excit1 */
-      SUBROUTINE EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,FONAC,
+      SUBROUTINE EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
+     &                  TRLON,TRMAG,BSRLON,EXENG,FONAC,
      &                  FONA2,WORK,LWORK)
 #include <implicit.h>
 #include <dummy.h>
@@ -306,16 +310,27 @@ C  /* Deck excit1 */
 C
       DIMENSION WORK(LWORK)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       CHARACTER*8 LABEL, LABINT(3*MXCOOR)
+      LOGICAL   LOCDIPLEN, LOCDIPVEL, LOCANGMOM, LOCLONDON, LOCSECMOM,
+     &          LOCROTSTR, LOCHBDO, LOCHDO
       LOGICAL   FOUND
 C
-C     If ECD true then
-C     set ROTSTR in cbiexc.h true to calculate needed integrals
+      CALL QENTER('EXCIT1')
 C
-      IF (ECD) ROTSTR = .TRUE.
+C     If OECD or ECD true then
+C     set flags in cbiexc.h true to calculate needed integrals
+C
+      IF (OECD) THEN
+         DIPSTR = .TRUE.
+         ROTVEL = .TRUE.
+         ROTSTR = .TRUE.
+      ELSE IF (ECD) THEN
+         ROTSTR = .TRUE.
+      END IF
 C
 C     Get reference state
 C     ===================
@@ -332,7 +347,7 @@ C
       ENDIF
       KFREE  = 1
       LFREE  = LWORK
-C      
+C
       CALL MEMGET('REAL',KCMO  ,NCMOT ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KUDV  ,LUDV  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPVX  ,LPVX  ,WORK,KFREE,LFREE)
@@ -434,6 +449,41 @@ C
 C     Construct property-integrals and write to LUPROP
 C     ================================================
 C
+      LOCDIPLEN = .FALSE.
+      LOCDIPVEL = .FALSE.
+      LOCANGMOM = .FALSE.
+      LOCLONDON = .FALSE.
+      LOCSECMOM = .FALSE.
+      LOCROTSTR = .FALSE.
+      LOCHBDO   = .FALSE.
+      LOCHDO    = .FALSE.
+
+      IF (DIPSTR) THEN         ! oscillator strength, len+vel
+         LOCDIPLEN = .TRUE.
+         LOCDIPVEL = .TRUE.
+      END IF
+      IF (ROTSTR) THEN         ! rot. str., len+London
+         LOCDIPLEN = .TRUE.
+         LOCLONDON = .TRUE.
+         LOCANGMOM = .TRUE.
+         IF (NODIFC) LOCHBDO = .TRUE.
+      END IF
+      IF (ROTVEL) THEN         ! rot. str., len+vel
+         LOCDIPLEN = .TRUE.
+         LOCDIPVEL = .TRUE.
+         LOCANGMOM = .TRUE.
+      END IF
+      IF (OECD) THEN           ! rot. str. tensors, len+vel
+         LOCDIPLEN = .TRUE.
+         LOCDIPVEL = .TRUE.
+         LOCANGMOM = .TRUE.
+         LOCSECMOM = .TRUE.
+         LOCROTSTR = .TRUE.
+      END IF
+      IF (FNAC .AND. NODIFC) THEN
+         LOCHDO    = .TRUE.
+      END IF
+C
 C     2. Work allocations:
 C
       KIDSYM = KWORK1
@@ -443,62 +493,83 @@ C
 C
       NLBTOT = 0
 C
-      IF (DIPSTR .OR. ROTSTR) THEN
+      IF (LOCDIPLEN) THEN
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
-C
-         IF (ROTSTR) THEN
-            CALL LABCOP(1,NLBTOT,'XLONMAG ',ISYMAX(1,2),LABAPP,LABSYM)
-            CALL LABCOP(1,NLBTOT,'YLONMAG ',ISYMAX(2,2),LABAPP,LABSYM)
-            CALL LABCOP(1,NLBTOT,'ZLONMAG ',ISYMAX(3,2),LABAPP,LABSYM)
-C
-            IF (NODIFC) THEN
-               NCOMP  = 0
-               NPATOM = 0
-               CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK(KWORK2),LWORK2,
-     &                     LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
-               NLAB = 3
-               CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
-     &                     LABSYM)
-            ENDIF
-         END IF
-      ENDIF
-C
-      IF (ROTVEL) THEN
+      END IF
+      IF (LOCDIPVEL) THEN
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+      END IF
+      IF (LOCANGMOM) THEN
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
          NLAB = 3
-         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
-      ENDIF
-C
-      IF (FNAC  .AND. NODIFC) THEN
+         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
+     &               LABSYM)
+      END IF
+      IF (LOCLONDON) THEN
+         CALL LABCOP(1,NLBTOT,'XLONMAG ',ISYMAX(1,2),LABAPP,LABSYM)
+         CALL LABCOP(1,NLBTOT,'YLONMAG ',ISYMAX(2,2),LABAPP,LABSYM)
+         CALL LABCOP(1,NLBTOT,'ZLONMAG ',ISYMAX(3,2),LABAPP,LABSYM)
+      END IF
+      IF (LOCSECMOM) THEN
+         NCOMP  = 0
+         NPATOM = 0
+         CALL GET1IN(DUMMY,'SECMOM ',NCOMP,WORK(KWORK2),LWORK2,
+     &               LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+         NLAB = 6
+         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
+     &               LABSYM)
+      END IF
+      IF (LOCROTSTR) THEN
+         NCOMP  = 0
+         NPATOM = 0
+         CALL GET1IN(DUMMY,'ROTSTR ',NCOMP,WORK(KWORK2),LWORK2,
+     &               LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+         NLAB = 6
+         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
+     &                  LABSYM)
+      END IF
+      IF (LOCHBDO) THEN
+         NCOMP  = 0
+         NPATOM = 0
+         CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK(KWORK2),LWORK2,
+     &               LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+         NLAB = 3
+         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
+     &               LABSYM)
+      END IF
+      IF (LOCHDO) THEN
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'HDO    ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),IDUMMY,
-     &               .TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &               .TRUE.,NPATOM,.TRUE.,IPRINT)
          NLAB = 3 * NUCDEP
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       ENDIF
 C
       CALL DZERO(TRLEN,3*NSYM*MXNEXI)
       CALL DZERO(TRVEL,3*NSYM*MXNEXI)
+      CALL DZERO(TQLEN,3*3*NSYM*MXNEXI)
+      CALL DZERO(TQVEL,3*3*NSYM*MXNEXI)
       CALL DZERO(TRLON,3*NSYM*MXNEXI)
       CALL DZERO(TRMAG,3*NSYM*MXNEXI)
       CALL DZERO(BSRLON,3*NSYM*MXNEXI)
@@ -578,8 +649,10 @@ C
      &                           1,1,LUPRI)
                      WRITE (LUPRI,'(A,F15.8)')
      &               'Excitation energy = ',WORK(KEXVAL-1+IEXVAL)
-                     WRITE (LUPRI,'(3A,F15.8)')
-     &               'Transition moment for ',LABEL,' = ',EXMOM
+C-tbp                WRITE (LUPRI,'(3A,F15.8)')
+C-tbp&               'Transition moment for ',LABEL,' = ',EXMOM
+                     WRITE (LUPRI,'(A,I4,A,I2,3A,F15.8)')
+     &               '<',IEXVAL,' (sym.',ISYM,')|',LABEL,'|0> = ',EXMOM
                   ENDIF
 C
 C                 Write transition momets into relevant arrays.
@@ -596,6 +669,44 @@ C
                     IF (LABEL(1:1).EQ.'X') TRVEL(1,ISYM,IEXVAL) = -EXMOM
                     IF (LABEL(1:1).EQ.'Y') TRVEL(2,ISYM,IEXVAL) = -EXMOM
                     IF (LABEL(1:1).EQ.'Z') TRVEL(3,ISYM,IEXVAL) = -EXMOM
+                  ELSE IF (LABEL(3:8).EQ.'SECMOM') THEN
+                    IF (LABEL(1:2) .EQ. 'XX') THEN
+                       TQLEN(1,1,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'XY') THEN
+                       TQLEN(1,2,ISYM,IEXVAL) = EXMOM
+                       TQLEN(2,1,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'XZ') THEN
+                       TQLEN(1,3,ISYM,IEXVAL) = EXMOM
+                       TQLEN(3,1,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'YY') THEN
+                       TQLEN(2,2,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'YZ') THEN
+                       TQLEN(2,3,ISYM,IEXVAL) = EXMOM
+                       TQLEN(3,2,ISYM,IEXVAL) = EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'ZZ') THEN
+                       TQLEN(3,3,ISYM,IEXVAL) = EXMOM
+                    ELSE
+                       CALL QUIT('Logical error (SECMOM) in EXCIT1')
+                    END IF
+                  ELSE IF (LABEL(3:8).EQ.'ROTSTR') THEN
+                    IF (LABEL(1:2) .EQ. 'XX') THEN
+                       TQVEL(1,1,ISYM,IEXVAL) = -EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'XY') THEN
+                       TQVEL(1,2,ISYM,IEXVAL) = -EXMOM
+                       TQVEL(2,1,ISYM,IEXVAL) = -EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'XZ') THEN
+                       TQVEL(1,3,ISYM,IEXVAL) = -EXMOM
+                       TQVEL(3,1,ISYM,IEXVAL) = -EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'YY') THEN
+                       TQVEL(2,2,ISYM,IEXVAL) = -EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'YZ') THEN
+                       TQVEL(2,3,ISYM,IEXVAL) = -EXMOM
+                       TQVEL(3,2,ISYM,IEXVAL) = -EXMOM
+                    ELSE IF (LABEL(1:2) .EQ. 'ZZ') THEN
+                       TQVEL(3,3,ISYM,IEXVAL) = -EXMOM
+                    ELSE
+                       CALL QUIT('Logical error (ROTSTR) in EXCIT1')
+                    END IF
                   ELSE IF (LABEL(2:7).EQ.'ANGMOM') THEN
                     IF (LABEL(1:1).EQ.'X') TRMAG(1,ISYM,IEXVAL) = -EXMOM
                     IF (LABEL(1:1).EQ.'Y') TRMAG(2,ISYM,IEXVAL) = -EXMOM
@@ -624,11 +735,14 @@ C
   100 CONTINUE
       CALL GPCLOSE(LUSOVE,'DELETE')
 C
+      CALL QEXIT('EXCIT1')
+C
       RETURN
       END
 C  /* Deck excout */
-      SUBROUTINE EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,FONAC,
-     &                  FONA2,WORK,LWORK)
+      SUBROUTINE EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
+     &                  EXENG,FONAC,FONA2,RMLEN,RQLEN,RLEN,
+     &                  RMVEL,RQVEL,RVEL,SLEN,SVEL,WORK,LWORK)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -638,18 +752,65 @@ C  /* Deck excout */
 #include <inforb.h>
 #include <nuclei.h>
 #include <abainf.h>
+#include <orgcom.h>
       CHARACTER COORDI*21, NMDTXT*9
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
+      DIMENSION RMLEN(3,3,NSYM,MXNEXI), RQLEN(3,3,NSYM,MXNEXI),
+     &          RLEN(3,3,NSYM,MXNEXI)
+      DIMENSION RMVEL(3,3,NSYM,MXNEXI), RQVEL(3,3,NSYM,MXNEXI),
+     &          RVEL(3,3,NSYM,MXNEXI)
+      DIMENSION SLEN(NSYM,MXNEXI), SVEL(NSYM,MXNEXI)
       DIMENSION WORK(LWORK)
       DIMENSION DSSUML(-6:2,1:4),DLSUML(-6:2,1:4),DISUML(-6:2,1:4)
       DIMENSION DSSUMM(-6:2,1:4),DLSUMM(-6:2,1:4),DISUMM(-6:2,1:4)
       DIMENSION DSSUMV(-6:2,1:4),DLSUMV(-6:2,1:4),DISUMV(-6:2,1:4)
+      DIMENSION XLEVICI(3,3,3), AVEC(3), XNEW(3)
+      LOGICAL   LCOECD, LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (TOLRTT = 1.0D-12)
       PARAMETER (D05 = 0.5D0, DTWO =  2.0D0, DTHREE = 3.0D0,
      &           ZERO = 0.0D0, ESUDIP = 1D4*DEBYE**2,
      &           ESUECD =  ECHARGE*XTANG*CCM*1D36*ECHARGE*HBAR/EMASS)
+C
+C-tbp: setup for OECD.
+C
+      LOCWRN = 0
+      LCOECD = .FALSE.
+
+      CALL DZERO(XLEVICI,27)
+      XLEVICI(3,2,1) = -1.0D0
+      XLEVICI(2,3,1) =  1.0D0
+      XLEVICI(3,1,2) =  1.0D0
+      XLEVICI(1,3,2) = -1.0D0
+      XLEVICI(2,1,3) = -1.0D0
+      XLEVICI(1,2,3) =  1.0D0
+      IF (OECD) THEN
+         CALL DZERO(RMLEN,3*3*NSYM*MXNEXI)
+         CALL DZERO(RQLEN,3*3*NSYM*MXNEXI)
+         CALL DZERO(RLEN,3*3*NSYM*MXNEXI)
+         CALL DZERO(RMVEL,3*3*NSYM*MXNEXI)
+         CALL DZERO(RQVEL,3*3*NSYM*MXNEXI)
+         CALL DZERO(RVEL,3*3*NSYM*MXNEXI)
+         CALL DZERO(SLEN,NSYM*MXNEXI)
+         CALL DZERO(RLEN,NSYM*MXNEXI)
+         XNRM = DSQRT(DDOT(3,GAGORG,1,GAGORG,1))
+         IF (XNRM .GT. 0.0D0) THEN
+            WRITE(LUPRI,'(//,10X,A,/,10X,A,/,10X,A,//)')
+     &      '*** NOTICE: OECD only at mathematical origin!',
+     &      '            Use the .NOCMC option to force this...',
+     &      '            OECD calculation is cancelled.'
+            LCOECD = .TRUE.
+         END IF
+      END IF
+      IF (LOCDBG) THEN
+         AVEC(1) = 0.0D0
+         AVEC(2) = 0.0D0
+         AVEC(3) = 2.063628D0
+      END IF
 C
 C     Write transition moments, dip. strength, and rot. strength
 C     to outputfile.
@@ -664,7 +825,7 @@ C
 C     Write electric transition dipole moments to output:
 C     ====================================================
 C
-      IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
+C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
          WRITE (LUPRI,'()')
          IF (EXCTRP) THEN
             CALL HEADER('Triplet electronic excitation energies',15)
@@ -682,7 +843,7 @@ C
      &            EXENG(ISYM,IEXVAL)*XTEV
  14         CONTINUE
  15      CONTINUE
-      END IF
+C-tbp END IF
       IF (DIPSTR .OR. ROTSTR .OR. ROTVEL) THEN
          WRITE (LUPRI,'()')
          CALL HEADER('Electric transition dipole moments (in a.u.)',15)
@@ -706,8 +867,136 @@ C
   200    CONTINUE
       END IF
 C
-C     Write magnetic transition dipole meoments to output:
-C     ====================================================
+C     Write electric quadrupole transition moments to output:
+C     =======================================================
+C
+      IF (OECD) THEN
+         WRITE (LUPRI,'()')
+         CALL HEADER('Diagonal electric quadrupole transition '
+     &               //'moments (in a.u.)',15)
+         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
+     &   ' Sym.   Mode    Frequency       Velocity/Frequency  ',
+     &   '            Length       ',
+     &   'ex. st.  No.      (au)          xx      yy      zz  ',
+     &   '      xx      yy      zz ',
+     &   '--------------------------------------------------',
+     &   '----------------------------'
+         DO ISYM = 1, NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+     &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
+     &            TQVEL(1,1,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
+     &            TQVEL(2,2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
+     &            TQVEL(3,3,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
+     &            TQLEN(1,1,ISYM,IEXVAL),
+     &            TQLEN(2,2,ISYM,IEXVAL),
+     &            TQLEN(3,3,ISYM,IEXVAL)
+            END DO
+         END DO
+         IF (LOCDBG) THEN
+            WRITE(LUPRI,'(//,A,3F10.5)')
+     &      'Velocity after translation along a = ',(AVEC(I),I=1,3)
+            DO ISYM = 1,NSYM
+               DO IEXVAL = 1,NEXCIT(ISYM)
+                  XNEW(1) = TQVEL(1,1,ISYM,IEXVAL)
+     &                    - 2.0D0*AVEC(1)*TRVEL(1,ISYM,IEXVAL)
+                  XNEW(2) = TQVEL(2,2,ISYM,IEXVAL)
+     &                    - 2.0D0*AVEC(2)*TRVEL(2,ISYM,IEXVAL)
+                  XNEW(3) = TQVEL(3,3,ISYM,IEXVAL)
+     &                    - 2.0D0*AVEC(3)*TRVEL(3,ISYM,IEXVAL)
+                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+     &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &            XNEW(1)/EXENG(ISYM,IEXVAL),
+     &            XNEW(2)/EXENG(ISYM,IEXVAL),
+     &            XNEW(3)/EXENG(ISYM,IEXVAL)
+               END DO
+            END DO
+            WRITE(LUPRI,'(/,A,3F10.5)')
+     &      'Length after translation along a = ',(AVEC(I),I=1,3)
+            DO ISYM = 1,NSYM
+               DO IEXVAL = 1,NEXCIT(ISYM)
+                  XNEW(1) = TQLEN(1,1,ISYM,IEXVAL)
+     &                    - 2.0D0*AVEC(1)*TRLEN(1,ISYM,IEXVAL)
+                  XNEW(2) = TQLEN(2,2,ISYM,IEXVAL)
+     &                    - 2.0D0*AVEC(2)*TRLEN(2,ISYM,IEXVAL)
+                  XNEW(3) = TQLEN(3,3,ISYM,IEXVAL)
+     &                    - 2.0D0*AVEC(3)*TRLEN(3,ISYM,IEXVAL)
+                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+     &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &            XNEW(1),XNEW(2),XNEW(3)
+               END DO
+            END DO
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*)
+         END IF
+         WRITE (LUPRI,'()')
+         CALL HEADER('Off-diagonal electric quadrupole transition '
+     &               //'moments (in a.u.)',15)
+         WRITE (LUPRI,'(1X,A,A,2(/,1X,A,A))')
+     &   ' Sym.   Mode    Frequency       Velocity/Frequency  ',
+     &   '            Length       ',
+     &   'ex. st.  No.      (au)          xy      xz      yz  ',
+     &   '      xy      xz      yz ',
+     &   '--------------------------------------------------',
+     &   '----------------------------'
+         DO ISYM = 1, NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+               WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
+     &            ISYM, IEXVAL, EXENG(ISYM,IEXVAL),
+     &            TQVEL(1,2,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
+     &            TQVEL(1,3,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
+     &            TQVEL(2,3,ISYM,IEXVAL) / EXENG(ISYM,IEXVAL),
+     &            TQLEN(1,2,ISYM,IEXVAL),
+     &            TQLEN(1,3,ISYM,IEXVAL),
+     &            TQLEN(2,3,ISYM,IEXVAL)
+            END DO
+         END DO
+         IF (LOCDBG) THEN
+            WRITE(LUPRI,'(//,A,3F10.5)')
+     &      'Velocity after translation along a = ',(AVEC(I),I=1,3)
+            DO ISYM = 1,NSYM
+               DO IEXVAL = 1,NEXCIT(ISYM)
+                  XNEW(1) = TQVEL(1,2,ISYM,IEXVAL)
+     &                    - AVEC(1)*TRVEL(2,ISYM,IEXVAL)
+     &                    - AVEC(2)*TRVEL(1,ISYM,IEXVAL)
+                  XNEW(2) = TQVEL(1,3,ISYM,IEXVAL)
+     &                    - AVEC(1)*TRVEL(3,ISYM,IEXVAL)
+     &                    - AVEC(3)*TRVEL(1,ISYM,IEXVAL)
+                  XNEW(3) = TQVEL(2,3,ISYM,IEXVAL)
+     &                    - AVEC(2)*TRVEL(3,ISYM,IEXVAL)
+     &                    - AVEC(3)*TRVEL(2,ISYM,IEXVAL)
+                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+     &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &            XNEW(1)/EXENG(ISYM,IEXVAL),
+     &            XNEW(2)/EXENG(ISYM,IEXVAL),
+     &            XNEW(3)/EXENG(ISYM,IEXVAL)
+               END DO
+            END DO
+            WRITE(LUPRI,'(/,A,3F10.5)')
+     &      'Length after translation along a = ',(AVEC(I),I=1,3)
+            DO ISYM = 1,NSYM
+               DO IEXVAL = 1,NEXCIT(ISYM)
+                  XNEW(1) = TQLEN(1,2,ISYM,IEXVAL)
+     &                    - AVEC(1)*TRLEN(2,ISYM,IEXVAL)
+     &                    - AVEC(2)*TRLEN(1,ISYM,IEXVAL)
+                  XNEW(2) = TQLEN(1,3,ISYM,IEXVAL)
+     &                    - AVEC(1)*TRLEN(3,ISYM,IEXVAL)
+     &                    - AVEC(3)*TRLEN(1,ISYM,IEXVAL)
+                  XNEW(3) = TQLEN(2,3,ISYM,IEXVAL)
+     &                    - AVEC(2)*TRLEN(3,ISYM,IEXVAL)
+     &                    - AVEC(3)*TRLEN(2,ISYM,IEXVAL)
+                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+     &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &            XNEW(1),XNEW(2),XNEW(3)
+               END DO
+            END DO
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*)
+         END IF
+      END IF
+C
+C     Write magnetic transition dipole moments to output:
+C     ===================================================
 C
       IF (ROTSTR .OR. ROTVEL) THEN
          WRITE (LUPRI,'()')
@@ -721,6 +1010,9 @@ C
      &   '----------------------------'
          DO 400 ISYM = 1,NSYM
             DO 300 IEXVAL = 1,NEXCIT(ISYM)
+C-tbp: correct signs!
+               CALL DSCAL(3,-1.0D0,TRMAG(1,ISYM,IEXVAL),1)
+               CALL DSCAL(3,-1.0D0,TRLON(1,ISYM,IEXVAL),1)
 C              The factor 0.5 is the Bohr-magneton
                WRITE (LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F8.3,2X,3F8.3)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
@@ -728,6 +1020,8 @@ C              The factor 0.5 is the Bohr-magneton
      &            D05*TRMAG(3,ISYM,IEXVAL), D05*TRLON(1,ISYM,IEXVAL),
      &            D05*TRLON(2,ISYM,IEXVAL), D05*TRLON(3,ISYM,IEXVAL)
                IF (NODIFC) THEN
+C-tbp: correct sign!
+                  CALL DSCAL(3,-1.0D0,BSRLON(1,ISYM,IEXVAL),1)
                   WRITE (LUPRI,'(51X,3(A,F7.3))')
      &            '+', D05*BSRLON(1,ISYM,IEXVAL),
      &            '+', D05*BSRLON(2,ISYM,IEXVAL),
@@ -739,6 +1033,28 @@ C              The factor 0.5 is the Bohr-magneton
                END IF
   300       CONTINUE
   400    CONTINUE
+         IF (LOCDBG) THEN
+            WRITE(LUPRI,'(//,A,3F10.5)')
+     &      'Conventional after translation along a = ',(AVEC(I),I=1,3)
+            DO ISYM = 1,NSYM
+               DO IEXVAL = 1,NEXCIT(ISYM)
+                  XNEW(1) = TRMAG(1,ISYM,IEXVAL)
+     &                    - AVEC(2)*TRVEL(3,ISYM,IEXVAL)
+     &                    + AVEC(3)*TRVEL(2,ISYM,IEXVAL)
+                  XNEW(2) = TRMAG(2,ISYM,IEXVAL)
+     &                    - AVEC(3)*TRVEL(1,ISYM,IEXVAL)
+     &                    + AVEC(1)*TRVEL(3,ISYM,IEXVAL)
+                  XNEW(3) = TRMAG(3,ISYM,IEXVAL)
+     &                    - AVEC(1)*TRVEL(2,ISYM,IEXVAL)
+     &                    + AVEC(2)*TRVEL(1,ISYM,IEXVAL)
+                  WRITE(LUPRI,'(2X,I2,6X,I3,1X,F12.6,3X,3F12.6)')
+     &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
+     &            D05*XNEW(1),D05*XNEW(2),D05*XNEW(3)
+               END DO
+            END DO
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*)
+         END IF
       END IF
 C
 C     Write oscilator and rotational strengths to output:
@@ -746,7 +1062,7 @@ C     ===================================================
 C
       IF (ROTSTR .OR. ROTVEL) THEN
          WRITE (LUPRI,'()')
-         CALL HEADER('Oscillator and Rotational Strengths',
+         CALL HEADER('Oscillator and Scalar Rotational Strengths',
      &   18)
          WRITE (LUPRI,'(2X,A,/2X,A)')
      &      'Units: 10**(-40) (esu**2)*(cm**2) (rotational strength)',
@@ -765,14 +1081,15 @@ C
                DIPSTL = DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRLEN(1,ISYM,IEXVAL),1) * EXENG(ISYM,IEXVAL)
 C              The factor 0.5 is the Bohr-magneton
-               ROTV   = - D05 * DDOT(3,TRVEL(1,ISYM,IEXVAL),1,
+C-tbp          correct signs
+               ROTV   = D05 * DDOT(3,TRVEL(1,ISYM,IEXVAL),1,
      &                  TRMAG(1,ISYM,IEXVAL),1) / EXENG(ISYM,IEXVAL)
-               ROTL   = - D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
+               ROTL   = D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRMAG(1,ISYM,IEXVAL),1)
-               ROTLON = - D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
+               ROTLON = D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                  TRLON(1,ISYM,IEXVAL),1)
                IF (NODIFC) THEN
-                  ROTLO2 = - D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
+                  ROTLO2 = D05 * DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
      &                     BSRLON(1,ISYM,IEXVAL),1)
                   ROTLON = ROTLON + ROTLO2
                ENDIF
@@ -780,10 +1097,251 @@ C              The factor 0.5 is the Bohr-magneton
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            (DTWO/DTHREE)*DIPSTV, (DTWO/DTHREE)*DIPSTL,
      &            ESUECD*ROTV,   ESUECD*ROTL,   ESUECD*ROTLON
+               IF (OECD) THEN
+                  SVEL(ISYM,IEXVAL) = ESUECD*ROTV
+                  SLEN(ISYM,IEXVAL) = ESUECD*ROTL
+               END IF
   500       CONTINUE
   600    CONTINUE
 C
-      ELSE IF (DIPSTR .AND. (.NOT. ROTSTR) .AND. (.NOT. ROTVEL)) THEN
+         IF (OECD .AND. (.NOT.LCOECD)) THEN
+
+         WRITE (LUPRI,'()')
+         CALL HEADER('Magnetic Dipole Rotatory Strength Tensor',
+     &               18)
+         WRITE (LUPRI,'(2X,A)')
+     &      'Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(3(/,1X,A,A))')
+     &   ' Sym. Mode Gauge         Magnetic Dipole Rotatory Strength ',
+     &   'Tensor          ',
+     &   '       No.            xx        xy        xz        yy     ',
+     &   '   yz        zz ',
+     &   '-----------------------------------------------------------',
+     &   '----------------'
+         DO ISYM = 1,NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+
+               PDOTL = DDOT(3,TRVEL(1,ISYM,IEXVAL),1,
+     &                        TRMAG(1,ISYM,IEXVAL),1)
+               RDOTL = DDOT(3,TRLEN(1,ISYM,IEXVAL),1,
+     &                        TRMAG(1,ISYM,IEXVAL),1)
+
+               DO J = 1,3
+                  DO I = 1,3
+                     RMVEL(I,J,ISYM,IEXVAL) =
+     &                        -TRVEL(J,ISYM,IEXVAL)*TRMAG(I,ISYM,IEXVAL)
+                     RMLEN(I,J,ISYM,IEXVAL) =
+     &                        -TRLEN(J,ISYM,IEXVAL)*TRMAG(I,ISYM,IEXVAL)
+                     IF (I .EQ. J) THEN
+                        RMVEL(I,I,ISYM,IEXVAL) = RMVEL(I,I,ISYM,IEXVAL)
+     &                                         + PDOTL
+                        RMLEN(I,I,ISYM,IEXVAL) = RMLEN(I,I,ISYM,IEXVAL)
+     &                                         + RDOTL
+                     END IF
+                  END DO
+               END DO
+
+               FACL = 0.375D0*ESUECD
+               FACV = FACL/EXENG(ISYM,IEXVAL)
+               CALL DSCAL(3*3,FACV,RMVEL(1,1,ISYM,IEXVAL),1)
+               CALL DSCAL(3*3,FACL,RMLEN(1,1,ISYM,IEXVAL),1)
+
+               TSTVEL = 0.0D0
+               TSTLEN = 0.0D0
+               DO J = 1,3
+                  DO I = 1,J
+                     RMVEL(I,J,ISYM,IEXVAL) = RMVEL(I,J,ISYM,IEXVAL)
+     &                                      + RMVEL(J,I,ISYM,IEXVAL)
+                     RMVEL(J,I,ISYM,IEXVAL) = RMVEL(I,J,ISYM,IEXVAL)
+                     RMLEN(I,J,ISYM,IEXVAL) = RMLEN(I,J,ISYM,IEXVAL)
+     &                                      + RMLEN(J,I,ISYM,IEXVAL)
+                     RMLEN(J,I,ISYM,IEXVAL) = RMLEN(I,J,ISYM,IEXVAL)
+                  END DO
+                  TSTVEL = TSTVEL + RMVEL(J,J,ISYM,IEXVAL)
+                  TSTLEN = TSTLEN + RMLEN(J,J,ISYM,IEXVAL)
+               END DO
+               TSTVEL = TSTVEL/3.0D0
+               TSTLEN = TSTLEN/3.0D0
+
+               WRITE(LUPRI,'(2X,I2,3X,I4,2X,A3,6(1X,F9.3))')
+     &         ISYM,IEXVAL,'Vel',RMVEL(1,1,ISYM,IEXVAL),
+     &                           RMVEL(1,2,ISYM,IEXVAL),
+     &                           RMVEL(1,3,ISYM,IEXVAL),
+     &                           RMVEL(2,2,ISYM,IEXVAL),
+     &                           RMVEL(2,3,ISYM,IEXVAL),
+     &                           RMVEL(3,3,ISYM,IEXVAL)
+               IF (ABS(TSTVEL-SVEL(ISYM,IEXVAL)) .GT. TOLRTT) THEN
+                  WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &            'WARNING: wrong average: ',TSTVEL,
+     &            '         expected     : ',SVEL(ISYM,IEXVAL)
+                  LOCWRN = LOCWRN + 1
+               END IF
+               WRITE(LUPRI,'(13X,A3,6(1X,F9.3))')
+     &                     'Len',RMLEN(1,1,ISYM,IEXVAL),
+     &                           RMLEN(1,2,ISYM,IEXVAL),
+     &                           RMLEN(1,3,ISYM,IEXVAL),
+     &                           RMLEN(2,2,ISYM,IEXVAL),
+     &                           RMLEN(2,3,ISYM,IEXVAL),
+     &                           RMLEN(3,3,ISYM,IEXVAL)
+               IF (ABS(TSTLEN-SLEN(ISYM,IEXVAL)) .GT. TOLRTT) THEN
+                  WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &            'WARNING: wrong average: ',TSTVEL,
+     &            '         expected     : ',SVEL(ISYM,IEXVAL)
+                  LOCWRN = LOCWRN + 1
+               END IF
+
+            END DO
+         END DO
+
+         WRITE (LUPRI,'()')
+         CALL HEADER('Electric Quadrupole Rotatory Strength Tensor',
+     &               18)
+         WRITE (LUPRI,'(2X,A)')
+     &      'Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(3(/,1X,A,A))')
+     &   ' Sym. Mode Gauge     Electric Quadrupole Rotatory Strength ',
+     &   'Tensor          ',
+     &   '       No.            xx        xy        xz        yy     ',
+     &   '   yz        zz ',
+     &   '-----------------------------------------------------------',
+     &   '----------------'
+         DO ISYM = 1,NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+
+               DO K = 1,3
+                  DO J = 1,3
+                     DO L = 1,3
+                        DO M = 1,3
+                           RQVEL(J,K,ISYM,IEXVAL) =
+     &                     RQVEL(J,K,ISYM,IEXVAL) + XLEVICI(J,L,M)*
+     &                     TRVEL(L,ISYM,IEXVAL)*TQVEL(M,K,ISYM,IEXVAL)
+                           RQLEN(J,K,ISYM,IEXVAL) =
+     &                     RQLEN(J,K,ISYM,IEXVAL) + XLEVICI(J,L,M)*
+     &                     TRLEN(L,ISYM,IEXVAL)*TQLEN(M,K,ISYM,IEXVAL)
+                        END DO
+                     END DO
+                  END DO
+               END DO
+
+               FACV = -0.375D0*ESUECD/EXENG(ISYM,IEXVAL)
+               FACL = -0.375D0*ESUECD*EXENG(ISYM,IEXVAL)
+               CALL DSCAL(3*3,FACV,RQVEL(1,1,ISYM,IEXVAL),1)
+               CALL DSCAL(3*3,FACL,RQLEN(1,1,ISYM,IEXVAL),1)
+
+               TSTVEL = 0.0D0
+               TSTLEN = 0.0D0
+               DO J = 1,3
+                  DO I = 1,J
+                     RQVEL(I,J,ISYM,IEXVAL) = RQVEL(I,J,ISYM,IEXVAL)
+     &                                      + RQVEL(J,I,ISYM,IEXVAL)
+                     RQVEL(J,I,ISYM,IEXVAL) = RQVEL(I,J,ISYM,IEXVAL)
+                     RQLEN(I,J,ISYM,IEXVAL) = RQLEN(I,J,ISYM,IEXVAL)
+     &                                      + RQLEN(J,I,ISYM,IEXVAL)
+                     RQLEN(J,I,ISYM,IEXVAL) = RQLEN(I,J,ISYM,IEXVAL)
+                  END DO
+                  TSTVEL = TSTVEL + RQVEL(J,J,ISYM,IEXVAL)
+                  TSTLEN = TSTLEN + RQLEN(J,J,ISYM,IEXVAL)
+               END DO
+               TSTVEL = TSTVEL/3.0D0
+               TSTLEN = TSTLEN/3.0D0
+
+               WRITE(LUPRI,'(2X,I2,3X,I4,2X,A3,6(1X,F9.3))')
+     &         ISYM,IEXVAL,'Vel',RQVEL(1,1,ISYM,IEXVAL),
+     &                           RQVEL(1,2,ISYM,IEXVAL),
+     &                           RQVEL(1,3,ISYM,IEXVAL),
+     &                           RQVEL(2,2,ISYM,IEXVAL),
+     &                           RQVEL(2,3,ISYM,IEXVAL),
+     &                           RQVEL(3,3,ISYM,IEXVAL)
+               IF (ABS(TSTVEL) .GT. TOLRTT) THEN
+                  WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &            'WARNING: wrong average: ',TSTVEL
+                  LOCWRN = LOCWRN + 1
+               END IF
+               WRITE(LUPRI,'(13X,A3,6(1X,F9.3))')
+     &                     'Len',RQLEN(1,1,ISYM,IEXVAL),
+     &                           RQLEN(1,2,ISYM,IEXVAL),
+     &                           RQLEN(1,3,ISYM,IEXVAL),
+     &                           RQLEN(2,2,ISYM,IEXVAL),
+     &                           RQLEN(2,3,ISYM,IEXVAL),
+     &                           RQLEN(3,3,ISYM,IEXVAL)
+               IF (ABS(TSTLEN) .GT. TOLRTT) THEN
+                  WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &            'WARNING: wrong average: ',TSTLEN
+                  LOCWRN = LOCWRN + 1
+               END IF
+
+            END DO
+         END DO
+
+         WRITE (LUPRI,'()')
+         CALL HEADER('Total Rotatory Strength Tensor',18)
+         WRITE (LUPRI,'(2X,A)')
+     &      'Units: 10**(-40) (esu**2)*(cm**2)'
+         WRITE (LUPRI,'(3(/,1X,A,A))')
+     &   ' Sym. Mode Gauge                   Total Rotatory Strength ',
+     &   'Tensor          ',
+     &   '       No.            xx        xy        xz        yy     ',
+     &   '   yz        zz ',
+     &   '-----------------------------------------------------------',
+     &   '----------------'
+         LENTOT = 3*3*NSYM*MXNEXI
+         CALL DCOPY(LENTOT,RMVEL,1,RVEL,1)
+         CALL DAXPY(LENTOT,1.0D0,RQVEL,1,RVEL,1)
+         CALL DCOPY(LENTOT,RMLEN,1,RLEN,1)
+         CALL DAXPY(LENTOT,1.0D0,RQLEN,1,RLEN,1)
+         DO ISYM = 1,NSYM
+            DO IEXVAL = 1,NEXCIT(ISYM)
+
+               TSTVEL = RVEL(1,1,ISYM,IEXVAL)
+               TSTLEN = RLEN(1,1,ISYM,IEXVAL)
+               DO I = 2,3
+                  TSTVEL = TSTVEL + RVEL(I,I,ISYM,IEXVAL)
+                  TSTLEN = TSTLEN + RLEN(I,I,ISYM,IEXVAL)
+               END DO
+               TSTVEL = TSTVEL/3.0D0
+               TSTLEN = TSTLEN/3.0D0
+
+               WRITE(LUPRI,'(2X,I2,3X,I4,2X,A3,6(1X,F9.3))')
+     &         ISYM,IEXVAL,'Vel',RVEL(1,1,ISYM,IEXVAL),
+     &                           RVEL(1,2,ISYM,IEXVAL),
+     &                           RVEL(1,3,ISYM,IEXVAL),
+     &                           RVEL(2,2,ISYM,IEXVAL),
+     &                           RVEL(2,3,ISYM,IEXVAL),
+     &                           RVEL(3,3,ISYM,IEXVAL)
+               IF (ABS(TSTVEL-SVEL(ISYM,IEXVAL)) .GT. TOLRTT) THEN
+                  WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &            'WARNING: wrong average: ',TSTVEL,
+     &            '         expected     : ',SVEL(ISYM,IEXVAL)
+                  LOCWRN = LOCWRN + 1
+               END IF
+               WRITE(LUPRI,'(13X,A3,6(1X,F9.3))')
+     &                     'Len',RLEN(1,1,ISYM,IEXVAL),
+     &                           RLEN(1,2,ISYM,IEXVAL),
+     &                           RLEN(1,3,ISYM,IEXVAL),
+     &                           RLEN(2,2,ISYM,IEXVAL),
+     &                           RLEN(2,3,ISYM,IEXVAL),
+     &                           RLEN(3,3,ISYM,IEXVAL)
+               IF (ABS(TSTLEN-SLEN(ISYM,IEXVAL)) .GT. TOLRTT) THEN
+                  WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &            'WARNING: wrong average: ',TSTLEN,
+     &            '         expected     : ',SLEN(ISYM,IEXVAL)
+                  LOCWRN = LOCWRN + 1
+               END IF
+
+            END DO
+         END DO
+
+         IF (LOCWRN .NE. 0) THEN
+            WRITE(LUPRI,'(//,1X,A,I6,A,A,/,1X,A,//)')
+     &      'WARNING:',LOCWRN,' warnings were issued for rotatory ',
+     &      ' strength tensors.',
+     &      '         Averages are incorrect!!!!'
+         END IF
+
+         END IF  ! (OECD .AND. (.NOT.LCOECD))
+C
+      ELSE IF (DIPSTR .AND. (.NOT. ROTSTR) .AND. (.NOT. ROTVEL)
+     &                .AND. (.NOT. OECD)) THEN
          WRITE (LUPRI,'()')
          CALL HEADER('Oscillator strengths',30)
          WRITE (LUPRI,'(2X,A)')
@@ -1044,20 +1602,22 @@ C
       CHARACTER LAB1(*)*8, LAB2(*)*8
       DIMENSION ISYM1(*), ISYM2(*)
 C
+      NTEST = NLBTOT + NLAB
+      IF (NTEST.GT.MAXPP) THEN
+         WRITE(LUPRI,'(A,/A,I6,A,I6)')
+     *   ' NUMBER OF SPECIFIED PROPERTIES EXCEEDS THE MAXIMUM ALLOWED',
+     *   ' MAXPRP =',MAXPP,' NLBTOT =',NTEST
+         CALL QUIT(' LABCOP: TOO MANY PROPERTIES SPECIFIED')
+      END IF
+C
       DO 100 ILAB = 1, NLAB
          LAB2(NLBTOT + ILAB)  = LAB1(ILAB)
          ISYM2(NLBTOT + ILAB) = ISYM1(ILAB) + 1
   100 CONTINUE
 C
 C     Update number total number of labels
-      NLBTOT = NLBTOT + NLAB
 C
-      IF (NLBTOT.GT.MAXPP) THEN
-         WRITE(LUPRI,'(A,/A,I5,A,I5)')
-     *   ' NUMBER OF SPECIFIED PROPERTIES EXCEED THE MAXIMUM ALLOWED',
-     *   ' MAXPRP = ',MAXPP,' NLBTOT = ',NLBTOT
-         CALL QUIT(' LABCOP: TOO MANY PROPERTIES SPECIFIED')
-      END IF
+      NLBTOT = NTEST
 C
       RETURN
       END

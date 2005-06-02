@@ -3269,8 +3269,13 @@ C
       DIMENSION XINDX(*),WRK(*)
       CHARACTER*8 BLANK
 C
-      PARAMETER ( MAXSIM = 15, BLANK = '        ' )
+      PARAMETER ( MAXSIM = 15, LMXFR = 1000, BLANK = '        ' )
+      PARAMETER ( TOLRTT = 1.0D-12)
       DIMENSION OSCSTR(MAXSIM,12),TRSMOM(MAXSIM,60)
+      DIMENSION RMLEN(3,3,LMXFR), RMVEL(3,3,LMXFR)
+      DIMENSION RQLEN(3,3,LMXFR), RQVEL(3,3,LMXFR)
+      DIMENSION RTLEN(3,3,LMXFR), RTVEL(3,3,LMXFR)
+      DIMENSION XLEVICI(3,3,3)
       DIMENSION XNACS2(MAXSIM+1) ,XNACGD(MAXSIM+1)
       LOGICAL REFST
       PARAMETER ( D2 = 2.0D0, D100 = 100.0D0, D0 = 0.0D0)
@@ -3278,6 +3283,8 @@ C
 C
 C
 #include <codata.h>
+      PARAMETER (RAU2CGS = ECHARGE*ECHARGE*XTANG*CCM*1D36*HBAR/EMASS)
+      PARAMETER (ESUECD = RAU2CGS)
 C
 C Used from common blocks:
 C  /INFOPT/ : EMCSCF
@@ -3297,9 +3304,54 @@ C
 #include <infpri.h>
 #include <inftap.h>
 #include <esg.h>
-C
-C     space allocation for reduced E(2) and reduced S(2)
-      KREDE  = 1
+C allocate work space for (oriented) electronic CD and
+C for reduced E(2) and reduced S(2)
+      IF (RSPOCD) THEN
+         IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
+            NINFO = NINFO + 1
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*) '***** NOTICE:'
+            WRITE(LUPRI,*) 'RSPPP: Rotatory strength tensors',
+     &                     ' will only be calculated for the'
+            WRITE(LUPRI,*) '       lowest ',LMXFR,' states.'
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*)
+         END IF
+         LFREX  = NPPCNV(KSYMOP)
+         LTRVEC = 3*NPPCNV(KSYMOP)
+         LTRTEN = 3*3*NPPCNV(KSYMOP)
+         LROTL  = NPPCNV(KSYMOP)
+         LROTV  = NPPCNV(KSYMOP)
+         CALL DZERO(XLEVICI,3*3*3)
+         XLEVICI(2,3,1) =  1.0D0
+         XLEVICI(3,2,1) = -1.0D0
+         XLEVICI(3,1,2) =  1.0D0
+         XLEVICI(1,3,2) = -1.0D0
+         XLEVICI(1,2,3) =  1.0D0
+         XLEVICI(2,1,3) = -1.0D0
+      ELSE IF (RSPECD) THEN
+         LFREX  = NPPCNV(KSYMOP)
+         LTRVEC = 3*NPPCNV(KSYMOP)
+         LTRTEN = 0
+         LROTL  = 0
+         LROTV  = 0
+      ELSE
+         LFREX  = 0
+         LTRVEC = 0
+         LTRTEN = 0
+         LROTL  = 0
+         LROTV  = 0
+      END IF
+      KFREX  = 1
+      KTRLEN = KFREX  + LFREX
+      KTRVEL = KTRLEN + LTRVEC
+      KTRMAG = KTRVEL + LTRVEC
+      KTQLEN = KTRMAG + LTRVEC
+      KTQVEL = KTQLEN + LTRTEN
+      KROTL  = KTQVEL + LTRTEN
+      KROTV  = KROTL  + LROTL
+      KREDE  = KROTV  + LROTV
       KREDS  = KREDE  + MAXRM*MAXRM
       KIBTYP = KREDS  + MAXRM*MAXRM
       KEIVAL = KIBTYP + MAXRM
@@ -3313,6 +3365,15 @@ C     space allocation for reduced E(2) and reduced S(2)
          WRITE(LUPRI,*)' KSYMOP,NGPPP(KSYMOP) ',KSYMOP,NGPPP(KSYMOP)
          WRITE(LUPRI,*)' LWRK ,LWRK1 ',LWRK,LWRK1
       END IF
+
+      CALL DZERO(WRK(KFREX),LFREX)
+      CALL DZERO(WRK(KTRLEN),LTRVEC)
+      CALL DZERO(WRK(KTRVEL),LTRVEC)
+      CALL DZERO(WRK(KTRMAG),LTRVEC)
+      CALL DZERO(WRK(KTQLEN),LTRTEN)
+      CALL DZERO(WRK(KTQVEL),LTRTEN)
+      CALL DZERO(WRK(KROTL),LROTL)
+      CALL DZERO(WRK(KROTV),LROTV)
 C
 C ALLOCATE WORK SPACE FOR EIGENVECTORS AND TRANSITION MOMENTS
 C
@@ -3443,12 +3504,20 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                IF (IPRRSP.GT.11) WRITE(LUPRI,'(A,I4,A,L4)')
      *              ' Operator symmetry:',KSYMOP,'; triplet = ',TRPLET
                DO 550 INUM = 1,NBX
+                 LOCST = ISIM-1+INUM
+                  IF ((RSPECD.OR.RSPOCD) .AND. (LOCST.GT.NPPCNV(KSYMOP))
+     &               ) THEN
+                     CALL QUIT('State count error in RSPPP')
+                  END IF
                   XMOM = DDOT(KZYVAR,WRK(KWRK2),1,
      *                        WRK(KBVECS+(INUM-1)*KZYVAR),1)
                   IF (IPRRSP.GT.0) WRITE(LUPRI,751)
      &               (ISIM-1+INUM),XMOM, WRK(KEIVAL-1+ISIM-1+INUM)*XTEV
  751              FORMAT('@ STATE NO:',I5,' *TRANSITION MOMENT:'
      *                 ,1P,G16.8,' *ENERGY(eV):',1P,G16.8)
+                  IF (RSPOCD .OR. RSPECD) THEN
+                     WRK(KFREX+LOCST-1) = WRK(KEIVAL-1+ISIM-1+INUM)
+                  END IF
                   IF ( LBLPP(KSYMOP,IOP) .EQ. 'XDIPLEN ' .OR.
      *                 LBLPP(KSYMOP,IOP) .EQ. 'YDIPLEN ' .OR.
      *                 LBLPP(KSYMOP,IOP) .EQ. 'ZDIPLEN ' ) THEN
@@ -3457,6 +3526,18 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *                   ' OSCILLATOR STRENGTH (LENGTH)   :',OSCIL
                       TRSMOM(INUM,JOP) = XMOM
                       OSCSTR(INUM,JOP) = OSCIL
+                      IF (RSPECD .OR. RSPOCD) THEN
+                         IF (LBLPP(KSYMOP,IOP).EQ.'XDIPLEN ') THEN
+                            KOFF = KTRLEN + 3*(LOCST - 1)
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'YDIPLEN ') THEN
+                            KOFF = KTRLEN + 3*(LOCST - 1) + 1
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'ZDIPLEN ') THEN
+                            KOFF = KTRLEN + 3*(LOCST - 1) + 2
+                            WRK(KOFF) = XMOM
+                         END IF
+                      END IF
                   ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XDIPVEL ' .OR.
      *                 LBLPP(KSYMOP,IOP) .EQ. 'YDIPVEL ' .OR.
      *                 LBLPP(KSYMOP,IOP) .EQ. 'ZDIPVEL ' ) THEN
@@ -3465,6 +3546,144 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *                   ' OSCILLATOR STRENGTH (VELOCITY) :',OSCIL
                       TRSMOM(INUM,JOP) = XMOM
                       OSCSTR(INUM,JOP) = OSCIL
+                      IF (RSPECD .OR. RSPOCD) THEN
+                         IF (LBLPP(KSYMOP,IOP).EQ.'XDIPVEL ') THEN
+                            KOFF = KTRVEL + 3*(LOCST - 1)
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'YDIPVEL ') THEN
+                            KOFF = KTRVEL + 3*(LOCST - 1) + 1
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'ZDIPVEL ') THEN
+                            KOFF = KTRVEL + 3*(LOCST - 1) + 2
+                            WRK(KOFF) = XMOM
+                         END IF
+                      END IF
+                  ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XANGMOM ' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'YANGMOM ' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZANGMOM ' ) THEN
+                      TRSMOM(INUM,JOP) = XMOM
+                      IF (RSPECD .OR. RSPOCD) THEN
+                         IF (LBLPP(KSYMOP,IOP).EQ.'XANGMOM ') THEN
+                            KOFF = KTRMAG + 3*(LOCST - 1)
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'YANGMOM ') THEN
+                            KOFF = KTRMAG + 3*(LOCST - 1) + 1
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'ZANGMOM ') THEN
+                            KOFF = KTRMAG + 3*(LOCST - 1) + 2
+                            WRK(KOFF) = XMOM
+                         END IF
+                      END IF
+                  ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XXSECMOM' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'XYSECMOM' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'XZSECMOM' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'YYSECMOM' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'YZSECMOM' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZZSECMOM' ) THEN
+                      TRSMOM(INUM,JOP) = XMOM
+                      IF (RSPECD .OR. RSPOCD) THEN
+                         IF (LBLPP(KSYMOP,IOP).EQ.'XXSECMOM') THEN
+                            I1 = 1
+                            I2 = 1
+                            KOFF = KTQLEN + 3*3*(LOCST - 1) + 3*(I2 - 1)
+     &                           + I1 - 1
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'XYSECMOM') THEN
+                            I1 = 1
+                            I2 = 2
+                            KOFF1 = KTQLEN + 3*3*(LOCST - 1)
+     &                            + 3*(I2 - 1) + I1 - 1
+                            KOFF2 = KTQLEN + 3*3*(LOCST - 1)
+     &                            + 3*(I1 - 1) + I2 - 1
+                            WRK(KOFF1) = XMOM
+                            WRK(KOFF2) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'XZSECMOM') THEN
+                            I1 = 1
+                            I2 = 3
+                            KOFF1 = KTQLEN + 3*3*(LOCST - 1)
+     &                            + 3*(I2 - 1) + I1 - 1
+                            KOFF2 = KTQLEN + 3*3*(LOCST - 1)
+     &                            + 3*(I1 - 1) + I2 - 1
+                            WRK(KOFF1) = XMOM
+                            WRK(KOFF2) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'YYSECMOM') THEN
+                            I1 = 2
+                            I2 = 2
+                            KOFF = KTQLEN + 3*3*(LOCST - 1) + 3*(I2 - 1)
+     &                           + I1 - 1
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'YZSECMOM') THEN
+                            I1 = 2
+                            I2 = 3
+                            KOFF1 = KTQLEN + 3*3*(LOCST - 1)
+     &                            + 3*(I2 - 1) + I1 - 1
+                            KOFF2 = KTQLEN + 3*3*(LOCST - 1)
+     &                            + 3*(I1 - 1) + I2 - 1
+                            WRK(KOFF1) = XMOM
+                            WRK(KOFF2) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'ZZSECMOM') THEN
+                            I1 = 3
+                            I2 = 3
+                            KOFF = KTQLEN + 3*3*(LOCST - 1) + 3*(I2 - 1)
+     &                           + I1 - 1
+                            WRK(KOFF) = XMOM
+                         END IF
+                      END IF
+                  ELSE IF ( LBLPP(KSYMOP,IOP) .EQ. 'XXROTSTR' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'XYROTSTR' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'XZROTSTR' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'YYROTSTR' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'YZROTSTR' .OR.
+     *                 LBLPP(KSYMOP,IOP) .EQ. 'ZZROTSTR' ) THEN
+                      TRSMOM(INUM,JOP) = XMOM
+                      IF (RSPECD .OR. RSPOCD) THEN
+                         IF (LBLPP(KSYMOP,IOP).EQ.'XXROTSTR') THEN
+                            I1 = 1
+                            I2 = 1
+                            KOFF = KTQVEL + 3*3*(LOCST - 1) + 3*(I2 - 1)
+     &                           + I1 - 1
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'XYROTSTR') THEN
+                            I1 = 1
+                            I2 = 2
+                            KOFF1 = KTQVEL + 3*3*(LOCST - 1)
+     &                            + 3*(I2 - 1) + I1 - 1
+                            KOFF2 = KTQVEL + 3*3*(LOCST - 1)
+     &                            + 3*(I1 - 1) + I2 - 1
+                            WRK(KOFF1) = XMOM
+                            WRK(KOFF2) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'XZROTSTR') THEN
+                            I1 = 1
+                            I2 = 3
+                            KOFF1 = KTQVEL + 3*3*(LOCST - 1)
+     &                            + 3*(I2 - 1) + I1 - 1
+                            KOFF2 = KTQVEL + 3*3*(LOCST - 1)
+     &                            + 3*(I1 - 1) + I2 - 1
+                            WRK(KOFF1) = XMOM
+                            WRK(KOFF2) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'YYROTSTR') THEN
+                            I1 = 2
+                            I2 = 2
+                            KOFF = KTQVEL + 3*3*(LOCST - 1) + 3*(I2 - 1)
+     &                           + I1 - 1
+                            WRK(KOFF) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'YZROTSTR') THEN
+                            I1 = 2
+                            I2 = 3
+                            KOFF1 = KTQVEL + 3*3*(LOCST - 1)
+     &                            + 3*(I2 - 1) + I1 - 1
+                            KOFF2 = KTQVEL + 3*3*(LOCST - 1)
+     &                            + 3*(I1 - 1) + I2 - 1
+                            WRK(KOFF1) = XMOM
+                            WRK(KOFF2) = XMOM
+                         ELSE IF (LBLPP(KSYMOP,IOP).EQ.'ZZROTSTR') THEN
+                            I1 = 3
+                            I2 = 3
+                            KOFF = KTQVEL + 3*3*(LOCST - 1) + 3*(I2 - 1)
+     &                           + I1 - 1
+                            WRK(KOFF) = XMOM
+                         END IF
+                      END IF
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
      *                 LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
                       OSCIL = D2*XMOM*XMOM*WRK(KEIVAL-1+ISIM-1+INUM)
@@ -3583,6 +3802,347 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
      &                  KSYMOP,0,WRK(KRESID-1+ISIM-1+INUM),D0)
  555     CONTINUE
  500  CONTINUE
+C
+C     Print oscillator/rotatory strengths
+C
+      IF (RSPOCD .OR. RSPECD) THEN
+
+         CALL AROUND('Absorption and Circular Dichroism Spectra')
+
+         WRITE (LUPRI,'(/,3(/,5X,A,I3))')
+     &   ' Reference  state    symmetry:',IREFSY,
+     &   ' Excitation operator symmetry:',KSYMOP,
+     &   ' Excitation state    symmetry:',KSYMST
+
+         WRITE (LUPRI,'(/,5X,A,/5X,A,//)')
+     &      ' Units: 10**(-40) (esu**2)*(cm**2) (rotatory   strength)',
+     &      '        dimensionless              (oscillator strength)'
+
+         CALL HEADER('Oscillator and Scalar Rotatory Strength',18)
+         WRITE(LUPRI,'(/,8X,A,/,8X,A,/,8X,A)')
+     &   ' State Frequency   Oscillator Strength    Rotatory  Strength',
+     &   '         (eV)      Velocity     Length   Velocity     Length',
+     &   ' -----------------------------------------------------------'
+
+         DO LOCST = 1,NPPCNV(KSYMOP)
+
+            IOFF0  = LOCST - 1
+            IOFF1  = 3*IOFF0
+            EXENG  = WRK(KFREX+IOFF0)
+            EXEV   = EXENG*XTEV
+
+            OSCLEN = D2R3*DDOT(3,WRK(KTRLEN+IOFF1),1,
+     &                           WRK(KTRLEN+IOFF1),1)*EXENG
+            ROTLEN = 0.5D0*DDOT(3,WRK(KTRLEN+IOFF1),1,
+     &                            WRK(KTRMAG+IOFF1),1)
+
+            IF (ABS(EXENG) .GT. 0.0D0) THEN
+
+               OSCVEL = D2R3*DDOT(3,WRK(KTRVEL+IOFF1),1,
+     &                              WRK(KTRVEL+IOFF1),1)/EXENG
+               ROTVEL = -0.5D0*DDOT(3,WRK(KTRVEL+IOFF1),1,
+     &                                WRK(KTRMAG+IOFF1),1)/EXENG
+
+
+               WRITE(LUPRI,'(8X,I5,5(1X,F10.4))')
+     &         LOCST,EXEV,OSCVEL,OSCLEN,ROTVEL*ESUECD,ROTLEN*ESUECD
+
+            ELSE
+
+             WRITE(LUPRI,'(8X,I5,1X,F10.4,1X,A,1X,F10.4,1X,A,1X,F10.4)')
+     &         LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
+
+               ROTVEL = 0.0D0
+
+            END IF
+
+            IF (RSPOCD) THEN
+               WRK(KROTV+IOFF0) = ROTVEL*ESUECD
+               WRK(KROTL+IOFF0) = ROTLEN*ESUECD
+            END IF
+
+         END DO
+
+      END IF
+
+      IF (RSPOCD) THEN
+
+         LOCWRN = 0
+         NUMST  = MIN(LMXFR,NPPCNV(KSYMOP))
+
+         CALL DZERO(RMVEL,3*3*NUMST)
+         CALL DZERO(RMLEN,3*3*NUMST)
+         CALL DZERO(RQVEL,3*3*NUMST)
+         CALL DZERO(RQLEN,3*3*NUMST)
+         CALL DZERO(RTVEL,3*3*NUMST)
+         CALL DZERO(RTLEN,3*3*NUMST)
+
+         CALL HEADER('Magnetic Dipole Rotatory Strength Tensor',18)
+         WRITE(LUPRI,'(/,A,/,A,A,/,A,A)')
+     &   ' State Gauge       Magnetic Dipole Rotatory Strength Tensor ',
+     &   '                  xx        xy        xz        yy        yz',
+     &   '        zz',
+     &   ' -----------------------------------------------------------',
+     &   '------------'
+         DO LOCST = 1,NUMST
+
+            IOFF0  = LOCST - 1
+            IOFF1  = 3*IOFF0
+            EXENG  = WRK(KFREX+IOFF0)
+
+            PDOTL  = DDOT(3,WRK(KTRVEL+IOFF1),1,
+     &                      WRK(KTRMAG+IOFF1),1)
+            RDOTL  = DDOT(3,WRK(KTRLEN+IOFF1),1,
+     &                      WRK(KTRMAG+IOFF1),1)
+
+            DO J = 1,3
+               DO I = 1,3
+                  RMVEL(I,J,LOCST) =
+     &                       WRK(KTRVEL+IOFF1+J-1)*WRK(KTRMAG+IOFF1+I-1)
+                  RMLEN(I,J,LOCST) =
+     &                      -WRK(KTRLEN+IOFF1+J-1)*WRK(KTRMAG+IOFF1+I-1)
+                  IF (I .EQ. J) THEN
+                     RMVEL(I,I,LOCST) = RMVEL(I,I,LOCST) - PDOTL
+                     RMLEN(I,I,LOCST) = RMLEN(I,I,LOCST) + RDOTL
+                  END IF
+               END DO
+            END DO
+
+            DO J = 1,3
+               DO I = 1,J
+                  RMVEL(I,J,LOCST) = RMVEL(I,J,LOCST) + RMVEL(J,I,LOCST)
+                  RMVEL(J,I,LOCST) = RMVEL(I,J,LOCST)
+                  RMLEN(I,J,LOCST) = RMLEN(I,J,LOCST) + RMLEN(J,I,LOCST)
+                  RMLEN(J,I,LOCST) = RMLEN(I,J,LOCST)
+               END DO
+            END DO
+
+            FACL = 0.375D0*ESUECD
+            CALL DSCAL(3*3,FACL,RMLEN(1,1,LOCST),1)
+
+            IF (ABS(EXENG) .GT. 0.0D0) THEN
+
+               FACV = FACL/EXENG
+               CALL DSCAL(3*3,FACV,RMVEL(1,1,LOCST),1)
+
+               WRITE(LUPRI,'(I5,3X,A,6(1X,F9.4))')
+     &         LOCST,'Vel ',RMVEL(1,1,LOCST),RMVEL(1,2,LOCST),
+     &                      RMVEL(1,3,LOCST),
+     &                      RMVEL(2,2,LOCST),RMVEL(2,3,LOCST),
+     &                      RMVEL(3,3,LOCST)
+
+            ELSE
+
+               CALL DZERO(RMVEL(1,1,LOCST),3*3)
+               WRITE(LUPRI,'(I5,3X,A,1X,A)')
+     &         LOCST,'Vel ','    ------ undefined ------'
+
+            END IF
+
+            TSTVEL = RMVEL(1,1,LOCST)
+            TSTLEN = RMLEN(1,1,LOCST)
+            DO I = 2,3
+               TSTVEL = TSTVEL + RMVEL(I,I,LOCST)
+               TSTLEN = TSTLEN + RMLEN(I,I,LOCST)
+            END DO
+            TSTVEL = TSTVEL/3.0D0
+            TSTLEN = TSTLEN/3.0D0
+
+            IF (ABS(TSTVEL-WRK(KROTV+IOFF0)) .GT. TOLRTT) THEN
+               WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &         'WARNING: wrong average: ',TSTVEL,
+     &         '         expected     : ',WRK(KROTV+IOFF0)
+               WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &         '         difference   : ',TSTVEL-WRK(KROTV+IOFF0)
+               LOCWRN = LOCWRN + 1
+            END IF
+
+            WRITE(LUPRI,'(8X,A,6(1X,F9.4))')
+     &            'Len ',RMLEN(1,1,LOCST),RMLEN(1,2,LOCST),
+     &                   RMLEN(1,3,LOCST),
+     &                   RMLEN(2,2,LOCST),RMLEN(2,3,LOCST),
+     &                   RMLEN(3,3,LOCST)
+
+            IF (ABS(TSTLEN-WRK(KROTL+IOFF0)) .GT. TOLRTT) THEN
+               WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &         'WARNING: wrong average: ',TSTLEN,
+     &         '         expected     : ',WRK(KROTL+IOFF0)
+               WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &         '         difference   : ',TSTLEN-WRK(KROTL+IOFF0)
+               LOCWRN = LOCWRN + 1
+            END IF
+
+         END DO
+
+         CALL HEADER('Electric Quadrupole Rotatory Strength Tensor',18)
+         WRITE(LUPRI,'(/,A,/,A,A,/,A,A)')
+     &   ' State Gauge   Electric Quadrupole Rotatory Strength Tensor ',
+     &   '                  xx        xy        xz        yy        yz',
+     &   '        zz',
+     &   ' -----------------------------------------------------------',
+     &   '------------'
+         DO LOCST = 1,NUMST
+
+            IOFF0  = LOCST - 1
+            IOFF1  = 3*IOFF0
+            IOFF2  = 3*IOFF1
+            EXENG  = WRK(KFREX+IOFF0)
+
+            DO K = 1,3
+               DO J = 1,3
+                  DO L = 1,3
+                     DO M = 1,3
+                        RQVEL(J,K,LOCST) =
+     &                  RQVEL(J,K,LOCST) - XLEVICI(M,L,J)*
+     &                  WRK(KTRVEL+IOFF1+L-1)*
+     &                  WRK(KTQVEL+IOFF2+3*(K-1)+M-1)
+                        RQLEN(J,K,LOCST) =
+     &                  RQLEN(J,K,LOCST) - XLEVICI(M,L,J)*
+     &                  WRK(KTRLEN+IOFF1+L-1)*
+     &                  WRK(KTQLEN+IOFF2+3*(K-1)+M-1)
+                     END DO
+                  END DO
+               END DO
+            END DO
+
+            DO J = 1,3
+               DO I = 1,J
+                  RQVEL(I,J,LOCST) = RQVEL(I,J,LOCST)
+     &                             + RQVEL(J,I,LOCST)
+                  RQVEL(J,I,LOCST) = RQVEL(I,J,LOCST)
+                  RQLEN(I,J,LOCST) = RQLEN(I,J,LOCST)
+     &                             + RQLEN(J,I,LOCST)
+                  RQLEN(J,I,LOCST) = RQLEN(I,J,LOCST)
+               END DO
+            END DO
+
+            FACL = -0.375D0*ESUECD*EXENG
+            CALL DSCAL(3*3,FACL,RQLEN(1,1,LOCST),1)
+
+            IF (ABS(EXENG) .GT. 0.0D0) THEN
+
+               FACV = -0.375D0*ESUECD/EXENG
+               CALL DSCAL(3*3,FACV,RQVEL(1,1,LOCST),1)
+
+               WRITE(LUPRI,'(I5,3X,A,6(1X,F9.4))')
+     &         LOCST,'Vel ',RQVEL(1,1,LOCST),RQVEL(1,2,LOCST),
+     &                      RQVEL(1,3,LOCST),
+     &                      RQVEL(2,2,LOCST),RQVEL(2,3,LOCST),
+     &                      RQVEL(3,3,LOCST)
+
+            ELSE
+
+               CALL DZERO(RQVEL(1,1,LOCST),3*3)
+               WRITE(LUPRI,'(I5,3X,A,1X,A)')
+     &         LOCST,'Vel ','    ------ undefined ------'
+
+            END IF
+
+            TSTVEL = RQVEL(1,1,LOCST)
+            TSTLEN = RQLEN(1,1,LOCST)
+            DO I = 2,3
+               TSTVEL = TSTVEL + RQVEL(I,I,LOCST)
+               TSTLEN = TSTLEN + RQLEN(I,I,LOCST)
+            END DO
+            TSTVEL = TSTVEL/3.0D0
+            TSTLEN = TSTLEN/3.0D0
+
+            IF (ABS(TSTVEL) .GT. TOLRTT) THEN
+               WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &         'WARNING: wrong average: ',TSTVEL
+               LOCWRN = LOCWRN + 1
+            END IF
+
+            WRITE(LUPRI,'(8X,A,6(1X,F9.4))')
+     &            'Len ',RQLEN(1,1,LOCST),RQLEN(1,2,LOCST),
+     &                   RQLEN(1,3,LOCST),
+     &                   RQLEN(2,2,LOCST),RQLEN(2,3,LOCST),
+     &                   RQLEN(3,3,LOCST)
+
+            IF (ABS(TSTLEN) .GT. TOLRTT) THEN
+               WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &         'WARNING: wrong average: ',TSTLEN
+               LOCWRN = LOCWRN + 1
+            END IF
+
+         END DO
+
+         CALL HEADER('Total Rotatory Strength Tensor',18)
+         WRITE(LUPRI,'(/,A,/,A,A,/,A,A)')
+     &   ' State Gauge                 Total Rotatory Strength Tensor ',
+     &   '                  xx        xy        xz        yy        yz',
+     &   '        zz',
+     &   ' -----------------------------------------------------------',
+     &   '------------'
+         LENTOT = 3*3*NPPCNV(KSYMOP)
+         CALL DCOPY(LENTOT,RMVEL,1,RTVEL,1)
+         CALL DAXPY(LENTOT,1.0D0,RQVEL,1,RTVEL,1)
+         CALL DCOPY(LENTOT,RMLEN,1,RTLEN,1)
+         CALL DAXPY(LENTOT,1.0D0,RQLEN,1,RTLEN,1)
+         DO LOCST = 1,NUMST
+
+            IOFF0 = LOCST - 1
+
+            IF (ABS(EXENG) .GT. 0.0D0) THEN
+
+               WRITE(LUPRI,'(I5,3X,A,6(1X,F9.4))')
+     &         LOCST,'Vel ',RTVEL(1,1,LOCST),RTVEL(1,2,LOCST),
+     &                      RTVEL(1,3,LOCST),
+     &                      RTVEL(2,2,LOCST),RTVEL(2,3,LOCST),
+     &                      RTVEL(3,3,LOCST)
+
+            ELSE
+
+               CALL DZERO(RTVEL(1,1,LOCST),3*3)
+               WRITE(LUPRI,'(I5,3X,A,1X,A)')
+     &         LOCST,'Vel ','    ------ undefined ------'
+
+            END IF
+
+            TSTVEL = RTVEL(1,1,LOCST)
+            TSTLEN = RTLEN(1,1,LOCST)
+            DO I = 2,3
+               TSTVEL = TSTVEL + RTVEL(I,I,LOCST)
+               TSTLEN = TSTLEN + RTLEN(I,I,LOCST)
+            END DO
+            TSTVEL = TSTVEL/3.0D0
+            TSTLEN = TSTLEN/3.0D0
+
+            IF (ABS(TSTVEL-WRK(KROTV+IOFF0)) .GT. TOLRTT) THEN
+               WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &         'WARNING: wrong average: ',TSTVEL,
+     &         '         expected     : ',WRK(KROTV+IOFF0)
+               WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &         '         difference   : ',TSTVEL-WRK(KROTV+IOFF0)
+               LOCWRN = LOCWRN + 1
+            END IF
+
+            WRITE(LUPRI,'(8X,A,6(1X,F9.4))')
+     &            'Len ',RTLEN(1,1,LOCST),RTLEN(1,2,LOCST),
+     &                   RTLEN(1,3,LOCST),
+     &                   RTLEN(2,2,LOCST),RTLEN(2,3,LOCST),
+     &                   RTLEN(3,3,LOCST)
+
+            IF (ABS(TSTLEN-WRK(KROTL+IOFF0)) .GT. TOLRTT) THEN
+               WRITE(LUPRI,'(1X,A,1P,D16.8,/,1X,A,1P,D16.8)')
+     &         'WARNING: wrong average: ',TSTLEN,
+     &         '         expected     : ',WRK(KROTL+IOFF0)
+               WRITE(LUPRI,'(1X,A,1P,D16.8)')
+     &         '         difference   : ',TSTLEN-WRK(KROTL+IOFF0)
+               LOCWRN = LOCWRN + 1
+            END IF
+
+         END DO
+
+         IF (LOCWRN .NE. 0) THEN
+            NWARN = NWARN + 1
+            WRITE(LUPRI,'(//,1X,A,I6,A,A,/,1X,A,//)')
+     &      'WARNING:',LOCWRN,' warnings were issued for rotatory ',
+     &      ' strength tensors.',
+     &      '         Averages are incorrect!!!!'
+         END IF
+
+      END IF
 C
 C *** END OF RSPPP
 C

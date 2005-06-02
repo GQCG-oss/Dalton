@@ -6,9 +6,14 @@
 \index{linear response!Coupled Cluster}
 \index{response!linear}
 \index{oscillator strength!Coupled Cluster}
+\index{rotatory strength!Coupled Cluster}
 \index{transition moment!Coupled Cluster}
 \index{transition strength!Coupled Cluster}
 \index{absorption strength!Coupled Cluster}
+\index{ECD!Coupled Cluster}
+\index{electronic circular dichroism!Coupled Cluster}
+\index{OECD!Coupled Cluster}
+\index{oriented electronic circular dichroism!Coupled Cluster}
 
 
 In the \Sec{CCLRSD} section the input that is
@@ -37,21 +42,61 @@ for the calculation of excited states.
 
 \begin{description}
 \item[\Key{DIPOLE}] 
-
+%
 Calculate the ground state--excited state dipole (length) transition properties including
 the oscillator strength.
+Integrals needed for operator DIPLEN.
 
 \item[\Key{DIPVEL}] 
 %
 Calculate the ground state--excited state dipole-velocity  transition properties including
-the oscillator strength in the dipole-velocity form. (The dipole length form is recommended
-for standard calculations).
+the oscillator strength in the velocity form.
+Integrals needed for operator DIPVEL.
+% Does not make sense:
+% (The dipole length form is recommended
+%for standard calculations).
+
+\item[\Key{ECD}] 
+%
+Calculate the ground state--excited state rotatory strength governing electronic circular dichroism
+(ECD) using both the length and velocity forms (see below).
+Integrals needed for operator DIPLEN, DIPVEL, and ANGMOM.
+
+\item[\Key{ECDLEN}] 
+%
+Calculate the ground state--excited state rotatory strength governing electronic circular dichroism
+(ECD) using the length form. Note that the result will be origin-dependent.
+Integrals needed for operator DIPLEN and ANGMOM.
+
+\item[\Key{ECDVEL}] 
+%
+Calculate the ground state--excited state rotatory strength governing electronic circular dichroism
+(ECD) using the origin invariant velocity form.
+Integrals needed for operator DIPVEL and ANGMOM.
 
 \item[\Key{NO2N+1}] 
 %
 Use an alternative, and normally less efficient, formulation for calculation
 the transition matrix elements (involving solution of response equations for 
 all operators instead of solving for the so-called $M$ vectors which is the default).
+
+\item[\Key{OECD}] 
+%
+Calculate the ground state--excited state rotatory strength tensor governing oriented electronic circular dichroism
+(OECD) using both the length and velocity forms (see below).
+Integrals needed for operator DIPLEN, DIPVEL, ANGMOM, SECMOM, and ROTSTR.
+
+\item[\Key{OECDLE}] 
+%
+Calculate the ground state--excited state rotatory strength tensor governing oriented electronic circular dichroism
+(OECD) using the length form. Note that the result will be origin-dependent.
+Integrals needed for operator DIPLEN, ANGMOM, and SECMOM.
+
+\item[\Key{OECDVE}] 
+%
+Calculate the ground state--excited state rotatory strength tensor governing oriented electronic circular dichroism
+(OECD) using the origin invariant velocity form.
+Integrals needed for operator DIPVEL, ANGMOM, and ROTSTR.
 
 \item[\Key{OPERAT}] \verb| |\newline
 \verb|READ (LUCMD,'(2A8)') LABELA, LABELB|\newline

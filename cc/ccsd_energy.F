@@ -67,7 +67,7 @@ C
 #include <r12int.h>
 #include <ccfop.h>
 #include <ccnoddy.h>
-      LOGICAL LCONVG,RSPIM2,EX,LEXIST
+      LOGICAL LCONV1,LCONV2,LCONVG,RSPIM2,EX,LEXIST
       CHARACTER*5 ETY0, ETY1, ETY2
       CHARACTER MODEL*10, ETYPE*24
       CHARACTER*8 LABEl1
@@ -521,11 +521,12 @@ C
             WRITE(LUPRI,529) 'Norm of t2am   after ccvec:',
      *               DDOT(NT2AMX,WORK(KT2AM),1,WORK(KT2AM),1)
          ENDIF
+         OMNM1 = DDOT(NT1AM(ISYMOP),WORK(KOMEG1),1,WORK(KOMEG1),1)
+         OMNM2 = DDOT(NT2AM(ISYMOP),WORK(KOMEG2),1,WORK(KOMEG2),1)
+         OMNM  = DSQRT(OMNM1+OMNM2)
          IF (IPRINT .GE. 3) THEN
-            WRITE(LUPRI,529) 'Norm of omega1 after ccvec:',
-     *               DDOT(NT1AM(ISYMOP),WORK(KOMEG1),1,WORK(KOMEG1),1)
-            WRITE(LUPRI,529) 'Norm of omega2 after ccvec:',
-     *               DDOT(NT2AM(ISYMOP),WORK(KOMEG2),1,WORK(KOMEG2),1)
+            WRITE(LUPRI,529) 'Norm of omega1 after ccvec:',OMNM1
+            WRITE(LUPRI,529) 'Norm of omega2 after ccvec:',OMNM2
          END IF
 C
          IF (CCSLV) THEN
@@ -631,8 +632,11 @@ C          Save new R12 amplitudes on disk:
 C
          CALL FLSHFO(LUPRI)
 C
-         IF (DABS(EN2-EN1) .LT. THRENR) LCONVG=.TRUE.
-           ITER = ITER+1
+         LCONV1 = DABS(EN2-EN1) .LT. THRENR
+         LCONV2 = OMNM .LT. THRVEC
+         LCONVG = LCONV1 .AND. LCONV2
+
+         ITER = ITER+1
          IF (ITER .GT. MAXITE) THEN
            WRITE(LUPRI,*) 'Energy not converged in ',MAXITE,
      &           ' iterations'
@@ -649,7 +653,19 @@ C
  242       FORMAT(' Accumulated inner iterations at this point are ',I5)
 C
          ELSE
-           IF (.NOT. LCONVG) GOTO 200
+           IF (.NOT. LCONVG) THEN
+              IF (IPRINT.GE.3 .AND. LCONV1) THEN
+                 WRITE(LUPRI,'(3X,A,D15.6,A,D15.6)')
+     &           'Energy difference ',DABS(EN2-EN1),
+     &           'is less then threshold ',THRENR
+                 WRITE(LUPRI,'(3X,A,A,D15.6,/,3X,A,D15.6)')
+     &           'Iterations continue, as the 2-norm of the vector ',
+     &           ' function: ',OMNM,
+     &           'is larger than the threshold: ',THRVEC
+                 CALL FLSHFO(LUPRI)
+              END IF
+              GOTO 200 ! go to next iteration
+           END IF
          ENDIF
 C
       IF (CCR12) THEN
@@ -660,6 +676,8 @@ C
       END IF
 
       WRITE(LUPRI,250) ETYPE(1:LENET),THRENR,EN2
+      WRITE(LUPRI,'(1X,A,1P,D15.8)')
+     & 'Final 2-norm of the CC vector function: ',OMNM
  250  FORMAT(/,1x,A,' energy converged to within ',D10.2,' is ',F16.9)
       IF (CCPAIR) THEN 
 C        Print CC pair energies (WK/UniKA/21-11-2002).
@@ -793,8 +811,10 @@ C
      *          + DDOT(NT1AMX,WORK(KT1AM),1,WORK(KT1AM),1)
         IF (ABS(XTNCCPR-XTNCCCU).LT.CVGTSOL) LSLTCVG = .TRUE.
         IF (IPRINT.GT.2) THEN
-          WRITE(LUPRI,*)'Norm of T-amplitudes in this solvent it.:',XTNCCCU
-          WRITE(LUPRI,*)'Norm of T-amplitudes in prev solvent it.:',XTNCCPR
+          WRITE(LUPRI,*)'Norm of T-amplitudes in this solvent it.:',
+     &                  XTNCCCU
+          WRITE(LUPRI,*)'Norm of T-amplitudes in prev solvent it.:',
+     &                  XTNCCPR
           WRITE(LUPRI,*)'LSLTCVG: ',LSLTCVG
         ENDIF
         WRITE(LUPRI,*)

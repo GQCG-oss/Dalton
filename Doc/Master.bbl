@@ -11,14 +11,6 @@ P.~R. Taylor.
 \newblock Symmetry-adapted integral derivatives.
 \newblock {\em Theor.~Chim.~Acta}, 69:447, 1986.
 
-\bibitem{tydptnchcpl393}
-T.~Yanai, D.~P. Tew, and N.~C. handy.
-\newblock {\em Chem.~Phys.~Lett.}, 393:51, 2004.
-
-\bibitem{ytttsytykhjcp120}
-Y.~Tawada, T.~Tsuneda, S.~Yanagisawa, T.~Yanai, and K.~Hirao.
-\newblock {\em J.~Chem.~Phys.}, 120:8425, 2004.
-
 \bibitem{carcsetljpmjcp114}
 C.~Angeli, R.~Cimiraglia, S.~Evangelisti, T.~Leininger, and J.-P. Malrieu.
 \newblock {\em J.~Chem.~Phys.}, 114:10252, 2001.
@@ -51,9 +43,9 @@ C.~C.~M. Samson, W.~Klopper, and T.~Helgaker.
 P.~Norman, D.~M. Bishop, H.~J.~Aa. Jensen, and J.~Oddershede.
 \newblock {\em J.~Chem.~Phys.}, 115:10323, 2001.
 
-\bibitem{fjjcp115}
-F.~Jensen.
-\newblock {\em J.~Chem.~Phys.}, 115:9113, 2001.
+\bibitem{fjjthcp121}
+F.~Jensen and T.~Helgaker.
+\newblock {\em J.~Chem.~Phys.}, 121:3463, 2004.
 
 \bibitem{poakrprtjcp112}
 {\mbox{P.-O.}}~{\AA}strand, K.~Ruud, and P.~R. Taylor.
@@ -431,6 +423,12 @@ K.~L. Bak, Aa.~E. Hansen, K.~Ruud, T.~Helgaker, J.~Olsen, and P.~J{\o}rgensen.
   trans-cyclooctene using {L}ondon atomic orbitals.
 \newblock {\em Theor.~Chim.~Acta}, 90:441, 1995.
 
+\bibitem{tbpaehcpl246}
+T.~B. Pedersen and Aa.~E. Hansen.
+\newblock {\it Ab initio} calculation and display of the rotatory strength
+  tensor in the random phase approximation: Method and model studies.
+\newblock {\em Chem.~Phys.~Lett.}, 246:1--8, 1995.
+
 \bibitem{plpmp91}
 P.~L. Polavarapu.
 \newblock {\it{Ab initio}} molecular optical rotations and absolute
@@ -475,6 +473,12 @@ R.~D. Amos.
 \newblock Electric and magnetic properties of {CO}, {HF}, and {HCl}, and
   {CH$_{3}$F}.
 \newblock {\em Chem.~Phys.~Lett.}, 87:23, 1982.
+
+\bibitem{Pedersen:ORMVE}
+T.~B. Pedersen, H.~Koch, L.~Boman, and {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s}.
+\newblock Origin invariant calculation of optical rotation without recourse to
+  {L}ondon orbitals.
+\newblock {\em Chem.~Phys.~Lett.}, 393:319, 2004.
 
 \bibitem{gzwhjpca108}
 G.~Zuber and W.~Hug.
@@ -559,6 +563,12 @@ K.~Ruud, {\mbox{P.-O.}}~{\AA}strand, and P.~R. Taylor.
 \newblock Zero-point vibrational effects on proton shieldings: Functional-group
   contributions from {\it{ab initio}} calculations.
 \newblock {\em J.~Am.~Chem.~Soc.}, 123:4826, 2001.
+
+\bibitem{tarkr}
+T.~A. Ruden and K.~Ruud.
+\newblock {\em Quantum Chemical Calculation of NMR and EPR Parameters}, chapter
+  Ro-vibrational corrections to NMR parameters, page 153.
+\newblock Wiley, Weinheim, 2004.
 
 \bibitem{rmpnmwijqc40}
 R.~M. Pitzer and N.~M. Pitzer.
@@ -645,6 +655,10 @@ S.~Kirpekar, J.~Oddershede, and H.~J.~Aa. Jensen.
   polarizabilities.
 \newblock {\em J.~Chem.~Phys.}, 103:2983, 1995.
 
+\bibitem{pmpljvkrjcp119}
+P.~Manninen, P.~Lantto, J.~Vaara, and K.~Ruud.
+\newblock {\em J.~Chem.~Phys.}, 119:2623, 2003.
+
 \bibitem{dmtajcp73}
 D.~Matsuoka and T.~Aoyama.
 \newblock Molecular integral of diamagnetic contribution to nuclear spin--spin
@@ -725,6 +739,219 @@ D.~B. Chesnut, B.~E. Rusiloski, K.~D. Moore, and D.~A. Egolf.
 F.~B. van Duijneveldt.
 \newblock {\mbox{IBM Res.~ Rep.~ RJ945}}.
 \newblock Technical report, IBM, 1971.
+
+\bibitem{wjhrfsjapjcp51}
+W.~J. Hehre, R.~F. Stewart, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 51:2657, 1969.
+
+\bibitem{wjhrdrfsjapjcp52}
+W.~J. Hehre, R.~Ditchfield, R.~F. Stewart, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 52:2769, 1970.
+
+\bibitem{wjpbalwjhrfsic19}
+W.~J. Pietro, B.~A. Levy, W.~J. Hehre, and R.~F. Stewart.
+\newblock {\em Inorg.~Chem.}, 19:2225, 1980.
+
+\bibitem{wjpwjhjcc4}
+W.~J. Pietro and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 4:241, 1983.
+
+\bibitem{jsbjapwjhjacs102}
+J.~S. Binkley, J.~A. Pople, and W.~J. Hehre.
+\newblock {\em J.~Am.~Chem.~Soc.}, 102:939, 1980.
+
+\bibitem{msgjsbjapwjpwjhjacs104}
+M.~S. Gordon, J.~S. Binkley, J.~A. Pople, W.~J. Pietro, and W.~J. Hehre.
+\newblock {\em J.~Am.~Chem.~Soc.}, 104:2797, 1983.
+
+\bibitem{kddwjhjcc7}
+K.~D. Dobbs and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 7:359, 1986.
+
+\bibitem{kddwjhjcc8-1}
+K.~D. Dobbs and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 8:861, 1987.
+
+\bibitem{kddwjhjcc8-2}
+K.~D. Dobbs and W.~J. Hehre.
+\newblock {\em J.~Comput.~Chem.}, 8:880, 1987.
+
+\bibitem{edgdfjpc99}
+E.~D. Glendening and D.~Feller.
+\newblock {\em J.~Phys.~Chem.}, 99:3060, 1995.
+
+\bibitem{wjpmmfwjhdjdjapjsbjacs104}
+W.~J. Pietro, M.~M. Francl, W.~J. Hehre, D.~J. Defrees, J.~A. Pople, and J.~S.
+  Binkley.
+\newblock {\em J.~Am.~Chem.~Soc.}, 104:5039, 1982.
+
+\bibitem{tcjcgwsprsjcc4}
+T.~Clark, J.~Chandrasekhar, G.~W. Spitznagel, and P.~v.~R.~Schleyer.
+\newblock {\em J.~Comput.~Chem.}, 4:294, 1983.
+
+\bibitem{rdwjhjapjcp54}
+R.~Ditchfield, W.~J. Hehre, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 54:724, 1971.
+
+\bibitem{wjhrdjapjcp56}
+W.~J. Hehre, R.~Ditchfield, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 56:2257, 1972.
+
+\bibitem{jddjapjcp62}
+J.~D. Dill and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 62:2921, 1975.
+
+\bibitem{mmfwjpwjhjsbmsgdjdjapjcp77}
+M.~M. Francl, W.~J. Pietro, W.~J. Hehre, J.~S. Binkley, M.~S. Gordon, D.~J.
+  Defrees, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 77:3654, 1982.
+
+\bibitem{vrjapmrtlwjcp109}
+V.~Rassolov, J.~A. Pople, M.~Ratner, and T.~L. Windus.
+\newblock {\em J.~Chem.~Phys.}, 109:1223, 1998.
+
+\bibitem{pchjaptca28}
+P.~C. Hariharan and J.~A. Pople.
+\newblock {\em Theor.~Chim.~Acta}, 28:213, 1973.
+
+\bibitem{mjfjapjsbjcp80}
+M.~J. Frisch, J.~A. Pople, and J.~S. Binkley.
+\newblock {\em J.~Chem.~Phys.}, 80:3265, 1984.
+
+\bibitem{rkjsbrsjapjcp72}
+R.~Krishnan, J.~S. Binkley, R.~Seeger, and J.~A. Pople.
+\newblock {\em J.~Chem.~Phys.}, 72:650, 1980.
+
+\bibitem{admgscjcp72}
+A.~D. McLean and G.~S. Chandler.
+\newblock {\em J.~Chem.~Phys.}, 72:5639, 1980.
+
+\bibitem{lacmpmjpbnedrcblrjcp103}
+L.~A. Curtiss, M.~P. McGrath, J-P. Blandeau, N.~E. Davis, Jr. R.~C.~Binning,
+  and L.~Radom.
+\newblock {\em J.~Chem.~Phys.}, 103:6104, 1995.
+
+\bibitem{mngapmpmlrjcp103}
+M.~N. Glukhovstev, A.~Pross, M.~P. McGrath, and L.~Radom.
+\newblock {\em J.~Chem.~Phys.}, 103:1878, 1995.
+
+\bibitem{huzinagabasis}
+S.~Huzinaga.
+
+\bibitem{htshjcc1}
+H.~Tatewaki and S.~Huzinaga.
+\newblock {\em J.~Comput.~Chem.}, 1:205, 1980.
+
+\bibitem{thdpjhhfs1977}
+T.~H. {\mbox Dunning Jr.} and P.~J. Hay.
+\newblock In H.~F. Schaefer, editor, {\em Methods of Electronic Structure
+  Theory}, volume~2. Plenum Press, New York, 1977.
+
+\bibitem{emhfsjcp83}
+E.~Magnusson and H.~F. Schaefer.
+\newblock {\em J.~Chem.~Phys.}, 83:5721, 1985.
+
+\bibitem{thdpjhhfs1977-2}
+T.~H. {\mbox Dunning Jr.} and P.~J. Harrison.
+\newblock In H.~F. Schaefer, editor, {\em Modern Theoretical Chemistry},
+  volume~2. Plenum Press, New York, 1977.
+
+\bibitem{thdjcp53}
+T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 53:2823, 1970.
+
+\bibitem{thdjcp55}
+T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 55:716, 1971.
+
+\bibitem{jkkapjpca106}
+J.~Koput and K.~A. Peterson.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 106:9595, 2002.
+
+\bibitem{akwdewkapthdjcp110}
+A.~K. Wilson, D.~E. Woon, K.~A. Peterson, and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 110:7667, 1999.
+
+\bibitem{dewthdjcp103}
+D.~E. Woon and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 103:4572, 1995.
+
+\bibitem{kapthdjcp117}
+K.~A. Peterson and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Chem.~Phys.}, 117:10548, 2002.
+
+\bibitem{akwtvmthdjsm388}
+A.~K. Wilson, T.~{\mbox van Mourik}, and T.~H. {\mbox Dunning Jr.}
+\newblock {\em J.~Mol.~Struct.~(THEOCHEM)}, 388:339, 1997.
+
+\bibitem{tmakwtdhmp96}
+T.~{\mbox van Mourik}, A.~K. Wilson, and T.~H. {\mbox Dunning Jr.}
+\newblock {\em Mol.~Phys.}, 96:529, 1999.
+
+\bibitem{tmthdijqc76}
+T.~{\mbox van Mourik} and T.~H. {\mbox Dunning Jr.}
+\newblock {\em Int.~J.~Quantum Chem.}, 76:205, 2000.
+
+\bibitem{wkijc19}
+W.~Kutzelnigg.
+\newblock {\em Isr.~J.~Chem.}, 19:193, 1980.
+
+\bibitem{mswkjcp76}
+M.~Schindler and W.~Kutzelnigg.
+\newblock {\em J.~Chem.~Phys.}, 76:1919, 1982.
+
+\bibitem{huzinagaintern}
+S.~Huzinaga.
+\newblock Approximate atomic functions.
+\newblock Technical report, University of Alberta, Edmonton, 1971.
+
+\bibitem{ajhwjcp52}
+A.~J.~H. Wachters.
+\newblock {\em J.~Chem.~Phys.}, 52:1033, 1970.
+
+\bibitem{wachterintern1969}
+A.~J.~H. Wachters.
+\newblock Technical report.
+
+\bibitem{cwbsrllabjcp91}
+C.~W. {\mbox Bauschlicher Jr.}, S.~R. Langhoff, and L.~A. Barnes.
+\newblock {\em J.~Chem.~Phys.}, 91:2399, 1989.
+
+\bibitem{ajstca79}
+A.~J. Sadlej.
+\newblock {\em Theor.~Chim.~Acta}, 79:123, 1991.
+
+\bibitem{ajsmujmst234}
+A.~J. Sadlej and M.~Urban.
+\newblock {\em J.~Mol.~Struct.~(THEOCHEM)}, 234:147, 1991.
+
+\bibitem{ajstca81}
+A.~J. Sadlej.
+\newblock {\em Theor.~Chim.~Acta}, 81:45, 1992.
+
+\bibitem{ajstca81-2}
+A.~J. Sadlej.
+\newblock {\em Theor.~Chim.~Acta}, 81:339, 1992.
+
+\bibitem{pfpgaaspasjcp115}
+P.~F. Provasi, G.~A. Aucar, and S.~P.~A. Sauer.
+\newblock {\em J.~Chem.~Phys.}, 115:1324, 2001.
+
+\bibitem{japrtjcp86}
+J.~Alml\"{o}f and P.~R. Taylor.
+\newblock {\em J.~Chem.~Phys.}, 86:4070, 1987.
+
+\bibitem{cwbsrlaktca77}
+C.~W. {\mbox Bauschlicher Jr.}, S.~R. Langhoff, and A.~Kormornicki.
+\newblock {\em Theor.~Chim.~Acta}, 77:263, 1990.
+
+\bibitem{rpamminpowbortca92}
+R.~Pou Amerigo, M.~Merchan, I.~Nebot-Gil, P.~O. Widmark, and B.~O. Roos.
+\newblock {\em Theor.~Chim.~Acta}, 92:149, 1995.
+
+\bibitem{kpbdpowbortca90}
+K.~Pierloot, B.~Dumez, P.~O. Widmark, and B.~O. Roos.
+\newblock {\em Theor.~Chim.~Acta}, 90:87, 1995.
 
 \bibitem{dft:becke88}
 A.D. Becke.
@@ -827,7 +1054,7 @@ J.P. Perdew, K.~Burke, and M.~Ernzerhof.
 \newblock {\em prl}, 77(3865), 1996.
 
 \bibitem{cwbjcp72}
-C.~W. Bauschlicher.
+C.~W. {\mbox Bauschlicher Jr.}
 \newblock The construction of modified virtual orbitals ({MVO}'s) which are
   suited for configuration interaction calculations.
 \newblock {\em J.~Chem.~Phys.}, 72:880, 1980.
@@ -857,6 +1084,10 @@ O.~Plashkevych, T.~Privalov, H.~{\AA}gren, V.~Carravetta, and K.~Ruud.
 \newblock On the validity of the equivalent cores approximation for computing
   x-ray photoemission and photoabsorption spectral bands.
 \newblock {\em Chem.~Phys.}, 260:11, 2000.
+
+\bibitem{hskrpoajcp120}
+H.~Solheim, K.~Ruud, and P.-O. {\AA}strand.
+\newblock {\em J.~Chem.~Phys.}, 120:10368, 2004.
 
 \bibitem{pnkrthjcp120}
 P.~Norman, K.~Ruud, and T.~Helgaker.
@@ -1026,6 +1257,13 @@ C.~H{\"attig}, O.~Christiansen, and P.~J{\o}rgensen.
 \newblock Cauchy moments and dispersion coefficients using coupled cluster
   linear response theory.
 \newblock {\em J.~Chem.~Phys.}, 107:10592, 1997.
+
+\bibitem{Haettig:DIPGRA}
+C.~H\"attig, T.~B. Pedersen, K.~V. Mikkelsen, and T.~Helgaker.
+\newblock Coupled-cluster singles-and-doubles calculations of atomic charges
+  from {Atomic Polar Tensors}.
+\newblock 2005.
+\newblock To be submitted.
 
 \bibitem{Christiansen:JCP105}
 O.~Christiansen, H.~Koch, A.~Halkier, P.~J{\o}rgensen, T.~Helgaker, and A.~M.

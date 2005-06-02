@@ -1014,6 +1014,8 @@ C     Initialization of RSPINP
       DATA E3TEST/.FALSE./
       DATA A2TEST/.FALSE./
       DATA X2TEST/.FALSE./
+      DATA RSPECD/.FALSE./
+      DATA RSPOCD/.FALSE./
 C     Initialization of INFRSP for both PPINP and LRINP
       DATA MAXITO/5/, ANTTES/.FALSE./, IPRRSP/2/
 C INITIALIZING ELWEAK
@@ -1100,9 +1102,13 @@ C
 C Read input options for PP = "Polarization Propagator" excitation energies
 C                           = "Linear Response Single Residue"
 C
+C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
+C                         .OECD (oriented electronic circular dichroism)
+C                for linear response residues introduced.
+C
 #include "implicit.h"
-      LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 49 )
+      LOGICAL NEWDEF, ISLINR
+      PARAMETER ( NTABLE = 50 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -1128,15 +1134,15 @@ C
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT','.ROOTS ',
      *            '.MAX IT', '.THCPP ', '.OLSEN ', '.MAXITO','.SROOTS',
      *            '.ANTTES', '.RESTPP', '.ABCHK ', '.ABSYM ','.PRINT ',
-     *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC','.XXXXXX',
+     *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC','.ECD   ',
      *            '.X2TEST', '.A2TEST', '.SINGLE', '.DOUBLE','.THCLR ',
-     *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART'/
+     *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART','.OECD  '/
       INTEGER IXARR(MAXLPP)
-C
 C
 C READ IN  INPUT
 C
-      NEWDEF = (WORD.EQ.'*LINEAR' .OR. WORD.EQ.'*QUADRA')
+      ISLINR = WORD.EQ.'*LINEAR'
+      NEWDEF = (ISLINR .OR. WORD.EQ.'*QUADRA')
       ICHANG = 0
       NPPTOT = 0
       IF (NEWDEF) THEN
@@ -1156,7 +1162,7 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,
-     *                      40,41,42,43,44,45,46,47,48,49), I
+     *                      40,41,42,43,44,45,46,47,48,49,50), I
                   END IF
                END DO
                IF (WORD .EQ. '.OPTION') THEN
@@ -1340,6 +1346,18 @@ c              selected excited states
                READ (LUCMD,*) ISPINA,ISPINB,ISPINC
                GO TO 100
  40            CONTINUE
+               IF (.NOT. RSPECD) THEN
+                  RSPECD = .TRUE. ! electronic CD
+                  LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
+                  LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
+                  LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+                  LPPOP( INDPRP('XDIPVEL ')) = .TRUE.
+                  LPPOP( INDPRP('YDIPVEL ')) = .TRUE.
+                  LPPOP( INDPRP('ZDIPVEL ')) = .TRUE.
+                  LPPOP( INDPRP('XANGMOM ')) = .TRUE.
+                  LPPOP( INDPRP('YANGMOM ')) = .TRUE.
+                  LPPOP( INDPRP('ZANGMOM ')) = .TRUE.
+               END IF
                GO TO 100
  41            CONTINUE
                X2TEST = .TRUE.
@@ -1372,6 +1390,35 @@ c              selected excited states
                GO TO 100
  49            CONTINUE
                   READ (LUCMD,*) (NPPSTV(J),J=1,NSYM)
+               GO TO 100
+ 50            CONTINUE
+               IF (.NOT. RSPOCD) THEN
+                  RSPOCD = .TRUE. ! oriented electronic CD
+                  LPPOP( INDPRP('XXSECMOM')) = .TRUE.
+                  LPPOP( INDPRP('XYSECMOM')) = .TRUE.
+                  LPPOP( INDPRP('XZSECMOM')) = .TRUE.
+                  LPPOP( INDPRP('YYSECMOM')) = .TRUE.
+                  LPPOP( INDPRP('YZSECMOM')) = .TRUE.
+                  LPPOP( INDPRP('ZZSECMOM')) = .TRUE.
+                  LPPOP( INDPRP('XXROTSTR')) = .TRUE.
+                  LPPOP( INDPRP('XYROTSTR')) = .TRUE.
+                  LPPOP( INDPRP('XZROTSTR')) = .TRUE.
+                  LPPOP( INDPRP('YYROTSTR')) = .TRUE.
+                  LPPOP( INDPRP('YZROTSTR')) = .TRUE.
+                  LPPOP( INDPRP('ZZROTSTR')) = .TRUE.
+                  IF (.NOT.RSPECD) THEN
+                     RSPECD = .TRUE. ! electronic CD
+                     LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
+                     LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
+                     LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+                     LPPOP( INDPRP('XDIPVEL ')) = .TRUE.
+                     LPPOP( INDPRP('YDIPVEL ')) = .TRUE.
+                     LPPOP( INDPRP('ZDIPVEL ')) = .TRUE.
+                     LPPOP( INDPRP('XANGMOM ')) = .TRUE.
+                     LPPOP( INDPRP('YANGMOM ')) = .TRUE.
+                     LPPOP( INDPRP('ZANGMOM ')) = .TRUE.
+                  END IF
+               END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

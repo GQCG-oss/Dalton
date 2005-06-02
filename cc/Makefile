@@ -71,6 +71,8 @@ pre: $(F_CPPS)
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > cc.ftnchek
 
+io : crayio.o
+
 libcc.a: $(C_OBJS) $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 

@@ -19,5 +19,5 @@
      *                SOPPA,  IREFSY, IPRRSP, MAXIT,  MAXITO,
      *                NFREQ,  NCFREQ, NOITRA, NCREF , ISTOCK, MAXOCK, 
      *                MAXRM,  LPVMAT, NACTT,  NACT(8),IACT(8),JACT(8),
-     *                HIRPA,  SOPW4,  CCPPA , AOSOP,  DFT_SO, RSPECD, 
+     *                HIRPA,  SOPW4,  CCPPA , AOSOP,  DFT_SO, RSPECD,
      *                RSPOCD

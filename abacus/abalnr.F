@@ -55,22 +55,25 @@ C
 #include <absorp.h>
 #include <maxaqn.h>
 #include <symmet.h>
+#include <codata.h>
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
-      LOGICAL NEWDEF
+      LOGICAL NEWDEF, LOCFIN
       CHARACTER*8 DIPLEN(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
 C
-      DATA TABLE /'.SKIP  ', '.XXXXXX','.MAX IT','.THRESH',
+      DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.XXXXXX','.XXXXXX',
      *            '.OPTORB', '.FREQUE','.XXXXXX','.PRINT ',
      *            '.LIFETI', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
+      NFRVLT = 0
       IF (NEWDEF) THEN
+         LOCFIN = .FALSE.
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -97,6 +100,34 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
     2          CONTINUE
+                  READ(LUCMD,*) NWAVEL
+                  IF (NWAVEL .LT. 0) THEN
+                     CALL QUIT('# wavelengths negative under *ABALNR')
+                  ELSE IF (NWAVEL .EQ. 0) THEN
+                     GO TO 100
+                  ELSE
+                     IF (.NOT. LOCFIN) THEN
+                        NFRVAL = 0
+                        LOCFIN = .TRUE.
+                     END IF
+                  END IF
+                  NFRVLT = NFRVLT + NWAVEL
+                  NFTOT  = NWAVEL + NFRVAL
+                  IF (NFTOT .GT. MXFR) THEN
+                     NWAVEL = MXFR - NFRVAL
+                  END IF
+                  READ(LUCMD,*) (FRVAL(NFRVAL+I),I=1,NWAVEL)
+                  DO I = NFRVAL+1,NFRVAL+NWAVEL
+                     IF (ABS(FRVAL(I)) .LT. 1.0D-12) THEN
+                        WRITE(LUPRI,*) 'Wavelength too small:',
+     &                                 FRVAL(I)
+                        WRITE(LUPRI,*) 'Use frequency input instead!'
+                        CALL QUIT('Wavelength too small under *ABALNR')
+                     END IF
+                     FRVAL(I) = XTNM/FRVAL(I)
+                  END DO
+                  NFRVAL = NFRVAL + NWAVEL
+                  ICHANG = ICHANG + 1
                GO TO 100
     3          CONTINUE
                   READ (LUCMD,*) INPVAL
@@ -142,9 +173,24 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
    10             CONTINUE
-                  READ (LUCMD,*) NFRVAL
-                  J = MIN(NFRVAL,MXFR)
-                  READ (LUCMD,*) (FRVAL(I),I=1,J)
+                  READ(LUCMD,*) NRDFR
+                  IF (NRDFR .LT. 0) THEN
+                     CALL QUIT('# frequencies negative under *ABALNR')
+                  ELSE IF (NRDFR .EQ. 0) THEN
+                     GO TO 100
+                  ELSE
+                     IF (.NOT. LOCFIN) THEN
+                        NFRVAL = 0
+                        LOCFIN = .TRUE.
+                     END IF
+                  END IF
+                  NFRVLT = NFRVLT + NRDFR
+                  NFTOT  = NRDFR  + NFRVAL
+                  IF (NFTOT .GT. MXFR) THEN
+                     NRDFR = MXFR - NFRVAL
+                  END IF
+                  READ(LUCMD,*) (FRVAL(NFRVAL+I),I=1,NRDFR)
+                  NFRVAL = NFRVAL + NRDFR
                   ICHANG = ICHANG + 1
                GO TO 100
    11             CONTINUE
@@ -206,12 +252,13 @@ C
             WRITE (LUPRI,'(A)') ' LNRABA skipped in this run.'
          ELSE
             IF (NFRVAL .GT. 0) THEN
+               IF (NFRVLT .EQ. 0) NFRVLT = NFRVAL
                J = MIN(MXFR,NFRVAL)
                WRITE (LUPRI,'(A,I4/A,5F10.6:/,(28X,5F10.6))')
-     &            ' Number of frequencies     :',NFRVAL,
+     &            ' Number of frequencies     :',NFRVLT,
      &            ' Frequencies               :',
      &            (FRVAL(I), I=1,J)
-             IF (NFRVAL .GT. MXFR) THEN
+             IF (NFRVLT .GT. MXFR) THEN
                WRITE(LUPRI,'(/A/A,I5/A)')
      &         'You have asked for too many frequencies under *ABALNR',
      &         'Current maximum is MXFR =',MXFR,
@@ -278,7 +325,8 @@ C
       RETURN
       END
 C  /* Deck lnraba */
-      SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,POLVL,POLVV,WORK,LWORK,
+     &                  PASS)
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
@@ -291,8 +339,10 @@ C  /* Deck lnraba */
       DIMENSION WORK(LWORK),SNDPRP(2)
       DIMENSION POLDD(2,3,3,MXFR), POLDQ(2,3,3,3,MXFR)
       DIMENSION POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR)
+      DIMENSION POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR)
       CHARACTER*8 LABEL1, LABEL2, LABINT(3*MXCOOR), BLANK
       PARAMETER (DP5=0.5D0)
+      PARAMETER (LOCDBG = 3)
 C
 #include <cbiexc.h>
 #include <inflin.h>
@@ -449,6 +499,7 @@ C
       END IF
 C
       IF (ROAG) THEN
+C
          CALL LABCOP(1,NLBTOT,'XLONMAG ',ISYMAX(1,2),LABAPP,LABSYM)
          CALL LABCOP(1,NLBTOT,'YLONMAG ',ISYMAX(2,2),LABAPP,LABSYM)
          CALL LABCOP(1,NLBTOT,'ZLONMAG ',ISYMAX(3,2),LABAPP,LABSYM)
@@ -461,7 +512,17 @@ C
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 C
-      ENDIF
+         IF (MVEOR) THEN
+            NCOMP  = 0
+            NPATOM = 0
+            CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
+     &                  LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+            NLAB = 3
+            CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+         END IF
+C
+      END IF
 C
 C     Set variables and logicals
 C
@@ -471,241 +532,450 @@ C
       EXECLC = .FALSE.
       NABATY = 1
       TRPLET = .FALSE.
-      LUSOVE = 0
-      LUGDVE = 0
-      LUREVE = 0
+C-tbp LUSOVE = 0
+C-tbp LUGDVE = 0
+C-tbp LUREVE = 0
       NABAOP = 1
       BLANK  = '        '
 C
-      CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C-tbp CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C-tbp CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+C-tbp CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
-      IF (NFRVAL.LE.0) GOTO 999
-C
-C     Zero the property complex tensors and start the calculations
+C     Zero the property complex tensors
 C
       CALL DZERO(SNDPRP,2)
       CALL DZERO(POLDD,2*9*MXFR)
       CALL DZERO(POLDQ,2*27*MXFR)
       CALL DZERO(POLDL,2*9*MXFR)
       CALL DZERO(POLDA,2*9*MXFR)
+      CALL DZERO(POLVL,2*9*MXFR)
+      CALL DZERO(POLVV,2*9*MXFR)
+C
+      IF (NFRVAL.LE.0) GOTO 999
+C
+C     Start the calculations
+C
+C     tbp, jan. 2004: pass twice to get DIPVEL as first operator
+C                     for velocity gauge optical rotation adjusted
+C                     to ensure vanishing rotation at zero frequency
+C                     (the modified velocity gauge).
+C
+      IFRZER = 0
+      NFRSAV = NFRVAL
+      IF (ROAG .AND. MVEOR .AND. NFRVAL.GT.0) THEN
+         NUMRUN = 2
+         IFRZER = 0
+         XMINFR = 1.0D15
+         DO IFRVAL = 1,NFRVAL
+            TSTFR  = ABS(FRVAL(IFRVAL))
+            IF (TSTFR.LT.1.0D-10 .AND. TSTFR.LT.XMINFR) THEN
+               XMINFR = TSTFR
+               IFRZER = IFRVAL
+            END IF
+         END DO
+      ELSE
+         NUMRUN = 1
+      END IF
+C
+      DO IRUN = 1,NUMRUN
+C
+         LUSOVE = 0
+         LUGDVE = 0
+         LUREVE = 0
+         CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         IF (IRUN .EQ. 2) THEN
+            IF (IFRZER .EQ. 0) THEN
+               IF (NFRVAL.GE.MXFR) THEN
+                  CALL QUIT('Too many frequencies in LNRABA')
+               ELSE
+                  NFRVAL      = NFRVAL + 1
+                  NFREQ_ALPHA = NFRVAL
+                  IFRZER      = NFRVAL
+                  FRVAL(IFRZER)      = 0.0D0
+                  FREQ_ALPHA(IFRZER) = FRVAL(IFRZER)
+               END IF
+            END IF
+            NABATY = -1    ! DIPVEL is anti-Hermitian
+         ELSE
+            NABATY = 1     ! DIPLEN is Hermitian
+         END IF
+C
+         DO ISYM=1,NSYM
+            KSYMOP = ISYM
+            DO IOPER=1,NOPER(KSYMOP)
+               KOPER=IOPER
+               LABEL1 = LABOP(IOPER,KSYMOP)
+               IDIP = 0
+               IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
+               IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
+               IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
+               IF (IRUN .EQ. 2) THEN
+                  IF (IDIP .EQ. 1) THEN
+                     LABEL1 = 'XDIPVEL '
+                  ELSE IF (IDIP .EQ. 2) THEN
+                     LABEL1 = 'YDIPVEL '
+                  ELSE IF (IDIP .EQ. 3) THEN
+                     LABEL1 = 'ZDIPVEL '
+                  ELSE
+                     GO TO 300  ! cycle operator loop
+                  END IF
+               END IF
 C     
-      DO ISYM=1,NSYM
-         KSYMOP = ISYM
-         DO IOPER=1,NOPER(KSYMOP)
-            KOPER=IOPER
-            LABEL1 = LABOP(IOPER,KSYMOP)
-            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
-            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
-            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
+               CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
 C     
-            CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
-C     
-            KGD1   = KWORK1
-            KWRKG1 = KGD1
-            LWRKG1 = LWORK - KWRKG1
-            KSLV   = KGD1 + 2*NVARPT
-            KLAST  = KSLV + 4*NVARPT
-            IF (KLAST.GT.LWORK) CALL STOPIT('LNRABA',' ',KLAST,LWORK)
-            KWRK = KLAST
-            LWRK = LWORK - KLAST + 1
+               KGD1   = KWORK1
+               KWRKG1 = KGD1
+               LWRKG1 = LWORK - KWRKG1
+               KSLV   = KGD1 + 2*NVARPT
+               KLAST  = KSLV + 4*NVARPT
+               IF (KLAST.GT.LWORK) CALL STOPIT('LNRABA',' ',KLAST,LWORK)
+               KWRK = KLAST
+               LWRK = LWORK - KLAST + 1
 C     
 C     Find right hand side (gradient) of first operator and write to file
 C     ===================================================================
 C     
-            CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
-     &           WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
-            REWIND LUGDVE
-            CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
-            IF (IPRLNR.GT.10) THEN
-               WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL1
-               CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,
-     &              2,1,LUPRI)
-            ENDIF
+               CALL GETGPV(LABEL1,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
+     &              WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
+               REWIND LUGDVE
+               CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
+               IF (IPRLNR.GE.LOCDBG) THEN
+                  WRITE (LUPRI,'(A,A,A,D15.6)')
+     &            'GP Vector, label: ',LABEL1,'  Norm: ',
+     &            DSQRT(DDOT(2*NVARPT,WORK(KWRKG1),1,WORK(KWRKG1),1))
+                  IF (IPRLNR.GT.10) THEN
+                     CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,
+     &                           2,1,LUPRI)
+                  END IF
+               END IF
 C     
 C     Calculate linear response vector and write to file
 C     ==================================================
 C     
-            CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
-     &           FRVAL,NFRVAL,NABATY,NABAOP,LABEL1,LUGDVE,LUSOVE,
-     &           LUREVE,THCLNR,MAXITE,IPRRSP,MXRM,MXPHP,
-     &           WORK(KWRK),LWRK)
+               CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,
+     &              FRVAL,NFRVAL,NABATY,NABAOP,LABEL1,LUGDVE,LUSOVE,
+     &              LUREVE,THCLNR,MAXITE,IPRRSP,MXRM,MXPHP,
+     &              WORK(KWRK),LWRK)
 C     
 C     Loop over the second property operators
 C     =======================================
 C     
-            DO 200 IPRLBL = 1, NLBTOT
+               DO 200 IPRLBL = 1, NLBTOT
 C     
 C     Find label and symmetry of second operator
-C     
-               LABEL2 = LABAPP(IPRLBL)
-               KSYM   = LABSYM(IPRLBL)
+C     ==========================================
+C
+                  LABEL2 = LABAPP(IPRLBL)
+                  KSYM   = LABSYM(IPRLBL)
+C
+C     Only ANGMOM in second run (for vel. and mod. vel. opt. rot.).
+C     =============================================================
+C
+                  IF (IRUN.EQ.2 .AND. LABEL2(2:7).NE.'ANGMOM')
+     &               GO TO 200
 C     
 C     If symmetry of first operator equals symmetry of
 C     second operator, that is if ISYM = KSYM, then
 C     ================================================
 C     
-               IF (KSYM.EQ.ISYM) THEN
+                  IF (KSYM.EQ.ISYM) THEN
+C
+                     IF (IPRLNR.GE.LOCDBG) THEN
+                        WRITE(LUPRI,'(/,A,A,A,A,A,/)')
+     &                  '***** RESPONSE CALCULATION FOR ',LABEL1,' ',
+     &                  LABEL2,' OPERATOR DOUBLE *****'
+                        CALL FLSHFO(LUPRI)
+                     END IF
 C     
 C     Find right hand side (gradient) for second operator
 C     ===================================================
 C     
-                  CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),WORK(KUDV),
-     &                 WORK(KPVX),WORK(KXINDX),ANTSYM,
-     &                 WORK(KWRKG1),LWRKG1)
-C     
-                  IF (IPRLNR.GT.10) THEN
-                     WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
-                     CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,
-     &                    2,1,LUPRI)
-                  ENDIF
+                     CALL GETGPV(LABEL2,DUMMY,DUMMY,WORK(KCMO),
+     &                    WORK(KUDV),WORK(KPVX),WORK(KXINDX),ANTSYM,
+     &                    WORK(KWRKG1),LWRKG1)
+C
+                     IF (IPRLNR.GE.LOCDBG) THEN
+                        WRITE (LUPRI,'(A,A,A,D15.6)')
+     &                  'GP Vector, label: ',LABEL2,'  Norm: ',
+     &                  DSQRT(DDOT(2*NVARPT,WORK(KGD1),1,WORK(KGD1),1))
+                        IF (IPRLNR.GT.10) THEN
+                           CALL OUTPUT(WORK(KGD1),1,NVARPT,1,2,NVARPT,
+     &                                 2,1,LUPRI)
+                        END IF
+                     ENDIF
 C     
 C     Form second order properties SNDPRP
 C     ===================================
 C     
-                  IF (.NOT.ABSORP) REWIND LUSOVE
-                  DO 100 IFRVAL = 1,NFRVAL
-                     IF (ABSORP) THEN
-                        CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
-     &                       ' ',IDUMMY,.FALSE.)
-                        CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
-     &                       BLANK,FREQ_ALPHA(IFRVAL),0.0D0,ISYM,0,
-     &                       THCLR_ABSORP,FOUND,CONV,ANTSYM)
-                        CALL GPCLOSE(LURSP,'KEEP')
-                        SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
-     &                       WORK(KGD1),1)
-                        SNDPRP(2)=DDOT(2*NVARPT,WORK(KSLV+2*NVARPT),1,
-     &                       WORK(KGD1),1)
-                     ELSE
-                        CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
-                        SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
-     &                       WORK(KGD1),1)
-                     END IF
-C     
-                     IF (IPRLNR.GT.2) THEN
-                        WRITE (LUPRI,'(/A,F15.8,A/4A,F15.8)')
-     &                       ' Frequency = ',FRVAL(IFRVAL),' au',
-     &                       ' Second order property for ',
-     &                       LABEL1,LABEL2,' = ',SNDPRP(1)
-                     ENDIF
-                     IF (IPRLNR.GT.10) THEN
-                        WRITE(LUPRI,'(A,I4)') 'Solution Vector no. ',
-     &                       IFRVAL
-                        CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,NVARPT,
-     &                       2,1,LUPRI)
-                     ENDIF
+                     IF (.NOT.ABSORP) REWIND LUSOVE
+                     DO 100 IFRVAL = 1,NFRVAL
+                        IF (ABSORP) THEN
+                           CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
+     &                          ' ',IDUMMY,.FALSE.)
+                           CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
+     &                          BLANK,FREQ_ALPHA(IFRVAL),0.0D0,ISYM,0,
+     &                          THCLR_ABSORP,FOUND,CONV,ANTSYM)
+                           CALL GPCLOSE(LURSP,'KEEP')
+                           SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
+     &                          WORK(KGD1),1)
+                           SNDPRP(2)=DDOT(2*NVARPT,
+     &                          WORK(KSLV+2*NVARPT),1,
+     &                          WORK(KGD1),1)
+                        ELSE
+                           CALL READT(LUSOVE,2*NVARPT,WORK(KSLV))
+                           SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
+     &                          WORK(KGD1),1)
+                        END IF
+C
+                        IF (IPRLNR.GE.LOCDBG) THEN
+                           WRITE (LUPRI,'(A,I4,A,1P,D15.6)')
+     &                     'Solution Vector no. ',IFRVAL,'  Norm: ',
+     &                     DSQRT(DDOT(2*NVARPT,WORK(KSLV),1,
+     &                                         WORK(KSLV),1))
+                           IF (IPRLNR.GT.10) THEN
+                              CALL OUTPUT(WORK(KSLV),1,NVARPT,1,2,
+     &                                    NVARPT,2,1,LUPRI)
+                           END IF
+                        ENDIF
+                        IF (IPRLNR.GE.(LOCDBG-1) .OR. IDIP.EQ.0) THEN
+                           WRITE (LUPRI,'(/,A,F15.8)')
+     &                          ' Frequency = ',FRVAL(IFRVAL)
+                           WRITE (LUPRI,'(4A,F15.8)')
+     &                          ' Second order property for ',
+     &                          LABEL1,LABEL2,' = ',SNDPRP(1)
+                        ENDIF
 C     
 C     Write properties into the various property matrices
 C     ===================================================
+C     Skip this section if first operator is not a dipole
+C     operator (tbp, 2004).
 C     
-                     IF (LABEL2(2:7).EQ.'DIPLEN') THEN
-                        IF (LABEL2(1:1).EQ.'X') THEN
-                           POLDD(1,IDIP,1,IFRVAL) = SNDPRP(1)
-                           POLDD(2,IDIP,1,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:1).EQ.'Y') THEN
-                           POLDD(1,IDIP,2,IFRVAL) = SNDPRP(1)
-                           POLDD(2,IDIP,2,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:1).EQ.'Z') THEN
-                           POLDD(1,IDIP,3,IFRVAL) = SNDPRP(1)
-                           POLDD(2,IDIP,3,IFRVAL) = SNDPRP(2)
-                        END IF
-                     ELSE IF (LABEL2(3:8).EQ.'THETA ') THEN
-                        IF (LABEL2(1:2).EQ.'XX') THEN
-                           POLDQ(1,IDIP,1,1,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,1,1,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'XY') THEN
-                           POLDQ(1,IDIP,1,2,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,1,2,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'XY') THEN
-                           POLDQ(1,IDIP,2,1,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,2,1,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'XZ') THEN
-                           POLDQ(1,IDIP,1,3,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,1,3,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'XZ') THEN
-                           POLDQ(1,IDIP,3,1,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,3,1,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'YY') THEN
-                           POLDQ(1,IDIP,2,2,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,2,2,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'YZ') THEN
-                           POLDQ(1,IDIP,2,3,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,2,3,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'YZ') THEN
-                           POLDQ(1,IDIP,3,2,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,3,2,IFRVAL) = SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:2).EQ.'ZZ') THEN
-                           POLDQ(1,IDIP,3,3,IFRVAL) = SNDPRP(1)
-                           POLDQ(2,IDIP,3,3,IFRVAL) = SNDPRP(2)
-                        END IF
-                     ELSE IF (LABEL2(2:7).EQ.'LONMAG') THEN
+                        IF (IDIP.GT.0 .AND. IDIP.LT.4) THEN
+                           IF (LABEL2(2:7).EQ.'DIPLEN') THEN
+                              IF (LABEL2(1:1).EQ.'X') THEN
+                                 POLDD(1,IDIP,1,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,1,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Y') THEN
+                                 POLDD(1,IDIP,2,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,2,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Z') THEN
+                                 POLDD(1,IDIP,3,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,3,IFRVAL) = SNDPRP(2)
+                              END IF
+                           ELSE IF (LABEL2(3:8).EQ.'THETA ') THEN
+                              IF (LABEL2(1:2).EQ.'XX') THEN
+                                 POLDQ(1,IDIP,1,1,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,1,1,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'XY') THEN
+                                 POLDQ(1,IDIP,1,2,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,1,2,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'XY') THEN
+                                 POLDQ(1,IDIP,2,1,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,2,1,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'XZ') THEN
+                                 POLDQ(1,IDIP,1,3,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,1,3,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'XZ') THEN
+                                 POLDQ(1,IDIP,3,1,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,3,1,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'YY') THEN
+                                 POLDQ(1,IDIP,2,2,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,2,2,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'YZ') THEN
+                                 POLDQ(1,IDIP,2,3,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,2,3,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'YZ') THEN
+                                 POLDQ(1,IDIP,3,2,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,3,2,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:2).EQ.'ZZ') THEN
+                                 POLDQ(1,IDIP,3,3,IFRVAL) = SNDPRP(1)
+                                 POLDQ(2,IDIP,3,3,IFRVAL) = SNDPRP(2)
+                              END IF
+                           ELSE IF (LABEL2(2:7).EQ.'LONMAG') THEN
 C     
 C     Multiply with minus the Bohr-magneton (-0.5) to create the magnetic 
 C     dipole operator from the angular momentum operator
 C     
-                        IF (LABEL2(1:1).EQ.'X') THEN
-                           POLDL(1,IDIP,1,IFRVAL) = -DP5*SNDPRP(1)
-                           POLDL(2,IDIP,1,IFRVAL) = -DP5*SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:1).EQ.'Y') THEN
-                           POLDL(1,IDIP,2,IFRVAL) = -DP5*SNDPRP(1)
-                           POLDL(2,IDIP,2,IFRVAL) = -DP5*SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:1).EQ.'Z') THEN
-                           POLDL(1,IDIP,3,IFRVAL) = -DP5*SNDPRP(1)
-                           POLDL(2,IDIP,3,IFRVAL) = -DP5*SNDPRP(2)
-                        END IF
-                     ELSE IF (LABEL2(2:7).EQ.'ANGMOM') THEN
-                        IF (LABEL2(1:1).EQ.'X') THEN
-                           POLDA(1,IDIP,1,IFRVAL) = -DP5*SNDPRP(1)
-                           POLDA(2,IDIP,1,IFRVAL) = -DP5*SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:1).EQ.'Y') THEN
-                           POLDA(1,IDIP,2,IFRVAL) = -DP5*SNDPRP(1)
-                           POLDA(2,IDIP,2,IFRVAL) = -DP5*SNDPRP(2)
-                        END IF
-                        IF (LABEL2(1:1).EQ.'Z') THEN
-                           POLDA(1,IDIP,3,IFRVAL) = -DP5*SNDPRP(1)
-                           POLDA(2,IDIP,3,IFRVAL) = -DP5*SNDPRP(2)
-                        END IF
-                     ELSE IF (IPRLNR.LE.2) THEN
+                              IF (LABEL2(1:1).EQ.'X') THEN
+                                 POLDL(1,IDIP,1,IFRVAL) = -DP5*SNDPRP(1)
+                                 POLDL(2,IDIP,1,IFRVAL) = -DP5*SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Y') THEN
+                                 POLDL(1,IDIP,2,IFRVAL) = -DP5*SNDPRP(1)
+                                 POLDL(2,IDIP,2,IFRVAL) = -DP5*SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Z') THEN
+                                 POLDL(1,IDIP,3,IFRVAL) = -DP5*SNDPRP(1)
+                                 POLDL(2,IDIP,3,IFRVAL) = -DP5*SNDPRP(2)
+                              END IF
+                           ELSE IF (LABEL2(2:7).EQ.'ANGMOM') THEN
+                              IF (IRUN .EQ. 2) THEN
+                                 IF (IPRLNR.GT.(LOCDBG+10)) THEN
+                                    WRITE(LUPRI,*)
+     &                              '...property goes into POLVL'
+                                 END IF
+                                 IF (LABEL2(1:1).EQ.'X') THEN
+                                    POLVL(1,IDIP,1,IFRVAL) =
+     &                                                     DP5*SNDPRP(1)
+                                    POLVL(2,IDIP,1,IFRVAL) =
+     &                                                     DP5*SNDPRP(2)
+                                 END IF
+                                 IF (LABEL2(1:1).EQ.'Y') THEN
+                                    POLVL(1,IDIP,2,IFRVAL) =
+     &                                                     DP5*SNDPRP(1)
+                                    POLVL(2,IDIP,2,IFRVAL) =
+     &                                                     DP5*SNDPRP(2)
+                                 END IF
+                                 IF (LABEL2(1:1).EQ.'Z') THEN
+                                    POLVL(1,IDIP,3,IFRVAL) =
+     &                                                     DP5*SNDPRP(1)
+                                    POLVL(2,IDIP,3,IFRVAL) =
+     &                                                     DP5*SNDPRP(2)
+                                 END IF
+                              ELSE
+                                 IF (LABEL2(1:1).EQ.'X') THEN
+                                    POLDA(1,IDIP,1,IFRVAL) =
+     &                                                    -DP5*SNDPRP(1)
+                                    POLDA(2,IDIP,1,IFRVAL) =
+     &                                                    -DP5*SNDPRP(2)
+                                 END IF
+                                 IF (LABEL2(1:1).EQ.'Y') THEN
+                                    POLDA(1,IDIP,2,IFRVAL) =
+     &                                                    -DP5*SNDPRP(1)
+                                    POLDA(2,IDIP,2,IFRVAL) =
+     &                                                    -DP5*SNDPRP(2)
+                                 END IF
+                                 IF (LABEL2(1:1).EQ.'Z') THEN
+                                    POLDA(1,IDIP,3,IFRVAL) =
+     &                                                    -DP5*SNDPRP(1)
+                                    POLDA(2,IDIP,3,IFRVAL) =
+     &                                                    -DP5*SNDPRP(2)
+                                 END IF
+                              END IF
+C-tbp                      ELSE IF (IPRLNR.LE.2) THEN
 C                    ... hjaaj mar 2004: this property is not
 C                        predefined, should never happen, but
 C                        we make sure the value is printed.
 C                        (the value was printed above if IPRLNR.gt.2)
-                        WRITE (LUPRI,'(/A,F15.8,A/4A,F15.8)')
-     &                       ' Frequency = ',FRVAL(IFRVAL),' au',
-     &                       ' Second order property for ',
-     &                       LABEL1,LABEL2,' = ',SNDPRP(1)
-                     ENDIF
- 100              CONTINUE
-               ENDIF
- 200        CONTINUE
+C-tbp                         WRITE (LUPRI,'(/A,F15.8,A/4A,F15.8)')
+C-tbp&                             ' Frequency = ',FRVAL(IFRVAL),' au',
+C-tbp&                             ' Second order property for ',
+C-tbp&                             LABEL1,LABEL2,' = ',SNDPRP(1)
+                           END IF
+                        END IF
+ 100                 CONTINUE
+                  ENDIF
+ 200           CONTINUE
+C
+ 300           CONTINUE
 C     
 C     End loop over operator in this symmetry
 C     
-         END DO
+            END DO
 C     
 C     End loop over symmetries
 C     
+         END DO
+C
+C     Close and delete files.
+C
+         IF (LUSOVE.GT.0) CALL GPCLOSE(LUSOVE,'DELETE')
+         IF (LUGDVE.GT.0) CALL GPCLOSE(LUGDVE,'DELETE')
+         IF (LUREVE.GT.0) CALL GPCLOSE(LUREVE,'DELETE')
+C
+C     End repetition loop (IRUN)
+C
       END DO
+C
+      NFRVAL      = NFRSAV
+      NFREQ_ALPHA = NFRVAL
+      IF (ROAG .AND. MVEOR) THEN
+         IF (IFRZER.LT.1 .OR. IFRZER.GT.MXFR) THEN
+            CALL QUIT('Logical error in LNRABA')
+         END IF
+         DO IFRVAL = 1,NFRVAL
+            DO IANG = 1,3
+               DO IDIP = 1,3
+                  DO IR = 1,2
+                     POLVV(IR,IDIP,IANG,IFRVAL) =
+     &                                        POLVL(IR,IDIP,IANG,IFRVAL)
+     &                                      - POLVL(IR,IDIP,IANG,IFRZER)
+                  END DO
+               END DO
+            END DO
+         END DO
+         IF ((IPRLNR.GE.LOCDBG) .AND. (NFRVAL.GT.0)) THEN
+            DO IFRVAL = 1,NFRVAL
+               WRITE(LUPRI,'(/,A,1P,D15.6)') 'Frequency: ',FRVAL(IFRVAL)
+               WRITE(LUPRI,'(A)') 'POLDL: London'
+               WRITE(LUPRI,'(A)') 'POLDA: No-London'
+               WRITE(LUPRI,'(A)') 'POLVL: Velocity'
+               WRITE(LUPRI,'(A)') 'POLVV: Modified velocity'
+               WRITE(LUPRI,'(A,A,/,A,A)')
+     &         ' Ei Bj      POLDL           POLDA           POLVL',
+     &         '           POLVV',
+     &         '-------------------------------------------------',
+     &         '---------------------'
+               DO IANG = 1,3
+                  DO IDIP = 1,3
+        WRITE(LUPRI,'(1X,I2,1X,I2,1X,F15.7,1X,F15.7,1X,F15.7,1X,F15.7)')
+     &            IDIP,IANG,POLDL(1,IDIP,IANG,IFRVAL),
+     &                      POLDA(1,IDIP,IANG,IFRVAL),
+     &                      POLVL(1,IDIP,IANG,IFRVAL),
+     &                      POLVV(1,IDIP,IANG,IFRVAL)
+                     IF (ABSORP) THEN
+        WRITE(LUPRI,'(7X,F15.7,1X,F15.7,1X,F15.7,1X,F15.7)')
+     &                      POLDL(2,IDIP,IANG,IFRVAL),
+     &                      POLDA(2,IDIP,IANG,IFRVAL),
+     &                      POLVL(2,IDIP,IANG,IFRVAL),
+     &                      POLVV(2,IDIP,IANG,IFRVAL)
+                     END IF
+                  END DO
+               END DO
+               WRITE(LUPRI,'(A,A)')
+     &         '-------------------------------------------------',
+     &         '---------------------'
+            END DO
+            WRITE(LUPRI,'(/,A,1P,D15.6)') 'Frequency: ',FRVAL(IFRZER)
+            WRITE(LUPRI,'(A)') 'POLVL: Velocity'
+            WRITE(LUPRI,'(A,/,A)')
+     &      ' Ei Bj      POLVL',
+     &      '----------------------'
+            DO IANG = 1,3
+               DO IDIP = 1,3
+                  WRITE(LUPRI,'(1X,I2,1X,I2,1X,F15.7)')
+     &            IDIP,IANG,POLVL(1,IDIP,IANG,IFRVAL)
+                  IF (ABSORP) THEN
+                     WRITE(LUPRI,'(7X,F15.7)')
+     &               POLVL(2,IDIP,IANG,IFRVAL)
+                  END IF
+               END DO
+            END DO
+            WRITE(LUPRI,'(A)')
+     &      '----------------------'
+         END IF
+      END IF
+C
+C     Skip point if no frequencies specified
 C
  999  CONTINUE
 C
-      CALL GPCLOSE(LUSOVE,'DELETE')
-      CALL GPCLOSE(LUGDVE,'DELETE')
-      CALL GPCLOSE(LUREVE,'DELETE')
+C-tbp CALL GPCLOSE(LUSOVE,'DELETE')
+C-tbp CALL GPCLOSE(LUGDVE,'DELETE')
+C-tbp CALL GPCLOSE(LUREVE,'DELETE')
 C
       CALL TIMER ('LNRABA',TIMEIN,TIMOUT)
       PASS = .TRUE.
@@ -1042,7 +1312,7 @@ C
       RETURN
       END
 C  /* Deck lnrout */
-      SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
+      SUBROUTINE LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1060,7 +1330,9 @@ C
 #include <abainf.h>
 #include <cbilnr.h>
       DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),
-     &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2)
+     &          POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR),
+     &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2),
+     &          BETAVL(2), BETAVV(2), ALPHVL(2), ALPHVV(2)
 #include <ibtfun.h>
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
@@ -1123,6 +1395,70 @@ C
      &                 JDIP=1,3)
                END IF
             END DO
+            IF (MVEOR) THEN
+               DO IFRVAL = 1,NFRVAL
+                  TSTFR = ABS(FRVAL(IFRVAL))
+                  IF (TSTFR .LT. 1.0D-8) THEN
+                     WRITE(LUPRI,9010) FRVAL(IFRVAL)
+                     WRITE(LUPRI,9007)
+                     WRITE(LUPRI,'(10X,A)') '--- undefined ---'
+                  ELSE
+                     FRQINV = 1.0D0/FRVAL(IFRVAL)
+                     CALL DSCAL(18,FRQINV,POLVL(1,1,1,IFRVAL),1)
+                     WRITE(LUPRI,9010) FRVAL(IFRVAL)
+                     WRITE(LUPRI,9007)
+                     IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+                     WRITE(LUPRI,9009) 'Bx','By','Bz'
+                     WRITE(LUPRI,9008) 'Ex',(POLVL(1,1,JDIP,IFRVAL),
+     &                    JDIP=1,3)
+                     WRITE(LUPRI,9008) 'Ey',(POLVL(1,2,JDIP,IFRVAL),
+     &                    JDIP=1,3)
+                     WRITE(LUPRI,9008) 'Ez',(POLVL(1,3,JDIP,IFRVAL),
+     &                    JDIP=1,3)
+                     IF (ABSORP) THEN
+                        WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                        WRITE(LUPRI,9009) 'Bx','By','Bz'
+                        WRITE(LUPRI,9008) 'Ex',(POLVL(2,1,JDIP,IFRVAL),
+     &                       JDIP=1,3)
+                        WRITE(LUPRI,9008) 'Ey',(POLVL(2,2,JDIP,IFRVAL),
+     &                       JDIP=1,3)
+                        WRITE(LUPRI,9008) 'Ez',(POLVL(2,3,JDIP,IFRVAL),
+     &                       JDIP=1,3)
+                     END IF
+                  END IF
+               END DO
+               DO IFRVAL = 1,NFRVAL
+                  TSTFR = ABS(FRVAL(IFRVAL))
+                  IF (TSTFR .LT. 1.0D-8) THEN
+                     WRITE(LUPRI,9011) FRVAL(IFRVAL)
+                     WRITE(LUPRI,9007)
+                     WRITE(LUPRI,'(10X,A)') '--- undefined ---'
+                  ELSE
+                     FRQINV = 1.0D0/FRVAL(IFRVAL)
+                     CALL DSCAL(18,FRQINV,POLVV(1,1,1,IFRVAL),1)
+                     WRITE(LUPRI,9011) FRVAL(IFRVAL)
+                     WRITE(LUPRI,9007)
+                     IF (ABSORP) WRITE(LUPRI,'(/,10X,A)') 'Real part:'
+                     WRITE(LUPRI,9009) 'Bx','By','Bz'
+                     WRITE(LUPRI,9008) 'Ex',(POLVV(1,1,JDIP,IFRVAL),
+     &                    JDIP=1,3)
+                     WRITE(LUPRI,9008) 'Ey',(POLVV(1,2,JDIP,IFRVAL),
+     &                    JDIP=1,3)
+                     WRITE(LUPRI,9008) 'Ez',(POLVV(1,3,JDIP,IFRVAL),
+     &                    JDIP=1,3)
+                     IF (ABSORP) THEN
+                        WRITE(LUPRI,'(/,10X,A)') 'Imaginary part:'
+                        WRITE(LUPRI,9009) 'Bx','By','Bz'
+                        WRITE(LUPRI,9008) 'Ex',(POLVV(2,1,JDIP,IFRVAL),
+     &                       JDIP=1,3)
+                        WRITE(LUPRI,9008) 'Ey',(POLVV(2,2,JDIP,IFRVAL),
+     &                       JDIP=1,3)
+                        WRITE(LUPRI,9008) 'Ez',(POLVV(2,3,JDIP,IFRVAL),
+     &                       JDIP=1,3)
+                     END IF
+                  END IF
+               END DO
+            END IF
          END IF
          TMASS = 0.0D0
          JATOM = 0
@@ -1143,25 +1479,72 @@ C
      &        'Optical rotation summary',
      &        '------------------------'
          DO IFRVAL = 1, NFRVAL
-            BETAL(1) =-(POLDL(1,1,1,IFRVAL) + POLDL(1,2,2,IFRVAL) +
-     &                 POLDL(1,3,3,IFRVAL))/(D3*FRVAL(IFRVAL))
-            BETANL(1)=-(POLDA(1,1,1,IFRVAL) + POLDA(1,2,2,IFRVAL) +
-     &                 POLDA(1,3,3,IFRVAL))/(D3*FRVAL(IFRVAL))
-            ALPHAL(1)=FACTOT*BETAL(1)*FRVAL(IFRVAL)*FRVAL(IFRVAL)/TMASS
-            ALPHNL(1)=FACTOT*BETANL(1)*FRVAL(IFRVAL)*FRVAL(IFRVAL)/TMASS
-            BETAL(2) =-(POLDL(2,1,1,IFRVAL) + POLDL(2,2,2,IFRVAL) +
-     &                 POLDL(2,3,3,IFRVAL))/(D3*FRVAL(IFRVAL))
-            BETANL(2)=-(POLDA(2,1,1,IFRVAL) + POLDA(2,2,2,IFRVAL) +
-     &                 POLDA(2,3,3,IFRVAL))/(D3*FRVAL(IFRVAL))
-            ALPHAL(2)=FACTOT*BETAL(2)*FRVAL(IFRVAL)*FRVAL(IFRVAL)/TMASS
-            ALPHNL(2)=FACTOT*BETANL(2)*FRVAL(IFRVAL)*FRVAL(IFRVAL)/TMASS
-            WRITE (LUPRI,'(/10X,A,F12.6,A,F12.6,A)') 
-     &           'Frequency: ',FRVAL(IFRVAL),' au  = ',
-     &           XTNM/FRVAL(IFRVAL), ' nm'
+            TSTFR = ABS(FRVAL(IFRVAL))
+            IF (TSTFR .LT. 1.0D-14) THEN
+               WRITE (LUPRI,'(/10X,A,F12.6,A)')
+     &              'Frequency: ',FRVAL(IFRVAL),' au'
+               BETAL(1)  = 0.0D0
+               BETANL(1) = 0.0D0
+               BETAL(2)  = 0.0D0
+               BETANL(2) = 0.0D0
+               BETAVL(1) = 0.0D0
+               BETAVV(1) = 0.0D0
+               BETAVL(2) = 0.0D0
+               BETAVV(2) = 0.0D0
+            ELSE
+               WRITE (LUPRI,'(/10X,A,F12.6,A,F12.6,A)') 
+     &              'Frequency: ',FRVAL(IFRVAL),' au  = ',
+     &              XTNM/FRVAL(IFRVAL), ' nm'
+               XXXDIV   = 1.0D0/(D3*FRVAL(IFRVAL))
+               BETAL(1) =-(POLDL(1,1,1,IFRVAL) + POLDL(1,2,2,IFRVAL)
+     &                     + POLDL(1,3,3,IFRVAL))*XXXDIV
+               BETANL(1)=-(POLDA(1,1,1,IFRVAL) + POLDA(1,2,2,IFRVAL)
+     &                     + POLDA(1,3,3,IFRVAL))*XXXDIV
+               BETAL(2) =-(POLDL(2,1,1,IFRVAL) + POLDL(2,2,2,IFRVAL)
+     &                     + POLDL(2,3,3,IFRVAL))*XXXDIV
+               BETANL(2)=-(POLDA(2,1,1,IFRVAL) + POLDA(2,2,2,IFRVAL)
+     &                     + POLDA(2,3,3,IFRVAL))*XXXDIV
+               BETAVL(1)=-(POLVL(1,1,1,IFRVAL) + POLVL(1,2,2,IFRVAL)
+     &                     + POLVL(1,3,3,IFRVAL))*XXXDIV
+               BETAVV(1)=-(POLVV(1,1,1,IFRVAL) + POLVV(1,2,2,IFRVAL)
+     &                     + POLVV(1,3,3,IFRVAL))*XXXDIV
+               BETAVL(2)=-(POLVL(2,1,1,IFRVAL) + POLVL(2,2,2,IFRVAL)
+     &                     + POLVL(2,3,3,IFRVAL))*XXXDIV
+               BETAVV(2)=-(POLVV(2,1,1,IFRVAL) + POLVV(2,2,2,IFRVAL)
+     &                     + POLVV(2,3,3,IFRVAL))*XXXDIV
+            END IF
+            XXXCON = FACTOT*FRVAL(IFRVAL)*FRVAL(IFRVAL)/TMASS
+            ALPHAL(1)=XXXCON*BETAL(1)
+            ALPHNL(1)=XXXCON*BETANL(1)
+            ALPHAL(2)=XXXCON*BETAL(2)
+            ALPHNL(2)=XXXCON*BETANL(2)
+            ALPHVL(1)=XXXCON*BETAVL(1)
+            ALPHVV(1)=XXXCON*BETAVV(1)
+            ALPHVL(2)=XXXCON*BETAVL(2)
+            ALPHVV(2)=XXXCON*BETAVV(2)
             IF (ABSORP) THEN
                WRITE(LUPRI,'(10X,A,F12.2,A)')
      &              'Lifetime : ',LIFETIME/CM_TO_AU,' cm-1'
-               WRITE(LUPRI,'(4(/10X,2(A,F12.6)))') 
+               IF (MVEOR) THEN
+                  WRITE(LUPRI,'(8(/10X,2(A,F15.6)))')
+     &              'Beta (London)                :',
+     &              BETAL(1), '  + i ',BETAL(2),
+     &              'Beta (No-London)             :',
+     &              BETANL(1),'  + i ',BETANL(2),
+     &              'Beta (Velocity)              :',
+     &              BETAVL(1), '  + i ',BETAVL(2),
+     &              'Beta (Modified Velocity)     :',
+     &              BETAVV(1),'  + i ',BETAVV(2),
+     &              'Optical rotation (London)    :',
+     &              ALPHAL(1),'  + i ',ALPHAL(2),
+     &              'Optical rotation (No-London) :',
+     &              ALPHNL(1),'  + i ',ALPHNL(2),
+     &              'Optical rotation (Velocity)  :',
+     &              ALPHVL(1),'  + i ',ALPHVL(2),
+     &              'Optical rotation (Mod. Vel.) :',
+     &              ALPHVV(1),'  + i ',ALPHVV(2)
+               ELSE
+                  WRITE(LUPRI,'(4(/10X,2(A,F12.6)))') 
      &              'Beta (London)                :',
      &              BETAL(1), '  + i ',BETAL(2),
      &              'Beta (No-London)             :',
@@ -1170,12 +1553,29 @@ C
      &              ALPHAL(1),'  + i ',ALPHAL(2),
      &              'Optical rotation (No-London) :', 
      &              ALPHNL(1),'  + i ',ALPHNL(2)
+               END IF
             ELSE
-               WRITE(LUPRI,'(4(/10X,A,F12.6))') 
+               IF (MVEOR) THEN
+                  WRITE(LUPRI,'(8(/10X,A,F15.6))')
+     &              'Beta (London)                :',BETAL(1),
+     &              'Beta (No-London)             :',BETANL(1),
+     &              'Beta (Velocity)              :',BETAVL(1),
+     &              'Beta (Modified Velocity)     :',BETAVV(1),
+     &              'Optical rotation (London)    :',ALPHAL(1),
+     &              'Optical rotation (No-London) :',ALPHNL(1),
+     &              'Optical rotation (Velocity)  :',ALPHVL(1),
+     &              'Optical rotation (Mod. Vel.) :',ALPHVV(1)
+               ELSE
+                  WRITE(LUPRI,'(4(/10X,A,F12.6))') 
      &              'Beta (London)                :',BETAL(1),
      &              'Beta (No-London)             :',BETANL(1),
      &              'Optical rotation (London)    :',ALPHAL(1),
      &              'Optical rotation (No-London) :',ALPHNL(1)
+               END IF
+            END IF
+            IF (IPRINT .GE. 1) THEN
+               WRITE(LUPRI,'(/,A,1P,D16.9)')
+     &         'Conversion, beta --> alpha: ',XXXCON
             END IF
          END DO
       ENDIF
@@ -1204,9 +1604,11 @@ C
  9004 FORMAT (16X,A,2X,3F12.7)
  9005 FORMAT (/,10X,'London    G tensor for frequency ',F12.6,' au')
  9006 FORMAT (/,10X,'No-London G tensor for frequency ',F12.6,' au')
-9007  FORMAT (10X,'-------------------------------------------------')
-9008  FORMAT (16X,A,2X,3F12.7)
-9009  FORMAT (27X,3(A,10X)/)
+ 9007 FORMAT (10X,'-------------------------------------------------')
+ 9008 FORMAT (16X,A,2X,3F12.7)
+ 9009 FORMAT (27X,3(A,10X)/)
+ 9010 FORMAT (/,10X,'Velocity  G tensor for frequency ',F12.6,' au')
+ 9011 FORMAT (/,10X,'Mod. Vel. G tensor for frequency ',F12.6,' au')
 C
       RETURN
       END

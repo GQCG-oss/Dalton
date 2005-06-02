@@ -7,11 +7,11 @@ dichroism, more specifically vibrational circular dichroism
 (VCD)\index{VCD}\index{vibrational circular dichroism} as 
 described in Ref.~\cite{klbpjthkrhjajjcp98}, electronic circular
 dichroism (ECD)\index{ECD}\index{electronic circular dichroism} as
-described in Ref.~\cite{klbaehkrthjopjtca90}, Raman 
+described in Refs.~\cite{klbaehkrthjopjtca90,tbpaehcpl246}, Raman 
 Optical Activity (ROA)\index{ROA}\index{Raman optical activity} as
 described in Ref.~\cite{thkrklbpjjofd99}, and optical rotation~\cite{plpmp91,plpdkckrcpl319}.
 
-By default all calculations of optical properties are done with
+By default, all calculations of optical properties are done with
 the use of London atomic orbitals\index{London orbitals} in order to
 enhance the basis set 
 convergence as well as to give the correct physical dependence on the
@@ -151,7 +151,8 @@ the keyword \Key{ECD} in the \aba\ input module. However,
 it is also necessary to specify the number of electronic
 excitations\index{electronic excitation} in 
 each symmetry. As ECD only is observed for chiral molecules, such
-calculations will in general not employ any symmetry,  a complete
+calculations will in general not employ any symmetry
+(although the implementation does make use of it, if present), a complete
 input for a molecule without symmetry will thus look like:
 
 \begin{verbatim}
@@ -167,8 +168,8 @@ input for a molecule without symmetry will thus look like:
 **END OF DALTON INPUT
 \end{verbatim}
 
-In this run we will calculate the rotatory strength\index{rotatory
-strength} corresponding to 
+In this run we will calculate the rotatory strength
+corresponding to 
 the three lowest electronic excitations\index{electronic excitation}
 (the \Key{NEXCIT} keyword) 
 using London atomic orbitals\index{London orbitals}. 
@@ -176,16 +177,44 @@ If rotatory strengths obtained without London atomic orbitals is also
 wanted, this is easily accomplished by adding the keyword
 \Key{ROTVEL} in the \Sec{EXCITA} input module.
 
+The rotatory strength tensors~\cite{tbpaehcpl246}
+that govern the ECD of oriented samples
+(OECD)\index{ECD!oriented}\index{electronic circular dichroism!oriented}\index{OECD}\index{oriented electronic circular dichroism} may additionally be
+calculated by specifying the \Key{OECD} keyword. As an example,
+the input
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.OECD
+*EXCITA
+.NEXCIT
+    3
+**END OF DALTON INPUT
+\end{verbatim}
+
+requests calculation of OECD as well as ECD.
+Note that London orbitals are not implemented for OECD and
+the rotatory strength tensors are calculated using both the
+length and velocity forms (the latter being origin invariant).
+Since the rotatory strength tensor is composed of electric quadrupole
+and magnetic dipole contributions~\cite{tbpaehcpl246}, these parts must
+be computed at the same origin. Therefore, the \Key{NOCMC}
+option is automatically turned on for OECD calculations.
+
 There are only a few studies of Electronic Circular
 Dichroism using London atomic
 orbitals~\cite{klbaehkrthjopjtca90,mpkrthcpl388}, and the results of
-these investigation indicate that the aug-cc-pVDZ or the d-aug-cc-pVDZ
+these investigations indicate that the aug-cc-pVDZ or the d-aug-cc-pVDZ
 basis set, which is supplied with the \siraba\ basis set library, is 
 reasonable for such calculations, the double augmentation being
 important in the case of diffuse/Rydberg-like excited states. 
 
 Another property that may often be of interest is the
-oscillatory strength\index{transition moment}. This property can be
+oscillator strength\index{transition moment}. This property can be
 calculated by an input 
 similar to the one for ECD calculation, and for a molecule with
 C$_{2v}$ symmetry an input would look like:
@@ -204,9 +233,9 @@ C$_{2v}$ symmetry an input would look like:
 **END OF DALTON INPUT
 \end{verbatim}
 
-This input will calculate the dipole strength (\Key{DIPSTR}) of the
+This input will calculate the oscillator strength (\Key{DIPSTR}) of the
 6 lowest electronic excitations distributed in a total of 4
-irreducible representations (as in C$_{2v}$). The dipole strength will
+irreducible representations (as in C$_{2v}$). The oscillator strength will
 be calculated both in 
 length and velocity forms. It is expected that the same requirements
 for basis set quality applies to this property as for ECD.
@@ -272,20 +301,22 @@ J.Olsen. \newblock {\em Faraday Discuss.}, {\bf 99},\hspace{0.25em}165, (1994).
 \end{list}
 }}
 \end{center}
+\index{optical rotation}
 
 The calculation of optical rotation is a special case of the
 calculation of Vibrational Raman Optical Activity (see
 Sec.~\ref{sec:vroa}), as the tensor determining the optical rotation,
-the mixed electric-magnetic polarizability, also contributes to
+the mixed electric-magnetic dipole polarizability, also contributes to
 vibrational Raman optical activity, although in the latter case it is the
 geometrical derivatives of the tensor which are the central quantities.
 
-Many of the comments made regarding basis set requirments for VROA
-calculations will thus also be applicable for the calculation of
-optical. However, we note that a very extensive basis set
-investigation of the optical rotation have been
-presented~\cite{jrcmjffjdpjsjpca104}.
-A typical input for the calculation of optical rotation would
+Many of the comments made regarding basis set requirements for VROA
+calculations will thus be applicable to the calculation of
+optical rotation, too. It should be noted that a very extensive basis set
+investigation of optical rotation has been
+reported~\cite{jrcmjffjdpjsjpca104}.
+A typical input for the calculation of optical rotation at
+355 and 589.3 nm as well as close to the static limit would
 be:
 
 \begin{verbatim}
@@ -297,25 +328,68 @@ be:
 .OPTROT
 *ABALNR
 .FREQUENCY
+ 1
+ 0.001
+.WAVELENGTH
  2
- 0.001 0.077318
+ 355.0 589.3
 .THRESH
  1.0D-4
 **END OF DALTON INPUT
 \end{verbatim}
 
 \dalton\ will always calculate the optical rotation both with and
-without London atomic orbitals as this has a negligible computational
+without London atomic orbitals (length gauge form)
+as this has a negligible computational
 cost compared to the calculation using London atomic orbitals only,
 since we will anyway have to solve only three response equations
 corresponding to the perturbing electric field. The optical rotation
-will only be 
-observed for molecules without symmetry, and by definition the optical
+will only be observed for chiral molecules, 
+and by definition the optical
 rotation will be zero in the static limit. One can approximate the
 static limit by supplying the program with a very large wavelength
 (small frequency), as in the example above, in order to be able to
 compare with approximations that are only valid in the static
-limit~\cite{rdacpl87,jrcmjffjdpjsjpca104}. 
+limit~\cite{rdacpl87,jrcmjffjdpjsjpca104}. Note that while the
+frequency input must be in atomic units (hartree),
+wavelengths must be supplied in nanometers (nm).
+
+Origin invariance may also be guaranteed using the
+``modified'' velocity
+gauge\index{Modified velocity gauge}
+formulation~\cite{Pedersen:ORMVE}.
+This is invoked with the \Key{OR}
+keyword which automatically
+activates the \Key{OPTROT}, too. As additional response equations
+must be solved, the \Key{OR} option is computationally more demanding than
+specifying the \Key{OPTROT} keyword alone.
+The modified velocity gauge formulation is used to ensure origin
+invariance in Coupled Cluster calculations of optical
+rotation~\cite{Pedersen:ORMVE} and the \Key{OR} option thus
+allows direct comparisons of Coupled Cluster and
+SCF, MCSCF, or DFT results.
+An input that invokes calculation of both London and modified velocity gauge
+optical rotation would be
+
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.OR
+*ABALNR
+.FREQUENCY
+ 1
+ 0.001
+.WAVELENGTH
+ 2
+ 355.0 589.3
+.THRESH
+ 1.0D-4
+**END OF DALTON INPUT
+\end{verbatim}
 
 \section{Vibrational Raman Optical Activity (VROA)}\label{sec:vroa}
 
@@ -350,7 +424,7 @@ with respect to the external magnetic field is negligible compared to
 the time used in the solution of the time-dependent response
 equations~\cite{thkrklbpjjofd99}. Because of this,  all relevant Raman
 properties (intensities and depolarization ratios)\index{Raman
-intensity}\index{depolarization ratio} is also calculated
+intensity}\index{depolarization ratio} are also calculated
 at the same time as ROA.  
 
 

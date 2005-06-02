@@ -66,8 +66,8 @@ C
 C              CC_LR &     Linear Response or Second-Order Properties:
 C              CC_SOP      polarizabilities, property gradients etc.
 C
-C              CC_LRESID   Control calculation of residues and
-C                          oscillator strenths.
+C              CC_LRESID & Control calculation of residues and
+C              CC_SOPR     oscillator strenths.
 C
 C              CC_HYPPOL   calculation of quadratic response properties.
 C
@@ -740,7 +740,11 @@ C-----------------------------------------------
 C
          IF (CCLRSD) THEN
            IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_LRESID(WORK,LWORK)
+            IF (OLDLRS) THEN
+               CALL CC_LRESID(WORK,LWORK)
+            ELSE
+               CALL CC_SOPR(WORK,LWORK)
+            END IF
            ELSE
             WRITE(LUPRI,*) 'Linear response residues'//
      &         ' are not implemented for the requested model.'

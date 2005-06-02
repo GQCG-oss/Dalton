@@ -275,6 +275,7 @@ c /* deck ccopaprt */
 *             absorption properties calculated from these
 *
 *    Written by Christof Haettig in winter 2002/2003.
+*    Rotatory strength tensors added in january 2005 by T.B. Pedersen.
 *
 *=====================================================================*
       IMPLICIT NONE  
@@ -290,7 +291,7 @@ c /* deck ccopaprt */
 
 
       CHARACTER*5  BLANKS
-      CHARACTER*8  LABEL
+      CHARACTER*8  SECNAM, LABEL
       CHARACTER*10 MODEL
       CHARACTER*80 STRING
 
@@ -300,29 +301,44 @@ c /* deck ccopaprt */
 #if defined (SYS_CRAY)
       REAL TRANMOM(2,NOPERAT,NTRANSIT)
       REAL DIPLEN(3,2), DIPVEL(3,2), ANGMOM(3,2)
-      REAL ZERO, HALF, ONE, TWO, THREE, EIGV, SIGN
+      REAL QUALEN(3,3,2), QUAVEL(3,3,2)
+      REAL ZERO, HALF, ONE, TWO, THREE, EIGV, EIGVM1, SIGN
       REAL TMF0, TM0F, STRN, EIGVI, EIGVF
       REAL OSCILEN, OSCIVEL, OSCIMIX, ROTALEN, ROTAVEL
+      REAL ROTLEN2, ROTVEL2
+      REAL RAU2CGS, XMON
 #else
       DOUBLE PRECISION TRANMOM(2,NOPERAT,NTRANSIT)
       DOUBLE PRECISION DIPLEN(3,2), DIPVEL(3,2), ANGMOM(3,2)
-      DOUBLE PRECISION ZERO, HALF, ONE, TWO, THREE, EIGV, SIGN
+      DOUBLE PRECISION QUALEN(3,3,2), QUAVEL(3,3,2)
+      DOUBLE PRECISION ZERO, HALF, ONE, TWO, THREE, EIGV, EIGVM1, SIGN
       DOUBLE PRECISION TMF0, TM0F, STRN, EIGVI, EIGVF
       DOUBLE PRECISION OSCILEN, OSCIVEL, OSCIMIX, ROTALEN, ROTAVEL
+      DOUBLE PRECISION ROTLEN2, ROTVEL2
+      DOUBLE PRECISION RAU2CGS, XMON
 #endif
+      PARAMETER (XMON=-1.0d0)
       PARAMETER (ZERO=0.0d0, HALF=0.5d0, ONE=1.0d0, THREE=3.0d0)
       PARAMETER (TWO=2.0d0)
+C-tbp: conversion factor from au to 1.0D-40 cgs (rotatory strength)
+      PARAMETER (RAU2CGS = ECHARGE*ECHARGE*XTANG*CCM*1D36*HBAR/EMASS)
+
+      PARAMETER (SECNAM = 'CCOPAPRT')
 
       LOGICAL LDIPLEN,LDIPL(3), LDIPVEL, LDIPV(3), LANGMOM, LANGM(3)
+      LOGICAL LQUALEN,LQUAL(6), LQUAVEL, LQUAV(6)
       INTEGER IRSD, ISTATE, ISYME, IMULE, ISTSY, IOPER, ISYMO, ISAMO,
      &        IDX, ISTATEI, ISTATEF, ISYMI, ISYMF, IMULI, IMULF,
-     &        ISTISY, ISTFSY, IOPERAT
+     &        ISTISY, ISTFSY, IOPERAT, IDY
+      INTEGER INDEX, I, J
 
 #if defined (SYS_CRAY)
       REAL DDOT
 #else
       DOUBLE PRECISION DDOT
 #endif
+
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2+I+J
 
 *---------------------------------------------------------------------*
 * print header for second-order properties: 
@@ -343,9 +359,12 @@ c /* deck ccopaprt */
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
          MODEL = 'CCSD'
       ELSE
-         CALL QUIT('CCOPAPRT called for an unknown Coupled '//
+         CALL QUIT(SECNAM//' called for an unknown Coupled '//
      &             'Cluster model.')
       END IF
+
+C-tbp:
+      write(lupri,*) secnam,': RAU2CGS = ',RAU2CGS
 
       DO IRSD = 1, NTRANSIT
        
@@ -406,6 +425,10 @@ c /* deck ccopaprt */
          LDIPV(IDX) = .FALSE.
          LANGM(IDX) = .FALSE.
        END DO 
+       DO IDX = 1,6
+         LQUAL(IDX) = .FALSE.
+         LQUAV(IDX) = .FALSE.
+       END DO
 
        DO IOPER = 1, NOPERAT
          IF (XST) THEN
@@ -431,10 +454,30 @@ c /* deck ccopaprt */
          
          ! collect transition moments for special operators
 
-         ! -> here some dipole vectors:
-         IF (LABEL(1:1).EQ.'X') IDX = 1
-         IF (LABEL(1:1).EQ.'Y') IDX = 2
-         IF (LABEL(1:1).EQ.'Z') IDX = 3
+         IDX = 0
+         IDY = 0
+         IF (LABEL(1:1).EQ.'X') THEN
+            IDX = 1
+            IF (LABEL(2:2) .EQ. 'X') THEN
+               IDY = 1
+            ELSE IF (LABEL(2:2) .EQ. 'Y') THEN
+               IDY = 2
+            ELSE IF (LABEL(2:2) .EQ. 'Z') THEN
+               IDY = 3
+            END IF
+         ELSE IF (LABEL(1:1).EQ.'Y') THEN
+            IDX = 2
+            IF (LABEL(2:2) .EQ. 'Y') THEN
+               IDY = 2
+            ELSE IF (LABEL(2:2) .EQ. 'Z') THEN
+               IDY = 3
+            END IF
+         ELSE IF (LABEL(1:1).EQ.'Z') THEN
+            IDX = 3
+            IF (LABEL(2:2) .EQ. 'Z') THEN
+               IDY = 3
+            END IF
+         END IF
 
          IF      (LABEL(2:7).EQ.'DIPLEN') THEN
             DIPLEN(IDX,1) = TM0F
@@ -448,6 +491,21 @@ c /* deck ccopaprt */
             ANGMOM(IDX,1) = TM0F
             ANGMOM(IDX,2) = TMF0
             LANGM( IDX)   = .TRUE.
+C-tbp: ANGMOM sign fixed here:
+            ANGMOM(IDX,1) = -ANGMOM(IDX,1)
+            ANGMOM(IDX,2) = -ANGMOM(IDX,2)
+         ELSE IF (LABEL(3:8).EQ.'SECMOM') THEN
+            QUALEN(IDX,IDY,1) = TM0F
+            QUALEN(IDX,IDY,2) = TMF0
+            QUALEN(IDY,IDX,1) = TM0F
+            QUALEN(IDY,IDX,2) = TMF0
+            LQUAL(INDEX(IDX,IDY)) = .TRUE.
+         ELSE IF (LABEL(3:8).EQ.'ROTSTR') THEN
+            QUAVEL(IDX,IDY,1) = TM0F
+            QUAVEL(IDX,IDY,2) = TMF0
+            QUAVEL(IDY,IDX,1) = TM0F
+            QUAVEL(IDY,IDX,2) = TMF0
+            LQUAV(INDEX(IDX,IDY)) = .TRUE.
          END IF
 
        END DO
@@ -459,6 +517,10 @@ c /* deck ccopaprt */
        LDIPLEN = LDIPL(1) .AND. LDIPL(2) .AND. LDIPL(3)
        LDIPVEL = LDIPV(1) .AND. LDIPV(2) .AND. LDIPV(3)
        LANGMOM = LANGM(1) .AND. LANGM(2) .AND. LANGM(3)
+       LQUALEN = LQUAL(1) .AND. LQUAL(2) .AND. LQUAL(3) .AND.
+     &           LQUAL(4) .AND. LQUAL(5) .AND. LQUAL(6)
+       LQUAVEL = LQUAV(1) .AND. LQUAV(2) .AND. LQUAV(3) .AND.
+     &           LQUAV(4) .AND. LQUAV(5) .AND. LQUAV(6)
 
        ! dipole oscillator strengths
        IF (LDIPLEN) THEN
@@ -479,28 +541,260 @@ c /* deck ccopaprt */
      &         ' oscillator strength (mixed gauge)    : ',OSCIMIX
        END IF
 
-       ! dipole rotator strengths
+       ! scalar rotatory strengths
        IF (LDIPLEN .AND. LANGMOM) THEN
-          ROTALEN = ( ONE / TWO )
+          ROTALEN = ( XMON / TWO )
      &       * HALF*( DDOT(3,DIPLEN(1,1),1,ANGMOM(1,2),1) -
      &                DDOT(3,ANGMOM(1,1),1,DIPLEN(1,2),1) )
          WRITE(LUPRI, '(6x,a,f15.8," a.u.")')
-     &         ' rotator strength (length gauge)      : ',ROTALEN
+     &         ' rotatory strength (length gauge)     : ',ROTALEN
+         WRITE(LUPRI, '(6x,a,f15.8," x 1.0D-40 cgs")')
+     &         ' rotatory strength (length gauge)     : ',
+     &         ROTALEN*RAU2CGS
        END IF
        IF (LDIPVEL .AND. LANGMOM) THEN
-          ROTAVEL = ( -ONE / (TWO*EIGV) )
+          ROTAVEL = ( XMON / (TWO*EIGV) )
      &       * HALF*( DDOT(3,DIPVEL(1,1),1,ANGMOM(1,2),1) +
      &                DDOT(3,ANGMOM(1,1),1,DIPVEL(1,2),1) )
          WRITE(LUPRI, '(6x,a,f15.8," a.u.")')
-     &         ' rotator strength (velocity gauge)    : ',ROTAVEL
+     &         ' rotatory strength (velocity gauge)   : ',ROTAVEL
+         WRITE(LUPRI, '(6x,a,f15.8," x 1.0D-40 cgs")')
+     &         ' rotatory strength (velocity gauge)   : ',
+     &         ROTAVEL*RAU2CGS
        END IF  
 
+       ! rotatory strength tensors
+       IF (LDIPLEN .AND. LANGMOM .AND. LQUALEN) THEN
+         CALL CC_CDTEN(DIPLEN,ANGMOM,QUALEN,ROTLEN2,EIGV,'length',
+     &                 RAU2CGS,LUPRI)
+         IF (DABS(ROTLEN2-ROTALEN) .GT. 1.0D-12) THEN
+            WRITE(LUPRI,*) SECNAM,
+     &      ': incorrect average of rot. str. tensor (length gauge)'
+            CALL QUIT('Incorrect average of rot. str. tensor')
+         END IF
+       END IF
+       IF (LDIPVEL .AND. LANGMOM .AND. LQUAVEL) THEN
+         EIGVM1 = ONE / EIGV
+         CALL DSCAL(6,EIGVM1,DIPVEL,1)
+         CALL DSCAL(18,EIGVM1,QUAVEL,1)
+         CALL CC_CDTEN(DIPVEL,ANGMOM,QUAVEL,ROTVEL2,EIGV,'velocity',
+     &                 RAU2CGS,LUPRI)
+         CALL DSCAL(6,EIGV,DIPVEL,1)
+         CALL DSCAL(18,EIGV,QUAVEL,1)
+         IF (DABS(ROTVEL2-ROTAVEL) .GT. 1.0D-12) THEN
+            WRITE(LUPRI,*) SECNAM,
+     &      ': incorrect average of rot. str. tensor (velocity gauge)'
+            CALL QUIT('Incorrect average of rot. str. tensor')
+         END IF
+       END IF
+
       END DO ! IRSD
+
+      CALL FLSHFO(LUPRI)
 
       RETURN
       END
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCOPAPRT                             *
+*---------------------------------------------------------------------*
+c /* deck cc_cdten */
+      SUBROUTINE CC_CDTEN(DIPMOM,ANGMOM,QUAMOM,ROTSTR,FREQ,GAUGE,
+     &                    RAU2CGS,LUPRI)
+C
+C     Thomas Bondo Pedersen, January 2005.
+C
+C     Purpose: set up and print rotatory strength tensors.
+C
+#include <implicit.h>
+      DIMENSION DIPMOM(3,2), ANGMOM(3,2), QUAMOM(3,3,2)
+      CHARACTER*(*) GAUGE
+
+      CHARACTER*1 IDG
+      CHARACTER*8 SECNAM
+      PARAMETER (SECNAM = 'CC_CDTEN')
+
+      DIMENSION RQ(3,3), RM(3,3), R(3,3), ATEN(3,3,3)
+
+      PARAMETER (XMON = -1.0D0)
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, DP75 = 0.75D0, ONE = 1.0D0)
+      PARAMETER (THIRD = 1.0D0/3.0D0)
+
+      DIMENSION DELTA(3,3), XLEVI(3,3,3)
+      DATA DELTA / ONE,ZERO,ZERO, ! (1,1), (2,1), (3,1)
+     &            ZERO, ONE,ZERO, ! (1,2), (2,2), (3,2)
+     &            ZERO,ZERO, ONE/ ! (1,3), (2,3), (3,3)
+      DATA XLEVI /ZERO,ZERO,ZERO, ! (1,1,1),(2,1,1),(3,1,1)
+     &            ZERO,ZERO,XMON, ! (1,2,1),(2,2,1),(3,2,1)
+     &            ZERO, ONE,ZERO, ! (1,3,1),(2,3,1),(3,3,1)
+     &            ZERO,ZERO, ONE, ! (1,1,2),(2,1,2),(3,1,2)
+     &            ZERO,ZERO,ZERO, ! (1,2,2),(2,2,2),(3,2,2)
+     &            XMON,ZERO,ZERO, ! (1,3,2),(2,3,2),(3,3,2)
+     &            ZERO,XMON,ZERO, ! (1,1,3),(2,1,3),(3,1,3)
+     &             ONE,ZERO,ZERO, ! (1,2,3),(2,2,3),(3,2,3)
+     &            ZERO,ZERO,ZERO/ ! (1,3,3),(2,3,3),(3,3,3)
+
+      IF (GAUGE(1:6) .EQ. 'length') THEN
+         SGN = XMON
+         IDG = 'l'
+      ELSE IF (GAUGE(1:8) .EQ. 'velocity') THEN
+         SGN = ONE
+         IDG = 'v'
+      ELSE
+         CALL QUIT('Unknown gauge in '//SECNAM)
+      END IF
+
+C     Compute A tensor.
+C     -----------------
+
+      DO K = 1,3
+         DO J = 1,3
+            DO I = 1,3
+               ATEN(I,J,K) = HALF*( DIPMOM(I,1)*QUAMOM(J,K,2) +
+     &                              QUAMOM(J,K,1)*DIPMOM(I,2) )
+            END DO
+         END DO
+      END DO
+
+C     Compute quadrupole contribution.
+C     --------------------------------
+
+      DO K = 1,3
+         DO J = 1,3
+            RQ(J,K) = ZERO
+            DO M = 1,3
+               DO L = 1,3
+                  RQ(J,K) = RQ(J,K) + XLEVI(L,M,J)*ATEN(L,M,K)
+               END DO
+            END DO
+         END DO
+      END DO
+
+      DO K = 1,3
+         DO J = K+1,3
+            RQ(J,K) = HALF*(RQ(J,K)+RQ(K,J))
+            RQ(K,J) = RQ(J,K)
+         END DO
+      END DO
+
+      FACT = SGN*DP75*FREQ
+      CALL DSCAL(9,FACT,RQ,1)
+
+      TRACEQ = THIRD*(RQ(1,1)+RQ(2,2)+RQ(3,3))
+
+C     Compute magnetic dot product.
+C     -----------------------------
+
+      DDOTL = HALF*(    DDOT(3,DIPMOM(1,1),1,ANGMOM(1,2),1) +
+     &              SGN*DDOT(3,ANGMOM(1,1),1,DIPMOM(1,2),1) )
+
+C     Compute magnetic contribution.
+C     ------------------------------
+
+      DO K = 1,3
+         DO J = 1,3
+            RM(J,K) = DELTA(J,K)*DDOTL
+     &              - HALF*(    DIPMOM(K,1)*ANGMOM(J,2) +
+     &                      SGN*ANGMOM(J,1)*DIPMOM(K,2) )
+         END DO
+      END DO
+
+      DO K = 1,2
+         DO J = K+1,3
+            RM(J,K) = HALF*(RM(J,K)+RM(K,J))
+            RM(K,J) = RM(J,K)
+         END DO
+      END DO
+
+      FACT = -DP75
+      CALL DSCAL(9,FACT,RM,1)
+
+      TRACEM = THIRD*(RM(1,1)+RM(2,2)+RM(3,3))
+
+C     Compute total tensor.
+C     ---------------------
+
+      CALL DCOPY(9,RQ,1,R,1)
+      CALL DAXPY(9,ONE,RM,1,R,1)
+
+      ROTSTR = THIRD*(R(1,1)+R(2,2)+R(3,3))
+
+C     Print.
+C     ------
+
+      WRITE(LUPRI,'(/,6X,A,A,A)')
+     & ' el. quadrupole rotatory strength tensor (',
+     & GAUGE(1:LEN(GAUGE)),' gauge):'
+      WRITE(LUPRI,'(/,3(15X,A))') 'X','Y','Z'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.8))')
+     & 'RQ',IDG,'X',(RQ(1,J),J=1,3)
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.8),2X,A)')
+     & 'RQ',IDG,'Y',(RQ(2,J),J=1,3),'a.u.'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.8))')
+     & 'RQ',IDG,'Z',(RQ(3,J),J=1,3)
+      CALL DSCAL(9,RAU2CGS,RQ,1)
+      WRITE(LUPRI,'(/,3(15X,A))') 'X','Y','Z'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.6))')
+     & 'RQ',IDG,'X',(RQ(1,J),J=1,3)
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.6),2X,A)')
+     & 'RQ',IDG,'Y',(RQ(2,J),J=1,3),'x 1.0D-40 cgs'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.6))')
+     & 'RQ',IDG,'Z',(RQ(3,J),J=1,3)
+      WRITE(LUPRI,'(/,1X,A,A,2X,A,F15.8,A,F15.6,A)')
+     & 'RQ',IDG,'Average: ',TRACEQ,' a.u. = ',
+     & RAU2CGS*TRACEQ,' x 1.0D-40 cgs'
+      IF (DABS(TRACEQ) .GT. 1.0D-12) THEN
+         WRITE(LUPRI,*) 'WARNING: non-zero quadrupole trace!!'
+         CALL FLSHFO(LUPRI)
+      END IF
+
+      WRITE(LUPRI,'(/,6X,A,A,A)')
+     & ' magn. dipole rotatory strength tensor (',
+     & GAUGE(1:LEN(GAUGE)),' gauge):'
+      WRITE(LUPRI,'(/,3(15X,A))') 'X','Y','Z'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.8))')
+     & 'RM',IDG,'X',(RM(1,J),J=1,3)
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.8),2X,A)')
+     & 'RM',IDG,'Y',(RM(2,J),J=1,3),'a.u.'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.8))')
+     & 'RM',IDG,'Z',(RM(3,J),J=1,3)
+      CALL DSCAL(9,RAU2CGS,RM,1)
+      WRITE(LUPRI,'(/,3(15X,A))') 'X','Y','Z'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.6))')
+     & 'RM',IDG,'X',(RM(1,J),J=1,3)
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.6),2X,A)')
+     & 'RM',IDG,'Y',(RM(2,J),J=1,3),'x 1.0D-40 cgs'
+      WRITE(LUPRI,'(1X,A,A,2X,A,3(1X,F15.6))')
+     & 'RM',IDG,'Z',(RM(3,J),J=1,3)
+      WRITE(LUPRI,'(/,1X,A,A,2X,A,F15.8,A,F15.6,A)')
+     & 'RM',IDG,'Average: ',TRACEM,' a.u. = ',
+     & RAU2CGS*TRACEM,' x 1.0D-40 cgs'
+
+      WRITE(LUPRI,'(/,6X,A,A,A)')
+     & ' total rotatory strength tensor (',
+     & GAUGE(1:LEN(GAUGE)),' gauge):'
+      WRITE(LUPRI,'(/,3(15X,A))') 'X','Y','Z'
+      WRITE(LUPRI,'(1X,A,A,3X,A,3(1X,F15.8))')
+     & 'R',IDG,'X',(R(1,J),J=1,3)
+      WRITE(LUPRI,'(1X,A,A,3X,A,3(1X,F15.8),2X,A)')
+     & 'R',IDG,'Y',(R(2,J),J=1,3),'a.u.'
+      WRITE(LUPRI,'(1X,A,A,3X,A,3(1X,F15.8))')
+     & 'R',IDG,'Z',(R(3,J),J=1,3)
+      CALL DSCAL(9,RAU2CGS,R,1)
+      WRITE(LUPRI,'(/,3(15X,A))') 'X','Y','Z'
+      WRITE(LUPRI,'(1X,A,A,3X,A,3(1X,F15.6))')
+     & 'R',IDG,'X',(R(1,J),J=1,3)
+      WRITE(LUPRI,'(1X,A,A,3X,A,3(1X,F15.6),2X,A)')
+     & 'R',IDG,'Y',(R(2,J),J=1,3),'x 1.0D-40 cgs'
+      WRITE(LUPRI,'(1X,A,A,3X,A,3(1X,F15.6))')
+     & 'R',IDG,'Z',(R(3,J),J=1,3)
+      WRITE(LUPRI,'(/,1X,A,A,3X,A,F15.8,A,F15.6,A)')
+     & 'R',IDG,'Average: ',ROTSTR,' a.u. = ',
+     & RAU2CGS*ROTSTR,' x 1.0D-40 cgs'
+
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CC_CDTEN                             *
 *---------------------------------------------------------------------*
 c /* deck ccopa_setup */
 *=====================================================================*

@@ -340,11 +340,14 @@ C
          KPOLDQ = KPOLDD + 2*9*MXFR
          KPOLDL = KPOLDQ + 2*27*MXFR
          KPOLDA = KPOLDL + 2*9*MXFR
-         KLST1  = KPOLDA + 2*9*MXFR
+         KPOLVL = KPOLDA + 2*9*MXFR
+         KPOLVV = KPOLVL + 2*9*MXFR
+         KLST1  = KPOLVV + 2*9*MXFR
          LWRK1  = LWORK - KLST1 + 1
          IF (.NOT. PASLNR) THEN
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
-     &                  WORK(KPOLDA),WORK(KLST1),LWRK1,PASLNR)
+     &                  WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
+     &                  WORK(KLST1),LWRK1,PASLNR)
             IF (PASLNR) CALL WRITRS
             CALL FLSHFO(LUPRI)
          END IF
@@ -353,6 +356,8 @@ C
          KPOLDQ = KLAST
          KPOLDL = KLAST
          KPOLDA = KLAST
+         KPOLVL = KLAST
+         KPOLVV = KLAST
          KLST1  = KLAST
          LWRK1  = LWRK
       END IF
@@ -367,30 +372,50 @@ C
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI
-         KTRLON = KTRVEL + 3*NSYM*MXNEXI
+         KTQLEN = KTRVEL + 3*NSYM*MXNEXI
+         KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
+         KTRLON = KTQVEL + 3*3*NSYM*MXNEXI
          KTRMAG = KTRLON + 3*NSYM*MXNEXI
          KBSRLO = KTRMAG + 3*NSYM*MXNEXI
          KEXENG = KBSRLO + 3*NSYM*MXNEXI
          KFONAC = KEXENG + NSYM*MXNEXI
          KFONA2 = KFONAC + 3*NUCDEP*NSYM*MXNEXI
-         KLST2  = KFONA2 + 3*NUCDEP*NSYM*MXNEXI
+         KRMLEN = KFONA2 + 3*NUCDEP*NSYM*MXNEXI
+         KRQLEN = KRMLEN + 3*3*NSYM*MXNEXI
+         KRLEN  = KRQLEN + 3*3*NSYM*MXNEXI
+         KRMVEL = KRLEN  + 3*3*NSYM*MXNEXI
+         KRQVEL = KRMVEL + 3*3*NSYM*MXNEXI
+         KRVEL  = KRQVEL + 3*3*NSYM*MXNEXI
+         KSLEN  = KRVEL  + 3*3*NSYM*MXNEXI
+         KSVEL  = KSLEN  + NSYM*MXNEXI
+         KLST2  = KSVEL  + NSYM*MXNEXI
          LWRK2  = LWORK  - KLST2 + 1
-         CALL EXCITA(WORK(KTRLEN),WORK(KTRVEL),WORK(KTRLON),
-     &               WORK(KTRMAG),WORK(KBSRLO),WORK(KEXENG),
-     &               WORK(KFONAC),WORK(KFONA2),WORK(KLST2),
-     &               LWRK2,PASEXC)
+         CALL EXCITA(WORK(KTRLEN),WORK(KTRVEL),WORK(KTQLEN),
+     &               WORK(KTQVEL),WORK(KTRLON),WORK(KTRMAG),
+     &               WORK(KBSRLO),WORK(KEXENG),WORK(KFONAC),
+     &               WORK(KFONA2),WORK(KLST2),LWRK2,PASEXC)
          IF (PASEXC) CALL WRITRS
          CALL FLSHFO(LUPRI)
       ELSE
          KTRLEN = KLST1
          KTRVEL = KTRLEN
-         KTRLON = KTRVEL
+         KTQLEN = KTRVEL
+         KTQVEL = KTQLEN
+         KTRLON = KTQVEL
          KTRMAG = KTRLON
          KBSRLO = KTRMAG
          KEXENG = KBSRLO
          KFONAC = KEXENG
          KFONA2 = KFONAC
-         KLST2  = KFONA2
+         KRMLEN = KFONA2
+         KRQLEN = KRMLEN
+         KRLEN  = KRQLEN
+         KRMVEL = KRLEN
+         KRQVEL = KRMVEL
+         KRVEL  = KRQVEL
+         KSLEN  = KRVEL
+         KSVEL  = KSLEN
+         KLST2  = KSVEL
          LWRK2  = LWRK1
       END IF
       CALL GETTIM(TIMEXC,TIMDUM)
@@ -514,12 +539,16 @@ C
       KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
       KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
       LWRK3  = LWORK - KLAST + 1
-      CALL RESULT(WORK(KPOLDD),WORK(KPOLDL),WORK(KPOLDA),WORK(KCSTRA),
+      CALL RESULT(WORK(KPOLDD),WORK(KPOLDL),WORK(KPOLDA),
+     &            WORK(KPOLVL),WORK(KPOLVV),WORK(KCSTRA),
      &            WORK(KSCTRA),WORK(KDSO),WORK(KPSO),WORK(KSD),
      &            WORK(KFC),WORK(KSDFC),WORK(KTRLEN),
-     &            WORK(KTRVEL),WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
-     &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KLAST),
-     &            LWRK3)
+     &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
+     &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
+     &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),
+     &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
+     &            WORK(KRMVEL),WORK(KRQVEL),WORK(KRVEL),
+     &            WORK(KSLEN),WORK(KSVEL),WORK(KLAST),LWRK3)
       IF (IPRDEF .GE. 0) CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
      &                               IDUMMY,WORK(KLAST),LWRK3)
       CALL FLSHFO(LUPRI)
@@ -651,9 +680,9 @@ Caug04-hjaaj: disabled currently inactive .NACME
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
      &             'xNACME ', '.NOLOND', '.NOHESS',
      &             '.WRTINT', '.ECD   ', '.NODIFC',
-     &             '.MOLGFA', '.SPIN-R', '.XXXXXX',
+     &             '.MOLGFA', '.SPIN-R', '.OR    ',
      &             '.PHASEO', '.NOMASV', '.NODARW',
-     &             '.ALPHA ', '.VROA  ', 'XXXXXXX',
+     &             '.ALPHA ', '.VROA  ', '.OR MVE',
      &             '.SOPPA(', '.HELLMA', '.NOCMC ',
      &             '.EXPFCK', '.GAUGEO', '.DIPORG',
      &             '.RAMAN ', '.QUADRU', '.NQCC  ',
@@ -750,6 +779,7 @@ C
       MCD    = .FALSE.
       ABA_ALPHA = .FALSE.
       OPTROT = .FALSE.
+      MVEOR  = .FALSE.
       LINCPL = .FALSE.
       SKIPAB = .FALSE.
       CTOCD  = .FALSE.
@@ -959,7 +989,9 @@ cLig <> added goto 151
          GO TO 100
   115    CONTINUE
             OECD   = .TRUE.
-            GO TO 126   ! set .ECD also!!!
+            NOCMC  = .TRUE.
+            ECD    = .TRUE.
+            DOEXCI = .TRUE.
          GO TO 100
   116    CONTINUE
             DOEXCI = .TRUE.
@@ -1014,7 +1046,10 @@ cLig <> added goto 151
   129    CONTINUE
             SPINRO = .TRUE.
          GOTO 100
-  130    CONTINUE
+  130    CONTINUE ! .OR = .OR MVE = .OPTROT + mod. vel. OR
+            MVEOR  = .TRUE.
+            OPTROT = .TRUE.
+            ABALNR = .TRUE.
          GOTO 100
   131    CONTINUE
             READ (LUCMD,*) (ORIGIN(ICOOR), ICOOR = 1,3)
@@ -1034,6 +1069,9 @@ cLig <> added goto 151
             ABALNR = .TRUE.
          GOTO 100
   136    CONTINUE
+            MVEOR  = .TRUE.
+            OPTROT = .TRUE.
+            ABALNR = .TRUE.
          GOTO 100
   137    CONTINUE
             ABASOP = .TRUE.
@@ -1353,8 +1391,15 @@ cLig <<
       IF (NUMHES .AND. (VROA .OR. RAMAN))  WRITE (LUPRI,'(5X,A)')
      &            ' A numerically calculated Hessian will be used '//
      &            'for the frequency analysis'
-      IF (OPTROT) WRITE (LUPRI,'(5X,A)')
-     &            ' Optical rotation strengths'
+      IF (OPTROT) THEN
+         IF (MVEOR) THEN
+            WRITE (LUPRI,'(5X,A)')
+     &      ' Optical rotation strengths (London, length, velocity)'
+         ELSE
+            WRITE (LUPRI,'(5X,A)')
+     &      ' Optical rotation strengths (London, length)'
+         END IF
+      END IF
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
       IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-factor'
       IF (EXPGRD) WRITE(LUPRI,'(5X,A)') ' Orbital-exponent gradient' 
@@ -1513,6 +1558,11 @@ cLig <<
          END IF
          IF (NACME)  THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. NACME '//
+     &                         'cannot be calculated with SOPPA'
+            IERR = IERR + 1
+         END IF
+         IF (OECD)    THEN
+            WRITE(LUPRI,'(A)') ' Incompatible input. OECD '//
      &                         'cannot be calculated with SOPPA'
             IERR = IERR + 1
          END IF
@@ -1741,7 +1791,7 @@ C
      &                                   LWORK)
       CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
      &            IPRDEF-2)
-      IF (SHIELD .OR. MAGSUS .OR. VCD .OR. ECD .OR. VROA .OR.
+      IF (SHIELD .OR. MAGSUS .OR. VCD .OR. ECD .OR. OECD .OR. VROA .OR.
      &    SPINRO .OR. MOLGFA .OR. MCD .OR. VERDET .OR. OPTROT) THEN
          IPRGAG = 1
       ELSE
@@ -1793,9 +1843,12 @@ C
 C
       END
 C  /* Deck result */
-      SUBROUTINE RESULT(POLDD,POLDL,POLDA,CSTRA,SCTRA,SPNDSO,SPNPSO,
-     &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TRMAG,
-     &                  TRLON,BSRLON,EXENG,FONAC,FONA2,WORK,LWORK)
+      SUBROUTINE RESULT(POLDD,POLDL,POLDA,POLVL,POLVV,
+     &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
+     &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
+     &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,
+     &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
+     &                  WORK,LWORK)
 C
 C <<< Final results from ABACUS >>>
 C
@@ -1811,12 +1864,16 @@ C
      *            D3 = 3.0D0, D100 = 100.0D0)
       CHARACTER NAME*6, SPDCAR*1
       DIMENSION PRAPOL(3,3), PRVPOL(6), CSTRA(*), SCTRA(*), POLDD(*),
-     *          POLDL(*), POLDA(*), WORK(LWORK)
+     *          POLDL(*), POLDA(*), POLVL(*), POLVV(*)
+      DIMENSION WORK(LWORK)
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
-      DIMENSION TRLEN(*), TRVEL(*), TRLON(*), TRMAG(*), BSRLON(*),
-     &          EXENG(*), FONAC(*), FONA2(*)
+      DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
+     &          TRLON(*), TRMAG(*), BSRLON(*),
+     &          EXENG(*), FONAC(*), FONA2(*),
+     &          RMLEN(*), RQLEN(*), RLEN(*),
+     &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
 #include <abainf.h>
 #include <taymol.h>
@@ -2121,12 +2178,16 @@ C
 C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
-         IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,IPRDEF)
+         IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,IPRDEF)
 C
-C     Excitation energies and electronic circular dichroism
+C     Excitation energies and (oriented) electronic circular dichroism
 C
-         IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
-     &                           FONAC,FONA2,WORK,LWORK)
+         IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
+     &                           TRMAG,TRLON,BSRLON,EXENG,
+     &                           FONAC,FONA2,RMLEN,RQLEN,
+     &                           RLEN,RMVEL,RQVEL,RVEL,
+     &                           SLEN,SVEL,WORK,LWORK)
+
 C
 C     Molecular quadrupole moments
 C

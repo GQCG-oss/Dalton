@@ -309,18 +309,22 @@ c /* deck CC_SOP */
 *---------------------------------------------------------------------*
 * print dipole gradients and APT (Cioslowski) population analysis
 *---------------------------------------------------------------------*
-      IF (IDIGRA .GT. 0) THEN
+      IF (DIPGRA) THEN
          IF (CCS) THEN
             CALL AROUND('CCS Dipole Gradients')
+            WRITE(LUPRI,*) 'WARNING: NOT DEBUGGED FOR CCS!!!'
          ELSE IF (CC2) THEN
             CALL AROUND('CC2 Dipole Gradients')
+            WRITE(LUPRI,*) 'WARNING: NOT DEBUGGED FOR CC2!!!'
          ELSE IF (CC3) THEN
             CALL AROUND('CC3 Dipole Gradients')
+            WRITE(LUPRI,*) 'WARNING: NOT DEBUGGED FOR CC3!!!'
          ELSE IF (CCSD) THEN
             CALL AROUND('CCSD Dipole Gradients')
          ELSE
             CALL QUIT('CC_SOP called for unknown Coupled Cluster.')
          END IF
+         CALL FLSHFO(LUPRI)
          LEND0 = LWORK - KFTRAN + 1
          CALL CCDIPGRAPR(WORK(KRESULT),WORK(KFTRAN),LEND0)
       ENDIF
@@ -355,7 +359,6 @@ c /* deck ccsopprt */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-       LOGICAL DIPGRA
 #include <cclrinf.h>
 #include <ccroper.h>
 
@@ -855,6 +858,11 @@ C     -------------------------------------------------------------
   999       CONTINUE
 
          ENDDO
+C-tbp: ANGMOM sign fixed here:
+         IF (ORLEN) CALL DSCAL(3*NBLRFR,-1.0D0,GLEN,1)
+         IF (ORVEL) CALL DSCAL(3*NBLRFR,-1.0D0,GVEL,1)
+         IF (ORMVE) CALL DSCAL(3*NBLRFR,-1.0D0,GTST,1)
+
          CALL CC_OROUT(GLEN,GVEL,GTST,WORK,LWORK,IPRSOP,MODEL)
 
       ENDIF
@@ -1464,11 +1472,12 @@ C
 #include <ccorb.h>
 #include <cclrinf.h>
 #include <ccroper.h>
+#include <cbisol.h>
 
       DIMENSION SOPROP(NBLRFR,NLROP,2)
       DIMENSION WORK(LWORK)
 
-      LOGICAL DOSYMS(8)
+      LOGICAL DOSYMS(8), SLV_SAVE
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CCDIPGRAPR')
@@ -1476,7 +1485,7 @@ C
 C     Return if nothing to do.
 C     ------------------------
 
-      IF (IDIGRA .LE. 0) RETURN
+      IF (.NOT. DIPGRA) RETURN
 
 C     Set DOSYM for abacus printing.
 C     ------------------------------
@@ -1508,7 +1517,7 @@ C     -----------
 C     Extract dipole gradients (APTs).
 C     --------------------------------
 
-      CALL CC_GETDGR(SOPROP,WORK(KDIGRA),IDIGRA)
+      CALL CC_GETDGR(SOPROP,WORK(KDIGRA))
 
 C     Transpose the APTs.
 C     -------------------
@@ -1516,8 +1525,12 @@ C     -------------------
       CALL CCTRSP12(WORK(KDIGRA),3*NUCDEP,3,NBLRFR,WORK(KSCR),NDIGRA)
 
 C     Print.
-C     ------
+C     SOLVNT flag from cbisol.h is turned off to avoid errors, then
+C     restored to original value.
+C     -------------------------------------------------------------
 
+      SLV_SAVE = SOLVNT
+      SOLVNT   = .FALSE.
       DO IFREQ = 1,NBLRFR
          IF (ABS(BLRFR(IFREQ)) .GT. 1.0D-8) THEN
             WRITE(LUPRI,'(/,8X,A)')
@@ -1531,6 +1544,7 @@ C     ------
      &               WORK(KCSTRA),WORK(KSCTRA),
      &               WORK(KEND),WORK(KEND),LWRK)
       END DO
+      SOLVNT = SLV_SAVE
 
 C     Restore DOSYM.
 C     --------------
@@ -1570,7 +1584,7 @@ C
       RETURN
       END
 C  /* Deck cc_getdgr */
-      SUBROUTINE CC_GETDGR(SOPROP,PROP,IPROP)
+      SUBROUTINE CC_GETDGR(SOPROP,PROP)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1588,43 +1602,68 @@ C
       DIMENSION PROP(3*NUCDEP,3,NBLRFR)
       INTEGER   IDIP(3)
 
+      CHARACTER*5 SCR
+      CHARACTER*8 LABELA, LABELB
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_GETDGR')
+
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
+      PARAMETER (ONE = 1.0D0)
+
+C     Initialize result array.
+C     ------------------------
+
+      CALL DZERO(PROP,3*NUCDEP*3*NBLRFR)
+
+C     Set symmetry ordered axis indices.
+C     ----------------------------------
+
       IOFFAX = 0
       DO IREP = 0,MAXREP
-
          NAXIS = NAXREP(IREP,1)
-
-         IF (LOCDBG) THEN
-            WRITE (LUPRI,*) 'IPTXYZ: ',
-     &      (IPTXYZ(I,IREP,1), I=1,NAXIS)
-         END IF
-
          DO I = 1,NAXIS 
             IDIP(IPTXYZ(I,IREP,1)) = IOFFAX + I 
          END DO
-
          IOFFAX = IOFFAX + NAXIS
-
-         IF (LOCDBG) THEN
-            WRITE (LUPRI,'(23X,3(2A,13X))')
-     &      ('E',CHRXYZ(-IPTXYZ(I,IREP,1)),I=1,NAXIS)
-            WRITE(LUPRI,*) 'Temporary IDIP for sym. ',IREP+1,':'
-            WRITE(LUPRI,*) (IDIP(IPTXYZ(I,IREP,1)), I=1,NAXIS)
-         END IF
-
       END DO
 
       IF (LOCDBG) THEN
-         WRITE(LUPRI,*) 'Final IDIP: ',(IDIP(I),I=1,3)
+         WRITE(LUPRI,*) SECNAM,' - extracting dipole gradients'
+         WRITE(LUPRI,*) 'IDIP: ',(IDIP(I),I=1,3)
+         CALL FLSHFO(LUPRI)
       ENDIF
 
-      IOPER = IPROP - 1
-      DO IAXIS = 1,3
-         DO ICOOR = 1,3*NUCDEP
+C     Extract results.
+C     ----------------
 
-            IOPER = IOPER + 1
+      DO IOPER = 1,NLROP
+
+         LABELA = LBLOPR(IALROP(IOPER))
+         LABELB = LBLOPR(IBLROP(IOPER))
+
+         IF (LABELA(1:5).EQ.'1DHAM' .AND.
+     &       LABELB(2:7).EQ.'DIPLEN') THEN
+
+            READ(LABELA,'(A5,I3)') SCR,ICOOR
+            IF (LABELB(1:1) .EQ. 'X') THEN
+               IAXIS = 1
+            ELSE IF (LABELB(1:1) .EQ. 'Y') THEN
+               IAXIS = 2
+            ELSE IF (LABELB(1:1) .EQ. 'Z') THEN
+               IAXIS = 3
+            ELSE
+               CALL QUIT('IAXIS error in '//SECNAM)
+            END IF
+
+            IF (LOCDBG) THEN
+               WRITE(LUPRI,*)
+               WRITE(LUPRI,*) '   A,B: ',LABELA,LABELB
+               WRITE(LUPRI,*) '   ICOOR = ',ICOOR,' IAXIS = ',IAXIS
+               CALL FLSHFO(LUPRI)
+            END IF
 
             ISYMA = ISYOPR(IALROP(IOPER))
             ISYMB = ISYOPR(IBLROP(IOPER))
@@ -1633,32 +1672,32 @@ C
             ISAMB = ISYMAT(IBLROP(IOPER))
 
             ISAPROP = ISAMA * ISAMB
-            SIGN    = DBLE(ISAPROP)
-            IF (ISAPROP.EQ.0) SIGN = +ONE
+            IF (ISAPROP.EQ.0) THEN
+               SIGN = ONE
+            ELSE
+               SIGN = DBLE(ISAPROP)
+            END IF
 
             IF (ISYMA.EQ.ISYMB) THEN
                DO IFREQ = 1,NBLRFR
-                  PROP(ICOOR,IDIP(IAXIS),IFREQ) = 
+                  PROP(ICOOR,IDIP(IAXIS),IFREQ) =
      &            -0.5D0*(SOPROP(IFREQ,IOPER,1)
      &            + SIGN* SOPROP(IFREQ,IOPER,2))
-               END DO
-            ELSE
-               DO IFREQ = 1,NBLRFR
-                  PROP(ICOOR,IDIP(IAXIS),IFREQ) = 0.0D0
                END DO
             END IF
 
             IF (LOCDBG) THEN
-               WRITE(LUPRI,*) 'LABELA,LABELB: ',
-     &                   LBLOPR(IALROP(IOPER)),',',LBLOPR(IBLROP(IOPER))
                DO IFREQ = 1,NBLRFR
-                  WRITE(LUPRI,*) '   ICOOR,IAXIS,FREQ,LR: ',
-     &            ICOOR,IAXIS,BLRFR(IFREQ),PROP(ICOOR,IDIP(IAXIS),IFREQ)
+                  WRITE(LUPRI,*) '      FREQ,LR: ',
+     &            BLRFR(IFREQ),PROP(ICOOR,IDIP(IAXIS),IFREQ)
                END DO
+               CALL FLSHFO(LUPRI)
             END IF
 
-         END DO
+         END IF
+
       END DO
+
 
       RETURN
       END

@@ -129,8 +129,8 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
-     &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V','.ONLYMO',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
+     &            '.THRVEC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -233,6 +233,7 @@ C
       NOEONL   = .FALSE.
       THRLEQ   = 1.0D-05
       THRENR   = 1.0D-08
+      THRVEC   = 1.0D9
       THRLDPHF = 1.0D-13
 CWMK  NFIELD = 0
       NSIMLE = 0
@@ -792,6 +793,10 @@ C                 '.INT4V ' use VVVV integrals in CC3 left transformation
                   ONLYMO = .TRUE.
                GO TO 1000
  106           CONTINUE
+C                 '.THRVEC' convergence threshold for norm of vector function
+                  READ(LUCMD,*) RDTHVC
+                  IF (RDTHVC .GT. 0.0D0) THRVEC = RDTHVC
+               GO TO 1000
  107           CONTINUE
  108           CONTINUE
  109           CONTINUE
@@ -1645,7 +1650,7 @@ c/* deck cc_lrsinp */
        SUBROUTINE CC_LRSINP(WORD,MSYM)
 C---------------------------------------------------------------------*
 C
-C    Purpose: Read input for CC excitec state calculations.
+C    Purpose: Read input for CC excited state calculations.
 C
 C    if (WORD .eq '*CCLRSD ') read & process input and set defaults,
 C    else set only defaults
@@ -1670,7 +1675,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_LRSINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 7)
+      PARAMETER (NTABLE = 20)
 
 * variables:
       LOGICAL SET
@@ -1680,11 +1685,13 @@ C=====================================================================*
       CHARACTER LABELA*(8),LABELB*(8),LABHELP*70
       CHARACTER TABLE(NTABLE)*(8)
 
-      INTEGER IJUMP,IDIP(3)
+      INTEGER IJUMP,IDIP(3),IANG(3),IQUA(6)
 * data:
       DATA SET /.FALSE./
-      DATA TABLE /'.DIPOLE','.XXXXXX','.XXXXXX','.NO2N+1','.OPERAT',
-     *            '.SELEXC','.DIPVEL'/
+      DATA TABLE /'.DIPOLE','.ECDLEN','.DIPLEN','.NO2N+1','.OPERAT',
+     *            '.SELEXC','.DIPVEL','.DIPMIX','.ECDVEL','.OECDLE',
+     *            '.OECDVE','.OLD_LR','.BOTHLR','.NEW_LR','.ECD   ',
+     *            '.OECD  ','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 
 *--------------------------------------------------------------------*
 * begin:
@@ -1698,11 +1705,18 @@ C=====================================================================*
 C
       OSCSTR = .FALSE.
       VELSTR = .FALSE.
+      MIXSTR = .FALSE.
+      ROTLEN = .FALSE.
+      ROTVEL = .FALSE.
+      RTNLEN = .FALSE.
+      RTNVEL = .FALSE.
       LRS2N1 = .TRUE. 
       SELLRS = .FALSE.
+      OLDLRS = .FALSE.
+      BOTHLRS = .FALSE.
 C
-      NSELRS   = 0
-      NLRSOP   = 0
+      NSELRS = 0
+      NLRSOP = 0
 C
 C     Other initializations
 C
@@ -1733,7 +1747,8 @@ c         table look up:
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
+     &           IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_LRRINP.')
 
 C
@@ -1742,6 +1757,7 @@ C           Calculate dipole oscillator strengths.
 C-------------------------------------------------
 C
 1           CONTINUE
+              IF (OSCSTR) GO TO 100
               OSCSTR = .TRUE.
               IF (NLRSOP+9 .GT. MXLRSO) THEN
                 WRITE(LUPRI,'(2(/,A,I5),/)')
@@ -1762,18 +1778,40 @@ C
               NLRSOP = NLRSOP + 9
             GO TO 100
 C
-C-----------------------------------
-C           
-C-----------------------------------
+C--------------------------------------------------------------
+C           .ECDLEN: calculate length gauge rotatory strengths.
+C--------------------------------------------------------------
 C
 2           CONTINUE
+              IF (ROTLEN) GO TO 100
+              ROTLEN = .TRUE.
+              IF (NLRSOP+3 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+3,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+              END IF
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
+              DO IDXAB=1,3
+                IDX = NLRSOP + IDXAB
+                IALRSOP(IDX) = IDIP(IDXAB)
+                IBLRSOP(IDX) = IANG(IDXAB)
+              END DO
+              NLRSOP = NLRSOP + 3
             GO TO 100
 C
-C-----------------------------------
-C           
-C-----------------------------------
+C-------------------------------------
+C           .DIPLEN: alias for .DIPOLE
+C-------------------------------------
 C
 3           CONTINUE
+              IF (OSCSTR) GO TO 100
+              GO TO 1
             GO TO 100
 C
 C--------------------------------------------------------------------------
@@ -1834,11 +1872,12 @@ C
               BACKSPACE(LUCMD)
             GO TO 100
 C
-C-------------------------------------------------
-C           Calculate dipole oscillator strengths.
-C-------------------------------------------------
+C---------------------------------------------------------
+C           Calculate velocity gauge oscillator strengths.
+C---------------------------------------------------------
 C
 7           CONTINUE
+              IF (VELSTR) GO TO 100
               VELSTR = .TRUE.
               IF (NLRSOP+9 .GT. MXLRSO) THEN
                 WRITE(LUPRI,'(2(/,A,I5),/)')
@@ -1857,6 +1896,324 @@ C
                  END DO
               END DO
               NLRSOP = NLRSOP + 9
+            GO TO 100
+C
+C---------------------------------------------------------------
+C           .DIPMIX: calculate mixed gauge oscillator strengths.
+C---------------------------------------------------------------
+C
+8           CONTINUE
+              IF (MIXSTR) GO TO 100
+              MIXSTR = .TRUE.
+              IF (NLRSOP+9 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+9,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TO MANY OPERATOR DOUBLES IN CCLRSD.')
+              END IF
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IANG(1) = INDPRPCC('XDIPVEL ')
+              IANG(2) = INDPRPCC('YDIPVEL ')
+              IANG(3) = INDPRPCC('ZDIPVEL ')
+              DO IDXA=1,3
+                 DO IDXB=1,3
+                   IDX = NLRSOP + (IDXA-1)*3+IDXB
+                   IALRSOP(IDX) = IDIP(IDXA)
+                   IBLRSOP(IDX) = IANG(IDXB)
+                 END DO
+              END DO
+              NLRSOP = NLRSOP + 9
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .ECDVEL: calculate velocity gauge rotatory strengths.
+C----------------------------------------------------------------
+C
+9           CONTINUE
+              IF (ROTVEL) GO TO 100
+              ROTVEL = .TRUE.
+              IF (NLRSOP+3 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+3,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+              END IF
+              IDIP(1) = INDPRPCC('XDIPVEL ')
+              IDIP(2) = INDPRPCC('YDIPVEL ')
+              IDIP(3) = INDPRPCC('ZDIPVEL ')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
+              DO IDXAB=1,3
+                IDX = NLRSOP + IDXAB
+                IALRSOP(IDX) = IDIP(IDXAB)
+                IBLRSOP(IDX) = IANG(IDXAB)
+              END DO
+              NLRSOP = NLRSOP + 3
+            GO TO 100
+C
+C---------------------------------------------------------------------
+C           .OECDLE: calculate length gauge rotatory strength tensors.
+C---------------------------------------------------------------------
+C
+10          CONTINUE
+              IF (RTNLEN) GO TO 100
+              RTNLEN = .TRUE.
+              ROTLEN = .TRUE.
+              IF (NLRSOP+27 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+27,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+              END IF
+              IDIP(1) = INDPRPCC('XDIPLEN ')
+              IDIP(2) = INDPRPCC('YDIPLEN ')
+              IDIP(3) = INDPRPCC('ZDIPLEN ')
+              IQUA(1) = INDPRPCC('XXSECMOM')
+              IQUA(2) = INDPRPCC('XYSECMOM')
+              IQUA(3) = INDPRPCC('XZSECMOM')
+              IQUA(4) = INDPRPCC('YYSECMOM')
+              IQUA(5) = INDPRPCC('YZSECMOM')
+              IQUA(6) = INDPRPCC('ZZSECMOM')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
+              DO IDXA=1,3
+                 DO IDXB=1,6
+                   IDX = NLRSOP + (IDXA-1)*6+IDXB
+                   IALRSOP(IDX) = IDIP(IDXA)
+                   IBLRSOP(IDX) = IQUA(IDXB)
+                 END DO
+              END DO
+              NLRSOP = NLRSOP + 18
+              DO IDXA=1,3
+                 DO IDXB=1,3
+                   IDX = NLRSOP + (IDXA-1)*3+IDXB
+                   IALRSOP(IDX) = IDIP(IDXA)
+                   IBLRSOP(IDX) = IANG(IDXB)
+                 END DO
+              END DO
+              NLRSOP = NLRSOP + 9
+            GO TO 100
+C
+C-----------------------------------------------------------------------
+C           .OECDVE: calculate velocity gauge rotatory strength tensors.
+C-----------------------------------------------------------------------
+C
+11          CONTINUE
+              IF (RTNVEL) GO TO 100
+              RTNVEL = .TRUE.
+              ROTVEL = .TRUE.
+              IF (NLRSOP+27 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+27,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+              END IF
+              IDIP(1) = INDPRPCC('XDIPVEL ')
+              IDIP(2) = INDPRPCC('YDIPVEL ')
+              IDIP(3) = INDPRPCC('ZDIPVEL ')
+              IQUA(1) = INDPRPCC('XXROTSTR')
+              IQUA(2) = INDPRPCC('XYROTSTR')
+              IQUA(3) = INDPRPCC('XZROTSTR')
+              IQUA(4) = INDPRPCC('YYROTSTR')
+              IQUA(5) = INDPRPCC('YZROTSTR')
+              IQUA(6) = INDPRPCC('ZZROTSTR')
+              IANG(1) = INDPRPCC('XANGMOM ')
+              IANG(2) = INDPRPCC('YANGMOM ')
+              IANG(3) = INDPRPCC('ZANGMOM ')
+              DO IDXA=1,3
+                 DO IDXB=1,6
+                   IDX = NLRSOP + (IDXA-1)*6+IDXB
+                   IALRSOP(IDX) = IDIP(IDXA)
+                   IBLRSOP(IDX) = IQUA(IDXB)
+                 END DO
+              END DO
+              NLRSOP = NLRSOP + 18
+              DO IDXA=1,3
+                 DO IDXB=1,3
+                   IDX = NLRSOP + (IDXA-1)*3+IDXB
+                   IALRSOP(IDX) = IDIP(IDXA)
+                   IBLRSOP(IDX) = IANG(IDXB)
+                 END DO
+              END DO
+              NLRSOP = NLRSOP + 9
+            GO TO 100
+C
+C-----------------------------------------------------
+C           .OLD_LR: use "old" LR residue program.
+C           - "new" code differs only in the number
+C             of evaluations of the transition moments
+C             and, in particular, eta and ksi vectors.
+C-----------------------------------------------------
+C
+12          CONTINUE
+               OLDLRS = .TRUE.
+            GO TO 100
+C
+C--------------------------------------------------------------------
+C           .BOTHLR: use both the OLDLR and new codes (debug option).
+C--------------------------------------------------------------------
+C
+13          CONTINUE
+               BOTHLRS = .TRUE.
+            GO TO 100
+C
+C-----------------------------------------------------
+C           .NEW_LR: use "new" LR residue program.
+C           - "new" code differs only in the number
+C             of evaluations of the transition moments
+C             and, in particular, eta and ksi vectors.
+C-----------------------------------------------------
+C
+14          CONTINUE
+               OLDLRS = .FALSE.
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .ECD   : calculate length and velocity gauge rotatory
+C                    strengths.
+C----------------------------------------------------------------
+C
+15          CONTINUE
+              IF (.NOT.ROTLEN) THEN
+                 ROTLEN = .TRUE.
+                 IF (NLRSOP+3 .GT. MXLRSO) THEN
+                   WRITE(LUPRI,'(2(/,A,I5),/)')
+     &             ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+3,
+     &             ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                   CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+                 END IF
+                 IDIP(1) = INDPRPCC('XDIPLEN ')
+                 IDIP(2) = INDPRPCC('YDIPLEN ')
+                 IDIP(3) = INDPRPCC('ZDIPLEN ')
+                 IANG(1) = INDPRPCC('XANGMOM ')
+                 IANG(2) = INDPRPCC('YANGMOM ')
+                 IANG(3) = INDPRPCC('ZANGMOM ')
+                 DO IDXAB=1,3
+                   IDX = NLRSOP + IDXAB
+                   IALRSOP(IDX) = IDIP(IDXAB)
+                   IBLRSOP(IDX) = IANG(IDXAB)
+                 END DO
+                 NLRSOP = NLRSOP + 3
+              END IF
+              IF (.NOT.ROTVEL) THEN
+                 ROTVEL = .TRUE.
+                 IF (NLRSOP+3 .GT. MXLRSO) THEN
+                   WRITE(LUPRI,'(2(/,A,I5),/)')
+     &             ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+3,
+     &             ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                   CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+                 END IF
+                 IDIP(1) = INDPRPCC('XDIPVEL ')
+                 IDIP(2) = INDPRPCC('YDIPVEL ')
+                 IDIP(3) = INDPRPCC('ZDIPVEL ')
+                 IANG(1) = INDPRPCC('XANGMOM ')
+                 IANG(2) = INDPRPCC('YANGMOM ')
+                 IANG(3) = INDPRPCC('ZANGMOM ')
+                 DO IDXAB=1,3
+                   IDX = NLRSOP + IDXAB
+                   IALRSOP(IDX) = IDIP(IDXAB)
+                   IBLRSOP(IDX) = IANG(IDXAB)
+                 END DO
+                 NLRSOP = NLRSOP + 3
+              END IF
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .OECD  : calculate length and velocity gauge rotatory
+C                    strength tensors.
+C----------------------------------------------------------------
+C
+16          CONTINUE
+               IF (.NOT.RTNLEN) THEN
+                  RTNLEN = .TRUE.
+                  ROTLEN = .TRUE.
+                  IF (NLRSOP+27 .GT. MXLRSO) THEN
+                    WRITE(LUPRI,'(2(/,A,I5),/)')
+     &              ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+27,
+     &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                    CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+                  END IF
+                  IDIP(1) = INDPRPCC('XDIPLEN ')
+                  IDIP(2) = INDPRPCC('YDIPLEN ')
+                  IDIP(3) = INDPRPCC('ZDIPLEN ')
+                  IQUA(1) = INDPRPCC('XXSECMOM')
+                  IQUA(2) = INDPRPCC('XYSECMOM')
+                  IQUA(3) = INDPRPCC('XZSECMOM')
+                  IQUA(4) = INDPRPCC('YYSECMOM')
+                  IQUA(5) = INDPRPCC('YZSECMOM')
+                  IQUA(6) = INDPRPCC('ZZSECMOM')
+                  IANG(1) = INDPRPCC('XANGMOM ')
+                  IANG(2) = INDPRPCC('YANGMOM ')
+                  IANG(3) = INDPRPCC('ZANGMOM ')
+                  DO IDXA=1,3
+                     DO IDXB=1,6
+                       IDX = NLRSOP + (IDXA-1)*6+IDXB
+                       IALRSOP(IDX) = IDIP(IDXA)
+                       IBLRSOP(IDX) = IQUA(IDXB)
+                     END DO
+                  END DO
+                  NLRSOP = NLRSOP + 18
+                  DO IDXA=1,3
+                     DO IDXB=1,3
+                       IDX = NLRSOP + (IDXA-1)*3+IDXB
+                       IALRSOP(IDX) = IDIP(IDXA)
+                       IBLRSOP(IDX) = IANG(IDXB)
+                     END DO
+                  END DO
+                  NLRSOP = NLRSOP + 9
+               END IF
+               IF (.NOT.RTNVEL) THEN
+                  RTNVEL = .TRUE.
+                  ROTVEL = .TRUE.
+                  IF (NLRSOP+27 .GT. MXLRSO) THEN
+                    WRITE(LUPRI,'(2(/,A,I5),/)')
+     &              ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLRSOP+27,
+     &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                    CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLRSD.')
+                  END IF
+                  IDIP(1) = INDPRPCC('XDIPVEL ')
+                  IDIP(2) = INDPRPCC('YDIPVEL ')
+                  IDIP(3) = INDPRPCC('ZDIPVEL ')
+                  IQUA(1) = INDPRPCC('XXROTSTR')
+                  IQUA(2) = INDPRPCC('XYROTSTR')
+                  IQUA(3) = INDPRPCC('XZROTSTR')
+                  IQUA(4) = INDPRPCC('YYROTSTR')
+                  IQUA(5) = INDPRPCC('YZROTSTR')
+                  IQUA(6) = INDPRPCC('ZZROTSTR')
+                  IANG(1) = INDPRPCC('XANGMOM ')
+                  IANG(2) = INDPRPCC('YANGMOM ')
+                  IANG(3) = INDPRPCC('ZANGMOM ')
+                  DO IDXA=1,3
+                     DO IDXB=1,6
+                       IDX = NLRSOP + (IDXA-1)*6+IDXB
+                       IALRSOP(IDX) = IDIP(IDXA)
+                       IBLRSOP(IDX) = IQUA(IDXB)
+                     END DO
+                  END DO
+                  NLRSOP = NLRSOP + 18
+                  DO IDXA=1,3
+                     DO IDXB=1,3
+                       IDX = NLRSOP + (IDXA-1)*3+IDXB
+                       IALRSOP(IDX) = IDIP(IDXA)
+                       IBLRSOP(IDX) = IANG(IDXB)
+                     END DO
+                  END DO
+                  NLRSOP = NLRSOP + 9
+               END IF
+            GO TO 100
+C
+C------------------------------------
+C           .XXXXXX: unused keywords.
+C------------------------------------
+C
+17          CONTINUE
+18          CONTINUE
+19          CONTINUE
+20          CONTINUE
             GO TO 100
 
           ELSE
@@ -1947,7 +2304,7 @@ C=====================================================================*
       DATA SETXSTOPA /.FALSE./
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
-     *             '.SELSTA','.STATES','.TRANSI','.XXXXXX','.XXXXXX'/
+     *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2270,11 +2627,38 @@ C           ------------
               END IF
             GO TO 100
 
-C           --------------
-C           .XXXXXX unused 
-C           --------------
+C           ------------------------------------------------------------
+C           .SECMOM: calculate complete length gauge electric quadrupole
+C                    transition vectors and if possible rotatory
+C                    strength tensors.
+C           ------------------------------------------------------------
 14          CONTINUE
+            IF (GSTOPA) THEN
+              CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'SECMOM','CC_OPAINP')
+            ELSE IF (XSTOPA) THEN
+              CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'SECMOM','CC_OPAINP')
+            ELSE IF (GSTTPA) THEN
+              WRITE(LUPRI,*) 'No .SECMOM keyword in section ',WORD
+              WRITE(LUPRI,*) 'input will be ignored...'
+            END IF
+            GO TO 100
+
+
+C           ------------------------------------------------------
+C           .ROTSTR: calculate complete velocity gauge electric
+C                    quadrupole transition vectors and if possible
+C                    rotatory strength tensors.
+C           ------------------------------------------------------
 15          CONTINUE
+            IF (GSTOPA) THEN
+              CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'ROTSTR','CC_OPAINP')
+            ELSE IF (XSTOPA) THEN
+              CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'ROTSTR','CC_OPAINP')
+            ELSE IF (GSTTPA) THEN
+              WRITE(LUPRI,*) 'No .ROTSTR keyword in section ',WORD
+              WRITE(LUPRI,*) 'input will be ignored...'
+            END IF
+            GO TO 100
 
 C
           ELSE
@@ -2305,10 +2689,11 @@ C
          WRITE (LUPRI,*) ' .HALFFR is used to obtain frequences'
       END IF
 
-*---------------------------------------------------------------------*
+*----------------------------------------------------------------------*
 * check, if any operator labels specified:
-* if not, use default: dipole length and velocity and angular momentum
-*---------------------------------------------------------------------*
+* if not, use default: dipole length and velocity, angular momentum, and
+*                      electric dipole length and velocity.
+*----------------------------------------------------------------------*
       IF (GSTOPA .AND. NLRSOP.EQ.0) THEN
 
         IF (NLRSOP+3 .LE. MXLRSO) 
@@ -2317,6 +2702,10 @@ C
      &    CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'DIPVEL','CC_OPAINP')
         IF (NLRSOP+3 .LE. MXLRSO) 
      &    CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'ANGMOM','CC_OPAINP')
+        IF (NLRSOP+6 .LE. MXLRSO) 
+     &    CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'SECMOM','CC_OPAINP')
+        IF (NLRSOP+6 .LE. MXLRSO) 
+     &    CALL CC_PUT1OP(ILRSOP,NLRSOP,MXLRSO,'ROTSTR','CC_OPAINP')
 
       ELSE IF (XSTOPA .AND. NQR2OP.EQ.0) THEN
 
@@ -2326,6 +2715,10 @@ C
      &    CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'DIPVEL','CC_OPAINP')
         IF (NQR2OP+3 .LE. MXQR2O) 
      &    CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'ANGMOM','CC_OPAINP')
+        IF (NQR2OP+6 .LE. MXQR2O) 
+     &    CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'SECMOM','CC_OPAINP')
+        IF (NQR2OP+6 .LE. MXQR2O) 
+     &    CALL CC_PUT1OP(IQR2OP,NQR2OP,MXQR2O,'ROTSTR','CC_OPAINP')
 
 
       ELSE IF (GSTTPA .AND. NSMOPER.EQ.0) THEN
@@ -3780,7 +4173,7 @@ C
       ORGANL = .FALSE.
       ASYMSD = .FALSE.
       LRELAX = .FALSE.
-      IDIGRA = 0
+      DIPGRA = .FALSE.
       ICHANG = 0
 
       OLDLR  = .FALSE.
@@ -3833,9 +4226,9 @@ C
                LRELAX = .FALSE.
             GO TO 100
 C
-C-----------------------
-C           .FREQUE
-C-----------------------
+C---------------------
+C           .FREQUEncy
+C---------------------
 C
 3           CONTINUE
               READ (LUCMD,*) NRDFR
@@ -3853,7 +4246,7 @@ C
             GO TO 100
 C
 C-----------------------------------
-C           Dipole polarizabilities.
+C           DIPole POLarizabilities.
 C-----------------------------------
 C
 4           CONTINUE
@@ -4028,9 +4421,9 @@ C           .DIPGRA: Dipole gradients and Cioslowski charges.
 C           -------------------------------------------------
 C
 13          CONTINUE
+               DIPGRA = .TRUE.
                NDIP   = 3
                NCOOR  = 3*NUCDEP
-               IDIGRA = NLROP + 1
                NTOT   = NDIP*NCOOR
                IF (NLROP+NTOT .GT. MXLROP) THEN
                   WRITE(LUPRI,'(2(/A,I5),/)')
@@ -4065,8 +4458,8 @@ C
                      IDX = NLROP + NCOOR*(IDXB - 1) + IDXA
                      IALROP(IDX) = IGRA(IDXA)
                      IBLROP(IDX) = IDIP(IDXB)
-                     LALORX(IDX) = .TRUE.  ! Force orbital relaxation for dipole
-                     LBLORX(IDX) = .TRUE.  ! Force orbital relaxation for gradient
+                     LALORX(IDX) = .TRUE.  ! Force orb. relax. for grad.
+                     LBLORX(IDX) = .TRUE.  ! Force orb. relax. for dip.
                   ENDDO
                ENDDO
                NLROP = NLROP + NTOT
@@ -4093,12 +4486,32 @@ C
                  CALL CC_LRINPREQ(LABDPV,LABANG,3,3,.TRUE.,LRELAX)
               ENDIF
  
-C------------------------------------------------
-C           '.OR    ': Synonymous with '.OR LEN'.
-C------------------------------------------------
+C----------------------------------------------------
+C           '.OR    ': same as '.OR MVE' + '.OR LEN'.
+C----------------------------------------------------
 C
 16          CONTINUE
-              GO TO 14
+               IF (.NOT. ORMVE) THEN
+                  ORMVE = .TRUE.
+                  CALL CC_LRINPREQ(LABDPV,LABANG,3,3,.TRUE.,LRELAX)
+                  IF (.NOT. LOCSTAT) THEN
+                     IF (NBLRFR .GE. MBLRFR) THEN
+                        WRITE(LUPRI,'(2(/A,I5),/)')
+     &             ' NUMBER OF FREQUENCIES SPECIFIED         : ',NBLRFR,
+     &             ' IS ALREADY EQUAL TO THE MAXIMUM ALLOWED : ',MBLRFR
+                        CALL QUIT('Request for .STATIC under .OR MVE '
+     &                            //'failed in CCLR.')
+                     ELSE
+                        LOCSTAT = .TRUE.
+                        NBLRFR  = NBLRFR + 1
+                        BLRFR(NBLRFR) = 0.0D0
+                     END IF
+                  END IF
+               END IF
+               IF (.NOT. ORLEN) THEN
+                  ORLEN =.TRUE.
+                  CALL CC_LRINPREQ(LABDIP,LABANG,3,3,.TRUE.,LRELAX)
+               ENDIF
             GO TO 100
 C
 C-------------------------------------------------------------------
@@ -6353,6 +6766,30 @@ C
           INDOP(NOP+1) = INDPRPCC('XANGMOM ')
           INDOP(NOP+2) = INDPRPCC('YANGMOM ')
           INDOP(NOP+3) = INDPRPCC('ZANGMOM ')
+        END IF
+      ELSE IF (OPERATOR(1:6).EQ.'SECMOM') THEN
+        NEWOP = 6
+        IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          INDOP(NOP+1) = INDPRPCC('XXSECMOM')
+          INDOP(NOP+2) = INDPRPCC('XYSECMOM')
+          INDOP(NOP+3) = INDPRPCC('XZSECMOM')
+          INDOP(NOP+4) = INDPRPCC('YYSECMOM')
+          INDOP(NOP+5) = INDPRPCC('YZSECMOM')
+          INDOP(NOP+6) = INDPRPCC('ZZSECMOM')
+        END IF
+      ELSE IF (OPERATOR(1:6).EQ.'ROTSTR') THEN
+        NEWOP = 6
+        IF ( (NOP+NEWOP) .GT. MAXOP ) THEN
+          FAILED = .TRUE.
+        ELSE
+          INDOP(NOP+1) = INDPRPCC('XXROTSTR')
+          INDOP(NOP+2) = INDPRPCC('XYROTSTR')
+          INDOP(NOP+3) = INDPRPCC('XZROTSTR')
+          INDOP(NOP+4) = INDPRPCC('YYROTSTR')
+          INDOP(NOP+5) = INDPRPCC('YZROTSTR')
+          INDOP(NOP+6) = INDPRPCC('ZZROTSTR')
         END IF
       ELSE
         CALL QUIT('Unkown OPERATOR in CC_PUT1OP')

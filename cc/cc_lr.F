@@ -1403,6 +1403,9 @@ C
 C     Modified version for general linear response properties
 C     Ove Christiansen November 1996.
 C
+C     Symmetrization (C+/-w operator)
+C     Thomas Bondo Pedersen, January 2005.
+C
 C-----------------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -1423,16 +1426,26 @@ C
 #include <cclres.h>
 #include <ccroper.h>
 C
-      LOGICAL LCALC,LDIP
+      LOGICAL LCALC
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*10,MODELP*10
       CHARACTER LABELA*8,LABELB*8
+C
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 C
 #include <leinf.h>
 C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <symmet.h>
+#include <codata.h>
+C
+      PARAMETER (RAUSI = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
+      PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
+C
+      TIMTOT = SECOND()
+      NTOT   = 0
 C
 C------------------------------------
 C     Header of Property calculation.
@@ -1507,14 +1520,23 @@ C
 C
       KOSCS    = 1
       KOSCSF   = KOSCS  + NALRPRP
-      KEND1    = KOSCSF + NBLRPRP
+      KSYMB    = KOSCSF + NBLRPRP
+      KSYMA    = KSYMB  + NBLRPRP
+      KEND1    = KSYMA  + NALRPRP
       LEND1    = LWORK  - KEND1
+C
+      IF (LEND1 .LT. 0) THEN
+         CALL QUIT('Insufficient memory in CC_LRESID [1]')
+      END IF
+C
       CALL DZERO(WORK(KOSCS),NALRPRP)
       CALL DZERO(WORK(KOSCSF),NBLRPRP)
+      CALL DZERO(WORK(KSYMB),NBLRPRP)
+      CALL DZERO(WORK(KSYMA),NALRPRP)
 C
-C----------------------------------------
-C     Calculate linear response residues.
-C----------------------------------------
+C----------------------------------------------
+C     Loop over states and operators requested.
+C----------------------------------------------
 C
       DO 1000 IRSD  = 1, NXLRSST
         ISTATE = ILRSST(IRSD)
@@ -1536,36 +1558,159 @@ C
             LABELA = LBLOPR(IALRSOP(IOPER))
             LABELB = LBLOPR(IBLRSOP(IOPER))
 C
-C------------------------------
-C           Calculate residues.
-C------------------------------
+C----------------------------------------
+C           Calculate transition moments.
+C----------------------------------------
 C
-            KOSCSOF  = NLRSOP*(IRSD-1) + IOPER + KOSCS - 1
-            KOSCSOF2 = NLRSOP*(IRSD-1) + IOPER + KOSCSF - 1
+            KRES1 = KOSCS  + NLRSOP*(IRSD-1) + IOPER - 1
+            KRES2 = KOSCSF + NLRSOP*(IRSD-1) + IOPER - 1
             CALL CC_LRSD(LABELA,ISYMA,
      *                   LABELB,ISYMB,
-     *                   ISTATE,WORK(KOSCSOF),WORK(KOSCSOF2),
+     *                   ISTATE,WORK(KRES1),WORK(KRES2),
      *                   WORK(KEND1),LEND1)
+C
+            KRES3 = KSYMB + NLRSOP*(IRSD-1) + IOPER - 1
+            KRES4 = KSYMA + NLRSOP*(IRSD-1) + IOPER - 1
+            IF (LABELA .EQ. LABELB) THEN
+               WORK(KRES3) = WORK(KRES1)
+               WORK(KRES4) = WORK(KRES2)
+            ELSE
+               CALL CC_LRSD(LABELB,ISYMB,
+     *                      LABELA,ISYMA,
+     *                      ISTATE,WORK(KRES3),WORK(KRES4),
+     *                      WORK(KEND1),LEND1)
+            END IF
+            IF (LOCDBG) THEN
+               WRITE(LUPRI,*) ' Residue symmetrization:'
+               WRITE(LUPRI,*) '   Exc. state: ',ISTSY,' of sym. ',
+     &                            ISYME,':'
+               WRITE(LUPRI,*) '   T(0f,',LABELA,') = ',WORK(KRES1)
+               WRITE(LUPRI,*) '   T(f0,',LABELB,') = ',WORK(KRES2)
+               WRITE(LUPRI,*) '   T(0f,',LABELB,') = ',WORK(KRES3)
+               WRITE(LUPRI,*) '   T(f0,',LABELA,') = ',WORK(KRES4)
+               CALL FLSHFO(LUPRI)
+            END IF
 C
           ENDIF
  2000   CONTINUE
  1000 CONTINUE
 C
-C-----------------------------------------------
+C-----------------------------------------
 C     Output Linear response properties.
-C     IF DIPOSCS put into polarizability tensor.
-C-----------------------------------------------
+C     Save requested transition strengths.
+C-----------------------------------------
+C
+      IF (OSCSTR) THEN
+         LOSCIL = NEXCI*3*3
+      ELSE
+         LOSCIL = 0
+      END IF
+C
+      IF (VELSTR) THEN
+         LOSCIV = NEXCI*3*3
+      ELSE
+         LOSCIV = 0
+      END IF
+C
+      IF (MIXSTR) THEN
+         LOSCIM = NEXCI*3*3
+      ELSE
+         LOSCIM = 0
+      END IF
+C
+      IF (ROTLEN) THEN
+         LROTL = NEXCI*3
+         LCHKL = NEXCI
+      ELSE
+         LROTL = 0
+         LCHKL = 0
+      ENDIF
+C
+      IF (ROTVEL) THEN
+         LROTV = NEXCI*3
+         LCHKV = NEXCI
+      ELSE
+         LROTV = 0
+         LCHKV = 0
+      ENDIF
+C
+      IF (RTNLEN) THEN
+         LRQL = NEXCI*3*9
+         LRML = NEXCI*3*3
+         NWRL = 0
+      ELSE
+         LRQL = 0
+         LRML = 0
+      ENDIF
+C
+      IF (RTNVEL) THEN
+         LRQV = NEXCI*3*9
+         LRMV = NEXCI*3*3
+         NWRV = 0
+      ELSE
+         LRQV = 0
+         LRMV = 0
+      ENDIF
 C
       KOSCS2 = KEND1
-      KTRS   = KOSCS2 + NEXCI*3*3
-      KVELST = KTRS   + NEXCI*3*3
-      KVELST2= KVELST + NEXCI*3*3
-      KEND2  = KVELST2+ NEXCI*3*3
-      LEND2  = LWORK  - KEND2
-      CALL DZERO(WORK(KOSCS2),NEXCI*3*3)
-      CALL DZERO(WORK(KTRS),NEXCI*3*3)
-      CALL DZERO(WORK(KVELST),NEXCI*3*3)
-      CALL DZERO(WORK(KVELST2),NEXCI*3*3)
+      KTRS   = KOSCS2  + LOSCIL
+      KVELST = KTRS    + LOSCIL
+      KVELST2= KVELST  + LOSCIV
+      KMIXST = KVELST2 + LOSCIV
+      KMIXST2= KMIXST  + LOSCIM
+      KROTL  = KMIXST2 + LOSCIM
+      KROTV  = KROTL   + LROTL
+      KRQL   = KROTV   + LROTV
+      KRML   = KRQL    + LRQL
+      KRQL2  = KRML    + LRML
+      KRML2  = KRQL2   + LRML
+      KRQV   = KRML2   + LRML
+      KRMV   = KRQV    + LRQV
+      KRQV2  = KRMV    + LRMV
+      KRMV2  = KRQV2   + LRMV
+      KCHKL  = KRMV2   + LRMV
+      KCHKV  = KCHKL   + LCHKL
+      KEND2  = KCHKV   + LCHKV
+      LEND2  = LWORK   - KEND2
+C
+      IF (LEND2 .LT. 0) THEN
+         CALL QUIT('Insufficient memory in CC_LRESID [2]')
+      END IF
+C
+      IF (OSCSTR) THEN
+         CALL DZERO(WORK(KOSCS2),LOSCIL)
+         CALL DZERO(WORK(KTRS),LOSCIL)
+      END IF
+      IF (VELSTR) THEN
+         CALL DZERO(WORK(KVELST),LOSCIV)
+         CALL DZERO(WORK(KVELST2),LOSCIV)
+      END IF
+      IF (MIXSTR) THEN
+         CALL DZERO(WORK(KMIXST),LOSCIM)
+         CALL DZERO(WORK(KMIXST2),LOSCIM)
+      END IF
+      IF (ROTLEN) THEN
+         CALL DZERO(WORK(KROTL),LROTL)
+         CALL DZERO(WORK(KROTL),LROTL)
+         CALL DZERO(WORK(KCHKL),LCHKL)
+      END IF
+      IF (ROTVEL) THEN
+         CALL DZERO(WORK(KROTV),LROTV)
+         CALL DZERO(WORK(KROTV),LROTV)
+         CALL DZERO(WORK(KCHKV),LCHKV)
+      END IF
+      IF (RTNLEN) THEN
+         CALL DZERO(WORK(KRQL),LRQL)
+         CALL DZERO(WORK(KRML),LRML)
+         CALL DZERO(WORK(KRQL2),LRML)
+         CALL DZERO(WORK(KRML2),LRML)
+      END IF
+      IF (RTNVEL) THEN
+         CALL DZERO(WORK(KRQV),LRQV)
+         CALL DZERO(WORK(KRMV),LRMV)
+         CALL DZERO(WORK(KRQV2),LRMV)
+         CALL DZERO(WORK(KRMV2),LRMV)
+      END IF
 C
       WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
      *  'Right transition moments in atomic units:'
@@ -1612,7 +1757,14 @@ C
           ENDIF
         END DO
       END DO
-
+C
+      CALL FLSHFO(LUPRI)
+C
+C----------------------------------------------------------------
+C     Calculate linear response residues from transition moments,
+C     incl. symmetrization.
+C----------------------------------------------------------------
+C
       WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
      *  'linear response residue property in atomic units:'
 C
@@ -1631,9 +1783,27 @@ C
           EIGV   = EIGVAL(ISTATE)
           ISYMEA = MULD2H(ISYME,ISYMA)
           IF ((ISYME.EQ.ISYMA).AND.(ISYME.EQ.ISYMB)) THEN
-            K1     = NLRSOP*(IRSD-1) + IOPER + KOSCS - 1
-            K2     = NLRSOP*(IRSD-1) + IOPER + KOSCSF - 1
-            RESIDUE = WORK(K1)*WORK(K2)
+            NTOT = NTOT + 1
+            K1 = NLRSOP*(IRSD-1) + IOPER + KOSCS - 1
+            K2 = NLRSOP*(IRSD-1) + IOPER + KOSCSF - 1
+            K3 = NLRSOP*(IRSD-1) + IOPER + KSYMB  - 1
+            K4 = NLRSOP*(IRSD-1) + IOPER + KSYMA  - 1
+            IHERMA = ISYMAT(IALRSOP(IOPER))
+            IHERMB = ISYMAT(IBLRSOP(IOPER))
+            ISASB  = IHERMA*IHERMB
+            IF (ISASB .EQ. 0) THEN
+               WRITE(LUPRI,*) ' WARNING: operators ',LABELA,LABELB,
+     &                        ' have undefined hermiticities: ',
+     &                          IHERMA,IHERMB
+               WRITE(LUPRI,*) ' Residue not appropriately symmetrized..'
+               CALL FLSHFO(LUPRI)
+               SIGN = 1.0D0
+            ELSE
+               SIGN = DBLE(ISASB)
+            ENDIF
+            RESIDAB = WORK(K1)*WORK(K2)
+            RESIDBA = WORK(K3)*WORK(K4)
+            RESIDUE = 0.5D0*(RESIDAB + SIGN*RESIDBA)
             IF (RESIDUE.GE.0.0D0) THEN
               SQRRES=SQRT(RESIDUE)
             ELSE
@@ -1642,34 +1812,176 @@ C
             WRITE(LUPRI,'(1X,A6,A8,A1,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
      *      'RES{<<',LABELA,',',LABELB,'>>(',EIGV,')} =',
      *      RESIDUE,' ( ',SQRRES,')'
-            IF (OSCSTR) THEN
-              IADR1 = 0
-              IADR2 = 0
-              IF (LABELA(1:5).EQ.'XDIPL') IADR1 = 1
-              IF (LABELA(1:5).EQ.'YDIPL') IADR1 = 2
-              IF (LABELA(1:5).EQ.'ZDIPL') IADR1 = 3
-              IF (LABELB(1:5).EQ.'XDIPL') IADR2 = 1
-              IF (LABELB(1:5).EQ.'YDIPL') IADR2 = 2
-              IF (LABELB(1:5).EQ.'ZDIPL') IADR2 = 3
-              IF ((IADR1+IADR2).GE.2) THEN
-                IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KOSCS2-1
-                WORK(IOSCS2) = RESIDUE
-              ENDIF
-            ENDIF
-            IF (VELSTR) THEN
-              IADR1 = 0
-              IADR2 = 0
-              IF (LABELA(1:5).EQ.'XDIPV') IADR1 = 1
-              IF (LABELA(1:5).EQ.'YDIPV') IADR1 = 2
-              IF (LABELA(1:5).EQ.'ZDIPV') IADR1 = 3
-              IF (LABELB(1:5).EQ.'XDIPV') IADR2 = 1
-              IF (LABELB(1:5).EQ.'YDIPV') IADR2 = 2
-              IF (LABELB(1:5).EQ.'ZDIPV') IADR2 = 3
-              IF ((IADR1+IADR2).GE.2) THEN
-                IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KVELST-1
-                WORK(IOSCS2) = RESIDUE
-              ENDIF
-            ENDIF
+            IF (LOCDBG) THEN
+               WRITE(LUPRI,*) '   A,B: ',RESIDAB,
+     &                        ' B,A: ',RESIDBA,
+     &                        ' combination: ',ISASB
+            END IF
+            IF (OSCSTR) THEN ! length gauge oscillator strength
+              IF (LABELA(2:7).EQ.'DIPLEN' .AND.
+     &            LABELB(2:7).EQ.'DIPLEN') THEN
+                 IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                 IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                 IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                 IF (LABELB(1:1).EQ.'X') IADR2 = 1
+                 IF (LABELB(1:1).EQ.'Y') IADR2 = 2
+                 IF (LABELB(1:1).EQ.'Z') IADR2 = 3
+                 IF ((IADR1+IADR2).GE.2) THEN
+                   IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KOSCS2-1
+                   WORK(IOSCS2) = RESIDUE
+                 END IF
+              END IF
+            END IF
+            IF (VELSTR) THEN ! velocity gauge oscillator strength
+              IF (LABELA(2:7).EQ.'DIPVEL' .AND.
+     &            LABELB(2:7).EQ.'DIPVEL') THEN
+                 IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                 IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                 IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                 IF (LABELB(1:1).EQ.'X') IADR2 = 1
+                 IF (LABELB(1:1).EQ.'Y') IADR2 = 2
+                 IF (LABELB(1:1).EQ.'Z') IADR2 = 3
+                 IF ((IADR1+IADR2).GE.2) THEN
+                   IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KVELST-1
+                   WORK(IOSCS2) = RESIDUE
+                 END IF
+              END IF
+            END IF
+            IF (MIXSTR) THEN ! Mixed gauge oscillator strength
+              IF (LABELA(2:7).EQ.'DIPLEN' .AND.
+     &            LABELB(2:7).EQ.'DIPVEL') THEN
+                 IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                 IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                 IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                 IF (LABELB(1:1).EQ.'X') IADR2 = 1
+                 IF (LABELB(1:1).EQ.'Y') IADR2 = 2
+                 IF (LABELB(1:1).EQ.'Z') IADR2 = 3
+                 IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KMIXST-1
+                 WORK(IOSCS2) = RESIDUE
+               END IF
+            END IF
+            IF (ROTLEN) THEN ! Length gauge rotatory strength
+               IF (LABELA(2:7) .EQ. 'DIPLEN' .AND.
+     &             LABELB(2:7) .EQ. 'ANGMOM') THEN
+                 IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                 IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                 IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                 IF (LABELB(1:1).EQ.'X') IADR2 = 1
+                 IF (LABELB(1:1).EQ.'Y') IADR2 = 2
+                 IF (LABELB(1:1).EQ.'Z') IADR2 = 3
+                 IF (IADR1 .EQ. IADR2) THEN
+                    IROTST = KROTL + 3*(ISTATE-1) + IADR1 - 1
+                    WORK(IROTST) = RESIDUE
+                 END IF
+               END IF
+            END IF
+            IF (ROTVEL) THEN ! Velocity gauge rotatory strength
+               IF (LABELA(2:7) .EQ. 'DIPVEL' .AND.
+     &             LABELB(2:7) .EQ. 'ANGMOM') THEN
+                 IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                 IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                 IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                 IF (LABELB(1:1).EQ.'X') IADR2 = 1
+                 IF (LABELB(1:1).EQ.'Y') IADR2 = 2
+                 IF (LABELB(1:1).EQ.'Z') IADR2 = 3
+                 IF (IADR1 .EQ. IADR2) THEN
+                    IROTST = KROTV + 3*(ISTATE-1) + IADR1 - 1
+                    WORK(IROTST) = RESIDUE
+                 END IF
+               END IF
+            END IF
+            IF (RTNLEN) THEN
+               IF (LABELA(2:7) .EQ. 'DIPLEN') THEN
+                  IF (LABELB(3:8) .EQ. 'SECMOM') THEN
+                     IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                     IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                     IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                     IF (LABELB(1:2).EQ.'XX') THEN
+                        IADR23 = 1
+                        IADR32 = 0
+                     ELSE IF (LABELB(1:2).EQ.'XY') THEN
+                        IADR23 = 4
+                        IADR32 = 2
+                     ELSE IF (LABELB(1:2).EQ.'XZ') THEN
+                        IADR23 = 7
+                        IADR32 = 3
+                     ELSE IF (LABELB(1:2).EQ.'YY') THEN
+                        IADR23 = 5
+                        IADR32 = 0
+                     ELSE IF (LABELB(1:2).EQ.'YZ') THEN
+                        IADR23 = 8
+                        IADR32 = 6
+                     ELSE IF (LABELB(1:2).EQ.'ZZ') THEN
+                        IADR23 = 9
+                        IADR32 = 0
+                     END IF
+                     IRTEN = KRQL + 3*9*(ISTATE-1)
+     &                     + 3*(IADR23-1) + IADR1 - 1
+                     WORK(IRTEN) = RESIDUE
+                     IF (IADR32 .NE. 0) THEN
+                        IRTEN = KRQL + 3*9*(ISTATE-1)
+     &                        + 3*(IADR32-1) + IADR1 - 1
+                        WORK(IRTEN) = RESIDUE
+                     END IF
+                  ELSE IF (LABELB(2:7) .EQ. 'ANGMOM') THEN
+                     IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                     IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                     IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                     IF (LABELB(1:1).EQ.'X') IADR2 = 1
+                     IF (LABELB(1:1).EQ.'Y') IADR2 = 2
+                     IF (LABELB(1:1).EQ.'Z') IADR2 = 3
+                     IRTEN = KRML + 3*3*(ISTATE-1)
+     &                     + 3*(IADR2-1) + IADR1 - 1
+                     WORK(IRTEN) = RESIDUE
+                  END IF
+               END IF
+            END IF
+            IF (RTNVEL) THEN
+               IF (LABELA(2:7) .EQ. 'DIPVEL') THEN
+                  IF (LABELB(3:8) .EQ. 'ROTSTR') THEN
+                     IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                     IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                     IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                     IF (LABELB(1:2).EQ.'XX') THEN
+                        IADR23 = 1
+                        IADR32 = 0
+                     ELSE IF (LABELB(1:2).EQ.'XY') THEN
+                        IADR23 = 4
+                        IADR32 = 2
+                     ELSE IF (LABELB(1:2).EQ.'XZ') THEN
+                        IADR23 = 7
+                        IADR32 = 3
+                     ELSE IF (LABELB(1:2).EQ.'YY') THEN
+                        IADR23 = 5
+                        IADR32 = 0
+                     ELSE IF (LABELB(1:2).EQ.'YZ') THEN
+                        IADR23 = 8
+                        IADR32 = 6
+                     ELSE IF (LABELB(1:2).EQ.'ZZ') THEN
+                        IADR23 = 9
+                        IADR32 = 0
+                     END IF
+                     IRTEN = KRQV + 3*9*(ISTATE-1)
+     &                     + 3*(IADR23-1) + IADR1 - 1
+                     WORK(IRTEN) = RESIDUE
+                     IF (IADR32 .NE. 0) THEN
+                        IRTEN = KRQV + 3*9*(ISTATE-1)
+     &                        + 3*(IADR32-1) + IADR1 - 1
+                        WORK(IRTEN) = RESIDUE
+                     END IF
+                  ELSE IF (LABELB(2:7) .EQ. 'ANGMOM') THEN
+                     IF (LABELA(1:1).EQ.'X') IADR1 = 1
+                     IF (LABELA(1:1).EQ.'Y') IADR1 = 2
+                     IF (LABELA(1:1).EQ.'Z') IADR1 = 3
+                     IF (LABELB(1:1).EQ.'X') IADR2 = 1
+                     IF (LABELB(1:1).EQ.'Y') IADR2 = 2
+                     IF (LABELB(1:1).EQ.'Z') IADR2 = 3
+                     IRTEN = KRMV + 3*3*(ISTATE-1)
+     &                     + 3*(IADR2-1) + IADR1 - 1
+                     WORK(IRTEN) = RESIDUE
+                  END IF
+               END IF
+            END IF
           ELSE
             RESIDUE = 0.0D0
             SQRRES  = 0.0D0
@@ -1683,12 +1995,13 @@ C
       END DO
 
 C
-C--------------------------------------------------------
-C     Perform analysis for dipole and velocity strenghts.
-C--------------------------------------------------------
+C-----------------------------------------------
+C     Perform analysis for oscillator strengths.
+C-----------------------------------------------
 C
-      CALL DCOPY(3*3*NEXCI,WORK(KOSCS2),1,WORK(KTRS),1)
-      CALL DCOPY(3*3*NEXCI,WORK(KVELST),1,WORK(KVELST2),1)
+      IF (OSCSTR) CALL DCOPY(LOSCIL,WORK(KOSCS2),1,WORK(KTRS),1)
+      IF (VELSTR) CALL DCOPY(LOSCIV,WORK(KVELST),1,WORK(KVELST2),1)
+      IF (MIXSTR) CALL DCOPY(LOSCIM,WORK(KMIXST),1,WORK(KMIXST2),1)
 C
 C-------------------------------------------------------------
 C     Write out strength for CCS, CC2, and CCSD on unit LUOSC.
@@ -1720,7 +2033,7 @@ C
            KOSCSI = KOSCS2 + 3*3*(ISTATE-1)
            KTRSI  = KTRS   + 3*3*(ISTATE-1)
            LCALC  = .FALSE.
-           LDIP   = .TRUE.
+           LDIP   = 1
            DO IRSD  = 1, NXLRSST
              ISTATE = ILRSST(IRSD)
              ISYME  = ISYEXC(ISTATE)
@@ -1776,7 +2089,7 @@ C
            KOSCSI = KVELST + 3*3*(ISTATE-1)
            KTRSI  = KVELST2+ 3*3*(ISTATE-1)
            LCALC  = .FALSE.
-           LDIP   = .FALSE.
+           LDIP   = 2
            DO IRSD  = 1, NXLRSST
              ISTATE = ILRSST(IRSD)
              ISYME  = ISYEXC(ISTATE)
@@ -1806,6 +2119,535 @@ C
 C
       ENDIF
 C
+      IF (MIXSTR .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+C
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Mixed    Gauge Osci'
+     *     //'llator Strength       |'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        | Dipole Strength(a.u.) | Oscillator stre'
+     *    //'ngth  | Direction   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+C
+         DO ISYM  = 1, NSYM
+          DO IEX   = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOSCSI = KMIXST + 3*3*(ISTATE-1)
+           KTRSI  = KMIXST2+ 3*3*(ISTATE-1)
+           LCALC  = .FALSE.
+           LDIP   = 3
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_OSCPRI(WORK(KTRSI),WORK(KOSCSI),EIGV,
+     *                    IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
+     *                    LDIP,LUOSC)
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9008
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9008     CONTINUE
+         END DO
+C
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+C
+      END IF
+C
+      LUOSC = LURES
+      IF (ROTLEN .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rota'
+     *     //'tory Strength         |'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Direction   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KTRSI  = KROTL + 3*(ISTATE-1)
+           KSTREN = KCHKL + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_ROTPRI(WORK(KTRSI),WORK(KSTREN),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9009
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9009     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+      END IF
+C
+      LUOSC = LURES
+      IF (ROTVEL .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rota'
+     *     //'tory Strength         |'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Direction   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KTRSI  = KROTV + 3*(ISTATE-1)
+           KSTREN = KCHKV + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_ROTPRI(WORK(KTRSI),WORK(KSTREN),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9010
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9010     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+      END IF
+
+      LUOSC = LURES
+      IF (RTNLEN .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rot.'
+     *     //'Str. Tensor, El. Quad.|'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFQ  = KRQL  + 3*9*(ISTATE-1)
+           KOFQ2  = KRQL2 + 3*3*(ISTATE-1)
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTQPRI(WORK(KOFFQ),WORK(KOFQ2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,NWRL)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9011
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9011     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rot.'
+     *     //'Str. Tensor, Mag. Dip.|'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFM  = KRML  + 3*3*(ISTATE-1)
+           KOFM2  = KRML2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKL + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTMPRI(WORK(KOFFM),WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRL)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9012
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9012     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         CALL DAXPY(LRML,1.0D0,WORK(KRQL2),1,WORK(KRML2),1)  ! Get total tensor (in KRML2)
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rot.'
+     *     //'Str. Tensor, Total    |'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFM2  = KRML2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKL + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTTPRI(WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRL)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9013
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9013     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         IF (NWRL .NE. 0) THEN
+            WRITE(LUOSC,'(//,1X,A,I4,A)')
+     &      '***NOTICE:',NWRL,' warnings issued for Rot. Str. Tensors.'
+            WRITE(LUOSC,'(1X,A)')
+     &      '           Length gauge tensors are wrong!'
+         END IF
+
+      END IF
+
+      LUOSC = LURES
+      IF (RTNVEL .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rot.'
+     *     //'Str. Tensor, El. Quad.|'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFQ  = KRQV  + 3*9*(ISTATE-1)
+           KOFQ2  = KRQV2 + 3*3*(ISTATE-1)
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTQPRI(WORK(KOFFQ),WORK(KOFQ2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,NWRV)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9014
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9014     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rot.'
+     *     //'Str. Tensor, Mag. Dip.|'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFM  = KRMV  + 3*3*(ISTATE-1)
+           KOFM2  = KRMV2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKV + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTMPRI(WORK(KOFFM),WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRV)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9015
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9015     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         CALL DAXPY(LRMV,1.0D0,WORK(KRQV2),1,WORK(KRMV2),1)  ! Get total tensor (in KRMV2)
+
+         WRITE(LUOSC,'(//A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     *     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rot.'
+     *     //'Str. Tensor, Total    |'
+         WRITE(LUOSC,'(A)')
+     *     ' |(spin, |        +-----------------------------'
+     *    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     *     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     *    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFM2  = KRMV2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKV + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTTPRI(WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRV)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9016
+             WRITE(LUOSC,'(A)')
+     *       ' +----------------------------------------------'
+     *      //'-------------------------------+'
+          END IF
+ 9016     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     *     ' +=============================================='
+     *    //'===============================+'
+
+         IF (NWRV .NE. 0) THEN
+            WRITE(LUOSC,'(//,1X,A,I4,A)')
+     &      '***NOTICE:',NWRV,' warnings issued for Rot. Str. Tensors.'
+            WRITE(LUOSC,'(1X,A)')
+     &      '           Velocity gauge tensors are wrong!'
+         END IF
+
+      END IF
+
+      LUOSC = LURES
+      IF (ROTLEN .OR. ROTVEL .OR. RTNLEN .OR. RTNVEL) THEN
+         WRITE(LUOSC,'(/,1X,A)')
+     &   'Conversion factors for rotatory strengths:'
+         WRITE(LUOSC,'(3X,A,F15.10,A)')
+     &   'SI  units:   1 a.u. = ',RAUSI,'D-55 A^2 m^3 s'
+         WRITE(LUOSC,'(3X,A,F15.10,A)')
+     &   'cgs units:   1 a.u. = ',RAUCGS,'D-40 cm^5 g s^-2'
+      END IF
+C
+      TIMTOT = SECOND() - TIMTOT
+      WRITE(LUPRI,'(/,1X,A,I5,A,F10.2,A)')
+     & '>>> Time for',NTOT,' linear response residues: ',
+     & TIMTOT,' seconds.'
+      CALL FLSHFO(LUPRI)
+C
+      RETURN
       END
 c*DECK CC_LRSD
       SUBROUTINE CC_LRSD(LABELA,ISYMA,
@@ -2019,7 +2861,7 @@ C
 C
       DIMENSION OSC(*),PVAL(3),PAXIS(3,3)
       CHARACTER MODEL*10,CDIP*7
-      LOGICAL LCALC,LDIP
+      LOGICAL LCALC
 C
       IF ( IPRINT .GT. 10 ) THEN
          CALL AROUND( 'IN CC_OSCPRI: Output transition properties ' )
@@ -2034,10 +2876,15 @@ C
       WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
      *    'Transition strength matrix for state nr.',IEX,
      *     ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
-      IF (LDIP) THEN
-        WRITE(LUPRI,'(1X,A)') 'Dipole gauge'
+      IF (LDIP .EQ. 1) THEN
+        WRITE(LUPRI,'(1X,A)') 'Gauge: length'
+      ELSE IF (LDIP .EQ. 2) THEN
+        WRITE(LUPRI,'(1X,A)') 'Gauge: velocity'
+      ELSE IF (LDIP .EQ. 3) THEN
+        WRITE(LUPRI,'(1X,A)') 'Gauge: mixed length/velocity'
       ELSE
-        WRITE(LUPRI,'(1X,A)') 'Dipole gauge'
+        WRITE(LUPRI,'(1X,A)') 'Gauge: UNKNOWN'
+        WRITE(LUPRI,'(1X,A)') '- scaling factors will be incorrect!'
       ENDIF
       CALL OUTPUT(TRS,1,3,1,3,3,3,1,LUPRI)
 C
@@ -2060,10 +2907,14 @@ C     First scale it - then
 C     write out oscillator strength matrix.
 C------------------------------------------
 C
-      IF (LDIP) THEN
+      IF (LDIP .EQ. 1) THEN
          FACT = EIGV*2.0D0/3.0D0
+      ELSE IF (LDIP .EQ. 2) THEN
+         FACT = -2.0D0/(3.0D0*EIGV)
+      ELSE IF (LDIP .EQ. 3) THEN
+         FACT = -2.0D0/3.0D0
       ELSE
-         FACT = 2.0D0/(3.0D0*EIGV)
+         FACT = 1.0D0
       ENDIF
       CALL DSCAL(3*3,FACT,OSC,1)
       WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
@@ -2084,6 +2935,7 @@ C
       CALL OUTPUT(PAXIS,1,3,1,3,3,3,1,LUPRI)
       OSCS = PVAL(1)+PVAL(2)+PVAL(3)
 C
+      CDIP = 'unknown'
       IF (IPAR .EQ.1) CDIP = '   X   '
       IF (IPAR .EQ.2) CDIP = '   Y   '
       IF (IPAR .EQ.3) CDIP = '   Z   '
@@ -3525,3 +4377,2369 @@ C----------------------------------------------------------------------
       RETURN
       END 
 *---------------------------------------------------------------------*
+C  /* Deck cc_rotpri */
+      SUBROUTINE CC_ROTPRI(RIN,STREN,EIGV,IEX,ISYM,MODEL,LCALC,LDIP,
+     &                     LUOSC)
+C
+C     Thomas Bondo Pedersen, January 2005.
+C     - based on CC_OSCPRI by Ove Christiansen.
+C
+C     Purpose: Print rotatory strengths.
+C
+#include <implicit.h>
+      DIMENSION    RIN(3)
+      CHARACTER*10 MODEL
+      LOGICAL      LCALC
+#include <priunit.h>
+#include <pgroup.h>
+#include <codata.h>
+#include <ccsdinp.h>
+
+      PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
+      PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
+
+      DIMENSION   ROT(3), STR(3)
+      INTEGER     POL(3)
+      CHARACTER*7 CDIP
+
+      PARAMETER (THRPOL = 1.0D-8)  ! Same threshold as in TNSRAN for polarization...
+
+      DATA POL /1,10,100/
+
+      IF ( IPRINT .GT. 10 ) THEN
+         CALL AROUND( 'IN CC_ROTPRI: Output Rotatory Strengths ' )
+      END IF
+
+      IMULT = 1  ! force singlet spin symmetry...
+
+      IF (LCALC) THEN
+
+C-tbp: ANGMOM sign fixed here:
+         CALL DSCAL(3,-1.0D0,RIN,1)
+
+         CALL DCOPY(3,RIN,1,ROT,1)
+
+         WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
+     &   'Rotatory strength for state nr.',IEX,
+     &   ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
+         IF (LDIP .EQ. 1) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: length'
+            FACT = -0.5D0
+         ELSE IF (LDIP .EQ. 2) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: velocity'
+            IF (ABS(EIGV) .LT. 1.0D-8) THEN
+               FACT = -1.0D16
+            ELSE
+               FACT = -1.0D0/(2.0D0*EIGV)
+            END IF
+         ELSE
+            WRITE(LUPRI,'(3X,A)') 'Gauge: UNKNOWN'
+            WRITE(LUPRI,'(3X,A)') '- scaling factors will be incorrect!'
+            FACT = 1.0D0
+         ENDIF
+         CALL DZERO(STR,3)
+         CALL DSCAL(3,FACT,ROT,1)
+         DO I = 1,3
+            STR(1) = STR(1) + ROT(I)
+         END DO
+         STR(2) = RAUSI*STR(1)
+         STR(3) = RAUCGS*STR(1)
+         WRITE(LUPRI,'(/,3X,A)') 'Rotatory strength components (a.u.):'
+         WRITE(LUPRI,'(10X,A1,15X,A1,15X,A1)') 'X','Y','Z'
+         WRITE(LUPRI,'(3X,F15.10,1X,F15.10,1X,F15.10,/)')
+     &   ROT(1),ROT(2),ROT(3)
+         WRITE(LUPRI,'(3X,A,F15.7,/,3X,A,F15.7,/,3X,A,F15.7)')
+     &   'Total Rotatory Strength in Atomic Units      : ',STR(1),
+     &   'Total Rotatory Strength in 10-55   A^2 m^3 s : ',STR(2),
+     &   'Total Rotatory Strength in 10-40 cm^5 g s^-2 : ',STR(3)
+
+         STREN = STR(1)
+
+         IPOL = 0
+         DO I = 1,3
+            IF (ABS(ROT(I)) .GT. THRPOL) IPOL = IPOL + POL(I)
+         END DO
+         IF (IPOL .EQ.   1) THEN
+            CDIP = '   X   '
+         ELSE IF (IPOL .EQ.  10) THEN
+            CDIP = '   Y   '
+         ELSE IF (IPOL .EQ. 100) THEN
+            CDIP = '   Z   '
+         ELSE IF (IPOL .EQ.  11) THEN
+            CDIP = ' (X,Y) '
+         ELSE IF (IPOL .EQ. 101) THEN
+            CDIP = ' (X,Z) '
+         ELSE IF (IPOL .EQ. 110) THEN
+            CDIP = ' (Y,Z) '
+         ELSE IF (IPOL .EQ. 111) THEN
+            CDIP = '(X,Y,Z)'
+         ELSE
+            CDIP = '   -   '
+         ENDIF
+
+         WRITE(LUOSC,9988) IMULT,REP(ISYM-1),IEX,STR(2),STR(3),CDIP
+
+         CALL FLSHFO(LUPRI)
+
+      ELSE
+
+         CDIP = '   ?   '
+         WRITE(LUOSC,9986) IMULT,REP(ISYM-1),IEX,'Not calculated',
+     &                     'Not calculated',CDIP
+
+      END IF
+
+      RETURN
+
+ 9986 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',A16,4X,
+     *       '  |',A15,5X,'  | ',A7,'  ',1X,'  |')
+ 9987 FORMAT(1X,'|       | ',I4,'   | ',A16,4X,
+     *       '  |',A15,5X,'  | ',A7,'  ',1X,'  |')
+ 9988 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+ 9989 FORMAT(1X,'|       | ',I4,'   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+
+      END
+C  /* Deck cc_rtqpri */
+      SUBROUTINE CC_RTQPRI(RQIN,RQOUT,EIGV,IEX,ISYM,MODEL,LCALC,LDIP,
+     &                     LUOSC,NWAR)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Print rotatory strength tensors, el. quadrupole contribution.
+C
+#include <implicit.h>
+      DIMENSION    RQIN(3,9), RQOUT(3,3)
+      CHARACTER*10 MODEL
+      LOGICAL      LCALC
+#include <priunit.h>
+#include <pgroup.h>
+#include <codata.h>
+#include <ccsdinp.h>
+
+      PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
+      PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_RTQPRI')
+
+      DIMENSION   SQ(3,3,3), AVE(3)
+      DIMENSION   RQ(3,3,3)
+      CHARACTER*7 CDIP
+      LOGICAL     WARN
+#if defined (SYS_CRAY)
+      REAL              LEVICI(3,3,3)
+#else
+      DOUBLE PRECISION  LEVICI(3,3,3)
+#endif
+
+      PARAMETER (TINY = 1.0D-12)
+
+      IF ( IPRINT .GT. 10 ) THEN
+         CALL AROUND('IN CC_RTQPRI: El. Quadr. Rotatory'
+     &               //' Strength Tensors')
+      END IF
+
+      IMULT = 1  ! force singlet spin symmetry...
+
+      IF (LCALC) THEN
+
+         CALL DCOPY(3*9,RQIN,1,SQ,1)
+
+         CALL DZERO(LEVICI,3*3*3)
+         LEVICI(1,2,3) = 1.0D0
+         LEVICI(2,1,3) = -1.0D0
+         LEVICI(3,1,2) = 1.0D0
+         LEVICI(1,3,2) = -1.0D0
+         LEVICI(2,3,1) = 1.0D0
+         LEVICI(3,2,1) = -1.0D0
+
+         WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
+     &   'El. quadr. rotatory strength tensor for state nr.',IEX,
+     &   ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
+         IF (LDIP .EQ. 1) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: length'
+            FACT = -3.0D0*EIGV/4.0D0
+         ELSE IF (LDIP .EQ. 2) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: velocity'
+            IF (ABS(EIGV) .LT. 1.0D-8) THEN
+               FACT = -1.0D16
+            ELSE
+               FACT = 3.0D0/(4.0D0*EIGV)
+            END IF
+         ELSE
+            WRITE(LUPRI,'(3X,A)') 'Gauge: UNKNOWN'
+            WRITE(LUPRI,'(3X,A)') '- scaling factors will be incorrect!'
+            FACT = 1.0D0
+         ENDIF
+
+         IERR = 0
+         DO I = 1,3
+            JERR = 0
+            DO J = 1,3
+               DO K = 1,J
+                  JK = 3*(K - 1) + J
+                  KJ = 3*(J - 1) + K
+                  DIFF = ABS(RQIN(I,JK) - RQIN(I,KJ))
+                  IF (DIFF .GT. 1.0D-14) JERR = JERR + 1
+               END DO
+            END DO
+            IERR = IERR + JERR
+         END DO
+         IF (IERR .NE. 0) THEN
+            WRITE(LUPRI,*) SECNAM,': non-symmetric rank-3 tensor',
+     &                     ' on entry'
+            WRITE(LUPRI,*) 'This will lead to non-zero average!!!'
+            WRITE(LUPRI,*) 'Residues from input:'
+            WRITE(LUPRI,'(1X,A,F12.8)') 'X,XX: ',RQIN(1,1)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'X,XY: ',RQIN(1,4)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'X,XZ: ',RQIN(1,7)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'X,YY: ',RQIN(1,5)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'X,YZ: ',RQIN(1,8)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'X,ZZ: ',RQIN(1,9)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Y,XX: ',RQIN(2,1)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Y,XY: ',RQIN(2,4)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Y,XZ: ',RQIN(2,7)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Y,YY: ',RQIN(2,5)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Y,YZ: ',RQIN(2,8)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Y,ZZ: ',RQIN(2,9)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Z,XX: ',RQIN(3,1)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Z,XY: ',RQIN(3,4)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Z,XZ: ',RQIN(3,7)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Z,YY: ',RQIN(3,5)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Z,YZ: ',RQIN(3,8)
+            WRITE(LUPRI,'(1X,A,F12.8)') 'Z,ZZ: ',RQIN(3,9)
+            CALL QUIT('Error in '//SECNAM)
+         END IF
+
+         CALL DSCAL(3*3*3,FACT,SQ,1)
+         CALL DZERO(RQ,3*3*3)
+         DO K = 1,3
+            DO J = 1,3
+               DO M = 1,3
+                  DO L = 1,3
+                     RQ(J,K,1) = RQ(J,K,1)
+     &                         + LEVICI(L,M,J)*SQ(L,M,K)
+                  END DO
+               END DO
+            END DO
+         END DO
+         CALL POLSYM(RQ(1,1,1),0.5D0)
+         CALL DAXPY(3*3,RAUSI,RQ(1,1,1),1,RQ(1,1,2),1)
+         CALL DAXPY(3*3,RAUCGS,RQ(1,1,1),1,RQ(1,1,3),1)
+         CALL DZERO(AVE,3)
+         DO I = 1,3
+            DO J = 1,3
+               AVE(I) = AVE(I) + RQ(J,J,I)
+            END DO
+            AVE(I) = AVE(I)/3.0D0
+         END DO
+         WRITE(LUPRI,'(/,3X,A)')
+     & 'Electric quadrupole rotatory strength tensor components (a.u.):'
+         CALL OUTPUT(RQ(1,1,1),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)')
+     &   'Orientational average: ',AVE(1)
+         WRITE(LUPRI,'(/,3X,A,A)')
+     &   'Electric quadrupole rotatory strength tensor components ',
+     &   '(D-55 SI):'
+         CALL OUTPUT(RQ(1,1,2),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)')
+     &   'Orientational average: ',AVE(2)
+         WRITE(LUPRI,'(/,3X,A,A)')
+     &   'Electric quadrupole rotatory strength tensor components ',
+     &   '(D-40 cgs):'
+         CALL OUTPUT(RQ(1,1,3),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)')
+     &   'Orientational average: ',AVE(3)
+         DIFF = AVE(1)
+         WARN = ABS(DIFF) .GT. TINY
+         IF (WARN) THEN
+            WRITE(LUPRI,9990)
+            NWAR = NWAR + 1
+         END IF
+
+         DO J = 1,3
+            DO K = J,3
+               CDIP = '   ?   '
+               IF ((J.EQ.1) .AND. (K.EQ.1)) THEN
+                  CDIP = '  XX   '
+                  WRITE(LUOSC,9988) IMULT,REP(ISYM-1),IEX,
+     &                              RQ(J,K,2),RQ(J,K,3),CDIP
+               ELSE
+                  IF (J .EQ. 1) THEN
+                     IF (K .EQ. 2) THEN
+                        CDIP = '  XY   '
+                     ELSE IF (K .EQ. 3) THEN
+                        CDIP = '  XZ   '
+                     END IF
+                  ELSE IF (J .EQ. 2) THEN
+                     IF (K .EQ. 2) THEN
+                        CDIP = '  YY   '
+                     ELSE IF (K .EQ. 3) THEN
+                        CDIP = '  YZ   '
+                     END IF
+                  ELSE IF (J .EQ. 3) THEN
+                     IF (K .EQ. 3) THEN
+                        CDIP = '  ZZ   '
+                     END IF
+                  END IF
+                  WRITE(LUOSC,9987) RQ(J,K,2),RQ(J,K,3),CDIP
+               END IF
+            END DO
+         END DO
+
+         CALL DCOPY(3*3,RQ(1,1,1),1,RQOUT,1)
+
+      ELSE
+
+         CDIP = '   ?   '
+         WRITE(LUOSC,9986) IMULT,REP(ISYM-1),IEX,'Not calculated',
+     &                     'Not calculated',CDIP
+
+      END IF
+
+      RETURN
+
+ 9986 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',A16,4X,
+     *       '  |',A15,5X,'  | ',A7,'  ',1X,'  |')
+ 9987 FORMAT(1X,'|      ',' |     ','   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+ 9988 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+ 9990 FORMAT(1X,'***WARNING*** Incorrect average!!!')
+
+      END
+C  /* Deck cc_rtmpri */
+      SUBROUTINE CC_RTMPRI(RMIN,RMOUT,EIGV,IEX,ISYM,MODEL,LCALC,LDIP,
+     &                     LUOSC,CHKSTR,NWAR)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Print rotatory strength tensors, magn. dipole contribution.
+C
+#include <implicit.h>
+      DIMENSION    RMIN(3,3), RMOUT(3,3)
+      CHARACTER*10 MODEL
+      LOGICAL      LCALC
+#include <priunit.h>
+#include <pgroup.h>
+#include <codata.h>
+#include <ccsdinp.h>
+
+      PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
+      PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
+
+      DIMENSION   SM(3,3), AVE(3)
+      DIMENSION   RM(3,3,3)
+      CHARACTER*7 CDIP
+      LOGICAL     WARN
+
+      PARAMETER (TINY = 1.0D-12)
+
+      IF ( IPRINT .GT. 10 ) THEN
+         CALL AROUND('IN CC_RTMPRI: Magn. Dip. Rotatory'
+     &               //' Strength Tensors')
+      END IF
+
+      IMULT = 1  ! force singlet spin symmetry...
+
+      IF (LCALC) THEN
+
+C-tbp: ANGMOM sign fixed here:
+         CALL DSCAL(3*3,-1.0D0,RMIN,1)
+
+         TRA = 0.0D0
+         DO K = 1,3
+            DO J = 1,3
+               SM(J,K) = -RMIN(K,J)
+            END DO
+            TRA = TRA + RMIN(K,K)
+         END DO
+
+         WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
+     &   'Magn. dip. rotatory strength tensor for state nr.',IEX,
+     &   ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
+         IF (LDIP .EQ. 1) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: length'
+            FACT = -0.75D0
+         ELSE IF (LDIP .EQ. 2) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: velocity'
+            IF (ABS(EIGV) .LT. 1.0D-8) THEN
+               FACT = -1.0D16
+            ELSE
+               FACT = -3.0D0/(4.0D0*EIGV)
+            END IF
+         ELSE
+            WRITE(LUPRI,'(3X,A)') 'Gauge: UNKNOWN'
+            WRITE(LUPRI,'(3X,A)') '- scaling factors will be incorrect!'
+            FACT = 1.0D0
+         ENDIF
+         TRA = TRA*FACT
+         CALL DSCAL(3*3,FACT,SM,1)
+         CALL DZERO(RM,3*3*3)
+         DO K = 1,3
+            DO J = 1,3
+               RM(J,K,1) = SM(J,K)
+            END DO
+            RM(K,K,1) = RM(K,K,1) + TRA
+         END DO
+         CALL POLSYM(RM(1,1,1),0.5D0)
+         CALL DAXPY(3*3,RAUSI,RM(1,1,1),1,RM(1,1,2),1)
+         CALL DAXPY(3*3,RAUCGS,RM(1,1,1),1,RM(1,1,3),1)
+         CALL DZERO(AVE,3)
+         DO I = 1,3
+            DO J = 1,3
+               AVE(I) = AVE(I) + RM(J,J,I)
+            END DO
+            AVE(I) = AVE(I)/3.0D0
+         END DO
+         WRITE(LUPRI,'(/,3X,A)')
+     &   'Magnetic dipole rotatory strength tensor components (a.u.):'
+         CALL OUTPUT(RM(1,1,1),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)')
+     &   'Orientational average: ',AVE(1)
+         WRITE(LUPRI,'(/,3X,A,A)')
+     &   'Magnetic dipole rotatory strength tensor components ',
+     &   '(D-55 SI):'
+         CALL OUTPUT(RM(1,1,2),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)')
+     &   'Orientational average: ',AVE(2)
+         WRITE(LUPRI,'(/,3X,A,A)')
+     &   'Magnetic dipole rotatory strength tensor components ',
+     &   '(D-40 cgs):'
+         CALL OUTPUT(RM(1,1,3),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)')
+     &   'Orientational average: ',AVE(3)
+         DIFF = AVE(1) - CHKSTR
+         WARN = ABS(DIFF) .GT. TINY
+         IF (WARN) THEN
+            WRITE(LUPRI,9990)
+            NWAR = NWAR + 1
+         END IF
+
+         DO J = 1,3
+            DO K = J,3
+               CDIP = '   ?   '
+               IF ((J.EQ.1) .AND. (K.EQ.1)) THEN
+                  CDIP = '  XX   '
+                  WRITE(LUOSC,9988) IMULT,REP(ISYM-1),IEX,
+     &                              RM(J,K,2),RM(J,K,3),CDIP
+               ELSE
+                  IF (J .EQ. 1) THEN
+                     IF (K .EQ. 2) THEN
+                        CDIP = '  XY   '
+                     ELSE IF (K .EQ. 3) THEN
+                        CDIP = '  XZ   '
+                     END IF
+                  ELSE IF (J .EQ. 2) THEN
+                     IF (K .EQ. 2) THEN
+                        CDIP = '  YY   '
+                     ELSE IF (K .EQ. 3) THEN
+                        CDIP = '  YZ   '
+                     END IF
+                  ELSE IF (J .EQ. 3) THEN
+                     IF (K .EQ. 3) THEN
+                        CDIP = '  ZZ   '
+                     END IF
+                  END IF
+                  WRITE(LUOSC,9987) RM(J,K,2),RM(J,K,3),CDIP
+               END IF
+            END DO
+         END DO
+
+         CALL DCOPY(3*3,RM(1,1,1),1,RMOUT,1)
+
+      ELSE
+
+         CDIP = '   ?   '
+         WRITE(LUOSC,9986) IMULT,REP(ISYM-1),IEX,'Not calculated',
+     &                     'Not calculated',CDIP
+
+      END IF
+
+      RETURN
+
+ 9986 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',A16,4X,
+     *       '  |',A15,5X,'  | ',A7,'  ',1X,'  |')
+ 9987 FORMAT(1X,'|      ',' |     ','   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+ 9988 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+ 9990 FORMAT(1X,'***WARNING*** Incorrect average!!!')
+
+      END
+C  /* Deck cc_rttpri */
+      SUBROUTINE CC_RTTPRI(RTIN,EIGV,IEX,ISYM,MODEL,LCALC,LDIP,
+     &                     LUOSC,CHKSTR,NWAR)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Print rotatory strength tensors, total.
+C
+#include <implicit.h>
+      DIMENSION    RTIN(3,3)
+      CHARACTER*10 MODEL
+      LOGICAL      LCALC
+#include <priunit.h>
+#include <pgroup.h>
+#include <codata.h>
+#include <ccsdinp.h>
+
+      PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
+      PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
+
+      DIMENSION   RTOT(3,3,3), AVE(3)
+      CHARACTER*7 CDIP
+      LOGICAL     WARN
+
+      PARAMETER (TINY = 1.0D-12)
+
+      IMULT = 1
+
+      IF (LCALC) THEN
+
+         CALL DCOPY(3*3,RTIN,1,RTOT(1,1,1),1)
+         CALL DZERO(RTOT(1,1,2),3*3)
+         CALL DAXPY(3*3,RAUSI,RTOT(1,1,1),1,RTOT(1,1,2),1)
+         CALL DZERO(RTOT(1,1,3),3*3)
+         CALL DAXPY(3*3,RAUCGS,RTOT(1,1,1),1,RTOT(1,1,3),1)
+
+         CALL DZERO(AVE,3)
+         DO I = 1,3
+            DO J = 1,3
+               AVE(I) = AVE(I) + RTOT(J,J,I)
+            END DO
+            AVE(I) = AVE(I)/3.0D0
+         END DO
+
+         WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
+     &   'Total rotatory strength tensor for state nr.',IEX,
+     &   ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
+         IF (LDIP .EQ. 1) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: length'
+         ELSE IF (LDIP .EQ. 2) THEN
+            WRITE(LUPRI,'(3X,A)') 'Gauge: velocity'
+         ELSE
+            WRITE(LUPRI,'(3X,A)') 'Gauge: UNKNOWN'
+         ENDIF
+         WRITE(LUPRI,'(/,3X,A)')
+     &   'Total rotatory strength tensor components (a.u.):'
+         CALL OUTPUT(RTOT(1,1,1),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)') 'Scalar strength: ',AVE(1)
+         WRITE(LUPRI,'(/,3X,A,A)')
+     &   'Total rotatory strength tensor components ',
+     &   '(D-55 SI):'
+         CALL OUTPUT(RTOT(1,1,2),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)') 'Scalar strength: ',AVE(2)
+         WRITE(LUPRI,'(/,3X,A,A)')
+     &   'Total rotatory strength tensor components ',
+     &   '(D-40 cgs):'
+         CALL OUTPUT(RTOT(1,1,3),1,3,1,3,3,3,1,LUPRI)
+         WRITE(LUPRI,'(3X,A,1P,D17.10)') 'Scalar strength: ',AVE(3)
+         DIFF = AVE(1) - CHKSTR
+         WARN = ABS(DIFF) .GT. TINY
+         IF (WARN) THEN
+            WRITE(LUPRI,9990)
+            NWAR = NWAR + 1
+         END IF
+
+         DO J = 1,3
+            DO K = J,3
+               CDIP = '   ?   '
+               IF ((J.EQ.1) .AND. (K.EQ.1)) THEN
+                  CDIP = '  XX   '
+                  WRITE(LUOSC,9988) IMULT,REP(ISYM-1),IEX,
+     &                              RTOT(J,K,2),RTOT(J,K,3),CDIP
+               ELSE
+                  IF (J .EQ. 1) THEN
+                     IF (K .EQ. 2) THEN
+                        CDIP = '  XY   '
+                     ELSE IF (K .EQ. 3) THEN
+                        CDIP = '  XZ   '
+                     END IF
+                  ELSE IF (J .EQ. 2) THEN
+                     IF (K .EQ. 2) THEN
+                        CDIP = '  YY   '
+                     ELSE IF (K .EQ. 3) THEN
+                        CDIP = '  YZ   '
+                     END IF
+                  ELSE IF (J .EQ. 3) THEN
+                     IF (K .EQ. 3) THEN
+                        CDIP = '  ZZ   '
+                     END IF
+                  END IF
+                  WRITE(LUOSC,9987) RTOT(J,K,2),RTOT(J,K,3),CDIP
+               END IF
+            END DO
+         END DO
+
+      ELSE
+
+         CDIP = '   ?   '
+         WRITE(LUOSC,9986) IMULT,REP(ISYM-1),IEX,'Not calculated',
+     &                     'Not calculated',CDIP
+
+      END IF
+
+      RETURN
+
+ 9986 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',A16,4X,
+     *       '  |',A15,5X,'  | ',A7,'  ',1X,'  |')
+ 9987 FORMAT(1X,'|      ',' |     ','   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+ 9988 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',F16.7,4X,
+     *       '  |',F15.7,5X,'  | ',A7,'  ',1X,'  |')
+ 9990 FORMAT(1X,'***WARNING*** Incorrect scalar strength!!!')
+
+      END
+C  /* Deck cc_sopr */
+      SUBROUTINE CC_SOPR(WORK,LWORK)
+C
+C     Thomas Bondo Pedersen, January 2005.
+C     - based on CC_LRESID by Ove Christiansen.
+C
+C     Purpose: Calculate linear response residues.
+C              The Eta and Ksi vectors are calculated only once.
+C
+C     NOTE: it is probably better to use *CCOPA ....
+C
+#include <implicit.h>
+      DIMENSION WORK(LWORK)
+#include <priunit.h>
+#include <codata.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <cclres.h>
+#include <ccrspprp.h>
+#include <ccroper.h>
+#include <ccexci.h>
+#include <ccexcinf.h>
+#include <dummy.h>
+#include <ccinftap.h>
+#include <ccsections.h>
+
+      PARAMETER (RAUSI  = FPEPS0*(HBAR**3)*1.0D55/(EMASS**2))
+      PARAMETER (RAUCGS = ECHARGE*ECHARGE*HBAR*XTANG*CCM*1.0D36/EMASS)
+
+      CHARACTER*7 SECNAM
+      PARAMETER (SECNAM = 'CC_SOPR')
+
+      LOGICAL LOCDBG,LCALC
+      PARAMETER (LOCDBG = .FALSE.)
+      CHARACTER*16 DBGMSG
+      PARAMETER (DBGMSG = 'CC_SOPR[debug]: ')
+
+      CHARACTER*8  LABELA, LABELB
+      CHARACTER*10 MODEL, MODELP
+
+      INTEGER NLOCS(8)
+
+      INTEGER ILRES
+
+      CALL QENTER(SECNAM)
+
+C     Start timing.
+C     -------------
+
+      TIMTOT = SECOND()
+
+C     Initialize counter (# residues).
+C     --------------------------------
+
+      NTOT = 0
+
+C     Print header.
+C     -------------
+
+      WRITE (LUPRI,'(7(/1X,2A),/)')
+     & '************************************',
+     &                               '*******************************',
+     & '*                                   ',
+     &                               '                              *',
+     & '*<<<<<<<<  OUTPUT FROM COUPLED CLUST',
+     &                               'ER LINEAR RESPONSE   >>>>>>>>>*',
+     & '*                                   ',
+     &                               '                              *',
+     & '*<<<<<<<<      CALCULATION OF SECOND',
+     &                               ' ORDER RESIDUES      >>>>>>>>>*',
+     & '*                                   ',
+     &                               '                              *',
+     & '************************************',
+     &                               '*******************************'
+
+      MODEL = 'CCSD      '
+      IF (CC2) THEN
+         MODEL = 'CC2       '
+      END IF
+      IF (MCC2) THEN
+         MODEL = 'MCC2      '
+      END IF
+      IF (CCS) THEN
+         MODEL = 'CCS       '
+      END IF
+      IF (CC3  ) THEN
+         MODEL = 'CC3       '
+         WRITE(LUPRI,'(/,1X,A)')
+     *    'CC3 linear response residues not implemented yet'
+         RETURN
+      END IF
+      IF (CC1A) THEN
+         MODEL = 'CCSDT-1a  '
+         WRITE(LUPRI,'(/,1X,A)')
+     *    'CC1A linear response residues not implemented yet'
+         RETURN
+      END IF
+      IF (CCSD) THEN
+         MODEL = 'CCSD      '
+      END IF
+
+      IF (CIS) THEN
+         MODELP = 'CIS      '
+      ELSE
+         MODELP = MODEL
+      END IF
+
+      CALL AROUND(SECNAM//': Calculation of '//MODELP//' Residues')
+      IF (IPRINT .GT. 10) THEN 
+         WRITE(LUPRI,*) SECNAM,': LWORK = ',LWORK
+      END IF
+      CALL FLSHFO(LUPRI)
+
+C     Count number of selected states in each symmetry.
+C     -------------------------------------------------
+
+      CALL IZERO(NLOCS,NSYM)
+      DO IRSD = 1,NXLRSST
+         ISTATE = ILRSST(IRSD)
+         ISYME  = ISYEXC(ISTATE)
+         NLOCS(ISYME) = NLOCS(ISYME) + 1
+      END DO
+
+      IF (LOCDBG) THEN
+         WRITE(LUPRI,*) DBGMSG,'NLOCS: ',(NLOCS(I),I=1,NSYM)
+         CALL FLSHFO(LUPRI)
+      END IF
+
+C     Check that any residues requested.
+C     ----------------------------------
+
+      NTEST = NXLRSST*NLRSOP
+      IF (NTEST .LE. 0) THEN
+         WRITE(LUPRI,'(/,1X,A,A)')
+     &   SECNAM,': No residues requested.'
+         WRITE(LUPRI,'(1X,A,I10,/,1X,A,I10,/)')
+     &   'Number of selected  excited  states :',NXLRSST,
+     &   'Number of requested operator doubles:',NLRSOP
+         GO TO 999
+      END IF
+
+C     Allocation 1.
+C     -------------
+
+      NTRMOM = NXLRSST*NPRLBL
+
+      KRIGHT = 1
+      KLEFT  = KRIGHT + NTRMOM
+      KEND1  = KLEFT  + NTRMOM
+      LWRK1  = LWORK  - KEND1 + 1
+
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Insufficient memory in '//SECNAM//' [1]')
+      END IF
+
+C     Initialize transition moment arrays.
+C     ------------------------------------
+
+      CALL DZERO(WORK(KRIGHT),NTRMOM)
+      CALL DZERO(WORK(KLEFT),NTRMOM)
+
+C     Loop through operators in PRPLBL.
+C     ---------------------------------
+
+      DO IPRLBL = 1,NPRLBL
+
+         LABELA = PRPLBL(IPRLBL)
+
+C        Check that the operator enters in at least 1 residue requested.
+C        ---------------------------------------------------------------
+
+         IAB   = 1
+         IOPER = ILRES(LABELA,'A')
+         IF (IOPER .LE. 0) THEN
+            IAB   = 2
+            IOPER = ILRES(LABELA,'B')
+         END IF
+
+         IF (IOPER .GT. 0) THEN
+
+            IF (IAB .EQ. 1) THEN
+               ISYMA = ISYOPR(IALRSOP(IOPER))
+            ELSE IF (IAB .EQ. 2) THEN
+               ISYMA = ISYOPR(IBLRSOP(IOPER))
+            ELSE
+               WRITE(LUPRI,*) SECNAM,': lllegal IAB: ',IAB
+               CALL QUIT('Internal error in '//SECNAM//' [IAB 1]')
+            END IF
+
+            IF (NLOCS(ISYMA) .GT. 0) THEN
+
+C              Allocation 2.
+C              -------------
+
+               NTAMP = NT1AM(ISYMA)
+               IF (.NOT. CCS) NTAMP = NTAMP + NT2AM(ISYMA)
+
+               KETA  = KEND1
+               KEND2 = KETA  + NTAMP
+               LWRK2 = LWORK - KEND2 + 1
+
+               IF (LWRK2 .LT. 0) THEN
+                  CALL QUIT('Insufficient memory in '//SECNAM//' [2]')
+               END IF
+
+C              Offsets to right and left moments.
+C              ----------------------------------
+
+               KOFFR = KRIGHT + NXLRSST*(IPRLBL - 1)
+               KOFFL = KLEFT  + NXLRSST*(IPRLBL - 1)
+
+C              Calculate etaA vector.
+C              ----------------------
+
+               CALL CC_ETAC(ISYMA,LABELA,WORK(KETA),'L0',1,0,DUMMY,
+     &                      WORK(KEND2),LWRK2)
+
+C              Calculate contribution to right transition moment:
+C              etaA*RE for all excited states of matching symmetry.
+C              ----------------------------------------------------
+
+               CALL CC_TRRETA(ISYMA,LABELA,WORK(KOFFR),WORK(KETA),
+     &                        WORK(KEND2),LWRK2,MODEL)
+
+C              Calculate contribution to right transition moment:
+C              [F*tA(-wf)]*RE for all excited states of matching symmetry,
+C              if requested.
+C              -----------------------------------------------------------
+
+               IF ((.NOT.CIS) .AND. (.NOT.LRS2N1)) THEN
+                  CALL CC_TRRFTA(ISYMA,LABELA,WORK(KOFFR),
+     &                           WORK(KEND1),LWRK1,MODEL)
+               END IF
+
+C              Calculate ksiA vector.
+C              ----------------------
+
+               KKSI = KETA
+               CALL CC_XKSI(WORK(KKSI),LABELA,ISYMA,0,DUMMY,
+     &                      WORK(KEND2),LWRK2)
+
+C              Calculate contribution to right transition moment:
+C              Mf(wf)*ksiA for all excited states of matching symmetry,
+C              if requested.
+C              --------------------------------------------------------
+
+               IF ((.NOT.CIS) .AND. LRS2N1) THEN
+                  CALL CC_TRRKSI(ISYMA,LABELA,WORK(KOFFR),WORK(KKSI),
+     &                           WORK(KEND2),LWRK2,MODEL)
+               END IF
+
+C              Calculate left transition moment:
+C              LE*ksiA for all excited states of matching symmetry.
+C              ----------------------------------------------------
+
+               CALL CC_TRLKSI(ISYMA,LABELA,WORK(KOFFL),WORK(KKSI),
+     &                        WORK(KEND2),LWRK2,MODEL)
+
+            END IF
+
+         END IF
+
+      END DO
+
+C     Print right transition moments.
+C     -------------------------------
+
+      WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
+     &  'Right transition moments in atomic units:'
+      WRITE(LUPRI,'(1X,A,/)')
+     &  '-----------------------------------------------'
+ 
+      DO IPRLBL = 1,NPRLBL
+
+         LABELA = PRPLBL(IPRLBL)
+
+         IAB   = 1
+         IOPER = ILRES(LABELA,'A')
+         IF (IOPER .LE. 0) THEN
+            IAB   = 2
+            IOPER = ILRES(LABELA,'B')
+         END IF
+
+         IF (IOPER .GT. 0) THEN
+
+            IF (IAB .EQ. 1) THEN
+               ISYMA = ISYOPR(IALRSOP(IOPER))
+            ELSE IF (IAB .EQ. 2) THEN
+               ISYMA = ISYOPR(IBLRSOP(IOPER))
+            ELSE
+               WRITE(LUPRI,*) SECNAM,': lllegal IAB: ',IAB
+               CALL QUIT('Internal error in '//SECNAM//' [IAB 2]')
+            END IF
+
+            IF (NLOCS(ISYMA) .GT. 0) THEN
+               DO IRSD = 1,NXLRSST
+                  ISTATE = ILRSST(IRSD)
+                  ISYME  = ISYEXC(ISTATE)
+                  ISTSY  = ISTATE - ISYOFE(ISYME)
+                  EIGV   = EIGVAL(ISTATE)
+                  IF (ISYME .EQ. ISYMA) THEN
+                    KOFF = KRIGHT + NXLRSST*(IPRLBL - 1) + IRSD - 1
+                    WRITE(LUPRI,'(1X,I2,F15.6,2X,A1,A8,A6,1X,F15.8)')
+     &              ISTATE,EIGV,'<',LABELA,'|f> = ',WORK(KOFF)
+                  END IF
+               END DO
+            END IF
+
+         END IF
+
+      END DO
+
+C     Print left transition moments.
+C     ------------------------------
+
+      WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
+     &  'Left  transition moments in atomic units:'
+      WRITE(LUPRI,'(1X,A,/)')
+     &  '-----------------------------------------------'
+
+      DO IPRLBL = 1,NPRLBL
+
+         LABELA = PRPLBL(IPRLBL)
+
+         IAB   = 1
+         IOPER = ILRES(LABELA,'A')
+         IF (IOPER .LE. 0) THEN
+            IAB   = 2
+            IOPER = ILRES(LABELA,'B')
+         END IF
+
+         IF (IOPER .GT. 0) THEN
+
+            IF (IAB .EQ. 1) THEN
+               ISYMA = ISYOPR(IALRSOP(IOPER))
+            ELSE IF (IAB .EQ. 2) THEN
+               ISYMA = ISYOPR(IBLRSOP(IOPER))
+            ELSE
+               WRITE(LUPRI,*) SECNAM,': lllegal IAB: ',IAB
+               CALL QUIT('Internal error in '//SECNAM//' [IAB 3]')
+            END IF
+
+            IF (NLOCS(ISYMA) .GT. 0) THEN
+               DO IRSD = 1,NXLRSST
+                  ISTATE = ILRSST(IRSD)
+                  ISYME  = ISYEXC(ISTATE)
+                  ISTSY  = ISTATE - ISYOFE(ISYME)
+                  EIGV   = EIGVAL(ISTATE)
+                  IF (ISYME .EQ. ISYMA) THEN
+                    KOFF = KLEFT + NXLRSST*(IPRLBL - 1) + IRSD - 1
+                    WRITE(LUPRI,'(1X,I2,F15.6,2X,A3,A8,A4,1X,F15.8)')
+     &              ISTATE,EIGV,'<f|',LABELA,'> = ',WORK(KOFF)
+                  END IF
+               END DO
+            END IF
+
+         END IF
+
+      END DO
+
+      CALL FLSHFO(LUPRI)
+
+C     Allocation 3.
+C     -------------
+
+      IF (OSCSTR) THEN
+         LOSCIL = NEXCI*3*3
+      ELSE
+         LOSCIL = 0
+      END IF
+
+      IF (VELSTR) THEN
+         LOSCIV = NEXCI*3*3
+      ELSE
+         LOSCIV = 0
+      END IF
+
+      IF (MIXSTR) THEN
+         LOSCIM = NEXCI*3*3
+      ELSE
+         LOSCIM = 0
+      END IF
+
+      IF (ROTLEN) THEN
+         LROTL = NEXCI*3
+         LCHKL = NEXCI
+      ELSE
+         LROTL = 0
+         LCHKL = 0
+      ENDIF
+
+      IF (ROTVEL) THEN
+         LROTV = NEXCI*3
+         LCHKV = NEXCI
+      ELSE
+         LROTV = 0
+         LCHKV = 0
+      ENDIF
+
+      IF (RTNLEN) THEN
+         LRQL = NEXCI*3*9
+         LRML = NEXCI*3*3
+         NWRL = 0
+      ELSE
+         LRQL = 0
+         LRML = 0
+      ENDIF
+
+      IF (RTNVEL) THEN
+         LRQV = NEXCI*3*9
+         LRMV = NEXCI*3*3
+         NWRV = 0
+      ELSE
+         LRQV = 0
+         LRMV = 0
+      ENDIF
+
+      KOSCS2 = KEND1
+      KTRS   = KOSCS2  + LOSCIL
+      KVELST = KTRS    + LOSCIL
+      KVELST2= KVELST  + LOSCIV
+      KMIXST = KVELST2 + LOSCIV
+      KMIXST2= KMIXST  + LOSCIM
+      KROTL  = KMIXST2 + LOSCIM
+      KROTV  = KROTL   + LROTL
+      KRQL   = KROTV   + LROTV
+      KRML   = KRQL    + LRQL
+      KRQL2  = KRML    + LRML
+      KRML2  = KRQL2   + LRML
+      KRQV   = KRML2   + LRML
+      KRMV   = KRQV    + LRQV
+      KRQV2  = KRMV    + LRMV
+      KRMV2  = KRQV2   + LRMV
+      KCHKL  = KRMV2   + LRMV
+      KCHKV  = KCHKL   + LCHKL
+      KEND3  = KCHKV   + LCHKV
+      LWRK3  = LWORK   - KEND3
+
+      IF (LWRK3 .LT. 0) THEN
+         CALL QUIT('Insufficient memory in '//SECNAM//' [3]')
+      END IF
+
+      IF (OSCSTR) THEN
+         CALL DZERO(WORK(KOSCS2),LOSCIL)
+         CALL DZERO(WORK(KTRS),LOSCIL)
+      END IF
+      IF (VELSTR) THEN
+         CALL DZERO(WORK(KVELST),LOSCIV)
+         CALL DZERO(WORK(KVELST2),LOSCIV)
+      END IF
+      IF (MIXSTR) THEN
+         CALL DZERO(WORK(KMIXST),LOSCIM)
+         CALL DZERO(WORK(KMIXST2),LOSCIM)
+      END IF
+      IF (ROTLEN) THEN
+         CALL DZERO(WORK(KROTL),LROTL)
+         CALL DZERO(WORK(KROTL),LROTL)
+         CALL DZERO(WORK(KCHKL),LCHKL)
+      END IF
+      IF (ROTVEL) THEN
+         CALL DZERO(WORK(KROTV),LROTV)
+         CALL DZERO(WORK(KROTV),LROTV)
+         CALL DZERO(WORK(KCHKV),LCHKV)
+      END IF
+      IF (RTNLEN) THEN
+         CALL DZERO(WORK(KRQL),LRQL)
+         CALL DZERO(WORK(KRML),LRML)
+         CALL DZERO(WORK(KRQL2),LRML)
+         CALL DZERO(WORK(KRML2),LRML)
+      END IF
+      IF (RTNVEL) THEN
+         CALL DZERO(WORK(KRQV),LRQV)
+         CALL DZERO(WORK(KRMV),LRMV)
+         CALL DZERO(WORK(KRQV2),LRMV)
+         CALL DZERO(WORK(KRMV2),LRMV)
+      END IF
+
+C     Calculate linear response residues from transition moments,
+C     incl. symmetrization.
+C     -----------------------------------------------------------
+
+      WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
+     &  'linear response residue property in atomic units:'
+      WRITE(LUPRI,'(1X,A,/)')
+     &  '-------------------------------------------------------'
+
+      DO IOPER = 1,NLRSOP
+
+         ISYMA  = ISYOPR(IALRSOP(IOPER))
+         ISYMB  = ISYOPR(IBLRSOP(IOPER))
+         LABELA = LBLOPR(IALRSOP(IOPER))
+         LABELB = LBLOPR(IBLRSOP(IOPER))
+
+         IPROPA = INDPRPCC(LABELA)
+         IPROPB = INDPRPCC(LABELB)
+
+         DO IRSD = 1,NXLRSST
+
+            ISTATE = ILRSST(IRSD)
+            ISYME  = ISYEXC(ISTATE)
+            ISTSY  = ISTATE - ISYOFE(ISYME)
+            EIGV   = EIGVAL(ISTATE)
+            ISYMEA = MULD2H(ISYME,ISYMA)
+
+            IF ((ISYME.EQ.ISYMA) .AND. (ISYME.EQ.ISYMB)) THEN
+
+               NTOT = NTOT + 1
+
+               KA = NXLRSST*(IPROPA - 1) + IRSD
+               KB = NXLRSST*(IPROPB - 1) + IRSD
+
+               K1 = KRIGHT + KA - 1
+               K2 = KLEFT  + KB - 1
+               K3 = KRIGHT + KB - 1
+               K4 = KLEFT  + KA - 1
+
+               IHERMA = ISYMAT(IALRSOP(IOPER))
+               IHERMB = ISYMAT(IBLRSOP(IOPER))
+               ISASB  = IHERMA*IHERMB
+
+               IF (ISASB .EQ. 0) THEN
+                  WRITE(LUPRI,*) ' WARNING: operators ',LABELA,LABELB,
+     &                           ' have undefined hermiticities: ',
+     &                             IHERMA,IHERMB
+                  WRITE(LUPRI,*)
+     &            ' Residue not appropriately symmetrized..'
+                  SIGN = 1.0D0
+               ELSE
+                  SIGN = DBLE(ISASB)
+               ENDIF
+               RESIDAB = WORK(K1)*WORK(K2)
+               RESIDBA = WORK(K3)*WORK(K4)
+               RESIDUE = 0.5D0*(RESIDAB + SIGN*RESIDBA)
+               IF (RESIDUE.GE.0.0D0) THEN
+                 SQRRES=SQRT(RESIDUE)
+               ELSE
+                 SQRRES=-SQRT(-RESIDUE)
+               ENDIF
+               WRITE(LUPRI,'(1X,A6,A8,A1,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
+     &         'RES{<<',LABELA,',',LABELB,'>>(',EIGV,')} =',
+     &         RESIDUE,' ( ',SQRRES,')'
+               IF (BOTHLRS) THEN
+                  WRITE(LUPRI,'(1X,A,F12.8,A)')
+     &            '  (Unsymmetrized residue: ',RESIDAB,')'
+               END IF
+
+               IF (OSCSTR) THEN ! Length gauge oscillator strength
+                  IF (LABELA(2:7).EQ.'DIPLEN' .AND.
+     &                LABELB(2:7).EQ.'DIPLEN') THEN
+                     IF (LABELA(1:5).EQ.'XDIPL') IADR1 = 1
+                     IF (LABELA(1:5).EQ.'YDIPL') IADR1 = 2
+                     IF (LABELA(1:5).EQ.'ZDIPL') IADR1 = 3
+                     IF (LABELB(1:5).EQ.'XDIPL') IADR2 = 1
+                     IF (LABELB(1:5).EQ.'YDIPL') IADR2 = 2
+                     IF (LABELB(1:5).EQ.'ZDIPL') IADR2 = 3
+                     IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KOSCS2-1
+                     WORK(IOSCS2) = RESIDUE
+                  END IF
+               END IF
+               IF (VELSTR) THEN ! Velocity gauge oscillator strength
+                  IF (LABELA(2:7).EQ.'DIPVEL' .AND.
+     &                LABELB(2:7).EQ.'DIPVEL') THEN
+                     IF (LABELA(1:5).EQ.'XDIPV') IADR1 = 1
+                     IF (LABELA(1:5).EQ.'YDIPV') IADR1 = 2
+                     IF (LABELA(1:5).EQ.'ZDIPV') IADR1 = 3
+                     IF (LABELB(1:5).EQ.'XDIPV') IADR2 = 1
+                     IF (LABELB(1:5).EQ.'YDIPV') IADR2 = 2
+                     IF (LABELB(1:5).EQ.'ZDIPV') IADR2 = 3
+                     IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KVELST-1
+                     WORK(IOSCS2) = RESIDUE
+                  END IF
+               END IF
+               IF (MIXSTR) THEN ! Mixed gauge oscillator strength
+                  IF (LABELA(2:7).EQ.'DIPLEN' .AND.
+     &                LABELB(2:7).EQ.'DIPVEL') THEN
+                     IF (LABELA(1:5).EQ.'XDIPL') IADR1 = 1
+                     IF (LABELA(1:5).EQ.'YDIPL') IADR1 = 2
+                     IF (LABELA(1:5).EQ.'ZDIPL') IADR1 = 3
+                     IF (LABELB(1:5).EQ.'XDIPV') IADR2 = 1
+                     IF (LABELB(1:5).EQ.'YDIPV') IADR2 = 2
+                     IF (LABELB(1:5).EQ.'ZDIPV') IADR2 = 3
+                     IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KMIXST-1
+                     WORK(IOSCS2) = RESIDUE
+                  END IF
+               END IF
+               IF (ROTLEN) THEN ! Length gauge rotatory strength
+                  IF (LABELA(2:7) .EQ. 'DIPLEN' .AND.
+     &                LABELB(2:7) .EQ. 'ANGMOM') THEN
+                     IF (LABELA(1:5).EQ.'XDIPL') IADR1 = 1
+                     IF (LABELA(1:5).EQ.'YDIPL') IADR1 = 2
+                     IF (LABELA(1:5).EQ.'ZDIPL') IADR1 = 3
+                     IF (LABELB(1:5).EQ.'XANGM') IADR2 = 1
+                     IF (LABELB(1:5).EQ.'YANGM') IADR2 = 2
+                     IF (LABELB(1:5).EQ.'ZANGM') IADR2 = 3
+                     IF (IADR1 .EQ. IADR2) THEN
+                        IROTST = KROTL + 3*(ISTATE-1) + IADR1 - 1
+                        WORK(IROTST) = RESIDUE
+                     END IF
+                  END IF
+               END IF
+               IF (ROTVEL) THEN ! Velocity gauge rotatory strength
+                  IF (LABELA(2:7) .EQ. 'DIPVEL' .AND.
+     &                LABELB(2:7) .EQ. 'ANGMOM') THEN
+                     IF (LABELA(1:5).EQ.'XDIPV') IADR1 = 1
+                     IF (LABELA(1:5).EQ.'YDIPV') IADR1 = 2
+                     IF (LABELA(1:5).EQ.'ZDIPV') IADR1 = 3
+                     IF (LABELB(1:5).EQ.'XANGM') IADR2 = 1
+                     IF (LABELB(1:5).EQ.'YANGM') IADR2 = 2
+                     IF (LABELB(1:5).EQ.'ZANGM') IADR2 = 3
+                     IF (IADR1 .EQ. IADR2) THEN
+                        IROTST = KROTV + 3*(ISTATE-1) + IADR1 - 1
+                        WORK(IROTST) = RESIDUE
+                     END IF
+                  END IF
+               END IF
+               IF (RTNLEN) THEN
+                  IF (LABELA(2:7) .EQ. 'DIPLEN') THEN
+                     IF (LABELB(3:8) .EQ. 'SECMOM') THEN
+                        IADR1 = -999999
+                        IF (LABELA(1:5).EQ.'XDIPL') IADR1 = 1
+                        IF (LABELA(1:5).EQ.'YDIPL') IADR1 = 2
+                        IF (LABELA(1:5).EQ.'ZDIPL') IADR1 = 3
+                        IADR23 = -999999
+                        IADR32 = -999999
+                        IF (LABELB(1:5).EQ.'XXSEC') THEN
+                           IADR23 = 1
+                           IADR32 = 0
+                        ELSE IF (LABELB(1:5).EQ.'XYSEC') THEN
+                           IADR23 = 4
+                           IADR32 = 2
+                        ELSE IF (LABELB(1:5).EQ.'XZSEC') THEN
+                           IADR23 = 7
+                           IADR32 = 3
+                        ELSE IF (LABELB(1:5).EQ.'YYSEC') THEN
+                           IADR23 = 5
+                           IADR32 = 0
+                        ELSE IF (LABELB(1:5).EQ.'YZSEC') THEN
+                           IADR23 = 8
+                           IADR32 = 6
+                        ELSE IF (LABELB(1:5).EQ.'ZZSEC') THEN
+                           IADR23 = 9
+                           IADR32 = 0
+                        END IF
+                        IF ((IADR1.LT.0) .OR. (IADR23.LT.0) .OR.
+     &                      (IADR32.LT.0)) THEN
+                           CALL QUIT('RQL error in '//SECNAM)
+                        END IF
+                        IRTEN = KRQL + 3*9*(ISTATE-1)
+     &                        + 3*(IADR23-1) + IADR1 - 1
+                        WORK(IRTEN) = RESIDUE
+                        IF (IADR32 .NE. 0) THEN
+                           IRTEN = KRQL + 3*9*(ISTATE-1)
+     &                           + 3*(IADR32-1) + IADR1 - 1
+                           WORK(IRTEN) = RESIDUE
+                        END IF
+                     ELSE IF (LABELB(2:7) .EQ. 'ANGMOM') THEN
+                        IF (LABELA(1:5).EQ.'XDIPL') IADR1 = 1
+                        IF (LABELA(1:5).EQ.'YDIPL') IADR1 = 2
+                        IF (LABELA(1:5).EQ.'ZDIPL') IADR1 = 3
+                        IF (LABELB(1:5).EQ.'XANGM') IADR2 = 1
+                        IF (LABELB(1:5).EQ.'YANGM') IADR2 = 2
+                        IF (LABELB(1:5).EQ.'ZANGM') IADR2 = 3
+                        IRTEN = KRML + 3*3*(ISTATE-1)
+     &                        + 3*(IADR2-1) + IADR1 - 1
+                        WORK(IRTEN) = RESIDUE
+                     END IF
+                  END IF
+               END IF
+               IF (RTNVEL) THEN
+                  IF (LABELA(2:7) .EQ. 'DIPVEL') THEN
+                     IF (LABELB(3:8) .EQ. 'ROTSTR') THEN
+                        IF (LABELA(1:5).EQ.'XDIPV') IADR1 = 1
+                        IF (LABELA(1:5).EQ.'YDIPV') IADR1 = 2
+                        IF (LABELA(1:5).EQ.'ZDIPV') IADR1 = 3
+                        IF (LABELB(1:5).EQ.'XXROT') THEN
+                           IADR23 = 1
+                           IADR32 = 0
+                        ELSE IF (LABELB(1:5).EQ.'XYROT') THEN
+                           IADR23 = 4
+                           IADR32 = 2
+                        ELSE IF (LABELB(1:5).EQ.'XZROT') THEN
+                           IADR23 = 7
+                           IADR32 = 3
+                        ELSE IF (LABELB(1:5).EQ.'YYROT') THEN
+                           IADR23 = 5
+                           IADR32 = 0
+                        ELSE IF (LABELB(1:5).EQ.'YZROT') THEN
+                           IADR23 = 8
+                           IADR32 = 6
+                        ELSE IF (LABELB(1:5).EQ.'ZZROT') THEN
+                           IADR23 = 9
+                           IADR32 = 0
+                        END IF
+                        IRTEN = KRQV + 3*9*(ISTATE-1)
+     &                        + 3*(IADR23-1) + IADR1 - 1
+                        WORK(IRTEN) = RESIDUE
+                        IF (IADR32 .NE. 0) THEN
+                           IRTEN = KRQV + 3*9*(ISTATE-1)
+     &                           + 3*(IADR32-1) + IADR1 - 1
+                           WORK(IRTEN) = RESIDUE
+                        END IF
+                     ELSE IF (LABELB(2:7) .EQ. 'ANGMOM') THEN
+                        IF (LABELA(1:5).EQ.'XDIPV') IADR1 = 1
+                        IF (LABELA(1:5).EQ.'YDIPV') IADR1 = 2
+                        IF (LABELA(1:5).EQ.'ZDIPV') IADR1 = 3
+                        IF (LABELB(1:5).EQ.'XANGM') IADR2 = 1
+                        IF (LABELB(1:5).EQ.'YANGM') IADR2 = 2
+                        IF (LABELB(1:5).EQ.'ZANGM') IADR2 = 3
+                        IRTEN = KRMV + 3*3*(ISTATE-1)
+     &                        + 3*(IADR2-1) + IADR1 - 1
+                        WORK(IRTEN) = RESIDUE
+                     END IF
+                  END IF
+               END IF
+
+            ELSE
+
+               RESIDUE = 0.0D0
+               SQRRES  = 0.0D0
+
+            END IF
+
+            IF (LABELA .EQ. LABELB) THEN
+               CALL CC_PRPC(SQRRES,MODELP,-1,
+     &                      LABELA,LABELB,LABELA,LABELB,
+     &                      EIGV,EIGV,EIGV,ISYMEA)
+            END IF
+
+         END DO
+
+      END DO
+
+      CALL FLSHFO(LUPRI)
+
+C     Print summary on unit LURES.
+C     ----------------------------
+
+      LUOSC = LURES
+
+      IF (OSCSTR) CALL DCOPY(LOSCIL,WORK(KOSCS2),1,WORK(KTRS),1)
+      IF (VELSTR) CALL DCOPY(LOSCIV,WORK(KVELST),1,WORK(KVELST2),1)
+      IF (MIXSTR) CALL DCOPY(LOSCIM,WORK(KMIXST),1,WORK(KMIXST2),1)
+
+      IF (OSCSTR .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Osci'
+     &     //'llator Strength       |'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        | Dipole Strength(a.u.) | Oscillator stre'
+     &    //'ngth  | Direction   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM  = 1, NSYM
+            DO IEX   = 1, NCCEXCI(ISYM,1)
+               ISTATE = ISYOFE(ISYM) + IEX
+               EIGV   = EIGVAL(ISTATE)
+               KOSCSI = KOSCS2 + 3*3*(ISTATE-1)
+               KTRSI  = KTRS   + 3*3*(ISTATE-1)
+               LCALC  = .FALSE.
+               LDIP   = 1
+               DO IRSD  = 1, NXLRSST
+                 ISTATE = ILRSST(IRSD)
+                 ISYME  = ISYEXC(ISTATE)
+                 ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+                 IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+               END DO
+               CALL CC_OSCPRI(WORK(KTRSI),WORK(KOSCSI),EIGV,
+     &                        IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
+     &                        LDIP,LUOSC)
+            END DO
+            IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+               NREST = 0
+               DO ISYM2 = ISYM+1,NSYM
+                  NREST = NREST + NCCEXCI(ISYM2,1)
+               END DO
+               IF (NREST.EQ.0) GOTO 9001
+               WRITE(LUOSC,'(A)')
+     &         ' +----------------------------------------------'
+     &        //'-------------------------------+'
+            END IF
+ 9001       CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+      END IF
+
+      IF (VELSTR .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Osci'
+     &     //'llator Strength       |'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        | Dipole Strength(a.u.) | Oscillator stre'
+     &    //'ngth  | Direction   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM  = 1, NSYM
+            DO IEX   = 1, NCCEXCI(ISYM,1)
+               ISTATE = ISYOFE(ISYM) + IEX
+               EIGV   = EIGVAL(ISTATE)
+               KOSCSI = KVELST + 3*3*(ISTATE-1)
+               KTRSI  = KVELST2+ 3*3*(ISTATE-1)
+               LCALC  = .FALSE.
+               LDIP   = 2
+               DO IRSD  = 1, NXLRSST
+                  ISTATE = ILRSST(IRSD)
+                  ISYME  = ISYEXC(ISTATE)
+                  ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+                  IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+               END DO
+               CALL CC_OSCPRI(WORK(KTRSI),WORK(KOSCSI),EIGV,
+     &                        IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
+     &                        LDIP,LUOSC)
+            END DO
+            IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+               NREST = 0
+               DO ISYM2 = ISYM+1,NSYM
+                  NREST = NREST + NCCEXCI(ISYM2,1)
+               END DO
+               IF (NREST.EQ.0) GOTO 9005
+               WRITE(LUOSC,'(A)')
+     &         ' +----------------------------------------------'
+     &         //'-------------------------------+'
+            END IF
+ 9005       CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+      END IF
+
+      IF (MIXSTR .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+ 
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Mixed    Gauge Osci'
+     &     //'llator Strength       |'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        | Dipole Strength(a.u.) | Oscillator stre'
+     &    //'ngth  | Direction   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+ 
+         DO ISYM  = 1, NSYM
+            DO IEX   = 1, NCCEXCI(ISYM,1)
+               ISTATE = ISYOFE(ISYM) + IEX
+               EIGV   = EIGVAL(ISTATE)
+               KOSCSI = KMIXST + 3*3*(ISTATE-1)
+               KTRSI  = KMIXST2+ 3*3*(ISTATE-1)
+               LCALC  = .FALSE.
+               LDIP   = 3
+               DO IRSD  = 1, NXLRSST
+                  ISTATE = ILRSST(IRSD)
+                  ISYME  = ISYEXC(ISTATE)
+                  ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+                  IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+               END DO
+               CALL CC_OSCPRI(WORK(KTRSI),WORK(KOSCSI),EIGV,
+     &                        IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
+     &                        LDIP,LUOSC)
+            END DO
+            IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+               NREST = 0
+               DO ISYM2 = ISYM+1,NSYM
+                  NREST = NREST + NCCEXCI(ISYM2,1)
+               END DO
+               IF (NREST.EQ.0) GOTO 9008
+               WRITE(LUOSC,'(A)')
+     &         ' +----------------------------------------------'
+     &        //'-------------------------------+'
+            END IF
+ 9008       CONTINUE
+         END DO
+ 
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+ 
+      END IF
+
+      IF (ROTLEN .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rota'
+     &     //'tory Strength         |'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Direction   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KTRSI  = KROTL + 3*(ISTATE-1)
+           KSTREN = KCHKL + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_ROTPRI(WORK(KTRSI),WORK(KSTREN),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9009
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9009     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+      END IF
+
+      IF (ROTVEL .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rota'
+     &     //'tory Strength         |'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Direction   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KTRSI  = KROTV + 3*(ISTATE-1)
+           KSTREN = KCHKV + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_ROTPRI(WORK(KTRSI),WORK(KSTREN),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9010
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9010     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+      END IF
+
+      IF (RTNLEN .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rot.'
+     &     //'Str. Tensor, El. Quad.|'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFQ  = KRQL  + 3*9*(ISTATE-1)
+           KOFQ2  = KRQL2 + 3*3*(ISTATE-1)
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTQPRI(WORK(KOFFQ),WORK(KOFQ2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,NWRL)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9011
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9011     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rot.'
+     &     //'Str. Tensor, Mag. Dip.|'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFM  = KRML  + 3*3*(ISTATE-1)
+           KOFM2  = KRML2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKL + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTMPRI(WORK(KOFFM),WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRL)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9012
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9012     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         CALL DAXPY(LRML,1.0D0,WORK(KRQL2),1,WORK(KRML2),1)  ! Get total tensor (in KRML2)
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Length   Gauge Rot.'
+     &     //'Str. Tensor, Total    |'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFM2  = KRML2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKL + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 1
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTTPRI(WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRL)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9013
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9013     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         IF (NWRL .NE. 0) THEN
+            WRITE(LUOSC,'(//,1X,A,I4,A)')
+     &      '***NOTICE:',NWRL,' warnings issued for Rot. Str. Tensors.'
+            WRITE(LUOSC,'(1X,A)')
+     &      '           Length gauge tensors are wrong!'
+         END IF
+
+      END IF
+
+      IF (RTNVEL .AND. (CCS.OR.CC2.OR.CCSD)) THEN
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rot.'
+     &     //'Str. Tensor, El. Quad.|'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFQ  = KRQV  + 3*9*(ISTATE-1)
+           KOFQ2  = KRQV2 + 3*3*(ISTATE-1)
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTQPRI(WORK(KOFFQ),WORK(KOFQ2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,NWRV)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9014
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9014     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rot.'
+     &     //'Str. Tensor, Mag. Dip.|'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFFM  = KRMV  + 3*3*(ISTATE-1)
+           KOFM2  = KRMV2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKV + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTMPRI(WORK(KOFFM),WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRV)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9015
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9015     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         CALL DAXPY(LRMV,1.0D0,WORK(KRQV2),1,WORK(KRMV2),1)  ! Get total tensor (in KRMV2)
+
+         WRITE(LUOSC,'(//A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+         WRITE(LUOSC,'(1X,A26,A10,A)')
+     &     '|  sym. | Exci.  |        ',MODELP,' Velocity Gauge Rot.'
+     &     //'Str. Tensor, Total    |'
+         WRITE(LUOSC,'(A)')
+     &     ' |(spin, |        +-----------------------------'
+     &    //'-------------------------------+'
+         WRITE(LUOSC,'(1X,A)')
+     &     '| spat) |        |        D-55 SI        |      D-40 cgs  '
+     &    //'      | Component   |'
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         DO ISYM = 1, NSYM
+          DO IEX = 1, NCCEXCI(ISYM,1)
+           ISTATE = ISYOFE(ISYM) + IEX
+           EIGV   = EIGVAL(ISTATE)
+           KOFM2  = KRMV2 + 3*3*(ISTATE-1)
+           KSTREN = KCHKV + ISTATE - 1
+           LCALC  = .FALSE.
+           LDIP   = 2
+           DO IRSD  = 1, NXLRSST
+             ISTATE = ILRSST(IRSD)
+             ISYME  = ISYEXC(ISTATE)
+             ISTSY  = ILRSST(IRSD)-ISYOFE(ISYME)
+             IF ((ISYME.EQ.ISYM).AND.(IEX.EQ.ISTSY)) LCALC =.TRUE.
+           END DO
+           CALL CC_RTTPRI(WORK(KOFM2),EIGV,IEX,ISYM,MODELP,
+     &                    LCALC,LDIP,LUOSC,WORK(KSTREN),NWRV)
+
+          END DO
+
+          IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
+             NREST = 0
+             DO ISYM2 = ISYM+1,NSYM
+                NREST = NREST + NCCEXCI(ISYM2,1)
+             END DO
+             IF (NREST.EQ.0) GOTO 9016
+             WRITE(LUOSC,'(A)')
+     &       ' +----------------------------------------------'
+     &      //'-------------------------------+'
+          END IF
+ 9016     CONTINUE
+         END DO
+
+         WRITE(LUOSC,'(A)')
+     &     ' +=============================================='
+     &    //'===============================+'
+
+         IF (NWRV .NE. 0) THEN
+            WRITE(LUOSC,'(//,1X,A,I4,A)')
+     &      '***NOTICE:',NWRV,' warnings issued for Rot. Str. Tensors.'
+            WRITE(LUOSC,'(1X,A)')
+     &      '           Velocity gauge tensors are wrong!'
+         END IF
+
+      END IF
+
+      IF (ROTLEN .OR. ROTVEL .OR. RTNLEN .OR. RTNVEL) THEN
+         WRITE(LUOSC,'(/,1X,A)')
+     &   'Conversion factors for rotatory strengths:'
+         WRITE(LUOSC,'(3X,A,F15.10,A)')
+     &   'SI  units:   1 a.u. = ',RAUSI,'D-55 A^2 m^3 s'
+         WRITE(LUOSC,'(3X,A,F15.10,A)')
+     &   'cgs units:   1 a.u. = ',RAUCGS,'D-40 cm^5 g s^-2'
+      END IF
+
+C     Print timings and exit.
+C     -----------------------
+
+ 999  TIMTOT = SECOND() - TIMTOT
+      WRITE(LUPRI,'(/,1X,A,I7,A,F10.2,A)')
+     & '>>> Total time for',NTOT,' linear response residues: ',
+     & TIMTOT,' seconds.'
+      CALL FLSHFO(LUPRI)
+
+      CALL QEXIT(SECNAM)
+
+      RETURN
+      END
+C  /* Deck ilres */
+      INTEGER FUNCTION ILRES(LABEL,LIST)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Find the first index of the operator LABEL on the residue
+C              list indicated by LIST ('A' or 'B') for which the total
+C              residue is symmetry--allowed.
+C              If LABEL is not on the list, ILRES = -1
+C              If LIST is illegal,          ILRES = -2.
+C
+#include <implicit.h>
+      CHARACTER*8 LABEL
+      CHARACTER*1 LIST
+#include <cclres.h>
+#include <ccroper.h>
+
+      CHARACTER*8 LOCLAB
+
+      ILRES = -1
+
+      IF (LIST .EQ. 'A') THEN
+
+         DO IOPER = 1,NLRSOP
+            LOCLAB = LBLOPR(IALRSOP(IOPER))
+            IF (LABEL(1:8) .EQ. LOCLAB(1:8)) THEN
+               ISYMA = ISYOPR(IALRSOP(IOPER))
+               ISYMB = ISYOPR(IBLRSOP(IOPER))
+               IF (ISYMA .EQ. ISYMB) THEN
+                  ILRES = IOPER
+                  RETURN
+               END IF
+            END IF
+         END DO
+
+      ELSE IF (LIST .EQ. 'B') THEN
+
+         DO IOPER = 1,NLRSOP
+            LOCLAB = LBLOPR(IBLRSOP(IOPER))
+            IF (LABEL(1:8) .EQ. LOCLAB(1:8)) THEN
+               ISYMA = ISYOPR(IALRSOP(IOPER))
+               ISYMB = ISYOPR(IBLRSOP(IOPER))
+               IF (ISYMA .EQ. ISYMB) THEN
+                  ILRES = IOPER
+                  RETURN
+               END IF
+            END IF
+         END DO
+
+      ELSE
+
+         ILRES = -2
+
+      END IF
+
+      RETURN
+      END
+C  /* Deck cc_trreta */
+      SUBROUTINE CC_TRRETA(ISYMA,LABELA,TRRMOM,ETA,WORK,LWORK,MODEL)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Calculate etaA*RE contributions to right ground-excited
+C              state transition moments for all excited states of matching
+C              symmetry.
+C
+#include <implicit.h>
+      DIMENSION TRRMOM(*), ETA(*), WORK(LWORK)
+      CHARACTER*8  LABELA
+      CHARACTER*10 MODEL
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <priunit.h>
+#include <cclres.h>
+#include <ccexci.h>
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_TRRETA')
+
+C     Allocation.
+C     -----------
+
+      NTAMP = NT1AM(ISYMA)
+      IF (.NOT. CCS) NTAMP = NTAMP + NT2AM(ISYMA)
+
+      KRE1 = 1
+      KRE2 = KRE1 + NT1AM(ISYMA)
+      IF (CCS) THEN
+         KEND = KRE2
+      ELSE
+         KEND = KRE2 + NT2AM(ISYMA)
+      END IF
+      LWRK = LWORK - KEND + 1
+
+      IF (LWRK .LT. 0) THEN
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      END IF
+
+C     Loop over requested excited states.
+C     -----------------------------------
+
+      DO IRSD = 1,NXLRSST
+
+         ISTATE = ILRSST(IRSD)
+         ISYME  = ISYEXC(ISTATE)
+
+         IF (ISYME .EQ. ISYMA) THEN
+
+C           Calculate contribution.
+C           -----------------------
+
+            IOPT = 3
+            CALL CC_RDRSP('RE',ISTATE,ISYMA,IOPT,MODEL,WORK(KRE1),
+     &                    WORK(KRE2))
+
+            CONTR = DDOT(NTAMP,ETA,1,WORK(KRE1),1)
+
+            TRRMOM(IRSD) = TRRMOM(IRSD) + CONTR
+
+            IF (IPRINT .GT. 2) THEN
+               ISTSY = ISTATE - ISYOFE(ISYME)
+               WRITE(LUPRI,'(1X,A1,A8,A3,A,F12.6,A,I3,A,I2,A)')
+     &         '<',LABELA,'|f>',' EtaA*RE cont. = ',CONTR,
+     &         '  (f:',ISTSY,' of sym.',ISYME,')'
+            END IF
+
+         END IF
+
+      END DO
+
+      RETURN
+      END
+C  /* Deck cc_trlksi */
+      SUBROUTINE CC_TRLKSI(ISYMA,LABELA,TRLMOM,XKSI,WORK,LWORK,MODEL)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Calculate LE*ksiA contributions to left ground-excited
+C              state transition moments for all excited states of matching
+C              symmetry.
+C
+#include <implicit.h>
+      DIMENSION TRLMOM(*), XKSI(*), WORK(LWORK)
+      CHARACTER*8  LABELA
+      CHARACTER*10 MODEL
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <priunit.h>
+#include <cclres.h>
+#include <ccexci.h>
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_TRLKSI')
+
+C     Allocation.
+C     -----------
+
+      NTAMP = NT1AM(ISYMA)
+      IF (.NOT. CCS) NTAMP = NTAMP + NT2AM(ISYMA)
+
+      KLE1 = 1
+      KLE2 = KLE1 + NT1AM(ISYMA)
+      IF (CCS) THEN
+         KEND = KLE2
+      ELSE
+         KEND = KLE2 + NT2AM(ISYMA)
+      END IF
+      LWRK = LWORK - KEND + 1
+
+      IF (LWRK .LT. 0) THEN
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      END IF
+
+C     Loop over requested excited states.
+C     -----------------------------------
+
+      DO IRSD = 1,NXLRSST
+
+         ISTATE = ILRSST(IRSD)
+         ISYME  = ISYEXC(ISTATE)
+
+         IF (ISYME .EQ. ISYMA) THEN
+
+C           Calculate contribution.
+C           -----------------------
+
+            IOPT = 3
+            CALL CC_RDRSP('LE',ISTATE,ISYMA,IOPT,MODEL,WORK(KLE1),
+     &                    WORK(KLE2))
+
+            CONTR = DDOT(NTAMP,WORK(KLE1),1,XKSI,1)
+
+            TRLMOM(IRSD) = TRLMOM(IRSD) + CONTR
+
+            IF (IPRINT .GT. 2) THEN
+               ISTSY = ISTATE - ISYOFE(ISYME)
+               WRITE(LUPRI,'(1X,A3,A8,A1,A,F12.6,A,I3,A,I2,A)')
+     &         '<f|',LABELA,'>',' LE*ksiA cont. = ',CONTR,
+     &         '  (f:',ISTSY,' of sym.',ISYME,')'
+            END IF
+
+         END IF
+
+      END DO
+
+      RETURN
+      END
+C  /* Deck cc_trrksi */
+      SUBROUTINE CC_TRRKSI(ISYMA,LABELA,TRRMOM,XKSI,WORK,LWORK,MODEL)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Calculate Mf*ksiA contributions to right ground-excited
+C              state transition moments for all excited states of matching
+C              symmetry.
+C
+#include <implicit.h>
+      DIMENSION TRRMOM(*), XKSI(*), WORK(LWORK)
+      CHARACTER*8  LABELA
+      CHARACTER*10 MODEL
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <priunit.h>
+#include <cclres.h>
+#include <ccexci.h>
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_TRRKSI')
+
+C     Allocation.
+C     -----------
+
+      NTAMP = NT1AM(ISYMA)
+      IF (.NOT. CCS) NTAMP = NTAMP + NT2AM(ISYMA)
+
+      KMF1 = 1
+      KMF2 = KMF1 + NT1AM(ISYMA)
+      IF (CCS) THEN
+         KEND = KMF2
+      ELSE
+         KEND = KMF2 + NT2AM(ISYMA)
+      END IF
+      LWRK = LWORK - KEND + 1
+
+      IF (LWRK .LT. 0) THEN
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      END IF
+
+C     Loop over requested excited states.
+C     -----------------------------------
+
+      DO IRSD = 1,NXLRSST
+
+         ISTATE = ILRSST(IRSD)
+         ISYME  = ISYEXC(ISTATE)
+
+         IF (ISYME .EQ. ISYMA) THEN
+
+C           Calculate contribution.
+C           -----------------------
+
+            IOPT   = 3
+            ILSTNR = ILRMAMP(ISTATE,EIGVAL(ISTATE),ISYMA)
+            CALL CC_RDRSP('M1',ILSTNR,ISYMA,IOPT,MODEL,WORK(KMF1),
+     &                    WORK(KMF2))
+
+            CONTR = DDOT(NTAMP,WORK(KMF1),1,XKSI,1)
+
+            TRRMOM(IRSD) = TRRMOM(IRSD) + CONTR
+
+            IF (IPRINT .GT. 2) THEN
+               ISTSY = ISTATE - ISYOFE(ISYME)
+               WRITE(LUPRI,'(1X,A1,A8,A3,A,F12.6,A,I3,A,I2,A)')
+     &         '<',LABELA,'|f>',' Mf*ksiA cont. = ',CONTR,
+     &         '  (f:',ISTSY,' of sym.',ISYME,')'
+            END IF
+
+         END IF
+
+      END DO
+
+      RETURN
+      END
+C  /* Deck cc_trrfta */
+      SUBROUTINE CC_TRRFTA(ISYMA,LABELA,TRRMOM,WORK,LWORK,MODEL)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Purpose: Calculate [F*tA(-wf)]*RE contributions to right ground-excited
+C              state transition moments for all excited states of matching
+C              symmetry.
+C
+#include <implicit.h>
+      DIMENSION TRRMOM(*), WORK(LWORK)
+      CHARACTER*8  LABELA
+      CHARACTER*10 MODEL
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <priunit.h>
+#include <cclres.h>
+#include <ccexci.h>
+
+      CHARACTER*9 SECNAM
+      PARAMETER (SECNAM = 'CC_TRRFTA')
+
+C     Allocation.
+C     -----------
+
+      NTAMP = NT1AM(ISYMA)
+      IF (.NOT. CCS) NTAMP = NTAMP + NT2AM(ISYMA)
+
+      KFTA = 1
+      KRE  = KFTA  + NTAMP
+      KEND = KRE   + NTAMP
+      LWRK = LWORK - KEND + 1
+
+      IF (LWRK .LT. 0) THEN
+         CALL QUIT('Insufficient memory in '//SECNAM)
+      END IF
+
+      KFTA1 = KFTA
+      KFTA2 = KFTA + NT1AM(ISYMA)
+      KRE1  = KRE
+      KRE2  = KRE  + NT1AM(ISYMA)
+
+C     Loop over requested excited states.
+C     -----------------------------------
+
+      DO IRSD = 1,NXLRSST
+
+         ISTATE = ILRSST(IRSD)
+         ISYME  = ISYEXC(ISTATE)
+
+         IF (ISYME .EQ. ISYMA) THEN
+
+C           Calculate contribution.
+C           -----------------------
+
+            IOPT   = 3
+            ILSTNR = IR1TAMP(LABELA,.FALSE.,-EIGVAL(ISTATE),ISYMA)
+            CALL CC_RDRSP('F1',ILSTNR,ISYMA,IOPT,MODEL,WORK(KFTA1),
+     &                    WORK(KFTA2))
+            IOPT   = 3
+            CALL CC_RDRSP('RE',ISTATE,ISYMA,IOPT,MODEL,WORK(KRE1),
+     &                    WORK(KRE2))
+
+            CONTR = DDOT(NTAMP,WORK(KFTA),1,WORK(KRE),1)
+
+            TRRMOM(IRSD) = TRRMOM(IRSD) + CONTR
+
+            IF (IPRINT .GT. 2) THEN
+               ISTSY = ISTATE - ISYOFE(ISYME)
+               WRITE(LUPRI,'(1X,A1,A8,A3,A,F12.6,A,I3,A,I2,A)')
+     &         '<',LABELA,'|f>',' [F*tA(-wf)]*RE cont. = ',CONTR,
+     &         '  (f:',ISTSY,' of sym.',ISYME,')'
+            END IF
+
+         END IF
+
+      END DO
+
+      RETURN
+      END

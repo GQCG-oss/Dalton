@@ -94,7 +94,7 @@ described in Ref.~\cite{klbaehkrthjopjtca90,mpkrthcpl388}. This
 necessitates the specification of the number electronic
 excitations\index{electronic excitation} in 
 each symmetry, given in the \Sec{EXCITA} module. The reader is
-refered to the section where the calculation of ECD is described in
+referred to the section where the calculation of ECD is described in
 more detail (Sec.~\ref{sec:ecd}).
 
 \item[\Key{EXCITA}] Invokes the calculation of electronic
@@ -237,13 +237,13 @@ described in Ref.~\cite{tuhjahjajpjjcp84}.
 entering the NMR spin-Hamiltonian, that is nuclear
 shieldings\index{nuclear shielding} and
 indirect nuclear spin-spin coupling\index{spin-spin coupling}
-constants. The reader is refered to the 
+constants. The reader is referred to the 
 description of the two keywords \Key{SHIELD} and \Key{SPIN-S}.
 
 \item[\Key{NOCMC}] This keyword sets the gauge
 origin\index{gauge origin}  to the origin of the Cartesian Coordinate system,
 that is (0,0,0). This keyword is automatically invoked in case of VCD
-calculations.
+and OECD calculations.
 
 \item[\Key{NODARW}] Turns off the calculation of the Darwin
 correction\index{Darwin correction}. By default the two major relativistic
@@ -288,13 +288,31 @@ coupling constants\index{nuclear quadrupole coupling}\index{NQCC}.
   of a fully analytical molecular Hessian calculation in the final
   geometry.
 
+\item[\Key{OECD}] Invokes the calculation of Oriented Electronic Circular
+Dichroism
+(OECD)\index{ECD!oriented}\index{electronic circular dichroism!oriented}\index{OECD}\index{oriented electronic circular dichroism}
+as described in Ref.~\cite{tbpaehcpl246}. This 
+necessitates the specification of the number of electronic
+excitations\index{electronic excitation} in 
+each symmetry, given in the \Sec{EXCITA} module.
+Note that OECD can only be calculated at the mathematical origin
+and the \Key{NOCMC} option is automatically turned on.
+The reader is
+referred to Sec.~\ref{sec:ecd} for more details.
+
 \item[\Key{OPTROT}] Requests the calculation of the optical rotation
 of a molecule~\cite{thkrklbpjjofd99,plpmp91}. By default the optical
 rotation is calculated 
-both with and without the use of London orbitals. Note that in the
+both with and without the use of London orbitals (using the
+length gauge formulation). Note that in the
 formalism used in \siraba , this quantity vanishes in the static
 limit, and frequencies need to be set in the \verb|*ABALNR| input
-module. See also description in Chapter~\ref{sec:optrot}.
+module. See also the description in Chapter~\ref{sec:optrot}.
+
+\item[\Key{OR}] Requests the calculation of the optical rotation
+of a molecule using the manifestly origin invariant ``modified''
+velocity gauge formulation\cite{Pedersen:ORMVE}.
+See also the description in Chapter~\ref{sec:optrot}.
 
 \item[\Key{PHASEO}]\verb| |\newline
 \verb|READ (LUCMD, *) (ORIGIN(ICOOR), ICOOR = 1, 3)|
@@ -333,7 +351,7 @@ transformed to the principal moments of inertia coordinate system.
 
 \item[\Key{RAMAN}] Calculates Raman intensities\index{Raman intensity}, as described in 
 Ref.~\cite{thkrklbpjjofd99}. This property needs a lot of settings
-in order to perform correctly, and the reader is therefore refered to
+in order to perform correctly, and the reader is therefore referred to
 Section~\ref{sec:vroa}, where the
 calculation of this property is described in more detail.
 
@@ -488,7 +506,7 @@ will be calculated as well\index{IR intensity}.
 Optical Activity\index{Raman optical activity}\index{ROA}, as
 described in Ref.~\cite{thkrklbpjjofd99}. This 
 property needs a lot of settings in order to perform correctly, and
-the reader is therefore refered to Section~\ref{sec:vroa}, where the
+the reader is therefore referred to Section~\ref{sec:vroa}, where the
 calculation of this property is described in more detail.
 
 \item[\Key{WRTINT}] Forces the magnetic first-derivate two-electron
@@ -580,6 +598,8 @@ Read one more line containing the number of frequencies to be
 calculated, and another line reading these frequencies. The
 frequencies are to be entered in atomic units. By default only the
 static case is evaluated.
+The \Key{FREQUE} keyword may be combined with the wave length input
+\Key{WAVELE} (see below).
 
 \item[\Key{LIFETIME}]\verb| |\newline
 \verb|READ (LUCMD,*) LIFETIME|
@@ -642,6 +662,21 @@ Set the convergence threshold for the solution
 of the frequency dependent response equations. Read one more line
 containing the convergence threshold~(D12.6). The default value is
 $5.0\cdot10^{-5}$.
+
+\item[\Key{FREQUE}]\verb| |\newline
+\verb|READ (LUCMD,*) NWVLEN|\newline
+\verb|READ (LUCMD,*) (WVLEN(I), I = 1, NWVLEN)|
+
+Set the number of wave lengths as well as the wave lengths\index{frequency}
+at which the
+frequency-dependent linear response equations are to be evaluated.
+Read one more line containing the number of wave lengths to be
+calculated, and another line reading these wave lengths. The
+wave lengths are to be entered in units of nanometers (nm).
+By default only the
+static case (infinite wavelength, zero frequency) is evaluated.
+The \Key{WAVELE} keyword may be combined with the frequency input
+\Key{WAVELE} (see above).
 \end{description}
 
 \subsection{Dipole moment and dipole gradient contributions: {\tt
