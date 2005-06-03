@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -177,6 +177,7 @@ c/* Deck CC_BMAT */
 #include "eribuf.h"
 #include "ccslvinf.h"
 #include "qm3.h"
+#include "second.h"
 
 * local parameters:
       CHARACTER MSGDBG*(16)
