@@ -61,13 +61,14 @@ Pawel Salek, 2004.06, Himmelbjerg.
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
-static real CamMuFactor = 0.33, CamAlpha = 0.19, CamBeta = 0.46;
+static real CamMuFactor = 0.33, CamAlpha = 0.19, CamBeta = 0.46,
+    CamLypWeight = 0.81, CamVwnWeight = 0.19;
 #define MU    CamMuFactor
 #define ALPHA CamAlpha
 #define BETA  CamBeta
 
-#define LYP_WEIGHT 0.81
-#define VWN_WEIGHT 0.19
+#define LYP_WEIGHT CamLypWeight
+#define VWN_WEIGHT CamVwnWeight
 #define ADD_CORRELATION 1
 
 #if 1
@@ -156,7 +157,9 @@ parse_table(const char *func, const char *str,
   return res;
 }
 
-static const char *cam_keywords[] = { "alpha", "beta", "mu" };
+static const char *cam_keywords[] = { "alpha", "beta", "mu",
+                                      "vwnweight", "lypweight"
+};
 static int
 camb3lyp_read(const char *conf_line)
 {
@@ -165,6 +168,8 @@ camb3lyp_read(const char *conf_line)
     weights[0] = CamAlpha;
     weights[1] = CamBeta;
     weights[2] = CamMuFactor;
+    weights[3] = CamVwnWeight;
+    weights[4] = CamLypWeight;
     if(!parse_table("CAM-B3LYP", conf_line,
                     ELEMENTS(cam_keywords), cam_keywords, weights))
         return 0;
@@ -175,6 +180,8 @@ camb3lyp_read(const char *conf_line)
     CamMuFactor = weights[2]; CamBeta = weights[1];
 
     CamAlpha = weights[0];
+    CamVwnWeight = weights[3];
+    CamLypWeight = weights[4];
     return 1;
 }
 
@@ -182,8 +189,9 @@ camb3lyp_read(const char *conf_line)
 static void
 camb3lyp_report(void)
 {
-    fun_printf("CAM-B3LYP functional with alpha=%5.3f beta=%5.3f mu=%5.3f",
-               ALPHA, BETA, MU);
+    fun_printf("CAM-B3LYP functional with alpha=%5.3f beta=%5.3f mu=%5.3f ",
+               "VwnWeight=%5.3f LypWeight=%5.3f",
+               ALPHA, BETA, MU, VWN_WEIGHT, LYP_WEIGHT);
 }
 
 /* ===================================================================
