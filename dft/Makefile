@@ -38,6 +38,7 @@ FUNFILES = \
 	fun-example8.c	\
 	fun-example9.c	\
 	fun-gga.c	\
+	fun-g96.c	\
 	fun-kt.c	\
 	fun-lb94.c	\
 	fun-lyp.c	\
@@ -51,6 +52,7 @@ FUNFILES = \
 	fun-pbex.c	\
 	fun-pw86x.c	\
 	fun-pw91c.c	\
+	fun-pw91x.c	\
 	fun-pz81.c	\
 	fun-slater.c	\
 	fun-vwn.c
