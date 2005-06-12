@@ -149,9 +149,10 @@ pw86x_energy(const FunDensProp *dp)
     return res;
 }
 
-static __inline__ void
+static void
 pw86x_first_helper(real rhoa, real grada, real *res)
-{    real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
+{
+    real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
     real t11, t12, t13, t14, t15, t16;
 
     t1 = pow(6.0,0.333333333333333);
@@ -201,7 +202,7 @@ pw86x_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
 }
 
-static __inline__ void
+static void
 pw86x_second_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -283,7 +284,7 @@ pw86x_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static  void
 pw86x_third_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -407,7 +408,7 @@ pw86x_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 pw86x_fourth_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;

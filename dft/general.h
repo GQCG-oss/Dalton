@@ -266,6 +266,8 @@ void FSYM2(dft_get_ao_dens_mat)(const real* cmo, real* dmat,
                                 real* work, int* lwork);
 void FSYM2(dft_get_ao_dens_matab)(real* cmo, real* dmata, real* dmatb,
                                   real* work, int* lwork);
+void FSYM(lrao2mo)(const real* cmo, const int *ksymop, 
+                   const real*res, real* fmat, real* work, int*lw);
 
 /* useful  constants for fortran interfacing */
 extern const int  ZEROI, ONEI, THREEI, FOURI;

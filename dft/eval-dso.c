@@ -106,11 +106,11 @@ dso_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
  * this option and we unfold the matrix first. Not that it matters much
  * except for memory usage.
  */
+extern void FSYM2(numdso_finish)(real* spndso);
 void
 FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork)
 {
     extern void dunfld_(const int* n, const real* dsp, real* dge);
-    extern void numdso_finish_(real* spndso);
     struct tms starttm, endtm; clock_t utm;
     struct dso_data dso;
     real electrons, *dmat;

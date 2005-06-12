@@ -71,9 +71,6 @@ const static int KOHNSH_DEBUG = 0;
 const static int DFTLR_DEBUG  = 0;
 const static int DFTMAG_DEBUG = 0;
 
-void lrao2mo_(const real* cmo, const int *ksymop, 
-              const real*res, real* fmat, real* work, int*lw);
-
 #if defined(VAR_MPI)
 #include <mpi.h>
 #define MASTER_NO 0
