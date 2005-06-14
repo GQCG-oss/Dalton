@@ -1198,7 +1198,7 @@ C
       IF (DOGGA) THEN
          DO I = 1, NBLEN
             GRDNRM =  SQRT(GRADAT(I,1)**2+GRADAT(I,2)**2+GRADAT(I,3)**2)
-            IF(GRDNRM.LE.1e-40) GDRNRM = 1e-40
+            IF(GRDNRM.LE.1D-40) GDRNRM = 1D-40
             DENS(1) = DP5*RHOA(I)
             DENS(2) = DP5*RHOA(I)
             DENS(3) = DP5*GRDNRM

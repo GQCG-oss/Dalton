@@ -131,12 +131,23 @@ float etime_(float* et)
   return et[0] + et[1];
 }
 
+#ifdef VAR_G77
+char* fdate_(void)
+{
+  static char buf[24];
+  time_t curr_time;
+  time(&curr_time);
+  strncpy(buf, ctime(&curr_time), 24);
+  return buf;
+}
+#else
 void fdate_(char* dt, int dtlen)
 {
   time_t curr_time;
   time(&curr_time);
   strncpy(dt, ctime(&curr_time), 24);
 }
+#endif
 
 int time_(void)
 { 
