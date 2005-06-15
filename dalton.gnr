@@ -171,12 +171,14 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
 #      ierr=1
    fi
-   if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
-      cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
-   else
-      echo "$WRKDIR/$potfil.$POTEXT does not exist or is not readable"
-      echo "A file with the extension $POTEXT only exist in QM/MM calc."
-#      ierr=1
+   if [ "$potfil" != "" ]; then 
+     if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
+        cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
+     else
+        echo "$WRKDIR/$potfil.$POTEXT does not exist or is not readable"
+        echo "A file with the extension $POTEXT only exist in QM/MM calc."
+#       ierr=1
+     fi
    fi
    if [ "$optf" != "0" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
