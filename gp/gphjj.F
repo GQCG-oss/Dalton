@@ -2004,3 +2004,16 @@ C
   140 CONTINUE
       RETURN
       END
+      SUBROUTINE COMPOFF(WRK, WORK, KBASE)
+C
+C     Nov. 2004 Hans Joergen Aa. Jensen
+C
+C     COMPOFF - Compute off-set from WORK to WRK
+C               i.e. WRK(I) = WORK(KBASE+I)
+C
+      REAL*8 WRK(*), WORK(*)
+      KADDR = LOC(WRK) - LOC(WORK) + 1
+      KBASE = KADDR / 8
+C     write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
+      RETURN
+      END
