@@ -24,6 +24,8 @@ FFILES = \
 # for the fun-tester.
 FUNFILES = \
 	fun-becke.c	\
+	fun-becke35.c	\
+	fun-b86.c	\
 	fun-b97.c	\
 	fun-b97-1.c	\
 	fun-b97-2.c	\
@@ -42,10 +44,12 @@ FUNFILES = \
 	fun-kt.c	\
 	fun-lb94.c	\
 	fun-lyp.c	\
-	fun-hcth120.c	\
-	fun-hcth147.c	\
-	fun-hcth407.c	\
+	fun-lypr.c	\
 	fun-hcth93.c	\
+ 	fun-hcth120.c	\
+ 	fun-hcth147.c	\
+ 	fun-hcth407.c	\
+ 	fun-hcth407p.c	\
 	fun-optx.c	\
 	fun-p86c.c	\
 	fun-pbec.c	\
@@ -53,9 +57,12 @@ FUNFILES = \
 	fun-pw86x.c	\
 	fun-pw91c.c	\
 	fun-pw91x.c	\
+	fun-pw91x2.c	\
+	fun-mpw.c	\
 	fun-pz81.c	\
 	fun-slater.c	\
-	fun-vwn.c
+	fun-vwn.c       \
+        fun-wignerc.c
 
 CFILES =\
 	$(FUNFILES)	\
