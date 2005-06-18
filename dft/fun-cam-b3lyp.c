@@ -189,7 +189,7 @@ camb3lyp_read(const char *conf_line)
 static void
 camb3lyp_report(void)
 {
-    fun_printf("CAM-B3LYP functional with alpha=%5.3f beta=%5.3f mu=%5.3f ",
+    fun_printf("CAM-B3LYP w/ alpha=%5.3f beta=%5.3f mu=%5.3f "
                "VwnWeight=%5.3f LypWeight=%5.3f",
                ALPHA, BETA, MU, VWN_WEIGHT, LYP_WEIGHT);
 }
