@@ -92,9 +92,14 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb)/2;
 #define __CVERSION__
  
 #include "functionals.h"
+
+#if !defined __inline__
+/* inline some stuff whenever possible */
+#define __inline__
+#endif
  
 /* INTERFACE PART */
-static int pw91x_isgga(void) { return 1; } /* FIXME: detect! */
+static int pw91x_isgga(void) { return 1; }
 static int pw91x_read(const char *conf_line);
 static real pw91x_energy(const FunDensProp* dp);
 static void pw91x_first(FunFirstFuncDrv *ds,   real factor,
