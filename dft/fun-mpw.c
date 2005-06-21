@@ -99,6 +99,11 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
 #define __CVERSION__
  
 #include "functionals.h"
+
+#if !defined __inline__
+/* inline some stuff whenever possible */
+#define __inline__
+#endif
  
 /* INTERFACE PART */
 static int mpw_isgga(void) { return 1; } /* FIXME: detect! */
