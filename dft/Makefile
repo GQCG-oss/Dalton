@@ -26,10 +26,12 @@ FUNFILES = \
 	fun-becke.c	\
 	fun-becke35.c	\
 	fun-b86.c	\
+	fun-b86mx.c	\
 	fun-b97.c	\
 	fun-b97-1.c	\
 	fun-b97-2.c	\
 	fun-cam-b3lyp.c \
+	fun-dk87x.c	\
 	fun-example.c	\
 	fun-example2.c	\
 	fun-example3.c	\
@@ -50,10 +52,14 @@ FUNFILES = \
  	fun-hcth147.c	\
  	fun-hcth407.c	\
  	fun-hcth407p.c	\
+	fun-lrc95x.c	\
 	fun-optx.c	\
 	fun-p86c.c	\
 	fun-pbec.c	\
 	fun-pbex.c	\
+	fun-revpbex.c	\
+	fun-rpbex.c	\
+	fun-mpbex.c	\
 	fun-pw86x.c	\
 	fun-pw91c.c	\
 	fun-pw91x.c	\
@@ -62,7 +68,8 @@ FUNFILES = \
 	fun-pz81.c	\
 	fun-slater.c	\
 	fun-vwn.c       \
-        fun-wignerc.c
+        fun-wignerc.c   \
+        fun-wl90c.c
 
 CFILES =\
 	$(FUNFILES)	\

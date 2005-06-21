@@ -645,42 +645,52 @@ using \verb|Combine| general functional.
 \item[SLATER] Dirac-Slater exchange functional
 \cite{dft:hohenberg,dft:kohn,dft:slater3}.\index{SLATER}
 
-\item[BECKE] Becke exchange correction presented in reference
-  \cite{dft:becke88}. Observe that full Becke88 exchange functional is
+\item[BECKE] 1988 Becke exchange correction presented in reference
+  \onlinecite{dft:becke88}. Observe that the full Becke88 exchange functional is
   sum \exfn{Slater} + \exfn{Becke}.\index{BECKE}
 
 \item[BECKE35] Modified \exfn{Becke} exchange correction presented in reference
   \cite{dft:edf1} with respect to the EDF1 functional. The $\beta$ value
-  of 0.0042 in \exfn{BECKE} is modified to 0.0035. \index{BECKE35}\index{EDF1}
+  of 0.0042 in \exfn{Becke} is modified to 0.0035. \index{BECKE35}\index{EDF1}
 
 \item[B86] Becke 1986 exchange functional, a divergence free, semi-empirical 
     gradient-corrected exchange functional.\cite{dft:b86,dft:b86r}\index{B86} This 
     functional corresponds to the B86R functional of the molpro program.
 
-%\item[B86MGC] B86 with modified gradient correction for large density gradients. 
-%\cite{dft:b96mgc}\index{B86MGC}
+\item[B86mx] B86 exchange functional modified with a gradient correction 
+  for large density gradients.\cite{dft:b96mgc}\index{B86MGC}
 
 \item[DBx] Double-Becke exchange functional defined by Gill et al.\cite{dft:edf1,dft:edf2} 
   for use in the EDF1 functional. The full DBx functional is defined as
-  sum 1.030952*\exfn{Slater} - 8.44793*\exfn{BECKE} + 10.4017*\exfn{Becke35}
-	\index{EDF1}\index{Double-Becke}\index{BECKE}
+  sum 1.030952*\exfn{Slater} - 8.44793*\exfn{BECKE} + 10.4017*\exfn{BECKE35}
+  \index{EDF1}\index{Double-Becke}\index{BECKE}
 
-\item[G96x] Gill 1996 exchange functional. \cite{dft:g96}\index{G96}
-    The full G96 exchange functional is given by 
-    sum \exfn{Slater} + \exfn{G96x}.
+\item[DK87x] rational function GGA exchange functional (equation 7) from Ref. 
+  \onlinecite{dft:dk87},\index{DK87} including Slater exchange.
 
-\item[KTx] Keal and Tozer GGA exchange functional. Note that
-    the gradient correction pre-factor constant (-0.006 for 
-    KT1 and KT2) is not included in the KT definition, but
-    rather in the KT1, KT2 definitions. The full KT exchange
-    is given by sum \exfn{Slater} + gamma*\exfn{KT} (gamma=-0.006 for KT1,KT2 and -0.004 for KT3).
-    \cite{dft:kt12}\index{KT}
+\item[G96x] 1996 Gill exchange functional, including Slater exchange. \cite{dft:g96}\index{G96}
+
+\item[LRC95x] GGA exchange functional with correct asymptotic behaviour. \cite{dft:lrc96}\index{LRC95}
+    The LRC95x exchange functional includes the Slater exchange (eqn 6 from original reference).
+
+\item[KTx] Keal and Tozer GGA exchange functional. Note that the gradient correction 
+    pre-factor constant (-0.006 for KT1 and KT2) is not included in the KT 
+    definition, but rather in the KT1, KT2 definitions. The full KT exchange
+    is given by sum \exfn{Slater} + gamma*\exfn{KT} 
+    (gamma=-0.006 for KT1,KT2 and -0.004 for KT3). \cite{dft:kt12}\index{KT}
 
 \item[OPTX] exchange functional correction of Handy \cite{dft:optx}.\index{OPTX}
     The full OPTX exchange functional is given by 
     sum 1.05151*\exfn{Slater} - 1.43169*\exfn{OPTX}.
 
-\item[PBEx] exchange functional \index{PBEx}
+\item[PBEx] exchange functional.\cite{dft:pbe} \index{PBEx}
+
+\item[revPBEx] revised PBEx exchange functional, with kappa of 1.245.\cite{dft:revpbe}
+   \index{revPBE}\index{PBE}
+
+\item[RPBEx] Hammer et al. revised PBEx exchange functional.\cite{dft:revpbe}\index{RPBE}\index{PBE}
+
+\item[mPBEx] modified PBEx exchange functional of Adamo and Barone.\cite{dft:mpbe}\index{mPBE}\index{PBE}
 
 \item[PW86x] Perdew and Wang 1986 exchange functional.\cite{dft:pw86x}.\index{PW86x}
 
@@ -695,11 +705,11 @@ using \verb|Combine| general functional.
 \providecommand\corfn[1]{#2}
 \begin{description}
 
-\item[VWN3] correlation functional Vosko, Wilk and Nusair (number
+\item[VWN3] correlation functional of Vosko, Wilk and Nusair (number
   III) \cite{dft:vwn}.\index{VWN3}
 
-\item[VWN5]  correlation functional Vosko, Wilk and Nusair (number
-  V -- the recommended one) The VWN keyword is synonymous with VWN5. \cite{dft:vwn}.\index{VWN5}
+\item[VWN5] correlation functional of Vosko, Wilk and Nusair (number
+  V -- the recommended one). The VWN keyword is a synonym for VWN5.\cite{dft:vwn}.\index{VWN5}
 
 \item[LYP] correlation functional by Lee, Yang and Parr
 \cite{dft:lyp1,dft:lyp2}.\index{LYP}
@@ -710,14 +720,18 @@ using \verb|Combine| general functional.
 
 \item[P86] non-local part of the correlation functional of Perdew
   \cite{dft:p86}. PZ81 (1981 Perdew local) is usually used for the local part of the
-  functional. \index{P86}\index{PZ81}
+  functional, with a total corelation functional of 
+  sum \corfn{P86} + \corfn{PZ81}.\index{P86}\index{PZ81}
 
 \item[PW91c] correlation functional of Perdew and Wang.
   \cite{dft:pw91}\index{PW91}
 
 \item[PZ81] 1981 local correlation functional of Perdew and Zunger \cite{dft:pz81}.\index{PZ81}
 
-\item[Wigner] spin-polarised correlation functional.\cite{dft:wigner,dft:bw}
+\item[Wigner] spin-polarised correlation functional.\cite{dft:wigner}\index{Wigner}
+
+\item[WL90c] 1990 non-local spin-dependent correlation functional (equation 15 from 
+  Ref.~\onlinecite{dft:wl90}).\index{WL90}
 
 \end{description}
 
@@ -750,31 +764,31 @@ valence.\index{LB94}
   \index{HCTH}\index{HCTH407}
 
 \item[HCTH407p] HCTH407 functional re-parameterized on a set of 407 training systems and ammonia dimer
-  to incorporate hydrogen bonding.\cite{dft:hcth407p}
-  \index{HCTH}\index{HCTH407}\index{HCTH407p}
+  to incorporate hydrogen bonding.\cite{dft:hcth407p}\index{HCTH}\index{HCTH407}\index{HCTH407p}
 \end{description]
 
 \subsubsection{Combined functionals}
 \providecommand\funexample[1]{\\{\tt #1 }}
 \begin{description}
 
-\item[Combine] it is an universal keyword allowing users to manually
-  construct arbitrary linear combinations of other functionals. Even\index{Combine}
-  fractional Hartree--Fock exchange can be specified. This keyword is
-  to be followed by a string of functionals with associated
-  weights. The syntax is \verb|NAME=WEIGHT ...|. Example:
+\item[Combine] is a universal keyword allowing users to manually
+  construct arbitrary linear combinations of exchange and correlation 
+  functionals. Even\index{Combine} fractional Hartree--Fock exchange 
+  can be specified. This keyword is to be followed by a string of 
+  functionals with associated weights. The syntax is \verb|NAME=WEIGHT ...|. 
+  As an example, B3LYP may be constructed as:
 \begin{verbatim}
 .DFT
  Combine hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19
 \end{verbatim}
 
-\item[SVWN5] is a sum of Slater functional and VWN5 correlation
-  functional.  It is equivalent to
+\item[SVWN5] is a sum of Slater functional and VWN (or VWN5) correlation
+  functional. SVWN is a synonym for SVWN5. It is equivalent to
   \funexample{Combine slater=1 vwn5=1}
-  \index{SVWN5}
+  \index{SVWN}
 
-\item[SVWN3] is a sum of Slater functional and VWN3 correlation
-  functional.  It is equivalent to the Gaussian program LSDA functional 
+\item[SVWN3] is a sum of the Slater exchange functional and VWN3 correlation
+  functional. It is equivalent to the Gaussian program LSDA functional 
   and can alternatively be selected by following set of keywords
   \funexample{Combine slater=1 vwn3=1}
   \index{SVWN3}
