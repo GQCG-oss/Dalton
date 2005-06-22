@@ -974,8 +974,13 @@ c            and slow down  the level shifting annealing...
          ELSE
              SHFTLVL =  SHFTLVL*SHFTFAC
 c            make sure we get right HOMO-LUMO gap in the end.
-             IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5.D-5) SHFTLVL = 0D0
+             IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5.D-5) SHFTLVL = 0.D0
          END IF
+C hjaaj 22-Jun-20005-B
+C        Level shift is only working for closed shell calculations ...
+C          (open shell problems reported by users ...)
+         IF (NASHT .GT. 0) SHFTLVL = 0.0D0
+C hjaaj 22-Jun-20005-E
          GNRMSV = GRDNRM
 C
 C        Iteration accepted; save current CMO for restart
