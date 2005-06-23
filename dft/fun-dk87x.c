@@ -87,11 +87,6 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
  
 #include "functionals.h"
  
-#if !defined __inline__
-/* inline some stuff whenever possible */
-#define __inline__
-#endif
-
 /* INTERFACE PART */
 static int dk87x_isgga(void) { return 1; } /* FIXME: detect! */
 static int dk87x_read(const char *conf_line);
@@ -152,7 +147,7 @@ dk87x_energy(const FunDensProp *dp)
     return res;
 }
 
-static __inline__ void
+static void
 dk87x_first_helper(real rhoa, real grada, real *res)
 {    real t1, t2, t3, t4, t5, t6, t7, t8, t9;
 
@@ -197,7 +192,7 @@ dk87x_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
 }
 
-static __inline__ void
+static void
 dk87x_second_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -283,7 +278,7 @@ dk87x_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 dk87x_third_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -429,7 +424,7 @@ dk87x_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 dk87x_fourth_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;

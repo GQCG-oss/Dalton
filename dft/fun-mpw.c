@@ -100,11 +100,6 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
  
 #include "functionals.h"
 
-#if !defined __inline__
-/* inline some stuff whenever possible */
-#define __inline__
-#endif
- 
 /* INTERFACE PART */
 static int mpw_isgga(void) { return 1; } /* FIXME: detect! */
 static int mpw_read(const char *conf_line);
@@ -178,7 +173,7 @@ mpw_energy(const FunDensProp *dp)
     return res;
 }
 
-static __inline__ void
+static void
 mpw_first_helper(real rhoa, real grada, real *res)
 {    real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
     real t11, t12, t13, t14, t15, t16, t17, t18;
@@ -238,7 +233,7 @@ mpw_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
 }
 
-static __inline__ void
+static void
 mpw_second_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -339,7 +334,7 @@ mpw_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 mpw_third_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -511,7 +506,7 @@ mpw_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 mpw_fourth_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;

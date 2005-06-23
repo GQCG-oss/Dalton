@@ -101,11 +101,6 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
  
 #include "functionals.h"
 
-#if !defined __inline__
-/* inline some stuff whenever possible */
-#define __inline__
-#endif
- 
 /* INTERFACE PART */
 static int pw91x2_isgga(void) { return 1; } /* FIXME: detect! */
 static int pw91x2_read(const char *conf_line);
@@ -179,7 +174,7 @@ pw91x2_energy(const FunDensProp *dp)
     return res;
 }
 
-static __inline__ void
+static void
 pw91x2_first_helper(real rhoa, real grada, real *res)
 {    real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
     real t11, t12, t13, t14, t15, t16, t17, t18;
@@ -239,7 +234,7 @@ pw91x2_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
 }
 
-static __inline__ void
+static void
 pw91x2_second_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -339,7 +334,7 @@ pw91x2_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 pw91x2_third_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -508,7 +503,7 @@ pw91x2_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 pw91x2_fourth_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;

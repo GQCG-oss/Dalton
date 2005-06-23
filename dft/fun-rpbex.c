@@ -82,11 +82,6 @@ K(rhoa,grada,rhob,gradb,gradab):=0.5*(Ea(2*rhoa)+Eb(2*rhob));
  
 #include "functionals.h"
 
-#if !defined __inline__
-/* inline some stuff whenever possible */
-#define __inline__
-#endif
- 
 /* INTERFACE PART */
 static int rpbe_isgga(void) { return 1; } /* FIXME: detect! */
 static int rpbe_read(const char *conf_line);
@@ -145,7 +140,7 @@ rpbe_energy(const FunDensProp *dp)
     return res;
 }
 
-static __inline__ void
+static void
 rpbe_first_helper(real rhoa, real grada, real *res)
 {    real t1, t2, t3, t4, t5, t6, t7;
 
@@ -184,7 +179,7 @@ rpbe_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
 }
 
-static __inline__ void
+static void
 rpbe_second_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -248,7 +243,7 @@ rpbe_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 rpbe_third_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -343,7 +338,7 @@ rpbe_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 rpbe_fourth_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;

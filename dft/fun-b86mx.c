@@ -81,11 +81,6 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
  
 #include "functionals.h"
  
-#if !defined __inline__
-/* inline some stuff whenever possible */
-#define __inline__
-#endif
-
 /* INTERFACE PART */
 static int b86mx_isgga(void) { return 1; } /* FIXME: detect! */
 static int b86mx_read(const char *conf_line);
@@ -143,7 +138,7 @@ b86mx_energy(const FunDensProp *dp)
     return res;
 }
 
-static __inline__ void
+static void
 b86mx_first_helper(real rhoa, real grada, real *res)
 {    real t1, t2, t3, t4, t5, t6;
 
@@ -182,7 +177,7 @@ b86mx_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
 }
 
-static __inline__ void
+static void
 b86mx_second_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -248,7 +243,7 @@ b86mx_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 b86mx_third_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
@@ -353,7 +348,7 @@ b86mx_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 
 }
 
-static __inline__ void
+static void
 b86mx_fourth_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;

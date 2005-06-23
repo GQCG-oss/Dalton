@@ -64,11 +64,6 @@ C
 
 #include "functionals.h"
 
-#if !defined __inline__
-/* inline some stuff whenever possible */
-#define __inline__
-#endif
-
 /* INTERFACE PART */
 static int  becke86_isgga(void) { return 1; }
 static int  becke86_read(const char* conf_line);
