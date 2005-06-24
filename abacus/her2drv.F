@@ -2399,12 +2399,12 @@ C
      &                    WORK(KAOINT+NCCINT*NINTYP),
      &                    (LWORK-NCCINT*NINTYP))
 C
-C                     I_SHL = I_SHL + 1
-C                     IF (I_SHL .GT. MXSHL_KEEP) THEN
-C                        write(lupri,*) 'Received quit because'//
-C     &                       'I_SHL exceeds MXSHL_KEEP'
-C                        CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
-C                     END IF
+                     I_SHL = I_SHL + 1
+                     IF (I_SHL .GT. MXSHL_KEEP) THEN
+                        write(lupri,*) 'Received quit because'//
+     &                       'I_SHL exceeds MXSHL_KEEP'
+                        CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+                     END IF
 C
                      GOTO 300
                   END IF
