@@ -128,7 +128,7 @@ C
       IPRINT = IPRDEF
       SKIP   = .NOT. (MOLHES .OR. DIPDER .OR. POLAR .OR. MAGSUS .OR.
      &                SHIELD .OR. SPNSPN .OR. VCD .OR. SPINRO .OR.
-     &                MOLGFA)
+     &                MOLGFA .OR. QPGRAD)
       CUT    = .FALSE.
       SYMTST = .FALSE.
       DOSELL = .TRUE.
@@ -171,6 +171,7 @@ C
 #include <spinro.h>
 #include <molgfa.h>
 #include <sigma.h>
+#include <difsec.h>
 C
 #include <nuclei.h>
 #include <dorps.h>
@@ -191,8 +192,8 @@ C
      *    '  <<<<<<<<<< Output from RELAX >>>>>>>>>> '
       END IF
 C
-      DOREAL = (MOLHES .OR. DIPDER .OR. VCD .OR. POLAR) .AND. 
-     &         (.NOT. DOTRPL)
+      DOREAL = (MOLHES .OR. DIPDER .OR. VCD .OR. POLAR .OR. QPGRAD)
+     &          .AND. (.NOT. DOTRPL)
       DOIMAG = (SHIELD .OR. MAGSUS .OR. VCD .OR. SPNSPN .OR. MOLGFA .OR.
      &          SPINRO) .AND. (.NOT. DOTRPL)
 C
@@ -265,6 +266,7 @@ C
          IF (SHIELD) CALL DZERO(SIGMAR,9*NUCDEP)
          IF (SPINRO) CALL DZERO(ELSPRP,9*NUCDEP)
          IF (SPNSPN) CALL HESZER(SPNPSO)
+         IF (QPGRAD) CALL DZERO(SEC1,27*NUCDEP)
       END IF
       
       DO 200 ITYPE = 1, 2
@@ -309,7 +311,7 @@ C
                   IF (MOLHES .AND. POLAR) THEN
                      SELLER = .TRUE.
                   ELSE
-                     IF (DIPDER) THEN
+                     IF (DIPDER .OR. QPGRAD) THEN
                         SELLER = .FALSE.
                      ELSE
                         SELLER = .TRUE.
@@ -415,6 +417,10 @@ C
          IF (DIPDER .AND. .NOT. DOTRPL) THEN
             CALL HEADER('Relaxation part of dipole gradient',-1)
             CALL FCPRI(DDIPR,'APT',WORK(KCSTRA),WORK(KSCTRA))
+         END IF
+         IF (QPGRAD .AND. .NOT. DOTRPL) THEN
+            CALL HEADER('Relaxation part of second moment gradient',-1)
+            CALL PRISEC(DSECR,'SECDER',WORK(KCSTRA),WORK(KSCTRA))
          END IF
          IF (POLAR .AND. .NOT. DOTRPL) THEN
             CALL HEADER('Polarizabilities',-1)
@@ -651,7 +657,8 @@ C
             JCOOR = IGDCOR(JOP,LSYMPT,ITYPE)
             IF (ITYPE .EQ. 1) THEN
                IF (.NOT. ((MOLHES .AND. JCOOR .GT. 0) .OR. 
-     &             (POLAR .AND. JCOOR .LT. 0))) GOTO 200
+     &             (POLAR .AND. JCOOR .LT. 0) .OR. 
+     &             (QPGRAD .AND. JCOOR .LT. -10))) GOTO 200
                JREC = 2*JREC - 1
             ELSE
                IF ((JCOOR .LT. 0 .AND. (SPNSPN .AND. DOPSO .AND. 
@@ -687,6 +694,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION REL(NOP,NOP), HESREL(MXCOOR,MXCOOR), 
@@ -701,6 +710,8 @@ C
 #include <dipole.h>
 #include <moldip.h>
 #include <inflin.h>
+#include <difsec.h>
+#include <symmet.h>
 #include <gdvec.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from ADDREL','*',103)
@@ -733,6 +744,14 @@ C
                ELSE IF (ITYPE .EQ. 2 .AND. (JCOOR .GT. -4)) THEN
                   SIGMAR(-JCOOR,ICOOR) = - RELIJ
                   ELSPRP(-JCOOR,ICOOR) = - RELIJ
+C
+C           Second moment gradient
+C
+               ELSE IF (ITYPE .EQ. 1 .AND. (JCOOR .LT. -10)) THEN
+                  IX = - JCOOR / 10
+                  IY = - MOD(JCOOR,10)
+                  DSECR(IPTAX(IX,1),IPTAX(IY,1),ICOOR) = RELIJ
+                  DSECR(IPTAX(IY,1),IPTAX(IX,1),ICOOR) = RELIJ
                END IF
 C
 C           Dipole gradient
@@ -743,6 +762,14 @@ C
                ELSE IF (ITYPE .EQ. 2 .AND. (ICOOR .GT. -4)) THEN
                   SIGMAR(-ICOOR,JCOOR) = - RELIJ
                   ELSPRP(-ICOOR,JCOOR) = - RELIJ
+C
+C           Second moment gradient
+C
+               ELSE IF (ITYPE .EQ. 1 .AND. (ICOOR .LT. -10)) THEN
+                  IX = - ICOOR / 10
+                  IY = - MOD(ICOOR,10)
+                  DSECR(IPTAX(IX,1),IPTAX(IY,1),JCOOR) = RELIJ
+                  DSECR(IPTAX(IY,1),IPTAX(IX,1),JCOOR) = RELIJ
                END IF
 C
 C           Polarizabilities and susceptibilities

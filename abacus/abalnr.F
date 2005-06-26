@@ -59,13 +59,15 @@ C
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
       LOGICAL NEWDEF, LOCFIN
-      CHARACTER*8 DIPLEN(3)
+      CHARACTER*8 DIPLEN(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
+      DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
+      DATA LONMAG/'XLONMAG','YLONMAG','ZLONMAG'/
 C
       DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
-     *            '.MAXRED', '.MAXPHP','.XXXXXX','.XXXXXX',
+     *            '.MAXRED', '.MAXPHP','.STATIC','.XXXXXX',
      *            '.OPTORB', '.FREQUE','.XXXXXX','.PRINT ',
      *            '.LIFETI', '.STOP  '/
 C
@@ -166,6 +168,8 @@ C
                   END IF
                GO TO 100
     7          CONTINUE
+                  STATIC = .TRUE.
+                  ICHANG = ICHANG + 1
                GO TO 100
     8          CONTINUE
                GO TO 100
@@ -226,6 +230,18 @@ C
          NOPER(ISYM) = NOPER(ISYM) + 1
          LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
       END DO
+      IF (STATIC) THEN
+         DO ILABEL=1,3
+            ISYM = ISYMAX(ILABEL,2) + 1
+            NOPER(ISYM) = NOPER(ISYM) + 1
+            LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+         END DO
+         DO ILABEL=1,3
+            ISYM = ISYMAX(ILABEL,2) + 1
+            NOPER(ISYM) = NOPER(ISYM) + 1
+            LABOP(NOPER(ISYM),ISYM) = LONMAG(ILABEL)
+         END DO
+      END IF
 C
       IF ((VROA .OR. RAMAN .OR. OPTROT) .AND. NODIFC) THEN
          WRITE (LUPRI,'(/,3A,/)')
@@ -294,6 +310,8 @@ C
                MAX_MICRO  = MAXITE
                MAX_ITORB = 5
             END IF
+            IF (STATIC) WRITE(LUPRI,'(/,A)') 
+     &          ' Using static approximation.'
          END IF
       END IF
 C
@@ -315,6 +333,7 @@ C
       SKIP     = .FALSE.
       CUT      = .FALSE.
       OOTV     = .FALSE.
+      STATIC   = .FALSE.
       ALFA     = ABA_ALPHA
       NFRVAL   = 1
       FRVAL(1) = 0.0D0
@@ -340,6 +359,7 @@ C  /* Deck lnraba */
       DIMENSION POLDD(2,3,3,MXFR), POLDQ(2,3,3,3,MXFR)
       DIMENSION POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR)
       DIMENSION POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR)
+      DIMENSION POLDLS(3,3), POLDAS(3,3)
       CHARACTER*8 LABEL1, LABEL2, LABINT(3*MXCOOR), BLANK
       PARAMETER (DP5=0.5D0)
       PARAMETER (LOCDBG = 3)
@@ -532,15 +552,10 @@ C
       EXECLC = .FALSE.
       NABATY = 1
       TRPLET = .FALSE.
-C-tbp LUSOVE = 0
-C-tbp LUGDVE = 0
-C-tbp LUREVE = 0
       NABAOP = 1
       BLANK  = '        '
 C
-C-tbp CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-C-tbp CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-C-tbp CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      IF (NFRVAL.LE.0) GOTO 999
 C
 C     Zero the property complex tensors
 C
@@ -551,6 +566,8 @@ C
       CALL DZERO(POLDA,2*9*MXFR)
       CALL DZERO(POLVL,2*9*MXFR)
       CALL DZERO(POLVV,2*9*MXFR)
+      CALL DZERO(POLDLS,9)
+      CALL DZERO(POLDAS,9)
 C
       IF (NFRVAL.LE.0) GOTO 999
 C
@@ -598,9 +615,6 @@ C
                   FREQ_ALPHA(IFRZER) = FRVAL(IFRZER)
                END IF
             END IF
-            NABATY = -1    ! DIPVEL is anti-Hermitian
-         ELSE
-            NABATY = 1     ! DIPLEN is Hermitian
          END IF
 C
          DO ISYM=1,NSYM
@@ -612,6 +626,15 @@ C
                IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
                IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
                IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
+               IF (LABEL1(2:7) .EQ.'DIPLEN') THEN
+                  NABATY = 1
+               ELSE IF ((LABEL1(2:7) .EQ. 'ANGMOM') .OR.
+     &                  (LABEL1(2:7) .EQ. 'LONMAG')) THEN
+                  NABATY = -1
+               ELSE
+                  WRITE (LUPRI,'(2A)') LABEL1, ' not recognised'
+                  CALL QUIT('Unrecognised operator in LNRABA')
+               END IF
                IF (IRUN .EQ. 2) THEN
                   IF (IDIP .EQ. 1) THEN
                      LABEL1 = 'XDIPVEL '
@@ -622,6 +645,7 @@ C
                   ELSE
                      GO TO 300  ! cycle operator loop
                   END IF
+                  NABATY = -1   ! DIPVEL is anti-Hermitian
                END IF
 C     
                CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK2),LWORK2)
@@ -970,6 +994,8 @@ C
       END IF
 C
 C     Skip point if no frequencies specified
+      IF (STATIC) CALL LNRAST(POLDLS,POLDAS,WORK(KCMO),WORK(KWORK1),
+     &     LWORK1)
 C
  999  CONTINUE
 C
@@ -987,6 +1013,190 @@ C
       END IF
 C
       CALL QEXIT('LNRABA')
+      RETURN
+      END
+C
+C  /* Deck lnrast */ 
+      SUBROUTINE LNRAST(POLDLS,POLDAS,CMO,WORK,LWORK)
+C      
+#include <implicit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <cbilnr.h>
+      LOGICAL FOUND, CONV
+      DIMENSION WORK(LWORK), SNDPRP(2), CMO(*)
+      DIMENSION POLDLS(3,3), POLDAS(3,3)
+      DIMENSION DTOT(N2ORBX), DTOTSV(N2ORBX)
+      DIMENSION DIPSLV(N2ORBX), ANGSLV(N2ORBX)
+      CHARACTER*8 LABEL1, LABEL2, BLANK
+      PARAMETER (DP5=0.5D0)
+#include <cbiexc.h>
+#include <inflin.h>
+#include <infvar.h>
+#include <infdim.h>
+#include <inforb.h>
+#include <nuclei.h>
+#include <inftap.h>
+#include <infrsp.h>
+#include <wrkrsp.h>
+#include <maxmom.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <abainf.h>
+#include <gnrinf.h>
+#include <infsop.h>
+#include <absorp.h>
+      BLANK  = '        '
+C
+C     Construct one-electron density matrix
+C
+      CALL MKDENS(DTOT,WORK,LWORK,IPRINT)
+C
+      DO ISYM=1,NSYM
+         KSYMOP = ISYM
+         DO IOPER=1,NOPER(KSYMOP) 
+            KSLV1 = 1
+            KSLV2 = KSLV1 + 2*NVARPT
+            LABEL1 = LABOP(IOPER,KSYMOP)
+            IF (LABEL1(2:7).EQ.'DIPLEN') THEN
+               IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
+               IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
+               IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
+               CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
+     &              ' ',IDUMMY,.FALSE.)
+               CALL REARSP(LURSP,2*NVARPT,WORK(KSLV1),LABEL1,
+     &              BLANK,0.0D0,0.0D0,ISYM,0,
+     &              THCLNR,FOUND,CONV,ANTSYM)
+               CALL GPCLOSE(LURSP,'KEEP')
+               IF (.NOT.FOUND) THEN
+                  WRITE (LUPRI,'(2A)') 'Solution Vector, label: '
+     &                 ,LABEL1,' not found on RSPVEC'
+                  CALL QUIT('Solution vector 1 not found on RSPVEC')
+               ELSE    
+                  IF (IPRLNR.GT.3) THEN
+                     WRITE(LUPRI,'(2A)') 'Solution Vector, '//
+     &                    'label: ',LABEL1
+                     CALL OUTPUT(WORK(KSLV1),1,NVARPT,1,2,NVARPT,
+     &                    2,1,LUPRI)
+                  END IF
+                  CALL UPWOP(WORK(KSLV1),DIPSLV,.TRUE.)
+                  CALL DGEMM('N','T',NORBT,NORBT,NORBT,1.D0,
+     &                 DTOT,NORBT,DIPSLV,NORBT,0.D0,DTOTSV,NORBT)
+                  DO IOPER2=1,NOPER(KSYMOP)
+                     LABEL2 = LABOP(IOPER2,KSYMOP)
+                     IF (LABEL2(2:7).EQ.'ANGMOM') THEN
+                        CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
+     &                       ' ',IDUMMY,.FALSE.)
+                        CALL REARSP(LURSP,2*NVARPT,WORK(KSLV2),
+     &                       LABEL2,BLANK,0.0D0,0.0D0,ISYM,0,
+     &                       THCLNR,FOUND,CONV,ANTSYM)
+                        CALL GPCLOSE(LURSP,'KEEP')
+                        IF (.NOT.FOUND) THEN
+                           WRITE (LUPRI,'(2A)') 'Solution Vector, '//
+     &                          'label: ',LABEL2,' not found on RSPVEC'
+                           CALL QUIT('Solution vector 2 not found '//
+     &                          'on RSPVEC')
+                        ELSE
+                           IF (IPRLNR.GT.3) THEN
+                              WRITE(LUPRI,'(2A)') 'Solution '//
+     &                             'Vector, label: ', LABEL2
+                              CALL OUTPUT(WORK(KSLV2),1,NVARPT,1,2,
+     &                             NVARPT,2,1,LUPRI)
+                           END IF
+                           CALL UPWOP(WORK(KSLV2),ANGSLV,.FALSE.)
+                           SNDPRP(1)=DDOT(N2ORBX,DTOTSV,1,
+     &                          ANGSLV,1)
+                           IF (LABEL2(1:1).EQ.'X')
+     &                          POLDAS(IDIP,1) = SNDPRP(1)
+                           IF (LABEL2(1:1).EQ.'Y')
+     &                          POLDAS(IDIP,2) = SNDPRP(1)  
+                           IF (LABEL2(1:1).EQ.'Z')
+     &                          POLDAS(IDIP,3) = SNDPRP(1)  
+                        END IF   
+                     ELSE IF (LABEL2(2:7).EQ.'LONMAG') THEN
+                        CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
+     &                       ' ',IDUMMY,.FALSE.)
+                        CALL REARSP(LURSP,2*NVARPT,WORK(KSLV2),
+     &                       LABEL2,BLANK,0.0D0,0.0D0,ISYM,0,
+     &                       THCLNR,FOUND,CONV,ANTSYM)
+                        CALL GPCLOSE(LURSP,'KEEP')
+                        IF (.NOT.FOUND) THEN
+                           WRITE (LUPRI,'(2A)') 'Solution Vector, '//
+     &                          'label: ',LABEL2,' not found on RSPVEC'
+                           CALL QUIT('Solution vector 2 not found '//
+     &                          'on RSPVEC')
+                        ELSE 
+                           IF (IPRLNR.GT.3) THEN
+                              WRITE(LUPRI,'(2A)') 'Solution '//
+     &                             'Vector, label: ',LABEL2
+                              CALL OUTPUT(WORK(KSLV2),1,NVARPT,1,2,
+     &                             NVARPT,2,1,LUPRI)
+                           END IF
+                           CALL UPWOP(WORK(KSLV2),ANGSLV,.FALSE.)
+                           SNDPRP(1)=DDOT(N2ORBX,DTOTSV,1,
+     &                          ANGSLV,1)
+                           IF (LABEL2(1:1).EQ.'X')
+     &                          POLDLS(IDIP,1) = SNDPRP(1)
+                           IF (LABEL2(1:1).EQ.'Y')
+     &                          POLDLS(IDIP,2) = SNDPRP(1)  
+                           IF (LABEL2(1:1).EQ.'Z')
+     &                          POLDLS(IDIP,3) = SNDPRP(1)  
+                        END IF
+                     END IF
+                  END DO
+               END IF
+            END IF
+         END DO
+      END DO
+      WRITE(LUPRI,9000)
+      WRITE(LUPRI,9003)
+      WRITE(LUPRI,9007)
+      WRITE(LUPRI,9009) 'Bx','By','Bz'
+      WRITE(LUPRI,9008) 'Ex',(POLDLS(1,JDIP), JDIP=1,3)
+      WRITE(LUPRI,9008) 'Ey',(POLDLS(2,JDIP), JDIP=1,3)
+      WRITE(LUPRI,9008) 'Ez',(POLDLS(3,JDIP), JDIP=1,3)
+      WRITE(LUPRI,9000)
+      WRITE(LUPRI,9004)
+      WRITE(LUPRI,9007)
+      WRITE(LUPRI,9009) 'Bx','By','Bz'
+      WRITE(LUPRI,9008) 'Ex',(POLDAS(1,JDIP), JDIP=1,3)
+      WRITE(LUPRI,9008) 'Ey',(POLDAS(2,JDIP), JDIP=1,3)
+      WRITE(LUPRI,9008) 'Ez',(POLDAS(3,JDIP), JDIP=1,3)         
+      DO IFRVAL=1,NFRVAL
+         WRITE(LUPRI,9000)
+         WRITE(LUPRI,9005) FRVAL(IFRVAL)
+         WRITE(LUPRI,9007)
+         WRITE(LUPRI,9009) 'Bx','By','Bz'
+         WRITE(LUPRI,9008) 'Ex',(POLDLS(1,JDIP)*FRVAL(IFRVAL),
+     &        JDIP=1,3)
+         WRITE(LUPRI,9008) 'Ey',(POLDLS(2,JDIP)*FRVAL(IFRVAL),
+     &        JDIP=1,3)
+         WRITE(LUPRI,9008) 'Ez',(POLDLS(3,JDIP)*FRVAL(IFRVAL),
+     &        JDIP=1,3)   
+         WRITE(LUPRI,9006) FRVAL(IFRVAL)
+         WRITE(LUPRI,9007)
+         WRITE(LUPRI,9009) 'Bx','By','Bz'
+         WRITE(LUPRI,9008) 'Ex',(POLDAS(1,JDIP)*FRVAL(IFRVAL),
+     &        JDIP=1,3)
+         WRITE(LUPRI,9008) 'Ey',(POLDAS(2,JDIP)*FRVAL(IFRVAL),
+     &        JDIP=1,3)
+         WRITE(LUPRI,9008) 'Ez',(POLDAS(3,JDIP)*FRVAL(IFRVAL),
+     &        JDIP=1,3)           
+      END DO
+ 9000 FORMAT (/)
+ 9003 FORMAT (/,10X,'London    G tensor using static approximation')
+ 9004 FORMAT (/,10X,'No-London G tensor using static approximation')
+ 9005 FORMAT (/,10X,'London    G tensor stat. appr. for freq ',F12.6,
+     &     ' au') 
+ 9006 FORMAT (/,10X,'No-London G tensor stat. appr. for freq ',F12.6,
+     &     ' au')
+ 9007 FORMAT (10X,'------------------------------------------------')
+ 9008 FORMAT (16X,A,2X,3F12.7)
+ 9009 FORMAT (27X,3(A,10X)/)
+C
       RETURN
       END
 C

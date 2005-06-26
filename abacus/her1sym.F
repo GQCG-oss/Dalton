@@ -36,8 +36,8 @@ C
 C  /* Deck onesop */
       SUBROUTINE ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,WORK,LWORK,
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
-     &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
-     &                  JCENTC,NCENTC,SIGNC,NNBASX,FCM,TLMD,
+     &                  CORBZ0,DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,
+     &                  JSYMC,JCENTC,NCENTC,SIGNC,NNBASX,FCM,TLMD,
      &                  HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE)
 #include <implicit.h>
 #include <priunit.h>
@@ -45,7 +45,7 @@ C  /* Deck onesop */
 #include <iratdef.h>
 #include <maxorb.h>
 C
-      LOGICAL SECDER, DIFDIP, PROPTY, NCLONE
+      LOGICAL SECDER, DIFDIP, PROPTY, NCLONE, DIFQDP
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), DENMAT(NNBASX), FOCMAT(NNBASX),
      &          FACINT(*), COORC(3,*), JSYMC(*),
@@ -67,8 +67,10 @@ C
       KSDER2 = KSDER1 +  6*KCKTAB
       KADER  = KSDER2 + 12*KCKTAB
       KSINT0 = KADER  +    NADER
-      KDINT1 = KSINT0 +    KCKTAB
-      KDSHEL = KDINT1 +  9*KCKTAB
+      KSINT1 = KSINT0 +    KCKTAB
+      KDINT1 = KSINT1 +  3*KCKTAB
+      KQINT1 = KDINT1 +  9*KCKTAB
+      KDSHEL = KQINT1 + 18*KCKTAB
       KFSHEL = KDSHEL +    KHKTAB
       KLAST  = KFSHEL +    KHKTAB
       IF (EXPGRA) THEN
@@ -101,22 +103,22 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('ONESOP',' ',KLAST,LWORK)
 C
       CALL ONESO1(STHMAT,WORK(KSDER0),WORK(KSDER1),WORK(KSDER2),
-     &            WORK(KADER),WORK(KSINT0),WORK(KDINT1),
-     &            DENMAT,FOCMAT,FACINT,COORC,WORK(KLAST),LWRK,IPRINT,
-     &            PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,DIFDIP,
-     &            SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,NCENTC,SIGNC,
-     &            NNBASX,WORK(KDSHEL),WORK(KFSHEL),WORK(KRLMNT),
-     &            WORK(KRLMTB),FCM,TLMD,WORK(KLMNO),HESSKE,HESSNA,
-     &            HESFS2,HSOLT2,HSOLNN,NCLONE,WORK(KXPDER))
+     &            WORK(KADER),WORK(KSINT0),WORK(KSINT1),WORK(KDINT1),
+     &            WORK(KQINT1),DENMAT,FOCMAT,FACINT,COORC,WORK(KLAST),
+     &            LWRK,IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,
+     &            DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,
+     &            NCENTC,SIGNC,NNBASX,WORK(KDSHEL),WORK(KFSHEL),
+     &            WORK(KRLMNT),WORK(KRLMTB),FCM,TLMD,WORK(KLMNO),HESSKE,
+     &            HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE,WORK(KXPDER))
       CALL QEXIT('ONESOP')
       RETURN
       END
 C  /* Deck oneso1 */
-      SUBROUTINE ONESO1(STHMAT,STDER0,STDER1,STDER2,ADER,SINT0,
-     &                  DINT1,DENMAT,FOCMAT,FACINT,COORC,WORK,LWORK,
-     &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
-     &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
-     &                  JCENTC,NCENTC,SIGNC,NNBASX,DSHELL,FSHELL,
+      SUBROUTINE ONESO1(STHMAT,STDER0,STDER1,STDER2,ADER,SINT0,SINT1,
+     &                  DINT1,QINT1,DENMAT,FOCMAT,FACINT,COORC,WORK,
+     &                  LWORK,IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
+     &                  CORBZ0,DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,
+     &                  JSYMC,JCENTC,NCENTC,SIGNC,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,HESSKE,HESSNA,
      &                  HESFS2,HSOLT2,HSOLNN,NCLONE,EXPDER)
 #include <implicit.h>
@@ -128,13 +130,13 @@ C  /* Deck oneso1 */
 #include <dummy.h>
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0)
 C
-      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, NCLONE
+      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, NCLONE, DIFQDP
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), ADER(*), EXPDER(*),
      &          DSHELL(KHKTAB),FSHELL(KHKTAB),
-     &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
-     &          DENMAT(NNBASX),FOCMAT(NNBASX),
+     &          SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
+     &          QINT1(KCKTAB,3,6), DENMAT(NNBASX),FOCMAT(NNBASX),
      &          FACINT(*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
@@ -178,10 +180,10 @@ C        **********************************************
 C        ***** Calculation of Cartesian integrals *****
 C        **********************************************
 C
-         CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
+         CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,QINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
-     &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &               GNUEXP,NCENTC,NCLONE,EXPDER)
+     &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,DIFQDP,FACINT,
+     &               COORC,GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
 C
 C        *************************************************
 C        ***** Transform to spherical harmonic basis *****
@@ -207,8 +209,14 @@ C
                   IF (DIFDIP) THEN
                      CALL SPHRM1(DINT1,DINT1,9,WORK,LWORK,PROPTY,IPRINT)
                   END IF
+                  IF (DIFQDP) THEN
+                    CALL SPHRM1(QINT1,QINT1,18,WORK,LWORK,PROPTY,IPRINT)
+                  END IF
                END IF
                CALL SPHRM1(SINT0,SINT0,1,WORK,LWORK,PROPTY,IPRINT)
+               IF (DIFQDP) THEN
+                  CALL SPHRM1(SINT1,SINT1,3,WORK,LWORK,PROPTY,IPRINT)
+               END IF
                IF (SOLVNT) THEN
                   CALL SPHRM1(RLMINT,RLMINT,7*LMNTOT,WORK,LWORK,PROPTY,
      &                        IPRINT)
@@ -279,6 +287,11 @@ C           ===============
 C
             CALL AVEDIP(SINT0,DINT1,ISYMOP,DIFDIP,DSHELL,MAXCMP)
 C
+C           Second moment gradient
+C           ======================
+C
+            CALL AVEQDP(SINT1,QINT1,ISYMOP,DIFQDP,DSHELL,MAXCMP)
+C
 C           Solvent contributions
 C           =====================
             IF (SOLVNT) THEN
@@ -319,7 +332,7 @@ C        **************************************************
 C        ***** Write differentiated integrals on file *****
 C        **************************************************
 C
-         IF (PROPTY .AND. (SECDER .OR. DIFDIP)) THEN
+         IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
             CALL WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)
          END IF

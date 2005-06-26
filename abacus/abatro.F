@@ -150,8 +150,9 @@ C
 C
       IPRINT = IPRDEF
       THRESH = 0.1D00
-      COMPAR = VCD
-      SKIP   = .NOT. ((MOLGRD .OR. MOLHES .OR. DIPDER) .AND. DOSYM(1))
+      COMPAR = VCD .OR. QPGRAD
+      SKIP   = .NOT. ((MOLGRD .OR. MOLHES .OR. DIPDER .OR. QPGRAD) 
+     &         .AND.   DOSYM(1))
       CUT    = .FALSE.
       NOROT1  = .FALSE.
       HESTRO = .TRUE.
@@ -400,7 +401,7 @@ C
       END IF
       DO 300 I = 1, 2
          NGDTOT(I) = 0
-         IF (((I .EQ. 1) .AND. (MOLHES .OR. DIPDER)) .OR. 
+         IF (((I .EQ. 1) .AND. (MOLHES .OR. DIPDER .OR. QPGRAD)) .OR. 
      &       ((I .EQ. 2) .AND. ((SPNSPN .AND. DOPSO) .OR. SHIELD
      &                                       .OR. SPINRO))) THEN
             DO 310 IREP = 0, MAXREP
@@ -457,6 +458,26 @@ C
             NGDTOT(I) = ISUM(MAXREP+1,NGDVEC(1,I),1)
          END IF
  400  CONTINUE
+C
+C     Quadrupole derivatives
+C
+      IF (QPGRAD) THEN
+         IAXREC = 3*NUCDEP + 3
+         DO IX = 1, 3
+            DO IY = IX , 3
+               IREP = IBTXOR(ISYMAX(IX,1),ISYMAX(IY,1))
+               NSYMCR = NGDVEC(IREP + 1,1)
+               IAXREC = IAXREC + 1
+               NSYMCR = NSYMCR + 1
+               IAXSYM = IX*10 + IY
+               IGDCOR(NSYMCR,IREP + 1,1) = - IAXSYM
+               IGDREC(NSYMCR,IREP + 1,1) =   IAXREC
+               NGDVEC(IREP + 1,1) = NSYMCR
+            END DO
+         END DO
+         NGDTOT(1) = ISUM(MAXREP + 1,NGDVEC(1,1),1)
+      END IF
+
 C
 C     Number of triplet operators in each symmetry for which linear equations
 C     will be solved

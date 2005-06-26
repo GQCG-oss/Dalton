@@ -229,7 +229,7 @@ C
       IPRALL = IPRDEF
       IF (MOLHES .AND. .NOT. HELFEY) THEN
          MAXDIF = 2
-      ELSE IF ((MOLGRD .OR. DIPDER) .AND. .NOT. HELFEY) THEN
+      ELSE IF ((MOLGRD .OR. DIPDER .OR. QPGRAD) .AND. .NOT. HELFEY) THEN
          MAXDIF = 1
       ELSE IF (EXPGRD) THEN
          MAXDIF = 2
@@ -445,7 +445,7 @@ CTROND
 CKR
 CKR Think carefully through whether next test will ever become true
 CKR
-            IF (DIPDER .AND. .NOT. MOLHES) THEN
+            IF ((DIPDER .OR. QPGRAD) .AND. .NOT. MOLHES) THEN
                ITYPE = -6
                DDFOCK = .TRUE.
             END IF

@@ -158,7 +158,8 @@ C
          INOT = 0
          DO 200 I = 1, NRDC
             IREC = IGDREC(IRDC + I,LSYMPT,1)
-            IF (MOLHES .OR. (POLAR .AND. IREC .GT. 3*NUCDEP)) THEN
+            IF (MOLHES .OR. (POLAR .AND. IREC .GT. 3*NUCDEP) .OR.
+     &         (QPGRAD .AND. IREC .GT. (3*NUCDEP + 3))) THEN
                CALL READDX (LUGDR,IREC,IRAT*NVARPT,WRK(IOFFGD))
                IOFFGD = IOFFGD + NVARPT
             ELSE
@@ -197,7 +198,8 @@ C        CALL ABARES(SOLEQ,GD,NBX,NREDH,WRK,LWRK)
          JRD = KGD
          DO 400 I = 1,NRDC + INOT
             IREC = 2*IGDREC(IRDC + I,LSYMPT,1)
-            IF (MOLHES .OR. (POLAR .AND. IREC .GT. 6*NUCDEP))
+            IF (MOLHES .OR. (POLAR .AND. IREC .GT. 6*NUCDEP).OR.
+     &         (QPGRAD .AND. IREC .GT. (6*NUCDEP + 6)))
      &         CALL WRITDX (LURDR,IREC,IRAT*NVARPT,WRK(JRD))
             JRD = JRD + NVARPT
  400     CONTINUE
@@ -213,7 +215,8 @@ C
          JRD = KGD
          DO 300 I = 1, NRDC + INOT
             IREC = 2*IGDREC(IRDC + I,LSYMPT,1) - 1
-            IF (MOLHES .OR. (POLAR .AND. IREC .GT. 6*NUCDEP)) THEN
+            IF (MOLHES .OR. (POLAR .AND. IREC .GT. 6*NUCDEP).OR.
+     &         (QPGRAD .AND. IREC .GT. (6*NUCDEP + 6))) THEN
                CALL WRITDX (LURDR,IREC,IRAT*NVARPT,WRK(JRD))
                IF (IPRINT .GE. 10) THEN
                   WRITE (LUPRI,'(//A,I5)') ' Symmetry coordinate: ',

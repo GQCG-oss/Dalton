@@ -2894,7 +2894,7 @@ C
            IF (HAMILT) THEN
              CALL TIMER('START ',TIMSTR,TIMEND)
              CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                   .TRUE.,.FALSE.,.FALSE.,.FALSE.)
+     &                   .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.)
              CALL TIMER('ONEDRV',TIMSTR,TIMEND)
              CALL FLSHFO(LUPRI)
            END IF

@@ -1687,6 +1687,7 @@ C
       IF (KGETSD.GT.LWORK) CALL STOPIT('GETSD',' ',KGETSD,LWORK)
       DO 100 ICOOR = 1, 3
          IF (DERIV(ICOOR)) THEN
+
             IF (IPRINT .GE. 10) THEN
                IF (ICOOR. EQ. 1) THEN
                   CALL TITLER('Differentiation in x direction',' ',200)
@@ -1906,11 +1907,15 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
 C
-      LOGICAL DNULL, TOTSYM
+      LOGICAL DNULL, TOTSYM, FNDLAB
       CHARACTER*4 KEY
+      CHARACTER*8 LABEL
 #include <nuclei.h>
 #include <symmet.h>
 #include <inforb.h>
+#include <inftap.h>
+#include <infinp.h>
+#include <chrnos.h>
       DIMENSION WORK(N2BASX), ONEMAT(N2BASX), TRONEM(NNBASX)
 #include <ibtfun.h>
 C
@@ -1971,6 +1976,38 @@ C
                      END IF
                   END IF
  200           CONTINUE
+               IF (NFIELD .GT. 0 .AND. KEY .EQ.'HMAT') THEN
+                  CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                 'UNFORMATTED',IDUMMY,.FALSE.)         
+                  DO 556 IFIELD = 1, NFIELD
+                     IF (EFIELD(IFIELD) .NE. D0) THEN
+                        IF (LFIELD(IFIELD)(2:8) .NE. 'DIPLEN ') THEN
+                           WRITE (LUPRI,'(/,3A,/)') 'Field type ',
+     &                          LFIELD(IFIELD),
+     &                  ' not implemented for geometric derivatives'
+                           CALL QUIT('Illegal field type for '//
+     &                          'geometric derivative')
+                        END IF
+C
+C     Determine label to search for
+C
+                        LABEL = CHRNOS(ISCOOR/100)
+     &                       //CHRNOS(MOD(ISCOOR,100)/10)
+     &                       //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+     &                       //'DPG '// LFIELD(IFIELD)(1:1)
+                        REWIND LUPROP
+                        IF (.NOT. FNDLAB(LABEL,LUPROP)) THEN
+                           WRITE(LUPRI,'(1X,3A)')'Label ',
+     &                          LABEL, ' not found on file AOPROPER'
+                           CALL QUIT('Error in ONEDER')
+                        END IF
+                        CALL READT(LUPROP,NNBASX,WORK)
+                        CALL DAXPY(NNBASX,-EFIELD(IFIELD),
+     &                       WORK,1,TRONEM,1)
+                     END IF
+ 556              CONTINUE
+                  CALL GPCLOSE(LUPROP,'KEEP')
+               END IF
             ELSE
                CALL GETDMA(ISCOOR,ONEMAT,WORK,DNULL)
             END IF

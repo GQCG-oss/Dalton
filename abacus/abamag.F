@@ -42,14 +42,14 @@ C
 #include <priunit.h>
 #include <mxcent.h>
       LOGICAL NEWDEF
-      PARAMETER (NTABLE = 13)
+      PARAMETER (NTABLE = 14)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <abainf.h>
 #include <magone.h>
       DATA TABLE /'.SHIELD', '.SPIN-S', '.DIASUS', '.SKIP  ',
      &            '.PRINT ', '.NODC  ', '.NODV  ', '.STOP  ',
      &            '.POINTS', '.NEFIEL', '.QUADRU', '.ALL CO',
-     &            '.ELFGRA'/
+     &            '.ELFGRA', '.SECMOM'/
       NEWDEF = WORD .EQ. '*EXPECT'
       ICHANG = 0
       IF (NEWDEF) THEN
@@ -123,6 +123,7 @@ C
                ALLCOM = .TRUE.
                GOTO 100
  14         CONTINUE
+               MSECND = .TRUE.
                GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -159,6 +160,8 @@ C
                END IF
                IF (MELFLD) WRITE (LUPRI,'(10X,A)')
      &             'Nuclear electric fields (diamagnetic spin-rotation)'
+               IF (MSECND) WRITE (LUPRI,'(10X,A)')
+     &              'Second moments'
                IF (MQUADR) WRITE (LUPRI,'(10X,A)')
      &              'Quadrupole moments'
                IF (MNQCC) WRITE (LUPRI,'(10X,A)')
@@ -209,6 +212,8 @@ C
       MPOINT = .FALSE.
       MELFLD = (SPINRO .AND. NOLOND)
       MQUADR = QUADRU
+      MSECND = SECNDM
+      MOCTUP = OCTUPO
       MNQCC  = NQCC
       ALLCOM = .NOT. DODRCT
       MPQUAD = 40
@@ -368,6 +373,18 @@ c        identical results.
       IF (MQUADR) THEN
          WORD = 'THETA  '
          NCOMP = 6
+         CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
+     &               MPRINT,MNODC,MNODV,WORD,NCOMP)
+      END IF
+      IF (MSECND) THEN
+         WORD = 'SECMOM '
+         NCOMP = 6
+         CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
+     &               MPRINT,MNODC,MNODV,WORD,NCOMP)
+      END IF
+      IF (MOCTUP) THEN
+         WORD = 'THRMOM '
+         NCOMP = 10
          CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
      &               MPRINT,MNODC,MNODV,WORD,NCOMP)
       END IF
@@ -650,6 +667,8 @@ C
 #include <nuclei.h>
 #include <suscpt.h>
 #include <quadru.h>
+#include <secmom.h>
+#include <thimom.h>
 #include <molgfa.h>
 #include <relcor.h>
 #include <dipole.h>
@@ -721,6 +740,29 @@ C
             QDREL(IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJ)
             QDREL(IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJ)
  110     CONTINUE
+      END IF
+      IF (WORD .EQ. 'SECMOM ') THEN
+        IJ = 0
+        DO 150 I = 1, 3
+        DO 150 J = I, 3
+           IJ = IJ + 1
+           SCMEL(IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJ)
+           SCMEL(IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJ)
+ 150    CONTINUE   
+      END IF
+      IF (WORD .EQ. 'THRMOM')THEN
+         IJK = 0
+         DO 160 I = 1, 3
+         DO 160 J = I, 3
+         DO 160 K = J, 3          
+            IJK = IJK + 1
+            THDMEL(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1)) = EXPVAL(IJK)
+            THDMEL(IPTAX(I,1),IPTAX(K,1),IPTAX(J,1)) = EXPVAL(IJK)
+            THDMEL(IPTAX(J,1),IPTAX(I,1),IPTAX(K,1)) = EXPVAL(IJK)
+            THDMEL(IPTAX(J,1),IPTAX(K,1),IPTAX(I,1)) = EXPVAL(IJK)
+            THDMEL(IPTAX(K,1),IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJK)
+            THDMEL(IPTAX(K,1),IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJK)
+ 160     CONTINUE
       END IF
       IF (WORD .EQ. 'S2MAG  ') THEN
          IJ = 0
@@ -3046,7 +3088,6 @@ C
  40         CONTINUE
           END IF
  30     CONTINUE
-        write(lupri,*)'NATOM',NATOM
         IF (IPRINT .GE. 5) THEN
           CALL HEADER('Nuclear contribution to electric field gradient',
      &                -1)
@@ -3147,6 +3188,129 @@ C
      &                 -1)
           CALL POLPRI(QDRNUC,'   ',1)
         END IF
+      END IF
+      RETURN
+      END
+C  /* Deck nucscm */
+      SUBROUTINE NUCSCM(GEOM,ORIGIN,LUPRI,IPRINT)
+C
+C     Nuclear contribution to second moments
+C     H.Solheim, May -03
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <nuclei.h>
+      PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
+      DIMENSION ORIGIN(3), GEOM(3*NATOMS)
+#include <symmet.h>
+#include <secmom.h>
+#include <ibtfun.h>
+C
+      CALL DZERO(SCMNUC,9)
+      KK = 1
+      NATOM = 1
+      IX = IPTAX(1,1)
+      IY = IPTAX(2,1)
+      IZ = IPTAX(3,1)
+      DO I = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+               XCOOR = GEOM(KK) - ORIGIN(1)
+               YCOOR = GEOM(KK + 1) - ORIGIN(2)
+               ZCOOR = GEOM(KK + 2) - ORIGIN(3)
+               SCMNUC(IX,IX) = SCMNUC(IX,IX) + CHARGE(I)*XCOOR*XCOOR
+               SCMNUC(IY,IY) = SCMNUC(IY,IY) + CHARGE(I)*YCOOR*YCOOR
+               SCMNUC(IZ,IZ) = SCMNUC(IZ,IZ) + CHARGE(I)*ZCOOR*ZCOOR
+               SCMNUC(IX,IY) = SCMNUC(IX,IY) + CHARGE(I)*XCOOR*YCOOR
+               SCMNUC(IX,IZ) = SCMNUC(IX,IZ) + CHARGE(I)*XCOOR*ZCOOR
+               SCMNUC(IY,IZ) = SCMNUC(IY,IZ) + CHARGE(I)*YCOOR*ZCOOR
+               KK = KK + 3
+            END IF
+         END DO
+      END DO
+      SCMNUC(IY,IX) = SCMNUC(IX,IY)
+      SCMNUC(IZ,IX) = SCMNUC(IX,IZ)
+      SCMNUC(IZ,IY) = SCMNUC(IY,IZ)
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('Nuclear contribution to second moment',-1)
+         CALL POLPRI(SCMNUC,'   ',1)
+      END IF
+      RETURN
+      END
+C  /* Deck nuc3rd */
+      SUBROUTINE NUC3RD(GEOM,ORIGIN,LUPRI,IPRINT)
+C
+C     Nuclear contribution to third moments
+C     H.Solheim, May -03
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <nuclei.h>
+      PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
+      DIMENSION ORIGIN(3), GEOM(3*NATOMS)
+#include <symmet.h>
+#include <thimom.h>
+#include <ibtfun.h>
+C
+      CALL DZERO(THDNUC,27)
+      KK = 1
+      NATOM = 1
+      IX = IPTAX(1,1)
+      IY = IPTAX(2,1)
+      IZ = IPTAX(3,1)
+      DO I = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+               XCOOR = GEOM(KK) - ORIGIN(1)
+               YCOOR = GEOM(KK + 1) - ORIGIN(2)
+               ZCOOR = GEOM(KK + 2) - ORIGIN(3)
+               THDNUC(IX,IX,IX) = THDNUC(IX,IX,IX)
+     &              + CHARGE(I)*XCOOR*XCOOR*XCOOR
+               THDNUC(IX,IX,IY) = THDNUC(IX,IX,IY)
+     &              + CHARGE(I)*XCOOR*XCOOR*YCOOR
+               THDNUC(IX,IX,IZ) = THDNUC(IX,IX,IZ)
+     &              + CHARGE(I)*XCOOR*XCOOR*ZCOOR
+               THDNUC(IX,IY,IY) = THDNUC(IX,IY,IY)
+     &              + CHARGE(I)*XCOOR*YCOOR*YCOOR
+               THDNUC(IX,IY,IZ) = THDNUC(IX,IY,IZ)
+     &              + CHARGE(I)*XCOOR*YCOOR*ZCOOR
+               THDNUC(IX,IZ,IZ) = THDNUC(IX,IZ,IZ)
+     &              + CHARGE(I)*XCOOR*ZCOOR*ZCOOR
+               THDNUC(IY,IY,IY) = THDNUC(IY,IY,IY)
+     &              + CHARGE(I)*YCOOR*YCOOR*YCOOR
+               THDNUC(IY,IY,IZ) = THDNUC(IY,IY,IZ)
+     &              + CHARGE(I)*YCOOR*YCOOR*ZCOOR
+               THDNUC(IY,IZ,IZ) = THDNUC(IY,IZ,IZ)
+     &              + CHARGE(I)*YCOOR*ZCOOR*ZCOOR
+               THDNUC(IZ,IZ,IZ) = THDNUC(IZ,IZ,IZ)
+     &              + CHARGE(I)*ZCOOR*ZCOOR*ZCOOR
+               KK = KK + 3
+            END IF
+         END DO
+      END DO
+      DO I = 1, 3
+         DO J = I, 3
+            DO K = J, 3
+               THDNUC(IPTAX(I,1),IPTAX(K,1),IPTAX(J,1)) =
+     &              THDNUC(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1))
+               THDNUC(IPTAX(J,1),IPTAX(I,1),IPTAX(K,1)) =
+     &              THDNUC(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1))
+               THDNUC(IPTAX(J,1),IPTAX(K,1),IPTAX(I,1)) =
+     &              THDNUC(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1))
+               THDNUC(IPTAX(K,1),IPTAX(I,1),IPTAX(J,1)) =
+     &              THDNUC(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1))
+               THDNUC(IPTAX(K,1),IPTAX(K,1),IPTAX(I,1)) =
+     &              THDNUC(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1))
+            END DO
+         END DO
+      END DO
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('Nuclear contribution to third moment',-1)
+         CALL PRIOCT(THDNUC)
       END IF
       RETURN
       END

@@ -98,7 +98,7 @@ C     *********************************************
 C     ***** Reorthonormalization contribution *****
 C     *********************************************
 C
-      IF (DIPDER) THEN
+      IF (DIPDER .OR. QPGRAD) THEN
          CALL OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,NODC,NODV,
      &            IREP,IPRINT)
       END IF

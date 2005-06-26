@@ -375,7 +375,8 @@ C
 C
       SKIP   =.NOT.(MOLHES .OR. DIPDER .OR. SHIELD .OR. VCD .OR. MAGSUS
      &                     .OR. SPNSPN .OR. ECD .OR. VROA .OR. MOLGFA
-     &                     .OR. SPINRO .OR. MCD .OR. VERDET .OR. OPTROT)
+     &                     .OR. SPINRO .OR. MCD .OR. VERDET .OR. OPTROT
+     &                     .OR. QPGRAD)
       CUT    = .FALSE.
       RUNINT = .TRUE.
       RUNFCK = .TRUE.
@@ -414,7 +415,7 @@ C
       TRATST = .FALSE.
       RUNGDY = MOLHES .OR. DIPDER .OR. SHIELD .OR. VCD .OR. MAGSUS
      &                .OR. ECD .OR. VROA .OR. MOLGFA .OR. MCD 
-     &	              .OR. VERDET .OR. SPINRO .OR. OPTROT
+     &	              .OR. VERDET .OR. SPINRO .OR. OPTROT .OR. QPGRAD
       IPRGDY = IPRDEF
       NODC   = .FALSE.
       NODV   = .FALSE.
@@ -483,6 +484,7 @@ C
 #include <infpar.h>
 #include <cbieri.h>
 #include <dftcom.h>
+#include "infinp.h"
 C
 C     For GDHAM true:
 C
@@ -564,6 +566,12 @@ C
                CALL GET1IN(DUMMY,'SQHDOR ',NCOMP,WORK(KLAST),LWRK,
      &              LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,
      &              .TRUE.,NPATOM,.FALSE.,IPRGDY)
+               IF (NFIELD .GT. 0) THEN
+                  NCOMP = 0
+                  CALL GET1IN(DUMMY,'DPLGRA ',NCOMP,WORK(KLAST),LWRK,
+     &                    LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,.TRUE.
+     &                    ,NPATOM,.TRUE.,IPRGDY)
+               END IF
             END IF
             DERIV(1) = DOREAL .AND. DCORGD(IATOM,1,1)
             DERIV(2) = DOREAL .AND. DCORGD(IATOM,2,1)
@@ -932,7 +940,7 @@ C
 C              Fock matrices for magnetic field derivatives
 C
                IF (ITYPE .EQ. -5) THEN
-                  IF (MOLHES .OR. DIPDER .OR. VCD) THEN
+                  IF (MOLHES .OR. DIPDER .OR. QPGRAD .OR. VCD) THEN
                     IREC = 3
                     IF (EXPFCK) IREC = 3*NUCIND
                   ELSE

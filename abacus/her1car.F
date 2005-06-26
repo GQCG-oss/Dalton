@@ -34,22 +34,22 @@ C
 #include <single.h>
 C
 C  /* Deck oneprm */
-      SUBROUTINE ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
-     &                  RLMINT,RLMTAB,FCM,
+      SUBROUTINE ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,
+     &                  QINT1,RLMINT,RLMTAB,FCM,
      &                  WORK,LWORK,IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,
-     &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &                  GNUEXP,NCENTC,NCLONE,EXPDER)
+     &                  TOLS,SECDER,DIFDIP,DIFQDP,FACINT,COORC,
+     &                  GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
 C
-      LOGICAL PROPTY, SECDER, DIFDIP, NCLONE
+      LOGICAL PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP
       DIMENSION WORK(LWORK)
       DIMENSION STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
-     &          STDER2(KCKTAB,6,2),
-     &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
-     &          ADER(*), FACINT(*), COORC(3,*), NCENTC(*),
+     &          STDER2(KCKTAB,6,2), SINT0(KCKTAB), SINT1(KCKTAB,3), 
+     &          DINT1(KCKTAB,3,3), QINT1(KCKTAB,3,6), 
+     &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*), EXPDER(*)
 #include <onecom.h>
 #include <expopt.h>
@@ -72,21 +72,21 @@ C
       LWRK   = LWORK  - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('ONEPRM',' ',KLAST,LWORK)
       CALL DZERO(WORK(KAHGTF),(NATOMC + 1)*NAHGTF)
-      CALL ONEPR1(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
+      CALL ONEPR1(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,QINT1,
      &            RLMINT,RLMTAB,FCM,
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &            FACINT,COORC,GNUEXP,NCENTC,NHKTAP,NCLONE,
-     &            EXPDER,WORK(KLAST),LWRK)
+     &            DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
+     &            NCLONE,EXPDER,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck onepr1 */
-      SUBROUTINE ONEPR1(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
-     &                  RLMINT,RLMTAB,FCM,
+      SUBROUTINE ONEPR1(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,
+     &                  QINT1,RLMINT,RLMTAB,FCM,
      &                  AHGTF,ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT,
      &                  PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &                  FACINT,COORC,GNUEXP,NCENTC,NHKTAP,NCLONE,
-     &                  EXPDER,WORK,LWORK)
+     &                  DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
+     &                  NCLONE,EXPDER,WORK,LWORK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -98,12 +98,14 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D3 = 3.0D0, THIRD = D1/D3,
      &           GNUTHR = 1.D-4)
 C
-      LOGICAL PROPTY, KINODC, SECDER, DIFDIP, NCLONE, CLASIC(MXCENT)
+      LOGICAL PROPTY, KINODC, SECDER, DIFDIP, NCLONE, CLASIC(MXCENT),
+     &        DIFQDP
       DIMENSION WORK(LWORK), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
-     &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
-     &          ADER(*), AHGTF(*), NCENTC(*), FACINT(*), COORC(3,*),
-     &          GNUEXP(*), EXPDER(KCKTAB,2,2,NUCA,NUCB)
+     &          SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
+     &          QINT1(KCKTAB,3,6), ADER(*), AHGTF(*), NCENTC(*), 
+     &          FACINT(*), COORC(3,*),GNUEXP(*), JCENTC(*), 
+     &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
 #include <cbisol.h>
@@ -179,6 +181,10 @@ C
       IF (PROPTY) THEN
          CALL DZERO(SINT0,  KCKTAB)
          CALL DZERO(DINT1,9*KCKTAB)
+         IF (DIFQDP) THEN
+            CALL DZERO(SINT1,3*KCKTAB)
+            CALL DZERO(QINT1,18*KCKTAB)
+         END IF
       END IF
       IF (EXPGRA) THEN
          CALL DZERO(EXPDER,4*KCKTAB*NUCA*NUCB)
@@ -336,7 +342,8 @@ C
      &                       SECDER)
                END IF
                CALL DIPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SINT0,
-     &                     DINT1,SHGTF,CORPX,CORPY,CORPZ,DIFDIP)
+     &                     SINT1,DINT1,QINT1,SHGTF,CORPX,CORPY,CORPZ,
+     &                     EXPPI,DIFDIP,DIFQDP)
             ELSE
                CALL CINT0(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,
      &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT)
@@ -962,8 +969,9 @@ C
       RETURN
       END
 C  /* Deck dipint */
-       SUBROUTINE DIPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SINT0,
-     &                   DINT1,SHGTF,CORPX,CORPY,CORPZ,DIFDIP)
+       SUBROUTINE DIPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SINT0,SINT1,
+     &                   DINT1,QINT1,SHGTF,CORPX,CORPY,CORPZ,EXPPI,
+     &                   DIFDIP,DIFQDP)
 C
 C     tuh 1985
 C
@@ -971,8 +979,10 @@ C
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-      LOGICAL DIFDIP
-      DIMENSION SINT0(KCKTAB), DINT1(KCKTAB,3,3)
+      PARAMETER (D2 = 2.0D0, DP5 = 0.50D0)
+      LOGICAL DIFDIP, DIFQDP
+      DIMENSION SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
+     &          QINT1(KCKTAB,3,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include <onecom.h>
 #include <lmns.h>
@@ -991,19 +1001,32 @@ C
          SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
          SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
          SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         SX1 = SHGTF*ODC(LVALA,LVALB,0,1,0,1)
+         SY1 = SHGTF*ODC(MVALA,MVALB,0,1,0,2)
+         SZ1 = SHGTF*ODC(NVALA,NVALB,0,1,0,3)
          DX0 = SHGTF*ODC(LVALA,LVALB,1,0,0,1) + CORPX*SX0
          DY0 = SHGTF*ODC(MVALA,MVALB,1,0,0,2) + CORPY*SY0
          DZ0 = SHGTF*ODC(NVALA,NVALB,1,0,0,3) + CORPZ*SZ0
+         DX1 = SHGTF*ODC(LVALA,LVALB,1,1,0,1) + CORPX*SX1
+         DY1 = SHGTF*ODC(MVALA,MVALB,1,1,0,2) + CORPY*SY1
+         DZ1 = SHGTF*ODC(NVALA,NVALB,1,1,0,3) + CORPZ*SZ1
+         QX0 = SHGTF*D2*ODC(LVALA,LVALB,2,0,0,1) 
+     &       + D2*CORPX*DX0 - (CORPX*CORPX - DP5*EXPPI)*SX0
+         QY0 = SHGTF*D2*ODC(MVALA,MVALB,2,0,0,2) 
+     &       + D2*CORPY*DY0 - (CORPY*CORPY - DP5*EXPPI)*SY0
+         QZ0 = SHGTF*D2*ODC(NVALA,NVALB,2,0,0,3) 
+     &       + D2*CORPZ*DZ0 - (CORPZ*CORPZ - DP5*EXPPI)*SZ0
+         QX1 = SHGTF*D2*ODC(LVALA,LVALB,2,1,0,1) 
+     &       + D2*CORPX*DX1 - (CORPX*CORPX - DP5*EXPPI)*SX1
+         QY1 = SHGTF*D2*ODC(MVALA,MVALB,2,1,0,2) 
+     &       + D2*CORPY*DY1 - (CORPY*CORPY - DP5*EXPPI)*SY1
+         QZ1 = SHGTF*D2*ODC(NVALA,NVALB,2,1,0,3) 
+     &       + D2*CORPZ*DZ1 - (CORPZ*CORPZ - DP5*EXPPI)*SZ1
 C
          SINT0(INT1)   = SINT0(INT1)   + SX0*SY0*SZ0
-         IF (DIFDIP) THEN
+C
+         IF (DIFDIP .OR. DIFQDP) THEN
             IF (.NOT. ONECEN) THEN
-               SX1 = SHGTF*ODC(LVALA,LVALB,0,1,0,1)
-               SY1 = SHGTF*ODC(MVALA,MVALB,0,1,0,2)
-               SZ1 = SHGTF*ODC(NVALA,NVALB,0,1,0,3)
-               DX1 = SHGTF*ODC(LVALA,LVALB,1,1,0,1) + CORPX*SX1
-               DY1 = SHGTF*ODC(MVALA,MVALB,1,1,0,2) + CORPY*SY1
-               DZ1 = SHGTF*ODC(NVALA,NVALB,1,1,0,3) + CORPZ*SZ1
                DINT1(INT1,1,1) = DINT1(INT1,1,1) + DX1*SY0*SZ0
                DINT1(INT1,2,1) = DINT1(INT1,2,1) + SX1*DY0*SZ0
                DINT1(INT1,3,1) = DINT1(INT1,3,1) + SX1*SY0*DZ0
@@ -1013,6 +1036,31 @@ C
                DINT1(INT1,1,3) = DINT1(INT1,1,3) + DX0*SY0*SZ1
                DINT1(INT1,2,3) = DINT1(INT1,2,3) + SX0*DY0*SZ1
                DINT1(INT1,3,3) = DINT1(INT1,3,3) + SX0*SY0*DZ1
+            END IF
+         END IF
+         IF (DIFQDP) THEN
+            SINT1(INT1,1) = SINT1(INT1,1) + DX0*SY0*SZ0
+            SINT1(INT1,2) = SINT1(INT1,2) + SX0*DY0*SZ0
+            SINT1(INT1,3) = SINT1(INT1,3) + SX0*SY0*DZ0
+            IF (.NOT. ONECEN) THEN
+               QINT1(INT1,1,1) = QINT1(INT1,1,1) + QX1*SY0*SZ0
+               QINT1(INT1,2,1) = QINT1(INT1,2,1) + QX0*SY1*SZ0
+               QINT1(INT1,3,1) = QINT1(INT1,3,1) + QX0*SY0*SZ1
+               QINT1(INT1,1,2) = QINT1(INT1,1,2) + DX1*DY0*SZ0
+               QINT1(INT1,2,2) = QINT1(INT1,2,2) + DX0*DY1*SZ0
+               QINT1(INT1,3,2) = QINT1(INT1,3,2) + DX0*DY0*SZ1
+               QINT1(INT1,1,3) = QINT1(INT1,1,3) + DX1*SY0*DZ0
+               QINT1(INT1,2,3) = QINT1(INT1,2,3) + DX0*SY1*DZ0
+               QINT1(INT1,3,3) = QINT1(INT1,3,3) + DX0*SY0*DZ1
+               QINT1(INT1,1,4) = QINT1(INT1,1,4) + SX1*QY0*SZ0
+               QINT1(INT1,2,4) = QINT1(INT1,2,4) + SX0*QY1*SZ0
+               QINT1(INT1,3,4) = QINT1(INT1,3,4) + SX0*QY0*SZ1
+               QINT1(INT1,1,5) = QINT1(INT1,1,5) + SX1*DY0*DZ0
+               QINT1(INT1,2,5) = QINT1(INT1,2,5) + SX0*DY1*DZ0
+               QINT1(INT1,3,5) = QINT1(INT1,3,5) + SX0*DY0*DZ1
+               QINT1(INT1,1,6) = QINT1(INT1,1,6) + SX1*SY0*QZ0
+               QINT1(INT1,2,6) = QINT1(INT1,2,6) + SX0*SY1*QZ0
+               QINT1(INT1,3,6) = QINT1(INT1,3,6) + SX0*SY0*QZ1
             END IF
          END IF
   100 CONTINUE

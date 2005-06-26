@@ -1,6 +1,6 @@
       LOGICAL         MSKIP, MNODC, MNODV, NST, SST, MDIASU, TOFILE,
      &                MCUT, MPOINT, MQUADR, ALLCOM, MNQCC, MELFLD,
-     &                DISCHA
+     &                DISCHA, MSECND, MOCTUP
       COMMON /MAGONE/ MPRINT, MSKIP, MNODC, MNODV, NST, SST, MDIASU,
      &                TOFILE, MCUT, MPQUAD, MPOINT, MQUADR,
-     &                ALLCOM, MNQCC, MELFLD, DISCHA
+     &                ALLCOM, MNQCC, MELFLD, DISCHA, MSECND, MOCTUP

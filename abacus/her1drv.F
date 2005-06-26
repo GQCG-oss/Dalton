@@ -150,7 +150,7 @@ C
       CUT    = .FALSE.
       IF (MOLHES) THEN
          MAXDIF = 2
-      ELSE IF (DIPDER .OR. MOLGRD) THEN
+      ELSE IF (DIPDER .OR. MOLGRD .OR. QPGRAD) THEN
          MAXDIF = 1
       ELSE IF (EXPGRD) THEN
          MAXDIF = 0
@@ -161,6 +161,7 @@ C
       NODC   = .FALSE.
       NODV   = .FALSE.
       DIFDIP = DIPDER .OR. (MOLGRD .AND. NFIELD .GT. 0)
+      DIFQDP = QPGRAD
       NCLONE = .FALSE.
       RETURN
       END
@@ -179,7 +180,7 @@ C
       IF (IPRINT .GT. 2) CALL TITLER('Output from ONEINT','*',103)
       PROPTY = .TRUE.
       CALL ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,NODV,
-     &            DIFDIP,HFONLY,NCLONE)
+     &            DIFDIP,DIFQDP,HFONLY,NCLONE)
       IF (IPRINT .GE. 2) CALL TIMER ('ONEINT',TIMSTR,TIMEND)
       PASS = .TRUE.
       IF (CUT) THEN
@@ -192,7 +193,7 @@ C
       END
 C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
-     &                  NODV,DIFDIP,HFONLY,NCLONE)
+     &                  NODV,DIFDIP,DIFQDP,HFONLY,NCLONE)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -202,7 +203,7 @@ C
 #include <iratdef.h>
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2), HFONLY,
-     &        NCLONE
+     &        NCLONE, DIFQDP
       DIMENSION WORK(LWORK)
 #include <nuclei.h>
 #include <shells.h>
@@ -287,18 +288,18 @@ C
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
      &            WORK(KJCENT),WORK(KTLMD),WORK(KCSTRA),WORK(KSCTRA),
      &            WORK(KLAST),LWRK,IPRINT,PROPTY,MAXDIF,
-     &            NODC,NODV,DIFDIP,NBAST,NNBASX,NNBAST,DOINT,.TRUE.,
-     &            WORK(KHESKE),WORK(KHESNA),WORK(KHESFS),WORK(KHSOLT),
-     &            WORK(KHSOLN),WORK(KHEDFT),HFONLY,NCLONE)
+     &            NODC,NODV,DIFDIP,DIFQDP,NBAST,NNBASX,NNBAST,DOINT,
+     &            .TRUE.,WORK(KHESKE),WORK(KHESNA),WORK(KHESFS),
+     &            WORK(KHSOLT),WORK(KHSOLN),WORK(KHEDFT),HFONLY,NCLONE)
       CALL QEXIT('ONEDRV')
       RETURN
       END
 C  /* Deck onedr1 */
       SUBROUTINE ONEDR1(STHMAT,DENMAT,FOCMAT,FACINT,COORC,SIGNC,NCENTC,
      &                  JSYMC,JCENTC,TLMD,CSTRA,SCTRA,WORK,LWORK,IPRINT,
-     &                  PROPTY,MAXDIF,NODC,NODV,DIFDIP,NBAST,NNBASX,
-     &                  NNBAST,DOINT,TOFILE,HESSKE,HESSNA,HESFS2,HSOLT2,
-     &                  HSOLNN,HESDFT,HFONLY,NCLONE)
+     &                  PROPTY,MAXDIF,NODC,NODV,DIFDIP,DIFQDP,NBAST,
+     &                  NNBASX,NNBAST,DOINT,TOFILE,HESSKE,HESSNA,HESFS2,
+     &                  HSOLT2,HSOLNN,HESDFT,HFONLY,NCLONE)
 C
 C     TUH
 C
@@ -324,7 +325,7 @@ C
 C
 #include <nuclei.h>
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
-     &        TOFILE, HFONLY, NCLONE, FOUND, FNDLB2
+     &        TOFILE, HFONLY, NCLONE, FOUND, DIFQDP, FNDLB2
       DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,*),
      &          FACINT(NUCDEP), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
@@ -346,6 +347,7 @@ C
 #include <dorps.h>
 #include <symind.h>
 #include <csym1.h>
+#include <difsec.h>
 #include <cbisol.h>
 #include <dftcom.h>
 #include <gnrinf.h>
@@ -363,7 +365,7 @@ C
       IF(THRS.EQ.0D0) THRS = 1D-15
       TOLS   = THRS*THRS
       TOLOG  = - LOG(TOLS)
-      IF (PROPTY .AND. (SECDER .OR. DIFDIP)) THEN
+      IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
          CALL GPOPEN(LUITMP,' ','NEW',' ','UNFORMATTED',IDUMMY,.FALSE.)
          REWIND LUITMP
          INDMAX = 0
@@ -373,6 +375,7 @@ C
 C     ***** Nuclear contributions *****
 C
       IF (PROPTY.AND..NOT.EXPGRA) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
+      IF (PROPTY .AND. DIFQDP) CALL SECNUC(CSTRA,SCTRA,IPRINT)
 C
 C     Gradient and Hessian elements equal to zero
 C
@@ -392,6 +395,10 @@ C
          IF (DIFDIP) THEN
             CALL DZERO(DDIPE,9*NUCDEP)
             CALL DZERO(DDIPS,9*NUCDEP)
+         END IF
+         IF (DIFQDP) THEN
+            CALL DZERO(DSECE,27*NUCDEP)
+            CALL DZERO(DSECS,27*NUCDEP)
          END IF
          IF (SOLVNT) THEN
             ESOLTT = D0
@@ -436,6 +443,12 @@ C
       KFCM  = 1
       KLAST = 1
       IF (PROPTY .AND. SOLVNT) THEN
+         IF (DIFQDP) THEN
+            WRITE (LUPRI,'(1X,A)') 'Second-moment gradient not yet '//
+     &           'implemented for spherical cavity model'
+            CALL QUIT('Second moment gradients not implemented '//
+     &           'for spherical cavity model')
+         END IF
          KFRSAV = 1
          KFREE  = KFRSAV
          LFREE  = LWORK
@@ -616,8 +629,8 @@ C
          CALL ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,
      &               WORK(KLAST),LWRK,
      &               IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,
-     &               DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,
-     &               NCENTC,SIGNC,NNBASX,WORK(KFCM),TLMD(1,1),
+     &               DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
+     &               JCENTC,NCENTC,SIGNC,NNBASX,WORK(KFCM),TLMD(1,1),
      &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE)
   110    IDENB0 = IDENB0 + KHKTB*MULTB
          IDENA = IDENA + KHKTA*MULTA
@@ -631,7 +644,7 @@ C     ***** ELSE write undifferentiated integrals    *****
 C     ****************************************************
 C
       IF (PROPTY) THEN
-         IF (SECDER .OR. DIFDIP) THEN
+         IF (SECDER .OR. DIFDIP .OR. DIFQDP) THEN
 C
 C           Write final buffer of first derivative integrals
 C
@@ -703,7 +716,7 @@ C     ***** Sort gradient elements on direct access unit *****
 C     ********************************************************
 C
       IF (PROPTY) THEN
-         IF (SECDER .OR. DIFDIP) THEN
+         IF (SECDER .OR. DIFDIP .OR. DIFQDP) THEN
             IF (SOLVNT) THEN
                CALL TLMWRT(TLMD,WORK(KFCM),WORK(KLAST),LWRK,IPRINT)
             END IF
@@ -783,6 +796,11 @@ C
                CALL HEADER('Electronic contributions to static part'//
      &                     ' of dipole gradient',-1)
                CALL FCPRI(DDIPE,'APT',WORK(KCSTRA),WORK(KSCTRA))
+            END IF
+            IF (DIFQDP) THEN
+               CALL HEADER('Electronic contributions to static part'//
+     &                     ' of second moment gradient',-1)
+               CALL PRISEC(DSECE,'SECDER',WORK(KCSTRA),WORK(KSCTRA))
             END IF
          END IF
       END IF
@@ -1179,6 +1197,71 @@ C
             CALL HEADER('Nuclear contribution to dipole gradient',-1)
             CALL FCPRI(DDIPN,'APT',CSTRA,SCTRA)
          END IF
+      END IF
+      RETURN
+      END
+C  /* Deck secnuc */
+      SUBROUTINE SECNUC(CSTRA,SCTRA,IPRINT)
+C
+C     Calculates nuclear contributions to electric second moment gradient
+C
+C     2003 hs
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+      PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
+      DIMENSION CSTRA(*), SCTRA(*)
+#include <orgcom.h>
+#include <abainf.h>
+#include <nuclei.h>
+#include <difsec.h>
+#include <symmet.h>
+#include <dorps.h>
+#include <ibtfun.h>
+C
+C     Second moment gradient
+C
+      CALL DZERO(DSECN,27*NUCDEP)
+      DO IATOM = 1, NUCIND
+         CHA = CHARGE(IATOM)
+         IF (ABS(CHA) .LT. D100) THEN
+            FAC = FMULT(ISTBNU(IATOM))*CHA
+            DO IXCOOR = 1, 3
+               DO IYCOOR = 1, IXCOOR
+                  IREP = IBTXOR(ISYMAX(IXCOOR,1),ISYMAX(IYCOOR,1))
+                  IF (IXCOOR .EQ. IYCOOR) THEN
+                     ISC = IPTCNT(3*(IATOM - 1) + IXCOOR,IREP,1)
+                     IF (ISC .GT. 0) THEN
+                        DSECN(IPTAX(IXCOOR,1),IPTAX(IXCOOR,1),ISC) = 
+     &                       2*FAC*(CORD(IXCOOR,IATOM))
+                     END IF
+                  ELSE
+                     ISC = IPTCNT(3*(IATOM - 1) + IXCOOR,IREP,1)
+                     IF (ISC .GT. 0) THEN
+                        DSECN(IPTAX(IXCOOR,1),IPTAX(IYCOOR,1),ISC) = 
+     &                       FAC*(CORD(IYCOOR,IATOM))
+                        DSECN(IPTAX(IYCOOR,1),IPTAX(IXCOOR,1),ISC) = 
+     &                       DSECN(IPTAX(IXCOOR,1),IPTAX(IYCOOR,1),ISC) 
+                     END IF
+                     ISC = IPTCNT(3*(IATOM - 1) + IYCOOR,IREP,1)
+                     IF (ISC .GT. 0) THEN
+                        DSECN(IPTAX(IXCOOR,1),IPTAX(IYCOOR,1),ISC) = 
+     &                       FAC*(CORD(IXCOOR,IATOM))
+                        DSECN(IPTAX(IYCOOR,1),IPTAX(IXCOOR,1),ISC) = 
+     &                       DSECN(IPTAX(IXCOOR,1),IPTAX(IYCOOR,1),ISC) 
+                     END IF
+                  END IF
+               END DO
+            END DO
+         END IF
+      END DO
+      IF (IPRINT .GT. 0) THEN
+         CALL HEADER
+     &        ('Nuclear contribution to second moment gradient',-1)
+         CALL PRISEC(DSECN,'SECDER',CSTRA,SCTRA)
       END IF
       RETURN
       END

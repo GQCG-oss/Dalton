@@ -202,14 +202,13 @@ C
 #endif
 Cef begin
 C To run the incore-version of dalton where integrals are stored in memory
-C on each slave for reuse, just set AOSAVE = .FALSE. below, and take a look
+C on each slave for reuse, just set AOSAVE = .TRUE. below, and take a look
 C at the header file DALTON_SOURCE_DIR/include/incore.h  and the variables:
 C MMWORK and IEIR. 
 C MMWORK (we used MMWORK=80000000 when testing ) determines the size of 
 C the chunk of array WORK which is reserved for incore-calculations. 
 C The variable IEIR in incore.h must also be set to a large enough positive 
-C integer (we used IEIR=3000000). Also, screening of integrals must not be used
-C when running DALTON with AOSAVE = .FALSE.  
+C integer (we used IEIR=3000000).
 
       JSCORE = 1
       LMCORE = MMWORK 

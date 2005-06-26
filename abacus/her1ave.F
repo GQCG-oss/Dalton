@@ -1229,3 +1229,272 @@ C
       END DO
       RETURN
       END
+C  /* Deck aveqdp */
+      SUBROUTINE AVEQDP(SINT1,QINT1,ISYMOP,DIFQDP,DSHELL,MAXCMP)
+C
+C     K.Ruud, spring 2003
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.00 D00, D2 = 2.0D0)
+      LOGICAL DIFQDP
+      DIMENSION DSHELL(KHKTAB), SINT1(KCKTAB,3), QINT1(KCKTAB,3,6)
+#include <onecom.h>
+#include <symmet.h>
+#include <dorps.h>
+#include <cbiqpg.h>
+#include <difsec.h>
+C
+#include <ibtfun.h>
+C
+      IF (DIFQDP) THEN
+         NAX = 3*NCENTA - 2
+         NAY = 3*NCENTA - 1
+         NAZ = 3*NCENTA
+         NBX = 3*NCENTB - 2
+         NBY = 3*NCENTB - 1
+         NBZ = 3*NCENTB
+         IX  = IPTAX(1,1)
+         IY  = IPTAX(2,1)
+         IZ  = IPTAX(3,1)
+C
+C        Expectation value of undifferentiated elements
+C
+         SAVRX  = D0
+         SAVRY  = D0
+         SAVRZ  = D0
+#if defined (SYS_CONVEX) || defined (SYS_HAL)
+#include <scalar.h>
+#endif
+         DO 200 ICOMP = 1, KHKTAB
+            DENS  = DSHELL(ICOMP)
+            SAVRX = SAVRX + DENS*SINT1(ICOMP,1)
+            SAVRY = SAVRY + DENS*SINT1(ICOMP,2)
+            SAVRZ = SAVRZ + DENS*SINT1(ICOMP,3)
+ 200     CONTINUE
+         IF (ONECEN) THEN
+            DO 300 IREP = 0, MAXREP
+            IF (DOREPS(IREP)) THEN
+               IAX = IPTCNT(NAX,IREP,1)
+               IAY = IPTCNT(NAY,IREP,1)
+               IAZ = IPTCNT(NAZ,IREP,1)
+               IF (IREP .EQ. 0) THEN
+                  IF (IAX .GT. 0)
+     &                 DSECE(IX,IX,IAX) = DSECE(IX,IX,IAX) - D2*SAVRX
+                  IF (IAY .GT. 0)
+     &                 DSECE(IY,IY,IAY) = DSECE(IY,IY,IAY) - D2*SAVRY
+                  IF (IAZ .GT. 0)
+     &                 DSECE(IZ,IZ,IAZ) = DSECE(IZ,IZ,IAZ) - D2*SAVRZ
+               END IF
+               IF (ISYMAX(3,2) .EQ. IREP .AND. IAX .GT. 0) THEN
+                  DSECE(IX,IY,IAX) = DSECE(IX,IY,IAX) - SAVRY
+                  DSECE(IY,IX,IAX) = DSECE(IY,IX,IAX) - SAVRY
+               END IF
+               IF (ISYMAX(3,2) .EQ. IREP .AND. IAY .GT. 0) THEN
+                  DSECE(IX,IY,IAY) = DSECE(IX,IY,IAY) - SAVRX
+                  DSECE(IY,IX,IAY) = DSECE(IY,IX,IAY) - SAVRX
+               END IF
+               IF (ISYMAX(2,2) .EQ. IREP .AND. IAX .GT. 0) THEN
+                  DSECE(IX,IZ,IAX) = DSECE(IX,IZ,IAX) - SAVRZ
+                  DSECE(IZ,IX,IAX) = DSECE(IZ,IX,IAX) - SAVRZ
+               END IF
+               IF (ISYMAX(2,2) .EQ. IREP .AND. IAZ .GT. 0) THEN
+                  DSECE(IX,IZ,IAZ) = DSECE(IX,IZ,IAZ) - SAVRX
+                  DSECE(IZ,IX,IAZ) = DSECE(IZ,IX,IAZ) - SAVRX
+               END IF
+               IF (ISYMAX(1,2) .EQ. IREP .AND. IAY .GT. 0) THEN
+                  DSECE(IY,IZ,IAY) = DSECE(IY,IZ,IAY) - SAVRZ
+                  DSECE(IZ,IY,IAY) = DSECE(IZ,IY,IAY) - SAVRZ
+               END IF
+               IF (ISYMAX(1,2) .EQ. IREP .AND. IAZ .GT. 0) THEN
+                  DSECE(IY,IZ,IAZ) = DSECE(IY,IZ,IAZ) - SAVRY
+                  DSECE(IZ,IY,IAZ) = DSECE(IZ,IY,IAZ) - SAVRY
+               END IF
+            END IF
+  300       CONTINUE
+         ELSE
+            XAVRXX  = D0
+            XAVRXY  = D0
+            XAVRXZ  = D0
+            XAVRYY  = D0
+            XAVRYZ  = D0
+            XAVRZZ  = D0
+            YAVRXX  = D0
+            YAVRXY  = D0
+            YAVRXZ  = D0
+            YAVRYY  = D0
+            YAVRYZ  = D0
+            YAVRZZ  = D0
+            ZAVRXX  = D0
+            ZAVRXY  = D0
+            ZAVRXZ  = D0
+            ZAVRYY  = D0
+            ZAVRYZ  = D0
+            ZAVRZZ  = D0
+            DO 400 ICOMP = 1, KHKTAB
+               DENS  = DSHELL(ICOMP)
+               XAVRXX = XAVRXX - DENS*QINT1(ICOMP,1,1)
+               XAVRXY = XAVRXY - DENS*QINT1(ICOMP,1,2)
+               XAVRXZ = XAVRXZ - DENS*QINT1(ICOMP,1,3)
+               XAVRYY = XAVRYY - DENS*QINT1(ICOMP,1,4)
+               XAVRYZ = XAVRYZ - DENS*QINT1(ICOMP,1,5)
+               XAVRZZ = XAVRZZ - DENS*QINT1(ICOMP,1,6)
+               YAVRXX = YAVRXX - DENS*QINT1(ICOMP,2,1)
+               YAVRXY = YAVRXY - DENS*QINT1(ICOMP,2,2)
+               YAVRXZ = YAVRXZ - DENS*QINT1(ICOMP,2,3)
+               YAVRYY = YAVRYY - DENS*QINT1(ICOMP,2,4)
+               YAVRYZ = YAVRYZ - DENS*QINT1(ICOMP,2,5)
+               YAVRZZ = YAVRZZ - DENS*QINT1(ICOMP,2,6)
+               ZAVRXX = ZAVRXX - DENS*QINT1(ICOMP,3,1)
+               ZAVRXY = ZAVRXY - DENS*QINT1(ICOMP,3,2)
+               ZAVRXZ = ZAVRXZ - DENS*QINT1(ICOMP,3,3)
+               ZAVRYY = ZAVRYY - DENS*QINT1(ICOMP,3,4)
+               ZAVRYZ = ZAVRYZ - DENS*QINT1(ICOMP,3,5)
+               ZAVRZZ = ZAVRZZ - DENS*QINT1(ICOMP,3,6)
+  400       CONTINUE
+            DO 500 IREP = 0, MAXREP
+            IF (DOREPS(IREP)) THEN
+               CHI  = PT(IBTAND(ISYMOP,IREP))
+               CSBX = CHI*SIGNBX
+               CSBY = CHI*SIGNBY
+               CSBZ = CHI*SIGNBZ
+               IAX = IPTCNT(NAX,IREP,1)
+               IAY = IPTCNT(NAY,IREP,1)
+               IAZ = IPTCNT(NAZ,IREP,1)
+               IBX = IPTCNT(NBX,IREP,1)
+               IBY = IPTCNT(NBY,IREP,1)
+               IBZ = IPTCNT(NBZ,IREP,1)
+               IF (IREP .EQ. 0) THEN
+                  IF (IAX.GT.0) THEN
+                     DSECE(IX,IX,IAX) = DSECE(IX,IX,IAX) + XAVRXX
+                     DSECE(IY,IY,IAX) = DSECE(IY,IY,IAX) + XAVRYY
+                     DSECE(IZ,IZ,IAX) = DSECE(IZ,IZ,IAX) + XAVRZZ
+                  END IF
+                  IF (IAY.GT.0) THEN
+                     DSECE(IX,IX,IAY) = DSECE(IX,IX,IAY) + YAVRXX
+                     DSECE(IY,IY,IAY) = DSECE(IY,IY,IAY) + YAVRYY
+                     DSECE(IZ,IZ,IAY) = DSECE(IZ,IZ,IAY) + YAVRZZ
+                  END IF
+                  IF (IAZ.GT.0) THEN
+                     DSECE(IX,IX,IAZ) = DSECE(IX,IX,IAZ) + ZAVRXX
+                     DSECE(IY,IY,IAZ) = DSECE(IY,IY,IAZ) + ZAVRYY
+                     DSECE(IZ,IZ,IAZ) = DSECE(IZ,IZ,IAZ) + ZAVRZZ
+                  END IF
+                  IF (IBX.GT.0) THEN
+                     DSECE(IX,IX,IBX) = DSECE(IX,IX,IBX) - CSBX*XAVRXX
+     &                                - D2*SAVRX
+                     DSECE(IY,IY,IBX) = DSECE(IY,IY,IBX) - CSBX*XAVRYY
+                     DSECE(IZ,IZ,IBX) = DSECE(IZ,IZ,IBX) - CSBX*XAVRZZ
+                  END IF
+                  IF (IBY.GT.0) THEN
+                     DSECE(IX,IX,IBY) = DSECE(IX,IX,IBY) - CSBY*YAVRXX
+                     DSECE(IY,IY,IBY) = DSECE(IY,IY,IBY) - CSBY*YAVRYY
+     &                                - D2*SAVRY
+                     DSECE(IZ,IZ,IBY) = DSECE(IZ,IZ,IBY) - CSBY*YAVRZZ
+                  END IF
+                  IF (IBZ.GT.0) THEN
+                     DSECE(IX,IX,IBZ) = DSECE(IX,IX,IBZ) - CSBZ*ZAVRXX
+                     DSECE(IY,IY,IBZ) = DSECE(IY,IY,IBZ) - CSBZ*ZAVRYY
+                     DSECE(IZ,IZ,IBZ) = DSECE(IZ,IZ,IBZ) - CSBZ*ZAVRZZ
+     &                                - D2*SAVRZ
+                  END IF
+               END IF
+               IF (ISYMAX(3,2) .EQ. IREP) THEN
+                  IF (IAX .GT. 0) THEN
+                      DSECE(IX,IY,IAX) = DSECE(IX,IY,IAX) + XAVRXY
+                      DSECE(IY,IX,IAX) = DSECE(IY,IX,IAX) + XAVRXY
+                  END IF
+                  IF (IAY .GT. 0) THEN
+                      DSECE(IX,IY,IAY) = DSECE(IX,IY,IAY) + YAVRXY
+                      DSECE(IY,IX,IAY) = DSECE(IY,IX,IAY) + YAVRXY
+                  END IF
+                  IF (IAZ .GT. 0) THEN
+                      DSECE(IX,IY,IAZ) = DSECE(IX,IY,IAZ) + ZAVRXY
+                      DSECE(IY,IX,IAZ) = DSECE(IY,IX,IAZ) + ZAVRXY
+                  END IF
+                  IF (IBX .GT. 0) THEN
+                      DSECE(IX,IY,IBX) = DSECE(IX,IY,IBX) - CSBX*XAVRXY
+     *                                 - SAVRY
+                      DSECE(IY,IX,IBX) = DSECE(IY,IX,IBX) - CSBX*XAVRXY
+     *                                 - SAVRY
+                  END IF
+                  IF (IBY .GT. 0) THEN
+                      DSECE(IX,IY,IBY) = DSECE(IX,IY,IBY) - CSBY*YAVRXY
+     *                                 - SAVRX
+                      DSECE(IY,IX,IBY) = DSECE(IY,IX,IBY) - CSBY*YAVRXY
+     *                                 - SAVRX
+                  END IF
+                  IF (IBZ .GT. 0) THEN
+                      DSECE(IX,IY,IBZ) = DSECE(IX,IY,IBZ) - CSBZ*ZAVRXY
+                      DSECE(IY,IX,IBZ) = DSECE(IY,IX,IBZ) - CSBZ*ZAVRXY
+                  END IF
+               END IF
+               IF (ISYMAX(2,2) .EQ. IREP) THEN
+                  IF (IAX .GT. 0) THEN
+                      DSECE(IX,IZ,IAX) = DSECE(IX,IZ,IAX) + XAVRXZ
+                      DSECE(IZ,IX,IAX) = DSECE(IZ,IX,IAX) + XAVRXZ
+                  END IF
+                  IF (IAY .GT. 0) THEN
+                      DSECE(IX,IZ,IAY) = DSECE(IX,IZ,IAY) + YAVRXZ
+                      DSECE(IZ,IX,IAY) = DSECE(IZ,IX,IAY) + YAVRXZ
+                  END IF
+                  IF (IAZ .GT. 0) THEN
+                      DSECE(IX,IZ,IAZ) = DSECE(IX,IZ,IAZ) + ZAVRXZ
+                      DSECE(IZ,IX,IAZ) = DSECE(IZ,IX,IAZ) + ZAVRXZ
+                  END IF
+                  IF (IBX .GT. 0) THEN
+                      DSECE(IX,IZ,IBX) = DSECE(IX,IZ,IBX) - CSBX*XAVRXZ
+     *                                 - SAVRZ
+                      DSECE(IZ,IX,IBX) = DSECE(IZ,IX,IBX) - CSBX*XAVRXZ
+     *                                 - SAVRZ
+                  END IF
+                  IF (IBY .GT. 0) THEN
+                      DSECE(IX,IZ,IBY) = DSECE(IX,IZ,IBY) - CSBY*YAVRXZ
+                      DSECE(IZ,IX,IBY) = DSECE(IZ,IX,IBY) - CSBY*YAVRXZ
+                  END IF
+                  IF (IBZ .GT. 0) THEN
+                      DSECE(IX,IZ,IBZ) = DSECE(IX,IZ,IBZ) - CSBZ*ZAVRXZ
+     *                                 - SAVRX
+                      DSECE(IZ,IX,IBZ) = DSECE(IZ,IX,IBZ) - CSBZ*ZAVRXZ
+     *                                 - SAVRX
+                  END IF
+               END IF
+               IF (ISYMAX(1,2) .EQ. IREP) THEN
+                  IF (IAX .GT. 0) THEN
+                      DSECE(IY,IZ,IAX) = DSECE(IY,IZ,IAX) + XAVRYZ
+                      DSECE(IZ,IY,IAX) = DSECE(IZ,IY,IAX) + XAVRYZ
+                  END IF
+                  IF (IAY .GT. 0) THEN
+                      DSECE(IY,IZ,IAY) = DSECE(IY,IZ,IAY) + YAVRYZ
+                      DSECE(IZ,IY,IAY) = DSECE(IZ,IY,IAY) + YAVRYZ
+                  END IF
+                  IF (IAZ .GT. 0) THEN
+                      DSECE(IY,IZ,IAZ) = DSECE(IY,IZ,IAZ) + ZAVRYZ
+                      DSECE(IZ,IY,IAZ) = DSECE(IZ,IY,IAZ) + ZAVRYZ
+                  END IF
+                  IF (IBX .GT. 0) THEN
+                      DSECE(IY,IZ,IBX) = DSECE(IY,IZ,IBX) - CSBX*XAVRYZ
+                      DSECE(IZ,IY,IBX) = DSECE(IZ,IY,IBX) - CSBX*XAVRYZ
+                  END IF
+                  IF (IBY .GT. 0) THEN
+                      DSECE(IY,IZ,IBY) = DSECE(IY,IZ,IBY) - CSBY*YAVRYZ
+     *                                 - SAVRZ
+                      DSECE(IZ,IY,IBY) = DSECE(IZ,IY,IBY) - CSBY*YAVRYZ
+     *                                 - SAVRZ
+                  END IF
+                  IF (IBZ .GT. 0) THEN
+                     DSECE(IY,IZ,IBZ) = DSECE(IY,IZ,IBZ) - CSBZ*ZAVRYZ
+     *                                 - SAVRY
+                     DSECE(IZ,IY,IBZ) = DSECE(IZ,IY,IBZ) - CSBZ*ZAVRYZ
+     *                                 - SAVRY
+                  END IF
+               END IF
+            END IF
+  500       CONTINUE
+         END IF
+      END IF
+      RETURN
+      END

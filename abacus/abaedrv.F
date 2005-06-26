@@ -264,7 +264,8 @@ C
       MAXNRD = MAXNR
       MAXSMD = MAXSIM
       MAXRDM = MAXRED
-      IF (.NOT. (MOLHES .OR. DIPDER .OR. POLAR)) SKIP = .TRUE.
+      IF (.NOT. (MOLHES .OR. DIPDER .OR. POLAR .OR. QPGRAD))
+     &     SKIP = .TRUE.
       RETURN
       END
 C  /* Deck respon */
@@ -336,6 +337,15 @@ C
             NRDCO(NRDT + 2) = 3*NUCDEP + 2
             NRDCO(NRDT + 3) = 3*NUCDEP + 3
             NRDT = NRDT + 3
+         END IF
+         IF (QPGRAD .AND. .NOT. MOLHES) THEN
+            NRDCO(NRDT + 1) = 3*NUCDEP + 4
+            NRDCO(NRDT + 2) = 3*NUCDEP + 5
+            NRDCO(NRDT + 3) = 3*NUCDEP + 6
+            NRDCO(NRDT + 4) = 3*NUCDEP + 7
+            NRDCO(NRDT + 5) = 3*NUCDEP + 8
+            NRDCO(NRDT + 6) = 3*NUCDEP + 9
+            NRDT = NRDT + 6
          END IF
       END IF
       CALL RESMC(.FALSE.,WORK,LWORK)

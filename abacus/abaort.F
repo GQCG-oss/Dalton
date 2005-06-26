@@ -57,10 +57,10 @@ C       /ABAINF/: MOLHES,DIPDER
 C
 #include <abainf.h>
 C
-C     Return immediately if not (molhes or dipder),
+C     Return immediately if not (molhes or dipder or qpgrad),
 C        we do not want to open LUSFDA and LUGDR without using them.
 C
-      IF (.NOT. (MOLHES .OR. DIPDER)) RETURN
+      IF (.NOT. (MOLHES .OR. DIPDER .OR. QPGRAD)) RETURN
 C
       CALL MCORL(WORK,LWORK,PASS)
 C
@@ -104,8 +104,9 @@ C
 #include <nuclei.h>
 #include <inftap.h>
 C
-      DOSFD  = ((MOLHES .OR. DIPDER ) .AND. .NOT. HELFEY) .OR. MAGSUS
-      DOREAL = MOLHES .OR. DIPDER .OR. VCD
+      DOSFD  = ((MOLHES .OR. DIPDER .OR. QPGRAD) .AND. .NOT. HELFEY)
+     &         .OR. MAGSUS
+      DOREAL = MOLHES .OR. DIPDER .OR. QPGRAD .OR. VCD 
       DOIMAG = SHIELD .OR. MAGSUS .OR. VCD .OR. SPNSPN .OR. ECD .OR.
      &         VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT
       DOBRHS = SHIELD .OR. MAGSUS .OR. VCD .OR. ECD .OR. MOLGFA .OR.
@@ -118,7 +119,7 @@ C     Unit for reorthonormalization
 C     =============================
 C
       KLAST = 1
-      IF (DOSFD .AND. (MOLHES .OR. DIPDER)) THEN
+      IF (DOSFD .AND. (MOLHES .OR. DIPDER .OR. QPGRAD)) THEN
          CALL GPOPEN(LUSFDA,ABASF,'UNKNOWN','DIRECT',' ',IRAT*N2ORBX,
      &               OLDDX)
          KHESFS = 1
@@ -132,6 +133,7 @@ C
       IF (DOREAL) THEN
          NREC = 3*NUCDEP
          IF (POLAR) NREC = NREC + 3
+         IF (QPGRAD .AND. .NOT. MOLHES) NREC = NREC + 6
          CALL GPOPEN(LUGDR,ABAGDR,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,
      &               OLDDX)
          IF (OLDDX) THEN
@@ -176,7 +178,7 @@ C     ***** Calculate differentiated gradients and Y vectors *****
 C     ***** Get differentiated overlap matrices in MO basis  *****
 C     ************************************************************
 C
-      IF (MOLHES .OR. DIPDER) CALL HESZER(WORK(KHESFS))
+      IF (MOLHES .OR. DIPDER .OR. QPGRAD) CALL HESZER(WORK(KHESFS))
       CALL RHSIDE(DOSFD,DOREAL,DOIMAG,DOBRHS,DOPRHS,WORK(KHESFS),
      &            WORK(KLAST),LWRK)
 C

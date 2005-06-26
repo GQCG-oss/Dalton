@@ -1664,3 +1664,223 @@ C
 C
       RETURN
       END
+      SUBROUTINE PRISEC(AMAT,KEY,CSTRA,SCTRA)
+C
+C     hs 060303
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <codata.h>
+      LOGICAL DONE, CARTRA
+      CHARACTER FIELD*1, KEY*(*)
+      DIMENSION AMAT(3,3,MXCOOR), CMAT(3,3,MXCOOR), CSTRA(*), SCTRA(*)
+      DIMENSION PRIVAL(6)
+      CHARACTER*2 PRICOR(6)
+#include <abainf.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+C
+      CARTRA = .TRUE.
+C
+C     Second moment gradient
+C
+      IF (KEY .EQ. 'SECDER') THEN
+         ITYPEF = 1
+         ITYPEC = 1
+      ELSE
+         WRITE (LUPRI,'(//A/2A/)') ' >>> ERROR in PRISEC ',
+     &     '    - Illegal keyword ',KEY
+         CALL QUIT('Illegal keyword in PRISEC')
+      END IF
+C
+      DO IREP = 0, MAXREP
+         IF (MAXREP .GT. 0)
+     &        WRITE (LUPRI,'(/11X,A,I1/)') 'Symmetry ', IREP + 1
+         DO K = 1, 6
+            PRICOR(K) = '  '
+         END DO
+         CALL DZERO(PRIVAL,6)
+         J = 0
+         DO IX = 1, 3
+            DO IY = IX, 3
+               IF  (IBTXOR(ISYMAX(IX,ITYPEF),ISYMAX(IY,ITYPEF))
+     &              .EQ. IREP) THEN
+                  J = J + 1
+                  PRICOR(J) = CHRXYZ(-IX)//CHRXYZ(-IY)
+               END IF
+            END DO
+         END DO
+         WRITE (LUPRI,'(14X,6(A,10X))') (PRICOR(K),K=1,J)
+         WRITE(LUPRI,'()')
+         DO IATOM = 1, NUCIND
+            DO ICOOR = 1, 3
+               ISC = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,ITYPEC)
+               IF (ISC .GT. 0) THEN
+                  J = 0
+                  DO IX = 1, 3
+                     DO IY = IX, 3
+                       IF  (IBTXOR(ISYMAX(IX,ITYPEF),ISYMAX(IY,ITYPEF))
+     &                       .EQ. IREP) THEN
+                          J = J +1
+                          PRIVAL(J) = AMAT(IPTAX(IX,ITYPEF),
+     &                         IPTAX(IY,ITYPEF),ISC)
+                       END IF
+                     END DO
+                  END DO
+                  WRITE(LUPRI,'(1X,A6,6F12.6)')
+     &                NAMEX(IPTCOR(ISC,ITYPEC)),(PRIVAL(K),K=1,J)
+               END IF
+            END DO
+            IF (MAXREP .EQ. 0) WRITE (LUPRI,'()')
+         END DO
+         WRITE (LUPRI,'()')
+      END DO
+c      IF (.NOT.DONE) THEN
+c         WRITE (LUPRI,'(2X,A)') ' No elements calculated - '//
+c     &                         ' appropriate symmetries not requested.'
+c      END IF
+C
+C     Transform to Cartesian coordinates
+C
+      WRITE (LUPRI,'(/)')
+      IF ((MAXREP .GT. 0) .AND. CARTRA) THEN
+         CALL TRASEC(AMAT,CMAT,CSTRA,SCTRA,3*NUCDEP,ITYPEF,ITYPEC)
+         DO K = 1, 6
+            PRICOR(K) = '  '
+         END DO
+         CALL DZERO(PRIVAL,6)
+         J = 0
+         DO IX = 1, 3
+            DO IY = IX, 3
+               J = J + 1
+               PRICOR(J) = CHRXYZ(-IX)//CHRXYZ(-IY)
+            END DO
+         END DO
+         WRITE (LUPRI,'(14X,6(A,10X))') (PRICOR(K),K=1,J)
+         WRITE(LUPRI,'()')
+         DO ICOOR = 1, 3*NUCDEP
+            J = 0
+            DO IX = 1, 3
+               DO IY = IX, 3
+                  J = J +1
+                  PRIVAL(J) = CMAT(IX,IY,ICOOR)
+               END DO
+            END DO
+            WRITE(LUPRI,'(1X,A6,6F12.6)')
+     &           NAMDPX(ICOOR),(PRIVAL(K),K=1,J)
+            IF (MOD(ICOOR,3) .EQ. 0) WRITE (LUPRI,'()')
+         END DO
+      END IF
+      RETURN
+      END
+C  /* Deck trasec */
+      SUBROUTINE TRASEC(SSECDR,CSECDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+      PARAMETER (D1 = 1.0D0)
+      DIMENSION SSECDR(3,3,MXCOOR), CSECDR(3,3,MXCOOR),
+     *          XMATRI(3,3,MXCOOR), YMATRI(3,3,MXCOOR), PERSEC(3,3),
+     *          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
+#include <symmet.h>
+C
+      CALL DZERO(PERSEC,9)
+      DO ICOOR = 1, 3
+         PERSEC(ICOOR,IPTAX(ICOOR,ITYPEF)) = D1
+      END DO
+      CALL TRACOR(CSTRA,SCTRA,ITYPEC,NCOOR,0)
+      CALL DGEMM('N','N',3,3*NCOOR,3,1.D0,
+     &           PERSEC,3,
+     &           SSECDR,3,0.D0,
+     &           XMATRI,3)
+      CALL DZERO(YMATRI,9*NCOOR)
+      DO I1 = 1, 3
+         DO I3 = 1, NCOOR
+            DO I = 1, 3
+               DO K = 1, 3
+                  YMATRI(I1,I,I3) = YMATRI(I1,I,I3) +
+     &                 PERSEC(I,K) * XMATRI(I1,K,I3)
+               END DO
+            END DO
+         END DO
+      END DO
+      CALL DGEMM('N','T',9,NCOOR,NCOOR,1.D0,
+     &           YMATRI,9,
+     &           SCTRA(1,1),NCOOR,0.D0,
+     &           CSECDR,9)
+      RETURN
+      END
+C  /* Deck prioct */
+      SUBROUTINE PRIOCT(CMAT)
+C
+C     hs 230503
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <codata.h>
+      DIMENSION CMAT(3,3,3)
+      DIMENSION PRIVAL(6)
+      CHARACTER*2 PRICOR(6)
+#include <abainf.h>
+#include <symmet.h>
+#include <chrxyz.h>
+C
+C     Print third moment
+C
+      DO K = 1, 6
+         PRICOR(K) = '  '
+      END DO
+      CALL DZERO(PRIVAL,6)
+      J = 0
+      DO IX = 1, 3
+         DO IY = IX, 3
+            J = J + 1
+            PRICOR(J) = CHRXYZ(-IX)//CHRXYZ(-IY)
+         END DO
+      END DO
+      WRITE (LUPRI,'(14X,6(A,10X))') (PRICOR(K),K=1,J)
+      WRITE(LUPRI,'()')
+      DO IX = 1, 3
+         J = 0
+         DO IY = 1, 3
+            DO IZ = IY, 3
+               J = J +1
+               PRIVAL(J) = CMAT(IPTAX(IX,1),IPTAX(IY,1),IPTAX(IZ,1))
+            END DO
+         END DO
+         WRITE(LUPRI,'(1X,A6,6F12.6)')
+     &        'E'//CHRXYZ(-IX),(PRIVAL(K),K=1,J)
+      END DO
+      CALL DZERO(PRIVAL,6)
+      J = 0
+      DO IX = 1, 3
+         DO IY = IX, 3
+            J = J + 1
+            PRICOR(J) = CHRXYZ(-IX)//CHRXYZ(-IY)
+         END DO
+      END DO
+      WRITE (LUPRI,'(14X,6(A,10X))') (PRICOR(K),K=1,J)
+      WRITE(LUPRI,'()')
+      DO IX = 1, 3
+         J = 0
+         DO IY = 1, 3
+            DO IZ = IY, 3
+               J = J +1
+               PRIVAL(J) = CMAT(IPTAX(IX,1),IPTAX(IY,1),IPTAX(IZ,1))
+            END DO
+         END DO
+         WRITE(LUPRI,'(1X,A6,6F12.6)')
+     &        'E'//CHRXYZ(-IX),(PRIVAL(K),K=1,J)
+      END DO
+      WRITE (LUPRI,'()')
+      RETURN
+      END
