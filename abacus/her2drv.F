@@ -2166,7 +2166,7 @@ ckr           Do we need anything fancy changing of sign for ZFS2EL
 C
 C
 C              b) atom to be differentiated does not enter integral
-C
+C     
                IF (PERTUR .AND. MAXDER .GT. 0) THEN
                   IF (IATOM .NE. NCENTA .AND. IATOM .NE. NCENTB
      &                                  .AND. IATOM .NE. NCENTC
@@ -2184,8 +2184,6 @@ C
      &                  (ICENTA .NE. 0)
                IF (ONECEN) THEN
                   IF (MAXDER .EQ. 0 .OR. EXPGRA) THEN
-C                     print *, 'onecenter integral,n_shl',
-C     &                    ibtand(jmax0,1),n_shl
                      IF (IBTAND(JMAX0,1).EQ.1) THEN
                         LINTMP = LINTSV
                         GO TO 300
@@ -2259,12 +2257,14 @@ C Largest exchange contribution
      &        SPDCAR(NHKTSH(ISHELD)-1),')'
                         ENDIF
 #if defined (VAR_MPI)
-          IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND. DIRFCK) THEN
+          IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND. 
+     &        DIRFCK .AND. HFXMU .EQ. D0) THEN
 #else
                   IF (AOSAVE .AND. INDX_SHL1 .GE. ISHELA .AND. 
      &                 INDX_SHL2 .GE. ISHELB .AND.
      &                 INDX_SHL3 .GE. ISHELC .AND. 
-     &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1) THEN
+     &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1
+     &                 .AND. HFXMU .EQ. D0) THEN
 #endif
                         LINTMP = .TRUE.
                         I_SHL = I_SHL + 1
@@ -2329,7 +2329,8 @@ C
                END IF
 C
 #if defined (VAR_MPI)
-               IF (AOSAVE .AND. DIRFCK .AND. MAXDER .EQ. 0) THEN
+               IF (AOSAVE .AND. DIRFCK .AND. MAXDER .EQ. 0 .AND.
+     &             HFXMU .EQ. D0) THEN
 C
                   NINTYP = 1
                   IF (LINTSV) THEN
@@ -2370,7 +2371,8 @@ C     &                 maxder
                   LINTMP = LINTSV
                END IF
 #else
-               IF (AOSAVE .AND. DIRFCK .AND. MAXDER .EQ. 0) THEN
+               IF (AOSAVE .AND. DIRFCK .AND. MAXDER .EQ. 0 .AND.
+     &             HFXMU .EQ. D0) THEN
                   NINTYP = 1
 C                  IF (INDX_SHL(1,1) .GE. ISHELA .AND. 
 C     &                 INDX_SHL(2,1) .GE. ISHELB .AND.
@@ -2410,8 +2412,6 @@ C
                   END IF
 C
                ELSE IF (MAXDER .GT. 0) THEN
-C                 print *,'lintmp,lintsv,maxder',lintmp,lintsv,
-C     &                 maxder
                   LINTMP = LINTSV
                END IF
 #endif
@@ -2473,9 +2473,8 @@ C     &                    II=1,NCCINT)
                ITOTNT = ITOTNT + NINTYP*NCCINT
                IF (AOSAVE .AND. MMCORE .GT. (NCCINT*NINTYP)
      &              .AND. N_SHL .LE. MXSHL_KEEP 
-     &              .AND. MSAVE .AND. MAXDER .EQ. 0) THEN
-C    &              .AND. MSAVE ) THEN
-                  
+     &              .AND. MSAVE .AND. MAXDER .EQ. 0
+     &              .AND. HFXMU .EQ. D0) THEN
 C
 C                  write(lupri,*) 'SAV:LINTSV,ISHELA/B/C/D,ISYMR,ISYMS',
 C     &                 LINTSV,ISHELA,ISHELB,ISHELC,ISHELD,
@@ -2506,10 +2505,8 @@ C                  INDX_SHL(4,1) = ISHELD
                   END IF
 C     Lagrer integraler i minne: Oppdaterer array med beregnede ishela/b/c/d
                ELSE
-C                  print *,'Hm, I got here!'
                   IF (MAXDER .GT. 0) THEN
                      LINTMP = LINTSV
-C                     print *,'maxder',maxder
                   ELSE
                      LINTMP = .FALSE.
                      INDX_SHL1 =IPREVA
