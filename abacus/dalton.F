@@ -220,12 +220,13 @@ C integer (we used IEIR=3000000).
       MSAVE = .TRUE.
       LINTSV = .FALSE.
       LINTMP = .FALSE.
-C      CALL IZERO(INDX_SHL,(5*MXSHL_KEEP))
 	INDX_SHL1 = 0
 	INDX_SHL2 = 0
 	INDX_SHL3 = 0
 	INDX_SHL4 = 0
+#if defined (VAR_MPI)
      	CALL IZERO(INDX_SHL,MXSHL_KEEP)
+#endif
 C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
 C
 	IF (MMWORK .NE. MMCORE) THEN
