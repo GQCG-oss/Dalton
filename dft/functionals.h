@@ -336,7 +336,7 @@ extern Functional Example2Functional;
 extern Functional ExampleFunctional;
 extern Functional DK87xFunctional;
 extern Functional G96xFunctional;
-extern Functional KTFunctional;
+extern Functional KTxFunctional;
 extern Functional LB94Functional;
 extern Functional LRC95xFunctional;
 extern Functional LYPFunctional;
@@ -370,11 +370,14 @@ extern Functional WL90cFunctional;
 
 /* sorted list of mixed functionals */
 extern Functional B3LYPFunctional;
+extern Functional B3LYPgFunctional;
 extern Functional B3LYPGaussFunctional;
 extern Functional B3P86Functional;
-extern Functional B3P86GFunctional;
+extern Functional B3P86gFunctional;
 extern Functional B3PW91Functional;
-extern Functional B3PW91GFunctional;
+extern Functional B3PW91gFunctional;
+extern Functional B1LYPFunctional;
+extern Functional B1PW91Functional;
 extern Functional BHandHFunctional;
 extern Functional BHandHLYPFunctional;
 extern Functional B86VWNFunctional;
@@ -411,6 +414,8 @@ extern Functional mPWLYPFunctional;
 extern Functional mPWP86Functional;
 extern Functional mPWPW91Functional;
 extern Functional PBE0Functional;
+extern Functional PBE0PBEFunctional;
+extern Functional PBE1PBEFunctional;
 extern Functional PBEFunctional;
 extern Functional RPBEFunctional;
 extern Functional revPBEFunctional;
@@ -422,6 +427,8 @@ extern Functional PW91P86Functional;
 extern Functional PW91PW91Functional;
 extern Functional SVWN3Functional;
 extern Functional SVWN5Functional;
+extern Functional XLYPFunctional;
+extern Functional X3LYPFunctional;
 
 /* the list of the functionals */
 extern Functional* available_functionals[];

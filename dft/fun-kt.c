@@ -34,11 +34,11 @@ C
 */
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-kt.c:
-   implementation of KT functional and its derivatives.
-   or exactly: KT GGA correction to the functional for KT1,KT2 total functional
-   energy is E_LDA+E_KT).
+   implementation of KTx functional and its derivatives.
+   or exactly: KTx GGA correction to the functional for KT1,KT2 total functional
+   energy is E_LDA+E_KTx).
    Reference:  Keal, Tozer, J. Chem. Phys., 119, 3015 (2003).
-   GAMMA is included in the KTx definition in fun-gga.c 
+   GAMMA is included in the KT{1,2,3} definition in fun-gga.c 
    implemented by Dave Wilson (davidwi@kjemi.uio.no)
    NOTE:
    this file may seem unnecessarily complex but the structure does pay off
@@ -77,8 +77,8 @@ static void kt_fourth(FunFourthFuncDrv *ds, real factor,
 #endif
 
 
-Functional KTFunctional = {
-    "KT",      /* name */
+Functional KTxFunctional = {
+    "KTx",      /* name */
     kt_isgga,  /* gga-corrected */
     kt_read,   /* set bloody common blocks */
     NULL,         /* reporter */
@@ -101,7 +101,7 @@ kt_read(const char* conf_line)
 }
 
 /* kt_energy:
-   note that in reality E_KT = E_KT,alpha + E_KT,beta
+   note that in reality E_KTx = E_KTx,alpha + E_KTx,beta
    i.e the energy is linear in alpha and beta densities.
 
    KT threshold is needed to avoid numerical problems on 0/0

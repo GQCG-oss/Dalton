@@ -618,154 +618,164 @@ To specify the parameters of the DFT integration.
 % The default is \verb|BECKE LMG| which is optimal for an
 %  overwhelming number of cases.
 \item[\Key{COARSE}]
-  Shortcut keyword for radial integration accuracy $10^-{11}$ and
+  Shortcut keyword for radial integration accuracy $10^{-11}$ and
   angular expansion order equal to $35$.
 \item[\Key{NORMAL}]
-  Shortcut keyword for radial integration accuracy $10^-{13}$ and
+  Shortcut keyword for radial integration accuracy $10^{-13}$ and
   angular expansion order equal to $35$.
 \item[\Key{FINE}]
-  Shortcut keyword for radial integration accuracy $10^-{13}$ and
+  Shortcut keyword for radial integration accuracy $10^{-13}$ and
   angular expansion order equal to $42$.
 \item[\Key{ULTRAF}]
-  Shortcut keyword for radial integration accuracy $10^-{15}$ and
+  Shortcut keyword for radial integration accuracy $10^{-15}$ and
   angular expansion order equal to $65$.
 
 \end{description}
 
 \subsection{\label{ref-dft}DFT functionals}
 
-Functionals in \siraba\ can be divided into two groups: generic and
-combined functionals. Combined functionals are a linear combination of
-generic ones. One can always create own combined functionals by
-using \verb|Combine| general functional. 
+In general, functionals in \siraba\ can be divided into two groups: 
+generic exchange and correlation functionals 
+and combined functionals. Combined functionals are a linear combination of
+generic ones. There are a large number of combined functionals defined below, 
+however the user can also create their own combined functionals with 
+the \verb|Combine| keyword. 
 
 \subsubsection{Exchange Functionals}
 \providecommand\exfn[1]{#1}
 \begin{description}
-\item[SLATER] Dirac-Slater exchange functional
-\cite{dft:hohenberg,dft:kohn,dft:slater3}.\index{SLATER}
 
-\item[BECKE] 1988 Becke exchange correction presented in reference
-  \onlinecite{dft:becke88}. Observe that the full Becke88 exchange functional is
-  sum \exfn{Slater} + \exfn{Becke}.\index{BECKE}
+\item[Slater] Dirac-Slater exchange functional
+\cite{dft:hohenberg,dft:kohn,dft:slater}.\index{Slater}
 
-\item[BECKE35] Modified \exfn{Becke} exchange correction presented in reference
-  \cite{dft:edf1} with respect to the EDF1 functional. The $\beta$ value
-  of 0.0042 in \exfn{Becke} is modified to 0.0035. \index{BECKE35}\index{EDF1}
+\item[Becke] 1988 Becke exchange GGA correction \cite{dft:becke88}. 
+  Note that the full Becke88 exchange functional is given as
+  \exfn{Slater} + \exfn{Becke}.\index{Becke}
+
+\item[Becke35] 1998 modified \exfn{Becke} exchange correction presented in reference
+  \cite{dft:edf1} for use in the EDF1 functional. The $\beta$ value
+  of 0.0042 in \exfn{Becke} is changed to 0.0035.\index{Becke35}\index{EDF1}
 
 \item[B86] Becke 1986 exchange functional, a divergence free, semi-empirical 
-    gradient-corrected exchange functional.\cite{dft:b86,dft:b86r}\index{B86} This 
-    functional corresponds to the B86R functional of the molpro program.
+    gradient-corrected exchange functional~\cite{dft:b86,dft:b86r}.\index{B86} This 
+    functional corresponds to the B86R functional of the Molpro program.
 
 \item[B86mx] B86 exchange functional modified with a gradient correction 
-  for large density gradients.\cite{dft:b96mgc}\index{B86MGC}
+  for large density gradients~\cite{dft:b86mgc}.\index{B86mx}
 
-\item[DBx] Double-Becke exchange functional defined by Gill et al.\cite{dft:edf1,dft:edf2} 
-  for use in the EDF1 functional. The full DBx functional is defined as
-  sum 1.030952*\exfn{Slater} - 8.44793*\exfn{BECKE} + 10.4017*\exfn{BECKE35}
-  \index{EDF1}\index{Double-Becke}\index{BECKE}
+\item[DBx] Double-Becke exchange functional defined in 1998 by 
+  Gill et al.\cite{dft:edf1,dft:edf2} for use in the EDF1 functional. 
+  The full DBx functional is defined as
 
-\item[DK87x] rational function GGA exchange functional (equation 7) from Ref. 
-  \onlinecite{dft:dk87},\index{DK87} including Slater exchange.
+  1.030952*\exfn{Slater} - 8.44793*\exfn{Becke} + 10.4017*\exfn{Becke35}
+  \index{EDF1}\index{Double-Becke}\index{Becke}
 
-\item[G96x] 1996 Gill exchange functional, including Slater exchange. \cite{dft:g96}\index{G96}
+\item[DK87x] DePristo and Kress' 1987 rational function GGA exchange functional 
+  (equation 7) from Ref. \cite{dft:dk87},\index{DK87} which includes Slater exchange.
 
-\item[LRC95x] GGA exchange functional with correct asymptotic behaviour. \cite{dft:lrc96}\index{LRC95}
-    The LRC95x exchange functional includes the Slater exchange (eqn 6 from original reference).
+\item[G96x] Gill's 1996 exchange functional, including Slater exchange~\cite{dft:g96}.\index{G96}
 
-\item[KTx] Keal and Tozer GGA exchange functional. Note that the gradient correction 
-    pre-factor constant (-0.006 for KT1 and KT2) is not included in the KT 
-    definition, but rather in the KT1, KT2 definitions. The full KT exchange
-    is given by sum \exfn{Slater} + gamma*\exfn{KT} 
-    (gamma=-0.006 for KT1,KT2 and -0.004 for KT3). \cite{dft:kt12}\index{KT}
+\item[LRC95x] 1995 GGA exchange functional with correct asymptotic behaviour~\cite{dft:lrc95}.\index{LRC95}
+  The LRC95x exchange functional includes the Slater exchange (eqn 6 from original reference).
 
-\item[OPTX] exchange functional correction of Handy \cite{dft:optx}.\index{OPTX}
-    The full OPTX exchange functional is given by 
-    sum 1.05151*\exfn{Slater} - 1.43169*\exfn{OPTX}.
+\item[KTx] Keal and Tozer's 2003 GGA exchange functional. Note that the gradient correction 
+  pre-factor constant, $\gamma$, is not included in the KT exchange 
+  definition, but rather in the KT1, KT2 and KT3 definitions. The full KT exchange is given by 
+  \cite{dft:kt12}\index{KT},
 
-\item[PBEx] exchange functional.\cite{dft:pbe} \index{PBEx}
+  \exfn{Slater} + $\gamma$\exfn{KTx} ($\gamma$ is -0.006 for KT1,KT2 and -0.004 for KT3). 
 
-\item[revPBEx] revised PBEx exchange functional, with kappa of 1.245.\cite{dft:revpbe}
-   \index{revPBE}\index{PBE}
+\item[OPTX] Handy's 2001 exchange functional correction \cite{dft:optx}.\index{OPTX}
+  The full OPTX exchange functional is given by 
+  1.05151*\exfn{Slater} - 1.43169*\exfn{OPTX}.
 
-\item[RPBEx] Hammer et al. revised PBEx exchange functional.\cite{dft:revpbe}\index{RPBE}\index{PBE}
+\item[PBEx] Perdew, Burke and Ernzerhof 1996 exchange functional~\cite{dft:pbe}.\index{PBEx}
 
-\item[mPBEx] modified PBEx exchange functional of Adamo and Barone.\cite{dft:mpbe}\index{mPBE}\index{PBE}
+\item[revPBEx] Zhang and Wang's 1998 revised PBEx exchange functional, with $\kappa$ of 1.245
+  \cite{dft:revpbe}.\index{revPBE}\index{PBE}
 
-\item[PW86x] Perdew and Wang 1986 exchange functional.\cite{dft:pw86x}.\index{PW86x}
+\item[RPBEx] Hammer, Hansen and N{\o}rskov's 1999 revised PBEx exchange functional 
+  \cite{dft:revpbe}.\index{RPBE}\index{PBE}
 
-\item[PW91x] Perdew and Wang 1991 exchange functional.\cite{dft:pw91}.\index{PW86x} This
-  functional is also given in a separate parameterization in Refs.~\onlinecite{dft:g96,dft:mpw}.
+\item[mPBEx] Adamo and Barone's 2002 modified PBEx exchange functional~\cite{dft:mpbe}.\index{mPBE}\index{PBE}
 
-\item[mPW] Adamo and Barone's modified PW91x exchange functional.\cite{dft:pw91,dft:mpw}.\index{PW86x}
+\item[PW86x] Perdew and Wang 1986 exchange functional~\cite{dft:pw86x}.\index{PW86x}
+
+\item[PW91x] Perdew and Wang 1991 exchange functional~\cite{dft:pw91}.\index{PW86x} This
+  functional is also given in a separate parameterization in Refs.~\cite{dft:g96,dft:mpw}.
+  The full PW91 exchange functional is given by 
+  \exfn{Slater} + \exfn{PW91x}.
+
+\item[mPW] Adamo and Barone's 1998 modified PW91x exchange functional~\cite{dft:pw91,dft:mpw}.\index{mPW}
 
 \end{description}
 
-\subsection{Correlation Functionals}
-\providecommand\corfn[1]{#2}
+\subsubsection{Correlation Functionals}
+\providecommand\corfn[1]{#1}
 \begin{description}
 
-\item[VWN3] correlation functional of Vosko, Wilk and Nusair (number
-  III) \cite{dft:vwn}.\index{VWN3}
+\item[VWN3] correlation functional of Vosko, Wilk and Nusair, 1980 (equation III) 
+  \cite{dft:vwn}. This is the form used in the Gaussian program.\index{VWN3}
 
-\item[VWN5] correlation functional of Vosko, Wilk and Nusair (number
-  V -- the recommended one). The VWN keyword is a synonym for VWN5.\cite{dft:vwn}.\index{VWN5}
+\item[VWN5] correlation functional of Vosko, Wilk and Nusair, 1980 (equation
+  V -- the recommended one). The VWN keyword is a synonym for VWN5~\cite{dft:vwn}.\index{VWN5}
 
-\item[LYP] correlation functional by Lee, Yang and Parr
-\cite{dft:lyp1,dft:lyp2}.\index{LYP}
+\item[LYP] correlation functional by Lee, Yang and Parr, 1988
+  \cite{dft:lyp1,dft:lyp2}.\index{LYP}
 
-\item[LYPr] Modified \corfn{LYP} functional, which is the re-parameterized EDF1 version 
-  with modified parameters (0.055, 0.158, 0.25, 0.3505). 
+\item[LYPr] 1998 modified \corfn{LYP} functional, which is the re-parameterized EDF1 version 
+  with modified parameters (0.055, 0.158, 0.25, 0.3505)
   \cite{dft:lyp1,dft:lyp2,dft:edf1}.\index{LYPr}\index{EDF1}
 
-\item[P86] non-local part of the correlation functional of Perdew
+\item[P86c] non-local part of the correlation functional of the Perdew 1986 correlation functional
   \cite{dft:p86}. PZ81 (1981 Perdew local) is usually used for the local part of the
-  functional, with a total corelation functional of 
-  sum \corfn{P86} + \corfn{PZ81}.\index{P86}\index{PZ81}
+  functional, with a total corelation functional of \index{P86}\index{PZ81}
+  \corfn{P86c} + \corfn{PZ81}.
 
-\item[PW91c] correlation functional of Perdew and Wang.
-  \cite{dft:pw91}\index{PW91}
+\item[PW91c] correlation functional of Perdew and Wang, 1991~\cite{dft:pw91}\index{PW91}.
 
-\item[PZ81] 1981 local correlation functional of Perdew and Zunger \cite{dft:pz81}.\index{PZ81}
+\item[PZ81] local correlation functional of Perdew and Zunger, 1981~\cite{dft:pz81}.\index{PZ81}
 
-\item[Wigner] spin-polarised correlation functional.\cite{dft:wigner}\index{Wigner}
+\item[Wigner] original 1938 spin-polarised correlation functional~\cite{dft:wigner}.\index{Wigner}
 
-\item[WL90c] 1990 non-local spin-dependent correlation functional (equation 15 from 
-  Ref.~\onlinecite{dft:wl90}).\index{WL90}
+\item[WL90c] Wilson and Levy's 1990 non-local spin-dependent correlation functional 
+  (equation 15 from Ref.~\cite{dft:wl90}).\index{WL90}
 
 \end{description}
 
 \subsubsection{Standalone Functionals}
-\providecommand\onefn[1]{#3}
+\providecommand\onefn[1]{#1}
 \begin{description}
 
 \item[LB94] assymptotically correct functional of Leeuwen and
-Baerends\cite{dft:lb94}. This functional improves description of the
-assymptotic density on the expense of core and inner
-valence.\index{LB94}
+  Baerends 1994~\cite{dft:lb94}. This functional improves description of the
+  assymptotic density on the expense of core and inner valence.\index{LB94}
 
-\item[B97] Becke 1997 functional.\cite{dft:b97}\index{B97}
+\item[B97] Becke 1997 functional~\cite{dft:b97}.\index{B97}
 
-\item[B97-1] Re-parameterization of the B97 functional\cite{dft:b97} in a self-consistent procedure 
-  by Hamprecht et al.\cite{dft:b97-1}\index{B97}\index{B97-1}
+\item[B97-1] Hamprecht et al.'s 1998 self-consistent re-parameterization of the 
+  B97 functional~\cite{dft:b97-1}.\index{B97}\index{B97-1}
 
-\item[B97-2] Modification of B97 functional\cite{dft:b97} by Wilson et al.\cite{dft:b97-2}\index{B97}\index{B97-2}
+\item[B97-2] Modification of B97 functional in 2001 by Wilson, Bradley and Tozer 
+  \cite{dft:b97-2}.\index{B97}\index{B97-2}
 
-\item[HCTH93] Original HCTH functional, parameterized on a set of 93 training systems.\cite{dft:hcth93} 
-  \index{HCTH}\index{HCTH93}
+\item[HCTH93] Original 1998 HCTH functional, parameterized on a set of 
+  93 training systems~\cite{dft:hcth93}.\index{HCTH}\index{HCTH93}
 
-\item[HCTH120] HCTH functional, parameterized on a set of 120 training systems.\cite{dft:hcth120} 
-  \index{HCTH}\index{HCTH120}
+\item[HCTH120] The HCTH functional parameterized on a set of 120 training systems 
+  in 2000~\cite{dft:hcth120}.\index{HCTH}\index{HCTH120}
 
-\item[HCTH147] HCTH functional, parameterized on a set of 147 training systems.\cite{dft:hcth:120}
-  \index{HCTH}\index{HCTH147}
+\item[HCTH147] The HCTH functional parameterized on a set of 147 training systems 
+  in 2000~\cite{dft:hcth120}.\index{HCTH}\index{HCTH147}
 
-\item[HCTH407] HCTH functional, parameterized on a set of 407 training systems.\cite{dft:hcth407}
-  \index{HCTH}\index{HCTH407}
+\item[HCTH407] The HCTH functional parameterized on a set of 407 training systems 
+  in 2001~\cite{dft:hcth407}.\index{HCTH}\index{HCTH407}
 
-\item[HCTH407p] HCTH407 functional re-parameterized on a set of 407 training systems and ammonia dimer
-  to incorporate hydrogen bonding.\cite{dft:hcth407p}\index{HCTH}\index{HCTH407}\index{HCTH407p}
-\end{description]
+\item[HCTH407p] The HCTH407 functional re-parameterized in 2003 on a set of 407 
+  training systems and ammonia dimer to incorporate hydrogen bonding 
+  \cite{dft:hcth407p}.\index{HCTH}\index{HCTH407}\index{HCTH407p}
+
+\end{description}
 
 \subsubsection{Combined functionals}
 \providecommand\funexample[1]{\\{\tt #1 }}
@@ -779,88 +789,97 @@ valence.\index{LB94}
   As an example, B3LYP may be constructed as:
 \begin{verbatim}
 .DFT
- Combine hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19
+ Combine HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN=0.19
 \end{verbatim}
 
 \item[SVWN5] is a sum of Slater functional and VWN (or VWN5) correlation
   functional. SVWN is a synonym for SVWN5. It is equivalent to
-  \funexample{Combine slater=1 vwn5=1}
+  \funexample{Combine Slater=1 VWN5=1}
   \index{SVWN}
 
 \item[SVWN3] is a sum of the Slater exchange functional and VWN3 correlation
   functional. It is equivalent to the Gaussian program LSDA functional 
   and can alternatively be selected by following set of keywords
-  \funexample{Combine slater=1 vwn3=1}
+  \funexample{Combine Slater=1 VWN3=1}
   \index{SVWN3}
 
 \item[LDA] A synonym for SVWN5 (or SVWN). \index{LDA}
 
-\item[BVWN] is a sum of Slater functional, Becke88 correction and VWN
-  correlation functional.  It is equivalent to 
-  \funexample{Combine slater=1 becke=1 vwn=1}
-  \index{BLYP}
+\item[BVWN] is a sum of \exfn{Slater} functional, \exfn{Becke} correction and 
+  \corfn{VWN} correlation functional.  It is equivalent to 
+  \funexample{Combine Slater=1 Becke=1 VWN=1}
+  \index{BVWN}
 
 \item[BLYP] is a sum of Slater functional, Becke88 correction and LYP
   correlation functional.  It is equivalent to 
-  \funexample{Combine slater=1 becke=1 lyp=1}
+  \funexample{Combine Slater=1 Becke=1 LYP=1}
   \index{BLYP}
 
-\item[B3LYP] hybrid functional \cite{dft:b3lyp} equivalent to:
-  \funexample{Combine hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn=0.19}.
+\item[B3LYP] 3-parameter hybrid functional \cite{dft:b3lyp} equivalent to:
+  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN=0.19}
   \index{B3LYP}
 
 \item[B3LYPg] hybrid functional with VWN3 form used for
-correlation---this is the form used by the Gaussian quantum chemistry
-program.\index{B3LYPG} This functional can be explicitely set up by
-\funexample{Combine hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19}
-\index{B3LYP, Gaussian version}
+  correlation---this is the form used by the Gaussian quantum chemistry
+  program. Keyword B3LYPGauss is a synonym for B3LYPg.\index{B3LYPG} 
+  This functional can be explicitely set up by
+  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN3=0.19}
+  \index{B3LYP, Gaussian version}
+
+\item[B1LYP] 1-parameter hybrid functional \cite{dft:b1lyp} equivalent to:
+  \funexample{Combine HF=0.25 Slater=0.75 Becke=0.75 LYP=1}
+  \index{B3LYP}
 
 \item[BP86] Becke88 exchange functional and Perdew86 correlation
   functional (with Perdew81 local correlation). The explicit form is:
-  \funexample{Combine slater=1 becke=1 pz81=1 p86c=1}
+  \funexample{Combine Slater=1 Becke=1 PZ81=1 P86c=1}
   \index{BP86}
 
 \item[B3P86] variant of \verb|B3LYP| with VWN used for local
   correlation  and P86 for the nonlocal part.
-  \funexample{Combine hf=0.2 slater=0.8 becke=0.72 p86c=0.81 vwn=1}
+  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 P86c=0.81 VWN=1}
   \index{B3P86}
 
 \item[B3P86g] variant of \verb|B3LYP| with VWN3 used for local
   correlation  and P86 for the nonlocal part.
   This is the form used by the Gaussian quantum chemistry program.
-  \funexample{Combine hf=0.2 slater=0.8 becke=0.72 p86c=0.81 vwn3=1}
+  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 P86c=0.81 VWN3=1}
   \index{B3P86}\index{B3P86, Gaussian version}
 
 \item[BPW91] Becke88 exchange functional and PW91 correlation
   functional. The explicit form is:
-  \funexample{Combine slater=1 becke=1 pw91=1}
+  \funexample{Combine Slater=1 Becke=1 PW91c=1}
   \index{BPW91}
 
 \item[B3PW91] variant of \verb|B3LYP| with VWN5 used for local
-  correlation  and PW91 for the nonlocal part.
-  \funexample{Combine hf=0.2 slater=0.8 becke=0.72 pw91=0.81 vwn5=1}
+  and PW91 for the nonlocal part of the correlation functional.
+  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 PW91c=0.81 VWN5=1}
   \index{B3PW91}
 
 \item[B3PW91g] variant of \verb|B3LYP| with VWN3 used for local
   correlation  and PW91 for the nonlocal part. 
   This is the form used by the Gaussian quantum chemistry program.
-  \funexample{Combine hf=0.2 slater=0.8 becke=0.72 pw91=0.81 vwn3=1}
+  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 PW91c=0.81 VWN3=1}
   \index{B3PW91}\index{B3PW91, Gaussian version}
 
+\item[B1PW91] 1-parameter hybrid functional \cite{dft:b1lyp} equivalent to:
+  \funexample{Combine HF=0.25 Slater=0.75 Becke=0.75 PW91c=1}
+  \index{B1PW91}
+
 \item[BHandH] is an simple Half-and-half functional.
-  \funexample{Combine hf=0.5 slater=0.5 lyp=1}
+  \funexample{Combine HF=0.5 Slater=0.5 LYP=1}
   \index{BHandH}
 
 \item[BHandHLYP] is another simple Half-and-half functional.
-  \funexample{Combine hf=0.5 slater=0.5 becke=0.5 lyp=1}
+  \funexample{Combine HF=0.5 Slater=0.5 Becke=0.5 LYP=1}
   \index{BHandH}
 
 \item[BW] is the sum of the Becke exchange and Wigner correlation
-  functionals.\cite{dft:wigner,dft:bw}
-  \funexample{Combine slater=1 becke=1 wigner=1}
+  functionals \cite{dft:wigner,dft:bw}.\index{BW}
+  \funexample{Combine Slater=1 Becke=1 Wigner=1}
 
 \item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai, Tew and
-Handy\cite{dft:camb3lyp}. This functional accepts additional arguments
+Handy \cite{dft:camb3lyp}. This functional accepts additional arguments
 \verb|alpha|, \verb|beta| and \verb|mu| to modify the fraction of HF
 exchange for short-range interactions, additional fraction of HF
 exchange for long-range interaction and the interaction switching
@@ -872,101 +891,111 @@ factor $\mu$. This input can be specified as follows:
 \index{CAMB3LYP}
 
 \item[DBLYP] is a sum of the Double-Becke exchange functional and
-  the LYP correlation functional.\cite{dft:becke,dft:edf1,dft:lyp}
- \funexample{Combine slater=1.030952 becke=-8.44793 becke35=10.4017 lyp=1}
+  the LYP correlation functional 
+  \cite{dft:becke88,dft:edf1,dft:lyp1,dft:lyp2}.\index{Double-Becke}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 LYP=1}
 
 \item[DBPW91] is a sum of the Double-Becke exchange functional and
-  the PW91 correlation functional.\cite{dft:becke,dft:edf1,dft:pw91}
- \funexample{Combine slater=1.030952 becke=-8.44793 becke35=10.4017 pw91=1}
+  the PW91 correlation functional \cite{dft:becke88,dft:edf1,dft:pw91}.\index{Double-Becke}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 PW91c=1}
 
 \item[DBP86] is the sum of the Double-Becke exchange functional and
-  the P86 correlation functional.\cite{dft:becke,dft:edf1,dft:p86}
- \funexample{Combine slater=1.030952 becke=-8.44793 becke35=10.4017 p86c=1 pz81=1}
+  the P86 correlation functional \cite{dft:becke88,dft:edf1,dft:p86}.\index{Double-Becke}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 P86c=1 PZ81=1}
 
-\item[EDF1] is a fitted functional of Adamson, Gill and Pople.\cite{dft:edf1}
+\item[EDF1] is a fitted functional of Adamson, Gill and Pople \cite{dft:edf1}.
   It is a linear combination of the Double-Becke exchange functional and the revised LYP
-  functional LYPr.
- \funexample{Combine slater=1.030952 becke=-8.44793 becke35=10.4017 lypr=1}
+  functional LYPr.\index{EDF1}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 LYPr=1}
 
 \item[EDF2] is a linear combination of the Hartree-Fock exchange and the Double-Becke exchange, Slater exchange,
-  LYP correlation, revised LYPr correlation and VWN correlation functionals.\cite{dft:edf2}
- \funexample{Combine hf=0.1695 slater=0.2811 becke=0.6227 becke35=-0.0551 vwn=0.3029 lyp=0.5998 lypr=-0.0053}
+  LYP correlation, revised LYPr correlation and VWN correlation functionals \cite{dft:edf2}\index{EDF2}.
+ \funexample{Combine HF=0.1695 Slater=0.2811 Becke=0.6227 Becke35=-0.0551 VWN=0.3029 LYP=0.5998 LYPr=-0.0053}
 
 \item[G96VWN] is the sum of the G96 exchange functional and the VWN 
-  correlation functional.
- \funexample{Combine slater=1 g96x=1 vwn=1}
+  correlation functional \cite{dft:g96}.
+ \funexample{Combine G96x=1 VWN=1}
 
 \item[G96LYP] is the sum of the G96 exchange functional and the LYP
-  correlation functional.
- \funexample{Combine slater=1 g96x=1 lyp=1}
+  correlation functional \cite{dft:g96}.
+ \funexample{Combine G96x=1 LYP=1}
 
 \item[G96PW91] is the sum of the G96 exchange functional and the PW91
-  correlation functional.
- \funexample{Combine slater=1 g96x=1 pw91=1}
+  correlation functional \cite{dft:g96}.
+ \funexample{Combine G96x=1 PW91c=1}
 
-\item[KT1] Slater-VWN5 functional with the KT GGA correction
+\item[KT1] Slater-VWN5 functional with the KT GGA exchange correction
   \cite{dft:kt12,dft:kt12a}.\index{KT1}
- \funexample{Combine slater=1 vwn=1 kt=-0.006}
+ \funexample{Combine Slater=1 VWN=1 KT=-0.006}
 
 \item[KT2] differs from KT1 only in that the weights of the Slater and
-  VWN5 functionals are from an empirical fit
+  VWN5 functionals are from an empirical fit (not equal to 1.0)
   \cite{dft:kt12,dft:kt12a}.\index{KT2}
-  \funexample{Combine slater=1.07173 vwn=0.576727 kt=-0.006}
+  \funexample{Combine Slater=1.07173 VWN=0.576727 KT=-0.006}
 
 \item[KT3] a hybrid functional of Slater, OPTX and KT exhange with the
   LYP correlation functional \cite{dft:kt3}. The explicit form is
-  \funexample{Combine slater=1.092 kt=-0.004 lyp=0.864409 optx=-0.925452}
+  \funexample{Combine Slater=1.092 KT=-0.004 LYP=0.864409 OPTX=-0.925452}
   \index{KT3}
 
 \item[OLYP] is the sum of the OPTX exchange functional with the
   LYP correlation functional \cite{dft:optx,dft:lyp1,dft:lyp2}.
-  \funexample{Combine slater=1.05151 optx=-1.43169 lyp=1}
+  \funexample{Combine Slater=1.05151 OPTX=-1.43169 LYP=1}
   \index{OLYP}
 
 \item[OP86] is the sum of the OPTX exchange functional with the
   P86 correlation functional \cite{dft:optx,dft:p86}.
-  \funexample{Combine slater=1.05151 optx=-1.43169 p86c=1 pz81=1}
-  \index{OLYP}
+  \funexample{Combine Slater=1.05151 OPTX=-1.43169 P86c=1 PZ81=1}
+  \index{OP86}
 
 \item[OPW91] is the sum of the OPTX exchange functional with the
   PW91 correlation functional \cite{dft:optx,dft:pw91}.
-  \funexample{Combine slater=1.05151 optx=-1.43169 pw91=1}
-  \index{OLYP}
+  \funexample{Combine Slater=1.05151 OPTX=-1.43169 PW91c=1}
+  \index{OPW91}
 
 \item[PBE0] a hybrid functional of Perdew, Burke and Ernzerhof with
   0.25 weight of exact exchange, 0.75 of \verb|PBEx| functional and
-  \verb|PBEC| correlation functional \cite{dft:pbe0}.\index{PBE0}
+  \verb|PBEC| correlation functional \cite{dft:pbe0}.
+  Alternatively called PBE1PBE or PBE0PBE functional.\index{PBE0}
   \funexample{Combine HF=0.25 PBEx=0.75 PBEc=1}
 
 \item[PBE] same as above but with exchange estimated exclusively by
   \verb|PBEx| functional \cite{dft:pbe}.\index{PBE} This is the form
-  used by eg. CADPAC and NWChem quantum chemistry programs.
-  \funexample{Combine pbex=1 pbec=1}\\
-  Observe that quantum chemistry program Molpro uses \verb|PW91c|
-  correlation functional instead of \verb|PBEC| which is equivalent to
-  following:
+  used by CADPAC and NWChem quantum chemistry programs.
+  \funexample{Combine PBEx=1 PBEc=1}\\
+  Note that the quantum chemistry program Molpro uses the \corfn{PW91c}
+  correlation functional instead of \corfn{PBEc}, which is equivalent to
+  the following:
   \funexample{Combine PBEx=1 PW91c=1}.
 
-\item[PW91] is the combination of PW91 exchange and correlation functionals.
-   \cite{dft:pw91}
+\item[PW91] is the combination of PW91 exchange and correlation functionals 
+   \cite{dft:pw91}.\index{PW91}
   \funexample{Combine PW91x=1 PW91c=1}.
 
-\item[PW91VWN] is the combination of PW91 exchange and VWN correlation functionals.
-   \cite{dft:pw91,dft:vwn}
+\item[PW91VWN] is the combination of PW91 exchange and VWN correlation functionals 
+   \cite{dft:pw91,dft:vwn}.\index{PW91}
   \funexample{Combine PW91x=1 VWN=1}.
 
-\item[PW91LYP] is the combination of PW91 exchange and LYP correlation functionals.
-   \cite{dft:pw91,dft:lyp1,dft:lyp2}
+\item[PW91LYP] is the combination of PW91 exchange and LYP correlation functionals 
+   \cite{dft:pw91,dft:lyp1,dft:lyp2}.\index{PW91}
   \funexample{Combine PW91x=1 LYP=1}.
 
-\item[PW91P86] is the combination of PW91 exchange and PW86 (with Perdew 1981 local) correlation functionals.
-   \cite{dft:pw91,dft:pw86,dft:pz81}
-  \funexample{Combine PW91x=1 PW86c=1 PZ81=1}.
+\item[PW91P86] is the combination of PW91 exchange and PW86 (with Perdew 1981 local) 
+  correlation functionals \cite{dft:pw91,dft:pw86,dft:pz81}.
+  \funexample{Combine PW91x=1 P86c=1 PZ81=1}.
 
-\item[PW91PW91] is the combination of PW91 exchange and PW91 correlation functionals. Equivalent to 
-  PW91.
-   \cite{dft:pw91}
+\item[PW91PW91] is the combination of PW91 exchange and PW91 correlation functionals. 
+  Equivalent to PW91 \cite{dft:pw91}.
   \funexample{Combine PW91x=1 PW91c=1}.
+
+\item[XLYP] is a linear combination of \exfn{Slater}, \exfn{Becke} and \exfn{PW91x}
+  exchange and \corfn{LYP} correlation functionals \cite{dft:xlyp,dft:x3lyp}.\index{XLYP}
+  \funexample{Combine Slater=1 Becke=0.722 PW91x=0.347 LYP=1}.
+
+\item[X3LYP] is a linear combination of Hartree--Fock, \exfn{Slater}, \exfn{Becke} 
+  and \exfn{PW91x} exchange and \corfn{VWN} and \corfn{LYP} correlation functionals 
+  \cite{dft:xlyp,dft:x3lyp}.\index{X3LYP}
+  \funexample{Combine HF=0.218 Slater=0.782 Becke=0.542 PW91x=0.167 VWN=0.129 LYP=0.871}.
 
 \end{description}
 

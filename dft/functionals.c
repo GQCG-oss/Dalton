@@ -63,7 +63,7 @@ Functional* available_functionals[] = {
     &ExampleFunctional,
     &DK87xFunctional,
     &G96xFunctional,
-    &KTFunctional,
+    &KTxFunctional,
     &LB94Functional,
     &LRC95xFunctional,
     &LYPFunctional,
@@ -96,11 +96,14 @@ Functional* available_functionals[] = {
     &WL90cFunctional,
     /* mixed functionals */
     &B3LYPFunctional,
+    &B3LYPgFunctional,
     &B3LYPGaussFunctional,
     &B3P86Functional,
-    &B3P86GFunctional,
+    &B3P86gFunctional,
     &B3PW91Functional,
-    &B3PW91GFunctional,
+    &B3PW91gFunctional,
+    &B1LYPFunctional,
+    &B1PW91Functional,
     &BHandHFunctional,
     &BHandHLYPFunctional,
     &B86VWNFunctional,
@@ -137,6 +140,8 @@ Functional* available_functionals[] = {
     &OP86Functional,
     &OPW91Functional,
     &PBE0Functional,
+    &PBE0PBEFunctional,
+    &PBE1PBEFunctional,
     &PBEFunctional,
     &revPBEFunctional,
     &RPBEFunctional,
@@ -149,6 +154,8 @@ Functional* available_functionals[] = {
     &PW91PW91Functional,
     &SVWN3Functional,
     &SVWN5Functional,
+    &XLYPFunctional,
+    &X3LYPFunctional,
     NULL
 };
 
