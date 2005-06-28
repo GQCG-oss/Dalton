@@ -62,6 +62,8 @@ FUNFILES = \
 	fun-mpbex.c	\
 	fun-pw86x.c	\
 	fun-pw91c.c	\
+	fun-pw92c.c	\
+	fun-pw92ac.c	\
 	fun-pw91x.c	\
 	fun-pw91x2.c	\
 	fun-mpw.c	\

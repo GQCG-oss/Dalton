@@ -697,16 +697,19 @@ the \verb|Combine| keyword.
 \item[RPBEx] Hammer, Hansen and N{\o}rskov's 1999 revised PBEx exchange functional 
   \cite{dft:revpbe}.\index{RPBE}\index{PBE}
 
-\item[mPBEx] Adamo and Barone's 2002 modified PBEx exchange functional~\cite{dft:mpbe}.\index{mPBE}\index{PBE}
+\item[mPBEx] Adamo and Barone's 2002 modified PBEx exchange functional~\cite{dft:mpbe}.
+  \index{mPBE}\index{PBE}
 
-\item[PW86x] Perdew and Wang 1986 exchange functional~\cite{dft:pw86x}.\index{PW86x}
+\item[PW86x] Perdew and Wang 1986 exchange functional (the PWGGA-I functional)
+  ~\cite{dft:pw86x}.\index{PW86x}
 
-\item[PW91x] Perdew and Wang 1991 exchange functional~\cite{dft:pw91}.\index{PW86x} This
-  functional is also given in a separate parameterization in Refs.~\cite{dft:g96,dft:mpw}.
-  The full PW91 exchange functional is given by 
+\item[PW91x] Perdew and Wang 1991 exchange functional (the pwGGA-II functional)
+  \cite{dft:pw91}.\index{PW86x} This functional is also given in a separate parameterization 
+  in Refs.~\cite{dft:g96,dft:mpw}. The full PW91 exchange functional is given by 
   \exfn{Slater} + \exfn{PW91x}.
 
-\item[mPW] Adamo and Barone's 1998 modified PW91x exchange functional~\cite{dft:pw91,dft:mpw}.\index{mPW}
+\item[mPW] Adamo and Barone's 1998 modified PW91x exchange functional~\cite{dft:pw91,dft:mpw}.
+  \index{mPW}
 
 \end{description}
 
@@ -732,7 +735,17 @@ the \verb|Combine| keyword.
   functional, with a total corelation functional of \index{P86}\index{PZ81}
   \corfn{P86c} + \corfn{PZ81}.
 
-\item[PW91c] correlation functional of Perdew and Wang, 1991~\cite{dft:pw91}\index{PW91}.
+\item[PW91c] 1991 correlation functional of Perdew and Wang (the pwGGA-II functional)
+  ~\cite{dft:pw91}.\index{PW91} This functional includes both the PW91c non-local and 
+  PW91c local (ie PW92c) contributions. The non-local PW91c contribution may be determined
+  as \corfn{PW91c} - \corfn{PW92c}.
+
+\item[PW92c] local correlation functional of Perdew and Wang, 1992~\cite{dft:pw91,dft:pw92}.\index{PW91}
+  This functional is the local contribution to the PW91c correlation functional.
+
+\item[PW92ac] gradient correction to the PW91c correlation functional of Perdew and Wang,
+  equation 16 from Ref.~\cite{dft:pw91,dft:pw92}.\index{PW91} The PWGGA-IIA functional
+  as defined in the original reference is \corfn{PW91c} + \corfn{PW92ac}. 
 
 \item[PZ81] local correlation functional of Perdew and Zunger, 1981~\cite{dft:pz81}.\index{PZ81}
 
@@ -783,14 +796,18 @@ the \verb|Combine| keyword.
 
 \item[Combine] is a universal keyword allowing users to manually
   construct arbitrary linear combinations of exchange and correlation 
-  functionals. Even\index{Combine} fractional Hartree--Fock exchange 
-  can be specified. This keyword is to be followed by a string of 
-  functionals with associated weights. The syntax is \verb|NAME=WEIGHT ...|. 
+  functionals from the list above. Even\index{Combine} fractional 
+  Hartree--Fock exchange can be specified. This keyword is to be 
+  followed by a string of functionals with associated weights. 
+  The syntax is \verb|NAME=WEIGHT ...|. 
   As an example, B3LYP may be constructed as:
 \begin{verbatim}
 .DFT
  Combine HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN=0.19
 \end{verbatim}
+
+The following GGA and hybrid functional aliases are defined within 
+\dalton\ and provide further examples of the Combine keyword.
 
 \item[SVWN5] is a sum of Slater functional and VWN (or VWN5) correlation
   functional. SVWN is a synonym for SVWN5. It is equivalent to
@@ -851,16 +868,10 @@ the \verb|Combine| keyword.
   \funexample{Combine Slater=1 Becke=1 PW91c=1}
   \index{BPW91}
 
-\item[B3PW91] variant of \verb|B3LYP| with VWN5 used for local
-  and PW91 for the nonlocal part of the correlation functional.
-  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 PW91c=0.81 VWN5=1}
+\item[B3PW91] 3-parameter Becke-PW91 functional, with PW91c non-local
+  and PW92c local correlation functional.
+  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 PW91c=0.81 PW92c=0.19}
   \index{B3PW91}
-
-\item[B3PW91g] variant of \verb|B3LYP| with VWN3 used for local
-  correlation  and PW91 for the nonlocal part. 
-  This is the form used by the Gaussian quantum chemistry program.
-  \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 PW91c=0.81 VWN3=1}
-  \index{B3PW91}\index{B3PW91, Gaussian version}
 
 \item[B1PW91] 1-parameter hybrid functional \cite{dft:b1lyp} equivalent to:
   \funexample{Combine HF=0.25 Slater=0.75 Becke=0.75 PW91c=1}
@@ -923,6 +934,11 @@ factor $\mu$. This input can be specified as follows:
 \item[G96PW91] is the sum of the G96 exchange functional and the PW91
   correlation functional \cite{dft:g96}.
  \funexample{Combine G96x=1 PW91c=1}
+
+\item[KMLYP] Kang and Musgrave 2-parameter hybrid functional with a mixture of
+  Slater and Hartree--Fock exchange and VWN and LYP correlation functionals.
+  \cite{dft:kmlyp}.
+ \funexample{Combine HF=0.557 Slater=0.443 VWN=0.552 LYP=0.448}
 
 \item[KT1] Slater-VWN5 functional with the KT GGA exchange correction
   \cite{dft:kt12,dft:kt12a}.\index{KT1}
@@ -995,9 +1011,19 @@ factor $\mu$. This input can be specified as follows:
 \item[X3LYP] is a linear combination of Hartree--Fock, \exfn{Slater}, \exfn{Becke} 
   and \exfn{PW91x} exchange and \corfn{VWN} and \corfn{LYP} correlation functionals 
   \cite{dft:xlyp,dft:x3lyp}.\index{X3LYP}
-  \funexample{Combine HF=0.218 Slater=0.782 Becke=0.542 PW91x=0.167 VWN=0.129 LYP=0.871}.
+  \funexample{Combine HF=0.218 Slater=0.782 Becke=0.542 PW91x=0.167 VWN=0.129 LYP=0.871}
 
 \end{description}
+
+Note that combinations of local and non-local correlation functionals
+can also be generated with the Combine keyword. For example,
+\funexample{Combine VWN=1 LYP=1} combines the VWN local and LYP non-local 
+correlation functional, whereas \funexample{Combine VWN=1 P86=1} 
+combines the VWN local and P86 non-local correlation functionals.
+
+Linear combinations of all exchange and correlation functionals listed above
+is possible with the Combine keyword.
+
 
 \pagebreak[3]
 \subsection{\label{ref-haminp}\Sec{HAMILTONIAN}}
