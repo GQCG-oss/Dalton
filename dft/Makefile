@@ -53,6 +53,7 @@ FUNFILES = \
  	fun-hcth407.c	\
  	fun-hcth407p.c	\
 	fun-lrc95x.c	\
+	fun-lg93.c	\
 	fun-optx.c	\
 	fun-p86c.c	\
 	fun-pbec.c	\
@@ -62,6 +63,7 @@ FUNFILES = \
 	fun-mpbex.c	\
 	fun-pw86x.c	\
 	fun-pw91c.c	\
+	fun-pw91nc.c	\
 	fun-pw92c.c	\
 	fun-pw92ac.c	\
 	fun-pw91x.c	\

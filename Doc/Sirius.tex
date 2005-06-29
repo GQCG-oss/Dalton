@@ -652,9 +652,9 @@ the \verb|Combine| keyword.
   Note that the full Becke88 exchange functional is given as
   \exfn{Slater} + \exfn{Becke}.\index{Becke}
 
-\item[Becke35] 1998 modified \exfn{Becke} exchange correction presented in reference
+\item[mBecke] 1998 modified \exfn{Becke} exchange correction presented in reference
   \cite{dft:edf1} for use in the EDF1 functional. The $\beta$ value
-  of 0.0042 in \exfn{Becke} is changed to 0.0035.\index{Becke35}\index{EDF1}
+  of 0.0042 in \exfn{Becke} is changed to 0.0035.\index{mBecke}\index{EDF1}
 
 \item[B86] Becke 1986 exchange functional, a divergence free, semi-empirical 
     gradient-corrected exchange functional~\cite{dft:b86,dft:b86r}.\index{B86} This 
@@ -667,13 +667,18 @@ the \verb|Combine| keyword.
   Gill et al.\cite{dft:edf1,dft:edf2} for use in the EDF1 functional. 
   The full DBx functional is defined as
 
-  1.030952*\exfn{Slater} - 8.44793*\exfn{Becke} + 10.4017*\exfn{Becke35}
+  1.030952*\exfn{Slater} - 8.44793*\exfn{Becke} + 10.4017*\exfn{mBecke}
   \index{EDF1}\index{Double-Becke}\index{Becke}
 
 \item[DK87x] DePristo and Kress' 1987 rational function GGA exchange functional 
-  (equation 7) from Ref. \cite{dft:dk87},\index{DK87} which includes Slater exchange.
+  (equation 7) from Ref. \cite{dft:dk87}.\index{DK87} The full exchange
+  functional is defined as \exfn{Slater} + \exfn{DK87x}.
 
-\item[G96x] Gill's 1996 exchange functional, including Slater exchange~\cite{dft:g96}.\index{G96}
+\item[G96x] Gill's 1996 GGA correction exchange functional~\cite{dft:g96}.\index{G96}
+  The complete exchange functional is given by \exfn{Slater} + \exfn{G96x}.
+
+\item[LG93] 1993 GGA exchange functional~\cite{dft:lg93}.\index{LG93}
+  The LG93 exchange functional includes Slater exchange (eqn 16 from original reference).
 
 \item[LRC95x] 1995 GGA exchange functional with correct asymptotic behaviour~\cite{dft:lrc95}.\index{LRC95}
   The LRC95x exchange functional includes the Slater exchange (eqn 6 from original reference).
@@ -704,12 +709,14 @@ the \verb|Combine| keyword.
   ~\cite{dft:pw86x}.\index{PW86x}
 
 \item[PW91x] Perdew and Wang 1991 exchange functional (the pwGGA-II functional)
-  \cite{dft:pw91}.\index{PW86x} This functional is also given in a separate parameterization 
-  in Refs.~\cite{dft:g96,dft:mpw}. The full PW91 exchange functional is given by 
-  \exfn{Slater} + \exfn{PW91x}.
+  and includes Slater exchange \cite{dft:pw91}.\index{PW86x} This functional is 
+  also given in a separate parameterization in Refs.~\cite{dft:g96,dft:mpw},
+  which is labeled PW91x2, and is defined as 
+  \exfn{PW91x} = \exfn{Slater} + \exfn{PW91x2}.
 
-\item[mPW] Adamo and Barone's 1998 modified PW91x exchange functional~\cite{dft:pw91,dft:mpw}.
-  \index{mPW}
+\item[mPW] Adamo and Barone's 1998 modified PW91x GGA correction exchange functional
+  ~\cite{dft:pw91,dft:mpw}. The full exchange functional is given by
+  \exfn{Slater} + \exfn{mPW}.\index{mPW}
 
 \end{description}
 
@@ -734,6 +741,9 @@ the \verb|Combine| keyword.
   \cite{dft:p86}. PZ81 (1981 Perdew local) is usually used for the local part of the
   functional, with a total corelation functional of \index{P86}\index{PZ81}
   \corfn{P86c} + \corfn{PZ81}.
+
+\item[PBEc] Perdew, Burke and Ernzerhof 1996 correlation functional, 
+  defined as PW91c local and PBEc non-local correlation~\cite{dft:pbe}.\index{PBEc}
 
 \item[PW91c] 1991 correlation functional of Perdew and Wang (the pwGGA-II functional)
   ~\cite{dft:pw91}.\index{PW91} This functional includes both the PW91c non-local and 
@@ -822,7 +832,7 @@ The following GGA and hybrid functional aliases are defined within
 
 \item[LDA] A synonym for SVWN5 (or SVWN). \index{LDA}
 
-\item[BVWN] is a sum of \exfn{Slater} functional, \exfn{Becke} correction and 
+\item[BVWN] is a sum of the \exfn{Slater} functional, \exfn{Becke} correction and 
   \corfn{VWN} correlation functional.  It is equivalent to 
   \funexample{Combine Slater=1 Becke=1 VWN=1}
   \index{BVWN}
@@ -843,8 +853,8 @@ The following GGA and hybrid functional aliases are defined within
   \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 LYP=0.81 VWN3=0.19}
   \index{B3LYP, Gaussian version}
 
-\item[B1LYP] 1-parameter hybrid functional \cite{dft:b1lyp} equivalent to:
-  \funexample{Combine HF=0.25 Slater=0.75 Becke=0.75 LYP=1}
+\item[B1LYP] 1-parameter hybrid functional with 25\% exact exchange \cite{dft:b1lyp}. 
+  Equivalent to: \funexample{Combine HF=0.25 Slater=0.75 Becke=0.75 LYP=1}
   \index{B3LYP}
 
 \item[BP86] Becke88 exchange functional and Perdew86 correlation
@@ -858,7 +868,7 @@ The following GGA and hybrid functional aliases are defined within
   \index{B3P86}
 
 \item[B3P86g] variant of \verb|B3LYP| with VWN3 used for local
-  correlation  and P86 for the nonlocal part.
+  correlation and P86 for the nonlocal part.
   This is the form used by the Gaussian quantum chemistry program.
   \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 P86c=0.81 VWN3=1}
   \index{B3P86}\index{B3P86, Gaussian version}
@@ -868,14 +878,35 @@ The following GGA and hybrid functional aliases are defined within
   \funexample{Combine Slater=1 Becke=1 PW91c=1}
   \index{BPW91}
 
-\item[B3PW91] 3-parameter Becke-PW91 functional, with PW91c non-local
-  and PW92c local correlation functional.
+\item[B3PW91] 3-parameter Becke-PW91 functional, with PW91 correlation 
+  functional. Note that PW91c includes PW92c local correlation, thus only
+  excess PW92c local correlation is required (coefficient of 0.19).
   \funexample{Combine HF=0.2 Slater=0.8 Becke=0.72 PW91c=0.81 PW92c=0.19}
   \index{B3PW91}
 
 \item[B1PW91] 1-parameter hybrid functional \cite{dft:b1lyp} equivalent to:
   \funexample{Combine HF=0.25 Slater=0.75 Becke=0.75 PW91c=1}
   \index{B1PW91}
+
+\item[B86VWN] is a sum of \exfn{Slater} and \exfn{B86x} exchange functionals and 
+  the \corfn{VWN} correlation functional. It is equivalent to 
+  \funexample{Combine Slater=1 B86x=1 VWN=1}
+  \index{B86VWN}
+
+\item[B86LYP] is a sum of \exfn{Slater} and \exfn{B86x} exchange functionals and 
+  the \corfn{LYP} correlation functional. It is equivalent to 
+  \funexample{Combine Slater=1 B86x=1 LYP=1}
+  \index{B86LYP}
+
+\item[B86P86] is a sum of \exfn{Slater} and \exfn{B86x} exchange functionals and 
+  the \corfn{P86c} correlation functional. It is equivalent to 
+  \funexample{Combine Slater=1 B86x=1 P86c=1}
+  \index{B86P86}
+
+\item[B86PW91] is a sum of \exfn{Slater} and \exfn{B86x} exchange functionals and 
+  the \corfn{PW91c} correlation functional.  It is equivalent to 
+  \funexample{Combine Slater=1 B86x=1 PW91c=1}
+  \index{B86PW91}
 
 \item[BHandH] is an simple Half-and-half functional.
   \funexample{Combine HF=0.5 Slater=0.5 LYP=1}
@@ -904,36 +935,40 @@ factor $\mu$. This input can be specified as follows:
 \item[DBLYP] is a sum of the Double-Becke exchange functional and
   the LYP correlation functional 
   \cite{dft:becke88,dft:edf1,dft:lyp1,dft:lyp2}.\index{Double-Becke}
- \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 LYP=1}
-
-\item[DBPW91] is a sum of the Double-Becke exchange functional and
-  the PW91 correlation functional \cite{dft:becke88,dft:edf1,dft:pw91}.\index{Double-Becke}
- \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 PW91c=1}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 mBecke=10.4017 LYP=1}
 
 \item[DBP86] is the sum of the Double-Becke exchange functional and
   the P86 correlation functional \cite{dft:becke88,dft:edf1,dft:p86}.\index{Double-Becke}
- \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 P86c=1 PZ81=1}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 mBecke=10.4017 P86c=1 PZ81=1}
+
+\item[DBPW91] is a sum of the Double-Becke exchange functional and
+  the PW91 correlation functional \cite{dft:becke88,dft:edf1,dft:pw91}.\index{Double-Becke}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 mBecke=10.4017 PW91c=1}
 
 \item[EDF1] is a fitted functional of Adamson, Gill and Pople \cite{dft:edf1}.
   It is a linear combination of the Double-Becke exchange functional and the revised LYP
   functional LYPr.\index{EDF1}
- \funexample{Combine Slater=1.030952 Becke=-8.44793 Becke35=10.4017 LYPr=1}
+ \funexample{Combine Slater=1.030952 Becke=-8.44793 mBecke=10.4017 LYPr=1}
 
 \item[EDF2] is a linear combination of the Hartree-Fock exchange and the Double-Becke exchange, Slater exchange,
   LYP correlation, revised LYPr correlation and VWN correlation functionals \cite{dft:edf2}\index{EDF2}.
- \funexample{Combine HF=0.1695 Slater=0.2811 Becke=0.6227 Becke35=-0.0551 VWN=0.3029 LYP=0.5998 LYPr=-0.0053}
+ \funexample{Combine HF=0.1695 Slater=0.2811 Becke=0.6227 mBecke=-0.0551 VWN=0.3029 LYP=0.5998 LYPr=-0.0053}
 
 \item[G96VWN] is the sum of the G96 exchange functional and the VWN 
   correlation functional \cite{dft:g96}.
- \funexample{Combine G96x=1 VWN=1}
+ \funexample{Combine Slater=1 G96x=1 VWN=1}
 
 \item[G96LYP] is the sum of the G96 exchange functional and the LYP
   correlation functional \cite{dft:g96}.
- \funexample{Combine G96x=1 LYP=1}
+ \funexample{Combine Slater=1 G96x=1 LYP=1}
+
+\item[G96P86] is the sum of the G96 exchange functional and the P86
+  correlation functional \cite{dft:g96}.
+ \funexample{Combine Slater=1 G96x=1 P86c=1}
 
 \item[G96PW91] is the sum of the G96 exchange functional and the PW91
   correlation functional \cite{dft:g96}.
- \funexample{Combine G96x=1 PW91c=1}
+ \funexample{Combine Slater=1 G96x=1 PW91c=1}
 
 \item[KMLYP] Kang and Musgrave 2-parameter hybrid functional with a mixture of
   Slater and Hartree--Fock exchange and VWN and LYP correlation functionals.
@@ -954,6 +989,42 @@ factor $\mu$. This input can be specified as follows:
   \funexample{Combine Slater=1.092 KT=-0.004 LYP=0.864409 OPTX=-0.925452}
   \index{KT3}
 
+\item[mPWVWN] is the combination of mPW exchange and VWN correlation functionals 
+   \cite{dft:mpw,dft:vwn}.\index{mPWVWN}
+  \funexample{Combine Slater=1 mPW=1 VWN=1}.
+
+\item[mPWLYP] is the combination of mPW exchange and LYP correlation functionals 
+   \cite{dft:mpw,dft:vwn}.\index{mPWLYP}
+  \funexample{Combine Slater=1 mPW=1 LYP=1}.
+
+\item[mPWP86] is the combination of mPW exchange and P86 correlation functionals 
+   \cite{dft:mpw,dft:vwn}.\index{mPWP86}
+  \funexample{Combine Slater=1 mPW=1 P86c=1 PZ81=1}.
+
+\item[mPWPW91] is the combination of mPW exchange and PW91 correlation functionals 
+   \cite{dft:mpw,dft:pw91}.\index{mPWPW91}
+  \funexample{Combine Slater=1 mPW=1 PW91c=1}.
+
+\item[mPW3PW91] is a 3-parameter combination of mPW exchange and PW91 correlation
+  functionals, with the PW91 (PW92c) local correlation~\cite{dft:mpw}.\index{mPW3PW91}
+  \funexample{Combine HF=0.2 Slater=0.8 mPW=0.72 PW91c=0.81 PW92c=0.19}.
+
+\item[mPW1PW91] is a 1-parameter combination mPW exchange and PW91 correlation
+  functionals with 25\% Hartree--Fock exchange \cite{dft:mpw}.\index{mPW1PW91}
+  \funexample{Combine HF=0.25 Slater=0.75 mPW=0.75 PW91c=1}.
+
+\item[mPW1K] optimizes mPW1PW91 for kinetics of H abstractions, with 42.8\% Hartree--Fock
+  echange \cite{dft:mpw1k}.\index{mPW1PW91}
+  \funexample{Combine HF=0.428 Slater=0.572 mPW=0.572 PW91c=1}.
+
+\item[mPW1N] optimizes mPW1PW91 for kinetics of H abstractions, with 42.8\% Hartree--Fock
+  echange \cite{dft:mpw1n}.\index{mPW1N}
+  \funexample{Combine HF=0.428 Slater=0.572 mPW=0.572 PW91c=1}.
+
+\item[mPW1S] optimizes mPW1PW91 for kinetics of H abstractions, with 6\% Hartree--Fock
+  echange \cite{dft:mpw1s}.\index{mPW1S}
+  \funexample{Combine HF=0.06 Slater=0.94 mPW=0.94 PW91c=1}.
+
 \item[OLYP] is the sum of the OPTX exchange functional with the
   LYP correlation functional \cite{dft:optx,dft:lyp1,dft:lyp2}.
   \funexample{Combine Slater=1.05151 OPTX=-1.43169 LYP=1}
@@ -970,23 +1041,31 @@ factor $\mu$. This input can be specified as follows:
   \index{OPW91}
 
 \item[PBE0] a hybrid functional of Perdew, Burke and Ernzerhof with
-  0.25 weight of exact exchange, 0.75 of \verb|PBEx| functional and
-  \verb|PBEC| correlation functional \cite{dft:pbe0}.
-  Alternatively called PBE1PBE or PBE0PBE functional.\index{PBE0}
+  0.25 weight of exact exchange, 0.75 of \verb|PBEx| exchange functional and
+  the \verb|PBEc| correlation functional \cite{dft:pbe0}.
+  Alternative aliases are PBE1PBE or PBE0PBE.\index{PBE0}
   \funexample{Combine HF=0.25 PBEx=0.75 PBEc=1}
 
 \item[PBE] same as above but with exchange estimated exclusively by
-  \verb|PBEx| functional \cite{dft:pbe}.\index{PBE} This is the form
-  used by CADPAC and NWChem quantum chemistry programs.
+  \exfn{PBEx} functional \cite{dft:pbe}.\index{PBE} Alias of PBEPBE. 
+  This is the form used by CADPAC and NWChem quantum chemistry programs.
   \funexample{Combine PBEx=1 PBEc=1}\\
-  Note that the quantum chemistry program Molpro uses the \corfn{PW91c}
-  correlation functional instead of \corfn{PBEc}, which is equivalent to
-  the following:
+  Note that the Molpro quantum chemistry program uses the \corfn{PW91c}
+  non-local correlation functional instead of \corfn{PBEc}, which is 
+  equivalent to the following:
   \funexample{Combine PBEx=1 PW91c=1}.
 
-\item[PW91] is the combination of PW91 exchange and correlation functionals 
-   \cite{dft:pw91}.\index{PW91}
-  \funexample{Combine PW91x=1 PW91c=1}.
+\item[RPBE] is a revised \funexample{PBE} functional that employs the 
+  \exfn{RPBEx} exchange functional.
+  \funexample{Combine RPBEx=1 PBEc=1}
+
+\item[revPBE] is a revised \funexample{PBE} functional that employs the 
+  \exfn{revPBEx} exchange functional.
+  \funexample{Combine revPBEx=1 PBEc=1}
+
+\item[mPBE] is a revised \funexample{PBE} functional that employs the 
+  \exfn{mPBEx} exchange functional.
+  \funexample{Combine mPBEx=1 PBEc=1}
 
 \item[PW91VWN] is the combination of PW91 exchange and VWN correlation functionals 
    \cite{dft:pw91,dft:vwn}.\index{PW91}
@@ -1001,7 +1080,7 @@ factor $\mu$. This input can be specified as follows:
   \funexample{Combine PW91x=1 P86c=1 PZ81=1}.
 
 \item[PW91PW91] is the combination of PW91 exchange and PW91 correlation functionals. 
-  Equivalent to PW91 \cite{dft:pw91}.
+  Equivalent to \funexample{PW91} keyword \cite{dft:pw91}.
   \funexample{Combine PW91x=1 PW91c=1}.
 
 \item[XLYP] is a linear combination of \exfn{Slater}, \exfn{Becke} and \exfn{PW91x}

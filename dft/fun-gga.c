@@ -102,7 +102,11 @@ static int  mpwvwn_read(const char* conf_line);
 static int  mpwlyp_read(const char* conf_line);
 static int  mpwp86_read(const char* conf_line);
 static int  mpwpw91_read(const char* conf_line);
+static int  mpw3pw91_read(const char* conf_line);
 static int  mpw1pw91_read(const char* conf_line);
+static int  mpw1k_read(const char* conf_line);
+static int  mpw1n_read(const char* conf_line);
+static int  mpw1s_read(const char* conf_line);
 static int  ovwn_read(const char* conf_line);
 static int  olyp_read(const char* conf_line);
 static int  op86_read(const char* conf_line);
@@ -180,7 +184,11 @@ Functional mPWVWNFunctional =  GGA_FUNCTIONAL("mPWVWN" , mpwvwn_read);
 Functional mPWLYPFunctional =  GGA_FUNCTIONAL("mPWLYP" , mpwlyp_read);
 Functional mPWP86Functional =  GGA_FUNCTIONAL("mPWP86" , mpwp86_read);
 Functional mPWPW91Functional = GGA_FUNCTIONAL("mPWPW91", mpwpw91_read);
+Functional mPW3PW91Functional =GGA_FUNCTIONAL("mPW3PW91",mpw3pw91_read);
 Functional mPW1PW91Functional =GGA_FUNCTIONAL("mPW1PW91",mpw1pw91_read);
+Functional mPW1KFunctional =   GGA_FUNCTIONAL("mPW1K",   mpw1k_read);
+Functional mPW1NFunctional =   GGA_FUNCTIONAL("mPW1N",   mpw1n_read);
+Functional mPW1SFunctional =   GGA_FUNCTIONAL("mPW1S",   mpw1s_read);
 Functional OVWNFunctional =    GGA_FUNCTIONAL("OVWN" ,   ovwn_read);
 Functional OLYPFunctional =    GGA_FUNCTIONAL("OLYP" ,   olyp_read);
 Functional OP86Functional =    GGA_FUNCTIONAL("OP86" ,   op86_read);
@@ -189,6 +197,7 @@ Functional PBE0Functional =    GGA_FUNCTIONAL("PBE0",    pbe0_read);
 Functional PBE1PBEFunctional = GGA_FUNCTIONAL("PBE1PBE", pbe0_read);
 Functional PBE0PBEFunctional = GGA_FUNCTIONAL("PBE0PBE", pbe0_read);
 Functional PBEFunctional =     GGA_FUNCTIONAL("PBE",     pbe_read); 
+Functional PBEPBEFunctional =  GGA_FUNCTIONAL("PBEPBE",  pbe_read);
 Functional revPBEFunctional =  GGA_FUNCTIONAL("revPBE",  revpbe_read); 
 Functional RPBEFunctional =    GGA_FUNCTIONAL("RPBE",    rpbe_read); 
 Functional mPBEFunctional =    GGA_FUNCTIONAL("mPBE",    mpbe_read); 
@@ -487,10 +496,10 @@ bw_read(const char* conf_line)
 static int
 dblyp_read(const char* conf_line)
 {
-    static const real dirw = 1.030952, b35w = 10.4017, b42w = -8.44793;
+    static const real dirw = 1.030952, mbw = 10.4017, bw = -8.44793;
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
-    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   b42w);
-    gga_fun_list = add_functional(gga_fun_list, &Becke35Functional, b35w);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   bw);
+    gga_fun_list = add_functional(gga_fun_list, &mBeckeFunctional,  mbw);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     1.0);
     fun_set_hf_weight(0);
     return 1;
@@ -499,10 +508,10 @@ dblyp_read(const char* conf_line)
 static int
 dbpw91_read(const char* conf_line)
 {
-    static const real dirw = 1.030952, b35w = 10.4017, b42w = -8.44793;
+    static const real dirw = 1.030952, mbw = 10.4017, bw = -8.44793;
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
-    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   b42w);
-    gga_fun_list = add_functional(gga_fun_list, &Becke35Functional, b35w);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   bw);
+    gga_fun_list = add_functional(gga_fun_list, &mBeckeFunctional,  mbw);
     gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
     fun_set_hf_weight(0);
     return 1;
@@ -511,10 +520,10 @@ dbpw91_read(const char* conf_line)
 static int
 dbp86_read(const char* conf_line)
 {
-    static const real dirw = 1.030952, b35w = 10.4017, b42w = -8.44793;
+    static const real dirw = 1.030952, mbw = 10.4017, bw = -8.44793;
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
-    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   b42w);
-    gga_fun_list = add_functional(gga_fun_list, &Becke35Functional, b35w);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   bw);
+    gga_fun_list = add_functional(gga_fun_list, &mBeckeFunctional,  mbw);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,    1.0);
     gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,    1.0);
     fun_set_hf_weight(0);
@@ -524,10 +533,10 @@ dbp86_read(const char* conf_line)
 static int
 edf1_read(const char* conf_line)
 {
-    static const real dirw = 1.030952, b35w = 10.4017, b42w = -8.44793;
+    static const real dirw = 1.030952, mbw = 10.4017, bw = -8.44793;
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
-    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   b42w);
-    gga_fun_list = add_functional(gga_fun_list, &Becke35Functional, b35w);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   bw);
+    gga_fun_list = add_functional(gga_fun_list, &mBeckeFunctional,  mbw);
     gga_fun_list = add_functional(gga_fun_list, &LYPrFunctional,    1.0);
     fun_set_hf_weight(0);
     return 1;
@@ -536,11 +545,11 @@ edf1_read(const char* conf_line)
 static int
 edf2_read(const char* conf_line)
 {
-    static const real dirw = 0.2811, b42w = 0.6227, b35w = -0.0551;
+    static const real dirw = 0.2811, bw = 0.6227, mbw = -0.0551;
     static const real vwnw = 0.3029, lypw = 0.5998, lyprw = -0.0053;
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
-    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   b42w);
-    gga_fun_list = add_functional(gga_fun_list, &Becke35Functional, b35w);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   bw);
+    gga_fun_list = add_functional(gga_fun_list, &mBeckeFunctional,  mbw);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,     vwnw);
     gga_fun_list = add_functional(gga_fun_list, &LYPrFunctional,    lyprw);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     lypw);
@@ -551,6 +560,7 @@ edf2_read(const char* conf_line)
 static int
 g96vwn_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &G96xFunctional,   1.0);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1.0);
     fun_set_hf_weight(0);
@@ -560,6 +570,7 @@ g96vwn_read(const char* conf_line)
 static int
 g96lyp_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &G96xFunctional,   1.0);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,    1.0);
     fun_set_hf_weight(0);
@@ -569,9 +580,10 @@ g96lyp_read(const char* conf_line)
 static int
 g96p86_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &G96xFunctional,   1.0);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   1.0);
-    gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,    1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,   1.0);
     fun_set_hf_weight(0);
     return 1;
 }
@@ -579,6 +591,7 @@ g96p86_read(const char* conf_line)
 static int
 g96pw91_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &G96xFunctional,   1.0);
     gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,  1.0);
     fun_set_hf_weight(0);
@@ -635,6 +648,7 @@ kt3_read(const char* conf_line)
 static int
 mpwvwn_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1.0);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,     1.0);
     fun_set_hf_weight(0);
@@ -644,6 +658,7 @@ mpwvwn_read(const char* conf_line)
 static int
 mpwlyp_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1.0);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     1.0);
     fun_set_hf_weight(0);
@@ -653,6 +668,7 @@ mpwlyp_read(const char* conf_line)
 static int
 mpwp86_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1.0);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,    1.0);
     gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,    1.0);
@@ -663,6 +679,7 @@ mpwp86_read(const char* conf_line)
 static int
 mpwpw91_read(const char* conf_line)
 {
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1.0);
     gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
     fun_set_hf_weight(0);
@@ -670,12 +687,13 @@ mpwpw91_read(const char* conf_line)
 }
 
 static int
-pw1pw_read(const char* conf_line)
+mpw3pw91_read(const char* conf_line)
 {
-    static const real hfw=0.25;
+    static const real hfw=0.2, wmp=0.72, lypw=0.81;
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1-hfw);
-    gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   1.0);
-    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
+    gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     wmp);
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   lypw);
+    gga_fun_list = add_functional(gga_fun_list, &PW92cFunctional,   1-lypw);
     fun_set_hf_weight(hfw);
     return 1;
 }
@@ -685,7 +703,40 @@ mpw1pw91_read(const char* conf_line)
 {
     static const real hfw=0.25;
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1-hfw);
-    gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1.0);
+    gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1-hfw);
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
+    fun_set_hf_weight(hfw);
+    return 1;
+}
+
+static int
+mpw1k_read(const char* conf_line)
+{
+    static const real hfw=0.428;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1-hfw);
+    gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1-hfw);
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
+    fun_set_hf_weight(hfw);
+    return 1;
+}
+
+static int
+mpw1n_read(const char* conf_line)
+{
+    static const real hfw=0.406;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1-hfw);
+    gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1-hfw);
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
+    fun_set_hf_weight(hfw);
+    return 1;
+}
+
+static int
+mpw1s_read(const char* conf_line)
+{
+    static const real hfw=0.060;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1-hfw);
+    gga_fun_list = add_functional(gga_fun_list, &mPWFunctional,     1-hfw);
     gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
     fun_set_hf_weight(hfw);
     return 1;
@@ -782,9 +833,18 @@ mpbe_read(const char* conf_line)
 }
  
 static int
+pw1pw_read(const char* conf_line)
+{
+    static const real hfw=0.25;
+    gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   1-hfw);
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
+    fun_set_hf_weight(hfw);
+    return 1;
+}
+
+static int
 pw91_read(const char* conf_line)
 {
-    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   1.0);
     gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,   1.0);
     fun_set_hf_weight(0);
@@ -794,7 +854,6 @@ pw91_read(const char* conf_line)
 static int
 pw91vwn_read(const char* conf_line)
 {
-    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   1.0);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,     1.0);
     fun_set_hf_weight(0);
@@ -805,7 +864,6 @@ static int
 pw91lyp_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     1.0);
-    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   1.0);
     fun_set_hf_weight(0);
     return 1;
@@ -816,7 +874,6 @@ pw91p86_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,    1.0);
     gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,    1.0);
-    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   1.0);
     fun_set_hf_weight(0);
     return 1;
@@ -826,7 +883,7 @@ static int
 xlyp_read(const char* conf_line)
 {
     static const real b88w = 0.722, pw91w = 0.347;
-    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1.0);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  1-pw91w);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   b88w);
     gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   pw91w);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     1.0);
@@ -836,10 +893,11 @@ xlyp_read(const char* conf_line)
 
 static int
 x3lyp_read(const char* conf_line)
+/* PW91x contains Slater exchange, so subtract from dirw */
 {
     static const real dirw = 0.782, b88w = 0.542, pw91w = 0.167;
     static const real vwnw = 0.129, lypw = 0.871;
-    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw-pw91w);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   b88w);
     gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional,   pw91w);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,     vwnw);

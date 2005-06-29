@@ -78,8 +78,8 @@ static void becke35_third(FunThirdFuncDrv *ds, real factor,
 static void becke35_fourth(FunFourthFuncDrv *ds, real factor,
                          const FunDensProp* dens_prop);
 
-Functional Becke35Functional = {
-    "Becke35",      /* name */
+Functional mBeckeFunctional = {
+    "mBecke",      /* name */
     becke35_isgga,  /* gga-corrected */
     becke35_read,   /* set bloody common blocks */
     NULL,         /* reporter */

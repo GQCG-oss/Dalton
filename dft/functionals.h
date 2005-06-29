@@ -326,7 +326,7 @@ void drv4_clear(FunFourthFuncDrv* gga); /* set all components to 0 */
 /* The list of functionals */
 /* sorted list of generic functionals */
 extern Functional BeckeFunctional;
-extern Functional Becke35Functional;
+extern Functional mBeckeFunctional;
 extern Functional B86xFunctional;
 extern Functional B86mxFunctional;
 extern Functional B97Functional;
@@ -338,6 +338,7 @@ extern Functional DK87xFunctional;
 extern Functional G96xFunctional;
 extern Functional KTxFunctional;
 extern Functional LB94Functional;
+extern Functional LG93Functional;
 extern Functional LRC95xFunctional;
 extern Functional LYPFunctional;
 extern Functional LYPrFunctional;
@@ -353,6 +354,7 @@ extern Functional PW86xFunctional;
 extern Functional PW91xFunctional;
 extern Functional PW91x2Functional;
 extern Functional PW91cFunctional;
+extern Functional PW91ncFunctional;
 extern Functional PW92cFunctional;
 extern Functional PW92acFunctional;
 extern Functional PZ81Functional;
@@ -416,10 +418,12 @@ extern Functional mPWLYPFunctional;
 extern Functional mPWP86Functional;
 extern Functional mPWPW91Functional;
 extern Functional mPW1PW91Functional;
+extern Functional mPW3PW91Functional;
 extern Functional PBE0Functional;
 extern Functional PBE0PBEFunctional;
 extern Functional PBE1PBEFunctional;
 extern Functional PBEFunctional;
+extern Functional PBEPBEFunctional;
 extern Functional RPBEFunctional;
 extern Functional revPBEFunctional;
 extern Functional mPBEFunctional;
