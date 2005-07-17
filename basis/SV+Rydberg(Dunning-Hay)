@@ -3,7 +3,7 @@ $Basis = SV+Rydberg(Dunning-Hay)
 $Elements supported
 $H Li Be B C N O F Ne 
 $
-$  REFERENCE
+$ REFERENCE
 $ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
 $ VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
 $

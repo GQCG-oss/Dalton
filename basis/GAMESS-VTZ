@@ -3,7 +3,7 @@ $Basis = GAMESS VTZ
 $Elements supported
 $H Be B C N O F Ne Na Mg Al Si P S Cl Ar 
 $
-$  REFERENCE
+$ REFERENCE
 $ T. H. DUNNING, JR., J. CHEM. PHYS. 55, 716 (1971)                            
 $ A.D. MCLEAN AND G.S. CHANDLER, J. CHEM. PHYS. 72, 5639 (1980)               
 $ A.J.H. WATCHERS, J. CHEM. PHYS. 52, 1033 (1970).                             

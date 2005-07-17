@@ -3,7 +3,7 @@ $Basis = NASA-Ames-ANO
 $Elements supported
 $H B C N O F Ne Al P Ti Fe Ni 
 $
-$  REFERENCE
+$ REFERENCE
 $ J. ALMLOF AND P.R. TAYLOR, J. CHEM. PHYS. 86, 4070 (1987).                   
 $ C.W. BAUSCHLICHER, JR., S.R. LANGHOFF, A. KORMORNICKI,  THEOR. CHIM ACTA 77, 
 $  263 (1990)                                                                  

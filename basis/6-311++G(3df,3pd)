@@ -3,7 +3,7 @@ $Basis = 6-311++G(3df,3pd)
 $Elements supported
 $H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
 $
-$  REFERENCE
+$ REFERENCE
 $Elements                             References
 $--------                             ----------
 $H, Li - Ne: R. Krishnan, J.S. Binkley, R. Seeger and J.A. Pople,

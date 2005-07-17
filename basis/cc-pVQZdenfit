@@ -1,7 +1,8 @@
 $jkbas cc-pVQZaux
 $
-$  REFERENCE turbomole webpage: ftp://ftp.chemie.uni-karlsruhe.de/pub/jkbasen
-
+$ REFERENCE 
+$ turbomole webpage: ftp://ftp.chemie.uni-karlsruhe.de/pub/jkbasen
+$
 a 1
 $ HYDROGEN
 $ h     (4s3p3d2f1g) / [4s3p3d2f1g]     {1111/111/111/11/1}

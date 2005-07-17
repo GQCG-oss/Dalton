@@ -2,8 +2,10 @@ $ Basis = cc-pwCVTZ
 $
 $Elements supported
 $ H He B C N O F Ne Al Si P S Cl Ar
-$Elements                             References
-$--------                             ----------
+$
+$ REFERENCE
+$ Elements                             References
+$ --------                             ----------
 $ He    : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).
 $Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
 $Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)
