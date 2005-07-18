@@ -1,9 +1,9 @@
 $ Basis = 6-31G
-
+$
 $ Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar Zn
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References                                
 $ --------                             ----------                                
 $  H - He:  W.J. Hehre, R. Ditchfield and J.A. Pople, J. Chem. Phys. 56,          
@@ -16,7 +16,7 @@ $           109, 1223 (1998)
 $ **                                                                             
 $           Note: He and Ne are unpublished basis sets taken from the Gaussian    
 $           program
-$
+$***********************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ S-TYPE FUNCTIONS

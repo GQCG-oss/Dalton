@@ -1,9 +1,9 @@
 $Basis = 6-31G(3df,3pd)
-
-$Elements supported
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
 $
-$ REFERENCE
+$ Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
+$
+$  REFERENCE
 $ Elements                             References                                
 $ --------                             ----------                                
 $  H - He: W.J. Hehre, R. Ditchfield and J.A. Pople, J. Chem. Phys. 56,          
@@ -22,7 +22,7 @@ $  Elements                             References
 $  --------                             ---------- 
 $  H-Ne: M.J. Frisch, J.A. Pople and J.S. Binkley, 
 $        J. Chem. Phys. 80, 3265 (1984)                                                         
-$
+$***********************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ HYDROGEN     (3p,1d)                                           

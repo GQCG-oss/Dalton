@@ -1,9 +1,9 @@
 $ Basis = 3-21++G*
-
+$
 $ Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References
 $ --------                             ----------
 $  H - Ne: J.S. Binkley, J.A. Pople, W.J. Hehre, J. Am. Chem. Soc 102 939 (1980)
@@ -27,7 +27,7 @@ $ Elements                             Reference
 $ --------                             ---------- 
 $ Na - Ar:  W.J. Pietro, M.M. Francl, W.J. Hehre, D.J. DeFrees, J.A. Pople and 
 $           J.S. Binkley, J. Am. Chem. Soc. 104, 5039 (1982) 
-$
+$***********************************************************************
 a 1
 $ HYDROGEN     (3s) -> [2s]                                      
 $ HYDROGEN     (Diffuse s)                                       

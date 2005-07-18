@@ -1,16 +1,17 @@
 $Basis = DZ+Rydberg(Dunning)
-
-$Elements supported
-$H B C N O F Ne Al Si P S Cl 
 $
-$ REFERENCE
-$ T.H. DUNNING, JR., J. CHEM. PHYS. 53, 2823 (1970).                           
-$ T.H. DUNNING, JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,   
-$ VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
+$ Elements supported
+$ H B C N O F Ne Al Si P S Cl 
+$
+$  REFERENCE
+$  T.H. DUNNING, JR., J. CHEM. PHYS. 53, 2823 (1970).                           
+$  T.H. DUNNING, JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,   
+$  VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
 $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
-$ T.H. DUNNING, JR. AND P.J. HARRISON, IN MODERN THEORETICAL CHEMISTRY, VOL.2  
-$ ED. H.F. SCHAEFER III (PLENUM PRESS, NEW YORK, 1977).                        
+$  T.H. DUNNING, JR. AND P.J. HARRISON, IN MODERN THEORETICAL CHEMISTRY, VOL.2  
+$  ED. H.F. SCHAEFER III (PLENUM PRESS, NEW YORK, 1977).                        
+$***********************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ S-TYPE FUNCTIONS

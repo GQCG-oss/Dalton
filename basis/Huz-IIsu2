@@ -1,11 +1,11 @@
 $Basis = Huz-IIsu2
 $decontracted s-functions and 2 added sharp s-functions to the Huz-II basisset
-
-$Elements supported
-$H C N O F P S 
 $
-$ REFERENCE
+$ Elements supported
+$ H C N O F P S 
 $
+$  REFERENCE
+$***********************************************************************
 a 1
 $ HYDROGEN     (7s,1p) -> [7s,1p]                                
 $ S-TYPE FUNCTIONS

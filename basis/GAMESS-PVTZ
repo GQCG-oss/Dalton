@@ -1,16 +1,16 @@
 $Basis = GAMESS PVTZ
- 
-$Elements supported
-$H Be B C N O F Ne 
+$ 
+$ Elements supported
+$ H Be B C N O F Ne 
 $
-$ REFERENCE
-$ T. H. DUNNING, JR., J. CHEM. PHYS. 55, 716 (1971)                            
-$ A.D. MCCLEAN AND G.S. CHANDLER, J. CHEM. PHYS. 72, 5639 (1980)               
-$ A.J.H. WATCHERS, J. CHEM. PHYS. 52, 1033 (1970).                             
+$  REFERENCE
+$  T. H. DUNNING, JR., J. CHEM. PHYS. 55, 716 (1971)                            
+$  A.D. MCCLEAN AND G.S. CHANDLER, J. CHEM. PHYS. 72, 5639 (1980)               
+$  A.J.H. WATCHERS, J. CHEM. PHYS. 52, 1033 (1970).                             
 $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
-$ HONDO-7                                                                      
-$
+$  HONDO-7                                                                      
+$***********************************************************************
 a 1
 $ HYDROGEN     (5s) -> [3s]                                      
 $ HYDROGEN     (1p)                                              

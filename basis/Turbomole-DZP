@@ -1,19 +1,18 @@
 $Basis = Turbomole-DZP
-
+$
 $********************************************************************************
 $ NOTE: this is the Turbomole DZP basis set, not the Ahlrichs-pVDZ from EMSL 
 $********************************************************************************
-
+$
 $ Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
 $ Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr 
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References 
 $ --------                             ---------- 
-$ H - Kr: A. Schafer, H. Horn and R. Ahlrichs, J. Chem. Phys. 97, 2571 (1992).                                                           
-$
-************************************************************************
+$ H - Kr: A. Schafer, H. Horn and R. Ahlrichs, J. Chem. Phys. 97, 2571 (1992).
+$***********************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]
 $ HYDROGEN     (1p)

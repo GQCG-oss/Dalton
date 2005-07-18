@@ -1,11 +1,11 @@
 $Basis = Almlof-Taylor-ANO
- 
+$ 
 $ Supported elements
 $ H He Li Be B C N O F Ne
 $
-$ REFERENCE
+$  REFERENCE
 $ J. Almlof and P.R. Taylor, J. Chem. Phys., 86, 4070 (1987)
-$
+$***********************************************************************
 a 1
 $ HYDROGEN
 *  s-type ANO's (max 6 functions can be used)

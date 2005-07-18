@@ -1,29 +1,28 @@
 $Basis = aug-cc-pCVQZ
-
-$Elements supported
-$H He B C N O F Ne Al Si P S Cl Ar
 $
-$ REFERENCE
-$Elements                             References
-$--------                             ----------
-$ H     : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
-$ He    : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).
-$Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
-$Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)
-$Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).
-$Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).
+$ Elements supported
+$ H He B C N O F Ne Al Si P S Cl Ar
+$
+$  REFERENCE
+$ Elements                             References
+$ --------                             ----------
+$ H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+$ He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).
+$ Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+$ Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)
+$ Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).
+$ Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).
 $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
 $  Polarization and/or diffuse functions
-$Elements                             References
-$--------                             ----------
-$ H     : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
-$Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989) and D. E. Woon and
-$         D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 103, 4572 (1995).
-$Al - Ar: K.A. Peterson and T.H. Dunning, Jr. J. Chem. Phys. 117, 10548 (2002)
-$Ca     : K.A. Peterson (to be published)
-$
-************************************************************************
+$ Elements                             References
+$ --------                             ----------
+$ H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+$ Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989) and D. E. Woon and
+$          D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 103, 4572 (1995).
+$ Al - Ar: K.A. Peterson and T.H. Dunning, Jr. J. Chem. Phys. 117, 10548 (2002)
+$ Ca     : K.A. Peterson (to be published)
+$***********************************************************************
 a 1
 $ HYDROGEN     (6s,3p,2d,1f) -> [4s,3p,2d,1f]                    
 $ HYDROGEN     Diffuse (1s,1p,1d,1f)                             

@@ -1,18 +1,15 @@
 $Basis = cc-pV6Z
 $
-$Elements supported
-$H He B C N O F Ne Al Si P S Cl Ar
+$ Elements supported
+$ H He B C N O F Ne Al Si P S Cl Ar
 $
-$ REFERENCES
-$Elements  References
-$H - He:   K.A. Peterson, D.E. Woon and T.H. Dunning, Jr.,
-$          J. Chem. Phys. 100, 7410 (1994).
-$          K.A. Peterson, to be published.
-$B - Ne:   A.K. Wilson, T. van Mourik and T.H. Dunning, Jr.,
-$          J. Mol. Struct. (THEOCHEM) 388, 339 (1997).
-$Al- Ar:   T. van Mourik and T.H. Dunning, Jr., 
-$          Int. J. Quantum Chem. 76, 205 (2000)
-************************************************************************
+$  REFERENCES
+$ Elements  References
+$ H - He:   K.A. Peterson, D.E. Woon and T.H. Dunning, Jr.,J. Chem. Phys. 100, 7410 (1994).
+$           K.A. Peterson, to be published.
+$ B - Ne:   A.K. Wilson, T. van Mourik and T.H. Dunning, Jr.,J. Mol. Struct. (THEOCHEM) 388, 339 (1997).
+$ Al- Ar:   T. van Mourik and T.H. Dunning, Jr., Int. J. Quantum Chem. 76, 205 (2000)
+$***********************************************************************
 a 1
 $ HYDROGEN     (10s,5p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]
 $ S-TYPE FUNCTIONS

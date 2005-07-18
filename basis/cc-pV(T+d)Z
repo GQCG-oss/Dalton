@@ -1,14 +1,13 @@
 $ Basis = cc-pV(T+d)Z                                                            
 $
-$Elements supported
+$ Elements supported
 $ Al Si P S Cl Ar
 $
-$ REFERENCES
-$Elements                             References
-$--------                             ----------
-$Al - Ar: T.H. Dunning, Jr., K.A. Peterson and A.K. Wilson, 
-$         J. Chem. Phys. 114, 9244 (2001)
-$
+$  REFERENCES
+$ Elements                             References
+$ --------                             ----------
+$ Al - Ar: T.H. Dunning, Jr., K.A. Peterson and A.K. Wilson, 
+$          J. Chem. Phys. 114, 9244 (2001)
 $*******************************************************************************
 a 13
 $ ALUMINUM     (15s,9p,3d,1f) -> [5s,4p,3d,1f]                                  

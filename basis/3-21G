@@ -1,10 +1,10 @@
 $ Basis = 3-21G
-
+$
 $ Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn 
 $ Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Rh Rh Pd Ag Cd In Sn Sb Te I Xe Cs 
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References                                
 $ --------                             ----------                                
 $  H - Ne: J.S. Binkley, J.A. Pople, W.J. Hehre, J. Am. Chem. Soc 102 939 (1980) 
@@ -16,7 +16,7 @@ $ Sc - Zn: K.D. Dobbs, W.J. Hehre, J. Comput. Chem. 8, 861 (1987).
 $  Y - Cd: K.D. Dobbs, W.J. Hehre, J. Comput. Chem. 8, 880 (1987).               
 $ Cs     : A 3-21G quality set derived from the Huzinage MIDI basis sets.        
 $          E.D. Glendening and D. Feller, J. Phys. Chem. 99, 3060 (1995)
-$
+$***********************************************************************
 A 1
 $ HYDROGEN     (3s) -> [2s]                                      
 $ S-TYPE FUNCTIONS

@@ -1,10 +1,10 @@
 $Basis = HIII
-
-$Elements supported
-$H C N O F P S 
 $
-$ REFERENCE
+$ Elements supported
+$ H C N O F P S 
 $
+$  REFERENCE
+$***********************************************************************
 a 1
 $ HYDROGEN     (6s,2p) -> [4s,2p]                                
 $ S-TYPE FUNCTIONS

@@ -1,14 +1,14 @@
 $ Basis = Ahlrichs TZV                                                           
- 
+$ 
 $ Supported Elements
 $ Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe
 $ Co Ni Cu Zn Ga Ge As Se Br Kr 
 $
-$ REFERENCES
-$Elements                             References                                
-$--------                             ----------                                
-$Li - Kr: A. Schafer, C. Huber and R. Ahlrichs, J. Chem. Phys. 100, 5829 (1994).
-$
+$  REFERENCES
+$ Elements                             References                                
+$ --------                             ----------                                
+$ Li - Kr: A. Schafer, C. Huber and R. Ahlrichs, J. Chem. Phys. 100, 5829 (1994).
+$***********************************************************************
 a 3
 $ LITHIUM      (11s) -> [5s]                                                    
 $ S-TYPE FUNCTIONS

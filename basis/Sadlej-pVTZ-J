@@ -1,13 +1,13 @@
 $Basis = Sadlej-pVTZ-J {previously sad-J}
- 
-$Elements supported
-$H C N O S 
+$ 
+$ Elements supported
+$ H C N O S 
 $
-$ REFERENCE   P. F. Provasi, G. A. Aucar and S. P. A. Sauer, J. Chem. Phys. 115, 1324 (2001) 
-$             A. J. Sadlej, Coll. Czech. Chem. Commun. 53,1995 (1988).
-$             A. J. Sadlej, Theor. Chim. Acta 79, 123 (1991).
-$
-************************************************************************
+$  REFERENCE   
+$  P. F. Provasi, G. A. Aucar and S. P. A. Sauer, J. Chem. Phys. 115, 1324 (2001) 
+$  A. J. Sadlej, Coll. Czech. Chem. Commun. 53,1995 (1988).
+$  A. J. Sadlej, Theor. Chim. Acta 79, 123 (1991).
+$***********************************************************************
 a 1
 $ HYDROGEN     (10s,4p) -> [6s,4p]
 $ S-TYPE FUNCTIONS

@@ -1,9 +1,9 @@
 $ Basis = 4-31G
-
+$
 $ Elements supported
 $ H He Li Be B C N O F Ne P S Cl 
 $
-$ REFERENCE
+$  REFERENCE
 $ Elements                             References                                
 $ --------                             ----------                                
 $ H, C - F: R. Ditchfield, W.J. Hehre and J.A. Pople, 
@@ -12,7 +12,7 @@ $ He, Ne:   Gaussian 90
 $ Li, Be:   These are actually 5-21G basis sets.                                 
 $ Na - Ar:  M.S. Gordon, J.S. Binkley, J.A. Pople, W.J. Pietro and W.J. Hehre,   
 $           J. Am. Chem. Soc. 104, 2797 (1983).
-$
+$***********************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ S-TYPE FUNCTIONS
