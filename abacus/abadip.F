@@ -465,7 +465,7 @@ csonia 04/10/95
       RETURN
       END
 C  /* Deck aptpop */
-      SUBROUTINE APTPOP(AMAT,SHESS,CSTRA,SCTRA,CHESS,WRK,LWRK)
+      SUBROUTINE APTPOP(AMAT,SHESS,QAPT,CSTRA,SCTRA,CHESS,WRK,LWRK)
 C
 C     hjaaj+tuh 151289
 C
@@ -482,7 +482,7 @@ C
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR)
       DIMENSION HELP1(3,3), HELP2(3,3), HELP3(3,3), CORR(3,3)
       DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR), WRK(LWRK)
-      DIMENSION CSTRA(*), SCTRA(*)
+      DIMENSION QAPT(*), CSTRA(*), SCTRA(*)
       LOGICAL ALL
 #include <abainf.h>
 #include <nuclei.h>
@@ -528,9 +528,10 @@ C
      &                    CORR,3)
                TOTCR = -(CORR(1,1) + CORR(2,2) + CORR(3,3))*THIRD
             END IF
-            QAPT=THIRD*(CMAT(1,ICOOR+1)+CMAT(2,ICOOR+2)+CMAT(3,ICOOR+3))
-            QAPT = QAPT + TOTCR
-            WRITE (LUPRI,'(28X,A6,F12.6)') NAMDEP(IATOM), QAPT
+            QAPT(IATOM)=THIRD*(CMAT(1,ICOOR+1)+CMAT(2,ICOOR+2)
+     &                        +CMAT(3,ICOOR+3))
+            QAPT(IATOM) = QAPT(IATOM) + TOTCR
+            WRITE (LUPRI,'(28X,A6,F12.6)') NAMDEP(IATOM), QAPT(IATOM)
  100     CONTINUE
          WRITE (LUPRI,'()')
       END IF
