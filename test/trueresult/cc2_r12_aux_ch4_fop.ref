@@ -1,0 +1,1800 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          PDC, Stockholm,               Sweden 
+
+ ---------------------------------------------------------------------
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,
+     R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, P. Salek, A. Sanchez, T. Saue, 
+     S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+     P. R. Taylor and O. Vahtras"
+
+ 
+     Date and time (Linux)  : Fri Apr  8 10:45:14 2005
+     Host name              : inttch05                                
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - second moments integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  CH4: CC2-R12/A first order properties without symmetry                  
+                                                                          
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+ WARNING: No Huckel guess for charge of         0
+ Hueckel start guess replaced with a diagonalization of H1
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:  98.841 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     4
+  Total number of atoms:   10
+
+  Basis-set 1 refers to the basis "6-311G**" from the basis-set library.
+
+  Basis-set 2 refers to the basis "6-311++G(3df,3pd)" from the basis-set library.
+
+  label  basis   atoms  charge   prim    cont     basis
+  ------------------------------------------------------------------------------
+  C        1       1       6      31      18      [11s5p1d|4s3p1d]                                   
+  H        1       1       1       8       6      [5s1p|3s1p]                                        
+  H        1       1       1       8       6      [5s1p|3s1p]                                        
+  H        1       1       1       8       6      [5s1p|3s1p]                                        
+  H        1       1       1       8       6      [5s1p|3s1p]                                        
+  C        2       1       0      52      39      [12s6p3d1f|5s4p3d1f]                               
+  H        2       1       0      20      18      [6s3p1d|4s3p1d]                                    
+  H        2       1       0      20      18      [6s3p1d|4s3p1d]                                    
+  H        2       1       0      20      18      [6s3p1d|4s3p1d]                                    
+  H        2       1       0      20      18      [6s3p1d|4s3p1d]                                    
+  ------------------------------------------------------------------------------
+  total:          10      10     195     153
+  ------------------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00E-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 30
+
+   1   C        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H        x      1.2767310000
+   5            y      1.2767310000
+   6            z      1.2767310000
+
+   7   H        x     -1.2767310000
+   8            y     -1.2767310000
+   9            z      1.2767310000
+
+  10   H        x     -1.2767310000
+  11            y      1.2767310000
+  12            z     -1.2767310000
+
+  13   H        x      1.2767310000
+  14            y     -1.2767310000
+  15            z     -1.2767310000
+
+  16   C        x      0.0000000000
+  17            y      0.0000000000
+  18            z      0.0000000000
+
+  19   H        x      1.2767310000
+  20            y      1.2767310000
+  21            z      1.2767310000
+
+  22   H        x     -1.2767310000
+  23            y     -1.2767310000
+  24            z      1.2767310000
+
+  25   H        x     -1.2767310000
+  26            y      1.2767310000
+  27            z     -1.2767310000
+
+  28   H        x      1.2767310000
+  29            y     -1.2767310000
+  30            z     -1.2767310000
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    3.680240          1.000000    0.000000    0.000000
+   IB    3.680240          0.000000    1.000000    0.000000
+   IC    3.680240          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         137322.2826         137322.2826         137322.2826 MHz
+            4.580578            4.580578            4.580578 cm-1
+
+
+  Nuclear repulsion energy :   12.514560078913
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in OVERLA is   0.02 seconds
+
+
+ >>> Time used in DIPLEN is   0.02 seconds
+
+
+ >>> Time used in SECMOM is   0.06 seconds
+
+
+ >>> Time used in CARMOM is   0.02 seconds
+
+
+ >>> Time used in CARMOM is   0.03 seconds
+
+
+ >>> Time used in CARMOM is   0.04 seconds
+
+
+ >>> Time used in ONEDRV is   0.06 seconds
+
+
+ >>> Time used in GABGEN is   0.17 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.44 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ Scale factors for CC excitations manifolds:
+ for bra states (projection manifold):  0.5
+ for ket states (operator manifold)  :  2.
+
+
+@ WARNING: orbitals are deleted during canonical orthonormalization
+@   because of detected numerical linear dependence.
+@ Eigenvalue threshold for num. lin. dep. =  1.00E-06
+
+@ 111 MO components are deleted in symmetry    1
+ Overlap eigenvalues of the deleted orbitals:
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+  0.00E+00
+
+WARNING: Orbitals have been deleted because of numerical
+   linear dependence although not requested in input.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Fri Apr  8 10:45:14 2005
+     Host name              : inttch05                                
+
+ Title lines from integral program:
+     CH4: CC2-R12/A first order properties without symmetry                  
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART H1DIAG" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 42
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          42
+     Number of basis functions        153
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              5
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00E-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   1    -26.920846156238   1.74E+01  -2.69E+01    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   2    -34.574014211930   5.98E+00  -7.65E+00    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   3    -38.781287021134   4.97E+00  -4.21E+00    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   4    -40.092085920578   1.21E+00  -1.31E+00    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   5    -40.191498551151   6.81E-02  -9.94E-02    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   6    -40.191730248749   2.39E-02  -2.32E-04    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   7    -40.191771445931   1.96E-03  -4.12E-05    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   8    -40.191772084246   2.24E-04  -6.38E-07    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   9    -40.191772092571   2.77E-05  -8.32E-09    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+  10    -40.191772092640   1.90E-06  -6.95E-11    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+  11    -40.191772092640   2.04E-07  -2.47E-13    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+  12    -40.191772092640   3.20E-08  -1.24E-14    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+  13    -40.191772092640   6.94E-10  -1.95E-14    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+  14    -40.191772092640   1.79E-11   8.88E-15    5
+ DIIS converged in  14 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -11.24614520    -0.91114126    -0.52478334    -0.52478334    -0.52478334
+         0.15222200     0.22923252     0.22923252     0.22923252     0.41945542
+
+    E(LUMO) :     0.15222200 au (symmetry 1)
+  - E(HOMO) :    -0.52478334 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.67700534 au
+
+ >>> Writing SIRIFC interface file <<<
+
+  Canonical primary and secondary basis sets
+  ISYM       NORB1 MBAS1       NORB2 MBAS2
+     1          42    42         111   111
+
+ >>> Time used in TWOINT is   2.16 seconds
+
+
+ Computation of exchange matrix done [5]
+
+ AUXILIARY BASIS LOW EIGENVALUES
+ ISYM         EIGENVALUE
+   1      0.000000000000
+
+ >>> Time used in R12AUX is   2.43 seconds
+
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -40.191772092640
+     Nuclear repulsion:            12.514560078913
+     Electronic energy:           -52.706332171553
+
+     Final gradient norm:           0.000000000018
+
+ 
+     Date and time (Linux)  : Fri Apr  8 10:45:21 2005
+     Host name              : inttch05                                
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  C   1s     0.5636  -0.1015   0.0000   0.0000   0.0000
+   2  C   1s     0.4666  -0.1682   0.0000   0.0000   0.0000
+   3  C   1s     0.0034   0.4331   0.0000   0.0000   0.0000
+   4  C   1s    -0.0008   0.2981   0.0000   0.0000   0.0000
+   5  C   2px    0.0000   0.0000   0.1624  -0.0816   0.0000
+   6  C   2py    0.0000   0.0000  -0.0816  -0.1624   0.0000
+   7  C   2pz    0.0000   0.0000   0.0000   0.0000   0.1818
+   8  C   2px    0.0000   0.0000   0.2619  -0.1316   0.0000
+   9  C   2py    0.0000   0.0000  -0.1316  -0.2619   0.0000
+  10  C   2pz    0.0000   0.0000   0.0000   0.0000   0.2931
+  11  C   2px    0.0000   0.0000   0.1831  -0.0920   0.0000
+  12  C   2py    0.0000   0.0000  -0.0920  -0.1831   0.0000
+  13  C   2pz    0.0000   0.0000   0.0000   0.0000   0.2049
+  14  C   3d2-   0.0000   0.0000   0.0000   0.0000   0.0320
+  15  C   3d1-   0.0000   0.0000   0.0286  -0.0144   0.0000
+  16  C   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  17  C   3d1+   0.0000   0.0000  -0.0144  -0.0286   0.0000
+  18  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  19  H   1s     0.0003   0.0770   0.0427  -0.1290   0.0961
+  20  H   1s     0.0002   0.1094   0.0706  -0.2133   0.1589
+  21  H   1s     0.0001   0.0088   0.0335  -0.1012   0.0754
+  22  H   2px   -0.0001  -0.0110   0.0045   0.0084  -0.0095
+  23  H   2py   -0.0001  -0.0110  -0.0086   0.0041  -0.0095
+  24  H   2pz   -0.0001  -0.0110  -0.0042   0.0128   0.0002
+  25  H   1s     0.0003   0.0770  -0.0427   0.1290   0.0961
+  26  H   1s     0.0002   0.1094  -0.0706   0.2133   0.1589
+  27  H   1s     0.0001   0.0088  -0.0335   0.1012   0.0754
+  28  H   2px    0.0001   0.0110   0.0045   0.0084   0.0095
+  29  H   2py    0.0001   0.0110  -0.0086   0.0041   0.0095
+  30  H   2pz   -0.0001  -0.0110   0.0042  -0.0128   0.0002
+  31  H   1s     0.0003   0.0770  -0.1290  -0.0427  -0.0961
+  32  H   1s     0.0002   0.1094  -0.2133  -0.0706  -0.1589
+  33  H   1s     0.0001   0.0088  -0.1012  -0.0335  -0.0754
+  34  H   2px    0.0001   0.0110  -0.0041  -0.0086  -0.0095
+  35  H   2py   -0.0001  -0.0110   0.0084  -0.0045   0.0095
+  36  H   2pz    0.0001   0.0110  -0.0128  -0.0042   0.0002
+  37  H   1s     0.0003   0.0770   0.1290   0.0427  -0.0961
+  38  H   1s     0.0002   0.1094   0.2133   0.0706  -0.1589
+  39  H   1s     0.0001   0.0088   0.1012   0.0335  -0.0754
+  40  H   2px   -0.0001  -0.0110  -0.0041  -0.0086   0.0095
+  41  H   2py    0.0001   0.0110   0.0084  -0.0045  -0.0095
+  42  H   2pz    0.0001   0.0110   0.0128   0.0042   0.0002
+  43  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  44  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  45  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  46  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  47  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  48  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  49  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  50  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  51  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  52  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  53  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  54  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  55  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  56  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  57  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  58  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  59  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  60  C   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  61  C   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  62  C   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  63  C   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  64  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  65  C   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  66  C   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  67  C   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  68  C   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  69  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  70  C   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  71  C   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  72  C   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  73  C   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  74  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  75  C   4f3-   0.0000   0.0000   0.0000   0.0000   0.0000
+  76  C   4f2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  77  C   4f1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  78  C   4f0    0.0000   0.0000   0.0000   0.0000   0.0000
+  79  C   4f1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  80  C   4f2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  81  C   4f3+   0.0000   0.0000   0.0000   0.0000   0.0000
+  82  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  83  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  84  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  85  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  86  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  87  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  88  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  89  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  90  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  91  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  92  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  93  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  94  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  95  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  96  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  97  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  98  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  99  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 100  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 101  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 102  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 103  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 104  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 105  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 106  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 107  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 108  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 109  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 110  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 111  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 112  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 113  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 114  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 115  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+ 116  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 117  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 118  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 119  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 120  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 121  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 122  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 123  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 124  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 125  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 126  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 127  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 128  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 129  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 130  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 131  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 132  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 133  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+ 134  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 135  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 136  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 137  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 138  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 139  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 140  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 141  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 142  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 143  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 144  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 145  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 146  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 147  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 148  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 149  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 150  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 151  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+ 152  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 153  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      6.32 seconds
+ >>>> Total wall time used in SIRIUS :      7.00 seconds
+
+ 
+     Date and time (Linux)  : Fri Apr  8 10:45:21 2005
+     Host name              : inttch05                                
+
+ NOTE:    2 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+- End of Wave Function Section
+
+
+Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   1
+
+ CCR12 APPROX =   2
+
+  I am freezing!
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -11.2461
+ In total frozen-core per symmetry-class:  1
+ 
+   NORB1  :      42
+   NORB2  :     111
+
+ Number of primary orbitals             :           42
+ Number of secondary orbitals           :          111
+ Total number of orbitals               :          153
+ Number of (i|p') integrals             :          612
+ Number of (i|u') integrals             :          612
+ Number of (Ip'|1/r12|jL) integrals     :          612
+ Number of (ip'|1/r12|jq') integrals    :       187578
+ Number of (ip'|r12|jq') integrals      :       187578
+ Number of (ip'|[T1,r12]|jq') integrals :       374544
+ Threshold for R12 contributions            =  0.00000    
+ Threshold for singular value decomposition = 0.100000E-11
+
+ The B matrix is transformed into an orthogonal basis
+ and inverted by diagonalization
+
+ ******************************************************************************
+ The MP2-R12/A and MP2-R12/B energies are computed as described in:
+ W. Klopper and C. C. M. Samson, J. Chem. Phys. 116, 6397-6410 (2002).
+ ------------------------------------------------------------------------------
+ Ansatz 1 is used and results are printed for approximation A.       
+ ******************************************************************************
+
+ Core memory required by CCSD_R12 :         964827  (double words)
+
+ Computation of (ip'|r12|jq') integrals done
+
+ >>> Time used in R  [6] is  1 minute   4 seconds
+
+ Backtransformation of (ip'|r12|jq') integrals done
+
+ >>> Time used in R12BAT is   1.27 seconds
+
+ Computation of V^aj_kl intermediate done
+
+ >>> Time used for V^aj_kl is    0.97 seconds
+
+ Computation of (ip'|1/r12|jq') integrals done
+
+ >>> Time used in 1/R[5] is  20.79 seconds
+
+ Computation of (i'p'|r12|jq') integrals done
+
+ >>> Time used in R  [5] is  21.36 seconds
+
+ Computation of (ip'|[T,r12]|jq') integrals done
+
+ >>> Time used in T,R[5] is  25.06 seconds
+
+
+
+             +-----------------------------------------------+
+             ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
+             +-----------------------------------------------+
+
+
+ SECOND-ORDER PAIR ENERGIES:
+
+                    1   -0.008552696    0.000000000
+                    2   -0.012167435   -0.004524398
+                    3   -0.016205477    0.000000000
+                    4   -0.012167435   -0.004524398
+                    5   -0.007774794   -0.011368248
+                    6   -0.016205477    0.000000000
+                    7   -0.012167435   -0.004524398
+                    8   -0.013412621   -0.011368248
+                    9   -0.013412621   -0.011368248
+                   10   -0.013386563    0.000000000
+
+ MP2 =   -0.173130492   -0.125452553   -0.047677939
+
+
+                        +-------------------------+
+                        ! Original MP2-R12 method !
+                        +-------------------------+
+
+
+ SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
+
+   1   -0.008552696   -0.004859893    0.000000000    0.000000000
+   2   -0.012167435   -0.012407436   -0.004524398   -0.002154321
+   3   -0.016205477   -0.014232283    0.000000000    0.000000000
+   4   -0.012167435   -0.012407436   -0.004524398   -0.002154321
+   5   -0.007774794   -0.007609339   -0.011368248   -0.010354164
+   6   -0.016205477   -0.014232283    0.000000000    0.000000000
+   7   -0.012167435   -0.012407436   -0.004524398   -0.002154321
+   8   -0.013412621   -0.011303085   -0.011368248   -0.010354164
+   9   -0.013412621   -0.011303085   -0.011368248   -0.010354164
+  10   -0.013386563   -0.012385410    0.000000000    0.000000000
+
+       -0.125452553   -0.113147683   -0.047677939   -0.037525455
+
+ Noninvariant MP2-R12/0   correlation energy =   -0.150673138
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.3923E-02 -0.1154E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.6200E+01  0.0000E+00
+   2 -0.8485E-02 -0.1673E-01  0.1000E+01 -0.5732E-02 -0.3241E-01  0.5000E+00  0.1777E+01  0.1540E+01
+   3 -0.7678E-02 -0.1733E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.9908E+00  0.0000E+00
+   4 -0.8485E-02 -0.1673E-01  0.1000E+01 -0.5732E-02 -0.3241E-01  0.5000E+00  0.1777E+01  0.1540E+01
+   5 -0.7076E-02 -0.1432E-01  0.1000E+01 -0.1009E-01 -0.4443E-01  0.5000E+00  0.6920E+00  0.8687E+00
+   6 -0.7678E-02 -0.1733E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.9908E+00  0.0000E+00
+   7 -0.8485E-02 -0.1673E-01  0.1000E+01 -0.5732E-02 -0.3241E-01  0.5000E+00  0.1777E+01  0.1540E+01
+   8 -0.6236E-02 -0.1458E-01  0.1000E+01 -0.1009E-01 -0.4443E-01  0.5000E+00  0.1374E+01  0.8687E+00
+   9 -0.6236E-02 -0.1458E-01  0.1000E+01 -0.1009E-01 -0.4443E-01  0.5000E+00  0.1374E+01  0.8687E+00
+  10 -0.8098E-02 -0.1720E-01  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.7633E+00  0.0000E+00
+
+ SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
+
+   1   -0.008552696   -0.009886323    0.000000000    0.000000000
+   2   -0.012167435   -0.016470983   -0.004524398   -0.005538277
+   3   -0.016205477   -0.019607394    0.000000000    0.000000000
+   4   -0.012167435   -0.016470983   -0.004524398   -0.005538277
+   5   -0.007774794   -0.011272014   -0.011368248   -0.013661379
+   6   -0.016205477   -0.019607394    0.000000000    0.000000000
+   7   -0.012167435   -0.016470983   -0.004524398   -0.005538277
+   8   -0.013412621   -0.016079776   -0.011368248   -0.013661379
+   9   -0.013412621   -0.016079776   -0.011368248   -0.013661379
+  10   -0.013386563   -0.017199823    0.000000000    0.000000000
+
+       -0.125452553   -0.159145448   -0.047677939   -0.057598967
+
+ Noninvariant MP2-R12/A   correlation energy =   -0.216744415
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.3923E-02 -0.1154E-01  0.3400E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.6200E+01  0.0000E+00
+   2 -0.8485E-02 -0.1673E-01  0.5072E+00 -0.5732E-02 -0.3241E-01  0.1769E+00  0.1777E+01  0.1540E+01
+   3 -0.7678E-02 -0.1733E-01  0.4431E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.9908E+00  0.0000E+00
+   4 -0.8485E-02 -0.1673E-01  0.5072E+00 -0.5732E-02 -0.3241E-01  0.1769E+00  0.1777E+01  0.1540E+01
+   5 -0.7076E-02 -0.1432E-01  0.4942E+00 -0.1009E-01 -0.4443E-01  0.2272E+00  0.6920E+00  0.8687E+00
+   6 -0.7678E-02 -0.1733E-01  0.4431E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.9908E+00  0.0000E+00
+   7 -0.8485E-02 -0.1673E-01  0.5072E+00 -0.5732E-02 -0.3241E-01  0.1769E+00  0.1777E+01  0.1540E+01
+   8 -0.6236E-02 -0.1458E-01  0.4277E+00 -0.1009E-01 -0.4443E-01  0.2272E+00  0.1374E+01  0.8687E+00
+   9 -0.6236E-02 -0.1458E-01  0.4277E+00 -0.1009E-01 -0.4443E-01  0.2272E+00  0.1374E+01  0.8687E+00
+  10 -0.8098E-02 -0.1720E-01  0.4709E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.7633E+00  0.0000E+00
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.008552696   -0.010306695    0.000000000    0.000000000    0.539661        0.868730    
+   2   -0.012167435   -0.016542555   -0.004524398   -0.005538277    0.539661        0.868730    
+   3   -0.016205477   -0.019903047    0.000000000    0.000000000    0.539661        0.868730    
+   4   -0.012167435   -0.016542555   -0.004524398   -0.005538277    0.539661        0.868730    
+   5   -0.007774794   -0.011347472   -0.011368248   -0.013661379    0.539661        0.868730    
+   6   -0.016205477   -0.019903047    0.000000000    0.000000000    0.539661        0.868730    
+   7   -0.012167435   -0.016542555   -0.004524398   -0.005538277    0.539661        0.868730    
+   8   -0.013412621   -0.016190403   -0.011368248   -0.013661379    0.539661        0.868730    
+   9   -0.013412621   -0.016190403   -0.011368248   -0.013661379    0.539661        0.868730    
+  10   -0.013386563   -0.017481581    0.000000000    0.000000000    0.539661        0.868730    
+
+       -0.125452553   -0.160950313   -0.047677939   -0.057598967
+
+              MP2-R12/A   correlation energy =   -0.218549280
+
+
+                     +--------------------------------+
+                     ! Auxiliary-basis MP2-R12 method !
+                     +--------------------------------+
+
+
+ SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
+
+   1   -0.008552696   -0.005591570    0.000000000    0.000000000
+   2   -0.012167435   -0.012730957   -0.004524398   -0.003077591
+   3   -0.016205477   -0.018917545    0.000000000    0.000000000
+   4   -0.012167435   -0.012730957   -0.004524398   -0.003077591
+   5   -0.007774794   -0.009192001   -0.011368248   -0.012005922
+   6   -0.016205477   -0.018917545    0.000000000    0.000000000
+   7   -0.012167435   -0.012730957   -0.004524398   -0.003077591
+   8   -0.013412621   -0.015622274   -0.011368248   -0.012005922
+   9   -0.013412621   -0.015622274   -0.011368248   -0.012005922
+  10   -0.013386563   -0.015702409    0.000000000    0.000000000
+
+       -0.125452553   -0.137758489   -0.047677939   -0.045250539
+
+ Noninvariant MP2-R12/0   correlation energy =   -0.183009028
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.3156E-02 -0.9273E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.9161E+01  0.0000E+00
+   2 -0.3874E-02 -0.7184E-02  0.1000E+01 -0.1451E-02 -0.1159E-01  0.5000E+00  0.6232E+01  0.6263E+01
+   3 -0.4001E-02 -0.5289E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2571E+01  0.0000E+00
+   4 -0.3874E-02 -0.7184E-02  0.1000E+01 -0.1451E-02 -0.1159E-01  0.5000E+00  0.6232E+01  0.6263E+01
+   5 -0.2298E-02 -0.3179E-02  0.1000E+01 -0.2087E-02 -0.5799E-02  0.5000E+00  0.2084E+01  0.1935E+01
+   6 -0.4001E-02 -0.5289E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2571E+01  0.0000E+00
+   7 -0.3874E-02 -0.7184E-02  0.1000E+01 -0.1451E-02 -0.1159E-01  0.5000E+00  0.6232E+01  0.6263E+01
+   8 -0.2991E-02 -0.3773E-02  0.1000E+01 -0.2087E-02 -0.5799E-02  0.5000E+00  0.3368E+01  0.1935E+01
+   9 -0.2991E-02 -0.3773E-02  0.1000E+01 -0.2087E-02 -0.5799E-02  0.5000E+00  0.3368E+01  0.1935E+01
+  10 -0.3654E-02 -0.4992E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2209E+01  0.0000E+00
+
+ SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
+
+   1   -0.008552696   -0.009626690    0.000000000    0.000000000
+   2   -0.012167435   -0.014256259   -0.004524398   -0.004706073
+   3   -0.016205477   -0.019231463    0.000000000    0.000000000
+   4   -0.012167435   -0.014256259   -0.004524398   -0.004706073
+   5   -0.007774794   -0.009436133   -0.011368248   -0.012119637
+   6   -0.016205477   -0.019231463    0.000000000    0.000000000
+   7   -0.012167435   -0.014256259   -0.004524398   -0.004706073
+   8   -0.013412621   -0.015784221   -0.011368248   -0.012119637
+   9   -0.013412621   -0.015784221   -0.011368248   -0.012119637
+  10   -0.013386563   -0.016061122    0.000000000    0.000000000
+
+       -0.125452553   -0.147924091   -0.047677939   -0.050477130
+
+ Noninvariant MP2-R12/A   correlation energy =   -0.198401221
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.3156E-02 -0.9273E-02  0.3403E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.9161E+01  0.0000E+00
+   2 -0.3874E-02 -0.7184E-02  0.5392E+00 -0.1451E-02 -0.1159E-01  0.1252E+00  0.6232E+01  0.6263E+01
+   3 -0.4001E-02 -0.5289E-02  0.7564E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.2571E+01  0.0000E+00
+   4 -0.3874E-02 -0.7184E-02  0.5392E+00 -0.1451E-02 -0.1159E-01  0.1252E+00  0.6232E+01  0.6263E+01
+   5 -0.2298E-02 -0.3179E-02  0.7229E+00 -0.2087E-02 -0.5799E-02  0.3600E+00  0.2084E+01  0.1935E+01
+   6 -0.4001E-02 -0.5289E-02  0.7564E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.2571E+01  0.0000E+00
+   7 -0.3874E-02 -0.7184E-02  0.5392E+00 -0.1451E-02 -0.1159E-01  0.1252E+00  0.6232E+01  0.6263E+01
+   8 -0.2991E-02 -0.3773E-02  0.7928E+00 -0.2087E-02 -0.5799E-02  0.3600E+00  0.3368E+01  0.1935E+01
+   9 -0.2991E-02 -0.3773E-02  0.7928E+00 -0.2087E-02 -0.5799E-02  0.3600E+00  0.3368E+01  0.1935E+01
+  10 -0.3654E-02 -0.4992E-02  0.7319E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.2209E+01  0.0000E+00
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.008552696   -0.010623222    0.000000000    0.000000000     1.62962         1.93487    
+   2   -0.012167435   -0.014443622   -0.004524398   -0.004706073     1.62962         1.93487    
+   3   -0.016205477   -0.019251081    0.000000000    0.000000000     1.62962         1.93487    
+   4   -0.012167435   -0.014443622   -0.004524398   -0.004706073     1.62962         1.93487    
+   5   -0.007774794   -0.009448156   -0.011368248   -0.012119637     1.62962         1.93487    
+   6   -0.016205477   -0.019251081    0.000000000    0.000000000     1.62962         1.93487    
+   7   -0.012167435   -0.014443622   -0.004524398   -0.004706073     1.62962         1.93487    
+   8   -0.013412621   -0.015786039   -0.011368248   -0.012119637     1.62962         1.93487    
+   9   -0.013412621   -0.015786039   -0.011368248   -0.012119637     1.62962         1.93487    
+  10   -0.013386563   -0.016082139    0.000000000    0.000000000     1.62962         1.93487    
+
+       -0.125452553   -0.149558622   -0.047677939   -0.050477130
+
+              MP2-R12/A   correlation energy =   -0.200035752
+
+ >>> Time used in E(R12) is   0.37 seconds
+
+ Time for MP2-R12 part cpu:  133.099764
+ Time for MP2-R12 part wall:  134.
+ ianr12,iapr12: 1 2
+  I am freezing!
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  1
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+
+     1 :      1
+  MIN AND MAX IN SELECTED SUPSPACE  -11.2461452 -11.2461452
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -11.2461
+ In total frozen-core per symmetry-class:  1
+ 
+ Computation of VXINT response intermediates done
+
+ >>> Time used for VXINT is    0.61 seconds
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :       148
+          Number of t2 amplitudes                 :     11026
+          Number of t2' amplitudes for R12 part   :       136
+          Total number of amplitudes in ccsd      :     11310
+
+ Iter.  1: Coupled cluster MP2-R12/A energy :     -40.3918078441912130
+     Conventional correlation energy:    -0.1731304917320955
+     Singlet R12 correlation energy :    -0.0241060690881353
+     Triplet R12 correlation energy :    -0.0027991907305531
+     Total correlation energy       :    -0.2000357515507839
+
+
+       Iteration no.:  1
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.12 seconds
+       Norm of omega1 after ccvec:         0.1281490663E-02
+       Norm of omega2 after ccvec:         0.1295755541E-27
+ Iter.  1: Coupled cluster CC2-R12/A energy :     -40.3916935949255134
+     Conventional correlation energy:    -0.1730162424664030
+     Singlet R12 correlation energy :    -0.0241060690881302
+     Triplet R12 correlation energy :    -0.0027991907305535
+     Total correlation energy       :    -0.1999215022850867
+
+
+       Iteration no.:  2
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.26 seconds
+       Norm of omega1 after ccvec:         0.1355310791E-04
+       Norm of omega2 after ccvec:         0.7459280323E-04
+ Iter.  2: Coupled cluster CC2-R12/A energy :     -40.3922197226620767
+     Conventional correlation energy:    -0.1735244452568736
+     Singlet R12 correlation energy :    -0.0241088729057554
+     Triplet R12 correlation energy :    -0.0028143118590172
+     Total correlation energy       :    -0.2004476300216461
+
+
+       Iteration no.:  3
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.34 seconds
+       Norm of omega1 after ccvec:         0.6884080118E-05
+       Norm of omega2 after ccvec:         0.2200669839E-04
+ Iter.  3: Coupled cluster CC2-R12/A energy :     -40.3929220303485224
+     Conventional correlation energy:    -0.1742120350370016
+     Singlet R12 correlation energy :    -0.0241026047573114
+     Triplet R12 correlation energy :    -0.0028352979137846
+     Total correlation energy       :    -0.2011499377080975
+
+
+       Iteration no.:  4
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.35 seconds
+       Norm of omega1 after ccvec:         0.9562982025E-07
+       Norm of omega2 after ccvec:         0.8631294516E-07
+ Iter.  4: Coupled cluster CC2-R12/A energy :     -40.3929140837855911
+     Conventional correlation energy:    -0.1742004462967444
+     Singlet R12 correlation energy :    -0.0241053586826796
+     Triplet R12 correlation energy :    -0.0028361861657372
+     Total correlation energy       :    -0.2011419911451612
+
+
+       Iteration no.:  5
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.14 seconds
+       Norm of omega1 after ccvec:         0.7031091598E-08
+       Norm of omega2 after ccvec:         0.4049924024E-08
+ Iter.  5: Coupled cluster CC2-R12/A energy :     -40.3929128378019442
+     Conventional correlation energy:    -0.1741983461821661
+     Singlet R12 correlation energy :    -0.0241058516259468
+     Triplet R12 correlation energy :    -0.0028365473534028
+     Total correlation energy       :    -0.2011407451615157
+
+
+       Iteration no.:  6
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.18 seconds
+       Norm of omega1 after ccvec:         0.5066750422E-10
+       Norm of omega2 after ccvec:         0.6744184917E-10
+ Iter.  6: Coupled cluster CC2-R12/A energy :     -40.3929124313807151
+     Conventional correlation energy:    -0.1741977851358669
+     Singlet R12 correlation energy :    -0.0241059763776696
+     Triplet R12 correlation energy :    -0.0028365772267492
+     Total correlation energy       :    -0.2011403387402858
+
+
+       Iteration no.:  7
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.07 seconds
+       Norm of omega1 after ccvec:         0.1632971294E-11
+       Norm of omega2 after ccvec:         0.7512140317E-12
+ Iter.  7: Coupled cluster CC2-R12/A energy :     -40.3929124020356269
+     Conventional correlation energy:    -0.1741977334010301
+     Singlet R12 correlation energy :    -0.0241059936721063
+     Triplet R12 correlation energy :    -0.0028365823220632
+     Total correlation energy       :    -0.2011403093951996
+
+
+       Iteration no.:  8
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.21 seconds
+       Norm of omega1 after ccvec:         0.5133463459E-13
+       Norm of omega2 after ccvec:         0.4576353527E-13
+ Iter.  8: Coupled cluster CC2-R12/A energy :     -40.3929123948431652
+     Conventional correlation energy:    -0.1741977250529487
+     Singlet R12 correlation energy :    -0.0241059946572482
+     Triplet R12 correlation energy :    -0.0028365824925413
+     Total correlation energy       :    -0.2011403022027383
+
+
+       Iteration no.:  9
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.13 seconds
+       Norm of omega1 after ccvec:         0.6234070787E-15
+       Norm of omega2 after ccvec:         0.8165142188E-15
+ Iter.  9: Coupled cluster CC2-R12/A energy :     -40.3929123942373351
+     Conventional correlation energy:    -0.1741977246110409
+     Singlet R12 correlation energy :    -0.0241059945355270
+     Triplet R12 correlation energy :    -0.0028365824503404
+     Total correlation energy       :    -0.2011403015969083
+
+
+       Iteration no.: 10
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.21 seconds
+       Norm of omega1 after ccvec:         0.5545689559E-16
+       Norm of omega2 after ccvec:         0.5994225535E-16
+ Iter. 10: Coupled cluster CC2-R12/A energy :     -40.3929123947619217
+     Conventional correlation energy:    -0.1741977250980682
+     Singlet R12 correlation energy :    -0.0241059945571948
+     Triplet R12 correlation energy :    -0.0028365824662331
+     Total correlation energy       :    -0.2011403021214961
+
+
+       Iteration no.: 11
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.28 seconds
+       Norm of omega1 after ccvec:         0.4610522405E-17
+       Norm of omega2 after ccvec:         0.3133048274E-17
+ Iter. 11: Coupled cluster CC2-R12/A energy :     -40.3929123947499349
+     Conventional correlation energy:    -0.1741977250773488
+     Singlet R12 correlation energy :    -0.0241059945632735
+     Triplet R12 correlation energy :    -0.0028365824688881
+     Total correlation energy       :    -0.2011403021095103
+
+
+       Iteration no.: 12
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.18 seconds
+       Norm of omega1 after ccvec:         0.1127714804E-18
+       Norm of omega2 after ccvec:         0.2068055244E-18
+ Iter. 12: Coupled cluster CC2-R12/A energy :     -40.3929123947631936
+     Conventional correlation energy:    -0.1741977250824718
+     Singlet R12 correlation energy :    -0.0241059945691744
+     Triplet R12 correlation energy :    -0.0028365824711235
+     Total correlation energy       :    -0.2011403021227697
+
+
+       Iteration no.: 13
+       -----------------
+
+       Time used in   RHS - TOTAL  :       5.15 seconds
+       Norm of omega1 after ccvec:         0.1772356234E-20
+       Norm of omega2 after ccvec:         0.3864607574E-20
+ Iter. 13: Coupled cluster CC2-R12/A energy :     -40.3929123947640107
+     Conventional correlation energy:    -0.1741977250830473
+     Singlet R12 correlation energy :    -0.0241059945692390
+     Triplet R12 correlation energy :    -0.0028365824712959
+     Total correlation energy       :    -0.2011403021235823
+
+
+ CC2-R12/A energy converged to within   0.10E-11 is    -40.392912395
+
+
+                +------------------------------------------+
+                ! Largest amplitudes in converged solution !
+                +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               1.4314 %
+
+          Double Excitation Contribution :              98.5686 %
+
+          ||T1||/||T2||                  :               0.1205
+
+          Tau1 diagnostic                :               0.0074
+
+          Norm of Total Amplitude Vector :               0.1744
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   7       2     |       44          |              |    0.004826  |
+ | 1   1   |   9       2     |       46          |              |    0.005382  |
+ | 1   1   |  11       2     |       48          |              |    0.004070  |
+ | 1   1   |  28       2     |       65          |              |   -0.004243  |
+ | 1   1   |   5       3     |       79          |              |   -0.004826  |
+ | 1   1   |   9       3     |       83          |              |   -0.004070  |
+ | 1   1   |  11       3     |       85          |              |    0.005382  |
+ | 1   1   |  27       3     |      101          |              |   -0.004281  |
+ | 1   1   |   2       4     |      113          |              |   -0.005095  |
+ | 1   1   |   6       4     |      117          |              |   -0.005334  |
+ | 1   1   |  10       4     |      121          |              |    0.006748  |
+ | 1   1   |  29       4     |      140          |              |    0.004396  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.011773  |
+ | 1 1 1 1 |   8   1   1   1 |        8        1 |           29 |   -0.008708  |
+ | 1 1 1 1 |  12   1   1   1 |       12        1 |           67 |    0.008728  |
+ | 1 1 1 1 |   3   1   2   1 |       40        1 |          781 |   -0.009714  |
+ | 1 1 1 1 |   4   1   2   1 |       41        1 |          821 |   -0.008884  |
+ | 1 1 1 1 |   9   1   2   1 |       46        1 |         1036 |    0.011753  |
+ | 1 1 1 1 |  11   1   2   1 |       48        1 |         1129 |    0.008888  |
+ | 1 1 1 1 |   3   1   3   1 |       77        1 |         2927 |    0.009640  |
+ | 1 1 1 1 |   4   1   3   1 |       78        1 |         3004 |   -0.010069  |
+ | 1 1 1 1 |   9   1   3   1 |       83        1 |         3404 |   -0.008888  |
+ | 1 1 1 1 |  11   1   3   1 |       85        1 |         3571 |    0.011753  |
+ | 1 1 1 1 |   2   1   4   1 |      113        1 |         6329 |   -0.013133  |
+ | 1 1 1 1 |  10   1   4   1 |      121        1 |         7261 |    0.014735  |
+ | 1 1 1 1 |   2   2   1   1 |        2        2 |            3 |   -0.006649  |
+ | 1 1 1 1 |  14   2   4   1 |      125        2 |         7752 |   -0.007474  |
+ | 1 1 1 1 |   3   3   1   1 |        3        3 |            6 |   -0.006649  |
+ | 1 1 1 1 |  13   3   2   1 |       50        3 |         1228 |   -0.006670  |
+ | 1 1 1 1 |   4   4   1   1 |        4        4 |           10 |   -0.006649  |
+ | 1 1 1 1 |   5   5   1   1 |        5        5 |           15 |   -0.008194  |
+ | 1 1 1 1 |   6   6   1   1 |        6        6 |           21 |   -0.008194  |
+ | 1 1 1 1 |   8   6   4   1 |      119        6 |         7027 |   -0.007055  |
+ | 1 1 1 1 |   7   7   1   1 |        7        7 |           28 |   -0.008194  |
+ | 1 1 1 1 |   8   8   1   1 |        8        8 |           36 |   -0.011025  |
+ | 1 1 1 1 |   3   8   2   1 |       40        8 |          788 |   -0.006996  |
+ | 1 1 1 1 |   9   8   2   1 |       46        8 |         1043 |    0.011010  |
+ | 1 1 1 1 |  11   8   2   1 |       48        8 |         1136 |    0.008326  |
+ | 1 1 1 1 |   3   8   3   1 |       77        8 |         2934 |    0.006943  |
+ | 1 1 1 1 |   4   8   3   1 |       78        8 |         3011 |   -0.007252  |
+ | 1 1 1 1 |   9   8   3   1 |       83        8 |         3411 |   -0.008326  |
+ | 1 1 1 1 |  11   8   3   1 |       85        8 |         3578 |    0.011010  |
+ | 1 1 1 1 |   2   8   4   1 |      113        8 |         6336 |   -0.009458  |
+ | 1 1 1 1 |  10   8   4   1 |      121        8 |         7268 |    0.013804  |
+ | 1 1 1 1 |   9   9   1   1 |        9        9 |           45 |   -0.009329  |
+ | 1 1 1 1 |  10  10   1   1 |       10       10 |           55 |   -0.009329  |
+ | 1 1 1 1 |   1  10   4   1 |      112       10 |         6226 |    0.006672  |
+ | 1 1 1 1 |   8  10   4   1 |      119       10 |         7031 |    0.007452  |
+ | 1 1 1 1 |  11  11   1   1 |       11       11 |           66 |   -0.009329  |
+ | 1 1 1 1 |  12  12   1   1 |       12       12 |           78 |   -0.010281  |
+ | 1 1 1 1 |   9  12   2   1 |       46       12 |         1047 |   -0.010273  |
+ | 1 1 1 1 |  11  12   2   1 |       48       12 |         1140 |   -0.007769  |
+ | 1 1 1 1 |   9  12   3   1 |       83       12 |         3415 |    0.007769  |
+ | 1 1 1 1 |  11  12   3   1 |       85       12 |         3582 |   -0.010273  |
+ | 1 1 1 1 |   2  12   4   1 |      113       12 |         6340 |    0.008275  |
+ | 1 1 1 1 |  10  12   4   1 |      121       12 |         7272 |   -0.012880  |
+ | 1 1 1 1 |  13  13   1   1 |       13       13 |           91 |   -0.009741  |
+ | 1 1 1 1 |  14  14   1   1 |       14       14 |          105 |   -0.009741  |
+ | 1 1 1 1 |   1   1   2   2 |       38       38 |          741 |   -0.008883  |
+ | 1 1 1 1 |   8   1   2   2 |       45       38 |         1028 |   -0.006866  |
+ | 1 1 1 1 |   2   2   2   2 |       39       39 |          780 |   -0.008640  |
+ | 1 1 1 1 |   2   2   4   2 |      113       39 |         6367 |    0.007036  |
+ | 1 1 1 1 |   3   3   2   2 |       40       40 |          820 |   -0.011608  |
+ | 1 1 1 1 |   4   3   2   2 |       41       40 |          860 |   -0.008858  |
+ | 1 1 1 1 |   9   3   2   2 |       46       40 |         1075 |    0.011456  |
+ | 1 1 1 1 |  11   3   2   2 |       48       40 |         1168 |    0.007286  |
+ | 1 1 1 1 |   3   3   3   2 |       77       40 |         2966 |    0.008157  |
+ | 1 1 1 1 |   4   3   3   2 |       78       40 |         3043 |   -0.007436  |
+ | 1 1 1 1 |   9   3   3   2 |       83       40 |         3443 |   -0.007106  |
+ | 1 1 1 1 |  11   3   3   2 |       85       40 |         3610 |    0.007702  |
+ | 1 1 1 1 |   2   3   4   2 |      113       40 |         6368 |   -0.010426  |
+ | 1 1 1 1 |  10   3   4   2 |      121       40 |         7300 |    0.010707  |
+ | 1 1 1 1 |   4   4   2   2 |       41       41 |          861 |   -0.013896  |
+ | 1 1 1 1 |   9   4   2   2 |       46       41 |         1076 |    0.009468  |
+ | 1 1 1 1 |  11   4   2   2 |       48       41 |         1169 |    0.010524  |
+ | 1 1 1 1 |   4   4   3   2 |       78       41 |         3044 |   -0.007576  |
+ | 1 1 1 1 |  11   4   3   2 |       85       41 |         3611 |    0.007962  |
+ | 1 1 1 1 |   2   4   4   2 |      113       41 |         6369 |   -0.009354  |
+ | 1 1 1 1 |  10   4   4   2 |      121       41 |         7301 |    0.009792  |
+ | 1 1 1 1 |   6   6   2   2 |       43       43 |          946 |   -0.018920  |
+ | 1 1 1 1 |   8   6   2   2 |       45       43 |         1033 |    0.006968  |
+ | 1 1 1 1 |  19   6   2   2 |       56       43 |         1583 |   -0.007659  |
+ | 1 1 1 1 |  13   6   3   2 |       87       43 |         3784 |    0.008029  |
+ | 1 1 1 1 |   7   6   4   2 |      118       43 |         6946 |    0.013439  |
+ | 1 1 1 1 |   7   7   2   2 |       44       44 |          990 |   -0.022843  |
+ | 1 1 1 1 |  20   7   2   2 |       57       44 |         1640 |    0.006941  |
+ | 1 1 1 1 |   5   7   3   2 |       79       44 |         3125 |   -0.009834  |
+ | 1 1 1 1 |   8   7   4   2 |      119       44 |         7065 |   -0.008510  |
+ | 1 1 1 1 |  14   7   4   2 |      125       44 |         7794 |    0.010790  |
+ | 1 1 1 1 |   8   8   2   2 |       45       45 |         1035 |   -0.014153  |
+ | 1 1 1 1 |   7   8   4   2 |      118       45 |         6948 |   -0.008510  |
+ | 1 1 1 1 |   9   9   2   2 |       46       46 |         1081 |   -0.017580  |
+ | 1 1 1 1 |  11   9   2   2 |       48       46 |         1174 |   -0.011707  |
+ | 1 1 1 1 |   3   9   3   2 |       77       46 |         2972 |   -0.008581  |
+ | 1 1 1 1 |   4   9   3   2 |       78       46 |         3049 |    0.008037  |
+ | 1 1 1 1 |   9   9   3   2 |       83       46 |         3449 |    0.009976  |
+ | 1 1 1 1 |  11   9   3   2 |       85       46 |         3616 |   -0.011371  |
+ | 1 1 1 1 |   2   9   4   2 |      113       46 |         6374 |    0.011545  |
+ | 1 1 1 1 |  10   9   4   2 |      121       46 |         7306 |   -0.015811  |
+ | 1 1 1 1 |  11  11   2   2 |       48       48 |         1176 |   -0.014157  |
+ | 1 1 1 1 |   4  11   3   2 |       78       48 |         3051 |    0.007146  |
+ | 1 1 1 1 |  11  11   3   2 |       85       48 |         3618 |   -0.009976  |
+ | 1 1 1 1 |   2  11   4   2 |      113       48 |         6376 |    0.008732  |
+ | 1 1 1 1 |  10  11   4   2 |      121       48 |         7308 |   -0.011957  |
+ | 1 1 1 1 |  13  13   2   2 |       50       50 |         1275 |   -0.015876  |
+ | 1 1 1 1 |   6  13   3   2 |       80       50 |         3210 |   -0.008029  |
+ | 1 1 1 1 |   5  13   4   2 |      116       50 |         6720 |   -0.009988  |
+ | 1 1 1 1 |  18  13   4   2 |      129       50 |         8306 |    0.007525  |
+ | 1 1 1 1 |  14  14   2   2 |       51       51 |         1326 |   -0.008847  |
+ | 1 1 1 1 |  16  16   2   2 |       53       53 |         1431 |   -0.006866  |
+ | 1 1 1 1 |  19  19   2   2 |       56       56 |         1596 |   -0.008984  |
+ | 1 1 1 1 |  20  20   2   2 |       57       57 |         1653 |   -0.009024  |
+ | 1 1 1 1 |  14  20   4   2 |      125       57 |         7807 |   -0.006917  |
+ | 1 1 1 1 |   1   1   3   3 |       75       75 |         2850 |   -0.008883  |
+ | 1 1 1 1 |   8   1   3   3 |       82       75 |         3396 |   -0.006866  |
+ | 1 1 1 1 |   3   3   3   3 |       77       77 |         3003 |   -0.015281  |
+ | 1 1 1 1 |   4   3   3   3 |       78       77 |         3080 |    0.009635  |
+ | 1 1 1 1 |   9   3   3   3 |       83       77 |         3480 |    0.011174  |
+ | 1 1 1 1 |  11   3   3   3 |       85       77 |         3647 |   -0.010341  |
+ | 1 1 1 1 |   2   3   4   3 |      113       77 |         6405 |    0.010809  |
+ | 1 1 1 1 |  10   3   4   3 |      121       77 |         7337 |   -0.010624  |
+ | 1 1 1 1 |   4   4   3   3 |       78       78 |         3081 |   -0.012488  |
+ | 1 1 1 1 |   9   4   3   3 |       83       78 |         3481 |   -0.007780  |
+ | 1 1 1 1 |  11   4   3   3 |       85       78 |         3648 |    0.011814  |
+ | 1 1 1 1 |   2   4   4   3 |      113       78 |         6406 |   -0.011108  |
+ | 1 1 1 1 |  10   4   4   3 |      121       78 |         7338 |    0.011097  |
+ | 1 1 1 1 |   5   5   3   3 |       79       79 |         3160 |   -0.022843  |
+ | 1 1 1 1 |  18   5   3   3 |       92       79 |         4265 |    0.006941  |
+ | 1 1 1 1 |   8   5   4   3 |      119       79 |         7100 |   -0.008510  |
+ | 1 1 1 1 |  14   5   4   3 |      125       79 |         7829 |    0.010790  |
+ | 1 1 1 1 |   6   6   3   3 |       80       80 |         3240 |   -0.018920  |
+ | 1 1 1 1 |   8   6   3   3 |       82       80 |         3401 |   -0.006968  |
+ | 1 1 1 1 |  19   6   3   3 |       93       80 |         4358 |   -0.007659  |
+ | 1 1 1 1 |   5   6   4   3 |      116       80 |         6750 |   -0.013439  |
+ | 1 1 1 1 |   8   8   3   3 |       82       82 |         3403 |   -0.014153  |
+ | 1 1 1 1 |   5   8   4   3 |      116       82 |         6752 |   -0.008510  |
+ | 1 1 1 1 |   9   9   3   3 |       83       83 |         3486 |   -0.014157  |
+ | 1 1 1 1 |  11   9   3   3 |       85       83 |         3653 |    0.011707  |
+ | 1 1 1 1 |   2   9   4   3 |      113       83 |         6411 |   -0.008730  |
+ | 1 1 1 1 |  10   9   4   3 |      121       83 |         7343 |    0.011957  |
+ | 1 1 1 1 |  11  11   3   3 |       85       85 |         3655 |   -0.017580  |
+ | 1 1 1 1 |   2  11   4   3 |      113       85 |         6413 |    0.011545  |
+ | 1 1 1 1 |  10  11   4   3 |      121       85 |         7345 |   -0.015811  |
+ | 1 1 1 1 |  13  13   3   3 |       87       87 |         3828 |   -0.015876  |
+ | 1 1 1 1 |   7  13   4   3 |      118       87 |         6990 |   -0.009988  |
+ | 1 1 1 1 |  20  13   4   3 |      131       87 |         8602 |    0.007525  |
+ | 1 1 1 1 |  14  14   3   3 |       88       88 |         3916 |   -0.008847  |
+ | 1 1 1 1 |  15  15   3   3 |       89       89 |         4005 |   -0.006866  |
+ | 1 1 1 1 |  18  18   3   3 |       92       92 |         4278 |   -0.009024  |
+ | 1 1 1 1 |  14  18   4   3 |      125       92 |         7842 |   -0.006917  |
+ | 1 1 1 1 |  19  19   3   3 |       93       93 |         4371 |   -0.008984  |
+ | 1 1 1 1 |   1   1   4   4 |      112      112 |         6328 |   -0.008883  |
+ | 1 1 1 1 |   8   1   4   4 |      119      112 |         7133 |   -0.006866  |
+ | 1 1 1 1 |   2   2   4   4 |      113      113 |         6441 |   -0.019129  |
+ | 1 1 1 1 |  10   2   4   4 |      121      113 |         7373 |    0.017921  |
+ | 1 1 1 1 |   3   3   4   4 |      114      114 |         6555 |   -0.007255  |
+ | 1 1 1 1 |   4   4   4   4 |      115      115 |         6670 |   -0.007760  |
+ | 1 1 1 1 |   5   5   4   4 |      116      116 |         6786 |   -0.018920  |
+ | 1 1 1 1 |  18   5   4   4 |      129      116 |         8372 |    0.007572  |
+ | 1 1 1 1 |   6   6   4   4 |      117      117 |         6903 |   -0.010449  |
+ | 1 1 1 1 |   7   7   4   4 |      118      118 |         7021 |   -0.018920  |
+ | 1 1 1 1 |  20   7   4   4 |      131      118 |         8633 |    0.007573  |
+ | 1 1 1 1 |   8   8   4   4 |      119      119 |         7140 |   -0.014153  |
+ | 1 1 1 1 |  10  10   4   4 |      121      121 |         7381 |   -0.025526  |
+ | 1 1 1 1 |  14  14   4   4 |      125      125 |         7875 |   -0.019391  |
+ | 1 1 1 1 |  18  18   4   4 |      129      129 |         8385 |   -0.008984  |
+ | 1 1 1 1 |  20  20   4   4 |      131      131 |         8646 |   -0.008984  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1381
+
+
+          Printed all single excitations greater than 0.003988
+
+
+          Printed all double excitations greater than 0.006619
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                   -40.1917720926
+
+            Total MP2-R12/A energy:               -40.3918078442
+
+            Total CC2-R12/A energy:               -40.3929123948
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+ write Vajtkl on disk
+ Time used for CCRHS_EINTP cpu:  0.000991821289
+ Time used for CCRHS_EINTP wall:  0.
+ Time used for R12 part in CCSD_RHS cpu:  3.7024231
+ Time used for R12 part in CCSD_RHS wall:  4.
+       Time used in   RHS - TOTAL  :       5.41 seconds
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +-------------------------------+
+                     ! Coupled Cluster model is: CC2 !
+                     +-------------------------------+
+
+
+ Solving   1 response equations:
+ L0 :
+     Start vector generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+  
+ ROOT:  1 RESIDUAL TOT: 1.64829E-01
+      1       1         0.03     0.16E+00
+
+ Dimension of the reduced space:     2
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.91
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.25058E-02
+      2       1         0.03     0.13E-01
+
+ Dimension of the reduced space:     3
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.78
+
+  
+ ROOT:  1 RESIDUAL TOT: 2.61098E-03
+      3       1         0.03     0.26E-02
+
+ Dimension of the reduced space:     4
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.80
+
+  
+ ROOT:  1 RESIDUAL TOT: 5.27332E-04
+      4       1         0.03     0.53E-03
+
+ Dimension of the reduced space:     5
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.75
+
+  
+ ROOT:  1 RESIDUAL TOT: 8.29843E-05
+      5       1         0.03     0.83E-04
+
+ Dimension of the reduced space:     6
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.85
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.00826E-05
+      6       1         0.03     0.10E-04
+
+ Dimension of the reduced space:     7
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.74
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.89318E-06
+      7       1         0.03     0.19E-05
+
+ Dimension of the reduced space:     8
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.76
+
+  
+ ROOT:  1 RESIDUAL TOT: 3.21208E-07
+      8       1         0.03     0.32E-06
+
+ Dimension of the reduced space:     9
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.87
+
+  
+ ROOT:  1 RESIDUAL TOT: 6.00263E-08
+      9       1         0.03     0.60E-07
+
+ Dimension of the reduced space:    10
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.83
+
+  
+ ROOT:  1 RESIDUAL TOT: 8.54515E-09
+     10       1         0.03     0.85E-08
+
+ Dimension of the reduced space:    11
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.82
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.75845E-09
+     11       1         0.03     0.18E-08
+
+ Dimension of the reduced space:    12
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.79
+
+  
+ ROOT:  1 RESIDUAL TOT: 2.29611E-10
+     12       1         0.03     0.23E-09
+
+ Dimension of the reduced space:    13
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.84
+
+  
+ ROOT:  1 RESIDUAL TOT: 5.82506E-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.82506E-11
+     13       1         0.03     0.58E-10
+
+ Dimension of the reduced space:    13
+
+ >>> TIME USED IN THIS MICRO ITERATION        1.76
+
+    --------------------------------------
+    converged in 13 iterations
+    threshold:    0.10E-09
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.39
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.39
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:  23.51 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  24.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.5091 %
+
+          Double Excitation Contribution :              99.4909 %
+
+          ||T1||/||T2||                  :               0.0715
+
+          Tau1 diagnostic                :               0.0117
+
+          Norm of Total Amplitude Vector :               0.4632
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       1     |        1          |              |    0.003950  |
+ | 1   1   |  12       1     |       12          |              |    0.003552  |
+ | 1   1   |  33       1     |       33          |              |    0.003551  |
+ | 1   1   |   3       2     |       40          |              |   -0.003530  |
+ | 1   1   |   4       2     |       41          |              |   -0.003228  |
+ | 1   1   |   5       2     |       42          |              |    0.004587  |
+ | 1   1   |   7       2     |       44          |              |    0.009748  |
+ | 1   1   |   9       2     |       46          |              |    0.006802  |
+ | 1   1   |  11       2     |       48          |              |    0.005144  |
+ | 1   1   |  20       2     |       57          |              |   -0.006147  |
+ | 1   1   |  23       2     |       60          |              |    0.002437  |
+ | 1   1   |  28       2     |       65          |              |   -0.007860  |
+ | 1   1   |  34       2     |       71          |              |   -0.003691  |
+ | 1   1   |   3       3     |       77          |              |    0.003503  |
+ | 1   1   |   4       3     |       78          |              |   -0.003659  |
+ | 1   1   |   5       3     |       79          |              |   -0.009748  |
+ | 1   1   |   7       3     |       81          |              |    0.004587  |
+ | 1   1   |   9       3     |       83          |              |   -0.005144  |
+ | 1   1   |  11       3     |       85          |              |    0.006802  |
+ | 1   1   |  18       3     |       92          |              |    0.006147  |
+ | 1   1   |  21       3     |       95          |              |    0.002437  |
+ | 1   1   |  27       3     |      101          |              |   -0.007930  |
+ | 1   1   |  35       3     |      109          |              |   -0.003692  |
+ | 1   1   |   2       4     |      113          |              |   -0.004773  |
+ | 1   1   |   6       4     |      117          |              |   -0.010773  |
+ | 1   1   |  10       4     |      121          |              |    0.008528  |
+ | 1   1   |  19       4     |      130          |              |   -0.006414  |
+ | 1   1   |  22       4     |      133          |              |   -0.002564  |
+ | 1   1   |  29       4     |      140          |              |    0.008143  |
+ | 1   1   |  36       4     |      147          |              |   -0.004391  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   9   1   2   1 |       46        1 |         1036 |    0.036353  |
+ | 1 1 1 1 |  11   1   3   1 |       85        1 |         3571 |    0.036353  |
+ | 1 1 1 1 |   2   1   4   1 |      113        1 |         6329 |   -0.042926  |
+ | 1 1 1 1 |  10   1   4   1 |      121        1 |         7261 |    0.045578  |
+ | 1 1 1 1 |  10   8   4   1 |      121        8 |         7268 |    0.040214  |
+ | 1 1 1 1 |   9  12   2   1 |       46       12 |         1047 |   -0.033303  |
+ | 1 1 1 1 |  11  12   3   1 |       85       12 |         3582 |   -0.033303  |
+ | 1 1 1 1 |  10  12   4   1 |      121       12 |         7272 |   -0.041753  |
+ | 1 1 1 1 |   4   3   3   2 |       78       40 |         3043 |   -0.035219  |
+ | 1 1 1 1 |  11   3   3   2 |       85       40 |         3610 |    0.037233  |
+ | 1 1 1 1 |   2   3   4   2 |      113       40 |         6368 |   -0.036499  |
+ | 1 1 1 1 |  10   3   4   2 |      121       40 |         7300 |    0.037025  |
+ | 1 1 1 1 |   2   4   4   2 |      113       41 |         6369 |   -0.033684  |
+ | 1 1 1 1 |  10   4   4   2 |      121       41 |         7301 |    0.033858  |
+ | 1 1 1 1 |   6   6   2   2 |       43       43 |          946 |   -0.037924  |
+ | 1 1 1 1 |  13   6   3   2 |       87       43 |         3784 |    0.048136  |
+ | 1 1 1 1 |   7   6   4   2 |      118       43 |         6946 |    0.045623  |
+ | 1 1 1 1 |   7   7   2   2 |       44       44 |          990 |   -0.045812  |
+ | 1 1 1 1 |   5   7   3   2 |       79       44 |         3125 |   -0.040340  |
+ | 1 1 1 1 |  14   7   4   2 |      125       44 |         7794 |    0.048811  |
+ | 1 1 1 1 |   9   9   2   2 |       46       46 |         1081 |   -0.034984  |
+ | 1 1 1 1 |   4   9   3   2 |       78       46 |         3049 |    0.037623  |
+ | 1 1 1 1 |  11   9   3   2 |       85       46 |         3616 |   -0.050253  |
+ | 1 1 1 1 |   2   9   4   2 |      113       46 |         6374 |    0.039926  |
+ | 1 1 1 1 |  10   9   4   2 |      121       46 |         7306 |   -0.053496  |
+ | 1 1 1 1 |  10  11   4   2 |      121       48 |         7308 |   -0.040455  |
+ | 1 1 1 1 |   6  13   3   2 |       80       50 |         3210 |   -0.048136  |
+ | 1 1 1 1 |   5  13   4   2 |      116       50 |         6720 |   -0.034491  |
+ | 1 1 1 1 |   2   3   4   3 |      113       77 |         6405 |    0.035438  |
+ | 1 1 1 1 |  10   3   4   3 |      121       77 |         7337 |   -0.036748  |
+ | 1 1 1 1 |   2   4   4   3 |      113       78 |         6406 |   -0.037321  |
+ | 1 1 1 1 |  10   4   4   3 |      121       78 |         7338 |    0.038377  |
+ | 1 1 1 1 |   5   5   3   3 |       79       79 |         3160 |   -0.045812  |
+ | 1 1 1 1 |  14   5   4   3 |      125       79 |         7829 |    0.048810  |
+ | 1 1 1 1 |   6   6   3   3 |       80       80 |         3240 |   -0.037924  |
+ | 1 1 1 1 |   5   6   4   3 |      116       80 |         6750 |   -0.045623  |
+ | 1 1 1 1 |  10   9   4   3 |      121       83 |         7343 |    0.040455  |
+ | 1 1 1 1 |  11  11   3   3 |       85       85 |         3655 |   -0.034984  |
+ | 1 1 1 1 |   2  11   4   3 |      113       85 |         6413 |    0.039927  |
+ | 1 1 1 1 |  10  11   4   3 |      121       85 |         7345 |   -0.053496  |
+ | 1 1 1 1 |   7  13   4   3 |      118       87 |         6990 |   -0.034491  |
+ | 1 1 1 1 |   2   2   4   4 |      113      113 |         6441 |   -0.038433  |
+ | 1 1 1 1 |  10   2   4   4 |      121      113 |         7373 |    0.035776  |
+ | 1 1 1 1 |   5   5   4   4 |      116      116 |         6786 |   -0.037924  |
+ | 1 1 1 1 |   7   7   4   4 |      118      118 |         7021 |   -0.037924  |
+ | 1 1 1 1 |  10  10   4   4 |      121      121 |         7381 |   -0.050794  |
+ | 1 1 1 1 |  14  14   4   4 |      125      125 |         7875 |   -0.038695  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.2814
+
+
+          Printed all single excitations greater than 0.002378
+
+
+          Printed all double excitations greater than 0.033248
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CC2-    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                 +---------------------------------------+
+                 !  Electronic contribution to operator  !
+                 +---------------------------------------+
+
+  
+                    XDIPLEN :   0.00000000
+  
+  
+  
+                    ZDIPLEN :   0.00000000
+  
+  
+  
+                    XXSECMOM:  12.93949468
+  
+  
+  
+                    YYSECMOM:  12.93949468
+  
+  
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                    -40.39291239476401074171
+
+ *******************************************************************
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                   -40.1917720926                
+            Total MP2-R12/A energy:               -40.3918078442                
+            Total CC2-R12/A energy:               -40.3929123948                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+
+ >>>> Total CPU  time used in DALTON:  3 minutes 59 seconds
+ >>>> Total wall time used in DALTON:  4 minutes  1 second 
+
+ 
+     Date and time (Linux)  : Fri Apr  8 10:49:15 2005
+     Host name              : inttch05                                
