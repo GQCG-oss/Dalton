@@ -52,8 +52,9 @@ cat > r12_damped_herdir.dal <<'%EOF%'
 .RUN WAVE FUNCTION
 .DIRECT
 **INTEGRALS
-.R12EXP
-.123
+.R12RGG
+1
+1. .123
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT

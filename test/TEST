@@ -46,7 +46,7 @@ cc_rsp_excipolar cc_rsp_exci cc_energy_field cc_fop_prop3 cc_fop_prop4 \
 cc_fop_freeze cc_rsp_gamma cc_rsp_gammafreq cc_rsp_gammafreq2 \
 cc_rsp_mcdbterm cc_rsp_threephot cc_energy_triples cc_energy_triplesdirect \
 cc_energy_triplesdirect2 cc_energy_triplesdirect3 cc_energy_triplet2 \
-cc_rsp_twophot cc_rsp_twophot2 \
+cc_rsp_twophot cc_rsp_twophot2 cc_rsp_gamma3 \
 cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd \
 cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o"
 #
@@ -85,9 +85,34 @@ dft_pbe dft_camb3lyp dft_cr_sym"
 DPT="dpt_hf dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm \
 dpt_hbr dpt_hbr_finp dpt_h2s_ff"
 #
-R12="r12_damped r12_damped_herdir \
+MP2R12="r12_damped r12_damped_herdir \
 r12_sym r12_nosym r12_fc_sym r12_fc_nosym \
-r12_aux_sym r12_aux_nosym r12_fc_aux_sym r12_fc_aux_nosym"
+r12_aux_sym r12_aux_nosym r12_fc_aux_sym r12_fc_aux_nosym \
+r12_prop r12_prop_n2 r12_prop_h2o"
+#
+SHORTCCR12="cc2_r12_aux2_bh cc2_r12_aux2_bh_sym \
+cc2_r12_aux_bh_a2 cc2_r12_aux_bh_sym_a2 \
+cc2_r12_he cc2_r12_aux2_bh_a2 cc2_r12_aux2_bh_sym_a2 \
+cc2_r12_aux2_bh_lhtr cc2_r12_aux2_bh_sym_lhtr \
+cc2_r12_he_a2 ccsdr12_bh ccsdr12_bh_direct \
+ccsdr12_n2 ccsdr12_n2_direct cc2_r12_aux_ch4 cc2_r12_aux_ch4_sym \
+cc2_r12_aux_ch4_lhtr cc2_r12_aux_ch4_sym_lhtr cc2_r12_aux_nh3_sym \
+cc2_r12_aux_nh3_sym_lhtr ccsdr12pt_ne \
+cc2_r12_aux_ch4_fop cc2_r12_aux_ch4_sym_fop \
+cc2_r12_aux_h2o_fop cc2_r12_aux_h2o_sym_fop \
+cc2_r12_aux_ch4_lr cc2_r12_aux_ch4_sym_lr \
+cc2_r12_aux_ch4_sym_lr_nondir cc2_r12_aux_ch4_sym_nondir \
+cc2_r12_aux_ch4_ff cc2_r12_aux_ch4_ff2 \
+cc2_r12_aux_ch4_sym_pol cc2_r12_aux_n2_gamma cc2_r12_aux_n2_gamma2 \
+cc2_r12_aux_ne_gamma cc2_r12_aux_bh_a3 cc2_r12_aux_bh_sym_a3 \
+"
+#
+LONGCCR12="cc2_r12_aux_ch4_a2 cc2_r12_aux_ch4_sym_a2 \
+cc2_r12_aux_ch4_sym_a3 cc2_r12_aux_benzene_sym_fop"
+#
+CCR12="$SHORTCCR12 $LONGCCR12"
+#
+R12="$MP2R12 $SHORTCCR12 $LONGCCR12"
 #
 NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"
 #
@@ -128,6 +153,10 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           long                 -- run all long testcases
           dft                  -- run all DFT testcases
           r12                  -- run all R12 testcases
+          ccr12                -- run all CC-R12 testcases
+          mp2r12               -- run all MP2-R12 testcases
+          shortccr12           -- run all short CC-R12 testcases
+          longccr12            -- run all long CC-R12 testcases
           benchmark            -- run all BENCHMARK testcases
           dpt                  -- run all DPT testcases
           numder               -- run all numerical derivatives testcases
@@ -247,6 +276,14 @@ while [ -n "$1" ]; do
    testcase="$testcase $DPT"; shift ;;
    "r12" )
    testcase="$testcase $R12"; shift ;;
+   "ccr12" )
+   testcase="$testcase $CCR12"; shift ;;
+   "mp2r12" )
+   testcase="$testcase $MP2R12"; shift ;;
+   "shortccr12" )
+   testcase="$testcase $SHORTCCR12"; shift ;;
+   "longccr12" )
+   testcase="$testcase $LONGCCR12"; shift ;;
    "benchmark" )
    testcase="$testcase $BENCHMARK"; shift ;;
    "numder" )

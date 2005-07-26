@@ -1,0 +1,155 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc2_r12_aux_benzene_sym_fop.info <<'%EOF%'
+   cc2_r12_aux_benzene_sym_fop
+   -------------
+   Molecule:         Benzene (C6H6)
+   Wave Function:    CC2-R12 / STO-3G
+   Test Purpose:     Check CC2-R12 first order properties with symmetry
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > cc2_r12_aux_benzene_sym_fop.mol <<'%EOF%'
+BASIS
+STO-3G 3-21G
+Benzene CC2-R12/Ansatz1/B first order properties
+
+    4    3  X  Y  Z 
+ 1      6.    2
+C      0.000000000000000   1.390000000000000   0.000000000000000       *
+C      1.203775311000000   0.695000000000000   0.000000000000000       *
+ 1      1.    2
+H      0.000000000000000   2.350000000000000   0.000000000000000       *
+H      2.035159699000000   1.175000000000000   0.000000000000000       *
+ 2      6.    2
+C      0.000000000000000   1.390000000000000   0.000000000000000       *
+C      1.203775311000000   0.695000000000000   0.000000000000000       *
+ 2      1.    2
+H      0.000000000000000   2.350000000000000   0.000000000000000       *
+H      2.035159699000000   1.175000000000000   0.000000000000000       *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc2_r12_aux_benzene_sym_fop.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTION
+.DIRECT
+**INTEGRALS
+.R12
+.AUXBAS
+.SECMOM
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESHOLD
+ 1D-10
+*CC INPUT
+.CC2
+.PRINT
+ 3
+.FREEZE
+ 6 0
+.THRENR
+ 1.0D-12
+.THRLEQ
+ 1.0D-10
+*CCFOP
+.NONREL
+.OPERAT
+XXSECMOM
+ZZSECMOM
+*R12 INPUT
+.NO HYB
+#.NO A 
+#.NO A'
+#.NO 2
+.CC2
+ 1B
+*END OF INPUT
+%EOF%
+
+#######################################################################
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc2_r12_aux_benzene_sym_fop.check
+cat >>cc2_r12_aux_benzene_sym_fop.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+#
+#            Total SCF   energy:                  -209.9728112144
+#            Total MP2-R12/B energy:              -211.1627342603
+#            Total CC2-R12/B energy:              -211.1646674388
+#
+#                    XXSECMOM:  74.97777369 
+#                    ZZSECMOM:  21.49729167 
+#
+
+CRIT1=`$GREP "Total MP2-R12/B energy: *-211.162734260" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
+CTRL[1]=2
+ERROR[1]="MP2-R12/A ENERGY NOT CORRECT"
+CRIT2=`$GREP "Total CC2-R12/B energy: *-211.164667438" $log | wc -l`
+TEST[2]=`expr   $CRIT2`
+CTRL[2]=2
+ERROR[2]="CC2-R12/A ENERGY NOT CORRECT"
+#
+CRIT3=`$GREP "XXSECMOM: *74.97777369" $log | wc -l`
+TEST[3]=`expr   $CRIT3`
+CTRL[3]=1
+ERROR[3]="CC2-R12/A XX-SECOND MOMENT OF CHARGE NOT CORRECT"
+CRIT4=`$GREP "ZZSECMOM: *21.49729167" $log | wc -l`
+TEST[4]=`expr   $CRIT4`
+CTRL[4]=1
+ERROR[4]="CC2-R12/A ZZ-SECOND MOMENT OF CHARGE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4  
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

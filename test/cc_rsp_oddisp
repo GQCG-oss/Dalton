@@ -67,6 +67,8 @@ cat > cc_rsp_oddisp.dal <<'%EOF%'
  1.0d-10
 .THRLEQ
  1.0d-10
+.PRINT
+  5
 *CCQR
 .OPERATOR
 XDIPLEN YDIPLEN ZANGMOM
