@@ -597,6 +597,15 @@ C  /* Deck exedrv */
 Cef begin
 #include <incore.h>
 Cef end
+Cholesky
+#include <ccdeco.h>
+#include <inforb.h>
+Cholesky
+#if defined (DAL_GCR)      
+      logical gcr
+      common /tmpalf/ gcr
+#endif
+C
       DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
@@ -949,7 +958,20 @@ C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
 Cholesky
          IF (CHOINT) CALL EXECHO(WORK,LMWORK,WRKDLM,CHOVER)
 Cholesky
+         IF (NEWSCF) CALL EXESCF(WORK,LMWORK,WRKDLM)
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
+#if defined (DAL_GCR)
+         if (gcr) then
+            write(lupri,*) 'Norbt at the begining :',norbt
+            call flshfo(lupri)
+            kone = 2
+            ktwo = kone + norbt*norbt*4
+            kend = ktwo + norbt*norbt*norbt*norbt*16
+            lwrk = lmwork - kend
+            call cho_tramo(work(kone),work(ktwo),work(kend),lwrk)
+            stop 'End of cho_tramo'
+         end if
+#endif
          IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
@@ -1070,6 +1092,14 @@ C
 #else
       PARAMETER (IVECDF = 1)
 #endif
+Cholesky
+#include <ccdeco.h>
+Cholesky
+#if defined (DAL_GCR)      
+      logical gcr
+      common /tmpalf/ gcr
+#endif
+C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR /'*END OF', '*PARALL', '*WALK  ',
@@ -1080,9 +1110,9 @@ C
      &             '.INPTES', '.PARALL', '.DIRECT',
      &             '.WALK  ', '.MAX IT', '.RESPON',
      &             '.RUN PR', '.RUN RE', '.RUN WA',
-     &             '.PRESOR', '.WESTA ', '.XXXXXX',
-     &             '.XXXXXX', '.XXXXXX', '.XXXXXX',
-     &             '.XXXXXX', '.XXXXXX', '.TOTSYM',
+     &             '.PRESOR', '.WESTA ', '.CHOLES',
+     &             '.NEWSCF', '.GCR   ', '.CHO V1',
+     &             '.CHO V2', '.XXXXXX', '.TOTSYM',
      &             '.VECLEN', '.RUNERI', '.XXXXXX',
      &             '.RUN AL', '.NMDDRV', '.PARNMD',
      &             '.OPTIMI', '.DOUGLA'/
@@ -1144,6 +1174,14 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       DKTRAN = .FALSE.
       GEOALL = .FALSE.
       PANAS  = 0.0D0
+Cholesky
+      CHOINT = .FALSE.
+      CHOVER = 0
+Cholesky
+      NEWSCF = .FALSE.
+#if defined (DAL_GCR)
+      GCR    = .FALSE.
+#endif      
 #ifdef VAR_MPI
       IF(NODTOT.GE.1) THEN
          PARCAL = .TRUE.
@@ -1211,7 +1249,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112,113,114,115,116,117,118,119,112,
+     &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
      &                123,130), I
             END IF
@@ -1285,10 +1323,28 @@ C
             WESTA = .TRUE.
          GO TO 100
  118     CONTINUE
+            RNHERM = .TRUE.
+            CHOINT = .TRUE.
+            CHOVER = 1
+         GO TO 100
  119     CONTINUE
+            RNHERM = .TRUE.
+            NEWSCF = .TRUE.
+         GO TO 100
  120     CONTINUE
+            RNHERM = .TRUE.
+            CHOINT = .TRUE.
+            GCR    = .TRUE.
+         GO TO 100
  121     CONTINUE
+            RNHERM = .TRUE.
+            CHOINT = .TRUE.
+            CHOVER = 1
+         GO TO 100
  122     CONTINUE
+            RNHERM = .TRUE.
+            CHOINT = .TRUE.
+            CHOVER = 2
          GO TO 100
  123     CONTINUE
             OPTNEW = .TRUE.
@@ -1682,3 +1738,41 @@ C
       RETURN
       END
 #endif
+C
+Cholesky
+C  /* Deck execho */
+      SUBROUTINE EXECHO(WORK, LMWORK, WRKDLM,IVERS)
+#include <implicit.h>
+#include <dummy.h>
+      DIMENSION WORK(LMWORK)
+#include <priunit.h>
+#include <gnrinf.h>
+#include <dftcom.h>
+C
+C     Run Cholesky stuff
+C
+      CALL QENTER('EXECHO')
+C
+      WRITE(LUPRI, '(A,I2,A,/)')
+     & '    Starting in Cholesky Section, Version',IVERS,' -'
+C
+      IF (IVERS .EQ. 1) THEN
+         CALL CC_CHODRV(WORK(2),LMWORK)
+      ELSE IF (IVERS .EQ. 2) THEN
+         CALL CHO_DAL_DRV(WORK(2),LMWORK)
+      ELSE
+         WRITE(LUPRI,'(A,A,I6)')
+     &   'EXECHO: version not recognized: ',IVERS
+         CALL QUIT('Illegal version in EXCHO')
+      END IF
+      CALL BNDCHK(WORK, LMWORK, WRKDLM, 'CHOLES')
+C
+ctst  IF (IVERS .EQ. 1) CLOSE(24)
+      WRITE(LUPRI, '(/A)') '- End of Cholesky Section'
+C
+      CALL FLSHFO(LUPRI)
+
+      CALL QEXIT('EXECHO')
+      RETURN
+      END
+
