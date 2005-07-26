@@ -946,6 +946,9 @@ C     &       '*** WARNING:  Maximum number of iterations exceeded ***'
 C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
          NEWGEO = .TRUE.
          IF (RNHERM) CALL EXEHER(WORK,LMWORK,WRKDLM)
+Cholesky
+         IF (CHOINT) CALL EXECHO(WORK,LMWORK,WRKDLM,CHOVER)
+Cholesky
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
          IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
 C
