@@ -1,0 +1,39 @@
+      INTEGER MXCHVC, LRDTOT, LREDU, NREDUC, ISYSCR, INAOSH, NUMCHO,
+     &        LENCHO, IDNTCH, NDIAG, IDIAG, MAXDIA, MAXDI1, IATPRI,
+     &        NUMCEN, IALBET, CHOVER
+#if defined (SYS_CRAY)
+      REAL DIASCR, THRCOM, THRDEF, THINDI, THSUDI, SPAN
+#else
+      DOUBLE PRECISION DIASCR, THRCOM, THRDEF, THINDI, THSUDI, SPAN
+#endif
+
+      PARAMETER (MXCHVC = 80 000)
+C
+      LOGICAL CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG,REDUCE,DIACAL,NEWSCF
+C
+      COMMON /CHOINT/ DIASCR(MXSHEL,MXSHEL),
+     &                THRCOM, THRDEF, THINDI, THSUDI, SPAN,
+     &                CHOVER,
+     &                LRDTOT,LREDU,NREDUC(8),
+     &                ISYSCR(MXSHEL,MXSHEL),INAOSH(MXCORB),
+     &                NUMCHO(8), LENCHO(MXCHVC,8),IDNTCH(MXCHVC,8),
+     &                NDIAG,IDIAG(8),MAXDIA,MAXDI1,
+     &                IATPRI(MXCORB),NUMCEN,
+     &                IALBET(MXCORB*(MXCORB+1)/2,2), 
+     &                CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG,REDUCE,DIACAL,
+     &                NEWSCF
+C
+C     Old common with some stuff to have several files.
+C
+C     COMMON /CHOINT/ DIASCR(MXSHEL,MXSHEL),THRCOM,THRDEF,
+C    *                THINDI,THSUDI,SPAN,
+C    *                ISYSCR(MXSHEL,MXSHEL),
+C    *                NUMCHO(8),IADRTO(8),IDNTLU(0:9,1:8),
+C    *                INDCHO(MXCHVC,8),LENCHO(MXCHVC,8),
+C    *                IDNTCH(MXCHVC,8),ISTRFI(0:9,1:8),
+C    *                IDIAG(8),IIBST(8),
+C    *                NDIAG,INAOSH(MXCORB),
+C    *                MAXDIA,MAXLEN,MAXDI1,NUMFIL(8),
+C    *                IATPRI(MXCORB),NUMCEN,
+C    *                IALBET(MXCORB*(MXCORB+1)/2,2), 
+C    *                CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG
