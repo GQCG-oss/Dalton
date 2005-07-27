@@ -64,6 +64,9 @@ cat > cc2_r12_aux_benzene_sym_fop.dal <<'%EOF%'
 *SCF INPUT
 .THRESHOLD
  1D-10
+*ORBITAL
+.MOSTART
+ H1DIAG
 *CC INPUT
 .CC2
 .PRINT

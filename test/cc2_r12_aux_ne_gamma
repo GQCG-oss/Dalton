@@ -133,6 +133,9 @@ cat > cc2_r12_aux_ne_gamma.dal <<'%EOF%'
 *HF INPUT
 .THRESH
  1.0D-10
+*ORBITALS
+.MOSTART
+ H1DIAG
 *CC INPUT
 .CC2
 .PRINT

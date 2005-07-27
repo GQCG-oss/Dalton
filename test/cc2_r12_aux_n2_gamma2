@@ -59,6 +59,9 @@ cat > cc2_r12_aux_n2_gamma2.dal <<'%EOF%'
 *SCF INPUT
 .THRESHOLD
  1D-10
+*ORBITALS
+.MOSTART
+ H1DIAG
 *CC INPUT
 .CC2
 .PRINT
