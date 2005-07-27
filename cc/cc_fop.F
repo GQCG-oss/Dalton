@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck cc_fop */
-       SUBROUTINE CC_FOP(WORK,LWORK)
+       SUBROUTINE CC_FOP(IPDD,WORK,LWORK,APROXR12)
 C
 C-----------------------------------------------------------------------------
 C
@@ -65,6 +65,8 @@ C     Relaxed CC2 FOP by A. Halkier & S. Coriani January 2000.
 C     No frozen core possible for Relaxed CC2 initially.
 C
 C     CCSD(T) introduced by Kasper Hald and Sonia Coriani in 2001/2002 
+C
+C     CC-R12 introduced by Christian Neiss 2005
 C
 C-----------------------------------------------------------------------------
 C
@@ -97,6 +99,9 @@ C
 #include <ccinftap.h>
 #include <ccslvinf.h>
 #include <ccnoddy.h>
+#include <r12int.h>
+#include <maxaqn.h>
+#include <symmet.h>
 #include <qm3.h>
 #include <ccqrinf.h>
 C
@@ -106,9 +111,10 @@ C
      *        LDUM, ETASAV, LCCPTSV
       LOGICAL BP2SAV
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
+      CHARACTER*(*) APROXR12 
       CHARACTER*17 MODELPRI2
       CHARACTER*10 MODEL
-      CHARACTER*8  LABEL, FNTOC, FN3VI2
+      CHARACTER*8  LABEL1, FNTOC, FN3VI2
       CHARACTER*7  FN3FOP2X
       CHARACTER*6  FN3VI, FN3FOP2, FNDPTIA2, FNDELD, FNCKJD, FN3FOPX
       CHARACTER*5  ETY1, FN3FOP, FNDPTIA, FNDPTAB, FNDPTIJ, FNDKBC3
@@ -120,7 +126,9 @@ C
 C
       LOGICAL LTESTE
 C
-      INTEGER ISYOF(8)
+      INTEGER ISYOF(8),KOFF(8,8),NCVAI1(8,8),NCVAI2(8,8),NCVAI3(8,8)
+      INTEGER NCVIJ(8,8),NCVAI5(8,8) 
+      INTEGER IPDD
 C
 #include <leinf.h>
 C
@@ -339,7 +347,7 @@ C--------------------------------
             !
          END IF
 
-         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
+         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,APROXR12,
      *                  IDUM,IDUM,RDUM,LDUM,
      *                  IDUM,CDUM,RDUM,IDUM,
      *                  ISYOF,1,1,WORK,LWORK)
@@ -975,7 +983,9 @@ C
          KETAAI = KZKAM  + LENDEN
          KEXVAL = KETAAI + NALLAI(1)
          KSOLUT = KEXVAL + 1
-         KWRK2  = KSOLUT + NALLAI(1)
+         YAJIJ  = KSOLUT + NALLAI(1)
+         KAJFR  = YAJIJ  + NALLAI(1)
+         KWRK2  = KAJFR  + NALLAI(1)
          LWRK2  = LWORK  - KWRK2
 C
          IF (LWRK2 .LT. 0) THEN
@@ -986,11 +996,86 @@ C
          CALL DZERO(WORK(KZKAM),LENDEN)
          CALL DZERO(WORK(KETAAI),NALLAI(1))
          CALL DZERO(WORK(KSOLUT),NALLAI(1))
+         CALL DZERO(WORK(YAJIJ),NALLAI(1))
+         CALL DZERO(WORK(KAJFR),NALLAI(1))
 C
          IF (MP2) THEN
-            CALL MP2_ZKDIA(MODEL,WORK(KZKAM),WORK(KWRK2),LWRK2)
+            CALL MP2_ZKDIA(IPDD,R12PRP,MODEL,WORK(KZKAM),
+     &                     WORK(KWRK2),LWRK2)
             CALL MP2_KANEW(MODEL,WORK(KETAAI),WORK(KZKAM),
      &           WORK(KWRK2),LWRK2)
+cElena
+           IF (R12PRP .AND. (IPDD .EQ. 2 .OR. IPDD .EQ. 3 .OR. 
+     &         IPDD .EQ. 5)) THEN
+              LUVAJKL = 0
+              IF (IPDD .EQ. 2) THEN
+                 CALL GPOPEN(LUVAJKL,'CCR12YAJIJ','UNKNOWN',' ',
+     &                    'UNFORMATTED',IDUMMY,.FALSE.)
+              ELSEIF (IPDD .EQ.  3) THEN
+                 CALL GPOPEN(LUVAJKL,'CCR12ZAJIJ','UNKNOWN',' ',
+     &                    'UNFORMATTED',IDUMMY,.FALSE.)
+              ELSEIF (IPDD .EQ.  5) THEN
+                 CALL GPOPEN(LUVAJKL,'CCR12XAJIJ','UNKNOWN',' ',
+     &                    'UNFORMATTED',IDUMMY,.FALSE.)
+                 IF (FROIMP) THEN
+                     LUFAJKL = 0
+                     CALL GPOPEN(LUFAJKL,'CCR12YAIFR','UNKNOWN',' ',
+     &                        'UNFORMATTED',IDUMMY,.FALSE.)
+                 ENDIF  
+              ENDIF
+              IF (FROIMP) THEN
+                 DO ISYMAJ = 1,NSYM
+                    ISYMIJ = ISYMAJ
+                    NCVAI = 0
+                    NCVAIFR = 0
+                    ICOU1 = 0
+                    ICOU2 = 0 
+                    ICOU3 = 0
+                    ICOU4 = 0
+                    DO ISYMA = 1,NSYM
+                       ISYMJ = MULD2H(ISYMAJ,ISYMA)
+                       ISYMI = MULD2H(ISYMIJ,ISYMJ)
+                       NCVAI = NCVAI + NVIRS(ISYMA)*NRHF(ISYMI) 
+                       NCVAIFR = NCVAIFR + NVIRS(ISYMA)*NRHFFR(ISYMI) 
+                       NCVAI1(ISYMA,ISYMI) = ICOU2
+                       NCVAI3(ISYMA,ISYMI) = ICOU4
+                       ICOU3 = NVIR(ISYMA)*NRHF(ISYMI)
+                       NCVAI2(ISYMA,ISYMI) = ICOU3
+                       ICOU5 = NVIR(ISYMA)*NRHFFR(ISYMI)
+                       NCVAI5(ISYMA,ISYMI) = ICOU5
+                       NCVIJ(ISYMA,ISYMI)  = ICOU1 
+                       ICOU1 = ICOU1 + NVIRS(ISYMA)*NRHFFR(ISYMI) 
+                       KOFF(ISYMA,ISYMI) = ICOU1
+                       ICOU2 = ICOU2 + NVIR(ISYMA)*NRHF(ISYMI)
+                       ICOU4 = ICOU4 + NVIR(ISYMA)*NRHFS(ISYMI)
+                    ENDDO
+                 ENDDO
+                 READ(LUVAJKL) (WORK(YAJIJ+I-1),I=1,NCVAI)
+                 CALL GPCLOSE(LUVAJKL,'KEEP')
+                 DO ISYM = 1, NSYM
+                    CALL DAXPY(NCVAI2(ISYM,ISYM),ONE,WORK(YAJIJ+
+     &                         NCVAI1(ISYM,ISYM)),1,WORK(KETAAI
+     &                         +NCVAI1(ISYM,ISYM)
+     &                         +KOFF(ISYM,ISYM)),1)
+                 ENDDO
+                 IF (IPDD .EQ.  5 .AND. FROIMP) THEN 
+                    READ(LUFAJKL) (WORK(KAJFR+I-1),I=1,NCVAIFR)
+                    CALL GPCLOSE(LUFAJKL,'KEEP')
+                    DO ISYM = 1, NSYM
+                    CALL DAXPY(NCVAI5(ISYM,ISYM),ONE,WORK(KAJFR+
+     &                         NCVIJ(ISYM,ISYM)),1,
+     &                         WORK(KETAAI
+     &                         +NCVAI3(ISYM,ISYM)),1)
+                    ENDDO
+                 ENDIF
+
+              ELSE
+                 READ(LUVAJKL) (WORK(YAJIJ+I-1),I=1,NALLAI(1))
+                 CALL GPCLOSE(LUVAJKL,'KEEP')
+                 CALL DAXPY(NALLAI(1),ONE,WORK(YAJIJ),1,WORK(KETAAI),1)
+              END IF
+           ENDIF 
+cElena            
          ELSE IF (CC2) THEN
             IOPT = 1
             CALL CC2_DEN(WORK(KETAAI),WORK(KZKAM),WORK(KWRK2),LWRK2,
@@ -1110,10 +1195,10 @@ C
 C
           CALL HEADER('Solving for orbital relaxation vector',-1)
 C
-          LABEL = 'ETAKAPPA'
+          LABEL1 = 'ETAKAPPA'
 C
           CALL ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,WORK(KEXVAL),
-     *               NEXVAL,NABATY,NABAOP,LABEL,LUGDVE,LUSOVE,LUREVE,
+     *               NEXVAL,NABATY,NABAOP,LABEL1,LUGDVE,LUSOVE,LUREVE,
      *               THRLEQ,MAXITE,IPRINT,MXRM,MXPHP,WORK(KWRK2),LWRK2)
 C
           REWIND(LUSOVE)
@@ -1180,6 +1265,8 @@ C
      &               IDUMMY,.FALSE.)
          REWIND(LUBAR0)
          WRITE(LUBAR0) (WORK(KZKAM+I-1), I = 1,LENDEN)
+         write(lupri,*) 'cc_fop, KKABAR'
+         call output(WORK(KZKAM),1,nrhft,1,nrhft,nrhft,nrhft,1,lupri)
          CALL GPCLOSE(LUBAR0,'KEEP')
 C
 C-------------------------------------------------------------
@@ -1233,8 +1320,8 @@ C     Calculate one electron AO-density and CC nat.occ.num.
 C----------------------------------------------------------
 C
       ILSTNR = 1
-      CALL CC_D1AO(WORK(KDENS),WORK(KZKAM),WORK(KWRK3),LWRK3,
-     &             MODELPRI, LIST,ILSTNR,.TRUE.,
+      CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
+     &             LWRK3,MODELPRI, LIST,ILSTNR,.TRUE.,
      &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN
@@ -1383,7 +1470,8 @@ C
           KONEAI = KWRK3
           KONEAB = KONEAI + NT1AM(ISYMOP)
           KONEIJ = KONEAB + NMATAB(ISYMOP)
-          KONEIA = KONEIJ + NMATIJ(ISYMOP)
+          KRMAT  = KONEIJ + NMATIJ(ISYMOP)
+          KONEIA = KRMAT  + NMATIJ(ISYMOP)
           KWRK4  = KONEIA + NT1AM(ISYMOP)
           LWRK4  = LWORK - KWRK4
 C
@@ -1497,14 +1585,14 @@ C-------------------------------------------
 C        Calculate the nuclear contribution.
 C-------------------------------------------
 C
-         IASGER = IPRINT - 9
+         IASGER = IPRINT - 4
          CALL DIPNUC(WORK(KWRK3),WORK(KWRK3),IASGER,.FALSE.)
 C
          DO 100 IDIP = 1,3
 C
-            IF (IDIP .EQ. 1) LABEL = 'XDIPLEN '
-            IF (IDIP .EQ. 2) LABEL = 'YDIPLEN '
-            IF (IDIP .EQ. 3) LABEL = 'ZDIPLEN '
+            IF (IDIP .EQ. 1) LABEL1 = 'XDIPLEN '
+            IF (IDIP .EQ. 2) LABEL1 = 'YDIPLEN '
+            IF (IDIP .EQ. 3) LABEL1 = 'ZDIPLEN '
 C
 C----------------------------------
 C           get property integrals.
@@ -1523,7 +1611,7 @@ C
             CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
             FF = 1.0D0
             ISY = -1
-            CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+            CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL1)
 C
             IF (IPRINT .GT. 50) THEN
                CALL AROUND('One electron property integrals in cc_fop')
@@ -1548,11 +1636,24 @@ C
      *                                 WORK(KDENS2),1)
                   DIPME3(IDIP) = -DDOT(N2BST(ISYMOP),WORK(KONEP),1,
      *                                 WORK(KDENS3),1)
+               ELSE IF (CCR12 .AND. (.NOT. RELORB)) THEN
+                 IF (IANR12.EQ.1) THEN
+                   CALL CC_R12PROP(PROPR12,LABEL1,APROXR12,WORK(KWRK4),
+     &                             LWRK4)
+                   DIPME(IDIP) = DIPME(IDIP) - PROPR12
+                 ELSE
+                   WRITE(LUPRI,*) 'IANR12 = ',IANR12
+                   CALL QUIT('Only Ansatz 1 implemented for higher '//
+     &                  'order property R12-calculations at the moment')
+                 END IF
+               ELSE IF ((CCR12.AND..NOT.MP2) .AND. RELORB) THEN
+                 CALL QUIT('CC-R12 response can only handle '//
+     &                   'unrelaxed orbitals: use .NONREL in input!')
                ENDIF
             ELSE
                DIPME(IDIP) = 0
 C
-               IF (CCPT .AND. (.NOT. RELORB)) THEN
+               IF ((CCPT .OR. CCR12) .AND. (.NOT. RELORB)) THEN
                    DIPME2(IDIP) = 0.0D0
                    DIPME3(IDIP) = 0.0D0
                ENDIF
@@ -1583,12 +1684,12 @@ C---------------------
 C        Print result.
 C---------------------
 C
-         IF (IASGER .GT. 0) THEN
+         IF (IASGER .GT. 0 .or. R12PRP) THEN
             CALL HEADER('Electronic contribution to dipole moment',-1)
             CALL DP0PRI(DIPME)
-            IF (IASGER.GT.1) THEN
+            IF (IASGER.GT.1 .or. R12PRP) THEN
               ! print with all digits for finite difference calc.
-              WRITE(LUPRI,'(1x,a,3g18.10//)') 
+              WRITE(LUPRI,'(1X,A,3G18.10//)') 
      *           'Electronic dipole moment (au):',DIPME
             ENDIF
          ENDIF
@@ -1651,12 +1752,12 @@ C
             DO 120 J = I,3
                IJ = IJ + 1
 C
-               IF (IJ .EQ. 1) LABEL = 'XXTHETA '
-               IF (IJ .EQ. 2) LABEL = 'XYTHETA '
-               IF (IJ .EQ. 3) LABEL = 'XZTHETA '
-               IF (IJ .EQ. 4) LABEL = 'YYTHETA '
-               IF (IJ .EQ. 5) LABEL = 'YZTHETA '
-               IF (IJ .EQ. 6) LABEL = 'ZZTHETA '
+               IF (IJ .EQ. 1) LABEL1 = 'XXTHETA '
+               IF (IJ .EQ. 2) LABEL1 = 'XYTHETA '
+               IF (IJ .EQ. 3) LABEL1 = 'XZTHETA '
+               IF (IJ .EQ. 4) LABEL1 = 'YYTHETA '
+               IF (IJ .EQ. 5) LABEL1 = 'YZTHETA '
+               IF (IJ .EQ. 6) LABEL1 = 'ZZTHETA '
 C
 C-------------------------------------
 C              get property integrals.
@@ -1675,7 +1776,7 @@ C
                CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
                FF = 1.0D0
                ISY = -1
-               CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+               CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL1)
 C
                IF (IPRINT .GT. 50) THEN
                   CALL AROUND('One electron property int. in cc_fop')
@@ -1696,6 +1797,23 @@ C
      *                            I,J,QDREL2)
                      CALL CCELQUA(WORK(KONEP),WORK(KDENS3),LENGTH,
      *                            I,J,QDREL3)
+                  ELSEIF (CCR12 .AND. (.NOT. RELORB)) THEN
+                    IF (IANR12.EQ.1) THEN
+                      CALL CC_R12PROP(PROPR12,LABEL1,APROXR12,
+     &                                WORK(KWRK4),LWRK4)
+                      QDREL(IPTAX(J,1),IPTAX(I,1)) = 
+     &                  QDREL(IPTAX(J,1),IPTAX(I,1)) + PROPR12
+                      IF (IPTAX(I,1).NE.IPTAX(J,1)) 
+     &                  QDREL(IPTAX(I,1),IPTAX(J,1)) =
+     &                  QDREL(IPTAX(I,1),IPTAX(J,1)) + PROPR12
+                    ELSE 
+                      WRITE(LUPRI,*) 'IANR12 = ',IANR12
+                      CALL QUIT('Only Ansatz 1 implemented for higher'//
+     &                 ' order property R12-calculations at the moment')
+                    ENDIF
+                  ELSE IF ((CCR12.AND..NOT.MP2) .AND. RELORB) THEN
+                    CALL QUIT('CC-R12 response can only handle '//
+     &                      'unrelaxed orbitals: use .NONREL in input!')
                   ENDIF
                ENDIF
 C
@@ -1713,7 +1831,7 @@ C---------------------
 C        Print result.
 C---------------------
 C
-         IF (IPRINT .GT. 9) THEN
+         IF (IPRINT .GT. 4) THEN
             CALL HEADER('Nuclear contr. to quadrupole moment',-1)
             WRITE(LUPRI,474) 'X','Y','Z'
             CALL OUTPUT(SKODN,1,3,1,3,3,3,1,LUPRI)
@@ -1820,12 +1938,12 @@ C
             DO 125 J = I,3
                IJ = IJ + 1
 C
-               IF (IJ .EQ. 1) LABEL = 'XXSECMOM'
-               IF (IJ .EQ. 2) LABEL = 'XYSECMOM'
-               IF (IJ .EQ. 3) LABEL = 'XZSECMOM'
-               IF (IJ .EQ. 4) LABEL = 'YYSECMOM'
-               IF (IJ .EQ. 5) LABEL = 'YZSECMOM'
-               IF (IJ .EQ. 6) LABEL = 'ZZSECMOM'
+               IF (IJ .EQ. 1) LABEL1 = 'XXSECMOM'
+               IF (IJ .EQ. 2) LABEL1 = 'XYSECMOM'
+               IF (IJ .EQ. 3) LABEL1 = 'XZSECMOM'
+               IF (IJ .EQ. 4) LABEL1 = 'YYSECMOM'
+               IF (IJ .EQ. 5) LABEL1 = 'YZSECMOM'
+               IF (IJ .EQ. 6) LABEL1 = 'ZZSECMOM'
 C
 C-------------------------------------
 C              get property integrals.
@@ -1844,7 +1962,7 @@ C
                CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
                FF = 1.0D0
                ISY = -1
-               CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+               CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL1)
 C
                IF (IPRINT .GT. 50) THEN
                   CALL AROUND('One electron property int. in cc_fop')
@@ -1865,6 +1983,23 @@ C
      *                           I,J,WORK(KRES2))
                     CALL CCELQUA(WORK(KONEP),WORK(KDENS3),LENGTH,
      *                           I,J,WORK(KRES3))
+                 ELSEIF (CCR12 .AND. (.NOT. RELORB)) THEN
+                    IF (IANR12.EQ.1) THEN
+                      CALL CC_R12PROP(PROPR12,LABEL1,APROXR12,
+     &                                WORK(KWRK4),LWRK4)
+                      ELSEMO(IPTAX(J,1),IPTAX(I,1)) =
+     &                  ELSEMO(IPTAX(J,1),IPTAX(I,1)) + PROPR12
+                      IF (IPTAX(I,1).NE.IPTAX(J,1)) 
+     &                  ELSEMO(IPTAX(I,1),IPTAX(J,1)) =
+     &                  ELSEMO(IPTAX(I,1),IPTAX(J,1)) + PROPR12
+                    ELSE
+                      WRITE(LUPRI,*) 'IANR12 = ',IANR12
+                      CALL QUIT('Only Ansatz 1 implemented for higher'//
+     &                 ' order property R12-calculations at the moment')
+                    ENDIF
+                 ELSE IF ((CCR12.AND..NOT.MP2) .AND. RELORB) THEN
+                    CALL QUIT('CC-R12 response can only handle '//
+     &                      'unrelaxed orbitals: use .NONREL in input!')
                  ENDIF
                ENDIF
 C
@@ -1913,6 +2048,11 @@ C
       IF (NQCC) THEN
 C
          CALL AROUND(' Electric Field Gradients ')
+C
+         if (.NOT.R12PRP.AND.CCR12) then
+           call quit('CCFOP: CCR12 works only with DIPMOM, QUADRU, '//
+     &               'SECMOM and OPERAT at the moment')
+         end if
 C
          IF (CCPT .AND. (.NOT. RELORB)) THEN
             CALL AROUND('Unrelaxed CCSD(T) electric field gradient')
@@ -1991,7 +2131,12 @@ C
          CALL AROUND(' First-order DPT corrections to the ground-state'
      *               //' energy ')
 C
-         LABEL = 'DERXXPVP'
+         if (.NOT.R12PRP.AND.CCR12) then
+           call quit('CCFOP: CCR12 works only with DIPMOM, QUADRU, '//
+     &               'SECMOM and OPERAT at the moment')
+         end if
+C
+         LABEL1 = 'DERXXPVP'
 C
 C----------------------------------------------------
 C        Calculate the first and simplest correction.
@@ -2009,7 +2154,7 @@ C
          CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
          FF = 1.0D0
          ISY = 1
-         CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+         CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL1)
 C
          IF (IPRINT .GT. 50) THEN
             CALL AROUND('Relativistic integrals in cc_fop')
@@ -2028,19 +2173,19 @@ C           -------------------------------------------------------------
 C
             DO IFIELD = 1, NFIELD
                IF (LFIELD(IFIELD) .EQ. 'OVERLAP ') THEN
-                  LABEL = 'KINENERG'
+                  LABEL1 = 'KINENERG'
                   FF = 0.5D0 * EFIELD(IFIELD)
                ELSE IF (LFIELD(IFIELD) .EQ. 'CM000000') THEN
-                  LABEL = 'KINENERG'
+                  LABEL1 = 'KINENERG'
                   FF = 0.5D0 * EFIELD(IFIELD)
                ELSE IF (LFIELD(IFIELD) .EQ. 'XDIPLEN ') THEN
-                  LABEL = 'PXPDIPOL'
+                  LABEL1 = 'PXPDIPOL'
                   FF = EFIELD(IFIELD)
                ELSE IF (LFIELD(IFIELD) .EQ. 'YDIPLEN ') THEN
-                  LABEL = 'PYPDIPOL'
+                  LABEL1 = 'PYPDIPOL'
                   FF = EFIELD(IFIELD)
                ELSE IF (LFIELD(IFIELD) .EQ. 'ZDIPLEN ') THEN
-                  LABEL = 'PZPDIPOL'
+                  LABEL1 = 'PZPDIPOL'
                   FF = EFIELD(IFIELD)
                ELSE
                     CALL QUIT('DPT correction can not be computed with'
@@ -2058,7 +2203,7 @@ C
 C
                CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
                ISY = 1
-               CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+               CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL1)
 C
                IF (IPRINT .GT. 50) THEN
                   CALL AROUND('Relativistic integrals in cc_fop')
@@ -2149,10 +2294,15 @@ C
          CALL AROUND(' Pauli relativistic corrections to the'
      *               //' ground-state energy ')
 C
+         if (.NOT.R12PRP.AND.CCR12) then
+           call quit('CCFOP: CCR12 works only with DIPMOM, QUADRU, '//
+     &               'SECMOM and OPERAT at the moment')
+         end if
+C
          DO 130 IRC = 1,2
 C
-            IF (IRC .EQ. 1) LABEL = 'DARWIN  '
-            IF (IRC .EQ. 2) LABEL = 'MASSVELO'
+            IF (IRC .EQ. 1) LABEL1 = 'DARWIN  '
+            IF (IRC .EQ. 2) LABEL1 = 'MASSVELO'
 C
 C-----------------------------
 C           get the integrals.
@@ -2171,7 +2321,7 @@ C
             CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
             FF = 1.0D0
             ISY = 1
-            CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+            CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL1)
 C
             IF (IPRINT .GT. 50) THEN
                CALL AROUND('Relativistic integrals in cc_fop')
@@ -2271,7 +2421,17 @@ C--------------------------------------------------------------------
 C     Calculate the relativistic two-electron Darwin term correction.
 C--------------------------------------------------------------------
 C
+celena 
+      IF (R12PRP .AND. DAR2EL) THEN
+          WRITE(LUPRI,*) 'Two-electron Darwin term correction 
+     &                    not implemented with R12' 
+          DAR2EL = .FALSE.
+      ENDIF 
       IF (DAR2EL) THEN
+         if (.NOT.R12PRP.AND.CCR12) then
+           call quit('CCFOP: CCR12 works only with DIPMOM, QUADRU, '//
+     &               'SECMOM and OPERAT at the moment')
+         end if
          IF (RELCOR) THEN
             IOPREL = 1
             WORK(KWRK3) = DARW + VELO
@@ -2299,6 +2459,10 @@ C
          !BP2SAV = BP2EOO
          !IF (BP2EOO) BP2EOO = .FALSE.
          IOPREL = 3
+c        if (CCR12) then
+c          call quit('CCFOP: CCR12 works only with general operator '//
+c    &               'input at the moment')
+c        end if
          if (.false.) then
             CALL CC_2EEXP(WORK(KWRK3),LWRK3,IOPREL)
          else
@@ -2316,13 +2480,13 @@ C
       END IF
 C
 C--------------------------------------------------------------
-C     Section for general operator APROP represented by LABEL.
+C     Section for general operator APROP represented by LABEL1.
 C     Note that only the electronic contribution is calculated.
 C--------------------------------------------------------------
 C
       DO 140 IOP = 1, NAFOP
 C
-         LABEL = PRPLBL(IAFOP(IOP))
+         LABEL1 = PRPLBL(IAFOP(IOP))
 C
          IF (IOP .EQ. 1) CALL AROUND( 
      *               ' Electronic contribution to operator ')
@@ -2344,7 +2508,7 @@ C
          CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
          FF = 1.0D0
          ISY = -1
-         CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+         CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL1)
 C
          IF (IPRINT .GT. 50) THEN
             CALL AROUND('APROP integrals in cc_fop')
@@ -2361,15 +2525,30 @@ C
                PROP2 = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS2),1)
                PROP2 = PROP2 + DDOT(N2BST(ISYMOP),WORK(KONEP),1,
      *                              WORK(KDENS3),1)
+            ELSE IF (CCR12 .AND. (.NOT. RELORB)) THEN
+              IF (IANR12.EQ.1) THEN
+                CALL CC_R12PROP(PROPR12,LABEL1,APROXR12,WORK(KWRK4),
+     &                          LWRK4)
+                PROP = PROP + PROPR12
+              ELSE
+                WRITE(LUPRI,*) 'IANR12 = ',IANR12
+                CALL QUIT('Only Ansatz 1 implemented for higher '//
+     &               'order property R12-calculations at the moment')
+              END IF
+            ELSE IF ((CCR12.AND..NOT.MP2) .AND. RELORB) THEN
+              CALL QUIT('CC-R12 response can only handle unrelaxed '//
+     &                'orbitals: use .NONREL in input!')
             ENDIF
          ELSE
-            PROP = 0.0D0
-            IF (CCPT .AND. (.NOT. RELORB)) THEN
-               PROP2 = 0.0D0
+              PROP = 0.0D0
+            IF ((CCPT .OR. CCR12) .AND. (.NOT. RELORB)) THEN
+              PROP2 = 0.0D0
             ENDIF
          ENDIF
+C
          CALL CC_PRPC(PROP,MODEL,1,LABEL,LABEL,LABEL,LABEL,
      *                DUMMY,DUMMY,DUMMY,ISY,0,0,0)
+C
 C-------------------------
 C        Write out result.
 C-------------------------
@@ -2378,18 +2557,19 @@ C
          IF (ISY.EQ.1) THEN
             IF (CCPT .AND. (.NOT. RELORB)) THEN
               CALL AROUND('Unrelaxed  : ')
-              WRITE(LUPRI,141) LABEL//':', PROP
+              WRITE(LUPRI,141) LABEL1//':', PROP 
               CALL AROUND('Semirelaxed  : ')
-              PROP = PROP + PROP2
+              PROP = PROP + PROP2 
             ENDIF
-            WRITE(LUPRI,141) LABEL//':', PROP
+            WRITE(LUPRI,141) LABEL1//':', PROP
          ELSE
-            WRITE(LUPRI,142) LABEL//':','zero by symmetry'
+            WRITE(LUPRI,142) LABEL1//':','zero by symmetry'
          ENDIF
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,*) ' '
 C
   141    FORMAT(20X,A9,1X,F12.8)
+CCN  141    FORMAT(20X,A9,1X,F24.20)
   142    FORMAT(20X,A9,1X,A)
 C
   140 CONTINUE
@@ -2442,7 +2622,7 @@ C
 C
          RSPIM = .FALSE.
          CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),
-     *               WORK(KT2AM),WORK(KEND1),LWRK1)
+     *               WORK(KT2AM),WORK(KEND1),LWRK1,'XXX')
 C
          RSPIM = .TRUE.
 C
@@ -2487,10 +2667,9 @@ C
          ETY1 = 'CCSD'
          IT1 = 1
          ITER = 0
-         CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
-     *                   DUMMY,DUMMY,
+         CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),DUMMY,
      *                   WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
-     *                   ETY1,0.0D0,0.0D0,.FALSE.,IALPR,IT1,ITER)
+     *                   ETY1,0.0D0,.FALSE.,IT1,ITER,"xxx")
 C
          NTAMP = NT1AMX + NT2AMX
 C
@@ -2577,12 +2756,15 @@ C
 #include <ccsdio.h>
 #include <ccsdinp.h>
 #include <ccinftap.h>
+#include <r12int.h>
 C
 !
 !SONIA SONIA SONIA
 !
 #include <grdccpt.h>
 C
+      LOGICAL LOCDBG
+      PARAMETER(LOCDBG = .FALSE.)
       PARAMETER( TWO = 2.0D00 )
       CHARACTER*5 FN3FOP
       CHARACTER*6 FN3VI, FN3FOP2
@@ -2840,14 +3022,49 @@ C
          FIRST = .FALSE.
 C
       ENDIF
+
+C
+C-----------------------------------------
+C     Calculate R12 contribution
+C     Christian Neiss  Mar. 2005
+C-----------------------------------------
+C
+      IF (CCR12) THEN
+        KETAR12SQ = KEND1
+        KEND2 = KETAR12SQ + NGAMSQ(1)
+        LWRK2 = LWORK - KEND2
+
+        CALL DZERO(WORK(KETAR12SQ),NGAMSQ(1))
+        CALL CC_R12ETA0(WORK(KETAR12SQ),WORK(KLAMDP),1,WORK(KEND2),
+     &                 LWRK2)
+
+        KOFF1 = NT1AMX + NT2AMX + 1
+        CALL CCR12PCK2(ETA(KOFF1),1,.FALSE.,WORK(KETAR12SQ),.TRUE.)
+        CALL CCLR_DIASCLR12(ETA(KOFF1),0.5D0*KETSCL,1)
+
+        !TEST: Sum_{kilj} (2V(ij,kl)-V(ji,kl))*c(ij,kl) should be E^(R12)
+        !WORKS ONLY WITH BRASCL=KETSCL=1.0
+        IF (LOCDBG) THEN
+          KTR12 = KEND2
+          KEND2 = KTR12 + NGAMMA(1)
+          IOPT = 32
+          CALL CC_RDRSP('R0 ',0,1,IOPT,MODEL,DUMMY,WORK(KTR12))
+          WRITE(LUPRI,*) 'E(R12) in CC_ETA: ',
+     &          DDOT(NGAMMA(1),ETA(KOFF1),1,WORK(KTR12),1)
+        END IF
+      ENDIF
+
 C
 C-----------------------------------------
 C     Print? and end
 C-----------------------------------------
 C
-      IF (IPRINT .GT. 40 ) THEN
+      IF (LOCDBG) THEN
          CALL AROUND( 'In CC_ETA:  Eta vector ' )
          CALL CC_PRP(ETA(1),ETA(1+NT1AMX),1,1,1)
+         if (CCR12) then
+           call cc_prpr12(eta(1+nt1amx+nt2amx),1,1,.true.)
+         end if
       ENDIF
 C
       IF ( IPRINT .GT. 10 ) THEN
@@ -2855,6 +3072,11 @@ C
          ETA2 = DDOT(NT2AMX,ETA(1+NT1AMX),1,ETA(1+NT1AMX),1)
          WRITE(LUPRI,*) 'Norm of eta1: ',ETA1
          WRITE(LUPRI,*) 'Norm of eta2: ',ETA2
+         IF (CCR12) THEN
+           ETAR12 = DDOT(NGAMMA(1),ETA(1+NT1AMX+NT2AMX),1,
+     &                   ETA(1+NT1AMX+NT2AMX),1)
+           WRITE(LUPRI,*) 'Norm of etaR12: ',ETAR12
+         END IF
          CALL AROUND( 'END OF CC_ETA ')
       ENDIF
 C
@@ -3254,7 +3476,8 @@ C
                      ITYP = ITYP + 1
 C
                      LABEL = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
-     *                  CHRNOS(IATOM/10)//CHRNOS(IATOM)//CHRNOS(IOFF)
+     *                 CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
+     &                 CHRNOS(IOFF)
 C
                      CALL DZERO(EFGINT,LENGTH)
                      FF = 1.0D0
@@ -3485,7 +3708,8 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), WORK(LWORK)
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccinftap.h>
@@ -3725,6 +3949,11 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+CCN                  ISYMD = ISAO(IDEL)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -4667,7 +4896,7 @@ C
       RETURN
       END
 C  /* Deck mp_zkdia */
-      SUBROUTINE MP2_ZKDIA(MODEL,ZKDIA,WORK,LWORK)
+      SUBROUTINE MP2_ZKDIA(IPDD,R12PRP,MODEL,ZKDIA,WORK,LWORK)
 C
 C     Written by Asger Halkier 20/3 - 1998
 C
@@ -4685,6 +4914,7 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER MODEL*10
       DIMENSION ZKDIA(*), WORK(LWORK)
+      LOGICAL R12PRP
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccorb.h>
@@ -4721,7 +4951,9 @@ C
       KZ2AM  = KYMAT  + NMATAB(1)
       KT1AM  = KZ2AM  + NT2SQ(1)
       KZ1AM  = KT1AM  + NT1AMX
-      KEND1  = KZ1AM  + NT1AMX
+      KRMAT  = KZ1AM  + NT1AMX
+      KEND1  = KRMAT  + NMATIJ(1)
+c      KEND1  = KZ1AM  + NT1AMX  
       LWRK1  = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -4745,7 +4977,9 @@ C     Square up zeta2 amplitudes.
 C--------------------------------
 C
       CALL DCOPY(NT2AMX,WORK(KZ2AM),1,WORK(KT2AM),1)
+      
       CALL CC_T2SQ(WORK(KT2AM),WORK(KZ2AM),1)
+       
 C
 C
 C-------------------------------------------
@@ -4754,8 +4988,10 @@ C-------------------------------------------
 C
       IOPT = 3
       CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+      
 C
       KEND1 = KT1AM
+      LWRK1 = LWORK  - KEND1
 C
 C
 C--------------------------------------------------------
@@ -4816,7 +5052,6 @@ C
       CALL DSCAL(NT2AMX,TWO,WORK(KT2AM),1)
       CALL DAXPY(NT2AMX,ONE,WORK(KZ2AM),1,WORK(KT2AM),1)
       CALL CC_T2SQ(WORK(KT2AM),WORK(KZ2AM),1)
-C
 C-----------------------------------------------
 C     Read integrals (ai|bj) = (ia|jb) from disc
 C     (file always assumed open) into KT2AM.
@@ -4840,11 +5075,8 @@ C     Calculate the ZK0(ab) and ZK0(ij) blocks
 C     from modified X- and Y-intermediates.
 C---------------------------------------------
 C
-CDEBUGGGG
-         do iii = 1, NMATIJ(1)
-            write(lupri,*)' etaij(',iii,') = ', WORK(KXMAT+iii-1)
-         end do
-      CALL MP2_ZKBLO(ZKDIA,WORK(KXMAT),WORK(KYMAT),WORK(KEND1),LWRK1)
+      CALL MP2_ZKBLO(ZKDIA,WORK(KXMAT),WORK(KYMAT),
+     &               WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------- 
 C     Calculate frozen core occupied blocks ZK0(iJ).
@@ -4852,7 +5084,8 @@ C---------------------------------------------------
 C
       IF (FROIMP) THEN
          KOFRES = NMATIJ(1) + NMATAB(1) + 2*NT1AMX + 2*NT1FRO(1) + 1
-         CALL MP2_ZKFCB(ZKDIA(KOFRES),WORK(KZ2AM),WORK(KEND1),LWRK1)
+         CALL MP2_ZKFCB(IPDD,R12PRP,ZKDIA(KOFRES),WORK(KZ2AM),
+     &                 WORK(KEND1),LWRK1)
       ENDIF
 C
 C------------------------------------------------
@@ -5066,7 +5299,11 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include <ccorb.h>
-#include <infind.h>
+CCN#include <infind.h> 
+#include <ccisao.h>
+celena#include <ccisao.h> sonst falscher Wert fuer ISAO() in D2h
+!CCN:                    Nicht, wenn man ISAO() NACH IJKAUX() aufruft!
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -5268,6 +5505,11 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+CCN                  ISYMD = ISAO(IDEL)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -5390,6 +5632,8 @@ C
                   CALL MP2_EIDF1(ETAAI,WORK(KOFOIN),ZKDIA(KOFFJK),
      *                           WORK(KCMO),WORK(KEND3),LWRK3,
      *                           IDEL,ISYMD)
+C
+
 C
                   CALL MP2_EIDF2(WORK(KAFROI),WORK(KDSFRO),
      *                           ZKDIA(KOFFJK),WORK(KCMO),WORK(KEND3),
@@ -5907,7 +6151,8 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -6071,6 +6316,11 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+CCN                  ISYMD = ISAO(IDEL)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -6517,6 +6767,7 @@ C
          REWIND(LUCCK)
          READ(LUCCK) (WORK(KKABAR+I-1), I = 1,LENBAR)
          CALL GPCLOSE(LUCCK,'KEEP')
+         
 C
 C--------------------------------------------------------------
 C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
@@ -7643,3 +7894,4 @@ C
       RETURN
  1000 CALL QUIT('Error reading CCTWODEN')
       END
+

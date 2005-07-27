@@ -36,7 +36,7 @@ C
 C     Antisymmetric Squareup of the integral distribution,
 C     for orbit-orbit Breit-Pauli correction
 C     S. Coriani, April 2003. Based on CCSD_SYMSQO.
-C
+C     Modified for [T1+T2,r12]-Integrals (Elena Vollmer, September 2003)
 #include <implicit.h>
       DIMENSION DISTAB(*), SCR(*)
       PARAMETER (ONE = 1.0D0)
@@ -51,7 +51,7 @@ C
          KOFF1 = 1
          KOFF2 = 1
          DO 100 ISYMB = 1,NSYM
-            CALL ASQMATR(NBAS(ISYMB),DISTAB(KOFF1),SCR(KOFF2))
+            CALL ASQMATR(NBAS(ISYMB),DISTAB(KOFF1),SCR(KOFF2),ISYMG)
             KOFF1 = KOFF1 + NBAS(ISYMB)*(NBAS(ISYMB)+1)/2
             KOFF2 = KOFF2 + NBAS(ISYMB)*NBAS(ISYMB)
   100    CONTINUE
@@ -70,15 +70,26 @@ C
                KOFF2 = KOFF1
                KOFF3 = IAODIS(ISYMB,ISYMA) + 1
                DO 210 B = 1,NBAS(ISYMB)
+                 IF (ISYMG .EQ. 0) THEN
                   CALL DCOPY(NBAS(ISYMA),DISTAB(KOFF2),1,SCR(KOFF3),
      *                       NBAS(ISYMB))
+                 ELSE
+                 CALL DSCAL(NBAS(ISYMA),-ONE,SCR(KOFF3),NBAS(ISYMB))
+                 CALL DAXPY(NBAS(ISYMA),ONE,DISTAB(KOFF2),1,SCR(KOFF3),
+     *                      NBAS(ISYMB))
+                 END IF
                   KOFF2 = KOFF2 + NBAS(ISYMA)
                   KOFF3 = KOFF3 + 1
   210          CONTINUE
 C
                KOFF4 = IAODIS(ISYMA,ISYMB) + 1
-               CALL DCOPY(NTOT,DISTAB(KOFF1),1,SCR(KOFF4),1)
-               CALL DSCAL(NTOT,-ONE,SCR(KOFF4),1)
+               IF (ISYMG .EQ. 0) THEN
+                CALL DCOPY(NTOT,DISTAB(KOFF1),1,SCR(KOFF4),1)
+                CALL DSCAL(NTOT,-ONE,SCR(KOFF4),1)
+               ELSE
+                CALL DSCAL(NTOT,-ONE,SCR(KOFF4),1)
+                CALL DAXPY(NTOT,-ONE,DISTAB(KOFF1),1,SCR(KOFF4),1)
+               END IF
 C
                KOFF1 = KOFF1 + NTOT
 C
@@ -93,23 +104,42 @@ C
       RETURN
       END
 C  /* Deck asqmatr */
-      SUBROUTINE ASQMATR(NDIM,PKMAT,SQMAT)
+      SUBROUTINE ASQMATR(NDIM,PKMAT,SQMAT,ISYMG)
 C
 C     PURPOSE:
 C      Antisymmetric Square up packed matrix.
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      DIMENSION PKMAT(*),SQMAT(NDIM,NDIM)
+      DIMENSION PKMAT(*),SQMAT(NDIM,NDIM),SKMAT(NDIM,NDIM)
+ 
 C
+      IF (ISYMG .EQ. 0) THEN
+       DO  I = 1,NDIM
+          DO  J = 1,I
+C
+             IJ = I*(I-1)/2 + J
+             SQMAT(I,J) =  PKMAT(IJ) 
+             SQMAT(J,I) = - PKMAT(IJ) 
+          ENDDO
+       ENDDO
+
+      ELSE
+      DO I = 1,NDIM
+         DO J = 1,I
+             SKMAT(I,J) = SQMAT(I,J)
+             SKMAT(J,I) = SQMAT(J,I)  
+         ENDDO
+      ENDDO  
       DO 100 I = 1,NDIM
-         DO 110 J = 1,I
-C
-            IJ = I*(I-1)/2 + J
-            SQMAT(I,J) = PKMAT(IJ)
-            SQMAT(J,I) = -PKMAT(IJ)
-C
-  110    CONTINUE
+          DO 110 J = 1,I
+
+             IJ = I*(I-1)/2 + J
+             SQMAT(I,J) =  PKMAT(IJ)  -  SKMAT(I,J)
+             SQMAT(J,I) =  -PKMAT(IJ)  -  SKMAT(J,I)
+
+  110     CONTINUE
   100 CONTINUE
-C
+      ENDIF
+
       RETURN
       END

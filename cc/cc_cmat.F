@@ -114,6 +114,7 @@ c/* Deck CC_CMAT */
 #include "ccfield.h"
 #include "aovec.h"
 #include "blocks.h"
+#include "r12int.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -172,6 +173,7 @@ c/* Deck CC_CMAT */
       INTEGER KENDF1, LENDF1, KENDF2, LENDF2, KEND1, LEND1
       INTEGER KEND2, LEND2, KEND3, LEND3, KENDA3, LENDA3
       INTEGER KENDB3, LENDB3, IOPTTCME
+      INTEGER IDUM
       
 #if defined (SYS_CRAY) 
       REAL XNORM
@@ -884,6 +886,10 @@ C     END IF
 
             IF (DIRECT) THEN
               IDEL   = INDEXA(IDEL2)
+              IF (NOAUXB) THEN
+                IDUM = 1
+                CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+              END IF
               ISYDEL = ISAO(IDEL)
             ELSE
               IDEL   = IBAS(ISYMD1) + ILLL

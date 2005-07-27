@@ -66,7 +66,8 @@ C
 #include <maxash.h>
 #include <iratdef.h>
 #include <ccorb.h>
-#include <infind.h>
+CCN #include <infind.h> replaced by #include <ccisao.h>
+#include <ccisao.h>
 #include <ccsdsym.h>
 #include <cbieri.h>
 #include <eribuf.h>

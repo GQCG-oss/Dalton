@@ -37,7 +37,8 @@ c*DECK CC_TRDRV
       SUBROUTINE CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                          FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                    TRIPLET,CC3DIIS,ITRAN,FREQ,FS12AM,LUFS12,
-     *                    ISIDE,IST,NSIM,WORK,LWORK)
+     *                    FS2AM,LUFS2,
+     *                    ISIDE,IST,NSIM,WORK,LWORK,APROXR12)
 C
 C-------------------------------------------------------------------
 C
@@ -114,12 +115,18 @@ C
 #include <ccsdio.h>
 #include <leinf.h>
 #include <aovec.h>
+#include <r12int.h>
       PARAMETER ( TWO = 2.0D00,XHALF=0.5D00 )
       DIMENSION WORK(LWORK), FREQ(*)
 C
-      LOGICAL ORSAVE,T2TSAV,MSCRS,TRIPLET,CC3DIIS
-      CHARACTER*8  FRHO1,FRHO2,FC1AM,FC2AM,FR2SD,FRHO12,FC12AM,FS12AM
+      LOGICAL ORSAVE,T2TSAV,MSCRS,TRIPLET,CC3DIIS,DEBUGV
+      PARAMETER (DEBUGV = .FALSE.)
+      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FR2SD,FRHO12,FC12AM,FS12AM,
+     &            FS2AM
+      CHARACTER*3 APROXR12
       INTEGER ITRAN(NSIM)
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 C
 C-------------------------
 C     Save and initialize.
@@ -191,11 +198,11 @@ C
       ONLY21 = .FALSE.
 C
       ORSAVE = OMEGOR
-      IF ( CCS .OR. CC2) THEN
-         OMEGOR = .FALSE.
-      ELSE
+C     IF ( CCS .OR. CC2) THEN
+C        OMEGOR = .FALSE.
+C     ELSE
          OMEGOR = .TRUE.
-      ENDIF
+C     ENDIF
  
 C
 C------------------------------------------------------
@@ -291,12 +298,13 @@ C
 C           ---------------------------------
 C           Read the CC trial vectors from disk.
 C           ---------------------------------
-            IF (IPRINT .GT. 45) CALL AROUND('CC_TRDRV: C1')
+            IF (IPRINT .GT. 45 .OR. LOCDBG) CALL AROUND('CC_TRDRV: C1')
             DO 150 IV = 1, NSIMTR
                KOFF1  = KC1AM + NT1AM(ISYMTR)*(IV - 1)
                CALL CC_RVEC(LUFC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *                      IV+K1-1,WORK(KOFF1))
-               IF (IPRINT.GT.45 .AND. (CCS.OR.(.NOT.MINSCR))) THEN
+               IF (IPRINT.GT.45 .AND. (CCS.OR.(.NOT.MINSCR))
+     *              .OR. LOCDBG) THEN
                   WRITE(LUPRI,*) 'Vector nr.',IV+K1-1
                   CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,1,0)
                ENDIF
@@ -305,12 +313,22 @@ C
             IF ((.NOT.CCS).AND.( MINSCR)) THEN
                CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      *                      K1,WORK(KRHO2))
-               IF (IPRINT .GT. 45) THEN
+               IF (IPRINT .GT. 45 .OR. LOCDBG) THEN
                   CALL AROUND('CC_TRDRV: (C1,C2) packed ')
                   WRITE(LUPRI,*) 'Vector nr.',K1
                   CALL CC_PRP(WORK(KC1AM),WORK(KRHO2),ISYMTR,1,1)
                ENDIF
             ENDIF
+C
+C           IF (CCR12 .AND. (IPRINT .GT. 45 .OR. LOCDBG)) THEN
+C             KRHO12 = KEND1
+C             KEND2  = KRHO12 + NGAMMA(ISYMTR) 
+C             CALL CC_RVEC(LUFC12,FC12AM,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+C    *                      K1,WORK(KRHO12))
+C             CALL AROUND('CC_TRDRV: R12 trial vector packed ')
+C             WRITE(lupri,*) 'Vector nr.',K1
+C             CALL CC_PRPR12(WORK(KRHO12),ISYMTR,1,.FALSE.)
+C           END IF
 C
 C           -----------------------------------------------
 C           Test with finited difference CC jacobian if FDJAC.
@@ -320,14 +338,18 @@ C           -----------------------------------------------
                  KC12AM = KEND1
                  KS12AM = KC12AM + NGAMMA(ISYMTR)
                  KRHO12 = KS12AM + NGAMMA(ISYMTR)
-                 KEND1  = KRHO12 + NGAMMA(ISYMTR)
+                 KEND1  = KRHO12 + NGAMMA(ISYMTR) 
+                 IF (IANR12.EQ.2) THEN
+                   KS2AM = KEND1
+                   KEND1 = KS2AM + NT2AM(ISYMTR)
+                 END IF               
                  LWRK1  = LWORK  - KEND1             
                  IF (LWRK1 .LE. 0 )
      *              CALL QUIT('Too little workspace in cclr_trr (2)')
 
                  CALL CC_RVEC(LUFC12,FC12AM,NGAMMA(ISYMTR),
      *                        NGAMMA(ISYMTR),K1,WORK(KC12AM))
-                 IF (IPRINT .GT. 45) THEN
+                 IF (IPRINT .GT. 45 .OR. LOCDBG) THEN
                    CALL AROUND('R12 double excitation part of vector')
                    CALL OUTPUT(WORK(KRHO12),1,NGAMMA(ISYMTR),1,1,
      *                         NGAMMA(ISYMTR),1,1,LUPRI)
@@ -336,19 +358,24 @@ C           -----------------------------------------------
 
                CALL DCOPY(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KC2AM),1)
                CALL CCLR_DUMTRR(WORK(KC1AM),WORK(KRHO1),WORK(KRHO2),
-     *                          WORK(KRHO12),WORK(KS12AM),
+     *                          WORK(KRHO12),WORK(KS12AM),WORK(KS2AM),
      *                          WORK(KEND1),LWRK1)
 C
 C              ------------------------------
 C              Print the transformed vectors.
 C              ------------------------------
-               IF (IPRINT .GT. 50) THEN
+               IF (IPRINT .GT. 50 .OR. LOCDBG) THEN
                   CALL AROUND('CC_TRDRV: RHO  trans. by DUMTRR .')
                   CALL CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYMTR,1,1)
                   IF (CCR12) THEN
                     WRITE(LUPRI,*) 'A * C_12:'
                     CALL OUTPUT(WORK(KRHO12),1,NGAMMA(ISYMTR),1,1,
      *                          NGAMMA(ISYMTR),1,1,LUPRI)
+                    IF (IANR12.EQ.2) THEN
+                      WRITE(LUPRI,*) 'S * C2:'
+                      CALL OUTPUT(WORK(KS2AM),1,NT2AM(ISYMTR),1,1,
+     *                            NT2AM(ISYMTR),1,1,LUPRI)
+                    END IF
                     WRITE(LUPRI,*) 'S * C_12:'
                     CALL OUTPUT(WORK(KS12AM),1,NGAMMA(ISYMTR),1,1,
      *                          NGAMMA(ISYMTR),1,1,LUPRI)
@@ -364,6 +391,10 @@ C              ------------------------------
      *                        NGAMMA(ISYMTR),K1,WORK(KRHO12))
                  CALL CC_WVEC(LUFS12,FS12AM,NGAMMA(ISYMTR),
      *                        NGAMMA(ISYMTR),K1,WORK(KS12AM))
+                 IF (IANR12.EQ.2) THEN
+                   CALL CC_WVEC(LUFS2,FS2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     &                          K1,WORK(KS2AM))
+                 END IF
                END IF
             ELSE
 C
@@ -375,9 +406,9 @@ C              ----------------------------------------
                      CALL CCLR_DIASCL(WORK(KRHO2),TWO,ISYMTR)
                   ENDIF
                   CALL CC_T2SQ(WORK(KRHO2),WORK(KC2AM),ISYMTR)
-                  IF (IPRINT.GT.50) THEN
+                  IF (IPRINT.GT.50 .OR. LOCDBG) THEN
                      CALL AROUND('CC_TRDRV: (C1,C2) squared ')
-                     CALL CC_PRSQ(WORK(KC1AM),WORK(KC2AM),ISYMTR,1,2)
+                     CALL CC_PRSQ(WORK(KC1AM),WORK(KC2AM),ISYMTR,1,1)
                   ENDIF
                ENDIF
 C
@@ -467,25 +498,45 @@ C
      *                         WORK(KRHO1),WORK(KRHO2),
      *                         WORK(KC1AM),WORK(KC2AM),
      *                         WORK(KEND1),LWRK1,NSIMTR,
-     *                         IVEC,ITR,LRHO1,.FALSE.,DUMMY)
+     *                         IVEC,ITR,LRHO1,.FALSE.,DUMMY,APROXR12)
+
+                  IF (DEBUGV) THEN
+                    WRITE(LUPRI,*)'analytical RHO1 and RHO2:'
+                    CALL CC_PRP(WORK(KRHO1),WORK(KRHO2),1,1,1)
+                  ! calculate V bar numerically
+                    CALL CC_R12FDVINT(WORK(KC1AM),WORK(KC2AM),
+     &                                WORK(KEND1),LWRK1,APROXR12,
+     &                                FC12AM,LUFC12,IVEC)
+c                 CALL QUIT('DEBUG V BAR')
+                  END IF
+   
                ELSE IF (ISIDE .EQ. -1) THEN
-                  IF (CCR12) CALL QUIT('No left transform. for CCR12')
-                  CALL CC_LHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
-     *                         FC1AM,LUFC1,FC2AM,LUFC2,
+                  CALL CC_LHTR(ECURR,
+     *                         FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
+     *                         FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                         WORK(KRHO1),WORK(KRHO2),
      *                         WORK(KC1AM),WORK(KC2AM),
      *                         WORK(KEND1),LWRK1,NSIMTR,
-     *                         IVEC,ITR,LRHO1)
+     *                         IVEC,ITR,LRHO1,APROXR12)
                ELSE
                   CALL QUIT(' ISIDE should be -1 or +1 ')
                ENDIF
 
-               IF ( CCR12 ) THEN
-                 DO IV = 1, NSIMTR
-                  CALL CC_R12METRIC(ISYMTR,WORK(KEND1),LWRK1,
-     *                       FC12AM,LUFC12,FS12AM,LUFS12,IVEC-1+IV)
-                 END DO
-               END IF
+C              IF ( CCR12 ) THEN
+C                DO IV = 1, NSIMTR
+C                  IF (ISIDE .EQ. 1) THEN
+C                    CALL CC_R12METRIC(ISYMTR,BRASCL,KETSCL,
+C    *                         WORK(KEND1),LWRK1,FC2AM,LUFC2,
+C    *                         FC12AM,LUFC12,FS12AM,LUFS12,
+C    *                         FS2AM,LUFS2,IVEC-1+IV,.FALSE.,DUMMY)
+C                  ELSE IF (ISIDE .EQ. -1) THEN
+C                    CALL CC_R12METRIC(ISYMTR,0.5D0*KETSCL,2.0D0*BRASCL,
+C    *                         WORK(KEND1),LWRK1,FC2AM,LUFC2,
+C    *                         FC12AM,LUFC12,FS12AM,LUFS12,
+C    *                         FS2AM,LUFS2,IVEC-1+IV,.FALSE.,DUMMY)
+C                  END IF
+C                END DO
+C              END IF
 
 C
             ENDIF
@@ -493,7 +544,7 @@ C
 C           ------------------------------
 C           Print the transformed vectors.
 C           ------------------------------
-            IF (( IPRINT .GT. 15).OR.(.NOT.(CCS.OR.CC2))) THEN
+            IF (( IPRINT .GT. 15).OR.(.NOT.(CCS.OR.CC2)).OR.LOCDBG) THEN
               IF (TRIPLET) THEN
                  NRHO2 = NT2AM(ISYMTR) + NT2AMA(ISYMTR)
               ELSE
@@ -512,11 +563,21 @@ C           ------------------------------
                  IF (.NOT.CCS) THEN
                    CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NRHO2,NR2,WORK(KRHO2))
                  END IF
-                 IF (IPRINT .GT. 45) THEN
+                 IF (CCR12) THEN
+                   KRHO12 = KEND1
+                   KEND2  = KRHO12 + NGAMMA(ISYMTR)
+                   CALL CC_RVEC(LUFR12,FRHO12,NGAMMA(ISYMTR),
+     *                          NGAMMA(ISYMTR),NR2,WORK(KRHO12))
+                 END IF
+                   
+                 IF (IPRINT .GT. 45 .OR. LOCDBG) THEN
                     CALL AROUND('CC_TRDRV: RHO = trans. Vector ')
                     WRITE (LUPRI,*) 'number of vector on file:',NR2
                     IF (TRIPLET.AND. (.NOT.CCS)) NC2 = 2
                     CALL CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYMTR,1,NC2)
+                    IF (CCR12) THEN
+                      CALL CC_PRPR12(WORK(KRHO12),ISYMTR,1,.TRUE.)
+                    ENDIF
                  ENDIF
 
                  IF (.NOT.(CCS.OR.CC2) .AND. (.NOT. TRIPLET)) THEN
@@ -530,6 +591,7 @@ C           ------------------------------
      *                            NT2AM(ISYMTR)+NT2AMA(ISYMTR),
      *                            NR1,0,WORK(KRHO2))
                  ENDIF
+                 CALL FLSHFO(LUPRI)
   90          CONTINUE
             ENDIF
 C
@@ -554,8 +616,9 @@ C
       OMEGOR = ORSAVE
       MINSCR = MSCRS
 C
-      IF (IPRINT .GT. 10) THEN
+      IF (IPRINT .GT. 10 .OR. LOCDBG) THEN
          CALL AROUND(' END OF CC_TRDRV ')
+         CALL FLSHFO(LUPRI)
       ENDIF
 C
    1  FORMAT(1x,A35,1X,E20.10)

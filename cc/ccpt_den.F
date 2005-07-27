@@ -76,7 +76,8 @@ C
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
       LOGICAL LTSTE, LETAFI, LETIFJ
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <inftap.h>
 #include <blocks.h>
 #include <ccfield.h>
@@ -721,6 +722,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -1658,7 +1663,9 @@ C
       DIMENSION D1PTIA(*)
       LOGICAL LTSTEN
 #include <ccorb.h>
-#include <infind.h>
+CCN #include <infind.h> not compatible with R12!
+#include <ccisao.h>
+#include <r12int.h>
 #include <inftap.h>
 #include <blocks.h>
 #include <ccfield.h>
@@ -1860,6 +1867,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

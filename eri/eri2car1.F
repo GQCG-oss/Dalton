@@ -87,6 +87,7 @@ C     Space for R12 method (WK/UniKA/04-11-2002).
       LHCPRM = 0
       LCPINT = 0
 C
+c     IF (KHKT12 .GT. 1 .OR. U12INT. OR. MIAU12) THEN
       IF (KHKT12 .GT. 1 .OR. U12INT) THEN
 C        No symmetry for [T1,r12] integrals WK/UniKA/04-11-2002).
          IF (SPHR12) THEN
@@ -214,6 +215,7 @@ C
 #include <eriao.h>
 #include <hertop.h>
 #include <r12int.h>
+      LOGICAL LOCMIA
 C
 #include <ibtfun.h>
 C
@@ -225,7 +227,7 @@ C     *********************************
 C
       CONTRA = GCON12 .OR. NPRF12.NE.1
 C
-      IF (KHKT12 .EQ. 1 .AND. .NOT. U12INT) THEN
+      IF (KHKT12 .EQ. 1 .AND. .NOT. (U12INT)) THEN
 C        No symmetry for [T1,r12] integrals (WK/UniKA/04-11-2002).
          DO TUV = 1, NTUV34
             FRSTUV(TUV) = IODDHH(TUV) .NE. 0
@@ -239,6 +241,24 @@ C     ***** General Case: (xy|zw) *****
 C     *********************************
 C
       ELSE
+        LOCMIA=MIAU12
+        MIAU12=.false.
+c       the variable miau12, needed for the computation of the
+c       (ab|[T1,r12]|cd) integral derivatives
+c           
+c           ((a-b)/(a+b) d/dA (ab|1/r12|cd) and
+c            (a-b)/(a+b) d/dB (ab|1/r12|cd) integrals)
+c
+c       must be set to .false. when computing the first electron
+c       coefficients transformation, i.e. before the first call
+c       to subroutine expcft.
+c       The expansion coefficients are scaled more conveniently
+c       at the second call of subroutine expcft for the (a-b)/(a+b)
+c       factor (call from subroutine cr2drv, computing second
+c       electron transformation)
+c
+c       (C. Villani,   Feb 2004)
+c
          J1D = 0
          J1U = 0
          J1I = 1
@@ -363,6 +383,8 @@ C
   500          CONTINUE
             END IF
   100    CONTINUE
+c       giving miau12 its old value back (C. Villani, Uni-Ka, Feb 2005)
+        MIAU12=LOCMIA
       END IF
       IF (IPRINT .GT. 20) THEN
          CALL HCPRINT(HCINT,IODDHC,IPNTUV,IPRINT)
@@ -480,7 +502,6 @@ C
             DO 310 I = 1, NPP12
                ETUV(I) = ECOEF(I,T,L1,L2,1)*EUV(I)
   310       CONTINUE
-C
             ITUV = INDHER(T,U,V)
             INDS = INDHSQ(ITUV)
             DO 400 TUV = 1, NTUV34
@@ -652,5 +673,476 @@ C  /* Deck cont12 */
      &                 CMAT2(K,M)*CPINT(N,1,K)
  300     CONTINUE
       END DO
+      RETURN
+      END
+c     Part for [T1,r12] integral derivatives, based on subroutine CR1DRV
+      SUBROUTINE CR1MIA(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
+     &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,
+     &                  WORK,LWORK,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+      LOGICAL DOREC, FRSTAO, CONTRA
+      DIMENSION HERINT(*), HCINT(*), HERR12(*),
+     &          INDHER(*), INDHSQ(*), IODDHH(*), IODDHC(*),
+     &          LMNPWR(*), IPNTUV(*), 
+     &          COOR12(NPP12,3), EXP12(NPP12,3), CSQ(*), CCFBT(*),
+     &          WORK(LWORK)
+      EXTERNAL  CMIASB
+#include <cbieri.h>
+#include <ericom.h>
+#include <eriao.h>
+#include <r12int.h>
+#include <ibtfun.h>
+C
+      IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
+C
+      ICORAB = 1
+      IEXPAB = 1
+      IF (IELCT1 .EQ. 2) THEN
+         ICORAB = 2
+         IEXPAB = 3
+      END IF
+C
+C     HCCONT  | HCSINT | LFCSNT | LFCINT
+C             |
+C             | ECOEF | HPI | P1 | P2
+C                     |
+C                     | EUV | ETUV | HCPRIM
+C
+      LCCONT = 0
+      LCSINT = 0
+      LFCSNT = 0
+      LFCINT = 0
+      LECOEF = 0
+      LHPI   = 0
+      LP1    = 0
+      LP2    = 0
+C     Space for R12 method (WK/UniKA/04-11-2002).
+      LXA    = 0
+      LEUV   = 0
+      LETUV  = 0
+      LHCPRM = 0
+      LCPINT = 0
+C
+c     IF (KHKT12 .GT. 1 .OR. U12INT) THEN
+C        No symmetry for [T1,r12] integrals WK/UniKA/04-11-2002).
+         IF (SPHR12) THEN
+            LCCONT = NCCPP*NTUV34*KCKT12
+            LFCINT = NTUV34*KHKT12
+         END IF
+         IF (SPHR1 .AND. SPHR2) THEN
+            LCSINT = NCCPP*NTUV34*KHKT2
+            LFCSNT = NTUV34*KHKT2
+         END IF
+C
+         LECOEF = 3*NPP12*(JMAX12 + 1)*(JMAX1 + 1)*(JMAX2+1)
+c        IF (U12INT) THEN
+C           Space for [T1,r12] integrals (WK/UniKA/04-11-2002).
+c           if(MAXDER.eq.0) then
+c             LECOEF = 2*LECOEF
+c           else
+c             Additional space for E(tij);2 coefficients,
+c             needed for [T1,r12] derivatives
+c             (C. Villani,   Winter 2004)
+              LECOEF = 3*LECOEF
+c           end if
+            LXA    =   NPP12
+c        END IF
+         LHPI   =   NPP12
+         LP1    = 3*NPP12
+         LP2    = 3*NPP12
+C
+         LEUV   = NPP12
+         LETUV  = NPP12
+C
+         LHCPRM = NPPPP*NTUV34
+c     END IF
+C
+      IF (GCON12) LCPINT = NPP12
+C
+      LFIRST = NTUV34
+C
+C     KC2MAX and LXA have been added (WK/UniKA/04-11-2002).
+c     if(.not.u12int.or.maxder.eq.0) then
+c       LTOTAL = LCCONT + KC2MAX
+c    &         + MAX(LCSINT + LFCSNT + LFCINT,
+c    &               LECOEF + 2*LXA + MAX(LHPI + LP1 + LP2 + 2*LXA,
+c    &               LEUV + LETUV + LHCPRM + LFIRST + LCPINT ) )
+c     else
+c       Additional space needed for E(tij);2 coefficients,
+c       needed for [T1,r12] derivatives   [To be checked!]
+c       (C. Villani,   Winter 2004)
+        LTOTAL = LCCONT + KC2MAX
+     &         + MAX(LCSINT + LFCSNT + LFCINT,
+     &               LECOEF + 3*LXA + MAX(LHPI + LP1 + LP2 + 3*LXA,
+     &               LEUV + LETUV + LHCPRM + LFIRST + LCPINT ) )
+c     end if
+      IF (LTOTAL.GT.LWORK) CALL STOPIT('CR1DRV','CR1TWO',KLAST,LWORK)
+C
+      KODDKC = 1
+      KCCONT = KODDKC + KC2MAX
+      KCSINT = KCCONT + LCCONT
+      KFCSNT = KCSINT + LCSINT
+      KFCINT = KFCSNT + LFCSNT
+C
+C     KAOP and KBOP are addresses for R12 method (WK/UniKA/04-11-2002).
+      KAOP   = KCCONT + LCCONT
+      KBOP   = KAOP   + LXA
+      KECOEF = KBOP   + LXA
+C
+      KHPI   = KECOEF + LECOEF
+      KP1    = KHPI   + LHPI
+      KP2    = KP1    + LP1
+C
+C     KXA and KXB are addresses for R12 method (WK/UniKA/04-11-2002).
+      KXA    = KP2    + LP2
+      KXB    = KXA    + LXA
+C
+      KEUV   = KECOEF + LECOEF
+      KETUV  = KEUV   + LEUV
+      KHCPRM = KETUV  + LETUV
+      KFIRST = KHCPRM + LHCPRM
+      KCPINT = KFIRST + LFIRST 
+C
+C     CALL CR1TWO with call to CMIASB (C. Villani Uni-Ka Feb 2005).
+      CALL CR1TWO(HERINT,HERR12,INDHER,INDHER,IODDHH,IODDHC,INDHSQ,
+     &            WORK(KECOEF),WORK(KEUV),WORK(KETUV),
+     &            LMNPWR,IPNTUV,WORK(KODDKC),
+     &            COOR12,EXP12,CSQ,CCFBT,
+     &            WORK(KHPI),WORK(KP1),WORK(KP2),
+     &            HCINT,WORK(KFCINT),WORK(KHCPRM),WORK(KFIRST),
+     &            WORK(KCCONT),WORK(KCSINT),WORK(KFCSNT),
+     &            WORK(KCPINT),IPRINT,
+     &            WORK(KXA),WORK(KXB),WORK(KAOP),WORK(KBOP),CMIASB)
+      RETURN
+      END
+      SUBROUTINE CMIASB(HERINT,HERR12,HCPRIM,L1,M1,N1,L2,M2,N2,
+     &                  INDHER,INDHVC,IODDHH,INDHSQ,
+     &                  ECOEF,EUV,ETUV,FRSTUV,
+     &                  ICOMP1,ICOMP2,ABVERP,IPRINT)
+C
+C     This subroutine is a variant of CR1U12 for derivative integrals
+c     over [T1,r12].
+C     Written by Cristian Villani (University of Karlsruhe, winter 2004).
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+C
+      PARAMETER (DP5 = 0.5D0)
+      INTEGER T, U, V, TUV
+      LOGICAL FRSTUV(NTUV34)
+      INTEGER MIAXYZ(3)
+C
+      DIMENSION HERINT(NPP12,NPRF34,NTUV),HERR12(NPP12,NPRF34,NTUV),
+     &          INDHER(0:JTOP,0:JTOP,0:JTOP), INDHVC(0:*),
+     &          IODDHH(NRTOP), INDHSQ(NRTOP),
+     &          ECOEF(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,3),
+     &          ETUV(NPP12), EUV(NPP12),
+     &          HCPRIM(NPP12,NPRF34,NTUV34),ABVERP(NPP12)
+C
+#include <ericom.h>
+#include <eriao.h>
+#include <hertop.h>
+#include <r12int.h>
+#include <ibtfun.h>
+
+      DO I=1,3
+        MIAXYZ(I)=0
+      END DO
+      MIAXYZ(XMIADR)=1
+C
+      IF (IPRINT .GT. 5) CALL TITLER('Output from CMIASB','*',103)
+C
+      INCT = I120(1) + 1
+      INCU = I120(2) + 1
+      INCV = I120(3) + 1
+      MAXT = L1 + L2
+      MAXU = M1 + M2
+      MAXV = N1 + N2
+      MINT = IBTAND(MAXT,I120(1))
+      MINU = IBTAND(MAXU,I120(2))
+      MINV = IBTAND(MAXV,I120(3))
+      MINTP = IBTAND(MAXT+1,I120(1))
+      MINUP = IBTAND(MAXU+1,I120(2))
+      MINVP = IBTAND(MAXV+1,I120(3))
+      MINTP1 = IBTAND(MAXT+MIAXYZ(1)+1,I120(1))
+      MINTP2 = IBTAND(MAXT+MIAXYZ(1),I120(1))
+      MINUP1 = IBTAND(MAXU+MIAXYZ(2)+1,I120(2))
+      MINUP2 = IBTAND(MAXU+MIAXYZ(2),I120(2))
+      MINVP1 = IBTAND(MAXV+MIAXYZ(3)+1,I120(3))
+      MINVP2 = IBTAND(MAXV+MIAXYZ(3),I120(3))
+C
+      IF (IPRINT .GT. 25) THEN
+         WRITE(LUPRI,'(/,1X,A,2I5/)')' ICOMP1, ICOMP2', ICOMP1,ICOMP2
+         WRITE(LUPRI,'(1X,A,15X,3I5)')' T loop:',MINT,MAXT,INCT
+         WRITE(LUPRI,'(1X,A,15X,3I5)')' U loop:',MINU,MAXU,INCU
+         WRITE(LUPRI,'(1X,A,15X,3I5)')' V loop:',MINV,MAXV,INCV
+      END IF
+C
+      DO 100 TUV = 1, NTUV34
+         FRSTUV(TUV) = .TRUE.
+  100 CONTINUE
+C
+C     Expansion coefficients := R(Rx*Ey*Ez)
+C     ======================================
+C
+      DO 201 V = MINVP2, MAXV, INCV
+      DO 201 U = MINUP2, MAXU, INCU
+         DO 211 I = 1, NPP12 
+            EUV(I) = ECOEF(I,V,N1,N2,3,MIAXYZ(3)+1) 
+     &             * ECOEF(I,U,M1,M2,2,MIAXYZ(2)+1)
+  211    CONTINUE
+         DO 301 T = MINTP1, MAXT, INCT
+            DO 311 I = 1, NPP12
+               ETUV(I) = ECOEF(I,T,L1,L2,1,MIAXYZ(1)+2) * EUV(I)
+  311       CONTINUE
+            ITUV = INDHER(T+1,U,V)
+            INDS = INDHSQ(ITUV)
+            DO 401 TUV = 1, NTUV34
+            IF (IODDHH(ITUV) .EQ. IODDHH(TUV)) THEN
+#if defined (SYS_AIX)
+C              code due to AIX xlf version 2.2 bug
+               INDT = INDS + INDHSQ(TUV)
+               INDT = INDHVC(INDT)
+#else
+               INDT = INDHVC(INDS + INDHSQ(TUV))
+#endif
+               IF (FRSTUV(TUV)) THEN
+                  FRSTUV(TUV) = .FALSE.
+                  DO 501 J = 1, NPRF34
+                  DO 501 I = 1, NPP12
+                     HCPRIM(I,J,TUV) = ETUV(I)*HERR12(I,J,INDT)
+  501             CONTINUE
+               ELSE
+                  DO 601 J = 1, NPRF34
+                  DO 601 I = 1, NPP12
+                     HCPRIM(I,J,TUV) = HCPRIM(I,J,TUV)
+     &                       + ETUV(I)*HERR12(I,J,INDT)
+  601             CONTINUE
+               END IF
+            END IF
+  401       CONTINUE
+  301    CONTINUE
+  201 CONTINUE
+C
+C     Expansion coefficients := (A/B)/p * Rx*Ey*Ez
+C     =============================================
+C
+      DO V = MINV, MAXV, INCV
+        DO U = MINU, MAXU, INCU
+          DO I = 1, NPP12
+            EUV(I) = ECOEF(I,V,N1,N2,3,1) * ECOEF(I,U,M1,M2,2,1)
+          END DO
+          DO T = MINTP, MAXT, INCT
+            DO I = 1, NPP12
+               ETUV(I) = ABVERP(I)*ECOEF(I,T,L1,L2,1,2) * EUV(I)
+            END DO
+            ITUV = INDHER(MIAXYZ(1)+T+1,MIAXYZ(2)+U,MIAXYZ(3)+V)
+            INDS = INDHSQ(ITUV)
+            DO TUV = 1, NTUV34
+              IF(IODDHH(ITUV) .EQ. IODDHH(TUV)) THEN
+#if defined (SYS_AIX)
+C               code due to AIX xlf version 2.2 bug
+                INDT = INDS + INDHSQ(TUV)
+                INDT = INDHVC(INDT)
+#else
+                INDT = INDHVC(INDS + INDHSQ(TUV))
+#endif
+                IF(FRSTUV(TUV)) THEN
+                  FRSTUV(TUV) = .FALSE.
+                  DO J = 1, NPRF34
+                    DO I = 1, NPP12
+                      HCPRIM(I,J,TUV) = ETUV(I)*HERR12(I,J,INDT)
+                    END DO
+                  END DO
+                ELSE
+                  DO J = 1, NPRF34
+                    DO I = 1, NPP12
+                      HCPRIM(I,J,TUV) = HCPRIM(I,J,TUV)
+     &                                + ETUV(I)*HERR12(I,J,INDT)
+                    END DO
+                  END DO
+                END IF
+              END IF
+            END DO
+          END DO
+        END DO
+      END DO
+C
+C     Expansion coefficients := R(Ex*Ry*Ez)
+C     ======================================
+C
+      DO 202 V = MINVP2, MAXV, INCV
+      DO 202 U = MINUP1, MAXU, INCU
+         DO 212 I = 1, NPP12 
+            EUV(I) = ECOEF(I,V,N1,N2,3,MIAXYZ(3)+1)
+     &             * ECOEF(I,U,M1,M2,2,MIAXYZ(2)+2)
+  212    CONTINUE
+         DO 302 T = MINTP2, MAXT, INCT
+            DO 312 I = 1, NPP12
+               ETUV(I) = ECOEF(I,T,L1,L2,1,MIAXYZ(1)+1) * EUV(I)
+  312       CONTINUE
+            ITUV = INDHER(T,U+1,V)
+            INDS = INDHSQ(ITUV)
+            DO 402 TUV = 1, NTUV34
+            IF (IODDHH(ITUV) .EQ. IODDHH(TUV)) THEN
+#if defined (SYS_AIX)
+C              code due to AIX xlf version 2.2 bug
+               INDT = INDS + INDHSQ(TUV)
+               INDT = INDHVC(INDT)
+#else
+               INDT = INDHVC(INDS + INDHSQ(TUV))
+#endif
+               IF (FRSTUV(TUV)) THEN
+                  FRSTUV(TUV) = .FALSE.
+                  DO 502 J = 1, NPRF34
+                  DO 502 I = 1, NPP12
+                     HCPRIM(I,J,TUV) = ETUV(I)*HERR12(I,J,INDT)
+  502             CONTINUE
+               ELSE
+                  DO 602 J = 1, NPRF34
+                  DO 602 I = 1, NPP12
+                     HCPRIM(I,J,TUV) = HCPRIM(I,J,TUV)
+     &                       + ETUV(I)*HERR12(I,J,INDT)
+  602             CONTINUE
+               END IF
+            END IF
+  402       CONTINUE
+  302    CONTINUE
+  202 CONTINUE
+C
+C     Expansion coefficients := (A/B)/p * Ex*Ry*Ez
+C     =============================================
+C
+      DO V = MINV, MAXV, INCV
+      DO U = MINUP, MAXU, INCU
+         DO I = 1, NPP12
+            EUV(I) = ECOEF(I,V,N1,N2,3,1) * ECOEF(I,U,M1,M2,2,2)
+         END DO
+         DO T = MINT, MAXT, INCT
+            DO I = 1, NPP12
+               ETUV(I) = ABVERP(I) * ECOEF(I,T,L1,L2,1,1) * EUV(I)
+            END DO
+            ITUV = INDHER(MIAXYZ(1)+T,MIAXYZ(2)+U+1,MIAXYZ(3)+V)
+            INDS = INDHSQ(ITUV)
+            DO TUV = 1, NTUV34
+              IF (IODDHH(ITUV) .EQ. IODDHH(TUV)) THEN
+#if defined (SYS_AIX)
+C               code due to AIX xlf version 2.2 bug
+                INDT = INDS + INDHSQ(TUV)
+                INDT = INDHVC(INDT)
+#else
+                INDT = INDHVC(INDS + INDHSQ(TUV))
+#endif
+                IF(FRSTUV(TUV)) THEN
+                  FRSTUV(TUV) = .FALSE.
+                  DO J = 1, NPRF34
+                    DO I = 1, NPP12
+                      HCPRIM(I,J,TUV) = ETUV(I)*HERR12(I,J,INDT)
+                    END DO
+                  END DO
+                ELSE
+                  DO J = 1, NPRF34
+                    DO I = 1, NPP12
+                      HCPRIM(I,J,TUV) = HCPRIM(I,J,TUV)
+     &                                + ETUV(I)*HERR12(I,J,INDT)
+                    END DO
+                  END DO
+                END IF
+              END IF
+            END DO
+          END DO
+        END DO
+      END DO
+C
+C     Expansion coefficients := R(Ex*Ey*Rz)
+C     ==================================
+C
+      DO 203 V = MINVP1, MAXV, INCV
+      DO 203 U = MINUP2, MAXU, INCU
+         DO 213 I = 1, NPP12 
+            EUV(I) = ECOEF(I,V,N1,N2,3,MIAXYZ(3)+2) *
+     .               ECOEF(I,U,M1,M2,2,MIAXYZ(2)+1)
+  213    CONTINUE
+         DO 303 T = MINTP2, MAXT, INCT
+            DO 313 I = 1, NPP12
+               ETUV(I) = ECOEF(I,T,L1,L2,1,MIAXYZ(1)+1) * EUV(I)
+  313       CONTINUE
+            ITUV = INDHER(T,U,V+1)
+            INDS = INDHSQ(ITUV)
+            DO 403 TUV = 1, NTUV34
+            IF (IODDHH(ITUV) .EQ. IODDHH(TUV)) THEN
+#if defined (SYS_AIX)
+C              code due to AIX xlf version 2.2 bug
+               INDT = INDS + INDHSQ(TUV)
+               INDT = INDHVC(INDT)
+#else
+               INDT = INDHVC(INDS + INDHSQ(TUV))
+#endif
+               IF (FRSTUV(TUV)) THEN
+                  FRSTUV(TUV) = .FALSE.
+                  DO 503 J = 1, NPRF34
+                  DO 503 I = 1, NPP12
+                     HCPRIM(I,J,TUV) = ETUV(I)*HERR12(I,J,INDT)
+  503             CONTINUE
+               ELSE
+                  DO 603 J = 1, NPRF34
+                  DO 603 I = 1, NPP12
+                     HCPRIM(I,J,TUV) = HCPRIM(I,J,TUV)
+     &                       + ETUV(I)*HERR12(I,J,INDT)
+  603             CONTINUE
+               END IF
+            END IF
+  403       CONTINUE
+  303    CONTINUE
+  203 CONTINUE
+C
+C     Expansion coefficients := (A/B)/p * (Ex*Ey*Rz)
+C     ==================================
+C
+      DO V = MINVP, MAXV, INCV
+        DO U = MINU, MAXU, INCU
+          DO I = 1, NPP12 
+            EUV(I) = ECOEF(I,V,N1,N2,3,2) * ECOEF(I,U,M1,M2,2,1)
+          END DO
+          DO T = MINT, MAXT, INCT
+            DO I = 1, NPP12
+               ETUV(I) = ABVERP(I) * ECOEF(I,T,L1,L2,1,1) * EUV(I)
+            END DO
+C
+            ITUV = INDHER(MIAXYZ(1)+T,MIAXYZ(2)+U,MIAXYZ(3)+V+1)
+            INDS = INDHSQ(ITUV)
+            DO TUV = 1, NTUV34
+              IF (IODDHH(ITUV) .EQ. IODDHH(TUV)) THEN
+#if defined (SYS_AIX)
+C               code due to AIX xlf version 2.2 bug
+                INDT = INDS + INDHSQ(TUV)
+                INDT = INDHVC(INDT)
+#else
+                INDT = INDHVC(INDS + INDHSQ(TUV))
+#endif
+                IF (FRSTUV(TUV)) THEN
+                  FRSTUV(TUV) = .FALSE.
+                  DO J = 1, NPRF34
+                    DO I = 1, NPP12
+                      HCPRIM(I,J,TUV) = ETUV(I)*HERR12(I,J,INDT)
+                    END DO
+                  END DO
+                ELSE
+                  DO J = 1, NPRF34
+                    DO I = 1, NPP12
+                      HCPRIM(I,J,TUV) = HCPRIM(I,J,TUV)
+     &                                + ETUV(I)*HERR12(I,J,INDT)
+                    END DO
+                  END DO
+                END IF
+              END IF
+            END DO
+          END DO
+        END DO
+      END DO
+
       RETURN
       END

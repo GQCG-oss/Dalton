@@ -465,7 +465,8 @@ c /* deck ccsopprt */
      &          LBLOPR(IBLROP(IOPER)),RLXB,BLRFR(IFREQ), PROP, ERROR
             END IF
            ELSE
-            WRITE(LUPRI,'(/1X,2(A8,A10,F7.4,3X),G16.8)')
+              WRITE(LUPRI,'(/1X,2(A8,A10,F7.4,3X),G16.8)')
+CCN              WRITE(LUPRI,'(/1X,2(A8,A10,F7.4,3X),F24.20)')
      &        LBLOPR(IALROP(IOPER)),RLXA,ALRFR(IFREQ),
      &        LBLOPR(IBLROP(IOPER)),RLXB,BLRFR(IFREQ), PROP
            ENDIF

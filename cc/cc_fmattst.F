@@ -73,6 +73,7 @@ C
 #include <eribuf.h>
 #include <ccroper.h>
 #include <ccinftap.h>
+#include <r12int.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMTWO= -2.0D0)
       PARAMETER (XMHALF=-0.5D0,XHALF=0.5D0,THREE=3.0D0,XMONE=-1.0D0)
@@ -983,6 +984,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

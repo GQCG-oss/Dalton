@@ -1376,7 +1376,7 @@ c       -------------------------------------------
 c       Matrix with property integrals in MO basis:
 c       -------------------------------------------
         ! read property integrals from file:
-        CALL CCPRPAO(LABELB,WORK(KFOCKB),IRREP,IMAT,IERR,
+        CALL CCPRPAO(LABELB,.TRUE.,WORK(KFOCKB),IRREP,IMAT,IERR,
      &               WORK(KEND1),LWRK1)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMB)) THEN
           WRITE(LUPRI,*) 'IERR,IRREP,ISYMB:',IERR,IRREP,ISYMB

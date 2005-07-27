@@ -240,11 +240,11 @@ C     JK+OC, CCSLV
         CALL DCOPY(N2BST(ISYMTA),XINT(1),1,WORK(KCTMO),1)
       ELSE
 * read the AO integrals:
-        CALL CCPRPAO(LABELA,WORK(KCTMO),IRREP,ISYM,IERR,
-     &               WORK(KEND1A),LEND1A)
-        IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
-           CALL QUIT('CCLR_FA: error while reading operator '//LABELA)
-        END IF
+       CALL CCPRPAO(LABELA,.TRUE.,WORK(KCTMO),IRREP,ISYM,IERR,
+     &             WORK(KEND1A),LEND1A)
+       IF (IERR.NE.0 .OR. IRREP.NE.ISYMTA) THEN
+        CALL QUIT('CCLR_FA: error while reading operator '//LABELA)
+       END IF
       END IF
 C
 * get MO coefficients:

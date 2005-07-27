@@ -85,7 +85,7 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 #include <ccorb.h>
-#include <infind.h>
+#include <infind.h> 
 #include <blocks.h>
 #include <ccfield.h>
 #include <ccfop.h>
@@ -105,6 +105,8 @@ C
 #include <ccr1rsp.h>
 #include <chrxyz.h>
 #include <inftap.h>
+#include <ccisao.h>
+#include <r12int.h>
 C
       LOGICAL LOCDBG ! debug flag
       PARAMETER (LOCDBG = .FALSE.)
@@ -1222,6 +1224,10 @@ C
 C
             IF (DIRECT) THEN
               IDEL  = INDEXA(IDEL2)
+              IF (NOAUXB) THEN
+                IDUM = 1
+                CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+              END IF
               ISYMD = ISAO(IDEL)
             ELSE
               IDEL  = IBAS(ISYMD1) + ILLL
@@ -1704,6 +1710,8 @@ C------------------------------------------------
 C
          IF (LONLYEXP) THEN
           DO 140 IDEL2 = 1,NUMDIS
+C
+            IF (NOAUXB) CALL QUIT('Not adapted for R12...')
 C
             IDEL   = INDEXA(IDEL2)
             ISYMD  = ISAO(IDEL)

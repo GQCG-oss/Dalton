@@ -1033,7 +1033,7 @@ C-----------------------------------------------------------
 C
       IF ( (LISTR(1:3).EQ.'R1 ') .OR. (LISTR(1:3).EQ.'RC ') ) THEN
         ! read property integrals from file:
-        CALL CCPRPAO(LABELY,WORK(KFOCKY),IRREP,IMAT,IERR,
+        CALL CCPRPAO(LABELY,.TRUE.,WORK(KFOCKY),IRREP,IMAT,IERR,
      *               WORK(KEND0),LWRK0)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISTAMY)) THEN
           WRITE(LUPRI,*) 'ISTAMY:',ISTAMY
@@ -2786,7 +2786,7 @@ C     -------------------------------------------------------
       IADRIA = IADRAB + NMATAB(ISYHOP)
       CALL GETWA2(LUDEFF,FNDEFF,WORK(KDIA),IADRIA,NT1AM(ISYHOP))
 
-      CALL CCPRPAO(LABELH,WORK(KFOCK),IRREP,IMAT,IERR,
+      CALL CCPRPAO(LABELH,.TRUE.,WORK(KFOCK),IRREP,IMAT,IERR,
      *             WORK(KEND1),LWRK1)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYHOP)) THEN
         WRITE(LUPRI,*) 'ISYHOP:',ISYHOP

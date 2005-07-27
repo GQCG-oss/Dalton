@@ -3242,7 +3242,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTABLE = 17)
+      PARAMETER (NTABLE = 18)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*12
       PARAMETER (MAXNRT = 40)
@@ -3259,11 +3259,12 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <huckel.h>
+#include <r12int.h>
 C
       DATA TABLE /'XXXXXXX','.5D7F9G','.DELETE','.MOSTAR','.FREEZE',
      *            '.GRAM-S','.SYMMET','.PUNCHI','.PUNCHO','.REORDE',
-     *            'xXXXXXX','.AO DEL','.CMOMAX','.NOSUPS','.SUPSYM',
-     *            '.THRSSY','.LOCALI'/
+     *            '.FROZEN','.AO DEL','.CMOMAX','.NOSUPS','.SUPSYM',
+     *            '.THRSSY','.LOCALI','.R12ORB'/
 C
       INLOC = 0
       INDEL = 0
@@ -3279,7 +3280,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112,113,114,115,116,117), II
+     *                   111,112,113,114,115,116,117,118), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3532,6 +3533,8 @@ C
      *         ' after ".LOCALI"',' Select " BOYLOC" or " PIPLOC"'
          INPERR = INPERR + 1
       END IF
+      GO TO 100
+  118 READ (LUCMD,*) (NRXR12(I), I=1,NSYM)
       GO TO 100
 C
  9000 CONTINUE

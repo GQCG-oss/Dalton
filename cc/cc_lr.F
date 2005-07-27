@@ -1308,9 +1308,9 @@ C
 C
       IF (.NOT.(CCS.OR.CC2.OR.CCSD)) THEN
          WRITE(LUPRI,'(A)')
-     &        ' CC_SOLRSP: Do not want to calculate anything'
+     &        ' CC_POLPRI: Do not want to calculate anything'
      *                  //' else than CCS, CC2 and CCSD properties '
-         CALL QUIT('Model not CCS, CC2, or CCSD in CC_SOLRSP')
+         CALL QUIT('Model not CCS, CC2, or CCSD in CC_POLPRI')
       ENDIF
 C
 C--------------------------------------
@@ -3013,8 +3013,12 @@ C        Calculate response contribution to expectation value.
 C-------------------------------------------------------------
 C
       IF (.NOT.CCS) THEN
+         NVAR   = NT1AM(ISYMOP) + NT2AM(ISYMOP)
+         IF (CCR12) THEN
+           NVAR = NVAR + NGAMMA(ISYMOP)
+         ENDIF
          KETA   = 1
-         KWRK1  = KETA  + NT1AM(ISYMOP) + NT2AM(ISYMOP)
+         KWRK1  = KETA  + NVAR
          LWRK1  = LWORK - KWRK1
          IF (LWRK1 .LT. 0 )
      &        CALL QUIT('Too little workspace in CC_TSTAV-1')
@@ -3024,17 +3028,26 @@ C
             IOPT  = 3
             CALL CC_RDRSP('L0 ',0,ISYMOP,IOPT,MODEL,WORK(KETA),
      *                    WORK(KETA+NT1AM(ISYMOP)))
+            IF (CCR12) THEN
+              IOPT = 32
+              CALL CC_RDRSP('L0 ',0,ISYMOP,IOPT,MODEL,DUMMY,
+     *                      WORK(KETA+NT1AM(ISYMOP)+NT2AM(ISYMOP)))
+            ENDIF  
          ELSE
             WRITE(LUPRI,*) 'IOPTTST = ',IOPTTST
             CALL QUIT('ILLEGAL VALUE FOR IOPTTST IN CC_TSTAV.')
          END IF
-         PROPRSP = DDOT(NT1AM(ISYMOP)+NT2AM(ISYMOP),WORK(KETA),1,VEC,1)
+         PROPRSP = DDOT(NVAR,WORK(KETA),1,VEC,1)
 
          IF (LOCDBG) THEN
            write(lupri,*) 'Input vector:'
-           call cc_prp(vec,vec(nt1am(isymop)+1),1,1,1)
+           call cc_prp(vec,vec(nt1am(isymop)+1),isymop,1,1)
+           if (CCR12) call cc_prpr12(vec(1+nt1am(isymop)+nt2am(isymop)),
+     *                               isymop,1,.true.)
            write(lupri,*) 'L0/X0 vector:'
-           call cc_prp(work(keta),work(keta+nt1am(isymop)),1,1,1)
+           call cc_prp(work(keta),work(keta+nt1am(isymop)),isymop,1,1)
+           if (CCR12) call cc_prpr12(work(keta+nt1am(isymop)+
+     *                               nt2am(isymop)),isymop,1,.true.)
            write(lupri,*) 'PROPRSP:',PROPRSP
          END IF
       ELSE
@@ -3084,6 +3097,8 @@ C              C is assumed to be a one-electron operator.
 C
 C     Written by Ove Christiansen 10-5-1996
 C
+C     Bug-Fix for frozen-core calculations: Chr. Neiss  22-04-2005
+C
 C-----------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -3094,6 +3109,7 @@ C
 C
       CHARACTER LBL*(*), MODEL*10
       DIMENSION WORK(LWORK)
+      INTEGER ICMO(8,8), NCMO(8), IGLMRHS(8,8), NGLMDS(8), IGLMVIS(8,8)
 C
 #include <ccorb.h>
 #include <cclr.h>
@@ -3106,11 +3122,32 @@ C
          CALL AROUND( 'IN CC_AVE ')
       ENDIF
 C
+      DO ISYM = 1, NSYM
+         ICOUNT  = 0
+         ICOUNT2 = 0
+         ICOUNT3 = 0
+         DO ISYM2 = 1, NSYM
+            ISYM1 = MULD2H(ISYM,ISYM2)
+            ICMO(ISYM1,ISYM2)    = ICOUNT
+            IGLMRHS(ISYM1,ISYM2) = ICOUNT2
+            ICOUNT  = ICOUNT  + NBAS(ISYM1)*NORBS(ISYM2)
+            ICOUNT2 = ICOUNT2 + NBAS(ISYM1)*NRHFS(ISYM2)
+            ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NRHFS(ISYM2)
+         END DO
+         NCMO(ISYM)   = ICOUNT
+         NGLMDS(ISYM) = ICOUNT2
+         DO ISYM2 = 1, NSYM
+            ISYM1 = MULD2H(ISYM,ISYM2)
+            IGLMVIS(ISYM1,ISYM2) = ICOUNT3
+            ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NVIRS(ISYM2)
+         END DO
+      END DO
+C
       KONEP  = 1
       KT1AM  = KONEP  + N2BST(ISYMOP)
-      KLAMDP = KT1AM  + NT1AMX
-      KLAMDH = KLAMDP + NLAMDT
-      KEND1  = KLAMDH + NLAMDT
+      KLAMDPS= KT1AM  + NT1AMX
+      KLAMDHS= KLAMDPS+ NGLMDS(1)
+      KEND1  = KLAMDHS+ NGLMDS(1)
       LWRK1  = LWORK  - KEND1
       IF ( LWRK1 .LT. 0 )
      *     CALL QUIT(' Too little workspace in CC_AVE')
@@ -3120,39 +3157,41 @@ C
 C
       IF (.NOT.CCS) THEN
          IOPT = 1
-         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
+         CALL CC_RDRSP('R0 ',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
       ELSE IF (CCS ) THEN
          CALL DZERO(WORK(KT1AM),NT1AMX)
       ENDIF
 C
-      CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
-     *            WORK(KEND1),LWRK1)
-C
-      ISYFAO = 1
-      ISYMPA = 1
-      ISYMHO = 1
-C
-      CALL CC_FCKMO(WORK(KONEP),WORK(KLAMDP),WORK(KLAMDH),
-     *              WORK(KEND1),LWRK1,ISYFAO,ISYMPA,ISYMHO)
-C
-      IF (IPRINT .GT. 50) THEN
-         CALL AROUND( 'In CC_AVE: Pert. matrix' )
-         CALL CC_PRFCKMO(WORK(KONEP),ISYMOP)
-      ENDIF
+      CALL LAMMATS(WORK(KLAMDPS),WORK(KLAMDHS),WORK(KT1AM),ISYMOP,
+     *             .FALSE.,.FALSE.,NGLMDS,IGLMRHS,IGLMVIS,ICMO,
+     *             WORK(KEND1),LWRK1)
 C
       XVALUE = 0.0D0
-C
-      DO 200 ISYMI = 1, NSYM
-C
-         DO 210 I = 1, NRHF(ISYMI)
-C
-            KII  = KONEP - 1 + IFCRHF(ISYMI,ISYMI)
-     *           + NORB(ISYMI)*(I - 1) + I
-C
-            XVALUE = XVALUE + 2.0D00*WORK(KII)
-C
-  210    CONTINUE
-  200 CONTINUE
+C 
+      DO ISYM = 1, NSYM
+
+        KSCR1 = KEND1
+        KEND2 = KSCR1 + NBAS(ISYM) * NRHFS(ISYM)
+        LWRK2 = LWORK  - KEND2
+        IF ( LWRK2 .LT. 0 ) THEN
+          WRITE (LUPRI,*) 'LWORK, LWRK2: ',WORK, LWRK2
+          CALL QUIT('Too little workspace in CC_AVE')
+        END IF
+
+        NBAS1 = MAX(NBAS(ISYM),1)
+        KOFF1 = KONEP   + IAODIS(ISYM,ISYM)
+        KOFF2 = KLAMDHS + IGLMRHS(ISYM,ISYM)
+
+        CALL DGEMM('N','N',NBAS(ISYM),NRHFS(ISYM),NBAS(ISYM),
+     *             1.0D0,WORK(KOFF1),NBAS1,WORK(KOFF2),NBAS1,
+     *             0.0D0,WORK(KSCR1),NBAS1)
+
+        KOFF2 = KLAMDPS + IGLMRHS(ISYM,ISYM)
+
+        TRACE = DDOT(NBAS(ISYM)*NRHFS(ISYM),
+     &                 WORK(KOFF2),1,WORK(KSCR1),1)
+        XVALUE = XVALUE + 2.0D0 * TRACE
+      END DO
 C
       END
 c*DECK CC_XKSI
@@ -4220,7 +4259,7 @@ C     -----------------------------------------------------------
       IF (LWRK2.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
 
       ! get X integrals:
-      CALL CCPRPAO(LABELX,WORK(KFOCKX),IRREP,ISYMM,IERR,
+      CALL CCPRPAO(LABELX,.TRUE.,WORK(KFOCKX),IRREP,ISYMM,IERR,
      &              WORK(KEND2),LWRK2)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
         CALL QUIT('CC_AVE2: error reading operator '//LABELX)
@@ -4246,7 +4285,7 @@ C     -----------------------------------------------------------
       IF (LWRK2.LT.0)CALL QUIT(' Too little workspace in CC_AVE2')
 
       ! get Y integrals:
-      CALL CCPRPAO(LABELY,WORK(KFOCKY),IRREP,ISYMM,IERR,
+      CALL CCPRPAO(LABELY,.TRUE.,WORK(KFOCKY),IRREP,ISYMM,IERR,
      &              WORK(KEND2),LWRK2)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMY)) THEN
         CALL QUIT('CC_AVE2: error reading operator '//LABELY)
@@ -4318,13 +4357,17 @@ C----------------------------------------------------------------------
       LOGICAL LORX
       CHARACTER*10 MODEL
       INTEGER KETA, KEND1, LWRK1, IOPT, IDLSTX, IDLSTY,
-     &        IR1TAMP
+     &        IR1TAMP, NVAR
 
       IF (CCS) THEN
          PROPRSP = 0.0D0
       ELSE
+         NVAR   = NT1AM(ISYM0) + NT2AM(ISYM0)
+         IF (CCR12) THEN
+           NVAR = NVAR + NGAMMA(ISYM0)
+         ENDIF
          KETA   = 1 
-         KEND1  = KETA  + NT1AM(ISYM0) + NT2AM(ISYM0)
+         KEND1  = KETA  + NVAR
          LWRK1  = LWORK - KEND1 
          IF (LWRK1.LT.0) CALL QUIT('Too little workspace in CC_TSTAV2')
          IF      (IOPTTST.EQ.0) THEN
@@ -4333,17 +4376,26 @@ C----------------------------------------------------------------------
             IOPT  = 3
             CALL CC_RDRSP('L0 ',0,ISYM0,IOPT,MODEL,WORK(KETA),
      *                    WORK(KETA+NT1AM(ISYMOP)))
+            IF (CCR12) THEN
+              IOPT = 32
+              CALL CC_RDRSP('L0 ',0,ISYMOP,IOPT,MODEL,DUMMY,
+     *                      WORK(KETA+NT1AM(ISYMOP)+NT2AM(ISYMOP)))
+            ENDIF
          ELSE
             WRITE(LUPRI,*) 'IOPTTST = ',IOPTTST
             CALL QUIT('ILLEGAL VALUE FOR IOPTTST IN CC_TSTAV2.')
          END IF
-         PROPRSP = DDOT(NT1AM(ISYMOP)+NT2AM(ISYMOP),WORK(KETA),1,VEC,1)
+         PROPRSP = DDOT(NVAR,WORK(KETA),1,VEC,1)
  
          IF (LOCDBG) THEN
            write(lupri,*) 'Input vector:'
-           call cc_prp(vec,vec(nt1am(isymop)+1),1,1,1)
+           call cc_prp(vec,vec(nt1am(isymop)+1),isymop,1,1)
+           if (CCR12) call cc_prpr12(vec(1+nt1am(isymop)+nt2am(isymop)),
+     *                               isymop,1,.false.)
            write(lupri,*) 'L0/X0 vector:'
-           call cc_prp(work(keta),work(keta+nt1am(isymop)),1,1,1)
+           call cc_prp(work(keta),work(keta+nt1am(isymop)),isymop,1,1)
+           if (CCR12) call cc_prpr12(work(keta+nt1am(isymop)+
+     *                               nt2am(isymop)),isymop,1,.false.)
            write(lupri,*) 'PROPRSP:',PROPRSP
          END IF
       ENDIF

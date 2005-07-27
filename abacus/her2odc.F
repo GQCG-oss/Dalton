@@ -1010,11 +1010,13 @@ C
      &               MAX2,SIGN,I120X,COOR12(1,1,2),COOR12(1,1,3),HEXPPI,
      &               'EX00',IPRINT)
          IF (U12INT)
-     &   CALL WKEQ30(COEF12(1,0,0,0,1,1),COEF12(1,0,0,0,1,2),
+     &   CALL WKEQ30(1,COEF12(1,0,0,0,1,1),COEF12(1,0,0,0,1,2),
+     &               COEF12(1,0,0,0,3,1),
      &               JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
      &               I120X,COOR12(1,1,2),COOR12(1,1,3),EXP12(1,2),
      &               EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
      &               'EX01',IPRINT)
+c        argument list changed! C. Villani, Uni-Ka, Spring 2005
 C
 C        y component
 C        ===========
@@ -1028,11 +1030,13 @@ C
      &                  MAX1,MAX2,SIGN,I120Y,COOR12(1,2,2),
      &                  COOR12(1,2,3),HEXPPI,'EY00',IPRINT)
             IF (U12INT)
-     &      CALL WKEQ30(COEF12(1,0,0,0,2,1),COEF12(1,0,0,0,2,2),
+     &      CALL WKEQ30(1,COEF12(1,0,0,0,2,1),COEF12(1,0,0,0,2,2),
+     &                  COEF12(1,0,0,0,3,1),
      &                  JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
      &                  I120Y,COOR12(1,2,2),COOR12(1,2,3),EXP12(1,2),
      &                  EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
      &                  'EY01',IPRINT)
+c           argument list changed! C. Villani, Uni-Ka, Spring 2005
          END IF
 C
 C        z component
@@ -1051,11 +1055,13 @@ C
      &                  MAX1,MAX2,SIGN,I120Z,COOR12(1,3,2),
      &                  COOR12(1,3,3),HEXPPI,'EZ00',IPRINT)
             IF (U12INT)
-     &      CALL WKEQ30(COEF12(1,0,0,0,3,1),COEF12(1,0,0,0,3,2),
+     &      CALL WKEQ30(1,COEF12(1,0,0,0,3,1),COEF12(1,0,0,0,3,2),
+     &                  COEF12(1,0,0,0,3,1),
      &                  JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
      &                  I120Z,COOR12(1,3,2),COOR12(1,3,3),EXP12(1,2),
      &                  EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
      &                  'EZ01',IPRINT)
+c          argument list changed! C. Villani, Uni-Ka, Spring 2005
          END IF
       END IF
 C

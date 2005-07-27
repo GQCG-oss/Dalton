@@ -116,6 +116,7 @@ c/* Deck CC_DMAT */
 #include "ccfield.h"
 #include "aovec.h"
 #include "blocks.h"
+#include "r12int.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)
@@ -127,7 +128,7 @@ c/* Deck CC_DMAT */
       LOGICAL APPEND, NOAPPEND
       PARAMETER (APPEND = .TRUE., NOAPPEND = .FALSE.)
 
-      INTEGER KDUM
+      INTEGER KDUM, IDUM
       PARAMETER( KDUM = +99 999 999 ) ! dummy address for work space
       INTEGER ISYM0
       PARAMETER( ISYM0 = 1 ) ! symmetry of the reference state
@@ -544,6 +545,10 @@ C     END IF
 
             IF (DIRECT) THEN
               IDEL   = INDEXA(IDEL2)
+              IF (NOAUXB) THEN
+                IDUM = 1
+                CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+              END IF
               ISYDEL = ISAO(IDEL)
             ELSE
               IDEL   = IBAS(ISYMD1) + ILLL

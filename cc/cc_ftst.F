@@ -231,6 +231,7 @@ c     END IF
 #include <eribuf.h>
 #include <ccroper.h>
 #include <ccinftap.h>
+#include <r12int.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMTWO= -2.0D0)
       PARAMETER (XMHALF=-0.5D0,XHALF=0.5D0,THREE=3.0D0,XMONE=-1.0D0)
@@ -1132,6 +1133,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -2866,7 +2871,7 @@ C
 C
       DIMENSION WORK(LWORK),ITADR(2)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-07)
-      CHARACTER MODEL*10, LLIST(*)
+      CHARACTER MODEL*10, LLIST(*), APROXR12*3
       LOGICAL L1TST,L2TST
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
@@ -3013,7 +3018,8 @@ C------------------------------------------
 C
       CALL DCOPY(NT1AMX,WORK(KC1AM),1,WORK(KRHO1D),1)
       CALL DCOPY(NT2AMX,WORK(KC2AM),1,WORK(KRHO2D),1)
-      CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY)
+      CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
+     &             APROXR12)
 C
 C-------------------------
 C     Zero out components.
@@ -3068,7 +3074,7 @@ C
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *               WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C---------------------------------------------
 C        Get the CC left amplitudes from disk.
@@ -3096,7 +3102,8 @@ C------------------
 C
          CALL DCOPY(NT1AMX,WORK(KC1AM),1,WORK(KRHO1D),1)
          CALL DCOPY(NT2AMX,WORK(KC2AM),1,WORK(KRHO2D),1)
-         CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY)
+         CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
+     &             APROXR12)
 C
          IF (LCOR .OR. LSEC) THEN
             CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -3168,7 +3175,7 @@ C
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *                 WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C-----------------------------------------------
 C          Get the CC left amplitudes from disk.
@@ -3203,7 +3210,8 @@ C--------------------
 C
            CALL DCOPY(NT1AMX,WORK(KC1AM),1,WORK(KRHO1D),1)
            CALL DCOPY(NT2AMX,WORK(KC2AM),1,WORK(KRHO2D),1)
-           CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY)
+           CALL CC_ATRR(0.0D0,1,-1,WORK(KRHO1D),LWRK1,.FALSE.,DUMMY,
+     &             APROXR12)
 C
            IF (LCOR .OR. LSEC) THEN
               CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
@@ -3283,8 +3291,9 @@ C
      *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND2),LWRK2) 
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND2),LWRK2,'XXX') 
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CCLR_FDF ')

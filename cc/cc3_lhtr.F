@@ -5255,7 +5255,8 @@ C
 #include <aovec.h>
 #include <iratdef.h>
 #include <ccorb.h> 
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -5278,6 +5279,7 @@ C
       INTEGER IOPT
 c
       integer isymi,isymalbe
+      INTEGER IDUM
 C
 #if defined (SYS_CRAY)
       REAL XLAMP1(*),XLAMP2(*),XLAMH1(*),XLAMH2(*)
@@ -5397,6 +5399,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

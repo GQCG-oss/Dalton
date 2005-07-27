@@ -278,7 +278,7 @@ c /* deck ccrspsym */
            KSYMPT  = 1
            IMATRIX = 1
         ELSE
-           CALL CCPRPAO(LABEL,WORK(KPROPAO),KSYMPT,IMATRIX,IERR,
+           CALL CCPRPAO(LABEL,.TRUE.,WORK(KPROPAO),KSYMPT,IMATRIX,IERR,
      &                  WORK(KEND1),LEND1)
           
         END IF

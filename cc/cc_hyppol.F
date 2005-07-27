@@ -355,7 +355,7 @@ c /* deck cc_hyppol */
         CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'L1 ',
      &                 '---',IDUMMY,       DUMMY,
      &                 'R1 ',WORK(KEADOTS),WORK(KEACONS),
-     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 )        
+     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
         TIMEA = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
@@ -396,9 +396,9 @@ c /* deck cc_hyppol */
       IF ( USE_R2 ) THEN
         TIM1 = SECOND()
 
-c       CALL CC_DOTDRV('O2 ','L1 ',NR2TRAN,MXVEC,
-c    &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
-c    &                 WORK(KEND0), LEND0 )
+C       CALL CC_DOTDRV('O2 ','L1 ',NR2TRAN,MXVEC,
+C    &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
+C    &                 WORK(KEND0), LEND0 )
         CALL CC_DOTDRV('R2 ','X1B',NR2TRAN,MXVEC,
      &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
      &                 WORK(KEND0), LEND0 )
@@ -426,7 +426,7 @@ c    &                 WORK(KEND0), LEND0 )
       CALL CC_XIETA( WORK(KXETRAN), NXETRAN, IOPT, IORDER, 'L0 ',
      &               'L1 ',WORK(KXDOTS),WORK(KXCONS),
      &               'R1 ',WORK(KEDOTS),WORK(KECONS),
-     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )        
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       TIMXE = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
@@ -1820,7 +1820,8 @@ c /* deck ccqhypprt */
      &          LBLOPR(ICQROP(IOPER)),RLXC,CQRFR(IFREQ), PROP, ERROR
             END IF
            ELSE
-            WRITE(LUPRI,'(/1X,3(A8,A10,F7.4,3X),G16.8)')
+              WRITE(LUPRI,'(/1X,3(A8,A10,F7.4,3X),G16.8)')
+CCN              WRITE(LUPRI,'(/1X,3(A8,A10,F7.4,3X),F24.20)')
      &        LBLOPR(IAQROP(IOPER)),RLXA,AQRFR(IFREQ),
      &        LBLOPR(IBQROP(IOPER)),RLXB,BQRFR(IFREQ),
      &        LBLOPR(ICQROP(IOPER)),RLXC,CQRFR(IFREQ), PROP

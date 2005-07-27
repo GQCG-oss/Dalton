@@ -240,7 +240,7 @@ C
 *     Matrix with property integrals in MO basis:
 *---------------------------------------------------------------------*
       ! read property integrals from file:
-      CALL CCPRPAO(LABELB,WORK(KFOCKB_AO),IRREP,ISYMB,IERR,
+      CALL CCPRPAO(LABELB,.TRUE.,WORK(KFOCKB_AO),IRREP,ISYMB,IERR,
      &             WORK(KEND1),LWRK1)
       CALL DCOPY(NORBT*NORBT,WORK(KFOCKB_AO),1,WORK(KFOCKB),1)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMB)) THEN

@@ -66,6 +66,8 @@ C  /* Deck cc3_triplet */
 #include <eribuf.h>
 #include <ccorb.h>
 #include <inftap.h>
+#include <ccisao.h>
+#include <r12int.h>
 !
       INTEGER INDEX, LWORK, KCMO, KSCR1, KFOCKD, KINT1T
       INTEGER KINT2T, KINT3T, KINT4T, KINT1S, KINT2S, KINT3S, KINT4S
@@ -83,6 +85,7 @@ C  /* Deck cc3_triplet */
       INTEGER KINTTMP1, KINTTMP2, KTRTMP1
       INTEGER KTRTMP2, KTRTMP3, KTRTMP4
 !
+      INTEGER IDUM
 !
 #if defined (SYS_CRAY)
       REAL ZERO, HALF, ONE, TWO, DTIME ! , TIMHER1, TIMHER2
@@ -321,6 +324,10 @@ C  /* Deck cc3_triplet */
 !
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

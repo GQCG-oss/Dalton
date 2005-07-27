@@ -810,7 +810,6 @@ C
          END IF
       END IF
 C
-C
 C     COMMON /DOXYZ/
 C
       DOX = .TRUE.
@@ -1013,7 +1012,7 @@ C           For [r12,T1+T2] integrals, JMAX must be increased by 1. For
 C           r12 integrals, JMAX must be 1 for (ss|ss) integrals, but is
 C           not increased otherwise. JMAX is also increased for #5 integrals 
 C           (WK/UniKA/04-11-2002).
-            IF (U12INT)        JMAX = JMAX + 1
+            IF (U12INT) JMAX = JMAX + 1
             IF (INTGAC .EQ. 5) JMAX = JMAX + 1
             IF (R12INT)        JMAX = MAX(1,JMAX)
 C
@@ -2036,6 +2035,8 @@ C     Arrays for Gaussian-damped R12 integrals (WK/UniKA/04-11-2002).
      &          ALPHA(NPPX), FACPQ(NPPS),
      &          COORPQ(NPPX,3),
      &          CSQ(*), NCENTR(NPQBCS,MLTPZ,4)
+c     C. Villani Uni-KA, Feb 2005
+      LOGICAL   MIOTST
 #include <cbieri.h>
 #include <odclss.h>
 #include <ericom.h>
@@ -2054,6 +2055,12 @@ C
 C     IF (NREDZ .GT. 1) CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
       CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
 C     Try to avoid zeroing - check sph2 rouintes.
+c
+c     Variable for integral printing (debug)
+      miotst=.false.
+c     Initializing variable for [T1,r12] derivative integrals
+c     C. Villani Uni-KA, Feb 2005
+      miau12=.false.
 C
       IOFRST = 0
       DO IOPS = 1, NREDZ 
@@ -2197,6 +2204,22 @@ C        B: Differentiated Cartesian integrals
 C        =====================================
 C
          ELSE
+           IF(IPRINT.GT.5) THEN
+c            Header for integral derivatives over different operators
+c            C. Villani Uni-KA, Feb 2005
+             WRITE(LUPRI,*) "-----------------------------------------"
+             IF(U12INT) THEN
+c              if(npqbcs.ne.1.or.mltpx.ne.1.or.mltpz.ne.1)
+c    .         write(lupri,*) "warning: may not work"
+               WRITE(LUPRI,*) "   Derivatives of [T1,r12] integrals "
+               XMIADR=0
+             ELSE IF(R12INT) THEN
+               WRITE(LUPRI,*) "   Derivatives of r12 integrals      "
+             ELSE
+               WRITE(LUPRI,*) "   Derivatives of 1/r12 integrals    "
+             END IF
+             WRITE(LUPRI,*) "-----------------------------------------"
+           END IF
 C
 C           CD derivatives
 C           --------------
@@ -2204,24 +2227,33 @@ C
             IPATH  = 1
             NDIMD1 = 3
             CALL SETCAO(IPRINT)
+            IF(U12INT) THEN
+c             symmetry control (ioddhr) is here always switched off,
+c             only that for the hermite integrals (ipqxyz) is kept.
+c             C. Villani Uni-KA, Feb 2005
+              IHCBIT=0
+              ICCXYZ=0
+            END IF
             CALL CR1DRV(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                  COORAB,EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
-C
             IF (UNDIFF) THEN
                IF (IPRINT.GT.5) CALL HEADER('Undiff. integrals',1)
                NDER3 = 0
                NDER4 = 0
                IAOCR = 13 
+c              NDIMD1 = 3
+               NDIMD1=1
+c              Here it is just needed ndimd1=1, oder????????
+c              C. Villani Uni-KA, Feb 2005
                CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
      &                     IODDHR(1,IHCBIT),IODDHR(1,ICDXYZ),
      &                     IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
      &                     COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
      &                     NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
+               NDIMD1=3
             END IF
-C
             IF (IPRINT.GT.5) CALL HEADER('Calculating C derivatives',1)
-C
             NDER3 = 1
             NDER4 = 0
             IAOCR = 7
@@ -2230,9 +2262,7 @@ C
      &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
      &                  COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
      &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
-C
             IF (IPRINT.GT.5) CALL HEADER('Calculating D derivatives',1)
-C
             NDER3 = 0
             NDER4 = 1
             IAOCR = 10
@@ -2245,37 +2275,118 @@ C
 C           AB derivatives
 C           --------------
 C
-            IPATH  = 2
-            NDIMD2 = 3
-            CALL SETCAO(IPRINT)
-            CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
-            CALL CR1DRV(HRINT2,HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
-     &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
-     &                  COORCD,EXPCD,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
+            IF(U12INT) THEN
+c             half-computed A and B derivatives [ (d/dP)(d/dR)(ab|r12|cd) ]
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              IPATH  = 1
+              NDIMD2 = 1
+c             decreasing ntuv34, just for this derivative part
+              nsave34=ntuv34
+              ntuv34= max(1,(JMAXCD + 1)*(JMAXCD + 2)*(JMAXCD)/6)
+c             calculates half-transformed integrals before eriswp call
+              DO XMIADR=1,3
+c               loop over x,y,z coordinates
+c 
+c               A half-derivatives
+                AENONB=.TRUE.
+                if(iprint.gt.5)
+     .            write(lupri,*) 'half-computed A derivatives ', xmiadr
+                CALL CR1MIA(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                     IODDHR(1,0),INDHSQ,LMNPWR,IPNTUV,COORAB,
+     &                     EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
+                NDER3 = 0
+                NDER4 = 0
+                IAOCR = XMIADR
+                CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                      IODDHR(1,0),IODDHR(1,0),
+     &                      IODDHR(1,0),LMNPWR,IPNTUV,
+     &                      COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
+     &                      NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+c               B half-derivatives
+                AENONB=.FALSE.
+                if(iprint.gt.5)
+     .            write(lupri,*) 'half-computed B derivatives ', xmiadr
+c 
+                CALL CR1MIA(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                 IODDHR(1,0),INDHSQ,LMNPWR,IPNTUV,COORAB,
+     &                 EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
+                NDER3 = 0
+                NDER4 = 0
+                IAOCR = 3 + XMIADR
+                CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                      IODDHR(1,0),IODDHR(1,0),
+     &                      IODDHR(1,0),LMNPWR,IPNTUV,
+     &                      COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
+     &                      NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+c               just changing sign for B half-derivatives
+                call miach(aoint(1,iofrst+1,1,iaocr),ncct*khktab*khktcd)
+              END DO
+c             giving ntuv34 its value back
+              ntuv34= nsave34
+              XMIADR=0
+c             switching on the option for the calculation
+c             of (a-b)/(a+b) d/dA (ab|1/r12|cd)
+c             and (a-b)/(a+b) d/dB (ab|1/r12|cd) integral derivatives
+c             contribution
+              MIAU12=.TRUE.
+c             U12INT need to be false in the next call to CR1DRV
+c             R12INT=.FALSE.
+              U12INT=.FALSE.
+            END IF
+c
+            IF(MIAU12.AND.NGTOAB.EQ.1.AND.NPRFAB.EQ.1) THEN
+c             case a=b, uncontracted,      (a-b)/(a+b) = 0
+c             For derivatives of [T1,r12] integrals,
+c             Just skip the computation of the second contribution
+c
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              if(iprint.gt.5)
+     .        write(lupri,*) 'skipping A and B second-half derivatives'
+            ELSE
+              IPATH  = 2
+              NDIMD2 = 3
+              CALL SETCAO(IPRINT)
+              CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
+              CALL CR1DRV(HRINT2,HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+     &                    IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
+     &                    COORCD,EXPCD,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
 C
-            IF (IPRINT.GT.5) CALL HEADER('Calculating A derivatives',1)
+              IF(IPRINT.GT.5) CALL HEADER('Calculating A derivatives',1)
 C
-            NDER3 = 1
-            NDER4 = 0
-            IAOCR = 1
-            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
-     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
-     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
-     &                  COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
-     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+              NDER3 = 1
+              NDER4 = 0
+              IAOCR = 1
+              CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                    IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                    IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                    COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
+     &                    NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
  
-            IF (IPRINT.GT.5) CALL HEADER('Calculating B derivatives',1)
+              IF(IPRINT.GT.5) CALL HEADER('Calculating B derivatives',1)
 C
-            NDER3 = 0
-            NDER4 = 1
-            IAOCR = 4
-            CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
-     &                  IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
-     &                  IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
-     &                  COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
-     &                  NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+              NDER3 = 0
+              NDER4 = 1
+              IAOCR = 4
+              CALL CR2DRV(AOINT(1,IOFRST+1,1,IAOCR),CPINT,INDHER,
+     &                    IODDHR(1,IHCBIT),IODDHR(1,IABXYZ),
+     &                    IODDHR(1,ICCXYZ),LMNPWR,IPNTUV,
+     &                    COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
+     &                    NDER3,NDER4,NDIMD2,WRKCR2,LWKCR2,IPRINT)
+            END IF
+            IF(MIAU12) THEN
+c             After [T1,r12] integrals derivatives are computed,
+c             the logical variable U12INT is given its true value back
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              U12INT=.TRUE.
+              MIAU12=.FALSE.
+            END IF
+            if(miotst) then
+c             C. Villani (Uni Karlsruhe Feb 2005)
+              IF(UNDIFF) call mia2pr(aoint(1,iofrst+1,1,13),
+     .                               ncct,khktab,khktcd,1,lupri)
+              call miaprt(aoint(1,iofrst+1,1,1),iofrst,iprint,lupri)
+           end if
          END IF
-C
          IOFRST = IOFRST + MLTPZ
       END DO
 C
@@ -3104,3 +3215,164 @@ C
      &                      )
       RETURN
       END
+
+      subroutine miaprt(aoint,iof,iprint,iu)
+#include <implicit.h>
+#include <ericom.h>
+#include <eriao.h>
+      integer iprint
+      dimension aoint(ncct,khktab,khktcd,*)
+
+c     Not sure, here
+      if(ncct.ne.ncccc) stop "ncct.ne.ncccc, unexpected"
+
+c     if(iprint.ge.99) then
+        call header('Final spherical integrals - MIAPRT',-1)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "C derivatives: "
+        call mia2pr(aoint(1,iof+1,1,7),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "D derivatives: "
+        call mia2pr(aoint(1,iof+1,1,10),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "A derivatives: "
+        call mia2pr(aoint(1,iof+1,1,1),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) " "
+        write(iu,*) "==========================================="
+        write(iu,*) "B derivatives: "
+        call mia2pr(aoint(1,iof+1,1,4),ncccc,khktab,khktcd,3,iu)
+        write(iu,*) "==========================================="
+        write(iu,*) "Checking sum of derivatives... "
+c     end if
+      call mia2cps(aoint(1,iof+1,1,1),ncccc,khktab,khktcd,3,iu)
+
+      return
+      end
+c
+      subroutine mia2pr(aoint,nccmio,khktab,khktcd,ndimd,u)
+      implicit none
+      integer nccmio, khktab, khktcd, ndimd, u, i, j, k, icc
+      double precision aoint(nccmio,khktab,khktcd,ndimd)
+      character*1 xyz(3)
+
+      xyz(1)='x'
+      xyz(2)='y'
+      xyz(3)='z'
+
+      if(ndimd.gt.1) then
+        do k = 1, ndimd
+          write(u, '(/1x,a1,a)') xyz(k), ' derivatives '
+          do i = 1, khktab
+            do j = 1, khktcd
+              if(nccmio.eq.1) then
+                write(u,505) i, j, aoint(1,i,j,k)
+              else
+                stop 'may not work...'
+                do icc=1,nccmio
+                  write(u,505) i, j, aoint(1+icc-1,i,j,k)
+                end do
+              end if
+            end do
+          end do
+        end do
+      else
+        do i = 1, khktab
+          do j = 1, khktcd
+            if(nccmio.eq.1) then
+              write(u,505) i, j, aoint(1,i,j,1)
+            else
+              stop 'may not work...'
+              do icc=1,nccmio
+                write(u,505) i, j, aoint(1+icc-1,i,j,1)
+              end do
+            end if
+          end do
+        end do
+      end if
+
+      return
+ 505  format(2i4,f22.14)
+      end
+
+      subroutine miach(v,n)
+      implicit none
+      integer i, n
+      double precision v(n)
+c
+c     The half-computed B derivatives integrals have the wrong sign
+c     it would be more efficient to change sign inside the eri2cft,
+c     however this additional call should not affect efficiency much.
+c
+c     C. Villani (Uni Karlsruhe Feb 2005)
+c
+      do i=1,n
+        v(i)=-v(i)
+      end do
+      return
+      end
+
+      subroutine mia2cps(aoint,nccmio,khktab,khktcd,ndimd,u)
+      implicit none
+      logical prt
+      integer nccmio, khktab, khktcd, ndimd, u, i, j, k, icc
+      double precision aoint(nccmio,khktab,khktcd,ndimd), s, thr
+      character*1 xyz(3)
+c
+c     checks translational invariancy of the integrals derivatives
+c
+c     C. Villani, Uni Karlsruhe, Feb 2005
+
+      xyz(1)='x'
+      xyz(2)='y'
+      xyz(3)='z'
+
+      prt=.false.
+      thr=0.00000001d0
+
+      if(ndimd.gt.1) then
+        do k = 1, ndimd
+          if(prt) write(u, '(/1x,a1,a)') xyz(k), ' derivatives '
+          do i = 1, khktab
+            do j = 1, khktcd
+              s=aoint(1,i,j,k)+aoint(1,i,j,k+3)+
+     .          aoint(1,i,j,k+6)+aoint(1,i,j,k+9)
+              if(nccmio.eq.1) then
+                if(prt) write(u,505) i, j, s
+                if(dabs(s).gt.thr) then
+                  print *, i, j, s, 'non inv'
+                  write(u,*) i, j, s, 'non inv'
+                  call quit('Integral deriv. are trasl. non invariant')
+                end if
+              else
+c               not sure, here
+                stop 'Integral deriv. ncc>1, may not work...'
+              end if
+            end do
+          end do
+        end do
+      else
+        do i = 1, khktab
+          do j = 1, khktcd
+            s=aoint(1,i,j,k)+aoint(1,i,j,k+3)+
+     .        aoint(1,i,j,k+6)+aoint(1,i,j,k+9)
+            if(nccmio.eq.1) then
+              if(prt) write(u,505) i, j, s
+              if(dabs(s).gt.thr) then
+                print *, i, j, s, 'non inv'
+                write(u,*) i, j, s, 'non inv'
+                call quit('Integral deriv. are trasl. non invariant')
+              end if
+            else
+c               not sure, here
+              stop 'Integral deriv. ncc>1, may not work...'
+            end if
+          end do
+        end do
+      end if
+
+      return
+ 505  format(2i4,f22.14)
+      end

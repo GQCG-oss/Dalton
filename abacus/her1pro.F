@@ -1675,7 +1675,7 @@ C
      &    ' Calculation of parity violating electroweak'//
      &    ' interaction integrals'
           WRITE (LUPRI,'(A,F9.6//A/)')
-     &    ' Weinberg angle: 1-sin^2[theta_W] =',BGWEIN,
+     &    ' Weinberg angle: 1-4*sin^2[theta_W] =',BGWEIN,
      &    ' Enhancement factors Q(z) for symmetry-independent nuclei:'
           WRITE (LUPRI,'(A)')
      &    '   #   Isotope   Charge           Mass     #Neutrons'//

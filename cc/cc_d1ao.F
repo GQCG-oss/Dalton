@@ -34,8 +34,8 @@ C
 #include <single.h>
 C
 C  /* Deck cc_d1ao */
-      SUBROUTINE CC_D1AO(AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,ILLNR,NO,
-     &                   FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
+      SUBROUTINE CC_D1AO(IPDD,R12PRP,AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,
+     &                   ILLNR,NO,FNDPTIA, FNDPTIA2, FNDPTAB, FNDPTIJ)
 C
 C     Written by Asger Halkier January 1996.
 C
@@ -63,11 +63,12 @@ C
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
+      logical r12prp
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION AODEN(*), ZKAM(*), WORK(LWORK)
 #include <ccorb.h>
-#include <infind.h>
+#include <infind.h> 
 #include <inftap.h>
 #include <blocks.h>
 #include <ccsdinp.h>
@@ -82,8 +83,6 @@ C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*)
       CHARACTER*(*) FNDPTIA, FNDPTAB, FNDPTIJ, FNDPTIA2
-C     CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ
-C     CHARACTER*6 FNDPTIA2
       LOGICAL NO
 C
 C----------------------------------------
@@ -109,7 +108,8 @@ C
          KT1AM  = KONEIA + NT1AMX
          KLAMDH = KT1AM  + NT1AMX
          KLAMDP = KLAMDH + NLAMDT
-         KEND1  = KLAMDP + NLAMDT
+         KRMAT  = KLAMDP + NLAMDT 
+         KEND1  = KRMAT  + NMATIJ(1)
          LWRK1  = LWORK  - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
@@ -127,6 +127,7 @@ C
          CALL DZERO(WORK(KONEIJ),NMATIJ(1))
          CALL DZERO(WORK(KONEIA),NT1AMX)
          CALL DZERO(WORK(KT1AM),NT1AMX)
+         CALL DZERO(WORK(KRMAT),NMATIJ(1))
 C
 C--------------------------------------------------
 C        Set up the relaxation part of the density.
@@ -139,12 +140,62 @@ C
 C
 C-------------------------------------
 C        Add the Hartree-Fock density.
+C        Add R12/A' contribution (Elena)
 C-------------------------------------
 C
+celena
+         IF (R12PRP .AND. (IPDD .EQ. 3 .OR. IPDD .EQ. 5)) THEN
+            lunit = 0
+            IF (IPDD .EQ. 3) THEN
+               call gpopen(lunit,'CCR12YIJ','unknown',' ','unformatted',
+     &                     idummy,.false.)
+             ELSEIF (IPDD .EQ. 5) THEN
+               call gpopen(lunit,'CCR12YIJB','unknown',' ',
+     &                     'unformatted',idummy,.false.)
+             ENDIF
+        
+           do isymaj = 1,nsym
+              isymij = isymaj
+              ncvij = 0
+              do isyma = 1,nsym
+                 isymj = muld2h(isymaj,isyma)
+                 isymi = muld2h(isymij,isymj)
+                 ncvij = ncvij +  nrhf(isyma)*nrhf(isymi)
+              enddo
+            enddo
+        
+            read(lunit)(work(krmat+i-1),i=1,ncvij)
+            call gpclose(lunit,'KEEP')
+
+            DO ISYMI = 1,NSYM
+               ISYMJ = ISYMI
+               DO  J = 1,NRHF(ISYMJ)
+                   DO  I = J+1,NRHF(ISYMI)
+                       NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)
+     *                          *(J - 1) + I
+                       NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)
+     *                          *(I - 1) + J
+                       WORK(KONEIJ + NIJ - 1) = WORK(KONEIJ + NIJ - 1)
+     *                          + work(krmat + nij - 1)
+                       WORK(KONEIJ + NJI - 1) = WORK(KONEIJ + NJI - 1)
+     *                          + work(krmat + nji - 1)
+C
+                   ENDDO   
+               ENDDO   
+            ENDDO    
+         
+         ENDIF
+
+celena
+
          DO 80 ISYM = 1,NSYM
             DO 90 I = 1,NRHF(ISYM)
                NII = IMATIJ(ISYM,ISYM) + NRHF(ISYM)*(I - 1) + I
                WORK(KONEIJ + NII - 1) = WORK(KONEIJ + NII - 1) + TWO
+               if (r12prp .and. (ipdd .eq. 3 .or. ipdd .eq. 5)) then
+                  WORK(KONEIJ + NII - 1) = WORK(KONEIJ + NII - 1) + 
+     &                   1.0d0*work(krmat + nii - 1)              
+               endif
    90       CONTINUE
    80    CONTINUE
 C

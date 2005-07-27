@@ -2648,6 +2648,9 @@ C
 C
       IF (LMULBS .OR. R12CAL) THEN
 C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
+         DO ISYM = 1, NSYM
+	    NOCC(ISYM) = NOCC(ISYM) + NRXR12(ISYM)
+         END DO
          LUMULB = 34
          CALL GPOPEN(LUMULB,'AUXBAS','UNKNOWN','SEQUENTIAL',
      &               'FORMATTED',IDUMMY,LDUMMY)

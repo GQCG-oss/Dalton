@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 c*DECK CC_RHTR3 
-	SUBROUTINE CC_RHTR3(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
+      SUBROUTINE CC_RHTR3(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      &                      FC1AM,LUFC1,FC2AM,LUFC2,
      &                      WORK, LWORK,NSIMTR,IVEC,ITR)
 !
@@ -88,6 +88,7 @@ c*DECK CC_RHTR3
 #include <blocks.h>
 #include <ccsdio.h>
 #include <second.h>
+#include <r12int.h>
 !
       INTEGER LWORK, LUC, LUD, LUCS, LUP, LUM, IERRC, IERRD, IERRCS
       INTEGER IERRP, IERRM, LUDTIM, LUCSIM, IERRDTIM, LUB3
@@ -118,6 +119,7 @@ c*DECK CC_RHTR3
       INTEGER KRHO3, KC2AMP, KC2AMM, KENDCC3, LWRKCC3
       INTEGER LUSRTT1, LUSRTT2, LUSRTT3, LUCKJDT1, LUCKJDT2, LUCKJDT3
       INTEGER LU3VI, LU3VI2, LUTOC
+      INTEGER IDUM
 !
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -950,6 +952,10 @@ c*DECK CC_RHTR3
 !
                   IF (DIRECT) THEN
                      IDEL  = INDEXA(IDEL2)
+                     IF (NOAUXB) THEN
+                        IDUM = 1
+                        CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                     END IF
                      ISYMD = ISAO(IDEL)
                   ELSE
                      IDEL  = IBAS(ISYMD1) + ILLL

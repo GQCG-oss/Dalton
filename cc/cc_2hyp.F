@@ -374,13 +374,15 @@ c /* deck CC_2HYP */
 
       IF (.NOT.L_USE_CHI2) THEN
        CALL CCQR_FADRV('L0 ','o1 ','R1 ','R2 ',N0FATRAN, MXVEC2,
-     &                  WORK(K0FATRAN),WORK(K0FADOTS),WORK(K0FACONS),
+     &                  WORK(K0FATRAN),WORK(K0FADOTS),
+     &                  WORK(K0FACONS),
      &                  WORK(KEND0), LEND0, 'DOTP' )
       END IF
 
       IF (.NOT.L_USE_XKS3) THEN
         CALL CCQR_FADRV('L1 ','o1 ','R1 ','R1 ',NAFATRAN, MXVEC1,
-     &                   WORK(KAFATRAN),WORK(KAFADOTS),WORK(KAFACONS),
+     &                   WORK(KAFATRAN),WORK(KAFADOTS),
+     &                   WORK(KAFACONS),
      &                   WORK(KEND0), LEND0, 'DOTP' )
       END IF
 
@@ -402,7 +404,7 @@ c /* deck CC_2HYP */
        CALL CC_XIETA( WORK(KAEATRAN), NAEATRAN, IOPT, IORDER, 'L1 ',
      &                '---',IDUMMY,       DUMMY,
      &                'R2 ',WORK(KAEADOTS),WORK(KAEACONS),
-     &                .FALSE.,MXVEC2, WORK(KEND0), LEND0 )        
+     &                .FALSE.,MXVEC2, WORK(KEND0), LEND0 )
 
       END IF
 
@@ -1101,13 +1103,15 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
       IF ((.NOT.L_USE_CHI2) .AND. NO_2NP1_RULE) THEN
        CALL CCQR_FADRV('L0 ','o1 ','RC ','CR2',N0FATRAN, MXVEC2,
-     &                  WORK(K0FATRAN),WORK(K0FADOTS),WORK(K0FACONS),
+     &                  WORK(K0FATRAN),WORK(K0FADOTS),
+     &                  WORK(K0FACONS),
      &                  WORK(KEND0), LEND0, 'DOTP' )
       END IF
 
       IF (.NOT.L_USE_XKS3) THEN
         CALL CCQR_FADRV('LC ','o1 ','RC ','RC ',NAFATRAN, MXVEC1,
-     &                   WORK(KAFATRAN),WORK(KAFADOTS),WORK(KAFACONS),
+     &                   WORK(KAFATRAN),WORK(KAFADOTS),
+     &                   WORK(KAFACONS),
      &                   WORK(KEND0), LEND0, 'DOTP' )
       END IF
 

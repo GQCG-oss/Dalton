@@ -237,7 +237,7 @@ C--------------------------------------
 C     Read property integrals (FOCKX) in AO basis from file
 C--------------------------------------
 C
-      CALL CCPRPAO(LABELX,WORK(KFOCKX),IRREP,ISYM,IERR,
+      CALL CCPRPAO(LABELX,.TRUE.,WORK(KFOCKX),IRREP,ISYM,IERR,
      *             WORK(KEND1),LWRK1)
 C
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN

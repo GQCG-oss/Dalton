@@ -6014,7 +6014,7 @@ C
       INTEGER NABIJP, NABIJM, ISYMAI, ISYMBJ, NBASA, NBASB
       INTEGER NVIRA, KOFF1, KOFF2, ISYMK, ISYMC, ISYMD, ISYDI
       INTEGER ISYCJ, LENGTH, NTOTAL, NTOTBE, NTOTK, NCJ
-      INTEGER NDICJ, NCK, NRHFA, ISYML, ISYMKI, ISYMLJ, NLJ
+      INTEGER NDICJ, NCK, NRHFA1, ISYML, ISYMKI, ISYMLJ, NLJ
       INTEGER NKL, NKI, NKILJ
 !
 #if defined (SYS_CRAY)
@@ -6483,7 +6483,7 @@ C
 C
                      NBASA = MAX(NBAS(ISYAL),1)
                      NBASB = MAX(NBAS(ISYBE),1)
-                     NRHFA = MAX(NRHF(ISYAL),1)
+                     NRHFA1 = MAX(NRHF(ISYAL),1)
 C
                      KOFF1 = ILMRHF(ISYBE) + 1
 C
@@ -6497,7 +6497,7 @@ C
                      CALL DGEMM('T','N',NRHF(ISYAL),NRHF(ISYBE),
      *                          NBAS(ISYAL),ONE,XLAMDP(KOFF2),NBASA,
      *                          WORK(KSCR4),NBASA,ZERO,WORK(KSCR5),
-     *                          NRHFA)
+     *                          NRHFA1)
 C
 C-------------------------------------------
 C                    Store the gamma matrix.

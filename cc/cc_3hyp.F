@@ -320,19 +320,22 @@ c /* deck CC_3HYP */
 * calculate F{O} matrix contributions:
 *---------------------------------------------------------------------*
       CALL CCQR_FADRV('L0 ','o1 ','R2 ','R2 ',N0FATRAN, MXVEC2,
-     &                 WORK(K0FATRAN),WORK(K0FADOTS),WORK(K0FACONS),
+     &                 WORK(K0FATRAN),WORK(K0FADOTS),
+     &                 WORK(K0FACONS),
      &                 WORK(KEND0), LEND0, 'DOTP' )
 
       IF (L_USE_CHI3) CALL DSCAL(MX0FADOTS,-1.0d0,WORK(K0FACONS),1)
 
       IF (.NOT.L_USE_CHI3) THEN
         CALL CCQR_FADRV('L1 ','o1 ','R1 ','R2 ',N1FATRAN, MXVEC2,
-     &                   WORK(K1FATRAN),WORK(K1FADOTS),WORK(K1FACONS),
+     &                   WORK(K1FATRAN),WORK(K1FADOTS),
+     &                   WORK(K1FACONS),
      &                   WORK(KEND0), LEND0, 'DOTP' )
       END IF
 
       CALL CCQR_FADRV('L2 ','o1 ','R1 ','R1 ',N2FATRAN, MXVEC1,
-     &                 WORK(K2FATRAN),WORK(K2FADOTS),WORK(K2FACONS),
+     &                 WORK(K2FATRAN),WORK(K2FADOTS),
+     &                 WORK(K2FACONS),
      &                 WORK(KEND0), LEND0, 'DOTP' )
 
 *---------------------------------------------------------------------*

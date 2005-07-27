@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck ccsd_energy */
-      SUBROUTINE CCSD_ENERGY(LSORT,WORK,LWORK)
+      SUBROUTINE CCSD_ENERGY(LSORT,WORK,LWORK,APROXR12,CCR12RSP)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C     DIIS and Brueckner bit by Rika Kobayashi 1992.
@@ -49,6 +49,7 @@ C
 #include <maxorb.h>
       PARAMETER (XMONE = -1.0D0, IZERO = 0, TWO = 2.0D0, ZERO = 0.0D00)
       LOGICAL   CCSAV, CC1BSV, CC1ASV, CCPTSV, CCP3SV, LSORT, LCCEQ
+      LOGICAL   MP2R12TST,LRES
       DIMENSION WORK(LWORK)
       COMMON /LUDIIS/ LUTDIS, LUSDIS
 #include <ccorb.h>
@@ -65,12 +66,21 @@ C
 #include <qm3.h>
 #include <ccfdgeo.h>
 #include <r12int.h>
+#include <ccr12int.h>
+!Sonia
 #include <ccfop.h>
 #include <ccnoddy.h>
-      LOGICAL LCONV1,LCONV2,LCONVG,RSPIM2,EX,LEXIST
+      LOGICAL LCONVG,RSPIM2,EX,LEXIST,LHTF, TEMP_DIRECT
+      LOGICAL CCR12RSP
+      LOGICAL LCONV1,LCONV2
       CHARACTER*5 ETY0, ETY1, ETY2
-      CHARACTER MODEL*10, ETYPE*24
-      CHARACTER*8 LABEl1
+      CHARACTER MODEL*10, MODELR*10, ETYPE*24, MODELR12*24
+      CHARACTER*3 APROXR12
+      CHARACTER*8 FILER12,FILER12_2
+      CHARACTER*24 BLANKS
+      DATA BLANKS /'                        '/
+      INTEGER LENMOD
+      CHARACTER*8 LABEL1
 C
       CALL QENTER('CCSD_ENERGY')
 C
@@ -94,6 +104,9 @@ C
       IF (CCR3)  MODEL = 'CCSDR(3)  '
       IF (CCR1A) MODEL = 'CCSDR(1A) '
       IF (CCR1B) MODEL = 'CCSDR(1B) '
+      ! set model for CCR12
+      CALL CCSD_MODEL(MODELR12,LENMOD,24,MODEL,10,APROXR12)
+      MODEL = MODELR12(1:10)
 C
 #if defined (SYS_CRAY)
 C     Open file for diis extrapolation
@@ -123,47 +136,23 @@ C-------------------------------------------------
 C     Employ MP2-R12 method (WK/UniKA/04-11-2002).
 C-------------------------------------------------
 C
-      IF (CCR12) THEN
+      R12NOP = R12NOP .OR. .NOT. R12XXL
+      IF (R12CAL.AND..NOT.LISKIP) THEN
         IPRSAVE = IPRINT
         IPRINT  = IPRINT / 10
+        CALL GETTIM(T0,W0)
+        CALL CCSD_R12(WORK,LWORK,WORK,LWORK,CCR12RSP)
+        CALL GETTIM(T1,W1)
+        WRITE(LUPRI,*)'Time for MP2-R12 part cpu:', T1-T0
+        WRITE(LUPRI,*)'Time for MP2-R12 part wall:', W1-W0
+        ! restore print level
+        IPRINT = IPRSAVE
       END IF
-
-      R12NOP = R12NOP .OR. .NOT. R12XXL
-      IF (R12CAL) CALL CCSD_R12(WORK,LWORK,WORK,LWORK)
-
-      IF (CCR12) THEN
-       ! restore print level
-       IPRINT = IPRSAVE
-       IF (CC2 .OR. CCSD) THEN
-c        read r12 amplitudes from file CCR12_D for present
-c        ansatz and approximation and put on CCR12_C
-c
-         N2 = (NRHFT*(NRHFT+1))**2/4
-         IOFF1 = 0
-         IOFF2 = n2
-         IF (IOFF2+N2.GT.LWORK) CALL QUIT('No space for CCR12_C')
-         LU43  = 43
-         CALL GPOPEN(LU43,'CCR12_D','UNKNOWN',' ','FORMATTED',
-     &                     IDUM,LDUM)
- 1816    READ(LU43,'(2I3)',end=1817) IAN,IAP
-         READ(LU43,'(4E30.20)') (WORK(IOFF1+I),I=1,N2)
-         READ(LU43,'(4E30.20)') (WORK(IOFF2+I),I=1,N2)
-         IF ((IAN.NE.IANR12).OR.(IAP.NE.IAPR12)) GOTO 1816
-         CALL GPCLOSE(LU43,'KEEP') 
-         CALL GPOPEN(LU43,'CCR12_C','UNKNOWN',' ','FORMATTED',
-     &                     IDUM,LDUM)
-         WRITE(LU43,'(4E30.20)') (WORK(IOFF1+I),I=1,N2)
-         WRITE(LU43,'(4E30.20)') (WORK(IOFF2+I),I=1,N2)
-         CALL GPCLOSE(LU43,'KEEP') 
-        ELSE  
-         CALL QEXIT('CCSD_ENERGY')
-         RETURN
-        END IF
-      END IF
-
+C
 C     switch off R12-MP12 for future calls
       R12CAL = .FALSE.
       CC2R12INT = .FALSE.
+      TEMP_DIRECT = DIRECT
 
 C     Use LABEL (WK/UniKA/04-11-2002).
       LABEL = 'TRCCINT '
@@ -173,14 +162,83 @@ C     Use LABEL (WK/UniKA/04-11-2002).
             WRITE (LUPRI,'(/A/)') 'NOAUXB with HERDIR not implemented'
             GOTO 9999
          ENDIF
-         IF (.NOT. DIRECT) 
-     &               CALL QUIT('NOAUXB without DIRECT not implemented')
+C        IF (.NOT. DIRECT) 
+C    &               CALL QUIT('NOAUXB without DIRECT not implemented')
       END IF
 C
-      IALPR  = IPRINT
-C
+C     reset nbas, etc. to original values:
       IF (INTTR) CALL CCSD_INIT1(WORK,LWORK)
 C
+CHF
+      IF (CCR12.AND.MP2 .and. .not. r12prp) THEN
+         CALL QEXIT('CCSD_ENERGY')
+         RETURN
+      ELSE IF (.NOT.LISKIP) THEN
+C
+       IF (CCR12.AND.CC2.AND.(IANR12.GT.1)) THEN
+         TEMP_DIRECT = DIRECT
+         DIRECT = .TRUE.
+         IF (IANR12.EQ.2 .OR. IANR12.EQ.3) THEN
+           WRITE(LUPRI,*)'Preparing ansatz 2/3 ... ONEAUX=',ONEAUX
+           CALL CCR12PREP2(WORK,LWORK)
+         ELSE
+           WRITE(LUPRI,*) 'IANR12 = ',IANR12 
+           CALL QUIT('This Ansatz is currently not implemented')
+         END IF
+       ELSE IF (CCR12.AND.(IANR12.EQ.1).AND.
+     &        (CCSD.OR.CCPT.OR.CC3.OR.CCP3)) THEN
+         WRITE(LUPRI,*)'Preparing ansatz 1 ... ONEAUX=',ONEAUX
+         DIRECT = .TRUE.
+         CALL GETTIM(T0,W0)
+         CALL CC_R12PREPCCSD(WORK,LWORK)
+         CALL GETTIM(T1,W1)
+         DIRECT = TEMP_DIRECT
+         WRITE(LUPRI,*)'Time used for V^albe_kl cpu:', T1-T0
+         WRITE(LUPRI,*)'Time used for V^albe_kl wall:',W1-W0 
+       END IF
+      END IF
+C     ----------------------------------------------------------------
+C     Read packed r12 amplitudes from file CCR12_D for present
+C     Ansatz and approximation and put on CCR12_C and CCR0_1___1
+C     ----------------------------------------------------------------
+      IF (CCR12.AND..NOT.(CIS.OR.CCS.OR.MP2)) THEN
+           KTAMP12 = 1
+           KEND1   = KTAMP12 + NGAMMA(1)
+           LWRK1   = LWORK - KEND1
+           IF (LWRK1 .LT. 0) THEN
+             CALL QUIT('Not enough work space for R12')
+           END IF
+           LU43  = 43
+           CALL GPOPEN(LU43,FCCR12D,'UNKNOWN',' ','UNFORMATTED',
+     &                 IDUM,LDUM)
+           write(lupri,*)'ianr12,iapr12:', ianr12, iapr12
+ 1816      READ(LU43,end=1817) IAN,IAP,APROXR12
+           READ(LU43) (WORK(KTAMP12-1+I),I=1,NGAMMA(1))
+           IF ((IAN.NE.IANR12).OR.(IAP.NE.IAPR12)) GOTO 1816
+           CALL GPCLOSE(LU43,'KEEP') 
+           CALL GPOPEN(LU43,FCCR12C,'UNKNOWN',' ','UNFORMATTED',
+     &                 IDUM,LDUM)
+           WRITE(LU43) (WORK(KTAMP12-1+I),I=1,NGAMMA(1))
+           CALL GPCLOSE(LU43,'KEEP') 
+C          
+           IF (.NOT.CCRSTR) THEN
+c            WRITE(LUPRI,*) 'Writing R12 amplitudes to disk, MODEL=',MODEL 
+             IOPT = 32
+             CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,DUMMY,DUMMY,
+     &                     WORK(KTAMP12),WORK(KEND1),LWRK1) 
+           END IF
+      END IF
+C
+C----------------------------------------------------------------------------
+C     Calculate X^V intermediates needed for CCR12 response and finite fields
+C----------------------------------------------------------------------------
+C
+      IF (CCR12RSP) THEN
+        filer12 = frhtf
+        filer12_2 = frhtf2
+        call cc_r12vxint(work,lwork,.false.)
+      END IF
+
 C----------------------------------------------------------------------
 C     Save RSPIM flag to calculate response global intermediates later.
 C     If CCS or MP2 no intermediates is calculated.
@@ -235,13 +293,14 @@ C
       WRITE(LUPRI,'(10X,A,I8)')
      *     'Total number of amplitudes in ccsd      :  ',NCCVAR
       WRITE(LUPRI,*)
+      CALL FLSHFO(LUPRI)
 C
 C------------------------------------------
 C     Sort AO-integrals into distributions.
 C------------------------------------------
 C
       IF ((.NOT. DIRECT).AND. LSORT) THEN
-         CALL CCSD_SORTAO(WORK,LWORK,IALPR)
+         CALL CCSD_SORTAO(WORK,LWORK)
       ENDIF
 C
 C----------------------------------------------------------------
@@ -263,7 +322,9 @@ C
                CALL QUIT('Insufficient spaces in CCSD_ENERGY')
             ENDIF
             CALL DZERO(WORK(KT1AM),NT1AMX)
-            CALL CCSD_IAJB(WORK(KT2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+            LHTF = .FALSE.
+            CALL CCSD_IAJB(WORK(KT2AM),WORK(KT1AM),FILER12,FILER12_2,
+     *                          LHTF,.FALSE.,.FALSE.,WORK(KEND1),LWRK1)
             REWIND(LUIAJB)
             CALL WRITI(LUIAJB,IRAT*NT2AM(ISYMOP),WORK(KT2AM))
          ENDIF
@@ -295,8 +356,7 @@ C------------------------
 C     Dynamic allocation.
 C------------------------
 C
-      NRHFTRIA= NRHFT * (NRHFT+1) / 2
-      NTAMR12 = 2 * NRHFTRIA * NRHFTRIA
+      NTAMR12 = 0 
       IF (CCD) THEN
         NTAMP = NT2AMX
       ELSE
@@ -304,17 +364,24 @@ C
       END IF
       IF (LMULBS) THEN
 C       add length of R12 part
+        NTAMR12 = NGAMMA(1)
         NTAMP = NTAMP + NTAMR12
       ENDIF 
 C
+C     CCRHSN assumes that T2AM can hold the cluster amplitudes 
+C     or the vector function in different storage schemes 
+C     (triangular, squared, half transformed)
+C     --> R12 doubles cannot be stored directly after conv. doubles
       KFOCKD  = 1
       KT1AM   = KFOCKD  + NORBTS
       KOMEG1  = KT1AM   + NT1AMX
       KOMEG2  = KOMEG1  + NT1AM(ISYMOP)
       KT2AM   = KOMEG2
      *        + MAX(NTAMP,NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
-      KEND1   = KT2AM + NT2SQ(ISYMOP)  ! CCRHSN uses T2AM for a squared array
-
+      KEND1   = KT2AM + MAX(NT2SQ(ISYMOP),(NT2AMX+NTAMR12))  ! CCRHSN uses T2AM for a squared array.
+                                       ! This implies also, that we cannot store 
+                                       ! the R12 doubles right after the doubles
+                                       ! before calling ccrhs.
       IF (CCPAIR) THEN
 C        Work space for printing of pair energies (WK/UniKA/21-11-2002).
          KES     = KEND1
@@ -327,7 +394,7 @@ C        Work space for printing of pair energies (WK/UniKA/21-11-2002).
          KT2T    = KT2S    + NRHFT * (NRHFT + 1)/2
          KEND1   = KT2T    + NRHFT * (NRHFT + 1)/2
       END IF 
-
+      
       LWRK1   = LWORK   - KEND1
 C
       IF ( KEND1 .GT. LWORK ) THEN
@@ -369,7 +436,9 @@ C-----------------------------------------------------------
 C
       IF (INTTR.AND.(.NOT.LISKIP)) THEN
          CALL DZERO(WORK(KT1AM),NT1AMX)
-         CALL CCSD_IAJB(WORK(KT2AM),WORK(KT1AM),WORK(KEND1),LWRK1)
+         LHTF = .FALSE.
+         CALL CCSD_IAJB(WORK(KT2AM),WORK(KT1AM),FILER12,FILER12_2,LHTF,
+     *                       .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
          REWIND(LUIAJB)
          CALL WRITI(LUIAJB,IRAT*NT2AM(ISYMOP),WORK(KT2AM))
       ELSE
@@ -390,7 +459,7 @@ C
       IF (CCRSTR.AND.(.NOT.MP2)) THEN
          ETY1   = 'RSTAR'
          IOPT   = 33
-         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+         CALL CC_RDRSP('R0',0,1,IOPT,MODELR,WORK(KT1AM),WORK(KT2AM))
          IF (IOPT.EQ.33) THEN
            INQUIRE(FILE='CCSD_TAM',EXIST=LEXIST,IOSTAT=IOS,ERR=990)
            IF (LEXIST) THEN ! read old CCSD_TAM file
@@ -414,7 +483,12 @@ C           Print MP2 pair energies (WK/UniKA/21-11-2002).
      *                     WORK(KES),WORK(KET),
      *                     WORK(KQS),WORK(KQT))
          END IF
-         CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),IALPR)
+         IF (CCR12.AND.CC2.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+           LRES = .FALSE.
+           CALL CCRHS_EPPP(WORK(KT2AM),WORK(KEND1),LWRK1,APROXR12,
+     &                     LRES,IDUMMY,CDUMMY,IDUMMY,1)
+         END IF
+         CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),IPRINT)
          IF (IPRINT .GT. 4) THEN
             CALL AROUND('Largest amplitudes in MP2 guess')
             CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
@@ -422,6 +496,7 @@ C           Print MP2 pair energies (WK/UniKA/21-11-2002).
             CALL CC_PRAM(WORK(KOMEG1),PT1,1)
          ENDIF
          ETY1 = 'MP2  '
+ 
       ENDIF
 C
 C-----------------------------------------------------------------------
@@ -430,6 +505,8 @@ C-----------------------------------------------------------------------
 C
       EN1=0D0
       EN2=99D0
+      EN1R12 = 0.0d0
+      EN2R12 = 0.0d0
       LCONVG=.FALSE.
       ITER=1
 C
@@ -446,28 +523,22 @@ C
       IF (CCSTST) THEN
          CALL DZERO(WORK(KT2AM),NT2AMX)
       ENDIF
-
-      IF (CCR12) THEN
+C
+      IF (CCR12.AND..NOT.(CCS.OR.CIS).AND..NOT.R12PRP) THEN
 C       read R12 amplitudes
-        N2 = NRHFTRIA * NRHFTRIA
-        KTAMP12S = KOMEG2   + NT2AMX
-        KTAMP12T = KTAMP12S + N2
-        IF ( (KTAMP12T+N2) .GT. KT2AM )
+        KTAMP12 = KOMEG2 + NT2AMX
+        IF ( (KTAMP12+NGAMMA(1)) .GT. KT2AM )
      *    CALL QUIT('Allocation error in CCSD_ENERGY!')
-        LUNIT = 0 
-        CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
-     &                     IDUM,LDUM)
-        READ(LUNIT,'(4E30.20)') (WORK(KTAMP12S+IJ), IJ = 0, N2-1)
-        READ(LUNIT,'(4E30.20)') (WORK(KTAMP12T+IJ), IJ = 0, N2-1)
-        CALL GPCLOSE(LUNIT,'KEEP')
-      END IF 
+        IOPT = 32
+        CALL CC_RDRSP('R0 ',0,1,IOPT,MODELR,DUMMY,WORK(KTAMP12))
+      END IF
 C
       IT1 = 0
       IF ( ETY1.EQ.'RSTAR' ) IT1 = 1
       CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
-     *                WORK(KTAMP12S),WORK(KTAMP12T),
+     *                WORK(KTAMP12),
      *                WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
-     *                ETY1,ER12S,ER12T,LMULBS,IALPR,IT1,ITER)
+     *                ETY1,ER12,LMULBS,IT1,ITER,APROXR12)
 C
       EINI = EN2
 C
@@ -491,8 +562,14 @@ C
          IOPT = 3
          CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT1AM),
      *                 WORK(KT2AM),WORK(KEND1),LWRK1)
+         IF (CCR12.AND..NOT.(CCS.OR.CIS)) THEN
+           IOPT =32
+           CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,DUMMY,
+     *                 WORK(KTAMP12),WORK(KEND1),LWRK1)
+         END IF
 C
          EN1 = EN2
+         EN1R12 = ER12
 C
          IF ( IPRINT .GT. 2 ) THEN
             WRITE(LUPRI,249) ITER
@@ -500,8 +577,10 @@ C
             WRITE(LUPRI,*)'      -----------------'
             WRITE(LUPRI,*)
          ENDIF
+
          CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),WORK(KT2AM),
-     *               WORK(KEND1),LWRK1)
+     *               WORK(KEND1),LWRK1,APROXR12)
+
 C
   240    CONTINUE
 C
@@ -516,9 +595,9 @@ C
          ENDIF
 C
          IF (IPRINT .GE. 5) THEN
-            WRITE(LUPRI,529) 'Norm of t1am   after ccvec:',
+            WRITE(LUPRI,529) 'Norm of t1am    after ccvec:',
      *               DDOT(NT1AMX,WORK(KT1AM),1,WORK(KT1AM),1)
-            WRITE(LUPRI,529) 'Norm of t2am   after ccvec:',
+            WRITE(LUPRI,529) 'Norm of t2am    after ccvec:',
      *               DDOT(NT2AMX,WORK(KT2AM),1,WORK(KT2AM),1)
          ENDIF
          OMNM1 = DDOT(NT1AM(ISYMOP),WORK(KOMEG1),1,WORK(KOMEG1),1)
@@ -528,6 +607,7 @@ C
             WRITE(LUPRI,529) 'Norm of omega1 after ccvec:',OMNM1
             WRITE(LUPRI,529) 'Norm of omega2 after ccvec:',OMNM2
          END IF
+
 C
          IF (CCSLV) THEN
            IF (IPRINT .GE. 3) THEN
@@ -550,12 +630,24 @@ C
          CALL CCSD_NXTAM(WORK(KT1AM),WORK(KT2AM),DUMMY,WORK(KOMEG1),
      *                   WORK(KOMEG2),DUMMY,WORK(KFOCKD),.FALSE.,
      *                   ISYMOP,0.0D0)
+C        IF (IPRINT .GE. 5) THEN
+C           WRITE(LUPRI,529) 'Norm of t1am   after NXTAM:',
+C    *               DDOT(NT1AMX,WORK(KT1AM),1,WORK(KT1AM),1)
+C           WRITE(LUPRI,529) 'Norm of t2am   after NXTAM:',
+C    *               DDOT(NT2AMX,WORK(KT2AM),1,WORK(KT2AM),1)
+C        ENDIF
+C        IF (IPRINT .GE. 3) THEN
+C           WRITE(LUPRI,529) 'Norm of omega1 after NXTAM:',
+C    *             DDOT(NT1AM(ISYMOP),WORK(KOMEG1),1,WORK(KOMEG1),1)
+C           WRITE(LUPRI,529) 'Norm of omega2 after NXTAM:',
+C    *             DDOT(NT2AM(ISYMOP),WORK(KOMEG2),1,WORK(KOMEG2),1)
+C        END IF
 C         ------------------------------------------------
 C         set address for singles amplitudes in DIIS 
 C         (have to be just before the doubles amplitudes)
 C         ------------------------------------------------
           KTAMP1  = KT2AM   - NT1AMX
-         IF ( KTAMP1 .LT. (KOMEG2+NT2AMX) )
+         IF ( KTAMP1 .LT. (KOMEG2+NT2AMX+NTAMR12) )
      *     CALL QUIT('Allocation error in CCSD_ENERGY!')
 
          IF (LMULBS) THEN
@@ -563,32 +655,25 @@ C          -----------------------------------------------------------
 C          for DIIS we put the R12 part of the vector function behind
 C          the conventional doubles part 
 C          -----------------------------------------------------------
-           KOMEG12S = KOMEG2   + NT2AMX
-           KOMEG12T = KOMEG12S + NRHFTRIA*NRHFTRIA
-           IF ( (KOMEG12T+NRHFTRIA*NRHFTRIA) .GT. KTAMP1 )
+           KOMEG12 = KOMEG2   + NT2AMX
+           IF ( (KOMEG12+NGAMMA(1)) .GT. KTAMP1 )
      *       CALL QUIT('Allocation error in CCSD_ENERGY!')
 C          ---------------------------------------
 C          and similar for the cluster amplitudes
 C          ---------------------------------------
-           KTAMP12S = KT2AM    + NT2AMX
-           KTAMP12T = KTAMP12S + NRHFTRIA*NRHFTRIA
-           KEND2    = KTAMP12T + NRHFTRIA*NRHFTRIA
-           LWRK2    = LWORK    - KEND2
-           IF ( LWRK2 .LT. 0 ) THEN
-              CALL QUIT('Insufficient spaces in CCSD_ENERGY (2)')
-           ENDIF
+           KTAMP12 = KT2AM   + NT2AMX
 C          --------------------------------------------------------
 C          read r12 part of the vector function and the amplitudes
 C          and apply the perturbational update for the amplitudes:
 C          --------------------------------------------------------
-           LCCEQ = .TRUE.
-           CALL CC_R12NXTAM(WORK(KOMEG12S),WORK(KOMEG12T),
-     &                      WORK(KTAMP12S),WORK(KTAMP12T),LCCEQ,
-     &                      ER12S,ER12T,IPRINT,WORK(KEND2),LWRK2)
-
-         ELSE
-           KEND2 = KEND1
-           LWRK2 = LWRK1
+             LCCEQ = .TRUE.
+             CALL CC_R12NXTAM(WORK(KOMEG12),1,
+     &                      WORK(KTAMP12),LCCEQ,
+     &                      ER12,WORK(KEND1),LWRK1)
+C            IF (IPRINT .GE. 5) THEN
+c              WRITE(LUPRI,529) 'Norm of R12amp. after NXTAM:',
+c    *               DDOT(NGAMMA(1),WORK(KTAMP12),1,WORK(KTAMP12),1)
+C            ENDIF
          END IF 
 
          IF (CCSTST) THEN
@@ -606,7 +691,8 @@ C---------------------------------
 C        The order is important !!
 C---------------------------------
 C
-         ETY2 = 'CCSD '
+         ETY2 = MODEL(1:5)//'     '
+         IF (CCSD.OR.CCPT.OR.CCP3)  ETY2 = 'CCSD '
          IF (CCD)   ETY2 = 'CCD  '
          IF (CCSDT) ETY2 = 'CC3  '
          IF (CC1B)  ETY2 = 'CC-1b'
@@ -615,24 +701,26 @@ C
 C
          IT1 = 1
          CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
-     *                   WORK(KTAMP12S),WORK(KTAMP12T),
-     *                   WORK(KEND2),LWRK2,EN2,POTNUC,ESCF,
-     *                   ETY2,ER12S,ER12T,LMULBS,IPRINT,IT1,ITER)
+     *                   WORK(KTAMP12),
+     *                   WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
+     *                   ETY2,ER12,LMULBS,IT1,ITER,
+     *                   APROXR12)
 C
-         IF (CCR12) THEN
+         EN2R12 = ER12
+C
+         IF (CCR12.AND..NOT.(CCS.OR.CIS)) THEN
 C          Save new R12 amplitudes on disk:
            LUNIT = 0 
-           CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+           CALL GPOPEN(LUNIT,FCCR12C,'UNKNOWN',' ','UNFORMATTED',
      &                       IDUM,LDUM)
-           N2 = NRHFTRIA * NRHFTRIA
-           WRITE(LUNIT,'(4E30.20)') (WORK(KTAMP12S+IJ), IJ = 0, N2-1)
-           WRITE(LUNIT,'(4E30.20)') (WORK(KTAMP12T+IJ), IJ = 0, N2-1)
+           WRITE(LUNIT) (WORK(KTAMP12-1+I),I=1,NGAMMA(1))
            CALL GPCLOSE(LUNIT,'KEEP')
          END IF
 C
          CALL FLSHFO(LUPRI)
 C
-         LCONV1 = DABS(EN2-EN1) .LT. THRENR
+         LCONV1 = DABS(EN2-EN1) .LT. THRENR .AND.
+     &        DABS(EN2R12-EN1R12).LT.THRENR
          LCONV2 = OMNM .LT. THRVEC
          LCONVG = LCONV1 .AND. LCONV2
 
@@ -668,17 +756,17 @@ C
            END IF
          ENDIF
 C
-      IF (CCR12) THEN
-        CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5)
-      ELSE
-        ETYPE(1:5) = ETY2(1:5)
-        LENET = 5
-      END IF
+      CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
 
       WRITE(LUPRI,250) ETYPE(1:LENET),THRENR,EN2
       WRITE(LUPRI,'(1X,A,1P,D15.8)')
      & 'Final 2-norm of the CC vector function: ',OMNM
  250  FORMAT(/,1x,A,' energy converged to within ',D10.2,' is ',F16.9)
+      IF (CCR12) THEN
+        WRITE(LUPRI,'(A,D10.2,a,F16.9)') 
+     &  ' R12       energy converged to within ',THRENR,' is ',ER12
+      END IF
+c
       IF (CCPAIR) THEN 
 C        Print CC pair energies (WK/UniKA/21-11-2002).
          CALL CCSD_CBS2(WORK(KT1AM),WORK(KT2AM),WORK(KEND1),LWRK1,
@@ -698,6 +786,9 @@ C
       CALL GPCLOSE(LUTDIS,'DELETE')
       CALL GPCLOSE(LUSDIS,'DELETE')
 #endif
+      IF (CCR12.AND.CC2.AND.(IANR12.GT.1)) THEN
+         DIRECT = TEMP_DIRECT 
+      END IF
 C
 C--------------------------------------------------------------
 C     Print largest amplitudes in the zero order wave function.
@@ -793,16 +884,34 @@ C----------------------------------
 C     save a copy on file CCR0___0
 C----------------------------------
 C
-      KT0AM = KT2AM + NT2AMX
-      KEND0 = KT0AM + NALLAI(1)
-      LRWK0 = LWORK - KEND0
+      KT0AM   = KEND1
+      KEND2   = KT0AM   + 2*NALLAI(1)
+      LWRK2   = LWORK - KEND2
+
+      IF ( LWRK2 .LT. 0 ) THEN
+         write(lupri,*) 'LWORK, LWRK2: ',LWORK, LWRK2
+         CALL QUIT('Insufficient spaces in CCSD_ENERGY (2)')
+      ENDIF
 
       CALL DZERO(WORK(KT0AM),2*NALLAI(1))
 C
       IOPT = 7
       CALL CC_WRRSP('R0',0,1,IOPT,MODEL,WORK(KT0AM),WORK(KT1AM),
-     *              WORK(KT2AM),WORK(KEND0),LWRK0)
+     *              WORK(KT2AM),WORK(KEND2),LWRK2)
 C
+C     --------------------------------------------------------
+C     for CC-R12 save also the R12 amplitudes on CCR0... file
+C     --------------------------------------------------------
+C
+      !R12 amps. are still on KTAMP12 = KT2AM + NT2AMX!
+      !do not overwrite them before!
+      IF (CCR12) THEN
+        IOPT=32
+        CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,WORK(KT0AM),DUMMY,
+     &                WORK(KTAMP12),WORK(KEND2),LWRK2)
+C
+      END IF
+ 
 C
 C SLV98,OC
 C
@@ -843,7 +952,7 @@ C
          ENDIF
 C
          CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),
-     *               WORK(KT2AM),WORK(KEND1),LWRK1)
+     *               WORK(KT2AM),WORK(KEND1),LWRK1,APROXR12)
 C
          IF (CCPT) THEN
             CC1B   = CC1BSV
@@ -856,7 +965,7 @@ C
          ECCP2 = TWO*DDOT(NT2AMX,WORK(KT2AM),1,WORK(KOMEG2),1)
 C
          IOPT = 3
-         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+         CALL CC_RDRSP('R0',0,1,IOPT,MODELR,WORK(KT1AM),WORK(KT2AM))
 C
          IF ( CCR3 ) THEN
 C
@@ -902,7 +1011,7 @@ C
 C
             ENDIF
 C
-         ENDIF
+         ENDIF ! end CCR3
 C
          ETOT = EN2 + ECCP1 + ECCP2
 c        IF (CCPT) THEN
@@ -938,27 +1047,17 @@ C
       WRITE(LUPRI,'(12X,A,A,A,F32.10,/)') 'Total ',ETY0,' energy: ',ESCF
       WRITE(LURES,'(/)')
       WRITE(LURES,'(12X,A,A,A,F32.10)') 'Total ',ETY0,' energy: ',ESCF
-      IF (CCR12 .AND. ETY1(1:3).EQ.'MP2') THEN
-          CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5)
-      ELSE
-          ETYPE(1:5) = ETY1(1:5)
-          LENET = 5
-      END IF 
-      WRITE(LUPRI,'(12X,A,A,A,F32.10,/)') 'Total ',ETYPE(1:LENET),
-     &    ' energy: ',EINI
-      WRITE(LURES,'(12X,A,A,A,F32.10)')   'Total ',ETYPE(1:LENET),
-     &    ' energy: ',EINI
+      CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5,APROXR12)
+      WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') 'Total ',ETYPE(1:LENET),
+     &    ' energy: ',BLANKS(1:12-LENET),EINI
+      WRITE(LURES,'(12X,A,A,A,A,F25.10)')   'Total ',ETYPE(1:LENET),
+     &    ' energy: ',BLANKS(1:12-LENET),EINI
       IF (.NOT. (MP2 .OR. NOCCIT)) THEN
-        IF (CCR12) THEN
-          CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5)
-        ELSE
-          ETYPE(1:5) = ETY2(1:5)
-          LENET = 5
-        END IF
-        WRITE(LUPRI,'(12X,A,A,A,F32.10)') 'Total ',ETYPE(1:LENET),
-     &     ' energy: ',EN2
-        WRITE(LURES,'(12X,A,A,A,F32.10)') 'Total ',ETYPE(1:LENET),
-     &     ' energy: ',EN2
+        CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
+        WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
+     &     ' energy: ',BLANKS(1:12-LENET),EN2
+        WRITE(LURES,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
+     &     ' energy: ',BLANKS(1:12-LENET),EN2
       END IF
       END IF
       ECCGRS = EN2
@@ -988,10 +1087,20 @@ C
      *        'The E4 doubles and triples:', ECCP2
          WRITE(LURES,'(12X,A,F25.10)')
      *        'The E5 singles and triples:', ECCP1
-         IF (CCPTSV) THEN
+         IF (CCPTSV.AND..NOT.CCR12) THEN
             WRITE(LUPRI,'(/,12X,A,F31.10)') 'Total energy CCSD(T):',ETOT
             WRITE(LURES,'(/,12X,A,F31.10)') 'Total energy CCSD(T):',ETOT
-         ELSE
+         ELSE IF ((CCPTSV.AND.CCR12).AND.(IANR12.EQ.1)) THEN
+            WRITE(LUPRI,'(/,12X,A,A,A,F23.10)') 
+     &            'Total CCSD(R12)(T)/',APROXR12,'energy:',ETOT
+            WRITE(LURES,'(/,12X,A,A,A,F23.10)') 
+     &            'Total CCSD(R12)(T)/',APROXR12,'energy:',ETOT
+         ELSE IF ((CCP3SV.AND.CCR12).AND.(IANR12.EQ.1)) THEN
+            WRITE(LUPRI,'(/,12X,3A,F25.10)') 'Total CC(3)(R12)/',
+     &            APROXR12,'energy:',ETOT
+            WRITE(LURES,'(/,12X,3A,F25.10)') 'Total CC(3)(R12)/',
+     &            APROXR12,'energy:',ETOT
+         ELSE IF (CCP3SV.AND..NOT.CCR12) THEN
             WRITE(LUPRI,'(/,12X,A,F31.10)') 'Total energy CC(3):  ',ETOT
             WRITE(LURES,'(/,12X,A,F31.10)') 'Total energy CC(3):  ',ETOT
          ENDIF
@@ -1025,8 +1134,9 @@ C
 C
          CCSAV = CCSDT
          CCSDT = .FALSE.
+  
          CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),WORK(KT2AM),
-     *               WORK(KEND1),LWRK1)
+     *               WORK(KEND1),LWRK1,APROXR12)
          CCSDT = CCSAV
 C
          IF (IPRINT .GT. 1) WRITE(LUPRI,'(/)')
@@ -1310,9 +1420,10 @@ C
       RETURN
       END
 C  /* Deck ccsd_eccsd */
-      SUBROUTINE CCSD_ECCSD(T1AM,T2AM,FCDIAG,TAMR12S,TAMR12T,
+      SUBROUTINE CCSD_ECCSD(T1AM,T2AM,FCDIAG,TAMR12,
      *                      WORK,LWORK,XECCSD,POTNUC,
-     *                      ESCF,ETY,ER12S,ER12T,LR12,IALPR,IT1,ITER)
+     *                      ESCF,ETY,ER12,LR12,IT1,ITER,
+     *                      APROXR12)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
@@ -1320,20 +1431,29 @@ C     Ove Christiansen 23-1-1996: Introduction of Finite field contribution.
 C                                 IT1 = 0 : no amplitudes on disk
 C                                 IT1 = 1 : t1 amplitudes read from disk
 C
+C  Bug fix for frozen core in finite field calculations, 
+C  C.Haettig, 23.3.05
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 #include <iratdef.h>
       DIMENSION FCDIAG(*)
-      DIMENSION T1AM(*),T2AM(*),TAMR12S(*), TAMR12T(*),WORK(*)
+      DIMENSION T1AM(*),T2AM(*),TAMR12(*),WORK(*)
       CHARACTER ETY*5, ETYPE*24, MODEL*10
-      LOGICAL LEXIST, LR12
+      CHARACTER*(*) APROXR12
+      LOGICAL LEXIST, LR12, LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+      INTEGER ICMO(8,8), NCMO(8), IGLMRHS(8,8), IGLMVIS(8,8), NGLMDS(8)
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccfield.h>
 #include <ccinftap.h>
+#include <r12int.h>
+#include <ccr12int.h>
+
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1412,11 +1532,33 @@ C
       DO 13 IF = 1, NFIELD
         IF (NONHF) THEN
 C
+         DO ISYM = 1, NSYM
+            ICOUNT = 0
+            ICOUNT3 = 0
+            DO ISYM2 = 1, NSYM
+               ISYM1 = MULD2H(ISYM,ISYM2)
+               ICMO(ISYM1,ISYM2)    = ICOUNT
+               ICOUNT  = ICOUNT  + NBAS(ISYM1)*NORBS(ISYM2)
+               ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NRHFS(ISYM2)
+            END DO
+            NCMO(ISYM)   = ICOUNT
+            NGLMDS(ISYM) = ICOUNT
+
+            ICOUNT2 = 0
+            DO ISYM2 = 1, NSYM
+               ISYM1 = MULD2H(ISYM,ISYM2)
+               IGLMRHS(ISYM1,ISYM2) = ICOUNT2
+               IGLMVIS(ISYM1,ISYM2) = ICOUNT3
+               ICOUNT2 = ICOUNT2 + NBAS(ISYM1)*NRHFS(ISYM2)
+               ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NVIRS(ISYM2)
+            END DO
+         END DO
+C
          KONEP  = 1
          KT1AM  = KONEP  + N2BST(ISYMOP)
-         KLAMDP = KT1AM  + NT1AMX
-         KLAMDH = KLAMDP + NLAMDT
-         KEND1  = KLAMDH + NLAMDT
+         KLAMDPS= KT1AM  + NT1AMX
+         KLAMDHS= KLAMDPS+ NGLMDS(1)
+         KEND1  = KLAMDHS+ NGLMDS(1)
          LWRK1  = LWORK  - KEND1
          IF ( LWRK1 .LT. 0 )
      *     CALL QUIT(' Too little workspace in ccsd_eccsd-2')
@@ -1436,34 +1578,33 @@ C
                CALL QUIT('IT1 should be 0 or 1 in ccsd_eccsd')
             ENDIF
          ENDIF
-C
-         CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
-     *               WORK(KEND1),LWRK1)
-C
-         ISYFAO = 1
-         ISYMPA = 1
-         ISYMHO = 1
-C
-         CALL CC_FCKMO(WORK(KONEP),WORK(KLAMDP),WORK(KLAMDH),
-     *                 WORK(KEND1),LWRK1,ISYFAO,ISYMPA,ISYMHO)
-C
-         IF (IALPR .GT. 50) THEN
-            CALL AROUND( 'In CCSD_ECCSD: Pert. matrix' )
-            CALL CC_PRFCKMO(WORK(KONEP),ISYMOP)
-         ENDIF
-C
-         DO 200 ISYMI = 1, NSYM
-C
-            DO 210 I = 1, NRHF(ISYMI)
-C
-               KII  = KONEP - 1 + IFCRHF(ISYMI,ISYMI)
-     *              + NORB(ISYMI)*(I - 1) + I
-C
-               XECCSD = XECCSD + 2.0D00*WORK(KII)
-C
-  210       CONTINUE
-  200    CONTINUE
-C
+         CALL LAMMATS(WORK(KLAMDPS),WORK(KLAMDHS),WORK(KT1AM),
+     &                1,.FALSE.,.FALSE.,
+     &                NGLMDS,IGLMRHS,IGLMVIS,ICMO,WORK(KEND1),LWRK1)
+
+         DO ISYM = 1, NSYM
+
+           KSCR1 = KEND1
+           KEND2 = KSCR1 + NBAS(ISYM) * NRHFS(ISYM)
+           LWRK2 = LWORK  - KEND2
+           IF ( LWRK2 .LT. 0 )
+     *       CALL QUIT(' Too little workspace in ccsd_eccsd-3')
+
+           NBAS1 = MAX(NBAS(ISYM),1)
+           KOFF1 = KONEP   + IAODIS(ISYM,ISYM) 
+           KOFF2 = KLAMDHS + IGLMRHS(ISYM,ISYM)
+
+           CALL DGEMM('N','N',NBAS(ISYM),NRHFS(ISYM),NBAS(ISYM),
+     *                ONE,WORK(KOFF1),NBAS1,WORK(KOFF2),NBAS1,
+     *                ZERO,WORK(KSCR1),NBAS1)
+
+           KOFF2 = KLAMDPS + IGLMRHS(ISYM,ISYM)
+
+           TRACE = DDOT(NBAS(ISYM)*NRHFS(ISYM),
+     &                    WORK(KOFF2),1,WORK(KSCR1),1)
+           XECCSD = XECCSD + TWO * TRACE
+         END DO
+ 
         ENDIF
   13  CONTINUE
 C
@@ -1473,35 +1614,53 @@ C
       LENET = 5
 
       IF (LR12) THEN
-        NRHFTRIA= NRHFT * (NRHFT+1) / 2
-        N2 = NRHFTRIA * NRHFTRIA
+C       NRHFTRIA= NRHFT * (NRHFT+1) / 2
+C       N2 = NRHFTRIA * NRHFTRIA
+C
+C       KVR12S = 1
+C       KVR12T = KVR12S + N2
+C       KEND1  = KVR12T + N2
+C       LWRK1  = LWORK  - KEND1
+C       IF ( LWRK1 .LT. 0 )
+C    *   CALL QUIT(' Too little workspace in ccsd_eccsd-3')
+C
+C        read V matrices
+C        LUNIT = 0
+C        CALL GPOPEN(LUNIT,FCCR12V,'UNKNOWN',' ','FORMATTED',
+C    &                    IDUM,LDUM)
+C6666     READ(LUNIT,'(I3)') IAN
+C        READ(LUNIT,'(4E30.20)') (WORK(KVR12S+IJ), IJ = 0, N2-1)
+C        READ(LUNIT,'(4E30.20)') (WORK(KVR12T+IJ), IJ = 0, N2-1)
+C        IF (IAN.NE.IANR12) GOTO 6666
+C        CALL GPCLOSE(LUNIT,'KEEP')
+C
+C        ER12S = DDOT(N2,WORK(KVR12S),1,TAMR12S,1)
+C        ER12T = 3.0D0*DDOT(N2,WORK(KVR12T),1,TAMR12T,1)
+C
+C        XECCSD = XECCSD + ER12S + ER12T
 
-        KVR12S = 1
-        KVR12T = KVR12S + N2
-        KEND1  = KVR12T + N2
-        LWRK1  = LWORK  - KEND1
+        KVR12 = 1
+        KEND1  = KVR12 + NGAMMA(1)
+        LWRK1  = LWORK - KEND1
         IF ( LWRK1 .LT. 0 )
-     *     CALL QUIT(' Too little workspace in ccsd_eccsd-3')
-
-c       read V matrices 
+     *    CALL QUIT(' Too little workspace in ccsd_eccsd-3')
+C
+C       read V matrices
         LUNIT = 0
-        CALL GPOPEN(LUNIT,'CCR12_V','UNKNOWN',' ','FORMATTED',
-     &                     IDUM,LDUM)
-        READ(LUNIT,'(4E30.20)') (WORK(KVR12S+IJ), IJ = 0, N2-1)
-        READ(LUNIT,'(4E30.20)') (WORK(KVR12T+IJ), IJ = 0, N2-1)
+        CALL GPOPEN(LUNIT,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUM,LDUM)
+6666    READ(LUNIT) IAN
+        READ(LUNIT) (WORK(KVR12-1+I), I=1, NGAMMA(1))
+        IF (IAN.NE.IANR12) GOTO 6666
         CALL GPCLOSE(LUNIT,'KEEP')
+        CALL CC_R12TCMEPK(WORK(KVR12),1,.FALSE.)
+        CALL CCLR_DIASCLR12(WORK(KVR12),0.5D0,1)
 
-C       WRITE(LUPRI,*) 'TAMR12S:',TAMR12S(1)
-C       WRITE(LUPRI,*) 'TAMR12T:',TAMR12T(1)
-C       WRITE(LUPRI,*) 'VR12S:',WORK(KVR12S)
-C       WRITE(LUPRI,*) 'VR12T:',WORK(KVR12T)
+        ER12 = 2.0D0*DDOT(NGAMMA(1),TAMR12,1,WORK(KVR12),1)
 
-        ER12S = DDOT(N2,WORK(KVR12S),1,TAMR12S,1)
-        ER12T = DDOT(N2,WORK(KVR12T),1,TAMR12T,1)
-        XECCSD = XECCSD + ER12S + ER12T
-
-        CALL CCSD_MODEL(ETYPE,LENET,24,ETY,5)
-
+        XECCSD = XECCSD + ER12
+       
+        CALL CCSD_MODEL(ETYPE,LENET,24,ETY,5,APROXR12)
       END IF
 C
       WRITE(LUPRI,'(1X,A,I3,A,A,A,F23.16)')
@@ -1511,11 +1670,30 @@ C
       IF (IPRINT .GE. 2) THEN
         WRITE(LUPRI,'(5X,A,F23.16)')
      &    'Conventional correlation energy:',XCORR
-        IF (LR12) WRITE(LUPRI,'(3(5X,A,F23.16,/))')
-     &    'Singlet R12 correlation energy :',ER12S,
-     &    'Triplet R12 correlation energy :',ER12T,
-     &    'Total correlation energy       :',XCORR+ER12S+ER12T
+        IF (LR12) THEN 
+          WRITE(LUPRI,'(3(5X,A,F23.16,/))')
+C    &    'Singlet R12 correlation energy :',ER12S,
+C    &    'Triplet R12 correlation energy :',ER12T,
+     &    'R12 correlation energy         :',ER12,
+     &    'Total correlation energy       :',XCORR+ER12
+        END IF
       END IF
+      IF (LOCDBG) THEN
+        CALL AROUND('Amplitudes at this iteration:')
+        call cc_prp(T1AM,T2AM,1,1,1)
+        if (CCR12) then
+c         call around('Singlet R12 part')
+c         call output(TAMR12S,1,nrhftria,1,nrhftria,
+c    &                nrhftria,nrhftria,1,lupri)
+c         call around('Triplet R12 part')
+c         call output(TAMR12T,1,nrhftria,1,nrhftria,
+c    &                nrhftria,nrhftria,1,lupri)
+c         ktamp12 = kend1
+c         call ccr12pck(work(ktamp12),1,TAMR12S,TAMR12T)
+c         call cc_prpr12(work(ktamp12),1,1,.true.)
+          CALL CC_PRPR12(TAMR12,1,1,.TRUE.)
+        end if
+      end if
 C
       CALL FLSHFO(LUPRI)
 C
@@ -1523,78 +1701,75 @@ C
 C
       RETURN
       END
-      SUBROUTINE CCSD_MODEL(MODELR12,LENMR12,LMAX,MODEL,LENM)
+      SUBROUTINE CCSD_MODEL(MODELR12,LENMR12,LMAX,MODEL,LENM,APROXR12)
       IMPLICIT NONE
 #include <r12int.h>
+#include <ccsdinp.h>
      
-      INTEGER LENM,LENMR12,LMAX
-      CHARACTER*(*) MODELR12, MODEL
+      INTEGER LENM,LENMR12,LMAX,I
+      CHARACTER*(*) MODELR12, MODEL, APROXR12
 
       IF (LMAX.LT.LENM) CALL QUIT('LMAX too small in CCSD_MODEL')
-
-      MODELR12(1:LENM) = MODEL(1:LENM)
-      LENMR12 = LENM 
-      DO WHILE (LENMR12.GT.0 .AND. MODELR12(LENMR12:LENMR12).EQ.' ')
-        LENMR12 = LENMR12 -1
-      END DO
       
-      IF (LMAX.LT.LENMR12+5) CALL QUIT('LMAX too small in CCSD_MODEL')
-      MODELR12(LENMR12+1:LENMR12+5) = '-R12/'
-      LENMR12 = LENMR12 + 5
+      IF (CCR12) THEN
+        MODELR12(1:LENM) = MODEL(1:LENM)
+        LENMR12 = LENM 
+        DO WHILE (LENMR12.GT.0 .AND. MODELR12(LENMR12:LENMR12).EQ.' ')
+          LENMR12 = LENMR12 -1
+        END DO
 
-      IF (IAPR12.EQ.1) THEN
-        IF(LMAX.LT.LENMR12+10)CALL QUIT('LMAX too small in CCSD_MODEL')
-        MODELR12(LENMR12+1:LENMR12+10) = "A (noninv)"
-        LENMR12 = LENMR12+10
-      ELSE IF (IAPR12.EQ.2) THEN
-        IF(LMAX.LT.LENMR12+1) CALL QUIT('LMAX too small in CCSD_MODEL')
-        MODELR12(LENMR12+1:LENMR12+1)  = "A"
-        LENMR12 = LENMR12+1
-      ELSE IF (IAPR12.EQ.3) THEN
-        IF(LMAX.LT.LENMR12+2) CALL QUIT('LMAX too small in CCSD_MODEL')
-        MODELR12(LENMR12+1:LENMR12+2)  = "A'"
-        LENMR12 = LENMR12+2
-      ELSE IF (IAPR12.EQ.4) THEN
-        IF(LMAX.LT.LENMR12+10)CALL QUIT('LMAX too small in CCSD_MODEL')
-        MODELR12(LENMR12+1:LENMR12+10) = "B (noninv)"
-        LENMR12 = LENMR12+10
-      ELSE IF (IAPR12.EQ.5) THEN
-        IF(LMAX.LT.LENMR12+1) CALL QUIT('LMAX too small in CCSD_MODEL')
-        MODELR12(LENMR12+1:LENMR12+1)  = "B"
-        LENMR12 = LENMR12+1
-      ELSE IF (IAPR12.EQ.6) THEN
-        IF(LMAX.LT.LENMR12+11)CALL QUIT('LMAX too small in CCSD_MODEL')
-        MODELR12(LENMR12+1:LENMR12+11) = "B' (noninv)"
-        LENMR12 = LENMR12+11
-      ELSE IF (IAPR12.EQ.7) THEN
-        IF(LMAX.LT.LENMR12+2) CALL QUIT('LMAX too small in CCSD_MODEL')
-        MODELR12(LENMR12+1:LENMR12+2)  = "B'"
-        LENMR12 = LENMR12+2
+        IF (LMAX.LT.LENMR12+5) CALL QUIT('LMAX too small in CCSD_MODEL')
+        IF (MP2 .OR. CC2) THEN
+          MODELR12(LENMR12+1:LENMR12+5) = '-R12/'
+          LENMR12 = LENMR12 + 5
+        ELSE IF (MODELR12(1:LENMR12).EQ.'MP2') THEN
+            MODELR12(LENMR12+1:LENMR12+5) = '-R12/'
+            LENMR12 = LENMR12 + 5
+        ELSE 
+            MODELR12(LENMR12+1:LENMR12+6) = '(R12)/'
+            LENMR12 = LENMR12 + 6
+        END IF
+
+        I = 1 
+        DO WHILE(I.LE.LEN(APROXR12) .AND. APROXR12(I:I).NE.' ')
+          IF (LMAX.LT.LENMR12+1) 
+     &       CALL QUIT('LMAX too small in CCSD_MODEL')
+          LENMR12 = LENMR12 + 1
+          MODELR12(LENMR12:LENMR12) = APROXR12(I:I)
+          I = I + 1
+        END DO
+     
       ELSE
-        CALL QUIT('Unkown R12 approximation in CCSD_MODEL')
-      END IF 
+        MODELR12(1:5) = MODEL(1:5)
+        LENMR12 = 5
+      END IF
 
       RETURN
       END
 C  /* Deck ccsd_iajb */
-      SUBROUTINE CCSD_IAJB(XAIBJ,T1AM,WORK,LWORK)
+      SUBROUTINE CCSD_IAJB(XAIBJ,T1AM,FILER12,FILER12_2,LHTF,
+     &                     CCR12RSP,MKVAJKL,WORK,LWORK)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
 C     Small modifications by Asger Halkier 22/5 - 1998 for extra
 C     MO integrals needed for gradients and frozen core FOP.
+C
 C     Added calculation of V(alpha j,kl) for CC2-R12,H.Fliegl, C. Haettig
+C
+C     Added flag for computation of additional half transformed 
+C     integrals needed for R12 response (e.g. r12 integrals with 
+C     two auxiliary basis functions): CCR12RSP
+C     C. Neiss, 10.12.2004
 C     
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 #include <maxorb.h>
 #include <maxash.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
-      DIMENSION XAIBJ(*),T1AM(*),WORK(*),INDEXA(MXCORB)
 #include <ccorb.h>
 #include <ccisao.h>
 #include <blocks.h>
@@ -1608,17 +1783,31 @@ C
 #include <ccsections.h>
 #include <ccfield.h>
 #include <r12int.h>
-      INTEGER IDUM
-      LOGICAL LDUM
+#include <ccr12int.h>
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      DIMENSION XAIBJ(*),T1AM(*),WORK(*),INDEXA(MXCORB)
+      INTEGER IDUM,LUNITR12,LUNITR12_2
+      LOGICAL LDUM,LHTF,CC2R12,MKVAJKL,CCR12RSP
       INTEGER NR1ORB(8),NR1BAS(8),NR1XBAS(8),N2BST1(8),NRGKL(8)
       INTEGER NR2BAS(8),KO2AM,YS2AM,KOFFH,KOFFD
       INTEGER IR1ORB(8,8),IR1BAS(8,8),IR2BAS(8,8),IR1XBAS(8,8)
       INTEGER IR2XBAS(8,8),IAODIS1(8,8),IRGKL(8,8)
-      INTEGER IGABJ(8)
+      integer ilmorb(8)
+      INTEGER IGABJ(8),IBASX(8),ICMO(8,8),IGLMRHS(8,8),NCMO(8),
+     &        NGLMDS(8),KLAMDHS,KLAMDPS,KEND0,LWRK0,IGLMVIS(8,8)
+      INTEGER IMAIJM(8,8),NMAIJM(8),IMATIJM(8,8),NMATIJM(8),
+     &        IGAMSM(8,8),NGAMSM(8),IRGKLS(8,8),NRGKLS(8),
+     &        IR1BASM(8,8),NR1BASM(8),IR2BASM(8,8),NR2BASM,
+     &        IR1XBASM(8,8),NR1XBASM(8),IR2XBASM(8,8),IMATF(8,8),
+     &        NMATF(8),NVABKL(8),IVABKL(8,8)
+      INTEGER NR1XORB(8),IR1XORB(8,8),NRXGKL(8),IRXGKL(8,8)
 C
       CHARACTER*5 FN3FOP
       CHARACTER*6 FN3VI, FN3FOP2
       CHARACTER*8 FN3SRT, FN3VI2, FNTOC
+      CHARACTER*8 FILER12, FILER12_2
+      CHARACTER*8 FILBACK
+      CHARACTER*10 FILE_BACK 
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1626,12 +1815,50 @@ C
 C-----------------------------------------------------------
 C     calculate some offsets and dimensions needed for R12 
 C-----------------------------------------------------------
+      KEND0 = 1
       IF (MKVAJKL) THEN
          TIMVAJKL = 0.0D0
    
-         CALL CC_R12OFFSET(NR1ORB,NR1BAS,NR1XBAS,NR2BAS,
-     &        NRGKL,N2BST1,IR1ORB,IR1BAS,IR1XBAS,IR2BAS,
-     &        IR2XBAS,IRGKL,IAODIS1)
+celena
+      IF (R12PRP) THEN
+         DO ISYMAI = 1,NSYM
+            ICOUN2 = 0
+            DO  ISYMI = 1,NSYM
+                ISYMA = MULD2H(ISYMAI,ISYMI)            
+                ILMORB(ISYMI) = ICOUN2
+                ICOUN2 = ICOUN2 + NBAS(ISYMI)*
+     &                   (NORB1(ISYMI)-NRHFFR(ISYMI))
+            ENDDO
+         ENDDO
+      ENDIF
+celena
+  
+         CALL CC_R12OFFSET(NR1ORB,NR1XORB,NR1BAS,NR1XBAS,NR2BAS,
+     &        NRGKL,NRXGKL,N2BST1,IR1ORB,IR1XORB,IR1BAS,IR1XBAS,IR2BAS,
+     &        IR2XBAS,IRGKL,IRXGKL,IAODIS1,NVABKL,IVABKL)
+         IF (IANR12.EQ.2 .OR. IANR12.EQ.3) then
+c          calculate some offsets and dimensions needed for Lambda
+c          including active and inactive occupied molecular orbitals  
+
+           CALL CC_R12OFFS23(IGLMRHS,IGLMVIS,NGLMDS,ICMO,NCMO,
+     &                       IMAIJM,NMAIJM,IMATIJM,NMATIJM,
+     &                       IGAMSM,NGAMSM,IRGKLS,NRGKLS,
+     &                       IR1BASM,NR1BASM,IR2BASM,NR2BASM,IR1XBASM,
+     &                       NR1XBASM,IR2XBASM,IMATF,NMATF) 
+
+           KLAMDHS = KEND0
+           KLAMDPS = KLAMDHS + NGLMDS(1)
+           KT1AM   = KLAMDPS + NGLMDS(1)
+           KEND0   = KT1AM + NT1AMX
+           LWRK0   = LWORK - KEND0
+           IF (LWRK0.LT.0) THEN
+             CALL QUIT('Insufficient work space in ccsd_iajb')
+           END IF 
+           CALL DZERO(WORK(KT1AM),NT1AMX)
+           CALL LAMMATS(WORK(KLAMDPS),WORK(KLAMDHS),WORK(KT1AM),
+     &                  1,.TRUE.,.FALSE.,
+     &                  NGLMDS,IGLMRHS,IGLMVIS,ICMO,WORK(KEND0),LWRK0)
+         END IF
       END IF
 C-----------------------------------------
 C     Initialize the XAIBJ integral array.
@@ -1645,16 +1872,46 @@ C        Zero space for non-Hermitean integrals (WK/UniKA/04-11-2002).
       ELSE
          CALL DZERO(XAIBJ,NT2AM(ISYMOP))
       END IF
+
+C----------------------------------------
+C     Open files needed for CC-R12:
+C----------------------------------------
+      IF (CCR12.AND.R12INT.AND.LHTF.AND.
+     &  (IANR12.EQ.2.OR.CCR12RSP.OR.IANR12.EQ.3)
+     &   .AND..NOT.R12PRP) THEN
+        LUNITR12 = 0
+        CALL WOPEN2(LUNITR12,FRHTF,64,0)
+C       WRITE(LUPRI,'(3A)') 'opened file:"',FRHTF(1:LEN(FRHTF)),'"'
+C       WRITE(LUPRI,*) 'unit number:',LUNITR12
+        IF (CCR12RSP) THEN
+          LUNITR12_2 = 0
+          CALL WOPEN2(LUNITR12_2,FILER12_2,64,0)
+C         WRITE(LUPRI,'(3A)') 'opened file:"',
+C    &                     FILER12_2(1:LEN(FILER12_2)),'"'
+C         WRITE(LUPRI,*) 'unit number:',LUNITR12_2
+        END IF
+      ELSE IF (CCR12.AND.V12INT.AND.LHTF.AND.
+     &           (IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+        LUNITR12 = 0
+        CALL WOPEN2(LUNITR12,FGHTF,64,0)
+       WRITE(LUPRI,'(3A)') 'opened file:"',FGHTF(1:LEN(FGHTF)),'"'
+       WRITE(LUPRI,*) 'unit number:',LUNITR12
+        LU44 = 0 
+        CALL WOPEN2(LU44,FCCGMNAB,64,0)
+       WRITE(LUPRI,'(3A)') 'opened file:"',
+     &                       FCCGMNAB(1:LEN(FCCGMNAB)),'"'
+       WRITE(LUPRI,*) 'unit number:',LU44
+      END IF
 C
 C---------------------------------
 C     Dynamic allocation of space.
 C---------------------------------
 C
-      KLAMDP = 1
-      LU43 = 43 
+      KLAMDP = KEND0
       IF (R12SQR) THEN
 C        Read MO coefficients from GUMAT.n for n=1,2 (WK/UniKA/04-11-2002).
          KLAMDQ = KLAMDP + NLAMDT
+         LU43 = 43 
          IF (COMBSS) THEN
             CALL GPOPEN(LU43,'GUMAT.2','UNKNOWN',' ','UNFORMATTED',
      &                  IDUM,LDUM)
@@ -1665,10 +1922,11 @@ C        Read MO coefficients from GUMAT.n for n=1,2 (WK/UniKA/04-11-2002).
          REWIND(LU43)
          READ(LU43) NTOTGU
          READ(LU43) (WORK(KLAMDQ+I-1), I = 1, NTOTGU)
-         IF (R12EIN .AND. INTGAC .EQ. 4) THEN
+         IF ((R12EIN .AND. INTGAC .EQ. 4) .OR. (R12PRP) 
+     *        ) THEN
             CALL GPCLOSE(LU43,'KEEP')
          ELSE
-            CALL GPCLOSE(LU43,'DELETE')
+            CALL GPCLOSE(LU43,'KEEP')
          END IF
          KLAMDH = KLAMDQ + NTOTGU
       ELSE
@@ -1681,10 +1939,15 @@ C
       KDNSHF = KCMO   + NLAMDS
       KFCKHF = KDNSHF + N2BAST
       KEND1  = KFCKHF + N2BAST
+
 C
       IF (MKVAJKL) THEN
          KVAJKL = KEND1
          KEND1  = KVAJKL + NVAJKL(1)
+         IF (R12PRP) THEN
+            KXAJKL = KEND1
+            KEND1  = KXAJKL+ NVAJKL(1)
+         ENDIF
       END IF
 
       LWRK1  = LWORK  - KEND1
@@ -1717,6 +1980,7 @@ C     Use LABEL (WK/UniKA/04-11-2002).
       READ(LUSIFC)
       READ(LUSIFC) (WORK(KCMO+I-1),I=1,NLAMDS)
       CALL GPCLOSE(LUSIFC,'KEEP')
+
 C
       CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1) 
 C
@@ -1737,14 +2001,17 @@ C--------------------------------------
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. R12INT
      *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .AND.
-     *    (R12TRA .OR. RELORB .OR. MP2)) THEN
+     *    (R12TRA .OR. RELORB .OR. MP2) .OR. (FROIMP .AND. 
+     *     R12PRP .AND. MKVAJKL)) THEN
 C        Not needed for R12 integrals (WK/UniKA/04-11-2002).
 !     *    (RELORB .OR. (CCFOP .AND. MP2))) THEN
 !     Sonia: remove "FOP" condition to be able to do gradients MP2
 
          KCMO  = KEND1
          KFRIN = KCMO  + NLAMDS
-         KEND1 = KFRIN + NT2FRO(1)
+         KFRGR = KFRIN + NT2FRO(1)
+         KFRGR1= KFRGR + NFROVR(1)
+         KEND1 = KFRGR1+ NFROVF(1)
          LWRK1 = LWORK - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
@@ -1752,10 +2019,12 @@ C
          ENDIF
 C
          CALL DZERO(WORK(KCMO),NLAMDS)
-         IF (R12TRA) THEN
+         IF (R12TRA .AND. .NOT. R12PRP) THEN
             CALL DZERO(WORK(KFRIN),NF2FRO(1))
          ELSE
             CALL DZERO(WORK(KFRIN),NT2FRO(1))
+            CALL DZERO(WORK(KFRGR),NFROVR(1))
+            CALL DZERO(WORK(KFRGR1),NFROVF(1))
          END IF
 C
 C----------------------------------------------
@@ -1768,14 +2037,26 @@ C
 C----------------------------------------------------
 C     initialize V(alpha j,kl)
 c----------------------------------------------------
-      IF (MKVAJKL) THEN
+      IF (MKVAJKL .AND. (.NOT. FNVAJKL .EQ. 'CCR12XAJKL'
+     &    .AND. ( .NOT. FNVAJKL .EQ. 'CCR12QAJKL')
+     &    .AND. ( .NOT. FNVAJKL .EQ. 'CCR12QIJAL')
+     &    .AND. ( .NOT. FNVAJKL .EQ. 'CCR12UAJKL')
+     &    .AND. ( .NOT. FNVAJKL .EQ. 'CCR12UIJAL') )) THEN
          DTIME = SECOND()
-
-         CALL CC_R12MKVAMKL0(WORK(KVAJKL),WORK(KLAMDH),
+         CC2R12 = .TRUE.
+         CALL CC_R12MKVAMKL0(WORK(KVAJKL),DUMMY,CC2R12,WORK(KLAMDH),
      &        WORK(KEND1),LWRK1) 
 
          TIMVAJKL = TIMVAJKL + ( SECOND() - DTIME )
-      END IF
+      ELSEIF ((MKVAJKL .AND. FNVAJKL .EQ. 'CCR12UIJAL') 
+     &        .OR. (MKVAJKL .AND. FNVAJKL .EQ. 'CCR12QAJKL')
+     &        .OR. (MKVAJKL .AND. FNVAJKL .EQ. 'CCR12QIJAL')
+     &        .OR. (MKVAJKL .AND. FNVAJKL .EQ. 'CCR12UAJKL')
+     &        .OR. (MKVAJKL .AND. FNVAJKL .EQ. 'CCR12XAJKL')) THEN
+         CALL DZERO(WORK(KVAJKL),NVAJKL(1))
+         CALL DZERO(WORK(KXAJKL),NVAJKL(1))
+      ENDIF
+       
 C
 C====================================================
 C     Start the loop over distributions of integrals.
@@ -1870,7 +2151,7 @@ C
                   IDEL  = INDEXA(IDEL2)
                   IF (NOAUXB) THEN
                      IDUM = 1
-                     CALL IJKAUX(IDEL,IDUM,IDUM)
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
                   END IF
                   ISYMD = ISAO(IDEL)
                ELSE
@@ -1895,12 +2176,14 @@ C
                IF (LWRK2 .LT. 0) THEN
                   CALL QUIT('Insufficient space in CCSD_IAJB')
                ENDIF
+               
 C
 C-----------------------------------------
 C              Read in batch of integrals.
 C-----------------------------------------
 C
                IOFFU21 = NDISAO(ISYDIS)
+               CALL DZERO(WORK(KXINT),2*NDISAO(ISYDIS))
                CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
      *                     WORK(KRECNR),DIRECT)
 C
@@ -1931,9 +2214,30 @@ C
                   ELSE
                      CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
      *                              WORK(KEND2),LWRK2,IDEL,ISYMD)
+                     IF (R12PRP .AND. R12TRA) THEN
+                         CALL CC_FRCOGR(WORK(KFRGR),WORK(KXINT),
+     *                        WORK(KCMO),WORK(KEND2),LWRK2,IDEL,ISYMD)
+                         CALL CC_FRCOGR1(WORK(KFRGR1),WORK(KXINT),
+     *                        WORK(KCMO),WORK(KEND2),LWRK2,IDEL,ISYMD)
+                     ENDIF 
+
                   END IF
+               END IF
 C
-               ENDIF
+C-----------------------------------------------------------------------
+C              For CC-R12 with Ansatz 2 calculate two-index transformed
+C              coulomb integrals (M alpha | N beta), where M,N are 
+C              frozen and active occupied orbitals; 
+C              integrals stored on file FCCGMNAB
+C-----------------------------------------------------------------------
+C
+chf
+               IF (CCR12.AND.V12INT.AND.LHTF.AND.
+     &             MKVAJKL.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+                 CALL CC_R12MKGMNAB(WORK(KXINT),WORK(KLAMDHS),1,IDEL,
+     &                              ISYMD,IGLMRHS,NGLMDS,LU44,
+     &                              FCCGMNAB,WORK(KEND2),LWRK2)
+               END IF
 C
 C---------------------------------------------------
 C              Transform one index in the integrals.
@@ -1951,7 +2255,12 @@ C
                   KOFF1 = KXINT  + IDSAOG(ISYMG,ISYDIS)
                   IF (U21INT) KOFFT = KOFF1  + NDISAO(ISYDIS)
 C                 Use KLAMDQ instead of KLAMDP (WK/UniKA/04-11-2002).
-                  KOFF2 = KLAMDQ + ILMRHF(ISYMJ)
+                  IF (FNVAJKL .EQ. 'CCR12QIJAL') THEN
+                      KOFF2 = KLAMDQ + ILMORB(ISYMJ)
+                     
+                  ELSE
+                      KOFF2 = KLAMDQ + ILMRHF(ISYMJ)
+                  ENDIF 
                   KOFF6 = KLAMDP + ILMRHF(ISYMJ)
 C
                   IF (LWRK2 .LT. 2*NNBST(ISYMAB)*NRHF(ISYMJ)) THEN
@@ -1989,14 +2298,13 @@ C-------------------------------------------------------------------
 C
                   NNBSAB = MAX(NNBST(ISYMAB),1)
                   NBASG  = MAX(NBAS(ISYMG),1)
-
                   CALL DGEMM('N','N',NNBST(ISYMAB),NRHF(ISYMJ),
      *                       NBAS(ISYMG),ONE,WORK(KOFF1),NNBSAB,
      *                       WORK(KOFF2),NBASG,ZERO,WORK(KEND2),
      *                       NNBSAB)
                   IF ((ONEAUX .OR. R12PRP) .AND. U21INT) THEN
-                     KENDT = KEND2 + NNBST(ISYMAB)*NRHF(ISYMJ)
-                     CALL DGEMM('N','N',NNBST(ISYMAB),NRHF(ISYMJ),
+                    KENDT = KEND2 + NNBST(ISYMAB)*NRHF(ISYMJ)
+                    CALL DGEMM('N','N',NNBST(ISYMAB),NRHF(ISYMJ),
      *                          NBAS(ISYMG),ONE,WORK(KOFFT),NNBSAB,
      *                          WORK(KOFF2),NBASG,ZERO,WORK(KENDT),
      *                          NNBSAB)
@@ -2020,7 +2328,7 @@ C
 C
                   IF (ONEAUX) THEN
                      KOFF4  = IH2AM(ISYMAI,ISYMBJ) + 1
-                  ELSE IF (U12INT .OR. R12SQR) THEN
+                  ELSE IF (U12INT .OR. R12SQR ) THEN
 C                    KOFF4 for non-Hermitean integrals (WK/UniKA/04-11-2002).
                      KOFF4  = IU2AM(ISYMAI,ISYMBJ) + 1
                   ELSE
@@ -2030,17 +2338,20 @@ C
                   CALL CCSD_AIBJ2(WORK(KEND2),XAIBJ(KOFF4),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KSCR1),WORK(KSCR2),
      *                            IDEL,ISYMD,ISYMJ,ISYMAB,LUTOC,FNTOC,
-     *                            .FALSE.)
+     *                            .FALSE.,LUNITR12,FILER12,LUNITR12_2,
+     *                            FILER12_2,LHTF,CCR12RSP)
                   IF (ONEAUX .AND. U21INT) THEN
                   CALL CCSD_AIBJ2(WORK(KENDT),XAIBJ(KOFF4),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KSCR1),WORK(KSCR2),
      *                            IDEL,ISYMD,ISYMJ,ISYMAB,LUTOC,FNTOC,
-     *                            .TRUE.)
+     *                            .TRUE.,LUNITR12,FILER12,LUNITR12_2,
+     *                            FILER12_2,LHTF,CCR12RSP)
                   ELSE IF (ONEAUX .AND. R12SQR) THEN
                   CALL CCSD_AIBJ2(WORK(KENDT),XAIBJ(KOFF4),WORK(KLAMDQ),
      *                            WORK(KLAMDH),WORK(KSCR1),WORK(KSCR2),
      *                            IDEL,ISYMD,ISYMJ,ISYMAB,LUTOC,FNTOC,
-     *                            .FALSE.)
+     *                            .FALSE.,LUNITR12,FILER12,LUNITR12_2,
+     *                            FILER12_2,LHTF,CCR12RSP)
                   END IF
 C---------------------------------------------------------
 C                 compute contributions to V(alpha j,kl)
@@ -2048,10 +2359,16 @@ C---------------------------------------------------------
                   IF (MKVAJKL) THEN
                    DTIME = SECOND()
                    IF (MBAS1(ISYMG).GT.0 .OR. NRHF(ISYMJ).GT.0) THEN
-
-
+                     IBASX(1) = 0
+                     DO ISYM = 2, NSYM
+                       IBASX(ISYM) = IBASX(ISYM-1)+MBAS2(ISYM-1)
+                     END DO
                      KGABJD = KEND2
                      KEND3 = KGABJD + NNBST(ISYMAB)*NRHF(ISYMJ)
+                     IF (U21INT) THEN
+                       KTABJD = KENDT
+                       KEND3 = KTABJD + NNBST(ISYMAB)*NRHF(ISYMJ)
+                     END IF
                      LWRK3 = LWORK - KEND3
  
                      IF (LWRK3 .LT. 0) THEN
@@ -2059,11 +2376,74 @@ C---------------------------------------------------------
                      END IF
 
                      KOFF5 = KXINT + IDSAOG(ISYMG,ISYDIS)
+                     IF(U21INT) KOFF6 = KOFF5  + NDISAO(ISYDIS)
 
-                     CALL R12MKVAMKL(WORK(KGABJD),WORK(KVAJKL),
-     &                    WORK(KLAMDH),WORK(KOFF5),IDEL,ISYMD,ISYMJ,
-     &                    ISYMAB,ISYMG,WORK(KSCR1),IDUMMY,.FALSE.,
-     &                    WORK(KEND3),LWRK3)
+                     IF      (IANR12.EQ.1 .AND. (.NOT.R12PRP)) THEN
+                        FILBACK = FNBACK
+celena
+                     ELSEIF (R12PRP) THEN
+                           IF (FNVAJKL .EQ. 'CCR12VIJAL') THEN
+                               FILE_BACK = FV12BACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12VAJKL') THEN 
+                               FILBACK = FNBACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12BIJAL') THEN
+                               FILE_BACK = FT12BACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12BAJKL') THEN
+                               FILBACK = FNBACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12QAJKL') THEN
+                               FILBACK = FNBACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12QIJAL') THEN
+                               FILBACK = FNBACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12UAJKL') THEN
+                               FILE_BACK = FU12BACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12UIJAL') THEN
+                               FILE_BACK = FQ12BACK
+                           ELSE IF (FNVAJKL .EQ. 'CCR12XAJKL') THEN
+                               FILBACK = FNBACK
+                           ENDIF
+celena
+                     ELSE IF (IANR12.EQ.2) THEN
+                        FILBACK = FRHTF
+                     ELSE IF (IANR12.EQ.3) THEN
+                        IDELTA = IDEL - IBAS(ISYMD)
+                        IF (IDELTA.LE.MBAS1(ISYMD)) THEN
+                          FILBACK = FNBACK
+                        ELSE 
+                          FILBACK = FRHTF
+                        END IF
+                     ELSE
+                        WRITE(LUPRI,*) 'IANR12 = ',IANR12
+                        CALL QUIT('Illegal IANR12.')
+                     END IF
+                     IF (FNVAJKL .EQ. 'CCR12QIJAL') THEN
+                        CALL R12MKVAMKL(FILBACK,WORK(KGABJD),
+     &                       WORK(KTABJD),WORK(KVAJKL),
+     &                       WORK(KLAMDQ),1,WORK(KLAMDHS),WORK(KLAMDPS),
+     &                       WORK(KOFF5),WORK(KOFF6),
+     &                       IDEL,ISYMD,ISYMJ,ISYMAB,ISYMG,WORK(KSCR1),
+     &                       IBASX,IGLMRHS,NGLMDS,.FALSE.,WORK(KEND3),
+     &                       LWRK3)
+                     ELSEIF (FNVAJKL .EQ. 'CCR12BIJAL' .OR.
+     &                       FNVAJKL .EQ. 'CCR12UAJKL' .OR.
+     &                       FNVAJKL .EQ. 'CCR12VIJAL' .OR.
+     &                       FNVAJKL .EQ. 'CCR12UIJAL') THEN
+                        CALL R12MKVAMKL(FILE_BACK,WORK(KGABJD),
+     &                       WORK(KTABJD),WORK(KVAJKL),
+     &                       WORK(KLAMDQ),1,WORK(KLAMDHS),WORK(KLAMDPS),
+     &                       WORK(KOFF5),WORK(KOFF6),
+     &                       IDEL,ISYMD,ISYMJ,ISYMAB,ISYMG,WORK(KSCR1),
+     &                       IBASX,IGLMRHS,NGLMDS,.FALSE.,WORK(KEND3),
+     &                       LWRK3)
+                     ELSE 
+                        CALL R12MKVAMKL(FILBACK,WORK(KGABJD),
+     &                       WORK(KTABJD),WORK(KVAJKL),
+     &                       WORK(KLAMDH),1,WORK(KLAMDHS),WORK(KLAMDPS),
+     &                       WORK(KOFF5),WORK(KOFF6),
+     &                       IDEL,ISYMD,ISYMJ,ISYMAB,ISYMG,WORK(KSCR1),
+     &                       IBASX,IGLMRHS,NGLMDS,.FALSE.,WORK(KEND3),
+     &                       LWRK3)
+ 
+                     ENDIF 
                    END IF
                    TIMVAJKL = TIMVAJKL + ( SECOND() - DTIME )
                   END IF
@@ -2119,7 +2499,7 @@ C
       KEND1 = KENDSV
       LWRK1 = LWRKSV
 C
-C-------------------------------------
+c-------------------------------------
 C     write AO-Fock matrix to file:
 C-------------------------------------
 C
@@ -2189,16 +2569,45 @@ C     -----------------------------------------
          DTIME = SECOND() 
 
          IF (DEBUG) THEN
-           CALL CC_R12MKVIJKL(WORK(KVAJKL),WORK(KLAMDH),1,
-     &                        WORK(KEND1),LWRK1,.FALSE.,DUMMY)
+           CALL CC_R12MKVIJKL(WORK(KVAJKL),1,WORK(KLAMDH),1,
+     &                        WORK(KEND1),LWRK1,.FALSE.,DUMMY,DUMMY)
          END IF
 
          LUVAJKL = 0
-         CALL GPOPEN(LUVAJKl,FNVAJKL,'UNKNOWN',' ','UNFORMATTED',
+         CALL GPOPEN(LUVAJKL,FVAJKL,'UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND(LUVAJKL)
          WRITE(LUVAJKL) (WORK(KVAJKL+I-1), I = 1,NVAJKL(1))
          CALL GPCLOSE(LUVAJKL,'KEEP')
+
+C     Compute Y(a,j,k,l) for MP2-R12 first order properties (Y=B,V,X)       
+         IF (R12PRP) THEN
+            IF (FNVAJKL .EQ. 'CCR12QAJKL') THEN 
+               CALL CC_R12MKXAJKL(WORK(KVAJKL),WORK(KCMO),WORK(KEND1),
+     &                            LWRK1,.true.)
+               LUVAJKL = 0
+               CALL GPOPEN(LUVAJKl,FNVAJKL,'UNKNOWN',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+               REWIND(LUVAJKL)
+               WRITE(LUVAJKL) (WORK(KVAJKL+I-1), I = 1,NVAJKL(1))
+               CALL GPCLOSE(LUVAJKL,'KEEP')
+
+             ELSE 
+               CALL CC_R12MKXAJKL(WORK(KVAJKL),WORK(KCMO),WORK(KEND1),
+     &                            LWRK1,.false.)
+             ENDIF
+
+             IF (FROIMP) THEN
+               IF (FNVAJKL .EQ. 'CCR12QAJKL') THEN
+                  CALL CC_R12MKXIJKL(WORK(KVAJKL),WORK(KCMO),WORK(KEND1)
+     &                               ,LWRK1,.true.)
+                ELSE
+                 CALL CC_R12MKXIJKL(WORK(KVAJKL),WORK(KCMO),WORK(KEND1)
+     &                               ,LWRK1,.false.)
+                ENDIF
+            END IF
+         END IF
+         
 
          TIMVAJKL = TIMVAJKL + ( SECOND() - DTIME )
           
@@ -2206,8 +2615,8 @@ C     -----------------------------------------
      &     'Computation of V^aj_kl intermediate done'
          WRITE(LUPRI,'(/1X,A,F7.2,A)')
      &     '>>> Time used for V^aj_kl is ',TIMVAJKL,' seconds'
+         WRITE(LUPRI,*)
       END IF
-
 C
 C-------------------------------------
 C     Write integrals (cJ|dk) to disk.
@@ -2225,10 +2634,25 @@ C
          REWIND(LUCJDK)
          WRITE(LUCJDK) (WORK(KFRIN+I-1), I = 1,NT2FRO(1))
          CALL GPCLOSE(LUCJDK,'KEEP')
+        IF (R12PRP) THEN
+            LUCJDK = 0
+            CALL GPOPEN(LUCJDK,'INCJDA','UNKNOWN',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+            REWIND(LUCJDK)
+            WRITE(LUCJDK) (WORK(KFRGR+I-1), I = 1,NFROVR(1))
+            CALL GPCLOSE(LUCJDK,'KEEP')
+
+            LUCJDK = 0
+            CALL GPOPEN(LUCJDK,'INCJDI','UNKNOWN',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+            REWIND(LUCJDK)
+            WRITE(LUCJDK) (WORK(KFRGR1+I-1), I = 1,NFROVF(1))
+            CALL GPCLOSE(LUCJDK,'KEEP')
+         ENDIF 
       ENDIF
 C
-      IF (CCSDT.OR.(CCPT.OR.CCP3).OR.
-     *    (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
+      IF (.NOT.R12TRA.AND.(CCSDT.OR.(CCPT.OR.CCP3).OR.
+     *    (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B))) THEN
 C
 C------------------------------------
 C        Sort integrals (kc,d alpha).
@@ -2262,19 +2686,35 @@ C
          CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
 C
       ENDIF
-C
+C  
+      IF (CCR12.AND.R12INT.AND.LHTF.AND.
+     &   (IANR12.EQ.2.OR.CCR12RSP.OR.IANR12.EQ.3)
+     &   .AND..NOT.R12PRP) THEN
+        CALL WCLOSE2(LUNITR12,FRHTF,'KEEP')
+        IF (CCR12RSP) THEN
+          CALL WCLOSE2(LUNITR12_2,FILER12_2,'KEEP')
+        END IF
+      ELSE IF (CCR12.AND.V12INT.AND.LHTF.AND.
+     &        (IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+        CALL WCLOSE2(LUNITR12,FGHTF,'KEEP')
+        CALL WCLOSE2(LU44,FCCGMNAB,'KEEP')
+      END IF
+C  
       CALL QEXIT('CCSD_IAJB')
-C
+
       RETURN
       END
 C  /* Deck ccsd_aibj2 */
       SUBROUTINE CCSD_AIBJ2(XINT,XAIBJ,XLAMDP,XLAMDH,
      *                      SCR1,SCR2,IDEL,ISYMD,ISYMJ,ISYMAB,
-     *                      LUFILE,FNFILE,ANTISYM)
+     *                      LUFILE,FNFILE,ANTISYM,
+     *                      LUNITR12,FILER12,LUNITR12_2,FILER12_2,
+     *                      LHTF,CCR12RSP)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
 #include <implicit.h>
+      INTEGER LU43,LUNITR12,LUNITR12_2
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),XAIBJ(*), SCR1(*),SCR2(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
@@ -2286,8 +2726,8 @@ C
 #include <ccsdinp.h>
 #include <ccfop.h>
 C
-      LOGICAL ANTISYM
-      CHARACTER*(*) FNFILE
+      LOGICAL ANTISYM,LHTF,CCR12RSP
+      CHARACTER*(*) FNFILE,FILER12,FILER12_2
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2304,7 +2744,7 @@ C
          KOFF1 = NNBST(ISYMAB)*(J-1) + 1
 C
          IF (ANTISYM) THEN
-            CALL CCSD_ASYMSQ(XINT(KOFF1),ISYMAB,SCR1)
+            CALL CCSD_ASYMSQ(XINT(KOFF1),ISYMAB,SCR1,0,0)
          ELSE
             CALL CCSD_SYMSQ(XINT(KOFF1),ISYMAB,SCR1)
          END IF
@@ -2324,7 +2764,6 @@ C
 C
             NBASA = MAX(NBAS(ISYMA),1)
             NBASB = MAX(NBAS(ISYMB),1)
-C
             CALL DGEMM('T','N',NBAS(ISYMB),NRHF(ISYMI),NBAS(ISYMA),
      *                 FACDG,SCR1(KOFF1),NBASA,XLAMDP(KOFF2),
      *                 NBASA,ZERO,SCR2(KOFF3),NBASB)
@@ -2333,35 +2772,49 @@ C
 C
   110    CONTINUE
 C
+CHF
+CCN      added R12INT as criterium
+         IF (LHTF.AND.CC2.AND.((IANR12.EQ.2.OR.IANR12.EQ.3).OR.
+     &               (CCR12RSP.AND.R12INT))) THEN
+           NSCR1 = NBAST*NBAST
+           CALL CC_R12WHTF(SCR2,IDEL,ISYMD,J,ISYMJ,ISYMAB,CCR12RSP,
+     &                     LUNITR12,FILER12,LUNITR12_2,FILER12_2,
+     &                     SCR1,NSCR1)
+         END IF
+CHF
+C
 C-------------------------------------------------
 C        Transformation of the B-index to virtual.
 C-------------------------------------------------
 C
          KOFF2 = 1
          DO 120 ISYMI = 1,NSYM
-C
+C       
             ISYMB = MULD2H(ISYMI,ISYMAB)
             ISYMA = ISYMB
-C
+C       
             KOFF1 = ILMVIR(ISYMA) + 1
             NBASB = MAX(NBAS(ISYMB),1)
-C
+C       
             IF (ONEAUX) THEN
-               KOFF3 = IH1AM(ISYMA,ISYMI) + 1
-               NVIRA = MAX(NORB1(ISYMA),1)
-               CALL DGEMM('T','N',NORB1(ISYMA),NRHF(ISYMI),NBAS(ISYMB),
-     *                    ONE,XLAMDH(KOFF1),NBASB,SCR2(KOFF2),
-     *                    NBASB,ZERO,SCR1(KOFF3),NVIRA)
+              KOFF3 = IH1AM(ISYMA,ISYMI) + 1
+              NVIRA = MAX(NORB1(ISYMA),1)
+              CALL DGEMM('T','N',NORB1(ISYMA),NRHF(ISYMI),NBAS(ISYMB),
+     *                   ONE,XLAMDH(KOFF1),NBASB,SCR2(KOFF2),
+     *                   NBASB,ZERO,SCR1(KOFF3),NVIRA)
             ELSE
-               KOFF3 = IT1AM(ISYMA,ISYMI) + 1
-               NVIRA = MAX(NVIR(ISYMA),1)
-               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISYMB),
-     *                    ONE,XLAMDH(KOFF1),NBASB,SCR2(KOFF2),
-     *                    NBASB,ZERO,SCR1(KOFF3),NVIRA)
+              KOFF3 = IT1AM(ISYMA,ISYMI) + 1
+              NVIRA = MAX(NVIR(ISYMA),1)
+              CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISYMB),
+     *                   ONE,XLAMDH(KOFF1),NBASB,SCR2(KOFF2),
+     *                   NBASB,ZERO,SCR1(KOFF3),NVIRA)
             END IF
             KOFF2 = KOFF2 + NBAS(ISYMB)*NRHF(ISYMI)
-C
+C       
   120    CONTINUE
+c------------------------------------------------------------
+CHF write and grep out here occupied g_ijkdelta integrals 
+c------------------------------------------------------------
 C
 C------------------------------------------
 C        Write out integrals used in CCSDT.
@@ -2369,17 +2822,17 @@ C------------------------------------------
 C
          IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) 
      *                                                            THEN
-C
+C       
             ISYMI  = ISYMJ
             ISYMCK = ISYMAB
             ISYCKI = MULD2H(ISYMCK,ISYMI)
-C
+C       
             I  = J
             ID = IDEL - IBAS(ISYMD)
-C
+C       
             IOFF = ICKID(ISYCKI,ISYMD) + NCKI(ISYCKI)*(ID - 1)
      *           + ICKI(ISYMCK,ISYMI) + NT1AM(ISYMCK)*(I - 1) + 1
-C
+C       
             IF (NT1AM(ISYMCK) .GT. 0) THEN
                CALL PUTWA2(LUFILE,FNFILE,SCR1,IOFF,NT1AM(ISYMCK))
             ENDIF
@@ -2392,7 +2845,7 @@ C
          ISYMB  = ISYMD
          ISYMBJ = MULD2H(ISYMB,ISYMJ)
          ISYMAI = ISYMAB
-C
+C       
          IF (ONEAUX) THEN
           DO 131 B = 1, NORB1(ISYMB)
             NBJ = IH1AM(ISYMB,ISYMJ) + NORB1(ISYMB)*(J-1) + B
@@ -2663,6 +3116,8 @@ C
          NRHF(ISYM)  = NRHFS(ISYM) - NRHFFR(ISYM)
          NVIR(ISYM)  = NVIRS(ISYM) - NVIRFR(ISYM)
          NORB(ISYM)  = NRHF(ISYM)  + NVIR(ISYM)
+         NRHFA(ISYM) = NRHF(ISYM) - NRXR12(ISYM)
+         NRHFSA(ISYM) = NRHFS(ISYM) - NRXR12(ISYM)
 C
          NORBT  = NORBT  + NORB(ISYM)
          NRHFT  = NRHFT  + NRHF(ISYM)
@@ -2747,12 +3202,19 @@ C
          NT1AO(ISYMAI) = 0
          NH1AM(ISYMAI) = 0
          NG1AM(ISYMAI) = 0
+celena
+         NT1VM(ISYMAI) = 0
+celena
          DO 200 ISYMI = 1,NSYM
             ISYMA = MULD2H(ISYMAI,ISYMI)
             NT1AM(ISYMAI) = NT1AM(ISYMAI) + NVIR(ISYMA) * NRHF(ISYMI)
             NT1AO(ISYMAI) = NT1AO(ISYMAI) + NBAS(ISYMA) * NRHF(ISYMI)
             NH1AM(ISYMAI) = NH1AM(ISYMAI) + NORB1(ISYMA) * NRHF(ISYMI)
             NG1AM(ISYMAI) = NG1AM(ISYMAI) + NORB2(ISYMA) * NRHF(ISYMI)
+celena
+            NT1VM(ISYMAI) = NT1VM(ISYMAI) + NVIR(ISYMA) * 
+     &                      (NORB1(ISYMI)-NRHFFR(ISYMI))
+celena
   200    CONTINUE
   100 CONTINUE
 C
@@ -2797,6 +3259,7 @@ C
       NT2AOX = NT2AO(1)
       NU2AMX = NU2AM(1)
       NH2AMX = NH2AM(1)
+      NT1VMX = NT1VM(1)
 C
       ICOUN1 = 0
       DO 450 ISYM = 1,NSYM
@@ -2848,15 +3311,18 @@ C
       ICOUN4 = NRHFT
       ICOUN5 = 0
       ICOUN6 = 0
+      ICOUN7 = 0
       DO 600 ISYMP = 1,NSYM
          ICOUN1 = ICOUN1 + NBAS(ISYMP)*NORB(ISYMP)
          ICOUN2 = ICOUN2 + NBAS(ISYMP)*NRHF(ISYMP)
          ICOUN5 = ICOUN5 + NBAS(ISYMP)*NRHFS(ISYMP)
 C
          IRHF(ISYMP) = ICOUN3
+         IRHFA(ISYMP) = ICOUN7
          IVIR(ISYMP) = ICOUN4
          ICOUN3 = ICOUN3 + NRHF(ISYMP)
          ICOUN4 = ICOUN4 + NVIR(ISYMP)
+         ICOUN7 = ICOUN7 + NRHFA(ISYMP)
 C
   600 CONTINUE
       NLAMDT = ICOUN1
@@ -2995,7 +3461,8 @@ C
 C
   630 CONTINUE
 C
-      IF (.NOT. ONEAUX) THEN
+      IF ((.NOT. ONEAUX) .AND. (.NOT.LABEL.EQ.'TRCCINT ')) THEN
+c     IF (.NOT. ONEAUX) THEN
          NH1AMX = NT1AMX
          NH2AMX = NT2AMX
          DO ISYMI = 1,NSYM
@@ -3166,6 +3633,7 @@ C
             ICOUN6 = ICOUN6 + NVIR(ISYMK)*NVIR(ISYMJ)
             ICOUN9 = ICOUN9 + N2BST(ISYMK)*NBAS(ISYMJ)
             ICOU10 = ICOU10 + NMATIJ(ISYMK)*NMATIJ(ISYMJ)
+ce
 C
             IF (ISYMJ .GT. ISYMK) THEN
                ICOUN5 = ICOUN5 + NMATIJ(ISYMK)*NMATIJ(ISYMJ)
@@ -3777,6 +4245,7 @@ C
          WRITE(LUPRI,1)
          DO 200 I = 1,NORBT
             WRITE(LUPRI,2) FOCK(I),WORK(I)
+            WRITE(55,'(4e30.20)') FOCK(I)
   200    CONTINUE
       END IF
 C
@@ -3908,7 +4377,7 @@ C----------------------
 C     Print if desired.
 C----------------------
 C
-      IF (IPRINT .GT. 20) THEN
+      IF (IPRINT .GT. 200) THEN
          CALL AROUND('MO-coefficient matrix in CMO_REORDER')
          KOFF1 = 1
          KOFF2 = KSCR2
@@ -4046,6 +4515,35 @@ C
 #endif
 C
       CALL QEXIT('CCSD_SYMSQ')
+C
+      RETURN
+      END
+      SUBROUTINE CCSD_SYMSQT(DISTAB1,ISYMAB,SCR)
+C
+#include <implicit.h>
+      DIMENSION DISTAB1(*), SCR(*)
+#include <priunit.h>
+#include <maxorb.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <symsq.h>
+C
+      CALL QENTER('CCSD_SYMSQT')
+C
+C
+#if !defined (SYS_CRAY)
+       DO IJSQ = 1,N2BST(ISYMAB)
+         KOFF = I2BST(ISYMAB) + IJSQ
+         IJPK = IADRPK(KOFF)
+         SCR(IJSQ) = -DISTAB1(IJPK) 
+       END DO  
+#endif
+C
+#if defined (SYS_CRAY)
+       WRITE(LUPRI,*) 'computation of Bijal on SYS_CRAY not implemented'
+#endif
+C
+      CALL QEXIT('CCSD_SYMSQT')
 C
       RETURN
       END

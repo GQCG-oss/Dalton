@@ -1126,7 +1126,7 @@ C
       RETURN
       END
 C  /* Deck ijkaux */
-      SUBROUTINE IJKAUX(II,JJ,KK)
+      SUBROUTINE IJKAUX(II,JJ,KK,LL)
 #include <implicit.h>
 #include <priunit.h>
 #include <ccorb.h>
@@ -1157,6 +1157,7 @@ C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
       II = IJ(II)
       JJ = IJ(JJ)
       KK = IJ(KK)
+      LL = IJ(LL)
       RETURN
       END
 C  /* Deck inoaux */

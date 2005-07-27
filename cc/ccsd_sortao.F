@@ -51,6 +51,7 @@ C
       DIMENSION WORK(LWORK)
 C
       CHARACTER*8 NAME(8)
+      CHARACTER*8 LBLSAV
 C
 C     SAVE FIRST
 C
@@ -64,6 +65,7 @@ C
 #include <ccfop.h>
 #include <ccsdinp.h>
 #include <ccpack.h>
+#include <r12int.h>
 C
 C--------------------
 C     Only sort once.
@@ -97,15 +99,24 @@ C------------------------
 C     Buffer information.
 C------------------------
 C
+      IF (CCR12) THEN
+        NALLBAS = 0
+        DO I = 1, NSYM
+          NALLBAS = NALLBAS + MBAS1(I) + MBAS2(I)
+        END DO
+      ELSE
+        NALLBAS = NBAST 
+      ENDIF
+C
 #if defined (SYS_CRAY)
       NIBUF = 1
-      IF (NBAST .LE. 255) THEN
+      IF (NALLBAS .LE. 255) THEN
          NBITS = 8
       ELSE
          NBITS = 16
       END IF
 #else
-      IF (NBAST .LE. 255) THEN
+      IF (NALLBAS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
@@ -141,7 +152,6 @@ C-------------------------------------------
 C
       IF (LPACKINT) THEN
          DTIME = SECOND()
-
          CALL INITPCKR8(THRPCKINT,IPCKTABINT,ENABLED)
 
          IF (.NOT.ENABLED) THEN
@@ -168,8 +178,8 @@ C
 C
          ISYDIS = MULD2H(ISYMD,ISYMOP)
          NTOTD  = NBAS(ISYMD)
-	 IF (NTOTD .EQ. 0) GOTO 100
-	 LENGTH = NDISAO(ISYDIS)
+       IF (NTOTD .EQ. 0) GOTO 100
+       LENGTH = NDISAO(ISYDIS)
 C
          NUMBAT = MIN(NTOTD,LWRK1/LENGTH)
 C
@@ -269,6 +279,7 @@ C
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
 #include <ccsdsym.h>
 #include <ibtfun.h>
+#include <r12int.h>
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -290,6 +301,7 @@ C
             IQ = IBTAND(IBTSHR(LABLE,  NBITS),IBIT1)
             IR = IBTAND(IBTSHR(LABLE,2*NBITS),IBIT1)
             IS = IBTAND(IBTSHR(LABLE,3*NBITS),IBIT1)
+            IF (NOAUXB) CALL IJKAUX(IP,IQ,IR,IS)
 C
             IF ((IS .GE. ID1) .AND. (IS .LE. ID2)) THEN
                IADR = KAOG(IR,ISYDIS) + KAOAB(IP,IQ)
@@ -329,6 +341,7 @@ C
             IQ = IBTAND(IBTSHR(LABLE1,NBITS),IBIT1)
             IR = IBTAND(       LABLE2,       IBIT1)
             IS = IBTAND(IBTSHR(LABLE2,NBITS),IBIT1)
+            IF (NOAUXB) CALL IJKAUX(IP,IQ,IR,IS)
 C
             IF ((IS .GE. ID1) .AND. (IS .LE. ID2)) THEN
                IADR = KAOG(IR,ISYDIS) + KAOAB(IP,IQ)

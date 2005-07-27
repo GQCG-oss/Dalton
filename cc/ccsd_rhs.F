@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck ccrhsn */
-      SUBROUTINE CCRHSN(OMEGA1,OMEGA2,T1AM,T2AM,WORK,LWORK)
+      SUBROUTINE CCRHSN(OMEGA1,OMEGA2,T1AM,T2AM,WORK,LWORK,APROXR12)
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
@@ -75,22 +75,44 @@ C
 #include <eribuf.h>
 #include <ccnoddy.h>
 #include <r12int.h>
+#include <ccr12int.h>
 #include <qm3.h>
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (XMHALF = -0.5D0, XMONE= -1.0D0 )
 C
-      LOGICAL FCKCON,CC1BSA,ETRAN,CC2R12
+      LOGICAL FCKCON,CC1BSA,ETRAN,CC2R12,CCSDR12,LV,LVAJKL,LRES,
+     &        DEBUGV,MKVAJKL,LVIJKL,LVABKL
+      PARAMETER (DEBUGV = .FALSE.)
 C
       DIMENSION INDEXA(MXCORB)
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),WORK(LWORK)
 C
       CHARACTER CFIL*6,DFIL*6, FN3SRT*8, FNDELD*6, CDUMMY*8
       CHARACTER FNCKJD*6, FNDKBC*4, FNTOC*8, FN3VI*6, FN3VI2*8
+      CHARACTER*(*) APROXR12
+      CHARACTER MODEL*10
+C
+
+      INTEGER IGLMRHS(8,8),IGLMVIS(8,8),NGLMDS(8),ICMO(8,8),NCMO(8),
+     &        IMAIJM(8,8),NMAIJM(8),
+     &        IMATIJM(8,8),NMATIJM(8),ICOUNT5,NGAMSM(8),IGAMSM(8,8),
+     &        IRGKLS(8,8),NRGKLS(8),IR1BASM(8,8),NR1BASM(8),
+     &        IR2BASM(8,8),NR2BASM,IR1XBASM(8,8),NR1XBASM(8),
+     &        IR2XBASM(8,8),IMATF(8,8),NMATF(8),NR1ORB(8),NR1BAS(8),
+     &        NR1XBAS(8),NR2BAS(8),NRGKL(8),N2BST1(8),IR1ORB(8,8),
+     &        IR1BAS(8,8),IR2BAS(8,8),IR2XBAS(8,8),IRGKL(8,8),
+     &        IAODIS1(8,8),NVABKL(8),IVABKL(8,8),IR1XBAS(8,8),
+     &        NR1XORB(8),IR1XORB(8,8),NRXGKL(8),IRXGKL(8,8)
 C
       CALL QENTER('CCRHSN')
 C
-      CC2R12 = CC2 .AND. LMULBS
+      CC2R12  = CC2 .AND. LMULBS
+      IF (LMULBS.AND. .NOT.(CC2R12 .OR. CCS .OR. CIS)) THEN
+        CCSDR12 = .TRUE.
+      ELSE
+        CCSDR12 = .FALSE.
+      END IF
       MKVAJKL = CC2R12 .AND. RSPIM
 C
 C-----------------------------------------------------------
@@ -227,9 +249,23 @@ C
         KFCKHF = KEND1
         KEND1  = KFCKHF + N2BAST
       END IF
+c
       IF (CC2R12) THEN
-         KVIJKL = KEND1
-         KEND1  = KVIJKL + NGAMSQ(1)
+         CALL CC_R12OFFS23(IGLMRHS,IGLMVIS,NGLMDS,ICMO,NCMO,
+     &                     IMAIJM,NMAIJM,IMATIJM,NMATIJM,
+     &                     IGAMSM,NGAMSM,IRGKLS,NRGKLS,
+     &                     IR1BASM,NR1BASM,IR2BASM,NR2BASM,IR1XBASM,
+     &                     NR1XBASM,IR2XBASM,IMATF,NMATF)
+         KVIJKL  = KEND1
+         KLAMDHS = KVIJKL + NGAMSQ(1)
+         KLAMDPS = KLAMDHS + NGLMDS(1)
+         KEND1   = KLAMDPS + NGLMDS(1)
+ 
+         LWRK1 = LWORK - KEND1
+         IF (LWRK1 .LT. 0) CALL QUIT('Insufficient space in CCHRSN')
+         CALL LAMMATS(WORK(KLAMDPS),WORK(KLAMDHS),T1AM,
+     &                1,.FALSE.,.FALSE.,
+     &                NGLMDS,IGLMRHS,IGLMVIS,ICMO,WORK(KEND1),LWRK1)
       END IF
       IF (MKVAJKL) THEN
          KVAJKL = KEND1
@@ -275,9 +311,11 @@ C----------------------------------
        CALL CC_R12MKVIJKL0(WORK(KVIJKL))
       END IF
       IF (MKVAJKL) THEN
-       CALL CC_R12MKVAMKL0(WORK(KVAJKL),WORK(KLAMDP),WORK(KEND1),LWRK1)
+       CC2R12 = .TRUE.
+       CALL CC_R12MKVAMKL0(WORK(KVAJKL),DUMMY,CC2R12,WORK(KLAMDP),
+     &                     WORK(KEND1),LWRK1)
       END IF
-C
+c
 C-------------------------------
 C     Prepare the t2-amplitudes.
 C-------------------------------
@@ -498,7 +536,7 @@ C
                   IDEL  = INDEXA(IDEL2)
                   IF (NOAUXB) THEN
                      IDUM = 1
-                     CALL IJKAUX(IDEL,IDUM,IDUM)
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
                   END IF
                   ISYMD = ISAO(IDEL)
                ELSE
@@ -604,13 +642,17 @@ C
                IF ( CC2 ) THEN
                   DTIME = SECOND() - TIMFP
                   IOPT = 1
+                  CALL GETTIM(T0,W0)
                   CALL CC_MOFCON(WORK(KXINT),OMEGA2,
      *                           WORK(KLAMDP),WORK(KLAMDH),
      *                           WORK(KLAMDP),WORK(KLAMDH),
      *                           WORK(KEND3),LWRK3,IDEL,
      *                           ISYMD,ISYMTR,IOPT,
-     *                           WORK(KVIJKL),CC2R12,
+     *                           WORK(KVIJKL),CC2R12,IANR12,
      *                           WORK(KVAJKL),MKVAJKL,TIMFP)
+                  CALL GETTIM(T1,W1)
+                  TIMMOFCPU = T1-T0
+                  TIMMOFWAL = W1-W0
                   DTIME   = (SECOND() - TIMFP) - DTIME
                   TIMF    = TIMF     + DTIME
                ENDIF
@@ -833,39 +875,433 @@ C
          KEND1 = KENDS2
          LWRK1 = LWRKS2
       ENDIF
+C     
+C     ----------------------------------------------------------------
+C     for CC2-R12 ansatz 3 add (ai|bj)-hat x (ka|lb) to V intermediate
+C     (Note: this requires that omega2 contains the integral 
+C            (ai|bj)-hat in packed triangular storage)
+C     ----------------------------------------------------------------
 C
+      IF (CC2 .AND. CCR12 .AND. IANR12.EQ.3) THEN
+         ! get R12 integrals
+         lunit = 0
+         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
+     &              idum,.false.)
+         read(lunit)(t2am(i),i=1,nt2amx)  
+         call gpclose(lunit,'KEEP')
+         
+         CALL CC_R12MI2(WORK(KVIJKL),T2AM,OMEGA2,1,1,-1.0d0,
+     &                  WORK(KEND1),LWRK1)
+
+         ! restore amplitudes stored as full square matrix
+         IF (LWRK1.LT.NT2AMX) CALL QUIT('Out of memory in CCRHSN')
+         REWIND (LURHS1)
+         READ (LURHS1)
+         READ (LURHS1) (WORK(KEND1+I-1), I = 1,NT2AMX)
+         CALL CC_T2SQ(WORK(KEND1),T2AM,1)
+      END IF
+C
+C---------------------------------------------------------------------
+C     for CC2 and NONHF=.true. calculate Fock matrix entering E-terms:
+C       the SCF Fock matrix is in principle given by the SCF orbital
+C       energies, but in recomputing it here from the SCF AO-Fock
+C       matrix computed in CCSD_IAJB allows to do finite difference
+C       on the vector function with respect to the CMO vector
+C       (see CC_FDXI & CC_FDETA). Note the SCF AO-Fock matrix read
+C       from file includes the `relaxed' external fields, so we
+C       only have to add the unrelaxed fields.
+C---------------------------------------------------------------------
+C
+      DTIME = SECOND()
+      IF ((CC2 .OR. CCR12) .AND. NONHF) THEN
+        KFIELD = KEND1
+        KEND2  = KFIELD + N2BAST
+        IF (CC2) THEN
+          KCMO   = KEND2
+          KEND2  = KCMO + MAX(NLAMDT,NLAMDS)
+        END IF 
+        IF (CCR12) THEN
+          if (isymop.ne.1) call quit('Symmetry problem in CCSD_RHS')
+          kvxintsq   = kend2
+          kxint    = kvxintsq + ngamsq(isymop)
+          kxintsq  = kxint + ngamma(1)
+          ktr12    = kxintsq + ngamsq(1)
+          ktr12sq  = ktr12 + ngamma(1)
+          kxir12   = ktr12sq + ngamsq(1)
+          kend2    = kxir12 + ngamsq(1)
+        END IF
+        LWRK2  = LWORK  - KEND2
+        IF (LWRK2 .LT. 0) THEN
+          CALL QUIT('Insufficient memory in CCRHSN.')
+        END IF
+
+        CALL DZERO(WORK(KFIELD),N2BAST)
+        IF (CCR12) THEN
+          CALL DZERO(WORK(KVXINTSQ),NGAMSQ(1))
+        END IF
+        DO  IF = 1, NFIELD
+          IF ( NHFFIELD(IF) ) THEN
+            DTIME = SECOND()
+            CALL CC_ONEP(WORK(KFIELD),WORK(KEND2),LWRK2,EFIELD(IF),1,
+     *                   LFIELD(IF))
+            TIMFCKMO = TIMFCKMO + SECOND() - DTIME
+            IF (CCR12) THEN
+              DTIME = SECOND()
+              CALL CC_R12RDVXINT(WORK(KVXINTSQ),WORK(KEND2),LWRK2,
+     &                         EFIELD(IF),1, LFIELD(IF))
+              TIMEP = TIMEP + SECOND() - DTIME
+            END IF
+          ELSE IF (.NOT. NHFFIELD(IF) .AND. CCR12) THEN
+            CALL QUIT('CCR12 response can only handle unrelaxed '//
+     &                'orbitals (w.r.t. the perturbation)')
+          END IF
+        END DO
+
+        IF (CCR12) THEN
+            DTIME = SECOND()
+            ! read R12 amplitudes and reorder to full square
+            iopt=32
+            call cc_rdrsp('R0 ',0,1,iopt,model,dummy,work(ktr12))
+c            lunit = 0
+c            CALL GPOPEN(lunit,fccr12c,'old',' ','formatted',idum,ldum)  
+c            REWIND(LUNIT)
+c            read(lunit,'(4e30.20)') (work(ksing+ij), ij = 0, n2-1)
+c            read(lunit,'(4e30.20)') (work(ktrip+ij), ij = 0, n2-1)
+c            CALL GPCLOSE(LUNIT,'KEEP')
+            call ccr12unpck2(work(ktr12),1,work(ktr12sq),.false.)
+ 
+            ! read R12 overlap matrix and reorder to full square
+            lunit = 0
+            call gpopen(lunit,fccr12x,'old',' ','unformatted',idummy,
+     &                  .false.)
+            rewind(lunit)
+ 8888       read(lunit) ian
+            read(lunit) (work(kxint-1+i), i=1, ngamma(1))
+            if (ian.ne.ianr12) goto 8888 
+            call gpclose(lunit,'KEEP')
+            call ccr12unpck2(work(kxint),1,work(kxintsq),.false.)
+
+            ! calculate R12 response contribution to Omega_{kilj}: 
+            CALL CC_R12XI(work(kxir12),1,work(ktr12sq),1,
+     &                    work(kxintsq),work(kvxintsq),1,work(kfield),
+     &                    work(klamdp),work(klamdh),'N',work(kend2),
+     &                    lwrk2)
+
+            ! transpose Xi: in Xi the r12-pair index (kl) is leading,
+            ! in Vijkl the occ. index pair (ij) is leading!!! 
+            call cclr_trsqr12(work(kxir12),1)
+            
+            ! add it to Omega_FP term = VIJKL 
+            call daxpy(ngamsq(1),one,work(kxir12),1,work(kvijkl),1)
+
+            TIMEP = TIMEP + SECOND() - DTIME
+        END IF
+
+        IF (CC2) THEN
+          DTIME = SECOND()
+          LUSIFC = 0
+          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     *                IDUMMY,.FALSE.)
+          REWIND(LUSIFC)
+          CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+          READ(LUSIFC)
+          READ(LUSIFC)
+          READ(LUSIFC) (WORK(KCMO+I-1),I=1,NLAMDS)
+          CALL GPCLOSE(LUSIFC,'KEEP')
+          
+          CALL CMO_REORDER(WORK(KCMO),WORK(KEND2),LWRK2)   
+
+          LUFCK = 0
+          CALL GPOPEN(LUFCK,'CC_FCKREF','UNKNOWN',' ','UNFORMATTED',
+     *                IDUMMY,.FALSE.)
+          REWIND(LUFCK)
+          READ(LUFCK)(WORK(KFCKHF + I-1),I = 1,N2BST(ISYMOP))
+          CALL GPCLOSE(LUFCK,'KEEP' )
+          
+          ! SCF Fock matrix in transformed using CMO vector
+          CALL CC_FCKMO(WORK(KFCKHF),WORK(KCMO),WORK(KCMO),
+     *                  WORK(KEND2),LWRK2,1,1,1)
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C SLV98,OC
+C-------------------------------------
+C
+        IF (CCSLV .AND. (.NOT. CCMM )) THEN
+           CALL CCSL_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+        ENDIF
+C
+C-------------------------------------
+C     Solvent contribution.
+C     Put into one-electron integrals.
+C CCMM02,JA+AO
+C-------------------------------------
+C
+        IF (CCMM) THEN
+           CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
+        ENDIF
+C
+C----------------------------------
+C
+          ! unrelaxed fields are transformed using the Lambda matrices
+          CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMDP),WORK(KLAMDH),
+     *                  WORK(KEND2),LWRK2,1,1,1)
+
+          CALL DAXPY(N2BAST,ONE,WORK(KFIELD),1,WORK(KFCKHF),1)
+          TIMFCKMO = TIMFCKMO + SECOND() - DTIME
+        END IF
+
+      END IF
+
+
+C
+C-------------------------------------------------
+C     for CCSD(R12):
+C-------------------------------------------------
+      IF ((IANR12.EQ.1).AND.CCSDR12) THEN
+        TIMR12CPU = 0.0d0
+        TIMR12WAL = 0.0d0
+        CALL GETTIM(T0,W0)
+c
+        CALL CCRHS_BP(OMEGA2,WORK(KEND1),LWRK1)
+c
+        CALL GETTIM(T1,W1)
+        WRITE(LUPRI,*)'Time used for CCRHS_BP cpu:', T1-T0 
+        WRITE(LUPRI,*)'Time used for CCRHS_BP wall:', W1-W0 
+        TIMR12CPU = TIMR12CPU + (T1-T0)
+        TIMR12WAL = TIMR12WAL + (W1-W0)
+      END IF
 C-------------------------------------------------
 C     for CC2-R12:
 C-------------------------------------------------
 C
       IF (CC2R12) THEN
-        CALL CC_MOFCONR12(WORK(KLAMDH),ISYMTR,WORK(KVIJKL),
-     &                    WORK(KVAJKL),TIMRDAOR12,TIMFP,TIMINTR12,
+        TIMR12CPU = 0.0d0
+        TIMR12WAL = 0.0d0
+        IF (IANR12.EQ.2 .OR. IANR12.EQ.3) THEN
+          ISYMV = 1 
+          ISYMH = 1
+          LRES  = .FALSE.
+          CALL GETTIM(T0,W0)
+          CALL CC_R12INTF2(WORK(KVIJKL),WORK(KLAMDH),ISYMH,
+     &                     WORK(KLAMDHS),ISYMV,WORK(KLAMDHS),ISYMH,
+     &                     WORK(KEND1),LWRK1)
+          CALL GETTIM(T1,W1)
+          TIMINTF2CPU = T1-T0
+          TIMINTF2WAL = W1-W0
+          TIMR12CPU = TIMR12CPU + (T1-T0)
+          TIMR12WAL = TIMR12WAL + (W1-W0)
+        END IF
+        LVIJKL = .TRUE.
+        LVAJKL = MKVAJKL
+        LVABKL = .FALSE.
+        IOPTBAS = 1
+        FACTERM23 = TWO
+        CALL GETTIM(T0,W0)
+        CALL CC_MOFCONR12(WORK(KLAMDH),1,WORK(KLAMDHS),
+     &                    WORK(KLAMDPS),WORK(KLAMDHS),ISYMTR,
+     &                    WORK(KVIJKL),FACTERM23,WORK(KVAJKL),IDUMMY,
+     &                    LVIJKL,LVAJKL,LVABKL,IOPTBAS,
+     &                    TIMRDAOR12,TIMFP,TIMINTR12,
+     &                    IGLMRHS,NGLMDS,IMAIJM,NMAIJM,
      &                    WORK(KEND1),LWRK1)
+        CALL GETTIM(T1,W1)
+        TIMMOFR12CPU = T1-T0
+        TIMMOFR12WAL = W1-W0
+        TIMR12CPU = TIMR12CPU + (T1-T0)
+        TIMR12WAL = TIMR12WAL + (W1-W0)
 
-        DTIME = SECOND()
+        IF ((IANR12.EQ.2.OR.IANR12.EQ.3).AND.DEBUGV) THEN
+c         symmetrize Vijkl
+          ISYMV = 1
+          KVSYM = KEND1
+          KEND1 = KVSYM + NGAMSQ(1)
+          CALL SYMV(WORK(KVIJKL),ISYMV,WORK(KVSYM),
+     &              NRHF,IMATIJ,IGAMSQ,NMATIJ,WORK(KEND1),LWRK1)
+
+c         write V^ij_kl on file to calculate later numerically V bar
+          LUVIJKL = 0
+          CALL GPOPEN(LUVIJKL,FVIJKL,'UNKNOWN',' ','UNFORMATTED',
+     &                IDUMMY,.FALSE.)
+          WRITE(LUVIJKL)(WORK(KVSYM-1+I),I=1,NGAMSQ(1))
+          CALL GPCLOSE(LUVIJKL,'KEEP')
+          WRITE(LUPRI,*)'VIJKL WRITTEN ON FILE'
+
+          DO ISYMIJ = 1, NSYM
+             ISYMKL = MULD2H(ISYMIJ,ISYMTR)
+             WRITE(LUPRI,*) 'ISYMIJ,ISYMKL:',ISYMIJ,ISYMKL
+             CALL OUTPUT(WORK(KVSYM+IGAMSQ(ISYMIJ,ISYMKL)),1,
+     &            NMATIJ(ISYMIJ),1,NMATIJ(ISYMKL),NMATIJ(ISYMIJ),
+     &            NMATIJ(ISYMKL),1,LUPRI)
+          END DO
+        END IF
+C
+
+C       Test: overwrite VIJKL and VAJKL with intermediates
+C             that do NOT depend on singles amplitudes 
+C       IF (.FALSE.) THEN
+C           call around('original Vijkl:')
+C           call cc_prsqr12(work(kvijkl),1,1,.false.)
+C
+C          KEND2 = KEND1
+C          KVAJKLTEMP = KEND2
+C          KEND2  = KVAJKLTEMP + NVAJKL(1)
+C          LWRK2  = LWORK  - KEND2
+C
+C          luvajkl = 0
+C          call gpopen(luvajkl,fvajkl,'old',' ','unformatted',
+C    &          idummy,.false.)
+C          rewind(luvajkl)
+C          read(luvajkl) (work(kvajkltemp+i-1), i = 1,nvajkl(1))
+C          call gpclose(luvajkl,'KEEP')
+C          call dzero(work(kvijkl),ngamsq(1))          
+C          call cc_r12mkvijkl(work(kvajkltemp),1,work(klamdp),1,
+C    &                        work(kend2),lwrk1,.true.,one,work(kvijkl))
+C
+C           call around('replacement for Vijkl:')
+C           call cc_prsqr12(work(kvijkl),1,1,.false.)
+C       END IF
+C       end Test
+
+        IF (IANR12.EQ.2 .OR. IANR12.EQ.3) THEN
+          LRES = .FALSE.
+          CALL GETTIM(T0,W0)
+          CALL CCRHS_EPP(WORK(KVIJKL),T2AM,1,WORK(KEND1),LWRK1,APROXR12,
+     &                   LRES,IDUMMY,CDUMMY,IDUMMY)
+          CALL GETTIM(T1,W1)
+          TIMEPPCPU = T1-T0
+          TIMEPPWAL = W1-W0
+          TIMR12CPU = TIMR12CPU + (T1-T0)
+          TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+          LRES = .FALSE.
+          CALL GETTIM(T0,W0)
+          CALL CCRHS_EPPP(OMEGA2,WORK(KEND1),LWRK1,APROXR12,LRES,
+     &                    IDUMMY,CDUMMY,IDUMMY,ISYMTR)
+          CALL GETTIM(T1,W1)
+          TIMEPPPCPU = T1-T0
+          TIMEPPPWAL = W1-W0
+          TIMR12CPU = TIMR12CPU + (T1-T0)
+          TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+          CALL GETTIM(T0,W0)
+          CALL CCRHS_HP(OMEGA1,WORK(KLAMDH),ISYMH,WORK(KLAMDH),ISYMH,
+     &                  WORK(KEND1),LWRK1,0,1,CDUMMY,IDUMMY,IDUMMY)  
+          CALL GETTIM(T1,W1)
+          TIMHPCPU = T1-T0
+          TIMHPWAL = W1-W0
+          TIMR12CPU = TIMR12CPU + (T1-T0)
+          TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+          CALL GETTIM(T0,W0)
+          CALL CCRHS_IP(OMEGA1,T1AM,1,WORK(KLAMDH),ISYMH,0,1,
+     &                  CDUMMY,IDUMMY,IDUMMY,WORK(KEND1),LWRK1)
+
+          CALL GETTIM(T1,W1)
+          TIMIPCPU = T1-T0
+          TIMIPWAL = W1-W0
+          TIMR12CPU = TIMR12CPU + (T1-T0)
+          TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+        END IF
+       END IF
+C
+       IF (CCSDR12) THEN
+c         calculate Vijkl and write Vajkl on file
+          CALL CC_R12OFFSET(NR1ORB,NR1XORB,NR1BAS,NR1XBAS,NR2BAS,
+     &         NRGKL,NRXGKL,N2BST1,IR1ORB,IR1XORB,IR1BAS,IR1XBAS,IR2BAS,
+     &         IR2XBAS,IRGKL,IRXGKL,IAODIS1,NVABKL,IVABKL)
+
+          KVIJKL = KEND1
+          KEND1  = KVIJKL + NGAMSQ(1)
+          LWRK1  = LWORK - KEND1
+
+          KVABKL = KEND1
+          KEND2  = KVABKL + NVABKL(1)
+          LWRK2  = LWORK - KEND2
+          IF (LWRK2.LT.0) THEN
+            CALL QUIT('Insufficient work space in ccrhsn')
+          END IF
+          ISYMC = 1
+          LV = .TRUE.
+          LVAJKL = .FALSE.
+          CALL GETTIM(T0,W0)
+c
+          CALL CC_R12MKVTF(WORK(KVABKL),WORK(KVIJKL),WORK(KLAMDH),
+     &                     ISYMC,IVABKL,NVABKL,IR1BAS,NR1BAS,
+     &                     LV,LVAJKL,WORK(KEND2),LWRK2)
+c
+          CALL GETTIM(T1,W1)
+          WRITE(LUPRI,*)'Time used for CC_R12MKVTF cpu:', T1-T0 
+          WRITE(LUPRI,*)'Time used for CC_R12MKVTF wall:',W1-W0 
+          TIMR12CPU = TIMR12CPU + (T1-T0)
+          TIMR12WAL = TIMR12WAL + (W1-W0)
+          CALL GETTIM(T0,W0)
+c
+          CALL CCRHS_BPP(WORK(KVIJKL),T2AM,1,WORK(KEND2),LWRK2)
+c
+          CALL GETTIM(T1,W1)
+          WRITE(LUPRI,*)'Time used for CCRHS_BPP cpu:', T1-T0 
+          WRITE(LUPRI,*)'Time used for CCRHS_BPP wall:',W1-W0 
+          TIMR12CPU = TIMR12CPU + (T1-T0)
+          TIMR12WAL = TIMR12WAL + (W1-W0)
+       END IF
+
+       IF (CCR12) THEN
         ISYMV = 1 
+        CALL GETTIM(T0,W0)
+c
         CALL CCRHS_EP(WORK(KVIJKL),ISYMV,.FALSE.,DUMMY,
-     &                WORK(KEND1),LWRK1,.FALSE.,
-     &                CDUMMY,IDUMMY,CDUMMY,IDUMMY,IDUMMY)
-        TIMEP = TIMEP + ( SECOND() - DTIME ) 
-
-        DTIME = SECOND()
+     &                WORK(KEND1),LWRK1,0,
+     &                CDUMMY,IDUMMY,CDUMMY,IDUMMY,IDUMMY,APROXR12,
+     &                BRASCL,KETSCL)
+        CALL GETTIM(T1,W1)
+        TIMEPCPU = T1-T0
+        TIMEPWAL = W1-W0
+        TIMR12CPU = TIMR12CPU + (T1-T0)
+        TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+        IF ((IANR12.EQ.2.OR.IANR12.EQ.3).AND.DEBUGV) THEN
+c         write V^ij_kl on file to calculate later numerically RHOR12 
+          LUVIJKL = 0
+          CALL GPOPEN(LUVIJKL,FVIJKL,'UNKNOWN',' ','UNFORMATTED',
+     &                IDUMMY,.FALSE.)
+          WRITE(LUVIJKL)(WORK(KVIJKL-1+I),I=1,NGAMSQ(1))
+          CALL GPCLOSE(LUVIJKL,'KEEP')
+          WRITE(LUPRI,*)'VIJKL WRITTEN ON FILE'
+        END IF
+c
+        CALL GETTIM(T0,W0)
         CALL CCRHS_GP(OMEGA1,WORK(KLAMDP),
-     &                WORK(KEND1),LWRK1,.FALSE.,1,IDUMMY)
-        TIMGP = TIMGP + ( SECOND() - DTIME ) 
-      END IF
+     &       WORK(KEND1),LWRK1,0,1,CDUMMY,IDUMMY,IDUMMY)
+        CALL GETTIM(T1,W1)
+        TIMGPCPU = T1-T0
+        TIMGPWAL = W1-W0
+        TIMR12CPU = TIMR12CPU + (T1-T0)
+        TIMR12WAL = TIMR12WAL + (W1-W0)
+c       TIMGP = TIMGP + ( SECOND() - DTIME ) 
+
+       END IF
 C
 C     -----------------------------------------
 C     write V(alpha jtilde,kl) to disk
 C     -----------------------------------------
       IF (MKVAJKL) THEN
-         LUVAJKL = 0
-         CALL GPOPEN(LUVAJKl,'CCR12VAJTKL','UNKNOWN',' ','UNFORMATTED',
+        IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+c        calculate contributions for ansatz 2
+         ISYMH = ISYMTR
+         ISYMV = 1
+         CALL CC_R12MKVAJ2(WORK(KVAJKL),ISYMV,WORK(KLAMDH),ISYMH,
+     &                     WORK(KLAMDHS),ISYMH,WORK(KEND1),LWRK1)
+        END IF
+         WRITE(LUPRI,*)'write Vajtkl on disk'
+         LUVAJTKL = 0
+         CALL GPOPEN(LUVAJTKl,FVAJTKL,'UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
-         REWIND(LUVAJKL)
-         WRITE(LUVAJKL) (WORK(KVAJKL+I-1), I = 1,NVAJKL(1))
-         CALL GPCLOSE(LUVAJKL,'KEEP')
+         REWIND(LUVAJTKL)
+         WRITE(LUVAJTKL) (WORK(KVAJKL+I-1), I = 1,NVAJKL(1))
+         CALL GPCLOSE(LUVAJTKL,'KEEP')
       END IF
 C
 C-------------------------------------------------
@@ -928,6 +1364,7 @@ C
          TIMOME2 = SECOND()
          ISYMBF = ISYMOP
          ICON = 1
+         
          CALL CC_T2MO(FAKE,PHONEY,ISYMOP,OMEGA2,T2AM,WORK(KGAMMA),
      *                WORK(KLAMDP),WORK(KLAMDP),ISYMTR,
      *                WORK(KEND1),LWRK1,ISYMBF,ICON)
@@ -965,7 +1402,7 @@ C-------------------------------
 C        Print the Gamma matrix.
 C-------------------------------
 C
-         IF (IPRCC .GT. 20) THEN
+         IF (IPRINT .GT. 120) THEN
             CALL AROUND('The Gamma matrix')
             DO 200 ISYM = 1,NSYM
                KOFF = KGAMMA + IGAMMA(ISYM,ISYM)
@@ -1015,88 +1452,6 @@ C
       CALL CC_FCKMO(WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
      *                 WORK(KEND1),LWRK1,1,1,1)
       TIMFCKMO = SECOND() - TIMFCKMO
-C
-C---------------------------------------------------------------------
-C     for CC2 and NONHF=.true. calculate Fock matrix entering E-terms:
-C       the SCF Fock matrix is in principle given by the SCF orbital
-C       energies, but in recomputing it here from the SCF AO-Fock
-C       matrix computed in CCSD_IAJB allows to do finite difference
-C       on the vector function with respect to the CMO vector
-C       (see CC_FDXI & CC_FDETA). Note the SCF AO-Fock matrix read
-C       from file includes the `relaxed' external fields, so we
-C       only have to add the unrelaxed fields.
-C---------------------------------------------------------------------
-C
-      DTIME = SECOND()
-      IF (CC2 .AND. NONHF) THEN
-        KCMO   = KEND1
-        KFIELD = KCMO   + NLAMDT
-        KEND2  = KFIELD + N2BAST
-        LWRK2  = LWORK  - KEND2
-        IF (LWRK2 .LT. 0) THEN
-          CALL QUIT('Insufficient memory in CCRHSN.')
-        END IF
-
-        LUSIFC = 0
-        CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
-     *              IDUMMY,.FALSE.)
-        REWIND(LUSIFC)
-        CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-        READ(LUSIFC)
-        READ(LUSIFC)
-        READ(LUSIFC) (WORK(KCMO+I-1),I=1,NLAMDS)
-        CALL GPCLOSE(LUSIFC,'KEEP')
-
-        CALL CMO_REORDER(WORK(KCMO),WORK(KEND2),LWRK2)   
-
-        LUFCK = 0
-        CALL GPOPEN(LUFCK,'CC_FCKREF','UNKNOWN',' ','UNFORMATTED',
-     *              IDUMMY,.FALSE.)
-        REWIND(LUFCK)
-        READ(LUFCK)(WORK(KFCKHF + I-1),I = 1,N2BST(ISYMOP))
-        CALL GPCLOSE(LUFCK,'KEEP' )
-
-        ! SCF Fock matrix in transformed using CMO vector
-        CALL CC_FCKMO(WORK(KFCKHF),WORK(KCMO),WORK(KCMO),
-     *                WORK(KEND2),LWRK2,1,1,1)
-
-        CALL DZERO(WORK(KFIELD),N2BAST)
-        DO  IF = 1, NFIELD
-          IF ( NHFFIELD(IF) ) THEN
-            CALL CC_ONEP(WORK(KFIELD),WORK(KEND2),LWRK2,EFIELD(IF),1,
-     *                   LFIELD(IF))
-          END IF
-        END DO 
-C
-C-------------------------------------
-C     Solvent contribution.
-C     Put into one-electron integrals.
-C SLV98,OC
-C-------------------------------------
-C
-        IF (CCSLV .AND. (.NOT. CCMM )) THEN
-           CALL CCSL_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
-        ENDIF
-C
-C-------------------------------------
-C     Solvent contribution.
-C     Put into one-electron integrals.
-C CCMM02,JA+AO
-C-------------------------------------
-C
-        IF (CCMM) THEN
-           CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
-        ENDIF
-C
-C----------------------------------
-C
-        ! unrelaxed fields are transformed using the Lambda matrices
-        CALL CC_FCKMO(WORK(KFIELD),WORK(KLAMDP),WORK(KLAMDH),
-     *                WORK(KEND2),LWRK2,1,1,1)
-
-        CALL DAXPY(N2BAST,ONE,WORK(KFIELD),1,WORK(KFCKHF),1)
-      END IF
-      TIMFCKMO = TIMFCKMO + SECOND() - DTIME
 C
 C---------------------
 C     Reallocate T2TP.
@@ -1259,18 +1614,29 @@ C
      *                   WORK(KFOCK),WORK(KEND2),LWRK2,FCKCON,
      *                   ETRAN,ISYMEI)
 C
-         IF (CC2R12) THEN
+         IF (CCR12.OR.CCSDR12) THEN
            KEMAT2P = KEND2
            KEND3   = KEMAT2P + NMATIJ(ISYMOP)
            LWRK3   = LWORK - KEND3
            IF (LWRK3.LT.0) CALL QUIT('Insufficient memory in CCSD_RHS')
 
            CALL DZERO(WORK(KEMAT2P),NMATIJ(ISYMOP))
-    
+           CALL GETTIM(T0,W0)
            CALL CCRHS_EINTP(WORK(KEMAT2P),WORK(KLAMDP),
-     &                      WORK(KEND3),LWRK3) 
+     &                      WORK(KEND3),LWRK3,0,1,CDUMMY,IDUMMY,
+     &                      IDUMMY,CDUMMY,IDUMMY) 
+           CALL GETTIM(T1,W1)
+           WRITE(LUPRI,*)'Time used for CCRHS_EINTP cpu:', T1-T0
+           WRITE(LUPRI,*)'Time used for CCRHS_EINTP wall:',W1-W0
+           TIMR12CPU = TIMR12CPU + (T1-T0)
+           TIMR12WAL = TIMR12WAL + (W1-W0)
+
+           WRITE(LUPRI,*)'Time used for R12 part in CCSD_RHS cpu:', 
+     &                    TIMR12CPU
+           WRITE(LUPRI,*)'Time used for R12 part in CCSD_RHS wall:', 
+     &                    TIMR12WAL
           
-           ! add to R12 contribution to usual E intermediate
+           ! add R12 contribution to usual E intermediate
            CALL DAXPY(NMATIJ(ISYMOP),ONE,WORK(KEMAT2P),1,WORK(KEMAT2),1)
          END IF
 C
@@ -1334,7 +1700,7 @@ C
 C
          ISYVEC = 1
          ISYCIM = 1
-         IOPT  = 1
+         IOPT   = 1
          IVECNR = 1
 C
          TIMCIO = SECOND()
@@ -1450,12 +1816,41 @@ C
          WRITE(LUPRI,9999) 'CCRHS_TRBT ', TIMTRBT
          WRITE(LUPRI,9999) 'CCRHS_T2TR ', TIMT2TR
          WRITE(LUPRI,9999) 'CCRHS_T2BT ', TIMT2BT
-         IF (CCR12) THEN
-            WRITE(LUPRI,9999) 'CCRHS_FP   ', TIMFP
-            WRITE(LUPRI,9999) 'CCRHS_EP   ', TIMEP
-            WRITE(LUPRI,9999) 'CCRHS_GP   ', TIMGP
-            WRITE(LUPRI,9999) 'INTEG. R12 ', TIMINTR12
-            WRITE(LUPRI,9999) 'RDAO   R12 ', TIMRDAOR12
+         IF (CCR12.AND.(IANR12.EQ.1)) THEN
+           WRITE(LUPRI,9999) 'CCRHS_FP   ', TIMFP
+           WRITE(LUPRI,9999)'CC_MOFCON cpu:', TIMMOFCPU 
+           WRITE(LUPRI,9999)'CC_MOFCON wall:', TIMMOFWAL 
+           WRITE(LUPRI,9999)'CC_MOFCONR12 cpu:', TIMMOFR12CPU 
+           WRITE(LUPRI,9999)'CC_MOFCONR12 wall:', TIMMOFR12WAL 
+           WRITE(LUPRI,9999)'CCRHS_EP cpu:', TIMEPCPU
+           WRITE(LUPRI,9999)'CCRHS_EP wall:',TIMEPWAL
+           WRITE(LUPRI,9999)'CCRHS_GP cpu:', TIMGPCPU
+           WRITE(LUPRI,9999)'CCRHS_GP wall:', TIMGPWAL
+           WRITE(LUPRI,9999) 'INTEG. R12 ', TIMINTR12
+           WRITE(LUPRI,9999) 'RDAO   R12 ', TIMRDAOR12
+         ELSE IF (CCR12.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+           WRITE(LUPRI,9999)'CC_MOFCON cpu:', TIMMOFCPU 
+           WRITE(LUPRI,9999)'CC_MOFCON wall:', TIMMOFWAL 
+           WRITE(LUPRI,9999)'CC_R12INTF2 cpu:', TIMINTF2CPU 
+           WRITE(LUPRI,9999)'CC_R12INTF2 wall:', TIMINTF2WAL 
+           WRITE(LUPRI,9999)'CC_MOFCONR12 cpu:', TIMMOFR12CPU 
+           WRITE(LUPRI,9999)'CC_MOFCONR12 wall:', TIMMOFR12WAL 
+           WRITE(LUPRI,9999)'CCRHS_EPP cpu:', TIMEPPCPU 
+           WRITE(LUPRI,9999)'CCRHS_EPP wall:', TIMEPPWAL 
+           WRITE(LUPRI,9999)'CCRHS_EPPP cpu:', TIMEPPPCPU 
+           WRITE(LUPRI,9999)'CCRHS_EPPP wall:', TIMEPPPWAL 
+           WRITE(LUPRI,9999)'CCRHS_HP cpu:', TIMHPCPU 
+           WRITE(LUPRI,9999)'CCRHS_HP wall:', TIMHPWAL 
+           WRITE(LUPRI,9999)'CCRHS_IP cpu:', TIMIPCPU 
+           WRITE(LUPRI,9999)'CCRHS_IP wall:', TIMIPWAL 
+           WRITE(LUPRI,9999)'CCRHS_EP cpu:', TIMEPCPU
+           WRITE(LUPRI,9999)'CCRHS_EP wall:',TIMEPWAL
+           WRITE(LUPRI,9999)'CCRHS_GP cpu:', TIMGPCPU
+           WRITE(LUPRI,9999)'CCRHS_GP wall:', TIMGPWAL
+           WRITE(LUPRI,9999)'R12 cpu:', TIMR12CPU
+           WRITE(LUPRI,9999)'R12 wall:', TIMR12WAL
+           WRITE(LUPRI,9999) 'INTEG. R12 ', TIMINTR12
+           WRITE(LUPRI,9999) 'RDAO   R12 ', TIMRDAOR12
          END IF
       ENDIF
 9999  FORMAT(7x,'Time used in',2x,A12,2x,': ',f10.2,' seconds')
@@ -2625,6 +3020,9 @@ C
 #include <ccsdsym.h>
 C
       ISYDIS = MULD2H(ISYMD,ISYMOP)
+cch
+c     write(lupri,*) 'CC_AOFOCK> ISYMOP:',ISYMOP
+cch
 C
       DO 100 ISYMG = 1,NSYM
 C
@@ -4704,7 +5102,7 @@ C  /* Deck ccrdao */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-C     Purpose: Read destribution of AO integrals.
+C     Purpose: Read distribution of AO integrals.
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -4905,7 +5303,10 @@ C
          DO 100 J = 1,NBUFX(0)
 C
             IRECJ = IRECNR(J)
-            IF (NOAUXB.AND..NOT.LOOPDP) CALL IJKAUX(IRECJ,IDUM,IDUM)
+            IF (NOAUXB.AND..NOT.LOOPDP) THEN
+               IDUM = 1
+               CALL IJKAUX(IRECJ,IDUM,IDUM,IDUM)
+            END IF
             IF (IRECJ .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
@@ -4914,9 +5315,13 @@ C
                   IP = IBTAND(       IBUF(I,1)         ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
                   IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
-                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IP,IQ,IR,IDUM)
+                  END IF
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR) = RBUF(I)
+              
   110          CONTINUE
                IF (U21INT) THEN
                READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
@@ -4924,7 +5329,10 @@ C
                   IP = IBTAND(       IBUF(I,1)         ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
                   IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
-                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IP,IQ,IR,IDUM)
+                  END IF 
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR + IOFFU21) = RBUF(I)
   115          CONTINUE
@@ -4938,7 +5346,10 @@ C
          DO 120 J = 1,NBUFX(0)
 C
             IRECJ = IRECNR(J)
-            IF (NOAUXB.AND..NOT.LOOPDP) CALL IJKAUX(IRECJ,IDUM,IDUM)
+            IF (NOAUXB.AND..NOT.LOOPDP) THEN
+               IDUM = 1 
+               CALL IJKAUX(IRECJ,IDUM,IDUM,IDUM)
+            END IF 
             IF (IRECJ .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
@@ -4947,7 +5358,10 @@ C
                   IP = IBTAND(       IBUF(I,2)       ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
                   IR = IBTAND(       IBUF(I,1)       ,IBIT1)
-                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IP,IQ,IR,IDUM)
+                  END IF
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR) = RBUF(I)
   130          CONTINUE
@@ -4957,7 +5371,10 @@ C
                   IP = IBTAND(       IBUF(I,2)       ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
                   IR = IBTAND(       IBUF(I,1)       ,IBIT1)
-                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IP,IQ,IR,IDUM)
+                  END IF
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR + IOFFU21) = RBUF(I)
   135          CONTINUE
@@ -4992,6 +5409,8 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <r12int.h>
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 C
 C---------------------------
 C     Work space allocation.
@@ -5019,6 +5438,10 @@ C     LABEL is used instead of 'TRCCINT' (WK/UniKA/04-11-2002).
 C
       READ (LUSIFC)
       READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
+CHF
+c      WRITE(LUPRI,*)'CMO out in lammat'
+c      CALL OUTPUT(WORK(KCMO),1,NLAMDS,1,NLAMDS,NLAMDS,NLAMDS,1,LUPRI)
+CHF
 C
       CALL GPCLOSE(LUSIFC,'KEEP')
 C
@@ -5037,7 +5460,7 @@ C
 C
       CALL LAMDA1(XLAMDP,XLAMDH,T1AM,WORK(KCMO))
 C
-      IF (IPRINT .GT. 20) THEN
+      IF (IPRINT .GT. 200 .OR. LOCDBG) THEN
 C
          CALL AROUND('Lambda Particle matrix in LAMMAT')
          KOFF1 = 1
@@ -5313,7 +5736,7 @@ CWMK
       CALL RDONEL('ONEHAMIL',.TRUE.,WORK,NNBST(ISYMOP))
       CALL CCSD_SYMSQ(WORK,ISYMOP,FOCK)
 C
-      IF (IPRCC .GT. 20) THEN
+      IF (IPRINT .GT. 120) THEN
          CALL AROUND('One electron AO-integrals in fock matrix')
          KOFF1 = 1
          DO 110 ISYMB = 1,NSYM
@@ -5927,7 +6350,7 @@ C
 C
                      NBASA = MAX(NBAS(ISYAL),1)
                      NBASB = MAX(NBAS(ISYBE),1)
-                     NRHFA = MAX(NRHF(ISYAL),1)
+                     NRHFA1 = MAX(NRHF(ISYAL),1)
 C
                      KOFF1 = ILMRHF(ISYBE) + 1
 C
@@ -5941,7 +6364,7 @@ C
                      CALL DGEMM('T','N',NRHF(ISYAL),NRHF(ISYBE),
      *                          NBAS(ISYAL),ONE,XLAMDP(KOFF2),NBASA,
      *                          WORK(KSCR4),NBASA,ZERO,WORK(KSCR5),
-     *                          NRHFA)
+     *                          NRHFA1)
 C
 C-------------------------------------------
 C                    Store the gamma matrix.
@@ -6237,7 +6660,7 @@ C------------------
 C     Test section.
 C------------------
 C
-      IF (IPRCC .GT. 20) THEN
+      IF (IPRINT .GT. 120) THEN
 C
       CALL AROUND('The inverse lambda matrix. Occupied part')
       DO 199 ISYMI = 1,NSYM
@@ -6321,6 +6744,7 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+#include <ccsdinp.h>
 C
 C----------------------------------------------------------
 C     Calculate two coulomb minus exchange of t2-amplitude.
@@ -6396,7 +6820,7 @@ C
 C
   100 CONTINUE
 C
-      IF (IPRCC .GT. 20) THEN
+      IF (IPRINT .GT. 120) THEN
          CALL AROUND('Two coulomb minus exchamge of t2am')
          DO 200 ISYMBJ = 1,NSYM
             ISYMAI = MULD2H(ISYMBJ,ISYM)
@@ -6426,6 +6850,7 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+#include <ccsdinp.h>
 C
 C----------------------------------
 C     Back transform t2-amplitudes.
@@ -6501,7 +6926,7 @@ C
 C
   100 CONTINUE
 C
-      IF (IPRCC .GT. 20) THEN
+      IF (IPRINT .GT. 120) THEN
          CALL AROUND('Back-transformed t2am')
          DO 200 ISYMBJ = 1,NSYM
             ISYMAI = MULD2H(ISYMBJ,ISYM)
@@ -7784,7 +8209,7 @@ C
 C  /* Deck cc_mofcon */
       SUBROUTINE CC_MOFCON(XINT,OMEGA2,XLAMDP,XLAMDH,XLAMPC,XLAMHC,
      *                     WORK,LWORK,IDEL,ISYMD,ISYMTR,IOPT,
-     *                     VIJKL,CC2R12,VAJKL,MKVAJKL,TIMR12)
+     *                     VIJKL,CC2R12,IANR12,VAJKL,MKVAJKL,TIMR12)
 C
 C     Written by Asger Halkier and Henrik Koch 3-5-95.
 C
@@ -7803,14 +8228,18 @@ C
 #include <symsq.h>
 #include <ccsdsym.h>
 #include <dummy.h>
+#include <ccr12int.h>
       PARAMETER(ZERO = 0.0D0,ONE = 1.0D0,XMONE=-1.0D0,TWO = 2.0D0)
-      LOGICAL CC2R12,MKVAJKL
+      LOGICAL CC2R12,MKVAJKL,LRES
+      INTEGER IANR12
       DIMENSION XINT(*),OMEGA2(*)
       DIMENSION XLAMPC(*),XLAMHC(*),XLAMDH(*),XLAMDP(*)
       DIMENSION WORK(LWORK),VIJKL(*),VAJKL(*)
+      CHARACTER*8 FILBACK
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
+      call qenter('mofcon')
       ISYDIS = MULD2H(ISYMD,ISYMOP)
       
       KEND0 = 1
@@ -7868,7 +8297,7 @@ C
 C---------------------------------------------------------
 C                 compute contributions to V(alpha j,kl)
 C---------------------------------------------------------
-         IF (MKVAJKL) THEN
+         IF (MKVAJKL .AND. IANR12.EQ.1) THEN
           DTIME = SECOND() 
           IF (NBAS(ISYMG).GT.0 .OR. NRHF(ISYMJ).GT.0) THEN
             KGABJD = KSCR1
@@ -7881,11 +8310,16 @@ C---------------------------------------------------------
             END IF
 
             KOFF1 = 1 + IDSAOG(ISYMG,ISYDIS)
-
-            CALL R12MKVAMKL(WORK(KGABJD),VAJKL,
-     &           XLAMDH,XINT(KOFF1),IDEL,ISYMD,ISYMJ,
-     &           ISALBE,ISYMG,WORK(KSCR5),IDUMMY,.FALSE.,
-     &           WORK(KEND2),LWRK2)
+            IF (IANR12.EQ.1) THEN
+               FILBACK = FNBACK
+            ELSE IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+               FILBACK = FRHTF
+            END IF
+            CALL R12MKVAMKL(FILBACK,WORK(KGABJD),WORK(KGABJD),VAJKL,
+     &           XLAMDH,1,DUMMY,DUMMY,XINT(KOFF1),XINT(KOFF1),
+     &           IDEL,ISYMD,ISYMJ,
+     &           ISALBE,ISYMG,WORK(KSCR5),IDUMMY,IGLMRHS,
+     &           NGLMDS,.FALSE.,WORK(KEND2),LWRK2)
           END IF
           TIMR12 = TIMR12 + (SECOND()-DTIME)
          END IF
@@ -7935,7 +8369,7 @@ C              -----------------------------------------
 C                 save g(aijd) as three index array 
 C              ----------------------------------------
 C
-               IF (CC2R12) THEN
+               IF (CC2R12.AND.IANR12.EQ.1) THEN
                   DTIME = SECOND()
 
                   ISYMIJ = MULD2H(ISYMI,ISYMJ)
@@ -8056,15 +8490,18 @@ C
 C
   100 CONTINUE
 
-      IF (CC2R12) THEN
+      IF (CC2R12.AND.IANR12.EQ.1) THEN
          DTIME = SECOND()
-
-         CALL CC_R12MKVKL(WORK(KGAIJD),VIJKL,ISYMD,IDEL,
-     &     IDUMMY,.FALSE.,WORK(KEND0),LWRK0)
+         FACTERM23 = ONE
+         CALL CC_R12MKVKL(WORK(KGAIJD),VIJKL,FACTERM23,XLAMDH,IGLMRH,
+     &                    ISYMD,
+     &                    ISYMTR,IDEL,IDUMMY,IDUMMY,IDUMMY,.FALSE.,
+     &                    WORK(KEND0),LWRK0,FNBACK)
 
          TIMR12 = TIMR12 + (SECOND()-DTIME)
       END IF      
  
+      call qexit('mofcon')
       RETURN
       END
 C  /* Deck cc_onep */
@@ -8117,7 +8554,8 @@ C
       IF (LEND1 .LT. 0 )CALL QUIT('Insufficient space in CC_ONEP')
 C
       IERR = -1
-      CALL CCPRPAO(LABPT,WORK(K2),IRREP,ISYM,IERR,WORK(KEND1),LEND1)
+      CALL CCPRPAO(LABPT,.TRUE.,WORK(K2),IRREP,ISYM,IERR,
+     &             WORK(KEND1),LEND1)
       IF (IERR.GT.0) THEN
          CALL QUIT('CC_ONEP: I/O error while reading operator '
      &                             //LABPT(1:8))

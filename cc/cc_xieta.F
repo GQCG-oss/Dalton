@@ -37,7 +37,8 @@ C
        SUBROUTINE CC_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
      &                      FILXI,   IXDOTS, XCONS, 
      &                      FILETA,  IEDOTS, ECONS, 
-     &                      LCAUCHY, MXVEC,   WORK,    LWORK         )
+     &                      LCAUCHY,  
+     &                      MXVEC,   WORK,    LWORK         )
 *---------------------------------------------------------------------*
 *
 *    Purpose: batched loop over Xi and Eta vector calculations
@@ -420,6 +421,8 @@ c /* deck cc_xieta1 */
 *
 *    Written by Christof Haettig, May 1998 -- Jan 1999.
 *
+*    CC-R12 contributions by Christian Neiss  spring 2005
+*
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -456,6 +459,8 @@ c /* deck cc_xieta1 */
 #include <ccnoddy.h>
 #include <cch2d.h>
 #include <ccrc1rsp.h>
+#include <r12int.h>
+#include <ccr12int.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -536,11 +541,11 @@ c /* deck cc_xieta1 */
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL AVERAGE, XNORM, FREQ, FREQLST
+      REAL AVERAGE, XNORM, FREQ, FREQLST, KTEST
       REAL XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION AVERAGE, XNORM, FREQ, FREQLST
+      DOUBLE PRECISION AVERAGE, XNORM, FREQ, FREQLST, KTEST
       DOUBLE PRECISION XCONS(MXVEC,NXETRAN), ECONS(MXVEC,NXETRAN)
 #endif
 
@@ -575,6 +580,11 @@ c /* deck cc_xieta1 */
       INTEGER INUM, ISIGNH, IOPER1, IOPER2, ISYOP1, ISYOP2, IREAL
       INTEGER KRBIMOLD, KFOCK0MO, KXI1EFF, KXI2EFF, KETA1EFF,KETA2EFF
       INTEGER LUDKBC3, LU3FOPX, LU3FOP2X, IOPTWR12, KXIR12, KETAR12
+      INTEGER ktr12,ktr12sq,kxmatsq,kxmat,kvxintsq,
+     &        kprpao,koffx,kxir12sq,ketar12sq,kctrr12,kctrr12sq
+      INTEGER luxint,ian,isymv
+      INTEGER IDUM
+      INTEGER KSCR1,KSCR2,KSCR3,ISYM1,ISYM2
     
 
 * external functions:
@@ -625,7 +635,7 @@ C     END IF
          CALL WOPEN2(LUETA,FILETA,64,0)
          IADRF_XI  = 1
          IADRF_ETA = 1
-         IF (CCSDT.OR.CCR12) CALL QUIT('Problem in CC_XIETA.')
+         IF (CCSDT) CALL QUIT('Problem in CC_XIETA.')
       ELSE IF (IOPTRES.EQ.2) THEN
          CALL QUIT('IOPTRES=2 option not implemented in CC_XIETA.')
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN
@@ -1301,7 +1311,12 @@ C            END IF
 
           IOPER_OLD  = IOPER
           IRELAX_OLD = IRELAX
-          IDLSTL_OLD = IDLSTL
+          IF (SKIPETA) THEN
+            IDLSTL_OLD = -1
+          ELSE
+            IDLSTL_OLD = IDLSTL
+          END IF
+          
 
           IF (LZERO) LZEROIMDONE = .TRUE.
 
@@ -1775,6 +1790,10 @@ C         AO integral distribution:
 C
           IF (DIRECT) THEN
             IDEL   = INDEXA(IDEL2)
+            IF (NOAUXB) THEN
+              IDUM = 1
+              CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+            END IF
             ISYDEL = ISAO(IDEL)
           ELSE
             IDEL   = IBAS(ISYMD1) + ILLL
@@ -2012,7 +2031,11 @@ C         LZEROLFT = (.NOT.SKIPETA) .AND. (IDLSTL .NE. IDLSTL_OLD)
         END IF ! LRELAX
 
         IOPER_OLD  = IOPER
-        IDLSTL_OLD = IDLSTL
+        IF (SKIPETA) THEN
+           IDLSTL_OLD = -1
+        ELSE
+           IDLSTL_OLD = IDLSTL
+        END IF
         IRELAX_OLD = IRELAX
 
       END DO ! ITRAN 
@@ -2257,6 +2280,7 @@ C        ---------------------------------------------------
               END IF
               CALL DZERO(WORK(KRZBI(ITRAN)),NEMAT1(ISYETA))
             ELSE
+              IDLSTL_OLD   = -1
               KRZ0I(ITRAN) = KRZ0I(ITRAN-1) ! promote last pointer
             END IF
 
@@ -2326,6 +2350,8 @@ C                ----------------------------------------------------
 
               IDLSTL_OLD = IDLSTL
 
+            ELSE
+              IDLSTL_OLD = -1
             END IF ! ( LRELAX .AND. (.NOT.SKIPETA) ) 
 
          END DO
@@ -2515,19 +2541,107 @@ C
 
         IF (CCR12 .AND. CCS) THEN
           CONTINUE
-        ELSE IF (CCR12) THEN
+        ELSE IF (CCR12 .AND. (.NOT.SKIPXI)) THEN
+          IF (LRELAX) THEN
+            CALL QUIT('CC-R12 response can only handle unrelaxed '//
+     &                'orbitals')
+          END IF
+          IF (.NOT. CC2) THEN
+            write(lupri,*)'Warning> CCR12 response only implemented '//
+     &                     'for CC2-R12 yet'
+            CALL DZERO(WORK(KXIR12),NGAMMA(ISYRES))
+            WRITE(LUPRI,*) 'Warning> R12 part of Xi vector is set to 0'
+            goto 8888
+          END IF
+
+C------------------------
+C         allocate memory
+C------------------------
           KXIR12 = KEND2
           KEND2  = KXIR12 + NGAMMA(ISYRES)
-          LWRK2  = LWORK - KEND2
-          IF (LWRK2 .LT. 0) THEN
+
+          kxir12sq= kend2
+          ktr12   = kxir12sq + ngamsq(isyres)
+          ktr12sq = ktr12 + ngamma(1)
+          kxmat   = ktr12sq + ngamsq(1)
+          kxmatsq = kxmat + ngamma(1)
+          kvxintsq= kxmatsq + ngamsq(1) 
+          kprpao  = kvxintsq + ngamsq(ISYRES)
+          kend3   = kprpao + N2BST(ISYRES)
+          LWRK3   = LWORK - KEND3
+          IF (LWRK3 .LT. 0) THEN
             CALL QUIT('Insufficient work space in CC_XIETA. (1b-R12)')
           END IF
 
-          CALL DZERO(WORK(KXIR12),NGAMMA(ISYRES))
+C------------------------------------------------------------------
+C         Read R12 amplitudes from disk and reorder to full square:
+C------------------------------------------------------------------
+          iopt=32
+          call cc_rdrsp('R0 ',0,1,iopt,model,dummy,work(ktr12))
+         
+C         if (locdbg) then
+C           call around('R12 amplitudes in CC_XIETA1 before unpacking')
+C           call cc_prpr12(work(ktr12),1,1,.false.)
+C         end if
+         
+          call ccr12unpck2(work(ktr12),1,work(ktr12sq),.false.)
 
-          WRITE(LUPRI,*) 'Warning> R12 part of Xi vector is set to 0'
+C-----------------------------------------------------------------------
+C         read X-integrals (R12 overlap matrix) from disk and reorder
+C         to full square:
+C-----------------------------------------------------------------------
+          luxint = 0
+          call gpopen(luxint,fccr12x,'old',' ','unformatted',idummy,
+     &                .false.)
+          rewind(luxint)
+ 9999     read(luxint) ian
+          read(luxint) (work(kxmat+i), i=0, ngamma(1)-1 )
+          if (ian.ne.ianr12) goto 9999
+          call gpclose(luxint,'KEEP')
+          call ccr12unpck2(work(kxmat),1,work(kxmatsq),.false.)
 
-        END IF
+C         if (locdbg) then
+C           call  around('R12 overlap integrals in CC_XIETA1')
+C           call cc_prsqr12(work(kxmatsq),1,1,.false.)
+C         end if
+
+C--------------------------------------------------
+C         read in VXINT and reorder to full square:
+C--------------------------------------------------
+          call dzero(work(kvxintsq),ngamsq(isyres))
+          call cc_r12rdvxint(work(kvxintsq),work(kend3),lwrk3,one,
+     &                       isyres,labelh)
+
+C         if (locdbg) then
+C           call around('VXINT in CC_XIETA1')
+C           call cc_prsqr12(work(kvxintsq),isyres,1,.false.)
+C         end if
+
+C--------------------------------------------------------------
+C         read in V (perturbation operator) matrix in AO-basis:
+C--------------------------------------------------------------
+          call ccprpao(labelh,.TRUE.,work(kprpao),isymv,isym,
+     &                 ierr,work(kend3),lwrk3) 
+          IF ((IERR.GT.0).OR.((IERR.EQ.0).AND.(isymv.NE.isyres))) THEN
+           CALL QUIT('CC_XIETA1: error while reading operator '//LABELH)
+          ELSE IF (IERR.LT.0) THEN
+           CALL DZERO(work(kprpao),N2BST(isyres))
+          END IF 
+
+C----------------------------------
+C         calculate R12 part of Xi:
+C----------------------------------
+          call cc_r12xi(work(kxir12sq),isyres,work(ktr12sq),1,
+     &                  work(kxmatsq),work(kvxintsq),isyres,
+     &                  work(kprpao),WORK(KCMO0),WORK(KLAMH0),'N',
+     &                  work(kend3),lwrk3)
+
+          ! pack Xi to triangular format
+          call ccr12pck2(work(kxir12),isyres,.false.,work(kxir12sq),
+     &                   .false.)
+          call cclr_diasclr12(work(kxir12),brascl,isyres)
+
+ 8888   END IF
         
 
 
@@ -2654,7 +2768,12 @@ c
               CALL PUTWA2(LUXI,FILXI,WORK(KXI2),IADRF_XI,NT2AM(ISYRES))
               IADRF_XI = IADRF_XI + NT2AM(ISYRES)
             END IF
-            IF (CCSDT.OR.CCR12) CALL QUIT('Problem in CC_XIETA')
+            IF (CCR12) THEN
+              CALL PUTWA2(LUXI,FILXI,WORK(KXIR12),IADRF_XI,
+     &                    NGAMMA(ISYRES))
+              IADRF_XI = IADRF_XI + NGAMMA(ISYRES)
+            END IF
+            IF (CCSDT) CALL QUIT('Problem in CC_XIETA')
           ELSE IF (IOPTRES.EQ.3) THEN
             IFILE  = IXETRAN(3,ITRAN)
             IF (LCAUCHY) IFILE = ILRCAMP(LABELH,ICAU,ISYRES)
@@ -2665,7 +2784,7 @@ c
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                      WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
             END IF
-            IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
+            IF (CCR12) THEN
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
             END IF
@@ -2683,7 +2802,7 @@ c
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                      WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
             END IF
-            IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
+            IF (CCR12) THEN
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
             END IF
@@ -2707,7 +2826,11 @@ c
      &                    WORK(KXI1),WORK(KXI2),ISYRES,
      &                    WORK(KEND2),LWRK2)
 
-            IF (CCR12) CALL QUIT('Problem in CC_XIETA!')
+            IF (CCR12) THEN
+              CALL CCDOTRSP(IXDOTS,XCONS,IOPTWR12,FILXI,ITRAN,NXETRAN,
+     &                      MXVEC,DUMMY,WORK(KXIR12),ISYRES,
+     &                      WORK(KEND2),LWRK2)
+            END IF  
 
             IF (LOCDBG) THEN
              IVEC = 1
@@ -2730,6 +2853,13 @@ c
             I = 1
             IF (CCS) I = 0
             CALL CC_PRP(WORK(KXI1),WORK(KXI2),ISYRES,1,I)
+            IF (CCR12) THEN
+              CALL CC_PRPR12(WORK(KXIR12),ISYRES,1,.TRUE.)
+              WRITE(LUPRI,*) 'Norm^2 of Xi: ',
+     &          DDOT(NT1AM(ISYRES),WORK(KXI1),1,WORK(KXI1),1) +
+     &          DDOT(NT2AM(ISYRES),WORK(KXI2),1,WORK(KXI2),1) +
+     &          DDOT(NGAMMA(ISYRES),WORK(KXIR12),1,WORK(KXIR12),1)
+            END IF
             CALL FLSHFO(LUPRI)
             WRITE (LUPRI,*) 'WORK(0) = ',WORK(ITST)
           END IF
@@ -2768,6 +2898,9 @@ c
 
           IADRDI = 1
           IADRCI = 1
+cch
+c          write(lupri,*) 'kxint,kyint:',kxint(itran),kyint(itran)
+cch
 
           CALL CCETA2(WORK(KETA1),WORK(KETA2),AVERAGE,
      &                WORK(KG0IM),WORK(KGBIM(ITRAN)),
@@ -2794,22 +2927,127 @@ c
      &                LISTL,IDLSTL,LABELH,ISYHOP,
      &                LTWOEL,LRELAX,WORK(KEND2), LWRK2)
 
+C--------------------------------------
+C         calculate R12 part of Eta{O}:
+C--------------------------------------
           IF (CCR12 .AND. CCS) THEN
             CONTINUE
           ELSE IF (CCR12) THEN
             KETAR12 = KEND2
             KEND2   = KETAR12 + NGAMMA(ISYRES)
             LWRK2   = LWORK - KEND2
-            IF (LWRK2 .LT. 0) THEN
+
+            IF (.NOT. CC2) THEN
+              CALL DZERO(WORK(KETAR12),NGAMMA(ISYRES))
+              WRITE(LUPRI,*) 'Warning> R12 part of Eta{O} is set to 0!'
+              GOTO 6666
+            END IF
+
+            KETAR12SQ = KEND2
+            KTR12     = KETAR12SQ + NGAMSQ(ISYRES)
+            KTR12SQ   = KTR12 + NGAMMA(1)
+            KCTRR12   = KTR12SQ + NGAMSQ(1)
+            KCTRR12SQ = KCTRR12 + NGAMMA(ISYCTR)
+            KXMAT     = KCTRR12SQ + NGAMSQ(ISYCTR)
+            KXMATSQ   = KXMAT + NGAMMA(1)
+            KPRPAO    = KXMATSQ + NGAMSQ(1)
+            KEND3     = KPRPAO + N2BAST
+            LWRK3   = LWORK - KEND3
+            IF (LWRK3 .LT. 0) THEN
               CALL QUIT('Insufficient work space in CC_XIETA.(ETA-R12)')
             END IF
+
+C--------------------------------------------------------------------
+C         Read R12 amplitudes from disk and reorder to square:
+C--------------------------------------------------------------------
+            iopt=32
+            call cc_rdrsp('R0 ',0,1,iopt,model,dummy,work(ktr12))
+            call ccr12unpck2(work(ktr12),1,work(ktr12sq),.false.)
+
+C--------------------------------------------------------------------
+C         Read R12 Lagr. multipliers from disk and reorder to square:
+C--------------------------------------------------------------------
+            iopt=32
+            call cc_rdrsp(listl,idlstl,isyctr,iopt,model,dummy,
+     &                    work(kctrr12))
+            call cclr_diasclr12(work(kctrr12),2.0D0*brascl,isyctr)
+            call ccr12unpck2(work(kctrr12),isyctr,work(kctrr12sq),
+     &                       .false.)
+
+C-----------------------------------------------------------------------
+C         read X-integrals (R12 overlap matrix) from disk and reorder
+C         to full square:
+C-----------------------------------------------------------------------
+            luxint = 0
+            call gpopen(luxint,fccr12x,'old',' ','unformatted',idummy,
+     &                  .false.)
+            rewind(luxint)
+ 7777       read(luxint) ian
+            read(luxint) (work(kxmat+i), i=0, ngamma(1)-1 )
+            if (ian.ne.ianr12) goto 7777
+            call gpclose(luxint,'KEEP')
+            call ccr12unpck2(work(kxmat),1,work(kxmatsq),.false.)
+
+C--------------------------------------------------------------
+C         read in V (perturbation operator) matrix in AO-basis:
+C--------------------------------------------------------------
+            call ccprpao(labelh,.TRUE.,work(kprpao),isymv,isym,
+     &                   ierr,work(kend3),lwrk3)
+            IF (N2BST(ISYMV).GT.N2BAST) THEN
+              CALL QUIT('Memory allocation error in CC_XIETA1')
+            ELSE IF ((IERR.GT.0)) THEN
+              CALL QUIT('CC_XIETA1: error while reading operator '//
+     &                  LABELH)
+            ELSE IF (IERR.LT.0) THEN
+              CALL DZERO(work(kprpao),N2BST(isymv))
+            END IF
+ 
+C--------------------------------------------------
+C         read in VXINT and reorder to full square:
+C--------------------------------------------------
+            KVXINTSQ = KEND3
+            KEND3    = KVXINTSQ + NGAMSQ(ISYMV)
+            LWRK3   = LWORK - KEND3
+            IF (LWRK3 .LT. 0) THEN
+              CALL QUIT('Insufficient work space in CC_XIETA.(ETA-R12)')
+            END IF
+            call dzero(work(kvxintsq),ngamsq(isymv))
+            call cc_r12rdvxint(work(kvxintsq),work(kend3),lwrk3,one,
+     &                         isymv,labelh)
+
+C--------------------------------------------------
+C         calculate R12 contribution to Eta{O}_(ai):
+C--------------------------------------------------
+            call cc_r12etaa(work(keta1),isyres,work(kctrr12sq),isyctr,
+     &                      work(ktr12sq),1,work(kxmatsq),work(kprpao),
+     &                      isymv,WORK(KLAMP0),WORK(KLAMH0),.false.,
+     &                      work(kend3),lwrk3)
+
+C-------------------------------------
+C         calculate R12 part of Eta{O}:
+C-------------------------------------
+            call dzero(work(ketar12sq),ngamsq(isyres))
+            call cc_r12xi(work(ketar12sq),isyres,work(kctrr12sq),isyctr,
+     &                    work(kxmatsq),work(kvxintsq),isymv,
+     &                    work(kprpao),WORK(KCMO0),WORK(KLAMH0),'T',
+     &                    work(kend3),lwrk3)
+
+            ! pack Eta{O} to triangular format
+            call ccr12pck2(work(ketar12),isyres,.false.,work(ketar12sq),
+     &                     .false.)
+            call cclr_diasclr12(work(ketar12),0.5D0*ketscl,isyres)
+
+            if (locdbg) then
+              if (isyres.eq.1) then
+                write(lupri,*) 'propr12 in CC_XIETA: ',
+     &            ddot(ngamma(1),work(ketar12),1,work(ktr12),1)
+              else
+                write(lupri,*) 'propr12 in CC_XIETA: zero by symmetry'
+              end if
+            end if 
+
+ 6666     END IF
   
-            CALL DZERO(WORK(KETAR12),NGAMMA(ISYRES))
-  
-            WRITE(LUPRI,*) 'Warning> R12 part of Eta^1 is set to 0!!!'
-  
-          END IF
-   
           IF (CCSDT) THEN
 #if !defined CC_AARHUS
             CALL QUIT('No triples (yet) in CC_XIETA')
@@ -2908,7 +3146,12 @@ C             ------------
      &                    NT2AM(ISYRES))
               IADRF_ETA = IADRF_ETA + NT2AM(ISYRES)
             END IF
-            IF (CCSDT.OR.CCR12) CALL QUIT('Problem in CC_XIETA')
+            IF (CCR12) THEN
+              CALL PUTWA2(LUETA,FILETA,WORK(KETAR12),IADRF_ETA,
+     &                    NGAMMA(ISYRES))
+              IADRF_ETA = IADRF_ETA + NGAMMA(ISYRES)
+            END IF
+            IF (CCSDT) CALL QUIT('Problem in CC_XIETA')
           ELSE IF (IOPTRES.EQ.3) THEN
            IFILE  = IXETRAN(4,ITRAN)
            IF (ILSTSYM(FILETA,IFILE).NE.ISYRES) THEN
@@ -2949,14 +3192,11 @@ C             ------------
                 IVEC = IVEC + 1
              END DO
            END IF                
-
+C
            IF (.NOT.CCS) CALL CCLR_DIASCL(WORK(KETA2),TWO,ISYRES)
            CALL CCDOTRSP(IEDOTS,ECONS,IOPTW,FILETA,ITRAN,NXETRAN,MXVEC,
      &                   WORK(KETA1),WORK(KETA2),ISYRES,
      &                   WORK(KEND2),LWRK2)
-
-           IF (CCR12) CALL QUIT('Problem in CC_XIETA!')
-
            IF (LOCDBG) THEN
              IVEC = 1
              DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
@@ -2964,7 +3204,24 @@ C             ------------
      &                'ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
                 IVEC = IVEC + 1
              END DO
+           END IF
+C
+           IF (CCR12) THEN
+             CALL CCDOTRSP(IEDOTS,ECONS,IOPTWR12,FILETA,ITRAN,NXETRAN,
+     &                     MXVEC,DUMMY,WORK(KETAR12),ISYRES,
+     &                     WORK(KEND2),LWRK2)
+           END IF
+C
+           IF (LOCDBG) THEN
+             write(lupri,*) 'ECONS R12 doubles contrib.:'
+             IVEC = 1
+             DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
+                WRITE (LUPRI,*) 
+     &                'ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTWR12
+                IVEC = IVEC + 1
+             END DO
            END IF                
+               
           ELSE
            CALL QUIT('Illegal value for IOPTRES in CC_XIETA.')
           END IF
@@ -2984,6 +3241,13 @@ C             ------------
             I = 1
             IF (CCS) I = 0
             CALL CC_PRP(WORK(KETA1),WORK(KETA2),ISYRES,1,I)
+            IF (CCR12) THEN
+              CALL CC_PRPR12(WORK(KETAR12),ISYRES,I,.TRUE.)
+              WRITE(LUPRI,*) 'Norm^2 of Eta: ',
+     &          DDOT(NT1AM(ISYRES),WORK(KETA1),1,WORK(KETA1),1) +
+     &          DDOT(NT2AM(ISYRES),WORK(KETA2),1,WORK(KETA2),1) +
+     &          DDOT(NGAMMA(ISYRES),WORK(KETAR12),1,WORK(KETAR12),1)
+            END IF
             IF (CCSDT.AND.IOPTRES.LT.5) THEN
               XNORM = DDOT(NT1AM(ISYRES),WORK(KETA1EFF),1,
      &                                   WORK(KETA1EFF),1)
@@ -3166,7 +3430,7 @@ C          END IF
         CALL DZERO(ONEHQ,N2BST(ISYHOP))
       ELSE 
 
-        CALL CCPRPAO(LABELH,ONEHQ,IRREP,ISYM,IERR,WORK,LWORK)
+        CALL CCPRPAO(LABELH,.TRUE.,ONEHQ,IRREP,ISYM,IERR,WORK,LWORK)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYHOP)) THEN
           CALL QUIT('CCXIINT1: error while reading operator '//LABELH)
         ELSE IF (IERR.LT.0) THEN
@@ -3318,6 +3582,9 @@ C          END IF
       ENDIF
 
 * if ITRAN=ISTART, make sure that everything will be initialized:
+CCH
+         IDLSTOLD   = IDLSTL - 1
+CCH
       IF (ITRAN.EQ.ISTART) THEN
          IDLSTOLD   = IDLSTL - 1
          DONE_BFDEN = .FALSE.
@@ -4502,7 +4769,7 @@ C     --------------------------------------------
           LRELAX2 = (IRELAX2 .GE. 1)
 
           IF (LRELAX1) THEN
-            CALL CCPRPAO(LABEL2,WORK(KONEH2),IRREP,
+            CALL CCPRPAO(LABEL2,.TRUE.,WORK(KONEH2),IRREP,
      &                   ISYM,IERR,WORK(KEND2),LWRK2)
             IF (IERR.LT.0) THEN
               CALL DZERO(WORK(KONEH2),N2BST(ISYOP2))
@@ -4510,7 +4777,7 @@ C     --------------------------------------------
           END IF
 
           IF (LRELAX2) THEN
-            CALL CCPRPAO(LABEL1,WORK(KONEH1),IRREP,
+            CALL CCPRPAO(LABEL1,.TRUE.,WORK(KONEH1),IRREP,
      &                   ISYM,IERR,WORK(KEND2),LWRK2)
             IF (IERR.LT.0) THEN
               CALL DZERO(WORK(KONEH1),N2BST(ISYOP1))
@@ -5132,7 +5399,7 @@ c /* deck cceta2 */
       SUBROUTINE CCETA2(RHO1,RHO2,AVERAGE,
      &                  G0IM,GBIM,R0IM,RBIM,F0IM,FBIM,RZ0I,RZBI,
      &                  FOCK,ONEH,FOCKHF,ZFCK0,ZFCKB,
-     &                  GAMMA,XINT,YINT,ZETA1,
+     &                  XGAMMA,XINT,YINT,ZETA1,
      &                  LUBFX1,FNBFX1,IADRX1,
      &                  LUBFZI,FNBFZI,IADRE0,IADRE1,
      &                  LUMO,  FNMO,  IADRMO,
@@ -5189,7 +5456,7 @@ c /* deck cceta2 */
       REAL RHO1(*), RHO2(*), G0IM(*), GBIM(*)
       REAL R0IM(*), RBIM(*), F0IM(*), FBIM(*)
       REAL RZ0I(*), RZBI(*), ZFCK0(*), ZFCKB(*), FOCKHF(*)
-      REAL FOCK(*), ONEH(*), GAMMA(*), XINT(*), YINT(*)
+      REAL FOCK(*), ONEH(*), XGAMMA(*), XINT(*), YINT(*)
       REAL WORK(LWORK), ZETA1(*)
       REAL HALF, ONE, ZERO, DDOT, XNORM
       REAL AVE1, AVE2, AVERAGE
@@ -5198,7 +5465,7 @@ c /* deck cceta2 */
       DOUBLE PRECISION RHO1(*), RHO2(*), G0IM(*), GBIM(*)
       DOUBLE PRECISION R0IM(*), RBIM(*), F0IM(*), FBIM(*)
       DOUBLE PRECISION RZ0I(*), RZBI(*), ZFCK0(*), ZFCKB(*), FOCKHF(*)
-      DOUBLE PRECISION FOCK(*), ONEH(*), GAMMA(*), XINT(*), YINT(*)
+      DOUBLE PRECISION FOCK(*), ONEH(*), XGAMMA(*), XINT(*), YINT(*)
       DOUBLE PRECISION WORK(LWORK), ZETA1(*)
       DOUBLE PRECISION HALF, ONE, ZERO, TWO, DDOT, XNORM
       DOUBLE PRECISION AVE1, AVE2, AVERAGE
@@ -5615,8 +5882,8 @@ C         ----------------------------------------------------------
      &                WORK(KEND3),LWRK3,ISYCTR,ISYHOP)
 
          IF (LOCDBG) THEN
-            WRITE (LUPRI,*) 'E term contribution from CCRHS_E:'
-            CALL CC_PRP(RHO1,RHO2,ISYETA,0,1)
+C           WRITE (LUPRI,*) 'E term contribution from CCRHS_E:'
+C           CALL CC_PRP(RHO1,RHO2,ISYETA,0,1)
             XNORM = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
             WRITE (LUPRI,*) 'Norm of Rho2 after CCRHS_E:',XNORM
          END IF
@@ -5628,6 +5895,13 @@ C         ----------------------------------------------------------
 *----------------------------------------------------------------------*
       IF (.NOT. CCS) THEN
 
+         IF (LOCDBG) THEN
+           WRITE (LUPRI,'(//A)') 'CCETA2> X-intermediate:'
+           WRITE (LUPRI,'(5G15.6)') (XINT(I),I=1,NMATIJ(ISYCTR))
+           WRITE (LUPRI,'(//A)') 'CCETA2> Y-intermediate:'
+           WRITE (LUPRI,'(5G15.6)') (YINT(I),I=1,NMATAB(ISYCTR))
+         END IF
+
          IF (CC2 .AND. LRELAX .AND. (.NOT.NONHF)) THEN
            CONTINUE
          ELSE IF (CC2 .AND. LRELAX .AND. NONHF) THEN
@@ -5637,10 +5911,6 @@ C         ----------------------------------------------------------
          END IF
 
          IF (LOCDBG) THEN
-           WRITE (LUPRI,'(//A)') 'CCETA2> X-intermediate:'
-           WRITE (LUPRI,'(5G15.6)') (XINT(I),I=1,NMATIJ(ISYCTR))
-           WRITE (LUPRI,'(//A)') 'CCETA2> Y-intermediate:'
-           WRITE (LUPRI,'(5G15.6)') (YINT(I),I=1,NMATAB(ISYCTR))
            WRITE (LUPRI,*) 'D2 term contribution from CC_21EFM:'
            CALL CC_PRP(RHO1,WORK,ISYETA,1,0)
            XNORM = DDOT(NT1AM(ISYRES),RHO1,1,RHO1,1)
@@ -5842,7 +6112,7 @@ C        compared to the call in the XI vector part...
 
 * calculate the A-term:
           IOPT = 2
-          CALL CCRHS_A(RHO2,WORK(KZETA2),GAMMA,
+          CALL CCRHS_A(RHO2,WORK(KZETA2),XGAMMA,
      *                 WORK(KEND3),LWRK3,ISYHOP,ISYCTR,IOPT)
 
           IF (LOCDBG) THEN
@@ -5852,7 +6122,7 @@ C        compared to the call in the XI vector part...
              WRITE (LUPRI,*) 'ZETA2:'
              CALL CC_PRSQ(WORK,WORK(KZETA2),ISYRES,0,1)
              CALL FLSHFO(LUPRI)
-             WRITE (LUPRI,*) 'GAMMA:',(GAMMA(I),I=1,NGAMMA(ISYHOP))
+             WRITE (LUPRI,*) 'GAMMA:',(XGAMMA(I),I=1,NGAMMA(ISYHOP))
           END IF
 
       END IF

@@ -54,6 +54,7 @@ C
 #include <ccfro.h>
 #include <symsq.h>
 #include <ccisao.h>
+#include <r12int.h>
 C
 C----------------------------------------
 C     Calculate index arrays for lengths.
@@ -66,6 +67,7 @@ C
          NCOFRO(ISYMAI) = 0
          NFROIJ(ISYMAI) = 0
          NFROFR(ISYMAI) = 0
+         NV1FRO(ISYMAI) = 0
          DO 110 ISYMI = 1,NSYM
             ISYMA = MULD2H(ISYMAI,ISYMI)
             NT1FRO(ISYMAI) = NT1FRO(ISYMAI) + NVIR(ISYMA)*NRHFFR(ISYMI)
@@ -75,6 +77,11 @@ C
             NFROIJ(ISYMAI) = NFROIJ(ISYMAI) + NRHFS(ISYMA)*NRHFS(ISYMI)
             NFROFR(ISYMAI) = NFROFR(ISYMAI)
      *                     + NRHFFR(ISYMA)*NRHFFR(ISYMI)
+celena
+            NV1FRO(ISYMAI) = NV1FRO(ISYMAI) + NRHFFR(ISYMI)*
+     &                          (NORB1(ISYMA)-NRHFFR(ISYMA))
+celena
+
   110    CONTINUE
   100 CONTINUE
 C
@@ -86,6 +93,10 @@ C
          NF2IJG(ISYMAI) = 0
          NFRIJK(ISYMAI) = 0
          NCOFRF(ISYMAI) = 0
+celena
+         NFROVF(ISYMAI) = 0
+         NFROVR(ISYMAI) = 0
+celena
          DO 130 ISYMI = 1,NSYM
             ISYMA = MULD2H(ISYMAI,ISYMI)
             NT2FRO(ISYMAI) = NT2FRO(ISYMAI) + NT1FRO(ISYMA)*NT1AM(ISYMI)
@@ -97,6 +108,10 @@ C
             NFRIJK(ISYMAI) = NFRIJK(ISYMAI) + NFROIJ(ISYMA)*NRHFS(ISYMI)
             NCOFRF(ISYMAI) = NCOFRF(ISYMAI)
      *                     + NCOFRO(ISYMA)*NRHFFR(ISYMI)
+celena
+            NFROVF(ISYMAI) =  NFROVF(ISYMAI)+NFROFR(ISYMI)*NT1FRO(ISYMA)
+            NFROVR(ISYMAI) =  NFROVR(ISYMAI)+NV1FRO(ISYMI)*NT1FRO(ISYMA)
+celena
   130    CONTINUE
   120 CONTINUE
 C
@@ -394,7 +409,7 @@ C
       RETURN
       END
 C  /* Deck mp2_zkfcb */
-      SUBROUTINE MP2_ZKFCB(RES,T2MAM,WORK,LWORK)
+      SUBROUTINE MP2_ZKFCB(IPDD,R12PRP,RES,T2MAM,WORK,LWORK)
 C
 C     Written by Asger Halkier 25/5 - 1998.
 C
@@ -405,6 +420,7 @@ C
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       DIMENSION RES(*), T2MAM(*), WORK(LWORK)
+      LOGICAL   R12PRP
 C
 #include <priunit.h>
 #include <maxorb.h>
@@ -422,6 +438,61 @@ C
       KFOCKD = KPIMIJ + NCOFRO(1)
       KEND1  = KFOCKD + NORBTS
       LWRK1  = LWORK  - KEND1
+
+celena
+C-------------------------------------
+C     Read R12-contributions
+C-------------------------------------
+ 
+      IF (R12PRP .AND. (IPDD .EQ. 2 .OR. IPDD .EQ. 3 
+     &    .OR. IPDD .EQ. 5)) THEN
+         DO ISYMAJ = 1,NSYM
+            ISYMIJ = ISYMAJ
+            NCVIJ = 0
+            DO ISYMA = 1,NSYM
+               ISYMJ = MULD2H(ISYMAJ,ISYMA)
+               ISYMI = MULD2H(ISYMIJ,ISYMJ)
+               NCVIJ = NCVIJ + NRHFFR(ISYMA)*NRHF(ISYMI)
+            ENDDO
+         ENDDO
+         YIJIJ = KEND1
+         YIJIJT= YIJIJ + NCVIJ  
+         KEND1 = YIJIJT+ NCVIJ
+         LWRK1  = LWORK  - KEND1
+         LUVAJKL = 0 
+         IF (IPDD .EQ. 2) THEN
+            CALL GPOPEN(LUVAJKL,'CCR12YIJIJ','UNKNOWN',' ',
+     *                  'UNFORMATTED',IDUMMY,.FALSE.)
+         ELSEIF (IPDD .EQ. 3) THEN
+            CALL GPOPEN(LUVAJKL,'CCR12ZIJIJ','UNKNOWN',' ',
+     *                  'UNFORMATTED',IDUMMY,.FALSE.)
+         ELSEIF (IPDD .EQ. 5) THEN
+            CALL GPOPEN(LUVAJKL,'CCR12XIJIJ','UNKNOWN',' ',
+     *                  'UNFORMATTED',IDUMMY,.FALSE.)
+         ENDIF
+         REWIND(LUVAJKL)
+         READ(LUVAJKL) (WORK(YIJIJ+I-1),I=1,NCVIJ)
+         CALL GPCLOSE(LUVAJKL,'DELETE')
+         DO ISYMAJ = 1,NSYM
+            ISYMIJ = ISYMAJ
+            DO ISYMA = 1,NSYM
+               ISYMJ = MULD2H(ISYMA,ISYMAJ)
+               ISYMI = MULD2H(ISYMA,ISYMIJ)
+               do i =1,nrhf(isymi)
+                  do j =1,nrhffr(isymj)
+                     idxij = icofro(isymj,isymi)+
+     &                          nrhffr(isymj)*(i-1) + j
+                     idxji = icofro(isymi,isymj)+
+     &                          nrhf(isymi)*(j-1) + i
+                     work(YIJIJT+idxji-1) = work(YIJIJ+idxij-1)
+                  enddo
+               enddo
+            ENDDO
+         ENDDO
+      ENDIF
+celena
+
+
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
@@ -442,6 +513,7 @@ C
       REWIND(LUCJDK)
       READ(LUCJDK) (WORK(KINTFR+I-1), I = 1,NT2FRO(1))
       CALL GPCLOSE(LUCJDK,'KEEP')
+
 C
       IF (IPRINT. GT. 20) THEN
          XFRNOR = DDOT(NT2FRO(1),WORK(KINTFR),1,WORK(KINTFR),1)
@@ -474,10 +546,15 @@ C
                CALL DGEMM('T','N',NRHF(ISYMI),NRHFFR(ISYMJ),
      *                    NVIR(ISYMC),ONE,T2MAM(KOFF1),NTOTC,
      *                    WORK(KOFF2),NTOTC,ONE,WORK(KOFF3),NTOTI)
-C
+cC
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
+celena
+      IF (R12PRP) THEN
+         CALL DAXPY(NCVIJ,ONE,WORK(YIJIJT),1,WORK(KPIMIJ),1)
+      END IF
+celena
 C
 C--------------------------
 C     Get orbital energies.
@@ -669,7 +746,8 @@ C
          CALL DGEMM('N','N',NNBST(ISALBE),NRHF(ISYMK),NBAS(ISYMG),ONE,
      *              XINT(KOFF2),NTOTAB,CMO(KOFF3),NTOTG,ZERO,
      *              WORK(KINAOK),NTOTAB)
-C
+
+
          DO 110 K = 1,NRHF(ISYMK)
 C
             CALL DZERO(WORK(KSCR1),N2BST(ISALBE))
@@ -732,7 +810,7 @@ C----------------------------------------------------------------
 C           Final scaling with CMO element and storage in result.
 C----------------------------------------------------------------
 C
-            IF (R12TRA) THEN
+            IF (R12TRA .AND. .NOT. R12PRP) THEN
                DO 131 D = 1,NRHFFR(ISYMD)
 C
                   NDK = IF1FRO(ISYMD,ISYMK) + NRHFFR(ISYMD)*(K - 1) + D
@@ -744,6 +822,7 @@ C
      *                       XFRIN(KOFF10),1)
 C
   131          CONTINUE
+C
             ELSE
                DO 130 D = 1,NVIR(ISYMD)
 C
@@ -754,9 +833,410 @@ C
 C
                   CALL DAXPY(NT1FRO(ISYMCJ),WORK(KOFF9),WORK(KSCR2),1,
      *                       XFRIN(KOFF10),1)
-C
   130          CONTINUE
             END IF
+  110    CONTINUE
+  100 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck cc_frcogr */
+      SUBROUTINE CC_FRCOGR(XFRIN,XINT,CMO,WORK,LWORK,IDEL,ISYDEL)
+C
+C
+C     To calculate the integrals (pJ|Ik) needed for frozen-core gradients.
+C     AO integrals are assumed totally symmetric.
+c     based on cc_frcoin (Elena Vollmer 29/09/04) 
+C
+#include <implicit.h>
+C
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
+      DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
+      integer  ilorbi(8),iv2fro(8,8),iv1fro(8,8)
+C
+#include <priunit.h>
+#include <maxorb.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccfro.h>
+#include <r12int.h>
+C
+C---------------------------------------
+C     Initial symmetries and allocation.
+C---------------------------------------
+C
+celena
+      ISYDIS = ISYDEL
+      ISYMD  = ISYDEL
+
+
+      noffset = 0
+      icoun1  = 0
+      do isym = 1,nsym
+         ilorbi(isym) = icoun1 
+         icoun1  =  icoun1 + nbas(isym)*(nvir(isym)-nrhffr(isym))
+         noffset = noffset + nbas(isym)*(nrhffr(isym)) 
+      enddo
+
+      do isymk = 1, nsym
+         icoun3 = 0
+         icoun4 = 0
+         do isymj = 1,nsym
+            isymi  = muld2h(isymk,isymj)
+            iv2fro(isymi,isymj) = icoun3
+            iv1fro(isymi,isymj) = icoun4 
+            icoun3 = icoun3 + nt1fro(isymi)*nv1fro(isymj)
+            icoun4 = icoun4 + (nrhffr(isymi))
+     &                   *(norb1(isymj)-nrhffr(isymj))
+         enddo
+      enddo
+
+celena
+
+C
+      KDVEC  = 1
+      KEND1  = KDVEC + NVIR(ISYMD)
+      LWRK1  = LWORK - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         CALL QUIT('Insufficient work space for allocation '//
+     &             'in CC_FRCOIN')
+      ENDIF
+C
+      CALL DZERO(WORK(KDVEC),NVIR(ISYMD))
+C
+C-----------------------------------
+C     Copy vector out of CMO matrix.
+C-----------------------------------
+C
+      KOFF1 = ILVISI(ISYMD) + IDEL - IBAS(ISYDEL)
+C
+      CALL DCOPY(NVIR(ISYMD),CMO(KOFF1),NBAS(ISYDEL),WORK(KDVEC),1)
+C
+C--------------------------------------------------------
+C     Outer symmetry loop and next work space allocation.
+C--------------------------------------------------------
+C
+      DO 100 ISYMK = 1,NSYM
+C
+         ISYMG  = ISYMK
+         ISYMDK = MULD2H(ISYMD,ISYMK)
+         ISYMCJ = ISYMDK
+         ISALBE = ISYMCJ 
+C
+         KINAOK = KEND1
+         KSCR1  = KINAOK + NNBST(ISALBE)*(NORB1(ISYMK)-NRHFFR(ISYMK))
+         KSCR2  = KSCR1  + N2BST(ISALBE)
+         KEND2  = KSCR2  + NT1FRO(ISYMCJ)
+         LWRK2  = LWORK  - KEND2
+C
+         IF (LWRK2 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND2
+            CALL QUIT('Insufficient space for allocation in CC_FRCOGR')
+         ENDIF
+C
+         CALL DZERO(WORK(KINAOK),NNBST(ISALBE)*(NORB1(ISYMK)
+     &              -NRHFFR(ISYMK)))
+C
+C--------------------------------------------
+C        Transform gamma-index to correlated.
+C--------------------------------------------
+C
+         KOFF2  = IDSAOG(ISYMG,ISYDIS) + 1
+         KOFF3  = NBAS(ISYMG)*NRHFFR(ISYMK)+ILVISI(ISYMG) + 1
+C
+         NTOTAB = MAX(NNBST(ISALBE),1)
+         NTOTG  = MAX(NBAS(ISYMG),1)
+C
+         CALL DGEMM('N','N',NNBST(ISALBE),(NORB1(ISYMK)-NRHFFR(ISYMK)),
+     &              NBAS(ISYMG),ONE,
+     *              XINT(KOFF2),NTOTAB,CMO(KOFF3),NTOTG,ZERO,
+     *              WORK(KINAOK),NTOTAB)
+         
+
+
+         DO 110 K = 1,(NORB1(ISYMK)-NRHFFR(ISYMK))
+C
+            CALL DZERO(WORK(KSCR1),N2BST(ISALBE))
+            CALL DZERO(WORK(KSCR2),NT1FRO(ISYMCJ))
+C
+C-----------------------------------
+C           Square up the integrals.
+C-----------------------------------
+C
+            KOFF4 = KINAOK + NNBST(ISALBE)*(K - 1)
+            CALL CCSD_SYMSQ(WORK(KOFF4),ISALBE,WORK(KSCR1))
+C
+C---------------------------------------------------------------
+C           Inner symmetry loop and final work space allocation.
+C---------------------------------------------------------------
+C
+            DO 120 ISYMAL = 1,NSYM
+C
+               ISYMC  = ISYMAL
+               ISYMBE = MULD2H(ISALBE,ISYMAL)
+               ISYMJ  = ISYMBE
+C
+               KSCR3 = KEND2
+               KEND3 = KSCR3 + NBAS(ISYMAL)*NRHFFR(ISYMJ)
+               LWRK3 = LWORK - KEND3
+C
+               IF (LWRK3 .LT. 0) THEN
+                  WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND3
+                  CALL QUIT('Insufficient space for allocation '//
+     &                      'in CC_FRCOIN')
+               ENDIF
+C
+C------------------------------------------------
+C              Construct the integrals (cJ|kdel).
+C------------------------------------------------
+C
+               KOFF5  = KSCR1 + IAODIS(ISYMAL,ISYMBE)
+               KOFF6  = ILRHSI(ISYMBE) + 1
+C
+               NTOTAL = MAX(NBAS(ISYMAL),1)
+               NTOTBE = MAX(NBAS(ISYMBE),1)
+C
+               CALL DGEMM('N','N',NBAS(ISYMAL),NRHFFR(ISYMJ),
+     *                    NBAS(ISYMBE),ONE,WORK(KOFF5),NTOTAL,
+     *                    CMO(KOFF6),NTOTBE,ZERO,WORK(KSCR3),NTOTAL)
+C
+
+               KOFF7  = ILVISI(ISYMAL) + 1
+               KOFF8  = KSCR2 + IT1FRO(ISYMC,ISYMJ)
+C
+               NTOTAL = MAX(NBAS(ISYMAL),1)
+               NTOTC  = MAX(NVIR(ISYMC),1)
+C
+               CALL DGEMM('T','N',NVIR(ISYMC),NRHFFR(ISYMJ),
+     *                    NBAS(ISYMAL),ONE,CMO(KOFF7),NTOTAL,
+     *                    WORK(KSCR3),NTOTAL,ZERO,WORK(KOFF8),NTOTC)
+C
+  120       CONTINUE
+C
+C----------------------------------------------------------------
+C           Final scaling with CMO element and storage in result.
+C----------------------------------------------------------------
+C
+               DO 131 D = 1,NRHFFR(ISYMD)
+C
+                  NDK = IV1FRO(ISYMD,ISYMK) + NRHFFR(ISYMD)*(K - 1) + D
+                  KOFF9 = KDVEC + D - 1
+                  KOFF10 = IV2FRO(ISYMCJ,ISYMDK)
+     *                   + NT1FRO(ISYMCJ)*(NDK - 1) + 1
+C
+                  CALL DAXPY(NT1FRO(ISYMCJ),WORK(KOFF9),WORK(KSCR2),1,
+     *                       XFRIN(KOFF10),1)
+C
+  131          CONTINUE
+C
+  110    CONTINUE
+  100 CONTINUE
+C
+      RETURN
+      END
+C  /* Deck cc_frcogr1 */
+      SUBROUTINE CC_FRCOGR1(XFRIN,XINT,CMO,WORK,LWORK,IDEL,ISYDEL)
+C
+C
+C     To calculate the integrals (pJ|IK) needed for frozen-core gradients.
+C     AO integrals are assumed totally symmetric.
+c     based on cc_frcoin (Elena Vollmer 29/09/04) 
+C
+#include <implicit.h>
+C
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
+      DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
+      integer  iglmrf(8,8),ilorbi(8),iv2fro(8,8),iv1fro(8,8)
+C
+#include <priunit.h>
+#include <maxorb.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccfro.h>
+#include <r12int.h>
+C
+C---------------------------------------
+C     Initial symmetries and allocation.
+C---------------------------------------
+C
+celena
+      ISYDIS = ISYDEL
+      ISYMD  = ISYDEL
+
+      do isymmua = 1,nsym
+         icou2 = 0
+         do isyma = 1,nsym
+            isymmu = muld2h(isymmua,isyma)
+            iglmrf(isymmu,isyma) = icou2
+            icou2 = icou2 + nbas(isymmu)*norb1(isyma)
+         enddo
+      enddo
+
+
+      noffset = 0
+      icoun1  = 0
+      do isym = 1,nsym
+         ilorbi(isym) = icoun1 
+         icoun1  =  icoun1 + nbas(isym)*(nrhfs(isym))
+         noffset = noffset + nbas(isym)*(nrhffr(isym)) 
+      enddo
+
+      do isymk = 1, nsym
+         icoun3 = 0
+         icoun4 = 0
+         do isymj = 1,nsym
+            isymi  = muld2h(isymk,isymj)
+            iv2fro(isymi,isymj) = icoun3
+            iv1fro(isymi,isymj) = icoun4 
+            icoun3 = icoun3 + nt1fro(isymi)*nfrofr(isymj)
+            icoun4 = icoun4 + (nrhffr(isymi))
+     &                   *(norb1(isymj)-nrhffr(isymj))
+         enddo
+      enddo
+
+celena
+
+C
+      KDVEC  = 1
+      KEND1  = KDVEC + NVIR(ISYMD)
+      LWRK1  = LWORK - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+         CALL QUIT('Insufficient work space for allocation '//
+     &             'in CC_FRCOIN')
+      ENDIF
+C
+      CALL DZERO(WORK(KDVEC),NVIR(ISYMD))
+C
+C-----------------------------------
+C     Copy vector out of CMO matrix.
+C-----------------------------------
+C
+      KOFF1 = ILVISI(ISYMD) + IDEL - IBAS(ISYDEL)
+C
+      CALL DCOPY(NVIR(ISYMD),CMO(KOFF1),NBAS(ISYDEL),WORK(KDVEC),1)
+C
+C--------------------------------------------------------
+C     Outer symmetry loop and next work space allocation.
+C--------------------------------------------------------
+C
+      DO 100 ISYMK = 1,NSYM
+C
+         ISYMG  = ISYMK
+         ISYMDK = MULD2H(ISYMD,ISYMK)
+         ISYMCJ = ISYMDK
+         ISALBE = ISYMCJ 
+C
+         KINAOK = KEND1
+         KSCR1  = KINAOK + NNBST(ISALBE)*NRHFFR(ISYMK)
+         KSCR2  = KSCR1  + N2BST(ISALBE)
+         KEND2  = KSCR2  + NT1FRO(ISYMCJ)
+         LWRK2  = LWORK  - KEND2
+C
+         IF (LWRK2 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND2
+            CALL QUIT('Insufficient space for allocation in CC_FRCOGR')
+         ENDIF
+C
+         CALL DZERO(WORK(KINAOK),NNBST(ISALBE)*NRHFFR(ISYMK))
+C
+C--------------------------------------------
+C        Transform gamma-index to correlated.
+C--------------------------------------------
+C
+         KOFF2  = IDSAOG(ISYMG,ISYDIS) + 1
+c         KOFF3  = 1 + iglmrf(ISYMg,ISYMk)
+         KOFF3  = 1 + ilorbi(ISYMg)
+C
+         NTOTAB = MAX(NNBST(ISALBE),1)
+         NTOTG  = MAX(NBAS(ISYMG),1)
+C
+         CALL DGEMM('N','N',NNBST(ISALBE),NRHFFR(ISYMK),
+     &              NBAS(ISYMG),ONE,
+     *              XINT(KOFF2),NTOTAB,CMO(KOFF3),NTOTG,ZERO,
+     *              WORK(KINAOK),NTOTAB)
+
+
+         DO 110 K = 1,NRHFFR(ISYMK)
+C
+            CALL DZERO(WORK(KSCR1),N2BST(ISALBE))
+            CALL DZERO(WORK(KSCR2),NT1FRO(ISYMCJ))
+C
+C-----------------------------------
+C           Square up the integrals.
+C-----------------------------------
+C
+            KOFF4 = KINAOK + NNBST(ISALBE)*(K - 1)
+            CALL CCSD_SYMSQ(WORK(KOFF4),ISALBE,WORK(KSCR1))
+C
+C---------------------------------------------------------------
+C           Inner symmetry loop and final work space allocation.
+C---------------------------------------------------------------
+C
+            DO 120 ISYMAL = 1,NSYM
+C
+               ISYMC  = ISYMAL
+               ISYMBE = MULD2H(ISALBE,ISYMAL)
+               ISYMJ  = ISYMBE
+C
+               KSCR3 = KEND2
+               KEND3 = KSCR3 + NBAS(ISYMAL)*NRHFFR(ISYMJ)
+               LWRK3 = LWORK - KEND3
+C
+               IF (LWRK3 .LT. 0) THEN
+                  WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND3
+                  CALL QUIT('Insufficient space for allocation '//
+     &                      'in CC_FRCOIN')
+               ENDIF
+C
+C------------------------------------------------
+C              Construct the integrals (cJ|kdel).
+C------------------------------------------------
+C
+               KOFF5  = KSCR1 + IAODIS(ISYMAL,ISYMBE)
+               KOFF6  = ILRHSI(ISYMBE) + 1
+C
+               NTOTAL = MAX(NBAS(ISYMAL),1)
+               NTOTBE = MAX(NBAS(ISYMBE),1)
+C
+               CALL DGEMM('N','N',NBAS(ISYMAL),NRHFFR(ISYMJ),
+     *                    NBAS(ISYMBE),ONE,WORK(KOFF5),NTOTAL,
+     *                    CMO(KOFF6),NTOTBE,ZERO,WORK(KSCR3),NTOTAL)
+C
+
+               KOFF7  = ILVISI(ISYMAL) + 1
+               KOFF8  = KSCR2 + IT1FRO(ISYMC,ISYMJ)
+C
+               NTOTAL = MAX(NBAS(ISYMAL),1)
+               NTOTC  = MAX(NVIR(ISYMC),1)
+C
+               CALL DGEMM('T','N',NVIR(ISYMC),NRHFFR(ISYMJ),
+     *                    NBAS(ISYMAL),ONE,CMO(KOFF7),NTOTAL,
+     *                    WORK(KSCR3),NTOTAL,ZERO,WORK(KOFF8),NTOTC)
+C
+  120       CONTINUE
+C
+C----------------------------------------------------------------
+C           Final scaling with CMO element and storage in result.
+C----------------------------------------------------------------
+C
+               DO 131 D = 1,NRHFFR(ISYMD)
+C
+                  NDK = IFROFR(ISYMD,ISYMK) + NRHFFR(ISYMD)*(K - 1) + D
+                  KOFF9 = KDVEC + D - 1
+                  KOFF10 = Iv2FRO(ISYMCJ,ISYMDK)
+     *                   + NT1FRO(ISYMCJ)*(NDK - 1) + 1
+C
+                  CALL DAXPY(NT1FRO(ISYMCJ),WORK(KOFF9),WORK(KSCR2),1,
+     *                       XFRIN(KOFF10),1)
+C
+  131          CONTINUE
+C
   110    CONTINUE
   100 CONTINUE
 C

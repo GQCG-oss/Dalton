@@ -519,7 +519,7 @@ C
       IF (NORBI.EQ.0) GO TO 200
          IF (LMULBS) THEN
             IF (LAUXBS) THEN
-              IF (.NOT. R12ECO) THEN
+              IF (.NOT. (R12ECO .OR. R12CBS)) THEN
 C              Overlap matrix elements that belong to the 
 C              primary basis are zeroed (WK/UniKA/04-11-2002).
 C              This routine will then delete the corresponding vectors from CMO.
@@ -614,7 +614,7 @@ C Delete orbitals with small ( THROVL ) eigenvalues
 C
          IDEL = 0
          DO 275 J = 1, NORBI
-           EIGVAL = SCRA(KS1T + J -1)
+           EIGVAL = SCRA(KS1T + J - 1)
            IF (EIGVAL .LT. THROVL) THEN
               IDEL  = (NORBI + 1 - J)
 C
@@ -638,7 +638,7 @@ C             ... secondary basis
                    DO 250 I = 0, NORB2(JSYM)*NBAS(JSYM) - 1
                      CMO(ICTO + I) = CMO(ICFROM + I)
   250              CONTINUE
-                   ICTO = ICTO + NORB2(JSYM)*NBAS(JSYM)   
+                   ICTO = ICTO + NORB2(JSYM)*NBAS(JSYM)     
                    ICFROM = ICFROM + NORB2(JSYM)*NBAS(JSYM)
   260            CONTINUE
                 END IF

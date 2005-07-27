@@ -1555,7 +1555,6 @@ c /* deck ccqr_fadrv */
 
       INTEGER LWORK, NFATRAN, MXVEC
 
- 
       CHARACTER*8 FNTOC
       CHARACTER*4 FNDKBC
       CHARACTER*5 FNDKBC3
@@ -2105,6 +2104,7 @@ c /* deck CC_DOTDRV */
 *             
 *
 *    Written by Christof Haettig, April 1997.
+*    adapted for CC-R12, Christian Neiss, June 2005
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -2134,13 +2134,13 @@ c /* deck CC_DOTDRV */
       REAL DCON(MXVEC,NDTRAN)
       REAL WORK(LWORK)
       REAL ZERO
-      REAL DCON1, DCON2
+      REAL DCON1, DCON2, DCONR12
       REAL DDOT
 #else
       DOUBLE PRECISION DCON(MXVEC,NDTRAN)
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION ZERO
-      DOUBLE PRECISION DCON1, DCON2
+      DOUBLE PRECISION DCON1, DCON2, DCONR12
       DOUBLE PRECISION DDOT
 #endif
       PARAMETER (ZERO = 0.0d0)
@@ -2152,8 +2152,8 @@ c /* deck CC_DOTDRV */
       INTEGER IDDOTS(MXVEC,NDTRAN)
 
       INTEGER ITRAN, IVEC, IFILEL, IFILER, ISYML, ISYMR, IOPT, ICAU
-      INTEGER KVECL1, KVECL2, KVECR1, KVECR2
-      INTEGER KEND1, KEND2, LEND1, LEND2, NTAMP
+      INTEGER KVECL1, KVECL2, KVECR1, KVECR2, KVECLR12, KVECRR12
+      INTEGER KEND1, KEND2, LEND1, LEND2, NTAMP, IOPTR12
 
 * external functions:
       INTEGER ILSTSYM
@@ -2194,15 +2194,24 @@ c /* deck CC_DOTDRV */
         END IF
 
         NTAMP = NT1AM(ISYML) + NT2AM(ISYML)
+        IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYML)
 
         KVECL1 = 1
         KVECL2 = KVECL1 + NT1AM(ISYML)
         KEND1  = KVECL2 + NT2AM(ISYML)
+        IF (CCR12) THEN
+          KVECLR12 = KVECL2 + NT2AM(ISYML)
+          KEND1    = KVECLR12 + NGAMMA(ISYML)
+        END IF
         LEND1  = LWORK - KEND1
 
         KVECR1 = KEND1
         KVECR2 = KVECR1 + NT1AM(ISYML)
         KEND2  = KVECR2 + NT2AM(ISYML)
+        IF (CCR12) THEN
+          KVECRR12 = KVECR2 + NT2AM(ISYML)
+          KEND2    = KVECRR12 + NGAMMA(ISYML)
+        END IF
         LEND2  = LWORK - KEND2
 
         IF (CCS) THEN
@@ -2218,14 +2227,23 @@ c /* deck CC_DOTDRV */
 
 * read left vector:
         IOPT = 3
+        IOPTR12 = 32
         IF (LISTL(1:2).EQ.'O3') THEN
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
      &                  WORK(KVECL1),WORK(KVECL2)     )
           CALL CCLR_DIASCL(WORK(KVECL2),0.5d0,ISYML)
+          IF (CCR12) THEN
+            CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPTR12,MODEL,
+     &                    DUMMY,WORK(KVECLR12))
+          END IF
         ELSE IF (LISTL(1:3).EQ.'CO2'.OR.LISTL(1:3).EQ.'O2 ') THEN
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
      &                  WORK(KVECL1),WORK(KVECL2)     )
           CALL CCLR_DIASCL(WORK(KVECL2),0.5d0,ISYML)
+          IF (CCR12) THEN
+            CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPTR12,MODEL,
+     &                    DUMMY,WORK(KVECLR12))
+          END IF
         ELSE IF (LISTL(1:3).EQ.'X1B') THEN
           CALL CC_LGD(WORK(KVECL1),LRZLBL(IFILEL),ISYLRZ(IFILEL),
      &         FRQLRZ(IFILEL),LORXLRZ(IFILEL),IOPT,WORK(KEND2),LEND2)
@@ -2234,6 +2252,10 @@ c /* deck CC_DOTDRV */
         ELSE
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
      &                  WORK(KVECL1),WORK(KVECL2)     )
+          IF (CCR12) THEN
+            CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPTR12,MODEL,
+     &                    DUMMY,WORK(KVECLR12))
+          END IF
         END IF
 
 *---------------------------------------------------------------------*
@@ -2257,15 +2279,24 @@ c /* deck CC_DOTDRV */
           END IF
 
           IOPT = 3
+          IOPTR12 = 32
 
           IF (LISTR(1:2).EQ.'O2') THEN
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
      &                    WORK(KVECR1),WORK(KVECR2)   )
             CALL CCLR_DIASCL(WORK(KVECR2),0.5d0,ISYMR)
+            IF (CCR12) THEN
+              CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPTR12,MODEL,
+     &                      DUMMY,WORK(KVECRR12))
+            END IF
           ELSE IF (LISTR(1:3).EQ.'CO2') THEN
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
      &                    WORK(KVECR1),WORK(KVECR2)   )
             CALL CCLR_DIASCL(WORK(KVECR2),0.5d0,ISYMR)
+            IF (CCR12) THEN
+              CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPTR12,MODEL,
+     &                      DUMMY,WORK(KVECRR12))
+            END IF
           ELSE IF (LISTR(1:3).EQ.'X1B') THEN
             CALL CC_LGD(WORK(KVECR1),LRZLBL(IFILER),ISYLRZ(IFILER),
      &           FRQLRZ(IFILER),LORXLRZ(IFILER),IOPT,WORK(KEND2),LEND2)
@@ -2279,10 +2310,16 @@ c /* deck CC_DOTDRV */
               IFILER = ILRCAMP(LABEL,ICAU,ISYMR)
               CALL CC_RDRSP('FC',IFILER,ISYMR,IOPT,MODEL,
      &                      WORK(KVECR1),WORK(KVECR2)   )
+              IF (CCR12) CALL QUIT('Calculations including Cauchy '//
+     &                             'vectors not adapted for CC-R12')
             END IF
           ELSE
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
      &                    WORK(KVECR1),WORK(KVECR2)   )
+            IF (CCR12) THEN
+              CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPTR12,MODEL,
+     &                      DUMMY,WORK(KVECRR12))
+            END IF
           END IF
 
           DCON1  = DDOT(NT1AM(ISYML),WORK(KVECL1),1,WORK(KVECR1),1)
@@ -2301,8 +2338,22 @@ c /* deck CC_DOTDRV */
           ELSE
            CALL QUIT('ERROR> unknown CC model in CC_DOTDRV.')
           END IF
+          IF (CCR12) THEN
+           DCONR12 = DDOT(NGAMMA(ISYML),WORK(KVECLR12),1,
+     &                    WORK(KVECRR12),1)
+           IF (LOCDBG) THEN
+             WRITE(LUPRI,*) 'NORM^2(LR12):',
+     &         DDOT(NGAMMA(ISYML),WORK(KVECLR12),1,WORK(KVECLR12),1)
+             WRITE(LUPRI,*) 'NORM^2(RR12):',
+     &         DDOT(NGAMMA(ISYMR),WORK(KVECRR12),1,WORK(KVECRR12),1)
+             WRITE(LUPRI,*) '(LR12|RR12):',
+     &         DDOT(NGAMMA(ISYMR),WORK(KVECLR12),1,WORK(KVECRR12),1)
+           END IF
+          ELSE
+           DCONR12 = ZERO
+          END IF
 
-          DCON(IVEC,ITRAN) = DCON1 + DCON2
+          DCON(IVEC,ITRAN) = DCON1 + DCON2 + DCONR12
 
           IVEC = IVEC + 1
         END DO

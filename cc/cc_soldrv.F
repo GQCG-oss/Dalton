@@ -35,10 +35,11 @@ C
 C
 C  /* Deck cc_soldrv */
 C--------------------------------------------------------------------
-      SUBROUTINE CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
+      SUBROUTINE CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,APROXR12,
      &                     ISYMS, ISTAT, EIGVAL, LPROJ,
      &                     ISYMO, LABEL, FREQS, ICAU,
-     &                     ISYOF, NVEC,  MAXVEC, WORK, LWORK)
+     &                     ISYOF, NVEC,  MAXVEC, 
+     &                     WORK, LWORK)
 C--------------------------------------------------------------------
 C
 C     Purpose: Direct solution of Coupled Cluster response equations.
@@ -96,7 +97,7 @@ C
       LOGICAL TRIPLET
       PARAMETER (TRIPLET= .FALSE.) 
 C
-      CHARACTER LIST*(*)
+      CHARACTER LIST*(*), APROXR12*(*)
 
       INTEGER NSTAT, ORDER, MAXVEC, NVEC, ISIDE, NSIMLEBAK
       INTEGER ISYOF(8)
@@ -118,10 +119,11 @@ C
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0)
 #endif
 
-      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM
+      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM,FS2AM
       PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM')
       PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2')
       PARAMETER (FRHO12='CCR_RH12',FC12AM='CCR_C12M',FS12AM='CCR_S12M')
+      PARAMETER (FS2AM='CCR_S2DM')
 
       LOGICAL LINQCC
       PARAMETER (LINQCC = .TRUE.) 
@@ -139,6 +141,7 @@ C
       LUFR2  = 0
       LUFR12 = 0
       LUFS12 = 0
+      LUFS2  = 0
 C
       LREDS = CCR12
 C
@@ -149,6 +152,7 @@ C
         WRITE (LUPRI,*) 'ISIDE :',ISIDE
         WRITE (LUPRI,*) 'NVEC  :',NVEC
         WRITE (LUPRI,*) 'MAXVEC:',MAXVEC
+        WRITE (LUPRI,*) 'CCR12,LREDS:',CCR12,LREDS
         WRITE (LUPRI,*) 'ISYMS :',((ISYMS(I,J),J=1,NSTAT),I=1,NVEC)
         WRITE (LUPRI,*) 'ISTAT :',((ISTAT(I,J),J=1,NSTAT),I=1,NVEC)
         WRITE (LUPRI,*) 'EIGVAL:',((EIGVAL(I,J),J=1,NSTAT),I=1,NVEC)
@@ -541,7 +545,7 @@ C----------------------
 C
             CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    FS12AM,LUFS12)
+     *                    FS12AM,LUFS12,FS2AM,LUFS2)
 C-------------------------------------------------------------------
 C           check for projection: if we solve projected equations
 C                                 set flat LPROJECT and store excited
@@ -566,7 +570,7 @@ C           Create start vectors.
 C--------------------------------
 C
             CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    LPROJECT,ISTATPRJ,
+     *                    FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
      *                    TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KEIVAL),WORK(KIPLAC),
      *                    WORK(KWRK1),LWRK1,LIST)
@@ -582,10 +586,10 @@ C
             CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
      *                    FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    LREDS,WORK(KREDS),FS12AM,LUFS12,
+     *                    LREDS,WORK(KREDS),FS12AM,LUFS12,FS2AM,LUFS2,
      *                    LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KREDH),WORK(KEIVAL),
-     *                    WORK(KSOLEQ),WORK(KWRK1),LWRK1)
+     *                    WORK(KSOLEQ),WORK(KWRK1),LWRK1,APROXR12)
 C
             IF (LINQCC .AND. CCSDT) ECURR = 0.0D0
 C
@@ -618,7 +622,7 @@ C
                  WRITE(LUPRI,*) 'norm KWRK2:',X2
               ENDIF
 C
-              IF ( IPRINT .GT. 30 ) THEN
+              IF ((IPRINT .GT. 30) .OR. DEBUG) THEN
                  CALL AROUND('CC_SOLRSP: response vectors in mo basis')
                  CALL OUTPUT(WORK(KWRK2),1,NCCVAR,1,IOFF2,
      *                       NCCVAR,IOFF2,1,LUPRI)
@@ -629,6 +633,7 @@ C
 C
                  KT1 = KWRK2 + (ICOUNT-1)*LETOT
                  KT2 = KT1 + NT1AM(ISYM)
+                 IF (CCR12) KT12 = KT2 + NT2AM(ISYM)
                  IF (IPRINT .GT. 1) THEN
                     WRITE(LUPRI,'(//1X,A)')
      *         'Analysis of CC Response/Cauchy vector:'
@@ -645,6 +650,12 @@ C
                        RHO2N=DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
                        WRITE(LUPRI,'(1X,A35,1X,E20.10)')
      *                 'Norm of doubles part:   ',RHO2N
+                      ENDIF
+                      IF (CCR12) THEN
+                       RHO12N=DDOT(NGAMMA(ISYM),WORK(KT12),1,
+     &                             WORK(KT12),1)
+                       WRITE(LUPRI,'(1X,A35,1X,E20.10)')
+     *                 'Norm of r12 doubles part:   ',RHO12N
                       ENDIF
                     ENDIF
                  ENDIF
@@ -681,7 +692,7 @@ C---------------------------------
 C
            CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                   FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                   FS12AM,LUFS12)
+     *                   FS12AM,LUFS12,FS2AM,LUFS2)
 C
          END DO
 
@@ -717,16 +728,16 @@ C            FC12AM (LUC12) R12 doubles part
 C
       IMPLICIT NONE
 C#include <implicit.h>
-C#include <priunit.h>
+#include <priunit.h>
 C#include <iratdef.h>
 #include <cclr.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 
 #if defined (SYS_CRAY)
-      REAL VEC(*)
+      REAL VEC(*), DDOT
 #else
-      DOUBLE PRECISION VEC(*)
+      DOUBLE PRECISION VEC(*), DDOT
 #endif
 
       LOGICAL TRIPLET
@@ -766,20 +777,20 @@ C            R12 doubles file (name: FC12AM, nr: LUC12)
 C
       IMPLICIT NONE
 C#include <implicit.h>
-C#include <priunit.h>
+#include <priunit.h>
 C#include <iratdef.h>
 #include <cclr.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 
 #if defined (SYS_CRAY)
-      REAL VEC(*)
+      REAL VEC(*), DDOT
 #else
-      DOUBLE PRECISION VEC(*)
+      DOUBLE PRECISION VEC(*), DDOT
 #endif
 
       LOGICAL TRIPLET
-      CHARACTER FC1AM*(*),FC2AM*(*),FC12AM
+      CHARACTER FC1AM*(*),FC2AM*(*),FC12AM*(*)
       INTEGER LUC1, LUC2, LUC12, IVEC, NT2VAR, NT12VAR, IADR
 C
       CALL CC_WVEC(LUC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
@@ -806,16 +817,18 @@ C
 C  /* Deck cc_filop  */
       SUBROUTINE CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    FS12AM,LUFS12)
+     *                    FS12AM,LUFS12,FS2AM,LUFS2)
 C
 C     Ove Christiansen 22-1-1996:
 C                Open files for linear solver.
 C                Has to be 8 character long.
 C
-#include <implicit.h>
-#include <iratdef.h>
+      IMPLICIT NONE
+C#include <implicit.h>
+C#include <iratdef.h>
 #include <ccsdinp.h>
-      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM
+      INTEGER LUFR1,LUFR2,LUFR12,LUFC1,LUFC2,LUFC12,LUFS12,LUFS2
+      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM,FS2AM
 C
       CALL WOPEN2(LUFC1,FC1AM,64,0)
       CALL WOPEN2(LUFR1,FRHO1,64,0)
@@ -829,21 +842,24 @@ C
          CALL WOPEN2(LUFR12,FRHO12,64,0)
          CALL WOPEN2(LUFC12,FC12AM,64,0)
          CALL WOPEN2(LUFS12,FS12AM,64,0)
+         CALL WOPEN2(LUFS2,FS2AM,64,0)
       END IF
 C
       END
 C  /* Deck cc_filcl  */
       SUBROUTINE CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    FS12AM,LUFS12)
+     *                    FS12AM,LUFS12,FS2AM,LUFS2)
 C
 C     Ove Christiansen 22-1-1996:
 C
-#include <implicit.h>
-#include <iratdef.h>
+      IMPLICIT NONE
+C#include <implicit.h>
+C#include <iratdef.h>
 #include <ccsdinp.h>
 C
-      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM
+      INTEGER LUFR1,LUFR2,LUFR12,LUFC1,LUFC2,LUFC12,LUFS12,LUFS2
+      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM,FS2AM
 C
 C-----------------
 C     Close files.
@@ -861,6 +877,7 @@ C
          CALL WCLOSE2(LUFR12,FRHO12,'DELETE')
          CALL WCLOSE2(LUFC12,FC12AM,'DELETE')
          CALL WCLOSE2(LUFS12,FS12AM,'DELETE')
+         CALL WCLOSE2(LUFS2,FS2AM,'DELETE')
       END IF
 C
       END

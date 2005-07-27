@@ -296,7 +296,7 @@ C
       MINSCR = .TRUE.
       MINMEM = .FALSE.
       CCPAIR = .FALSE.
-      MKVAJKL = .FALSE.
+ccn      MKVAJKL = .FALSE.
 ckr      R12CAL = .TRUE.
 ckr      R12NOA = .FALSE.
 ckr      R12NOP = .FALSE.
@@ -307,8 +307,8 @@ cwk      VCLTHR =  0D0
 cwk      SVDTHR =  1D-15
 ckr      R12XXL = .FALSE.
 
-      BRASCL = 0.5D0
-      KETSCL = 2.0D0
+      BRASCL = 1.0D0
+      KETSCL = 1.0D0
 C
 C     If this is a restart run, we read MSYM from SIRIFC
 C
@@ -811,6 +811,10 @@ C                 '.THRVEC' convergence threshold for norm of vector function
       END IF
   300 CONTINUE
 C
+C---------------------------------------------------
+C     set some defaults...
+C---------------------------------------------------
+C
       MSYM = MSYMS
       IF (ITEST .EQ. 0 ) THEN
          MINSCR = .TRUE.
@@ -892,6 +896,13 @@ C
                   CALL QUIT('Inconsistency: in FF '//
      &                 'and relaxed derivative')
                ENDIF
+               ! put operators for "unrelaxed" fields on common CCRSPOP
+               ! (needed for CCR12 with unrelaxed finite fields)
+               IF (NONHF) THEN
+                  DO IFIELD = 1, NFIELD
+                     IDX = INDPRPCC(LFIELD(IFIELD))
+                  END DO
+               END IF
             END IF 
 C
             IF (LHTR.AND.((CCLRSD).OR.
@@ -1140,7 +1151,7 @@ C=====================================================================*
        SUBROUTINE CC_EXCINP(WORD,MSYM)
 C---------------------------------------------------------------------*
 C
-C    Purpose: Read input for CC excitec state calculations.
+C    Purpose: Read input for CC excited state calculations.
 C
 C    if (WORD .eq '*CCEXCI ') read & process input and set defaults, 
 C    else set only defaults 
@@ -3901,6 +3912,10 @@ C
 
 1           CONTINUE
                DIPMOM = .TRUE.
+CCN         Added for CC-R12:
+               IDUM = INDPRPCC('XDIPLEN ')
+               IDUM = INDPRPCC('YDIPLEN ')
+               IDUM = INDPRPCC('ZDIPLEN ')
             GO TO 100
 
 C
@@ -3911,6 +3926,13 @@ C
 
 2           CONTINUE
                QUADRU = .TRUE.
+CCN         Added for CC-R12:
+               IDUM = INDPRPCC('XXTHETA ')
+               IDUM = INDPRPCC('XYTHETA ')
+               IDUM = INDPRPCC('XZTHETA ')
+               IDUM = INDPRPCC('YYTHETA ')
+               IDUM = INDPRPCC('YZTHETA ')
+               IDUM = INDPRPCC('ZZTHETA ')               
             GO TO 100
 
 C
@@ -3997,6 +4019,13 @@ C
 
 9          CONTINUE
                SECMOM = .TRUE.
+CCN         Added for CC-R12:
+               IDUM = INDPRPCC('XXSECMOM')
+               IDUM = INDPRPCC('XYSECMOM')
+               IDUM = INDPRPCC('XZSECMOM')
+               IDUM = INDPRPCC('YYSECMOM')
+               IDUM = INDPRPCC('YZSECMOM')
+               IDUM = INDPRPCC('ZZSECMOM')
             GO TO 100
 C
 C-------------------------------------------------
@@ -8187,13 +8216,15 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
       LOGICAL SET
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_R12IN')
-      PARAMETER (NTABLE = 16, D0 = 0.0D0)
+      PARAMETER (NTABLE = 20, D0 = 0.0D0)
       CHARACTER WORD*(7)
       CHARACTER TABLE(NTABLE)*(7)
+      CHARACTER*120 CC2LAB
       DATA TABLE /'.NO HYB','.NO A  ','.NO A'' ','.NO B  ',
      &            '.NO RXR','.R12THR','.SVDTHR','.R12XXL',
      &            '.R12DIA','.R12SVD','.R12LEV','.R12RST',
-     &            '.BASSCL','.R12PRP','.NO 1  ','.NO 2  '/
+     &            '.BASSCL','.NO 1  ','.NO 2  ','.R12PRP',
+     &            '.CABS  ', '.NO B'' ','.NO 3  ','.CC2   '/
       DATA SET/.FALSE./
       R12LEV = D0
       IF (SET) RETURN
@@ -8210,7 +8241,8 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
             IJUMP = IJUMP + 1
           END DO
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
+     &            IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_R12IN.')
     1       CONTINUE
                R12HYB = .FALSE.
@@ -8254,14 +8286,66 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
                READ (LUCMD, *) BRASCL, KETSCL
             GO TO 100
    14       CONTINUE
-               R12PRP = .TRUE.
-            GO TO 100
-   15       CONTINUE
                NOTONE = .TRUE.
             GO TO 100
-   16       CONTINUE
+   15       CONTINUE
                NOTTWO = .TRUE.
             GO TO 100
+   16       CONTINUE
+               R12PRP = .TRUE.
+               IANCC2 = 1
+               IF (R12NOB) IAPCC2 = 1 
+               IF (R12XXL) IAPCC2 = 2
+celena
+               IF (R12PRP .AND. .NOT. NOTTWO) THEN
+                  NOTTWO = .TRUE.
+                  write(lupri,*)
+                  write(lupri,*) 'Sorry, calculation of R12 '// 
+     &                           'corrections to '//
+     &                           'first order properties using '//
+     &                           'Ansatz 2 not implemented. '//
+     &                           'Ansatz 2 will be ignored.' 
+                  write(lupri,*)
+                ENDIF
+celena
+            GO TO 100
+   17       CONTINUE
+               R12CBS = .TRUE.
+            GO TO 100
+   18       CONTINUE
+               NOBP = .TRUE.
+            GO TO 100
+   19       CONTINUE
+               NOTTRE = .TRUE.
+            GO TO 100
+   20       CONTINUE
+            DO I = 1, 120
+	      CC2LAB(I:I) = ' '
+            ENDDO
+            READ (LUCMD,'(A)') CC2LAB
+            DO I = 1, 120
+              IF (CC2LAB(I:I) .NE. ' ') THEN
+                READ (CC2LAB(I:I),'(I1)',ERR=300) IANCC2
+                GOTO 400 
+              END IF
+            ENDDO
+	    GOTO 300
+  400       CONTINUE
+            DO I = 120, 1, -1
+              IF (CC2LAB(I:I) .NE. ' ') THEN
+	        IF (CC2LAB(I:I) .EQ. 'A') THEN
+                  IAPCC2 = 1
+		  GOTO 100
+	        ELSE IF (CC2LAB(I:I) .EQ. 'B') THEN
+                  IAPCC2 = 2
+		  GOTO 100
+                ELSE
+		  GOTO 300
+	        END IF
+                GOTO 100 
+	      END IF
+            END DO
+            GO TO 300
           ELSE
            WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -8280,9 +8364,51 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
       END IF
   200 CONTINUE
 
+      NORXR = NORXR .OR. R12HYB
+
+      IF (IANCC2 .NE. 0) THEN
+         IF (IANCC2 .EQ. 1) THEN
+            NOTTWO = .TRUE.
+            NOTTRE = .TRUE.
+            IF (IAPCC2 .EQ. 1) THEN
+               IAP = 2
+            ELSE IF (IAPCC2 .EQ. 2) THEN
+	       IF (NORXR) THEN
+                  IAP = 5
+               ELSE
+                  IAP = 7
+               END IF
+            ELSE
+               GOTO 300
+            END IF
+         ELSE IF (IANCC2 .EQ. 2) THEN
+            NOTONE = .TRUE.
+            NOTTRE = .TRUE.
+	    IF (IAPCC2 .NE. 2) GOTO 300 
+            IF (NORXR) THEN
+               IAP = 8
+            ELSE
+               IAP = 10
+            END IF
+         ELSE IF (IANCC2 .EQ. 3) THEN
+            NOTONE = .TRUE.
+            NOTTWO = .TRUE.
+	    IF (IAPCC2 .NE. 2) GOTO 300 
+            IF (NORXR) THEN
+               IAP = 8
+            ELSE
+               IAP = 10
+            END IF
+         ELSE
+	    GOTO 300
+         END IF
+         IAPCC2 = IAP
+      END IF
+
       write(lupri,*)'Scale factors for CC excitations manifolds:'
       write(lupri,*)'for bra states (projection manifold):',brascl
       write(lupri,*)'for ket states (operator manifold)  :',ketscl
 
       RETURN
+  300 CALL QUIT('WRONG CC2LAB')
       END

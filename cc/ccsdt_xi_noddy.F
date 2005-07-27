@@ -539,7 +539,8 @@ c     ----------------------------------------------
         END IF
 
         ! read property integrals from file:
-        CALL CCPRPAO(LABELB,FOCKB,IRREP,ISYMM,IERR,WORK(KEND0),LWRK0)
+        CALL CCPRPAO(LABELB,.TRUE.,FOCKB,IRREP,ISYMM,IERR,
+     &               WORK(KEND0),LWRK0)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMB)) THEN
           CALL QUIT('CCSDT_T31_NODDY: error reading operator '//LABELB)
         ELSE IF (IERR.LT.0) THEN

@@ -1639,9 +1639,14 @@ C
          KLAST  = KNCSCD + (NORBC*NORBD*NODCCD + 1)/IRAT
       END IF
       KINDAB = KLAST
-      KINDCD = KINDAB + (2*NORBA*NORBB + 1)/IRAT
-      KLAST  = KINDCD + (2*NORBC*NORBD + 1)/IRAT
+C.....New code to fix Heike's error on tchplx4.
+C     Add 2 in place of 1 (WK/UniKA/18-06-2004).
+C     KINDCD = KINDAB + (2*NORBA*NORBB + 1)/IRAT
+C     KLAST  = KINDCD + (2*NORBC*NORBD + 1)/IRAT
 C
+      KINDCD = KINDAB + (2*NORBA*NORBB + 2)/IRAT
+      KLAST  = KINDCD + (2*NORBC*NORBD + 2)/IRAT
+C....New code
       LWRK = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('TWOODS',' ',KLAST,LWORK)
       LWTOT  = LWTOT + KLAST

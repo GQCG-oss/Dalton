@@ -1030,7 +1030,7 @@ C     END IF
         LABELX = LRTLBL(IDLSTX)
 
         ! read property integrals from file:
-        CALL CCPRPAO(LABELX,WORK(KXPROP_AO),IRREP,ISYMX,IERR,
+        CALL CCPRPAO(LABELX,.TRUE.,WORK(KXPROP_AO),IRREP,ISYMX,IERR,
      &               WORK(KEND2),LWRK2)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMX)) THEN
           CALL QUIT('CCSDT_T32_NODDY: error reading operator '//LABELX)
@@ -1047,7 +1047,7 @@ C     END IF
       IF (LISTY(1:3).EQ.'R1 ') THEN
         LABELY = LRTLBL(IDLSTY)
         ! read property integrals from file:
-        CALL CCPRPAO(LABELY,WORK(KYPROP_AO),IRREP,ISYMY,IERR,
+        CALL CCPRPAO(LABELY,.TRUE.,WORK(KYPROP_AO),IRREP,ISYMY,IERR,
      &               WORK(KEND2),LWRK2)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMY)) THEN
           CALL QUIT('CCSDT_T32_NODDY: error reading operator '//LABELY)

@@ -151,7 +151,7 @@ C
 
          IF ( CONNECTION .EQ. 'SYMMETR' ) THEN
             WRITE(LABELS,'(A5,A3)') '1DOVL', LABELH(6:8)
-            CALL CCPRPAO(LABELS,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
+            CALL CCPRPAO(LABELS,.TRUE.,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
             IF (IERR.GT.0) THEN
               WRITE (LUPRI,'(A,A8,1X,A)') 
      &              'Warning:',LABELS,'Integrals missing!'
@@ -164,7 +164,7 @@ C
             CALL DSCAL(N2BST(ISYHOP),HALF,RMAT,1) 
          ELSE IF ( CONNECTION .EQ. 'NATURAL' ) THEN
             WRITE(LABELS,'(A6,A2)') 'SQHDOR',LABELH(7:8)
-            CALL CCPRPAO(LABELS,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
+            CALL CCPRPAO(LABELS,.TRUE.,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
             IF (IERR.GT.0) THEN
               WRITE (LUPRI,'(A,A8,1X,A)') 
      &            'Warning:',LABELS,'Integrals missing!'
@@ -193,7 +193,7 @@ C
 
          IF ( CONNECTION .EQ. 'SYMMETR' ) THEN
             WRITE(LABELS,'(A5,A3)') 'dS/dB',LABELH(6:8)
-            CALL CCPRPAO(LABELS,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
+            CALL CCPRPAO(LABELS,.TRUE.,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
             IF (IERR.GT.0) THEN
               WRITE (LUPRI,'(A,A8,1X,A)')
      &            'Warning:',LABELS,'Integrals missing!'
@@ -207,7 +207,7 @@ C
 C           WRITE (LUPRI,*) 'Symmetric connection for dh/dB used.'
          ELSE IF ( CONNECTION .EQ. 'NATURAL' ) THEN
             WRITE(LABELS,'(A7,A1)') 'd|S>/dB',LABELH(6:6)
-            CALL CCPRPAO(LABELS,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
+            CALL CCPRPAO(LABELS,.TRUE.,RMAT,IRREP,ISYM,IERR,WORK,LWORK)
             IF (IERR.GT.0) THEN
               WRITE (LUPRI,'(A,A8,1X,A)')
      &            'Warning:',LABELS,'Integrals missing!'

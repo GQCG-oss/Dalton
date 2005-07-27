@@ -257,10 +257,8 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
-C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
-cLig <> changed NTABLE from 111 to 112
-C     NTABLE has been increased 114 (WK/UniKA/09-03-2004).
-      PARAMETER (NDIR = 9, NTABLE = 123)
+C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
+      PARAMETER (NDIR = 9, NTABLE = 128)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -315,12 +313,13 @@ cLig <> added RANGMO and RPSO
      &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT', 
      &             '.XDDXR3', '.AD2DAR', '.PVIOLA', '.WEINBG', 
      &             '.FINDPT', '.FNPROP', '.PVP   ', '.1ELPOT',
-     &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
+     &             '.QDBINT', '.QDBTST', '.R12   ', '.R12GTG',
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
      &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  ',
      &             '.DPTPXP', '.NOPICH', '.OZ-KE ', '.PSO-KE', 
      &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
-     &             '.PSO-OZ', '.SQHD2O', 'xxxxxxx'/
+     &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
+     &             '.R12RGG', '.R12ERF', '.R12RRF', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
 C
@@ -386,8 +385,6 @@ C
       ELSE IF (PROMPT .EQ. '.') THEN
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-C              Labels 203-209 have been added (WK/UniKA/04-11-2002).
-cLig <> added go to 211 and 212
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
@@ -400,7 +397,7 @@ cLig <> added go to 211 and 212
      &                191,192,193,194,195,196,197,198,199,200,
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
-     &                221,222,223), I
+     &                221,222,223,224,225,226,227,228), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -893,16 +890,19 @@ C           R12 calculation requested with linear r12 terms (WK/UniKA/04-11-2002
             ONEPRP = .TRUE.
             GOTO 100
  204     CONTINUE
-C           R12 calculation requested with Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
+C           R12 calculation requested with Gaussian-type geminals (WK/UniKA/03-24-2005).
             R12CAL = .TRUE.
             CARMOM = .TRUE.
             IORCAR = MAX(IORCAR,2)
             ONEPRP = .TRUE.
             R12EOR = .TRUE.
-            READ(LUCMD,*) GAMAC
-            GAMAD = GAMAC
-C           CALL QUIT('The Gaussian-damped R12 method is '//
-C    &                'not available in this version. Sorry.')
+            SLATER = .TRUE.
+            READ(LUCMD,*) NTOGAM
+	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+     &      CALL QUIT('Invalid number of Gaussian-damped terms.')
+	    DO NTGAM = 1, NTOGAM
+              READ(LUCMD,*) GAMAB(NTGAM), GAMAX(NTGAM)
+	    END DO
             GOTO 100
  205     CONTINUE
 C           Calculation with multiple basis sets requested (WK/UniKA/04-11-2002).
@@ -946,7 +946,6 @@ cLig >> added what to do for RANGMO and RPSO options
  214     CONTINUE
             NOPICH = .TRUE.
             GO TO 100
-cLig <<
  215     CONTINUE
             OZKE   = .TRUE.
             ONEPRP = .TRUE.
@@ -982,6 +981,74 @@ C        .SQH2DO
             ONEPRP = .TRUE.
             GO TO 100
  223     CONTINUE
+C           R12 calculation requested with fitted Slater-type geminal (WK/UniKA/03-24-2005).
+            R12CAL = .TRUE.
+            CARMOM = .TRUE.
+            IORCAR = MAX(IORCAR,2)
+            ONEPRP = .TRUE.
+            R12EOR = .TRUE.
+            SLATER = .TRUE.
+            READ(LUCMD,*) ALPSTG
+            READ(LUCMD,*) NTOGAM
+	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+     &      CALL QUIT('Invalid number of Gaussians.')
+            CALL STGFIT(ALPSTG,NTOGAM,GAMAB,GAMAX)
+            GOTO 100
+ 224     CONTINUE
+C           R12 calculation requested with fitted "r12-times-Slater" geminal (WK/UniKA/03-24-2005).
+            R12CAL = .TRUE.
+            CARMOM = .TRUE.
+            IORCAR = MAX(IORCAR,2)
+            ONEPRP = .TRUE.
+            R12EOR = .TRUE.
+            READ(LUCMD,*) ALPSTG
+            READ(LUCMD,*) NTOGAM
+	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+     &      CALL QUIT('Invalid number of Gaussians.')
+            CALL RSTGFT(ALPSTG,NTOGAM,GAMAB,GAMAX)
+            GOTO 100
+ 225     CONTINUE
+C           R12 calculation requested with Gaussian-damped r12 integrals (WK/UniKA/03-24-2005).
+            R12CAL = .TRUE.
+            CARMOM = .TRUE.
+            IORCAR = MAX(IORCAR,2)
+            ONEPRP = .TRUE.
+            R12EOR = .TRUE.
+            READ(LUCMD,*) NTOGAM
+	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+     &      CALL QUIT('Invalid number of Gaussians.')
+	    DO NTGAM = 1, NTOGAM
+              READ(LUCMD,*) GAMAB(NTGAM), GAMAX(NTGAM)
+	    END DO
+            GOTO 100
+ 226     CONTINUE
+C           R12 calculation requested with fitted ERFC-type geminal (WK/UniKA/03-29-2005).
+            R12CAL = .TRUE.
+            CARMOM = .TRUE.
+            IORCAR = MAX(IORCAR,2)
+            ONEPRP = .TRUE.
+            R12EOR = .TRUE.
+            SLATER = .TRUE.
+            READ(LUCMD,*) ALPSTG
+            READ(LUCMD,*) NTOGAM
+	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+     &      CALL QUIT('Invalid number of Gaussians.')
+            CALL ERFFIT(ALPSTG,NTOGAM,GAMAB,GAMAX)
+            GOTO 100
+ 227     CONTINUE
+C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/UniKA/03-29-2005).
+            R12CAL = .TRUE.
+            CARMOM = .TRUE.
+            IORCAR = MAX(IORCAR,2)
+            ONEPRP = .TRUE.
+            R12EOR = .TRUE.
+            READ(LUCMD,*) ALPSTG
+            READ(LUCMD,*) NTOGAM
+	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
+     &      CALL QUIT('Invalid number of Gaussians.')
+            CALL RRFFIT(ALPSTG,NTOGAM,GAMAB,GAMAX)
+            GOTO 100
+ 228     CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
@@ -3342,10 +3409,14 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       R12PRP = .FALSE.
       NOTONE = .FALSE.
       NOTTWO = .FALSE.
+      NOTTRE = .FALSE.
+      IANCC2 = 0
+      IAPCC2 = 0
       R12LEV = 0.D0
       R12RST = .FALSE.
       R12CAL = .FALSE.
       R12XXL = .FALSE.
+      R12CBS = .FALSE.
       R12OLD = .FALSE.
       R12SQR = .FALSE.
       R12TRA = .FALSE.
@@ -3353,6 +3424,7 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       R12EIN = .FALSE.
       R12ECO = .FALSE.
       R12EOR = .FALSE.
+      SLATER = .FALSE.
       R12NOA = .FALSE.
       R12NOB = .FALSE.
       R12NOP = .FALSE.
@@ -3382,6 +3454,9 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       LOOPDP = .FALSE.
       VCLTHR =  0D0
       SVDTHR =  1D-12
+      DO I=1,8
+        NRXR12(I) = 0
+      END DO
 cLig >> setting RANGMO and RPSO false
       RANGMO = .FALSE.
       RPSO   = .FALSE.
@@ -4203,3 +4278,269 @@ C
       INTST = TSTINP
       RETURN
       END
+C/* Deck rstgft */
+      subroutine rstgft(alpha,i,ggan,ggas)
+C
+#include <implicit.h>
+      dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
+      character*5 fn
+      data ggax /
+     &0.5230D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.3383D+00,0.2652D+01,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.2670D+00,0.1503D+01,0.7928D+01,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.2272D+00,0.1077D+01,0.4270D+01,0.1885D+02,0.0000D+00,0.0000D+00,
+     &0.2011D+00,0.8520D+00,0.2941D+01,0.9710D+01,0.3980D+02,0.0000D+00,
+     &0.1824D+00,0.7118D+00,0.2252D+01,0.6474D+01,0.1966D+02,0.7792D+02 
+     & /
+       data ggac /
+     &0.6498D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.4806D+00,0.3307D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.3880D+00,0.3184D+00,0.1768D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.3259D+00,0.3108D+00,0.1755D+00,0.1102D+00,0.0000D+00,0.0000D+00,
+     &0.2804D+00,0.3026D+00,0.1785D+00,0.1100D+00,0.7450D-01,0.0000D+00,
+     &0.2454D+00,0.2938D+00,0.1815D+00,0.1128D+00,0.7502D-01,0.5280D-01 
+     & /
+c-----data ggax /---old fit without weight function exp(-2x)------
+c    1 0.1760d0, 0.0000d0, 0.0000d0, 0.0000d0, 0.0000d0, 0.0000d0,
+c    2 0.1069d0, 0.4323d0, 0.0000d0, 0.0000d0, 0.0000d0, 0.0000d0,
+c    3 0.0801d0, 0.2359d0, 0.9192d0, 0.0000d0, 0.0000d0, 0.0000d0,
+c    4 0.0654d0, 0.1644d0, 0.4662d0, 1.7980d0, 0.0000d0, 0.0000d0,
+c    5 0.0561d0, 0.1273d0, 0.3080d0, 0.8643d0, 3.3200d0, 0.0000d0,
+c    6 0.0495d0, 0.1047d0, 0.2289d0, 0.5475d0, 1.5300d0, 5.8660d0
+c    & /
+c      data ggac /
+c    1 0.2811d0, 0.0000d0, 0.0000d0, 0.0000d0, 0.0000d0, 0.0000d0,
+c    2 0.1036d0, 0.3999d0, 0.0000d0, 0.0000d0, 0.0000d0, 0.0000d0,
+c    3 0.0454d0, 0.2352d0, 0.3692d0, 0.0000d0, 0.0000d0, 0.0000d0,
+c    4 0.0220d0, 0.1459d0, 0.2781d0, 0.3006d0, 0.0000d0, 0.0000d0,
+c    5 0.0114d0, 0.0929d0, 0.2126d0, 0.2601d0, 0.2354d0, 0.0000d0,
+c    6 0.0062d0, 0.0603d0, 0.1620d0, 0.2259d0, 0.2212d0, 0.1828d0
+c----& /
+      if (i .ge. 1 .and. i .le. 6) then
+       do k=1,i
+        ggas(k)=ggax(k,i)*alpha**2
+       enddo
+       write(fn,'(a4,i1)') 'sin.',i
+       LUCFN=0
+       CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
+       write(LUCFN,'(a,i1,a)') 'set output ''rsg',i,'.ps'''
+       write(LUCFN,'(a)') 'set term postscript'
+       write(LUCFN,'(a,f25.20,a)') 'rsg(x)=x*exp(-x*',alpha,')'
+       do k=1,i
+        ggan(k)=ggac(k,i)
+       enddo
+       do k=1,i
+        if (k.eq.1) then
+         if (k.lt.i) then
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),')'
+         endif
+	else
+         if (k.lt.i) then
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*x*exp(-x**2*',ggas(k),')'
+         endif
+        endif
+       enddo
+       write(LUCFN,'(a,i10,a)') 'set xrange [0:',nint(5d0/alpha),']'
+       write(LUCFN,'(a,F10.1,a)') 
+     &    'set yrange [0:',nint(5d0/alpha)/10.0d0,']'
+       write(LUCFN,'(a)') 'plot fit(x), rsg(x)'
+       call gpclose(LUCFN,'KEEP')
+      else
+       call quit('This STG fit is not possible. Sorry.')
+      end if
+      end
+C/* Deck stgfit */
+      subroutine stgfit(alpha,i,ggan,ggas)
+C
+#include <implicit.h>
+      dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
+      character*5 fn
+      data ggax /
+     &0.6853D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.4254D+00,0.4520D+01,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.3303D+00,0.2321D+01,0.1628D+02,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.2783D+00,0.1591D+01,0.7637D+01,0.4574D+02,0.0000D+00,0.0000D+00,
+     &0.2447D+00,0.1225D+01,0.4924D+01,0.1988D+02,0.1127D+03,0.0000D+00,
+     &0.2209D+00,0.1004D+01,0.3622D+01,0.1216D+02,0.4587D+02,0.2544D+03
+     &/
+       data ggac /
+     &0.7354D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.5640D+00,0.3102D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.4683D+00,0.3087D+00,0.1529D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.4025D+00,0.3090D+00,0.1570D+00,0.8898D-01,0.0000D+00,0.0000D+00,
+     &0.3532D+00,0.3072D+00,0.1629D+00,0.9321D-01,0.5619D-01,0.0000D+00,
+     &0.3144D+00,0.3037D+00,0.1681D+00,0.9811D-01,0.6024D-01,0.3726D-01
+     &/
+      if (i .ge. 1 .and. i .le. 6) then
+       do k=1,i
+        ggas(k)=ggax(k,i)*alpha**2
+       enddo
+       write(fn,'(a4,i1)') 'gin.',i
+       LUCFN=0
+       CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
+       write(LUCFN,'(a,i1,a)') 'set output ''stg',i,'.ps'''
+       write(LUCFN,'(a)') 'set term postscript'
+       write(LUCFN,'(a,f25.20,a)') 'stg(x)=exp(-x*',alpha,')'
+       do k=1,i
+        ggan(k)=ggac(k,i)
+       enddo
+       do k=1,i
+        if (k.eq.1) then
+         if (k.lt.i) then
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),')'
+         endif
+	else
+         if (k.lt.i) then
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*exp(-x**2*',ggas(k),')'
+         endif
+        endif
+       enddo
+       write(LUCFN,'(a,i10,a)') 'set xrange [0:',nint(3d0/alpha),']'
+       write(LUCFN,'(a,i10,a)') 'set yrange [0:1]'
+       write(LUCFN,'(a)') 'plot fit(x), stg(x)'
+       call gpclose(LUCFN,'KEEP')
+      else
+       call quit('This STG fit is not possible. Sorry.')
+      end if
+      end
+C/* Deck erffit */
+      subroutine erffit(alpha,i,ggan,ggas)
+C
+#include <implicit.h>
+      dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
+      character*5 fn
+      data ggax /
+     &0.1701D+01,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.1370D+01,0.8312D+01,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.1256D+01,0.4702D+01,0.2877D+02,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.1198D+01,0.3495D+01,0.1406D+02,0.8056D+02,0.0000D+00,0.0000D+00,
+     &0.1161D+01,0.2888D+01,0.9417D+01,0.3575D+02,0.1991D+03,0.0000D+00,
+     &0.1136D+01,0.2521D+01,0.7177D+01,0.2232D+02,0.8204D+02,0.4515D+03 
+     &/
+       data ggac /
+     &0.7658D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.6232D+00,0.2676D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.5466D+00,0.2623D+00,0.1308D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.4948D+00,0.2604D+00,0.1327D+00,0.7585D-01,0.0000D+00,0.0000D+00,
+     &0.4563D+00,0.2577D+00,0.1363D+00,0.7886D-01,0.4774D-01,0.0000D+00,
+     &0.4260D+00,0.2543D+00,0.1393D+00,0.8244D-01,0.5094D-01,0.3157D-01
+     &/
+      if (i .ge. 1 .and. i .le. 6) then
+       do k=1,i
+        ggas(k)=ggax(k,i)*alpha**2
+       enddo
+       write(fn,'(a4,i1)') 'cin.',i
+       LUCFN=0
+       CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
+       write(LUCFN,'(a,i1,a)') 'set output ''etg',i,'.ps'''
+       write(LUCFN,'(a)') 'set term postscript'
+       write(LUCFN,'(a,f25.20,a)') 'etg(x)=1.0-erf(x*',alpha,')'
+       do k=1,i
+        ggan(k)=ggac(k,i)
+       enddo
+       do k=1,i
+        if (k.eq.1) then
+         if (k.lt.i) then
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*exp(-x**2*',ggas(k),')'
+         endif
+	else
+         if (k.lt.i) then
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*exp(-x**2*',ggas(k),')'
+         endif
+        endif
+       enddo
+       write(LUCFN,'(a,i10,a)') 'set xrange [0:',nint(3d0/alpha),']'
+       write(LUCFN,'(a,i10,a)') 'set yrange [0:1]'
+       write(LUCFN,'(a)') 'plot fit(x), etg(x)'
+       call gpclose(LUCFN,'KEEP')
+      else
+       call quit('This STG fit is not possible. Sorry.')
+      end if
+      end
+C/* Deck rrffit */
+      subroutine rrffit(alpha,i,ggan,ggas)
+C
+#include <implicit.h>
+      dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
+      character*5 fn
+      data ggax /
+     &0.1492D+01,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.1266D+01,0.5257D+01,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.1185D+01,0.3351D+01,0.1461D+02,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.1143D+01,0.2643D+01,0.8308D+01,0.3411D+02,0.0000D+00,0.0000D+00,
+     &0.1117D+01,0.2269D+01,0.6008D+01,0.1808D+02,0.7171D+02,0.0000D+00,
+     &0.1099D+01,0.2037D+01,0.4815D+01,0.1239D+02,0.3603D+02,0.1405D+03 
+     &/
+       data ggac /
+     &0.6939D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.5564D+00,0.2815D+00,0.0000D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.4835D+00,0.2677D+00,0.1493D+00,0.0000D+00,0.0000D+00,0.0000D+00,
+     &0.4350D+00,0.2602D+00,0.1460D+00,0.9297D-01,0.0000D+00,0.0000D+00,
+     &0.3993D+00,0.2535D+00,0.1468D+00,0.9191D-01,0.6278D-01,0.0000D+00,
+     &0.3716D+00,0.2472D+00,0.1478D+00,0.9346D-01,0.6282D-01,0.4442D-01
+     &/
+      if (i .ge. 1 .and. i .le. 6) then
+       do k=1,i
+        ggas(k)=ggax(k,i)*alpha**2
+       enddo
+       write(fn,'(a4,i1)') 'din.',i
+       LUCFN=0
+       CALL GPOPEN(LUCFN,FN,'NEW',' ','FORMATTED',IDUMMY,.FALSE.)
+       write(LUCFN,'(a,i1,a)') 'set output ''reg',i,'.ps'''
+       write(LUCFN,'(a)') 'set term postscript'
+       write(LUCFN,'(a,f25.20,a)') 'reg(x)=x-x*erf(x*',alpha,')'
+       do k=1,i
+        ggan(k)=ggac(k,i)
+       enddo
+       do k=1,i
+        if (k.eq.1) then
+         if (k.lt.i) then
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(a,f25.20,a,f25.20,a)') 
+     &    'fit(x)=',ggan(k),'*x*exp(-x**2*',ggas(k),')'
+         endif
+	else
+         if (k.lt.i) then
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*x*exp(-x**2*',ggas(k),') + \\'
+         else
+	   write(LUCFN,'(f25.20,a,f25.20,a)') 
+     &    ggan(k),'*x*exp(-x**2*',ggas(k),')'
+         endif
+        endif
+       enddo
+       write(LUCFN,'(a,i10,a)') 'set xrange [0:',nint(30/alpha),']'
+       write(LUCFN,'(a,F10.1,a)') 
+     &    'set yrange [0:',nint(5d0/alpha)/10.0d0,']'
+       write(LUCFN,'(a)') 'plot fit(x), reg(x)'
+       call gpclose(LUCFN,'KEEP')
+      else
+       call quit('This STG fit is not possible. Sorry.')
+      end if
+      end

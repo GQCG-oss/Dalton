@@ -1120,7 +1120,9 @@ C
 C
 #include <ccfield.h>
 #include <inforb.h>
-#include <infind.h>
+CCN #include <infind.h> not compatible with R12!
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <inftap.h>
 #include <ccsdinp.h>
@@ -1273,6 +1275,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

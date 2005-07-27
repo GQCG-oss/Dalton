@@ -1,0 +1,3873 @@
+*=====================================================================*
+      subroutine cc_r12whtf(xint,idel,isymd,j,isymj,isymbi,lauxbeta,
+     &                      lunitr12,filer12,lunitr12_2,filer12_2,
+     &                      work,lwork)
+c----------------------------------------------------------------------
+c     purpose: get half transformed r12 integrals and write them
+c              on file first delta then delta' in ccsd_iabj2   
+c 
+c     xint     array of half transformed 12 integrals 
+c              (i beta|r12|j delta) with j, delta fixed
+c     idel     number of delta (running over all symmetries; in 
+c              contrast, idelta starts with 1 for every symmetry!)
+c     isymd    symmetry of delta
+c     j        number of j (starts with 1 for every symmetry)
+c     isymj    symmetry of j
+c     isymbi   symmetry of (i beta)
+c     lauxbeta flag to write out also integrals with beta being
+c              auxiliary basis function (needed for R12 response)
+c     lunitr12, filer12 unit number, file name to be written to
+c     lunitr12_2, filer12_2 unit number, file name for integrals with
+c              two auxiliary basis functions
+c     
+c     H. Fliegl, C. Haettig, winter 2003
+c     modified C. Neiss, fall 2004: write also integrals with beta 
+c                auxiliary basis functions if desired
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <dummy.h>
+       
+      logical locdbg,lauxbeta
+      parameter (locdbg = .false.)
+      integer lunitr12, lunitr12_2, lwork, idel, isymd, isymi, isymb
+      integer isymbi, isymdj, isymj, ndelj, iadr, ilen
+      integer isym, isym1, isym2, icount3, icount4
+      integer idxbi, idxdj, idxbi2, koff1
+      integer nr1orb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
+      integer ir1xbas(8,8),nvabkl(8),ivabkl(8,8)
+      integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
+      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8),nrxgkl(8),idelta
+      integer nr1xorb(8),ir1xorb(8,8),irxgkl(8,8),
+     &        ir2bas2(8,8),ir2xbas2(8,8),nr2bas2
+
+      character*(*) filer12, filer12_2
+
+#if defined (SYS_CRAY)
+      real work(*), xint(*)
+#else
+      double precision work(*), xint(*)
+#endif
+
+      call qenter('r12whtf')
+      
+      if (locdbg) then
+        write(lupri,*) 'Entered CC_R12WHTF'
+        write(lupri,*) 'lauxbeta = ',lauxbeta
+        write(lupri,'(A,I2,X,A)') 'LUNITR12, FILER12: ',lunitr12,filer12
+        write(lupri,'(A,I2,X,A)') 'LUNITR12_2, FILER12_2: ',lunitr12_2,
+     &                           filer12_2
+      end if
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     &                  nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,
+     &                  ir1xbas,ir2bas,ir2xbas,irgkl,irxgkl,iaodis1,
+     &                  nvabkl,ivabkl)
+
+      if (lwork.lt.nr1bas(isymbi)) then
+        call quit('Insufficient work space in cc_r12whtf')
+      end if
+
+      idelta = idel - ibas(isymd)  
+
+      koff1 = 1
+      isymdj = muld2h(isymd,isymj)
+      do isymi = 1, nsym
+         isymb  = muld2h(isymbi,isymi)
+        do i = 1, nrhf(isymi)
+            do b = 1, mbas1(isymb) 
+              idxbi   = ir1bas(isymb,isymi) + mbas1(isymb)*(i-1)+b 
+              idxbi2  = koff1 -1 + nbas(isymb)*(i-1) +b
+              work(idxbi) = xint(idxbi2) 
+            end do 
+        end do
+        if (locdbg) then
+          write(lupri,*)'idel, j, isymdj =',idel,j,isymdj
+          write(lupri,*) 'symmetry block (beta,i):',isymb,isymi
+          call around('integrals before reordering')
+          call output(xint(koff1),1,nbas(isymb),1,nrhf(isymi),
+     &                nbas(isymb),nrhf(isymi),1,lupri)
+          call around('integrals after reordering')
+          call output(work(ir1bas(isymb,isymi)+1),1,mbas1(isymb),
+     &                1,nrhf(isymi),mbas1(isymb),nrhf(isymi),1,lupri)
+          write(lupri,*)
+        end if 
+        koff1 = koff1 + nbas(isymb)*nrhf(isymi)
+      end do
+      
+     
+      if (idelta.le.mbas1(isymd)) then
+        ndelj = ir1bas(isymd,isymj) + mbas1(isymd)*(j-1) + idelta 
+        iadr  = ir2bas(isymbi,isymdj) + nr1bas(isymbi)*(ndelj-1)+1
+      else 
+        ndelj = ir1xbas(isymd,isymj) + 
+     &          mbas2(isymd)*(j-1) + idelta - mbas1(isymd) 
+        iadr  = nr2bas + ir2xbas(isymbi,isymdj) + 
+     &          nr1bas(isymbi)*(ndelj-1)+1 
+      end if
+      ilen = nr1bas(isymbi)
+      call putwa2(lunitr12,filer12,work,iadr,ilen)
+
+C     write also integrals with beta being auxiliary function on extra
+C     file if desired:      
+      if (lauxbeta) then
+        if (mbsmax.lt.6) then
+          write (lupri,*) 'MBSMAX = ',MBSMAX
+          call quit("MBSMAX must at least be 6 for "//
+     &              "(k beta'|r12|l delta')")
+        end if
+
+        ! nr2bas2 = lenghts for nr1bas x nr1xbas over all symmetries 
+        nr2bas2 = 0
+        do isym = 1, nsym
+           nr2bas2 = nr2bas2 + nr1bas(isym)*nr1xbas(isym)
+        end do
+        ! ir2bas2  = symmetry offsets for nr1xbas x nr1bas
+        ! ir2xbas2 = symmetry offsets for nr1xbas x nr1xbas
+        do isym = 1, nsym
+          icount3 = 0
+          icount4 = 0
+          do isym2 = 1, nsym
+            isym1 = muld2h(isym,isym2)
+            ir2bas2(isym1,isym2)  = icount3 
+            ir2xbas2(isym1,isym2) = icount4
+            icount3 = icount3 + nr1xbas(isym1)*nr1bas(isym2)
+            icount4 = icount4 + nr1xbas(isym1)*nr1xbas(isym2)
+          end do
+        end do
+
+        ! reallocate work space:
+        if (lwork.lt.nr1xbas(isymbi)) then
+          call quit('Insufficient work space in cc_r12whtf')
+        end if   
+
+        koff1 = 1 
+        isymdj = muld2h(isymd,isymj)
+        do isymi = 1, nsym
+          isymb  = muld2h(isymbi,isymi)
+          do i = 1, nrhf(isymi)
+            do b = mbas1(isymb) + 1, mbas1(isymb)+mbas2(isymb)
+              idxbi   = ir1xbas(isymb,isymi) + mbas2(isymb)*(i-1) + b -
+     &                  mbas1(isymb)
+              idxbi2  = koff1 -1 + nbas(isymb)*(i-1) + b
+              work(idxbi) = xint(idxbi2)
+            end do
+          end do
+c          if (locdbg) then
+c            call around('integrals after reordering')
+c            call output(work(ir1xbas(isymb,isymi)+1),1,mbas2(isymb),
+c     &                  1,nrhf(isymi),mbas2(isymb),nrhf(isymi),1,lupri)
+c            write(lupri,*)
+c          end if
+          koff1 = koff1 + nbas(isymb)*nrhf(isymi)
+        end do
+
+        if (idelta.le.mbas1(isymd)) then
+          ndelj = ir1bas(isymd,isymj) + mbas1(isymd)*(j-1) + idelta 
+          iadr  = ir2bas2(isymbi,isymdj) + nr1xbas(isymbi)*(ndelj-1)+1
+        else
+          ndelj = ir1xbas(isymd,isymj) +
+     &            mbas2(isymd)*(j-1) + idelta - mbas1(isymd)
+          iadr  = nr2bas2 + ir2xbas2(isymbi,isymdj) +
+     &            nr1xbas(isymbi)*(ndelj -1) + 1
+        end if
+        ilen   = nr1xbas(isymbi)
+        call putwa2(lunitr12_2,filer12_2,work,iadr,ilen)
+      end if
+
+      if (locdbg) then
+        write(lupri,*) 'Leaving CC_R12WHTF'
+      end if
+
+      call qexit('r12whtf')
+      end 
+*=====================================================================*
+      subroutine cc_r12intf2(vitjtkl,lamdh,isymh,lamdhs,isymv,
+     &                       lamdhcs,isymhcs,work,lwork)
+c----------------------------------------------------------------------
+c     purpose: calculate V^itjt_kl for ansatz 2
+c     
+c     H. Fliegl, C. Haettig winter 2003
+c
+c     if lmkvajkl = .true. then calculate for ansatz 2 the 
+c     contributions for V^alpha jtilde_kl
+c 
+c     \sum_MN r^MtNt_kl * g^alpha jt_MN
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+#include <dummy.h>
+
+      logical ldum,lauxd,locdbg
+      parameter (locdbg = .false.)
+
+      integer isymv,krmtntkl,kgmtntkl,nt2aox,isymhs,isymhcs       
+      integer krhtf, kend1, lwrk1, lwork, idum, idelta, isymd
+      integer isymk, isymdk, isymm, isymij, isymkl, isyml, koffv, 
+     &        kend2, koffr, koffg, isymnm, ntotmn, ntotij
+      integer nr1orb(8), nr1bas(8), nr1xbas(8), nr2bas, n2bst1(8)
+      integer ir1xbas(8,8),ibasx(8),isymdm,idxkl,idxlk,iadr1,iadr2
+      integer ir1orb(8,8), ir1bas(8,8), ir2bas(8,8), iaodis1(8,8)
+      integer ir2xbas(8,8), irgkl(8,8), irxgkl(8,8)
+      integer nrgkl(8), nrxgkl(8), lwrk2
+      integer idxd,idxdp,isym,icount1,isym1,isym2,kgtf,isyma,koffc,
+     &        koff1,koff2,ntota,ntotm,isymn,isymmn,idxmn,idxdn
+      integer iglmrhs(8,8),iglmvis(8,8),nglmds(8),igamsm2(8,8),
+     &        icmo(8,8),ncmo(8),imaijm(8,8),nmaijm(8),ngamsm2(8),kgmkl,
+     &        imatijm(8,8),nmatijm(8),icount5,ngamsm(8),igamsm(8,8),
+     &        irgkls(8,8),nrgkls(8),ir1basm(8,8),nr1basm(8),
+     &        ir2basm(8,8),nr2basm,ir1xbasm(8,8),nr1xbasm(8),nvajkls(8),
+     &        ir2xbasm(8,8),imatf(8,8),nmatf(8),icount2,ivajkls(8,8)
+      integer nvabkl(8),ivabkl(8,8),nr1xorb(8),ir1xorb(8,8)
+      integer isymaj,ntotaj,isymh,lunit,krsym,isymg,isymr
+
+      double precision one, zero,two
+      parameter (one = 1.0d0, zero = 0.0d0, two = 2.0d0)
+#if defined (SYS_CRAY)
+      real lamdhs(*), vitjtkl(*), work(*),ddot,lamdhcs(*),
+     &     factor, lamdh(*),x1,x2,x3
+#else
+      double precision lamdhs(*), vitjtkl(*), work(*), ddot,lamdhcs(*),
+     &                 factor, lamdh(*),x1,x2,x3
+#endif
+
+      call qenter('r12intf2')
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,
+     &     ir2bas,ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl) 
+      call cc_r12offs23(iglmrhs,iglmvis,nglmds,icmo,ncmo,imaijm,nmaijm,
+     &             imatijm,nmatijm,igamsm,ngamsm,irgkls,nrgkls,
+     &             ir1basm,nr1basm,ir2basm,nr2basm,ir1xbasm,
+     &             nr1xbasm,ir2xbasm,imatf,nmatf)
+
+      ibasx(1) = 0
+      do isym = 2, nsym
+        ibasx(isym) = ibasx(isym-1) + mbas2(isym-1)
+      end do
+
+      do isym = 1, nsym
+        icount1 = 0
+        icount2 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          igamsm2(isym1,isym2) = icount1
+          ivajkls(isym1,isym2) = icount2
+          icount1 = icount1 + nmatij(isym1)*nmatijm(isym2)
+          icount2 = icount2 + nr1bas(isym1)*nmatijm(isym2)
+        end do
+        ngamsm2(isym) = icount1
+        nvajkls(isym) = icount2
+      end do
+
+      isymhs = isymh
+      isymg = muld2h(isymh,isymh)
+      isymr = muld2h(isymhcs,isymhs)
+
+      krmtntkl = 1
+      kgmtntkl = krmtntkl + ngamsm(isymr)
+      kend1 = kgmtntkl + ngamsm(isymg)
+      lwrk1   = lwork - kend1
+      if (lwrk1.lt.0) then
+        write(lupri,*)'lwork,lwrk1,kend1',lwork,lwrk1,kend1
+        call quit('Insufficient work space in cc_r12intf2')
+      end if
+
+      call dzero(work(krmtntkl),ngamsm(isymr))
+      call dzero(work(kgmtntkl),ngamsm(isymg))
+
+      do isymd = 1, nsym
+        krhtf = kend1
+        kend2 = krhtf + nrgkls(isymd)
+        lwrk2 = lwork - kend2
+        if (lwrk2.lt.0) then
+          write(lupri,*)'lwrk2, lwork, kend2', lwrk2, lwork, kend2
+          call quit('Insufficient work space in cc_r12intf2')
+        end if
+
+        do idelta = 1, mbas1(isymd)
+c         read (ka|r12|lb) from file and sort as R^d_(ak,l) 
+          lauxd = .false.
+          idxd = idelta+ibas(isymd)
+          call cc_r12getrint(work(krhtf),idxd,isymd,nr1bas,ir1bas,
+     &         nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &         ibasx,lauxd,.false.,frhtf,work(kend2),lwrk2)
+          if (locdbg) then
+            write(lupri,*)'Rhtf in tf2'
+            write(lupri,*)' norm^2 Rhtf in tf2',
+     &                ddot(nrgkl(isymd),work(krhtf),1,work(krhtf),1)
+          end if
+
+c         case response calculation: lres = .true.
+c         get rmtntkl
+          call cc_r12generaltf(work(krhtf),work(krmtntkl),idelta,
+     &                       isymd,lamdhcs,isymhcs,lamdhs,isymhs,
+     &                       .false.,iglmrhs,iglmrhs,nmatij,nrhfs,
+     &                       irgkl,nrgkl,imatijm,nmatijm,imaijm,
+     &                       igamsm,work(kend2),lwrk2)
+
+c         read (Ka|Lb) from file and sort as I^d_(aK,L)
+          lauxd = .false.
+          idxd = idelta+ibas(isymd)
+          call cc_r12getrints(work(krhtf),idxd,isymd,nr1basm,ir1basm,
+     &           nr2basm,ir2basm,nrgkls,irgkls,ir1xbasm,ir2xbasm,
+     &           ibasx,imatijm,nmatijm,lauxd,fccgmnab,work(kend2),lwrk2)
+
+c         get gmtntKL
+          call cc_r12generaltf(work(krhtf),work(kgmtntkl),idelta,
+     &                         isymd,lamdh,isymh,lamdh,isymh,
+     &                         .false.,iglmrh,iglmrh,nmatijm,nrhf,
+     &                         irgkls,nrgkls,imatij,nmatij,imatf,
+     &                         igamsm2,work(kend2),lwrk2)
+
+        end do
+      end do
+c
+      if (locdbg) then
+c       print result
+        write(lupri,*)'Rmtntkl',
+     &        ddot(ngamsm(isymr),work(krmtntkl),1,work(krmtntkl),1)
+        write(lupri,*)'Imtntkl',
+     &        ddot(ngamsm(isymg),work(kgmtntkl),1,work(kgmtntkl),1)
+      end if
+
+      x1 = 0.0d0
+      x2 = 0.0d0
+      x3 = 0.0d0
+c     make Vitjtkl
+      do isymnm = 1, nsym
+        isymij = isymnm
+        isymkl = muld2h(isymv,isymij)
+
+        factor = one
+
+        koffv = 1 + igamsq(isymij,isymkl)
+        koffr = krmtntkl + igamsm(isymnm,isymkl)
+        koffg = kgmtntkl + igamsm(isymnm,isymij)
+      
+        ntotmn = max(nmatijm(isymnm),1)
+        ntotij = max(nmatij(isymij),1)
+ 
+        call dgemm('N','N',nmatij(isymij),nmatij(isymkl),
+     &           nmatijm(isymnm),factor,work(koffg),ntotij,
+     &           work(koffr),ntotmn,one,vitjtkl(koffv),ntotij)
+
+        if (locdbg) then
+          x1 = x1 + 
+     &    ddot(nmatijm(isymnm)*nmatij(isymij),work(koffg),1,
+     &         work(koffg),1)
+          x2 = x2 + 
+     &    ddot(nmatijm(isymnm)*nmatij(isymkl),work(koffr),1,
+     &         work(koffr),1)
+          x3 = x3 +
+     &    ddot(nmatij(isymij)*nmatij(isymkl),vitjtkl(koffv),1,
+     &         vitjtkl(koffv),1)
+        end if
+
+        end do
+c
+      if (locdbg) then
+        write(lupri,*)'V after tf2'
+        do isymij = 1, nsym
+          isymkl = muld2h(isymv,isymij)
+          write(lupri,*)'symmetry block (ij,kl)',isymij,isymkl
+          call output(vitjtkl,1,nmatij(isymij),1,nmatij(isymkl),
+     &              nmatij(isymij),nmatij(isymkl),1,lupri)
+        end do
+        write(lupri,*)'norm^2 V after tf2',
+     &        ddot(ngamsq(isymv),vitjtkl,1,vitjtkl,1)
+        write(lupri,*)'x1 = ', x1
+        write(lupri,*)'x2 = ', x2
+        write(lupri,*)'x3 = ', x3
+      end if 
+c
+      call qexit('r12intf2')
+      end 
+*======================================================================*
+      subroutine ccr12prep2(work,lwork)
+*----------------------------------------------------------------------*
+c     Purpose: make some intermediates used for ansatz 2 & 3
+c
+c     H. Fliegl, C. Haettig, winter 2003
+c     adapted for ansatz 3, Christof Haettig, spring 2005
+*----------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+#include <dummy.h>
+       
+#if defined (SYS_CRAY)
+      real zero,one,half
+#else
+      double precision zero,one,half
+#endif
+      parameter (zero = 0.0D0, one = 1.0D0, half = 0.5d0)
+ 
+      logical noauxbsave, locdbg, lauxd, ldummy, do_virt
+      parameter (locdbg = .false.)
+
+      integer nr1orb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
+      integer ir1xbas(8,8),nxx2(8)
+      integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
+      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8),ibasx(8)
+      integer nbasx(8),nnbastx,isym,isymdk,n2bst2(8),isymd,isymk,
+     &        icount6,kend0,lusifc,nsymx,norbsx(8),nbastx,nlamdsx,
+     &        nrhfsx(8),kcmox,lwrk0,lwork,ksfull,iaodis2(8,8)
+      integer norbtsx,njx(8),isympq,isymp,isymq,ksjbp,ksbbp,ksmupbp
+      integer isymbp,krhtf,ib,isymdp,idelp,idxbpdp,krdpakl
+      integer isymakl,kend1,lwrk1,koff1,klamdp,klamdh,kend2,lwrk2,
+     &        isymj,koffs,kcmo,ntotc,ntots,ntots2,kgdakl,
+     &        kghtf,idxddp,koff2,idel,kgdpakl,idxd,idxdp 
+      integer kt1am,isymmu,kscr1,kstep,luvajkl
+      integer kiajb, idxb,krtot, icount7, kvajkl, kend3,lwrk3
+      integer iglmrhs(8,8),iglmvis(8,8),nglmds(8),icmo(8,8),ncmo(8),
+     &        imaijm(8,8),nmaijm(8),imatijm(8,8),nmatijm(8),igamsm(8,8),
+     &        ngamsm(8),klamdhs,klamdps,irgkls(8,8),nrgkls(8),
+     &        ir1basm(8,8),nr1basm(8),ir2basm(8,8),nr2basm,
+     &        ir1xbasm(8,8),nr1xbasm(8),ir2xbasm(8,8),imatf(8,8),
+     &        nmatf(8),nvabkl(8),ivabkl(8,8),isbbp(8,8),nsbbp(8)
+      integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
+#if defined (SYS_CRAY)
+      real work(*),ddot,xs
+#else
+      double precision work(*),ddot,xs
+#endif
+
+c----------------------------------------------------------------------
+c     some initializations: 
+c----------------------------------------------------------------------
+      call qenter('r12prep2')
+      if(locdbg) write(lupri,*) 'entered ccr12prep2'
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
+     & ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl) 
+
+      call cc_r12offs23(iglmrhs,iglmvis,nglmds,icmo,ncmo,imaijm,nmaijm,
+     &             imatijm,nmatijm,igamsm,ngamsm,irgkls,nrgkls,
+     &             ir1basm,nr1basm,ir2basm,nr2basm,ir1xbasm,
+     &             nr1xbasm,ir2xbasm,imatf,nmatf)
+
+c     calculate number of auxbasis functions in previous symmetries   
+      ibasx(1) = 0
+      do isym = 2,nsym
+        ibasx(isym) = ibasx(isym-1)+mbas2(isym-1)
+      end do
+c
+      nnbastx = 0
+      do isym = 1, nsym
+        nbasx(isym) = mbas1(isym) + mbas2(isym)
+        nnbastx = nnbastx + nbasx(isym)*(nbasx(isym)+1)/2
+      end do
+c
+      do isymdk = 1, nsym
+        n2bst2(isymdk) = 0
+        do isymk = 1, nsym
+           isymd = muld2h(isymdk,isymk)
+           n2bst2(isymdk) = n2bst2(isymdk) + mbas2(isymd)*mbas2(isymk)
+        end do
+      end do
+c
+      do isymdk = 1, nsym
+        icount6 = 0
+        do isymk = 1, nsym
+          isymd = muld2h(isymdk,isymk)
+          iaodis2(isymd,isymk) = icount6
+          icount6 = icount6 + mbas2(isymd)*mbas2(isymk) 
+        end do
+      end do
+c
+      do isympq = 1, nsym
+        njx(isympq)  = 0
+        nxx2(isympq) = 0
+        nsbbp(isympq)= 0
+        do isymp = 1, nsym
+          isymq = muld2h(isympq,isymp)
+          njx(isympq) = njx(isympq) + mbas2(isymp)*nrhfs(isymq)
+          nxx2(isympq) = nxx2(isympq) + mbas2(isymp)*mbas2(isymq)
+          isbbp(isymp,isymq) = nsbbp(isympq)
+          nsbbp(isympq) = nsbbp(isympq)+nvir(isymp)*mbas2(isymq)
+        end do
+      end do
+c
+      kend0 = 1
+
+c----------------------------------------------------------------------
+c     get MO coefficients defined for combined orbital + aux. basis:
+c----------------------------------------------------------------------
+      lusifc = 0
+      call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',
+     &            idummy,.false.)
+
+c     read dimensions for CMO coefficients for full basis (nlamdsx)
+      rewind(lusifc)
+      call mollab('FULLBAS ',lusifc,lupri)
+      read(lusifc) nsymx,norbtsx,nbastx,nlamdsx,(nrhfsx(i),I=1,nsym),
+     &             (norbsx(i),i=1,nsym)
+
+
+c     allocate work space for CMO coefficients for full basis
+      kcmox  = kend0
+      kend0  = kcmox + nlamdsx
+      lwrk0  = lwork - kend0
+      if (lwrk0 .lt.0) then
+         call quit('Insufficient work space in ccr12prep2')
+      end if
+
+c     read CMO coefficients and close file
+      read(lusifc)
+      read(lusifc) (work(kcmox+i-1),i=1,nlamdsx)
+      call gpclose(lusifc,'KEEP')
+
+c     test if CMO is ok
+      if (locdbg) then
+        write(lupri,*)'CMO out of ccr12prep2'
+        kscr1 = 1 
+        do isymp = 1, nsym
+          isymmu = isymp 
+          write(lupri,*) 'symmetry block,nbasx,norbsx:',isymp,
+     &       nbasx(isymmu), norbsx(isymp)
+          call output(work(kcmox+kscr1-1),1,nbasx(isymmu),
+     &              1,norbsx(isymp),nbasx(isymmu),norbsx(isymp),
+     &              1,lupri)
+          kscr1 = kscr1 + nbasx(isymmu)*norbsx(isymp)
+        end do
+      end if
+
+c     order CMO coefficients
+      klamdp = kend0
+      klamdh = klamdp + nlamdt  
+      kend1  = klamdh + nlamdt
+      kt1am  = kend1
+      kend2  = kt1am + nt1amx
+      lwrk2  = lwork - kend2
+      if(lwrk2.lt.0) then
+        call quit('insufficient work space in cc_r12prep2')
+      end if      
+      call dzero(work(kt1am),nt1amx) 
+      call lammat(work(klamdp),work(klamdh),work(kt1am),
+     &            work(kend2),lwrk2)
+
+c-----------------------------------------------------------------------
+c     read overlap matrix for full basis from file:
+c-----------------------------------------------------------------------
+
+      ksfull  = kend1
+      kend1   = ksfull + nnbastx
+      lwrk1   = lwork  - kend1
+      if (lwrk1 .lt.0) then
+         call quit('Insufficient work space in ccr12prep2')
+      end if
+
+      noauxbsave = noauxb
+      noauxb = .false. ! read integrals for the full basis
+      call rdonel('OVERLAP ',.true.,work(ksfull),nnbastx) 
+      noauxb = noauxbsave
+
+      if (locdbg) then
+        !test if S is ok compare with sirius/r12aux.F !
+        write(lupri,*)'in r12prep nnbastx = ', nnbastx
+        write(lupri,*)'in r12prep S'
+        call outpkb(work(ksfull),nbasx,nsymx,1,lupri)
+        write(lupri,*)'norm^2 ksfull:', 
+     &                 ddot(nnbastx,work(ksfull),1,work(ksfull),1)
+      end if
+
+c     get S_Jb' and for ansatz also S_bb'
+      ksjbp   = kend1
+      kend1   = ksjbp + njx(1)
+
+      ksbbp = kend1
+      if (ianr12.eq.3) then
+        kend1 = ksbbp + nsbbp(1)
+        do_virt = .true.
+      else
+        do_virt = .false.
+      end if
+
+      klamdhs = kend1
+      klamdps = klamdhs + nglmds(1)
+      kend1   = klamdps + nglmds(1) 
+      lwrk1   = lwork - kend1
+      if (lwrk1 .lt.0) then
+        call quit('Insufficient work space in ccr12prep2')
+      end if
+
+      call lammats(work(klamdps),work(klamdhs),dummy,
+     &             1,.true.,.false.,
+     &             nglmds,iglmrhs,iglmvis,icmo,work(kend1),lwrk1)       
+
+      call cc_r12mksjbp(work(ksfull),work(ksjbp),work(ksbbp),do_virt,
+     &                  work(klamdhs),nbasx,iglmrhs,iglmvis,
+     &                  ir1xbasm,isbbp,work(kend1),lwrk1)
+      
+      if (locdbg) then
+        write(lupri,*)'norm^2 S_Jbp', 
+     &                 ddot(njx(1),work(ksjbp),1,work(ksjbp),1)
+      end if
+
+      if (.false.) then
+c       to test if batf2 works in MP2-R12 case
+c       get S_mu'b'
+        ksmupbp = kend1
+        kend1   = ksmupbp + nxx2(1) 
+        lwrk1   = lwork - kend1
+        if (lwrk1 .lt.0) then
+         call quit('Insufficient work space in ccr12prep2')
+        end if
+        call cc_r12mksmupbp(work(kcmox),work(ksmupbp),iaodis2, 
+     &                    work(kend1),lwrk1)
+
+c-----------------------------------------------------------------------
+c     make R^d'_a,kl 
+c-----------------------------------------------------------------------
+        do isymbp = 1, nsym
+          isymdp = isymbp
+          isymakl = isymdp
+
+          krdpakl   = kend1
+          krtot   = krdpakl + nrgkl(isymakl)*mbas2(isymdp)
+          kend2   = krtot + nrgkl(isymakl)
+          lwrk2   = lwork - kend2
+          if(lwrk2.lt.0) then
+            call quit('Insufficient works space in cc_r12prep')
+          end if
+       
+          call dzero(work(krdpakl),nrgkl(isymakl)*mbas2(isymdp)) 
+          do ib = 1, mbas2(isymbp)
+            lauxd = .true.
+            idxb = ib + ibasx(isymdp)+ibas(isymdp)+mbas1(isymbp)
+            call cc_r12getrint(work(krtot),idxb,isymbp,nr1bas,
+     &           ir1bas,nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,
+     &           ir2xbas,ibasx,lauxd,.false.,
+     &           frhtf,work(kend2),lwrk2)
+            do idelp = 1, mbas2(isymdp)
+              idxbpdp = iaodis2(isymbp,isymdp) + 
+     &                  mbas2(isymbp)*(idelp-1) + ib
+              koff1 = krdpakl-1 + nrgkl(isymakl)*(idelp-1) + 1 
+
+              write(lupri,*)'work(ksmupbp-1+idxbpdp)',
+     &                     work(ksmupbp-1+idxbpdp)
+              write(lupri,*)'work(krhtf)',
+     &                     (work(krtot+i-1),i=1,nrgkl(isymakl))
+
+              call daxpy(nrgkl(isymakl),work(ksmupbp-1+idxbpdp),
+     &                   work(krtot),1,work(koff1),1) 
+              write(lupri,*)'work(koff1)', work(koff1)
+
+           end do
+          end do
+          write(lupri,*)'work(krdpakl)'
+          call output(work(krdpakl),1,nrgkl(isymakl),1,mbas2(isymdp),
+     &              nrgkl(isymakl),mbas2(isymdp),1,lupri)
+
+c         save R^dp_akl on file
+          do idelp = 1, mbas2(isymdp)
+            write(lupri,*)'idelp =',idelp
+            koff1 = krdpakl-1 + nrgkl(isymakl)*(idelp-1) + 1 
+            lauxd = .true.
+            idxb = idelp + ibasx(isymdp)+ibas(isymdp)+mbas1(isymdp)
+            call cc_r12putrint(work(koff1),idxb,isymdp,nr1bas,ir1bas,
+     &           nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,ibasx,lauxd,
+     &           frhtf,work(kend2),lwrk2)
+          end do
+c
+        end do  
+      end if
+c----------------------------------------------------------------------
+c     make I^dp_a,kl 
+c----------------------------------------------------------------------
+      do isymdp = 1, nsym
+        isymj = isymdp
+        isymd = isymdp
+        isymakl = isymd
+c
+        koffs = kend1
+        kghtf  = koffs + mbas1(isymd)*mbas2(isymdp)
+        kgdpakl = kghtf + nrgkl(isymakl)
+        kend2   = kgdpakl + nrgkl(isymakl)*mbas2(isymd) 
+        lwrk2  = lwork - kend2
+        if (lwrk2.lt.0) then
+          call quit('Insufficient work space in ccr12prep')
+        end if
+        
+c         get S_ddp
+          kcmo = klamdhs + iglmrhs(isymd,isymj)
+          koff1 = ksjbp + ir1xbasm(isymdp,isymj)  
+          ntotc  = max(mbas1(isymd),1)
+          ntots  = max(nrhfs(isymj),1)
+    
+          call dgemm('N','N',mbas1(isymd),mbas2(isymdp),
+     &               nrhfs(isymj),one,work(kcmo),ntotc,work(koff1),
+     &               ntots,zero,work(koffs),ntotc)
+
+          if (ianr12.eq.3) then
+            kcmo  = klamdhs + iglmvis(isymd,isymj)
+            koff1 = ksbbp   + isbbp(isymj,isymdp)  
+            ntots = max(nvir(isymj),1)
+            call dgemm('N','N',mbas1(isymd),mbas2(isymdp),nvir(isymj),
+     &                 one,work(kcmo),ntotc,work(koff1),ntots,
+     &                 one,work(koffs),ntotc)
+          end if
+c    
+c         get I^dp_akl
+          do idelp = 1, mbas2(isymdp)
+            lauxd = .true.
+            idxdp = idelp+ibasx(isymdp)+ibas(isymdp)+mbas1(isymdp)
+            koff2 = kgdpakl-1 + nrgkl(isymakl)*(idelp-1)+1
+            call cc_r12getrint(work(koff2),idxdp,
+     &         isymdp,nr1bas,ir1bas,nr2bas,ir2bas,nrgkl,
+     &         irgkl,ir1xbas,ir2xbas,ibasx,lauxd,.false.,
+     &         fghtf,work(kend2),lwrk2)
+            if (locdbg) then
+              write(lupri,*)'norm^2 Idpakl:', 
+     &        ddot(nrgkl(isymd),work(koff2),1,work(koff2),1)
+            end if
+          end do  
+c         add -I*S to I^dp_akl
+          do idel = 1, mbas1(isymd)
+            lauxd = .false.
+            idxd = idel+ibas(isymd)
+            call cc_r12getrint(work(kghtf),idxd,isymd,nr1bas,ir1bas,
+     &       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &       ibasx,lauxd,.false.,fghtf,work(kend2),lwrk2)
+             if (locdbg) then
+               write(lupri,*)'norm^2 Idakl:', 
+     &          ddot(nrgkl(isymd),work(kghtf),1,work(kghtf),1)
+             end if
+         
+            do idelp = 1, mbas2(isymdp)
+              idxddp = mbas1(isymd)*(idelp-1)+idel 
+              koff2 = kgdpakl-1 + nrgkl(isymakl)*(idelp-1)+1
+              call daxpy(nrgkl(isymakl),-work(koffs-1+idxddp),
+     &                 work(kghtf),1,work(koff2),1) 
+            end do
+          end do
+c         save I^d'_akl on file
+          do idelp = 1, mbas2(isymdp)
+          koff2 = kgdpakl-1 + nrgkl(isymakl)*(idelp-1)+1
+          lauxd = .true.
+          idxdp = idelp + ibasx(isymdp)+ibas(isymdp)+mbas1(isymdp)
+c
+          if (locdbg) then
+            write(lupri,*)'mbas1(isymd)', mbas1(isymd)
+            write(lupri,*) "save I^d'akl... isymdp,idelp,idxdp :",
+     &                      isymdp,idelp,idxdp
+            write(lupri,*)'norm^2 before write Idpakl:', 
+     &      ddot(nrgkl(isymd),work(koff2),1,work(koff2),1)
+            write(lupri,*)"I^d'akl" 
+            call output(work(koff2),1,nrgkl(isymd),1,nrgkl(isymd),
+     &                  nrgkl(isymd),nrgkl(isymd),1,lupri)
+          end if
+c
+          call cc_r12putrint(work(koff2),idxdp,isymdp,nr1bas,ir1bas,
+     &       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,ibasx,lauxd,
+     &       fgdpakl,work(kend2),lwrk2)
+          end do
+      end do  
+c     
+c----------------------------------------------------------------------
+c     calculate \sum_mn part for V_alphaj,kl
+c----------------------------------------------------------------------
+c
+      kvajkl  = kend1
+      kend2 = kvajkl + nvajkl(1) 
+      lwrk2  = lwork - kend2
+      if (lwrk2.lt.0) then
+        call quit('Insufficient work space in prep2')
+      end if 
+c
+c     read V_alphajkl from file
+      luvajkl = 0
+      call gpopen(luvajkL,fvajkl,'unknown',' ','unformatted',
+     &            idummy,.false.)
+      rewind(luvajkl)
+      read(luvajkl)(work(kvajkl+i-1),i=1,nvajkl(1))
+      call gpclose(luvajkl,'KEEP')
+  
+      if (locdbg) then
+        write(lupri,*)'Valphajkl after read in prep2:', 
+     &              (work(kvajkl+i-1),i=1,nvajkl(1)) 
+      end if
+c     
+      call cc_r12mkvaj2(work(kvajkl),1,work(klamdh),1,
+     &                  work(klamdhs),1,work(kend2),lwrk2)
+      if (locdbg) then
+        write(lupri,*)'Valphajkl out of prep2:', 
+     &                 (work(kvajkl-1+i),i=1,nvajkl(1))
+      end if
+c     write V_alphajkl on file
+      luvajkl = 0
+      call gpopen(luvajkL,fvajkl,'unknown',' ','unformatted',
+     &            idummy,.false.)
+      rewind(luvajkl)
+      write(luvajkl)(work(kvajkl+i-1),i=1,nvajkl(1))
+      call gpclose(luvajkl,'KEEP')
+
+c     test if V_alphajkl is ok
+      if (locdbg) then
+        write(lupri,*)'norm^2 Valphajkl in prep2:', 
+     &     ddot(nvajkl(1),work(kvajkl),1,work(kvajkl),1)
+        call cc_r12mkvijkl(work(kvajkl),1,work(klamdh),1,
+     &                     work(kend2),lwrk2,.false.,idummy,idummy)
+        write(lupri,*)'Vajkl for ansatz 2 finished in prep2'
+      end if
+
+c----------------------------------------------------------------------
+c     close file, clean trace and return:
+c----------------------------------------------------------------------
+      if(locdbg) write(lupri,*)'leaving ccr12prep2'
+      call qexit('r12prep2')
+
+      end 
+*======================================================================*
+      subroutine cc_r12mksjbp(smat,sjbp,sbbp,do_virt,cmo,
+     &                        nbasx,iglmrhs,iglmvis,
+     &                        ir1xbasm,isbbp,work,lwork)
+*----------------------------------------------------------------------*
+c     purpose: get S_abp symmetry blocked out of S packed as a 
+c              triangular matrix and transform to S_Jbp and Sbbp
+c     
+c     H. Fliegl, C. Haettig, winter 2003
+c     added transformation to Sbbp, Christof Haettig, spring 2005
+*----------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+
+      logical locdbg
+      parameter (locdbg = .false.)
+
+      logical do_virt
+      integer lwork,ir1xbasm(8,8),iglmrhs(8,8),iglmvis(8,8),isbbp(8,8)
+      integer koff1, kcmo, ks, koffs, ntotb1, ntotbx, ntotrhs, ntotvir
+      integer nbasx(8), ndim, isym
+
+#if defined (SYS_CRAY)
+      real work(*), smat(*), sjbp(*), sbbp(*), cmo(*)
+      real one, zero
+#else
+      double precision work(*), smat(*), sjbp(*), sbbp(*), cmo(*)
+      double precision one, zero
+#endif
+      parameter(zero = 0.0d0, one = 1.0d0)
+
+      call qenter('r12mksjbp')
+
+      koff1   = 1 
+      do isym = 1, nsym
+
+        ndim = mbas1(isym)+mbas2(isym)
+        if (lwork.lt.ndim*ndim) then
+          call quit('Insufficient work space in cc_r12mksjbp')
+        end if
+
+c       --------------------------
+c       unpack triangular S matrix
+c       --------------------------
+        call sqmatr(ndim,smat(koff1),work)           
+        koff1 = koff1 + ndim*(ndim+1)/2
+
+c       --------------------------------------
+c       transform S(alpha,beta') to S(J,beta')
+c       --------------------------------------
+        kcmo    = 1 + iglmrhs(isym,isym)
+        ks      = 1 + ir1xbasm(isym,isym) 
+        koffs   = 1 + nbasx(isym)*mbas1(isym)
+
+        ntotb1  = max(mbas1(isym),1)
+        ntotbx  = max(nbasx(isym),1)
+        ntotrhs = max(nrhfs(isym),1)
+
+        call dgemm('T','N',nrhfs(isym),mbas2(isym),mbas1(isym),
+     &             one,cmo(kcmo),ntotb1,work(koffs),ntotbx,
+     &             zero,sjbp(ks),ntotrhs) 
+
+c       --------------------------------------
+c       transform S(alpha,beta') to S(b,beta')
+c       --------------------------------------
+        if (do_virt) then
+          kcmo   = 1 + iglmvis(isym,isym)
+          ks     = 1 + isbbp(isym,isym)
+          
+          ntotvir = max(nvir(isym),1)
+
+          call dgemm('T','N',nvir(isym),mbas2(isym),mbas1(isym),
+     &               one,cmo(kcmo),ntotb1,work(koffs),ntotbx,
+     &               zero,sbbp(ks),ntotvir) 
+        end if
+
+      end do  
+
+      call qexit('r12mksjbp')
+      end 
+*=====================================================================*
+      subroutine cc_r12mksmupbp(cmo,smupbp,iaodis2,work,lwork)
+c--------------------------------------------------------------------- 
+c     purpose: make D_mu'b' = \sum_p' C_b'p' * C_mu'p' for ansatz 2
+c
+c     H. Fliegl, C. Haettig, winter 2003
+c--------------------------------------------------------------------- 
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+      logical locdbg
+      parameter (locdbg = .false.)
+
+      integer lwork, isymp, isymq, isympq, isymbp,  
+     &        isymmup, kcmo, ntotc, ntots, 
+     &        iaodis2(8,8), koff1, kscr1, idxpb2, idxpb, ks, isympbp 
+      integer idxbpp, idxbpp2, ip, ib, koff0, idxp, idxb
+
+#if defined (SYS_CRAY) 
+      real cmo(*), smupbp(*), work(*)       
+#else
+      double precision cmo(*), smupbp(*), work(*)       
+#endif
+      double precision one, zero
+      parameter(one = 1.0d0, zero = 0.0d0)   
+ 
+      call qenter('r12mksmupbp')      
+
+c
+      koff0 = 1
+      kscr1 = 1
+      do isymp = 1, nsym
+        isymbp = isymp
+        isymmup = isymp
+c       isympbp = muld2h(isymp,isymbp) ! eq 1
+c       get C_p'b' out of CMO
+        if (locdbg) then
+          write(lupri,*)'mbas1(isymbp),mbas2(isymbp)',
+     &                   mbas1(isymbp),mbas2(isymbp)
+          write(lupri,*)'norb1(isymp),norb2(isymp)',
+     &                   norb1(isymp),norb2(isymp)
+          write(lupri,*)'norb2(isymp)*mbas2(isymbp)',
+     &                   norb2(isymp)*mbas2(isymbp)
+          write(lupri,*)'nrhfs(isymp)',nrhfs(isymp)
+          write(lupri,*)'isymbp, isymp', isymbp, isymp
+        end if
+        do ip=norb1(isymp)+1+nrhfs(isymp),
+     &       (norb1(isymp)+norb2(isymp)+nrhfs(isymp))
+          idxp = ip - nrhfs(isymp) - norb1(isymp)
+          do ib = mbas1(isymbp)+1,(mbas1(isymbp)+mbas2(isymbp))
+            idxb   = ib - mbas1(isymp)
+            idxbpp = koff0-1 + (mbas1(isymbp)+mbas2(isymbp))*(ip-1)+ib 
+            idxbpp2 = mbas2(isymbp)*(idxp-1)+idxb 
+            work(idxbpp2) = cmo(idxbpp)
+            if (locdbg) then
+              write(lupri,*)'wrk,idxbpp,idxbpp2',idxbpp, idxbpp2
+              write(lupri,*)work(idxbpp2)
+            end if
+          end do
+        end do
+        koff0 = koff0 + (mbas1(isymbp)+mbas2(isymbp)) *
+     &            (nrhfs(isymp)+norb1(isymp)+norb2(isymp))
+        
+c       transform to D
+        
+        ks    = 1+iaodis2(isymbp,isymmup) 
+        ntotc = max(mbas2(isymbp),1)
+
+        call dgemm('N','T',mbas2(isymbp),mbas2(isymmup),norb2(isymp),
+     &             one,work,ntotc,work,ntotc,zero,
+     &             smupbp(ks),ntotc)
+        if (locdbg) then
+          write(lupri,*)'resorted CMO in cc_r12mksmupbp'
+          call output(work,1,mbas2(isymbp),1,
+     &         norb2(isymmup),mbas2(isymbp),norb2(isymmup),1,lupri)
+          write(lupri,*)'S_bp,mup in cc_r12mksmupbp'
+          call output(smupbp(ks),1,mbas2(isymbp),1,
+     &         mbas2(isymmup),mbas2(isymbp),mbas2(isymmup),1,lupri)
+        end if
+      end do
+
+      call qexit('r12mksmupbp')      
+      end
+*=====================================================================*
+      subroutine cc_r12getkiajb(xkipjq,xkiajb,oneaux,nt2amx,
+     &                          nh2amx,ih2am,nh1am,ih1am,norb1)
+c---------------------------------------------------------------------
+c     purpose: get K^ij_ab out of K^ij_pq stored as a lower 
+c              symmetry packed triangular matrix
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+      logical oneaux, locdbg
+      parameter (locdbg = .false.)
+      integer nh2amx, ih2am(8,8), nh1am(8), ih1am(8,8), nvircc(8),
+     &        nt2amx, nt1am(8), it1am(8,8), it2am(8,8), isympi,
+     &        isymi, isym, icount1, icount2, isymj, isymk, ldr12(8),
+     &        isymqj, isymq, isymp, nqj, npi, nbj, nai, idxpiqj, 
+     &        idxaibj, index, i,j,p,a,b,q, norb1(8) 
+#if defined (SYS_CRAY)
+      real xkiajb(*), xkipjq(*)
+#else
+      double precision xkiajb(*), xkipjq(*), ddot
+#endif
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+
+      call qenter('getkiajb')
+
+c     calculate some offsets and dimensions
+c     calculate number of active virtual orbitals in CC
+c     nvirfr = frozen virtual orbitals        
+      do isym = 1, nsym
+        nvircc(isym) = norb1(isym) - nrhfs(isym) - nvirfr(isym)
+      end do
+
+      nt2amx = 0
+      do isympi = 1, nsym
+        nt1am(isympi) = 0
+        do isymi = 1, nsym
+          isymp = muld2h(isympi,isymi)
+          nt1am(isympi) = nt1am(isympi) + nvircc(isymp)*nrhf(isymi)
+        end do
+        nt2amx = nt2amx + nt1am(isympi)*(nt1am(isympi)+1)/2
+      end do
+     
+      do isymk = 1, nsym
+        icount1 = 0
+        icount2 = 0
+        do isymj = 1, nsym
+          isymi = muld2h(isymj,isymk)  
+          it1am(isymi,isymj) = icount1
+          icount1 = icount1 + nrhf(isymj)*nvircc(isymi)
+          if (isymj .gt. isymi) then
+             it2am(isymi,isymj) = icount2
+             it2am(isymj,isymi) = icount2
+             icount2 = icount2 + nt1am(isymi)*nt1am(isymj)
+          else if (isymk .eq. 1) then
+             it2am(isymi,isymj) = icount2
+             icount2 = icount2 + nt1am(isymi)*(nt1am(isymi)+1)/2
+          end if
+        end do 
+      end do
+
+      do isym = 1, nsym
+        if (oneaux) then
+          ldr12(isym) = norb1(isym)
+        else
+          ldr12(isym) = nvir(isym)
+        end if
+      end do
+c     
+      if (locdbg) then 
+        write(lupri,*) 'norm^2(kpiqj):',ddot(nh2amx,xkipjq,1,xkipjq,1)
+      end if
+c
+c    ---------------------------------------------------------------
+c     loop over symmetries and indices pick out p,q as virtual MO's 
+c     and reorder integrals
+c    
+c     reorder integrals
+c     npi    : pair p,i with i occupied and p MO 
+c              virtual dimensions as needed for
+c              MP2-R12 code
+c     nai    : pair a,i dimensions as needed for
+c              CC code
+c     idxpiqj: quadrupel pi,qj dimensions as 
+c              needed for MP2-R12 code
+c     idxaibj: quadrupel ai,bj dimensions as 
+c              needed for CC code         
+c    ---------------------------------------------------------------
+      do isympi = 1, nsym
+         isymqj = isympi
+         do isymp = 1, nsym
+          isymi = muld2h(isympi,isymp)
+          do isymq =1, nsym
+            isymj = muld2h(isymqj,isymq)
+c
+              do i = 1, nrhf(isymi)
+                do p = nrhfs(isymp)+1, nrhfs(isymp)+nvircc(isymp)
+                  a = p - nrhfs(isymp)
+                  do j = 1, nrhf(isymj)
+                    do q = nrhfs(isymq)+1, nrhfs(isymq)+nvircc(isymq)
+                      b = q - nrhfs(isymq)
+                      nqj = ih1am(isymq,isymj)+ ldr12(isymq)*(j-1)+q 
+                      npi = ih1am(isymp,isymi)+ ldr12(isymp)*(i-1)+p 
+                      nbj = it1am(isymq,isymj)+nvircc(isymq)*(j-1)+b
+                      nai = it1am(isymp,isymi)+nvircc(isymp)*(i-1)+a
+                      idxpiqj = ih2am(isympi,isymqj)+ index(npi,nqj) 
+                      idxaibj = it2am(isympi,isymqj)+index(nai,nbj) 
+                      xkiajb(idxaibj) = xkipjq(idxpiqj)
+                    end do
+                  end do
+                end do
+              end do
+c
+          end do
+        end do
+      end do
+
+      if (locdbg) then
+        write(lupri,*)'xkiajb'
+        do isymi =1, nsym
+          call outpak(xkiajb(1+it2am(isymi,isymi)),nt1am(isymi),1,lupri)
+        end do
+        write(lupri,*) 'norm^2(kiajb):',ddot(nt2amx,xkiajb,1,xkiajb,1)
+      end if
+c
+      call qexit('getkiajb')
+      end
+*======================================================================*
+      subroutine ccrhs_epp(omega,t2am,isymt2am,work,lwork,aproxr12,lres,
+     &                     lufc2,fc2am,ifile)
+*----------------------------------------------------------------------*
+c     purpose: add E'' term to Omega^ij_kl (stored in omega) for the
+c              ansaetze 2 and 3
+c
+c     omega^ij_kl <-- omega^ij_kl 
+c                       + sum_ab (K^ab_kl - t^ab_kl) * T^ab_ij
+c
+c     the contrib. of K is skipped for approximation A
+c
+c     for the approximations ??? is in ansatz 2 added:
+c
+c     omega^ij_kl <-- omega^ij_kl 
+c                       + sum_ab (e_k+e_l-e_i-e_j) r^ab_kl * T^ab_ij
+c
+c     while in ansatz 3 the following term is added:
+c 
+c     omega^ij_kl <-- omega^ij_kl 
+c                       + sum_ab (e_k+e_l-e_a-e_b) r^ab_ij * T^ab_ij
+c
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c     adapted for ansatz 3, Christof Haettig, spring 2005
+*----------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+      logical locdbg,lres
+      parameter (locdbg = .false.)
+      integer lwork,lunit,isymt2am,isymkint,kt2pck,kpck,lwrk1,idum,
+     &        kend1,iopt,idummy,kap,lufc2,ifile,kend2,lwrk2,keps
+      character*(*) fc2am
+#if defined (SYS_CRAY)
+      real work(*), t2am(*), omega(*),factor,ddot,two
+#else
+      double precision work(*), t2am(*), omega(*),factor,ddot,two
+#endif
+      parameter(two=2.0d0)
+      character*(*) aproxr12
+
+      call qenter('rhs_epp')
+
+c     calculate some offsets      
+      kt2pck = 1
+      kpck  = kt2pck + nt2am(isymt2am) ! if lres isymt2am = isymtr!
+      kend1 = kpck   + nt2amx 
+      lwrk1 = lwork - kend1
+
+      kend2 = kend1
+      if (ianr12.eq.3) then
+        keps  = kend2
+        kend2 = keps + norbts
+      end if
+      lwrk2 = lwork - kend2
+
+      if (lwrk1.lt.0 .or. lwrk2.lt.0) then
+        call quit('Insufficient work space in ccrhs_epp')
+      end if
+
+c     ----------------------------------------------------------
+c     get doubles amplitudes R^mn_ab stored as triangular matrix
+c     ----------------------------------------------------------
+      if (lres) then
+        call cc_rvec(lufc2,fc2am,nt2am(isymt2am),nt2am(isymt2am),
+     &               ifile,work(kt2pck))
+        call cclr_diascl(work(kt2pck),two,isymt2am)
+      else
+        iopt = 0
+        call cc_t2pk(work(kt2pck),t2am,isymt2am,iopt)      
+      end if
+
+c     ---------------------------------------------
+c     read t^ab_kl integrals from file
+c     ---------------------------------------------
+      lunit = 0
+      call gpopen(lunit,fkr12,'unknown',' ','unformatted',idum,.false.)
+      read(lunit)(work(kpck-1+i),i=1,nt2amx)  
+      call gpclose(lunit,'KEEP')
+
+
+c     ----------------------------------------------------
+c     for approximation B substract K^ab_kl from t^ab_kl
+c     ----------------------------------------------------
+      if (aproxr12(1:1).eq.'B') then
+        lunit = 0
+        call gpopen(lunit,ftr12,'unknown',' ','unformatted',
+     &              idum,.false.)
+        read(lunit)(t2am(i),i=1,nt2amx)  
+        call gpclose(lunit,'KEEP')
+        
+        ! substract (t - K) => work(kpck)
+        call daxpy(nt2amx,-1.0d0,t2am,1,work(kpck),1)
+      end if
+
+c     ------------------------------------------------------------
+c     in ansatz 3 add for approximation A' and B the term
+c        (eps_k + eps_l - eps_a - eps_b) * r^ab_kl
+c     ------------------------------------------------------------
+      if (ianr12.eq.3 .and. 
+     &   (aproxr12(1:2).eq."A'".or.aproxr12(1:1).eq."B") ) then
+        lunit = 0
+        call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
+     &              idum,.false.)
+        read(lunit)(t2am(i),i=1,nt2amx)  
+        call gpclose(lunit,'KEEP')
+
+        call cc_t2xe(t2am,work(keps),work(kend2),lwrk2)
+
+        call daxpy(nt2amx,+1.0d0,t2am,1,work(kpck),1)
+      end if
+
+c     ------------------------------------------------------
+c     calculate Omega^ij_kl = \sum_ab k^ab_kl * t^ij_ab
+c     ------------------------------------------------------
+      isymkint = 1
+      factor = 1.0d0
+      call cc_r12mi2(omega,work(kpck),work(kt2pck),isymkint,isymt2am,
+     &               factor,work(kend1),lwrk1)
+
+      if (locdbg) then
+        write(lupri,*)'Norm^2 Omega^ij_kl in ccrhs_epp', 
+     &                 ddot(ngamsq(isymt2am),omega,1,omega,1)
+      end if
+
+c     ------------------------------------------------------------
+c     in ansatz 2 add for approximation A' and B the term
+c      omega^ij_kl += sum_ab (e_k+e_l-e_i-e_j) r^ab_kl * c^kl_ij
+c     ------------------------------------------------------------
+      if (ianr12.eq.2 .and.
+     &   (aproxr12(1:2).eq."A'".or.aproxr12(1:1).eq."B") ) then
+        kap   = kend1
+        kend1 = kap + ngamsq(isymt2am)         
+        lwrk1 = lwork - kend1
+        if (lwrk1.lt.0) then
+          call quit('Insufficient work space in ccrhs_epp')
+        end if
+
+        lunit = 0
+        call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
+     &              idum,.false.)
+        read(lunit)(work(kpck-1+i),i=1,nt2amx)  
+        call gpclose(lunit,'KEEP')
+
+        ! calculate \sum_ab r^ab_kl*t^ij_ab
+        factor = -1.0d0
+        isymkint = 1
+        call dzero(work(kap),ngamsq(isymt2am))
+        call cc_r12mi2(work(kap),work(kpck),work(kt2pck),isymkint,
+     &                 isymt2am,factor,work(kend1),lwrk1)
+
+        call cc_r12mkediff(work(kap),isymt2am,work(kend1),lwrk1)
+
+        call daxpy(ngamsq(isymt2am),1.0d0,work(kap),1,omega,1)
+      end if 
+
+c     -----------------------------------------------------------------
+c     that's it; restore T2 amplitudues, print debug output and return:
+c     -----------------------------------------------------------------
+      if (.not.lres) then
+c       pack T2 amplitudes back to a quadratic matrix
+        call cc_t2sq(work(kt2pck),t2am,isymt2am)
+      end if
+
+      if (locdbg) then
+        write(lupri,*) 'omega^ij_kl after ccrhs_epp contribution:'
+        write(lupri,*) 'norm^2 omega^ij,kl',
+     &                 ddot(ngamsq(isymt2am),omega,1,omega,1)
+      end if
+ 
+      call qexit('rhs_epp')
+      end
+*=====================================================================*
+      subroutine cc_r12mkediff(r12int,isymr,work,lwork)
+c---------------------------------------------------------------------
+c     purpose: calculate r12int*(e_k+e_l-e_i-e_j)
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <inftap.h>
+      integer lwork, kscr1,kend1,lwrk1,isymkl,isymij,keij,kekl,
+     &         kend2,lwrk2,isymk,isyml,isymi,isymj,mk,idxkl,
+     &         idxij,mj,ij,kl,idxklij,isymr,idummy,ml,index
+      integer mi
+#if defined (SYS_CRAY)
+      real work(*), r12int(*),el,ei,ek,ej
+#else
+      double precision work(*), r12int(*),el,ei,ek,ej
+#endif
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+
+      call qenter('r12mkediff')
+ 
+      kscr1 = 1
+      kend1 = kscr1 + norbts
+      lwrk1 = lwork - kend1
+      if (lwrk1.lt.0) then
+        call quit('Insufficient work space in cc_r12mkediff')
+      end if
+c-------------------------------------
+c     Read canonical orbital energies.
+c-------------------------------------
+c
+      call gpopen(lusifc,'SIRIFC','UNKNOWN',' ','UNFORMATTED',idummy,
+     &            .false.)
+      rewind lusifc
+c
+      call mollab('TRCCINT ',lusifc,lupri)
+      read (lusifc)
+      read (lusifc) (work(kscr1+i-1), i=1,norbts)
+      call gpclose(lusifc,'KEEP')
+c
+      if (froimp .or. froexp)
+     &   call ccsd_delfro(work(kscr1),work(kend1),lwrk1)
+
+      do isymkl = 1, nsym
+        isymij = muld2h(isymr,isymkl)
+        keij = kend1
+        kekl = keij + nmatij(isymij)
+        kend2 = kekl + nmatij(isymkl)
+        lwrk2 = lwork - kend2
+        if (lwrk2.lt.0) then
+          call quit('Insufficient work space in cc_r12mkediff')
+        end if
+        
+        do isymk = 1, nsym
+          isyml = muld2h(isymkl,isymk)
+          do isymi = 1, nsym
+             isymj = muld2h(isymij,isymi)
+c
+            do k = 1, nrhf(isymk)
+              mk = iorb(isymk)+k
+              ek = work(kscr1+mk-1)
+              do l = 1, nrhf(isyml)
+                idxkl = imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+                ml = iorb(isyml)+l
+                el = work(kscr1+ml-1)
+                work(kekl+idxkl-1) = ek + el
+              end do
+
+              do i = 1, nrhf(isymi)
+                mi = iorb(isymi)+i
+                ei = work(kscr1+mi-1)
+                do j = 1, nrhf(isymj)
+                  idxij = imatij(isymi,isymj)+nrhf(isymi)*(j-1)+i
+                  mj = iorb(isymj)+j
+                  ej = work(kscr1+mj-1)
+                  work(keij+idxij-1) = ei + ej
+                end do
+              end do
+c
+            end do
+         end do
+        end do
+c
+        do ij = 1, nmatij(isymij)
+          do kl = 1, nmatij(isymkl)
+            idxklij = igamsq(isymkl,isymij)+nmatij(isymkl)*(ij-1)+kl
+            r12int(idxklij) = r12int(idxklij)*
+     &      (work(kekl-1+kl)-work(keij-1+ij)) 
+          end do
+        end do
+c
+      end do
+      
+      call qexit('r12mkediff')
+      end 
+*=====================================================================*
+      subroutine cc_r12mkediff2(c2am,isymc,work,lwork)
+c---------------------------------------------------------------------
+c     purpose: calculate c12*(e_k+e_l-e_i-e_j)
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <inftap.h>
+       integer lwork, kscr1,kend1,lwrk1, isymc,index,idummy,isymik,
+     &         isymjl,keik,kejl,kend2,lwrk2,isymk,isymi,isyml,isymj,
+     &         mk,ik,mi,jl,mj,idxijkl,idxklij,ml
+#if defined (SYS_CRAY)
+       real work(*), c2am(*),el,ei,ek,ej
+#else
+       double precision work(*), c2am(*),el,ei,ek,ej
+#endif
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+
+      call qenter('r12mkediff2')
+
+      kscr1 = 1
+      kend1 = kscr1 + norbts
+      lwrk1 = lwork - kend1
+      if (lwrk1.lt.0) then
+        call quit('Insufficient work space in cc_r12mkediff')
+      end if
+c-------------------------------------
+c     Read canonical orbital energies.
+c-------------------------------------
+c
+      call gpopen(lusifc,'SIRIFC','UNKNOWN',' ','UNFORMATTED',idummy,
+     &            .false.)
+      rewind lusifc
+c
+      call mollab('TRCCINT ',lusifc,lupri)
+      read (lusifc)
+      read (lusifc) (work(kscr1+i-1), i=1,norbts)
+      call gpclose(lusifc,'KEEP')
+c
+      if (froimp .or. froexp)
+     *   call ccsd_delfro(work(kscr1),work(kend1),lwrk1)
+
+      do isymik = 1, nsym
+        isymjl = muld2h(isymc,isymik)
+        if (isymik.le.isymjl) then
+
+         keik = kend1
+         kejl = keik + nmatij(isymik)
+         kend2 = kejl + nmatij(isymjl)
+         lwrk2 = lwork - kend2
+         if (lwrk2.lt.0) then
+           call quit('Insufficient work space in cc_r12mkediff')
+         end if
+        
+         do isymk = 1, nsym
+           isymi = muld2h(isymik,isymk)
+c          isyml = isymk
+          do isyml = 1, nsym
+           isymj = muld2h(isymjl,isyml)
+           do k = 1, nrhf(isymk)
+             mk = iorb(isymk)+k
+             ek = work(kscr1+mk-1)
+             do i = 1, nrhf(isymi)
+               ik = imatij(isymi,isymk)+nrhf(isymi)*(k-1)+i
+               mi = iorb(isymi)+i
+               ei = work(kscr1+mi-1)
+               work(keik+ik-1) = ek - ei
+             end do
+c            l = k
+c            el = ek
+            do l = 1, nrhf(isyml)
+             ml = iorb(isyml) +l
+             el = work(kscr1+ml-1)
+             do j = 1, nrhf(isymj)
+               jl = imatij(isymj,isyml)+nrhf(isymj)*(l-1)+j
+               mj = iorb(isymj)+j
+               ej = work(kscr1+mj-1)
+               work(kejl+jl-1) = el - ej
+             end do
+            end do
+           end do
+chf
+          end do
+         end do
+c
+         if (isymik.eq.isymjl) then
+ 
+           do jl = 1, nmatij(isymjl)
+             do ik = 1, jl
+               idxijkl = igamma(isymik,isymjl)+index(ik,jl) 
+               c2am(idxijkl) = c2am(idxijkl) *  
+     &          ( work(keik-1+ik) + work(kejl-1+jl) )
+             end do
+           end do
+ 
+         else
+
+           do jl = 1, nmatij(isymjl)
+             do ik = 1, nmatij(isymik)
+               idxklij = igamma(isymik,isymjl)+nmatij(isymik)*(jl-1)+ik
+               c2am(idxklij) = c2am(idxklij)*
+     &          ( work(keik-1+ik) + work(kejl-1+jl) )
+             end do
+           end do
+
+         end if
+c
+        end if
+      end do
+
+      call qexit('r12mkediff2')
+      return
+      end 
+*======================================================================*
+      subroutine cc_t2xe(t2am,eps,work,lwork)
+*----------------------------------------------------------------------*
+*     Purpose: multiply doubles vector on t2am in place with orbital 
+*              energy differences
+*      
+*              t2(ai,bj) <-- t2(ai,bj) * (e_i + e_j - e_a - e_b)
+*
+*              amplitudes are addressed using it2am (i.e. as triangle)
+*
+*     C. Haettig, spring 2005
+*----------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+
+      logical locdbg, delfro
+      parameter (locdbg = .false.)
+      parameter (delfro = .true.)
+
+      integer isymbj, isymai, isymj, isymi, isymb, isyma, index,
+     &        koffi, koffj, koffa, koffb, nbj, nai, naibj, lwork
+#if defined (SYS_CRAY)
+      real t2am(*), eps(*), work(lwork)
+#else
+      double precision t2am(*), eps(*), work(lwork)
+#endif
+
+      index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
+
+      call qenter('cc_t2xe')
+
+      call cc_get_orbene(eps,delfro,locdbg,work,lwork)
+
+      do isymbj = 1,nsym
+        isymai = isymbj
+        do isymj = 1,nsym
+          isymb = muld2h(isymj,isymbj)
+          do isymi = 1,nsym
+            isyma = muld2h(isymi,isymai)
+            do j = 1,nrhf(isymj)
+              koffj = irhf(isymj) + j
+              do b = 1,nvir(isymb)
+                koffb = ivir(isymb) + b
+                nbj = it1am(isymb,isymj)+nvir(isymb)*(j-1)+b
+                do i = 1,nrhf(isymi)
+                  koffi = irhf(isymi) + i
+                  do a = 1,nvir(isyma)
+                    koffa = ivir(isyma) + a
+                    nai = it1am(isyma,isymi)+nvir(isyma)*(i-1)+a
+
+                    if (nai .le. nbj) then
+                      naibj = it2am(isymai,isymbj) + index(nai,nbj)
+                      t2am(naibj) = t2am(naibj) *
+     &                   (eps(koffi)+eps(koffj)-eps(koffa)-eps(koffb))
+                    end if
+
+                  end do
+                end do
+              end do
+            end do
+          end do
+        end do
+      end do
+
+
+      call qexit('cc_t2xe')
+      return
+      end
+*=====================================================================*
+      subroutine cc_r12mi2(omega,xkint,t2am,isymkint,isymt2am,
+     &                     factor,work,lwork)
+c---------------------------------------------------------------------
+c     purpose: calculate Omega^ij_kl = \sum_ab k^ab_kl * t^ij_ab
+c              input: xkint and t2am packed as a triangular matrix
+c
+c     H. Fliegl, C. Haettig, spring 2004 
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+      logical locdbg
+      parameter (locdbg = .false.)
+      integer isymkint, isymt2am, lwork, ntoto, ntotk,
+     &        isyma, isymij, isymkl, kxint, kt2am, kend1, lwrk1,
+     &        isymab, isymint, isymb, kom
+#if defined (SYS_CRAY)
+      real work(*), xkint(*),t2am(*), omega(*),factor
+      real one,ddot,xk,xt
+#else
+      double precision work(*), xkint(*),t2am(*), omega(*),factor
+      double precision one,ddot,xk,xt
+#endif
+      parameter (one = 1.0d0)
+
+      call qenter('r12mi2')
+c
+      isymint = muld2h(isymkint,isymt2am) !isymint = isymomg
+       
+      if (locdbg) then
+        xk = 0.0d0
+        xt = 0.0d0 
+      end if
+      do isymb = 1, nsym
+        do isyma = 1, nsym
+          isymab = muld2h(isyma,isymb)
+          isymkl = muld2h(isymkint,isymab)
+          isymij = muld2h(isymkl,isymint)
+c
+          kxint = 1
+          kt2am = kxint + nvir(isyma)*nmatij(isymkl)
+          kend1 = kt2am + nvir(isyma)*nmatij(isymij)
+          lwrk1 = lwork - kend1
+          if (lwrk1.lt.0) then
+            call quit('Insufficient work space in cc_r12mi2')
+          end if  
+c
+          do b = 1, nvir(isymb)
+
+            call cc_r12sortk(work(kxint),xkint,b,isymkint,isymb,
+     &                       isyma,.false.)
+            if (locdbg) then
+              xk = xk +
+     &        ddot(nvir(isyma)*nmatij(isymkl),work(kxint),1,
+     &             work(kxint),1)
+            end if
+
+            call cc_r12sortk(work(kt2am),t2am,b,isymt2am,isymb,
+     &                       isyma,.false.)
+            if (locdbg) then
+              xt = xt +
+     &        ddot(nvir(isyma)*nmatij(isymij),work(kt2am),1,
+     &             work(kt2am),1)
+            end if
+c
+            ntotk = max(nvir(isyma),1)
+            ntoto = max(nmatij(isymij),1)
+c
+            kom = igamsq(isymij,isymkl) +1 
+            call dgemm('T','N',nmatij(isymij),nmatij(isymkl),
+     &               nvir(isyma),factor,work(kt2am),ntotk,work(kxint),
+     &               ntotk,one,omega(kom),ntoto)
+          end do
+        end do
+      end do
+
+      if (locdbg) then
+        write(lupri,*)'xk =', xk
+        write(lupri,*)'xt =', xt
+      end if
+ 
+      call qexit('r12mi2')
+      end
+*=====================================================================*
+      subroutine cc_r12sortk(xk,xkint,b,isymkint,isymb,isyma,lopt)
+c---------------------------------------------------------------------
+c     purpose: sort k^ab_kl as three index array with fixed b
+c              expect that k is stored as a lower triangular 
+c              matrix
+c              lopt = .false. : xkint stored with it2am/it1am
+c              lopt = .true.  : xkint stored with ih2am/ih1am
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+      integer isymkint, index, isymakl, isyma, isyml, 
+     &        isymk, isymak, isymbl, isymkl, idxbl, idxkl, idxakl,
+     &        idxabkl, idxak, isymb
+#if defined (SYS_CRAY)
+      real xkint(*), xk(*)
+#else
+      double precision xkint(*), xk(*)
+#endif
+      logical lopt
+
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+      call qenter('r12sortk')
+c     
+      isymakl = muld2h(isymb,isymkint)      
+      isymkl = muld2h(isyma,isymakl)
+      do isymk = 1, nsym
+        isyml = muld2h(isymkl,isymk)
+        isymak = muld2h(isyma,isymk)
+        isymbl = muld2h(isymb,isyml)
+        if (.not.lopt) then
+          do l = 1, nrhf(isyml)
+            idxbl = it1am(isymb,isyml)+nvir(isymb)*(l-1)+b
+            do k = 1, nrhf(isymk)  
+              idxkl  = imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+              if (isymak.eq.isymbl) then
+                do a = 1, nvir(isyma)  
+                 idxakl = nvir(isyma)*(idxkl-1)+a 
+                 idxak = it1am(isyma,isymk)+nvir(isyma)*(k-1)+a
+                 idxabkl = it2am(isymak,isymbl)+index(idxak,idxbl)
+                 xk(idxakl) = xkint(idxabkl)
+                end do
+              else if (isymak.lt.isymbl) then  
+               idxakl = nvir(isyma)*(idxkl-1)+1 
+               idxak = it1am(isyma,isymk)+nvir(isyma)*(k-1)+1
+               idxabkl = it2am(isymak,isymbl)+
+     &                   nt1am(isymak)*(idxbl-1)+idxak
+               call dcopy(nvir(isyma),xkint(idxabkl),1,
+     &                    xk(idxakl),1)
+              else if (isymak.gt.isymbl) then  
+                do a = 1, nvir(isyma)  
+                 idxakl = nvir(isyma)*(idxkl-1)+a 
+                 idxak = it1am(isyma,isymk)+nvir(isyma)*(k-1)+a
+                 idxabkl = it2am(isymbl,isymak)+
+     &                     nt1am(isymbl)*(idxak-1)+idxbl
+                 xk(idxakl) = xkint(idxabkl)
+                end do
+              end if
+            end do
+          end do
+        else 
+          do l = 1, nrhf(isyml)
+            idxbl=ih1am(isymb,isyml)+norb1(isymb)*(l-1)+nrhfs(isymb)+b
+            do k = 1, nrhf(isymk)  
+              idxkl  = imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+              if (isymak.eq.isymbl) then
+                do a = 1, nvir(isyma)  
+                 idxakl = nvir(isyma)*(idxkl-1)+a 
+                 idxak = ih1am(isyma,isymk) +
+     &                      norb1(isyma)*(k-1)+nrhfs(isyma)+a
+                 idxabkl = ih2am(isymak,isymbl)+index(idxak,idxbl)
+                 xk(idxakl) = xkint(idxabkl)
+                end do
+              else if (isymak.lt.isymbl) then  
+               idxakl = nvir(isyma)*(idxkl-1)+1 
+               idxak = ih1am(isyma,isymk) +
+     &                    norb1(isyma)*(k-1)+nrhfs(isyma)+1
+               idxabkl = ih2am(isymak,isymbl)+
+     &                   nh1am(isymak)*(idxbl-1)+idxak
+               call dcopy(nvir(isyma),xkint(idxabkl),1,
+     &                    xk(idxakl),1)
+              else if (isymak.gt.isymbl) then  
+                do a = 1, nvir(isyma)  
+                 idxakl = nvir(isyma)*(idxkl-1)+a 
+                 idxak = ih1am(isyma,isymk) +
+     &                     norb1(isyma)*(k-1)+nrhfs(isyma)+a
+                 idxabkl = ih2am(isymbl,isymak)+
+     &                     nh1am(isymbl)*(idxak-1)+idxbl
+                 xk(idxakl) = xkint(idxabkl)
+                end do
+              end if
+            end do
+          end do
+        end if
+      end do
+c
+      call qexit('r12sortk')
+      end
+*======================================================================*
+      subroutine ccrhs_eppp(omega2,work,lwork,aproxr12,lres,
+     &                      lufc12,fc12am,ifile,isymtr)
+*----------------------------------------------------------------------*
+c     Purpose: add E''' term to vector function in omega2 for the
+c              ansaetze 2 and 3
+c
+c     omega^ab_ij <-- omega^ab_ij 
+c                       + sum_kl (K^ab_kl - t^ab_kl) * c^kl_ij
+c
+c     the contrib. of K is skipped for the approximations A, A'
+c
+c     for the approximations ??? is in ansatz 2 added:
+c
+c     omega^ab_ij <-- omega^ab_ij 
+c                       + sum_kl (e_k+e_l-e_i-e_j) r^ab_kl * c^kl_ij
+c
+c     while in ansatz 3 the following term is added:
+c 
+c     omega^ab_ij <-- omega^ab_ij 
+c                       + sum_kl (e_k+e_l-e_a-e_b) r^ab_ij * c^kl_ij
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c     adapted for ansatz 3, Christof Haettig, spring 2005
+*----------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <dummy.h>
+#include <r12int.h>
+#include <ccr12int.h>
+
+      logical locdbg, lres, needkrint
+      parameter (locdbg = .false.)
+      character*(*) fc12am
+      character*(*) aproxr12
+      character*10 model
+      integer lwork, lwrk1, kend1, ktint, kcamp, keps, krint
+      integer lunit, idum, isymkint, iopt, kend2, lwrk2
+      integer ifile, lufc12, isymtr
+
+#if defined (SYS_CRAY)
+      real omega2(*), work(*), factor, ddot
+#else
+      double precision omega2(*), work(*), factor, ddot
+#endif
+
+      call qenter('rhs_eppp')
+
+      if (locdbg) then
+        write(lupri,*) 'entered ccrhs_eppp... isymtr =',isymtr
+      end if
+
+      ! is a second integral array of length nt2amx needed?
+      needkrint = (aproxr12(1:1).eq."B") 
+      if (ianr12.eq.3 .and. 
+     &  (aproxr12(1:2).eq."A'".or.aproxr12(1:1).eq."B") ) then
+        needkrint=.true.
+      end if
+
+      ktint  = 1
+      kcamp  = ktint + nt2amx
+      kend1  = kcamp + ngamma(isymtr)
+      lwrk1  = lwork - kend1
+
+      kend2  = kend1
+      if (needkrint) then
+        krint = kend1 
+        kend2 = krint + nt2amx
+      end if
+      if (ianr12.eq.3) then
+        keps  = kend2
+        kend2 = keps + norbts
+      end if
+      lwrk2 = lwork - kend2
+
+      if (lwrk1.lt.0 .or. lwrk2.lt.0) then
+        call quit('Insufficient work space in ccrhs_eppp')
+      end if
+
+c     ---------------------------------------------
+c     read t^ab_kl integrals from file
+c     ---------------------------------------------
+      lunit = 0
+      call gpopen(lunit,fkr12,'unknown',' ','unformatted',idum,.false.)
+      read(lunit)(work(ktint+i-1),i=1,nt2amx)  
+      call gpclose(lunit,'KEEP')
+
+c     ----------------------------------------------------
+c     for approximation B substract K^ab_kl from t^ab_kl
+c     ----------------------------------------------------
+      if (aproxr12(1:1).eq."B") then
+        ! read K^ab_kl from file
+        lunit = 0
+        call gpopen(lunit,ftr12,'unknown',' ','unformatted',
+     &              idum,.false.)
+        read(lunit)(work(krint+i-1),i=1,nt2amx)  
+        call gpclose(lunit,'KEEP')
+        
+        ! substract (t - K) => work(ktint)
+        call daxpy(nt2amx,-1.0d0,work(krint),1,work(ktint),1)
+      end if
+
+c     ------------------------------------------------------------
+c     in ansatz 3 add for approximation A' and B the term
+c        (eps_k + eps_l - eps_a - eps_b) * r^ab_kl
+c     ------------------------------------------------------------
+      if (ianr12.eq.3 .and. 
+     &   (aproxr12(1:2).eq."A'".or.aproxr12(1:1).eq."B") ) then
+        lunit = 0
+        call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
+     &              idum,.false.)
+        read(lunit)(work(krint+i-1),i=1,nt2amx)  
+        call gpclose(lunit,'KEEP')
+
+        call cc_t2xe(work(krint),work(keps),work(kend2),lwrk2)
+
+        call daxpy(nt2amx,+1.0d0,work(krint),1,work(ktint),1)
+      end if
+
+c     ------------------------------------------------------
+c     get R12 amplitudes c^mn_kl stored as triangular matrix
+c     ------------------------------------------------------
+      if (lres) then
+        call cc_rvec(lufc12,fc12am,ngamma(isymtr),ngamma(isymtr),
+     &               ifile,work(kcamp))
+        call cclr_diasclr12(work(kcamp),ketscl,isymtr)
+      else
+c       read r12 amplitudes from file
+        iopt = 32
+        call cc_rdrsp('R0 ',0,1,iopt,model,dummy,work(kcamp))
+      end if
+
+      if (locdbg) then
+        write(lupri,*) 'in ccrhs_eppp norm^2 r12 amplitudes',
+     &                 ddot(ngamma(isymtr),work(kcamp),1,work(kcamp),1)
+        write(lupri,*)'Omega_aibj before contribution of ccrhs_eppp:',
+     &                  ddot(nt2am(isymtr),omega2,1,omega2,1)
+      end if
+
+c     ------------------------------------------------------
+c     calculate Omega^ab_ij += - sum_kl k^ab_kl * c^kl_ij
+c     ------------------------------------------------------
+      isymkint = 1
+      factor   = 1.0d0
+      call cc_r12mi22(omega2,work(ktint),work(kcamp),isymkint,isymtr,
+     &                factor,work(kend1),lwrk1) 
+
+      if (locdbg) then
+        write(lupri,*)'norm^2 omega_aibj after mi22:', 
+     &               ddot(nt2am(isymtr),omega2,1,omega2,1)
+      end if
+
+c     ------------------------------------------------------------
+c     in ansatz 2 add for approximation A' and B the term
+c      omega^ab_ij += sum_kl (e_k+e_l-e_i-e_j) r^ab_kl * c^kl_ij
+c     ------------------------------------------------------------
+      if (ianr12.eq.2 .and. 
+     &   (aproxr12(1:2).eq."A'".or.aproxr12(1:1).eq."B") ) then
+        
+        ! multiply R12 amplitudes with orbital energy differences:
+        !   c^kl_ij  <--  (e_k + el - e_i - e_j) * c^kl_ij
+        call cc_r12mkediff2(work(kcamp),isymtr,work(kend1),lwrk1)
+
+        lunit = 0
+        call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
+     &              idum,.false.)
+        read(lunit)(work(ktint+i-1),i=1,nt2amx)  
+        call gpclose(lunit,'KEEP')
+
+        isymkint = 1
+        factor   = -1.0d0
+        call cc_r12mi22(omega2,work(ktint),work(kcamp),isymkint,isymtr,
+     &                  factor,work(kend1),lwrk1) 
+      end if
+
+c     ----------------------------------------------
+c     that's it; print some debug output and return:
+c     ----------------------------------------------
+      if (locdbg) then
+        write(lupri,*)'Omega_aibj after ccrhs_eppp contribution:',
+     &               ddot(nt2am(isymtr),omega2,1,omega2,1)
+      end if
+
+      call qexit('rhs_eppp')
+      end
+*=====================================================================*
+      subroutine cc_r12mi22(omega2,xkint,c2am,isymkint,isymc,
+     &                      factor,work,lwork)
+c--------------------------------------------------------------------
+c     purpose: make Omega_ab_ij
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c--------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+      logical locdbg
+      parameter (locdbg = .false.)
+      integer lwork, isymkint, isymc, isymb, isyma, isymab, isymkl,
+     &        isymij, isymj, isymi, kxint, kc2am, kend1, isymint
+      integer ntoti, ntota, kom, isymai, isymbj, maxai, idxai, idxbj,
+     &        naibj, koffai, lwrk1
+#if defined (SYS_CRAY)
+      real work(*), xkint(*),c2am(*), omega2(*),factor
+      real one, zero,xk
+#else
+      double precision work(*), xkint(*),c2am(*), omega2(*),factor
+      double precision one, zero,ddot,x1,x2,x3,xk
+#endif
+      parameter (zero = 0.0d0, one = 1.0d0)
+
+      integer index
+      index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
+
+      call qenter('r12mi22')
+      isymint = muld2h(isymkint,isymc)
+
+      if (locdbg) then
+        write(lupri,*) 'entered cc_r12mi22'
+        x1 = 0.0d0
+        xk = 0.0d0
+        x2 = 0.0d0
+        x3 = 0.0d0
+      end if 
+
+      do isymb = 1, nsym
+        do isyma = 1, nsym
+          isymab = muld2h(isyma,isymb)
+          isymkl = muld2h(isymkint,isymab) 
+          isymij = muld2h(isymkl,isymc)    
+          do isymj = 1, nsym
+            isymi = muld2h(isymij,isymj)
+            isymai = muld2h(isyma,isymi)
+            isymbj = muld2h(isymb,isymj)
+
+            kxint = 1
+            kc2am = kxint + nvir(isyma)*nmatij(isymkl)
+            kom   = kc2am + nrhf(isymi)*nmatij(isymkl)
+            kend1 = kom   + nvir(isyma)*nrhf(isymi)
+            lwrk1 = lwork - kend1
+c  
+            if (lwrk1.lt.0) then
+                call quit('Insufficient memory in cc_r12mi22')
+            end if
+c
+            do b = 1, nvir(isymb)
+              call cc_r12sortk(work(kxint),xkint,b,isymkint,isymb,
+     &                         isyma,.false.)
+                  xk = xk + ddot(nvir(isyma)*nmatij(isymkl),
+     &                         work(kxint),1,work(kxint),1)
+              do j = 1, nrhf(isymj)
+                call cc_r12sortc(work(kc2am),c2am,j,isymc,isymj,isymi)
+ 
+                ntoti = max(nrhf(isymi),1)
+                ntota = max(nvir(isyma),1)
+                call dgemm('N','T',nvir(isyma),nrhf(isymi),
+     &                     nmatij(isymkl),one,work(kxint),ntota,
+     &                     work(kc2am),ntoti,zero,work(kom),ntota)
+c
+                if (locdbg) then
+                  x1 = x1 + ddot(nvir(isyma)*nmatij(isymkl),
+     &                         work(kxint),1,work(kxint),1)
+                  x2 = x2 + ddot(nrhf(isymi)*nmatij(isymkl),
+     &                           work(kc2am),1,work(kc2am),1)
+                  x3 = x3 + ddot(nvir(isyma)*nrhf(isymi),
+     &                           work(kom),1,work(kom),1)
+                end if 
+ 
+                ! substract the result from Omega(ai,bj) which is 
+                ! stored as a triangular matrix
+                if (isymbj.eq.isymai) then
+                  idxbj  = it1am(isymb,isymj) + nvir(isymb)*(j-1) + b
+                  koffai = it1am(isyma,isymi)
+                  maxai = min(koffai+nvir(isyma)*nrhf(isymi),idxbj)
+
+                  do idxai = koffai+1, maxai
+                    naibj = it2am(isymai,isymbj) + index(idxai,idxbj)
+                    omega2(naibj)= omega2(naibj)+
+     &                            factor*work(kom-1+idxai-koffai)
+                  end do
+c                 
+                else if (isymbj.gt.isymai) then
+c                 ! omega not totally symmetric ... only needed for
+c                 ! response
+                  idxbj  = it1am(isymb,isymj) + nvir(isymb)*(j-1) + b
+                  koffai = it1am(isyma,isymi)
+                  maxai = koffai+nvir(isyma)*nrhf(isymi) 
+
+                  do idxai = koffai+1, maxai
+                    naibj = it2am(isymai,isymbj) + 
+     &                      nt1am(isymai)*(idxbj-1) + idxai 
+                    omega2(naibj)= omega2(naibj)+
+     &                            factor*work(kom-1+idxai-koffai)
+                  end do
+                end if
+              end do
+            end do
+c           
+          end do
+        end do
+      end do
+
+      if (locdbg) then
+        write(lupri,*)'xk =', xk
+        write(lupri,*)'x1 =', x1
+        write(lupri,*)'x2 =', x2
+        write(lupri,*)'x3 =', x3
+      end if
+ 
+      call qexit('r12mi22')
+      end
+*=====================================================================*
+      subroutine cc_r12sortc(xc,c2am,j,isymc,isymj,isymi)
+c--------------------------------------------------------------------
+c     purpose: sort c^kl_ij as c^j_i,kl
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c--------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+      logical locdbg
+      parameter ( locdbg = .false. ) 
+      integer isymc, index, isymj, isymi, isymikl, isymkl, isymk,
+     &        isyml, isymki, isymlj, idxlj, idxkl, idxikl, idxki,
+     &        idxkilj  
+#if defined (SYS_CRAY)
+      real c2am(*), xc(*)
+      real ddot
+#else
+      double precision c2am(*), xc(*)
+      double precision ddot
+#endif
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+      call qenter('r12sortc')
+      
+      if (locdbg) then
+       write(lupri,*)'entered cc_r12sortc..' 
+       write(lupri,*)'norm^2(c2am):',ddot(ngamma(isymc),c2am,1,c2am,1)
+      end if 
+
+      isymikl = muld2h(isymj,isymc) 
+      isymkl  = muld2h(isymi,isymikl)
+      do isymk = 1, nsym
+        isyml = muld2h(isymkl,isymk)
+        isymki = muld2h(isymi,isymk)
+        isymlj = muld2h(isymj,isyml)
+
+        do l = 1, nrhf(isyml)
+          idxlj = imatij(isyml,isymj) + nrhf(isyml)*(j-1)+l
+          do k = 1, nrhf(isymk)
+            idxkl = imatij(isymk,isyml) + nrhf(isymk)*(l-1)+k
+            if (isymki.eq.isymlj) then 
+              do i =1, nrhf(isymi)
+                idxikl = nrhf(isymi)*(idxkl-1)+i 
+                idxki  = imatij(isymk,isymi)+nrhf(isymk)*(i-1)+k
+                idxkilj = igamma(isymki,isymlj)+index(idxki,idxlj) 
+                xc(idxikl) = c2am(idxkilj)
+              end do
+            else if (isymki.lt.isymlj) then
+              idxikl = nrhf(isymi)*(idxkl-1)+1 
+              idxki  = imatij(isymk,isymi)+k
+              idxkilj = igamma(isymki,isymlj)+
+     &                  nmatij(isymki)*(idxlj-1)+idxki
+              call dcopy(nrhf(isymi),c2am(idxkilj),nrhf(isymk),
+     &                   xc(idxikl),1)
+            else if (isymki.gt.isymlj) then
+              do i =1, nrhf(isymi)
+                idxikl = nrhf(isymi)*(idxkl-1)+i
+                idxki  = imatij(isymk,isymi)+nrhf(isymk)*(i-1)+k
+                idxkilj = igamma(isymlj,isymki)+
+     &                    nmatij(isymlj)*(idxki-1)+idxlj
+                xc(idxikl) = c2am(idxkilj)
+              end do
+            end if
+          end do
+        end do
+      end do
+
+      if (locdbg) then
+         write(lupri,'(a,3i5)')
+     &     'R12 amplitudes for fixed isymj,j,isymi:',isymj,j,isymi
+         call output(xc,1,nrhf(isymi),1,nmatij(isymkl),
+     &               nrhf(isymi),nmatij(isymkl),1,lupri)
+      end if
+
+      call qexit('r12sortc')
+      end
+*=====================================================================*
+      subroutine cc_r12batf2(work,lwork)
+c--------------------------------------------------------------------
+c     purpose: prepare R^d_akl for ansatz 2 to obtain (V^kl_aj)^+
+c
+c     H. Fliegl, C. Haettig, sping 2004
+c--------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+       
+#if defined (SYS_CRAY)
+      real zero,one, work(*),ddot
+#else
+      double precision zero,one, work(*),ddot
+#endif
+      parameter (zero = 0.0D0, one = 1.0D0)
+ 
+      logical locdbg,lauxd
+      parameter (locdbg = .false.)
+
+      integer nr1orb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
+      integer ir1xbas(8,8),nxx2(8),lwork,isymmu,kscr1
+      integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
+      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8)
+      integer nnbastx,isym,isymdk,n2bst2(8),isymd,isymk,
+     &        icount6,kend0,lusifc,nsymx,norbsx(8),nbastx,nlamdsx,
+     &        nrhfsx(8),kcmox,lwrk0,ksfull,iaodis2(8,8)
+      integer idummy,norbtsx,njx(8),isympq,isymp,isymq,ksjbp,ksmupbp
+      integer kend1,lwrk1,isymbp,isymdp,isymakl,krdpakl,krtot,kend2,
+     &        lwrk2,ib,idxb,idelp,idxbpdp,koff1,idxdp,nvabkl(8),
+     &        ivabkl(8,8)
+      integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
+
+      call qenter('batf2')
+      if(locdbg) write(lupri,*) 'entered batf2'
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
+     & ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl) 
+
+c
+      do isymdk = 1, nsym
+        icount6 = 0
+        do isymk = 1, nsym
+          isymd = muld2h(isymdk,isymk)
+          iaodis2(isymd,isymk) = icount6
+          icount6 = icount6 + mbas2(isymd)*mbas2(isymk) 
+        end do
+      end do
+c
+      do isympq = 1, nsym
+        nxx2(isympq) = 0
+        do isymp = 1, nsym
+          isymq = muld2h(isympq,isymp)
+          nxx2(isympq) = nxx2(isympq) + mbas2(isymp)*mbas2(isymq)
+        end do
+      end do
+c
+      kend0 = 1
+
+c----------------------------------------------------------------------
+c     get MO coefficients defined for combined orbital + aux. basis:
+c----------------------------------------------------------------------
+      lusifc = 0
+      call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',
+     &            idummy,.false.)
+
+c     read dimensions for CMO coefficients for full basis (nlamdsx)
+      rewind(lusifc)
+      call mollab('FULLBAS ',lusifc,lupri)
+      read(lusifc) nsymx,norbtsx,nbastx,nlamdsx,(nrhfsx(i),i=1,nsym),
+     &             (norbsx(i),i=1,nsym)
+
+
+c     allocate work space for CMO coefficients for full basis
+      kcmox  = kend0
+      kend0  = kcmox + nlamdsx
+      lwrk0  = lwork - kend0
+      if (lwrk0 .lt.0) then
+         call quit('Insufficient work space in batf2')
+      end if
+
+c     read CMO coefficients and close file
+      read(lusifc)
+      read(lusifc) (work(kcmox+i-1),i=1,nlamdsx)
+      call gpclose(lusifc,'KEEP')
+
+c     test if CMO is ok
+      if (locdbg) then
+        write(lupri,*)'CMO out batf2'
+        kscr1 = 1 
+        do isymp = 1, nsym
+          isymmu = isymp 
+          write(lupri,*) 'symmetry block,nbas,norbs:',isymp,
+     &       nbas(isymmu), norbs(isymp)
+          call output(work(kcmox+kscr1-1),1,nbas(isymmu),
+     &              1,norbs(isymp),nbas(isymmu),norbs(isymp),
+     &              1,lupri)
+          kscr1 = kscr1 + nbas(isymmu)*norbs(isymp)
+        end do
+      end if
+
+c     get S_mu'b'
+      ksmupbp = kend0
+      kend1   = ksmupbp + nxx2(1) 
+      lwrk1   = lwork - kend1
+      if (lwrk1 .lt.0) then
+       call quit('Insufficient work space in batf2')
+      end if
+      call cc_r12mksmupbp(work(kcmox),work(ksmupbp),iaodis2, 
+     &                    work(kend1),lwrk1)
+
+      if (locdbg) then
+        write(lupri,*) "norm^2(S_mu'b'):",ddot(nxx2(1),work(ksmupbp),1,
+     &       work(ksmupbp),1)
+        do isymp = 1, nsym
+          write(lupri,*) 'symmetry block:',isymp 
+          call output(work(ksmupbp+iaodis2(isymp,isymp)),
+     &                1,nbas(isymp),1,norbs(isymp),
+     &                nbas(isymp),norbs(isymmu),1,lupri)
+        end do
+      end if
+
+c-----------------------------------------------------------------------
+c     make R^d'_a,kl 
+c-----------------------------------------------------------------------
+      do isymbp = 1, nsym
+        isymdp = isymbp
+        isymakl = isymdp
+
+        krdpakl   = kend1
+        krtot   = krdpakl + nrgkl(isymakl)*mbas2(isymdp)
+        kend2   = krtot + nrgkl(isymakl)
+        lwrk2   = lwork - kend2
+        if(lwrk2.lt.0) then
+          call quit('Insufficient works space in batf2 ')
+        end if
+       
+        call dzero(work(krdpakl),nrgkl(isymakl)*mbas2(isymdp)) 
+        do ib = 1, mbas2(isymbp)
+          lauxd = .false.
+          idxb  = ib + ibas(isymdp) + mbas1(isymbp)
+          call cc_r12getrint(work(krtot),idxb,isymbp,nr1bas,ir1bas,
+     &         nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,
+     &         ir2xbas,idummy,lauxd,.false.,
+     &         frhtf,work(kend2),lwrk2)
+          do idelp = 1, mbas2(isymdp)
+            idxbpdp = iaodis2(isymbp,isymdp) + 
+     &                mbas2(isymbp)*(idelp-1) + ib
+            koff1 = krdpakl-1 + nrgkl(isymakl)*(idelp-1) + 1 
+            call daxpy(nrgkl(isymakl),work(ksmupbp-1+idxbpdp),
+     &                   work(krtot),1,work(koff1),1) 
+          end do
+        end do
+
+        if (locdbg) then
+          write(lupri,*)'work(krdpakl) for symmetry block',isymbp
+          write(lupri,*)'norm^2:',ddot(nrgkl(isymakl)*mbas2(isymdp),
+     &                               work(krdpakl),1,work(krdpakl),1)
+          call output(work(krdpakl),1,nrgkl(isymakl),1,mbas2(isymdp),
+     &              nrgkl(isymakl),mbas2(isymdp),1,lupri)
+        end if
+
+c       save R^dp_akl on file
+        do idelp = 1, mbas2(isymdp)
+          koff1 = krdpakl-1 + nrgkl(isymakl)*(idelp-1) + 1 
+          lauxd = .false.
+          idxdp = idelp + ibas(isymdp) + mbas1(isymdp)
+          call cc_r12putrint(work(koff1),idxdp,isymdp,nr1bas,ir1bas,
+     &         nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,idummy,lauxd,
+     &         frhtf,work(kend2),lwrk2)
+        end do
+c
+      end do  
+c
+      call qexit('batf2')
+      end
+*=====================================================================*
+      subroutine cc_r12mkvaj2(vajkl,isymv,cmo,isymc,cmos,isymcs,
+     &                        work,lwork)
+c---------------------------------------------------------------------
+c     purpose: make \sum_mn r_mn^kl*g_aj^mn
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+#include <dummy.h>
+      logical locdbg, lauxd
+      parameter (locdbg = .false.) 
+      integer isymv, isymc, lwork, lwrk1, lwrk2, kend1, kend2 
+      integer krmnkl, kgmakl, krhtf, koffv, koffg, koffr, idxkl, idxd,
+     &        ntotaj, ntotmn, idelta, isymd, isymnm, isymaj, isymkl
+      integer nr1orb(8), nr1bas(8), nr1xbas(8), nr2bas, n2bst1(8)
+      integer ir1xbas(8,8), ibasx(8),kmkl,iadr1,iadr2,isymdm,isymm,ndim
+      integer iglmrhs(8,8),iglmvis(8,8),nglmds(8),icmo(8,8),ncmo(8),
+     &        imaijm(8,8),nmaijm(8),imatijm(8,8),nmatijm(8),
+     &        igamsm(8,8),ngamsm(8),ivajkls(8,8),nvajkls(8)
+      integer ir1orb(8,8), ir1bas(8,8), ir2bas(8,8), iaodis1(8,8)
+      integer ir2xbas(8,8), irgkl(8,8), nrgkl(8), isyma,isymj
+      integer irgkls(8,8),nrgkls(8),ir1basm(8,8),nr1basm(8),
+     &        ir2basm(8,8),nr2basm,ir1xbasm(8,8),nr1xbasm(8),
+     &        ir2xbasm(8,8),isym,icount1,isym2,isym1,isymg,koffc,
+     &        koff1,ntotg,ntotm,imatf(8,8),nmatf(8)
+      integer ioffg(8,8),isymn,isymmn,idxmn,kgtf,idxdn,idxlk,isymk,
+     &        isyml,nvabkl(8),ivabkl(8,8),isymcs
+      integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
+      double precision one, zero
+      parameter (one = 1.0d0, zero = 0.0d0)
+#if defined (SYS_CRAY)
+      real work(*), vajkl(*), cmo(*),ddot,ddummy,cmos(*)
+#else
+      double precision work(*),vajkl(*),cmo(*),ddot,ddummy,cmos(*)
+#endif 
+
+      call qenter('r12mkvaj2')
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,
+     &     ir2bas,ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl) 
+      call cc_r12offs23(iglmrhs,iglmvis,nglmds,icmo,ncmo,imaijm,nmaijm,
+     &             imatijm,nmatijm,igamsm,ngamsm,irgkls,nrgkls,
+     &             ir1basm,nr1basm,ir2basm,nr2basm,ir1xbasm,
+     &             nr1xbasm,ir2xbasm,imatf,nmatf)
+c
+      ibasx(1) = 0
+      do isym = 2, nsym
+        ibasx(isym) = ibasx(isym-1) + mbas2(isym-1)
+      end do
+c
+      do isym = 1, nsym
+        icount1 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          ivajkls(isym1,isym2) = icount1
+          icount1 = icount1 + nr1bas(isym1)*nmatijm(isym2)
+        end do
+        nvajkls(isym) = icount1
+      end do
+c     
+      if (locdbg) then
+        do isym = 1, nsym
+          icount1 = 0
+          do isym2 = 1, nsym
+            isym1 = muld2h(isym,isym2)
+            ioffg(isym1,isym2) = icount1
+            icount1 = icount1 + nmatij(isym1)*nmatijm(isym2)
+          end do
+        end do
+      end if
+      
+      krmnkl = 1
+      kgmakl = krmnkl + ngamsm(1)
+      kend1  = kgmakl + nvajkls(1) 
+      lwrk1  = lwork - kend1
+      if (lwrk1.lt.0) then
+        call quit('Insufficient work space in mkvaj2')
+      end if
+ 
+      call dzero(work(krmnkl),ngamsm(1))
+      call dzero(work(kgmakl),nvajkls(1))
+c
+      do isymd = 1, nsym
+        krhtf = kend1
+        kmkl  = krhtf + nrgkls(isymd)
+        kend2 = kmkl + nmatf(isymd)
+        lwrk2 = lwork - kend2
+        if (lwrk2.lt.0) then
+          call quit('Insufficient work space in mkvaj2')
+        end if
+        do idelta = 1, mbas1(isymd)
+          lauxd = .false.
+          idxd = idelta+ibas(isymd)
+          call cc_r12getrint(work(krhtf),idxd,isymd,nr1bas,ir1bas,
+     &         nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &         ibasx,lauxd,.false.,
+     &         frhtf,work(kend2),lwrk2)
+
+c         get rMNkl
+          call cc_r12generaltf(work(krhtf),work(krmnkl),idelta,isymd,
+     &                         cmos,isymcs,cmos,isymcs,.false.,iglmrhs,
+     &                         iglmrhs,nmatij,nrhfs,irgkl,nrgkl,
+     &                         imatijm,nmatijm,imaijm,igamsm,
+     &                         work(kend2),lwrk2)
+c
+          lauxd = .false.
+          idxd = idelta+ibas(isymd)
+c         get g^delta_gamma,KL
+          call cc_r12getrints(work(krhtf),idxd,isymd,nr1basm,ir1basm,
+     &           nr2basm,ir2basm,nrgkls,irgkls,ir1xbasm,ir2xbasm,
+     &           ibasx,imatijm,nmatijm,lauxd,fccgmnab,work(kend2),lwrk2)
+c
+          if (locdbg) then
+            write(lupri,*) 'norm^2(Gmbnd) after read:',idxd,
+     &              ddot(nrgkls(isymd),work(krhtf),1,work(krhtf),1)
+          end if
+c
+c        transform g^delta_gamma,KL to g^delta_m,KL
+         do isymg = 1, nsym
+           isymkl = muld2h(isymg,isymd)
+           isymm  = muld2h(isymc,isymg)
+
+c          koffc = iglmrhs(isymg,isymm)+1+nrhffr(isymm)*nbas(isymg)
+           koffc = iglmrh(isymg,isymm)+1
+           koffg = krhtf + irgkls(isymg,isymkl)
+           koff1 = kmkl  + imatf(isymkl,isymm) 
+
+           ntotg = max(nbas(isymg),1)
+           ntotm = max(nrhf(isymm),1)
+
+           call dgemm('T','N',nrhf(isymm),nmatijm(isymkl),nbas(isymg),
+     &                one,cmo(koffc),ntotg,work(koffg),ntotg,zero,
+     &                work(koff1),ntotm)
+         end do
+c
+         do isymkl = 1, nsym
+          isymm = muld2h(isymkl,isymd)
+          isymdm = muld2h(isymd,isymm)
+          do isymk = 1, nsym
+            isyml = muld2h(isymkl,isymk)
+            do k = 1, nrhfs(isymk)
+              do l = 1, nrhfs(isyml)
+                idxkl = imatijm(isymk,isyml)+nrhfs(isymk)*(l-1)+k 
+                idxlk = imatijm(isyml,isymk)+nrhfs(isyml)*(k-1)+l
+                iadr1 = kgmakl-1+ivajkls(isymdm,isymkl)+
+     &              nr1bas(isymdm)*(idxlk-1)+ir1bas(isymd,isymm)+idelta
+                iadr2 = kmkl+imatf(isymkl,isymm)+nrhf(isymm)*(idxkl-1)
+                call dcopy(nrhf(isymm),work(iadr2),1,
+     &                     work(iadr1),mbas1(isymd))
+              end do
+            end do
+          end do
+         end do 
+c
+        end do
+      end do
+    
+      if (locdbg) then
+        write(lupri,*)'work(krmnkl)'
+c       write(lupri,*)(work(krmnkl-1+i),i=1,ngamsm(1))
+        write(lupri,*)'norm^2 work(krmnkl):', 
+     &      ddot(ngamsm(1),work(krmnkl),1,work(krmnkl),1)
+        write(lupri,*)'work(kgmakl)'
+c       write(lupri,*)(work(kgmakl-1+i),i=1,nvajkls(1))
+        write(lupri,*)'norm^2 work(kgmakl):', 
+     &      ddot(nvajkls(1),work(kgmakl),1,work(kgmakl),1)
+      end if
+
+c     make Vajkl
+      do isymnm = 1, nsym
+        isymkl = isymnm
+        isymaj = muld2h(isymv,isymkl)
+        
+        koffv = 1 + ivajkl(isymaj,isymkl)  
+        koffr = krmnkl + igamsm(isymnm,isymkl)
+        koffg = kgmakl + ivajkls(isymaj,isymnm)
+        
+        ntotmn = max(1,nmatijm(isymnm))
+        ntotaj = max(1,nr1bas(isymaj))
+        
+        call dgemm('N','N',nr1bas(isymaj),nmatij(isymkl),
+     &             nmatijm(isymnm),one,work(koffg),ntotaj,
+     &             work(koffr),ntotmn,one,vajkl(koffv),ntotaj)
+        if (locdbg) then
+          write(lupri,*)'DEBUG: Vajkl in mkvaj2'
+          call output(vajkl(koffv),1,nr1bas(isymaj),1,
+     &                nmatij(isymkl),nr1bas(isymaj),
+     &                nmatij(isymkl),1,lupri)
+        end if
+      end do
+c
+      call qexit('r12mkvaj2')
+      end
+*=====================================================================*
+      subroutine ccrhs_hp(omega1,lamdh,isymh,lamdh0,isymh0,work,
+     &                    lwork,iamp,isymc,fc12am,lufc12,ifile)
+c---------------------------------------------------------------------
+c     purpose: update Omega_ai - = 
+c              \sum_alpha Lambda^h_alphaa * Omega_alphai 
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+#include <dummy.h>
+      integer lwork,isymc,isymh,ifile,lufc12,komai, isymom,
+     &        isymh0,kctil,kend1,lwrk1,isymd,isymilk,isymimn,
+     &        idelp,kint,kgtf,kmint,kend2,lwrk2,isymkl,
+     &        isymi,isymmn,isyma,isymb,koffr,koffm,koffom,
+     &        koffom1,ntota,ntotb,koffc,koffg,ntotkl,ntotmn,
+     &        koffl,ibasx(8),isym 
+      integer nr1orb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
+      integer ir1xbas(8,8)
+      integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
+      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8),nrxgkl(8),irxgkl(8,8)
+      integer nr1xorb(8),ir1xorb(8,8) 
+      integer idxdp,ntoti,nvabkl(8),ivabkl(8,8)
+      integer iakl(8,8),nakl(8),icount1,isym1,isym2
+      integer iomalb(8,8),nomalb(8),iomab(8,8),nomab(8),icount2,
+     &        icount3,komalb,komab,koffe
+      integer iamp
+#if defined (SYS_CRAY)
+      real work(*), omega1(*), lamdh(*), lamdh0(*), one
+      real zero,ddot
+#else
+      double precision work(*), omega1(*), lamdh(*),lamdh0(*), one
+      double precision zero,ddot
+#endif
+      parameter(one = 1.0d0, zero = 0.0d0)
+      character*(*) fc12am
+      character cdummy*(8)
+      logical locdbg, lauxd
+      parameter(locdbg = .false.)
+
+      call qenter('ccrhs_hp')
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
+     & ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl) 
+
+      do isym = 1, nsym
+        icount1 = 0
+        icount2 = 0
+        icount3 = 0
+        do isym2 = 1,nsym
+          isym1 = muld2h(isym,isym2)
+          iakl(isym1,isym2)   = icount1 + nmatij(isym1)*nvir(isym2) 
+          iomalb(isym1,isym2) = icount2 + nbas(isym1)*nvir(isym2)
+          iomab(isym1,isym2)  = icount3 + nvir(isym1)*nvir(isym2)
+        end do
+        nakl(isym) = icount1
+        nomalb(isym) = icount2
+      end do
+
+      isymom = muld2h(isymh,isymc)
+
+      komai = 1
+      kctil = komai + nt1ao(isymom)
+      kend1 = kctil + ngamsq(isymc)
+      lwrk1 = lwork - kend1
+      if (lwrk1 .lt.0) then
+         call quit('Insufficient work space in ccrhs_hp')
+      end if
+
+      ibasx(1) = 0
+      do isym = 2,nsym
+        ibasx(isym) = ibasx(isym-1)+mbas2(isym-1)
+      end do         
+c
+      call dzero(work(komai),nt1ao(isymom))
+ 
+c     read r12 amplitudes or trial vector
+      call cc_r12getct(work(kctil),isymc,iamp,ketscl,.true.,.true.,
+     &                 lufc12,fc12am,ifile,cdummy,idummy,work(kend1),
+     &                 lwrk1)    
+
+      do isymd = 1, nsym
+        isymilk = muld2h(isymh,isymd)
+        isymimn = muld2h(isymc,isymilk)
+        do idelp = 1, mbas2(isymd)
+          kint = kend1
+          kgtf = kint + nrgkl(isymd)
+          kmint = kgtf + nmaijk(isymilk)
+          kend2 = kmint + nmaijk(isymimn)
+          lwrk2 = lwork - kend2
+          if (lwrk2.lt.0) then
+             call quit('Insufficient work space in ccrhs_hp')
+          end if
+ 
+c         get I^dp_akl
+          lauxd = .true.
+          idxdp = idelp+ibasx(isymd)+ibas(isymd)+mbas1(isymd)
+          call cc_r12getrint(work(kint),idxdp,isymd,nr1bas,ir1bas,
+     &       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &       ibasx,lauxd,.false.,
+     &       fgdpakl,work(kend2),lwrk2)
+c           transform I^dp_akl to I^dp_ikl
+            call cc_r12generaltf(work(kint),work(kgtf),idelp,isymd,
+     &                         lamdh,isymh,lamdh,isymh,.true.,iglmrh,
+     &                         iglmrh,nmatij,nrhf,irgkl,nrgkl,imatij,
+     &                         nmatij,imaijk,igamsq,work(kend2),lwrk2)
+          if (locdbg) then
+            write(lupri,*)'norm^2 kgtf:', 
+     &          ddot(nmaijk(isymilk),work(kgtf),1,work(kgtf),1)
+          end if
+
+c         transform M^dpi_mn = /sum_kl C^tilde * I^dp_ikl 
+          do isymkl = 1, nsym
+            isymi  = muld2h(isymilk,isymkl) 
+            isymmn = muld2h(isymimn,isymi)
+          
+            koffc  = kctil + igamsq(isymkl,isymmn)
+            koffg  = kgtf  + imaijk(isymkl,isymi)
+            koffm  = kmint + imaijk(isymmn,isymi)
+          
+            ntotkl = max(nmatij(isymkl),1)
+            ntotmn = max(nmatij(isymmn),1)
+            ntoti  = max(nrhf(isymi),1)
+          
+            call dgemm('T','T',nmatij(isymmn),nrhf(isymi),
+     &                nmatij(isymkl),one,work(koffc),ntotkl,
+     &                work(koffg),ntoti,zero,work(koffm),ntotmn)
+          end do
+          if (locdbg) then
+            write(lupri,*)'norm^2 kmint:',
+     &       ddot(nmaijk(isymimn),work(kmint),1,work(kmint),1)
+          end if
+
+c         get R^dp_amn
+          lauxd = .true.
+          idxdp = idelp+ibasx(isymd)+ibas(isymd)+mbas1(isymd)
+          call cc_r12getrint(work(kint),idxdp,isymd,nr1bas,ir1bas,
+     &       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &       ibasx,lauxd,.false.,
+     &       frhtf,work(kend2),lwrk2)
+
+          if (locdbg) then
+            write(lupri,*)'norm^2 kint:', 
+     &           ddot(nrgkl(isymd),work(kint),1,work(kint),1)
+          end if
+          
+          do isymmn = 1, nsym
+            isyma  = muld2h(isymmn,isymd)
+            isymi  = muld2h(isymom,isyma) 
+          
+            koffr  = kint + irgkl(isyma,isymmn)
+            koffm  = kmint + imaijk(isymmn,isymi) 
+            koffom = komai + it1ao(isyma,isymi)
+          
+            ntota  = max(mbas1(isyma),1)
+            ntotmn = max(nmatij(isymmn),1)
+          
+            call dgemm('N','N',mbas1(isyma),nrhf(isymi),
+     &                 nmatij(isymmn),-one,work(koffr),ntota,
+     &                 work(koffm),ntotmn,one,work(koffom),ntota)
+          end do
+        end do
+      end do 
+      if (locdbg) then
+        write(lupri,*)'norm^2 komai:', 
+     &     ddot(nt1ao(isymom),work(komai),1,work(komai),1)
+      end if
+c       update Omega_ai
+        do isyma = 1, nsym
+          isymb = muld2h(isymh0,isyma)
+          isymi = muld2h(isymom,isyma)  
+          koffl = 1 + iglmvi(isyma,isymb)
+          koffom = komai + it1ao(isyma,isymi) 
+          koffom1 = 1 + it1am(isymb,isymi)
+          
+          ntota = max(mbas1(isyma),1)
+          ntotb = max(nvir(isymb),1)
+          
+          call dgemm('T','N',nvir(isymb),nrhf(isymi),mbas1(isyma),one,
+     &               lamdh0(koffl),ntota,work(koffom),ntota,one,
+     &               omega1(koffom1),ntotb)
+        end do
+      call qexit('ccrhs_hp')
+      end 
+*=====================================================================*
+      subroutine ccrhs_ip(omega1,t1am,isymt,lamdh,isymh,iamp,isymc,
+     &                    fc12am,lufc12,ifile,work,lwork)
+c---------------------------------------------------------------------
+c     purpose: update Omega_ai = /sum_klm ctilde * M^ak_mn
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>  
+#include <dummy.h> 
+      logical lauxd, locdbg
+      parameter (locdbg = .false.)
+      integer lwork,ifile,lufc12,isymt,isymh,isymc,isymt1ao,
+     &        isymak,icount7,isymk,isyma,kt1ao,kmint,kend1,
+     &        lwrk1,isymb,isyml,koffl,kofft,kofftam,ntota,
+     &        ntotb,isymd,idelp,kint,kfint,kend2,lwrk2,
+     &        ibasx(8),isymkl,idxkl,idxlk,kofft1am,koffgc,
+     &        koffge,isymmn,idxmn,koffr,koffm,kctil,isymomg,isym
+      integer nr1orb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
+      integer ir1xbas(8,8)
+      integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
+      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8),nrxgkl(8),irxgkl(8,8)
+      integer nr1xorb(8),ir1xorb(8,8) 
+      integer idxdp,nvabkl(8),ivabkl(8,8)
+      integer iamp
+#if defined (SYS_CRAY) 
+      real omega1(*), work(*), lamdh(*), t1am(*), 
+     &     ddot, er12, one, zero
+#else 
+      double precision omega1(*), work(*), lamdh(*), t1am(*),
+     &                ddot, er12, one, zero
+#endif 
+      parameter (one = 1.0d0, zero = 0.0d0)
+      character*(*) fc12am
+      character cdummy*(8)
+
+      call qenter('ccrhs_ip')
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,
+     & ir2bas,ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl) 
+
+      isymt1ao = muld2h(isymt,isymh)
+       
+      if (locdbg) then
+        write(lupri,*)'in ccrhs_ip: omega1 on entry '
+        call cc_prp(omega1,dummy,isymt1ao,1,0)
+      end if  
+c
+      do isymak = 1, nsym
+         nvajkl(isymak) = 0
+         icount7 = 0
+         do isymk = 1, nsym
+           isyma = muld2h(isymak,isymk)
+           ivajkl(isyma,isymk) = icount7
+           nvajkl(isymak) = nvajkl(isymak)+nt1ao(isyma)*nmatij(isymk)
+           icount7 = icount7 + nt1ao(isyma)*nmatij(isymk)
+         end do
+      end do        
+c
+      ibasx(1) = 0
+      do isym = 2,nsym
+        ibasx(isym) = ibasx(isym-1)+mbas2(isym-1)
+      end do
+c
+      kt1ao = 1
+      kmint = kt1ao + nt1ao(isymt1ao)
+      kend1 = kmint + nvajkl(isymt1ao)
+      lwrk1 = lwork - kend1
+      if (lwrk1 .lt.0) then
+         call quit('Insufficient work space in ccrhs_ip')
+      end if 
+c     
+      call dzero(work(kmint),nvajkl(isymt1ao))
+      call dzero(work(kt1ao),nt1ao(isymt1ao))
+c
+c     calculate t_al = /sum_b t_bl * Lamda^h_ab
+      do isymb = 1, nsym
+        isyma = muld2h(isymh,isymb)
+        isyml = muld2h(isymt,isymb)
+
+        koffl = 1 + iglmvi(isyma,isymb)
+        kofft = 1 + it1am(isymb,isyml)
+        kofftam = kt1ao + it1ao(isyma,isyml)
+        
+        ntota = max(mbas1(isyma),1)
+        ntotb = max(nvir(isymb),1)
+
+        call dgemm('N','N',mbas1(isyma),nrhf(isyml),nvir(isymb),one,
+     &             lamdh(koffl),ntota,t1am(kofft),ntotb,zero,
+     &             work(kofftam),ntota)
+      end do      
+ 
+      do isymd = 1, nsym
+        isymk = muld2h(isymt1ao,isymd)
+        do idelp = 1, mbas2(isymd)
+          kint  = kend1
+          kfint = kint + nrgkl(isymd)
+          kend2 = kfint + nrhf(isymk)
+          lwrk2 = lwork - kend2
+          if (lwrk2.lt.0) then
+             call quit('Insufficient work space in ccrhs_hp')
+          end if    
+
+c         get I^dp_akl
+          lauxd = .true.
+          idxdp = idelp+ibasx(isymd)+ibas(isymd)+mbas1(isymd)
+          call cc_r12getrint(work(kint),idxdp,isymd,nr1bas,ir1bas,
+     &       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &       ibasx,lauxd,.false.,
+     &       fgdpakl,work(kend2),lwrk2)
+          if (locdbg) then
+            write(lupri,*)'norm^2 kint:',
+     &        ddot(nrgkl(isymd),work(kint),1,work(kint),1)
+          end if
+
+c         get F intermediate      
+          call dzero(work(kfint),nrhf(isymk))
+          do isyml = 1, nsym
+            isyma = muld2h(isymt1ao,isyml)
+            isymkl = muld2h(isymk,isyml)
+c
+            do k = 1, nrhf(isymk)
+              do l = 1, nrhf(isyml)
+                idxkl = imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+                idxlk = imatij(isyml,isymk)+nrhf(isyml)*(k-1)+l
+
+                kofft1am = kt1ao + it1ao(isyma,isyml)+
+     &                     mbas1(isyma)*(l-1) 
+                koffgc   = kint + irgkl(isyma,isymkl)+
+     &                     mbas1(isyma)*(idxlk-1)  
+                koffge   = kint + irgkl(isyma,isymkl)+ 
+     &                     mbas1(isyma)*(idxkl-1)  
+
+                work(kfint-1+k) = work(kfint-1+k) + 
+     &                           2.0d0*ddot(mbas1(isyma),
+     &                           work(kofft1am),1,work(koffgc),1) -
+     &                           ddot(mbas1(isyma),work(kofft1am),1,
+     &                           work(koffge),1)
+              end do
+            end do
+          end do
+          if (locdbg) then
+            write(lupri,*)'norm^2: kfint', 
+     &        ddot(nrhf(isymk),work(kfint),1,work(kfint),1)
+          end if
+
+c         get R^dp_amn
+          lauxd = .true.
+          idxdp = idelp+ibasx(isymd)+ibas(isymd)+mbas1(isymd)
+          call cc_r12getrint(work(kint),idxdp,isymd,nr1bas,ir1bas,
+     &       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &       ibasx,lauxd,.false.,
+     &       frhtf,work(kend2),lwrk2)
+  
+c         get M intermediate
+          do isymmn = 1, nsym
+            isyma = muld2h(isymd,isymmn)
+            isymak = muld2h(isyma,isymk)
+            do k = 1, nrhf(isymk)
+              do idxmn = 1, nmatij(isymmn)
+                koffr = kint+irgkl(isyma,isymmn)+
+     &                  mbas1(isyma)*(idxmn-1)
+                koffm = kmint+ivajkl(isymak,isymmn)+
+     &                  nt1ao(isymak)*(idxmn-1)+it1ao(isyma,isymk)+
+     &                  mbas1(isyma)*(k-1)
+
+                call daxpy(mbas1(isyma),work(kfint-1+k),work(koffr),
+     &                     1,work(koffm),1)
+              end do
+            end do  
+          end do
+c        
+        end do
+      end do
+      if (locdbg) then
+        write(lupri,*) 'norm^2(M):',ddot(nvajkl(isymt1ao),
+     &      work(kmint),1,work(kmint),1)
+      end if
+
+      kctil = kend1
+      kend2 = kctil + ngamsq(isymc)
+      lwrk2 = lwork - kend2
+      if (lwrk2.lt.0) then
+        call quit('Insufficient work space in ccrhs_ip')
+      end if
+
+c     read r12 amplitudes or trial vector
+      call cc_r12getct(work(kctil),isymc,iamp,ketscl,.true.,.true.,
+     &                 lufc12,fc12am,ifile,cdummy,idummy,work(kend2),
+     &                 lwrk2)   
+  
+c     isymomg = muld2h(isymc,muld2h(isymt1ao,isymh))
+      isymomg = muld2h(isymh,muld2h(isymt1ao,isymc))
+      call ccrhs_gp0(omega1,isymomg,work(kmint),isymt1ao,lamdh,isymh,
+     &         work(kctil),isymc,.false.,er12,locdbg,work(kend2),lwrk2)
+
+      if (locdbg) then
+        write(lupri,*)'in ccrhs_ip: omega1 on exit '
+        call cc_prp(omega1,dummy,isymt1ao,1,0)
+      end if  
+
+      call qexit('ccrhs_ip')
+      end
+*======================================================================*
+      subroutine cc_r12offs23(iglmrhs,iglmvis,nglmds,icmo,ncmo,
+     &                        imaijm,nmaijm,imatijm,nmatijm,
+     &                        igamsm,ngamsm,irgkls,nrgkls,
+     &                        ir1basm,nr1basm,ir2basm,nr2basm,ir1xbasm,
+     &                        nr1xbasm,ir2xbasm,imatf,nmatf)
+*----------------------------------------------------------------------*
+c     purpose: calculate some offsets needet for ansatz 2 & 3 to include
+c              all active and inactive orbitals
+c
+c     H. Fliegl, C. Haettig, spring 2004
+*----------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+      integer iglmrhs(8,8),iglmvis(8,8),nglmds(8),isym,
+     &        icmo(8,8),ncmo(8),imaijm(8,8),nmaijm(8),
+     &        imatijm(8,8),nmatijm(8),ngamsm(8),igamsm(8,8),
+     &        isym2,isym1,irgkls(8,8),nrgkls(8),ir1basm(8,8),nr1basm(8),
+     &        ir2basm(8,8),nr2basm,ir1xbasm(8,8),nr1xbasm(8),
+     &        ir2xbasm(8,8),imatf(8,8),nmatf(8),
+     &        icount1,icount2,icount2a,icount3,icount4,icount5,
+     &        icount6,icount7
+
+      call qenter('ccoffs23')
+
+      do isym = 1, nsym
+     
+        ! precalculate dimensions of transformation matrices
+        ! and the offset for the virtual block
+        icount1 = 0
+        icount2a= 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+
+          icmo(isym1,isym2) = icount1
+
+          icount1 = icount1 + nbas(isym1)*norbs(isym2)
+          icount2a= icount2a+ nbas(isym1)*nrhfs(isym2)
+        end do
+        ncmo(isym)    = icount1
+        nglmds(isym)  = icount1
+
+        icount2 = 0
+        icount3 = 0
+        icount4 = 0
+        icount5 = 0
+        icount6 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          iglmrhs(isym1,isym2) = icount2
+          iglmvis(isym1,isym2) = icount2a
+          imaijm(isym1,isym2)  = icount3
+          imatijm(isym1,isym2) = icount4
+          ir1basm(isym1,isym2) = icount5
+          ir1xbasm(isym1,isym2) = icount6
+
+          icount2 = icount2 + nbas(isym1)*nrhfs(isym2)
+          icount2a= icount2a+ nbas(isym1)*nvirs(isym2)
+          icount3 = icount3 + nmatij(isym1)*nrhfs(isym2)
+          icount4 = icount4 + nrhfs(isym1)*nrhfs(isym2)
+          icount5 = icount5 + mbas1(isym1)*nrhfs(isym2)
+          icount6 = icount6 + mbas2(isym1)*nrhfs(isym2)
+        end do
+        nmaijm(isym)  = icount3
+        nmatijm(isym) = icount4
+        nr1basm(isym) = icount5 
+        nr1xbasm(isym) = icount6
+      end do
+
+      do isym = 1, nsym
+        icount7 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          imatf(isym1,isym2)  = icount7
+          icount7 = icount7 + nmatijm(isym1)*nrhf(isym2)
+        end do
+        nmatf(isym)   = icount7
+      end do
+
+      do isym = 1, nsym
+        icount1 = 0
+        icount2 = 0
+        icount3 = 0
+        icount4 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          igamsm(isym1,isym2)  = icount1
+          irgkls(isym1,isym2)  = icount2
+          ir2basm(isym1,isym2) = icount3
+          ir2xbasm(isym1,isym2) = icount4
+
+          icount1 = icount1 + nmatijm(isym1)*nmatij(isym2)
+          icount2 = icount2 + mbas1(isym1)*nmatijm(isym2)
+          icount3 = icount3 + nr1basm(isym1)*nr1basm(isym2)
+          icount4 = icount4 + nr1basm(isym1)*nr1xbasm(isym2)
+        end do
+        ngamsm(isym)  = icount1
+        nrgkls(isym)  = icount2
+c       nr2basm(isym) = icount3
+      end do
+c
+      nr2basm = 0
+      do isym = 1, nsym  
+        nr2basm = nr2basm + nr1basm(isym)*nr1basm(isym)
+      end do    
+
+      call qexit('ccoffs23')
+
+      end
+*=====================================================================*
+      subroutine cc_r12mkgmnab(xint,cmos,isymc,idel,isymd,
+     &                         iglmrhs,nglmds,lunitr12,filer12,
+     &                         work,lwork)
+c---------------------------------------------------------------------
+c     purpose: make g^MN_alpha_beta intermediate
+c              M and N run over all active and inactive occupied
+c              molecular orbitals
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <r12int.h>
+      logical locdbg
+      parameter (locdbg = .false.)
+      integer icount1,isym,isym1,isym2,nr1orb(8),
+     &        nr1bas(8),nrgkl(8),n2bst1(8),ir1orb(8,8),ir1bas(8,8),
+     &        ir2bas(8,8),ir2xbas(8,8),irgkl(8,8),iaodis1(8,8),idelta,
+     &        idel,isymd,iglmrhs(8,8),nglmds(8),lunitr12,lwork,isymg,
+     &        isymn,isymdn,isymab,isymbm,koff1,kscr1,kend1,lwrk1,koffg,
+     &        koffc,ntotab,ntotg,idxabn,isymm,isymb,isyma,koff5,kscr2,
+     &        koff3,koff4,ntota,ntotb,isymc,nr1xbas(8),nr2bas(8),
+     &        ir1xbas(8,8),nvabkl(8),ivabkl(8,8)
+      integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
+
+      character*(*) filer12
+
+#if defined (SYS_CRAY) 
+      real work(*), cmos(*), xint(*), one, zero, xnrm, ddot
+      real xnrm1, xnrm2
+#else
+      double precision work(*), cmos(*), xint(*), one, zero, xnrm, ddot
+      double precision xnrm1, xnrm2
+#endif
+      parameter (one = 1.0d0, zero = 0.0d0)
+
+      idelta = idel - ibas(isymd)  
+
+c     skip if idelta not in orbital basis
+      if (idelta.gt.mbas1(isymd)) return
+
+      call qenter('r12mkgmnab')
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     &                  nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,
+     &                  ir1xbas,ir2bas,ir2xbas,irgkl,irxgkl,iaodis1,
+     &                  nvabkl,ivabkl)
+c
+c     transform first index 
+c
+      if (locdbg) then
+        xnrm = 0.0d0
+        xnrm1 = 0.0d0
+        xnrm2 = 0.0d0
+      end if
+c
+      do isymg = 1, nsym
+        isymn  = muld2h(isymc,isymg) ! isymn = isymg
+        isymdn = muld2h(isymd,isymn)
+        isymab = isymdn
+        isymbm = isymdn
+
+        koff1  = 1
+        kscr1  = koff1 + nnbst(isymab)*nrhfs(isymn)
+        kscr2  = kscr1 + nbast*nbast
+        kend1  = kscr2 + nbast*nrhfts
+        lwrk1  = lwork - kend1
+        if (lwrk1.lt.0) then
+          call quit('Insufficient work space in cc_r12mkgmnab') 
+        end if
+
+        koffg  = idsaog(isymg,isymd) + 1
+        koffc  = iglmrhs(isymg,isymn) + 1
+
+        ntotab = max(nnbst(isymab),1)
+        ntotg  = max(nbas(isymg),1)
+
+        call dgemm('N','N',nnbst(isymab),nrhfs(isymn),mbas1(isymg),
+     &             one,xint(koffg),ntotab,cmos(koffc),ntotg,zero,
+     &             work(koff1),ntotab)
+c
+        if (locdbg) then
+          xnrm1 = xnrm1+ddot(nnbst(isymab)*nrhfs(isymn),work(koff1),1,
+     &                       work(koff1),1) 
+        end if
+c
+        
+        do n = 1, nrhfs(isymn)
+          idxabn = koff1 + nnbst(isymab)*(n-1)
+c         unpack integrals as a quadratic matrix
+          call ccsd_symsq(work(idxabn),isymab,work(kscr1))
+c
+          if (locdbg) then
+            xnrm2=xnrm2+ddot(n2bst(isymab),work(kscr1),1,work(kscr1),1) 
+          end if
+
+c         transform second index to M
+          koff5 = kscr2
+          do isyma = 1, nsym
+            isymm = muld2h(isymc,isyma) !isymm = isyma
+            isymb = muld2h(isymab,isyma)
+
+            koff3 = kscr1 + iaodis(isyma,isymb)
+            koff4 = iglmrhs(isyma,isymm) + 1
+
+            ntota = max(nbas(isyma),1)
+            ntotb = max(nbas(isymb),1)
+
+            call dgemm('T','N',nbas(isymb),nrhfs(isymm),mbas1(isyma),
+     &                 one,work(koff3),ntota,cmos(koff4),ntota,zero,
+     &                 work(koff5),ntotb)
+c
+            if (locdbg) then
+            xnrm = xnrm+ddot(nbas(isymb)*nrhfs(isymm),work(koff5),1,
+     &                                                work(koff5),1) 
+            end if
+c
+
+            koff5 = koff5 + nbas(isymb)*nrhfs(isymm)
+          end do
+
+c         write result on file
+          call cc_r12whtfs(work(kscr2),idel,isymd,n,isymn,isymbm,
+     &                     lunitr12,filer12,work(kend1),lwrk1)          
+        end do
+      end do
+c
+      if (locdbg) then
+        write(lupri,*) 'norm^2(cmo)',ddot(nglmds,cmos,1,cmos,1)
+        write(lupri,*) 'Gmbnd for idel=',idel,xnrm
+        write(lupri,*) 'Gabnd for idel=',idel,xnrm1,xnrm2
+      end if
+c
+
+      call qexit('r12mkgmnab')
+      end
+*=====================================================================*
+      subroutine cc_r12whtfs(xint,idel,isymd,j,isymj,isymai,
+     &                      lunitr12,filer12,work,lwork)
+c----------------------------------------------------------------------
+c     purpose: get half transformed coulomb integrals and write them
+c              on file first delta in ccsd_aibj   
+c              note: M,N run over all active and inactive occupied
+c                    molecular orbitals 
+c
+c     H. Fliegl, C. Haettig, spring 2004
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <dummy.h>
+       
+      logical locdbg
+      parameter (locdbg = .false.)
+      integer lunitr12, lwork, idel, isymd, isymi, isyma
+      integer isymai, isymdj, isymj, ndelj, iadr, ilen
+      integer idxai, idxdj, idxai2, koff1, idelta
+      integer isym,isym1,isym2,icount1,ng1bas(8),ig2bas(8,8),ig1bas(8,8)
+
+      character*(*) filer12
+
+#if defined (SYS_CRAY)
+      real work(*), xint(*)
+#else
+      double precision work(*), xint(*)
+#endif
+
+      call qenter('whtfs')
+
+c     calculate some offsets and dimensions
+      do isym = 1, nsym
+        ng1bas(isym) = 0
+        icount1 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          ng1bas(isym) = ng1bas(isym)+mbas1(isym1)*nrhfs(isym2)
+          ig1bas(isym1,isym2) = icount1
+          icount1 = icount1 + mbas1(isym1)*nrhfs(isym2)
+        end do
+      end do
+c
+      do isym = 1, nsym
+        icount1 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          ig2bas(isym1,isym2) = icount1
+          icount1 = icount1 + ng1bas(isym1)*ng1bas(isym2)
+        end do
+      end do
+c
+      if (lwork.lt.ng1bas(isymai)) then
+        call quit('Insufficient work space in cc_r12whtfs')
+      end if
+
+      idelta = idel - ibas(isymd)  
+
+      koff1 = 1
+      isymdj = muld2h(isymd,isymj)
+      do isymi = 1, nsym
+         isyma  = muld2h(isymai,isymi)
+        do i = 1, nrhfs(isymi)
+            do a = 1, mbas1(isyma) 
+              idxai   = ig1bas(isyma,isymi) + mbas1(isyma)*(i-1)+a 
+              idxai2  = koff1 -1 + nbas(isyma)*(i-1) +a
+              work(idxai) = xint(idxai2) 
+            end do 
+        end do 
+        koff1 = koff1 + nbas(isyma)*nrhfs(isymi)
+      end do
+      
+      if (locdbg) then
+        write(lupri,*)'idel=',idel
+        write(lupri,*)'in whtfs'
+        do isymi = 1, nsym
+         isyma  = muld2h(isymai,isymi)
+         write(lupri,*) 'symmetry block (a,i):',isyma,isymi
+         call output(work(ig1bas(isyma,isymi)+1),1,mbas1(isyma),
+     &    1,nrhfs(isymi),mbas1(isyma),nrhfs(isymi),1,lupri) 
+        end do
+      end if
+      
+      if (idelta.le.mbas1(isymd)) then
+        ndelj = ig1bas(isymd,isymj) + mbas1(isymd)*(j-1) + idelta 
+        iadr  = ig2bas(isymai,isymdj) + ng1bas(isymai)*(ndelj-1)+1
+      else 
+        call quit('There is something wrong in cc_r12whtfs',
+     &            ' with the auxiliary basis')
+      end if
+      ilen = ng1bas(isymai)
+
+      call putwa2(lunitr12,filer12,work,iadr,ilen)
+
+      call qexit('whtfs')
+      end 
+*=====================================================================*
+      subroutine cc_r12getrints(r12bkl,idel,isymd,nr1basm,ir1basm,
+     &           nr2basm,ir2basm,nrgkls,irgkls,ir1xbasm,ir2xbasm,
+     &           ibasx,imatijm,nmatijm,lauxd,fconst,work,lwork)
+c---------------------------------------------------------------------
+c     purpose: get g^MN_gamma_delta integrals, needed for ansatz 2 
+c
+c     H. Fliegl, C. Haettig spring 2004
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+
+      logical lauxd,locdbg 
+      parameter(locdbg=.false.)
+
+      character*(*) fconst
+
+#if defined (SYS_CRAY)
+      real zero,one
+#else
+      double precision zero,one
+#endif
+      parameter (zero = 0.0d0, one = 1.0d0)
+
+      integer nr1basm(8),ir1basm(8,8),nr2basm,ir2basm(8,8)
+      integer ir2xbasm(8,8),nrgkls(8),imatijm(8,8)
+      integer irgkls(8,8),ir1xbasm(8,8),nmatijm(8)
+      integer idelta,idel,lwork,lwrk1,ibasx(8)
+      integer lur2back,kscr2,kend2,lwrk2,iadr,ndell,ilen
+      integer isymb,isymk,isymkl,isyml,idxbk,idxkl,idxbkl
+      integer isymd,isymdl,isymbk,kend1 
+
+
+#if defined (SYS_CRAY)
+      real r12bkl(*),work(*),ddot
+#else
+      double precision r12bkl(*),work(*),ddot
+#endif
+          
+      kend1 = 1
+
+      idelta = idel - ibas(isymd)
+      if (lauxd) idelta = idelta - ibasx(isymd)
+
+      lur2back = 0
+      call wopen2(lur2back,fconst,64,0)
+      
+      do isyml = 1, nsym
+         isymdl = muld2h(isymd,isyml)
+         isymbk = isymdl
+         
+         kscr2 = kend1 
+         kend2 = kscr2 + nr1basm(isymbk)
+         lwrk2 = lwork - kend2
+         if (lwrk2 .lt.0) then
+            write(lupri,*)'lwork',lwork
+            write(lupri,*)'lwrk2,kend2,kscr2', lwrk2,kend2,kscr2
+            call quit('Insufficient work space in cc_r12getrints')
+         end if
+c       ------------------------------------------------------------
+c        read r^{beta,delta}_{k,l} from file and pack as 
+c        R^{delta}(beta,kl) or  R^{delta'}(beta,kl)
+c       ------------------------------------------------------------
+         do l = 1, nrhfs(isyml)
+            if (idelta.le.mbas1(isymd)) then
+               ndell = ir1basm(isymd,isyml) +
+     &              mbas1(isymd)*(l-1)+idelta
+               iadr = ir2basm(isymbk,isymdl)+
+     &              nr1basm(isymbk)*(ndell-1)+1
+            else
+               ndell = ir1xbasm(isymd,isyml)+
+     &              mbas2(isymd)*(l-1)+idelta-mbas1(isymd)
+               iadr = nr2basm + ir2xbasm(isymbk,isymdl)+
+     &              nr1basm(isymbk)*(ndell-1)+1
+
+               if(locdbg) then
+                  write(lupri,*)'ndell,iadr,l,idelta',ndell,iadr,
+     &                 l,idelta
+               end if
+
+            end if
+            ilen   = nr1basm(isymbk)
+            call getwa2(lur2back,fconst,work(kscr2),iadr,ilen)
+c 
+            do isymb =1, nsym
+               isymk = muld2h(isymbk,isymb)
+               isymkl = muld2h(isymk,isyml)
+               do k=1, nrhfs(isymk)
+                  do b=1, mbas1(isymb)
+                     idxbk = ir1basm(isymb,isymk) + mbas1(isymb)*(k-1)+b
+                     idxkl = imatijm(isymk,isyml) + nrhfs(isymk)*(l-1)+k
+                     idxbkl = irgkls(isymb,isymkl) + 
+     &                    mbas1(isymb)*(idxkl-1)+b
+
+                     if(locdbg) then
+                        write(lupri,*)'idxbk,idxkl,idxbkl',
+     &                       idxbk,idxkl,idxbkl
+                     end if
+
+                     r12bkl(idxbkl) = work(kscr2 -1 + idxbk)
+                     
+                  end do
+               end do
+
+               if (locdbg) then
+                 write(lupri,'(2a,4i5)')' R^{delta}(beta,kl) for ',
+     &            'delta,l,isymb,isymkl',idelta,l,isymb,isymkl
+                 idxbkl = irgkls(isymb,isymkl) + 1
+                 call output(r12bkl(idxbkl),1,mbas1(isymb),1,
+     &             nmatijm(isymkl),mbas1(isymb),nmatijm(isymkl),1,lupri)
+               end if
+
+            end do
+              
+         end do
+      end do
+      call wclose2(lur2back,fconst,'KEEP')
+
+      if (locdbg) then
+        write(lupri,*) 'leaving cc_r12getrints... norm^2(r12bkl):',
+     &     ddot(nrgkls(isymd),r12bkl,1,r12bkl,1)
+      end if
+
+      end
+*=====================================================================*
+      subroutine cc_r12fdvint(c1am,c2am,work,lwork,aproxr12,
+     &                        fc12am,lufc12,ivec)
+c-----------------------------------------------------------------------
+c      purpose: Test routine to calculate V bar numerically used for
+c               CC2-R12 ansatz 2
+c
+c      H. Fliegl, C. Haettig, winter 2004
+c-----------------------------------------------------------------------
+      implicit none
+#include <maxorb.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <second.h>
+#include <ccsdinp.h>
+#include <cclr.h>
+#include <r12int.h>
+#include <ccr12int.h>
+      logical omegorsv, testvajtkl, testvbar, testrbar 
+      parameter (testvajtkl = .false., testvbar = .false., 
+     &           testrbar = .false.)
+
+      integer lwork,kvintp,kvintm,kend1,krho1,krho2,kt1am,
+     &        kt2am,lwrk1,iopt,luvijkl,isymij,isymkl,kvajkl,luvajkl
+      integer kvsym,kvsing,kvtrip,nrhftria,krp,krm,ngamsm(8),
+     &        imatijm(8,8),nmatijm(8),igamsm(8,8),isym,isym1,isym2,
+     &        icount1,icount4,krsym,lufc12,krho1p,krho2p,nrho2,ivec
+      integer khintm,khintp
+#if defined (SYS_CRAY)
+      real work(*),c1am(*),c2am(*)
+      real xhalf, xmtwo, delta
+#else
+      double precision work(*),c1am(*),ddot,c2am(*)
+      double precision xhalf, xmtwo, delta, deltai
+#endif 
+      parameter (xhalf = 0.5d00,xmtwo = -2.0d00, 
+     &           delta = 1.0d-7 , deltai = 1.0d00/delta)
+c    &           delta = 1.0d-05, deltai = 1.0d00/delta)
+      character*10 model
+      character*(*) aproxr12,fc12am
+
+      integer index
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+c
+      call qenter('r12fdvint')
+      do isym = 1, nsym
+        icount4 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          imatijm(isym1,isym2) = icount4
+          icount4 = icount4 + nrhfs(isym1)*nrhfs(isym2)
+        end do
+        nmatijm(isym) = icount4
+      end do
+      do isym = 1, nsym
+        icount1 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          igamsm(isym1,isym2)  = icount1
+          icount1 = icount1 + nmatijm(isym1)*nmatij(isym2)
+        end do
+        ngamsm(isym)  = icount1
+      end do
+
+      if (omegsq) call quit('cclr_fdvint INCOMPATIBLE WITH omegsq.')
+      if (lcor.or.lsec) 
+     &   call quit('cclr_fdvint INCOMPATIBLE WITH fcore AND fsecon.')
+c
+       call around( 'in CCLR_FDVINT: making finite diff. v')
+       omegorsv = omegor
+       omegor   =.true.
+c
+c     isymtr = 1 ! in cclr.h 
+
+      krho1 = 1
+      krho2 = krho1   + nt1amx
+      kt1am = krho2   + max(nt2amx,nt2ao(isymop),2*nt2ort(isymop))
+      kt2am = kt1am   + nt1amx
+      kvintm = kt2am  + nt2sq(isymop)
+      kvintp = kvintm + ngamsq(isymtr)
+      kvajkl = kvintp + ngamsq(isymtr)
+      kvsym  = kvajkl + nvajkl(isymtr)
+      krm  = kvsym + ngamsq(isymtr)
+      krp  = krm + ngamsm(isymtr)
+      krsym  = krp + ngamsm(isymtr)
+      krho1p  = krsym + ngamsm(isymtr)
+      krho2p  = krho1p + nt1amx
+      khintm   = krho2p + max(nt2amx,nt2ao(isymop),2*nt2ort(isymop))
+      khintp  = khintm + nt1amx
+      kend1 = khintp + nt1amx
+      lwrk1 = lwork   - kend1
+      if (lwrk1.lt.0) then
+         write (lupri,*) 'available: lwork   =  ',lwork
+         write (lupri,*) 'needed (at least)  =  ',kend1
+         call quit('insufficient work space in cclr_fdvint ')
+      endif
+      nrho2 = max(nt2amx,nt2ao(isymop),2*nt2ort(isymop))
+
+      if (testvajtkl) then
+c       calculate V^alpha_j_ kl
+        call dzero(work(kt1am),nt1am(isymtr))
+        rspim = .true.
+        call ccrhsn(work(krho1),work(krho2),work(kt1am),
+     &              work(kt2am),
+     *              work(kend1),lwrk1,aproxr12)
+      
+c       read Valpajtildekl
+        luvajkl = 0
+        call gpopen(luvajkl,fvajtkl,'unknown',' ','unformatted',
+     &              idummy,.false.)
+        read(luvajkl)(work(kvajkl-1+i),i=1,nvajkl(isymtr))
+        call gpclose(luvajkl,'KEEP')
+
+        write(lupri,*)'Vajtkl out of fdvint:', 
+     &                (work(kvajkl-1+i),i=1,nvajkl(isymtr))
+        end if
+      
+c     read the CC reference amplitudes From disk.
+      iopt = 3
+      call cc_rdrsp('R0',0,1,iopt,model,work(kt1am),work(kt2am))
+ 
+      rspim = .false.
+
+c---------------------------------------------
+c     Calculate V bar by finite difference.
+c---------------------------------------------
+
+c     Compute V(t - 0.5 delta * C)
+      call daxpy(nt1amx,-0.5d0*delta,c1am,1,work(kt1am),1)
+      call ccrhsn(work(krho1),work(krho2),work(kt1am),
+     &            work(kt2am),
+     *            work(kend1),lwrk1,aproxr12)
+
+c     Read V(t - 0.5 delta * C) into WORK(KVINTM)
+      luvijkl = 0
+      call gpopen(luvijkl,fvijkl,'unknown',' ','unformatted',
+     &            idummy,.false.)
+      read(luvijkl)(work(kvintm-1+i),i=1,ngamsq(isymtr))
+      call gpclose(luvijkl,'KEEP')
+
+c     Read HP or IP TERM 'CCR12HTST' or 'CCR12ITST'
+c     luvijkl = 0
+c     call gpopen(luvijkl,'CCR12ITST','unknown',' ','unformatted',
+c    &            idummy,.false.)
+c     read(luvijkl)(work(khintm-1+i),i=1,nt1amx)
+c     call gpclose(luvijkl,'KEEP')
+
+      if (testrbar) then
+c       Read R(t - 0.5 delta * C) into WORK(KRM)
+        luvijkl = 0
+        call gpopen(luvijkl,'RMTNTKL','unknown',' ','unformatted',
+     &              idummy,.false.)
+        read(luvijkl)(work(krm-1+i),i=1,ngamsm(isymtr))
+        call gpclose(luvijkl,'KEEP')
+      end if
+c     Compute V(t + 0.5 delta * C)
+      call daxpy(nt1amx,delta,c1am,1,work(kt1am),1)
+      call ccrhsn(work(krho1p),work(krho2p),work(kt1am),
+     &            work(kt2am),
+     *            work(kend1),lwrk1,aproxr12)
+
+c     Read V(t + 0.5 delta * C) into WORK(KVINTP)
+      luvijkl = 0
+      call gpopen(luvijkl,fvijkl,'unknown',' ','unformatted',
+     &            idummy,.false.)
+      read(luvijkl)(work(kvintp-1+i),i=1,ngamsq(isymtr))
+      call gpclose(luvijkl,'KEEP')
+
+c     Read HP or IP TERM
+c     luvijkl = 0
+c     call gpopen(luvijkl,'CCR12ITST','unknown',' ','unformatted',
+c    &            idummy,.false.)
+c     read(luvijkl)(work(khintp-1+i),i=1,nt1amx)
+c     call gpclose(luvijkl,'KEEP')
+
+      if (testrbar) then
+c       Read R(t - 0.5 delta * C) into WORK(KRP)
+        luvijkl = 0
+        call gpopen(luvijkl,'RMTNTKL','unknown',' ','unformatted',
+     &              idummy,.false.)
+        read(luvijkl)(work(krp-1+i),i=1,ngamsm(isymtr))
+        call gpclose(luvijkl,'KEEP')
+      end if
+
+c     Restore t amplitudes
+      call daxpy(nt1amx,-0.5d0*delta,c1am,1,work(kt1am),1)
+
+c     Calculate [V(t+0.5*delta*C)-V(t-0.5*delta*C)]/delta
+      call daxpy(ngamsq(1),-1.0d00,work(kvintm),1,work(kvintp),1)
+      call dscal(ngamsq(1),deltai,work(kvintp),1)
+
+c     Calculate [RHO1(t+0.5*delta*C)-RHO1(t-0.5*delta*C)]/delta
+      call daxpy(nt1amx,-1.0d00,work(krho1),1,work(krho1p),1)
+      call dscal(nt1amx,deltai,work(krho1p),1)
+
+c     Calculate [RHO2(t+0.5*delta*C)-RHO2(t-0.5*delta*C)]/delta
+      call daxpy(nrho2,-1.0d00,work(krho2),1,work(krho2p),1)
+      call dscal(nrho2,deltai,work(krho2p),1)
+
+c     Calculate finite diff HP BAR
+c     call daxpy(nt1amx,-1.0d00,work(khintm),1,work(khintp),1)
+c     call dscal(nt1amx,deltai,work(khintp),1)
+
+c     write(lupri,*)'IBAR numerically'
+c     do isymij = 1, nsym
+c      isymkl = muld2h(isymij,isymtr)
+c      call output(work(khintp+it1am(isymij,isymkl)),1,
+c    &      nvir(isymij),1,nrhf(isymkl),nvir(isymij),
+c    &      nrhf(isymkl),1,lupri)
+c     end do
+      
+
+c     Print dOmega/dt_1 Result:
+      write(lupri,*)'numerical: RHO1 and RHO2:'
+      call cc_prp(work(krho1p),work(krho2p),1,1,1)
+      write(lupri,*)'numerical: RHOR12:'
+      do isymij = 1, nsym
+       isymkl = muld2h(isymij,isymtr)
+       call output(work(kvintp+igamsq(isymij,isymkl)),1,
+     &      nmatij(isymij),1,nmatij(isymkl),nmatij(isymij),
+     &      nmatij(isymkl),1,lupri)
+      end do
+
+      if (testrbar) then
+c       Calculate [R(t+0.5*delta*C)-R(t-0.5*delta*C)]/delta
+        call daxpy(ngamsm(1),-1.0d00,work(krm),1,work(krp),1)
+        call dscal(ngamsm(1),deltai,work(krp),1)
+      end if
+
+      if (testvbar) then
+c     symmetrize V bar 
+        call symV(work(kvintp),isymtr,work(kvsym),
+     &            nrhf,imatij,igamsq,nmatij,work(kend1),lwrk1)
+
+c     Print the result:
+        write(lupri,*)'norm^2 of V bar numerically:', 
+     &    ddot(ngamsq(isymtr),work(kvsym),1,work(kvsym),1)
+        do isymij = 1, nsym
+         isymkl = muld2h(isymij,isymtr)
+         write(lupri,*) 'isymij,isymkl:',isymij,isymkl
+         write(lupri,*)'CC2-R12 <V bar numerically>'
+         call output(work(kvsym+igamsq(isymij,isymkl)),1,
+     &        nmatij(isymij),1,nmatij(isymkl),nmatij(isymij),
+     &        nmatij(isymkl),1,lupri)
+        end do
+c       split into triplett and singulett
+        nrhftria = nrhft*(nrhft+1)/2
+        kvsing = kend1
+        kvtrip = kvsing + nrhftria*nrhftria
+        kend1  = kvtrip + nrhftria*nrhftria
+        write(lupri,*)'Vsing and Vtrip out of fdvint'
+        call cc_r12vunpack(work(kvsym),isymtr,work(kvsing),
+     &                     work(kvtrip),nrhftria,.true.)
+       end if
+
+       if (testrbar) then
+c        Print result for R:
+c        symmetrize R:
+         call symV(work(krp),isymtr,work(krsym),
+     &             nrhfs,imatijm,igamsm,nmatijm,work(kend1),lwrk1)
+         write(lupri,*)'norm^2 of R bar numerically:', 
+     &                ddot(ngamsm(isymtr),work(krsym),1,work(krsym),1)
+         do isymij = 1, nsym
+           isymkl = muld2h(isymij,isymtr)
+           write(lupri,*) 'isymij,isymkl:',isymij,isymkl
+           write(lupri,*)'CC2-R12 <R bar numerically>'
+           call output(work(krsym+igamsm(isymij,isymkl)),1,
+     &          nmatijm(isymij),1,nmatij(isymkl),nmatijm(isymij),
+     &          nmatij(isymkl),1,lupri)
+         end do
+       end if
+
+      omegor = omegorsv
+
+      write(lupri,*)'leaving cc_r12fdvint'
+      call qexit('r12fdvint')
+      end
+*=====================================================================*
+      subroutine symV(vijkl,isymv,vsym,ndim1,ioff1,ioff2,ndim2,
+     &                work,lwork)
+c---------------------------------------------------------------------
+c     purpose: symmetrize Vijkl = 1/2 (Vijkl + Vjilk)
+c
+c     H. Fliegl, C. Haettig, winter 2004
+c
+c     ndim1 --> nrhf / nrhfs
+c     ioff1 --> imatij / imatijm
+c     ioff2 --> igamsq / igamsm
+c     ndim2 --> nmatij / nmatijm
+c      
+c---------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+    
+      integer lwork,isymv,lwrk1,kend1,isymkl,isymij,isymk,
+     &        isyml,isymi,isymj,idxkl,idxlk,idxij,idxji,idxijkl,idxjilk
+      integer ndim1(8),ioff1(8,8),ioff2(8,8),ndim2(8)
+
+#if defined (SYS_CRAY)
+      real vijkl(*),work(*),half,vsym(*)
+#else
+      double precision vijkl(*),work(*),half,vsym(*)
+#endif
+      parameter ( half = 0.5d0 )
+
+      call qenter('symV')
+
+      do isymkl = 1, nsym
+        isymij = muld2h(isymv,isymkl)  
+        do isymk = 1, nsym
+          isyml = muld2h(isymkl,isymk)
+          do k = 1, nrhf(isymk)
+            do l = 1, nrhf(isyml)
+              idxkl = imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+              idxlk = imatij(isyml,isymk)+nrhf(isyml)*(k-1)+l
+              do isymi = 1, nsym
+                isymj = muld2h(isymij,isymi)
+                do i = 1, ndim1(isymi)
+                  do j = 1, ndim1(isymj)
+                    idxij = ioff1(isymi,isymj)+ndim1(isymi)*(j-1)+i
+                    idxji = ioff1(isymj,isymi)+ndim1(isymj)*(i-1)+j
+                    idxijkl = ioff2(isymij,isymkl)+
+     &                        ndim2(isymij)*(idxkl-1)+idxij
+                    idxjilk = ioff2(isymij,isymkl)+
+     &                        ndim2(isymij)*(idxlk-1)+idxji
+                    vsym(idxijkl)=half*(vijkl(idxijkl)+vijkl(idxjilk))
+                  end do
+                end do
+              end do  
+            end do
+          end do
+        end do
+      end do 
+
+      call qexit('symV')
+      end 
+*=====================================================================*
+      subroutine cc_r12stabmat(amat,maxred,len1,len2,len3,work,lwork)
+c----------------------------------------------------------------------
+c     purpose: get stability matrix and calculate the corresponding
+c              eigenvalues
+c             
+c              e  C^T
+c              C  B
+c
+c     H. Fliegl, C. Haettig
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+
+      integer maxred,len1,len2,len3,lwork,i,j,idxi,idxj,ierr
+      integer kevr,kevi,kevec,kiv1,kfv1,kend1,lwrk1,matz,nm
+#if defined (SYS_CRAY)
+      real amat(maxred,maxred),work(*),stabmat(len2+len3,len2+len3)
+      real zero,stabsave(len2+len3,len2+len3)
+#else
+      double precision amat(maxred,maxred),work(*),
+     &                 stabmat(len2+len3,len2+len3),zero
+      double precision stabsave(len2+len3,len2+len3)
+#endif
+      parameter(zero = 0.0d0)
+
+      call qenter('stabmat')
+c
+      nm = len2+len3 
+
+      kevr = 1
+      kevi = kevr + nm
+      kevec = kevi + nm
+      kiv1  = kevec + nm*nm
+      kfv1  = kiv1 + nm*nm
+      kend1 = kfv1 + nm*nm
+      lwrk1 = lwork - kend1
+      if (lwrk1.lt.0) then
+        call quit('Insufficient work space in stabmat')
+      end if
+
+c     get stability matrix out of jacobian 
+      do i = len1+1, len1+len2+len3
+        idxi = i-len1
+        do j = len1+1, len1+len2+len3
+          idxj = j-len1
+          stabmat(idxi,idxj) = amat(i,j) 
+        end do        
+      end do
+
+      write(lupri,*)'STABILITY-MATRIX'
+      call output(stabmat,1,len2+len3,1,len2+len3,len2+len3,
+     &              len2+len3,1,lupri)
+c     save matrix
+      call dcopy(nm*nm,stabmat,1,stabsave,1)
+
+c     get eigenvalues of stability matrix
+      matz = 1 ! get eigenvalues and eigenvectors
+      call rg(nm,nm,stabmat,work(kevr),work(kevi),matz,work(kevec),
+     &        work(kiv1),work(kfv1),ierr)
+c 
+      do i = 1, nm
+       if (work(kevr-1+i).lt.zero) then
+        write(lupri,*)
+     &        'WARNING: NEGATIVE EIGENVALUES OF STABILITY-MATRIX'
+       end if
+      end do
+c
+      write(lupri,*)'Eigenvalues of STABILITY-MATRIX'
+      call output(work(kevr),1,len2+len3,1,1,len2+len3,
+     &              len2+len3,1,lupri)
+c
+      call dcopy(nm*nm,stabsave,1,stabmat,1)
+c     set nondiagonal blocks to zero and recalculate the eigenvalues
+      do i = len2+1, nm
+        do j = 1, len2
+          stabmat(i,j) = zero
+          stabmat(j,i) = zero
+        end do
+      end do
+      write(lupri,*)'STABILITY-MATRIX without C-MAT'
+      call output(stabmat,1,len2+len3,1,len2+len3,len2+len3,
+     &              len2+len3,1,lupri)
+
+      call rg(nm,nm,stabmat,work(kevr),work(kevi),matz,work(kevec),
+     &        work(kiv1),work(kfv1),ierr)
+c 
+      do i = 1, nm
+       if (work(kevr-1+i).lt.zero) then
+        write(lupri,*)
+     &         'WARNING: NEGATIVE EIGENVALUES OF STABILITY-MATRIX'
+       end if
+      end do
+c
+      write(lupri,*)'Eigenvalues of STABILITY-MATRIX without C-MAT'
+      call output(work(kevr),1,len2+len3,1,1,len2+len3,
+     &              len2+len3,1,lupri)
+c
+
+      call qexit('stabmat')
+
+      end 
+*=====================================================================*

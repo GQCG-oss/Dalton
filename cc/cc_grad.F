@@ -73,11 +73,12 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION WORK(LWORK)
       DIMENSION GRADH1(*), GRADFS(*)
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL1
       CHARACTER*10 MODEL
 C
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccfield.h>
 #include <ccsdinp.h>
@@ -895,16 +896,16 @@ C
 C
               ELSE
 C
-                 LABEL = '1DHAM'//CHRNOS(ISCOOR/100)
+                 LABEL1 = '1DHAM'//CHRNOS(ISCOOR/100)
      &                          //CHRNOS(MOD(ISCOOR,100)/10)
      &                          //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-                 CALL CCPRPAO(LABEL,WORK(K1DHAM),IRREP,ISYM,IERR,
-     &                        WORK(KEND2),LWRK2)
+                 CALL CCPRPAO(LABEL1,.TRUE.,WORK(K1DHAM),IRREP,ISYM,
+     &                        IERR,WORK(KEND2),LWRK2)
 C
                  IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
                     CALL QUIT('CC_DERIV: error while reading '
-     &                           //LABEL//' integrals.')
+     &                           //LABEL1//' integrals.')
                  END IF
 C
 C------------------------------------------------
@@ -1027,6 +1028,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -1473,16 +1478,16 @@ C
                  CALL QUIT('Insufficient work space in CC_GRAD.')
               END IF
 C
-              LABEL = '1DOVL'//CHRNOS(ISCOOR/100)
+              LABEL1 = '1DOVL'//CHRNOS(ISCOOR/100)
      &                       //CHRNOS(MOD(ISCOOR,100)/10)
      &                       //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-              CALL CCPRPAO(LABEL,WORK(K1DOVL),IRREP,ISYM,IERR,
+              CALL CCPRPAO(LABEL1,.TRUE.,WORK(K1DOVL),IRREP,ISYM,IERR,
      &                     WORK(KEND2),LWRK2)
 C
               IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
                  CALL QUIT('CC_DERIV: error while reading '
-     &                        //LABEL//' integrals.')
+     &                        //LABEL1//' integrals.')
               ENDIF
 C
               GRADFS(ISCOOR) = DDOT(N2BST(1),WORK(K1DOVL),1,
@@ -1517,13 +1522,13 @@ C
             CALL QUIT('Insufficient work space in CC_GRAD.')
          END IF
 C
-         LABEL = 'KINENERG'
-         CALL CCPRPAO(LABEL,WORK(K1DOVL),IRREP,ISYM,IERR,
+         LABEL1 = 'KINENERG'
+         CALL CCPRPAO(LABEL1,.TRUE.,WORK(K1DOVL),IRREP,ISYM,IERR,
      &                WORK(KEND2),LWRK2)
 C
          IF (IERR.NE.0 .OR. IRREP.NE.1) THEN
             CALL QUIT('CC_DERIV: error while reading '
-     &                   //LABEL//' integrals.')
+     &                   //LABEL1//' integrals.')
          ENDIF
 C
          GRADFS(1) = -HALF*DDOT(N2BST(1),WORK(K1DOVL),1,

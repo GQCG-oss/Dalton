@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 c*DECK CC_EXCI
-       SUBROUTINE CC_EXCI(WORK,LWORK,LIST)
+       SUBROUTINE CC_EXCI(WORK,LWORK,LIST,APROXR12)
 C
 C----------------------------------------------------------------------
 C
@@ -96,11 +96,13 @@ C
       DIMENSION WORK(LWORK),NCCEXSAV(8,3),CONT(28)
       CHARACTER MODEL*24,MODELP*24,MODEL1*24,CHSYM*4,FILEX*10,FILOLD*10
       CHARACTER CDIP*1,CDUM*3, SPACE*32, MODELSCR*24
-      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM
+      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM,FS2AM
       CHARACTER*(3) LIST
+      CHARACTER*(3) APROXR12
       PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM')
       PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2')
       PARAMETER (FRHO12='CCR_RH12',FC12AM='CCR_C12M',FS12AM='CCR_S12M')
+      PARAMETER (FS2AM ='CCR_S2DM')
       PARAMETER (TWO = 2.0D00,TF=1.0D-04, TLOVLP = 0.5D0 )
       PARAMETER (XMONE = -1.0D00 , THRLDP = 1.0D-20)
       PARAMETER (THRDEGEN = 1.0D-8)
@@ -117,6 +119,7 @@ C
       LUFR2  = 0
       LUFR12 = 0
       LUFS12 = 0
+      LUFS2  = 0
 C
       IF (CCP2)   CCS = .TRUE.
       TRIPLET = .FALSE.
@@ -171,8 +174,11 @@ C     Test of Finite difference jacobian and linear transformations.
 C     or test calculation by finite difference jacobian.
 C-------------------------------------------------------------------
 C
+      IF (LIST(1:2) .EQ. 'RE') ISIDE  = +1
+      IF (LIST(1:2) .EQ. 'LE') ISIDE  = -1
+
       IF (JACTST.OR.FDJAC) THEN
-         CALL CCLR_JAC(WORK,LWORK)
+         CALL CCLR_JAC(ISIDE,WORK,LWORK,APROXR12)
          IF (JACTST) THEN
             CALL AROUND( ' END OF JACTST ' )
             CALL QEXIT('CC_EXCI')
@@ -183,7 +189,7 @@ C
          RSPIM2 = RSPIM
          RSPIM  = .FALSE.
          FDJAC  = .TRUE.
-         CALL CCLR_FDJAC(NT1AMX,NT2AMX,WORK,LWORK)
+         CALL CCLR_FDJAC(NT1AMX,NT2AMX,WORK,LWORK,APROXR12)
          FDJAC  = .FALSE.
          RSPIM  = RSPIM2
       ENDIF
@@ -287,7 +293,7 @@ C
       ELSE
         MODELP = MODEL
         IF (CCR12 .AND. (.NOT.CCS)) THEN
-          CALL CCSD_MODEL(MODELP,LENMOD,24,MODEL,24)
+          CALL CCSD_MODEL(MODELP,LENMOD,24,MODEL,24,APROXR12)
         END IF
       ENDIF
 C
@@ -489,7 +495,7 @@ C-------------------
 C
          CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                 FS12AM,LUFS12)
+     *                 FS12AM,LUFS12,FS2AM,LUFS2)
 C
 C-----------------------------
 C        Create start vectors.
@@ -497,7 +503,7 @@ C-----------------------------
 C
          LPROJECT = .FALSE.
          CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                 LPROJECT,ISTATPRJ,
+     *                 FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
      *                 TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                 NREDH,WORK(KEIVAL),WORK(KIPLAC),
      *                 WORK(KWRK1),LWRK1,LIST)
@@ -528,10 +534,10 @@ C
            CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
      *                   FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                   FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                   LREDS,WORK(KREDS),FS12AM,LUFS12, 
+     *                   LREDS,WORK(KREDS),FS12AM,LUFS12,FS2AM,LUFS2, 
      *                   LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                   NREDH,WORK(KREDH),WORK(KEIVAL),
-     *                   WORK(KSOLEQ),WORK(KWRK1),LWRK1)
+     *                   WORK(KSOLEQ),WORK(KWRK1),LWRK1,APROXR12)
          END IF
 
          ! test eigenvector: in case of degeneracies orthogonalize
@@ -611,7 +617,7 @@ C
 
             IF (LOCDBG) THEN
                WRITE(LUPRI,*) 'Overlap matrix for solution vectors:'
-               CALL PROVLP(WORK(KWRK2),NCCVAR,IOFF2,
+               CALL PROVLP(WORK(KWRK2),WORK(KWRK2),NCCVAR,IOFF2,
      *                     WORK(KWRK2+IOFF2*NCCVAR),LUPRI)
             END IF
             IF ( IPRINT .GT. 30 ) THEN
@@ -703,7 +709,8 @@ C
      *                        DUMMY,WORK(KC12AM))
               END IF
 
-              CALL CC_ATRR(ECURR,ISYM,1,WORK(KWRK0),LWRK0,.TRUE.,CONT)
+              CALL CC_ATRR(ECURR,ISYM,1,WORK(KWRK0),LWRK0,.TRUE.,CONT,
+     &                     APROXR12)
               CALL CC_EXCIT_CONT(I,ISYM,TRIPLET,MODELP,
      *                           CONT(4),CONT(1))
            END DO
@@ -745,7 +752,7 @@ C--------------------------------
 C
             LPROJECT = .FALSE.
             CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    LPROJECT,ISTATPRJ,
+     *                    FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
      *                    TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KEIVAL),WORK(KIPLAC),
      *                    WORK(KWRK1),LWRK1,LIST)
@@ -796,10 +803,10 @@ C
             CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
      *                    FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    LREDS,WORK(KREDS),FS12AM,LUFS12,
+     *                    LREDS,WORK(KREDS),FS12AM,LUFS12,FS2AM,LUFS2,
      *                    LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KREDH),WORK(KEIVAL),
-     *                    WORK(KSOLEQ),WORK(KWRK1),LWRK1)
+     *                    WORK(KSOLEQ),WORK(KWRK1),LWRK1,APROXR12)
 C
 C-------------------------------------
 C       Write out Excitation energies.
@@ -954,6 +961,7 @@ C
 C
                     LPROJECT = .FALSE.
                     CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                            FS12AM,LUFS12,FS2AM,LUFS2,
      *                            LPROJECT,ISTATPRJ,
      *                            TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                            NREDH,WORK(KEIVAL),WORK(KIPLAC),
@@ -988,7 +996,7 @@ C-------------------------------
 C
          CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                 FS12AM,LUFS12)
+     *                 FS12AM,LUFS12,FS2AM,LUFS2)
 
 C-----------------------------------------------------------
 C        restore number of excitation within symmetry class:
@@ -1197,7 +1205,7 @@ C
       KEXCIS = KEXCI
       KT1PS  = KT1P
 C
-      IF ((.NOT.CCR3).AND.(.NOT.(LIST(1:2).EQ.'LE'))) THEN
+      IF ((.NOT.CCR3).AND.(LHTR .OR. (.NOT.LIST(1:2).EQ.'LE'))) THEN
 C
       WRITE(LURES,'(//A)')
      *     ' +=============================================='
@@ -1361,7 +1369,7 @@ C
 
             IF (CCR12) THEN
               MODELSCR = MODEL1 
-              CALL CCSD_MODEL(MODEL1,LENMOD,24,MODELSCR,24)
+              CALL CCSD_MODEL(MODEL1,LENMOD,24,MODELSCR,24,APROXR12)
             END IF
 C
             WRITE(LURES,'(/A)')
@@ -1660,7 +1668,7 @@ C
       DIMENSION OME1(*),OME2(*),OME3(*),OME4(*),WORK(LWORK),OMES(*)
       DIMENSION IADR(MXISPT)
 C
-      CHARACTER CHSYM*4,MODEL1*10,MODEL*10
+      CHARACTER CHSYM*4,MODEL1*10,MODEL*10,APROXR12*3
       CHARACTER LBLPT(MXISPT)*8
       CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2
       PARAMETER (TWO = 2.0D00,TF=1.0D-04, TLOVLP = 0.5D0 )
@@ -1865,7 +1873,8 @@ C            Input vector is first elements in work -
 C            Output vector replaces vector as first elements in work.
 C--------------------------------------------------------------------
 C
-             CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK,.FALSE.,DUMMY)
+             CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK,.FALSE.,DUMMY,
+     &                     APROXR12)
 C
              IF (IPRINT .GT.25) THEN
                 CALL AROUND('CC_PCEXCI: partioned A*R(0) vector. ')
@@ -1969,7 +1978,8 @@ C
      *                    ISYMTR,1,1)
            ENDIF
 C
-           CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK,.FALSE.,DUMMY)
+           CALL CC_ATRR(ECURR,ISYMTR,1,WORK,LWORK,.FALSE.,DUMMY,
+     &                     APROXR12)
            IF (IPRINT .GT.15) THEN
               CALL AROUND('CC_PCEXCI: A*C(0) vector. ')
               CALL CC_PRP(WORK(KRV1),WORK(KRV1+NT1AM(ISYMTR)),
@@ -2333,7 +2343,8 @@ C
       RETURN
       END
 c*DECK CC_ATRR
-      SUBROUTINE CC_ATRR(ECURR,ISYMV,ISIDE,WORK,LWORK,LCONT,CONT)
+      SUBROUTINE CC_ATRR(ECURR,ISYMV,ISIDE,WORK,LWORK,LCONT,CONT,
+     &                   APROXR12)
 C
 C----------------------------------------------------------------------
 C     Ove Christiansen December 1996.
@@ -2356,13 +2367,16 @@ C
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <ccsdinp.h>
+#include <r12int.h>
 C
       LOGICAL LCONT
-      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FR2SD,FRHO12,FC12AM,FS12AM
-      PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM')
-      PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2')
-      PARAMETER (FRHO12='CCR_RH12',FC12AM='CCR_C12M',FS12AM='CCR_S12M')
+      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FR2SD,FRHO12,FC12AM,FS12AM,
+     &            FS2AM
+      PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM',FC12AM='CCR_C12M')
+      PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2',FRHO12='CCR_RH12')
+      PARAMETER (                  FS2AM ='CCR_S2DM',FS12AM='CCR_S12M')
       PARAMETER (TWO = 2.0D00 )
+      CHARACTER*3 APROXR12
 C
       DIMENSION WORK(LWORK), CONT(28)
 C
@@ -2390,6 +2404,7 @@ C
       LUFC2  = 0
       LUFC12 = 0
       LUFS12 = 0
+      LUFS2  = 0
 C
 C----------------
 C     Open files.
@@ -2397,7 +2412,7 @@ C----------------
 C
       CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *              FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *              FS12AM,LUFS12)
+     *              FS12AM,LUFS12,FS2AM,LUFS2)
 C
 C----------------------------------------------------------------------
 C     Make rho2 file name.
@@ -2488,6 +2503,8 @@ C
            CONT(1) = DDOT(NT1AM(ISYMTR),WORK(KRHO1),1,WORK(KRHO1),1)
            IF (CCS) THEN
              CONT(2) = 0.0D0
+           ELSE IF (CCR12.AND.IANR12.EQ.2) THEN
+             CONT(2) = 0.0D0
            ELSE
              CONT(2) = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KRHO2),1)
            END IF
@@ -2548,31 +2565,51 @@ C
       LRHO1 = NT1AM(ISYMTR)
 C
       IF (MYSIDE .EQ. 1) THEN
+c        get A*R
          CALL CC_RHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
      *                FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                WORK(KRHO1),WORK(KRHO2),
      *                WORK(KC1AM),WORK(KC2AM),
      *                WORK(KEND1),LWRK1,NSIMTR,
-     *                IVEC,ITR,LRHO1,LCONT,CONT(7))
+     *                IVEC,ITR,LRHO1,LCONT,CONT(7),APROXR12)
       ELSE IF (MYSIDE .EQ. -1) THEN
-         IF (CCR12) CALL QUIT('No left transform. for CCR12')
-         CALL CC_LHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
-     *                FC1AM,LUFC1,FC2AM,LUFC2,
+c        get R*A
+         CALL CC_LHTR(ECURR,
+     *                FRHO1,LUFR1,FR2SD,LUFSD,FRHO12,LUFR12,
+     *                FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                WORK(KRHO1),WORK(KRHO2),
      *                WORK(KC1AM),WORK(KC2AM),
      *                WORK(KEND1),LWRK1,NSIMTR,
-     *                IVEC,ITR,LRHO1)
+     *                IVEC,ITR,LRHO1,APROXR12)
       ELSE 
          CALL QUIT('CC_ATRR; ISIDE should be -1 or +1 ')
       ENDIF
 
       IF ( CCR12 ) THEN
-         CALL CC_R12METRIC(ISYMTR,WORK(KEND1),LWRK1,
-     *                     FC12AM,LUFC12,FS12AM,LUFS12,IVEC)
+         IF (MYSIDE .EQ. 1) THEN
+            CALL CC_R12METRIC(ISYMTR,BRASCL,KETSCL,WORK(KEND1),LWRK1,
+     *                        FC2AM,LUFC2,FC12AM,LUFC12,FS12AM,LUFS12,
+     *                        FS2AM,LUFS2,IVEC,.FALSE.,DUMMY)
+         ELSE IF (MYSIDE .EQ. -1) THEN
+            CALL CC_R12METRIC(ISYMTR,0.5D0*KETSCL,2.0D0*BRASCL,
+     *                        WORK(KEND1),LWRK1,FC2AM,LUFC2,
+     *                        FC12AM,LUFC12,FS12AM,LUFS12,FS2AM,LUFS2,
+     *                        IVEC,.FALSE.,DUMMY)
+         END IF
 
          KS12AM = NT1AM(ISYMTR)+NT2AM(ISYMTR)+NGAMMA(ISYMTR)+1
          CALL CC_RVEC(LUFS12,FS12AM,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
      *                IVEC,WORK(KS12AM))
+         IF (IANR12.EQ.2) THEN
+           KS2AM = KS12AM + NGAMMA(ISYMTR)
+           KEND1 = KS2AM + NT2AM(ISYMTR)
+           LWRK1 = LWORK - KEND1
+           IF (LWRK1.LT.0) THEN
+             CALL QUIT('Insufficient work space in cc_atrr')
+           END IF
+           CALL CC_RVEC(LUFS2,FS2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                  IVEC,WORK(KS2AM))
+         END IF
       END IF
 
       NRHO2 = MAX(NT2AM(ISYMTR),2*NT2ORT(ISYMTR))
@@ -2600,9 +2637,13 @@ C
              KSCR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1 
              KEND2  = KSCR12 + NT1AM(ISYMTR)
            ELSE IF (CCR12) THEN
-             KSCR12 = KS12AM + NGAMMA(ISYMTR)
+             IF (IANR12.EQ.2) THEN
+               KSCR12 = KS2AM + NT2AM(ISYMTR)
+             ELSE
+               KSCR12 = KS12AM + NGAMMA(ISYMTR)
+             END IF
              KEND2  = KSCR12 + 
-     &                  MAX(NT1AM(ISYMTR),NT2AM(ISYMTR),NGAMMA(ISYMTR))
+     &                MAX(NT1AM(ISYMTR),NT2AM(ISYMTR),NGAMMA(ISYMTR))
            ELSE
              KSCR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1 
              KEND2  = KSCR12 + MAX(NT1AM(ISYMTR),NT2AM(ISYMTR))
@@ -2620,6 +2661,12 @@ C
              CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      &                    1,WORK(KSCR12))
              CONT(5) = DDOT(NT2AM(ISYMTR),WORK(KRHO2),1,WORK(KSCR12),1)
+chf
+             IF (CCR12.AND.IANR12.EQ.2) THEN
+               CONT(2)= CONT(2)+ 
+     &                  DDOT(NT2AM(ISYMTR),WORK(KS2AM),1,WORK(KSCR12),1)
+             END IF
+chf
            END IF
 
            IF (CCR12) THEN
@@ -2650,7 +2697,7 @@ C----------------------------
 C
       CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *              FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *              FS12AM,LUFS12)
+     *              FS12AM,LUFS12,FS2AM,LUFS2)
       IF (.NOT. (CCS.OR.CC2)) THEN
          CALL WCLOSE2(LUFSD,FR2SD,'DELETE')
       ENDIF      
@@ -2887,6 +2934,7 @@ C
       IMPLICIT NONE
 #include <priunit.h>
 #include <ccsdinp.h>
+#include <r12int.h>
 
       CHARACTER*(*) MODEL
       CHARACTER*(8) MULTIPLICITY
@@ -2907,28 +2955,45 @@ C
       WRITE(LUPRI,'(A,I3,5X,2A,5X,A,I3)')'Symmetry:',ISYM,
      *   'Multiplicity: ',MULTIPLICITY,'State nr.:',ISTATE
       WRITE(LUPRI,'(/72("-")/)') 
-      WRITE(LUPRI,'(3(A,F10.6,5X))') 'C1  x R1 :',CONT(1),
-     *   '  C1  x C1     :',SCONT(1),'Ratio:',CONT(1)/SCONT(1)
+      WRITE(LUPRI,'(3(A,F10.6,5X))') 'C1 * R1  :',CONT(1),
+     *   'C1  * C1                :',SCONT(1),'Ratio:',CONT(1)/SCONT(1)
       IF (.NOT.CCS) THEN
-        WRITE(LUPRI,'(3(A,F10.6,5X))') 'C2  x R2 :',CONT(2),
-     *   '  C2  x C2     :',SCONT(2),'Ratio:',CONT(2)/SCONT(2)
+        IF (CCR12.AND.(IANR12.EQ.1.OR.IANR12.EQ.3)) THEN
+         WRITE(LUPRI,'(3(A,F10.6,5X))') 'C2 * R2  :',CONT(2),
+     *    'C2  * C2                :',SCONT(2),'Ratio:',
+     *     CONT(2)/SCONT(2)
+        ELSE IF (CCR12.AND.IANR12.EQ.2) THEN
+         WRITE(LUPRI,'(3(A,F10.6,5X))') 'C2 * R2  :',CONT(2),
+     *    'C2*C2 + C2*S23*C12      :',SCONT(2),'Ratio:',
+     *    CONT(2)/SCONT(2)
+        ELSE
+         WRITE(LUPRI,'(3(A,F10.6,5X))') 'C2 * R2  :',CONT(2),
+     *    'C2  * C2                :',SCONT(2),'Ratio:',
+     *     CONT(2)/SCONT(2)
+        END IF
       END IF
       IF (CCR12) THEN
-        WRITE(LUPRI,'(3(A,F10.6,5X))') 'C12 x R12:',CONT(3),
-     *   '  C12 x S x C12:',SCONT(3),'Ratio:',CONT(3)/SCONT(3)
+        IF (IANR12.EQ.1.OR.IANR12.EQ.3) THEN
+          WRITE(LUPRI,'(3(A,F10.6,5X))') 'C12 * R12:',CONT(3),
+     *    'C12 * S * C12           :',SCONT(3),'Ratio:',CONT(3)/SCONT(3)
+        ELSE IF (IANR12.EQ.2) THEN
+          WRITE(LUPRI,'(3(A,F10.6,5X))') 'C12 * R12:',CONT(3),
+     *    'C12*S32*C2 + C12*S12*C12:',SCONT(3),'Ratio:',
+     *    CONT(3)/SCONT(3)
+        END IF
       END IF
       EAE = CONT(1)+CONT(2)+CONT(3) 
       ESE = SCONT(1)+SCONT(2)+SCONT(3) 
       WRITE(LUPRI,'(72("."))')
-      WRITE(LUPRI,'(3(A,F10.6,5X),/)') 'C   x R  :', EAE,
-     *   '  C   x C      :',ESE, 'Ratio:',EAE/ESE
+      WRITE(LUPRI,'(3(A,F10.6,5X),/)') 'C   * R  :', EAE,
+     *   '  C   * C      :',ESE, 'Ratio:',EAE/ESE
 
       WRITE(LUPRI,'(A)') 'singles only contributions:'
       WRITE(LUPRI,'(13X,A,F10.6)') "J(T1)       :",CONT(4)/ESE
       WRITE(LUPRI,'(13X,A,F10.6)') "J(E1)       :",CONT(5)/ESE
       WRITE(LUPRI,'(A)') "...................................."
       WRITE(LUPRI,'(A,2F10.6,/)') "<R1|[Hhat,R1]|HF>        :",
-     *             (CONT(4)+CONT(5))/ESE,(CONT(4)+CONT(5))/ESE
+     *             (CONT(4)+CONT(5))/ESE, (CONT(4)+CONT(5))/ESE
 
       IF (.NOT.CCS) THEN
         WRITE(LUPRI,'(A)') 'doubles contributions:'
@@ -2936,7 +3001,7 @@ C
         WRITE(LUPRI,'(13X,A,F10.6)') "I(T2,E1)    :",CONT(9)/ESE
         WRITE(LUPRI,'(A)') "...................................."
         WRITE(LUPRI,'(A,2F10.6)') "<R1|[[H,T2],R1]|HF>      :",
-     *             (CONT(7)+CONT(9))/ESE,(CONT(7)+CONT(9))/ESE
+     *             (CONT(7)+CONT(9))/ESE, (CONT(7)+CONT(9))/ESE
         WRITE(LUPRI,'(13X,A,F10.6)') "G(E2)+H(E2) :",CONT(6)/ESE
         WRITE(LUPRI,'(13X,A,F10.6)') "I(E2,T1)    :",CONT(8)/ESE
         WRITE(LUPRI,'(A)') "...................................."
@@ -2950,7 +3015,7 @@ C
      *            CONT(11)/ESE
           WRITE(LUPRI,'(A)') "...................................."
           WRITE(LUPRI,'(A,2F10.6)') "sum of doubles blocks    :",
-     *     (CONT(6)+CONT(8)+CONT(10)+CONT(11))/ESE,
+     *     (CONT(6)+CONT(8)+CONT(10)+CONT(11))/ESE, 
      *     (CONT(6)+CONT(8)+CONT(10)+CONT(11))/ESE
           WRITE(LUPRI,'(A,F10.6)') "doubles total            :",
      *     (CONT(7)+CONT(9)+CONT(6)+CONT(8)+CONT(10)+CONT(11))/ESE
@@ -2964,24 +3029,51 @@ C
       IF (CCR12) THEN
         WRITE(LUPRI,'(/A)') 'R12 contributions:'
         WRITE(LUPRI,'(4X,A,2F10.6)') "<R1|[[H,T2'],R1]|HF> :",
-     *       CONT(18)/ESE,CONT(18)/ESE
+     *       CONT(18)/ESE, CONT(18)/ESE
+        IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+          WRITE(LUPRI,'(4X,A,2F10.6)') "1HP and 1IP contrib  :",
+     *         CONT(22)/ESE
+        END IF
         WRITE(LUPRI,'(4X,A,F10.6)') "<R1|[Hhat,R2']|HF>   :",
      *       CONT(19)/ESE
+        IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+          WRITE(LUPRI,'(4X,A,F10.6)') "2HP and 2IP contrib  :",
+     *         CONT(23)/ESE
+        END IF
         WRITE(LUPRI,'(4X,A,F10.6)') "<R2'|[Hhat,R1]|HF>   :",
      *       CONT(20)/ESE
         WRITE(LUPRI,'(4X,A,F10.6)') "<R2'|[F,R2']|HF>     :",
      *       CONT(21)/ESE
-        WRITE(LUPRI,'(A)') "...................................."
-        WRITE(LUPRI,'(A,2F10.6)') "sum of R12 doubles blocks:",
+        IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+          WRITE(LUPRI,'(4X,A,F10.6)') "<R2'|[F,R2]|HF>      :",
+     *       CONT(12)/ESE
+          WRITE(LUPRI,'(4X,A,F10.6)') "<R2 |[F,R2']|HF>     :",
+     *       CONT(13)/ESE
+          WRITE(LUPRI,'(A)') "...................................."
+          WRITE(LUPRI,'(A,2F10.6)') "sum of R12 doubles blocks:",
+     *        (CONT(19)+CONT(20)+CONT(21)+CONT(12)+CONT(13))/ESE, 
+     *        (CONT(19)+CONT(20)+CONT(21)+CONT(12)+CONT(13))/ESE
+          WRITE(LUPRI,'(A,F10.6)') "R12 doubles total        :",
+     *     (CONT(18)+CONT(19)+CONT(20)+CONT(21)+CONT(12)+CONT(13))/ESE
+          WRITE(LUPRI,'(A)') "...................................."
+          WRITE(LUPRI,'(A,10X,F10.6)') "total excitation energy  :",
+     *     (CONT(4)+CONT(5)+CONT(6)+CONT(7)+CONT(8)+CONT(9)+
+     *      CONT(10)+CONT(11)+CONT(18)+CONT(19)+CONT(20)+
+     *      CONT(21)+CONT(12)+CONT(13))/ESE
+        ELSE IF (IANR12.EQ.1) THEN
+          WRITE(LUPRI,'(A)') "...................................."
+          WRITE(LUPRI,'(A,2F10.6)') "sum of R12 doubles blocks:",
      *        (CONT(19)+CONT(20)+CONT(21))/ESE,
      *        (CONT(19)+CONT(20)+CONT(21))/ESE
-        WRITE(LUPRI,'(A,F10.6)') "R12 doubles total        :",
-     *        (CONT(18)+CONT(19)+CONT(20)+CONT(21))/ESE
-        WRITE(LUPRI,'(A)') "...................................."
-        WRITE(LUPRI,'(A,10X,F10.6)') "total excitation energy  :",
-     *   (CONT(4)+CONT(5)+CONT(6)+CONT(7)+CONT(8)+CONT(9)+
-     *    CONT(10)+CONT(11)+CONT(18)+CONT(19)+CONT(20)+
-     *    CONT(21))/ESE
+          
+          WRITE(LUPRI,'(A,F10.6)') "R12 doubles total        :",
+     *          (CONT(18)+CONT(19)+CONT(20)+CONT(21))/ESE
+          WRITE(LUPRI,'(A)') "...................................."
+          WRITE(LUPRI,'(A,10X,F10.6)') "total excitation energy  :",
+     *     (CONT(4)+CONT(5)+CONT(6)+CONT(7)+CONT(8)+CONT(9)+
+     *      CONT(10)+CONT(11)+CONT(18)+CONT(19)+CONT(20)+
+     *      CONT(21))/ESE
+        END IF
       END IF
 
       WRITE(LUPRI,'(72("-"))') 

@@ -72,6 +72,7 @@ C  /* Deck ccrhsn3 */
 #include <cbieri.h>
 #include <eribuf.h>
 #include <second.h>
+#include <r12int.h>
 !
       INTEGER LWORK, ISYMTR, LUCSIM, LUDTIM, IERRCS, IERRDT
       INTEGER KOMG1, KOMG2, KLAMDP, KLAMIP, KLAMDH, KDENSI
@@ -87,6 +88,8 @@ C  /* Deck ccrhsn3 */
       INTEGER KOFF, KT1AM, KT2AM
 !
       INTEGER INDEXA(MXCORB)
+!
+      INTEGER IDUM
 !
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -295,6 +298,10 @@ C  /* Deck ccrhsn3 */
 !
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

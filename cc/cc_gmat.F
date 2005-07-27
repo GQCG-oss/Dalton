@@ -260,6 +260,7 @@ c/* Deck CC_GMAT */
 #include <blocks.h>
 #include <second.h>
 #include <ccnoddy.h>
+#include <r12int.h>
 #include <ccsections.h>
 #include <ccslvinf.h>
 #include <qm3.h>
@@ -346,6 +347,7 @@ c/* Deck CC_GMAT */
       INTEGER MDISAO,MDSRHF,M2BST,MT2BGD,MT2SQ,MT2AM,MSCRATCH,MFREE
 
       INTEGER ILSTSYM, IOPTTCME
+      INTEGER IDUM
 
       CALL QENTER('CC_GMAT')
 
@@ -1006,6 +1008,10 @@ C
 
             IF(DIRECT) THEN
               IDEL   = INDEXA(IDEL2)
+              IF (NOAUXB) THEN
+                 IDUM = 1
+                 CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+              END IF
               ISYDEL = ISAO(IDEL)
             ELSE
               IDEL   = IBAS(ISYMD1) + ILLL

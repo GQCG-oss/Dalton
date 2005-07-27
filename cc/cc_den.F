@@ -75,7 +75,8 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION AODEN(*), ZKDIA(*), WORK(LWORK)
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <inftap.h>
 #include <blocks.h>
 #include <ccfield.h>
@@ -698,6 +699,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

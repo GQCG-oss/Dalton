@@ -235,7 +235,7 @@ C
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *               WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C------------------
 C        Transform.
@@ -325,7 +325,7 @@ C
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *                 WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C--------------------
 C          Transform.
@@ -443,8 +443,9 @@ C
      *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND2),LWRK2) 
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND2),LWRK2,'XXX') 
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CC_FDC ')

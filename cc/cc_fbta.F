@@ -342,6 +342,7 @@ c /* deck cc_fbta1 */
 #include <ccfro.h>
 #include <ccr1rsp.h>
 #include <chrxyz.h>
+#include <r12int.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -350,7 +351,7 @@ c /* deck cc_fbta1 */
       PARAMETER (ISYM0 = 1)       
       INTEGER KDUM
       PARAMETER (KDUM = +99 999 999)
-      INTEGER IDUM
+      INTEGER IDUM, IDUM1
       PARAMETER (IDUM = 0)         
 * files
       INTEGER LUSIRG                                    !CMO(0) coefficients
@@ -1724,6 +1725,10 @@ C             END IF
 *
           IF (DIRECT) THEN              !find  sym and index for given delta
             IDEL   = INDEXA(IDEL2)
+            IF (NOAUXB) THEN
+               IDUM1 = 1
+               CALL IJKAUX(IDEL,IDUM1,IDUM1,IDUM1)
+            END IF
             ISYDEL = ISAO(IDEL)
           ELSE
             IDEL   = IBAS(ISYMD1) + ILLL

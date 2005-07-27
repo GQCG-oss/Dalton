@@ -144,9 +144,11 @@ C----------------------------------------------------------------------
          CALL CC_RDRSP('O3',IDLSTO3,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
          CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
+         IF (CCR12) CALL CC_RDRSP('O3',IDLSTO3,ISYMGD,IOPTR12,MODEL,
+     &                            DUMMY,GD(IADR12))
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
-         IF ( CCR12 ) CALL QUIT('No R12 for O3')
+         IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMGD)
 
 C----------------------------------------------------------------------
 C 'R2 ' second-order response t amplitudes:  --> 'O2 '
@@ -166,7 +168,7 @@ C----------------------------------------------------------------------
          CALL CC_R2GD(GD,ILSTNR,WORK,LWORK)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
-         IF ( CCR12 ) CALL QUIT('No R12 for O2')
+         IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMGD)
  
 C----------------------------------------------------------------------
 C 'R1 ' first-order response t amplitudes:  --> 'O1 '
@@ -242,7 +244,7 @@ C----------------------------------------------------------------------
          CALL CC_L2GD(GD,ILSTNR,WORK,LWORK)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
-         IF ( CCR12 ) CALL QUIT('No R12 for X2+F2')
+         IF ( CCR12) NTAMP = NTAMP + NGAMMA(ISYMGD)
 
 C----------------------------------------------------------------------
 C 'L1 ' first-order response Lagrangian multipliers: --> 'X1 ' + 'F1 '
@@ -262,8 +264,8 @@ C----------------------------------------------------------------------
      *               FRQLRZ(ILSTNR),LORXLRZ(ILSTNR),IOPTRDG,WORK,LWORK)
          NTAMP = NT1AM(ISYLRZ(ILSTNR)) + NT2AM(ISYLRZ(ILSTNR))
          IF ( CCS ) NTAMP = NT1AM(ISYLRZ(ILSTNR))
+         IF ( CCR12 ) NTAMP = NTAMP + NGAMMA(ISYLRZ(ILSTNR))
          ISYMGD = ISYLRZ(ILSTNR)
-         IF ( CCR12 ) CALL QUIT('No R12 for X1+F1')
 
 C----------------------------------------------------------------------
 C 'L0 ' zero-order response Lagrangian multipliers:
@@ -273,11 +275,6 @@ C----------------------------------------------------------------------
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
 
          CALL CC_ETA(GD,WORK,LWORK)
-C        IF ( CCR12 ) CALL QUIT('No R12 for Eta^(0)')
-         IF ( CCR12 ) THEN
-           CALL DZERO(GD(IADR12),NGAMMA(ISYMGD))
-           WRITE(LUPRI,*) 'Warning: set R12 part of Eta^(0) to zero!!!'
-         END IF
 
 C----------------------------------------------------------------------
 C 'N2 ' Lagrangian multipliers:
@@ -574,6 +571,7 @@ C
 C     Written by Ove Christiansen 17-10-1996
 C     Changes for orbital relaxed response, Christof Haettig spring '99
 C     Changes for CC3 response, Christof Haettig sping '02
+C     Adapted for CC-R12 response, Christian Neiss April 2005
 C
 C----------------------------------------------------------------------
 C
@@ -608,6 +606,7 @@ C-----------------
 C
       NTAMP = NT1AM(ISYMC) + NT2AM(ISYMC)
       IF ( CCS ) NTAMP = NT1AM(ISYMC)
+      IF ( CCR12 ) NTAMP = NTAMP + NGAMMA(ISYMC)
 C
       IF (LWORK .LT. 0)
      *      CALL QUIT('Insufficient space for allocation in CC_LGD -1')
@@ -636,6 +635,12 @@ C       ! calculate the ETA vector in CC_ETAC
 C       CALL CC_ETAC(ISYMC,LBLC,GD,'L0 ',1,0,DUMMY,WORK,LWORK)
 C     END IF
 C
+      IF (CCR12) THEN
+        IOPT = 32
+        CALL CC_RDRSP('X1 ',ILSTETA,ISYMC,IOPT,MODEL,DUMMY,
+     *                GD(1+NTAMP-NGAMMA(ISYMC)))
+      END IF
+C
       IF ( DEBUG ) THEN
          X    = DDOT(NTAMP,GD,1,GD,1)
          WRITE(LUPRI,1) 'Norm of GD after eta cont.:     ',X
@@ -656,6 +661,7 @@ C
 C
       KFRV1 = KFRV  
       KFRV2 = KFRV  + NT1AM(ISYMC)
+      KFRVR12 = KEND1 - NGAMMA(ISYMC) 
 C
 C-----------------------------------------------
 C     Calculate list number.
@@ -677,6 +683,12 @@ C
       IOPT = IOPTR 
       CALL CC_RDRSP('F1 ',ILTNR,ISYMC,IOPT,MODEL,WORK(KFRV1),
      *              WORK(KFRV2))
+C
+      IF (CCR12) THEN
+        IOPT = 32
+        CALL CC_RDRSP('F1 ',ILTNR,ISYMC,IOPT,MODEL,DUMMY,
+     *              WORK(KFRVR12))
+      END IF
 C
       IF ( DEBUG ) THEN
          X = DDOT(NTAMP,WORK(KFRV),1,WORK(KFRV),1)
@@ -769,6 +781,7 @@ c /* deck cc_r2gd */
 *                                right hand side vector
 *
 *    Written by Christof Haettig, Februar 1997.
+*    Adapted for CC-R12, Christian Neiss June 2005
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -792,12 +805,12 @@ c /* deck cc_r2gd */
 
 #if defined (SYS_CRAY)
       REAL GD(*), WORK(LWORK)
-      REAL DDOT
+      REAL DDOT, DUMMY
       REAL ONE
       REAL FREQA, FREQB
 #else
       DOUBLE PRECISION GD(*), WORK(LWORK)
-      DOUBLE PRECISION DDOT
+      DOUBLE PRECISION DDOT, DUMMY
       DOUBLE PRECISION ONE
       DOUBLE PRECISION FREQA, FREQB
 #endif
@@ -805,7 +818,7 @@ c /* deck cc_r2gd */
 
       CHARACTER*(10) MODEL
       CHARACTER*(8)  LABELA, LABELB
-      INTEGER ISYMR2, ISYMA, ISYMB, IADR1, IADR2, NTAMP
+      INTEGER ISYMR2, ISYMA, ISYMB, IADR1, IADR2, NTAMP, IADR12
       INTEGER IDLSTR1A, IDLSTR1B, IOPT, ISYMO2, IDLSTO2
 
 * external functions:
@@ -839,6 +852,10 @@ c /* deck cc_r2gd */
       IADR1 = 1
       IADR2 = IADR1 + NT1AM(ISYMR2)
       NTAMP = NT1AM(ISYMR2) + NT2AM(ISYMR2)
+      IF (CCR12) THEN
+        IADR12 = IADR2 + NT2AM(ISYMR2)
+        NTAMP = NTAMP + NGAMMA(ISYMR2)
+      END IF
 
       IF (LWORK .LT. NTAMP) THEN
         CALL QUIT('Insufficient memory in CC_GDR2.')
@@ -850,7 +867,12 @@ c /* deck cc_r2gd */
       IOPT = 3
       IF (CCSDT) IOPT = 24
       CALL CC_RDRSP('O2',IDLSTO2,ISYMO2,IOPT,MODEL,GD(IADR1),GD(IADR2))
-      CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMO2)
+      CALL CCLR_DIASCL(GD(IADR2),0.5D0,ISYMO2)
+
+      IF (CCR12) THEN
+        IOPT = 32
+        CALL CC_RDRSP('O2',IDLSTO2,ISYMO2,IOPT,MODEL,DUMMY,GD(IADR12))
+      END IF
 
 *---------------------------------------------------------------------*
 * write debug output & return:
@@ -862,6 +884,10 @@ c /* deck cc_r2gd */
      &     DDOT(NT1AM(ISYMR2),GD(IADR1),1,GD(IADR1),1)
         WRITE (LUPRI,*) 'DEBUG_CC_GDR2> norm^2 of doubles part:',
      &     DDOT(NT2AM(ISYMR2),GD(IADR2),1,GD(IADR2),1)
+        IF (CCR12) THEN
+          WRITE (LUPRI,*) 'DEBUG_CC_GDR2> norm^2 of r12 doubles part:',
+     &       DDOT(NGAMMA(ISYMR2),GD(IADR12),1,GD(IADR12),1)
+        END IF
       END IF
 
       RETURN
@@ -882,6 +908,7 @@ c /* deck CC_L2GD */
 *                                response vector
 *
 *    Written by Christof Haettig, April 1997.
+*    Adapted for CC-R12, Christian Neiss June 2005
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -896,6 +923,7 @@ c /* deck CC_L2GD */
 #include <ccr2rsp.h>
 #include <ccl2rsp.h>
 #include <ccx2rsp.h>
+#include <dummy.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -917,7 +945,7 @@ c /* deck CC_L2GD */
 
       CHARACTER*(10) MODEL
       CHARACTER*(8)  LABELA, LABELB
-      INTEGER ISYML2, ISYMA, ISYMB, IADR1, IADR2, NTAMP
+      INTEGER ISYML2, ISYMA, ISYMB, IADR1, IADR2, NTAMP, IADR12
       INTEGER IOPT, IDLSTR2, IDLSTX2
 
 * external functions:
@@ -946,6 +974,10 @@ c /* deck CC_L2GD */
       IADR2 = IADR1 + NT1AM(ISYML2)
       NTAMP = NT1AM(ISYML2) + NT2AM(ISYML2)
       IF (CCS) NTAMP = NT1AM(ISYML2)
+      IF (CCR12) THEN
+        IADR12 = IADR2 + NT2AM(ISYML2)
+        NTAMP  = NTAMP + NGAMMA(ISYML2)
+      END IF
 
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'LABELA, LABELB:',LABELA,LABELB
@@ -963,6 +995,10 @@ c /* deck CC_L2GD */
 *---------------------------------------------------------------------*
       IOPT = 3
       CALL CC_RDRSP('X2',IDLSTX2,ISYML2,IOPT,MODEL,GD(IADR1),GD(IADR2))
+      IF (CCR12) THEN
+        IOPT = 32
+        CALL CC_RDRSP('X2',IDLSTX2,ISYML2,IOPT,MODEL,DUMMY,GD(IADR12))
+      END IF
 
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'DEBUG_CC_GDL2> norm^2 of X2-vector:',
@@ -972,6 +1008,9 @@ c /* deck CC_L2GD */
         IF (.NOT.CCS) 
      &   WRITE (LUPRI,*) 'DEBUG_CC_GDL2> norm^2 of doubles part:',
      &     DDOT(NT2AM(ISYML2),GD(IADR2),1,GD(IADR2),1)
+        IF (CCR12) 
+     &   WRITE (LUPRI,*) 'DEBUG_CC_GDL2> norm^2 of r12 doubles part:',
+     &     DDOT(NGAMMA(ISYML2),GD(IADR12),1,GD(IADR12),1)
       END IF
 *---------------------------------------------------------------------*
 * 2. contribution: F matrix transformed R2 vector
@@ -979,6 +1018,10 @@ c /* deck CC_L2GD */
       IOPT = 3
       CALL CC_RDRSP('F2',IDLSTR2,ISYML2,IOPT,MODEL,
      &              WORK(IADR1),WORK(IADR2))
+      IF (CCR12) THEN
+        IOPT = 32
+        CALL CC_RDRSP('F2',IDLSTR2,ISYML2,IOPT,MODEL,DUMMY,WORK(IADR12))
+      END IF
 
       CALL DAXPY(NTAMP,ONE,WORK,1,GD,1)
       
@@ -993,6 +1036,9 @@ c /* deck CC_L2GD */
         IF (.NOT.CCS) 
      &   WRITE (LUPRI,*) 'DEBUG_CC_GDL2> norm^2 of doubles part:',
      &     DDOT(NT2AM(ISYML2),GD(IADR2),1,GD(IADR2),1)
+        IF (CCR12)
+     &   WRITE (LUPRI,*) 'DEBUG_CC_GDL2> norm^2 of r12 doubles part:',
+     &     DDOT(NGAMMA(ISYML2),GD(IADR12),1,GD(IADR12),1)
       END IF
 
       RETURN

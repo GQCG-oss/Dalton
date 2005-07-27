@@ -437,8 +437,8 @@ C
      &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
  
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
+     *            WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -490,8 +490,8 @@ C     -------------------------------------------------------------
      &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
  
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
+     *            WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -546,8 +546,8 @@ C     --------------------------------------------
      &              WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
  
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
+      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),WORK(KT1AMP0),
+     *            WORK(KT2AMP0),WORK(KEND1A),LWRK1A,'XXX')
  
       IF (IPRSAV .GT. 5) THEN
          CALL AROUND(' END OF CC_FDAAMAT:')

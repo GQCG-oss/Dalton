@@ -244,6 +244,7 @@ C---------------------------------------------------------------------*
          IMUL = IMULTE(IDXVEC)
       END IF                              
 
+      IF (LOCDBG) WRITE(LUPRI,*) 'CC_WRRSP> FILE:',FILEX 
 *---------------------------------------------------------------------*
 * open & rewind file:
 *---------------------------------------------------------------------*
@@ -260,9 +261,11 @@ C---------------------------------------------------------------------*
       KDOUBLE   = 1
       KSINGLEFF = 1
       KDOUBLEFF = 1
+      KR12DBLE  = 1
       KEND      = 1
 
-      IF (LEXISTS .AND. LISTI(1:2).NE.'R0') THEN
+CCH   IF (LEXISTS .AND. LISTI(1:2).NE.'R0') THEN
+      IF (LEXISTS) THEN
 C
 C        check model and how many vectors were stored on file
 C
@@ -353,10 +356,11 @@ C             KEND     = KDOUBLE  + NT2AM(ISYM)+NT2AMA(ISYM)
 C             READ(LUSAVE,ERR=888,END=888) 
 C    &            (WORK(KDOUBLE+NT2AM(ISYM)-1+I),I=1,NT2AMA(ISYM))
             END IF
+            IF (LOCDBG) WRITE(LUPRI,*) 'read r12 doubles part'
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
             READ(LUSAVE,ERR=888,END=888) 
-            IF (LOCDBG) WRITE(LUPRI,*) 'read r12 doubles part'
+            IF (LOCDBG) WRITE(LUPRI,*) 'skipped r12 doubles part'
          END IF
          NVECR = 4
 C
@@ -790,7 +794,6 @@ C
       DIMENSION VS0(*),VS1(*),VS2(*),VS2P(*),VS3(*),VS4(*)
 C
       INTEGER IOS
-
 
 * write vector components to file:
       ! CPHF part for orbital relaxed response 

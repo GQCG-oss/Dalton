@@ -122,7 +122,6 @@ C          'EO2': rhs for right eigenvector second-order response
 C
 C          'X1' : first-order eta vectors
 C          'X2': second-order eta vectors
-C          'X2': second-order eta vectors
 C          'X3': third-order eta vectors
 C          'X4': fourth-order eta vectors
 C          'CX2': second-order Cauchy eta vectors
@@ -271,6 +270,7 @@ C
       IF (CCSTST.AND.(IOPT.GT.1)) THEN
          CALL DZERO(VEC2,NT2AM(ISYM))
       ENDIF
+
 
       RETURN
 *---------------------------------------------------------------------*
@@ -1296,7 +1296,13 @@ Cold    TYPE(3:3)  = '_'
      *    MODFIL(7:10) .EQ.'-R12'.OR.
      *    MODFIL(8:10) .EQ.'-R1' .OR.
      *    MODFIL(9:10) .EQ.'-R'  .OR.
-     *    MODFIL(10:10).EQ.'-'       ) THEN
+     *    MODFIL(10:10).EQ.'-'   .OR.
+     *    MODFIL(5:9)  .EQ.'(R12)'.OR.
+     *    MODFIL(6:10) .EQ.'(R12)'.OR.
+     *    MODFIL(7:10) .EQ.'(R12'.OR.
+     *    MODFIL(8:10) .EQ.'(R1' .OR.
+     *    MODFIL(9:10) .EQ.'(R'  .OR.
+     *    MODFIL(10:10).EQ.'('       ) THEN
         IBIT32=32
       ELSE
         IBIT32 = 0
@@ -1465,12 +1471,15 @@ C     CALL QUIT ('fatal i/o error in CC_RVRSP')
 *---------------------------------------------------------------------*
 c /* deck CCPRPAO */
 *=====================================================================*
-       SUBROUTINE CCPRPAO(LABEL,PRPAO,IRREP,ISYM,IERR,WORK,LWORK)
+       SUBROUTINE CCPRPAO(LABEL1,LONLYAO,PRPAO,IRREP,ISYM,IERR,
+     &                    WORK,LWORK)
 *---------------------------------------------------------------------*
 *
 *  Purpose: read property one-electron AO integrals from file AOPROPER
 *
-*       input:   LABEL -- search string for AOPROPER file
+*       input:   LABEL1 -- search string for AOPROPER file
+*                LONLYAO -- property AO integrals only for AO basis
+*                           or for AO + auxiliary basis?
 *                
 *       output:  PRPAO -- property AO integrals in coupled cluster
 *                         storage scheme (dimension of ouput vector
@@ -1492,6 +1501,25 @@ c /* deck CCPRPAO */
 *  Thomas Bondo Pedersen, April 2003:
 *     Correct sign error in *ANGMOM integrals.
 *
+*  Christian Neiss, Dec. 2004:
+*  adapted for R12
+*  Note: the meaning of nbas, mbas1, mbas2,... depends on from WHERE
+*  this routine is called (these common blocks are overwritten 
+*  during R12 with different values):
+*  within normal CC: nbas   number of AO basis functions
+*                    mbas1  0 or not initialized
+*                    mbas2  0 or not initialized
+*                    ....
+*  within R12 environment: nbas   number of AO + auxiliary basis func.
+*                          mbas1  number of AO basis functions
+*                          mbas2  number of auxiliary basis functions
+*                          ....
+*  To ensure the highest possible flexilbility of this subroutine,
+*  we use the R12-specific variables throughout the routine. If the 
+*  calculation is not R12, the variables are initialized with the 
+*  corespondig values; in these cases it does not matter, whether
+*  LONLYAO is TRUE or FALSE.
+*  
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -1506,6 +1534,7 @@ c /* deck CCPRPAO */
 #include <inftap.h>
 #include <ccisao.h>
 #include <dummy.h>
+#include <r12int.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -1520,7 +1549,7 @@ c /* deck CCPRPAO */
 
 
 * input:
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL1
       INTEGER IRREP, ISYM, IERR, LWORK
 
 #if defined (SYS_CRAY)
@@ -1532,9 +1561,12 @@ c /* deck CCPRPAO */
 #endif
 
       CHARACTER*8 RTNLBL(2)
-      LOGICAL LOPENED
+      LOGICAL LOPENED, LONLYAO
       INTEGER IDX, IDXI, IDXJ
       INTEGER KEND0, LEND0, KINTEG, ISYMA, ISYMB, IOLD, INEW
+      INTEGER nallbas,nsquare,ntriangle,istart,iend
+      INTEGER isymi,isymj,isymab,icount1,icount2,ioff
+      INTEGER ibasxtd(8),nbasxtd(8),iaodis1(8,8),iaodis2(8,8)
 
 * functions:
       INTEGER IDAMAX
@@ -1549,11 +1581,11 @@ c /* deck CCPRPAO */
 
 
       IERR = -1
-      CALL MOLLB2(LABEL,RTNLBL,LUPROP,IERR)
+      CALL MOLLB2(LABEL1,RTNLBL,LUPROP,IERR)
 
       IF (IERR .NE. 0) THEN
         IERR = ABS(IERR)  ! force IERR to be positive for I/O errors
-        WRITE (LUPRI,'(3A)')   'WARNING: property label ',LABEL,
+        WRITE (LUPRI,'(3A)')   'WARNING: property LABEL ',LABEL1,
      &                  ' not found on file AOPROPER.'
         WRITE (LUPRI,'(A,i5)') 'WARNING: IERR =',IERR
         WRITE (LUPRI,'(A)')    'WARNING: no integrals read.'
@@ -1561,89 +1593,187 @@ c /* deck CCPRPAO */
         RETURN
       END IF
 
-      IF (LOCDBG) THEN
-        WRITE (LUPRI,*) 'CCPRPAO> LABEL:',LABEL
-        WRITE (LUPRI,*) 'CCPRPAO> IERR:',IERR
-        WRITE (LUPRI,*) 'CCPRPAO> N2BASX:',N2BASX
-        WRITE (LUPRI,*) 'CCPRPAO> NNBASX:',NNBASX
-        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(1):',RTNLBL(1)
-        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(2):',RTNLBL(2)
-        CALL FLSHFO(LUPRI)
-      END IF
+*---------------------------------------------------------------------*
+* set dimensions
+*---------------------------------------------------------------------*
+      if (.NOT. CCR12) then
+        do i = 1, nsym
+          mbas1(i) = nbas(i)
+          mbas2(i) = 0
+        end do
+      end if
 
+      nallbas = 0
+      do i = 1, nsym
+        nbasxtd(i) = mbas1(i) + mbas2(i)
+        nallbas = nallbas + nbasxtd(i) 
+      end do
+      nsquare = nallbas*nallbas
+      ntriangle = nallbas*(nallbas+1)/2
+
+      ibasxtd(1) = 0
+      do i = 2, nsym
+        ibasxtd(i) = ibasxtd(i-1) + nbasxtd(i-1)
+      end do
+ 
       KINTEG = 1
-      KEND0  = KINTEG + N2BASX
+      KEND0  = KINTEG + nsquare
       LEND0  = LWORK - KEND0
 
       IF (LEND0.LT.0) CALL QUIT('Insufficient memory in CCPRPAO.')
+
+      IF (LOCDBG) THEN
+        WRITE (LUPRI,*) 'CCPRPAO> LABEL:',LABEL1
+        WRITE (LUPRI,*) 'CCPRPAO> LONLYAO:',LONLYAO
+        WRITE (LUPRI,*) 'CCPRPAO> IERR:',IERR
+        WRITE (LUPRI,*) 'CCPRPAO> N2BASX:',N2BASX
+        WRITE (LUPRI,*) 'CCPRPAO> NNBASX:',NNBASX
+        WRITE (LUPRI,*) 'CCPRPAO> NSQAURE:',nsquare
+        WRITE (LUPRI,*) 'CCPRPAO> NTRIANGLE:',ntriangle
+        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(1):',RTNLBL(1)
+        WRITE (LUPRI,*) 'CCPRPAO> RTNLBL(2):',RTNLBL(2)
+        do i = 1, nsym
+C          write(lupri,*) 'ibas(',i,') = ',ibas(i)
+          write(lupri,*) 'nbas(',i,') = ',nbas(i)
+C          write(lupri,*) 'ibasxtd(',i,') = ',ibasxtd(i)
+          write(lupri,*) 'nbasxtd(',i,') = ',nbasxtd(i)
+          write(lupri,*) 'mbas1(',i,') = ',mbas1(i)
+          write(lupri,*) 'mbas2(',i,') = ',mbas2(i)
+        end do
+        CALL FLSHFO(LUPRI)
+      END IF
 
 *---------------------------------------------------------------------*
 * read integrals and resort them to a full square matrix:
 *---------------------------------------------------------------------*
       IF (RTNLBL(2).EQ.'SQUARE  ') THEN
         ISYM = 0
-        CALL READT(LUPROP,N2BASX,WORK(KINTEG))
+        CALL READT(LUPROP,nsquare,WORK(KINTEG))
         CALL GPCLOSE(LUPROP,'KEEP')
       ELSE IF (RTNLBL(2).EQ.'SYMMETRI') THEN
         ISYM = +1
-        IF (LEND0.LT.NNBASX)
+        IF (LEND0.LT.ntriangle)
      &       CALL QUIT('Insufficient memory in CCPRPAO.')
-        CALL READT(LUPROP,NNBASX,WORK(KEND0))
-        CALL DSPTGE(NBAST,WORK(KEND0),WORK(KINTEG))
+        CALL READT(LUPROP,ntriangle,WORK(KEND0))
+        CALL DSPTGE(NALLBAS,WORK(KEND0),WORK(KINTEG))
         CALL GPCLOSE(LUPROP,'KEEP')
       ELSE IF (RTNLBL(2).EQ.'ANTISYMM') THEN
         ISYM = -1
-        IF (LEND0.LT.NNBASX)
+        IF (LEND0.LT.ntriangle)
      &       CALL QUIT('Insufficient memory in CCPRPAO.')
-        CALL READT(LUPROP,NNBASX,WORK(KEND0))
-        CALL DAPTGE(NBAST,WORK(KEND0),WORK(KINTEG))
+        CALL READT(LUPROP,ntriangle,WORK(KEND0))
+        CALL DAPTGE(NALLBAS,WORK(KEND0),WORK(KINTEG))
         CALL GPCLOSE(LUPROP,'KEEP')
       ELSE
         IERR = 1
-        WRITE (LUPRI,'(3A)') 'WARNING: no antisymmetry label for ',
-     &              LABEL,' integrals on file AOPROPER.'
+        WRITE (LUPRI,'(3A)') 'WARNING: no antisymmetry LABEL for ',
+     &              LABEL1,' integrals on file AOPROPER.'
         WRITE (LUPRI,'(A)') 'WARNING: no integrals read.'
         CALL GPCLOSE(LUPROP,'KEEP')
         RETURN
       END IF
 
       IF (IPRINT.GT.99 .OR. LOCDBG) THEN
-        CALL AROUND('CCPRPAO: '//LABEL//'-integrals')
-        CALL OUTPUT(WORK(KINTEG),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        CALL AROUND('CCPRPAO: '//LABEL1//'-integrals')
+        CALL OUTPUT(WORK(KINTEG),1,NALLBAS,1,NALLBAS,NALLBAS,NALLBAS,
+     &              1,LUPRI)
       END IF
-
 *---------------------------------------------------------------------*
 * find irrep symmetry of the operator:
 *---------------------------------------------------------------------*
-      IDX = IDAMAX(N2BASX,WORK(KINTEG),1)
+      IDX = IDAMAX(nsquare,WORK(KINTEG),1)
       IF ( ABS(WORK(KINTEG-1+IDX)) .GT. CKMXPR ) THEN
-        IDXI  = (IDX+NBAST-1) / NBAST
-        IDXJ  = IDX - (IDXI-1)*NBAST
-        IRREP = MULD2H(ISAO(IDXI),ISAO(IDXJ))
+        IDXI  = (IDX+NALLBAS-1) / NALLBAS
+        IDXJ  = IDX - (IDXI-1)*NALLBAS
+C        IRREP = MULD2H(ISAO(IDXI),ISAO(IDXJ))
+        do isyma = 1, nsym
+c         do i = 1, nbasxtd(isyma)
+c           ioff = ibasxtd(i) + i 
+c           if (ioff .eq. idxi) isymi = isyma
+c           if (ioff .eq. idxj) isymj = isyma
+c         end do   
+c         a bit simpler / more elegant: 
+          istart = ibasxtd(isyma) + 1
+          iend   = istart-1 + nbasxtd(isyma)
+          if (idxi.ge.istart .and. idxi.le.iend) isymi = isyma
+          if (idxj.ge.istart .and. idxj.le.iend) isymj = isyma
+        end do
+        IRREP = muld2h(isymi,isymj)
+        if (locdbg) then
+          write(lupri,*) 'CCPRPAO> IRREP = ',IRREP
+        end if
       ELSE
         IRREP = 0
         IERR  = -1
         WRITE (LUPRI,'(3A,1P,D15.7)')
-     &       'WARNING: integrals for operator with label ',LABEL,
+     &       'WARNING: integrals for operator with LABEL ',LABEL1,
      &               ' are smaller than ',CKMXPR
         WRITE (LUPRI,'(A)')
      &       'WARNING: irrep symmetry can not be determined.'
+        CALL FLSHFO(LUPRI)
         RETURN
       END IF
       
 *---------------------------------------------------------------------*
 * resort integrals to coupled cluster storage:
 *---------------------------------------------------------------------*
+      !determine offsets   
+      do isymab = 1, nsym
+        icount1 = 0
+        icount2 = 0
+        do isymb = 1, nsym
+          isyma = muld2h(isymab,isymb)
+          iaodis1(isyma,isymb) = icount1
+          iaodis2(isyma,isymb) = icount2
+          icount1 = icount1 + mbas1(isyma)*mbas1(isymb)
+          icount2 = icount2 + nbasxtd(isyma)*nbasxtd(isymb) 
+c         if (locdbg) then
+c           write(lupri,*) 'iaodis1(',isyma,',',isymb,') = ',
+c    &        iaodis1(isyma,isymb)
+c         end if
+        end do
+      end do
+
       DO ISYMA = 1, NSYM
         ISYMB = MULD2H(IRREP,ISYMA)
-        DO A = 1, NBAS(ISYMA)
-        DO B = 1, NBAS(ISYMB)
-          IOLD = (IBAS(ISYMA)+A-1)*NBAST + (IBAS(ISYMB)+B)
-          INEW = IAODIS(ISYMB,ISYMA) + NBAS(ISYMB)*(A-1) + B
-          PRPAO(INEW) = WORK(KINTEG-1+IOLD)
-        END DO
-        END DO
+        if (LONLYAO) then
+          DO A = 1, mbas1(ISYMA)
+          DO B = 1, mbas1(ISYMB)
+            IOLD = (ibasxtd(isyma)+A-1)*NALLBAS + ibasxtd(isymb) + B
+            INEW = IAODIS1(ISYMB,ISYMA) + MBAS1(ISYMB)*(A-1) + B
+            if (locdbg) then
+              write(lupri,*) 'isyma, isymb, iold, inew = ',isyma, isymb,
+     &          iold, inew
+            end if
+            PRPAO(INEW) = WORK(KINTEG-1+IOLD)
+          END DO
+          END DO
+        else 
+          do A = 1, nbasxtd(isyma)
+          do B = 1, nbasxtd(isymb)
+            IOLD = (ibasxtd(isyma)+A-1)*NALLBAS +
+     &             (ibasxtd(isymb)+B)
+            INEW = IAODIS2(ISYMB,ISYMA) + 
+     &             (nbasxtd(isymb))*(A-1) + B
+            PRPAO(INEW) = WORK(KINTEG-1+IOLD)
+          end do
+          end do
+        end if
       END DO
+
+      IF (LOCDBG) THEN
+        call around('CCPRPAO: Resorted '//LABEL1//'-integrals')
+        do isyma = 1, nsym
+          isymb = muld2h(irrep,isyma)
+          write(lupri,*) 'Symmetry block: ',isymb, isyma
+          if (nbas(isyma).eq.0 .or. nbas(isymb).eq.0) then
+            write(lupri,*) 'This symmetry is empty'
+          else
+            call output(prpao(1+IAODIS1(ISYMB,ISYMA)),1,nbas(isymb),1,
+     &                  nbas(isyma),nbas(isymb),nbas(isyma),1,lupri)
+          end if
+        end do
+      END IF
 
 *---------------------------------------------------------------------*
 * Correct sign error in *ANGMOM squaring:
@@ -1654,7 +1784,7 @@ C  TODO/FIXME: KR has promised to look at the signs of *all* one-el.
 C              integrals. For now, the sign of rot. strengths and
 C              optical rotations is changed in the CC code.
 C
-C     IF (LABEL(2:7) .EQ. 'ANGMOM') THEN
+C     IF (LABEL1(2:7) .EQ. 'ANGMOM') THEN
 C        CALL DSCAL(N2BST(IRREP),-1.0D0,PRPAO,1)
 C     ENDIF
 
@@ -1700,6 +1830,56 @@ C     ENDIF
         WRITE(LUPRI,*) 'Length of CMO (NLAMDS):',NLAMDS
         WRITE(LUPRI,*) 'Norm^2 of CMO:',DDOT(NLAMDS,CMO,1,CMO,1)
       END IF
+
+      RETURN
+      END
+*=====================================================================*
+*=====================================================================*
+      SUBROUTINE CC_GET_ORBENE(ORBENE,DELFRO,LOCDBG,WORK,LWORK)
+*---------------------------------------------------------------------*
+*     Purpose: read canonical orbital energies from SIRIFC file
+*     Christof Haettig, spring 2005, Friedrichstal(Baden)
+*=====================================================================*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccorb.h>
+#include <inftap.h>
+#include <dummy.h>
+#include <ccsdinp.h>
+
+      LOGICAL DELFRO, LOCDBG
+      INTEGER IDX, NORBEN, LWORK
+
+#if defined (SYS_CRAY) 
+      REAL ORBENE(NORBTS), WORK(LWORK)
+#else
+      DOUBLE PRECISION ORBENE(NORBTS), WORK(LWORK)
+#endif
+
+*---------------------------------------------------------------------*
+*     read canonical orbital energies from SIRIFC file:
+*---------------------------------------------------------------------*
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND LUSIFC
+      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+      READ (LUSIFC)
+      READ (LUSIFC) (WORK(IDX),IDX=1,NORBTS)
+      CALL GPCLOSE(LUSIFC,'KEEP')
+
+      NORBEN = NORBTS
+      IF ( DELFRO .AND. (FROIMP .OR. FROEXP)) THEN
+        CALL CCSD_DELFRO(WORK,WORK(NORBTS+1),LWORK-NORBTS)
+        NORBEN = NORBT
+      END IF
+      CALL FOCK_REORDER(WORK,WORK(NORBTS+1),LWORK-NORBTS)
+     
+      CALL DCOPY(NORBEN,WORK,1,ORBENE,1)
+
+      IF (LOCDBG) THEN
+         CALL AROUND('Canonical orbital energies:')
+         CALL OUTPUT(ORBENE,1,NORBEN,1,1,NORBEN,1,1,LUPRI)
+      ENDIF
 
       RETURN
       END

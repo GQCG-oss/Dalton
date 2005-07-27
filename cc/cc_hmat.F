@@ -969,7 +969,7 @@ C
 C
          RSPIM = .TRUE.
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *               WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *               WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C-----------------------------------------
 C        Get the CC response vector again.
@@ -1068,7 +1068,7 @@ C
 C
            RSPIM = .TRUE.
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
-     *                 WORK(KC2AM),WORK(KEND2),LWRK2) 
+     *                 WORK(KC2AM),WORK(KEND2),LWRK2,'XXX') 
 C
 C-------------------------------------------
 C          Get the CC response vector again.
@@ -1188,8 +1188,9 @@ C
      *              WORK(KC2AM),WORK(KEND2),LWRK2)
 C
       RSPIM = .TRUE.
-      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
-     *            WORK(KEND2),LWRK2) 
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     &            WORK(KC2AM),
+     *            WORK(KEND2),LWRK2,'XXX') 
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CC_FDH ')

@@ -258,7 +258,7 @@ C
       ELSE
 
          ! the standard case: retrieve integrals using CCPRPAO
-         CALL CCPRPAO(LABEL,WORK(K1INT),ISYM,IMATRIX,IERR,
+         CALL CCPRPAO(LABEL,.TRUE.,WORK(K1INT),ISYM,IMATRIX,IERR,
      &                     WORK(KEND1),LWRK1)
          IF (IERR.LT.0) THEN
            CALL DZERO(WORK(K1INT),N2BST(ISYMOPR))

@@ -93,11 +93,13 @@ c /* deck CC_AAMAT */
       CHARACTER LISTO*(*), LISTR*(*), FILAAM*(*)
       CHARACTER*(10) MODEL
       CHARACTER*(8)  LABEL
+      CHARACTER APROXR12*3
       LOGICAL LTWOEL
       INTEGER IATRAN(MXDIM_AATRAN,NATRAN), IADOTS(MXVEC,NATRAN)
       INTEGER IOPER, IDLSTR, IFILE, IVEC, ITRAN, IOPT, IOPTRES
       INTEGER ISYOPE, ISYTAM, ISYRES, IRELAX, IOPTE
       INTEGER KEND1, LWRK1, KRES1, KRES2, LEN, KRES1EFF, KRES2EFF
+      INTEGER LENMOD,IOPTWR12,KRESR12
 
 
 * external functions:
@@ -169,6 +171,10 @@ c /* deck CC_AAMAT */
         KRES1 = 1
         KRES2 = KRES1 + NT1AM(ISYRES)
         KEND1 = KRES2 + NT2AM(ISYRES)
+        IF (CCR12) THEN
+          KRESR12 = KRES2 + NT2AM(ISYRES)
+          KEND1   = KRESR12 + NGAMMA(ISYRES)
+        END IF
         LWRK1 = LWORK - KEND1
         IF (LWRK1.LT.0) CALL QUIT('Insufficient memory in CC_AAMAT.')
 
@@ -250,11 +256,21 @@ c          --------------------------------------------------
         ELSE
            CALL QUIT('Unkown coupled cluster model in CC_AAMAT.')
         END IF
+        IF (CCR12) THEN
+          APROXR12 = '   '
+          CALL CCSD_MODEL(MODEL,LENMOD,10,MODEL,10,APROXR12)
+          IOPTWR12 = 32
+        END IF
 
         IF      (IOPTRES.EQ.3) THEN
           CALL CC_WRRSP(FILAAM, IFILE, ISYRES, IOPT, MODEL,
      &                  DUMMY,WORK(KRES1),WORK(KRES2),
      &                  WORK(KEND1),LWRK1)
+          IF (CCR12) THEN
+            CALL CC_WRRSP(FILAAM,IFILE,ISYRES,IOPTWR12,
+     &                    MODEL,DUMMY,DUMMY,WORK(KRESR12),
+     &                    WORK(KEND1),LWRK1)
+          END IF
           IF (CCSDT) THEN
             CALL CC_WRRSP(FILAAM,IFILE,ISYRES,IOPTE,MODEL,DUMMY,
      &                 WORK(KRES1EFF),WORK(KRES2EFF),WORK(KEND1),LWRK1)
@@ -263,6 +279,11 @@ c          --------------------------------------------------
           CALL CC_WARSP(FILAAM, IFILE, ISYRES, IOPT, MODEL,
      &                  DUMMY,WORK(KRES1),WORK(KRES2),
      &                  WORK(KEND1),LWRK1)
+          IF (CCR12) THEN
+            CALL CC_WARSP(FILAAM,IFILE,ISYRES,IOPTWR12,
+     &                    MODEL,DUMMY,DUMMY,WORK(KRESR12),
+     &                    WORK(KEND1),LWRK1)
+          END IF
           IF (CCSDT) THEN
             CALL CC_WARSP(FILAAM,IFILE,ISYRES,IOPTE,MODEL,DUMMY,
      &                 WORK(KRES1EFF),WORK(KRES2EFF),WORK(KEND1),LWRK1)
@@ -281,6 +302,11 @@ c          --------------------------------------------------
            CALL CCDOTRSP(IADOTS,ACONS,IOPT,FILAAM,ITRAN,NATRAN,MXVEC,
      &                   WORK(KRES1),WORK(KRES2),ISYRES,
      &                   WORK(KEND1),LWRK1)
+           IF (CCR12) THEN
+             CALL CCDOTRSP(IADOTS,ACONS,IOPTWR12,FILAAM,ITRAN,NATRAN,
+     &                     MXVEC,DUMMY,WORK(KRESR12),ISYRES,
+     &                     WORK(KEND1),LWRK1)
+           END IF
  
            IF (LOCDBG) THEN
              IVEC = 1
@@ -299,10 +325,12 @@ c          --------------------------------------------------
          WRITE (LUPRI,*) MSGDBG, 'wrote ',FILAAM,':',IFILE,' to disk.'
          LEN = NT1AM(ISYRES)
          IF (.NOT.CCS) LEN = LEN + NT2AM(ISYRES)
+         IF (CCR12) LEN = LEN + NGAMMA(ISYRES)
          WRITE (LUPRI,*) MSGDBG, 'NORM^2 for result vector = ', 
      &    DDOT(LEN,WORK(KRES1),1,WORK(KRES1),1)
          WRITE (LUPRI,*) 'Listing of the result vector:'
          CALL CC_PRP(WORK(KRES1),WORK(KRES2),ISYRES,1,1)
+         IF (CCR12) CALL CC_PRPR12(WORK(KRESR12),ISYRES,1,.TRUE.)
          IF (CCSDT) THEN
            WRITE (LUPRI,*) 'norm^2 of eff. result vector:',
      &        DDOT(LEN,WORK(KRES1EFF),1,WORK(KRES1EFF),1)

@@ -1178,7 +1178,8 @@ C
 #include <aovec.h>
 #include <iratdef.h>
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h>
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -1198,7 +1199,7 @@ C
       INTEGER KLAMPB, KLAMHB, KT1AM, ISYMLP, K3OINT2
       INTEGER KOOOO, ISYMB2
       INTEGER INDEXA(MXCORB)
-      INTEGER ISYMC2,ISYMC,IDLSTC,ISYMBC,MAXBC,KLAMPC,KLAMHC
+      INTEGER ISYMC2,ISYMC,IDLSTC,ISYMBC,MAXBC,KLAMPC,KLAMHC,IDUM
 C
 #if defined (SYS_CRAY)
       REAL XOOOO(*), XOOVV(*), XOVVO(*), WORK(LWORK)
@@ -1448,6 +1449,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                    IDUM = 1
+                    CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -1919,7 +1924,8 @@ C
 #include <aovec.h>
 #include <iratdef.h>
 #include <ccorb.h>
-#include <infind.h>
+#include <ccisao.h>
+#include <r12int.h> 
 #include <blocks.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -1935,7 +1941,7 @@ C
       INTEGER KFREE, LFREE, NTOSYM, ISYMD1, NTOT, ILLL
       INTEGER KRECNR, NUMDIS, IDEL2, IDEL, ISYMD, ISYDIS
       INTEGER ISYAIK, KXINT, KLAMPB, KLAMHB, ISYCKJ, KCKJ
-      INTEGER INDEXA(MXCORB)
+      INTEGER INDEXA(MXCORB),IDUM
 C
 #if defined (SYS_CRAY)
 #else
@@ -2044,6 +2050,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                    IDUM = 1
+                    CALL IJKAUX(IDEL,IDUM,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL

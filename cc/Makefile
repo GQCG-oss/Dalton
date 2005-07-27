@@ -61,7 +61,11 @@ cc3_aden_cub.o cc3_aden_cub_t0.o \
 cc_foppt_sc.o cc_r12.o  cc_mkrv.o cc_rhtr_noddy.o \
 cc_2eexp_1.o  cc_grad_1.o   cc_2eexp_2.o   asqr.o \
 ccsdt_t32_noddy.o ccsdt_o32_noddy.o \
-ccsoppa.o  cc_r12dummies.o cc_qm3.o cc_jmat.o \
+cc_mofconr12.o cc_r12batf.o cc_r12mkvamkl.o \
+cc_r12mkxajkl.o cc_r12xprep.o cc_r12mkxajklfr.o \
+cc_r12rdpck.o cc_r12vunpack.o cc_r12a2.o cc_lammats.o \
+cclhtr_r12.o cc_r12ccsd.o cc_ftstnew.o cc_r12xieta.o \
+ccsoppa.o cc_qm3.o cc_jmat.o \
 cc_kmat.o cc_setk11.o cclr_fa.o
 
 F_CPPS = $(F_OBJS:.o=.i)
@@ -70,6 +74,11 @@ pre: $(F_CPPS)
 
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > cc.ftnchek
+
+cc_ftstnew.o: cc_ftstnew.F
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_ftstnew.F 
+cc_r12ccsd.o: cc_r12ccsd.F
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c cc_r12ccsd.F 
 
 io : crayio.o
 

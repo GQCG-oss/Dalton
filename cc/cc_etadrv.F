@@ -35,7 +35,7 @@ C
 C
 c /* deck CC_ETADRV */
 *=====================================================================*
-      SUBROUTINE CC_ETADRV(TYPE,LABEL,ISYMS,ISTAT,EIGV,
+      SUBROUTINE CC_ETADRV(TYPE,LABELV,ISYMS,ISTAT,EIGV,
      &                     ISYMO,FREQS,ICAU,NVEC,MAXVEC,
      &                     WORK,LWORK)
 *---------------------------------------------------------------------*
@@ -54,6 +54,7 @@ c /* deck CC_ETADRV */
 *
 *     Written by Christof Haettig april/june/july 1997.
 *     extensions for Cauchy eta vectors in March 1998.
+*     adapted for CC-R12 by Christian Neiss, june 2005
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -65,7 +66,9 @@ c /* deck CC_ETADRV */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
+#include <cclists.h>
 #include <dummy.h>
+#include <r12int.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -79,7 +82,8 @@ c /* deck CC_ETADRV */
       INTEGER ISYMO(MAXVEC,*), ICAU(MAXVEC,*)
       INTEGER ISYMS(MAXVEC,*), ISTAT(MAXVEC,*)
 
-      CHARACTER*8 LABEL(MAXVEC,*)
+      CHARACTER*8 LABELV(MAXVEC,*)
+      CHARACTER*3 APROXR12
 
 #if defined (SYS_CRAY)
       REAL FREQS(MAXVEC,*), EIGV(MAXVEC,*)
@@ -96,14 +100,15 @@ c /* deck CC_ETADRV */
 
       CHARACTER MODEL*(10)
       INTEGER MX0KTRAN, MX1GTRAN, MX2FTRAN, MX1FATRAN
-      INTEGER MXTRAN, MX0GTRAN, MX1FTRAN, MX0FATRAN, MXEATRAN
+      INTEGER MXTRAN, MX0GTRAN, MX1FTRAN, MX0FATRAN, MXXETRAN
       INTEGER K0KTRAN, K1GTRAN, K2FTRAN, K1FATRAN
-      INTEGER K0GTRAN, K1FTRAN, K0FATRAN, KEATRAN
+      INTEGER K0GTRAN, K1FTRAN, K0FATRAN, KXETRAN
       INTEGER N0KTRAN, N1GTRAN, N2FTRAN, N1FATRAN
       INTEGER N0GTRAN, N1FTRAN, N0FATRAN, NEATRAN
       INTEGER IOPT, ISYM, IVEC, ORDER, MPERM, NSTAT, IOPTH, IOPTRW
       INTEGER KEND0, LEND0, KEND1, LEND1, LMAX1, LMAX2, KCHI1, KCHI2
       INTEGER KEND2, LEND2, KRHS1, KRHS2, IDUM
+      INTEGER KCHIR12, LMAXR12, IOPTRWR12, MODLEN, KRHSR12
 
 * external functions
       INTEGER ILSTSYM
@@ -182,7 +187,7 @@ C       MPERM = ??
       MX2FTRAN  = 3 * MXTRAN
       MX0FATRAN = 5 * MXTRAN
       MX1FATRAN = 5 * MXTRAN
-      MXEATRAN  = 3 * MXTRAN
+      MXXETRAN  = MXDIM_XEVEC * MXTRAN
 
       K0KTRAN  = 1
       K0GTRAN  = K0KTRAN  + MX0KTRAN
@@ -191,8 +196,8 @@ C       MPERM = ??
       K2FTRAN  = K1FTRAN  + MX1FTRAN
       K0FATRAN = K2FTRAN  + MX2FTRAN
       K1FATRAN = K0FATRAN + MX0FATRAN
-      KEATRAN  = K1FATRAN + MX1FATRAN
-      KEND0    = KEATRAN + MXEATRAN
+      KXETRAN  = K1FATRAN + MX1FATRAN
+      KEND0    = KXETRAN  + MXXETRAN
       LEND0    = LWORK - KEND0
 
       IF (LEND0 .LT. 0 ) THEN
@@ -202,7 +207,7 @@ C       MPERM = ??
 *---------------------------------------------------------------------*
 * set up lists for G, F and F{A} transformations and ETA{O} vectors:
 *---------------------------------------------------------------------*
-      CALL CC_ETA_SETUP(TYPE,NSTAT,ORDER,LABEL,ISTAT,EIGV,FREQS,ICAU,
+      CALL CC_ETA_SETUP(TYPE,NSTAT,ORDER,LABELV,ISTAT,EIGV,FREQS,ICAU,
      &                  NVEC, MAXVEC,  MXTRAN, 
      &                  WORK(K0KTRAN), N0KTRAN,
      &                  WORK(K0GTRAN), N0GTRAN,
@@ -211,21 +216,24 @@ C       MPERM = ??
      &                  WORK(K2FTRAN), N2FTRAN,
      &                  WORK(K0FATRAN),N0FATRAN,
      &                  WORK(K1FATRAN),N1FATRAN,
-     &                  WORK(KEATRAN), NEATRAN  )
+     &                  WORK(KXETRAN), NEATRAN  )
 
 *---------------------------------------------------------------------*
 * initialize ETA vector files:
 *---------------------------------------------------------------------*
       LMAX1 = 0
       LMAX2 = 0
+      LMAXR12 = 0
       DO ISYM = 1, NSYM
         LMAX1 = MAX(LMAX1,NT1AM(ISYM))
         LMAX2 = MAX(LMAX2,NT2AM(ISYM))
+        IF (CCR12) LMAXR12 = MAX(LMAXR12,NGAMMA(ISYM))
       END DO
 
       KCHI1 = KEND0
       KCHI2 = KCHI1 + LMAX1
-      KEND1 = KCHI2 + LMAX2
+      KCHIR12 = KCHI2 + LMAXR12
+      KEND1 = KCHIR12 + LMAX2
       LEND1 = LWORK - KEND1
 
       IF (LEND1 .LT. 0 ) THEN
@@ -234,6 +242,7 @@ C       MPERM = ??
 
       CALL DZERO(WORK(KCHI1),LMAX1)
       IF (.NOT.CCS) CALL DZERO(WORK(KCHI2),LMAX2)
+      IF (CCR12) CALL DZERO(WORK(KCHIR12),LMAXR12)
 
       IF (CCS) THEN
          MODEL  = 'CCS       '
@@ -247,11 +256,20 @@ C       MPERM = ??
       ELSE
          CALL QUIT('Unkown coupled cluster model in CC_ETADRV.')
       END IF
+      IF (CCR12) THEN
+        APROXR12 = '   '
+        IOPTRWR12 = 32
+      END IF
+      CALL CCSD_MODEL(MODEL,MODLEN,10,MODEL,10,APROXR12)
 
       DO IVEC = 1, NVEC
         ISYM = ILSTSYM(TYPE,IVEC)
         CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,IDUMMY,
      &                WORK(KCHI1),WORK(KCHI2),WORK(KEND1),LEND1)
+        IF (CCR12) THEN
+          CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTRWR12,MODEL,IDUMMY,
+     &                  IDUMMY,WORK(KCHIR12),WORK(KEND1),LEND1)
+        END IF
       END DO
 
 *---------------------------------------------------------------------*
@@ -271,9 +289,14 @@ C       MPERM = ??
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,
      &                  WORK(KCHI1),WORK(KCHI2))
+          IF (CCR12) CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRWR12,MODEL,
+     &                             DUMMY,WORK(KCHIR12))
           XNORM = DDOT(NT1AM(ISYM),WORK(KCHI1),1,WORK(KCHI1),1)
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
+          IF (CCR12) 
+     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
       END IF
@@ -312,6 +335,9 @@ C       MPERM = ??
           XNORM = DDOT(NT1AM(ISYM),WORK(KCHI1),1,WORK(KCHI1),1)
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
+          IF (CCR12)
+     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
       END IF
@@ -354,9 +380,14 @@ C       MPERM = ??
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,
      &                  WORK(KCHI1),WORK(KCHI2))
+          IF (CCR12) CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRWR12,MODEL,
+     &                             DUMMY,WORK(KCHIR12))
           XNORM = DDOT(NT1AM(ISYM),WORK(KCHI1),1,WORK(KCHI1),1)
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
+          IF (CCR12)
+     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
       END IF
@@ -392,9 +423,14 @@ C       MPERM = ??
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,
      &                  WORK(KCHI1),WORK(KCHI2))
+          IF (CCR12) CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRWR12,MODEL,
+     &                             DUMMY,WORK(KCHIR12))
           XNORM = DDOT(NT1AM(ISYM),WORK(KCHI1),1,WORK(KCHI1),1)
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
+          IF (CCR12)
+     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
       END IF
@@ -403,25 +439,35 @@ C       MPERM = ??
 * calculate ETA{O} vector contributions:
 *---------------------------------------------------------------------*
       IF (TYPE(1:2).EQ.'X2') THEN
-        CALL CCQR_EADRV('L1 ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
-     &                   WORK(KEND0), LEND0, 'FILE' )
+        IOPT  = 4
+        ORDER = 1
+        CALL CC_XIETA(WORK(KXETRAN),NEATRAN,IOPT, ORDER, 'L1 ',
+     &                'O1 ', IDUM, RDUM, TYPE, IDUM, RDUM,
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:3).EQ.'CX2') THEN
-        CALL CCQR_EADRV('LC ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
-     &                   WORK(KEND0), LEND0, 'FILE' )
+        IOPT  = 4
+        ORDER = 1
+        CALL CC_XIETA(WORK(KXETRAN),NEATRAN,IOPT, ORDER, 'LC ',
+     &                'O1 ', IDUM, RDUM, TYPE, IDUM, RDUM,
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:2).EQ.'X3') THEN
-        CALL CCQR_EADRV('L2 ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
-     &                   WORK(KEND0), LEND0, 'FILE' )
+        IOPT  = 4
+        ORDER = 1
+        CALL CC_XIETA(WORK(KXETRAN),NEATRAN,IOPT, ORDER, 'L2 ',
+     &                'O1 ', IDUM, RDUM, TYPE, IDUM, RDUM,
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:3).EQ.'EX2') THEN
-        CALL CCQR_EADRV('EL1','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
-     &                   WORK(KEND0), LEND0, 'FILE' )
+        IOPT  = 4
+        ORDER = 1
+        CALL CC_XIETA(WORK(KXETRAN),NEATRAN,IOPT, ORDER, 'EL1',
+     &                'O1 ', IDUM, RDUM, TYPE, IDUM, RDUM,
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:3).EQ.'EX1') THEN
-        CALL CCQR_EADRV('LE ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
-     &                   WORK(KEND0), LEND0, 'FILE' )
+        IOPT  = 4
+        ORDER = 1
+        CALL CC_XIETA(WORK(KXETRAN),NEATRAN,IOPT, ORDER, 'LE ',
+     &                'O1 ', IDUM, RDUM, TYPE, IDUM, RDUM,
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       END IF
 
       IF (LOCDBG) THEN
@@ -431,9 +477,14 @@ C       MPERM = ??
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,
      &                  WORK(KCHI1),WORK(KCHI2))
+          IF (CCR12) CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRWR12,MODEL,
+     &                             DUMMY,WORK(KCHIR12))
           XNORM = DDOT(NT1AM(ISYM),WORK(KCHI1),1,WORK(KCHI1),1)
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
+          IF (CCR12)
+     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
       END IF
@@ -444,6 +495,10 @@ C       MPERM = ??
         KRHS1 = KEND1
         KRHS2 = KRHS1 + LMAX1
         KEND2 = KRHS2 + LMAX2
+        IF (CCR12) THEN
+          KRHSR12 = KEND2
+          KEND2   = KRHSR12 + LMAXR12
+        END IF
         LEND2 = LWORK - KEND2
 
         IF (LEND2 .LT. 0 ) THEN
@@ -456,16 +511,23 @@ C       MPERM = ??
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,
      &                  WORK(KCHI1),WORK(KCHI2))
+          IF (CCR12) CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRWR12,MODEL,
+     &                             DUMMY,WORK(KCHIR12))
           CALL CC_RDRSP('RE',ISTAT(IVEC,1),ISYMS(IVEC,1),IOPTRW,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
+          IF (CCR12) CALL CC_RDRSP('RE',ISTAT(IVEC,1),ISYMS(IVEC,1),
+     &                             IOPTRWR12,MODEL,DUMMY,WORK(KRHSR12))
           XNORM = DDOT(NT1AM(ISYM),WORK(KCHI1),1,WORK(KRHS1),1)
           IF (.NOT. CCS)
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KRHS2),1)
+          IF (CCR12) 
+     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &                        WORK(KRHSR12),1)
           WRITE (LUPRI,'(A,I3,2X,F12.8,2X,A,2X,F12.8)') MSGDBG,
-     &              ISTAT(IVEC,1),EIGV(IVEC,1),LABEL(IVEC,1),XNORM
+     &              ISTAT(IVEC,1),EIGV(IVEC,1),LABELV(IVEC,1),XNORM
         ELSE
           WRITE (LUPRI,'(A,I3,2X,F12.8,2X,A,2X,F12.8)') MSGDBG,
-     &              ISTAT(IVEC,1),EIGV(IVEC,1),LABEL(IVEC,1),ZERO
+     &              ISTAT(IVEC,1),EIGV(IVEC,1),LABELV(IVEC,1),ZERO
         END IF
         END DO
 
@@ -493,7 +555,7 @@ c /* deck CC_ETA_SETUP */
      &                        I2FTRAN, N2FTRAN,
      &                        I0FATRAN,N0FATRAN,
      &                        I1FATRAN,N1FATRAN,
-     &                        IEATRAN, NEATRAN  )
+     &                        IXETRAN, NEATRAN  )
 *---------------------------------------------------------------------*
 *
 *    Purpose: set up for CC_ETA section
@@ -512,6 +574,7 @@ c /* deck CC_ETA_SETUP */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
+#include <cclists.h>
 
 * local parameters:
       CHARACTER*(22) MSGDBG
@@ -546,7 +609,7 @@ c /* deck CC_ETA_SETUP */
       INTEGER I2FTRAN(3,MXTRAN)
       INTEGER I0FATRAN(5,MXTRAN)
       INTEGER I1FATRAN(5,MXTRAN)
-      INTEGER IEATRAN(3,MXTRAN)
+      INTEGER IXETRAN(MXDIM_XEVEC,MXTRAN)
 
       INTEGER N0KTRAN, N1GTRAN, N2FTRAN, N1FATRAN
       INTEGER          N0GTRAN, N1FTRAN, N0FATRAN, NEATRAN
@@ -877,50 +940,98 @@ c /* deck CC_ETA_SETUP */
 *---------------------------------------------------------------------*
         IF (TYPE(1:2).EQ.'X2') THEN
           NEATRAN = NEATRAN + 1
-          IEATRAN(1,NEATRAN) = IL1(A)
-          IEATRAN(2,NEATRAN) = IOP(B)
-          IEATRAN(3,NEATRAN) = IVEC
+
+          IXETRAN(1,NEATRAN) = IOP(B)
+          IXETRAN(2,NEATRAN) = IL1(A)
+          IXETRAN(3,NEATRAN) = -1
+          IXETRAN(4,NEATRAN) = IVEC
+          IXETRAN(5,NEATRAN) = 0
+          IXETRAN(6,NEATRAN) = 0
+          IXETRAN(7,NEATRAN) = 0
+          IXETRAN(8,NEATRAN) = 0
   
           NEATRAN = NEATRAN + 1
-          IEATRAN(1,NEATRAN) = IL1(B)
-          IEATRAN(2,NEATRAN) = IOP(A)
-          IEATRAN(3,NEATRAN) = IVEC
+
+          IXETRAN(1,NEATRAN) = IOP(A)
+          IXETRAN(2,NEATRAN) = IL1(B)
+          IXETRAN(3,NEATRAN) = -1
+          IXETRAN(4,NEATRAN) = IVEC
+          IXETRAN(5,NEATRAN) = 0
+          IXETRAN(6,NEATRAN) = 0
+          IXETRAN(7,NEATRAN) = 0
+          IXETRAN(8,NEATRAN) = 0
         ELSE IF (TYPE(1:3).EQ.'CX2') THEN
           IF (ICAU(IVEC,B).EQ.0) THEN
             NEATRAN = NEATRAN + 1
-            IEATRAN(1,NEATRAN) = IL1(A)
-            IEATRAN(2,NEATRAN) = IOP(B)
-            IEATRAN(3,NEATRAN) = IVEC
+
+            IXETRAN(1,NEATRAN) = IOP(B)
+            IXETRAN(2,NEATRAN) = IL1(A)
+            IXETRAN(3,NEATRAN) = -1
+            IXETRAN(4,NEATRAN) = IVEC
+            IXETRAN(5,NEATRAN) = 0
+            IXETRAN(6,NEATRAN) = 0
+            IXETRAN(7,NEATRAN) = 0
+            IXETRAN(8,NEATRAN) = 0
           END IF
   
           IF (ICAU(IVEC,A).EQ.0) THEN
             NEATRAN = NEATRAN + 1
-            IEATRAN(1,NEATRAN) = IL1(B)
-            IEATRAN(2,NEATRAN) = IOP(A)
-            IEATRAN(3,NEATRAN) = IVEC
+
+            IXETRAN(1,NEATRAN) = IOP(A)
+            IXETRAN(2,NEATRAN) = IL1(B)
+            IXETRAN(3,NEATRAN) = -1
+            IXETRAN(4,NEATRAN) = IVEC
+            IXETRAN(5,NEATRAN) = 0
+            IXETRAN(6,NEATRAN) = 0
+            IXETRAN(7,NEATRAN) = 0
+            IXETRAN(8,NEATRAN) = 0
           END IF
         ELSE IF (TYPE(1:2).EQ.'X3') THEN
           DO IDX = 1, NP3AB
             NEATRAN = NEATRAN + 1
-            IEATRAN(1,NEATRAN) = IL2(IPAB(IDX))
-            IEATRAN(2,NEATRAN) = IOP(IPC(IDX))
-            IEATRAN(3,NEATRAN) = IVEC
+
+            IXETRAN(1,NEATRAN) = IOP(IPC(IDX))
+            IXETRAN(2,NEATRAN) = IL2(IPAB(IDX))
+            IXETRAN(3,NEATRAN) = -1
+            IXETRAN(4,NEATRAN) = IVEC
+            IXETRAN(5,NEATRAN) = 0
+            IXETRAN(6,NEATRAN) = 0
+            IXETRAN(7,NEATRAN) = 0
+            IXETRAN(8,NEATRAN) = 0
           END DO
         ELSE IF (TYPE(1:3).EQ.'EX2') THEN
           NEATRAN = NEATRAN + 1
-          IEATRAN(1,NEATRAN) = IE1(A,1)
-          IEATRAN(2,NEATRAN) = IOP(B)
-          IEATRAN(3,NEATRAN) = IVEC
+
+          IXETRAN(1,NEATRAN) = IOP(B)
+          IXETRAN(2,NEATRAN) = IE1(A,1)
+          IXETRAN(3,NEATRAN) = -1
+          IXETRAN(4,NEATRAN) = IVEC
+          IXETRAN(5,NEATRAN) = 0
+          IXETRAN(6,NEATRAN) = 0
+          IXETRAN(7,NEATRAN) = 0
+          IXETRAN(8,NEATRAN) = 0
   
           NEATRAN = NEATRAN + 1
-          IEATRAN(1,NEATRAN) = IE1(B,1)
-          IEATRAN(2,NEATRAN) = IOP(A)
-          IEATRAN(3,NEATRAN) = IVEC
+
+          IXETRAN(1,NEATRAN) = IOP(A)
+          IXETRAN(2,NEATRAN) = IE1(B,1)
+          IXETRAN(3,NEATRAN) = -1
+          IXETRAN(4,NEATRAN) = IVEC
+          IXETRAN(5,NEATRAN) = 0
+          IXETRAN(6,NEATRAN) = 0
+          IXETRAN(7,NEATRAN) = 0
+          IXETRAN(8,NEATRAN) = 0
         ELSE IF (TYPE(1:3).EQ.'EX1') THEN
           NEATRAN = NEATRAN + 1
-          IEATRAN(1,NEATRAN) = IE0(1)
-          IEATRAN(2,NEATRAN) = IOP(A)
-          IEATRAN(3,NEATRAN) = IVEC
+
+          IXETRAN(1,NEATRAN) = IOP(A)
+          IXETRAN(2,NEATRAN) = IE0(1)
+          IXETRAN(3,NEATRAN) = -1
+          IXETRAN(4,NEATRAN) = IVEC
+          IXETRAN(5,NEATRAN) = 0
+          IXETRAN(6,NEATRAN) = 0
+          IXETRAN(7,NEATRAN) = 0
+          IXETRAN(8,NEATRAN) = 0
         END IF
   
 *---------------------------------------------------------------------*
@@ -1026,7 +1137,7 @@ c /* deck CC_ETA_SETUP */
      &    WRITE (LUPRI,*) 'List of (T^n A{O}) matrix transformations:'
         DO ITRAN = 1, NEATRAN
           WRITE(LUPRI,'(A,3I5,5X,(12I5,20X))') MSGDBG,
-     &     (IEATRAN(I,ITRAN),I=1,3)
+     &     (IXETRAN(I,ITRAN),I=1,4)
         END DO
         WRITE (LUPRI,*)
 

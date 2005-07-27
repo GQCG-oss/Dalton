@@ -71,8 +71,9 @@ C
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
-      CHARACTER*8 FS12AM, FRHO12, FC12AM
+      CHARACTER*8 FS12AM, FRHO12, FC12AM, FS2AM
       CHARACTER*(*) LIST
+      CHARACTER*3 APROXR12
       DIMENSION REDH(*), REDS(*), SOLEQ(*)
       DIMENSION EIVAL(*), AMAT((MXDIIS+1)*(MXDIIS+1),*)
       DIMENSION WRK(LWRK), RNORM(*)
@@ -158,10 +159,11 @@ C
      *      TRIPLET
          ENDIF                      
 C
-         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
-     *                       FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                 TRIPLET,.TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
-     *                 ISIDE,0,NUPVEC,WRK,LWRK)
+         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
+     *                 .TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
+     *                 FS2AM,IDUMMY,
+     *                 ISIDE,0,NUPVEC,WRK,LWRK,APROXR12)
 C
          CALL FLSHFO(LUPRI)
          TIM    = SECOND() - TIM
@@ -599,7 +601,7 @@ C
          IF (IPRLE.GT.105) THEN
             WRITE (LUPRI,'(/A)')
      *      ' CCNEX: solution vectors'
-            CALL PROVLP(WRK(KSOL),NCCVAR,NBX,WRK(KWRK1),LUPRI)
+            CALL PROVLP(WRK(KSOL),WRK(KSOL),NCCVAR,NBX,WRK(KWRK1),LUPRI)
             CALL OUTPUT(WRK(KSOL),1,NCCVAR,1,NBX,NCCVAR,NBX,
      *                  1,LUPRI)
          END IF
@@ -643,7 +645,8 @@ C
          IF (IPRLE.GT.45) THEN
             WRITE (LUPRI,'(/A)')
      *         ' CCNEX_DIIS: residual vectors '
-               CALL PROVLP(WRK(KRES),NCCVAR,NBX,WRK(KWRK1),LUPRI)
+               CALL PROVLP(WRK(KRES),WRK(KRES),NCCVAR,NBX,WRK(KWRK1),
+     *                     LUPRI)
                CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NBX,NCCVAR,NBX,
      *                     1,LUPRI)
          END IF

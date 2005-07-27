@@ -2712,7 +2712,7 @@ C---------------------------------------------------------------------*
 C     Matrix with property integrals in MO basis:
 C---------------------------------------------------------------------*
       ! read property integrals from file:
-      CALL CCPRPAO(LABELY,WORK(KFOCKY),IRREP,ISYM,IERR,
+      CALL CCPRPAO(LABELY,.TRUE.,WORK(KFOCKY),IRREP,ISYM,IERR,
      &             WORK(KEND1),LWRK1)
       IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISYMY)) THEN
           CALL QUIT('CCSDT_GWBIC: error reading oper. '//LABELY)
@@ -3709,7 +3709,7 @@ C-----------------------------------------------------------
 C
       IF (LISTR(1:3).EQ.'R1 ') THEN
         ! read property integrals from file:
-        CALL CCPRPAO(LABELY,WORK(KFOCKY),IRREP,IMAT,IERR,
+        CALL CCPRPAO(LABELY,.TRUE.,WORK(KFOCKY),IRREP,IMAT,IERR,
      *               WORK(KEND0),LWRK0)
         IF ((IERR.GT.0) .OR. (IERR.EQ.0 .AND. IRREP.NE.ISTAMY)) THEN
           WRITE(LUPRI,*) 'ISTAMY:',ISTAMY

@@ -906,7 +906,7 @@ C
      &                          //CHRNOS(MOD(ISCOOR,100)/10)
      &                          //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-                 CALL CCPRPAO(LABEL,WORK(K1DHAM),IRREP,ISYM,IERR,
+                 CALL CCPRPAO(LABEL,.TRUE.,WORK(K1DHAM),IRREP,ISYM,IERR,
      &                        WORK(KEND2),LWRK2)
 C
                  IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
@@ -1602,7 +1602,7 @@ C
      &                       //CHRNOS(MOD(ISCOOR,100)/10)
      &                       //CHRNOS(MOD((MOD(ISCOOR,100)),10))
 C
-              CALL CCPRPAO(LABEL,WORK(K1DOVL),IRREP,ISYM,IERR,
+              CALL CCPRPAO(LABEL,.TRUE.,WORK(K1DOVL),IRREP,ISYM,IERR,
      &                     WORK(KEND2),LWRK2)
 C
               IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
