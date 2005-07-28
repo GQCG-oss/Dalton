@@ -1455,7 +1455,7 @@ C
                   IF (LVDW .EQ. 0) THEN
                     TEMP = TEMP
                   ELSE
-                    TEMP = TEMP + IFACULTET(NSISY(LVDW))
+                    TEMP = TEMP + IFAC(NSISY(LVDW))
                   END IF
                 ELSE
                     TEMP = TEMP + NSISY(LVDW) * NSISY(KVDW)
@@ -6861,19 +6861,3 @@ C
       END IF
       RETURN
       END
-C
-      INTEGER FUNCTION IFACULTET(NUMBER)
-C
-C-----------------------------------------------------------------------------
-C Calculating n! = 1*2*3*....*n
-C-----------------------------------------------------------------------------
-C
-      INTEGER I, NUMBER
-C
-      IFACULTET = 1
-C
-      DO 100 I = 1, NUMBER
-        IFACULTET = IFACULTET*I
- 100  CONTINUE
-      END
-
