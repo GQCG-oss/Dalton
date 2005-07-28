@@ -1388,8 +1388,8 @@ C
       CHARACTER*8 A, B(4), C
 #if defined (VAR_SPLITFILES)
 #include "dummy.h"
-      CHARACTER FNNAME*80
 #endif
+      CHARACTER FNNAME*80
       DATA C/'********'/
       IRDERR = 0
 #if defined (VAR_SPLITFILES)
@@ -1403,7 +1403,7 @@ C
          LU = LUBKP
          CALL GPOPEN(LU,FNNAME(1:LN),'OLD','SEQUENTIAL','UNFORMATTED',
      &               IDUMMY,.FALSE.)
-      INQUIRE (UNIT=LU,NAME=FNNAME)
+         INQUIRE (UNIT=LU,NAME=FNNAME)
          REWIND (LU)
          GOTO 1
       ELSE IF (FNNAME(LN:LN) .EQ. ' ') THEN
@@ -1430,12 +1430,13 @@ C 940510-hjaaj: same change for Cray's multifile datasets
          LUERR = -1
          RETURN
       ELSE
-         WRITE(LUERR,4)A,LU
+         INQUIRE (UNIT=LU,NAME=FNNAME)
+         WRITE(LUERR,4)A,LU,FNNAME
          CALL QTRACE(LUERR)
          CALL QUIT('ERROR (MOLLAB) MOLECULE label not found on file')
       END IF
     4 FORMAT(/' *** ERROR (MOLLAB), MOLECULE label ',A8,
-     *        ' not found on unit',I4)
+     *        ' not found on unit',I4/' File name: ',A)
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 10) GO TO 1
