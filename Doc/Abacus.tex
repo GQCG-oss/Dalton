@@ -663,12 +663,12 @@ of the frequency dependent response equations. Read one more line
 containing the convergence threshold~(D12.6). The default value is
 $5.0\cdot10^{-5}$.
 
-\item[\Key{FREQUE}]\verb| |\newline
+\item[\Key{WAVELE}]\verb| |\newline
 \verb|READ (LUCMD,*) NWVLEN|\newline
 \verb|READ (LUCMD,*) (WVLEN(I), I = 1, NWVLEN)|
 
-Set the number of wave lengths as well as the wave lengths\index{frequency}
-at which the
+Set the number of wave lengths as well as the wave
+lengths\index{wave lengths|linear response} at which the
 frequency-dependent linear response equations are to be evaluated.
 Read one more line containing the number of wave lengths to be
 calculated, and another line reading these wave lengths. The
@@ -676,7 +676,7 @@ wave lengths are to be entered in units of nanometers (nm).
 By default only the
 static case (infinite wavelength, zero frequency) is evaluated.
 The \Key{WAVELE} keyword may be combined with the frequency input
-\Key{WAVELE} (see above).
+\Key{FREQUE} (see above).
 \end{description}
 
 \subsection{Dipole moment and dipole gradient contributions: {\tt
@@ -688,11 +688,11 @@ dipole gradient\index{dipole gradient} appear in the \verb|*DIPCTL| section.
 \begin{description}
 \item[\Key{NODC}] Neglect contributions to traces from
 inactive one-electron density matrix. This will give wrong results for
-the dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+the dipole gradient. Mainly for debugging purposes.
 
 \item[\Key{NODV}] Neglect contributions to traces from
 active one-electron density matrix. This will give wrong results for the
-dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+dipole gradient. Mainly for debugging purposes.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IPRINT|
@@ -701,7 +701,7 @@ Set print level in the calculation of the dipole gradient\index{dipole gradient}
 line containing print level. The default 
 is the variable \verb|IPRDEF| from the general input module.
 
-\item[\Key{SKIP}] Skip the calculation of dipole gradient\index{dipole gradient}.
+\item[\Key{SKIP}] Skip the calculation of dipole gradient.
 
 %\item[\Key{TEST}] Test dipole moments and dipole
 %reorthonormalization(?) through a dummy routine. This test routine is
@@ -709,25 +709,30 @@ is the variable \verb|IPRDEF| from the general input module.
 %only be used together with the \verb|.NODIFC| keyword.
 
 \item[\Key{STOP}] Stop the program after finishing the calculation
-of the dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+of the dipole gradient. Mainly for debugging purposes.
 \end{description}
 
-\subsection{End of input: \Sec{END OF}}
+%hjaaj: do not document *END OF as this is an obsolete keyword,
+%       only kept for backwards compatibility /July 2005
+%\subsection{End of input: \Sec{END OF}}
+%
+%The last directive in the input can be \verb|*END OF|.
 
-The last directive in the input should be \verb|*END OF|.
-
-\subsection{Calculation of excitation energies: {\tt
-*EXCITA}}\label{sec:excita}
+\subsection{Calculation of excitation energies: {\tt*EXCITA}}
+\label{sec:excita}
 
 Directives to control the calculations of electronic
 transition\index{electronic excitation}
 properties and excitation energies\index{excitation energy} appear in
-the \verb|*EXCITA| input 
-module. For SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
+the \verb|*EXCITA| input module.
+For SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
 functions the properties are calculated using the 
-random phase approximation (RPA) and for MCSCF\index{MCSCF} wave functions the
-multiconfigurational (MC)-RPA is used. In the case of Kohn--Sham DFT, time-dependent linear response theory is used in the adiabatic approximation with the exact functional kernel. Implemented electronic transition
-properties are at the moment:
+random phase approximation (RPA) and for MCSCF\index{MCSCF}
+wave functions the multiconfigurational (MC-RPA) is used.
+In the case of Kohn--Sham DFT, time-dependent linear response theory
+is used in the adiabatic approximation with the exact functional kernel.
+
+Implemented electronic transition properties are at the moment:
 
 \begin{enumerate}
 \item Oscillator Strength\index{oscillator strength} which determines
