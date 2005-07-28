@@ -576,11 +576,10 @@ debugging purposes.
 calculation of the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: {\tt
-*ABALNR}}\label{sec:abalnr}
+\subsection{Linear response calculation: \Sec{ABALNR}}\label{sec:abalnr}
 
 Directives to control the calculation of frequency dependent linear
-response\index{frequency}\index{linear response}\index{response!linear}
+response\index{linear response}\index{response!linear}
 functions. 
 %At present these directives only affect the 
 %calculation of frequency dependent linear response functions appearing
@@ -592,7 +591,8 @@ functions.
 \verb|READ (LUCMD,*) NFRVAL|\newline
 \verb|READ (LUCMD,*) (FRVAL(I), I = 1, NFRVAL)|
 
-Set the number of frequencies as well as the frequency\index{frequency} at which the
+Set the number of frequencies as well as the
+frequency\index{frequency!linear response} at which the
 frequency-dependent linear response equations are to be evaluated.
 Read one more line containing the number of frequencies to be
 calculated, and another line reading these frequencies. The
@@ -668,7 +668,7 @@ $5.0\cdot10^{-5}$.
 \verb|READ (LUCMD,*) (WVLEN(I), I = 1, NWVLEN)|
 
 Set the number of wave lengths as well as the wave
-lengths\index{wave lengths|linear response} at which the
+lengths\index{wave lengths!linear response} at which the
 frequency-dependent linear response equations are to be evaluated.
 Read one more line containing the number of wave lengths to be
 calculated, and another line reading these wave lengths. The
@@ -679,8 +679,8 @@ The \Key{WAVELE} keyword may be combined with the frequency input
 \Key{FREQUE} (see above).
 \end{description}
 
-\subsection{Dipole moment and dipole gradient contributions: {\tt
-*DIPCTL}}\label{sec:dipctl} 
+\subsection{Dipole moment and dipole gradient contributions:
+\Sec{DIPCTL}}\label{sec:dipctl} 
 
 Directives controlling the calculation of contributions to the
 dipole gradient\index{dipole gradient} appear in the \verb|*DIPCTL| section.
@@ -718,7 +718,7 @@ of the dipole gradient. Mainly for debugging purposes.
 %
 %The last directive in the input can be \verb|*END OF|.
 
-\subsection{Calculation of excitation energies: {\tt*EXCITA}}
+\subsection{Calculation of excitation energies: \Sec{EXCITA}}
 \label{sec:excita}
 
 Directives to control the calculations of electronic
@@ -843,8 +843,8 @@ Indicates that it is triplet excitation energies that is to be
 calculated.
 \end{description}
 
-\subsection{One-electron expectation values: {\tt
-*EXPECT}}\label{sec:expect}
+\subsection{One-electron expectation values:
+\Sec{EXPECT}}\label{sec:expect}
 
 Directive that control the calculation of one-electron expectation
 values appear in the \verb|*EXPECT| input module. Notice, however,
@@ -1225,8 +1225,7 @@ transformation. The calculation will not be aborted. Mainly for
 debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: {\tt
-*LINRES}}\label{sec:linres}
+\subsection{Linear response calculation: \Sec{LINRES}}\label{sec:linres}
 
 Directives to control the calculation of frequency-independent linear
 response functions\index{linear response}\index{response!linear}. At
@@ -1504,8 +1503,8 @@ value is~10$^{-3}$.
 the geometric  response equations. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Second-order polarization propagator approximation: {\tt
-*SOPPA}}\label{sec:soppa}
+\subsection{Second-order polarization propagator approximation:
+\Sec{SOPPA}}\label{sec:soppa}
 
 This input module controls the calculation of molecular properties
 using the second-order polarization propagator approximation, see
@@ -1519,8 +1518,8 @@ Chapter~\ref{ch:soppa}.
   are calculated explicitly.
 \end{description}
 
-\subsection{Indirect nuclear spin-spin couplings: {\tt
-*SPIN-S}}\label{sec:spin-s}
+\subsection{Indirect nuclear spin-spin couplings:
+\Sec{SPIN-S}}\label{sec:spin-s}
 
 This input module controls the calculation of which indirect nuclear
 spin-spin coupling constants and what contributions to the total
@@ -1663,8 +1662,8 @@ supposedly independent coordinates.  Read one more line specifying
 value.  Default is~0.1.
 \end{description}
 
-\subsection{Response equations for triplet operators: {\tt
-*TRPRSP}}\label{sec:trprsp}
+\subsection{Response equations for triplet operators:
+\Sec{TRPRSP}}\label{sec:trprsp}
 
 Directives controlling the set-up of right-hand sides for triplet
 perturbing operators (for instance the Fermi contact and spin-dipole
