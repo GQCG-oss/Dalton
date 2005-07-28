@@ -5411,6 +5411,7 @@ C
 #include <r12int.h>
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
+      CALL QENTER('LAMMAT')
 C
 C---------------------------
 C     Work space allocation.
@@ -5518,6 +5519,7 @@ C
 C
       END IF
 C
+      CALL QEXIT('LAMMAT')
       RETURN
 C
     1 FORMAT(/,/,7X,'Symmetry number :',I5)
