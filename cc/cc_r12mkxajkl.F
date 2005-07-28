@@ -2238,18 +2238,10 @@ c#include <inforb.h>
       integer koffc,kexiaz,noffset,nvir0(8),kextia,kfctao
       integer icoun1,imatpq(8,8),icoun2,imatsq(8,8),ij,ji
       integer kajfr,isymaj,luvajkl,ncfai,kexfa,kexfaz
-c<infinp.h>
-      integer NFIELD, ISPIN,ISTATE,LSYM,NACTEL,MCTYPE
-      integer LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3
-      integer LROOTS,NROOTS,IROOT,NOROT,IMOORD,MXFELT
-      integer IORTO,ICI0,KDEL,ICHECK,NTIT
-      integer MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS
-      integer ITRLVL,ITRFIN,JCHSYM,JCHORB,NFLAG,MAXRTS
-      integer NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO
+c
       integer icoun3,imatfq(8,8),kxij,kxijij,ncvij,nvirf(8)
 #include <maxorb.h>
 #include <infinp.h>
-c<infinp.h>
 #if defined (SYS_CRAY)
       real res(*),cmo(*),emcmy,zero,one,two,work(*),dens(*),densx
 #else
