@@ -94,10 +94,12 @@ static int  g96vwn_read(const char* conf_line);
 static int  g96lyp_read(const char* conf_line);
 static int  g96p86_read(const char* conf_line);
 static int  g96pw91_read(const char* conf_line);
+static int  g961lyp_read(const char* conf_line);
 static int  kmlyp_read(const char* conf_line);
 static int  kt1_read(const char* conf_line);
 static int  kt2_read(const char* conf_line);
 static int  kt3_read(const char* conf_line);
+static int  lg1lyp_read(const char* conf_line);
 static int  mpwvwn_read(const char* conf_line);
 static int  mpwlyp_read(const char* conf_line);
 static int  mpwp86_read(const char* conf_line);
@@ -176,10 +178,12 @@ Functional G96VWNFunctional =  GGA_FUNCTIONAL("G96VWN",  g96vwn_read);
 Functional G96LYPFunctional =  GGA_FUNCTIONAL("G96LYP",  g96lyp_read);
 Functional G96P86Functional =  GGA_FUNCTIONAL("G96P86",  g96p86_read);
 Functional G96PW91Functional = GGA_FUNCTIONAL("G96PW91", g96pw91_read);
+Functional G961LYPFunctional = GGA_FUNCTIONAL("G961LYP", g961lyp_read);
 Functional KMLYPFunctional =   GGA_FUNCTIONAL("KMLYP",   kmlyp_read);
 Functional KT1Functional =     GGA_FUNCTIONAL("KT1",     kt1_read);
 Functional KT2Functional =     GGA_FUNCTIONAL("KT2",     kt2_read);
 Functional KT3Functional =     GGA_FUNCTIONAL("KT3",     kt3_read);
+Functional LG1LYPFunctional =  GGA_FUNCTIONAL("LG1LYP",  lg1lyp_read);
 Functional mPWVWNFunctional =  GGA_FUNCTIONAL("mPWVWN" , mpwvwn_read);
 Functional mPWLYPFunctional =  GGA_FUNCTIONAL("mPWLYP" , mpwlyp_read);
 Functional mPWP86Functional =  GGA_FUNCTIONAL("mPWP86" , mpwp86_read);
@@ -599,6 +603,16 @@ g96pw91_read(const char* conf_line)
 }
 
 static int
+g961lyp_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  0.75);
+    gga_fun_list = add_functional(gga_fun_list, &G96xFunctional,    0.75);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     1.0);
+    fun_set_hf_weight(0.25);
+    return 1;
+}
+
+static int
 kmlyp_read(const char* conf_line)
 {
     static const real hfw = 0.557, lypw = 0.448;
@@ -642,6 +656,16 @@ kt3_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,    lypw);
     gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional,   optw);
     fun_set_hf_weight(0);
+    return 1;
+}
+
+static int
+lg1lyp_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  0.75);
+    gga_fun_list = add_functional(gga_fun_list, &LG93xFunctional,   0.75);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     1.0);
+    fun_set_hf_weight(0.25);
     return 1;
 }
 

@@ -30,6 +30,7 @@ FUNFILES = \
 	fun-b97.c	\
 	fun-b97-1.c	\
 	fun-b97-2.c	\
+	fun-b97-k.c	\
 	fun-cam-b3lyp.c \
 	fun-dk87x.c	\
 	fun-example.c	\
@@ -42,6 +43,8 @@ FUNFILES = \
 	fun-example8.c	\
 	fun-example9.c	\
 	fun-gga.c	\
+	fun-ft97ax.c	\
+	fun-ft97bx.c	\
 	fun-g96.c	\
 	fun-kt.c	\
 	fun-lb94.c	\
