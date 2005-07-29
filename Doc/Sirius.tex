@@ -634,13 +634,13 @@ To specify the parameters of the DFT integration.
 
 \subsection{\label{ref-dft}DFT functionals}
 
-In general, functionals in \siraba\ can be divided into two groups: 
+In general, functionals in \dalton\ can be divided into two groups: 
 generic exchange and correlation functionals 
 and combined functionals. Combined functionals are a linear combination of
 generic ones. There are a large number of combined functionals defined below, 
 however the user can also create their own combined functionals with 
 the \verb|Combine| keyword. 
-A number of standalone functionals are also included within \dalton\. 
+A number of standalone functionals are also included within \dalton. 
 
 It should be noted that the input is not case sensitive, although the notation
 employed in this manual makes use of case to exphasise exchange or correlation 
@@ -686,7 +686,7 @@ functional properties and reflect the original literature sources.
 
 \item[FT97bx] Filatov and Thiel 1997 (FT97) exchange functional GGA correction,
   variant B.~\cite{dft:ft97}.\index{FT97} In this variant, the $\beta$ parameter 
-  is a switching function dependent on the density gradient, $\del n_{\sigma}$ 
+  is a switching function dependent on the density gradient, $\nabla n_{\sigma}$ 
   and only significantly varies from variant A calculated molecular properties 
   if core electron effects are significant. This is the default exchange functional 
   in the combined FT97 exchange-correlation functional.
