@@ -92,6 +92,7 @@ Cef end
       INCLUDE 'mpif.h'
       LOGICAL FINISH
 #endif
+      CHARACTER*1 adummy
       CHARACTER*14 FILNAM
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
@@ -202,7 +203,7 @@ C
 #endif
 Cef begin
 C To run the incore-version of dalton where integrals are stored in memory
-C on each slave for reuse, just set AOSAVE = .TRUE. below, and take a look
+C on each slave for reuse, just set AOSAVE = .FALSE. below, and take a look
 C at the header file DALTON_SOURCE_DIR/include/incore.h  and the variables:
 C MMWORK and IEIR. 
 C MMWORK (we used MMWORK=80000000 when testing ) determines the size of 
@@ -215,7 +216,7 @@ C integer (we used IEIR=3000000).
       ISCORE = JSCORE
       MMCORE = LMCORE
       N_SHL = 1
-      AOSAVE = .TRUE.
+      AOSAVE = .FALSE.
       INITX = .FALSE.
       MSAVE = .TRUE.
       LINTSV = .FALSE.
@@ -241,6 +242,7 @@ Chjaaj   IEND = INDEX(BASDIR,' ') - 1
 Chjaaj   not good, will give wrong IEND if any directories
 Chjaaj   contains blanks, as in '/home/my basdir/'); thus
          DO I = LBASDIR,1,-1
+            write(adummy,'(a)') BASDIR(I:I)
             IF (BASDIR(I:I) .NE. ' ') THEN
                IEND = I
                GO TO 20

@@ -1676,8 +1676,8 @@ C--------------------------------
 C
             IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
      *                     .OR.(CCDC.AND.DIELCONV))
-     *         CALL CC_PRPC(DIPMN(IDIP),MODEL,1,LABEL,LABEL,LABEL,LABEL,
-     *                   DUMMY,DUMMY,DUMMY,ISY,0,0,0)
+     *         CALL CC_PRPC(DIPMN(IDIP),MODEL,1,LABEL1,LABEL1,LABEL1,
+     *                   LABEL1,DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   100    CONTINUE
 C
 C---------------------
@@ -1889,15 +1889,15 @@ C
 C
                IJ = IJ + 1
 C
-               IF (IJ .EQ. 1) LABEL = 'XXTHETA '
-               IF (IJ .EQ. 2) LABEL = 'XYTHETA '
-               IF (IJ .EQ. 3) LABEL = 'XZTHETA '
-               IF (IJ .EQ. 4) LABEL = 'YYTHETA '
-               IF (IJ .EQ. 5) LABEL = 'YZTHETA '
-               IF (IJ .EQ. 6) LABEL = 'ZZTHETA '
+               IF (IJ .EQ. 1) LABEL1 = 'XXTHETA '
+               IF (IJ .EQ. 2) LABEL1 = 'XYTHETA '
+               IF (IJ .EQ. 3) LABEL1 = 'XZTHETA '
+               IF (IJ .EQ. 4) LABEL1 = 'YYTHETA '
+               IF (IJ .EQ. 5) LABEL1 = 'YZTHETA '
+               IF (IJ .EQ. 6) LABEL1 = 'ZZTHETA '
 C
-               CALL CC_PRPC(SKODN(I,J),MODEL,1,LABEL,
-     *                                 LABEL,LABEL,LABEL,
+               CALL CC_PRPC(SKODN(I,J),MODEL,1,LABEL1,
+     *                                 LABEL1,LABEL1,LABEL1,
      *                                 DUMMY,DUMMY,DUMMY,ISY,0,0,0)
 
   679       CONTINUE
@@ -2361,7 +2361,7 @@ C
             IF (IRC.EQ.2) PROP = VELO
             IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
      *             .OR.(CCDC.AND.DIELCONV)) 
-     *          CALL CC_PRPC(PROP,MODEL,1,LABEL,LABEL,LABEL,LABEL,
+     *          CALL CC_PRPC(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
      *                   DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   130    CONTINUE
 C
@@ -2546,7 +2546,7 @@ C
             ENDIF
          ENDIF
 C
-         CALL CC_PRPC(PROP,MODEL,1,LABEL,LABEL,LABEL,LABEL,
+         CALL CC_PRPC(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
      *                DUMMY,DUMMY,DUMMY,ISY,0,0,0)
 C
 C-------------------------
