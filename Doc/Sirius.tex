@@ -680,17 +680,17 @@ functional properties and reflect the original literature sources.
   (equation 7) from Ref. \cite{dft:dk87}.\index{DK87} The full exchange
   functional is defined as \exfn{Slater} + \exfn{DK87x}.
 
-\item[FT97ax] Filatov and Thiel 1997 (FT97) exchange functional GGA correction, 
-  variant A.~\cite{dft:ft97}.\index{FT97}
-  The complete exchange functional is given by \exfn{Slater} + \exfn{FT97ax}.
-
-\item[FT97bx] Filatov and Thiel 1997 (FT97) exchange functional GGA correction,
-  variant B.~\cite{dft:ft97}.\index{FT97} In this variant, the $\beta$ parameter 
-  is a switching function dependent on the density gradient, $\nabla n_{\sigma}$ 
-  and only significantly varies from variant A calculated molecular properties 
-  if core electron effects are significant. This is the default exchange functional 
-  in the combined FT97 exchange-correlation functional.
-  The complete exchange functional is given by \exfn{Slater} + \exfn{FT97bx}.
+%\item[FT97ax] Filatov and Thiel 1997 (FT97) exchange functional GGA correction, 
+%  variant A.~\cite{dft:ft97}.\index{FT97}
+%  The complete exchange functional is given by \exfn{Slater} + \exfn{FT97ax}.
+%
+%\item[FT97bx] Filatov and Thiel 1997 (FT97) exchange functional GGA correction,
+%  variant B.~\cite{dft:ft97}.\index{FT97} In this variant, the $\beta$ parameter 
+%  is a switching function dependent on the density gradient, $\nabla n_{\sigma}$ 
+%  and only significantly varies from variant A calculated molecular properties 
+%  if core electron effects are significant. This is the default exchange functional 
+%  in the combined FT97 exchange-correlation functional.
+%  The complete exchange functional is given by \exfn{Slater} + \exfn{FT97bx}.
 
 \item[G96x] Gill's 1996 GGA correction exchange functional~\cite{dft:g96}.\index{G96}
   The complete exchange functional is given by \exfn{Slater} + \exfn{G96x}.
@@ -748,8 +748,8 @@ functional properties and reflect the original literature sources.
 \item[VWN5] correlation functional of Vosko, Wilk and Nusair, 1980 (equation
   V -- the recommended one). The VWN keyword is a synonym for VWN5~\cite{dft:vwn}.\index{VWN5}
 
-\item[FT97c] Filatov and Thiel 1997 (FT97) correlation functional
-  \cite{dft:ft97}.\index{FT97}
+%\item[FT97c] Filatov and Thiel 1997 (FT97) correlation functional
+%  \cite{dft:ft97}.\index{FT97}
 
 \item[LYP] correlation functional by Lee, Yang and Parr, 1988
   \cite{dft:lyp1,dft:lyp2}.\index{LYP}
@@ -797,7 +797,7 @@ functional properties and reflect the original literature sources.
 
 \item[B97] Becke 1997 functional~\cite{dft:b97}.\index{B97}
 
-\item[B97-1] Hamprecht et al.'s 1998 self-consistent re-parameterization of the 
+\item[B97-1] Hamprecht et al.'s 1998 re-parameterization of the 
   B97 functional~\cite{dft:b97-1}.\index{B97}\index{B97-1}
 
 \item[B97-2] Modification of B97 functional in 2001 by Wilson, Bradley and Tozer 
@@ -974,8 +974,9 @@ factor $\mu$. This input can be specified as follows:
   functional LYPr.\index{EDF1}
  \funexample{Combine Slater=1.030952 Becke=-8.44793 mBecke=10.4017 LYPr=1}
 
-\item[EDF2] is a linear combination of the Hartree-Fock exchange and the Double-Becke exchange, Slater exchange,
-  LYP correlation, revised LYPr correlation and VWN correlation functionals \cite{dft:edf2}\index{EDF2}.
+\item[EDF2] is a linear combination of the Hartree-Fock exchange and the Double-Becke 
+  exchange, Slater exchange, LYP correlation, revised LYPr correlation and VWN 
+  correlation functionals \cite{dft:edf2}\index{EDF2}.
  \funexample{Combine HF=0.1695 Slater=0.2811 Becke=0.6227 mBecke=-0.0551 VWN=0.3029 LYP=0.5998 LYPr=-0.0053}
 
 \item[G96VWN] is the sum of the G96 exchange functional and the VWN 
@@ -994,8 +995,8 @@ factor $\mu$. This input can be specified as follows:
   correlation functional \cite{dft:g96}.
  \funexample{Combine Slater=1 G96x=1 PW91c=1}
 
-\item[G961LYP] is a 1-parameter B1LYP type functional with the exchange gradient correction
-  provided by the G96x functional \cite{dft:g961lyp}.
+\item[G961LYP] is a 1-parameter B1LYP type functional with the exchange gradient 
+  correction provided by the G96x functional \cite{dft:g961lyp}.
  \funexample{Combine HF=0.25 Slater=0.75 G96x=0.75 LYP=1}
 
 \item[KMLYP] Kang and Musgrave 2-parameter hybrid functional with a mixture of
@@ -1017,8 +1018,8 @@ factor $\mu$. This input can be specified as follows:
   \funexample{Combine Slater=1.092 KT=-0.004 LYP=0.864409 OPTX=-0.925452}
   \index{KT3}
 
-\item[LG1LYP] is a 1-parameter B1LYP type functional with the exchange gradient correction
-  provided by the LG93x functional \cite{dft:g961lyp}.
+\item[LG1LYP] is a 1-parameter B1LYP type functional with the exchange gradient
+  correction provided by the LG93x functional \cite{dft:g961lyp}.
  \funexample{Combine HF=0.25 Slater=0.75 LG93x=0.75 LYP=1}
 
 \item[mPWVWN] is the combination of mPW exchange and VWN correlation functionals 
