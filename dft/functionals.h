@@ -336,8 +336,6 @@ extern Functional B97_KFunctional;
 extern Functional Example2Functional;
 extern Functional ExampleFunctional;
 extern Functional DK87xFunctional;
-extern Functional FT97axFunctional;
-extern Functional FT97bxFunctional;
 extern Functional G96xFunctional;
 extern Functional KTxFunctional;
 extern Functional LB94Functional;

@@ -43,8 +43,6 @@ FUNFILES = \
 	fun-example8.c	\
 	fun-example9.c	\
 	fun-gga.c	\
-	fun-ft97ax.c	\
-	fun-ft97bx.c	\
 	fun-g96.c	\
 	fun-kt.c	\
 	fun-lb94.c	\

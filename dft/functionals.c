@@ -63,8 +63,6 @@ Functional* available_functionals[] = {
     &Example2Functional,
     &ExampleFunctional,
     &DK87xFunctional,
-    &FT97axFunctional,
-    &FT97bxFunctional,
     &G96xFunctional,
     &KTxFunctional,
     &LB94Functional,
