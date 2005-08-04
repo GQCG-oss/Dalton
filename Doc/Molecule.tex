@@ -34,7 +34,7 @@ and the ``Not Quite van Duijneveldt'' (NQvD) basis
 sets\index{NQvD basis set}\index{basis set!NQvD}. The large number of
 different basis sets provided is in part
 related to the variety of molecular properties with very different
-basis set requirements that can be calculated with \dalton .
+basis set requirements that can be calculated with \dalton.
 Most of the basis sets have been downloaded from the EMSL basis set
 library service\index{EMSL basis set library service}\index{basis set!EMSL library}\newline
 (http://www.emsl.pnl.gov:2080/forms/basisform.html)~\cite{emslref}.
@@ -42,13 +42,14 @@ Only a small number of the basis sets were obtained from different sources:
 
 \begin{list}{--}{}
 \item The ano-1, ano-2, ano-3, ano-4 and Sadlej-pVTZ basis sets which where
-downloaded from the MOLCAS
-home-page\index{NQvD basis set}\index{basis set!NQvD}\index{ANO basis set}\index{basis set!ANO}\index{sadlej basis set}\index{basis set!sadlej}
-(http://garm.teokem.lu.se/MOLCAS/).
+downloaded from the MOLCAS home-page\index{NQvD basis set}\index{basis set!NQvD}\index{ANO basis set}
+\index{basis set!ANO}\index{sadlej basis set}\index{basis set!sadlej}
+(http://www.teokem.lu.se/molcas/).
 \item The NQvD (The Not Quite van Duijneveldt) basis sets were constructed
 by Knut F\ae gri for this distribution~\cite{nqvdref}.
 \item The Turbomole-X {X = SV,SVP,DZ,DZP,TZ,TZP,TZV,TZVP,TZVPP,TZVPPP} basis sets have
 been downloaded from Turbomole\index{Turbomole basis set}\index{basis set!Turbomole}(http://www.turbomole.com)
+\item The pc-$n$ and apc-$n$ polarization-consistent basis sets were provided to us by Frank Jensen.
 \end{list}
 
 We note that each file containing a given basis set in the BASIS
@@ -293,9 +294,10 @@ atoms of this kind).
   \verb|Basis=pointcharge|\index{point charge}, the
   atoms in this block will be treated as point charges, that is,
   having only a charge but no basis functions attached to
-  them. Effective core potentials (ECP)\index{effective core
-  potentials}\index{ECD} can also by used by specifying
-  \verb|Basis=ECP|.
+  them. Stuttgart effective core potentials (ECP) with corresponding
+  Stuttgart double zeta basis sets\index{effective core
+  potentials}\index{ECP} can also by used by specifying
+  \verb|Basis=ecp-sdd-DZ|.
 \item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
 basis set for this atom type ($s=1$, $p=2$, etc.).
 Ignored if library basis sets are being used (\verb|BASIS| or
@@ -573,12 +575,16 @@ The aug-cc-pVXZ and aug-cc-pCVXZ basis sets are extended in an even-tempered man
 (in the manner of Dunning~\cite{dewthdjcp100})
 by including a 'd-', 't-' or 'q-' prefix to give doubly, triply or quadruply 
 augmented basis sets, respectively. For example, specifying t-aug-cc-pVDZ will
-produce a triply augmented cc-pVDZ basis. The aug-ecp basis sets may be augmented 
-in the same manner by using the same prefixes, eg d-aug-ecp. 
+produce a triply augmented cc-pVDZ basis.
+%hjaaj: aug-ecp does not exist in basis/ directory, thus commented here. /Aug-2005 hjaaj.
+%The aug-ecp basis sets may be augmented 
+%in the same manner by using the same prefixes, eg d-aug-ecp. 
 Note that these basis sets are not listed 
 explicitly in the basis library directory\index{basis set!library}, 
-but are automatically generated within \dalton from the respective 
-aug-cc-pVXZ and aug-ecp basis sets. 
+but are automatically generated within \dalton\ from the respective 
+aug-cc-pVXZ
+% and aug-ecp basis sets. 
+basis set.
 
 The ANO basis sets require that you give the number of contracted
 functions you would like to use for each of the primitive sets defined
@@ -724,8 +730,10 @@ MOLCAS homepage without any further processing, and should therefore
 be free of errors. The NQvD basis provided to us by Knut F\ae gri 
 along with the Turbomole basis sets have been slightly reformatted for more 
 convenient processing of the file, hopefully without having introduced any errors. 
+The pc-$n$ and apc-$n$ basis sets have been provided to us by Frank Jensen.
 
-We have included several Turbomole basis sets, although we have retained Ahlrichs basis sets
+We have included several Turbomole basis sets,
+although we have retained the Ahlrichs basis sets
 from the EMSL basis set library. We recommend the Turbomole
 basis sets rather than the Ahlrichs basis sets from EMSL, which
 contain some errors. The Ahlrichs-VDZ basis
@@ -827,7 +835,7 @@ DZP+Rydberg(Dunning) & H, B--Ne, Al--Cl & DZP, with polariz. functions from
   \cite{thdpjhhfs1977-2}.\\
 TZ(Dunning) & H, Li--Ne & \cite{thdjcp55}\\
 \hline
-\multicolumn{2}{l}{\bf{\emph{Dunning's correlation consistent basis 
+\multicolumn{2}{l}{\bf{\emph{Dunning's correlation-consistent basis 
 sets\index{basis set!correlation-consistent}\index{correlation-consistent basis set}}}} \\
 \multicolumn{3}{l}{\emph{Note: H,He (valence only) are included in all core-valence basis sets 
   for convenience.}} \\
@@ -851,18 +859,26 @@ aug-cc-pCVXZ (X = D,T,Q,5) & H, He, B--F, & aug-cc-pVXZ, cc-pCVXZ and \cite{dewt
 $n$-aug-cc-pVXZ ($n$ = d,t,q) & as aug-cc-pVXZ & aug-cc-pVXZ. See Sec.~\ref{sec:molbasis} \\
 $n$-aug-cc-pCVXZ ($n$ = d,t,q) & as aug-cc-pCVXZ & aug-cc-pCVXZ. See Sec.~\ref{sec:molbasis} \\
 \hline
+\newpage
 cc-pVXZdenfit (X=T,Q,5) & H, B--F, Al--Cl & Turbomole program \\
 cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
   cc-pVXZ re-contracted for \\
   & Al--Ar, Ga--Kr & Douglas-Kroll calculations.\\
 \hline
-\newpage
+\multicolumn{2}{l}{\bf{\emph{Frank Jensen's polarization-consistent basis 
+sets\index{basis set!polarization-consistent}\index{polarization-consistent basis set}}}} \\
+pc-$n$ ($n$ = 0,1,2,3,4)  & H, C--F & \cite{fjjcp115,fjjcp116} \\
+                      & Si--Cl & \cite{fjthjcp121} \\
+apc-$n$ ($n$ = 0,1,2,3,4) & H, C--F & pc-$n$, with aug. functions from \cite{fjjcp117} \\
+                      & Si--Cl & \cite{fjthjcp121} \\
+\hline
 \bf{\emph{Ahlrich's Turbomole basis sets}} & & \\
 \multicolumn{3}{l}{\emph{Note}: See text above -- Turbomole basis sets are preferred over EMSL sets} \\
 Turbomole-SV & H--Kr & \cite{ashhrajcp97} Turbomole SV basis\\
 Turbomole-XZ (X=D,T) & H--Kr & \cite{ashhrajcp97} Turbomole DZ,TZ basis\\
 Turbomole-TZV & H--Kr & \cite{aschrajcp100} Turbomole TZV basis \\
-Turbomole-XP (X=SV,DZ,TZ,TZV) & H--Kr & \cite{ashhrajcp97,aschrajcp100} Turbomole polariz. basis \\
+Turbomole-XP & H--Kr & \cite{ashhrajcp97,aschrajcp100} Turbomole polariz. basis \\
+ ~~~~(X=SV,DZ,TZ,TZV) & & \\
 Turbomole-TZVPP & H--Kr & \cite{aschrajcp100} Turbomole TZVPP basis \\
 Turbomole-TZVPPP & H--He,B--Ne,Al--Ar & \cite{aschrajcp100} Turbomole TZVPPP basis \\
 Ahlrichs-VXZ (X=D,T) & H--Kr & \cite{ashhrajcp97} From EMSL \\
@@ -900,8 +916,13 @@ ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO basis sets\\
 \hline
 raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
  & Po, Th, U & \\
-ecp-sdd-DZ & Li--Bi & Stuttgart ECPs (some elements excluded) \\
-ecp-sdd-pseudo & H--Rn &  See BASIS/ecp-sdd-pseudo file for references \\
+\hline
+\multicolumn{3}{l}{\bf{\emph{Stuttgart effective core potentials}}} \\
+\multicolumn{3}{l}{\emph{(see http://www.theochem.uni-stuttgart.de/pseudopotentials/index.en.html)}} \\
+ecp-sdd-DZ & Li--Bi & Stuttgart ECP valence basis sets  \\
+           & \multicolumn{2}{l}{(some elements excluded)}  \\
+ecp-sdd-pseudo & H--Rn & Stuttgart ECPs. \\
+           & \multicolumn{2}{l}{(some elements excluded)}  \\
 \hline
 \end{longtable}
 
