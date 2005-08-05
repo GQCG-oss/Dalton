@@ -388,8 +388,7 @@ C
 C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
-Clf         IF (TDHF) THEN
-         IF (.false.) THEN
+         IF (TDHF) THEN
             CALL C3SOL(VECA, VECB, VECC,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
      *                 UDV,WRK(KFREE),LFREE,
