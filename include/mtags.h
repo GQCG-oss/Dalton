@@ -6,3 +6,7 @@ C
      &     MTAG8 = 80, MTAG61 = 61, MTAG62 = 62, MTAG63 = 63,
      &     MTAG64 = 64, MTAG51 = 51, MTAG52 = 52, MTAG53 = 53, 
      &     MTAG54 = 54)
+C
+C     PCM-specific communication tags
+C
+      PARAMETER (MPTAG1 = 1, MPTAG2 = 2)

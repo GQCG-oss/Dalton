@@ -56,13 +56,15 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 #include <codata.h>
+#include <pcmlog.h>
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
       LOGICAL NEWDEF, LOCFIN
-      CHARACTER*8 DIPLEN(3), ANGMOM(3), LONMAG(3)
+      CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
+      DATA DIPLOC/'XDIPLOC','YDIPLOC','ZDIPLOC'/
       DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
       DATA LONMAG/'XLONMAG','YLONMAG','ZLONMAG'/
 C
@@ -229,6 +231,9 @@ C
          ISYM = ISYMAX(ILABEL,1) + 1
          NOPER(ISYM) = NOPER(ISYM) + 1
          LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+         IF(PCM.AND.LOCFLD) THEN
+            LABOP(NOPER(ISYM),ISYM) = DIPLOC(ILABEL)
+         END IF
       END DO
       IF (STATIC) THEN
          DO ILABEL=1,3
@@ -380,6 +385,7 @@ C
 #include <gnrinf.h>
 #include <infsop.h>
 #include <absorp.h>
+#include <pcmlog.h>
 C
       IF (SKIP) RETURN
       CALL QENTER('LNRABA')
@@ -502,18 +508,28 @@ C
       IF (ALFA .OR. ROAA .OR. ROAG) THEN
          NCOMP  = 0
          NPATOM = 0
-         CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
-     &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
-         NLAB = 3
-         CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+Clf
+         IF(PCM.AND.LOCFLD) THEN
+            CALL GET1IN(DUMMY,'DIPLOC ',NCOMP,WORK(KWORK2),LWORK2,
+     &           LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+            NLAB = 3
+            CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+         ELSE
+            CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
+     &           LABINT,WORK(KIDSYM),WORK(KIDADR),
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+            NLAB = 3
+            CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
+         END IF
       ENDIF
       IF (ROAA) THEN
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'THETA  ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &            IPRINT)
          NLAB = 6
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       END IF
@@ -528,7 +544,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
+     &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &            IPRINT)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 C
@@ -623,10 +640,14 @@ C
                KOPER=IOPER
                LABEL1 = LABOP(IOPER,KSYMOP)
                IDIP = 0
-               IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
-               IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
-               IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
-               IF (LABEL1(2:7) .EQ.'DIPLEN') THEN
+               IF ((LABEL1 .EQ.'XDIPLEN').OR.(LABEL1 .EQ.'XDIPLOC')) 
+     $              IDIP = 1
+               IF ((LABEL1 .EQ.'YDIPLEN').OR.(LABEL1 .EQ.'YDIPLOC')) 
+     $              IDIP = 2
+               IF ((LABEL1 .EQ.'ZDIPLEN').OR.(LABEL1 .EQ.'ZDIPLOC')) 
+     $              IDIP = 3
+               IF ((LABEL1(2:7) .EQ.'DIPLEN') .OR. (LABEL1(2:7) .EQ.
+     &                             'DIPLOC')) THEN
                   NABATY = 1
                ELSE IF ((LABEL1(2:7) .EQ. 'ANGMOM') .OR.
      &                  (LABEL1(2:7) .EQ. 'LONMAG')) THEN
@@ -791,6 +812,21 @@ C
                                  POLDD(1,IDIP,3,IFRVAL) = SNDPRP(1)
                                  POLDD(2,IDIP,3,IFRVAL) = SNDPRP(2)
                               END IF
+Clf
+                           ELSE IF (LABEL2(2:7).EQ.'DIPLOC') THEN
+                              IF (LABEL2(1:1).EQ.'X') THEN
+                                 POLDD(1,IDIP,1,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,1,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Y') THEN
+                                 POLDD(1,IDIP,2,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,2,IFRVAL) = SNDPRP(2)
+                              END IF
+                              IF (LABEL2(1:1).EQ.'Z') THEN
+                                 POLDD(1,IDIP,3,IFRVAL) = SNDPRP(1)
+                                 POLDD(2,IDIP,3,IFRVAL) = SNDPRP(2)
+                              END IF
+Clf
                            ELSE IF (LABEL2(3:8).EQ.'THETA ') THEN
                               IF (LABEL2(1:2).EQ.'XX') THEN
                                  POLDQ(1,IDIP,1,1,IFRVAL) = SNDPRP(1)

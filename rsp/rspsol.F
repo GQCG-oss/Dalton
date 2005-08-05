@@ -123,9 +123,12 @@ C  /* Deck rspslv */
      &                  UDV,EVECS,WRK,LWRK)
 C
 #include <implicit.h>
+#include <maxorb.h>
 C
 #include <priunit.h>
 #include <infpri.h>
+#include <infinp.h>
+#include <pcmlog.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
 #include <inforb.h>
@@ -297,10 +300,17 @@ C
       END IF
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
-      CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
-     &                 UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &                 WRK(KDVT),WRK(KDVTTR),
-     &                 EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      IF (PCM) THEN
+         CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      ELSE
+         CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
+     &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      END IF
 C
       IF ((NCSIM.GT.0).AND.(IPRRSP.GT.101)) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
@@ -345,6 +355,7 @@ C
 #include <infinp.h>
 #include <infrsp.h>
 #include <inftap.h>
+#include <wrkrsp.h>
 C     logical inersf
       inersf = .false.
 
@@ -373,6 +384,11 @@ C
       IF (LUSOL .LE. 0)
      &CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       IF (NCSIM .GT. 0) THEN
+         IF (IPRRSP.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE SLVLNC **** '
+            CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+         END IF
          CALL SLVLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      *               WRK(KFLVEC),WRK(KFLINR),WRK(KTLMSI),
      *               UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK(KSYRLM),
@@ -384,6 +400,11 @@ C
          END IF
       END IF
       IF ( NOSIM .GT.0 ) THEN
+         IF (IPRRSP.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFIRMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** AFTER SLVLNO **** '
+            CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+         END IF
          CALL SLVLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               WRK(KFLVEC),WRK(KFLINR),WRK(KTLMSI),
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK(KSYRLM),
@@ -621,7 +642,7 @@ C
             JRXC   = JRXC   + NNORBX
   800    CONTINUE
          IF (IPRRSP.GT.101) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER SLVSOR  in SLVLNC **** '
             CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF

@@ -106,6 +106,7 @@ C
 #include <r12int.h>
 #include <priunit.h>
 #include <infinp.h>
+#include <pcmlog.h>
 #include <infvar.h>
 #include <inforb.h>
 #include <infopt.h>
@@ -125,6 +126,7 @@ C *** data:
       DATA STAR8/'********'/
 C
       CALL QENTER('SIROPT')
+      WRITE(LUPRI,*)'PCM =',PCM
 C
       IF (IPRERR .GT. 0) CALL TIMOPT('START',LUERR,WRK,LFREE)
 C
@@ -484,6 +486,10 @@ C
      *               WRK(KERLM),WRK(KWRKG),LWRKG)
 C        CALL SOLGRD(CREF,CMO,INDXCI,DV,
 C    *               G,ESOLT,ERLM,WRK,LFREE)
+      ELSEIF (PCM) THEN
+         CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
+     *               WRK(KDV),WRK(KGTOT),ESOLT,
+     *               WRK(KWRKG),LWRKG)
       ELSE
          ESOLT = D0
       END IF
@@ -515,10 +521,10 @@ C
             WRITE (LUPRI,1015) POTNUC,EMY,EACTIV
          END IF
       END IF
-      IF (SOLVNT) WRITE (LUW4,1016) ESOLT
+      IF (SOLVNT.OR.PCM) WRITE (LUW4,1016) ESOLT
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
-         IF (SOLVNT) WRITE (LUPRI,1016) ESOLT
+         IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F25.15,T54,
@@ -643,6 +649,10 @@ C                    need higher int. transf. level for NEO/NR
                      CALL SOLGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KERLM),WRK(KWRKG),LWRKG)
+                  ELSEIF (PCM) THEN
+                     CALL PCMGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
+     *                  WRK(KDV),WRK(KGTOT),ESOLT,
+     *                  WRK(KWRKG),LWRKG)
                   END IF
 #endif
                ELSE
@@ -993,6 +1003,15 @@ C
          CALL SOLFCK(DUMMY,DUMMY,WRK(KFCSOL),WRK(KCMO),
      &               WRK(KERLM),.TRUE.,DUMSOL,
      &               WRK(KWRKG),LWRKG,IPRSOL)
+         CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+      ELSEIF (PCM) THEN
+         KFCSOL = KWRKG
+         KWRKG  = KFCSOL + NNORBT
+         LWRKG  = LFREE  - (KWRKG-1)
+         CALL PCMFCK(DUMMY,DUMMY,WRK(KFCSOL),WRK(KCMO),
+     &               .TRUE.,DUMSOL,
+     &               WRK(KWRKG),LWRKG,IPRSOL)
+         CALL DSCAL(NNORBT,-1.0D0,WRK(KFCSOL),1)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
       ELSE
          KFCSOL = KFC
@@ -2343,7 +2362,11 @@ C CBGETDIS : IADH2
 C
 #include <maxash.h>
 #include <maxorb.h>
+#include <mxcent.h>
+#include <pcmdef.h>
 #include <priunit.h>
+#include <pcm.h>
+#include <pcmlog.h>
 #include <infinp.h>
 #include <infopt.h>
 #include <infvar.h>
@@ -2355,13 +2378,14 @@ C
 #include <cbgetdis.h>
 #include <r12int.h>
 C
-      LOGICAL     FNDLAB, ORBHES, LGLOCAL
+      LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(8), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(10), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
-     *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS'/
+     *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
+     *            'PCMINFO ','PCMJXMAT'/
       DATA LABEOD, LABCC /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
@@ -2595,6 +2619,54 @@ C     Write Solvent information, if Solvent calculation.
      *               DUMSOL,WRK(KWRK2),LWRK2,IPRTMP)
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
+      END IF
+C     Write PCM solvent info if PCM calculation
+      IF (PCM) THEN
+         KTMAT = 1
+         KDCAO = KTMAT + NNORBT
+         KDVAO = KDCAO + N2BASX
+         KPOT  = KDVAO + N2BASX
+         KWRK2 = KPOT  + NTS
+         LWRK2 = LFREE - KWRK2 + 1
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-3',KWRK2,LFREE)
+C
+         IPRTMP = 0
+         CALL PCMFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,.TRUE.,
+     *               DUMSOL,WRK(KWRK2),LWRK2,IPRTMP)
+         WRITE (LUSIFC) LAB123,TABLE(10)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
+         WRITE (LUSIFC) LAB123,TABLE(9)
+         WRITE (LUSIFC) NTS
+         WRITE (LUSIFC) (QSE(ITS),ITS = 1, NTS)
+         WRITE (LUSIFC) (QSN(ITS),ITS = 1, NTS)
+         WRITE (LUSIFC) (-QSE(ITS)-QSN(ITS),ITS = 1, NTS)
+C
+Clf         WRITE (LUSIFC) (QSE(ITS)-QSN(ITS),ITS = 1, NTS)
+Clf
+C
+C     Calculate expectation value of the electronic potential
+C     at the tessera
+C
+         EXP1VL = .TRUE.
+         TOFILE = .FALSE.
+         CALL DZERO(WRK(KDCAO),2*N2BASX)
+         CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDCAO),
+     &               WRK(KDVAO),CMO,DV,WRK(KWRK2),LWRK2)
+         CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KWRK2))
+         CALL PKSYM1(WRK(KWRK2),WRK(KDCAO),NBAS,NSYM,1)
+         IF (NASHT .GT. 0) THEN
+            CALL DGEFSP(NBAST,WRK(KDVAO),WRK(KWRK2))
+            CALL PKSYM1(WRK(KWRK2),WRK(KDVAO),NBAS,NSYM,1)
+         END IF
+Ckr
+Ckr      Check whether DV+DC is good enough for open-shell systems (should
+Ckr      be the case).
+Ckr
+         CALL DAXPY(NNBASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
+         CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDCAO),1,TOFILE,'NPETES ',
+     &              1,WRK(KWRK2),LWRK2)
+         WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
+         IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
 C
 C     Write CREF in determinants here, if NCDETS .gt. NCONF

@@ -166,13 +166,13 @@ C
       RETURN
       END
 C  /* Deck oneint */
-      SUBROUTINE ONEINT(WORK,LWORK,PASS,PROPTY)
+      SUBROUTINE ONEINT(WORK,LWORK,PASS,PROPTY,PCM)
 C
 C     TUH
 C
 #include <implicit.h>
 #include <priunit.h>
-      LOGICAL PASS, PROPTY
+      LOGICAL PASS, PROPTY, PCM
       DIMENSION WORK(LWORK)
 #include <cbione.h>
       IF (SKIP) RETURN
@@ -180,7 +180,7 @@ C
       IF (IPRINT .GT. 2) CALL TITLER('Output from ONEINT','*',103)
       PROPTY = .TRUE.
       CALL ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,NODV,
-     &            DIFDIP,DIFQDP,HFONLY,NCLONE)
+     &            DIFDIP,DIFQDP,HFONLY,NCLONE,PCM)
       IF (IPRINT .GE. 2) CALL TIMER ('ONEINT',TIMSTR,TIMEND)
       PASS = .TRUE.
       IF (CUT) THEN
@@ -193,7 +193,7 @@ C
       END
 C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
-     &                  NODV,DIFDIP,DIFQDP,HFONLY,NCLONE)
+     &                  NODV,DIFDIP,DIFQDP,HFONLY,NCLONE,PCM)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -203,7 +203,7 @@ C
 #include <iratdef.h>
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2), HFONLY,
-     &        NCLONE, DIFQDP
+     &        NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
 #include <nuclei.h>
 #include <shells.h>
@@ -290,7 +290,8 @@ C
      &            WORK(KLAST),LWRK,IPRINT,PROPTY,MAXDIF,
      &            NODC,NODV,DIFDIP,DIFQDP,NBAST,NNBASX,NNBAST,DOINT,
      &            .TRUE.,WORK(KHESKE),WORK(KHESNA),WORK(KHESFS),
-     &            WORK(KHSOLT),WORK(KHSOLN),WORK(KHEDFT),HFONLY,NCLONE)
+     &            WORK(KHSOLT),WORK(KHSOLN),WORK(KHEDFT),HFONLY,NCLONE,
+     &            PCM)
       CALL QEXIT('ONEDRV')
       RETURN
       END
@@ -299,7 +300,7 @@ C  /* Deck onedr1 */
      &                  JSYMC,JCENTC,TLMD,CSTRA,SCTRA,WORK,LWORK,IPRINT,
      &                  PROPTY,MAXDIF,NODC,NODV,DIFDIP,DIFQDP,NBAST,
      &                  NNBASX,NNBAST,DOINT,TOFILE,HESSKE,HESSNA,HESFS2,
-     &                  HSOLT2,HSOLNN,HESDFT,HFONLY,NCLONE)
+     &                  HSOLT2,HSOLNN,HESDFT,HFONLY,NCLONE,PCM)
 C
 C     TUH
 C
@@ -325,7 +326,7 @@ C
 C
 #include <nuclei.h>
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
-     &        TOFILE, HFONLY, NCLONE, FOUND, DIFQDP, FNDLB2
+     &        TOFILE, HFONLY, NCLONE, FOUND, DIFQDP, FNDLB2, PCM
       DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,*),
      &          FACINT(NUCDEP), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
@@ -409,6 +410,17 @@ C
                CALL HESZER(HSOLT2)
                CALL HESZER(HSOLNN)
             END IF
+         ELSEIF (PCM) THEN
+            ESOLTT = D0
+            ESOLNN = D0
+            CALL DZERO(GSOLTT,3*NUCDEP)
+            CALL DZERO(GSOLNN,3*NUCDEP)
+            CALL DZERO(GSOLCV,3*NUCDEP)
+Clf            IF (SECDER) THEN
+            IF (.FALSE.) THEN
+               CALL QUIT('ONEINT: '// 
+     $              'SECOND DERIVATIVES NOT IMPLEMENTED WITH PCM')
+            END IF
          END IF
       END IF
 C
@@ -432,7 +444,8 @@ C
            CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,IPRINT,
      &                 NODC,NODV)
          END IF
-         CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),NBAST,IPRINT)
+         CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),.TRUE.,
+     &              NBAST,IPRINT)
       END IF
 C
 C     ********************************************************
@@ -467,6 +480,8 @@ C
          CALL SOLNUC(.TRUE.,MAXDIF,DIFDIP,TLMD(1,2),HSOLNN,
      &               WORK(KFCM),WORK,KFREE,LFREE,IPRINT)
          KLAST = KFREE
+      ELSE IF(PROPTY .AND. PCM) THEN 
+         CALL PCMNUC
       END IF
       LWRK  = LWORK - KLAST + 1
 C
@@ -631,7 +646,7 @@ C
      &               IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,
      &               DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &               JCENTC,NCENTC,SIGNC,NNBASX,WORK(KFCM),TLMD(1,1),
-     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE)
+     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE,PCM)
   110    IDENB0 = IDENB0 + KHKTB*MULTB
          IDENA = IDENA + KHKTA*MULTA
   100 CONTINUE
@@ -772,6 +787,18 @@ C
                CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Nuclear solvent part of gradient',-1)
                CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
+            ELSE IF (PCM) THEN
+               CALL HEADER('PCM Solvent energy contributions',-1)
+               WRITE(LUPRI,'(3(/A,F15.10))')
+     &              ' Nuclear solvent energy:',ESOLNN,
+     &              ' Electr. solvent energy:',ESOLTT,
+     &              ' Total   solvent energy:',ESOLNN+ESOLTT
+               CALL HEADER('Electronic solvent part of gradient',-1)
+               CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Nuclear solvent part of gradient',-1)
+               CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Cavity solvent part of the gradient',-1)
+               CALL PRIGRD(GSOLCV,WORK(KCSTRA),WORK(KSCTRA))
             END IF
             IF (DFTRUN) THEN
                CALL HEADER('DFT contribution to gradient',-1)
@@ -1447,5 +1474,111 @@ C
      &      'integrals not found on LUPROP.'
          CALL QUIT('DKTRF error: Integrals not found on LUPROP')
       END IF
+      RETURN
+      END
+C /* Deck PCMNUC */
+      SUBROUTINE PCMNUC
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0)
+#include <pi.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include <nuclei.h>
+#include <pcmnuclei.h>
+#include <taysol.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <symmet.h>
+#include <ibtfun.h>
+
+      FACT = 4.0D0 * PI * EPS/(EPS - D1)
+      ISPP = 1
+      DO INUC = 1, NUCIND
+         DO ICOOR = 1,3
+            SESE=D0
+            SNSN=D0
+            SESN=D0
+            IF(ICESPH .NE. 1) CALL OVER(ISPP,ICOOR,SESE,SNSN,SESN)
+Clf            IF(ICESPH .NE. 1) CALL OVER(INUC,ICOOR,SESE,SNSN,SESN)
+            DERU = D0
+            DERY = D0
+            XN = CORD(1,INUC)
+            YN = CORD(2,INUC) 
+            ZN = CORD(3,INUC)
+            DO JSYM = 0, MAXREP
+               SIGNX = PT(IBTAND(ISYMAX(1,1),JSYM))
+               SIGNY = PT(IBTAND(ISYMAX(2,1),JSYM))
+               SIGNZ = PT(IBTAND(ISYMAX(3,1),JSYM))
+               DO ITS = 1, NTSIRR
+                  XI = SIGNX * XCTS(ITS)
+                  YI = SIGNY * YCTS(ITS)
+                  ZI = SIGNZ * ZCTS(ITS)
+                  DIST = DSQRT ((XN-XI)**2 + (YN-YI)**2 + 
+     $                 (ZN-ZI)**2)
+                  IF(ICOOR .EQ. 1) PROD = XI - XN
+                  IF(ICOOR .EQ. 2) PROD = YI - YN
+                  IF(ICOOR .EQ. 3) PROD = ZI - ZN
+                  DVNUC = CHARGE(INUC) * PROD / DIST**3
+                  DERY = DERY + DVNUC * QSE(ITS)
+                  DERU = DERU + DVNUC * QSN(ITS)
+               ENDDO
+            ENDDO
+            IACOOR  = IPTCNT(3*(INUC-1)+ICOOR ,0,1)
+            IF(IACOOR .GT. 0) THEN
+               DOVERS = FACT * ((SESE + SNSN) * DP5 + SESN)
+               GSOLCV(IACOOR) = FMULT(ISTBNU(INUC))*DOVERS
+               GSOLNN(IACOOR) = FMULT(ISTBNU(INUC))*(DERY + DERU)
+            ENDIF
+         ENDDO
+         ISPP = ISPP + MULT(ISTBNU(INUC))
+      ENDDO
+      RETURN
+      END
+C/*DECK OVER*/
+      SUBROUTINE OVER(NSJ,IC,SESE,SNSN,SESN)
+C
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0)
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      DO ISYM = 0, MAXREP
+         MTS = NTSIRR * ISYM
+         SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
+         SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
+         SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
+         DO ITS=1,NTSIRR
+            L=ISPHE(ITS + MTS)
+            XNI = - (XE(L) - SIGNX * XCTS(ITS)) / RE(L)
+            YNI = - (YE(L) - SIGNY * YCTS(ITS)) / RE(L)
+            ZNI = - (ZE(L) - SIGNZ * ZCTS(ITS)) / RE(L)
+            IF(L.LE.NESFP)THEN
+               IF(INA(L).EQ.NSJ)THEN
+                  IF(IC.EQ.1)DN=XNI
+                  IF(IC.EQ.2)DN=YNI
+                  IF(IC.EQ.3)DN=ZNI
+                  SESE=SESE+DN*(QSE(ITS)**2)/AS(ITS)
+                  SNSN=SNSN+DN*(QSN(ITS)**2)/AS(ITS)
+                  SESN=SESN+DN*QSE(ITS)*QSN(ITS)/AS(ITS)
+               ENDIF
+            ELSE
+               DCENTN=XNI*Dercen(L,NSJ,IC,1)+
+     *                YNI*Dercen(L,NSJ,IC,2)+
+     *                ZNI*Dercen(L,NSJ,IC,3)
+               DN=DERRAD(L,NSJ,IC)+DCENTN
+               SESE=SESE+DN*(QSE(ITS)**2)/AS(ITS)
+               SNSN=SNSN+DN*(QSN(ITS)**2)/AS(ITS)
+               SESN=SESN+DN*QSE(ITS)*QSN(ITS)/AS(ITS)
+            ENDIF
+         ENDDO
+      ENDDO
       RETURN
       END

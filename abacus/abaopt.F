@@ -1939,6 +1939,8 @@ C
 #include "maxorb.h"
 #include "symmet.h"
 #include "nuclei.h"
+#include "infinp.h"
+#include "pcmlog.h"
       DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
       CHARACTER*1 MARK
       INTEGER     START
@@ -1957,6 +1959,7 @@ C
       IF (.NOT. GECONV) THEN
          CALL HEADER('Next geometry (au)',-1)
          CALL PRIGEO(CORDNW)
+         IF (PCM) CALL UPDCAV(CORDNW)
       ELSE
          CALL HEADER('Final geometry (au)',-1)
          CALL PRIGEO(CORD)
@@ -2117,6 +2120,7 @@ C
 #include "gnrinf.h"
 #include "siripc.h"
 #include "dftcom.h"
+#include "pcmlog.h"
 #include "molinp.h"
 #include "abainf.h"
 #include "rspprp.h"
@@ -2133,7 +2137,7 @@ Cef end
          EXHER = .TRUE.
       END IF
       NEWGEO = .TRUE.
-Cef begin
+      NPCMIN = .TRUE.
       IF (AOSAVE) THEN
          LINTSV = .FALSE.
          LINTMP = .FALSE.
@@ -2177,6 +2181,7 @@ C
             THRSTP = MAX(THRSTP,5.0D-05)
          END IF
          IF (DOCCSD) THEN
+C
             CALL CC_GEOFLAG
             CALL EXECC(WORK,LWORK,WRKDLM)
          ENDIF

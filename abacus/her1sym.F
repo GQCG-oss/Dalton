@@ -38,14 +38,17 @@ C  /* Deck onesop */
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
      &                  CORBZ0,DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,
      &                  JSYMC,JCENTC,NCENTC,SIGNC,NNBASX,FCM,TLMD,
-     &                  HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE)
+     &                  HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE,PCM)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+Clf#include <pcmlog.h>
 #include <iratdef.h>
 #include <maxorb.h>
 C
-      LOGICAL SECDER, DIFDIP, PROPTY, NCLONE, DIFQDP
+      LOGICAL SECDER, DIFDIP, PROPTY, NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), DENMAT(NNBASX), FOCMAT(NNBASX),
      &          FACINT(*), COORC(3,*), JSYMC(*),
@@ -94,6 +97,11 @@ C
             KLMNO  = KRLMTB + 21*KCKTAB
             KLAST  = KLMNO  + (3*LMNTOT + 1)/IRAT
          END IF
+      ELSE IF (PCM) THEN
+         KRLMNT = KLAST
+         KRLMTB = KRLMNT + 7*NTS*KCKTAB
+         KLAST  = KRLMTB
+         KLMNO  = KLAST
       ELSE
          KRLMNT = KLAST
          KRLMTB = KLAST
@@ -109,7 +117,7 @@ C
      &            DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,
      &            NCENTC,SIGNC,NNBASX,WORK(KDSHEL),WORK(KFSHEL),
      &            WORK(KRLMNT),WORK(KRLMTB),FCM,TLMD,WORK(KLMNO),HESSKE,
-     &            HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE,WORK(KXPDER))
+     &            HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE,WORK(KXPDER),PCM)
       CALL QEXIT('ONESOP')
       RETURN
       END
@@ -120,7 +128,7 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,DIFQDP,SECDER,NATOMC,TOLOG,TOLS,
      &                  JSYMC,JCENTC,NCENTC,SIGNC,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,HESSKE,HESSNA,
-     &                  HESFS2,HSOLT2,HSOLNN,NCLONE,EXPDER)
+     &                  HESFS2,HSOLT2,HSOLNN,NCLONE,EXPDER,PCM)
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
@@ -130,7 +138,7 @@ C  /* Deck oneso1 */
 #include <dummy.h>
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0)
 C
-      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, NCLONE, DIFQDP
+      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), ADER(*), EXPDER(*),
@@ -147,6 +155,8 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 #include <cbisol.h>
+#include <pcmdef.h>
+#include <pcm.h>
 #include <expopt.h>
 C
 #include <ibtfun.h>
@@ -183,7 +193,7 @@ C
          CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,QINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
      &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,DIFQDP,FACINT,
-     &               COORC,GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
+     &               COORC,GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER,PCM)
 C
 C        *************************************************
 C        ***** Transform to spherical harmonic basis *****
@@ -224,6 +234,9 @@ C
                      CALL SPHRM1(RLMTAB,RLMTAB,21,WORK,LWORK,PROPTY,
      &                           IPRINT)
                   END IF
+               ELSE IF (PCM) THEN
+                  CALL SPHRM1(RLMINT,RLMINT,7*NTS,WORK,LWORK,PROPTY,
+     &                        IPRINT)
                END IF
             ELSE
                CALL SPHRM1(STDER0,STDER0,2,WORK,LWORK,PROPTY,IPRINT)
@@ -297,6 +310,8 @@ C           =====================
             IF (SOLVNT) THEN
                 CALL AVESOL(RLMINT,RLMTAB,FCM,MAXDIF,DIFDIP,ISYMOP,
      &                      MAXCMP,DSHELL,TLMD,LMNO,IPRINT,HSOLT2)
+             ELSE IF (PCM) THEN
+                CALL AVEPCM(RLMINT,MAXCMP,DSHELL,IPRINT)
             END IF
          END IF
 C
@@ -334,7 +349,7 @@ C        **************************************************
 C
          IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
             CALL WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
-     &                  ISYMOP,NATOMC,IPRINT)
+     &                  ISYMOP,NATOMC,IPRINT,PCM)
          END IF
       END IF
   100 CONTINUE
@@ -345,31 +360,46 @@ C
       END
 C  /* Deck wd1sym */
       SUBROUTINE WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
-     &                  ISYMOP,NATOMC,IPRINT)
+     &                  ISYMOP,NATOMC,IPRINT,PCM)
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION STDER1(KCKTAB,3,2), ADER(*), JSYMC(*), JCENTC(*),
      &          RLMINT(*), FCM(*), WORK(LWORK)
+      LOGICAL PCM
 #include <onecom.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+clf#include <pcmlog.h>
 C
       KOMAT = 1
-      KLAST  = KOMAT + 6*KCKTAB
+      IF (PCM) THEN
+         KQTOT = KOMAT + 6*KCKTAB
+         KLAST = KQTOT + NTSIRR
+      ELSE
+         KLAST  = KOMAT + 6*KCKTAB
+         KQTOT  = KLAST
+      ENDIF
       IF (KLAST .GT. LWORK) CALL STOPIT('WD1SYM',' ',KLAST,LWORK)
       CALL WD1SY1(STDER1,ADER,RLMINT,FCM,WORK(KOMAT),JSYMC,JCENTC,
-     &            ISYMOP,NATOMC,IPRINT)
+     &            ISYMOP,NATOMC,IPRINT,WORK(KQTOT),PCM)
       RETURN
       END
 C  /* Deck wd1sy1 */
       SUBROUTINE WD1SY1(STDER1,ADER,RLMINT,FCM,OMAT,JSYMC,JCENTC,ISYMOP,
-     &                  NATOMC,IPRINT)
+     &                  NATOMC,IPRINT,QTOT,PCM)
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
-     &          FCM(*)
+     &          FCM(*),QTOT(*)
+      LOGICAL PCM
 #include <cbisol.h>
 #include <onecom.h>
 #include <ader.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
       IF (IPRINT .GT. 5) THEN
          NADER = 28*NATOMC
          IF (ONECEN) NADER = 10*NATOMC
@@ -429,11 +459,29 @@ C
         CALL DASYM1(OMAT(1,1,1),OMAT(1,1,2),ONECEN,NCENTA,NCENTB,
      &              NCNTCV,ISYMOP,0,MULA,MULB,NHKTA,NHKTB,KHKTA,
      &              KHKTB,KHKTAB,KCKTAB,HKAB,LDIAG,IPRINT)
+      ELSE IF (PCM) THEN
+C
+CLF Do we have to multiply this by the multiplicity?
+C
+         DO ITS = 1, NTSIRR
+            QTOT(ITS) = QSE(ITS) + QSN(ITS)
+         END DO
+         DO 410 ICMPAB = 1, KHKTAB
+          OMAT(ICMPAB,1,1)=DDOT(NTSIRR,QTOT,1,RLMINT(ICMPAB,1,5),KCKTAB)
+          OMAT(ICMPAB,2,1)=DDOT(NTSIRR,QTOT,1,RLMINT(ICMPAB,1,6),KCKTAB)
+          OMAT(ICMPAB,3,1)=DDOT(NTSIRR,QTOT,1,RLMINT(ICMPAB,1,7),KCKTAB)
+          OMAT(ICMPAB,1,2)=DDOT(NTSIRR,QTOT,1,RLMINT(ICMPAB,1,2),KCKTAB)
+          OMAT(ICMPAB,2,2)=DDOT(NTSIRR,QTOT,1,RLMINT(ICMPAB,1,3),KCKTAB)
+          OMAT(ICMPAB,3,2)=DDOT(NTSIRR,QTOT,1,RLMINT(ICMPAB,1,4),KCKTAB)
+ 410     CONTINUE
+         CALL DASYM1(OMAT(1,1,1),OMAT(1,1,2),ONECEN,NCENTA,NCENTB,
+     &        NCNTCV,ISYMOP,0,MULA,MULB,NHKTA,NHKTB,KHKTA,
+     &        KHKTB,KHKTAB,KCKTAB,HKAB,LDIAG,IPRINT)
       END IF
       RETURN
       END
 C  /* Deck dsym1 */
-      SUBROUTINE DSYM1(DENMAT,FOCMAT,DSO,FSO,NBAST,IPRINT)
+      SUBROUTINE DSYM1(DENMAT,FOCMAT,DSO,FSO,DOFOCK,NBAST,IPRINT)
 C
 C     Take density matrix in symmetry orbital basis and generate
 C     density matrix over distinct pairs of AOs
@@ -446,6 +494,7 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
+      LOGICAL DOFOCK
 #include <shells.h>
 #include <pincom.h>
 #include <symmet.h>
@@ -458,7 +507,7 @@ C
       ISTR = 1
       NNBASX = NBAST*(NBAST + 1)/2
       CALL DZERO(DENMAT,NNBASX)
-      CALL DZERO(FOCMAT,NNBASX)
+      IF (DOFOCK) CALL DZERO(FOCMAT,NNBASX)
       DO 100 IREP = 0, MAXREP
          NORBI = NAOS(IREP+1)
          IF (NORBI .EQ. 0) GOTO 110
@@ -480,7 +529,7 @@ C
                HKAB   = FMULT(KAB)
                ISOFF  = ISOFF + 1
                DSYMIJ = DSO(ISOFF)
-               FSYMIJ = FSO(ISOFF)
+               IF (DOFOCK) FSYMIJ = FSO(ISOFF)
                INDB   = JOFF + NB - KHKTB
                DO 400 ISYMOP = 0, MAXOPR
                   IF (IBTAND(ISYMOP,MAB) .NE. 0) GOTO 400
@@ -493,7 +542,7 @@ C
                   INDM = MAX(INDA,INDB)
                   IND  = (INDM*(INDM - 3))/2 + INDA + INDB
                   DENMAT(IND) = DENMAT(IND) + FAC*DSYMIJ
-                  FOCMAT(IND) = FOCMAT(IND) + FAC*FSYMIJ
+                  IF (DOFOCK) FOCMAT(IND) = FOCMAT(IND) + FAC*FSYMIJ
 400            CONTINUE
 300         CONTINUE
 200      CONTINUE
@@ -503,8 +552,10 @@ C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Total density matrix (sym. distinct AO basis)',-1)
          CALL OUTPAK(DENMAT,NBAST,1,LUPRI)
-         CALL HEADER('Total Fock matrix (sym. distinct AO basis)',-1)
-         CALL OUTPAK(FOCMAT,NBAST,1,LUPRI)
+         IF (DOFOCK) THEN
+            CALL HEADER('Total Fock matrix (sym. distinct AO basis)',-1)
+            CALL OUTPAK(FOCMAT,NBAST,1,LUPRI)
+         END IF
       END IF
       RETURN
       END
@@ -826,6 +877,44 @@ C
          END IF
 200      CONTINUE
 100   CONTINUE
+      RETURN
+      END
+C /* Deck sym1ev */
+      SUBROUTINE SYM1EV(AO,DMAT,EXPVAL,FACSYM,MULTA,MULTB,IPRINT)
+C
+C     Expectation values, K.Ruud, Pisa June-05
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+      DIMENSION AO(*), DMAT(*)
+#include "onecom.h"
+#include <symmet.h>
+#include <ibtfun.h>
+      ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
+C
+      DO JREP = 0, MAXREP
+         DO NA = 1, KHKTA
+            IF (IBTAND(MULA,IBTXOR(JREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+               NAT = KHKTB*(NA - 1)
+               IF (LDIAG) THEN
+                  KHKTBB = NA
+               ELSE
+                  KHKTBB = KHKTB
+               END IF
+               DO NB = 1, KHKTBB
+                  IF (IBTAND(MULB,IBTXOR(JREP,ISYMAO(NHKTB,NB))).EQ.0) 
+     &                 THEN
+                     IORBAB = ITRI(IDENA+NA,IDENB+NB)
+                     FAC = FACSYM/(MULTA*MULTB)
+                     EXPVAL = EXPVAL + FAC*AO(NAT+NB)*DMAT(IORBAB)
+                  END IF
+               END DO
+            END IF
+         END DO
+      END DO
       RETURN
       END
 C  /* Deck sym1n */

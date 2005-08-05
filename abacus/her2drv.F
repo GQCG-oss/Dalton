@@ -1724,7 +1724,6 @@ C  /* Deck twood1 */
 #include "nuclei.h"
 #include "twosta.h"
 #include "ibtfun.h"
-  
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from TWOOD1','*',103)
 C

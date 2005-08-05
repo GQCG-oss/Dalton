@@ -2865,6 +2865,7 @@ C
             DIPLEN = .FALSE.
          END IF
 C
+Clf         goto 1234
          DO I = 1,N
          DO J = 1,3
          DO K = 1,3
@@ -2980,6 +2981,12 @@ C
 C
 C If not done before, put in list
 C
+
+C     lf 1234 continue there is a minor bug here: for some components
+C     both the number is given and afterwards beta is set equal to a
+C     previously calculated component It affects just the printout, I
+C     hope...
+
          IF (DOCAL .OR. ONFIL) THEN
             N = N + 1
             IF (N .GT. MXCALC) THEN

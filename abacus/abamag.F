@@ -228,6 +228,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxmom.h>
+#include "maxorb.h"
 #include <maxaqn.h>
       PARAMETER (D0 = 0.D0)
       LOGICAL PASS
@@ -237,12 +238,12 @@ C
 #include <nuclei.h>
 #include <abainf.h>
 #include <inforb.h>
+#include "symmet.h"
 #include <dorps.h>
 #include <spnout.h>
 #include <relcor.h>
 #include <dipole.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include <pcmlog.h>
       IF (MSKIP .OR. ((.NOT. DODSO) .AND. (SST
      &          .AND. .NOT. (NST .OR. MDIASU)))) RETURN
       CALL QENTER('MAGINT')
@@ -258,20 +259,34 @@ C     **************************************************************
 C
       KDENMA = 1
       KFOCMA = KDENMA + NNBASX
-      KLAST  = KFOCMA + NNBASX
+      KDSO   = KFOCMA + NNBASX
+      KFSO   = KDSO   + NNBASX
+      KLAST  = KFSO   + NNBASX
       LWRK   = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('MAGINT',' ',KLAST,LWORK)
 C 
-      CALL DZERO(WORK(KDENMA),NNBASX)
-      CALL DZERO(WORK(KFOCMA),NNBASX)
-      CALL DSOFSO(WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,MPRINT,
+      CALL DZERO(WORK(KDSO),NNBASX)
+      CALL DZERO(WORK(KFSO),NNBASX)
+      CALL DSOFSO(WORK(KDSO),WORK(KFSO),WORK(KLAST),LWRK,MPRINT,
      &            MNODC,MNODV)
+      CALL DSYM1(WORK(KDENMA),WORK(KFOCMA),WORK(KDSO),WORK(KFSO),
+     &           .TRUE.,NBAST,MPRINT)
+      KLAST = KDSO
+      LWRK = LWRK + 2*NNBASX
 C
 C     We always start by calculating the dipole moment
 C
       NCOMP = 3
       CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
      &            MPRINT,MNODC,MNODV,'DIPLEN ',NCOMP)
+C
+C     Local-field corrected dipole moment
+C
+      IF(PCM.AND.LOCFLD) THEN
+         NCOMP = 3
+         CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
+     &        MPRINT,MNODC,MNODV,'DIPLOC ',NCOMP)
+      END IF
 C
       IF (NST) THEN
          IF (NOLOND) THEN
@@ -439,26 +454,24 @@ C
       MAXTYP = 3*MXCOOR
       IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
       CALL QENTER('MAGDRV')
-      KSTHMA = 1
-      KEXPVA = KSTHMA + NNBASX*NCOMP
+      KEXPVA = 1
       KINTRP = KEXPVA + NCOMP
       KINTAD = KINTRP + (9*MXCENT**2+1)/IRAT
-      KOVERL = KINTAD + (9*MXCENT**2+1)/IRAT
-      KFMOVL = KOVERL + 6*NNBASX
+      KFMOVL = KINTAD + (9*MXCENT**2+1)/IRAT
       KLAST  = KFMOVL + 6
       LWRK   = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('MAGDRV',' ',KLAST,LWORK)
-      CALL MAGDR1(SPNDSO,WORK(KSTHMA),DENMAT,FOCMAT,
+      CALL MAGDR1(SPNDSO,DENMAT,FOCMAT,
      &            WORK(KEXPVA),WORK(KLAST),LWRK,IPRINT,NODC,NODV,
      &            NNBASX,NNBAST,NBAST,WORD,WORK(KINTRP),WORK(KINTAD),
-     &            WORK(KOVERL),WORK(KFMOVL),NCOMP)
+     &            WORK(KFMOVL),NCOMP)
       CALL QEXIT('MAGDRV')
       RETURN
       END
 C  /* Deck magdr1 */
-      SUBROUTINE MAGDR1(SPNDSO,STHMAT,DENMAT,FOCMAT,EXPVAL,WORK,LWORK,
+      SUBROUTINE MAGDR1(SPNDSO,DENMAT,FOCMAT,EXPVAL,WORK,LWORK,
      &                  IPRINT,NODC,NODV,NNBASX,NNBAST,NBAST,WORD,
-     &                  INTREP,INTADR,OVERLP,FMOVL,NCOMP)
+     &                  INTREP,INTADR,FMOVL,NCOMP)
 C
 C     K.Ruud, April 1992
 C
@@ -476,12 +489,11 @@ C
 #include <priunit.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TMAT
-      LOGICAL NODC, NODV
+      LOGICAL NODC, NODV, EXP1VL
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
-      DIMENSION STHMAT(NNBASX,NCOMP), SPNDSO(*),
+      DIMENSION SPNDSO(*),
      &          DENMAT(NNBASX), INTREP(*), INTADR(*),
-     &          FOCMAT(NNBASX), EXPVAL(NCOMP), OVERLP(NNBASX,6),
-     &          FMOVL(6),WORK(LWORK)
+     &          FOCMAT(NNBASX), EXPVAL(NCOMP), FMOVL(6),WORK(LWORK)
 #include <abainf.h>
 #include <efield.h>
 #include <cbisol.h>
@@ -490,90 +502,42 @@ C
 #include <onecom.h>
 #include <nuclei.h>
 #include <symmet.h>
+cDM added to pass vectors to MAGPCMSEC
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+cDM
 C
       SIGN = 1.0D0
+      EXP1VL = .TRUE.
+      KCOMP = 0
       IF (IPRINT .GT. 2) CALL TITLER('Output form MAGDR1','*',103)
-C
-C     Get the magnetic integrals
-C
-      IF ((WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ')
-     &     .AND. .NOT. ALLCOM) THEN
-         NPATOM = 2
-         DO 60 I = 1, NUCIND
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,
-     &            INTREP,INTADR,I,.FALSE.,NPATOM,.TRUE.,IPRINT)
-C
-            IF (IPRINT .GT. 5) THEN
-               DO 101 ICOMP = 1, NCOMP
-                  CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-                  WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &                  INTREP(ICOMP) + 1
-                  CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 101           CONTINUE
-            END IF
-            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                  IPRINT,WORD,LABINT,SIGN)
- 60      CONTINUE
-      ELSE IF (WORD .EQ. 'NSTCGOS') THEN
-         NPATOM = 2
-         DO 61 I = 1, NUCIND
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,
-     &            INTREP,INTADR,I,.FALSE.,NPATOM,.TRUE.,IPRINT)
-C
-            IF (IPRINT .GT. 5) THEN
-               DO 102 ICOMP = 1, NCOMP
-                  CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-                  WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &                  INTREP(ICOMP) + 1
-                  CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 102           CONTINUE
-            END IF
-            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                  IPRINT,WORD,LABINT,SIGN)
- 61      CONTINUE
-      ELSE IF (WORD .EQ. 'DSO    ') THEN
-         IF (ALLCOM) THEN
-            NPATOM = 1
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
-     &                  INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
-            IF (IPRINT .GE. 15) THEN
-               DO ICOMP = 1, NCOMP
-                  CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-                  WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &                 INTREP(ICOMP) + 1
-                  CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
-               END DO
-            END IF
-            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                  IPRINT,WORD,LABINT,SIGN)
-         ELSE
-            CALL GET1DS(STHMAT,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
-     &                  INTADR,SPNDSO,DENMAT,EXPVAL,MPQUAD,IPRINT)
-         END IF
+      IF (WORD .EQ. 'DSO    ') THEN
+         NPATOM = 1
+         CALL GET1IN(DUMMY,WORD,KCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &               EXP1VL,DENMAT,IPRINT)
+         CALL MAGAVE(SPNDSO,EXPVAL,KCOMP,WORK,LWORK,
+     &               IPRINT,WORD,LABINT,SIGN)
       ELSE
          NPATOM = 0
          IF (WORD .EQ. 'DSUSCGM') THEN
-            CALL GET1IN(STHMAT,'DSUSCGO',NCOMP,WORK(1),LWORK,LABINT,
-     &           INTREP,INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
+            CALL GET1IN(DUMMY,'DSUSCGO',KCOMP,WORK(1),LWORK,LABINT,
+     &           INTREP,INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &           EXP1VL,DENMAT,IPRINT)
          ELSE
-            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
-     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
-         END IF
-         IF (IPRINT .GE. 15) THEN
-            DO 140 ICOMP = 1, NCOMP
-               CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-               WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &               INTREP(ICOMP) + 1
-               CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 140        CONTINUE
+            CALL GET1IN(DUMMY,WORD,KCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &               EXP1VL,DENMAT,IPRINT)
          END IF
 C
 C     Add contribution from electric field, KRu, Aug.-93
 C
          IF (NFIELD .GT. 0 .AND. (WORD .EQ. 'DIASUS ')) THEN
-            NCOMP = 6
-            KTMAT = 1
-            LWRK  = KTMAT + NNBAST*NCOMP
+            NCOMP  = 6
+            KEXPT  = 1
+            NPATOM = 0
+            LWRK  = KEXPT + NCOMP
             IF (LWRK .GT. LWORK) CALL STOPIT('MAGDR1',' ',LWRK,LWORK)
             LLEFT = LWORK - LWRK + 1
             DO 555 IFIELD = 1, NFIELD
@@ -591,66 +555,81 @@ C
                      CALL QUIT('Illegal field type for '//
      &                         'magnetizabileties')
                   END IF
-                  CALL GET1PR(WORK(KTMAT),'CM2    ',NCOMP,'TRIANG',
-     &                        .TRUE.,WORK(LWRK),LLEFT,IDUMMY,IPRINT)
-                  CALL DAXPY(NNBASX*NCOMP,EFIELD(IFIELD),WORK(KTMAT),1,
-     &                       STHMAT,1)
+                  KCOMP = 0
+                  CALL GET1IN(DUMMY,'CM2    ',KCOMP,WORK(LWRK),LLEFT,
+     &                        LABINT,INTREP,INTADR,MPQUAD,.FALSE.,
+     &                        NPATOM,.TRUE.,WORK(KEXPT),EXP1VL,DENMAT,
+     &                        IPRINT)
+                  CALL DAXPY(KCOMP,EFIELD(IFIELD),WORK(EXPT),1,
+     &                       EXPVAL,1)
                END IF
  555        CONTINUE
          END IF
 C
-         IF (SOLVNT .AND. (WORD .EQ. 'DIASUS')) THEN
+         IF ((SOLVNT.OR.PCM) .AND. (WORD .EQ. 'DIASUS')) THEN
             NCOMP  = 6
-	    KDERMA = 1
-            LWRK   = KDERMA + NNBASX*NCOMP
-            IF (LWRK .GT. LWORK) CALL STOPIT('MAGDR1','SOLVENT',
-     &                                       LWRK,LWORK)
-            LLEFT = LWORK - LWRK + 1
-            CALL MAGSOL(WORK(KDERMA),NCOMP,IPRINT,IPRINT,
-     &                  WORK(LWRK),LLEFT)
-	    CALL DAXPY(NNBASX*NCOMP,D1,WORK(KDERMA),1,STHMAT,1)
+            IF (SOLVNT) THEN
+cDM Onsager solvent model contributions
+               KSLEXP = 1
+               KSLSPH = KSLEXP + NCOMP
+               KSLCAR = KSLSPH + (2*LCAVMX + 1)*NCOMP
+               KGLM   = KSLCAR + (LCAVMX + 1)*(LCAVMX + 2)*NCOMP/2
+               KTLM   = KGLM   + LMTOT
+               KTRAMT = KTLM   + LMTOT
+               KLAST  =KTRAMT+(LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2
+               IF (KLAST .GT. LWORK) CALL STOPIT('MAGDR1','MAGSOLEXP',
+     &                                           KLAST,LWORK)
+               LWRK   = LWORK - KLAST + 1
+               CALL MAGSOLEXP(WORK(KSLEXP),WORK(KSLSPH),WORK(KSLCAR),
+     &                        INTREP,INTADR,LABINT,WORK(KGLM),
+     &                        WORK(KTLM),WORK(KTRAMT),INTPRI,
+     &                        DENMAT,WORK(KLAST),LWRK)
+            ELSE 
+cDM IEF-PCM solvent model contributions
+
+               KDERMA = 1
+               KPOTPR = KDERMA +  NNBASX*NCOMP
+               KQSEPR = KPOTPR + NTSIRR*NCOMP
+               LWRK = KQSEPR + NTSIRR*NCOMP
+               LLEFT=LWORK - LWRK + 1
+
+               CALL MAGPCMSEC(WORK(KDERMA),NCOMP,IPRINT,IPRINT,
+     &              WORK(LWRK),LLEFT,DENMAT,WORK(KPOTPR),WORK(KQSEPR))
+            END IF
+C
+ckr            IF (IPRINT.GT.5) THEN
+               CALL AROUND('Second-order solvent contribution')
+               CALL OUTPAK(WORK(KSLEXP),3,1,LUPRI)
+ckr            END IF
+
+cDM add the solvent contribution to perturbed Fock matrix 
+	    CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
+C
          END IF
 C
-         IF (IPRINT .GT. 5) THEN
-            DO 100 ICOMP = 1, NCOMP
-               CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-               WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
-     &               INTREP(ICOMP) + 1
-               CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
- 100        CONTINUE
-         END IF
-         CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &               IPRINT,WORD,LABINT,SIGN)
+         CALL MAGAVE(SPNDSO,EXPVAL,KCOMP,WORK,LWORK,IPRINT,WORD,
+     &               LABINT,SIGN)
       END IF
 C
 C     Multiplies Fock matrix with second derivative of overlap integrals
 C
       IF (WORD .EQ. 'DIASUS ' .OR. WORD .EQ. 'DSUSCGO') THEN
-         NCOMP  = 6
+         NCOMP  = 0
          NPATOM = 0
-         CALL GET1IN(OVERLP,'S2MAG  ',NCOMP,WORK(1),LWORK,LABINT,INTREP,
-     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
-         IF (IPRINT .GT. 10) THEN
-            DO 110 ICOMP = 1, 6
-               CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
-               WRITE (LUPRI,'(A,I2)') 'Symmetry of operator:',
-     &               INTREP(ICOMP) + 1
-               CALL OUTPUT(OVERLP(1,ICOMP),1,NBAST,1,NBAST,NBAST,NBAST,
-     &                     1,LUPRI)
- 110        CONTINUE
-         END IF
+         CALL GET1IN(DUMMY,'S2MAG  ',NCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,EXP1VL,
+     &               FOCMAT,IPRINT)
          SIGN = -1.0D0
-         CALL MAGAVE(SPNDSO,OVERLP,FOCMAT,FMOVL,6,WORK,LWORK,IPRINT,
+         CALL MAGAVE(SPNDSO,EXPVAL,NCOMP,WORK,LWORK,IPRINT,
      &               'S2MAG  ',LABINT,SIGN)
       END IF
       RETURN
       END
 C  /* Deck magave */
-      SUBROUTINE MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,
+      SUBROUTINE MAGAVE(SPNDSO,EXPVAL,NCOMP,WORK,
      &                  LWORK,IPRINT,WORD,LABINT,SIGN)
 C
-C     Calculates the diamagnetic susceptibility expectation values
-C     K.Ruud, April 1992
+C     Distribute calculated expectation values into proper arrays
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -660,7 +639,7 @@ C
 #include <mxcent.h>
       PARAMETER (DP5 = 0.5D0)
       CHARACTER WORD*7, LABINT(9*MXCENT)*8
-      DIMENSION STHMAT(NNBASX,NCOMP), DENMAT(NNBASX),
+      DIMENSION DENMAT(NNBASX),
      &          EXPVAL(NCOMP), SPNDSO(*), WORK(LWORK)
 #include <inforb.h>
 #include <symmet.h>
@@ -676,45 +655,41 @@ C
 C
       CALL QENTER('MAGAVE')
 C
-      CALL DZERO(EXPVAL,NCOMP)
-      DO 20 ICOMP = 1, NCOMP
-         NROW   = 0
-         IELMNT = 0
-         IOFF = 0
-         DO 15 ISYM = 1, NSYM
-            DO 10 IROW = 1, NBAS(ISYM)
-            DO 10 ICOL = 1, IROW
-               I = IOFF + IROW
-               J = IOFF + ICOL
-               IJ = I*(I - 1)/2 + J
-               IELMNT = IELMNT + 1
-               EXPVAL(ICOMP) = EXPVAL(ICOMP) +
-     &                         DENMAT(IELMNT)*STHMAT(IJ,ICOMP)
- 10         CONTINUE
-            IOFF = IOFF + NBAS(ISYM)
- 15      CONTINUE
-         EXPVAL(ICOMP) = EXPVAL(ICOMP)*SIGN
- 20   CONTINUE
-      IF (WORD .EQ. 'DARWIN ') DARWN  = EXPVAL(1)
-      IF (WORD .EQ. 'MASSVEL') RMASSV = EXPVAL(1)
+      IF (WORD .EQ. 'DARWIN ') DARWN  = -EXPVAL(1)
+      IF (WORD .EQ. 'MASSVEL') RMASSV = -EXPVAL(1)
       IF (WORD .EQ. 'DIPLEN ') THEN
-         DIPME(1) = -EXPVAL(1)
-         DIPME(2) = -EXPVAL(2)
-         DIPME(3) = -EXPVAL(3)
+         DIPME(1) = EXPVAL(1)
+         DIPME(2) = EXPVAL(2)
+         DIPME(3) = EXPVAL(3)
+Clf
          KCSTRA = 1
          KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
          KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          CALL DIPNUC(WORK(KCSTRA),WORK(KSCTRA),IPRINT,.FALSE.)
+      END IF
+Clf Calculation of dipole moment corrected with the local field factor
+C for the electronic part we use the same structure as for diplen but
+C using the DIPLOC integrals instead
+C for the nuclear part we add the local field contribution calculated in 
+C DIPLFN to the nuclear part of the dipole which is already present in dipmn
+      IF (WORD .EQ. 'DIPLOC ') THEN
+         DLFE(1) = EXPVAL(1)
+         DLFE(2) = EXPVAL(2)
+         DLFE(3) = EXPVAL(3)
+         CALL DIPLFN(IPRINT)
+         DLFN(1) = DLFN(1) + DIPMN(1)
+         DLFN(2) = DLFN(2) + DIPMN(2)
+         DLFN(3) = DLFN(3) + DIPMN(3)
       END IF
       IF (WORD .EQ. 'DIASUS ' .OR. WORD .EQ. 'DSUSCGO') THEN
          IJ = 0
          DO 100 I = 1, 3
          DO 100 J = I, 3
             IJ = IJ + 1
-            SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
-            SUSDIA(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
-            GFACDI(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
-            GFACDI(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
+            SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJ)
+            SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJ)
+            GFACDI(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJ)
+            GFACDI(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJ)
   100   CONTINUE
       END IF
       IF (WORD .EQ. 'DSUSCGM') THEN
@@ -722,13 +697,13 @@ C
          DO 101 I = 1, 3
          DO 101 J = I, 3
             IJ = IJ + 1
-            SUSCOM(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
-            SUSCOM(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
+            SUSCOM(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJ)
+            SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJ)
             GFACDI(IPTAX(J,2),IPTAX(I,2)) =
-     &           GFACDI(IPTAX(J,2),IPTAX(I,2)) - EXPVAL(IJ)
+     &           GFACDI(IPTAX(J,2),IPTAX(I,2)) + EXPVAL(IJ)
             IF (I .NE. J) THEN
                GFACDI(IPTAX(I,2),IPTAX(J,2)) =
-     &              GFACDI(IPTAX(I,2),IPTAX(J,2)) - EXPVAL(IJ)
+     &              GFACDI(IPTAX(I,2),IPTAX(J,2)) + EXPVAL(IJ)
             END IF
  101     CONTINUE
       END IF
@@ -737,8 +712,8 @@ C
          DO 110 I = 1, 3
          DO 110 J = I, 3
             IJ = IJ + 1
-            QDREL(IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJ)
-            QDREL(IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJ)
+            QDREL(IPTAX(J,1),IPTAX(I,1)) = -EXPVAL(IJ)
+            QDREL(IPTAX(I,1),IPTAX(J,1)) = -EXPVAL(IJ)
  110     CONTINUE
       END IF
       IF (WORD .EQ. 'SECMOM ') THEN
@@ -746,8 +721,8 @@ C
         DO 150 I = 1, 3
         DO 150 J = I, 3
            IJ = IJ + 1
-           SCMEL(IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJ)
-           SCMEL(IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJ)
+           SCMEL(IPTAX(J,1),IPTAX(I,1)) = -EXPVAL(IJ)
+           SCMEL(IPTAX(I,1),IPTAX(J,1)) = -EXPVAL(IJ)
  150    CONTINUE   
       END IF
       IF (WORD .EQ. 'THRMOM')THEN
@@ -756,12 +731,12 @@ C
          DO 160 J = I, 3
          DO 160 K = J, 3          
             IJK = IJK + 1
-            THDMEL(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(I,1),IPTAX(K,1),IPTAX(J,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(J,1),IPTAX(I,1),IPTAX(K,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(J,1),IPTAX(K,1),IPTAX(I,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(K,1),IPTAX(I,1),IPTAX(J,1)) = EXPVAL(IJK)
-            THDMEL(IPTAX(K,1),IPTAX(J,1),IPTAX(I,1)) = EXPVAL(IJK)
+            THDMEL(IPTAX(I,1),IPTAX(J,1),IPTAX(K,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(I,1),IPTAX(K,1),IPTAX(J,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(J,1),IPTAX(I,1),IPTAX(K,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(J,1),IPTAX(K,1),IPTAX(I,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(K,1),IPTAX(I,1),IPTAX(J,1)) = -EXPVAL(IJK)
+            THDMEL(IPTAX(K,1),IPTAX(J,1),IPTAX(I,1)) = -EXPVAL(IJK)
  160     CONTINUE
       END IF
       IF (WORD .EQ. 'S2MAG  ') THEN
@@ -815,8 +790,9 @@ C
 C     Print section
 C
       IF (IPRINT .GT. 3) THEN
-         IF (SIGN .GT. 0) THEN
-            WRITE (LUPRI,'(/2A)')' Expectation values for ', WORD
+         WRITE (LUPRI,'()')
+         IF (SIGN .GT. 0.D0) THEN
+            WRITE (LUPRI,'(2A)') ' Expectation values for ', WORD
          ELSE
             WRITE (LUPRI,'(/2A)')' Trace of Fock matrix multiplied by ',
      &                           WORD
@@ -829,11 +805,11 @@ C
          IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ') THEN
             IOFF = 0
             DO 40 IATOM = 1, NUCDEP
-               WRITE (LUPRI,1000) NAMDPX(IOFF + 1),
+               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'x',
      &               (WORK(KIVEC + IOFF + I*NROW    ), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDPX(IOFF + 2),
+               WRITE (LUPRI,1000) NAMDEP(IOFF + 2),'y',
      &               (WORK(KIVEC + IOFF + I*NROW + 1), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDPX(IOFF + 1),
+               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'z',
      &               (WORK(KIVEC + IOFF + I*NROW + 2), I = 0, 2)
                IOFF = IOFF + 3
                WRITE (LUPRI,'()')
@@ -856,7 +832,7 @@ C
       END IF
       CALL QEXIT('MAGAVE')
       RETURN
- 1000 FORMAT (1X,A,' :',F17.10,2F24.10)
+ 1000 FORMAT (1X,A6,1X,A1,' :',F17.10,2F24.10)
       END
 C  /* Deck get1pr */
       SUBROUTINE GET1PR(SINTMA,WORD,NCOMP,MTFORM,TRIMAT,WORK,LWORK,
@@ -903,13 +879,15 @@ C
       LFREE = LWRK
       CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,IDUMMY,TRIANG,
-     &            PROPRI,IPRINT,SINTMA,NCOMP,TOFILE,MTFORM,DOINT)
+     &            PROPRI,IPRINT,SINTMA,NCOMP,TOFILE,MTFORM,DOINT,
+     &            DUMMY,.FALSE.,DUMMY)
       CALL GPCLOSE(LUPROP,'KEEP')
       RETURN
       END
 C  /* Deck get1in */
       SUBROUTINE GET1IN(SINTMA,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
-     &                  INTADR,MPQUAD,TOFILE,KPATOM,TRIMAT,NPRINT)
+     &                  INTADR,MPQUAD,TOFILE,KPATOM,TRIMAT,EXPVAL,
+     &                  EXP1VL,DENMAT,NPRINT)
 C
 C     K.Ruud, March 1992. This routine generates the nescessary input
 C     for getting first-order magnetic derivatives from HERMIT
@@ -936,9 +914,10 @@ C
 #include <spnout.h>
 #include <inftap.h>
 C
-      LOGICAL TOFILE, TRIMAT, DOINT(2,2)
+      LOGICAL TOFILE, TRIMAT, DOINT(2,2), EXP1VL
       CHARACTER WORD*7, LABINT(*)*8
-      DIMENSION WORK(LWORK), SINTMA(*), INTREP(*), INTADR(*)
+      DIMENSION WORK(LWORK), SINTMA(*), INTREP(*), INTADR(*), EXPVAL(*),
+     &          DENMAT(*)
 C
       TRIANG = TRIMAT
       PROPRI = NPRINT .GT. 5
@@ -985,86 +964,17 @@ C
          IORDER = IDUMMY
       END IF
 C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
+      IF (LUPROP .LE. 0) THEN
+         CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     $        'UNFORMATTED',IDUMMY,.FALSE.)
+      END IF
       KFREE = 1
       LFREE = LWORK
       CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
      &            WORD,IORDER,MPQUAD,TRIANG,PROPRI,
-     &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT)
+     &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT,EXPVAL,
+     &            EXP1VL,DENMAT)
       CALL GPCLOSE(LUPROP,'KEEP')
-      RETURN
-      END
-C  /* Deck get1ds */
-      SUBROUTINE GET1DS(STHMAT,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
-     &                  INTADR,SPNDSO,DENMAT,EXPVAL,MPQUAD,NPRINT)
-C
-C     K.Ruud, May 2002. Calculates diamagnetic spin-orbit integrals
-C                       by looping over pairs of nuclei, and contracts
-C                       them with densities. Alternative routine for 
-C                       reducing memory requirements in the 1-el.int.part
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <dorps.h>
-#include <spnout.h>
-#include <inftap.h>
-C
-      LOGICAL DOINT(2,2), TOFILE, NOTALL
-      CHARACTER WORD*7, LABINT(*)*8
-      DIMENSION WORK(LWORK), STHMAT(*), INTREP(*), INTADR(*), SPNDSO(*),
-     &          DENMAT(*), EXPVAL(*)
-C
-      CALL QENTER('GET1DS')
-      TRIANG = .TRUE.
-      TOFILE = .FALSE.
-      SIGN   = 1.0D0
-      PROPRI = NPRINT .GT. 5
-C
-      DOINT(1,1) = .TRUE.
-      DOINT(2,2) = .TRUE.
-      DOINT(1,2) = .FALSE.
-      DOINT(2,1) = .FALSE.
-C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      NOTALL = DOSELE .OR. NUCSPI .GT. 0
-      DO INUC = 1, NUCIND
-         IF (.NOT. NOTALL .OR. (DOSELE .AND. DOPERT(INUC,2)) 
-     &        .OR. (NUCSPI .GT. 0)) THEN
-         DO JNUC = 1, INUC - 1
-         IF (.NOT. NOTALL .OR. (DOSELE .AND. DOPERT(JNUC,2))
-     &           .OR. (NUCSPI .GT. 0)) THEN
-            IF ((NUCSPI .EQ. 0) .OR. (NUCSPI .GT. 0 .AND. 
-     /           (NCSPNI(INUC) .OR. NCSPNI(JNUC)))) THEN
-               KFREE = 1
-               LFREE = LWORK
-               IF (INUC .EQ. JNUC) THEN
-                  NPATOM = 1
-               ELSE
-                  NPATOM = 2
-                  IPATOM(2) = JNUC
-               END IF
-               IPATOM(1) = INUC
-               ALLATM = .FALSE.
-               CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
-     &                     WORD,IDUMMY,MPQUAD,TRIANG,PROPRI,
-     &                     NPRINT,STHMAT,NCOMP,TOFILE,'TRIANG',DOINT)
-               CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
-     &                     NPRINT,WORD,LABINT,SIGN)
-            END IF
-            END IF
-         END DO
-         END IF
-      END DO
-      CALL GPCLOSE(LUPROP,'KEEP')
-      CALL QEXIT('GET1DS')
       RETURN
       END
 C  /* Deck spntra */
@@ -1754,7 +1664,8 @@ C
             ISTRT  = 1
             DO I = 1, NUCIND
                CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,LABEL,
-     &                     ISDREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &                     ISDREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &                     .FALSE.,DUMMY,INTPRI)
                ITYP  = 0
                ITYP2 = 0
                DO J = 0, MAXREP
@@ -1779,7 +1690,7 @@ C
             NPATOM = 0
             CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,SDLAB,
      &                  ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-     &                  INTPRI)
+     &                  DUMMY,.FALSE.,DUMMY,INTPRI)
             NREC = NREC + 6*NUCDEP
          END IF
       END IF
@@ -1788,14 +1699,15 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'FERMI C',NCOMP,WORK,LWORK,FCLAB,
      &               IFCREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-     &               INTPRI)
+     &               DUMMY,.FALSE.,DUMMY,INTPRI)
          NREC = NREC + NUCDEP
       END IF
       IF (DOSDFC) THEN
          NPATOM = 0
          NCOMP  = 0
          CALL GET1IN(DUMMY,'SDFC   ',NCOMP,WORK,LWORK,SDLAB,
-     &               ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &               ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &               .FALSE.,DUMMY,INTPRI)
          NREC = NREC + 9*NUCDEP
       END IF
       CALL GPOPEN(LUGDT,ABAGDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
@@ -2652,6 +2564,7 @@ C
          DO 87 ISYM2 = 0, MAXSYM
             IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
                IATOM2 = IATOM2 + 1
+               IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 87
                IF (DOPERT(I2,2)) THEN
                   IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
                   NZ1 = IZATOM(I1)

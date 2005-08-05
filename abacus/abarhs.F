@@ -565,12 +565,12 @@ C
                NCOMP  = 0
                CALL GET1IN(DUMMY,'SQHDOR ',NCOMP,WORK(KLAST),LWRK,
      &              LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,
-     &              .TRUE.,NPATOM,.FALSE.,IPRGDY)
+     &              .TRUE.,NPATOM,.FALSE.,DUMMY,.FALSE.,DUMMY,IPRGDY)
                IF (NFIELD .GT. 0) THEN
                   NCOMP = 0
                   CALL GET1IN(DUMMY,'DPLGRA ',NCOMP,WORK(KLAST),LWRK,
      &                    LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,.TRUE.
-     &                    ,NPATOM,.TRUE.,IPRGDY)
+     &                    ,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRGDY)
                END IF
             END IF
             DERIV(1) = DOREAL .AND. DCORGD(IATOM,1,1)
@@ -3521,7 +3521,7 @@ C
          DO 77 I = 1, NUCIND
             CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK,LWORK,LABTMP,
      &                  INTREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,
-     &                  IPRINT)
+     &                  DUMMY,.FALSE.,DUMMY,IPRINT)
             ITYP  = 0
             ITYP2 = 0
             DO 78 J = 1, NSYM
@@ -3542,7 +3542,7 @@ C
       ELSE
          CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK,LWORK,LABINT,
      &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-     &               IPRINT)
+     &               DUMMY,.FALSE.,DUMMY,IPRINT)
       END IF
       NREC = 3*NUCDEP
 C

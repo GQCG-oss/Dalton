@@ -9,4 +9,3 @@ C     FILE: priunit.h
       COMMON /PRIUNT/ LUCMD, LUPRI, LUERR, LUW4, NINFO, NWARN, IPRERR,
      *                LUPOT
 #endif
-

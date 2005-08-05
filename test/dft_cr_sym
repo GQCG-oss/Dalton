@@ -48,7 +48,7 @@ LMG BLOCK
 "
 
 test="
-check_scf_energy DFT -75.935846161571 4e-10
+check_scf_energy DFT -75.935846161571 4e-9
                      
 check_second_hyperpolarizabilities 0.000 0.000 0.000 'X;X,X,X' 127.0073 1e-4
 check_second_hyperpolarizabilities 0.000 0.000 0.000 'X;X,Y,Y' 96.3892 1e-4
@@ -73,7 +73,7 @@ check_second_hyperpolarizabilities 0.000 0.000 0.000 'Z;Y,Z,Y' 12.1060 1e-4
 check_second_hyperpolarizabilities 0.000 0.000 0.000 'Z;Z,Z,Z' 2.1693 1e-4
 
 check_second_hyperpolarizabilities 0.067 0.000 0.000 'X;X,X,X' 135.3986 1e-4
-check_second_hyperpolarizabilities 0.067 0.000 0.000 'X;X,Y,Y' 101.3454 1e-4
+check_second_hyperpolarizabilities 0.067 0.000 0.000 'X;X,Y,Y' 101.3454 2e-4
 check_second_hyperpolarizabilities 0.067 0.000 0.000 'X;Y,Y,X' 103.4104 1e-4
 check_second_hyperpolarizabilities 0.067 0.000 0.000 'X;Y,X,Y' 103.4104 1e-4
 check_second_hyperpolarizabilities 0.067 0.000 0.000 'X;X,Z,Z' 13.8175 1e-4

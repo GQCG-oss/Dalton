@@ -5968,10 +5968,3 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
 
       return
       end
-
-
-
-
-
-
-

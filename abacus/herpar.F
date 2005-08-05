@@ -2186,3 +2186,725 @@ C                 Update the status word
       CALL BARRIER()
       END
 #endif
+#if defined (VAR_MPI)
+C /* Deck J1INTP */
+      SUBROUTINE J1INTP(NBAST,NOSIM,DMAT,EXP1VL,EXPVAL,TOFILE,
+     &                  IPRTYP,MATDIM,WORK,LWORK)
+C
+C     Master routine for distributing tesseraes to slaves
+C     K.Ruud, June 10 2005, Pisa
+C
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+C
+      LOGICAL EXP1VL, TOFILE
+      DIMENSION DMAT(MATDIM,NOSIM), WORK(LWORK)
+#include "priunit.h"
+#include "pcm.h"
+      DIMENSION EXPVAL(NTS,NOSIM)
+#include "mtags.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
+     &     'storing PCM-integrals on disk')
+C     
+C     Wake up the slaves
+C     
+      NNBASX = NBAST*(NBAST + 1)/2
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
+C     
+
+      CALL MPIXBCAST(EXP1VL,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NTSIRR,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
+      IF (EXP1VL) THEN
+         CALL MPIXBCAST(DMAT,NNBASX,'DOUBLE',MASTER)
+      ELSE
+         CALL MPIXBCAST(EXPVAL,NTS*NOSIM,'DOUBLE',MASTER)
+         CALL DZERO(DMAT,MATDIM*NOSIM)
+      END IF
+      CALL MPIXBCAST(XCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(YCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ZCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
+C
+C     Loop over all tesserae
+C
+      DO ITS = 1, NTSIRR
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(ITS,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+C
+C     Send end message to all slaves
+C
+      ITS = -1
+      DO ISLAVE = 1, NODTOT
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(ITS ,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+C
+C     Collect data from all slaves
+C     
+      IF (EXP1VL) THEN
+         CALL DZERO(WORK,NTS)
+         CALL MPI_REDUCE(WORK,EXPVAL,NTS,MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      ELSE IF (.NOT. TOFILE) THEN
+C
+C        WORK(1) = DMAT(1)
+C
+         CALL DZERO(WORK(NOSIM*MATDIM+1),MATDIM*NOSIM)
+         CALL MPI_REDUCE(WORK(NOSIM*MATDIM+1),DMAT,MATDIM*NOSIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      END IF
+      RETURN
+      END
+C
+C /* Deck JINTS */
+      SUBROUTINE J1INTS(WORK,LWORK,IPRTYP,IPRTMP)
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "iratdef.h"
+      LOGICAL TOFILE, EXP1VL, TRIMAT
+      CHARACTER*7 INTLAB
+      CHARACTER*8 LABINT(3*MXCOOR)
+      DIMENSION WORK(LWORK)
+C
+#include "priunit.h"
+#include "orgcom.h"
+#include "symmet.h"
+#include "infpar.h"
+#include "pcm.h"
+#include "mtags.h"
+#include "mpif.h"
+C
+      IPRPCM = IPRTMP
+      CALL MPIXBCAST(EXP1VL,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NTSIRR,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
+      NNBASX = NBAST*(NBAST + 1)/2
+      N2BASX = NBAST*NBAST
+      IF (IPRTYP .EQ. 11) THEN
+         MATDIM = NNBASX
+         TRIMAT = .TRUE.
+         NCOMP  = 1
+         INTLAB = 'NPETES '
+      ELSE
+         MATDIM = N2BASX
+         TRIMAT = .FALSE.
+         NCOMP = 3
+         INTLAB = 'PCMBSOL'
+      END IF
+C
+      KDEN   = 1
+      KINTRP = KDEN + MATDIM*NOSIM
+      KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
+      KEXPVL = KINTAD + (3*MXCOOR + 1)/IRAT
+      KLAST  = KEXPVL + NTSIRR*(MAXREP + 1)*NOSIM
+C
+      IF (EXP1VL) THEN
+         CALL MPIXBCAST(WORK(KDEN),NNBASX,'DOUBLE',MASTER)
+         CALL DZERO(WORK(KEXPVL),NTSIRR*(MAXREP + 1))
+      ELSE
+         CALL MPIXBCAST(WORK(KEXPVL),NTSIRR*(MAXREP + 1)*NOSIM,'DOUBLE',
+     &                  MASTER)
+         CALL DZERO(WORK(KDEN),MATDIM*NOSIM)
+      END IF
+      CALL MPIXBCAST(XCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(YCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ZCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
+C
+C     Loop over tesseraes to be calculated on this node
+C
+ 10   CONTINUE
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(ITS,1,'INTEGER',MASTER,MPTAG2)
+C
+      IF (ITS .GT. 0) THEN
+         DIPORG(1) = XCTS(ITS)
+         DIPORG(2) = YCTS(ITS)
+         DIPORG(3) = ZCTS(ITS)
+         NTESP = 1
+         KPATOM = 0
+C
+C        Calculates nuclear potential energy integrals (in AO basis) for
+C        the given tessera
+C
+         L=1
+         KTMP = KLAST
+         IF (.NOT. TOFILE .AND. .NOT. EXP1VL) THEN
+            KMAT = KTMP + 8
+            IF (IPRTYP .EQ. 11) THEN
+               KLAST = KMAT + (MAXREP + 1)*MATDIM
+            ELSE
+               KLAST = KMAT + (MAXREP + 1)*MATDIM*NCOMP
+            END IF
+            NCOMP = (MAXREP + 1)
+         ELSE
+            KMAT = KTMP + 8
+            KLAST = KMAT
+            NCOMP = 0
+         END IF
+         LWRK = LWORK - KLAST + 1
+         CALL GET1IN(WORK(KMAT),INTLAB,NCOMP,WORK(KLAST),LWRK,LABINT,
+     &               WORK(KINTRP),WORK(KINTAD),L,TOFILE,KPATOM,TRIMAT,
+     &               WORK(KTMP),EXP1VL,WORK(KDEN),IPRPCM)
+         IF (IPRTYP .EQ. 13) THEN
+            DO IOSIM = 1, NOSIM
+               IADR = KEXPVL + ITS - 1 + NTS*(IOSIM - 1)
+               JADR = KMAT + (IOSIM - 1)*MATDIM
+               MADR = KDEN + (IOSIM - 1)*MATDIM
+               CALL DAXPY(MATDIM,WORK(IADR),WORK(JADR),1,
+     &                 WORK(MADR),1)
+            END DO
+         ELSE IF (EXP1VL) THEN
+            DO I = 1, NCOMP
+               IADR = KEXPVL + ITS - 1 + (I-1)*NTSIRR
+               WORK(IADR) = -WORK(KTMP+I-1)
+            END DO
+         ELSE
+            DO IOSIM = 1, NOSIM
+               IADR = KEXPVL + ITS - 1 + NTSIRR*(MAXREP + 1)*(IOSIM - 1)
+               MADR = KDEN + (IOSIM - 1)*MATDIM
+               CALL DAXPY(MATDIM,-WORK(IADR),WORK(KMAT),1,
+     &                 WORK(MADR),1)
+            END DO
+         END IF
+         GO TO 10
+      END IF
+C
+C     No more tesseraes to calculate
+C
+      IF (EXP1VL) THEN
+         CALL MPI_REDUCE(WORK(KEXPVL),WORK(KEXPVL),NTSIRR*(MAXREP + 1),
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      ELSE IF (.NOT. TOFILE) THEN
+         CALL MPI_REDUCE(WORK(KDEN),WORK(KDEN),MATDIM*NOSIM,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      END IF
+      RETURN
+      END
+C /* Deck J1XP */
+      SUBROUTINE J1XP(NOSIM,VTEX,UCMO,UBO,UDV,UDVTR,XJ1SQ,XJ1SQT,
+     &                TOFILE,TRPLET,JWOPSY,WORK,LWORK)
+C
+C     Master routine for distributing tesseraes to slaves for
+C     calculating one-index transformed potentials
+C     K.Ruud, June 10 2005, Pisa
+C
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "pcmdef.h"
+C
+      LOGICAL TOFILE, TRPLET
+      DIMENSION WORK(LWORK)
+#include "priunit.h"
+#include "pcm.h"
+#include "inforb.h"
+#include "infind.h"
+      DIMENSION VTEX(NTS,NOSIM), UCMO(NORBT*NBAST), UBO(NOSIM*N2ORBX),
+     &          UDV(N2ASHX), UDVTR(N2ASHX), XJ1SQ(NOSIM*N2ORBX),
+     &          XJ1SQT(NOSIM*N2ORBX)
+#include "mtags.h"
+#include "infpar.h"
+#include "wrkrsp.h"
+#include "mpif.h"
+C
+      IF (TOFILE) CALL QUIT('Parallel calculations do not allow for '//
+     &     'storing PCM-integrals on disk')
+C     
+C     Wake up the slaves
+C     
+      IPRTYP = 12
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
+C
+      CALL MPIXBCAST(NTSIRR,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
+C
+      CALL MPIXBCAST(QSE,NTS,'DOUBLE',MASTER)
+      CALL MPIXBCAST(QSN,NTS,'DOUBLE',MASTER)
+      CALL MPIXBCAST(UCMO,NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(UBO,N2ORBX*NOSIM,'DOUBLE',MASTER)
+      CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(XCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(YCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ZCTS,NTSIRR,'DOUBLE',MASTER)
+      IF (TRPLET) THEN
+         CALL MPIXBCAST(UDVTR,N2ASHX,'DOUBLE',MASTER)
+      ELSE
+         CALL MPIXBCAST(UDV,N2ASHX,'DOUBLE',MASTER)
+      END IF
+      CALL MPIXBCAST(MXCORB,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISX,MXCORB,'INTEGER',MASTER)
+      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(KSYMOP,1,'INTEGER',MASTER)
+C
+C     Loop over all tesserae
+C
+      DO ITS = 1, NTSIRR
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(ITS,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+C
+C     Send end message to all slaves
+C
+      ITS = -1
+      DO ISLAVE = 1, NODTOT
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(ITS ,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+C
+C     Collect data from all slaves
+C     
+      NDIMZ = MAX(N2ORBX,NTS)
+      CALL DZERO(WORK,NOSIM*NDIMZ)
+      CALL DZERO(VTEX,NTS*NOSIM)
+      CALL MPI_REDUCE(WORK,VTEX,NOSIM*NTS,MPI_DOUBLE_PRECISION,MPI_SUM,
+     &                0,MPI_COMM_WORLD,IERR)
+      IF (TRPLET) THEN
+         CALL MPI_REDUCE(WORK,XJ1SQT,NOSIM*N2ORBX,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      ELSE
+         CALL MPI_REDUCE(WORK,XJ1SQ,NOSIM*N2ORBX,
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+      END IF
+      RETURN
+      END
+C /* Deck J1XS */
+      SUBROUTINE J1XS(WORK,LWORK,IPRTMP)
+C
+C     Parallell construction of one-index transformed potentials
+C     K.Ruud, Pisa June 2005
+C
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "pcmdef.h"
+#include "iratdef.h"
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL TOFILE, EXP1VL, TRIMAT, TRPLET
+      CHARACTER*8 LABINT(3*MXCOOR)
+      DIMENSION WORK(LWORK)
+C
+#include "priunit.h"
+#include "orgcom.h"
+#include "symmet.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "pcm.h"
+#include "mtags.h"
+#include "mpif.h"
+C
+      IPRPCM = IPRTMP
+      CALL MPIXBCAST(NTSIRR,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NOSIM,1,'INTEGER',MASTER)
+C
+      KINTRP = 1
+      KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
+      KEXPVL = KINTAD + (3*MXCOOR + 1)/IRAT
+      KJ1AO  = KEXPVL + NTSIRR*(MAXREP + 1)*NOSIM
+      KJ1    = KJ1AO  + NNBASX*(MAXREP + 1)
+      KJ1SQ  = KJ1    + NNORBX
+      KJ1XSQ = KJ1SQ  + N2ORBX
+      KJ1XAC = KJ1XSQ + N2ORBX*NOSIM
+      KUCMO  = KJ1XAC + N2ASHX*NOSIM
+      KUDV   = KUCMO  + NORBT*NBAST
+      KUBO   = KUDV   + N2ASHX
+      KPCMX  = KUBO   + N2ORBX*NOSIM
+      KLAST  = KPCMX  + N2ORBX*NOSIM
+      LWRK   = LWORK - KLAST + 1
+C
+      CALL MPIXBCAST(QSE,NTSIRR*(MAXREP + 1),'DOUBLE',MASTER)
+      CALL MPIXBCAST(QSN,NTSIRR*(MAXREP + 1),'DOUBLE',MASTER)
+      CALL MPIXBCAST(WORK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(WORK(KUBO),N2ORBX*NOSIM,'DOUBLE',MASTER)
+      CALL MPIXBCAST(TRPLET,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(XCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(YCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(ZCTS,NTSIRR,'DOUBLE',MASTER)
+      CALL MPIXBCAST(WORK(KUDV),N2ASHX,'DOUBLE',MASTER)
+      CALL MPIXBCAST(MXCORB,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISX,MXCORB,'INTEGER',MASTER)
+      CALL MPIXBCAST(TOFILE,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(KSYMOP,1,'INTEGER',MASTER)
+C
+C     Loop over tesseraes to be calculated on this node
+C
+      CALL DZERO(WORK(KPCMX),NOSIM*N2ORBX)
+      CALL DZERO(WORK(KEXPVL),NOSIM*NTSIRR*(MAXREP + 1))
+ 10   CONTINUE
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(ITS,1,'INTEGER',MASTER,MPTAG2)
+C
+      IF (ITS .GT. 0) THEN
+         L = 1
+         NCOMP     = MAXREP + 1
+         DIPORG(1) = XCTS(ITS)
+         DIPORG(2) = YCTS(ITS)
+         DIPORG(3) = ZCTS(ITS)
+         EXP1VL    = .FALSE.
+         TOFILE    = .FALSE.
+         KPATOM    = 0
+         TRIMAT    = .TRUE.
+         CALL GET1IN(WORK(KJ1AO),'NPETES ',NCOMP,WORK(KLAST),LWRK,
+     &               LABINT,WORK(KINTRP),WORK(KINTAD),L,TOFILE,KPATOM,
+     &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRPCM)
+         JJ1AO = KJ1AO
+C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
+         CALL UTHU(WORK(JJ1AO),WORK(KJ1),WORK(KUCMO),WORK(KLAST),
+     *             NBAST,NORBT)
+C Transform V(MO) from triangular to square format
+         CALL DSPTSI(NORBT,WORK(KJ1),WORK(KJ1SQ))
+         CALL DZERO(WORK(KJ1XSQ),N2ORBX*NOSIM)
+         DO IOSIM = 1, NOSIM
+            JUBO = KUBO + (IOSIM - 1) * N2ORBX
+            JJ1X = KJ1XSQ + (IOSIM - 1) * N2ORBX
+            JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
+            JPCMX  = KPCMX + (IOSIM - 1)*N2ORBX
+            CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
+C     
+            IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
+            IF (IPRRSP .GE. 15) THEN
+               WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
+               CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
+     &              NORBT,NORBT,1,LUPRI)
+               IF (NASHT .GT. 0) THEN
+                  WRITE (LUPRI,'(/A)') ' J1X_ac matrix:'
+                  CALL OUTPUT(WORK(JJ1XAC),1,NASHT,1,NASHT,
+     &                 NASHT,NASHT,1,LUPRI)
+               END IF
+            END IF
+C
+C     Expectation value of transformed potential on tesserae:
+C                     <0|\tilde{V}|0> 
+C
+            IF (KSYMOP .EQ. 1) THEN
+               IF (TRPLET) THEN
+                  FACTOR = SLVTLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               ELSE
+                  FACTOR = SLVQLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               END IF
+               IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+ITS-1
+               WORK(IADR) = FACTOR
+               IF (IPRRSP .GE. 6) THEN
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- J1X expectation value :',WORK(IADR)
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- active part of J1X    :',TJ1XAC
+               END IF
+            END IF
+C     KPCMX: \tilde{J} + \tilde{X}
+            CALL DAXPY(N2ORBX,QSN(ITS)+QSE(ITS),WORK(JJ1X),
+     &                 1,WORK(JPCMX),1)
+         END DO
+C
+C     Non-totally symmetric perturbation operators
+C
+         IF (KSYMOP .GT. 1) THEN
+            JJ1AO = KJ1AO + (KSYMOP - 1)*NNBASX
+            JTS = (KSYMOP - 1)*NTSIRR + ITS
+C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
+            CALL UTHU(WORK(JJ1AO),WORK(KJ1),WORK(KUCMO),WORK(KLAST),
+     *                NBAST,NORBT)
+C Transform V(MO) from triangular to square format
+            CALL DSPTSI(NORBT,WORK(KJ1),WORK(KJ1SQ))
+            CALL DZERO(WORK(KJ1XSQ),N2ORBX*NOSIM)
+            DO IOSIM = 1, NOSIM
+               JUBO = KUBO + (IOSIM - 1) * N2ORBX
+               JJ1X = KJ1XSQ + (IOSIM - 1) * N2ORBX
+               JJ1XAC = KJ1XAC + (IOSIM - 1) * N2ASHX
+               CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
+C     
+               IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
+               IF (IPRRSP .GE. 15) THEN
+                  WRITE (LUPRI,'(/A)') ' J1X_mo matrix (KSYMOP):'
+                  CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
+     &                 NORBT,NORBT,1,LUPRI)
+                  IF (NASHT .GT. 0) THEN
+                     WRITE (LUPRI,'(/A)') ' J1X_ac matrix (KSYMOP):'
+                     CALL OUTPUT(WORK(JJ1XAC),1,NASHT,1,NASHT,
+     &                    NASHT,NASHT,1,LUPRI)
+                  END IF
+               END IF
+C
+C     Expectation value of transformed potential on tesserae:
+C                     <0|\tilde{V}|0> 
+C
+               IF (TRPLET) THEN
+                  FACTOR = SLVTLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               ELSE
+                  FACTOR = SLVQLM(WORK(KUDV),WORK(JJ1XAC),WORK(JJ1X),
+     &                            TJ1XAC)
+               ENDIF
+               IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+JTS-1
+               WORK(IADR) = FACTOR
+               IF (IPRRSP .GE. 6) THEN
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- J1X expectation value :',WORK(IADR)
+                  WRITE (LUPRI,'(A,F17.8)')
+     *                 ' --- active part of J1X    :',TJ1XAC
+               END IF
+            ENDDO
+         END IF
+         GO TO 10
+      END IF
+C
+C     Return expectation values and one-index transformed potentials
+C
+      CALL MPI_REDUCE(WORK(KEXPVL),WORK(KEXPVL),
+     &                NOSIM*NTSIRR*(MAXREP + 1),MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      CALL MPI_REDUCE(WORK(KPCMX),WORK(KPCMX),NOSIM*N2ORBX,
+     &                MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                IERR)
+      RETURN
+      END
+C /* Deck JX2P */
+      SUBROUTINE J2XP(IKLVL,ISYMV1,ISYMV2,ISYMV3,ISYMDN,ZYM1,ZYM2,ZYM3,
+     &                TCHG,OVLAP,CMO,DEN1,WORK,LWORK)
+C
+C     Master routine for calculating multiple one-index transformations
+C     of PCM potentials, K.Ruud, Tromso June 2005
+C
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+C
+#include "inforb.h"
+#include "infdim.h"
+      DIMENSION ZYM1(N2ORBX), ZYM2(N2ORBX), ZYM3(N2ORBX), TCHG(NTS),
+     &          CMO(NORBT*NBAST), DEN1(NASHDI,NASHDI)
+C
+#include "priunit.h"
+#include "infpar.h"
+#include "mtags.h"
+#include "pcm.h"
+#include "mpif.h"      
+C     
+C     Wake up the slaves
+C     
+      IPRTYP = 14
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
+C
+C     Send necessary start-up data
+C
+      CALL MPIXBCAST(IKLVL,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NASHDI,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(CMO,NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(DEN1,NASHDI*NASHDI,'DOUBLE',MASTER)
+      IF (IKLVL .GE. 1) CALL MPIXBCAST(ZYM1,N2ORBX,'DOUBLE',MASTER)
+      IF (IKLVL .GE. 2) CALL MPIXBCAST(ZYM2,N2ORBX,'DOUBLE',MASTER)
+      IF (IKLVL .GE. 3) CALL MPIXBCAST(ZYM3,N2ORBX,'DOUBLE',MASTER)
+      IF (IKLVL .GE. 1) CALL MPIXBCAST(ISYMV1,1,'INTEGER',MASTER)
+      IF (IKLVL .GE. 2) CALL MPIXBCAST(ISYMV2,1,'INTEGER',MASTER)
+      IF (IKLVL .GE. 3) CALL MPIXBCAST(ISYMV3,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYMDN,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(OVLAP,1,'DOUBLE',MASTER)
+C
+C     Loop over all tesserae
+C
+      DO ITS = 1, NTSIRR
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(ITS,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+C
+C     Send end message to all slaves
+C
+      ITS = -1
+      DO ISLAVE = 1, NODTOT
+         IWHO = -1
+         CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MPTAG1)
+         CALL MPIXSEND(ITS ,1,'INTEGER',NWHO,MPTAG2)
+      END DO
+C
+C     Collect relevant results from the slaves
+C
+      CALL DZERO(WORK,NTS)
+      CALL MPI_REDUCE(WORK,TCHG,NTS,MPI_DOUBLE_PRECISION,MPI_SUM,0,
+     &                MPI_COMM_WORLD,IERR)
+C      
+      RETURN
+      END
+C /* Deck JX2S */
+      SUBROUTINE J2XS(WRK,LWORK,IPRRSP)
+C
+C     Slave routine for calculating multiple one-index transformations
+C     of PCM potentials, K.Ruud, Tromso June 2005
+C
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+C
+      CHARACTER*8 LABINT(3*MXCOOR)
+      LOGICAL CLCCHG, TOFILE, TRIMAT, EXP1VL
+      DIMENSION WRK(LWORK)
+#include "priunit.h"
+#include "inforb.h"
+#include "symmet.h"
+#include "infdim.h"
+#include "orgcom.h"
+#include "mtags.h"
+#include "pcm.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      CALL MPIXBCAST(IKLVL,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NASHDI,1,'INTEGER',MASTER)
+C
+      KDEN1  = 1
+      KINTRP = KDEN1  + NASHDI*NASHDI
+      KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
+      KTCHG  = KINTAD + (3*MXCOOR + 1)/IRAT
+      KCHGAO = KTCHG  + NTSIRR*(MAXREP + 1)
+      KUCMO  = KCHGAO + NNBASX*(MAXREP + 1)
+      KTELM  = KUCMO  + NORBT*NBAST
+      KTLMA  = KTELM  + N2ORBX
+      KTLMB  = KTLMA  + N2ORBX
+      KZYM1  = KTLMB  + N2ORBX
+      IF (IKLVL .GE. 1) THEN
+         KZYM2 = KZYM1  + N2ORBX
+      ELSE
+         KZYM2 = KZYM1
+      END IF
+      IF (IKLVL .GE. 2) THEN
+         KZYM3 = KZYM2  + N2ORBX
+      ELSE
+         KZYM3 = KZYM2
+      END IF
+      IF (IKLVL .GE. 3) THEN
+         KLAST = KZYM3 + N2ORBX
+      ELSE
+         KLAST = KZYM3
+      END IF
+      LWRK = LWORK - KLAST + 1
+C
+      CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
+      CALL MPIXBCAST(WRK(KDEN1),NASHDI*NASHDI,'DOUBLE',MASTER)
+      IF (IKLVL .GE. 1) CALL MPIXBCAST(WRK(KZYM1),N2ORBX,
+     &                                 'DOUBLE',MASTER)
+      IF (IKLVL .GE. 2) CALL MPIXBCAST(WRK(KZYM2),N2ORBX,
+     &                                 'DOUBLE',MASTER)
+      IF (IKLVL .GE. 3) CALL MPIXBCAST(WRK(KZYM3),N2ORBX,
+     &                                 'DOUBLE',MASTER)
+      IF (IKLVL .GE. 1) CALL MPIXBCAST(ISYMV1,1,'INTEGER',MASTER)
+      IF (IKLVL .GE. 2) CALL MPIXBCAST(ISYMV2,1,'INTEGER',MASTER)
+      IF (IKLVL .GE. 3) CALL MPIXBCAST(ISYMV3,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(ISYMDN,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(OVLAP,1,'DOUBLE',MASTER)
+C
+      NSIM = 1
+      IF(IKLVL.LT.0) THEN
+         CLCCHG = .FALSE.
+      ELSE
+         CLCCHG = .TRUE.
+      END IF
+      IF (IKLVL.LE.0) ISYM = 1
+      IF (IKLVL.EQ.1) ISYM = ISYMV1
+      IF (IKLVL.EQ.2) ISYM = MULD2H(ISYMV1,ISYMV2)
+      IF (IKLVL.EQ.3) ISYM = MULD2H(MULD2H(ISYMV1,ISYMV2),ISYMV3)
+      ISYMT = MULD2H(ISYM,ISYMDN)
+      CALL DZERO(WRK(KTCHG),NTSIRR*(MAXREP + 1))
+C
+ 10   CONTINUE
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(ITS,1,'INTEGER',MASTER,MPTAG2)
+C
+      IF (ITS .GT. 0) THEN
+         CALL DZERO(WRK(KCHGAO),NNBASX*(MAXREP + 1))
+         L = 1
+         NCOMP = (MAXREP + 1)
+         DIPORG(1) = XCTS(ITS)
+         DIPORG(2) = YCTS(ITS)
+         DIPORG(3) = ZCTS(ITS)
+         EXP1VL    = .FALSE.
+         TOFILE    = .FALSE.
+         KPATOM    = 0
+         TRIMAT    = .TRUE.
+         CALL GET1IN(WRK(KCHGAO),'NPETES ',NCOMP,WRK(KLAST),LWRK,
+     &               LABINT,WRK(KINTRP),WRK(KINTAD),L,TOFILE,KPATOM,
+     &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
+         JCHGAO = KCHGAO
+         DO ILOP = 1, (MAXREP + 1)
+            ISYM = ILOP
+            JTS = (ILOP - 1)*NTSIRR + ITS
+            CALL UTHU(WRK(JCHGAO),WRK(KTLMA),WRK(KUCMO),WRK(KLAST),
+     $                NBAST,NORBT)
+            CALL DSPTSI(NORBT,WRK(KTLMA),WRK(KTELM))
+C with no transformation we copy the array from KTELM to KTLMA
+            IF (IKLVL.EQ.0) THEN 
+               CALL DZERO(WRK(KTLMA),N2ORBX)
+               CALL DCOPY(N2ORBX,WRK(KTELM),1,WRK(KTLMA),1)
+            END IF
+C First transformation of charges: q^e_{ab} --> q^e_{ab}({}^1\kappa) 
+            IF (IKLVL.GE.1) THEN
+               CALL DZERO(WRK(KTLMA),N2ORBX)
+               CALL OITH1(ISYMV1,WRK(KZYM1),WRK(KTELM),WRK(KTLMA),ISYM)
+               ISYM = MULD2H(ISYM,ISYMV1)
+            END IF
+C Second transformation of charges: q^e_{ab}({}^1\kappa) --> q^e_{ab}({}^1\kappa {}^2\kappa) 
+            IF (IKLVL.GE.2) THEN
+               CALL DZERO(WRK(KTLMB),N2ORBX)
+               CALL OITH1(ISYMV2,WRK(KZYM2),WRK(KTLMA),WRK(KTLMB),ISYM)
+               CALL DCOPY(N2ORBX,WRK(KTLMB),1,WRK(KTLMA),1)
+               ISYM = MULD2H(ISYM,ISYMV2)
+            END IF 
+C Third transformation of charges: hope you can figure out the formula.....
+            IF (IKLVL.GE.3) THEN
+               CALL DZERO(WRK(KTLMA),N2ORBX)
+               CALL OITH1(ISYMV3,WRK(KZYM3),WRK(KTLMB),WRK(KTLMA),ISYM)
+               ISYM = MULD2H(ISYM,ISYMV3)
+            END IF
+C Contract transformed charges with the density
+            CALL MELONE(WRK(KTLMA),ISYM,WRK(KDEN1),OVLAP,FACT,
+     &                  200,'POPGET')
+            KTS = KTCHG + JTS - 1
+            WRK(KTS) = FACT
+            JCHGAO = JCHGAO + NNBASX
+         END DO
+         GOTO 10
+      END IF
+C
+C     Return relevant data to the master process
+C
+      CALL MPI_REDUCE(WRK(KTCHG),WRK(KTCHG),NTSIRR*(MAXREP + 1),
+     &                MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                IERR)
+      RETURN
+      END
+#endif

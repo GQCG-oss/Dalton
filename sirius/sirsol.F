@@ -1324,6 +1324,16 @@ C
       KNEED  = MAX(KW21,KW30)
       IF (KNEED .GT. LFREE) CALL ERRWRK('SOLLNC',KNEED,LFREE)
 C
+      IF (IPRSOL .GE. 140) THEN
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(ci,1) on entry'
+         DO I = 1,NCONST
+            IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
+     *      ' conf #',I,SVEC(I,1)
+         END DO
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(orb) on entry'
+         CALL OUTPUT(SVEC(1+NCONST,1),1,NWOPPT,1,NCSIM,
+     *               NSVEC,NCSIM,1,LUPRI)
+      END IF
 C
 C     Read nuclear contributions to ERLM (TN(l,m))
 C     and position for R(l,m).
@@ -1463,6 +1473,17 @@ C        ... tell SOLGO only to use the NWOPPT first JWOP entries
          NWOPH  = MWOPH
       END IF
 C
+      IF (IPRSOL .GE. 140) THEN
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(ci,1) on exit'
+         DO I = 1,NCONST
+            IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
+     *      ' conf #',I,SVEC(I,1)
+         END DO
+         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(orb) on exit'
+         CALL OUTPUT(SVEC(1 + NCONST,1),1,NWOPPT,1,NCSIM,
+     *               NSVEC,NCSIM,1,LUPRI)
+      END IF
+C
       CALL QEXIT('SOLLNC')
       RETURN
 C     end of sollnc.
@@ -1540,13 +1561,13 @@ C
          WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM SOLLNO >>>'
       END IF
       IF (IPRSOL .GE. 140) THEN
-      IF (FULHES) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(ci,1) on entry'
-         DO 30 I = 1,NCONST
-            IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
-     *      ' conf #',I,SVEC(I,1)
-   30    CONTINUE
-      END IF
+         IF (FULHES) THEN
+            WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(ci,1) on entry'
+            DO 30 I = 1,NCONST
+               IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
+     *              ' conf #',I,SVEC(I,1)
+ 30         CONTINUE
+         END IF
          WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(orb) on entry'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *               NSVEC,NOSIM,1,LUPRI)

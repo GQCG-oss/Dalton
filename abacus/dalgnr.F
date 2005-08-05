@@ -47,6 +47,7 @@ C
 #include <inpbak.h>
 #include <infpri.h>
 #include <pribak.h>
+#include <pcmlog.h>
 C
 C     Restoring should only be done if SIRIUS has been through its
 C     input processing.
@@ -120,6 +121,7 @@ C
       POTNUC = POTNCB
       EPSOL  = EPSOLB
       EPSTAT = EPSTTB
+      PCM    = PCMB
       RSOL(1)= RSOLB(1)
       RSOL(2)= RSOLB(2)
       RSOL(3)= RSOLB(3)
@@ -197,6 +199,7 @@ C
 #include <inpbak.h>
 #include <infpri.h>
 #include <pribak.h>
+#include <pcmlog.h>
 C
 C        /INFINP/ values are saved
 C
@@ -257,6 +260,7 @@ C
       POTNCB = POTNUC
       EPSOLB = EPSOL
       EPSTTB = EPSTAT
+      PCMB   = PCM
       RSOLB(1)= RSOL(1)
       RSOLB(2)= RSOL(2)
       RSOLB(3)= RSOL(3)
@@ -410,11 +414,13 @@ C  /* Deck exeher */
 #include <priunit.h>
 #include <gnrinf.h>
 #include <dftcom.h>
+#include <pcmlog.h>
 C
 C     Run Integral section
 C
       CALL QENTER('HERMIT')
       NEWPRP = .TRUE.
+      NEWMAT = .TRUE.
       GRDONE = .FALSE.
 C
       WRITE(LUPRI, '(/A/)') 'Starting in Integral Section -'
@@ -552,6 +558,7 @@ C  /* Deck exeaba */
 #include <huckel.h>
 #include <gnrinf.h>
 #include <abainf.h>
+#include <pcmlog.h>
 C
 C     Run ABACUS
 C
@@ -565,6 +572,7 @@ C
 C     Several files left open, have to be closed manually.
 C
       NEWPRP = .TRUE.
+      NEWMAT = .TRUE.
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
       WRITE(LUPRI, '(/A/)') '- End of Static Property Section'
       CALL FLSHFO(LUPRI)
@@ -594,6 +602,7 @@ C  /* Deck exedrv */
 #include <cbiwlk.h>
 #include <cbisol.h>
 #include <taymol.h>
+#include <pcmlog.h>
 Cef begin
 #include <incore.h>
 Cef end
@@ -684,6 +693,9 @@ C
                ISTBNU(NUCIND) = 7
                CHARGE(NUCIND) = D0
                CALL NUCPRO(WORK(2),LMWORK)
+CLF
+            ELSE IF(PCM) THEN
+               NPCMIN =.TRUE.
             END IF
 C
             IF (WLKREJ) THEN
@@ -1057,6 +1069,10 @@ C
 #include <cbieri.h>
 #include <veclen.h>
 #include <numder.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+CSONIA
 #include <grdccpt.h>
 #ifdef VAR_MPI
 #include <infpar.h>
@@ -1067,11 +1083,14 @@ C
 #else
       PARAMETER (IVECDF = 1)
 #endif
+Clf
+      LOGICAL ALLOPT
+Clf
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR /'*END OF', '*PARALL', '*WALK  ',
      &             '*MINIMI', '*NMDDRV', '*OPTIMI',
-     &             '*XXXXXX'/
+     &             '*PCM   '/
       DATA TABLE  /'.PRINT ', '.ITERAT', '.PRIERR',
      &             '.INTEGR', '.WAVE F', '.PROPER',
      &             '.INPTES', '.PARALL', '.DIRECT',
@@ -1141,6 +1160,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       DKTRAN = .FALSE.
       GEOALL = .FALSE.
       PANAS  = 0.0D0
+      NPCMIN = .TRUE.
 #ifdef VAR_MPI
       IF(NODTOT.GE.1) THEN
          PARCAL = .TRUE.
@@ -1157,6 +1177,17 @@ C     ... FTRCTL true forces AO sort and integral transformation,
 C         but we may restart with old integrals. FTRCTL is set
 C         true by EXEHER signalling that new AO integrals have
 C         been calculated.
+C
+C     Initialize /PCMLOG/
+C
+      PCM    = .FALSE.
+      OUTFLD = .FALSE.
+      NEWMAT = .TRUE.
+      LOCFLD = .FALSE.
+      NONEQ  = .FALSE.
+      NEQRSP = .FALSE.
+Clf   NPCMIN = DEFINED ABOVE.....
+      OLDCEN = .FALSE.
 C
 C     Initialize /HUCKEL/
 C
@@ -1450,7 +1481,14 @@ C
       GO TO 200
     6   CONTINUE
       GO TO 200
-    7   CONTINUE
+C
+Clf: PCM input processing
+C
+ 7    CONTINUE
+C     INPERR is defined as a precaution (not used during PCM input processing)
+      INPERR = 0
+      ALLOPT = .FALSE.
+      CALL PCMINP(WORD,INPERR,ALLOPT)
       GO TO 200
     1 CONTINUE
 #if defined (VAR_MPI) || defined (VAR_PVM)

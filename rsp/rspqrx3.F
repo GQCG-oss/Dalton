@@ -264,6 +264,7 @@ C
 #include <inftpa.h>
 #include <inftmo.h>
 #include <infinp.h>
+#include <pcmlog.h>
 #include <priunit.h>
 #include <infpp.h>
 #include <infsmo.h>
@@ -387,7 +388,8 @@ C
 C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
-         IF (TDHF) THEN
+Clf         IF (TDHF) THEN
+         IF (.false.) THEN
             CALL C3SOL(VECA, VECB, VECC,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
      *                 UDV,WRK(KFREE),LFREE,
@@ -405,6 +407,15 @@ C
      *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                 WRK(KSYRLM))
          END IF
+C
+Clf 10/06/2002
+C quadratic PCM response (for the time beeing without memory efficent SCF)
+C
+      ELSE IF (PCM) THEN
+         CALL E3IEF(VECA, VECB, VECC,
+     *        ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
+     *        WRK(KDEN1),UDV,WRK(KFREE),LFREE,
+     *        KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP)
       END IF
 C
       CALL QEXIT('E3INIT')

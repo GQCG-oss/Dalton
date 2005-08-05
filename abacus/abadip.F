@@ -251,7 +251,7 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('DIPCT1','GET1IN',KLAST,LWORK)
       CALL GET1IN(SOPACK,'DIPLEN ',NCOMP,WORK(KLAST),LWRK,LABINT,
      &            WORK(KINT),WORK(KREP),IDUMMY,.FALSE.,NPATOM,.TRUE.,
-     &            IPRINT)
+     &            DUMMY,.FALSE.,DUMMY,IPRINT)
       IF (NNBASX .GT. LWORK) CALL STOPIT('DIPCT1','SYMUPK',NNBASX,LWORK)
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Dipole (x) SO  matrix in DIPCT1',-1)
@@ -553,6 +553,7 @@ C  /* Deck dp0sum */
 #include <dipole.h>
 #include <moldip.h>
 #include <symmet.h>
+#include <pcmlog.h>
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN
             DIP0(I) = DIPMN(I) + DIPME(I)
@@ -560,6 +561,16 @@ C  /* Deck dp0sum */
             DIP0(I) = D0
          END IF
   100 CONTINUE
+Clf Local field corrected dipole moment
+      IF (PCM.AND.LOCFLD) THEN
+         DO 200 I = 1, 3
+            IF (ISYMAX(I,1) .EQ. 0) THEN
+               DIPLF0(I) = DLFN(I) + DLFE(I)
+            ELSE
+               DIPLF0(I) = D0
+            END IF
+ 200     CONTINUE
+      END IF
       RETURN
       END
 C  /* Deck chkprp */

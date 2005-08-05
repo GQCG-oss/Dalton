@@ -64,6 +64,7 @@ C
 #include <numder.h>
 #include <dftcom.h>
 #include <expopt.h>
+#include <pcmlog.h>
 C
 C
       LOGICAL PROPTY, OLDDX, DFTADX
@@ -115,7 +116,7 @@ C
       IF (.NOT.PASONE) THEN
          PROPTY = .TRUE.
          EXPGRA = EXPGRD
-         CALL ONEINT(WORK,LWORK,PASONE,PROPTY)
+         CALL ONEINT(WORK,LWORK,PASONE,PROPTY,PCM)
          IF (PASONE) CALL WRITRS
          CALL FLSHFO(LUPRI)
       END IF
@@ -501,8 +502,9 @@ C
          CALL ADDGRD(GRADNN)
          CALL ADDGRD(GRADFS)
          CALL ADDGRD(GRADFT)
-         IF (SOLVNT) CALL ADDGRD(GSOLTT)
-         IF (SOLVNT) CALL ADDGRD(GSOLNN)
+         IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLTT)
+         IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLNN)
+         IF (PCM) CALL ADDGRD(GSOLCV)
       END IF
 C
 C     Calculated dipole moment
@@ -512,6 +514,7 @@ C
 C     Calculated elements of dipole gradient
 C
       CALL DZERO(DIP1,9*NUCDEP)
+Clf to be adjusted for PCM IR intensities calculation
       IF (DIPDER) THEN
          CALL DIPADD(DDIPN)
          CALL DIPADD(DDIPE)
@@ -958,7 +961,7 @@ cLig <> added goto 151
             VIB    = .TRUE.
             IF (IWKTYP .EQ. 6) THEN
                MOLGRD = .TRUE.
-               MOLHES = .TRUE.
+               MOLHES = .NOT.NUMHES
             ELSE
                MOLGRD = .NOT.((WRDSRC .EQ. '**PROPE') .AND. OPTWLK)
                MOLHES = .NOT.((WRDSRC .EQ. '**PROPE') .AND. OPTWLK 
@@ -1681,6 +1684,14 @@ cLig <<
          WRITE (LUPRI,'(2X,A)') 'VCD currently not implemented for DFT'
          CALL QUIT('VCD not implemented for DFT')
       END IF
+      IF (DFTRUN .AND. VCD) THEN
+         WRITE (LUPRI,'(2X,A)') 'VCD currently not implemented for DFT'
+         CALL QUIT('VCD not implemented for DFT')
+      END IF
+      IF (DFTRUN .AND. VCD) THEN
+         WRITE (LUPRI,'(2X,A)') 'VCD currently not implemented for DFT'
+         CALL QUIT('VCD not implemented for DFT')
+      END IF
 C
 C
 C     **** PROCESS INPUT FOR VARIOUS PROGRAM SECTIONS  *****
@@ -1966,6 +1977,7 @@ C
 #include <sigma.h>
 #include <relcor.h>
 #include <aatens.h>
+#include <pcmlog.h>
 #include <difsec.h>
 #include <expopt.h>
 #include <primit.h>
@@ -2209,6 +2221,17 @@ C
      *           DIPMOM, ' au', DEBYE*DIPMOM, ' Debye'
             CALL HEADER('Dipole moment components',-1)
             CALL DP0PRI(DIP0)
+Clf Printout of the LF dipole moment
+            IF (PCM .AND. LOCFLD) THEN
+               CALL HEADER('Local-field corrected dipole moment',-1)
+               DIPLF = SQRT(DIPLF0(1)*DIPLF0(1) + DIPLF0(2)*DIPLF0(2) + 
+     &              DIPLF0(3)*DIPLF0(3))
+               WRITE (LUPRI,'(9X,2(7X,F12.6,A)//)')
+     *              DIPLF, ' au', DEBYE*DIPLF, ' Debye'
+               CALL HEADER(
+     $              'Local-field corrected dipole moment components',-1)
+               CALL DP0PRI(DIPLF0)
+            END IF
          END IF
          IF (DIPDER) THEN
             IF (NFLOAT .EQ. 0) THEN
@@ -2753,6 +2776,7 @@ c      CALL HEADER('Total octupole moments (cgs, Debye*AAngstroem)',-1)
 c      CALL PRIOCT(THDTOT,'CGS',1)
       RETURN
       END
+C
 C  /* Deck susres */
       SUBROUTINE SUSRES(IPRINT)
 #include <implicit.h>

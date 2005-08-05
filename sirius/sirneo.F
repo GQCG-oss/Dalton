@@ -705,6 +705,7 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infinp.h>
+#include <pcmlog.h>
 #include <infvar.h>
 #include <infopt.h>
 #include <infdim.h>
@@ -741,7 +742,7 @@ C     ... symmetrize CI vector
       DOPHP  = .FALSE.
 #else
       DOPHP  = (MAXPHP .GT. 0)
-      IF (SOLVNT) DOPHP = .FALSE.
+      IF (SOLVNT .OR. PCM) DOPHP = .FALSE.
       IF (BETA .NE. D1) DOPHP = .FALSE.
 C     ... only use PHP for beta = 1
 C     PHPMAERKE: implement for beta .ne. 1
@@ -1265,7 +1266,8 @@ C
 C           Find label ORBDIAG, for diagonal of orbital Hessian.
             CALL MOLLAB(LABIT2(3),LUIT2,LUERR)
             CALL READT(LUIT2,NWOPT,WRK(KODIAG))
-            IF (SOLVNT) THEN
+C
+            IF (SOLVNT .OR. PCM) THEN
                CALL MOLLAB(LABIT2(4),LUIT2,LUERR)
                IF (NCONF .GT. 1) READ (LUIT2)
                CALL READT (LUIT2,NWOPT,WRK(KWO))

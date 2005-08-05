@@ -36,14 +36,15 @@ C
 C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
-     &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT)
+     &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT,EXPVAL,
+     &                  EXP1EL,DENMAT)
 #include <implicit.h>
 #include <priunit.h>
 C
-      LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DOINT(2,2)
+      LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DOINT(2,2),EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), INTREP(NOPTYP),
-     &          WORK(LWORK), INTADR(*)
+     &          WORK(LWORK), INTADR(*), EXPVAL(NOPTYP), DENMAT(*)
 C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(A,/)')
      &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
@@ -78,14 +79,14 @@ C
       CALL PR1DR1(SOINT,WORK(KLAST),LWRK,NPOINT,LABINT,
      &            INTTYP,INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,DOATOM,
      &            WORK(KWEIGH),WORK(KABSCI),TRIANG,NATOM,INTADR,NSHINT,
-     &            SQUARE,DOINT,IPRINT)
+     &            SQUARE,DOINT,EXPVAL,EXP1EL,DENMAT,IPRINT)
       RETURN
       END
 C  /* Deck pr1dr1 */
       SUBROUTINE PR1DR1(SOINT,WORK,LWORK,NPOINT,LABINT,INTTYP,
      &                  INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,DOATOM,
      &                  WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,SQUARE,
-     &                  DOINT,IPRINT)
+     &                  DOINT,EXPVAL,EXP1EL,DENMAT,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -96,12 +97,13 @@ C  /* Deck pr1dr1 */
       PARAMETER (D1 = 1.00 D00, D4 = 4.D0,D8 = 8.D0,DMTRA = .75D0)
 C
       LOGICAL ANTI, DOATOM(*), HER, TRIANG, SQUARE, DONUC1, DOMOM1,
-     &        DOINT(2,2)
+     &        DOINT(2,2), EXP1EL
 C
       CHARACTER LABINT(NOPTYP)*8
 C
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
-     &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
+     &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*),
+     &          EXPVAL(NOPTYP), DENMAT(NELMNT)
 C
 #include <onecom.h>
 #include <orgcom.h>
@@ -434,6 +436,16 @@ C
          JMAXM = 3
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.66) THEN
+         JMAXD  = 0
+         JMAXM  = 1
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.67) THEN
+         JMAXD  = 0
+         JMAXM  = 2
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.70) THEN
          JMAXD  = 3
          JMAXM  = 0
@@ -457,6 +469,11 @@ C
       ELSE IF (INTTYP .EQ.74) THEN
          JMAXD  = 2
          JMAXM  = 1
+         DONUC1 = .FALSE. 
+         DOMOM1 = .FALSE. 
+      ELSE IF (INTTYP .EQ.75) THEN
+         JMAXD  = 0
+         JMAXM  = 0
          DONUC1 = .FALSE. 
          DOMOM1 = .FALSE. 
       ELSE IF (INTTYP .EQ.80) THEN 
@@ -545,7 +562,7 @@ C
          WRITE (LUPRI,'(A,I5)') ' JMAXM  ',JMAXM
       END IF
 C
-      CALL DZERO(SOINT,NELMNT*NOPTYP)
+      IF (.NOT. EXP1EL) CALL DZERO(SOINT,NELMNT*NOPTYP)
 C
 C     ****************************************************************
 C     *** Prepare for Gaussian quadrature (diamagnetic spin-orbit) ***
@@ -574,6 +591,12 @@ C    &         NPOINT .EQ. 8 .OR. NPOINT .EQ. 10
          END IF
       END IF
 C
+C     ***********************************************************
+C     ***** If expectation values, construct density matrix *****
+C     ***********************************************************
+C     
+      IF (EXP1EL) CALL DZERO(EXPVAL,NOPTYP)
+C
 C     ************************************************************
 C     ***** Triangular loop over symmetry independent shells *****
 C     ************************************************************
@@ -583,6 +606,7 @@ C
       IORBA = 0
       CALL IZERO(ISOFRA, 8)
       KMAXT = KMAX
+      IDENA = 0
       DO 200 ISHELA = 1,KMAXT
          NHKTA = NHKT(ISHELA)
          KHKTA = KHKT(ISHELA)
@@ -629,6 +653,7 @@ C
          IORBB = 0
          ISHMXB = ISHELA
          IF (SQUARE) ISHMXB = KMAXT
+         IDENB0 = 0
          DO 300 ISHELB = 1, ISHMXB
             NHKTB = NHKT(ISHELB)
             KHKTB = KHKT(ISHELB)
@@ -697,22 +722,25 @@ C           ******************************
 C           ***** Symmetry integrals *****
 C           ******************************
 C
-            CALL PR1SOP(SOINT,WORK,LWORK,NPOINT,LABINT,
-     &                  INTTYP,INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,
-     &                  DOATOM,WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,
-     &                  SQUARE,IPRINT,JMAXD,JMAXM,ISHELA,ISHELB,IORBA,
-     &                  IORBB,KAB,CORBX0,CORBY0,CORBZ0,TOLOG,TOLS,
-     &                  DONUC1,DOMOM1,MULTA,MULTB)
+            CALL PR1SOP(SOINT,DENMAT,EXPVAL,WORK,LWORK,
+     &                  NPOINT,LABINT,INTTYP,INTREP,NOPTYP,NBAST,NELMNT,
+     &                  ANTI,IORDER,DOATOM,WEIGHT,ABSCIS,TRIANG,NATOM,
+     &                  INTADR,NSHINT,SQUARE,IPRINT,JMAXD,JMAXM,ISHELA,
+     &                  ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
+     &                  TOLOG,TOLS,DONUC1,DOMOM1,MULTA,MULTB,EXP1EL,
+     &                  IDENB0)
 C
-  300    IORBB = IORBB + KHKTB
-         IORBA = IORBA + KHKTA
+         IDENB0= IDENB0 + KHKTB*MULTB
+  300    IORBB = IORBB  + KHKTB
+         IORBA = IORBA  + KHKTA
+         IDENA = IDENA  + KHKTA*MULTA
   200 CONTINUE
 C
 C     ****************************
 C     ***** Unpack integrals *****
 C     ****************************
 C
-      IF (.NOT.SQUARE) THEN
+      IF (.NOT.SQUARE .AND. .NOT. EXP1EL) THEN
          IF (NELMNT.GT.LWORK)CALL STOPIT('PR1DR1','SYMUPK',NELMNT,LWORK)
          DO 800 I = 1, NOPTYP
             CALL DCOPY(NELMNT,SOINT(1,I),1,WORK,1)
@@ -725,21 +753,23 @@ C
      *         /,2X,'***************************************',/)
       END
 C  /* Deck pr1sop */
-      SUBROUTINE PR1SOP(SOINT,WORK,LWORK,NPOINT,LABINT,
+      SUBROUTINE PR1SOP(SOINT,DENMAT,EXPVAL,WORK,LWORK,NPOINT,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,
      &                  DOATOM,WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,
      &                  SQUARE,IPRINT,JMAXD,JMAXM,ISHELA,ISHELB,IORBA,
      &                  IORBB,KAB,CORBX0,CORBY0,CORBZ0,TOLOG,TOLS,
-     &                  DONUC1,DOMOM1,MULTA,MULTB)
+     &                  DONUC1,DOMOM1,MULTA,MULTB,EXP1EL,IDENB0)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
 #include <nuclei.h>
-      LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1
+      LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1,
+     &        EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
-     &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
+     &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*),
+     &          DENMAT(NELMNT), EXPVAL(NOPTYP)
 #include <onecom.h>
 C
       KSHINT = 1
@@ -753,24 +783,24 @@ C
       KLAST  = KCORCZ + NUCDEP
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1SOP',' ',KLAST,LWORK)
       LWRK = LWORK - KLAST + 1
-      CALL PR1SO1(SOINT,WORK(KSHINT),WORK(KLAST),LWRK,
+      CALL PR1SO1(SOINT,WORK(KSHINT),DENMAT,EXPVAL,WORK(KLAST),LWRK,
      &            NPOINT,LABINT,INTTYP,INTREP,NOPTYP,NBAST,NELMNT,ANTI,
      &            IORDER,DOATOM,WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,
      &            NSHINT,SQUARE,IPRINT,WORK(KFACTR),JMAXD,JMAXM,ISHELA,
      &            ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &            WORK(KCORCX),WORK(KCORCY),WORK(KCORCZ),WORK(KCENTC),
      &            WORK(KSYMC),TOLOG,TOLS,DONUC1,DOMOM1,MULTA,MULTB,
-     &            WORK(KNCNTC))
+     &            WORK(KNCNTC),EXP1EL,IDENB0)
       RETURN
       END
 C  /* Deck pr1so1 */
-      SUBROUTINE PR1SO1(SOINT,SHLINT,WORK,LWORK,NPOINT,
+      SUBROUTINE PR1SO1(SOINT,SHLINT,DENMAT,EXPVAL,WORK,LWORK,NPOINT,
      &                  LABINT,INTTYP,INTREP,NOPTYP,NBAST,NELMNT,ANTI,
      &                  IORDER,DOATOM,WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,
      &                  NSHINT,SQUARE,IPRINT,FACINT,JMAXD,JMAXM,ISHELA,
      &                  ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,TOLOG,TOLS,
-     &                  DONUC1,DOMOM1,MULTA,MULTB,NCENTC)
+     &                  DONUC1,DOMOM1,MULTA,MULTB,NCENTC,EXP1EL,IDENB0)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -779,17 +809,19 @@ C  /* Deck pr1so1 */
 #include <nuclei.h>
 C
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
-     &        MULCHA, DOMOM1, HUCORB
+     &        MULCHA, DOMOM1, HUCORB, EXP1EL
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), SHLINT(KCKTAB,NSHINT),
      &          WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), FACINT(*),
      &          CORCX(*), CORCY(*), CORCZ(*), NCENTC(*),
-     &          INTADR(*), JSYMC(*), JCENTC(*)
+     &          INTADR(*), JSYMC(*), JCENTC(*), DENMAT(NELMNT),
+     &          EXPVAL(NOPTYP)
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
 #include <onecom.h>
+#include <orgcom.h>
 #include <shells.h>
 #include <huckel.h>
 #include <symmet.h>
@@ -798,6 +830,7 @@ C
 C
 #include <ibtfun.h>
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
+      ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 C
 C     Initialization for Coulomb integrals
 C
@@ -827,10 +860,13 @@ cLig <> added JMAX adjustment  for INTTYP = 82
      &                    .OR. (INTTYP .EQ. 62)
      &                    .OR. (INTTYP .EQ. 63)
      &                    .OR. (INTTYP .EQ. 64)
+     &                    .OR. (INTTYP .EQ. 66)
+     &                    .OR. (INTTYP .EQ. 67)
      &                    .OR. (INTTYP .EQ. 70)
      &                    .OR. (INTTYP .EQ. 72)
      &                    .OR. (INTTYP .EQ. 73)
      &                    .OR. (INTTYP .EQ. 74)
+     &                    .OR. (INTTYP .EQ. 75)
      &                    .OR. (INTTYP .EQ. 80)
      &                    .OR. (INTTYP .EQ. 82)
      &                    .OR. (INTTYP .EQ. 92)
@@ -863,14 +899,17 @@ cLig <> added JMAX adjustment  for INTTYP = 82
          IF (INTTYP .EQ. 61) JMAX = JMAX + 2                
          IF (INTTYP .EQ. 62) JMAX = JMAX + 2
          IF (INTTYP .EQ. 63) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 66) JMAX = JMAX + 1
+         IF (INTTYP .EQ. 67) JMAX = JMAX + 2
          IF (INTTYP .EQ. 70) JMAX = JMAX + 1                
          IF (INTTYP .EQ. 72) JMAX = JMAX + 2
          IF (INTTYP .EQ. 73) JMAX = JMAX + 2
          IF (INTTYP .EQ. 74) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 75) JMAX = JMAX + 1
          IF (INTTYP .EQ. 80) JMAX = JMAX + 3
 cLig <> added JMAX = JMAX+2 for INTTYP = 82
          IF (INTTYP .EQ. 82) JMAX = JMAX + 2
-         IF (INTTYP .EQ. 92) JMAX = JMAX + 3
+         IF (INTTYP .EQ. 92) JMAX = JMAX + 4
          IF (INTTYP .EQ. 93) JMAX = JMAX + 4
          IF (INTTYP .EQ. 94) JMAX = JMAX + 4
          IF (INTTYP .EQ. 96) JMAX = JMAX + 4
@@ -890,7 +929,32 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
          ISTEPU = JMAX + 1
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
-         IF (INTTYP.NE.12 .AND. INTTYP.NE.58 .AND. INTTYP.NE.96) THEN
+C
+         IF (INTTYP .EQ. 75 .OR. INTTYP .EQ. 66 
+     &        .OR. INTTYP .EQ. 67) THEN
+            NATOMC = 0
+C
+            DO 301 IATOMC = 1, NPOINT
+               MULC = MAXREP + 1
+               MABC = IBTOR(MULC,KAB)
+               CORCX0 = DIPORG(1)
+               CORCY0 = DIPORG(2)
+               CORCZ0 = DIPORG(3)
+               FACTOR = - FMULT(IBTAND(MULC,KAB))
+               DO 311 ISYMOP = 0, MAXOPR
+                  IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
+                     NATOMC = NATOMC + 1
+                     JSYMC(NATOMC)  = ISYMOP
+                     JCENTC(NATOMC) = IATOMC
+                     CORCX(NATOMC)  = XYZ(1,ISYMOP)*CORCX0
+                     CORCY(NATOMC)  = XYZ(2,ISYMOP)*CORCY0
+                     CORCZ(NATOMC)  = XYZ(3,ISYMOP)*CORCZ0
+                     FACINT(NATOMC) = FACTOR
+                  END IF
+ 311           CONTINUE
+ 301        CONTINUE
+         ELSE IF (INTTYP.NE.12 .AND. INTTYP.NE.58
+     &      .AND. INTTYP.NE.96) THEN
             NATOMC = 0
             DO 300 IATOMC = 1, NUCIND
             IF (DOATOM(IATOMC)) THEN
@@ -938,10 +1002,12 @@ C     *****************************************
 C     ***** Loop over symmetry operations *****
 C     *****************************************
 C
+      IDENB = IDENB0 - KHKTB
       DO 100 ISYMOP = 0, MAXOPR
       IF(IBTAND(ISYMOP,MAB) .EQ. 0) THEN
          LDIAG  = (ISHELA .EQ. ISHELB) .AND. (.NOT.SQUARE)
          ONECEN = .FALSE.
+         IDENB  = IDENB + KHKTB
          CORBX  = XYZ(1,ISYMOP)*CORBX0
          CORBY  = XYZ(2,ISYMOP)*CORBY0
          CORBZ  = XYZ(3,ISYMOP)*CORBZ0
@@ -963,8 +1029,8 @@ C hj-aug99: basis functions are normalized to MULT[AB],
 C           and HUCMAT was scaled with the 1/sqrt(SCAL) factor.
 C           Code modified so projection vectors are also properly scaled.
 C
-               IF (LCLASS(ISHELA) .EQ. 2) SCAL = MULTA
-               IF (LCLASS(ISHELB) .EQ. 2) SCAL = MULTB*SCAL
+               IF (LCLASS(ISHELA) .EQ. 2) SCAL = DFLOAT(MULTA)
+               IF (LCLASS(ISHELB) .EQ. 2) SCAL = DFLOAT(MULTB)*SCAL
             END IF
             IF (LCLASS(ISHELA) .EQ. 2 .AND. LCLASS(ISHELB) .EQ. 2) THEN
                IHUCA = IHUCPT(ISHELA)
@@ -1008,11 +1074,61 @@ C
             CALL SPHRM1(SHLINT,SHLINT,NSHINT,WORK,LWORK,.FALSE.,IPRINT)
          END IF
 C
+C        *******************************************
+C        ***** Expectation values of integrals *****
+C        *******************************************
+C
+         ONECEN = ICENTA .EQ. ICENTB
+         IF (EXP1EL) THEN
+            CALL DZERO(WORK,NOPTYP)
+            IF ((INTTYP .EQ. 26) .OR. (INTTYP .EQ. 27) .OR.
+     &            (INTTYP .EQ. 28) .OR. (INTTYP .EQ. 38) .OR.
+     &            (INTTYP .EQ. 48) .OR. (INTTYP .EQ. 74) .OR.
+     &            (INTTYP .EQ. 82) .OR. (INTTYP .EQ. 93) .OR.
+     &            (INTTYP .EQ. 97)) THEN
+               CALL NSTTRA(SHLINT,DUMMY,FACINT,JSYMC,JCENTC,NATOMC,
+     &                  ISYMOP,NELMNT,NOPTYP,ANTI,IORBA,IORBB,MULTA,
+     &                  MULTB,NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DENMAT,
+     &                  EXP1EL)
+            ELSE IF (INTTYP .EQ. 75) THEN
+               CALL TESTRA(SHLINT,EXPVAL,FACINT,JSYMC,JCENTC,NATOMC,
+     &                     ISYMOP,1,NOPTYP,ANTI,EXP1EL,DENMAT,MULTA,
+     &                     MULTB,IPRINT)
+            ELSE IF (INTTYP.EQ.12 .OR. INTTYP.EQ.58 .OR. 
+     &               INTTYP.EQ.96) THEN
+               CALL DSOTRA(SHLINT,EXPVAL,ISYMOP,1,NOPTYP,ANTI,DOATOM,
+     &                     KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,EXP1EL,
+     &                     DENMAT,MULTA,MULTB,IPRINT)
+            ELSE IF (INTTYP .EQ. 30 .OR. INTTYP .EQ. 31) THEN
+               CALL EFGTRA(SHLINT,EXPVAL,FACINT,JSYMC,JCENTC,NATOMC,
+     &                     ISYMOP,1,NOPTYP,ANTI,INTADR,EXP1EL,
+     &                     DENMAT,MULTA,MULTB,IPRINT)
+            ELSE
+               DO ICOMP = 1, NOPTYP
+                  ICOUNT = 0
+                  DO IORBA = IDENA + 1, IDENA + KHKTA
+                     DO IORBB = IDENB + 1, IDENB + KHKTB
+                        FAC = 1.0D0
+                        IF (ONECEN.AND.LDIAG.AND.
+     &                      IORBB.NE.IORBA) FAC=0.5D0
+                        IORBAB = ITRI(IORBA,IORBB)
+                        ICOUNT = ICOUNT + 1
+                        WORK(ICOMP)=WORK(ICOMP)
+     &                       +FAC*DENMAT(IORBAB)*SHLINT(ICOUNT,ICOMP)
+                     END DO
+                  END DO
+               END DO
+               DO ICOMP = 1, NOPTYP
+                  IF (INTREP(ICOMP) .EQ. 0) EXPVAL(ICOMP) = 
+     &                                      EXPVAL(ICOMP) + WORK(ICOMP)
+               END DO
+            END IF
+C
 C        *************************************************
 C        ***** Transform integrals to symmetry basis *****
 C        *************************************************
 C
-         IF (INTTYP .EQ. 10 .OR. INTTYP .EQ. 66) THEN
+         ELSE IF (INTTYP .EQ. 10 .OR. INTTYP .EQ. 92) THEN
             CALL PSOTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
      &                  INTADR,IPRINT)
@@ -1023,7 +1139,8 @@ C
      &                 INTADR,IPRINT)
          ELSE IF (INTTYP.EQ.12 .OR. INTTYP.EQ.58 .OR. INTTYP.EQ.96) THEN
             CALL DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
-     &                  KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,IPRINT)
+     &                  KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,EXP1EL,
+     &                  DUMMY,MULTA,MULTB,IPRINT)
          ELSE IF (INTTYP.EQ.14 .OR. INTTYP.EQ.44 .OR. INTTYP.EQ.98) THEN
             CALL HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)
@@ -1034,20 +1151,21 @@ cLig <> added the call to NSSTRA for INTTYP = 82
      &            (INTTYP .EQ. 82) .OR. (INTTYP .EQ. 93) .OR.
      &            (INTTYP .EQ. 97)) THEN
             CALL NSTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
-     &                  IPRINT,INTADR)
+     &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,MULTA,MULTB,
+     &                  NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DUMMY,EXP1EL)
          ELSE IF (INTTYP .EQ. 29) THEN
             CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IPRINT)
          ELSE IF (INTTYP .EQ. 30 .OR. INTTYP .EQ. 31) THEN
             CALL EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,INTADR,EXP1EL,DUMMY,MULTA,
+     &                  MULTB,IPRINT)
          ELSE IF (INTTYP .EQ. 34) THEN
             CALL HDBTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,IPRINT)
          ELSE IF (INTTYP .EQ. 52) THEN
             CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
@@ -1062,6 +1180,10 @@ cLig <> added the call to NSSTRA for INTTYP = 82
          ELSE IF (INTTYP .EQ. 70) THEN
             CALL G1HTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NCENTC,NATOMC,
      &                  ISYMOP,NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+         ELSE IF (INTTYP .EQ. 75) THEN
+            CALL TESTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
+     &                  NELMNT,NOPTYP,ANTI,EXP1EL,DUMMY,MULTA,MULTB,
+     &                  IPRINT)
          ELSE
             FULMAT = .TRUE.
             DO 200 I = 1, NOPTYP
@@ -1110,6 +1232,7 @@ C
       IF (INTTYP .EQ. 65) JMAXA = JMAXA + 2
       JMAXB  = NHKTB - 1
       JMAXT  = JMAXA + JMAXB + JMAXD + JMAXM
+      IF (INTTYP .EQ. 92) JMAXT = JMAXT + 3
 C
       KODC   = 1
       KAHGTF = KODC+ 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)*(JMAXM+1)
@@ -1172,8 +1295,9 @@ cLig <> set DIFODC true also for INTTYP = 81 and 82
      &    .OR. (INTTYP.EQ.40) .OR. (INTTYP.EQ.44) .OR. (INTTYP.EQ.50)
      &    .OR. (INTTYP.EQ.51) .OR. (INTTYP.EQ.52) .OR. (INTTYP.EQ.53)
      &    .OR. (INTTYP.EQ.54) .OR. (INTTYP.EQ.55) .OR. (INTTYP.EQ.59)
-     &    .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.70)
-     &    .OR. (INTTYP.EQ.71) .OR. (INTTYP.EQ.72) .OR. (INTTYP.EQ.73)
+     &    .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.66)
+     &    .OR. (INTTYP.EQ.67) .OR. (INTTYP.EQ.70) .OR. (INTTYP.EQ.71)
+     &    .OR. (INTTYP.EQ.72) .OR. (INTTYP.EQ.73)
      &    .OR. (INTTYP.EQ.74) .OR. (INTTYP.EQ.80) .OR. (INTTYP.EQ.81)
      &    .OR. (INTTYP.EQ.82) .OR. (INTTYP.EQ.83) .OR. (INTTYP.EQ.84)
      &    .OR. (INTTYP.EQ.91) .OR. (INTTYP.EQ.92) .OR. (INTTYP.EQ.93)
@@ -1318,10 +1442,13 @@ cLig <> added the call to DZERO also for INTTYP = 82
      &                       .OR. (INTTYP .EQ. 62)
      &                       .OR. (INTTYP .EQ. 63)
      &                       .OR. (INTTYP .EQ. 64)
+     &                       .OR. (INTTYP .EQ. 66)
+     &                       .OR. (INTTYP .EQ. 67)
      &                       .OR. (INTTYP .EQ. 70)
      &                       .OR. (INTTYP .EQ. 72)
      &                       .OR. (INTTYP .EQ. 73)
      &                       .OR. (INTTYP .EQ. 74)
+     &                       .OR. (INTTYP .EQ. 75)
      &                       .OR. (INTTYP .EQ. 80)
      &                       .OR. (INTTYP .EQ. 82)
      &                       .OR. (INTTYP .EQ. 92)
@@ -1483,9 +1610,9 @@ C
 C        London orbital contribution to magnetic moment
 C        ----------------------------------------------
 C
-         ELSE IF (INTTYP .EQ. 19) THEN
+         ELSE IF (INTTYP .EQ. 19 .OR. INTTYP .EQ. 66) THEN
             CALL MM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC)
+     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
 C
 C        One-electron contribution to magnetic moment
 C        --------------------------------------------
@@ -1498,7 +1625,7 @@ C
      &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
      &                  ORIGIN,INTTYP)
             CALL MM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC)
+     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
 C
 C        Kinetic energy integrals
 C        ------------------------
@@ -1523,9 +1650,9 @@ C
 C        London orbital contribution to magnetic susceptibility
 C        ------------------------------------------------------
 C
-         ELSE IF (INTTYP .EQ. 24) THEN
+         ELSE IF ((INTTYP .EQ. 24).OR.(INTTYP .EQ. 67)) THEN
             CALL DSUSLH(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC)
+     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
 C
 C        Diamagnetic susceptibility
 C        --------------------------
@@ -1622,7 +1749,7 @@ C
 C        Potential energy at the individual nuclei
 C        -----------------------------------------
 C
-         ELSE IF (INTTYP .EQ. 35) THEN
+         ELSE IF (INTTYP .EQ. 35 .OR. INTTYP .EQ. 75) THEN
             CALL NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
 C
@@ -1906,7 +2033,7 @@ C        --------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 92) THEN
             CALL PSOKIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
-     &                  NOPTYP,NATOMC)
+     &                  NOPTYP,NATOMC,iprint)
 C
 C        Kinetic energy correction to diamagnetic nuclear shieldings
 C        -----------------------------------------------------------
@@ -3211,7 +3338,7 @@ C
       END
 C  /* Deck mm1int */
       SUBROUTINE MM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC)
+     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
 C
 C     K.Ruud, Feb. 1992
 C
@@ -3250,18 +3377,20 @@ C
 C
 C       Kinetic energy contribution
 C
-         SHLINT(INT,1) = SHLINT(INT,1) + D4INV*( DIFABY*(DX2*SY0*SZ1 +
-     &                                     SX0*DY2*SZ1 + SX0*SY0*SZ21)
+         IF (INTTYP .EQ. 19 .OR. INTTYP .EQ. 20) THEN
+            SHLINT(INT,1) = SHLINT(INT,1)+D4INV*( DIFABY*(DX2*SY0*SZ1 +
+     &                                       SX0*DY2*SZ1 + SX0*SY0*SZ21)
      &                                   - DIFABZ*(DX2*SY1*SZ0 +
      &                                     SX0*SY21*SZ0 + SX0*SY1*DZ2))
-         SHLINT(INT,2) = SHLINT(INT,2) + D4INV*( DIFABZ*(SX21*SY0*SZ0 +
+            SHLINT(INT,2) = SHLINT(INT,2)+D4INV*( DIFABZ*(SX21*SY0*SZ0 +
      &                                     SX1*DY2*SZ0 + SX1*SY0*DZ2)
      &                                   - DIFABX*(DX2*SY0*SZ1 +
      &                                     SX0*DY2*SZ1 + SX0*SY0*SZ21))
-         SHLINT(INT,3) = SHLINT(INT,3) + D4INV*( DIFABX*(DX2*SY1*SZ0 +
+            SHLINT(INT,3) = SHLINT(INT,3)+D4INV*( DIFABX*(DX2*SY1*SZ0 +
      &                                     SX0*SY21*SZ0 + SX0*SY1*DZ2)
      &                                   - DIFABY*(SX21*SY0*SZ0 +
      &                                     SX1*DY2*SZ0 + SX1*SY0*DZ2))
+         END IF
 C
 C     Nuclear attraction contribution
 C
@@ -3459,7 +3588,7 @@ C
       END
 C  /* Deck dsuslh */
       SUBROUTINE DSUSLH(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC)
+     &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
 C
 C     K.Ruud, Feb. 1992
 C
@@ -3469,6 +3598,7 @@ C
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), AHGTF(*)
+      INTEGER INTTYP
 #include <onecom.h>
 #include <lmns.h>
       INT = 0
@@ -3510,6 +3640,8 @@ C
 C
 C       Kinetic energy contribution
 C
+C     Skip the Kinetic contribution if PCM type integral 67
+         IF (INTTYP .NE. 67) THEN
          SHLINT(INT,1) = SHLINT(INT,1) + (D2*DIFABY*DIFABZ*YZ
      &                                 -  DIFABY*DIFABY*ZZ
      &                                 -  DIFABZ*DIFABZ*YY)*D8INV
@@ -3531,6 +3663,7 @@ C
          SHLINT(INT,6) = SHLINT(INT,6) + (DIFABX*DIFABY*XY*D2
      &                                 -  DIFABY*DIFABY*XX
      &                                 -  DIFABX*DIFABX*YY)*D8INV
+      END IF
 C
 C     Nuclear attraction contribution
 C
@@ -4855,7 +4988,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <codata.h>
-C<
+C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DWNFAC = 0.5D0*PI*ALPHA2)
       DIMENSION SHLINT(KCKTAB)
@@ -4968,7 +5101,7 @@ C
       END
 C
       SUBROUTINE PSOKIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
-     &                  NOPTYP,NATOMC)
+     &                  NOPTYP,NATOMC,iprint)
 C
 C     Kinetic energy correction to paramagnetic spin-orbit integrals
 C
@@ -4996,13 +5129,13 @@ C
          MAXU = MVALA + MVALB + 3
          MAXV = NVALA + NVALB + 3
          IADRAV = 1
-         DO 200 IV = 0,MAXV
+         DO 200 IV = 0,MAXV + 1
             EV  = ODC(NVALA,NVALB,IV,0,0,3)
             FV1 = ODC(NVALA,NVALB,IV,1,0,3)
             FV2 = ODC(NVALA,NVALB,IV,2,0,3)
             FV3 = ODC(NVALA,NVALB,IV,3,0,3)
             IADRAU = IADRAV
-            DO 300 IU = 0,MAXU
+            DO 300 IU = 0, MAXU
                EU  = ODC(MVALA,MVALB,IU,0,0,2)
                FU1 = ODC(MVALA,MVALB,IU,1,0,2)
                FU2 = ODC(MVALA,MVALB,IU,2,0,2)
@@ -5017,7 +5150,7 @@ C
                F1F2 = FU1*FV2
                EF2  = EU*FV2
                EF3  = EU*FV3
-               DO 400 IT = 0,MAXT
+               DO 400 IT = 0, MAXT
                   ET  = ODC(LVALA,LVALB,IT,0,0,1)
                   FT1 = ODC(LVALA,LVALB,IT,1,0,1)
                   FT2 = ODC(LVALA,LVALB,IT,2,0,1)
@@ -5141,13 +5274,6 @@ C
                      AH0U = AHGTF(IOFF + IADRAU + IT + ISTEPU)
                      AH0V = AHGTF(IOFF + IADRAU + IT + ISTEPV)
 C
-ckr                     write (2,*) 'ah0u',ah0u,ah0v,
-ckr     &                    efe,eef,efg,egf,edh,ehd,it,iu,iv
-ckr                     write (2,*) et,fu,ev,eu,fv,gu,gv,du,hv,hu,dv
-ckr                     write (2,*) edh*ah0u,efe*ah0u,-efg*ah0u
-ckr                     write (2,*) ehd*ah0v,eef*ah0v,-egf*ah0v
-ckr                     write (2,*) -deh*ah0u,-fee*ah0u,feg*ah0u
-ckr                     write (2,*) -ffd*ah0v,dff*ah0v
                      SHLINT(INT,IXX) = SHLINT(INT,IXX)
      &                               + ((EFE - EFG + EDH)*AH0U
      &                               + (EEF - EGF + EHD)*AH0V)
@@ -5311,17 +5437,18 @@ C
       END
 C  /* Deck nsttra */
       SUBROUTINE NSTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
-     &                  IPRINT,INTADR)
+     &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,MULTA,MULTB,
+     &                  NBAST,INTTYP,IPRINT,INTADR,EXPVAL,DMAT,EXP1EL)
 #include <implicit.h>
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-      LOGICAL FULMAT, ANTI
+      LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
+      DIMENSION EXPVAL(*), DMAT(*)
 #include <onecom.h>
 #include <symmet.h>
 #include <ibtfun.h>
@@ -5347,8 +5474,12 @@ cLig <<
      &                                *PT(IBTAND(IREPCD,ISYMC))
                      ITYP = 9*(IATOMC - 1) + 3*(LCOOR - 1) + ICOOR
                      IADR = INTADR(3*(ISCOOR - 1) + ICOOR)
+                     IF (EXP1EL) THEN
+                        IF (IREPCD .EQ. 0) CALL SYM1EV(SHLINT(1,ITYP),
+     &                                    DMAT,EXPVAL(IADR),FACSYM,
+     &                                    MULTA,MULTB,IPRINT)
 cLig <> added the call to SYMSQR for INTTYP = 82
-                     IF (INTTYP .EQ. 26 .OR. INTTYP .EQ. 27
+                     ELSE IF (INTTYP .EQ. 26 .OR. INTTYP .EQ. 27
      &                    .OR. INTTYP .EQ. 74 
      &                    .OR. INTTYP .EQ. 82 .OR. INTTYP .EQ. 93
      &                    .OR. INTTYP .EQ. 97) THEN
@@ -5402,7 +5533,7 @@ C  /* Deck psotra */
      &                             *PT(IBTAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) + ICOOR
                   IADR = INTADR(ISCOOR)
-                  IF (INTTYP .EQ. 66) THEN
+                  IF (INTTYP .EQ. 92) THEN
                      CALL SYMSQR(SHLINT(1,ITYP),SOINT(1,IADR),IREPC,
      &                           ISYMOP,IORBA,IORBB,FACSYM,NBAST,IPRINT)
                   ELSE
@@ -6249,9 +6380,10 @@ C  /* Deck sdtra */
       END
 C  /* Deck npetra */
       SUBROUTINE NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,NPETBL,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,IPRINT)
 C
 C     K.Ruud, July 92
+C     Symmetry finally introduced Aug-01, kr
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -6262,33 +6394,77 @@ C
 #include <symmet.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
-     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
-     &          NPETBL(NUCIND,0:MAXREP)
+     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
 #include <onecom.h>
 #include <ibtfun.h>
       FULMAT = .TRUE.
       ITYP = 0
-      DO 100 IATOMC = 1, NATOMC
-         ICENTC = JCENTC(IATOMC)
-         ISYMC  = JSYMC (IATOMC)
-         FACTOR = FACINT(IATOMC)
-         DO 200 IREPC = 0, MAXREP
+      DO IREPC = 0, MAXREP
+         DO IATOMC = 1, NATOMC
+            ICENTC = JCENTC(IATOMC)
+            ISYMC  = JSYMC (IATOMC)
+            FACTOR = FACINT(IATOMC)
             IF (IBTAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
-               ITYP = ITYP + 1
                FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
-               IADR = NPETBL(ICENTC,IREPC)
+               IADR = IPTNUC(ICENTC,IREPC)
                IF (IREPC .EQ. 0) THEN
-                  CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
+                  CALL SYM1S(SHLINT(1,IATOMC),SOINT(1,IADR),ISYMOP,
      &                       MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                       FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
                ELSE
-                  CALL SYM1N(SHLINT(1,ITYP),SOINT(1,IADR),IREPC,
+                  CALL SYM1N(SHLINT(1,IATOMC),SOINT(1,IADR),IREPC,
      &                       ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                       FACSYM,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
                END IF
             END IF
- 200     CONTINUE
- 100  CONTINUE
+         END DO
+      END DO
+      RETURN
+      END
+C  /* Deck testra */
+      SUBROUTINE TESTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
+     &                  NELMNT,NOPTYP,ANTI,EXP1EL,DMAT,MULTA,MULTB,
+     &                  IPRINT)
+C
+C     K.Ruud, June 2001
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <symmet.h>
+      LOGICAL FULMAT, ANTI, EXP1EL
+      DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
+     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC)
+      DIMENSION DMAT(*)
+#include <onecom.h>
+#include <ibtfun.h>
+      FULMAT = .TRUE.
+      ITYP = 0
+      DO IREPC = 0, MAXREP
+         DO IATOMC = 1, NATOMC
+            ICENTC = JCENTC(IATOMC)
+            ISYMC  = JSYMC (IATOMC)
+            FACTOR = FACINT(IATOMC)
+            IF (IBTAND(MAXREP + 1,IREPC) .EQ. 0) THEN
+               FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
+               IF (EXP1EL) THEN
+                  IF (IREPC .EQ. 0) CALL SYM1EV(SHLINT(1,IATOMC),
+     &                                    DMAT,SOINT(1,IREPC+1),-FACSYM,
+     &                                    MULTA,MULTB,IPRINT)
+               ELSE IF (IREPC .EQ. 0) THEN
+                  CALL SYM1S(SHLINT(1,IATOMC),SOINT(1,IREPC + 1),ISYMOP,
+     &                       MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                       FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
+               ELSE
+                  CALL SYM1N(SHLINT(1,IATOMC),SOINT(1,IREPC + 1),IREPC,
+     &                       ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                       FACSYM,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+               END IF
+            END IF
+         END DO
+      END DO
       RETURN
       END
 C  /* Deck eftra */
@@ -6341,7 +6517,8 @@ C
       END
 C  /* Deck efgtra */
       SUBROUTINE EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,IFGTBL,EXP1EL,DMAT,MULTA,
+     &                  MULTB,IPRINT)
 #include <implicit.h>
 #include <dummy.h>
 #include <maxaqn.h>
@@ -6349,10 +6526,11 @@ C  /* Deck efgtra */
 #include <maxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
-      LOGICAL FULMAT, ANTI
+      LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IFGTBL(NUCIND,6,0:MAXREP)
+      DIMENSION DMAT(*)
 #include <onecom.h>
 #include <ibtfun.h>
 C
@@ -6373,7 +6551,11 @@ C
                   FACSYM = FACTOR*PT(IBTAND(ISYMXY,ISYMC))
      &                           *PT(IBTAND(IREPC ,ISYMC))
                   IADR = IFGTBL(ICENTC,IJ,IREPC)
-                  IF (IREPC .EQ. 0) THEN
+                  IF (EXP1EL) THEN
+                     IF (IREPC .EQ. 0) CALL SYM1EV(SHLINT(1,ITYP),DMAT,
+     &                                      SOINT(1,IADR),FACSYM,MULTA,
+     &                                      MULTB,IPRINT)
+                  ELSE IF (IREPC .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
@@ -6391,16 +6573,18 @@ C
        END
 C  /* Deck dsotra */
       SUBROUTINE DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
-     &                  KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,IPRINT)
+     &                  KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,EXP1EL,
+     &                  DMAT,MULTA,MULTB,IPRINT)
 #include <implicit.h>
 #include <dummy.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <nuclei.h>
-      LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
+      LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR,
+     &        EXP1EL
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
-     &          INTADR(*)
+     &          INTADR(*), DMAT(*)
 #include <onecom.h>
 #include <symmet.h>
 #include <ibtfun.h>
@@ -6476,10 +6660,16 @@ C
                           ITYP = ITYP0 + 3*(ICOORC - 1) + ICOORD
                           IF (INTTYP .EQ. 58) CALL DSCAL(KCKTAB,      
      &                         CHARGE(IATOMC),SHLINT(1,ITYP),1) 
-                          CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),
-     &                               ISYMOP,MULA,MULB,NHKTA,NHKTB,
-     &                               KHKTA,KHKTB,FACSYM,LDIAG,FULMAT,
-     &                               DUM,IDUM,IPRINT)
+                          IF (EXP1EL) THEN
+                             CALL SYM1EV(SHLINT(1,ITYP),DMAT,
+     &                                   SOINT(1,IADR),FACSYM,MULTA,
+     &                                   MULTB,IPRINT)
+                          ELSE
+                             CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),
+     &                                  ISYMOP,MULA,MULB,NHKTA,NHKTB,
+     &                                  KHKTA,KHKTB,FACSYM,LDIAG,FULMAT,
+     &                                  DUM,IDUM,IPRINT)
+                          END IF
                         END IF
   310                 CONTINUE
                     END IF

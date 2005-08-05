@@ -498,7 +498,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,
+     &               DUMMY,IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       END IF
@@ -507,7 +508,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       END IF
@@ -516,7 +518,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
      &               LABSYM)
@@ -561,7 +564,7 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'HDO    ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),IDUMMY,
-     &               .TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               .TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPR1IN)
          NLAB = 3 * NUCDEP
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       ENDIF

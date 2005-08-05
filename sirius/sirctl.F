@@ -87,8 +87,12 @@ C
 #include <infpri.h>
 #include <scbrhf.h>
 #include <gnrinf.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 C
-      LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP
+      LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
 C
 #include <sirbkd.h>
@@ -151,6 +155,15 @@ C     No optimal orbital trial vectors nor orbital absorption
 C     No active-active rotations
       FLAG(23) = .FALSE.
 C
+C     Do some solvent initializations
+C
+Cbm initialized PCMSV
+      PCMSV   = PCM
+      WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
+      IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
+      IF (PCM) CALL SOLVNT(WORK,LWORK)
+C
+C
 C ***************************************************
 C        *** set RHF parameters for RHF and MP2 ***
 C
@@ -158,7 +171,11 @@ C
          MCTYPE   = 0
          IF (DOCINO .OR. DOCI .OR. DOMC) THEN
             FLAG(25)=.FALSE.
-            IF (DOMP2) FLAG(16)=.FALSE. 
+            IF (DOMP2) THEN
+               FLAG(16)= .FALSE.
+               PCMSV   = PCM
+               PCM     = .FALSE.
+            END IF
          END IF
 C        ... do not write interface file if RHF or MP2 not final calc.
 C        ... no solvent if RHF followed by MP2 and CI or MC
@@ -561,6 +578,9 @@ C Recover MCSCF flags and settings
          DO 3 IFLAG = 1, NFLAG
             FLAG(IFLAG) = FLAGSV(IFLAG)
     3    CONTINUE
+         PCM    = PCMSV
+Cbm
+         WRITE(LUPRI,*)'rimetto PCM = PCMSV',PCM
          MCTYPE = MCTPSV
 C
          FLAG( 2) = .TRUE.
@@ -620,6 +640,7 @@ C
 C *** Output sections
 C
 C *** ORBITAL OUTPUT
+      IF (LUPROP .GE. 0) CALL GPCLOSE(LUPROP,'KEEP')
       IF (FLAG(5) .AND. NUMRUN .GT. 0) THEN
          CALL SIROUT(ICONV,WORK,LWORK)
          CALL FLSHFO(LUW4)
@@ -688,6 +709,7 @@ C
       IF (LUH2AC .GT. 0) CALL GPCLOSE(LUH2AC,'DELETE')
       IF (LUW4 .NE. LUPRI) CALL GPCLOSE(LUW4,'KEEP')
 C
+      IF (PCM) CALL GPCLOSE(LUPCMD,'KEEP')
       CALL QEXIT('SIRCTL')
       RETURN
 C *** end of SIRCTL.

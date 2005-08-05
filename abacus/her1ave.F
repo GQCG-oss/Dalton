@@ -1498,3 +1498,129 @@ C
       END IF
       RETURN
       END
+C  /* Deck avepcm */
+      SUBROUTINE AVEPCM(PCMINT,MAXCMP,DSHELL,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+      PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
+      PARAMETER (DP5 = 0.5 D00)
+C
+C Used from common blocks:
+C  ONECOM : ONECEN, ?
+C  CBISOL : NCNTCV
+C
+#include <onecom.h>
+#include <symmet.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include <taysol.h>
+C
+      LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
+      DIMENSION DSHELL(MAXCMP)
+      DIMENSION PCMINT(KCKTAB,7,NTSIRR)
+#include <ibtfun.h>
+C
+      NAX = 3*NCENTA - 2
+      NAY = 3*NCENTA - 1
+      NAZ = 3*NCENTA
+      NBX = 3*NCENTB - 2
+      NBY = 3*NCENTB - 1
+      NBZ = 3*NCENTB
+C
+C        Multiply densities and integrals
+C
+      DA0000 = D0
+      DA0X00 = D0
+      DA0Y00 = D0
+      DA0Z00 = D0
+      DA000X = D0
+      DA000Y = D0
+      DA000Z = D0
+      DO 300 ICOMP = 1, MAXCMP
+         DT0000 = D0
+         DT0X00 = D0
+         DT0Y00 = D0
+         DT0Z00 = D0
+         DT000X = D0
+         DT000Y = D0
+         DT000Z = D0
+         DO ISYM = 0, MAXREP
+            MTS = ISYM * NTSIRR
+            DO 200 ITS = 1, NTSIRR
+               QT = QSE(ITS) + QSN(ITS)
+               I = ITS + MTS
+               DT0000 = DT0000 + PCMINT(ICOMP,1,I)*QT
+               IF(.NOT. ONECEN) THEN
+                  DT0X00 = DT0X00 + PCMINT(ICOMP,2,I)*QT
+                  DT0Y00 = DT0Y00 + PCMINT(ICOMP,3,I)*QT
+                  DT0Z00 = DT0Z00 + PCMINT(ICOMP,4,I)*QT
+               END IF 
+               DT000X = DT000X + PCMINT(ICOMP,5,I)*QT
+               DT000Y = DT000Y + PCMINT(ICOMP,6,I)*QT
+               DT000Z = DT000Z + PCMINT(ICOMP,7,I)*QT
+ 200        CONTINUE
+         ENDDO
+C
+         DENS = DSHELL(ICOMP)
+C
+         DA0000 = DA0000 + DT0000 * DENS
+         IF(.NOT. ONECEN) THEN
+            DA0X00 = DA0X00 + DT0X00 * DENS
+            DA0Y00 = DA0Y00 + DT0Y00 * DENS
+            DA0Z00 = DA0Z00 + DT0Z00 * DENS
+            DA000X = DA000X + SIGNBX * DT000X * DENS
+            DA000Y = DA000Y + SIGNBY * DT000Y * DENS
+            DA000Z = DA000Z + SIGNBZ * DT000Z * DENS
+         ELSE
+            DA000X = DA000X + DT000X * DENS
+            DA000Y = DA000Y + DT000Y * DENS
+            DA000Z = DA000Z + DT000Z * DENS
+         END IF
+  300 CONTINUE
+      IAX  = IPTCNT(NAX,0,1)
+      IAY  = IPTCNT(NAY,0,1)
+      IAZ  = IPTCNT(NAZ,0,1)
+      IBX  = IPTCNT(NBX,0,1)
+      IBY  = IPTCNT(NBY,0,1)
+      IBZ  = IPTCNT(NBZ,0,1)
+      DOAX = IAX .NE. 0 .AND. .NOT. ONECEN
+      DOAY = IAY .NE. 0 .AND. .NOT. ONECEN
+      DOAZ = IAZ .NE. 0 .AND. .NOT. ONECEN
+      DOBX = IBX .NE. 0
+      DOBY = IBY .NE. 0
+      DOBZ = IBZ .NE. 0
+C
+C           Undifferentiated expectation value
+C           of SUM(pq) Dpq*((-2 Sum(lm) gl Tlm) Rlm) * (0.5)
+C                      DENS*sum(lm) (FCM(lm) * R(lm)) * DP5
+C
+      IF (IPRINT .GT. 4) THEN
+         WRITE (LUPRI,*) 'old ESOLTT  ',ESOLTT
+         WRITE (LUPRI,*) 'contribution',DP5*DA0000
+         WRITE (LUPRI,*) 'new ESOLTT  ',ESOLTT + DP5*DA0000
+      END IF
+      ESOLTT = ESOLTT + DA0000 * DP5
+C
+C           <u(A)/Rlm(C)/u(B)>
+C           Consider u(A) derivatives;
+C           SUM(pq) Dpq(tpq)a =
+C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)a):
+C
+      IF (DOAX) GSOLTT(IAX) = GSOLTT(IAX) + DA0X00
+      IF (DOAY) GSOLTT(IAY) = GSOLTT(IAY) + DA0Y00
+      IF (DOAZ) GSOLTT(IAZ) = GSOLTT(IAZ) + DA0Z00
+C
+C           <u(A)/Rlm(C)/u(B)>
+C           Consider u(B) derivatives;
+C           SUM(pq) Dpq(tpq)b =
+C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)b):
+C
+      IF (DOBX) GSOLTT(IBX) = GSOLTT(IBX) + DA000X
+      IF (DOBY) GSOLTT(IBY) = GSOLTT(IBY) + DA000Y
+      IF (DOBZ) GSOLTT(IBZ) = GSOLTT(IBZ) + DA000Z
+      RETURN
+      END

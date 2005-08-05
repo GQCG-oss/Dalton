@@ -21,7 +21,7 @@ F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abander.o    abandsym.o   herfckcon.o  abaop2.o\
 	abasop.o     abamolden.o  eckart.o     ecp.o\
 	abafmm.o     abanvib.o    aba2r12.o    aba2eth.o\
-	abactocd.o   abaqpg.o
+	abactocd.o   abaqpg.o     abapcm.o
 
 C_OBJS = linux_mem_allo.o
 
@@ -48,8 +48,3 @@ Makefile.depend depend: ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend
-her2el2.o: her2el2.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
-
-hersym.o: hersym.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 

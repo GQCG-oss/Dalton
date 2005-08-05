@@ -587,6 +587,7 @@ C
 #include <priunit.h>
 #include <maxorb.h>
 #include <infinp.h>
+#include <pcmlog.h>
 #include <inforb.h>
 #include <infdim.h>
 #include <inftap.h>
@@ -671,7 +672,7 @@ C FLAG(16) MEANS SOLVENT CALCULATION
 C
 
       CALL FLSHFO(LUPRI)
-      IF (FLAG(16)) THEN
+      IF (FLAG(16) .OR. PCM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

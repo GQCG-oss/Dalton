@@ -324,7 +324,7 @@ C
 #include <gnrinf.h>
 #include <dftcom.h>
 #include <ccsdinp.h>
-      LOGICAL MCSCF, DMP2, WAVTP
+      LOGICAL MCSCF, DMP2, WAVTP, DPCM
 C
 C     *** Workaround to many common variables with the same name ***
 C     *** MCSCF is set to DOMC (in infinp.h), and DMP2 is set    ***
@@ -333,6 +333,7 @@ C     *** WAVTP.                                                 ***
 C
       MCSCF = WAVTP('MCSCF')
       DMP2  = WAVTP('DOMP2')
+      DPCM  = WAVTP('DOPCM')
 !
 ! Sonia: CCSD(T) analytical exists!
 !
@@ -344,7 +345,8 @@ C
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
-     &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0))) THEN
+     &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
+     &        DPCM) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
@@ -368,6 +370,7 @@ C     *** MCSCF is set to DOMC (in infinp.h) through the logical ***
 C     *** function WAVMC.                                        ***
 C     **************************************************************
 #include <implicit.h>
+#include "pcmlog.h"
 #include <maxorb.h>
 #include <infinp.h>
       CHARACTER*5 STRING
@@ -376,6 +379,8 @@ C
          WAVTP = DOMC
       ELSE IF (STRING.EQ.'DOMP2') THEN
          WAVTP = DOMP2
+      ELSE IF (STRING .EQ. 'DOPCM') THEN
+         WAVTP = PCM
       ELSE
          CALL QUIT('Wrong string in WAVTP')
       END IF

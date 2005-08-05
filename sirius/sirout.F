@@ -86,6 +86,10 @@ C   INFDIM : LCINDX
 C
 #include <maxash.h>
 #include <maxorb.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 #include <priunit.h>
 #include <molde.h>
 #include <infinp.h>
@@ -317,6 +321,17 @@ csonia 04/10/95
          IF (INERSF) WRITE (LUW4,'(/5X,A)')
      *      'This is the final state in a calculation with'//
      *      ' inertial polarization.'
+      ELSE IF (PCM) THEN
+         IF (NONEQ) THEN
+            WRITE (LUW4,'(/5X,A,2(/10X,A,F12.6))')
+     *           'SOLVATION MODEL: polarizable continuum model (PCM),'
+     *           ,'dielectric constant =',EPSINF,
+     *           'static diel. const. =',EPS
+         ELSE
+            WRITE (LUW4,'(/5X,A,(/10X,A,F12.6))')
+     *           'SOLVATION MODEL: polarizable continuum model (PCM),'
+     *           ,'dielectric constant =',EPS
+         END IF
       ELSE
          ESOLT = D0
       END IF
@@ -330,7 +345,7 @@ C        CI calculation
       ELSE IF (FLAG(2) .AND. MCTYPE .GT. 0) THEN
 C        MCSCF calculation
          WRITE (LUW4,5020) ISTATE,EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
-         IF (FLAG(16)) WRITE (LUW4,5025) ESOLT
+         IF (FLAG(16) .OR. PCM) WRITE (LUW4,5025) ESOLT
          WRITE (LUW4,5030) GRDNRM
       ELSE IF (DORHF) THEN
          IF (.NOT.DODFT) THEN

@@ -1886,6 +1886,10 @@ C   INFTAP : LUIT2
 C   INFPRI : IPRI6
 C
 #include <maxorb.h>
+#include <mxcent.h>
+Clf#include <pcmdef.h>
+Clf#include <pcm.h>
+#include <pcmlog.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <infdim.h>
@@ -1906,7 +1910,7 @@ C        Find label CIDIAG2, for diagonal of CI Ham. matrix.
 C        Hessian diagonal is 2 * (CIDIAG2 - EACTVN).
          CALL MOLLAB(LABIT2(1),LUIT2,LUPRI)
          CALL READT(LUIT2,NCONF,DIAGL)
-         IF (FLAG(16)) THEN
+         IF (FLAG(16) .OR. PCM) THEN
 C        IF (SOLVNT) THEN
             MAXPHP = 0
 CPHPMAERKE  ... PHP not implemented for SOLVNT in this version.

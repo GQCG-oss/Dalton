@@ -67,6 +67,8 @@ C
       DIMENSION ZYM1(*),ZYM2(*),WRK(*),CMO(*)
       DIMENSION VEC1(KZYV1),VEC2(KZYV2),VECA(KZYVR)
       DIMENSION MJWOP(2,MAXWOP,8)
+      INTEGER   DBGFLG(10)
+      
 C
       NSIM = 1
       KFREE = 1
@@ -93,6 +95,11 @@ C
       CALL GTZYMT(NSIM,VEC1,KZYV1,ISYMV1,ZYM1,MJWOP)
       CALL GTZYMT(NSIM,VEC2,KZYV2,ISYMV2,ZYM2,MJWOP)
 C
+C DBGFLG initialization
+C                  1  2  3  4  5  6  7  8  9  10
+C     DATA DBGFLG/-1,-2,-3,-4,-5,-6,-7,-8,-9,-10/
+      DATA DBGFLG/ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10/
+C
 C     VECA is only available if E3TEST is set
 C
       VAL = DDOT(KZYVR,VECA,1,ETRS,1)
@@ -100,33 +107,39 @@ C
       CALL TCASE1(VECA, VEC1, VEC2,WRK(KTA),WRK(KTB),
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK(KFREE),LFREE,
-     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *              DBGFLG)
 C
       CALL TCASE2(VECA,VEC1,VEC2,WRK(KTC1),
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK(KFREE),LFREE,
-     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *              DBGFLG)
 C
       CALL TCASE2(VECA,VEC2,VEC1,WRK(KTC2),
      *              ETRS,XINDX,ZYM2,ZYM1,ISYRLM,
      *              DEN1,UDV,WRK(KFREE),LFREE,
-     *              KZYVR,KZYV2,KZYV1,IGRSYM,ISYMV2,ISYMV1,CMO,MJWOP)
+     *              KZYVR,KZYV2,KZYV1,IGRSYM,ISYMV2,ISYMV1,CMO,MJWOP,
+     *              DBGFLG)
 C
       CALL TCASE3(VECA,VEC1,VEC2,WRK(KTB),WRK(KTB1),WRK(KTC1),WRK(KTD1),
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK(KFREE),LFREE,
-     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *              DBGFLG)
 C
       CALL TCASE3(VECA,VEC2,VEC1,WRK(KTB),WRK(KTB2),WRK(KTC2),WRK(KTD2),
      *              ETRS,XINDX,ZYM2,ZYM1,ISYRLM,
      *              DEN1,UDV,WRK(KFREE),LFREE,
-     *              KZYVR,KZYV2,KZYV1,IGRSYM,ISYMV2,ISYMV1,CMO,MJWOP)
+     *              KZYVR,KZYV2,KZYV1,IGRSYM,ISYMV2,ISYMV1,CMO,MJWOP,
+     *              DBGFLG)
 C
       CALL TCASE4(VECA, VEC1, VEC2,WRK(KTA),WRK(KTB1),
      *              WRK(KTB2),WRK(KTC1),WRK(KTC2),WRK(KTE),
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK(KFREE),LFREE,
-     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *              DBGFLG)
 C
       IF (CRCAL .OR. E3TEST) THEN
          WRITE (LUPRI,'(A,F20.12)') 'Total contribution from E3SOL:',
@@ -137,7 +150,7 @@ C
       END
       SUBROUTINE TOPGET(ZYM1,ZYM2,ZYM3,IKLVL,OVLAP,ISYMDN,
      *                  ISYMV1,ISYMV2,ISYMV3,TOP,DEN1,EPS,NUCFLG,
-     *                  ISYRLM,CMO,WRK,LWRK,IPRLVL,PRSTR)
+     *                  ISYRLM,CMO,WRK,LWRK,IPRLVL,PRSTR,ADDFLG)
 C
 C Output:
 C
@@ -162,6 +175,7 @@ C
 #include <infrsp.h>
 C
       LOGICAL NUCFLG
+      INTEGER ADDFLG
       CHARACTER*(*)PRSTR
 C
       DIMENSION DEN1(NASHDI,NASHDI)
@@ -185,7 +199,13 @@ C
       CALL MEMGET('REAL',KTELM ,N2ORBX,WRK,KFREE,LWRK)
       CALL MEMGET('REAL',KTLMA ,N2ORBX,WRK,KFREE,LWRK)
       CALL MEMGET('REAL',KTLMB ,N2ORBX,WRK,KFREE,LWRK)
+Clf
+      CALL MEMGET('REAL',KTLMC ,N2ORBX,WRK,KFREE,LWRK)
+Clf
       CALL MEMGET('REAL',KFLVEC,NLMSOL,WRK,KFREE,LWRK)
+Clf      
+      CALL DZERO(WRK(KTLMC),N2ORBX)
+
 C
 C     Unpack symmetry blocked CMO
 C
@@ -256,7 +276,10 @@ C
             CALL MELONE(WRK(KTLMA),ISYM,DEN1,OVLAP,FACT,200,'TOPGET')
          END IF
          FACT = WRK((KFLVEC-1)+LM)*FACT
-         CALL DAXPY(N2ORBX,FACT,WRK(KTELM),1,TOP,1)
+         CALL DAXPY(N2ORBX,FACT,WRK(KTELM),1,WRK(KTLMC),1)
+         IF (ADDFLG.GT.0) THEN
+            CALL DAXPY(N2ORBX,FACT,WRK(KTELM),1,TOP,1)
+         END IF
 C
   500 CONTINUE
   520 CONTINUE
@@ -264,8 +287,8 @@ C
       CALL GPCLOSE(LUSOL,'KEEP')
 C
       IF (IPRRSP.GE.IPRLVL) THEN
-         WRITE(LUPRI,'(/3A,D20.14)') 'Norm of TOPGET in ', PRSTR,
-     *        ' : ',DNRM2(N2ORBX,TOP,1)
+         WRITE(LUPRI,'(/3A,2D22.14)') 'Norm of TOPGET in ', PRSTR,
+     *        ' : ',DNRM2(N2ORBX,wrk(ktlmc),1),DNRM2(N2ORBX,top,1)
       END IF
 C
       RETURN
@@ -274,7 +297,8 @@ C
       SUBROUTINE TCASE1(VECA, VEC1, VEC2,TA,TB,
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
-     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *     DBGFLG)
 #include <implicit.h>
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0, DM2 = -2.0D0 )
@@ -297,6 +321,7 @@ C
       DIMENSION TA(NORBT,NORBT),TB(NORBT,NORBT)
       DIMENSION VEC1(KZYV1),VEC2(KZYV2),VECA(KZYVR)
       DIMENSION MJWOP(2,MAXWOP,8)
+      INTEGER DBGFLG(10)
 C
       LOGICAL   TDM, LREF, NORHO2
 C
@@ -312,8 +337,9 @@ C TA = 2*sum(l,m) f(l) <0| TE(l,m) |0> TE(l,m)
 C
       CALL DZERO(TA,N2ORBX)
       CALL TOPGET(DUMMY,DUMMY,DUMMY,0,D1,1,
-     *            IDUM,IDUM,IDUM,TA,UDV,EPSOL,.FALSE.,
-     *            ISYRLM,CMO,WRK(KFREE),LFREE,100,'TA')
+     *            IDUMMY,IDUMMY,IDUMMY,TA,UDV,EPSOL,.FALSE.,
+     *            ISYRLM,CMO,WRK(KFREE),LFREE,100,'TA',
+     $     DBGFLG(1))
       CALL DSCAL(N2ORBX,D2,TA,1)
 C
 C TB = 2*sum(l,m) f(l)*( <0|TE(l,m)|0> - Tn(l,m) )*TE(l,m) 
@@ -325,12 +351,16 @@ C
       END IF
       CALL DZERO(TB,N2ORBX)
       CALL TOPGET(DUMMY,DUMMY,DUMMY,0,DUMMY,1,
-     *            IDUM,IDUM,IDUM,TB,DUMMY,EPS,.TRUE.,
-     *            ISYRLM,CMO,WRK(KFREE),LFREE,100,'TB')
+     *            IDUMMY,IDUMMY,IDUMMY,TB,DUMMY,EPS,.TRUE.,
+     *            ISYRLM,CMO,WRK(KFREE),LFREE,100,'TB',
+     $     DBGFLG(2))
+clf
       CALL DSCAL(N2ORBX,DM1,TB,1)
       CALL TOPGET(DUMMY,DUMMY,DUMMY,0,D1,1,
-     *            IDUM,IDUM,IDUM,TB,UDV,EPS,.FALSE.,
-     *            ISYRLM,CMO,WRK(KFREE),LFREE,100,'TB')
+     *            IDUMMY,IDUMMY,IDUMMY,TB,UDV,EPS,.FALSE.,
+     *            ISYRLM,CMO,WRK(KFREE),LFREE,100,'TB',
+     $     DBGFLG(3))
+clf
       CALL DSCAL(N2ORBX,D2,TB,1)
 C
       IF (MZCONF(ISYMV1) .EQ. 0 .OR. MZCONF(ISYMV2) .EQ. 0) RETURN
@@ -369,7 +399,8 @@ C
       SUBROUTINE TCASE2(VECA, VEC1, VEC2,TC1,
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
-     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *     DBGFLG)
 #include <implicit.h>
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0 )
@@ -392,6 +423,7 @@ C
       DIMENSION TC1(NORBT,NORBT)
       DIMENSION VEC1(KZYV1),VEC2(KZYV2),VECA(KZYVR)
       DIMENSION MJWOP(2,MAXWOP,8)
+      INTEGER DBGFLG(10)
 C
       LOGICAL   TDM, LREF, NORHO2
 C
@@ -412,8 +444,9 @@ C
       CALL DZERO(TC1,N2ORBX)
       IF (MZWOPT(ISYMV1).GT.0) THEN
          CALL TOPGET(ZYM1,DUMMY,DUMMY,1,D1,1,
-     *        ISYMV1,IDUM,IDUM,TC1,UDV,EPSOL,.FALSE.,
-     *        ISYRLM,CMO,WRK(KFREE),LFREE,100,'TC1 cont1')
+     *        ISYMV1,IDUMMY,IDUMMY,TC1,UDV,EPSOL,.FALSE.,
+     *        ISYRLM,CMO,WRK(KFREE),LFREE,100,'TC1 cont1',
+     $        DBGFLG(4))
       END IF
 C
 C ... + 2*sum(l,m) f(l) ( <01L| TE(l,m) |0> + <0| TE(l,m) |01R> ) TE(l,m) 
@@ -436,8 +469,9 @@ C
      *        NORHO2,XINDX,WRK,KFREE,LFREE,LREF)
 C
          CALL TOPGET(DUMMY,DUMMY,DUMMY,0,OVLAP,ISYMDN,
-     *        IDUM,IDUM,IDUM,TC1,DEN1,EPSOL,.FALSE.,
-     *        ISYRLM,CMO,WRK(KFREE),LFREE,100,'TC1 cont2')
+     *        IDUMMY,IDUMMY,IDUMMY,TC1,DEN1,EPSOL,.FALSE.,
+     *        ISYRLM,CMO,WRK(KFREE),LFREE,100,'TC1 cont2',
+     $        DBGFLG(5))
       END IF
 C
       CALL DSCAL(N2ORBX,D2,TC1,1)
@@ -465,7 +499,8 @@ C
       SUBROUTINE TCASE3(VECA, VEC1, VEC2,TB,TB1,TC1,TD1,
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
-     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *     DBGFLG)
 #include <implicit.h>
 C
       PARAMETER ( D1 = 1.0D0 )
@@ -489,6 +524,7 @@ C
       DIMENSION TC1(NORBT,NORBT),TD1(NORBT,NORBT)
       DIMENSION VEC1(KZYV1),VEC2(KZYV2),VECA(KZYVR)
       DIMENSION MJWOP(2,MAXWOP,8)
+      INTEGER DBGFLG(10)
 C
       LOGICAL   LCON, LORB
       LOGICAL   TDM, LREF, NORHO2
@@ -547,7 +583,7 @@ C
       LREF = .FALSE.
       NZYVEC = MZYVAR(ISYMV2)
       NZCVEC = MZCONF(ISYMV2)
-      CALL RSP1GR(NSIM,KZYVR,IDUM,JSPIN,IGRSYM,JSPIN,ISYMV2,ETRS,
+      CALL RSP1GR(NSIM,KZYVR,IDUMMY,JSPIN,IGRSYM,JSPIN,ISYMV2,ETRS,
      *            VEC2,NZYVEC,NZCVEC,OVLAP,ISYMDN,DEN1,TD1,
      *            XINDX,MJWOP,WRK(KFREE),LFREE,LORB,LCON,LREF)
 C
@@ -558,7 +594,8 @@ C
       SUBROUTINE TCASE4(VECA, VEC1, VEC2,TA,TB1,TB2,TC1,TC2,TE,
      *              ETRS,XINDX,ZYM1,ZYM2,ISYRLM,
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
-     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
+     *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
+     *     DBGFLG)
 #include <implicit.h>
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, DH = 0.5D0 )
@@ -583,6 +620,7 @@ C
       DIMENSION TC1(NORBT,NORBT),TC2(NORBT,NORBT)
       DIMENSION VEC1(KZYV1),VEC2(KZYV2),VECA(KZYVR)
       DIMENSION MJWOP(2,MAXWOP,8)
+      INTEGER DBGFLG(10)
 C
       LOGICAL   LCON, LORB
       LOGICAL   TDM, LREF, NORHO2
@@ -623,11 +661,13 @@ C     + sum(l,m) f(l) <0| TE(l,m)(k2,k1) |0> TE(l,m) + ...
 C
       IF (MZWOPT(ISYMV1).GT.0 .AND. MZWOPT(ISYMV2).GT.0) THEN
          CALL TOPGET(ZYM1,ZYM2,DUMMY,2,D1,1,
-     *               ISYMV1,ISYMV2,IDUM,TE,UDV,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont1a')
+     *               ISYMV1,ISYMV2,IDUMMY,TE,UDV,EPSOL,.FALSE.,
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont1a',
+     $        DBGFLG(6))
          CALL TOPGET(ZYM2,ZYM1,DUMMY,2,D1,1,
-     *               ISYMV2,ISYMV1,IDUM,TE,UDV,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont1b')
+     *               ISYMV2,ISYMV1,IDUMMY,TE,UDV,EPSOL,.FALSE.,
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont1b',
+     $        DBGFLG(7))
       END IF
 C
 C ... + 2*sum(l,m) f(l) ( <01L| TE(l,m)(k2) |0> + 
@@ -656,8 +696,9 @@ C
      *         NORHO2,XINDX,WRK,KFREE,LFREE,LREF)
 C
          CALL TOPGET(ZYM2,DUMMY,DUMMY,1,OVLAP,ISYMDN,
-     *               ISYMV2,IDUM,IDUM,TE,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont2a')
+     *               ISYMV2,IDUMMY,IDUMMY,TE,DEN1,EPSOL,.FALSE.,
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont2a',
+     $        DBGFLG(8))
       END IF
 C
 C ... + 2*sum(l,m) f(l) ( <02L| TE(l,m)(k1) |0> + 
@@ -683,8 +724,9 @@ C
      *         NORHO2,XINDX,WRK,KFREE,LFREE,LREF)
 C
          CALL TOPGET(ZYM1,DUMMY,DUMMY,1,OVLAP,ISYMDN,
-     *               ISYMV1,IDUM,IDUM,TE,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont2b')
+     *               ISYMV1,IDUMMY,IDUMMY,TE,DEN1,EPSOL,.FALSE.,
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont2b',
+     $        DBGFLG(9))
       END IF
 C     
 C ... + 2*sum(l,m) f(l) ( <01L| TE(l,m) |02R> + 
@@ -710,8 +752,9 @@ C
      *         XINDX,WRK,KFREE,LFREE,LREF)
 C
          CALL TOPGET(DUMMY,DUMMY,DUMMY,0,OVLAP,ISYMDN,
-     *               IDUM,IDUM,IDUM,TE,DEN1,EPSOL,.FALSE.,
-     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont3')
+     *               IDUMMY,IDUMMY,IDUMMY,TE,DEN1,EPSOL,.FALSE.,
+     *               ISYRLM,CMO,WRK(KFREE),LFREE,100,'TE cont3',
+     $        DBGFLG(10))
       END IF
 C
 C     / <0| [qj ,TE] |0> \
@@ -732,7 +775,7 @@ C
       LREF = .TRUE.
       NZYVEC = MZCONF(1)
       NZCVEC = MZCONF(1)
-      CALL RSP1GR(NSIM,KZYVR,IDUM,JSPIN,IGRSYM,JSPIN,ISYMV,ETRS,
+      CALL RSP1GR(NSIM,KZYVR,IDUMMY,JSPIN,IGRSYM,JSPIN,ISYMV,ETRS,
      *            WRK(KCREF),NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,TE,
      *            XINDX,MJWOP,WRK(KFREE),LFREE,LORB,LCON,LREF)
 C
@@ -931,7 +974,7 @@ C
       LREF = .TRUE.
       NZYVEC = NCREF
       NZCVEC = NCREF
-      CALL RSP1GR(NSIM,KZYVR,IDUM,JSPIN,IGRSYM,JSPIN,ISYMV,ETRS,
+      CALL RSP1GR(NSIM,KZYVR,IDUMMY,JSPIN,IGRSYM,JSPIN,ISYMV,ETRS,
      *            WRK(KCREF),NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,WRK(KTRES),
      *            XINDX,MJWOP,WRK(KFREE),LFREE,LORB,LCON,LREF)
 

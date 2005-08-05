@@ -38,6 +38,7 @@ C  /* Deck pr1int */
      &                  TRIANG,PROPRI,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
+#include <dummy.h>
 #include <maxmom.h>
 #include <maxorb.h>
 #include <maxaqn.h>
@@ -51,7 +52,8 @@ C
 #include <ccom.h>
 #include <r12int.h>
 C
-      LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2),resetcharges
+      LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2),resetcharges,
+     &        EXP1EL
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
       DIMENSION WORK(LWORK)
 C
@@ -60,6 +62,7 @@ C
       NCOMP    = 0
       TOFILE   = .TRUE.
       DOINT(1,1) = .TRUE.
+      EXP1EL = .FALSE.
       IF (WORD .EQ. 'HUCKEL') THEN
          DOINT(2,1) = .TRUE.
          DOINT(1,2) = .TRUE.
@@ -112,6 +115,7 @@ C
       LFREE = LWORK
       CALL MEMGET('REAL',KLBINT,MAXTYP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINTRP,MAXTYP,WORK,KFREE,LFREE)
+      IF (EXP1EL) CALL MEMGET('REAL',KEXPVL,MAXTYP,WORK,KFREE,LFREE)
       IF (WORD .EQ. 'ELFGRDC' .OR. WORD .EQ. 'ELFGRDS') THEN
          LINTAD = 9*NUCIND*(MAXREP + 1)
       ELSE
@@ -121,7 +125,7 @@ C
       CALL PR1IN1(WORK,KFREE,LFREE,WORK(KINTRP),WORK(KINTAD),
      &            WORK(KLBINT),WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
-     &            DOINT)
+     &            DOINT,WORK(KEXPVL),EXP1EL,DUMMY)
       CALL MEMREL('after PR1IN1 '//WORD,WORK,1,1,KFREE,LFREE)
       IF (WORD .EQ. 'HUCKEL') THEN
 C        ... restore normal values
@@ -143,7 +147,8 @@ C
 C  /* Deck pr1in1 */
       SUBROUTINE PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,WORD,
      &                  IORDER,NPQUAD,TRIANG,PROPRI,IPRINT,
-     &                  SINTMA,NCOMP,TOFILE,MTFORM,DOINT)
+     &                  SINTMA,NCOMP,TOFILE,MTFORM,DOINT,EXPVAL,EXP1EL,
+     &                  DENMAT)
 C
 C     Calculation of one-electron property integrals
 C
@@ -171,6 +176,8 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
+C     LOA contribution to PCM solvent - 1st/2nd order magnetic
+C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -181,15 +188,16 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 90)
+      PARAMETER (NTABLE = 94)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
-     &        TOFILE,DOINT(2,2)
+     &        TOFILE,DOINT(2,2),FNDLAB, EXP1EL
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
-     &          EFDIR*1
+     &          EFDIR*1, LABLOC*8
       CHARACTER*8  RTNLBL(2), TMPTXT
-      DIMENSION WORK(*), INTREP(*), INTADR(*), SINTMA(*)
+      DIMENSION WORK(*), INTREP(*), INTADR(*), SINTMA(*), EXPVAL(*),
+     &          DENMAT(*)
       CHARACTER*6 FILMME
 C
       DIMENSION QMTEST(NMMBA1)
@@ -205,6 +213,10 @@ C
 #include <codata.h>
 #include <orgcom.h>
 #include <gtensor.h>
+#include <chrnos.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 C
 cLig <> added RAGMO and RPSO
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
@@ -229,6 +241,7 @@ cLig <> added RAGMO and RPSO
      &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ',
      &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ',
      &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ',
+     &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ',
      &            'HUCKEL ', 'SQHD2OR'/
 C
       LOGICAL   RGAUGE, RCHRG
@@ -258,7 +271,8 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
      &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
-     &             79,80,81,82,83,84,85,86,87,88, 1,90), I
+     &             79,80,81,82,83,84,85,86,87,88,89,90,91,92, 1,
+     &             94), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2043,10 +2057,94 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
+C     Potential energy at the tesseraes
+C     ---------------------------------
+C
+ 89   CONTINUE
+Clf         PCM = .TRUE.
+         INTTYP = 75
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        ' Calculation of the potential energy at a point'
+         NOPTYP = MAXREP + 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL TESTYP(NOPTYP,INTREP,LABINT)
+         ANTI = .FALSE.
+      GOTO 200
+C
+C     London orbital contribution to tesserae potentials
+C     --------------------------------------------------
+C
+ 90   CONTINUE
+Clf         PCM = .TRUE.
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &  ' Calculation of London orbital contribution to PCM integrals'
+         INTTYP = 66
+ckr
+ckr      or should we temporarily use noptyp=3*max(nsym) = 3*8 = 24
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XPCMLON '
+         LABINT(2) = 'YPCMLON '
+         LABINT(3) = 'ZPCMLON '
+         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GO TO 200
+C
+C     Second order London contribution to tesserae potentials
+C     -------------------------------------------------------
+C
+ 91   CONTINUE
+Clf         PCM = .TRUE.
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &  ' Calculation of 2nd order London contribution to PCM integrals'
+         INTTYP = 67
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XXMAGPCM'
+         LABINT(2) = 'XYMAGPCM'
+         LABINT(3) = 'XZMAGPCM'
+         LABINT(4) = 'YYMAGPCM'
+         LABINT(5) = 'YZMAGPCM'
+         LABINT(6) = 'ZZMAGPCM'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GOTO 200
+C
+C     LOCAL FIELD Dipole moment (dipole length) integrals
+C     ---------------------------------------
+C
+ 92   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of local field dipole moment (length) integrals.'
+         INTTYP = 2
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XDIPLOC '
+         LABINT(2) = 'YDIPLOC '
+         LABINT(3) = 'ZDIPLOC '
+         INTREP(1) = ISYMAX(1,1)
+         INTREP(2) = ISYMAX(2,1)
+         INTREP(3) = ISYMAX(3,1)
+         ANTI = .FALSE.
+      GO TO 200
+C
 C     <d2/dx2>, <d2/dy2>, <d2/dz2> integrals for SQHD2OR /hjaaj Oct 2004
 C     -------------------------------------------------
 C
- 90   CONTINUE
+ 94   CONTINUE
          INTTYP = 98
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of second half-derivative overlap integrals.'
@@ -2057,7 +2155,6 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C
   200 CONTINUE
 C
 C     ***** Print section *****
@@ -2067,6 +2164,7 @@ C
          WRITE (LUPRI,'(A,L5)') ' TRASPH:', TRASPH
          WRITE (LUPRI,'(A,L5)') ' SQUARE:', SQUARE
          WRITE (LUPRI,'(A,L5)') ' SOLVNT:', SOLVNT
+         WRITE (LUPRI,'(/,A,L5)') ' PCM:', PCM
          WRITE (LUPRI,'(A,I5)') ' Number of operator components:',NOPTYP
          DO 300 I = 1, NOPTYP
             WRITE (LUPRI,'(2A)')   ' Molecule label: ', LABINT(I)
@@ -2095,14 +2193,22 @@ C
       CALL MEMCHK('PR1IN1 labels for '//WORD,WORK,1)
 C
 C     *******************************
+C     Check if too little was allocated for
+C     LABINT, INTYP, and INTREP:
+C     *******************************
+C
+      CALL MEMCHK('PR1IN1 labels for '//WORD,WORK,1)
+C
+C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C
-      CALL MEMGET('REAL',KSOINT,NOPTYP*NELMNT,WORK,KFREE,LFREE)
+      IF (.NOT. EXP1EL) CALL MEMGET('REAL',KSOINT,NOPTYP*NELMNT,
+     &                              WORK,KFREE,LFREE)
       CALL PR1DRV(WORK(KSOINT),NELMNT,WORK(KFREE),LFREE,
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
      &            IORDER,WORK(KATOM),INTADR,TRIANG,NATOM,SQUARE,
-     &            IPRINT,DOINT)
+     &            IPRINT,DOINT,EXPVAL,EXP1EL,DENMAT)
 C
       IF (FINDPT .AND. .NOT. NOPICH) THEN 
        IF (INTTYP .EQ. 2) THEN
@@ -2162,6 +2268,10 @@ C
                CALL DGETAP(NBAST,WORK(IADR),WORK(KFREE))
             ELSE
                CALL DGETSP(NBAST,WORK(IADR),WORK(KFREE))
+               DO I = 1, NBAST
+                  II = I*(I+1)/2 - 1
+                  WORK(KFREE + II) = 0.0D0
+               END DO
             END IF
             CALL DCOPY(NBAST*(NBAST + 1)/2,WORK(KFREE),1,WORK(IADRL),1)
             CALL DSCAL(NBAST*(NBAST + 1)/2,2.0D0,WORK(IADRL),1)
@@ -2180,6 +2290,49 @@ C
          CALL MEMGET('REAL',KDIFF,NELMNT,WORK,KFREE,LFREE)
          CALL DSOTST(WORK(KSOINT),WORK(KDIFF),NBAST,NELMNT,NOPTYP,
      &               LABINT,WORK(KATOM),NPQUAD,INTADR,IPRINT)
+      END IF
+C
+C     ******************************************************
+C     ***** Local field correction to dipole integrals *****
+C     ******************************************************
+C
+      IF (LABINT(1).EQ.'XDIPLOC') THEN
+         NLOCFL = NELMNT
+         CALL MEMGET('REAL',KLOCFL,NLOCFL,WORK,KFREE,LFREE)
+         WRITE(LUPRI,*) '----ADDING LOCAL FIELD CONTRIBUTION----'
+         LPCMBK = LUPCMD
+         IF (LUPCMD .LT. 0) THEN
+            CALL GPOPEN(LUPCMD,'PCMDATA','UNKNOWN',
+     &           'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
+         END IF
+         REWIND(LUPCMD)
+         DO I = 1,NOPTYP
+            CALL DZERO(WORK(KLOCFL),NELMNT)
+            LABLOC='LF-INT#'//CHRNOS(I)
+            IF(FNDLAB(LABLOC,LUPCMD)) THEN
+               CALL READT(LUPCMD,NELMNT,WORK(KLOCFL))
+            ELSE
+               WRITE (LUPRI,'(/A)') ' Integral label '//LABLOC//
+     $              ' not found on file PCMDATA'
+               CALL QUIT('Integral label not found in PR1IN1')
+            END IF
+            IF (EXP1EL) THEN
+               IF (.NOT. OUTFLD) THEN
+                  EXPVAL(I) = EXPVAL(I)
+     &                      + DDOT(NELMNT,DENMAT,1,WORK(KLOCFL),1)
+               ELSE
+                  EXPVAL(I) = DDOT(NELMNT,DENMAT,1,WORK(KLOCFL),1)
+               END IF
+            ELSE
+               ISTART = KSOINT+(I-1)*NELMNT
+               IF (.NOT.OUTFLD) THEN
+                  CALL DAXPY(NELMNT,1.0D0,WORK(KLOCFL),1,WORK(ISTART),1)
+               ELSE
+                  CALL DCOPY(NELMNT,WORK(KLOCFL),1,WORK(ISTART),1)
+               END IF
+            END IF
+         END DO
+         IF (LPCMBK .LT. 0) CALL GPCLOSE(LUPCMD,'KEEP')
       END IF
 C
 C     ***********************************
@@ -2403,7 +2556,8 @@ C
      &                       .OR.(INTTYP .EQ. 10).OR.(INTTYP .EQ. 11)
      &                       .OR.(INTTYP .EQ. 13).OR.(INTTYP .EQ. 17)
      &                       .OR.(INTTYP .EQ. 18).OR.(INTTYP .EQ. 42)
-     &                       .OR.(INTTYP .EQ. 20).OR.(INTTYP .EQ. 65))
+     &                       .OR.(INTTYP .EQ. 20).OR.(INTTYP .EQ. 65)
+     &                       .OR.(INTTYP .EQ. 66).OR.(INTTYP .EQ. 67))
      &                       THEN
             IADR = KSOINT
             DO 1010 ICOMP = 1, NCOMP
@@ -2440,6 +2594,7 @@ C
  1020       CONTINUE
          END IF
       END IF
+      NCOMP = NOPTYP
 C     Reset gauge origin and nuclear charges 
       IF (RCHRG)  CALL DCOPY(NUCIND,WORK(KCHRG),1,CHARGE,1)
       IF (RGAUGE) CALL DCOPY(3,GAGSAV,1,GAGORG,1)
@@ -3499,6 +3654,52 @@ C
       END IF
       RETURN
       END
+C  /* Deck testyp */
+      SUBROUTINE TESTYP(NOPTYP,INTREP,LABINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <pcmdef.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
+      DIMENSION INTREP(9*MXCENT)
+      CHARACTER LABINT(9*MXCENT)*8
+#include <orgcom.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <ibtfun.h>
+C
+C     Determine the bitstring that stabilize the tesserae
+C
+      LL   = 1
+      MULK = 0
+      DO 140 L = 1, MAXREP
+         DO M = 1, 3
+            IF (IBTAND(LL,ISYMAX(M,1)) .NE. 0) THEN
+               IF (ISYMAX(M,1) .EQ. 1) THEN
+                  IF (ABS(DIPORG(M)) .GE. 1.0D-6) GO TO 140
+               ELSE IF (ISYMAX(M,1) .EQ. 2) THEN
+                  IF (ABS(DIPORG(M)) .GE. 1.0D-6) GO TO 140
+               ELSE
+                  IF (ABS(DIPORG(M)) .GE. 1.0D-6) GO TO 140
+               END IF
+            END IF
+         END DO
+         MULK = MULK + LL
+ 140  LL = 2*LL
+C
+      ITYP = 0
+      DO IREP = 0, MAXREP
+         IF (IBTAND(MULK,IREP) .EQ. 0) THEN
+            ITYP = ITYP + 1
+            LABINT(ITYP) = 'J1-PCMIN'
+            INTREP(ITYP) = IREP
+         END IF
+      END DO
+      RETURN
+      END
 C  /* Deck efntyp */
       SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,INTTYP)
 #include <implicit.h>
@@ -4411,5 +4612,54 @@ C  /* Deck alftyp */
             END IF
  200     CONTINUE
  100  CONTINUE
+      RETURN
+      END
+C
+C  /* Deck wrtief */
+C
+      SUBROUTINE WRTIEF(AINT,LENGTH,LABEL,LUNIT)
+C
+C     Luca Frediani 29/09/2002
+C
+C     Purpose: Write IEF matrices on PCMDATA (Based on WRTPRO)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <pcmlog.h>
+#include <iratdef.h>
+Clf#include <dummy.h>
+Clf#include <inftap.h>
+Clf#include <gnrinf.h>
+C
+      CHARACTER*8 LABEL,RTNLBL(2)
+      DIMENSION AINT(LENGTH)
+C
+C     Decide whether we start to write at the beginning or the end of the
+C     file. Please note that we now require to be open when reaching this
+C     routine.
+C
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
+      IF (NEWMAT) THEN
+         NEWMAT = .FALSE.
+         REWIND LUNIT
+      ELSE
+         REWIND (LUNIT)
+         CALL FNDLAB('EOFLABEL',LUNIT)
+         BACKSPACE LUNIT
+      END IF
+C
+C     Write label
+C
+      CALL NEWLB2(LABEL,RTNLBL,LUNIT,LUPRI)
+C
+C     Write integrals
+C
+      LEN = MAX(4,LENGTH)
+      CALL WRITI(LUNIT,IRAT*LEN,AINT)
+C
+C     We add an extra label to signify EOF
+C
+      CALL NEWLB2('EOFLABEL',RTNLBL,LUNIT,LUPRI)
+C      
       RETURN
       END

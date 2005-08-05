@@ -1,0 +1,4 @@
+C
+C$Id: pcmnuclei.h,v 1.2 2005-08-05 08:42:56 ruud Exp $
+C
+      COMMON /PCMNUCLEI/ PCMCHG(MXCENT),PCMCORD(3,MXCENT),NPCMN

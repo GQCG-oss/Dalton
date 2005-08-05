@@ -109,6 +109,7 @@ C
 #include <huckel.h>
 #include <r12int.h>
 #include <nuclei.h>
+#include <pcmlog.h>
 C
       LOGICAL SET, FEXIST
 C
@@ -179,6 +180,9 @@ C        Open LUINTA for new integrals
       END IF
 C
       CALL HERINT(WORK,LWORK)
+      IF (PCM) THEN
+         CALL IEFMAT(WORK,LWORK)
+      END IF
 C
       IF (QM3) THEN
         DO 752 KI = 1, ISYTP
@@ -319,7 +323,7 @@ cLig <> added RANGMO and RPSO
      &             '.DPTPXP', '.NOPICH', '.OZ-KE ', '.PSO-KE', 
      &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
      &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
-     &             '.R12RGG', '.R12ERF', '.R12RRF', 'xxxxxxx'/
+     &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC'/
 C
 C     Check if input has been processed earlier.
 C
@@ -1049,6 +1053,8 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             CALL RRFFIT(ALPSTG,NTOGAM,GAMAB,GAMAX)
             GOTO 100
  228     CONTINUE
+            DIPLEN=.TRUE.
+            ONEPRP=.TRUE.
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
@@ -1955,6 +1961,7 @@ C
 #include <efield.h>
 #include <r12int.h>
 #include <drw2el.h>
+#include <pcmlog.h>
 C
       DIMENSION   RLMORI(3)
       CHARACTER*8 LABELT(3), LABELS(6)
@@ -2958,13 +2965,13 @@ C        Integrals written on LUONEL -
 C        Some previous information has been written in READIN
 C
          IF (.NOT. ONLYOV) THEN
-           IF (HAMILT) THEN
-             CALL TIMER('START ',TIMSTR,TIMEND)
-             CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                   .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.)
-             CALL TIMER('ONEDRV',TIMSTR,TIMEND)
-             CALL FLSHFO(LUPRI)
-           END IF
+            IF (HAMILT) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
+     &                     .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,PCM)
+               CALL TIMER('ONEDRV',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
          END IF
       END IF
 C

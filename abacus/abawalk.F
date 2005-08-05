@@ -44,7 +44,7 @@ C  /* Deck wlkinp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER ( NTABLE = 41, NWKTYP = 7, NSCTYP = 3,
+      PARAMETER ( NTABLE = 42, NWKTYP = 7, NSCTYP = 3,
      *            D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( TRSTI = 1.2D0, TRSTD = 0.7D0, TRSTDR = 0.5D0 )
 C
@@ -67,7 +67,7 @@ C
      &            '.FRAGME', '.IMAGE ', '.XXXXXX', '.IRC   ',
      &            '.MAXTRU', '.NOORTH', '.NATCON', '.VIBAVE',
      &            '.NORMAL', '.ECKART', '.TEMPER', '.NO CEN',
-     &            '.REUSE '/
+     &            '.REUSE ', '.ACCURA'/
       DATA WLKTYP /'Level-shifted Newton walk (mode following)',
      *             'Gradient-extremal walk                    ',
      *             'Dynamic walk                              ',
@@ -104,7 +104,7 @@ C
      &                      11,12,13,14,15,16,17,18,19,20,
      &                      21,22,23,24,25,26,27,28,29,30,
      &                      31,32,33,34,35,36,37,38,39,40,
-     &                      41), I
+     &                      41,42), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -276,6 +276,9 @@ Cpeo mass-scaled coordinates as default
  41            CONTINUE
                   REUSED = .TRUE.
                   GO TO 100
+ 42            CONTINUE
+                  ACCURT = .TRUE.
+                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -384,6 +387,8 @@ C
          END IF
          IF (REUSED) WRITE(LUPRI,'(A)') ' Property derivatives from '//
      &        'a previous geometry will be used'
+         IF (ACCURT) WRITE(LUPRI,'(A)') ' A five-point derivative '//
+     &        'scheme will be used for property derivatives'
       END IF
       IF (IMAGE) THEN
          WRITE (LUPRI,'(A)') ' Minimization of image surface '
@@ -1045,7 +1050,7 @@ C
          IF (IWKTYP .EQ. 6) THEN
             IF (VIBAVE .OR. NMODIF) THEN
                CALL WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,
-     &                     EVEC,IPOINT,NUMMOD,IPRWLK)
+     &                     EVEC,IPOINT,NUMMOD,ACCURT,IPRWLK)
             ELSE
                CALL WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,
      *                     IPOINT,IPRWLK)
@@ -1110,7 +1115,7 @@ C     Normal coordinate or Cartesian displacements
 C
             IF (VIBAVE .OR. NMODIF) THEN
                CALL WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,
-     &                     EVEC,IPOINT,NUMMOD,IPRWLK)
+     &                     EVEC,IPOINT,NUMMOD,ACCURT,IPRWLK)
             ELSE
                CALL WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,
      *                     IPOINT,IPRWLK)
@@ -3097,7 +3102,11 @@ C
          GEOCNV = WLKEND
       ELSE IF (IWKTYP .EQ. 6) THEN
          IF (VIBAVE .OR. NMODIF) THEN
-            WLKEND = IPOINT .EQ. 2*NUMMOD - 1
+            IF (ACCURT) THEN
+               WLKEND = IPOINT .EQ. 4*NUMMOD - 1
+            ELSE
+               WLKEND = IPOINT .EQ. 2*NUMMOD - 1
+            END IF
          ELSE
             WLKEND = IPOINT .EQ. 2*NCART - 1
          END IF
@@ -3335,7 +3344,7 @@ C
       END
 C  /* Deck wlknci */
       SUBROUTINE WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,EVEC,
-     *                  IPOINT,NUMMOD,IPRINT)
+     *                  IPOINT,NUMMOD,ACCURT,IPRINT)
 C
 C     Atomic displacements along normal modes for numerical differentiation
 C
@@ -3346,6 +3355,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
       PARAMETER (D2 = 2.0D0)
+      LOGICAL ACCURT
 C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
 C
@@ -3361,15 +3371,31 @@ C
       DO 100 IATOM = 1, NUCIND
          DO 110 ICOOR = 1, 3
             ICCOOR = 3*(IATOM - 1) + ICOOR
-            IF (IPOINT .EQ. 0) THEN
-               STPCAR(ICCOOR) = EVEC(ICCOOR,1)*DISPNC
-            ELSE IF (IPOINT .EQ. 2*NUMMOD) THEN
-               STPCAR(ICCOOR) = EVEC(ICCOOR,NUMMOD)*DISPNC
-            ELSE IF (MOD(IPOINT,2) .EQ. 1) THEN
-               STPCAR(ICCOOR) = -D2*EVEC(ICCOOR,(IPOINT + 1)/2)*DISPNC
+            IF (ACCURT) THEN
+               IF (IPOINT .EQ. 0) THEN
+                  STPCAR(ICCOOR) = EVEC(ICCOOR,1)*DISPNC
+               ELSE IF (IPOINT .EQ. 4*NUMMOD) THEN
+                  STPCAR(ICCOOR) = EVEC(ICCOOR,NUMMOD)*DISPNC
+               ELSE IF ((MOD(IPOINT,4) .EQ. 1) .OR. 
+     &                  (MOD(IPOINT,4) .EQ. 3)) THEN
+                  STPCAR(ICCOOR) = EVEC(ICCOOR,(IPOINT+3)/4)*DISPNC
+               ELSE IF (MOD(IPOINT,4) .EQ. 2) THEN
+                  STPCAR(ICCOOR) = -D4*EVEC(ICCOOR,(IPOINT+3)/4)*DISPNC
+               ELSE
+                  STPCAR(ICCOOR) = EVEC(ICCOOR,(IPOINT + 3)/4)*DISPNC
+     &                           + EVEC(ICCOOR,(IPOINT + 4)/4)*DISPNC
+               END IF
             ELSE
-               STPCAR(ICCOOR) = EVEC(ICCOOR,(IPOINT + 1)/2)*DISPNC
-     &                        + EVEC(ICCOOR,(IPOINT + 2)/2)*DISPNC
+               IF (IPOINT .EQ. 0) THEN
+                  STPCAR(ICCOOR) = EVEC(ICCOOR,1)*DISPNC
+               ELSE IF (IPOINT .EQ. 2*NUMMOD) THEN
+                  STPCAR(ICCOOR) = EVEC(ICCOOR,NUMMOD)*DISPNC
+               ELSE IF (MOD(IPOINT,2) .EQ. 1) THEN
+                  STPCAR(ICCOOR) = -D2*EVEC(ICCOOR,(IPOINT+1)/2)*DISPNC
+               ELSE
+                  STPCAR(ICCOOR) = EVEC(ICCOOR,(IPOINT + 1)/2)*DISPNC
+     &                           + EVEC(ICCOOR,(IPOINT + 2)/2)*DISPNC
+               END IF
             END IF
  110     CONTINUE
  100  CONTINUE
@@ -3794,7 +3820,7 @@ C
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *6.5796838999D15)
 C
-      LOGICAL FINAL
+      LOGICAL FINAL, ODD
 #include <cbilnr.h>
       DIMENSION GRDCAR(NCRTOT), HESCAR(NCART,NCART), GRAD0(NCRTOT),
      &          HESS0(NCART,NCART), HESSF(NCART,NCART), DIPM0(3), 
@@ -3892,232 +3918,96 @@ C
 C     Should we transform the normal coordinates to an Eckart frame?
 C
       ELSE
-         FINAL = IPOINT .EQ. 2*NUMMOD
-         I = (IPOINT+1)/2
-         IF (MOD(IPOINT,2) .EQ. 1) THEN
-            HESSF(I,1) = (ERGMOL - ESTART)/DISPLC**2
-            IF (.NOT. REUSED) THEN
-            DO ICOOR = 1, 3
-               DIPMF(ICOOR,I) = (DIP0(ICOOR)-DIPM0(ICOOR))/DISPLC**2
-            END DO
-            IF (MAGSUS) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     SUSTF(ICOOR,JCOOR,I) = (-SUSTOT(ICOOR,JCOOR) -
-     &                    SUSTO0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (MOLGFA) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     GFACF(ICOOR,JCOOR,I) = (GTRAN(ICOOR,JCOOR) -
-     &                    GFAC0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (QUADRU) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     QUADF(ICOOR,JCOOR,I) = (QUADT(ICOOR,JCOOR) -
-     &                    QUAD0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (SHIELD) THEN
-               DO IATOM = 1, NUCDEP
-                  DO ICOOR = 1, 3
-                     DO JCOOR = 1, 3
-                        SIGMAF(ICOOR,JCOOR,IATOM,I) = 
-     &                        (TMAT(ICOOR,JCOOR,IATOM) -
-     &                         SIGMA0(ICOOR,JCOOR,IATOM))/DISPLC**2
-                     END DO
-                  END DO
-               END DO
-            END IF
-            IF (SPINRO) THEN
-               DO IATOM = 1, NUCDEP
-                  DO ICOOR = 1, 3
-                     DO JCOOR = 1, 3
-                        SRCF(ICOOR,JCOOR,IATOM,I) = 
-     &                       (GTRANT(ICOOR,JCOOR,IATOM) -
-     &                       SRC0(ICOOR,JCOOR,IATOM))/DISPLC**2
-                     END DO
-                  END DO
-               END DO
-            END IF
-            IF (POLAR) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     POLARF(ICOOR,JCOOR,I) = (POLARS(ICOOR,JCOOR)
-     &                    - POLAR0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (ALFA) THEN
-               DO IFRQR = 1, NFRVAL
-                  DO ICOOR = 1, 3
-                     DO JCOOR = 1, 3
-                        ALFAF(ICOOR,JCOOR,IFRQR,I) = 
-     &                       (POLDD(1,ICOOR,JCOOR,IFRQR)
-     &                       - ALFA0(ICOOR,JCOOR,IFRQR))/DISPLC**2
-                     END DO
-                  END DO
-               END DO
-            END IF
-            IF (NQCC) THEN
-               DO IATOM = 1, NUCDEP
-                  DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     EFGF(ICOOR,JCOOR,IATOM,I) = 
-     &                    (ELNQC(ICOOR,JCOOR,IATOM)
-     &                    - EFG0(ICOOR,JCOOR,IATOM))/DISPLC**2
-                  END DO
-                  END DO
-               END DO
-            END IF
-            IF (SPNSPN) THEN
-               DO ICOOR = 1, 3*NUCDEP
-                  DO JCOOR = 1, 3*NUCDEP
-                     SSJF(ICOOR,JCOOR,I) = (SPNTOT(ICOOR,JCOOR)
-     &                    - SSJ0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (OPTROT) THEN
-               DO IFRQ = 1, NFRVAL
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     ROANLF(ICOOR,JCOOR,IFRQ,I) = 
-     &                      (ROANL(1,ICOOR,JCOOR,IFRQ)
-     &                    - ROANL0(ICOOR,JCOOR,IFRQ))/DISPLC**2
-                     ROALOF(ICOOR,JCOOR,IFRQ,I) = 
-     &                      (ROALO(1,ICOOR,JCOOR,IFRQ)
-     &                     - ROALO0(ICOOR,JCOOR,IFRQ))/DISPLC**2
-                  END DO
-               END DO
-               END DO
-            END IF
+         IF (ACCURT) THEN
+            FINAL = IPOINT .EQ. 4*NUMMOD
+            I = (IPOINT+3)/4
+         ELSE
+            FINAL = IPOINT .EQ. 2*NUMMOD
+            I = (IPOINT+1)/2
+         END IF
+         IF (ACCURT) THEN
+            IWHERE = MOD(IPOINT,4)
+            IF (IWHERE .EQ. 1) THEN
+                  HESSF(I,1) = (D4/D3)*(ERGMOL - ESTART)/(DISPLC**2)
+            ELSE IF (IWHERE .EQ. 2 .OR. IWHERE .EQ. 3) THEN
+                  HESSF(I,1) = HESSF(I,1)
+     &                 - (ERGMOL - ESTART)/(D12*(DISPLC**2))
+            ELSE
+                  HESSF(I,1) = HESSF(I,1) + 
+     &                         (D4/D3)*(ERGMOL - ESTART)/(DISPLC**2)
             END IF
          ELSE
-            HESSF(I,1) = HESSF(I,1)
-     &                     + (ERGMOL - ESTART)/DISPLC**2
-            IF (.NOT. REUSED) THEN
-            DO ICOOR = 1, 3
-               DIPMF(ICOOR,I) = DIPMF(ICOOR,I)
-     &                        + (DIP0(ICOOR)-DIPM0(ICOOR))/DISPLC**2
-            END DO
-            IF (MAGSUS) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     SUSTF(ICOOR,JCOOR,I) = SUSTF(ICOOR,JCOOR,I)
-     &                    + (-SUSTOT(ICOOR,JCOOR) 
-     &                    - SUSTO0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (MOLGFA) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     GFACF(ICOOR,JCOOR,I) = GFACF(ICOOR,JCOOR,I) 
-     &                    + (GTRAN(ICOOR,JCOOR) 
-     &                    -  GFAC0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (QUADRU) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     QUADF(ICOOR,JCOOR,I) = QUADF(ICOOR,JCOOR,I) 
-     &                    + (QUADT(ICOOR,JCOOR) 
-     &                    -  QUAD0(ICOOR,JCOOR))/DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (SHIELD) THEN
-               DO IATOM = 1, NUCDEP
-                  DO ICOOR = 1, 3
-                     DO JCOOR = 1, 3
-                        SIGMAF(ICOOR,JCOOR,IATOM,I) = 
-     &                       SIGMAF(ICOOR,JCOOR,IATOM,I) 
-     &                    + (TMAT(ICOOR,JCOOR,IATOM) 
-     &                    -  SIGMA0(ICOOR,JCOOR,IATOM))/DISPLC**2
-                     END DO
-                  END DO
-               END DO
-            END IF
-            IF (SPINRO) THEN
-               DO IATOM = 1, NUCDEP
-                  DO ICOOR = 1, 3
-                     DO JCOOR = 1, 3
-                        SRCF(ICOOR,JCOOR,IATOM,I) = 
-     &                       SRCF(ICOOR,JCOOR,IATOM,I) 
-     &                    + (GTRANT(ICOOR,JCOOR,IATOM) 
-     &                    -  SRC0(ICOOR,JCOOR,IATOM))/DISPLC**2
-                     END DO
-                  END DO
-               END DO
-            END IF
-            IF (POLAR) THEN
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     POLARF(ICOOR,JCOOR,I) = POLARF(ICOOR,JCOOR,I) +
-     &                    (POLARS(ICOOR,JCOOR) - POLAR0(ICOOR,JCOOR))/
-     &                     DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (ALFA) THEN
-               DO IFRQR = 1, NFRVAL
-                  DO ICOOR = 1, 3
-                     DO JCOOR = 1, 3
-                        ALFAF(ICOOR,JCOOR,IFRQR,I) = 
-     &                       ALFAF(ICOOR,JCOOR,IFRQR,I) +
-     &                       (POLDD(1,ICOOR,JCOOR,IFRQR) 
-     &                       - ALFA0(ICOOR,JCOOR,IFRQR))/DISPLC**2
-                     END DO
-                  END DO
-               END DO
-            END IF
-            IF (NQCC) THEN
-               DO IATOM = 1, NUCDEP
-                  DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     EFGF(ICOOR,JCOOR,IATOM,I) = 
-     &                    EFGF(ICOOR,JCOOR,IATOM,I) +
-     &                    (ELNQC(ICOOR,JCOOR,IATOM) 
-     &                    - EFG0(ICOOR,JCOOR,IATOM))/DISPLC**2
-                  END DO
-                  END DO
-               END DO
-            END IF
-            IF (SPNSPN) THEN
-               DO ICOOR = 1, 3*NUCDEP
-                  DO JCOOR = 1, 3*NUCDEP
-                     SSJF(ICOOR,JCOOR,I) = SSJF(ICOOR,JCOOR,I) +
-     &                    (SPNTOT(ICOOR,JCOOR) - SSJ0(ICOOR,JCOOR))
-     &                    /DISPLC**2
-                  END DO
-               END DO
-            END IF
-            IF (OPTROT) THEN
-               DO IFRQ = 1, NFRVAL
-               DO ICOOR = 1, 3
-                  DO JCOOR = 1, 3
-                     ROANLF(ICOOR,JCOOR,IFRQ,I) = 
-     &                    ROANLF(ICOOR,JCOOR,IFRQ,I) +
-     &                    (ROANL(1,ICOOR,JCOOR,IFRQ)
-     &                    - ROANL0(ICOOR,JCOOR,IFRQ))/DISPLC**2
-                     ROALOF(ICOOR,JCOOR,IFRQ,I) =
-     &                    ROALOF(ICOOR,JCOOR,IFRQ,I) +
-     &                    (ROALO(1,ICOOR,JCOOR,IFRQ)
-     &                    - ROALO0(ICOOR,JCOOR,IFRQ))/DISPLC**2
-                  END DO
-               END DO
-               END DO
-            END IF
+            IF (MOD(IPOINT,2) .EQ. 1) THEN
+               HESSF(I,1) = (ERGMOL - ESTART)/DISPLC**2
+               ODD = .TRUE.
+            ELSE
+               HESSF(I,1) = HESSF(I,1)
+     &                    + (ERGMOL - ESTART)/DISPLC**2
+               ODD = .FALSE.
             END IF
          END IF
+         IF (.NOT. REUSED) THEN
+            IF (ACCURT) THEN
+               CALL FEMDIF(DIPM0,DIP0,DIPMF(1,I),DISPLC,IWHERE,3)
+               IF (MAGSUS) THEN
+                  CALL DSCAL(9,DM1,SUSTOT,1)
+                  CALL FEMDIF(SUSTO0,SUSTOT,SUSTF(1,1,I),
+     &                        DISPLC,IWHERE,9)
+               END IF
+               IF (MOLGFA) CALL FEMDIF(GFAC0,GTRAN,GFACF(1,1,I),
+     &                              DISPLC,IWHERE,9)
+               IF (QUADRU) CALL FEMDIF(QUAD0,QUADT,QUADF(1,1,I),
+     &                              DISPLC,IWHERE,9)
+               IF (SHIELD) CALL FEMDIF(SIGMA0,TMAT,SIGMAF(1,1,1,I),
+     &                              DISPLC,IWHERE,9*NUCDEP)
+               IF (SPINRO) CALL FEMDIF(SRC0,GTRANT,SRCF(1,1,1,I),
+     &                              DISPLC,IWHERE,9*NUCDEP)
+               IF (POLAR) CALL FEMDIF(POLAR0,POLARS,POLARF(1,1,I),
+     &                             DISPLC,IWHERE,9)
+               IF (ALFA) CALL FEMDIF(ALFA0,POLDD,ALFAF(1,1,1,I),
+     &                            DISPLC,IWHERE,NFRVAL*9)
+               IF (NQCC) CALL FEMDIF(EFG0,ELNQC,EFGF(1,1,1,I),
+     &                            DISPLC,IWHERE,NUCDEP*9)
+               IF (SPNSPN) CALL FEMDIF(SSJ0,SPNTOT,SSJF(1,1,I),
+     &                              DISPLC,IWHERE,NUCDEP*NUCDEP*9)
+               IF (OPTROT) THEN
+                  CALL FEMDIF(ROANL0,ROANL,ROANLF(1,1,1,I),
+     &                        DISPLC,IWHERE,NFRVAL*9)
+                  CALL FEMDIF(ROALO0,ROALO,ROALOF(1,1,1,I),
+     &                        DISPLC,IWHERE,NFRVAL*9)
+               END IF
+            ELSE
+               CALL TREDIF(DIPM0,DIP0,DIPMF(1,I),DISPLC,ODD,3)
+               IF (MAGSUS) THEN
+                  CALL DSCAL(9,DM1,SUSTOT,1)
+                  CALL TREDIF(SUSTO0,SUSTOT,SUSTF(1,1,I),
+     &                        DISPLC,ODD,9)
+               END IF
+               IF (MOLGFA) CALL TREDIF(GFAC0,GTRAN,GFACF(1,1,I),
+     &                                 DISPLC,ODD,9)
+               IF (QUADRU) CALL TREDIF(QUAD0,QUADT,QUADF(1,1,I),
+     &                                 DISPLC,ODD,9)
+               IF (SHIELD) CALL TREDIF(SIGMA0,TMAT,SIGMAF(1,1,1,I),
+     &                                 DISPLC,ODD,9*NUCDEP)
+               IF (SPINRO) CALL TREDIF(SRC0,GTRANT,SRCF(1,1,1,I),
+     &                                 DISPLC,ODD,9*NUCDEP)
+               IF (POLAR) CALL TREDIF(POLAR0,POLARS,POLARF(1,1,I),
+     &                                DISPLC,ODD,9)
+               IF (ALFA) CALL TREDIF(ALFA0,POLDD,ALFAF(1,1,1,I),
+     &                               DISPLC,ODD,NFRVAL*9)
+               IF (NQCC) CALL TREDIF(EFG0,ELNQC,EFGF(1,1,1,I),
+     &                               DISPLC,ODD,NUCDEP*9)
+               IF (SPNSPN) CALL TREDIF(SSJ0,SPNTOT,SSJF(1,1,I),
+     &                                 DISPLC,ODD,NUCDEP*NUCDEP*9)
+               IF (OPTROT) THEN
+                  CALL TREDIF(ROANL0,ROANL,ROANLF(1,1,1,I),
+     &                        DISPLC,ODD,NFRVAL*9)
+                  CALL TREDIF(ROALO0,ROALO,ROALOF(1,1,1,I),
+     &                        DISPLC,ODD,NFRVAL*9)
+               END IF
+            END IF
+         END IF
+
       END IF
 C
 C     ***** Print *****
@@ -4334,7 +4224,7 @@ C
             WRITE (LUPRI,'(5X,A4,5X,3(5X,A1,11X))') 'Mode','X',
      &           'Y','Z'
             DO IMOD = 1, NUMMOD
-               WRITE (LUPRI,'(/6X,I2,6X,F12.6,5X,F12.6,5X,F12.6)')
+               WRITE (LUPRI,'(6X,I2,6X,F12.6,5X,F12.6,5X,F12.6)')
      &              IMOD,(DIPMF(ICOOR,IMOD),ICOOR = 1, 3)
             END DO
             IF (MAGSUS) THEN
@@ -7566,7 +7456,8 @@ C
       CALL DCOPY(KMAX,COR1(1,2),1,CENT(1,2,2),1)
       CALL DCOPY(KMAX,COR1(1,3),1,CENT(1,3,2),1)
       CALL GET1IN(S11AO,'SQOVLAP',NCOMP,WORK,LWORK,LABEL,IREP,DUMMY,
-     &            IDUMMY,.FALSE.,NPATOM,.FALSE.,INTPRI)
+     &            IDUMMY,.FALSE.,NPATOM,.FALSE.,DUMMY,.FALSE.,DUMMY,
+     &            INTPRI)
       CALL DCOPY(KMAX,COR1(1,1),1,CENT(1,1,1),1)
       CALL DCOPY(KMAX,COR1(1,2),1,CENT(1,2,1),1)
       CALL DCOPY(KMAX,COR1(1,3),1,CENT(1,3,1),1)
@@ -7597,7 +7488,8 @@ C
       CALL DCOPY(KMAX,COR2(1,2),1,CENT(1,2,2),1)
       CALL DCOPY(KMAX,COR2(1,3),1,CENT(1,3,2),1)
       CALL GET1IN(S22AO,'SQOVLAP',NCOMP,WORK,LWORK,LABEL,IREP,DUMMY,
-     &            IDUMMY,.FALSE.,NPATOM,.FALSE.,INTPRI)
+     &            IDUMMY,.FALSE.,NPATOM,.FALSE.,DUMMY,.FALSE.,DUMMY,
+     &            INTPRI)
       CALL DCOPY(KMAX,COR1(1,1),1,CENT(1,1,1),1)
       CALL DCOPY(KMAX,COR1(1,2),1,CENT(1,2,1),1)
       CALL DCOPY(KMAX,COR1(1,3),1,CENT(1,3,1),1)
@@ -7629,7 +7521,8 @@ C
          CALL DCOPY(KMAX,COR2(1,2),1,CENT(1,2,2),1)
          CALL DCOPY(KMAX,COR2(1,3),1,CENT(1,3,2),1)
          CALL GET1IN(S12AO,'SQOVLAP',NCOMP,WORK,LWORK,LABEL,IREP,DUMMY,
-     &               IDUMMY,.FALSE.,NPATOM,.FALSE.,INTPRI)
+     &               IDUMMY,.FALSE.,NPATOM,.FALSE.,DUMMY,.FALSE.,DUMMY,
+     &               INTPRI)
          CALL DCOPY(KMAX,COR1(1,1),1,CENT(1,1,1),1)
          CALL DCOPY(KMAX,COR1(1,2),1,CENT(1,2,1),1)
          CALL DCOPY(KMAX,COR1(1,3),1,CENT(1,3,1),1)
@@ -7871,5 +7764,52 @@ C
          TMAT(IPTCOL(ISCOOR),NTR + IPRJ) = TMT
   200 CONTINUE
 C
+      RETURN
+      END
+C /* Deck tredif */
+      SUBROUTINE TREDIF(PROP0,PROP,PROPD,DISPLC,ODD,IDIM)
+C
+C     Three-point numerical differentiation
+C     K.Ruud, June 2001
+C
+#include <implicit.h>
+      LOGICAL ODD
+      DIMENSION PROP0(IDIM), PROP(IDIM), PROPD(IDIM)
+C
+      IF (ODD) THEN
+         DO I = 1, IDIM
+            PROPD(I) = (PROP(I)-PROP0(I))/DISPLC**2
+         END DO
+      ELSE
+         DO I = 1, IDIM
+            PROPD(I) = PROPD(I) + (PROP(I)-PROP0(I))/DISPLC**2
+         END DO
+      END IF
+      RETURN
+      END
+C /* Deck femdif */
+      SUBROUTINE FEMDIF(PROP0,PROP,PROPD,DISPLC,IPOINT,IDIM)
+C
+C     Five-point numerical differentiation
+C     K.Ruud, June 2001
+C
+#include <implicit.h>
+      PARAMETER (D3 = 3.0D0, D4 = 4.0D0, D12 = D3*D4)
+      DIMENSION PROP0(IDIM), PROP(IDIM), PROPD(IDIM)
+C
+      IF (IPOINT .EQ. 1) THEN
+         DO I = 1, IDIM
+            PROPD(I) = (D4/D3)*(PROP(I)-PROP0(I))/(DISPLC**2)
+         END DO
+      ELSE IF (IPOINT .EQ. 2 .OR. IPOINT .EQ. 3) THEN
+         DO I = 1, IDIM
+            PROPD(I) = PROPD(I)
+     &               - (PROP(I)-PROP0(I))/(D12*(DISPLC**2))
+         END DO
+      ELSE
+         DO I = 1, IDIM
+            PROPD(I) = PROPD(I) + (D4/D3)*(PROP(I)-PROP0(I))/(DISPLC**2)
+         END DO
+      END IF
       RETURN
       END

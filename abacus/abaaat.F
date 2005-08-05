@@ -415,7 +415,8 @@ C
       NCOMP  = 0
       NPATOM = 0
       CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK,LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &            .FALSE.,DUMMY,INTPRI)
 C
       DO 300 X = 1, 3
          ISCOOR = 3*NUCDEP + IPTAX(X,2)
@@ -441,7 +442,8 @@ C
       NCOMP  = 0
       NPATOM = 0
       CALL GET1IN(DUMMY,'HDO    ',NCOMP,WORK,LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
+     &            DUMMY,.FALSE.,DUMMY,INTPRI)
 C
       DO 200 ISCOOR = 1, 3*NUCDEP
          KSYMP = -1
@@ -596,7 +598,8 @@ C
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'HDOBR  ',NCOMP,WORK(KLAST),LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &            .FALSE.,DUMMY,INTPRI)
 C
          DO 100 IREP = 0, MAXREP
          DO 110 IATOM = 1, NUCIND
@@ -630,7 +633,8 @@ C
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'S1MAGR ',NCOMP,WORK(KLAST),LWORK,LABINT,
-     &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &               .FALSE.,DUMMY,INTPRI)
          DO 200 X = 1, 3
             KSYMP = -1
             CALL PRPGET(LABINT(X),CMO,DBR,KSYMP,ASM,
@@ -646,7 +650,8 @@ C
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'SQHDOL ',NCOMP,WORK(KLAST),LWORK,LABINT,
-     &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &               .FALSE.,DUMMY,INTPRI)
          DO 300 IREP = 0, MAXREP
             DO 310 IATOM = 1, NUCIND
 C           IF (DOATOM(IATOM)) THEN
@@ -809,7 +814,8 @@ C
       NCOMP  = 0
       NPATOM = 0
       CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK,LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &            .FALSE.,DUMMY,INTPRI)
 C
       DO 100 B = 1, 3
          KSYMP = -1
@@ -825,7 +831,8 @@ C
       NCOMP  = 0
       NPATOM = 0
       CALL GET1IN(DUMMY,'HDO    ',NCOMP,WORK,LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &            .FALSE.,DUMMY,INTPRI)
       DO 200 R = 1, NCART
         KSYMP = -1
         CALL PRPGET(LABINT(R),CMO,DR(1,1,R),KSYMP,ASM,WORK,LWORK,IPRINT)
@@ -838,7 +845,8 @@ C
       NCOMP  = 0
       NPATOM = 0
       CALL GET1IN(DUMMY,'HDOBR  ',NCOMP,WORK,LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &            .FALSE.,DUMMY,INTPRI)
       DO 300 R = 1, NCART
       DO 300 B = 1, 3
          ICOOR = 3*(R - 1) + B
@@ -854,7 +862,8 @@ C
       NCOMP  = 0
       NPATOM = 0
       CALL GET1IN(DUMMY,'S1MAGL ',NCOMP,WORK,LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &            .FALSE.,DUMMY,INTPRI)
       DO 400 B = 1, 3
          KSYMP = -1
          CALL PRPGET(LABINT(B),CMO,S1MAGL(1,1,B),KSYMP,ASM,
@@ -868,7 +877,8 @@ C
       NCOMP  = 0
       NPATOM = 0
       CALL GET1IN(DUMMY,'SQHDOL ',NCOMP,WORK,LWORK,LABINT,
-     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,INTPRI)
+     &            INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,
+     &            .FALSE.,DUMMY,INTPRI)
       DO 500 R = 1, NCART
          KSYMP = -1
          CALL PRPGET(LABINT(R),CMO,SQHDOL(1,1,R),KSYMP,ASM,

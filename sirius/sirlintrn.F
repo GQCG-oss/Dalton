@@ -121,6 +121,10 @@ C CBGETDIS : DISTYP,IADINT,IADH2,IADH2X
 C   INFTIM : NCALLS,TIMCPU,TIMWAL  ! IDTIM is index for these
 C
 #include <maxorb.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
 #include <priunit.h>
 #include <infinp.h>
 #include <infvar.h>
@@ -421,7 +425,15 @@ C
          CALL SOLLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KWSOL),LWSOL)
-C
+         CALL GETTIM(T5,W5)
+      ELSEIF (PCM) THEN
+         MXSIM = MAX(NOSIM,NCSIM)
+         KVTEX = KWSOL
+         KWPCM = KVTEX + MXSIM*NTS
+         LWPCM = LWSOL - MXSIM*NTS
+         CALL PCMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+     &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
+     &               WRK(KVTEX),WRK(KWPCM),LWPCM)
          CALL GETTIM(T5,W5)
       ELSE
          T5 = T4

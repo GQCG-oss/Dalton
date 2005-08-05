@@ -55,7 +55,7 @@ C
      &            '.XXXXXX', '.HESFIL', '.HESPUN'/
       DATA ISOTPD/0/, ISOTHD/0/, DOINT/.FALSE./
 C
-      NEWDEF = (WORD .EQ. '*VIBANA')
+      NEWDEF = ((WORD .EQ. '*VIBANA').OR.(WORD.EQ.'*HARMON'))
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD

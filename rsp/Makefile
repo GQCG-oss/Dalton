@@ -56,7 +56,9 @@ F_OBJS = \
 	rspvec.o	\
 	absorp.o	\
 	rspzfs.o	\
-	x2expl.o
+	x2expl.o        \
+	rspief1.o       \
+        rspief.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

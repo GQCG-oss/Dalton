@@ -83,7 +83,7 @@ c /* deck cclr_fa */
 #include <ccsdinp.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(17)
       PARAMETER (MSGDBG='[debug] CCLR_FA> ')
 #if defined (SYS_CRAY)
       REAL ONE, TWO, THREE 

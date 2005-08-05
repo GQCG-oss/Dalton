@@ -90,7 +90,7 @@ C
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                   DINTSKP,RELCAL)
+     &                   DINTSKP,RELCAL)         
       ELSE
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
@@ -981,6 +981,12 @@ C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL DFTHED_SLAVE(WORK,MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.10) THEN
              CALL DFT_SUSCEP_SLAVE(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 11 .OR. IPRTYP .EQ. 13) THEN
+            CALL J1INTS(WORK,MWORK,IPRTYP,IPRINT)
+         ELSE IF (IPRTYP .EQ. 12) THEN
+            CALL J1XS(WORK,MWORK,IPRINT)
+         ELSE IF (IPRTYP .EQ. 14) THEN
+            CALL J2XS(WORK,MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODSTR) ERROR on slave',MYTID,

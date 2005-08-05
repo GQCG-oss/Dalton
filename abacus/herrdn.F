@@ -3253,6 +3253,7 @@ C
 #include <shells.h>
 #include <symmet.h>
 #include <aosotr.h>
+#include <pcmlog.h>
 C
 C
 #include <ibtfun.h>
@@ -3398,6 +3399,12 @@ C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
 C
       CALL SYMNCO(LWORK,WORK)
+C
+C LF Generate coordinates of cavity spheres if need be
+C
+      IF(PCM) THEN
+         CALL SPHGEN
+      END IF
 C
       RETURN
 C
@@ -4125,6 +4132,7 @@ C
 C     This subroutine prints information about atomic coordinates
 C
 C     tuh 081188 - Bush elected
+Clf       031104 - Bush Jr. re-elected
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -4140,6 +4148,7 @@ C
       DIMENSION WORK(LWORK)
 C
 #include <nuclei.h>
+Clf#include <pcmnuclei.h>
 #include <symmet.h>
 #include <pgroup.h>
 #include <cbirea.h>
@@ -4165,12 +4174,14 @@ C
       ICRX = 1
       ICRY = 2
       ICRZ = 3
+      IPCMN=0
       NATOMS = 0
       KMASS  = NCOOR + 1
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
+         IPCMN=IPCMN+1
             IF (IPREAD .GT. 0) THEN
                WRITE (LUPRI,'(/I4,3X,A,5X,A,3X,F15.10)')
      *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
@@ -4192,6 +4203,7 @@ C--------------------------
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  IPCMN=IPCMN+1
                   JATOM  = JATOM + 1
                   WORK(KMASS + NATOMS) = 
      *                 DISOTP(IZATOM(ICENT),1,'MASS')
@@ -4216,6 +4228,7 @@ C--------------------------
   200       CONTINUE
          END IF
   100 CONTINUE
+      NPCMN=IPCMN
 C
 C     ********************************
 C     ***** Symmetry Coordinates *****

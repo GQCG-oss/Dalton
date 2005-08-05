@@ -65,6 +65,7 @@ C
 #include <esg.h>
 #include <taymol.h>
 #include <abainf.h>
+#include <pcmlog.h>
 
       CALL HEADER('Excited state gradient calculation',-1)
       CALL GETTIM(ESGTIM_0,DUMTIM)        
@@ -126,7 +127,7 @@ C
 
       CALL ONEDRV(
      &        WRK(KWRK2),LWRK2,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
-     &        NODV,DIFDIP,.FALSE.,HFONLY,NCLONE)
+     &        NODV,DIFDIP,.FALSE.,HFONLY,NCLONE,PCM)
 
       CALL GETTIM(ESGTIM_3,DUMTIM)        
 

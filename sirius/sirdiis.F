@@ -315,6 +315,7 @@ C
 #include <priunit.h>
 #include <molde.h>
 #include <infinp.h>
+#include <pcmlog.h>
 #include <inforb.h>
 #include <infvar.h>
 #include <infopt.h>
@@ -349,7 +350,7 @@ C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
 C
       IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
-      IF (FLAG(16)) THEN
+      IF (FLAG(16) .OR. PCM) THEN
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A/A)')
      &      ' Iter      Total energy       Solvation energy    '//
@@ -461,15 +462,8 @@ C       keep vectors until GRDNRM fallen a factor 100
       ITNOCC = 0
       NEWOCC = 0
       NOSCIL = 0
-Cef begin
-Ckr      IF (AOSAVE) THEN
-C	IF (.TRUE.) THEN
-Ckr         DODIFDEN = .FALSE.
-Ckr      ELSE
-         DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
-     &         .AND..NOT. HSROHF
-Ckr      END IF
-Cef end
+      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
+     &           .AND. .NOT. PCM .AND. .NOT. HSROHF
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
@@ -653,6 +647,13 @@ C
      &                  WRK(KFREE),LFREE,IPRDIS)
             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
             CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+         ELSE IF (PCM) THEN
+            CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
+            CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
+     &                  DUMMY,.FALSE.,ESOLT,WRK(KFREE),
+     &                  LFREE,IPRDIS)
+            CALL DAXPY(NNBAST,-D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+            CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          END IF
 C
          EMCDIF = EMCSCF
@@ -687,7 +688,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
-            IF (FLAG(16)) THEN
+            IF (FLAG(16) .OR. PCM) THEN
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I5,F20.12,F20.12,1P,D15.5,D12.2)')
      &               ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
@@ -1174,12 +1175,12 @@ Chj from siropt.F, should be modified
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** RHF orbital energy analysis ***'
-         IF (FLAG(16))
+         IF (FLAG(16) .OR. PCM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** RHF orbital energy analysis ***'
-            IF (FLAG(16))
+            IF (FLAG(16) .OR. PCM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF

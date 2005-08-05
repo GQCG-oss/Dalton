@@ -1107,6 +1107,8 @@ C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
 #include "implicit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
       LOGICAL NEWDEF, ISLINR
       PARAMETER ( NTABLE = 50 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1126,6 +1128,8 @@ C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
+#include "pcm.h"
+#include "pcmlog.h"
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ','.DIPVEL',
      *            '.DIPVLX', '.DIPVLY', '.DIPVLZ', '.DIPMAG','.DIPMGX',
@@ -1459,6 +1463,25 @@ c              selected excited states
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
+         IF (PCM .AND. .NOT.NEQRSP) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
+     *      ,PCM
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Dielectric constant                            : EPSOL  ='
+     *      ,EPS
+         END IF
+         IF (PCM .AND. NEQRSP) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Non-equilibrium PCM solvent model requested    : INERSI ='
+     *      ,PCM
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Static dielectric constant                     : EPSTAT ='
+     *      ,EPS
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Optical dielectric constant                    : EPSOL  ='
+     *      ,EPSINF
+         END IF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
      *       ,IPRPP
@@ -1529,23 +1552,26 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
 #include "inflr.h"
 #include "infpri.h"
 #include "infhso.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
 C
       LOGICAL NEWDEF, SPNDEF, NXTLAB
-      PARAMETER ( NTABLE = 41 )
+      PARAMETER ( NTABLE = 45 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND
 C
@@ -1558,8 +1584,9 @@ C
      *            '.MAX IT', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE', '.PV PSO', '.PV SO1', '.PV SO2',
-     *            '.FERMI ', '.SPIN-D'/
+     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
+     *            '.FERMI ', '.SPIN-D',
+     *            '.DIPLF ', '.DIPLFX', '.DIPLFY', '.DIPLFZ'/
 C
 C
 C
@@ -1579,7 +1606,8 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
-     *                      28,29,30,31,32,33,34,35,36,37,38,39,40,41),I
+     *                      28,29,30,31,32,33,34,35,36,37,38,39,40,41,
+     *                      42,43,44,45),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1817,12 +1845,25 @@ C
      &                     'UNFORMATTED',IDUMMY,.FALSE.)
  198           CONTINUE
                IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
-                  print *, 'labfnd',labfnd
                   IF (LABFND(1:3) .EQ. 'SD ')
      &                 LLROP(INDPRP(LABFND)) = .TRUE.
                   GOTO 198
                END IF
                CALL GPCLOSE(LUPROP,'KEEP')
+               GO TO 100
+ 42            CONTINUE
+                  LLROP( INDPRP('XDIPLOC ')) = .TRUE.
+                  LLROP( INDPRP('YDIPLOC ')) = .TRUE.
+                  LLROP( INDPRP('ZDIPLOC ')) = .TRUE.
+               GO TO 100
+ 43            CONTINUE
+                  LLROP( INDPRP('XDIPLOC ')) = .TRUE.
+               GO TO 100
+ 44            CONTINUE
+                  LLROP( INDPRP('YDIPLOC ')) = .TRUE.
+               GO TO 100
+ 45            CONTINUE
+                  LLROP( INDPRP('ZDIPLOC ')) = .TRUE.
                GO TO 100
 C
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -1865,6 +1906,25 @@ C
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
+         END IF
+         IF (PCM .AND. .NOT.NEQRSP) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
+     *      ,PCM
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Dielectric constant                            : EPSOL  ='
+     *      ,EPS
+         END IF
+         IF (PCM .AND. NEQRSP) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Non-equilibrium PCM solvent model requested    : INERSI ='
+     *      ,PCM
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Static dielectric constant                     : EPSTAT ='
+     *      ,EPS
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Optical dielectric constant                    : EPSOL  ='
+     *      ,EPSINF
          END IF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRLR  ='
@@ -2651,6 +2711,9 @@ C               which otherwise would cause an infinite loop here /hjaaj June 20
             ELSE IF (LABEL(2:7) .EQ. 'ANGECC') THEN
                TRIMAT = .TRUE.
                PRPWRD = 'ANGECC'
+            ELSE IF (LABEL(2:7) .EQ. 'DIPLOC') THEN
+               TRIMAT = .TRUE.
+               PRPWRD = 'DIPLOC '
             ELSE
                WRITE(LUPRI,'(/3A)') '@ RSPSYM ERROR: PROPERTY LABEL "',
      &            LABEL,'" NOT FOUND ON AOPROPER'
@@ -2673,7 +2736,7 @@ C
             IF (LWRK1.LT.0) CALL ERRWRK('RSPSYM',KLAST,LWRK)
             CALL GET1IN(DUMMY,PRPWRD,NCOMP,WRK(KLAST),LWRK1,LABINT,
      &                  WRK(KINTRP),WRK(KINTAD),IDUMMY,TOFILE,NPATOM,
-     &                  TRIMAT,IPRRSP - 120)
+     &                  TRIMAT,DUMMY,.FALSE.,DUMMY,IPRRSP - 120)
             CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
 C
@@ -3571,6 +3634,7 @@ C
 #include "maxorb.h"
 #include "priunit.h"
 #include "infinp.h"
+#include "pcmlog.h"
 #include "inftap.h"
 #include "infopt.h"
 #include "infpri.h"
@@ -3786,6 +3850,12 @@ C
         DO 20 I = 1,NNORBT
            FC(I) = FC(I) - WRK(I)
  20     CONTINUE
+      ELSEIF(PCM) THEN
+        CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
+        CALL READT (LUSIFC,NNORBT,WRK)
+        DO I = 1,NNORBT
+           FC(I) = FC(I) + WRK(I)
+        ENDDO
       END IF
 C
       IF (SOPPA) THEN

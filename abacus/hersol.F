@@ -1650,24 +1650,15 @@ C
       LM = 0
       ICOUNT = 0
       DOALL  = .TRUE.
-      IF (NCOMP .EQ. 3) THEN
-         CALL DZERO(DERMAT,NCOMP*N2BASX)
-      ELSE
-         CALL DZERO(DERMAT,NCOMP*NNBASX)
-      END IF
+      CALL DZERO(DERMAT,NCOMP*N2BASX)
 C
       DO 100 L = 0, LSOLMX
          MCOMP = (L + 1)*(L + 2)*NCOMP/2
 C
 C     Construct differentiated integrals in spherical harmonic basis
 C
-         IF (NCOMP .EQ. 3) THEN
-            CALL GET1PR(AOMAT1,'LONSOL1',MCOMP,'TRIANG',.TRUE.,WORK,
+         CALL GET1PR(AOMAT1,'LONSOL1',MCOMP,'TRIANG',.TRUE.,WORK,
      &               LWORK,L,INTPRI)
-         ELSE
-            CALL GET1PR(AOMAT1,'LONSOL2',MCOMP,'TRIANG',.TRUE.,WORK,
-     &               LWORK,L,INTPRI)
-         END IF
          CALL SPHCOM(L,TRAMAT,2*L + 1,(L + 1)*(L + 2)/2,MORDER,MINTEG,
      &               WORK,LWORK,IPRINT)
          CALL DZERO(TEMPMA(1,1,-LCAVMX),NCOMP*(2*LCAVMX + 1)*NNBASX)
@@ -1718,49 +1709,25 @@ C
  190        CONTINUE
  200     CONTINUE
  100  CONTINUE
-      IF (NCOMP .EQ. 3) THEN
 C
 C        We need to square things away, in particular certain matrices
 C
-         CALL DCOPY(NCOMP*NNBASX,DERMAT,1,TEMPMA(1,1,-LCAVMX),1)
-         DO 300 ICOMP = 1, NCOMP
-            IOFFS = 1 + (ICOMP - 1)*N2BASX
-            CALL DAPTGE(NBAST,TEMPMA(1,ICOMP,-LCAVMX),DERMAT(IOFFS))
- 300     CONTINUE
-         IF (IPRINT .GT. 5) THEN
-           CALL AROUND('Solvent contributions to gradient in MAGSO1')
-           IOFF = 1
-           WRITE (LUPRI,'(2X,A)') 'X coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Y coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Z coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         IF (IPRINT .GT. 5) THEN
-            CALL AROUND('Solvent contributions to hessian in MAGSO1')
-            IOFF = 1
-            WRITE (LUPRI,'(2X,A)') 'XX coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'ZZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-         END IF
+      CALL DCOPY(NCOMP*NNBASX,DERMAT,1,TEMPMA(1,1,-LCAVMX),1)
+      DO 300 ICOMP = 1, NCOMP
+         IOFFS = 1 + (ICOMP - 1)*N2BASX
+         CALL DAPTGE(NBAST,TEMPMA(1,ICOMP,-LCAVMX),DERMAT(IOFFS))
+ 300  CONTINUE
+      IF (IPRINT .GT. 5) THEN
+         CALL AROUND('Solvent contributions to gradient in MAGSO1')
+         IOFF = 1
+         WRITE (LUPRI,'(2X,A)') 'X coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Y coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Z coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 C
 C     We ought to be more or less finished now
@@ -1784,7 +1751,7 @@ C
 #include <iratdef.h>
 #include <priunit.h>
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
-      CHARACTER*2 LBL3(3), LBL6(6), LABXY
+      CHARACTER*2 LBL3(3), LABXY
       CHARACTER*8 LABINT(9*MXCENT), LABEL, RTNLBL(2)
       DIMENSION GLM(LMTOT), TLM(LMTOT), INTREP(*), INTADR(*),
      &          DERMAT(*), 
@@ -1804,7 +1771,6 @@ C
 #include <chrnos.h>
 C
       DATA (LBL3(I), I = 1, 3) /'X ','Y ', 'Z '/
-      DATA (LBL6(I), I = 1, 6) /'XX','XY','XZ','YY','YZ','ZZ'/
 C
 C     Construct GLM, TLM, and density matrix
 C
@@ -1852,11 +1818,7 @@ C
       READ (LUSOL)
       LM = 0
       DOALL = .FALSE.
-      IF (NCOMP .EQ. 3) THEN
-         CALL DZERO(DERMAT,NCOMP*N2BASX)
-      ELSE
-         CALL DZERO(DERMAT,NCOMP*NNBASX)
-      END IF
+      CALL DZERO(DERMAT,NCOMP*N2BASX)
 C
 C     Calculate all integrals, order by order, component by component
 C
@@ -1868,13 +1830,9 @@ C
 C     Construct differentiated integrals in spherical harmonic basis
 C
             KPATOM = 0
-            IF (NCOMP .EQ. 3) THEN
-               CALL GET1IN(DUMMY,'LONSOL1',0,WORK,LWORK,LABINT,INTREP,
-     &                     INTADR,L,.TRUE.,KPATOM,.TRUE.,INTPRI)
-            ELSE
-               CALL GET1IN(DUMMY,'LONSOL2',0,WORK,LWORK,LABINT,INTREP,
-     &                     INTADR,L,.TRUE.,KPATOM,.TRUE.,INTPRI)
-            END IF
+            CALL GET1IN(DUMMY,'LONSOL1',0,WORK,LWORK,LABINT,INTREP,
+     &                  INTADR,L,.TRUE.,KPATOM,.TRUE.,DUMMY,.FALSE.,
+     &                  DUMMY,INTPRI)
  110     CONTINUE 
  100  CONTINUE 
 C
@@ -1889,11 +1847,7 @@ C
       KEND   = KSTART + (LCAVMX + 1)*(LCAVMX + 2)*NNBASX/2
       IF (KEND .GT. LWORK) CALL STOPIT('MAGSO2',' ',KEND,LWORK)
       DO 140 ICOOR = 1, NCOMP
-         IF (NCOMP .EQ. 3) THEN
-            LABXY = LBL3(ICOOR)
-         ELSE
-            LABXY = LBL6(ICOOR)
-         END IF
+         LABXY = LBL3(ICOOR)
          ICOUNT = 0
          DO 120 L = 0, LSOLMX
             CALL DZERO(WORK(KTMP),(2*LCAVMX + 1)*NNBASX)
@@ -1963,66 +1917,149 @@ C
  200        CONTINUE
  120     CONTINUE 
  140  CONTINUE 
-      IF (NCOMP .EQ. 3) THEN
 C
 C        We need to square things away, in particular certain matrices
 C
-         CALL DCOPY(NCOMP*NNBASX,DERMAT,1,WORK(1),1)
-         DO 300 ICOMP = 1, NCOMP
-            IOFFD = 1 + (ICOMP - 1)*NNBASX
-            IOFFS = 1 + (ICOMP - 1)*N2BASX
-            CALL DAPTGE(NBAST,WORK(IOFFD),DERMAT(IOFFS))
- 300     CONTINUE
-         IF (IPRINT .GT. 5) THEN
-           CALL AROUND('Solvent contributions to gradient in MAGSO2')
-           IOFF = 1
-           WRITE (LUPRI,'(2X,A)') 'X coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Y coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-           IOFF = IOFF + N2BASX
-           WRITE (LUPRI,'(2X,A)') 'Z coordinate'
-           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-         END IF
-      ELSE
-         IF (IPRINT .GT. 5) THEN
-            CALL AROUND('Solvent contributions to hessian in MAGSO2')
-            IOFF = 1
-            WRITE (LUPRI,'(2X,A)') 'XX coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'XZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YY coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'YZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-            IOFF = IOFF + NNBASX
-            WRITE (LUPRI,'(2X,A)') 'ZZ coordinate'
-            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
-         END IF
+      CALL DCOPY(NCOMP*NNBASX,DERMAT,1,WORK(1),1)
+      DO 300 ICOMP = 1, NCOMP
+         IOFFD = 1 + (ICOMP - 1)*NNBASX
+         IOFFS = 1 + (ICOMP - 1)*N2BASX
+         CALL DAPTGE(NBAST,WORK(IOFFD),DERMAT(IOFFS))
+ 300  CONTINUE
+      IF (IPRINT .GT. 5) THEN
+         CALL AROUND('Solvent contributions to gradient in MAGSO2')
+         IOFF = 1
+         WRITE (LUPRI,'(2X,A)') 'X coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Y coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         IOFF = IOFF + N2BASX
+         WRITE (LUPRI,'(2X,A)') 'Z coordinate'
+         CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 C
 C     We ought to be more or less finished now. Change EOF label in order
 C     to overwrite the integrals
 C
       CALL GPCLOSE(LUSOL,'KEEP')
-      IF (NCOMP .EQ. 3) THEN
-         LABEL = 'X 000000'
-      ELSE
-         LABEL = 'XX000000'
-      END IF
+      LABEL = 'X 000000'
       REWIND (LUPROP)
       CALL FNDLAB(LABEL,LUPROP)
       BACKSPACE LUPROP
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
       CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
       CALL GPCLOSE(LUPROP,'KEEP')
+      RETURN
+      END
+C  /* Deck magsolexp */
+      SUBROUTINE MAGSOLEXP(EXPVAL,EXPSPH,EXPCAR,INTREP,INTADR,LABINT,
+     &                     GLM,TLM,TRAMAT,INTPRI,DENMAT,WORK,LWORK)
+C
+C     K.Ruud, July-05
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <iratdef.h>
+      PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
+      LOGICAL EXP1VL
+      DIMENSION GLM(LMTOT), TLM(LMTOT),
+     &          EXPVAL(6), EXPSPH(6,-LCAVMX:LCAVMX),
+     &          EXPCAR(6,(LCAVMX + 1)*(LCAVMX + 2)/2),
+     &          INTREP(*), INTADR(*),
+     &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
+     &          DENMAT(*), WORK(LWORK)
+      CHARACTER*8 LABINT(*)
+#include <symmet.h>
+#include <cbisol.h>
+#include <orgcom.h>
+#include <mgsolt.h>
+#include <inforb.h>
+#include <infinp.h>
+#include <inftap.h>
+C
+      DIMENSION CAVCNT(3)
+      LOGICAL   FOUND
+C
+C     Construct GLM, TLM, and density matrix
+C
+      CALL SOLFL(GLM,EPDIEL,RCAV,LCAVMX)
+      CALL RDSIFC('SOLTLM',FOUND,TLM,WORK,LWORK)
+      IF (.NOT. FOUND)
+     &    CALL QUIT('MAGSO1 ERROR: "SOLTLM" not found on SIRIFC.')
+C
+      CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+      REWIND LUSOL
+      CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
+      READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
+      IF (LMAXSS .LT. LSOLMX) THEN
+         WRITE (LUPRI,'(//2A,2(/A,I5))') ' >>> MAGSO1 ERROR,',
+     *   ' insufficient number of intgrals on LUSOL',
+     *   ' l max from SIRIUS input :',LSOLMX,
+     *   ' l max from LUSOL  file  :',LMAXSS
+         CALL QUIT('MAGSO1: lmax on LUSOL is too small')
+      END IF
+      IF ((LMAXSS+1)**2 .NE. LMTOTX) THEN
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+     *   ' LUSOL file info inconsistent',
+     *   ' l_max               :',LMAXSS,
+     *   ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
+     *   ' LMTOTX              :',LMTOTX
+         CALL QUIT('MAGSO1: LUSOL info not internally consistent')
+      END IF
+C
+      READ (LUSOL)
+      LM = 0
+      ICOUNT = 0
+      DOALL  = .TRUE.
+      EXP1VL = .TRUE.
+      CALL DZERO(EXPVAL,6)
+C
+      NCOMP = 6
+      DO 100 L = 0, LSOLMX
+         CALL DZERO(EXPSPH,(2*LCAVMX + 1)*6)
+         CALL DZERO(EXPCAR,(LCAVMX + 1)*(LCAVMX + 2)*3)
+         MCOMP = (L + 1)*(L + 2)*NCOMP/2
+C
+C     Construct differentiated integrals in spherical harmonic basis
+C
+         NPATOM = 0
+         JCOMP  = 0
+         CALL GET1IN(DUMMY,'LONSOL2',JCOMP,WORK,LWORK,LABINT,INTREP,
+     &               INTADR,L,.FALSE.,NPATOM,.TRUE.,EXPCAR,EXP1VL,
+     &               DENMAT,INTPRI)
+         CALL SPHCOM(L,TRAMAT,2*L + 1,(L + 1)*(L + 2)/2,MORDER,MINTEG,
+     &               WORK,LWORK,INTPRI)
+         DO 430 ICOOR = 1, NCOMP
+            DO 400 ICAR = 1, (L + 1)*(L + 2)/2
+               IL = 0
+               DO 410 ISPH = -L, L
+                  IL = IL + 1
+                  IELMNT = (L + 1)*(L + 2)*(IL - 1)/2 + ICAR
+                  COEF = TRAMAT(IELMNT)
+                  EXPSPH(ICOOR,ISPH) = EXPSPH(ICOOR,ISPH)
+     &                               + EXPCAR(ICOOR,ICAR)*COEF
+ 410           CONTINUE
+ 400        CONTINUE
+ 430     CONTINUE
+C
+C     Construct and -2g(l)sum(m) T(lm) t(lm)a_mn
+C
+         DO 200 M = -L, L
+            ICOUNT = ICOUNT + 1
+            DO 190 ICOOR = 1, NCOMP
+               FAC2 = -D2*GLM(ICOUNT)*TLM(ICOUNT)
+               EXPVAL(ICOOR) = EXPVAL(ICOOR) + EXPSPH(ICOOR,M)*FAC2
+ 190        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
+C     We ought to be more or less finished now
+C
+      CALL GPCLOSE(LUSOL,'KEEP')
       RETURN
       END
