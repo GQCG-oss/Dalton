@@ -303,8 +303,8 @@ C
          ZEN = ZE(NSFE)
          REN = RE(NSFE)
          IF(IPRCAV.GE.10) THEN
-            WRITE(LUPRI,1242),NSFE
-            WRITE(LUPRI,1243),XEN,YEN,ZEN,REN
+            WRITE(LUPRI,1242) NSFE
+            WRITE(LUPRI,1243) XEN,YEN,ZEN,REN
          END IF
 C     Default options (same as traditional GEPOL)
          IPtype = 2
@@ -1290,7 +1290,7 @@ C
  100     CONTINUE
 C     Se la tessera e' completamente coperta, la trascura
          IF(ICOP.EQ.NV) THEN
-            IF(IPRCAV.GE.10) WRITE(LUPRI,1020),NSFE1
+            IF(IPRCAV.GE.10) WRITE(LUPRI,1020) NSFE1
             RETURN
 C           ******
          END IF
