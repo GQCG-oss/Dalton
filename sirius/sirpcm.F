@@ -242,8 +242,8 @@ C
      *   5X,'OMEGA =',F8.4,5X,'RET   =',F8.4,5X,'FRO   =',F8.4//
      *   5X,'IPRPCM=',I8//5X,'NON-EQ = ',L1,5X,'NEQRSP =',L1)
       END
-C/* Comdeck solvnt */
-      SUBROUTINE SOLVNT(WORK,LWORK)
+C/* Comdeck pcmsolvnt */
+      SUBROUTINE PCMSOLVNT(WORK,LWORK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -356,7 +356,7 @@ C
       ELSE
          WRITE (LUPRI,'(/A)') ' Matrix label Q-PCMMAT not '//
      &        'found on file PCMDATA'
-         CALL QUIT('Integral label not found in SOLVNT')
+         CALL QUIT('Integral label not found in PCMSOLVNT')
       END IF
       CALL ICVEV(WORK(LDMATM),WORK(LSE1),WORK(LSE1),
      $     WORK(LBMCHG),WORK(LVEC0),WORK(LMEP),WORK(LCAM),NTS,NNBASX,
@@ -629,8 +629,8 @@ C
       UNZ = (MAXREP + 1) * UNZ / TWO
       RETURN
       END
-C/* Comdeck jmat */
-      SUBROUTINE JMAT(VEC2,NUM2,WORK,LWORK)
+C/* Comdeck pcmjmat */
+      SUBROUTINE PCMJMAT(VEC2,NUM2,WORK,LWORK)
 C
 #include <implicit.h>
 #include <dummy.h>

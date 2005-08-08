@@ -159,9 +159,9 @@ C     Do some solvent initializations
 C
 Cbm initialized PCMSV
       PCMSV   = PCM
-      WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
-      IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
-      IF (PCM) CALL SOLVNT(WORK,LWORK)
+c     WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
+c     IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
+      IF (PCM) CALL PCMSOLVNT(WORK,LWORK)
 C
 C
 C ***************************************************
@@ -580,7 +580,7 @@ C Recover MCSCF flags and settings
     3    CONTINUE
          PCM    = PCMSV
 Cbm
-         WRITE(LUPRI,*)'rimetto PCM = PCMSV',PCM
+c        WRITE(LUPRI,*)'rimetto PCM = PCMSV',PCM
          MCTYPE = MCTPSV
 C
          FLAG( 2) = .TRUE.

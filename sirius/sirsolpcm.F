@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirsolpcm.F,v 1.2 2005-08-05 08:43:00 ruud Exp $
+C$Id: sirsolpcm.F,v 1.3 2005-08-08 12:28:59 hjj Exp $
 C
 #include <single.h>
 C  /* Deck pcmgrd */
@@ -173,7 +173,7 @@ C
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
       IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
-         CALL JMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
+         CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
       END IF
       REWIND (LUPROP)
       CALL REAPCM('NE-PCMIN','PCMGRD  ',LUPROP,WRK(KJENAO),NNBASX)
@@ -526,7 +526,7 @@ C
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
       IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
-         CALL JMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
+         CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
       END IF
       REWIND (LUPROP)
       CALL REAPCM('NE-PCMIN','PCMFCK  ',LUPROP,WRK(KJENAO),NNBASX)
