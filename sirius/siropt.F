@@ -126,7 +126,6 @@ C *** data:
       DATA STAR8/'********'/
 C
       CALL QENTER('SIROPT')
-      WRITE(LUPRI,*)'PCM =',PCM
 C
       IF (IPRERR .GT. 0) CALL TIMOPT('START',LUERR,WRK,LFREE)
 C
