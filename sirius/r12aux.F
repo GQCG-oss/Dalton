@@ -85,8 +85,9 @@ C
          N2BOYX = NNBOYM * NNBOYM
          NNBOYT = NNBOYM * (NNBOYM + 1) / 2
       ELSE
-         NNBOYT = NNBAST
-         N2BOYX = N2BASX
+         NNBOYM = NBAST + NOCCT_R12
+         N2BOYX = NNBOYM * NNBOYM
+         NNBOYT = NNBOYM * (NNBOYM + 1) / 2
       END IF
 c      NMOCCT = 2 * NOCCT * NOCCT
       NMORBT = 2 * NORBT * NORBT
@@ -288,11 +289,11 @@ c         NOCCI = NOCC(ISYM)
          ISMO1 = ISMO1 + (NORBI - NOCCI) * NBASI
          ISMO = ISMO + NBASI
       END DO 
-      ISMO = KFCAO + NOCCT*NBAST
-      ISMO2 = KCMO + NOCC(1)*NBAS(1)
+      ISMO = KFCAO + NOCCT_R12*NBAST
+      ISMO2 = KCMO + (NOCC(1)+NRXR12(1))*NBAS(1)
       CALL DZERO(WORK(ISMO),NVIRT*NBAST)
       DO ISYM = 1, NSYM
-         NOCCI = NOCC(ISYM)
+         NOCCI = NOCC(ISYM) + NRXR12(ISYM)
          NORBI = NORB1(ISYM)
          NBASI = NBAS(ISYM) 
          NVIRI = NVIR(ISYM)
@@ -301,7 +302,7 @@ c         NOCCI = NOCC(ISYM)
            ISMO = ISMO + NBAST
            ISMO2 = ISMO2 + NBASI
          END DO
-         ISMO2 = ISMO2 + NOCC(ISYM+1) * NBAS(ISYM+1)   
+         ISMO2 = ISMO2 + (NOCC(ISYM+1) + NRXR12(ISYM+1)) * NBAS(ISYM+1)   
          ISMO = ISMO + NBASI
       END DO 
       IF (R12PRP) THEN 
@@ -310,7 +311,7 @@ c         NOCCI = NOCC(ISYM)
      *              WORK(KSMO+4*NMORBT),WORK(KSMO+3*NMORBT),
      *              WORK(KSMO+2*NMORBT),WORK(KSMO+NMORBT),WORK(KSMO), 
      *              WORK(KFCAO),WORK(KFCAO),WORK(KWRK),LWRK,
-     *              NBAST,NORBT,NOCCT,NVIRT,.FALSE.)
+     *              NBAST,NORBT,NOCCT_R12,NVIRT,.FALSE.)
          LUNIT = 0
          CALL GPOPEN(LUNIT,'AUXQA12','UNKNOWN','SEQUENTIAL',
      &                      'FORMATTED',IDUMMY,LDUMMY)

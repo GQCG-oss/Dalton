@@ -739,31 +739,51 @@ C
       WRITE(LUPRI,*) 'IPDD, IANSAZ = ', IPDD, IANSAZ
       CALL AROUND('Singlet <W@> matrix') 
       CALL OUTPUT(WS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of Singlet <W@> matrix =',
+     *                DDOT(NSPAIR*NAPAIR,WS11,1,WS11,1)
       CALL AROUND('Singlet <V@> matrix') 
       CALL OUTPUT(VS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of Singlet <V@> matrix =',
+     *                DDOT(NSPAIR*NAPAIR,VS11,1,VS11,1)
       CALL AROUND('Singlet <B@> matrix') 
       CALL OUTPUT(US11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of Singlet <B@> matrix =',
+     *                DDOT(NSPAIR*NSPAIR,US11,1,US11,1)
       CALL AROUND('Singlet <S@> matrix') 
       CALL OUTPUT(RS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of Singlet <S@> matrix =',
+     *                DDOT(NSPAIR*NSPAIR,RS11,1,RS11,1)
       CALL AROUND('Triplet <W@> matrix') 
       CALL OUTPUT(WT11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of triplet <W@> matrix =',
+     *                DDOT(NSPAIR*NAPAIR,WT11,1,WT11,1)
       CALL AROUND('Triplet <V@> matrix') 
       CALL OUTPUT(VT11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of Triplet <V@> matrix =',
+     *                DDOT(NSPAIR*NAPAIR,VT11,1,VT11,1)
       CALL AROUND('Triplet <B@> matrix') 
       CALL OUTPUT(UT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of Triplet <B@> matrix =',
+     *                DDOT(NSPAIR*NSPAIR,UT11,1,UT11,1)
       CALL AROUND('Triplet <S@> matrix') 
       CALL OUTPUT(RT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      WRITE(LUPRI,*) 'Norm of Triplet <S@> matrix =',
+     *                DDOT(NSPAIR*NSPAIR,RT11,1,RT11,1)
       CALL AROUND('Singlet <B#> matrices') 
       DO MN = 1, NAPAIR 
          WRITE(LUPRI,'(A,I4)') ' PAIR =', MN
          CALL OUTPUT(BS11(1,1,MN),1,
      &   NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         WRITE(LUPRI,*) 'Norm of Singlet <B#> matrix =',
+     *   DDOT(NSPAIR*NSPAIR,BS11(1,1,MN),1,BS11(1,1,MN),1)
       END DO
       CALL AROUND('Triplet <B#> matrices') 
       DO MN = 1, NAPAIR 
          WRITE(LUPRI,'(A,I4)') ' PAIR =', MN
          CALL OUTPUT(BT11(1,1,MN),1,
      &   NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         WRITE(LUPRI,*) 'Norm of Triplet <B#> matrix =',
+     *   DDOT(NSPAIR*NSPAIR,BT11(1,1,MN),1,BT11(1,1,MN),1)
       END DO
 C
   998 IJ = 0
