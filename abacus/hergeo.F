@@ -309,7 +309,7 @@ C
 C
       IF (.NOT. QM3) THEN
         IF (PRINT) THEN
-          IF (NUCDEP .LE. 12*(IPRUSR+1)) THEN
+          IF (NUCDEP .LE. 12*(IPRUSR+1) .AND. DISTMX .NE. D0) THEN
 C hjaaj Oct 2003: this output is only useful for small molecules ...
             IF (DIF) THEN
               CALL HEADER
