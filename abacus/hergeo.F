@@ -319,6 +319,7 @@ C hjaaj Oct 2003: this output is only useful for small molecules ...
             END IF
             CALL PRIDIS(NAMDEP,DIST,NUCDEP)
           END IF
+          IF (DISTMX .NE. D0) THEN
           IF (DIF) THEN
             WRITE(LUPRI,'(/A,F12.6,A/5A)')
      &         '  Max differential change in interatomic separation is',
@@ -329,6 +330,7 @@ C hjaaj Oct 2003: this output is only useful for small molecules ...
      &         '  Max interatomic separation is',
      &         DISTMX,' Angstroms','  between atoms "',
      &         NAMDEP(IDISTMX),'" and "',NAMDEP(JDISTMX),'".'
+          END IF
           END IF
         END IF
       END IF
