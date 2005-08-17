@@ -427,46 +427,6 @@ C
          GO TO 9999
       END IF
 C
-C     Calculate response properties with absorption
-C     =============================================
-C
-      IF (ABSORP) THEN
-         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
-     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
-     *                WRK(KINDX),WRK(KWRK1),LWRK1)
-         GO TO 9999
-      END IF
-C
-C     Calculate response properties with absorption
-C     =============================================
-C
-      IF (ABSORP) THEN
-         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
-     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
-     *                WRK(KINDX),WRK(KWRK1),LWRK1)
-         GO TO 9999
-      END IF
-C
-C     Calculate response properties with absorption
-C     =============================================
-C
-      IF (ABSORP) THEN
-         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
-     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
-     *                WRK(KINDX),WRK(KWRK1),LWRK1)
-         GO TO 9999
-      END IF
-C
-C     Calculate response properties with absorption
-C     =============================================
-C
-      IF (ABSORP) THEN
-         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
-     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
-     *                WRK(KINDX),WRK(KWRK1),LWRK1)
-         GO TO 9999
-      END IF
-C
 C     Calculate cubic response properties (fourth order)
 C     ==================================================
 C

@@ -58,7 +58,7 @@ C
 #include <codata.h>
 #include <pcmlog.h>
 C
-      PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
+      PARAMETER (NTABLE = 14)
       LOGICAL NEWDEF, LOCFIN
       CHARACTER*8 DIPLEN(3),DIPLOC(3), ANGMOM(3), LONMAG(3)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -71,7 +71,7 @@ C
       DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.STATIC','.XXXXXX',
      *            '.OPTORB', '.FREQUE','.XXXXXX','.PRINT ',
-     *            '.LIFETI', '.STOP  '/
+     *            '.DAMPIN', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -209,7 +209,7 @@ C
    13             CONTINUE
                   ABSORP = .TRUE.
                   ICHANG = ICHANG + 1
-                  READ (LUCMD,*) LIFETIME
+                  READ (LUCMD,*) DAMPING
                GO TO 100
    14             CONTINUE
                   CUT    = .TRUE.
@@ -299,10 +299,9 @@ C
                WRITE (LUPRI,'(/,A)') ' Program is stopped after LNRINP.'
             END IF
             IF (ABSORP) THEN
-               WRITE(LUPRI,'(A,F8.2,A)') 
-     &              ' Finite lifetime of the excited states :',
-     &              LIFETIME, ' cm-1'
-               LIFETIME = LIFETIME*CM_TO_AU                  
+               WRITE(LUPRI,'(A,F9.6,A)') 
+     &              ' Damping parameter equals  :',
+     &              DAMPING, ' a.u.'
                NFREQ_ALPHA = NFRVAL
                DO I=1,NFREQ_ALPHA
                   FREQ_ALPHA(I) = FRVAL(I)
@@ -311,8 +310,8 @@ C
                THCPP_ABSORP = 1.0D-3
                IPRABS = IPRLNR
                NEXCITED_STATES = 2
-               MAX_MACRO  = 5
-               MAX_MICRO  = MAXITE
+               MAX_MACRO  = MAXITE
+               MAX_MICRO  = 10
                MAX_ITORB = 5
             END IF
             IF (STATIC) WRITE(LUPRI,'(/,A)') 
@@ -761,8 +760,8 @@ C
                            CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                          ' ',IDUMMY,.FALSE.)
                            CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),LABEL1,
-     &                          BLANK,FREQ_ALPHA(IFRVAL),0.0D0,ISYM,0,
-     &                          THCLR_ABSORP,FOUND,CONV,ANTSYM)
+     &                          'COMPLEX ',FREQ_ALPHA(IFRVAL),0.0D0,
+     &                          ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
                            CALL GPCLOSE(LURSP,'KEEP')
                            SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
      &                          WORK(KGD1),1)
@@ -1570,7 +1569,6 @@ C
 #include <codata.h>
       PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
      &           D3 = 3.0D0)
-      PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include <nuclei.h>
 #include <symmet.h>
 #include <abainf.h>
@@ -1769,8 +1767,9 @@ C
             ALPHVL(2)=XXXCON*BETAVL(2)
             ALPHVV(2)=XXXCON*BETAVV(2)
             IF (ABSORP) THEN
-               WRITE(LUPRI,'(10X,A,F12.2,A)')
-     &              'Lifetime : ',LIFETIME/CM_TO_AU,' cm-1'
+               WRITE(LUPRI,'(10X,A,F12.6,A,F12.2,A)')
+     &              'Damping  : ',DAMPING,' au  = ',
+     &              DAMPING*XTKAYS,' cm-1'
                IF (MVEOR) THEN
                   WRITE(LUPRI,'(8(/10X,2(A,F15.6)))')
      &              'Beta (London)                :',
@@ -1835,7 +1834,7 @@ C
                DO ISTATE=1,NEXCITED_STATES
                   WRITE(LUPRI,'(6X,2I6,F12.4,A,F9.3,A,F10.2,A)') 
      &                 ISYM,ISTATE,EXC_ENERGY(ISTATE,ISYM),' a.u.',
-     &                 EXC_ENERGY(ISTATE,ISYM)*AU_TO_EV,' eV',
+     &                 EXC_ENERGY(ISTATE,ISYM)*XTEV,' eV',
      &                 XTNM/EXC_ENERGY(ISTATE,ISYM),' nm'
                END DO
             END IF

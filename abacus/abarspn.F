@@ -681,9 +681,8 @@ C
 C
       IF (ABSORP) THEN
 C
-C     Finite lifetime of the excited states,
-C     corresponds to complex response including absorption
-C     in the system
+C     Nonzero damping parameter corresponds to complex response including 
+C     absorption in the system
 C
          IF (.NOT.RESFLG(KSYMOP)) THEN
             CALL RESONANT(WRK(KREDE),WRK(KREDS),WRK(KIBTYP),

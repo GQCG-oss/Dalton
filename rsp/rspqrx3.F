@@ -270,6 +270,7 @@ C
 #include <infsmo.h>
 #include <infhyp.h>
 #include <esg.h>
+#include <absorp.h>
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -318,7 +319,7 @@ C
      *                 KZYVB,KZYVC,
      *                 ISYMA,ISYMB,ISYMC,
      *                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
-         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM) THEN
+         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA) THEN
             DFTSAV=DODFT
             DODFT=.FALSE.
             CALL Q3FOCK(

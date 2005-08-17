@@ -62,8 +62,8 @@ cat > prop_or.dal <<'%EOF%'
 **PROPERTIES
 .OPTROT
 *ABALNR
-.LIFETIME
- 2000.0
+.DAMPING
+0.0091133
 .FREQUENCIES
  1
  0.07318
@@ -95,21 +95,14 @@ CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT"
 
 # Optical Rotation
-CRIT1=`$GREP "Optical rotation.*-29\.71[89].*-3\.997" $log | wc -l`
-CRIT2=`$GREP "Optical rotation.*-31\.63[78].*-4\.286" $log | wc -l`
+CRIT1=`$GREP "Optical rotation.*-29\.73.*-3\.947" $log | wc -l`
+CRIT2=`$GREP "Optical rotation.*-31\.65.*-4\.243" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="OPTICAL ROTATION NOT CORRECT"
 
-# Excitation Energies
-CRIT1=`$GREP "1     1      (0| )\.3628 a.u.    9\.871 eV    125\.60 nm" $log | wc -l`
-CRIT2=`$GREP "1     2      (0| )\.3764 a.u.   10\.242 eV    121\.05 nm" $log | wc -l`
-TEST[3]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[3]=2
-ERROR[3]="EXCITATION ENERGIES NOT CORRECT"
-
 PASSED=1
-for i in 1 2 3
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
