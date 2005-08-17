@@ -111,7 +111,7 @@ C
             CALL QUIT('Inconsistent orbital description found '//
      &                'on response vector file')
       ELSE
-         IF (ABS(EMCX - EMCSCF) .GT. THRZER) THEN
+         IF (ABS((EMCX - EMCSCF)/EMCSCF) .GT. 100D0*THRZER) THEN
             IF ((OPTNEW .AND. ITRNMR .GT. 0) .OR. 
      &          (OPTWLK .AND. ITERNR .GT. 0)) THEN
                USOLVD = .TRUE.
@@ -119,7 +119,7 @@ C
      &            ' previous geometry are used as starting '//
      &              'vectors for property',LABX1, LABX2
             ELSE
-               WRITE (LUPRI,'(/A,2(/A,F20.10))')
+               WRITE (LUPRI,'(/A,2(/A,F24.14))')
      &              ' Molecular energy found on response'//
      &              ' vector file does not match current energy',
      &              ' Energy on file            : ',EMCX,
