@@ -1280,9 +1280,9 @@ C     Read effective core potential information from file for atom.
 C     The charge of atom type will be set to the effective charge below
 C     after J=2: reading Huckel basis (if DOHUCKEL)
                     CALL ECPINP(Q,QEFF,I,IPREAD)
-                    INDECP(I) = NUCIND+1 - NONT(I)
-                    NECP(I) = NONT(I)
-                    IF (NECP(I).GT.MXNONT) THEN
+                    INDECP(NTYECP) = NUCIND+1 - NONT(I)
+                    NECP(NTYECP) = NONT(I)
+                    IF (NECP(NTYECP).GT.MXNONT) THEN
                        WRITE(LUPRI,*) ' NUMBER OF ECP ATOMS OF TYPE ', 
      &                      NTYECP, ' EXCEEDS MXNONT=',MXNONT
                        CALL QUIT('Too many ECP atoms of this type')
