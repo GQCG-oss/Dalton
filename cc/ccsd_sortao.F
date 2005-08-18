@@ -278,8 +278,8 @@ C
       DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
 #include <ccsdsym.h>
-#include <ibtfun.h>
 #include <r12int.h>
+#include <ibtfun.h>
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C

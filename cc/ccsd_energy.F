@@ -1763,6 +1763,8 @@ C     two auxiliary basis functions): CCR12RSP
 C     C. Neiss, 10.12.2004
 C     
 #include <implicit.h>
+#include <ccr12int.h>
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 #include <priunit.h>
 #include <dummy.h>
 #include <maxorb.h>
@@ -1783,8 +1785,6 @@ C
 #include <ccsections.h>
 #include <ccfield.h>
 #include <r12int.h>
-#include <ccr12int.h>
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XAIBJ(*),T1AM(*),WORK(*),INDEXA(MXCORB)
       INTEGER IDUM,LUNITR12,LUNITR12_2
       LOGICAL LDUM,LHTF,CC2R12,MKVAJKL,CCR12RSP
@@ -1894,12 +1894,12 @@ C         WRITE(LUPRI,*) 'unit number:',LUNITR12_2
      &           (IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
         LUNITR12 = 0
         CALL WOPEN2(LUNITR12,FGHTF,64,0)
-       WRITE(LUPRI,'(3A)') 'opened file:"',FGHTF(1:LEN(FGHTF)),'"'
+       WRITE(LUPRI,'(3A)') 'opened file:"',FGHTF,'"'
        WRITE(LUPRI,*) 'unit number:',LUNITR12
         LU44 = 0 
         CALL WOPEN2(LU44,FCCGMNAB,64,0)
        WRITE(LUPRI,'(3A)') 'opened file:"',
-     &                       FCCGMNAB(1:LEN(FCCGMNAB)),'"'
+     &                       FCCGMNAB,'"'
        WRITE(LUPRI,*) 'unit number:',LU44
       END IF
 C

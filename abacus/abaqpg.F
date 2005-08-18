@@ -221,9 +221,9 @@ C
 #include <infinp.h>
 #include <inflin.h>
 #include <gdvec.h>
-#include <ibtfun.h>
-      LOGICAL OLDDX
 #include <chrxyz.h>
+      LOGICAL OLDDX
+#include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from QPGCT1','*',103)
 C
@@ -397,9 +397,9 @@ C
 #include <dipole.h>
 #include <inforb.h>
 #include <infinp.h>
-#include <ibtfun.h>
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP)
       DIMENSION GEOM(3*NATOMS), NATTYP(NATOMS)
+#include <ibtfun.h>
 C
       NCOOR = 3*NUCDEP
 C
@@ -532,9 +532,9 @@ C
 #include <dipole.h>
 #include <inforb.h>
 #include <infinp.h>
-#include <ibtfun.h>
       DIMENSION DIPA(3), SECA(3,3), THIRDA(3,3,3)
       DIMENSION DIPATM(3,NUCDEP), DIPEAT(3,NUCDEP), GEOM(3*NATOMS)
+#include <ibtfun.h>
 C
 C     Molecular dipole moment
 C
