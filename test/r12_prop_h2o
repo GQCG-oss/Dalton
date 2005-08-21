@@ -30,7 +30,7 @@ cat > r12_prop_h2o.info <<'%EOF%'
 #######################################################################
 cat > r12_prop_h2o.mol <<'%EOF%'
 BASIS
-AhlrichsVDZ AhlrichsVTZ
+Ahlrichs-VDZ Ahlrichs-VTZ
 H2O
 
     4    2  X  Y

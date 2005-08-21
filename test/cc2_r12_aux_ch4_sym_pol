@@ -60,6 +60,9 @@ cat > cc2_r12_aux_ch4_sym_pol.dal <<'%EOF%'
 *SCF INPUT
 .THRESHOLD
  1.0D-10
+*ORBITALS
+.MOSTART
+ H1DIAG
 *CC INPUT
 .CC2
 .PRINT

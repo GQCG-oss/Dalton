@@ -37,7 +37,7 @@ walk_vibave2 energy_zmat r12_sym dpt_h2s prop_ctocd prop_soppactocd \
 rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar prop_newtrasoppa prop_newtrasoppacc prop_newtramcscf \
 dft_qr_sym energy_hsrohf energy_hsrohf_qc rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
-rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_absorp"
+rsp_g_rohf_ecc rsp_hfc rsp_zfs"
 
 #
 SHORTCC="cc_rsp_alpha2 cc_rsp_beta cc_rsp_beta2 cc_rsp_betafreq \
@@ -88,7 +88,7 @@ dpt_hbr dpt_hbr_finp dpt_h2s_ff"
 MP2R12="r12_damped r12_damped_herdir \
 r12_sym r12_nosym r12_fc_sym r12_fc_nosym \
 r12_aux_sym r12_aux_nosym r12_fc_aux_sym r12_fc_aux_nosym \
-r12_prop r12_prop_n2 r12_prop_h2o"
+r12_prop r12_prop_n2 r12_prop_h2o r12_loc r12_stg"
 #
 SHORTCCR12="cc2_r12_aux2_bh cc2_r12_aux2_bh_sym \
 cc2_r12_aux_bh_a2 cc2_r12_aux_bh_sym_a2 \

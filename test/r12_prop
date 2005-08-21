@@ -30,7 +30,7 @@ cat > r12_prop.info <<'%EOF%'
 #######################################################################
 cat > r12_prop.mol <<'%EOF%'
 BASIS
-AhlrichsVDZ AhlrichsVTZ
+Ahlrichs-VDZ Ahlrichs-VTZ
 MP2-R12 dipole moment using symmetry, .CABS and frozen core
 
     4    2  X  Y

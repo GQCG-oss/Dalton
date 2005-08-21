@@ -30,7 +30,7 @@ cat > cc2_r12_he.info <<'%EOF%'
 cat > cc2_r12_he.mol <<'%EOF%'
 #
 BASIS
-AhlrichsVDZ AhlrichsVTZ
+Ahlrichs-VDZ Ahlrichs-VTZ
 He
 
     2    0             .10E-99

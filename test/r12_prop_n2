@@ -30,7 +30,7 @@ cat > r12_prop_n2.info <<'%EOF%'
 #######################################################################
 cat > r12_prop_n2.mol <<'%EOF%'
 BASIS
-AhlrichsVTZ AhlrichsVTZ
+Ahlrichs-VTZ Ahlrichs-VTZ
 MP2-R12 first order property calculation on N2
 small basis
     2    3  X  Y  Z   1.00D-15

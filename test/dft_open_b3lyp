@@ -11,7 +11,7 @@ info="
 "
 
 molecule="BASIS
-AhlrichsVTZ
+Ahlrichs-VTZ
 BeH AhlrichsVDZ
 --------
     2    0

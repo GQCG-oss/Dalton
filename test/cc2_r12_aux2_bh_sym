@@ -29,7 +29,7 @@ cat > cc2_r12_aux2_bh_sym.info <<'%EOF%'
 #######################################################################
 cat > cc2_r12_aux2_bh_sym.mol <<'%EOF%'
 BASIS
-AhlrichsVDZ AhlrichsVTZ
+Ahlrichs-VDZ Ahlrichs-VTZ
 BH
                                                                             
     4    2  X Y     0.10D-14
