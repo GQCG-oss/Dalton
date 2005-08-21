@@ -289,6 +289,13 @@ C
       CALL IZERO(KFRVIR,8*MAXFRO)
       CALL IZERO(NOMINP,3*8)
 C
+      ITEST = 0
+      DO I=1,8
+        NRHFFR(I) = LOCFRO(I)
+        ITEST = ITEST + NRHFFR(I)
+      END DO
+      FROIMP = ITEST .NE. 0
+C
       CALL DZERO(EFIELD,MXFELT)
 C
       ITEST  = 0

@@ -555,35 +555,39 @@ C
      &                             ISYM, ITURN, NORBISAV, NORBI
          END IF
 C
-         IF (NORBI .NE. NBASI) THEN
-C           Make CMO orthornormal wrt. unit metric
-C           (needed for canonicial orthonormalization)
-            THRLDP = 1.0D-14
-            CALL ORTVEC(0,NORBI,NBASI,THRLDP,CMO(ICSYM),SCRA(KSCR1))
-            CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
-     *                NBASI,NORBI)
-C           CALL UTHU(H,HT,U,WRK,NAO,NMO)
-         ELSE
-            NNBASI = NNBAS(ISYM)
-            CALL DCOPY(NNBASI,SCRA(ISSYM),1,SCRA(KS1T),1)
-            CALL DUNIT(CMO(ICSYM),NBASI)
+	 IF (.NOT. LAUXBS) THEN
+            IF (NORBI .NE. NBASI) THEN
+C              Make CMO orthornormal wrt. unit metric
+C              (needed for canonicial orthonormalization)
+               THRLDP = 1.0D-14
+               CALL ORTVEC(0,NORBI,NBASI,THRLDP,CMO(ICSYM),SCRA(KSCR1))
+               CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
+     *                   NBASI,NORBI)
+C              CALL UTHU(H,HT,U,WRK,NAO,NMO)
+            ELSE
+               NNBASI = NNBAS(ISYM)
+               CALL DCOPY(NNBASI,SCRA(ISSYM),1,SCRA(KS1T),1)
+               CALL DUNIT(CMO(ICSYM),NBASI)
+            END IF
+C
+C           Normalize primary CMO vectors
+C           (required for proper canonical orthonormalization)
+C
+            JS1T = KS1T - 1
+            DO I = 1, NORBI
+              JS1T = JS1T + I
+              IF (SCRA(JS1T) .GT. 0.0D0) THEN
+C             ... we may have zeroed some elements above
+C                 in order that they should be excluded by this routine
+                 FAC = D1 / SQRT(SCRA(JS1T))
+                 JCSYM = ICSYM + (I-1)*NBASI
+                 CALL DSCAL(NBASI,FAC,CMO(JCSYM),1)
+              END IF
+            END DO
          END IF
 C
-C        Normalize primary CMO vectors
-C        (required for proper canonical orthonormalization)
-C
-         JS1T = KS1T - 1
-         DO I = 1, NORBI
-           JS1T = JS1T + I
-           IF (SCRA(JS1T) .GT. 0.0D0) THEN
-C          ... we may have zeroed some elements above
-C              in order that they should be excluded by this routine
-              FAC = D1 / SQRT(SCRA(JS1T))
-              JCSYM = ICSYM + (I-1)*NBASI
-              CALL DSCAL(NBASI,FAC,CMO(JCSYM),1)
-           END IF
-         END DO
 C        and update SCR(KS1T) to the new CMO vectors:
+C
          CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
      *             NBASI,NORBI)
 C

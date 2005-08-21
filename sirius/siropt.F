@@ -2781,7 +2781,6 @@ C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
             END DO
             CLOSE(99)
             CALL DCOPY(NBASL*NOCL,WRK(ICMOL),1,WRK(IOCCL),1)
-            CALL DCOPY(NBASL*NORB1L,WRK(ICMOL),1,WRK(ICMOL),1)
             CALL DCOPY(NORB2L*NBASL,WRK(3*NBASC+1),1,
      *           WRK(IOCCL+NBASL*(NORB1L+NOCL)),1)
             WRITE (LUSIFC) LAB123, LABUNI
@@ -2789,8 +2788,6 @@ C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
      *                     NORB2L+NOCL,NBASL,POTNUC,EMCSCF
             WRITE (LUSIFC) (WRK(IEIGL+I-1),I=1,MAX(NORBFTL,4))
             WRITE (LUSIFC) (WRK(IOCCL+I-1),I=1,MAX(NMOFLTL,4))
-            write(lupri,*) 'WMK: NBASL,NORB1L,NORB2L,NOCL,NMOFLTL  =',
-     &                           NBASL,NORB1L,NORB2L,NOCL,NMOFLTL
          ELSE
             IOFF1 = KFCDIA
             IOFF2 = KFCDIA + NBASC

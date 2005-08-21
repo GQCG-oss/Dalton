@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirsolpcm.F,v 1.3 2005-08-08 12:28:59 hjj Exp $
+C$Id: sirsolpcm.F,v 1.4 2005-08-21 11:43:12 klopper Exp $
 C
 #include <single.h>
 C  /* Deck pcmgrd */

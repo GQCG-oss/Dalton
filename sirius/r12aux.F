@@ -77,9 +77,14 @@ C
          NCMOT = 0
          NORBT = 0
          DO ISYM = 1, NSYM
-            NORB1(ISYM) = NORB1(ISYM) + NOCC(ISYM)
+cwmk
+cwmk        Bug fixed (WK/UniKA/17-08-2005).
+cwmk        NORB1(ISYM) = NORB1(ISYM) + NOCC(ISYM)
+cwmk
             NORBT = NORBT + NORB1(ISYM)
             NCMOT  = NCMOT + (NORB1(ISYM)+NORB2(ISYM))*NBAS(ISYM)
+            IF (NRXR12(ISYM) .NE. 0) CALL QUIT
+     &      ('Local MP2-R12 not implemented with .R12ORBa. Sorry.')
          END DO
          NNBOYM = MAX(NORB1(1) + NORB2(1), NBAS(1))
          N2BOYX = NNBOYM * NNBOYM
@@ -113,10 +118,11 @@ c         CALL MEMGET('REAL',KFQQA,NORBT*NOCCT**3,WORK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK,LWRK,WORK,KFREE,LFREE)
       NCMOT  = NCMOTI
       IF (BOYORB.OR.PIPORB) THEN
-         IJ = 0
          OPEN(99,FILE='LOCMO',FORM='FORMATTED')
+         KL = KCMO
          DO IJ = 1, NBAS(1)*NORB1(1)
-            READ(99,'(D30.20)') WORK(KCMO+IJ-1)
+            READ(99,'(D30.20)') WORK(KL)
+            KL = KL + 1 
          END DO
          CLOSE(99)
       ELSE
@@ -150,7 +156,10 @@ C
 C
 C     ***** ORTHOGONALIZE AUXILIARY BASIS SET *****
 C
+      LAUXBS = .TRUE.
       IF (R12ECO .OR. R12CBS) THEN
+          DELEMO = .FALSE.
+          CALL DELMO(WORK(KAUX),WORK(KWRK),LWRK,THROVL,DELEMO)
           CALL AUXORT(WORK(KCMO),WORK(KAUX),WORK(KWRK),LWRK)
       END IF
       DELEMO = .FALSE.
@@ -472,6 +481,8 @@ C  /* Deck auxort */
           CALL AUXNRM(SCRA(ISSYM),SCRA(ISMO),NBASI,
      *                NORBI,NAUXI,SCRA(KSCR1))
           CALL DCOPY(NAUXI*NBASI,SCRA(ISMO+NORBI*NBASI),1,AUX(ISMO2),1)
+C         CALL AROUND('Auxiliary basis with CMOs projected out')
+C         CALL OUTPUT(AUX(ISMO2),1,NAUXI,1,NBASI,NAUXI,NBASI,1,LUPRI)
           ISMO1 = ISMO1 + NORBI*NBASI
           ISMO2 = ISMO2 + NAUXI*NBASI  
           ISMO = ISMO + (NORBI + NAUXI) * NBASI
@@ -486,10 +497,8 @@ C     PROJECT OUT M1 VECTORS
 C
 #include <implicit.h>
       DIMENSION S(*), VC(*), W(*)
-      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
-C
+      PARAMETER ( D0 = 0D0, D1 = 1D0)
       IF (M1. LE. 0 .OR. M2 .LE. 0) RETURN
-
       IVCI = M1 * N + 1
       DO I = 1, M2
         CALL MPAPV(N,S,VC(IVCI),W)
@@ -497,7 +506,7 @@ C
         DO J = 1, M1
           T = DDOT(N,VC(IVCJ),1,W,1)
           DO K = 0, N - 1
-             VC(IVCI + K) = VC(IVCI + K) -  T * VC(IVCJ + K)  
+             VC(IVCI + K) = VC(IVCI + K) - T * VC(IVCJ + K)  
           ENDDO
           IVCJ = IVCJ + N
         ENDDO

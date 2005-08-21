@@ -585,7 +585,6 @@ C
          DO 300 ISYM = 1, NSYM
             IF (NRHF(ISYM)*NVIR(ISYM) .NE. 0) 
      *      WRITE(LUPRI,'(/A,I2)') ' X-MATRIX/ISYM =',ISYM
-            write(lupri,*) 'IPBAS',IPBAS
             IF (R12PRP) THEN
                NPK = IT1vM(ISYM,ISYM) + 1
                CALL OUTPUT(GX(NPK),1,NVIR(ISYM),1,NORB1(ISYM),
@@ -952,8 +951,9 @@ C
             IF (NI.EQ.NJ) FLMAT(NFI) = EVL(IJ) * DP5
          END DO
       END IF
-      IF (IPRINT .GE. 4) THEN
+      IF (IPRINT .GE. 4 .OR. LGLOCAL) THEN
          CALL AROUND('Fock matrix in occupied space') 
+         WRITE(LUPRI,*)
          CALL OUTPAK(FLMAT,NOCDIM,1,LUPRI)
          CALL AROUND('Pairs of orbital energies') 
          CALL OUTPUT(EVL,1,NSPAIR,1,1,NSPAIR,1,1,LUPRI)
@@ -998,6 +998,7 @@ C
          ICOUNT=1
          CALL DZERO(TIJAB,NH2AMX)
   900    ICONV=0
+         E2 = D0
          DO 701 ISYMIA = 1, NSYM
             ISYMJB = ISYMIA
             DO 702 ISYMI = 1, NSYM
@@ -1014,6 +1015,7 @@ C
                            DO 804 B = NRHFS(ISYMB) + 1, NORB1(ISYMB)
                               ISYMIB = MULD2H(ISYMI,ISYMB)
                               KOFFB = IVIR(ISYMB) + B
+                              IF (ONEAUX) THEN
                               NAI = IH1AM(ISYMA,ISYMI) +
      *                              NORB1(ISYMA)*(I-1) + A
                               NBJ = IH1AM(ISYMB,ISYMJ) +
@@ -1026,6 +1028,20 @@ C
      *                              NORB1(ISYMB)*(I-1) + B
                               NAJBI = IH2AM(ISYMJA,ISYMIB) +
      *                                INDEX(NAJ,NBI)
+                              ELSE
+                              NAI = IT1AM(ISYMA,ISYMI) +
+     *                              NVIR(ISYMA)*(I-1) + A
+                              NBJ = IT1AM(ISYMB,ISYMJ) +
+     *                              NVIR(ISYMB)*(J-1) + B
+                              NAIBJ = IT2AM(ISYMIA,ISYMJB) +
+     *                                INDEX(NAI,NBJ)
+                              NAJ = IT1AM(ISYMA,ISYMJ) +
+     *                              NVIR(ISYMA)*(J-1) + A
+                              NBI = IT1AM(ISYMB,ISYMI) +
+     *                              NVIR(ISYMB)*(I-1) + B
+                              NAJBI = IT2AM(ISYMJA,ISYMIB) +
+     *                                INDEX(NAJ,NBI)
+                              END IF
                               VAIBJ = V2AM(NAIBJ)
                               VAJBI = V2AM(NAJBI)
                               VV = VAIBJ
@@ -1043,10 +1059,17 @@ C
                               DO 902 K = 1, NRHF(ISYMK)
                                  IF ((K.EQ.I).AND.(ISYMI.EQ.ISYMK))
      *                                                     GOTO 902
-                                 NAK = IH1AM(ISYMA,ISYMK) +
-     *                                 NORB1(ISYMA)*(K-1) + A
-                                 NAKBJ = IH2AM(ISYMKA,ISYMJB) +
-     *                                 INDEX(NAK,NBJ)
+                                 IF (ONEAUX) THEN
+                                   NAK = IH1AM(ISYMA,ISYMK) +
+     *                                   NORB1(ISYMA)*(K-1) + A
+                                   NAKBJ = IH2AM(ISYMKA,ISYMJB) +
+     *                                   INDEX(NAK,NBJ)
+                                 ELSE
+                                   NAK = IT1AM(ISYMA,ISYMK) +
+     *                                   NVIR(ISYMA)*(K-1) + A
+                                   NAKBJ = IT2AM(ISYMKA,ISYMJB) +
+     *                                   INDEX(NAK,NBJ)
+                                 END IF
                                  NIK = INDEX(I,K)
                                  XXX = FLMAT(NIK) * TIJAB(NAKBJ)
                                  TKI = TKI + XXX
@@ -1059,10 +1082,17 @@ C
                               DO 904 K = 1, NRHF(ISYMK)
                                  IF ((K.EQ.J).AND.(ISYMK.EQ.ISYMJ))
      *                                                     GOTO 904
-                                 NBK = IH1AM(ISYMB,ISYMK) +
-     *                                 NORB1(ISYMB)*(K-1) + B
-                                 NAIBK = IH2AM(ISYMKB,ISYMIA) +
-     *                                 INDEX(NBK,NAI)
+                                 IF (ONEAUX) THEN
+                                   NBK = IH1AM(ISYMB,ISYMK) +
+     *                                   NORB1(ISYMB)*(K-1) + B
+                                   NAIBK = IH2AM(ISYMKB,ISYMIA) +
+     *                                   INDEX(NBK,NAI)
+                                 ELSE
+                                   NBK = IT1AM(ISYMB,ISYMK) +
+     *                                   NVIR(ISYMB)*(K-1) + B
+                                   NAIBK = IT2AM(ISYMKB,ISYMIA) +
+     *                                   INDEX(NBK,NAI)
+                                 END IF
                                  NJK = INDEX(J,K)
                                  XXX = FLMAT(NJK)*TIJAB(NAIBK)
                                  TKJ = TKJ + XXX
@@ -1075,10 +1105,17 @@ C
                               DO 906 NC = NRHFS(ISYMC) + 1, NORB1(ISYMC)
                                  IF ((NC.EQ.A).AND.(ISYMA.EQ.ISYMC))
      *                                                     GOTO 906
-                                 NCI = IH1AM(ISYMC,ISYMI) +
-     *                                 NORB1(ISYMC)*(I-1) + NC
-                                 NCIBJ = IH2AM(ISYMIC,ISYMJB) +
-     *                                 INDEX(NCI,NBJ)
+                                 IF (ONEAUX) THEN
+                                   NCI = IH1AM(ISYMC,ISYMI) +
+     *                                   NORB1(ISYMC)*(I-1) + NC
+                                   NCIBJ = IH2AM(ISYMIC,ISYMJB) +
+     *                                   INDEX(NCI,NBJ)
+                                 ELSE
+                                   NCI = IT1AM(ISYMC,ISYMI) +
+     *                                   NVIR(ISYMC)*(I-1) + NC
+                                   NCIBJ = IT2AM(ISYMIC,ISYMJB) +
+     *                                   INDEX(NCI,NBJ)
+                                 END IF
                                  NCA = INDEX(NC-NCT,A-NCT)
                                  XXX = FLMAT(NCA)*TIJAB(NCIBJ)
                                  TKA = TKA + XXX
@@ -1091,10 +1128,17 @@ C
                               DO 908 NC = NRHFS(ISYMC) + 1, NORB1(ISYMC)
                                  IF ((NC.EQ.B).AND.(ISYMB.EQ.ISYMC))
      *                                                     GOTO 908
-                                 NCJ = IH1AM(ISYMC,ISYMJ) +
-     *                                 NORB1(ISYMC)*(J-1) + NC
-                                 NAICJ = IH2AM(ISYMJC,ISYMIA) +
-     *                                 INDEX(NCJ,NAI)
+                                 IF (ONEAUX) THEN
+                                   NCJ = IH1AM(ISYMC,ISYMJ) +
+     *                                   NORB1(ISYMC)*(J-1) + NC
+                                   NAICJ = IH2AM(ISYMJC,ISYMIA) +
+     *                                   INDEX(NCJ,NAI)
+                                 ELSE
+                                   NCJ = IT1AM(ISYMC,ISYMJ) +
+     *                                   NVIR(ISYMC)*(J-1) + NC
+                                   NAICJ = IT2AM(ISYMJC,ISYMIA) +
+     *                                   INDEX(NCJ,NAI)
+                                 END IF
                                  NCB = INDEX(NC-NCT,B-NCT)
                                  XXX = FLMAT(NCB)*TIJAB(NAICJ)
                                  TKB = TKB + XXX
@@ -1106,8 +1150,10 @@ C
                               NJJ = INDEX(J,J)
                               DENOM = D1 / (FLMAT(NAA) + FLMAT(NBB) -
      *                                      FLMAT(NII) - FLMAT(NJJ))
-                              TIJAB(NAIBJ) = (TKI+ TKJ- TKA- TKB- VV )
-     *                                        * DENOM
+                              TIJAB(NAIBJ) = (TKI+TKJ-TKA-TKB-VV)
+     *                                       * DENOM
+                              VV = (D2 * VAIBJ - VAJBI)
+			      E2 = E2 + VV * TIJAB(NAIBJ)
                               IF (ABS(TIJAB(NAIBJ)-TINI).GT.THRES) 
      *                                                         ICONV = 1
   804                      CONTINUE
@@ -1117,16 +1163,20 @@ C
   703          CONTINUE
   702       CONTINUE
   701    CONTINUE
-         IF (ICOUNT.LE.20) THEN
+	 IF (ICOUNT .EQ. 1) WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A,I3,3X,F15.9)') ' ENERGY IN ITERATION',
+     &   ICOUNT,E2
+         IF (ICOUNT.LE.50) THEN
              IF (ICONV.EQ.1) THEN
                  ICOUNT= ICOUNT + 1
                  GOTO 900
              ELSE
-                 WRITE(LUPRI,'(A,I3)') 'FINAL ITERATION OF LOCAL MP2',
+                 WRITE(LUPRI,*)
+                 WRITE(LUPRI,'(A,I3)') ' FINAL ITERATION OF LOCAL MP2',
      &                                                          ICOUNT
              END IF
          ELSE
-            WRITE(LUPRI,'(A)') 'ITERATIONS BIGGER THAN 20'
+            WRITE(LUPRI,'(A)') 'MORE THAN 50 ITERATIONS'
          END IF
       END IF
 C
@@ -1950,7 +2000,7 @@ C
             F2T = F2T + FT(IJ) 
   501    CONTINUE
   500 CONTINUE 
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 4) THEN
          CALL AROUND('Singlet <C> matrix') 
          CALL OUTPUT(CS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
          CALL AROUND('Triplet <C> matrix') 
@@ -2161,9 +2211,9 @@ c
 c
 c    Print MP2-R12/A -Ansatz 1- amplitudes for 
 c
-            CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/A') 
+            CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/A)') 
             CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-            CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/A') 
+            CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/A)') 
             CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
           ENDIF
 c
@@ -2193,11 +2243,12 @@ cElena
 
          LUNIT = 0
          IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
-            CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/A''') 
-            CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-            CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/A''') 
-            CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-
+            IF (IPRINT .GE. 4) THEN
+              CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/A'')')
+              CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+              CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/A'')')
+              CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+           END IF
            LUNIT = 0
            CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
      &                 IDUM,LDUM)
@@ -2240,10 +2291,12 @@ c
   602    CONTINUE
       ELSE IF (IPDD .EQ. 5) THEN
          IF (R12HYB .OR. (LUMULX .EQ. LUMULO)) THEN
-              CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/B')
+            IF (IPRINT. GE. 4) THEN
+              CALL AROUND('Singlet <C> matrix (Ansatz 1, MP2-R12/B)')
               CALL OUTPUT(CS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
-              CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/B')
+              CALL AROUND('Triplet <C> matrix (Ansatz 1, MP2-R12/B)')
               CALL OUTPUT(CT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+            END IF
             LUNIT = 0
             IF (R12PRP .AND. LUMULX .NE. LUMULO) THEN
               LUNIT = 0
@@ -3361,6 +3414,7 @@ celena
          NSPAIR = NRHFT * (NRHFT + 1) / 2
          NOCXBS = 0
          NVCXBS = 0
+         NBASTX = 0
          DO 230 ISYM = 1, NSYM
             NORB1T = NORB1T + NORB1(ISYM)
             NORB2T = NORB2T + NORB2(ISYM)
@@ -3368,6 +3422,7 @@ celena
             NNBASF = NNBASF + NBASF * (NBASF + 1) / 2
             NOCXBS = NOCXBS + NRHF(ISYM) * NBAS(ISYM)
             NVCXBS = NVCXBS + NORB1(ISYM) * NBAS(ISYM)
+            NBASTX = NBASTX + NBAS(ISYM)
   230    CONTINUE
 C
          WRITE(LUPRI,'(1X,A,8I8)') 
@@ -3382,6 +3437,8 @@ C
      *     'Number of secondary orbitals           : ',NORB2T
          WRITE(LUPRI,'(1X,A,I12)')
      *     'Total number of orbitals               : ',NORB2T + NORB1T
+         WRITE(LUPRI,'(1X,A,I12)')
+     *     'Total number of basis functions        : ',NBASTX
          IF (ONEAUX) THEN
             WRITE(LUPRI,'(1X,A,I12)')
      *     'Number of (i|p) integrals              : ',NH1AMX
@@ -3509,30 +3566,30 @@ C
          KSF = KFOCKQ + 2 * NRHFT ** 4
          KTF = KSF + MAX(NSPAIR ** 2, NNBASF)
          KT1AM = KTF + MAX(NSPAIR ** 2, NNBASF)
-         KGXAM = KT1AM + NT1AMX
+         KGXAM = KT1AM + NT1AMX * 10
          IF (R12PRP) THEN
             KQQAM = KGXAM + NT1VMX
          ELSE
-            KQQAM = KGXAM + NT1AMX 
+            KQQAM = KGXAM + NT1AMX
          ENDIF
          IF (R12EOR) THEN
-            KQQ2M = KQQAM + NRHFT ** 4 
-            KQQ4M = KQQ2M + NRHFT ** 4 
-            KQQ6M = KQQ4M + NRHFT ** 4 
+            KQQ2M = KQQAM + NRHFT ** 4
+            KQQ4M = KQQ2M + NRHFT ** 4
+            KQQ6M = KQQ4M + NRHFT ** 4
          ELSE
-            KQQ2M = KQQAM 
-            KQQ4M = KQQAM 
+            KQQ2M = KQQAM
+            KQQ4M = KQQAM
             KQQ6M = KQQAM
          ENDIF
 celena
-         KQVAM = KQQ6M + NRHFT*NRHFT ** 3
-         KUGAM = KQVAM + NBAST*NRHFT** 3 
+         KQVAM = KQQ6M + NRHFT*NRHFT**3
+         KUGAM = KQVAM + NBAST*NRHFT**3
   
 celena 
          IF (R12PRP) THEN
-            KFRIN = KUGAM + NVCXBS 
+            KFRIN = KUGAM + NVCXBS
          ELSE
-            KFRIN = KUGAM + NOCXBS 
+            KFRIN = KUGAM + NOCXBS
          ENDIF
 C
 celena
@@ -3541,11 +3598,11 @@ celena
 celena
          IF (ONEAUX) THEN
            KT2AM = KS2AM + NH2AMX
-           KU2AM = KT2AM 
-           KR2AM = KT2AM + NH2AMX  
+           KU2AM = KT2AM
+           KR2AM = KT2AM + NH2AMX
 cWK        IF (R12XXL) THEN
               KV2AM = KR2AM + NH2AMX
-              KW2AM = KV2AM + NH2AMX 
+              KW2AM = KV2AM + NH2AMX
 cWK        ELSE
 c             KV2AM = KR2AM
 c             KW2AM = KV2AM
@@ -3553,10 +3610,10 @@ cWK        END IF
            KEND1 = KW2AM + NH2AMX
          ELSE
            KT2AM = KS2AM + NT2AMX
-           KU2AM = KT2AM 
-           KR2AM = KT2AM + NT2AMX  
+           KU2AM = KT2AM
+           KR2AM = KT2AM + NT2AMX
            KV2AM = MAX(KR2AM + NT2AMX, KU2AM + NU2AMX)
-           KW2AM = KV2AM + NT2AMX 
+           KW2AM = KV2AM + NT2AMX
            KEND1 = KW2AM + NT2AMX
          END IF
          WRITE(LUPRI,'(A,I15,A/)')' Core memory required by CCSD_R12 :',

@@ -53,7 +53,13 @@ C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
       CALL TITLER('BOYS LOCALIZATION','*',125)
       CALL NUMLOC(NOC,NBA,NB1,NB2)
       CALL FROLOC(NCO)
-
+C
+      WRITE(LUPRI,*) 'Number of frozen orbitals    :',NCO
+      WRITE(LUPRI,*) 'Number of localized orbitals :',NOC-NCO
+      WRITE(LUPRI,*) 'Number of molecular orbitals :',NB1
+      WRITE(LUPRI,*) 'Number of auxilliary orbitals:',NB2
+      WRITE(LUPRI,*) 'Number of basis functions    :',NBA
+C
 C Parameters are set for valence orbitals only
  
       NOC = NOC - NCO
@@ -64,9 +70,7 @@ C Parameters are set for valence orbitals only
       NCMO = NCMOT - NCO*NBA
       NKB   = NBA*NOC
       NKCL  = NOC*NOC
-      NNBA1 = NB1*(NB1+1)/2
-
-
+      NNBA1 = NBA*(NBA+1)/2
  
 C     *****   memory allocation  *****
  
@@ -86,11 +90,11 @@ C     *****   memory allocation  *****
       KQPIX  = KB     + NKB 
       KQPJX  = KQPIX  + NOC
       KPAO   = KQPJX  + NOC
-      KEVC   = KPAO   + NB1*NB1
-      KMOC   = KEVC   + NB1*NB1
-      KOVER1 = KMOC   + (NOC+NCO)*NB1
+      KEVC   = KPAO   + NB1*NBA
+      KMOC   = KEVC   + NB1*NBA
+      KOVER1 = KMOC   + (NOC+NCO)*NBA
       KOVER2 = KOVER1 + NNBAST
-      KEND   = KOVER2 + NB1*NB1
+      KEND   = KOVER2 + NN
       LFREE  = LWORK  - KEND
  
       KCMOC  = KCMO  + NCO*NBA
@@ -99,8 +103,8 @@ C molecular coefficients and dipole moment integrals
  
       JRDMO = 9
       CALL READMO(WORK(KCMO),JRDMO,WORK(KEND),LFREE)
-      CALL AROUND('Canonical occupied molecular orbitals')
-      CALL PRINTORB(NB1,NBA,WORK(KCMO))
+C     CALL AROUND('Canonical molecular orbitals')
+C     CALL PRINTORB(NB1,NBA,WORK(KCMO))
 
       CALL RDPROP('XDIPLEN ',WORK(KDIPX),ANTIS)
       CALL RDPROP('YDIPLEN ',WORK(KDIPY),ANTIS)
@@ -114,16 +118,16 @@ C molecular coefficients and dipole moment integrals
 Cccms CALL DCOPY(NCMOT,WORK(KCMO),1,CMO,1)
  
 C Projected atomic orbitals
- 
-      NOC = NOC + NCO
-      CALL RDONEL('OVERLAP ',.TRUE.,WORK(KOVER1),NNBAST)
-      CALL PROAO(WORK(KPAO),WORK(KEVC),WORK(KCMO),WORK(KMOC),
-     *           WORK(KOVER1),WORK(KOVER2),NOC,NBA,NB1,NNBA1)
-
-      KSHI = KCMO + NBA*NB1
-      LSHI = NOC*NBA
-      CALL DZERO(WORK(KSHI),LSHI)
-
+c 
+c     NOC = NOC + NCO
+c     CALL RDONEL('OVERLAP ',.TRUE.,WORK(KOVER1),NNBAST)
+c     CALL PROAO(WORK(KPAO),WORK(KEVC),WORK(KCMO),WORK(KMOC),
+c    *           WORK(KOVER1),WORK(KOVER2),NOC,NBA,NB1,NNBA1)
+c
+c     KSHI = KCMO + NBA*NB1
+c     LSHI = NOC*NBA
+c     CALL DZERO(WORK(KSHI),LSHI)
+c
 Cccms KSHI = KCMO + NBA*NOC
 C     LSHI = NB1*NBA
 C     CALL DZERO(WORK(KSHI),LSHI)
@@ -132,25 +136,24 @@ C        KSHIP = KPAO + NB1*(I-1)
 C        KSHIC = KCMO + NBA*(NOC+I-1)
 C        CALL DCOPY(NB1,WORK(KSHIP),1,WORK(KSHIC),1)
 C     END DO
-
-      CALL AROUND('Localized molecular orbitals and PAOs')
-      CALL PRINTORB(NB1+NOC,NBA,WORK(KCMO))
- 
+C
+C     CALL AROUND('Localized orbitals')
+C     CALL PRINTORB(NB1,NBA,WORK(KCMO))
+C
 C *** IF R12EIN COMBINED WITH LOCAL MOS 
  
 CWMK  IF (R12EOR) THEN
  
 C *** Memory allocation
 
-         NOBL = NB1 + NOC 
          KFCAO  = KEND
          KFVAO  = KFCAO  + N2BASX
          KFCMO  = KFVAO  + N2BASX
-         KDCAO  = KFCMO  + NOBL*(NOBL+1)/2
+         KDCAO  = KFCMO  + N2BASX
          KDVAO  = KDCAO  + N2BASX  
          KFPAO  = KDVAO  + N2BASX
-         KVEC   = KFPAO  + NB1 * (NB1+1)/2
-         KWRK   = KVEC   + NB1 * NB1
+         KVEC   = KFPAO  + NNBAST
+         KWRK   = KVEC   + NN
          LWRK   = LFREE  - KWRK 
  
 C *** Tranform AO fock matrix in local MO fock matrix
@@ -162,7 +165,7 @@ C *** Tranform AO fock matrix in local MO fock matrix
          CALL DCOPY(N2BASX,WORK(KFCAO),1,WORK(KDCAO),1)
          CALL DGETSP(NBAST,WORK(KDCAO),WORK(KFCAO))
          CALL UTHU(WORK(KFCAO),WORK(KFCMO),WORK(KCMO),WORK(KDCAO),
-     *                                                       NBA,NOBL)
+     *                                                       NBA,NB1)
 C ccms diag pao
 C         NTFMO = NOBL*(NOBL+1)/2
 C         NB1T  = NB1 * (NB1+1)/2 
@@ -187,10 +190,10 @@ C        CALL FCKMAT(.TRUE.,DUMMY,WORK(KCMO),EMY,WORK(KFCAO),DUMMY,
 C    *               WORK(KWRK),LWRK)
 C        CALL OUTPAK(WORK(KFCAO),NBAST,1,LUPRI)
 C        CALL WRLOCMO(WORK(KCMO),WORK(KFCAO),NOC,NCO,NBA,NB1)
- 
-      CALL AROUND('Molecular orbitals and Canonical PAOs')
-      CALL PRINTORB(NB1+NOC,NBA,WORK(KCMO))
-
+c
+c     CALL AROUND('Molecular orbitals and Canonical PAOs')
+c     CALL PRINTORB(NB1+NOC,NBA,WORK(KCMO))
+c
 CWMK  END IF
  
       CALL TITLER('END BOYS LOCALIZATION','*',103)
@@ -268,15 +271,20 @@ C     of NRHFFR(ISYM) from ccorb.h which is not defined yet in Sirius!
 C     NOTE that NRHFFR(isym) frozen orbitals from CC from ccorb.h not
 C     necessarily are the first, thus also for that reason it cannot be used.
 C     This will also work for MCSCF.
+C
+C     Revised by wmk Aug 2005 to use LOCFRO(ISYM).
+C
 #include <implicit.h>
 #include <inforb.h>
+#include <r12int.h>
 
 C     LGLO = .TRUE.
 C     hjaaj aug 2004: is in ccorb.h but is never used in cc/, thus
 C     I just disabled the definition.
       NCO = 0
       DO ISYM = 1, NSYM
-         NCO = NCO + NFRO(ISYM)
+cwmk     NCO = NCO + NFRO(ISYM)
+         NCO = NCO + LOCFRO(ISYM)
       END DO
          
       RETURN
@@ -552,7 +560,7 @@ C End of the Localization
 
  500  CONTINUE
       RETURN
- 2200 FORMAT(/25x,'** LOCALIZATION CONVERGE AFTER',i3,' ITERATIONS **'/)
+ 2200 FORMAT(/9x,'** LOCALIZATION CONVERGED AFTER',i3,' ITERATIONS **'/)
  2300 FORMAT(/'** LOCALIZATION HAS BEEN UNSUCESSFUL **')
 
       END
@@ -602,6 +610,7 @@ C  /* Deck wrlocmo  */
       SUBROUTINE WRLOCMO(CMO,FKMAT,NOC,NCO,NBA,NB1)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
 #include <implicit.h>
+#include <priunit.h>
       DIMENSION FKMAT(*), CMO(*)
 
       IJ = 0

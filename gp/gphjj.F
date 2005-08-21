@@ -797,7 +797,7 @@ C     Jun-1992 ov     Parameters for 0.5, 1.5, ... (for Cray)
 C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
-C
+C  18-aug-2005 wmk    Changed C1 to 1.D-15
 #include "implicit.h"
       DIMENSION F(*),V(*)
       DIMENSION BIG(*) ,JBIG(*)
@@ -805,7 +805,8 @@ C
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
 #include "thrzer.h"
-      DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
+      DATA C1,C2,C3,C4,C5,C6/1.D-15,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
+Cwas: DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
 Cwas: IF (NB.EQ.1) RETURN !900727-hjaaj

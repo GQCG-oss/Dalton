@@ -3485,6 +3485,7 @@ C               in the MOTECC-90 Input/Output documentation
 C
 C *** Option 11 
   111 CONTINUE
+      READ (LUCMD,*) (LOCFRO(I),I=1,NSYM)
       GO TO 100
 C
 C *** Option 12 >AO DEL< Delete MO:s based on AO overlap matrix.

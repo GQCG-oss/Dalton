@@ -3463,6 +3463,7 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       SVDTHR =  1D-12
       DO I=1,8
         NRXR12(I) = 0
+        LOCFRO(I) = 0
       END DO
 cLig >> setting RANGMO and RPSO false
       RANGMO = .FALSE.
