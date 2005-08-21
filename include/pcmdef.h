@@ -1,5 +1,3 @@
 C
-C$Id: pcmdef.h,v 1.2 2005-08-05 08:42:56 ruud Exp $
-C
       PARAMETER (MXTS=2500, MXSP=100, MXTSPT = 2*MXTS)
       PARAMETER (MXVER = 25000)
