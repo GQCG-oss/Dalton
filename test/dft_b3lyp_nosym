@@ -45,7 +45,7 @@ B3LYP
 '
 
 test='
-check_scf_energy DFT  -73.176324831119 1e-13
+check_scf_energy DFT  -73.176324878547 1e-13
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

@@ -95,10 +95,10 @@ C...  Outer point
       NR = NINT(LOG(D1+(RH/GRDC))/H)
       IF(IPRINT.GE.3)WRITE(LUPRI,'(A,I5)') 'Number of points:',NR
       IF(NR.GT.NRADPT) CALL QUIT('Too many radial points.')
-      RADNDE(1) = RL
-      RADWT(1)  = (RL+GRDC)*RL*RL*H
-      DO IR = 2,NR
-         RADNDE(IR) = (RADNDE(IR-1)+GRDC)*EPH-GRDC
+      RADNDE(NR) = RL
+      RADWT(NR)  = (RL+GRDC)*RL*RL*H
+      DO IR = NR-1,1,-1
+         RADNDE(IR) = (RADNDE(IR+1)+GRDC)*EPH-GRDC
          RADWT(IR) = (RADNDE(IR)+GRDC)*RADNDE(IR)*RADNDE(IR)*H
       ENDDO
       END

@@ -45,7 +45,7 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT -73.950244651480 5e-9
+check_scf_energy DFT  -73.950244035250 5e-9
 check_dipole 0.783423 1e-6
 '
 

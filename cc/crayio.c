@@ -185,8 +185,6 @@ void PrintFileStats(unit, file)
   double ave_read=0.0e0, ave_write=0.0e0;
   double rate_read=0.0e0, rate_write=0.0e0;
 
-  (void) fflush(stdout);
-
   if (file->n_read) {
     ave_read = file->words_read / (double) file->n_read;
     if (file->time_read > 0.0e0)
@@ -199,17 +197,18 @@ void PrintFileStats(unit, file)
       rate_write = file->words_write / (1000000.0e0 * file->time_write);
   }
 
-  (void) fflush(stdout);
-  (void) fprintf(stderr,"CRAYIO: Statistics for unit %d, file '%s', length=%ld bytes.\n",
-		 unit, file->path, file->length);
-  (void) fprintf(stderr,"CRAYIO: oper :  #req.  :  #seek  :   #words  :");
-  (void) fprintf(stderr," #w/#req : time(s) :  MW/s \n");
-  (void) fprintf(stderr,"CRAYIO: read : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
-		 file->n_read, file->seek_read, (INTEGER) file->words_read, 
-		 (INTEGER) ave_read, file->time_read, rate_read);
-  (void) fprintf(stderr,"CRAYIO:write : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
-		 file->n_write, file->seek_write, (INTEGER) file->words_write, 
-		 (INTEGER) ave_write, file->time_write, rate_write);
+  fflush(stdout);
+  fprintf(stderr,"CRAYIO: Statistics for unit %d, file '%s', length=%lu bytes.\n",
+          unit, file->path, (unsigned long)file->length);
+  fprintf(stderr,
+          "CRAYIO: oper :  #req.  :  #seek  :   #words  :"
+          " #w/#req : time(s) :  MW/s \n"
+          "CRAYIO: read : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
+          file->n_read, file->seek_read, (int) file->words_read, 
+          (int) ave_read, file->time_read, rate_read);
+  fprintf(stderr,"CRAYIO:write : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
+          file->n_write, file->seek_write, (int) file->words_write, 
+          (int) ave_write, file->time_write, rate_write);
 }
 
 void InitFileData(file)
@@ -332,12 +331,13 @@ void GETWA(unit, result, addr, count, ierr)
 
   if ( (where+nbytes) > file->length ) {
     *ierr = -5;
-    (void) fflush(stdout);
-    (void) fprintf(stderr,"GETWA: where %ld \n",where);
-    (void) fprintf(stderr,"GETWA: nbytes %ld \n",nbytes);
-    (void) fprintf(stderr,"GETWA: file->length %ld \n",file->length);
-    (void) PrintFileStats(*unit, file);
-    (void) fflush(stdout);
+    fflush(stdout);
+    fprintf(stderr,
+            "GETWA: where %ld \n"
+            "GETWA: nbytes %ld \n"
+            "GETWA: file->length %ld \n",
+            (long)where, (long)nbytes, (long)file->length);
+    PrintFileStats(*unit, file);
     return;
   }
 
