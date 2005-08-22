@@ -27,7 +27,7 @@ cat > r12_stg.info <<'%EOF%'
                      The hybrid and CABS approaches are used. 
 
                      The orbital-invariant energies must be equal
-                     to those of test case r12_stg.
+                     to those of test case r12_loc.
 %EOF%
 
 #######################################################################

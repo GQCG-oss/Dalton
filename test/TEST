@@ -88,7 +88,7 @@ dpt_hbr dpt_hbr_finp dpt_h2s_ff"
 MP2R12="r12_damped r12_damped_herdir \
 r12_sym r12_nosym r12_fc_sym r12_fc_nosym \
 r12_aux_sym r12_aux_nosym r12_fc_aux_sym r12_fc_aux_nosym \
-r12_prop r12_prop_n2 r12_prop_h2o r12_loc r12_stg"
+r12_prop r12_prop_n2 r12_prop_h2o r12_loc r12_stg r12_orb"
 #
 SHORTCCR12="cc2_r12_aux2_bh cc2_r12_aux2_bh_sym \
 cc2_r12_aux_bh_a2 cc2_r12_aux_bh_sym_a2 \

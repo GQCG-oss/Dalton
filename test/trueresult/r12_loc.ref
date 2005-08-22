@@ -1,0 +1,1942 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+
+    Celestino Angeli,         University of Ferrara,        Italy      
+    Keld L. Bak,              UNI-C,                        Denmark    
+    Vebjoern Bakken,          University of Oslo,           Norway     
+    Ove Christiansen,         Aarhus University,            Denmark    
+    Renzo Cimiraglia,         University of Ferrara,        Italy      
+    Sonia Coriani,            University of Trieste,        Italy      
+    Paal Dahle,               University of Oslo,           Norway     
+    Erik K. Dalskov,          UNI-C,                        Denmark    
+    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
+    Berta Fernandez,          U. of Santiago de Compostela, Spain      
+    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
+    Kasper Hald,              Aarhus University,            Denmark    
+    Asger Halkier,            Aarhus University,            Denmark    
+    Hanne Heiberg,            University of Oslo,           Norway     
+    Trygve Helgaker,          University of Oslo,           Norway     
+    Hinne Hettema,            University of Auckland,       New Zealand
+    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
+    Dan Jonsson,              KTH Stockholm,                Sweden     
+    Poul Joergensen,          Aarhus University,            Denmark    
+    Sheela Kirpekar,          SDU - Odense University,      Denmark    
+    Wim Klopper,              University of Karlsruhe,      Germany    
+    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
+    Jakob Kongsted,           Aarhus University,            Denmark    
+    Henrik Koch,              University of Trondheim,      Norway     
+    Andrea Ligabue,           University of Modena,         Italy      
+    Ola B. Lutnaes,           University of Oslo,           Norway     
+    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
+    Patrick Norman,           University of Linkoeping,     Sweden     
+    Jeppe Olsen,              Aarhus University,            Denmark    
+    Anders Osted,             Copenhagen University,        Denmark    
+    Martin J. Packer,         University of Sheffield,      UK         
+    Thomas B. Pedersen,       University of Lund,           Sweden     
+    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
+    Elias Rudberg,            KTH Stockholm,                Sweden     
+    Torgeir A. Ruden,         University of Oslo,           Norway     
+    Kenneth Ruud,             University of Tromsoe,        Norway     
+    Pawel Salek,              KTH Stockholm,                Sweden     
+    Alfredo Sanchez de Meras, University of Valencia,       Spain      
+    Trond Saue,               University of Strasbourg,     France     
+    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
+    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
+    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
+    Peter R. Taylor,          University of Warwick,        UK         
+    Olav Vahtras,             KTH Stockholm,                Sweden     
+    David J. Wilson,          University of Oslo,           Norway     
+    Hans Agren,               KTH Stockholm,                Sweden     
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+
+     Date and time (Linux)  : Fri Aug 19 19:38:12 2005
+     Host name              : tchplx50                                
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  CH4: Local MP2-R12 (Ansatz 1)                                           
+                                                                          
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           C           0.000000
+                           H           0.000000
+                           H           0.000000
+                           H           0.000000
+                           H           0.000000
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:   0.000 %
+
+ Center-of-mass coordinates (A):    1.090000   -0.120000    7.289010
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     4
+  Total number of atoms:   10
+
+  label  basis   atoms  charge   prim    cont     basis
+  ------------------------------------------------------------------------------
+  C        1       1       6      26      16      [11s5p|4s4p]                                       
+  H        1       1       1       5       3      [5s|3s]                                            
+  H        1       1       1       5       3      [5s|3s]                                            
+  H        1       1       1       5       3      [5s|3s]                                            
+  H        1       1       1       5       3      [5s|3s]                                            
+  C        2       1       0      46      31      [11s6p2d1f|5s3p2d1f]                               
+  H        2       1       0      21      19      [5s2p2d|3s2p2d]                                    
+  H        2       1       0      21      19      [5s2p2d|3s2p2d]                                    
+  H        2       1       0      21      19      [5s2p2d|3s2p2d]                                    
+  H        2       1       0      21      19      [5s2p2d|3s2p2d]                                    
+  ------------------------------------------------------------------------------
+  total:          10      10     176     135
+  ------------------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 30
+
+   1   C        x      1.0900000000
+   2            y     -0.1200000000
+   3            z      7.2890100000
+
+   4   H        x      2.8715308320
+   5            y      0.1736528345
+   6            z      8.5657410000
+
+   7   H        x     -0.6915308320
+   8            y     -0.4136528345
+   9            z      8.5657410000
+
+  10   H        x      0.7963471655
+  11            y      1.6615308320
+  12            z      6.0122790000
+
+  13   H        x      1.3836528345
+  14            y     -1.9015308320
+  15            z      6.0122790000
+
+  16   C        x      1.0900000000
+  17            y     -0.1200000000
+  18            z      7.2890100000
+
+  19   H        x      2.8715308320
+  20            y      0.1736528345
+  21            z      8.5657410000
+
+  22   H        x     -0.6915308320
+  23            y     -0.4136528345
+  24            z      8.5657410000
+
+  25   H        x      0.7963471655
+  26            y      1.6615308320
+  27            z      6.0122790000
+
+  28   H        x      1.3836528345
+  29            y     -1.9015308320
+  30            z      6.0122790000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C           H           H           H           H           C     
+            ------      ------      ------      ------      ------      ------
+ C     :    0.000000
+ H     :    1.170203    0.000000
+ H     :    1.170203    1.910933    0.000000
+ H     :    1.170203    1.910933    1.910933    0.000000
+ H     :    1.170203    1.910933    1.910933    1.910933    0.000000
+ C     :    0.000000    1.170203    1.170203    1.170203    1.170203    0.000000
+ H     :    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
+ H     :    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
+ H     :    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
+ H     :    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
+
+            H           H           H           H     
+            ------      ------      ------      ------
+ H     :    0.000000
+ H     :    1.910933    0.000000
+ H     :    1.910933    1.910933    0.000000
+ H     :    1.910933    1.910933    1.910933    0.000000
+
+
+  Max interatomic separation is    1.9109 Angstroms
+  between atoms "H     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    3.680240          1.000000    0.000000    0.000000
+   IB    3.680240          0.000000    1.000000    0.000000
+   IC    3.680240          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         137322.2826         137322.2826         137322.2826 MHz
+            4.580578            4.580578            4.580578 cm-1
+
+
+  Nuclear repulsion energy :   12.514560078913
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ >>> Time used in DIPLEN is   0.02 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.03 seconds
+
+
+ >>> Time used in ONEDRV is   0.03 seconds
+
+
+ >>> Time used in GABGEN is   0.12 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.23 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ Scale factors for CC excitations manifolds:
+ for bra states (projection manifold):   1.00000000000000     
+ for ket states (operator manifold)  :   1.00000000000000     
+
+
+@ Primary orbitals are deleted during canonical orthonormalization
+@   because of detected numerical linear dependence.
+@ Eigenvalue threshold for num. lin. dep. =  1.00D-06
+
+@   3 MO components are deleted in symmetry    1
+ Overlap eigenvalues of the deleted orbitals:
+  0.00D+00  0.00D+00  0.00D+00
+ DELMO: ISYM, ITURN, NORBISAV, NORBI           1           2         135
+          25
+
+WARNING: Orbitals have been deleted because of numerical
+   linear dependence although not requested in input.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Fri Aug 19 19:38:13 2005
+     Host name              : tchplx50                                
+
+ Title lines from integral program:
+     CH4: Local MP2-R12 (Ansatz 1)                                           
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART H1DIAG" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 25
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Occupied SCF orbitals              5
+     Secondary orbitals                20
+     Total number of orbitals          25
+     Number of basis functions        135
+
+     Boys localization of all doubly occupied orbitals will be performed after RHF/DFT/MCSCF
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations         100
+     ---------------------------------------
+     Total number of variables           101
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ ---------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    1      -27.136564111351    1.69256D+01   -2.71D+01    1
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    2      -34.589876264565    5.94157D+00   -7.45D+00    2
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    3      -38.794687354110    4.88363D+00   -4.20D+00    3
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    4      -40.076399280007    1.16828D+00   -1.28D+00    4
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    5      -40.169302451018    7.17472D-02   -9.29D-02    5
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    6      -40.169567251296    2.35077D-02   -2.65D-04    6
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    7      -40.169607707938    1.69023D-03   -4.05D-05    7
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+    8      -40.169608178674    1.81784D-04   -4.71D-07    8
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.07 seconds
+
+    9      -40.169608183990    2.56722D-05   -5.32D-09    9
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+   10      -40.169608184049    1.77715D-06   -5.89D-11   10
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+   11      -40.169608184049    1.32378D-07   -1.14D-13   10
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+   12      -40.169608184049    3.23692D-08   -7.11D-14   10
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+   13      -40.169608184049    2.10338D-10   -4.26D-14   10
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+   14      -40.169608184049    1.30667D-11    1.42D-13   10
+ DIIS converged in  14 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -11.24883460    -0.91570058    -0.52493145    -0.52493145    -0.52493145
+         0.15124038     0.22803923     0.22803923     0.22803923     0.41917923
+
+    E(LUMO) :     0.15124038 au (symmetry 1)
+  - E(HOMO) :    -0.52493145 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.67617183 au
+
+ >>> Writing SIRIFC interface file <<<
+
+
+  *********************************************************************
+  ************************* BOYS LOCALIZATION *************************
+  *********************************************************************
+
+ Number of frozen orbitals    :           1
+ Number of localized orbitals :           4
+ Number of molecular orbitals :          25
+ Number of auxilliary orbitals:           0
+ Number of basis functions    :         135
+
+         ** LOCALIZATION CONVERGED AFTER 10 ITERATIONS **
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+
+                      *****************************
+                      *** END BOYS LOCALIZATION ***
+                      *****************************
+
+
+
+@ Auxiliary orbitals are deleted during canonical orthonormalization
+@   because of detected numerical linear dependence.
+@ Eigenvalue threshold for num. lin. dep. =  1.00D-06
+
+@  20 MO components are deleted in symmetry    1
+ Overlap eigenvalues of the deleted orbitals:
+  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
+  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
+  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
+  0.00D+00  0.00D+00  0.00D+00  0.00D+00  0.00D+00
+ DELMO: ISYM, ITURN, NORBISAV, NORBI           1           2         107
+          87
+
+  Canonical primary and secondary basis sets
+  ISYM       NORB1 MBAS1       NORB2 MBAS2
+     1          25    28          87   107
+
+
+@ Auxiliary orbitals are deleted during canonical orthonormalization
+@   because of detected numerical linear dependence.
+@ Eigenvalue threshold for num. lin. dep. =  1.00D-06
+
+@   8 MO components are deleted in symmetry    1
+ Overlap eigenvalues of the deleted orbitals:
+  4.95D-07  4.95D-07  4.95D-07  2.81D-07  1.42D-08
+  1.42D-08  1.42D-08  8.87D-09
+ DELMO: ISYM, ITURN, NORBISAV, NORBI           1           2          87
+          79
+
+  Canonical primary and secondary basis sets
+  ISYM       NORB1 MBAS1       NORB2 MBAS2
+     1          25    28          79   107
+
+ >>> Time used in TWOINT is   0.61 seconds
+
+
+ Computation of exchange matrix done [5]
+
+ AUXILIARY BASIS LOW EIGENVALUES
+ ISYM         EIGENVALUE
+   1      0.000000000000
+
+ >>> Time used in R12AUX is   0.78 seconds
+
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -40.169608184049
+     Nuclear repulsion:            12.514560078913
+     Electronic energy:           -52.684168262962
+
+     Final gradient norm:           0.000000000013
+
+ 
+     Date and time (Linux)  : Fri Aug 19 19:38:14 2005
+     Host name              : tchplx50                                
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  C   1s    -0.5635  -0.1021   0.0000   0.0000   0.0000
+   2  C   1s    -0.4666  -0.1727   0.0000   0.0000   0.0000
+   3  C   1s    -0.0036   0.4457   0.0000   0.0000   0.0000
+   4  C   1s     0.0004   0.3911   0.0000   0.0000   0.0000
+   5  C   2px    0.0000   0.0000   0.0348   0.1767   0.0000
+   6  C   2py    0.0000   0.0000  -0.1767   0.0348   0.0000
+   7  C   2pz    0.0000   0.0000   0.0000   0.0000   0.1801
+   8  C   2px    0.0000   0.0000   0.0602   0.3060   0.0000
+   9  C   2py    0.0000   0.0000  -0.3060   0.0602   0.0000
+  10  C   2pz    0.0000   0.0000   0.0000   0.0000   0.3119
+  11  C   2px    0.0000   0.0000   0.0201   0.1023   0.0000
+  12  C   2py    0.0000   0.0000  -0.1023   0.0201   0.0000
+  13  C   2pz    0.0000   0.0000   0.0000   0.0000   0.1043
+  14  C   2px    0.0000   0.0000   0.0201   0.1023   0.0000
+  15  C   2py    0.0000   0.0000  -0.1023   0.0201   0.0000
+  16  C   2pz    0.0000   0.0000   0.0000   0.0000   0.1043
+  17  H   1s    -0.0003   0.0803   0.0043   0.1379   0.0975
+  18  H   1s    -0.0001   0.0818   0.0070   0.2268   0.1604
+  19  H   1s    -0.0001  -0.0006   0.0030   0.0960   0.0679
+  20  H   1s    -0.0003   0.0803  -0.0043  -0.1379   0.0975
+  21  H   1s    -0.0001   0.0818  -0.0070  -0.2268   0.1604
+  22  H   1s    -0.0001  -0.0006  -0.0030  -0.0960   0.0679
+  23  H   1s    -0.0003   0.0803  -0.1379   0.0043  -0.0975
+  24  H   1s    -0.0001   0.0818  -0.2268   0.0070  -0.1604
+  25  H   1s    -0.0001  -0.0006  -0.0960   0.0030  -0.0679
+  26  H   1s    -0.0003   0.0803   0.1379  -0.0043  -0.0975
+  27  H   1s    -0.0001   0.0818   0.2268  -0.0070  -0.1604
+  28  H   1s    -0.0001  -0.0006   0.0960  -0.0030  -0.0679
+  29  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  30  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  31  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  32  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  33  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  34  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  35  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  36  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  37  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  38  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  39  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  40  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  41  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  42  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  43  C   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  44  C   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  45  C   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  46  C   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  47  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  48  C   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  49  C   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  50  C   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  51  C   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  52  C   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  53  C   4f3-   0.0000   0.0000   0.0000   0.0000   0.0000
+  54  C   4f2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  55  C   4f1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  56  C   4f0    0.0000   0.0000   0.0000   0.0000   0.0000
+  57  C   4f1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  58  C   4f2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  59  C   4f3+   0.0000   0.0000   0.0000   0.0000   0.0000
+  60  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  61  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  62  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  63  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  64  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  65  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  66  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  67  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  68  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  69  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  70  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  71  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  72  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  73  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  74  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  75  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  76  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  77  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  78  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  79  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  80  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  81  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  82  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  83  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  84  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  85  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  86  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  87  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  88  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  89  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  90  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  91  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  92  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  93  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  94  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  95  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  96  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  97  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  98  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  99  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 100  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 101  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 102  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 103  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 104  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 105  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 106  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 107  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 108  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 109  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+ 110  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 111  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 112  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 113  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 114  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+ 115  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 116  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 117  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 118  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 119  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+ 120  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 121  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 122  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 123  H   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+ 124  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+ 125  H   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+ 126  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 127  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 128  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+ 129  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 130  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 131  H   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 132  H   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+ 133  H   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+ 134  H   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+ 135  H   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.96 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
+
+ 
+     Date and time (Linux)  : Fri Aug 19 19:38:14 2005
+     Host name              : tchplx50                                
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+- End of Wave Function Section
+
+
+Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   NRHF   :       4
+   NORB1  :      25
+   NORB2  :      79
+
+ Number of primary orbitals             :           25
+ Number of secondary orbitals           :           79
+ Total number of orbitals               :          104
+ Total number of basis functions        :          135
+ Number of (i|p') integrals             :          416
+ Number of (i|u') integrals             :          540
+ Number of (Ip'|1/r12|jL) integrals     :          416
+ Number of (ip'|1/r12|jq') integrals    :        86736
+ Number of (ip'|r12|jq') integrals      :        86736
+ Number of (ip'|[T1,r12]|jq') integrals :       173056
+ Threshold for R12 contributions            =  0.00000    
+ Threshold for singular value decomposition = 0.100000E-11
+
+ Calculation with Gaussian-type geminals (GTGs)
+ Expansion coefficients and exponents:
+    1        0.468300000000000        0.082575000000000
+    2        0.308700000000000        0.580250000000000
+    3        0.152900000000000        4.070000000000001
+ The B matrix is transformed into an orthogonal basis
+ and inverted by diagonalization
+
+ ******************************************************************************
+ The MP2-R12/A and MP2-R12/B energies are computed as described in:
+ W. Klopper, J. Chem. Phys. 120, 10890-10895 (2004).
+ To avoid the hybride scheme, the keyword '.NO HYB'
+ must be specified in the Dalton input file.
+ ------------------------------------------------------------------------------
+ Ansatz 1 is used and results are printed for approximations A and B.
+ ------------------------------------------------------------------------------
+ The Gaussian-damped R12 integrals are computed as described in:
+ C. C. M. Samson, W. Klopper and T. Helgaker,
+ Comp. Phys. Commun. 149, 1-10 (2002).
+ ******************************************************************************
+
+ Core memory required by CCSD_R12 :         462602  (double words)
+
+
+ >>> Time used in TWOINT is   0.42 seconds
+
+
+ >>> Time used in TWOINT is   0.43 seconds
+
+
+ >>> Time used in TWOINT is   0.17 seconds
+
+
+ >>> Time used in TWOINT is   0.17 seconds
+
+
+ >>> Time used in TWOINT is   0.16 seconds
+
+
+ >>> Time used in TWOINT is   0.16 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+ Computation of (ik|[[f12,T1],f12]|jl) integrals done
+
+ >>> Time used in #6 [4] is  11.75 seconds
+
+
+ >>> Time used in TWOINT is   0.34 seconds
+
+
+ >>> Time used in TWOINT is   0.35 seconds
+
+
+ >>> Time used in TWOINT is   0.13 seconds
+
+
+ >>> Time used in TWOINT is   0.15 seconds
+
+
+ >>> Time used in TWOINT is   0.13 seconds
+
+
+ >>> Time used in TWOINT is   0.12 seconds
+
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+ Computation of (ik|f12**2|jl) integrals done
+
+ >>> Time used in #4 [4] is  11.36 seconds
+
+
+ >>> Time used in TWOINT is   0.32 seconds
+
+
+ >>> Time used in TWOINT is   0.33 seconds
+
+
+ >>> Time used in TWOINT is   0.14 seconds
+
+
+ >>> Time used in TWOINT is   0.13 seconds
+
+
+ >>> Time used in TWOINT is   0.15 seconds
+
+
+ >>> Time used in TWOINT is   0.14 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.07 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+ Computation of (ik|f12/r12|jl) integrals done
+
+ >>> Time used in #2 [4] is  11.15 seconds
+
+
+ >>> Time used in TWOINT is   1.12 seconds
+
+
+ >>> Time used in TWOINT is   1.32 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.19 seconds
+
+
+ >>> Time used in TWOINT is   0.23 seconds
+
+
+ >>> Time used in TWOINT is   0.15 seconds
+
+
+ >>> Time used in TWOINT is   0.12 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.19 seconds
+
+
+ >>> Time used in TWOINT is   0.07 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.17 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.17 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.16 seconds
+
+ Computation of (ip'|f12|jq') integrals done
+
+ >>> Time used in #3 [5] is  14.73 seconds
+
+
+ >>> Time used in TWOINT is   0.43 seconds
+
+
+ >>> Time used in TWOINT is   0.79 seconds
+
+
+ >>> Time used in TWOINT is   0.23 seconds
+
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.13 seconds
+
+
+ >>> Time used in TWOINT is   0.12 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.07 seconds
+
+
+ >>> Time used in TWOINT is   0.14 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.13 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.15 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.14 seconds
+
+ Computation of (ip'|1/r12|jq') integrals done
+
+ >>> Time used in #1 [5] is  13.32 seconds
+
+
+ >>> Time used in TWOINT is   0.34 seconds
+
+
+ >>> Time used in TWOINT is   0.35 seconds
+
+
+ >>> Time used in TWOINT is   0.12 seconds
+
+
+ >>> Time used in TWOINT is   0.14 seconds
+
+
+ >>> Time used in TWOINT is   0.14 seconds
+
+
+ >>> Time used in TWOINT is   0.14 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.07 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.07 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in #4 [4] is  11.59 seconds
+
+
+ >>> Time used in TWOINT is   1.15 seconds
+
+
+ >>> Time used in TWOINT is   1.33 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.41 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.41 seconds
+
+
+ >>> Time used in TWOINT is   0.21 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.18 seconds
+
+
+ >>> Time used in TWOINT is   0.13 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.18 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.18 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.11 seconds
+
+
+ >>> Time used in TWOINT is   0.19 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Computation of (i* p'|f12|jq') integrals done
+
+ >>> Time used in #3 [5] is  15.78 seconds
+
+
+ >>> Time used in TWOINT is   1.17 seconds
+
+
+ >>> Time used in TWOINT is   1.36 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.39 seconds
+
+
+ >>> Time used in TWOINT is   0.40 seconds
+
+
+ >>> Time used in TWOINT is   0.41 seconds
+
+
+ >>> Time used in TWOINT is   0.20 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.18 seconds
+
+
+ >>> Time used in TWOINT is   0.13 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.19 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.18 seconds
+
+
+ >>> Time used in TWOINT is   0.08 seconds
+
+
+ >>> Time used in TWOINT is   0.09 seconds
+
+
+ >>> Time used in TWOINT is   0.18 seconds
+
+
+ >>> Time used in TWOINT is   0.07 seconds
+
+
+ >>> Time used in TWOINT is   0.10 seconds
+
+
+ >>> Time used in TWOINT is   0.19 seconds
+
+ Computation of (i'p|f12|jq') integrals done
+
+ >>> Time used in #3 [5] is  19.45 seconds
+
+
+ >>> Time used in TWOINT is   8.30 seconds
+
+
+ >>> Time used in TWOINT is   6.45 seconds
+
+
+ >>> Time used in TWOINT is   2.50 seconds
+
+
+ >>> Time used in TWOINT is   2.54 seconds
+
+
+ >>> Time used in TWOINT is   2.48 seconds
+
+
+ >>> Time used in TWOINT is   2.46 seconds
+
+
+ >>> Time used in TWOINT is   1.09 seconds
+
+
+ >>> Time used in TWOINT is   1.19 seconds
+
+
+ >>> Time used in TWOINT is   0.61 seconds
+
+
+ >>> Time used in TWOINT is   0.39 seconds
+
+
+ >>> Time used in TWOINT is   0.36 seconds
+
+
+ >>> Time used in TWOINT is   0.27 seconds
+
+
+ >>> Time used in TWOINT is   0.61 seconds
+
+
+ >>> Time used in TWOINT is   0.37 seconds
+
+
+ >>> Time used in TWOINT is   0.28 seconds
+
+
+ >>> Time used in TWOINT is   0.61 seconds
+
+
+ >>> Time used in TWOINT is   0.36 seconds
+
+
+ >>> Time used in TWOINT is   0.27 seconds
+
+
+ >>> Time used in TWOINT is   0.60 seconds
+
+
+ >>> Time used in TWOINT is   0.36 seconds
+
+
+ >>> Time used in TWOINT is   0.29 seconds
+
+
+ >>> Time used in TWOINT is   0.62 seconds
+
+ Computation of (ip'|[T,f12]|jq') integrals done
+
+ >>> Time used in #5 [5] is  42.06 seconds
+
+
+
+             +-----------------------------------------------+
+             ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
+             +-----------------------------------------------+
+
+
+
+                     +-------------------------------+
+                     ! Fock matrix in occupied space !
+                     +-------------------------------+
+
+ 
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.62262373
+       2       0.09769228    -0.62262373
+       3      -0.09769228     0.09769228    -0.62262373
+       4      -0.09769229     0.09769229    -0.09769228    -0.62262374
+
+
+                       +---------------------------+
+                       ! Pairs of orbital energies !
+                       +---------------------------+
+
+
+               Column   1
+       1      -1.24524746
+       2      -1.24524746
+       3      -1.24524746
+       4      -1.24524746
+       5      -1.24524746
+       6      -1.24524745
+       7      -1.24524747
+       8      -1.24524747
+       9      -1.24524746
+      10      -1.24524747
+ 
+ ENERGY IN ITERATION  1      -0.108742972
+ ENERGY IN ITERATION  2      -0.109808334
+ ENERGY IN ITERATION  3      -0.109876146
+ ENERGY IN ITERATION  4      -0.109875840
+ ENERGY IN ITERATION  5      -0.109876005
+ ENERGY IN ITERATION  6      -0.109876008
+ ENERGY IN ITERATION  7      -0.109876008
+ ENERGY IN ITERATION  8      -0.109876008
+ ENERGY IN ITERATION  9      -0.109876008
+ 
+ FINAL ITERATION OF LOCAL MP2  9
+
+ SECOND-ORDER PAIR ENERGIES:
+
+                    1   -0.015734480    0.000000000
+                    2   -0.003299040   -0.004523975
+                    3   -0.015734480    0.000000000
+                    4   -0.003299040   -0.004523975
+                    5   -0.003299040   -0.004523975
+                    6   -0.015734480    0.000000000
+                    7   -0.003299040   -0.004523975
+                    8   -0.003299040   -0.004523975
+                    9   -0.003299040   -0.004523975
+                   10   -0.015734479    0.000000000
+
+ MP2 =   -0.109876008   -0.082732159   -0.027143850
+
+
+                        +-------------------------+
+                        ! Original MP2-R12 method !
+                        +-------------------------+
+
+
+ SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
+
+   1   -0.015734480    0.019710092    0.000000000    0.000000000
+   2   -0.003299040    0.010499053   -0.004523975    0.005743147
+   3   -0.015734480    0.019710092    0.000000000    0.000000000
+   4   -0.003299040    0.010499053   -0.004523975    0.005743147
+   5   -0.003299040    0.010499053   -0.004523975    0.005743147
+   6   -0.015734480    0.019710092    0.000000000    0.000000000
+   7   -0.003299040    0.010499053   -0.004523975    0.005743147
+   8   -0.003299040    0.010499053   -0.004523975    0.005743147
+   9   -0.003299040    0.010499053   -0.004523975    0.005743147
+  10   -0.015734479    0.019710092    0.000000000    0.000000000
+
+       -0.082732159    0.141834687   -0.027143850    0.034458883
+
+ Noninvariant MP2-R12/0   correlation energy =    0.176293571
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1  0.1427E-01 -0.6903E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+   2  0.5615E-02 -0.2569E-02  0.1000E+01  0.8581E-02 -0.6744E-02  0.5000E+00  0.1885E+01  0.2283E+01
+   3  0.1427E-01 -0.6903E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+   4  0.5615E-02 -0.2569E-02  0.1000E+01  0.8581E-02 -0.6744E-02  0.5000E+00  0.1885E+01  0.2283E+01
+   5  0.5615E-02 -0.2569E-02  0.1000E+01  0.8581E-02 -0.6744E-02  0.5000E+00  0.1885E+01  0.2283E+01
+   6  0.1427E-01 -0.6903E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+   7  0.5615E-02 -0.2569E-02  0.1000E+01  0.8581E-02 -0.6744E-02  0.5000E+00  0.1885E+01  0.2283E+01
+   8  0.5615E-02 -0.2569E-02  0.1000E+01  0.8581E-02 -0.6744E-02  0.5000E+00  0.1885E+01  0.2283E+01
+   9  0.5615E-02 -0.2569E-02  0.1000E+01  0.8581E-02 -0.6744E-02  0.5000E+00  0.1885E+01  0.2283E+01
+  10  0.1427E-01 -0.6903E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+
+ SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
+
+   1   -0.015734480   -0.045235941    0.000000000    0.000000000
+   2   -0.003299040   -0.015571914   -0.004523975   -0.015443530
+   3   -0.015734480   -0.045235941    0.000000000    0.000000000
+   4   -0.003299040   -0.015571914   -0.004523975   -0.015443530
+   5   -0.003299040   -0.015571914   -0.004523975   -0.015443530
+   6   -0.015734480   -0.045235941    0.000000000    0.000000000
+   7   -0.003299040   -0.015571913   -0.004523975   -0.015443530
+   8   -0.003299040   -0.015571913   -0.004523975   -0.015443530
+   9   -0.003299040   -0.015571914   -0.004523975   -0.015443530
+  10   -0.015734479   -0.045235941    0.000000000    0.000000000
+
+       -0.082732159   -0.274375244   -0.027143850   -0.092661179
+
+ Noninvariant MP2-R12/A   correlation energy =   -0.367036423
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1  0.1427E-01 -0.6903E-02 -0.2067E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+   2  0.5615E-02 -0.2569E-02 -0.2186E+01  0.8581E-02 -0.6744E-02 -0.1272E+01  0.1885E+01  0.2283E+01
+   3  0.1427E-01 -0.6903E-02 -0.2067E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+   4  0.5615E-02 -0.2569E-02 -0.2186E+01  0.8581E-02 -0.6744E-02 -0.1272E+01  0.1885E+01  0.2283E+01
+   5  0.5615E-02 -0.2569E-02 -0.2186E+01  0.8581E-02 -0.6744E-02 -0.1272E+01  0.1885E+01  0.2283E+01
+   6  0.1427E-01 -0.6903E-02 -0.2067E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+   7  0.5615E-02 -0.2569E-02 -0.2186E+01  0.8581E-02 -0.6744E-02 -0.1272E+01  0.1885E+01  0.2283E+01
+   8  0.5615E-02 -0.2569E-02 -0.2186E+01  0.8581E-02 -0.6744E-02 -0.1272E+01  0.1885E+01  0.2283E+01
+   9  0.5615E-02 -0.2569E-02 -0.2186E+01  0.8581E-02 -0.6744E-02 -0.1272E+01  0.1885E+01  0.2283E+01
+  10  0.1427E-01 -0.6903E-02 -0.2067E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2823E+01  0.0000E+00
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.015734480   -0.045445784    0.000000000    0.000000000     1.45299         2.15338    
+   2   -0.003299040   -0.015989604   -0.004523975   -0.015461143     1.45299         2.15338    
+   3   -0.015734480   -0.045445784    0.000000000    0.000000000     1.45299         2.15338    
+   4   -0.003299040   -0.015989605   -0.004523975   -0.015461143     1.45299         2.15338    
+   5   -0.003299040   -0.015989605   -0.004523975   -0.015461143     1.45299         2.15338    
+   6   -0.015734480   -0.045445784    0.000000000    0.000000000     1.45299         2.15338    
+   7   -0.003299040   -0.015989604   -0.004523975   -0.015461143     1.45299         2.15338    
+   8   -0.003299040   -0.015989604   -0.004523975   -0.015461143     1.45299         2.15338    
+   9   -0.003299040   -0.015989604   -0.004523975   -0.015461143     1.45299         2.15338    
+  10   -0.015734479   -0.045445784    0.000000000    0.000000000     1.45299         2.15338    
+
+       -0.082732159   -0.277720763   -0.027143850   -0.092766858
+
+              MP2-R12/A   correlation energy =   -0.370487621
+
+ SECOND-ORDER R12/A' PAIR ENERGIES:
+
+  0@@   -0.082732159   -0.277720763   -0.027143850   -0.092766858    6.629353245    3.091514132
+  1@@   -0.082732159   -0.276169468   -0.027143850   -0.092766858    6.595342213    3.091514132
+  2@@   -0.082732159   -0.277106321   -0.027143850   -0.092766858    6.582657715    3.091514132
+  3@@   -0.082732159   -0.276943591   -0.027143850   -0.092766858    6.586993289    3.091514132
+  4@@   -0.082732159   -0.277016681   -0.027143850   -0.092766858    6.585353236    3.091514132
+  5@@   -0.082732159   -0.276994099   -0.027143850   -0.092766858    6.585928179    3.091514132
+  6@@   -0.082732159   -0.277002716   -0.027143850   -0.092766858    6.585720752    3.091514132
+  7@@   -0.082732159   -0.276999681   -0.027143850   -0.092766858    6.585795596    3.091514132
+  8@@   -0.082732159   -0.277000796   -0.027143850   -0.092766858    6.585768459    3.091514132
+  9@@   -0.082732159   -0.277000393   -0.027143850   -0.092766858    6.585778319    3.091514132
+ 10@@   -0.082732159   -0.277000540   -0.027143850   -0.092766858    6.585774734    3.091514132
+ 11@@   -0.082732159   -0.277000487   -0.027143850   -0.092766858    6.585776038    3.091514132
+ 12@@   -0.082732159   -0.277000506   -0.027143850   -0.092766858    6.585775563    3.091514132
+ 13@@   -0.082732159   -0.277000499   -0.027143850   -0.092766858    6.585775736    3.091514132
+ 14@@   -0.082732159   -0.277000502   -0.027143850   -0.092766858    6.585775673    3.091514132
+ 15@@   -0.082732159   -0.277000501   -0.027143850   -0.092766858    6.585775696    3.091514132
+ 16@@   -0.082732159   -0.277000501   -0.027143850   -0.092766858    6.585775688    3.091514132
+
+   1   -0.015734480   -0.045280499    0.000000000    0.000000000     1.45299         2.15338    
+   2   -0.003299040   -0.015979751   -0.004523975   -0.015461143     1.45299         2.15338    
+   3   -0.015734480   -0.045280499    0.000000000    0.000000000     1.45299         2.15338    
+   4   -0.003299040   -0.015979751   -0.004523975   -0.015461143     1.45299         2.15338    
+   5   -0.003299040   -0.015979751   -0.004523975   -0.015461143     1.45299         2.15338    
+   6   -0.015734480   -0.045280499    0.000000000    0.000000000     1.45299         2.15338    
+   7   -0.003299040   -0.015979751   -0.004523975   -0.015461143     1.45299         2.15338    
+   8   -0.003299040   -0.015979751   -0.004523975   -0.015461143     1.45299         2.15338    
+   9   -0.003299040   -0.015979751   -0.004523975   -0.015461143     1.45299         2.15338    
+  10   -0.015734479   -0.045280499    0.000000000    0.000000000     1.45299         2.15338    
+
+ CONVERGED IN:  16  ITERATIONS
+
+       -0.082732159   -0.277000501   -0.027143850   -0.092766858
+
+              MP2-R12/A'  correlation energy =   -0.369767358
+
+ SECOND-ORDER NONINVARIANT R12/B PAIR ENERGIES:
+
+   1   -0.015734480   -0.035157510    0.000000000    0.000000000
+   2   -0.003299040   -0.010397051   -0.004523975   -0.011251118
+   3   -0.015734480   -0.035157510    0.000000000    0.000000000
+   4   -0.003299040   -0.010397051   -0.004523975   -0.011251119
+   5   -0.003299040   -0.010397051   -0.004523975   -0.011251119
+   6   -0.015734480   -0.035157510    0.000000000    0.000000000
+   7   -0.003299040   -0.010397051   -0.004523975   -0.011251118
+   8   -0.003299040   -0.010397051   -0.004523975   -0.011251118
+   9   -0.003299040   -0.010397051   -0.004523975   -0.011251118
+  10   -0.015734479   -0.035157510    0.000000000    0.000000000
+
+       -0.082732159   -0.203012346   -0.027143850   -0.067506711
+
+ Noninvariant MP2-R12/B   correlation energy =   -0.270519057
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1  0.1427E-01 -0.1049E-01 -0.1361E+01  0.0000E+00  0.0000E+00  0.0000E+00
+   2  0.5615E-02 -0.4441E-02 -0.1264E+01  0.8581E-02 -0.1095E-01 -0.7839E+00
+   3  0.1427E-01 -0.1049E-01 -0.1361E+01  0.0000E+00  0.0000E+00  0.0000E+00
+   4  0.5615E-02 -0.4441E-02 -0.1264E+01  0.8581E-02 -0.1095E-01 -0.7839E+00
+   5  0.5615E-02 -0.4441E-02 -0.1264E+01  0.8581E-02 -0.1095E-01 -0.7839E+00
+   6  0.1427E-01 -0.1049E-01 -0.1361E+01  0.0000E+00  0.0000E+00  0.0000E+00
+   7  0.5615E-02 -0.4441E-02 -0.1264E+01  0.8581E-02 -0.1095E-01 -0.7839E+00
+   8  0.5615E-02 -0.4441E-02 -0.1264E+01  0.8581E-02 -0.1095E-01 -0.7839E+00
+   9  0.5615E-02 -0.4441E-02 -0.1264E+01  0.8581E-02 -0.1095E-01 -0.7839E+00
+  10  0.1427E-01 -0.1049E-01 -0.1361E+01  0.0000E+00  0.0000E+00  0.0000E+00
+
+ SECOND-ORDER R12/B PAIR ENERGIES:
+
+  0@@   -0.082732159   -0.203808020   -0.027143850   -0.067560693    4.016419337    1.905572461
+  1@@   -0.082732159   -0.203268730   -0.027143850   -0.067560693    4.012899035    1.905572461
+  2@@   -0.082732159   -0.203573566   -0.027143850   -0.067560693    4.008814198    1.905572461
+  3@@   -0.082732159   -0.203545035   -0.027143850   -0.067560693    4.010161914    1.905572461
+  4@@   -0.082732159   -0.203555447   -0.027143850   -0.067560693    4.009860784    1.905572461
+  5@@   -0.082732159   -0.203553465   -0.027143850   -0.067560693    4.009939393    1.905572461
+  6@@   -0.082732159   -0.203554009   -0.027143850   -0.067560693    4.009920761    1.905572461
+  7@@   -0.082732159   -0.203553883   -0.027143850   -0.067560693    4.009925428    1.905572461
+  8@@   -0.082732159   -0.203553915   -0.027143850   -0.067560693    4.009924291    1.905572461
+  9@@   -0.082732159   -0.203553908   -0.027143850   -0.067560693    4.009924572    1.905572461
+ 10@@   -0.082732159   -0.203553909   -0.027143850   -0.067560693    4.009924503    1.905572461
+ 11@@   -0.082732159   -0.203553909   -0.027143850   -0.067560693    4.009924520    1.905572461
+ 12@@   -0.082732159   -0.203553909   -0.027143850   -0.067560693    4.009924516    1.905572461
+
+   1   -0.015734480   -0.035137710    0.000000000    0.000000000     2.76823         3.50551    
+   2   -0.003299040   -0.010500512   -0.004523975   -0.011260116     2.76823         3.50551    
+   3   -0.015734480   -0.035137710    0.000000000    0.000000000     2.76823         3.50551    
+   4   -0.003299040   -0.010500512   -0.004523975   -0.011260116     2.76823         3.50551    
+   5   -0.003299040   -0.010500512   -0.004523975   -0.011260116     2.76823         3.50551    
+   6   -0.015734480   -0.035137710    0.000000000    0.000000000     2.76823         3.50551    
+   7   -0.003299040   -0.010500512   -0.004523975   -0.011260115     2.76823         3.50551    
+   8   -0.003299040   -0.010500512   -0.004523975   -0.011260115     2.76823         3.50551    
+   9   -0.003299040   -0.010500512   -0.004523975   -0.011260116     2.76823         3.50551    
+  10   -0.015734479   -0.035137710    0.000000000    0.000000000     2.76823         3.50551    
+
+ CONVERGED IN:  12  ITERATIONS
+
+       -0.082732159   -0.203553909   -0.027143850   -0.067560693
+
+              MP2-R12/B   correlation energy =   -0.271114602
+
+
+                     +--------------------------------+
+                     ! Auxiliary-basis MP2-R12 method !
+                     +--------------------------------+
+
+
+ SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
+
+   1   -0.015734480    0.002733852    0.000000000    0.000000000
+   2   -0.003299040    0.000769211   -0.004523975   -0.001214959
+   3   -0.015734480    0.002733852    0.000000000    0.000000000
+   4   -0.003299040    0.000769211   -0.004523975   -0.001214959
+   5   -0.003299040    0.000769211   -0.004523975   -0.001214959
+   6   -0.015734480    0.002733852    0.000000000    0.000000000
+   7   -0.003299040    0.000769211   -0.004523975   -0.001214959
+   8   -0.003299040    0.000769211   -0.004523975   -0.001214959
+   9   -0.003299040    0.000769211   -0.004523975   -0.001214959
+  10   -0.015734479    0.002733852    0.000000000    0.000000000
+
+       -0.082732159    0.015550672   -0.027143850   -0.007289755
+
+ Noninvariant MP2-R12/0   correlation energy =    0.008260916
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1  0.7281E-02 -0.3905E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+   2  0.1534E-02 -0.1001E-02  0.1000E+01  0.2636E-02 -0.2692E-02  0.5000E+00  0.4162E+01  0.4299E+01
+   3  0.7281E-02 -0.3905E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+   4  0.1534E-02 -0.1001E-02  0.1000E+01  0.2636E-02 -0.2692E-02  0.5000E+00  0.4162E+01  0.4299E+01
+   5  0.1534E-02 -0.1001E-02  0.1000E+01  0.2636E-02 -0.2692E-02  0.5000E+00  0.4162E+01  0.4299E+01
+   6  0.7281E-02 -0.3905E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+   7  0.1534E-02 -0.1001E-02  0.1000E+01  0.2636E-02 -0.2692E-02  0.5000E+00  0.4162E+01  0.4299E+01
+   8  0.1534E-02 -0.1001E-02  0.1000E+01  0.2636E-02 -0.2692E-02  0.5000E+00  0.4162E+01  0.4299E+01
+   9  0.1534E-02 -0.1001E-02  0.1000E+01  0.2636E-02 -0.2692E-02  0.5000E+00  0.4162E+01  0.4299E+01
+  10  0.7281E-02 -0.3905E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+
+ SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
+
+   1   -0.015734480   -0.029310034    0.000000000    0.000000000
+   2   -0.003299040   -0.005650055   -0.004523975   -0.007105340
+   3   -0.015734480   -0.029310034    0.000000000    0.000000000
+   4   -0.003299040   -0.005650055   -0.004523975   -0.007105340
+   5   -0.003299040   -0.005650055   -0.004523975   -0.007105340
+   6   -0.015734480   -0.029310034    0.000000000    0.000000000
+   7   -0.003299040   -0.005650055   -0.004523975   -0.007105340
+   8   -0.003299040   -0.005650055   -0.004523975   -0.007105340
+   9   -0.003299040   -0.005650055   -0.004523975   -0.007105340
+  10   -0.015734479   -0.029310034    0.000000000    0.000000000
+
+       -0.082732159   -0.151140467   -0.027143850   -0.042632042
+
+ Noninvariant MP2-R12/A   correlation energy =   -0.193772509
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1  0.7281E-02 -0.3905E-02 -0.1864E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+   2  0.1534E-02 -0.1001E-02 -0.1533E+01  0.2636E-02 -0.2692E-02 -0.9793E+00  0.4162E+01  0.4299E+01
+   3  0.7281E-02 -0.3905E-02 -0.1864E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+   4  0.1534E-02 -0.1001E-02 -0.1533E+01  0.2636E-02 -0.2692E-02 -0.9793E+00  0.4162E+01  0.4299E+01
+   5  0.1534E-02 -0.1001E-02 -0.1533E+01  0.2636E-02 -0.2692E-02 -0.9793E+00  0.4162E+01  0.4299E+01
+   6  0.7281E-02 -0.3905E-02 -0.1864E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+   7  0.1534E-02 -0.1001E-02 -0.1533E+01  0.2636E-02 -0.2692E-02 -0.9793E+00  0.4162E+01  0.4299E+01
+   8  0.1534E-02 -0.1001E-02 -0.1533E+01  0.2636E-02 -0.2692E-02 -0.9793E+00  0.4162E+01  0.4299E+01
+   9  0.1534E-02 -0.1001E-02 -0.1533E+01  0.2636E-02 -0.2692E-02 -0.9793E+00  0.4162E+01  0.4299E+01
+  10  0.7281E-02 -0.3905E-02 -0.1864E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4269E+01  0.0000E+00
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.015734480   -0.029491113    0.000000000    0.000000000     3.25143         3.74656    
+   2   -0.003299040   -0.005719145   -0.004523975   -0.007160967     3.25143         3.74656    
+   3   -0.015734480   -0.029491113    0.000000000    0.000000000     3.25143         3.74656    
+   4   -0.003299040   -0.005719145   -0.004523975   -0.007160967     3.25143         3.74656    
+   5   -0.003299040   -0.005719145   -0.004523975   -0.007160967     3.25143         3.74656    
+   6   -0.015734480   -0.029491114    0.000000000    0.000000000     3.25143         3.74656    
+   7   -0.003299040   -0.005719145   -0.004523975   -0.007160966     3.25143         3.74656    
+   8   -0.003299040   -0.005719145   -0.004523975   -0.007160966     3.25143         3.74656    
+   9   -0.003299040   -0.005719145   -0.004523975   -0.007160967     3.25143         3.74656    
+  10   -0.015734479   -0.029491113    0.000000000    0.000000000     3.25143         3.74656    
+
+       -0.082732159   -0.152279323   -0.027143850   -0.042965799
+
+              MP2-R12/A   correlation energy =   -0.195245122
+
+ SECOND-ORDER R12/A' PAIR ENERGIES:
+
+  0@@   -0.082732159   -0.152279323   -0.027143850   -0.042965799    5.339189897    2.246294889
+  1@@   -0.082732159   -0.150798970   -0.027143850   -0.042965799    5.209949573    2.246294889
+  2@@   -0.082732159   -0.151601802   -0.027143850   -0.042965799    5.205597528    2.246294889
+  3@@   -0.082732159   -0.151454062   -0.027143850   -0.042965799    5.208695690    2.246294889
+  4@@   -0.082732159   -0.151510323   -0.027143850   -0.042965799    5.207255982    2.246294889
+  5@@   -0.082732159   -0.151493200   -0.027143850   -0.042965799    5.207793240    2.246294889
+  6@@   -0.082732159   -0.151499258   -0.027143850   -0.042965799    5.207599951    2.246294889
+  7@@   -0.082732159   -0.151497199   -0.027143850   -0.042965799    5.207668009    2.246294889
+  8@@   -0.082732159   -0.151497918   -0.027143850   -0.042965799    5.207644226    2.246294889
+  9@@   -0.082732159   -0.151497669   -0.027143850   -0.042965799    5.207652514    2.246294889
+ 10@@   -0.082732159   -0.151497755   -0.027143850   -0.042965799    5.207649630    2.246294889
+ 11@@   -0.082732159   -0.151497725   -0.027143850   -0.042965799    5.207650634    2.246294889
+ 12@@   -0.082732159   -0.151497736   -0.027143850   -0.042965799    5.207650285    2.246294889
+ 13@@   -0.082732159   -0.151497732   -0.027143850   -0.042965799    5.207650406    2.246294889
+ 14@@   -0.082732159   -0.151497733   -0.027143850   -0.042965799    5.207650364    2.246294889
+ 15@@   -0.082732159   -0.151497733   -0.027143850   -0.042965799    5.207650378    2.246294889
+ 16@@   -0.082732159   -0.151497733   -0.027143850   -0.042965799    5.207650373    2.246294889
+
+   1   -0.015734480   -0.029293762    0.000000000    0.000000000     3.25143         3.74656    
+   2   -0.003299040   -0.005720447   -0.004523975   -0.007160967     3.25143         3.74656    
+   3   -0.015734480   -0.029293762    0.000000000    0.000000000     3.25143         3.74656    
+   4   -0.003299040   -0.005720447   -0.004523975   -0.007160967     3.25143         3.74656    
+   5   -0.003299040   -0.005720447   -0.004523975   -0.007160967     3.25143         3.74656    
+   6   -0.015734480   -0.029293762    0.000000000    0.000000000     3.25143         3.74656    
+   7   -0.003299040   -0.005720447   -0.004523975   -0.007160966     3.25143         3.74656    
+   8   -0.003299040   -0.005720447   -0.004523975   -0.007160966     3.25143         3.74656    
+   9   -0.003299040   -0.005720447   -0.004523975   -0.007160967     3.25143         3.74656    
+  10   -0.015734479   -0.029293762    0.000000000    0.000000000     3.25143         3.74656    
+
+ CONVERGED IN:  16  ITERATIONS
+
+       -0.082732159   -0.151497733   -0.027143850   -0.042965799
+
+              MP2-R12/A'  correlation energy =   -0.194463532
+
+ SECOND-ORDER NONINVARIANT R12/B PAIR ENERGIES:
+
+   1   -0.015734480   -0.025965813    0.000000000    0.000000000
+   2   -0.003299040   -0.005072989   -0.004523975   -0.006453365
+   3   -0.015734480   -0.025965813    0.000000000    0.000000000
+   4   -0.003299040   -0.005072989   -0.004523975   -0.006453365
+   5   -0.003299040   -0.005072989   -0.004523975   -0.006453365
+   6   -0.015734480   -0.025965813    0.000000000    0.000000000
+   7   -0.003299040   -0.005072989   -0.004523975   -0.006453365
+   8   -0.003299040   -0.005072989   -0.004523975   -0.006453365
+   9   -0.003299040   -0.005072989   -0.004523975   -0.006453365
+  10   -0.015734479   -0.025965813    0.000000000    0.000000000
+
+       -0.082732159   -0.134301189   -0.027143850   -0.038720190
+
+ Noninvariant MP2-R12/B   correlation energy =   -0.173021379
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1  0.7281E-02 -0.5182E-02 -0.1405E+01  0.0000E+00  0.0000E+00  0.0000E+00
+   2  0.1534E-02 -0.1326E-02 -0.1157E+01  0.2636E-02 -0.3602E-02 -0.7319E+00
+   3  0.7281E-02 -0.5182E-02 -0.1405E+01  0.0000E+00  0.0000E+00  0.0000E+00
+   4  0.1534E-02 -0.1326E-02 -0.1157E+01  0.2636E-02 -0.3602E-02 -0.7319E+00
+   5  0.1534E-02 -0.1326E-02 -0.1157E+01  0.2636E-02 -0.3602E-02 -0.7319E+00
+   6  0.7281E-02 -0.5182E-02 -0.1405E+01  0.0000E+00  0.0000E+00  0.0000E+00
+   7  0.1534E-02 -0.1326E-02 -0.1157E+01  0.2636E-02 -0.3602E-02 -0.7319E+00
+   8  0.1534E-02 -0.1326E-02 -0.1157E+01  0.2636E-02 -0.3602E-02 -0.7319E+00
+   9  0.1534E-02 -0.1326E-02 -0.1157E+01  0.2636E-02 -0.3602E-02 -0.7319E+00
+  10  0.7281E-02 -0.5182E-02 -0.1405E+01  0.0000E+00  0.0000E+00  0.0000E+00
+
+ SECOND-ORDER R12/B PAIR ENERGIES:
+
+  0@@   -0.082732159   -0.134942077   -0.027143850   -0.038826406    4.027331448    1.700519322
+  1@@   -0.082732159   -0.134241918   -0.027143850   -0.038826406    3.961795716    1.700519322
+  2@@   -0.082732159   -0.134578394   -0.027143850   -0.038826406    3.958385532    1.700519322
+  3@@   -0.082732159   -0.134536550   -0.027143850   -0.038826406    3.959811145    1.700519322
+  4@@   -0.082732159   -0.134549341   -0.027143850   -0.038826406    3.959337578    1.700519322
+  5@@   -0.082732159   -0.134546534   -0.027143850   -0.038826406    3.959469509    1.700519322
+  6@@   -0.082732159   -0.134547297   -0.027143850   -0.038826406    3.959433726    1.700519322
+  7@@   -0.082732159   -0.134547104   -0.027143850   -0.038826406    3.959443225    1.700519322
+  8@@   -0.082732159   -0.134547155   -0.027143850   -0.038826406    3.959440717    1.700519322
+  9@@   -0.082732159   -0.134547142   -0.027143850   -0.038826406    3.959441377    1.700519322
+ 10@@   -0.082732159   -0.134547145   -0.027143850   -0.038826406    3.959441203    1.700519322
+ 11@@   -0.082732159   -0.134547144   -0.027143850   -0.038826406    3.959441249    1.700519322
+ 12@@   -0.082732159   -0.134547145   -0.027143850   -0.038826406    3.959441237    1.700519322
+ 13@@   -0.082732159   -0.134547145   -0.027143850   -0.038826406    3.959441240    1.700519322
+
+   1   -0.015734480   -0.025952810    0.000000000    0.000000000     4.54748         5.17471    
+   2   -0.003299040   -0.005122651   -0.004523975   -0.006471068     4.54748         5.17471    
+   3   -0.015734480   -0.025952810    0.000000000    0.000000000     4.54748         5.17471    
+   4   -0.003299040   -0.005122651   -0.004523975   -0.006471068     4.54748         5.17471    
+   5   -0.003299040   -0.005122651   -0.004523975   -0.006471068     4.54748         5.17471    
+   6   -0.015734480   -0.025952810    0.000000000    0.000000000     4.54748         5.17471    
+   7   -0.003299040   -0.005122651   -0.004523975   -0.006471068     4.54748         5.17471    
+   8   -0.003299040   -0.005122651   -0.004523975   -0.006471068     4.54748         5.17471    
+   9   -0.003299040   -0.005122651   -0.004523975   -0.006471068     4.54748         5.17471    
+  10   -0.015734479   -0.025952810    0.000000000    0.000000000     4.54748         5.17471    
+
+ CONVERGED IN:  13  ITERATIONS
+
+       -0.082732159   -0.134547145   -0.027143850   -0.038826406
+
+              MP2-R12/B   correlation energy =   -0.173373550
+
+ >>> Time used in E(R12) is   0.35 seconds
+
+ Time for MP2-R12 part cpu:   151.539998073578     
+ Time for MP2-R12 part wall:   153.000000000000     
+
+NOAUXB with HERDIR not implemented
+
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                      0.00000000000000000000
+
+ *******************************************************************
+
+ requested model not yet implemented
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+
+ >>>> Total CPU  time used in DALTON:  2 minutes 34 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 35 seconds
+
+ 
+     Date and time (Linux)  : Fri Aug 19 19:40:47 2005
+     Host name              : tchplx50                                
