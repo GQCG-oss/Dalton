@@ -2,8 +2,8 @@ C     PARAMETER (MXTSK=(MXSHEL*(MXSHEL+1)/2), IEIR=0, MMWORK=0,
 C    &     MXSHL_KEEP=MAX(MXTSK,IEIR), MNSHL_KEEP=MIN(MXTSK,IEIR) )
 Chj 11-May-2005: changes needed for compilation with g77:
 C     MAX and MIN not allowed by "g77"; zero size arrays not allowed
-      PARAMETER (MXTSK=(MXSHEL*(MXSHEL + 1)/2), IEIR=3000000,
-     &           MMWORK=20000000,
+      PARAMETER (MXTSK=(MXSHEL*(MXSHEL + 1)/2), IEIR=1,
+     &           MMWORK=1,
      &          MXSHL_KEEP=MXTSK, MNSHL_KEEP=IEIR)
       DOUBLE PRECISION CORE
       LOGICAL AOSAVE, LINTSV, INITX, LINTMP, MSAVE
