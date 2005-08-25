@@ -737,7 +737,7 @@ block_postprocess(GridGenMolGrid *mg, real *center,
     GGBlockWork ggw;
     int dest;
 
-    /* we fidn first atoms that relevant for this cell.
+    /* we find first atoms that relevant for this cell.
      * We do it by linear search which will scale as N^2
      * but we can live with that for now.
      */
@@ -754,12 +754,20 @@ block_postprocess(GridGenMolGrid *mg, real *center,
          * two radial points is possibly the best way out. */
         real r;
         assert(ag->pnt>=2);
-        r = ag->rad[0] + 1.5*(ag->rad[0]-ag->rad[1]); 
+        r = ag->rad[0] + 1.5*(ag->rad[0]-ag->rad[1]);
         if(r*r>dist2) {
-            map2r[atno] = uniq_atoms;
-            relevant_atoms[uniq_atoms++] = atno;
-
+	    map2r[atno] = uniq_atoms;
+	    relevant_atoms[uniq_atoms++] = atno;
         }
+    }
+    for(i=0; i<point_cnt; i++) {
+        int atnoi = atom_nums[i];
+	if(map2r[atnoi] == -1) {
+            map2r[atnoi] = uniq_atoms;
+            relevant_atoms[uniq_atoms++] = atnoi;
+	    fort_print("Internal safety check corrected for atom %d - "
+		       "please report.", atnoi);
+	}
     }
     if(uniq_atoms<=1) { /* 0 cannot happen and 1 - no partitioning. */
         free(relevant_atoms);
