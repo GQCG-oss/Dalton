@@ -630,7 +630,9 @@ fi
 #
 # Determine memory size, also ask whether user would like to active the
 # possibility of storing the two-electron integrals in memory 
-#
+# Observe, that the minimal value is not 0, it is 1 because
+# some compilers (g77) do not like arrays with no elements.
+
 $ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static'
 $ECHO 'allocations, in addition to the dynamic allocation.'
 $ECHO '\nDALTON has the possibility to reserve a certain amount of memory'
@@ -653,7 +655,7 @@ if [ "$answer" = "y" ]; then
     $ECHO '\n   Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
     
 else
-    icoresiz=0
+    icoresiz=1
 fi
 # incoresiz is set later on
 
