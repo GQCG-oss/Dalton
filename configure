@@ -524,7 +524,7 @@ for testlib in $liblist; do
 	if [ $answer = 'y' ]; then
           LIBDIR=$testdir
           case $testlib in
-            libacml.a) LIB='-lacml'; blas3=true;;
+            libacml.a) LIB='-lacml'; blas3=true;lapack=true;;
 	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
                        pdpackextras="$pdpackextras gp_zlapack.o";;
 	    libessl.a) LIB='-lessl'
@@ -577,7 +577,7 @@ fi
 # Look for LAPACK library.
 # Add -L$LIBDIR to be sure compiler can find it.
 #
-if [ -n "$LIBDIR" ]; then
+if [ -n "$LIBDIR" -a $lapack != true ]; then
    if [ -f $LIBDIR/liblapack.a ]; then
       lapack=true; LIB="-L$LIBDIR -llapack $LIB"
    else
