@@ -158,7 +158,7 @@ dk87x_first_helper(real rhoa, real grada, real *res)
     res[0] = -1.4847442272E-4*t3*t7*pow(grada,4.0)/pow(rhoa,
         5.0)+0.001489099973306*t8*t9/(pow(t2,0.02)*pow(rhoa,3.666666666666667))+
         0.00176436*t3*t4*t9/pow(rhoa,2.333333333333333);
-    res[1] = -0.00111682497998*t5*t9*pow(grada,1.98)*pow(abs(rhoa),
+    res[1] = -0.00111682497998*t5*t9*pow(grada,1.98)*pow(fabs(rhoa),
         0.026666666666667)+1.1135581704000001E-4*t3*t7*t8/pow(rhoa,
         4.0)-0.00264654*grada*t3*t9*t1;
 }
@@ -204,7 +204,7 @@ dk87x_second_helper(real rhoa, real grada, real *res)
     t13 = 1/pow(rhoa,2.333333333333333);
     t14 = 1/pow(rhoa,4.0);
     t15 = pow(grada,1.98);
-    t16 = abs(rhoa);
+    t16 = fabs(rhoa);
     t17 = pow(t16,0.026666666666667);
     t18 = 1/pow(t7,3.0);
     t19 = pow(grada,2.98);
@@ -283,7 +283,7 @@ dk87x_third_helper(real rhoa, real grada, real *res)
     t13 = 1/pow(rhoa,2.333333333333333);
     t14 = 1/pow(rhoa,4.0);
     t15 = pow(grada,1.98);
-    t16 = abs(rhoa);
+    t16 = fabs(rhoa);
     t17 = pow(t16,0.026666666666667);
     t18 = pow(grada,6.0);
     t19 = 1/pow(t7,3.0);
@@ -414,7 +414,7 @@ dk87x_fourth_helper(real rhoa, real grada, real *res)
     t13 = 1/pow(rhoa,2.333333333333333);
     t14 = 1/pow(rhoa,4.0);
     t15 = pow(grada,1.98);
-    t16 = abs(rhoa);
+    t16 = fabs(rhoa);
     t17 = pow(t16,0.026666666666667);
     t18 = pow(grada,6.0);
     t19 = 1/pow(t7,3.0);

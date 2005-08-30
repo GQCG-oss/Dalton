@@ -133,7 +133,7 @@ becke86_energy(const FunDensProp* dp)
        real xb = dp->gradb*pow(dp->rhob,-4.0/3.0);
        real rb43 = pow(dp->rhob,4.0/3.0);
        real denomb = 1.0 +GAMMA*xb*xb;
-       real eb = PREF*rb43*(1.0 + BETA*xb*xb)/denomb;
+       eb = PREF*rb43*(1.0 + BETA*xb*xb)/denomb;
    } 
    return -(ea+eb);
 }

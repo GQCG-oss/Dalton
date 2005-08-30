@@ -622,7 +622,7 @@ C 891103 - hjaaj : UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C 891106 - hjaaj : only FXCAO if NISHT.gt.0
 C 921201 - hjaaj : Fock matrices from AO integrals
 C                  (partly following Hans Agren 911202)
-C DFT modification tuh
+C DFT modification tuh, fixed by pawsa
 C
 C Purpose:
 C
@@ -898,9 +898,10 @@ C
             END IF
   300    CONTINUE
 C
-#ifndef FOR_THE_FUTURE
+#if 0 && !defined(FOR_THE_FUTURE)
 C
-C     add DFT contribution in MO BASIS
+C     add DFT contribution in MO BASIS, this has been deprecated by
+c        the call in sirlintrn.F
 C
       IF (DODFT .AND. .NOT. MOLHES) THEN
          IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')

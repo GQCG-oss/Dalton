@@ -184,6 +184,27 @@ $AWK 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
 END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Linear response"
 }
 
+# check_aba_polarizability:
+# check the static polarizability as reported by ABACUS property module.
+# $1 - the threshold
+# $2..$4 -- Ex, Ey, Ez in a.u.
+check_aba_polarizability() {
+if [ "$4" = "" ]; then
+    echo "not enough parameters to $0."; return 1
+fi
+$AWK -v "thr=$1" -v "ex=$2" -v "ey=$3" -v "ez=$4" '
+function e(v,r){return(v>r||v<-r)}
+/Static polarizabilities .au/{
+for(i=0;i<4;i++) getline;
+getline; if($1 != "Ex" || e($2-ex,thr)) {print $2 " " ex;exit(1);}
+getline; if($1 != "Ey" || e($2-ey,thr)) {print $2 " " ex;exit(1);}
+getline; if($1 != "Ez" || e($2-ez,thr)) {print $2 " " ex;exit(1);}
+s=1
+}
+END{exit(!s)}
+' $log || ERRLIST="$ERRLIST; static polarizability"
+}
+
 # ###################################################################
 # Geometry optimization functions.
 
@@ -421,7 +442,7 @@ if [ "$4" = "" ]; then
     echo "not enough parameters to check_mag_tensors."; return 1
 fi
 
-awk -v "tol=$1" -v "t=`echo $2`" -v "d=`echo $3`" -v "p=`echo $4`" '
+$AWK -v "tol=$1" -v "t=`echo $2`" -v "d=`echo $3`" -v "p=`echo $4`" '
 function e(v,r){return(v>r||v<-r)}
 /Total magnetizability tensor/ {
 split(t,a); for(i=0;i<5;i++)getline;
@@ -466,7 +487,7 @@ if [ "$4" = "" ]; then
     echo "not enough parameters to check_mag_tensors."; return 1
 fi
 
-awk -v "tol=$1" -v "t=`echo $2`" -v "nu=`echo $3`" -v "el=`echo $4`" '
+$AWK -v "tol=$1" -v "t=`echo $2`" -v "nu=`echo $3`" -v "el=`echo $4`" '
 function e(v,r){return(v>r||v<-r)}
 /Molecular g-tensor in principal axis system/ {
 split(t,a); for(i=0;i<3;i++)getline;
