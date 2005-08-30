@@ -184,6 +184,24 @@ $AWK 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
 END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Linear response"
 }
 
+# check_exc_energy:
+# check excitation energy
+# $1 - symmetry of the excited state
+# $2 - number of the excited state
+# $3 - excitation energy.
+# $4 - max deviation.
+check_exc_energy() {
+[ "$4" = "" ] &&  echo "not enough parameters to check_exc_energy."
+$AWK -v "symm=$1" -v "nr=$2" -v "ene=$3" -v "thr=$4" '
+function e(val,r){return(val>r||val<-r)}
+/^@ Excited    state    symmetry/{ rsy= ($5==symm)}
+/^@ State no:/                   {rst=  ($4==nr)}
+rsy && rst && /^@ Excitation energy/{
+getline;res=e(ene-$2,thr)
+}
+END{exit (res) }' $log || ERRLIST="$ERRLIST; Excitation energy"
+}
+
 # check_aba_polarizability:
 # check the static polarizability as reported by ABACUS property module.
 # $1 - the threshold
