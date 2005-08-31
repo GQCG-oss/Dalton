@@ -312,7 +312,7 @@ END {exit(failed)}
 # handle strings longer than 399 characters.
 check_mol_hessian() {
 if [ "$3" = "" ]; then
-    echo "not enough parameters to check_vibr_freq."; return 1
+    echo "not enough parameters to check_mol_hessian."; return 1
 fi
 p=`echo $3|sed 's,[ 0]* , ,g'`
 $AWK 'function e(v,r){#print "mol_hessian: checking " v,",", r;
@@ -401,25 +401,23 @@ if [ "$2" = "" ]; then
     echo "not enough parameters to check_vibr_freq."; return 1
 fi
 p=`echo $2`
-$AWK 'function e(v,r){#print "vibr_freq: checking " v,",", r;
+$AWK -v"tol=$1" 'function e(v,r){#print "vibr_freq: checking " v,",", r;
 return(v>r||v<-r)}
  BEGIN {s=0;c=0}
 / Vibrational Frequencies and IR Intensities/ {
-for(i=0; i<8; i++) getline;
-tol='$1';
+for(i=0; i<9; i++) getline;
 split("'"$p"'",arr," ");
 idx=1;
 failed=0;
-while(arr[idx] != "") {
+for(idx=1;arr[idx] != ""; idx+=3) {
 getline; split($0,l," ");
-for(i=1; l[i]!= ""; i++) {
- #print "Expected:",arr[idx]," Found:",l[i]
+for(i=1; i<=3; i++) {
+ #print "Expected:",arr[idx+i-1]," Found:",l[i]
  if(l[i] ~ /-?[.0-9]+/) {
-   if(e(arr[idx]-l[i],tol)) {failed++;print "a"}
+   if(e(arr[idx+i-1]-l[i],tol)) {failed++;print "expected",arr[idx+i-1]," Found ", l[i],tol}
   } else {
-   if(arr[idx] != l[i])     {failed++;print "b"}
+   if(arr[idx+i-1] != l[i])     {failed++;print "b"}
   } 
-  idx++
 }
 if(failed>5) break
 }

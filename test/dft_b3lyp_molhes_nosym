@@ -74,7 +74,7 @@ check_mol_hessian 9 1e-5 "
  H    z    0.000000    0.000000    0.572343"
 
 
-check_dip_gradient 3 1e-5 "
+check_dip_gradient 3 2e-5 "
         Li   x     0.64485917     0.00000050     0.00000430
         Li   y     0.00000050     0.64485917     0.00000430
         Li   z     0.00000005     0.00000005     0.69483010
@@ -88,11 +88,11 @@ check_dip_gradient 3 1e-5 "
         H    z     0.00000013     0.00000013     0.12247127"
 
 check_rotational_const 35507.25 1.184394
-check_vibr_freqs 1e-5 "
-   1      A      3996.45    0.018209     28.486   0.6741
-   2      A      1014.69    0.004623     93.818   2.2203
-   3      A       265.92    0.001212    140.260   3.3193
-   4      A       265.68    0.001211    140.258   3.3193"
+check_vibr_freqs 4e-1 "
+   1      A      3996.45 
+   2      A      1014.69 
+   3      A       265.92 
+   4      A       265.68"
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
