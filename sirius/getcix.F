@@ -92,7 +92,7 @@ C
          DTIM = SECOND()
       END IF
       LFREE  = LFRSAV
-      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+      IF (MCTYPE .GT. 0) THEN
         LUSTR = -9999
         IF (FLAG(26) .AND. IFIRST .EQ. 1) THEN
           CALL GPOPEN(LUSTR,'SIRIUS.STRINGINFO','UNKNOWN',
@@ -130,9 +130,9 @@ C    *              NOSYM,ICSF,REFSPC)
 C
         IF (LUSTR.GT.0) CALL GPCLOSE(LUSTR,'KEEP')
       ELSE
-C     ... NASHT .le. 1
+C     ... RHF or ROHF
         IF (IPRCIX .GT. 0) WRITE (LUPRI,'(/A/A)')
-     &     ' RHF with at most one open shell',
+     &     ' RHF with at most one open shell or high spin.',
      &     ' No determinant string information needed.'
       END IF
       IF (IPRCIX .GT. 0) THEN
@@ -246,7 +246,7 @@ C
 #include <iratdef.h>
 C
 C Used from common blocks:
-C   INFINP : NACTEL,ISPIN, MCTYPE, NELMN1, NELMX1, NELMN3, NELMX3
+C   INFINP : NACTEL,ISPIN, NELMN1, NELMX1, NELMN3, NELMX3
 C   INFORB : NASHT,NAS1(*),NAS2(*),NAS3(*)
 C   INFDIM : NCONMA,LCINDX,LACIMX,LBCIMX
 C   INFPRI : IPRCIX
@@ -431,7 +431,7 @@ C
 #include <iratdef.h>
 C
 C Used from common blocks:
-C   INFINP : NACTEL,ISPIN, MCTYPE, NELMN1, NELMX1, NELMN3, NELMX3
+C   INFINP : NACTEL,ISPIN, NELMN1, NELMX1, NELMN3, NELMX3
 C   INFORB : NASHT,NAS1(*),NAS2(*),NAS3(*)
 C   INFDIM : NCONMA,LCINDX,LACIMX,LBCIMX
 C   SCBRHF : IOPRHF
@@ -584,6 +584,7 @@ C
          IF (MACTEL .NE. NACTEL) NEWCI = .TRUE.
          IF (MCTOLD .NE. MCTYPE) NEWCI = .TRUE.
          IF (MCTYPE .EQ. 2) THEN
+C           if RAS
             IF (MELMN1 .NE. NELMN1) NEWCI = .TRUE.
             IF (MELMX1 .NE. NELMX1) NEWCI = .TRUE.
             IF (MELMN3 .NE. NELMN3) NEWCI = .TRUE.

@@ -104,8 +104,8 @@ C
       CALL QENTER('MP2CTL')
       CALL GETTIM(TIMMP2,DUMMY)
       IF (IPRMP2 .GT. 0) WRITE (LUW4,'(//A//A/A)')
-     *   ' >>>>> Output from SIRIUS MP2 module <<<<<',
-     *' Reference: H.J.Aa.Jensen, P. Jorgensen, H. Agren, and J. Olsen,'
+     * ' >>>>> Output from SIRIUS MP2 module <<<<<'
+     *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
 C
 C

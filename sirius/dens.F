@@ -1582,7 +1582,7 @@ C
 #include <maxash.h>
 C
 C Used from common blocks:
-C   INFINP : MCTYPE
+C   INFINP : ?
 C   INFORB : MULD2H(8,8),NASHT,N2ASHX,NNASHX
 C   INFPRI : IPRDNS, LUERR
 C

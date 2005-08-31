@@ -2706,7 +2706,7 @@ C High spin orbitals input
 C Shift level
  125  READ(LUCMD,*) DEFLVL
       DEFLVL = -ABS(DEFLVL)
-       GO TO 100
+      GO TO 100
 C
  2000 CONTINUE
       IF (NODIIS) MXDIIS = 0
@@ -4690,17 +4690,19 @@ C     formulation of NEVPT.
                WRITE(IWUNIT,1051)
      *         'Type: restricted active space calculation (RAS)'
             END IF
-         ELSE IF (FLAG(23)) THEN
-            WRITE(IWUNIT,1051)
-     *      'Type: reduced configuration space (not CAS).'
-         ELSE
+         ELSE IF (MCTYPE .EQ. 1) THEN
             WRITE(IWUNIT,1051)
      *      'Type: complete active space calculation (CAS).'
             IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *      'Type: complete active space calculation (CAS).'
-           IF ( DONEVPT ) then
-              WRITE (IWUNIT,1050) ' NEVPT2 calculation.'
-           ENDIF
+         ELSE
+C          hjaaj Aug 2005 - program validity check, should not be possible
+C          to get here unless someone modifies SIRIUS incorrectly
+           CALL QUIT('ERROR in PRTINP - MCTYPE invalid for DOMC/DOCI')
+         END IF
+         IF (FLAG(23)) THEN
+            WRITE(IWUNIT,1051)
+     *      '      Active-active rotations included by user.'
          END IF
       ELSE IF ( DOMP2 ) THEN
          WRITE (IWUNIT,1050) ' Moller-Plesset PT2 calculation.'
@@ -4751,8 +4753,10 @@ C     formulation of NEVPT.
          IRUN = 1
          IF (DONEVPT) IRUN = 2
          IF (DORHF) THEN
-            IF (IOPRHF .EQ. 0) THEN
-               WRITE(IWUNIT,1051) 'a RHF calculation'
+            IF (HSROHF) THEN
+               WRITE(IWUNIT,1050) 'a high spin ROHF calculation'
+            ELSE IF (IOPRHF .EQ. 0) THEN
+               WRITE(IWUNIT,1051) 'an RHF calculation'
             ELSE
                WRITE(IWUNIT,1051) 'an open shell RHF calculation'
             END IF

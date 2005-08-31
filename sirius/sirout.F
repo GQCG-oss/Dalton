@@ -406,8 +406,9 @@ CMAERKE-901025 write orbital energies for Hartree-Fock
       END IF
       END IF
 #endif
-      IF (NASHT .GT. 1 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
+      IF (MCTYPE .GT. 0 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
      *    .NOT.(CICALC.AND.DOCINO) ) THEN
+C     if MC/CI and NO's not already printed
          KREL1 = KFREE
          CALL MEMGET('REAL',KUNO,N2ASHX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)

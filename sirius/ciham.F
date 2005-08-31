@@ -94,7 +94,7 @@ C
       CALL DSPTSI(NASHT,FCAC,WRK(KFCAC2))
       CALL GETFIJ(WRK(KRJ),WRK(KRK),H2AC)
       IF (MCTYPE .EQ. 2) THEN
-C        ... reorder from Sirius to Lunar order
+C        ... reorder from Sirius to Lunar order for RAS
          CALL REORMT(WRK(KFCAC2),WRK(KWHAM),NASHT,NASHT,
      &               XNDXCI(KLTSOB),XNDXCI(KLTSOB))
          CALL DCOPY(N2ASHX,WRK(KWHAM),1,WRK(KFCAC2),1)

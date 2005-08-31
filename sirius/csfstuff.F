@@ -1462,7 +1462,7 @@ C
 #include <priunit.h>
 C
 C Used from common blocks:
-C  INFINP : FLAG(27),MCTYPE,LSYM,?
+C  INFINP : FLAG(27),LSYM,?
 C  PHPINF : MXPDIM,NPCVAR,...
 C  CIINFO : ICOMBI,IPSIGN,NDTASM,NCSASM
 C  DETBAS : KLTSOB,?
