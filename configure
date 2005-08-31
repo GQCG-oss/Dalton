@@ -132,7 +132,7 @@ if [ -z "$1" ]; then
 else
     ARCH="$1"
 fi
-$ECHO "   Installing DALTON on a $ARCH computer\n"
+$ECHO "-->Installing DALTON on a $ARCH computer\n"
 case $ARCH in
     -aix|-rs6000 ) WHICH="rs6000";;
     -sgi|-iris4d|-irix ) WHICH="iris4d";;
@@ -311,7 +311,7 @@ if [ "$answer" = "y" ]; then
     parnodp=
 #
     if [ "$mesp" = "mpi" ]; then
-        $ECHO "\n   WARNING: Makefiles for MPI architecture are difficult to guess"
+        $ECHO "\n-->WARNING: Makefiles for MPI architecture are difficult to guess"
         $ECHO "   Please compare the generated Makefile.config with local documentation."
 #
 # The only computer I can think of with a separate compiler for parallel
@@ -410,7 +410,7 @@ for comp in $complist; do
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
     if [ -n "$F77" ]; then
-	$ECHO "\n   Compiler $F77 found and accepted."
+	$ECHO "\n-->Compiler $F77 found and accepted."
         break
     fi
 done
@@ -471,7 +471,7 @@ for comp in $ccmplist; do
     test -z "$ac_cv_prog_C" && ac_cv_prog_C=""
     CC="$ac_cv_prog_C"
     if [ -n "$CC" ]; then
-        $ECHO "\n   Compiler $CC found and accepted."
+        $ECHO "\n-->Compiler $CC found and accepted."
         break
     fi
 done
@@ -611,7 +611,7 @@ if [ -z "$LIB" -a -n "$liblist" ]; then
     $ECHO '   No mathematical libraries seem to be available'
     $ECHO '   I will proceed without them\n'
 elif [ -n "$LIB" ]; then
-    $ECHO '\n   The following mathematical library(ies) will be used:\n   '$LIB'\n'
+    $ECHO '\n-->The following mathematical library(ies) will be used:\n   '$LIB'\n'
 fi      
 
 #
@@ -635,51 +635,55 @@ fi
 
 $ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static'
 $ECHO 'allocations, in addition to the dynamic allocation.'
-$ECHO '\nDALTON has the possibility to reserve a certain amount of memory'
-$ECHO 'for storing two-electron integrals in direct and parallell calculations'
+$ECHO '\nDALTON has the possibility to reserve an amount of static memory'
+$ECHO 'for storing two-electron integrals in direct and parallel calculations'
 $ECHO 'Storing some or all of the 2-el. integrals in memory will speed up'
 $ECHO 'direct and parallel calculations (and in particular the latter).'
 $ECHO 'NOTE: This will increase the static memory allocation used by DALTON'
 
-storeint="false"
 get_yes_or_no "\nWould you like to activate the possibility of storing 2-el.int. in memory?"
 if [ "$answer" = "y" ]; then
-    storeint="true"
-    incoresiz=
-    while [ "$incoresiz" = "" ]
+    incoresiz=0
+#   only accept positive numbers
+    while [ $incoresiz -le 0 ]
     do
        $ECHO 'How many millions of *8 words to use for storing 2-el.integrals? \c'
        read incoresiz
+#      check that user hasn't just hit return (giving an empty string)
+       if [ "$incoresiz" = "" ]; then incoresiz=0; fi
     done
     incoresiz=`expr $incoresiz \* 1000000`
-    $ECHO '\n   Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
+    $ECHO '\n-->Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
     
 else
-    icoresiz=1
+    incoresiz=1
 fi
-# incoresiz is set later on
 
-$ECHO 'Maximum amount of work memory for dynamic allocations can be'
-$ECHO 'changed at run time through the environment variable WRKMEM'
-$ECHO 'or using the -M option to the run script: "dalton -M mb ...".'
+#
+$ECHO '\nMaximum amount of work memory for dynamic allocations can be'
+$ECHO 'changed at run time with the environment variable WRKMEM'
+$ECHO 'or by using the -M option to the run script: "dalton -M mb ...".'
 $ECHO 'We recommend at least 20 million *8 words work memory,'
 $ECHO 'larger for correlated calculations, but it should for maximum'
 $ECHO 'efficiency NOT exceed available physical memory.\n'
-memsiz=
-while [ "$memsiz" = "" ]
+memsiz=0
+# only accept positive numbers
+while [ $memsiz -le 0 ]
 do
     $ECHO 'How many millions of *8 words to use as default for work memory? \c'
     read memsiz
+#   check that user hasn't just hit return (giving an empty string)
+    if [ "$memsiz" = "" ]; then memsiz=0; fi
 done
 memsiz=`expr $memsiz \* 1000000`
-$ECHO '\n   Program will be installed with a default work memory of '$memsiz' words'
+$ECHO '\n-->Program will be installed with a default work memory of '$memsiz' words'
 
 #
 # Determine location for executable and run script
 #
 
 curr=`pwd`
-$ECHO '\n   Current directory is '$curr'\n'
+$ECHO '\n-->Current directory is '$curr'\n'
 
 INSTALL_DIR=$curr/bin
 get_yes_or_no 'Use ./bin as installation directory for binaries and scripts?'
@@ -688,7 +692,7 @@ while [ "$answer" = "n" ]
 do
     $ECHO 'Please enter installation directory: \c'
     read INSTALL_DIR
-    $ECHO '\n   DALTON executable and script will be placed in '$INSTALL_DIR' directory\n'
+    $ECHO '\n-->DALTON executable and script will be placed in '$INSTALL_DIR' directory\n'
     if [ ! -d "$INSTALL_DIR" ]; then
         $ECHO "ERROR: $INSTALL_DIR does not exist"
 	answer2=
@@ -722,7 +726,7 @@ get_yes_or_no '\nUse '$basdir' as default basis set directory?'
 if [ "$answer" = "n" ];  then
     $ECHO '\nPlease enter default basis set directory (must end with /) \c'
     read basdir
-    $ECHO '\n   Default basis set directory will be '$basdir'\n'
+    $ECHO '\n-->Default basis set directory will be '$basdir'\n'
 fi
 
 #
@@ -745,7 +749,7 @@ fi
 answer=
 while [ "$answer" != "y" -a "$answer" != "n" ]
 do
-    $ECHO '\n   Job specific directories under $SCRATCH/$USER\n   will be used for temporary files when running DALTON\n'
+    $ECHO '\n-->Job specific directories under $SCRATCH/$USER\n-->will be used for temporary files when running DALTON\n'
     $ECHO 'Use SCRATCH='$worksp' as default root scratch space in "dalton" run script? [y/n] \c'
     read answer
 done
@@ -762,7 +766,7 @@ fi
 #
 tab=`$ECHO "\t"`
 
-$ECHO '\n   Creating Makefile.config ...'
+$ECHO '\n-->Creating Makefile.config ...'
 
 backup -v Makefile.config
 
@@ -782,7 +786,7 @@ case "$WHICH" in
     rs6000)
           case $opsys in
 	  2)
-             cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+             cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
              if [ $split = 'true' ] ; then
                 cpp="$cpp -DVAR_SPLITFILES"
 	     fi
@@ -797,7 +801,7 @@ case "$WHICH" in
              inc='-I../include'
              cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
           *)
-             cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"',-DINSTALL_MMWORK=$icoresiz"
+             cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"',-D'INSTALL_MMWORK=$incoresiz'"
              if [ $split = 'true' ] ; then
                 cpp="$cpp,-DVAR_SPLITFILES"
              fi
@@ -833,7 +837,7 @@ case "$WHICH" in
           else
                 specopt="-DNO_F90"
           fi
-          cpp="-DSYS_IRIX $specopt -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+          cpp="-DSYS_IRIX $specopt -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ $split = 'true' ] ; then
               cpp="$cpp -DVAR_SPLITFILES"
           fi
@@ -844,7 +848,7 @@ case "$WHICH" in
 	  inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     cray)
-          cpp="-DSYS_CRAY -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz -DVAR_VECTOR"
+          cpp="-DSYS_CRAY -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
                 cpp="$cpp $parop"
           fi
@@ -853,7 +857,7 @@ case "$WHICH" in
           opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='cray.x';;
     cray_t90)
-          cpp="-DSYS_T90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz -DVAR_VECTOR"
+          cpp="-DSYS_T90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp $parop"
           fi
@@ -862,7 +866,7 @@ case "$WHICH" in
           opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='t90.x';;
     cray_t3e)
-          cpp="-DSYS_T3D -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+          cpp="-DSYS_T3D -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
           fi
@@ -872,7 +876,7 @@ case "$WHICH" in
           def='t3d.x'
           LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
     nec)
-          cpp="-DSYS_NEC D'INSTALL_WRKMEM=$memsiz' D'INSTALL_BASDIR=\"$basdir\"' DINSTALL_MMWORK=$icoresiz USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
+          cpp="-DSYS_NEC D'INSTALL_WRKMEM=$memsiz' D'INSTALL_BASDIR=\"$basdir\"' D'INSTALL_MMWORK=$incoresiz' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
           if [ "$mesp" = "dummy" ]; then
              cpp="-cpp $cpp"
           else
@@ -885,7 +889,7 @@ case "$WHICH" in
 	  fi
 	  opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
     alpha)
-          cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+          cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
              set_parallel_def $cc
@@ -894,7 +898,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
           opt='-fast -fpe3 -warn nouncalled';;
     sun4)
-          cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+          cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ $split = 'true' ] ; then
               cpp="$cpp -DVAR_SPLITFILES"
           fi
@@ -906,7 +910,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"
           opt='-fast';;
     hp)
-          cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+          cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
 	      set_parallel_def $mesp
@@ -937,7 +941,7 @@ case "$WHICH" in
           copt=${copt}" -AC99"
           cpp=${cpp}${f90yes};;
     linux-alpha)
-          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"          
+          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
 	  if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
  	      set_def $mesp
@@ -950,7 +954,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
           copt='-fast';;
     linux) 
-          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ $split = 'true' ] ; then
              cpp="$cpp -DVAR_SPLITFILES"
           else
@@ -1046,13 +1050,13 @@ case "$WHICH" in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
     darwin) 
-          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz"
+          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
           fi
           if [ "$F77" = xlf ]; then
-               cpp="-WF,-DSYS_AIX,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"',-DINSTALL_MMWORK=$icoresiz"
+               cpp="-WF,-DSYS_AIX,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"',-D'INSTALL_MMWORK=$incoresiz'"
                copt='-qarch=auto -O3 -qtune=auto -qmaxmem=-1 -qunroll=yes'
                opt="$copt -qextname -qstrict -noprebind"
                def='dalton.x'
@@ -1091,7 +1095,7 @@ case "$WHICH" in
 -X -u -X _sbdgetd_ -X -u -X _sbdtra_ -X -u -X _sbddim_ -Lsirius -lsirius"
           fi;;
     hal) 
-          cpp="-DSYS_HAL -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DINSTALL_MMWORK=$icoresiz -Wp,-P"
+          cpp="-DSYS_HAL -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D'INSTALL_MMWORK=$incoresiz' -Wp,-P"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
              def='parallel.x'
@@ -1326,7 +1330,7 @@ fi
 # Update the DALTON run-script
 #
 
-$ECHO '\n   Creating the DALTON run-script in '$INSTALL_DIR
+$ECHO '\n-->Creating the DALTON run-script in '$INSTALL_DIR
 
 backup -v $INSTALL_DIR/dalton
 
