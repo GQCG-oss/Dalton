@@ -1,3 +1,4 @@
+/*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /*
 C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -993,20 +994,14 @@ comp_weight(const void *a, const void *b)
 }
 #endif
 static void
-boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
-                        int nblocks, int shlblocks[][2],
-                        real *center, const int *atom_nums,
-                        real *coorw)
+write_final_coords_and_weights(int cnt, int nblocks, int *shlblocks,
+			       real *coorw, FILE *f)
 {
     int i;
-    if(selected_partitioning->postprocess) {
-        cnt = selected_partitioning->postprocess(mg, center, cnt, atom_nums,
-                                                 (real(*)[4])coorw);
-    }
-    if(cnt == 0) return;
+    if(cnt <= 0) return;
     if(fwrite(&cnt, sizeof(cnt), 1, f)!=1) {
         fprintf(stderr, "GRIDGEN: 'too short write' error.\n");
-        exit(1);
+        dalton_quit("GRIDGEN: 'too short write' error.\n");
     }
     /* qsort(coorw, cnt, 4*sizeof(real), comp_weight); */
     if(fwrite(&nblocks,  sizeof(nblocks), 1, f) != 1) abort();
@@ -1018,6 +1013,21 @@ boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
     for(i=0; i<cnt; i++)
         if(fwrite(coorw+i*4+3, sizeof(real), 1, f) != 1)
            dalton_quit("write error in %s(), weights", __FUNCTION__);
+}
+
+static void
+boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, int cnt,
+                        int nblocks, int shlblocks[][2],
+                        real *center, const int *atom_nums,
+                        real *coorw)
+{
+    int i;
+    if(selected_partitioning->postprocess) {
+        cnt = selected_partitioning->postprocess(mg, center, cnt, atom_nums,
+                                                 (real(*)[4])coorw);
+    }
+    if(cnt == 0) return;
+    write_final_coords_and_weights(cnt, nblocks, &shlblocks[0][0], coorw, f);
 }
 
 #ifdef VAR_MPI
@@ -1083,7 +1093,7 @@ boxify_save_batch(GridGenMolGrid *mg, FILE *f, int cnt,
             int arr[2]; arr[0] = bcnt; arr[1] = nbl;
             M(MPI_Send(arr,     2,      MPI_INT,   last, 1, MPI_COMM_WORLD));
             M(MPI_Send(shlbl,   2*nbl,  MPI_INT,   last, 2, MPI_COMM_WORLD));
-            M(MPI_Send(coor+i*4,4*bcnt, MPI_DOUBLE,last, 3, MPI_COMM_WORLD));
+            M(MPI_Send(coorw+i*4,4*bcnt,MPI_DOUBLE,last, 3, MPI_COMM_WORLD));
             M(MPI_Send(center,  3,      MPI_DOUBLE,last, 4, MPI_COMM_WORLD));
             M(MPI_Send(atom_nums+i,bcnt, MPI_INT,  last, 5, MPI_COMM_WORLD));
         }
@@ -1703,12 +1713,7 @@ grid_par_slave(const char *fname, real threshold)
         if(selected_partitioning->postprocess)
             arr[0] = selected_partitioning->postprocess
                 (mg, center, arr[0], atom_nums,  (real(*)[4])dt);
-        if(arr[0] == 0) continue;
-        if(fwrite(arr,       sizeof(int), 2, f) != 2) abort();
-        if(fwrite(shlblocks, sizeof(int), arr[1]*2, f) != arr[1]*2)
-            dalton_quit("write error in %s(), point 2", __FUNCTION__);
-        /* write coords and weights */
-        write_coords_and_weights(arr[0], dt, f);
+        write_final_coords_and_weights(arr[0], arr [1], shlblocks, dt, f);
         point_cnt += arr[0];
     } while(1);
     fclose(f);
