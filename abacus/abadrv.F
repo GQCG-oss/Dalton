@@ -2611,7 +2611,7 @@ C  /* Deck timsta */
       SUBROUTINE TIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,
      *                  TIMDRC,TIMORT,TIMDIP,TIMQPG,TIMRES,TIMREL,
      *                  TIMTST,TIMVIB,TIMWLK,
-     *                  TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCT0)
+     *                  TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCTO)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
