@@ -220,7 +220,7 @@ C notation changed from 'd' to 'd-' for consistency with EMSL
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF
          ELSE IF (BASNAM(1:7) .EQ. 'aug-ecp') THEN
-            BASTMP(1:75) = BASNAM(5:80)
+            BASTMP(1:76) = BASNAM(5:80)
             IAUG = 1
          ELSE IF (BASNAM(3:9) .EQ. 'aug-ecp') THEN
             BASTMP(1:74) = BASNAM(7:80)
@@ -250,10 +250,10 @@ C for backward compatibility the old notation is retained
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF 
          ELSE IF (BASNAM(1:7) .EQ. 'aug-ecp') THEN 
-            BASTMP(1:75) = BASNAM(5:80)                      
+            BASTMP(1:76) = BASNAM(5:80)                      
             IAUG = 1 
          ELSE IF (BASNAM(2:8) .EQ. 'aug-ecp') THEN           
-            BASTMP(1:74) = BASNAM(6:80)
+            BASTMP(1:75) = BASNAM(6:80)
             IF (BASNAM(1:1) .EQ. 'd') THEN
                IAUG = 1
             ELSE IF (BASNAM(1:1) .EQ. 't') THEN
