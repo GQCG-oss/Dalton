@@ -2356,8 +2356,8 @@ C
 C                     write(lupri,*) 'I_SHL,INDX_SHL(I_SHL)', 
 C     &                    I_SHL,INDX_SHL(I_SHL)
 C
-C                     write(lupri,*) 'WORK(KAOINT): ',(WORK(KAOINT+II-1),
-C     &                    II=1,NCCINT)
+C                     write(lupri,*) 'WORK(KAOINT): ',(WORK(KAOINT+II),
+C     &                    II=0,NCCINT-1)
                      CALL INTFCK(FMAT,WORK(KAOINT),DMAT,NDMAT,
      &                    NCCINT,NINTYP,ICORBA,ICORBB,ICORBC,ICORBD,
      &                    HKABCD,IPRINT,NODV,NINDAB,NINDCD,SUSCEP,
@@ -2493,7 +2493,6 @@ C     &                 ISYMR,ISYMS
                   MMCORE = MMCORE - (NCCINT*NINTYP)
                   CALL DCOPY((NCCINT*NINTYP),WORK(KAOINT),1,
      &                 CORE(ISCORE),1)
-                  ISCORE = ISCORE + (NINTYP*NCCINT)
 C                  INDX_SHL(1,1) = ISHELA
 C                  INDX_SHL(2,1) = ISHELB
 C                  INDX_SHL(3,1) = ISHELC
@@ -2508,12 +2507,16 @@ C                  INDX_SHL(4,1) = ISHELD
                   INDX_SHL4 = ISHELD
 #if defined (VAR_MPI)                  
                   INDX_SHL(N_SHL) = ISCORE
+C                  write (lupri,*) 'n_shl,indx',n_shl,indx_shl(n_shl)
                   N_SHL = N_SHL + 1
+                  ISCORE = ISCORE + (NINTYP*NCCINT)
                   IF (N_SHL .GT. (MXSHL_KEEP+1)) THEN
                      write(lupri,*) 'Received quit because'//
      &                    'N_SHL exceeds MXSHL_KEEP+1'
                      CALL QUIT('N_SHL exceeds MXSHL_KEEP+1.')
                   END IF
+#else
+                  ISCORE = ISCORE + (NINTYP*NCCINT)
 #endif                  
 C     Lagrer integraler i minne: Oppdaterer array med beregnede ishela/b/c/d
                ELSE
