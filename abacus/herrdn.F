@@ -457,6 +457,7 @@ C
       KPRIM  = MAXPRI
       KCMAT  = KPRIM*KPRIM
       KNONT  = 1
+      MXBLCK = 100
       KIQM   = KNONT  +  KATOM
       KBLCK  = KIQM   +  KATOM*KSETS
       KJCO   = KBLCK  +  KATOM*KSETS
@@ -464,9 +465,9 @@ C
       KNRC   = KNUC   +  KBLOCK*KSETS
       KSEG   = KNRC   +  KBLOCK*KSETS
       KA     = KSEG   +  KBLOCK*KSETS
-      KC     = KA     +  KBLOCK*KPRIM*KSETS
-      KCC    = KC     +  KBLOCK*KCMAT*KSETS
-      KLAST  = KCC    +  KBLOCK*KCMAT*KSETS
+      KC     = KA     +  MXBLCK*KPRIM*KSETS
+      KCC    = KC     +  MXBLCK*KCMAT*KSETS
+      KLAST  = KCC    +  MXBLCK*KCMAT*KSETS
 C     WRITE(LUPRI,'(A,2I16)') 'KLAST, LWORK',KLAST,LWORK
       IF(KLAST.GT.LWORK) GOTO 5020
       LWRK   = LWORK  -  KLAST + 1
@@ -479,7 +480,7 @@ C
      &            WORK(KBLCK),WORK(KJCO),WORK(KNUC),
      &            WORK(KNRC),WORK(KSEG),WORK(KA),
      &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM,KAOVEC,
-     &            HERMIT)
+     &            MXBLCK,HERMIT)
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
@@ -503,7 +504,7 @@ C5030 CONTINUE
 C  /* Deck readi1 */
       SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,NUC,
      &           NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &           KPRIM,KAOVEC,HERMIT)
+     &           KPRIM,KAOVEC,MXBLCK,HERMIT)
 C******************************************************************************
 C
 C     Reads and processes input file of molecular data
@@ -704,7 +705,7 @@ C     ... now oldnrm only false if sperical, i.e. the only case
 C         where we know the 5 d's have same norm. Used for Huckel.
       CALL BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &            KBLOCK,KPRIM,KAOVEC,ANG,ZMAT,MXSPD,ADDSYM)
+     &            KBLOCK,KPRIM,KAOVEC,ANG,ZMAT,MXSPD,ADDSYM,MXBLCK)
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -865,7 +866,8 @@ C
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,
      &                  JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &                  KBLOCK,KPRIM,KAOVEC,ANG,ZMTTST,MXSPD,ADDSYM)
+     &                  KBLOCK,KPRIM,KAOVEC,ANG,ZMTTST,MXSPD,ADDSYM,
+     &                  MXBLCK)
 C*****************************************************************************
 C
 C       Read orbital and geometry input data
@@ -1327,6 +1329,14 @@ C
             NBLCK(I,J) = NBLOCK
             IBLOCK(J)  = IBLOCK(J) + NBLCK(I,J)
             NOORBI     = NOORBI .AND.IQM(I,J).EQ.0
+            IF (IBLOCK(J) .GT. MXBLCK) THEN
+               WRITE (LUPRI,*) ' Too many blocks of basis functions '//
+     &              'in input'
+               WRITE (LUPRI,*) ' Increase MXBLCK in the subroutine '//
+     &              'READIN (abacus/herrdn.F) and be welcome back'
+               CALL QUIT('Too many basis function blocks in input, '//
+     &              'see output file')
+            END IF
             IF (IQM(I,J).GT.0) THEN
                IF(INPTST .OR. IPREAD .GT. 3) THEN
                   WRITE(LUPRI,'(3X,A5,A)') BSET,' set:'
