@@ -417,7 +417,7 @@ C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
             CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
      +                  ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
-     +                  CPRIMU(1,1, NBLOCK),  KPRIM, NBLOCK)
+     +                  CPRIMU(1,1, NBLOCK), KPRIM, NBLOCK)
             GOTO 32
          ELSE
             NBLOCK = NBLOCK - 1
@@ -437,16 +437,16 @@ C
       CALL GPCLOSE(LUBAS,'KEEP')
       RETURN
  5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error,'//
-     *  'number of primitives per block      ',INTEXP,
-     *  '                   current maximum number              ',KPRIM
+        WRITE (LUPRI,'(/A,I6/2A/A,I6)')
+     &  ' >>> BASLIB error, number of primitives per block  ',INTEXP,
+     &  '                   in basis ',BASNAM,
+     &  '                   current maximum number          ',KPRIM
         CALL QUIT('Too many primitives')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of contracted functions      ',
-     *  INTORB,
-     *  '                   current maximum number              ',KPRIM
+        WRITE (LUPRI,'(/A,I6/2A/A,I6)')
+     &  ' >>> BASLIB error, number of contracted functions  ',INTORB,
+     &  '                   in basis ',BASNAM,
+     &  '                   current maximum number          ',KPRIM
 C
       END
 C
@@ -1073,18 +1073,18 @@ C
  200  CONTINUE
       WRITE (LUPRI,'(/I3,2A)') INTQ,
      &     ' is an unsupported element for basis ',BASNAM
-      CALL QUIT('Unsupported element in HERBAS')
+      CALL QUIT('Unsupported element in specified basis set file')
  5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error,'//
-     *  'number of primitives per block      ',ISPRIM,
-     *  '                   current maximum number              ',KPRIM
+        WRITE (LUPRI,'(/A,I6/2A/A,I6)')
+     &  ' >>> FINNQD error, number of primitives per block  ',ISPRIM,
+     &  '                   in basis ',BASNAM,
+     &  '                   current maximum number          ',KPRIM
         CALL QUIT('Too many primitives')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of contracted functions      ',
-     *  ISCONT,
-     *  '                   current maximum number              ',KPRIM
+        WRITE (LUPRI,'(/A,I6/2A/A,I6)')
+     &  ' >>> FINNQD error, number of contracted functions  ',ISCONT,
+     &  '                   in basis ',BASNAM,
+     &  '                   current maximum number          ',KPRIM
         CALL QUIT('Too many contracted functions')
       END 
 C             
