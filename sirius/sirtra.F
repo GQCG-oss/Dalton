@@ -2573,8 +2573,8 @@ C     and allocate space for buffers.
 C
       IF (IDIST .EQ. 0) THEN
          CALL REWSPL(LUINTM)
-         READ (LUINTM)
-         READ (LUINTM) LBINTM, LVLMOL
+         READ (LUINTM,ERR=998,END=999)
+         READ (LUINTM,ERR=998,END=999) LBINTM, LVLMOL
          LVLMIN = 0
          IF (NEEDTP(1).NE.0 .OR. NEEDTP(2).NE.0. .OR.
      &       NEEDTP(4).NE.0 .OR. NEEDTP(5).NE.0) LVLMIN = 2
@@ -2636,6 +2636,12 @@ C
       END IF
       CALL QEXIT('NXTH2M')
       RETURN
+  998 CONTINUE
+         WRITE (LUPRI,*) 'ERROR reading MOTWOINT in NXTH2M'
+         CALL QUIT('ERROR reading MOTWOINT in NXTH2M')
+  999 CONTINUE
+         WRITE (LUPRI,*) 'END OF FILE reading MOTWOINT in NXTH2M'
+         CALL QUIT('END OF FILE reading MOTWOINT in NXTH2M')
       END
 C  /* Deck nx2h2m */
       SUBROUTINE NX2H2M(IC,ID,H2CD,NEEDTP,BUF,IBUF,IDIST)
