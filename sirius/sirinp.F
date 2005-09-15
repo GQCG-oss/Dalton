@@ -699,6 +699,11 @@ C     Extra default: CALL SIROUT for summary
 C
       CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
       IF (.NOT.DORHF) MAXFCK = 0
+      IF (.NOT.DOCI ) DOCINO = .FALSE.
+C     .. ignore .CINO if no CI calculation
+      IF (.NOT.DOMC .AND. .NOT.DOCI) MCTYPE = 0
+C     ... ignore any *CONFIGURATION input
+C         if neither DOMC nor DOCI /hjaaj aug 2005
 C
       IF (DORHF .AND. .NOT.FLAG(21)) THEN
         IF (MXDIIS .LE. 0) THEN
@@ -841,7 +846,7 @@ C
             THRPWF = 0.1D0
          END IF
       END IF
-      IF (MCTYPE .EQ. 0 .AND. (DOMC .OR. DOCI .OR. DOCINO)) THEN
+      IF (MCTYPE .EQ. 0 .AND. (DOMC .OR. DOCI)) THEN
          WRITE (LUPRI,'(/A)')
      &      'INPUT ERROR: MCSCF or CI requested,'//
      &      ' but neither CAS nor RAS space defined.'
@@ -4775,9 +4780,9 @@ C          to get here unless someone modifies SIRIUS incorrectly
          END IF
          IF (DOCI .AND. IRUN .LT. NUMRUN) THEN
             IF (DOCINO) THEN
-               WRITE(IWUNIT,1051) 'a  CI-NO  calculation '
+               WRITE(IWUNIT,1051) 'a CI-NO calculation '
             ELSE
-               WRITE(IWUNIT,1051) 'a  CI  calculation '
+               WRITE(IWUNIT,1051) 'a CI calculation '
             END IF
             IRUN = IRUN + 1
          END IF
