@@ -116,7 +116,7 @@ C
      &   ' EWMO - Energy Weighted Maximum Overlap - is a Huckel type'//
      &   ' method,',
      &   ' which normally is better than Extended Huckel Theory.',
-     &   ' Reference: Linderberg and Ohrm, Propagators in Quantum'//
+     &   ' Reference: Linderberg and Ohrn, Propagators in Quantum'//
      &   ' Chemistry (Wiley, 1973)'
       END IF
 C
