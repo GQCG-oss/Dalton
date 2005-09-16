@@ -681,7 +681,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
      & ,' DIIS iter.',ITDIIS,EMCSCF,GRDNRM,EMCDIF,-IFTHRS,DIFDEN
             IF (AUTOCC) THEN
                WRITE (LUPRI,'(/A,8I4)')
-     &         ' AUTOCC: current HF occupation',(NISH(I),I=1,NSYM)
+     &         ' AUTOCC: current SCF occupation',(NISH(I),I=1,NSYM)
                IF (IOPRHF .NE. 0) WRITE (LUPRI,'(A,I4)')
      &         ' AUTOCC: current open shell symmetry',IOPRHF
             END IF
@@ -732,14 +732,15 @@ C        allow two oscillations before exiting.
 C        970402-hjaaj: Always allow two oscillations (NOSCIL)
 C        after a "NEWOCC"
 C
-         EMCDIF = EMCDIF - THRINC*ABS(EMCLOW)
+         EMCLOW = MIN(EMCLOW,EMCSCF)
+         EMCDIFERR = THRINC*ABS(EMCLOW)
 C        ... if EMCDIF positive, but increase < THRINC*abs(EMCLOW) then
 C            the increase are in digits which are not reliable
-C        ... by subtracting possible numerical round-off error,
-C            this modified EMCDIF should only be positive if
-C            the exact energy has increased.
+C        ... by comparing to EMCDIFERR, an estimate of the numerical round-off
+C            error, this modified test should only be positive if the exact
+C            energy has increased.
 C
-         IF (EMCDIF .GT. D0 .AND. ITNOCC .GT. 4) THEN
+         IF (EMCDIF .GT. EMCDIFERR .AND. ITNOCC .GT. 4) THEN
             NOSCIL = NOSCIL + 1
          IF (NOSCIL .GT. 10) THEN
             IF (AUTOCC .AND. NSYM .GT. 1 .AND. ITNOCC .LE. 6) THEN
@@ -758,7 +759,6 @@ C           CALL READMO(CMO,JRDMO,WRK,LFREE)
             GO TO 1100
          END IF
          END IF
-         EMCLOW = MIN(EMCLOW,EMCSCF)
 C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
@@ -853,7 +853,7 @@ C          (see below) /hjaaj
             J = 0
             DO I = 1,IEND
 C           IF (I .NE. INDEVC) THEN
-               IF (EGSAV(1,I) .GT. EMCSCF .AND.
+               IF (EGSAV(1,I) .GT. EMCSCF + EMCDIFERR .AND.
      &             EGSAV(2,I) .LT. GRDNRM) THEN
 C                  ... Oops! a previous iter with higher E and lower grd
                   J = J + 1
@@ -925,8 +925,10 @@ c We ignore small jump up.
           IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
-     &         EMCDIF*(GRDNRM-GNRMSV) .LT. 0.0D0 )
+     &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10 )
      &      ) THEN
+C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
+C                 to avoid round-off problems here /hjaaj Sep 2005
 #endif
 c        IF (ITDIIS.GT.1 .AND. 
 c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
@@ -1174,12 +1176,12 @@ Chj from siropt.F, should be modified
        END IF
 C
        IF (IPRENR .GT. 0) THEN
-         WRITE (LUW4,'(//A)') ' *** RHF orbital energy analysis ***'
+         WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
          IF (LUPRI .NE. LUW4) THEN
-            WRITE (LUPRI,'(//A)') ' *** RHF orbital energy analysis ***'
+            WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
@@ -1201,7 +1203,7 @@ C
 Chj      ... if (GEOWLK) then
             IF (.NOT. OPTNEW)
      *         WRITE (LUW4,'(//A/)')
-     *            ' Check ratio for geometry walk with converged RHF :'
+     *            ' Check ratio for geometry walk with converged SCF :'
             JWSTEP = 1
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
