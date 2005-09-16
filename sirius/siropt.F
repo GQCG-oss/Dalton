@@ -1018,12 +1018,12 @@ C
       IF (NASHT .EQ. 0) THEN
 C        hjaaj dec 2002: if extended to cover nasht.eq.1 as in sirdiis.F
 C        then remember to add FCSOL and FV to FD for RHFENR call
-         WRITE (LUW4,'(//A)') ' *** RHF orbital energy analysis ***'
+         WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (SOLVNT)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
-            WRITE (LUPRI,'(//A)') ' *** RHF orbital energy analysis ***'
+            WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (SOLVNT)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
@@ -1246,9 +1246,17 @@ C                     because the Fock matrix is not zero for these
             ILUMO = ISYM
          END IF
          IF (SUPSYM) THEN
-            WRITE (LUPRI,1741) ISYM
+            IF (DODFT) THEN
+               WRITE (LUPRI,1841) ISYM
+            ELSE
+               WRITE (LUPRI,1741) ISYM
+            END IF
          ELSE
-            WRITE (LUPRI,1740) ISYM
+            IF (DODFT) THEN
+               WRITE (LUPRI,1840) ISYM
+            ELSE
+               WRITE (LUPRI,1740) ISYM
+            END IF
          END IF
          IF (IPRINT .GE. 10) THEN
             NLAST = NORBI
@@ -1265,6 +1273,9 @@ C                     because the Fock matrix is not zero for these
          END IF
   200 CONTINUE
       IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY)
+C     take care of 1-electron case and no virtuals case
+      IF (EHOMO .EQ. -DBIG) EHOMO = D0
+      IF (ELUMO .EQ.  DBIG) ELUMO = D0
       WRITE (LUPRI,'(2(/A,F15.8,A,I2,A)/A/A,F15.8,A)')
      &   '    E(LUMO) :',ELUMO,' au (symmetry',ILUMO,')',
      &   '  - E(HOMO) :',EHOMO,' au (symmetry',IHOMO,')',
@@ -1298,6 +1309,9 @@ C1730 FORMAT(//' Hartree-Fock electronic energy:',F25.12)
 C1732 FORMAT( /' Hartree-Fock total      energy:',F25.12)
  1740 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2/)
  1741 FORMAT( /' Hartree-Fock orbital energies, symmetry',I2,
+     &         ' (supersymmetry in parenthesis)'/)
+ 1840 FORMAT( /' Kohn-Sham orbital energies, symmetry',I2/)
+ 1841 FORMAT( /' Kohn-Sham orbital energies, symmetry',I2,
      &         ' (supersymmetry in parenthesis)'/)
  1750 FORMAT(4X,5F15.8)
  1751 FORMAT(4(F15.8,' (',I2,')'))
