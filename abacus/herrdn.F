@@ -1550,9 +1550,11 @@ C          CORR - coordinates of symmetry independent center
 C*****************************************************************************
 C
         CALL RDLINE(LUINFO)
-        IPOS = INDEX(MLINE(NMLINE),' ')
-        IF (IPOS .LT. 2) THEN
-          WRITE (LUPRI,*) 'Atom name must start in first column'
+        IPOS = INDEX(MLINE(NMLINE)(2:80),' ') + 1
+C       sep05-hjaaj: allow both e.g. 'H ' and ' H' as names
+        IF (IPOS .LE. 2 .AND. MLINE(NMLINE)(1:1) .EQ. ' ') THEN
+          WRITE (LUPRI,'(/A,I5/A/A)') 'Error in input line no. ',NMLINE,
+     &    MLINE(NMLINE),'Atom name must start in first or second column'
           CALL QUIT('Error in placement of atom name. See output')
         ELSE IF (IPOS .EQ. 2) THEN
           FRMT = '(A1)'
@@ -4176,9 +4178,12 @@ C     *********************************
 C     ***** Cartesian Coordinates *****
 C     *********************************
 C
-      IF (IPREAD .GT. 0) THEN
+      IPTEST = MIN(NUCDEP/13,2)
+C     hjaaj: x,y,z normally only interesting for
+C            small molecules, otherwise just a lot of lines.
+      IF (IPREAD .GT. IPTEST) THEN
          CALL HEADER('Cartesian Coordinates',1)
-         WRITE (LUPRI,'(A,I3)')
+         WRITE (LUPRI,'(A,I5)')
      &      '  Total number of coordinates:',NCOOR
       END IF
       ICRX = 1
@@ -4192,7 +4197,7 @@ C
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
          IPCMN=IPCMN+1
-            IF (IPREAD .GT. 0) THEN
+            IF (IPREAD .GT. IPTEST) THEN
                WRITE (LUPRI,'(/I4,3X,A,5X,A,3X,F15.10)')
      *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
                WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
@@ -4224,7 +4229,7 @@ C--------------------------
      *                        *CORD(2,ICENT)
                   WORK(ICRZ) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      *                        *CORD(3,ICENT)
-                  IF (IPREAD .GT. 0) THEN
+                  IF (IPREAD .GT. IPTEST) THEN
                      WRITE (LUPRI,'(/I4,3X,A,I2,3X,A,3X,F15.10)')
      *                     ICRX, NAME,JATOM,CHRXYZ(-1),WORK(ICRX)
                      WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
@@ -4251,13 +4256,13 @@ C
       IF (MAXREP .GT. 0) THEN
          IF (IPREAD .GT. 0) THEN
             CALL HEADER('Symmetry Coordinates',1)
-            WRITE (LUPRI,'(A,8I3)')
+            WRITE (LUPRI,'(A,8I4)')
      *            '  Number of coordinates in each symmetry: ',
      *            (NCRREP(I,1),I=0,MAXREP)
          END IF
          DO 300 ISYM = 0, MAXREP
-         IF (NCRREP(ISYM,1) .GT. 0) THEN
-            IF (IPREAD .GT. 0) WRITE (LUPRI,'(/A,2X,A3,A2,I2,A1/)')
+         IF (NCRREP(ISYM,1) .GT. IPTEST) THEN
+            IF (IPREAD .GT. IPTEST) WRITE (LUPRI,'(/A,2X,A3,A2,I2,A1/)')
      &          '  Symmetry',REP(ISYM),' (',ISYM+1,')'
             DO 400 IATOM = 1, NUCIND
                DO 500 ICOOR = 1, 3
@@ -4273,7 +4278,7 @@ C
                            NSIGN(NB) = NSGN
                         END IF
   600                CONTINUE
-                     IF (IPREAD .GT. 0) THEN
+                     IF (IPREAD .GT. IPTEST) THEN
                      IF (NB .EQ. 1) THEN
                         WRITE (LUPRI,'(I4,3X,A,2X,A,I5)') ISCOOR,
      &                     NAMEX(3*IATOM)(1:4), CHRXYZ(-ICOOR), NBASE(1)
@@ -4439,15 +4444,18 @@ C.......................................................................
      2  247.D0, 247.D0, 251.D0, 252.D0, 257.D0,
      3  258.D0, 259.D0, 260.D0/
       INUC = NINT(CHARGE)
-      A = CHARGE*2.556D0
-      IF (INUC.LE.103) A = AMASS(INUC)
+      IF (INUC.LE.103) THEN
+         A = AMASS(INUC)
+      ELSE
+         A = CHARGE*2.556D0
+      END IF
       A = A**(1.0D0/3.0D0)
       DELTA = 1.5D10*(.52917706D0/(.836D0*A+0.57D0))**2
-      IF(IPREAD.GE.0) THEN
-        CALL HEADER('Output from NUCSIZ',-1)
+      IF (IPREAD.GE.0) THEN
+C       CALL HEADER('Output from NUCSIZ',-1)
         WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(INUC),
-     &   '  : Exponent for gaussian charge distribution : ',DELTA
-        ENDIF
+     &  '  : Exponent for nuclear gaussian charge distribution : ',DELTA
+      END IF
       RETURN
       END
 C  /* Deck sphlab */
