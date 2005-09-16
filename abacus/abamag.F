@@ -582,7 +582,7 @@ cDM Onsager solvent model contributions
                LWRK   = LWORK - KLAST + 1
                CALL MAGSOLEXP(WORK(KSLEXP),WORK(KSLSPH),WORK(KSLCAR),
      &                        INTREP,INTADR,LABINT,WORK(KGLM),
-     &                        WORK(KTLM),WORK(KTRAMT),INTPRI,
+     &                        WORK(KTLM),WORK(KTRAMT),IPRINT,
      &                        DENMAT,WORK(KLAST),LWRK)
             ELSE 
 cDM IEF-PCM solvent model contributions
