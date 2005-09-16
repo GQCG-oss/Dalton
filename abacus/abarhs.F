@@ -3359,6 +3359,7 @@ C
       IF ((.NOT. (SHIELD .OR. SPNSPN .OR. SPINRO)) .OR. 
      &   ((.NOT. (SHIELD .OR. SPINRO))
      &    .AND. (SPNSPN .AND. (.NOT. DOPSO)))) RETURN
+      CALL QENTER('PSORHS')
 C
       IF (IPRALL .GE. 3) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPRALL .GE. 4) CALL TITLER('Output from PSORHS','*',103)
@@ -3392,6 +3393,7 @@ C
          CALL FCPRI(SIGMAS,'SIGMA',WORK(KCSTRA),WORK(KSCTRA))
       END IF
       IF (IPRALL .GE. 3) CALL TIMER('PSORHS',TIMSTR,TIMEND)
+      CALL QEXIT('PSORHS')
       RETURN
       END
 C  /* Deck psorh1 */
@@ -3557,13 +3559,7 @@ C
          KSYMST = LSYMST
          KSYMOP = LSYMPT
          KZWOPT = NWOPT
-         IF ((NASHT .EQ. 0).AND.(.NOT.ABASOP)) THEN
-            KZCONF = 0
-         ELSE IF (NASHT .EQ. 1) THEN
-            KZCONF = 1
-         ELSE
-            KZCONF = NCONST
-         END IF
+         KZCONF = NCONST
          KZVAR  = KZWOPT + KZCONF
          KZYWOP = 2*KZWOPT
          KZYCON = 2*KZCONF
