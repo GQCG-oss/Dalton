@@ -695,13 +695,13 @@ C
 C     We use the modified Douglas-Kroll integrals instead
 C
            IF (DKTRAN) THEN
-              CALL DKTRF(STHMAT(1,2),NBAST,NNBASX,IPRINT)
+              CALL DKTRF(STHMAT(1,2),NBAST,NNBAST,IPRINT)
            ELSE
-              DO 800 I = 1, NNBASX
+              DO 800 I = 1, NNBAST
                  STHMAT(I,2) = STHMAT(I,2) + STHMAT(I,3)
  800          CONTINUE
            END IF
-           CALL WRTUND(STHMAT,NBAST,NNBASX,IPRINT)
+           CALL WRTUND(STHMAT,NNBAST,NNBASX,IPRINT)
         ENDIF
       END IF
 C
@@ -1450,7 +1450,7 @@ C
       RETURN
       END
 C /* Deck dktrf */
-      SUBROUTINE DKTRF(STDER0,NBAST,NNBASX,IPRINT)
+      SUBROUTINE DKTRF(STDER0,NBAST,NNBAST,IPRINT)
 C
 C     Read in Douglas-Kroll and overlap integrals and transfer to standard
 C     arrays
@@ -1459,11 +1459,11 @@ C
 #include <priunit.h>
       LOGICAL FNDLAB
 #include <inftap.h>
-      DIMENSION STDER0(NNBASX)
+      DIMENSION STDER0(NNBAST)
 C
       REWIND (LUPROP)
       IF (FNDLAB('DKPOTINT',LUPROP)) THEN
-         CALL READT(LUPROP,NNBASX,STDER0)
+         CALL READT(LUPROP,NNBAST,STDER0)
          IF (IPRINT .GT. 6) THEN
             CALL HEADER('Douglas-Kroll matrix read from LUPROP '//
      &                  'in DKTRF',-1)

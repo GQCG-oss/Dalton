@@ -40,7 +40,7 @@ C
 ===========================================================================
 #endif
 C  /* Deck wrtund */
-      SUBROUTINE WRTUND(STHMAT,NBAST,NNBASX,IPRINT)
+      SUBROUTINE WRTUND(STHMAT,NNBAST,NNBASX,IPRINT)
 C
 C     T. Helgaker Sep. 1986
 C
@@ -88,35 +88,33 @@ C
          IAB = 0
          ICOUNT = 0
          NBUF = 0
-         DO 200 IA = 1, NBAST
-            DO 300 IB = 1, IA
-               IAB = IAB + 1
-               AINT = STHMAT(IAB,ITYPE)
-               IF (ITYPE .EQ. 1 .AND. FINDPT)
-     *         AINT = AINT + DPTFAC * DP5 * ALPHAC**2 * STHMAT(IAB,3)
-               IF (ABS(AINT) .GT. THRS) THEN
-                  ICOUNT = ICOUNT + 1
-                  BUF(ICOUNT) = AINT
-                  IBUF(ICOUNT) = ITRI(IA,IB)
-                  IF (ICOUNT .EQ. 600) THEN
-                     WRITE (LUONEL) BUF, IBUF, ICOUNT
-                     NBUF = NBUF + 1
-                     IF (IPRINT .GE. 5) THEN
-                        WRITE (LUPRI, '(//,A,2I5,/)')
-     *                     ' ICOUNT, NBUF ', ICOUNT, NBUF
-                        DO 400 I = 1, ICOUNT
-                           LABEL = IBUF(I)
-                           IORBA = INDEX1(LABEL)
-                           IORBB = INDEX2(LABEL)
-                           WRITE (LUPRI,'(1X,3I5,5X,D24.12)')
-     *                           LABEL, IORBA, IORBB, BUF(I)
-  400                   CONTINUE
-                     END IF
-                     ICOUNT = 0
+         DO IAB = 1, NNBAST
+            AINT = STHMAT(IAB,ITYPE)
+            IF (ITYPE .EQ. 1 .AND. FINDPT)
+     *      AINT = AINT + DPTFAC * DP5 * ALPHAC**2 * STHMAT(IAB,3)
+            IF (ABS(AINT) .GT. THRS) THEN
+               ICOUNT = ICOUNT + 1
+               BUF(ICOUNT) = AINT
+               IBUF(ICOUNT) = IAB
+               IF (ICOUNT .EQ. 600) THEN
+                  WRITE (LUONEL) BUF, IBUF, ICOUNT
+                  NBUF = NBUF + 1
+                  IF (IPRINT .GE. 5) THEN
+                     WRITE (LUPRI, '(//A,2I5,A,2I5)')
+     *                  ' ICOUNT, NBUF  ', ICOUNT, NBUF,
+     *                  ' NNBAST, NNBASX',NNBAST, NNBASX
+                     DO I = 1, ICOUNT
+                        LABEL = IBUF(I)
+                        IORBA = INDEX1(LABEL)
+                        IORBB = INDEX2(LABEL)
+                        WRITE (LUPRI,'(1X,3I5,5X,D24.12)')
+     *                        LABEL, IORBA, IORBB, BUF(I)
+                     END DO
                   END IF
+                  ICOUNT = 0
                END IF
-  300       CONTINUE
-  200    CONTINUE
+            END IF
+         END DO
          NCOUNT = 600*NBUF + ICOUNT
          IF (ICOUNT .GT. 0) THEN
             WRITE (LUONEL) BUF, IBUF, ICOUNT
