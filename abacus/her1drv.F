@@ -226,12 +226,7 @@ C
       NBAST  = 0
       NNBAST = 0
       DO 100 KB = 0, MAXREP
-         NBASI = 0
-         DO 200 ISHELL = 1, KMAX
-            IF (IBTAND(KB,ISTBAO(ISHELL)).EQ.0) THEN
-               NBASI = NBASI + KHKT(ISHELL)
-            END IF
-  200    CONTINUE
+         NBASI  = NAOS(KB+1)
          NBAST  = NBAST  + NBASI
          NNBAST = NNBAST + NBASI*(NBASI + 1)/2
   100 CONTINUE
@@ -437,7 +432,9 @@ C
          IF (ESG) THEN
             CALL GPOPEN(LUESG,'ESG_AOMAT',' ',' ',' ',IDUMMY,.FALSE.)
             REWIND(LUESG)
-            READ (LUESG) NNBAST
+            READ (LUESG) MMBAST
+            IF (MMBAST .NE. NNBAST)
+     &      CALL QUIT('ESG error: NNBAST on LUESG not coorect')
             CALL GETESG_DENMAT_FOCMAT(WORK(KDSO),WORK(KFSO),NBAST,
      &                                NNBAST)
          ELSE

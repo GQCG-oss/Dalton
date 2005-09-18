@@ -66,23 +66,23 @@ C
       INDEX1(IJ) = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C
-      IF (IPRINT .GE. 5) CALL TITLER('Output from WRTUND','*',103)
+      IF (IPRINT .GE. 4) CALL TITLER('Output from WRTUND','*',103)
 C
       DO 100 ITYPE = 1, 3
          IF (ITYPE .EQ. 1) THEN
             IF (FINDPT) WRITE (LUPRI,'(/A)') 
      &      ' Metric is changed by direct perturbation theory (DPT) '
-            IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)') ' Overlap matrix'
+            IF (IPRINT .GE. 4) WRITE (LUPRI,'(/A)') ' Overlap matrix'
             WRITE (LUONEL) LAB123, TITLES
          ELSE IF (ITYPE .EQ. 2) THEN
             IF (FINDPT) WRITE (LUPRI,'(/A)') 
      &      ' One-electron Hamiltionian is changed by'//
      &      ' direct perturbation theory (DPT) '
-            IF (IPRINT .GE. 5)
+            IF (IPRINT .GE. 4)
      &         WRITE (LUPRI,'(/A)')' One-el. Ham. matrix'
             WRITE (LUONEL) LAB123, TITLEH
          ELSE IF (ITYPE .EQ. 3) THEN
-            IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)')' Kin. energy matrix'
+            IF (IPRINT .GE. 4) WRITE (LUPRI,'(/A)')' Kin. energy matrix'
             WRITE (LUONEL) LAB123, TITLET
          END IF
          IAB = 0
@@ -99,10 +99,12 @@ C
                IF (ICOUNT .EQ. 600) THEN
                   WRITE (LUONEL) BUF, IBUF, ICOUNT
                   NBUF = NBUF + 1
-                  IF (IPRINT .GE. 5) THEN
-                     WRITE (LUPRI, '(//A,2I5,A,2I5)')
+                  IF (IPRINT .GE. 4) THEN
+                     WRITE (LUPRI, '(//A,2I5,A,2I8)')
      *                  ' ICOUNT, NBUF  ', ICOUNT, NBUF,
-     *                  ' NNBAST, NNBASX',NNBAST, NNBASX
+     *                  ' NNBAST, NNBASX', NNBAST, NNBASX
+                  END IF
+                  IF (IPRINT .GE. 5) THEN
                      DO I = 1, ICOUNT
                         LABEL = IBUF(I)
                         IORBA = INDEX1(LABEL)
@@ -120,9 +122,12 @@ C
             WRITE (LUONEL) BUF, IBUF, ICOUNT
             NBUF = NBUF + 1
          END IF
+         IF (IPRINT .GE. 4) THEN
+            WRITE (LUPRI, '(//A,2I5,A,2I8)')
+     *         ' ICOUNT, NBUF  ', ICOUNT, NBUF,
+     *         ' NNBAST, NNBASX', NNBAST, NNBASX
+         END IF
          IF (IPRINT .GE. 5) THEN
-             WRITE (LUPRI, '(//,A,2I5,/)')
-     *             ' ICOUNT, NBUF ', ICOUNT, NBUF
              DO 500 I = 1, ICOUNT
                 LABEL = IBUF(I)
                 IORBA = INDEX1(LABEL)
@@ -135,13 +140,13 @@ C
          PERCNT = SDPRE(100*NCOUNT) / SDPRE(IAB)
          IF (IPRINT .GE. 3) THEN
             IF (ITYPE .EQ. 1) THEN
-               WRITE (LUPRI,'(//,I6,A,I4,A)') NCOUNT,
+               WRITE (LUPRI,'(/I6,A,I4,A)') NCOUNT,
      *         ' atomic overlap integrals written in',NBUF,' buffers.'
             ELSE IF (ITYPE .EQ. 2) THEN
-               WRITE (LUPRI,'(//,I6,A,I4,A)') NCOUNT,
+               WRITE (LUPRI,'(/I6,A,I4,A)') NCOUNT,
      *         ' one-el. Hamil. integrals written in',NBUF,' buffers.'
             ELSE
-               WRITE (LUPRI,'(//,I6,A,I4,A)') NCOUNT,
+               WRITE (LUPRI,'(/I6,A,I4,A)') NCOUNT,
      *         ' kinetic energy integrals written in',NBUF,' buffers.'
             END IF
             WRITE (LUPRI,'(A,F7.2)') ' Percentage non-zero integrals:',
