@@ -67,7 +67,7 @@ C
       CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NODTOT,IERR)
       IF (IERR.GT.0) CALL MPI_MYFAIL(IERR)
 C
-C     One processor is lost as the master
+C     One process is lost as the master
 C
       MASTER = 0
       NODTOT = NODTOT - 1
@@ -157,7 +157,7 @@ C
          DATATYPE = MPI_CHARACTER
       ELSE
          WRITE(LUPRI,*) ' TYPE :',TYPE,' does not exist!'
-         CALL QUIT('ERROR in MPIXBCAST: Nonexisting DATATYPE')
+         CALL QUIT('ERROR in MPIXRECV: Nonexisting DATATYPE')
       END IF
       IF (SOURCE.EQ.-1) THEN
          CALL MPI_RECV(BUFFER,COUNT,DATATYPE,MPI_ANY_SOURCE,TAG,
