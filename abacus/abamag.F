@@ -560,7 +560,7 @@ C
      &                        LABINT,INTREP,INTADR,MPQUAD,.FALSE.,
      &                        NPATOM,.TRUE.,WORK(KEXPT),EXP1VL,DENMAT,
      &                        IPRINT)
-                  CALL DAXPY(KCOMP,EFIELD(IFIELD),WORK(EXPT),1,
+                  CALL DAXPY(KCOMP,EFIELD(IFIELD),WORK(KEXPT),1,
      &                       EXPVAL,1)
                END IF
  555        CONTINUE

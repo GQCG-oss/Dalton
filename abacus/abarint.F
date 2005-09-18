@@ -193,14 +193,14 @@ C
 #include "optinf.h"
 #include "codata.h"
       DIMENSION VALINT(ICRD)
-      CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
+      CHARACTER CRDTXT*26, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
 C
       CALL HEADER('Redundant internal coordinates',-1)
       EMPTXT = '        '
       REMCRD = .FALSE.
       DO 10 I = 1, ICRD
-         CRDTXT = '                      '
+         CRDTXT = '                          '
          MARK = ' '
          IF (CONOPT .AND. (ICNSTR(I) .EQ. 1)) MARK = '*'
          IF (ICNSTR(I) .EQ. 2) THEN
@@ -215,14 +215,14 @@ C
             IF (INTCRD(I,1) .EQ. 5) CRDTXT='Hydrogen bond'
             IF (INTCRD(I,1) .EQ. 7) CRDTXT='Auxiliary bond'
             IF ((INTCRD(I,1) .NE. 7) .OR. (IPRINT .GE. 3))
-     &           WRITE(LUPRI,'(A,I3,2A,A22,2I4,A,F14.5,A5)') EMPTXT,I,
+     &           WRITE(LUPRI,'(A,I3,2A,A26,2I4,A,F14.5,A5)') EMPTXT,I,
      &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),EMPTXT,
      &           XTANG*VALINT(I),UNTTXT
          ELSE IF (INTCRD(I,1) .GT. 20) THEN
             UNTTXT = ' deg.'
             IF (INTCRD(I,1) .EQ. 21) CRDTXT='Dihedral angle'
             IF (INTCRD(I,1) .EQ. 23) CRDTXT='Extra dihedral angle'
-            WRITE(LUPRI,'(A,I3,2A,A22,4I4,F14.3,A5)') EMPTXT,I,
+            WRITE(LUPRI,'(A,I3,2A,A26,4I4,F14.3,A5)') EMPTXT,I,
      &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),
      &           INTCRD(I,4),INTCRD(I,5),1.8D2*VALINT(I)/PI,UNTTXT
          ELSE
