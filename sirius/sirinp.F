@@ -526,7 +526,7 @@ C
       MAXEVC = -1
       RHFCAN = .TRUE.
       MAXFCK = 0
-      MXHFMA = 15
+      MXHFMA = 60
       MXHFMI = 12
       HSROHF = .FALSE.
       CALL IZERO(NROHF,8)
