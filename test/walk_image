@@ -96,7 +96,7 @@ CTRL[3]=1
 ERROR[3]="CARTESIAN BASIS FUNCTIONS NOT USED"
 
 # Geometry
-CRIT1=`$GREP "Total number of coordinates\: 12" $log | wc -l`
+CRIT1=`$GREP "Total number of coordinates\: * 12" $log | wc -l`
 CRIT2=`$GREP "1 * N * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`

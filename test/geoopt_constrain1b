@@ -104,7 +104,7 @@ CTRL[2]=6
 ERROR[2]="SYMMETRY NOT CORRECT"
 
 # Geometry
-CRIT1=`$GREP "Total number of coordinates\: 24" $log | wc -l`
+CRIT1=`$GREP "Total number of coordinates\: * 24" $log | wc -l`
 CRIT2=`$GREP "1 * C * 1 * x * 1\.75478762[0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "4 * C * 2 * x * \-1\.75478762[0-9][0-9]" $log | wc -l`
 CRIT4=`$GREP "7 * H * 1 * x * 2\.44455455[0-9][0-9]" $log | wc -l`

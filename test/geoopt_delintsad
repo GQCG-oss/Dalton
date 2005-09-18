@@ -109,7 +109,7 @@ CTRL[2]=9
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "Total number of coordinates\: 24" $log | wc -l`
+CRIT1=`$GREP "Total number of coordinates\: * 24" $log | wc -l`
 CRIT2=`$GREP "3 * z * 1\.4598223474" $log | wc -l`
 CRIT3=`$GREP "4 * C * x * (0| )\.0201357029" $log | wc -l`
 CRIT4=`$GREP "6 * z * \-1\.4596834723" $log | wc -l`
