@@ -295,13 +295,7 @@ c         ELSE
 c            CALL PARION
 c         END IF
 c      END IF
-c      CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-c      CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-c      CALL MEMINI(LUPRI,LUERR)
 c#else
-C      CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-C      CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-C      CALL MEMINI(LUPRI,LUERR)
 C
 C     This is not an MPI version, but we anyway set
 C     variable MYNUM = 0 which for MPI identifies
@@ -310,27 +304,21 @@ C
 C      MYNUM = 0
 C#endif
 C
-C     Back to old version...   vb jan-01
-C     Revised June 01 /hjaaj
 C
-      IF (MYNUM .EQ. 0) THEN
-         CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
+      CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
-C        ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
-C            if OUTFIL is an environment variable
-         CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
-     &            IDUMMY,.FALSE.)
-      ELSE
-         WRITE (FILNAM,'(A,I4.4)') 'DALTON.OUT',MYNUM
-         CALL GPOPEN(LUPRI,FILNAM,'NEW',' ','FORMATTED',
-     &            IDUMMY,.FALSE.)
-      END IF
+C     ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
+C         for Master if OUTFIL is an environment variable;
+C         for slaves the name will be changed to
+C         "DALTON.OUT#<slave no>" in GPOPEN
+C
       CALL MEMINI(LUPRI,LUERR)
-C
-C     *** End of old version ***
 C
       IF (MYNUM .EQ. 0) THEN
 C         
+         CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+C
          CALL TITLER(' DALTON - An electronic structure program ',
      &               '*',111)
 C
