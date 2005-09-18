@@ -457,14 +457,24 @@ C
       KPRIM  = MAXPRI
       KCMAT  = KPRIM*KPRIM
       KNONT  = 1
-      MXBLCK = 100
       KIQM   = KNONT  +  KATOM
       KBLCK  = KIQM   +  KATOM*KSETS
       KJCO   = KBLCK  +  KATOM*KSETS
       KNUC   = KJCO   +  KATOM*KANG*KSETS
       KNRC   = KNUC   +  KBLOCK*KSETS
       KSEG   = KNRC   +  KBLOCK*KSETS
-      KA     = KSEG   +  KBLOCK*KSETS
+      KLAST  = KSEG   +  KBLOCK*KSETS
+C
+C     Allocate 100 000 for WORK in READI1 and
+C     use rest of memory for blocks
+C     /sep 05 hjaaj
+C
+      LWRK   = LWORK  -  KLAST - 100000
+      L_PER_BLCK = KSETS*(KPRIM + 2*KCMAT)
+      MXBLCK = MAX( 30, LWRK / L_PER_BLCK )
+      MXBLCK = MIN( MXBLCK, KBLOCK)
+C
+      KA     = KLAST
       KC     = KA     +  MXBLCK*KPRIM*KSETS
       KCC    = KC     +  MXBLCK*KCMAT*KSETS
       KLAST  = KCC    +  MXBLCK*KCMAT*KSETS
@@ -1163,7 +1173,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  IF (IPOS .NE. 0) THEN
                     IPOS2 = INDEX(MLINE(NMLINE-NONT(I))(IPOS:),'=')
                     IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
-                       WRITE (LUPRI,'(/A)')
+                       WRITE (LUPRI,'(/A/A//A)')
      &                   ' Incorrect input for basis set name in line:',
      &                   MLINE(NMLINE-NONT(I)),
      &                   ' Format is "Basis=?"'
@@ -1175,9 +1185,11 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                            IPOS4 = INDEX(MLINE(NMLINE-NONT(I))(IPOS3:), 
      &                                                             '=')
                            IF (IPOS4 .EQ. 0 .OR. (IPOS4 .GT. 11)) THEN
-                              WRITE (LUPRI,*) 'Incorrect input for '//
-     &                             'auxiliary basis set name'
-                              WRITE (LUPRI,*) 'Format is "Aux=?"'
+                              WRITE (LUPRI,'(A/A//A)')
+     &                          'Incorrect input for auxilary basis'//
+     &                          ' set name in input line:',
+     &                          MLINE(NMLINE-NONT(I)),
+     &                          'Format is "Aux=?"'
                               CALL QUIT('Incorrect input for '//
      &                             'auxiliary basis set name')
                            ELSE
@@ -1187,8 +1199,9 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
      &                                                       :IPOS3-1)
                            ENDIF
                          ELSE
-                           WRITE (LUPRI,'(A,I4)') 'No auxiliary ' //
-     &                          'basis set given for atom kind # ', I
+                           WRITE (LUPRI,'(A,I4,A/A)') 'No auxiliary ' //
+     &                          'basis set given for atom kind # ', I,
+     &                          ' - input line:',MLINE(NMLINE-NONT(I))
                            CALL QUIT('Incorrect input for '//
      &                          'auxiliary basis set name')
                          ENDIF
@@ -1197,8 +1210,9 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                        ENDIF
                     END IF
                  ELSE
-                    WRITE (LUPRI,'(A,I4)') 'No basis set given '//
-     &                   'for atom kind # ', I
+                    WRITE (LUPRI,'(A,I4,A/A)') 'No basis set given '//
+     &                   'for atom kind # ', I,
+     &                    ' - input line:',MLINE(NMLINE-NONT(I))
                     CALL QUIT('Incorrect input for '//
      &                   'basis set name')
                  END IF
@@ -1257,10 +1271,10 @@ C                where we should not add Huckel basis (to avoid calling BASLIB b
                  IF (Q .EQ. D0) BASNAM = 'pointcharge'
 C                ... avoid floating orbitals
                  IF (IQM(1,1) .EQ. 0) BASNAM = 'pointcharge'
-C                ... avoid calling BASLIB for MM point charges
-                 IF (QM3 .AND. BASNAM(1:2) .EQ. 'MM') 
-     &           BASNAM = 'pointcharge'
 C                ... avoid point charges (maybe set with INTGRL so BASNAM undefined)
+                 IF (QM3 .AND. BASNAM(1:2) .EQ. 'MM') 
+C                ... avoid calling BASLIB for MM point charges
+     &           BASNAM = 'pointcharge'
                  IF (BASNAM(1:11) .NE. 'pointcharge') BASNAM = 'HUCKEL'
 C                ... tell BASLIB that this is for Huckel
               END IF
@@ -1331,9 +1345,9 @@ C
             NOORBI     = NOORBI .AND.IQM(I,J).EQ.0
             IF (IBLOCK(J) .GT. MXBLCK) THEN
                WRITE (LUPRI,*) ' Too many blocks of basis functions '//
-     &              'in input'
-               WRITE (LUPRI,*) ' Increase MXBLCK in the subroutine '//
-     &              'READIN (abacus/herrdn.F) and be welcome back'
+     &              'in .mol input:',IBLOCK(J),MXBLCK
+               WRITE (LUPRI,*) ' Increase work memory in Dalton '//
+     &              '("dalton -M mb" option) and be welcome back'
                CALL QUIT('Too many basis function blocks in input, '//
      &              'see output file')
             END IF
@@ -1935,7 +1949,7 @@ C
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, n# of primitive bf after adding Huckel '//
+     *  ' >>> BASPRO error, # of primitive bf after adding Huckel '//
      &     'orbitals',IPRIMD,
      *  '                   current maximum number                 '//
      &     '        ',MXPRIM
@@ -3358,8 +3372,6 @@ C
                 DIST = SQRT(DS)
                 IF (DIST.LT.0.1.AND.CHARGE(M)*CHARGE(N).NE.D0) GOTO 5000
                 IF (IBTAND(KB,ISTBNU(N)) .EQ. 0) THEN
-                  IF((ABS(CHARGE(M)) .GT. 100.0D0) .AND.
-     &              (ABS(CHARGE(N)) .GT. 100.0D0)) GOTO 320
                   IF (DIST.GT.D0) THEN
                     HKAB  = FMULT(IBTAND(ISTBNU(M),ISTBNU(N)))
                     IF (M .EQ. N) HKAB = DP5*HKAB
@@ -3390,8 +3402,6 @@ C
                     IF (DIST.LT.0.1.AND.CHARGE(M)*CHARGE(N).NE.D0) 
      &              GOTO 5000
                     IF (IBTAND(KB,ISTBNU(N)) .EQ. 0) THEN
-                      IF((ABS(CHARGE(M)) .GT. 100.0D0) .AND.
-     &                (ABS(CHARGE(N)) .GT. 100.0D0)) GOTO 321
                       IF (DIST.GT.D0) THEN
                         HKAB  = FMULT(IBTAND(ISTBNU(M),ISTBNU(N)))
                         IF (M .EQ. N) HKAB = DP5*HKAB
@@ -3423,8 +3433,8 @@ C
 C     Error messages:
 C
  5000 CONTINUE
-      WRITE (LUPRI,'(3(A,I3),A,D15.5)')
-     &     ' The nucleus',N,' is too close to the',KB,
+      WRITE (LUPRI,'(3(A,I4),A,D15.5)')
+     &     ' Nucleus no.',N,' is too close to the',KB,
      &     'th transformation of nucleus no.',M,' DIST=',DIST
       CALL QUIT('Nuclei too close.')
  5010 CONTINUE
