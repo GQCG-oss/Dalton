@@ -101,7 +101,7 @@ CTRL[2]=8
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "Total number of coordinates\: 60" $log | wc -l`
+CRIT1=`$GREP "Total number of coordinates\: * 60" $log | wc -l`
 CRIT2=`$GREP "1 * C * 1 * x * 1\.1884933632" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "4 * C * 2 * x * \-1\.1884933632" $log | wc -l`
@@ -173,7 +173,7 @@ CTRL[3]=58
 ERROR[3]="GEOMETRY NOT CORRECT"
 
 # Symmetry
-CRIT1=`$GREP "Number of coordinates in each symmetry\: * 10 10 10 10 * 6 * 6 * 4 * 4" $log | wc -l`
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 10 * 10 * 10 * 10 * 6 * 6 * 4 * 4" $log | wc -l`
 CRIT2=`$GREP "Number of orbitals in each symmetry\: * 28 * 28 * 22 * 22 * 8 * 8 * 4 * 4" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=2

@@ -102,7 +102,7 @@ CTRL[1]=5
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "Total number of coordinates\: 42" $log | wc -l`
+CRIT1=`$GREP "Total number of coordinates\: * 42" $log | wc -l`
 CRIT2=`$GREP "1 * O * x * 6\.1169594363" $log | wc -l`
 CRIT3=`$GREP "4 * C * x * (\-0|\-)\.4281183799" $log | wc -l`
 CRIT4=`$GREP "5 * y * \-2\.2595362151" $log | wc -l`
@@ -139,7 +139,7 @@ CTRL[2]=28
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Symmetry
-CRIT1=`$GREP "Number of coordinates in each symmetry\: * 28 14" $log | wc -l`
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 28 * 14" $log | wc -l`
 CRIT2=`$GREP "Number of orbitals in each symmetry\: * 38 * 8" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
