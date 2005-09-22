@@ -60,12 +60,6 @@ c     **print out section**
      &        NBAST,NBAST,1,LUPRI)
       END IF
 C
-c     restoring dipole origin
-
-      DIPORG(1) = XI
-      DIPORG(2) = YI
-      DIPORG(3) = ZI
-c
       RETURN
       END
 
