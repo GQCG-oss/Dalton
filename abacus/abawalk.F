@@ -3354,7 +3354,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-      PARAMETER (D2 = 2.0D0)
+      PARAMETER (D2 = 2.0D0, D4 = 4.0D0)
       LOGICAL ACCURT
 C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
@@ -3816,6 +3816,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
+      PARAMETER (D3 = 3.0D0, D4  = 4.0D0, D12 = 12.0D0)
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *6.5796838999D15)
