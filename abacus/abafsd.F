@@ -1987,7 +1987,7 @@ C
                   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                 'UNFORMATTED',IDUMMY,.FALSE.)         
                   DO 556 IFIELD = 1, NFIELD
-                     IF (EFIELD(IFIELD) .NE. D0) THEN
+                     IF (EFIELD(IFIELD) .NE. 0.D0) THEN
                         IF (LFIELD(IFIELD)(2:8) .NE. 'DIPLEN ') THEN
                            WRITE (LUPRI,'(/,3A,/)') 'Field type ',
      &                          LFIELD(IFIELD),
