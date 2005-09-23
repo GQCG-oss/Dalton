@@ -2837,7 +2837,8 @@ C
       KOPMAT  = 1
       KDEN1   = KOPMAT + NORBT * NORBT
       KDEN2   = KDEN1  + NASHT * NASHT
-      IF (OPLBL(3:8).EQ.'SPNORB' .OR. OPLBL(3:8).EQ.'MNF-SO') THEN
+      IF (OPLBL(3:8).EQ.'SPNORB' .OR. OPLBL(3:8).EQ.'MNF-SO'
+     &   .OR. OPLBL(3:8).EQ.'SPNSCA') THEN
          KFREE = KDEN2 + N2ASHX*N2ASHX*2
       ELSE
          KFREE = KDEN2
@@ -2860,7 +2861,8 @@ C
          WRITE(LUPRI,'(A//)')  ' =============================='
       END IF
 C
-      IF (OPLBL(3:8).EQ.'SPNORB' .OR. OPLBL(3:8).EQ.'MNF-SO') THEN
+      IF (OPLBL(3:8).EQ.'SPNORB' .OR. OPLBL(3:8).EQ.'MNF-SO'
+     &   .OR. OPLBL(3:8).EQ.'SPNSCA') THEN
          CALL X2HSO(NSIM,KZYVR,KZYV,IGRSYM,IGRSPI,ISYMV,ISPINV,
      *           OPLBL,IOPSYM,IOPSPI,GRVEC,X2TRS,
      *           VEC,UDV,PV,WRK(KOPMAT),WRK(KDEN1),WRK(KDEN2),
@@ -3215,7 +3217,8 @@ C
          WRITE(LUPRI,'(A//)')  ' =============================='
       END IF
 C
-      IF (OPLBL(3:8).EQ.'SPNORB' .OR. OPLBL(3:8).EQ.'MNF-SO') THEN
+      IF (OPLBL(3:8).EQ.'SPNORB' .OR. OPLBL(3:8).EQ.'MNF-SO'
+     &   .OR. OPLBL(3:8).EQ.'SPNSCA') THEN
          CALL A2HSO(NSIM,KZYVR,KZYV,IGRSYM,IGRSPI,ISYMV,ISPINV,
      *           OPLBL,IOPSYM,IOPSPI,
      *           GRVEC,A2TRS,VEC,UDV,PV,WRK(KOPMAT),XINDX,CMO,
