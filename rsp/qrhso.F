@@ -1294,7 +1294,8 @@ C
 C Transform density 
 C
       CALL GTDMSO(WORK(KFREE),CMO,WORK(KD1),WORK(KFREE),WORK(KFREE))
-      CALL D_K(NBAST,WORK(KAO),WORK(KD1),WORK(KD2),WORK(KS))
+      CALL D_K(NBAST,WORK(KAO),WORK(KD1),WORK(KD2),WORK(KS),
+     &         WORK(KFREE),LFREE)
       IF (DEBUG) THEN
          CALL MAOPRI(WORK(KD1),'X2HSOAO:Density 1')
          CALL MAOPRI(WORK(KD2),'X2HSOAO:Density 2')
@@ -1397,7 +1398,8 @@ C
 C
 C Final transform (adds [k,f1] to f2
 C
-      CALL F_K(NBAST,WORK(KAO),WORK(KF1),WORK(KF2),WORK(KS))
+      CALL F_K(NBAST,WORK(KAO),WORK(KF1),WORK(KF2),WORK(KS),
+     &         WORK(KFREE),LFREE)
       IF (DEBUG) THEN
          CALL MAOPRI(WORK(KF2),'X2HSOAO:Final fock')
       END IF
