@@ -121,9 +121,30 @@ c     see above for description.
             SPNDSO(K,L) = SPNDSO(L  ,K)
          END DO
       END DO
+c      write(2,*)'SPNDSO:'
+c      CALL OUTPUT(SPNDSO,1,NUCIND*3,1,NUCIND*3,MXCOOR,MXCOOR,1,2)
       END
       SUBROUTINE getdsosz(nDSODIM)
 #include <implicit.h>
 #include <mxcent.h>
       nDSODIM = MXCOOR
       END
+#ifdef VAR_MPI
+      SUBROUTINE dsosyncslaves(dmat,nind,work,lwork)
+#include <implicit.h>
+#include <mpif.h>
+#include <codata.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <nuclei.h>
+#include <spnout.h>
+#include <inforb.h>
+#include <infpar.h>
+      DIMENSION DMAT(NBAST,NBAST)
+      IF(MYNUM.EQ.0) CALL dftdns(dmat, work, lwork, 0)
+      CALL MPI_Bcast(dmat, N2BASX, MPI_DOUBLE_PRECISION,
+     &     0, MPI_COMM_WORLD,IERR)
+      CALL MPI_Bcast(nind, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,IERR)
+      CALL MPI_Bcast(NCSPNI,MXCENT, MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
+      END
+#endif

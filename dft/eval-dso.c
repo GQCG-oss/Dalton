@@ -90,7 +90,7 @@ void FSYM(getdsosz)(int *dsodim);
 void
 numdso_slave(real* work, int* lwork, const int* iprint)
 {
-    int dsodim,sz;
+    int dsodim,sz, new_lwork;
     int nucind;            /* IN: will be synced from master */
     real *spndso;
     
@@ -98,19 +98,15 @@ numdso_slave(real* work, int* lwork, const int* iprint)
     if(*lwork < sz)
 	dalton_quit("Slave has not enough memory %d for DSO matrix %d",
 		    *lwork, sz);
-    FSYM(numdso)(work, &nucind, work+sz, lwork-sz);
+    new_lwork = *lwork-sz;
+    FSYM(numdso)(work, &nucind, work+sz, &new_lwork);
 }
 
-static void
-numdso_sync_slaves(real *dmat, int *nucind)
-{
-    MPI_Bcast(dmat, inforb_.n2basx,MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(nucind, 1, MPI_INT, 0, MPI_COMM_WORLD);
-}
 static void
 numdso_collect_info(real *spndso, real *work, int lwork)
 {
     int dsodim,sz;
+
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz <=1) return;
 
@@ -119,7 +115,9 @@ numdso_collect_info(real *spndso, real *work, int lwork)
     MPI_Reduce(work, spndso, sz, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 }
 #else /* VAR_MPI */
-#define numdso_sync_slaves(a,b)
+#define dsosyncslaves(dmat,nucind,work,lwork) \
+        FSYM(dftdns)(dmat, work, lwork, &ZEROI)
+
 #define numdso_collect_info(a,work,lwork)
 #endif /* VAR_MPI */
 
@@ -156,17 +154,14 @@ FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork)
     struct dso_data dso;
     real electrons, *dmat;
 
-    
     dft_wake_slaves((DFTPropEvalMaster)FSYM(numdso));
     dmat = dal_malloc(inforb_.n2basx*sizeof(real));
-    FSYM(dftdns)(dmat, work, lwork, &ZEROI);
-    /* numdso_sync_slaves(dmat, nucind); */
+    FSYM(dsosyncslaves)(dmat, nucind,work,lwork);
 
     dso.dso  = spndso;
     dso.rvec = malloc(DFT_BLLEN*(*nucind)*3*sizeof(real));
     dso.r3i  = malloc(DFT_BLLEN*(*nucind)*sizeof(real));
     if(!dso.rvec || !dso.r3i) dalton_quit("ABORT!!!");
-
     times(&starttm);
     electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0,
                                     (DftBlockCallback)dso_cb, &dso);
