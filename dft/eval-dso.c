@@ -101,7 +101,8 @@ numdso_slave(real* work, int* lwork, const int* iprint)
     new_lwork = *lwork-sz;
     FSYM(numdso)(work, &nucind, work+sz, &new_lwork);
 }
-
+#define numdso_sync_slaves(dmat,nucind,work,lwork) \
+        FSYM(dsosyncslaves)(dmat,nucind,work,lwork)
 static void
 numdso_collect_info(real *spndso, real *work, int lwork)
 {
@@ -115,7 +116,7 @@ numdso_collect_info(real *spndso, real *work, int lwork)
     MPI_Reduce(work, spndso, sz, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 }
 #else /* VAR_MPI */
-#define dsosyncslaves(dmat,nucind,work,lwork) \
+#define numdso_sync_slaves(dmat,nucind,work,lwork) \
         FSYM(dftdns)(dmat, work, lwork, &ZEROI)
 
 #define numdso_collect_info(a,work,lwork)
@@ -156,7 +157,7 @@ FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork)
 
     dft_wake_slaves((DFTPropEvalMaster)FSYM(numdso));
     dmat = dal_malloc(inforb_.n2basx*sizeof(real));
-    FSYM(dsosyncslaves)(dmat, nucind,work,lwork);
+    numdso_sync_slaves(dmat, nucind,work,lwork);
 
     dso.dso  = spndso;
     dso.rvec = malloc(DFT_BLLEN*(*nucind)*3*sizeof(real));
