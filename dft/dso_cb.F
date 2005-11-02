@@ -53,7 +53,6 @@ c     1. upper triangle of the DSOMAT need to be set.
 c     This is done in numdso_finish() f77 routine.
 c
 #include <implicit.h>
-#include <codata.h>
 #include <mxcent.h>
 #include <nuclei.h>
 #include <spnout.h>
@@ -145,6 +144,7 @@ c      CALL OUTPUT(SPNDSO,1,NUCIND*3,1,NUCIND*3,MXCOOR,MXCOOR,1,2)
       CALL MPI_Bcast(dmat, N2BASX, MPI_DOUBLE_PRECISION,
      &     0, MPI_COMM_WORLD,IERR)
       CALL MPI_Bcast(nind, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,IERR)
+      CALL MPI_Bcast(nucind, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,IERR)
       CALL MPI_Bcast(NCSPNI,MXCENT, MPI_LOGICAL,0,MPI_COMM_WORLD,IERR)
       END
 #endif

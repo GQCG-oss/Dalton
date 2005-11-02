@@ -99,8 +99,10 @@ numdso_slave(real* work, int* lwork, const int* iprint)
 	dalton_quit("Slave has not enough memory %d for DSO matrix %d",
 		    *lwork, sz);
     new_lwork = *lwork-sz;
+    FSYM(dzero)(work, &sz);
     FSYM(numdso)(work, &nucind, work+sz, &new_lwork);
 }
+void FSYM(dsosyncslaves)(real *dmat,int *nucind,real *work,int *lwork);
 #define numdso_sync_slaves(dmat,nucind,work,lwork) \
         FSYM(dsosyncslaves)(dmat,nucind,work,lwork)
 static void
@@ -162,7 +164,7 @@ FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork)
     dso.dso  = spndso;
     dso.rvec = malloc(DFT_BLLEN*(*nucind)*3*sizeof(real));
     dso.r3i  = malloc(DFT_BLLEN*(*nucind)*sizeof(real));
-    if(!dso.rvec || !dso.r3i) dalton_quit("ABORT!!!");
+    if(!dso.rvec || !dso.r3i) dalton_quit("Not enough memory in numdso.");
     times(&starttm);
     electrons = dft_integrate_ao_bl(1, dmat, work, lwork, 0,
                                     (DftBlockCallback)dso_cb, &dso);
