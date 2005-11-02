@@ -1,3 +1,11 @@
+2005-11-02  Pawel Salek 
+
+	* dft/dft_int.F: remove redundant common blocks.
+	* dft/dso_cb.F: add trivial subroutine getdsosz.
+	* dft/eval-dso.c: parallelize.
+	* dft/general.[hc]: register DSO slave.
+	* dft/{integrator,prop-eval}.c: remove some noise.
+
 2005-05-09  Pawel Salek 
 
 	merge dft-qr-faster.

@@ -319,8 +319,6 @@ c
 c
 #include <implicit.h>
 #include <mpif.h>
-#include <maxorb.h>
-#include <infpar.h>
       A = ELECTRONS
       CALL MPI_Reduce(A,ELECTRONS,1,MPI_DOUBLE_PRECISION,MPI_SUM,
      &                0,MPI_COMM_WORLD,IERR)

@@ -76,8 +76,6 @@ const static int DFTMAG_DEBUG = 0;
 #define MASTER_NO 0
 #endif
 #if 0 && defined(VAR_MPI)
-#include <mpi.h>
-#define MASTER_NO 0
 
 /* dft_kohn_sham_slave:
    this is a slave driver. It's task is to allocate memory needed by
@@ -106,7 +104,7 @@ dft_kohn_sham_collect_info(real*ksm, real* energy, real* work, int lwork)
 {
     real tmp = *energy;
     int sz = 0;
-    MPI_comm_size(MPI_COMM_WORLD, &sz);
+    MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz <=1) return;
     CHECK_WRKMEM(inforb_.n2basx, lwork);
     dcopy_(&inforb_.n2basx, ksm,&ONEI, work, &ONEI);

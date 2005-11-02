@@ -122,3 +122,8 @@ c     see above for description.
          END DO
       END DO
       END
+      SUBROUTINE getdsosz(nDSODIM)
+#include <implicit.h>
+#include <mxcent.h>
+      nDSODIM = MXCOOR
+      END

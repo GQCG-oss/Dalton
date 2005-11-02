@@ -182,6 +182,7 @@ void dftcrcf_(real* fi, real* cmo,
               real* kappaC, int* symC,
               real* kappaD, int* symD,
               real* work, int* lwork);
+void FSYM(numdso)(real* spndso, int *nucind, real* work, int* lwork);
 
 
 void FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
@@ -202,6 +203,7 @@ void dft_mol_grad_slave (real* work, int* lwork, const int* iprint);
 void dft_qr_resp_slave  (real* work, int* lwork, const int* iprint);
 void dft_qrbl_slave     (real* work, int* lwork, const int* iprint);
 void dft_cr_resp_slave(real* work, int* lwork, const int* iprint);
+void numdso_slave(real* work, int* lwork, const int* iprint);
 
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
