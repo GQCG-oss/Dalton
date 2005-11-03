@@ -70,6 +70,7 @@ Functional* available_functionals[] = {
     &LRC95xFunctional,
     &LYPFunctional,
     &LYPrFunctional,
+    &HCTHFunctional,
     &HCTH93Functional,
     &HCTH120Functional,
     &HCTH147Functional,
