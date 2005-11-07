@@ -1,7 +1,7 @@
 #!/bin/sh
 #dalton="mpirun -np 4 `pwd`/../../dalpar.x"; par='.PARALLEL'
-dalton="`pwd`/../../dalton.x"; par='!.PARALLEL'
-tmp=/tmp/${USER}
+dalton="`pwd`/../../bin/dalton.x"; par='!.PARALLEL'
+tmp=/scratch/${USER}
 runenergy=1
 grid=1e-7
 
@@ -51,14 +51,29 @@ EOF
 gen_CO() {
 cat > MOLECULE.INP <<EOF
 BASIS
-Ahlrichs-VDZ
+taug-cc-pVTZ
 CO with STO-2G basis set
 --------
     2    0
         6.    1
 C     .0000     .0000     .0000
         8.    1
-O    1.41421356 1.41421356  .0000
+O    1.01421356 1.41421356  .0000
+EOF
+}
+
+gen_CO2() {
+cat > MOLECULE.INP <<EOF
+BASIS
+taug-cc-pVTZ
+CO2 STO-2G or Ahlrichs-VDZ
+--------
+    2    0
+        6.    1
+C     .0000     .0000     .0000
+        8.    2
+O1    2.0 0.0 0.0
+O2   -2.0 0.1 0.0
 EOF
 }
 
@@ -116,8 +131,6 @@ $hfocc
 *DFT INPUT
 .RADINT
 $grid
-.GRID TYPE
-BECKECORR
 .DFTTHRESHOLD
 0 0 0
 .DFTELS
@@ -125,10 +138,12 @@ BECKECORR
 *HAMILTONIAN
 .FIELD
 $finite_run_field
- YDIPLEN
+YDIPLEN
 *ORBITAL INPUT
 .MOSTART
 $mostart
+.AO DELETE
+1e-3
 *END OF INPUT
 EOF
 
@@ -164,16 +179,16 @@ $grid
 0 0 0
 .DFTELS
 1
-.GRID TYPE
-BECKECORR
 *ORBITAL INPUT
 .MOSTART
 $mostart
+.AO DELETE
+1e-4
 **RESPONSE
 *LINEAR
 .DIPLNY
 .THCLR 
-1e-7
+1e-3
 *END OF INPUT
 EOF
 
@@ -219,7 +234,7 @@ run_test() {
     awk '/@.*YDIPLEN/ {gsub("[dD]","e",$8);print "Linear response returns: " $8+0}' DALTON.OUT
 }
 
-run_test 1e-4 gen_LiH    1  "PBE"  || exit 1
+run_test 1e-4 gen_CO2    ""  "B3LYP"  || exit 1
 #run_test 2e-4 gen_BeH    "" "BP86"           || exit 1
 run_test 1e-5 gen_CO    "" "CAMb3LYP"             || exit 1
 #run_test 5e-5 gen_H2Oion "" "BLYP"            || exit 1

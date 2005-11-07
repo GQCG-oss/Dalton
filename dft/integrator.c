@@ -328,7 +328,7 @@ dft_integrate_ao(DftDensity* dens, real* work, int* lwork,
     /* start integration */
     electrons  = 0.0;
     /*printf("CALLING grid_open from dft_integrate_ao\n");*/
-    rawgrid = grid_open(inforb_.nbast, NULL, work, lwork);
+    rawgrid = grid_open(inforb_.nbast, dens->dmata, work, lwork);
     npoints = 0;
     while( (blocksz=grid_getchunk_plain(rawgrid, GRID_BUFF_SZ,
                                         grid->coor, grid->weight)) >=0) {
@@ -510,7 +510,7 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
             lo = 0; hi = len-1;
 #endif
             npoints += len;
-            if(lo<hi)
+            if(lo<=hi)
                 cb(grid, dmagao, len, lo, hi+1, cb_data);
         }
     }
