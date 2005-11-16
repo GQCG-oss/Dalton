@@ -144,7 +144,7 @@ qrbl_data_init(QuadBlData *d, real *cmo, int is_gga, int max_block_len,
         dalton_quit("no enough mem in %s", __FUNCTION__);
     isym = isetksymop_(&symY);
     FSYM(deq27)(cmo, kappaY, &dummy, d->my,    &dummy, work, lwork);
-    isym = isetksymop_(&symZ);
+    isetksymop_(&symZ);
     FSYM(deq27)(cmo, kappaZ, &dummy, d->mz,    &dummy, work, lwork);
     isetksymop_(&isym);
 #if 0
