@@ -534,7 +534,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'SECMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPR1IN)
          NLAB = 6
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
      &               LABSYM)
@@ -544,7 +545,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'ROTSTR ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPR1IN)
          NLAB = 6
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
      &                  LABSYM)
@@ -554,7 +556,8 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &               IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
      &               LABSYM)

@@ -553,7 +553,8 @@ C
             NPATOM = 0
             CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &                  LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
+     &                  IPRINT)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          END IF
