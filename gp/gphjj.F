@@ -410,7 +410,8 @@ C      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #if defined (SYS_SX)
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
 #endif
-#if defined (SYS_LINUX)
+#if defined (SYS_LINUX) && !(defined(GFORTRAN) && GFORTRAN <= 402)
+c     bug in gfortran-4.0.2 causes a segfault here.
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
@@ -2006,6 +2007,9 @@ C
   140 CONTINUE
       RETURN
       END
+c     LOC() is not provided by gfortran-4.0.2 and this routine is not
+c     used at all in ther code.
+#if !(defined(GFORTRAN) && GFORTRAN <= 402)
       SUBROUTINE COMPOFF(WRK, WORK, KBASE)
 C
 C     Nov. 2004 Hans Joergen Aa. Jensen
@@ -2019,3 +2023,4 @@ C
 C     write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
       RETURN
       END
+#endif

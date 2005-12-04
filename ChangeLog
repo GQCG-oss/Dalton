@@ -1,3 +1,11 @@
+2005-12-04  Pawel Salek 
+
+	* configure: recognize gfortran, mostly works with
+	4.0.2 20051125 (Red Hat 4.0.2-8)
+	* abacus/herrdn.F: workarounds necessary for gfortran.
+	* gp/gphjj.F: ditto.
+	* dft/general.h: more order in the underscore issue.
+
 2005-11-02  Pawel Salek 
 
 	* dft/dft_int.F: remove redundant common blocks.

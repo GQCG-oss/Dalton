@@ -194,7 +194,7 @@ case $WHICH in
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort ifc efc pgf77 g77'
+              complist='ifort ifc efc pgf77 g77 gfortran'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='xlf g77'
@@ -1004,6 +1004,14 @@ case "$WHICH" in
              copt="-fastsse -Mvect=idiom -Munroll -c9x -DRESTRICT=restrict"
              opt="-fastsse -Munroll"; safe_opt="-fastsse"
              ;;
+          gfortran)
+             gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+             echo "gfortran version $gfver"
+             cpp="-DVAR_G77 $cpp -DGFORTRAN=$gfver"
+             copt="-march=i686 -malign-double -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1"
+             opt="-march=i686 -malign-double -O3 -ffast-math -funroll-loops -ftree-vectorize"
+             ;;
+
           *)
               test_linux_g77=false
               if [ -s /etc/redhat-release ]; then

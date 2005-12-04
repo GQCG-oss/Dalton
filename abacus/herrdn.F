@@ -1658,8 +1658,15 @@ C     of the nuclei in traditional Dalton format, with 4 characters for the
 C     name of the atom
 C
         IF (IPOS .EQ. 0) THEN
+#if (defined(GFORTRAN) && GFORTRAN <= 402)
+c     a bug in the compiler (seen with gfortran-4.0.2 20051125)
+c     allegedly fixed in 4.1.x series.
+          WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,A11)') NAMN(NUCIND),
+     &          (CORD(J,NUCIND),J = 1, 3), '             '
+#else
           WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,A14)') NAMN(NUCIND),
      &          (CORD(J,NUCIND),J = 1, 3), '                '
+#endif
         ELSE
           IF (MASSNM .LT. 10) THEN
             WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I1,A5)') 
