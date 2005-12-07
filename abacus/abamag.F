@@ -1658,11 +1658,11 @@ C
 C
       NREC = 0
       IF (DOSD) THEN
-         NCOMP  = 0
          IF (DODRCT) THEN
             NPATOM = 2
             ISTRT  = 1
             DO I = 1, NUCIND
+               NCOMP  = 0
                CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,LABEL,
      &                     ISDREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,DUMMY,
      &                     .FALSE.,DUMMY,INTPRI)

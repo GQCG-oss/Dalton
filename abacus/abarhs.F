@@ -3515,12 +3515,12 @@ C
 C
 C     Construct the appropriate property vectors
 C
-      NCOMP  = 0
-      NPATOM = 0
       IF (DODRCT .AND. .NOT. RALLCO) THEN
          NPATOM = 2
          ISTRT  = 1
          DO 77 I = 1, NUCIND
+            NCOMP  = 0
+            NPATOM = 0
             CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK,LWORK,LABTMP,
      &                  INTREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,
      &                  DUMMY,.FALSE.,DUMMY,IPRINT)
@@ -3542,6 +3542,8 @@ C
  78         CONTINUE
  77      CONTINUE
       ELSE
+         NCOMP  = 0
+         NPATOM = 0
          CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK,LWORK,LABINT,
      &               INTREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
      &               DUMMY,.FALSE.,DUMMY,IPRINT)
