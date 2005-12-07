@@ -1,4 +1,4 @@
-/* Comdeck pedram */
+C/* Comdeck pedram */
       SUBROUTINE PEDRAM(WORK,LWORK)
 C
 #include <implicit.h>
