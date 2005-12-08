@@ -242,7 +242,12 @@ Chj         CFMAX  = CFMAX1(IPRM1)*CFMX2
 C
 C           screening test
 C
-            DOTHIS = .FALSE.
+C           DOTHIS = .FALSE.
+C dothis set to .true. 
+C Must not be futher changed without extensive
+C testing on large molecules! tuh 08.12.05
+C
+            DOTHIS = .TRUE.
             DO 315 ISYM = 1, NODC12
 Chj: next line moved from 320 loop to here
                NPRI12(ISYM) = NPRI12(ISYM) + 1
