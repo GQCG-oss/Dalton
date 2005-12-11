@@ -4694,8 +4694,8 @@ C
       IATOM  = 0
       MULTE  = 1
 C
-C     a) Undifferentiated integrals written on file
-C     =============================================
+C     a) Undifferentiated integrals (or 2-el.Darwin) written on file
+C     ==============================================================
 C
       IF (ITYPE .EQ. 0) THEN
          UNDIFF = .TRUE.
@@ -4795,7 +4795,7 @@ C
          DIA2SO = .TRUE.
          SQ12EL = .TRUE.
 C
-C     l) Zero-field electron spin-spin couplings
+C     m) Zero-field electron spin-spin couplings
 C     ==========================================
 C
       ELSE IF (ITYPE .EQ. 11) THEN

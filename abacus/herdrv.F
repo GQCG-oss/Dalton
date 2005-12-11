@@ -262,7 +262,7 @@ C
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 128)
+      PARAMETER (NDIR = 9, NTABLE = 129)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -323,7 +323,8 @@ cLig <> added RANGMO and RPSO
      &             '.DPTPXP', '.NOPICH', '.OZ-KE ', '.PSO-KE', 
      &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
      &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
-     &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC'/
+     &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
+     &             '.2-EL D'/
 C
 C     Check if input has been processed earlier.
 C
@@ -401,7 +402,7 @@ C
      &                191,192,193,194,195,196,197,198,199,200,
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
-     &                221,222,223,224,225,226,227,228), I
+     &                221,222,223,224,225,226,227,228,229), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1056,6 +1057,9 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             DIPLEN=.TRUE.
             ONEPRP=.TRUE.
             GO TO 100
+ 229     CONTINUE
+            DAR2EL = .TRUE.
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -1100,6 +1104,8 @@ cLig <>
      &    ' Calculation of two-electron integrals over [T1,r12].'
       IF (U21INT) WRITE (LUPRI,'(A)')
      &    ' Calculation of two-electron integrals over [T2,r12].'
+      IF (DAR2EL) WRITE (LUPRI,'(/A)')
+     &     ' Calculate 2-electron Darwin integrals'
       IF (AD2DAR) WRITE (LUPRI,'(/A/A,F18.14/)')
      &    ' Two-electron Darwin integrals are added to standard',
      &    ' repulsion integrals with perturbation parameter:',DARFAC
@@ -1958,6 +1964,7 @@ C
 #include <nuclei.h>
 #include <huckel.h>
 #include <ccom.h>
+#include "inftap.h"
 #include <efield.h>
 #include <r12int.h>
 #include <drw2el.h>
@@ -3107,6 +3114,52 @@ C
             CALL FLSHFO(LUPRI)
          END IF
 C
+C        *****************************************
+C        ***** Two-electron Darwin integrals *****
+C        *****************************************
+C
+         IF (DAR2EL) THEN
+            NPAO = MXSHEL*MXAOVC
+            CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)     
+            CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)     
+            CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &                  WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),0,
+     &                  .FALSE.,IPRDEF)
+            CALL MEMREL('HERINT.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL GETTIM(DA1CPU,DA1WAL)
+            IRNTYP = 0
+            DO2DAR = .TRUE.
+            IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
+            CALL GPOPEN(LUINTA,'AO2ELDAR','UNKNOWN',' ',' ',
+     &                  IDUMMY,.FALSE.)
+            CALL TWOINT(WORK(KFREE),LFREE,DUMMY,DUMMY,DUMMY,1,IDUMMY,
+     &                  IDUMMY,
+     &                  DUMMY,IDUMMY,NUMDIS,1,IRNTYP,0,0,.TRUE.,.TRUE.,
+     &                  .FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
+     &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                  .FALSE.)
+            DO2DAR = .FALSE.
+            IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
+            CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
+            CALL GETTIM(DA2CPU,DA2WAL)
+            DACPU=DA2CPU-DA1CPU
+            DAWAL=DA2WAL-DA1WAL
+            CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
+     &      '   Two-electron Darwin integrals',
+     &      '   =================================',
+     &      '   Spin-orbit Darwin CPU  time ',DACPU,' seconds',
+     &      '   Spin-orbit Darwin wall time ',DAWAL,' seconds'
+            CALL FLSHFO(LUPRI)
+         END IF
+C
 C        *************************************
 C        ***** Test spin-orbit integrals *****
 C        *************************************
@@ -3398,6 +3451,7 @@ C#endif
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
       DO2DAR = .FALSE.
+      DAR2EL = .FALSE.
       AD2DAR = .FALSE.
       FINDPT = .FALSE.
       NFIELD = 0
