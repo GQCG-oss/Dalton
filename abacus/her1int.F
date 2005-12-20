@@ -909,11 +909,11 @@ cLig <> added JMAX adjustment  for INTTYP = 82
          IF (INTTYP .EQ. 80) JMAX = JMAX + 3
 cLig <> added JMAX = JMAX+2 for INTTYP = 82
          IF (INTTYP .EQ. 82) JMAX = JMAX + 2
-         IF (INTTYP .EQ. 92) JMAX = JMAX + 4
+         IF (INTTYP .EQ. 92) JMAX = JMAX + 6
          IF (INTTYP .EQ. 93) JMAX = JMAX + 4
          IF (INTTYP .EQ. 94) JMAX = JMAX + 4
          IF (INTTYP .EQ. 96) JMAX = JMAX + 4
-         IF (INTTYP .EQ. 97) JMAX = JMAX + 4
+         IF (INTTYP .EQ. 97) JMAX = JMAX + 6
          MULCHA = (INTTYP .EQ. 5) .OR. (INTTYP .EQ. 19)
      &                            .OR. (INTTYP .EQ. 20)
      &                            .OR. (INTTYP .EQ. 24)
@@ -2033,7 +2033,7 @@ C        --------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 92) THEN
             CALL PSOKIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
-     &                  NOPTYP,NATOMC,iprint)
+     &                  NOPTYP,NATOMC)
 C
 C        Kinetic energy correction to diamagnetic nuclear shieldings
 C        -----------------------------------------------------------
@@ -3096,9 +3096,9 @@ C
             DPLZZ = SX0*SY0*DZ3
          END IF
 C
-         SHLINT(INT,1) = SHLINT(INT,1) - (D2*DIFABZ*DIFABY*DPLYZ -
-     &                   DIFABZ*DIFABZ*DPLYY -
-     &                   DIFABY*DIFABY*DPLZZ)*D4INV
+         SHLINT(INT,1) = SHLINT(INT,1) - (D2*DIFABZ*DIFABY*DPLYZ
+     &                                 -  DIFABZ*DIFABZ*DPLYY 
+     &                                 - DIFABY*DIFABY*DPLZZ)*D4INV
          SHLINT(INT,2) = SHLINT(INT,2) - (DIFABZ*DIFABZ*DPLXY -
      &                   DIFABY*DIFABZ*DPLXZ -
      &                   DIFABZ*DIFABX*DPLYZ +
@@ -5101,7 +5101,7 @@ C
       END
 C
       SUBROUTINE PSOKIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
-     &                  NOPTYP,NATOMC,iprint)
+     &                  NOPTYP,NATOMC)
 C
 C     Kinetic energy correction to paramagnetic spin-orbit integrals
 C
@@ -5129,7 +5129,7 @@ C
          MAXU = MVALA + MVALB + 3
          MAXV = NVALA + NVALB + 3
          IADRAV = 1
-         DO 200 IV = 0,MAXV + 1
+         DO 200 IV = 0, MAXV
             EV  = ODC(NVALA,NVALB,IV,0,0,3)
             FV1 = ODC(NVALA,NVALB,IV,1,0,3)
             FV2 = ODC(NVALA,NVALB,IV,2,0,3)
@@ -5173,9 +5173,17 @@ C
                      AH0T = AHGTF(IOFF + IADRAU + IT + 1)
                      AH0U = AHGTF(IOFF + IADRAU + IT + ISTEPU)
                      AH0V = AHGTF(IOFF + IADRAU + IT + ISTEPV)
+ckr                     write (2,*) 'f2ef1,ef2f1,eef3,ah0u',
+ckr     &                    f2ef1,ef2f1,eef3,ah0u
+ckr                     write (2,*) 'f2f1e,ef3e,ef1f2,ah0v',
+ckr     &                    f2f1e,ef3e,ef1f2,ah0v
+ckr                     write (2,*) 'ituv,iatom,istepu,istepv,ioff',
+ckr     &                    lvala,mvala,nvala,lvalb,mvalb,nvalb,it,iu,iv,
+ckr     &                    iatom,istepu,istepv,ioff
                      SHLINT(INT,IX) = SHLINT(INT,IX) + DP5*
      &                    ((F2EF1 + EF2F1 + EEF3)*AH0U
      &                   - (F2F1E + EF3E + EF1F2)*AH0V)
+ckr                     write(2,*) 'int,ix',int,ix,shlint(int,ix)
                      SHLINT(INT,IY) = SHLINT(INT,IY) + DP5*
      &                    ((F3EE + F1F2E + F1EF2)*AH0V
      &                   - (F2EF1 + EF2F1 + EEF3)*AH0T)
@@ -5533,7 +5541,7 @@ C  /* Deck psotra */
      &                             *PT(IBTAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) + ICOOR
                   IADR = INTADR(ISCOOR)
-                  IF (INTTYP .EQ. 92) THEN
+                  IF (INTTYP .EQ. 92 .OR. INTTYP .EQ. 10) THEN
                      CALL SYMSQR(SHLINT(1,ITYP),SOINT(1,IADR),IREPC,
      &                           ISYMOP,IORBA,IORBB,FACSYM,NBAST,IPRINT)
                   ELSE

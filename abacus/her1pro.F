@@ -530,6 +530,7 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL PSOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),INTADR,NATOM,
      &               INTTYP)
+         SQUARE = .FALSE.
          ANTI = .TRUE.
       GO TO 200
 C
@@ -2259,20 +2260,11 @@ C     ****************************************************
 C     ****** (Anti)symmetrize relativistic integrals *****
 C     ****************************************************
 C
-      IF (INTTYP .EQ. 92 .OR. INTTYP .EQ. 93 .OR. INTTYP .EQ. 94
-     &.OR.INTTYP .EQ. 95 .OR. INTTYP .EQ. 97) THEN
+      IF (INTTYP .EQ. 93 .OR. INTTYP .EQ. 94.OR.INTTYP .EQ. 95) THEN
          IADR  = KSOINT
          IADRL = KSOINT
          DO ICOMP = 1, NOPTYP
-            IF (INTTYP .EQ. 97) THEN
-               CALL DGETAP(NBAST,WORK(IADR),WORK(KFREE))
-            ELSE
-               CALL DGETSP(NBAST,WORK(IADR),WORK(KFREE))
-               DO I = 1, NBAST
-                  II = I*(I+1)/2 - 1
-                  WORK(KFREE + II) = 0.0D0
-               END DO
-            END IF
+            CALL DGETSP(NBAST,WORK(IADR),WORK(KFREE))
             CALL DCOPY(NBAST*(NBAST + 1)/2,WORK(KFREE),1,WORK(IADRL),1)
             CALL DSCAL(NBAST*(NBAST + 1)/2,2.0D0,WORK(IADRL),1)
             IADR  = IADR  + NELMNT
