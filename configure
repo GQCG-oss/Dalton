@@ -1047,7 +1047,7 @@ case "$WHICH" in
               esac
               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
               opt="$copt -fno-globals -Wno-globals"
-              copt="$copt -std=c99 -DRESTRICT=restrict"
+              copt="$copt -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
               ;;
           esac
           if [ "$mesp" = "dummy" ]; then
@@ -1080,7 +1080,7 @@ case "$WHICH" in
                copt="$mcpu -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
                copt2="$mcpu -O2 -ffast-math -fexpensive-optimizations -funroll-loops"
                opt="$copt2 -fno-globals -Wno-globals"
-               copt="$copt -std=c99 -DRESTRICT=restrict"
+               copt="$copt -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
                def='linux.x'
                inc='-I../include'
                LIB="-lcc_dynamic"
