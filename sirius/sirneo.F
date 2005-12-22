@@ -555,7 +555,6 @@ C
          DEPRED = ( WRK(KEVAL-1+ISTATE) / (BETA*BETA) )
      *          * (GAMMA*(D1-GAMMA) + DHALF*
      *             GAMMA*GAMMA*(WRK(KEVEC+(ISTATE-1)*NREDL)**(-2)))
-     *
       ELSE
          DEPRED = DHALF*WRK(KEVAL-1+ISTATE)
       END IF
