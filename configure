@@ -578,12 +578,12 @@ fi
 # Add -L$LIBDIR to be sure compiler can find it.
 #
 if [ -n "$LIBDIR" -a $lapack != true ]; then
-   if [ -f $LIBDIR/liblapack.a ]; then
+   if [ -f $LIBDIR/liblapack.so -o -f $LIBDIR/liblapack.a ]; then
       lapack=true; LIB="-L$LIBDIR -llapack $LIB"
    else
       LIB="-L$LIBDIR $LIB"
       for testdir in $dirlist; do
-         if [ -f $testdir/liblapack.a ]; then
+         if [ -f $testdir/liblapack.a -o -f $testdir/liblapack.so ]; then
             lapack=true; LIB="-L$testdir -llapack $LIB"
             break
          fi
