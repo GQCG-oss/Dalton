@@ -71,7 +71,7 @@ C
 #include <priunit.h>
 #include <infinp.h>
 #include <inforb.h>
-#include <infpop.h>
+#include "infpop.h"
 #include <inftap.h>
 #include <infpri.h>
 C
@@ -161,7 +161,9 @@ C     11') POPNET  net and overlap populations over cgto basis
 C                  functions - sum over all MO's
 C
       KNUMB  = KOVLP
-      KPOPCG = KNUMB  + NBAST
+      KPOPNAB= KNUMB  + NBAST
+      KPOPABI= KPOPNAB+ MXCENT*MXCENT
+      KPOPCG = KPOPABI+ MXCENT*MXCENT
       KPOPC  = KWRK1
       KPPNET = KPOPC  + NBAST*NOCCT
       KWRK2  = KPPNET + NBAST*(NBAST + 1)/2
@@ -198,7 +200,7 @@ C
       END IF
       IF (MCTYPE .EQ. 2) THEN
          NWARN = NWARN + 1
-         WRITE (LUW4,'(/A)')
+         WRITE (LUW4,'(/A/A/A)')
      &       ' WARNING, population analysis for RAS wave functions'//
      &       ' uses pseudo-natural orbitals,',
      &       '          that is, the off-diagonal elements of the'//
@@ -248,6 +250,7 @@ C     *****     Perform Mulliken population analysis  *****
 C
       IF (MULLKM) THEN
          CALL MULLIK (WRK(KOCC),WRK(KIAMN),WRK(KIPR),WRK(KNUMB),
+     &                WRK(KPOPNAB),WRK(KPOPABI),
      *                WRK(KPOPCG),WRK(KPOPC),WRK(KCMOCG),WRK(KSS),
      *                WRK(KPPNET))
       END IF
@@ -295,7 +298,7 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
 #include <priunit.h>
-#include <infpop.h>
+#include "infpop.h"
 #include <infinp.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -430,7 +433,7 @@ C
 #include <mxcent.h>
 #include <priunit.h>
 #include <inforb.h>
-#include <infpop.h>
+#include "infpop.h"
 #include <infpri.h>
 C
       LOGICAL FOUND
@@ -541,8 +544,8 @@ C
       RETURN
       END
 C  /* Deck mullik */
-      SUBROUTINE MULLIK (OCCUP,IAMN,IPR,NUMBER,POPCGT,POPC,CMOCGT,SS,
-     *                   POPNET)
+      SUBROUTINE MULLIK (OCCUP,IAMN,IPR,NUMBER,
+     *                   POPNAB,POPABI,POPCGT,POPC,CMOCGT,SS,POPNET)
 C
 C  Purpose:
 C         Given the mo coefficients and overlap integrals in cgto basis,
@@ -552,8 +555,10 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
+#include <mxcent.h>
 C
       DIMENSION OCCUP(NOCCT),IAMN(NBAST),IPR(NBAST),NUMBER(NBAST),
+     &          POPNAB(MXCENT,MXCENT),POPABI(MXCENT,MXCENT),
      *          POPCGT(NBAST),POPC(NBAST),CMOCGT(*),SS(*),POPNET(*)
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
@@ -563,10 +568,9 @@ C   INFPOP ? MAXTYP, ...
 C   INFORB ? NBAST,
 C   INFTAP : LUTEMP
 C
-#include <mxcent.h>
 #include <maxaqn.h>
 #include <ccom.h>
-#include <infpop.h>
+#include "infpop.h"
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
@@ -1016,7 +1020,7 @@ C   INFORB ? NBAST,
 C
 #include <mxcent.h>
 #include <priunit.h>
-#include <infpop.h>
+#include "infpop.h"
 #include <inforb.h>
 #include <infpri.h>
 C
@@ -1150,7 +1154,7 @@ C
 #include <mxcent.h>
 #include <priunit.h>
 #include <inforb.h>
-#include <infpop.h>
+#include "infpop.h"
 #include <infpri.h>
 C
       DIMENSION QUPOL(6),A(6),EIVR(9),WO(3),IWO(3),ELQPOL(6),
