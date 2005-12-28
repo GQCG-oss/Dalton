@@ -218,6 +218,7 @@ void mpi_sync_data(const SyncData* data, int count);
 
 void* dal_malloc_(size_t sz, const char *func, unsigned line);
 #define dal_malloc(sz) dal_malloc_((sz),__FUNCTION__, __LINE__)
+#define dal_new(sz,tp) (tp*)dal_malloc_((sz)*sizeof(tp),__FUNCTION__, __LINE__)
 
 int fort_print(const char* format, ...);
 /* FORTRAN FUNCTION PROTOTYPES */

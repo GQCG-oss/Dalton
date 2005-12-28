@@ -135,7 +135,7 @@ void dzero_(real*arr, const int* cnt);
 GridGenAtomGrid*
 agrid_new(int uniq_no, int Z)
 {
-    GridGenAtomGrid* grid = dal_malloc(sizeof(GridGenAtomGrid));
+    GridGenAtomGrid* grid = dal_new(1,GridGenAtomGrid);
     grid->uniq_no = uniq_no;
     grid->Z       = Z;
     grid->pnt     = 0;
@@ -251,7 +251,7 @@ static void*
 gen_lmg_init(void)
 {
     int nucind;
-    struct lmg_data *lmg = dal_malloc(sizeof(struct lmg_data));
+    struct lmg_data *lmg = dal_new(1, struct lmg_data);
 
     FSYM2(get_maxl_nucind)(&lmg->maxl, &nucind);
     lmg->nucorb = malloc(2*lmg->maxl*nucind*sizeof(int));
@@ -590,7 +590,7 @@ ssf_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
     static const real SSF_CUTOFF = 0.64;
     int atno, ptno;
     real mu, g_mu, pr, rx, ry, rz;
-    int * relevant_atoms = dal_malloc(sizeof(int)*mg->atom_cnt);
+    int * relevant_atoms = dal_new(mg->atom_cnt, int);
     int atomi=0, ati, ati2, rel_atom_cnt = 0;
 
     rx = ggw->x[idx] - mg->atom_coords[atom].x;
@@ -688,9 +688,9 @@ block_work_init(GGBlockWork* ggw, real (*coorw)[4],
 {
     ggw->coor = coorw;
     ggw->LDA  = point_cnt;
-    ggw->rj   = dal_malloc(atom_cnt*point_cnt*sizeof(real));
-    ggw->p_kg = dal_malloc(atom_cnt*point_cnt*sizeof(real));
-    ggw->vec  = dal_malloc(point_cnt*sizeof(real));
+    ggw->rj   = dal_new(atom_cnt*point_cnt, real);
+    ggw->p_kg = dal_new(atom_cnt*point_cnt, real);
+    ggw->vec  = dal_new(point_cnt, real);
 }
 
 static void
@@ -731,9 +731,9 @@ block_postprocess(GridGenMolGrid *mg, real *center,
     real xpasc[HARDNESS1], facult[HARDNESS1];
     /* compute confocal ellipical coordinates for the batch of points to
      * be processed. */
-    int *relevant_atoms = dal_malloc(mg->atom_cnt*sizeof(int));
+    int *relevant_atoms = dal_new(mg->atom_cnt, int);
     /* map2r: map from all to relevant_atoms array */
-    int *map2r = dal_malloc(mg->atom_cnt*sizeof(int));
+    int *map2r = dal_new(mg->atom_cnt, int);
     int uniq_atoms;
     GGBlockWork ggw;
     int dest;
@@ -1130,7 +1130,7 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
         fprintf(stderr,"internal error, cannot save sorted grid file.\n");
         exit(1);
     }
-    rshel2 = dal_malloc(FSYM2(ishell_cnt)()*sizeof(real));
+    rshel2 = dal_new(FSYM2(ishell_cnt)(), real);
     FSYM(gtexts)(rshel2);
     for(idx=0; idx<point_cnt; idx += cnt) {
         int i;
@@ -1199,13 +1199,13 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
 static void
 ggen_work_init(GridGenWork* ggw, GridGenMolGrid* mg, int mxshells)
 {
-    ggw->rj   = dal_malloc(sizeof(real)*mg->atom_cnt*MAX_PT_PER_SHELL);
-    ggw->p_kg = dal_malloc(sizeof(real)*mg->atom_cnt*MAX_PT_PER_SHELL);
-    ggw->vec  = dal_malloc(sizeof(real)*mg->atom_cnt*MAX_PT_PER_SHELL);
-    ggw->x    = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));
-    ggw->y    = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));
-    ggw->z    = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));
-    ggw->wg   = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));  
+    ggw->rj   = dal_new(mg->atom_cnt*MAX_PT_PER_SHELL, real);
+    ggw->p_kg = dal_new(mg->atom_cnt*MAX_PT_PER_SHELL, real);
+    ggw->vec  = dal_new(mg->atom_cnt*MAX_PT_PER_SHELL, real);
+    ggw->x    = dal_new(MAX_PT_PER_SHELL*mxshells, real);
+    ggw->y    = dal_new(MAX_PT_PER_SHELL*mxshells, real);
+    ggw->z    = dal_new(MAX_PT_PER_SHELL*mxshells, real);
+    ggw->wg   = dal_new(MAX_PT_PER_SHELL*mxshells, real);  
 }
 
 static void
@@ -1224,15 +1224,15 @@ static GridGenMolGrid*
 mgrid_new(int atom_cnt, const GridGenAtom* atoms)
 {
     int i, j, index, paircnt;
-    GridGenMolGrid* mg = dal_malloc(sizeof(GridGenMolGrid));
+    GridGenMolGrid* mg = dal_new(1, GridGenMolGrid);
     mg->atom_cnt    = atom_cnt;
     mg->atom_coords = atoms;
-    mg->atom_grids  = dal_malloc(atom_cnt*sizeof(GridGenAtomGrid*));
+    mg->atom_grids  = dal_new(atom_cnt, GridGenAtomGrid*);
     /* be careful with atoms (=no pairs): some systems (AIX) do not 
      * like 0 allocations */
     paircnt = (atom_cnt*(atom_cnt-1))/2;
-    mg->rij  = dal_malloc(sizeof(real)*(paircnt == 0 ? 1 : paircnt));
-    mg->aij  = dal_malloc(sizeof(real)*(paircnt == 0 ? 1 : paircnt));
+    mg->rij  = dal_new((paircnt == 0 ? 1 : paircnt), real);
+    mg->aij  = dal_new((paircnt == 0 ? 1 : paircnt), real);
     index =0;
     for(i=0; i<atom_cnt; i++) {
         mg->atom_grids[i] = agrid_new(atoms[i].icent, atoms[i].Z);
@@ -1429,7 +1429,7 @@ mgrid_compute_coords(GridGenMolGrid* mgrid, const char* filename)
 #if defined(USE_PTHREADS)
     mgrid->nt = mol_grid_get_num_threads();
     { int i;
-    pthread_t *ptid = dal_malloc(mgrid->nt*sizeof(pthread_t));
+    pthread_t *ptid = dal_new(mgrid->nt, pthread_t);
     for(i=0; i<mgrid->nt; i++) {
         mol_grid_lock(mgrid);
         mgrid->off = i;
@@ -1457,13 +1457,13 @@ mgrid_boxify(GridGenMolGrid *mg, const char* fname,
     real (*coorw)[4];
     real lo[3], hi[3];
     struct point_key_t * keys =
-      dal_malloc(point_cnt*sizeof(struct point_key_t));
+      dal_new(point_cnt, struct point_key_t);
     int coorw_allocated = 0;
     int *atom_idx;
     int new_point_cnt;
 
     atom_idx = selected_partitioning->postprocess ?
-        dal_malloc(point_cnt*sizeof(int)) : NULL;
+        dal_new(point_cnt, int) : NULL;
 
     boxify_load_grid(fname, point_cnt, work, worksz,
                      &coorw, &coorw_allocated, atom_idx);
@@ -1634,7 +1634,7 @@ grid_gen_atom_new(int* atom_cnt)
     GridGenAtom* atoms;
 
     FSYM2(get_no_atoms)(atom_cnt);
-    atoms = dal_malloc(*atom_cnt*sizeof(GridGenAtom));
+    atoms = dal_new(*atom_cnt, GridGenAtom);
     
     icent = 0;
     do {
@@ -1737,7 +1737,7 @@ void FSYM2(set_grid_done)(void);
 DftGridReader*
 grid_open(int nbast, real *dmat, real *work, int *lwork)
 {
-    DftGridReader *res = dal_malloc(sizeof(DftGridReader));
+    DftGridReader *res = dal_new(1, DftGridReader);
     int grdone, angmin, angint;
     real radint;
     char *fname;
@@ -1817,7 +1817,7 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
 DftGridReader*
 grid_open_cmo(int nbast, const real *cmo, real *work, int *lwork)
 {
-    real *dmat = dal_malloc(nbast*nbast*sizeof(real));
+    real *dmat = dal_new(nbast*nbast, real);
     DftGridReader *reader;
     FSYM2(dft_get_ao_dens_mat)(cmo, dmat, work, lwork);
     reader = grid_open(nbast, dmat, work, lwork);
