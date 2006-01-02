@@ -3520,7 +3520,7 @@ C
          ISTRT  = 1
          DO 77 I = 1, NUCIND
             NCOMP  = 0
-            NPATOM = 0
+            NPATOM = 2
             CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK,LWORK,LABTMP,
      &                  INTREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,
      &                  DUMMY,.FALSE.,DUMMY,IPRINT)
