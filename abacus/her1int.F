@@ -5541,7 +5541,7 @@ C  /* Deck psotra */
      &                             *PT(IBTAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) + ICOOR
                   IADR = INTADR(ISCOOR)
-                  IF (INTTYP .EQ. 92 .OR. INTTYP .EQ. 10) THEN
+                  IF (INTTYP .EQ. 92) THEN
                      CALL SYMSQR(SHLINT(1,ITYP),SOINT(1,IADR),IREPC,
      &                           ISYMOP,IORBA,IORBB,FACSYM,NBAST,IPRINT)
                   ELSE

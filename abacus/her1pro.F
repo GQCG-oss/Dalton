@@ -530,7 +530,6 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL PSOTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),INTADR,NATOM,
      &               INTTYP)
-         SQUARE = .FALSE.
          ANTI = .TRUE.
       GO TO 200
 C
