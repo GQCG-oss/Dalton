@@ -1275,7 +1275,8 @@ C
 C
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END '
-      CALL CC_PRPC(ESCF,STHELP,666,
+      ZERO=0.0D0
+      CALL CC_PRPC(ZERO,STHELP,666,
      *             LABEL1,LABEL1,LABEL1,LABEL1,
      *             ZERO,ZERO,ZERO,1,0,0,0)
 
