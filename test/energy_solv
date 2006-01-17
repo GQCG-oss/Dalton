@@ -131,10 +131,10 @@ ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set
 CRIT1=`$GREP "Basis set used is \"6\-31G\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "O1 * 1 * 8 * 22 * 9 * \[10s4p\|3s2p\]" $log | wc -l`
-CRIT3=`$GREP "C2 * 1 * 6 * 22 * 9 * \[10s4p\|3s2p\]" $log | wc -l`
-CRIT4=`$GREP "H3 * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT5=`$GREP "total\: * 4 * 16 * 52 * 22" $log | wc -l`
+CRIT2=`$GREP "O1 * 1 * 8\.0000 * 22 * 9 * \[10s4p\|3s2p\]" $log | wc -l`
+CRIT3=`$GREP "C2 * 1 * 6\.0000 * 22 * 9 * \[10s4p\|3s2p\]" $log | wc -l`
+CRIT4=`$GREP "H3 * 2 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT5=`$GREP "total\: * 4 * 16\.0000 * 52 * 22" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=5
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
@@ -203,10 +203,10 @@ ERROR[9]="MCSCF ENERGY NOT CORRECT"
 # Occupancy
 CRIT1=`$GREP "2\.000000000 * 2\.000000000 * 1\.98917878[0-9] * 1\.98081609[0-9] * 1\.97259851[0-9]" $log | wc -l`
 CRIT2=`$GREP "(0| )\.02858843[0-9] * (0| )\.02155218[0-9] * (0| )\.01083859[0-9]" $log | wc -l`
-CRIT3=`$GREP "1\.98020209[0-9] * 1\.97179716[0-9] * (0| )\.02965842[0-9] * (0| )\.01198551[0-9]" $log | wc -l`
+CRIT3=`$GREP "1\.98020209[0-9] * 1\.97179716[0-9] * (0| )\.01198551[0-9] * (0| )\.02965842[0-9]" $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[10]=4
+CTRL[10]=5
 ERROR[10]="OCCUPANCIES NOT CORRECT"
 
 PASSED=1
