@@ -332,6 +332,7 @@ extern Functional B86mxFunctional;
 extern Functional B97Functional;
 extern Functional B97_1Functional;
 extern Functional B97_2Functional;
+extern Functional B97_3Functional;
 extern Functional B97_KFunctional;
 extern Functional Example2Functional;
 extern Functional ExampleFunctional;

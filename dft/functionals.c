@@ -59,6 +59,7 @@ Functional* available_functionals[] = {
     &B97Functional,
     &B97_1Functional,
     &B97_2Functional,
+    &B97_3Functional,
     &B97_KFunctional,
     &Example2Functional,
     &ExampleFunctional,
