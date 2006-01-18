@@ -245,10 +245,10 @@ CTRL[1]=11
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "C * 1 * 6 * 44 * 38 * \[12s5p2d1f\|12s3p2d1f\]" $log | wc -l`
-CRIT2=`$GREP "H1 * 1 * 1 * 18 * 18 * \[7s2p1d\|7s2p1d\]" $log | wc -l`
-CRIT3=`$GREP "H2 * 2 * 1 * 18 * 18 * \[7s2p1d\|7s2p1d\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 4 * 9 * 98 * 92" $log | wc -l`
+CRIT1=`$GREP "C * 1 * 6\.0000 * 44 * 38 * \[12s5p2d1f\|12s3p2d1f\]" $log | wc -l`
+CRIT2=`$GREP "H1 * 1 * 1\.0000 * 18 * 18 * \[7s2p1d\|7s2p1d\]" $log | wc -l`
+CRIT3=`$GREP "H2 * 2 * 1\.0000 * 18 * 18 * \[7s2p1d\|7s2p1d\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 4 * 9\.0000 * 98 * 92" $log | wc -l`
 CRIT5=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=5
