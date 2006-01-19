@@ -2200,6 +2200,7 @@ C
 C
       INTEGER ILSTSYM
 C
+      MODEL = '              '
       IF (CCR12 .AND. (.NOT.(CCS.OR.CIS))) THEN
         ILEN   = 4
         LABR12 = '-R12'

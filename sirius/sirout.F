@@ -100,6 +100,13 @@ C
 #include <infopt.h>
 #include <inftap.h>
 #include <infpri.h>
+C----------------
+C CBN+JK 03.01.06
+C----------------
+#include <qm3.h>
+C----------------
+C CBN+JK 03.01.06
+C----------------
 C
 C
 C EXTERNAL FUNCTIONS
@@ -332,7 +339,20 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
+C------------------
+C CBN+JK 03.01.06
+C------------------
+      ELSE IF (QM3) THEN
+         WRITE(LUW4,*)
+         WRITE(LUW4,*) '    QM/MM calculation converged'
+         WRITE(LUW4,*) '    Electrostatic energy: ', ENSQM3
+         WRITE(LUW4,*) '    Polarization energy: ' , EPOQM3
+         WRITE(LUW4,*) '    van der Waals energy: ', ECLVDW
+         WRITE(LUW4,*) '    Total QM/MM energy: ' , ESOLT
       ELSE
+C------------------
+C CBN+JK 03.01.06
+C------------------
          ESOLT = D0
       END IF
       IF (CICALC) THEN

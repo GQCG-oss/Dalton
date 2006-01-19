@@ -47,6 +47,7 @@ C  /* Deck pr1int */
 C
 #include <huckel.h>
 #include <nuclei.h>
+#include <qm3.h>
 #include <shells.h>
 #include <symmet.h>
 #include <ccom.h>
@@ -100,6 +101,7 @@ C     The actual number of elements in these arrays is later
 C     tested for in NTYPTS.
 C
       MAXTYP = 3*MXCOOR
+      IF (QM3) MAXTYP = 9*NCTOT
 C
 C     For DSO integrals the following number of elements are
 C     needed. NTYPTS is therefore not called.
@@ -188,7 +190,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 94)
+      PARAMETER (NTABLE = 97)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -242,7 +244,8 @@ cLig <> added RAGMO and RPSO
      &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ',
      &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ',
      &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ',
-     &            'HUCKEL ', 'SQHD2OR'/
+     &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2',
+     &            'MAGQDP '/
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -251,10 +254,10 @@ C
 C
       CALL QENTER('PR1IN1')
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KATOM,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KATOM,MXCENT,WORK,KFREE,LFREE)
       RCHRG  = .FALSE.
       RGAUGE = .FALSE. 
-      CALL MEMGET('REAL',KCHRG,NUCIND,WORK,KFREE,LFREE) 
+      CALL MEMGET('REAL',KCHRG,MXCENT,WORK,KFREE,LFREE) 
 C
 C     **************************
 C     ***** Integral types *****
@@ -272,7 +275,7 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
      &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
      &             79,80,81,82,83,84,85,86,87,88,89,90,91,92, 1,
-     &             94), I
+     &             94,95,96,97), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2155,6 +2158,114 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
+C     London orbital contribution to electric field at a point in space
+C     -----------------------------------------------------------------
+C
+ 95   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &  ' Calculation of London orbital contribution to electric field'
+         INTTYP = 99
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'BX EF X '
+         LABINT(2) = 'BY EF X '
+         LABINT(3) = 'BZ EF X '
+         LABINT(4) = 'BX EF Y '
+         LABINT(5) = 'BY EF Y '
+         LABINT(6) = 'BZ EF Y '
+         LABINT(7) = 'BX EF Z '
+         LABINT(8) = 'BY EF Z '
+         LABINT(9) = 'BZ EF Z '
+         IF (MAXREP .GT. 0) THEN
+            CALL QUIT('Symmetry not implemented for B-derivative'//
+     &           ' of electric fields')
+         END IF
+         INTREP(1) = 0
+         INTREP(2) = 0
+         INTREP(3) = 0
+         INTREP(4) = 0
+         INTREP(5) = 0
+         INTREP(6) = 0
+         INTREP(7) = 0
+         INTREP(8) = 0
+         INTREP(9) = 0
+         ANTI = .TRUE.
+         SQUARE = .TRUE.
+      GO TO 200
+C
+C     Second order London contribution to tesserae potentials
+C     -------------------------------------------------------
+C
+ 96   CONTINUE
+Clf         PCM = .TRUE.
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &  ' Calculation of 2nd-order LAO contribution to electric field'
+         INTTYP = 100
+         NOPTYP = 18
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1)  = 'BXX EF X'
+         LABINT(2)  = 'BXY EF X'
+         LABINT(3)  = 'BXZ EF X'
+         LABINT(4)  = 'BYY EF X'
+         LABINT(5)  = 'BYZ EF X'
+         LABINT(6)  = 'BZZ EF X'
+         LABINT(7)  = 'BXX EF Y'
+         LABINT(8)  = 'BXY EF Y'
+         LABINT(9)  = 'BXZ EF Y'
+         LABINT(10) = 'BYY EF Y'
+         LABINT(11) = 'BYZ EF Y'
+         LABINT(12) = 'BZZ EF Y'
+         LABINT(13) = 'BXX EF Z'
+         LABINT(14) = 'BXY EF Z'
+         LABINT(15) = 'BXZ EF Z'
+         LABINT(16) = 'BYY EF Z'
+         LABINT(17) = 'BYZ EF Z'
+         LABINT(18) = 'BZZ EF Z'
+         IF (MAXREP .GT. 0) THEN
+            CALL QUIT('Symmetry not implemented for B-derivative'//
+     &           ' of electric fields')
+         END IF
+         DO I = 1, NOPTYP
+            INTREP(I) = 0
+         END DO
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GOTO 200
+C
+C     Magnetic quadrupole moment integrals
+C     ------------------------------------
+C
+ 97   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      'Calculation of magnetic quadrupole integrals'
+         INTTYP = 101
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XXMAGQDP'
+         LABINT(2) = 'XYMAGQDP'
+         LABINT(3) = 'XZMAGQDP'
+         LABINT(4) = 'YXMAGQDP'
+         LABINT(5) = 'YYMAGQDP'
+         LABINT(6) = 'YZMAGQDP'
+         LABINT(4) = 'ZXMAGQDP'
+         LABINT(5) = 'ZYMAGQDP'
+         LABINT(6) = 'ZZMAGQDP'
+         INTREP(1) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,2))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,2))
+         INTREP(4) = IBTXOR(ISYMAX(2,1),ISYMAX(1,2))
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(2,2))
+         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,2))
+         INTREP(7) = IBTXOR(ISYMAX(3,1),ISYMAX(1,2))
+         INTREP(8) = IBTXOR(ISYMAX(3,1),ISYMAX(2,2))
+         INTREP(9) = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
   200 CONTINUE
 C
 C     ***** Print section *****
@@ -2375,11 +2486,11 @@ C
             CALL WRTPRO(WORK(IADR),NELMNT,LABINT(I),RTNLBL)
             IADR = IADR + NELMNT
   600     CONTINUE
-          ELSE IF (QM3) THEN
-            IF ( (INTTYP .NE. 29) .AND.
+       ELSE IF (QM3) THEN
+          IF ( (INTTYP .NE. 29) .AND.
      &         (INTTYP .NE. 35) ) THEN 
-              IADR = KSOINT
-              DO 721 I = 1, NOPTYP
+             IADR = KSOINT
+             DO 721 I = 1, NOPTYP
                 IF (PROPRI .OR. IPRINT .GT. 4) THEN
                   CALL AROUND('Integrals of operator: '//LABINT(I))
                   WRITE (LUPRI,'(A,2X,A3,A1,I2,A1)')
@@ -2455,7 +2566,7 @@ C
   721         CONTINUE
             ELSE IF ( (INTTYP .EQ. 29) .OR.
      &              (INTTYP .EQ. 35) ) THEN
-              LM3TMP = NOPTYP/NUCIND
+              LM3TMP = NOPTYP/NCTOT
               IF (INTTYP .EQ. 29) THEN
                 NCOMS = 0
               ELSE IF (INTTYP .EQ. 35) THEN
@@ -2463,7 +2574,7 @@ C
               END IF
               DO 715 I = 0, ISYTP
                 DO 716 J = NSYSBG(I), NSYSED(I)
-                  DO 717 K = 1, NUCIND
+                  DO 717 K = 1, NCTOT
                     IF (ISUBSY(K) .EQ. J) THEN
                       L = LM3TMP*(K-1)
                       DO 718 M = (L + 1), (L + LM3TMP)
@@ -2548,7 +2659,8 @@ C
      &                       .OR.(INTTYP .EQ. 13).OR.(INTTYP .EQ. 17)
      &                       .OR.(INTTYP .EQ. 18).OR.(INTTYP .EQ. 42)
      &                       .OR.(INTTYP .EQ. 20).OR.(INTTYP .EQ. 65)
-     &                       .OR.(INTTYP .EQ. 66).OR.(INTTYP .EQ. 67))
+     &                       .OR.(INTTYP .EQ. 66).OR.(INTTYP .EQ. 67)
+     &                       .OR.(INTTYP .EQ. 99))
      &                       THEN
             IADR = KSOINT
             DO 1010 ICOMP = 1, NCOMP
@@ -2715,11 +2827,13 @@ cLig <> added SPIN = .TRUE. for INTTYP = 82
      &       INTTYP .EQ. 97
       IF (.NOT.SPIN .OR. ALLATM) THEN
          NATOM = NUCDEP
-         DO 100 I = 1, NUCIND
+         IF (QM3 .AND. (INTTYP .EQ. 29.OR.
+     &                  INTTYP .EQ. 30.OR. INTTYP .EQ. 35)) NATOM=NCTOT
+         DO 100 I = 1, NATOM
             DOATOM(I) = .TRUE.
   100    CONTINUE
       ELSE
-         DO 200 I = 1, NUCIND
+         DO 200 I = 1, NATOM
             DOATOM(I) = .FALSE.
   200    CONTINUE
          NATOM = 0
@@ -2735,15 +2849,13 @@ cLig <> added SPIN = .TRUE. for INTTYP = 82
   300    CONTINUE
       END IF
 C
-      CALL QEXIT('SETATM')
-C
       IF (QM3 .AND. (INTTYP .EQ. 29)) THEN
-        DO 111 N = 1, NUCIND
+        DO 111 N = 1, NCTOT
           DOATOM(N) = .FALSE.
  111    CONTINUE
         DO 120 I = 0, ISYTP
           DO 121 J = NSYSBG(I), NSYSED(I)
-            DO 122 K = 1, NUCIND
+            DO 122 K = 1, NCTOT
               IF ( (ISUBSY(K) .EQ. 0) .AND.
      &           (ISUBSI(K) .LE. NSISY(0)) ) THEN
                 DOATOM(K) = .TRUE.
@@ -2758,12 +2870,12 @@ C
  120    CONTINUE
       END IF
       IF (QM3 .AND. (INTTYP .EQ. 35)) THEN
-        DO 113 N = 1, NUCIND
+        DO 113 N = 1, NCTOT
           DOATOM(N) = .FALSE.
  113    CONTINUE
         DO 114 I=0,ISYTP
           DO 115 J = NSYSBG(I), NSYSED(I)
-            DO 116 K = 1, NUCIND
+            DO 116 K = 1, NCTOT
               IF ( (ISUBSY(K) .EQ. 0) .AND.
      &           (ISUBSI(K) .LE. NSISY(I)) ) THEN
                 DOATOM(K) = .TRUE.
@@ -2778,16 +2890,18 @@ C
  114    CONTINUE
       END IF
       IF (QM3 .AND. (INTTYP .EQ. 30)) THEN
-        DO 117 N = 1, NUCIND
+        DO 117 N = 1, NCTOT
           DOATOM(N) = .FALSE.
  117    CONTINUE
-        DO 123 K = 1, NUCIND
+        DO 123 K = 1, NCTOT
           IF ( (ISUBSY(K) .EQ. 0) .AND.
      &       (ISUBSI(K) .LE. NSISY(0)) ) THEN
             DOATOM(K) = .TRUE.
           END IF
  123    CONTINUE
       END IF
+      CALL QEXIT('SETATM')
+C
       RETURN
       END
 C  /* Deck ntypts */
@@ -3603,7 +3717,7 @@ C  /* Deck npetyp */
 #include <maxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
-      DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
+      DIMENSION INTREP(9*MXCENT), NPETBL(NCTOT,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
 #include <chrnos.h>
@@ -3611,7 +3725,7 @@ C  /* Deck npetyp */
 C
       NOPTYP = NATOM
       CALL NTYPTS(NOPTYP)
-      CALL DZERO(NPETBL,NUCIND*(MAXREP + 1))
+      CALL DZERO(NPETBL,NCTOT*(MAXREP + 1))
 C
       ITYP = 0
 C
@@ -3631,7 +3745,7 @@ C
  100    CONTINUE
       ELSE
         ITYP = 0
-        DO 300 IATOM = 1, NUCIND
+        DO 300 IATOM = 1, NCTOT
           NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
           DO 400 IREP = 0, MAXREP
             IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
@@ -3738,7 +3852,7 @@ C
  50     CONTINUE
       ELSE
         DO 60 IREP = 0, MAXREP
-          DO 110 IATOM = 1, NUCIND
+          DO 110 IATOM = 1, NCTOT
             DO 210 ICOOR = 1, 3
               ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
               IF (ISCOOR .GT. 0) THEN

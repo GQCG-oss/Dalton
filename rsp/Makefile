@@ -58,7 +58,8 @@ F_OBJS = \
 	rspzfs.o	\
 	x2expl.o        \
 	rspief1.o       \
-        rspief.o
+        rspief.o        \
+        rspqm3.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

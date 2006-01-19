@@ -279,8 +279,8 @@ C ::: Then the different elements are counted, and arrays updated. :::
             NAMEX(3*I-2) = NAMN(I)//'x'
             ISOTOP(I) = NINT(ATMARR(6,I))
  275     CONTINUE
-         NUCIND = NINT(ATMARR(1,0))
-         DO 300 I = NUCIND + 1, KATOM
+         NCTOT = NINT(ATMARR(1,0))
+         DO 300 I = NCTOT + 1, KATOM
             NAMN(I) = '    '
             NAMEX(3*I)   = '      '
             NAMEX(3*I-1) = '      '
@@ -293,7 +293,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
             ISOTOP(I) = 1
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
-         DO 400 I = 1, NUCIND
+         DO 400 I = 1, NCTOT
             NC = NCLINE(I)
             TMPLN = MLINE(NC)
             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
@@ -339,6 +339,7 @@ C           CORD(2,NUCIND) = D0
 C           CORD(3,NUCIND) = D0
 C           CHARGE(NUCIND) = D0
 C        END IF
+         NUCIND = NCTOT
       RETURN
       END
 C  /* Deck prnarr */

@@ -262,7 +262,7 @@ C
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 129)
+      PARAMETER (NDIR = 9, NTABLE = 132)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -324,7 +324,7 @@ cLig <> added RANGMO and RPSO
      &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
      &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
      &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
-     &             '.2-EL D'/
+     &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP'/
 C
 C     Check if input has been processed earlier.
 C
@@ -402,7 +402,8 @@ C
      &                191,192,193,194,195,196,197,198,199,200,
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
-     &                221,222,223,224,225,226,227,228,229), I
+     &                221,222,223,224,225,226,227,228,229,230,
+     &                231,232), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1060,6 +1061,18 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
  229     CONTINUE
             DAR2EL = .TRUE.
             GO TO 100
+ 230     CONTINUE
+            EFBDER = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 231     CONTINUE
+            EFB2DR = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 232     CONTINUE
+            MAGQDP = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -1324,6 +1337,12 @@ cLig <<
      &         'Electric field gradient applied in ',FIELD3(1:2),
      &         '-direction'
          END IF
+         IF (EFBDER) WRITE (LUPRI,'(10X,A)')
+     &        '- 1.order London orbital correction to electric field at'
+     &        //' a position in space'
+         IF (EFB2DR) WRITE (LUPRI,'(10X,A)')
+     &        '- 2.order London orbital correction to electric field at'
+     &        //' a position in space'
          IF (QDBTST) WRITE (LUPRI,'(10X,A)') 
      &           'Magnetic-field derivative integrals of electric '//
      &           'field gradients will be tested'
@@ -1332,6 +1351,8 @@ cLig <<
          IF (DERHAM) WRITE (LUPRI,'(10X,A)')
      &        '- Geometrical derivatives of one-electron Hamiltonian '//
      &        'integrals'
+         IF (MAGQDP) WRITE (LUPRI,'(10X,A)')
+     &        '- Magnetic quadrupole integrals calculated'
          IF (PSOKE) WRITE (LUPRI,'(10X,A)')
      &      '- kinetic energy correction to paramagnetic spin-orbit'
          IF (DNSKE) WRITE (LUPRI,'(10X,A)')
@@ -1495,7 +1516,7 @@ C
         IF ( (QM3) .AND. (OLDTG) ) THEN
           DO 873 I= 1, ISYTP
            DO 874 J = NSYSBG(I), NSYSED(I)
-              DO 875 K = 1, NUCIND
+              DO 875 K = 1, NCTOT
                  IF (ISUBSY(K) .EQ. J) CHAOLD(K) = CHARGE(K)
                  IF (ISUBSY(K) .EQ. J) CHARGE(K) = 0.0
   875         CONTINUE
@@ -2752,6 +2773,24 @@ C
                CALL TIMER('CM1   ',TIMSTR,TIMEND)
             END IF
 C
+C           **** 1.order B derivative of electric field at a point ****
+C
+            IF (EFBDER) THEN
+               CALL TIMER('START',TIMSTR,TIMEND)
+               CALL PR1INT('EFIELB1',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('EFBDER',TIMSTR,TIMEND)
+            END IF
+C
+C           **** 2.order B derivative of electric field at a point ****
+C
+            IF (EFB2DR) THEN
+               CALL TIMER('START',TIMSTR,TIMEND)
+               CALL PR1INT('EFIELB2',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('EFBDR2',TIMSTR,TIMEND)
+            END IF
+C
 C           ****  Second order magnetic derivative of electric field  ****
 C
             IF (CM2) THEN
@@ -2807,6 +2846,16 @@ C
                CALL PR1INT('OCTGRA ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('OCTGRA ',TIMSTR,TIMEND)
+            END IF
+C
+C           **** Magnetic quadrupole integrals ****
+C
+            IF (MAGQDP) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('MAGQDP ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('MAGQDP',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
             END IF
 C
 C           ****  Rotational strength integrals  ****

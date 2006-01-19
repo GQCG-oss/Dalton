@@ -133,6 +133,13 @@ C
 #include <wrkrsp.h>
 #include <inforb.h>
 #include <infslv.h>
+C---------------------
+C CBN+JK 03.01.06
+C---------------------
+#include <qm3.h>
+C---------------------
+C CBN+JK 03.01.06
+C---------------------
 C
       PARAMETER ( DM1 = -1.0D0 )
 C
@@ -305,6 +312,9 @@ C
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               WRK(KDVT),WRK(KDVTTR),
      &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+      ELSE IF (QM3) THEN
+         CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
+     &               WRK(KDV),EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ELSE
          CALL SLVLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),

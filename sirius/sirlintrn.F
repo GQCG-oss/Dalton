@@ -139,6 +139,13 @@ C
 C ---
       PARAMETER (IDTIM1 = 6, IDTIM2 = 8, D4 = 4.0D0)
 #include <inftim.h>
+C------------------
+C CBN+JK 03.01.06
+C------------------
+#include <qm3.h>
+C------------------
+C CBN+JK 03.01.06
+C------------------
 C
       LOGICAL SOLVNT, ORBLIN, MEMLIN, DFTADX
 C
@@ -439,6 +446,21 @@ C
          T5 = T4
          W5 = W4
       END IF
+C
+C---------------------------
+C CBN 03.01.06
+C---------------------------
+C
+      IF (QM3) THEN
+         WRITE(LUPRI,*)'I QM3LIN'
+         CALL QM3LIN(NOSIM,BOVECS,CREF,CMO,INDXCI,
+     &               WRK(KSOVECS),ORBLIN,WRK(K3A),L3A)
+      END IF
+C
+C---------------------------
+C CBN 03.01.06
+C---------------------------
+C
 C
       NCALLS(IDTIM)   = NCALLS(IDTIM)   + 1
       TIMCPU(1,IDTIM) = TIMCPU(1,IDTIM) + T5 - T0

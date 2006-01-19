@@ -303,6 +303,7 @@ C
       LCCSAV(16) = CC3
       LCCSAV(17) = CC1A
       LCCSAV(18) = CC1B
+      APROXR12   = '   '
 C
       IMOD   = 0
       LTCEXC = .FALSE.

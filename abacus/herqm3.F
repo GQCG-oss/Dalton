@@ -728,7 +728,7 @@ C
       IF (WORD .EQ. '**TWOIA') THEN
         IF (LONEPAR) THEN
           CALL QUIT('No twobody interaction terms needed '//
-     *    'when atomic van der Wall parameters given!')
+     *    'when atomic van der Waals parameters given!')
         END IF
         GOTO 911
       ELSE IF ((WORD .EQ. '**END O') .AND.
@@ -1265,7 +1265,7 @@ C-----------------------------------------------------
 C
       NTOTQM3 = 0
 C
-      DO 11 I = 1,NUCIND
+      DO 11 I = 1,NCTOT
         IF (ISUBSY(I) .GT. NTOTQM3) THEN
           NTOTQM3 = ISUBSY(I)
         END IF
@@ -1289,9 +1289,9 @@ C
         KTEMP = KTEMP + NUALIS(I) * ( NSYSED(I) - NSYSBG(I) + 1)
   111 CONTINUE
 C
-      IF ((KTEMP + NUCIND) .GT. MXCENT) THEN
+      IF ((KTEMP + NCTOT) .GT. MXCENT) THEN
         WRITE(LUPRI,'(//1X,A32,I5)')'Number of coordinates',
-     &        ' required:',(NUCIND + KTEMP)
+     &        ' required:',(NCTOT + KTEMP)
         WRITE(LUPRI,'(1X,A32,I5)')
      &        'Maximum number of atoms allowed:',MXCENT
         CALL QUIT('Maximum number of coordinates exceeded')
@@ -1332,7 +1332,7 @@ C
               COMZ = D0
               LTEMP = 0
 C
-              DO 55 J=1,NUCIND
+              DO 55 J=1,NCTOT
                 IF (ISUBSY(J) .EQ. M) THEN
                   LTEMP = LTEMP + 1
 C
@@ -1349,36 +1349,36 @@ C
               KURT1 = KURT1 + 1
               TMINV = 1 / TOTALM
 C
-              CORD(1,NUCIND+KURT) = TMINV * COMX
-              CORD(2,NUCIND+KURT) = TMINV * COMY
-              CORD(3,NUCIND+KURT) = TMINV * COMZ
-              CHARGE(NUCIND+KURT) = 0.0000
-              ISUBSY(NUCIND+KURT) = M
-              ISUBSI(NUCIND+KURT) = LTEMP + 1
+              CORD(1,NCTOT+KURT) = TMINV * COMX
+              CORD(2,NCTOT+KURT) = TMINV * COMY
+              CORD(3,NCTOT+KURT) = TMINV * COMZ
+              CHARGE(NCTOT+KURT) = 0.0000
+              ISUBSY(NCTOT+KURT) = M
+              ISUBSI(NCTOT+KURT) = LTEMP + 1
               LTEMP1 = LTEMP
 C
               IF ((KURT - 1) .LT. 10) THEN
-                NAMN(NUCIND+KURT) = 
+                NAMN(NCTOT+KURT) = 
      *               'A  '//CHRNOS(MOD((KURT1-1),10))
               ELSE IF (((KURT-1) .GT. 9) .AND. 
      &          ((KURT-1) .LT. 100)) THEN
-                NAMN(NUCIND+KURT) = 
+                NAMN(NCTOT+KURT) = 
      *               'A '//CHRNOS((KURT1-1)/10)
      &                   //CHRNOS(MOD((KURT1-1),10))
               ELSE IF (((KURT-1) .GT. 99) .AND.
      &          ((KURT-1) .LT. 1000)) THEN
-                NAMN(NUCIND+KURT) = 
+                NAMN(NCTOT+KURT) = 
      *               'A'//CHRNOS((KURT1-1)/100)
      &                  //CHRNOS(MOD((KURT1-1),100)/10)
      &                  //CHRNOS(MOD((MOD((KURT1-1),100)),10))
               END IF
 C
-              NAMEX(3*(NUCIND+KURT))   = 
-     *                 NAMN(NUCIND+KURT)//' z'
-              NAMEX(3*(NUCIND+KURT)-1) = 
-     *                 NAMN(NUCIND+KURT)//' y'
-              NAMEX(3*(NUCIND+KURT)-2) = 
-     *                 NAMN(NUCIND+KURT)//' x'
+              NAMEX(3*(NCTOT+KURT))   = 
+     *                 NAMN(NCTOT+KURT)//' z'
+              NAMEX(3*(NCTOT+KURT)-1) = 
+     *                 NAMN(NCTOT+KURT)//' y'
+              NAMEX(3*(NCTOT+KURT)-2) = 
+     *                 NAMN(NCTOT+KURT)//' x'
   45        CONTINUE
 C
             NSISY(L) = LTEMP1
@@ -1388,42 +1388,42 @@ C
 C
               LTEMP = 0
 C
-              DO 47 J = 1, NUCIND
+              DO 47 J = 1, NCTOT
                 IF (ISUBSY(J) .EQ. M ) THEN
 C
                   LTEMP = LTEMP + 1 
                   KURT = KURT + 1
                   KURT1 = KURT1 + 1
 C
-                  CORD(1,NUCIND+KURT) = CORD(1,J)
-                  CORD(2,NUCIND+KURT) = CORD(2,J)
-                  CORD(3,NUCIND+KURT) = CORD(3,J)
-                  CHARGE(NUCIND+KURT) = 0.0000
-                  ISUBSY(NUCIND+KURT) = M
-                  ISUBSI(NUCIND+KURT) = NUALIS(L) + LTEMP
+                  CORD(1,NCTOT+KURT) = CORD(1,J)
+                  CORD(2,NCTOT+KURT) = CORD(2,J)
+                  CORD(3,NCTOT+KURT) = CORD(3,J)
+                  CHARGE(NCTOT+KURT) = 0.0000
+                  ISUBSY(NCTOT+KURT) = M
+                  ISUBSI(NCTOT+KURT) = NUALIS(L) + LTEMP
 C
                   IF ((KURT - 1) .LT. 10) THEN
-                    NAMN(NUCIND+KURT) = 
+                    NAMN(NCTOT+KURT) = 
      &                   'A  '//CHRNOS(MOD((KURT1-1),10))
                   ELSE IF (((KURT-1) .GT. 9) .AND.
      &              ((KURT-1) .LT. 100)) THEN
-                    NAMN(NUCIND+KURT) = 
+                    NAMN(NCTOT+KURT) = 
      &                   'A '//CHRNOS((KURT1-1)/10)
      &                   //CHRNOS(MOD((KURT1-1),10))
                   ELSE IF (((KURT-1) .GT. 99) .AND.
      &              ((KURT-1) .LT. 1000)) THEN
-                    NAMN(NUCIND+KURT) = 
+                    NAMN(NCTOT+KURT) = 
      &                   'A'//CHRNOS((KURT1-1)/100)
      &                   //CHRNOS(MOD((KURT1-1),100)/10)
      &                   //CHRNOS(MOD((MOD((KURT1-1),100)),10))
                   END IF
 C
-                  NAMEX(3*(NUCIND+KURT))   = 
-     *                                  NAMN(NUCIND+KURT)//' z'
-                  NAMEX(3*(NUCIND+KURT)-1) = 
-     *                                  NAMN(NUCIND+KURT)//' y'
-                  NAMEX(3*(NUCIND+KURT)-2) = 
-     *                                  NAMN(NUCIND+KURT)//' x'
+                  NAMEX(3*(NCTOT+KURT))   = 
+     *                                  NAMN(NCTOT+KURT)//' z'
+                  NAMEX(3*(NCTOT+KURT)-1) = 
+     *                                  NAMN(NCTOT+KURT)//' y'
+                  NAMEX(3*(NCTOT+KURT)-2) = 
+     *                                  NAMN(NCTOT+KURT)//' x'
                 END IF
   47          CONTINUE
 C
@@ -1463,7 +1463,7 @@ C
               LTEMP = 0
               LTEMP1 = 0
 C
-              DO 49 JL = 1, NUCIND
+              DO 49 JL = 1, NCTOT
                 IF (ISUBSY(JL) .EQ. M) THEN
                   LTEMP = LTEMP + 1
                 END IF
@@ -1478,41 +1478,41 @@ C
                 KURT1 = KURT1 + 1
 C
                 READ (LUOSCR,*)
-     *          CORD(1,NUCIND+KURT),CORD(2,NUCIND+KURT),
-     *          CORD(3,NUCIND+KURT)
+     *          CORD(1,NCTOT+KURT),CORD(2,NCTOT+KURT),
+     *          CORD(3,NCTOT+KURT)
 C      
                 IF (ANGQM3) THEN
-                  CORD(1,NUCIND+KURT) = CORD(1,NUCIND+KURT)/XTANG
-                  CORD(2,NUCIND+KURT) = CORD(2,NUCIND+KURT)/XTANG
-                  CORD(3,NUCIND+KURT) = CORD(3,NUCIND+KURT)/XTANG
+                  CORD(1,NCTOT+KURT) = CORD(1,NCTOT+KURT)/XTANG
+                  CORD(2,NCTOT+KURT) = CORD(2,NCTOT+KURT)/XTANG
+                  CORD(3,NCTOT+KURT) = CORD(3,NCTOT+KURT)/XTANG
                 END IF
 C
-                CHARGE(NUCIND+KURT) = 0.0000
-                ISUBSY(NUCIND+KURT) = M
-                ISUBSI(NUCIND+KURT) = LTEMP1
+                CHARGE(NCTOT+KURT) = 0.0000
+                ISUBSY(NCTOT+KURT) = M
+                ISUBSI(NCTOT+KURT) = LTEMP1
 C
                 IF ((KURT - 1) .LT. 10) THEN
-                  NAMN(NUCIND+KURT) = 
+                  NAMN(NCTOT+KURT) = 
      &                 'A  '//CHRNOS(MOD((KURT1-1),10))
                 ELSE IF (((KURT-1) .GT. 9) .AND.
      &            ((KURT-1) .LT. 100)) THEN
-                  NAMN(NUCIND+KURT) = 
+                  NAMN(NCTOT+KURT) = 
      &                 'A '//CHRNOS((KURT1-1)/10)
      &                 //CHRNOS(MOD((KURT1-1),10))
                 ELSE IF (((KURT-1) .GT. 99) .AND.
      &            ((KURT-1) .LT. 1000)) THEN
-                  NAMN(NUCIND+KURT) = 
+                  NAMN(NCTOT+KURT) = 
      &                 'A'//CHRNOS((KURT1-1)/100)
      &                 //CHRNOS(MOD((KURT1-1),100)/10)
      &                 //CHRNOS(MOD((MOD((KURT1-1),100)),10))
                 END IF
 C
-                NAMEX(3*(NUCIND+KURT))   =
-     *                                NAMN(NUCIND+KURT)//' z'
-                NAMEX(3*(NUCIND+KURT)-1) =
-     *                                NAMN(NUCIND+KURT)//' y'
-                NAMEX(3*(NUCIND+KURT)-2) =
-     *                                NAMN(NUCIND+KURT)//' x'
+                NAMEX(3*(NCTOT+KURT))   =
+     *                                NAMN(NCTOT+KURT)//' z'
+                NAMEX(3*(NCTOT+KURT)-1) =
+     *                                NAMN(NCTOT+KURT)//' y'
+                NAMEX(3*(NCTOT+KURT)-2) =
+     *                                NAMN(NCTOT+KURT)//' x'
   50          CONTINUE
 C
               NSISY(L) = LTEMP
@@ -1526,7 +1526,7 @@ C
             LTEMP = 0
             KURT1 = KURT1 + 1
 C
-            DO 98 J=1,NUCIND
+            DO 98 J=1,NCTOT
               IF (ISUBSY(J) .EQ. M) THEN
                 LTEMP = LTEMP + 1
               END IF
@@ -1538,7 +1538,7 @@ C
 C
   44  CONTINUE
 C
-      NUCIND = NUCIND + KTEMP
+      NCTOT = NCTOT + KTEMP
       NONTYP = NONTYP + 1
       NONT(NONTYP) = KTEMP
 C
@@ -1636,7 +1636,7 @@ C
       DO 12 KI = 0, ISYTP
         IF (MDLWRD(KI)(1:5) .EQ. 'SPC_E') THEN
           DO 13 I = NSYSBG(KI), NSYSED(KI)
-            DO 14 J = 1,NUCIND
+            DO 14 J = 1,NCTOT
               IF ( (ISUBSY(J) .EQ. I) .AND. 
      &          (ISUBSI(J) .GT. NSISY(KI)) ) THEN
 C
@@ -1645,7 +1645,7 @@ C
                 DO 15 K = 0, ISYTP
                   DO 21 LM = NSYSBG(K), NSYSED(K)
                     IF (LM .NE. I) THEN
-                      DO 16 L = 1, NUCIND
+                      DO 16 L = 1, NCTOT
 C
                         DIST = D0
                         DISM1 = D0
@@ -1800,7 +1800,7 @@ C
           DO 50 I= 0, ISYTP
             IF  (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
               DO 60 J = NSYSBG(I), NSYSED(I)
-                DO 70 K = 1, NUCIND
+                DO 70 K = 1, NCTOT
                   IF ( (ISUBSY(K) .EQ. J) .AND.
      &              (ISUBSI(K) .GT. NSISY(I)) ) THEN
 C
@@ -1817,7 +1817,7 @@ C
                         DO 80 L = 0, ISYTP
                           IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
                             DO 90 M = NSYSBG(L), NSYSED(L)
-                              DO 100 N = 1, NUCIND
+                              DO 100 N = 1, NCTOT
                                 IF ( (ISUBSY(N) .EQ. M) .AND.
      &                            (ISUBSI(N) .GT. NSISY(L)) ) THEN
 C
@@ -1876,7 +1876,7 @@ C
                         DO 81 L = 0, ISYTP
                           IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
                             DO 91 M = NSYSBG(L), NSYSED(L)
-                              DO 102 N = 1, NUCIND
+                              DO 102 N = 1, NCTOT
                                 IF ( (ISUBSY(N) .EQ. M) .AND.
      &                            (ISUBSI(N) .GT. NSISY(L)) ) THEN
 C
@@ -2292,7 +2292,7 @@ C
         DO 50 I= 1, ISYTP
           IF  (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
             DO 60 J = NSYSBG(I), NSYSED(I)
-             DO 70 K = 1, NUCIND
+             DO 70 K = 1, NCTOT
               IF ( (ISUBSY(K) .EQ. J) .AND.
      &          (ISUBSI(K) .GT. NSISY(I)) ) THEN
                 NUM = NUM + 1
@@ -2307,7 +2307,7 @@ C
                   DO 80 L = 1, ISYTP
                     IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
                       DO 90 M = NSYSBG(L), NSYSED(L)
-                        DO 100 N = 1, NUCIND
+                        DO 100 N = 1, NCTOT
                           IF ( (ISUBSY(N) .EQ. M) .AND.
      &                      (ISUBSI(N) .GT. NSISY(L)) ) THEN
                             KURT = KURT + 1
@@ -2359,7 +2359,7 @@ C
                     DO 81 L = 1, ISYTP
                       IF (MDLWRD(L)(1:5) .EQ. 'SPC_E') THEN
                         DO 91 M = NSYSBG(L), NSYSED(L)
-                          DO 101 N = 1, NUCIND
+                          DO 101 N = 1, NCTOT
                             IF ( (ISUBSY(N) .EQ. M) .AND.
      &                        (ISUBSI(N) .GT. NSISY(L)) ) THEN
                               LARS = LARS + 1
@@ -2557,7 +2557,7 @@ C
           DO 800 I = 1, ISYTP
             IF (MDLWRD(I)(1:3) .NE. 'SPC') GOTO 800
             DO 810 J = NSYSBG(I), NSYSED(I)
-              DO 820 K = 1, NUCIND
+              DO 820 K = 1, NCTOT
                 IF ( (ISUBSY(K) .EQ. J) .AND.
      *            (ISUBSI(K) .LE. NSISY(I)) ) THEN
                   TEMPX = TEMPX + CORD(1,K)*CHARGE(K)
@@ -2626,14 +2626,14 @@ C
       DO 500 I = 1, ISYTP
         IF (MDLWRD(I)(1:3) .NE. 'SPC') GOTO 500
         DO 510 J = NSYSBG(I), NSYSED(I)
-          DO 520 K = 1, NUCIND
+          DO 520 K = 1, NCTOT
             IF ( (ISUBSY(K) .EQ. J) .AND.
      *           (ISUBSI(K) .LE. NSISY(I)) ) THEN
               DO 530 IM = 1, ISYTP
                 IF (MDLWRD(IM)(1:3) .NE. 'SPC') GOTO 530
                 DO 540 JM = NSYSBG(IM), NSYSED(IM)
                   IF (JM .GT. J) THEN
-                    DO 550 KM = 1, NUCIND
+                    DO 550 KM = 1, NCTOT
                       IF ( (ISUBSY(KM) .EQ. JM) .AND.
      *                  (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
                         DIST = SQRT((CORD(1,K)-CORD(1,KM))**2 +
@@ -2671,7 +2671,7 @@ C*******************************************************
 C The classical "QM"/MM electrostatic energy calculated:
 C*******************************************************
 C
-      DO 300 K=1,NUCIND
+      DO 300 K=1,NCTOT
         IF ( (ISUBSY(K) .EQ. 0) .AND.
      &    (ISUBSI(K) .LE. NSISY(0)) ) THEN
           DO 310 I = 1, ISYTP
@@ -2679,7 +2679,7 @@ C
             IF (MDLWRD(I)(1:3) .NE. 'SPC') GOTO 310
 C
             DO 320 J = NSYSBG(I), NSYSED(I)
-              DO 330 L=1,NUCIND
+              DO 330 L=1,NCTOT
                 IF ( (ISUBSY(L) .EQ. J) .AND.
      &            (ISUBSI(L) .LE. NSISY(I)) ) THEN
                   DIST = SQRT((CORD(1,K)-CORD(1,L))**2 +
@@ -3141,7 +3141,7 @@ C
             QMCORZ = D0
             TOTALM = D0
 C
-            DO 220 K = 1, NUCIND
+            DO 220 K = 1, NCTOT
 C
               QMMASS = D0
 C
@@ -3165,7 +3165,7 @@ C
             QMCORY = D0
             QMCORZ = D0
 C
-            DO 230 K = 1, NUCIND
+            DO 230 K = 1, NCTOT
               IF ( (ISUBSY(K) .EQ. J) .AND.
      &          (ISUBSI(K) .GT. NSISY(I)) ) THEN
                 QMCORX = CORD(1,K)
@@ -3192,7 +3192,7 @@ C
 C
                   TOTALM2 = D0
 C
-                  DO 260 KM = 1, NUCIND
+                  DO 260 KM = 1, NCTOT
                     IF ( (ISUBSY(KM) .EQ. JM) .AND.
      &                (ISUBSI(KM) .LE. NSISY(IM)) ) THEN
 C
@@ -3210,7 +3210,7 @@ C
                   TMCORZ = TMCORZ/TOTALM2
 C
                 ELSE IF (.NOT. (DISMOD(IM)) ) THEN
-                  DO 270 KM = 1, NUCIND
+                  DO 270 KM = 1, NCTOT
                     IF ( (ISUBSY(KM) .EQ. JM) .AND.
      &                (ISUBSI(KM) .GT. NSISY(IM)) ) THEN
                       TMCORX = CORD(1,KM)
@@ -3287,11 +3287,11 @@ C
         ELSE IF (LBEGIN .EQ. 0) THEN
           IF (I .NE. 0) GOTO 100
         END IF
-        DO 110 JVDW = 1, NUCIND
+        DO 110 JVDW = 1, NCTOT
           IF ( (ISUBSY(JVDW) .GE. NSYSBG(I)) .AND.
      *         (ISUBSY(JVDW) .LE. NSYSED(I)) .AND.
      *         (ISUBSI(JVDW) .EQ. K) ) THEN
-            DO 120 KVDW = 1, NUCIND
+            DO 120 KVDW = 1, NCTOT
 C
             DIST = D0
             SIG_RM1 = D0
@@ -3554,7 +3554,7 @@ C
       IF (OLDTG)  THEN
         DO 873 I= 1, ISYTP
          DO 874 J = NSYSBG(I), NSYSED(I)
-           DO 875 K = 1, NUCIND
+           DO 875 K = 1, NCTOT
               IF (ISUBSY(K) .EQ. J) CHARGE(K) = CHAOLD(K)
   875      CONTINUE
   874    CONTINUE
@@ -3562,13 +3562,13 @@ C
       END IF
 C
       NATOM = 1
-      DO 30 I = 1, NUCIND
+      DO 30 I = 1, NCTOT
         IF ( (ISUBSY(I) .EQ. 0) .AND.
      &       (ISUBSI(I) .LE. NSISY(0)) )THEN
            DO 40 I2 =1, ISYTP
            IF (MDLWRD(I2)(1:3) .NE. 'SPC') GOTO 40 
              DO 50 J = NSYSBG(I2), NSYSED(I2) 
-               DO 60 L=1,NUCIND
+               DO 60 L=1,NCTOT
                  IF ( (ISUBSY(L) .EQ. J) .AND.
      &                 (ISUBSI(L) .LE. NSISY(I2)) ) THEN
                    IF (CHARGE(L) .EQ. 0.0D0) GOTO 60 
@@ -3610,7 +3610,7 @@ C
       IF (OLDTG) THEN
        DO 876 I= 1, ISYTP
           DO 877 J = NSYSBG(I), NSYSED(I)
-            DO 878 K = 1, NUCIND
+            DO 878 K = 1, NCTOT
                IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
   878       CONTINUE
   877    CONTINUE
@@ -3649,7 +3649,7 @@ C
       IF (OLDTG)  THEN
         DO 873 I= 1, ISYTP
          DO 874 J = NSYSBG(I), NSYSED(I)
-           DO 875 K = 1, NUCIND
+           DO 875 K = 1, NCTOT
               IF (ISUBSY(K) .EQ. J) CHARGE(K) = CHAOLD(K)
   875      CONTINUE
   874    CONTINUE
@@ -3657,14 +3657,14 @@ C
       END IF
 C
       NATOM = 1
-      DO 30 I = 1, NUCIND
+      DO 30 I = 1, NCTOT
         IF ( (ISUBSY(I) .EQ. 0) .AND.
      &       (ISUBSI(I) .LE. NSISY(0)) )THEN
            NUM = 0
            DO 40 I2 =1, ISYTP
            IF (MDLWRD(I2)(1:5) .NE. 'SPC_E') GOTO 40
              DO 50 J = NSYSBG(I2), NSYSED(I2)
-               DO 60 L=1,NUCIND
+               DO 60 L=1,NCTOT
                  IF ( (ISUBSY(L) .EQ. J) .AND.
      &                 (ISUBSI(L) .GT. NSISY(I2)) ) THEN
                    TEXXX = 0.0D0
@@ -3733,7 +3733,7 @@ C
       IF (OLDTG) THEN
        DO 876 I= 1, ISYTP
           DO 877 J = NSYSBG(I), NSYSED(I)
-            DO 878 K = 1, NUCIND
+            DO 878 K = 1, NCTOT
                IF (ISUBSY(K) .EQ. J) CHARGE(K) = ZERO
   878       CONTINUE
   877    CONTINUE
@@ -3767,11 +3767,11 @@ C
       DIST2  = D0
       DIST3  = D0
 C
-      DO 100 K = 1, NUCIND
+      DO 100 K = 1, NCTOT
         TEMPX  = D0
         TEMPY  = D0
         TEMPZ  = D0
-        DO 101 KM = 1, NUCIND
+        DO 101 KM = 1, NCTOT
           IF (K .NE. KM) THEN 
             DIST = SQRT((CORD(1,K)-CORD(1,KM))**2 +
      *             (CORD(2,K)-CORD(2,KM))**2 +

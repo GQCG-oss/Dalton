@@ -710,6 +710,13 @@ C
 #include <infdim.h>
 #include <inftap.h>
 #include <infpri.h>
+C-----------------------
+C CBN+JK 03.01.06
+C----------------------
+#include <qm3.h>
+C-----------------------
+C CBN+JK 03.01.06
+C----------------------
 C
 C     local variables:
 C
@@ -741,7 +748,13 @@ C     ... symmetrize CI vector
       DOPHP  = .FALSE.
 #else
       DOPHP  = (MAXPHP .GT. 0)
-      IF (SOLVNT .OR. PCM) DOPHP = .FALSE.
+C----------------------
+C CBN+JK 03.01.06
+C----------------------
+      IF (SOLVNT .OR. PCM .OR. QM3) DOPHP = .FALSE.
+C-----------------------
+C CBN+JK 03.01.06
+C----------------------
       IF (BETA .NE. D1) DOPHP = .FALSE.
 C     ... only use PHP for beta = 1
 C     PHPMAERKE: implement for beta .ne. 1
@@ -1266,7 +1279,13 @@ C           Find label ORBDIAG, for diagonal of orbital Hessian.
             CALL MOLLAB(LABIT2(3),LUIT2,LUERR)
             CALL READT(LUIT2,NWOPT,WRK(KODIAG))
 C
-            IF (SOLVNT .OR. PCM) THEN
+C-----------------------
+C CBN+JK 03.01.06
+C----------------------
+            IF (SOLVNT .OR. PCM .OR. QM3) THEN
+C-----------------------
+C CBN+JK 03.01.06
+C----------------------
                CALL MOLLAB(LABIT2(4),LUIT2,LUERR)
                IF (NCONF .GT. 1) READ (LUIT2)
                CALL READT (LUIT2,NWOPT,WRK(KWO))

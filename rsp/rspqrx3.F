@@ -271,6 +271,14 @@ C
 #include <infhyp.h>
 #include <esg.h>
 #include <absorp.h>
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+#include <qm3.h>
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+C
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -386,6 +394,26 @@ C
      *         '   DFT CONTRIBUTION TO HYPVAL',E3DFT,E3TOT
          END IF
       END IF
+
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+      IF (QM3) THEN
+         IF (TDHF) THEN
+            CALL QM3QRO(VECB,VECC,
+     *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP)
+            CALL QM3QRO(VECC,VECB,
+     *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),
+     *                 UDV,WRK(KFREE),LFREE,
+     *                 KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP)
+         END IF
+      END IF
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+C
 C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)

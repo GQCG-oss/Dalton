@@ -15,7 +15,7 @@ C
      &        QUAGRA, DPLGRA, ELGDIL, ELGDIA, MNF_SO, DPTOVL, DPTPOT,
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST, NO2SO,
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
-     &        DSOKE,  PSOOZ, DAR2EL
+     &        DSOKE,  PSOOZ, DAR2EL, EFBDER, EFB2DR, MAGQDP
 C
       COMMON /CBIHER/ EXPKR(3), THRESH,
      &                IPRDEF, IORCAR, IORSPH, NPQUAD,
@@ -38,4 +38,5 @@ C
      &                MNF_SO, DPTOVL, DPTPOT, XDDXR3, PVIOLA,
      &                POTENE, PVPINT, QDBINT, QDBTST, NO2SO,
      &                RANGMO, RPSO,   PXPINT, OZKE, PSOKE, DNSKE, FCKE,
-     &                SDKE,   DSOKE,  PSOOZ, DAR2EL
+     &                SDKE,   DSOKE,  PSOOZ, DAR2EL, EFBDER, EFB2DR,
+     &                MAGQDP

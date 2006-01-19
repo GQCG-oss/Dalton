@@ -1090,6 +1090,13 @@ C
 #include "inftap.h"
 #include "pcm.h"
 #include "pcmlog.h"
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
+#include <qm3.h>
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ','.DIPVEL',
      *            '.DIPVLX', '.DIPVLY', '.DIPVLZ', '.DIPMAG','.DIPMGX',
@@ -1423,6 +1430,15 @@ c              selected excited states
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+         IF (QM3) THEN
+           WRITE(LUPRI,*) 'QM/MM response calculation'
+         END IF
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
@@ -1529,6 +1545,13 @@ C
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
+#include <qm3.h>
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
 C
       LOGICAL NEWDEF, SPNDEF, NXTLAB
       PARAMETER ( NTABLE = 45 )
@@ -1886,6 +1909,15 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
+         IF (QM3) THEN
+           WRITE(LUPRI,*) 'QM/MM response calculation'
+         END IF
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRLR  ='
      *       ,IPRLR
@@ -3606,6 +3638,13 @@ C
 #include "scbrhf.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
+#include <qm3.h>
+C--------------------
+C CBN+JK 03.01.06
+C--------------------
 C
       CALL QENTER('RSPMC ')
 C
@@ -3818,6 +3857,22 @@ C
         ENDDO
       END IF
 C
+C----------------------
+C CBN+JK 03.01.06
+C----------------------
+      IF (QM3) THEN
+        IF (OLDTG .OR. (.NOT. LOSPC)) THEN
+          CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
+          CALL READT (LUSIFC,NNORBT,WRK)
+          DO 21 I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+ 21       CONTINUE
+        END IF
+      END IF
+C----------------------
+C CBN+JK 03.01.06
+C----------------------
+
       IF (SOPPA) THEN
 C
          IF (CCPPA) THEN
@@ -4174,6 +4229,13 @@ C
 #include <inftap.h>
 #include <esg.h>
 C
+C------------------
+C CBN+JK 03.01.06
+C------------------
+#include <qm3.h>
+C------------------
+C CBN+JK 03.01.06
+C------------------
       DATA TABLE /'.ROOTS', '.THCPP ', '.MAX IT', '.MAXITO', '.THCLR ',
      *            '.RESTPP','.PRINT ', '.STATE '/
 C
@@ -4288,6 +4350,15 @@ C
      *      ,EPSOL
          END IF
 C
+C------------------
+C CBN+JK, 03.01.06
+C------------------
+         IF (QM3) THEN
+           WRITE(LUPRI,*) 'QM/MM response calculation'
+         END IF
+C------------------
+C CBN+JK, 03.01.06
+C------------------
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='
      *       ,IPRPP

@@ -48,6 +48,7 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
+#include <qm3.h>
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
       PARAMETER ( NTABLE = 29, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
@@ -520,6 +521,15 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
+         IF (QM3) THEN
+          WRITE(LUPRI,*) 'QM/MM response calculation'
+         END IF
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
      *      ' Second harmonic generation                     : SHG='
@@ -583,6 +593,7 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
+#include <qm3.h>
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 25)
@@ -891,6 +902,15 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
+         IF (QM3) THEN
+          WRITE(LUPRI,*) 'QM/MM response calculation'
+         END IF
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')
      *       ' B of Magnetic Circular Dichroism requested    : MCDCAL ='

@@ -320,6 +320,7 @@ C
       PARAMETER (D0 = 0.00 D00)
 C
 #include <nuclei.h>
+#include <qm3.h>
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
      &        TOFILE, HFONLY, NCLONE, FOUND, DIFQDP, FNDLB2, PCM
       DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,*),
@@ -614,7 +615,9 @@ C
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
          NATOMC = 0
-         DO 120 IATOMC = 1,NUCIND
+         IMXATM = NUCIND
+         IF (QM3) IMXATM = NCTOT
+         DO 120 IATOMC = 1,IMXATM
             MULC   = ISTBNU(IATOMC)
             MABC   = IBTOR(MULC,KAB)
             CORCX0 = CORD(1,IATOMC)
@@ -1162,36 +1165,18 @@ C     Dipole moment
 C
       CALL DZERO(DIPMN,3)
 C
-      IF (.NOT. QM3) THEN 
-        DO 100 IATOM = 1, NUCIND
-          CHA = CHARGE(IATOM)
-          IF (ABS(CHA) .LT. D100) THEN
+      DO 100 IATOM = 1, NUCIND
+         CHA = CHARGE(IATOM)
+         IF (ABS(CHA) .LT. D100) THEN
             FAC = FMULT(ISTBNU(IATOM))*CHA
             DO 200 ICOOR = 1, 3
-              IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
-                 DIPMN(ICOOR) = DIPMN(ICOOR) 
-     &                        + FAC*(CORD(ICOOR,IATOM) - DIPORG(ICOOR))
-              END IF
-  200       CONTINUE
-          END IF
-  100   CONTINUE
-      ELSE
-        DO 101 IATOM = 1, NUCIND
-          IF ( (ISUBSY(IATOM) .EQ. 0) .AND.  
-     &      (ISUBSI(IATOM) .LE. NSISY(0)) )THEN
-            CHA = CHARGE(IATOM)
-            IF (ABS(CHA) .LT. D100) THEN
-              FAC = FMULT(ISTBNU(IATOM))*CHA
-              DO 201 ICOOR = 1, 3
-                IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
-                  DIPMN(ICOOR) = DIPMN(ICOOR)
+               IF (ISYMAX(ICOOR,1) .EQ. 0) THEN
+                  DIPMN(ICOOR) = DIPMN(ICOOR) 
      &                         + FAC*(CORD(ICOOR,IATOM) - DIPORG(ICOOR))
-                END IF
- 201          CONTINUE
-            END IF
-          END IF
- 101    CONTINUE
-      END IF
+               END IF
+ 200        CONTINUE
+         END IF
+ 100  CONTINUE
 C
 C     Dipole moment gradient
 C

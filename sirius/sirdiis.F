@@ -327,6 +327,15 @@ C
 #include <dfterg.h>
 #include <r12int.h>
 #include "incore.h"
+C------------------------
+C CBN+JK 03.01.06 Begin
+C------------------------
+C
+#include <qm3.h>
+C
+C------------------------
+C CBN+JK 03.01.06 End
+C------------------------
 C
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -350,7 +359,13 @@ C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
 C
       IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
-      IF (FLAG(16) .OR. PCM) THEN
+C----------------
+C CBN+JK 03.01.06
+C----------------
+      IF (FLAG(16) .OR. PCM .OR. QM3) THEN
+C----------------
+C CBN+JK 03.01.06
+C----------------
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A/A)')
      &      ' Iter      Total energy       Solvation energy    '//
@@ -462,8 +477,14 @@ C       keep vectors until GRDNRM fallen a factor 100
       ITNOCC = 0
       NEWOCC = 0
       NOSCIL = 0
+C------------------
+C CBN+JK 03.01.06
+C------------------
       DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
-     &           .AND. .NOT. PCM .AND. .NOT. HSROHF
+     &           .AND. .NOT. PCM .AND. .NOT. HSROHF .AND. .NOT. QM3
+C------------------
+C CBN+JK 03.01.06
+C------------------
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
@@ -640,6 +661,23 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                  WRK(KFREE),LFREE,IPRDIS)
 C
          ESOLT = D0
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
+         IF (QM3 .AND. .NOT. DOCCSD) THEN
+            WRITE(LUPRI,*)'EMCSCF before ',EMCSCF
+            CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
+            CALL DZERO(WRK(KFCSOL),NNBAST)
+            CALL QM3FCK(DAOSAV(1,1),DAOSAV(1,2),
+     &                  WRK(KFCSOL),ESOLT,ENSQM3,EPOQM3,EELEL,
+     &                  WRK(KFREE),LFREE,IPRDIS)
+            CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+            CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+            WRITE(LUPRI,*)'EMCSCF after ',EMCSCF
+         END IF
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
          IF (FLAG(16)) THEN
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL SOLFCK(DAOSAV(1,1),DAOSAV(1,2),
@@ -658,6 +696,13 @@ C
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
+         IF (QM3 .AND. (.NOT. OLDTG)) EMCSCF = EMCSCF - EELEL
+C-----------------
+C CBN+JK 03.01.06
+C-----------------
          EMCDIF = EMCSCF - EMCDIF
          EGSAV(1,INDEVC) = EMCSCF
 C
@@ -688,7 +733,13 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPRDIS)
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
-            IF (FLAG(16) .OR. PCM) THEN
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+            IF (FLAG(16) .OR. PCM .OR. QM3) THEN
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I5,F20.12,F20.12,1P,D15.5,D12.2)')
      &               ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
@@ -1177,12 +1228,24 @@ Chj from siropt.F, should be modified
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
-         IF (FLAG(16) .OR. PCM)
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+         IF (FLAG(16) .OR. PCM .OR. QM3)
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
-            IF (FLAG(16) .OR. PCM)
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
+            IF (FLAG(16) .OR. PCM .OR. QM3)
+C-------------------
+C CBN+JK 03.01.06
+C-------------------
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF

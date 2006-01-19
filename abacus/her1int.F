@@ -543,6 +543,21 @@ cLig <<
          JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.99) THEN
+         JMAXD  = 0
+         JMAXM  = 1
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.100) THEN
+         JMAXD  = 0
+         JMAXM  = 2
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.101) THEN
+         JMAXD = 1
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
       END IF
 C
       IF (IPRINT .GT. 5) THEN
@@ -763,6 +778,7 @@ C  /* Deck pr1sop */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
+#include <qm3.h>
 #include <nuclei.h>
       LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1,
      &        EXP1EL
@@ -772,15 +788,18 @@ C  /* Deck pr1sop */
      &          DENMAT(NELMNT), EXPVAL(NOPTYP)
 #include <onecom.h>
 C
+      INATM = NUCDEP
+      IF (QM3 .AND. (INTTYP .EQ. 35 .OR. INTTYP .EQ. 29
+     &               .OR. INTTYP .EQ. 30)) INATM = NCTOT
       KSHINT = 1
       KSYMC  = KSHINT + KCKTAB*NSHINT
-      KCENTC = KSYMC  + (NUCDEP + 1)/IRAT
-      KNCNTC = KCENTC + (NUCDEP + 1)/IRAT
-      KFACTR = KNCNTC + (NUCDEP + 1)/IRAT
-      KCORCX = KFACTR + NUCDEP
-      KCORCY = KCORCX + NUCDEP
-      KCORCZ = KCORCY + NUCDEP
-      KLAST  = KCORCZ + NUCDEP
+      KCENTC = KSYMC  + (INATM + 1)/IRAT
+      KNCNTC = KCENTC + (INATM + 1)/IRAT
+      KFACTR = KNCNTC + (INATM + 1)/IRAT
+      KCORCX = KFACTR + INATM
+      KCORCY = KCORCX + INATM
+      KCORCZ = KCORCY + INATM
+      KLAST  = KCORCZ + INATM
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1SOP',' ',KLAST,LWORK)
       LWRK = LWORK - KLAST + 1
       CALL PR1SO1(SOINT,WORK(KSHINT),DENMAT,EXPVAL,WORK(KLAST),LWRK,
@@ -873,7 +892,9 @@ cLig <> added JMAX adjustment  for INTTYP = 82
      &                    .OR. (INTTYP .EQ. 93)
      &                    .OR. (INTTYP .EQ. 94)
      &                    .OR. (INTTYP .EQ. 96)
-     &                    .OR. (INTTYP .EQ. 97)) THEN
+     &                    .OR. (INTTYP .EQ. 97)
+     &                    .OR. (INTTYP .EQ. 99)
+     &                    .OR. (INTTYP .EQ. 100)) THEN
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
          IF (INTTYP .EQ. 10) JMAX = JMAX + 1
@@ -914,6 +935,8 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
          IF (INTTYP .EQ. 94) JMAX = JMAX + 4
          IF (INTTYP .EQ. 96) JMAX = JMAX + 4
          IF (INTTYP .EQ. 97) JMAX = JMAX + 6
+         IF (INTTYP .EQ. 99) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 100) JMAX = JMAX + 3
          MULCHA = (INTTYP .EQ. 5) .OR. (INTTYP .EQ. 19)
      &                            .OR. (INTTYP .EQ. 20)
      &                            .OR. (INTTYP .EQ. 24)
@@ -931,7 +954,8 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
          NAHGTF = ISTEPU*ISTEPV
 C
          IF (INTTYP .EQ. 75 .OR. INTTYP .EQ. 66 
-     &        .OR. INTTYP .EQ. 67) THEN
+     &        .OR. INTTYP .EQ. 67 .OR. INTTYP .EQ. 99
+     &        .OR. INTTYP .EQ. 100) THEN
             NATOMC = 0
 C
             DO 301 IATOMC = 1, NPOINT
@@ -956,7 +980,11 @@ C
          ELSE IF (INTTYP.NE.12 .AND. INTTYP.NE.58
      &      .AND. INTTYP.NE.96) THEN
             NATOMC = 0
-            DO 300 IATOMC = 1, NUCIND
+            IMXATM = NUCIND
+            IF (QM3 .AND. (INTTYP .EQ. 35 .OR. INTTYP .EQ. 29
+     &                .OR. INTTYP .EQ. 30))
+     &                IMXATM = NCTOT
+            DO 300 IATOMC = 1, IMXATM
             IF (DOATOM(IATOMC)) THEN
                MULC   = ISTBNU(IATOMC)
                MABC   = IBTOR(MULC,KAB)
@@ -1302,11 +1330,15 @@ cLig <> set DIFODC true also for INTTYP = 81 and 82
      &    .OR. (INTTYP.EQ.82) .OR. (INTTYP.EQ.83) .OR. (INTTYP.EQ.84)
      &    .OR. (INTTYP.EQ.91) .OR. (INTTYP.EQ.92) .OR. (INTTYP.EQ.93)
      &    .OR. (INTTYP.EQ.94) .OR. (INTTYP.EQ.97) .OR. (INTTYP.EQ.98)
+     &    .OR. (INTTYP.EQ.99) .OR. (INTTYP.EQ.100).OR. (INTTYP.EQ.101)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &    .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
      &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.62)
      &    .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.64) .OR. (INTTYP.EQ.72)
      &    .OR. (INTTYP.EQ.73) .OR. (INTTYP.EQ.80)
+Ckr
+Ckr   We may contemplate setting ADDNAI equal to true for EFBINT and EFB2IN
+Ckr
 C
       DO 100 IPRIMA = 1,NUCA
          JPRIMA = JSTA + IPRIMA
@@ -1373,7 +1405,8 @@ cLig <> put the origin in GAGORG also for INTTYP = 81 and 82
      &            (INTTYP .EQ. 38) .OR. (INTTYP .EQ. 57) .OR. 
      &            (INTTYP .EQ. 61) .OR. (INTTYP .EQ. 81) .OR.
      &            (INTTYP .EQ. 82) .OR. (INTTYP .EQ. 91) .OR.
-     &            (INTTYP .EQ. 93) .OR. (INTTYP .EQ. 97)) THEN
+     &            (INTTYP .EQ. 93) .OR. (INTTYP .EQ. 97) .OR.
+     &            (INTTYP .EQ.101)) THEN
             TEMP(1) = GAGORG(1)
             TEMP(2) = GAGORG(2)
             TEMP(3) = GAGORG(3)
@@ -1454,7 +1487,9 @@ cLig <> added the call to DZERO also for INTTYP = 82
      &                       .OR. (INTTYP .EQ. 92)
      &                       .OR. (INTTYP .EQ. 93)
      &                       .OR. (INTTYP .EQ. 94)
-     &                       .OR. (INTTYP .EQ. 97)) THEN      
+     &                       .OR. (INTTYP .EQ. 97)
+     &                       .OR. (INTTYP .EQ. 99)
+     &                       .OR. (INTTYP .EQ. 100)) THEN      
                CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
             IF (ADDNAI) THEN
                CALL DZERO(AHGTF,NAHGTF)
@@ -2064,7 +2099,27 @@ C
             CALL PSOZIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
 C
+C        London orbital contribution to electric field at point in space
+C        ---------------------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 99) THEN
+            CALL EFBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  DIFABX,DIFABY,DIFABZ)
+C
+C        London orbital contribution to electric field at point in space
+C        ---------------------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 100) THEN
+            CALL EFB2IN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  DIFABX,DIFABY,DIFABZ)
+C
+C        Angular London orbital contribution to magnetic susceptibility
+C        --------------------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 101) THEN
+            CALL MQDPIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
          END IF                                    
+C
   200    CONTINUE
   100 CONTINUE
 C
@@ -3586,6 +3641,65 @@ C
  100  CONTINUE
       RETURN
       END
+C  /* Deck mqdpin */
+      SUBROUTINE MQDPIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
+C
+C     K.Ruud, Feb. 1992
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      PARAMETER (D2I3 = 2.0D0/3.0D0, D3INV = 1.0D0/3.0D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,9), ORIGIN(3)
+#include <onecom.h>
+#include <lmns.h>
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         SX0  = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0  = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0  = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         SX1  = SHGTF*ODC(LVALA,LVALB,0,0,1,1)
+         SY1  = SHGTF*ODC(MVALA,MVALB,0,0,1,2)
+         SZ1  = SHGTF*ODC(NVALA,NVALB,0,0,1,3)
+         SX2  = SHGTF*ODC(LVALA,LVALB,0,0,2,1)
+         SY2  = SHGTF*ODC(MVALA,MVALB,0,0,2,2)
+         SZ2  = SHGTF*ODC(NVALA,NVALB,0,0,2,3)
+         DX0  = SHGTF*ODC(LVALA,LVALB,0,1,0,1)
+         DY0  = SHGTF*ODC(MVALA,MVALB,0,1,0,2)
+         DZ0  = SHGTF*ODC(NVALA,NVALB,0,1,0,3)
+         DX1  = SHGTF*ODC(LVALA,LVALB,0,1,1,1)
+         DY1  = SHGTF*ODC(MVALA,MVALB,0,1,1,2)
+         DZ1  = SHGTF*ODC(NVALA,NVALB,0,1,1,3)
+C
+         SHLINT(INT,1) = SHLINT(INT,1) + D2I3*SX1*(SY1*DZ0 - DY0*SZ1)
+         SHLINT(INT,2) = SHLINT(INT,2) + D2I3*SY0*(DX1*SZ1 - SX2*DZ0)
+     &                                 + D3INV*SX0*SY0*SZ1
+         SHLINT(INT,3) = SHLINT(INT,3) + D2I3*SZ0*(SX2*DY0 - DX1*SY1)
+     &                                 - D3INV*SX0*SY1*SZ0
+         SHLINT(INT,4) = SHLINT(INT,4) + D2I3*SX0*(SY2*DZ0 - DY1*SZ1)
+     &                                 - D3INV*SX0*SY0*SZ1
+         SHLINT(INT,5) = SHLINT(INT,5) + D2I3*SY1*(DX0*SZ1 - SX1*DZ0)
+         SHLINT(INT,6) = SHLINT(INT,6) + D2I3*SZ0*(SX1*SY1 - DX0*SY2)
+     &                                 + D3INV*SX1*SY0*SZ0
+         SHLINT(INT,7) = SHLINT(INT,7) + D2I3*SX0*(SY1*DZ1 - DY0*SZ2)
+     &                                 + D3INV*SX0*SY1*SZ0
+         SHLINT(INT,8) = SHLINT(INT,8) + D2I3*SY0*(DX0*SZ2 - SX1*SZ1)
+     &                                 - D3INV*SX1*SY0*SZ0
+         SHLINT(INT,9) = SHLINT(INT,9) + D2I3*SZ1*(SX1*DY0 - DX0*SY1)
+ 100  CONTINUE
+      RETURN
+      END
 C  /* Deck dsuslh */
       SUBROUTINE DSUSLH(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
@@ -4408,6 +4522,223 @@ C
                      SHLINT(INT,IZ) = SHLINT(INT,IZ) - EEE*AH0V
                      IOFF = IOFF + NAHGTF
  500              CONTINUE
+ 400           CONTINUE
+               IADRAU = IADRAU + ISTEPU
+ 300        CONTINUE
+            IADRAV = IADRAV + ISTEPV
+ 200     CONTINUE
+         INT = INT + 1
+ 100  CONTINUE
+      RETURN
+      END
+C  /* Deck efbint */
+      SUBROUTINE EFBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  DIFABX,DIFABY,DIFABZ)
+C
+C     London orbital correction to the electric field calculated at a 
+C     point (e.g. in a MM system) in space.
+C
+C     K.Ruud, Copenhagen January 2006
+C
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+      PARAMETER (DP5 = 0.50D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,9), AHGTF(*)
+#include <onecom.h>
+#include <lmns.h>
+      INT = 1
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         MAXT = LVALA + LVALB
+         MAXU = MVALA + MVALB
+         MAXV = NVALA + NVALB
+         IADRAV = 1
+         DO 200 IV = 0, MAXV + 1
+            EV = ODC(NVALA,NVALB,IV,0,0,3)
+            FV = ODC(NVALA,NVALB,IV,0,1,3)
+            IADRAU = IADRAV
+            IUMAX = MAXU + 1
+            IF (IV .GT. MAXV) IUMAX = MAXU
+            DO 300 IU = 0, IUMAX
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               FU = ODC(MVALA,MVALB,IU,0,1,2)
+               ITMAX = MAXT + 1
+               IF ((IU .GT. MAXU) .OR. (IV .GT. MAXV)) ITMAX = MAXT
+               DO 400 IT = 0, ITMAX
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  FT = ODC(LVALA,LVALB,IT,0,1,1)
+                  FX = FT*EU*EV
+                  FY = ET*FU*EV
+                  FZ = ET*EU*FV
+                  AH0T = DP5*AHGTF(IADRAU + IT + 1)
+                  AH0U = DP5*AHGTF(IADRAU + IT + ISTEPU)
+                  AH0V = DP5*AHGTF(IADRAU + IT + ISTEPV)
+                  SHLINT(INT,1) = SHLINT(INT,1)
+     &                           + AH0T*(DIFABY*FZ-DIFABZ*FY)
+                  SHLINT(INT,2) = SHLINT(INT,2)
+     &                           + AH0T*(DIFABZ*FX-DIFABX*FZ)
+                  SHLINT(INT,3) = SHLINT(INT,3)
+     &                           + AH0T*(DIFABX*FY-DIFABY*FX)
+                  SHLINT(INT,4) = SHLINT(INT,4)
+     &                           + AH0U*(DIFABY*FZ-DIFABZ*FY)
+                  SHLINT(INT,5) = SHLINT(INT,5)
+     &                           + AH0U*(DIFABZ*FX-DIFABX*FZ)
+                  SHLINT(INT,6) = SHLINT(INT,6)
+     &                           + AH0U*(DIFABX*FY-DIFABY*FX)
+                  SHLINT(INT,7) = SHLINT(INT,7)
+     &                           + AH0V*(DIFABY*FZ-DIFABZ*FY)
+                  SHLINT(INT,8) = SHLINT(INT,8)
+     &                           + AH0V*(DIFABZ*FX-DIFABX*FZ)
+                  SHLINT(INT,9) = SHLINT(INT,9)
+     &                           + AH0V*(DIFABX*FY-DIFABY*FX)
+ 400           CONTINUE
+               IADRAU = IADRAU + ISTEPU
+ 300        CONTINUE
+            IADRAV = IADRAV + ISTEPV
+ 200     CONTINUE
+         INT = INT + 1
+ 100  CONTINUE
+      RETURN
+      END
+C  /* Deck efb2in */
+      SUBROUTINE EFB2IN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  DIFABX,DIFABY,DIFABZ)
+C
+C     2.nd-order London orbital correction to the electric field 
+C     calculated at a point (e.g. in a MM system) in space.
+C
+C     K.Ruud, Copenhagen January 2006
+C
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+      PARAMETER (DP25 = 0.25D0, D2 = 2.0D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,18), AHGTF(*)
+#include <onecom.h>
+#include <lmns.h>
+      INT = 1
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         MAXT = LVALA + LVALB
+         MAXU = MVALA + MVALB
+         MAXV = NVALA + NVALB
+         IADRAV = 1
+         DO 200 IV = 0, MAXV + 2
+            EV = ODC(NVALA,NVALB,IV,0,0,3)
+            FV = ODC(NVALA,NVALB,IV,0,1,3)
+            GV = ODC(NVALA,NVALB,IV,0,2,3)
+            IADRAU = IADRAV
+            IUMAX = MAXU + 2
+            IF (IV .GT. MAXV + 1) THEN
+               IUMAX = MAXU
+            ELSE IF (IV .GT. MAXV) THEN
+               IUMAX = MAXU + 1
+            END IF
+            DO 300 IU = 0, IUMAX
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               FU = ODC(MVALA,MVALB,IU,0,1,2)
+               GU = ODC(MVALA,MVALB,IU,0,2,2)
+               ITMAX = MAXT + 2
+               IF (((IU .GT. MAXU + 1) .OR. (IV .GT. MAXV + 1))
+     &               .OR. ((IU .EQ. MAXU + 1) .AND. (IV .EQ. MAXV + 1)))
+     &               THEN
+                  ITMAX = MAXT
+               ELSE IF ((IU .GT. MAXU) .OR. (IV .GT. MAXV)) THEN
+                  ITMAX = MAXT + 1
+               END IF
+               DO 400 IT = 0, ITMAX
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  FT = ODC(LVALA,LVALB,IT,0,1,1)
+                  GT = ODC(LVALA,LVALB,IT,0,2,1)
+                  FXX = GT*EU*EV
+                  FXY = FT*FU*EV
+                  FXZ = FT*EU*FV
+                  FYY = ET*GU*EV
+                  FYZ = ET*FU*FV
+                  FZZ = ET*EU*GV
+                  AH0T = DP25*AHGTF(IADRAU + IT + 1)
+                  AH0U = DP25*AHGTF(IADRAU + IT + ISTEPU)
+                  AH0V = DP25*AHGTF(IADRAU + IT + ISTEPV)
+                SHLINT(INT,1)=SHLINT(INT,1)+AH0T*(DIFABY*DIFABZ*FYZ*D2
+     &                                            - DIFABY*DIFABY*FZZ
+     &                                            - DIFABZ*DIFABZ*FYY)
+                SHLINT(INT,2)=SHLINT(INT,2)+AH0T*(DIFABZ*DIFABZ*FXY
+     &                                            + DIFABY*DIFABX*FZZ
+     &                                            - DIFABZ*DIFABX*FYZ
+     &                                            - DIFABY*DIFABZ*FXZ)
+                SHLINT(INT,3)=SHLINT(INT,3)+AH0T*(DIFABX*DIFABZ*FYY
+     &                                            + DIFABY*DIFABY*FXZ
+     &                                            - DIFABY*DIFABZ*FXY
+     &                                            - DIFABX*DIFABY*FYZ)
+                SHLINT(INT,4)=SHLINT(INT,4)+AH0T*(DIFABX*DIFABZ*FXZ*D2
+     &                                            - DIFABX*DIFABX*FZZ
+     &                                            - DIFABZ*DIFABZ*FXX)
+                SHLINT(INT,5)=SHLINT(INT,5)+AH0T*(DIFABX*DIFABX*FYZ
+     &                                            + DIFABY*DIFABZ*FXX
+     &                                            - DIFABX*DIFABY*FXZ
+     &                                            - DIFABX*DIFABZ*FXY)
+                SHLINT(INT,6)=SHLINT(INT,6)+AH0T*(DIFABX*DIFABY*FXY*D2
+     &                                            - DIFABY*DIFABY*FXX
+     &                                            - DIFABX*DIFABX*FYY)
+                SHLINT(INT,7)=SHLINT(INT,7)+AH0U*(DIFABY*DIFABZ*FYZ*D2
+     &                                            - DIFABY*DIFABY*FZZ
+     &                                            - DIFABZ*DIFABZ*FYY)
+                SHLINT(INT,8)=SHLINT(INT,8)+AH0U*(DIFABZ*DIFABZ*FXY
+     &                                            + DIFABY*DIFABX*FZZ
+     &                                            - DIFABZ*DIFABX*FYZ
+     &                                            - DIFABY*DIFABZ*FXZ)
+                SHLINT(INT,9)=SHLINT(INT,9)+AH0U*(DIFABX*DIFABZ*FYY
+     &                                            + DIFABY*DIFABY*FXZ
+     &                                            - DIFABY*DIFABZ*FXY
+     &                                            - DIFABX*DIFABY*FYZ)
+                SHLINT(INT,10)=SHLINT(INT,10)+AH0U*(DIFABX*DIFABZ*FXZ*D2
+     &                                            - DIFABX*DIFABX*FZZ
+     &                                            - DIFABZ*DIFABZ*FXX)
+                SHLINT(INT,11)=SHLINT(INT,11)+AH0U*(DIFABX*DIFABX*FYZ
+     &                                            + DIFABY*DIFABZ*FXX
+     &                                            - DIFABX*DIFABY*FXZ
+     &                                            - DIFABX*DIFABZ*FXY)
+                SHLINT(INT,12)=SHLINT(INT,12)+AH0U*(DIFABX*DIFABY*FXY*D2
+     &                                            - DIFABY*DIFABY*FXX
+     &                                            - DIFABX*DIFABX*FYY)
+                SHLINT(INT,13)=SHLINT(INT,13)+AH0V*(DIFABY*DIFABZ*FYZ*D2
+     &                                            - DIFABY*DIFABY*FZZ
+     &                                            - DIFABZ*DIFABZ*FYY)
+                SHLINT(INT,14)=SHLINT(INT,14)+AH0V*(DIFABZ*DIFABZ*FXY
+     &                                            + DIFABY*DIFABX*FZZ
+     &                                            - DIFABZ*DIFABX*FYZ
+     &                                            - DIFABY*DIFABZ*FXZ)
+                SHLINT(INT,15)=SHLINT(INT,15)+AH0V*(DIFABX*DIFABZ*FYY
+     &                                            + DIFABY*DIFABY*FXZ
+     &                                            - DIFABY*DIFABZ*FXY
+     &                                            - DIFABX*DIFABY*FYZ)
+                SHLINT(INT,16)=SHLINT(INT,16)+AH0V*(DIFABX*DIFABZ*FXZ*D2
+     &                                            - DIFABX*DIFABX*FZZ
+     &                                            - DIFABZ*DIFABZ*FXX)
+                SHLINT(INT,17)=SHLINT(INT,17)+AH0V*(DIFABX*DIFABX*FYZ
+     &                                            + DIFABY*DIFABZ*FXX
+     &                                            - DIFABX*DIFABY*FXZ
+     &                                            - DIFABX*DIFABZ*FXY)
+                SHLINT(INT,18)=SHLINT(INT,18)+AH0V*(DIFABX*DIFABY*FXY*D2
+     &                                            - DIFABY*DIFABY*FXX
+     &                                            - DIFABX*DIFABX*FYY)
  400           CONTINUE
                IADRAU = IADRAU + ISTEPU
  300        CONTINUE

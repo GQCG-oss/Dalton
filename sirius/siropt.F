@@ -116,6 +116,13 @@ C
 #include <itinfo.h>
 #include <gnrinf.h>
 #include <cbihr2.h>
+C------------------------
+C CBN 03.01.06
+C------------------------
+#include <qm3.h>
+C------------------------
+C CBN 03.01.06
+C------------------------
 C ---
 C
 C *** local:
@@ -492,6 +499,20 @@ C    *               G,ESOLT,ERLM,WRK,LFREE)
       ELSE
          ESOLT = D0
       END IF
+C----------------
+C CBN+JK 03.01.06
+C----------------
+      IF (QM3) THEN
+         WRITE(LUPRI,*)'QM3 beregning.2.Grad'
+         CALL QM3GRAD(WRK(KCREF),WRK(KCMO),
+     &                WRK(KCINDX),WRK(KGTOT),
+     &                EQM3,WRK(KWRKG),LWRKG,IPRINT)
+      ELSE
+         EQM3=D0
+      END IF
+C----------------
+C CBN+JK 03.01.06
+C----------------
       GNRMSV = GNORM(3)
       CALL GRDINF(GNORM,WRK(KGTOT))
 C
@@ -504,7 +525,13 @@ C
          ITABS = -1
       END IF
 C
-      EMCSCF = POTNUC + EMY + EACTIV + ESOLT
+C----------------
+C CBN+JK 03.01.06
+C----------------
+      EMCSCF = POTNUC + EMY + EACTIV + ESOLT + EQM3
+C----------------
+C CBN+JK 03.01.06
+C----------------
       IF (ITABS .GT. 0) THEN
          WRITE (LUW4,1005) EMCSCF,ITABS
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,1005) EMCSCF,ITABS
@@ -1015,6 +1042,22 @@ C
       ELSE
          KFCSOL = KFC
       END IF
+C------------------
+C CBN+JK 03.01.06
+C------------------
+      IF (QM3) THEN
+         KFCQM3 = KWRKG
+         KWRKG = KFCSOL + NNORBT
+         LWRKG  = LFREE  - (KWRKG-1)
+         CALL QM3FCKMO(WRK(KCMO),WRK(KFCQM3),WRK(KWRKG),
+     &                 LWRKG,IPRINT)
+         CALL DAXPY(NNORBT,D1,WRK(KFCQM3),1,WRK(KFC),1)
+      END IF
+C------------------
+C CBN+JK 03.01.06
+C------------------
+
+
       IF (NASHT .EQ. 0) THEN
 C        hjaaj dec 2002: if extended to cover nasht.eq.1 as in sirdiis.F
 C        then remember to add FCSOL and FV to FD for RHFENR call
@@ -2390,6 +2433,13 @@ C
 #include <infpri.h>
 #include <cbgetdis.h>
 #include <r12int.h>
+C----------------
+C CBN+JK 03.01.06
+C----------------
+#include <qm3.h>
+C----------------
+C CBN+JK 03.01.06
+C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
@@ -2681,6 +2731,29 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
+C Write qm3 solvent part of the Fock matrix to interface file
+
+      IF (QM3) THEN
+          write(lupri,*) 'FNSIFC:',FNSIFC
+         KTMAT = KWRK1
+         KFSOLAO = KTMAT + NNORBT
+         KUCMO = KFSOLAO + NNBASX
+         KWRK2 = KUCMO + NORBT*NBAST
+         LWRK2 = LFREE - KWRK2 + 1
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-2',KWRK2,LFREE)
+         CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IQM3PR)
+         CALL UPKCMO(CMO,WRK(KUCMO))
+         CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
+     &             NBAST,NORBT)
+         WRITE (LUSIFC) LAB123,TABLE(7)
+         CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
+      END IF
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
 C
 C     Write CREF in determinants here, if NCDETS .gt. NCONF
 C

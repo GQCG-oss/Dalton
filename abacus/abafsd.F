@@ -1743,6 +1743,7 @@ C
 #include <cbisol.h>
 #include <infinp.h>
 #include <pcmlog.h>
+#include "qm3.h"
 #include <efield.h>
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),
      &          WORK(LWORK)
@@ -1840,6 +1841,7 @@ C
                END IF
  556        CONTINUE
          END IF
+C
          IF ((SOLVNT .OR. PCM) .AND. (KEY .EQ. 'HMAT')
      &                         .AND. (.NOT. NOLOND)) THEN
             KTMAT = KWRK
@@ -1854,6 +1856,15 @@ C
                CALL MAGPCMFIRST(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),
      &                          LLEFT)
             END IF
+            CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
+         END IF
+C         
+         IF (QM3 .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+            KTMAT = KWRK
+            MWRK  = KTMAT + 3*N2BASX
+            IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','QM3-1',MWRK,LWRK)
+            LLEFT = LWRK - MWRK + 1
+            CALL QM3FIRST(WORK(KTMAT),3,IPRINT,INTPRI,WORK(MWRK),LLEFT)
             CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
          END IF
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)

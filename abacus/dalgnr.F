@@ -669,9 +669,10 @@ C
             IF (SOLVNT) THEN
                NEWGEO = .TRUE.
                NUCIND = NUCIND + 1
+               NCTOT  = NCTOT + 1
                NUCDEP = NUCDEP + 1
                NATOMS = NATOMS + 1
-               NCNTCV = NUCIND
+               NCNTCV = NCTOT
                NCLINE(NUCIND) = 0
                NAMN(NUCIND)       = 'cav '
                NAMEX(3*NUCIND-2)  = 'cav  x'
@@ -1025,6 +1026,7 @@ C
 C
 C     We finally punch information for Gamess-US graphic packages
 C
+      IF (SOLVNT) NUCIND = NUCIND - 1
       IKIND = 2
       IKOL  = IKIND + MXCENT
       KLAST = IKOL + MXCENT

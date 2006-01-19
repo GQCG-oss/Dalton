@@ -212,7 +212,6 @@ C     ----------------------------------------------------------------
            LU43  = 43
            CALL GPOPEN(LU43,FCCR12D,'UNKNOWN',' ','UNFORMATTED',
      &                 IDUM,LDUM)
-           write(lupri,*)'ianr12,iapr12:', ianr12, iapr12
  1816      READ(LU43,end=1817) IAN,IAP,APROXR12
            READ(LU43) (WORK(KTAMP12-1+I),I=1,NGAMMA(1))
            IF ((IAN.NE.IANR12).OR.(IAP.NE.IAPR12)) GOTO 1816
@@ -1070,7 +1069,7 @@ C
      *                ZERO,ZERO,ZERO,1,0,0,0)
       ENDIF
       IF (.NOT.CCSLV) THEN
-         LABEL1 = ETYPE(1:LENET)//'    '
+         LABEL1 = ETYPE(1:LENET)//' '
          CALL CC_PRPC(EN2,MODEL,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
