@@ -2312,7 +2312,7 @@ C
       KINTRP = KDEN + MATDIM*NOSIM
       KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
       KEXPVL = KINTAD + (3*MXCOOR + 1)/IRAT
-      KLAST  = KEXPVL + NTSIRR*(MAXREP + 1)*NOSIM
+      KLST1  = KEXPVL + NTSIRR*(MAXREP + 1)*NOSIM
 C
       IF (EXP1VL) THEN
          CALL MPIXBCAST(WORK(KDEN),NNBASX,'DOUBLE',MASTER)
@@ -2344,7 +2344,7 @@ C        Calculates nuclear potential energy integrals (in AO basis) for
 C        the given tessera
 C
          L=1
-         KTMP = KLAST
+         KTMP = KLST1
          IF (.NOT. TOFILE .AND. .NOT. EXP1VL) THEN
             KMAT = KTMP + 8
             IF (IPRTYP .EQ. 11) THEN
