@@ -89,8 +89,8 @@ else
 fi
 
 # Reading from atombasis:
-CRIT1=`$GREP "O * 1 * 8 * 35 * 22 * \[12s6p1d\|5s4p1d\]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * 1 * 9 * 7 * \[6s1p\|4s1p\]" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 35 * 22 * \[12s6p1d\|5s4p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 9 * 7 * \[6s1p\|4s1p\]" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2`
 CTRL[1]=2
 ERROR[1]="ATOMBASIS NOT READ CORRECTLY"

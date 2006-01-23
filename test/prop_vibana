@@ -86,12 +86,12 @@ fi
 
 # Basis set
 CRIT1=`$GREP "Basis set used is \"cc\-pVDZ\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "N * 2 * 7 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT3=`$GREP "C * 2 * 6 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT4=`$GREP "C * 1 * 6 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT5=`$GREP "H * 2 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
-CRIT6=`$GREP "H * 1 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
-CRIT7=`$GREP "total\: * 10 * 42 * 184 * 104" $log | wc -l`
+CRIT2=`$GREP "N * 2 * 7\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT3=`$GREP "C * 2 * 6\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT4=`$GREP "C * 1 * 6\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT5=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT6=`$GREP "H * 1 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT7=`$GREP "total\: * 10 * 42\.0000 * 184 * 104" $log | wc -l`
 CRIT8=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`

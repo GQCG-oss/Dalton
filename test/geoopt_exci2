@@ -141,9 +141,9 @@ CTRL[1]=6
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "Li * 1 * 3 * 48 * 24 * \[10s6p4d\|5s3p2d\]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1 * 18 * 9 * \[6s4p\|3s2p\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 2 * 4 * 66 * 33" $log | wc -l`
+CRIT1=`$GREP "Li * 1 * 3\.0000 * 48 * 24 * \[10s6p4d\|5s3p2d\]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * 1\.0000 * 18 * 9 * \[6s4p\|3s2p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 4\.0000 * 66 * 33" $log | wc -l`
 CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[2]=4

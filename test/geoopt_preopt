@@ -98,9 +98,9 @@ ERROR[2]="PREOPTIMIZATION NOT SET UP CORRECTLY"
 
 # Basis set1
 CRIT1=`$GREP "Basis set used is \"STO\-3G\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "O * 1 * 8 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 1 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 3 * 10 * 21 * 7" $log | wc -l`
+CRIT2=`$GREP "O * 1 * 8\.0000 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * 1\.0000 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 3 * 10\.0000 * 21 * 7" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[3]=4
 ERROR[3]="FIRST BASIS SET NOT READ CORRECTLY"
@@ -150,9 +150,9 @@ ERROR[9]="THIRD ITERATION NOT CORRECT"
 
 # Basis set2
 CRIT1=`$GREP "Basis set used is \"6\-31G\*\*\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "O * 1 * 8 * 27 * 14 * \[10s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 3 * 10 * 41 * 24" $log | wc -l`
+CRIT2=`$GREP "O * 1 * 8\.0000 * 27 * 14 * \[10s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 3 * 10\.0000 * 41 * 24" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[10]=4
 ERROR[10]="SECOND BASIS SET NOT READ CORRECTLY"
@@ -165,9 +165,9 @@ ERROR[11]="FIRST ENERGY WITH SECOND BASIS SET NOT CORRECT"
 
 # Basis set3
 CRIT1=`$GREP "Basis set used is \"cc\-pVTZ\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "O * 1 * 8 * 42 * 30 * \[10s5p2d1f\|4s3p2d1f\]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * 1 * 16 * 14 * \[5s2p1d\|3s2p1d\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 3 * 10 * 74 * 58" $log | wc -l`
+CRIT2=`$GREP "O * 1 * 8\.0000 * 42 * 30 * \[10s5p2d1f\|4s3p2d1f\]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * 1\.0000 * 16 * 14 * \[5s2p1d\|3s2p1d\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 3 * 10\.0000 * 74 * 58" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[12]=8
 ERROR[12]="FINAL BASIS SET NOT READ CORRECTLY"

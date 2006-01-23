@@ -143,9 +143,9 @@ CTRL[1]=10
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "He * 1 * 2 * 4 * 4 * \[1s1p\|1s1p\]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1 * 1 * 1 * \[1s\|1s\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 2 * 3 * 5 * 5" $log | wc -l`
+CRIT1=`$GREP "He * 1 * 2\.0000 * 4 * 4 * \[1s1p\|1s1p\]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * 1\.0000 * 1 * 1 * \[1s\|1s\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 3\.0000 * 5 * 5" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="BASIS SET NOT READ CORRECTLY"

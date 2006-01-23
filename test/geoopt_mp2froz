@@ -90,11 +90,11 @@ ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Basis set
 CRIT1=`$GREP "Basis set used is \"STO\-3G\" from the basis set library\." $log | wc -l`
-CRIT2=`$GREP "H1 * 2 * 1 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
-CRIT3=`$GREP "H2 * 4 * 1 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
-CRIT4=`$GREP "C1 * 2 * 6 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
-CRIT5=`$GREP "C2 * 4 * 6 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
-CRIT6=`$GREP "total\: * 12 * 42 * 108 * 36" $log | wc -l`
+CRIT2=`$GREP "H1 * 2 * 1\.0000 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
+CRIT3=`$GREP "H2 * 4 * 1\.0000 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
+CRIT4=`$GREP "C1 * 2 * 6\.0000 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
+CRIT5=`$GREP "C2 * 4 * 6\.0000 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
+CRIT6=`$GREP "total\: * 12 * 42\.0000 * 108 * 36" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[2]=84
 ERROR[2]="BASIS SET NOT READ CORRECLY"

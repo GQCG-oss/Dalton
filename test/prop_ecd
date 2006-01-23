@@ -109,10 +109,10 @@ else
 fi
 
 # Atombasis
-CRIT1=`$GREP "C\#1 * 2 * 6 * 33 * 17 * \[12s7p\|5s4p\]" $log | wc -l`
-CRIT2=`$GREP "H\#1 * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT3=`$GREP "H\#3 * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 6 * 16 * 82 * 42" $log | wc -l`
+CRIT1=`$GREP "C\#1 * 2 * 6\.0000 * 33 * 17 * \[12s7p\|5s4p\]" $log | wc -l`
+CRIT2=`$GREP "H\#1 * 2 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT3=`$GREP "H\#3 * 2 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 6 * 16\.0000 * 82 * 42" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
 ERROR[1]="ATOMBASIS NOT READ CORRECTLY"

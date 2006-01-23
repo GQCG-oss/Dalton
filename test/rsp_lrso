@@ -96,8 +96,8 @@ else
 fi
 
 # Basis set
-CRIT1=`$GREP "O * 2 * 8 * 65 * 15 * \[14s9p4d\|3s2p1d\]" $log | wc -l`
-CRIT2=`$GREP "total\: * 2 * 16 * 130 * 30" $log | wc -l`
+CRIT1=`$GREP "O * 2 * 8\.0000 * 65 * 15 * \[14s9p4d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "total\: * 2 * 16\.0000 * 130 * 30" $log | wc -l`
 CRIT3=`$GREP "Cartesian basis used" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=3

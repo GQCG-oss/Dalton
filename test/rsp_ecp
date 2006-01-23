@@ -89,9 +89,9 @@ CTRL[1]=5
 ERROR[1]="ECP ON OXYGEN NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "O * 1 * 8 * 16 * 8 * \[4s4p\|2s2p\]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 3 * 10 * 24 * 12" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 16 * 8 * \[4s4p\|2s2p\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 24 * 12" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="BASIS SET NOT SET UP CORRECTLY"

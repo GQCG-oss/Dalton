@@ -97,9 +97,9 @@ else
 fi
 
 # Basis set
-CRIT1=`$GREP "O * 1 * 8 * 31 * 18 * \[11s5p1d\|4s3p1d\]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * 1 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 3 * 10 * 47 * 30" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 31 * 18 * \[11s5p1d\|4s3p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 47 * 30" $log | wc -l`
 CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[1]=4
