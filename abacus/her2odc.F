@@ -160,7 +160,12 @@ C
          THRSH  = THRESH
       ELSE
          IELCTR = 2
-         THRSH  = THRESH/OLDMAX
+C
+C     This adjustment of screening thresholds seems to lead to stalling and
+C     odd convergence behaviour. Disabled. kr-230106
+C
+ckr         THRSH  = THRESH/OLDMAX
+         THRSH  = THRESH
       END IF
 C
 C     XFAC, YFAC and ZFAC
@@ -580,7 +585,12 @@ C
          THRSH  = THRESH
       ELSE
          IELCTR = 2
-         THRSH  = THRESH/OLDMAX
+         THRSH  = THRESH
+C
+C     This adjustment of screening thresholds seems to lead to stalling and
+C     odd convergence behaviour. Disabled. kr-230106
+C
+ckr         THRSH  = THRESH/OLDMAX
       END IF
 Chj aug99: find max relevant isymop
 C          test is trivially true for ISYMOP .eq. 1
