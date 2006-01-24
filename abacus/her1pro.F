@@ -670,6 +670,7 @@ C
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          ANTI = .TRUE.
+         SQUARE = .FALSE.
       GO TO 200
 C
 C     London orbital contribution to angular momentum LONMOM
@@ -2250,9 +2251,9 @@ C
          LABINT(4) = 'YXMAGQDP'
          LABINT(5) = 'YYMAGQDP'
          LABINT(6) = 'YZMAGQDP'
-         LABINT(4) = 'ZXMAGQDP'
-         LABINT(5) = 'ZYMAGQDP'
-         LABINT(6) = 'ZZMAGQDP'
+         LABINT(7) = 'ZXMAGQDP'
+         LABINT(8) = 'ZYMAGQDP'
+         LABINT(9) = 'ZZMAGQDP'
          INTREP(1) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,2))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,2))

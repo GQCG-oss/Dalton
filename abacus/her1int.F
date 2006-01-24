@@ -3649,9 +3649,9 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-      PARAMETER (D2I3 = 2.0D0/3.0D0, D3INV = 1.0D0/3.0D0)
+      PARAMETER (D3INV = 1.0D0/3.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
-     &          SHLINT(KCKTAB,9), ORIGIN(3)
+     &          SHLINT(KCKTAB,9)
 #include <onecom.h>
 #include <lmns.h>
       INT = 0
@@ -3682,21 +3682,15 @@ C
          DY1  = SHGTF*ODC(MVALA,MVALB,0,1,1,2)
          DZ1  = SHGTF*ODC(NVALA,NVALB,0,1,1,3)
 C
-         SHLINT(INT,1) = SHLINT(INT,1) + D2I3*SX1*(SY1*DZ0 - DY0*SZ1)
-         SHLINT(INT,2) = SHLINT(INT,2) + D2I3*SY0*(DX1*SZ1 - SX2*DZ0)
-     &                                 + D3INV*SX0*SY0*SZ1
-         SHLINT(INT,3) = SHLINT(INT,3) + D2I3*SZ0*(SX2*DY0 - DX1*SY1)
-     &                                 - D3INV*SX0*SY1*SZ0
-         SHLINT(INT,4) = SHLINT(INT,4) + D2I3*SX0*(SY2*DZ0 - DY1*SZ1)
-     &                                 - D3INV*SX0*SY0*SZ1
-         SHLINT(INT,5) = SHLINT(INT,5) + D2I3*SY1*(DX0*SZ1 - SX1*DZ0)
-         SHLINT(INT,6) = SHLINT(INT,6) + D2I3*SZ0*(SX1*SY1 - DX0*SY2)
-     &                                 + D3INV*SX1*SY0*SZ0
-         SHLINT(INT,7) = SHLINT(INT,7) + D2I3*SX0*(SY1*DZ1 - DY0*SZ2)
-     &                                 + D3INV*SX0*SY1*SZ0
-         SHLINT(INT,8) = SHLINT(INT,8) + D2I3*SY0*(DX0*SZ2 - SX1*SZ1)
-     &                                 - D3INV*SX1*SY0*SZ0
-         SHLINT(INT,9) = SHLINT(INT,9) + D2I3*SZ1*(SX1*DY0 - DX0*SY1)
+         SHLINT(INT,1) = SHLINT(INT,1) - D3INV*SX1*(SY1*DZ0 - DY0*SZ1)
+         SHLINT(INT,2) = SHLINT(INT,2) - D3INV*SY0*(DX1*SZ1 - SX2*DZ0)
+         SHLINT(INT,3) = SHLINT(INT,3) - D3INV*SZ0*(SX2*DY0 - DX1*SY1)
+         SHLINT(INT,4) = SHLINT(INT,4) - D3INV*SX0*(SY2*DZ0 - DY1*SZ1)
+         SHLINT(INT,5) = SHLINT(INT,5) - D3INV*SY1*(DX0*SZ1 - SX1*DZ0)
+         SHLINT(INT,6) = SHLINT(INT,6) - D3INV*SZ0*(SX1*DY1 - DX0*SY2)
+         SHLINT(INT,7) = SHLINT(INT,7) - D3INV*SX0*(SY1*DZ1 - DY0*SZ2)
+         SHLINT(INT,8) = SHLINT(INT,8) - D3INV*SY0*(DX0*SZ2 - SX1*DZ1)
+         SHLINT(INT,9) = SHLINT(INT,9) - D3INV*SZ1*(SX1*DY0 - DX0*SY1)
  100  CONTINUE
       RETURN
       END

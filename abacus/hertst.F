@@ -839,7 +839,8 @@ C
       CALL DZERO(TSTVEC,NBASIS*NBASIS)
       CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
-      IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR') THEN
+      IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR' .OR.
+     &    WHATIN .EQ. 'MQDP') THEN
          NCOUN2 = NCOUNT*ICOUNT
       ELSE
          NCOUN2 = NCOUNT*(NCOUNT + 1)/2
@@ -856,7 +857,8 @@ C
             CALL QUIT('Error in magnetic properties test')
          END IF
          CALL READT(LUPROP,NCOUN2,AUXVEC)
-         IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR') THEN
+         IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR' .OR.
+     &       WHATIN .EQ. 'MQDP') THEN
             DO 11 I1 = 1, NCOUNT
                DO 11 I2 = 1, NCOUNT
                   IADR1 = (I1 - 1)*NCOUNT + I2
@@ -922,6 +924,8 @@ C
                      QMN(1,2) = CORD(3,NUCNM2) - ORIGIN(3)
                      QMN(1,3) = ORIGIN(2) - CORD(2,NUCNM2)
                      QMN(2,3) = CORD(1,NUCNM2) - ORIGIN(1)
+                  ELSE IF (WHATIN .EQ. 'MQDP') THEN
+                     IADR = (ICOUNL - 1)*NCOUNT + ICOUNR
                   ELSE IF (ICOUNR .GE. ICOUNL) THEN
                      IADR = ICOUNR*(ICOUNR - 1)/2 + ICOUNL
                      QMN(1,2) = CORD(3,NUCNM2) - CORD(3,NUCNM1)
@@ -943,10 +947,16 @@ C
                         DO 100 K2 = 1, JCO(I2,J2)
                            DO  100 L2 = 1, J2*(J2 + 1)/2
                               NROW2 = NROW2 + 1
+                              SIGN = 1.0D0
                               IF (ICOUNR .GE. ICOUNL) THEN
                                  IADR5 = ICOUNR*(ICOUNR - 1)/2 + ICOUNL
                               ELSE
-                                 IADR5 = ICOUNL*(ICOUNL - 1) + ICOUNR
+                                 IF (WHATIN .EQ. 'MQDP') THEN 
+                                    IADR5 = ICOUNL*(ICOUNL - 1)/2+ICOUNR
+                                    SIGN = -1.0D0
+                                 ELSE
+                                    IADR5 = ICOUNL*(ICOUNL - 1) + ICOUNR
+                                 END IF
                               END IF
                               IF ((NUCNM1 .EQ. NNUC) .AND.
      &                             (J2 .EQ. (J + 1)) .AND. (K .EQ. K2)
@@ -967,17 +977,25 @@ C
                               END IF
  100                       CONTINUE
                   STVEC(1) = AUXVEC(IADRX)/(D2*SQRT(PRIEXP(JPRIMA)))
-     &                     + CORD(1,NUCNM1)*AUXVEC(IADR5)
+     &                     + SIGN*CORD(1,NUCNM1)*AUXVEC(IADR5)
                   STVEC(2) = AUXVEC(IADRY)/(D2*SQRT(PRIEXP(JPRIMA)))
-     &                     + CORD(2,NUCNM1)*AUXVEC(IADR5)
+     &                     + SIGN*CORD(2,NUCNM1)*AUXVEC(IADR5)
                   STVEC(3) = AUXVEC(IADRZ)/(D2*SQRT(PRIEXP(JPRIMA)))
-     &                     + CORD(3,NUCNM1)*AUXVEC(IADR5)
-                  CALL DGEMM('N','N',3,1,3,1.D0,
-     &                       QMN,3,
-     &                       STVEC,3,0.D0,
-     &                       RSVEC,3)
+     &                     + SIGN*CORD(3,NUCNM1)*AUXVEC(IADR5)
+                  IF (WHATIN .EQ. 'MQDP') THEN
+                     CALL DCOPY(3,STVEC,1,RSVEC,1)
+                  ELSE
+                     CALL DGEMM('N','N',3,1,3,1.D0,
+     &                          QMN,3,
+     &                          STVEC,3,0.D0,
+     &                          RSVEC,3)
+                  END IF
                   DO 50 I2 = 1, 3
-                     TSTVEC(IADR,I2) = DP5*RSVEC(I2)
+                     IF (WHATIN .EQ. 'MQDP') THEN
+                        TSTVEC(IADR,I2) = 1.0D0/3.0D0*RSVEC(I2)
+                     ELSE
+                        TSTVEC(IADR,I2) = DP5*RSVEC(I2)
+                     END IF
                      DIFRS = RESVEC(IADR,I2)
      &                     - TSTVEC(IADR,I2)
                      DIFFER = DIFFER .OR. (ABS(DIFRS) .GT. PRTHRS)
@@ -997,7 +1015,8 @@ C
          DO 300 I = 1, 3
             WRITE(LUPRI,'(1X,A,I3)') 'Component:  ', I
             CALL DCOPY(NCOUN2,DIFVEC(1,I),1,AUXVEC,1)
-            IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR') THEN
+            IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR' .OR.
+     &          WHATIN .EQ. 'MQDP') THEN
                CALL OUTPUT(AUXVEC,1,NCOUNT,1,NCOUNT,NCOUNT,NCOUNT,1,
      &                     LUPRI)
             ELSE
@@ -1009,7 +1028,8 @@ C
          DO 320 I = 1, 3
             WRITE(LUPRI,'(1X,A,I3)') 'Component:  ', I
             CALL DCOPY(NCOUN2,TSTVEC(1,I),1,AUXVEC,1)
-            IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR') THEN
+            IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR' .OR.
+     &          WHATIN .EQ. 'MQDP') THEN
                CALL OUTPUT(AUXVEC,1,NCOUNT,1,NCOUNT,NCOUNT,NCOUNT,1,
      &                     LUPRI)
             ELSE

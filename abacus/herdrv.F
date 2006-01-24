@@ -262,7 +262,7 @@ C
 #include <maxaqn.h>
 #include <efield.h>
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 132)
+      PARAMETER (NDIR = 9, NTABLE = 133)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -324,7 +324,8 @@ cLig <> added RANGMO and RPSO
      &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
      &             '.PSO-OZ', '.SQHD2O', '.R12STG', '.R12RSG',
      &             '.R12RGG', '.R12ERF', '.R12RRF', '.DIPLOC',
-     &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP'/
+     &             '.2-EL D', '.EFBDER', '.EFBDR2', '.MAGQDP',
+     &             '.MQDPTS'/
 C
 C     Check if input has been processed earlier.
 C
@@ -403,7 +404,7 @@ C
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
-     &                231,232), I
+     &                231,232,233), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1073,6 +1074,12 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             MAGQDP = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
+ 233     CONTINUE
+            MAGQDP = .TRUE.
+            ANGMOM = .TRUE.
+            ONEPRP = .TRUE.
+            MQDPTS = .TRUE.
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -1353,6 +1360,8 @@ cLig <<
      &        'integrals'
          IF (MAGQDP) WRITE (LUPRI,'(10X,A)')
      &        '- Magnetic quadrupole integrals calculated'
+         IF (MQDPTS) WRITE (LUPRI,'(10X,A)')
+     &        '- Test of magnetic quadrupole integrals calculated'
          IF (PSOKE) WRITE (LUPRI,'(10X,A)')
      &      '- kinetic energy correction to paramagnetic spin-orbit'
          IF (DNSKE) WRITE (LUPRI,'(10X,A)')
@@ -2858,6 +2867,30 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
+C           ***** Test of magnetic quadrupole integrals *****
+C
+            IF (MQDPTS) THEN
+               LABELT(1) = 'XXMAGQDP'
+               LABELT(2) = 'YXMAGQDP'
+               LABELT(3) = 'ZXMAGQDP'
+               LABELS(1) = 'XANGMOM '
+               CALL MG1TST(WORK,LWORK,IPRONE,LABELS,LABELT,ORIGIN,
+     &                     'MQDP')
+               LABELT(1) = 'XYMAGQDP'
+               LABELT(2) = 'YYMAGQDP'
+               LABELT(3) = 'ZYMAGQDP'
+               LABELS(1) = 'YANGMOM '
+               CALL MG1TST(WORK,LWORK,IPRONE,LABELS,LABELT,ORIGIN,
+     &                     'MQDP')
+               LABELT(1) = 'XZMAGQDP'
+               LABELT(2) = 'YZMAGQDP'
+               LABELT(3) = 'ZZMAGQDP'
+               LABELS(1) = 'ZANGMOM '
+               CALL MG1TST(WORK,LWORK,IPRONE,LABELS,LABELT,ORIGIN,
+     &                     'MQDP')
+               CALL FLSHFO(LUPRI)
+            END IF
+C
 C           ****  Rotational strength integrals  ****
 C
             IF (ROTSTR) THEN
@@ -3540,6 +3573,8 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       R12NOP = .FALSE.
       R12HYB = .TRUE.
       NORXR  = .FALSE.
+      MAGQDP = .FALSE.
+      MQDPTS = .FALSE.
       U12INT = .FALSE.
       U21INT = U12INT
       V12INT = .TRUE.
