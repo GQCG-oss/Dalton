@@ -30,6 +30,9 @@
 # Darwin (OS X) Absoft f77 support added 030503 tuh 
 #
 
+# defaults section for quick config
+do_quick_config=n
+
 # set the target def 
 set_parallel_def() {
     if [ "$1" = "mpi" ]; then
@@ -43,7 +46,11 @@ set_parallel_def() {
 
 # Read of yes/no answer, the output in standarized to 'y' or 'n'. /hjaaj
 get_yes_or_no() {
-    answer=
+    if test "$do_quick_config" = y; then
+        answer="$2"
+    else
+        answer=
+    fi
     while [ "$answer" != "y" -a "$answer" != "n" ]
     do
       $ECHO "$1 [y/n] \c"
@@ -103,6 +110,11 @@ arclist='aix cray cray-t3d cray-t3e dec-alpha linux-alpha linux paragon sgi sun 
 # Attempting auto-configuration. The list of replies from uname should be
 # extended!
 #
+if test x"$1" = x-q -o x"$1" = x--quick; then
+   do_quick_config=y
+   shift
+fi
+
 if [ -z "$1" ]; then
     case $MACHTYPE in
         AIX ) ARCH="-aix";;
@@ -122,7 +134,7 @@ if [ -z "$1" ]; then
         exit 1;;
     esac
     $ECHO "No architecture specified, attempting auto-configuration:"
-    get_yes_or_no "This appears to be a $ARCH architecture. Is this correct? "
+    get_yes_or_no "This appears to be a $ARCH architecture. Is this correct? " y
     if [ "$answer" = "n" ]; then
         $ECHO "\nPlease configure manually from command line: 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
         exit 1
@@ -229,7 +241,7 @@ if [ $WHICH = 'iris4d' ]; then
     else
       bit='64'
     fi
-    get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?"
+    get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?" y
     if [ "$answer" = "n" ]; then
       if [ $bit = '64' ]; then
         opsys='IRIX'
@@ -250,7 +262,7 @@ elif [ $WHICH = 'hp' ]; then
       arch='hpux'
     fi
     if [ $arch = "hpux" ]; then
-       get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?"
+       get_yes_or_no "This appears to be a $bit-bit architecture. Is this correct?" y
        if [ "$answer" = "n" ]; then
          if [ $bit = '64' ]; then
            bit='32'
@@ -260,7 +272,7 @@ elif [ $WHICH = 'hp' ]; then
        fi
     fi
 elif [ $WHICH = 'rs6000' ]; then
-    get_yes_or_no "Is this a 64-bit architecture?"
+    get_yes_or_no "Is this a 64-bit architecture?" y
     if [ "$answer" = "y" ]; then
 	bit='64'
     else
@@ -289,7 +301,7 @@ fi
 #
 
 mesp='dummy'
-get_yes_or_no 'Do you want to install the program in a parallel MPI version?'
+get_yes_or_no 'Do you want to install the program in a parallel MPI version?' n
 if [ "$answer" = "y" ]; then
 #
 # Determine message passing protocol to be used
@@ -399,7 +411,7 @@ for comp in $complist; do
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if [ -f $ac_dir/$ac_word ]; then
-  	  get_yes_or_no "Compiler $ac_word found, use this compiler?"
+  	  get_yes_or_no "Compiler $ac_word found, use this compiler?" y
           if [ $answer = 'y' ]; then
 	    ac_cv_prog_F77=$ac_word
           fi
@@ -460,7 +472,7 @@ for comp in $ccmplist; do
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
 	if [ -f $ac_dir/$ac_word ]; then
-  	  get_yes_or_no "Compiler $ac_word found, use this compiler?"
+  	  get_yes_or_no "Compiler $ac_word found, use this compiler?" y
           if [ $answer = 'y' ]; then
 	    ac_cv_prog_C=$ac_word
           fi
@@ -520,7 +532,7 @@ for testlib in $liblist; do
    for testdir in $dirlist; do
 #     echo "testing existence of $testdir/$testlib"
       if [ -f $testdir/$testlib ]; then
-	get_yes_or_no "Found $testdir/$testlib, use it ?"
+	get_yes_or_no "Found $testdir/$testlib, use it ?" y
 	if [ $answer = 'y' ]; then
           LIBDIR=$testdir
           case $testlib in
@@ -621,7 +633,7 @@ fi
 
 split="false"
 if [ $WHICH = 'rs6000' -o $WHICH = 'sun4' -o $WHICH = 'iris4d' -o $WHICH = 'linux' ] ; then
-    get_yes_or_no "Does your file system allow files bigger than 2 Gb?"
+    get_yes_or_no "Does your file system allow files bigger than 2 Gb?" y
     if [ "$answer" = "n" ]; then
        split="true"
     fi
@@ -641,7 +653,7 @@ $ECHO 'Storing some or all of the 2-el. integrals in memory will speed up'
 $ECHO 'direct and parallel calculations (and in particular the latter).'
 $ECHO 'NOTE: This will increase the static memory allocation used by DALTON'
 
-get_yes_or_no "\nWould you like to activate the possibility of storing 2-el.int. in memory?"
+get_yes_or_no "\nWould you like to activate the possibility of storing 2-el.int. in memory?" n
 if [ "$answer" = "y" ]; then
     incoresiz=0
 #   only accept positive numbers
@@ -671,7 +683,11 @@ memsiz=0
 while [ $memsiz -le 0 ]
 do
     $ECHO 'How many millions of *8 words to use as default for work memory? \c'
-    read memsiz
+    if test "$do_quick_config" = y; then
+       memsiz=50
+    else 
+       read memsiz
+    fi
 #   check that user hasn't just hit return (giving an empty string)
     if [ "$memsiz" = "" ]; then memsiz=0; fi
 done
@@ -686,7 +702,7 @@ curr=`pwd`
 $ECHO '\n-->Current directory is '$curr'\n'
 
 INSTALL_DIR=$curr/bin
-get_yes_or_no 'Use ./bin as installation directory for binaries and scripts?'
+get_yes_or_no 'Use ./bin as installation directory for binaries and scripts?' y
 
 while [ "$answer" = "n" ]
 do
@@ -722,7 +738,7 @@ fi
 
 basdir=$curr'/basis/'
 
-get_yes_or_no '\nUse '$basdir' as default basis set directory?'
+get_yes_or_no '\nUse '$basdir' as default basis set directory?' y
 if [ "$answer" = "n" ];  then
     $ECHO '\nPlease enter default basis set directory (must end with /) \c'
     read basdir
@@ -746,13 +762,9 @@ else
     worksp='/tmp/'
 fi
 
-answer=
-while [ "$answer" != "y" -a "$answer" != "n" ]
-do
-    $ECHO '\n-->Job specific directories under $SCRATCH/$USER\n-->will be used for temporary files when running DALTON\n'
-    $ECHO 'Use SCRATCH='$worksp' as default root scratch space in "dalton" run script? [y/n] \c'
-    read answer
-done
+$ECHO '\n-->Job specific directories under $SCRATCH/$USER\n-->will be used for temporary files when running DALTON\n'
+get_yes_or_no 'Use SCRATCH='$worksp' as default root scratch space in "dalton" run script? [y/n] \c' y
+
 if [ "$answer" = "n" ];  then
     $ECHO 'Please enter default root scratch directory: \c'
     read worksp
