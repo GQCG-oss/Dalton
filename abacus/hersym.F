@@ -314,9 +314,9 @@ C ::: Finally the number of atoms are updated. :::
                WRITE(TMPLN(12:15),'(I4)') NONT(K)
             ELSE
                CALL LINE5(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,BASIS,
-     &                    ATOMBA,BSNM)
+     &                    ATOMBA,BSNM,KSPH)
                CALL LINE5W(TMPLN,Q,NONT(K),MBSI,ATOMBA,BASIS,BSNM,
-     &                     IQM,JCO,MXAQN)
+     &                     IQM,JCO,MXAQN,KSPH)
             END IF
             MLINE(NC) = TMPLN
  510        CONTINUE

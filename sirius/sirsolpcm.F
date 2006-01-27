@@ -113,8 +113,8 @@ C
       KJ2GRD = KUCMO  + NORBT*NBAST
       KPOT   = KJ2GRD + NVAR
       KDENC  = KPOT   + NTS
-      KDENV  = KDENC  + NNBASX
-      KW10   = KDENV  + NNBASX
+      KDENV  = KDENC  + N2BASX
+      KW10   = KDENV  + N2BASX
 C     1.3 rest of CSF contribution
       KDIALM = KW10
       KW20   = KDIALM + NVAR
@@ -163,13 +163,14 @@ C     Loop over l,m expansion
 C
       CALL UPKCMO(CMO,WRK(KUCMO))
       CALL DZERO(WRK(KDIASH),NVAR)
+      CALL DZERO(WRK(KDIALM),NVAR)
 C
 C     Read JEN = J(en) + J(ne) in ao basis and transform to mo basis.
 C     Extract active-active block in WRK(KJENAC).
 C     
       LUPBKP = LUPROP
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
-     &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
+     &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.) 
       IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
          CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
       END IF
@@ -206,15 +207,21 @@ C
 C     Read J2 in ao basis and transform to mo basis.
 C     Extract active-active block in WRK(KJ2AC).
 C     
+      CALL DZERO(WRK(KDENC),N2BASX)
+      CALL DZERO(WRK(KDENV),N2BASX)
       CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDENC),WRK(KDENV),
      &            CMO,DV,WRK(KWRK1),LW21)
-      CALL DAXPY(NNBASX,1.0D0,WRK(KDENV),1,WRK(KDENC),1)
+      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENC),1)
+      CALL DZERO(WRK(KDENV),N2BASX)
+      CALL DGEFSP(NBAST,WRK(KDENC),WRK(KDENV))
+
       EXP1VL = .TRUE.
       TOFILE = .FALSE.
-      CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENC),1,TOFILE,'NPETES ',
+      CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENV),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LW21)
-      CALL V2Q(WRK(KWRK1),LW21,WRK(KPOT),QSE,QET,.FALSE.)
-      CALL DSCAL(NTS,-1.0D0,QSE,1)
+      CALL DZERO(QSE,MXTS)
+      CALL V2Q(WRK(KWRK1),WRK(KPOT),QSE,QET,.FALSE.)
+C      CALL DSCAL(NTS,-1.0D0,QSE,1)
 C     
 C     Read J1 (=ELECTROSTATIC POTENTIAL) in ao basis and transform to mo
 C     basis.  Extract active-active block in WRK(KJ1AC).
@@ -238,7 +245,7 @@ Ckr
          TRIMAT    = .TRUE.
          CALL GET1IN(WRK(KJ1AO),'NPETES ',NCOMP,WRK(KWRK1),LW21,LABINT,
      &               INTREP,INTADR,L,TOFILE,KPATOM,TRIMAT,DUMMY,EXP1VL,
-     &               DUMMY,IPRRSP)
+     &               DUMMY,IPRPCM)
          CALL UTHU(WRK(KJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KWRK1),
      &        NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
@@ -247,6 +254,7 @@ Ckr
          IF (NONEQ) THEN
             WRK(KPOT + I - 1) = SOLELM(DV,WRK(KJ1AC),WRK(KJ1),TJ1AC)
          END IF
+
          IF (IPRPCM .GE. 15) THEN
             WRITE (LUPRI,'(/A)') ' J1_ao matrix:'
             CALL OUTPAK(WRK(KJ1AO),NBAST,1,LUPRI)
@@ -287,6 +295,7 @@ C
          CALL GETAC2(WRK(KJEN),WRK(KJENAC))
       END IF
       TJEN     = SOLELM(DV,WRK(KJENAC),WRK(KJEN),TJENAC)
+
       IF (IPRPCM .GE. 6) THEN
          CALL OUTPAK(WRK(KJENAC),NASHT,1,LUPRI)
          WRITE (LUPRI,'(A,F17.8)')
@@ -515,12 +524,11 @@ C
       ESOLT = D0
       QET = D0
 C
-Clf   I don't think the next call is necessary, anyway it cannot take a long time..
-C
       CALL DZERO(WRK(KTJ2),NTS)
 C
 C        Read JEN in ao basis 
 C
+      LUPBKP = LUPROP
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
       IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
@@ -623,14 +631,14 @@ C
 C    PX = interaction solute electrons - polarization electronic charges
 C             PX = sum_i [Vel(i) * QSE(i)]
 C
-        PC = D0
-	DO ITS = 1, NTSIRR
-        DO JATOM = 1, NUCDEP
-          R2 = (PCMCORD(1,JATOM)-XCTS(ITS))**2 + (PCMCORD(2,JATOM)-
-     *         YCTS(ITS))**2 + (PCMCORD(3,JATOM)-ZCTS(ITS))**2
-          R = DSQRT(R2)
-          PC = PC + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
-        ENDDO
+      PC = D0
+      DO ITS = 1, NTSIRR
+         DO JATOM = 1, NUCDEP
+            R2 = (PCMCORD(1,JATOM)-XCTS(ITS))**2 + (PCMCORD(2,JATOM)-
+     *           YCTS(ITS))**2 + (PCMCORD(3,JATOM)-ZCTS(ITS))**2
+            R = DSQRT(R2)
+            PC = PC + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
+         ENDDO
       ENDDO
       PX = DDOT(NNBASX,FSOL,1,WRK(KJENAO),1) - PB
 C
@@ -638,7 +646,6 @@ C     Electrostatic contribution:
 C     GES = 1/2 (PB + PC) + 1/2 PX + UNZ
 C     UNZ = 1/2 interaction nuclei - polarization nuclear charges
       ESOLT = - DP5*(PX+PB) + DP5*PC + UNZ
-      print *, 'px,pb,pc,unz',px,pb,pc,unz,esolt
 C     
 C     Symmetry pack TAO using WRK(KJAO)
 C     Transform to MO basis
@@ -669,6 +676,7 @@ C
          CALL OUTPKB(FSOL,NORB,NSYM,1,LUPRI)
       END IF
       FIRST = .FALSE.
+      IF (LUPBKP .LT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('PCMFCK')
       RETURN
 C     end of pcmfck.
@@ -692,15 +700,27 @@ C   INFLIN : NWOPPT,NVARPT
 C
 #include <maxorb.h>
 #include <inflin.h>
+#include <infvar.h>
+#include <priunit.h>
 C
       CALL QENTER('PCMLIN')
 C
       IF (NCSIM .GT. 0) THEN
+         IF (IPRPCM.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE PCMLNC **** '
+            CALL OUTPUT(SCVECS,1,NCONF,1,NCSIM,NCONF,NCSIM,1,LUPRI)
+         END IF
+C     CALL PCMLNC(NCSIM,BCVEC,CREF,CMO,INDXCI,
+C     *               DV,DTV,SVEC,VTEX,WRK,LFREE)
+C     
          CALL PCMLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
-     *               DV,DTV,SCVECS,VTEX,WRK,LWRK)
-C        CALL PCMLNC(NCSIM,BCVEC,CREF,CMO,INDXCI,
-C    *               DV,DTV,SVEC,VTEX,WRK,LFREE)
-C
+     *        DV,DTV,SCVECS,VTEX,WRK,LWRK)
+         IF (IPRPCM.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** AFTER PCMLNC **** '
+            CALL OUTPUT(SCVECS,1,NCONF,1,NCSIM,NCONF,NCSIM,1,LUPRI)
+         END IF
       END IF
       IF ( NOSIM .GT.0 ) THEN
          IF ( .NOT.ORBLIN ) THEN
@@ -708,10 +728,20 @@ C
          ELSE
             NSVAR  = NWOPPT
          END IF
+         IF (IPRPCM.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE PCMLNO **** '
+            CALL OUTPUT(SOVECS,1,NWOPPT,1,NOSIM,NWOPPT,NOSIM,1,LUPRI)
+         END IF
          CALL PCMLNO(NOSIM,BOVECS,CREF,CMO,INDXCI,
-     *               DV, SOVECS,NSVAR,VTEX,WRK,LWRK)
-C        CALL PCMLNO(NOSIM,BOVEC,CREF,CMO,INDXCI,
-C    *               DV, SVEC,NSVEC,VTEX,,WRK,LFREE)
+     *        DV, SOVECS,NSVAR,VTEX,WRK,LWRK)
+C     CALL PCMLNO(NOSIM,BOVEC,CREF,CMO,INDXCI,
+C     *               DV, SVEC,NSVEC,VTEX,,WRK,LFREE)
+         IF (IPRPCM.GT.101) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** AFTER PCMLNO **** '
+            CALL OUTPUT(SOVECS,1,NWOPPT,1,NOSIM,NWOPPT,NOSIM,1,LUPRI)
+         END IF
       END IF
       CALL QEXIT('PCMLIN')
       RETURN
@@ -766,16 +796,17 @@ C     Core allocation
 C
       KUCMO  = 1
       KJPX   = KUCMO  + NORBT*NBAST
-      KJPXAC = KJPX   + NNORBX
+      KJPXAO = KJPX   + NNORBX
+      KJPXAC = KJPXAO + NNBASX
       KPCMXB = KJPXAC + NNASHX
       KXBAC  = KPCMXB + NCSIM*NNORBX
       KEXBAC = KXBAC  + NCSIM*NNASHX
       KW10   = KEXBAC + NCSIM
 C
       KCHRG   = KW10
-      KW20    = KCHRG + NNBASX
-C     2.1 read rlmao in ao basis and transform to rlm in mo basis
-      KDV     = KDV
+      KW20    = KCHRG + NTS
+      KDW     = KW20
+      KDV     = KDW + NCSIM*N2BASX
       KJPCMAO = KDV + NCSIM*NNBASX
       KW30    = KJPCMAO + NNBASX
 C
@@ -801,8 +832,11 @@ C     Unpack symmetry blocked CMO
 C
       CALL UPKCMO(CMO,WRK(KUCMO))
 C
+      CALL DZERO(WRK(KCHRG),NTS)
+      CALL DZERO(WRK(KJPXAO),NNBASX)
       CALL DCOPY(NTS,QSN,1,WRK(KCHRG),1)
       CALL DAXPY(NTS,1.0D0,QSE,1,WRK(KCHRG),1)
+      CALL DSCAL(NTS,-1.0D0,WRK(KCHRG),1)
       CALL J1INT(WRK(KCHRG),.FALSE.,WRK(KJPXAO),1,.FALSE.,'NPETES ',
      &           1,WRK(KW30),LW30)
       CALL UTHU(WRK(KJPXAO),WRK(KJPX),WRK(KUCMO),WRK(KW30),NBAST,NORBT)
@@ -829,23 +863,30 @@ C
       END IF
 C
       DO ICSIM = 1, NCSIM
-         CALL FCKDEN(.FALSE.,.TRUE.,DUMMY,WRK(KDV),CMO,DTV(1,ICSIM),
+         CALL DZERO(WRK(KCHRG),NTS)
+         CALL DZERO(WRK(KDW),N2BASX)
+         CALL DZERO(WRK(KDV),NNBASX)
+         CALL FCKDEN(.FALSE.,.TRUE.,DUMMY,WRK(KDW),CMO,DTV(1,ICSIM),
      &               WRK(KW30),LW30)
+
+         CALL DGEFSP(NBAST,WRK(KDW),WRK(KDV))
+
          CALL J1INT(WRK(KCHRG),.TRUE.,WRK(KDV),1,.FALSE.,'NPETES ',
      &              1,WRK(KW30),LW30)
-         CALL DSCAL(NTS,-1.0D0,WRK(KCHRG),1)
          CALL V2Q(WRK(KW30),WRK(KCHRG),VTEX(1,ICSIM),QET,.FALSE.)
       END DO
+      CALL DSCAL(NTS*NCSIM,-1.0D0,VTEX,1)
 C
       DO ICSIM = 1, NCSIM
          CALL DZERO(WRK(KJPCMAO),NNBASX)
-         CALL J1INT(VTEX(1,ICSIM),.FALSE.,WRK(KJPCMAO),.FALSE.,1,
+         CALL J1INT(VTEX(1,ICSIM),.FALSE.,WRK(KJPCMAO),1,.FALSE.,
      &              'NPETES ',1,WRK(KW30),LW30)
          JPCMXB = KPCMXB + (ICSIM - 1)*NNORBX
          CALL UTHU(WRK(KJPCMAO),WRK(JPCMXB),WRK(KUCMO),WRK(KW30),
      &             NBAST,NORBT)
       END DO
 C
+
       DO ICSIM = 1, NCSIM
          JPCMXB = KPCMXB + (ICSIM - 1)*NNORBX
          JXBAC  = KXBAC  + (ICSIM - 1)*NNASHX
@@ -867,7 +908,7 @@ C
 C     ... orbital part of sigma vector(s)
 C
       IF (IPRPCM .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(ci,1) on exit 2'
+         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(ci,1) in between'
          DO I = 1,NCONST
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *      ' conf #',I,SVEC(I,1)
@@ -914,7 +955,6 @@ C
          CALL OUTPUT(SVEC(1+NCONST,1),1,NWOPPT,1,NCSIM,
      *               NSVEC,NCSIM,1,LUPRI)
       END IF                                                                
-      IF (LUPBKP .LT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('PCMLNC')
       RETURN
 C     end of pcmlnc.
@@ -954,7 +994,7 @@ C
 #include <maxash.h>
 #include <maxorb.h>
 #include <mxcent.h>
-      CHARACTER*9 LABINT(9*MXCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
       DIMENSION VTEX(NTS,NOSIM), QTEX(NTS,NOSIM), INTREP(9*MXCENT),
      &          INTADR(9*MXCENT)
 #include <infinp.h>
@@ -974,6 +1014,7 @@ C
 C
 C     Determine if full Hessian or only orbital Hessian
 C
+
       FULHES = (NSVEC .EQ. NVARPT)
       IF (FULHES) THEN
          JSOVEC = 1 + NCONST
@@ -1022,11 +1063,11 @@ C     3.0 SOLSC
          KW50   = KOVLP  + NOSIM
          LW50   = LFREE  + 1 - KW50
       ELSE
-         KW50   = 0
-         LW50   = LFREE + 1 - KW30
+         KW50   = KW30
+         LW50   = LFREE + 1 - KW50
       END IF
 C
-      KNEED = MAX(KW20,KW30)
+      KNEED = MAX(KW20,KW50)
       IF (KNEED .GT. LFREE) CALL ERRWRK('PCMLNO',KNEED,LFREE)
 C
 C     Unpack symmetry blocked CMO
@@ -1069,7 +1110,7 @@ Ckr
          TOFILE    = .FALSE.
          KPATOM    = 0
          TRIMAT    = .TRUE.
-         CALL GET1IN(WRK(KJ1A0),'NPETES ',NCOMP,WRK(KW50),LW50,
+         CALL GET1IN(WRK(KJ1AO),'NPETES ',NCOMP,WRK(KW50),LW50,
      &               LABINT,INTREP,INTADR,L,TOFILE,KPATOM,TRIMAT,DUMMY,
      &               EXP1VL,DUMMY,IPRPCM)
          CALL UTHU(WRK(KJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
@@ -1114,11 +1155,14 @@ Ckr
       DIPORG(2) = YI
       DIPORG(3) = ZI
 C
-      DO IOSUM = 1, NOSUM
+      DO IOSIM = 1, NOSIM
+Clf Note: no check that KW50 is enough to contain the PCM matrix!!!!
          CALL V2Q(WRK(KW50),VTEX(1,IOSIM),QTEX(1,IOSIM),QTEXS,.FALSE.)
          IF (IPRPCM .GE. 6) THEN
-            WRITE (LUPRI,'(A,F17.8)')
-     *           ' --- J2X expectation value :',VTEX(I,IOSIM)
+            DO I=1,NTSIRR
+               WRITE (LUPRI,'(A,F17.8)')
+     *              ' --- J2X expectation value :',QTEX(I,IOSIM)
+            END DO
          END IF
       ENDDO
 C
@@ -1139,12 +1183,12 @@ Ckr
          TRIMAT    = .TRUE.
          CALL GET1IN(WRK(KJ1AO),'NPETES ',NCOMP,WRK(KW50),LW50,LABINT,
      &               INTREP,INTADR,L,TOFILE,KPATOM,TRIMAT,DUMMY,
-     &               EXP1VL,DUMMY,IPRRSP)
+     &               EXP1VL,DUMMY,IPRPCM)
          CALL UTHU(WRK(KJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
      *        NBAST,NORBT)
          DO IOSIM = 1 , NOSIM
             JPCMX = KPCMX + (IOSIM - 1) * NNORBX 
-            CALL DAXPY(NNORBX,-DP5*QTEX(I,IOSIM),WRK(KJ1),1,
+            CALL DAXPY(NNORBX,QTEX(I,IOSIM),WRK(KJ1),1,
      &                WRK(JPCMX),1)
          ENDDO
       ENDDO

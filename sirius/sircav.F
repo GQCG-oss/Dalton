@@ -1127,9 +1127,16 @@ C
 c  replication of the cavity
 c
 CcheckWRITE(LUPRI,*)'IN REPCAV',NTS
+      NTSIRR = NTS
+      NTS = NTS * (MAXREP + 1)
+
+      IF (NTS.GT.MXTS) THEN 
+         CALL QUIT('REPCAV: TOO MANY TESSERAE, INCREASE MXTS')
+      END IF
+
       DO ISYMOP=1,MAXREP
-        DO I=1,NTS
-          II=I+NTs*ISYMOP
+        DO I=1,NTSIRR
+          II=I+Ntsirr*ISYMOP
           AS(II)=AS(I)
           NVERT(II)=NVERT(I)
           ISPHE(II)=NPERM(ISPHE(I),ISYMOP+1)
@@ -1146,9 +1153,9 @@ CcheckWRITE(LUPRI,*)'IN REPCAV',NTS
 C
 Clf Moving the normal points in a safe location where they will not be overwritten 
 C
-      DO I=1,NTS
-        II=I+NTS
-        II2=I+(MAXREP+1)*NTS
+      DO I=1,NTSIRR
+        II=I+NTSIRR
+        II2=I+(MAXREP+1)*NTSIRR
         XCTS(II2)=XCTS(II)
         YCTS(II2)=YCTS(II)
         ZCTS(II2)=ZCTS(II)
@@ -1156,8 +1163,8 @@ C
 C
 Clf      write(lupri,*) 'see if the pt are correct',nts
       DO ISYMOP=1,MAXREP
-         DO I=1,NTS
-            II=I+NTS*ISYMOP
+         DO I=1,NTSIRR
+            II=I+NTSIRR*ISYMOP
             XCTS(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XCTS(I)
             YCTS(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YCTS(I)
             ZCTS(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZCTS(I)
@@ -1168,8 +1175,6 @@ C            YCTS(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YCTS(II2)
 C            ZCTS(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZCTS(II2)
          ENDDO
       ENDDO
-      NTSIRR = NTS
-      NTS = NTS * (MAXREP + 1)
 Clf
 C      do i=1,nts
 C         do j=1,nts
@@ -2179,7 +2184,7 @@ C
 C
 C     Prepare the input file for GeomView (coloured polyhedra)
 C
-      IF (ICESPH .EQ. 0 .OR. ICESPH .EQ. 2) INDEX = 1
+      IF (ICESPH .EQ. 0 .OR. ICESPH .EQ. 2 .OR. ICESPH .EQ. 3) INDEX = 1
       IPUNCH=-4
       CALL GPOPEN(IPUNCH,'gv.off','UNKNOWN',' ','FORMATTED',
      *            IDUMMY,.FALSE.)
@@ -2244,7 +2249,7 @@ C
          Return
       END IF
       NUM = 0
-      DO I = 1, NESFP
+      DO I = 1, NUCDEP
          DIFF=( PCMCORD(1,I)*XTANG - XE(N) )**2
      $       +( PCMCORD(2,I)*XTANG - YE(N) )**2
      *       +( PCMCORD(3,I)*XTANG - ZE(N) )**2

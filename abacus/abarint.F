@@ -4001,7 +4001,7 @@ C
       DO 50 J = 1, NONTYP
          IF (INDEX(MLINE(I),'Cha') .NE. 0) THEN
             CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),MXAQN,
-     &                 BASIS,ATOMBA,BSNM)
+     &                 BASIS,ATOMBA,BSNM,KSPH)
          ELSE
             READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
          END IF
@@ -4049,7 +4049,7 @@ C
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
          IF (INDEX(TMPLN,'Cha') .NE. 0) THEN
             CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,ATOMBA,
-     &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN)
+     &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
           ELSE
             WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          END IF

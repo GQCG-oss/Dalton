@@ -979,6 +979,7 @@ C
          IORDER = IDUMMY
       END IF
 C
+      LUPBKP = LUPROP
       IF (LUPROP .LE. 0) THEN
          CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      $        'UNFORMATTED',IDUMMY,.FALSE.)
@@ -989,7 +990,7 @@ C
      &            WORD,IORDER,MPQUAD,TRIANG,PROPRI,
      &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT,EXPVAL,
      &            EXP1VL,DENMAT)
-      CALL GPCLOSE(LUPROP,'KEEP')
+      IF (LUPBKP .LE. 0) CALL GPCLOSE(LUPROP,'KEEP')
       RETURN
       END
 C  /* Deck spntra */

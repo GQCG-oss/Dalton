@@ -927,6 +927,9 @@ C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       IBLOCK(3) = 1
       CALL IZERO(IQM,KATOM*3)
 C
+Clf initialize KSPH for PCM input
+      KSPH=0
+C
 C     Initialize NSETS and BSET for Dalton,
 C     if (DIRAC) these will be modified below:
 C     NSETS = 1 for Large, = 2 for "Large" and "Small"
@@ -984,7 +987,7 @@ C     New or old input?
 C
          IF (INDEX(MLINE(NMLINE),'Cha') .NE. 0) THEN
             CALL LINE5(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
-     &                JCO(1,I,1),KANG,BASIS,ATOMBA,BASNAMSAVE)
+     &                JCO(1,I,1),KANG,BASIS,ATOMBA,BASNAMSAVE,KSPH)
          ELSE
 C
 C        Read/process data on centers/blocks
@@ -1130,7 +1133,7 @@ C
             ENDIF
          ENDIF
 C        MBSI has been added (WK/UniKA/04-11-2002).
-         CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG,MBSI)
+         CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG,MBSI,KSPH)
 C
          DO 300 J = 1,NSETS
           IF (J.EQ.1 .OR. (J.EQ.2 .AND. DOHUCKEL) 
@@ -1517,7 +1520,7 @@ C
       CALL QUIT('Cannot determine the charge of one atom')
       END
 C  /* Deck cntinp */
-      SUBROUTINE CNTINP(LUINFO,NONT,Q,NSYMOP,ANG,MBSI)
+      SUBROUTINE CNTINP(LUINFO,NONT,Q,NSYMOP,ANG,MBSI,KSPH)
 C     MBSI has been added (WK/UniKA/04-11-2002).
 C*****************************************************************************
 C
@@ -1544,6 +1547,9 @@ C
 #include <symmet.h>
 #include <r12int.h>
 #include <ibtfun.h>
+#include <pcmlog.h>
+#include <pcmdef.h>
+#include <pcm.h>
 C
       NQ = NINT(Q)
       IF (GAUNUC.AND.(NQ.GT.0)) THEN
@@ -1593,6 +1599,18 @@ C
            READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
      &                                  CORD(2,NCTOT),CORD(3,NCTOT),
      &                                  ISUBSY(NCTOT),ISUBSI(NCTOT)
+        ELSE IF ((.NOT. QM3) .AND. PCM) THEN
+           IF ( KSPH .EQ. 1) THEN
+              IDXSPH(NUCIND) = KSPH
+              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NUCIND),
+     &             CORD(2,NUCIND),CORD(3,NUCIND),
+     &             RSPH(NUCIND)
+           ELSE
+              IDXSPH(NUCIND) = 0
+              RSPH(NUCIND) = 0.0D0
+              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NUCIND),
+     &             CORD(2,NUCIND),CORD(3,NUCIND)
+           END IF
         ELSE
            READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
      &                                  CORD(2,NCTOT),CORD(3,NCTOT)
@@ -1625,12 +1643,23 @@ C
           CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NCTOT),'REA',
      &                IERR)
         END DO
+        IF (PCM) THEN
+           IF (KSPH .GT. 0) THEN
+              IDXSPH(NUCIND) = KSPH
+              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,RSPH(NUCIND),
+     &             'REA',IERR)
+           ELSE
+              IDXSPH(NUCIND) = 0
+              RSPH(NUCIND) = 0.0D0
+           END IF
+        END IF
         IF (QM3) THEN
           CALL FREFRM(MLINE(NMLINE),ISTART,ISUBSY(NCTOT),DUMMY,
      &                'INT',IERR)
           CALL FREFRM(MLINE(NMLINE),ISTART,ISUBSI(NCTOT),DUMMY,
      &                'INT',IERR)
         END IF
+              
 #endif
         IF (ISUBSY(NCTOT) .EQ. 0) NUCIND = NUCIND + 1
         IPOS = INDEX(MLINE(NMLINE),'Isotope=')
@@ -6689,7 +6718,7 @@ C
       END
 C
       SUBROUTINE LINE5(TMPLN,Q,NONT,MBSI,IQM,JCO,KANG,BASIS,
-     &                 ATOMBA,BASNAM)
+     &                 ATOMBA,BASNAM,KSPH)
 C
 C     Read the atom-specific information in new input style
 C
@@ -6697,10 +6726,12 @@ C
 #include <dummy.h>
 #include <priunit.h>
 #include "r12int.h"
+#include <pcmlog.h>
       CHARACTER TMPLN*80, BASNAM*80, FRMT*5
       LOGICAL BASIS, ATOMBA
       DIMENSION JCO(KANG)
 C
+      KSPH = 0
       IPOS = INDEX(TMPLN,'Cha')
       IPOS2 = INDEX(TMPLN(IPOS:),'=')
       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
@@ -6786,16 +6817,35 @@ C
      &              'atomic basis set specified for one atom type')
             END IF
          END IF
+C
+C read in cavity information
+C
+         IF (PCM) THEN
+            IPOS = INDEX(TMPLN,'Sph')
+            IF (IPOS .NE. 0) THEN
+               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+                  WRITE (LUPRI,*) 'Incorrect input for choice '//
+     &                 'of PCM cavity'
+                  WRITE (LUPRI,*) 'Format is "Sphere=?"'
+                  CALL QUIT('Incorrect input for choice of '//
+     &                 'PCM cavity')
+               ELSE
+                  READ (TMPLN((IPOS+IPOS2):),*) KSPH
+               END IF
+            END IF
+         END IF
       END IF
       RETURN
       END
 C
       SUBROUTINE LINE5W(LINE,Q,NONT,MBSI,ATOMBA,BASIS,BASNAM,
-     &                  IQM,JCO,KANG)
+     &                  IQM,JCO,KANG,KSPH)
 C
 C     Write out atom-specific input line in new format
 C     
 #include <implicit.h>
+#include <pcmlog.h>
 #include "r12int.h"
       CHARACTER LINE*80, BASNAM*80
       DIMENSION JCO(KANG)
@@ -6836,5 +6886,10 @@ C
       IF (ATOMBA) THEN
          WRITE (LINE,'(A25)') 'Basis='//BASNAM(1:25)
       END IF
+C
+      IF (PCM) THEN
+         WRITE (LINE,'(A25)') 'Sphere=',KSPH
+      END IF
       RETURN
       END
+

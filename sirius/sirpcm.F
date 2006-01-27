@@ -210,7 +210,7 @@ C
          WRITE(LUPRI,*) 'EXCESSIVE NUMBER OF RADII (>MXSP)'
          NERR=NERR+1
       END IF
-      IF(ICESPH.GT.2) THEN
+      IF(ICESPH.GT.3) THEN
          WRITE(LUPRI,9010)
          WRITE(LUPRI,*) 'WRONG VALUE FOR -ICESPH- (>2)'
          NERR=NERR+1
@@ -1210,6 +1210,7 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 #include "infpar.h"
+#include "inftap.h"
 C
       CHARACTER*7 INTLAB
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1322,6 +1323,7 @@ C
             END DO
          END IF
       ENDDO 
+
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -1412,10 +1414,13 @@ C
                PCMCORD(2,I)=CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K))
                PCMCORD(3,I)=CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K))
                PCMCHG(I)=CHARGE(N)
+               RSPH(I)=RSPH(N)
             END IF
          END DO
       END DO
-      
+
+      IF(I.NE.NUCDEP) CALL QUIT('SPHGEN: WRONG N. OF NUCLEI')
+
       IF(ICESPH.EQ.0) THEN
          NESFP = I
          DO J=1,NESFP
@@ -1423,9 +1428,11 @@ C
             YE(J)=PCMCORD(2,J)
             ZE(J)=PCMCORD(3,J)
             NUCZ = INT(PCMCHG(J))
-            IF(NUCZ.GT.LASTAR) CALL QUIT('SPHGEN: SPHERE NOT DEFINED')
+            IF(NUCZ.GT.LASTAR) CALL QUIT('SPHGEN: NUCZ IS TOO BIG')
             RIN(J) = RVDW(NUCZ)
-            IF(RIN(J).EQ.D0) CALL QUIT('SPHGEN: SPHERE NOT DEFINED')
+            IF(RIN(J).EQ.D0) THEN 
+               CALL QUIT('SPHGEN: SPHERE NOT DEFINED')
+            end if
          ENDDO
       ELSE IF(ICESPH.EQ.1) THEN
          WRITE(LUPRI,'(A)') 'SPHGEN: SPHERES CENTERS GIVEN FROM INPUT'
@@ -1435,6 +1442,18 @@ C
             YE(J)=PCMCORD(2,INA(J))
             ZE(J)=PCMCORD(3,INA(J))
          ENDDO
+      ELSE IF(ICESPH.EQ.3) THEN
+         NESFP=0
+         DO J=1,NUCDEP
+            IF(RSPH(J).GT.0.1) THEN
+               NESFP = NESFP + 1
+               INA(NESFP) = J
+               RIN(NESFP) = RSPH(J)
+               XE(NESFP)  = PCMCORD(1,J)
+               YE(NESFP)  = PCMCORD(2,J)
+               ZE(NESFP)  = PCMCORD(3,J)
+            END IF
+         END DO
       ELSE 
          CALL QUIT('SPHGEN: WRONG ICESPH VALUE')
       ENDIF

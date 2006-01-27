@@ -2119,9 +2119,9 @@ C
                   IF (MLINE(1)(1:5) .EQ. 'BASIS') BASIS  = .TRUE.
                   IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
                   CALL LINE5(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
-     &                       IQM1,JCO1,MXAQN,BASIS,ATOMBA,BSNM)
+     &                       IQM1,JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
                   CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
-     &                        ATOMBA,BASIS,BSNM,IQM1,JCO1,MXAQN)
+     &                        ATOMBA,BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
                ELSE
                   WRITE (MLINE(NCLINE(ICENT1)-1)(13:15),'(I3)') NAT
                END IF
@@ -2142,9 +2142,9 @@ C
  1100    CONTINUE
          IF (NEWINP) THEN
             CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,IQM1,
-     &                 JCO1,MXAQN,BASIS,ATOMBA,BSNM)
+     &                 JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
             CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,ATOMBA,
-     &                  BASIS,BSNM,IQM1,JCO1,MXAQN)
+     &                  BASIS,BSNM,IQM1,JCO1,MXAQN,KSPH)
             BASIS  = .FALSE.
             ATOMBA = .FALSE.
          ELSE
