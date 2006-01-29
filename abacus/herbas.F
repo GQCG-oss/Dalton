@@ -129,85 +129,85 @@ C        (it would be good to extend with 2p parameters for Li, Be etc.)
 C        BASNAM is needed here but contains true basis set name,
 C        this is restored from BASSAV just before RETURN.
 C panor/johhe 2005:
-C        Huckel guess now based on ano-5 instead because it 
+C        Huckel guess now based on ANO-DK3 instead because it 
 C        includes all elements in the periodic table.
 C
          ANO = .TRUE.
-         BASTMP = 'ano-5'
+         BASTMP = 'ANO-DK3 for Huckel'
 C        NOTE that ECP Huckel start guess is implemented
 C        in REAANO through the Q-QEFF parameter. 
-         ISTART = 6
+         ISTART = 7
          IF (INTQ .LE. 2) THEN
 C           ... H and He
-            BASNAM = 'ano-5   1 0 0 0'
+            BASNAM = 'HUCKEL    1 0 0 0'
          ELSE IF (INTQ .LE. 4) THEN
 C           ... Li, Be
-            BASNAM = 'ano-5   2 0 0 0'
+            BASNAM = 'HUCKEL    2 0 0 0'
          ELSE IF (INTQ .LE. 10) THEN
 C           ... B, C, N, O, F, Ne
-            BASNAM = 'ano-5   2 1 0 0'
+            BASNAM = 'HUCKEL    2 1 0 0'
          ELSE IF (INTQ .LE. 12) THEN
 C           ... Na, Mg
-            BASNAM = 'ano-5   3 1 0 0'
+            BASNAM = 'HUCKEL    3 1 0 0'
          ELSE IF (INTQ .LE. 18) THEN
 C           ... Al, Si, P, S, Cl, Ar
-            BASNAM = 'ano-5   3 2 0 0'
+            BASNAM = 'HUCKEL    3 2 0 0'
          ELSE IF (INTQ .LE. 20) THEN
 C           ...  K, Ca
-            BASNAM = 'ano-5   4 2 0 0'
+            BASNAM = 'HUCKEL    4 2 0 0'
          ELSE IF (INTQ .LE. 30) THEN
 C           ...  Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn
-            BASNAM = 'ano-5   4 2 1 0'
+            BASNAM = 'HUCKEL    4 2 1 0'
          ELSE IF (INTQ .LE. 36) THEN
 C           ...  Ga, Ge, As, Se, Br, Kr
-            BASNAM = 'ano-5   4 3 1 0'
+            BASNAM = 'HUCKEL    4 3 1 0'
          ELSE IF (INTQ .LE. 38) THEN
 C           ...  Rb, Sr
-            BASNAM = 'ano-5   5 3 1 0'
+            BASNAM = 'HUCKEL    5 3 1 0'
          ELSE IF (INTQ .LE. 45) THEN
 C           ...  Rh
-            BASNAM = 'ano-5   5 3 2 0'
+            BASNAM = 'HUCKEL    5 3 2 0'
          ELSE IF (INTQ .LE. 46) THEN
 C           ...  Pd
-            BASNAM = 'ano-5   4 3 2 0'
+            BASNAM = 'HUCKEL    4 3 2 0'
          ELSE IF (INTQ .LE. 48) THEN
 C           ...  Cd
-            BASNAM = 'ano-5   5 3 2 0'
+            BASNAM = 'HUCKEL    5 3 2 0'
          ELSE IF (INTQ .LE. 54) THEN
 C           ...  Xe
-            BASNAM = 'ano-5   5 4 2 0'
+            BASNAM = 'HUCKEL    5 4 2 0'
          ELSE IF (INTQ .LE. 56) THEN
 C           ...  Ba
-            BASNAM = 'ano-5   6 4 2 0'
+            BASNAM = 'HUCKEL    6 4 2 0'
          ELSE IF (INTQ .LE. 57) THEN
 C           ...  La
-            BASNAM = 'ano-5   6 4 3 0'
+            BASNAM = 'HUCKEL    6 4 3 0'
          ELSE IF (INTQ .LE. 58) THEN
 C           ...  Ce
-            BASNAM = 'ano-5   6 4 3 1'
+            BASNAM = 'HUCKEL    6 4 3 1'
          ELSE IF (INTQ .LE. 63) THEN
 C           ...  Eu
-            BASNAM = 'ano-5   6 4 2 1'
+            BASNAM = 'HUCKEL    6 4 2 1'
          ELSE IF (INTQ .LE. 64) THEN
 C           ...  Gd
-            BASNAM = 'ano-5   6 4 3 1'
+            BASNAM = 'HUCKEL    6 4 3 1'
          ELSE IF (INTQ .LE. 70) THEN
 C           ...  Yb
-            BASNAM = 'ano-5   6 4 2 1'
+            BASNAM = 'HUCKEL    6 4 2 1'
          ELSE IF (INTQ .LE. 80) THEN
 C           ...  Hg
-            BASNAM = 'ano-5   6 4 3 1'
+            BASNAM = 'HUCKEL    6 4 3 1'
          ELSE IF (INTQ .LE. 86) THEN
 C           ...  Rn
-            BASNAM = 'ano-5   6 5 3 1'
+            BASNAM = 'HUCKEL    6 5 3 1'
          ELSE
-            CALL QUIT('BASLIB error: Huckel not defined for Z.gt.86')
+            CALL QUIT('BASLIB error: HUCKEL not defined for Z.gt.86')
          END IF
 C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
       ELSE
          IF (BASNAM(3:10) .EQ. 'aug-cc-p') THEN
-            BASTMP(1:79) = BASNAM(3:80)
+            BASTMP(1:78) = BASNAM(3:80)
             IF (BASNAM(1:2) .EQ. 'd-') THEN
                IAUG = 1
             ELSE IF (BASNAM(1:2) .EQ. 't-') THEN
@@ -482,7 +482,7 @@ C*     BLANK - A logical variable that gives whether the line*
 C*             is blank or not.                              *
 C*************************************************************
       CHARACTER SIGN
-      CHARACTER STRING*88, BASNAM*80
+      CHARACTER STRING*88, BASNAM*(*)
       LOGICAL BLANK, POLFUN
 C
 C CONEOR is the maximum number of coloumns of contraction coeffecients on 
@@ -675,7 +675,7 @@ C Reading the exponents. Format from MOLCAS files
 C
       LOGICAL ANO, SADLEJ, POLFUN, BLANK, UNCONT
       DIMENSION CPRIMU( KPRIM, KPRIM, KAOVEC), ALPHA(KPRIM, KAOVEC)
-      CHARACTER BASNAM*80
+      CHARACTER BASNAM*(*)
 C
 C Determine number of contracted functions to be read
 C
@@ -1067,7 +1067,7 @@ C
  2000 CONTINUE
       WRITE (LUPRI,'(/2A/A,I5)')
      &   'FINNQD: Error when reading from basis file ',
-     &   BASDIR(1:LENBAS)//'NQvD',
+     &   BASNAM,
      &   ' IOSTAT =',IOERR
       CALL QUIT('I/O error in FINNQD in HERBAS')
  200  CONTINUE
@@ -1266,13 +1266,11 @@ C         IPRINT = IPREAD - 1 for HUCKEL) /hjaaj
          GO TO 10
       END IF
 C
-  300 IEND = INDEX ( BASNAM(1:), ' ') - 1
-      WRITE (LUPRI,'(/3A)')
-     +      'Basis "',BASNAM(1:IEND),'" doesn''t exist'
-      IF (BASNAM(1:6) .EQ. 'Huckel') THEN
+  300 WRITE (LUPRI,'(/2A/A)')
+     +      'Basis : ',BASNAM, 'does not exist.'
+      IF (INDEX(BASNAM,'Huckel') .GT. 0) THEN
          WRITE (LUPRI,'(/A)')
-     +   'NB! Basis Huckel must be available to use Huckel guess!'
+     +   'NB! This basis must be available to use Huckel guess!'
       END IF
       CALL QUIT('Non-existing basis set in HERBAS')
-
       END
