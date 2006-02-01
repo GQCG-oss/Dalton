@@ -1601,15 +1601,14 @@ C
      &                                  ISUBSY(NCTOT),ISUBSI(NCTOT)
         ELSE IF ((.NOT. QM3) .AND. PCM) THEN
            IF ( KSPH .EQ. 1) THEN
-              IDXSPH(NUCIND) = KSPH
-              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NUCIND),
-     &             CORD(2,NUCIND),CORD(3,NUCIND),
-     &             RSPH(NUCIND)
+              IDXSPH(NCTOT) = KSPH
+              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
+     &             CORD(2,NCTOT),CORD(3,NCTOT),RSPH(NCTOT)
            ELSE
-              IDXSPH(NUCIND) = 0
-              RSPH(NUCIND) = 0.0D0
-              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NUCIND),
-     &             CORD(2,NUCIND),CORD(3,NUCIND)
+              IDXSPH(NCTOT) = 0
+              RSPH(NCTOT) = 0.0D0
+              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
+     &             CORD(2,NCTOT),CORD(3,NCTOT)
            END IF
         ELSE
            READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
@@ -1645,12 +1644,12 @@ C
         END DO
         IF (PCM) THEN
            IF (KSPH .GT. 0) THEN
-              IDXSPH(NUCIND) = KSPH
-              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,RSPH(NUCIND),
+              IDXSPH(NCTOT) = KSPH
+              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,RSPH(NCTOT),
      &             'REA',IERR)
            ELSE
-              IDXSPH(NUCIND) = 0
-              RSPH(NUCIND) = 0.0D0
+              IDXSPH(NCTOT) = 0
+              RSPH(NCTOT) = 0.0D0
            END IF
         END IF
         IF (QM3) THEN

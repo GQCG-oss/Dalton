@@ -3416,6 +3416,7 @@ C/* Deck herini */
 #include <elweak.h>
 #include <r12int.h>
 #include <infinp.h>
+#include <qm3.h>
 C
 C     Initialize effective core potential parameters
 C
@@ -3608,6 +3609,7 @@ cLig >> setting RANGMO and RPSO false
       RPSO   = .FALSE.
 cLig <<
 C
+      CALL IZERO(ISUBSY,MXQM3)
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
