@@ -2188,7 +2188,7 @@ C                 Update the status word
 #endif
 #if defined (VAR_MPI)
 C /* Deck J1INTP */
-      SUBROUTINE J1INTP(NBAST,NOSIM,DMAT,EXP1VL,EXPVAL,TOFILE,
+      SUBROUTINE J1INTP(NBAST,NOSIM,KSYMP,DMAT,EXP1VL,EXPVAL,TOFILE,
      &                  IPRTYP,MATDIM,WORK,LWORK)
 C
 C     Master routine for distributing tesseraes to slaves
@@ -2217,7 +2217,7 @@ C
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPRPCM,1,'INTEGER',MASTER)
 C     
-
+      CALL MPIXBCAST(KSYMP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(EXP1VL,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NTSIRR,1,'INTEGER',MASTER)
@@ -2290,6 +2290,7 @@ C
 #include "mpif.h"
 C
       IPRPCM = IPRTMP
+      CALL MPIXBCAST(KSYMP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(EXP1VL,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NBAST,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NTSIRR,1,'INTEGER',MASTER)
@@ -2312,7 +2313,7 @@ C
       KINTRP = KDEN + MATDIM*NOSIM
       KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
       KEXPVL = KINTAD + (3*MXCOOR + 1)/IRAT
-      KLST1  = KEXPVL + NTSIRR*(MAXREP + 1)*NOSIM
+      KLAST  = KEXPVL + NTSIRR*(MAXREP + 1)*NOSIM
 C
       IF (EXP1VL) THEN
          CALL MPIXBCAST(WORK(KDEN),NNBASX,'DOUBLE',MASTER)
@@ -2344,7 +2345,7 @@ C        Calculates nuclear potential energy integrals (in AO basis) for
 C        the given tessera
 C
          L=1
-         KTMP = KLST1
+         KTMP = KLAST
          IF (.NOT. TOFILE .AND. .NOT. EXP1VL) THEN
             KMAT = KTMP + 8
             IF (IPRTYP .EQ. 11) THEN
@@ -2378,8 +2379,9 @@ C
          ELSE
             DO IOSIM = 1, NOSIM
                IADR = KEXPVL + ITS - 1 + NTSIRR*(MAXREP + 1)*(IOSIM - 1)
+               KADR = KMAT + (KSYMP - 1)*MATDIM
                MADR = KDEN + (IOSIM - 1)*MATDIM
-               CALL DAXPY(MATDIM,-WORK(IADR),WORK(KMAT),1,
+               CALL DAXPY(MATDIM,-WORK(IADR),WORK(KADR),1,
      &                 WORK(MADR),1)
             END DO
          END IF
