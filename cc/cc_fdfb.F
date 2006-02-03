@@ -67,12 +67,14 @@ C------------------------------------------------------------
       DIMENSION WORK(LWORK), RHODIF(*), CMOQ(*)
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0, TWO = 2.0d0, XHALF = 0.5D0)
       CHARACTER MODEL*10, LISTL*(*), LISTR*(*)
-      CHARACTER*8 FILER12, FILER12_2
       LOGICAL   LHTF
 C
       IF (IPRINT.GT.10) THEN
         CALL AROUND('IN CC_FDFB : MAKING FIN. DIFF. CC F*T^A Vector')
       END IF
+C
+      IF (CCR12) CALL QUIT('Finite-difference of F*T^A Vector for '//
+     &                     'CCR12 not adapted')
 C
 C----------------------------
 C     Work space allocations.
@@ -138,7 +140,7 @@ C-------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
       LHTF = .FALSE.
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,LHTF,
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
      &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
@@ -204,7 +206,7 @@ C        -------------------------------------
 C
          CALL DZERO(WORK(KT1AMP0),NT1AMX)                      
          LHTF = .FALSE.
-         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,
+         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),
      &                  LHTF,.FALSE.,.FALSE.,WORK(KEND1),LWRK1)
          REWIND(LUIAJB)
          CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
@@ -282,7 +284,7 @@ C------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
       LHTF = .FALSE.
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,LHTF,
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
      &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))

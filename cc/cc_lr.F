@@ -3015,7 +3015,7 @@ C
       IF (.NOT.CCS) THEN
          NVAR   = NT1AM(ISYMOP) + NT2AM(ISYMOP)
          IF (CCR12) THEN
-           NVAR = NVAR + NGAMMA(ISYMOP)
+           NVAR = NVAR + NTR12AM(ISYMOP)
          ENDIF
          KETA   = 1
          KWRK1  = KETA  + NVAR
@@ -3976,7 +3976,7 @@ C
          MATZ = 1
          CALL DCOPY(3*3,TNSR,1,AMAT,1)
          CALL RG(3,3,AMAT,PVAL,WI,MATZ,PAXIS,V1,FV1,IERR)
-         CALL RGORD(3,3,PVAL,WI,PAXIS)
+         CALL RGORD(3,3,PVAL,WI,PAXIS,.FALSE.)
       ENDIF
 C
 C------------------------------------
@@ -4364,7 +4364,7 @@ C----------------------------------------------------------------------
       ELSE
          NVAR   = NT1AM(ISYM0) + NT2AM(ISYM0)
          IF (CCR12) THEN
-           NVAR = NVAR + NGAMMA(ISYM0)
+           NVAR = NVAR + NTR12AM(ISYM0)
          ENDIF
          KETA   = 1 
          KEND1  = KETA  + NVAR

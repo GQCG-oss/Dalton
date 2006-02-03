@@ -173,7 +173,7 @@ c /* deck CC_AAMAT */
         KEND1 = KRES2 + NT2AM(ISYRES)
         IF (CCR12) THEN
           KRESR12 = KRES2 + NT2AM(ISYRES)
-          KEND1   = KRESR12 + NGAMMA(ISYRES)
+          KEND1   = KRESR12 + NTR12AM(ISYRES)
         END IF
         LWRK1 = LWORK - KEND1
         IF (LWRK1.LT.0) CALL QUIT('Insufficient memory in CC_AAMAT.')
@@ -325,7 +325,7 @@ c          --------------------------------------------------
          WRITE (LUPRI,*) MSGDBG, 'wrote ',FILAAM,':',IFILE,' to disk.'
          LEN = NT1AM(ISYRES)
          IF (.NOT.CCS) LEN = LEN + NT2AM(ISYRES)
-         IF (CCR12) LEN = LEN + NGAMMA(ISYRES)
+         IF (CCR12) LEN = LEN + NTR12AM(ISYRES)
          WRITE (LUPRI,*) MSGDBG, 'NORM^2 for result vector = ', 
      &    DDOT(LEN,WORK(KRES1),1,WORK(KRES1),1)
          WRITE (LUPRI,*) 'Listing of the result vector:'

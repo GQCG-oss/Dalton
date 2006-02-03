@@ -3786,7 +3786,7 @@ C
                   ICLASS(NSORB) = IC
                   IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
                      NQ     = IZATOM(NCENT(IA))
-                  IF (NQ .GT. 0) THEN
+CCN                  IF (NQ .GT. 0) THEN
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
 C                    ... atomic charge of this center
@@ -3796,7 +3796,7 @@ C                    ... effective charge of this center
 C                    ... .gt. 0 if ECP otherwise .eq. 0
                      NHUCCO = NUMCF(IA)
                      CALL HUCFUN(NQ,IQCORE,NHKTA,NHUCCO,HUCEXC(IHNMAO))
-                  END IF
+CCN                  END IF
                   END IF
                   IRREPN        = IRREP(NAORB)
                   IRREP(NAORB)  = IRREPN + 1

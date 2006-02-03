@@ -344,12 +344,12 @@ C        read CC R12 doubles vector...
 C
          IF (NVEC.GE.4 .AND. IAND(IOPT,32).EQ.0 .AND. CCR12) THEN
             KR12DBLE = KEND
-            KEND     = KR12DBLE  + NGAMMA(ISYM)
+            KEND     = KR12DBLE  + NTR12AM(ISYM)
             IF (LWORK.LT.KEND-1) THEN
                CALL QUIT('Insufficient memory in CC_WRRSP (r12 dbls).')
             END IF
             READ(LUSAVE,ERR=888,END=888) 
-     &            (WORK(KR12DBLE-1+I),I=1,NGAMMA(ISYM))
+     &            (WORK(KR12DBLE-1+I),I=1,NTR12AM(ISYM))
             IF (IMUL.EQ.3) THEN
               CALL QUIT('Triplet for R12 not implemented in CC_WRRSP.')
 C             KEND     = KDOUBLE  + NT2AM(ISYM)+NT2AMA(ISYM)
@@ -845,7 +845,7 @@ C
       ! R12 doubles cluster amplitudes
       IF (NWRITE.GE.4 .AND. CCR12) THEN
          IF ( IAND(IOPT,32).EQ.32 ) THEN
-            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NGAMMA(ISYM))
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NTR12AM(ISYM))
             IF (IMUL.EQ.3) THEN
               CALL QUIT('Triplet not implemented for R12 in CC_WVRSP')
 C             WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
@@ -854,7 +854,7 @@ C    &            (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))
               WRITE(LUSAVE,IOSTAT=IOS,ERR=993)   
             END IF
          ELSE
-            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VS2P(I),I=1,NGAMMA(ISYM))
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VS2P(I),I=1,NTR12AM(ISYM))
             IF (IMUL.EQ.3) THEN
               CALL QUIT('Triplet not implemented for R12 in CC_WVRSP')
 C             WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
@@ -1008,7 +1008,7 @@ C---------------------------------------------------------------------*
       ELSE IF (IOPT.EQ.32) THEN
         KVEC1 = -999 999
         KVEC2 = 1
-        KEND  = KVEC2 + NGAMMA(ISYM)
+        KEND  = KVEC2 + NTR12AM(ISYM)
       ELSE
         CALL QUIT('Illegal case in CC_WARSP.')
       END IF
@@ -1064,7 +1064,7 @@ C     END IF
         CALL DAXPY(NT2AM(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
       END IF
       IF ( IAND(IOPT,32).NE.0 ) THEN
-        CALL DAXPY(NGAMMA(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
+        CALL DAXPY(NTR12AM(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
       END IF
 C     IF ( IAND(IOPT,4).NE.0 ) THEN
 C       CALL DAXPY(2*NALLAI(ISYM),1.0d0,VEC0,1,WORK(KVEC0),1)

@@ -2194,14 +2194,14 @@ c /* deck CC_DOTDRV */
         END IF
 
         NTAMP = NT1AM(ISYML) + NT2AM(ISYML)
-        IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYML)
+        IF (CCR12) NTAMP = NTAMP + NTR12AM(ISYML)
 
         KVECL1 = 1
         KVECL2 = KVECL1 + NT1AM(ISYML)
         KEND1  = KVECL2 + NT2AM(ISYML)
         IF (CCR12) THEN
           KVECLR12 = KVECL2 + NT2AM(ISYML)
-          KEND1    = KVECLR12 + NGAMMA(ISYML)
+          KEND1    = KVECLR12 + NTR12AM(ISYML)
         END IF
         LEND1  = LWORK - KEND1
 
@@ -2210,7 +2210,7 @@ c /* deck CC_DOTDRV */
         KEND2  = KVECR2 + NT2AM(ISYML)
         IF (CCR12) THEN
           KVECRR12 = KVECR2 + NT2AM(ISYML)
-          KEND2    = KVECRR12 + NGAMMA(ISYML)
+          KEND2    = KVECRR12 + NTR12AM(ISYML)
         END IF
         LEND2  = LWORK - KEND2
 
@@ -2339,15 +2339,15 @@ c /* deck CC_DOTDRV */
            CALL QUIT('ERROR> unknown CC model in CC_DOTDRV.')
           END IF
           IF (CCR12) THEN
-           DCONR12 = DDOT(NGAMMA(ISYML),WORK(KVECLR12),1,
+           DCONR12 = DDOT(NTR12AM(ISYML),WORK(KVECLR12),1,
      &                    WORK(KVECRR12),1)
            IF (LOCDBG) THEN
              WRITE(LUPRI,*) 'NORM^2(LR12):',
-     &         DDOT(NGAMMA(ISYML),WORK(KVECLR12),1,WORK(KVECLR12),1)
+     &         DDOT(NTR12AM(ISYML),WORK(KVECLR12),1,WORK(KVECLR12),1)
              WRITE(LUPRI,*) 'NORM^2(RR12):',
-     &         DDOT(NGAMMA(ISYMR),WORK(KVECRR12),1,WORK(KVECRR12),1)
+     &         DDOT(NTR12AM(ISYMR),WORK(KVECRR12),1,WORK(KVECRR12),1)
              WRITE(LUPRI,*) '(LR12|RR12):',
-     &         DDOT(NGAMMA(ISYMR),WORK(KVECLR12),1,WORK(KVECRR12),1)
+     &         DDOT(NTR12AM(ISYMR),WORK(KVECLR12),1,WORK(KVECRR12),1)
            END IF
           ELSE
            DCONR12 = ZERO

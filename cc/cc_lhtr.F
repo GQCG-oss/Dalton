@@ -53,8 +53,10 @@ C
 C     Generalised for transforming more than one vector per
 C     integral calculation by Asger Halkier & Ove Christiansen
 C     medio October 1996. New input list and new name 4 nov. 1996.
-C     (IVEC is first number for first vector on files, FRHO1,FC1AM,FC2AM
-C      ITR is first vector on FRHO2),OC,CC2 FF bugfix, March 1997.
+C     (IVEC is first number for first vector on files, FRHO1,FC1AM,FC2AM,
+C           FRHO12,FC12AM;
+C      ITR is first vector on FRHO2)
+C     OC,CC2 FF bugfix, March 1997.
 C     Some changes for CC2 and NONHF=.true. to allow for finite diff.
 C     with respect to the orbtial coeff. vector. Ch. Haettig, march 2000
 C     Some changes for CC2-R12 and NONHF=.true. Chr. Neiss, April 2005
@@ -111,11 +113,17 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION IADRPQ(MXCORB,MAXSIM)
 C
-      LOGICAL ETRAN,FCKCON, APROX12
+      LOGICAL ETRAN,FCKCON,APROX12,CCSDR12,SKIPMI
 C
       CALL QENTER('CC_LHTR')
 C
       THIRD = ONE/THREE
+C
+C
+      !set CCSDR12
+      CCSDR12 = CCR12 .AND. (.NOT.CC2)
+C
+      SKIPMI = .FALSE.
 C
 C---------------------------------
 C     Initialze timing parameters.
@@ -180,6 +188,11 @@ C
          KXMAT = KYDEN  + N2BST(ISYRES)*NSIMTR
          KEND0 = KXMAT  + NMATIJ(ISYRES)*NSIMTR
       ENDIF
+C
+      IF (CCR12) THEN
+        KRHOR12 = KEND0
+        KEND0 = KRHOR12 + NTR12SQ(ISYMTR)
+      END IF
 C
       IF (CC3) THEN
          KOVVO = KEND0
@@ -1057,17 +1070,35 @@ C------------------------
 C
       KEND1 = KENDS2
       LWRK1 = LWRKS2
-C------------------------------------------
-C     allocate memory for r12 result vector
-C------------------------------------------
-      IF (CCR12) THEN
-        KRHOR12 = KEND1
-        KEND1 = KRHOR12 + NGAMSQ(ISYMTR)
-        LWRK1 = LWRK1 - NGAMSQ(ISYMTR)
-      END IF
 C
-      IF (LWRK1 .LT. 0) THEN
-        CALL QUIT('Insufficient work space in CC_LHTR for R12')
+C--------------------------------------------------------------
+C     calculate R12-contribution to rho_BZ (<--> LT12B & LT22B)
+C--------------------------------------------------------------
+C
+      IF (CCSDR12) THEN
+        DO IV = 1, NSIMTR
+          IF (.NOT. MINSCR) THEN
+            DTIME = SECOND()
+            CALL CC_RVEC(LUFR2,FRHO2,NRHO2,NRHO2,IV + ITR -1,
+     *                   RHO2)
+            DTIME = SECOND() - DTIME
+            TIMIO = TIMIO + DTIME
+          END IF
+C  
+          !calculate B''-contribution:
+          IAMP = 1
+          IFILE = IVEC+IV-1
+          CALL CCRHS_BP(RHO2,ISYMTR,IAMP,FC12AM,LUFC12,
+     &                  IFILE,2.0D0*BRASCL,WORK(KEND1),LWRK1)
+C 
+          IF (.NOT. MINSCR) THEN
+            DTIME = SECOND()
+            CALL CC_WVEC(LUFR2,FRHO2,NRHO2,NRHO2,IV + ITR -1,
+     *                   RHO2)
+            DTIME = SECOND() - DTIME
+            TIMIO = TIMIO + DTIME
+          END IF
+        END DO
       END IF
 C
 C-----------------------------
@@ -1076,7 +1107,7 @@ C-----------------------------
 C
       DO 125 IV = 1,NSIMTR
 C
-        IF (CCR12) CALL DZERO(WORK(KRHOR12),NGAMSQ(ISYMTR))
+        IF (CCR12) CALL DZERO(WORK(KRHOR12),NTR12SQ(ISYMTR))
 C
 C--------------------------------------------------------------------
 C     for CC2 and NONHF=.true. calculate Fock matrix entering E-term:
@@ -1096,12 +1127,12 @@ C
            IF (CCR12) THEN
              if (isymop.ne.1) call quit('Symmetry problem in CC_LHTR')
              kvxintsq = kend2
-             kxint    = kvxintsq + ngamsq(isymop)
-             kxintsq  = kxint + ngamma(1)
-             kctr12sq = kxintsq + ngamsq(1)
-             ktr12sq  = kctr12sq + ngamsq(isymtr)
-             kscr     = ktr12sq + ngamsq(1)
-             kend2    = kscr + ngamsq(isymtr)
+             kxint    = kvxintsq + nr12r12sq(isymop)
+             kxintsq  = kxint + nr12r12p(1)
+             kctr12sq = kxintsq + nr12r12sq(1)
+             ktr12sq  = kctr12sq + ntr12sq(isymtr)
+             kscr     = ktr12sq + ntr12sq(1)
+             kend2    = kscr + ntr12sq(isymtr)
            END IF
            LWRK2  = LWORK  - KEND2
            IF (LWRK2 .LT. 0) THEN
@@ -1110,7 +1141,7 @@ C
 
            CALL DZERO(WORK(KFIELD),N2BST(1))
            IF (CCR12) THEN
-             CALL DZERO(WORK(KVXINTSQ),NGAMSQ(1))
+             CALL DZERO(WORK(KVXINTSQ),NR12R12SQ(1))
            END IF
            DO IF = 1, NFIELD
              WRITE(LUPRI,*) IF, NHFFIELD(IF), EFIELD(IF), LFIELD(IF)
@@ -1143,7 +1174,7 @@ C
               ! read R12 trial vector and reorder to full square
               ifile = IV+IVEC-1
               call cc_r12getct(work(kctr12sq),isymtr,1,2.0D0*brascl,
-     &                         .false.,.false.,lufc12,fc12am,ifile,
+     &                         .false.,'N',lufc12,fc12am,ifile,
      &                         cdummy,idummy,work(kend2),lwrk2)
 C
               ! read R12 overlap matrix and reorder to full square
@@ -1152,29 +1183,30 @@ C
      &                    .false.)
               rewind(lunit)
  8888         read(lunit) ian
-              read(lunit) (work(kxint-1+i), i=1, ngamma(1))
+              read(lunit) (work(kxint-1+i), i=1, nr12r12p(1))
               if (ian.ne.ianr12) goto 8888 
               call gpclose(lunit,'KEEP')
-              call ccr12unpck2(work(kxint),1,work(kxintsq),.false.)
+              iopt = 2
+              call ccr12unpck2(work(kxint),1,work(kxintsq),'N',iopt)
 C
               ! calculate R12 response contributions to Omega_{kilj}:
               ! first contribution: 
-              CALL CC_R12XI(work(kscr),isymtr,work(kctr12sq),isymtr,
+              CALL CC_R12XI(work(kscr),isymtr,'T',work(kctr12sq),isymtr,
      &                      work(kxintsq),work(kvxintsq),isymop,
      &                      work(kfield),work(klamdh),work(klamdp),'N',
      &                      work(kend2),lwrk2)
 C
-              ! transpose: in CC_R12XI the r12-pair index (kl) is leading,
-              ! in RHOR12 the occ. index pair (ij) is leading!!! 
-              call cclr_trsqr12(work(kscr),isymtr)
+C             ! transpose: in CC_R12XI the r12-pair index (kl) is leading,
+C             ! in RHOR12 the occ. index pair (ij) is leading!!! 
+C             call cclr_trsqr12(work(kscr),isymtr)
 C
 C             ! add it to RHOR12 
-              call daxpy(ngamsq(isymtr),one,work(kscr),1,work(krhor12),
+              call daxpy(ntr12sq(isymtr),one,work(kscr),1,work(krhor12),
      &                   1)
 C 
               ! second contribution:
               ! need R12 amplitudes
-              CALL cc_r12getct(work(ktr12sq),1,0,dummy,.false.,.false.,
+              CALL cc_r12getct(work(ktr12sq),1,0,dummy,.false.,'N',
      &                         idummy,cdummy,idummy,cdummy,
      &                         idummy,work(kend2),lwrk2)
 C 
@@ -1240,72 +1272,15 @@ C-------------------------------------
              CALL DAXPY(N2BST(1),ONE,WORK(KFIELD),1,WORK(KFCKHF),1)
            END IF 
          END IF
-
-C
-C-----------------------------------------------------------------------
-C        Compute R12 contributions
-C-----------------------------------------------------------------------
-C
-         IF (CCR12) THEN
-           IF (IANR12.NE.1) THEN
-           CALL QUIT('NOT YET UPDATED FOR ANSAETZE 2/3')
-           END IF
-           IF ( DEBUG ) THEN
-               RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
-               RHO2N = DDOT(NRHO2,RHO2,1,RHO2,1)
-               RHO12N = DDOT(NGAMSQ(ISYMTR),WORK(KRHOR12),1,
-     &                       WORK(KRHOR12),1)
-               WRITE(LUPRI,*) 'Trial vector:',IV
-               WRITE(LUPRI,1) 'Norm of Rho1 -before R12:  ',RHO1N
-               WRITE(LUPRI,1) 'Norm of Rho2 -before R12:  ',RHO2N
-               WRITE(LUPRI,1) "Norm of Rho2' -before R12:  ",RHO12N
-               WRITE(LUPRI,1) 'Norm Lambda^h',
-     &          DDOT(NLAMDT,WORK(KLAMDH),1,WORK(KLAMDH),1)
-               WRITE(LUPRI,1) 'Norm Lambda^p',
-     &          DDOT(NLAMDT,WORK(KLAMDP),1,WORK(KLAMDP),1)
-           ENDIF
-
-C          ------------------------------
-C          Calculate F' term:
-C          ------------------------------
-           IFILE = IV+IVEC-1
-           CALL CCLHTR_FP(RHO1(1,IV),WORK(KLAMDH),WORK(KEND1),LWRK1,
-     &                   ISYMTR,FC12AM,LUFC12,IFILE)
-
-C          ------------------------------
-C          Calculate G' term:
-C          ------------------------------
-           IFILE = IV+IVEC-1
-           CALL CCLHTR_GP(CTR1(1,IV),ISYMTR,WORK(KLAMDP),1,
-     &                    WORK(KRHOR12),ISYMTR,WORK(KEND1),LWRK1)
-
-C          -----------------------------------
-C          Calculate E' term and add to rho12:
-C          -----------------------------------
-           IFILE = IV+IVEC-1
-           CALL CCRHS_EP(WORK(KRHOR12),ISYMTR,.FALSE.,dummy,
-     &                   WORK(KEND1),LWRK1,1,FC12AM,LUFC12,
-     &                   FRHO12,LUFR12,IFILE,APROXR12,
-     &                   0.5D0*KETSCL,2.0D0*BRASCL)
-
-           IF ( DEBUG ) THEN
-               RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
-               RHO2N = DDOT(NRHO2,RHO2,1,RHO2,1)
-               RHO12N = DDOT(NGAMSQ(ISYMTR),WORK(KRHOR12),1,
-     &                       WORK(KRHOR12),1)
-               WRITE(LUPRI,*) 'after R12 section:'
-               WRITE(LUPRI,*) 'Trial vector:',IV
-               WRITE(LUPRI,1) 'Norm of Rho1 -after R12:  ',RHO1N
-               WRITE(LUPRI,1) 'Norm of Rho2 -after R12:  ',RHO2N
-               WRITE(LUPRI,1) "Norm of Rho2' -after R12:  ",RHO12N
-               WRITE(LUPRI,1) 'Norm Lambda^h',
-     &          DDOT(NLAMDT,WORK(KLAMDH),1,WORK(KLAMDH),1)
-               WRITE(LUPRI,1) 'Norm Lambda^p',
-     &          DDOT(NLAMDT,WORK(KLAMDP),1,WORK(KLAMDP),1)
-           ENDIF
-         END IF
 C
          IF (.NOT. MINSCR) THEN
+C
+C------------------------------
+C           Recover work space.
+C------------------------------
+C
+            KEND1 = KENDS2
+            LWRK1 = LWRKS2
 C
 C-------------------------------------------------------
 C           Read CTR2 from disc into RHO2 and square up.
@@ -1363,6 +1338,128 @@ C
             WRITE(LUPRI,1) 'Norm of RHO2 loop over vect. 1.   ', RHO2N
          ENDIF
 C
+C-----------------------------------------------------------------------
+C        Compute R12 contributions
+C-----------------------------------------------------------------------
+C
+         IF (CCR12) THEN
+           IF (IANR12.NE.1) THEN
+              CALL QUIT('NOT YET UPDATED FOR ANSAETZE 2/3')
+           END IF
+           IF ( DEBUG ) THEN
+               RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
+               RHO2N = DDOT(NRHO2,RHO2,1,RHO2,1)
+               RHO12N = DDOT(NTR12SQ(ISYMTR),WORK(KRHOR12),1,
+     &                       WORK(KRHOR12),1)
+               WRITE(LUPRI,*) 'Trial vector:',IV
+               WRITE(LUPRI,1) 'Norm of Rho1 -before R12:  ',RHO1N
+               WRITE(LUPRI,1) 'Norm of Rho2 -before R12:  ',RHO2N
+               WRITE(LUPRI,1) "Norm of Rho2' -before R12:  ",RHO12N
+               WRITE(LUPRI,1) 'Norm Lambda^h',
+     &          DDOT(NLAMDT,WORK(KLAMDH),1,WORK(KLAMDH),1)
+               WRITE(LUPRI,1) 'Norm Lambda^p',
+     &          DDOT(NLAMDT,WORK(KLAMDP),1,WORK(KLAMDP),1)
+           ENDIF
+
+C          ------------------------------
+C          Calculate F' term:
+C          ------------------------------
+           IFILE = IV+IVEC-1
+           CALL CCLHTR_FP(RHO1(1,IV),WORK(KLAMDH),WORK(KEND1),LWRK1,
+     &                   ISYMTR,FC12AM,LUFC12,IFILE)
+
+C          ------------------------------
+C          Calculate G' term:
+C          ------------------------------
+           CALL CCLHTR_GP(CTR1(1,IV),ISYMTR,WORK(KLAMDP),1,
+     &                    WORK(KRHOR12),ISYMTR,WORK(KEND1),LWRK1)
+
+C          ------------------------------
+C          Calculate CCSD contributions:
+C          ------------------------------
+           IF (CCSDR12) THEN
+C            ------------
+C            add B' term:
+C            ------------
+             CALL CCRHS_BPP(WORK(KRHOR12),CTR2,ISYMTR,.FALSE.,
+     *                      'R12VCTDTKL',WORK(KEND1),LWRK1)
+C            ------------
+C            add A' term:
+C            ------------
+             !calculate M-intermediate:
+             KMINT = KEND1
+             KEND1 = KMINT + N3ORHF(ISYRES)
+             LWRK1 = LWORK - KEND1
+             IF (LWRK1 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+               CALL QUIT('Insufficient memory for M-intermediate '//
+     &                   'in CC_LHTR')
+             ENDIF
+C
+             SKIPMI = .TRUE.
+             TIMEMI = SECOND()
+             CALL CC_MI(WORK(KMINT),CTR2,ISYMTR,WORK(KT2AM),ISYMOP,
+     *                  WORK(KEND1),LWRK1)
+             TIMEMI = SECOND() - TIMEMI
+C
+             IF ( DEBUG ) THEN
+               WRITE(LUPRI,1) 'Norm of M-INT before CCLHTR_AP: ',
+     &           DDOT(N3ORHF(ISYRES),WORK(KMINT),1,WORK(KMINT),1)
+             ENDIF
+C
+             !read V-intermediate from disk:
+             KVINT = KEND1
+             KEND2 = KVINT + NTR12AM(1)
+             LWRK2 = LWORK - KEND2
+             IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+               CALL QUIT('Insufficient memory for V-intermediate '//
+     &                   'in CC_LHTR')
+             ENDIF
+             lunit = 0
+             call gpopen(lunit,fccr12v,'old',' ','unformatted',
+     &                       idum,ldum)
+ 9999        read(lunit) ian
+             read(lunit) (work(kvint+i), i=0, ntr12am(1)-1)
+             if (ian.ne.ianr12) goto 9999 
+             call gpclose(lunit,'KEEP')
+C
+             CALL CCLHTR_AP(WORK(KRHOR12),WORK(KVINT),WORK(KMINT),
+     &                      ISYMTR,WORK(KEND2),LWRK2)
+C            -----------------------
+C            add additional E' term:
+C            -----------------------
+             KOFFXI = KXMAT + NMATIJ(ISYRES)*(IV - 1)
+             CALL CCLHTR_EP(WORK(KRHOR12),WORK(KVINT),WORK(KOFFXI),
+     &                      ISYMTR,WORK(KEND2),LWRK2)
+           END IF
+
+C          -----------------------------------
+C          Calculate E' term and add to rho12:
+C          -----------------------------------
+           IFILE = IV+IVEC-1
+           CALL CCRHS_EP(WORK(KRHOR12),ISYMTR,.FALSE.,dummy,
+     &                   WORK(KEND1),LWRK1,1,FC12AM,LUFC12,
+     &                   FRHO12,LUFR12,IFILE,APROXR12,
+     &                   0.5D0*KETSCL,2.0D0*BRASCL)
+C
+           IF ( DEBUG ) THEN
+               RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
+               RHO2N = DDOT(NRHO2,RHO2,1,RHO2,1)
+               RHO12N = DDOT(NTR12SQ(ISYMTR),WORK(KRHOR12),1,
+     &                       WORK(KRHOR12),1)
+               WRITE(LUPRI,*) 'after CCRHS_EP:'
+               WRITE(LUPRI,*) 'Trial vector:',IV
+               WRITE(LUPRI,1) 'Norm of Rho1 -after R12:  ',RHO1N
+               WRITE(LUPRI,1) 'Norm of Rho2 -after R12:  ',RHO2N
+               WRITE(LUPRI,1) "Norm of Rho2' -after R12:  ",RHO12N
+               WRITE(LUPRI,1) 'Norm Lambda^h',
+     &          DDOT(NLAMDT,WORK(KLAMDH),1,WORK(KLAMDH),1)
+               WRITE(LUPRI,1) 'Norm Lambda^p',
+     &          DDOT(NLAMDT,WORK(KLAMDP),1,WORK(KLAMDP),1)
+           ENDIF
+         END IF
+C
 C-----------------------------------------------------------
 C        Calculate adresses for CTR-dependent intermediates.
 C        Skip large section for CC2.
@@ -1378,24 +1475,36 @@ C------------------------------
 C        Work space allocation.
 C------------------------------
 C
-         KMINT = KENDS2
-         KEND1 = KMINT + N3ORHF(ISYRES)
-         LWRK1 = LWORK - KEND1
+         IF (.NOT.SKIPMI) THEN
+           KMINT = KENDS2 
+           KEND1 = KMINT + N3ORHF(ISYRES)
+           LWRK1 = LWORK - KEND1
 C
-         IF (LWRK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
-            CALL QUIT('Insufficient memory for M-intermediate '//
-     &                'in CC_LHTR')
-         ENDIF
+           IF (LWRK1 .LT. 0) THEN
+              WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+              CALL QUIT('Insufficient memory for M-intermediate '//
+     &                  'in CC_LHTR')
+           ENDIF
 C
 C--------------------------------------------------
 C        Calculate M-intermediate of CTR2 and T2AM.
 C--------------------------------------------------
 C
-         TIMEMI = SECOND()
-         CALL CC_MI(WORK(KMINT),CTR2,ISYMTR,WORK(KT2AM),ISYMOP,
-     *                WORK(KEND1),LWRK1)
-         TIMEMI = SECOND() - TIMEMI
+           TIMEMI = SECOND()
+           CALL CC_MI(WORK(KMINT),CTR2,ISYMTR,WORK(KT2AM),ISYMOP,
+     *                  WORK(KEND1),LWRK1)
+           TIMEMI = SECOND() - TIMEMI
+C
+         END IF
+C
+         IF ( DEBUG ) THEN
+            WRITE(LUPRI,1) 'Norm of CTR2           : ',
+     &        DDOT(NT2SQ(ISYMTR),CTR2,1,CTR2,1)
+            WRITE(LUPRI,1) 'Norm of T2AM           : ',
+     &        DDOT(NT2AMX,WORK(KT2AM),1,WORK(KT2AM),1)
+            WRITE(LUPRI,1) 'Norm of M-INT          : ',
+     &        DDOT(N3ORHF(ISYRES),WORK(KMINT),1,WORK(KMINT),1)
+         ENDIF
 C
 C-----------------------------------------
 C        Calculate the LT21G contribution.
@@ -1754,7 +1863,7 @@ C
            KEMAT1 = KEND1
            KEMAT2 = KEMAT1 + NEMAT1(1)
            KEND2  = KEMAT2 + NMATIJ(1)
-           LWRK2  = LWORK  - KEND1
+           LWRK2  = LWORK  - KEND2
            IF (LWRK2 .LT. 0) THEN
               CALL QUIT('Insufficient work space in CC_LHTR')
            ENDIF

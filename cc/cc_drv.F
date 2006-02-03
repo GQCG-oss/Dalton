@@ -128,8 +128,8 @@ C
       PARAMETER(NMODEL = 18)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
-      LOGICAL   MOLGRD, LSORT
-      LOGICAL   CC3RSP, CCR12RSP
+      LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
+      LOGICAL   CC3RSP, CCR12RSP, CCR12LIM
 #if defined CC_AARHUS
       PARAMETER (CC3RSP = .TRUE.)
 #else
@@ -305,21 +305,25 @@ C
       LCCSAV(18) = CC1B
       APROXR12   = '   '
 C
-      IMOD   = 0
       LTCEXC = .FALSE.
 C
       MMOD = 0
       DO I = 0, NMODEL
         IF (LCCSAV(I)) MMOD = MMOD + 1
       END DO
-
-C-----------------------------------------------------------------
-C     set flags controlling AO integral sort for non-direct runs
-C     and AO -> MO transformation to (ia|jb) etc. integrals
-C-----------------------------------------------------------------
-      LSORT  = .TRUE.
-      INTTR  = .TRUE.
-
+C
+C------------------------------------------
+C     Call the CCSD initialization routine.
+C------------------------------------------
+C
+      ISYMOP = 1
+      LABEL  = 'TRCCINT '
+      IF (LMULBS) THEN
+         NOAUXBSAVE = NOAUXB
+         NOAUXB = .TRUE.
+      END IF
+      CALL CCSD_INIT1(WORK,LWORK)
+C
 C-----------------------------------------------------------------
 C     flag for ground state zeroth-order Lagrange multiplier:
 C-----------------------------------------------------------------
@@ -393,9 +397,64 @@ C
       LPTEXC = .FALSE.
       IF (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) LPTEXC = .TRUE.
 C
+C----------------------------------------------------------------
+C     CCR12LIM - controls if intermediates for CCR12 left transf.
+C                are needed
+C----------------------------------------------------------------
+C
+      CCR12LIM = CCR12 .AND. ( LRSPSYM.OR.LLEFTEIG.OR.LHTR)
+C
+C------------------------------------------
+C     Sort AO-integrals into distributions.
+C------------------------------------------
+C
+      IF (.NOT. DIRECT) THEN
+         CALL CCSD_SORTAO(WORK,LWORK)
+      ENDIF
+C
+C-----------------------------------------------------------
+C     Calculate the ( ia | jb ) integrals and write to disk.
+C-----------------------------------------------------------
+C
+      IF (.NOT.LISKIP) THEN
+         IF (LMULBS.AND.MMOD.LE.1.AND.MP2.AND.(.NOT.NATVIR).AND.
+     *       (.NOT.R12PRP)) THEN
+           ! if only MP2-R12 the (IA|JB) integrals are not needed
+           ! on file LUIAJB
+           CONTINUE
+         ELSE IF (LMULBS.AND.HERDIR) THEN
+           CALL QUIT('CC-R12 with HERDIR not implemented')
+         ELSE
+           KT1AM = 1
+           KT2AM = KT1AM + NT1AMX
+           KEND  = KT2AM + NT2AMX
+           LWRK  = LWORK - KEND
+           IF (LWRK .LT. 0) CALL QUIT ('Insufficient memory in CC_DRV')
+           CALL DZERO(WORK(KT1AM),NT1AMX)
+           LHTF = .FALSE.
+           CALL CCSD_IAJB(WORK(KT2AM),WORK(KT1AM),LHTF,
+     *                         .FALSE.,.FALSE.,WORK(KEND),LWRK)
+           REWIND(LUIAJB)
+           CALL WRITI(LUIAJB,IRAT*NT2AM(ISYMOP),WORK(KT2AM))
+         ENDIF
+      ENDIF
+C
+C--------------------------------------------------------------------
+C     Calculate semi-natural virtual orbitals from MP2-Guess for R12:
+C--------------------------------------------------------------------
+C
+      IF ((.NOT.LISKIP).AND.NATVIR) THEN
+         CALL CC_R12NO(WORK(KT1AM),WORK(KT2AM),WORK(KEND),LWRK)
+      END IF
+C
+      IF (LMULBS) NOAUXB = NOAUXBSAVE
+C
 C----------------------
 C     Loop over models.
 C----------------------
+C
+      INTTR  = .FALSE.
+      IMOD   = 0
 C
       DO 100 I = 0, NMODEL
 C
@@ -492,7 +551,7 @@ C
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C        Start loop over R12 ansaetze and approximations
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c
+C
          IANR12 = IANCC2
          IAPR12 = IAPCC2
 C
@@ -533,7 +592,7 @@ C
 C          ! no energy in gradient step for geometry optimization
            IF (.NOT.MOLGRD) THEN
 
-              CALL CCSD_ENERGY(LSORT,WORK,LWORK,APROXR12,CCR12RSP)
+              CALL CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
 c
 c              write(lupri,*) 'after CCSD_ENERGY: APROXR12 = ',APROXR12
 c
@@ -544,7 +603,6 @@ C          switch off flags for sort and transformation
 C          done in CCSD_ENERGY
 C
            INTTR = .FALSE.
-           LSORT = .FALSE.
 C
            IF (CCP2) CCS = .TRUE.
 C

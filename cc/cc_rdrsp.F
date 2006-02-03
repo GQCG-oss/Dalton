@@ -1297,6 +1297,7 @@ Cold    TYPE(3:3)  = '_'
      *    MODFIL(8:10) .EQ.'-R1' .OR.
      *    MODFIL(9:10) .EQ.'-R'  .OR.
      *    MODFIL(10:10).EQ.'-'   .OR.
+     *    MODFIL(4:8)  .EQ.'(R12)'.OR.
      *    MODFIL(5:9)  .EQ.'(R12)'.OR.
      *    MODFIL(6:10) .EQ.'(R12)'.OR.
      *    MODFIL(7:10) .EQ.'(R12'.OR.
@@ -1413,7 +1414,7 @@ C
 
       ! R12 doubles cluster amplitudes
       IF (IOPT.EQ.32) THEN
-         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NGAMMA(ISYM))
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NTR12AM(ISYM))
          IF (IMUL.EQ.3) THEN
            CALL QUIT('Triplet not yet implemented for R12 in CC_RVRSP')
 C          READ(LUSAVE,IOSTAT=IOS,ERR=993)

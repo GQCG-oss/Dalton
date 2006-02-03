@@ -51,7 +51,7 @@ c /* deck cccr_aa */
 *          result RHO are returned at the beginning of the work space in
 *          WORK(1)... WORK(NT1AM(ISYRES))
 *          WORK(NT1AM(ISYRES)+1)... WORK(NT1AM(ISYRES)+NT2AM(ISYRES))
-*          WORK(WORK(NT1AM(ISYRES)+NT2AM(ISYRES)+1)... WORK(NT1AM(ISYRES)+NT2AM(ISYRES)+NGAMMA(ISYRES))
+*          WORK(WORK(NT1AM(ISYRES)+NT2AM(ISYRES)+1)... WORK(NT1AM(ISYRES)+NT2AM(ISYRES)+NTR12AM(ISYRES))
 *          (double excitation part will be stored in packed form)
 *
 *    symmetries:
@@ -167,7 +167,7 @@ C#include <ccr1rsp.h>
 
       IF (CCR12) THEN
         KRHOR12 = KEND0 
-        KEND0   = KRHOR12 + NGAMMA(ISYRES)
+        KEND0   = KRHOR12 + NTR12AM(ISYRES)
       END IF
 
       KPERTA  = KEND0
@@ -374,16 +374,16 @@ C     JK+OC, CCSLV
 * C. Neiss,  june 2005
 *---------------------------------------------------------------------*
       IF (CCR12) THEN
-        CALL DZERO(WORK(KRHOR12),NGAMMA(ISYRES))
+        CALL DZERO(WORK(KRHOR12),NTR12AM(ISYRES))
 C
         KT12AM0 = KEND1
-        KT12AMB = KT12AM0 + NGAMSQ(1)
-        KXINTTRI= KT12AMB + NGAMSQ(ISYMTB)
-        KXINTSQ = KXINTTRI+ NGAMMA(1)
-        KVXINTSQ= KXINTSQ + NGAMSQ(1)
-        KSCR    = KVXINTSQ+ NGAMSQ(ISYMTA)
-        KRHO12SQ= KSCR    + NGAMSQ(ISYRES)
-        KLAMDPB = KRHO12SQ+ NGAMSQ(ISYRES)
+        KT12AMB = KT12AM0 + NTR12SQ(1)
+        KXINTTRI= KT12AMB + NTR12SQ(ISYMTB)
+        KXINTSQ = KXINTTRI+ NR12R12P(1)
+        KVXINTSQ= KXINTSQ + NR12R12SQ(1)
+        KSCR    = KVXINTSQ+ NR12R12SQ(ISYMTA)
+        KRHO12SQ= KSCR    + NTR12SQ(ISYRES)
+        KLAMDPB = KRHO12SQ+ NTR12SQ(ISYRES)
         KLAMDHB = KLAMDPB + NGLMDT(ISYMTB)
         KEND2   = KLAMDHB + NGLMDT(ISYMTB)
         LEND2   = LWORK - KEND2
@@ -396,11 +396,11 @@ C
      &                   WORK(KLAMDHB),WORK(KT1AMPB),ISYMTB)
 
 * read R12 ground state amplitudes:
-        CALL CC_R12GETCT(WORK(KT12AM0),1,0,IDUM,.FALSE.,.FALSE.,
+        CALL CC_R12GETCT(WORK(KT12AM0),1,0,IDUM,.FALSE.,'N',
      &                   IDUM,IDUM,IDUM,IDUM,IDUM,WORK(KEND2),LEND2)
 
 * read R12 response amplitudes:
-        CALL CC_R12GETCT(WORK(KT12AMB),ISYMTB,2,KETSCL,.FALSE.,.FALSE.,
+        CALL CC_R12GETCT(WORK(KT12AMB),ISYMTB,2,KETSCL,.FALSE.,'N',
      &                   IDUM,IDUM,IDUM,LISTB,ITAMPB,WORK(KEND2),LEND2)
 
 * read R12 overlap matrix:
@@ -409,13 +409,14 @@ C
      &              IDUM,.FALSE.)
         REWIND(LUNIT)
  8888   READ(LUNIT) IAN
-        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NGAMMA(1))
+        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NR12R12P(1))
         IF (IAN.NE.IANR12) GOTO 8888
         CALL GPCLOSE(LUNIT,'KEEP')
-        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),.FALSE.)
+        IOPT = 2
+        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),'N',IOPT)
 
 * read R12 VXINT:
-        CALL DZERO(WORK(KVXINTSQ),NGAMSQ(ISYMTA))
+        CALL DZERO(WORK(KVXINTSQ),NR12R12SQ(ISYMTA))
         CALL CC_R12RDVXINT(WORK(KVXINTSQ),WORK(KEND2),LEND2,ONE,
      &                     ISYMTA,LABELA)
 
@@ -427,7 +428,7 @@ C
       END IF
 
 * calculate first contribution:
-        CALL CC_R12XI(WORK(KRHO12SQ),ISYRES,WORK(KT12AMB),ISYMTB,
+        CALL CC_R12XI(WORK(KRHO12SQ),ISYRES,'N',WORK(KT12AMB),ISYMTB,
      &                WORK(KXINTSQ),WORK(KVXINTSQ),ISYMTA,
      &                WORK(KPERTA),WORK(KLAMDP0),WORK(KLAMDH0),
      &                'N',WORK(KEND2),LEND2)
@@ -436,12 +437,13 @@ C
         CALL CC_R12XI2A(WORK(KSCR),ISYRES,WORK(KT12AM0),1,
      &                  WORK(KPERTA),ISYMTA,WORK(KLAMDP0),
      &                  WORK(KLAMDHB),ISYMTB,'N',WORK(KEND2),LEND2)
-        CALL CC_R12XI2B(WORK(KRHO12SQ),WORK(KXINTSQ),1,'N',WORK(KSCR),
-     &                  ISYRES,'N',-ONE)
+        CALL CC_R12XI2B(WORK(KRHO12SQ),'N',WORK(KXINTSQ),1,'N',
+     &                  WORK(KSCR),ISYRES,'N',-ONE)
 
 * pack to triangular format:
+        IOPT = 1
         CALL CCR12PCK2(WORK(KRHOR12),ISYRES,.FALSE.,WORK(KRHO12SQ),
-     &                 .FALSE.)
+     &                 'N',IOPT)
         CALL CCLR_DIASCLR12(WORK(KRHOR12),BRASCL,ISYRES)
  
       END IF
@@ -450,7 +452,7 @@ C
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'Final result of CCCR_AA: RHO:'
         Call CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYRES,1,1)
-        IF (CCR12) CALL CC_PRP(WORK(KRHOR12),ISYRES,1,.TRUE.)
+        IF (CCR12) CALL CC_PRPR12(WORK(KRHOR12),ISYRES,1,.TRUE.)
       END IF
 
       RETURN

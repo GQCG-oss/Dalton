@@ -197,7 +197,7 @@ C     Calculate MP2-R12 contributions for frozen core gradients
       integer dklijz,kajij,kcvia,ntotj,imataj(8,8),icou3
       integer nr1orb(8),nr1xbas(8),nrgkl,n2bst1(8),ir1orb(8,8)
       integer ir2bas(8,8),ir2xbas(8,8),irgkl,iaodis1(8,8),nr2bas(8)
-      integer kxij,ir1xbas(8,8)
+      integer kxij,ir1xbas(8,8),nijkl(8)
       integer ipdd,res,koffe,kctil2,idxijkl,lctil,ncvai
 
 #if defined (SYS_CRAY)
@@ -249,7 +249,7 @@ c     ----------------------------------------
       call dscal(nrhftria*nrhftria,0.5d0,work(krtrip),1)
 
       call cc_r12vpack(work(kccr12),isymv,work(krsing),work(krtrip),
-     &     nrhftria)
+     &     nrhf,nrhfa,nijkl)
 
 c     ---------------------------------
 C     get c_tilde = 2*c_ij^kl - c_ji^kl
@@ -607,8 +607,9 @@ C  /* Deck r12gradapfr */
       integer isym,nvir0t,blajkl,klijz,krajklz,klijanz,kxajklz
       integer ipdd,kxtil,koffk,koffl,koffj,koffi,isymmu,isymmuj
       integer blajklz,aj,kl,ijkl,nrhfst,nrhffrt
-      integer imataj(8,8),imatka(8,8),nmatkl(8),nmatak(8)
-      integer icou4,icou5,icou6,icou7,imatmn(8,8),imatkl(8,8)
+      integer imataj(8,8),imatka(8,8),nmatkl1(8),nmatak(8)
+      integer icou4,icou5,icou6,icou7,imatmn(8,8),imatkl1(8,8)
+      integer nijkl(8)
 #if defined (SYS_CRAY)
       real res(*),work(*),orb(*),v2am(*),one,two,zero
 #else
@@ -626,7 +627,7 @@ C  /* Deck r12gradapfr */
 
       do isyman = 1,nsym
          nmatan(isyman) = 0
-         nmatkl(isyman) = 0
+         nmatkl1(isyman) = 0
          nmatak(isyman) = 0
          icou3 = 0
          icou4 = 0
@@ -637,7 +638,7 @@ C  /* Deck r12gradapfr */
             icou5 = icou5 + nrhffr(isyma)*nrhf(isymn)
             nmatan(isyman) = nmatan(isyman) + nrhffr(isyma)*nrhfs(isymn)
             nmatak(isyman) = nmatak(isyman) + nrhffr(isyma)*nrhf(isymn)
-            nmatkl(isyman) = nmatkl(isyman) + nrhfs(isyma)*nrhfs(isymn)
+            nmatkl1(isyman) = nmatkl1(isyman)+nrhfs(isyma)*nrhfs(isymn)
           enddo
       enddo
 
@@ -651,11 +652,11 @@ C  /* Deck r12gradapfr */
          do isyma = 1,nsym
             isymn = muld2h(isyman,isyma)
             imataj(isymn,isyma)= icou4
-            imatkl(isyma,isymn)= icou5
+            imatkl1(isyma,isymn)= icou5
             imatmn(isyma,isymn)= icou6
             imatka(isymn,isyma)= icou7
             icou4 = icou4+nrhfs(isymn)*nrhffr(isyma)
-            icou5 = icou5+nmatkl(isymn)* nmatkl(isyma)
+            icou5 = icou5+nmatkl1(isymn)* nmatkl1(isyma)
             icou6 = icou6+nrhfs(isyma)*nrhfs(isymn)
             icou7 = icou7+nmatak(isyma)*nmatij(isymn)
          enddo
@@ -697,7 +698,7 @@ c     ----------------------------------------
       call dscal(nrhftria*nrhftria,0.5d0,work(krtrip),1)
 
       call cc_r12vpack(work(kccr12),isymv,work(krsing),work(krtrip),
-     &     nrhftria)
+     &     nrhf,nrhfa,nijkl)
 
 c     ---------------------------------
 C     get c_tilde = 2*c_ij^kl - c_ji^kl
@@ -977,8 +978,8 @@ c
      &                          (l-1)*nrhfs(isymk) + k
                           ij = imatmn(isymi,isymj)+
      &                          (j-1)*nrhfs(isymi) + i
-                          ijkl = imatkl(isymij,isymkl)+
-     &                          ij +(kl-1)*nmatkl(isymij)
+                          ijkl = imatkl1(isymij,isymkl)+
+     &                          ij +(kl-1)*nmatkl1(isymij)
                           work(blajklz+idx-1) = work(blajkl+ijkl-1)
                        enddo
                     enddo

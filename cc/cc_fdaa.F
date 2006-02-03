@@ -374,6 +374,9 @@ C
       IF (CC2)  MODEL = 'CC2'
       IF (CCSD) MODEL = 'CCSD'
 C
+      IF (CCR12) CALL QUIT('Finite-difference A{O}-matrix for CCR12 '//
+     &                     'not adapted')
+C
       KT1AMPSAV  = 1
       KT2AMPSAV  = KT1AMPSAV + NT1AMX
       KT1AMPA    = KT2AMPSAV + NT2AMX

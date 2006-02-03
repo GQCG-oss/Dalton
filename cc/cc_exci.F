@@ -385,7 +385,7 @@ C
            NCCVAR = NT1AM(ISYMTR)
          ELSE
            NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-           IF (CCR12)   NCCVAR = NCCVAR + NGAMMA(ISYMTR)
+           IF (CCR12)   NCCVAR = NCCVAR + NTR12AM(ISYMTR)
            IF (TRIPLET) NCCVAR = NCCVAR + NT2AMA(ISYMTR)
          END IF
          CALL CCLR_LEINFI(TRIPLET)
@@ -689,7 +689,7 @@ C
               END IF
               IF (CCR12) THEN
                 KC12AM = KWRK1
-                KWRK1  = KC12AM + NGAMMA(ISYM)
+                KWRK1  = KC12AM + NTR12AM(ISYM)
               END IF
               LWRK1 = LWORK - KWRK1
               IF(LWRK1.LT.0) CALL QUIT('OUT OF WORKSPACE IN CC_EXCI')
@@ -1551,7 +1551,7 @@ C
       IPRLE  = IPRINT
       LETYPA = NT1AM(ISYMTR) + NT2AM(ISYMTR)
       IF (  TRIPLET  ) LETYPA = LETYPA + NT2AMA(ISYMTR)
-      IF (   CCR12   ) LETYPA = LETYPA + NGAMMA(ISYMTR)
+      IF (   CCR12   ) LETYPA = LETYPA + NTR12AM(ISYMTR)
       IF (CCS.OR.CCP2) LETYPA = NT1AM(ISYMTR)
       LETYPB = 0
       LETOT  = LETYPA + LETYPB
@@ -2369,13 +2369,14 @@ C
 #include <ccsdinp.h>
 #include <r12int.h>
 C
-      LOGICAL LCONT
+      LOGICAL LCONT,LOCDBG
       CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FR2SD,FRHO12,FC12AM,FS12AM,
      &            FS2AM
       PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM',FC12AM='CCR_C12M')
       PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2',FRHO12='CCR_RH12')
       PARAMETER (                  FS2AM ='CCR_S2DM',FS12AM='CCR_S12M')
       PARAMETER (TWO = 2.0D00 )
+      PARAMETER (LOCDBG = .FALSE.)
       CHARACTER*3 APROXR12
 C
       DIMENSION WORK(LWORK), CONT(28)
@@ -2385,7 +2386,7 @@ C
          NCCVAR = NT1AM(ISYMV)
       ELSE
          NCCVAR = NT1AM(ISYMV) + NT2AM(ISYMV)
-         IF (CCR12) NCCVAR = NCCVAR + NGAMMA(ISYMV)
+         IF (CCR12) NCCVAR = NCCVAR + NTR12AM(ISYMV)
       END IF
 
 C     IF (CCS .OR. CC2 .OR. CCSD) THEN
@@ -2459,7 +2460,7 @@ CCH   IF (ISIDE  .EQ. -1) NRHO2 = MAX(NRHO2,2*NT2ORT(1))
       IF ( CCS ) NRHO2 = 2
 C
       NC2AM = MAX(NT2SQ(ISYMTR),NT2SQ(1),
-     *           NT2AM(ISYMTR)+2*NT2ORT(1))
+     *           NT2AM(ISYMTR)+2*NT2ORT(1),NT2R12(1))
       IF ( CC2 ) NC2AM = MAX(NT2SQ(ISYMTR),NT2SQ(1))
       IF ( CCS ) NC2AM = 2
 C
@@ -2478,7 +2479,7 @@ C---------------------------------------------------------------------
 C     Prepare the C-amplitudes.
 C---------------------------------------------------------------------
 C
-      IF ( DEBUG ) THEN
+      IF ( DEBUG .OR. LOCDBG ) THEN
          RHO1N = DDOT(NT1AM(ISYMTR),WORK(KRHO1),1,WORK(KRHO1),1)
          WRITE(LUPRI,1) 'Norm of C1AM -first in CC_ATRR:  ',RHO1N
          IF (.NOT. CCS) THEN
@@ -2486,7 +2487,9 @@ C
             WRITE(LUPRI,1) 'Norm of C2AM -first in CC_ATRR:  ',RHO2N
          ENDIF
       ENDIF
+C
       IF (.NOT. CCS) NRHO2 = NT2AM(ISYMTR)
+C
       DO 70 IV = 1, NSIMTR
          NR1 = IV + K1 - 1
          IF (.NOT. (CCS.OR.CC2)) THEN
@@ -2511,8 +2514,8 @@ C
            CONT(3) = 0.0D0
          END IF
          IF (CCR12) THEN
-            KRHO12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1
-            CALL CC_WVEC(LUFC12,FC12AM,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+            KRHO12 = NT1AM(ISYMTR)+NRHO2+1
+            CALL CC_WVEC(LUFC12,FC12AM,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
      *                   NR1,WORK(KRHO12))
          END IF
   70  CONTINUE
@@ -2543,7 +2546,6 @@ C
       IF ( CCS ) NRHO2 = 2
       CALL DZERO(WORK(KRHO1),NRHO1)
       CALL DZERO(WORK(KRHO2),NRHO2)
-      IF (CC2 ) NRHO2 = NT2AM(ISYMTR)
       DO 80 IV = 1, NSIMTR
          NR1 = IV + K1 - 1
          IF (.NOT. (CCS.OR.CC2)) THEN
@@ -2597,11 +2599,11 @@ c        get R*A
      *                        IVEC,.FALSE.,DUMMY)
          END IF
 
-         KS12AM = NT1AM(ISYMTR)+NT2AM(ISYMTR)+NGAMMA(ISYMTR)+1
-         CALL CC_RVEC(LUFS12,FS12AM,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+         KS12AM = NT1AM(ISYMTR)+NT2AM(ISYMTR)+NTR12AM(ISYMTR)+1
+         CALL CC_RVEC(LUFS12,FS12AM,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
      *                IVEC,WORK(KS12AM))
          IF (IANR12.EQ.2) THEN
-           KS2AM = KS12AM + NGAMMA(ISYMTR)
+           KS2AM = KS12AM + NTR12AM(ISYMTR)
            KEND1 = KS2AM + NT2AM(ISYMTR)
            LWRK1 = LWORK - KEND1
            IF (LWRK1.LT.0) THEN
@@ -2624,11 +2626,12 @@ c        get R*A
          CALL CC_RVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *                NR1,WORK(KRHO1))
          IF (.NOT.CCS) THEN
-            CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NRHO2,NR2,WORK(KRHO2))
+            CALL CC_RVEC(LUFSD,FR2SD,NRHO2,NT2AM(ISYMTR),
+     *                   NR2,WORK(KRHO2))
          END IF
          IF (CCR12) THEN
             KRHO12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1
-            CALL CC_RVEC(LUFR12,FRHO12,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+            CALL CC_RVEC(LUFR12,FRHO12,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
      *                   NR1,WORK(KRHO12))
          END IF
 
@@ -2640,10 +2643,10 @@ c        get R*A
              IF (IANR12.EQ.2) THEN
                KSCR12 = KS2AM + NT2AM(ISYMTR)
              ELSE
-               KSCR12 = KS12AM + NGAMMA(ISYMTR)
+               KSCR12 = KS12AM + NTR12AM(ISYMTR)
              END IF
              KEND2  = KSCR12 + 
-     &                MAX(NT1AM(ISYMTR),NT2AM(ISYMTR),NGAMMA(ISYMTR))
+     &                MAX(NT1AM(ISYMTR),NT2AM(ISYMTR),NTR12AM(ISYMTR))
            ELSE
              KSCR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1 
              KEND2  = KSCR12 + MAX(NT1AM(ISYMTR),NT2AM(ISYMTR))
@@ -2670,10 +2673,10 @@ chf
            END IF
 
            IF (CCR12) THEN
-             CALL CC_RVEC(LUFC12,FC12AM,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+             CALL CC_RVEC(LUFC12,FC12AM,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
      *                     NR1,WORK(KSCR12))
-             CONT(6) =DDOT(NGAMMA(ISYMTR),WORK(KSCR12),1,WORK(KRHO12),1)
-             CONT(3) =DDOT(NGAMMA(ISYMTR),WORK(KSCR12),1,WORK(KS12AM),1)
+             CONT(6)=DDOT(NTR12AM(ISYMTR),WORK(KSCR12),1,WORK(KRHO12),1)
+             CONT(3)=DDOT(NTR12AM(ISYMTR),WORK(KSCR12),1,WORK(KS12AM),1)
            ELSE
              CONT(6) = 0.0D0
              CONT(3) = 0.0D0
@@ -2681,9 +2684,12 @@ chf
 
          END IF
 
-         IF (IPRINT .GT. 45) THEN
+         IF ((IPRINT.GT.45) .OR. LOCDBG) THEN
             CALL AROUND('CC_ATRR: RHO = trans. Vector ')
             CALL CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYMTR,1,1)
+            IF (CCR12) THEN
+              CALL CC_PRPR12(WORK(KRHO12),ISYMTR,1,.TRUE.)
+            END IF
          ENDIF
          IF (.NOT.(CCS.OR.CC2)) THEN
             CALL CC_WVEC(LUFR2,FRHO2,NT2AM(ISYMTR),

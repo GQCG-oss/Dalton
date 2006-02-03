@@ -1132,10 +1132,10 @@ C     point and restart from the optimal solution so far.
 C-----------------------------------------------------------
 C
       IF ( NREDH .GE. MXLRV ) THEN
-         IF ( IPRLE .GT. 20 ) THEN
+C        IF ( IPRLE .GT. 20 ) THEN
             WRITE(LUPRI,*) ' NREDH : ',NREDH
             WRITE(LUPRI,*) ' MXLRV : ',MXLRV
-         ENDIF
+C        ENDIF
 C
          WRITE(LUPRI,'(/,1X,A)') 
      *      'ATTENTION!!!! '
@@ -1651,7 +1651,7 @@ c
                CALL QUIT(' CCRED: EIGENVALUE EQUATION NOT CONVERGED ')
          END IF
 C
-         CALL RGORD(MAXRED,NREDH,EIVAL,WRK(KWI),SOLEQ)
+         CALL RGORD(MAXRED,NREDH,EIVAL,WRK(KWI),SOLEQ,.FALSE.)
 C
          ICPLX = 0
          DO I=1,NVEC
@@ -1696,7 +1696,7 @@ C
       RETURN
       END
 C  /* Deck rgord */
-      SUBROUTINE RGORD(NM,N,WR,WI,Z)
+      SUBROUTINE RGORD(NM,N,WR,WI,Z,LSORT)
 C
 C  15-Aug-1989 Hans Joergen Aa. Jensen
 C  modified by Ove Christiansen 20-dec 1994
@@ -1704,17 +1704,27 @@ C  to normalize correct!
 C
 C  Reorder and normalize eigenpairs from RG.
 C
+C  LSORT = .FALSE. --> ascending order
+C  LSORT = .TRUE.  --> descending order
 #include <implicit.h>
+      LOGICAL LSORT
       DIMENSION WR(N), WI(N), Z(NM,N)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       DO 100 I = 1,N-1
          ILOW = I
          XLOW = WR(I)
          DO 50 J = I+1,N
+          IF (.NOT.LSORT) THEN
             IF (WR(J) .LT. XLOW) THEN
                ILOW = J
                XLOW = WR(J)
             END IF
+          ELSE
+            IF (WR(J) .GT. XLOW) THEN
+               ILOW = J
+               XLOW = WR(J)
+            END IF
+          END IF
    50    CONTINUE
          IF (ILOW .NE. I) THEN
             WR(ILOW) = WR(I)
@@ -1813,7 +1823,7 @@ C
 
          IF (CCR12) THEN
            CALL DCOPY(NCCVAR,BVECS(1,I),1,WRK(KSVECS+NCCVAR*(I-1)),1)
-           CALL CC_RVEC(LUFS12,S12FIL,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+           CALL CC_RVEC(LUFS12,S12FIL,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
      *                  NBPREV+I,WRK(KSVECS+NCCVAR*(I-1)+NT1AM(ISYMTR)+
      *                  NT2AM(ISYMTR)))
            IF (IANR12.EQ.2) THEN
@@ -1825,15 +1835,15 @@ C
 
          IF (CCR12) THEN
 C          Check norm of r12 part:
-           TST = DDOT(NGAMMA(ISYMTR),BVECS((1+NT1AM(ISYMTR)+
+           TST = DDOT(NTR12AM(ISYMTR),BVECS((1+NT1AM(ISYMTR)+
      *                NT2AM(ISYMTR)),I),1,WRK(KSVECS+NCCVAR*(I-1)+
      *                NT1AM(ISYMTR)+NT2AM(ISYMTR)),1)           
            IF (TST .LT. -THRTST) THEN
              WRITE(LUPRI,*) '(CCORT) Norm^2 (R12-part) = ',TST
-             WRITE(LUPRI,*) 'WARNING: R12 part of input vector no. ',I,
-     *                      ' in CCORT has norm < 0'
-             WRITE(LUPRI,*) '>>>>>>> Check your '//
-     *                      'auxiliary basis and/or approximations!'
+             WRITE(LUPRI,'(A,I4,A)') 'WARNING: R12 part of input '//
+     *                      'vector no. ',I,' in CCORT has norm < 0'
+C            WRITE(LUPRI,*) '>>>>>>> Check your '//
+C    *                      'auxiliary basis and/or approximations!'
 C            CALL QUIT('R12 input vector in CCORT has norm < 0')
            END IF
            TT = DDOT(NCCVAR,BVECS(1,I),1,WRK(KSVECS+NCCVAR*(I-1)),1)
@@ -1948,7 +1958,7 @@ C         IF (KEND2.LT.0)
 C    *      CALL QUIT('Insufficient memory in CCORT')
 C         DO I = 1, NBADD
 C           DO J = 1, NBADD
-C             WRK(KOLP-1+NBADD*(J-1)+I) = DDOT(NGAMMA(ISYMTR),
+C             WRK(KOLP-1+NBADD*(J-1)+I) = DDOT(NTR12AM(ISYMTR),
 C    *                   BVECS((1+NT1AM(ISYMTR)+NT2AM(ISYMTR)),I),1,
 C    *                   WRK(KSVECS+NCCVAR*(J-1)+
 C    *                   NT1AM(ISYMTR)+NT2AM(ISYMTR)),1)  
@@ -1993,15 +2003,15 @@ C
          END DO
          IF (CCR12) THEN
 C          Check norm of r12 part:
-           TST = DDOT(NGAMMA(ISYMTR),BVECS((1+NT1AM(ISYMTR)+
+           TST = DDOT(NTR12AM(ISYMTR),BVECS((1+NT1AM(ISYMTR)+
      *                NT2AM(ISYMTR)),I),1,WRK(KSVECS+NCCVAR*(I-1)+
      *                NT1AM(ISYMTR)+NT2AM(ISYMTR)),1)           
            IF (TST .LT. -THRTST) THEN
              WRITE(LUPRI,*) '(CCORT) Norm^2 (R12-part) = ',TST
-             WRITE(LUPRI,*) 'WARNING: R12 part of result vector no. ',I,
-     *                      ' in CCORT has norm < 0'
-             WRITE(LUPRI,*) '>>>>>>> Check your '//
-     *                      'auxiliary basis and/or approximations!'
+             WRITE(LUPRI,'(A,I4,A)') 'WARNING: R12 part of result '//
+     *                      'vector no. ',I,' in CCORT has norm < 0'
+C            WRITE(LUPRI,*) '>>>>>>> Check your '//
+C    *                      'auxiliary basis and/or approximations!'
 C            CALL QUIT('R12 result vector in CCORT has norm < 0')
            END IF
            TT = DDOT(NCCVAR,BVECS(1,I),1,WRK(KSVECS+NCCVAR*(I-1)),1)
@@ -2063,7 +2073,7 @@ C
          CALL CC_PUTVEC(LUFC1,C1FIL,LUFC2,C2FIL,LUFC12,C12FIL,
      *                  TRIPLET,IVENU,BVECS(1,I))
          IF (CCR12) THEN
-           CALL CC_WVEC(LUFS12,S12FIL,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+           CALL CC_WVEC(LUFS12,S12FIL,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
      *                  IVENU,WRK(KSVECS+NT1AM(ISYMTR)+NT2AM(ISYMTR)+
      *                  NCCVAR*(I-1)))
            IF (IANR12.EQ.2) THEN
@@ -2412,7 +2422,7 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
 
       IF (CCR12) THEN
         KSCR = KEND1
-        KEND1= KSCR + NGAMMA(ISYMTR) 
+        KEND1= KSCR + NTR12AM(ISYMTR) 
       END IF
   
       LWRK1 = LWORK - KEND1
@@ -2442,7 +2452,7 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
             CALL CC_R12NXTAM(VECTORS(NCCVAR0+1,JVEC),ISYMTR,
      &                       WORK(KSCR),LCCEQ,
      &                       DUMMY,WORK(KEND1),LWRK1)
-            CALL DSCAL(NGAMMA(ISYMTR),-1.0D0,VECTORS(NCCVAR0+1,JVEC),1)
+            CALL DSCAL(NTR12AM(ISYMTR),-1.0D0,VECTORS(NCCVAR0+1,JVEC),1)
          END IF 
       END DO
 

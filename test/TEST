@@ -90,14 +90,14 @@ dpt_hbr dpt_hbr_finp dpt_h2s_ff"
 MP2R12="r12_damped r12_damped_herdir \
 r12_sym r12_nosym r12_fc_sym r12_fc_nosym \
 r12_aux_sym r12_aux_nosym r12_fc_aux_sym r12_fc_aux_nosym \
-r12_prop r12_prop_n2 r12_prop_h2o r12_loc r12_stg r12_orb"
+r12_prop r12_prop_n2 r12_prop_h2o r12_loc r12_stg r12_orb r12_cabs"
 #
 SHORTCCR12="cc2_r12_aux2_bh cc2_r12_aux2_bh_sym \
 cc2_r12_aux_bh_a2 cc2_r12_aux_bh_sym_a2 \
 cc2_r12_he cc2_r12_aux2_bh_a2 cc2_r12_aux2_bh_sym_a2 \
 cc2_r12_aux2_bh_lhtr cc2_r12_aux2_bh_sym_lhtr \
-cc2_r12_he_a2 ccsdr12_bh ccsdr12_bh_direct \
-ccsdr12_n2 ccsdr12_n2_direct cc2_r12_aux_ch4 cc2_r12_aux_ch4_sym \
+cc2_r12_he_a2 ccsdr12_bh_direct ccsdr12_n2_direct \
+ccsdr12_bh ccsdr12_n2 cc2_r12_aux_ch4 cc2_r12_aux_ch4_sym \
 cc2_r12_aux_ch4_lhtr cc2_r12_aux_ch4_sym_lhtr cc2_r12_aux_nh3_sym \
 cc2_r12_aux_nh3_sym_lhtr ccsdr12pt_ne \
 cc2_r12_aux_ch4_fop cc2_r12_aux_ch4_sym_fop \
@@ -107,10 +107,14 @@ cc2_r12_aux_ch4_sym_lr_nondir cc2_r12_aux_ch4_sym_nondir \
 cc2_r12_aux_ch4_ff cc2_r12_aux_ch4_ff2 \
 cc2_r12_aux_ch4_sym_pol cc2_r12_aux_n2_gamma cc2_r12_aux_n2_gamma2 \
 cc2_r12_aux_ne_gamma cc2_r12_aux_bh_a3 cc2_r12_aux_bh_sym_a3 \
-"
+cc2_r12_aux_ne cc2_r12_aux_ne_gamma2 cc2_r12_aux_h2o_a2 \
+cc2_r12_aux_h2o_sym_a2 cc2_r12_aux_h2o_a3 cc2_r12_aux_h2o_sym_a3 \
+ccsdr12_n2_exc ccsdr12_n2_sym_exc ccsdr12_n2_sym_exc_lhtr \
+ccsdr12pt_ne_f12 cc2_r12_aux_ch4_sym_f12 cc2_r12_aux_ch4_sym_a3_f12"
 #
 LONGCCR12="cc2_r12_aux_ch4_a2 cc2_r12_aux_ch4_sym_a2 \
-cc2_r12_aux_ch4_sym_a3 cc2_r12_aux_benzene_sym_fop"
+cc2_r12_aux_ch4_sym_a3 cc2_r12_aux_benzene_sym_fop cc3r12_n2_sym_exc \
+cc3r12_n2_sym_exc_lhtr"
 #
 CCR12="$SHORTCCR12 $LONGCCR12"
 #

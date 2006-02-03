@@ -811,6 +811,9 @@ C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
+      IF (CCR12) CALL QUIT('Finite-difference on H-matrix for CCR12 '//
+     &                     'not adapted')
+C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CC_FDH  : MAKING FINITE DIFF. CC H-Matrix')
       ENDIF

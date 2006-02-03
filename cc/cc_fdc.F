@@ -70,6 +70,9 @@ C
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
 C
+      IF (CCR12) CALL QUIT('Finite-difference C-matrix for CCR12 '//
+     &                     'not adapted')
+C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CC_FDC  : MAKING FINITE DIFF. CC C Matrix')
       ENDIF

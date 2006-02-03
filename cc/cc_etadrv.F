@@ -227,7 +227,7 @@ C       MPERM = ??
       DO ISYM = 1, NSYM
         LMAX1 = MAX(LMAX1,NT1AM(ISYM))
         LMAX2 = MAX(LMAX2,NT2AM(ISYM))
-        IF (CCR12) LMAXR12 = MAX(LMAXR12,NGAMMA(ISYM))
+        IF (CCR12) LMAXR12 = MAX(LMAXR12,NTR12AM(ISYM))
       END DO
 
       KCHI1 = KEND0
@@ -295,7 +295,7 @@ C       MPERM = ??
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
           IF (CCR12) 
-     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &     XNORM = XNORM+DDOT(NTR12AM(ISYM),WORK(KCHIR12),1,
      &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
@@ -336,7 +336,7 @@ C       MPERM = ??
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
           IF (CCR12)
-     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &     XNORM = XNORM+DDOT(NTR12AM(ISYM),WORK(KCHIR12),1,
      &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
@@ -386,7 +386,7 @@ C       MPERM = ??
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
           IF (CCR12)
-     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &     XNORM = XNORM+DDOT(NTR12AM(ISYM),WORK(KCHIR12),1,
      &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
@@ -429,7 +429,7 @@ C       MPERM = ??
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
           IF (CCR12)
-     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &     XNORM = XNORM+DDOT(NTR12AM(ISYM),WORK(KCHIR12),1,
      &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
@@ -483,7 +483,7 @@ C       MPERM = ??
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
           IF (CCR12)
-     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &     XNORM = XNORM+DDOT(NTR12AM(ISYM),WORK(KCHIR12),1,
      &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM
         END DO
@@ -521,7 +521,7 @@ C       MPERM = ??
           IF (.NOT. CCS)
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KRHS2),1)
           IF (CCR12) 
-     &     XNORM = XNORM+DDOT(NGAMMA(ISYM),WORK(KCHIR12),1,
+     &     XNORM = XNORM+DDOT(NTR12AM(ISYM),WORK(KCHIR12),1,
      &                        WORK(KRHSR12),1)
           WRITE (LUPRI,'(A,I3,2X,F12.8,2X,A,2X,F12.8)') MSGDBG,
      &              ISTAT(IVEC,1),EIGV(IVEC,1),LABELV(IVEC,1),XNORM

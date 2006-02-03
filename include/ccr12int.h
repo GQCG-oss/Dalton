@@ -1,9 +1,10 @@
       character*8 fnback, frhtf, frhtf2, fghtf, fccgmnab, fvabkl,
-     &            fvcdkl, fvijkl
+     &            fvcdkl, fvijkl, fnsak, fr12f12htf
       parameter (fnback = 'CCR12BAK', frhtf = 'R12HTF  ', 
      &           frhtf2 = 'R12HTF2 ', 
-     &           fghtf  = 'R12V12A2', fccgmnab = 'FCCGMNAB', 
-     &           fvabkl = 'R12VABKL', fvcdkl = 'R12VCDKL')
+     &           fghtf  = 'R12V12A2', fccgmnab = 'R12GMNAB', 
+     &           fvabkl = 'R12VABKL', fvcdkl = 'R12VCDKL',
+     &           fnsak  = 'CCR12SAK', fr12f12htf = 'R12F12HT')
       character*10 fv12back, ft12back,fvajkl,fq12back,fu12back,
      &             fv12back2, ft12back2
       parameter (fvijkl = 'R12VIJKL')

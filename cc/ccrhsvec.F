@@ -255,7 +255,7 @@ c /* deck CCRHSVEC */
         DO ISYM = 1, NSYM
           LMAX1 = MAX(LMAX1,NT1AM(ISYM))
           LMAX2 = MAX(LMAX2,NT2AM(ISYM))
-          IF (CCR12) LMAXR12 = MAX(LMAXR12,NGAMMA(ISYM))
+          IF (CCR12) LMAXR12 = MAX(LMAXR12,NTR12AM(ISYM))
         END DO
 
         KRHS1 = KEND0
@@ -558,7 +558,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
           LMAX1 = MAX(LMAX1,NT1AM(ISYM))
           LMAX2 = MAX(LMAX2,NT2AM(ISYM))
           IF (CCR12) THEN
-            LMAXR12 = MAX(LMAXR12,NGAMMA(ISYM))
+            LMAXR12 = MAX(LMAXR12,NTR12AM(ISYM))
           END IF
         END DO
 
@@ -596,7 +596,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
           IF (CCR12) THEN
             CALL CC_RDRSP(LISTR,IDXVEC,ISYM,IOPTR12,MODEL,
      &                  DUMMY,WORK(KRHSR12))
-            XNORM = XNORM + DDOT(NGAMMA(ISYM),WORK(KRHSR12),1,
+            XNORM = XNORM + DDOT(NTR12AM(ISYM),WORK(KRHSR12),1,
      &                           WORK(KRHSR12),1)
           END IF
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM

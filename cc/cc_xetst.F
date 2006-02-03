@@ -545,7 +545,7 @@ C       -------------------------------------------------
       KEND1   = KETA2   + NT2AM(ISYETA)
       if (CCR12) then
         keta12 = kend1
-        kend1 = keta12 + ngamma(isyeta)
+        kend1 = keta12 + ntr12am(isyeta)
       end if
       LWRK1   = LWORK   - KEND1
 
@@ -691,11 +691,13 @@ C
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0, TWO = 2.0d0, XHALF = 0.5D0)
       LOGICAL NONHFSAVE,LHTF
       CHARACTER MODEL*10
-      CHARACTER*8 FIlER12, FILER12_2
 C
       IF (IPRINT.GT.10) THEN
          CALL AROUND( 'IN CC_FDXI  : MAKING FINITE DIFF. CC Xi Vector')
       END IF
+C
+      IF (CCR12) CALL QUIT('Finite-difference Xi-vector for CCR12 '//
+     &                     'not adapted')
 C
       IF (CC2) THEN
         IF (NFIELD.GT.0 .AND. (.NOT.NONHF)) THEN
@@ -764,7 +766,7 @@ C
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
       LHTF = .FALSE.
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,LHTF,
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
      &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
@@ -831,7 +833,7 @@ C
 C
          CALL DZERO(WORK(KT1AMP0),NT1AMX)
          LHTF = .FALSE.
-         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,
+         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),
      &                   LHTF,.FALSE.,.FALSE.,WORK(KEND1),LWRK1)
          REWIND(LUIAJB)
          CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
@@ -953,7 +955,7 @@ C
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
       LHTF = .FALSE.
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,LHTF,
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
      &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
@@ -1004,7 +1006,6 @@ C
       DIMENSION WORK(LWORK), RHODIF(*), CMO1(*), VECL1(*), VECL2(*)
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0, TWO = 2.0d0, XHALF = 0.5D0)
       CHARACTER MODEL*10, LISTL*(*)
-      CHARACTER*8 FILER12, FILER12_2
       LOGICAL NONHFSAVE,LHTF
 C
       IF (IPRINT.GT.10) THEN
@@ -1056,7 +1057,7 @@ C
       KEND1B     = KETA2    + NT2AMX
       if (CCR12) then
         keta12   = kend1b
-        kend1b   = keta12   + ngamma(1)
+        kend1b   = keta12   + ntr12am(1)
       end if
       LWRK1B     = LWORK    - KEND1B
 C
@@ -1093,7 +1094,7 @@ C-------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
       LHTF = .FALSE.
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,LHTF,
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
      &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
@@ -1163,7 +1164,7 @@ C        -------------------------------------
 C
          CALL DZERO(WORK(KT1AMP0),NT1AMX)
          LHTF = .FALSE.
-         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,
+         CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),
      &                  LHTF,.FALSE.,.FALSE.,WORK(KEND1),LWRK1)
          REWIND(LUIAJB)
          CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))
@@ -1275,7 +1276,7 @@ C------------------------------------------------------------------
 C
       CALL DZERO(WORK(KT1AMP0),NT1AMX)
       LHTF = .FALSE.
-      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),FILER12,FILER12_2,LHTF,
+      CALL CCSD_IAJB(WORK(KT2AMP0),WORK(KT1AMP0),LHTF,
      &               .FALSE.,.FALSE.,WORK(KEND1),LWRK1)
       REWIND(LUIAJB)
       CALL WRITI(LUIAJB,IRAT*NT2AMX,WORK(KT2AMP0))

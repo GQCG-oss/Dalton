@@ -1,0 +1,4008 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+
+    Celestino Angeli,         University of Ferrara,        Italy      
+    Keld L. Bak,              UNI-C,                        Denmark    
+    Vebjoern Bakken,          University of Oslo,           Norway     
+    Ove Christiansen,         Aarhus University,            Denmark    
+    Renzo Cimiraglia,         University of Ferrara,        Italy      
+    Sonia Coriani,            University of Trieste,        Italy      
+    Paal Dahle,               University of Oslo,           Norway     
+    Erik K. Dalskov,          UNI-C,                        Denmark    
+    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
+    Berta Fernandez,          U. of Santiago de Compostela, Spain      
+    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
+    Kasper Hald,              Aarhus University,            Denmark    
+    Asger Halkier,            Aarhus University,            Denmark    
+    Hanne Heiberg,            University of Oslo,           Norway     
+    Trygve Helgaker,          University of Oslo,           Norway     
+    Hinne Hettema,            University of Auckland,       New Zealand
+    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
+    Dan Jonsson,              KTH Stockholm,                Sweden     
+    Poul Joergensen,          Aarhus University,            Denmark    
+    Sheela Kirpekar,          SDU - Odense University,      Denmark    
+    Wim Klopper,              University of Karlsruhe,      Germany    
+    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
+    Jakob Kongsted,           Aarhus University,            Denmark    
+    Henrik Koch,              University of Trondheim,      Norway     
+    Andrea Ligabue,           University of Modena,         Italy      
+    Ola B. Lutnaes,           University of Oslo,           Norway     
+    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
+    Patrick Norman,           University of Linkoeping,     Sweden     
+    Jeppe Olsen,              Aarhus University,            Denmark    
+    Anders Osted,             Copenhagen University,        Denmark    
+    Martin J. Packer,         University of Sheffield,      UK         
+    Thomas B. Pedersen,       University of Lund,           Sweden     
+    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
+    Elias Rudberg,            KTH Stockholm,                Sweden     
+    Torgeir A. Ruden,         University of Oslo,           Norway     
+    Kenneth Ruud,             University of Tromsoe,        Norway     
+    Pawel Salek,              KTH Stockholm,                Sweden     
+    Alfredo Sanchez de Meras, University of Valencia,       Spain      
+    Trond Saue,               University of Strasbourg,     France     
+    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
+    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     
+    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
+    Peter R. Taylor,          University of Warwick,        UK         
+    Olav Vahtras,             KTH Stockholm,                Sweden     
+    David J. Wilson,          University of Oslo,           Norway     
+    Hans Agren,               KTH Stockholm,                Sweden     
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+
+     Date and time (Linux)  : Wed Sep 21 11:22:23 2005
+     Host name              : inttch05                                
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - second moments integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Ne                                                                      
+                                                                          
+  Used basis set file for basis set for elements with Z =  10 :
+     "/work/dalton-ifc/basis/6-311G"
+  Used basis set file for basis set for elements with Z =  10 :
+     "/work/dalton-ifc/basis/6-311++G(3df,3pd)"
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E 
+    C2z | C2z   E 
+    C2y | C2y  C2x   E 
+    C2x | C2x  C2y  C2z   E 
+     i  |  i   Oxy  Oxz  Oyz   E 
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E 
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E 
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag 
+    B3u | B3u  Ag 
+    B2u | B2u  B1g  Ag 
+    B1g | B1g  B2u  B3u  Ag 
+    B1u | B1u  B2g  B3g  Au   Ag 
+    B2g | B2g  B1u  Au   B3g  B3u  Ag 
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag 
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           Ne         19.992439
+                           Ne          0.000000
+
+                       Total mass:    19.992439 amu
+                       Natural abundance:   0.000 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis-set 1 refers to the basis "6-311G" from the basis-set library.
+
+  Basis-set 2 refers to the basis "6-311++G(3df,3pd)" from the basis-set library.
+
+  label  basis   atoms  charge   prim    cont     basis
+  ------------------------------------------------------------------------------
+  Ne       1       1      10      26      13      [11s5p|4s3p]                                       
+  Ne       2       1       0      52      39      [12s6p3d1f|5s4p3d1f]                               
+  ------------------------------------------------------------------------------
+  total:           2      10      78      52
+  ------------------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+   1   Ne       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   Ne       x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   0  2  2  0  2  0  0  0
+
+  Symmetry  B3u ( 2)
+
+   1   Ne    x    1
+   2   Ne    x    4
+
+  Symmetry  B2u ( 3)
+
+   3   Ne    y    2
+   4   Ne    y    5
+
+  Symmetry  B1u ( 5)
+
+   5   Ne    z    3
+   6   Ne    z    6
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          1.000000    0.000000    0.000000
+   IB    0.000000          0.000000    1.000000    0.000000
+   IC    0.000000          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ All are zero as the "molecule" is an atom!
+
+
+
+  Nuclear repulsion energy :    0.000000000000
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:              15   9   9   3   9   3   3   1
+
+  Number of main orbitals in each symmetry:          4   3   3   0   3   0   0   0
+  Number of auxiliary functions in each symmetry:   11   6   6   3   6   3   3   1
+
+
+  Symmetry  Ag ( 1)
+
+    1     Ne   M   1s         1
+    2     Ne   M   1s         2
+    3     Ne   M   1s         3
+    4     Ne   M   1s         4
+    5     Ne   A   1s        14
+    6     Ne   A   1s        15
+    7     Ne   A   1s        16
+    8     Ne   A   1s        17
+    9     Ne   A   1s        18
+   10     Ne   A   3d0       33
+   11     Ne   A   3d2+      35
+   12     Ne   A   3d0       38
+   13     Ne   A   3d2+      40
+   14     Ne   A   3d0       43
+   15     Ne   A   3d2+      45
+
+
+  Symmetry  B3u( 2)
+
+   16     Ne   M   2px        5
+   17     Ne   M   2px        8
+   18     Ne   M   2px       11
+   19     Ne   A   2px       19
+   20     Ne   A   2px       22
+   21     Ne   A   2px       25
+   22     Ne   A   2px       28
+   23     Ne   A   4f1+      50
+   24     Ne   A   4f3+      52
+
+
+  Symmetry  B2u( 3)
+
+   25     Ne   M   2py        6
+   26     Ne   M   2py        9
+   27     Ne   M   2py       12
+   28     Ne   A   2py       20
+   29     Ne   A   2py       23
+   30     Ne   A   2py       26
+   31     Ne   A   2py       29
+   32     Ne   A   4f3-      46
+   33     Ne   A   4f1-      48
+
+
+  Symmetry  B1g( 4)
+
+   34     Ne   A   3d2-      31
+   35     Ne   A   3d2-      36
+   36     Ne   A   3d2-      41
+
+
+  Symmetry  B1u( 5)
+
+   37     Ne   M   2pz        7
+   38     Ne   M   2pz       10
+   39     Ne   M   2pz       13
+   40     Ne   A   2pz       21
+   41     Ne   A   2pz       24
+   42     Ne   A   2pz       27
+   43     Ne   A   2pz       30
+   44     Ne   A   4f0       49
+   45     Ne   A   4f2+      51
+
+
+  Symmetry  B2g( 6)
+
+   46     Ne   A   3d1+      34
+   47     Ne   A   3d1+      39
+   48     Ne   A   3d1+      44
+
+
+  Symmetry  B3g( 7)
+
+   49     Ne   A   3d1-      32
+   50     Ne   A   3d1-      37
+   51     Ne   A   3d1-      42
+
+
+  Symmetry  Au ( 8)
+
+   52     Ne   A   4f2-      47
+
+  Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
+
+  Symmetries of magnetic field:  B3g(7)  B2g(6)  B1g(4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in SECMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.03 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ Scale factors for CC excitations manifolds:
+ for bra states (projection manifold):   1.00000000000000     
+ for ket states (operator manifold)  :   1.00000000000000     
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Sep 21 11:22:23 2005
+     Host name              : inttch05                                
+
+ Title lines from integral program:
+     Ne                                                                      
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART H1DIAG" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 13
+
+     Spin multiplicity                         1
+     Total number of symmetries                8
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4   5   6   7   8
+                                       --  --  --  --  --  --  --  --
+     Total number of orbitals           4   3   3   0   3   0   0   0
+     Number of basis functions         15   9   9   3   9   3   3   1
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              2   1   1   0   1   0   0   0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+
+ Linear response properties calculated
+
+ Cubic response properties calculated
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+   1   -114.597081308723   2.92D+01  -1.15D+02    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    8    F
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+   2   -123.647487351652   1.17D+01  -9.05D+00    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    8    T
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+   3   -128.150516354818   3.67D+00  -4.50D+00    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    8    T
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+   4   -128.437781903585   3.53D-01  -2.87D-01    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    8    T
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+   5   -128.440910857456   9.08D-03  -3.13D-03    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+   6   -128.440913323134   3.62D-04  -2.47D-06    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+   7   -128.440913326486   1.26D-05  -3.35D-09    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+   8   -128.440913326492   8.79D-07  -5.63D-12    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+   9   -128.440913326492   2.36D-08   2.84D-14    2  1  1  0  1  0  0  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+  10   -128.440913326492   6.98D-11  -2.84D-14    2  1  1  0  1  0  0  0
+ DIIS converged in  10 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    2    1    1    0    1    0    0    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -32.75576288    -1.91253107     1.58971483    78.45377511
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.84268389     1.40892376     8.08702444
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.84268389     1.40892376     8.08702444
+
+ Hartree-Fock orbital energies, symmetry 5
+
+        -0.84268389     1.40892376     8.08702444
+
+    E(LUMO) :     1.40892376 au (symmetry 2)
+  - E(HOMO) :    -0.84268389 au (symmetry 5)
+  ------------------------------------------
+    gap     :     2.25160764 au
+
+ >>> Writing SIRIFC interface file <<<
+
+  Canonical primary and secondary basis sets
+  ISYM       NORB1 MBAS1       NORB2 MBAS2
+     1           4     4          11    11
+     2           3     3           6     6
+     3           3     3           6     6
+     4           0     0           3     3
+     5           3     3           6     6
+     6           0     0           3     3
+     7           0     0           3     3
+     8           0     0           1     1
+
+ >>> Time used in TWOINT is   0.06 seconds
+
+
+ Computation of exchange matrix done [6]
+
+ AUXILIARY BASIS LOW EIGENVALUES
+ ISYM         EIGENVALUE
+   1      0.010375768555
+   2      0.003284948047
+   3      0.003284948047
+   4      0.063178282479
+   5      0.003284948047
+   6      0.063178282479
+   7      0.063178282479
+   8      0.217203531848
+
+ >>> Time used in R12AUX is   0.08 seconds
+
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:            -128.440913326492
+     Nuclear repulsion:             0.000000000000
+     Electronic energy:          -128.440913326492
+
+     Final gradient norm:           0.000000000070
+
+ 
+     Date and time (Linux)  : Wed Sep 21 11:22:23 2005
+     Host name              : inttch05                                
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2
+   1  Ne  1s     0.6034   0.1534
+   2  Ne  1s     0.4288   0.1985
+   3  Ne  1s    -0.0064  -0.6678
+   4  Ne  1s     0.0048  -0.4634
+   5  Ne  1s     0.0000   0.0000
+   6  Ne  1s     0.0000   0.0000
+   7  Ne  1s     0.0000   0.0000
+   8  Ne  1s     0.0000   0.0000
+   9  Ne  1s     0.0000   0.0000
+  10  Ne  3d0    0.0000   0.0000
+  11  Ne  3d2+   0.0000   0.0000
+  12  Ne  3d0    0.0000   0.0000
+  13  Ne  3d2+   0.0000   0.0000
+  14  Ne  3d0    0.0000   0.0000
+  15  Ne  3d2+   0.0000   0.0000
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2
+   1  Ne  2px   -0.3295   0.2439
+   2  Ne  2px   -0.4828   0.7572
+   3  Ne  2px   -0.4142  -1.1403
+   4  Ne  2px    0.0000   0.0000
+   5  Ne  2px    0.0000   0.0000
+   6  Ne  2px    0.0000   0.0000
+   7  Ne  2px    0.0000   0.0000
+   8  Ne  4f1+   0.0000   0.0000
+   9  Ne  4f3+   0.0000   0.0000
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2
+   1  Ne  2py   -0.3295   0.2439
+   2  Ne  2py   -0.4828   0.7572
+   3  Ne  2py   -0.4142  -1.1403
+   4  Ne  2py    0.0000   0.0000
+   5  Ne  2py    0.0000   0.0000
+   6  Ne  2py    0.0000   0.0000
+   7  Ne  2py    0.0000   0.0000
+   8  Ne  4f3-   0.0000   0.0000
+   9  Ne  4f1-   0.0000   0.0000
+
+     Molecular orbitals for symmetry species   5
+
+ Orbital          1        2
+   1  Ne  2pz   -0.3295   0.2439
+   2  Ne  2pz   -0.4828   0.7572
+   3  Ne  2pz   -0.4142  -1.1403
+   4  Ne  2pz    0.0000   0.0000
+   5  Ne  2pz    0.0000   0.0000
+   6  Ne  2pz    0.0000   0.0000
+   7  Ne  2pz    0.0000   0.0000
+   8  Ne  4f0    0.0000   0.0000
+   9  Ne  4f2+   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Wed Sep 21 11:22:23 2005
+     Host name              : inttch05                                
+
+- End of Wave Function Section
+
+
+Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   1
+
+ CCR12 APPROX =   7
+
+ 
+  I am freezing!
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -32.7558
+ In total frozen-core per symmetry-class:  1  0  0  0  0  0  0  0
+ 
+   NRHF   :       1       2       2       0       2       0       0       0
+   NRHFS  :       2       2       2       0       2       0       0       0
+   NORB1  :       4       3       3       0       3       0       0       0
+   NORB2  :      11       6       6       3       6       3       3       1
+
+ Number of primary orbitals             :           13
+ Number of secondary orbitals           :           39
+ Total number of orbitals               :           52
+ Total number of basis functions        :           52
+ Number of (i|p') integrals             :           69
+ Number of (i|u') integrals             :           69
+ Number of (Ip'|1/r12|jL) integrals     :           69
+ Number of (ip'|1/r12|jq') integrals    :         9166
+ Number of (ip'|r12|jq') integrals      :         9166
+ Number of (ip'|[T1,r12]|jq') integrals :        17968
+ Threshold for R12 contributions            =  0.00000    
+ Threshold for singular value decomposition = 0.100000E-11
+
+ The B matrix is transformed into an orthogonal basis
+ and inverted by diagonalization
+
+ ******************************************************************************
+ The MP2-R12/A and MP2-R12/B energies are computed as described in:
+ W. Klopper and C. C. M. Samson, J. Chem. Phys. 116, 6397-6410 (2002).
+ ------------------------------------------------------------------------------
+ Ansatz 1 is used and results are printed for approximations A and B.
+ ******************************************************************************
+
+ Core memory required by CCSD_R12 :          73467  (double words)
+
+ Computation of (ip'|r12|jq') integrals done
+
+ >>> Time used in R  [6] is   1.25 seconds
+
+ Backtransformation of (ip'|r12|jq') integrals done
+
+ >>> Time used in R12BAT is   0.00 seconds
+
+ Computation of V^aj_kl intermediate done
+
+ >>> Time used for V^aj_kl is    0.00 seconds
+ 
+ Computation of (ip'|1/r12|jq') integrals done
+
+ >>> Time used in 1/R[5] is   0.46 seconds
+
+ Computation of (ip'|r12|jq')X(p'r')(kr'|r12|lq') integrals done
+
+ >>> Time used in RXR    is   0.01 seconds
+
+ Computation of (i'p'|r12|jq') integrals done
+
+ >>> Time used in R  [6] is   1.29 seconds
+
+ Computation of (ip'|[T,r12]|jq') integrals done
+
+ >>> Time used in T,R[5] is   0.55 seconds
+
+
+
+             +-----------------------------------------------+
+             ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
+             +-----------------------------------------------+
+
+
+ SECOND-ORDER PAIR ENERGIES:
+
+                    1   -0.003655001    0.000000000
+                    2   -0.006526820   -0.004969056
+                    3   -0.010475481    0.000000000
+                    4   -0.006526820   -0.004969056
+                    5   -0.007662020   -0.013232825
+                    6   -0.010475481    0.000000000
+                    7   -0.006526820   -0.004969056
+                    8   -0.007662020   -0.013232825
+                    9   -0.007662020   -0.013232825
+                   10   -0.010475481    0.000000000
+
+ MP2 =   -0.132253603   -0.077647962   -0.054605641
+
+
+                     +--------------------------------+
+                     ! Auxiliary-basis MP2-R12 method !
+                     +--------------------------------+
+
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.003655001   -0.014071460    0.000000000    0.000000000     1.42107         1.42929    
+   2   -0.006526820   -0.016345968   -0.004969056   -0.007716954     1.42107         1.42929    
+   3   -0.010475481   -0.027373753    0.000000000    0.000000000     1.42107         1.42929    
+   4   -0.006526820   -0.016345968   -0.004969056   -0.007716954     1.42107         1.42929    
+   5   -0.007662020   -0.016270209   -0.013232825   -0.032121334     1.42107         1.42929    
+   6   -0.010475481   -0.027373753    0.000000000    0.000000000     1.42107         1.42929    
+   7   -0.006526820   -0.016345968   -0.004969056   -0.007716954     1.42107         1.42929    
+   8   -0.007662020   -0.016270209   -0.013232825   -0.032121334     1.42107         1.42929    
+   9   -0.007662020   -0.016270209   -0.013232825   -0.032121334     1.42107         1.42929    
+  10   -0.010475481   -0.027373753    0.000000000    0.000000000     1.42107         1.42929    
+
+       -0.077647962   -0.194041252   -0.054605641   -0.119514863
+
+              MP2-R12/A   correlation energy =   -0.313556115
+
+ SECOND-ORDER R12/B PAIR ENERGIES:
+
+   1   -0.003655001   -0.011185739    0.000000000    0.000000000     6.70822         6.78125    
+   2   -0.006526820   -0.014822297   -0.004969056   -0.007196943     5.63837         5.71140    
+   3   -0.010475481   -0.023796874    0.000000000    0.000000000     4.56852         4.64156    
+   4   -0.006526820   -0.014822297   -0.004969056   -0.007196943     5.63837         5.71140    
+   5   -0.007662020   -0.014424911   -0.013232825   -0.028008036     4.56852         4.64156    
+   6   -0.010475481   -0.023796874    0.000000000    0.000000000     4.56852         4.64156    
+   7   -0.006526820   -0.014822297   -0.004969056   -0.007196943     5.63837         5.71140    
+   8   -0.007662020   -0.014424911   -0.013232825   -0.028008036     4.56852         4.64156    
+   9   -0.007662020   -0.014424911   -0.013232825   -0.028008036     4.56852         4.64156    
+  10   -0.010475481   -0.023796874    0.000000000    0.000000000     4.56852         4.64156    
+
+       -0.077647962   -0.170317986   -0.054605641   -0.105614937
+
+              MP2-R12/B   correlation energy =   -0.275932923
+
+ >>> Time used in E(R12) is   0.05 seconds
+
+ Time for MP2-R12 part cpu:   3.60999989330769     
+ Time for MP2-R12 part wall:   4.00000000000000     
+ 
+  I am freezing!
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            1
+  FROM FNDMN3 : 
+    PLACES OF LOWEST ELEMENTS 
+
+     1 :      1
+  MIN AND MAX IN SELECTED SUPSPACE   -32.7557628839083     
+  -32.7557628839083     
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -32.7558
+ In total frozen-core per symmetry-class:  1  0  0  0  0  0  0  0
+ 
+ Computation of CC-R12 VXINT response intermediates done
+
+ >>> Time used for VXINT is    0.03 seconds
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+ 
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :         8
+          Number of t2 amplitudes                 :        96
+          Number of t2' amplitudes for R12 part   :        76
+          Total number of amplitudes in ccsd      :       180
+ 
+ Iter.  1: Coupled cluster MP2-R12/B energy :    -128.7168462494781007
+     Conventional correlation energy:    -0.1322536030358208
+     R12 correlation energy         :    -0.1436793199503688
+     Total correlation energy       :    -0.2759329229861895
+
+
+       Iteration no.:  1
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.23 seconds
+       Norm of omega1 after ccvec:         0.1864079953D-02
+       Norm of omega2 after ccvec:         0.4041678717D-32
+       Norm of Omegar12 in NXTAM  :         0.2452116176D-28
+ Iter.  1: Coupled cluster CC2-R12/B energy :    -128.7168351263627830
+     Conventional correlation energy:    -0.1322424799205067
+     R12 correlation energy         :    -0.1436793199503679
+     Total correlation energy       :    -0.2759217998708745
+
+
+       Iteration no.:  2
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.23 seconds
+       Norm of omega1 after ccvec:         0.1296221954D-04
+       Norm of omega2 after ccvec:         0.1563609901D-04
+       Norm of Omegar12 in NXTAM  :         0.2005695110D-05
+ Iter.  2: Coupled cluster CC2-R12/B energy :    -128.7173490348544557
+     Conventional correlation energy:    -0.1330718681821850
+     R12 correlation energy         :    -0.1433638401803815
+     Total correlation energy       :    -0.2764357083625664
+
+
+       Iteration no.:  3
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.22 seconds
+       Norm of omega1 after ccvec:         0.1113148188D-05
+       Norm of omega2 after ccvec:         0.7175811533D-07
+       Norm of Omegar12 in NXTAM  :         0.8057247858D-08
+ Iter.  3: Coupled cluster CC2-R12/B energy :    -128.7174052451006467
+     Conventional correlation energy:    -0.1331640322356407
+     R12 correlation energy         :    -0.1433278863730972
+     Total correlation energy       :    -0.2764919186087379
+
+
+       Iteration no.:  4
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.22 seconds
+       Norm of omega1 after ccvec:         0.2347190070D-08
+       Norm of omega2 after ccvec:         0.8776685223D-08
+       Norm of Omegar12 in NXTAM  :         0.2221010206D-09
+ Iter.  4: Coupled cluster CC2-R12/B energy :    -128.7173988190495990
+     Conventional correlation energy:    -0.1331568997187276
+     R12 correlation energy         :    -0.1433285928389739
+     Total correlation energy       :    -0.2764854925577015
+
+
+       Iteration no.:  5
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.22 seconds
+       Norm of omega1 after ccvec:         0.6518878502D-10
+       Norm of omega2 after ccvec:         0.1454158381D-10
+       Norm of Omegar12 in NXTAM  :         0.8683764997D-12
+ Iter.  5: Coupled cluster CC2-R12/B energy :    -128.7173988488082621
+     Conventional correlation energy:    -0.1331568943829211
+     R12 correlation energy         :    -0.1433286279334542
+     Total correlation energy       :    -0.2764855223163753
+
+
+       Iteration no.:  6
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.23 seconds
+       Norm of omega1 after ccvec:         0.1289255742D-11
+       Norm of omega2 after ccvec:         0.4608323737D-12
+       Norm of Omegar12 in NXTAM  :         0.3088883763D-13
+ Iter.  6: Coupled cluster CC2-R12/B energy :    -128.7173988412042113
+     Conventional correlation energy:    -0.1331568741296963
+     R12 correlation energy         :    -0.1433286405826110
+     Total correlation energy       :    -0.2764855147123073
+
+
+       Iteration no.:  7
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.24 seconds
+       Norm of omega1 after ccvec:         0.2192378670D-15
+       Norm of omega2 after ccvec:         0.3109922009D-15
+       Norm of Omegar12 in NXTAM  :         0.2172240564D-16
+ Iter.  7: Coupled cluster CC2-R12/B energy :    -128.7173988418471637
+     Conventional correlation energy:    -0.1331568742406830
+     R12 correlation energy         :    -0.1433286411145682
+     Total correlation energy       :    -0.2764855153552513
+
+
+       Iteration no.:  8
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.23 seconds
+       Norm of omega1 after ccvec:         0.5886889881D-19
+       Norm of omega2 after ccvec:         0.2111618290D-19
+       Norm of Omegar12 in NXTAM  :         0.1606981077D-21
+ Iter.  8: Coupled cluster CC2-R12/B energy :    -128.7173988418525141
+     Conventional correlation energy:    -0.1331568742439515
+     R12 correlation energy         :    -0.1433286411166610
+     Total correlation energy       :    -0.2764855153606125
+
+
+       Iteration no.:  9
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.23 seconds
+       Norm of omega1 after ccvec:         0.4421171728D-23
+       Norm of omega2 after ccvec:         0.2459197337D-23
+       Norm of Omegar12 in NXTAM  :         0.1166409938D-24
+ Iter.  9: Coupled cluster CC2-R12/B energy :    -128.7173988418524928
+     Conventional correlation energy:    -0.1331568742439515
+     R12 correlation energy         :    -0.1433286411166298
+     Total correlation energy       :    -0.2764855153605813
+
+
+       Iteration no.: 10
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.30 seconds
+       Norm of omega1 after ccvec:         0.1656147159D-25
+       Norm of omega2 after ccvec:         0.4273728048D-25
+       Norm of Omegar12 in NXTAM  :         0.6249659785D-26
+ Iter. 10: Coupled cluster CC2-R12/B energy :    -128.7173988418524928
+     Conventional correlation energy:    -0.1331568742439515
+     R12 correlation energy         :    -0.1433286411166153
+     Total correlation energy       :    -0.2764855153605668
+
+
+       Iteration no.: 11
+       -----------------
+ 
+       Time used in   RHS - TOTAL  :       0.29 seconds
+       Norm of omega1 after ccvec:         0.3326979066D-26
+       Norm of omega2 after ccvec:         0.2016729539D-27
+       Norm of Omegar12 in NXTAM  :         0.1899973992D-28
+ Iter. 11: Coupled cluster CC2-R12/B energy :    -128.7173988418524928
+     Conventional correlation energy:    -0.1331568742439515
+     R12 correlation energy         :    -0.1433286411166138
+     Total correlation energy       :    -0.2764855153605653
+
+
+ CC2-R12/B energy converged to within   0.10D-13 is   -128.717398842
+ Final 2-norm of the CC vector function:  5.94024580D-14
+ R12       energy converged to within   0.10D-13 is     -0.143328641
+
+
+                +------------------------------------------+
+                ! Largest amplitudes in converged solution !
+                +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.5689 %
+
+          Double Excitation Contribution :              99.4311 %
+
+          ||T1||/||T2||                  :               0.0756
+
+          Tau1 diagnostic                :               0.0027
+
+          Norm of Total Amplitude Vector :               0.1031
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       1     |        3          |              |    0.003180  |
+ | 2   2   |   2       1     |        4          |              |   -0.002955  |
+ | 3   3   |   1       1     |        5          |              |    0.003180  |
+ | 3   3   |   2       1     |        6          |              |    0.002955  |
+ | 5   5   |   1       1     |        7          |              |    0.003180  |
+ | 5   5   |   2       1     |        8          |              |   -0.002955  |
+ +-----------------------------------------------------------------------------+
+ | 2 2 2 2 |   1   1   1   1 |        3        3 |            6 |   -0.036740  |
+ | 3 3 3 3 |   1   1   1   1 |        5        5 |           15 |   -0.036740  |
+ | 5 5 5 5 |   1   1   1   1 |        7        7 |           28 |   -0.036740  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0641
+
+
+          Printed all single excitations greater than 0.002514
+
+
+          Printed all double excitations greater than 0.033238
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -128.4409133265
+
+            Total MP2-R12/B energy:              -128.7168462495
+
+            Total CC2-R12/B energy:              -128.7173988419
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+ write Vajtkl on disk
+ Time used for R12 part in CCSD_RHS cpu:  0.230000286102294     
+ Time used for R12 part in CCSD_RHS wall:   0.00000000000000D+000
+       Time used in   RHS - TOTAL  :       0.30 seconds
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +-------------------------------+
+                     ! Coupled Cluster model is: CC2 !
+                     +-------------------------------+
+
+
+ Solving   1 response equations:
+ L0 :
+     Start vector generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+  
+ ROOT:  1 RESIDUAL TOT: 7.08418D-01
+      1       1         0.00     0.71E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+  
+ ROOT:  1 RESIDUAL TOT: 5.67438D-02
+      2       1         0.00     0.57E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+  
+ ROOT:  1 RESIDUAL TOT: 2.41886D-02
+      3       1         0.00     0.24E-01
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+  
+ ROOT:  1 RESIDUAL TOT: 3.88064D-03
+      4       1         0.00     0.39E-02
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+  
+ ROOT:  1 RESIDUAL TOT: 8.10884D-04
+      5       1         0.00     0.81E-03
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.64525D-04
+      6       1         0.00     0.16E-03
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.11
+
+  
+ ROOT:  1 RESIDUAL TOT: 5.05928D-05
+      7       1         0.00     0.51E-04
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+  
+ ROOT:  1 RESIDUAL TOT: 5.22508D-06
+      8       1         0.00     0.52E-05
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+  
+ ROOT:  1 RESIDUAL TOT: 6.81801D-07
+      9       1         0.00     0.68E-06
+ Dimension of the reduced space:    10
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.90457D-07
+     10       1         0.00     0.19E-06
+ Dimension of the reduced space:    11
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.51146D-08
+     11       1         0.00     0.15E-07
+ Dimension of the reduced space:    12
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.98779D-09
+     12       1         0.00     0.20E-08
+ Dimension of the reduced space:    13
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+  
+ ROOT:  1 RESIDUAL TOT: 1.18761D-10
+     13       1         0.00     0.12E-09
+ Dimension of the reduced space:    14
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+  
+ ROOT:  1 RESIDUAL TOT: 4.59650D-12
+     14       1         0.00     0.46E-11
+ Dimension of the reduced space:    15
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+  
+ ROOT:  1 RESIDUAL TOT: 9.73676D-14
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.73676D-14
+     15       1         0.00     0.97E-13
+ Dimension of the reduced space:    15
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+    --------------------------------------
+    converged in 15 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.02
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.02
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.40 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.2265 %
+
+          Double Excitation Contribution :              99.7735 %
+
+          ||T1||/||T2||                  :               0.0477
+
+          Tau1 diagnostic                :               0.0050
+
+          Norm of Total Amplitude Vector :               0.2999
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       1     |        1          |              |   -0.003588  |
+ | 2   2   |   1       1     |        3          |              |    0.005439  |
+ | 2   2   |   2       1     |        4          |              |   -0.005833  |
+ | 3   3   |   1       1     |        5          |              |    0.005439  |
+ | 3   3   |   2       1     |        6          |              |    0.005833  |
+ | 5   5   |   1       1     |        7          |              |    0.005439  |
+ | 5   5   |   2       1     |        8          |              |   -0.005833  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.036046  |
+ | 2 1 2 1 |   1   1   1   1 |        3        1 |            4 |    0.074730  |
+ | 3 1 3 1 |   1   1   1   1 |        5        1 |           11 |    0.074730  |
+ | 5 1 5 1 |   1   1   1   1 |        7        1 |           22 |    0.074730  |
+ | 2 2 2 2 |   1   1   1   1 |        3        3 |            6 |   -0.073412  |
+ | 3 2 3 2 |   1   1   1   1 |        5        3 |           13 |   -0.106648  |
+ | 5 2 5 2 |   1   1   1   1 |        7        3 |           24 |   -0.106648  |
+ | 3 3 3 3 |   1   1   1   1 |        5        5 |           15 |   -0.073412  |
+ | 5 3 5 3 |   1   1   1   1 |        7        5 |           26 |   -0.106648  |
+ | 5 5 5 5 |   1   1   1   1 |        7        7 |           28 |   -0.073412  |
+ | 2 3 3 2 |   1   1   1   1 |        3        1 |           60 |    0.041271  |
+ | 2 5 5 2 |   1   1   1   1 |        3        1 |           80 |    0.041271  |
+ | 3 5 5 3 |   1   1   1   1 |        3        1 |           90 |    0.041271  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.2714
+
+
+          Printed all single excitations greater than 0.002000
+
+
+          Printed all double excitations greater than 0.033296
+  
+
+
+        +---------------------------------------------------------+
+        ! Unrelaxed CC2-    First-order one-electron properties:  !
+        +---------------------------------------------------------+
+
+
+
+                 +---------------------------------------+
+                 !  Electronic contribution to operator  !
+                 +---------------------------------------+
+
+  
+                    XXSECMOM:   3.09386866
+  
+  
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                   -128.71739884185249280790
+
+ *******************************************************************
+     
+
+   *******************************************************************
+   *                                                                 *
+   *<<<<<<<<   OUTPUT FROM PROPERTY AND SYMMETRY ANALYSIS   >>>>>>>>>*
+   *                                                                 *
+   *******************************************************************
+
+
+
+                     +-------------------------------+
+                     ! REQUESTED PROPERTY OPERATORS: !
+                     +-------------------------------+
+
+             Index   Oper. Label  Symmetry  Transp.  PDBS  Atom
+             --------------------------------------------------
+                1     HAM0            1        1      T      0
+                2     XXSECMOM        1        1      F      0
+                3     XDIPLEN         2        1      F      0
+                4     YDIPLEN         3        1      F      0
+                5     ZDIPLEN         5        1      F      0
+             --------------------------------------------------
+
+
+
+
+                     +-------------------------------+
+                     ! REQUESTED EXPECTATION VALUES: !
+                     +-------------------------------+
+
+                       Index   Oper. Label  Symmetry
+                       -----------------------------
+                       -----------------------------
+
+
+
+
+                   +------------------------------------+
+                   ! REQUESTED EFFECTIVE FOCK MATRICES: !
+                   +------------------------------------+
+
+                       Index   Oper. Label  Symmetry
+                       -----------------------------
+                       -----------------------------
+
+
+
+
+                   +-----------------------------------+
+                   ! REQUESTED FIRST ORDER XI VECTORS: !
+                   +-----------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     2      0.000000D+00
+                2      YDIPLEN        F     3      0.000000D+00
+                3      ZDIPLEN        F     5      0.000000D+00
+             --------------------------------------------------
+
+
+
+
+                    +----------------------------------+
+                    ! REQUESTED FIRST ORDER T VECTORS: !
+                    +----------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     2      0.000000D+00
+                2      YDIPLEN        F     3      0.000000D+00
+                3      ZDIPLEN        F     5      0.000000D+00
+             --------------------------------------------------
+
+
+
+
+                   +------------------------------------+
+                   ! REQUESTED FIRST ORDER ETA VECTORS: !
+                   +------------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     2      0.000000D+00
+                2      YDIPLEN        F     3      0.000000D+00
+                3      ZDIPLEN        F     5      0.000000D+00
+             --------------------------------------------------
+
+
+
+
+                  +-------------------------------------+
+                  ! REQUESTED FIRST ORDER ZETA VECTORS: !
+                  +-------------------------------------+
+
+             Index   Oper. Label  relaxed  Sym.     Frequency
+             --------------------------------------------------
+                1      XDIPLEN        F     2      0.000000D+00
+                2      YDIPLEN        F     3      0.000000D+00
+                3      ZDIPLEN        F     5      0.000000D+00
+             --------------------------------------------------
+
+
+
+
+                  +--------------------------------------+
+                  ! REQUESTED SECOND-ORDER XKSI VECTORS: !
+                  +--------------------------------------+
+
+     Index    Oper. Label  Symmetry  Frequency   Oper. Label  Symmetry  Frequency  Symmetry
+     ----------------------------------------------------------------------
+    1   XDIPLEN   2     0.000000D+00   XDIPLEN   2     0.000000D+00  1
+    2   YDIPLEN   3     0.000000D+00   YDIPLEN   3     0.000000D+00  1
+    3   ZDIPLEN   5     0.000000D+00   ZDIPLEN   5     0.000000D+00  1
+    4   XDIPLEN   2     0.000000D+00   YDIPLEN   3     0.000000D+00  4
+    5   XDIPLEN   2     0.000000D+00   ZDIPLEN   5     0.000000D+00  6
+    6   YDIPLEN   3     0.000000D+00   ZDIPLEN   5     0.000000D+00  7
+     ----------------------------------------------------------------------
+
+
+
+
+                   +-----------------------------------+
+                   ! REQUESTED SECOND-ORDER T VECTORS: !
+                   +-----------------------------------+
+
+     Index    Oper. Label  Symmetry  Frequency   Oper. Label  Symmetry  Frequency  Symmetry
+     ----------------------------------------------------------------------
+    1   XDIPLEN   2     0.000000D+00   XDIPLEN   2     0.000000D+00  1
+    2   YDIPLEN   3     0.000000D+00   YDIPLEN   3     0.000000D+00  1
+    3   ZDIPLEN   5     0.000000D+00   ZDIPLEN   5     0.000000D+00  1
+    4   XDIPLEN   2     0.000000D+00   YDIPLEN   3     0.000000D+00  4
+    5   XDIPLEN   2     0.000000D+00   ZDIPLEN   5     0.000000D+00  6
+    6   YDIPLEN   3     0.000000D+00   ZDIPLEN   5     0.000000D+00  7
+     ----------------------------------------------------------------------
+
+
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    3   |  first-order amplitude equations                     |
+ |  X1  |    3   |  first-order multipliers equations                   |
+ |  O2  |    6   |  second-order amplitude equations                    |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |    3   |  first-order amplitude response                      |
+ |  L1  |    3   |  first-order multiplier response                     |
+ |  R2  |    6   |  second-order amplitude response                     |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |    3   |  first-order amplitude response (R1) vector          |
+ +======================================================================+
+
+
+
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  3 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   3Xi{O} vector calculations    
+   will be performed.
+
+
+
+ Solving   1 response equations:
+ R1 :XDIPLEN   0.000000  2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+     R1  start vector nr.  1 of symmetry  2 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 4.44472D-01
+      1       1         0.00     0.44E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 2.66701D-02
+      2       1         0.00     0.27E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 1.67663D-03
+      3       1         0.00     0.17E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 9.09029D-05
+      4       1         0.00     0.91E-04
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 1.58571D-05
+      5       1         0.00     0.16E-04
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 3.71515D-07
+      6       1         0.00     0.37E-06
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 1.02914D-08
+      7       1         0.00     0.10E-07
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 7.25822D-11
+      8       1         0.00     0.73E-10
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 5.28265D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.28265D-13
+      9       1         0.00     0.53E-12
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.80 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.1865 %
+
+          Double Excitation Contribution :               0.8135 %
+
+          ||T1||/||T2||                  :              11.0420
+
+          Tau1 diagnostic                :               0.0681
+
+          Norm of Total Amplitude Vector :               0.1933
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   1       1     |        3          |              |    0.177592  |
+ +-----------------------------------------------------------------------------+
+ | 2 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.003138  |
+ | 2 3 1 3 |   1   1   1   1 |        1        5 |           17 |    0.005747  |
+ | 2 3 1 3 |   1   2   1   1 |        1        6 |           21 |   -0.006220  |
+ | 1 3 2 3 |   1   1   1   1 |        3        5 |           19 |   -0.010641  |
+ | 1 3 2 3 |   1   2   1   1 |        3        6 |           23 |   -0.006220  |
+ | 2 1 3 3 |   1   1   1   1 |        3        3 |           43 |   -0.003990  |
+ | 2 1 5 5 |   1   1   1   1 |        3        3 |           59 |   -0.003990  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1783
+
+
+          Printed all single excitations greater than 0.165987
+
+
+          Printed all double excitations greater than 0.003006
+
+ Solving   1 response equations:
+ R1 :YDIPLEN   0.000000  3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+     R1  start vector nr.  2 of symmetry  3 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 4.44472D-01
+      1       1         0.00     0.44E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 2.66701D-02
+      2       1         0.00     0.27E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 1.67663D-03
+      3       1         0.00     0.17E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 9.09029D-05
+      4       1         0.00     0.91E-04
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 1.58571D-05
+      5       1         0.00     0.16E-04
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 3.71515D-07
+      6       1         0.00     0.37E-06
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 1.02914D-08
+      7       1         0.00     0.10E-07
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 7.25822D-11
+      8       1         0.00     0.73E-10
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 5.28252D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.28252D-13
+      9       1         0.00     0.53E-12
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.81 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.1865 %
+
+          Double Excitation Contribution :               0.8135 %
+
+          ||T1||/||T2||                  :              11.0420
+
+          Tau1 diagnostic                :               0.0681
+
+          Norm of Total Amplitude Vector :               0.1933
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   3   |   1       1     |        3          |              |    0.177592  |
+ +-----------------------------------------------------------------------------+
+ | 3 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.003138  |
+ | 3 3 1 3 |   1   1   1   1 |        1        5 |           17 |    0.005747  |
+ | 3 3 1 3 |   1   2   1   1 |        1        6 |           21 |   -0.010641  |
+ | 1 3 3 3 |   1   1   1   1 |        3        5 |           19 |   -0.006220  |
+ | 1 3 3 3 |   1   2   1   1 |        3        6 |           23 |   -0.006220  |
+ | 2 2 3 1 |   1   1   1   1 |        3        1 |           35 |   -0.003990  |
+ | 3 1 5 5 |   1   1   1   1 |        3        3 |           59 |   -0.003990  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1783
+
+
+          Printed all single excitations greater than 0.165987
+
+
+          Printed all double excitations greater than 0.003006
+
+ Solving   1 response equations:
+ R1 :ZDIPLEN   0.000000  5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+     R1  start vector nr.  3 of symmetry  5 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 4.44472D-01
+      1       1         0.00     0.44E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 2.66701D-02
+      2       1         0.00     0.27E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 1.67663D-03
+      3       1         0.00     0.17E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 9.09029D-05
+      4       1         0.00     0.91E-04
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 1.58571D-05
+      5       1         0.00     0.16E-04
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 3.71515D-07
+      6       1         0.00     0.37E-06
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 1.02914D-08
+      7       1         0.00     0.10E-07
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 7.25826D-11
+      8       1         0.00     0.73E-10
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 5.28137D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.28137D-13
+      9       1         0.00     0.53E-12
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.79 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.1865 %
+
+          Double Excitation Contribution :               0.8135 %
+
+          ||T1||/||T2||                  :              11.0420
+
+          Tau1 diagnostic                :               0.0681
+
+          Norm of Total Amplitude Vector :               0.1933
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   5   |   1       1     |        3          |              |    0.177592  |
+ +-----------------------------------------------------------------------------+
+ | 5 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.003138  |
+ | 5 3 1 3 |   1   1   1   1 |        1        5 |           17 |    0.005747  |
+ | 5 3 1 3 |   1   2   1   1 |        1        6 |           21 |   -0.006220  |
+ | 1 3 5 3 |   1   1   1   1 |        3        5 |           19 |   -0.006220  |
+ | 1 3 5 3 |   1   2   1   1 |        3        6 |           23 |   -0.010641  |
+ | 2 2 5 1 |   1   1   1   1 |        3        1 |           35 |   -0.003990  |
+ | 3 3 5 1 |   1   1   1   1 |        3        1 |           51 |   -0.003990  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1783
+
+
+          Printed all single excitations greater than 0.165987
+
+
+          Printed all double excitations greater than 0.003006
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |          (result is written to file)             |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.00 secs.|
+ | time for  1 sets of left interm.:      0.00 secs.|
+ | time for  3 sets of right inter.:      0.00 secs.|
+ | time for  3 sets of 2. ord. int.:      0.01 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0   No. |  R1  No. |   F1   No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     1    |      1       |       0.26  |
+ |     0    |     2    |      2       |       0.27  |
+ |     0    |     3    |      3       |       0.28  |
+ +==================================================+
+
+
+
+ Solving   1 response equations:
+ L1 :XDIPLEN   0.000000  2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+     L1  start vector nr.  1 of symmetry  2 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 6.10089D-01
+      1       1         0.00     0.61E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 2.87847D-02
+      2       1         0.00     0.29E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 2.25093D-03
+      3       1         0.00     0.23E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 1.16578D-04
+      4       1         0.00     0.12E-03
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 1.47333D-05
+      5       1         0.00     0.15E-04
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 4.98976D-07
+      6       1         0.00     0.50E-06
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 1.46278D-08
+      7       1         0.00     0.15E-07
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 1.37225D-10
+      8       1         0.00     0.14E-09
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 6.43216D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.43216D-13
+      9       1         0.00     0.64E-12
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.82 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              98.3953 %
+
+          Double Excitation Contribution :               1.6047 %
+
+          ||T1||/||T2||                  :               7.8306
+
+          Tau1 diagnostic                :               0.1316
+
+          Norm of Total Amplitude Vector :               0.3753
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   1       1     |        3          |              |    0.343072  |
+ +-----------------------------------------------------------------------------+
+ | 2 3 1 3 |   1   2   1   1 |        1        6 |           21 |   -0.022846  |
+ | 1 3 2 3 |   1   2   1   1 |        3        6 |           23 |   -0.022846  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.3446
+
+
+          Printed all single excitations greater than 0.165324
+
+
+          Printed all double excitations greater than 0.021113
+
+ Solving   1 response equations:
+ L1 :YDIPLEN   0.000000  3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+     L1  start vector nr.  2 of symmetry  3 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 6.10089D-01
+      1       1         0.00     0.61E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 2.87847D-02
+      2       1         0.00     0.29E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 2.25093D-03
+      3       1         0.00     0.23E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 1.16578D-04
+      4       1         0.00     0.12E-03
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 1.47333D-05
+      5       1         0.00     0.15E-04
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 4.98976D-07
+      6       1         0.00     0.50E-06
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 1.46278D-08
+      7       1         0.00     0.15E-07
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 1.37225D-10
+      8       1         0.00     0.14E-09
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+
+ Finding gradient for 
+ Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
+  
+ ROOT:  1 RESIDUAL TOT: 6.43070D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.43070D-13
+      9       1         0.00     0.64E-12
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.83 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              98.3953 %
+
+          Double Excitation Contribution :               1.6047 %
+
+          ||T1||/||T2||                  :               7.8306
+
+          Tau1 diagnostic                :               0.1316
+
+          Norm of Total Amplitude Vector :               0.3753
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   3   |   1       1     |        3          |              |    0.343072  |
+ +-----------------------------------------------------------------------------+
+ | 1 3 3 3 |   1   1   1   1 |        3        5 |           19 |   -0.022846  |
+ | 1 3 3 3 |   1   2   1   1 |        3        6 |           23 |   -0.022846  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.3446
+
+
+          Printed all single excitations greater than 0.165324
+
+
+          Printed all double excitations greater than 0.021113
+
+ Solving   1 response equations:
+ L1 :ZDIPLEN   0.000000  5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+     L1  start vector nr.  3 of symmetry  5 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 6.10089D-01
+      1       1         0.00     0.61E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 2.87847D-02
+      2       1         0.00     0.29E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 2.25093D-03
+      3       1         0.00     0.23E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 1.16578D-04
+      4       1         0.00     0.12E-03
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 1.47333D-05
+      5       1         0.00     0.15E-04
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 4.98976D-07
+      6       1         0.00     0.50E-06
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 1.46278D-08
+      7       1         0.00     0.15E-07
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 1.37225D-10
+      8       1         0.00     0.14E-09
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+
+ Finding gradient for 
+ Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
+  
+ ROOT:  1 RESIDUAL TOT: 6.43244D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.43244D-13
+      9       1         0.00     0.64E-12
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.86 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              98.3953 %
+
+          Double Excitation Contribution :               1.6047 %
+
+          ||T1||/||T2||                  :               7.8306
+
+          Tau1 diagnostic                :               0.1316
+
+          Norm of Total Amplitude Vector :               0.3753
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   5   |   1       1     |        3          |              |    0.343072  |
+ +-----------------------------------------------------------------------------+
+ | 5 3 1 3 |   1   2   1   1 |        1        6 |           21 |   -0.022846  |
+ | 1 3 5 3 |   1   1   1   1 |        3        5 |           19 |   -0.022846  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.3446
+
+
+          Printed all single excitations greater than 0.165324
+
+
+          Printed all double excitations greater than 0.021113
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  6 2th.-order amplitude rhs vectors "O2 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   6 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -  12 A{O} matrix transformations 
+         -   0Xi{O} vector calculations    
+              (A{O} matrix included in B matrix)
+   will be performed.
+
+
+
+
+ +==================================================+
+ |        B MATRIX TRANSFORMATION SECTION           |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.00 secs.|
+ | time for  3 sets of 1. ord. int.:      0.00 secs.|
+ | time for  6 sets of 2. ord. int.:      0.00 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | R vector | R vector |    result    |             |
+ | R1   No. |  R1  No. |   O2   No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.27  |
+ |     2    |     2    |      2       |       0.27  |
+ |     3    |     3    |      3       |       0.25  |
+ |     1    |     2    |      4       |       0.28  |
+ |     1    |     3    |      5       |       0.27  |
+ |     2    |     3    |      6       |       0.26  |
+ +--------------------------------------------------+
+ | total time for   6 B transforms.:      1.69 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.59      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      3.55      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      0.00      |
+ |  % of time used in singles part :      0.00      |
+ |  % of time used in A term       :      0.00      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in F term       :      0.00      |
+ |  % of time used in E term       :      0.00      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :      0.59      |
+ +==================================================+
+
+
+
+ Solving   3 response equations:
+ R2 :XDIPLEN   0.000000  2XDIPLEN   0.000000  2
+ R2 :YDIPLEN   0.000000  3YDIPLEN   0.000000  3
+ R2 :ZDIPLEN   0.000000  5ZDIPLEN   0.000000  5
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+     R2  start vector nr.  1 of symmetry  1 generated from gradient
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+     R2  start vector nr.  2 of symmetry  1 generated from gradient
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+     R2  start vector nr.  3 of symmetry  1 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 4.80908D-01
+ ROOT:  2 RESIDUAL TOT: 4.80908D-01
+ ROOT:  3 RESIDUAL TOT: 4.80908D-01
+      1       3         0.00     0.48E+00
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 2.24404D-02
+ ROOT:  2 RESIDUAL TOT: 2.24404D-02
+ ROOT:  3 RESIDUAL TOT: 2.24404D-02
+      2       3         0.00     0.22E-01
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 1.93563D-03
+ ROOT:  2 RESIDUAL TOT: 1.93563D-03
+ ROOT:  3 RESIDUAL TOT: 1.93563D-03
+      3       3         0.00     0.19E-02
+ Dimension of the reduced space:    12
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 1.12833D-04
+ ROOT:  2 RESIDUAL TOT: 1.12833D-04
+ ROOT:  3 RESIDUAL TOT: 1.12833D-04
+      4       3         0.00     0.11E-03
+ Dimension of the reduced space:    15
+ >>> TIME USED IN THIS MICRO ITERATION        0.13
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 6.94192D-06
+ ROOT:  2 RESIDUAL TOT: 6.94192D-06
+ ROOT:  3 RESIDUAL TOT: 6.94192D-06
+      5       3         0.00     0.69E-05
+ Dimension of the reduced space:    18
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 3.01971D-07
+ ROOT:  2 RESIDUAL TOT: 3.01971D-07
+ ROOT:  3 RESIDUAL TOT: 3.01971D-07
+      6       3         0.00     0.30E-06
+ Dimension of the reduced space:    21
+ >>> TIME USED IN THIS MICRO ITERATION        0.11
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 7.45914D-09
+ ROOT:  2 RESIDUAL TOT: 7.45914D-09
+ ROOT:  3 RESIDUAL TOT: 7.45914D-09
+      7       3         0.00     0.75E-08
+ Dimension of the reduced space:    24
+ >>> TIME USED IN THIS MICRO ITERATION        0.13
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 9.98095D-11
+ ROOT:  2 RESIDUAL TOT: 9.98095D-11
+ ROOT:  3 RESIDUAL TOT: 9.98096D-11
+      8       3         0.00     0.10E-09
+ Dimension of the reduced space:    27
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 1.84917D-12
+ ROOT:  2 RESIDUAL TOT: 1.84894D-12
+ ROOT:  3 RESIDUAL TOT: 1.84902D-12
+      9       3         0.00     0.18E-11
+ Dimension of the reduced space:    30
+ >>> TIME USED IN THIS MICRO ITERATION        0.12
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,XDIPLEN  and symmetries:   2  2  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,YDIPLEN  and symmetries:   3  3  1
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
+  
+ ROOT:  1 RESIDUAL TOT: 1.95673D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.95673D-15
+ ROOT:  2 RESIDUAL TOT: 1.45107D-15
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.45107D-15
+ ROOT:  3 RESIDUAL TOT: 5.46251D-16
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.46251D-16
+     10       3         0.00     0.20E-14
+ Dimension of the reduced space:    30
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+    --------------------------------------
+    converged in 10 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.01
+         ---------------------------
+         Total time          0.02
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.18 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.3469 %
+
+          Double Excitation Contribution :               0.6531 %
+
+          ||T1||/||T2||                  :              12.3339
+
+          Tau1 diagnostic                :               0.0450
+
+          Norm of Total Amplitude Vector :               0.1276
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       1     |        3          |              |    0.122569  |
+ +-----------------------------------------------------------------------------+
+ | 2 2 2 2 |   1   1   1   1 |        3        3 |            6 |   -0.006100  |
+ | 3 2 3 2 |   1   1   1   1 |        5        3 |           13 |   -0.003208  |
+ | 5 2 5 2 |   1   1   1   1 |        7        3 |           24 |   -0.003208  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1228
+
+
+          Printed all single excitations greater than 0.033224
+
+
+          Printed all double excitations greater than 0.002694
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.3469 %
+
+          Double Excitation Contribution :               0.6531 %
+
+          ||T1||/||T2||                  :              12.3339
+
+          Tau1 diagnostic                :               0.0450
+
+          Norm of Total Amplitude Vector :               0.1276
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   3   |   1       1     |        5          |              |    0.122569  |
+ +-----------------------------------------------------------------------------+
+ | 3 2 3 2 |   1   1   1   1 |        5        3 |           13 |   -0.003208  |
+ | 3 3 3 3 |   1   1   1   1 |        5        5 |           15 |   -0.006100  |
+ | 5 3 5 3 |   1   1   1   1 |        7        5 |           26 |   -0.003208  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1228
+
+
+          Printed all single excitations greater than 0.033224
+
+
+          Printed all double excitations greater than 0.002694
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.3469 %
+
+          Double Excitation Contribution :               0.6531 %
+
+          ||T1||/||T2||                  :              12.3339
+
+          Tau1 diagnostic                :               0.0450
+
+          Norm of Total Amplitude Vector :               0.1276
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 5   5   |   1       1     |        7          |              |    0.122569  |
+ +-----------------------------------------------------------------------------+
+ | 5 2 5 2 |   1   1   1   1 |        7        3 |           24 |   -0.003208  |
+ | 5 3 5 3 |   1   1   1   1 |        7        5 |           26 |   -0.003208  |
+ | 5 5 5 5 |   1   1   1   1 |        7        7 |           28 |   -0.006100  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1228
+
+
+          Printed all single excitations greater than 0.033224
+
+
+          Printed all double excitations greater than 0.002694
+
+ Solving   1 response equations:
+ R2 :XDIPLEN   0.000000  2YDIPLEN   0.000000  3
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+     R2  start vector nr.  4 of symmetry  4 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+  
+ ROOT:  1 RESIDUAL TOT: 4.98983D-01
+      1       1         0.00     0.50E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+  
+ ROOT:  1 RESIDUAL TOT: 1.66574D-02
+      2       1         0.00     0.17E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+  
+ ROOT:  1 RESIDUAL TOT: 1.52832D-03
+      3       1         0.00     0.15E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+  
+ ROOT:  1 RESIDUAL TOT: 2.61075D-05
+      4       1         0.00     0.26E-04
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+  
+ ROOT:  1 RESIDUAL TOT: 3.43379D-08
+      5       1         0.00     0.34E-07
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
+  
+ ROOT:  1 RESIDUAL TOT: 1.38757D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.38757D-15
+      6       1         0.00     0.14E-14
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+    --------------------------------------
+    converged in  6 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.49 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.2723 %
+
+          Double Excitation Contribution :               0.7277 %
+
+          ||T1||/||T2||                  :              11.6799
+
+          Tau1 diagnostic                :               0.0339
+
+          Norm of Total Amplitude Vector :               0.0962
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   3   |   1       1     |        3          |              |    0.067719  |
+ | 3   2   |   1       1     |        1          |              |    0.067719  |
+ +-----------------------------------------------------------------------------+
+ | 2 1 3 1 |   1   1   1   1 |        3        1 |           19 |   -0.003837  |
+ | 3 3 2 3 |   1   2   1   1 |        1        6 |           37 |   -0.003837  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0959
+
+
+          Printed all single excitations greater than 0.033212
+
+
+          Printed all double excitations greater than 0.002843
+
+ Solving   1 response equations:
+ R2 :XDIPLEN   0.000000  2ZDIPLEN   0.000000  5
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+     R2  start vector nr.  5 of symmetry  6 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+  
+ ROOT:  1 RESIDUAL TOT: 4.98983D-01
+      1       1         0.00     0.50E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+  
+ ROOT:  1 RESIDUAL TOT: 1.66574D-02
+      2       1         0.00     0.17E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+  
+ ROOT:  1 RESIDUAL TOT: 1.52832D-03
+      3       1         0.00     0.15E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+  
+ ROOT:  1 RESIDUAL TOT: 2.61075D-05
+      4       1         0.00     0.26E-04
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+  
+ ROOT:  1 RESIDUAL TOT: 3.43379D-08
+      5       1         0.00     0.34E-07
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: XDIPLEN ,ZDIPLEN  and symmetries:   2  5  6
+  
+ ROOT:  1 RESIDUAL TOT: 1.34599D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.34599D-15
+      6       1         0.00     0.13E-14
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+    --------------------------------------
+    converged in  6 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.51 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.2723 %
+
+          Double Excitation Contribution :               0.7277 %
+
+          ||T1||/||T2||                  :              11.6799
+
+          Tau1 diagnostic                :               0.0339
+
+          Norm of Total Amplitude Vector :               0.0962
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   5   |   1       1     |        3          |              |    0.067719  |
+ | 5   2   |   1       1     |        1          |              |    0.067719  |
+ +-----------------------------------------------------------------------------+
+ | 2 1 5 1 |   1   1   1   1 |        3        1 |           19 |   -0.003837  |
+ | 2 3 5 3 |   1   2   1   1 |        3        6 |           39 |   -0.003837  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0959
+
+
+          Printed all single excitations greater than 0.033212
+
+
+          Printed all double excitations greater than 0.002843
+
+ Solving   1 response equations:
+ R2 :YDIPLEN   0.000000  3ZDIPLEN   0.000000  5
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+     R2  start vector nr.  6 of symmetry  7 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+  
+ ROOT:  1 RESIDUAL TOT: 4.98983D-01
+      1       1         0.00     0.50E+00
+ Dimension of the reduced space:     2
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+  
+ ROOT:  1 RESIDUAL TOT: 1.66574D-02
+      2       1         0.00     0.17E-01
+ Dimension of the reduced space:     3
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+  
+ ROOT:  1 RESIDUAL TOT: 1.52832D-03
+      3       1         0.00     0.15E-02
+ Dimension of the reduced space:     4
+ >>> TIME USED IN THIS MICRO ITERATION        0.09
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+  
+ ROOT:  1 RESIDUAL TOT: 2.61075D-05
+      4       1         0.00     0.26E-04
+ Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.10
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+  
+ ROOT:  1 RESIDUAL TOT: 3.43379D-08
+      5       1         0.00     0.34E-07
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.08
+
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+
+ Finding gradient for 
+ Frequencies  0.000000,  0.000000 and labels: YDIPLEN ,ZDIPLEN  and symmetries:   3  5  7
+  
+ ROOT:  1 RESIDUAL TOT: 1.08694D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.08694D-15
+      6       1         0.00     0.11E-14
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.07
+
+    --------------------------------------
+    converged in  6 iterations
+    threshold:    0.10E-11
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.01
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.01
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.53 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.2723 %
+
+          Double Excitation Contribution :               0.7277 %
+
+          ||T1||/||T2||                  :              11.6799
+
+          Tau1 diagnostic                :               0.0339
+
+          Norm of Total Amplitude Vector :               0.0962
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   5   |   1       1     |        3          |              |    0.067719  |
+ | 5   3   |   1       1     |        1          |              |    0.067719  |
+ +-----------------------------------------------------------------------------+
+ | 5 1 3 1 |   1   2   1   1 |        1        2 |           37 |   -0.003837  |
+ | 3 3 5 3 |   1   2   1   1 |        3        6 |           55 |   -0.003837  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0959
+
+
+          Printed all single excitations greater than 0.033212
+
+
+          Printed all double excitations greater than 0.002843
+ 
+ Solution of CC response equations completed.
+ 
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<  OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE   >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF SECOND ORDER PROPERTIES     >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested  3 second-order properties
+         -   3 F matrix transformations with R1 vectors
+         -   0 J matrix transformations with L1 vectors
+         -   3 ETA and XKSI vector calculations 
+         -   0 X intermediate calculations 
+         -   0 2. order reortho./relax. contributions
+   will be performed.
+
+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.00 secs.|
+ | time for  1 sets of left interm.:      0.00 secs.|
+ | time for  3 sets of right inter.:      0.00 secs.|
+ | time for  3 sets of 2. ord. int.:      0.00 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |  # products  |             |
+ |  L0  No. |  R1  No. |   with R1    |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     1    |      1       |       0.26  |
+ |     0    |     2    |      1       |       0.24  |
+ |     0    |     3    |      1       |       0.25  |
+ +==================================================+
+
+
+
+>>> Time used for    3 F matrix transformations:        0.88 seconds.
+
+>>> Time used for    3 O1/X1 vector calculation:        0.12 seconds.
+
+>>> Total time for   9 linear response function:        1.00 seconds.
+
+
+      +--------------------------------------------------------------+
+      !      FINAL CC2 RESULTS FOR THE SECOND-ORDER PROPERTIES       !
+      +--------------------------------------------------------------+
+
+
+  A operator                  B operator                     property 
+------------------------------------------------------------------------
+
+ XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.29273347    
+
+ XDIPLEN  (unrel.)    -.-    YDIPLEN  (unrel.)    -.-          ---
+
+ XDIPLEN  (unrel.)    -.-    ZDIPLEN  (unrel.)    -.-          ---
+
+ YDIPLEN  (unrel.)    -.-    XDIPLEN  (unrel.)    -.-          ---
+
+ YDIPLEN  (unrel.)  0.0000   YDIPLEN  (unrel.)  0.0000     0.29273347    
+
+ YDIPLEN  (unrel.)    -.-    ZDIPLEN  (unrel.)    -.-          ---
+
+ ZDIPLEN  (unrel.)    -.-    XDIPLEN  (unrel.)    -.-          ---
+
+ ZDIPLEN  (unrel.)    -.-    YDIPLEN  (unrel.)    -.-          ---
+
+ ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.29273347    
+------------------------------------------------------------------------
+
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<  OUTPUT FROM COUPLED CLUSTER CUBIC RESPONSE   >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF CC HYPERPOLARIZABILITIES    >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested  21 cubic response functions 
+         -   6 H^0 matrix transformations 
+         -   6 G^0 matrix transformations 
+         -   9 G^A matrix transformations 
+         -   6 F^0 matrix transformations 
+         -   9 F^A matrix transformations 
+         -   9 F^0{O} matrix transformations 
+         -  15 F^A{O} matrix transformations 
+         -   9 ETA^A{O} vector calculations 
+   will be performed.
+
+
+
+>>> Time used for    6 H matrix transformations:           0.00 seconds.
+
+
+ +==================================================+
+ |        G MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L0  No.| R1  No.| R1  No.| with R2  | time/secs  |
+ +--------------------------------------------------+
+ |     0  |     1  |     1  |      3  |       0.00  |
+ |     0  |     1  |     2  |      1  |       0.00  |
+ |     0  |     2  |     2  |      3  |       0.00  |
+ |     0  |     1  |     3  |      1  |       0.00  |
+ |     0  |     3  |     3  |      3  |       0.00  |
+ |     0  |     2  |     3  |      1  |       0.00  |
+ +--------------------------------------------------+
+ | total time for   6 G transforms.:      0.08 secs.|
+ +--------------------------------------------------+
+
+
+ +==================================================+
+ |    GENERALIZED G MATRIX TRANSFORMATION SECTION   |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L1  No.| R1  No.| R1  No.| with R1  | time/secs  |
+ +--------------------------------------------------+
+ |     1  |     1  |     1  |      1  |       0.00  |
+ |     1  |     1  |     2  |      1  |       0.01  |
+ |     2  |     1  |     1  |      1  |       0.00  |
+ |     1  |     1  |     3  |      1  |       0.00  |
+ |     3  |     1  |     1  |      1  |       0.00  |
+ |     2  |     2  |     2  |      1  |       0.00  |
+ |     2  |     2  |     3  |      1  |       0.00  |
+ |     3  |     2  |     2  |      1  |       0.01  |
+ |     3  |     3  |     3  |      1  |       0.00  |
+ +--------------------------------------------------+
+ | total time for   9 G transforms.:      0.09 secs.|
+ +--------------------------------------------------+
+
+>>> Time used for   15 G matrix transformations:           0.17 seconds.
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.00 secs.|
+ | time for  1 sets of left interm.:      0.00 secs.|
+ | time for  6 sets of right inter.:      0.00 secs.|
+ | time for  6 sets of 2. ord. int.:      0.00 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |  # products  |             |
+ |  L0  No. |  R2  No. |   with R2    |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     1    |      3       |       0.25  |
+ |     0    |     4    |      1       |       0.24  |
+ |     0    |     5    |      1       |       0.23  |
+ |     0    |     2    |      2       |       0.25  |
+ |     0    |     6    |      1       |       0.24  |
+ |     0    |     3    |      1       |       0.24  |
+ +--------------------------------------------------+
+ | total time for   6 F transforms.:      1.56 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.00      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      3.21      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      0.00      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in GZ terms     :      0.00      |
+ |  % of time used in FG terms     :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :      3.85      |
+ +==================================================+
+
+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.00 secs.|
+ | time for  3 sets of left interm.:      0.00 secs.|
+ | time for  3 sets of right inter.:      0.00 secs.|
+ | time for  9 sets of 2. ord. int.:      0.00 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |  # products  |             |
+ |  L1  No. |  R1  No. |   with R2    |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      3       |       0.24  |
+ |     1    |     2    |      1       |       0.23  |
+ |     2    |     1    |      1       |       0.25  |
+ |     2    |     2    |      3       |       0.24  |
+ |     1    |     3    |      1       |       0.23  |
+ |     3    |     1    |      1       |       0.26  |
+ |     3    |     3    |      3       |       0.27  |
+ |     2    |     3    |      1       |       0.26  |
+ |     3    |     2    |      1       |       0.25  |
+ +--------------------------------------------------+
+ | total time for   9 F transforms.:      2.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.43      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      2.14      |
+ |  % of time used in CCRDAO       :      0.43      |
+ |  % of time used in (**|k del)   :      0.00      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in GZ terms     :      0.00      |
+ |  % of time used in FG terms     :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :      2.14      |
+ +==================================================+
+
+
+
+>>> Time used for   15 F matrix transformations:           3.90 seconds.
+
+>>> Time used for   24 F{O} matrix transformations:        0.02 seconds.
+
+>>> Time used for    9 ETA{O} vector calculations :        0.12 seconds.
+
+>>> Total time for  81 cubic response functions:           4.21 seconds.
+
+
++----------------------------------------------------------------------------+
+!           FINAL CC2 RESULTS FOR THE SECOND HYPERPOLARIZABILITIES           !
++----------------------------------------------------------------------------+
+
+
+  A operator        B operator        C operator        D operator           gamma
+--------------------------------------------------------------------------------------
+
+ XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.23950030    
+ 
+ XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
+ XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
+ XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
+
+ XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
+ 
+ XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
+ XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
+ XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
+
+ XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
+ 
+ XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
+
+ XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
+ 
+ XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
+
+ XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
+ 
+ XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
+ XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
+ XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
+ XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
+ XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
+ XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
+ XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
+
+ XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
+ 
+ XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
+ XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
+ XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
+
+ XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
+ 
+ XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
+ XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
+ YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
+
+ YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
+ 
+ YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
+
+ YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
+ 
+ YDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
+ YDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
+ YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
+ YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
+ YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
+
+ YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
+ 
+ YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
+ YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
+ YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
+
+ YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.23950030    
+ 
+ YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
+ YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
+ YDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
+
+ YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
+ 
+ YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
+ YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
+ YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
+ YDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
+ YDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
+
+ YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
+ 
+ YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
+
+ YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
+ 
+ YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
+ ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
+ ZDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
+
+ ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
+ 
+ ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
+ ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
+ ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
+
+ ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
+ 
+ ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
+ ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
+ ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    XDIPLEN    -.-          ---
+ ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
+ ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
+ ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
+ ZDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-    YDIPLEN    -.-          ---
+
+ ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000    -0.79833432E-01
+ 
+ ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
+
+ ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
+ 
+ ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-          ---
+
+ ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000    -0.79833432E-01
+ 
+ ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    YDIPLEN    -.-          ---
+ ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-    ZDIPLEN    -.-          ---
+ ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    XDIPLEN    -.-          ---
+
+ ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000    -0.79833432E-01
+ 
+ ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-    ZDIPLEN    -.-          ---
+ ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    XDIPLEN    -.-          ---
+ ZDIPLEN    -.-    ZDIPLEN    -.-    ZDIPLEN    -.-    YDIPLEN    -.-          ---
+
+ ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000    -0.23950030    
+--------------------------------------------------------------------------------------
+---------------------------------------------------------------------------
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -128.4409133265                
+            Total MP2-R12/B energy:              -128.7168462495                
+            Total CC2-R12/B energy:              -128.7173988419                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+
+ >>>> Total CPU  time used in DALTON:  24.78 seconds
+ >>>> Total wall time used in DALTON:  25.00 seconds
+
+ 
+     Date and time (Linux)  : Wed Sep 21 11:22:48 2005
+     Host name              : inttch05                                

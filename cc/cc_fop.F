@@ -3031,26 +3031,28 @@ C-----------------------------------------
 C
       IF (CCR12) THEN
         KETAR12SQ = KEND1
-        KEND2 = KETAR12SQ + NGAMSQ(1)
+        KEND2 = KETAR12SQ + NTR12SQ(1)
         LWRK2 = LWORK - KEND2
 
-        CALL DZERO(WORK(KETAR12SQ),NGAMSQ(1))
+        CALL DZERO(WORK(KETAR12SQ),NTR12SQ(1))
         CALL CC_R12ETA0(WORK(KETAR12SQ),WORK(KLAMDP),1,WORK(KEND2),
      &                 LWRK2)
 
         KOFF1 = NT1AMX + NT2AMX + 1
-        CALL CCR12PCK2(ETA(KOFF1),1,.FALSE.,WORK(KETAR12SQ),.TRUE.)
+        IOPT = 1
+        CALL CCR12PCK2(ETA(KOFF1),1,.FALSE.,WORK(KETAR12SQ),'T',
+     &                 IOPT)
         CALL CCLR_DIASCLR12(ETA(KOFF1),0.5D0*KETSCL,1)
 
         !TEST: Sum_{kilj} (2V(ij,kl)-V(ji,kl))*c(ij,kl) should be E^(R12)
         !WORKS ONLY WITH BRASCL=KETSCL=1.0
         IF (LOCDBG) THEN
           KTR12 = KEND2
-          KEND2 = KTR12 + NGAMMA(1)
+          KEND2 = KTR12 + NTR12AM(1)
           IOPT = 32
           CALL CC_RDRSP('R0 ',0,1,IOPT,MODEL,DUMMY,WORK(KTR12))
           WRITE(LUPRI,*) 'E(R12) in CC_ETA: ',
-     &          DDOT(NGAMMA(1),ETA(KOFF1),1,WORK(KTR12),1)
+     &          DDOT(NTR12AM(1),ETA(KOFF1),1,WORK(KTR12),1)
         END IF
       ENDIF
 
@@ -3073,7 +3075,7 @@ C
          WRITE(LUPRI,*) 'Norm of eta1: ',ETA1
          WRITE(LUPRI,*) 'Norm of eta2: ',ETA2
          IF (CCR12) THEN
-           ETAR12 = DDOT(NGAMMA(1),ETA(1+NT1AMX+NT2AMX),1,
+           ETAR12 = DDOT(NTR12AM(1),ETA(1+NT1AMX+NT2AMX),1,
      &                   ETA(1+NT1AMX+NT2AMX),1)
            WRITE(LUPRI,*) 'Norm of etaR12: ',ETAR12
          END IF

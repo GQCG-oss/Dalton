@@ -227,7 +227,7 @@ C     Equations
       integer dklijz,kajij,kcvia,ntotj,imataj(8,8),icou3
       integer nr1orb(8),nr1xbas(8),nrgkl,n2bst1(8),ir1orb(8,8)
       integer ir2bas(8,8),ir2xbas(8,8),irgkl,iaodis1(8,8),nr2bas(8)
-      integer ir1xbas(8,8)
+      integer ir1xbas(8,8),nijkl(8)
       integer koffe,kctil2,idxijkl,lctil,ncvai
       integer res,kscr1
 
@@ -282,7 +282,7 @@ c     ----------------------------------------
       call dscal(nrhftria*nrhftria,0.5d0,work(krtrip),1)
 
       call cc_r12vpack(work(kccr12),isymv,work(krsing),work(krtrip),
-     &     nrhftria)
+     &     nrhf,nrhfa,nijkl)
 
 c     ---------------------------------
 C     get c_tilde = 2*c_ij^kl - c_ji^kl
@@ -639,8 +639,8 @@ C  /* Deck r12gradap */
       integer isym,nvir0t,blajkl,klijz,krajklz,klijanz,kxajklz
       integer ipdd,kxtil,koffk,koffl,koffj,koffi,isymmu,isymmuj
       integer icou4,imataj(8,8),blajklf,kl,aj,ajkl,nrhfst
-      integer imatmn(8,8),icou6,nmatkl(8),imatkl(8,8),icou5
-      integer imatka(8,8),icou7,nmatak(8)
+      integer imatmn(8,8),icou6,nmatkl1(8),imatkl1(8,8),icou5
+      integer imatka(8,8),icou7,nmatak(8),nijkl(8)
 #if defined (SYS_CRAY)
       real res(*),work(*),orb(*),v2am(*),one,two,zero
 #else
@@ -691,7 +691,7 @@ c     ----------------------------------------
       call dscal(nrhftria*nrhftria,0.5d0,work(krtrip),1)
 
       call cc_r12vpack(work(kccr12),isymv,work(krsing),work(krtrip),
-     &     nrhftria)
+     &     nrhf,nrhfa,nijkl)
 
 c     ---------------------------------
 C     get c_tilde = 2*c_ij^kl - c_ji^kl
@@ -762,7 +762,7 @@ c     ---------------------------------
             icou5 = icou5 + nvir0(isyma)*nrhf(isymn)
           enddo
           nmatan(isyman) = icou3
-          nmatkl(isyman) = icou4
+          nmatkl1(isyman) = icou4
           nmatak(isyman) = icou5
       enddo
 
@@ -777,12 +777,12 @@ c     ---------------------------------
             isymn = muld2h(isyman,isyma)
             imatan(isyma,isymn)= icou3
             imataj(isymn,isyma)= icou4
-            imatkl(isyma,isymn)= icou5
+            imatkl1(isyma,isymn)= icou5
             imatmn(isymn,isyma)= icou6
             imatka(isymn,isyma)= icou7
             icou3 = icou3+nrhf(isymn)*(norb1(isyma) - nrhfs(isyma))
             icou4 = icou4+nrhfs(isymn)*(norb1(isyma) - nrhfs(isyma))
-            icou5 = icou5+nmatan(isymn)* nmatkl(isyma)
+            icou5 = icou5+nmatan(isymn)* nmatkl1(isyma)
             icou6 = icou6+nrhfs(isyma)*nrhfs(isymn)
             icou7 = icou7+nmatak(isyma)*nmatij(isymn)
          enddo
@@ -1002,7 +1002,7 @@ c     Calculate d_{kl}^{ij} = c_{kl}^{mn}*ctilde_{ij}^{mn}
      &                            (k-1)*nrhfs(isyml) + l
                               aj = imataj(isymj,isyma)+
      &                            (j-1)*nvir0(isyma) + a
-                              ajkl = imatkl(isymaj,isymkl)+
+                              ajkl = imatkl1(isymaj,isymkl)+
      &                          aj +(kl-1)*nmatan(isymaj)
                               work(blajklf+idx-1) = work(blajkl+ajkl-1)
                            enddo
@@ -1098,7 +1098,7 @@ C  /* Deck r12gradaxd */
       integer njaik,nik,nja,najik,nikja,aklij,kctil2,aijklz,lrcc12,bijkl
       integer isymja,isymka,ntoto,isymoj,isymo,idxlkij,kres,nikaj
       integer kiakjz,aj,ajkl,kl,isymkj,kiajkz,rklijz,index
-      integer ipdd,resb,kxtil,kresz,icoun4,nmataj(8),ncvij
+      integer ipdd,resb,kxtil,kresz,icoun4,nmataj(8),ncvij,nijkl(8)
 #if defined (SYS_CRAY)
       real work(*),dklij(*),v2am(*),kctil(*),kccr12(*),one,two,zero
       real res(*) 
@@ -1192,7 +1192,7 @@ C     Read matrix X
       call dscal(n2,2d0/3d0,work(kxtrip),1)
 
       call cc_r12vpack(work(kxxr12),isymv,work(kxsing),work(kxtrip),
-     &     nrhftria)
+     &     nrhf,nrhfa,nijkl)
 
 
 C     Calculate XC_{ij}^{kl} = X_{ij}^{mn} * Ctilde_{mn}^{kl}   
@@ -1702,7 +1702,7 @@ C  /* Deck r12gradbd */
       integer imbas1(8),dens,lxdnumu,icou4,imatmunu(8,8),lxdpmu
       integer nrhfst,ksqijklz,ksqjkl,ksajkl,sajkl,icoun1,norb1t
       integer imataj(8,8),idx,kl,aj,ajkl,kspjklf,ksajklf
-      integer imatmn(8,8),icou6,nmatkl(8),imatkl(8,8),icou5
+      integer imatmn(8,8),icou6,nmatkl1(8),imatkl1(8,8),icou5
       integer nmatan(8),icou7
       integer imatoi(8,8),icou8,isyman,isymn
       integer iglmrv1(8,8),noffset1,icou9,nrhffrt
@@ -1751,7 +1751,7 @@ C  /* Deck r12gradbd */
          icou3 = 0
          icou4 = 0
          icou7 = 0
-         nmatkl(isyman) = 0
+         nmatkl1(isyman) = 0
          do isyma = 1,nsym
             isymn = muld2h(isyman,isyma)
             nvir0(isyma)  = norb1(isyma) - nrhfs(isyma)
@@ -1759,7 +1759,7 @@ C  /* Deck r12gradbd */
             icou4 = icou4 + nrhfs(isyma)*nrhfs(isymn)
           enddo
           nmatan(isyman) = icou3
-          nmatkl(isyman) = icou4
+          nmatkl1(isyman) = icou4
       enddo
 
       do isyman = 1,nsym
@@ -1770,13 +1770,13 @@ C  /* Deck r12gradbd */
          do isyma = 1,nsym
             isymn = muld2h(isyman,isyma)
             imataj(isyma,isymn)= icou4
-            imatkl(isyma,isymn)= icou5
+            imatkl1(isyma,isymn)= icou5
             imatmn(isyma,isymn)= icou6
             imatoi(isyma,isymn)= icou8
             icou4 = icou4+nrhfs(isymn)*(norb1(isyma) - nrhfs(isyma))
-            icou5 = icou5+nmatan(isymn)* nmatkl(isyma)
+            icou5 = icou5+nmatan(isymn)* nmatkl1(isyma)
             icou6 = icou6+nrhfs(isyma)*nrhfs(isymn)
-            icou8 = icou8+nmatkl(isyma)*nmatkl(isymn)
+            icou8 = icou8+nmatkl1(isyma)*nmatkl1(isymn)
          enddo
       enddo
 
@@ -1933,7 +1933,7 @@ c
                              ij = imatmn(isymi,isymj)+
      &                             (j-1)*nrhfs(isymi) + i
                              ijkl = imatoi(isymij,isymkl)+
-     &                             (kl-1)*nmatkl(isymij) + ij
+     &                             (kl-1)*nmatkl1(isymij) + ij
                              work(ksijklf+idx-1) = work(ksijkl+ijkl-1)
                          enddo
                        enddo
@@ -1965,7 +1965,7 @@ c
      &                            (k-1)*nrhfs(isyml) + l
                               aj = imataj(isyma,isymj)+
      &                            (j-1)*nvir0(isyma) + a
-                              ajkl = imatkl(isymaj,isymkl)+
+                              ajkl = imatkl1(isymaj,isymkl)+
      &                          aj +(kl-1)*nmatan(isymaj)
                              work(ksajklf+idx-1) = work(ksajkl+ajkl-1)
                           enddo
@@ -1996,7 +1996,7 @@ c
                              aj = imatmn(isyma,isymj)+
      &                            (j-1)*nrhfs(isyma) + a
                              ajkl = imatoi(isymaj,isymkl)+
-     &                          aj +(kl-1)*nmatkl(isymaj)
+     &                          aj +(kl-1)*nmatkl1(isymaj)
                              work(kspjklf+idx-1) = work(kspjkl+ajkl-1)
                           enddo
                        enddo

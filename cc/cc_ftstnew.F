@@ -174,14 +174,14 @@ C     end if
       KEND1     = KRHOANA2 + NT2AM(ISYRES)
       IF (CCR12) THEN
         KRHOANA12 = KEND1
-        KEND1     = KRHOANA12 + NGAMMA(ISYRES)
+        KEND1     = KRHOANA12 + NTR12AM(ISYRES)
       END IF  
       LWRK1 = LWORK - KEND1
       IF (LWRK1.LT.0) CALL QUIT('Insufficient memory in CC_FTSTNEW')
 
       LENALL = NT1AM(ISYRES) + NT2AM(ISYRES)
       IF (CCS)   LENALL = NT1AM(ISYRES)
-      IF (CCR12) LENALL = LENALL + NGAMMA(ISYRES)
+      IF (CCR12) LENALL = LENALL + NTR12AM(ISYRES)
 
       CALL DZERO(WORK(KRHOANA1),LENALL)
 
@@ -196,7 +196,7 @@ C     end if
         KEND1    = KRHODIF2 + NT2AMX
         IF (CCR12) THEN
           KRHODIF12 = KEND1
-          KEND1     = KRHODIF12 + NGAMMA(1)
+          KEND1     = KRHODIF12 + NTR12AM(1)
         END IF
 
         LWRK1 = LWORK - KEND1
@@ -226,9 +226,9 @@ C     end if
       IF (CCR12) THEN
          CALL CC_PRPR12(WORK(KRHOANA12),ISYRES,1,.TRUE.)
          WRITE(LUPRI,*) 'Norm^2 of FMATRIX: ',
-     &          DDOT(NT1AM(ISYRES),WORK(KRHOANA1),1,WORK(KRHOANA1),1) +
-     &          DDOT(NT2AM(ISYRES),WORK(KRHOANA2),1,WORK(KRHOANA2),1) +
-     &          DDOT(NGAMMA(ISYRES),WORK(KRHOANA12),1,WORK(KRHOANA12),1)
+     &         DDOT(NT1AM(ISYRES),WORK(KRHOANA1),1,WORK(KRHOANA1),1) +
+     &         DDOT(NT2AM(ISYRES),WORK(KRHOANA2),1,WORK(KRHOANA2),1) +
+     &         DDOT(NTR12AM(ISYRES),WORK(KRHOANA12),1,WORK(KRHOANA12),1)
       END IF
 
       IF (NSYM .EQ. 1) THEN
@@ -237,10 +237,10 @@ C     end if
         ERRNRM = DDOT(NT1AMX,WORK(KRHOANA1),1,WORK(KRHOANA1),1) +
      &           DDOT(NT2AMX,WORK(KRHOANA2),1,WORK(KRHOANA2),1)
         IF (CCR12) THEN
-          CALL DAXPY(NGAMMA(1),-1.0D0,WORK(KRHODIF12),1,WORK(KRHOANA12),
-     &               1)
+          CALL DAXPY(NTR12AM(1),-1.0D0,WORK(KRHODIF12),1,
+     &               WORK(KRHOANA12),1)
           ERRNRM = ERRNRM + 
-     &             DDOT(NGAMMA(1),WORK(KRHOANA12),1,WORK(KRHOANA12),1)
+     &             DDOT(NTR12AM(1),WORK(KRHOANA12),1,WORK(KRHOANA12),1)
         END IF  
      
         WRITE(LUPRI,'(//A)') 'Difference between Results:'
@@ -347,7 +347,7 @@ C memory allocation:
        kend1     = kt2ampsav + nt2amx
        if (CCR12) then
          kt12ampsav = kend1
-         kend1      = kt12ampsav + ngamma(isym)
+         kend1      = kt12ampsav + ntr12am(isym)
        end if
 
        kt1ampa = kend1
@@ -355,7 +355,7 @@ C memory allocation:
        kend1   = kt2ampa + nt2amx
        if (CCR12) then
          kt12ampa = kend1
-         kend1    = kt12ampa + ngamma(isym)
+         kend1    = kt12ampa + ntr12am(isym)
 C      dirty hack; otherwise problems with g77-compiler!
        else
          kt12ampa = lwork-1
@@ -366,7 +366,7 @@ C      dirty hack; otherwise problems with g77-compiler!
        kend1  = keta2 + nt2amx
        if (CCR12) then
          keta12 = kend1
-         kend1  = keta12 + ngamma(1)
+         kend1  = keta12 + ntr12am(1)
        end if
 
        kzeta1 = kend1
@@ -374,7 +374,7 @@ C      dirty hack; otherwise problems with g77-compiler!
        kend1  = kzeta2 + nt2amx
        if (CCR12) then
          kzeta12 = kend1
-         kend1   = kzeta12 + ngamma(isym)
+         kend1   = kzeta12 + ntr12am(isym)
        end if
 
        kt0amp0 = kend1 
@@ -382,10 +382,10 @@ C      dirty hack; otherwise problems with g77-compiler!
        komega1 = kt1amp0 + nt1amx
        komega2 = komega1 + nt1amx
        kt2amp0 = komega2 + max(nt2amx,2*nt2ort(1),nt2ao(1))
-       kend1   = kt2amp0 + nt2sq(1)
+       kend1   = kt2amp0 + max(nt2sq(1),nt2r12(1))
        if (CCR12) then
          kt12amp0 = kend1
-         kend1    = kt12amp0 + ngamma(isym)
+         kend1    = kt12amp0 + ntr12am(isym)
        end if
 
        krho1  = kend1
@@ -393,7 +393,7 @@ C      dirty hack; otherwise problems with g77-compiler!
        kend1  = krho2 + nt2amx
        if (CCR12) then
          krho12 = kend1
-         kend1  = krho12 + ngamma(isym)
+         kend1  = krho12 + ntr12am(isym)
        end if
        lwrk1 = lwork - kend1
 
@@ -408,7 +408,7 @@ C test if work space is enough:
 C zero out result arrays:
        call dzero(rhodif1,nt1amx)
        call dzero(rhodif2,nt2amx)
-       if (CCR12) call dzero(rhodif12,ngamma(isym))
+       if (CCR12) call dzero(rhodif12,ntr12am(isym))
 
 
 C---------------------------------------------------------------------*
@@ -454,7 +454,7 @@ C      different format than ground state amplitudes:
      &                  work(kt12ampa))
          if (locdbg) then
            write(lupri,*) 'T12AMPA in CC_FDF:'
-           call outpak(work(kt12ampa),nmatij(1),1,lupri)
+           call outpak(work(kt12ampa),nmatki(1),1,lupri)
          end if
        end if
        if (locdbg) then 
@@ -474,7 +474,7 @@ C---------------------------------------------------------------------*
          call dcopy(nt1amx,work(kt1ampsav),1,work(kt1amp0),1)
          call dcopy(nt2amx,work(kt2ampsav),1,work(kt2amp0),1)
          if (CCR12) then
-           call dcopy(ngamma(isym),work(kt12ampsav),1,work(kt12amp0),1)
+           call dcopy(ntr12am(isym),work(kt12ampsav),1,work(kt12amp0),1)
          end if       
          
          if (i.eq.1) fac=one
@@ -483,7 +483,7 @@ C---------------------------------------------------------------------*
          call daxpy(nt1amx,fac*delta,work(kt1ampa),1,work(kt1amp0),1)
          call daxpy(nt2amx,fac*delta,work(kt2ampa),1,work(kt2amp0),1)
          if (CCR12) then
-           call daxpy(ngamma(isym),fac*delta,work(kt12ampa),1,
+           call daxpy(ntr12am(isym),fac*delta,work(kt12ampa),1,
      &                work(kt12amp0),1)
          end if
 
@@ -491,13 +491,6 @@ C---------------------------------------------------------------------*
          call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
      &               work(kt1amp0),work(kt2amp0),work(kend1),lwrk1)
          if (CCR12) then
-c          LUNIT = 0 
-c          CALL GPOPEN(LUNIT,FCCR12C,'UNKNOWN',' ','FORMATTED',
-c    &                       IDUM,LDUM)
-c          N2 = NRHFTRIA * NRHFTRIA
-c          WRITE(LUNIT,'(4E30.20)') (WORK(KTAMP12S+IJ), IJ = 0, N2-1)
-c          WRITE(LUNIT,'(4E30.20)') (WORK(KTAMP12T+IJ), IJ = 0, N2-1)
-c          CALL GPCLOSE(LUNIT,'KEEP')
            iopt = 32
            call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
      &                   dummy,work(kt12amp0),work(kend1),lwrk1)
@@ -519,7 +512,7 @@ C---------------------------------------------------------------------*
          call dcopy(nt1amx,work(kzeta1),1,work(krho1),1)
          call dcopy(nt2amx,work(kzeta2),1,work(krho2),1)
          if (CCR12) then
-           call dcopy(ngamma(isym),work(kzeta12),1,work(krho12),1)
+           call dcopy(ntr12am(isym),work(kzeta12),1,work(krho12),1)
          end if
 
          ecurr=0.0D0 
@@ -544,7 +537,7 @@ C---------------------------------------------------------------------*
          call daxpy(nt1amx,fac*half*delinv,work(krho1),1,rhodif1,1)
          call daxpy(nt2amx,fac*half*delinv,work(krho2),1,rhodif2,1)
          if (CCR12) then
-           call daxpy(ngamma(isym),fac*half*delinv,work(krho12),1,
+           call daxpy(ntr12am(isym),fac*half*delinv,work(krho12),1,
      &                 rhodif12,1)
          end if
 
@@ -559,20 +552,13 @@ C---------------------------------------------------------------------*
        call dcopy(nt1amx,work(kt1ampsav),1,work(kt1amp0),1)
        call dcopy(nt2amx,work(kt2ampsav),1,work(kt2amp0),1)
        if (CCR12) then
-         call dcopy(ngamma(isym),work(kt12ampsav),1,work(kt12amp0),1)
+         call dcopy(ntr12am(isym),work(kt12ampsav),1,work(kt12amp0),1)
        end if
 
        iopt=3
        call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
      &               work(kt1amp0),work(kt2amp0),work(kend1),lwrk1)
        if (CCR12) then
-c          LUNIT = 0 
-c          CALL GPOPEN(LUNIT,FCCR12C,'UNKNOWN',' ','FORMATTED',
-c    &                       IDUM,LDUM)
-c          N2 = NRHFTRIA * NRHFTRIA
-c          WRITE(LUNIT,'(4E30.20)') (WORK(KTAMP12S+IJ), IJ = 0, N2-1)
-c          WRITE(LUNIT,'(4E30.20)') (WORK(KTAMP12T+IJ), IJ = 0, N2-1)
-c          CALL GPCLOSE(LUNIT,'KEEP')
          iopt = 32
          call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
      &                 dummy,work(kt12amp0),work(kend1),lwrk1)

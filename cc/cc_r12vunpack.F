@@ -1,11 +1,14 @@
 *======================================================================*
-      subroutine cc_r12vunpack(vijkl,isymv,vsing,vtrip,nrhftria,lprojv)
+      subroutine cc_r12vunpack(vijkl,isymv,vsing,vtrip,lprojv,
+     &                         nr12orb,nrhforb)
 *----------------------------------------------------------------------*
 c     purpose: make V^{it jt }_{kl} = P^{kl}_{ij} * V^{it jt }_{kl}
 c              and set it equal to the vector function omega for s = 0,1
 c              (no symmetry is used!)
 c
 c     H. Fliegl, C. Haettig spring 2003 
+c
+c     modified by C. Neiss, summer 2005
 c----------------------------------------------------------------------
       implicit none
 #include <priunit.h>
@@ -23,22 +26,59 @@ c----------------------------------------------------------------------
 
       integer idxkl,idxlk,idxij,idxijkl,idxijlk,nrhftria,idxjikl,idxjilk
       integer isymkl,isymij,isyml,isymk,isymi,isymj,idxji
-      integer it,jt,kt,lt,kl,ij,isymv
+      integer it,jt,kt,lt,kl,ij,klij,isymv,icoun1,icoun2,isym
+      integer nrhforb(8),irhforb(8),nij(8),iij(8,8),iijkl(8,8)
+      integer nr12orb(8),ir12orb(8),nkl(8),ikl(8,8),nr12t
       integer index
 #if defined (SYS_CRAY)
-      real vijkl(*),vsing(nrhftria,nrhftria)
-      real vtrip(nrhftria,nrhftria),ff
+      real vijkl(*),vsing(*)
+      real vtrip(*),ff
 #else
-      double precision vijkl(*),vsing(nrhftria,nrhftria)
-      double precision vtrip(nrhftria,nrhftria),ff
+      double precision vijkl(*),vsing(*)
+      double precision vtrip(*),ff
 #endif
 
       index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
 
       call qenter('cc_r12vunpack')
-
+C
       ff = 1.0d0/sqrt(2.0d0)
-      
+C
+      nr12t  = 0
+      icoun1 = 0
+      icoun2 = 0
+      do isym = 1, nsym
+        irhforb(isym) = icoun1
+        ir12orb(isym) = icoun2
+        icoun1 = icoun1 + nrhforb(isym)
+        icoun2 = icoun2 + nr12orb(isym)
+        nr12t  = nr12t  + nr12orb(isym)
+      end do
+
+      do isym = 1, nsym
+        icoun1 = 0
+        icoun2 = 0
+        do isymj = 1, nsym
+          isymi = muld2h(isymj,isym)
+          iij(isymi,isymj) = icoun1
+          ikl(isymi,isymj) = icoun2
+          icoun1 = icoun1 + nrhforb(isymi)*nrhforb(isymj)
+          icoun2 = icoun2 + nr12orb(isymi)*nr12orb(isymj)
+        end do
+        nij(isym) = icoun1
+        nkl(isym) = icoun2
+      end do
+
+      do isym = 1, nsym
+        icoun1 = 0
+        do isymij = 1, nsym
+          isymkl = muld2h(isymij,isym)
+          iijkl(isymij,isymkl) = icoun1
+          icoun1 = icoun1 + nij(isymij)*nkl(isymkl)
+        end do
+      end do
+C
+      nrhftria = nr12t*(nr12t+1)/2
       call dzero(vsing,nrhftria*nrhftria) 
       call dzero(vtrip,nrhftria*nrhftria) 
 
@@ -47,59 +87,60 @@ c----------------------------------------------------------------------
          do isyml =1, nsym
             isymk = muld2h(isymkl,isyml)
 
-            do k = 1, nrhf(isymk)
-               kt = irhf(isymk) + k
-               do l = 1, nrhf(isyml)
-                  lt = irhf(isyml) + l
+            do k = 1, nr12orb(isymk)
+               kt = ir12orb(isymk) + k
+               do l = 1, nr12orb(isyml)
+                  lt = ir12orb(isyml) + l
                   if (lt.le.kt) then
                      kl = index(kt,lt)
-                     idxkl=imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
-                     idxlk=imatij(isyml,isymk)+nrhf(isyml)*(k-1)+l
+                     idxkl=ikl(isymk,isyml)+nr12orb(isymk)*(l-1)+k
+                     idxlk=ikl(isyml,isymk)+nr12orb(isyml)*(k-1)+l
                      do isymi =1, nsym
                         isymj = muld2h(isymij,isymi)
 
-                        do j = 1, nrhf(isymj)
-                           jt = irhf(isymj)+j                       
-                           do i = 1, nrhf(isymi)
-                              it = irhf(isymi)+i
+                        do j = 1, nrhforb(isymj)
+                           jt = irhforb(isymj)+j                       
+                           do i = 1, nrhforb(isymi)
+                              it = irhforb(isymi)+i
                               if (jt.le.it) then
                                  ij = index(it,jt) 
-                                 idxij = imatij(isymi,isymj)+
-     &                                nrhf(isymi)*(j-1) + i
-                                 idxijkl = igamsq(isymij,isymkl)+
-     &                                nmatij(isymij)*(idxkl-1)+idxij
-                                 idxijlk = igamsq(isymij,isymkl)+ 
-     &                                nmatij(isymij)*(idxlk-1)+idxij
+                                 klij = nrhftria*(ij-1) + kl
+                                 idxij = iij(isymi,isymj)+
+     &                                nrhforb(isymi)*(j-1) + i
+                                 idxijkl = iijkl(isymij,isymkl)+
+     &                                nij(isymij)*(idxkl-1)+idxij
+                                 idxijlk = iijkl(isymij,isymkl)+ 
+     &                                nij(isymij)*(idxlk-1)+idxij
 
-                                 vsing(kl,ij)=vijkl(idxijkl)+
+                                 vsing(klij)=vijkl(idxijkl)+
      &                                vijkl(idxijlk)
-                                 vtrip(kl,ij)=vijkl(idxijkl)-
+                                 vtrip(klij)=vijkl(idxijkl)-
      &                                vijkl(idxijlk)
 c                            -----------------------------------------  
 c                             V is not symmetric in ik <-> jl, thus
 c                                 use 0.5 (V(ijkl) + V(jilk))
 c                            -----------------------------------------
                                  if (lprojv) then
-                                   idxji = imatij(isymj,isymi)+
-     &                                  nrhf(isymj)*(i-1) + j
-                                   idxjilk = igamsq(isymij,isymkl)+
-     &                                  nmatij(isymij)*(idxlk-1)+idxji
-                                   idxjikl = igamsq(isymij,isymkl)+
-     &                                  nmatij(isymij)*(idxkl-1)+idxji
-                                   vsing(kl,ij) = half*(vsing(kl,ij)
+                                   idxji = iij(isymj,isymi)+
+     &                                  nrhforb(isymj)*(i-1) + j
+                                   idxjilk = iijkl(isymij,isymkl)+
+     &                                  nij(isymij)*(idxlk-1)+idxji
+                                   idxjikl = iijkl(isymij,isymkl)+
+     &                                  nij(isymij)*(idxkl-1)+idxji
+                                   vsing(klij) = half*(vsing(klij)
      &                                  + vijkl(idxjikl)+vijkl(idxjilk))
-                                   vtrip(kl,ij) = half*(vtrip(kl,ij)
+                                   vtrip(klij) = half*(vtrip(klij)
      &                                  + vijkl(idxjilk)-vijkl(idxjikl))
                                  end if
 
                                  if (it.eq.jt) 
-     &                                vsing(kl,ij)=ff*vsing(kl,ij)
+     &                                vsing(klij)=ff*vsing(klij)
                                  if (kt.eq.lt) 
-     &                                vsing(kl,ij)=ff*vsing(kl,ij)
+     &                                vsing(klij)=ff*vsing(klij)
                                  if (it.eq.jt) 
-     &                                vtrip(kl,ij)=ff*vtrip(kl,ij)
+     &                                vtrip(klij)=ff*vtrip(klij)
                                  if (kt.eq.lt) 
-     &                                vtrip(kl,ij)=ff*vtrip(kl,ij)
+     &                                vtrip(klij)=ff*vtrip(klij)
                               end if
                            end do
                         end do
@@ -126,9 +167,13 @@ c                            -----------------------------------------
       end
 
 *=====================================================================* 
-      subroutine cc_r12vpack(vijkl,isymv,vsing,vtrip,nrhftria)
+      subroutine cc_r12vpack(vijkl,isymv,vsing,vtrip,nr12orb,nrhforb,
+     &                       nijkl)
 *---------------------------------------------------------------------*
 c     purpose: transform omega for s = 0,1 back to omega(ki,lj)
+c
+c     modified by C. Neiss, summer 2005
+c     see CCR12PCK for further comments
 c---------------------------------------------------------------------
       implicit none
 #include <ccsdsym.h>     
@@ -136,33 +181,73 @@ c---------------------------------------------------------------------
 #include <ccorb.h>
       integer idxkl,idxlk,idxij,idxijkl,idxijlk,nrhftria,idxjikl,idxjilk
       integer isymkl,isymij,isyml,isymk,isymi,isymj,idxji
-      integer it,jt,kt,lt,index,kl,ij,isymv
+      integer it,jt,kt,lt,index,kl,ij,klij,isymv,isym,icoun1,icoun2
+      integer nr12orb(8),nrhforb(8),irhforb(8),ir12orb(8),
+     &        nij(8),nkl(8),iij(8,8),ikl(8,8),nijkl(8),iijkl(8,8),nr12t
 #if defined (SYS_CRAY)
-      real vijkl(*),vsing(nrhftria,nrhftria)
-      real vtrip(nrhftria,nrhftria),ff
+      real vijkl(*),vsing(*)
+      real vtrip(*),ff
       real ffkl,half
 #else
-      double precision vijkl(*),vsing(nrhftria,nrhftria)
-      double precision vtrip(nrhftria,nrhftria),ff
+      double precision vijkl(*),vsing(*)
+      double precision vtrip(*),ff
       double precision ffkl,half
 #endif
+      logical locdbg
+      parameter(locdbg = .false.)
       parameter (half = 0.5D0)
 
       index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
       
       call qenter('cc_r12vpack')
+C
+      nr12t  = 0
+      icoun1 = 0
+      icoun2 = 0
+      do isym = 1, nsym
+        irhforb(isym) = icoun1
+        ir12orb(isym) = icoun2
+        icoun1 = icoun1 + nrhforb(isym)
+        icoun2 = icoun2 + nr12orb(isym)
+        nr12t  = nr12t  + nr12orb(isym)
+      end do
 
-      call dzero(vijkl,ngamsq(isymv))
+      do isym = 1, nsym
+        icoun1 = 0
+        icoun2 = 0
+        do isymj = 1, nsym
+          isymi = muld2h(isymj,isym)
+          iij(isymi,isymj) = icoun1
+          ikl(isymi,isymj) = icoun2
+          icoun1 = icoun1 + nrhforb(isymi)*nrhforb(isymj)
+          icoun2 = icoun2 + nr12orb(isymi)*nr12orb(isymj)
+        end do
+        nij(isym) = icoun1
+        nkl(isym) = icoun2
+      end do
+
+      do isym = 1, nsym
+        icoun1 = 0
+        do isymij = 1, nsym
+          isymkl = muld2h(isymij,isym)
+          iijkl(isymij,isymkl) = icoun1
+          icoun1 = icoun1 + nij(isymij)*nkl(isymkl)
+        end do
+        nijkl(isym) = icoun1
+      end do
+C
+      nrhftria = nr12t*(nr12t+1)/2
+      call dzero(vijkl,nijkl(isymv))
 
       do isymkl = 1, nsym
          isymij = muld2h(isymkl,isymv)
          do isyml =1, nsym
             isymk = muld2h(isymkl,isyml)
 
-            do k = 1, nrhf(isymk)
-               kt = irhf(isymk) + k
-               do l = 1, nrhf(isyml)
-                  lt = irhf(isyml) + l
+            do k = 1, nr12orb(isymk)
+               kt = ir12orb(isymk) + k
+               do l = 1, nr12orb(isyml)
+                  lt = ir12orb(isyml) + l
 
                   if (lt.eq.kt) then
                      ffkl = sqrt(2d0)
@@ -172,16 +257,16 @@ c---------------------------------------------------------------------
 
                   if (lt.le.kt) then
                      kl = index(kt,lt)
-                     idxkl=imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
-                     idxlk=imatij(isyml,isymk)+nrhf(isyml)*(k-1)+l
+                     idxkl=ikl(isymk,isyml)+nr12orb(isymk)*(l-1)+k
+                     idxlk=ikl(isyml,isymk)+nr12orb(isyml)*(k-1)+l
 
                      do isymi =1, nsym
                         isymj = muld2h(isymij,isymi)
 
-                        do j = 1, nrhf(isymj)
-                           jt = irhf(isymj)+j                       
-                           do i = 1, nrhf(isymi)
-                              it = irhf(isymi)+i
+                        do j = 1, nrhforb(isymj)
+                           jt = irhforb(isymj)+j                       
+                           do i = 1, nrhforb(isymi)
+                              it = irhforb(isymi)+i
 
                               if (jt.eq.it) then
                                  ff = ffkl * sqrt(2d0)
@@ -191,22 +276,23 @@ c---------------------------------------------------------------------
 
                               if (jt.le.it) then
                                  ij = index(it,jt) 
-                                 idxij = imatij(isymi,isymj)+
-     &                                nrhf(isymi)*(j-1) + i
-                                 idxijkl = igamsq(isymij,isymkl)+
-     &                                nmatij(isymij)*(idxkl-1)+idxij
-                                 idxijlk = igamsq(isymij,isymkl)+ 
-     &                                nmatij(isymij)*(idxlk-1)+idxij
-                                 idxji = imatij(isymj,isymi)+
-     &                                nrhf(isymj)*(i-1) + j
-                                 idxjilk = igamsq(isymij,isymkl)+
-     &                                nmatij(isymij)*(idxlk-1)+idxji
-                                 idxjikl = igamsq(isymij,isymkl)+
-     &                                nmatij(isymij)*(idxkl-1)+idxji
-                                 vijkl(idxijkl) = ff*half*(vsing(kl,ij)
-     &                                          +       vtrip(kl,ij))
-                                 vijkl(idxijlk) = ff*half*(vsing(kl,ij)
-     &                                          -       vtrip(kl,ij))
+                                 klij = nrhftria*(ij-1)+kl
+                                 idxij = iij(isymi,isymj)+
+     &                                nrhforb(isymi)*(j-1) + i
+                                 idxijkl = iijkl(isymij,isymkl)+
+     &                                nij(isymij)*(idxkl-1)+idxij
+                                 idxijlk = iijkl(isymij,isymkl)+ 
+     &                                nij(isymij)*(idxlk-1)+idxij
+                                 idxji = iij(isymj,isymi)+
+     &                                nrhforb(isymj)*(i-1) + j
+                                 idxjilk = iijkl(isymij,isymkl)+
+     &                                nij(isymij)*(idxlk-1)+idxji
+                                 idxjikl = iijkl(isymij,isymkl)+
+     &                                nij(isymij)*(idxkl-1)+idxji
+                                 vijkl(idxijkl) = ff*half*(vsing(klij)
+     &                                          +       vtrip(klij))
+                                 vijkl(idxijlk) = ff*half*(vsing(klij)
+     &                                          -       vtrip(klij))
                                  vijkl(idxjilk) = vijkl(idxijkl)
                                  vijkl(idxjikl) = vijkl(idxijlk)
                               end if
@@ -223,6 +309,21 @@ c---------------------------------------------------------------------
 
          end do
       end do
+
+      if (locdbg) then
+        write(lupri,*) 'Result in CC_R12VPACK:'
+        do isymij = 1, nsym
+          isymkl = muld2h(isymij,isymv)
+          write(lupri,*) 'Symmetry block (ij,kl):',
+     &             isymij,isymkl
+          if (nkl(isymkl).eq.0 .or. nij(isymij).eq.0) then
+            write(lupri,*) 'This symmetry is empty'
+          else
+            call output(vijkl(iijkl(isymij,isymkl)+1),1,nij(isymij),
+     &                  1,nkl(isymkl),nij(isymij),nkl(isymkl),1,lupri)
+          end if
+        end do
+      end if
 
       call qexit('cc_r12vpack')
       end
@@ -258,6 +359,7 @@ c---------------------------------------------------------------------
       integer idum,ijcsvc,ijctvc,ijvsvc,ijvtvc,n2,lunit,ifile,kpck
       integer lufc12,lufr12,ian,iap,kpckv,kpckc,kbmat,kxint
       integer iamp,iopt
+      integer nkilj(8),nijkl(8)
       character*(*) frho12, fc12am
       character*3 aprox
       character*10 model
@@ -275,7 +377,7 @@ c---------------------------------------------------------------------
 
       if (locdbg) write(lupri,*) 'Entered CCRHS_EP'
 
-      nrhftria = nrhft*(nrhft+1)/2
+      nrhftria = nrhftb*(nrhftb+1)/2
       n2 = nrhftria * nrhftria
 
       ksing  = 1
@@ -288,17 +390,17 @@ c---------------------------------------------------------------------
       kctrip = kcsing + n2
       kevl   = kctrip + n2
       kpckc  = kevl   + nrhftria 
-      kbmat  = kpckc  + ngamma(isymv)
-      kxint  = kbmat  + ngamma(1)
-      kend1  = kxint  + ngamma(1)
+      kbmat  = kpckc  + ntr12am(isymv)
+      kxint  = kbmat  + nr12r12p(1)
+      kend1  = kxint  + nr12r12p(1)
 
       if (iamp .EQ. 1) then
         kpck  = kend1
-        kend1 = kpck + ngamma(isymv)
+        kend1 = kpck + ntr12am(isymv)
       end if
       if (lcont) then
         kpckv = kend1
-        kend1 = kpckv + ngamma(isymv)
+        kend1 = kpckv + ntr12am(isymv)
       end if
 
       lwrk1  = lwork  - kend1
@@ -313,10 +415,11 @@ c     ----------------------------
 c     get V and omega for s = 0,1
 c     ----------------------------
       lprojv = .true.
-      call cc_r12vunpack(vijkl,isymv,work(ksing),work(ktrip),nrhftria,
-     &                   lprojv)
+      call cc_r12vunpack(vijkl,isymv,work(ksing),work(ktrip),lprojv,
+     &                   nrhfb,nrhf)
       if (lcont) then
-        call ccr12pck(work(kpckv),isymv,work(ksing),work(ktrip))
+        call ccr12pck(work(kpckv),isymv,work(ksing),work(ktrip),nrhfb,
+     &                nrhf,nkilj)
       end if
       if (locdbg) then
 c        call around('Vtilde integrals (singlet):')
@@ -325,9 +428,10 @@ c    &             nrhftria,nrhftria,1,lupri)
 c        call around('Vtilde integrals (triplet):')
 c        call output(work(ktrip),1,nrhftria,1,nrhftria,
 c    &             nrhftria,nrhftria,1,lupri)
-         call cc_r12vpack(vijkl,isymv,work(ksing),work(ktrip),nrhftria)
+         call cc_r12vpack(vijkl,isymv,work(ksing),work(ktrip),nrhfb,
+     &                    nrhf,nijkl)
          call around('Vtilde on entry (after 0.5*P_kl^ij):')
-         call cc_prsqr12(vijkl,isymv,1,.false.)
+         call cc_prsqr12(vijkl,isymv,'T',1,.false.)
       end if 
 
 c     ----------------------
@@ -347,7 +451,7 @@ c     ----------------
       call gpopen(lunit,fccr12b,'old',' ','unformatted',
      &                   idum,ldum)
  8888 read(lunit) ian, iap, aprox
-      read(lunit) (work(kbmat+i), i=0, ngamma(1)-1 )
+      read(lunit) (work(kbmat+i), i=0, nr12r12p(1)-1 )
       if ((ian.ne.ianr12).or.(iap.ne.iapr12)) goto 8888
       call gpclose(lunit,'KEEP')
       if (aproxr12(1:3).ne.aprox) then
@@ -355,7 +459,8 @@ c     ----------------
         write(lupri,*)'aprox    =', aprox(1:3)
         call quit('>>> Warning: inconsistent R12 approximation')
       end if
-      call ccr12unpck(work(kbmat),1,work(kbsing),work(kbtrip))
+      call ccr12unpck(work(kbmat),1,work(kbsing),work(kbtrip),nrhfb,
+     &                nrhfb)
 c     -------------------------
 c     read R12 overlap matrices
 c     ------------------------- 
@@ -363,25 +468,27 @@ c     -------------------------
       call gpopen(lunit,fccr12x,'old',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
-      read(lunit) (work(kxint+i), i=0, ngamma(1)-1 )
+      read(lunit) (work(kxint+i), i=0, nr12r12p(1)-1 )
       if (ian.ne.ianr12) goto 9999
       call gpclose(lunit,'KEEP')
-      call ccr12unpck(work(kxint),1,work(kxsing),work(kxtrip))
+      call ccr12unpck(work(kxint),1,work(kxsing),work(kxtrip),nrhfb,
+     &                nrhfb)
 
       if (iamp .EQ. 1) then
 c       --------------------
 c       read trial vector R2
 c       --------------------
-        call cc_rvec(lufc12,fc12am,ngamma(isymv),ngamma(isymv),
+        call cc_rvec(lufc12,fc12am,ntr12am(isymv),ntr12am(isymv),
      *               ifile,work(kpck))
         if (lcont) then
-          call dcopy(ngamma(isymv),work(kpck),1,work(kpckc),1)
+          call dcopy(ntr12am(isymv),work(kpck),1,work(kpckc),1)
         end if
 c       if (locdbg) then
 c         call cc_prpr12(work(kpck),isymv,1,.TRUE.)
 c       end if
         call cclr_diasclr12(work(kpck),basscl2,isymv)
-        call ccr12unpck(work(kpck),isymv,work(kcsing),work(kctrip))
+        call ccr12unpck(work(kpck),isymv,work(kcsing),work(kctrip),
+     &                  nrhfb,nrhf)
       else 
 c       --------------------
 c       read R12 amplitudes
@@ -389,16 +496,17 @@ c       --------------------
 c       lunit = 0 
 c       call gpopen(lunit,fccr12c,'unknown',' ','unformatted',
 c    &                   idum,ldum)
-c       read(lunit) (work(kpckc+i), i = 0, ngamma(1)-1 )
+c       read(lunit) (work(kpckc+i), i = 0, ntr12am(1)-1 )
 c       call gpclose(lunit,'KEEP')
         if (isymv.ne.1) call quit('Symmetry error in CCRHS_EP')
         iopt = 32
         call cc_rdrsp('R0 ',0,1,iopt,model,dummy,work(kpckc))
-        call ccr12unpck(work(kpckc),isymv,work(kcsing),work(kctrip))
+        call ccr12unpck(work(kpckc),isymv,work(kcsing),work(kctrip),
+     &                  nrhfb,nrhf)
       end if 
 
       if (lcont) then 
-        cont(1) = ddot(ngamma(isymv),work(kpckc),1,work(kpckv),1)
+        cont(1) = ddot(ntr12am(isymv),work(kpckc),1,work(kpckv),1)
       end if
 
 c     if (locdbg) then
@@ -435,7 +543,7 @@ c     end if
          write(lupri,*) 'ccrhs_ep> norm^2(omega_12 triplet):',
      &   ddot(n2,work(ktrip),1,work(ktrip),1)
          if (iamp.EQ.1) write(lupri,*) 'ccrhs_ep> norm^2(C12 packed):',
-     &   ddot(ngamma(isymv),work(kpck),1,work(kpck),1)
+     &   ddot(ntr12am(isymv),work(kpck),1,work(kpck),1)
          write(lupri,*) 'ccrhs_ep> norm^2(C12 singlet):',
      &   ddot(n2,work(kcsing),1,work(kcsing),1)
          write(lupri,*) 'ccrhs_ep> norm^2(C12 triplet):',
@@ -471,11 +579,12 @@ c    *               nrhftria,nrhftria,1,lupri)
 c        call around('r12 vector function (triplet)')
 c        call output(work(ktrip),1,nrhftria,1,nrhftria,
 c    *               nrhftria,nrhftria,1,lupri)
-         call cc_r12vpack(vijkl,isymv,work(ksing),work(ktrip),nrhftria)
+         call cc_r12vpack(vijkl,isymv,work(ksing),work(ktrip),nrhfb,
+     &                    nrhf,nijkl)
          call around('OmegaR12 on exit')
-         call cc_prsqr12(vijkl,isymv,1,.false.)
+         call cc_prsqr12(vijkl,isymv,'T',1,.false.)
          write(lupri,*) 'ccrhs_ep> norm^2(OmegaR12):',
-     &   ddot(ngamsq(isymv),vijkl,1,vijkl,1)
+     &   ddot(ntr12sq(isymv),vijkl,1,vijkl,1)
       end if
       if (locdbg) then
          write(lupri,*) 'ccrhs_ep> norm^2(omega_12 singlet):',
@@ -489,9 +598,10 @@ c       ------------------------------------------------------------
 c       for jacobian right transformations scale diagonal to 
 c       transform to pseudo-orthonormal basis
 c       ------------------------------------------------------------
-        call ccr12pck(work(kpck),isymv,work(ksing),work(ktrip))
+        call ccr12pck(work(kpck),isymv,work(ksing),work(ktrip),nrhfb,
+     &                nrhf,nkilj)
         call cclr_diasclr12(work(kpck),basscl1,isymv)
-        call cc_wvec(lufr12,frho12,ngamma(isymv),ngamma(isymv),
+        call cc_wvec(lufr12,frho12,ntr12am(isymv),ntr12am(isymv),
      *               ifile,work(kpck))
         if (locdbg) then
           call around('Jacobian transformed vector in CCRHS_EP')
@@ -501,17 +611,18 @@ c       ------------------------------------------------------------
 c       ------------------------------------------------------------
 c       write result vector as ground state vector function to file:
 c       ------------------------------------------------------------
-        call ccr12pck(work(kpckc),isymv,work(ksing),work(ktrip))
+        call ccr12pck(work(kpckc),isymv,work(ksing),work(ktrip),nrhfb,
+     &                nrhf,nkilj)
         lunit = 0 
         call gpopen(lunit,'CC_OMEGAR12','unknown',' ','unformatted',
      &                   idum,ldum)
-        write(lunit) (work(kpckc+i), i=0, ngamma(isymv)-1 )
+        write(lunit) (work(kpckc+i), i=0, ntr12am(isymv)-1 )
         call gpclose(lunit,'KEEP')
       end if
 c
       if (lcont) then 
-        call daxpy(ngamma(isymv),-1.0d0,work(kpckv),1,work(kpck),1)
-        cont(2) = ddot(ngamma(isymv),work(kpckc),1,work(kpck),1)
+        call daxpy(ntr12am(isymv),-1.0d0,work(kpckv),1,work(kpck),1)
+        cont(2) = ddot(ntr12am(isymv),work(kpckc),1,work(kpck),1)
       end if
 
       if (locdbg) write(lupri,*) 'Leaving CCRHS_EP'
@@ -544,10 +655,19 @@ c---------------------------------------------------------------------
 
       call qenter('ccrhs_ep0')
 
-        if (iapr12.le.2) then
-          fact = 0
-        else
-          fact = half
+        if (ianr12.eq.1) then
+c         if (iapr12.le.2) then
+          if (iapr12.le.2.or.iapr12.eq.4.or.iapr12.eq.6) then
+            fact = 0.0D0
+          else
+            fact = half
+          end if
+        else if (ianr12.eq.2 .or. ianr12.eq.3) then
+          if (iapr12.eq.2.or.iapr12.eq.5) then
+            fact = 0.0D0
+          else
+            fact = half
+          end if
         end if
 c
       do kl = 1, n 
@@ -596,39 +716,41 @@ c---------------------------------------------------------------------
 #include <r12int.h>
 #include <ccr12int.h>
 
-      logical ldum,lcont
-      integer lwork,isymv,kend1,lwrk1     
-      integer iamp,idum,lunit,ifile
-      integer lufc12,lufr12,kpck,kpckv,ktr12
-      integer ktr12sq,kbmatsq,koffv,kofftr12,koffb
+      logical ldum,lcont,lbmat
+      integer lwork,isymv,kend1,lwrk1,kend2,lwrk2,kevl,kekl,keij     
+      integer iamp,idum,lunit,ifile,ian,iap,isym,iopt
+      integer lufc12,lufr12,kpck,kpckv,ktr12,kxintsq
+      integer ktr12sq,kbmatsq,koffv,kofftr12,koffb,kbscr
       integer isymi,isymj,isymij,isymmn,isymkl,idxij
+      integer nkl,nij,inmatkl(8),inmatij(8)
       character*(*) frho12, fc12am
       character*3 cdum
       character*10 model
-      character*(*) aproxr12
+      character*3 aproxr12,aprox
 #if defined (SYS_CRAY)
-      real vijkl(*),work(*), cont(2), ddot, basscl1, basscl2, one
+      real vijkl(*),work(*), cont(2), ddot, basscl1, basscl2, one,
+     &     factor, half
 #else
       double precision vijkl(*),work(*), cont(2), ddot, basscl1,
-     &                 basscl2, one
+     &                 basscl2, one, factor, half
 #endif
       logical locdbg
       parameter (locdbg = .false.)
-      parameter (one = 1.0D0)
+      parameter (one = 1.0D0, half = 0.5D0)
 
       call qenter('ccrhs_ep')
 
       if (locdbg) write(lupri,*) 'Entered CCRHS_EP'
 
       ktr12   = 1 
-      ktr12sq = ktr12   + ngamma(isymv)
-      kbmatsq = ktr12sq + ngamsq(isymv)
-      kpck    = kbmatsq + ngamsq(1)
-      kend1   = kpck    + ngamma(isymv)
+      ktr12sq = ktr12   + ntr12am(isymv)
+      kbmatsq = ktr12sq + ntr12sq(isymv)
+      kpck    = kbmatsq + nr12r12sq(1)
+      kend1   = kpck    + max(nr12r12p(1),ntr12am(isymv))
 
       if (lcont) then
         kpckv = kend1
-        kend1 = kpckv   + ngamma(isymv)
+        kend1 = kpckv   + ntr12am(isymv)
       end if
 
       lwrk1  = lwork  - kend1
@@ -640,74 +762,195 @@ c     ---------------
 c     get V (= Omega)
 c     ---------------
       !apply 0.5*P_kl^ij:
-      call cc_r12pklij(vijkl,isymv,work(kend1),lwrk1)
-      call dscal(ngamsq(isymv),0.5D0,vijkl,1)
+      call cc_r12pklij(vijkl,isymv,'T',work(kend1),lwrk1)
+      call dscal(ntr12sq(isymv),0.5D0,vijkl,1)
       if (lcont) then
-        call ccr12pck2(work(kpckv),isymv,.false.,vijkl,.true.)
+        iopt = 1
+        call ccr12pck2(work(kpckv),isymv,.false.,vijkl,'T',iopt)
       end if
       if (locdbg) then
          call around('OmegaR12 on entry (after 0.5*P_kl^ij):')
-         call cc_prsqr12(vijkl,isymv,1,.false.)
+         call cc_prsqr12(vijkl,isymv,'T',1,.false.)
       end if 
 
 c     -----------------------------------
 c     read R12 amplitudes or trial vector
 c     -----------------------------------
-      call cc_r12getct(work(ktr12sq),isymv,iamp,basscl2,.false.,.true.,
+      call cc_r12getct(work(ktr12sq),isymv,iamp,basscl2,.false.,'T',
      &                 lufc12,fc12am,ifile,cdum,idum,work(kend1),lwrk1)
-c     if (locdbg) then
-c       call around('R12 amplitudes')
-c       call cc_prsqr12(work(ktr12sq),isymv,1,.false.)
-c     end if
-
-      if (lcont) then
-        call ccr12pck2(work(ktr12),isymv,.false.,work(ktr12sq),.true.) 
-        cont(1) = ddot(ngamma(isymv),work(ktr12),1,work(kpckv),1)
+      if (locdbg) then
+        call around('R12 amplitudes')
+        call cc_prsqr12(work(ktr12sq),isymv,'T',1,.false.)
       end if
 
-c     -------------------------------------------- 
-c     loop over pairs (ij) and add B*c to OmegaR12
-c     --------------------------------------------
-      do isymij = 1, nsym
-        isymmn = muld2h(isymv,isymij)
-        isymkl = isymmn
-c       if (locdbg) then
-c         write(lupri,*) 'in loop over idxij: isymij = ',isymij
-c       end if
-        do idxij = 1, nmatij(isymij)
-          call cc_r12buildbmat(work(kbmatsq),isymij,idxij,
-     &                         work(kend1),lwrk1,aproxr12)
-          koffb    = kbmatsq + igamsq(isymkl,isymmn)
-          kofftr12 = ktr12sq + igamsq(isymij,isymmn) + idxij-1 
-          koffv    = igamsq(isymij,isymkl) + idxij
-c         if (locdbg) then
-c           write(lupri,*) 'idxij = ',idxij
-c           write(lupri,*) 'R12 amplitudes part used:'
-c           do i = 1, nmatij(isymmn)
-c             write(lupri,*) kofftr12+(i-1)*nmatij(isymij),
-c    &                       work(kofftr12+(i-1)*nmatij(isymij))
-c           end do
-c           write(lupri,*) 'Omega part used:'
-c           do i = 1, nmatij(isymkl)
-c             write(lupri,*) koffv+(i-1)*nmatij(isymij),
-c    &                       vijkl(koffv+(i-1)*nmatij(isymij))
-c           end do
-c         end if
-          call dgemv('N',nmatij(isymkl),nmatij(isymmn),
-     &               one,work(koffb),max(nmatij(isymkl),1),
-     &               work(kofftr12),max(nmatij(isymij),1),
-     &               one,vijkl(koffv),max(nmatij(isymij),1))
+      if (lcont) then
+        iopt = 1
+        call ccr12pck2(work(ktr12),isymv,.false.,work(ktr12sq),'T',
+     &                 iopt) 
+        cont(1) = ddot(ntr12am(isymv),work(ktr12),1,work(kpckv),1)
+      end if
+
+c     ----------------
+c     read B matrices
+c     ----------------
+      lunit = 0
+      call gpopen(lunit,fccr12b,'old',' ','unformatted',
+     &                   idum,ldum)
+ 8888 read(lunit) ian, iap, aprox
+      read(lunit) (work(kpck+i), i=0, nr12r12p(1)-1 )
+      if ((ian.ne.ianr12).or.(iap.ne.iapr12)) goto 8888
+      call gpclose(lunit,'KEEP')
+      if (aproxr12(1:3).ne.aprox) then
+        write(lupri,*)'aproxr12 =', aproxr12(1:3)
+        write(lupri,*)'aprox    =', aprox(1:3)
+        call quit('>>> Warning: inconsistent R12 approximation')
+      end if
+      iopt = 2
+      call ccr12unpck2(work(kpck),1,work(kbmatsq),'N',iopt)
+      call dscal(nr12r12sq(1),-one,work(kbmatsq),1)
+
+      if (locdbg) then
+        call around('B-Matrix read from file')
+        do isymkl = 1, nsym
+          isymmn = isymkl
+          call output(work(kbmatsq+ir12r12sq(isymkl,isymmn)),1,
+     &                nmatkl(isymkl),1,nmatkl(isymmn),nmatkl(isymkl),
+     &                nmatkl(isymmn),1,lupri)
+        end do 
+      end if
+
+c     ----------------------------------------------------
+c     for some cases we are nearly done, since B does not
+c     depend on (ij)
+c     ----------------------------------------------------
+      if (ianr12.eq.1) then
+        if (iapr12.le.2 .or. iapr12.eq.4 .or. iapr12.eq.6) then
+          lbmat = .false.
+        else
+          lbmat = .true.
+          factor = half
+        end if
+      else
+        if (iapr12.eq.2 .or. iapr12.eq.5) then
+          lbmat = .false. 
+        else
+          lbmat = .true.
+          factor = half
+        end if
+      end if
+
+      if (.not. lbmat) then
+        !matrix multiplication:
+        call cc_r12xi2b(vijkl,'T',work(kbmatsq),1,'N',work(ktr12sq),
+     &                  isymv,'T',one)
+      else
+c       ----------------------------------------------- 
+c       in other cases: 
+c        - read R12 overlap matrix, orbital energies
+c        - loop over pairs (ij) and add B*c to OmegaR12
+c       -----------------------------------------------
+        !calculate # of indices (kl) / (ij) and offset over all symmetries:
+        nkl = 0
+        nij = 0
+        do isym = 1, nsym
+          inmatkl(isym) = nkl
+          inmatij(isym) = nij
+          nkl = nkl + nmatkl(isym)
+          nij = nij + nmatij(isym)
         end do
-      end do
+c
+        kbscr = kend1
+        kxintsq = kbscr + nr12r12sq(1)
+        kevl  = kxintsq + nr12r12sq(1)
+        kekl  = kevl + norbts
+        keij  = kekl + nkl
+        kend2 = keij + nij
+        lwrk2 = lwork - kend2
+        if (lwrk2 .lt. 0) then
+          call quit('Insufficient work space in ccrhs_ep')
+        end if
+c
+        lunit = 0
+        call gpopen(lunit,fccr12x,'old',' ','unformatted',
+     &              idum,ldum)
+ 9999   read(lunit) ian
+        read(lunit) (work(kpck+i), i=0, nr12r12p(1)-1 )
+        if (ian.ne.ianr12) goto 9999
+        call gpclose(lunit,'KEEP')
+        iopt = 2
+        call ccr12unpck2(work(kpck),1,work(kxintsq),'N',iopt)
+        if (locdbg) then
+          call around('R12 Overlap-Matrix read from file')
+          do isymkl = 1, nsym
+            isymmn = isymkl
+            call output(work(kxintsq+ir12r12sq(isymkl,isymmn)),1,
+     &                  nmatkl(isymkl),1,nmatkl(isymmn),nmatkl(isymkl),
+     &                  nmatkl(isymmn),1,lupri)
+          end do
+        end if 
+c
+c       ------------------------------------
+c       Read canonical orbital energies.
+c       -------------------------------------
+c
+        lunit = 0
+        call gpopen(lunit,'SIRIFC','OLD',' ','UNFORMATTED',idummy,
+     &              .false.)
+        rewind lunit
+        call mollab('TRCCINT ',lunit,lupri)
+        read (lunit)
+        read (lunit) (work(kevl+i-1), i=1,norbts)
+        call gpclose(lunit,'KEEP')
+c
+        if (froimp .or. froexp)
+     *    call ccsd_delfro(work(kevl),work(kend2),lwrk2)
+c
+        call cc_r12epair(work(kekl),nkl,work(kevl),inmatkl,imatkl,nrhfb)
+        call cc_r12epair(work(keij),nij,work(kevl),inmatij,imatij,nrhf)
+c
+        do isymij = 1, nsym
+          isymmn = muld2h(isymv,isymij)
+          isymkl = isymmn
+c         if (locdbg) then
+c           write(lupri,*) 'in loop over idxij: isymij = ',isymij
+c         end if
+          do idxij = 1, nmatij(isymij)
+c           call dzero(work(kbscr),nr12r12sq(1))
+            call cc_r12buildbmat(work(kbscr),isymij,idxij,work(kbmatsq),
+     &                           work(kxintsq),work(kekl),inmatkl,
+     &                           work(keij),inmatij,factor)
+            koffb    = kbscr + ir12r12sq(isymkl,isymmn)
+            kofftr12 = ktr12sq + itr12sqt(isymij,isymmn) + idxij-1 
+            koffv    = itr12sqt(isymij,isymkl) + idxij
+            if (locdbg) then
+              write(lupri,*) 'idxij = ',idxij
+              write(lupri,*) 'R12 amplitudes part used:'
+              do i = 1, nmatkl(isymmn)
+                write(lupri,*) kofftr12+(i-1)*nmatij(isymij),
+     &                       work(kofftr12+(i-1)*nmatij(isymij))
+              end do
+              write(lupri,*) 'Omega part used:'
+              do i = 1, nmatkl(isymkl)
+                write(lupri,*) koffv+(i-1)*nmatij(isymij),
+     &                       vijkl(koffv+(i-1)*nmatij(isymij))
+              end do
+            end if
+            call dgemv('N',nmatkl(isymkl),nmatkl(isymmn),
+     &                 one,work(koffb),max(nmatkl(isymkl),1),
+     &                 work(kofftr12),max(nmatij(isymij),1),
+     &                 one,vijkl(koffv),max(nmatij(isymij),1))
+          end do
+        end do
+      end if
 
 c     --------------
 c     print results:
 c     --------------
       if (locdbg) then
          call around('OmegaR12 on exit')
-         call cc_prsqr12(vijkl,isymv,1,.false.)
+         call cc_prsqr12(vijkl,isymv,'T',1,.false.)
          write(lupri,*) 'ccrhs_ep> norm^2(OmegaR12):',
-     &   ddot(ngamsq(isymv),vijkl,1,vijkl,1)
+     &   ddot(ntr12sq(isymv),vijkl,1,vijkl,1)
       end if
  
       if (iamp .EQ. 1) then
@@ -715,9 +958,10 @@ c       ------------------------------------------------------------
 c       for jacobian right transformations scale diagonal to 
 c       transform to pseudo-orthonormal basis
 c       ------------------------------------------------------------
-        call ccr12pck2(work(kpck),isymv,.false.,vijkl,.true.)
+        iopt = 1
+        call ccr12pck2(work(kpck),isymv,.false.,vijkl,'T',iopt)
         call cclr_diasclr12(work(kpck),basscl1,isymv)
-        call cc_wvec(lufr12,frho12,ngamma(isymv),ngamma(isymv),
+        call cc_wvec(lufr12,frho12,ntr12am(isymv),ntr12am(isymv),
      *               ifile,work(kpck))
         if (locdbg) then
           call around('Jacobian transformed vector in CCRHS_EP')
@@ -727,17 +971,18 @@ c       ------------------------------------------------------------
 c       ------------------------------------------------------------
 c       write result vector as ground state vector function to file:
 c       ------------------------------------------------------------
-        call ccr12pck2(work(ktr12),isymv,.false.,vijkl,.true.)
+        iopt = 1
+        call ccr12pck2(work(ktr12),isymv,.false.,vijkl,'T',iopt)
         lunit = 0 
         call gpopen(lunit,'CC_OMEGAR12','unknown',' ','unformatted',
      &                   idum,ldum)
-        write(lunit) (work(ktr12+i), i=0, ngamma(isymv)-1 )
+        write(lunit) (work(ktr12+i), i=0, ntr12am(isymv)-1 )
         call gpclose(lunit,'KEEP')
       end if
 c
       if (lcont) then 
-        call daxpy(ngamma(isymv),-one,work(kpckv),1,work(kpck),1)
-        cont(2) = ddot(ngamma(isymv),work(ktr12),1,work(kpck),1)
+        call daxpy(ntr12am(isymv),-one,work(kpckv),1,work(kpck),1)
+        cont(2) = ddot(ntr12am(isymv),work(ktr12),1,work(kpck),1)
       end if
 
       if (locdbg) write(lupri,*) 'Leaving CCRHS_EP'
@@ -753,7 +998,7 @@ c----------------------------------------------------------------------
 c     purpose: get new start R12  amplitudes for each iteration
 c
 c     H. Fliegl, C. Haettig, (WK/UniKA/08-05-2003)
-c     modified by C. Neiss  April 2005
+c     modified by C. Neiss  April 2005, September 2005
 c----------------------------------------------------------------------
       implicit none
 #include <priunit.h>
@@ -770,8 +1015,9 @@ c----------------------------------------------------------------------
       integer kbsing,kbtrip,lwork,nrhftria,n2,kxsing,kxtrip,kevl
       integer kend1,lwrk1,lunit,idum,ijv,ij,kvsing,kvtrip
       integer komgsing,komgtrip,kcsing,kctrip
-      integer kbmat,kxint,kvint,lu43
+      integer kscr,kvint,lu43,kepsij,kepsoff
       integer kbb,kuu,kpp,kqq,krr,ian,iap,iopt,isym
+      integer nkilj(8),nij,isymij,inmatij(8),it,jt,isymi,isymj
 #if defined (SYS_CRAY)
       real tamp12(*),omeg12(*),er12,work(*)
       real ensing,entrip,delta,xf,fs,ft,ws,wt,ddot
@@ -781,17 +1027,28 @@ c----------------------------------------------------------------------
 #endif
       character*3 aprox
       character*10 model
-
+      integer index
+c
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+c
       call qenter('r12nxtam')
       if (locdbg) then
         write(lupri,*) 'Entered CC_R12NXTAM'
         call flshfo(lupri)
       end if
-
-      nrhftria = nrhft*(nrhft+1)/2
+c
+      nrhftria = nrhftb*(nrhftb+1)/2
       n2 = nrhftria * nrhftria
-      
-      komgsing = 1
+c
+      nij = 0
+      do isymij = 1, nsym
+        inmatij(isymij) = nij
+        nij = nij + nmatij(isymij)
+      end do
+c
+      kend1  = 1
+c     
+      komgsing = kend1
       komgtrip = komgsing + n2
       kcsing = komgtrip + n2
       kctrip = kcsing + n2
@@ -799,26 +1056,26 @@ c----------------------------------------------------------------------
       kbtrip = kbsing + n2
       kxsing = kbtrip + n2
       kxtrip = kxsing + n2
-      kbmat  = kxtrip + n2
-      kxint  = kbmat  + ngamma(1)
-      kend1  = kxint  + ngamma(1)
+      kscr   = kxtrip + n2
+      kend1  = kscr  + max(nr12r12p(1),norbts)
      
       if (lcceq) then
         kvsing = kend1
         kvtrip = kvsing + n2
-        kvint  = kvtrip + n2
-        kend1  = kvint  + ngamma(1)
+        kend1  = kvtrip + n2
       end if
 
       kevl   = kend1
-      kend1  = kevl   + nrhftria 
-
-      kbb    = kend1
+      kbb    = kevl   + nrhftria 
       kuu    = kbb    + n2 
       kpp    = kuu    + n2
       kqq    = kpp    + n2
       krr    = kqq    + n2
       kend1  = krr    + n2
+c
+      kepsij = kend1
+      kend1  = kepsij + nij 
+c
       lwrk1  = lwork  - kend1
 
       if (lwrk1 .lt. 0) then
@@ -854,14 +1111,15 @@ c       ---------------
         call gpopen(lunit,fccr12v,'old',' ','unformatted',
      &                     idum,ldum)
  7777   read(lunit) ian
-        read(lunit) (work(kvint+i), i=0, ngamma(1)-1)
+        read(lunit) (work(kscr+i), i=0, ntr12am(1)-1)
         if (ian.ne.ianr12) goto 7777
         call gpclose(lunit,'KEEP')
         if (locdbg) then
           write(lupri,*) 'Read V-intermediate done'
           call flshfo(lupri)
         end if
-        call ccr12unpck(work(kvint),1,work(kvsing),work(kvtrip))
+        call ccr12unpck(work(kscr),1,work(kvsing),work(kvtrip),nrhfb,
+     &                  nrhf)
         if (locdbg) then
           write(lupri,*) 'Unpack V-intermediate done'
           write(lupri,*) 'Singlet V-intermediate:'
@@ -872,6 +1130,10 @@ c       ---------------
      &              nrhftria,1,lupri)
           call flshfo(lupri)
         end if
+CCN
+C        write(lupri,*) 'V-Matrix in CC_R12NXTAM:'
+C        call ccr12unpck2(work(kscr),1,work(kend1),'T',1)
+CCN
       end if
 
 c     ---------------    
@@ -881,10 +1143,11 @@ c     ---------------
       call gpopen(lunit,fccr12b,'old',' ','unformatted',
      &                   idum,ldum)
  8888 read(lunit) ian, iap, aprox
-      read(lunit) (work(kbmat+i), i=0, ngamma(1)-1)
+      read(lunit) (work(kscr+i), i=0, nr12r12p(1)-1)
       if ((ian.ne.ianr12).or.(iap.ne.iapr12)) goto 8888
       call gpclose(lunit,'KEEP')
-      call ccr12unpck(work(kbmat),1,work(kbsing),work(kbtrip))
+      call ccr12unpck(work(kscr),1,work(kbsing),work(kbtrip),nrhfb,
+     &                nrhfb)
 
 c     ----------------------------
 c     read R12 overlap matrices X 
@@ -893,10 +1156,11 @@ c     ----------------------------
       call gpopen(lunit,fccr12x,'old',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
-      read(lunit) (work(kxint+i), i=0, ngamma(1)-1)
+      read(lunit) (work(kscr+i), i=0, nr12r12p(1)-1)
       if (ian.ne.ianr12) goto 9999
       call gpclose(lunit,'KEEP')
-      call ccr12unpck(work(kxint),1,work(kxsing),work(kxtrip))
+      call ccr12unpck(work(kscr),1,work(kxsing),work(kxtrip),nrhfb,
+     &                nrhfb)
 
       if (lcceq) then
 c       -------------------------------
@@ -905,15 +1169,16 @@ c       -------------------------------
         lunit = 0 
         call gpopen(lunit,'CC_OMEGAR12','old',' ','unformatted',
      &              idum,ldum)
-        read(lunit) (omeg12(i), i=1, ngamma(1))
+        read(lunit) (omeg12(i), i=1, ntr12am(1))
         call gpclose(lunit,'KEEP')   
 chf
         write(lupri,529)'Norm of Omegar12 in NXTAM  :', 
-     &     ddot(ngamma(1),omeg12,1,omeg12,1)
+     &     ddot(ntr12am(1),omeg12,1,omeg12,1)
 chf
       end if
       !repack omega_R12
-      call ccr12unpck(omeg12,isym,work(komgsing),work(komgtrip))
+      call ccr12unpck(omeg12,isym,work(komgsing),work(komgtrip),nrhfb,
+     &                nrhf)
 
       if (locdbg) then
         write(lupri,*) 'Singlet Omega-R12:'
@@ -958,14 +1223,13 @@ c     xf = 0 for for approximation A
 c     ------------------------------------------------------
       xf = 0.0d0
       delta = 0d0
-      ijv = 0
       if (ianr12.eq.1) then
         if (iapr12.le.2.or.iapr12.eq.4.or.iapr12.eq.6) then
           xf = 0
         else
           xf = 0.5d0
         end if
-      else if (ianr12.eq.2) then
+      else if (ianr12.eq.2 .or. ianr12.eq.3) then
 c       if (iapr12.le.2) then
         if (iapr12.eq.2.or.iapr12.eq.5) then
           xf = 0
@@ -973,29 +1237,60 @@ c       if (iapr12.le.2) then
           xf = 0.5d0
         end if
       endif
-      do ij = 1, nrhftria
-         if (R12SVD) then
+c     -----------------------------------------------
+c     Get orbital energy pairs for OCCUPIED orbitals:
+c     -----------------------------------------------
+      lunit = 0
+      call gpopen(lunit,'SIRIFC','OLD',' ','UNFORMATTED',idum,
+     &            .false.)
+      rewind lunit
+      call mollab('TRCCINT ',lunit,lupri)
+      read (lunit)
+      read (lunit) (work(kscr+i-1), i=1,norbts)
+      call gpclose(lunit,'KEEP')
+c
+      if (froimp .or. froexp)
+     *  call ccsd_delfro(work(kscr),work(kend1),lwrk1)
+c
+      call cc_r12epair(work(kepsij),nij,work(kscr),inmatij,imatij,nrhf)
+c
+      do isymj = 1, nsym
+       do isymi = 1, nsym
+        do j = 1, nrhf(isymj)
+         jt = irhf(isymj) + j
+         do i = 1, nrhf(isymi)
+          it = irhf(isymi) + i
+          if (it.le.jt) then
+           ij = index(it,jt)
+           ijv = nrhftria*(ij-1)
+           isymij = muld2h(isymi,isymj)
+           kepsoff = inmatij(isymij)+imatij(isymi,isymj)+
+     &                 nrhf(isymi)*(j-1)+i-1
+           if (R12SVD) then
             CALL R12MP2(work(komgsing+ijv),work(komgtrip+ijv),
      &                  work(komgsing+ijv),work(komgtrip+ijv),
      &                  work(kxsing),work(kxtrip),
-     &                  work(kevl+ij-1),nrhft,nrhftria,
+     &                  work(kepsij+kepsoff),nrhftb,nrhftria,
      &                  fs,ft,work(kbb),work(kuu),work(kpp),
      &                  work(kqq),
      &                  work(kbsing),work(kbtrip),
      &                  work(kevl),xf,work(krr),ij,ws,wt,
      &                  delta,work(kcsing+ijv),work(kctrip+ijv))
-         else if (R12DIA) then
+           else if (R12DIA) then
             CALL MP2R12(work(komgsing+ijv),work(komgtrip+ijv),
      &                  work(komgsing+ijv),work(komgtrip+ijv),
      &                  work(kxsing),work(kxtrip),
-     &                  work(kevl+ij-1),nrhft,nrhftria,
+     &                  work(kepsij+kepsoff),nrhftb,nrhftria,
      &                  fs,ft,work(kbb),work(kuu),work(kpp),
      &                  work(kqq),
      &                  work(kbsing),work(kbtrip),
      &                  work(kevl),xf,work(krr),ij,ws,wt,
      &                  delta,work(kcsing+ijv),work(kctrip+ijv))
-         end if
-         ijv = ijv + nrhftria
+           end if
+          end if
+         end do
+        end do
+       end do
       end do
 
 c     ------------------------------------------------
@@ -1010,7 +1305,8 @@ c       read R12 amplitudes
 c       --------------------
         iopt =32
         call cc_rdrsp('R0 ',0,1,iopt,model,dummy,tamp12)
-        call ccr12unpck(tamp12,1,work(kcsing),work(kctrip))
+        call ccr12unpck(tamp12,1,work(kcsing),work(kctrip),nrhfb,
+     &                  nrhf)
         if (locdbg) then
           write(lupri,*) 'Singlet R12 amplitudes:'
           call output(work(kcsing),1,nrhftria,1,nrhftria,nrhftria,
@@ -1046,7 +1342,8 @@ c       ----------------------------------------------------
      &              nrhftria,1,lupri)
       end if
 
-      call ccr12pck(omeg12,isym,work(komgsing),work(komgtrip))
+      call ccr12pck(omeg12,isym,work(komgsing),work(komgtrip),nrhfb,
+     &              nrhf,nkilj)
 
       if (locdbg) write(lupri,*) 'Leaving CC_R12NXTAM'
 
@@ -1089,6 +1386,7 @@ c---------------------------------------------------------------------
       integer krsing,krtrip,kxsing,kxtrip,ij,ksing,ktrip,kpck,kxint
       integer idum,n2,lunit,ijrsvc,ijrtvc,ijsvc,ijtvc
       integer ian, iap,ks2,krabkl,krmnab,ksr
+      integer nkilj(8)
 #if defined (SYS_CRAY)
       real work(*), ddot,two,one,half,basscl1,basscl2
 #else
@@ -1101,7 +1399,7 @@ c---------------------------------------------------------------------
         write(lupri,*) 'Entered CC_R12METRIC'
       end if
 
-      nrhftria = nrhft*(nrhft+1)/2
+      nrhftria = nrhftb*(nrhftb+1)/2
       n2 = nrhftria * nrhftria
 
       ksing  = 1
@@ -1111,15 +1409,15 @@ c---------------------------------------------------------------------
       krsing = kxtrip + n2
       krtrip = krsing + n2
       kxint  = krtrip + n2
-      kend1  = kxint  + ngamma(1)
+      kend1  = kxint  + nr12r12p(1)
 
       kpck  = kend1
-      kend1 = kpck + ngamma(isymr)
+      kend1 = kpck + ntr12am(isymr)
       if (ianr12.eq.2) then
         krabkl = kend1
-        krmnab = krabkl + nt2amx
+        krmnab = krabkl + nt2r12(1)
         ksr    = krmnab + nt2am(isymr)
-        kend1  = ksr + ngamsq(isymr)
+        kend1  = ksr + ntr12sq(isymr)
       end if
 
       lwrk1  = lwork  - kend1
@@ -1142,24 +1440,26 @@ c     -------------------------
       call gpopen(lunit,fccr12x,'unknown',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
-      read(lunit) (work(kxint+i), i=0, ngamma(1)-1 )
+      read(lunit) (work(kxint+i), i=0, nr12r12p(1)-1 )
       if (ian.ne.ianr12) goto 9999
       call gpclose(lunit,'KEEP')
-      call ccr12unpck(work(kxint),1,work(kxsing),work(kxtrip))
+      call ccr12unpck(work(kxint),1,work(kxsing),work(kxtrip),nrhfb,
+     &                nrhfb)
 
 c     ------------------------
 c     read try vector R^ij_kl
 c     ------------------------
       lunit = 0 
-      call cc_rvec(lufc12,fc12am,ngamma(isymr),ngamma(isymr),
+      call cc_rvec(lufc12,fc12am,ntr12am(isymr),ntr12am(isymr),
      *             ifile,work(kpck))
       call cclr_diasclr12(work(kpck),basscl2,isymr)
-      call ccr12unpck(work(kpck),isymr,work(krsing),work(krtrip))
+      call ccr12unpck(work(kpck),isymr,work(krsing),work(krtrip),
+     &                nrhfb,nrhf)
 
       if (locdbg) then
          write(lupri,*) 'fc12am,lufc12,ifile:',fc12am,lufc12,ifile
          write(lupri,*) 'cc_r12metric> norm^2(R12 packed):',
-     &   ddot(ngamma(isymr),work(kpck),1,work(kpck),1)
+     &   ddot(ntr12am(isymr),work(kpck),1,work(kpck),1)
          write(lupri,*) 'cc_r12metric> norm^2(R12 singlet):',
      &   ddot(n2,work(krsing),1,work(krsing),1)
          write(lupri,*) 'cc_r12metric> norm^2(R12 triplet):',
@@ -1191,21 +1491,21 @@ c       read r^ab_kl integrals
         lunit = 0
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
-        read(lunit)(work(krabkl-1+i),i=1,nt2amx)
+        read(lunit)(work(krabkl-1+i),i=1,nt2r12(1))
         call gpclose(lunit,'KEEP')
 c       read R^mn_ab trial vector (stored as triangular matrix)
         call cc_rvec(lufc2,fc2am,nt2am(isymr),nt2am(isymr),
      &               ifile,work(krmnab))
         call cclr_diascl(work(krmnab),two,isymr)
 c       calculate \sum_ab r^ab_kl * R^mn_ab
-        call dzero(work(ksr),ngamsq(isymr))
+        call dzero(work(ksr),ntr12sq(isymr))
         call cc_r12mi2(work(ksr),work(krabkl),work(krmnab),1,isymr,one,
      &                 work(kend1),lwrk1)
 c       get singlet and triplet sr contribution 
 c       and write it on work(ksing) and work(ktrip)
         lprojv = .true.
         call cc_r12vunpack(work(ksr),isymr,work(ksing),work(ktrip),
-     &                     nrhftria,lprojv)
+     &                     lprojv,nrhfb,nrhf)
       end if
 
       ijrsvc = krsing
@@ -1243,13 +1543,14 @@ c     -----------------------
 c     ------------------
 c     write S*R on file
 c     ------------------
-        call ccr12pck(work(kpck),isymr,work(ksing),work(ktrip))
+        call ccr12pck(work(kpck),isymr,work(ksing),work(ktrip),nrhfb,
+     &                nrhf,nkilj)
         call cclr_diasclr12(work(kpck),basscl1,isymr)
         if (locdbg) then
           call around('R12 S*R after packing')
           call cc_prpr12(work(kpck),isymr,1,.false.)
         end if
-        call cc_wvec(lufs12,fs12am,ngamma(isymr),ngamma(isymr),
+        call cc_wvec(lufs12,fs12am,ntr12am(isymr),ntr12am(isymr),
      *               ifile,work(kpck))
 c
         if (ianr12.eq.2) then
@@ -1259,7 +1560,7 @@ c         get \sum_kl r^kl_ab * R^ij_kl + R^ij_ab and put it on file
         end if
 c
       if (locdbg.and.ianr12.eq.2) then
-        call cc_rvec(lufs12,fs12am,ngamma(isymr),ngamma(isymr),ifile,
+        call cc_rvec(lufs12,fs12am,ntr12am(isymr),ntr12am(isymr),ifile,
      &                work(kpck))
         write(lupri,*)'FS12AM'
         call cc_prpr12(work(kpck),isymr,1,.false.)
@@ -1302,7 +1603,7 @@ c---------------------------------------------------------------------
      &                        fc2am,lufc2,fc12am,lufc12,fs12am,lufs12,
      &                        fs2am,lufs2,ifile,lnoread,vec)
 *---------------------------------------------------------------------*
-c     purpose: make the CC2-R12 S*R contibution for excitation
+c     purpose: make the CC-R12 S*R contibution for excitation
 c              energies
 c              alternative subroutine for cc_r12metric_old without 
 c              using singlet/triplet matrices in matrix 
@@ -1322,7 +1623,7 @@ c
 c     C. Neiss, 01.07.2004: possibility to get input vector via
 c     call-list, not via file: 
 c     vec      input vector
-c     dimension(vec): nt1am(isymr)+nt2am(isymr)+ngamma(isymr)
+c     dimension(vec): nt1am(isymr)+nt2am(isymr)+ntr12am(isymr)
 c---------------------------------------------------------------------
       implicit none
 #include <ccsdsym.h>
@@ -1340,8 +1641,7 @@ c---------------------------------------------------------------------
       integer lwork,isymr,kend1,lwrk1
       integer lufc12,lufs12,lufc2,lufs2
       integer kxint,ij,kpck,kxintsq,kr12sq,kres,krabkl,krmnab
-      integer idum,lunit,ifile
-      integer ian
+      integer idum,lunit,ifile,ian,iopt
 #if defined (SYS_CRAY)
       real work(*), ddot, one, half, two, basscl1, basscl2, vec(*)
 #else
@@ -1356,15 +1656,15 @@ c---------------------------------------------------------------------
       end if
 
       kres   = 1 
-      kxint  = kres + ngamsq(isymr)
-      kxintsq = kxint + ngamma(1)
-      kr12sq = kxintsq + ngamsq(1)
-      kpck   = kr12sq + ngamsq(isymr)
-      kend1   = kpck + ngamma(isymr)
+      kxint  = kres + ntr12sq(isymr)
+      kxintsq = kxint + nr12r12p(1)
+      kr12sq = kxintsq + nr12r12sq(1)
+      kpck   = kr12sq + ntr12sq(isymr)
+      kend1   = kpck + ntr12am(isymr)
 
       if (ianr12.eq.2) then
         krabkl = kend1
-        krmnab = krabkl + nt2amx
+        krmnab = krabkl + nt2r12(1)
         kend1  = krmnab + nt2am(isymr)
       end if 
 
@@ -1382,42 +1682,42 @@ c     --------------------------------------------------------
       call gpopen(lunit,fccr12x,'unknown',' ','unformatted',
      &                   idum,ldum)
  9999 read(lunit) ian
-      read(lunit) (work(kxint+i), i=0, ngamma(1)-1 )
+      read(lunit) (work(kxint+i), i=0, nr12r12p(1)-1 )
       if (ian.ne.ianr12) goto 9999
       call gpclose(lunit,'KEEP')
-      call ccr12unpck2(work(kxint),1,work(kxintsq),.true.)
+      iopt = 2
+      call ccr12unpck2(work(kxint),1,work(kxintsq),'T',iopt)
 
 c     -------------------------------------------------
 c     read trial vector and pack to symmetrized square
 c     -------------------------------------------------
       if (.not. lnoread) then
-        call cc_rvec(lufc12,fc12am,ngamma(isymr),ngamma(isymr),
+        call cc_rvec(lufc12,fc12am,ntr12am(isymr),ntr12am(isymr),
      *               ifile,work(kpck))
       else
-        call dcopy(ngamma(isymr),vec(nt1am(isymr)+nt2am(isymr)+1),
+        call dcopy(ntr12am(isymr),vec(nt1am(isymr)+nt2am(isymr)+1),
      &             1,work(kpck),1)
       end if
       call cclr_diasclr12(work(kpck),basscl2,isymr)
-      call ccr12unpck2(work(kpck),isymr,work(kr12sq),.true.)
+      iopt = 1
+      call ccr12unpck2(work(kpck),isymr,work(kr12sq),'T',iopt)
 
       if (locdbg) then
          write(lupri,*) 'fc12am,lufc12,ifile:',fc12am,lufc12,ifile
          write(lupri,*) 'cc_r12metric> norm^2(R12 packed triangle):',
-     &   ddot(ngamma(isymr),work(kpck),1,work(kpck),1)
+     &   ddot(ntr12am(isymr),work(kpck),1,work(kpck),1)
          write(lupri,*) 'cc_r12metric> norm^2(R12 packed square):',
-     &   ddot(ngamsq(isymr),work(kr12sq),1,work(kr12sq),1)
+     &   ddot(ntr12sq(isymr),work(kr12sq),1,work(kr12sq),1)
       end if
       if (locdbg) then
          call around('R12 trial amplitudes')
-         call cc_prsqr12(work(kr12sq),isymr,1,.false.)
-         call around('X matrix (R12 overlap matrix)')
-         call cc_prsqr12(work(kxintsq),1,1,.false.)
+         call cc_prsqr12(work(kr12sq),isymr,'T',1,.false.)
       end if
 
 c     ------------- 
 c     calculate S*R 
 c     -------------
-      call dzero(work(kres),ngamsq(isymr))
+      call dzero(work(kres),ntr12sq(isymr))
 
       ! conv. doubles contributions for Ansatz 2:
       if (ianr12.eq.2) then
@@ -1425,7 +1725,7 @@ c       read r^ab_kl integrals
         lunit = 0
         call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &              idum,.false.)
-        read(lunit)(work(krabkl-1+i),i=1,nt2amx)
+        read(lunit)(work(krabkl-1+i),i=1,nt2r12(1))
         call gpclose(lunit,'KEEP')
 c       read R^mn_ab trial vector (stored as triangular matrix)
         if (.not. lnoread) then
@@ -1440,26 +1740,27 @@ c       calculate \sum_ab r^ab_kl * R^mn_ab
         call cc_r12mi2(work(kres),work(krabkl),work(krmnab),1,isymr,one,
      &                 work(kend1),lwrk1)
 c       apply projection operator 0.5*P_kl^ij: 
-        call cc_r12pklij(work(kres),isymr,work(kend1),lwrk1)
-        call dscal(ngamsq(isymr),half,work(kres),1)
+        call cc_r12pklij(work(kres),isymr,'T',work(kend1),lwrk1)
+        call dscal(ntr12sq(isymr),half,work(kres),1)
       end if
 
       ! add the r12 doubles contribution:
-      call cc_r12xi2b(work(kres),work(kr12sq),isymr,'N',work(kxintsq),1,
-     &               'N',one)
+      call cc_r12xi2b(work(kres),'T',work(kxintsq),1,'T',
+     &                work(kr12sq),isymr,'T',one)
 
 c     -----------------------
 c     print and pack results 
 c     -----------------------
       if (locdbg) then
          call around('R12 S*R before packing')
-         call cc_prsqr12(work(kres),isymr,1,.false.) 
+         call cc_prsqr12(work(kres),isymr,'T',1,.false.) 
       end if
       if ( debug ) then
          write(lupri,*) 'cc_r12metric> norm^2(S * R12):',
-     &   ddot(ngamma(isymr),work(kres),1,work(kres),1)
+     &   ddot(ntr12am(isymr),work(kres),1,work(kres),1)
       end if
-      call ccr12pck2(work(kpck),isymr,.false.,work(kres),.true.)
+      iopt = 1
+      call ccr12pck2(work(kpck),isymr,.false.,work(kres),'T',iopt)
       call cclr_diasclr12(work(kpck),basscl1,isymr)
       if (locdbg) then
         call around('R12 S*R after packing')
@@ -1469,7 +1770,7 @@ c     -----------------------
 c     ------------------
 c     write S*R on file
 c     ------------------
-      call cc_wvec(lufs12,fs12am,ngamma(isymr),ngamma(isymr),
+      call cc_wvec(lufs12,fs12am,ntr12am(isymr),ntr12am(isymr),
      *             ifile,work(kpck))
 c
         if (ianr12.eq.2) then
@@ -1521,9 +1822,9 @@ c
       call qenter('getsr22')
 
       krabkl = 1
-      krmnab = krabkl + nt2amx
+      krmnab = krabkl + nt2r12(1)
       krijkl = krmnab + nt2am(isymt)
-      kend1  = krijkl + ngamma(isymt)
+      kend1  = krijkl + ntr12am(isymt)
       lwrk1  = lwork - kend1
       if (lwrk1.lt.0) then
         call quit('isufficient work space in getrs22')
@@ -1533,7 +1834,7 @@ c     read r^ab_kl integrals
       lunit = 0
       call gpopen(lunit,fr12r12,'unknown',' ','unformatted',
      &            idummy,.false.)
-      read(lunit)(work(krabkl-1+i),i=1,nt2amx)
+      read(lunit)(work(krabkl-1+i),i=1,nt2r12(1))
       call gpclose(lunit,'KEEP')
 
       if (.not. lnoread) then
@@ -1541,12 +1842,12 @@ c       read R^mn_ab trial vector (stored as triangular matrix)
         call cc_rvec(lufc2,fc2am,nt2am(isymt),nt2am(isymt),
      &               ifile,work(krmnab))
 c       read R^ij_kl
-        call cc_rvec(lufc12,fc12am,ngamma(isymt),ngamma(isymt),
+        call cc_rvec(lufc12,fc12am,ntr12am(isymt),ntr12am(isymt),
      *               ifile,work(krijkl))
       else 
         call dcopy(nt2am(isymt),vec(nt1am(isymt)+1),1,
      &             work(krmnab),1)
-        call dcopy(ngamma(isymt),vec(nt1am(isymt)+nt2am(isymt)+1),
+        call dcopy(ntr12am(isymt),vec(nt1am(isymt)+nt2am(isymt)+1),
      &             1,work(krijkl),1)
       end if
       call cclr_diascl(work(krmnab),two,isymt)
@@ -1566,7 +1867,7 @@ c     write result on file fs2am
      &               work(krmnab))
         write(lupri,*)'FS2AM'
         write(lupri,*)'nt2am(isymt):', nt2am(isymt)
-        write(lupri,*)'ngamma(isymt):',ngamma(isymt)
+        write(lupri,*)'ntr12am(isymt):',ntr12am(isymt)
         call outpak(work(krmnab),nt2am(isymt),1,lupri)
       end if
 
@@ -1575,17 +1876,18 @@ c     write result on file fs2am
 *=====================================================================* 
 
 *=====================================================================*
-      subroutine cc_r12buildbmat(bmatsq,isymij,idxij,work,
-     &                           lwork,aproxr12)
+      subroutine cc_r12buildbmat(bmatsq,isymij,idxij,bmatsq0,
+     &                           xintsq,epskl,inmatkl,epsij,inmatij,
+     &                           factor)
 *---------------------------------------------------------------------*
 c     purpose: Build up R12 B-matrix B_(kl,mn)^(ij) for 
 c              fixed index pair (ij)
 c
-c     bmatsq   B-matrix if dimension ngamsq(1)
+c     bmatsq   B-matrix if dimension nr12r12sq(1)
 c     isymij   symmetry of pair (ij)
 c     idxij    sorted pair index (ij)
 c
-c     Christian Neiss,  April 2005
+c     Christian Neiss,  April 2005, restructured September 2005
 c---------------------------------------------------------------------
       implicit none
 #include <ccsdsym.h>
@@ -1595,169 +1897,24 @@ c---------------------------------------------------------------------
 #include <r12int.h>
 #include <ccr12int.h>
 
-      logical locdbg,ldum
+      logical locdbg
       parameter (locdbg=.false.)
 
-      integer idxij,it,jt,isymi,isymj,idx,ij
-      integer nrhftria,isymij,isymkl,isymmn
-      integer idxkl,idxmn,idxklmn
-      integer lwork,lunit,ian,iap,idum
-      integer kbmat,kxint,kxintsq,kevl,kevlsq,kend1,lwrk1
-      integer index,inmatij(8),nij,isym
-      character*3 aprox
-      character*(*) aproxr12
+      integer idxij,idxkl,idxmn,idxklmn
+      integer isymij,isymkl,isymmn
+      integer inmatkl(8),inmatij(8)
 
 #if defined (SYS_CRAY)
-      real bmatsq(*),work(*),half,one,two,factor
+      real bmatsq(*),bmatsq0(*),xintsq(*),epskl(*),epsij(*),factor,two
 #else
-      double precision bmatsq(*),work(*),half,one,two,factor
+      double precision bmatsq(*),bmatsq0(*),xintsq(*),epskl(*),
+     &                 epsij(*),factor,two
 #endif
-      parameter (half = 0.5d0, one = 1.0D0, two = 2.0D0)
-
-      index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
+      parameter (two = 2.0D0)
 
       call qenter('cc_r12buildbmat')
       if (locdbg) then
         write(lupri,*)'Entered CC_R12BUILDBMAT'
-      end if
-
-      nrhftria = nrhft*(nrhft+1)/2
-
-      !calculate number of indices (ij) and offset over all symmetries:
-      nij = 0
-      do isym = 1, nsym
-        inmatij(isym) = nij
-        nij = nij + nmatij(isym)
-      end do
-      if (locdbg) then
-        write(lupri,*)'number of unsorted indices (ij): ',nrhftria
-        write(lupri,*)'number of sorted indices (ij): ',nij
-      end if
-
-      kbmat   = 1
-      kxint   = kbmat   + ngamma(1)
-      kxintsq = kxint   + ngamma(1)
-      kevl    = kxintsq + ngamsq(1)
-      kevlsq  = kevl    + nrhftria
-      kend1   = kevlsq  + nmatij(isymij)
-
-      lwrk1  = lwork  - kend1
-      if (lwrk1 .lt. 0) then
-         call quit('Insufficient work space in cc_r12buildbmat')
-      end if
-
-c     ----------------     
-c     read B matrices 
-c     ----------------
-      lunit = 0
-      call gpopen(lunit,fccr12b,'old',' ','unformatted',
-     &                   idum,ldum)
- 8888 read(lunit) ian, iap, aprox
-      read(lunit) (work(kbmat+i), i=0, ngamma(1)-1 )
-      if ((ian.ne.ianr12).or.(iap.ne.iapr12)) goto 8888
-      call gpclose(lunit,'KEEP')
-      if (aproxr12(1:3).ne.aprox) then
-        write(lupri,*)'aproxr12 =', aproxr12(1:3)
-        write(lupri,*)'aprox    =', aprox(1:3)
-        call quit('>>> Warning: inconsistent R12 approximation')
-      end if
-      call ccr12unpck2(work(kbmat),1,bmatsq,.false.)
-      call dscal(ngamsq(1),-one,bmatsq,1)
-
-      if (locdbg) then
-        call around('B-Matrix read from file')
-        call cc_prsqr12(bmatsq,1,1,.false.)
-      end if
-
-c     ----------------------------------------------------
-c     for some cases we are already done, since B does not
-c     depend on (ij)
-c     ----------------------------------------------------
-      if (ianr12.eq.1) then
-        if (iapr12.le.2) then
-          if (locdbg) then
-            write(lupri,*)'Leaving CC_R12BUILDBMAT'
-          end if
-          call qexit('cc_r12buildbmat')
-          return
-        else
-          factor = half
-        end if
-      else
-        if (iapr12.le.2) then
-          if (locdbg) then
-            write(lupri,*)'Leaving CC_R12BUILDBMAT'
-          end if
-          call qexit('cc_r12buildbmat')
-          return 
-        else
-          factor = half
-        end if
-      end if
-
-c     ----------------------
-c     read orbital energies 
-c     ---------------------
-      lunit = 0
-      ldum = .false.
-      call gpopen(lunit,fccr12e,'old',' ','formatted',
-     &                   idum,ldum)
-      read(lunit,'(4e30.20)') (work(kevl+ij), ij = 0, nrhftria-1)
-      call gpclose(lunit,'KEEP')
-
-      !unpack to symmetrized full square:
-c      call dzero(work(kevlsq),nmatij(isymij))
-      call dzero(work(kevlsq),nij)
-      do isym = 1, nsym  !isymij   
-        do isymj = 1, nsym
-          isymi = muld2h(isym,isymj)
-          do j = 1, nrhf(isymj)
-            jt = irhf(isymj) + j
-            do i = 1, nrhf(isymi)
-              it = irhf(isymi) + i
-              ij = index(it,jt)
-              idx = inmatij(isym) + imatij(isymi,isymj) +
-     &              nrhf(isymi)*(j-1) + i
-              work(kevlsq-1+idx) = work(kevl-1+ij)
-c              write(lupri,*) kevlsq-1+idx,work(kevlsq-1+idx)
-            end do
-          end do
-        end do
-      end do
-
-      if (locdbg) then
-        call around('Packed pair orbital energies')
-        call outpak(work(kevl),nrhft,1,lupri)
-        call around('Unpacked pair orbital energies')
-        idx = kevlsq
-        do isym = 1, nsym
-          do isymi = 1, nsym
-            isymj = muld2h(isym,isymi)
-            write(lupri,*) 'Symmetry block ',isymi, isymj
-            write(lupri,*) idx+imatij(isymi,isymj) 
-            call output(work(idx+imatij(isymi,isymj)),
-     &                  1,nrhf(isymi),1,nrhf(isymj),
-     &                  nrhf(isymi),nrhf(isymj),1,lupri)
-          end do
-          idx = idx + nmatij(isym)
-        end do
-      end if
-
-c     -------------------------
-c     read R12 overlap matrices
-c     ------------------------- 
-      lunit = 0
-      call gpopen(lunit,fccr12x,'old',' ','unformatted',
-     &                   idum,ldum)
- 9999 read(lunit) ian
-      read(lunit) (work(kxint+i), i=0, ngamma(1)-1 )
-      if (ian.ne.ianr12) goto 9999
-      call gpclose(lunit,'KEEP')
-      call ccr12unpck2(work(kxint),1,work(kxintsq),.true.)
-
-      if (locdbg) then
-        call around('R12 Overlap-Matrix read from file')
-        call cc_prsqr12(work(kxintsq),1,1,.false.)
       end if
 
 c     --------------
@@ -1765,21 +1922,16 @@ c     build B-matrix
 c     --------------
       do isymkl = 1, nsym
         isymmn = isymkl
-        do idxkl = 1, nmatij(isymkl)
-          do idxmn = 1, nmatij(isymmn)
-            idxklmn = igamsq(isymkl,isymmn) + 
-     &                nmatij(isymkl)*(idxmn-1) + idxkl
-c            write(lupri,*) 'idxklmn: ',idxklmn
-c            write(lupri,*) 'bmatsq(idxklmn), work(kxintsq-1+idxklmn): ',
-c     &                      bmatsq(idxklmn), work(kxintsq-1+idxklmn)
-c            write(lupri,*) 'eps(idxkl), eps(idxmn), eps(idxij): ',
-c     &                     work(kevlsq-1+idxkl),work(kevlsq-1+idxmn),
-c     &                     work(kevlsq-1+idxij)
-            bmatsq(idxklmn) = bmatsq(idxklmn) +
-     &                     factor*(work(kevlsq-1+inmatij(isymkl)+idxkl)+
-     &                             work(kevlsq-1+inmatij(isymmn)+idxmn)-
-     &                     two*work(kevlsq-1+inmatij(isymij)+idxij))*
-     &                     work(kxintsq-1+idxklmn)
+        do idxmn = 1, nmatkl(isymmn)
+          do idxkl = 1, nmatkl(isymkl)
+            idxklmn = ir12r12sq(isymkl,isymmn) + 
+     &                nmatkl(isymkl)*(idxmn-1) + idxkl
+c           write(lupri,*) 'idxklmn: ',idxklmn
+            bmatsq(idxklmn) = bmatsq0(idxklmn) +
+     &                     factor*(epskl(inmatkl(isymkl)+idxkl)+
+     &                             epskl(inmatkl(isymmn)+idxmn)-
+     &                     two*epsij(inmatij(isymij)+idxij))*
+     &                     xintsq(idxklmn)
           end do
         end do
       end do
@@ -1787,8 +1939,13 @@ c     &                     work(kevlsq-1+idxij)
       if (locdbg) then
         call around('B-Matrix in CC_R12BUILDBMAT')
         write(lupri,*) 'idxij, epsilon(ij): ',idxij,
-     &                 work(kevlsq-1+inmatij(isymij)+idxij)
-        call cc_prsqr12(bmatsq,1,1,.false.)
+     &                 epsij(inmatkl(isymij)+idxij)
+        do isymkl = 1, nsym
+          isymmn = isymkl
+          call output(bmatsq(1+ir12r12sq(isymkl,isymmn)),1,
+     &                nmatkl(isymkl),1,nmatkl(isymmn),nmatkl(isymkl),
+     &                nmatkl(isymmn),1,lupri)
+        end do
       end if
 
       if (locdbg) then
@@ -1799,4 +1956,220 @@ c     &                     work(kevlsq-1+idxij)
       return
       end 
 *=====================================================================*
- 
+
+*=====================================================================*
+      subroutine cc_r12nxtam_new(omeg12,isym,tamp12,lcceq,
+     &                       er12,work,lwork)
+c----------------------------------------------------------------------
+c     purpose: get new start R12  amplitudes for each iteration
+c              substitute for old cc_r12nxtam: working without 
+c              singlet/triplet format, similiar to conventinal
+c              part of vector function
+c
+c     C. Neiss summer 2005, NOT FINISHED!!!
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+#include <ccsdinp.h>
+
+      logical locdbg,ldum,lcceq 
+      parameter (locdbg = .false.)
+
+      integer kbmat,kbmatsq,kvint,kvintsq,ktr12sq,komegsq,kend1,lwrk1
+      integer lwork,ian,iap,iopt,isym,lunit,idum
+      integer isymij,isymmn,isymkl,idxij
+      integer nkilj(8)
+#if defined (SYS_CRAY)
+      real tamp12(*),omeg12(*),er12,work(*),ddot
+#else
+      double precision tamp12(*),omeg12(*),er12,work(*),ddot
+#endif
+      character*3 aprox
+      character*10 model
+
+      call qenter('r12nxtam')
+      if (locdbg) then
+        write(lupri,*) 'Entered CC_R12NXTAM'
+        call flshfo(lupri)
+      end if
+
+      kbmat   = 1 
+      kbmatsq = kbmat  + ngamma(1)
+      ktr12sq = kbmatsq+ ngamsq(1)
+      komegsq = ktr12sq+ ngamsq(isym)
+      kend1   = komegsq+ ngamsq(isym)
+     
+      if (lcceq) then
+        kvint    = kend1 
+        kvintsq  = kvint  + ngamma(1)
+        kend1    = kvintsq+ ngamsq(1)
+      end if
+
+      lwrk1  = lwork  - kend1
+
+      if (lwrk1 .lt. 0) then
+         call quit('Insufficient work space in cc_r12nxtam')
+      end if
+
+c     -------------
+c     test symmetry
+c     -------------
+      if (lcceq .and. (isym.ne.1)) then
+        call quit('Symmetry error in CC_R12NXTAM')
+      end if 
+
+      if (lcceq) then
+c       ---------------    
+c       read V matrices 
+c       ---------------
+        lunit = 0
+        call gpopen(lunit,fccr12v,'old',' ','unformatted',
+     &                     idum,ldum)
+ 7777   read(lunit) ian
+        read(lunit) (work(kvint+i), i=0, ngamma(1)-1)
+        if (ian.ne.ianr12) goto 7777
+        call gpclose(lunit,'KEEP')
+        if (locdbg) then
+          write(lupri,*) 'Read V-intermediate done'
+          call flshfo(lupri)
+        end if
+        iopt = 1
+        call ccr12unpck2(work(kvint),1,work(kvintsq),'T',iopt)
+
+c       -------------------------------
+c       read vector function omega_R12
+c       -------------------------------
+        lunit = 0 
+        call gpopen(lunit,'CC_OMEGAR12','old',' ','unformatted',
+     &              idum,ldum)
+        read(lunit) (omeg12(i), i=1, ngamma(1))
+        call gpclose(lunit,'KEEP')  
+c 
+        write(lupri,529)'Norm of Omegar12 in NXTAM  :', 
+     &     ddot(ngamma(1),omeg12,1,omeg12,1)
+c
+      end if
+      !repack omega_R12
+      iopt = 1
+      call ccr12unpck2(omeg12,isym,work(komegsq),'T',iopt)
+
+ 529  format(7x,a,d25.10)
+
+      call dzero(work(ktr12sq),ngamsq(isym))
+
+c     -------------------------------
+c     calculate update for amplitudes
+c     -------------------------------
+      do isymij = 1, nsym
+        isymmn = muld2h(isym,isymij)
+        isymkl = isymmn
+        do idxij = 1, nmatij(isymij)
+          call cc_r12buildbmat(work(kbmatsq),isymij,idxij,
+     &                         work(kend1),lwrk1,aprox)
+
+c      .......................
+c      .......................
+        end do
+      end do
+
+c     ------------------------------------------------
+c     copy update for amplitudes into omgsing/omgtrip
+c     ------------------------------------------------
+
+      if (lcceq) then
+c       --------------------
+c       read R12 amplitudes
+c       --------------------
+        iopt =32
+        call cc_rdrsp('R0 ',0,1,iopt,model,idum,tamp12)
+
+c       ----------------------------------------------------
+c       add old amplitudes to update to get new amplitudes
+c       ----------------------------------------------------
+
+      end if ! lcceq
+
+      iopt = 1
+      call ccr12pck2(omeg12,isym,.false.,work(komegsq),'T',iopt)
+
+      if (locdbg) write(lupri,*) 'Leaving CC_R12NXTAM'
+
+      call qexit('r12nxtam')
+      end
+*=====================================================================*
+
+*=====================================================================*
+      subroutine cc_r12epair(evlout,length,evlin,inmat,imat,nrhf1)
+c----------------------------------------------------------------------
+c     purpose: get pair orbital energies 
+c
+c     C. Neiss september 2005
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccsdinp.h>
+
+      logical locdbg
+      parameter (locdbg = .false.)
+
+      integer kend1,lwrk1,length,kscr1
+      integer lwork,idummy
+      integer isymij,isymi,isymj,mi,mj,idxij 
+      integer nrhf1(8),inmat(8),imat(8,8)
+#if defined (SYS_CRAY)
+      real evlout(length),evlin(norbts),ei,ej
+#else
+      double precision evlout(length),evlin(norbts),ei,ej
+#endif
+c
+      call qenter('cc_r12epair')
+      if (locdbg) then
+        write(lupri,*) 'Entered CC_R12EPAIR'
+        call flshfo(lupri)
+      end if
+c
+      call dzero(evlout,length)
+c
+      do isymij = 1, nsym
+        do isymi = 1, nsym
+          isymj = muld2h(isymi,isymij)
+          do i = 1, nrhf1(isymi)
+            mi = iorb(isymi)+i
+            ei = evlin(mi)
+            do j = 1, nrhf1(isymj)
+              idxij = inmat(isymij) + imat(isymi,isymj) + 
+     &                nrhf1(isymi)*(j-1)+i
+              mj = iorb(isymj)+j
+              ej = evlin(mj)
+              evlout(idxij) = ei + ej
+            end do
+          end do
+        end do
+      end do 
+c
+      if (locdbg) then
+        call around('CC_R12EPAIR: pair orbital energies')
+        do isymij = 1, nsym
+          do isymi = 1, nsym
+            isymj = muld2h(isymij,isymi)
+            write(lupri,*) 'Symmetry block ',isymi, isymj
+            call output(evlout(1+inmat(isymij)+imat(isymi,isymj)),
+     &                  1,nrhf1(isymi),1,nrhf1(isymj),
+     &                  nrhf1(isymi),nrhf1(isymj),1,lupri)
+          end do
+        end do
+      end if
+c
+      if (locdbg) write(lupri,*) 'Leaving CC_R12EPAIR'
+
+      call qexit('cc_r12epair')
+      end
+*=====================================================================*
+

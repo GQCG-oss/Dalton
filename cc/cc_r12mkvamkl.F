@@ -7,7 +7,8 @@ c*=====================================================================*
 c     Purpose: calculation of V^{alpha,j}_{k,l} 
 c     
 c     where:     alpha      AOs in orbital basis
-c                j,k,l      active occupied MOs
+c                j          active occupied MO
+c                k,l        r12 MOs
 c
 c     H. Fliegl, C. Haettig spring 2003
 c
@@ -56,8 +57,8 @@ c     adapted for ansatz 3, Christof Haettig, spring 2005.
       integer krdpmlk,kgdpmja,isymmk,idxmlk,idxmkl,idxja,
      &        isymdj,idxmja,idxmaj,isymma, kend3,kend4,
      &        lwrk4, igmaj(8), ngmaj, ngmgi, kcmo,kgmaj,ntotm,igmgi(8)
-      integer koffrtf,imaijm(8,8),nmaijm(8),isymijm,icount1,isymij
-      integer nvabkl(8),ivabkl(8,8)
+      integer koffrtf,imaklm(8,8),nmaklm(8),isymklm,icount1,isymij
+      integer nvabkl(8),ivabkl(8,8),nalphaj(8),ialphaj(8,8)
 #if defined (SYS_CRAY)
       real gabjd(*),tabjd(*),vajkl(*),cmo(*),xint(*),work(*)
       real scr1(*), ddot, nbjd(*), tint(*),xlamdhs(*), xlamdps(*) 
@@ -125,7 +126,8 @@ c     calculate some symmetry offsets and dimensions
 c    ------------------------------------------------
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
-     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl)
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
+     &     ialphaj)
 
       do isymaj = 1,nsym
          icou2 = 0
@@ -150,27 +152,27 @@ c    ------------------------------------------------
          igmaj(isymaj) = ngmaj
          igmgi(isymgi) = ngmgi
 
-         ngabj  = ngabj + mbas1(isymb)*mbas1(isyma)*nrhf(isymj)
-         ngmaj  = ngmaj + nrhfs(isymb)*mbas1(isyma)*nrhf(isymj)
-         ngmgi  = ngmgi + nrhfs(isymb)*mbas1(isymg)*nrhf(isymi)
+         ngabj  = ngabj + mbas1(isymb)*mbas1(isyma)*nrhfa(isymj)
+         ngmaj  = ngmaj + nrhfsa(isymb)*mbas1(isyma)*nrhfa(isymj)
+         ngmgi  = ngmgi + nrhfsa(isymb)*mbas1(isymg)*nrhfa(isymi)
       end do
       
 c    
-      do isymijm = 1, nsym
+      do isymklm = 1, nsym
         icount1 = 0
         do isymm = 1, nsym
-          isymij = muld2h(isymijm,isymm)
-          imaijm(isymij,isymm) = icount1
-          icount1 = icount1 + nmatij(isymij)*nrhfs(isymm)
+          isymkl = muld2h(isymklm,isymm)
+          imaklm(isymkl,isymm) = icount1
+          icount1 = icount1 + nmatkl(isymkl)*nrhfsa(isymm)
         end do
-        nmaijm(isymijm) = icount1
+        nmaklm(isymklm) = icount1
       end do
       
       kr2bkl = 1
       kend0  = kr2bkl + nrgkl(isymd)
       if (iansatz.eq.2) then
         krtf = kend0
-        kend0 = krtf + nmaijm(isymd)   
+        kend0 = krtf + nmaklm(isymd)   
       end if 
       lwrk0  = lwork  - kend0
       
@@ -191,18 +193,19 @@ c
       isymv = isymcmo
 c
       if (locdbg) then
+        write(lupri,*)'nalphaj: ',(nalphaj(i),i=1,nsym)
         write(lupri,*)'Vajkl entered mkvamkl'
         write(lupri,*)'norm^2:',ddot(nvajkl(isymv),vajkl,1,vajkl,1)
 c       write(lupri,*)(vajkl(i),i=1,nvajkl(isymv))
         do isymkl = 1, nsym
            isymaj = muld2h(isymv,isymkl)
            write(lupri,*) 'Block isymaj, isymkl: ',isymaj,isymkl
-           if ((nt1ao(isymaj).eq.0).or.(nmatij(isymkl).eq.0)) then
+           if ((nalphaj(isymaj).eq.0).or.(nmatkl(isymkl).eq.0)) then
             write(lupri,*) 'This block is empty'
            else
             call output(vajkl(1+ivajkl(isymaj,isymkl)),1,
-     &                  nt1ao(isymaj),1,nmatij(isymkl),nt1ao(isymaj),
-     &                  nmatij(isymkl),1,lupri)
+     &                  nalphaj(isymaj),1,nmatkl(isymkl),
+     &                  nalphaj(isymaj),nmatkl(isymkl),1,lupri)
            end if
          end do
       end if
@@ -212,6 +215,7 @@ c     get R12 integrals R^{delta}(beta,kl)
 c     -------------------------------------
       call cc_r12getrint(work(kr2bkl),idel,isymd,nr1bas,ir1bas,
      &     nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &     nrhfb,nmatkl,imatkl,
      &     ibasx,lauxd,.false.,filback,work(kend1),lwrk1)
       
       if (locdbg) then
@@ -224,8 +228,8 @@ c       write(lupri,*) (work(kr2bkl+i-1),i=1,nrgkl(isymd))
           isymkl = muld2h(isymb,isymd)
           write(lupri,*) 'isymb,isymkl:',isymb,isymkl
           call output(work(kr2bkl+irgkl(isymb,isymkl)),1,mbas1(isymb),
-     &                1,nmatij(isymkl),
-     &                mbas1(isymb),nmatij(isymkl),1,lupri)
+     &                1,nmatkl(isymkl),
+     &                mbas1(isymb),nmatkl(isymkl),1,lupri)
         end do
       end if
 
@@ -236,28 +240,28 @@ c     for ansatz 2 transform beta index to all occupied (m)
           isymkl = muld2h(isymb,isymd)
           koffc  = 1+iglmrhs(isymb,isymm) 
           koffr  = kr2bkl+irgkl(isymb,isymkl)
-          koffrtf = krtf+imaijm(isymkl,isymm)  !for nrhfs(isymm)
+          koffrtf = krtf+imaklm(isymkl,isymm)  !for nrhfs(isymm)
       
           ntotb = max(mbas1(isymb),1)
           ntotc = max(nbas(isymb),1)
-          ntotm = max(nrhfs(isymm),1)
+          ntotm = max(nrhfsa(isymm),1)
 
-          call dgemm('T','N',nrhfs(isymm),nmatij(isymkl),mbas1(isymb),
+          call dgemm('T','N',nrhfsa(isymm),nmatkl(isymkl),mbas1(isymb),
      &               one,xlamdhs(koffc),ntotc,work(koffr),ntotb,zero,
      &               work(koffrtf),ntotm)
 
-          x1 = x1 + ddot(nrhfs(isymm)*mbas1(isymb),
+          x1 = x1 + ddot(nrhfsa(isymm)*mbas1(isymb),
      &                   xlamdhs(koffc),1,xlamdhs(koffc),1)
           x2 = x2 + ddot(nrgkl(isymd),work(koffr),1,work(koffr),1)
         end do
 
 
         if (locdbg) then
-          write(lupri,*)'nmaijm(isymd) =', nmaijm(isymd)
+          write(lupri,*)'nmaklm(isymd) =', nmaklm(isymd)
           write(lupri,*)'Norm R_m,kl in mkvamkl',idel,
-     &      ddot(nmaijm(isymd),work(krtf),1,work(krtf),1)
-          x3 = x3 + ddot(nmaijm(isymd),work(krtf),1,work(krtf),1)
-          write(lupri,*)'R_m,kl', (work(krtf-1+i),i=1,nmaijm(isymd))
+     &      ddot(nmaklm(isymd),work(krtf),1,work(krtf),1)
+          x3 = x3 + ddot(nmaklm(isymd),work(krtf),1,work(krtf),1)
+          write(lupri,*)'R_m,kl', (work(krtf-1+i),i=1,nmaklm(isymd))
         end if
       end if
 
@@ -267,7 +271,7 @@ c                    triangular matrix g to quadratic matrix (scr1)
 c                    and remove auxiliary basis functions alpha,beta 
 c      for ansatz 2: transform beta index to occupied
 c     ----------------------------------------------------------------
-      do j=1, nrhf(isymj)
+      do j=1, nrhfa(isymj)
          koff1= nnbst(isymab)*(j-1) +1
 c Elena
          if (u21int) then
@@ -301,24 +305,24 @@ c             m runs now over all occupied orbitals
               kcmo  = iglmrhs(isymb,isymm) + 1
               kgmaj = kend1
               lwrk1 = lwork - kend1
-              if (lwrk1.lt.nrhfs(isymm)*mbas1(isyma)) then
+              if (lwrk1.lt.nrhfsa(isymm)*mbas1(isyma)) then
                 call quit('Insufficient work space in mkvamkl')
               end if
             
-              ntotm = max(nrhfs(isymm),1)
+              ntotm = max(nrhfsa(isymm),1)
               ntota = max(nbas(isyma),1)
               ntotb = max(nbas(isymb),1)
 c             get G^dp_m,alpha j
-              call dgemm('T','T',nrhfs(isymm),mbas1(isyma),mbas1(isymb),
-     &                   one,xlamdps(kcmo),ntotb,scr1(koff1),ntota,zero,
-     &                   work(kgmaj),ntotm)
+              call dgemm('T','T',nrhfsa(isymm),mbas1(isyma),
+     &                   mbas1(isymb),one,xlamdps(kcmo),ntotb,
+     &                   scr1(koff1),ntota,zero,work(kgmaj),ntotm)
 
               ! sort into array aranged as G(m,aj)
               do a = 1, mbas1(isyma)
                  idxaj = mbas1(isyma)*(j-1)+a
-                 do m = 1, nrhfs(isymm)
-                    koff1  = kgmaj-1 + nrhfs(isymm)*(a-1) + m
-                    idxmaj = igmaj(isymaj)+nrhfs(isymm)*(idxaj-1)+m  
+                 do m = 1, nrhfsa(isymm)
+                    koff1  = kgmaj-1 + nrhfsa(isymm)*(a-1) + m
+                    idxmaj = igmaj(isymaj)+nrhfsa(isymm)*(idxaj-1)+m  
                     work(kgtf-1+idxmaj) = work(koff1)
                  end do
               end do
@@ -334,7 +338,7 @@ c             get G^dp_m,alpha j
 
       if (locdbg.and.iansatz.eq.1) then
         write(lupri,*) 'norm^2 orginal coulomb integrals:',
-     &   ddot(nrhf(isymj)*nnbst(isymab),gabjd,1,gabjd,1)
+     &   ddot(nrhfa(isymj)*nnbst(isymab),gabjd,1,gabjd,1)
         write(lupri,*) 'resorted coulomb integrals: ... norm^2=',
      &   ddot(ngabj,work(kgabj),1,work(kgabj),1)
         do isymb = 1, nsym
@@ -342,8 +346,8 @@ c             get G^dp_m,alpha j
           isymaj = muld2h(isyma,isymj)
           write(lupri,*) 'isymj,isyma,isymb:',isymj,isyma,isymb
           call output(work(kgabj+igabj(isymaj)),1,mbas1(isymb),
-     &                1,mbas1(isyma)*nrhf(isymj),
-     &                mbas1(isymb),mbas1(isyma)*nrhf(isymj),1,lupri)
+     &                1,mbas1(isyma)*nrhfa(isymj),
+     &                mbas1(isymb),mbas1(isyma)*nrhfa(isymj),1,lupri)
         end do
       else if (locdbg.and.iansatz.eq.2) then 
         write(lupri,*) 'Norm:G^dp_m,gamma_i:',
@@ -367,10 +371,10 @@ c     ----------------------------------------------------------------
            
            koffg = kgabj + igabj(isymaj)
            koffr = kr2bkl + irgkl(isymb,isymkl)
-           koffv = 1 + ivajkl(isymaj,isymkl) + ir1bas(isyma,isymj)
+           koffv = 1 + ivajkl(isymaj,isymkl) + ialphaj(isyma,isymj)
            
            ntotb  = max(1,mbas1(isymb))
-           ntotaj = max(1,nr1bas(isymaj))
+           ntotaj = max(1,nalphaj(isymaj))
 celena
 C          if (idelta.le.mbas1(isymd)) then 
 C             if (R12CBS) then
@@ -384,28 +388,28 @@ C          end if
 
            if (locdbg) then
              write(lupri,*)'d: V'
-             call output(vajkl(koffv),1,mbas1(isyma)*nrhf(isymj),1,
-     &          nmatij(isymkl),mbas1(isyma)*nrhf(isymj),nmatij(isymkl),
-     &          1,lupri)
+             call output(vajkl(koffv),1,mbas1(isyma)*nrhfa(isymj),1,
+     &          nmatkl(isymkl),nalphaj(isymaj),
+     &          nmatkl(isymkl),1,lupri)
            end if
 
-           call dgemm('T','N',mbas1(isyma)*nrhf(isymj),nmatij(isymkl),
-     &          mbas1(isymb),factor,work(koffg),ntotb,
+           call dgemm('T','N',mbas1(isyma)*nrhfa(isymj),
+     &          nmatkl(isymkl),mbas1(isymb),factor,work(koffg),ntotb,
      &          work(koffr),ntotb,one,vajkl(koffv),ntotaj)
           
            if (locdbg) then
              write(lupri,*)'d: G'
              call output(work(koffg),1,mbas1(isymb),
-     &                1,mbas1(isyma)*nrhf(isymj),
-     &                mbas1(isymb),mbas1(isyma)*nrhf(isymj),1,lupri)
+     &                1,mbas1(isyma)*nrhfa(isymj),
+     &                mbas1(isymb),mbas1(isyma)*nrhfa(isymj),1,lupri)
              write(lupri,*)'d: R'
              call output(work(koffr),1,mbas1(isymb),
-     &                1,nmatij(isymkl),
-     &                mbas1(isymb),nmatij(isymkl),1,lupri)
+     &                1,nmatkl(isymkl),
+     &                mbas1(isymb),nmatkl(isymkl),1,lupri)
              write(lupri,*)'d: V = V + G*R'
-             call output(vajkl(koffv),1,mbas1(isyma)*nrhf(isymj),1,
-     &          nmatij(isymkl),mbas1(isyma)*nrhf(isymj),nmatij(isymkl),
-     &          1,lupri)
+             call output(vajkl(koffv),1,mbas1(isyma)*nrhfa(isymj),1,
+     &          nmatkl(isymkl),nalphaj(isymaj),
+     &          nmatkl(isymkl),1,lupri)
            end if
         end do
       else if (iansatz.eq.2) then
@@ -421,14 +425,14 @@ c         m runs over all occupied orbitals
           isyma = muld2h(isymaj,isymj)
 
           koffg = kgtf + igmaj(isymaj)
-          koffr = krtf + imaijm(isymkl,isymm)
-          koffv = 1 + ivajkl(isymaj,isymkl) + ir1bas(isyma,isymj)
+          koffr = krtf + imaklm(isymkl,isymm)
+          koffv = 1 + ivajkl(isymaj,isymkl) + ialphaj(isyma,isymj)
 
-          ntotg = max(nrhfs(isymm),1)
-          ntotaj = max(nr1bas(isymaj),1)
+          ntotg = max(nrhfsa(isymm),1)
+          ntotaj = max(nalphaj(isymaj),1)
 
-          call dgemm('T','N',mbas1(isyma)*nrhf(isymj),nmatij(isymkl),
-     &        nrhfs(isymm),factor,work(koffg),ntotg,work(koffr),ntotg,
+          call dgemm('T','N',mbas1(isyma)*nrhfa(isymj),nmatkl(isymkl),
+     &        nrhfsa(isymm),factor,work(koffg),ntotg,work(koffr),ntotg,
      &        one,vajkl(koffv),ntotaj)
         end do 
       else
@@ -436,8 +440,8 @@ c         m runs over all occupied orbitals
       end if
       if (locdbg.and.iansatz.eq.2) then
         write(lupri,*)'Vajkl ansatz 2 auxbas first part:'
-        call output(vajkl,1,nvajkl(1),1,nvajkl(1),nvajkl(1),
-     &              nvajkl(1),1,lupri) 
+        call output(vajkl,1,nvajkl(isymv),1,nvajkl(isymv),nvajkl(1),
+     &              nvajkl(isymv),1,lupri) 
       end if
 
 c     ---------------------------------------------
@@ -451,7 +455,7 @@ c     ---------------------------------------------
             isymi = muld2h(isymcmo,isyma)
             isymgi = muld2h(isymg,isymi)
             igbgi(isymgi) = ngbgi
-            ngbgi  = ngbgi + mbas1(isymb)*mbas1(isymg)*nrhf(isymi)
+            ngbgi  = ngbgi + mbas1(isymb)*mbas1(isymg)*nrhfa(isymi)
          end do
          kgab = kend0
          kgbi = kgab + nbast*nbast
@@ -462,7 +466,7 @@ c     ---------------------------------------------
          if (iansatz.eq.2) then
            kgtf    = kend1
            krdpmlk = kgtf + ngmgi 
-           kend1   = krdpmlk + nmaijm(isymd)
+           kend1   = krdpmlk + nmaklm(isymd)
          end if
 
          lwrk1 = lwork - kend1
@@ -516,13 +520,11 @@ c                     write(*,*) 'vamkl', koff1,idxab
                ntota = max(nbas(isyma),1)
                  
                call dgemm('N','N',mbas1(isymb),
-     &              nrhf(isymi),mbas1(isyma),one,work(kgab),ntotb,
+     &              nrhfa(isymi),mbas1(isyma),one,work(kgab),ntotb,
      &              cmo(koffc),ntota,zero,work(kgbi),ntotb)
 
- 
-
                  
-               do i =1, nrhf(isymi)
+               do i =1, nrhfa(isymi)
                   idxgi = mbas1(isymg)*(i-1)+g
                   do b = 1, mbas1(isymb)
                      idxbi = mbas1(isymb)*(i-1)+b
@@ -548,9 +550,10 @@ c          m runs over all occupied orbitals
            
              ntotb = max(mbas1(isymb),1)
              ntotc = max(nbas(isymb),1)
-             ntotm = max(nrhfs(isymm),1)
+             ntotm = max(nrhfsa(isymm),1)
            
-             call dgemm('T','N',nrhfs(isymm),mbas1(isymg)*nrhf(isymi),
+             call dgemm('T','N',nrhfsa(isymm),
+     &                mbas1(isymg)*nrhfa(isymi),
      &                mbas1(isymb),one,xlamdps(koffc),ntotc,work(koffg),
      &                ntotb,zero,work(koff1),ntotm)
            end do
@@ -564,8 +567,9 @@ c
              isymgi = muld2h(isymg,isymi)
              write(lupri,*) 'isymi,isymg,isymb:',isymi,isymg,isymb
              call output(work(kgbgi+igbgi(isymgi)),1,mbas1(isymb),
-     &                   1,mbas1(isymg)*nrhf(isymi),
-     &                   mbas1(isymb),mbas1(isymg)*nrhf(isymi),1,lupri)
+     &                   1,mbas1(isymg)*nrhfa(isymi),
+     &                   mbas1(isymb),mbas1(isymg)*nrhfa(isymi),
+     &                   1,lupri)
            end do
          else if (locdbg.and.iansatz.eq.2) then
             write(lupri,*)'resorted coulomb integrals (second part):',
@@ -575,7 +579,7 @@ c
             write(lupri,*)'G^dp_m,gammai in mkvamkl',
      &                (work(kgtf-1+i),i=1,ngmgi)
             write(lupri,*)'Norm Vajkl ansatz 2:',
-     &          ddot(nvajkl(1),vajkl,1,vajkl,1)
+     &          ddot(nvajkl(isymv),vajkl,1,vajkl,1)
          end if
 c
          if (iansatz.eq.1) then
@@ -585,14 +589,16 @@ c          -------------------------------------------------
            do isyml = 1, nsym
               isymdl = muld2h(isymd,isyml)
               isymbk = isymdl
-              do l=1,nrhf(isyml)
+              do l=1,nrhfb(isyml)
                  do isymb = 1, nsym
                     isymk  = muld2h(isymbk,isymb)
                     isymkl = muld2h(isymk,isyml)
-                    do k=1,nrhf(isymk)
+                    do k=1,nrhfb(isymk)
                        do b=1, mbas1(isymb)
-                          idxkl=imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
-                          idxlk=imatij(isyml,isymk)+nrhf(isyml)*(k-1)+l
+                          idxkl=imatkl(isymk,isyml)+
+     &                            nrhfb(isymk)*(l-1)+k
+                          idxlk=imatkl(isyml,isymk)+
+     &                            nrhfb(isyml)*(k-1)+l
                           idxbkl = irgkl(isymb,isymkl) + 
      &                         mbas1(isymb)*(idxkl-1)+b
                           idxblk = irgkl(isymb,isymkl) + 
@@ -610,8 +616,8 @@ c          -------------------------------------------------
               isymkl = muld2h(isymd,isymb)
               write(lupri,*) 'isymb,isymd,isymkl:',isymb,isymd,isymkl
               call output(work(krblk+irgkl(isymb,isymkl)),1,
-     &                    mbas1(isymb),1,nmatij(isymkl),
-     &                    mbas1(isymb),nmatij(isymkl),1,lupri)
+     &                    mbas1(isymb),1,nmatkl(isymkl),
+     &                    mbas1(isymb),nmatkl(isymkl),1,lupri)
              end do
            end if
          else if (iansatz.eq.2) then
@@ -622,18 +628,18 @@ c          m runs over all occupied
            do isyml = 1, nsym
              isymdl = muld2h(isymd,isyml)
              isymmk = isymdl
-             do l = 1, nrhf(isyml)
+             do l = 1, nrhfb(isyml)
                do isymm = 1, nsym
                  isymk = muld2h(isymmk,isymm)
                  isymkl = muld2h(isymk,isyml)
-                 do k = 1, nrhf(isymk)
-                   do m = 1, nrhfs(isymm)
-                     idxkl=imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
-                     idxlk=imatij(isyml,isymk)+nrhf(isyml)*(k-1)+l
-                     idxmkl =imaijm(isymkl,isymm)+
-     &                       nrhfs(isymm)*(idxkl-1)+m
-                     idxmlk =imaijm(isymkl,isymm)+
-     &                       nrhfs(isymm)*(idxlk-1)+m
+                 do k = 1, nrhfb(isymk)
+                   do m = 1, nrhfsa(isymm)
+                     idxkl=imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
+                     idxlk=imatkl(isyml,isymk)+nrhfb(isyml)*(k-1)+l
+                     idxmkl =imaklm(isymkl,isymm)+
+     &                       nrhfsa(isymm)*(idxkl-1)+m
+                     idxmlk =imaklm(isymkl,isymm)+
+     &                       nrhfsa(isymm)*(idxlk-1)+m
                      work(krdpmlk+idxmlk-1) = work(krtf-1+idxmkl)       
                    end do 
                  end do
@@ -643,9 +649,9 @@ c          m runs over all occupied
 
            if (locdbg) then
              write(lupri,*) 'norm^2 of resorted R^dp_m,lk:',idel,
-     &        ddot(nmaijm(isymd),work(krdpmlk),1,work(krdpmlk),1)
+     &        ddot(nmaklm(isymd),work(krdpmlk),1,work(krdpmlk),1)
              write(lupri,*)'R^dp_m,lk', 
-     &                      (work(krdpmlk-1+i),i=1,nmaijm(isymd))
+     &                      (work(krdpmlk-1+i),i=1,nmaklm(isymd))
            end if
          end if
 
@@ -666,18 +672,19 @@ c            isymi  = muld2h(isymgi,isymg)
           
              koffg = kgbgi + igbgi(isymgi)
              koffr = krblk + irgkl(isymb,isymkl)
-             koffv = 1 + ivajkl(isymgi,isymkl) + ir1bas(isymg,isymi)
+             koffv = 1 + ivajkl(isymgi,isymkl) + ialphaj(isymg,isymi)
              
              ntotb  = max(1,mbas1(isymb))
-             ntotgi = max(1,nr1bas(isymgi))
+             ntotgi = max(1,nalphaj(isymgi))
           
-             call dgemm('T','N',mbas1(isymg)*nrhf(isymi),nmatij(isymkl),
+             call dgemm('T','N',mbas1(isymg)*nrhfa(isymi),
+     &            nmatkl(isymkl),
      &            mbas1(isymb),-one,work(koffg),ntotb,
      &            work(koffr),ntotb,one,vajkl(koffv),ntotgi)
              if (locdbg) then 
                write(lupri,*)'DEBUG Vajkl(koffv) auxbas'
-               call output(vajkl(koffv),1,mbas1(isymg)*nrhf(isymi),1,
-     &           nmatij(isymkl),nr1bas(isymgi),nmatij(isymkl),
+               call output(vajkl(koffv),1,mbas1(isymg)*nrhfa(isymi),1,
+     &           nmatkl(isymkl),nalphaj(isymgi),nmatkl(isymkl),
      &           1,lupri)
              end if 
            end do
@@ -693,27 +700,29 @@ c          m runs over all occupied
              isymi  = muld2h(isymgi,isymg)
 
              koffg = kgtf + igmgi(isymgi)
-             koffr = krdpmlk + imaijm(isymkl,isymm)
-             koffv = 1 + ivajkl(isymgi,isymkl) + ir1bas(isymg,isymi)
+             koffr = krdpmlk + imaklm(isymkl,isymm)
+             koffv = 1 + ivajkl(isymgi,isymkl) + ialphaj(isymg,isymi)
 
-             ntotm  = max(nrhfs(isymm),1)
-             ntotgi = max(nr1bas(isymgi),1)
+             ntotm  = max(nrhfsa(isymm),1)
+             ntotgi = max(nalphaj(isymgi),1)
              
-             call dgemm('T','N',mbas1(isymg)*nrhf(isymi),nmatij(isymkl),
-     &           nrhfs(isymm),-one,work(koffg),ntotm,work(koffr),ntotm,
+             call dgemm('T','N',mbas1(isymg)*nrhfa(isymi),
+     &           nmatkl(isymkl),
+     &           nrhfsa(isymm),-one,work(koffg),ntotm,work(koffr),ntotm,
      &           one,vajkl(koffv),ntotgi)
 
 c
-             xnrmr = xnrmr + ddot(nrhfs(isymm)*nmatij(isymkl),
+             xnrmr = xnrmr + ddot(nrhfsa(isymm)*nmatkl(isymkl),
      &                           work(koffr),1,work(koffr),1)
-             xnrmg = xnrmg + ddot(nrhfs(isymm)*mbas1(isymg)*nrhf(isymi),
+             xnrmg = xnrmg + ddot(nrhfsa(isymm)*mbas1(isymg)*
+     &                           nrhfa(isymi),
      &                           work(koffg),1,work(koffg),1)
 c
              if (locdbg) then 
                write(lupri,*)'Vajkl(koffv) ansatz 2 auxbas'
-               call output(vajkl(koffv),1,mbas1(isymg)*nrhf(isymi),1,
-     &                    nmatij(isymkl),nr1bas(isymgi),
-     &                    nmatij(isymkl),1,lupri)
+               call output(vajkl(koffv),1,mbas1(isymg)*nrhfa(isymi),1,
+     &                    nmatkl(isymkl),nalphaj(isymgi),
+     &                    nmatkl(isymkl),1,lupri)
              end if 
            end do 
         end if
@@ -721,8 +730,19 @@ c
 
       if (locdbg) then
         write(lupri,*)'Vajkl leaving mkvamkl'
-        write(lupri,*)'norm^2:',ddot(nvajkl(1),vajkl,1,vajkl,1)
-c       write(lupri,*)(vajkl(i),i=1,nvajkl(1))
+        write(lupri,*)'norm^2:',ddot(nvajkl(isymv),vajkl,1,vajkl,1)
+c       write(lupri,*)(vajkl(i),i=1,nvajkl(isymv))
+        do isymkl = 1, nsym
+           isymaj = muld2h(isymv,isymkl)
+           write(lupri,*) 'Block isymaj, isymkl: ',isymaj,isymkl
+           if ((nalphaj(isymaj).eq.0).or.(nmatkl(isymkl).eq.0)) then
+            write(lupri,*) 'This block is empty'
+           else
+            call output(vajkl(1+ivajkl(isymaj,isymkl)),1,
+     &                  nalphaj(isymaj),1,nmatkl(isymkl),
+     &                  nalphaj(isymaj),nmatkl(isymkl),1,lupri)
+           end if
+         end do
         write(lupri,*)'xnrmr, xnrmg:',xnrmr,xnrmg
         write(lupri,*)'x1, x2, x3:',x1, x2, x3
       end if
@@ -730,21 +750,31 @@ c       write(lupri,*)(vajkl(i),i=1,nvajkl(1))
       call qexit('r12mkvamkl')
       end                       
 *====================================================================*
-      subroutine cc_r12mkvamkl0(vajkl,vabkl,cc2r12,cmo,
+      subroutine cc_r12mkvamkl0(vxykl,length,iopt,cmo,isycmo,
      &                          work,lwork) 
 c--------------------------------------------------------------------
-c     purpose: initialize V_{alpha j, kl}
+c     purpose: initialize R12 V-intermediates 
 c  
 c     H. Fliegl, C. Haettig spring 2003
 c     modified for CCSD(R12) model, summer 2004
+c
+c     C. Neiss august/september 2005:
+c     generalized and restructured for arbitrary r12-orbitals,
+c     non-totalsymm. Vajkl, Vijkl
+c     Note that the meaning of variable "cmo" has changed!
+c     iopt = 0      initialize V_(alpha beta)^(kl)
+c     iopt = 1      initialize V_(alpha j)^(kl)
+c     iopt = 2      initialize V_(ij)^(kl) 
 c--------------------------------------------------------------------
       implicit none
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <r12int.h>
+#include <ccr12int.h>
+#include <dummy.h>
  
-      logical cc2r12,locdbg
+      logical locdbg
       parameter (locdbg = .false.)
 #if defined (SYS_CRAY)
       real zero,one
@@ -758,125 +788,104 @@ c--------------------------------------------------------------------
       integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),ir1xbas(8,8)
       integer ir2xbas(8,8),iaodis1(8,8),irgkl(8,8)
       integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
-      integer igabj(8)
-      integer isymd,isymj,isymgk,isymg,isymk,isymkl
-      integer isymab,isyma,isymb,isymaj,isymdl,isyml,isym0
-      integer idxab,idxak,idxkl,idxlk,idxajkl,koffc,ntotb,ntota
-      integer koverlp,ksab,ksak,kend1,lwrk1,lwork,koff1,koffs
-      integer kvajkl,idxaj,nnbast,nvabkl(8),ivabkl(8,8)
-      integer idxabkl,idxbl
+      integer igabj(8),nalphaj(8),ialphaj(8,8)
+      integer isymi,isymj,isymk,isymkl,isycmo
+      integer isymab,isyma,isymb,isymaj,isyml
+      integer idxab,idxak,idxkl,idxlk,idxlj,idxajkl,koffc
+      integer ksab,ksak,kski,kend1,lwrk1,lwork,koffsak,koffski
+      integer idxaj,nnbast,nvabkl(8),ivabkl(8,8)
+      integer idxabkl,idxbl,lusak,luvajkl,idxbj
+      integer iopt,length,isymij,idxij,idxki,idxijkl
+      integer lr12f12htf
+      
 #if defined (SYS_CRAY)
-      real vajkl(*),cmo(*),work(*),vabkl(*)
+      real vxykl(length),cmo(*),work(*), ddot
 #else
-      double precision vajkl(*),cmo(*),work(*),vabkl(*)
+      double precision vxykl(length),cmo(*),work(*), ddot
 #endif
       
       call qenter('r12mkvamkl0')
-     
+
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
-     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl)
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
+     &     ialphaj)
+
 
       nnbast = 0
       do i = 1,nsym
          nnbast = nnbast + nbas(i)*(nbas(i)+1)/2
       end do
+c
+      kend1 = 1
+      if (.not.R12EOR) then
+        ksak = kend1
+        kend1 = ksak + nr1bas(1)  
+       if (iopt.ne.0) then
+         kski = kend1
+         kend1 = kski + nmatki(1)
+       end if
+      end if
 
-      koverlp = 1
-      ksab = koverlp + n2bst(1)
-      ksak = ksab + n2bst1(1)
-      kend1 = ksak + nr1bas(1)  
       lwrk1 = lwork - kend1
-      if (lwrk1.lt.nnbast) then
+      if (lwrk1.lt.0) then
          write(lupri,*)'lwrk1,lwork',lwrk1,lwork
          call quit('Insufficient work space in cc_r12mkvamkl0.')
       end if
 
-c    --------------------------------------------------------------
-c     read overlap matrix from file and unpack as quadratic matrix
-c    --------------------------------------------------------------
-      call rdonel('OVERLAP ',.true.,work(kend1),nnbast)
+c    ------------------------------
+c     read overlap matrix from file
+c    ------------------------------
+      if (.not. R12EOR) then
+      lusak = 0
+      call gpopen(lusak,fnsak,'UNKNOWN',' ','UNFORMATTED',
+     &            idummy,.false.)
+      rewind(lusak)
+      read(lusak) (work(ksak+i-1), i=1, nr1bas(1))
+      call gpclose(lusak,'KEEP')
 
-      isym0 = 1
-      call ccsd_symsq(work(kend1),isym0,work(koverlp))
-
-      do isymk = 1, nsym
-         isyma = isymk
-         isymb = isymk
-         do b = 1, mbas1(isymb)
-            do a = 1, mbas1(isyma)
-               koff1 = iaodis(isymb,isyma)+nbas(isyma)*(b-1)+a
-               idxab = mbas1(isyma)*(b-1)+a  
-               work(ksab-1+idxab) = work(koverlp -1 + koff1)
-            end do
-         end do
-         
-c       -------------------------------------------
-c        transform S_{alpha beta} with C_{beta k} 
-c        to obtain S_{alpha k}
-c       -------------------------------------------            
-         koffc = 1 + iglmrh(isymb,isymk)
-         koffs = ksak + ir1bas(isyma,isymk)
-         ntotb = max(nbas(isymb),1)
-         ntota = max(mbas1(isyma),1)
-         
-         call dgemm('N','N',mbas1(isyma),
-     &        nrhf(isymk),mbas1(isymb),one,work(ksab),ntota,
-     &        cmo(koffc),ntotb,zero,work(koffs),ntota)
-      end do
-  
-      if (locdbg) then
-        write(lupri,*)'Sak ='
-        do isyma = 1, nsym
-          isymk = isyma
-          call output(work(ksak),1,mbas1(isyma),1,nrhf(isymk),
-     &               mbas1(isyma),nrhf(isymk),1,lupri)
+c     -------------------------------------------
+c     transform S_{alpha k} with C_{alpha i} 
+c     to obtain S_{ki}
+c     -------------------------------------------
+      if (iopt.ne.0) then   
+        do isymk = 1, nsym
+          isyma = isymk
+          isymi = muld2h(isyma,isycmo)
+          koffc = 1 + iglmrh(isyma,isymi)
+          koffsak = ksak + ir1bas(isyma,isymk)
+          koffski = kski + imatki(isymk,isymi)
+          call dgemm('T','N',nrhfb(isymk),nrhfa(isymi),
+     &               mbas1(isyma),one,work(koffsak),
+     &               max(1,mbas1(isyma)),cmo(koffc),
+     &               max(1,nbas(isyma)),zero,work(koffski),
+     &               max(1,nrhfb(isymk)))  
         end do
       end if
-      
-      if (cc2r12) then
-c       -------------------------------------------------
-c       initialize V(aj,kl) with S(alpha,k)*dkron(j,l)
-c       -------------------------------------------------
-        call dzero(vajkl,nvajkl(1))
-        
-        do isymkl=1, nsym
-           isymaj = isymkl
-           do isymk =1, nsym
-              isyml = muld2h(isymkl,isymk)
-              do k=1, nrhf(isymk)
-                 do l=1, nrhf(isyml)
-                    idxkl=imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
-                    isymj = isyml
-                    isyma = muld2h(isymaj,isymj)   
-                    j=l
-                    do a=1, mbas1(isyma)
-                       idxaj = ir1bas(isyma,isymj)+mbas1(isyma)*(j-1)+a
-                       idxak = ir1bas(isyma,isymk)+mbas1(isyma)*(k-1)+a
-                       idxajkl = ivajkl(isymaj,isymkl)+nr1bas(isymaj)*
-     &                      (idxkl -1) + idxaj 
-                       vajkl(idxajkl) = work(ksak-1+idxak)
-                    end do
-                 end do
-              end do
-           end do
-        end do
 c
-      else
-c     ----------------------------------------------
-c     initialize V(ak,bl) with S(alpha,k)*S(beta,l)
-c     ----------------------------------------------
-        call dzero(vabkl,nvabkl(1))
-
+      end if
+c  
+      call dzero(vxykl,length)
+c
+      if (iopt.eq.0) then
+       if (R12EOR) then
+        call cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,nr1bas,
+     &                     ir1bas,ir2bas,ivabkl,nalphaj,ialphaj,
+     &                     lr12f12htf,fr12f12htf,
+     &                     iopt,work(kend1),lwrk1)
+       else
+c       ----------------------------------------------
+c       initialize V(ak,bl) with S(alpha,k)*S(beta,l)
+c       ----------------------------------------------
         do isymkl = 1, nsym
           isymab = isymkl
           do isymk = 1, nsym
             isyml = muld2h(isymkl,isymk) 
             isyma = isymk
             isymb = isyml
-            do k = 1, nrhf(isymk)
-              do l = 1, nrhf(isyml)
-                idxkl = imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+            do k = 1, nrhfb(isymk)
+              do l = 1, nrhfb(isyml)
+                idxkl = imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
                 do a = 1, mbas1(isyma)
                   idxak = ir1bas(isyma,isymk)+mbas1(isyma)*(k-1)+a
                   do b = 1, mbas1(isymb)
@@ -884,7 +893,7 @@ c     ----------------------------------------------
                     idxbl = ir1bas(isymb,isyml)+mbas1(isymb)*(l-1)+b
                     idxabkl = ivabkl(isymab,isymkl)+
      &                        n2bst(isymab)*(idxkl-1)+idxab
-                    vabkl(idxabkl) = 
+                    vxykl(idxabkl) = 
      &                        work(ksak-1+idxak)*work(ksak-1+idxbl)
                   end do
                 end do
@@ -892,8 +901,124 @@ c     ----------------------------------------------
             end do
           end do
         end do 
- 
+c
+       end if
+c
+
+       if (locdbg) then
+         write(lupri,*) 'in cc_r12mkvamkl0: iopt, vxykl', iopt,
+     &    ddot(length,vxykl,1,vxykl,1)
+         do isymab = 1, nsym
+          isymkl = isymab
+          write(lupri,*) 'symmetry block ',isymab,isymkl
+          call output(vxykl(1+ivabkl(isymab,isymkl)),1,n2bst(isymab),
+     &         1,nmatkl(isymkl),n2bst(isymab),nmatkl(isymkl),1,lupri)
+         end do
+       end if
+c
+      else if (iopt.eq.1) then
+      if (R12EOR) then 
+        call cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,nr1bas,
+     &                      ir1bas,ir2bas,ivabkl,nalphaj,ialphaj,
+     &                      lr12f12htf,fr12f12htf,
+     &                      iopt,work(kend1),lwrk1)
+
+      else 
+c       -------------------------------------------------
+c       initialize V(aj,kl) with S(alpha,k)*S(j,l)
+c       -------------------------------------------------
+        do isymkl = 1, nsym
+          isymaj = muld2h(isymkl,isycmo)
+          do isymk = 1, nsym
+            isyml = muld2h(isymkl,isymk)
+            isyma = isymk
+            isymj = muld2h(isyml,isycmo)
+
+            do k = 1, nrhfb(isymk)
+              do l = 1, nrhfb(isyml)
+                idxkl = imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
+                do a = 1, mbas1(isyma)
+                  idxak = ir1bas(isyma,isymk)+mbas1(isyma)*(k-1)+a
+                  do j = 1, nrhfa(isymj)
+                    idxaj = ialphaj(isyma,isymj)+mbas1(isyma)*(j-1)+a
+                    idxlj = imatki(isyml,isymj)+nrhfb(isyml)*(j-1)+l
+                    idxajkl = ivajkl(isymaj,isymkl)+
+     &                        nalphaj(isymaj)*(idxkl-1)+idxaj
+                    vxykl(idxajkl) =
+     &                        work(ksak-1+idxak)*work(kski-1+idxlj)
+
+                  end do
+                end do
+              end do
+            end do
+          end do
+        end do
+c
+      end if
+c
+        if (locdbg) then
+          write(lupri,*) 'in cc_r12mkvamkl0: iopt, vxykl', iopt,
+     &     ddot(length,vxykl,1,vxykl,1)
+          do isymkl = 1, nsym
+           isymaj  = muld2h(isycmo,isymkl)
+           write(lupri,*) 'symmetry block ',isymaj,isymkl
+           call output(vxykl(1+ivajkl(isymaj,isymkl)),1,nalphaj(isymaj),
+     &          1,nmatkl(isymkl),nalphaj(isymaj),nmatkl(isymkl),1,lupri)
+          end do
+        end if
+c
+      else if (iopt.eq.2) then
+      if (R12EOR) then 
+        call cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,nr1bas,
+     &                      ir1bas,ir2bas,ivabkl,nalphaj,ialphaj,
+     &                      lr12f12htf,fr12f12htf,
+     &                      iopt,work(kend1),lwrk1)
+
+      else 
+c       -------------------------------------------------
+c       initialize V(ij,kl) with S(i,k)*S(j,l)
+c       -------------------------------------------------
+        do isymkl = 1, nsym
+          isymij = muld2h(isymkl,isycmo)
+          do isymk = 1, nsym
+            isyml = muld2h(isymkl,isymk)
+            isymi = muld2h(isymk,isycmo) 
+            isymj = muld2h(isyml,isycmo)
+            do k = 1, nrhfb(isymk)
+              do l = 1, nrhfb(isyml)
+                idxkl = imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
+                do i = 1, nrhfa(isymi)
+                  idxki = imatki(isymk,isymi)+nrhfb(isymk)*(i-1)+k
+                  do j = 1, nrhfa(isymj)
+                    idxij = imatij(isymi,isymj)+nrhfa(isymi)*(j-1)+i
+                    idxlj = imatki(isyml,isymj)+nrhfb(isyml)*(j-1)+l
+                    idxijkl = itr12sqt(isymij,isymkl)+
+     &                        nmatij(isymij)*(idxkl-1)+idxij
+                    vxykl(idxijkl) =
+     &                        work(kski-1+idxki)*work(kski-1+idxlj)
+                  end do
+                end do
+              end do
+            end do
+          end do
+        end do
+c
+      end if
+        if (locdbg) then
+        write(lupri,*)'Norm Vijkl:', ddot(length,vxykl,1,vxykl,1)
+        do isymij = 1, nsym
+          isymkl = isymij
+          write(lupri,*)'symmetry block (ij,kl)',isymij,isymkl
+          call output(vxykl(1+itr12sqt(isymij,isymkl)),1,
+     &         nmatij(isymij),1,nmatkl(isymkl),nmatij(isymij),
+     &         nmatkl(isymkl),1,lupri)
+        end do
+        end if
+c
+      else 
+        call quit('Unkown value for IOPT in CC_R12MKVAMKL0')
       end if 
+
       call qexit('r12mkvamkl0')       
       end                       
 *=====================================================================*
@@ -924,7 +1049,7 @@ c---------------------------------------------------------------------
       parameter (locdbg = .false.)
 
       integer nr1orb(8),nr1bas(8),nr1xbas(8),n2bst1(8),nrgkl(8)
-      integer nr2bas(8)
+      integer nr2bas(8),nvabkl(8),ivabkl(8,8),nalphaj(8),ialphaj(8,8)
       integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),ir1xbas(8,8)
       integer ir2xbas(8,8),iaodis1(8,8),irgkl(8,8)
       integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
@@ -933,7 +1058,7 @@ c---------------------------------------------------------------------
       integer idxkl,nrhftria,isymij,idxijkl
       integer lwork,ntota,ntoti,ntota1
       integer kvajkl,koffc,kscr1,kvijkl,ksing,ktrip,kend1 
-      integer ik,il,ii,ij,idxij,iklij,lwrk1,nvabkl(8),ivabkl(8,8)
+      integer ik,il,ii,ij,idxij,iklij,lwrk1
 #if defined (SYS_CRAY)
       real vajkl(*),cmo(*),work(*),vijkl(*),ddot,fac
 #else
@@ -941,10 +1066,11 @@ c---------------------------------------------------------------------
 #endif
 
       call qenter('r12mkvijkl')
-      
+
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
-     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl)
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
+     &     ialphaj)
 
       if (locdbg) then
         write(lupri,*) 'in cc_r12mkvijkl: vajkl',
@@ -952,18 +1078,18 @@ c---------------------------------------------------------------------
         do isymkl = 1, nsym 
           isymaj  = muld2h(isymv,isymkl)
           write(lupri,*) 'symmetry block ',isymaj,isymkl 
-          call output(vajkl(1+ivajkl(isymaj,isymkl)),1,nr1bas(isymaj),
-     &        1,nmatij(isymkl),nr1bas(isymaj),nmatij(isymkl),1,lupri)
+          call output(vajkl(1+ivajkl(isymaj,isymkl)),1,nalphaj(isymaj),
+     &        1,nmatkl(isymkl),nalphaj(isymaj),nmatkl(isymkl),1,lupri)
         end do
       end if
 
-      nrhftria = nrhft*(nrhft+1)/2
+      nrhftria = nrhftb*(nrhftb+1)/2
 
       kscr1  = 1
-      kend1 = kscr1  + nrhft*nrhft
+      kend1 = kscr1  + nrhftb*nrhftb
       if (.not. lres) then
         kvijkl = kend1 
-        ksing  = kvijkl + nrhft*nrhft*nrhft*nrhft
+        ksing  = kvijkl + nrhftb*nrhftb*nrhftb*nrhftb
         ktrip  = ksing  + nrhftria * nrhftria
         kend1  = ktrip  + nrhftria * nrhftria
       end if
@@ -974,31 +1100,31 @@ c---------------------------------------------------------------------
       end if
 
       if (.not. lres) then
-        call dzero(work(kvijkl),nrhft*nrhft*nrhft*nrhft)
+        call dzero(work(kvijkl),nrhftb*nrhftb*nrhftb*nrhftb)
       end if 
 
       do isymkl = 1, nsym
          isymaj = muld2h(isymv,isymkl)
          do isyml =1, nsym
             isymk = muld2h(isymkl,isyml)
-            do k = 1, nrhf(isymk)
-               ik = irhf(isymk) + k
-               do l = 1, nrhf(isyml)
-                  il = irhf(isyml) + l
-                  idxkl=imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+            do k = 1, nrhfb(isymk)
+               ik = irhfb(isymk) + k
+               do l = 1, nrhfb(isyml)
+                  il = irhfb(isyml) + l
+                  idxkl=imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
                   do isyma =1, nsym
                      isymj = muld2h(isymaj,isyma)
                      isymi = muld2h(isycmo,isyma)
 
                      koffc = iglmrh(isyma,isymi)+1
-                     kvajkl = ivajkl(isymaj,isymkl)+nr1bas(isymaj)*
-     &                       (idxkl -1) +ir1bas(isyma,isymj)+1
+                     kvajkl = ivajkl(isymaj,isymkl)+nalphaj(isymaj)*
+     &                       (idxkl -1) +ialphaj(isyma,isymj)+1
                      ntota1 = max(1,mbas1(isyma))
                      ntota = max(1,nbas(isyma))
-                     ntoti = max(1,nrhf(isymi))
+                     ntoti = max(1,nrhfa(isymi))
 
-                     call dgemm('T','N',nrhf(isymi),
-     &                    nrhf(isymj),mbas1(isyma),one,cmo(koffc),
+                     call dgemm('T','N',nrhfa(isymi),
+     &                    nrhfa(isymj),mbas1(isyma),one,cmo(koffc),
      &                    ntota,vajkl(kvajkl),ntota1,zero,work(kscr1),
      &                    ntoti)
 c                    ------------------------------------------
@@ -1007,17 +1133,17 @@ c                     in vector function
 c                    ------------------------------------------
                      if (lres) then
                        isymij  = muld2h(isymi,isymj)
-                       idxijkl = igamsq(isymij,isymkl)+ 
+                       idxijkl = itr12sqt(isymij,isymkl)+ 
      &                 nmatij(isymij)*(idxkl-1)+imatij(isymi,isymj)+1
-                       call daxpy(nrhf(isymi)*nrhf(isymj),fac,
+                       call daxpy(nrhfa(isymi)*nrhfa(isymj),fac,
      &                            work(kscr1),1,vijkl(idxijkl),1)
                      else
-                       do j = 1, nrhf(isymj)
-                         ij = irhf(isymj) + j
-                         do i = 1, nrhf(isymi)
-                           ii = irhf(isymi) + i
-                           idxij = nrhf(isymi)*(j-1) + i
-                           iklij=nrhft*(nrhft*(nrhft*(il-1)+
+                       do j = 1, nrhfa(isymj)
+                         ij = irhfa(isymj) + j
+                         do i = 1, nrhfa(isymi)
+                           ii = irhfa(isymi) + i
+                           idxij = nrhfa(isymi)*(j-1) + i
+                           iklij=nrhftb*(nrhftb*(nrhftb*(il-1)+
      &                                  ik-1)+ij-1)+ii
                            work(kvijkl-1+iklij) = work(kscr1-1+idxij)
                          end do
@@ -1030,37 +1156,10 @@ c
          end do
       end do
 
-      if (.not.lres) then
-        if (locdbg) then
-          write(lupri,*) ' norm^2 Vijkl:',
-     &     ddot(nrhft*nrhft*nrhft*nrhft,work(kvijkl),1,work(kvijkl),1)
-          call output(work(kvijkl),1,nrhft*nrhft,1,nrhft*nrhft,
-     &                   nrhft*nrhft,  nrhft*nrhft,1,lupri)
-          call cc_r12mkvijkl2(work(kvijkl),work(ksing),
-     &                      work(ktrip),nrhftria)
-          write(lupri,*)'norm^2 Vsing:',
-     &           ddot(nrhftria*nrhftria,work(ksing),1,work(ksing),1)
-          write(lupri,*)'norm^2 Vtrip:',
-     &           ddot(nrhftria*nrhftria,work(ktrip),1,work(ktrip),1)
-        end if
-      end if
-      if (lres .and. locdbg) then
-        write(lupri,*) ' Vijkl:',ddot(ngamsq(muld2h(isymv,isycmo)),
-     &                                vijkl,1,vijkl,1)
-        do isymkl = 1, nsym
-           isymij = muld2h(muld2h(isymv,isycmo),isymkl)
-           write(lupri,*) ' symmetry block:',isymij,isymkl
-           call output(vijkl(1+igamsq(isymij,isymkl)),
-     &                 1,nmatij(isymij),1,nmatij(isymkl),
-     &                   nmatij(isymij),nmatij(isymkl),1,lupri)
-        end do
-      end if
-
-
       call qexit('r12mkvijkl') 
       end 
 *=====================================================================*
-      subroutine cc_r12mkvijkl2(vijkl,vsing,vtrip,nrhftria)
+      subroutine cc_r12mkvijkl2(vijkl,vsing,vtrip,nr12t,nrhftria)
 c---------------------------------------------------------------------
 c     purpose: make V for s = 0,1 to compare with MP2-R12
 c
@@ -1072,12 +1171,12 @@ c--------------------------------------------------------------------
 #include <ccsdsym.h>
 #include <r12int.h>
 
-      integer ij,kl,nrhftria
+      integer ij,kl,nrhftria,nr12t
 #if defined (SYS_CRAY)
-      real vijkl(nrhft,nrhft,nrhft,nrhft),ff
+      real vijkl(nr12t,nr12t,nr12t,nr12t),ff
       real vsing(nrhftria,nrhftria),vtrip(nrhftria,nrhftria)
 #else
-      double precision vijkl(nrhft,nrhft,nrhft,nrhft),ff
+      double precision vijkl(nr12t,nr12t,nr12t,nr12t),ff
       double precision vsing(nrhftria,nrhftria)
       double precision vtrip(nrhftria,nrhftria)
 #endif
@@ -1085,11 +1184,11 @@ c--------------------------------------------------------------------
       ff = 1.0d0/sqrt(2.0d0)
 
       ij = 0
-      do i=1,nrhft
+      do i=1,nr12t
          do j=1,i
             ij = ij + 1
             kl = 0
-            do k=1,nrhft
+            do k=1,nr12t
                do l=1, k
                   kl = kl + 1
                   vsing(kl,ij) = vijkl(i,j,k,l)+ vijkl(i,j,l,k)
@@ -1111,6 +1210,7 @@ c--------------------------------------------------------------------
 *=====================================================================*
       subroutine cc_r12getrint(r12bkl,idel,isymd,nr1bas,ir1bas,
      &     nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &     nrhf1,nmatij1,imatij1,
      &     ibasx,lauxd,lauxbeta,fconst,work,lwork)
 c---------------------------------------------------------------------
 c     purpose: get R12 integrals 
@@ -1120,9 +1220,9 @@ c
 c     added possilbility to read r12_(beta,kl) with beta being 
 c     auxiliary function:  C. Neiss  winter 2004/2005
 c
-c     nr1bas     dimension (mbas1 OR mbas2) x nrhf
-c     ir1bas     symmetry offset of mbas1 x nrhf
-c     ir1xbas    symmetry offset of mbas2 x nrhf
+c     nr1bas     dimension (mbas1 OR mbas2) x nrhfb
+c     ir1bas     symmetry offset of mbas1 x nrhfb
+c     ir1xbas    symmetry offset of mbas2 x nrhfb
 c     nr2bas     length of nr1bas OR nr1xbas over all symmetries
 c     ir2bas     symmetry offset nr1bas x nr1bas OR nr1xbas x nr1bas
 c     nrgkl      dimension of three index array (result)
@@ -1157,6 +1257,7 @@ c---------------------------------------------------------------------
       integer nr1bas(8),ir1bas(8,8),nr2bas,ir2bas(8,8)
       integer ir2xbas(8,8),nrgkl(8)
       integer irgkl(8,8),ir1xbas(8,8)
+      integer nrhf1(8), nmatij1(8), imatij1(8,8)
       integer idelta,idel,lwork,lwrk1,ibasx(8)
       integer lur2back,kscr2,kend2,lwrk2,iadr,ndell,ilen
       integer isymb,isymk,isymkl,isyml,idxbk,idxkl,idxbkl
@@ -1170,7 +1271,7 @@ c---------------------------------------------------------------------
 #endif
       
       call qenter('cc_r12getrint')
-    
+
       kend1 = 1
 
       if (locdbg) then
@@ -1204,7 +1305,7 @@ c       ------------------------------------------------------------
 c        read r^{beta,delta}_{k,l} from file and pack as 
 c        R^{delta}(beta,kl) or  R^{delta'}(beta,kl)
 c       ------------------------------------------------------------
-         do l = 1, nrhf(isyml)
+         do l = 1, nrhf1(isyml)
            if (idelta.le.mbas1(isymd)) then
              ! delta in orbital basis
              ndell = ir1bas(isymd,isyml) +
@@ -1219,6 +1320,8 @@ c       ------------------------------------------------------------
      &               nr1bas(isymbk)*(ndell-1)+1
            end if
            if(locdbg) then
+             write(lupri,*)'mbas1,nr1bas:',mbas1(isymd),nr1bas(isymbk)
+             write(lupri,*)'mbas2,nr2bas:',mbas2(isymd),nr2bas
              write(lupri,*)'ndell,iadr,l,idelta',ndell,iadr,
      &              l,idelta
            end if
@@ -1228,11 +1331,11 @@ c
            do isymb =1, nsym
              isymk = muld2h(isymbk,isymb)
              isymkl = muld2h(isymk,isyml)
-             do k=1, nrhf(isymk)
+             do k=1, nrhf1(isymk)
                if (.not. lauxbeta) then 
                  do b=1, mbas1(isymb)
                    idxbk = ir1bas(isymb,isymk) + mbas1(isymb)*(k-1)+b
-                   idxkl = imatij(isymk,isyml) + nrhf(isymk)*(l-1)+k
+                   idxkl = imatij1(isymk,isyml) + nrhf1(isymk)*(l-1)+k
                    idxbkl = irgkl(isymb,isymkl) + 
      &                      mbas1(isymb)*(idxkl-1)+b
                    if(locdbg) then
@@ -1244,7 +1347,7 @@ c
                else 
                  do b=1, mbas2(isymb)
                    idxbk = ir1xbas(isymb,isymk) + mbas2(isymb)*(k-1)+b
-                   idxkl = imatij(isymk,isyml) + nrhf(isymk)*(l-1)+k
+                   idxkl = imatij1(isymk,isyml) + nrhf1(isymk)*(l-1)+k
                    idxbkl = irgkl(isymb,isymkl) + 
      &                      mbas2(isymb)*(idxkl-1)+b 
                    if(locdbg) then
@@ -1262,12 +1365,12 @@ c
                idxbkl = irgkl(isymb,isymkl) + 1
                if (.not. lauxbeta) then
                  call output(r12bkl(idxbkl),1,mbas1(isymb),1,
-     &                       nmatij(isymkl),mbas1(isymb),nmatij(isymkl),
-     &                       1,lupri)
+     &                       nmatij1(isymkl),mbas1(isymb),
+     &                       nmatij1(isymkl),1,lupri)
                else 
                  call output(r12bkl(idxbkl),1,mbas2(isymb),1,
-     &                       nmatij(isymkl),mbas2(isymb),nmatij(isymkl),
-     &                       1,lupri) 
+     &                       nmatij1(isymkl),mbas2(isymb),
+     &                       nmatij1(isymkl),1,lupri) 
                end if 
              end if
 
@@ -1286,8 +1389,9 @@ c
       end
 *=====================================================================*
       subroutine cc_r12putrint(r12bkl,idel,isymd,nr1bas,ir1bas,
-     &     nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,ibasx,lauxd,
-     &     fconst,work,lwork)
+     &     nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &     nrhf1,nmatij1,imatij1,
+     &     ibasx,lauxd,fconst,work,lwork)
 c---------------------------------------------------------------------
 c     purpose: write R12 integrals on file  
 c
@@ -1314,6 +1418,7 @@ c---------------------------------------------------------------------
       integer nr1bas(8),ir1bas(8,8),nr2bas,ir2bas(8,8)
       integer ir2xbas(8,8),nrgkl(8)
       integer irgkl(8,8),ir1xbas(8,8)
+      integer nrhf1(8), nmatij1(8), imatij1(8,8)
       integer idelta,idel,lwork,lwrk1,ibasx(8)
       integer lur2back,kscr2,kend2,lwrk2,iadr,ndell,ilen
       integer isymb,isymk,isymkl,isyml,idxbk,idxkl,idxbkl
@@ -1325,7 +1430,7 @@ c---------------------------------------------------------------------
 #else
       double precision r12bkl(*),work(*),ddot
 #endif
-      call qenter('cc_r12putrint')    
+      call qenter('cc_r12putrint') 
 
       kend1 = 1
 
@@ -1352,15 +1457,15 @@ c       ------------------------------------------------------------
 c       pack R^{delta}(beta,kl) or  R^{delta'}(beta,kl) as 
 c       r^{beta,delta}_{k,l} and write to file 
 c       ------------------------------------------------------------
-         do l = 1, nrhf(isyml)
+         do l = 1, nrhf1(isyml)
 
             do isymb =1, nsym
                isymk = muld2h(isymbk,isymb)
                isymkl = muld2h(isymk,isyml)
-               do k=1, nrhf(isymk)
+               do k=1, nrhf1(isymk)
                   do b=1, mbas1(isymb)
-                     idxbk = ir1bas(isymb,isymk) + mbas1(isymb)*(k-1)+b
-                     idxkl = imatij(isymk,isyml) + nrhf(isymk)*(l-1)+k
+                     idxbk = ir1bas(isymb,isymk)+mbas1(isymb)*(k-1)+b
+                     idxkl = imatij1(isymk,isyml)+nrhf1(isymk)*(l-1)+k
                      idxbkl = irgkl(isymb,isymkl) + 
      &                    mbas1(isymb)*(idxkl-1)+b
                      work(kscr2 -1 + idxbk) = r12bkl(idxbkl)
@@ -1398,6 +1503,7 @@ c---------------------------------------------------------------------
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+#include <r12int.h>
 #if defined (SYS_CRAY)
       real zero,one
       real vijkl(*)
@@ -1407,23 +1513,37 @@ c---------------------------------------------------------------------
 #endif
       parameter (zero = 0.0d0, one = 1.0d0)
 
-      integer isyml,isymk,isymkl,idxkl,idxklkl
+      integer isymi,isymj,isymij,idxij,idxkl,idxijkl,icoun1
+      integer nr12orb(8),nrhforb(8),nij(8),iij(8,8)
+
+      call quit('CC_R12MKVIJKL0 is obsolete! Use CC_R12MKVAMKL0!')
       
-      call dzero(vijkl,ngamsq(1))
-      
-      do isymk = 1, nsym
-        do isyml = 1, nsym
-         isymkl = muld2h(isyml,isymk)
-         do k =1, nrhf(isymk)
-            do l = 1, nrhf(isyml)
-               idxkl  = imatij(isymk,isyml) + nrhf(isymk)*(l-1)+k
-               idxklkl=igamsq(isymkl,isymkl)+
-     &              nmatij(isymkl)*(idxkl-1)+idxkl
-               vijkl(idxklkl) = one
-            end do
-         end do
-       end do
-      end do
+C     do isymij = 1, nsym
+C       icoun1 = 0
+C       do isymj = 1, nsym
+C         isymi = muld2h(isymj,isymij)
+C         iij(isymi,isymj) = icoun1
+C         icoun1 = icoun1 + nrhforb(isymi)*nrhforb(isymj)
+C       end do
+C       nij(isymij) = icoun1
+C     end do
+
+C     call dzero(vijkl,ntr12sq(1))
+C     
+C     do isymi = 1, nsym
+C       do isymj = 1, nsym
+C        isymij = muld2h(isymi,isymj)
+C        do i = 1, nrhforb(isymi)
+C           do j = 1, nrhforb(isymj)
+C              idxij  = iij(isymi,isymj) + nrhforb(isymi)*(j-1)+i
+C              idxkl  = imatkl(isymi,isymj) + nr12orb(isymi)*(j-1)+i
+C              idxijkl= itr12sqt(isymij,isymij)+
+C    &                  nij(isymij)*(idxkl-1)+idxij
+C              vijkl(idxijkl) = one
+C           end do
+C        end do
+C      end do
+C     end do
       end
 *=====================================================================*
       subroutine ccrhs_gp(omega1,lambp,work,lwork,iamp,isymc, 
@@ -1480,13 +1600,13 @@ c---------------------------------------------------------------------
          do isymk = 1, nsym
             isyma = muld2h(isymak,isymk)
             ivajkl(isyma,isymk) = icount7
-            nvajkl(isymak) = nvajkl(isymak) + nt1ao(isyma)*nmatij(isymk)
-            icount7 = icount7 + nt1ao(isyma)*nmatij(isymk) 
+            nvajkl(isymak) = nvajkl(isymak)+nt1ao(isyma)*nmatkl(isymk)
+            icount7 = icount7 + nt1ao(isyma)*nmatkl(isymk) 
          end do
       end do
 
       kctil = 1
-      kvajkl = kctil + ngamsq(isymc)
+      kvajkl = kctil + ntr12sq(isymc)
       kend1 = kvajkl + nvajkl(1)
       lwrk1 = lwork - kend1
       if (lwrk1 .lt.0) then
@@ -1510,7 +1630,7 @@ c     --------------------
 c     -----------------------------------
 c     read r12 amplitudes or trial vector
 c     -----------------------------------
-      call cc_r12getct(work(kctil),isymc,iamp,ketscl,.true.,.true.,
+      call cc_r12getct(work(kctil),isymc,iamp,ketscl,.true.,'T',
      &              lufc12,fc12am,ifile,cdummy,idummy,work(kend1),lwrk1)
 
 c     -------------------
@@ -1584,19 +1704,8 @@ c---------------------------------------------------------------------
 
       call qenter('ccrhs_eintp')
                
-      do isymak = 1, nsym
-         nvajkl(isymak) = 0
-         icount7 = 0
-         do isymk = 1, nsym
-            isyma = muld2h(isymak,isymk)
-            ivajkl(isyma,isymk) = icount7
-            nvajkl(isymak) = nvajkl(isymak) + nt1ao(isyma)*nmatij(isymk)
-            icount7 = icount7 + nt1ao(isyma)*nmatij(isymk) 
-         end do
-      end do
-
       kctil = 1
-      kvajkl = kctil + ngamsq(isymc)
+      kvajkl = kctil + ntr12sq(isymc)
       kend1 = kvajkl + nvajkl(1)
       lwrk1 = lwork - kend1
 
@@ -1617,12 +1726,12 @@ c     --------------------
 C     ---------------------------------------------------
 C     read R12 amplitudes and form (2*c_ij^kl - c_ji^kl)
 C     ---------------------------------------------------
-       call cc_r12getct(work(kctil),isymc,iamp,ketscl,.true.,.true.,
+       call cc_r12getct(work(kctil),isymc,iamp,ketscl,.true.,'T',
      &                  lufc12,fc12am,ifile,listr,idlstr,
      &                  work(kend1),lwrk1)
 C
       if (locdbg) then
-        write(lupri,*) 'Norm^2(R12 ampl.)=', ddot(ngamsq(isymc),
+        write(lupri,*) 'Norm^2(R12 ampl.)=', ddot(ntr12sq(isymc),
      &      work(kctil),1,work(kctil),1)
         write(lupri,*) 'symmetry of R12 ampl:',isymc
         write(lupri,*) 'Norm^2(EIM) at start of ccrhs_eintp:',
@@ -1639,7 +1748,7 @@ C     ------------------------------------
          isymmuj = isymkl
          isymij = muld2h(isymkl,isymc)
 CCN      uncomment the following lines if locdbg = .TRUE. 
-CCN            do idxkl = 1, nmatij(isymkl)
+CCN            do idxkl = 1, nmatkl(isymkl)
 CCN         if (locdbg) vnrm = zero
 CCN         if (locdbg) vcprod = zero
          do isymn =1, nsym
@@ -1658,7 +1767,7 @@ CCN         if (locdbg) vcprod = zero
                call quit('Insufficient work space in ccrhs_eint')
             end if
 CCN         comment the following line if locdbg = .TRUE.
-            do idxkl = 1, nmatij(isymkl)                      
+            do idxkl = 1, nmatkl(isymkl)                      
 c            ---------------------------------------
 c             transform Vmujkl with lambdap to Vnjkl
 c            ---------------------------------------
@@ -1675,7 +1784,7 @@ c            ---------------------------------------
                if (locdbg) then
                  vnrm=vnrm+ddot(nrhf(isymn)*nrhf(isymj),work(kvint),1,
      &                                                  work(kvint),1)
-                 koffc = kctil + igamsq(isymnj,isymkl)+
+                 koffc = kctil + itr12sqt(isymnj,isymkl)+
      &              nmatij(isymnj)*(idxkl-1) + imatij(isymn,isymj)
                  vcprod=vcprod+ddot(nrhf(isymn)*nrhf(isymj),
      &                   work(kvint),1,work(koffc),1)
@@ -1691,7 +1800,7 @@ c              contract with R12 amplitudes
 c             ---------------------------               
                ntoti = max(1,nrhf(isymi)) 
                koffo = 1+imatij(isymn,isymi)
-               koffc = kctil + igamsq(isymij,isymkl)+
+               koffc = kctil + itr12sqt(isymij,isymkl)+
      &              nmatij(isymij)*(idxkl-1) + imatij(isymi,isymj)
 
                call dgemm('N','T',nrhf(isymn),nrhf(isymi),nrhf(isymj),
@@ -1700,7 +1809,7 @@ c             ---------------------------
 
             end do
             if (locdbg) then
-             koffc = kctil + igamsq(isymij,isymkl)+
+             koffc = kctil + itr12sqt(isymij,isymkl)+
      &             nmatij(isymij)*(idxkl-1) 
              write(lupri,*) 'isymkl,idxkl,Norm^2(Vnjkl),Norm^2(cijkl):',
      &          isymkl, idxkl, vnrm,ddot(nmatij(isymij),
@@ -1716,7 +1825,7 @@ c             ---------------------------
       call qexit('ccrhs_eintp')
       end 
 *=====================================================================*
-      subroutine cc_r12getct(ctilde,isymc,iamp,basscl2,do_2cme,ltrans,
+      subroutine cc_r12getct(ctilde,isymc,iamp,basscl2,do_2cme,trans,
      &                     lufc12,fc12am,ifile,listr,idlstr,work,lwork)
 c---------------------------------------------------------------------
 c     purpose: get ctilde = (2*c^ij_kl - c^ji_kl) OR c^ij_kl
@@ -1731,9 +1840,9 @@ c     iamp:     type of amplitudes used (see CCRHS_EINTP)
 c     basscl2:  scale factor for diagonal elements for unpacking trial 
 c               vectors into square matrix format (see CCRHS_EP)
 c     do_2cme:	flag whether to calculate (2*c^ij_kl - c^ji_kl) or not
-c     ltrans:   flag wheter lower (r12) indices (kl) are leading
-C                  (-> .FALSE.), or upper (occ.) indices (ij) are 
-C                  leading (-> .TRUE.) in ctilde
+c     trans:    flag wheter lower (r12) indices (kl) are leading
+C                  (-> 'N'), or upper (occ.) indices (ij) are 
+C                  leading (-> 'T') in ctilde
 c     lufc12:	unit number of trial vector file
 c     fc12am:	file name of trial vector file
 c     ifile:	index of trial vector
@@ -1749,9 +1858,8 @@ c---------------------------------------------------------------------
 #include <r12int.h> 
 #include <ccr12int.h> 
 
-      integer lwork, kend1, kpck, lwrk1, lu43, idum, isymkl, isymij, 
-     &        isyml, isymk, idxkl, isymi, isymj, idxij, idxji, idxklij,
-     &        idxklji, ifile, lufc12, isymc, iopt
+      integer lwork, kend1, kpck, lwrk1, lu43, idum, 
+     &        ifile, lufc12, isymc, iopt
       integer iamp,idlstr,lunit
 #if defined (SYS_CRAY) 
       real work(*), ctilde(*), two, ddot, basscl2
@@ -1759,16 +1867,16 @@ c---------------------------------------------------------------------
       double precision work(*), ctilde(*), two, ddot, basscl2
 #endif
       parameter (two = 2.0d0)
-      logical do_2cme, ldum, locdbg, ltrans
+      logical do_2cme, ldum, locdbg
       parameter (locdbg = .false.)
       character*(*) fc12am
-      character     listr*(3)
+      character     listr*(3), trans*(1)
       character     model*(10)
 
       CALL QENTER('cc_r12getct')
 
       kpck  = 1
-      kend1 = kpck + ngamma(isymc)
+      kend1 = kpck + ntr12am(isymc)
       lwrk1 = lwork - kend1
       if (lwrk1.lt.0) then
          write(lupri,*) 'lwork, lwrk1: ',lwork, lwrk1
@@ -1779,10 +1887,11 @@ c---------------------------------------------------------------------
 c       --------------------
 c       read R12 trial vector 
 c       -------------------
-        call cc_rvec(lufc12,fc12am,ngamma(isymc),ngamma(isymc),
+        call cc_rvec(lufc12,fc12am,ntr12am(isymc),ntr12am(isymc),
      *               ifile,work(kpck))
         call cclr_diasclr12(work(kpck),basscl2,isymc)
-        call ccr12unpck2(work(kpck),isymc,ctilde,ltrans)
+        iopt = 1
+        call ccr12unpck2(work(kpck),isymc,ctilde,trans,iopt)
       else if (iamp .EQ. 2) then
 C       -------------------------
 C       read response amplitudes 
@@ -1790,7 +1899,8 @@ C       -------------------------
         iopt = 32
         call cc_rdrsp(listr,idlstr,isymc,iopt,model,dummy,work(kpck))
         call cclr_diasclr12(work(kpck),basscl2,isymc)
-        call ccr12unpck2(work(kpck),isymc,ctilde,ltrans)
+        iopt = 1
+        call ccr12unpck2(work(kpck),isymc,ctilde,trans,iopt)
       else if (iamp .eq. 0) then
 c       --------------------------------
 c       read R12 ground state amplitudes 
@@ -1798,26 +1908,21 @@ c       --------------------------------
         if (isymc.ne.1) call quit('Symmetry error in CC_R12GETCT')
         iopt = 32
         call cc_rdrsp('R0 ',0,1,iopt,model,dummy,work(kpck))
-        call ccr12unpck2(work(kpck),isymc,ctilde,ltrans)
+        iopt = 1
+        call ccr12unpck2(work(kpck),isymc,ctilde,trans,iopt)
       else
         call quit('Illegal value for iamp in cc_r12getct!')
       end if
 
       if (do_2cme) then
-        call cc_r12tcmesq(ctilde,isymc,.false.)
+        call cc_r12tcmesq(ctilde,isymc,trans,.false.)
       end if
 
       if (locdbg) then
         write(lupri,*) 'resorted R12 amplitudes (ctilde):'
-        write(lupri,*) 'norm^2:',ddot(ngamsq(isymc),
+        write(lupri,*) 'norm^2:',ddot(ntr12sq(isymc),
      &         ctilde,1,ctilde,1)
-        do isymkl = 1, nsym
-          isymij = muld2h(isymkl,isymc)
-          write(lupri,*) 'symmetry block ',isymkl,isymij
-          call output(ctilde(1+igamsq(isymkl,isymij)),
-     &       1,nmatij(isymkl),1,nmatij(isymij),
-     &       nmatij(isymkl),nmatij(isymij),1,lupri)
-        end do
+        call cc_prsqr12(ctilde,isymc,trans,1,.FALSE.)
       end if
       CALL QEXIT('cc_r12getct')
       return
@@ -1889,7 +1994,7 @@ c     -----------------------------
                call quit('Insufficient work space in ccrhs_gp0')
             end if
                          
-            do idxkl = 1, nmatij(isymkl)
+            do idxkl = 1, nmatkl(isymkl)
                koffl = iglmvi(isymmu,isyma)+1
                kvmujkl = 1+ivajkl(isymmuj,isymkl)+
      &              nt1ao(isymmuj)*(idxkl-1)+it1ao(isymmu,isymj)
@@ -1908,28 +2013,28 @@ c     -----------------------------
      &              nrhf(isymj),1,lupri)
                end if
 c              ------------------------------
-c                make ctilde*V(atilde,m,k,l) 
+c               make ctilde*V(atilde,m,k,l) 
 c              ------------------------------
 
                ntoti = max(1,nrhf(isymi)) 
-               koffo = 1+it1am(isyma,isymi)
-               koffc = 1 + igamsq(isymij,isymkl)+
+               koffo = 1 + it1am(isyma,isymi)
+               koffc = 1 + itr12sqt(isymij,isymkl)+
      &              nmatij(isymij)*(idxkl-1) + imatij(isymi,isymj)
                  call dgemm('N','T',nvir(isyma),nrhf(isymi),nrhf(isymj),
      &                one,work(kvint),ntota,ctilde(koffc),ntoti,
      &                one,omega1(koffo),ntota)
 
-c                if (locdbg) then
-c                  write(lupri,*)'in ccrhs_gp0: ctilde',idxkl
-c                  write(lupri,*)'isymij,isymkl,isymi,isymj:',
-c    &                        isymij,isymkl,isymi,isymj
-c                  call output(ctilde(koffc),1,nrhf(isymi),1,
-c    &                    nrhf(isymj),nrhf(isymi),nrhf(isymj),1,lupri)
-c                  write(lupri,*)'in ccrhs_gp0: omega1 + V*ctilde'
-c                  call output(omega1(koffo),1,nvir(isyma),1,
-c    &                nrhf(isymi),nvir(isyma),
-c    &                nrhf(isymi),1,lupri)
-c                end if
+                 if (locdbg) then
+                   write(lupri,*)'in ccrhs_gp0: ctilde',idxkl
+                   write(lupri,*)'isymij,isymkl,isymi,isymj:',
+     &                        isymij,isymkl,isymi,isymj
+                   call output(ctilde(koffc),1,nrhf(isymi),1,
+     &                    nrhf(isymj),nrhf(isymi),nrhf(isymj),1,lupri)
+                   write(lupri,*)'in ccrhs_gp0: omega1 + V*ctilde'
+                   call output(omega1(koffo),1,nvir(isyma),1,
+     &                nrhf(isymi),nvir(isyma),
+     &                nrhf(isymi),1,lupri)
+                 end if
 
 c               ------------------------------------------------------
 c               make Vijkl and contract ct*Vijkl to obtain MP2-R12 
@@ -1958,12 +2063,14 @@ c              -------------------------------------------------------
 c=====================================================================*
 
 *=====================================================================*
-      subroutine cc_r12tcmesq(MATRIX,ISYM,LINV)
+      subroutine cc_r12tcmesq(MATRIX,ISYM,TRANS,LINV)
 c---------------------------------------------------------------------
 c     purpose: calculate ctilde = (2*c^ij_kl - c^ji_kl)
 c
-c     MATRIX   input and output, dimension ngamsq(ISYM)
-c     LINV     do the inverse operation        
+c     MATRIX   input and output, dimension ntr12sq(ISYM)
+c     LINV     do the inverse operation  
+c     TRANS    r12 index pair leading: 'N'
+c              occ. index pair leading: 'T'      
 c     
 c     Christian Neiss  Feb. 2005 
 c---------------------------------------------------------------------
@@ -1977,6 +2084,7 @@ c---------------------------------------------------------------------
       logical locdbg,linv
       parameter(locdbg = .false.)
 
+      character*1 trans
       integer isym
       integer isymij,isymkl,isymi,isymj,isymk,isyml
       integer idxij,idxkl,idxji,idxklij,idxklji
@@ -1993,7 +2101,7 @@ c---------------------------------------------------------------------
         write(lupri,*) 'Entered CC_R12TCMESQ'
 
         call around('Input in CC_R12TCMESQ')
-        call cc_prsqr12(matrix,isym,1,.false.)
+        call cc_prsqr12(matrix,isym,trans,1,.false.)
       end if
 
       fac = -one  
@@ -2003,19 +2111,29 @@ c---------------------------------------------------------------------
         isymij = muld2h(isymkl,isym)
         do isymk = 1, nsym
           isyml = muld2h(isymk,isymkl)
-          do k = 1, nrhf(isymk)
-            do l = 1, nrhf(isyml)
-              idxkl = imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
+          do k = 1, nrhfb(isymk)
+            do l = 1, nrhfb(isyml)
+              idxkl = imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
               do isymi = 1, nsym
                 isymj = muld2h(isymi,isymij)
                 do i = 1, nrhf(isymi)
                   do j = 1, nrhf(isymj)
                     idxij = imatij(isymi,isymj)+nrhf(isymi)*(j-1)+i
                     idxji = imatij(isymj,isymi)+nrhf(isymj)*(i-1)+j
-                    idxklij = igamsq(isymkl,isymij)+
-     &                        nmatij(isymkl)*(idxij-1)+idxkl
-                    idxklji = igamsq(isymkl,isymij)+
-     &                        nmatij(isymkl)*(idxji-1)+idxkl
+                    if (trans.eq.'T') then
+                      idxklij = itr12sqt(isymij,isymkl)+
+     &                          nmatij(isymij)*(idxkl-1)+idxij
+                      idxklji = itr12sqt(isymij,isymkl)+
+     &                          nmatij(isymij)*(idxkl-1)+idxji
+                    else if (trans.eq.'N') then
+                      idxklij = itr12sq(isymkl,isymij)+
+     &                          nmatkl(isymkl)*(idxij-1)+idxkl
+                      idxklji = itr12sq(isymkl,isymij)+
+     &                          nmatkl(isymkl)*(idxji-1)+idxkl
+                    else
+                      call quit('Illegal value for "TRANS" in '//
+     &                          'CC_R12TCMESQ') 
+                    end if
                     if (idxij.le.idxji) then
                       xklij = two*matrix(idxklij) + fac*matrix(idxklji)
                       xklji = two*matrix(idxklji) + fac*matrix(idxklij)
@@ -2031,120 +2149,24 @@ c---------------------------------------------------------------------
       end do
 
       if (LINV) then
-        call dscal(ngamsq(isym),1.0D0/3.0D0,matrix,1)
+        call dscal(ntr12sq(isym),1.0D0/3.0D0,matrix,1)
       end if
                     
       if (locdbg) then
         call around ('Result in CC_R12TCMESQ')
-        call cc_prsqr12(matrix,isym,1,.false.)
+        call cc_prsqr12(matrix,isym,trans,1,.false.)
 
         write(lupri,*) 'Leaving CC_R12TCMESQ'
       end if
       call qexit('cc_r12tcmesq')
       return
       end
-c=====================================================================*
-
-*=====================================================================*
-      subroutine cc_r12tcmesq_old(MATRIX,ISYM,WORK,LWRK)
-c---------------------------------------------------------------------
-c     purpose: calculate ctilde = (2*c^ij_kl - c^ji_kl)
-c
-c     MATRIX   input and output, dimension ngamsq(ISYM)
-c
-c     Christian Neiss  Feb. 2005
-c---------------------------------------------------------------------
-      implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-
-      logical locdbg
-      parameter(locdbg = .false.)
-
-      integer isym
-      integer isymij,isymkl,isymi,isymj,isymk,isyml
-      integer idxij,idxkl,idxji,idxklij,idxklji
-      integer lwrk,kscr,kend1,lwrk1
-
-#if defined (SYS_CRAY)
-      real matrix(*),two,xklij,xklji,work(*)
-#else
-      double precision matrix(*),two,xklij,xklji,work(*)
-#endif
-      parameter (two = 2.0d0)
-
-      call qenter('cc_r12tcmesq')
-      if (locdbg) then
-        write(lupri,*) 'Entered CC_R12TCMESQ'
-
-        call around('Input in CC_R12TCMESQ')
-        call cc_prsqr12(matrix,isym,1,.false.)
-      end if
-
-      kscr = 1
-      kend1 = kscr + ngamsq(isym)
-      lwrk1 = lwrk - kend1
-      if (lwrk1 .gt. lwrk) then
-        write(lupri,*) 'LWRK, LWRK1: ', lwrk, lwrk1
-        call quit('Insufficient memory in CC_R12TCMESQ')
-      end if
-
-
-C     ------------------------------------
-C     Calculate 2V(ij,kl)-V(ji,kl)
-C     ------------------------------------
-      do isymkl = 1, nsym
-         isymij = muld2h(isymkl,isym)
-         do isyml =1, nsym
-            isymk = muld2h(isymkl,isyml)
-            do k = 1, nrhf(isymk)
-               do l = 1, nrhf(isyml)
-                  idxkl=imatij(isymk,isyml)+nrhf(isymk)*(l-1)+k
-                  do isymi = 1, nsym
-                     isymj = muld2h(isymij,isymi)
-                     do j = 1, nrhf(isymj)
-                        do i = 1, nrhf(isymi)
-                           idxij = imatij(isymi,isymj)+
-     &                          nrhf(isymi)*(j-1) + i
-                           idxji = imatij(isymj,isymi)+
-     &                          nrhf(isymj)*(i-1) + j
-                           idxklij =  igamsq(isymkl,isymij)+
-     &                          nmatij(isymkl)*(idxij-1)+idxkl
-                           idxklji =igamsq(isymkl,isymij)+
-     &                          nmatij(isymkl)*(idxji-1)+idxkl
-                           work(kscr-1+idxklij) =
-     &                          two*matrix(idxklij) - matrix(idxklji)
-                        end do
-                     end do
-                  end do
-               end do
-            end do
-         end do
-      end do
-
-      call dcopy(ngamsq(isym),work(kscr),1,matrix,1)
-
-      if (locdbg) then
-        call around ('Result in CC_R12TCMESQ')
-        call cc_prsqr12(matrix,isym,1,.false.)
-
-        write(lupri,*) 'Leaving CC_R12TCMESQ'
-      end if
-
-      call qexit('cc_r12tcmesq')
-      return
-      end
-c=====================================================================*
-
 *======================================================================
        subroutine cc_r12tcmepk(MATRIX,ISYM,LINV)
 C----------------------------------------------------------------------
 c     purpose: calculate ctilde = (2*c^ij_kl - c^ji_kl)
 c
-c     MATRIX   input and output, dimension ngammaISYM)
+c     MATRIX   input and output, dimension ntr12am(ISYM)
 c     LINV     do the inverse operation
 c
 c     based on CCSD_TCMEPK
@@ -2176,7 +2198,11 @@ C----------------------------------------------------------------------
       
       call qenter('cc_r12tcmepk')
 
-      if (locdbg) write(lupri,*) 'Entered CC_R12TCMEPK'
+      if (locdbg) then
+        write(lupri,*) 'Entered CC_R12TCMEPK'
+        call around('Input in CC_R12TCMEPK')
+        call cc_prpr12(matrix,isym,1,.false.)
+      end if
 
       fac = -one
       if (LINV) fac = one
@@ -2212,46 +2238,46 @@ C
 C
                   DO 140 I = 1,NRHFI
 C
-                     DO 150 L = 1,NRHF(ISYML)
+                     DO 150 L = 1,NRHFB(ISYML)
 C
                         IF (ISYML .EQ. ISYMK) THEN
                            NRHFK = L
                         ELSE
-                           NRHFK = NRHF(ISYMK)
+                           NRHFK = NRHFB(ISYMK)
                         ENDIF
 C
-                        NLI = IMATIJ(ISYML,ISYMI)
-     *                      + NRHF(ISYML)*(I - 1) + L
-                        NLJ = IMATIJ(ISYML,ISYMJ)
-     *                      + NRHF(ISYML)*(J - 1) + L
+                        NLI = IMATKI(ISYML,ISYMI)
+     *                      + NRHFB(ISYML)*(I - 1) + L
+                        NLJ = IMATKI(ISYML,ISYMJ)
+     *                      + NRHFB(ISYML)*(J - 1) + L
 C
                         DO 160 K = 1,NRHFK
 C
-                           NKI = IMATIJ(ISYMK,ISYMI)
-     *                         + NRHF(ISYMK)*(I - 1) + K
-                           NKJ = IMATIJ(ISYMK,ISYMJ)
-     *                         + NRHF(ISYMK)*(J - 1) + K
+                           NKI = IMATKI(ISYMK,ISYMI)
+     *                         + NRHFB(ISYMK)*(I - 1) + K
+                           NKJ = IMATKI(ISYMK,ISYMJ)
+     *                         + NRHFB(ISYMK)*(J - 1) + K
 C
                          IF (ISYMKI.EQ.ISYMLJ) THEN
-                           NKILJ = IGAMMA(ISYMKI,ISYMLJ)
+                           NKILJ = ITR12AM(ISYMKI,ISYMLJ)
      *                           + INDEX(NKI,NLJ)
                          ELSE IF (ISYMKI.LT.ISYMLJ) THEN
-                           NKILJ = IGAMMA(ISYMKI,ISYMLJ)
-     *                           + NMATIJ(ISYMKI)*(NLJ-1)+NKI
+                           NKILJ = ITR12AM(ISYMKI,ISYMLJ)
+     *                           + NMATKI(ISYMKI)*(NLJ-1)+NKI
                          ELSE IF (ISYMLJ.LT.ISYMKI) THEN
-                           NKILJ = IGAMMA(ISYMKI,ISYMLJ)
-     *                           + NMATIJ(ISYMLJ)*(NKI-1)+NLJ
+                           NKILJ = ITR12AM(ISYMKI,ISYMLJ)
+     *                           + NMATKI(ISYMLJ)*(NKI-1)+NLJ
                          END IF
 C
                          IF (ISYMKJ.EQ.ISYMLI) THEN
-                           NKJLI = IGAMMA(ISYMKJ,ISYMLI)
+                           NKJLI = ITR12AM(ISYMKJ,ISYMLI)
      *                           + INDEX(NKJ,NLI)
                          ELSE IF (ISYMKJ.LT.ISYMLI) THEN
-                           NKJLI = IGAMMA(ISYMKJ,ISYMLI)
-     *                           + NMATIJ(ISYMKJ)*(NLI-1)+NKJ
+                           NKJLI = ITR12AM(ISYMKJ,ISYMLI)
+     *                           + NMATKI(ISYMKJ)*(NLI-1)+NKJ
                          ELSE IF (ISYMLI.LT.ISYMKJ) THEN
-                           NKJLI = IGAMMA(ISYMKJ,ISYMLI)
-     *                           + NMATIJ(ISYMLI)*(NKJ-1)+NLI
+                           NKJLI = ITR12AM(ISYMKJ,ISYMLI)
+     *                           + NMATKI(ISYMLI)*(NKJ-1)+NLI
                          END IF
 C
                          XKILJ = TWO*MATRIX(NKILJ) + FAC*MATRIX(NKJLI)
@@ -2269,13 +2295,320 @@ C
   100 CONTINUE
 C 
       if (LINV) then
-        call dscal(ngamma(isym),1.0D0/3.0D0,matrix,1)
+        call dscal(ntr12am(isym),1.0D0/3.0D0,matrix,1)
       end if
 C    
-      if (locdbg) write(lupri,*) 'Leaving CC_R12TCMEPK'
+      if (locdbg) then
+        call around('Result in CC_R12TCMEPK')
+        call cc_prpr12(matrix,isym,1,.false.)
+        write(lupri,*) 'Leaving CC_R12TCMEPK'
+      end if
       call qexit('cc_r12tcmepk')
       return
 
       end 
-*======================================================================
+*======================================================================*
+      subroutine cc_r12mkSak(work,lwork) 
+c----------------------------------------------------------------------
+c     purpose: calculate overlap S_ak
+c              a        AO index
+c              k        r12 index 
+c  
+c     C. Neiss  august 2005
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <ccr12int.h>
+#include <dummy.h>
+ 
+      logical locdbg
+      parameter (locdbg = .false.)
+#if defined (SYS_CRAY)
+      real zero,one
+#else
+      double precision zero,one
+#endif
+      parameter (zero = 0.0d0, one = 1.0d0)
 
+      integer nr1orb(8),nr1bas(8),nr1xbas(8),n2bst1(8),nrgkl(8)
+      integer nr2bas(8)
+      integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),ir1xbas(8,8)
+      integer ir2xbas(8,8),iaodis1(8,8),irgkl(8,8)
+      integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
+      integer igabj(8),nalphaj(8),ialphaj(8,8)
+      integer isymab,isyma,isymb,isymk,isym0
+      integer idxab,idxak,koffc,ntotb,ntota
+      integer koverlp,ksab,ksak,kend1,lwrk1,lwork,koff1,koffs
+      integer nnbast,nvabkl(8),ivabkl(8,8)
+      integer kcmo,lusifc,lusak
+#if defined (SYS_CRAY)
+      real work(*)
+#else
+      double precision work(*)
+#endif
+      
+      call qenter('cc_r12mkSak')
+
+      call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
+     &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
+     &     ialphaj)
+
+      nnbast = 0
+      do i = 1,nsym
+         nnbast = nnbast + nbas(i)*(nbas(i)+1)/2
+      end do
+
+      koverlp = 1
+      ksab = koverlp + n2bst(1)
+      ksak = ksab + n2bst1(1)
+      kcmo = ksak + nr1bas(1)  
+      kend1 = kcmo + nlamds
+      lwrk1 = lwork - kend1
+      if (lwrk1.lt.nnbast) then
+         write(lupri,*)'lwrk1,lwork',lwrk1,lwork
+         call quit('Insufficient work space in cc_r12mkSak.')
+      end if
+
+c    --------------------------------------------------------------
+c     read overlap matrix from file and unpack as quadratic matrix
+c    --------------------------------------------------------------
+      call rdonel('OVERLAP ',.true.,work(kend1),nnbast)
+      isym0 = 1
+      call ccsd_symsq(work(kend1),isym0,work(koverlp))
+
+c     -------------------------------------------
+c     read MO-coefficients from interface file
+c     -------------------------------------------
+      LUSIFC = 0
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND LUSIFC
+      CALL MOLLAB('FULLBAS ',LUSIFC,LUPRI)
+      READ (LUSIFC)
+      READ (LUSIFC)
+      READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
+      CALL GPCLOSE(LUSIFC,'KEEP')
+
+      CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
+
+      do isymk = 1, nsym
+        isyma = isymk
+        isymb = isymk
+        do b = 1, mbas1(isymb)
+          do a = 1, mbas1(isyma)
+             koff1 = iaodis(isymb,isyma)+nbas(isyma)*(b-1)+a
+             idxab = mbas1(isyma)*(b-1)+a
+             work(ksab-1+idxab) = work(koverlp -1 + koff1)
+          end do
+        end do
+c       -------------------------------------------
+c       transform S_{alpha beta} with C_{beta k} 
+c       to obtain S_{alpha k}
+c       -------------------------------------------            
+        koffc = kcmo + iglmvi(isymb,isymk) + nbas(isymb)*nrhffr(isymk)
+        koffs = ksak + ir1bas(isyma,isymb)
+        ntotb = max(nbas(isymb),1)
+        ntota = max(mbas1(isyma),1)
+         
+        call dgemm('N','N',mbas1(isyma),
+     &       nrhfb(isymk),mbas1(isymb),one,work(ksab),ntota,
+     &       work(koffc),ntotb,zero,work(koffs),ntota)
+      end do
+  
+      if (locdbg) then
+        write(lupri,*)'Sak in CC_R12MKSAK ='
+        do isyma = 1, nsym
+          isymk = isyma
+          call output(work(ksak+ir1bas(isyma,isymk)),1,mbas1(isyma),
+     &               1,nrhfb(isymk),
+     &               mbas1(isyma),nrhfb(isymk),1,lupri)
+        end do
+      end if
+
+c     ----------------------------------
+c     write result to file
+c     ----------------------------------
+      lusak = 0
+      call gpopen(lusak,fnsak,'UNKNOWN',' ','UNFORMATTED',
+     &            idummy,.false.)
+      rewind(lusak)
+      write(lusak) (work(ksak+i-1), i=1, nr1bas(1))
+      call gpclose(lusak,'KEEP')
+
+      call qexit('cc_r12mkSak')
+      return
+      end       
+*======================================================================*
+      subroutine cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,
+     &                          nr1bas,ir1bas,ir2bas,
+     &                          ivabkl,nalphaj,ialphaj,
+     &                          lunit,filename,iopt,work,lwork)
+c---------------------------------------------------------------------
+c     purpose: get Vabkl for initialisation routine cc_r12mkvamkl0
+c              needed for extension of new correlation factor f12
+c
+c     H. Fliegl, C. Haettig, autumn 2005
+c---------------------------------------------------------------------
+      implicit none
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+#include <dummy.h>
+#include <priunit.h>
+
+#if defined (SYS_CRAY)
+      real vxykl(*),work(*),ddot,one,zero,cmo(*)
+#else
+      double precision vxykl(*),work(*),ddot,one,zero,cmo(*)
+#endif
+      parameter (one = 1.0d0, zero = 0.0d0)
+
+      character*8 filename
+      integer lunit,isyma,isymb,isymk,isyml,isymab,isymkl,isymak,
+     &        nbetl,iadr,ilen,idxkl,idxak,kend2,kscr2,kend1,lwrk2 
+      integer lwork,isymbl,idxab,idxabkl,iopt,idxbl,idxbi,idxil
+      integer nvabkl(8),nr1bas(8),ir1bas(8,8),ir2bas(8,8),ivabkl(8,8)
+      integer idxbjlk,kend3,lwrk3,ntota,koffv,koffc,length
+      integer isymj,kscr3,isycmo,isymbj,nalphaj(8),ialphaj(8,8)
+      integer ntota1,koffvblak,idxbj,isymi,isymij
+      integer kscr4,kend4,lwrk4,idxjilk
+      integer ntotk,idxkj,idxlk,isymkj,idxij
+
+
+      call qenter('getvxykl') 
+
+      lunit = 0
+      call wopen2(lunit,filename,64,0)
+
+      kend1 = 1
+
+      call dzero(vxykl,length)
+
+      do isymb = 1, nsym
+       do b = 1, mbas1(isymb)
+        do isyml = 1, nsym
+         isymbl = muld2h(isymb,isyml)
+         isymak = isymbl
+
+         kscr2 = kend1
+         kend2 = kscr2 + nr1bas(isymak)
+         lwrk2 = lwork - kend2
+         if (lwrk2.lt.0) then
+            call quit('Insufficient work space in getvxykl')
+         end if
+
+         do l = 1, nrhfb(isyml)
+          nbetl = ir1bas(isymb,isyml) + mbas1(isymb)*(l-1)+b
+          iadr  = ir2bas(isymak,isymbl)+nr1bas(isymak)*(nbetl-1)+1
+          ilen  = nr1bas(isymak)
+          call getwa2(lunit,filename,work(kscr2),iadr,ilen)
+
+          do isyma = 1, nsym
+           isymab = muld2h(isyma,isymb)
+           isymk  = muld2h(isymak,isyma)
+           isymkl = muld2h(isymk,isyml)
+
+c          isymbj = muld2h(isymkl,isycmo)
+c          isymj  = muld2h(isycmo,isyma)
+c          isymkj = muld2h(isymk,isymj)
+
+c          isymi = muld2h(isycmo,isymb)
+c          isymij = muld2h(isymi,isymj)
+        
+           if (iopt.eq.0) then
+c            calculate Valpha_beta_kl
+
+             do k = 1, nrhfb(isymk)
+               idxkl = imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
+               do a = 1, mbas1(isyma)
+                 idxak = ir1bas(isyma,isymk) + mbas1(isyma)*(k-1)+a
+                 idxab = iaodis(isyma,isymb) + mbas1(isyma)*(b-1)+a
+                 idxabkl = ivabkl(isymab,isymkl)+
+     &                        n2bst(isymab)*(idxkl-1)+idxab
+                 vxykl(idxabkl) = work(kscr2 -1 + idxak)
+               end do
+             end do
+           else if ((iopt.eq.1).or.(iopt.eq.2)) then
+             isymbj = muld2h(isymkl,isycmo)
+             isymj  = muld2h(isycmo,isyma)
+             isymkj = muld2h(isymk,isymj)
+             
+             isymi = muld2h(isycmo,isymb)
+             isymij = muld2h(isymi,isymj)
+
+c            calculate Valpha_j_kl
+
+             kscr3 = kend2
+             kend3 = kscr3 + nmatki(isymkj)
+             lwrk3 = lwork - kend3
+             if (lwrk3.lt.0) then
+               call quit('insufficient work space in getvxykl')
+             end if
+
+             ntota = max(nbas(isyma),1) 
+             ntota1 = max(mbas1(isyma),1) 
+             ntotk = max(nrhfb(isymk),1)
+
+             koffc = iglmrh(isyma,isymj)+1
+             koffvblak = kscr2 + ir1bas(isyma,isymk)
+             koffv = kscr3 + imatki(isymk,isymj) 
+
+             call dgemm('T','N',nrhfb(isymk),nrhfa(isymj),mbas1(isyma),
+     &                  one,work(koffvblak),ntota1,cmo(koffc),ntota,
+     &                  zero,work(koffv),ntotk)
+             
+             if (iopt.eq.2) then
+c              calculate Vij_kl
+              
+               do i = 1, nrhfa(isymi)
+                 idxbi = iglmrh(isymb,isymi)+mbas1(isymb)*(i-1)+b
+                 do k = 1, nrhfb(isymk)
+                   idxlk = imatkl(isyml,isymk)+nrhfb(isyml)*(k-1)+l
+                   do j = 1, nrhfa(isymj)
+                     idxij = imatij(isymi,isymj)+nrhfa(isymi)*(j-1)+i
+                     idxkj = imatki(isymk,isymj)+nrhfb(isymk)*(j-1)+k
+                     idxjilk = itr12sqt(isymij,isymkl)+
+     &                         nmatij(isymij)*(idxlk-1)+idxij
+
+                     vxykl(idxjilk) = vxykl(idxjilk)+
+     &                               work(kscr3-1+idxkj)*cmo(idxbi)
+
+                   end do
+                 end do
+               end do
+
+             else
+c              sort Vblkj as Vbjlk             
+               do j = 1, nrhfa(isymj)
+                 idxbj = ialphaj(isymb,isymj)+mbas1(isymb)*(j-1)+b
+                 do k = 1, nrhfb(isymk)
+                   idxlk = imatkl(isyml,isymk)+nrhfb(isyml)*(k-1)+l
+                   idxkj = imatki(isymk,isymj)+nrhfb(isymk)*(j-1)+k
+                   idxbjlk = ivajkl(isymbj,isymkl)+
+     &                       nalphaj(isymbj)*(idxlk-1)+idxbj
+                   vxykl(idxbjlk) = work(kscr3 -1 +idxkj)
+                 end do
+               end do
+c
+             end if
+c            
+           else
+            call quit('This iopt is not implemented yet')
+           end if
+c
+          end do
+
+         end do
+        end do
+       end do
+      end do
+       
+      call wclose2(lunit,filename,'KEEP')
+
+      call qexit('getvxykl') 
+      end
+c====================================================================*

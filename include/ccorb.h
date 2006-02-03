@@ -5,7 +5,7 @@
      *        NBAS,NBAST,NNBASX,N2BASX,IORB,IBAS,
      *        NRHFFR,NVIRFR,
      *        KFRRHF,KFRVIR,NFC,NFV,
-     *        NRHFA,NRHFSA
+     *        NRHFA,NRHFSA,NRHFB,NRHFSB,NRHFTB
       PARAMETER (MAXFRO = 60)
       LOGICAL LGLO
       COMMON /CCORB/ NSYM,NSYMFR,MULD2H(8,8),NLAMDS,N2BAST,
@@ -14,4 +14,5 @@
      *               NBAS(8),NBAST,NNBASX,N2BASX,IORB(8),IBAS(8),
      *               NRHFFR(8),NVIRFR(8),
      *               KFRRHF(MAXFRO,8),KFRVIR(MAXFRO,8),
-     *               NFC,NFV,LGLO,NRHFA(8),NRHFSA(8)
+     *               NFC,NFV,LGLO,NRHFA(8),NRHFSA(8),NRHFB(8),
+     *               NRHFSB(8),NRHFTB

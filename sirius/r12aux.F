@@ -97,6 +97,8 @@ cwmk
 c      NMOCCT = 2 * NOCCT * NOCCT
       NMORBT = 2 * NORBT * NORBT
       NMOCCT = 2 * NOCCT_R12 * NOCCT_R12
+      KFREE = 1
+      LFREE = LWORK
       CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFVAO,0,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDCAO,N2BOYX,WORK,KFREE,LFREE)
@@ -193,6 +195,11 @@ C
       CALL DCOPY(N2BASX,WORK(KFCAO),1,WORK(KDCAO),1)
       CALL DGETSP(NBAST,WORK(KDCAO),WORK(KFCAO))
       IF (NSYM .GT. 1) CALL PKSYM1(WORK(KFCAO),WORK(KFCAO),NBAS,NSYM,2)
+      LUMULB = 34
+      CALL GPOPEN(LUMULB,'AUXAOX','UNKNOWN','SEQUENTIAL',
+     &                   'FORMATTED',IDUMMY,LDUMMY)
+      WRITE(LUMULB,112) (WORK(KFCAO + J), J = 0, NNBAST - 1) 
+      CALL GPCLOSE(LUMULB,'KEEP')
       CALL UTHUB(WORK(KFCAO),WORK(KFAUX),WORK(KAUX),WORK(KDCAO),NSYM,
      *           NBAS,NORB2)   
 
@@ -277,7 +284,6 @@ C
      *           NBAS,NBASF)    
       WRITE(LUMULB,112) (WORK(KSMO + J), J = 0, NNBASF - 1) 
       CALL GPCLOSE(LUMULB,'KEEP')
- 
 C
 C     **** FORM <ij|r12**2|kl> IN ORTHOGONAL BASIS ****
 C
@@ -512,5 +518,122 @@ C
         ENDDO
         IVCI = IVCI + N
       ENDDO   
+      RETURN
+      END
+C
+C  /* Deck r12aux1 */  
+      SUBROUTINE R12AUX1(CMO,WORK,LWORK)
+C
+C     The matrix <ij|r12**2|kl> must be recomputed if canonical virtual
+C     orbitals have been replaced by natural orbitals (WK/UniKA/22-11-2005).
+C
+#include <implicit.h>
+#include <priunit.h>   
+      LOGICAL FOUND
+      DIMENSION WORK(LWORK), CMO(*), NBASF(8)
+#include <iratdef.h>
+#include <dummy.h>
+#include <thrldp.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <inforb.h>
+#include <infvar.h>
+#include <inftap.h>
+#include <infpri.h>
+#include <scbrhf.h>
+#include <gnrinf.h>
+#include <r12int.h>
+#include <memint.h>
+C
+      CALL QENTER('R12AUX1')
+C
+C     ***** ALLOCATE MEMORY *****
+C
+      KFREE = 1
+      LFREE = LWORK
+      NMOCCT = 2 * NOCCT * NOCCT
+      KBNOB = (NBAST + NOCCT) ** 2
+      CALL MEMGET('REAL',KFMO,NOCCT*NBAST,WORK,KFREE,LFREE)
+      LENKSM = MAX(7*NMOCCT,KBNOB)
+      CALL MEMGET('REAL',KSMO,LENKSM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFQQ,NOCCT**4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFCAO,KBNOB,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDCAO,KBNOB,WORK,KFREE,LFREE)
+      CALL MEMGET('WORK',KWRK,LWRK,WORK,KFREE,LFREE)
+C
+C     **** COPY MOLECULAR ORBITALS ****
+C
+      IFMO = KFMO
+      ICMA = 1     
+      CALL DZERO(WORK(IFMO),NOCCT*NBAST)
+      DO ISYM = 1, NSYM
+         NOCCI = NOCC(ISYM)
+         NORBI = NORB1(ISYM) + NORB2(ISYM)
+         NBASI = NBAS(ISYM) 
+         DO I = 1, NOCCI 
+            CALL DCOPY(NBASI,CMO(ICMA),1,WORK(IFMO),1)
+            IFMO = IFMO + NBAST
+            ICMA = ICMA + NBASI
+         END DO
+         ICMA = ICMA + NORBI * NBASI
+         IFMO = IFMO + NBASI
+      END DO 
+C
+C     **** FORM <ij|r12**2|kl> IN ORTHOGONAL BASIS ****
+C
+      KSMO1 = KSMO  + NMOCCT
+      KSMO2 = KSMO1 + NMOCCT
+      KSMO3 = KSMO2 + NMOCCT
+      KSMO4 = KSMO3 + NMOCCT
+      KSMO5 = KSMO4 + NMOCCT
+      KSMO6 = KSMO5 + NMOCCT
+      CALL R12QQ(WORK(KFQQ),WORK(KSMO6),WORK(KSMO5),
+     *           WORK(KSMO4),WORK(KSMO3),
+     *           WORK(KSMO2),WORK(KSMO1),WORK(KSMO), 
+     *           WORK(KFMO),WORK(KFMO),WORK(KWRK),LWRK,
+     *           NBAST,NOCCT)
+      LUMULB = 0
+      CALL GPOPEN(LUMULB,'AUXQ12','UNKNOWN','SEQUENTIAL',
+     &                   'FORMATTED',IDUMMY,LDUMMY)
+      WRITE(LUMULB,'(4E30.20)') (WORK(KFQQ + J), J = 0, NOCCT**4 - 1)
+      CALL GPCLOSE(LUMULB,'KEEP')
+C
+C     **** CONSTRUCT EXCHANGE MATRIX IN AUXILIARY BASIS ****
+C
+      LUMULB = 0
+      CALL GPOPEN(LUMULB,'AUXAOX','UNKNOWN','SEQUENTIAL',
+     &                   'FORMATTED',IDUMMY,LDUMMY)
+      READ(LUMULB,112) (WORK(KFCAO + J), J = 0, NNBAST - 1)
+      CALL GPCLOSE(LUMULB,'KEEP')
+      NNBASF = 0
+      DO ISYM = 1, NSYM
+         NORBI = NORB1(ISYM)
+         NAUXI = NORB2(ISYM)
+         NBASF(ISYM) = NORBI + NAUXI + NOCC(ISYM)
+         NNBASF = NNBASF + NBASF(ISYM)*(NBASF(ISYM)+1)/2
+      END DO
+      CALL UTHUB(WORK(KFCAO),WORK(KSMO),CMO,WORK(KDCAO),NSYM,
+     *           NBAS,NBASF)
+      LUMULB = 0
+      CALL GPOPEN(LUMULB,'AUXFCKN','UNKNOWN','SEQUENTIAL',
+     &                   'FORMATTED',IDUMMY,LDUMMY)
+      WRITE(LUMULB,112) (WORK(KSMO + J), J = 0, NNBASF - 1)
+      CALL GPCLOSE(LUMULB,'KEEP')
+C
+C     **** FORM OVERLAP IN ORTHOGONAL BASIS ****
+C
+      LUMULB = 0
+      FOUND = .TRUE.
+      CALL GPOPEN(LUMULB,'AUXOVLN','UNKNOWN','SEQUENTIAL',
+     &                   'FORMATTED',IDUMMY,LDUMMY)
+      CALL RDONEL('OVERLAP ',FOUND,WORK(KFCAO),NNBAST)
+      CALL UTHUB(WORK(KFCAO),WORK(KSMO),CMO,WORK(KDCAO),NSYM,
+     *           NBAS,NBASF)    
+      WRITE(LUMULB,112) (WORK(KSMO + J), J = 0, NNBASF - 1) 
+      CALL GPCLOSE(LUMULB,'KEEP')
+C
+  112 FORMAT(4E30.20)
+      CALL MEMREL('R12AUX1',WORK,1,1,KFREE,LFREE)
+      CALL QEXIT('R12AUX1')
       RETURN
       END

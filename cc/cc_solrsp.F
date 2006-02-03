@@ -689,7 +689,7 @@ C======================================================================
             ! add eta^(0) to complete rhs vectors:
             NTAMP = NT1AMX
             IF (.NOT.CCS) NTAMP = NTAMP + NT2AMX
-            IF (CCR12) NTAMP = NTAMP + NGAMMA(1)
+            IF (CCR12) NTAMP = NTAMP + NTR12AM(1)
             KETA  = 1
             KEND1 = KETA  + NTAMP
             LWRK1 = LWORK - KEND1
@@ -1581,7 +1581,7 @@ C
             ENDIF
             IF (CCR12) THEN
                KTR12= KEND1 
-               KEND1= KTR12 + NGAMMA(ISYM)
+               KEND1= KTR12 + NTR12AM(ISYM)
             ENDIF
             LEND1= LWORK - KEND1
             IF (LEND1 .LE. 0 ) CALL QUIT(
@@ -1617,7 +1617,7 @@ C
             ENDIF
             IF (CCR12) THEN
                KTR12= KEND1
-               KEND1= KTR12 + NGAMMA(ISYM)
+               KEND1= KTR12 + NTR12AM(ISYM)
             ENDIF
             LEND1= LWORK - KEND1
             IF (LEND1 .LE. 0 ) CALL QUIT(
@@ -1647,7 +1647,7 @@ C
             IF (.NOT. CCS) KEND1 = KT2  + NT2AM(ISYM)
             IF (CCR12) THEN
                KTR12= KEND1
-               KEND1= KTR12 + NGAMMA(ISYM)
+               KEND1= KTR12 + NTR12AM(ISYM)
             ENDIF
             LEND1 = LWORK - KEND1
             IF (LEND1.LE.0) CALL QUIT('Out of workspace in cc_solrsp')
@@ -1794,7 +1794,7 @@ C
            ENDIF 
            IF (CCR12) THEN
               KT12  = KEND1
-              KEND1 = KT12  + NGAMMA(ISYM)
+              KEND1 = KT12  + NTR12AM(ISYM)
            END IF
            LEND1= LWORK - KEND1
            IF (LEND1 .LE. 0) THEN
@@ -1816,7 +1816,7 @@ C
            IF (CCR12) THEN
             IOPT = 32
             CALL CC_RDRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,WORK(KT12))
-            X12 = DDOT(NGAMMA(ISYM),WORK(KT12),1,WORK(KT12),1)
+            X12 = DDOT(NTR12AM(ISYM),WORK(KT12),1,WORK(KT12),1)
            ELSE
             X12 = 0.0D0
            END IF

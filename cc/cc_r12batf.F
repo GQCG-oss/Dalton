@@ -7,7 +7,7 @@ c            and store them on file
 c
 c   (k gamma|r_12|l delta) = sum_pq C_gamma,p C_delta,q (kp|r_12|lq)
 c
-c   where:  k,l      active occupied MOs
+c   where:  k,l      active occupied / r12 MOs
 c           p,q      general MOs (orbital + auxiliary basis)
 c           gamma    AO in orbital basis
 c           delta    AO in orbital or auxiliary basis
@@ -30,7 +30,8 @@ c         mbas2   AOs in auxiliary basis
 c         norb1   orbital basis functions per irrep
 c         norb2   auxiliary basis functions per irrep
 c         nvir    general MOs per irrep ( = norb1 + norb2 )
-c         nrhf    active occupied MOs
+c         nrhf    active occupied / r12 MOs
+c         nrhfa   active occupied MOs
 c         nvircc  active virtual MOs
 c         nbas    mbas1 + mbas2
 c
@@ -75,6 +76,7 @@ c----------------------------------------------------------------------
       integer kend0,kend1,nvabkl(8),ivabkl(8,8),kend3,lwrk3
       integer iendtyp,inttyp,istartdelta,ienddelta,istartgamma
       integer istartp,iendp,norbp,norbq,nbasg,lur2back2
+      integer nalphaj(8),ialphaj(8,8)
 celena
       integer isymdk,kr2sm2,kr2gk2,kr2pk2,icount1
       integer koffs 
@@ -95,14 +97,14 @@ c-----------------------------------------------------------------------
 
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,ir2xbas,
-     & irgkl,irxgkl,iaodis1,nvabkl,ivabkl)
+     & irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,ialphaj)
 
       ! nr2bas2 = lenghts for nr1bas x nr1xbas over all symmetries 
       ! nvircc  = number of active virtual orbitals in a symmetry
       nr2bas2 = 0
       do isym = 1, nsym
          nr2bas2 = nr2bas2 + nr1bas(isym)*nr1xbas(isym)
-         nvircc(isym) = norb1(isym) - nrhfs(isym) - nvirfr(isym)
+         nvircc(isym) = norb1(isym) - nrhfsa(isym) - nvirfr(isym)
       end do
       ! ir2bas2  = symmetry offsets for nr1xbas x nr1bas
       ! ir2xbas2 = symmetry offsets for nr1xbas x nr1xbas
@@ -166,7 +168,7 @@ c-----------------------------------------------------------------------
       read(lusifc) (work(kcmo+i-1),i=1,nlamds)
       call gpclose(lusifc,'KEEP')
       !Reorder C_MO coefficients such that first all occ. orbitals
-      !in all symmetries, then all virtual(here: = ALL orbitals!!)
+      !in all symmetries, then all virtual(here in MP2-R12: = ALL orbitals!!)
       !orbitals in all symmetries; by this, the redundant occ. 
       !orbitals are grouped in one single block!
       call cmo_reorder(work(kcmo),work(kend0),lwrk0)
@@ -227,8 +229,8 @@ C-----------------------------------------------------------------------
             istartdelta = 1
             ienddelta   = mbas1(isymd)
            if (projvir) then
-            istartq   = nrhfs(isymq) + 1
-            iendq     = nrhfs(isymq) + nvircc(isymq)
+            istartq   = nrhfsa(isymq) + 1
+            iendq     = nrhfsa(isymq) + nvircc(isymq)
             norbq     = nvircc(isymq)
            else
             istartq   = 1
@@ -337,8 +339,8 @@ C                   ----------------------------------------------------
                      istartgamma = 1
                      nbasg       = mbas1(isymg)
                      if (projvir) then
-                      istartp = nrhfs(isymp) + 1
-                      iendp   = nrhfs(isymp) + nvircc(isymp)
+                      istartp = nrhfsa(isymp) + 1
+                      iendp   = nrhfsa(isymp) + nvircc(isymp)
                       norbp   = nvircc(isymp)
                      else
                       istartp = 1
@@ -511,7 +513,7 @@ c-----------------------------------------------------------------------
         if ((inttyp .eq. 1) .or. (inttyp .eq. 2)) then
           call wclose2(lur2back,fback,'KEEP')
         else 
-         call wclose2(lur2back2,fback2,'KEEP')
+          call wclose2(lur2back2,fback2,'KEEP')
         end if
 
       end do ! loop over integral types
@@ -533,11 +535,11 @@ c               symmetry packed lower triangular matrix r_{pk,ql}
 c               stored in r2am
 c
 c     rpkq = r^l_{pk,q} with :   p MOs ranging from istartp ... iendp 
-c                                k occupied MOs
+c                                k occupied / r12 MOs
 c                                q MOs ranging from istartq ... iendq
 c
 c     r2am = r_{pk,ql}  with :  p,q general MOs (orbital + aux. basis)
-c                               k,l occupied MOs
+c                               k,l occupied / r12 MOs
 c
 c     H. Fliegl, C. Haettig  spring 2003
 c     modified C. Neiss      autumn 2004
@@ -672,13 +674,16 @@ c           ---------------------------------------------------------
 *=====================================================================*
       subroutine cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,ir2xbas,
-     & irgkl,irxgkl,iaodis1,nvabkl,ivabkl)
+     & irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,ialphaj)
 c----------------------------------------------------------------------
 c     set some symmetry offsets and dimensions needed only when 
 c     working in the R12 environment and the standard CC offset 
 c     cannot be used because some dimensions were overwritten
 c
 c     H. Fliegl, C. Haettig spring 2003
+c
+c     adapted for more general R12-MOs:
+c     C. Neiss, summer 2005
 c----------------------------------------------------------------------
       implicit none 
 #include <priunit.h>
@@ -692,9 +697,16 @@ c----------------------------------------------------------------------
       integer nrxgkl(8),irxgkl(8,8)
       integer isymdk,isymk,isymd,isym,isym1,isym2
       integer icount1,icount2,icount3,icount4,icount5,icount6
-      integer icount7,icount8,icount9,icount10
+      integer icount7,icount8,icount9,icount10,icount11
+      integer nalphaj(8),ialphaj(8,8)
       logical locdbg
       parameter (locdbg = .FALSE.)
+
+      call qenter('cc_r12offset')
+      if (locdbg) then
+        write(LUPRI,*) 'Entered CC_R12OFFSET'
+        call flshfo(LUPRI)
+      end if
 
       do isymdk = 1, nsym
         nr1orb(isymdk)  = 0
@@ -702,15 +714,19 @@ c----------------------------------------------------------------------
         nr1bas(isymdk)  = 0
         nr1xbas(isymdk) = 0
         n2bst1(isymdk)  = 0
+        nalphaj(isymdk) = 0
         do isymk = 1, nsym
            isymd = muld2h(isymdk,isymk)
-           nr1orb(isymdk)  = nr1orb(isymdk) + norb1(isymd)*nrhf(isymk)
-           nr1xorb(isymdk) = nr1xorb(isymdk)+ norb2(isymd)*nrhf(isymk)
-           nr1bas(isymdk)  = nr1bas(isymdk) + mbas1(isymd)*nrhf(isymk)
-           nr1xbas(isymdk) = nr1xbas(isymdk)+ mbas2(isymd)*nrhf(isymk)
-           n2bst1(isymdk)  = n2bst1(isymdk) + mbas1(isymd)*mbas1(isymk)
+           nr1orb(isymdk) = nr1orb(isymdk) + norb1(isymd)*nrhfb(isymk)
+           nr1xorb(isymdk)= nr1xorb(isymdk)+ norb2(isymd)*nrhfb(isymk)
+           nr1bas(isymdk) = nr1bas(isymdk) + mbas1(isymd)*nrhfb(isymk)
+           nr1xbas(isymdk)= nr1xbas(isymdk)+ mbas2(isymd)*nrhfb(isymk)
+           n2bst1(isymdk) = n2bst1(isymdk) + mbas1(isymd)*mbas1(isymk)
+           nalphaj(isymdk)= nalphaj(isymdk)+ mbas1(isymd)*nrhfa(isymk)
         end do
         if (locdbg) then
+          write (lupri,*) 'nrhf, nrhfa, nrhfb:',
+     &                     nrhf(isymdk), nrhfa(isymdk), nrhfb(isymdk)
           write (lupri,*) 'nr1orb, nr1xorb, nr1bas, nr1xbas: ',
      &                     nr1orb(isymdk),nr1xorb(isymdk),
      &                     nr1bas(isymdk),nr1xbas(isymdk),n2bst1(isymdk)
@@ -723,12 +739,12 @@ c     ------------------------------------
       do isymdk = 1, nsym
         nrgkl(isymdk) = 0  
         nrxgkl(isymdk) = 0
-        nvajkl(isymdk) = 0
+        nvajkl(isymdk) = 0 
         do isymk = 1, nsym
           isymd = muld2h(isymdk,isymk)
-          nrgkl(isymdk) = nrgkl(isymdk) + mbas1(isymd)*nmatij(isymk) 
-          nrxgkl(isymdk) = nrxgkl(isymdk) + mbas2(isymd)*nmatij(isymk)
-          nvajkl(isymdk) = nvajkl(isymdk) + nr1bas(isymd)*nmatij(isymk)
+          nrgkl(isymdk) = nrgkl(isymdk) + mbas1(isymd)*nmatkl(isymk) 
+          nrxgkl(isymdk) = nrxgkl(isymdk) + mbas2(isymd)*nmatkl(isymk)
+          nvajkl(isymdk) = nvajkl(isymdk) + nalphaj(isymd)*nmatkl(isymk)
          end do
       end do
 
@@ -738,9 +754,9 @@ c
         icount1      = 0
         do isym2 = 1, nsym
           isym1 = muld2h(isym,isym2)
-          nvabkl(isym) = nvabkl(isym) + n2bst(isym1)*nmatij(isym2)
+          nvabkl(isym) = nvabkl(isym) + n2bst(isym1)*nmatkl(isym2)
           ivabkl(isym1,isym2) = icount1
-          icount1 = icount1 + n2bst(isym1)*nmatij(isym2)
+          icount1 = icount1 + n2bst(isym1)*nmatkl(isym2)
         end do
       end do
 
@@ -766,6 +782,7 @@ c     --------------------------------------------
         icount8 = 0
         icount9 = 0
         icount10 = 0
+        icount11 = 0
         do isymk = 1, nsym
           isymd = muld2h(isymdk,isymk)
           ir1orb(isymd,isymk) = icount1 !occ+vir
@@ -773,23 +790,30 @@ c     --------------------------------------------
           ir1bas(isymd,isymk) = icount2 !AO
           ir1xbas(isymd,isymk)= icount8
           ir2bas(isymd,isymk) = icount3 !AO+aux
-          ir2xbas(isymd,isymk) = icount4 !aux
-          irgkl(isymd,isymk) = icount5
+          ir2xbas(isymd,isymk)= icount4 !aux
+          irgkl(isymd,isymk)  = icount5
           irxgkl(isymd,isymk) = icount10
-          iaodis1(isymd,isymk) = icount6
+          iaodis1(isymd,isymk)= icount6
           ivajkl(isymd,isymk) = icount7
-          icount1 = icount1 + nrhf(isymk)*norb1(isymd)
-          icount9 = icount9 + nrhf(isymk)*norb2(isymd)
-          icount2 = icount2 + nrhf(isymk)*mbas1(isymd)
-          icount8 = icount8 + nrhf(isymk)*mbas2(isymd)
+          ialphaj(isymd,isymk)= icount11
+          icount1 = icount1 + nrhfb(isymk)*norb1(isymd)
+          icount9 = icount9 + nrhfb(isymk)*norb2(isymd)
+          icount2 = icount2 + nrhfb(isymk)*mbas1(isymd)
+          icount8 = icount8 + nrhfb(isymk)*mbas2(isymd)
           icount3 = icount3 + nr1bas(isymd)*nr1bas(isymk)
           icount4 = icount4 + nr1bas(isymd)*nr1xbas(isymk)
-          icount5 = icount5 + mbas1(isymd)*nmatij(isymk) 
+          icount5 = icount5 + mbas1(isymd)*nmatkl(isymk) 
           icount6 = icount6 + mbas1(isymd)*mbas1(isymk) 
-          icount7 = icount7 + nr1bas(isymd)*nmatij(isymk) 
-          icount10 = icount10 + mbas2(isymd)*nmatij(isymk)
+          icount7 = icount7 + nalphaj(isymd)*nmatkl(isymk) 
+          icount10 = icount10 + mbas2(isymd)*nmatkl(isymk)
+          icount11 = icount11 + nrhfa(isymk)*mbas1(isymd)
         end do
       end do
+      if (locdbg) then
+        write(LUPRI,*) 'Leaving CC_R12OFFSET'
+        call flshfo(LUPRI)
+      end if
+      call qexit('cc_r12offset')
       return
       end 
 *======================================================================*

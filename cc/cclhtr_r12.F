@@ -37,7 +37,7 @@ C
       subroutine CCLHTR_FP(RHO1,XLAMDH,WORK,LWORK,ISYMC,FC12AM,LUFC12,
      &           IFILE)
 *---------------------------------------------------------------------*
-C     purpose: Calculate Sum{klj}c^{ij}_{kl}*V^{a jt}_{kl} =: rho_Fp
+C     purpose: Calculate Sum{klj} c^{ij}_{kl}*V^{a jt}_{kl} =: rho_Fp
 C
 C     C. Neiss, C. Hättig, summer 2004
 *---------------------------------------------------------------------*
@@ -64,16 +64,16 @@ C     C. Neiss, C. Hättig, summer 2004
 
       call qenter('cclhtr_fp')
 
-      do isymak = 1, nsym
-         nvajkl(isymak) = 0
-         do isymk = 1, nsym
-            isyma = muld2h(isymak,isymk)
-            nvajkl(isymak) = nvajkl(isymak) + nt1ao(isyma)*nmatij(isymk)
-         end do
-      end do
+C     do isymak = 1, nsym
+C        nvajkl(isymak) = 0
+C        do isymk = 1, nsym
+C           isyma = muld2h(isymak,isymk)
+C           nvajkl(isymak) = nvajkl(isymak) + nt1ao(isyma)*nmatkl(isymk)
+C        end do
+C     end do
 
       kvec = 1
-      kvajkl = kvec + ngamsq(isymc)
+      kvajkl = kvec + ntr12sq(isymc)
       kend1 = kvajkl + nvajkl(1)
       lwrk1 = lwork - kend1
 
@@ -98,7 +98,7 @@ C     -----------------------
 c     ---------------------
 c     read r12 trial vector
 c     ---------------------
-      call cc_r12getct(work(kvec),isymc,1,2.0D0*brascl,.false.,.true.,
+      call cc_r12getct(work(kvec),isymc,1,2.0D0*brascl,.false.,'T',
      &                 lufc12,fc12am,ifile,cdummy,idummy,work(kend1),
      &                 lwrk1)
 
@@ -200,9 +200,9 @@ c     ----------------------------
 
       if (locdbg) then
          call around('rhor12 in CCLHTR_GP')
-         call cc_prsqr12(rhor12,isyres,1,.false.)
+         call cc_prsqr12(rhor12,isyres,'T',1,.false.)
          write(lupri,*) 'norm^2(rhor12):',
-     &     ddot(ngamsq(isyres),rhor12,1,rhor12,1)
+     &     ddot(ntr12sq(isyres),rhor12,1,rhor12,1)
 
          write(lupri,*) 'Leaving CCLHTR_GP'
       end if
@@ -211,3 +211,276 @@ c     ----------------------------
       return
       end
 *=====================================================================*
+
+*=====================================================================*
+      subroutine CC_R12CV(GAMMA,C12AMP,ISYMC,VINT,ISYMV,WORK,LWORK)
+*---------------------------------------------------------------------*
+C     purpose: Calculate Sum_{mn} c^ij_mn * (V\dagger)^mn_kl
+C              add to GAMMA
+C
+C     C. Neiss october 2005
+*---------------------------------------------------------------------*
+      implicit none
+#include <r12int.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccr12int.h>
+#include <ccsdinp.h>
+
+      integer isygam,isymc,isymv,isymij,isymmn,isymkl
+      integer lwork,kend1,lwrk1,koff1,koff2,koff3,kscr,iopt,
+     &        idxik,idxjl,kcamp,kvint
+
+#if defined (SYS_CRAY)
+      real GAMMA(*),C12AMP(*),VINT(*),WORK(LWORK),zero,one
+#else
+      double precision GAMMA(*),C12AMP(*),VINT(*),WORK(LWORK),zero,one
+#endif
+      logical locdbg
+      parameter (locdbg = .FALSE.)
+      parameter (one = 1.0d0, zero = 0.0d0)
+
+      call qenter('cc_r12cv')
+      if (locdbg) then
+        write(lupri,*) 'Entered CC_R12CV'
+      end if
+
+      kend1 = 1
+C
+      isygam = muld2h(isymc,isymv)
+C 
+      if (locdbg) then
+        write(Lupri,*) 'Gamma on entry:'
+        call cc_prpr12(gamma,isygam,1,.FALSE.)
+        write(lupri,*) 
+        write(Lupri,*) 'R12 amplitudes on entry:'
+        call cc_prpr12(C12AMP,isymc,1,.FALSE.)
+        write(lupri,*)
+        write(Lupri,*) 'V-intermediate on entry:'
+        call cc_prpr12(VINT,isymv,1,.FALSE.)
+        write(lupri,*)
+C       call dzero(gamma,ngamma(isygam))
+      end if
+C
+      !unpack amplitudes and V-interm. to square:
+      kcamp = kend1
+      kvint = kcamp + max(ntr12sq(isymc),ngamma(isygam))
+      kscr  = kvint + ntr12sq(isymv)
+      kend1 = kscr  + ngamsq(isygam)
+      lwrk1 = lwork - kend1
+      if (lwrk1.lt.0) then
+        call quit('insufficient work space in CC_R12CV')
+      end if
+C
+      iopt = 1
+      call ccr12unpck2(c12amp,isymc,work(kcamp),'N',iopt)
+      call ccr12unpck2(vint,isymv,work(kvint),'N',iopt)
+C
+      !contract:
+      do isymij = 1, nsym
+        isymmn = muld2h(isymij,isymc)
+        isymkl = muld2h(isymmn,isymv)
+        koff1 = kcamp + itr12sq(isymmn,isymij)
+        koff2 = kvint + itr12sq(isymmn,isymkl)
+        koff3 = kscr + igamsq(isymkl,isymij)
+        call dgemm('T','N',nmatij(isymkl),nmatij(isymkl),
+     &             nmatkl(isymmn),one,work(koff2),max(1,nmatkl(isymmn)),
+     &             work(koff1),max(1,nmatkl(isymmn)),zero,
+     &             work(koff3),max(1,nmatij(isymkl)))
+      end do
+C
+      !pack to triangle and add to Gamma:
+      iopt = 0
+      call ccr12pck2(work(kcamp),isygam,.false.,work(kscr),'N',iopt)
+      call daxpy(ngamma(isygam),one,work(kcamp),1,gamma,1)
+C
+      if (locdbg) then
+        write(Lupri,*) 'Gamma on exit:'
+        call cc_prpr12(gamma,isygam,1,.FALSE.)
+      end if
+C
+      if (locdbg) then
+        write(lupri,*) 'Leaving CC_R12CV'
+      end if      
+      call qexit('cc_r12cv')
+      return
+      end
+*=====================================================================*
+
+*=====================================================================*
+      subroutine CCLHTR_AP(RHOR12,VINT,XMINT,ISYMTR,WORK,LWORK)
+*---------------------------------------------------------------------*
+C     purpose: Calculate Sum_{mn} M^ij_mn * (V\dagger)^kl_mn
+C              add to R12-part of rho
+C              i,j,m,n: occ. indices
+C              k,l    : r12 indices
+C
+C     C. Neiss october 2005
+*---------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+C
+C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      integer lwork,kend1,lwrk1,kvint,kmint,iopt,isymtr
+      integer isymij,isymmn,isymkl,koffv,koffm,koffr,isym1,isym2
+#if defined (SYS_CRAY)
+      real RHOR12(*),VINT(*),XMINT(*),WORK(LWORK),zero,one,two
+#else
+      double precision RHOR12(*),VINT(*),XMINT(*),WORK(LWORK),zero,one,
+     &                 two
+#endif
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      logical locdbg
+      parameter (locdbg = .FALSE.)
+C
+      call qenter('cclhtr_ap')
+      if (locdbg) then
+        write(lupri,*) 'Entered CCLHTR_AP'
+      end if
+
+      kvint = 1
+      kmint = kvint + ntr12sq(1)
+      kend1 = kmint + ngamsq(isymtr)
+      lwrk1 = lwork - kend1
+      if (lwrk1.lt.0) call quit('Insufficient memory in CCLHTR_AP')
+
+      !pack V-intermediate to square format:
+      iopt = 1
+      call ccr12unpck2(vint,1,work(kvint),'T',iopt)
+      if (locdbg) then
+        write(lupri,*) 'V-intermediate in CCLHTR_AP:'
+        call cc_prsqr12(work(kvint),1,'T',1,.false.)
+      end if
+
+      !reorder M-intermediate to square format:
+      iopt = 1
+      call cc_sort4o2(xmint,isymtr,work(kmint),iopt)
+      if (locdbg) then
+        write(lupri,*) 'M-intermediate in CCLHTR_AP before reorder:'
+        do isym2 = 1, nsym
+          isym1 = muld2h(isymtr,isym2)
+          write(lupri,*)'Symmetry block ', isym1, isym2
+          call output(xmint,1,nmaijk(isym1),1,nrhf(isym2),
+     &                nmaijk(isym1),nrhf(isym2),1,lupri)
+        end do
+C
+        write(lupri,*) 'M-intermediate in CCLHTR_AP after reorder:'
+        call cc_prsqr12(work(kmint),isymtr,'T',1,.false.)
+      end if
+
+      !transform:
+      do isymkl = 1, nsym
+        isymmn = isymkl
+        isymij = muld2h(isymmn,isymtr)
+        koffv = kvint + itr12sqt(isymmn,isymkl)
+        koffm = kmint + igamsq(isymij,isymmn)
+        koffr = 1 + itr12sqt(isymij,isymkl)
+        call dgemm('N','N',nmatij(isymij),nmatkl(isymkl),nmatij(isymmn),
+     &             one,work(koffm),max(1,nmatij(isymij)),
+     &             work(koffv),max(1,nmatij(isymmn)),one,
+     &             rhor12(koffr),max(1,nmatij(isymij)))
+      end do
+C
+      if (locdbg) then
+        write(lupri,*) 'Leaving CCLHTR_AP'
+      end if
+      call qexit('cclhtr_ap')
+      RETURN
+      END
+*=====================================================================*
+
+*=====================================================================*
+      subroutine CCLHTR_EP(RHOR12,VINT,XMAT,ISYMTR,WORK,LWORK)
+*---------------------------------------------------------------------*
+C     purpose: Calculate 2C-E [-Sum_{n} (V\dagger)^kl_in * X_nj]
+C              add to RHOR12
+C              k,l:   r12 indices
+C              i,j,n: occ. indices
+C
+C     C. Neiss october 2005
+*---------------------------------------------------------------------*
+      implicit none
+#include <r12int.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccr12int.h>
+#include <ccsdinp.h>
+
+      integer isymkl,isymin,isymij,isymnj,isymi,isymj,isymn,isymk,isyml
+      integer idxkl,koffx,kvinkl,kvijkl,isymtr 
+      integer lwork,kend1,lwrk1,iopt,kvint0
+
+#if defined (SYS_CRAY)
+      real RHOR12(*),VINT(*),XMAT(*),WORK(LWORK),zero,one,two
+#else
+      double precision RHOR12(*),VINT(*),XMAT(*),WORK(LWORK),zero,one,
+     &                 two
+#endif
+      logical locdbg
+      parameter (locdbg = .FALSE.)
+      parameter (one = 1.0d0, zero = 0.0d0, two = 2.0d0)
+
+      call qenter('cclhtr_ep')
+      if (locdbg) then
+        write(lupri,*) 'Entered CCLHTR_EP'
+      end if
+
+      kvint0 = 1
+      kend1  = kvint0 + ntr12sq(1)
+      lwrk1  = lwork - kend1
+      if (lwrk1.lt.0) call quit('Insufficient memory in CCLHTR_EP')
+
+      !pack V-intermediate to square format and make 2C-E combination:
+      iopt = 1
+      call ccr12unpck2(vint,1,work(kvint0),'T',iopt)
+      call cc_r12tcmesq(work(kvint0),1,'T',.FALSE.)
+
+      !transform with XMAT and add to rho:
+      do isymkl = 1, nsym
+        isymin = isymkl
+        do isymn = 1, nsym
+          isymi = muld2h(isymin,isymn)
+          isymj = muld2h(isymtr,isymn)
+          isymnj = isymtr
+          isymij = muld2h(isymi,isymj)
+          do isymk = 1, nsym
+            isyml = muld2h(isymkl,isymk)
+            do k = 1, nrhfb(isymk)
+              do l = 1, nrhfb(isyml)
+                idxkl = imatkl(isymk,isyml)+nrhfb(isymk)*(l-1)+k
+                kvinkl = kvint0 + itr12sqt(isymin,isymkl) + 
+     &                   nmatij(isymin)*(idxkl-1)+
+     &                   imatij(isymi,isymn) 
+                kvijkl = 1 + itr12sqt(isymij,isymkl) +
+     &                   nmatij(isymij)*(idxkl-1)+
+     &                   imatij(isymi,isymj)
+                koffx  = 1 + imatij(isymn,isymj) 
+                call dgemm('N','N',nrhf(isymi),nrhf(isymj),nrhf(isymn),
+     &                     -two,work(kvinkl),max(1,nrhf(isymi)),
+     &                     xmat(koffx),max(1,nrhf(isymn)),
+     &                     one,rhor12(kvijkl),max(1,nrhf(isymi)))
+              end do
+            end do
+          end do
+        end do
+      end do 
+
+      call qexit('cclhtr_ep')
+      if (locdbg) then
+        write(lupri,*) 'Leaving CCLHTR_EP'
+      end if
+
+      return
+      end
+*======================================================================*
+
+
+
+
+

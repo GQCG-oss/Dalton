@@ -267,7 +267,7 @@ C
 C
          KBYTE = IPCKTABLE(ITAB)
 C
-#ifdef LITTLENDIAN
+#ifdef LITTLEENDIAN
          MBYTE = MBYTE - KBYTE
          OFF = 8 - KBYTE
          DO L = 1, KBYTE
@@ -364,7 +364,7 @@ C
 # define NOPACKING
 #endif
 C
-#if defined (LITTLENDIAN) || defined(BIGENDIAN)
+#if defined (LITTLEENDIAN) || defined(BIGENDIAN)
       PARAMETER (JMASK = z'3C000000')
 C
       DATA IMASK / z'00000000', z'000FF000',

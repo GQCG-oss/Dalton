@@ -951,7 +951,8 @@ c           -------------------
             ! Transform XiB vector with Jacobian. Xib is stored at 
             ! the beginning of WORK and will be replaced by the
             ! transformed vector.
-            CALL CC_ATRR(ZERO,ISYM,1,WORK(KSING),LWORK,.FALSE.,DUMMY)
+            CALL CC_ATRR(ZERO,ISYM,1,WORK(KSING),LWORK,.FALSE.,DUMMY,
+     &                   'XXX')
             
             CALL CC_WRRSP('RC ',IDLSTRC,ISYM,IOPTW,MODELW,WORK(KORB),
      &                    WORK(KSING),WORK(KDOUB),WORK(KEND1),LEND1)
@@ -1031,7 +1032,8 @@ c          -----------------------------------
             CALL CC_RDRSP('LC ',IDXLST,ISYM,IOPT,MODEL,
      &                     WORK(KSING),WORK(KDOUB))
             
-            CALL CC_ATRR(ZERO,ISYM,-1,WORK(KSING),LWORK,.FALSE.,DUMMY)
+            CALL CC_ATRR(ZERO,ISYM,-1,WORK(KSING),LWORK,.FALSE.,DUMMY,
+     &                   'XXX')
             CALL DSCAL(NAMP,-ONE,WORK(KSING),1)
             
             ! add to Cbar(-2) vector on file:

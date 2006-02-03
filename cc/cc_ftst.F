@@ -2882,6 +2882,9 @@ C
       IF (CCS) MODEL = 'CCS       '
       IF (CC2) MODEL = 'CC2       '
 C
+      IF (CCR12) CALL QUIT('CCLR_FDF for CCR12 not adapted; use '//
+     &                     'CC_FTSTNEW / CC_FDF')
+C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CCLR_FDF  : MAKING FINITE DIFF. CC F-Matrix')
       ENDIF

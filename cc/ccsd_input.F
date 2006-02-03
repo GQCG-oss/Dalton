@@ -8220,10 +8220,14 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
 #include <implicit.h>
 #include <priunit.h>
 #include <r12int.h>
+CCN
+#include <maxorb.h>
+#include <infinp.h>
+CCN
       LOGICAL SET
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_R12IN')
-      PARAMETER (NTABLE = 20, D0 = 0.0D0)
+      PARAMETER (NTABLE = 21, D0 = 0.0D0)
       CHARACTER WORD*(7)
       CHARACTER TABLE(NTABLE)*(7)
       CHARACTER*120 CC2LAB
@@ -8231,7 +8235,8 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
      &            '.NO RXR','.R12THR','.SVDTHR','.R12XXL',
      &            '.R12DIA','.R12SVD','.R12LEV','.R12RST',
      &            '.BASSCL','.NO 1  ','.NO 2  ','.R12PRP',
-     &            '.CABS  ', '.NO B'' ','.NO 3  ','.CC2   '/
+     &            '.CABS  ','.NO B'' ','.NO 3  ','.CC2   ',
+     &            '.NATVIR'/
       DATA SET/.FALSE./
       R12LEV = D0
       IF (SET) RETURN
@@ -8248,8 +8253,8 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
             IJUMP = IJUMP + 1
           END DO
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
-     &            IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+     &            21), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_R12IN.')
     1       CONTINUE
                R12HYB = .FALSE.
@@ -8353,6 +8358,13 @@ celena
 	      END IF
             END DO
             GO TO 300
+            CONTINUE
+   21          NATVIR = .TRUE.
+               R12NOA = .TRUE.
+               R12NOP = .TRUE.
+               NOTTWO = .TRUE.
+               NOTTRE = .TRUE.
+            GO TO 100         
           ELSE
            WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -8378,8 +8390,17 @@ celena
             NOTTWO = .TRUE.
             NOTTRE = .TRUE.
             IF (IAPCC2 .EQ. 1) THEN
+               IF (NATVIR) THEN 
+                  R12NOA = .FALSE.
+                  R12NOP = .FALSE.
+                  R12NOB = .TRUE. 
+               END IF
                IAP = 2
             ELSE IF (IAPCC2 .EQ. 2) THEN
+               IF (NATVIR) THEN 
+                  R12NOA = .TRUE. 
+                  R12NOB = .FALSE.
+               END IF
 	       IF (NORXR) THEN
                   IAP = 5
                ELSE
@@ -8389,6 +8410,8 @@ celena
                GOTO 300
             END IF
          ELSE IF (IANCC2 .EQ. 2) THEN
+            IF (NATVIR) 
+     *         CALL QUIT('Sorry, NATVIR for Ansatz 2 not implemented')
             NOTONE = .TRUE.
             NOTTRE = .TRUE.
 	    IF (IAPCC2 .NE. 2) GOTO 300 
@@ -8398,6 +8421,8 @@ celena
                IAP = 10
             END IF
          ELSE IF (IANCC2 .EQ. 3) THEN
+            IF (NATVIR) 
+     *         CALL QUIT('Sorry, NATVIR for Ansatz 3 not implemented')
             NOTONE = .TRUE.
             NOTTWO = .TRUE.
 	    IF (IAPCC2 .NE. 2) GOTO 300 
@@ -8411,7 +8436,12 @@ celena
          END IF
          IAPCC2 = IAP
       END IF
-
+CCN
+      DIRFCK = .TRUE.
+      write(lupri,*)
+      write(lupri,*)'>>>> Detected R12 input:'
+      write(lupri,*)'Direct Fock matrix formation switched on!'
+CCN
       write(lupri,*)'Scale factors for CC excitations manifolds:'
       write(lupri,*)'for bra states (projection manifold):',brascl
       write(lupri,*)'for ket states (operator manifold)  :',ketscl

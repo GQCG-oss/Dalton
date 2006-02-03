@@ -4,7 +4,7 @@
      &                        lvijkl,lvajkl,lvabkl,
      &                        ioptbas,timrdao,timfr12,timintr12,
      &                        iglmrhs,nglmds,imaijm,nmaijm,
-     &                        work,lwork)
+     &                        imaklm,nmaklm,work,lwork)
 c-----------------------------------------------------------------------
 c     purpose: get V_{kl}^{itilde jtilde} contributions 
 c              for auxiliary basis if lvijkl=.TRUE.
@@ -26,7 +26,6 @@ c-----------------------------------------------------------------------
 #include <priunit.h>
 #include <dummy.h>     
 #include <maxorb.h>
-CCN#include <maxash.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -53,13 +52,14 @@ CCN#include <maxash.h>
       integer indexa(mxcorb)
       integer isymhcs,iglmrhs(8,8),nglmds(8),imaijm(8,8),nmaijm(8),
      &        lwork,index,kend1,lwrk1,ioff,isym,isymgk,icount2,
-     &        icount5,isymk,isymg
+     &        icount5,isymk,isymg,icount6
       integer kccfb1,kindxb,kfree,lfree,ntosym,
      &        kendsv,lwrksv,isymd1,ntot,illl,numdis,idel2,idel,
      &        kodcl1,kodcl2,kodbc1,kodbc2,krdbc1,krdbc2,kscr1,kscr5,
      &        kodpp1,kodpp2,krdpp1,krdpp2,krecnr,kend2,lwrk2,kscr2
      &        isymd,isydis,kxint,isymd,kgaijd,isymh,
-     &        ibasx(8),irgkl(8,8),nrgkl(8),ir1bas(8,8)
+     &        ibasx(8),irgkl(8,8),nrgkl(8),ir1bas(8,8),
+     &        nggij(8),iggij(8,8),nmaklm(8),imaklm(8,8)
       integer ibastyp,ibastypst,ibastypend,idum,ioptbas
 
 #if defined (SYS_CRAY)
@@ -133,15 +133,20 @@ c
 
         do isymgk = 1, nsym
           nrgkl(isymgk) = 0
+          nggij(isymgk) = 0
           icount2 = 0
           icount5 = 0
+          icount6 = 0
           do isymk = 1, nsym
             isymg = muld2h(isymgk,isymk)
-            nrgkl(isymgk) = nrgkl(isymgk) + mbas1(isymg)*nmatij(isymk)
+            nrgkl(isymgk) = nrgkl(isymgk) + mbas1(isymg)*nmatkl(isymk)
+            nggij(isymgk) = nggij(isymgk) + mbas1(isymg)*nmatij(isymk)
             ir1bas(isymg,isymk)  = icount2
             irgkl(isymg,isymk) = icount5
-            icount2 = icount2 + nrhf(isymk)*mbas1(isymg)
-            icount5 = icount5 + mbas1(isymg)*nmatij(isymk)
+            iggij(isymg,isymk) = icount6
+            icount2 = icount2 + nrhfb(isymk)*mbas1(isymg)
+            icount5 = icount5 + mbas1(isymg)*nmatkl(isymk)
+            icount6 = icount6 + mbas1(isymg)*nmatij(isymk)
           end do
         end do
 C  ====================================================
@@ -288,7 +293,9 @@ c                ---------------------------------------
      &                              isymhcs,work(kxint),vijkl,facterm23,
      &                               lvijkl,vajkl,lvajkl,work(kgaijd),
      &                               iglmrhs,nglmds,imaijm,nmaijm,
-     &                               ibasx,nrgkl,irgkl,ir1bas,idel,
+     &                               imaklm,nmaklm,
+     &                               ibasx,nggij,iggij,nrgkl,irgkl,
+     &                               ir1bas,idel,
      &                               isymd,isydis,xlamdhcs,work(kend2),
      &                               lwrk2)
 
@@ -323,8 +330,9 @@ c                  calculate ccsd(r12) part
       subroutine cc_r12mofcc2(xlamdh,isymh,xlamdhs,xlamdps,isymhcs,
      &                        xint,vijkl,facterm23,lvijkl,vajkl,lvajkl,
      &                        xgaijd,iglmrhs,nglmds,imaijm,nmaijm,
-     &                        ibasx,nrgkl,irgkl,ir1bas,idel,
-     &                        isymd,isydis,xlamdhcs,work,lwork)
+     &                        imaklm,nmaklm,
+     &                        ibasx,nggij,iggij,nrgkl,irgkl,ir1bas,
+     &                        idel,isymd,isydis,xlamdhcs,work,lwork)
 c---------------------------------------------------------------------
 c     purpose: calculate V^ij_kl (auxiliary basis) for CC2-R12 model
 c
@@ -334,7 +342,6 @@ c---------------------------------------------------------------------
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccorb.h>
-CCN#include <ccisao.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <r12int.h>
@@ -351,7 +358,8 @@ CCN#include <ccisao.h>
      &        koff2,ntalbe,ntotg,isymhcs,isymd,isymi,isymbe,isymal,
      &        isyma,kscr5,kend2,lwrk2,koff3,ntotal,ntotbe,isymij,
      &        idxai,idxij,idxaij,krtf,isymm,ntota,ntotm,koffc,
-     &        koffg,koffgtf,isymhs,isymh
+     &        koffg,koffgtf,isymhs,isymh,
+     &        nggij(8),iggij(8,8),imaklm(8,8),nmaklm(8)
 #if defined (SYS_CRAY)
       real zero,one,two,xlamdh(*),xlamdhs(*),xlamdps(*),
      &     xint(*),vijkl(*),vajkl(*),work(*),xgaijd(*),ddot,xlamdhcs(*),
@@ -493,7 +501,7 @@ c              --------------------------------------------
                      idxai = nbas(isymal)*(i-1)+a
                      idxij = imatij(isymi,isymj)+
      &                        nrhf(isymi)*(j-1)+i
-                     idxaij = irgkl(isymal,isymij)+
+                     idxaij = iggij(isymal,isymij)+
      &                        nbas(isymal)*(idxij-1)+a 
                      xgaijd(idxaij) = 
      &                             work(kscr5-1+idxai) 
@@ -524,7 +532,7 @@ c       should be equivalent with Lambdas^h_am occupied block
         if (locdbg) then
           write(lupri,*)'I_ai,j in mofcc2',
      &           ddot(nd2ijg(isydis),xgaijd,1,xgaijd,1)
-c         write(lupri,*)(xgaijd(i),i=1,nd2ijg(isydis))
+          write(lupri,*)(xgaijd(i),i=1,nd2ijg(isydis))
         end if
 c       transform to I_M,ij, M runs over all active and 
 c       inactive molecular orbitals
@@ -534,13 +542,13 @@ c         isymm  = muld2h(isymhcs,isyma)
           isymm  = muld2h(isymhs,isyma)
 c          
           ntota  = max(nbas(isyma),1)
-          ntotm  = max(nrhfs(isymm),1)
+          ntotm  = max(nrhfsa(isymm),1)
 c     
           koffc = 1+iglmrhs(isyma,isymm)
-          koffg = 1+irgkl(isyma,isymij)
+          koffg = 1+iggij(isyma,isymij)
           koffgtf = krtf+imaijm(isymij,isymm)
 c     
-          call dgemm('T','N',nrhfs(isymm),nmatij(isymij),
+          call dgemm('T','N',nrhfsa(isymm),nmatij(isymij),
      &                mbas1(isyma),one,xlamdps(koffc),ntota,
      &                xgaijd(koffg),ntota,zero,work(koffgtf),
      &                ntotm)
@@ -549,23 +557,25 @@ c
         if (locdbg) then
           write(lupri,*)'I_mi,j',idel,
      &      ddot(nmaijm(isydis),work(krtf),1,work(krtf),1)
-c         write(lupri,*)(work(krtf+i-1),i=1,nmaijm(isydis))
+          write(lupri,*)(work(krtf+i-1),i=1,nmaijm(isydis))
         end if
 c     
 c       case respose calculation calculate second part for V
         lauxd = .true.
         call cc_r12mkvkl(work(krtf),vijkl,facterm23,xlamdhcs,iglmrhs,
      &                  isymd,isymhcs,idel,ibasx,imaijm,nmaijm,
+     &                  imaklm,nmaklm,
      &                  lauxd,work(kend2),lwrk2,frhtf)
 c
         if (locdbg) then
           write(lupri,*)'norm^2 Vijkl = ',
-     &              ddot(ngamsq(isymhcs),vijkl,1,vijkl,1)
+     &              ddot(ntr12sq(isymhcs),vijkl,1,vijkl,1)
         end if
        else ! ansatz 1
         lauxd = .true.
         call cc_r12mkvkl(xgaijd,vijkl,facterm23,xlamdh,iglmrh,
      &                 isymd,isymhcs,idel,ibasx,imaijm,nmaijm,
+     &                 imaklm,nmaklm,
      &                 lauxd,work(kend1),lwrk1,fnback)
        end if
       end if ! (lvijkl)
@@ -580,8 +590,8 @@ c
 *=====================================================================*
       subroutine cc_r12mkvkl(gaijd,vijkl,facterm23,xlamdh,ioffc,isymd,
      &                       isymhcs,
-     &                       idel,ibasx,imaijm,nmaijm,lauxd,
-     &                       work,lwork,filback)
+     &                       idel,ibasx,imaijm,nmaijm,imaklm,nmaklm,
+     &                       lauxd,work,lwork,filback)
 c---------------------------------------------------------------------
 c     purpose: update V^{itilde jtilde}_{kl}
 c 
@@ -607,7 +617,8 @@ c---------------------------------------------------------------------
       integer isymij,isyma,isymkl,koffr,koffg,koffv,ntota,ntotaj,
      &        ntotij,icount4,nr1xbas(8),nr1bas(8),nr2bas,nrgkl(8),
      &        ir1bas(8,8), ir2bas(8,8), ibasx(8),imaijm(8,8),nmaijm(8),
-     &        icount2,icount3,icount5, idelta,ioffc(8,8)
+     &        icount2,icount3,icount5, idelta,ioffc(8,8),imaklm(8,8),
+     &        nmaklm(8)
       integer kend2,lwrk2,krtf,isymm,koff1,koff2,ntotm,isymhcs,isymr
 
 #if defined (SYS_CRAY)
@@ -625,21 +636,14 @@ c---------------------------------------------------------------------
       call qenter('r12mkvkl')
 
       if (locdbg) then
-        write(lupri,*)'g(aijd) in cc_r12mkvkl (beginning):'
-        do isyma = 1, nsym
-          isymij = muld2h(isymd,isyma)
-          write(lupri,*) 'isymd,isyma,isymij:',isymd,isyma,isymij
-          if (ianr12.eq.1) then
-            call output(gaijd(1+id2ijg(isyma,isymij)),
-     &                  1,nbas(isyma),1,nmatij(isymij),
-     &                  nbas(isyma),nmatij(isymij),1,lupri)
-          else if (ianr12.eq.2 .or. ianr12.eq.3) then
-            isymm = isyma
-            call output(gaijd(1+imaijk(isymij,isymm)),
-     &                  1,nrhf(isymm),1,nmatij(isymij),
-     &                  nrhf(isymm),nmatij(isymij),1,lupri)
-          end if
-        end do
+       write(lupri,*)'g(aijd) in cc_r12mkvkl (beginning):'
+       if (ianr12.eq.1) then
+        write(lupri,*)'norm^2(gaijd) = ',ddot(nd2ijg(isymd),gaijd,
+     &                                         1,gaijd,1)
+       else if (ianr12.eq.2 .or. ianr12.eq.3) then
+        write(lupri,*)'norm^2(gaijd) = ',ddot(nmaijm(isymd),gaijd,
+     &                                         1,gaijd,1)
+       end if 
       end if
 
       do isymgk = 1, nsym
@@ -647,8 +651,8 @@ c---------------------------------------------------------------------
         nr1xbas(isymgk) = 0
         do isymk = 1, nsym
            isymg = muld2h(isymgk,isymk)
-           nr1bas(isymgk)  = nr1bas(isymgk) +mbas1(isymg)*nrhf(isymk)
-           nr1xbas(isymgk) = nr1xbas(isymgk)+mbas2(isymg)*nrhf(isymk)
+           nr1bas(isymgk)  = nr1bas(isymgk) +mbas1(isymg)*nrhfb(isymk)
+           nr1xbas(isymgk) = nr1xbas(isymgk)+mbas2(isymg)*nrhfb(isymk)
         end do
       end do
 
@@ -659,7 +663,7 @@ c     -----------------------------------
         nrgkl(isymgk) = 0  
         do isymk = 1, nsym
           isymg = muld2h(isymgk,isymk)
-          nrgkl(isymgk) = nrgkl(isymgk) + mbas1(isymg)*nmatij(isymk) 
+          nrgkl(isymgk) = nrgkl(isymgk) + mbas1(isymg)*nmatkl(isymk) 
          end do
       end do
 
@@ -684,11 +688,11 @@ c     --------------------------------------
            ir2xbas(isymg,isymk) = icount4
            irgkl(isymg,isymk)   = icount5
            ir1xbas(isymg,isymk) = icount8
-           icount2 = icount2 + nrhf(isymk)*mbas1(isymg)
+           icount2 = icount2 + nrhfb(isymk)*mbas1(isymg)
            icount3 = icount3 + nr1bas(isymg)*nr1bas(isymk)
-           icount4 = icount4 + nt1ao(isymg)*nr1xbas(isymk)
-           icount5 = icount5 + mbas1(isymg)*nmatij(isymk) 
-           icount8 = icount8 + nrhf(isymk)*mbas2(isymg)
+           icount4 = icount4 + nr1bas(isymg)*nr1xbas(isymk)
+           icount5 = icount5 + mbas1(isymg)*nmatkl(isymk) 
+           icount8 = icount8 + nrhfb(isymk)*mbas2(isymg)
         end do
       end do
 
@@ -699,49 +703,50 @@ c     --------------------------------------
       if (lwrk1 .lt.0) then
          call quit('Insufficient work space in cc_r12mkvkl')
       end if
+
+      call cc_r12getrint(work(kr2akl),idel,isymd,nr1bas,ir1bas,
+     &               nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &               nrhfb,nmatkl,imatkl,
+     &               ibasx,lauxd,.false.,filback,work(kend1),lwrk1)
+      if (locdbg) then
+        write(lupri,*)'R_a,kl',
+     &     ddot(nrgkl(isymd),work(kr2akl),1,work(kr2akl),1)
+        write(lupri,*)(work(kr2akl+i-1),i=1,nrgkl(isymd))
+      end if
+
 c    --------------
 c     add ansatz 2
 c    --------------
-      call cc_r12getrint(work(kr2akl),idel,isymd,nr1bas,ir1bas,
-     &               nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
-     &               ibasx,lauxd,.false.,filback,work(kend1),lwrk1)
-      
       if (ianr12.eq.2 .or. ianr12.eq.3) then
         isymr = muld2h(isymhcs,isymd)
         krtf = kend1
-        kend2 = krtf + nmaijm(isymr)
+        kend2 = krtf + nmaklm(isymr)
         lwrk2 = lwork - kend2
         if (lwrk2.lt.0) then
           call quit('Insufficient work space in cc_r12mkvkl')
         end if
 c       
-        if (locdbg) then
-         write(lupri,*)'R_a,kl',
-     &     ddot(nrgkl(isymd),work(kr2akl),1,work(kr2akl),1)
-c        write(lupri,*)(work(kr2akl+i-1),i=1,nrgkl(isymd))
-        end if
-
         do isyma = 1, nsym
           isymkl = muld2h(isyma,isymd)
           isymm  = muld2h(isyma,isymhcs)
           
           koff1 = 1+ioffc(isyma,isymm)
           koffr = kr2akl+irgkl(isyma,isymkl)
-          koff2 = krtf+imaijm(isymkl,isymm)
+          koff2 = krtf+imaklm(isymkl,isymm)
 
           ntota = max(nbas(isyma),1)
           ntota1 = max(mbas1(isyma),1)
-          ntotm = max(nrhfs(isymm),1)
+          ntotm = max(nrhfsa(isymm),1)
  
-          call dgemm('T','N',nrhfs(isymm),nmatij(isymkl),mbas1(isyma),
+          call dgemm('T','N',nrhfsa(isymm),nmatkl(isymkl),mbas1(isyma),
      &               one,xlamdh(koff1),ntota,work(koffr),ntota1,
      &               zero,work(koff2),ntotm) 
         end do 
 
-        xr = xr + ddot(nmaijm(isymr),work(krtf),1,work(krtf),1)
+        xr = xr + ddot(nmaklm(isymr),work(krtf),1,work(krtf),1)
         if (locdbg) then
           write(lupri,*)'R_m,kl in mkvkl', idel,
-     &   ddot(nmaijm(isymr),work(krtf),1,work(krtf),1)
+     &   ddot(nmaklm(isymr),work(krtf),1,work(krtf),1)
         end if
 
       end if
@@ -764,15 +769,15 @@ c
            isymij = muld2h(isymm,isymd)
            isymkl = muld2h(isymhcs,isymij)
 
-           koffr = krtf + imaijm(isymkl,isymm) 
+           koffr = krtf + imaklm(isymkl,isymm) 
            koffg = 1 + imaijm(isymij,isymm)
-           koffv = 1 + igamsq(isymij,isymkl)
+           koffv = 1 + itr12sqt(isymij,isymkl)
          
-           ntotm  = max(1,nrhfs(isymm))
+           ntotm  = max(1,nrhfsa(isymm))
            ntotij = max(1,nmatij(isymij))
 
-           call dgemm('T','N',nmatij(isymij),nmatij(isymkl),
-     &          nrhfs(isymm),factor,gaijd(koffg),ntotm,
+           call dgemm('T','N',nmatij(isymij),nmatkl(isymkl),
+     &          nrhfsa(isymm),factor,gaijd(koffg),ntotm,
      &          work(koffr),ntotm,one,vijkl(koffv),ntotij)
          else
            isymij = muld2h(isymd,isyma)
@@ -781,13 +786,13 @@ c
 
            koffr = kr2akl + irgkl(isyma,isymkl)
            koffg = 1 + id2ijg(isymij,isyma)
-           koffv = 1 + igamsq(isymij,isymkl)
+           koffv = 1 + itr12sqt(isymij,isymkl)
         
            ntota  = max(1,nbas(isyma))
            ntota1 = max(1,mbas1(isyma))
            ntotij = max(1,nmatij(isymij))
 
-           call dgemm('T','N',nmatij(isymij),nmatij(isymkl),
+           call dgemm('T','N',nmatij(isymij),nmatkl(isymkl),
      &          mbas1(isyma),factor,gaijd(koffg),ntota,
      &          work(koffr),ntota1,one,vijkl(koffv),ntotij)
          end if
@@ -796,15 +801,15 @@ c
 
       if (locdbg) then
         write(lupri,*)'DEBUG: vijkl, idelta,isymd =',idelta,isymd
-        write(lupri,*)'norm^2 = ',ddot(ngamsq(isymhcs),vijkl,1,vijkl,1)
+        write(lupri,*)'norm^2(Vijkl) = ',ddot(ntr12sq(isymhcs),vijkl,
+     &                                        1,vijkl,1)
         do isyma = 1, nsym
          isymij = muld2h(isymd,isyma)
          isymkl = muld2h(isymhcs,isymij)
-c        isymkl = isymij
          write(lupri,*) 'isymij,isymkl:',isymij,isymkl
          write(lupri,*)'CC2-R12 <V>'
-         call output(vijkl(igamsq(isymij,isymkl)+1),1,nmatij(isymij),1,
-     &        nmatij(isymkl),nmatij(isymij),nmatij(isymkl),
+         call output(vijkl(itr12sqt(isymij,isymkl)+1),1,nmatij(isymij),
+     &        1,nmatkl(isymkl),nmatij(isymij),nmatkl(isymkl),
      &        1,lupri)
         end do
         write(lupri,*)'xr in mkvkl: ', xr

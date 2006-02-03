@@ -539,15 +539,15 @@ c /* deck cc_famat */
         ENDIF
 * allocate memory:
         KGAMMAR12 = KEND0
-        KEND0     = KGAMMAR12 + NGAMMA(ISYRES)
+        KEND0     = KGAMMAR12 + NTR12AM(ISYRES)
         LEND0     = LWORK - KEND0
 C
         KCTRR12 = KEND0
-        KT12AMB = KCTRR12 + NGAMSQ(ISYCTR)
-        KXINTTRI= KT12AMB + MAX(NGAMSQ(ISYMTB),NGAMSQ(ISYRES))
-        KXINTSQ = KXINTTRI+ NGAMMA(1)
-        KSCR    = KXINTSQ + NGAMSQ(1)
-        KCTMO   = KSCR    + NGAMSQ(ISYRES)
+        KT12AMB = KCTRR12 + NTR12SQ(ISYCTR)
+        KXINTTRI= KT12AMB + MAX(NTR12SQ(ISYMTB),NTR12SQ(ISYRES))
+        KXINTSQ = KXINTTRI+ NR12R12P(1)
+        KSCR    = KXINTSQ + NR12R12SQ(1)
+        KCTMO   = KSCR    + NTR12SQ(ISYRES)
         KT1AMP0 = KCTMO   + N2BST(ISYMTA)
         KLAMDP0 = KT1AMP0 + NT1AMX
         KLAMDH0 = KLAMDP0 + NLAMDT
@@ -583,11 +583,11 @@ C
 
 * read R12 Lagrangian multipliers:
         CALL CC_R12GETCT(WORK(KCTRR12),ISYCTR,2,2.0D0*BRASCL,.FALSE.,
-     &                   .FALSE.,IDUM,IDUM,IDUM,LISTC,IZETVC,
+     &                   'N',IDUM,IDUM,IDUM,LISTC,IZETVC,
      &                   WORK(KEND1),LEND1) 
 
 * read R12 response amplitudes:
-        CALL CC_R12GETCT(WORK(KT12AMB),ISYMTB,2,KETSCL,.FALSE.,.FALSE.,
+        CALL CC_R12GETCT(WORK(KT12AMB),ISYMTB,2,KETSCL,.FALSE.,'N',
      &                   IDUM,IDUM,IDUM,LISTB,ITAMPB,WORK(KEND1),LEND1)
 
 * read R12 overlap matrix:
@@ -596,10 +596,11 @@ C
      &              IDUM,.FALSE.)
         REWIND(LUNIT)
  8888   READ(LUNIT) IAN
-        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NGAMMA(1))
+        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NR12R12P(1))
         IF (IAN.NE.IANR12) GOTO 8888
         CALL GPCLOSE(LUNIT,'KEEP')
-        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),.FALSE.) 
+        IOPT = 2
+        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),'N',IOPT) 
         
 *---------------------------------------------------------------------*
 * Calculate singles contribution:
@@ -612,14 +613,15 @@ C
 *---------------------------------------------------------------------*
 * Calculate R12 doubles contribution:
 *---------------------------------------------------------------------*
-        CALL DZERO(WORK(KT12AMB),NGAMSQ(ISYRES))
+        CALL DZERO(WORK(KT12AMB),NTR12SQ(ISYRES))
         CALL CC_R12XI2A(WORK(KSCR),ISYRES,WORK(KCTRR12),ISYCTR,
      &                  WORK(KCTMO),ISYMTA,WORK(KLAMDP0),WORK(KLAMDHB),
      &                  ISYMTB,'T',WORK(KEND1),LEND1)
-        CALL CC_R12XI2B(WORK(KT12AMB),WORK(KXINTSQ),1,'N',WORK(KSCR),
-     &                  ISYRES,'N',-1.0D0)
+        CALL CC_R12XI2B(WORK(KT12AMB),'N',WORK(KXINTSQ),1,'N',
+     &                  WORK(KSCR),ISYRES,'N',-1.0D0)
+        IOPT = 1
         CALL CCR12PCK2(WORK(KGAMMAR12),ISYRES,.FALSE.,WORK(KT12AMB),
-     &                 .FALSE.)
+     &                 'N',IOPT)
         CALL CCLR_DIASCLR12(WORK(KGAMMAR12),0.5D0*KETSCL,ISYRES)
 
       END IF 

@@ -66,7 +66,7 @@ cc_r12mkxajkl.o cc_r12xprep.o cc_r12mkxajklfr.o \
 cc_r12rdpck.o cc_r12vunpack.o cc_r12a2.o cc_lammats.o \
 cclhtr_r12.o cc_r12ccsd.o cc_ftstnew.o cc_r12xieta.o \
 ccsoppa.o cc_qm3.o cc_jmat.o \
-cc_kmat.o cc_setk11.o cclr_fa.o
+cc_kmat.o cc_setk11.o cclr_fa.o cc_r12no.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

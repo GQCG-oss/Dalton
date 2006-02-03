@@ -819,7 +819,7 @@ C   Rn    Z=86
      & 8.740000D-01,5.366755D+02,1.286712D+02,2.949110D+01,5.225200D+00,
      & 4.280000D-01,1.107011D+02,2.133120D+01,2.326300D+00,1.010760D+01/
 C
-      IF (NQ.LE.0 .AND. NQ .GT. 87) GOTO 999
+      IF ((NQ.LE.0) .OR. (NQ.GE.87)) GOTO 999
 C
 C     Calculate offset for this l quantum number for ECP,
 C     where the lowest orbitals are excluded.

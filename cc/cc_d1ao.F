@@ -100,6 +100,9 @@ C
          RETURN
 C
       ELSE IF (MP2) THEN
+cch
+         write(lupri,*) 'IN CC_D1AO'
+cch
 C
          KONEAI = 1
          KONEAB = KONEAI + NT1AMX

@@ -903,7 +903,7 @@ C           R12 calculation requested with Gaussian-type geminals (WK/UniKA/03-2
             IORCAR = MAX(IORCAR,2)
             ONEPRP = .TRUE.
             R12EOR = .TRUE.
-            SLATER = .TRUE.
+C           SLATER = .TRUE.
             READ(LUCMD,*) NTOGAM
 	    IF (NTOGAM .LE. 0 .OR. NTOGAM .GT. MAXGAM)
      &      CALL QUIT('Invalid number of Gaussian-damped terms.')

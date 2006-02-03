@@ -224,7 +224,7 @@ C-----------------------------
            NCCVAR = NT1AM(ISYMTR)
          ELSE
            NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-           IF (CCR12) NCCVAR = NCCVAR + NGAMMA(ISYMTR)
+           IF (CCR12) NCCVAR = NCCVAR + NTR12AM(ISYMTR)
          END IF
          CALL CCLR_LEINFI(TRIPLET)
          THRLE = THRLEQ
@@ -652,7 +652,7 @@ C
      *                 'Norm of doubles part:   ',RHO2N
                       ENDIF
                       IF (CCR12) THEN
-                       RHO12N=DDOT(NGAMMA(ISYM),WORK(KT12),1,
+                       RHO12N=DDOT(NTR12AM(ISYM),WORK(KT12),1,
      &                             WORK(KT12),1)
                        WRITE(LUPRI,'(1X,A35,1X,E20.10)')
      *                 'Norm of r12 doubles part:   ',RHO12N
@@ -754,7 +754,7 @@ C
          IADR = 1 + NT1AM(ISYMTR)
          CALL CC_RVEC(LUC2,FC2AM,NT2VAR,NT2VAR,IVEC,VEC(IADR))
          IF (CCR12) THEN
-            NT12VAR = NGAMMA(ISYMTR)
+            NT12VAR = NTR12AM(ISYMTR)
             IADR    = 1 + NT1AM(ISYMTR) + NT2VAR
             CALL CC_RVEC(LUC12,FC12AM,NT12VAR,NT12VAR,IVEC,VEC(IADR))
          END IF
@@ -806,7 +806,7 @@ C
          IADR = 1 + NT1AM(ISYMTR)
          CALL CC_WVEC(LUC2,FC2AM,NT2VAR,NT2VAR,IVEC,VEC(IADR))
          IF (CCR12) THEN
-            NT12VAR = NGAMMA(ISYMTR)
+            NT12VAR = NTR12AM(ISYMTR)
             IADR    = 1 + NT1AM(ISYMTR) + NT2VAR
             CALL CC_WVEC(LUC12,FC12AM,NT12VAR,NT12VAR,IVEC,VEC(IADR))
          END IF

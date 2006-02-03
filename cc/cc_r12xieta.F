@@ -75,7 +75,7 @@ C-----------------------------------------------------------------------
       integer ir1xbas(8,8),ir1xorb(8,8),ibasx(8)
       integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
       integer ir2xbas(8,8),irgkl(8,8),nrgkl(8),nvabkl(8),ivabkl(8,8) 
-      integer nrxgkl(8),irxgkl(8,8)
+      integer nrxgkl(8),irxgkl(8,8),nalphaj(8),ialphaj(8,8)
       integer nr2bas2,ir2bas2(8,8),ir2xbas2(8,8)
       integer iaodis2(8,8),nallbas,nbasxtd(8),norbxtd(8),nlamdsxtd
       integer iaomo(8,8),naomo(8),n2bstxtd(8),iaomox(8,8)
@@ -88,15 +88,14 @@ C-----------------------------------------------------------------------
       integer kcmo,kcmox,k12back,kr12bkl,kr12bkl2,krvbkl,krvbkl2
       integer kprpao,kprpmo,kvxintsq,kvxint,koff1,koff2
       integer koffv,koffr,koffrv,koffrv2,koffc,koffres,koffx
-      integer isympt,imatrix,ierr,iprp,lusifc,idel,idelta,idum
+      integer isympt,imatrix,ierr,iprp,lusifc,idel,idelta,idum,iopt
       integer luvxint
       integer kappa,beta,ienddelta
-c     integer nrhftria,n2,kvxints,kvxintt
 
 #if defined (SYS_CRAY)
-      real zero,one,work(*),fac,ddot,time
+      real zero,one,work(*),fac,ddot,time,dummy
 #else
-      double precision zero,one,work(*),fac,ddot,time
+      double precision zero,one,work(*),fac,ddot,time,dummy
 #endif
       parameter (zero = 0.0D0, one = 1.0D0)
       data lab123/'********','********','********'/
@@ -119,7 +118,7 @@ C     additional dimensions/offsets:
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &                  nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,
      &                  ir1xbas,ir2bas,ir2xbas,irgkl,irxgkl,iaodis1,
-     &                  nvabkl,ivabkl)
+     &                  nvabkl,ivabkl,nalphaj,ialphaj)
      
       nallbas = 0
       nlamdsxtd = 0
@@ -182,8 +181,8 @@ C     if locdbg do some printout of variables:
         write(lupri,*) 'nr1xorb(',i,') = ',nr1xorb(i)
         write(lupri,*) 'nrgkl(',i,') = ',nrgkl(i)
         write(lupri,*) 'nrxgkl(',i,') = ',nrxgkl(i)
-        write(lupri,*) 'ngamma(',i,') = ',ngamma(i)
-        write(lupri,*) 'ngamsq(',i,') = ',ngamsq(i)
+        write(lupri,*) 'ntr12am(',i,') = ',ntr12am(i)
+        write(lupri,*) 'ntr12sq(',i,') = ',ntr12sq(i)
         end do
         do i = 1, nsym
           do j = 1, nsym
@@ -425,16 +424,16 @@ C-----------------------------------------------------------------------
 C allocate memory for result arrays (square matrix and lower triangle)
 C-----------------------------------------------------------------------
         kvxintsq = kend2
-        kvxint   = kvxintsq + ngamsq(isympt)
-        kend3 = kvxint + ngamma(isympt)
+        kvxint   = kvxintsq + nr12r12sq(isympt)
+        kend3 = kvxint + nr12r12p(isympt)
         lwrk3 = lwork - kend3
         if (locdbg) write(lupri,*) 'lwrk3 at #4 = ',lwrk3
         if (lwrk3 .lt. 0) then
           call quit('Insufficient memory in CC_R12VXINT at #4')
         end if
 C       zero out result array:
-        call dzero(work(kvxintsq),ngamsq(isympt))
-        call dzero(work(kvxint),ngamma(isympt))
+        call dzero(work(kvxintsq),nr12r12sq(isympt))
+        call dzero(work(kvxint),nr12r12p(isympt))
 
 C-----------------------------------------------------------------------
 C start loop over delta/delta':
@@ -485,15 +484,16 @@ C-----------------------------------------------------------------------
             lauxbeta = .FALSE.
             ! read r^(delta)_(kappa,mn) or r^(delta')_(kappa,mn)
             call cc_r12getrint(work(kr12bkl),idel,isymd,nr1bas,ir1bas,
-     &                       nr2bas,ir2bas,nrgkl,irgkl,
-     &                       ir1xbas,ir2xbas,ibasx,lauxd,lauxbeta,
+     &                       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &                       nrhfb,nmatkl,imatkl,ibasx,lauxd,lauxbeta,
      &                       filer12,work(kend5),lwrk5) 
             if (.not. ltstxint) then
             ! read r^(delta)_(kappa',mn) or r^(delta')_(kappa',mn)
             lauxbeta = .TRUE.
             call cc_r12getrint(work(kr12bkl2),idel,isymd,nr1xbas,
      &                          ir1bas,nr2bas2,ir2bas2,nrxgkl,irxgkl,
-     &                          ir1xbas,ir2xbas2,ibasx,lauxd,
+     &                          ir1xbas,ir2xbas2,
+     &                          nrhfb,nmatkl,imatkl,ibasx,lauxd,
      &                          lauxbeta,filer12_2,work(kend5),lwrk5)
             end if
 
@@ -506,18 +506,18 @@ C-----------------------------------------------------------------------
                 write(lupri,*) 'kappa is AO basis function:'
                 koffr = irgkl(isymkappa,isymmn) + kr12bkl
                 call output(work(koffr),1,mbas1(isymkappa),1,
-     &                      nmatij(isymmn),mbas1(isymkappa),
-     &                      nmatij(isymmn),1,lupri)
-                if (min(mbas1(isymkappa),nmatij(isymmn)).eq.0) then
+     &                      nmatkl(isymmn),mbas1(isymkappa),
+     &                      nmatkl(isymmn),1,lupri)
+                if (min(mbas1(isymkappa),nmatkl(isymmn)).eq.0) then
                   write(lupri,*) 'This symmetry block is empty'
                 end if
                 if (.not. ltstxint) then
                 write(lupri,*) 'kappa is auxiliary basis function:'
                 koffr = irxgkl(isymkappa,isymmn) + kr12bkl2
                 call output(work(koffr),1,mbas2(isymkappa),1,
-     &                      nmatij(isymmn),mbas2(isymkappa),
-     &                      nmatij(isymmn),1,lupri)
-                if (min(mbas2(isymkappa),nmatij(isymmn)).eq.0) then
+     &                      nmatkl(isymmn),mbas2(isymkappa),
+     &                      nmatkl(isymmn),1,lupri)
+                if (min(mbas2(isymkappa),nmatkl(isymmn)).eq.0) then
                   write(lupri,*) 'This symmetry block is empty'
                 end if
                 end if
@@ -543,22 +543,22 @@ C-----------------------------------------------------------------------
               koffv = iaodis2(isymb,isymkappa) + kprpao
               koffr = irgkl(isymkappa,isymmn) + kr12bkl 
               koffrv = irgkl(isymb,isymmn) + krvbkl
-              call dgemm('N','N', mbas1(isymb),nmatij(isymmn),
+              call dgemm('N','N', mbas1(isymb),nmatkl(isymmn),
      &                 mbas1(isymkappa),fac,work(koffv),
      &                 max(1,nbasxtd(isymb)),
      &                 work(koffr),max(1,mbas1(isymkappa)),zero,
      &                 work(koffrv),max(1,mbas1(isymb)))
 c              if (locdbg) then
 c                call output(work(koffrv),1,mbas1(isymb),1,
-c     &                      nmatij(isymmn),mbas1(isymb),
-c     &                      nmatij(isymmn),1,lupri)
+c     &                      nmatkl(isymmn),mbas1(isymb),
+c     &                      nmatkl(isymmn),1,lupri)
 c              end if
               koffv = iaodis2(isymb,isymkappa) +
      &              nbasxtd(isymb)*mbas1(isymkappa) 
      &              + kprpao
               koffr = irxgkl(isymkappa,isymmn) + kr12bkl2
               if (.not. ltstxint) then
-              call dgemm('N','N',mbas1(isymb),nmatij(isymmn),
+              call dgemm('N','N',mbas1(isymb),nmatkl(isymmn),
      &                 mbas2(isymkappa),-fac,work(koffv),
      &                 max(1,nbasxtd(isymb)),
      &                 work(koffr),max(1,mbas2(isymkappa)),one,
@@ -566,21 +566,21 @@ c              end if
               koffv = iaodis2(isymb,isymkappa) + mbas1(isymb) + kprpao
               koffr = irgkl(isymkappa,isymmn) + kr12bkl
               koffrv2 = irxgkl(isymb,isymmn) + krvbkl2
-              call dgemm('N','N',mbas2(isymb),nmatij(isymmn),
+              call dgemm('N','N',mbas2(isymb),nmatkl(isymmn),
      &                 mbas1(isymkappa),-fac,work(koffv),
      &                 max(1,nbasxtd(isymb)),
      &                 work(koffr),max(1,mbas1(isymkappa)),zero,
      &                 work(koffrv2),max(1,mbas2(isymb)))
 c              if (locdbg) then
 c                call output(work(koffrv2),1,mbas2(isymb),1,
-c     &                      nmatij(isymmn),mbas2(isymb),
-c     &                      nmatij(isymmn),1,lupri)
+c     &                      nmatkl(isymmn),mbas2(isymb),
+c     &                      nmatkl(isymmn),1,lupri)
 c              end if
               koffv = iaodis2(isymb,isymkappa) +
      &              nbasxtd(isymb)*mbas1(isymkappa) + mbas1(isymb) +
      &              kprpao
               koffr = irxgkl(isymkappa,isymmn) + kr12bkl2
-              call dgemm('N','N',mbas2(isymb),nmatij(isymmn),
+              call dgemm('N','N',mbas2(isymb),nmatkl(isymmn),
      &                 mbas2(isymkappa),fac,work(koffv),
      &                 max(1,nbasxtd(isymb)),
      &                 work(koffr),max(1,mbas2(isymkappa)),one,
@@ -590,17 +590,17 @@ c              end if
                 write(lupri,*) 'Symmetry beta, mn:',isymb,isymmn
                 write(lupri,*) 'beta is AO basis function:'
                 call output(work(koffrv),1,mbas1(isymb),1,
-     &                      nmatij(isymmn),mbas1(isymb),
-     &                      nmatij(isymmn),1,lupri)
-                if (min(mbas1(isymb),nmatij(isymmn)).eq.0) then
+     &                      nmatkl(isymmn),mbas1(isymb),
+     &                      nmatkl(isymmn),1,lupri)
+                if (min(mbas1(isymb),nmatkl(isymmn)).eq.0) then
                   write(lupri,*) 'This symmetry block is empty'
                 end if
                 if (.not. ltstxint) then
                 write(lupri,*) 'beta is auxiliary basis function:'
                 call output(work(koffrv2),1,mbas2(isymb),1,
-     &                      nmatij(isymmn),mbas2(isymb),
-     &                      nmatij(isymmn),1,lupri)
-                if (min(mbas2(isymb),nmatij(isymmn)).eq.0) then
+     &                      nmatkl(isymmn),mbas2(isymb),
+     &                      nmatkl(isymmn),1,lupri)
+                if (min(mbas2(isymb),nmatkl(isymmn)).eq.0) then
                   write(lupri,*) 'This symmetry block is empty'
                 end if
                 end if
@@ -616,15 +616,16 @@ C-----------------------------------------------------------------------
             lauxbeta = .FALSE.
             ! read R^(delta)_(beta,kl) or R^(delta')_(beta,kl)
             call cc_r12getrint(work(kr12bkl),idel,isymd,nr1bas,ir1bas,
-     &                       nr2bas,ir2bas,nrgkl,irgkl,
-     &                       ir1xbas,ir2xbas,ibasx,lauxd,lauxbeta,
+     &                       nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
+     &                       nrhfb,nmatkl,imatkl,ibasx,lauxd,lauxbeta,
      &                       fnback,work(kend5),lwrk5)
             if (.not. ltstxint) then
             lauxbeta = .TRUE.
             ! read R^(delta)_(beta',kl) or R^(delta')_(beta',kl)
             call cc_r12getrint(work(kr12bkl2),idel,isymd,nr1xbas,
      &                         ir1bas,nr2bas2,ir2bas2,nrxgkl,irxgkl,
-     &                         ir1xbas,ir2xbas2,ibasx,lauxd,lauxbeta,
+     &                         ir1xbas,ir2xbas2,
+     &                         nrhfb,nmatkl,imatkl,ibasx,lauxd,lauxbeta,
      &                         fnback2,work(kend5),lwrk5)
             end if
 
@@ -637,18 +638,18 @@ C-----------------------------------------------------------------------
                 write(lupri,*) 'beta is AO basis function:'
                 koffr = irgkl(isymb,isymkl) + kr12bkl
                 call output(work(koffr),1,mbas1(isymb),1,
-     &                      nmatij(isymkl),mbas1(isymb),
-     &                      nmatij(isymkl),1,lupri)
-                if (min(mbas1(isymb),nmatij(isymkl)).eq.0) then
+     &                      nmatkl(isymkl),mbas1(isymb),
+     &                      nmatkl(isymkl),1,lupri)
+                if (min(mbas1(isymb),nmatkl(isymkl)).eq.0) then
                   write(lupri,*) 'This symmetry block is empty'
                 end if
                 if (.not. ltstxint) then
                 write(lupri,*) 'beta is auxiliary basis function:'
                 koffr = irxgkl(isymb,isymkl) + kr12bkl2
                 call output(work(koffr),1,mbas2(isymb),1,
-     &                      nmatij(isymkl),mbas2(isymb),
-     &                      nmatij(isymkl),1,lupri)
-                if (min(mbas2(isymb),nmatij(isymkl)).eq.0) then
+     &                      nmatkl(isymkl),mbas2(isymb),
+     &                      nmatkl(isymkl),1,lupri)
+                if (min(mbas2(isymb),nmatkl(isymkl)).eq.0) then
                   write(lupri,*) 'This symmetry block is empty'
                 end if
                 end if
@@ -667,34 +668,36 @@ C----------------------------------------------------------------------
               isymkl = muld2h(isymbd,1)
               koffr  = irgkl(isymb,isymkl) + kr12bkl
               koffrv = irgkl(isymb,isymmn) + krvbkl
-              koffx  = igamsq(isymkl,isymmn) + kvxintsq
-c              call output(work(koffr),1,mbas1(isymb),1,nmatij(isymkl),
-c     &                    mbas1(isymb),nmatij(isymkl),1,lupri)
-c              call output(work(koffrv),1,mbas1(isymb),1,nmatij(isymmn),
-c     &                    mbas1(isymb),nmatij(isymmn),1,lupri)
-              call dgemm('T','N',nmatij(isymkl),nmatij(isymmn),
+              koffx  = ir12r12sq(isymkl,isymmn) + kvxintsq
+c              call output(work(koffr),1,mbas1(isymb),1,nmatkl(isymkl),
+c     &                    mbas1(isymb),nmatkl(isymkl),1,lupri)
+c              call output(work(koffrv),1,mbas1(isymb),1,nmatkl(isymmn),
+c     &                    mbas1(isymb),nmatkl(isymmn),1,lupri)
+              call dgemm('T','N',nmatkl(isymkl),nmatkl(isymmn),
      &                 mbas1(isymb),one,work(koffr),max(1,mbas1(isymb)),
      &                 work(koffrv),max(1,mbas1(isymb)),one,work(koffx),
-     &                 max(1,nmatij(isymkl)))
+     &                 max(1,nmatkl(isymkl)))
               koffr  = irxgkl(isymb,isymkl) + kr12bkl2
               koffrv2 = irxgkl(isymb,isymmn) + krvbkl2
-c              call output(work(koffr),1,mbas2(isymb),1,nmatij(isymkl),
-c     &                    mbas2(isymb),nmatij(isymkl),1,lupri)
-c              call output(work(koffrv2),1,mbas2(isymb),1,nmatij(isymmn),
-c     &                    mbas2(isymb),nmatij(isymmn),1,lupri)
+c              call output(work(koffr),1,mbas2(isymb),1,nmatkl(isymkl),
+c     &                    mbas2(isymb),nmatkl(isymkl),1,lupri)
+c              call output(work(koffrv2),1,mbas2(isymb),1,nmatkl(isymmn),
+c     &                    mbas2(isymb),nmatkl(isymmn),1,lupri)
               if (.not. ltstxint) then
-              call dgemm('T','N',nmatij(isymkl),nmatij(isymmn),
+              call dgemm('T','N',nmatkl(isymkl),nmatkl(isymmn),
      &                 mbas2(isymb),one,work(koffr),max(1,mbas2(isymb)),
      &                 work(koffrv2),max(1,mbas2(isymb)),one,
-     &                 work(koffx),max(1,nmatij(isymkl)))
+     &                 work(koffx),max(1,nmatkl(isymkl)))
               end if
               if (locdbg) then
                 write(lupri,*) 'idelta, idel, isymd: ',idelta,idel,isymd
                 write(lupri,*) 'isymkl, isymmn :',isymkl,isymmn
-                write(lupri,*) 'ngamsq(isympt),igamsq(isymkl,isymmn): ',
-     &                          ngamsq(isympt),igamsq(isymkl,isymmn)
-                call output(work(koffx),1,nmatij(isymkl),1,
-     &                    nmatij(isymmn),nmatij(isymkl),nmatij(isymmn),
+                write(lupri,*) 'nr12r12sq(isympt),
+     &                          ir12r12sq(isymkl,isymmn): ',
+     &                          nr12r12sq(isympt),
+     &                          ir12r12sq(isymkl,isymmn)
+                call output(work(koffx),1,nmatkl(isymkl),1,
+     &                    nmatkl(isymmn),nmatkl(isymkl),nmatkl(isymmn),
      &                    1,lupri)
               end if
             end do
@@ -710,45 +713,46 @@ C-----------------------------------------------------------------------
 C resort result into a symmetry packed triangular matrix and
 C apply the projection operator P_(mn)^(kl):
 C-----------------------------------------------------------------------
+        iopt = 2
         call ccr12pck2(work(kvxint),isympt,.TRUE.,work(kvxintsq),
-     &                 .false.)
+     &                 'N',iopt)
 
         if (locdbg) then
           call around('final VXINT before packing')
           do isymmn = 1, nsym
             isymkl = muld2h(isympt,isymmn)
-            koffx = igamsq(isymkl,isymmn) + kvxintsq
+            koffx = ir12r12sq(isymkl,isymmn) + kvxintsq
             write(lupri,*) 'Symmetry block:', isymkl, isymmn
-            if (nmatij(isymkl).eq.0 .or. nmatij(isymmn).eq.0) then
+            if (nmatkl(isymkl).eq.0 .or. nmatkl(isymmn).eq.0) then
               write(lupri,*) 'This symmetry is empty'
             else
-              call output(work(koffx),1,nmatij(isymkl),1,
-     &                    nmatij(isymmn),nmatij(isymkl),nmatij(isymmn),
+              call output(work(koffx),1,nmatkl(isymkl),1,
+     &                    nmatkl(isymmn),nmatkl(isymkl),nmatkl(isymmn),
      &                    1,lupri)
             end if
           end do
           write(lupri,*) 
           write(lupri,*) 'Norm^2 over symmetries: ',
-     &           ddot(ngamsq(isympt),work(kvxintsq),1,work(kvxintsq),1)
+     &         ddot(nr12r12sq(isympt),work(kvxintsq),1,work(kvxintsq),1)
           call around('final VXINT after packing')
           do isymnl = 1, nsym
             isymmk = muld2h(isympt,isymnl)
-            koffx = igamma(isymmk,isymnl) + kvxint 
+            koffx = ir12r12p(isymmk,isymnl) + kvxint 
             if (isymmk .lt. isymnl) then 
               write(lupri,*) 'Symmetry block: ', isymmk, isymnl
-              if (nmatij(isymmk).eq.0 .or. nmatij(isymnl).eq.0) then
+              if (nmatkl(isymmk).eq.0 .or. nmatkl(isymnl).eq.0) then
                 write(lupri,*) 'This symmetry is empty' 
               else
-                call output(work(koffx),1,nmatij(isymmk),1,
-     &                      nmatij(isymnl),nmatij(isymmk),
-     &                      nmatij(isymnl),1,lupri)
+                call output(work(koffx),1,nmatkl(isymmk),1,
+     &                      nmatkl(isymnl),nmatkl(isymmk),
+     &                      nmatkl(isymnl),1,lupri)
               end if
             else if (isymmk .eq. isymnl) then
               write(lupri,*) 'Symmetry block: ', isymmk, isymnl
-              if (nmatij(isymmk) .eq. 0) then
+              if (nmatkl(isymmk) .eq. 0) then
                 write(lupri,*) 'This symmetry is empty'
               else 
-                call outpak(work(koffx),nmatij(isymmk),1,lupri)
+                call outpak(work(koffx),nmatkl(isymmk),1,lupri)
               end if
             end if
           end do
@@ -760,17 +764,19 @@ C-----------------------------------------------------------------------
         !place date and time in lab123
         call getdat(lab123(2),lab123(3))
 
+        !need to write always at least 4 ("long") items, otherwise  
+        !problems with subroutine MOLLAB
         write(luvxint) lab123, label1
-        write(luvxint) isympt
-        write(luvxint) (work(kvxint-1+i), i=1, ngamma(isympt))
+        write(luvxint) isympt,dummy,dummy,dummy,dummy
+        write(luvxint) (work(kvxint-1+i), i=1, max(4,nr12r12p(isympt)))
 
         if (locdbg) then
           write(lupri,*)
-          write(lupri,*) 'ngamma(isympt) = ',ngamma(isympt)
+          write(lupri,*) 'nr12r12p(isympt) = ',nr12r12p(isympt)
           write(lupri,*) label1, isympt
-          write(lupri,*) 'norm:',ddot(ngamma(isympt),work(kvxint),1,
-     &                                               work(kvxint),1)
-          write(lupri,*) (work(kvxint-1+i), i=1, ngamma(isympt))
+          write(lupri,*) 'norm:',ddot(nr12r12p(isympt),work(kvxint),1,
+     &                                                 work(kvxint),1)
+          write(lupri,*) (work(kvxint-1+i), i=1, nr12r12p(isympt))
         end if
 
 C-----------------------------------------------------------------------
@@ -806,22 +812,24 @@ C-----------------------------------------------------------------------
 *=======================================================================
 
 *=====================================================================*
-      subroutine cc_r12xi(XIR12,ISYMXI,TR12,ISYMC,XINT,VXINT,ISYMV,
-     &                    PRPAO,CMO,LAMH,TRANS,WORK,LWORK)
+      subroutine cc_r12xi(XIR12,ISYMXI,TRXI,TR12,ISYMC,XINT,VXINT,ISYMV,
+     &                    PRPAO,CMO,LAMH,TRV,WORK,LWORK)
 C----------------------------------------------------------------------
 C     purpose: calculate Xi vector for CCR12 response
 C
-C     XIR12    result array of dimension ngamsq(isymxi)
+C     XIR12    result array of dimension ntr12sq(isymxi)
 C     ISYMXI   symmetry of Xi
-C     TR12     R12 amplitudes of dimension ngamsq(isymc)
+C     TRXI     r12 index pair leading in Xi: 'N'
+C              occ. index pair leading in Xi: 'T'
+C     TR12     R12 amplitudes of dimension ntr12sq(isymc)
 C     ISYMC    symmetry of amplitudes
-C     XINT     X-intermediate (R12 overlap integrals) of dim. ngamsq(1)
-C     VXINT    VX-intermediate of dimension ngamsq(isymv)
+C     XINT     X-intermediate (R12 overlap integrals) of dim. nr12r12sq(1)
+C     VXINT    VX-intermediate of dimension nr12r12sq(isymv)
 C     ISYMV    symmetry of perturbation
 C     PRPAO    one-electron perturbation operator integrals in AO-basis
 C     LAMH     Lambda^h matrix
 C     CMO      MO coefficient matrix
-C     TRANS    use normal ('N') or transposed ('T') matrix V_m^jtilde 
+C     TRV      use normal ('N') or transposed ('T') matrix V_m^jtilde 
 C              when constructing vc-intermediate
 C
 C     Christian Neiss 2005 
@@ -846,7 +854,7 @@ C----------------------------------------------------------------------
       integer isymxi,isymv,isymc
       integer kvcint
       integer lwork,kend1,lwrk1
-      character*1 trans !allowed are 'N' and 'T'
+      character*1 trv,trxi !allowed are 'N' and 'T'
 
 #if defined (SYS_CRAY)
       real xir12(*),tr12(*),xint(*),vxint(*),prpao(*),lamh(*),
@@ -863,12 +871,6 @@ C----------------------------------------------------------------------
         write(lupri,*) 'memory available: ',lwork,' double words'
       end if
 
-      !check variable trans:
-      if (.not.((trans.eq.'T').or.(trans.eq.'N'))) then
-        write(lupri,*) 'TRANS = ',trans
-        call quit('Forbidden value of TRANS in CC_R12XI')
-      end if
-
       !check symmetry:
       if (isymxi.ne.muld2h(isymc,isymv)) then
         call quit('Symmetry error in CC_R12XI')
@@ -878,7 +880,7 @@ C-----------------------------------------------------------------------
 C allocate memory for intermediates needed until end
 C-----------------------------------------------------------------------
       kvcint = 1                      !VC-intermediate
-      kend1 = kvcint + ngamsq(isymxi)
+      kend1 = kvcint + ntr12sq(isymxi)
       lwrk1 = lwork - kend1
       if (lwrk1 .lt. 0) then
         call quit('Insufficient memory in CC_R12XI')
@@ -890,22 +892,22 @@ C or        Sum_m (c_{kl}^{im}*V_j^mtilde + c_{kl}^{mj}*V_j^mtilde)
 C and apply P_kl^ij:
 C-----------------------------------------------------------------------
       call cc_r12xi2a(work(kvcint),isymxi,TR12,ISYMC,PRPAO,ISYMV,
-     &                CMO,LAMH,1,TRANS,WORK(KEND1),LWRK1)
+     &                CMO,LAMH,1,TRV,WORK(KEND1),LWRK1)
    
 C-----------------------------------------------------------------------
 C finally calculate Xi
 C-----------------------------------------------------------------------
       !zero out Xi:
-      call dzero(xir12,ngamsq(isymxi))
+      call dzero(xir12,ntr12sq(isymxi))
 
-      call cc_r12xi2b(xir12,vxint,isymv,'N',
+      call cc_r12xi2b(xir12,trxi,vxint,isymv,'N',
      &               tr12,isymc,'N',one)
-      call cc_r12xi2b(xir12,xint,1,'N',
+      call cc_r12xi2b(xir12,trxi,xint,1,'N',
      &               work(kvcint),isymxi,'N',-one)
 
       if (locdbg) then
         call around('Result in CC_R12XI')
-        call cc_prsqr12(xir12,isymxi,1,.false.)
+        call cc_prsqr12(xir12,isymxi,'N',1,.false.)
       end if
 
       if (locdbg) write(lupri,*) 'Leaving CC_R12XI'
@@ -917,22 +919,22 @@ C-----------------------------------------------------------------------
 
 *=====================================================================*
       subroutine cc_r12xi2a(VCINT,ISYMVC,TR12,ISYMC,PRPAO,ISYMV,
-     &                      CMO,LAMH,ISYMH,TRANS,WORK,LWORK)
+     &                      CMO,LAMH,ISYMH,TRV,WORK,LWORK)
 C----------------------------------------------------------------------
 C     calculate Sum_m (c_{kl}^{im}*V_m^jtilde + c_{kl}^{mj}*V_m^itilde)
 C     or        Sum_m (c_{kl}^{im}*V_j^mtilde + c_{kl}^{mj}*V_j^mtilde)
 C     and apply P_kl^ij
 C
-C     VCINT    result array of dimension ngamsq(isymvc)
+C     VCINT    result array of dimension ntr12sq(isymvc)
 C     ISYMVC   symmetry of result
-C     TR12     R12 amplitudes of dimension ngamsq(isymc)
+C     TR12     R12 amplitudes of dimension ntr12sq(isymc)
 C     ISYMC    symmetry of amplitudes
 C     PRPAO    one-electron perturbation operator integrals in AO-basis
 C     ISYMV    symmetry of perturbation
 C     LAMH     Lambda^h matrix
 C     ISYMH    Symmetry of Lambda^h matrix
 C     CMO      MO coefficient matrix
-C     TRANS    use normal ('N') or transposed ('T') matrix V_m^jtilde 
+C     TRV      use normal ('N') or transposed ('T') matrix V_m^jtilde 
 C              when constructing vc-intermediate
 C
 C     Christian Neiss 2005 
@@ -959,7 +961,7 @@ C----------------------------------------------------------------------
       integer kscr1,kvint,koffc,koffv,
      &        koffvc,kofftr12
       integer lwork,kend1,kend2,lwrk1,lwrk2
-      character*1 trans !allowed are 'N' and 'T'
+      character*1 trv !allowed are 'N' and 'T'
 
 #if defined (SYS_CRAY)
       real vcint(*),tr12(*),prpao(*),lamh(*),cmo(*),work(*)
@@ -974,10 +976,10 @@ C----------------------------------------------------------------------
         write(lupri,*) 'memory available: ',lwork,' double words'
       end if
 
-      !check variable trans:
-      if (.not.((trans.eq.'T').or.(trans.eq.'N'))) then
-        write(lupri,*) 'TRANS = ',trans
-        call quit('Forbidden value of TRANS in CC_R12XI2A')
+      !check variable trv:
+      if (.not.((trv.eq.'T').or.(trv.eq.'N'))) then
+        write(lupri,*) 'TRV = ',trv
+        call quit('Forbidden value of TRV in CC_R12XI2A')
       end if
 
       !check symmetry:
@@ -990,15 +992,7 @@ C print out R12 amplitudes (debug)
 C-----------------------------------------------------------------------
       if (locdbg) then
         call around('R12 amplitudes in CC_R12XI after unpacking')
-        call cc_prsqr12(tr12,isymc,1,.false.)
-
-c       !only for testing if ccr12unpck2 works right!
-c       !repack amplitudes -> should be the same as read in!
-c       kscr1 = kend1
-c       kend2 = kscr1 + ngamma(isymc)
-c       call ccr12pck2(work(kscr1),isymc,.false.,tr12,.false.)
-c       call around('R12 amplitudes in CC_R12XI after repacking')
-c       call cc_prpr12(work(kscr1),isymc,1,.false.)
+        call cc_prsqr12(tr12,isymc,'N',1,.false.)
       end if
  
 C-----------------------------------------------------------------------
@@ -1095,35 +1089,36 @@ C-----------------------------------------------------------------------
         do isymm = 1, nsym
           isymi = muld2h(isymim,isymm)
           isymj = muld2h(isymmj,isymm)
-          kofftr12 = 1 + igamsq(isymkl,isymim) + 
-     &               nmatij(isymkl)*imatij(isymi,isymm)
+          kofftr12 = 1 + itr12sq(isymkl,isymim) + 
+     &               nmatkl(isymkl)*imatij(isymi,isymm)
 c         koffv = kvint + imatij(isymm,isymj)
-          koffvc = 1 + igamsq(isymkl,isymij) + 
-     &             nmatij(isymkl)*imatij(isymi,isymj)
+          koffvc = 1 + itr12sq(isymkl,isymij) + 
+     &             nmatkl(isymkl)*imatij(isymi,isymj)
 c         write(lupri,*) 'symmetry isymkl, isymi, isymm, isymj: ',
 c    &                    isymkl,isymi,isymm,isymj
-c         write(lupri,*) 'igamsq(isymkl,isymij): ',igamsq(isymkl,isymij)
-c         write(lupri,*) 'nmatij(isymkl), nrhf(isymi), nrhf(isymm)',
-c    &                    nmatij(isymkl), nrhf(isymi), nrhf(isymm)
-c         call output(tr12(kofftr12),1,nmatij(isymkl)*nrhf(isymi),1,
-c    &                nrhf(isymm),nmatij(isymkl)*nrhf(isymi),
+c         write(lupri,*) 'itr12sq(isymkl,isymij): ',
+c    &                    itr12sq(isymkl,isymij)
+c         write(lupri,*) 'nmatkl(isymkl), nrhf(isymi), nrhf(isymm)',
+c    &                    nmatkl(isymkl), nrhf(isymi), nrhf(isymm)
+c         call output(tr12(kofftr12),1,nmatkl(isymkl)*nrhf(isymi),1,
+c    &                nrhf(isymm),nmatkl(isymkl)*nrhf(isymi),
 c    &                nrhf(isymm),1,lupri)
-          if (trans.eq.'N') then
+          if (trv.eq.'N') then
             koffv = kvint + imatij(isymm,isymj)
-            call dgemm('N','N',nmatij(isymkl)*nrhf(isymi),nrhf(isymj),
+            call dgemm('N','N',nmatkl(isymkl)*nrhf(isymi),nrhf(isymj),
      &               nrhf(isymm),one,tr12(kofftr12),
-     &               max(1,nmatij(isymkl)*nrhf(isymi)),
+     &               max(1,nmatkl(isymkl)*nrhf(isymi)),
      &               work(koffv),max(1,nrhf(isymm)),zero,
-     &               vcint(koffvc),max(1,nmatij(isymkl)*nrhf(isymi))) 
-          else if (trans.eq.'T') then
+     &               vcint(koffvc),max(1,nmatkl(isymkl)*nrhf(isymi))) 
+          else if (trv.eq.'T') then
             koffv = kvint + imatij(isymj,isymm)
-            call dgemm('N','T',nmatij(isymkl)*nrhf(isymi),nrhf(isymj),
+            call dgemm('N','T',nmatkl(isymkl)*nrhf(isymi),nrhf(isymj),
      &               nrhf(isymm),one,tr12(kofftr12),
-     &               max(1,nmatij(isymkl)*nrhf(isymi)),
+     &               max(1,nmatkl(isymkl)*nrhf(isymi)),
      &               work(koffv),max(1,nrhf(isymj)),zero,
-     &               vcint(koffvc),max(1,nmatij(isymkl)*nrhf(isymi)))
+     &               vcint(koffvc),max(1,nmatkl(isymkl)*nrhf(isymi)))
           else
-            call quit('Forbidden value of TRANS in CC_R12XI2A')
+            call quit('Forbidden value of TRV in CC_R12XI2A')
           end if
         end do
       end do
@@ -1132,31 +1127,32 @@ c    &                nrhf(isymm),1,lupri)
         call around('"c*V" before P_{kl}^{ij}')
         do isymkl = 1, nsym
           isymij = muld2h(isymkl,isymvc)
-          koffvc = 1 + igamsq(isymkl,isymij)
+          koffvc = 1 + itr12sq(isymkl,isymij)
           write(lupri,*) 'Symmetry block isymkl,isymij: ',isymkl,isymij
-          if (nmatij(isymkl).eq.0 .or. nmatij(isymij).eq.0) then
+          if (nmatkl(isymkl).eq.0 .or. nmatij(isymij).eq.0) then
             write(lupri,*) 'This symmetry is empty'
           else
-            call output(vcint(koffvc),1,nmatij(isymkl),1,nmatij(isymij),
-     &                  nmatij(isymkl),nmatij(isymij),1,lupri)
+            call output(vcint(koffvc),1,nmatkl(isymkl),1,nmatij(isymij),
+     &                  nmatkl(isymkl),nmatij(isymij),1,lupri)
           end if
         end do
+C       write(lupri,*) (vcint(i), i=1, ntr12sq(isymvc))
       end if
 
       !apply P_{kl}^{ij}
-      call cc_r12pklij(vcint,isymvc,work,lwork)
+      call cc_r12pklij(vcint,isymvc,'N',work,lwork)
 
       if (locdbg) then
         call around('VC-intermediate')
         do isymkl = 1, nsym
           isymij = muld2h(isymkl,isymvc)
-          koffvc = 1 + igamsq(isymkl,isymij)
+          koffvc = 1 + itr12sq(isymkl,isymij)
           write(lupri,*) 'Symmetry block isymkl,isymij: ',isymkl,isymij
-          if (nmatij(isymkl).eq.0 .or. nmatij(isymij).eq.0) then
+          if (nmatkl(isymkl).eq.0 .or. nmatij(isymij).eq.0) then
             write(lupri,*) 'This symmetry is empty'
           else
-            call output(vcint(koffvc),1,nmatij(isymkl),1,nmatij(isymij),
-     &                  nmatij(isymkl),nmatij(isymij),1,lupri)
+            call output(vcint(koffvc),1,nmatkl(isymkl),1,nmatij(isymij),
+     &                  nmatkl(isymkl),nmatij(isymij),1,lupri)
           end if
         end do
       end if
@@ -1169,18 +1165,24 @@ c    &                nrhf(isymm),1,lupri)
 *=======================================================================
 
 *=====================================================================*
-      subroutine cc_r12xi2b(RESULT,MAT1,ISYM1,TR1,MAT2,ISYM2,TR2,FAC)
+      subroutine cc_r12xi2b(RESULT,TRR,MAT1,ISYM1,TR1,MAT2,ISYM2,TR2,
+     &                      FAC)
 C----------------------------------------------------------------------
 C     purpose: calculate FAC*Sum_kl X_{mn}^{kl}*c_{kl}^{ij} and add it 
 C              to a given array (RESULT)
 C
-C     RESULT   result array of dimension ngamsq(muld2h(isym1,isym2))
-C     MAT1     Matrix 1 [X]
+C     RESULT   result array of dimension ntr12sq(muld2h(isym1,isym2))
+C     TRR      R12-index pair (mn) leading: 'N'
+C              occ. index pair (ij) leading: 'T'
+C     MAT1     Matrix 1 [X] dim: nr12r12sq(isym1)
 C     ISYM1    Symmetry of MAT1
-C     MAT2     Matrix 2 [c]
-C     ISYM2    Symmetry of MAT2
+C     MAT2     Matrix 2 [c] dim: ntr12sq(isym2)
+C     ISYM2    Symmetry of MAT2 
 C     FAC      Factor
-C     TR1,TR2  Transpose or not?
+C     TR1      index pair (mn) leading: 'N'
+C              index pair (kl) leading: 'T'  
+C     TR2      index pair (kl) leading: 'N'
+C              index pair (ij) leading: 'T'
 C
 C     Christian Neiss 2005
 C----------------------------------------------------------------------
@@ -1201,12 +1203,12 @@ C----------------------------------------------------------------------
 
       integer isym1,isym2,isymmn,isymij,isymkl
       integer koff1,koff2,koffr
-      character*1 tr1,tr2
+      character*1 tr1,tr2,trr
 
 #if defined (SYS_CRAY)
-      real result(*),mat1(*),mat2(*),fac
+      real result(*),mat1(*),mat2(*),fac,ddot
 #else
-      double precision result(*),mat1(*),mat2(*),fac 
+      double precision result(*),mat1(*),mat2(*),fac,ddot 
 #endif
 
       call qenter('cc_r12xi2b')
@@ -1215,94 +1217,168 @@ C----------------------------------------------------------------------
         write(lupri,*) 'Entered CC_R12XI2B'
       end if
 
-      !check TR1, TR2
+      !check TR1, TR2, TRR
       IF (((TR1.NE.'N').AND.(TR1.NE.'T')).OR.
-     &    ((TR2.NE.'N').AND.(TR2.NE.'T'))) THEN
+     &    ((TR2.NE.'N').AND.(TR2.NE.'T')).OR.
+     &    ((TRR.NE.'N').AND.(TRR.NE.'T'))) THEN
         WRITE(LUPRI,*) 'TR1, TR2: ',TR1,TR2
         CALL QUIT('Illegal value for TR1 or TR2 in CC_R12XI2B')
       END IF
 
       if (locdbg) then
         call around('MAT1')
-        do isymmn = 1, nsym
-          isymkl = muld2h(isymmn,isym1)
-          koff1 = 1 + igamsq(isymmn,isymkl)
-          write(lupri,*) 'Symmetry block ',isymmn,isymkl
-          if (nmatij(isymmn).eq.0 .or. nmatij(isymkl).eq.0) then
-            write(lupri,*) 'This symmetry is empty'
-          else
-            call output(mat1(koff1),1,nmatij(isymmn),1,nmatij(isymkl),
-     &                  nmatij(isymmn),nmatij(isymkl),1,lupri)
-          end if
-        end do
+        write(lupri,*) 'Norm^2: ',DDOT(nr12r12sq(isym1),mat1,1,mat1,1)
+C       do isymmn = 1, nsym
+C         isymkl = muld2h(isymmn,isym1)
+C         koff1 = 1 + ir12r12sq(isymmn,isymkl)
+C         write(lupri,*) 'Symmetry block ',isymmn,isymkl
+C         if (nmatkl(isymmn).eq.0 .or. nmatkl(isymkl).eq.0) then
+C           write(lupri,*) 'This symmetry is empty'
+C         else
+C           call output(mat1(koff1),1,nmatkl(isymmn),1,nmatkl(isymkl),
+C    &                  nmatkl(isymmn),nmatkl(isymkl),1,lupri)
+C         end if
+C       end do
         call around('MAT2')
-        do isymkl = 1, nsym
-          isymij = muld2h(isymkl,isym2)
-          koff2 = 1 + igamsq(isymkl,isymij)
-          write(lupri,*) 'Symmetry block ',isymkl,isymij
-          if (nmatij(isymkl).eq.0 .or. nmatij(isymij).eq.0) then
-            write(lupri,*) 'This symmetry is empty'
-          else
-            call output(mat2(koff2),1,nmatij(isymkl),1,nmatij(isymij),
-     &                  nmatij(isymkl),nmatij(isymij),1,lupri)
-          end if
-        end do
+        write(lupri,*) 'Norm^2: ',DDOT(ntr12sq(isym2),mat2,1,mat2,1)
+C       if (tr2.eq.'N') then
+C         do isymkl = 1, nsym
+C           isymij = muld2h(isymkl,isym2)
+C           koff2 = 1 + itr12sq(isymkl,isymij)
+C           write(lupri,*) 'Symmetry block ',isymkl,isymij
+C           if (nmatkl(isymkl).eq.0 .or. nmatij(isymij).eq.0) then
+C             write(lupri,*) 'This symmetry is empty'
+C           else
+C             call output(mat2(koff2),1,nmatkl(isymkl),1,nmatij(isymij),
+C    &                    nmatkl(isymkl),nmatij(isymij),1,lupri)
+C           end if
+C         end do
+C       else if (tr2.eq.'T') then
+C         do isymij = 1, nsym
+C           isymkl = muld2h(isymij,isym2)
+C           koff2 = 1 + itr12sqt(isymij,isymkl)
+C           write(lupri,*) 'Symmetry block ',isymij,isymkl
+C           if (nmatkl(isymkl).eq.0 .or. nmatij(isymij).eq.0) then
+C             write(lupri,*) 'This symmetry is empty'
+C           else
+C             call output(mat2(koff2),1,nmatij(isymij),1,nmatkl(isymkl),
+C    &                    nmatij(isymij),nmatkl(isymkl),1,lupri)
+C           end if
+C         end do
+C       end if
         write(lupri,*) 'TR1, TR2: ',TR1,TR2
         call flshfo(lupri)
       end if
 
-
-      do isymmn = 1, nsym
+      if (TRR.eq.'N') then
+       do isymmn = 1, nsym
         isymkl = muld2h(isymmn,isym1)
         isymij = muld2h(isymkl,isym2)
         if ((tr1.eq.'N').and.(tr2.eq.'N')) then
-        koff1 = 1 + igamsq(isymmn,isymkl)
-        koff2 = 1 + igamsq(isymkl,isymij)
-        koffr = 1 + igamsq(isymmn,isymij)
-        call dgemm(tr1,tr2,nmatij(isymmn),nmatij(isymij),
-     &             nmatij(isymkl),fac,mat1(koff1),max(1,nmatij(isymmn)),
-     &             mat2(koff2),max(1,nmatij(isymkl)),one,
-     &             result(koffr),max(1,nmatij(isymmn)))
+        koff1 = 1 + ir12r12sq(isymmn,isymkl)
+        koff2 = 1 + itr12sq(isymkl,isymij)
+        koffr = 1 + itr12sq(isymmn,isymij)
+        call dgemm(tr1,tr2,nmatkl(isymmn),nmatij(isymij),
+     &             nmatkl(isymkl),fac,mat1(koff1),max(1,nmatkl(isymmn)),
+     &             mat2(koff2),max(1,nmatkl(isymkl)),one,
+     &             result(koffr),max(1,nmatkl(isymmn)))
         else if ((tr1.eq.'T').and.(tr2.eq.'T')) then
-        koff1 = 1 + igamsq(isymkl,isymmn)
-        koff2 = 1 + igamsq(isymij,isymkl)
-        koffr = 1 + igamsq(isymmn,isymij)
-        call dgemm(tr1,tr2,nmatij(isymmn),nmatij(isymij),
-     &             nmatij(isymkl),fac,mat1(koff1),max(1,nmatij(isymkl)),
+        koff1 = 1 + ir12r12sq(isymkl,isymmn)
+        koff2 = 1 + itr12sqt(isymij,isymkl)
+        koffr = 1 + itr12sq(isymmn,isymij)
+        call dgemm(tr1,tr2,nmatkl(isymmn),nmatij(isymij),
+     &             nmatkl(isymkl),fac,mat1(koff1),max(1,nmatkl(isymkl)),
      &             mat2(koff2),max(1,nmatij(isymij)),one,
-     &             result(koffr),max(1,nmatij(isymmn)))
+     &             result(koffr),max(1,nmatkl(isymmn)))
         else if ((tr1.eq.'T').and.(tr2.eq.'N')) then
-        koff1 = 1 + igamsq(isymkl,isymmn)
-        koff2 = 1 + igamsq(isymkl,isymij)
-        koffr = 1 + igamsq(isymmn,isymij)
-        call dgemm(tr1,tr2,nmatij(isymmn),nmatij(isymij),
-     &             nmatij(isymkl),fac,mat1(koff1),max(1,nmatij(isymkl)),
-     &             mat2(koff2),max(1,nmatij(isymkl)),one,
-     &             result(koffr),max(1,nmatij(isymmn)))
+        koff1 = 1 + ir12r12sq(isymkl,isymmn)
+        koff2 = 1 + itr12sq(isymkl,isymij)
+        koffr = 1 + itr12sq(isymmn,isymij)
+        call dgemm(tr1,tr2,nmatkl(isymmn),nmatij(isymij),
+     &             nmatkl(isymkl),fac,mat1(koff1),max(1,nmatkl(isymkl)),
+     &             mat2(koff2),max(1,nmatkl(isymkl)),one,
+     &             result(koffr),max(1,nmatkl(isymmn)))
         else if ((tr1.eq.'N').and.(tr2.eq.'T')) then
-        koff1 = 1 + igamsq(isymmn,isymkl)
-        koff2 = 1 + igamsq(isymij,isymkl)
-        koffr = 1 + igamsq(isymmn,isymij)
-        call dgemm(tr1,tr2,nmatij(isymmn),nmatij(isymij),
-     &             nmatij(isymkl),fac,mat1(koff1),max(1,nmatij(isymmn)),
+        koff1 = 1 + ir12r12sq(isymmn,isymkl)
+        koff2 = 1 + itr12sqt(isymij,isymkl)
+        koffr = 1 + itr12sq(isymmn,isymij)
+        call dgemm(tr1,tr2,nmatkl(isymmn),nmatij(isymij),
+     &             nmatkl(isymkl),fac,mat1(koff1),max(1,nmatkl(isymmn)),
      &             mat2(koff2),max(1,nmatij(isymij)),one,
-     &             result(koffr),max(1,nmatij(isymmn)))
+     &             result(koffr),max(1,nmatkl(isymmn)))
         end if
-      end do
+       end do
+      else if (TRR.eq.'T') then
+       do isymmn = 1, nsym
+        isymkl = muld2h(isymmn,isym1)
+        isymij = muld2h(isymkl,isym2)
+        if ((tr1.eq.'N').and.(tr2.eq.'N')) then
+        koff1 = 1 + ir12r12sq(isymmn,isymkl)
+        koff2 = 1 + itr12sq(isymkl,isymij)
+        koffr = 1 + itr12sqt(isymij,isymmn)
+        call dgemm('T','T',nmatij(isymij),nmatkl(isymmn),
+     &             nmatkl(isymkl),fac,mat2(koff2),max(1,nmatkl(isymkl)),
+     &             mat1(koff1),max(1,nmatkl(isymmn)),one,
+     &             result(koffr),max(1,nmatij(isymij)))
+        else if ((tr1.eq.'T').and.(tr2.eq.'T')) then
+        koff1 = 1 + ir12r12sq(isymkl,isymmn)
+        koff2 = 1 + itr12sqt(isymij,isymkl)
+        koffr = 1 + itr12sqt(isymij,isymmn)
+        call dgemm('N','N',nmatij(isymij),nmatkl(isymmn),
+     &             nmatkl(isymkl),fac,mat2(koff2),max(1,nmatij(isymij)),
+     &             mat1(koff1),max(1,nmatkl(isymkl)),one,
+     &             result(koffr),max(1,nmatij(isymij)))
+        else if ((tr1.eq.'T').and.(tr2.eq.'N')) then
+        koff1 = 1 + ir12r12sq(isymkl,isymmn)
+        koff2 = 1 + itr12sq(isymkl,isymij)
+        koffr = 1 + itr12sqt(isymij,isymmn)
+        call dgemm('T','N',nmatij(isymij),nmatkl(isymmn),
+     &             nmatkl(isymkl),fac,mat2(koff2),max(1,nmatkl(isymkl)),
+     &             mat1(koff1),max(1,nmatkl(isymkl)),one,
+     &             result(koffr),max(1,nmatij(isymij)))
+        else if ((tr1.eq.'N').and.(tr2.eq.'T')) then
+        koff1 = 1 + ir12r12sq(isymmn,isymkl)
+        koff2 = 1 + itr12sqt(isymij,isymkl)
+        koffr = 1 + itr12sqt(isymij,isymmn)
+        call dgemm('N','T',nmatij(isymij),nmatkl(isymmn),
+     &             nmatkl(isymkl),fac,mat2(koff2),max(1,nmatij(isymij)),
+     &             mat1(koff1),max(1,nmatkl(isymmn)),one,
+     &             result(koffr),max(1,nmatij(isymij)))
+        end if
+       end do
+      else
+       call quit('Unknown value for TRR in CC_R12XI2B')
+      end if
 
       if (locdbg) then
         call around('Result of CC_R12XI2B')
-        do isymmn = 1, nsym
-          isymij = muld2h(isymmn,muld2h(isym1,isym2))
-          koffr = 1 + igamsq(isymmn,isymij)
-          write(lupri,*) 'Symmetry block ',isymmn,isymij
-          if (nmatij(isymmn).eq.0 .or. nmatij(isymij).eq.0) then
-            write(lupri,*) 'This symmetry is empty'
-          else
-            call output(result(koffr),1,nmatij(isymmn),1,nmatij(isymij),
-     &                  nmatij(isymmn),nmatij(isymij),1,lupri)
-          end if
-        end do
+        write(lupri,*) 'Norm^2: ',DDOT(ntr12sq(muld2h(isym1,isym2)),
+     &                             result,1,result,1)
+C       if (TRR.eq.'N') then
+C        do isymmn = 1, nsym
+C         isymij = muld2h(isymmn,muld2h(isym1,isym2))
+C         koffr = 1 + itr12sq(isymmn,isymij)
+C         write(lupri,*) 'Symmetry block ',isymmn,isymij
+C         if (nmatkl(isymmn).eq.0 .or. nmatij(isymij).eq.0) then
+C           write(lupri,*) 'This symmetry is empty'
+C         else
+C           call output(result(koffr),1,nmatkl(isymmn),1,nmatij(isymij),
+C    &                  nmatkl(isymmn),nmatij(isymij),1,lupri)
+C         end if
+C        end do
+C       else if (TRR.eq.'T') then
+C        do isymij = 1, nsym
+C         isymmn = muld2h(isymij,muld2h(isym1,isym2))
+C         koffr = 1 + itr12sqt(isymij,isymmn)
+C         write(lupri,*) 'Symmetry block ',isymij,isymmn
+C         if (nmatkl(isymmn).eq.0 .or. nmatij(isymij).eq.0) then
+C           write(lupri,*) 'This symmetry is empty'
+C         else
+C           call output(result(koffr),1,nmatij(isymij),1,nmatkl(isymmn),
+C    &                  nmatij(isymij),nmatkl(isymmn),1,lupri)
+C         end if
+C        end do 
+C       end if
       end if
 
       if (locdbg) write(lupri,*) 'Leaving CC_R12XI2B'
@@ -1318,7 +1394,7 @@ C----------------------------------------------------------------------
 C     purpose: read in VXINT, calculate FF*VXINT(isympt) and 
 C              add it to a given array (MATRIX)
 C
-C     MATRIX   array of dimension ngamsq(isympt)
+C     MATRIX   array of dimension nr12r12sq(isympt)
 C     ISYMPT   symmetry of perturbation
 C     LABPT    label of perturbation
 C     FF       Factor (Fieldstrength)
@@ -1344,12 +1420,12 @@ C----------------------------------------------------------------------
       character*8 labpt
       integer isympt,isymv
       integer kvxint,kvxintsq,luvxint
-      integer lwork,kend1,lwrk1,idum
+      integer lwork,kend1,lwrk1,idum,iopt
 
 #if defined (SYS_CRAY)
-      real matrix(*),work(*),ff
+      real matrix(*),work(*),ff,ddot
 #else
-      double precision matrix(*),work(*),ff
+      double precision matrix(*),work(*),ff,ddot
 #endif
 
       call qenter('cc_r12rdvxint')
@@ -1359,8 +1435,8 @@ C----------------------------------------------------------------------
       end if
 
       kvxint   = 1 
-      kvxintsq = kvxint + ngamma(isympt)
-      kend1    = kvxintsq + ngamsq(isympt)
+      kvxintsq = kvxint + nr12r12p(isympt)
+      kend1    = kvxintsq + nr12r12sq(isympt)
       lwrk1 = lwork - kend1
       if (lwrk1 .lt. 0) then
         call quit('Insufficient memory in CC_R12RDVXINT')
@@ -1380,21 +1456,26 @@ C-----------------------------------------------------------------------
         call quit('Symmetry mismatch when reading CCR12VXINT in '//
      &            'CC_R12RDVXINT')
       end if
-      read(luvxint) (work(kvxint+i-1),i=1,ngamma(isympt))
+      read(luvxint) (work(kvxint+i-1),i=1,nr12r12p(isympt))
       call gpclose(luvxint,'KEEP')
       !unpack to square:
-      call ccr12unpck2(work(kvxint),isympt,work(kvxintsq),.false.)
+      iopt = 2
+      call ccr12unpck2(work(kvxint),isympt,work(kvxintsq),'N',iopt)
 
       if (locdbg) then
         write(lupri,*) 'LABEL = ',labpt
         call around('VXINT in CC_R12RDVXINT')
-        call cc_prsqr12(work(kvxintsq),isympt,1,.false.)
+        write(lupri,*) 'Norm^2 (packed): ',ddot(ntr12sq(isympt),
+     &                             work(kvxint),1,work(kvxint),1)
+        write(lupri,*) 'Norm^2 (squared): ',ddot(nr12r12sq(isympt),
+     &                             work(kvxintsq),1,work(kvxintsq),1)
+C       call cc_prsqr12(work(kvxintsq),isympt,1,.false.)
       end if
 
 C-----------------------------------------------------------------------
 C multiply with FF and add to MATRIX 
 C-----------------------------------------------------------------------
-      call daxpy(ngamsq(isympt),ff,work(kvxintsq),1,matrix,1) 
+      call daxpy(nr12r12sq(isympt),ff,work(kvxintsq),1,matrix,1) 
 
       if (locdbg) write(lupri,*) 'Leaving CC_R12RDVXINT'
       call qexit('cc_r12rdvxint')
@@ -1404,12 +1485,12 @@ C-----------------------------------------------------------------------
 *=======================================================================
 
 *=====================================================================*
-      subroutine cc_r12pklij(MATRIX,ISYM,WORK,LWORK)
+      subroutine cc_r12pklij(MATRIX,ISYM,TRANS,WORK,LWORK)
 C----------------------------------------------------------------------
 C     purpose: calculate P_{kl}^{ij}X_{kl}^{ij}
 C                       = X_{kl}^{ij} + X_{lk}^{ji} 
 C
-C     MATRIX   Matrix of dimension ngamsq(ISYM) with {kl} and {ij} as
+C     MATRIX   Matrix of dimension ntr12sq(ISYM) with {kl} and {ij} as
 C              packed pair indices; MATRIX is input and output!
 C
 C     Christian Neiss,  Feb. 2005
@@ -1429,10 +1510,11 @@ C----------------------------------------------------------------------
 #endif
       parameter (zero = 0.0d0, one = 1.0d0)
 
+      character*1 trans
       integer isym,isymkl,isymij,isymk,isyml,isymi,isymj
       integer idxkl,idxlk,idxij,idxji,idxklij,idxlkji
       integer kscr1,kscr2,koff
-      integer lwork,kend1,lwrk1
+      integer lwork,kend1,lwrk1,iopt
 
 #if defined (SYS_CRAY)
       real work(*),matrix(*),dnrm2
@@ -1446,19 +1528,21 @@ C----------------------------------------------------------------------
       if (locdbg) then
         write(lupri,*) 'Entered CC_R12PKLIJ'
         write(lupri,*) 'memory available: ',lwork,' double words'
+        write(lupri,*) 'Input in CC_R12PKLIJ:'
+        call cc_prsqr12(matrix,isym,trans,1,.false.)
       end if
 
       !only for testing needed, see below!
       if (locdbg) then
         kscr1 = 1
-        kscr2 = kscr1 + ngamma(isym)
-        kend1 = kscr2 + ngamsq(isym)
+        kscr2 = kscr1 + ntr12am(isym)
+        kend1 = kscr2 + ntr12sq(isym)
         lwrk1 = lwork - kend1
         if (lwrk1 .lt. 0) then
           call quit('Insufficient memory in CC_R12PKLIJ')
         end if
 
-        call dcopy(ngamsq(isym),matrix,1,work(kscr2),1)
+        call dcopy(ntr12sq(isym),matrix,1,work(kscr2),1)
       end if
       
 C calculate X_{lk}^{ji}      
@@ -1468,18 +1552,28 @@ C calculate X_{lk}^{ji}
           isyml = muld2h(isymkl,isymk) 
           do isymi = 1, nsym
             isymj = muld2h(isymij,isymi)
-            do k = 1, nrhf(isymk)
-              do l = 1, nrhf(isyml)
-                idxkl = imatij(isymk,isyml) + nrhf(isymk)*(l-1) + k
-                idxlk = imatij(isyml,isymk) + nrhf(isyml)*(k-1) + l
+            do k = 1, nrhfb(isymk)
+              do l = 1, nrhfb(isyml)
+                idxkl = imatkl(isymk,isyml) + nrhfb(isymk)*(l-1) + k
+                idxlk = imatkl(isyml,isymk) + nrhfb(isyml)*(k-1) + l
                 do i = 1, nrhf(isymi)
                   do j = 1, nrhf(isymj)
                     idxij = imatij(isymi,isymj) + nrhf(isymi)*(j-1)+i
                     idxji = imatij(isymj,isymi) + nrhf(isymj)*(i-1)+j
-                    idxklij = igamsq(isymkl,isymij) + 
-     &                        nmatij(isymkl)*(idxij-1) + idxkl
-                    idxlkji = igamsq(isymkl,isymij) + 
-     &                        nmatij(isymkl)*(idxji-1) + idxlk
+                    if (trans.eq.'T') then
+                      idxklij = itr12sqt(isymij,isymkl) +
+     &                          nmatij(isymij)*(idxkl-1) + idxij
+                      idxlkji = itr12sqt(isymij,isymkl) +
+     &                          nmatij(isymij)*(idxlk-1) + idxji
+                    else if (trans.eq.'N') then
+                      idxklij = itr12sq(isymkl,isymij) + 
+     &                          nmatkl(isymkl)*(idxij-1) + idxkl
+                      idxlkji = itr12sq(isymkl,isymij) + 
+     &                          nmatkl(isymkl)*(idxji-1) + idxlk
+                    else
+                      call quit('Illeagl value for "TRANS" in '//
+     &                          'CC_R12PKLIJ') 
+                    end if
                     if (idxklij.le.idxlkji) then
                       matrix(idxklij)=matrix(idxklij)+matrix(idxlkji)
                       matrix(idxlkji)=matrix(idxklij)
@@ -1494,19 +1588,22 @@ C calculate X_{lk}^{ji}
  
       if (locdbg) then
         call around('Result in CC_R12PKLIJ')
-        call cc_prsqr12(matrix,isym,1,.false.)
+        call cc_prsqr12(matrix,isym,trans,1,.false.)
       end if
      
       !Test: calling these two routines should give the same as before!
       if (locdbg) then
-        call ccr12pck2(work(kscr1),isym,.TRUE.,work(kscr2),.false.)
-        call ccr12unpck2(work(kscr1),isym,work(kscr2),.false.)
+        iopt = 1
+        call ccr12pck2(work(kscr1),isym,.TRUE.,work(kscr2),trans,
+     &                 iopt)
+        call ccr12unpck2(work(kscr1),isym,work(kscr2),trans,iopt)
         call around('alternatively calculated result in CC_R12PKLIJ')
-        call cc_prsqr12(work(kscr2),isym,1,.false.)
+        call cc_prsqr12(work(kscr2),isym,trans,1,.false.)
 
-        call daxpy(ngamsq(isym),-one,matrix,1,work(kscr2),1)
+        call daxpy(ntr12sq(isym),-one,matrix,1,work(kscr2),1)
         write(lupri,*) 'Norm^2 of difference: ',
-     &    dnrm2(ngamsq(isym),work(kscr2),1)
+     &    dnrm2(ntr12sq(isym),work(kscr2),1)
+        call flshfo(lupri)
       end if     
 
       if (locdbg) write(lupri,*) 'Leaving CC_R12PKLIJ'
@@ -1542,22 +1639,22 @@ C----------------------------------------------------------------------
       integer lwork, lwrk0, kend0
       integer KTR12SQ,KTR12PK1,KTR12PK2,KTAMP12S,KTAMP12T
       integer NRHFTRIA     
-      integer lunit,idum,ij,n2
+      integer lunit,idum,ij,n2,nkilj(8)
       logical ldum
 
 
       call qenter('cc_r12tstform')
 
 
-      nrhftria = nrhft*(nrhft+1)/2 
+      nrhftria = nrhftb*(nrhftb+1)/2 
       n2 = nrhftria*nrhftria
 
       KTR12SQ = 1
-      KEND0   = KTR12SQ + NGAMSQ(1)
+      KEND0   = KTR12SQ + NTR12SQ(1)
 
       KTR12PK1 = KEND0
-      KTR12PK2 = KTR12PK1 + NGAMMA(1)
-      KEND0    = KTR12PK2 + NGAMMA(1)
+      KTR12PK2 = KTR12PK1 + NTR12AM(1)
+      KEND0    = KTR12PK2 + NTR12AM(1)
 
       KTAMP12S = KEND0
       KTAMP12T = KTAMP12S + NRHFTRIA*NRHFTRIA
@@ -1570,11 +1667,11 @@ C----------------------------------------------------------------------
 
   
 C     method 1:
-      CALL CC_R12GETCT(WORK(KTR12SQ),1,0,ketscl,.FALSE.,.TRUE.,
+      CALL CC_R12GETCT(WORK(KTR12SQ),1,0,ketscl,.FALSE.,'T',
      &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                 WORK(KEND0),LWRK0)
-      call cc_prsqr12(WORK(KTR12SQ),1,1,.true.)
-      CALL CCR12PCK2(WORK(KTR12PK1),1,.FALSE.,WORK(KTR12SQ),.true.)
+      call cc_prsqr12(WORK(KTR12SQ),1,'T',1,.true.)
+      CALL CCR12PCK2(WORK(KTR12PK1),1,.FALSE.,WORK(KTR12SQ),'T',1)
       call cc_prpr12(WORK(KTR12PK1),1,1,.true.)
 
 
@@ -1590,11 +1687,13 @@ C    &            nrhftria,nrhftria,1,lupri)
 C     call around('R12 triplet part')
 C     call output(work(KTAMP12T),1,nrhftria,1,nrhftria,
 C    &            nrhftria,nrhftria,1,lupri)
-C     CALL CCR12PCK(WORK(KTR12PK2),1,WORK(KTAMP12S),WORK(KTAMP12T))
+C     CALL CCR12PCK(WORK(KTR12PK2),1,WORK(KTAMP12S),WORK(KTAMP12T),
+C    &              nrhfb,nrhf,nkilj)
 C     call cc_prpr12(WORK(KTR12PK2),1,1,.true.)
 
 C     reconstruct singlet/triplet format from method 1:
-      call ccr12unpck(WORK(KTR12PK1),1,WORK(KTAMP12S),WORK(KTAMP12T))
+      call ccr12unpck(WORK(KTR12PK1),1,WORK(KTAMP12S),WORK(KTAMP12T),
+     &                nrhfb,nrhf)
       call around('R12 singlet part')
       call output(work(KTAMP12S),1,nrhftria,1,nrhftria,
      &            nrhftria,nrhftria,1,lupri)
@@ -1603,17 +1702,17 @@ C     reconstruct singlet/triplet format from method 1:
      &            nrhftria,nrhftria,1,lupri)
 
 C     resonstruct square matrix format from method 2:
-      call ccr12unpck2(WORK(KTR12PK2),1,WORK(KTR12SQ),.true.)
-      call cc_prsqr12(WORK(KTR12SQ),1,1,.true.)
+      call ccr12unpck2(WORK(KTR12PK2),1,WORK(KTR12SQ),'T',1)
+      call cc_prsqr12(WORK(KTR12SQ),1,'T',1,.true.)
 
 C     test P_kl^ij:
       ! Method 1:
-      call cc_r12pklij(WORK(KTR12SQ),1,work(kend0),lwrk0)
-      call cc_prsqr12(WORK(KTR12SQ),1,1,.true.)
+      call cc_r12pklij(WORK(KTR12SQ),1,'T',work(kend0),lwrk0)
+      call cc_prsqr12(WORK(KTR12SQ),1,'T',1,.true.)
       ! Method 2:
       call cc_r12vunpack(WORK(KTR12SQ),1,work(KTAMP12S),work(KTAMP12T),
-     &                   nrhftria,.TRUE.)
-      call cc_prsqr12(WORK(KTR12SQ),1,1,.true.)
+     &                   .TRUE.,nrhfb,nrhf)
+      call cc_prsqr12(WORK(KTR12SQ),1,'T',1,.true.)
 
 
       call quit('TEST DONE')
@@ -1628,7 +1727,8 @@ C     test P_kl^ij:
 C-----------------------------------------------------------------------
 C  purpose: r12 contribution to eta^(0) 
 C
-C           etar12sq   r12 part of eta^(0) vector of dim. ngamsq(isyres)
+C           etar12sq   r12 part of eta^(0) vector of dim. ntr12sq(isyres)
+C                      (occ. index pair leading)
 C           cmo        MO coefficient or lambda matrix
 C           isyres     symmetry of result (for eta = 1)
 C
@@ -1666,17 +1766,9 @@ C-----------------------------------------------------------------------
         write(lupri,*) 'memory available: ',lwork,' double words'
       end if
 
-C     do isymak = 1, nsym
-C       nvajkl(isymak) = 0
-C       do isymk = 1, nsym
-C         isyma = muld2h(isymak,isymk)
-C         nvajkl(isymak) = nvajkl(isymak) + nt1ao(isyma)*nmatij(isymk)
-C       end do
-C     end do
- 
       kvajkl = 1
       kvijkl = kvajkl + nvajkl(1)
-      kend1 = kvijkl + ngamsq(isyres)
+      kend1 = kvijkl + ntr12sq(isyres)
       lwrk1 = lwork - kend1
       if (lwrk1 .lt. 0) then
         call quit('Insufficient work space in cc_r12eta0')
@@ -1700,20 +1792,20 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Calculate CMO*V
 C-----------------------------------------------------------------------
-      call dzero(work(kvijkl),ngamsq(isyres))
+      call dzero(work(kvijkl),ntr12sq(isyres))
       call cc_r12mkvijkl(work(kvajkl),1,cmo,isyres,work(kend1),
      &                   lwrk1,.true.,one,work(kvijkl))
       if (locdbg) then
          write(lupri,*) 'norm^2(vijkl) after cc_r12mkvijkl:',
-     &    ddot(ngamsq(isyres),work(kvijkl),1,work(kvijkl),1)
+     &    ddot(ntr12sq(isyres),work(kvijkl),1,work(kvijkl),1)
       end if
 
 C-----------------------------------------------------------------------
 C     Make 2*Coulomb-Exchange: 2V(ij,kl)-V(ji,kl)
 C-----------------------------------------------------------------------
-      call cc_r12tcmesq(work(kvijkl),isyres,.false.)
+      call cc_r12tcmesq(work(kvijkl),isyres,'T',.false.)
 
-      call daxpy(ngamsq(isyres),two,work(kvijkl),1,etar12sq,1)
+      call daxpy(ntr12sq(isyres),two,work(kvijkl),1,etar12sq,1)
 
       if (locdbg) write(lupri,*) 'Leaving CC_R12ETA0'
       call qexit('cc_r12eta0')
@@ -1776,9 +1868,9 @@ C-----------------------------------------------------------------------
       isymxi = 1
 
       kxir12 = 1
-      kzetar12 = kxir12 + ngamma(isymxi)
-      kzetar12sq = kzetar12 + ngamma(1)
-      kend1  = kzetar12sq + ngamsq(1)
+      kzetar12 = kxir12 + ntr12am(isymxi)
+      kzetar12sq = kzetar12 + ntr12am(1)
+      kend1  = kzetar12sq + ntr12sq(1)
       lwrk1 = lwork - kend1
       if (locdbg) then
         kzeta1 = kend1
@@ -1810,12 +1902,12 @@ C       write(lupri,*) 'Will calculate R12 part for ',labelh
         call flshfo(lupri)
         ! allocate memory
         ktr12   = kend1
-        ktr12sq = ktr12 + ngamma(1)
-        kxir12sq = ktr12sq + ngamsq(1)
-        kxint   = kxir12sq + ngamsq(1)
-        kxintsq = kxint + ngamma(1)
-        kvxintsq  = kxintsq + ngamsq(1)
-        kprpao  = kvxintsq + ngamsq(isymxi)
+        ktr12sq = ktr12 + ntr12am(1)
+        kxir12sq = ktr12sq + ntr12sq(1)
+        kxint   = kxir12sq + nr12r12sq(1)
+        kxintsq = kxint + nr12r12p(1)
+        kvxintsq  = kxintsq + nr12r12sq(1)
+        kprpao  = kvxintsq + nr12r12sq(isymxi)
         kt1amp0 = kprpao + n2bst(isymxi)
         klamp0  = kt1amp0 + NT1AMX
         klamh0  = klamp0 + NLAMDT
@@ -1828,7 +1920,8 @@ C       write(lupri,*) 'Will calculate R12 part for ',labelh
         ! read R12 amplitudes from disk
         iopt = 32
         call cc_rdrsp('R0 ',0,1,iopt,model,dummy,work(ktr12))
-        call ccr12unpck2(work(ktr12),1,work(ktr12sq),.false.)
+        iopt = 1
+        call ccr12unpck2(work(ktr12),1,work(ktr12sq),'N',iopt)
 
         ! read X-integrals (R12 overlap matrix)
         luxint = 0
@@ -1836,13 +1929,14 @@ C       write(lupri,*) 'Will calculate R12 part for ',labelh
      &              .false.)
         rewind(luxint)
  9999   read(luxint) ian
-        read(luxint) (work(kxint+i), i=0, ngamma(1)-1 )
+        read(luxint) (work(kxint+i), i=0, nr12r12p(1)-1 )
         if (ian.ne.ianr12) goto 9999
         call gpclose(luxint,'KEEP')
-        call ccr12unpck2(work(kxint),1,work(kxintsq),.false.)
+        iopt = 2
+        call ccr12unpck2(work(kxint),1,work(kxintsq),'N',iopt)
 
         ! read in VXINT
-        call dzero(work(kvxintsq),ngamsq(isymxi))
+        call dzero(work(kvxintsq),nr12r12sq(isymxi))
         call cc_r12rdvxint(work(kvxintsq),work(kend2),lwrk2,one,
      &                     isymxi,labelh)
 
@@ -1862,13 +1956,14 @@ C       write(lupri,*) 'Will calculate R12 part for ',labelh
      &              work(kend2),lwrk2)
 
         ! calulate R12 part of Xi
-        call cc_r12xi(work(kxir12sq),isymxi,work(ktr12sq),1,
+        call cc_r12xi(work(kxir12sq),isymxi,'N',work(ktr12sq),1,
      &                work(kxintsq),work(kvxintsq),isymxi,work(kprpao),
      &                work(klamp0),work(klamh0),'N',work(kend2),lwrk2)
 
         ! pack Xi to triangular format
+        iopt = 1
         call ccr12pck2(work(kxir12),isymxi,.false.,work(kxir12sq),
-     &                 .false.)
+     &                 'N',iopt)
         call cclr_diasclr12(work(kxir12),brascl,isymxi)
 
 c      end if
@@ -1887,11 +1982,6 @@ C-----------------------------------------------------------------------
       iopt = 32
       call cc_rdrsp(listl,idlstl,1,iopt,model,dummy,work(kzetar12))
 
-C     if (locdbg) then
-C       call around('Lagrangian multipliers R12 part as read from file')
-C       call cc_prpr12(work(kzetar12),1,1,.FALSE.)
-C     end if
-
       if (locdbg) then
         !Read conventional multipliers (for comparison)
         IOPT = 3
@@ -1906,13 +1996,13 @@ C     end if
 C-----------------------------------------------------------------------
 C Calculate dot product
 C-----------------------------------------------------------------------
-      propr12 = ddot(ngamma(1),work(kzetar12),1,work(kxir12),1)
+      propr12 = ddot(ntr12am(1),work(kzetar12),1,work(kxir12),1)
 
       if (locdbg) then
         diacont = 0.0D0
         do isym = 1, nsym
-          do i = 1, nmatij(isym)
-            idx = igamma(isym,isym) + i*(i+1)/2 - 1
+          do i = 1, nmatki(isym)
+            idx = itr12am(isym,isym) + i*(i+1)/2 - 1
             diacont = diacont + work(kzetar12+idx)*work(kxir12+idx)
           end do
         end do 
@@ -1937,11 +2027,11 @@ C  purpose: r12 contribution to Eta{A} singles part
 C
 C  ETAA     singles part of Eta{A}
 C  ISYRES   symmetry of Eta{A}
-C  CTR12    R12 doubles Lagr. multipliers (ngamsq(isyctr))
+C  CTR12    R12 doubles Lagr. multipliers (ntr12sq(isyctr))
 C  ISYCTR   symmetry of Lagr. multipliers 
-C  TR12     R12 doubles amplitudes / trial vector (ngamsq(isyt12))
+C  TR12     R12 doubles amplitudes / trial vector (ntr12sq(isyt12))
 C  ISYT12   R12 amplitudes symmetry
-C  XINT     R12 overlap matrix (ngamsq(1))
+C  XINT     R12 overlap matrix (nr12r12sq(1))
 C  PRPAO    Perturbation operator integrals in AO basis
 C  ISYMV    Symmtetry of perturbation operator
 C  LAMDP    CMO matrix used for occ. index (assumed symm. 1) 
@@ -2088,19 +2178,17 @@ C-----------------------------------------------------
       end if
 
       if (locdbg) then
-        call around('R12 overlap matrix X')
-        call cc_prsqr12(xint,1,1,.false.)
         call around('R12 ground state amplitudes')
-        call cc_prsqr12(tr12,isyt12,1,.false.)
+        call cc_prsqr12(tr12,isyt12,'N',1,.false.)
         call around('R12 Lagrangian multipliers')
-        call cc_prsqr12(ctr12,isyctr,1,.false.)
+        call cc_prsqr12(ctr12,isyctr,'N',1,.false.)
       end if
 
 C----------------------
 C make contractions
 C----------------------
       kscr1 = kend1
-      kscr2 = kscr1 + ngamsq(isyt12)
+      kscr2 = kscr1 + ntr12sq(isyt12)
       kend2 = kscr2 + nmatij(muld2h(isyctr,isyt12))
       lwrk2 = lwork - kend2
       if (lwrk2 .lt. 0) then
@@ -2108,12 +2196,12 @@ C----------------------
       end if
 
       ! first contraction over k'l':
-      call dzero(work(kscr1),ngamsq(isyt12))
-      call cc_r12xi2b(work(kscr1),xint,1,'N',tr12,isyt12,'N',one)
+      call dzero(work(kscr1),ntr12sq(isyt12))
+      call cc_r12xi2b(work(kscr1),'N',xint,1,'N',tr12,isyt12,'N',one)
 
       if (locdbg) then
         call around('c*X')
-        call cc_prsqr12(work(kscr1),isyt12,1,.false.)
+        call cc_prsqr12(work(kscr1),isyt12,'N',1,.false.)
       end if
 
       ! second contraction over klm:
@@ -2124,25 +2212,25 @@ C----------------------
         do isymm = 1, nsym
           isymj = muld2h(isymmj,isymm)
           isymi = muld2h(isymmi,isymm)
-          koffscr1 = kscr1 + igamsq(isymkl,isymmj) + 
-     &               nmatij(isymkl)*imatij(isymm,isymj) 
-          koffctr  = 1 + igamsq(isymkl,isymmi) + 
-     &               nmatij(isymkl)*imatij(isymm,isymi)
+          koffscr1 = kscr1 + itr12sq(isymkl,isymmj) + 
+     &               nmatkl(isymkl)*imatij(isymm,isymj) 
+          koffctr  = 1 + itr12sq(isymkl,isymmi) + 
+     &               nmatkl(isymkl)*imatij(isymm,isymi)
           koffscr2 = kscr2 + imatij(isymj,isymi)
 C         write(lupri,*) 'symmetry isymkl, isymm: ',
 C    &                    isymkl,isymm
 C         write(lupri,*) 'SCR1:'
-C         call output(work(koffscr1),1,nmatij(isymkl)*nrhf(isymm),1,
-C    &                nrhf(isymj),nmatij(isymkl)*nrhf(isymm),
+C         call output(work(koffscr1),1,nmatkl(isymkl)*nrhf(isymm),1,
+C    &                nrhf(isymj),nmatkl(isymkl)*nrhf(isymm),
 C    &                nrhf(isymj),1,lupri)
 C         write(lupri,*) 'CTR:'
-C         call output(ctr12(koffctr),1,nmatij(isymkl)*nrhf(isymm),1,
-C    &                nrhf(isymi),nmatij(isymkl)*nrhf(isymm),
+C         call output(ctr12(koffctr),1,nmatkl(isymkl)*nrhf(isymm),1,
+C    &                nrhf(isymi),nmatkl(isymkl)*nrhf(isymm),
 C    &                nrhf(isymi),1,lupri)
           call dgemm('T','N',nrhf(isymj),nrhf(isymi),
-     &               nmatij(isymkl)*nrhf(isymm),one,work(koffscr1),
-     &               max(1,nmatij(isymkl)*nrhf(isymm)),ctr12(koffctr),
-     &               max(1,nmatij(isymkl)*nrhf(isymm)),one,
+     &               nmatkl(isymkl)*nrhf(isymm),one,work(koffscr1),
+     &               max(1,nmatkl(isymkl)*nrhf(isymm)),ctr12(koffctr),
+     &               max(1,nmatkl(isymkl)*nrhf(isymm)),one,
      &               work(koffscr2),max(1,nrhf(isymj)))
 C         write(lupri,*)'SCR2: imatij(isymj,isymi)=',imatij(isymj,isymi)
 C         call output(work(koffscr2),1,nrhf(isymj),1,

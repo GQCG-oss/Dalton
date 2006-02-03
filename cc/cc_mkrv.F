@@ -83,6 +83,7 @@ C
       CHARACTER*3 APPROX(0:14,2), IPCC
       CHARACTER*8 EOFLAB
       LOGICAL FRSTWR
+      INTEGER NKILJ(8)
 #include <r12int.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -446,6 +447,7 @@ C                                      Write out C^(ij)_kl,ab for
 C                                      approximation A, A', B, and *, resp.,
 C                                      for CC2-R12 model (WK/UniKA/30-12-2003).
 C
+C
                                        IF (FRSTWR
      &                                 .AND. A. LE. NORB1(ISYMA)
      &                                 .AND. B. LE. NORB1(ISYMB))
@@ -457,7 +459,6 @@ C
      &                                 -(UAKBL + EIJKL * RAKBL),
      &                                 -(UAKBL - SAKBL + EIJKL * RAKBL),
      &                                 -(EKLAB * RAKBL + EIJKL * RAKBL)
- 
 C
                                        EIJ = D1 / 
      *                                      (EV(KOFFI) + EV(KOFFJ) -
@@ -793,7 +794,6 @@ C
             EVS(IJ) = EV(I) + EV(J)
   491    CONTINUE
   490 CONTINUE
-
 c
 c    Write out orbital energies for CC2-R12 model 
 c
@@ -818,7 +818,7 @@ C
         CALL DSCAL(NSPAIR*NSPAIR,2.0D0,VS11,1)
         CALL DSCAL(NSPAIR*NSPAIR,2.0D0,VT11,1)
         CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,VT11,1)
-        CALL CCR12PCK(WORK(KSCR),1,VS11,VT11)
+        CALL CCR12PCK(WORK(KSCR),1,VS11,VT11,NRHF,NRHFA,NKILJ)
         CALL GPOPEN(LU43,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
  1244   READ(LU43,END=1243) IDUM
@@ -826,11 +826,11 @@ C
         GOTO 1244
  1243   CONTINUE
         WRITE(LU43) IANSAZ
-        WRITE(LU43) (WORK(KSCR-1+I), I=1, NGAMMA(1))
+        WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1))
         CALL GPCLOSE(LU43,'KEEP') 
 chf
 c       write(lupri,*)'Norm V out of MP2-R12:', 
-c    &   ddot(ngamma(1),work(kscr),1,work(kscr),1)
+c    &   ddot(nkilj(1),work(kscr),1,work(kscr),1)
 chf
         ! undo scaling
         CALL DSCAL(NSPAIR*NSPAIR,3.0D0,VT11,1)
@@ -842,7 +842,7 @@ C
         CALL DSCAL(NSPAIR*NSPAIR,4.0D0,RS11,1)
         CALL DSCAL(NSPAIR*NSPAIR,4.0D0,RT11,1)
         CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,RT11,1)
-        CALL CCR12PCK(WORK(KSCR),1,RS11,RT11)
+        CALL CCR12PCK(WORK(KSCR),1,RS11,RT11,NRHF,NRHF,NKILJ)
         CALL GPOPEN(LU43,FCCR12X,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
         IF (NOTONE) THEN 
@@ -852,7 +852,7 @@ C
  1245    CONTINUE
         END IF
         WRITE(LU43) IANSAZ
-        WRITE(LU43) (WORK(KSCR-1+I), I=1, NGAMMA(1)) 
+        WRITE(LU43) (WORK(KSCR-1+I), I=1, NKILJ(1)) 
         CALL GPCLOSE(LU43,'KEEP')
         ! undo scaling
         CALL DSCAL(NSPAIR*NSPAIR,3.0D0,RT11,1)
@@ -947,9 +947,9 @@ C
       CALL DSCAL(NSPAIR*NSPAIR,4.0D0,US11,1)
       CALL DSCAL(NSPAIR*NSPAIR,4.0D0,UT11,1)
       CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,UT11,1)
-      CALL CCR12PCK(WORK(KSCR),1,US11,UT11)   
+      CALL CCR12PCK(WORK(KSCR),1,US11,UT11,NRHF,NRHF,NKILJ)   
       WRITE(LU44) IANSAZ, IPDD, IPCC
-      WRITE(LU44) (WORK(KSCR-1+I), I=1, NGAMMA(1)) 
+      WRITE(LU44) (WORK(KSCR-1+I), I=1, NKILJ(1)) 
       ! undo scaling
       CALL DSCAL(NSPAIR*NSPAIR,3.0D0,UT11,1)
       CALL DSCAL(NSPAIR*NSPAIR,0.25D0,US11,1)
@@ -1083,14 +1083,21 @@ C
 c
 c     Write out amplitudes for CC2-R12 model (WK/UniKA/30-12-2003).
 c
+      IF (IPRINT .GT. 3) THEN
+         CALL AROUND('Singlet <C> matrix') 
+         CALL OUTPUT(CS11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
+         CALL AROUND('Triplet <C> matrix') 
+         CALL OUTPUT(CT11,1,NSPAIR,1,NAPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      END IF
+c
       CALL DSCAL(NSPAIR*NSPAIR,0.5D0,CS11,1)
       CALL DSCAL(NSPAIR*NSPAIR,0.5D0,CT11,1)
-      CALL CCR12PCK(WORK(KSCR),1,CS11,CT11)
+      CALL CCR12PCK(WORK(KSCR),1,CS11,CT11,NRHF,NRHFA,NKILJ)
       WRITE(LU45) IANSAZ,IPDD,IPCC
-      WRITE(LU45) (WORK(KSCR-1+I), I=1, NGAMMA(1)) 
+      WRITE(LU45) (WORK(KSCR-1+I), I=1, NKILJ(1)) 
 chf
 c     write(lupri,*)'Norm MP2-R12 amplitudes c: ', 
-c    &  ddot(ngamma(1),work(kscr),1,work(kscr),1)
+c    &  ddot(nkilj(1),work(kscr),1,work(kscr),1)
 chf
       ! undo scaling:
       CALL DSCAL(NSPAIR*NSPAIR,2.0D0,CS11,1)
@@ -1793,7 +1800,7 @@ C
                   DO 314 K = 1, NRHF(ISYMK)
                      DO 315 L = 1, NRHF(ISYML)
                         DO 316 A = 1, NORB1(ISYMA)
-			   IF (R12CBS) THEN
+                           IF (R12CBS) THEN
                               NSTRC = 1
                            ELSE
                               NSTRC = NORB1(ISYMC) + 1
@@ -1802,7 +1809,7 @@ C
                            NAK = IH1AM(ISYMA,ISYMK)
      *                         + NORB1(ISYMA)*(K-1) + A
                            DO 317 B = 1, NORB1(ISYMB) 
-			      IF (R12CBS) THEN
+                              IF (R12CBS) THEN
                                  NSTRD = 1
                               ELSE
                                  NSTRD = NORB1(ISYMD) + 1
@@ -1816,12 +1823,12 @@ C
                               DSM = D0
                               DO 318 C = NSTRC, NENDC       
                                  IF (C .LE. NORB1(ISYMC)) THEN
-				    NCK = IH1AM(ISYMC,ISYMK)
+                                    NCK = IH1AM(ISYMC,ISYMK)
      *                                  + NORB1(ISYMC)*(K-1) + C
                                     NCKBL = IH2AM(ISYMKC,ISYMLB)
      *                                    + INDEX(NCK,NBL)
                                  ELSE 
-				    NCK = IG1AM(ISYMC,ISYMK)
+                                    NCK = IG1AM(ISYMC,ISYMK)
      *                                  + NORB2(ISYMC)*(K-1)
      *                                  - NORB1(ISYMC) + C
                                     NCKBL = IH2AM(ISYMKC,ISYMLB)
@@ -1836,9 +1843,9 @@ C
                               DSM = D0     
                               DO 319 D = NSTRD, NENDD
                                  IF (D .LE. NORB1(ISYMD)) THEN
-				    NDL = IH1AM(ISYMD,ISYML)
+                                    NDL = IH1AM(ISYMD,ISYML)
      *                                  + NORB1(ISYMD)*(L-1) + D
-				    NDLAK = IH2AM(ISYMLD,ISYMKA)
+                                    NDLAK = IH2AM(ISYMLD,ISYMKA)
      *                                    + INDEX(NDL,NAK)
                                  ELSE
                                     NDL = IG1AM(ISYMD,ISYML)
@@ -1887,7 +1894,7 @@ C
                   DO 304 K = 1, NRHF(ISYMK)
                      DO 305 L = 1, NRHF(ISYML)
                         DO 306 A = 1, NORB1(ISYMA)
-			   IF (R12CBS) THEN
+                           IF (R12CBS) THEN
                               NSTRC = 1
                            ELSE
                               NSTRC = NORB1(ISYMC) + 1
@@ -1896,7 +1903,7 @@ C
                            NAK = IT1AM(ISYMA,ISYMK)
      *                         + NVIR(ISYMA)*(K-1) + A
                            DO 307 B = 1, NORB1(ISYMB) 
-			      IF (R12CBS) THEN
+                              IF (R12CBS) THEN
                                  NSTRD = 1
                               ELSE
                                  NSTRD = NORB1(ISYMD) + 1

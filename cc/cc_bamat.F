@@ -277,7 +277,7 @@ c/* Deck CC_BAMAT */
           KEND2   = KTHETA2 + NT2AM(ISYRES)
           IF (CCR12) THEN
             KTHETAR12 = KTHETA2 + NT2AM(ISYRES)
-            KEND2     = KTHETAR12 + NGAMMA(ISYRES)
+            KEND2     = KTHETAR12 + NTR12AM(ISYRES)
           END IF
         END IF
         IF (CCSDT .AND. IOPTRES.NE.5) THEN
@@ -528,17 +528,17 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
 * initialize the R12 doubles part of the result vector THETA:
 *---------------------------------------------------------------------*
       IF ( CCR12 ) THEN
-        CALL DZERO(WORK(KTHETAR12),NGAMMA(ISYRES))
+        CALL DZERO(WORK(KTHETAR12),NTR12AM(ISYRES))
 
         KLAMDPB = KEND2
         KLAMDHB = KLAMDPB + NGLMDT(ISYMTB)
         KLAMDPA = KLAMDHB + NGLMDT(ISYMTB)
         KLAMDHA = KLAMDPA + NGLMDT(ISYMTA)
         KT12AMP = KLAMDHA + NGLMDT(ISYMTA)
-        KXINTTRI= KT12AMP + MAX(NGAMSQ(ISYMTA),NGAMSQ(ISYMTB))
-        KXINTSQ = KXINTTRI + MAX(NGAMMA(1),NGAMSQ(ISYRES))
-        KSCR    = KXINTSQ + NGAMSQ(1)
-        KEND3   = KSCR + NGAMSQ(ISYRES)
+        KXINTTRI= KT12AMP + MAX(NTR12SQ(ISYMTA),NTR12SQ(ISYMTB))
+        KXINTSQ = KXINTTRI + MAX(NR12R12P(1),NTR12SQ(ISYRES))
+        KSCR    = KXINTSQ + NR12R12SQ(1)
+        KEND3   = KSCR + NTR12SQ(ISYRES)
         LEND3   = LWORK - KEND3
         IF (LEND3 .LT. 0) THEN
           CALL QUIT('Insufficient work space in CC_BAMAT')
@@ -561,10 +561,11 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
      &              DUMMY,.FALSE.)
         REWIND(LUNIT)
  8888   READ(LUNIT) IAN
-        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NGAMMA(1))
+        READ(LUNIT) (WORK(KXINTTRI-1+I), I=1, NR12R12P(1))
         IF (IAN.NE.IANR12) GOTO 8888
         CALL GPCLOSE(LUNIT,'KEEP')
-        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),.FALSE.)
+        IOPT = 2
+        CALL CCR12UNPCK2(WORK(KXINTTRI),1,WORK(KXINTSQ),'N',IOPT)
 C
         DO I = 1, 2
           IF (I.EQ.1) THEN
@@ -579,7 +580,7 @@ C
             IDLST1 = IDLSTB
           END IF
           !read R12 response amplitudes
-          CALL CC_R12GETCT(WORK(KT12AMP),ISYM1,2,KETSCL,.FALSE.,.FALSE.,
+          CALL CC_R12GETCT(WORK(KT12AMP),ISYM1,2,KETSCL,.FALSE.,'N',
      &                 DUMMY,DUMMY,DUMMY,LIST1,IDLST1,WORK(KEND3),LEND3)
           !calculate....
           IF (I.EQ.1) THEN
@@ -587,7 +588,7 @@ C
      &                      WORK(KPERT),ISYMO,WORK(KLAMDP0),
      &                      WORK(KLAMDHB),ISYM2,'N',
      &                      WORK(KEND3),LEND3)
-            CALL DCOPY(NGAMSQ(ISYRES),WORK(KSCR),1,WORK(KXINTTRI),1)
+            CALL DCOPY(NTR12SQ(ISYRES),WORK(KSCR),1,WORK(KXINTTRI),1)
           ELSE IF (I.EQ.2) THEN
             CALL CC_R12XI2A(WORK(KSCR),ISYRES,WORK(KT12AMP),ISYM1,
      &                      WORK(KPERT),ISYMO,WORK(KLAMDP0),
@@ -596,17 +597,14 @@ C
           END IF
         END DO       
 C
-        CALL DAXPY(NGAMSQ(ISYRES),ONE,WORK(KXINTTRI),1,WORK(KSCR),1)
-        CALL DZERO(WORK(KXINTTRI),NGAMSQ(ISYRES))
-C        CALL CC_R12XI2B(WORK(KXINTTRI),WORK(KSCR),ISYRES,'T',
-C     &                  WORK(KXINTSQ),1,'T',-ONE)
-        CALL CC_R12XI2B(WORK(KXINTTRI),WORK(KXINTSQ),1,'N',
+        CALL DAXPY(NTR12SQ(ISYRES),ONE,WORK(KXINTTRI),1,WORK(KSCR),1)
+        CALL DZERO(WORK(KXINTTRI),NTR12SQ(ISYRES))
+        CALL CC_R12XI2B(WORK(KXINTTRI),'N',WORK(KXINTSQ),1,'N',
      &                  WORK(KSCR),ISYRES,'N',-ONE)
 C
-C        CALL CCR12PCK2(WORK(KTHETAR12),ISYRES,.FALSE.,WORK(KXINTTRI),
-C     &                 .TRUE.)
+        IOPT = 1
         CALL CCR12PCK2(WORK(KTHETAR12),ISYRES,.FALSE.,WORK(KXINTTRI),
-     &                 .FALSE.)
+     &                 'N',IOPT)
         CALL CCLR_DIASCLR12(WORK(KTHETAR12),BRASCL,ISYRES)
 C
       END IF
@@ -656,8 +654,8 @@ C
         
         IF (CCR12) THEN
           CALL PUTWA2(LUBMAT,FILBAM,WORK(KTHETAR12),IADRTH,
-     &                NGAMMA(ISYRES))
-          IADRTH = IADRTH + NGAMMA(ISYRES)
+     &                NTR12AM(ISYRES))
+          IADRTH = IADRTH + NTR12AM(ISYRES)
         END IF
 
         IF (LOCDBG) THEN
@@ -669,7 +667,7 @@ C
          IF (.NOT.CCS) XNORM = XNORM +
      &           DDOT(NT2AM(ISYRES),WORK(KTHETA2),1,WORK(KTHETA2),1)
          IF (CCR12) XNORM = XNORM +
-     &        DDOT(NGAMMA(ISYRES),WORK(KTHETAR12),1,WORK(KTHETAR12),1)
+     &        DDOT(NTR12AM(ISYRES),WORK(KTHETAR12),1,WORK(KTHETAR12),1)
          WRITE (LUPRI,*) 'Norm:', XNORM
 
          Call AROUND('B{O} matrix transformation written to file:')
@@ -724,9 +722,9 @@ C
            WRITE (LUPRI,*) 'index of result vector:',IBATRAN(4,ITRAN)
            XNORM = DDOT(NT1AM(ISYRES),WORK(KTHETA1),1,WORK(KTHETA1),1)
            IF (.NOT.CCS) XNORM = XNORM +
-     &          DDOT(NT2AM(ISYRES),WORK(KTHETA2),1,WORK(KTHETA2),1)
+     &         DDOT(NT2AM(ISYRES),WORK(KTHETA2),1,WORK(KTHETA2),1)
            IF (CCR12) XNORM = XNORM +
-     &          DDOT(NGAMMA(ISYRES),WORK(KTHETAR12),1,WORK(KTHETAR12),1)
+     &         DDOT(NTR12AM(ISYRES),WORK(KTHETAR12),1,WORK(KTHETAR12),1)
            WRITE (LUPRI,*) 'norm^2 of result vector:',XNORM
          END IF
 

@@ -97,13 +97,13 @@ C
       CHARACTER*(*) APROXR12
 C
       LOGICAL FCKCON,NEWGS,CC1BSA,ETRAN,LCONT,LRES,LAMP,CC2R12,LMKVAJKL
-      LOGICAL DEBUGV,LVIJKL,LVABKL,LVAJKL
+      LOGICAL DEBUGV,LVIJKL,LVABKL,LVAJKL,LCC2R12A3,CCSDR12
       PARAMETER (DEBUGV = .FALSE.)
 C
       INTEGER IGLMRHS(8,8),IGLMVIS(8,8),NGLMDS(8),ICMO(8,8),NCMO(8),
      &        IMAIJM(8,8),NMAIJM(8),IMATIJM(8,8),NMATIJM(8),
-     &        NGAMSM(8),IGAMSM(8,8),
-     &        IRGKLS(8,8),NRGKLS(8),IR1BASM(8,8),NR1BASM(8),
+     &        NGAMSM(8),IGAMSM(8,8),IMAKLM(8,8),NMAKLM(8),
+     &        IRGIJS(8,8),NRGIJS(8),IR1BASM(8,8),NR1BASM(8),
      &        IR2BASM(8,8),NR2BASM,IR1XBASM(8,8),NR1XBASM(8),
      &        IR2XBASM(8,8),IMATF(8,8),NMATF(8)
 C
@@ -123,8 +123,15 @@ C
          WRITE(LUPRI,*) ' In CC_RHTR Right transformation routine:'
          WRITE(LUPRI,*) ' CCSDT, CC1A, CC1B, CC3: ',CCSDT, CC1A,
      &        CC1B, CC3
+         WRITE(LUPRI,*) ' CCSD, CC2:',CCSD,CC2
 C
       ENDIF
+C
+CCN   !set LCC2R12A3
+      LCC2R12A3 = CC2 .AND. CCR12 .AND. IANR12.EQ.3 
+CCN
+      !set CCSDR12
+      CCSDR12 = CCR12 .AND. (.NOT.CC2) 
 C
 C---------------------------
 C     For ccs no c2 vectors.
@@ -269,8 +276,8 @@ C
 c  
       IF (CCR12.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
         CALL CC_R12OFFS23(IGLMRHS,IGLMVIS,NGLMDS,ICMO,NCMO,
-     &                    IMAIJM,NMAIJM,IMATIJM,NMATIJM,
-     &                    IGAMSM,NGAMSM,IRGKLS,NRGKLS,
+     &                    IMAIJM,NMAIJM,IMAKLM,NMAKLM,IMATIJM,NMATIJM,
+     &                    IGAMSM,NGAMSM,IRGIJS,NRGIJS,
      &                    IR1BASM,NR1BASM,IR2BASM,NR2BASM,IR1XBASM,
      &                    NR1XBASM,IR2XBASM,IMATF,NMATF)
 
@@ -1117,6 +1124,16 @@ C
          ENDIF
 C
 C--------------------------------------------------------------
+C        Add B'-Term for CCSD(R12)
+C--------------------------------------------------------------
+C
+         IF (CCSDR12) THEN
+           IAMP = 1
+           CALL CCRHS_BP(RHO2,ISYMTR,IAMP,FC12AM,LUFC12,IV+IVEC-1,
+     *                   KETSCL,WORK(KEND1),LWRK1)
+         END IF
+C
+C--------------------------------------------------------------
 C        Transform the Omega2 vector to the MO basis.
 C        We thus have the B(C2) and (a,i-bar|bj) contributions.
 C--------------------------------------------------------------
@@ -1168,7 +1185,7 @@ C     For CC2-R12 ansatz 3 calculate the contribution of
 C     r^ab_mn g^ij_ab-bar to the V-bar intermediates:
 C-------------------------------------------------------
 C
-      IF (CC2 .AND. CCR12 .AND. IANR12.EQ.3) THEN
+      IF (LCC2R12A3) THEN
          DTIME = SECOND()
 
          ! read g^ij_ab-bar (contained in the doubles result vector)
@@ -1181,7 +1198,7 @@ C
          LUNIT = 0
          CALL GPOPEN(LUNIT,FR12R12,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,.FALSE.)
-         READ(LUNIT)(C2AM(I),I=1,NT2AMX)  
+         READ(LUNIT)(C2AM(I),I=1,NT2R12(1))  
          CALL GPCLOSE(LUNIT,'KEEP')
 
          DTIME = SECOND() - DTIME
@@ -1189,12 +1206,12 @@ C
 
          ! allocate memory for one squared and one packed V
          KVIJKL = KEND1
-         KEND2  = KVIJKL + NGAMSQ(ISYMTR)
+         KEND2  = KVIJKL + NTR12SQ(ISYMTR)
          LWRK2  = LWORK  - KEND2
-         IF (LWRK2.LT.NGAMMA(ISYMTR)) 
+         IF (LWRK2.LT.NTR12AM(ISYMTR)) 
      &      CALL QUIT('Insufficient work space in cc_rhtr')
          
-         CALL DZERO(WORK(KVIJKL),NGAMSQ(ISYMTR))
+         CALL DZERO(WORK(KVIJKL),NTR12SQ(ISYMTR))
 
          ! calculate the contribution multiplied with a factor
          ! of 1/2 because a symmetrization projector applied
@@ -1203,13 +1220,16 @@ C
      &                  WORK(KEND2),LWRK2)
 
          ! save result in packed triangular from on file
-         CALL CCR12PCK2(WORK(KEND2),ISYMTR,.FALSE.,WORK(KVIJKL),.TRUE.)
-         CALL CC_WVEC(LUFR12,FRHO12,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+         IOPT = 1
+         CALL CCR12PCK2(WORK(KEND2),ISYMTR,.FALSE.,WORK(KVIJKL),'T',
+     &                  IOPT)
+         CALL CC_WVEC(LUFR12,FRHO12,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
      *                IV+IVEC-1,WORK(KEND2))
       END IF
 C
+CCN   ! added LCC2R12A3  
       IF (((.NOT. MINSCR).AND. (.NOT. CCS))
-     *        .OR.(.NOT.(CCS.OR.CC2))) THEN
+     *        .OR.(.NOT.(CCS.OR.CC2)).OR.LCC2R12A3) THEN
 C
 C-----------------------------------
 C        Readin C2 amplitude in RHO.
@@ -1838,7 +1858,7 @@ C
               ! allocate memory for V intermediates
               KVMUJTKL = KEND1
               KVIJKL   = KVMUJTKL + NVAJKL(1)
-              KEND2    = KVIJKL   + NGAMSQ(ISYMTR)
+              KEND2    = KVIJKL   + NTR12SQ(ISYMTR)
 c  
               IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
                 KLAMDPCS = KEND2
@@ -1850,7 +1870,7 @@ c
                 CALL QUIT('Insufficient work space in cc_rhtr')
               END IF
 C
-              CALL DZERO(WORK(KVIJKL),NGAMSQ(ISYMTR))
+              CALL DZERO(WORK(KVIJKL),NTR12SQ(ISYMTR))
 C
               TIMR12CPU = 0.0d0
               TIMR12WAL = 0.0d0
@@ -1866,22 +1886,22 @@ C
               ELSE
                 !allocate memory:
                 kvxintsq = kend2
-                kfieldao = kvxintsq + ngamsq(1)
+                kfieldao = kvxintsq + nr12r12sq(1)
                 kxinttri = kfieldao + n2bst(1)
-                kxintsq  = kxinttri + ngamma(1)
-                ktr12sq  = kxintsq + ngamsq(1)
-                kscr     = ktr12sq + ngamsq(1)
-                kc12sq   = kscr + ngamsq(isymtr) 
-                kend3    = kc12sq + ngamsq(isymtr) 
+                kxintsq  = kxinttri + nr12r12p(1)
+                ktr12sq  = kxintsq + nr12r12sq(1)
+                kscr     = ktr12sq + ntr12sq(1)
+                kc12sq   = kscr + ntr12sq(isymtr) 
+                kend3    = kc12sq + ntr12sq(isymtr) 
                 lwrk3    = lwork - kend3
                 if (lwrk3.lt.0) then
                   call quit('Insufficient memory in CC_RHTR')
                 end if
 C
                 !intitialize fields
-                call dzero(work(kvxintsq),ngamsq(1))
+                call dzero(work(kvxintsq),nr12r12sq(1))
                 call dzero(work(kfieldao),n2bst(1))
-                call dzero(work(kscr),ngamsq(isymtr))
+                call dzero(work(kscr),ntr12sq(isymtr))
 C
                 !sum up fields
                 DO IF = 1, NFIELD
@@ -1901,7 +1921,7 @@ C
                 !read R12 trial vector
                 ifile = IV+IVEC-1
                 call cc_r12getct(work(kc12sq),isymtr,1,ketscl,.false.,
-     &                           .false.,lufc12,fc12am,ifile,cdummy,
+     &                           'N',lufc12,fc12am,ifile,cdummy,
      &                           idummy,work(kend3),lwrk3)
                 !read R12 overlap matrix
                 lunit = 0
@@ -1909,14 +1929,16 @@ C
      &                      idummy,.false.)
                 rewind(lunit)
  8888           read(lunit) ian
-                read(lunit) (work(kxinttri-1+i), i=1, ngamma(1))
+                read(lunit) (work(kxinttri-1+i), i=1, nr12r12p(1))
                 if (ian.ne.ianr12) goto 8888
                 call gpclose(lunit,'KEEP')
-                call ccr12unpck2(work(kxinttri),1,work(kxintsq),.false.)
+                iopt = 2
+                call ccr12unpck2(work(kxinttri),1,work(kxintsq),'N',
+     &                           iopt)
 
                 !read R12 ground state amplitudes
                 call cc_r12getct(work(ktr12sq),1,0,dummy,.false.,
-     &                           .false.,lufc12,fc12am,ifile,cdummy,
+     &                           'N',lufc12,fc12am,ifile,cdummy,
      &                           idummy,work(kend3),lwrk3)
 C
                 !calculate contributions:
@@ -1926,23 +1948,23 @@ C
      &                          work(kfieldao),1,work(klamdp),
      &                          work(klhc1),isymtr,'N',
      &                          work(kend3),lwrk3)
-                call cc_r12xi2b(work(kvijkl),work(kscr),isymtr,'T',
-     &                          work(kxintsq),1,'T',-one)
+                call cc_r12xi2b(work(kvijkl),'T',work(kxintsq),1,'N',
+     &                          work(kscr),isymtr,'N',-one)
 C
                 !second contribution:
-                call cc_r12xi(work(kscr),isymtr,work(kc12sq),isymtr,
+                call cc_r12xi(work(kscr),isymtr,'T',work(kc12sq),isymtr,
      &                        work(kxintsq),work(kvxintsq),1,
      &                        work(kfieldao),work(klamdp),work(klamdh),
      &                        'N',work(kend3),lwrk3)
-                !transpose: in CC_R12XI the r12-pair index (kl) is leading,
-                !in RHOR12 the occ. index pair (ij) is leading!!!
-                call cclr_trsqr12(work(kscr),isymtr)
+C               !transpose: in CC_R12XI the r12-pair index (kl) is leading,
+C               !in RHOR12 the occ. index pair (ij) is leading!!!
+C               call cclr_trsqr12(work(kscr),isymtr)
                 !add it to VIJKL
-                call daxpy(ngamsq(isymtr),one,work(kscr),1,work(kvijkl),
-     &                     1) 
+                call daxpy(ntr12sq(isymtr),one,work(kscr),1,
+     &                     work(kvijkl),1) 
                 !need to scale, because WORK(KVIJKL) (F' contribution) is
                 !scaled below with 2.0
-                CALL DSCAL(NGAMSQ(ISYMTR),0.5D0,WORK(KVIJKL),1)
+                CALL DSCAL(NTR12SQ(ISYMTR),0.5D0,WORK(KVIJKL),1)
 C
               END IF
             END IF
@@ -1951,320 +1973,335 @@ C           -------------------------
 C           Calculate the F'+E' term:
 C           -------------------------
 C   
-              IF(IANR12.EQ.2.OR.IANR12.EQ.3) THEN
-                ! get tranformation matrix Lambda^hbar for active
-                ! and inactive occupied molecular orbitals
-                CALL LAMMATS(WORK(KLAMDPCS),WORK(KLAMDHCS),C1AM(1,IV),
-     &                       ISYMTR,.FALSE.,.TRUE.,
-     &                       NGLMDS,IGLMRHS,IGLMVIS,ICMO,
-     &                       WORK(KEND2),LWRK2)
-                ISYMV = ISYMTR
-                ISYMH = 1
-                ISYMHCS = ISYMTR
-                LRES  = .TRUE.
+            IF(IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+              ! get tranformation matrix Lambda^hbar for active
+              ! and inactive occupied molecular orbitals
+              CALL LAMMATS(WORK(KLAMDPCS),WORK(KLAMDHCS),C1AM(1,IV),
+     &                     ISYMTR,.FALSE.,.TRUE.,
+     &                     NGLMDS,IGLMRHS,IGLMVIS,ICMO,
+     &                     WORK(KEND2),LWRK2)
+              ISYMV = ISYMTR
+              ISYMH = 1
+              ISYMHCS = ISYMTR
+              LRES  = .TRUE.
  
-                IF (IANR12.EQ.3) THEN
-                  CALL CC_RVEC(LUFR12,FRHO12,NGAMMA(ISYMTR),
-     *                         NGAMMA(ISYMTR),IV+IVEC-1,WORK(KEND2))
-                  CALL CCR12UNPCK2(WORK(KEND2),ISYMTR,
-     *                             WORK(KVIJKL),.TRUE.)
-                ELSE
-                  CALL DZERO(WORK(KVIJKL),NGAMSQ(ISYMTR))
-                END IF
-
-                CALL GETTIM(T0,W0)
-                ! generate first part of Vbar
-                CALL CC_R12INTF2(WORK(KVIJKL),WORK(KLAMDH),ISYMH,
-     &                           WORK(KLAMDHS),ISYMV,WORK(KLAMDHCS),
-     &                           ISYMHCS,WORK(KEND2),LWRK2)
-                CALL GETTIM(T1,W1)
-                TIMINTF2CPU = T1-T0
-                TIMINTF2WAL = W1-W0
-                TIMR12CPU = TIMR12CPU + (T1-T0)
-                TIMR12WAL = TIMR12WAL + (W1-W0)
-c
-                ! generate second part of Vbar
-                LVAJKL = .FALSE.
-                LVABKL = .FALSE.
-                LVIJKL = .TRUE.
-                IOPTBAS = 1
-                FACTERM23 = ONE
-c
-                CALL GETTIM(T0,W0)
-                CALL CC_MOFCONR12(WORK(KLAMDH),1,
-     &                            WORK(KLAMDHS),WORK(KLAMDPS),
-     &                            WORK(KLAMDHCS),ISYMTR,
-     &                            WORK(KVIJKL),FACTERM23,DUMMY,DUMMY,
-     &                            LVIJKL,LVAJKL,LVABKL,IOPTBAS,
-     &                            TIMRDAO,TIMFR12,TIMINTR12,
-     &                            IGLMRHS,NGLMDS,IMAIJM,NMAIJM,
-     &                            WORK(KEND2),LWRK2)
-               CALL GETTIM(T1,W1)
-               TIMMOFR12CPU = T1-T0
-               TIMMOFR12WAL = W1-W0
-               TIMR12CPU = TIMR12CPU + (T1-T0)
-               TIMR12WAL = TIMR12WAL + (W1-W0)
+              IF (IANR12.EQ.3) THEN
+                CALL CC_RVEC(LUFR12,FRHO12,NTR12AM(ISYMTR),
+     *                       NTR12AM(ISYMTR),IV+IVEC-1,WORK(KEND2))
+                IOPT = 1
+                CALL CCR12UNPCK2(WORK(KEND2),ISYMTR,
+     *                           WORK(KVIJKL),'T',IOPT)
+              ELSE
+                CALL DZERO(WORK(KVIJKL),NTR12SQ(ISYMTR))
               END IF
-           
-              ! read V(mu jt,kl)
-              LUVAJTKL = 0
-              CALL GPOPEN(LUVAJTKL,FVAJTKL,'UNKNOWN',' '
-     &             ,'UNFORMATTED', IDUMMY,.FALSE.) 
-              REWIND(LUVAJTKL)
-              READ(LUVAJTKL) (WORK(KVMUJTKL+I-1), I = 1,NVAJKL(1))
-              CALL GPCLOSE(LUVAJTKL,'KEEP')
-c          
-c             ! make P*V(it,jt,k,l) 
-c
               CALL GETTIM(T0,W0)
-
-              CALL CC_R12MKVIJKL(WORK(KVMUJTKL),1,WORK(KLHC1),ISYMTR,
-     &                           WORK(KEND2),LWRK2,.TRUE.,
-     &                           1.0D0,WORK(KVIJKL))
-              CALL DSCAL(NGAMSQ(ISYMTR),2.0D0,WORK(KVIJKL),1)
-
+              ! generate first part of Vbar
+              CALL CC_R12INTF2(WORK(KVIJKL),WORK(KLAMDH),ISYMH,
+     &                         WORK(KLAMDHS),ISYMV,WORK(KLAMDHCS),
+     &                         ISYMHCS,WORK(KEND2),LWRK2)
               CALL GETTIM(T1,W1)
-              TIMMKVIJKLCPU = T1-T0
-              TIMMKVIJKLWAL = W1-W0
+              TIMINTF2CPU = T1-T0
+              TIMINTF2WAL = W1-W0
               TIMR12CPU = TIMR12CPU + (T1-T0)
               TIMR12WAL = TIMR12WAL + (W1-W0)
 c
-              IF ((IANR12.EQ.2.OR.IANR12.EQ.3).AND.DEBUGV) THEN
-c               symmetrize V bar for test
-                KVSYM = KEND2
-                KEND2 = KVSYM + NGAMSQ(ISYMTR)
-                CALL SYMV(WORK(KVIJKL),ISYMTR,WORK(KVSYM),
-     &                    NRHF,IMATIJ,IGAMSQ,NMATIJ,WORK(KEND2),LWRK2)
-                ! when testing dscal from above has to be commented out
-                CALL DSCAL(NGAMSQ(ISYMTR),2.0d0,WORK(KVSYM),1)
-c             
-                WRITE(LUPRI,*)'CC2-R12 <V BAR> OUT OF PROGRAM'
-                DO ISYMIJ = 1, NSYM
-                  ISYMKL = MULD2H(ISYMIJ,ISYMTR)
-                  WRITE(LUPRI,*) 'ISYMIJ,ISYMKL:',ISYMIJ,ISYMKL
-                  CALL OUTPUT(WORK(KVSYM+IGAMSQ(ISYMIJ,ISYMKL)),1,
-     &                 NMATIJ(ISYMIJ),1,NMATIJ(ISYMKL),NMATIJ(ISYMIJ),
-     &                 NMATIJ(ISYMKL),1,LUPRI)
-                END DO 
-              END IF
-chf
-              IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
-                IF (LCONT) THEN
-                  KC12AM = KEND2
-                  KVPCK = KC12AM + NGAMMA(ISYMTR)
-                  KEND2 = KVPCK + NGAMMA(ISYMTR)                  
-
-                  CALL CC_RVEC(LUFC12,FC12AM,NGAMMA(ISYMTR),
-     &                         NGAMMA(ISYMTR),IVEC+IV-1,WORK(KC12AM))
-                  CALL CCR12PCK2(WORK(KVPCK),ISYMTR,.TRUE.,WORK(KVIJKL),
-     &                           .TRUE.)
-                  CALL DSCAL(NGAMMA(ISYMTR),0.5D0,WORK(KVPCK),1)
-
-                  CONT(9,IV) = 
-     &             -DDOT(NGAMMA(ISYMTR),WORK(KVPCK),1,WORK(KC12AM),1)
-                END IF
-                ! calculate C*R2
-                ! (C2AM is used here as scratch area)
-                LRES = .TRUE.
-                IFILE = IV + IVEC -1 
-c
-                CALL GETTIM(T0,W0)
-                CALL CCRHS_EPP(WORK(KVIJKL),C2AM,ISYMTR,WORK(KEND2),
-     &                         LWRK2,APROXR12,LRES,LUFC2,FC2AM,IFILE)
-                CALL GETTIM(T1,W1)
-                TIMEPPCPU = T1-T0 
-                TIMEPPWAL = W1-W0
-                TIMR12CPU = TIMR12CPU + (T1-T0)
-                TIMR12WAL = TIMR12WAL + (W1-W0)
-                IF (LCONT) THEN
-                  CALL CCR12PCK2(WORK(KVPCK),ISYMTR,.TRUE.,WORK(KVIJKL),
-     &                           .TRUE.)
-                  CALL DSCAL(NGAMMA(ISYMTR),0.5D0,WORK(KVPCK),1)
-
-                  CONT(9,IV) = CONT(9,IV) +
-     &             DDOT(NGAMMA(ISYMTR),WORK(KVPCK),1,WORK(KC12AM),1)
-                END IF
-C               Read in result vector.
-                CALL CC_RVEC(LUFR2,FRHO2,NRHO2,NT2AM(ISYMTR),
-     *                IV + ITR  -1,RHO2)
-                IF (LCONT) THEN
-                  CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
-     *                  IVEC+IV-1,C2AM)
-                  CALL CCLR_DIASCL(C2AM,XHALF,ISYMTR)
-                  CONT(10,IV) = -DDOT(NT2AM(ISYMTR),RHO2,1,C2AM,1)
-                END IF
-                LRES = .TRUE.
-                IFILE = IV + IVEC -1 
-                ! calculate C*R12
-c
-                CALL GETTIM(T0,W0)
-                CALL CCRHS_EPPP(RHO2,WORK(KEND2),LWRK2,APROXR12,LRES,
-     &                          LUFC12,FC12AM,IFILE,ISYMTR)
-                CALL GETTIM(T1,W1)
-                TIMEPPPCPU = T1-T0
-                TIMEPPPWAL = W1-W0
-                TIMR12CPU = TIMR12CPU + (T1-T0)
-                TIMR12WAL = TIMR12WAL + (W1-W0)
-C               write out result vector.
-                CALL CC_WVEC(LUFR2,FRHO2,NRHO2,NT2AM(ISYMTR),
-     *                IV + ITR -1,RHO2)
-                IF (LCONT) THEN
-                  CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
-     *                  IVEC+IV-1,C2AM)
-                  CALL CCLR_DIASCL(C2AM,XHALF,ISYMTR)
-                  CONT(10,IV) = CONT(10,IV) + 
-     &                          DDOT(NT2AM(ISYMTR),RHO2,1,C2AM,1)
-                END IF
-              END IF
- 
-              IFILE = IV + IVEC -1 
-              ! R*B
+              ! generate second part of Vbar
+              LVAJKL = .FALSE.
+              LVABKL = .FALSE.
+              LVIJKL = .TRUE.
+              IOPTBAS = 1
+              FACTERM23 = ONE
 c
               CALL GETTIM(T0,W0)
-              CALL CCRHS_EP(WORK(KVIJKL),ISYMTR,LCONT,CONT(17,IV),
-     &                      WORK(KEND2),LWRK2,1,FC12AM,LUFC12,
-     &                      FRHO12,LUFR12,IFILE,APROXR12,
-     &                      BRASCL,KETSCL)
-           
-c             TIMEP = TIMEP + ( SECOND() - DTIME )
-              CALL GETTIM(T1,W1)
-              TIMEPCPU = T1-T0
-              TIMEPWAL = W1-W0
-              TIMR12CPU = TIMR12CPU + (T1-T0)
-              TIMR12WAL = TIMR12WAL + (W1-W0)
-              IF ((IANR12.EQ.2.OR.IANR12.EQ.3) .AND. LCONT) THEN
-                ! avoid double counting of the EPP contribution
-                CONT(17,IV) = CONT(17,IV) - CONT(9,IV)
-              END IF
-chf
+              CALL CC_MOFCONR12(WORK(KLAMDH),1,
+     &                          WORK(KLAMDHS),WORK(KLAMDPS),
+     &                          WORK(KLAMDHCS),ISYMTR,
+     &                          WORK(KVIJKL),FACTERM23,DUMMY,DUMMY,
+     &                          LVIJKL,LVAJKL,LVABKL,IOPTBAS,
+     &                          TIMRDAO,TIMFR12,TIMINTR12,
+     &                          IGLMRHS,NGLMDS,IMAIJM,NMAIJM,
+     &                          IMAKLM,NMAKLM,WORK(KEND2),LWRK2)
+             CALL GETTIM(T1,W1)
+             TIMMOFR12CPU = T1-T0
+             TIMMOFR12WAL = W1-W0
+             TIMR12CPU = TIMR12CPU + (T1-T0)
+             TIMR12WAL = TIMR12WAL + (W1-W0)
+            END IF
+          
+            ! read V(mu jt,kl)
+            LUVAJTKL = 0
+            CALL GPOPEN(LUVAJTKL,FVAJTKL,'UNKNOWN',' '
+     &           ,'UNFORMATTED', IDUMMY,.FALSE.) 
+            REWIND(LUVAJTKL)
+            READ(LUVAJTKL) (WORK(KVMUJTKL+I-1), I = 1,NVAJKL(1))
+            CALL GPCLOSE(LUVAJTKL,'KEEP')
+c         
+c           ! make P*V(it,jt,k,l) 
+c
+            CALL GETTIM(T0,W0)
 
-c             -------------------------
-c             Calculate G'(R2') term:
-c             -------------------------
+            CALL CC_R12MKVIJKL(WORK(KVMUJTKL),1,WORK(KLHC1),ISYMTR,
+     &                         WORK(KEND2),LWRK2,.TRUE.,
+     &                         1.0D0,WORK(KVIJKL))
+            CALL DSCAL(NTR12SQ(ISYMTR),2.0D0,WORK(KVIJKL),1)
+            CALL GETTIM(T1,W1)
+            TIMMKVIJKLCPU = T1-T0
+            TIMMKVIJKLWAL = W1-W0
+            TIMR12CPU = TIMR12CPU + (T1-T0)
+            TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+            IF ((IANR12.EQ.2.OR.IANR12.EQ.3).AND.DEBUGV) THEN
+c             symmetrize V bar for test
+              KVSYM = KEND2
+              KEND2 = KVSYM + NTR12SQ(ISYMTR)
+              CALL SYMV(WORK(KVIJKL),ISYMTR,WORK(KVSYM),
+     &                  NRHF,IMATIJ,ITR12SQT,NMATIJ,WORK(KEND2),LWRK2)
+              ! when testing dscal from above has to be commented out
+              CALL DSCAL(NTR12SQ(ISYMTR),2.0d0,WORK(KVSYM),1)
+c           
+              WRITE(LUPRI,*)'CC2-R12 <V BAR> OUT OF PROGRAM'
+              DO ISYMIJ = 1, NSYM
+                ISYMKL = MULD2H(ISYMIJ,ISYMTR)
+                WRITE(LUPRI,*) 'ISYMIJ,ISYMKL:',ISYMIJ,ISYMKL
+                CALL OUTPUT(WORK(KVSYM+ITR12SQT(ISYMIJ,ISYMKL)),1,
+     &               NMATIJ(ISYMIJ),1,NMATKL(ISYMKL),NMATIJ(ISYMIJ),
+     &               NMATKL(ISYMKL),1,LUPRI)
+              END DO 
+            END IF
+chf
+            IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
               IF (LCONT) THEN
-                CONT(16,IV) =
-     *             - DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+                KC12AM = KEND2
+                KVPCK = KC12AM + NTR12AM(ISYMTR)
+                KEND2 = KVPCK  + NTR12AM(ISYMTR)                  
+
+                CALL CC_RVEC(LUFC12,FC12AM,NTR12AM(ISYMTR),
+     &                       NTR12AM(ISYMTR),IVEC+IV-1,WORK(KC12AM))
+                IOPT = 1
+                CALL CCR12PCK2(WORK(KVPCK),ISYMTR,.TRUE.,WORK(KVIJKL),
+     &                         'T',IOPT)
+                CALL DSCAL(NTR12AM(ISYMTR),0.5D0,WORK(KVPCK),1)
+
+                CONT(9,IV) = 
+     &           -DDOT(NTR12AM(ISYMTR),WORK(KVPCK),1,WORK(KC12AM),1)
               END IF
-           
-              DTIME = SECOND()
+              ! calculate C*R2
+              ! (C2AM is used here as scratch area)
+              LRES = .TRUE.
               IFILE = IV + IVEC -1 
+c
               CALL GETTIM(T0,W0)
-              CALL CCRHS_GP(RHO1(1,IV),WORK(KLAMDP),WORK(KEND2),
-     &                      LWRK2,1,ISYMTR,FC12AM,LUFC12,IFILE)
+              CALL CCRHS_EPP(WORK(KVIJKL),C2AM,ISYMTR,WORK(KEND2),
+     &                       LWRK2,APROXR12,LRES,LUFC2,FC2AM,IFILE)
               CALL GETTIM(T1,W1)
-              TIMGPCPU = T1-T0
-              TIMGPWAL = W1-W0
+              TIMEPPCPU = T1-T0 
+              TIMEPPWAL = W1-W0
               TIMR12CPU = TIMR12CPU + (T1-T0)
               TIMR12WAL = TIMR12WAL + (W1-W0)
-              TIMGP = TIMGP + ( SECOND() - DTIME )
-
               IF (LCONT) THEN
-                CONT(16,IV) = CONT(16,IV) +
-     *               DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+                IOPT = 1
+                CALL CCR12PCK2(WORK(KVPCK),ISYMTR,.TRUE.,WORK(KVIJKL),
+     &                         'T',IOPT)
+                CALL DSCAL(NTR12AM(ISYMTR),0.5D0,WORK(KVPCK),1)
+
+                CONT(9,IV) = CONT(9,IV) +
+     &           DDOT(NTR12AM(ISYMTR),WORK(KVPCK),1,WORK(KC12AM),1)
               END IF
+C             Read in result vector.
+              CALL CC_RVEC(LUFR2,FRHO2,NRHO2,NT2AM(ISYMTR),
+     *              IV + ITR  -1,RHO2)
+              IF (LCONT) THEN
+                CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,C2AM)
+                CALL CCLR_DIASCL(C2AM,XHALF,ISYMTR)
+                CONT(10,IV) = -DDOT(NT2AM(ISYMTR),RHO2,1,C2AM,1)
+              END IF
+              LRES = .TRUE.
+              IFILE = IV + IVEC -1 
+              ! calculate C*R12
+c
+              CALL GETTIM(T0,W0)
+              CALL CCRHS_EPPP(RHO2,WORK(KEND2),LWRK2,APROXR12,LRES,
+     &                        LUFC12,FC12AM,IFILE,ISYMTR)
+              CALL GETTIM(T1,W1)
+              TIMEPPPCPU = T1-T0
+              TIMEPPPWAL = W1-W0
+              TIMR12CPU = TIMR12CPU + (T1-T0)
+              TIMR12WAL = TIMR12WAL + (W1-W0)
+C             write out result vector.
+              CALL CC_WVEC(LUFR2,FRHO2,NRHO2,NT2AM(ISYMTR),
+     *              IV + ITR -1,RHO2)
+              IF (LCONT) THEN
+                CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,C2AM)
+                CALL CCLR_DIASCL(C2AM,XHALF,ISYMTR)
+                CONT(10,IV) = CONT(10,IV) + 
+     &                        DDOT(NT2AM(ISYMTR),RHO2,1,C2AM,1)
+              END IF
+            END IF
+c
+            !add B'' term for CCSDR12:
+            IF (CCSDR12) THEN
+              CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,C2AM)
+              CALL CCLR_DIASCL(C2AM,TWO,ISYMTR)
+              CALL CCRHS_BPP(WORK(KVIJKL),C2AM,ISYMTR,.TRUE.,
+     *                       FVCDKL,WORK(KEND2),LWRK2)
+            END IF
+c
+            ! R*B
+            IFILE = IV + IVEC -1 
+            CALL GETTIM(T0,W0)
+            CALL CCRHS_EP(WORK(KVIJKL),ISYMTR,LCONT,CONT(17,IV),
+     &                    WORK(KEND2),LWRK2,1,FC12AM,LUFC12,
+     &                    FRHO12,LUFR12,IFILE,APROXR12,
+     &                    BRASCL,KETSCL)
+c           TIMEP = TIMEP + ( SECOND() - DTIME )
+            CALL GETTIM(T1,W1)
+            TIMEPCPU = T1-T0
+            TIMEPWAL = W1-W0
+            TIMR12CPU = TIMR12CPU + (T1-T0)
+            TIMR12WAL = TIMR12WAL + (W1-W0)
+            IF ((IANR12.EQ.2.OR.IANR12.EQ.3) .AND. LCONT) THEN
+              ! avoid double counting of the EPP contribution
+              CONT(17,IV) = CONT(17,IV) - CONT(9,IV)
+            END IF
 chf
-              IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
-                KRC1 = KEND2
-                KEND2 = KRC1 + NT1AM(ISYMTR)
-                LWRK2 = LWORK - KEND2
-                IF (LWRK2.LT.0) THEN
-                  CALL QUIT('Insufficient work space in cc_rhtr')
-                END IF
-c
-                IF (LCONT) THEN
-                  CONT(20,IV) = -
-     &                 DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
-                END IF
-c               ! calculate H'(R2) 
-                ISYMH = 1
-                IAMP  = 1 ! get trial vectors
-                ISYMC = ISYMTR
-                IFILE = IV + IVEC -1 
-                CALL GETTIM(T0,W0)
-                CALL CCRHS_HP(RHO1(1,IV),WORK(KLAMDH),ISYMH,
-     &                        WORK(KLAMDH),ISYMH,WORK(KEND2),
-     &                        LWRK2,IAMP,ISYMC,
-     &                        FC12AM,LUFC12,IFILE)
-                CALL GETTIM(T1,W1)
-                TIMHP2CPU = T1-T0
-                TIMHP2WAL = T1-T0
-                TIMR12CPU = TIMR12CPU + (T1-T0)
-                TIMR12WAL = TIMR12WAL + (W1-W0)
-c
-c               ! calculate I'(R2) 
-                IAMP  = 1
-                IFILE = IV + IVEC -1 
-                ISYMH = 1
-                ISYMC = ISYMTR
-                CALL GETTIM(T0,W0)
-                CALL CCRHS_IP(RHO1(1,IV),WORK(KT1AM),1,WORK(KLAMDH),
-     &                        ISYMH,IAMP,ISYMC,FC12AM,LUFC12,IFILE,
-     &                        WORK(KEND2),LWRK2)
-                CALL GETTIM(T1,W1)
-                TIMIP2CPU = T1-T0
-                TIMIP2WAL = W1-W0 
-                TIMR12CPU = TIMR12CPU + (T1-T0)
-                TIMR12WAL = TIMR12WAL + (W1-W0)
-c
-                IF (LCONT) THEN
-                  CONT(20,IV) = CONT(20,IV) + 
-     &                 DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
-                  CONT(16,IV) = CONT(16,IV) + CONT(20,IV)
-                  CONT(19,IV) = -
-     &                 DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
-                END IF
-                ! calculate H'(R1)
-                IAMP  = 0 ! get ground state amplitudes
-                IFILE = IV + IVEC -1 
-                ISYMC = 1
-                ISYMH = 1
-                CALL GETTIM(T0,W0)
-                CALL CCRHS_HP(RHO1(1,IV),WORK(KLHC1),ISYMTR,
-     &                        WORK(KLAMDH),ISYMH,WORK(KEND2),
-     &                        LWRK2,IAMP,ISYMC,FC12AM,LUFC12,
-     &                        IFILE)
-                CALL GETTIM(T1,W1)
-                TIMHPCPU = T1-T0 
-                TIMHPWAL = W1-W0
-                TIMR12CPU = TIMR12CPU + (T1-T0)
-                TIMR12WAL = TIMR12WAL + (W1-W0)
-c
-c               ! get trial vector C1
-                IFILE = IV + IVEC -1 
-                CALL CC_RVEC(LUFC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
-     &               IFILE,WORK(KRC1))
-c               ! calculate I'(R1) 
-                IAMP  = 0
-                ISYMC = 1
-                ISYMH = 1
-                IFILE = IV + IVEC -1 
-                CALL GETTIM(T0,W0)
-                CALL CCRHS_IP(RHO1(1,IV),WORK(KRC1),ISYMTR,WORK(KLAMDH),
-     &                        ISYMH,IAMP,ISYMC,FC12AM,LUFC12,IFILE,
-     &                        WORK(KEND2),LWRK2)
-                CALL GETTIM(T1,W1)
-                TIMIPCPU = T1-T0
-                TIMIPWAL = W1-W0
-                TIMR12CPU = TIMR12CPU + (T1-T0)
-                TIMR12WAL = TIMR12WAL + (W1-W0)
-c
-                IF (LCONT) THEN
-                  CONT(19,IV) = CONT(19,IV) +
-     &                 DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
-                  CONT(15,IV) = CONT(15,IV) + CONT(19,IV)
-                END IF
-              END IF
+
+c           -------------------------
+c           Calculate G'(R2') term:
+c           -------------------------
+            IF (LCONT) THEN
+              CONT(16,IV) =
+     *           - DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+            END IF
+          
+            DTIME = SECOND()
+            IFILE = IV + IVEC -1 
+            CALL GETTIM(T0,W0)
+            CALL CCRHS_GP(RHO1(1,IV),WORK(KLAMDP),WORK(KEND2),
+     &                    LWRK2,1,ISYMTR,FC12AM,LUFC12,IFILE)
+            CALL GETTIM(T1,W1)
+            TIMGPCPU = T1-T0
+            TIMGPWAL = W1-W0
+            TIMR12CPU = TIMR12CPU + (T1-T0)
+            TIMR12WAL = TIMR12WAL + (W1-W0)
+            TIMGP = TIMGP + ( SECOND() - DTIME )
+
+            IF (LCONT) THEN
+              CONT(16,IV) = CONT(16,IV) +
+     *             DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+            END IF
 chf
-              IF ( DEBUG ) THEN
-                 RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
-                 RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
-                 WRITE(LUPRI,1) 'Norm of Rho1 -after R12:  ',RHO1N
-                 WRITE(LUPRI,1) 'Norm of Rho2 -after R12:  ',RHO2N
-                 WRITE(LUPRI,1) 'Norm of Vmujkl         :  ',
-     &             DDOT(NVAJKL(1),WORK(KVMUJTKL),1,WORK(KVMUJTKL),1)
-                 WRITE(LUPRI,1) 'Norm of Vijkl          :  ',
-     &             DDOT(NGAMSQ(ISYMTR),WORK(KVIJKL),1,WORK(KVIJKL),1)
+            IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
+              KRC1 = KEND2
+              KEND2 = KRC1 + NT1AM(ISYMTR)
+              LWRK2 = LWORK - KEND2
+              IF (LWRK2.LT.0) THEN
+                CALL QUIT('Insufficient work space in cc_rhtr')
               END IF
+c
+              IF (LCONT) THEN
+                CONT(20,IV) = -
+     &               DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+              END IF
+c             ! calculate H'(R2) 
+              ISYMH = 1
+              IAMP  = 1 ! get trial vectors
+              ISYMC = ISYMTR
+              IFILE = IV + IVEC -1 
+              CALL GETTIM(T0,W0)
+              CALL CCRHS_HP(RHO1(1,IV),WORK(KLAMDH),ISYMH,
+     &                      WORK(KLAMDH),ISYMH,WORK(KEND2),
+     &                      LWRK2,IAMP,ISYMC,
+     &                      FC12AM,LUFC12,IFILE)
+              CALL GETTIM(T1,W1)
+              TIMHP2CPU = T1-T0
+              TIMHP2WAL = T1-T0
+              TIMR12CPU = TIMR12CPU + (T1-T0)
+              TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+c             ! calculate I'(R2) 
+              IAMP  = 1
+              IFILE = IV + IVEC -1 
+              ISYMH = 1
+              ISYMC = ISYMTR
+              CALL GETTIM(T0,W0)
+              CALL CCRHS_IP(RHO1(1,IV),WORK(KT1AM),1,WORK(KLAMDH),
+     &                      ISYMH,IAMP,ISYMC,FC12AM,LUFC12,IFILE,
+     &                      WORK(KEND2),LWRK2)
+              CALL GETTIM(T1,W1)
+              TIMIP2CPU = T1-T0
+              TIMIP2WAL = W1-W0 
+              TIMR12CPU = TIMR12CPU + (T1-T0)
+              TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+              IF (LCONT) THEN
+                CONT(20,IV) = CONT(20,IV) + 
+     &               DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+                CONT(16,IV) = CONT(16,IV) + CONT(20,IV)
+                CONT(19,IV) = -
+     &               DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+              END IF
+              ! calculate H'(R1)
+              IAMP  = 0 ! get ground state amplitudes
+              IFILE = IV + IVEC -1 
+              ISYMC = 1
+              ISYMH = 1
+              CALL GETTIM(T0,W0)
+              CALL CCRHS_HP(RHO1(1,IV),WORK(KLHC1),ISYMTR,
+     &                      WORK(KLAMDH),ISYMH,WORK(KEND2),
+     &                      LWRK2,IAMP,ISYMC,FC12AM,LUFC12,
+     &                      IFILE)
+              CALL GETTIM(T1,W1)
+              TIMHPCPU = T1-T0 
+              TIMHPWAL = W1-W0
+              TIMR12CPU = TIMR12CPU + (T1-T0)
+              TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+c             ! get trial vector C1
+              IFILE = IV + IVEC -1 
+              CALL CC_RVEC(LUFC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
+     &             IFILE,WORK(KRC1))
+c             ! calculate I'(R1) 
+              IAMP  = 0
+              ISYMC = 1
+              ISYMH = 1
+              IFILE = IV + IVEC -1 
+              CALL GETTIM(T0,W0)
+              CALL CCRHS_IP(RHO1(1,IV),WORK(KRC1),ISYMTR,WORK(KLAMDH),
+     &                      ISYMH,IAMP,ISYMC,FC12AM,LUFC12,IFILE,
+     &                      WORK(KEND2),LWRK2)
+              CALL GETTIM(T1,W1)
+              TIMIPCPU = T1-T0
+              TIMIPWAL = W1-W0
+              TIMR12CPU = TIMR12CPU + (T1-T0)
+              TIMR12WAL = TIMR12WAL + (W1-W0)
+c
+              IF (LCONT) THEN
+                CONT(19,IV) = CONT(19,IV) +
+     &               DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+                CONT(15,IV) = CONT(15,IV) + CONT(19,IV)
+              END IF
+            END IF
+chf
+            IF ( DEBUG ) THEN
+               RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
+               RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
+               WRITE(LUPRI,1) 'Norm of Rho1 -after R12:  ',RHO1N
+               WRITE(LUPRI,1) 'Norm of Rho2 -after R12:  ',RHO2N
+               WRITE(LUPRI,1) 'Norm of Vmujkl         :  ',
+     &           DDOT(NVAJKL(1),WORK(KVMUJTKL),1,WORK(KVMUJTKL),1)
+               WRITE(LUPRI,1) 'Norm of Vijkl          :  ',
+     &           DDOT(NTR12SQ(ISYMTR),WORK(KVIJKL),1,WORK(KVIJKL),1)
+            END IF
+C
+            IF (CCSDR12) THEN
+              !add contribution to WORK(KEI2)
+              CALL CCRHS_EINTP(WORK(KEI2),WORK(KLAMDP),
+     &                         WORK(KEND2),LWRK2,1,ISYMTR,
+     &                         FC12AM,LUFC12,IV+IVEC-1,IDUMMY,IDUMMY)
+            END IF
          END IF
 
 C
@@ -2955,7 +2992,7 @@ C
             WRITE(LUPRI,1) 'Norm of Rho2 -end of cc_rhtr:    ',RHO2N
          ENDIF
          IF (CCR12) THEN
-            RHO12N = DDOT(NGAMSQ(ISYMTR),WORK(KVIJKL),1,WORK(KVIJKL),1)
+            RHO12N = DDOT(NTR12SQ(ISYMTR),WORK(KVIJKL),1,WORK(KVIJKL),1)
             WRITE(LUPRI,1) 'Norm of Rho12 -end of cc_rhtr:    ',RHO12N
          END IF
       ENDIF

@@ -121,7 +121,7 @@ C     ---------------------------------------------------------------
       IF ( CCS ) THEN
         NTAMP = NT1AM(ISYMGD)
       ELSE IF ( CCR12 ) THEN
-        NTAMP = NTAMP + NGAMMA(ISYMGD) 
+        NTAMP = NTAMP + NTR12AM(ISYMGD) 
       END IF
  
 C----------------------------------------------------------------------
@@ -148,7 +148,7 @@ C----------------------------------------------------------------------
      &                            DUMMY,GD(IADR12))
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
-         IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMGD)
+         IF (CCR12) NTAMP = NTAMP + NTR12AM(ISYMGD)
 
 C----------------------------------------------------------------------
 C 'R2 ' second-order response t amplitudes:  --> 'O2 '
@@ -168,7 +168,7 @@ C----------------------------------------------------------------------
          CALL CC_R2GD(GD,ILSTNR,WORK,LWORK)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
-         IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMGD)
+         IF (CCR12) NTAMP = NTAMP + NTR12AM(ISYMGD)
  
 C----------------------------------------------------------------------
 C 'R1 ' first-order response t amplitudes:  --> 'O1 '
@@ -244,7 +244,7 @@ C----------------------------------------------------------------------
          CALL CC_L2GD(GD,ILSTNR,WORK,LWORK)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
-         IF ( CCR12) NTAMP = NTAMP + NGAMMA(ISYMGD)
+         IF ( CCR12) NTAMP = NTAMP + NTR12AM(ISYMGD)
 
 C----------------------------------------------------------------------
 C 'L1 ' first-order response Lagrangian multipliers: --> 'X1 ' + 'F1 '
@@ -264,7 +264,7 @@ C----------------------------------------------------------------------
      *               FRQLRZ(ILSTNR),LORXLRZ(ILSTNR),IOPTRDG,WORK,LWORK)
          NTAMP = NT1AM(ISYLRZ(ILSTNR)) + NT2AM(ISYLRZ(ILSTNR))
          IF ( CCS ) NTAMP = NT1AM(ISYLRZ(ILSTNR))
-         IF ( CCR12 ) NTAMP = NTAMP + NGAMMA(ISYLRZ(ILSTNR))
+         IF ( CCR12 ) NTAMP = NTAMP + NTR12AM(ISYLRZ(ILSTNR))
          ISYMGD = ISYLRZ(ILSTNR)
 
 C----------------------------------------------------------------------
@@ -606,7 +606,7 @@ C-----------------
 C
       NTAMP = NT1AM(ISYMC) + NT2AM(ISYMC)
       IF ( CCS ) NTAMP = NT1AM(ISYMC)
-      IF ( CCR12 ) NTAMP = NTAMP + NGAMMA(ISYMC)
+      IF ( CCR12 ) NTAMP = NTAMP + NTR12AM(ISYMC)
 C
       IF (LWORK .LT. 0)
      *      CALL QUIT('Insufficient space for allocation in CC_LGD -1')
@@ -638,7 +638,7 @@ C
       IF (CCR12) THEN
         IOPT = 32
         CALL CC_RDRSP('X1 ',ILSTETA,ISYMC,IOPT,MODEL,DUMMY,
-     *                GD(1+NTAMP-NGAMMA(ISYMC)))
+     *                GD(1+NTAMP-NTR12AM(ISYMC)))
       END IF
 C
       IF ( DEBUG ) THEN
@@ -661,7 +661,7 @@ C
 C
       KFRV1 = KFRV  
       KFRV2 = KFRV  + NT1AM(ISYMC)
-      KFRVR12 = KEND1 - NGAMMA(ISYMC) 
+      KFRVR12 = KEND1 - NTR12AM(ISYMC) 
 C
 C-----------------------------------------------
 C     Calculate list number.
@@ -854,7 +854,7 @@ c /* deck cc_r2gd */
       NTAMP = NT1AM(ISYMR2) + NT2AM(ISYMR2)
       IF (CCR12) THEN
         IADR12 = IADR2 + NT2AM(ISYMR2)
-        NTAMP = NTAMP + NGAMMA(ISYMR2)
+        NTAMP = NTAMP + NTR12AM(ISYMR2)
       END IF
 
       IF (LWORK .LT. NTAMP) THEN
@@ -886,7 +886,7 @@ c /* deck cc_r2gd */
      &     DDOT(NT2AM(ISYMR2),GD(IADR2),1,GD(IADR2),1)
         IF (CCR12) THEN
           WRITE (LUPRI,*) 'DEBUG_CC_GDR2> norm^2 of r12 doubles part:',
-     &       DDOT(NGAMMA(ISYMR2),GD(IADR12),1,GD(IADR12),1)
+     &       DDOT(NTR12AM(ISYMR2),GD(IADR12),1,GD(IADR12),1)
         END IF
       END IF
 
@@ -976,7 +976,7 @@ c /* deck CC_L2GD */
       IF (CCS) NTAMP = NT1AM(ISYML2)
       IF (CCR12) THEN
         IADR12 = IADR2 + NT2AM(ISYML2)
-        NTAMP  = NTAMP + NGAMMA(ISYML2)
+        NTAMP  = NTAMP + NTR12AM(ISYML2)
       END IF
 
       IF (LOCDBG) THEN
@@ -1010,7 +1010,7 @@ c /* deck CC_L2GD */
      &     DDOT(NT2AM(ISYML2),GD(IADR2),1,GD(IADR2),1)
         IF (CCR12) 
      &   WRITE (LUPRI,*) 'DEBUG_CC_GDL2> norm^2 of r12 doubles part:',
-     &     DDOT(NGAMMA(ISYML2),GD(IADR12),1,GD(IADR12),1)
+     &     DDOT(NTR12AM(ISYML2),GD(IADR12),1,GD(IADR12),1)
       END IF
 *---------------------------------------------------------------------*
 * 2. contribution: F matrix transformed R2 vector
@@ -1038,7 +1038,7 @@ c /* deck CC_L2GD */
      &     DDOT(NT2AM(ISYML2),GD(IADR2),1,GD(IADR2),1)
         IF (CCR12)
      &   WRITE (LUPRI,*) 'DEBUG_CC_GDL2> norm^2 of r12 doubles part:',
-     &     DDOT(NGAMMA(ISYML2),GD(IADR12),1,GD(IADR12),1)
+     &     DDOT(NTR12AM(ISYML2),GD(IADR12),1,GD(IADR12),1)
       END IF
 
       RETURN

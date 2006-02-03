@@ -155,7 +155,7 @@ C
       IF (TRIPLET) T2TCOR = .FALSE.
 C
       NCAMP = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      IF (CCR12) NCAMP = NCAMP + NGAMMA(ISYMTR)
+      IF (CCR12) NCAMP = NCAMP + NTR12AM(ISYMTR)
       IF (TRIPLET) NCAMP = NCAMP + NT2AMA(ISYMTR)
       IF (CCS) NCAMP = NT1AM(ISYMTR)
 C
@@ -280,7 +280,7 @@ C           ------------
             IF ( CCS ) NRHO2 = 2
 C
             NC2AM = MAX(NT2SQ(ISYMTR),NT2SQ(1),
-     *              NT2AM(ISYMTR)+2*NT2ORT(1))
+     *              NT2AM(ISYMTR)+2*NT2ORT(1),NT2R12(1))
             IF ( CC2 ) NC2AM = MAX(NT2SQ(ISYMTR),NT2SQ(1))
             IF ( CCS ) NC2AM = 2
 C
@@ -322,8 +322,8 @@ C
 C
 C           IF (CCR12 .AND. (IPRINT .GT. 45 .OR. LOCDBG)) THEN
 C             KRHO12 = KEND1
-C             KEND2  = KRHO12 + NGAMMA(ISYMTR) 
-C             CALL CC_RVEC(LUFC12,FC12AM,NGAMMA(ISYMTR),NGAMMA(ISYMTR),
+C             KEND2  = KRHO12 + NTR12AM(ISYMTR) 
+C             CALL CC_RVEC(LUFC12,FC12AM,NTR12AM(ISYMTR),NTR12AM(ISYMTR),
 C    *                      K1,WORK(KRHO12))
 C             CALL AROUND('CC_TRDRV: R12 trial vector packed ')
 C             WRITE(lupri,*) 'Vector nr.',K1
@@ -336,9 +336,9 @@ C           -----------------------------------------------
             IF (FDJAC .OR. JACEXP) THEN
                IF (CCR12) THEN
                  KC12AM = KEND1
-                 KS12AM = KC12AM + NGAMMA(ISYMTR)
-                 KRHO12 = KS12AM + NGAMMA(ISYMTR)
-                 KEND1  = KRHO12 + NGAMMA(ISYMTR) 
+                 KS12AM = KC12AM + NTR12AM(ISYMTR)
+                 KRHO12 = KS12AM + NTR12AM(ISYMTR)
+                 KEND1  = KRHO12 + NTR12AM(ISYMTR) 
                  IF (IANR12.EQ.2) THEN
                    KS2AM = KEND1
                    KEND1 = KS2AM + NT2AM(ISYMTR)
@@ -347,12 +347,12 @@ C           -----------------------------------------------
                  IF (LWRK1 .LE. 0 )
      *              CALL QUIT('Too little workspace in cclr_trr (2)')
 
-                 CALL CC_RVEC(LUFC12,FC12AM,NGAMMA(ISYMTR),
-     *                        NGAMMA(ISYMTR),K1,WORK(KC12AM))
+                 CALL CC_RVEC(LUFC12,FC12AM,NTR12AM(ISYMTR),
+     *                        NTR12AM(ISYMTR),K1,WORK(KC12AM))
                  IF (IPRINT .GT. 45 .OR. LOCDBG) THEN
                    CALL AROUND('R12 double excitation part of vector')
-                   CALL OUTPUT(WORK(KRHO12),1,NGAMMA(ISYMTR),1,1,
-     *                         NGAMMA(ISYMTR),1,1,LUPRI)
+                   CALL OUTPUT(WORK(KRHO12),1,NTR12AM(ISYMTR),1,1,
+     *                         NTR12AM(ISYMTR),1,1,LUPRI)
                  END IF
                END IF
 
@@ -369,16 +369,16 @@ C              ------------------------------
                   CALL CC_PRP(WORK(KRHO1),WORK(KRHO2),ISYMTR,1,1)
                   IF (CCR12) THEN
                     WRITE(LUPRI,*) 'A * C_12:'
-                    CALL OUTPUT(WORK(KRHO12),1,NGAMMA(ISYMTR),1,1,
-     *                          NGAMMA(ISYMTR),1,1,LUPRI)
+                    CALL OUTPUT(WORK(KRHO12),1,NTR12AM(ISYMTR),1,1,
+     *                          NTR12AM(ISYMTR),1,1,LUPRI)
                     IF (IANR12.EQ.2) THEN
                       WRITE(LUPRI,*) 'S * C2:'
                       CALL OUTPUT(WORK(KS2AM),1,NT2AM(ISYMTR),1,1,
      *                            NT2AM(ISYMTR),1,1,LUPRI)
                     END IF
                     WRITE(LUPRI,*) 'S * C_12:'
-                    CALL OUTPUT(WORK(KS12AM),1,NGAMMA(ISYMTR),1,1,
-     *                          NGAMMA(ISYMTR),1,1,LUPRI)
+                    CALL OUTPUT(WORK(KS12AM),1,NTR12AM(ISYMTR),1,1,
+     *                          NTR12AM(ISYMTR),1,1,LUPRI)
                   END IF
                ENDIF
 
@@ -387,10 +387,10 @@ C              ------------------------------
                CALL CC_WVEC(LUFR2,FRHO2,NT2AM(ISYMTR),
      *                      NT2AM(ISYMTR),K1,WORK(KRHO2))
                IF (CCR12) THEN
-                 CALL CC_WVEC(LUFR12,FRHO12,NGAMMA(ISYMTR),
-     *                        NGAMMA(ISYMTR),K1,WORK(KRHO12))
-                 CALL CC_WVEC(LUFS12,FS12AM,NGAMMA(ISYMTR),
-     *                        NGAMMA(ISYMTR),K1,WORK(KS12AM))
+                 CALL CC_WVEC(LUFR12,FRHO12,NTR12AM(ISYMTR),
+     *                        NTR12AM(ISYMTR),K1,WORK(KRHO12))
+                 CALL CC_WVEC(LUFS12,FS12AM,NTR12AM(ISYMTR),
+     *                        NTR12AM(ISYMTR),K1,WORK(KS12AM))
                  IF (IANR12.EQ.2) THEN
                    CALL CC_WVEC(LUFS2,FS2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
      &                          K1,WORK(KS2AM))
@@ -565,9 +565,9 @@ C           ------------------------------
                  END IF
                  IF (CCR12) THEN
                    KRHO12 = KEND1
-                   KEND2  = KRHO12 + NGAMMA(ISYMTR)
-                   CALL CC_RVEC(LUFR12,FRHO12,NGAMMA(ISYMTR),
-     *                          NGAMMA(ISYMTR),NR2,WORK(KRHO12))
+                   KEND2  = KRHO12 + NTR12AM(ISYMTR)
+                   CALL CC_RVEC(LUFR12,FRHO12,NTR12AM(ISYMTR),
+     *                          NTR12AM(ISYMTR),NR2,WORK(KRHO12))
                  END IF
                    
                  IF (IPRINT .GT. 45 .OR. LOCDBG) THEN
