@@ -452,11 +452,9 @@ C CBN 03.01.06
 C---------------------------
 C
       IF (QM3) THEN
-         WRITE(LUPRI,*)'I QM3LIN'
          CALL QM3LIN(NOSIM,BOVECS,CREF,CMO,INDXCI,
-     &               WRK(KSOVECS),ORBLIN,WRK(K3A),L3A)
+     &               WRK(KSOVEC),ORBLIN,WRK(K3A),L3A)
       END IF
-C
 C---------------------------
 C CBN 03.01.06
 C---------------------------

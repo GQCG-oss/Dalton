@@ -227,11 +227,11 @@ C
       CALL GPOPEN(LURES,'CC_RES','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LURES)
-C
+
       CALL GPOPEN(LUPRPC,'CC_PRPC','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUPRPC)
-C
+
       CALL GPOPEN(LUIAJB,'CCSD_IAJB','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUIAJB)
@@ -262,6 +262,7 @@ C
          IMULTE2(IEX) = IMULTE(IEX)
       ENDDO
       NPRPC = 0
+      NPRMI = 0
 C
 C---------------------------------------------------
 C     Set some logicals needed for R12 calculations:
@@ -1180,6 +1181,7 @@ C
 #include <cclr.h>
 #include <prpc.h>
 #include <ccpack.h>
+#include <inftap.h>
 #include <ccinftap.h>
 #include <numder.h>
 C
@@ -1250,6 +1252,7 @@ C
      *        IDUMMY,.FALSE.)
          REWIND(LUPRPCO)
          REWIND(LUPRPC)
+
          NPRPCO = NPRPC
          DO I = 1, NPRPC
             READ(LUPRPC,
@@ -1279,6 +1282,7 @@ C
             LEND  = LWORK - KEND
             IF (LEND.LE.0)CALL QUIT('Too little workspace in cc_resume')
             REWIND(LUPRPC)
+
             DO I = 1, NPRPC
                READ(LUPRPC,
      *          '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
@@ -1291,9 +1295,10 @@ C
 C
 C     Writeout the list of properties to summary section of output file.
 C
+
       CALL FLSHFO(LUPRI)
-      IF ((NPRPC.GT.0).AND.(IPRINT.GT.8)) THEN
-        CALL PRPRPC(LUPRPC,1,DUMMY)
+      IF ((NPRPC.GT.0).AND.(IPRINT.GT.100)) THEN
+        CALL PRPRPC(LUPRPC,1,DUMMY,NPRPC)
       ENDIF
 C
       IF ( LPACKINT ) THEN
@@ -1333,7 +1338,7 @@ C
      *'**********************'
 C
       LABEL1 = 'ALL_DONE'
-      STHELP = 'THE_END '
+      STHELP = 'THE_END   '
       ZERO=0.0D0
       CALL CC_PRPC(ZERO,STHELP,666,
      *             LABEL1,LABEL1,LABEL1,LABEL1,
@@ -1620,7 +1625,7 @@ C
       END
 C
 C
-      SUBROUTINE PRPRPC(LU,IOPT,PROPIN)
+      SUBROUTINE PRPRPC(LU,IOPT,PROPIN,NUOFPR)
 C
 C     Outputs the prpc to lupri the list of properties
 C     that is stored on the file opened with unit number LU
@@ -1631,7 +1636,6 @@ C                 labels etc. comming from the prpc list.
 C
 #include <implicit.h>
 #include <priunit.h>
-C
 #include <prpc.h>
       CHARACTER STHELP*10
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
@@ -1644,15 +1648,22 @@ C
      *' | List of selected calculated molecular properties (a.u.) | '
       WRITE (LUPRI,'(A,/)')
      *' +---------------------------------------------------------+ '
-      STHELP = 'Dummy'
+      STHELP = 'Dummy   '
+      WRITE (LUPRI,*) ' Properties are read from unit number ', LU
       REWIND(LU)
-      DO I = 1, NPRPC
+      DO I = 1, NUOFPR
        READ(LU,
      *      '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *      IPRPC,ISYMIN,NORD,LABEL,PROP,
      *      LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
-       IF (I.NE.IPRPC) WRITE(LUPRI,*) ' PROBLEM OM PRPC LIST?'
+       IF (LABEL .EQ. 'THE_END   ') THEN
+         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(1X,A)') LABEL
+         return
+       END IF
+       IF (I.NE.IPRPC) WRITE(LUPRI,*) ' PROBLEM OM PROPERTY LIST?'
        IF (IOPT.EQ.2) PROP = PROPIN(I)
+
        IF (STHELP.NE.LABEL) WRITE(LUPRI,'(/,1X,A10,A)') LABEL,
      *   ' properties :'
        STHELP = LABEL
@@ -1662,13 +1673,16 @@ C
             WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,3(A,F18.10))')
      *      '#',I,ISYMIN,
      *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
-     *       ' E_tot:',PROP,' w:',FRQZ,' E_grs:',FRQU
+     *       ' E_tot:',FRQU,' w:',PROP,' E_grs:',FRQY
           ELSE
             WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,1(A,F18.10))')
      *      '#',I,ISYMIN,
      *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
      *       ' E_tot:',PROP
           ENDIF
+         ELSE IF (LABX.EQ."Exctot  ") THEN
+            WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,F18.10)')
+     *      '#',I,ISYMIN,' ',LABX,' Excited state Energy = ',PROP
          ELSE
             WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,F18.10)')
      *      '#',I,ISYMIN,' ',LABX,' Ground state Energy = ',PROP

@@ -65,11 +65,13 @@ C
 #include <dftcom.h>
 #include <expopt.h>
 #include <pcmlog.h>
+#include <ccinftap.h>
 C
 C
       LOGICAL PROPTY, OLDDX, DFTADX
 #include <past.h>
 C
+      CHARACTER LABEL1*8, STHELP*10
 C---------------------------------------------------------------------
 C
       IF (SKIPAB) RETURN
@@ -620,6 +622,7 @@ C     ******************************
 C
       CALL GETTIM(TIMALL,TIMDUM)
       TIMALL = TIMALL - TSTART
+
 #if !defined (SYS_T3D)
 cLig <> added the TIMCTO
       CALL TIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,TIMDRC,
@@ -1951,9 +1954,10 @@ C
 #include <maxaqn.h>
 #include <codata.h>
 #include <aovec.h>
+#include <ccinftap.h>
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0,
      *            D3 = 3.0D0, D100 = 100.0D0)
-      CHARACTER NAME*6, SPDCAR*1
+      CHARACTER NAME*6, SPDCAR*1, LAPRPC*10
       DIMENSION PRAPOL(3,3), PRVPOL(6), CSTRA(*), SCTRA(*), POLDD(*),
      *          POLDL(*), POLDA(*), POLVL(*), POLVV(*)
       DIMENSION WORK(LWORK)
@@ -2221,6 +2225,14 @@ C
      *           DIPMOM, ' au', DEBYE*DIPMOM, ' Debye'
             CALL HEADER('Dipole moment components',-1)
             CALL DP0PRI(DIP0)
+            DO IPRPC = 1,3 
+               IF (IPRPC .EQ. 1) LAPRPC = 'XDIPLEN '
+               IF (IPRPC .EQ. 2) LAPRPC = 'YDIPLEN '
+               IF (IPRPC .EQ. 3) LAPRPC = 'ZDIPLEN '
+               CALL WRIPRO(DIP0(IPRPC),"SCF/DFT-MY",1,
+     *                     LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *                     0.0D0,0.0D0,0.0D0,1,0,0,0)
+            END DO
 Clf Printout of the LF dipole moment
             IF (PCM .AND. LOCFLD) THEN
                CALL HEADER('Local-field corrected dipole moment',-1)

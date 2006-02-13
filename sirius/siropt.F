@@ -503,7 +503,6 @@ C----------------
 C CBN+JK 03.01.06
 C----------------
       IF (QM3) THEN
-         WRITE(LUPRI,*)'QM3 beregning.2.Grad'
          CALL QM3GRAD(WRK(KCREF),WRK(KCMO),
      &                WRK(KCINDX),WRK(KGTOT),
      &                EQM3,WRK(KWRKG),LWRKG,IPRINT)
@@ -548,9 +547,11 @@ C----------------
          END IF
       END IF
       IF (SOLVNT.OR.PCM) WRITE (LUW4,1016) ESOLT
+      IF (QM3) WRITE (LUW4,1017) EQM3
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
+         IF (QM3) WRITE (LUPRI,1017) EQM3
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F25.15,T54,
@@ -561,6 +562,7 @@ C----------------
      *       /' - Inactive energy        :',F25.15,
      *       /' - Active energy          :',F25.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',F25.15)
+ 1017 FORMAT( ' - QM/MM solvation ener.:',F25.15)
  1020 FORMAT(/' Norm of total gradient   :',F22.12,
      *       /' -    of CI gradient      :',F22.12,
      *       /' -    of orbital gradient :',F22.12)
@@ -868,6 +870,7 @@ C
      *               WRK(KDV),WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFCAC),
      *               WRK(KH2AC),EACTIV,WRK(KIBNDX),
      &               WRK(KWNEO),LWNEO)
+
 C        CALL SIRNEO(CREF,G,CMO,INDXCI,DV,PV,
 C    *               FC,FV,FCAC,H2AC,EACTIV,IBNDX,WRK,LFREE)
 C
@@ -1046,28 +1049,26 @@ C------------------
 C CBN+JK 03.01.06
 C------------------
       IF (QM3) THEN
-         KFCQM3 = KWRKG
-         KWRKG = KFCSOL + NNORBT
+         KFCSOL = KWRKG
+         KWRKG  = KFCSOL + NNORBT
          LWRKG  = LFREE  - (KWRKG-1)
-         CALL QM3FCKMO(WRK(KCMO),WRK(KFCQM3),WRK(KWRKG),
+         CALL QM3FCKMO(WRK(KCMO),WRK(KFCSOL),WRK(KWRKG),
      &                 LWRKG,IPRINT)
-         CALL DAXPY(NNORBT,D1,WRK(KFCQM3),1,WRK(KFC),1)
+         CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+      ELSE
+         KFCSOL = KFC
       END IF
-C------------------
-C CBN+JK 03.01.06
-C------------------
-
 
       IF (NASHT .EQ. 0) THEN
 C        hjaaj dec 2002: if extended to cover nasht.eq.1 as in sirdiis.F
 C        then remember to add FCSOL and FV to FD for RHFENR call
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
-         IF (SOLVNT)
+         IF (SOLVNT .OR. QM3)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
-            IF (SOLVNT)
+            IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          END IF
@@ -2737,7 +2738,6 @@ C-------------------
 C Write qm3 solvent part of the Fock matrix to interface file
 
       IF (QM3) THEN
-          write(lupri,*) 'FNSIFC:',FNSIFC
          KTMAT = KWRK1
          KFSOLAO = KTMAT + NNORBT
          KUCMO = KFSOLAO + NNBASX

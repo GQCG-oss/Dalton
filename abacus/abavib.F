@@ -1052,6 +1052,32 @@ C
  910  CONTINUE 
       WRITE(LUIP,8050)
       CALL GPCLOSE(LUIP,'KEEP')
+
+C     We punch out harmonic freqs and normal coordinates on file 
+C     DALTON.NOR
+
+      LUNOR = 0
+      CALL GPOPEN(LUNOR,'DALTON.NOR','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+      WRITE(LUNOR,'(A)') 'Harmonic Freqs. in cm^-1'
+      DO 911 IMODE = 1, NUMMOD
+        WRITE(LUNOR,'(E23.16)') FREQAU(IMODE)*XTKAYS
+ 911  CONTINUE
+      WRITE(LUNOR,*)
+      WRITE(LUNOR,'(A)') 'Normal Coordinates'
+      DO 912 IMODE = 1, NUMMOD
+        WRITE(LUNOR,8041) (SXFAMU*EVEC(I,IMODE),I=1,NCORD)
+        WRITE(LUNOR,*)
+ 912  CONTINUE
+      WRITE(LUNOR,'(A)') 'Norm of Vectors'
+      DO 913 IMODE = 1, NUMMOD
+        ENORM2 = 0.0D0
+        DO 914 I = 1, NCORD
+          ENORM2 = ENORM2 + EVEC(I,IMODE)**2
+ 914    CONTINUE
+      WRITE(LUNOR,'(E23.16)') SXFAMU*sqrt(ENORM2)
+ 913  CONTINUE
+      CALL GPCLOSE(LUNOR,'KEEP')
 C
 C     ****************************************************************
 C     ***** Normal coordinates in redundant internal coordinates *****
@@ -1209,6 +1235,7 @@ C
  8020 FORMAT(5F12.5)
  8030 FORMAT('MODE',I5,'   FREQUENCY=',F10.5,' (CM**-1)')
  8040 FORMAT(1P,3E17.9)
+ 8041 FORMAT(1P,3E23.16) 
  8050 FORMAT('----- END OF NORMAL MODES FOR -MOLPLT- PROGRAM -----')
 C
       END

@@ -12,7 +12,7 @@ C     ("TAP" for tapes here for historical reasons)
      &                LUH2AC, LUSIFC, LBINTM, LBINTD, LBONEL, LBINFO
       INTEGER         LUPMOM,LUMOM,LUEIND,LUENUC, LUESITE, LUEOBAR,
      &                LUVDWSE,LUENSA,LUQM3E,LUQM3P,LUOSCR,LUMMOV,
-     &                LUOVER
+     &                LUOVER,LUNDPF
       CHARACTER ABATLM*10, FNSOL*8, ABARDR*9, ABARDI*10, ABAGDR*9,
      &          ABAGDI*10, ABAGDT*10, ABARDT*10, ABADFK*10, ABASF*9,
      &          ABAWLK*10, ABATRJ*10, ABAIRC*10, ABANR1*10, ABANR3*10, 
@@ -28,7 +28,7 @@ C     ("TAP" for tapes here for historical reasons)
      &                LUINTR, LUMOLDEN, LUR12(20), LUORDA, LUMINT,
      &                LUPMOM,LUMOM,LUEIND,LUENUC, LUESITE, LUEOBAR,
      &                LUVDWSE,LUENSA,LUQM3E,LUQM3P,LUOSCR,LUMMOV,
-     &                LUOVER
+     &                LUOVER,LUNDPF
       COMMON /RSPTAP/ LUAHSO, LUCRV1, LUCRV2, LUXYVE, LUCRVE,
      &                LURSP3, LURSP4, LURSP5, LUMHSO, LURSP
       COMMON /SIRTAP/ LUINTM, LUIT1, LUIT2, LUIT3, LUIT5, LUINF,

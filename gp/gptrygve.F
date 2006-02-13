@@ -1269,6 +1269,7 @@ C
 #include <eribuf.h>
 #include <priunit.h>
 #include <inftap.h>
+#include <ccinftap.h>
 #include <r12int.h>
 C
       LUCMD  = -9001
@@ -1305,14 +1306,15 @@ C
       LUCMD  = -9031
       LUINTR = -9032
       LUMOLDEN=-9033
+      LUNDPF = -9034
       DO I = 1, MXCOOR
-         LUAORC(I) = -9034 - I
+         LUAORC(I) = -9035 - I
       ENDDO
 C
 C     /R12INT/ (WK/UniKA/26-11-2002).
 C
       DO I = 1, 5
-         LUR12(I) = -9034 - MXCOOR - I
+         LUR12(I) = -9035 - MXCOOR - I
       ENDDO
 C
 C     /RSPTAP/

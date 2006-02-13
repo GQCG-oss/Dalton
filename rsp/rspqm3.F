@@ -52,11 +52,15 @@ C
 #include <qm3.h>
 #include <priunit.h>
 #include <dummy.h>
+#include <inftap.h>
 #include <ccinftap.h>
 #include <wrkrsp.h>
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(*), EVECS(KZYVAR,*)
       DIMENSION WRK(*), DV(*), CREF(*)
+      LOGICAL LOPEN 
+
+      LOPEN = .FALSE.
 
       CALL QENTER('QM3LNO')
 
@@ -119,9 +123,12 @@ C    If OLDTG = .FALSE. N_s is included in one-electron
 C    part of vacuum Hamiltonian
 C--------------------------------------------------------
 
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
-        
+      IF (LUSIFC .LE. 0) THEN
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         LOPEN = .TRUE.
+      END IF
+     
       REWIND(LUSIFC)
 
       MMORBT = MAX(4,NNORBT)
@@ -132,7 +139,9 @@ C--------------------------------------------------------
       CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
       CALL READT (LUSIFC,NNORBX,WRK(KFSOLMO))
 
-      CALL GPCLOSE(LUSIFC,'KEEP')
+      IF (LOPEN) THEN
+         CALL GPCLOSE(LUSIFC,'KEEP')
+      END IF
 
       CALL DSPTSI(NORBT,WRK(KFSOLMO),WRK(KUFSOL))
 
@@ -298,9 +307,11 @@ C
       DIMENSION ZYM1(*),ZYM2(*),WRK(LWRK),CMO(*)
       DIMENSION VEC1(KZYV1),VEC2(KZYV2)
       DIMENSION MJWOP(2,MAXWOP,8)
-      LOGICAL LCON, LORB, LREF
+      LOGICAL LCON, LORB, LREF, LOPEN
 
       CALL QENTER('QM3QRO')
+
+      LOPEN = .FALSE.
   
       IF (TRPLET) CALL QUIT('TRIPLET NOT IMPLEMENTED FOR QM/MM YET')
 
@@ -359,6 +370,12 @@ C    If OLDTG = .FALSE. N_s is included in one-electron
 C    part of vacuum Hamiltonian
 C--------------------------------------------------------
 
+      IF (LUSIFC .LE. 0) THEN
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         LOPEN = .TRUE.
+      END IF
+
       MMORBT = MAX(4,NNORBT)
       IF (MMORBT .NE. NNORBX) THEN
         CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QM3QRO')
@@ -368,6 +385,10 @@ C
 
       CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
       CALL READT (LUSIFC,NNORBX,WRK(KFSOLMO))
+
+      IF (LOPEN) THEN
+         CALL GPCLOSE(LUSIFC,'KEEP')
+      END IF
 
       CALL DSPTSI(NORBT,WRK(KFSOLMO),WRK(KUFSOL))
 

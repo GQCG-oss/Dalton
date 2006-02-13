@@ -142,52 +142,52 @@ C
      *'*********************************************************'//
      *'**********'
 C
-      MODEL = 'CCSD'
+      MODEL = 'CCSD      '
       IF (CC2) THEN
          CALL AROUND('Coupled Cluster model is: CC2'//LABR12)
-         MODEL = 'CC2'
+         MODEL = 'CC2       '
          MODELPRI = ' CC2'
       ENDIF
       IF (CCS.AND.(.NOT.CIS)) THEN
          CALL AROUND('Coupled Cluster model is: CCS')
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
          MODELPRI = ' CCS'
       ENDIF
       IF (CCS.AND.CIS) THEN
          CALL AROUND('Model is not CC but CIS crap.')
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
          MODELPRI = ' CIS'
       ENDIF
       IF (CCD) THEN
          CALL AROUND('Coupled Cluster model is: CCD'//LABR12)
-         MODEL = 'CCD'
+         MODEL = 'CCD       '
          MODELPRI = ' CCD'
       ENDIF
       IF (CC3  ) THEN
          CALL AROUND('Coupled Cluster model is: CC3'//LABR12)
-         MODEL = 'CC3'
+         MODEL = 'CC3       '
          MODELPRI = ' CC3'
-         WRITE(LUPRI,*) 
+         WRITE(LUPRI,*)
      *    'CC3 X-state first order properties not implemented'
          RETURN
       ENDIF
       IF (CC1A) THEN
          CALL AROUND('Coupled Cluster model is: CCSDT-1a'//LABR12)
-         MODEL = 'CCSDT-1a'
-         WRITE(LUPRI,*) 
+         MODEL = 'CCSDT-1a  '
+         WRITE(LUPRI,*)
      *    'CCSDT-1a X-state first order properties not implemented'
          RETURN
       ENDIF
       IF (CC1B) THEN
          CALL AROUND('Coupled Cluster model is: CCSDT-1b'//LABR12)
-         MODEL = 'CCSDT-1b'
-         WRITE(LUPRI,*) 
+         MODEL = 'CCSDT-1b  '
+         WRITE(LUPRI,*)
      *    'CCSDT-1b X-state first order properties not implemented'
          RETURN
       ENDIF
       IF (CCSD) THEN
          CALL AROUND('Coupled Cluster model is: CCSD'//LABR12)
-         MODEL = 'CCSD'
+         MODEL = 'CCSD      '
          MODELPRI = 'CCSD'
       ENDIF
 C
@@ -635,8 +635,8 @@ C--------------------------------
 C           Store on prpc list.
 C--------------------------------
 C
-            CALL CC_PRPC(DIPMN(IDIP),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
-     *                   EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+            CALL WRIPRO(DIPMN(IDIP),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *                  EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
 C
   100    CONTINUE
 C
@@ -809,8 +809,8 @@ C--------------------------------
 C           Store on prpc list.
 C--------------------------------
 C
-            CALL CC_PRPC(ELSEMO(I,J),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
-     *                   EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+            CALL WRIPRO(ELSEMO(I,J),MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *                  EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
 C
   125       CONTINUE
   115    CONTINUE
@@ -992,8 +992,8 @@ C        Calculate the electronic contribution to the given property.
 C--------------------------------------------------------------------
 C
          PROP = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
-         CALL CC_PRPC(PROP,MODEL,-11,LABEL,LABEL,LABEL,LABEL,
-     *                EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
+         CALL WRIPRO(PROP,MODEL,-11,LABEL,LABEL,LABEL,LABEL,
+     *               EXC,DUMMY,DUMMY,ISY,ISYMX,1,IXNR)
 
 C
 C----------------------

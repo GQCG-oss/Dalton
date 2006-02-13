@@ -128,35 +128,35 @@ C
 C
       MODEL = 'CCSD      '
       IF (CC2) THEN
-         MODEL = 'CC2'
+         MODEL = 'CC2       '
       ENDIF
       IF (CCS) THEN
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
       ENDIF
       IF (CC3  ) THEN
-         MODEL = 'CC3'
+         MODEL = 'CC3       '
          WRITE(LUPRI,'(/,1x,A)') 'CC3 Polari not implemented yet'
          CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CC1A) THEN
-         MODEL = 'CCSDT-1a'
+         MODEL = 'CCSDT-1a  '
          WRITE(LUPRI,'(/,1x,A)') 'CC1A Polari not implemented yet'
          CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CC1B) THEN
-         MODEL = 'CCSDT-1b'
+         MODEL = 'CCSDT-1b  '
          WRITE(LUPRI,'(/,1x,A)') 'CC1B Polari not implemented yet'
          CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CCSD) THEN
-         MODEL = 'CCSD'
+         MODEL = 'CCSD      '
       ENDIF
 C
       IF (CIS) THEN
-         MODELP = 'CIS'
+         MODELP = 'CIS       '
       ELSE
          MODELP = MODEL
       ENDIF
@@ -879,9 +879,10 @@ C
               END IF
 
             ENDIF
-            CALL CC_PRPC(RESULT,MODELP,2,
-     *                   LABELA,LABELB,LABELA,LABELB,
-     *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB)
+            CALL WRIPRO(RESULT,MODELP,2,
+     *                  LABELA,LABELB,LABELA,LABELB,
+     *                  BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     *                  0,0,0)
          END DO
 
          IF (DIPPOL.AND.(LABELA(2:7).EQ.'DIPLEN')
@@ -1381,13 +1382,13 @@ C
          WRITE(LUPRI,'(/,1X,A,E18.8,A,/)')
      *      'Conversion factor (a.u. - S.I.):',DPOLAUTSI,' (C^2m^2J^-1)'
 C
-            CALL CC_PRPC(SHPAL,MODEL,2,
-     *                   'isoalpha','isoalpha','isoalpha','isoalpha',
-     *                   FRQ,DUMMY,DUMMY,1,0,0,0)
+            CALL WRIPRO(SHPAL,MODEL,2,
+     *                  'isoalpha','isoalpha','isoalpha','isoalpha',
+     *                  FRQ,DUMMY,DUMMY,1,0,0,0)
 C
-            CALL CC_PRPC(ANINV,MODEL,2,
-     *                   'anis_inv','anis_inv','anis_inv','anis_inv',
-     *                   FRQ,DUMMY,DUMMY,1,0,0,0)
+            CALL WRIPRO(ANINV,MODEL,2,
+     *                  'anis_inv','anis_inv','anis_inv','anis_inv',
+     *                  FRQ,DUMMY,DUMMY,1,0,0,0)
 C
       END
 c*DECK CC_LRESID
@@ -1478,29 +1479,29 @@ C
 C
       MODEL = 'CCSD      '
       IF (CC2) THEN
-         MODEL = 'CC2'
+         MODEL = 'CC2       '
       ENDIF
       IF (CCS) THEN
-         MODEL = 'CCS'
+         MODEL = 'CCS       '
       ENDIF
       IF (CC3  ) THEN
-         MODEL = 'CC3'
+         MODEL = 'CC3       '
          WRITE(LUPRI,'(/,1x,A)')
      *    'CC3 Oscillator strengths not implemented yet'
          RETURN
       ENDIF
       IF (CC1A) THEN
-         MODEL = 'CCSDT-1a'
+         MODEL = 'CCSDT-1a  '
          WRITE(LUPRI,'(/,1x,A)')
      *    'CC1A Oscillator strengths not implemented yet'
          RETURN
       ENDIF
       IF (CCSD) THEN
-         MODEL = 'CCSD'
+         MODEL = 'CCSD      '
       ENDIF
 C
       IF (CIS) THEN
-         MODELP = 'CIS'
+         MODELP = 'CIS       '
       ELSE
          MODELP = MODEL
       ENDIF
@@ -1987,9 +1988,9 @@ C
             SQRRES  = 0.0D0
           ENDIF
           IF (LABELA.EQ.LABELB) THEN
-             CALL CC_PRPC(SQRRES,MODELP,-1,
-     *                    LABELA,LABELB,LABELA,LABELB,
-     *                    EIGV,EIGV,EIGV,ISYMEA)
+             CALL WRIPRO(SQRRES,MODEL,-1,
+     *                   LABELA,LABELB,LABELA,LABELB,
+     *                   EIGV,EIGV,EIGV,ISYMEA,ISYME,1,ISTATE)
           ENDIF
         END DO
       END DO
@@ -4111,7 +4112,7 @@ C
       END
 c*DECK CC_PRPC
        SUBROUTINE CC_PRPC(PROP,LABEL,NORD,LABX,LABY,LABZ,LABU,
-     *                   FRQY,FRQZ,FRQU,ISYMIN)
+     *                   FRQY,FRQZ,FRQU,ISYMIN,ISYMEX,ISPINEX,IEX)
 C
 C-----------------------------------------------------------------------------
 C
@@ -4128,6 +4129,7 @@ C           -1    ground - excited  transition matrix element
 C           -2    excited - excited transition matrix element (not implemented yet)
 C           -3    ground - excited transition strength
 C           -4    excited - excited transition strength (not implemented yet)
+C           -11    First order excited state property
 C-----------------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -4146,12 +4148,6 @@ C
 C
       LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
-C
-      PARAMETER (ISYMEX=0, ISPINEX=0, IEX=0)
-C     ... hjaaj Oct 2003: make sure these three variables are defined
-C     for "WRITE(LUPRPC," below, otherwise they are undefined and
-C     may be bigger than 'I4' format, giving stars in output
-C     and illegal character when LUPRPC is read again in cc_drv.F
 C
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
 C
@@ -5769,9 +5765,13 @@ C     -----------------------------------------------------------
             END IF
 
             IF (LABELA .EQ. LABELB) THEN
-               CALL CC_PRPC(SQRRES,MODELP,-1,
-     &                      LABELA,LABELB,LABELA,LABELB,
-     &                      EIGV,EIGV,EIGV,ISYMEA)
+               CALL WRIPRO(SQRRES,MODEL,-1,
+     &                     LABELA,LABELB,LABELA,LABELB,
+     &                     EIGV,EIGV,EIGV,ISYMEA,ISYME,1,ISTATE)
+               OSCCON = EIGV*SQRRES*SQRRES 
+               CALL WRIPRO(OSCCON,MODEL,-21,
+     &                     LABELA,LABELB,LABELA,LABELB,
+     &                     EIGV,EIGV,EIGV,ISYMEA,ISYME,1,ISTATE)
             END IF
 
          END DO
@@ -6795,3 +6795,67 @@ C           -----------------------
 
       RETURN
       END
+c*DECK WRIPRO
+       SUBROUTINE WRIPRO(PROP,LABEL,NORD,LABX,LABY,LABZ,LABU,
+     *                   FRQY,FRQZ,FRQU,ISYMIN,ISYMEX,ISPINEX,IEX)
+C
+C-----------------------------------------------------------------------------
+C
+C     Purpose: Add response property to list of property information to be
+C              passed to numerical differentiantion/averaging.
+C
+C     Ove Christiansen August 1999.
+C
+C     NORD = 1    exp. value
+C            2    Linear response function
+C            3    Quadratic response function
+C            4    Cubic response function
+C           -1    ground - excited  transition matrix element
+C           -2    excited - excited transition matrix element (not implemented yet)
+C           -3    ground - excited transition strength
+C           -4    excited - excited transition strength (not implemented yet)
+C           -11    First order excited state property
+C-----------------------------------------------------------------------------
+C
+#include <implicit.h>
+#include <maxorb.h>
+C
+#include <dummy.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <cclr.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <ccsdinp.h>
+#include <prpc.h>
+#include <inftap.h>
+C
+      LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
+      PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
+C
+      CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
+C
+C--------------------------------------------------
+C
+      EXIST = .FALSE.
+C
+      IF (NOEONL .AND. (NORD.EQ.0)) THEN
+C         if energy and NOEONList = true then skip addition to list.
+        RETURN
+      ELSE
+        IF (EXIST) THEN
+           IPRMI = IHIT
+        ELSE
+           NPRMI = NPRMI + 1
+           IPRMI = NPRMI
+        ENDIF
+C
+        WRITE(LUNDPF,
+     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *   IPRMI,ISYMIN,NORD,LABEL,PROP,
+     *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
+      ENDIF
+C
+      END
+C--------------------------------------------------------------

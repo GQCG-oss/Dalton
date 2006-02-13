@@ -106,55 +106,6 @@ C
         MODELPRI = ' CC2'
       ENDIF
 C
-      IF (MCC2) THEN
-        CALL AROUND('Coupled Cluster model is: MCC2')
-        MODEL = 'MCC2'
-        MODELPRI = 'MCC2'
-      ENDIF
-C
-      IF (MP2) THEN
-        CALL AROUND('Model is second order pert. theory: MP2 ')
-        MODEL = 'MP2'
-        MODELPRI = ' MP2'
-      ENDIF
-C
-      IF (CCS.AND.(.NOT.CIS)) THEN
-        CALL AROUND('Coupled Cluster model is: CCS')
-        MODEL = 'CCS'
-        MODELPRI = ' CCS'
-      ENDIF
-C
-      IF (CCS.AND.CIS) THEN
-        CALL AROUND('CIS model in use ')
-        MODEL = 'CCS'
-        MODELPRI = ' CIS'
-      ENDIF
-C
-      IF (CCD) THEN
-        CALL AROUND('Coupled Cluster model is: CCD')
-        MODEL = 'CCD'
-        MODELPRI = ' CCD'
-      ENDIF
-C
-      IF (CC3) THEN
-        CALL AROUND('Coupled Cluster model is: CC3')
-        MODEL = 'CC3'
-        MODELPRI = 'CC3'
-        CALL QUIT('CC3 first order properties not implemented')
-      ENDIF
-C
-      IF (CC1A) THEN
-        CALL AROUND('Coupled Cluster model is: CCSDT-1a')
-        MODEL = 'CCSDT-1a'
-        CALL QUIT( 'CCSDT-1a first order properties not implemented')
-      ENDIF
-C
-      IF (CC1B) THEN
-        CALL AROUND('Coupled Cluster model is: CCSDT-1b')
-        MODEL = 'CCSDT-1b'
-        CALL QUIT( 'CCSDT-1b first order properties not implemented')
-      ENDIF
-C
       IF (.NOT. (CCSD.OR.CC2)) THEN
         CALL QUIT('CCMM only implemented for the ' //
      &            'CC2 and CCSD parameterizations.') 
@@ -370,22 +321,22 @@ C
      *  ' CCMM equations are converged in ',NSLVINIT,
      *  ' inner iterations'
 C
-        WRITE(LURES,'(12X,A8,A,F20.10)')
-     *  MODEL,' Total energy:           ',ECMCU
+        WRITE(LURES,'(12X,A4,A,F20.10)')
+     *  MODELPRI,' Total energy:           ',ECMCU
 C
-        WRITE(LURES,'(12X,A8,A,F20.10,/)')
-     *  MODEL,' E(QM/MM):       ',ECMCON
+        WRITE(LURES,'(12X,A4,A,F20.10,/)')
+     *  MODELPRI,' E(QM/MM):       ',ECMCON
 C
         ECCGRS1 = ECMCU    
-        LABEL = MODELPRI//'/MM'
-        CALL CC_PRPC(ECCGRS1,MODEL,0,
-     *                LABEL,LABEL,LABEL,LABEL,
-     *                ZERO,ZERO,ZERO,1,0,0,0)
+        LABEL = MODELPRI//'/MM '
+        CALL WRIPRO(ECCGRS1,MODEL,0,
+     *              LABEL,LABEL,LABEL,LABEL,
+     *              ZERO,ZERO,ZERO,1,0,0,0)
 C
-        LABEL = 'E_QM/MM'
-        CALL CC_PRPC(ECMCON,MODEL,0,
-     *                LABEL,LABEL,LABEL,LABEL,
-     *                ZERO,ZERO,ZERO,1,0,0,0)
+        LABEL = 'E_QM/MM '
+        CALL WRIPRO(ECMCON,MODEL,0,
+     *              LABEL,LABEL,LABEL,LABEL,
+     *              ZERO,ZERO,ZERO,1,0,0,0)
       ELSE 
 C
         ICCSLIT = ICCSLIT + 1

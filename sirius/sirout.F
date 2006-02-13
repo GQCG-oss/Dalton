@@ -100,6 +100,7 @@ C
 #include <infopt.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <gnrinf.h>
 C----------------
 C CBN+JK 03.01.06
 C----------------
@@ -115,7 +116,7 @@ C
 C
       LOGICAL CICALC, MOISNO
 C
-      CHARACTER*8 TABLE(4), RTNLBL(2)
+      CHARACTER*8 TABLE(4), RTNLBL(2), LAPRPC
       DATA TABLE/'********','OLDORB  ','NEWORB  ','STARTVEC'/
 C
       CALL QENTER('SIROUT')
@@ -374,6 +375,12 @@ C        ... DIIS-HF or QC-HF optimization
          ELSE
 C        ... DIIS-DFT or QC-DFT optimization
              WRITE (LUW4,5022) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
+         END IF
+         IF (.NOT. DOCCSD) THEN
+            LAPRPC = 'ENERGY  '
+            CALL WRIPRO(EMCSCF,"SCF/DFT   ",0,
+     *                  LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,ISTATE)
          END IF
          IF (FLAG(16)) WRITE (LUW4,5025) ESOLT
          WRITE (LUW4,5030) GRDNRM

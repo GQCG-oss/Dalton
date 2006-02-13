@@ -83,6 +83,7 @@ C
 #include <infpri.h>
 #include <gnrinf.h>
 #include <inftap.h>
+#include <prpc.h>
 Cef begin
 #include <incore.h>
 Cef end
@@ -94,6 +95,7 @@ Cef end
 #endif
       CHARACTER*1 adummy
       CHARACTER*14 FILNAM
+      CHARACTER LABEL1*8, STHELP*10
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
@@ -311,6 +313,10 @@ C     ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
 C         for Master if OUTFIL is an environment variable;
 C         for slaves the name will be changed to
 C         "DALTON.OUT#<slave no>" in GPOPEN
+
+      CALL GPOPEN(LUNDPF,'DALTON.PROP','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      REWIND(LUNDPF)
 C
       CALL MEMINI(LUPRI,LUERR)
 C
@@ -460,6 +466,14 @@ C
          CALL EXEDRV(WORK, LMWORK, WRKDLM,MASTER,MYNUM)
 #endif
          CALL FLSHFO(LUPRI)
+
+         LABEL1 = 'ALL_DONE'
+         STHELP = 'THE_END   '
+         CALL WRIPRO(0.0D0,STHELP,666,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
+         IPRLOC = MAX(IPRINT,IPRRHF)
+         IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
@@ -468,6 +482,7 @@ C
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUERR,'KEEP')
          CALL GPCLOSE(LUMOLDEN,'KEEP')
+         CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
          IF (PARIO) THEN
@@ -480,6 +495,12 @@ C
 #else
             CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
 #endif
+            LABEL1 = 'ALL_DONE'
+            STHELP = 'THE_END   '
+            CALL WRIPRO(0.0D0,STHELP,666,
+     *                  LABEL1,LABEL1,LABEL1,LABEL1,
+            IPRLOC = MAX(IPRINT,IPRRHF)
+            IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
 C
@@ -489,6 +510,7 @@ C
             CALL GPCLOSE(LUCME,'KEEP')
             CALL GPCLOSE(LUERR,'KEEP')
             CALL GPCLOSE(LUMOLDEN,'KEEP')
+            CALL GPCLOSE(LUNDPF,'KEEP')
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
@@ -522,9 +544,17 @@ C
 #else
       CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
 #endif
+      LABEL1 = 'ALL_DONE'
+      STHELP = 'THE_END   '
+      CALL WRIPRO(0.0D0,STHELP,666,
+     *            LABEL1,LABEL1,LABEL1,LABEL1,
+     *            ZERO,ZERO,ZERO,1,0,0,0)
+      IPRLOC = MAX(IPRINT,IPRRHF)
+      IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
       CALL GPCLOSE(LUERR,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUMOLDEN,'KEEP')
+      CALL GPCLOSE(LUNDPF,'KEEP')
       CALL GPCLOSE(LUPRI,'KEEP')
 #endif
 #if defined (VAR_PVM)

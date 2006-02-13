@@ -78,7 +78,7 @@ c /* deck CC_2HYP */
       PARAMETER (ZERO = 0.0d0)
 
       LOGICAL LCHI2_SAVE, LXKS3_SAVE, LADD, LERROR
-      CHARACTER*10 MODEL
+      CHARACTER*10 MODEL, MOPRPC
       INTEGER LWORK
       INTEGER IZT(4),IAM(4),IOP(4),IR2(6),IX2(6),IO3(4),IL2(6),IO2(6)
       INTEGER ISYML, ISYM1, ISYM2, ISYM3, ISYMA, ISYMB, ISYMC, ISYMD
@@ -1316,7 +1316,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 #endif
       PARAMETER (HALF = 0.5D0)
 
-      CHARACTER MODEL*10
+      CHARACTER MODEL*10,MOPRPC
       INTEGER ISYMABCD
 *---------------------------------------------------------------------*
 * print header for hyperpolarizability section
@@ -1336,11 +1336,22 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
          CALL QUIT('CCCHYPPRT called for an unknown Coupled '//
      &             'Cluster model.')
       END IF
-      IF (CCSD) MODEL = 'CCSD'
-      IF (CIS) MODEL  = 'CIS'
-      IF (CCS) MODEL  = 'CCS'
-      IF (CC2) MODEL  = 'CC2'
-      IF (CC3) MODEL  = 'CC3'
+      IF (CCSD) THEN
+         MODEL = 'CCSD'
+         MOPRPC = 'CCSD      '
+      ELSE IF (CIS) THEN
+         MODEL  = 'CIS'
+         MOPRPC = 'CIS       '
+      ELSE IF (CCS) THEN
+         MODEL  = 'CCS'
+         MOPRPC = 'CCS       '
+      ELSE IF (CC2) THEN
+         MODEL  = 'CC2'
+         MOPRPC = 'CC2       '
+      ELSE IF (CC3) THEN
+         MODEL  = 'CC3'
+         MOPRPC = 'CC3       '
+      END IF
 
       IF (IPRCHYP.GT.5) THEN
        WRITE(LUPRI,'(/1X,4(1X,A," operator",7X),4X,A,8X,A,/,107("-"))')
@@ -1401,11 +1412,11 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
           END IF
           ISYOLD = 0
          END IF
-         CALL CC_PRPC(PROP,MODEL,4,
-     &                LBLOPR(IACROP(IOPER)),LBLOPR(IBCROP(IOPER)),
-     &                LBLOPR(ICCROP(IOPER)),LBLOPR(IDCROP(IOPER)),
-     &                BCRFR(IFREQ),CCRFR(IFREQ),DCRFR(IFREQ),ISYMABCD,
-     &                0,0,0)
+         CALL WRIPRO(PROP,MOPRPC,4,
+     &               LBLOPR(IACROP(IOPER)),LBLOPR(IBCROP(IOPER)),
+     &               LBLOPR(ICCROP(IOPER)),LBLOPR(IDCROP(IOPER)),
+     &               BCRFR(IFREQ),CCRFR(IFREQ),DCRFR(IFREQ),ISYMABCD,
+     &               0,0,0)
 
 
          DO IFREQ = 2, NCRFREQ

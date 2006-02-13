@@ -350,10 +350,15 @@ C
             RESIDUE = 0.0D0
           ENDIF
           IF (LABELA.EQ.LABELB) THEN
-             CALL CC_PRPC(SQRRES,MODELP,-110,
-     *                    LABELA,LABELB,LABELA,LABELB,
-     *                    EIGVI,EIGVF,EIGVF-EIGVI,MULD2H(ISYMAI,ISYMF),
-     *                    0,0,0)
+             CALL WRIPRO(SQRRES,MODELP,-2,
+     *                   LABELA,LABELB,LABELA,LABELB,
+     *                   EIGVI,EIGVF,EIGVF-EIGVI,MULD2H(ISYMAI,ISYMF),
+     *                   0,0,0)
+             OSCCON = (EIGVF-EIGVI)*SQRRES*SQRRES 
+             CALL WRIPRO(OSCCON,MODEL,-22,
+     &                   LABELA,LABELB,LABELA,LABELB,
+     &                   EIGVI,EIGVF,EIGVF-EIGVI,MULD2H(ISYMAI,ISYMF),
+     &                   ISYME,1,ISTATE)
           ENDIF
         END DO  
 c       WRITE(LUPRI,*) ' ' 

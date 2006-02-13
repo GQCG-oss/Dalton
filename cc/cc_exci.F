@@ -95,6 +95,7 @@ C
       LOGICAL LREDS
       DIMENSION WORK(LWORK),NCCEXSAV(8,3),CONT(28)
       CHARACTER MODEL*24,MODELP*24,MODEL1*24,CHSYM*4,FILEX*10,FILOLD*10
+      CHARACTER MOPRPC*10
       CHARACTER CDIP*1,CDUM*3, SPACE*32, MODELSCR*24
       CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM,FS2AM
       CHARACTER*(3) LIST
@@ -124,7 +125,7 @@ C
       IF (CCP2)   CCS = .TRUE.
       TRIPLET = .FALSE.
       LABEL  = "Excita  "
-      LABEL1 = "ExcTot  "
+      LABEL1 = "Exctot  "
 C
 C----------------------------------------------------------
 C     Reinit NEXCI: Necessary if symmetry has been reduced.
@@ -240,56 +241,70 @@ C
      *'**********'
 C
       MODEL = 'CCSD'
+      MOPRPC = 'CCSD      '
       IF (CC2) THEN
          CALL AROUND( ' CC2 Excitation Energies ')
          MODEL = 'CC2'
+         MOPRPC = 'CC2       '
       ENDIF
       IF (CCP2) THEN
          CALL AROUND( ' CCS and CC(2) Excitation Energies ')
          MODEL = 'CC(2)'
+         MOPRPC ='CC(2)     '
       ENDIF
       IF (CCS.AND.(.NOT.CIS)) THEN
          CALL AROUND( ' CCS Excitation Energies ')
          MODEL = 'CCS'
+         MOPRPC ='CCS       '
       ENDIF
       IF (CCS.AND.CIS) THEN
          CALL AROUND( ' CIS Excitation Energies ')
          MODEL = 'CCS'
+         MOPRPC ='CCS       '
       ENDIF
       IF (CC3  ) THEN
          CALL AROUND( ' CC3 Excitation Energies ')
          MODEL = 'CC3'
+         MOPRPC ='CC3       '
       ENDIF
       IF (CC1B .AND. ( .NOT. CC1a) ) THEN
          CALL AROUND( ' CCSDT-1b Excitation Energies ')
          MODEL = 'CCSDT-1b'
+         MOPRPC ='CCSDT-1b  '
       ENDIF
       IF (CC1A ) THEN
          CALL AROUND( ' CCSDT-1a Excitation Energies ')
          MODEL = 'CCSDT-1a'
+         MOPRPC ='CCSDT-1a  '
       ENDIF
       IF (CCR3) THEN
          CALL AROUND( ' CCSD and CCSDR(3) Excitation Energies')
          MODEL = 'CCSD'
+         MOPRPC ='CCSD      '
       ENDIF
       IF (CCRT) THEN
          CALL AROUND( ' CCSD and CCSDR(T) Excitation Energies')
          MODEL = 'CCSD'
+         MOPRPC ='CCSD      '
       ENDIF
       IF (CCR1A) THEN
          CALL AROUND( ' CCSD and CCSDR(1a) Excitation Energies')
          MODEL = 'CCSD'
+         MOPRPC ='CCSD      '
       ENDIF
       IF (CCR1B) THEN
          CALL AROUND( ' CCSD and CCSDR(1b) Excitation Energies')
          MODEL = 'CCSD'
+         MOPRPC ='CCSD      '
       ENDIF
       IF (CCSD) THEN
          CALL AROUND( ' CCSD Excitation Energies ')
          MODEL = 'CCSD'
+         MOPRPC ='CCSD      '
       ENDIF
       IF (CIS) THEN
         MODELP = 'CIS'
+        MOPRPC ='CIS       '
       ELSE
         MODELP = MODEL
         IF (CCR12 .AND. (.NOT.CCS)) THEN
@@ -1252,12 +1267,12 @@ c    *            WORK(KT1PS+IEX-1)
 c           ENDIF
             OME   = WORK(KEXCIS+IEX-1)
             ETOT  = ECCGRS+OME
-            CALL CC_PRPC(OME,MODELP,0,
-     *             LABEL,LABEL,LABEL,LABEL,
-     *             ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
-            CALL CC_PRPC(ETOT,MODELP,0,
-     *             LABEL1,LABEL1,LABEL1,LABEL1,
-     *             ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
+            CALL WRIPRO(OME,MOPRPC,0,
+     *                  LABEL,LABEL,LABEL,LABEL,
+     *                  ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
+            CALL WRIPRO(ETOT,MOPRPC,0,
+     *                  LABEL1,LABEL1,LABEL1,LABEL1,
+     *                  ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
  9200    CONTINUE
 C
          DO 9220 IEX =  1, NCCEXSAV(ISYM,IMULT)
@@ -1419,13 +1434,13 @@ c                    WRITE(LURES,9993) IEX,OME,
 c    *                  OME*XTEV,OME*XTKAYS
 c                 ENDIF
                   ETOT  = ECCGRS+OME
-                  CALL CC_PRPC(OME,MODEL1,0,
-     *                         LABEL,LABEL,LABEL,LABEL,
-     *                         ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
-                  CALL CC_PRPC(ETOT,MODEL1,0,
-     *                         LABEL1,LABEL1,LABEL1,LABEL1,
-     *                         ECCGRS,OME,ETOT,1,ISYM,IMULT,IEX)
-C
+                  CALL WRIPRO(OME,MOPRPC,0,
+     *                        LABEL,LABEL,LABEL,LABEL,
+     *                        0.0D0,0.0D0,0.0D0,1,ISYM,IMULT,IEX)
+                  CALL WRIPRO(ETOT,MOPRPC,0,
+     *                        LABEL1,LABEL1,LABEL1,LABEL1,
+     *                        0.0D0,0.0D0,0.0D0,1,ISYM,IMULT,IEX)
+
                   IF ((ISYM .EQ. IXSTSY).AND.(IEX.EQ.IXSTAT)) THEN
                      OMECCX = OME
                      ECCXST = ECCGRS + OMECCX

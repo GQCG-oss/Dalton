@@ -39,8 +39,9 @@ C  /* Deck qm3fck */
      *                  WRK,LWRK,IPRINT)
 
 #include <implicit.h>
-#include <priunit.h>
 #include <dummy.h>
+#include <inftap.h>
+#include <priunit.h>
 #include <qm3.h>
 #include <mxcent.h>
 #include <thrzer.h>
@@ -50,19 +51,17 @@ C  /* Deck qm3fck */
 #include <maxorb.h>
 #include <infinp.h>
 #include <inforb.h>
-#include <inftap.h>
 #include <infpri.h>
 #include <scbrhf.h>
 #include <maxaqn.h>
 #include <symmet.h>
 #include <orgcom.h>
-#include <sdpre.h>
-#include <ccinftap.h>
 
-      DIMENSION DCAO(*),DVAO(*)
+      DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
-      DIMENSION DFTNS(MXQM3)
       LOGICAL HSFOCK
+      DIMENSION DFTNS(MXQM3)
+
 
       CALL QENTER('QM3FCK')
       KDTAO = 1
@@ -127,7 +126,6 @@ C  /* Deck qm3_rra */
 #include <symmet.h>
 #include <orgcom.h>
 #include <infinp.h>
-#include <ccinftap.h>
 
       DIMENSION WRK(LWRK)
       DIMENSION EELEC(3,MXQM3)
@@ -161,9 +159,9 @@ C  /* Deck qm3_rra */
         WRITE(LUPRI,*) 'QM3RAINT: Read in integrals'
       ENDIF
 
-      CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
+      CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LUCCEF)
+      REWIND(LUQM3E)
 
       LM = 0
 
@@ -173,13 +171,13 @@ C  /* Deck qm3_rra */
             DO 522 K = 1, NUALIS(I)
               LM = LM + 1
 
-              CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+              CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
               WRK(KRAx+LM-1) = DDOT(NNBASX,WRK(KRRAOx),1,DCAO,1)
 
-              CALL READT(LUCCEF,NNBASX,WRK(KRRAOy))
+              CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
               WRK(KRAy+LM-1) = DDOT(NNBASX,WRK(KRRAOy),1,DCAO,1)
 
-              CALL READT(LUCCEF,NNBASX,WRK(KRRAOz))
+              CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
               WRK(KRAz+LM-1) = DDOT(NNBASX,WRK(KRRAOz),1,DCAO,1)
 
   522       CONTINUE
@@ -258,9 +256,9 @@ C     the determination of the induced dipole moments
 
       CALL QM3_OBAR(FFJ)
 
-      CALL CC_PUT31(LUCCRA,'CC_RA',NCOMS,WRK(KRAx),WRK(KRAy),WRK(KRAz))
+      CALL CC_PUT31(LUMOM,'CC_RA',NCOMS,WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
-      CALL GPCLOSE(LUCCEF,'KEEP')
+      CALL GPCLOSE(LUQM3E,'KEEP')
 
       CALL QEXIT('QM3_RRA')
       RETURN
@@ -284,7 +282,6 @@ C  /* Deck qm3_ns */
 #include <maxaqn.h>
 #include <symmet.h>
 #include <orgcom.h>
-#include <ccinftap.h>
 
       DIMENSION WRK(LWRK) 
       DIMENSION DFTNS(*)
@@ -301,9 +298,9 @@ C  /* Deck qm3_ns */
 
       ENSEL = 0.0D0
        
-      CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
+      CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
      &          'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND (LUCCPO)
+      REWIND (LUQM3P)
 
       FAC1 = -1.0D0
 
@@ -316,7 +313,7 @@ C  /* Deck qm3_ns */
 
               L = L +1
 
-              CALL READT(LUCCPO,NNBASX,WRK(KNSAO))
+              CALL READT(LUQM3P,NNBASX,WRK(KNSAO))
 
               DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KNSAO),1)
               ENSEL     = ENSEL - DFTNS(L) 
@@ -332,7 +329,7 @@ C  /* Deck qm3_ns */
         END IF
   525 CONTINUE       
 
-      CALL GPCLOSE(LUCCPO,'KEEP')
+      CALL GPCLOSE(LUQM3P,'KEEP')
 
 C-------------------
 C     Print section:
@@ -389,7 +386,6 @@ C  /* Deck qm3_fmo */
 #include <symmet.h>
 #include <orgcom.h>
 #include <infinp.h>
-#include <ccinftap.h>
 
       DIMENSION WRK(LWRK)
       DIMENSION FSOL(*)
@@ -415,14 +411,14 @@ C  /* Deck qm3_fmo */
 
       CALL DZERO(WRK(KRRAOx),3*NNBASX)
       CALL DZERO(WRK(KRAx),6*NCOMS)
-      CALL DZERO(WRK(KTAO),2*NNBASX)
+      CALL DZERO(WRK(KTAO),NNBASX)
 
       IF (.NOT. LOSPC) THEN  
 
-        CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+        CALL CC_GET31(LUMOM,'CC_RA',NCOMS,
      *                 WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
-        CALL CC_GET31(LUCCEA,'ENSAFILE',NCOMS,
+        CALL CC_GET31(LUENSA,'ENSAFILE',NCOMS,
      *                 WRK(KENSAx),WRK(KENSAy),WRK(KENSAz))
 
         IF (IQM3PR .GT. 15) THEN
@@ -493,9 +489,9 @@ C  /* Deck qm3_fmo */
           WRITE(LUPRI,'(//,A)')
         END IF
 
-        CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
+        CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
      &              'UNFORMATTED',IDUMMY,.FALSE.)
-        REWIND(LUCCEF)
+        REWIND(LUQM3E)
 
         LM = 0
 
@@ -505,21 +501,21 @@ C  /* Deck qm3_fmo */
               DO 522 K = 1, NUALIS(I)
                 LM = LM + 1
 
-                CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
 
                 IF (IQM3PR .GE. 15) THEN
                   WRITE (LUPRI,'(/A)') ' Rra_ao x matrix:'
                   CALL OUTPAK(WRK(KRRAOx),NBAST,1,LUPRI)
                 END IF
   
-                CALL READT(LUCCEF,NNBASX,WRK(KRRAOy))
+                CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
   
                 IF (IQM3PR .GE. 15) THEN
                   WRITE (LUPRI,'(/A)') ' Rra_ao y matrix:'
                   CALL OUTPAK(WRK(KRRAOy),NBAST,1,LUPRI)
                 END IF
 
-                CALL READT(LUCCEF,NNBASX,WRK(KRRAOz))
+                CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
   
                 IF (IQM3PR .GE. 15) THEN
                   WRITE (LUPRI,'(/A)') ' Rra_ao z matrix:'
@@ -552,7 +548,7 @@ C  /* Deck qm3_fmo */
           END IF
   520   CONTINUE
 
-        CALL GPCLOSE(LUCCEF,'KEEP')
+        CALL GPCLOSE(LUQM3E,'KEEP')
 
         IF (IQM3PR .GE. 15) THEN
             WRITE (LUPRI,'(/A)') ' QM/MM contribution:'
@@ -566,9 +562,9 @@ C  /* Deck qm3_fmo */
 C       We use RRAOx in this case for the pot.energy integrals
         CALL DZERO(WRK(KRRAOx),NNBASX)
 
-        CALL GPOPEN(LUCCPO,'POTMM','UNKNOWN',' ',
+        CALL GPOPEN(LUQM3P,'POTMM','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
-        REWIND (LUCCPO)
+        REWIND (LUQM3P)
 
         FAC1 = -1.0D0
 
@@ -581,7 +577,7 @@ C       We use RRAOx in this case for the pot.energy integrals
 
                 L = L +1
 
-                CALL READT(LUCCPO,NNBASX,WRK(KRRAOx))
+                CALL READT(LUQM3P,NNBASX,WRK(KRRAOx))
 
                 IF (IQM3PR .GE. 4) THEN
                   WRITE (LUPRI,'(/A,I3,A)')
@@ -596,7 +592,7 @@ C       We use RRAOx in this case for the pot.energy integrals
           END IF
   525   CONTINUE
 
-        CALL GPCLOSE(LUCCPO,'KEEP')
+        CALL GPCLOSE(LUQM3P,'KEEP')
 
       END IF
 
@@ -625,7 +621,6 @@ C  /* Deck qm3_energy */
 #include <symmet.h>
 #include <orgcom.h>
 #include <infinp.h>
-#include <ccinftap.h>
 
       DIMENSION WRK(LWRK)
       DIMENSION FFJ(3), DFTNS(*)
@@ -671,10 +666,10 @@ C-------------------------------------
       EQM3T = 0.0D0
 
       IF (.NOT. LOSPC) THEN
-        CALL CC_GET31(LUCCOB,'OBARFILE',NCOMS,
+        CALL CC_GET31(LUEOBAR,'OBARFILE',NCOMS,
      *                WRK(KOMMSx),WRK(KOMMSy),WRK(KOMMSz))
 
-        CALL CC_GET31(LUCCRA,'CC_RA',NCOMS,
+        CALL CC_GET31(LUMOM,'CC_RA',NCOMS,
      *                WRK(KRAx),WRK(KRAy),WRK(KRAz))
 
         KS = 0
@@ -802,6 +797,7 @@ C  /* Deck qm3grad */
 #include <infind.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <inflin.h>
 
       DIMENSION CREF(*),CMO(*),INDXCI(*)
       DIMENSION G(*),WRK(LWRK)
@@ -904,6 +900,8 @@ C
 #include <inflin.h>
 #include <inforb.h>
 #include <dummy.h>
+#include <priunit.h>
+#include <infpri.h>
 
       DIMENSION BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION SOVECS(*),WRK(LWRK)
@@ -934,8 +932,11 @@ C
          ELSE
             NSVAR  = NWOPPT
          END IF
-         CALL QM3HESS(NOSIM,BOVECS,CREF,CMO,INDXCI,
-     &                WRK(KDENS),SOVECS,NSVAR,WRK(KWRK),LWRK1)
+
+
+      CALL QM3HESS(NOSIM,BOVECS,CREF,CMO,INDXCI,
+     &             WRK(KDENS),SOVECS,NSVAR,WRK(KWRK),LWRK1)
+
       END IF
       CALL QEXIT('QM3LIN')
       RETURN
@@ -956,7 +957,7 @@ C
 #include <qm3.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <ccinftap.h>
+#include <inftap.h>
 C
       DIMENSION BOVECS(NWOPPT,*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION DV(*),SVEC(NSVEC,*),WRK(LWRK)
@@ -1011,12 +1012,10 @@ C     Determine if full Hessian or only orbital Hessian
 C     1. Construct effective operators Tgxo and RRayo
 
       CALL DZERO(WRK(KRXYO),NOSIM*NNORBX )
-      CALL DZERO(WRK(KTEXY),NOSIM)
+      CALL DZERO(WRK(KUBO),NOSIM*N2ORBX)
 
 C     1.a. Unpack symmetry blocked CMO
-
       CALL UPKCMO(CMO,WRK(KUCMO))
-
 C     1.b. Calculate unpacked orbital trial vectors in UBO
 
       IF (NOSIM.GT.0) THEN
@@ -1025,6 +1024,10 @@ C     1.b. Calculate unpacked orbital trial vectors in UBO
             CALL UPKWOP(NWOPPT,JWOP,BOVECS(1,IOSIM),WRK(JUBO))
   210    CONTINUE
       END IF
+
+
+      CALL DZERO(WRK(KFSOLMO),NNORBX)
+      CALL DZERO(WRK(KUFSOL),N2ORBX)
 
 C     1.c. Construct the Tg operator in ao and transform to mo
       CALL QM3FCKMO(CMO,WRK(KFSOLMO),WRK(KWRK),LWRK1,IPRINT)
@@ -1037,23 +1040,28 @@ C     1.c. Construct the Tg operator in ao and transform to mo
 
 C        1.d. Calculate one-index transformed Tg integrals
 
-         CALL DZERO(WRK(KUTGX),N2ORBX)
-         CALL TR1UH1(WRK(JUBO),WRK(KUFSOL),WRK(KUTGX),1)
-         CALL DGETSP(NORBT,WRK(KUTGX),WRK(KTGX))
+         CALL DZERO(WRK(KUTRX),N2ORBX)
+         CALL TR1UH1(WRK(JUBO),WRK(KUFSOL),WRK(KUTRX),1)
+         CALL DGETSP(NORBT,WRK(KUTRX),WRK(KTGX))
 
          FAC = 1.0D0
          CALL DAXPY(NNORBX,FAC,WRK(KTGX),1,WRK(JRXYO),1)
 
-         CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
+
+         WRITE (LUPRI,'(/A,I3,A,I3)')
+     *      ' >>> SOLLNO - Rxo matrix no.',IOSIM,' of',NOSIM
+         CALL OUTPAK(WRK(JRXYO),NORBT,1,LUPRI)
+
+
+         CALL GPOPEN(LUQM3E,'ELFDMM','OLD',' ',
      &               'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LUCCEF)
+         REWIND(LUQM3E)
 
 C        1.e. Readin Rra integrals and transform to mo
 
          LM = 0
 
          FAC = 1.0D0
-         CALL DZERO(WRK(KTRAO),NNBASX)
 
          DO 520 I = 1, ISYTP
            IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
@@ -1063,14 +1071,18 @@ C        1.e. Readin Rra integrals and transform to mo
 
                  FAC = -ALPIMM(I,K)
 
-                 CALL READT(LUCCEF,NNBASX,WRK(KRRAOx))
+                 CALL DZERO(WRK(KRRAOx),NNBASX)
+                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOx))
 
 C                Calculate one-index transformed Rra.x integrals
 
+                 CALL DZERO(WRK(KTRMO),NNORBX)
+                 CALL DZERO(WRK(KUTR),N2ORBX)
+                 CALL DZERO(WRK(KUTRX),N2ORBX)
+                 CALL DZERO(WRK(KTRX),NNORBX)
                  CALL UTHU(WRK(KRRAOx),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
      &                     NBAST,NORBT)
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-                 CALL DZERO(WRK(KUTRX),N2ORBX)
                  CALL TR1UH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX),1)
                  CALL DGETSP(NORBT,WRK(KUTRX),WRK(KTRX))
 
@@ -1083,14 +1095,18 @@ C                Calculate one-index transformed Rra.x integrals
   
                  CALL DAXPY(NNORBX,FACx,WRK(KTRMO),1,WRK(JRXYO),1)
 
-                 CALL READT(LUCCEF,NNBASX,WRK(KRRAOy))
+                 CALL DZERO(WRK(KRRAOy),NNBASX)
+                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOy))
 
 C                Calculate one-index transformed Rra.y integrals
 
+                 CALL DZERO(WRK(KTRMO),NNORBX)
+                 CALL DZERO(WRK(KUTR),N2ORBX)
+                 CALL DZERO(WRK(KUTRX),N2ORBX)
+                 CALL DZERO(WRK(KTRX),NNORBX)
                  CALL UTHU(WRK(KRRAOy),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
      &                     NBAST,NORBT)
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-                 CALL DZERO(WRK(KUTRX),N2ORBX)
                  CALL TR1UH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX),1)
                  CALL DGETSP(NORBT,WRK(KUTRX),WRK(KTRX))
 
@@ -1103,14 +1119,18 @@ C                Calculate one-index transformed Rra.y integrals
 
                  CALL DAXPY(NNORBX,FACy,WRK(KTRMO),1,WRK(JRXYO),1)
 
-                 CALL READT(LUCCEF,NNBASX,WRK(KRRAOz))
+                 CALL DZERO(WRK(KRRAOz),NNBASX)
+                 CALL READT(LUQM3E,NNBASX,WRK(KRRAOz))
 
 C                Calculate one-index transformed Rra.z integrals
 
+                 CALL DZERO(WRK(KTRMO),NNORBX)
+                 CALL DZERO(WRK(KUTR),N2ORBX)
+                 CALL DZERO(WRK(KUTRX),N2ORBX)
+                 CALL DZERO(WRK(KTRX),NNORBX)
                  CALL UTHU(WRK(KRRAOz),WRK(KTRMO),WRK(KUCMO),WRK(KWRK),
      &                     NBAST,NORBT)
                  CALL DSPTSI(NORBT,WRK(KTRMO),WRK(KUTR))
-                 CALL DZERO(WRK(KUTRX),N2ORBX)
                  CALL TR1UH1(WRK(JUBO),WRK(KUTR),WRK(KUTRX),1)
                  CALL DGETSP(NORBT,WRK(KUTRX),WRK(KTRX))
 
@@ -1128,18 +1148,18 @@ C                Calculate one-index transformed Rra.z integrals
            END IF
   520    CONTINUE
 C
-         CALL GPCLOSE(LUCCEF,'KEEP')
+         CALL GPCLOSE(LUQM3E,'KEEP')
 
   200 CONTINUE
 
-      IF (IQM3PR .GT. 15) THEN
+C      IF (IQM3PR .GT. 15) THEN
          DO 600 IOSIM = 1,NOSIM
             JRXYO = KRXYO + (IOSIM-1)*NNORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
      *         ' >>> SOLLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
             CALL OUTPAK(WRK(JRXYO),NORBT,1,LUPRI)
   600    CONTINUE
-      END IF
+C      END IF
 
 C     2. Add effective operators Tgxo and RRayo contribution to SVEC(NSVEC,NOSIM) 
 C     Tell SOLGO only to use the NWOPPT first JWOP entries

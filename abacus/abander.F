@@ -6960,7 +6960,6 @@ C
 C
 C     *** Finding the new derivative. ***
 C
-      WRITE (LUPRI,*) 'ER FORAN'
       NFINNR = NPRPC
       CALL NMNDER(TMPCCD(1,1,2),COEFF,TMPCCF,GRIREP,WORK,IADRSS,
      &            KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,IMAX,IMIN,ICNT,

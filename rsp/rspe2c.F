@@ -1757,6 +1757,13 @@ c ach
                XPROP = SOPR(IFREQ,IOP,JOP)
                WRITE(LUPRI,'(5A,1P,D20.12)')
      * '@ -<< ',LBLLR(KSYMOP,IOP),' ; ',LBLLR(KSYMOP,JOP),' >> =',XPROP
+C JK
+                CALL WRIPRO(XPROP,"LR-SCF/DFT   ",2,
+     *                      LBLLR(KSYMOP,IOP),LBLLR(KSYMOP,JOP),
+     *                      LBLLR(KSYMOP,IOP),LBLLR(KSYMOP,JOP),
+     *                      FREQ(IFREQ),FREQ(IFREQ),FREQ(IFREQ),
+     *                      1,0,0,0)
+C JK
                IF (SOPW4) THEN
                   CALL GETGPV(LBLLR(KSYMOP,JOP),FC,DUMMY,CMO,UDV,PV,
      &                        XINDX,ANTSYM,WRK(KGP),LWRKGP)

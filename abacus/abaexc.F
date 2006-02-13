@@ -759,7 +759,7 @@ C  /* Deck excout */
 #include <nuclei.h>
 #include <abainf.h>
 #include <orgcom.h>
-      CHARACTER COORDI*21, NMDTXT*9
+      CHARACTER COORDI*21, NMDTXT*9, LAPRPC*8
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
       DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
@@ -847,6 +847,12 @@ C-tbp IF (.NOT. (DIPSTR .OR. ROTSTR .OR. ROTVEL)) THEN
                WRITE (LUPRI,'(16X,I2,6X,I3,2F12.6)')
      &            ISYM,IEXVAL,EXENG(ISYM,IEXVAL),
      &            EXENG(ISYM,IEXVAL)*XTEV
+                  LAPRPC = 'Excita  '
+                  ISPINEX = 1
+                  IF (EXCTRP) ISPINEX = 3
+                  CALL WRIPRO(EXENG(ISYM,IEXVAL),"SCF/DFT   ",0,
+     *                        LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *                        0.0D0,0.0D0,0.0D0,1,ISYM,ISPINEX,IEXVAL)
  14         CONTINUE
  15      CONTINUE
 C-tbp END IF
@@ -1365,6 +1371,15 @@ C
                WRITE (LUPRI,'(2X,I2,6X,I3,5X,F12.6,5X,2F9.4)')
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            (DTWO/DTHREE)*DIPSTV, (DTWO/DTHREE)*DIPSTL
+                  LAPRPC = 'OSCI-VEL'
+                  CALL WRIPRO((DTWO/DTHREE)*DIPSTV,"SCF/DFT   ",-3,
+     *                         LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *                         0.0D0,0.0D0,0.0D0,1,ISYM,1,IEXVAL)
+                  LAPRPC = 'OSCI-LEN'
+                  CALL WRIPRO((DTWO/DTHREE)*DIPSTV,"SCF/DFT   ",-3,
+     *                         LAPRPC,LAPRPC,LAPRPC,LAPRPC,
+     *                         0.0D0,0.0D0,0.0D0,1,ISYM,1,IEXVAL)
+
   700       CONTINUE
   800    CONTINUE
       END IF

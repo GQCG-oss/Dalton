@@ -365,7 +365,7 @@ c /* deck ccsopprt */
 
       CHARACTER*5  BLANKS
       CHARACTER*8  LABA, LABB, ALPHLAB
-      CHARACTER*10 MODEL, RLXA, RLXB
+      CHARACTER*10 MODEL, RLXA, RLXB, MOPRPC
       CHARACTER*80 STRING
       INTEGER LWORK
       INTEGER ISYMA, ISYMB, ISYMAB, ISAMA, ISAMB, ISAPROP, IRELAX, M
@@ -402,15 +402,19 @@ c /* deck ccsopprt */
       IF (CCS) THEN
          CALL AROUND( BLANKS//'FINAL CCS'//STRING(1:41)//BLANKS ) 
          MODEL = 'CCS'
+         MOPRPC = 'CCS       '
       ELSE IF (CC2) THEN
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:41)//BLANKS )
          MODEL = 'CC2'
+         MOPRPC = 'CC2       '
       ELSE IF (CC3) THEN
          CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:41)//BLANKS )
          MODEL = 'CC3'
+         MOPRPC = 'CC3       '
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:41)//BLANKS )
          MODEL = 'CCSD'
+         MOPRPC = 'CCSD      '
       ELSE
          CALL QUIT('CCSOPPRT called for an unknown Coupled '//
      &             'Cluster model.')
@@ -486,11 +490,11 @@ CCN              WRITE(LUPRI,'(/1X,2(A8,A10,F7.4,3X),F24.20)')
            END IF
          END IF
          ISYMAB = MULD2H(ISYMA,ISYMB)
-         CALL CC_PRPC(PROP,MODEL,2,
-     &                LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
-     &                LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
-     &                BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
-     &                0,0,0)
+         CALL WRIPRO(PROP,MOPRPC,2,
+     &               LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &               LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &               BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     &               0,0,0)
 
 C
          DO IFREQ = 2, NBLRFR
@@ -509,11 +513,11 @@ C
      &           ALRFR(IFREQ), BLRFR(IFREQ), PROP
              END IF
            END IF
-           CALL CC_PRPC(PROP,MODEL,2,
-     &                  LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
-     &                  LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
-     &                  BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
-     &                  0,0,0)
+           CALL WRIPRO(PROP,MOPRPC,2,
+     &                 LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &                 LBLOPR(IALROP(IOPER)),LBLOPR(IBLROP(IOPER)),
+     &                 BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     &                 0,0,0)
          END DO
 
       END DO
@@ -570,11 +574,11 @@ C
      &                          ALRFR(IFREQ),BLRFR(IFREQ),ALPHA,ALPHASI
             END IF
 C
-            ALPHLAB='isoalpha'
-            CALL CC_PRPC(ALPHA,MODEL,2,
-     *                   ALPHLAB,ALPHLAB,ALPHLAB,ALPHLAB,
-     *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
-     *                   0,0,0)
+            ALPHLAB='ISOALPHA'
+            CALL WRIPRO(ALPHA,MOPRPC,2,
+     *                  ALPHLAB,ALPHLAB,ALPHLAB,ALPHLAB,
+     *                  BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     *                  0,0,0)
 C
           END DO
           END IF
@@ -694,11 +698,11 @@ C
               WRITE(LUPRI,'(80("-"))')
           END IF
 C
-            ALPHLAB='anis_inv'
-            CALL CC_PRPC(ANI,MODEL,2,
-     *                   ALPHLAB,ALPHLAB,ALPHLAB,ALPHLAB,
-     *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
-     *                   0,0,0)
+            ALPHLAB='ANIS_INV'
+            CALL WRIPRO(ANI,MOPRPC,2,
+     *                  ALPHLAB,ALPHLAB,ALPHLAB,ALPHLAB,
+     *                  BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB,
+     *                  0,0,0)
 C
         END DO
         END IF

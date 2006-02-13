@@ -74,7 +74,7 @@ C
       LOGICAL CCR12RSP, CCR12LIM
       LOGICAL LCONV1,LCONV2
       CHARACTER*5 ETY0, ETY1, ETY2
-      CHARACTER MODEL*10, MODELR*10, ETYPE*24, MODELR12*24
+      CHARACTER MODEL*10, MODELR*10, ETYPE*24, MODELR12*24, MOPRPC*10
       CHARACTER MODREF*10
       CHARACTER*3 APROXR12
       CHARACTER*24 BLANKS
@@ -107,6 +107,7 @@ C
       IF (CCR3)  MODEL = 'CCSDR(3)  '
       IF (CCR1A) MODEL = 'CCSDR(1A) '
       IF (CCR1B) MODEL = 'CCSDR(1B) '
+      MOPRPC = MODEL
       ! set model for CCR12
       CALL CCSD_MODEL(MODELR12,LENMOD,24,MODEL,10,APROXR12)
       MODEL = MODELR12(1:10)
@@ -313,11 +314,15 @@ C        write SCF energy to summary file:
          WRITE(LURES,'(/12X,A,A,A,F32.10)')
      *               'Total ',ETY0,' energy: ',ESCF
 C
-         LABEL1 = 'CCS/SCF'
-         CALL CC_PRPC(ESCF,MODEL,0,
+         LABEL1 = 'ENERGY  '
+         MODREF = 'CCS/SCF   '
+         CALL CC_PRPC(ESCF,MODREF,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
-C
+         CALL WRIPRO(ESCF,MODREF,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
+
          CALL QEXIT('CCSD_ENERGY')
          RETURN
       ENDIF
@@ -1033,17 +1038,23 @@ C
       END IF
       ECCGRS = EN2
       IF ( (.NOT.CCSLV) .OR. (ICCSLIT.EQ.0)) THEN
-         LABEL1 = 'SCF '
-         MODREF = 'REFERENCE '
+         LABEL1 = 'ENERGY  '
+         MODREF = 'SCF       '
          CALL CC_PRPC(ESCF,MODREF,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
+         CALL WRIPRO(ESCF,MODREF,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
       ENDIF
       IF (.NOT.CCSLV) THEN
-         LABEL1 = ETYPE(1:LENET)//' '
-         CALL CC_PRPC(EN2,MODEL,0,
+         LABEL1 = 'ENERGY  '
+         CALL CC_PRPC(EN2,MOPRPC,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
+         CALL WRIPRO(EN2,MOPRPC,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
       ENDIF
 C
       IF (CCPTSV .OR. CCP3SV) THEN

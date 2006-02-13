@@ -1341,7 +1341,7 @@ C
       CALL FLSHFO(LUPRI)
 C
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-C     SLV98,OC Solvent section 2
+C     Solvent section
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
       IF (CCSLV .AND. (.NOT. CCMM )) THEN
@@ -1356,15 +1356,7 @@ C
         CALL CC_SLV(WORK(KDENS),WORK(KETLM),DIELCONV,WORK(KWRK4),LWRK4)
 C
       ENDIF
-C
-C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-C     SLV98,OC End of solvent section 2.
-C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-C
-C--------------------------------------------------------------
-C CCMM02,JA+AO qm/mm part 2 start
-C--------------------------------------------------------------
-C
+
       IF (CCMM) THEN
         DTIME = SECOND()
         CALL CC_QM3(WORK(KDENS),CCMMCONV,WORK(KWRK3),LWRK3)
@@ -1373,10 +1365,7 @@ C
      *                  SECOND()-DTIME
         END IF
       ENDIF
-C
-C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-C CCMM02,JAND qm/mm part 2 end
-C--------------------------------------------------------------
+
 C---------------------------------------------------------------------
 C     Calculate the simple one electron AO-density in CCS calculation.
 C---------------------------------------------------------------------
@@ -1676,8 +1665,8 @@ C--------------------------------
 C
             IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
      *                     .OR.(CCDC.AND.DIELCONV))
-     *         CALL CC_PRPC(DIPMN(IDIP),MODEL,1,LABEL1,LABEL1,LABEL1,
-     *                   LABEL1,DUMMY,DUMMY,DUMMY,ISY,0,0,0)
+     *         CALL WRIPRO(DIPMN(IDIP),MODEL,1,LABEL1,LABEL1,LABEL1,
+     *                     LABEL1,DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   100    CONTINUE
 C
 C---------------------
@@ -1896,9 +1885,9 @@ C
                IF (IJ .EQ. 5) LABEL1 = 'YZTHETA '
                IF (IJ .EQ. 6) LABEL1 = 'ZZTHETA '
 C
-               CALL CC_PRPC(SKODN(I,J),MODEL,1,LABEL1,
-     *                                 LABEL1,LABEL1,LABEL1,
-     *                                 DUMMY,DUMMY,DUMMY,ISY,0,0,0)
+               CALL WRIPRO(SKODN(I,J),MODEL,1,LABEL1,
+     *                     LABEL1,LABEL1,LABEL1,
+     *                     DUMMY,DUMMY,DUMMY,ISY,0,0,0)
 
   679       CONTINUE
   678    CONTINUE
@@ -2361,8 +2350,8 @@ C
             IF (IRC.EQ.2) PROP = VELO
             IF (.NOT.CCSLV .OR.(CCMM.AND.CCMMCONV)
      *             .OR.(CCDC.AND.DIELCONV)) 
-     *          CALL CC_PRPC(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
-     *                   DUMMY,DUMMY,DUMMY,ISY,0,0,0)
+     *          CALL WRIPRO(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
+     *                      DUMMY,DUMMY,DUMMY,ISY,0,0,0)
   130    CONTINUE
 C
 C----------------------
@@ -2546,8 +2535,8 @@ C
             ENDIF
          ENDIF
 C
-         CALL CC_PRPC(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
-     *                DUMMY,DUMMY,DUMMY,ISY,0,0,0)
+         CALL WRIPRO(PROP,MODEL,1,LABEL1,LABEL1,LABEL1,LABEL1,
+     *               DUMMY,DUMMY,DUMMY,ISY,0,0,0)
 C
 C-------------------------
 C        Write out result.
