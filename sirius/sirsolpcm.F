@@ -33,8 +33,7 @@ C
 C  /* Deck pcmgrd */
       SUBROUTINE PCMGRD(CREF,CMO,INDXCI,DV,G,ESOLT,WRK,LFREE)
 C
-C     Written by R. Cammi, L. Frediani, B. Mennucci, and K.Ruud,
-C                Pisa June 2001, based on SOLGRD by hjj.
+C     Written by L. Frediani and K.Ruud based on SOLGRD by hjj.
 C
 C   Purpose:  calculate MCSCF energy and gradient contribution
 C             from a surrounding medium
@@ -164,6 +163,7 @@ C
       CALL UPKCMO(CMO,WRK(KUCMO))
       CALL DZERO(WRK(KDIASH),NVAR)
       CALL DZERO(WRK(KDIALM),NVAR)
+      CALL DZERO(WRK(KJEN),NNORBX)
 C
 C     Read JEN = J(en) + J(ne) in ao basis and transform to mo basis.
 C     Extract active-active block in WRK(KJENAC).
@@ -171,13 +171,19 @@ C
       LUPBKP = LUPROP
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.) 
-      IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
+clf      IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
+C ASK KENNETH!!!!!
+C
+      IF (.true.) THEN
          CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
+         print *, 'recomp. int. in pcmjmat'
       END IF
       REWIND (LUPROP)
       CALL REAPCM('NE-PCMIN','PCMGRD  ',LUPROP,WRK(KJENAO),NNBASX)
+
       CALL UTHU(WRK(KJENAO),WRK(KJEN),WRK(KUCMO),WRK(KWRK1),
      &          NBAST,NORBT)
+
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KJEN),WRK(KJENAC))
       END IF
@@ -201,8 +207,6 @@ C
          WRITE (LUPRI,'(A,F17.8)')
      *   ' --- active part of JEN(=PB)    :',TJENAC
       END IF
-Cbm   PB=-TJEN
-Cbm   WRITE(LUPRI,*)'PB =',PB
 C     
 C     Read J2 in ao basis and transform to mo basis.
 C     Extract active-active block in WRK(KJ2AC).
@@ -214,10 +218,11 @@ C
       CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENC),1)
       CALL DZERO(WRK(KDENV),N2BASX)
       CALL DGEFSP(NBAST,WRK(KDENC),WRK(KDENV))
-
+      CALL DZERO(WRK(KDENC),N2BASX)
+      CALL PKSYM1(WRK(KDENV),WRK(KDENC),NBAS,NSYM,1)
       EXP1VL = .TRUE.
       TOFILE = .FALSE.
-      CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENV),1,TOFILE,'NPETES ',
+      CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENC),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LW21)
       CALL DZERO(QSE,MXTS)
       CALL V2Q(WRK(KWRK1),WRK(KPOT),QSE,QET,.FALSE.)
@@ -295,7 +300,6 @@ C
          CALL GETAC2(WRK(KJEN),WRK(KJENAC))
       END IF
       TJEN     = SOLELM(DV,WRK(KJENAC),WRK(KJEN),TJENAC)
-
       IF (IPRPCM .GE. 6) THEN
          CALL OUTPAK(WRK(KJENAC),NASHT,1,LUPRI)
          WRITE (LUPRI,'(A,F17.8)')
@@ -441,6 +445,10 @@ C
       END IF
 C
 C
+
+      DIPORG(1) = XI
+      DIPORG(2) = YI
+      DIPORG(3) = ZI
       FIRST = .FALSE.
       IF (LUPBKP .LT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('PCMGRD')
@@ -1271,7 +1279,7 @@ C
      *               NSVEC,NOSIM,1,LUPRI)
       END IF
 C
-      IF (LUPBKP .LT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+Clf      IF (LUPBKP .LT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('PCMLNO')
       RETURN
 C     ... end of pcmlno.
