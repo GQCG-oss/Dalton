@@ -2229,7 +2229,7 @@ C
                IF (IPRPC .EQ. 1) LAPRPC = 'XDIPLEN '
                IF (IPRPC .EQ. 2) LAPRPC = 'YDIPLEN '
                IF (IPRPC .EQ. 3) LAPRPC = 'ZDIPLEN '
-               CALL WRIPRO(DIP0(IPRPC),"SCF/DFT-MY",1,
+               CALL WRIPRO(DIP0(IPRPC),"SCF/DFT   ",1,
      *                     LAPRPC,LAPRPC,LAPRPC,LAPRPC,
      *                     0.0D0,0.0D0,0.0D0,1,0,0,0)
             END DO

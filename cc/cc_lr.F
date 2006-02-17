@@ -6806,15 +6806,26 @@ C              passed to numerical differentiantion/averaging.
 C
 C     Ove Christiansen August 1999.
 C
-C     NORD = 1    exp. value
+C     NORD = 0    energy (ground or excited)
+C            1    exp. value
 C            2    Linear response function
 C            3    Quadratic response function
 C            4    Cubic response function
-C           -1    ground - excited  transition matrix element
-C           -2    excited - excited transition matrix element (not implemented yet)
-C           -3    ground - excited transition strength
-C           -4    excited - excited transition strength (not implemented yet)
-C           -11    First order excited state property
+C           -1    ground - excited  transition matrix element, <0|x|i>
+C           -2    excited - excited transition matrix element, |<i|x|f>|
+C           -11   First order excited state property, <i|x|i>
+C           -20   <0|x|i><i|y|0>
+C           -21   w*<0|x|i><i|y|0>
+C           -22   (w_f - w_i)*|<i|x|f>|^2
+C           -30   D_pa
+C           -31   D_pe
+C           -32   D_pc
+C           -33   w1w2D_pa
+C           -34   w1w2D_pe
+C           -35   w1w2D_pc
+C           -400  oscillator strength
+C            401  chemical shielding isotropic
+C            402  chemical shielding tensor
 C-----------------------------------------------------------------------------
 C
 #include <implicit.h>

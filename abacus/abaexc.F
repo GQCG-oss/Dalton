@@ -1372,11 +1372,11 @@ C
      &            ISYM, IEXVAL, XTEV*EXENG(ISYM,IEXVAL),
      &            (DTWO/DTHREE)*DIPSTV, (DTWO/DTHREE)*DIPSTL
                   LAPRPC = 'OSCI-VEL'
-                  CALL WRIPRO((DTWO/DTHREE)*DIPSTV,"SCF/DFT   ",-3,
+                  CALL WRIPRO((DTWO/DTHREE)*DIPSTV,"SCF/DFT   ",-400,
      *                         LAPRPC,LAPRPC,LAPRPC,LAPRPC,
      *                         0.0D0,0.0D0,0.0D0,1,ISYM,1,IEXVAL)
                   LAPRPC = 'OSCI-LEN'
-                  CALL WRIPRO((DTWO/DTHREE)*DIPSTV,"SCF/DFT   ",-3,
+                  CALL WRIPRO((DTWO/DTHREE)*DIPSTL,"SCF/DFT   ",-400,
      *                         LAPRPC,LAPRPC,LAPRPC,LAPRPC,
      *                         0.0D0,0.0D0,0.0D0,1,ISYM,1,IEXVAL)
 

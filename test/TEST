@@ -66,7 +66,8 @@ cc_beta_solv"
 #
 QM3="ccsdmm_spc_fop cc2mm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
 ccsdmm_ec3_fop ccsdmm_e01_fop ccsdmm_modelmix cc2mm_exci \
-cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta"
+cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta hfmm_1 \
+dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6"
 #
 MEDIUM="$MEDIUM $MEDIUMCC $QM3"
 #

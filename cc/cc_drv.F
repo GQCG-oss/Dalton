@@ -1710,7 +1710,7 @@ C
        IF (NORD.EQ.-1) WRITE(LUPRI,
      *   '(1X,A,I3,I2,A,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
      *   '#',I,ISYMIN,' |<O|',LABX,'|i(',FRQY,')>| =',PROP
-       IF (NORD.EQ.-10) WRITE(LUPRI,
+       IF (NORD.EQ.-2) WRITE(LUPRI,
      *   '(1X,A,I3,I2,A,F9.6,A,A8,A3,F9.6,A,F15.8,A,F12.8,A)')
      *   '#',I,ISYMIN,' |<i(',FRQY,')|',LABX,'|f(',FRQZ,
      *   ')>| =',PROP

@@ -2173,7 +2173,7 @@ cLig >> added include mxcent abainf and sigma
 cLig <<
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
-      CHARACTER NAME*6, NAMEX(3)*8, SGN*3
+      CHARACTER NAME*6, NAMEX(3)*8, SGN*3, LAPRPC*8, LANAME*8
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
@@ -2278,6 +2278,29 @@ cLig <<
      &   ' Asymmetry:         ',ASYM,  '    ',
      &   ' S parameter:       ',SPAR,  ' ppm',
      &   ' A parameter:       ',APAR,  ' ppm'
+C << JK write results to DALTON.PROP file
+      LANAME = NAME//'  '
+      LAPRPC = 'SH-CONST'
+      CALL WRIPRO(AVETOT,"SCF/DFT   ",401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'ANISO   '
+      CALL WRIPRO(ANIS  ,"SCF/DFT   ",401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'ASYMMETR'
+      CALL WRIPRO(ASYM  ,"SCF/DFT   ",401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'S-PARAME'
+      CALL WRIPRO(SPAR  ,"SCF/DFT   ",401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LAPRPC = 'A-PARAME'
+      CALL WRIPRO(APAR  ,"SCF/DFT   ",401,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+C << JK
       CALL HEADER('Total shielding tensor (ppm):',1)
 csonia 04/10/95
       IF (LUCME.GT.0) THEN
@@ -2285,6 +2308,45 @@ csonia 04/10/95
          WRITE (LUCME,'(A)')  'Total shielding tensor (ppm):'
       END IF
 csonia 04/10/95
+C << JK write shielding tensor to DALTON.PROP
+      LAPRPC = 'SH TENSO'
+      LANAME = NAME//'xx'
+      CALL WRIPRO(TMAT(1,1),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'xy'
+      CALL WRIPRO(TMAT(2,1),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'xz'
+      CALL WRIPRO(TMAT(3,1),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'yx'
+      CALL WRIPRO(TMAT(1,2),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'yy'
+      CALL WRIPRO(TMAT(2,2),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'yz'
+      CALL WRIPRO(TMAT(3,2),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'zx'
+      CALL WRIPRO(TMAT(1,3),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'zy'
+      CALL WRIPRO(TMAT(2,3),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+      LANAME = NAME//'zz'
+      CALL WRIPRO(TMAT(3,3),"SCF/DFT   ",402,
+     *            LANAME,LAPRPC,LAPRPC,LAPRPC,
+     *            0.0D0,0.0D0,0.0D0,1,0,0,0)
+C << JK
       WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
       DO 400 ICOOR = 1, 3
          WRITE (LUPRI,'(2X,A8,3F15.8)')
