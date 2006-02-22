@@ -2834,7 +2834,7 @@ cLig <> added SPIN = .TRUE. for INTTYP = 82
             DOATOM(I) = .TRUE.
   100    CONTINUE
       ELSE
-         DO 200 I = 1, NATOM
+         DO 200 I = 1, NCTOT
             DOATOM(I) = .FALSE.
   200    CONTINUE
          NATOM = 0
