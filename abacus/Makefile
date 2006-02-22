@@ -53,13 +53,3 @@ her2el2.o: her2el2.F
 
 hersym.o: hersym.F
 	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
-her2el2.o: her2el2.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
-
-hersym.o: hersym.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
-her2el2.o: her2el2.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
-
-hersym.o: hersym.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 

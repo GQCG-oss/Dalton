@@ -23,7 +23,3 @@ Makefile.depend depend: ../include/*.h
 include Makefile.depend
 amfi.o: amfi.F
 	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
-amfi.o: amfi.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
-amfi.o: amfi.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c $*.F 
