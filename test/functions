@@ -409,9 +409,9 @@ for(i=0; i<9; i++) getline;
 split("'"$p"'",arr," ");
 idx=1;
 failed=0;
-for(idx=1;arr[idx] != ""; idx+=3) {
+for(idx=1;arr[idx] != ""; idx+=6) {
 getline; split($0,l," ");
-for(i=1; i<=3; i++) {
+for(i=1; i<=6; i++) {
  #print "Expected:",arr[idx+i-1]," Found:",l[i]
  if(l[i] ~ /-?[.0-9]+/) {
    if(e(arr[idx+i-1]-l[i],tol)) {failed++;print "expected",arr[idx+i-1]," Found ", l[i],tol}
