@@ -1042,13 +1042,10 @@ C
      &               WRK(KWRKG),LWRKG,IPRSOL)
          CALL DSCAL(NNORBT,-1.0D0,WRK(KFCSOL),1)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
-      ELSE
-         KFCSOL = KFC
-      END IF
 C------------------
 C CBN+JK 03.01.06
 C------------------
-      IF (QM3) THEN
+      ELSE IF (QM3) THEN
          KFCSOL = KWRKG
          KWRKG  = KFCSOL + NNORBT
          LWRKG  = LFREE  - (KWRKG-1)
