@@ -128,16 +128,10 @@ c
       END
       SUBROUTINE get_no_atoms(natom_CNT)
 c return total number of atoms.
-C JK+CBN 03.01.06
-c Modified by CBN 30.08.05
 #include <implicit.h>
 #include <mxcent.h>
 #include <nuclei.h>
-#include <qm3.h>
       NATOM_CNT = NATOMS
-      IF (QM3) THEN
-        NATOM_CNT = NSISY(0)
-      ENDIF
       END
       SUBROUTINE GET_ATOM_BY_ICENT(ICENT,ZCNT,NAT,NDEG,X,Y,Z)
 #include <implicit.h>
