@@ -345,11 +345,12 @@ C CBN+JK 03.01.06
 C------------------
       ELSE IF (QM3) THEN
          WRITE(LUW4,*)
-         WRITE(LUW4,*) '    QM/MM calculation converged'
-         WRITE(LUW4,*) '    Electrostatic energy: ', ENSQM3
-         WRITE(LUW4,*) '    Polarization energy: ' , EPOQM3
-         WRITE(LUW4,*) '    van der Waals energy: ', ECLVDW
-         WRITE(LUW4,*) '    Total QM/MM energy: ' , ESOLT
+         WRITE(LUW4,'(A)') '    QM/MM calculation converged'
+         WRITE(LUW4,*)
+         WRITE(LUW4,'(A26,F20.12)') '    Electrostatic energy: ', ENSQM3
+         WRITE(LUW4,'(A26,F20.12)') '    Polarization energy:  ', EPOQM3
+         WRITE(LUW4,'(A26,F20.12)') '    van der Waals energy: ', ECLVDW
+         WRITE(LUW4,'(A26,F20.12)') '    Total QM/MM energy:   ', ESOLT
       ELSE
 C------------------
 C CBN+JK 03.01.06
