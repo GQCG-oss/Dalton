@@ -30,16 +30,21 @@ C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C 
 C
-#include <single.h>
+#include "single.h"
+C
+C VERSION : $Revision: 1.22 $
+C DATE    : $Date: 2006-02-24 16:19:55 $
+C FILE    : hergp.F
 C
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D00)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
          GRDMOL(I) = D0
@@ -48,11 +53,11 @@ C  /* Deck zergrd */
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D00)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
          DO 200 J = 1, NCOORD
@@ -63,10 +68,10 @@ C  /* Deck zerhes */
       END
 C  /* Deck heszer */
       SUBROUTINE HESZER(HESS)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include <nuclei.h>
+#include "nuclei.h"
       DO 100 I = 1, 3*NUCDEP
          CALL DZERO(HESS(1,I),3*NUCDEP)
   100 CONTINUE
@@ -74,11 +79,11 @@ C  /* Deck heszer */
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION GRAD(MXCOOR)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
          GRDMOL(I) = GRDMOL(I) + GRAD(I)
@@ -87,11 +92,11 @@ C  /* Deck addgrd */
       END
 C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
@@ -107,15 +112,15 @@ C
 C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION GRAD(MXCOOR), CGRAD(MXCOOR), CSTRA(*), SCTRA(*)
       IF (.NOT.DOSYM(1)) THEN
          WRITE (LUPRI,'(2X,A)')
@@ -151,18 +156,18 @@ C     Adapted from Nelson's OUTPAK for Hessians March 1985 tuh
 C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
       DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       INTEGER BEGIN
 C
       IF (KEY .EQ. 'CENTERS') THEN
@@ -242,8 +247,8 @@ C
       END
 C  /* Deck tragrd */
       SUBROUTINE TRAGRD(SGRAD,CGRAD,CSTRA,SCTRA,NCR0,NCOOR)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION SGRAD(MXCOOR), CGRAD(MXCOOR)
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       CALL TRACOR(CSTRA,SCTRA,1,NCOOR,0)
@@ -255,8 +260,8 @@ C  /* Deck tragrd */
       END
 C  /* Deck trahes */
       SUBROUTINE TRAHES(SHESS,NDIMS,CHESS,CSTRA,SCTRA,NDIMC,NCOOR,ITYPE)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
      &          AMAT(MXCOOR,MXCOOR), CSTRA(NCOOR,NCOOR),
      &          SCTRA(NCOOR,NCOOR)
@@ -282,17 +287,17 @@ C  /* Deck prigeo */
 C
 C     Jun 29 1988 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
       DIMENSION COORD(3,*)
 C
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -310,11 +315,11 @@ C
       END
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (DP5 = 0.5D0)
-#include <mxcent.h>
+#include "mxcent.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include <nuclei.h>
+#include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
@@ -331,17 +336,17 @@ C  /* Deck molchr */
 C
 C     Calculates total charge of molecule
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <infinp.h>
-#include <inforb.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "infinp.h"
+#include "inforb.h"
 C
 C     Nuclear charge
 C
@@ -355,6 +360,29 @@ C
       ICHRG = NINT(CHRGNU) - (2*NISHT + NACTEL)
       RETURN
       END
+C  /* Deck rmolchr */
+      SUBROUTINE RMOLCHR(ICHRG)
+C
+C     Calculates total charge of molecule
+C
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER (D0 = 0.0D00)
+C
+#include "nuclei.h"
+#include "symmet.h"
+C
+C     Nuclear charge
+C
+      CHRGNU = D0
+      DO 100 IATOM = 1, NUCIND
+         CHRGNU = CHRGNU + FMULT(ISTBNU(IATOM))*CHARGE(IATOM)
+  100 CONTINUE
+      ICHRG = NINT(CHRGNU)
+      RETURN
+      END
 C  /* Deck disotp */
       FUNCTION DISOTP(IATOM,ISOTOP,TYPE)
 C
@@ -362,9 +390,20 @@ C     NOTE: Isotopes are sorted according to abundance,
 C     i.e. DISOTP(IATOM,1,TYPE) will return the most abundant
 C     isotope etc.
 C
+C      DATNUC(1,ISOTOP,IATOM) - atomic mass
+C      DATNUC(2,ISOTOP,IATOM) - abundance
+C      DATNUC(3,ISOTOP,IATOM) - spin
+C      DATNUC(4,ISOTOP,IATOM) - magnetic moment
+C      DATNUC(5,ISOTOP,IATOM) - quadrupole moment
+C
 C     Extended to Z=54 on march 10, 1994, K.Ruud
 C     Extended to Z=86 feb. 1996, S. Kirpekar
-C
+C     Extended to Z=109 1997/06/20 Joern Thyssen
+C     Corrected Z=55-109 for correct units 
+C                        1999/04/23 W.A. de Jong
+C     Extended to Z=118 1997/05/28 Trond Saue
+C     Updated magnetic and quadrupole moments
+C                        2003/03/06 Joost van Stralen
 C     Proton mass and electron charge:
 C        1986 CODATA Recommended Values
 C
@@ -382,9 +421,14 @@ C        Atomic Data and Nuclear Data Tables 42 (1989) 189
 C
 C     Quadrupole moments:
 C
-C        P.Pykkoe and J.Li
-C        Report HUKI 1-92
-C        Updated  to P.Pyykkoe, Mol.Phys. (2001) by K.Ruud, Aug.2001
+C        P.Pykkoe
+C        Molecular Physics 99 (2001) 1617
+C 
+C              or the same
+C
+C        R. K. Harris et al
+C        Pure Applied Chemistry 77 (2001) 1795
+C        (IUPAC Recommendations 2001)
 C
 C     Nuclear masses, Abundancies, nuclear moments, spins 
 C     and quadrupole moments for Z= 55 to Z = 86:
@@ -394,10 +438,10 @@ C       Quantities, Units and Symbols in Physical Chemistry
 C       (IUPAC, Blackwell Scientific, Oxford, 1988)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
-      PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 86)
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+      PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
       PARAMETER (DMP = PMASS*XFAMU*EMASS)
       PARAMETER (THRESH = 1.0D-10)
 C
@@ -480,7 +524,7 @@ C
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
-     & 12.000000D0, 98.900000D0,   .000000D0,   .000000D0,   .000000D0,
+     &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
 C
 C     O:
 C
@@ -489,7 +533,7 @@ C
      & 16.999131D0,   .040000D0,  2.500000D0, -1.893790D0,  -.025580D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
-     & 14.003074D0, 99.630000D0,  1.000000D0,   .403761D0,   .020200D0,
+     &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
 C
 C     F:
 C
@@ -498,7 +542,7 @@ C
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
-     & 15.994915D0, 99.760000D0,   .000000D0,   .000000D0,   .000000D0,
+     &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
 C
 C     Ne:
 C
@@ -1170,8 +1214,8 @@ C     Hg:
 C
      &201.970617D0, 29.860000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &199.968300D0, 23.100000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &198.968254D0, 16.870000D0,   0.500000D0, 0.50588549,   0.000000D0,
-     &200.970277D0, 13.180000D0,   1.500000D0,-0.5602257 ,   0.386000D0,
+     &198.968254D0, 16.870000D0,   0.500000D0, 0.50588549D0, 0.000000D0,
+     &200.970277D0, 13.180000D0,   1.500000D0,-0.5602257D0,  0.386000D0,
      &197.966743D0,  9.970000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &203.973467D0,  6.870000D0,   0.000000D0, 0.000000D0,   0.000000D0/
 C
@@ -1206,7 +1250,7 @@ C
 C
 C     Po:
 C
-     &208.982404D0,  0.000000D0,   0.500000D0, 0.000000D0,   0.000000D0,
+     &208.982404D0,100.000000D0,   0.500000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1215,7 +1259,7 @@ C
 C
 C     At:
 C
-     &209.987126D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &209.987126D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1224,13 +1268,314 @@ C
 C
 C     Rn:
 C
-     &222.017571D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &222.017571D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0/
 C
+C
+C     Fr - Am
+C
+      DATA (((DATNUC(I,J,K),I=1,5),J=1,MAXISO),K=87,95) /
+C
+C     Fr:
+C
+     &223.019733D0,100.000000D0,   1.500000D0, 1.170000D0,   1.170000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ra:
+C
+     &226.025403D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ac:
+C
+     &227.027750D0,100.000000D0,   1.500000D0, 1.100000D0,   1.700000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Th:
+C
+     &232.0380508D0,100.00000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Pa:
+C
+     &231.035880D0,100.000000D0,   1.500000D0, 2.010000D0,  -1.720000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     U:
+C
+     &238.0507847D0,99.274500D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &235.0439242D0, 0.720000D0,   3.500000D0,-0.380000D0,   4.936000D0,
+     &234.0409468D0, 0.005500D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &233.039628D0,  0.000000D0,   2.500000D0, 0.590000D0,   3.663000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Np:
+C
+     &237.0481678D0,100.00000D0,   2.500000D0, 3.140000D0,   3.886000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Pu:
+C
+     &244.064199D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Am:
+C
+     &243.061373D0,100.000000D0,   2.500000D0, 1.610000D0,   4.210000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0/
+C
+C
+C     Cm - Mt(109)
+C
+      DATA (((DATNUC(I,J,K),I=1,5),J=1,MAXISO),K=96,109) /
+C
+C     Cm:
+C
+     &247.070347D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Bk:
+C
+     &247.070300D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Cf:
+C
+     &251.079580D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Es:
+C
+     &252.082944D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Fm:
+C
+     &257.095099D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Md:
+C
+     &258.098570D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     No:
+C
+     &259.100931D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Lr(103):
+C
+     &260.105320D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Rf(104):
+C
+     &261.108690D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Db(105):
+C
+     &262.113760D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Sg(106):
+C
+     &263.118220D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Bh(107):
+C
+     &262.122930D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Hs(108):
+C
+     &263.128700D0,264.128400D0,265.1301600D0,267.13180D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Mt(109):
+C
+     &266.137640D0,268.138800D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0/
+C
+C     110 - 118
+C
+      DATA (((DATNUC(I,J,K),I=1,5),J=1,MAXISO),K=110,118) /
+C
+C     Uun(110):
+C
+     &268.143500D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uuu(111):
+C
+     &272.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uub(112):
+C
+     &277.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uut(113):
+C     -- no data --- 
+     &283.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uuq(114):
+C
+     &289.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uup(115):
+C     -- no data --
+     &294.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uuh(116):
+C     -- no data --
+     &300.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uus(117):
+C     -- no data --
+     &306.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uuo(118):
+C     -- no data --
+     &310.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0/
 C
 C
 C
@@ -1300,7 +1645,7 @@ C     This routine unpacks triangular index, inspired by P. Taylor
 C     T. Helgaker & H. Koch
 C     Wed Nov 27 10:38:04  1991
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       RIJ = 2*IJ
       I = INT(SQRT(RIJ + 0.25D00) + 0.4999999D00)
@@ -1310,12 +1655,12 @@ C
       END
 C  /* Deck pr2der */
       SUBROUTINE PR2DER(CHESS,NROW,NDIM,LUPRI)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, KCOL = 6)
       INTEGER BEGIN
       DIMENSION CHESS(NDIM,NDIM)
-#include <nuclei.h>
+#include "nuclei.h"
       LAST = MIN(NROW,KCOL)
       BEGIN= 1
  51   CONTINUE
@@ -1345,20 +1690,20 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "chrxyz.h"
+#include "codata.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR), CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       CARTRA = .TRUE.
 C
 C     Atomic polar tensors (au)
@@ -1418,8 +1763,12 @@ C
       DONE = .FALSE.
       DO 100 IREP = 0, MAXREP
          NAXIS = NAXREP(IREP,ITYPEF)
+#if defined (PRG_DIRAC)
+         IF (NCRREP(IREP,ITYPEC) .GT. 0) THEN
+#else
          IF (DOSYM(IREP + 1) .AND. (NAXIS .GT. 0)
      &                       .AND. (NCRREP(IREP,ITYPEC) .GT. 0)) THEN
+#endif
             DONE = .TRUE.
             IF (MAXREP .GT. 0) THEN
                WRITE (LUPRI,'(/4X,A,I1)') 'Symmetry ', IREP + 1
@@ -1460,15 +1809,15 @@ C
       END
 C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
      *          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
-#include <symmet.h>
+#include "symmet.h"
 C
       CALL DZERO(PERDIP,9)
       DO 100 ICOOR = 1, 3
@@ -1487,16 +1836,16 @@ C
       END
 C  /* Deck dp0pri */
       SUBROUTINE DP0PRI(DIPOLE)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <cbidip.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "chrxyz.h"
+#include "codata.h"
+#include "cbidip.h"
+#include "symmet.h"
       DIMENSION DIPOLE(3)
-#include <chrxyz.h>
       IF (NAXREP(0,1) .EQ. 0) THEN
          WRITE (LUPRI,'(20X,A)') ' All components zero by symmetry'
       ELSE
@@ -1507,7 +1856,7 @@ C  /* Deck dp0pri */
      *              DIPOLE(I), DEBYE*DIPOLE(I)
             END IF
   100    CONTINUE
-         WRITE (LUPRI,'(/,23X,A,F9.5,A)') ' 1 a.u. = ',DEBYE,' Debye '
+         WRITE (LUPRI,'(/23X,A,F9.5,A)') ' 1 a.u. = ',DEBYE,' Debye '
       END IF
       WRITE (LUPRI,'(//)')
       RETURN
@@ -1518,19 +1867,19 @@ C
 C     Determine center of mass from information in common blocks
 C     K.Ruud, June-94
 C
-#include <implicit.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "qm3.h"
+#include "nuclei.h"
       DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
      &          NUMIS(NATOMS)
-#include <orgcom.h>
-#include <cbisol.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "orgcom.h"
+#include "cbisol.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       ICHTOT = 0
       JATOM = 0
@@ -1565,20 +1914,20 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,GEOM,
      &                  ORIGIN,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
 C
-#include <priunit.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER ( D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
      &            BIGMAS = 1.0D20 )
 C
       DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3*NNATOM), ORIGIN(3)
 C
-#include <cbisol.h>
-#include <nuclei.h>
+#include "cbisol.h"
+#include "nuclei.h"
 C
       IF (IPRINT .GE. 0) CALL HEADER('Isotopic Masses',-1)
       TOTMAS = D0
@@ -1643,22 +1992,22 @@ C
 C
 C     hs 060303
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)
       DIMENSION AMAT(3,3,MXCOOR), CMAT(3,3,MXCOOR), CSTRA(*), SCTRA(*)
       DIMENSION PRIVAL(6)
       CHARACTER*2 PRICOR(6)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 C
       CARTRA = .TRUE.
 C
@@ -1755,15 +2104,15 @@ C
       END
 C  /* Deck trasec */
       SUBROUTINE TRASEC(SSECDR,CSECDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION SSECDR(3,3,MXCOOR), CSECDR(3,3,MXCOOR),
      *          XMATRI(3,3,MXCOOR), YMATRI(3,3,MXCOOR), PERSEC(3,3),
      *          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
-#include <symmet.h>
+#include "symmet.h"
 C
       CALL DZERO(PERSEC,9)
       DO ICOOR = 1, 3
@@ -1796,18 +2145,18 @@ C  /* Deck prioct */
 C
 C     hs 230503
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
       DIMENSION CMAT(3,3,3)
       DIMENSION PRIVAL(6)
       CHARACTER*2 PRICOR(6)
-#include <abainf.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "abainf.h"
+#include "symmet.h"
+#include "chrxyz.h"
 C
 C     Print third moment
 C
