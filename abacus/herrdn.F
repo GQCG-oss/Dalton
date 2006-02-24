@@ -1132,8 +1132,9 @@ C
                CALL QUIT('Input error in .mol file, see output.')
             ENDIF
          ENDIF
-C        MBSI has been added (WK/UniKA/04-11-2002).
+
          CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG,MBSI,KSPH)
+C        .. MBSI has been added (WK/UniKA/04-11-2002).
 C
          DO 300 J = 1,NSETS
           IF (J.EQ.1 .OR. (J.EQ.2 .AND. DOHUCKEL) 
@@ -1277,8 +1278,8 @@ C                ... avoid floating orbitals
                  IF (IQM(1,1) .EQ. 0) BASNAM = 'pointcharge'
 C                ... avoid point charges (maybe set with INTGRL so BASNAM undefined)
                  IF (QM3 .AND. BASNAM(1:2) .EQ. 'MM') 
+     &              BASNAM = 'pointcharge'
 C                ... avoid calling BASLIB for MM point charges
-     &           BASNAM = 'pointcharge'
                  IF (BASNAM(1:11) .NE. 'pointcharge') BASNAM = 'HUCKEL'
 C                ... tell BASLIB that this is for Huckel
               END IF
@@ -1376,8 +1377,13 @@ C
             NOORBT(K+INUC) = NOORBI
             IF (INDEX(BASNAM,'ecp') .NE. 0) CHARGE(K+INUC) =  QEFF
 C           reset charge to effective charge for ECP
-            IF (IQM(I,1) .EQ. 0) IZATOM(K+INUC) = -2
-C           ... code to tell this is a point charge (no basis fu.) /hjaaj Nov 2003
+            IF (IQM(I,1) .EQ. 0) THEN
+C           ... this is a point charge (no basis fu.) /hjaaj Nov 2003
+               IZATOM(K+INUC) = -2
+C              ... code to tell this is a point charge (no basis fu.) /hjaaj Nov 2003
+               GNUEXP(K+INUC) = D0
+C              ... make sure the point charge IS a point /hjaaj Feb 2006
+            END IF
  400     CONTINUE
 C
 C     Currently the program cannot handle symmetry if there is a chance 
@@ -3786,7 +3792,10 @@ C
                   ICLASS(NSORB) = IC
                   IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
                      NQ     = IZATOM(NCENT(IA))
-CCN                  IF (NQ .GT. 0) THEN
+                  IF (NQ .GT. 0) THEN
+C                 ... skip point charges (code NQ=-2),
+C                     floating orbitals (NQ = 0), and
+C                     auxiliary basis sets (code NQ=-1)
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
 C                    ... atomic charge of this center
@@ -3796,7 +3805,7 @@ C                    ... effective charge of this center
 C                    ... .gt. 0 if ECP otherwise .eq. 0
                      NHUCCO = NUMCF(IA)
                      CALL HUCFUN(NQ,IQCORE,NHKTA,NHUCCO,HUCEXC(IHNMAO))
-CCN                  END IF
+                  END IF
                   END IF
                   IRREPN        = IRREP(NAORB)
                   IRREP(NAORB)  = IRREPN + 1
