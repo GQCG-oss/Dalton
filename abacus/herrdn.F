@@ -1028,39 +1028,28 @@ C ach
                WRITE(LUPRI,*) MLINE(NMLINE)
                CALL FLSHFO(LUPRI)
             ENDIF
+C
+            LMMINP = .FALSE.
+            IF (QM3) THEN
+              IPOS = INDEX(MLINE(NMLINE),'MM')
+              IF (IPOS .GT. 0) THEN
+                  LMMINP = .TRUE.
+                  BASNAM(1:7) = 'MM atom'
+              END IF
+            END IF
+C
+            IF (LMMINP) THEN
+                READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
+            ELSE
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
-            IF (.NOT. QM3) THEN
               IF (LMULBS) THEN
-                 READ (MLINE(NMLINE),'(BN,I3,F7.0,I5,24I5)',ERR=299) 
+                 READ (MLINE(NMLINE),'(BN,I3,F7.0,I5,24I5)',ERR=299)
      &           MBSI,Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
               ELSE
-                 READ (MLINE(NMLINE),'(BN,F10.0,I5,24I5)',ERR=299) 
+                 READ (MLINE(NMLINE),'(BN,F10.0,I5,24I5)',ERR=299)
      &                Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
                  MBSI = 1
-              END IF
-            ELSE
-              LMMINP = .FALSE.
-              DO 157 K=1,79
-                TSTCHA = (MLINE(NMLINE)(K:K+1))
-                IF (TSTCHA .EQ. 'MM') THEN
-                  LMMINP = .TRUE.
-                  BASNAM(1:2) = 'MM'
-                  GOTO 158
-                END IF
-  157         CONTINUE
-  158         CONTINUE
-              IF (LMMINP) THEN
-                READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
-              ELSE
-                IF (LMULBS) THEN
-                   READ (MLINE(NMLINE),'(BN,I3,F7.0,I5,24I5)',ERR=299)
-     &             MBSI,Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
-                ELSE
-                   READ (MLINE(NMLINE),'(BN,F10.0,I5,24I5)',ERR=299)
-     &                  Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
-                   MBSI = 1
-                END IF
               END IF
             END IF
          END IF
@@ -1235,7 +1224,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  ENDIF
                  IF (INPTST .OR. IPREAD .GT. 0) THEN
                     IF (DOHUCKEL .AND. J.EQ.2) THEN
-                        IF (BASNAM(1:2) .NE. 'MM')
+                        IF (BASNAM(1:7) .NE. 'MM atom')
      &                  WRITE (LUPRI,'(/A,I3)')
      &                 ' Huckel basis read for atomic type no.',I
                     ELSE IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
@@ -1246,10 +1235,10 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                        WRITE (LUPRI,'(/A,I3,A)')
      &                    ' Atomic type no.',I,
      &                    ' is a point charge without basis functions.'
-                    ELSE IF (BASNAM(1:2) .EQ. 'MM') THEN
+                    ELSE IF (BASNAM(1:7) .EQ. 'MM atom') THEN
                        WRITE (LUPRI,'(/A,I3,A)')
      &                    ' Atomic type no.',I,
-     &                    ' is a MM point charge without'//
+     &                    ' is a MM atom without'//
      &                    ' basis functions.'
                     ELSE IF (INDEX(BASNAM,'ecp') .NE. 0) THEN
                        WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
@@ -1273,13 +1262,11 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
               IF (DOHUCKEL .AND. J.EQ.2) THEN
 C                make pseudo-label 'pointcharge' for all cases
 C                where we should not add Huckel basis (to avoid calling BASLIB below)
+C                (Feb. 2006: exept for QM3 / MM which is also skipped below)
                  IF (Q .EQ. D0) BASNAM = 'pointcharge'
 C                ... avoid floating orbitals
                  IF (IQM(1,1) .EQ. 0) BASNAM = 'pointcharge'
 C                ... avoid point charges (maybe set with INTGRL so BASNAM undefined)
-                 IF (QM3 .AND. BASNAM(1:2) .EQ. 'MM') 
-     &              BASNAM = 'pointcharge'
-C                ... avoid calling BASLIB for MM point charges
                  IF (BASNAM(1:11) .NE. 'pointcharge') BASNAM = 'HUCKEL'
 C                ... tell BASLIB that this is for Huckel
               END IF
@@ -1295,7 +1282,8 @@ C                Use DIRAC style format for specifying IQM and JCO.
      &                SEG(IBLOCK(J),J),
      &                ALPHA(1,IBLOCK(J),J),CPRIM(1,1,IBLOCK(J),J),
      &                CPRIMU(1,1,IBLOCK(J),J),NBLOCK,KAOVEC,KPRIM)
-              ELSE IF (BASNAM(1:11) .NE. 'pointcharge') THEN
+              ELSE IF (BASNAM(1:11) .NE. 'pointcharge' .AND.
+     &                 BASNAM(1: 7) .NE. 'MM atom') THEN
                  IF (INDEX(BASNAM,'ecp') .NE. 0 .AND. J.EQ.1) THEN
 C     Read effective core potential information from file for atom. 
 C     The charge of atom type will be set to the effective charge below
@@ -1315,8 +1303,7 @@ C
                     BASNAM     = AUXNAM
                  END IF
 C
-                 IF (BASNAM(1:2) .NE. 'MM')
-     &           CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
+                 CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),
@@ -1397,7 +1384,7 @@ C           then it may have a different basis set
 C           and FNDSYM routine can currently not detect that
 C           (e.g. if some Carbon have STO-3G and others have
 C           6-31G**) /hjaaj Mar 2004
-C           We skip point charges (IZATOM -2) and multiple
+C           We skip point charges/MM atoms (IZATOM -2) and multiple
 C           basis set (IZATOM -1) for this test, because they
 C           cannot destroy symmetry check (either no basis fu.
 C           thus same basis set on all point charges (!)
@@ -1423,7 +1410,7 @@ C
          END IF
   100 CONTINUE
 C
-      IF (.NOT. (ONLYOV)) THEN
+      IF (.NOT. ONLYOV) THEN
         IF (QM3) THEN
           CALL QM3MAS(NONT,NONTYP)
 C
@@ -1602,23 +1589,23 @@ C
 #if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D) && !defined (SYS_T90)
 C
         IF (QM3) THEN
-           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
-     &                                  CORD(2,NCTOT),CORD(3,NCTOT),
-     &                                  ISUBSY(NCTOT),ISUBSI(NCTOT)
-        ELSE IF ((.NOT. QM3) .AND. PCM) THEN
+           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101)
+     &         CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT),
+     &         ISUBSY(NCTOT),ISUBSI(NCTOT)
+        ELSE IF (PCM) THEN
            IF ( KSPH .EQ. 1) THEN
               IDXSPH(NCTOT) = KSPH
-              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
-     &             CORD(2,NCTOT),CORD(3,NCTOT),RSPH(NCTOT)
+              READ (MLINE(NMLINE)(IPOS:80),*,ERR=103)
+     &            CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT),RSPH(NCTOT)
            ELSE
               IDXSPH(NCTOT) = 0
               RSPH(NCTOT) = 0.0D0
-              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
-     &             CORD(2,NCTOT),CORD(3,NCTOT)
+              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101)
+     &            CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT)
            END IF
         ELSE
-           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) CORD(1,NCTOT),
-     &                                  CORD(2,NCTOT),CORD(3,NCTOT)
+           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101)
+     &         CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT)
         END IF
         GO TO 104
 C
@@ -2008,18 +1995,13 @@ C*****************************************************************************
 #include <maxaqn.h>
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
-      LOGICAL SEG,HERMIT,NRMPRI
+      LOGICAL   SEG,HERMIT,NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
      &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
      &          SEG(KBLOCK,3),
      &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3)
       CHARACTER SPDCAR*1,TSTRING*(6*MXQN+3),TSTRI2*(6*MXQN+3),
      &          KASYM(3,3)*1
-#if defined (SYS_CRAY)
-      REAL QM3CHT
-#else
-      DOUBLE PRECISION QM3CHT
-#endif
 #include <molde.h>
 #include <ccom.h>
 #include <nuclei.h>
@@ -2071,21 +2053,21 @@ C           Output for multiple basis sets (WK/UniKA/04-11-2002).
 C         Output for multiple basis sets (WK/UniKA/04-11-2002).
           WRITE (LUPRI,'(A)')
      &        '  label  basis   atoms  charge'//
-     &        '   prim    cont     basis'
+     &        '   prim  cont     basis'
           WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
           IF (LUCME.GT.0) THEN
              WRITE (LUCME,'(A)')
      &           '  label  basis   atoms  charge'//
-     &           '   prim    cont     basis'
+     &           '   prim   cont     basis'
              WRITE (LUCME,'(2X,78A1)') ('-',I=1,78)
           END IF
          ELSE
           WRITE (LUPRI,'(A)')
-     &        '  label    atoms   charge   prim    cont     basis'
+     &        '  label    atoms   charge   prim   cont     basis'
           WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
           IF (LUCME.GT.0) THEN
             WRITE (LUCME,'(A)')
-     &        '  label    atoms   charge   prim    cont     basis'
+     &        '  label    atoms   charge   prim   cont     basis'
             WRITE (LUCME,'(2X,70A1)') ('-',I=1,70)
           END IF
          END IF
@@ -2118,48 +2100,60 @@ C
          ELSE
             TSTRI2 = 'Point Charge'
          END IF
-         DO 20 N = 1,NONT(I)
+         NUCTYP = 0
+         NCHTYP = 0
+         CHTTYP = 0.0D0
+         DO N = 1,NONT(I)
             ICENT  = ICENT + 1
+            NUCTYP = NUCTYP + NUCDEG(ICENT)
+
             NCHARG = MAX(0,IZATOM(ICENT))
 C           hjaaj: do not add code -2 for point charges
 C           and code -1 for multiple basis to total charge
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
+
+            IF (IZATOM(ICENT) .EQ. -1) THEN
+C           ... do not add charges second time for multiple basis sets,
+C               however, we do add point charges (incl. MM) /hjaaj Feb 2006
+               CHTTYP = 0.0D0
+            ELSE
+               CHTTYP = CHARGE(ICENT)
+            END IF
+            QM3CHT = QM3CHT + NUCDEG(ICENT)*CHTTYP
 C
             IF (QM3) THEN
-              QM3CHT = QM3CHT + CHARGE(ICENT)    
+              IF (ISUBSY(ICENT) .EQ. 0) THEN
+                IQMBAS = IQMBAS + NBAS
+              END IF
             END IF
+         END DO
+         NCHTOT = NCHTOT + NCHTYP
 C
-            IF (ISUBSY(ICENT) .EQ. 0 .AND. QM3) THEN
-               IQMBAS = IQMBAS + NBAS
-            END IF
-            IF (IPREAD .GT. 0) THEN
-               IF(DIRAC) THEN
-                  WRITE (LUPRI,'(2X,A4,1X,4I8,6X,2A)') NAMN(ICENT),
-     &                 NUCDEG(ICENT),NCHARG,NPRIM,NBAS,'L - ',TSTRING
-                  WRITE (LUPRI,'(23X,2I8,6X,2A)')
-     &                 NPRIMS,NBASS,'S - ',TSTRI2
-               ELSE
-                  IF (LMULBS) THEN
+         IF (IPREAD .GT. 0) THEN
+            IF(DIRAC) THEN
+               WRITE (LUPRI,'(2X,A2,3X,4I8,6X,2A)') NAMN(ICENT)(1:2),
+     &              NUCTYP,NCHARG,NPRIM,NBAS,'L - ',TSTRING
+               WRITE (LUPRI,'(23X,2I8,6X,2A)')
+     &              NPRIMS,NBASS,'S - ',TSTRI2
+            ELSE
+               IF (LMULBS) THEN
 C               Output for multiple basis sets (WK/UniKA/04-11-2002).
-                     WRITE (LUPRI,'(2X,A4,1X,I5,I8,F8.4,2I8,6X,A)') 
-     &                    NAMN(ICENT),MULBSI(ICENT),NUCDEG(ICENT),
-     &                    CHARGE(ICENT),NPRIM,NBAS,TSTRING
-                     IF (LUCME.GT.0)
-     &                    WRITE (LUCME,'(2X,A4,1X,I5,I8,F8.4,2I8,6X,A)')
-     &                    NAMN(ICENT),MULBSI(ICENT),NUCDEG(ICENT),
-     &                    CHARGE(ICENT),NPRIM,NBAS,TSTRING
-                  ELSE
-                     WRITE (LUPRI,'(2X,A4,1X,I8,F8.4,2I8,6X,A)') 
-     &                    NAMN(ICENT),NUCDEG(ICENT),CHARGE(ICENT),
-     &                    NPRIM,NBAS,TSTRING
-                     IF (LUCME.GT.0)
-     &                    WRITE (LUCME,'(2X,A4,1X,I8,F8.4,2I8,6X,A)')
-     &                    NAMN(ICENT),NUCDEG(ICENT),CHARGE(ICENT),
-     &                    NPRIM,NBAS,TSTRING
-                  END IF
+                  WRITE (LUPRI,'(2X,A2,3X,I5,I8,F10.4,2I6,6X,A)') 
+     &                 NAMN(ICENT)(1:2),MULBSI(ICENT),NUCTYP,
+     &                 CHTTYP,NPRIM,NBAS,TSTRING
+                  IF (LUCME.GT.0)
+     &            WRITE (LUCME,'(2X,A2,3X,I5,I8,F10.4,2I6,6X,A)')
+     &                 NAMN(ICENT)(1:2),MULBSI(ICENT),NUCTYP,
+     &                 CHTTYP,NPRIM,NBAS,TSTRING
+               ELSE
+                  WRITE (LUPRI,'(2X,A2,3X,I8,F10.4,2I6,6X,A)') 
+     &                 NAMN(ICENT)(1:2),NUCTYP,CHTTYP,NPRIM,NBAS,TSTRING
+                  IF (LUCME.GT.0)
+     &            WRITE (LUCME,'(2X,A2,3X,I8,F10.4,2I6,6X,A)')
+     &                 NAMN(ICENT)(1:2),NUCTYP,CHTTYP,NPRIM,NBAS,TSTRING
                END IF
             END IF
-   20    CONTINUE
+         END IF
          IBLOCK = IBLOCK + NBLCK(I,1)
          IBLCKS = IBLCKS + NBLCK(I,2)
          !FILIP : do sth with blocks here
@@ -2172,23 +2166,22 @@ C               Output for multiple basis sets (WK/UniKA/04-11-2002).
             WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NPSML,NSMALL,'S - small components'
          ENDIF
-         TSYSCH = NCHTOT
-         IF (QM3) TSYSCH = QM3CHT
+         TSYSCH = QM3CHT
          IF (LMULBS) THEN
 C     Output for multiple basis sets (WK/UniKA/04-11-2002).
             WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
-            WRITE (LUPRI,'(2X,A,I12,F8.4,2I8)')
+            WRITE (LUPRI,'(2X,A,I12,F10.4,2I6)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
             IF (LUCME.GT.0) 
-     &           WRITE (LUCME,'(2X,A,I12,F8.4,2I8,6X,/)')
+     &           WRITE (LUCME,'(2X,A,I12,F10.4,2I6/)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
             WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
          ELSE
             WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
-            WRITE (LUPRI,'(2X,A,I7,F8.4,2I8)')
+            WRITE (LUPRI,'(2X,A,I7,F10.4,2I6)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
             IF (LUCME.GT.0) 
-     &           WRITE (LUCME,'(2X,A,I7,F8.4,2I8,6X,/)')
+     &           WRITE (LUCME,'(2X,A,I7,F10.4,2I6/)')
      &           'total:',NUCDEP,TSYSCH,NPBAS,NBASIS
             WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
          END IF
@@ -2733,8 +2726,8 @@ C
       END IF
       RETURN
  1000 CONTINUE
-        WRITE (LUPRI,'(/1X,A,2(I3,A),A1,A/A,2I4)')
-     &    'INPUT ERROR: CGTO no.',N,' for block',NBLOCK,
+        WRITE (LUPRI,'(/A,2(I3,A),A1,A/A,2I4)')
+     &    ' INPUT ERROR: CGTO no.',N,' for block',NBLOCK,
      &    ' of ',SPDCAR(I-1),' type has zero norm.',
      &    ' Contraction matrix: ',NUCIJ,NRCIJ
          CALL QUIT('CGTO with zero norm.')
@@ -3407,7 +3400,7 @@ C
      &     'th transformation of nucleus no.',M,' DIST=',DIST
       CALL QUIT('Nuclei too close.')
  5010 CONTINUE
-      WRITE (LUPRI,'(///1X,A,/,2(1X,A,I3/),/,1X,A,I3,A)')
+      WRITE (LUPRI,'(///A/2(A,I3/)/A,I3,A)')
      &      ' Allowed number of atoms exceeded.',
      &      ' Number of atoms in input:',NUCDEP,
      &      ' Number of atoms allowed: ',MXCENT,
@@ -4575,7 +4568,7 @@ C
       IF (IPREAD .GE. 10) THEN
          CALL HEADER('I - IAOAO',6)
          DO 600 I = 1, IAO
-            WRITE (LUPRI,'(4X,I5,1X,I5)') I, IAOAO(I)
+            WRITE (LUPRI,'(I9,I6)') I, IAOAO(I)
   600    CONTINUE
       END IF
       RETURN
@@ -4613,7 +4606,7 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ICNTAO',-1)
          DO 400 I = 1, IORB
-            WRITE (LUPRI,'(4X,I5,1X,I5)') I, ICNTAO(I)
+            WRITE (LUPRI,'(I9,I6)') I, ICNTAO(I)
   400    CONTINUE
       END IF
       RETURN
@@ -4683,7 +4676,7 @@ C
  230                 CONTINUE
                      IF (IPREAD .GT. 0) THEN
                         WRITE (LUPRI,
-     &                  '(2X,A,I3,3X,A,2X,A,3X,I2,7(2X,A,1X,I2))')
+     &                  '(2X,A,I3,3X,A,2X,A,3X,I2,7(2X,A,I3))')
      &                  'I',ISCOOR, NAMEX(3*ICENT)(1:4), CHRXYZ(-ICOOR),
      &                  NBASE(1), (CHRSGN(NSIGN(I)),NBASE(I),I=2,NB)
                      END IF
@@ -5759,6 +5752,7 @@ C
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DIMENSION NONT(KATOM)
 C
+      NCTOT = NCTOT + 1
       NUCIND = NUCIND + 1
       IF (NUCIND .GT. MXCENT) GOTO 5000
       IZ(NUCIND,1) = 0
@@ -6140,7 +6134,6 @@ C               for ZMAT
  605  CONTINUE
       NMLINE = NMLINE - 1
       IF (SOLVNT) NUCIND = NUCIND + 1
-      NCTOT = NUCIND
       RETURN
  5000 CONTINUE
          WRITE (LUPRI,'(6X,A,I3,3A/9X,2A)')
