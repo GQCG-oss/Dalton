@@ -63,19 +63,18 @@ C
 C     CC2 (without frozen core) by A. Halkier & S. Coriani 20/01-2000.
 C
 *----------------------------------------------------------------------*
+      call quit('CCEFFFOCK is not working')
+      return
+      end
+#ifdef HJAAJ_REMOVED
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-      INTEGER MAXASH
-      INTEGER LIROW, JTFRO, JTINAC, JTACT, JTSEC, JTSEAC, JTSESE
-      INTEGER JTFRFR,JTINFR,JTACFR,JTSEFR,JTININ,JTACIN,JTACAC,JTSEIN
-      INTEGER ISAO, IROW, ISMO, ISX, ISW, ICH, IOBTYP, LOC, ISSMO
-      INTEGER ISSORD, IACTYP, NSM, LUBAR0
+      INTEGER  LUBAR0
 #else
-#  include <implicit.h>
+#include <implicit.h>
 #endif
 #include <priunit.h>
 #include <dummy.h>
-#include <maxorb.h>
 #include <maxash.h>
 #include <maxorb.h>
 #include <mxcent.h>
@@ -342,7 +341,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
             CALL QUIT(
-     *     'Insufficient core for initial allocation in CC_2EEXP')
+     *     'Insufficient core for initial allocation in CCEFFFOCK')
          ENDIF
 C
 C-------------------------------------------------------------
@@ -426,7 +425,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
             CALL QUIT(
-     *         'Insufficient core for allocation 1 in CC_2EEXP')
+     *         'Insufficient core for allocation 1 in CCEFFFOCK')
          ENDIF
 C
 C
@@ -519,7 +518,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
             CALL QUIT(
-     *       'Insufficient core for first allocation in CC_2EEXP')
+     *       'Insufficient core for first allocation in CCEFFFOCK')
          ENDIF
 C
 C----------------------------------------
@@ -603,7 +602,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
             CALL QUIT(
-     *           'Insufficient memory for allocation 1 CC_2EEXP')
+     *           'Insufficient memory for allocation 1 CCEFFFOCK')
          ENDIF
 C
          IF (FROIMP) THEN
@@ -671,7 +670,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         CALL CC_GET_CMO(CMO)
+         CALL CC_GET_CMO(WORK(KCMO))
 C
          CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
 C
@@ -774,7 +773,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
             CALL QUIT(
-     *    'Insufficient memory for work allocation in CC_2EEXP')
+     *    'Insufficient memory for work allocation in CCEFFFOCK')
          ENDIF
 C
 C--------------------------
@@ -903,7 +902,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
             CALL QUIT(
-     *    'Insufficient memory for work allocation in CC_2EEXP')
+     *    'Insufficient memory for work allocation in CCEFFFOCK')
          ENDIF
 C
 C----------------------------------------
@@ -956,7 +955,7 @@ C
          IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
             CALL QUIT(
-     *    'Insufficient memory for work allocation in CC_2EEXP')
+     *    'Insufficient memory for work allocation in CCEFFFOCK')
          ENDIF
 C
          CALL DZERO(WORK(KT1AM),NT1AM(1))
@@ -1188,7 +1187,7 @@ C
            KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
            LWRK1  = LWORK  - KEND1
            IF (LWRK1 .LT. 0) THEN
-              CALL QUIT('Insufficient core in CC_2EEXP')
+              CALL QUIT('Insufficient core in CCEFFFOCK')
            END IF
 C
          ELSE
@@ -1296,7 +1295,7 @@ C
             IF (LWRK2 .LT. 0) THEN
                WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:',KEND2
                CALL QUIT(
-     *           'Insufficient core for allocation 2 in CC_2EEXP')
+     *           'Insufficient core for allocation 2 in CCEFFFOCK')
             ENDIF
 C
 C--------------------------------------------------
@@ -1566,7 +1565,7 @@ C
                         WRITE(LUPRI,*) 'Available:', LWORK
                         WRITE(LUPRI,*) 'Needed:', KEND3
                         CALL QUIT(
-     *                    'Insufficient work space in CC_2EEXP')
+     *                    'Insufficient work space in CCEFFFOCK')
                      ENDIF
 C
                      CALL DZERO(WORK(KFD2IJ),NCOFRO(ISYMPQ))
@@ -1730,7 +1729,7 @@ C
             IF (LWRK2 .LT. 0) THEN
                WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:',KEND2
                CALL QUIT(
-     *             'Insufficient core for allocation in CC_2EEXP')
+     *             'Insufficient core for allocation in CCEFFFOCK')
             ENDIF
 C
 C-----------------------------------------
@@ -1766,7 +1765,7 @@ C
                      WRITE(LUPRI,*) 'Available:', LWORK
                      WRITE(LUPRI,*) 'Needed:', KCHE3
                      CALL QUIT(
-     *                  'Insufficient work space in CC_2EEXP')
+     *                  'Insufficient work space in CCEFFFOCK')
                   ENDIF
 C
 C----------------------------------------------------
@@ -1881,9 +1880,8 @@ C----------------------------------------------------------------
 C
       IF ((.NOT.LONLYEXP).AND. (LOCDBG.OR.DEBUG.OR.IPRINT.GE.2)) THEN
          WRITE(LUPRI,'(//,2X,A))') 'Results of CCEFFFOCK:'
-         WRITE(LUPRI,'(2X,A,/)','======================')
-
-         WRITE(LUPRI,'(2X,A,I5)','one-index transformation order:')
+         WRITE(LUPRI,'(2X,A,/)')   '======================'
+         WRITE(LUPRI,'(2X,A,I5)')  'one-index transformation order:',
      &            I1DXORD 
 
          WRITE(LUPRI,'(/2X,3A)') 'Label     Sym. ',
@@ -1952,7 +1950,7 @@ C
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,*) 'Two electron first-order property'//
      *              ' calculation completed'
-         WRITE(LUPRI,*) 'Total time used in CC_2EEXP:', TIMTOT
+         WRITE(LUPRI,*) 'Total time used in CCEFFFOCK:', TIMTOT
       ENDIF
       IF (IPRINT .GT. 9) THEN
          WRITE(LUPRI,*) 'Time used for setting up d(pq,ga,de):', TIMDEN
@@ -1971,4 +1969,5 @@ C
       RETURN
   165 CALL QUIT('Error reading CCTWODEN')
       END
+#endif /* HJAAJ_REMOVED */
 C
