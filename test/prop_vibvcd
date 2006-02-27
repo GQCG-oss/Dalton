@@ -129,9 +129,9 @@ else
 fi
 
 # Reading basis set:
-CRIT1=`$GREP "O\#1 * 1 * 8\.0000 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
-CRIT2=`$GREP "C\#2 * 2 * 6\.0000 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
-CRIT3=`$GREP "H\#4 * 4 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT1=`$GREP "O\# * 1 * 8\.0000 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
+CRIT2=`$GREP "C\# * 2 * 6\.0000 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
+CRIT3=`$GREP "H\# * 4 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
 CRIT4=`$GREP "total\: * 7 * 24\.0000 * 88 * 38" $log | wc -l`
 TEST[1]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4`
 CTRL[1]=4

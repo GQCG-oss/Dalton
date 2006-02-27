@@ -87,10 +87,10 @@ ERROR[1]="WALK MODULE NOT USED"
 
 # Atombasis
 CRIT1=`$GREP "N * 1 * 7\.0000 * 28 * 15 * \[10s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT2=`$GREP "H * 3 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
 CRIT3=`$GREP "total\: * 4 * 10\.0000 * 49 * 30" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[2]=5
+CTRL[2]=3
 ERROR[2]="ATOMBASIS NOT READ CORRECTLY"
 
 # Cartesian functions

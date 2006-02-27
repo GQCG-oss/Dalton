@@ -99,12 +99,11 @@ ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set
 CRIT1=`$GREP "O * 1 * 8\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
-CRIT3=`$GREP "H * 1 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 3 * 10\.0000 * 40 * 24" $log | wc -l`
-CRIT5=`$GREP "Spherical harmonic basis used\." $log | wc -l`
-TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[2]=7
+CRIT2=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 40 * 24" $log | wc -l`
+CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[2]=4
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry

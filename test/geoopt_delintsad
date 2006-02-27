@@ -101,11 +101,11 @@ CTRL[1]=8
 ERROR[1]="GEOMETRY OPTIMIZATION NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "C * 1 * 6\.0000 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * 1\.0000 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
+CRIT1=`$GREP "C * 2 * 6\.0000 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
+CRIT2=`$GREP "H * 6 * 1\.0000 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
 CRIT3=`$GREP "total\: * 8 * 18\.0000 * 48 * 16" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[2]=9
+CTRL[2]=3
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry

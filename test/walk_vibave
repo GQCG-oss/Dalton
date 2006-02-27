@@ -103,10 +103,10 @@ fi
 # Basis set
 CRIT1=`$GREP "Basis set used is \"STO\-3G\" from the basis set library\." $log | wc -l`
 CRIT2=`$GREP "N * 1 * 7\.0000 * 15 * 5 * \[6s3p\|2s1p\]" $log | wc -l`
-CRIT3=`$GREP "H * 1 * 1\.0000 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
+CRIT3=`$GREP "H * 3 * 1\.0000 * 3 * 1 * \[3s\|1s\]" $log | wc -l`
 CRIT4=`$GREP "total\: * 4 * 10\.0000 * 24 * 8" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[1]=6
+CTRL[1]=4
 ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
