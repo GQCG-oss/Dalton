@@ -4578,6 +4578,7 @@ C
 C
       CHARACTER*8 LABEL,RTNLBL(2)
       DIMENSION AINT(LENGTH)
+      LOGICAL FNDLAB
 C
 C     Decide whether we start to write at the beginning or the end of the
 C     file. Please note that we now require to be open when reaching this
@@ -4588,7 +4589,10 @@ C
          REWIND LUPROP
       ELSE
          REWIND (LUPROP)
-         CALL FNDLAB('EOFLABEL',LUPROP)
+         IF(.NOT.FNDLAB('EOFLABEL',LUPROP)) THEN
+            WRITE (LUPRI,'(/A)') ' End of file not found in AOPROPER?'
+            CALL QUIT('Internal error, EOF not found in AOPROPER')
+         END IF
          BACKSPACE LUPROP
       END IF
 C
@@ -4739,6 +4743,7 @@ Clf#include <gnrinf.h>
 C
       CHARACTER*8 LABEL,RTNLBL(2)
       DIMENSION AINT(LENGTH)
+      LOGICAL FNDLAB
 C
 C     Decide whether we start to write at the beginning or the end of the
 C     file. Please note that we now require to be open when reaching this
@@ -4750,7 +4755,10 @@ C
          REWIND LUNIT
       ELSE
          REWIND (LUNIT)
-         CALL FNDLAB('EOFLABEL',LUNIT)
+         IF(.NOT.FNDLAB('EOFLABEL',LUPROP)) THEN
+            WRITE (LUPRI,'(/A)') ' End of file not found in AOPROPER?'
+            CALL QUIT('Internal error, EOF not found in AOPROPER')
+         END IF
          BACKSPACE LUNIT
       END IF
 C

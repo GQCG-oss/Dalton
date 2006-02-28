@@ -1759,7 +1759,7 @@ C
      &          IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT),
      &          WORK(LWORK)
       DIMENSION CAVCNT(3)
-      LOGICAL   FOUND
+      LOGICAL   FOUND,FNDLAB
 C
 #include <symmet.h>
 #include <cbisol.h>
@@ -1945,7 +1945,11 @@ C
       CALL GPCLOSE(LUSOL,'KEEP')
       LABEL = 'X 000000'
       REWIND (LUPROP)
-      CALL FNDLAB(LABEL,LUPROP)
+      IF(.NOT.FNDLAB(LABEL,LUPROP)) THEN
+         WRITE (LUPRI,'(/A)') ' Integral label '//LABEL//
+     &        ' not found on file AOPROPER.'
+         CALL QUIT('Integral label not found in hersol')
+      END IF
       BACKSPACE LUPROP
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
       CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
