@@ -326,6 +326,7 @@ C
 #include <inforb.h>
 #include <gnrinf.h>
 #include <dftcom.h>
+#include <ecpinf.h>
 #include <ccsdinp.h>
       LOGICAL MCSCF, DMP2, WAVTP, DPCM
 C
@@ -344,7 +345,7 @@ C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
      &    CCD   .OR. CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCR1B.OR. CCT .OR.
-     &   (DMP2.AND..NOT.MCSCF)) THEN
+     &   (DMP2.AND..NOT.MCSCF) .OR. ECP) THEN
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
