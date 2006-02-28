@@ -119,7 +119,7 @@ C
          IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
 C        error check:
          IF (LREAL+LENID .GT. LFREE) GO TO 8001
-#if !(defined(GFORTRAN) && GFORTRAN <= 402)
+#if !(defined(GFORTRAN) && GFORTRAN <= 410)
 c     either ugly aliasing or a bug in the compiler (seen with
 c     gfortran-4.0.2 20051125)
          IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
@@ -254,7 +254,7 @@ C
          KFREE1 = 1 + LENID
       END IF
       WMEMCK(1) = WORK(KFREE1-LENID)
-#if !(defined(GFORTRAN) && GFORTRAN <= 402)
+#if !(defined(GFORTRAN) && GFORTRAN <= 410)
 c     either ugly aliasing or a bug in the compiler (seen with
 c     gfortran-4.0.2 20051125)
       IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
@@ -334,7 +334,7 @@ C
       IF (KFREE .EQ. 1) KFREE = 1 + LENID
 C
       IALLOC = 0
-#if (defined(GFORTRAN) && GFORTRAN <= 402)
+#if (defined(GFORTRAN) && GFORTRAN <= 410)
 c     either ugly aliasing or a bug in the compiler (seen with
 c     gfortran-.0.2 20051125)
       RETURN
