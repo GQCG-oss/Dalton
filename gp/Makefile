@@ -9,7 +9,7 @@ F_OBJS = gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
 
 F_CPPS = $(F_OBJS:.o=.i)
 
-pre: $(F_CPPS)
+pre: $(F_CPPS) mpi_dummy.i
 
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > gp.ftnchek
