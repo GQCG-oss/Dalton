@@ -41,6 +41,7 @@ rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_absorp rsp_prop_file"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s dft_qr_sym"
 SHORTNOCC="$SHORTENRGY $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST"
+SHORTQM3="cc2mm_spc_fop"
 #
 SHORTCC="cc_rsp_alpha2 cc_rsp_beta cc_rsp_beta2 cc_rsp_betafreq \
 cc_rsp_betafreq2 cc_fop_drw2e cc_fop_prop cc_fop_prop2 cc_exgr_prop \
@@ -52,7 +53,7 @@ cc_rsp_twophot cc_rsp_twophot2 cc_rsp_gamma3 \
 cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd \
 cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file"
 #
-SHORT="$SHORTNOCC $SHORTCC"
+SHORT="$SHORTNOCC $SHORTCC $SHORTQM3"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -64,12 +65,12 @@ cc_energy_triplet cc_rsp_twophotdirect cc_grad2 cc_grad3 cc_geoopt \
 cc_rsp_solv cc_energy_triplet3 cc2dc_energy cc2dc_resp cc2dc_exci cc2dc_resp_newlr \
 cc_beta_solv" 
 #
-QM3="ccsdmm_spc_fop cc2mm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
+MEDIUMQM3="ccsdmm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
 ccsdmm_ec3_fop ccsdmm_e01_fop ccsdmm_modelmix cc2mm_exci \
 cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta hfmm_1 \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6"
 #
-MEDIUM="$MEDIUM $MEDIUMCC $QM3"
+MEDIUM="$MEDIUM $MEDIUMCC $MEDIUMQM3"
 #
 LONG="geoopt_prop3 prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
 #
@@ -117,9 +118,12 @@ LONGCCR12="cc2_r12_aux_ch4_a2 cc2_r12_aux_ch4_sym_a2 \
 cc2_r12_aux_ch4_sym_a3 cc2_r12_aux_benzene_sym_fop cc3r12_n2_sym_exc \
 cc3r12_n2_sym_exc_lhtr"
 #
+#
 CCR12="$SHORTCCR12 $LONGCCR12"
 #
 R12="$MP2R12 $SHORTCCR12 $LONGCCR12"
+#
+QM3="$SHORTQM3 $MEDIUMQM3"
 #
 NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"
 #
@@ -314,6 +318,10 @@ if [ "$reftest" = "true" ]; then
    testdir=`pwd`/trueresult
 else
    testdir="`date +'%Y-%m-%dT%H_%M'`-testjob"
+# test if more than one testjob submitted within same time-stamp:
+   while [ -e $testdir ]; do
+      testdir=${testdir}x
+   done
    mkdir $testdir 
 fi
 cp functions $testdir
@@ -379,11 +387,9 @@ do
   while [ "$step" -le "$numsteps" ]
   do
       if [ "$multi" -eq 1 ]; then
-          if [ "$step" -gt 1 ]; then
-              myprint ""
-              myprint "start $item step $step:"
-              myprint "-----------------------------------------------------------"
-          fi
+          myprint "-----------------------------------------------------------"
+          myprint "  Start $item step $step of $numsteps :"
+          myprint "-----------------------------------------------------------"
           molfile=$item
           potfile=$item
 	  cp $item'__'$step'.dal' $item'.dal'
@@ -396,11 +402,7 @@ do
           molfile=$item
           potfile=$item
           dalfile=$item
-	  if [ "$multi" -eq 0 ]; then
-             logfile=./$item.log
-          else
-	     logfile=./$item'__'$step'_'$item.log
-	  fi
+          logfile=./$item.log
           checkfile=./$item.check
           reffile=./$item.ref
           moldenfile=./$item.molden
@@ -433,11 +435,13 @@ do
           fi
       else
           failed=false
-          if [ "$step" -eq "$numsteps" ]; then
-              $DALTON $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+          if [ "$step" -eq "1" ]; then
+#             make sure that directory is clear before start
+              $DALTON -d $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           else
-              $DALTON -D $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
+#             copy $item.tar.gz for multistep jobs (-f option)
+              $DALTON -f $item $paramlist -ext log $dalfile $molfile $potfile > "$tmpfile"
               if [ $? -ne 0 ]; then failed=true; fi
           fi
           grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
@@ -488,11 +492,7 @@ do
       fi
       echo $checkout
       passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
-      if [ -n "$passed" ]; then
-        if [ "$keep" = "false" ]; then
-          rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info $dalfile.tar.gz
-        fi
-      else
+      if [ -z "$passed" ]; then
         trouble=`expr $trouble \+ 1`
         if [ "$bell" = "true" ]; then
           echo "\a"
@@ -501,6 +501,13 @@ do
         if [ "$trouble" -eq 1 ]; then
             problems="$problems $item"
         fi
+      elif [ "$keep" = "false" ]; then
+          rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
+          if [ "$step" -eq "$numsteps" ]; then
+#         only delete restart files in last step of multistep test !!!
+             rm -f $dalfile.tar.gz
+          fi
+#     else everything OK and -keep defined
       fi
     step=`expr $step \+ 1`
   done
@@ -524,12 +531,13 @@ myprint ""
 
 if [ "$benchmark" = "true" ]; then
     if [ "$numresult" -gt 0  ]; then
-        ind=1
+      ind=1
       while [ "$ind" -le "$numresult" ]; do
-	  awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null
-          ind=`expr $ind \+ 1`
-        done
-        echo
+        awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null 
+        awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null >> $listing
+        ind=`expr $ind \+ 1`
+      done
+      echo
     fi
 fi
 
