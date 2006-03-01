@@ -690,9 +690,9 @@ C
      *  (I10,':',2I4))
 C
       IF (FLAG(11) .AND. NWOPA.GT.0) THEN
-         WRITE (LUERR,'(/A,A)') ' *** ERROR ***',
+         WRITE (LUPRI,'(/A,A)') ' *** ERROR ***',
      *      ' (SETWOP) ACTROT option not implemented for FLAG(11)'
-         CALL QTRACE(LUERR)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*ERROR-SETWOP**ACTROT not implemented for FLAG(11)')
       END IF
 C
@@ -756,6 +756,7 @@ C
  1220             CONTINUE
                END IF
  1210       CONTINUE
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
 C
 C           *** INACTIVE-SECONDARY ELEMENTS
 C
@@ -774,6 +775,7 @@ C
  1250             CONTINUE
                END IF
  1240       CONTINUE
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
 C
 C           *** active-active elements, if RAS or
 C           if FLAG(23) (i.e. active-active rotations) or "orbital
@@ -807,6 +809,7 @@ C
             ELSE
                IACT = 0
             END IF
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
 C           *** ACTIVE-SECONDARY ELEMENTS
  1165       IF (NASH(ISYM).EQ.0.OR.NSSH(JSYM).EQ.0) GO TO 1260
             IF (LVLABS .EQ.1 .OR. LVLABS .EQ. 2) GO TO 1260
@@ -824,6 +827,7 @@ C           *** ACTIVE-SECONDARY ELEMENTS
  1260       CONTINUE
             NWOP(ISYM) = NWOP(ISYM) + NWOPX-NWOPX1
             NWOPX1 = NWOPX
+            IF (NWOPX .GT. MAXWOP) GOTO 2500
  1290    CONTINUE
 C
 C        Construct KLWOP and remove any duplicate active-active
@@ -833,22 +837,23 @@ C
          IF (NKLWOP/IRAT + 1 .GT. LKLWOP)
      &      CALL ERRWRK('SETWOP',(NKLWOP/IRAT),LKLWOP)
          CALL IZERO(KLWOP,NKLWOP)
-         NWOPT = 0
-         DO 140 IG = 1,NWOPX
+         NWOPX = 0
+         DO 140 IG = 1,NWOPX1
             KW = ISW(JWOP(1,IG))
             LW = ISW(JWOP(2,IG))-NISHT
             IF (KLWOP(KW,LW) .EQ. 0) THEN
-               NWOPT = NWOPT + 1
-               KLWOP(KW,LW)  = NWOPT
-               JWOP(1,NWOPT) = JWOP(1,IG)
-               JWOP(2,NWOPT) = JWOP(2,IG)
+               NWOPX = NWOPX + 1
+               KLWOP(KW,LW)  = NWOPX
+               JWOP(1,NWOPX) = JWOP(1,IG)
+               JWOP(2,NWOPX) = JWOP(2,IG)
             END IF
   140    CONTINUE
+         IF (NWOPX .GT. MAXWOP) GOTO 2500
+         NWOPT = NWOPX
 C
 C        Fill up with redundant active-active orbital rotations,
 C        they are needed for LINTRN.
 C
-         NWOPH = NWOPT
          IF (IOPSY.EQ.1 .AND. IACT .EQ. 0) THEN
             DO 2400 KW = NISHT+1, NOCCT-1
                DO 2200 LW = KW+1, NOCCT
@@ -856,23 +861,27 @@ C
                      KX = ISX(KW)
                      LX = ISX(LW)
                      IF (ISSMO(KX) .EQ. ISSMO(LX)) THEN
-                        NWOPH = NWOPH + 1
-                        JWOP(1,NWOPH) = KX
-                        JWOP(2,NWOPH) = LX
+                        NWOPX = NWOPX + 1
+                        JWOP(1,NWOPX) = KX
+                        JWOP(2,NWOPX) = LX
                      END IF
                   END IF
  2200          CONTINUE
  2400       CONTINUE
          END IF
+         NWOPH = NWOPX
          NWOPMA = MAX(NWOPH,NWOPMA)
 C
-         IF (NWOPH .GT. MAXWOP) THEN
-            WRITE (LUERR ,2410) IOPSY,NWOPH,MAXWOP
-            WRITE (LUPRI,2410) IOPSY,NWOPH,MAXWOP
+ 2500    CONTINUE
+         IF (NWOPX .GT. MAXWOP) THEN
+            WRITE (LUERR,2410) IOPSY,NWOPX,MAXWOP
+            WRITE (LUPRI,2410) IOPSY,NWOPX,MAXWOP
             CALL QUIT('SETWOP, TOO MANY ORBITAL ROTATIONS.')
          END IF
- 2410    FORMAT(///,' SETWOP, TOO MANY ORBITAL ROTATIONS SYMMETRY',I3,
-     *           //,' NWOPH  =',I8,/,' MAXWOP =',I8)
+ 2410 FORMAT(///' SETWOP - Too many orbital rotations in symmetry',I3
+     &  //' NWOPX  =',I8/' MAXWOP =',I8
+     &  //' To run this calculation you must modify the Dalton source:'
+     &   /'   Increase MAXWOP in include/infind.h; make depend; make')
 C
          IF (IPRERR.GE.5) WRITE (LUERR,'(/A,I3,A,I3,/A,2I5/)')
      *      ' (SETWOP) orbital rotation operators, abs level',
@@ -919,7 +928,7 @@ C
 C     recover operator of symmetry JWOPSY
 C
       REWIND LUINDX
-      CALL MOLLAB(OPLBL(JWOPSY),LUINDX,LUERR)
+      CALL MOLLAB(OPLBL(JWOPSY),LUINDX,LUPRI)
       READ (LUINDX) NWOPT, NWOP, NWOPH, JWOPSY1, NKLWOP
       IF (JWOPSY1 .NE. JWOPSY) CALL QUIT(
      &   'PROGRAM ERROR: JWOPSY on LUINDX does not correspond to label')
