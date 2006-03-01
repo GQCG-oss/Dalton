@@ -1032,10 +1032,7 @@ C
             LMMINP = .FALSE.
             IF (QM3) THEN
               IPOS = INDEX(MLINE(NMLINE),'MM')
-              IF (IPOS .GT. 0) THEN
-                  LMMINP = .TRUE.
-                  BASNAM(1:7) = 'MM atom'
-              END IF
+              IF (IPOS .GT. 0) LMMINP = .TRUE.
             END IF
 C
             IF (LMMINP) THEN
@@ -1224,7 +1221,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  ENDIF
                  IF (INPTST .OR. IPREAD .GT. 0) THEN
                     IF (DOHUCKEL .AND. J.EQ.2) THEN
-                        IF (BASNAM(1:7) .NE. 'MM atom')
+                        IF (BASNAM(1:2) .NE. 'MM')
      &                  WRITE (LUPRI,'(/A,I3)')
      &                 ' Huckel basis read for atomic type no.',I
                     ELSE IF (BASNAM(1:6) .EQ. 'INTGRL') THEN
@@ -1235,7 +1232,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                        WRITE (LUPRI,'(/A,I3,A)')
      &                    ' Atomic type no.',I,
      &                    ' is a point charge without basis functions.'
-                    ELSE IF (BASNAM(1:7) .EQ. 'MM atom') THEN
+                    ELSE IF (BASNAM(1:2) .EQ. 'MM') THEN
                        WRITE (LUPRI,'(/A,I3,A)')
      &                    ' Atomic type no.',I,
      &                    ' is a MM atom without'//
@@ -1267,6 +1264,8 @@ C                (Feb. 2006: exept for QM3 / MM which is also skipped below)
 C                ... avoid floating orbitals
                  IF (IQM(1,1) .EQ. 0) BASNAM = 'pointcharge'
 C                ... avoid point charges (maybe set with INTGRL so BASNAM undefined)
+                 IF (BASNAM(1:2) .EQ. 'MM') BASNAM = 'pointcharge'
+C                ... avoid MM atoms
                  IF (BASNAM(1:11) .NE. 'pointcharge') BASNAM = 'HUCKEL'
 C                ... tell BASLIB that this is for Huckel
               END IF
@@ -1283,7 +1282,7 @@ C                Use DIRAC style format for specifying IQM and JCO.
      &                ALPHA(1,IBLOCK(J),J),CPRIM(1,1,IBLOCK(J),J),
      &                CPRIMU(1,1,IBLOCK(J),J),NBLOCK,KAOVEC,KPRIM)
               ELSE IF (BASNAM(1:11) .NE. 'pointcharge' .AND.
-     &                 BASNAM(1: 7) .NE. 'MM atom') THEN
+     &                 BASNAM(1: 2) .NE. 'MM') THEN
                  IF (INDEX(BASNAM,'ecp') .NE. 0 .AND. J.EQ.1) THEN
 C     Read effective core potential information from file for atom. 
 C     The charge of atom type will be set to the effective charge below
