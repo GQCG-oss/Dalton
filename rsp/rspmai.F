@@ -711,6 +711,7 @@ C
 #include "maxorb.h"
 #include "infvar.h"
 #include "gnrinf.h"
+#include "infinp.h"
 #include "rspprp.h"
 #include "qrinf.h"
 #include "infave.h"
@@ -733,7 +734,8 @@ C
 C
       IF (.NOT.SET) THEN
          SET = .TRUE.
-         NOITRA = DIRCAL
+         IF (.NOT. DIRFCK) DIRFCK = DIRCAL
+         NOITRA = DIRFCK
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
@@ -869,9 +871,14 @@ C              .PROP2Average
      *   ' with Coupled Cluster Singles and Doubles Amplitudes',
      *   ' Reference : S. P. A. Sauer, to be published'
          END IF
-         IF (NOITRA) WRITE(LUPRI,'(/2A,L1)')
+         IF (DIRFCK) THEN
+            WRITE(LUPRI,'(/A)')
+     *      ' AO-DIRECT FOCK MATRIX CALCULATION.'
+         ELSE IF (NOITRA) THEN
+            WRITE(LUPRI,'(/2A,L1)')
      *      ' MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.'
      *      ,'  NOITRA = ',NOITRA
+         END IF
          IF (TRPFLG) WRITE(LUPRI,'(/2A,L1,A,L1)')
      *      ' ** CALCULATION OF TRIPLET RESPONSE PROPERTY  **'
      *      ,'  TRPFLG = ',TRPFLG
