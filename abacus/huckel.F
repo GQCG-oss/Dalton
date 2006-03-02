@@ -111,14 +111,12 @@ C
      &      'Using EHT  model: ',.NOT.EWMO,
      &      'Number of Huckel orbitals each symmetry:',
      &      (NHUCAO(I),I=1,NSYM)
-      IF (EWMO) THEN
-         WRITE (LUPRI,'(/A/A/A)')
-     &   ' EWMO - Energy Weighted Maximum Overlap - is a Huckel type'//
-     &   ' method,',
-     &   ' which normally is better than Extended Huckel Theory.',
-     &   ' Reference: Linderberg and Ohrn, Propagators in Quantum'//
-     &   ' Chemistry (Wiley, 1973)'
-      END IF
+      IF (EWMO) WRITE (LUPRI,'(/A/A/A)')
+     &  ' EWMO - Energy Weighted Maximum Overlap - is a Huckel type'//
+     &  ' method,',
+     &  '        which normally is better than Extended Huckel Theory.',
+     &  ' Reference: Linderberg and Ohrn, Propagators in Quantum'//
+     &  ' Chemistry (Wiley, 1973)'
 C
       NNHUCBA = NHUCBA * (NHUCBA + 1) / 2
 C
@@ -445,6 +443,12 @@ C     energies are taken from: Joseph B. Mann, "Atomic Structure Calculations
 C     I. Hartree-Fock Energy Results for the Elements H through Lr", 
 C     Report LA-3690 (Los Alamos National Laboratory, 1967).
 C
+C hjaaj mar 2006:
+C     Added 2p for Li, Be; 3p for Na, Mg; 4p for K, Ca
+C     with energy parameters from A. Herman, Modelling Simul. Mater.
+C     Sci. Eng. 12 (2004) 21. TODO: add 4p for first row transition metals etc.
+C
+C
 C     Input:
 C     NQ     = atomic number
 C     IQCORE = number of core electrons described with ECP
@@ -476,11 +480,11 @@ C   He    Z= 2
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Li    Z= 3
      & 2.477700D+00,1.963000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.130000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Be    Z= 4
      & 4.732700D+00,3.093000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,0.206000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    B    Z= 5
      & 7.695300D+00,4.947000D-01,0.000000D+00,0.000000D+00,0.000000D+00,
@@ -509,11 +513,11 @@ C   Ne    Z=10
       DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=11,20) /
 C   Na    Z=11
      & 4.047850D+01,2.797000D+00,1.821000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,1.518100D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,1.518100D+00,0.114000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Mg    Z=12
      & 4.903170D+01,3.767700D+00,2.531000D-01,0.000000D+00,0.000000D+00,
-     & 0.000000D+00,2.282200D+00,0.000000D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,2.282200D+00,0.157000D+00,0.000000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Al    Z=13
      & 5.850090D+01,4.910700D+00,3.934000D-01,0.000000D+00,0.000000D+00,
@@ -541,11 +545,11 @@ C   Ar    Z=18
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C    K    Z=19
      & 1.335325D+02,1.448990D+01,1.748800D+00,1.475000D-01,0.000000D+00,
-     & 0.000000D+00,1.151930D+01,9.544000D-01,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,1.151930D+01,9.544000D-01,0.103000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,
 C   Ca    Z=20
      & 1.493631D+02,1.682270D+01,2.245400D+00,1.955000D-01,0.000000D+00,
-     & 0.000000D+00,1.362930D+01,1.340700D+00,0.000000D+00,0.000000D+00,
+     & 0.000000D+00,1.362930D+01,1.340700D+00,0.138000D+00,0.000000D+00,
      & 0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00,0.000000D+00/
       DATA ((ENERGY(IZ,ISHELL),ISHELL=1,15),IZ=21,30) /
 C   Sc    Z=21

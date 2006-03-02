@@ -3784,13 +3784,13 @@ C
                   ICLASS(NSORB) = IC
                   IF (IC .EQ. 2 .AND. DOHUCKEL) THEN
                      NQ     = IZATOM(NCENT(IA))
+C                    ... atomic charge of this center
                   IF (NQ .GT. 0) THEN
 C                 ... skip point charges (code NQ=-2),
 C                     floating orbitals (NQ = 0), and
 C                     auxiliary basis sets (code NQ=-1)
                      IHNMAO = IHNMAO + 1
                      IHUCPT(IA) = IHNMAO
-C                    ... atomic charge of this center
                      IQCORE = NINT(CHARGE(NCENT(IA)))
 C                    ... effective charge of this center
                      IQCORE = NQ - IQCORE

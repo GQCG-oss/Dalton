@@ -133,7 +133,14 @@ C        Huckel guess now based on ANO-DK3 instead because it
 C        includes all elements in the periodic table.
 C
          ANO = .TRUE.
-         BASTMP = 'ANO-DK3 for Huckel'
+C hjaaj mar 2006: use ano-4 for Z.le.36 to include
+C        2p for Li, Be; 3p for Na, Mg; 4p for K, Ca
+C        (these basis fu. does not exist in the minimum basis ANO-DK3)
+         IF (INTQ .LE. 36) THEN
+            BASTMP = 'ano-4   for Huckel'
+         ELSE
+            BASTMP = 'ANO-DK3 for Huckel'
+         END IF
 C        NOTE that ECP Huckel start guess is implemented
 C        in REAANO through the Q-QEFF parameter. 
          ISTART = 7
@@ -142,19 +149,22 @@ C           ... H and He
             BASNAM = 'HUCKEL    1 0 0 0'
          ELSE IF (INTQ .LE. 4) THEN
 C           ... Li, Be
-            BASNAM = 'HUCKEL    2 0 0 0'
+CHJ         BASNAM = 'HUCKEL    2 0 0 0'
+            BASNAM = 'HUCKEL    2 1 0 0'
          ELSE IF (INTQ .LE. 10) THEN
 C           ... B, C, N, O, F, Ne
             BASNAM = 'HUCKEL    2 1 0 0'
          ELSE IF (INTQ .LE. 12) THEN
 C           ... Na, Mg
-            BASNAM = 'HUCKEL    3 1 0 0'
+CHJ         BASNAM = 'HUCKEL    3 1 0 0'
+            BASNAM = 'HUCKEL    3 2 0 0'
          ELSE IF (INTQ .LE. 18) THEN
 C           ... Al, Si, P, S, Cl, Ar
             BASNAM = 'HUCKEL    3 2 0 0'
          ELSE IF (INTQ .LE. 20) THEN
 C           ...  K, Ca
-            BASNAM = 'HUCKEL    4 2 0 0'
+CHJ         BASNAM = 'HUCKEL    4 2 0 0'
+            BASNAM = 'HUCKEL    4 3 0 0'
          ELSE IF (INTQ .LE. 30) THEN
 C           ...  Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn
             BASNAM = 'HUCKEL    4 2 1 0'
