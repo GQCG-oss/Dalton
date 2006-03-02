@@ -33,14 +33,14 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-C===========================================================================
+C=========================================================================
 C old log:
 C010131-vebjornb: Old dalton.F split into dalton.F (program) and
 C                 dalgnr.F (subroutines).
 C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
-C===========================================================================
+C=========================================================================
 C  /* Deck dalton */
       PROGRAM DALTON
 C
@@ -138,7 +138,7 @@ C
 C     Read environment variables for LMWORK and BASDIR
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
 C
-      CALL GETMMBAS(LMWORK,BASDIR,IDUMMY)
+      CALL GETMMBAS(MYNUM,LMWORK,BASDIR,LBASDIR)
       IF (LMWORK .LE. 0) LMWORK = LWORK_DEF
 C
       NBYTES  = (LMWORK+2) * 8
@@ -161,7 +161,11 @@ C
      &       /'       (2) "datasize" resource limit too small.')
 C
 #if defined (SYS_IRIX) || defined (SYS_AIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_HAL) || defined (SYS_DEC)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))||defined(VAR_ABSOFT)
+
+#if defined (SYS_LINUX)
+      WADDR = 1
+#endif
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT)
       WADDR = MALLOC(NBYTES)
 #endif
 
@@ -179,15 +183,13 @@ C
       END IF
 #endif
 #endif
-#if (defined (SYS_LINUX))
-      WADDR = 1
-#endif
       IF (WADDR .EQ. 0) THEN
          WRITE(LUERR,1000)
          IF (LUERR .NE. 0) WRITE(0,1000)
          CALL QUIT(' DALTON: memory allocation failure')
       END IF
 #endif
+
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
 C
       IABORT = 0
@@ -232,10 +234,15 @@ C integer (we used IEIR=3000000).
 #endif
 C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
 C
-	IF (MMWORK .NE. MMCORE) THEN
-	CALL QUIT('MMCORE must equal MMWORK.')
-	END IF
+      IF (MMWORK .NE. MMCORE) THEN
+         CALL QUIT('MMCORE must equal MMWORK.')
+      END IF
 Cef end
+c     write (0,*) 'checking BASDIR for MYNUM',MYNUM
+c     write (0,*) MYNUM,' ',BASDIR
+c     write (0,*) MYNUM,' ',
+c    &INSTALL_BASDIR
+
       IF (INDEX(BASDIR,
      &INSTALL_BASDIR
      &) .LE. 0) THEN
@@ -244,7 +251,6 @@ Chjaaj   IEND = INDEX(BASDIR,' ') - 1
 Chjaaj   not good, will give wrong IEND if any directories
 Chjaaj   contains blanks, as in '/home/my basdir/'); thus
          DO I = LBASDIR,1,-1
-            write(adummy,'(a)') BASDIR(I:I)
             IF (BASDIR(I:I) .NE. ' ') THEN
                IEND = I
                GO TO 20
@@ -572,53 +578,61 @@ C
       END IF
 #endif
       END
-      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR)
+      SUBROUTINE GETMMBAS(MYNUM,LMWORK,BASDIR,LBASDIR)
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER*(*) BASDIR
 #if defined(SYS_AIX)||defined(SYS_CRAY)||defined(SYS_IRIX)||defined(SYS_NEC)||defined(SYS_CONVEX)||defined(SYS_T3D)||defined(SYS_SUN)||defined (SYS_LINUX)||defined(SYS_HPUX)||defined(SYS_HAL)||defined(SYS_T90)||defined(SYS_DEC)
       CHARACTER*20 WRKMEM
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
 C
 C     Dynamic memory allocation; check for WRKMEM in environment
 C     The T3D thingie might work for DEC_ALPHA as well? Try it out, kr-dec96
 C
-      WRKMEM = '                    '
+      IF (MYNUM .EQ. 0) THEN
+C     ... only master reads environment, transferred
+C         to slave with MPI_BCAST.
+C         On some MPI implementations it requires extra
+C         options to transfer UNIX environment variables to
+C         slave nodes. /hjaaj June 2005
+        WRKMEM = '                    '
 #if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
-      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
+        CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
+        CALL PXFGETENV('BASDIR',6,BASDIR,LBASDR,IERR)
 #else
-      CALL GETENV('WRKMEM',WRKMEM)
-      CALL GETENV ('BASDIR',BASDIR)
+        CALL GETENV('WRKMEM',WRKMEM)
+        CALL GETENV('BASDIR',BASDIR)
 #endif
-      READ(WRKMEM, '(I20)', ERR=10) LMWORK
-      IF (LMWORK .GE. 0) GOTO 20
-   10    WRITE(LUERR,'(/3A)')
-     &   ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'
-         LMWORK = 0
-   20 CONTINUE
+        READ(WRKMEM, '(I20)', ERR=10) LMWORK
+        IF (LMWORK .GE. 0) GO TO 20
+   10     WRITE(LUERR,'(/3A)')
+     &    ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'
+          LMWORK = 0
+   20   CONTINUE
 C
-C     Either default memory size,
+C       Either default memory size,
 C
-      IF (LMWORK .LE. 0) THEN
-         WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
-      ELSE
+        IF (LMWORK .LE. 0) THEN
+          WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
+        ELSE
 C
-C     ... or user specified memory size.
+C       ... or user specified memory size.
 C
-         DO I=20,1,-1
-           IF(WRKMEM(I:I).NE.' ') GOTO 1312
-         ENDDO
-         CALL QUIT('Empty environment variable WRKMEM')
- 1312    LWMEM = I
-         WRITE(LUERR,'(/A/3A)')
-     &   ' DALTON: user specified work memory size used,',
-     &   '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
+          DO I=20,1,-1
+            IF(WRKMEM(I:I).NE.' ') GOTO 1312
+          ENDDO
+          CALL QUIT('Empty environment variable WRKMEM')
+ 1312     LWMEM = I
+          WRITE(LUERR,'(/A/3A)')
+     &    ' DALTON: user specified work memory size used,',
+     &    '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
+        END IF
       END IF
 #if defined(VAR_MPI)
-      CALL MPI_BCAST(LMWORK,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+C
+C     Transfer LMWORK and BASDIR to slaves
+C
+      CALL MPIXBCAST(LMWORK,1,'INTEGE',0)
+      CALL MPIXBCAST(BASDIR,LBASDIR,'STRING',0)
 #endif /* defined(VAR_MPI) */
 #endif
       END
