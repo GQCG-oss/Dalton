@@ -1612,7 +1612,7 @@ C
          WRITE (LUNMCL,'(I5)') I0
          CALL GPCLOSE(LUNMCL,'KEEP')
 #endif         
-         DO ILINE = 1, 500
+         DO ILINE = 1, KMLINE
             MLINE(ILINE) = '                                        '//
      &           '                                        '
          END DO
