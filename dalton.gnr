@@ -36,7 +36,7 @@ usage (){
 	  echo ' -D        do not delete job scratch directory after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o file   redirect output from program to this file in WRKDIR'
-          echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
+          echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to job before calculation starts'
 	  echo ' -M mb     set scratch memory to mb Megabytes'
 	  echo ' -m mem    set scratch memory to mem double precision words'
 	  echo ' -N num    use MPI version with num nodes'
@@ -128,7 +128,11 @@ export TMPDIR
 if [ ! -d "$TMPDIR" ]; then
    mkdir -p $TMPDIR
 fi
-SCRATCHDIR=$TMPDIR/$outnam
+if [ $optn -gt 1 ] ; then
+  SCRATCHDIR=$TMPDIR
+else
+  SCRATCHDIR=$TMPDIR/$USER/$outnam
+fi
 #
 echo
 echo "   ***************************************** "
@@ -202,7 +206,7 @@ if [ $optn -gt 1 ] ; then
       if [ -a $DALMPI -a -x $DALMPI ]; then
 	 if [ -n "$optlam" ] ; then
 	    lamboot -v  $WRKDIR/$optlam
-	    $MPIRUN -np $optn $DALMPI
+	    $MPIRUN -wd $TMPDIR -np $optn $DALMPI
             ierr=$?
 	    wipe    -v  $WRKDIR/$optlam
 	 else

@@ -1388,7 +1388,7 @@ DALTON="$INSTALL_DIR/$DALEXE"
 DALMPI="$INSTALL_DIR/dalpar.x"
 MPIRUN="$mpirun"
 # set TMPDIR (if not defined by e.g. NQS) and WRKDIR
-[ -z "\$TMPDIR" ] && TMPDIR="$worksp/\$USER"
+[ -z "\$TMPDIR" ] && TMPDIR="$worksp"
 EOF
 cat dalton.gnr >> $INSTALL_DIR/dalton
 
