@@ -1539,10 +1539,10 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 #include <r12int.h>
-#include <ibtfun.h>
 #include <pcmlog.h>
 #include <pcmdef.h>
 #include <pcm.h>
+#include <ibtfun.h>
 C
       NQ = NINT(Q)
       IF (GAUNUC.AND.(NQ.GT.0)) THEN
