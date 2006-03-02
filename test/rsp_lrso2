@@ -120,7 +120,7 @@ ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
 CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.97734936.[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.99019271.[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.9901927..[0-9]" $log | wc -l`
 CRIT3=`$GREP "Final MCSCF energy\: * \-7\.9941305296.[0-9]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
@@ -136,8 +136,8 @@ CTRL[5]=5
 ERROR[5]="NOT CORRECT"
 
 # Linear response
-CRIT1=`$GREP "\@.*Y SPNORB .* Y SPNORB .* 2\.634010349[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
-CRIT2=`$GREP "\@.*X SPNORB .* X SPNORB .* 2\.634010349[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
+CRIT1=`$GREP "\@.*Y SPNORB .* Y SPNORB .* 2\.6340103..[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
+CRIT2=`$GREP "\@.*X SPNORB .* X SPNORB .* 2\.6340103..[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
 CRIT3=`$GREP "\@.*\*\*\*\*WARNING\*\*\*\*\*\* NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3

@@ -34,7 +34,7 @@ Calculation of ESR hyperfine couplings with solvent for the CH3 radical
 
     2    1  Y         1.00D-15
         6.    1    4    3    1    1    1
-C     0.00000    0.00000   0.0000
+ C    0.00000    0.00000   0.0000
     2    0
 74124.
 24708.
@@ -62,8 +62,8 @@ C     0.00000    0.00000   0.0000
     1    1
 .76100000 1.00000000
         1.    2    3    2    1    1
-H1    -.118598   0.00000  2.036247
-H2    -.118598  1.763441 -1.018124
+ H1   -.118598   0.00000  2.036247
+ H2   -.118598  1.763441 -1.018124
     2    0
 304.83
 101.61
@@ -127,13 +127,13 @@ cat > rsp_solvesr.dal <<'%EOF%'
 .TRPFLG
 *ESR
 .TRPPRP
-FC C  01
+FC  C 01
 .TRPPRP
-FC H1 02
+FC  H102
 .TRPPRP
-FC H2 03
+FC  H203
 .TRPPRP
-FC H2 04
+FC  H204
 .TRPPRP
 SD 001 x
 .TRPPRP
@@ -246,12 +246,11 @@ ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set
 CRIT1=`$GREP "C * 1 * 6\.0000 * 44 * 38 * \[12s5p2d1f\|12s3p2d1f\]" $log | wc -l`
-CRIT2=`$GREP "H1 * 1 * 1\.0000 * 18 * 18 * \[7s2p1d\|7s2p1d\]" $log | wc -l`
-CRIT3=`$GREP "H2 * 2 * 1\.0000 * 18 * 18 * \[7s2p1d\|7s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 3 * 1\.0000 * 18 * 18 * \[7s2p1d\|7s2p1d\]" $log | wc -l`
 CRIT4=`$GREP "total\: * 4 * 9\.0000 * 98 * 92" $log | wc -l`
 CRIT5=`$GREP "Spherical harmonic basis used\." $log | wc -l`
-TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[2]=5
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT4 \+ $CRIT5`
+CTRL[2]=4
 ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
@@ -295,9 +294,9 @@ CTRL[6]=2
 ERROR[6]="ESR CALCULATION NOT SET UP CORRECTLY"
 
 # ESR parameters
-CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC C * 01\" LAGRANGIAN\: \-1\.51627[0-9] AVERAGE\: * 2\.36947[0-9] TOTAL\: * (0| )\.85319[0-9]" $log | wc -l`
-CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC H1 02\" LAGRANGIAN\: (\-0| \-)\.02256[0-9] AVERAGE\: (\-0| \-)\.15185[0-9] TOTAL\: (\-0| \-)\.17442[0-9]" $log | wc -l`
-CRIT3=`$GREP "TRIPLET OPERATOR\: \"FC H2 03\" LAGRANGIAN\: (\-0| \-)\.04513[0-9] AVERAGE\: (\-0| \-)\.30371[0-9] TOTAL\: (\-0| \-)\.34885[0-9]" $log | wc -l`
+CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC  C 01\" LAGRANGIAN\: \-1\.51627[0-9] AVERAGE\: * 2\.36947[0-9] TOTAL\: * (0| )\.85319[0-9]" $log | wc -l`
+CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC  H102\" LAGRANGIAN\: (\-0| \-)\.02256[0-9] AVERAGE\: (\-0| \-)\.15185[0-9] TOTAL\: (\-0| \-)\.17442[0-9]" $log | wc -l`
+CRIT3=`$GREP "TRIPLET OPERATOR\: \"FC  H203\" LAGRANGIAN\: (\-0| \-)\.04513[0-9] AVERAGE\: (\-0| \-)\.30371[0-9] TOTAL\: (\-0| \-)\.34885[0-9]" $log | wc -l`
 CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD * 001 y\" LAGRANGIAN\: (\-0| \-)\.02073[0-9] AVERAGE\: (\-0| \-)\.52459[0-9] TOTAL\: (\-0| \-)\.54533[0-9]" $log | wc -l`
 CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD * 002 y\" LAGRANGIAN\: * (0| )\.00168[0-9] AVERAGE\: (\-0| \-)\.08072[0-9] TOTAL\: (\-0| \-)\.07904[0-9]" $log | wc -l`
 CRIT6=`$GREP "TRIPLET OPERATOR\: \"SD * 003 y\" LAGRANGIAN\: * (0| )\.00432[0-9] AVERAGE\: (\-0| \-)\.01322[0-9] TOTAL\: (\-0| \-)\.00889[0-9]" $log | wc -l`
@@ -317,7 +316,7 @@ CRIT19=`$GREP "TRIPLET OPERATOR\: \"SD * 011 x\" LAGRANGIAN\: * (0| )\.00432[0-9
 CRIT20=`$GREP "TRIPLET OPERATOR\: \"SD * 011 z\" LAGRANGIAN\: * (0| )\.01638[0-9] AVERAGE\: (\-0| \-)\.14855[0-9] TOTAL\: (\-0| \-)\.13216[0-9]" $log | wc -l`
 CRIT21=`$GREP "TRIPLET OPERATOR\: \"SD * 012 x\" LAGRANGIAN\: (\-0| \-)\.00250[0-9] AVERAGE\: * (0| )\.00763[0-9] TOTAL\: * (0| )\.00513[0-9]" $log | wc -l`
 CRIT22=`$GREP "TRIPLET OPERATOR\: \"SD * 012 z\" LAGRANGIAN\: (\-0| \-)\.00609[0-9] AVERAGE\: (\-0| \-)\.07568[0-9] TOTAL\: (\-0| \-)\.08178[0-9]" $log | wc -l`
-CRIT23=`$GREP "TRIPLET OPERATOR\: \"FC H2 04\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT23=`$GREP "TRIPLET OPERATOR\: \"FC  H204\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
 CRIT24=`$GREP "TRIPLET OPERATOR\: \"SD * 001 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
 CRIT25=`$GREP "TRIPLET OPERATOR\: \"SD * 001 z\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
 CRIT26=`$GREP "TRIPLET OPERATOR\: \"SD * 002 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`

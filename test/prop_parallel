@@ -36,7 +36,7 @@ INTGRL
     3    2  X  Y
 #
         8.    1    2    1    1
-O#1    0.0                 0.0                0.512211                 *
+ O#1   0.0                 0.0                0.512211                 *
 #
     9    4
 7816.54000  0.002031
@@ -58,7 +58,7 @@ O#1    0.0                 0.0                0.512211                 *
 0.21370000            1.000000
 #
         6.    1    2    1    1
-C#2    0.0                -1.381390          -1.805940                 *
+ C#2   0.0                -1.381390          -1.805940                 *
     9    4
 4232.61000  0.002029
 634.882000  0.015535
@@ -76,7 +76,7 @@ C#2    0.0                -1.381390          -1.805940                 *
 0.35940000  0.640089
 0.11460000            1.000000
         1.    1    1    1
-H#4   -1.748934           -2.379468          -2.201879                 *
+ H#4  -1.748934           -2.379468          -2.201879                 *
     4    2
 19.2406000  0.032828
 2.89920000  0.231208
@@ -130,10 +130,10 @@ else
 fi
 
 # Reading basis set:
-CRIT1=`$GREP "O\#1 * 1 * 8 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
-CRIT2=`$GREP "C\#2 * 2 * 6 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
-CRIT3=`$GREP "H\#4 * 4 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT4=`$GREP "total\: * 7 * 24 * 88 * 38" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
+CRIT2=`$GREP "C * 2 * 6\.0000 * 24 * 10 * \[9s5p\|4s2p\]" $log | wc -l`
+CRIT3=`$GREP "H * 4 * 1\.0000 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 7 * 24\.0000 * 88 * 38" $log | wc -l`
 TEST[1]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4`
 CTRL[1]=4
 ERROR[1]="BASIS SET NOT READ CORRECTLY"
@@ -159,20 +159,20 @@ CTRL[3]=7
 ERROR[3]="MOLECULAR GEOMETRY NOT CORRECT"
 
 # SCF energy:
-CRIT1=`$GREP "Total energy * \-152\.810086303[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-4158\.1738457[0-9] eV" $log | wc -l`
-CRIT3=`$GREP "\-401202\.824[0-9] kJ\/mol" $log | wc -l`
+CRIT1=`$GREP "Total energy * \-152\.810086303. au \(Hartrees\)" $log | wc -l`
+CRIT2=`$GREP "\-4158\.173851.. eV" $log | wc -l`
+CRIT3=`$GREP "\-401202\.824. kJ\/mol" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGY NOT CORRECT"
 
 # Gradient:
-CRIT1=`$GREP "O\#1 * z * (\-0|\-)\.034768081[0-9]" $log | wc -l`
-CRIT2=`$GREP "C\#2 * y * (0| )\.058664395[0-9]" $log | wc -l`
-CRIT3=`$GREP "C\#2 * z * (0| )\.037776717[0-9]" $log | wc -l`
-CRIT4=`$GREP "H\#4 * x * (\-0|\-)\.044054079[0-9]" $log | wc -l`
-CRIT5=`$GREP "H\#4 * y * (\-0|\-)\.010347327[0-9]" $log | wc -l`
-CRIT6=`$GREP "H\#4 * z * (\-0|\-)\.003008635[0-9]" $log | wc -l`
+CRIT1=`$GREP "O\#1 * z * (\-0|\-)\.0347680..." $log | wc -l`
+CRIT2=`$GREP "C\#2 * y * (0| )\.0586643..." $log | wc -l`
+CRIT3=`$GREP "C\#2 * z * (0| )\.0377767..." $log | wc -l`
+CRIT4=`$GREP "H\#4 * x * (\-0|\-)\.0440540..." $log | wc -l`
+CRIT5=`$GREP "H\#4 * y * (\-0|\-)\.0103473..." $log | wc -l`
+CRIT6=`$GREP "H\#4 * z * (\-0|\-)\.0030086..." $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="GRADIENT NOT CORRECT"
@@ -194,7 +194,7 @@ CRIT13=`$GREP "C\#2 * y * (\-0|\-)\.17893[0-9] * (0| )\.74009[0-9]" $log | wc -l
 CRIT14=`$GREP "C\#2 * z * (\-0|\-)\.18881[0-9] * (0| )\.26109[0-9] * (0| )\.67402[0-9]" $log | wc -l`
 CRIT15=`$GREP "H\#4 * x * (0| )\.00801[0-9] * (\-0|\-)\.45297[0-9] * (\-0|\-)\.1795[5-6][0-9] * 1\.22243[0-9]" $log | wc -l`
 CRIT16=`$GREP "H\#4 * y * (\-0|\-)\.02916[0-9] * (\-0|\-)\.56116[0-9] * (\-0|\-)\.0722[7-8][0-9] * (0| )\.44495[0-9] * (0| )\.59032[0-9]" $log | wc -l`
-CRIT17=`$GREP "H\#4 * z * (\-0|\-)\.1125[6-8][0-9] * (\-0|\-)\.05475[0-9] * (\-0|\-)\.24403[0-9] * (0| )\.17047[0-9] * (0| )\.167337[0-9] * (0| )\.28355[0-9]" $log | wc -l`
+CRIT17=`$GREP "H\#4 * z * (\-0|\-)\.1125[6-8][0-9] * (\-0|\-)\.05475[0-9] * (\-0|\-)\.24403[0-9] * (0| )\.17047[0-9] * (0| )\.16733[0-9] * (0| )\.28355[0-9]" $log | wc -l`
 CRIT18=`$GREP "C\#2 * x * 1\.54306[0-9]" $log | wc -l`
 CRIT19=`$GREP "H\#4 * x * \-1\.16201[0-9] * 1\.09182[0-9]" $log | wc -l`
 CRIT20=`$GREP "H\#4 * y * (\-0|\-)\.32862[0-9] * (0| )\.56172[0-9] * (0| )\.52986[0-9]" $log | wc -l`
@@ -204,12 +204,12 @@ TEST[6]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
               $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ \
               $CRIT21`
-CTRL[6]=21
+CTRL[6]=22
 ERROR[6]="HESSIAN NOT CORRECT"
 
 # Dipole moment:
-CRIT1=`$GREP "1\.104664 au * 2\.807802 Debye" $log | wc -l`
-CRIT2=`$GREP "z * \-1\.1046640[0-9] * \-2\.8078019[0-9]" $log | wc -l`
+CRIT1=`$GREP "1\.104664 au * 2\.807776 Debye" $log | wc -l`
+CRIT2=`$GREP "z * \-1\.1046640[0-9] * \-2\.8077755[0-9]" $log | wc -l`
 TEST[7]=`expr $CRIT1  \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="DIPOLE MOMENT NOT CORRECT"
@@ -222,7 +222,7 @@ CRIT4=`$GREP "H\#4 * x * (\-0|\-)\.1579086[0-9]" $log | wc -l`
 CRIT5=`$GREP "H\#4 * y * (\-0|\-)\.2305723[0-9]" $log | wc -l`
 CRIT6=`$GREP "H\#4 * z * (0| )\.2819115[0-9]" $log | wc -l`
 CRIT7=`$GREP "O\#1 * x * (\-0|\-)\.5081037[0-9]" $log | wc -l`
-CRIT8=`$GREP "C\#2 * x * (0| )\.8580728[0-9]" $log | wc -l`
+CRIT8=`$GREP "C\#2 * x * (0| )\.858072[89][0-9]" $log | wc -l`
 CRIT9=`$GREP "H\#4 * x * (\-0|\-)\.3499691[0-9]" $log | wc -l`
 CRIT10=`$GREP "H\#4 * y * (\-0|\-)\.2495106[0-9]" $log | wc -l`
 CRIT11=`$GREP "H\#4 * z * (\-0|\-)\.0373766[0-9]" $log | wc -l`
@@ -264,7 +264,7 @@ CRIT8=`$GREP "H\#4 * 2 * 2\.014102" $log | wc -l`
 CRIT9=`$GREP "H\#4 * 3 * 2\.014102" $log | wc -l`
 TEST[10]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
-CTRL[10]=14
+CTRL[10]=21
 ERROR[10]="ISOTOPIC SUBSTITUTIONS NOT CORRECT"
 
 # Vibrational frequencies:
@@ -308,7 +308,7 @@ CTRL[11]=30
 ERROR[11]="FREQUENCIES NOT CORRECT"
 
 # Dipole and rotational strengths:
-CRIT1=`$GREP " 1 * 3315\.39 *  78\.999 * (\-0|\-|0| )\.000" $log | wc -l`
+CRIT1=`$GREP " 1 * 3315\.39 *  78\.99. * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT2=`$GREP " 2 * 3297\.25 *   (0| )\.000 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT3=`$GREP " 3 * 3210\.76 *  13\.112 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT4=`$GREP " 4 * 3192\.31 *  63\.853 * (\-0|\-|0| )\.000" $log | wc -l`
@@ -322,8 +322,8 @@ CRIT11=`$GREP "11 * 1226\.49 *  20\.750 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT12=`$GREP "12 * 1185\.79 *   (0| )\.000 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT13=`$GREP "13 *  965\.66 *  22\.511 * (\-0|\-|0| )\.000" $log | wc -l`
 CRIT14=`$GREP "14 *  960\.42 *   7\.089 * (\-0|\-|0| )\.000" $log | wc -l`
-CRIT15=`$GREP "15 *  957\.42 * 417\.465 * (\-0|\-|0| )\.000" $log | wc -l`
-CRIT16=`$GREP " 1 * 3259\.27 *  72\.562 * 27\.232" $log | wc -l`
+CRIT15=`$GREP "15 *  957\.42 * 417\.46. * (\-0|\-|0| )\.000" $log | wc -l`
+CRIT16=`$GREP " 1 * 3259\.27 *  72\.56. * 27\.232" $log | wc -l`
 CRIT17=`$GREP " 2 * 3256\.72 *   5\.841 * \-22\.113" $log | wc -l`
 CRIT18=`$GREP " 3 * 2406\.34 *   7\.064 * 11\.285" $log | wc -l`
 CRIT19=`$GREP " 4 * 2384\.28 *  60\.222 * \-12\.272" $log | wc -l`
@@ -336,7 +336,7 @@ CRIT25=`$GREP "10 * 1076\.92 *  80\.327 * \-48\.115" $log | wc -l`
 CRIT26=`$GREP "11 * 1013\.35 *  25\.174 * \-4\.309" $log | wc -l`
 CRIT27=`$GREP "12 *  982\.94 * 121\.308 * 20\.457" $log | wc -l`
 CRIT28=`$GREP "13 *  940\.46 *  20\.212 * \-1\.619" $log | wc -l`
-CRIT29=`$GREP "14 *  855\.57 * 209\.036 * 8\.995" $log | wc -l`
+CRIT29=`$GREP "14 *  855\.57 * 209\.03. * 8\.995" $log | wc -l`
 CRIT30=`$GREP "15 *  778\.37 *   6\.071 * (0| )\.054" $log | wc -l`
 TEST[12]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
@@ -350,7 +350,7 @@ ERROR[12]="DIPOLE/ROTATIONAL STRENGTHS NOT CORRECT"
 # Vibrational Polarizabilities:
 CRIT1=`$GREP "Ex * (0| )\.326994 * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * (0| )\.385276 * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * 3\.209956" $log | wc -l`
+CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * 3\.20995." $log | wc -l`
 CRIT4=`$GREP "Ex * (0| )\.425399 * (\-0|\-)\.037752 * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT5=`$GREP "Ey * (\-0|\-)\.037752 * (0| )\.362976 * (\-0|\-|0| )\.000000" $log | wc -l`
 TEST[13]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`

@@ -35,10 +35,9 @@ Calculation of non-equilibrium solvation first hyperpolarizabilities
 
     2    2  X  Z
         8.    1 Basis=ano-1 5 4 3 0
-O     0.0  1.0 0.0
+ O    0.0  1.0 0.0
         1.    1 Basis=ano-1 4 3 0
-H     1.4344154111 2.1075628725 0.0
-H    -1.4344154111 2.1075628725 0.0
+ H    1.4344154111 2.1075628725 0.0
 %EOF%
 
 #######################################################################
@@ -99,9 +98,9 @@ CTRL[1]=4
 ERROR[1]="INTEGRAL CALCULATION NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "O * 1 * 8 * 61 * 32 * \[14s9p4d\|5s4p3d\]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * 1 * 20 * 13 * \[8s4p\|4s3p\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 3 * 10 * 101 * 58" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8\.0000 * 61 * 32 * \[14s9p4d\|5s4p3d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 20 * 13 * \[8s4p\|4s3p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 101 * 58" $log | wc -l`
 CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[2]=4

@@ -136,9 +136,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Total SCF   energy\: * \-40\.170920554[0-9]" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy\: * \-40\.27892377(7|8)[0-9]" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy\: * \-40\.299263340[0-9]" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy\: * \-40\.170920554." $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy\: * \-40\.27892377.." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy\: * \-40\.29926334.." $log | wc -l`
 TEST[4]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=6
 ERROR[4]="ENERGIES NOT CORRECT"

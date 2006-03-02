@@ -95,8 +95,8 @@ CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT"
 
 # Optical Rotation
-CRIT1=`$GREP "Optical rotation.*-29\.73.*-3\.947" $log | wc -l`
-CRIT2=`$GREP "Optical rotation.*-31\.65.*-4\.243" $log | wc -l`
+CRIT1=`$GREP "Optical rotation.*-29\.7..*-3\.9.." $log | wc -l`
+CRIT2=`$GREP "Optical rotation.*-31\.6..*-4\.2.." $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[2]=2
 ERROR[2]="OPTICAL ROTATION NOT CORRECT"

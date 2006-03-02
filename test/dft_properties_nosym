@@ -24,7 +24,7 @@ cat > dft_properties_nosym.info <<'%EOF%'
    Wave Functions:   DFT B3LYP / cc-pVDZ
    Test Purpose:     DFT B3LYP properties test w/o symmetry:
                      Shieldings, excitation energies, spin-spin, darwin,
-                     mass-vel., dipol, spin-orbit,  P-viola
+                     mass-vel., dipol, spin-orbit,  P-violation
 %EOF%
 
 #######################################################################
@@ -71,7 +71,7 @@ cat > dft_properties_nosym.dal <<'%EOF%'
 **RESPONSE 
 .TRPFLG
 *LINEAR
-.MAXIT
+.MAX IT
 99
 .MAXITO
 99

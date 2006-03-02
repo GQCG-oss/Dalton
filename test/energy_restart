@@ -31,7 +31,7 @@ cat > energy_restart.info <<'%EOF%'
 cat > energy_restart.mol <<'%EOF%'
 BASIS
 cc-pVDZ
-Restarting an MCSCF wave function
+Restarting an MCSCF wave function optimization
 
     2
         8.    1
