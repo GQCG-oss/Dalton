@@ -3121,8 +3121,11 @@ C
 C
       IF (IPRWLK .GT. 2) THEN
          WRITE (LUPRI,'(/A,1P,D12.6)') ' Norm of gradient   ',GRDNRM
+        IF (IWKTYP .NE. 6) THEN
+C        ... Hessian index not calculated for numerical differentiation
          WRITE (LUPRI,'(A,I5)')        ' Totally sym.  index',INDHES(0)
          WRITE (LUPRI,'(A,I5)')        ' Total Hessian index',INDEX
+        END IF
          WRITE (LUPRI,'(A,I5)')        ' Number of steps    ',IPOINT
          WRITE (LUPRI,'(A,L5)')        ' WLKEND             ',WLKEND
       END IF
