@@ -794,8 +794,9 @@ C
          CALL HEADER('Copy of input to READIN',0)
          IF (ADDSYM) WRITE(LUPRI,'(A/)')
      &   ' - as modified by symmetry addition module:'
+         WRITE (LUPRI,'(80A1 )') ('-',I = 1, 80)
          WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
-         WRITE (LUPRI,'(/)')
+         WRITE (LUPRI,'(80A1/)') ('-',I = 1, 80)
       END IF
 C
       THRCLS = THRS
@@ -1588,7 +1589,7 @@ C
 #if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D) && !defined (SYS_T90)
 C
         IF (QM3) THEN
-           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101)
+           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
      &         CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT),
      &         ISUBSY(NCTOT),ISUBSI(NCTOT)
         ELSE IF (PCM) THEN
@@ -1599,11 +1600,11 @@ C
            ELSE
               IDXSPH(NCTOT) = 0
               RSPH(NCTOT) = 0.0D0
-              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101)
+              READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
      &            CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT)
            END IF
         ELSE
-           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101)
+           READ (MLINE(NMLINE)(IPOS:80),*,ERR=101,END=101)
      &         CORD(1,NCTOT),CORD(2,NCTOT),CORD(3,NCTOT)
         END IF
         GO TO 104
@@ -3394,16 +3395,20 @@ C
 C     Error messages:
 C
  5000 CONTINUE
-      WRITE (LUPRI,'(3(A,I4),A,D15.5)')
+      WRITE (LUPRI,'(3(A,I5)/A,1P,D15.5/)')
      &     ' Nucleus no.',N,' is too close to the',KB,
-     &     'th transformation of nucleus no.',M,' DIST=',DIST
+     &     'th transformation of nucleus no.',M,' DISTANCE =',DIST
+      WRITE (LUPRI,'(A,2F30.10)')
+     &     ' X_A, X_B :',CORD(1,N),CORD(1,M)*PT(IBTAND(ISYMAX(1,1),KB)),
+     &     ' Y_A, Y_B :',CORD(2,N),CORD(2,M)*PT(IBTAND(ISYMAX(2,1),KB)),
+     &     ' Z_A, Z_B :',CORD(3,N),CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB))
       CALL QUIT('Nuclei too close.')
  5010 CONTINUE
-      WRITE (LUPRI,'(///A/2(A,I3/)/A,I3,A)')
+      WRITE (LUPRI,'(///A/2(A,I5/)/A,I5,A)')
      &      ' Allowed number of atoms exceeded.',
-     &      ' Number of atoms in input:',NUCDEP,
-     &      ' Number of atoms allowed: ',MXCENT,
-     &      ' Increase MXCENT to ',NUCDEP,'.'
+     &      ' - Number of atoms in input:',NUCDEP,
+     &      ' - Number of atoms allowed: ',MXCENT,
+     &      ' Increase MXCENT to at least',NUCDEP,' and recompile.'
       CALL QUIT('Too many atoms in READIN.')
 C
  1000 FORMAT(2X,A4,5X,3F10.5,6X,/,
@@ -6099,10 +6104,15 @@ C     define atom number in IZATOM /hjaaj Mar 2004
          DO 606 J = 1, NONT(I)
             NCLINE(IATOM) = NMLINE
             WRITE(MLINE(NMLINE)(1:4),'(A4)') NAMN(IATOM)
-            WRITE(MLINE(NMLINE)(5:24),'(F20.16)')  CORD(1,IATOM)
-            WRITE(MLINE(NMLINE)(25:44),'(F20.16)') CORD(2,IATOM)
-            WRITE(MLINE(NMLINE)(45:64),'(F20.16)') CORD(3,IATOM)
-            WRITE(MLINE(NMLINE)(65:80),'(A16)') '                '
+            IF (ABS(CORD(1,IATOM)).ge.100.0D0 .OR.
+     &          ABS(CORD(2,IATOM)).ge.100.0D0 .OR.
+     &          ABS(CORD(3,IATOM)).ge.100.0D0) THEN
+               WRITE(MLINE(NMLINE)(5:76),'(3F20.10,12X)')
+     &            CORD(1,IATOM),CORD(2,IATOM),CORD(3,IATOM)
+            ELSE
+               WRITE(MLINE(NMLINE)(5:76),'(3F20.15,12X)')
+     &            CORD(1,IATOM),CORD(2,IATOM),CORD(3,IATOM)
+            END IF
             NMLINE = NMLINE + 1
             IATOM = IATOM + 1
  606     CONTINUE

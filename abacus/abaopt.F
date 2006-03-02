@@ -1574,7 +1574,7 @@ C
             CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
      &           IWOFF,WRKDLM)
          END IF
-C hj aug 99: reset hermit/abacus print to lower level for folloWing iter.
+C hj aug 99: reset hermit/abacus print to lower level for following iter.
          IPRUSR = IPRUS2
 C
 C     If redundant internal coordinates are used, Wilson's B matrix,
@@ -1870,10 +1870,9 @@ C
      &           // 'symmetry will decrease the energy further.'
          END IF
          IF (NEWTON .AND. SADDLE .AND. (INDTOT .NE. 1)) THEN
-            WRITE(LUPRI,*) 'Please note that Hessian '
-     &           // 'index does not correspond'
-            WRITE(LUPRI,*)
-     &           'to a first order saddle point (transition state).'
+            WRITE(LUPRI,'(/A/A)')
+     &         ' Please note that Hessian index does not correspond',
+     &         ' to a first order saddle point (transition state).'
          END IF
          ENERGY = GEINFO(ITRNMR,1)
          WRITE(LUPRI,*)
@@ -1991,21 +1990,17 @@ C
       WRITE(LUPRI,678) ' Norm of step                   : ', STPNRM
       WRITE(LUPRI,678) ' Updated trust radius           : ', TRSTRA
 c      if (itrnmr.eq.1) stop ' '
-      IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GE. 3 .OR. INDTOT.NE.INDHES(0)) THEN
          DO 50 I = 0, MAXREP
-            IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I1,A,I7)')
-     &           ' Hessian index (',I,')              : ', INDHES(I)
+            IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I1,A,I8)')
+     &           ' Hessian index (',I,')              :', INDHES(I)
  50      CONTINUE
       END IF
-      WRITE(LUPRI,'(A,I7)') ' Total Hessian index            : ',INDTOT
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A,I8//)')' Total Hessian index            :',INDTOT
       IF (BRKSYM .AND. GECONV) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '*) Within given symmetry.'
+         WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
       ELSE IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '*) End of preoptimization.'
+         WRITE(LUPRI,'(/A)') ' *) End of preoptimization.'
       END IF
       START = 1
       NCRD = NCRTOT
@@ -2378,7 +2373,6 @@ C
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
       CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
-      CLOSE (13)
       WRINDX = .TRUE.
       MOLGRD = .TRUE.
       MOLHES = .TRUE.
@@ -6449,8 +6443,8 @@ C
          I = NCLINE(IATOM)-1
  50   CONTINUE
 C
-C     We run over all atom types and all symmetry independant centres and
-C     and expand them to all atoms. The molec<ule input is modified
+C     We run over all atom types and all symmetry independent centres and
+C     and expand them to all atoms. The molecule input is modified
 C     according to this.
 C
       IATOM = 1
@@ -6477,8 +6471,15 @@ C
                   ELSE
                      TMPTXT = TMPLN(IPOS:IPOS+11)
                   END IF
-                  WRITE(TMPLN(5:76),'(3F20.16,1X,A11)') COOX,COOY,COOZ,
-     &                                                  TMPTXT
+                  IF (ABS(COOX).ge.100.0D0 .OR.
+     &                ABS(COOY).ge.100.0D0 .OR.
+     &                ABS(COOZ).ge.100.0D0) THEN
+                     WRITE(TMPLN(5:76),'(3F20.10,1X,A11)')
+     &                    COOX,COOY,COOZ,TMPTXT
+                  ELSE
+                     WRITE(TMPLN(5:76),'(3F20.15,1X,A11)')
+     &                    COOX,COOY,COOZ,TMPTXT
+                  END IF
                   MLINE(INSLIN + 1) = TMPLN
                   NMLINE = NMLINE + 1
                   IXTRA = IXTRA + 1
@@ -6596,12 +6597,11 @@ C
          ITRNMR = ITRNMR + 1
       ELSE
          DOPRE = .FALSE.
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) '*** WARNING! ***'
-         WRITE(LUPRI,*) 'Preoptimization can only be done when ' //
-     &        'basis set library is used.'
-         WRITE(LUPRI,*) 'Preoptimization has been turned off!'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A/A/A/)')
+     &      '*** WARNING! ***',
+     &      'Preoptimization can only be done when ' //
+     &        'basis set library is used.',
+     &      'Preoptimization has been turned off!'
       END IF
       RDINPC = .FALSE.
       RDMLIN = .FALSE.

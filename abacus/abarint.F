@@ -4037,8 +4037,15 @@ C
                   ELSE
                      TMPTXT = TMPLN(IPOS:IPOS+11)
                   END IF
-                  WRITE(TMPLN(5:75),'(3F20.16,1X,A11)') COOX,COOY,COOZ,
-     &                 TMPTXT
+                  IF (ABS(COOX).ge.100.0D0 .OR.
+     &                ABS(COOY).ge.100.0D0 .OR.
+     &                ABS(COOZ).ge.100.0D0) THEN
+                     WRITE(TMPLN(5:76),'(3F20.10,1X,A11)')
+     &                    COOX,COOY,COOZ,TMPTXT
+                  ELSE
+                     WRITE(TMPLN(5:76),'(3F20.15,1X,A11)')
+     &                    COOX,COOY,COOZ,TMPTXT
+                  END IF
                   MLINE(INSLIN + 1) = TMPLN
                   NMLINE = NMLINE + 1
                   IXTRA = IXTRA + 1

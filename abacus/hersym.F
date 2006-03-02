@@ -122,14 +122,13 @@ C ***********************************************************
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 7
 C
-C     Just to make sure, we zero all temporary arrays
+C     Just to make sure, we zero temporary arrays
 C
          CALL DZERO(ATMARR,6*(MXCENT + 1))
          CALL DZERO(DRTAXS,6*(MAXAXS + 1))
          CALL DZERO(DIRAXS,6*(MAXAXS + 1))
          CALL DZERO(DMRPLN,6*(MAXMIR + 1))
          CALL DZERO(TMPARR,7*(LENTMP + 1))
-         CALL DZERO(TMP2AR,6*(MXCENT + 1))
 C        IF (SOLVNT .OR. DORLM) THEN
 C          NUCLP = NUCIND - 1
 C        ELSE
@@ -149,12 +148,12 @@ C                work for ECP) /hjaaj Mar 2004
  100     CONTINUE
          ATMARR(1,0) = NUCLP
          IF (IPREAD .GE. IPRTHR) THEN
-            TEXT = 'Original Coordinates                    '
+            TEXT = 'Original Coordinates'
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
          IF (.NOT. NOMOVE) THEN
-            CALL CNTRML(MXCENT, ATMARR)
+            CALL CNTRML(NUCLP, ATMARR)
           END IF
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
@@ -170,7 +169,7 @@ C
          END IF
          IF (IPREAD .GE. IPRTHR) THEN
             IF (.NOT. NOMOVE) THEN
-              TEXT = 'Centered and Rotated                    '
+              TEXT = 'Centered and Rotated Coordinates'
               CALL PRNARR(TEXT , MXCENT, ATMARR)
             ELSE
               WRITE (LUPRI,'(/A/)') 
@@ -181,7 +180,7 @@ C
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/1X,A)') 'No rotational axes were found.'
             ELSE
-              TEXT = 'Rotational Axes                         '
+              TEXT = 'Rotational Axes'
               CALL PRNARR(TEXT, MAXAXS, DRTAXS)
             END IF
             IF (NINT(DIRAXS(1,0)) .LT. 0) THEN
@@ -191,19 +190,19 @@ C
                WRITE(LUPRI,'(/1X,A)') 'No unique improper rotational '
      &                                           // 'axes were found.'
             ELSE
-               TEXT = 'Improper Rotational Axes                '
+               TEXT = 'Improper Rotational Axes'
                CALL PRNARR(TEXT, MAXAXS, DIRAXS)
             END IF
             IF (NINT(DMRPLN(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/1X,A)') 'No mirror planes were found.'
             ELSE
-               TEXT = 'Mirror Planes                           '
+               TEXT = 'Mirror Planes'
                CALL PRNARR(TEXT, MAXMIR, DMRPLN)
             END IF
          END IF
          CALL REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM)
          IF (IPREAD .GE. MIN(3,IPRTHR/2)) THEN
-            TEXT = 'Symmetry Independent Centres            '
+            TEXT = 'Symmetry Independent Centres'
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
 C ::: The new symmetry is added. :::
@@ -251,9 +250,9 @@ C ::: If there's any Aangstroem mark, it's removed.    :::
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
          DO 250 I = 1, NINT(ATMARR(1,0))
-            DO 260 J = 1, 3
-               CORD(J,I) = ATMARR(J,I)
- 260        CONTINUE
+            CORD(1,I) = ATMARR(1,I)
+            CORD(2,I) = ATMARR(2,I)
+            CORD(3,I) = ATMARR(3,I)
             IOLD = NINT(ATMARR(5,I))
 C           ... IOLD .ge. I after CALL SRTOLD
             CHARGE(I) = CHARGE(IOLD)
@@ -296,9 +295,15 @@ C ::: We update the coordinates of the input file :::
          DO 400 I = 1, NCTOT
             NC = NCLINE(I)
             TMPLN = MLINE(NC)
-            WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
-            WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
-            WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
+            IF (ABS(CORD(1,I)).ge.100.0D0 .OR.
+     &          ABS(CORD(2,I)).ge.100.0D0 .OR.
+     &          ABS(CORD(3,I)).ge.100.0D0) THEN
+               WRITE(TMPLN(5:65),'(3G20.12,1X)')
+     &            CORD(1,I),CORD(2,I),CORD(3,I)
+            ELSE
+               WRITE(TMPLN(5:65),'(3F20.15,1X)')
+     &            CORD(1,I),CORD(2,I),CORD(3,I)
+            END IF
             QMASS = DISOTP(IZATOM(I),ISOTOP(I),'MASS')
             IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
      &                            'Isotope=', NINT(QMASS)
@@ -347,26 +352,23 @@ C  /* Deck prnarr */
 C ::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                          ::
 C ::       Prints all elements of array       ::
-C ::                                          ::
+C ::(VB, part of hersym.F)                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <priunit.h>
-         CHARACTER*40 TEXT
-         CHARACTER*40 UNDER
+         CHARACTER*(*) TEXT
          DIMENSION ARR(6,0:MXM)
-         UNDER = '----------------------------------------'
-         I = 40
+         I = LEN(TEXT)
  10      CONTINUE
          IF ((I .GE. 1) .AND. (TEXT(I:I) .EQ. ' ')) THEN
             I = I - 1
             GOTO 10
          END IF
-         UNDER((I+1):40) = '                                        '
-         WRITE(LUPRI,'(/1X,A/1X,A)') TEXT, UNDER
+         WRITE(LUPRI,'(/1X,A/1X,80A1)') TEXT, ('-',J=1,I)
          DO 200 I=1,NINT(ARR(1,0))
             WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3),
      &         NINT(ARR(6,I))
- 11         FORMAT (I8, 2X, 3F15.8,'  Isotope',I3)
+ 11         FORMAT (I8, ' : ', 3F15.8,'  Isotope',I3)
  200     CONTINUE
          RETURN
       END
@@ -444,7 +446,7 @@ C  /* Deck dldpax */
       SUBROUTINE DLDPAX(MXM, AXARR)
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                             ::
-C ::       Deletes all duplicate axes (parallell) in array       ::
+C ::       Deletes all duplicate axes (parallel) in array        ::
 C ::                                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
@@ -635,15 +637,22 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          RETURN
       END
 C  /* Deck cntrml */
-      SUBROUTINE CNTRML(MXM, ATMARR)
+      SUBROUTINE CNTRML(NUCLP, ATMARR)
 C :::::::::::::::::::::::::::::::::::::::::::
 C ::                                       ::
 C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
-         DIMENSION ATMARR(6,0:MXM), SUM(3)
+#include <priunit.h>
+         DIMENSION ATMARR(6,0:NUCLP), SUM(3)
          N = NINT(ATMARR(1,0))
+C
+Cdbg     write (lupri,*) 'CNTRML: initial coord.s etc.'
+Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
+Cdbg     CALL PRNARR('CNTRML: ATMARR start', NUCLP, ATMARR)
+      ITURN = 0
+  10  ITURN = ITURN + 1
          SUM(1) = 0.0D0
          SUM(2) = 0.0D0
          SUM(3) = 0.0D0
@@ -651,18 +660,26 @@ C ::: Finds the three coordinates of the center of mass, then the molecule :::
 C ::: is moved so that the center of mass coincides with the origin.        :::
          TOTMAS = 0.0D0
          DO 100 I=1,N
-            AMASS = DISOTP(NINT(ATMARR(4,I)),NINT(ATMARR(6,I)),'MASS')
+            IZ = NINT(ATMARR(4,I))
+         IF (IZ .GT. 0) THEN
+C... hjaaj exclude point charges, MM atoms and floating orbitals
+C          in the centering of the molecule.
+            AMASS = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
             TOTMAS = TOTMAS + AMASS
             SUM(1) = SUM(1) + ATMARR(1,I)*AMASS
             SUM(2) = SUM(2) + ATMARR(2,I)*AMASS
             SUM(3) = SUM(3) + ATMARR(3,I)*AMASS
+         END IF
  100     CONTINUE
          DO 200 I=1,N
-            ATMARR(1,I) = ATMARR(1,I) - SUM(1)/TOTMAS
-            ATMARR(2,I) = ATMARR(2,I) - SUM(2)/TOTMAS
-            ATMARR(3,I) = ATMARR(3,I) - SUM(3)/TOTMAS
+            ATMARR(1,I) = ATMARR(1,I) - (SUM(1)/TOTMAS)
+            ATMARR(2,I) = ATMARR(2,I) - (SUM(2)/TOTMAS)
+            ATMARR(3,I) = ATMARR(3,I) - (SUM(3)/TOTMAS)
  200     CONTINUE
-         RETURN
+Cdbg     write (lupri,*) 'CNTRML: transformed coord.s'
+Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,NUCLP+1,6,NUCLP+1,1,LUPRI)
+      IF (ITURN .LE. 1) GO TO 10
+      RETURN
       END
 C  /* Deck rotmol */
       SUBROUTINE ROTMOL(MXM, ATMARR, AXVEC, DEG)
@@ -739,11 +756,13 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION V1(3), V2(3), V3(3), TMPARR(6, 0:LENTMP)
          CALL DZERO(TMPARR,6*LENTMP)
          N = NINT(ATMARR(1,0))
-         NTOT= N + NINT(DRTAXS(1,0) + DMRPLN(1,0))
 C ::: First we make a new array of vectors, consisting of mirror :::
 C ::: planes, even-ordered rotational axes and atom positions.   :::
          ITURN = 0
-         J = 1
+c        NTOT = N + NINT(DRTAXS(1,0) + DMRPLN(1,0))
+C        ... we count instead
+         NTOT = 0
+C 1) rotational axes of even order (C_2, C_4, etc.)
          DO 100 I = 1, NINT(DRTAXS(1,0))
 ckr
 ckr         The following test prevented the molecule from being rotated
@@ -753,39 +772,47 @@ ckr
 ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
             IF ((NINT(DRTAXS(4,I)) .GE. 2) .AND.
      &         (ABS(MOD(DRTAXS(4,I),2.0D0)) .LT. 1.0D-8)) THEN
+               NTOT = NTOT + 1
                DO 105 K = 1, 3
-                  TMPARR(K,J) = DRTAXS(K,I)
+                  TMPARR(K,NTOT) = DRTAXS(K,I)
  105           CONTINUE
-               TMPARR(4,J) = 1.0D0
-               J = J + 1
+               TMPARR(4,NTOT) = 1.0D0
             END IF
  100     CONTINUE
+C 2) mirror planes
          DO 110 I = 1, NINT(DMRPLN(1,0))
+            NTOT = NTOT + 1
             DO 115 K = 1, 3
-               TMPARR(K,J) = DMRPLN(K,I)
+               TMPARR(K,NTOT) = DMRPLN(K,I)
  115        CONTINUE
-            TMPARR(4,J) = 1.0D0
-            J = J + 1
+            TMPARR(4,NTOT) = 1.0D0
  110     CONTINUE
+C 3) rotational axes of odd order (C_3, C_5, etc.)
          DO 120 I = 1, NINT(DRTAXS(1,0))
             IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
      &         (ABS(MOD(DRTAXS(4,I),2.0D0)) .GT. 1.0D-2)) THEN
+               NTOT = NTOT + 1
                DO 125 K = 1, 4
-                  TMPARR(K,J) = DRTAXS(K,I)
+                  TMPARR(K,NTOT) = DRTAXS(K,I)
  125           CONTINUE
-               J = J + 1
             END IF
  120     CONTINUE
+C 4) and all the nuclei/point charges
          DO 130 I = 1, N
+            NTOT = NTOT + 1
             DO 135 K = 1, 3
-               TMPARR(K,J) = ATMARR(K,I)
+               TMPARR(K,NTOT) = ATMARR(K,I)
  135        CONTINUE
-            TMPARR(4,J) = 0.0D0
-            TMPARR(6,J) = 1.0D0
-            J = J + 1
+            TMPARR(4,NTOT) = 0.0D0
+            TMPARR(6,NTOT) = 1.0D0
  130     CONTINUE
-         NTOT = J - 1
-         TMPARR(1,0) = 1.0D0*NTOT
+C
+         TMPARR(1,0) = NTOT
+C
+C        Find first non-zero vector, place it along z-axis
+C        (if no symmetry axes, it will become the coordinates of
+C        the first of the nuclei with highest charge).
+C
          IF (NTOT .GT. 0) THEN
             V1(1) = TMPARR(1,1)
             V1(2) = TMPARR(2,1)
@@ -802,25 +829,32 @@ ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
             GOTO 150
          END IF
          IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)).GT.TOLLRN*TOLLRN)THEN
+C           V2 = target direction (along z-axis)
             V2(1) = 0.0D0
             V2(2) = 0.0D0
             V2(3) = 1.0D0
+C           V3 = axis to rotate around
             V3(1) =  V1(2)
             V3(2) = -V1(1)
             V3(3) = 0.0D0
             IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
      &                   .GT. TOLLRN*TOLLRN) THEN
                DEG = VECANG(V1, V2)
-               CALL ROTMOL(MXM, ATMARR, V3, DEG)
+               CALL ROTMOL(MXM   , ATMARR, V3, DEG)
                CALL ROTMOL(MAXAXS, DRTAXS, V3, DEG)
                CALL ROTMOL(MAXAXS, DIRAXS, V3, DEG)
                CALL ROTMOL(MAXMIR, DMRPLN, V3, DEG)
-               CALL ROTMOL(NTOT, TMPARR, V3, DEG)
+               CALL ROTMOL(NTOT  , TMPARR, V3, DEG)
             END IF
             ITURN = 1
          ELSE
             ITURN = 2
          END IF
+C
+C        Find second non-zero vector, rotate it so y-coordinate zero
+C        (place it in xz-plane)
+C        First look for a vector with zero z-coordiante
+C
          JJ = I + 1
  200     CONTINUE
          IF ((ITURN .LT. 2) .AND. (I .LE. NTOT)) THEN
@@ -837,16 +871,18 @@ ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
             V1(3) = 0.0D0
             IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3).GT.TOLLRN*TOLLRN)
      &                      .AND. (ABS(TMPARR(3,I)) .LT. TOLLRN)) THEN
+C              V2 = target direction (along x-axis)
                V2(1) = 1.0D0
                V2(2) = 0.0D0
                V2(3) = 0.0D0
+C              V3 = axis to rotate around
                V3(1) =  V1(2)*V2(3) - V2(2)*V1(3)
                V3(2) = -V1(1)*V2(3) + V2(1)*V1(3)
                V3(3) =  V1(1)*V2(2) - V2(1)*V1(2)
                IF ((V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3))
      &                                        .GT. TOLLRN*TOLLRN) THEN
                   DEG = VECANG(V1, V2)
-                  CALL ROTMOL(MXM, ATMARR, V3, DEG)
+                  CALL ROTMOL(MXM   , ATMARR, V3, DEG)
                   CALL ROTMOL(MAXAXS, DRTAXS, V3, DEG)
                   CALL ROTMOL(MAXAXS, DIRAXS, V3, DEG)
                   CALL ROTMOL(MAXMIR, DMRPLN, V3, DEG)
@@ -856,7 +892,10 @@ ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
             I = I + 1
             GOTO 200
          END IF
-         IF ((ITURN .LT. 2) .AND. (ITURN .GT. 0)) THEN
+         IF (ITURN .EQ. 1) THEN
+C           did not find a second non-zero vector with zero z-coordinate
+C           - zero z-coordinate in temporary array and try again,
+C             i.e. do not require true z-coordinate to be zero this time.
             DO 300 K = 1, NTOT
                TMPARR(3,K) = 0.0D0
  300        CONTINUE
