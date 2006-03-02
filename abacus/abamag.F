@@ -774,9 +774,9 @@ C DIPLFN to the nuclear part of the dipole which is already present in dipmn
       END IF
       IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ' .OR.
      &    WORD .EQ. 'NSTCGOS') THEN
-         NROW = NUCDEP
+         NROW = 3*NUCDEP
          KIVEC  = 1
-         KCSTRA = KIVEC  + 3*NUCDEP
+         KCSTRA = KIVEC  + 3*NROW
          KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
          KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          LWRK   = LWORK - KLAST + 1
@@ -820,21 +820,20 @@ C
          IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ') THEN
             IOFF = 0
             DO 40 IATOM = 1, NUCDEP
-               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'x',
-     &               (WORK(KIVEC + IOFF + I*NROW    ), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDEP(IOFF + 2),'y',
-     &               (WORK(KIVEC + IOFF + I*NROW + 1), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'z',
-     &               (WORK(KIVEC + IOFF + I*NROW + 2), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IATOM),'x',
+     &               (WORK(KIVEC + IOFF +     I*NROW), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IATOM),'y',
+     &               (WORK(KIVEC + IOFF + 1 + I*NROW), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IATOM),'z',
+     &               (WORK(KIVEC + IOFF + 2 + I*NROW), I = 0, 2)
                IOFF = IOFF + 3
                WRITE (LUPRI,'()')
  40         CONTINUE
          END IF
          IF (WORD .EQ. 'DIASUS ' .OR. WORD .EQ. 'S2MAG  ' .OR.
      &       WORD .EQ. 'DSUSCGO') THEN
-            WRITE (LUPRI,'(24X,A,19X,A,19X,A)') (CHRXYZ(I), I = 1,3)
-            WRITE (LUPRI,'()')
-            WRITE (LUPRI,'(10X,A,4X,F20.10)') CHRXYZ(1), EXPVAL(1)
+            WRITE (LUPRI,'(24X,A,19X,A,19X,A/)') (CHRXYZ(I), I = 1,3)
+            WRITE (LUPRI,'(10X,A,4X, F20.10)') CHRXYZ(1), EXPVAL(1)
             WRITE (LUPRI,'(10X,A,4X,2F20.10)') CHRXYZ(2), EXPVAL(2),
      &             EXPVAL(4)
             WRITE (LUPRI,'(10X,A,4X,3F20.10)') CHRXYZ(3), EXPVAL(3),
