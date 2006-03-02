@@ -1338,7 +1338,7 @@ cs
      &      ' No calculation of Hessian due to .NOHESS.'
          MOLHES = .FALSE.
       END IF
-      IF ((VROA .OR. RAMAN) .AND.DOWALK) THEN
+      IF ((VROA .OR. RAMAN) .AND. DOWALK) THEN
          MOLHES = .FALSE.
          MOLGRD = GRDINP .OR. NUMHES
          IF (DIPDER) POLAR = .TRUE.
@@ -1465,8 +1465,16 @@ cLig <<
      &     ' No mass-velocity correction calculated'
       IF (.NOT. DARWIN) WRITE(LUPRI,'(5X,A)')
      &     ' No Darwin correction calculated'
-      IF (NODIFC) WRITE(LUPRI,'(5X,A)') ' Differentiatied creation '//
-     &                 'operators not used'
+      IF (NODIFC) THEN
+         WRITE(LUPRI,'(6X,A)')
+     &   'Differentiatied creation operators not used (.NODIFC),',
+     &   'i.e. symmetric orbital connection is used',
+     &   'for perturbation dependent basis sets.'
+      ELSE
+         WRITE(LUPRI,'(6X,A)')
+     &   'Natural orbital connection is used',
+     &   'for perturbation dependent basis sets.'
+      END IF
       IF (GAGT) THEN
          IF (MOLGFA .OR. SPINRO .OR. ((MAGSUS .OR. SHIELD)
      &              .AND. NOLOND)) THEN
@@ -2011,9 +2019,16 @@ C
 C
       ERGMOL = EMCSCF
 C
-C     Geometry
+C     Geometry, Energy, Gradient, and Hessian output is
+C     controlled by IPRDEF, such that it can been suppressed
+C     in geometry optimizations.
+C     For other properties the user has explicit asked for them
+C     so they are always printed (changed Jan 2003 hjaaj).
 C
       IF (IPRDEF .GE. 0) THEN
+C
+C     Geometry
+C
          CALL HEADER('Molecular geometry (au)',-1)
          CALL PRIGEO(CORD)
 C
@@ -2245,74 +2260,78 @@ Clf Printout of the LF dipole moment
                CALL DP0PRI(DIPLF0)
             END IF
          END IF
-         IF (DIPDER) THEN
-            IF (NFLOAT .EQ. 0) THEN
-               CALL HEADER('Dipole moment gradient (au)',-1)
-               CALL FCPRI(DIPFLT,'APT',CSTRA,SCTRA)
-            ELSE
-               CALL HEADER
-     *              ('Unfolded dipole moment gradient (au) ',-1)
-               CALL FCPRI(DIP1,'APT',CSTRA,SCTRA)
-               CALL HEADER('Dipole moment gradient (APTs) (au)',-1)
-               CALL FCPRI(DIPFLT,'APT',CSTRA,SCTRA)
-            END IF
-            ITEMP = MXCOOR*MXCOOR + 1
-            CALL APTPOP(DIPFLT,HESMOL,QAPT,CSTRA,SCTRA,WORK,WORK(ITEMP),
-     &                  LWORK-ITEMP)
+      END IF
+C     ... end if (iprdef .ge. 0)
+C
+C     APT population analysis
+C
+      IF (DIPDER) THEN
+         IF (NFLOAT .EQ. 0) THEN
+            CALL HEADER('Dipole moment gradient (au)',-1)
+            CALL FCPRI(DIPFLT,'APT',CSTRA,SCTRA)
+         ELSE
+            CALL HEADER
+     *           ('Unfolded dipole moment gradient (au) ',-1)
+            CALL FCPRI(DIP1,'APT',CSTRA,SCTRA)
+            CALL HEADER('Dipole moment gradient (APTs) (au)',-1)
+            CALL FCPRI(DIPFLT,'APT',CSTRA,SCTRA)
          END IF
+         ITEMP = MXCOOR*MXCOOR + 1
+         CALL APTPOP(DIPFLT,HESMOL,QAPT,CSTRA,SCTRA,WORK,WORK(ITEMP),
+     &               LWORK-ITEMP)
+      END IF
 C
 C     Polarizabilities
 C
-         IF (POLAR) THEN
-            IF (NFLOAT .EQ. 0) THEN
-               CALL HEADER('Static polarizabilities (au)',-1)
-               CALL POLPRI(POLARS,'   ',1)
-               CALL HEADER('Static polarizabilities (angstroms**3)',-1)
-               CALL POLPRI(POLARS,'EXP',1)
-               DO 200 I = 1, 3
-                  DO 210 J = 1, 3
-                     POLFLT(I,J) = POLARS(I,J)
- 210              CONTINUE
- 200           CONTINUE
-            ELSE
-               CALL HEADER('Unfolded static polarizabilities (au)',-1)
-               CALL POLPRI(POLARS,'   ',1)
-               CALL HEADER
-     *            ('Unfolded static polarizabilities (angstroms**3)',-1)
-               CALL POLPRI(POLARS,'EXP',1)
-               CALL HEADER('Static polarizabilities (au)',-1)
-               CALL POLPRI(POLFLT,'   ',1)
-               CALL HEADER('Static polarizabilities (angstroms**3)',-1)
-               CALL POLPRI(POLFLT,'EXP',1)
-            END IF
-C
-C        Principal values and axes of polarizability
-C
-            CALL DIAPOL
+      IF (POLAR) THEN
+         IF (NFLOAT .EQ. 0) THEN
+            CALL HEADER('Static polarizabilities (au)',-1)
+            CALL POLPRI(POLARS,'   ',1)
+            CALL HEADER('Static polarizabilities (angstroms**3)',-1)
+            CALL POLPRI(POLARS,'EXP',1)
+            DO 200 I = 1, 3
+               DO 210 J = 1, 3
+                  POLFLT(I,J) = POLARS(I,J)
+ 210           CONTINUE
+ 200        CONTINUE
+         ELSE
+            CALL HEADER('Unfolded static polarizabilities (au)',-1)
+            CALL POLPRI(POLARS,'   ',1)
+            CALL HEADER
+     *         ('Unfolded static polarizabilities (angstroms**3)',-1)
+            CALL POLPRI(POLARS,'EXP',1)
+            CALL HEADER('Static polarizabilities (au)',-1)
+            CALL POLPRI(POLFLT,'   ',1)
+            CALL HEADER('Static polarizabilities (angstroms**3)',-1)
+            CALL POLPRI(POLFLT,'EXP',1)
          END IF
+C
+C     Principal values and axes of polarizability
+C
+         CALL DIAPOL
+      END IF
 C
 C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
-         IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,IPRDEF)
+      IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,IPRDEF)
 C
 C     Excitation energies and (oriented) electronic circular dichroism
 C
-         IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
-     &                           TRMAG,TRLON,BSRLON,EXENG,
-     &                           FONAC,FONA2,RMLEN,RQLEN,
-     &                           RLEN,RMVEL,RQVEL,RVEL,
-     &                           SLEN,SVEL,WORK,LWORK)
+      IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
+     &                        TRMAG,TRLON,BSRLON,EXENG,
+     &                        FONAC,FONA2,RMLEN,RQLEN,
+     &                        RLEN,RMVEL,RQVEL,RVEL,
+     &                        SLEN,SVEL,WORK,LWORK)
 
 C     Molecular second moments
 C
-         IF (SECNDM) CALL SECRES(IPRDEF)
+      IF (SECNDM) CALL SECRES(IPRDEF)
 C
 C     Molecular quadrupole moments
 C
-         IF (QUADRU) THEN
-            CALL QDRRES(IPRDEF)
-         END IF
+      IF (QUADRU) THEN
+         CALL QDRRES(IPRDEF)
       END IF
 C
 C     Nuclear quadrupole moments
@@ -2361,14 +2380,12 @@ cLig <<
 C
 C     Susceptibilities
 C
-      IF (IPRDEF .GE. 0) THEN
-         IF (MAGSUS) THEN
-            CALL SUSRES(IPRDEF)
-         END IF
+      IF (MAGSUS) THEN
+         CALL SUSRES(IPRDEF)
+      END IF
 C
 C     Molecular g-factor
 C
-      END IF
       IF (MOLGFA) THEN
          JATOM  = NATOMS + NFLOAT
          KGEOM  = 1
@@ -2380,22 +2397,20 @@ C
          CALL MGFRES(WORK(KGEOM),WORK(KAMASS),WORK(KLAST),LWRK,JATOM,
      &        IPRDEF)
       END IF
-      IF (IPRDEF .GE. 0) THEN
 C
 C     Atomic axial tensor
 C
-         IF (VCD) THEN
-            CALL HEADER('Atomic axial tensors (AATs)',-1)
-            CALL FCPRI(AATTOT,'AAT',CSTRA,SCTRA)
-         END IF
+      IF (VCD) THEN
+         CALL HEADER('Atomic axial tensors (AATs)',-1)
+         CALL FCPRI(AATTOT,'AAT',CSTRA,SCTRA)
+      END IF
 C
 C     Nuclear shieldings
 C
-         IF (SHIELD) CALL SHIRES(WORK,LWORK,IPRDEF)
+      IF (SHIELD) CALL SHIRES(WORK,LWORK,IPRDEF)
 C
 C     Spin-rotation constants
 C
-      END IF
       IF (SPINRO) THEN
          JATOM  = NATOMS + NFLOAT
          KGEOM  = 1
@@ -2414,7 +2429,7 @@ C
 C
 C     Spin-spin-couplings constants
 C
-      IF (SPNSPN .AND. IPRDEF .GE. 0) THEN
+      IF (SPNSPN) THEN
          CALL SPIRES(SPNDSO,SPNPSO,SPNSD,SPNFC,SPSDFC,WORK,LWORK)
       END IF
       RETURN
