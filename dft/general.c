@@ -75,14 +75,16 @@ const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 /* stub subroutines for the functional code */
 extern real dftgethf_(void);
 extern void dftsethf_(real *w);
-extern void dftsetcam_(real *w, real *b);
+extern void dftsetcam_(const real *w, const real *b);
 
 static real
 dal_get_hf_weight(void) { return dftgethf_(); }
 static void
 dal_set_hf_weight(real w) { dftsethf_(&w); }
 static void
-dal_set_cam_param(real w, real be) { dftsetcam_(&w, &be);}
+dal_set_cam_param(int cnt, const real *w, const real *be) {
+  dftsetcam_(w, be);
+}
 
 /* =================================================================== */
 /* dftinput:

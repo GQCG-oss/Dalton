@@ -129,7 +129,7 @@ Functional Camb3lypFunctional = {
 /* IMPLEMENTATION PART */
 static int
 parse_table(const char *func, const char *str,
-            int cnt, const char *keywords[], float *weights)
+            int cnt, const char *keywords[], real *weights)
 {
   int res=1;
   while(*str) {
@@ -140,12 +140,14 @@ parse_table(const char *func, const char *str,
       int len = strlen(keywords[i]);
       if(strncasecmp(keywords[i], str, len)==0 &&
          str[len] == '=') {
-        if(sscanf(str+len+1,"%g", &weights[i]) != 1) {
-          fun_printf("%s: %s not followed by the weight: ",
-                     func, keywords[i]);
-          res = 0;
-        }
-        break;
+          float f;
+          if(sscanf(str+len+1,"%g", &f) != 1) {
+              fun_printf("%s: %s not followed by the weight: ",
+                         func, keywords[i]);
+              res = 0;
+          }
+          weights[i] = f;
+          break;
       }
     }
     if(i==cnt) {
@@ -163,7 +165,7 @@ static const char *cam_keywords[] = { "alpha", "beta", "mu",
 static int
 camb3lyp_read(const char *conf_line)
 {
-    float weights[ELEMENTS(cam_keywords)];
+    real weights[ELEMENTS(cam_keywords)];
 
     weights[0] = CamAlpha;
     weights[1] = CamBeta;
@@ -176,7 +178,7 @@ camb3lyp_read(const char *conf_line)
     /* sanity checks */
     if(weights[2]<=0) weights[2] = 1e-30;
     fun_set_hf_weight(weights[0]);
-    fun_set_cam_param(weights[2], weights[1]);
+    fun_set_cam_param(1, &weights[2], &weights[1]);
     CamMuFactor = weights[2]; CamBeta = weights[1];
 
     CamAlpha = weights[0];
@@ -382,7 +384,7 @@ camb3lyp_b_energy_small(real a)
     real res;
     a = 2*a; /* the expension derived for different a; correct for this. */
     res = 1-4.0/3.0*SQRT_PI*a + 2 * a*a - 2.0/3.0*a*a*a*a;
-    return 1-ALPHA -BETA*(1-res);
+    return 1-res;
 }
 
 
@@ -392,7 +394,7 @@ camb3lyp_b_first_small(real a)
     real res;
     a = 2*a; /* the expension derived for different a; correct for this. */
     res = 4.0/3.0*(-SQRT_PI + 3 * a +(2*exp(-1/(a*a)) - 2.0)*a*a*a);
-    return 2*BETA*res;
+    return 2*res;
 }
 
 /* ===================================================================
@@ -412,7 +414,7 @@ camb3lyp_b_energy_large(real a)
     res = 0;
     for(i=0, ac = a2; i<MAX_LARGE_COEFS; i++, ac *= -a2)
         res += 1.0/(large_coefs[i]*ac);
-    return 1-ALPHA - BETA*(1-res);
+    return 1-res;
 }
 
 
@@ -431,7 +433,7 @@ camb3lyp_b_first_large(real a)
         tmp += 1.0/(large_coefs1[i]*ac);
         ac *= -a2;
     }
-    return 2*tmp*BETA;
+    return 2*tmp;
 }
 
 /* ===================================================================
@@ -445,7 +447,7 @@ camb3lyp_b_energy_medium(real a)
 {
     real b = exp(-1/(4*a*a))-1;
     real c = 2*a*a*b + 0.5;
-    real res= 1-ALPHA - BETA*8.0/3.0*a*(SQRT_PI*erf(1/(2*a))+2*a*(b-c));
+    real res= 8.0/3.0*a*(SQRT_PI*erf(1/(2*a))+2*a*(b-c));
     return res;
 }
 
@@ -462,7 +464,7 @@ camb3lyp_b_first_medium(real a)
     real res = -2.666666666666667*a
         *(2*a*(t4/(2*pow(a,3.0))-4*a*t5-t1*t4)+2*t6-t3*t4)
         -2.666666666666667*(2*a*t6+SQRT_PI*erf(0.5*t1));
-    return BETA*res;
+    return res;
 }
 
 static real
@@ -485,8 +487,7 @@ camb3lyp_b_second_medium(real a)
     t1 = a*a;
     if(a>=5)  {
         static const double large_coefs[] = {  6, -48, 640,  -11520 };
-        return BETA*
-            evaluate_series(ELEMENTS(large_coefs), large_coefs, t1)/
+        return evaluate_series(ELEMENTS(large_coefs), large_coefs, t1)/
             (t1*t1);
     }
     t2 = 1/t1;
@@ -497,7 +498,7 @@ camb3lyp_b_second_medium(real a)
     t7 = -t3/a+0.5*t4*t3-4*a*t5;
     return -(8*a*(2*a*(t3/(4*pow(a,6.0))-2*t3*pow(a,-4.0)+t6-4*t5)
                   -t3/(2*pow(a,5.0))+4*t7+2*t4*t3)/3.0
-             +16*(2.0*a*t7+2.0*(t3-2*t1*t5-1.5)+t6)/3.0)*BETA;
+             +16*(2.0*a*t7+2.0*(t3-2*t1*t5-1.5)+t6)/3.0);
 }
 
 static real
@@ -509,8 +510,7 @@ camb3lyp_b_third_medium(real a)
     if(a>=5)  {
         static const double large_coefs[] = {  -1.5, 8, -80,  1152 };
         real a2 = a*a;
-        return BETA*
-            evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
+        return evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
             (a2*a2*a);
     }
     t1 = pow(a,-2.0);
@@ -521,7 +521,7 @@ camb3lyp_b_third_medium(real a)
     t6 = t2-1;
     t7 = -t1*t2-2*t4*t2+t3*t2/4-4*t6;
     t8 = pow(a,-3.0);
-    return -8*BETA*
+    return -8*
         (a*(2*a*(t2/(8*pow(a,9.0))-5*t2/(2*pow(a,7.0))+15*t5*t2/2)
                  -t2/(4*pow(a,8.0))+6*t7-6*t4*t2+7*t3*t2/2)/3
          +(4*(-t2/a+t8*t2/2-4*a*t6)+2*a*t7+2*t8*t2-t5*t2/2));
@@ -537,27 +537,11 @@ camb3lyp_b_fourth_medium(real a)
         static const double large_coefs[] =
             { 0.3, -8.0/7.0, 80.0/9.0, -1152.0/11.0 };
         real a2 = a*a;
-        return BETA*
-            evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
+        return evaluate_series(ELEMENTS(large_coefs), large_coefs, a2)/
             (a2*a2*a2);
     }
     t1 = pow(a,-2.0);
     t2 = exp(-0.25*t1);
-#if 0
-    t3 = pow(a,-9.0);
-    t4 = pow(a,-7.0);
-    t5 = pow(a,-5.0);
-    t6 = pow(a,-8.0);
-    t7 = pow(a,-6.0);
-    t8 = 15*t5*t2/2-5*t4*t2/2+t3*t2/8;
-    t9 = pow(a,-4.0);
-
-    return -8*a*(2.0*a*(t2/(16*pow(a,12.0))-19.0*t2/(8.0*pow(a,10.0))
-                      -75*t7*t2/2+85*t6*t2*0.25)-t2/(8*pow(a,11.0))
-                 +8*t8+24*t5*t2-24*t4*t2+15*0.25*t3*t2)/3.0
-        -32*(6*(-t1*t2-2*t9*t2+0.25*t7*t2-4.0*(t2-1))+2*a*t8-6*t9*t2
-             +7*t7*t2/2-t6*t2/4)/3;
-#else
     t3 = pow(a, -8.0);
     t4 = pow(a, -6.0);
     t5 = pow(a, -9.0);
@@ -578,8 +562,7 @@ camb3lyp_b_fourth_medium(real a)
          -0.07052369794347*t2*SQRT_PI*pow(a,-11.0)+8.0*t8
          +2.0*a*(-37.5*t4*t2+21.25*t3*t2-2.375*t2*pow(a,-10.0)
                  +0.0625*t2*pow(a,-12.0)));
-    return BETA*res;
-#endif
+    return res;
 }
 
 #define FAC M_SQRT2
@@ -608,14 +591,14 @@ camb3lyp_energy(const FunDensProp *dp)
     ex = 0.5*(SlaterFunctional.func(&dsigma) +
               BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
     
-    ea = camb3lyp_energy_sigma(dp->rhoa, ex);
+    ea = ex*(1-ALPHA) - BETA*camb3lyp_energy_sigma(dp->rhoa, ex);
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
         dsigma.grada = dsigma.gradb = dp->gradb;
 	dsigma.gradab = dsigma.grada*dsigma.gradb;
         ex = 0.5*(SlaterFunctional.func(&dsigma) +
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
-        eb = camb3lyp_energy_sigma(dp->rhob, ex);
+        eb = ex*(1-ALPHA) - BETA*camb3lyp_energy_sigma(dp->rhob, ex);
     } else eb = ea;
     res = ea + eb;
 #if ADD_CORRELATION
@@ -631,8 +614,8 @@ camb3lyp_first_sigma(real rho, real ex,
                      RGFirstDrv *ds, RGFirstDrv *res)
 {
     real             a = fun_a(rho, ex);
-    real       bfactor = EVALUATOR(a, energy);
-    real bfactor_first = EVALUATOR(a, first);
+    real       bfactor = -BETA*EVALUATOR(a, energy);
+    real bfactor_first = BETA*EVALUATOR(a, first);
     RGFirstDrv ader;
 
     fun_a_first(rho, a, ex, ds, &ader);
@@ -646,7 +629,7 @@ camb3lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
     RGFirstDrv res, dfun;
     FunDensProp dsigma;
-    real ex;
+    real ex, ex_weight;
     FunFirstFuncDrv fun1;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
@@ -661,8 +644,9 @@ camb3lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 
     dfun.df10 = fun1.df1000; dfun.df01 = fun1.df0010;
     camb3lyp_first_sigma(dp->rhoa, ex, &dfun, &res);
-    ds->df1000 += factor*res.df10;
-    ds->df0010 += factor*res.df01;
+    ex_weight = 1-ALPHA;
+    ds->df1000 += factor*(ex_weight*dfun.df10 + res.df10);
+    ds->df0010 += factor*(ex_weight*dfun.df01 + res.df01);
 
     if(dp->rhob>10e-13) {
         if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
@@ -674,8 +658,8 @@ camb3lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
             dfun.df10 = fun1.df0100; dfun.df01 = fun1.df0001;
             camb3lyp_first_sigma(dp->rhob, ex, &dfun, &res);
         }
-        ds->df0100 += factor*res.df10;
-        ds->df0001 += factor*res.df01;
+        ds->df0100 += factor*(ex_weight*dfun.df10 + res.df10);
+        ds->df0001 += factor*(ex_weight*dfun.df01 + res.df01);
     }
 #if ADD_CORRELATION
     LYPFunctional.first(ds, LYP_WEIGHT*factor, dp);
@@ -698,9 +682,9 @@ camb3lyp_second_sigma(real rho, real ex, RGSecondDrv *f2,
     }
 
     a = fun_a(rho, ex);
-    bfactor  = EVALUATOR(a, energy);
-    b_first  = EVALUATOR(a, first);
-    b_second = camb3lyp_b_second_medium(a);
+    bfactor  = -BETA*EVALUATOR(a, energy);
+    b_first  = BETA*EVALUATOR(a, first);
+    b_second = BETA*camb3lyp_b_second_medium(a);
 
     fun_a_second(rho, a, ex, f2, &ader);
     
@@ -723,7 +707,7 @@ camb3lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
     FunSecondFuncDrv f2;
     RGSecondDrv res, dfun;
     FunDensProp dsigma;
-    real ex;
+    real ex, ex_weight;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
@@ -739,11 +723,12 @@ camb3lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
     dfun.df11 = f2.df1010; 
     camb3lyp_second_sigma(dp->rhoa, ex, &dfun, &res);
 
-    ds->df1000 += factor*res.df10;
-    ds->df0010 += factor*res.df01;
-    ds->df2000 += factor*res.df20;
-    ds->df1010 += factor*res.df11;
-    ds->df0020 += factor*res.df02;
+    ex_weight = 1-ALPHA;
+    ds->df1000 += factor*(ex_weight*dfun.df10 + res.df10);
+    ds->df0010 += factor*(ex_weight*dfun.df01 + res.df01);
+    ds->df2000 += factor*(ex_weight*dfun.df20 + res.df20);
+    ds->df1010 += factor*(ex_weight*dfun.df11 + res.df11);
+    ds->df0020 += factor*(ex_weight*dfun.df02 + res.df02);
 
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
@@ -753,15 +738,15 @@ camb3lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
                   BeckeFunctional.func(&dsigma)*BECKE88_CORR_WEIGHT);
         dfun.df10 = f2.df0100; dfun.df20 = f2.df0200; 
         dfun.df01 = f2.df0001; dfun.df02 = f2.df0002;
-        dfun.df11 = f2.df0101; 
+        dfun.df11 = f2.df0101;
         camb3lyp_second_sigma(dp->rhob, ex, &dfun, &res);
     }
 
-    ds->df0100 += factor*res.df10;
-    ds->df0001 += factor*res.df01;
-    ds->df0200 += factor*res.df20;
-    ds->df0101 += factor*res.df11;
-    ds->df0002 += factor*res.df02;
+    ds->df0100 += factor*(ex_weight*dfun.df10 + res.df10);
+    ds->df0001 += factor*(ex_weight*dfun.df01 + res.df01);
+    ds->df0200 += factor*(ex_weight*dfun.df20 + res.df20);
+    ds->df0101 += factor*(ex_weight*dfun.df11 + res.df11);
+    ds->df0002 += factor*(ex_weight*dfun.df02 + res.df02);
 
 #if ADD_CORRELATION
     LYPFunctional.second(ds, LYP_WEIGHT*factor, dp);
@@ -781,10 +766,10 @@ camb3lyp_third_sigma(real rho, real ex, RGThirdDrv *f3,
     RGThirdDrv ader;
 
     a = fun_a(rho, ex);
-    bfactor  = EVALUATOR(a, energy);
-    b_first  = EVALUATOR(a, first);
-    b_second = camb3lyp_b_second_medium(a);
-    b_third  = camb3lyp_b_third_medium(a);
+    bfactor  = -BETA*EVALUATOR(a, energy);
+    b_first  = BETA*EVALUATOR(a, first);
+    b_second = BETA*camb3lyp_b_second_medium(a);
+    b_third  = BETA*camb3lyp_b_third_medium(a);
     fun_a_third(rho, a, ex, f3, &ader);
 
     res->df10 = f3->df10*bfactor + ex*b_first*ader.df10;
@@ -833,7 +818,7 @@ camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
     FunThirdFuncDrv f3;
     RGThirdDrv res, dfun;
     FunDensProp dsigma;
-    real ex;
+    real ex, ex_weight;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
@@ -849,16 +834,17 @@ camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
     dfun.df11 = f3.df1010; dfun.df21 = f3.df2010; dfun.df12 = f3.df1020;
     camb3lyp_third_sigma(dp->rhoa, ex, &dfun, &res);
 
-    ds->df1000 += factor*res.df10;
-    ds->df0010 += factor*res.df01;
-    ds->df2000 += factor*res.df20;
-    ds->df1010 += factor*res.df11;
-    ds->df0020 += factor*res.df02;
+    ex_weight = 1-ALPHA;
+    ds->df1000 += factor*(ex_weight*dfun.df10 + res.df10);
+    ds->df0010 += factor*(ex_weight*dfun.df01 + res.df01);
+    ds->df2000 += factor*(ex_weight*dfun.df20 + res.df20);
+    ds->df1010 += factor*(ex_weight*dfun.df11 + res.df11);
+    ds->df0020 += factor*(ex_weight*dfun.df02 + res.df02);
 
-    ds->df3000 += factor*res.df30;
-    ds->df2010 += factor*res.df21;
-    ds->df1020 += factor*res.df12;
-    ds->df0030 += factor*res.df03;
+    ds->df3000 += factor*(ex_weight*dfun.df30 + res.df30);
+    ds->df2010 += factor*(ex_weight*dfun.df21 + res.df21);
+    ds->df1020 += factor*(ex_weight*dfun.df12 + res.df12);
+    ds->df0030 += factor*(ex_weight*dfun.df03 + res.df03);
 
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
@@ -872,16 +858,16 @@ camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
         camb3lyp_third_sigma(dp->rhob, ex, &dfun, &res);
     }
 
-    ds->df0100 += factor*res.df10;
-    ds->df0001 += factor*res.df01;
-    ds->df0200 += factor*res.df20;
-    ds->df0101 += factor*res.df11;
-    ds->df0002 += factor*res.df02;
+    ds->df0100 += factor*(ex_weight*dfun.df10 + res.df10);
+    ds->df0001 += factor*(ex_weight*dfun.df01 + res.df01);
+    ds->df0200 += factor*(ex_weight*dfun.df20 + res.df20);
+    ds->df0101 += factor*(ex_weight*dfun.df11 + res.df11);
+    ds->df0002 += factor*(ex_weight*dfun.df02 + res.df02);
 
-    ds->df0300 += factor*res.df30;
-    ds->df0201 += factor*res.df21;
-    ds->df0102 += factor*res.df12;
-    ds->df0003 += factor*res.df03;
+    ds->df0300 += factor*(ex_weight*dfun.df30 + res.df30);
+    ds->df0201 += factor*(ex_weight*dfun.df21 + res.df21);
+    ds->df0102 += factor*(ex_weight*dfun.df12 + res.df12);
+    ds->df0003 += factor*(ex_weight*dfun.df03 + res.df03);
 
 #if ADD_CORRELATION
     LYPFunctional.third(ds, LYP_WEIGHT*factor, dp);
@@ -910,11 +896,11 @@ camb3lyp_fourth_sigma(real rho, real ex, RGFourthDrv *f4,
     RGFourthDrv a;
 
     a_ = fun_a(rho, ex);
-    bfactor  = EVALUATOR(a_, energy);
-    b_first  = EVALUATOR(a_, first);
-    b_second = camb3lyp_b_second_medium(a_);
-    b_third  = camb3lyp_b_third_medium(a_);
-    b_fourth = camb3lyp_b_fourth_medium(a_);
+    bfactor  = -BETA*EVALUATOR(a_, energy);
+    b_first  = BETA*EVALUATOR(a_, first);
+    b_second = BETA*camb3lyp_b_second_medium(a_);
+    b_third  = BETA*camb3lyp_b_third_medium(a_);
+    b_fourth = BETA*camb3lyp_b_fourth_medium(a_);
     fun_a_fourth(rho, a_, ex, f4, &a);
     a10_2 = a.df10*a.df10;
     a01_2 = a.df01*a.df01;
@@ -1001,7 +987,7 @@ camb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
     FunFourthFuncDrv f4;
     RGFourthDrv res, dfun;
     FunDensProp dsigma;
-    real ex;
+    real ex, ex_weight;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
@@ -1019,22 +1005,23 @@ camb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
     dfun.df13 = f4.df1030; dfun.df04 = f4.df0040;
     camb3lyp_fourth_sigma(dp->rhoa, ex, &dfun, &res);
 
-    ds->df1000 += factor*res.df10;
-    ds->df0010 += factor*res.df01;
-    ds->df2000 += factor*res.df20;
-    ds->df1010 += factor*res.df11;
-    ds->df0020 += factor*res.df02;
+    ex_weight = 1-ALPHA;
+    ds->df1000 += factor*(ex_weight*dfun.df10 + res.df10);
+    ds->df0010 += factor*(ex_weight*dfun.df01 + res.df01);
+    ds->df2000 += factor*(ex_weight*dfun.df20 + res.df20);
+    ds->df1010 += factor*(ex_weight*dfun.df11 + res.df11);
+    ds->df0020 += factor*(ex_weight*dfun.df02 + res.df02);
 
-    ds->df3000 += factor*res.df30;
-    ds->df2010 += factor*res.df21;
-    ds->df1020 += factor*res.df12;
-    ds->df0030 += factor*res.df03;
+    ds->df3000 += factor*(ex_weight*dfun.df30 + res.df30);
+    ds->df2010 += factor*(ex_weight*dfun.df21 + res.df21);
+    ds->df1020 += factor*(ex_weight*dfun.df12 + res.df12);
+    ds->df0030 += factor*(ex_weight*dfun.df03 + res.df03);
 
-    ds->df4000 += factor*res.df40;
-    ds->df3010 += factor*res.df31;
-    ds->df2020 += factor*res.df22;
-    ds->df1030 += factor*res.df13;
-    ds->df0040 += factor*res.df04;
+    ds->df4000 += factor*(ex_weight*dfun.df40 + res.df40);
+    ds->df3010 += factor*(ex_weight*dfun.df31 + res.df31);
+    ds->df2020 += factor*(ex_weight*dfun.df22 + res.df22);
+    ds->df1030 += factor*(ex_weight*dfun.df13 + res.df13);
+    ds->df0040 += factor*(ex_weight*dfun.df04 + res.df04);
 
     if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
         dsigma.rhoa  = dsigma.rhob  = dp->rhob;
@@ -1050,22 +1037,23 @@ camb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
         camb3lyp_fourth_sigma(dp->rhob, ex, &dfun, &res);
     }
 
-    ds->df0100 += factor*res.df10;
-    ds->df0001 += factor*res.df01;
-    ds->df0200 += factor*res.df20;
-    ds->df0101 += factor*res.df11;
-    ds->df0002 += factor*res.df02;
+    ds->df0100 += factor*(ex_weight*dfun.df10 + res.df10);
+    ds->df0001 += factor*(ex_weight*dfun.df01 + res.df01);
+    ds->df0200 += factor*(ex_weight*dfun.df20 + res.df20);
+    ds->df0101 += factor*(ex_weight*dfun.df11 + res.df11);
+    ds->df0002 += factor*(ex_weight*dfun.df02 + res.df02);
 
-    ds->df0300 += factor*res.df30;
-    ds->df0201 += factor*res.df21;
-    ds->df0102 += factor*res.df12;
-    ds->df0003 += factor*res.df03;
+    ds->df0300 += factor*(ex_weight*dfun.df30 + res.df30);
+    ds->df0201 += factor*(ex_weight*dfun.df21 + res.df21);
+    ds->df0102 += factor*(ex_weight*dfun.df12 + res.df12);
+    ds->df0003 += factor*(ex_weight*dfun.df03 + res.df03);
 
-    ds->df0400 += factor*res.df40;
-    ds->df0301 += factor*res.df31;
-    ds->df0202 += factor*res.df22;
-    ds->df0103 += factor*res.df13;
-    ds->df0004 += factor*res.df04;
+    ds->df0400 += factor*(ex_weight*dfun.df40 + res.df40);
+    ds->df0301 += factor*(ex_weight*dfun.df31 + res.df31);
+    ds->df0202 += factor*(ex_weight*dfun.df22 + res.df22);
+    ds->df0103 += factor*(ex_weight*dfun.df13 + res.df13);
+    ds->df0004 += factor*(ex_weight*dfun.df04 + res.df04);
+
 #if ADD_CORRELATION
     LYPFunctional.fourth(ds, LYP_WEIGHT*factor, dp);
     VWNFunctional.fourth(ds, VWN_WEIGHT*factor, dp);

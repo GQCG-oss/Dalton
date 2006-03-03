@@ -33,7 +33,7 @@ YDIPLEN
 '
 
 test='
-check_scf_energy DFT  -0.498914920927 1e-10
+check_scf_energy DFT  -0.498914920772 1e-10
 check_dipole 0.000516 1e-6
 '                     
 

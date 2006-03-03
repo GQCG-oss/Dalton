@@ -180,13 +180,14 @@ static int my_printf(const char *fmt, ...)
  
 static void set_hf_weight(real w)         {}
 static real get_hf_weight(void)           {return 0;}
-static void set_cam_param(real w, real b) {}
+static void set_cam_param(int cnt, const real *w, const real *b) {}
 
 Functional* selected_func = &LDAFunctional;
 int (*fun_printf)(const char *fmt, ...) = my_printf;
 void (*fun_set_hf_weight)(real w)         = set_hf_weight;
 real (*fun_get_hf_weight)(void)           = get_hf_weight;
-void (*fun_set_cam_param)(real w, real b) = set_cam_param;
+void (*fun_set_cam_param)(int cnt, const real *mu, const real *b)
+     = set_cam_param;
 
 /* =================================================================== */
 enum FunError

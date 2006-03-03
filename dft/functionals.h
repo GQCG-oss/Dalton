@@ -272,7 +272,7 @@ extern Functional *selected_func;
 extern int (*fun_printf)(const char *fmt, ...);
 extern void (*fun_set_hf_weight)(real w);
 extern real (*fun_get_hf_weight)(void);
-extern void (*fun_set_cam_param)(real w, real b);
+extern void (*fun_set_cam_param)(int cnt, const real *w, const real *b);
 
 /* FunDensProp structure contains properties of the density that are
    needed for functional evaluation and possibly other purposes.
