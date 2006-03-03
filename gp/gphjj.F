@@ -85,7 +85,7 @@ C
  || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
  || defined (SYS_SX) || defined (SYS_DARWIN) || defined (SYS_NEC) 
       CHARACTER*(24) FFDATE
-#if defined (SYS_LINUX) || defined(SYS_AIX) || defined (SYS_HAL)
+#if defined(SYS_AIX) || defined (SYS_HAL)
       CALL FDATE(FFDATE)
 #else
       CHARACTER*(24) FDATE

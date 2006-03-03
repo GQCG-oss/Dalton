@@ -246,7 +246,7 @@ c    &INSTALL_BASDIR
       IF (INDEX(BASDIR,
      &INSTALL_BASDIR
      &) .LE. 0) THEN
-
+         IEND = 0
 Chjaaj   IEND = INDEX(BASDIR,' ') - 1
 Chjaaj   not good, will give wrong IEND if any directories
 Chjaaj   contains blanks, as in '/home/my basdir/'); thus
