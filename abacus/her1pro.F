@@ -4754,10 +4754,11 @@ C
          NEWMAT = .FALSE.
          REWIND LUNIT
       ELSE
-         REWIND (LUNIT)
-         IF(.NOT.FNDLAB('EOFLABEL',LUPROP)) THEN
-            WRITE (LUPRI,'(/A)') ' End of file not found in AOPROPER?'
-            CALL QUIT('Internal error, EOF not found in AOPROPER')
+         REWIND LUNIT
+         IF(.NOT.FNDLAB('EOFLABEL',LUNIT)) THEN
+            WRITE (LUPRI,'(/A)') 
+     $           ' End of file not found in PCMDATA'
+            CALL QUIT('Internal error, EOF not found in PCMDATA')
          END IF
          BACKSPACE LUNIT
       END IF
