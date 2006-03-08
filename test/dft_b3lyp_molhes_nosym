@@ -89,10 +89,10 @@ check_dip_gradient 3 2e-5 "
 
 check_rotational_const 35507.25 1.184394
 check_vibr_freqs 4e-1 "
-   1      A      3996.45 
-   2      A      1014.69 
-   3      A       265.92 
-   4      A       265.68"
+   1      A      3996.45    0.018209     28.484   0.6741
+   2      A      1014.69    0.004623     93.818   2.2203
+   3      A       265.57    0.001210    140.258   3.3193
+   4      A       265.57    0.001210    140.258   3.3193"
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
