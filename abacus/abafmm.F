@@ -122,10 +122,10 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <abainf.h>
-      CHARACTER OUTCEN*60                          !maw
-      PARAMETER (OUTCEN =                         !maw
-     &     "/people/mark/desktop/code/data/FMM_g-data.out")
 #include <cbifmm.h>
+C     CHARACTER OUTCEN*60                          !maw
+C     PARAMETER (OUTCEN =                         !maw
+C    &     "/people/mark/desktop/code/data/FMM_g-data.out")
 C
 C     Connecting output for Gaussian product co-ordinate data
 C      to be written in MOMINT subroutine 
@@ -612,8 +612,9 @@ C
          DO I = 1, NBAST
             WRITE (LUPRI,'(2X,I5,2X,3F12.6,5X,F12.6)') 
      &            I, (AOCOOR(I,J),J=1,3), AOEXP(I)
-            WRITE (18,'(2X,I5,2X,3F24.16,2X,F20.12)') 
-     &            I, (AOCOOR(I,J),J=1,3), AOEXP(I)
+Chj: see FMMINI
+C           WRITE (18,'(2X,I5,2X,3F24.16,2X,F20.12)') 
+C    &            I, (AOCOOR(I,J),J=1,3), AOEXP(I)
          END DO
       END IF
       RETURN

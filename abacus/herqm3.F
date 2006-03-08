@@ -3236,8 +3236,8 @@ C
      *                      QM3LJB(I,IM)*DISTM6
                   END IF
                 END IF
-                TEMJA1 = TEMJA1 + QM3LJA(I,IM)*DSTM12
-                TEMJA2 = TEMJA2 + QM3LJB(I,IM)*DISTM6
+Cftnchek        TEMJA1 = TEMJA1 + QM3LJA(I,IM)*DSTM12
+Cftnchek        TEMJA2 = TEMJA2 + QM3LJB(I,IM)*DISTM6
               END IF
   250       CONTINUE
   240     CONTINUE
@@ -3321,8 +3321,8 @@ C
      *                      4.0D0*EPS_IJ*(SIG_RM12-SIG_RM6)
                   END IF
                 END IF
-                TEMJA1 = TEMJA1 + 4.0D0*EPS_IJ*SIG_RM12
-                TEMJA2 = TEMJA2 + 4.0D0*EPS_IJ*SIG_RM6
+Cftnchek        TEMJA1 = TEMJA1 + 4.0D0*EPS_IJ*SIG_RM12
+Cftnchek        TEMJA2 = TEMJA2 + 4.0D0*EPS_IJ*SIG_RM6
 C
               END IF
  120        CONTINUE

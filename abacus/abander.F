@@ -7048,7 +7048,6 @@ C     /* Deck wrimop */
       NTOT  = 0
       NWRIT = 0
       THRTRM = 0.0D0
-      NCOMING = NCOMING+1
 C
 C     *** Open DALTON.MOP file. ***
 C         Only for normal coordinates right now.

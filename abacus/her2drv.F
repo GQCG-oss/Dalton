@@ -1939,6 +1939,7 @@ Cef begin
 #include "r12int.h"
 #include "doxyz.h"
 #include "blocks.h"
+#include "dftcom.h"
 #include "incore.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1

@@ -78,8 +78,8 @@ C
 #include <dummy.h>
 #include <mtags.h>
 #include <maxorb.h>
-#include <infpar.h>
 #include <priunit.h>
+#include <infpar.h>
 #include <infpri.h>
 #include <gnrinf.h>
 #include <inftap.h>
@@ -478,7 +478,7 @@ C
          CALL WRIPRO(0.0D0,STHELP,666,
      *               LABEL1,LABEL1,LABEL1,LABEL1,
      *               ZERO,ZERO,ZERO,1,0,0,0)
-         IPRLOC = MAX(IPRINT,IPRRHF)
+         IPRLOC = MAX(IPRUSR,IPRRHF)
          IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
@@ -506,7 +506,7 @@ C
             CALL WRIPRO(0.0D0,STHELP,666,
      *                  LABEL1,LABEL1,LABEL1,LABEL1,
      *                  ZERO,ZERO,ZERO,1,0,0,0)
-            IPRLOC = MAX(IPRINT,IPRRHF)
+            IPRLOC = MAX(IPRUSR,IPRRHF)
             IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
 C
 C     Send ending signal to slaves
@@ -556,7 +556,7 @@ C
       CALL WRIPRO(0.0D0,STHELP,666,
      *            LABEL1,LABEL1,LABEL1,LABEL1,
      *            ZERO,ZERO,ZERO,1,0,0,0)
-      IPRLOC = MAX(IPRINT,IPRRHF)
+      IPRLOC = MAX(IPRUSR,IPRRHF)
       IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
       CALL GPCLOSE(LUERR,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
