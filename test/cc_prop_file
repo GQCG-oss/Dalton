@@ -101,18 +101,17 @@ fi
 # Test af Energies
 #
 
-CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.3536975097" $log | wc -l`
-CRIT2=`$GREP "#  2 1 ENERGY   Ground state Energy =    * \-112\.4948864024" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 ` 
-CTRL[1]=2
-ERROR[1]="ENERGIES NOT CORRECTLY WRITTEN TO PROPERTY FILE"
+CRIT1=`$GREP "#  1 1 ENERGY   Ground state Energy =    * \-112\.4948864024" $log | wc -l`
+TEST[1]=` expr $CRIT1 ` 
+CTRL[1]=1
+ERROR[1]="ENERGY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 
 #
 # Test of CCSD dipole moment 
 #
-CRIT1=`$GREP "#  3 1 * <XDIPLEN > =   *   ( |0)\.00417488" $log | wc -l`
-CRIT2=`$GREP "#  4 1 * <YDIPLEN > =   *   ( |0)\.00003466" $log | wc -l`
-CRIT3=`$GREP "#  5 1 * <ZDIPLEN > =   *  ( \-|\-0)\.44399466" $log | wc -l`
+CRIT1=`$GREP "#  2 1 * <XDIPLEN > =   *   ( |0)\.00417488" $log | wc -l`
+CRIT2=`$GREP "#  3 1 * <YDIPLEN > =   *   ( |0)\.00003466" $log | wc -l`
+CRIT3=`$GREP "#  4 1 * <ZDIPLEN > =   *  ( \-|\-0)\.44399466" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="CCSD DIPOLE MOMENT NOT CORRECTLY WRITTEN TO PROPERTY FILE"
@@ -120,15 +119,15 @@ ERROR[2]="CCSD DIPOLE MOMENT NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 #
 # Test of CCSD polarizability
 #
-CRIT1=`$GREP " # 10 1 * <<XDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  6\.074461" $log | wc -l`
-CRIT2=`$GREP " # 11 1 * <<XDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  ( |0)\.022538" $log | wc -l`
-CRIT3=`$GREP " # 12 1 * <<XDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.025364" $log | wc -l`
-CRIT4=`$GREP " # 13 1 * <<YDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  ( |0)\.022538" $log | wc -l`
-CRIT5=`$GREP " # 14 1 * <<YDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  2\.465752" $log | wc -l`
-CRIT6=`$GREP " # 15 1 * <<YDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.000230" $log | wc -l`
-CRIT7=`$GREP " # 16 1 * <<ZDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.025364" $log | wc -l`
-CRIT8=`$GREP " # 17 1 * <<ZDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.000230" $log | wc -l`
-CRIT9=`$GREP " # 18 1 * <<ZDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  8\.604020" $log | wc -l`
+CRIT1=`$GREP " #  9 1 * <<XDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  6\.074461" $log | wc -l`
+CRIT2=`$GREP " # 10 1 * <<XDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  ( |0)\.022538" $log | wc -l`
+CRIT3=`$GREP " # 11 1 * <<XDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.025364" $log | wc -l`
+CRIT4=`$GREP " # 12 1 * <<YDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  ( |0)\.022538" $log | wc -l`
+CRIT5=`$GREP " # 13 1 * <<YDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  2\.465752" $log | wc -l`
+CRIT6=`$GREP " # 14 1 * <<YDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.000230" $log | wc -l`
+CRIT7=`$GREP " # 15 1 * <<ZDIPLEN ,XDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.025364" $log | wc -l`
+CRIT8=`$GREP " # 16 1 * <<ZDIPLEN ,YDIPLEN >>\( ( |0)\.000000\) =  *  ( \-|\-0)\.000230" $log | wc -l`
+CRIT9=`$GREP " # 17 1 * <<ZDIPLEN ,ZDIPLEN >>\( ( |0)\.000000\) =  *  8\.604020" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
 CTRL[3]=9
 ERROR[3]="CCSD POLARZABILITY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
@@ -136,10 +135,10 @@ ERROR[3]="CCSD POLARZABILITY NOT CORRECTLY WRITTEN TO PROPERTY FILE"
 #
 # Test of excited state energies
 #
-CRIT1=`$GREP " #  6 1 Sy\: 1 Sp\: 1 Exc\:  1 E_tot\: *  \-112\.3446759" $log | wc -l`
-CRIT2=`$GREP " #  7 1 Exctot   Excited state Energy =    \-112\.3446759" $log | wc -l`
-CRIT3=`$GREP " #  8 1 Sy: 1 Sp: 1 Exc:  2 E_tot:   \-112\.1269284" $log | wc -l`
-CRIT4=`$GREP " #  9 1 Exctot   Excited state Energy =    \-112\.1269284" $log | wc -l`
+CRIT1=`$GREP " #  5 1 Sy\: 1 Sp\: 1 Exc\:  1 E_tot\: *  \-112\.3446759" $log | wc -l`
+CRIT2=`$GREP " #  6 1 Exctot   Excited state Energy =    \-112\.3446759" $log | wc -l`
+CRIT3=`$GREP " #  7 1 Sy: 1 Sp: 1 Exc:  2 E_tot:   \-112\.1269284" $log | wc -l`
+CRIT4=`$GREP " #  8 1 Exctot   Excited state Energy =    \-112\.1269284" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[4]=4
 ERROR[4]="CCSD EXCITED STATE ENERGIES NOT CORRECTLY WRITTEN TO PROPERTY FILE"

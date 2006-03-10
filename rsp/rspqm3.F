@@ -63,6 +63,10 @@ C
       LOPEN = .FALSE.
 
       CALL QENTER('QM3LNO')
+      IF ( (.NOT. (OLDTG)) .AND. (LOSPC) ) THEN
+         CALL QEXIT('QM3LNO')
+         RETURN
+      END IF
 
       IF (TRPLET) CALL QUIT('TRIPLET NOT IMPLEMENTED FOR QM/MM YET')
 
@@ -310,6 +314,10 @@ C
       LOGICAL LCON, LORB, LREF, LOPEN
 
       CALL QENTER('QM3QRO')
+      IF ( (.NOT. (OLDTG)) .AND. (LOSPC) ) THEN
+         CALL QEXIT('QM3QRO')
+         RETURN
+      END IF
 
       LOPEN = .FALSE.
   

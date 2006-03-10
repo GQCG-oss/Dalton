@@ -381,7 +381,7 @@ C        ... DIIS-DFT or QC-DFT optimization
             LAPRPC = 'ENERGY  '
             CALL WRIPRO(EMCSCF,"SCF/DFT   ",0,
      *                  LAPRPC,LAPRPC,LAPRPC,LAPRPC,
-     *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,ISTATE)
+     *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUW4,5025) ESOLT
          WRITE (LUW4,5030) GRDNRM
