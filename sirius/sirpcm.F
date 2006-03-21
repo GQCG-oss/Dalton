@@ -1152,19 +1152,27 @@ C
       DIMENSION AS(*)
       NTS = (MAXREP + 1)*NTSIRR
       DO JSYM = 0, MAXREP
-         JSTART = JSYM * NTSIRR + 1
+         JSTART = JSYM * NTSIRR
          DO I=1,NTSIRR
-            DO J=JSTART,JSTART+NTSIRR-1
+            DO J = 1,NTSIRR
+               JTS = J + JSTART
+C     
+C     symmmetry adapted transpose matrix indeces
+C     
+               ITSTR = J
+               JTSTR = I + JSTART
+               
                DELTAIJ = D0
                IF (I.EQ.J) then 
                   DELTAIJ = AS(I) * FACT * DP5
                END IF
-               SPAK(I,J) = FPI*(DELTAIJ - DPAK(J,I))/AS(I)
+               SPAK(I,JTS) = FPI*(DELTAIJ - DPAK(ITSTR,JTSTR))/AS(I)
             END DO
          END DO
          DO I=1,NTSIRR
-            DO J=JSTART,JSTART+NTSIRR-1
-               DPAK(I,J) = -SPAK(I,J)
+            DO J=1,NTSIRR
+               JTS = J + JSTART
+               DPAK(I,JTS) = -SPAK(I,JTS)
             END DO
          END DO
       END DO
@@ -1333,9 +1341,6 @@ C
       DIPORG(3) = ZI
       NBAST = NBASTOLD
       NNBASX = NNBASXOLD
-C      nsym=nsymold
-C
-      IF(LOCFLD) CALL J4INT(WORK(KFREE),LWRK)
       RETURN
       END
 C

@@ -2401,41 +2401,31 @@ C     ******************************************************
 C
       IF (LABINT(1).EQ.'XDIPLOC') THEN
          NLOCFL = NELMNT
-         CALL MEMGET('REAL',KLOCFL,NLOCFL,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KLOCFL,3*NELMNT,WORK,KFREE,LFREE)
          WRITE(LUPRI,*) '----ADDING LOCAL FIELD CONTRIBUTION----'
-         LPCMBK = LUPCMD
-         IF (LUPCMD .LT. 0) THEN
-            CALL GPOPEN(LUPCMD,'PCMDATA','UNKNOWN',
-     &           'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
-         END IF
-         REWIND(LUPCMD)
+C
+C Fetching local field integrals
+C
+         CALL DZERO(WORK(KLOCFL),3*NELMNT)
+         CALL J4INT(WORK(KLOCFL),WORK(KFREE),LFREE)
          DO I = 1,NOPTYP
-            CALL DZERO(WORK(KLOCFL),NELMNT)
-            LABLOC='LF-INT#'//CHRNOS(I)
-            IF(FNDLAB(LABLOC,LUPCMD)) THEN
-               CALL READT(LUPCMD,NELMNT,WORK(KLOCFL))
-            ELSE
-               WRITE (LUPRI,'(/A)') ' Integral label '//LABLOC//
-     $              ' not found on file PCMDATA'
-               CALL QUIT('Integral label not found in PR1IN1')
-            END IF
+            JLOCFL = KLOCFL + NELMNT * (I-1)
             IF (EXP1EL) THEN
                IF (.NOT. OUTFLD) THEN
                   EXPVAL(I) = EXPVAL(I)
-     &                      + DDOT(NELMNT,DENMAT,1,WORK(KLOCFL),1)
+     &                      + DDOT(NELMNT,DENMAT,1,WORK(JLOCFL),1)
                ELSE
-                  EXPVAL(I) = DDOT(NELMNT,DENMAT,1,WORK(KLOCFL),1)
+                  EXPVAL(I) = DDOT(NELMNT,DENMAT,1,WORK(JLOCFL),1)
                END IF
             ELSE
-               ISTART = KSOINT+(I-1)*NELMNT
+               ISTART = KSOINT + (I - 1) * NELMNT
                IF (.NOT.OUTFLD) THEN
-                  CALL DAXPY(NELMNT,1.0D0,WORK(KLOCFL),1,WORK(ISTART),1)
+                  CALL DAXPY(NELMNT,1.0D0,WORK(JLOCFL),1,WORK(ISTART),1)
                ELSE
-                  CALL DCOPY(NELMNT,WORK(KLOCFL),1,WORK(ISTART),1)
+                  CALL DCOPY(NELMNT,WORK(JLOCFL),1,WORK(ISTART),1)
                END IF
             END IF
          END DO
-         IF (LPCMBK .LT. 0) CALL GPCLOSE(LUPCMD,'KEEP')
       END IF
 C
 C     ***********************************

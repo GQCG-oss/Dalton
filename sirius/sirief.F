@@ -555,6 +555,9 @@ C
             UMAT(ISYM, JSYM) = ONE * PT(IBTAND(ISYM,JSYM))
          ENDDO
       ENDDO
+
+      
+
 C
 C Computation of WORK = DMAT * UMAT
 C      
@@ -758,7 +761,7 @@ C      END
 C
 C/* Deck J4INT */
 C
-      SUBROUTINE J4INT(WORK,LWORK)
+      SUBROUTINE J4INT(WLOCFL,WORK,LWORK)
 C
 #include <implicit.h>
 #include <pi.h>
@@ -772,15 +775,14 @@ C
 #include <pcmdef.h>
       CHARACTER*8 RTNLBL(2), LFLABEL, LABINT(9*MXCENT)
       LOGICAL FNDLAB, EXP1VL, TOFILE, TRIMAT, FIRST
-      SAVE FIRST
-      DATA FIRST/.TRUE./
 #include <pcm.h>
 #include <pcmlog.h>
 #include "orgcom.h"
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <symmet.h>
 C
-      DIMENSION WORK(*), INTREP(9*MXCENT), INTADR(9*MXCENT)
-      IF (FIRST) THEN
-      FIRST = .FALSE.
+      DIMENSION WLOCFL(*), WORK(*), INTREP(9*MXCENT), INTADR(9*MXCENT)
       LPCMBK = 0
       LPRPBK = 0
       LPCMBK = LUPCMD
@@ -793,7 +795,6 @@ C
       NTNIRR = NTS * NTSIRR
       IF(.NOT.OUTFLD) 
      $     CALL MEMGET('REAL',LDMATM,NTNIRR,WORK,KFREE,LWORK)
-      CALL MEMGET('REAL',LVEC2 ,NNBASX,WORK,KFREE,LWORK)
       CALL MEMGET('REAL',LDNVEC,NTSIRR,WORK,KFREE,LWORK)
       CALL MEMGET('REAL',KQFLD,NTSIRR,WORK,KFREE,LWORK)
       IF(.NOT.OUTFLD) THEN
@@ -809,11 +810,13 @@ C
          WRITE(LUPRI,*) '========== LF MATRIX INV PACK =========='
          CALL OUTPUT(WORK(LDMATM),1,NTSIRR,1,NTS,NTSIRR,NTS,1,LUPRI)
       END IF
-C
+C     
       DO IC = 1,3
+         ISYM = ISYMAX(IC,1)+1
+
          IF (LUPROP .LT. 0) then
             CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
-     &                  'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
+     &           'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
          END IF
          DO ITS=1,NTSIRR
             L = ISPHE(ITS)
@@ -828,17 +831,20 @@ C
                WORK(LDNVEC+ITS-1) = (ZE(L) - ZP)/RE(L)
             END IF
          ENDDO
-         CALL DZERO(WORK(LVEC2),NNBASX)
+         
+         LVEC2 = 1 + NNBASX * (IC - 1)
+         CALL DZERO(WLOCFL(LVEC2),NNBASX)
 C     
          REWIND (LUPROP)
          XI = DIPORG(1)
          YI = DIPORG(2)
          ZI = DIPORG(3)
+         KDMATM = LDMATM + ISYMAX(IC,1) * NTSIRR * NTSIRR
          DO ITS = 1, NTSIRR
             IF(.NOT.OUTFLD) THEN
                DQ = D0
                DO JTS = 1,NTSIRR
-                  INDEX = (JTS-1)*NTSIRR+ITS-1+LDMATM
+                  INDEX = (JTS-1) * NTSIRR + ITS - 1 + KDMATM
                   DQ = DQ + WORK(INDEX)*WORK(LDNVEC+JTS-1)
                END DO
                WORK(KQFLD + ITS - 1) = DQ*AS(ITS)
@@ -846,22 +852,15 @@ C
                WORK(KQFLD + ITS - 1) = WORK(LDNVEC+ITS-1)*AS(ITS)
             END IF
          ENDDO
-         CALL J1INT(WORK(KQFLD),.FALSE.,WORK(LVEC2),1,.FALSE.,'NPETES ',
-     &              1,WORK(KFREE),LWORK)
-C
-C     Write modified dipole integrals
-C
-         LFLABEL = 'LF-INT#'//CHRNOS(IC)
-         CALL WRTIEF(WORK(LVEC2),NNBASX,LFLABEL,LUPCMD)
-Clf         WRITE(LUPRI,*) 'LOCAL FIELD CHECK LABEL ',LFLABEL
-Clf         write(lupri,*) LFLABEL,(WORK(LVEC2+I),I=0,NNBASX-1)
+         CALL J1INT(WORK(KQFLD),.FALSE.,WLOCFL(LVEC2),1,.FALSE.,
+     $        'NPETES ',ISYM,WORK(KFREE),LWORK)
+
       END DO
       DIPORG(1) = XI
       DIPORG(2) = YI
       DIPORG(3) = ZI
       CALL MEMREL('J4INT',WORK,KFRSAV,KFRSAV,KFREE,LWORK)
       IF (LPCMBK .LT. 0) CALL GPCLOSE(LUPCMD,'KEEP')
-      END IF
       RETURN
       END
 C  /* Deck diplfn */
