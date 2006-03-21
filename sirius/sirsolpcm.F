@@ -398,17 +398,17 @@ C
      *      ' orb  #',I,G(I)
   850    CONTINUE
       END IF
-C
+C     
 C     Calculate PCM solvent energy contributions 
-C
-        PC = D0
-	DO ITS = 1, NTSIRR
-        DO JATOM = 1, NUCDEP
-          R2 = (PCMCORD(1,JATOM)-XCTS(ITS))**2 + (PCMCORD(2,JATOM)-
-     *         YCTS(ITS))**2 + (PCMCORD(3,JATOM)-ZCTS(ITS))**2
-          R = DSQRT(R2)
-          PC = PC + NSYM*QSE(ITS) * PCMCHG(JATOM) / R
-        ENDDO
+C     
+      PC = D0
+      DO ITS = 1, NTSIRR
+         DO JATOM = 1, NUCDEP
+            R2 = (PCMCORD(1,JATOM)-XCTS(ITS))**2 + (PCMCORD(2,JATOM)-
+     *           YCTS(ITS))**2 + (PCMCORD(3,JATOM)-ZCTS(ITS))**2
+            R = DSQRT(R2)
+            PC = PC + NSYM*QSE(ITS) * PCMCHG(JATOM) / R
+         ENDDO
       ENDDO
       ESOLT = - DP5 * TJEN + DP5 * PC + UNZ
       IF (IPRPCM .GE. 6) THEN
@@ -529,6 +529,15 @@ C
       QET = D0
 C
       CALL DZERO(WRK(KTJ2),NTS)
+
+C
+C lf Adding active and inactive density
+C
+CLF      CALL DZERO(WRK(KDTOT),NNBAST)
+CLF      IF(NASHT.GT.0) THEN
+clf         CALL DAXPY(NNBAST,1.0D0,DV,1,WRK(KDTOT),1)
+CLF      ENDIF 
+CLF      CALL DAXPY(NNBAST,1.0D0,DC,1,WRK(KDTOT),1)
 C
 C        Read JEN in ao basis 
 C
@@ -612,8 +621,7 @@ C
 C     Print total induced charge before and after renormalization
 C
       IF(IPRPCM.GE.5)THEN
-         IF(ICOMPCM.NE.0) WRITE(LUPRI,1000) QET, TCH, QETN
-         IF(ICOMPCM.EQ.0) WRITE(LUPRI,1100) QET, TCH
+         WRITE(LUPRI,1100) QET, TCH
       END IF
 C      
  1000 FORMAT(1X,'ELECTRONIC APPARENT CHARGE',F10.5,' THEORETICAL ',

@@ -687,10 +687,18 @@ C-----------------
             CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ELSE IF (PCM) THEN
             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
+C
+C In case of HF and one open shell electron we need to add the active density before enetering pcmfck    
+C The inactive density is then restored immediatly afterwards
+C
+            IF((NASHT.EQ.1).AND.(.NOT.DODFT))
+     &           CALL DAXPY(NNBAST,D1,DAOSAV(1,2),1,DAOSAV(1,1),1)
             CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
      &                  DUMMY,.FALSE.,ESOLT,WRK(KFREE),
      &                  LFREE,IPRDIS)
-            CALL DAXPY(NNBAST,-D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+            IF((NASHT.EQ.1).AND.(.NOT.DODFT))
+     &           CALL DAXPY(NNBAST,DM1,DAOSAV(1,2),1,DAOSAV(1,1),1)
+            CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
             CALL MEMREL('DISCTL.PCMFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          END IF
 C

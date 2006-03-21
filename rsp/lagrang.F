@@ -63,6 +63,7 @@ C-- common blocks:
 #include "infpri.h"
 #include "infinp.h"
 #include <dftcom.h>
+#include <pcmlog.h>
 C
       PARAMETER (DHALF=0.5D0,ONE=1.0D0,DMONE=-1.0D0)
 C
@@ -75,12 +76,12 @@ C
          WRITE (LUPRI,*) 'SOPPA not implemented in LAGRAN yet, sorry!'
          CALL QUIT('LAGRAN-ERROR: SOPPA not implemented')
       END IF
-      IF (FLAG(16) .AND. NASHT.GT.1 .AND. NCREF .NE. KZCONF) THEN
+clf      IF ((FLAG(16).OR.PCM).AND.(NASHT.GT.1).AND.(NCREF.NE.KZCONF)) THEN
 Chj:     see comments in RSPSLV in rspsol.F
-         WRITE(LUPRI,*)'Solvent not implemented in LAGRAN with CSFs'
-         WRITE(LUPRI,*)'Use .DETERMINANTS and try again!'
-         CALL QUIT('Solvent not implemented in LAGRAN with CSFs')
-      END IF
+clf         WRITE(LUPRI,*)'Solvent not implemented in LAGRAN with CSFs'
+clf         WRITE(LUPRI,*)'Use .DETERMINANTS and try again!'
+clf         CALL QUIT('Solvent not implemented in LAGRAN with CSFs')
+clf      END IF
 C
 C ALLOCATE WORK SPACE
 C
@@ -136,7 +137,7 @@ C
 C     section for calculating esr-properties with solvent
 C     contributions.
 C
-      IF (FLAG(16)) THEN
+      IF (FLAG(16).OR.PCM) THEN
 C
 C        workspace allocation
 C
@@ -146,7 +147,13 @@ Chj      KTDV   = KGP2  + KZVAR
 Chj      ... SOLGDT uses NVARH (.gt. KZVAR !) for GP2
          KDV    = KTDV  + N2ASHX
          KWRK1  = KDV   + NNASHX
-         KWRK2  = KWRK1 + NLMSOL * 2
+         IF (FLAG(16)) THEN
+            KWRK2  = KWRK1 + NLMSOL * 2
+         ELSE IF (PCM) THEN
+            KWRK2  = KWRK1
+         ELSE
+            KWRK2  = KWRK1
+         END IF
          LWRK1  = LWRK  - KWRK2
 C
 C        initialize solvent gradient.
@@ -179,9 +186,17 @@ C
 C
 C        use wavefunction routine to calculate solvent gradient.
 C
-         CALL SOLGDT(WRK(KCREF),CMO,XINDX,WRK(KDV),WRK(KGP2),
-     *               ESOLT,WRK(KWRK1),WRK(KWRK2),LWRK1,NDREF,IREFSY)
-C
+         IF (FLAG(16)) THEN
+            CALL SOLGDT(WRK(KCREF),CMO,XINDX,WRK(KDV),WRK(KGP2),
+     *           ESOLT,WRK(KWRK1),WRK(KWRK2),LWRK1,NDREF,IREFSY)
+         ELSE IF (PCM) THEN
+            CALL PCMGDT(WRK(KCREF),CMO,XINDX,WRK(KDV),WRK(KGP2),
+     *           ESOLT,WRK(KWRK2),LWRK1,NDREF,IREFSY)
+         ELSE
+            CALL QUIT("Lagran: Either FLAG(16) or PCM must be TRUE")
+         END IF
+               
+C     
 C        scale by a half for consistency with response and add to GP.
 C
          CALL DAXPY(KZWOPT,DHALF,WRK(KGP2+KZCONF),1,WRK(KGP+KZCONF),1)
@@ -923,19 +938,19 @@ C
       LWRK1  = LFREE  - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('SOLGDT',-KWRK1,LFREE)
 C
-         IF (IPRSOL .GE. 130) THEN
-            WRITE (LUPRI,'(/A/A,2I10)')
-     *         ' >>> SOLGDT - gtot (input) - non-zero elements',
-     *         '     NCONF, NWOPT =',NCONF,NWOPT
-            DO 40 I = 1,NCONF
-               IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
-     *         ' conf #',I,G(I)
-   40       CONTINUE
-            DO 50 I = NCONF+1,NVAR
-               IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
-     *         ' orb  #',I,G(I)
-   50       CONTINUE
-         END IF
+      IF (IPRSOL .GE. 130) THEN
+         WRITE (LUPRI,'(/A/A,2I10)')
+     *        ' >>> SOLGDT - gtot (input) - non-zero elements',
+     *        '     NCONF, NWOPT =',NCONF,NWOPT
+         DO 40 I = 1,NCONF
+            IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
+     *           ' conf #',I,G(I)
+ 40      CONTINUE
+         DO 50 I = NCONF+1,NVAR
+            IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
+     *           ' orb  #',I,G(I)
+ 50      CONTINUE
+      END IF
 C
 C     Calculate f(l) factors
 C     If (INERSF) FLVEC factors describe the optical polarization
@@ -1147,8 +1162,9 @@ C                     = 2 ( <i|R(l,m)|i> - TE(l,m) )
 C        Add the DIALM contribution and the GRDLM contribution
 C        to solvent Hessian diagonal.
 C
-         CALL SOLDIA(TELMAC,WRK(KRLMAC),INDXCI,
-     *               WRK(KRLM),DV,WRK(KDIALM),WRK(KW21),LW21)
+Clf the diagonal hessian is not needed for triplet gradients
+Clf         CALL SOLDIA(TELMAC,WRK(KRLMAC),INDXCI,
+Clf     *               WRK(KRLM),DV,WRK(KDIALM),WRK(KW21),LW21)
 C        CALL SOLDIA(TELM,RLMAC,INDXCI,RLM,DV,DIAG,WRK,LFREE)
 C
          FAC1 = - D2 * FLVEC(LM) * ERLM(LM,2)
@@ -1348,3 +1364,407 @@ C
       END
 
 
+C  /* Deck pcmgdt */
+      SUBROUTINE PCMGDT(CREF,CMO,INDXCI,DV,G,ESOLT,WRK,LFREE,
+     $                  NHCREF,KREFSY)
+C
+C   Based on SOLGDT:
+C   13-02-2006 Luca Frediani
+C
+C   Purpose:  calculate MCSCF energy and gradient contribution
+C             from a surrounding medium with PCM
+C
+C   Output:
+C    G          MCSCF gradient with solvation contribution added
+C
+#include "implicit.h"
+#include "dummy.h"
+C
+      DIMENSION CREF(*), CMO(*), INDXCI(*)
+      DIMENSION DV(*),   G(*),   WRK(*)
+      PARAMETER ( D1=1.0d0, DM1=-1.0d0, D0 = 0.0D0, D2 = 2.0D0 )
+#include "thrzer.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "mxcent.h"
+#include "orgcom.h"
+#include "pcmdef.h"
+#include "pcmlog.h"
+#include "pcm.h"
+C
+C Used from common blocks:
+C   INFINP: NLMSOL, LSOLMX, EPSOL, RSOL(3)
+C   INFVAR: NCONF,  NWOPT,  NVAR,   NVARH
+C   INFORB: NNASHX, NNBASX, NNORBX, etc.
+C   INFIND: IROW(*)
+C   INFTAP: LUSOL,  LUIT2
+C   INFPRI: IPRSOL
+C
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
+C
+      LOGICAL     FNDLAB, EXP1VL, TOFILE, TRIMAT
+      PARAMETER  (MXLMAX = 50)
+      CHARACTER*8 STAR8, SOLVDI, EODATA, LABINT(9*MXCENT)
+      DATA        STAR8/'********'/
+      DATA        SOLVDI/'SOLVDIAG'/, EODATA/'EODATA  '/
+C
+C     Statement functions;
+C     define automatic arrays (dynamic core allocation)
+C
+      CALL QENTER('PCMGDT')
+C
+C
+C     Core allocation
+C        DIASH  diagonal of solvent contribution to Hessian
+C        GRDLM  TELM gradient for current l,m value in the l,m loop
+C        UCMO   CMO unpacked (i.e. no symmetry blocking)
+C
+      KJENAO = 1
+      KJEN   = KJENAO + NNBASX
+      KJ1AO  = KJEN   + NNORBX
+      KJ1    = KJ1AO  + NNBASX*NSYM
+      KJENAC = KJ1    + NNORBX
+      KJ1AC  = KJENAC + NNASHX
+      KDIASH  = KJ1AC  + NNASHX
+      KGRDLM = KDIASH + NVAR
+      KUCMO  = KGRDLM + NVARH
+      KJ2GRD = KUCMO  + NORBT*NBAST
+      KPOT   = KJ2GRD + NVAR
+      KDENC  = KPOT   + NTS
+      KDENV  = KDENC  + N2BASX
+      KW10   = KDENV  + N2BASX
+C     1.3 rest of CSF contribution
+      KDIALM = KW10
+      KTDV   = KDIALM + NVAR
+      KW20   = KTDV + NASHT * NASHT
+C
+C     Allocations for non-equlibrium energy solvation
+      IF (NONEQ) THEN
+         KMPOT  = KW20
+         KQSEGR = KMPOT  + NTS * NTS 
+         KPOTGR = KQSEGR + NTS
+         KW21   = KPOTGR + NTS
+      ELSE
+         KW21   = KW20
+      END IF
+C
+      LW21   = LFREE - KW21
+C
+      KWRK1  = KW21
+      LWRK1  = LFREE  - KWRK1
+      IF (LWRK1 .LT. 0) CALL ERRWRK('PCMGDT',-KWRK1,LFREE)
+C
+
+      KFREE=1
+      ISPIN1=0
+      ISPIN2=0
+      CALL RSPDM(KREFSY,KREFSY,NHCREF,NHCREF,CREF,CREF,
+     *     WRK(KTDV),DUMMY, ISPIN1,ISPIN2,.FALSE.,.TRUE.,
+     *     INDXCI,WRK(KWRK1),KFREE,LWRK1)
+C     
+C     TRIANGULAR PACKING OF ONE ELECTRON DENSITY MATRIX
+C     
+      CALL DSITSP(NASHT,WRK(KTDV),DV)
+C     
+clf      IF (IPRPCM .GE. 130) THEN
+      IF (.true.) THEN
+         WRITE (LUPRI,'(/A/A,2I10)')
+     *        ' >>> PCMGDT - gtot (input) - non-zero elements',
+     *        '     NCONF, NWOPT =',NCONF,NWOPT
+         DO 40 I = 1,NCONF
+            IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
+     *           ' conf #',I,G(I)
+ 40      CONTINUE
+         DO 50 I = NCONF+1,NVAR
+            IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
+     *           ' orb  #',I,G(I)
+ 50      CONTINUE
+      END IF
+
+      IF (IPRSOL .GE. 20 .AND. NASHT .GT. 0) THEN
+         WRITE (LUPRI,'(/A)') ' >>> SOLGDT - DV matrix :'
+         CALL OUTPAK(DV,NASHT,1,LUPRI)
+      END IF
+C
+C     Unpack symmetry blocked CMO
+C     Loop over l,m expansion
+C
+      CALL UPKCMO(CMO,WRK(KUCMO))
+      CALL DZERO(WRK(KDIASH),NVAR)
+      CALL DZERO(WRK(KDIALM),NVAR)
+      CALL DZERO(WRK(KJEN),NNORBX)
+C
+C     Read JEN = J(en) + J(ne) in ao basis and transform to mo basis.
+C     Extract active-active block in WRK(KJENAC).
+C     
+      LUPBKP = LUPROP
+      IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
+     &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.) 
+CLF      IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
+      IF (.TRUE.) THEN
+         CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
+      END IF
+      REWIND (LUPROP)
+      CALL REAPCM('NE-PCMIN','PCMGRD  ',LUPROP,WRK(KJENAO),NNBASX)
+      CALL UTHU(WRK(KJENAO),WRK(KJEN),WRK(KUCMO),WRK(KWRK1),
+     &          NBAST,NORBT)
+      IF (NASHT .GT. 0) THEN
+         CALL GETAC2(WRK(KJEN),WRK(KJENAC))
+      END IF
+      IF (IPRPCM .GE. 15) THEN
+         WRITE (LUPRI,'(/A)') ' JEN_ao matrix:'
+         CALL OUTPAK(WRK(KJENAO),NBAST,1,LUPRI)
+         WRITE (LUPRI,'(/A)') ' JEN_mo matrix:'
+         CALL OUTPAK(WRK(KJEN),  NORBT,1,LUPRI)
+         IF (NASHT .GT. 0) THEN
+            WRITE (LUPRI,'(/A)') ' JEN_ac matrix:'
+            CALL OUTPAK(WRK(KJENAC),NASHT,1,LUPRI)
+         END IF
+      END IF
+C     
+C     Expextation value of JEN (=PB)
+C     
+      TJEN     = SOLELM(DV,WRK(KJENAC),WRK(KJEN),TJENAC)
+      IF (IPRPCM .GE. 6) THEN
+         WRITE (LUPRI,'(A,F17.8)')
+     *   ' --- JEN expectation value(=PB) :',TJEN
+         WRITE (LUPRI,'(A,F17.8)')
+     *   ' --- active part of JEN(=PB)    :',TJENAC
+      END IF
+Cbm   PB=-TJEN
+Cbm   WRITE(LUPRI,*)'PB =',PB
+C     
+C     Read J2 in ao basis and transform to mo basis.
+C     Extract active-active block in WRK(KJ2AC).
+C     
+      CALL DZERO(WRK(KDENC),N2BASX)
+      CALL DZERO(WRK(KDENV),N2BASX)
+      CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDENC),WRK(KDENV),
+     &            CMO,DV,WRK(KWRK1),LW21)
+      CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENC),1)
+      CALL DZERO(WRK(KDENV),N2BASX)
+      CALL DGEFSP(NBAST,WRK(KDENC),WRK(KDENV))
+      CALL DZERO(WRK(KDENC),N2BASX)
+      CALL PKSYM1(WRK(KDENV),WRK(KDENC),NBAS,NSYM,1)
+
+      EXP1VL = .TRUE.
+      TOFILE = .FALSE.
+      CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENC),1,TOFILE,'NPETES ',
+     &           1,WRK(KWRK1),LW21)
+      CALL DZERO(QSE,MXTS)
+      CALL V2Q(WRK(KWRK1),WRK(KPOT),QSE,QET,.FALSE.)
+C      CALL DSCAL(NTS,-1.0D0,QSE,1)
+C     
+C     Read J1 (=ELECTROSTATIC POTENTIAL) in ao basis and transform to mo
+C     basis.  Extract active-active block in WRK(KJ1AC).
+C     
+      XI = DIPORG(1)
+      YI = DIPORG(2)
+      ZI = DIPORG(3)
+Ckr
+Ckr should be parallelized, but a lot of information to send
+Ckr However, in general not used for SCF and DFT optimizations
+Ckr
+      DO I = 1 , NTSIRR
+         L = 1
+         NCOMP = NSYM
+         DIPORG(1) = XCTS(I)
+         DIPORG(2) = YCTS(I)
+         DIPORG(3) = ZCTS(I)
+         EXP1VL    = .FALSE.
+         TOFILE    = .FALSE.
+         KPATOM    = 0
+         TRIMAT    = .TRUE.
+         CALL GET1IN(WRK(KJ1AO),'NPETES ',NCOMP,WRK(KWRK1),LW21,LABINT,
+     &               INTREP,INTADR,L,TOFILE,KPATOM,TRIMAT,DUMMY,EXP1VL,
+     &               DUMMY,IPRPCM)
+         CALL UTHU(WRK(KJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KWRK1),
+     &        NBAST,NORBT)
+         IF (NASHT .GT. 0) THEN
+            CALL GETAC2(WRK(KJ1),WRK(KJ1AC))
+         END IF
+         IF (NONEQ) THEN
+Clf here we will need the singlet density, I beleive.....
+            WRK(KPOT + I - 1) = SOLELM(DV,WRK(KJ1AC),WRK(KJ1),TJ1AC)
+         END IF
+
+         IF (IPRPCM .GE. 15) THEN
+            WRITE (LUPRI,'(/A)') ' J1_ao matrix:'
+            CALL OUTPAK(WRK(KJ1AO),NBAST,1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' J1_mo matrix:'
+            CALL OUTPAK(WRK(KJ1),  NORBT,1,LUPRI)
+            IF (NASHT .GT. 0) THEN
+               WRITE (LUPRI,'(/A)') ' J1_ac matrix:'
+               CALL OUTPAK(WRK(KJ1AC),NASHT,1,LUPRI)
+            END IF
+         END IF
+         CALL DAXPY(NNORBX,-QSE(I),WRK(KJ1),1,WRK(KJEN),1)
+C
+C     Due to the computational cost of building the CI gradient, and the lack
+C     of importance on convergence rates, we skip the construction of the 
+C     solvent contribution to the diagonal Hessian. K.Ruud, Oct.-01
+C
+C         CALL DZERO(WRK(KGRDLM),NVARH)
+C         IF (NCONF .GT. 1) THEN
+C            CALL SOLGC(CREF,WRK(KJ1AC),TJ1AC,WRK(KGRDLM),INDXCI,
+C     &                 WRK(KWRK1),LWRK1)
+CC           CALL SOLGC(CREF,RLMAC,TELMAC,GLMCI,INDXCI,WRK,LWRK)
+CC         END IF
+C         IF (NWOPT .GT. 0) THEN
+C            CALL SOLGO(DCVAL,DV,WRK(KJ1),WRK(KGRDLM+NCONF))
+C         END IF
+C         READ(LUGRDQ)WRK(KJ2GRD)
+C         DO J =  NCONF, NVAR - 1 
+C            WRK(KDIASH+J) = WRK(KDIASH+J) - WRK(KGRDLM+J)*WRK(KJ2GRD+J)
+C         ENDDO
+      ENDDO
+Ckr
+Ckr   End of parallelization loop
+Ckr
+C
+C     Expextation value of J + X(0) = PB + PX
+C     
+      IF (NASHT .GT. 0) THEN
+         CALL GETAC2(WRK(KJEN),WRK(KJENAC))
+      END IF
+      TJEN     = SOLELM(DV,WRK(KJENAC),WRK(KJEN),TJENAC)
+
+      IF (IPRPCM .GE. 6) THEN
+         CALL OUTPAK(WRK(KJENAC),NASHT,1,LUPRI)
+         WRITE (LUPRI,'(A,F17.8)')
+     *        ' --- TJEN expectation value :',TJEN
+         WRITE (LUPRI,'(A,F17.8)')
+     *        ' --- active part of TJEN    :',TJENAC
+      END IF
+C     
+      KFREE=1
+      ISPIN1=1
+      ISPIN2=0
+      CALL RSPDM(KREFSY,KREFSY,NHCREF,NHCREF,CREF,CREF,
+     *     WRK(KTDV),DUMMY, ISPIN1,ISPIN2,.FALSE.,.TRUE.,
+     *     INDXCI,WRK(KWRK1),KFREE,LWRK1)
+Clf
+      IF (.true.) THEN
+         WRITE (LUPRI,'(/A)') ' JEN_ao matrix:'
+         CALL OUTPAK(WRK(KJENAO),NBAST,1,LUPRI)
+         WRITE (LUPRI,'(/A)') ' JEN_mo matrix:'
+         CALL OUTPAK(WRK(KJEN),  NORBT,1,LUPRI)
+         IF (NASHT .GT. 0) THEN
+            WRITE (LUPRI,'(/A)') ' JEN_ac matrix:'
+            CALL OUTPAK(WRK(KJENAC),NASHT,1,LUPRI)
+         END IF
+      END IF
+
+
+C     
+C     TRIANGULAR PACKING OF ONE ELECTRON DENSITY MATRIX
+C     
+      CALL DSITSP(NASHT,WRK(KTDV),DV)
+      CALL DZERO(WRK(KGRDLM),NVARH)
+      IF (NCONF .GT. 1) THEN
+         CALL SOLGC(CREF,WRK(KJENAC),TJENAC,WRK(KGRDLM),INDXCI,
+     &              WRK(KWRK1),LWRK1)
+C        CALL SOLGC(CREF,RLMAC,TELMAC,GLMCI,INDXCI,WRK,LWRK)
+      END IF
+      IF (NWOPT .GT. 0) THEN
+         CALL SOLGO(D0,DV,WRK(KJEN),WRK(KGRDLM+NCONF))
+      END IF
+C     
+C     
+C     Obtain DIALM = diagonal TE(l,m) Hessian
+C                  = 2 ( <i|R(l,m)|i> - TE(l,m) )
+C     Add the DIALM contribution and the GRDLM contribution
+C     to solvent Hessian diagonal.
+C     
+C      CALL SOLDIA(TJENAC,WRK(KJENAC),INDXCI,
+C     *            WRK(KJEN),DV,WRK(KDIALM),WRK(KW21),LW21)
+C     CALL SOLDIA(TELM,RLMAC,INDXCI,RLM,DV,DIAG,WRK,LFREE)
+C     
+      DO 420 I = 0,(NVAR-1)
+         WRK(KDIASH+I) = WRK(KDIASH+I)
+     *                 - WRK(KDIALM+I)
+  420 CONTINUE
+C     
+C     test orthogonality
+C     
+      IF (IPRPCM .GE. 120) THEN
+         WRITE (LUPRI,'(/A)')' >>> PCMGRD - grdj1, grdj2, dialm, '//
+     &                      'diash, cref'
+         DO 430 I = 1,NCONF
+            WRITE (LUPRI,'(A,I10,3F10.6)') ' conf #',I,
+     *            WRK(KDIALM-1+I),
+     *            WRK(KDIASH-1+I),CREF(I)
+  430    CONTINUE
+      END IF
+C     
+      TEST = DDOT(NCONF,CREF,1,WRK(KGRDLM),1)
+      IF (ABS(TEST) .GT. 1.D-8) THEN
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(/A,/A,1P,D12.4)')
+     *   ' >>> PCMGRD WARNING, for B',
+     *   ' <CREF | GRADB > =',TEST
+      END IF
+C     
+C      TEST = DDOT(NCONF,CREF,1,WRK(KGRDJ1),1)
+      IF (ABS(TEST) .GT. 1.D-8) THEN
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(/A,/A,1P,D12.4)')
+     *   ' >>> PCMGRD WARNING, for J1 ',
+     *   ' <CREF | GRADJ1 > =',TEST
+      END IF
+C      TEST = DDOT(NCONF,CREF,1,WRK(KGRDJ2),1)
+      IF (ABS(TEST) .GT. 1.D-8) THEN
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(/A,/A,1P,D12.4)')
+     *   ' >>> PCMGRD WARNING, for J2',
+     *   ' <CREF | GRADJ2 > =',TEST
+      END IF
+C     
+C     Add PCM gradient contribution to MCSCF gradient
+C     
+      CALL DAXPY(NVARH,DM1,WRK(KGRDLM),1,G,1)
+clf      IF (IPRPCM .GE. 140) THEN
+      IF (.true.) THEN
+         WRITE (LUPRI,'(/A/A,2I10)')
+     *      ' >>> PCMGRD - grdB, gtot (accum) - non-zero grdlm',
+     *      '     NCONF, NWOPT =',NCONF,NWOPT
+         DO 440 I = 1,NCONF
+            IF (WRK(KGRDLM-1+I) .NE. D0)
+     *         WRITE (LUPRI,'(A,I10,3F15.10)')
+     *         ' conf #',I,WRK(KGRDLM-1+I),G(I)
+  440    CONTINUE
+         DO 450 I = NCONF+1,NVAR
+            IF (WRK(KGRDLM-1+I) .NE. D0)
+     *         WRITE (LUPRI,'(A,I10,3F15.10)')
+     *         ' orb  #',I,WRK(KGRDLM-1+I),G(I)
+  450    CONTINUE
+      END IF
+C     
+C     
+C     
+      IF (IPRPCM .GE. 130) THEN
+         WRITE (LUPRI,'(/A/A,2I10)')
+     *      ' >>> PCMGRD - gtot (output) - non-zero elements',
+     *      '     NCONF, NWOPT =',NCONF,NWOPT
+         DO 840 I = 1,NCONF
+            IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
+     *      ' conf #',I,G(I)
+  840    CONTINUE
+         DO 850 I = NCONF+1,NVAR
+            IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
+     *      ' orb  #',I,G(I)
+  850    CONTINUE
+      END IF
+      IF (LUPBKP .LT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      CALL QEXIT('PCMGDT')
+      RETURN
+C     end of pcmgdt.
+      END

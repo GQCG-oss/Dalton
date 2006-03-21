@@ -155,22 +155,22 @@ C
          CALL QUIT(
      &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
       END IF
-      IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
-     &   THEN
-C
-Chj-May2000: it is not so quick to implement triplet solvent response
-C  with CSF's because RSPSLV calls sirius routines, and all the Sirius
-C  routines are using CSF's if that was used in Sirius.
-C  However, when triplet we need to use determinants to get the triplet
-C  configurations included.
-C
-         WRITE (LUPRI,*) 'RSPSLV-ERROR: '//
-     &      'solvent triplet response is not implemented for CSFs'
-         WRITE (LUPRI,*) 'KZCONF .ne. NCREF:',KZCONF,NCREF
-         WRITE(LUPRI,*)'Use .DETERMINANTS and try again!'
-         CALL QUIT('RSPSLV-ERROR: '//
-     &      'solvent triplet response is not implemented for CSFs')
-      END IF
+Clf      IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
+Clf     &   THEN
+ClfC
+ClfChj-May2000: it is not so quick to implement triplet solvent response
+ClfC  with CSF's because RSPSLV calls sirius routines, and all the Sirius
+ClfC  routines are using CSF's if that was used in Sirius.
+ClfC  However, when triplet we need to use determinants to get the triplet
+ClfC  configurations included.
+ClfC
+Clf         WRITE (LUPRI,*) 'RSPSLV-ERROR: '//
+Clf     &      'solvent triplet response is not implemented for CSFs'
+Clf         WRITE (LUPRI,*) 'KZCONF .ne. NCREF:',KZCONF,NCREF
+Clf         WRITE(LUPRI,*)'Use .DETERMINANTS and try again!'
+Clf         CALL QUIT('RSPSLV-ERROR: '//
+Clf     &      'solvent triplet response is not implemented for CSFs')
+Clf      END IF
       IPRSAV = IPRRSP
       IPRRSP = IPRSLV
       IF (SLVANT) THEN

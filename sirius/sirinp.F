@@ -2699,6 +2699,19 @@ C     Reference: C.W. Bauschlicher, JCP 72 (1980) 880.
 C High spin orbitals input
  124  HSROHF = .TRUE.
       READ(LUCMD,*) (NROHF(I),I=1,NSYM)
+C
+Clf in case there is only one open shell electron we go for the old code
+C
+      INUM = 0
+      DO IHS = 1, NSYM
+         IF (NROHF(IHS) .EQ. 1 ) IOPRHF = IHS
+         INUM = INUM + NROHF(IHS)
+      END DO
+      IF (INUM .EQ. 1) THEN
+         HSROHF = .FALSE.
+      ELSE
+         IOPRHF = 0
+      END IF
       IF (INIOCC .EQ. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
