@@ -440,10 +440,17 @@ Clf 10/06/2002
 C quadratic PCM response (for the time beeing without memory efficent SCF)
 C
       ELSE IF (PCM) THEN
-         CALL E3IEF(VECA, VECB, VECC,
-     *        ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
-     *        WRK(KDEN1),UDV,WRK(KFREE),LFREE,
-     *        KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP)
+         IF (.NOT.NEWQR) THEN
+            CALL E3IEF(VECA, VECB, VECC,
+     *           ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
+     *           WRK(KDEN1),UDV,WRK(KFREE),LFREE,
+     *           KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP)
+         ELSE
+            CALL E3IEF2(VECA, VECB, VECC,
+     *           ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
+     *           WRK(KDEN1),UDV,WRK(KFREE),LFREE,
+     *           KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP)
+         END IF
       END IF
 C
       CALL QEXIT('E3INIT')

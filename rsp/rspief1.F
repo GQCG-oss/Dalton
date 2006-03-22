@@ -332,9 +332,9 @@ C Contract transformed charges with the density
             END DO
          END DO
 #if defined (VAR_MPI)
-      END IF
+         END IF
 #endif
-      CALL V2Q(WRK(KFREE),WRK(KTCHG),WRK(KQCHG),QTEXS,NEQRSP)
+         CALL V2Q(WRK(KFREE),WRK(KTCHG),WRK(KQCHG),QTEXS,NEQRSP)
       END IF
 C
 C     Make charges of the n-index transformed potentials
@@ -744,6 +744,7 @@ C
 #include <infspi.h>
 #include <infden.h>
 #include <infinp.h>
+#include <priunit.h>
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -939,200 +940,4 @@ C
 C
       RETURN
       END
-ClfC=============================================================================
-ClfC    /* Deck C3IEF */
-ClfC=============================================================================
-Clf      SUBROUTINE C3IEF(VECA,VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,
-Clf     &                 UDV,WRK,LWRK,KZYVR,KZYV1,KZYV2,
-Clf     &                 IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
-ClfC
-ClfC     Purpose:
-ClfC     Memeory efficient routine for computing solvent contribution 
-ClfC     to E[3] times two vectors. Replaces E3IEF in SCF calculations.
-ClfC
-Clf#include <implicit.h>
-Clf#include <dummy.h>
-ClfC
-Clf      PARAMETER ( D0=0.0D0, D1=1.0D0 )
-ClfC
-Clf#include <maxorb.h>
-Clf#include <inforb.h>
-Clf#include <infdim.h>
-Clf#include <infinp.h>
-Clf#include <infvar.h>
-Clf#include <infrsp.h>
-Clf#include <infpri.h>
-Clf#include <infcr.h>
-Clf#include <inftap.h>
-Clf#include <qrinf.h>
-ClfC
-Clf      DIMENSION ETRS(KZYVR),XINDX(*)
-Clf      DIMENSION UDV(NASHDI,NASHDI)
-Clf      DIMENSION ZYM1(*),ZYM2(*),WRK(*),CMO(*)
-Clf      DIMENSION VEC1(KZYV1),VEC2(KZYV2),VECA(KZYVR)
-Clf      DIMENSION MJWOP(2,MAXWOP,8)
-ClfC
-Clf      LOGICAL LCON, LORB, LREF
-ClfC
-Clf      NSIM = 1
-Clf      KFREE = 1
-Clf      LFREE = LWRK
-Clf      CALL MEMGET('REAL',KTRES ,N2ORBX,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KTELM ,N2ORBX,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KTLMA ,N2ORBX,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KTLMB ,N2ORBX,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KFLST ,NLMSOL,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KFLOP ,NLMSOL,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KTNLM ,NLMSOL,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KRLMAO,NNBASX,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KUCMO ,NORBT*NBAST,WRK,KFREE,LFREE)
-Clf      CALL MEMGET('REAL',KCREF ,NCREF,WRK,KFREE,LFREE)
-ClfC
-ClfC Get the reference state
-ClfC
-Clf      CALL GETREF(WRK(KCREF),MZCONF(1))
-ClfC
-ClfC Zero the final effective operator
-ClfC
-Clf      CALL DZERO(WRK(KTRES),N2ORBX)
-ClfC
-ClfC Unpack the response vectors
-ClfC
-Clf      CALL GTZYMT(NSIM,VEC1,KZYV1,ISYMV1,ZYM1,MJWOP)
-Clf      CALL GTZYMT(NSIM,VEC2,KZYV2,ISYMV2,ZYM2,MJWOP)
-ClfC
-ClfC Unpack symmetry blocked CMO
-ClfC
-Clf      CALL UPKCMO(CMO,WRK(KUCMO))
-ClfC
-ClfC Calculate f(l) factors.
-ClfC
-Clf      CALL SOLFL(WRK(KFLST),EPSTAT,RSOL,LSOLMX)
-Clf      CALL SOLFL(WRK(KFLOP),EPSOL,RSOL,LSOLMX)
-ClfC
-ClfC Read nuclear contributions TN(l,m).
-ClfC
-Clf      IF (LUSOL .LE. 0) CALL GPOPEN(LUSOL,FNSOL,'UNKNOWN',' ',
-Clf     &     'UNFORMATTED',IDUMMY,.FALSE.)
-Clf      REWIND LUSOL
-Clf      CALL MOLLAB('SOLVRLM ',LUSOL,LUERR)
-Clf      READ (LUSOL)
-Clf      CALL READT(LUSOL,NLMSOL,WRK(KTNLM))
-ClfC
-ClfC Loop over l,m expansion.
-ClfC
-Clf      LM = 0
-Clf      DO 520 L = 0,LSOLMX
-Clf         READ (LUSOL) L1,(ISYRLM(M),M=1,2*L+1)
-Clf      DO 500 M = -L,L
-Clf         LM = LM + 1
-Clf         ISYMT = ISYRLM(L+M+1)
-Clf         IF (ISYMT.NE.1 .AND. ISYMT.NE.ISYMV1 .AND.
-Clf     &        ISYMT.NE.ISYMV2 .AND. ISYMT.NE.MULD2H(ISYMV1,ISYMV2)) THEN
-Clf            READ (LUSOL)
-Clf            GO TO 500
-Clf         END IF
-ClfC
-ClfC Read R(l,m) in ao basis, transform to mo basis and unpack.
-ClfC Electronic contribution TE(l,m).
-ClfC
-Clf         CALL READT(LUSOL,NNBASX,WRK(KRLMAO))
-Clf         CALL UTHU(WRK(KRLMAO),WRK(KTELM),WRK(KUCMO),WRK(KFREE),
-Clf     &             NBAST,NORBT)
-Clf         CALL DCOPY(NNORBX,WRK(KTELM),1,WRK(KTLMA),1)
-Clf         CALL DSPTSI(NORBT,WRK(KTLMA),WRK(KTELM))
-ClfC
-ClfC Create the effective operator:        
-ClfC 
-ClfC     TRES = sum(l,m)[ W(k1,k2) + A1(k2) + A12 ]
-ClfC 
-ClfC      W(k1,k2) = g(l)*( F1 + F2 )*TELM(k1,k2)
-ClfC        A1(k2) = g(l)*F3*TELM(k2)
-ClfC           A12 = g(l)*F4*TELM
-ClfC
-ClfC      F1 = -TNLM
-ClfC      F2 = <0| TELM |0>
-ClfC      F3 = 2*<0| TELM(k1) |0>
-ClfC      F4 = <0| TELM(k1,k2) |0>
-ClfC
-Clf         F1=D0
-Clf         F2=D0
-Clf         F3=D0
-Clf         F4=D0
-ClfC     
-Clf         IF (ISYMT.EQ.1) THEN
-Clf            F1 = -WRK((KTNLM-1)+LM) 
-Clf            CALL DCOPY(N2ORBX,WRK(KTELM),1,WRK(KTLMA),1)
-Clf            CALL MELONE(WRK(KTLMA),1,UDV,D1,F2,200,'C3IEF')
-Clf         END IF
-Clf         IF (ISYMT.EQ.ISYMV1) THEN
-Clf            CALL DZERO(WRK(KTLMA),N2ORBX)
-Clf            CALL OITH1(ISYMV1,ZYM1,WRK(KTELM),WRK(KTLMA),ISYMT)
-Clf            CALL MELONE(WRK(KTLMA),1,UDV,D1,F3,200,'C3IEF')
-Clf            F3 = 2*F3
-Clf         END IF
-Clf         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-Clf            CALL DZERO(WRK(KTLMA),N2ORBX)
-Clf            CALL DZERO(WRK(KTLMB),N2ORBX)
-Clf            CALL OITH1(ISYMV1,ZYM1,WRK(KTELM),WRK(KTLMA),ISYMT)
-Clf            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),ISYMV2)
-Clf            CALL MELONE(WRK(KTLMB),1,UDV,D1,F4,200,'C3IEF')
-Clf         END IF
-ClfC
-Clf         FLST = WRK((KFLST-1)+LM)
-Clf         FLOP = WRK((KFLOP-1)+LM)
-Clf         IF (ISYMT.EQ.MULD2H(ISYMV1,ISYMV2)) THEN
-Clf            FACT = FLOP*F4
-Clf            CALL DAXPY(N2ORBX,FACT,WRK(KTELM),1,WRK(KTRES),1)
-Clf         END IF
-Clf         IF (ISYMT.EQ.ISYMV1) THEN
-Clf            CALL DZERO(WRK(KTLMA),N2ORBX)
-Clf            CALL OITH1(ISYMV2,ZYM2,WRK(KTELM),WRK(KTLMA),ISYMT)
-Clf            FACT = FLOP*F3
-Clf            CALL DAXPY(N2ORBX,FACT,WRK(KTLMA),1,WRK(KTRES),1)
-Clf         END IF
-Clf         IF (ISYMT.EQ.1) THEN
-Clf            IF (INERSI) THEN
-Clf               FACT = FLST*(F1+F2)
-Clf            ELSE
-Clf               FACT = FLOP*(F1+F2)
-Clf            END IF
-Clf            CALL DZERO(WRK(KTLMA),N2ORBX)
-Clf            CALL DZERO(WRK(KTLMB),N2ORBX)
-Clf            CALL OITH1(ISYMV1,ZYM1,WRK(KTELM),WRK(KTLMA),ISYMT)
-Clf            CALL OITH1(ISYMV2,ZYM2,WRK(KTLMA),WRK(KTLMB),
-Clf     &                 MULD2H(ISYMT,ISYMV1))
-Clf            CALL DAXPY(N2ORBX,FACT,WRK(KTLMB),1,WRK(KTRES),1)
-Clf         END IF
-Clf  500 CONTINUE
-Clf  520 CONTINUE
-ClfC
-ClfC       Make the gradient
-ClfC
-ClfC     / <0| [qj ,TRES] |0> \
-ClfC     |          0         |
-ClfC     | <0| [qj+,TRES] |0> |
-ClfC      \         0         /
-ClfC
-Clf      ISYMDN = 1
-Clf      OVLAP  = D1
-Clf      JSPIN = 0
-Clf      ISYMV  = IREFSY
-Clf      ISYMST = MULD2H(IGRSYM,IREFSY)
-Clf      IF ( ISYMST .EQ. IREFSY ) THEN
-Clf         LCON = ( MZCONF(IGRSYM) .GT. 1 )
-Clf      ELSE
-Clf         LCON = ( MZCONF(IGRSYM) .GT. 0 )
-Clf      END IF
-Clf      LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
-Clf      LREF = .TRUE.
-Clf      NZYVEC = NCREF
-Clf      NZCVEC = NCREF
-Clf      CALL RSP1GR(NSIM,KZYVR,IDUMMY,JSPIN,IGRSYM,JSPIN,ISYMV,ETRS,
-Clf     *            WRK(KCREF),NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,WRK(KTRES),
-Clf     *            XINDX,MJWOP,WRK(KFREE),LFREE,LORB,LCON,LREF)
-Clf
-ClfC     
-Clf      CALL GPCLOSE(LUSOL,'KEEP')
-Clf      RETURN
-Clf      END
+

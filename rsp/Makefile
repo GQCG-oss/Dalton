@@ -58,6 +58,7 @@ F_OBJS = \
 	rspzfs.o	\
 	x2expl.o        \
 	rspief1.o       \
+	rspief2.o       \
         rspief.o        \
         rspqm3.o
 

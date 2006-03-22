@@ -238,14 +238,12 @@ C
          CALL QUIT('MMCORE must equal MMWORK.')
       END IF
 Cef end
-c     write (0,*) 'checking BASDIR for MYNUM',MYNUM
-c     write (0,*) MYNUM,' ',BASDIR
-c     write (0,*) MYNUM,' ',
-c    &INSTALL_BASDIR
-
+Clf
+      IEND=0
+Clf
       IF (INDEX(BASDIR,
-     &INSTALL_BASDIR
-     &) .LE. 0) THEN
+     &     INSTALL_BASDIR
+     &     ) .LE. 0) THEN
          IEND = 0
 Chjaaj   IEND = INDEX(BASDIR,' ') - 1
 Chjaaj   not good, will give wrong IEND if any directories

@@ -4175,7 +4175,7 @@ C            small molecules, otherwise just a lot of lines.
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
-         IPCMN=IPCMN+1
+            IPCMN = IPCMN + 1
             IF (IPREAD .GT. IPTEST) THEN
                WRITE (LUPRI,'(/I4,3X,A,5X,A,3X,F15.10)')
      *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
@@ -4197,7 +4197,7 @@ C--------------------------
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  IPCMN=IPCMN+1
+                  IPCMN = IPCMN + 1
                   JATOM  = JATOM + 1
                   WORK(KMASS + NATOMS) = 
      *                 DISOTP(IZATOM(ICENT),1,'MASS')
@@ -4222,7 +4222,7 @@ C--------------------------
   200       CONTINUE
          END IF
   100 CONTINUE
-      NPCMN=IPCMN
+      NPCMN = IPCMN
 C
 C     ********************************
 C     ***** Symmetry Coordinates *****
@@ -5368,11 +5368,11 @@ C     Rotations
 C
       NROTS = 0
       DO 40 I = 1,3
-      IF(LSYMOP(IROTS(I))) THEN
-        IND         = IND + 1
-        ISOP(IND) = IROTS(I)
-        NROTS       = NROTS + 1
-      ENDIF
+         IF(LSYMOP(IROTS(I))) THEN
+            IND         = IND + 1
+            ISOP(IND) = IROTS(I)
+            NROTS       = NROTS + 1
+         ENDIF
    40 CONTINUE
 C
 C     Inversion
@@ -5394,6 +5394,7 @@ C
         NREFL       = NREFL + 1
       ENDIF
    50 CONTINUE
+
       IF(IND.NE.MAXREP) CALL QUIT('SYMGRP:IND.NE.MAXREP!')
 C
 C     Classify group

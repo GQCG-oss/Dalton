@@ -13,7 +13,7 @@ C
 C
 C     ----- set up the NAMELIST $PCM -----
 C
-      PARAMETER (NTABLE=15)
+      PARAMETER (NTABLE=16)
       CHARACTER RINPUT*8
       CHARACTER*8 RZSOL
       CHARACTER*6 SOLWD
@@ -28,7 +28,7 @@ C
       DATA TABLE/'.SOLVNT','.EPS   ','.EPSINF','.RSOLV ',
      *           '.RET   ','.NESFP ','.ICESPH','.ICOMPC',
      *           '.IPRINT','.NON-EQ','.NEQRSP','.NPCMMT',
-     *           '.ANISO ','.LOCFLD','.OUTFLD'/
+     *           '.ANISO ','.LOCFLD','.OUTFLD','.NEWQR '/
 C
       DATA RINPUT/'INPUT   '/
 C
@@ -41,6 +41,7 @@ C
 C       this group defines the solvent (no default)
 C
       PCM = .TRUE.
+      NEWQR = .FALSE.
       RZSOL = RINPUT
       EPSI = D0
       EPSINI = D0
@@ -80,8 +81,8 @@ C
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
-                  GO TO (101,102,103,104,105,106,107,108,
-     &            109,110,111,112,113,114,115), II
+                  GO TO (101,102,103,104,105,106,107,108,109,110,
+     &                   111,112,113,114,115,116), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -166,12 +167,17 @@ C *** Option 14 >LOCFLD < Local field effect
  114  LOCFLD = .TRUE.
       GO TO 100
 C
-C *** Option 14 >OUTFLD < Local field effect for sum frequency generation
+C *** Option 15 >OUTFLD < Local field effect for sum frequency generation
 C Ref: Mizrahi and Sipe -- Phys. Rev. B Vol 34 n. 6 pp. 3700-3709 
 C
  115  LOCFLD = .TRUE.
       OUTFLD = .TRUE.
       GO TO 100
+C
+C *** Option 16 >NEWQR <  Go for the new quadratic response routine
+ 116  NEWQR = .TRUE.
+      GO TO 100
+C
 C
 C     We need to create to PCM files
 C
@@ -1426,6 +1432,44 @@ C
 
       IF(I.NE.NUCDEP) CALL QUIT('SPHGEN: WRONG N. OF NUCLEI')
 
+Clf      IPCM = 0
+ClfC
+ClfC GENERATION OF ALL COORDINATES 
+ClfC
+Clf      DO 100 ICENT = 1, NUCIND
+Clf         MULCNT = ISTBNU(ICENT)
+Clf         IF (MULT(MULCNT) .EQ. 1) THEN
+Clf            IPCM = IPCM + 1
+Clf            NATOMS = NATOMS + 1
+Clf            PCMCORD(1,IPCM) = CORD(1,ICENT)
+Clf            PCMCORD(2,IPCM) = CORD(2,ICENT)
+Clf            PCMCORD(3,IPCM) = CORD(3,ICENT)
+Clf            PCMCHG(IPCM) = CHARGE(ICENT)
+Clf         ELSE
+Clf            JATOM = 0
+Clf            DO 200 ISYMOP = 0, MAXOPR
+Clf               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+Clf                  IPCM = IPCM + 1
+Clf                  JATOM  = JATOM + 1
+Clf                  NATOMS = NATOMS + 1
+Clf                  PCMCORD(1,IPCM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+Clf     *                        *CORD(1,ICENT)
+Clf                  PCMCORD(2,IPCM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+Clf     *                        *CORD(2,ICENT)
+Clf                  PCMCORD(3,IPCM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+Clf     *                        *CORD(3,ICENT)
+Clf                  PCMCHG(IPCM) = CHARGE(ICENT)
+Clf               END IF
+Clf  200       CONTINUE
+Clf         END IF
+Clf  100 CONTINUE
+ClfC
+ClfC GENERATION OF ALL SPHERES FROM COORDINATES
+ClfC 
+ClfC ICESPH = 0 SPHERES ON ALL ATOMS WITH TABULATED RADII                  
+ClfC ICESPH = 1 SPHERES GIVEN FROM INPUT (X,Y,Z,R)                    
+ClfC ICESPH = 2 SPHERES ON SELECTED NUCLEI WITH RADII GIVEN FROM INPUT
+ClfC
       IF(ICESPH.EQ.0) THEN
          NESFP = I
          DO J=1,NESFP
