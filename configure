@@ -1021,7 +1021,8 @@ case "$WHICH" in
              echo "gfortran version $gfver prc=$prc"
              cpp="-DVAR_G77 $cpp -DGFORTRAN=$gfver"
              case $prc in
-             i[0-9]86) march="-march=$prc -malign-double";;
+             i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                     march="-march=$prc -malign-double";;
              x86_64) march="-march=x86-64";;
                  *) march="";
              esac
