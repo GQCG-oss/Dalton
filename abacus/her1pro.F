@@ -2413,9 +2413,9 @@ C
             IF (EXP1EL) THEN
                IF (.NOT. OUTFLD) THEN
                   EXPVAL(I) = EXPVAL(I)
-     &                      + DDOT(NELMNT,DENMAT,1,WORK(JLOCFL),1)
+     &                      - DDOT(NELMNT,DENMAT,1,WORK(JLOCFL),1)
                ELSE
-                  EXPVAL(I) = DDOT(NELMNT,DENMAT,1,WORK(JLOCFL),1)
+                  EXPVAL(I) = - DDOT(NELMNT,DENMAT,1,WORK(JLOCFL),1)
                END IF
             ELSE
                ISTART = KSOINT + (I - 1) * NELMNT

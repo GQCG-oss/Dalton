@@ -848,8 +848,12 @@ C
                   DQ = DQ + WORK(INDEX)*WORK(LDNVEC+JTS-1)
                END DO
                WORK(KQFLD + ITS - 1) = DQ*AS(ITS)
+Clf
+               QLOC(ITS,IC) = WORK(KQFLD + ITS - 1)
             ELSE
                WORK(KQFLD + ITS - 1) = WORK(LDNVEC+ITS-1)*AS(ITS)
+Clf
+               QLOC(ITS,IC) = WORK(KQFLD + ITS - 1)
             END IF
          ENDDO
          CALL J1INT(WORK(KQFLD),.FALSE.,WLOCFL(LVEC2),1,.FALSE.,
