@@ -99,6 +99,7 @@ typedef struct {
     real df40, df31, df22, df13, df04;
 } RGFourthDrv;
 
+#define THR 1e-15
  
 /* INTERFACE PART */
 static int camb3lyp_isgga(void) { return 1; }
@@ -765,6 +766,7 @@ camb3lyp_third_sigma(real rho, real ex, RGThirdDrv *f3,
     real bfactor, b_first, b_second, b_third, a;
     RGThirdDrv ader;
 
+    if(ex<THR) { memset(res, 0, sizeof(*res)); return; }
     a = fun_a(rho, ex);
     bfactor  = -BETA*EVALUATOR(a, energy);
     b_first  = BETA*EVALUATOR(a, first);
