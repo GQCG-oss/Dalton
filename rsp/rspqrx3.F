@@ -31,8 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#define DFTQRCAB dftqrab 
-#define DFTQRC dftqrcf
+#define DFTQRC dft_qr_respons
+c#define DFTQRC dftqrcf
 #include <single.h>
 C
 #ifdef REVLOG
@@ -219,7 +219,7 @@ C
       RETURN
       END
 C  /* Deck dft3drv */
-      SUBROUTINE DFT3DRV(VECB, VECC,FI,FA,ZYMB,ZYMC,
+      SUBROUTINE DFT3DRV(VECB, VECC,FI,ZYMB,ZYMC,
      &                   KZYVA,KZYVB,KZYVC,
      &                   ISYMA,ISYMB,ISYMC,
      &                   ISPINA,ISPINB,ISPINC,
@@ -231,20 +231,15 @@ C  /* Deck dft3drv */
 #include <infinp.h>
 #include <dftcom.h>
       DIMENSION VECB(*),VECC(*),ZYMB(*),ZYMC(*),WRK(*),CMO(*)
-      DIMENSION FI(NORBT,NORBT), FA(NORBT,NORBT), MJWOP(2,MAXWOP,8)
+      DIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
       LOGICAL ADDFOCK
 c     unpack response vectors.
       NSIM = 1
       CALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
       CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
 c     compute dft contribution
-      IF (NASHT.EQ.0) THEN   
-         CALL DFTQRC(FI,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,
+      CALL DFTQRC(FI,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,
      &            ADDFOCK,WRK,LFREE)
-      ELSE 
-         CALL DFTQRCAB(FI,FA,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,
-     &            ADDFOCK,WRK,LFREE)
-      END IF   
 c     pack stuff back.
       END
 C  /* Deck e3init */
@@ -377,8 +372,7 @@ C DFT contribution
 C
       IF(DODFT) THEN
          CALL DZERO(WRK(KFC),N2ORBX)
-         CALL DZERO(WRK(KFO),N2ORBX)
-         CALL DFT3DRV(VECB,VECC,WRK(KFC),WRK(KFO),WRK(KZYMB),WRK(KZYMC),
+         CALL DFT3DRV(VECB,VECC,WRK(KFC),WRK(KZYMB),WRK(KZYMC),
      *                   KZYVA,KZYVB,KZYVC,
      *                   ISYMA,ISYMB,ISYMC,
      *                   ISPINA,ISPINB,ISPINC,
@@ -388,8 +382,8 @@ C
          END IF
          TRPLETSAVE=TRPLET
          TRPLET=MOD(ISPINA+ISPINB+ISPINC,2).NE.0
-         CALL ORBEX(ISYMA,1,KZYVA,WRK(KFC),WRK(KFO),WRK(KDUM),
-     &        WRK(KDUM),ETRS,D1,UDV,MJWOP)
+         CALL ORBEX(ISYMA,1,KZYVA,WRK(KFC),WRK(KDUM),WRK(KDUM),
+     &        WRK(KDUM),ETRS,D1,WRK(KDUM),MJWOP)
          TRPLET=TRPLETSAVE
          IF (E3TEST) THEN
             E3TOT = -DDOT(KZYVA,ETRS,1,VECA,1)
