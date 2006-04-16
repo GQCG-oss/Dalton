@@ -383,9 +383,9 @@ C
 CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammenheng med loop i PCMGRI
                   DO 310 ITS = 1,NTSIRR
                      FACTOR = 1.0D0
-                     DIFCPX = SIGNX * XCTS(ITS) - CORPX
-                     DIFCPY = SIGNY * YCTS(ITS) - CORPY
-                     DIFCPZ = SIGNZ * ZCTS(ITS) - CORPZ
+                     DIFCPX = SIGNX * XTSCOR(ITS) - CORPX
+                     DIFCPY = SIGNY * YTSCOR(ITS) - CORPY
+                     DIFCPZ = SIGNZ * ZTSCOR(ITS) - CORPZ
                      CALL HERNAI(TSHGTF,JMAX,EXPP,DIFCPX,DIFCPY,
      *                    DIFCPZ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,
      *                    IPRINT)

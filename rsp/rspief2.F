@@ -106,9 +106,9 @@ C
 
       DO I=1,NTS
          K = 3 * (I-1)
-         WORK(KCTS + K)     = XCTS(I)
-         WORK(KCTS + K + 1) = YCTS(I)
-         WORK(KCTS + K + 2) = ZCTS(I)
+         WORK(KCTS + K)     = XTSCOR(I)
+         WORK(KCTS + K + 1) = YTSCOR(I)
+         WORK(KCTS + K + 2) = ZTSCOR(I)
       END DO
 
 C we fetch the transformation vectors

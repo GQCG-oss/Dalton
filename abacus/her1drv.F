@@ -1494,9 +1494,9 @@ Clf            IF(ICESPH .NE. 1) CALL OVER(INUC,ICOOR,SESE,SNSN,SESN)
                SIGNY = PT(IBTAND(ISYMAX(2,1),JSYM))
                SIGNZ = PT(IBTAND(ISYMAX(3,1),JSYM))
                DO ITS = 1, NTSIRR
-                  XI = SIGNX * XCTS(ITS)
-                  YI = SIGNY * YCTS(ITS)
-                  ZI = SIGNZ * ZCTS(ITS)
+                  XI = SIGNX * XTSCOR(ITS)
+                  YI = SIGNY * YTSCOR(ITS)
+                  ZI = SIGNZ * ZTSCOR(ITS)
                   DIST = DSQRT ((XN-XI)**2 + (YN-YI)**2 + 
      $                 (ZN-ZI)**2)
                   IF(ICOOR .EQ. 1) PROD = XI - XN
@@ -1539,9 +1539,9 @@ C
          SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
          DO ITS=1,NTSIRR
             L=ISPHE(ITS + MTS)
-            XNI = - (XE(L) - SIGNX * XCTS(ITS)) / RE(L)
-            YNI = - (YE(L) - SIGNY * YCTS(ITS)) / RE(L)
-            ZNI = - (ZE(L) - SIGNZ * ZCTS(ITS)) / RE(L)
+            XNI = - (XE(L) - SIGNX * XTSCOR(ITS)) / RE(L)
+            YNI = - (YE(L) - SIGNY * YTSCOR(ITS)) / RE(L)
+            ZNI = - (ZE(L) - SIGNZ * ZTSCOR(ITS)) / RE(L)
             IF(L.LE.NESFP)THEN
                IF(INA(L).EQ.NSJ)THEN
                   IF(IC.EQ.1)DN=XNI

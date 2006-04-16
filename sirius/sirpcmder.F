@@ -1,5 +1,5 @@
 c/* Deck Deriva */
-      SUBROUTINE DERIVA(NSJ,NSJR,ICOORD,INTSPH,NEWSPH)
+      SUBROUTINE CAVDER(NSJ,NSJR,ICOORD,INTSPH,NEWSPH)
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -88,10 +88,10 @@ C     rispetto alla coordinata ICOORD di NSJ (primo elemento di CASCA)
 C
                NS1 = CASCA(1)
                NS2 = CASCA(2)
-               CALL DRDC(NS2,ICOORD,NS1,DR1,NEWSPH)
-               CALL DCDC(1,NS2,ICOORD,NS1,DX,NEWSPH)
-               CALL DCDC(2,NS2,ICOORD,NS1,DY,NEWSPH)
-               CALL DCDC(3,NS2,ICOORD,NS1,DZ,NEWSPH)
+               CALL DRRDCN(NS2,ICOORD,NS1,DR1,NEWSPH)
+               CALL DRCNCN(1,NS2,ICOORD,NS1,DX,NEWSPH)
+               CALL DRCNCN(2,NS2,ICOORD,NS1,DY,NEWSPH)
+               CALL DRCNCN(3,NS2,ICOORD,NS1,DZ,NEWSPH)
                DO 800 I = 3, ICONT
                   DDR = D0
                   DDX = D0
@@ -103,49 +103,49 @@ C
 C     Derivata del raggio dell'elemento I di CASCA rispetto
 C     alla coord. ICOORD dell'elemento 1 di CASCA
 C
-                  CALL DRDR(NS2,NS1,DER,NEWSPH)
+                  CALL DRRDRD(NS2,NS1,DER,NEWSPH)
                   DDR = DER * DR1
-                  CALL DRDC(NS2,1,NS1,DER,NEWSPH)
+                  CALL DRRDCN(NS2,1,NS1,DER,NEWSPH)
                   DDR = DDR + DER * DX
-                  CALL DRDC(NS2,2,NS1,DER,NEWSPH)
+                  CALL DRRDCN(NS2,2,NS1,DER,NEWSPH)
                   DDR = DDR + DER * DY
-                  CALL DRDC(NS2,3,NS1,DER,NEWSPH)
+                  CALL DRRDCN(NS2,3,NS1,DER,NEWSPH)
                   DDR = DDR + DER * DZ
 C     
 C     Derivata della coord. X dell'elemento I di CASCA rispetto
 C     alla coord. ICOORD dell'elemento 1 di CASCA
 C
-                  CALL DCDR(1,NS2,NS1,DER,NEWSPH)
+                  CALL DRCNRD(1,NS2,NS1,DER,NEWSPH)
                   DDX = DER * DR1
-                  CALL DCDC(1,NS2,1,NS1,DER,NEWSPH)
+                  CALL DRCNCN(1,NS2,1,NS1,DER,NEWSPH)
                   DDX = DDX + DER * DX
-                  CALL DCDC(1,NS2,2,NS1,DER,NEWSPH)
+                  CALL DRCNCN(1,NS2,2,NS1,DER,NEWSPH)
                   DDX = DDX + DER * DY
-                  CALL DCDC(1,NS2,3,NS1,DER,NEWSPH)
+                  CALL DRCNCN(1,NS2,3,NS1,DER,NEWSPH)
                   DDX = DDX + DER * DZ
 C     
 C     Derivata della coord. Y dell'elemento I di CASCA rispetto
 C     alla coord. ICOORD dell'elemento 1 di CASCA
 C     
-                  CALL DCDR(2,NS2,NS1,DER,NEWSPH)
+                  CALL DRCNRD(2,NS2,NS1,DER,NEWSPH)
                   DDY = DER * DR1
-                  CALL DCDC(2,NS2,1,NS1,DER,NEWSPH)
+                  CALL DRCNCN(2,NS2,1,NS1,DER,NEWSPH)
                   DDY = DDY + DER * DX
-                  CALL DCDC(2,NS2,2,NS1,DER,NEWSPH)
+                  CALL DRCNCN(2,NS2,2,NS1,DER,NEWSPH)
                   DDY = DDY + DER * DY
-                  CALL DCDC(2,NS2,3,NS1,DER,NEWSPH)
+                  CALL DRCNCN(2,NS2,3,NS1,DER,NEWSPH)
                   DDY = DDY + DER * DZ
 C     
 C     Derivata della coord. Z dell'elemento I di CASCA rispetto
 C     alla coord. ICOORD dell'elemento 1 di CASCA
 C     
-                  CALL DCDR(3,NS2,NS1,DER,NEWSPH)
+                  CALL DRCNRD(3,NS2,NS1,DER,NEWSPH)
                   DDZ = DER * DR1
-                  CALL DCDC(3,NS2,1,NS1,DER,NEWSPH)
+                  CALL DRCNCN(3,NS2,1,NS1,DER,NEWSPH)
                   DDZ = DDZ + DER * DX
-                  CALL DCDC(3,NS2,2,NS1,DER,NEWSPH)
+                  CALL DRCNCN(3,NS2,2,NS1,DER,NEWSPH)
                   DDZ = DDZ + DER * DY
-                  CALL DCDC(3,NS2,3,NS1,DER,NEWSPH)
+                  CALL DRCNCN(3,NS2,3,NS1,DER,NEWSPH)
                   DDZ = DDZ + DER * DZ
 C     
                   DR1 = DDR
@@ -169,7 +169,7 @@ C
       END
 C***********************************************************************
 c/* Deck Dcdr */
-      SUBROUTINE DCDR(JJ,NSI,NSJ,DC,NEWSPH)
+      SUBROUTINE DRCNRD(JJ,NSI,NSJ,DC,NEWSPH)
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -226,7 +226,7 @@ C
       RETURN
       END
 c/* Deck Dcdc */
-      SUBROUTINE DCDC(JJ,NSI,ICOORD,NSJ,DC,NEWSPH)
+      SUBROUTINE DRCNCN(JJ,NSI,ICOORD,NSJ,DC,NEWSPH)
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -290,7 +290,7 @@ C
       RETURN
       END
 c/* Deck Drdr */
-      SUBROUTINE DRDR(NSI,NSJ,DR1,NEWSPH)
+      SUBROUTINE DRRDRD(NSI,NSJ,DR1,NEWSPH)
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -351,7 +351,7 @@ C
       RETURN
       END
 c/* Deck Drdc */
-      SUBROUTINE DRDC(NSI,ICOORD,NSJ,DR1,NEWSPH)
+      SUBROUTINE DRRDCN(NSI,ICOORD,NSJ,DR1,NEWSPH)
 C
 #include <implicit.h>
 #include <mxcent.h>

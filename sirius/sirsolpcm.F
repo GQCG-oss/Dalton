@@ -194,14 +194,14 @@ C
          END IF
       END IF
 C     
-C     Expextation value of JEN (=PB)
+C     Expextation value of JEN (=PCMEN)
 C     
       TJEN     = SOLELM(DV,WRK(KJENAC),WRK(KJEN),TJENAC)
       IF (IPRPCM .GE. 6) THEN
          WRITE (LUPRI,'(A,F17.8)')
-     *   ' --- JEN expectation value(=PB) :',TJEN
+     *   ' --- JEN expectation value(=PCMEN) :',TJEN
          WRITE (LUPRI,'(A,F17.8)')
-     *   ' --- active part of JEN(=PB)    :',TJENAC
+     *   ' --- active part of JEN(=PCMEN)    :',TJENAC
       END IF
 C     
 C     Read J2 in ao basis and transform to mo basis.
@@ -237,9 +237,9 @@ Ckr
       DO I = 1 , NTSIRR
          L = 1
          NCOMP = NSYM
-         DIPORG(1) = XCTS(I)
-         DIPORG(2) = YCTS(I)
-         DIPORG(3) = ZCTS(I)
+         DIPORG(1) = XTSCOR(I)
+         DIPORG(2) = YTSCOR(I)
+         DIPORG(3) = ZTSCOR(I)
          EXP1VL    = .FALSE.
          TOFILE    = .FALSE.
          KPATOM    = 0
@@ -290,7 +290,7 @@ Ckr
 Ckr   End of parallelization loop
 Ckr
 C
-C     Expextation value of J + X(0) = PB + PX
+C     Expextation value of J + X(0) = PCMEN + PCMEE
 C     
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KJEN),WRK(KJENAC))
@@ -400,20 +400,20 @@ C
       END IF
 C     
 C     Calculate PCM solvent energy contributions 
-C     
-      PC = D0
-      DO ITS = 1, NTSIRR
-         DO JATOM = 1, NUCDEP
-            R2 = (PCMCORD(1,JATOM)-XCTS(ITS))**2 + (PCMCORD(2,JATOM)-
-     *           YCTS(ITS))**2 + (PCMCORD(3,JATOM)-ZCTS(ITS))**2
-            R = DSQRT(R2)
-            PC = PC + NSYM*QSE(ITS) * PCMCHG(JATOM) / R
-         ENDDO
+C
+        PCMNE = D0
+	DO ITS = 1, NTSIRR
+        DO JATOM = 1, NUCDEP
+          R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
+     *         YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
+          R = DSQRT(R2)
+          PCMNE = PCMNE + NSYM*QSE(ITS) * PCMCHG(JATOM) / R
+        ENDDO
       ENDDO
-      ESOLT = - DP5 * TJEN + DP5 * PC + UNZ
+      ESOLT = - DP5 * TJEN + DP5 * PCMNE + PCMNN
       IF (IPRPCM .GE. 6) THEN
-         WRITE(LUPRI,*) 'ESOLT, TJEN, PC, UNZ'
-         WRITE(LUPRI,'(3f20.15)') TJEN, PC, UNZ
+         WRITE(LUPRI,*) 'ESOLT, TJEN, PCMNE, PCMNN'
+         WRITE(LUPRI,'(3f20.15)') TJEN, PCMNE, PCMNN
       END IF
 C
 C     We have used "effective" nuclear charges in non-equilibrium
@@ -454,8 +454,8 @@ C     end of pcmgrd.
 C  /* Deck pcmfck */
       SUBROUTINE PCMFCK(DC,DV,FSOL,CMO,MOBAS,ESOLT,WRK,LFREE,IPRINT)
 C
-C     Written by R. Cammi, L. Frediani, B. Mennucci, and K.Ruud,
-C                Pisa June 2001, based on SOLGRD by hjj.
+C     Written by L. Frediani and K.Ruud,
+C                June 2001, based on SOLGRD by hjj.
 C
 C   Purpose:  calculate effective solvent Fock operator
 C
@@ -561,11 +561,10 @@ C     inactive density matrix
 C
          CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
 C
-C benedetta: EN contribution
-C    PB = interaction solute electrons - polarization nuclear charges
-C             PB = sum_i [Vel(i) * QSN(i)]
+C    PCMEN = interaction solute electrons - polarization nuclear charges
+C             PCMEN = sum_i [Vel(i) * QSN(i)]
 C
-         PB = -DDOT(NNBASX,FSOL,1,WRK(KJENAO),1)
+         PCMEN = -DDOT(NNBASX,FSOL,1,WRK(KJENAO),1)
          EXP1VL = .TRUE.
          TOFILE = .FALSE.
          CALL J1INT(WRK(KTJ2),EXP1VL,DC,1,TOFILE,'NPETES ',
@@ -634,30 +633,28 @@ C
       CALL J1INT(QSE,EXP1VL,WRK(KJENAO),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LWRK1)
 C
+C    PCMNE = interaction solute nuclei - polarization electronic charges
+C             PCMNE = sum_i [Vnuc(i) * QSE(i)]
 C
-C Benedetta: NE and EE contributions
+C    PCMEE = interaction solute electrons - polarization electronic charges
+C             PCMEE = sum_i [Vel(i) * QSE(i)]
 C
-C    PC = interaction solute nuclei - polarization electronic charges
-C             PC = sum_i [Vnuc(i) * QSE(i)]
-C
-C    PX = interaction solute electrons - polarization electronic charges
-C             PX = sum_i [Vel(i) * QSE(i)]
-C
-      PC = D0
-      DO ITS = 1, NTSIRR
-         DO JATOM = 1, NUCDEP
-            R2 = (PCMCORD(1,JATOM)-XCTS(ITS))**2 + (PCMCORD(2,JATOM)-
-     *           YCTS(ITS))**2 + (PCMCORD(3,JATOM)-ZCTS(ITS))**2
-            R = DSQRT(R2)
-            PC = PC + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
-         ENDDO
+        PCMNE = D0
+	DO ITS = 1, NTSIRR
+        DO JATOM = 1, NUCDEP
+          R2 = (PCMCORD(1,JATOM)-XTSCOR(ITS))**2 + (PCMCORD(2,JATOM)-
+     *         YTSCOR(ITS))**2 + (PCMCORD(3,JATOM)-ZTSCOR(ITS))**2
+          R = DSQRT(R2)
+          PCMNE = PCMNE + NSYM * QSE(ITS) * PCMCHG(JATOM) / R
+        ENDDO
       ENDDO
-      PX = DDOT(NNBASX,FSOL,1,WRK(KJENAO),1) - PB
+      PCMEE = DDOT(NNBASX,FSOL,1,WRK(KJENAO),1) - PCMEN
 C
 C     Electrostatic contribution:
-C     GES = 1/2 (PB + PC) + 1/2 PX + UNZ
-C     UNZ = 1/2 interaction nuclei - polarization nuclear charges
-      ESOLT = - DP5*(PX+PB) + DP5*PC + UNZ
+C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN
+C     PCMNN = 1/2 interaction nuclei - polarization nuclear charges
+      ESOLT = - DP5*(PCMEE+PCMEN) + DP5*PCMNE + PCMNN
+      write (2,*) 'ee,en,ne,nn',pcmee,pcmen,pcmne,pcmnn,esolt
 C     
 C     Symmetry pack TAO using WRK(KJAO)
 C     Transform to MO basis
@@ -1115,9 +1112,9 @@ Ckr
       DO I = 1, NTSIRR
          L = 1
          NCOMP = NSYM
-         DIPORG(1) = XCTS(I)
-         DIPORG(2) = YCTS(I)
-         DIPORG(3) = ZCTS(I)
+         DIPORG(1) = XTSCOR(I)
+         DIPORG(2) = YTSCOR(I)
+         DIPORG(3) = ZTSCOR(I)
          EXP1VL    = .FALSE.
          TOFILE    = .FALSE.
          KPATOM    = 0
@@ -1186,9 +1183,9 @@ Ckr
       DO I = 1 , NTSIRR
          L = 1
          NCOMP = NSYM
-         DIPORG(1) = XCTS(I)
-         DIPORG(2) = YCTS(I)
-         DIPORG(3) = ZCTS(I)
+         DIPORG(1) = XTSCOR(I)
+         DIPORG(2) = YTSCOR(I)
+         DIPORG(3) = ZTSCOR(I)
          EXP1VL    = .FALSE.
          TOFILE    = .FALSE.
          KPATOM    = 0
@@ -1315,14 +1312,14 @@ C  /* Deck NEQENR */
       FACSLO = (EPS - EPSINF) / (EPS - D1)
       DO ITS = 1, NTS
          POTMAT(ITS,ITS) = 1.07D0 * DSQRT ( FPI/AS(ITS) )
-         XI = XCTS(ITS)
-         YI = YCTS(ITS)
-         ZI = ZCTS(ITS)
+         XI = XTSCOR(ITS)
+         YI = YTSCOR(ITS)
+         ZI = ZTSCOR(ITS)
          DO JTS = 1, NTS
             IF (JTS .NE. ITS) THEN
-               XJ = XCTS(JTS)
-               YJ = YCTS(JTS)
-               ZJ = ZCTS(JTS)
+               XJ = XTSCOR(JTS)
+               YJ = YTSCOR(JTS)
+               ZJ = ZTSCOR(JTS)
                DRIJ = DSQRT((XI-XJ)**2 + (YI-YJ)**2 + (ZI-ZJ)**2)
                POTMAT(ITS,JTS) = D1/DRIJ
             END IF
@@ -1333,11 +1330,11 @@ C  /* Deck NEQENR */
          SSI = D0
          SSN = D0
          DO JTS = 1, NTSIRR
-C     bm
+C
 C     we need Q(el+N)^f for the excited state
 C     calculated as sum of three contributions: Q(el)^ff + Q(N)^ff + Q(el+N)^fs
 C     where Q(el)^ff=QSE and Q(N)^ff + Q(el+N)^fs = QSN - QSLO
-c     bm
+c
             QSLO  = FACSLO*QSEGR(JTS)
             SSI = SSI + QSEGR(JTS) * POTMAT(ITS,JTS)
             SSN = SSN - (QSE(JTS) + QSN(JTS) + QSLO) * POTMAT(ITS,JTS)
@@ -1373,9 +1370,7 @@ c     lf         IF (IPRPCM .GE. 6) THEN
       WRITE(LUPRI,*)'QF(GS)-QS   = UELOR0 ',UELOR0*FACSLO
       WRITE(LUPRI,*)'QF(EXC)-QS = UELOR ',UELOR*FACSLO
       WRITE(LUPRI,*)'PORT =',PORT,' QSSLW = ',QSSLW
-Clf      WRITE(LUPRI,*)'-TJEN',-TJEN
-      WRITE(LUPRI,*)'PC=', PC, '  UNZ=', UNZ
-Clf      WRITE(LUPRI,*)'PX=', -TJEN-PB
+      WRITE(LUPRI,*)'PCMNE=', PCMNE, '  PCMNN=', PCMNN
       WRITE(LUPRI,*)
       WRITE(LUPRI,*)'ESOLT', ESOLT
       WRITE(LUPRI,*)'CORRECTION TO ESOLT', QSSLW-PORT

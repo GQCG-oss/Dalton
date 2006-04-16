@@ -105,7 +105,7 @@ C     es: xe(k)=c(1,ina(k))
 C
 Clf      IF(ICESPH.LE.0) THEN
 Clf         DO J=1,NESFP
-ClfCbm
+Clf
 Clfc           XE(J)=CORD(1,J)
 Clfc           YE(J)=CORD(2,J)
 Clfc           ZE(J)=CORD(3,J)
@@ -379,9 +379,9 @@ Clf               WRITE(LUPRI,*) 'ZERO AREA IN TESSERA', NN + 1
                CALL QUIT('TOO MANY TESSERAE IN PEDRA!')
             END IF
             NN = NN + 1
-            XCTS(NN) = PP(1)
-            YCTS(NN) = PP(2)
-            ZCTS(NN) = PP(3)
+            XTSCOR(NN) = PP(1)
+            YTSCOR(NN) = PP(2)
+            ZTSCOR(NN) = PP(3)
             XVAL(NN) = PP1(1)
             YVAL(NN) = PP1(2)
             ZVAL(NN) = PP1(3)
@@ -399,7 +399,7 @@ Clf               WRITE(LUPRI,*) 'ZERO AREA IN TESSERA', NN + 1
             ENDDO
             IF(IPRCAV.GE.10) THEN
                WRITE(LUPRI,1246) NN
-               WRITE(LUPRI,1247) XCTS(NN),YCTS(NN),ZCTS(NN)
+               WRITE(LUPRI,1247) XTSCOR(NN),YTSCOR(NN),ZTSCOR(NN)
                WRITE(LUPRI,1248) XVAL(NN),YVAL(NN),ZVAL(NN)
                WRITE(LUPRI,1249) AS(NN),ISPHE(NN),NVERT(NN)
             END IF
@@ -419,16 +419,16 @@ C     Verifica se due tessere sono troppo vicine
       TEST2 = TEST*TEST
       DO 400 I = 1, NTS-1
          IF(AS(I).EQ.D0) GOTO 400
-         XI = XCTS(I)
-         YI = YCTS(I)
-         ZI = ZCTS(I)
+         XI = XTSCOR(I)
+         YI = YTSCOR(I)
+         ZI = ZTSCOR(I)
          II = I + 1
          DO 410 J = II , NTS
             IF(ISPHE(I).EQ.ISPHE(J)) GOTO 410
             IF(AS(J).EQ.D0) GOTO 410
-            XJ = XCTS(J)
-            YJ = YCTS(J)
-            ZJ = ZCTS(J)
+            XJ = XTSCOR(J)
+            YJ = YTSCOR(J)
+            ZJ = ZTSCOR(J)
             RIJ = (XI-XJ)**2 + (YI-YJ)**2 + (ZI-ZJ)**2
             IF(RIJ.GT.TEST2) GOTO 410
             WRITE(LUPRI,9010) I,J,RIJ,TEST2
@@ -446,9 +446,9 @@ C
      $        ,'UNFORMATTED',IDUMMY,.FALSE.)
          READ(LUCAVD) NTS
          READ(LUCAVD) ISPHE
-         READ(LUCAVD) XCTS
-         READ(LUCAVD) YCTS
-         READ(LUCAVD) ZCTS
+         READ(LUCAVD) XTSCOR
+         READ(LUCAVD) YTSCOR
+         READ(LUCAVD) ZTSCOR
          READ(LUCAVD) AS
          CALL GPCLOSE(LUCAVD,'KEEP')
          NTSIRR = NTS / (MAXREP + 1)
@@ -458,9 +458,9 @@ C
      $        ,'UNFORMATTED',IDUMMY,.FALSE.)
          WRITE(LUCAVD) NTS
          WRITE(LUCAVD) ISPHE
-         WRITE(LUCAVD) XCTS
-         WRITE(LUCAVD) YCTS
-         WRITE(LUCAVD) ZCTS
+         WRITE(LUCAVD) XTSCOR
+         WRITE(LUCAVD) YTSCOR
+         WRITE(LUCAVD) ZTSCOR
          WRITE(LUCAVD) AS
          CALL GPCLOSE(LUCAVD,'KEEP')
       ELSE IF (NRWCAV .EQ. 0) THEN
@@ -480,7 +480,7 @@ C         enddo
 C      enddo
 C      write(lupri,*) 'centers of tesserae'
 C      do i=1,nts
-C         write(lupri,1240) i, xcts(i),ycts(i),zcts(i),as(i)
+C         write(lupri,1240) i, xtscor(i),ytscor(i),ztscor(i),as(i)
 C      enddo
 C      call flshfo(lupri)
 
@@ -490,7 +490,7 @@ C      call flshfo(lupri)
          KLAST = KIDX + NTS
          IF (KLAST.LT.LWORK) THEN
             CALL DZERO(WORK,KLAST)
-            call ordpcm(lupri,nts,xcts,ycts,zcts,as,work(kord),
+            call ordpcm(lupri,nts,xtscor,ytscor,ztscor,as,work(kord),
      $           work(kidx),work(klast),lwork)
          ELSE
             WRITE(LUPRI,*)
@@ -498,9 +498,9 @@ C      call flshfo(lupri)
          END IF
       END IF
  1234 format(2i4,3f12.6)
- 1235 format('XCTS(',i4,') = ',f18.12)
- 1236 format('YCTS(',i4,') = ',f18.12)
- 1237 format('ZCTS(',i4,') = ',f18.12)
+ 1235 format('XTSCOR(',i4,') = ',f18.12)
+ 1236 format('YTSCOR(',i4,') = ',f18.12)
+ 1237 format('ZTSCOR(',i4,') = ',f18.12)
  1238 format('AS(',i4,') = ',f18.12)
  1239 format('ISPHE(',i4,') = ',I3)
  1240 format(i4,4f12.6)
@@ -528,11 +528,11 @@ C***********************************************************
       DO ITS = 1, NTS
          NSFE = ISPHE(ITS)
 C     Trova il versore normale
-         XN = (XCTS(ITS) - XE(NSFE)) / RE(NSFE)
-         YN = (YCTS(ITS) - YE(NSFE)) / RE(NSFE)
-         ZN = (ZCTS(ITS) - ZE(NSFE)) / RE(NSFE)
+         XN = (XTSCOR(ITS) - XE(NSFE)) / RE(NSFE)
+         YN = (YTSCOR(ITS) - YE(NSFE)) / RE(NSFE)
+         ZN = (ZTSCOR(ITS) - ZE(NSFE)) / RE(NSFE)
 C     Trova il prodotto scalare
-         PROD = XCTS(ITS)*XN + YCTS(ITS)*YN + ZCTS(ITS)*ZN
+         PROD = XTSCOR(ITS)*XN + YTSCOR(ITS)*YN + ZTSCOR(ITS)*ZN
          VOL = VOL + AS(ITS) * PROD / 3.D0
       ENDDO
 C***********************************************************
@@ -580,7 +580,7 @@ C
             ENDIF
             IF(NATSPH.EQ.0)then
                DO ICOORD = 1, 3
-                  CALL DERIVA(NSFE,NSFER,ICOORD,INTSPH,NEWSPH)
+                  CALL CAVDER(NSFE,NSFER,ICOORD,INTSPH,NEWSPH)
                ENDDO
             ENDIF
          ENDDO
@@ -597,28 +597,29 @@ C
 
       DO I=1,NTS
          AS(I)=AS(I)*ANTOAU*ANTOAU
-         XCTS(I)=XCTS(I)*ANTOAU
-         YCTS(I)=YCTS(I)*ANTOAU
-         ZCTS(I)=ZCTS(I)*ANTOAU
+         XTSCOR(I)=XTSCOR(I)*ANTOAU
+         YTSCOR(I)=YTSCOR(I)*ANTOAU
+         ZTSCOR(I)=ZTSCOR(I)*ANTOAU
 Clf XVAL, YVAL and ZVAL of the tessera I are the coordinates of a point located
 C inside the cavity on the normal direction from the tessera center
 C Probably they will not be used anymore. If this happen I will remove them.
-         XCTS(I+NTS)=XVAL(I)*ANTOAU
-         YCTS(I+NTS)=YVAL(I)*ANTOAU
-         ZCTS(I+NTS)=ZVAL(I)*ANTOAU
+         XTSCOR(I+NTS)=XVAL(I)*ANTOAU
+         YTSCOR(I+NTS)=YVAL(I)*ANTOAU
+         ZTSCOR(I+NTS)=ZVAL(I)*ANTOAU
       ENDDO
       DR = DR * ANTOAU
 C
       IF(IPRSOL .GT. 5) THEN
          WRITE(LUPRI,9070)
          WRITE(LUPRI,9080)
-         WRITE(LUPRI,9090) (I,ISPHE(I),AS(I),XCTS(I),YCTS(I),ZCTS(I),
-     *                   XCTS(NTS+I),YCTS(NTS+I),ZCTS(NTS+I), I=1,NTS)
+         WRITE(LUPRI,9090) (I,ISPHE(I),AS(I),XTSCOR(I),YTSCOR(I),
+     *                   ZTSCOR(I),XTSCOR(NTS+I),YTSCOR(NTS+I),
+     *                   ZTSCOR(NTS+I), I=1,NTS)
       END IF
 C
 C     Call the routine which checks if the cavity is single or divided.
 C
-      CALL SEPARA(ICAV1,ICAV2,NCAV1,NCAV2,NATM,SOME)
+      CALL CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NATM,SOME)
 C
 C     The dispersion calculation is allowed only in the case of
 C     single cavity.
@@ -1155,32 +1156,32 @@ Clf Moving the normal points in a safe location where they will not be overwritt
 C
       DO I=1,NTSIRR
         II=I+NTSIRR
-        II2=I+(MAXREP+1)*NTSIRR
-        XCTS(II2)=XCTS(II)
-        YCTS(II2)=YCTS(II)
-        ZCTS(II2)=ZCTS(II)
+        II2=I+(MAXREP+1)*NTS
+        XTSCOR(II2)=XTSCOR(II)
+        YTSCOR(II2)=YTSCOR(II)
+        ZTSCOR(II2)=ZTSCOR(II)
       ENDDO
 C
 Clf      write(lupri,*) 'see if the pt are correct',nts
       DO ISYMOP=1,MAXREP
          DO I=1,NTSIRR
             II=I+NTSIRR*ISYMOP
-            XCTS(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XCTS(I)
-            YCTS(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YCTS(I)
-            ZCTS(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZCTS(I)
+            XTSCOR(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(I)
+            YTSCOR(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(I)
+            ZTSCOR(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(I)
 C            II=I+NTS*(ISYMOP+MAXREP+1)
 C            II2=I+NTS
-C            XCTS(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XCTS(II2)
-C            YCTS(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YCTS(II2)
-C            ZCTS(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZCTS(II2)
+C            XTSCOR(II)=PT(IBTAND(ISYMAX(1,1),ISYMOP)) * XTSCOR(II2)
+C            YTSCOR(II)=PT(IBTAND(ISYMAX(2,1),ISYMOP)) * YTSCOR(II2)
+C            ZTSCOR(II)=PT(IBTAND(ISYMAX(3,1),ISYMOP)) * ZTSCOR(II2)
          ENDDO
       ENDDO
 Clf
 C      do i=1,nts
 C         do j=1,nts
-C            distance=sqrt((xcts(j)-xcts(i))**2
-C     $                   +(ycts(j)-ycts(i))**2
-C     $                   +(zcts(j)-zcts(i))**2)
+C            distance=sqrt((xtscor(j)-xtscor(i))**2
+C     $                   +(ytscor(j)-ytscor(i))**2
+C     $                   +(ztscor(j)-ztscor(i))**2)
 C            if(i.ne.j .and. distance.lt.1.0d-8) then
 C               write(lupri,*) 'tesserae too close:',i,j
 C            endif
@@ -2087,8 +2088,8 @@ C
       DNORM3 = SQRT(P3(1)*P3(1) + P3(2)*P3(2) + P3(3)*P3(3))
       RETURN
       END
-C/* Comdeck separa */
-      SUBROUTINE SEPARA(ICAV1,ICAV2,NCAV1,NCAV2,NATM,SOME)
+C/* Comdeck cavspl */
+      SUBROUTINE CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NATM,SOME)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -2792,17 +2793,18 @@ C/* Deck UPDCAV*/
       RETURN
       END
 C/* Deck ordpcm*/
-      SUBROUTINE ORDPCM(lupri,nts,xcts,ycts,zcts,as,privec,idxpri,
+      SUBROUTINE ORDPCM(lupri,nts,xtscor,ytscor,ztscor,as,privec,idxpri,
      $     work,lwork)
 #include <implicit.h>
-      DIMENSION PRIVEC(4,*), XCTS(*), YCTS(*), ZCTS(*), WORK(*), AS(*)
+      DIMENSION PRIVEC(4,*), XTSCOR(*), YTSCOR(*), ZTSCOR(*),
+     &          WORK(*), AS(*)
       DIMENSION IDXPRI(*)
       LOGICAL CHKTSS, LCHK, LSWTCH
       LSWTCH = .FALSE.
       DO I = 1,NTS
-         PRIVEC(1,I) = XCTS(I)
-         PRIVEC(2,I) = YCTS(I)
-         PRIVEC(3,I) = ZCTS(I)
+         PRIVEC(1,I) = XTSCOR(I)
+         PRIVEC(2,I) = YTSCOR(I)
+         PRIVEC(3,I) = ZTSCOR(I)
          PRIVEC(4,I) = AS(I)
          IDXPRI(I) = I 
       ENDDO

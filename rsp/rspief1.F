@@ -284,9 +284,9 @@ C
             CALL DZERO(WRK(KCHGAO),NNBASX)
             L = 1
             NCOMP = NSYM
-            DIPORG(1) = XCTS(ITS)
-            DIPORG(2) = YCTS(ITS)
-            DIPORG(3) = ZCTS(ITS)
+            DIPORG(1) = XTSCOR(ITS)
+            DIPORG(2) = YTSCOR(ITS)
+            DIPORG(3) = ZTSCOR(ITS)
             EXP1VL    = .FALSE.
             TOFILE    = .FALSE.
             KPATOM    = 0

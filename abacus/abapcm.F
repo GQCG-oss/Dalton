@@ -148,9 +148,9 @@ c     loop over tesserae
 c     use dipole origin to pass tessera position 
 c     to integration program 
 
-         DIPORG(1) = XCTS(ITS)
-         DIPORG(2) = YCTS(ITS)
-         DIPORG(3) = ZCTS(ITS)
+         DIPORG(1) = XTSCOR(ITS)
+         DIPORG(2) = YTSCOR(ITS)
+         DIPORG(3) = ZTSCOR(ITS)
 
          NREAD = 2
          NTESP = 1

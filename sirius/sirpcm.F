@@ -373,11 +373,11 @@ C     4) Calculation of the interaction free energy between
 C        solute's nuclei-nuclear induced charges.
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
-      CALL VNN
+      CALL PCMVNN
       IF(SOME) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) ' ..... DONE WITH INDUCED NUCLEAR CHARGES .....'
-         CALL TIMER('VNN   ',TIMSTR,TIMEND)
+         CALL TIMER('PCMVNN   ',TIMSTR,TIMEND)
       END IF
 C
       IF(.NOT.SOME) THEN
@@ -598,8 +598,8 @@ C
  9030 FORMAT(1X,'**** ERROR **** PCM SPHERE(S) MUST HAVE',
      *          ' A POSITIVE RADIUS')
       END
-C/* Comdeck vnn */
-      SUBROUTINE VNN
+C/* Comdeck pcmvnn */
+      SUBROUTINE PCMVNN
 C
 #include <implicit.h>
 #include <pcmdef.h>
@@ -620,19 +620,19 @@ C     Routine for calculation of free energy of interaction between
 C     solute nuclei and the polarization charges induced by the
 C     nuclei themselves.
 C
-      UNZ = D0
+      PCMNN = D0
       DO ITS = 1, NTSIRR
-        XI=XCTS(ITS)
-        YI=YCTS(ITS)
-        ZI=ZCTS(ITS)
+        XI=XTSCOR(ITS)
+        YI=YTSCOR(ITS)
+        ZI=ZTSCOR(ITS)
         DO JATOM = 1, NUCDEP
            R2 = (PCMCORD(1,JATOM)-XI)**2 + (PCMCORD(2,JATOM)-YI)**2 + 
      *          (PCMCORD(3,JATOM)-ZI)**2
            R = DSQRT(R2)
-           UNZ = UNZ + QSN(ITS) * PCMCHG(JATOM) / R
+           PCMNN = PCMNN + QSN(ITS) * PCMCHG(JATOM) / R
         ENDDO
       ENDDO
-      UNZ = (MAXREP + 1) * UNZ / TWO
+      PCMNN = (MAXREP + 1) * PCMNN / TWO
       RETURN
       END
 C/* Comdeck pcmjmat */
@@ -1291,9 +1291,9 @@ C
       ELSE
 #endif
       DO  ITS = 1, NTSIRR
-         DIPORG(1) = XCTS(ITS)
-         DIPORG(2) = YCTS(ITS)
-         DIPORG(3) = ZCTS(ITS)
+         DIPORG(1) = XTSCOR(ITS)
+         DIPORG(2) = YTSCOR(ITS)
+         DIPORG(3) = ZTSCOR(ITS)
          NTESP = 1
          KPATOM = 0
 C

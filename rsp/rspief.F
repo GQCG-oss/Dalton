@@ -416,9 +416,9 @@ C
 C Read AO potential integrals on tesserae
          L = 1
          NCOMP     = NSYM
-         DIPORG(1) = XCTS(I)
-         DIPORG(2) = YCTS(I)
-         DIPORG(3) = ZCTS(I)
+         DIPORG(1) = XTSCOR(I)
+         DIPORG(2) = YTSCOR(I)
+         DIPORG(3) = ZTSCOR(I)
          EXP1VL    = .FALSE.
          TOFILE    = .FALSE.
          KPATOM    = 0
