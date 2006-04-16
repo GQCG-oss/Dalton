@@ -123,6 +123,12 @@ C     ***** Input Section *****
 C     *************************
 C
       TIMSTR = SECOND()
+      CALL GPINQ('AOPROPER','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
+     &                                  IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUPROP,'DELETE')
+      END IF
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL HERINP(WORK,LWORK)
       IF (TSTINP) THEN
