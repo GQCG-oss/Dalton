@@ -654,7 +654,6 @@ C     Electrostatic contribution:
 C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN
 C     PCMNN = 1/2 interaction nuclei - polarization nuclear charges
       ESOLT = - DP5*(PCMEE+PCMEN) + DP5*PCMNE + PCMNN
-      write (2,*) 'ee,en,ne,nn',pcmee,pcmen,pcmne,pcmnn,esolt
 C     
 C     Symmetry pack TAO using WRK(KJAO)
 C     Transform to MO basis
