@@ -1622,11 +1622,11 @@ C
 #include <implicit.h>
 #include <dummy.h>
       CHARACTER*8 WORD
-      DIMENSION PRPAO(NNBASX)
+      DIMENSION PRPAO(*)
       LOGICAL   ANTSYM
 C
 C -- common blocks:
-C  INFORB : NNBASX
+C  INFORB : NNBASX, N2BASX
 C
 #include <priunit.h>
 #include <inftap.h>
@@ -1641,17 +1641,23 @@ C
      &            'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND LUPROP
       IF ( FNDLB2(WORD,RTNLBL,LUPROP)) THEN
-         IF (RTNLBL(2).EQ.'SYMMETRI') THEN
+         IF (RTNLBL(2).EQ.'SQUARE  ') THEN
+            CALL READT(LUPROP,N2BASX,PRPAO)
             ANTSYM = .FALSE.
+         ELSE IF (RTNLBL(2).EQ.'SYMMETRI') THEN
+            ANTSYM = .FALSE.
+            CALL READT(LUPROP,NNBASX,PRPAO)
          ELSE IF (RTNLBL(2).EQ.'ANTISYMM') THEN
             ANTSYM = .TRUE.
+            CALL READT(LUPROP,NNBASX,PRPAO)
          ELSE
-            WRITE (LUPRI,'(//A)')
-     *         ' RDPROP error: No antisymmetry label on AOPROPER'
+            WRITE (LUPRI,'(//3A/3(A,1X))')
+     &         ' >>> RDPROP error: property "',WORD,
+     &         '" on AOPROPER has no valid antisymmetry label.',
+     &         '     Labels read on file:',RTNLBL(1),RTNLBL(2)
             CALL QTRACE(LUPRI)
             CALL QUIT('RDPROP error: No antisymmetry label on AOPROPER')
          END IF
-         CALL READT(LUPROP,NNBASX,PRPAO)
       ELSE
          WRITE (LUPRI,'(//3A)') ' >>> RDPROP error: property "',WORD,
      *      '" not found on AOPROPER.'
