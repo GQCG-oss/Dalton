@@ -603,6 +603,9 @@ C
       DATA    A/1/,B/0/,C/0/
       C = C + A/B
 #endif
+Chjaaj apr06:
+C     Use stderr on unix/linux systems, if LUPRI not defined yet.
+      IF (LUPRI .LT. 0) LUPRI = 0
 #if defined (SYS_IRIX)
       WRITE(LUPRI,*) 'IRIX has no obvious system traceback facility.'
 #endif
