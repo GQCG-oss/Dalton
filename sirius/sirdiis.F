@@ -975,13 +975,12 @@ C           is higher in energy with lower gradient, especially if MOSTART H1DIA
 C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
-C
+C        Do not try that with open-shell - it does not work./pawsa
 #if 0 /* I am not sure what the test for stalling detection should be */
-c We ignore small jump up.
          IF (JTDIIS.GT.1 .AND.
      &       EMCDIF.GT.5D-5) THEN
 #else
-          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+          IF (ONLYFC.AND.JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
      &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10 )

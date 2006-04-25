@@ -652,8 +652,20 @@ kohn_shamab_cb(DftGrid* grid, DftKohnShamU* exc)
 
     drv1_clear(&drvs);
     exc->energy += selected_func->func(&grid->dp)*grid->curr_weight;
+    if(grid->dp.rhob<1e-20) grid->dp.rhob = 1e-20;
+    if(grid->dp.gradb<1e-20) grid->dp.gradb = 1e-20;
+    if(grid->dp.gradab<1e-20) /* so small that we can ignore direction */
+      grid->dp.gradab = 1e-20;
     selected_func->first(&drvs, grid->curr_weight, &grid->dp);
-
+    if(isnan(drvs.df1000) || isnan(drvs.df0100) || isinf(drvs.df0100) ||
+       isnan(drvs.df0010) || isnan(drvs.df0001) ||
+       isnan(drvs.df00001)) {
+      fort_print("AAA: %g %g %g %g %g => %g %g %g %g %g",
+                 grid->dp.rhoa, grid->dp.grada,
+                 grid->dp.rhob, grid->dp.gradb, grid->dp.gradab,
+                 drvs.df1000, drvs.df0100, drvs.df0010, drvs.df0001,
+                 drvs.df00001);
+    }
     if(grid->dogga) {
 	real *atvX = &grid->atv[inforb_.nbast];
 	real *atvY = &grid->atv[inforb_.nbast*2];
