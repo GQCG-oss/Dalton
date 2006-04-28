@@ -1028,7 +1028,7 @@ C  /* Deck efntra */
 #include <symmet.h>
       DO 10 ICOMP = 1, NCOMP
          WORD = LABINT(ICOMP)
-         NSTNUM = WORD(5:6)
+         NSTNUM = WORD(6:7)
          NUMBER = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*10
          IROW = NUMBER + ICHAR(NSTNUM(2:2)) - ICHAR('0')
          STAVEC(IROW) = EXPVAL(ICOMP)
@@ -3881,6 +3881,7 @@ C
 #include <spinro.h>
 #include <orgcom.h>
 #include <ibtfun.h>
+#include <helfey.h>
 C
       CALL DZERO(SPRDNL,3*MXCOOR)
       CALL DZERO(HFGEL,MXCOOR)
