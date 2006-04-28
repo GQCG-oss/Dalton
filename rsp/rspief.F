@@ -120,7 +120,7 @@ C
       KW20    = KCHRG + NTS
 C     2.1 read rlmao in ao basis and transform to rlm in mo basis
       KDV     = KW20
-      KW30    = KDV  + NCSIM*NNBASX
+      KW30    = KDV  + NCSIM*N2BASX
 C
       KJPCMAO = KW10
       KW50    = KJPCMAO + NNBASX
@@ -183,7 +183,7 @@ C
       DO ICSIM = 1, NCSIM
          CALL DZERO(WRK(KJPCMAO),NNBASX)
          CALL J1INT(VTEX(1,ICSIM),.FALSE.,WRK(KJPCMAO),1,.FALSE.,
-     &              1,'NPETES ',WRK(KW30),LW30)
+     &              'NPETES ',1,WRK(KW30),LW30)
          JPCMXB = KPCMXB + (ICSIM - 1)*NNORBX
          CALL UTHU(WRK(KJPCMAO),WRK(JPCMXB),WRK(KUCMO),WRK(KW30),
      &             NBAST,NORBT)
