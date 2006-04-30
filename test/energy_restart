@@ -22,7 +22,7 @@ cat > energy_restart.info <<'%EOF%'
    --------------
    Molecule:         H2O
    Wave Functions:   MCSCF (RAS) / cc-pVDZ
-   Test Purpose:     Restart an MCSCF wave function
+   Test Purpose:     Restart an MCSCF wave function optimization
 %EOF%
 
 #######################################################################
@@ -67,7 +67,7 @@ cat > energy_restart__1.dal <<'%EOF%'
  4 2 2 0
 *OPTIMIZATION
 .THRESH
-1.0D-3
+2.0D-3
 *END OF INPUT
 %EOF%
 
@@ -143,22 +143,13 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-76\.14761413597" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-76\.147613....." $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
 
-# Occupancy
-CRIT1=`$GREP "2\.000000000 * 1\.98908001[0-9] * 1\.97643839[0-9] * (0| )\.02420710[0-9] * (0| )\.01125003[0-9]" $log | wc -l`
-CRIT2=`$GREP "1\.98138164[0-9] * (0| )\.01780007[0-9]" $log | wc -l`
-CRIT3=`$GREP "1\.97463013[0-9] * (0| )\.02521259[0-9]" $log | wc -l`
-CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[5]=6
-ERROR[5]="OCCUPANCIES NOT CORRECT"
-
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
@@ -223,21 +214,21 @@ ERROR[3]="SYMMETRY NOT CORRECT"
 # Old MCSCF energy
 # (hjaaj: the remaining digits in "Old MCSCF en" are beyond convergence
 # and can be anything, that is, small changes in implementation can change them)
-CRIT1=`$GREP "\(OPTST\) RESTART\, Old MCSCF energy\: * \-76\.14761373104" $log | wc -l`
+CRIT1=`$GREP "\(OPTST\) RESTART\, Old MCSCF energy\: * \-76\.14743" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="OLD MCSCF ENERGY (FROM RESTART) NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-76\.14761415901[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-76\.1476141590.." $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="FINAL MCSCF ENERGY NOT CORRECT"
 
 # Occupancy
-CRIT1=`$GREP "2\.000000000 * 1\.98908073[0-9] * 1\.97643661[0-9] * (0| )\.02420948[0-9] * (0| )\.01125112[0-9]" $log | wc -l`
-CRIT2=`$GREP "1\.98138086[0-9] * (0| )\.01779856[0-9]" $log | wc -l`
-CRIT3=`$GREP "1\.97462753[0-9] * (0| )\.02521508[0-9]" $log | wc -l`
+CRIT1=`$GREP "2\.000000000 * 1\.989080... * 1\.976436... * (0| )\.024209... * (0| )\.011251..." $log | wc -l`
+CRIT2=`$GREP "1\.981380... * (0| )\.017798..." $log | wc -l`
+CRIT3=`$GREP "1\.974627... * (0| )\.025215..." $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=6
