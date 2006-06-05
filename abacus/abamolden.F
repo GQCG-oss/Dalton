@@ -162,7 +162,9 @@ C
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
-      CHARACTER*2 ASYMB(103)
+
+C     include character ASYMB(103)*2 with atomic symbolse
+#include <asymb.h>
 
 #include <molde.h>
 #include <nuclei.h>
@@ -174,19 +176,6 @@ C
 #include <chrsgn.h>
 #include <chrnos.h>
 #include <ibtfun.h>
-
-      DATA (ASYMB(I),I = 1,103)
-     1/' H', 'He', 'Li', 'Be', ' B', ' C', ' N', ' O', ' F', 'Ne',
-     2 'Na', 'Mg', 'Al', 'Si', ' P', ' S', 'Cl', 'Ar', ' K', 'Ca',
-     3 'Sc', 'Ti', ' V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
-     4 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', ' Y', 'Zr',
-     5 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',
-     6 'Sb', 'Te', ' I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
-     7 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
-     8 'Lu', 'Hf', 'Ta', ' W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',
-     9 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
-     O 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
-     1 'Md', 'No', 'Lr' /
 
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
