@@ -69,6 +69,7 @@ C
 C
 C     Search for label identfying atom
 C
+      INTQINP = NINT(Q)
       REWIND(LU)
  20   CONTINUE
       READ(LU,'(A80)', ERR=900,END=910)
@@ -76,7 +77,7 @@ C
       READ (STRING, '(A1)') LAB
       IF (LAB.EQ.'A') THEN
          READ (STRING, '(A1,I4)') LAB,INTQ
-         IF (INTQ.EQ.INT(Q)) THEN
+         IF (INTQ.EQ.INTQINP) THEN
             GOTO 100
          ELSE
             GOTO 20
@@ -170,7 +171,7 @@ C
      &   'ECPINP: Error when reading from basis file ECP_pseudo'
       CALL QUIT('Read error in ECPINP reading basis file ECP_pseudo')
  910  CONTINUE
-      WRITE (LUPRI,'(/I3,A)') INTQ,
+      WRITE (LUPRI,'(/I3,A)') INTQINP,
      &     ' is an unsupported element in basis file ECP_pseudo'
       CALL QUIT('Unsupported element in ECPINP')
 C
