@@ -974,37 +974,37 @@ C
          END IF
       END IF
       IF (GRDTHR .NE. DEFTH2) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+         WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Convergence threshold for gradient set to : ', GRDTHR
-         IF ((GRDTHR .LT. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
+         IF ((GRDTHR .LE. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
             WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
+            WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Threshold reset to:', DEFTH2
             GRDTHR = DEFTH2
          END IF
       END IF
       IF (THRERG .NE. DEFTHE) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+         WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Convergence threshold for energy set to   : ', THRERG
-         IF ((THRERG .LT. D0) .OR. (THRERG .GT. 0.1D0)) THEN
+         IF ((THRERG .LE. D0) .OR. (THRERG .GT. 0.1D0)) THEN
             WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
+            WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Threshold reset to:', DEFTHE
             THRERG = DEFTHE
          END IF
       END IF
       IF (THRSTP .NE. DEFTH2) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+         WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Convergence threshold for step set to     : ', THRSTP
-         IF ((THRSTP .LT. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
+         IF ((THRSTP .LE. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
             WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
+            WRITE(LUPRI,'(A,1P,D13.2)')
      &           ' Threshold reset to:', DEFTH2
             THRSTP = DEFTH2
          END IF
       END IF
       IF (DISPLA .NE. DEFDSP) THEN
-         WRITE (LUPRI,'(A,D13.2)')
+         WRITE (LUPRI,'(A,1P,D13.2)')
      &        ' In case of numerical gradients, displacements are : ',
      &        DISPLA
       END IF
@@ -2171,9 +2171,20 @@ C
 C
 C        Reduce gradient criterion for DFT optimization
 C
-         IF (DFTRUN) THEN
+         IF (DFTRUN .AND.
+     &       (GRDTHR .LT. 5.0D-05 .OR. THRSTP .LT. 5.0D-05)) THEN
             GRDTHR = MAX(GRDTHR,5.0D-05)
             THRSTP = MAX(THRSTP,5.0D-05)
+            IF (CHGRDT) THEN
+              NINFO = NINFO + 1
+              WRITE (LUPRI,'(/A)') ' INFO>>>> Due to numerical '//
+     &        'integration in DFT optimization'
+              WRITE (LUPRI,'(A)') ' INFO>>>> thresholds for convergence'
+     &        //' of geometry optimization have been reset'
+              WRITE (LUPRI,'(/A/,3(/,20X,A,F10.8))') ' New thresholds:',
+     &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
+     &        'Energy change  ',THRERG
+            END IF
          END IF
          IF (DOCCSD) THEN
 C
@@ -2192,10 +2203,11 @@ C
          THRSTP = GRDTHR
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
+         NINFO = NINFO + 1
          WRITE (LUPRI,'(/A)') ' INFO>>>> Due to convergence '//
      &        'thresholds for the wave function'
-         WRITE (LUPRI,'(A)') ' INFO>>>> thresholds for convergence'
-     &        //' of geometry optimization has been reset'
+         WRITE (LUPRI,'(A)') ' INFO>>>> default thresholds for'
+     &        //' convergence of geometry optimization have been reset'
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
@@ -2211,9 +2223,9 @@ C     away. This is necessary for instance to get test15 through....
 C
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
          WRITE (LUPRI,'(/A)') ' INFO >>>> As this is an excited '//
-     &        'optimization I have updated some thresholds'
+     &        'optimization some thresholds have been updated'
          IF (TRSTRA .EQ. 0.5D0) TRSTRA = 0.25D0
-         IF (TRSTIN .EQ. 1.2D0) TRSTIN = 1.00D0
+         IF (TRSTIN .EQ. 1.2D0) TRSTIN = 1.10D0
          IF (RTENBD .EQ. 0.4D0) RTENBD = 0.85D0
          IF (RTRJMN .EQ. 0.1D0) RTRJMN = 0.80D0
          IF (RTENGD .EQ. 0.8D0) RTENGD = 0.90D0
