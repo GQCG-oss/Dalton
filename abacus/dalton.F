@@ -120,6 +120,8 @@ C
 #endif
       DATA WRKDLM/12345678D0/
 C
+
+      CALL QENTER('DALTON main')
 #if defined (VAR_MPI)
       CALL MPIXINIT
       PARIO = .FALSE.
@@ -206,10 +208,9 @@ C
       END IF
 #endif
 Cef begin
-C To run the incore-version of dalton where integrals are stored in memory
-C on each slave for reuse, just set AOSAVE = .FALSE. below, and take a look
-C at the header file DALTON_SOURCE_DIR/include/incore.h  and the variables:
-C MMWORK and IEIR. 
+C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
+C are stored in memory on each slave for reuse. Take a look at the header
+C file DALTON_SOURCE_DIR/include/incore.h  and the variables: MMWORK and IEIR. 
 C MMWORK (we used MMWORK=80000000 when testing ) determines the size of 
 C the chunk of array WORK which is reserved for incore-calculations. 
 C The variable IEIR in incore.h must also be set to a large enough positive 
@@ -575,6 +576,7 @@ C
          CALL PVMXEXIT
       END IF
 #endif
+      CALL QEXIT('DALTON main')
       END
       SUBROUTINE GETMMBAS(MYNUM,LMWORK,BASDIR,LBASDIR)
 #include <implicit.h>
