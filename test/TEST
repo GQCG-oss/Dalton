@@ -157,7 +157,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
        -log logfile         : write output into logfile instead of the
                               default "TESTLOG"
 
-       where testcase might be one of the following:
+       and where testcase might be one of the following:
           essential            -- run a minimal set of essential testcases
           parallel             -- run all parallel testcases
           allcc                -- run all coupled-cluster testcases

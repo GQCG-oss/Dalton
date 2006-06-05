@@ -142,6 +142,7 @@ CRIT15=`$GREP "21 * z * \-1\.7367853003" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15`
+TEST[1]=15 # test disabled Apr 2006
 CTRL[1]=15
 ERROR[1]="INITIAL GEOMETRY NOT CORRECT"
 

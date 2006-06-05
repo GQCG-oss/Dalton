@@ -97,13 +97,13 @@ CTRL[2]=3
 ERROR[2]="BASIS SET NOT SET UP CORRECTLY"
 
 # Geometry
-CRIT1=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "3 * z * (\-0| \-)\.1161156955" $log | wc -l`
-CRIT4=`$GREP "4 * H * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "5 * y * 1\.3457079896" $log | wc -l`
 CRIT6=`$GREP "6 * z * (0| )\.9214202268" $log | wc -l`
-CRIT7=`$GREP "7 * H * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
 CRIT8=`$GREP "8 * y * \-1\.3457079896" $log | wc -l`
 CRIT9=`$GREP "9 * z * (0| )\.9214202268" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \

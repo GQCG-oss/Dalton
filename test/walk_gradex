@@ -102,16 +102,16 @@ ERROR[3]="CARTESIAN BASIS FUNCTIONS NOT USED"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 12" $log | wc -l`
-CRIT2=`$GREP "1 * N * x * (\-0|\-)\.2402098951" $log | wc -l`
+CRIT2=`$GREP "1 * x * (\-0|\-)\.2402098951" $log | wc -l`
 CRIT3=`$GREP "2 * y * (\-0|\-)\.0000003109" $log | wc -l`
 CRIT4=`$GREP "3 * z * (0| )\.5147128871" $log | wc -l`
-CRIT5=`$GREP "4 * H * x * 1\.4837091636" $log | wc -l`
+CRIT5=`$GREP "4 * x * 1\.4837091636" $log | wc -l`
 CRIT6=`$GREP "5 * y * (0| )\.0000000802" $log | wc -l`
 CRIT7=`$GREP "6 * z * (\-0|\-)\.2633317998" $log | wc -l`
-CRIT8=`$GREP "7 * H * x * \-1\.1558499044" $log | wc -l`
+CRIT8=`$GREP "7 * x * \-1\.1558499044" $log | wc -l`
 CRIT9=`$GREP "8 * y * 1\.5260201343" $log | wc -l`
 CRIT10=`$GREP "9 * z * (\-0|\-)\.1256905028" $log | wc -l`
-CRIT11=`$GREP "10 * H * x * \-1\.1558492311" $log | wc -l`
+CRIT11=`$GREP "10 * x * \-1\.1558492311" $log | wc -l`
 CRIT12=`$GREP "11 * y * \-1\.5260211423" $log | wc -l`
 CRIT13=`$GREP "12 * z * (\-0|\-)\.1256905447" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \

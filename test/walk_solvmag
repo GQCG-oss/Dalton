@@ -97,19 +97,19 @@ ERROR[1]="INTEGRAL SETUP NOT CORRECT"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 15" $log | wc -l`
-CRIT2=`$GREP "1 * C * x * (0| )\.0000001475" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000001475" $log | wc -l`
 CRIT3=`$GREP "2 * y * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * \-1\.3932067381" $log | wc -l`
-CRIT5=`$GREP "4 * F * x * (\-0|\-)\.0000001276" $log | wc -l`
+CRIT5=`$GREP "4 * x * (\-0|\-)\.0000001276" $log | wc -l`
 CRIT6=`$GREP "5 * y * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * 1\.2050427284" $log | wc -l`
-CRIT8=`$GREP "7 * H * x * 1\.9358001773" $log | wc -l`
+CRIT8=`$GREP "7 * x * 1\.9358001773" $log | wc -l`
 CRIT9=`$GREP "8 * y * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT10=`$GREP "9 * z * \-2\.0424861818" $log | wc -l`
-CRIT11=`$GREP "10 * H * x * (\-0|\-)\.9678997640" $log | wc -l`
+CRIT11=`$GREP "10 * x * (\-0|\-)\.9678997640" $log | wc -l`
 CRIT12=`$GREP "11 * y * \-1\.6764519428" $log | wc -l`
 CRIT13=`$GREP "12 * z * \-2\.0424864897" $log | wc -l`
-CRIT14=`$GREP "13 * H * x * (\-0|\-)\.9678997640" $log | wc -l`
+CRIT14=`$GREP "13 * x * (\-0|\-)\.9678997640" $log | wc -l`
 CRIT15=`$GREP "14 * y * 1\.6764519428" $log | wc -l`
 CRIT16=`$GREP "15 * z * \-2\.0424864897" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \

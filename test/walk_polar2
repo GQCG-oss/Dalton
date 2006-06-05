@@ -111,11 +111,11 @@ else
 fi
 
 # Reading molecular geometry:
-CRIT1=`$GREP "1 * OS * x *  (0| )\.0000000000" $log | wc -l`
-CRIT2=`$GREP "4 * OP * 1 * x * 1\.2634502500" $log | wc -l`
-CRIT3=`$GREP "5 *          y * 2\.0449019100" $log | wc -l`
-CRIT4=`$GREP "7 * OP * 2 * x * 1\.2634502500" $log | wc -l`
-CRIT5=`$GREP "8 *          y * \-2\.0449019100" $log | wc -l`
+CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "4 * x * 1\.2634502500" $log | wc -l`
+CRIT3=`$GREP "5 * y * 2\.0449019100" $log | wc -l`
+CRIT4=`$GREP "7 * x * 1\.2634502500" $log | wc -l`
+CRIT5=`$GREP "8 * y * \-2\.0449019100" $log | wc -l`
 TEST[1]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[1]=5
 ERROR[1]="MOLECULAR GEOMETRY NOT CORRECT"

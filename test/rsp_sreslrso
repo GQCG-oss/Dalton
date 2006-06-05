@@ -106,10 +106,10 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * 2\.0969699107" $log | wc -l`
-CRIT5=`$GREP "4 * Li * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (\-0|\-)\.9969699107" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \

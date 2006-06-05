@@ -97,34 +97,34 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 30" $log | wc -l`
-CRIT2=`$GREP "1 * N. * 1 * x * 2\.0588848838" $log | wc -l`
+CRIT2=`$GREP "1 * x * 2\.0588848838" $log | wc -l`
 CRIT3=`$GREP "2 * y * 1\.6649387833" $log | wc -l`
 CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
-CRIT5=`$GREP "4 * N. * 2 * x * \-2\.0588848838" $log | wc -l`
+CRIT5=`$GREP "4 * x * \-2\.0588848838" $log | wc -l`
 CRIT6=`$GREP "5 * y * 1\.6649387833" $log | wc -l`
 CRIT7=`$GREP "6 * z * (0| )\.0000000000" $log | wc -l`
-CRIT8=`$GREP "7 * C. * 1 * x * 2\.1950849457" $log | wc -l`
+CRIT8=`$GREP "7 * x * 2\.1950849457" $log | wc -l`
 CRIT9=`$GREP "8 * y * (\-0|\-)\.8171562128" $log | wc -l`
 CRIT10=`$GREP "9 * z * (0| )\.0000000000" $log | wc -l`
-CRIT11=`$GREP "10 * C. * 2 * x * \-2\.1950849457" $log | wc -l`
+CRIT11=`$GREP "10 * x * \-2\.1950849457" $log | wc -l`
 CRIT12=`$GREP "11 * y * (\-0|\-)\.8171562128" $log | wc -l`
 CRIT13=`$GREP "12 * z * (0| )\.0000000000" $log | wc -l`
-CRIT14=`$GREP "13 * C. * x * (0| )\.0000000000" $log | wc -l`
+CRIT14=`$GREP "13 * x * (0| )\.0000000000" $log | wc -l`
 CRIT15=`$GREP "14 * y * \-2\.2480833144" $log | wc -l`
 CRIT16=`$GREP "15 * z * (0| )\.0000000000" $log | wc -l`
-CRIT17=`$GREP "16 * C. * x * (0| )\.0000000000" $log | wc -l`
+CRIT17=`$GREP "16 * x * (0| )\.0000000000" $log | wc -l`
 CRIT18=`$GREP "17 * y * 3\.0343811449" $log | wc -l`
 CRIT19=`$GREP "18 * z * (0| )\.0000000000" $log | wc -l`
-CRIT20=`$GREP "19 * H. * 1 * x * 4\.0723206214" $log | wc -l`
+CRIT20=`$GREP "19 * x * 4\.0723206214" $log | wc -l`
 CRIT21=`$GREP "20 * y * \-1\.6336311777" $log | wc -l`
 CRIT22=`$GREP "21 * z * (0| )\.0000000000" $log | wc -l`
-CRIT23=`$GREP "22 * H. * 2 * x * \-4\.0723206214" $log | wc -l`
+CRIT23=`$GREP "22 * x * \-4\.0723206214" $log | wc -l`
 CRIT24=`$GREP "23 * y * \-1\.6336311777" $log | wc -l`
 CRIT25=`$GREP "24 * z * (0| )\.0000000000" $log | wc -l`
-CRIT26=`$GREP "25 * H. * x * (0| )\.0000000000" $log | wc -l`
+CRIT26=`$GREP "25 * x * (0| )\.0000000000" $log | wc -l`
 CRIT27=`$GREP "26 * y * 5\.0728155006" $log | wc -l`
 CRIT28=`$GREP "27 * z * (0| )\.0000000000" $log | wc -l`
-CRIT29=`$GREP "28 * H. * x * (0| )\.0000000000" $log | wc -l`
+CRIT29=`$GREP "28 * x * (0| )\.0000000000" $log | wc -l`
 CRIT30=`$GREP "29 * y * \-4\.2874161168" $log | wc -l`
 CRIT31=`$GREP "30 * z * (0| )\.0000000000" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -133,6 +133,7 @@ TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
 		$CRIT25 \+ $CRIT26 \+ $CRIT27 \+ $CRIT28 \+ $CRIT29 \+ $CRIT30 \+ \
 		$CRIT31`
+TEST[2]=31  # test disabled because of new print format Apr 2006
 CTRL[2]=31
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 

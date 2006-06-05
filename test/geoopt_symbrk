@@ -94,16 +94,16 @@ ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Coordinates are entered in Angstroms and converted to atomic units\." $log | wc -l`
-CRIT2=`$GREP "1 * O * 1 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * 1\.3795000778" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0|\-|0| )\.0000000000" $log | wc -l`
-CRIT5=`$GREP "4 * O * 2 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "5 * y * \-1\.3795000778" $log | wc -l`
 CRIT7=`$GREP "6 * z * (\-0|\-|0| )\.0000000000" $log | wc -l`
-CRIT8=`$GREP "7 * H * 1 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "7 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT9=`$GREP "8 * y * 1\.3795000778" $log | wc -l`
 CRIT10=`$GREP "9 * z * 1\.7952398272" $log | wc -l`
-CRIT11=`$GREP "10 * H * 2 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
+CRIT11=`$GREP "10 * x * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT12=`$GREP "11 * y * \-1\.3795000778" $log | wc -l`
 CRIT13=`$GREP "12 * z * \-1\.7952398272" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
