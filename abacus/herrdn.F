@@ -1533,6 +1533,10 @@ C*****************************************************************************
 C
       LOGICAL ANG
       CHARACTER*4 FRMT
+
+C     include character ASYMB(0:NSYMB)*2 with atomic symbols
+#include <asymb.h>
+
 #include <gnrinf.h>
 #include <molinp.h>
 #include <ccom.h>
@@ -1580,6 +1584,10 @@ C       sep05-hjaaj: allow both e.g. 'H ' and ' H' as names
           FRMT = '(A4)'
         END IF
         READ (MLINE(NMLINE),FRMT) NAMN(NCTOT)
+        IF (NAMN(NCTOT)(1:4) .EQ. '    ' .AND.
+     &      NQ .GE. 0 .AND. NQ .LE.NSYMB) THEN
+           NAMN(NCTOT)(1:2) = ASYMB(NQ)
+        END IF
 C
 C       951115-hjaaj: NAMN() must never be read with free format
 C        (otherwise it will on e.g. AIX be filled with nulls:
@@ -4161,7 +4169,7 @@ C
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
       IF (IPREAD .GT. IPTEST) THEN
-         CALL HEADER('Cartesian Coordinates',1)
+         CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')
      &      '  Total number of coordinates:',NCOOR
       END IF
@@ -4177,9 +4185,8 @@ C            small molecules, otherwise just a lot of lines.
          IF (MULT(MULCNT) .EQ. 1) THEN
             IPCMN = IPCMN + 1
             IF (IPREAD .GT. IPTEST) THEN
-               WRITE (LUPRI,'(/I4,3X,A,5X,A,3X,F15.10)')
-     *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
-               WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
+               WRITE (LUPRI,'(2X,A,3X," : ",3(I4,2X,A,F15.10))')
+     *               NAME,ICRX,CHRXYZ(-1), CORD(1,ICENT),
      *               ICRY, CHRXYZ(-2), CORD(2,ICENT),
      *               ICRZ, CHRXYZ(-3), CORD(3,ICENT)
             END IF
@@ -4209,9 +4216,8 @@ C--------------------------
                   WORK(ICRZ) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      *                        *CORD(3,ICENT)
                   IF (IPREAD .GT. IPTEST) THEN
-                     WRITE (LUPRI,'(/I4,3X,A,I2,3X,A,3X,F15.10)')
-     *                     ICRX, NAME,JATOM,CHRXYZ(-1),WORK(ICRX)
-                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
+                  WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I4,2X,A,F15.10))')
+     *                     NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
      *                     ICRY,CHRXYZ(-2),WORK(ICRY),
      *                     ICRZ,CHRXYZ(-3),WORK(ICRZ)
                   END IF
@@ -4384,20 +4390,9 @@ C     for a gaussian charge distribution approximation to the finite nuc
 C.......................................................................
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION ASYMB(103), AMASS(103)
-      CHARACTER*2 ASYMB
-      DATA (ASYMB(I),I = 1,103)
-     1/'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',
-     2 'Na', 'Mg', 'Al', 'Si', 'P ', 'S ', 'Cl', 'Ar', 'K ', 'Ca',
-     3 'Sc', 'Ti', 'V ', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
-     4 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y ', 'Zr',
-     5 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',
-     6 'Sb', 'Te', 'I ', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
-     7 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
-     8 'Lu', 'Hf', 'Ta', 'W ', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',
-     9 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',
-     O 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
-     1 'Md', 'No', 'Lr' /
+C     include character ASYMB(0:NSYNB)*2 with atomic symbols
+#include <asymb.h>
+      DIMENSION AMASS(103)
       DATA (AMASS(I),I = 1,92)
      1/ 1.0078246D0, 4.002601D0, 7.01600D0, 9.01218D0, 11.009307D0,
      2  12.000000D0, 14.0030738D0, 15.9949141D0,
@@ -5752,10 +5747,16 @@ C
 #include <priunit.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0)
+
+      DIMENSION NONT(KATOM)
+
 #include <nuclei.h>
 #include <molinp.h>
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
-      DIMENSION NONT(KATOM)
+
+C     include character ASYMB(0:NSYMB)*2 with atomic symbols
+#include <asymb.h>
+
 C
       NCTOT = NCTOT + 1
       NUCIND = NUCIND + 1
@@ -5818,6 +5819,22 @@ C
      &     IZ(NUCIND,4),CHARGE(NUCIND)
 #endif
  204  CONTINUE
+      IF (NAMN(NUCIND)(1:4) .EQ. '    ') THEN
+         ICHRG = NINT(CHARGE(NUCIND))
+         NAMN(NUCIND)(1:2) = ASYMB(ICHRG)
+      END IF
+      IF (NAMN(NUCIND)(1:2) .EQ. '  ') THEN
+         NAMN(NUCIND)(1:3) = NAMN(NUCIND)(2:4) 
+         NAMN(NUCIND)(4:4) = ' '
+         GO TO 204
+      END IF
+      IF (NAMN(NUCIND)(2:4) .EQ. '   ') THEN
+         INUM = MOD(INUM,1000)
+         WRITE(NAMN(NUCIND)(2:4),'(I3)') INUM
+      ELSE IF (NAMN(NUCIND)(3:4) .EQ. '  ') THEN
+         INUM = MOD(INUM,100)
+         WRITE(NAMN(NUCIND)(3:4),'(I2)') INUM
+      END IF
       NMLINE = NMLINE + 1
       NCLINE(NUCIND) = NMLINE
       NONT(NUCIND) = 1
