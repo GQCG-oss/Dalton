@@ -1538,10 +1538,9 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(2,4),DSTEP(4)
-#ifndef PRG_DIRAC
-      CHARACTER TEXT*6
-#else /* PRG_DIRAC */
-      CHARACTER SECTID*12, INTTID*12,TEXT*9
+      CHARACTER TEXT*(*)
+#ifdef PRG_DIRAC
+      CHARACTER SECTID*12, INTTID*12
 #endif /* PRG_DIRAC */
 C
       IF(TEXT(1:6).EQ.'Header') THEN
@@ -1569,11 +1568,11 @@ C VB mar 2001:
 C     SCRSTA is only entered if IPRINT > 0, so no need to check
 C
 C      IF (IPRINT.GT.0) THEN
-         WRITE(LUPRI,'(A)') '* Screening statistics:'
-         WRITE(LUPRI,'(6X,4(5X,A8))') 'Step1   ','Step2   ',
+         WRITE(LUPRI,'(2A)') '* Screening statistics ',TEXT
+         WRITE(LUPRI,'(4(5X,A8))') 'Step1   ','Step2   ',
      &        'Coulomb ','Exchange'
-         WRITE(LUPRI,'(A6,4(6X,F6.2,A1))') 
-     &        TEXT,(DSTEP(I),'%',I=1,4)
+         WRITE(LUPRI,'(4(6X,F6.2,A1))') 
+     &        (DSTEP(I),'%',I=1,4)
 C      END IF
 #else /* PRG_DIRAC */
       INTTID = SECTID(CPUSEC)

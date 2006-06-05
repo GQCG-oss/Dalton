@@ -263,18 +263,18 @@ C
      &            IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &            WORK(KIORBS),
      &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
-      CALL TIMER('TWOINT',TIMSTR,TIMEND)
+      IF (IPRINT.GT.0) CALL TIMER('GETDIS/TWOINT',TIMSTR,TIMEND)
 C
 C--------------------------------------
-C     Write out integrals distributions
+C     Write out integral distributions
 C--------------------------------------
 C
       IF (IPRINT.GT.3) THEN
          CALL HEADER('Distribution matrices in GETDIS',-1)
          DO 300 I = 1, NUMDIS
             CALL UNPKIJ(INDXAB(I),IA,IB)
-            WRITE(LUPRI,'(//,1X,A,I4)')' Distribution matrix No.',I
-            WRITE(LUPRI,'(1X,A,2I4)')  ' Orbital indices:       ',IA,IB
+            WRITE(LUPRI,'(//A,I4)')' Distribution matrix No.',I
+            WRITE(LUPRI,'(A,2I4)')  ' Orbital indices:       ',IA,IB
             CALL OUTPUT(GMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   300    CONTINUE
       END IF
@@ -325,7 +325,7 @@ C
       CALL TIMER('START ',TIMSTR,TIMEND)
       CALL GETFCK(WORK(KFMAT),WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,DIRECT,
      *          .FALSE.)
-      CALL TIMER('GETFCK',TIMSTR,TIMEND)
+      CALL TIMER('FCKTES/GETFCK',TIMSTR,TIMEND)
       if (.true.) return
 C
 C     Test distributions
@@ -605,7 +605,7 @@ C
 C
 #include <memint.h> 
       IF (NDMAT .EQ. 0) RETURN  
-      CALL QENTER('HERFCK1')
+      CALL QENTER('HRFCK1')
       I2TYP = 0
 C
 C     Inquire if this is an ABACUS run or not:
@@ -656,7 +656,7 @@ C
       CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)
       CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &            WORK(KJORBS),WORK(KKORBS),0,.FALSE.,IPRINT)
-      CALL MEMREL('HERFCK1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
+      CALL MEMREL('HRFCK1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
 C
 C     Transform density to AO basis
 C     Modified july-97, kr
@@ -731,7 +731,7 @@ c           calculation.
             HFXFAC = HFXFC0
          END IF
 
-         CALL MEMREL('HERFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
+         CALL MEMREL('HRFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
          IF (IPRINT .GT. 0)
      &      CALL SCRSTA('PARDRV',WORK(KDSKP))
       ELSE
@@ -767,9 +767,9 @@ C
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
             HFXFAC = HFXFC0
          END IF
-         CALL TIMER('TWOINT',TIMSTR,TIMEND)
+         IF (IPRINT .GT. 0) CALL TIMER('HRFCK1/TWOINT',TIMSTR,TIMEND)
          IF (IPRINT .GT. 0)
-     &      CALL SCRSTA('TWOINT',WORK(KDSKP))
+     &      CALL SCRSTA('HRFCK1/TWOINT',WORK(KDSKP))
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
@@ -782,17 +782,17 @@ C     Write out densities and associated fock matrices.
 C------------------------------------------------------
 C
       IF (IPRINT.GT.5) THEN
-         CALL HEADER('Density and Fock matrices in HERFCK1',-1)
+         CALL HEADER('Density and Fock matrices in HRFCK1',-1)
          DO 300 I = 1, NDMAT
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
+            WRITE (LUPRI,'(//A,2I3)') ' Density matrix No.',I,NDMAT
             CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+            WRITE (LUPRI,'(//A,2I3)') ' Fock matrix No.',I,NDMAT
             CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   300    CONTINUE
       END IF
 C
-      CALL MEMREL('HERFCK1',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('HERFCK1')
+      CALL MEMREL('HRFCK1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('HRFCK1')
       RETURN
       END
 C  /* Deck aindex */

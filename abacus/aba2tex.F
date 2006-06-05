@@ -547,7 +547,8 @@ C
      &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
                   HFXFAC = HFXFC0
                END IF
-               IF (IPRINT .GE. 2) CALL TIMER('TWOINT',TIMSTR,TIMEND)
+               IF (IPRINT .GE. 2)
+     &         CALL TIMER('TWOEXP/TWOINT',TIMSTR,TIMEND)
             END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
@@ -617,7 +618,7 @@ C
      &               IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR)
       END IF
       IF (CUT) THEN
-         WRITE (LUPRI,'(/,A)')
+         WRITE (LUPRI,'(/A)')
      &          ' Program stopped after TWOEXP as required.'
          WRITE (LUPRI,'(A)') ' No restart file has been written.'
          CALL QUIT(' ***** End of ABACUS (in TWOEXP) *****')

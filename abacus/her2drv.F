@@ -1978,6 +1978,7 @@ Cef begin
       YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
       
+      CALL QENTER('SYMLOP')
 C
       LMCORE = MMCORE
       JSCORE = ISCORE
@@ -2248,8 +2249,7 @@ C Largest exchange contribution
                       FCKMAX = DNSMAX*ULINT
                       IF(FCKMAX.LT.FCKTHR) THEN
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
-                        IF(IPRINT.GE.5) THEN
-                   WRITE(LUPRI,
+                        IF(IPRINT.GE.5) WRITE(LUPRI,
      &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
      &        '*Skip: ',FCKMAX,
      &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
@@ -2260,14 +2260,13 @@ C Largest exchange contribution
      &        SPDCAR(NHKTSH(ISHELC)-1),')',
      &        ISHELD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
      &        SPDCAR(NHKTSH(ISHELD)-1),')'
-                        ENDIF
 #if defined (VAR_MPI)
           IF (AOSAVE .AND. LINTSV .AND. MAXDER .EQ. 0 .AND. 
      &        DIRFCK .AND. HFXMU .EQ. D0) THEN
              I_SHL = I_SHL + 1
              IF (I_SHL .GT. MXSHL_KEEP) THEN
-                write(lupri,*) 'Received quit because'//
-     &               'I_SHL exceeds MXSHL_KEEP'
+                write(lupri,*) 'Received quit because '//
+     &               'I_SHL exceeds MXSHL_KEEP',I_SHL,MXSHL_KEEP
                 CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
              END IF
 #else
@@ -2278,13 +2277,13 @@ C Largest exchange contribution
      &                 .AND. HFXMU .EQ. D0) THEN
                      I_SHL = I_SHL + NINTYP*NCCINT
                      IF (I_SHL .GT. MMCORE) THEN
-                        write(lupri,*) 'Received quit because'//
-     &                       'I_SHL exceeds MXSHL_KEEP'
-                        CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
+                        write(lupri,*) 'Received quit because '//
+     &                       'I_SHL exceeds MMCORE',I_SHL,MMCORE
+                        CALL QUIT('I_SHL exceeds MMCORE.')
                      END IF
 #endif
-              LINTMP = .TRUE.
-                     END IF
+                     LINTMP = .TRUE.
+                  END IF
                         GOTO 300
                       ENDIF
                     ENDIF
@@ -2368,8 +2367,8 @@ C     &                    II=0,NCCINT-1)
 C
                      I_SHL = I_SHL + 1
                      IF (I_SHL .GT. MXSHL_KEEP) THEN
-                        write(lupri,*) 'Received quit because'//
-     &                       'I_SHL exceeds MXSHL_KEEP'
+                        write(lupri,*) 'Received quit because '//
+     &                       'I_SHL exceeds MXSHL_KEEP',I_SHL,MXSHL_KEEP
                         CALL QUIT('I_SHL exceeds MXSHL_KEEP.')
                      END IF
 C
@@ -2414,8 +2413,8 @@ C
 C
                      I_SHL = I_SHL + NCCINT*NINTYP
                      IF (I_SHL .GT. MMCORE) THEN
-                        write(lupri,*) 'Received quit because'//
-     &                       'I_SHL exceeds MMCORE'
+                        write(lupri,*) 'Received quit because '//
+     &                       'I_SHL exceeds MMCORE',I_SHL,MMCORE
                         CALL QUIT('I_SHL exceeds MMCORE.')
                      END IF
 C
@@ -2478,7 +2477,9 @@ C
 C               
 C               write(lupri,*) 'WORK(KAOINT)2: ',(WORK(KAOINT+II-1),
 C     &                    II=1,NCCINT)
-               IF (N_SHL .GT. (MXSHL_KEEP)) THEN
+               IF (N_SHL .GT. MXSHL_KEEP) THEN
+                  write(lupri,*) 'Received quit because '//
+     &                 'N_SHL exceeds MXSHL_KEEP',N_SHL,MXSHL_KEEP
                   CALL QUIT('N_SHL exceeds MXSHL_KEEP')
                END IF 
                ITOTNT = ITOTNT + NINTYP*NCCINT
@@ -2512,8 +2513,8 @@ C                  write (lupri,*) 'n_shl,indx',n_shl,indx_shl(n_shl)
                   N_SHL = N_SHL + 1
                   ISCORE = ISCORE + (NINTYP*NCCINT)
                   IF (N_SHL .GT. (MXSHL_KEEP+1)) THEN
-                     write(lupri,*) 'Received quit because'//
-     &                    'N_SHL exceeds MXSHL_KEEP+1'
+                     write(lupri,*) 'Received quit because '//
+     &                  'N_SHL exceeds MXSHL_KEEP+1',N_SHL,MXSHL_KEEP+1
                      CALL QUIT('N_SHL exceeds MXSHL_KEEP+1.')
                   END IF
 #else
@@ -2632,7 +2633,7 @@ C
             CALL QUIT(
      &      'DISTRI call of FCKOUT not implemented in this version')
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
-C     Note: Make FCKOUT general enough to handle distributions
+C     TODO: Make FCKOUT general enough to handle distributions
 C           CALL FCKOUT(FMAT,DMAT,NDMAT,GMAT,SOINT,DIRFCK,DISTRI,
 C    &                  FIRST,LAST,THRESH,SQ12EL,IPRINT)
             IF (TKTIME) THEN
@@ -2642,10 +2643,11 @@ C    &                  FIRST,LAST,THRESH,SQ12EL,IPRINT)
             FIRST = .FALSE.
          END IF
       ELSE IF (EXPECT) THEN
-         IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE,WORK,
-     & 	                                  WORK(1+MXCOOR*MXCOOR))
+         IF (IPRINT .GE. 6) 
+     & 	    CALL PRIGRD(GRADEE,WORK,WORK(1+MXCOOR*MXCOOR))
       END IF
 C
+      CALL QEXIT('SYMLOP')
       RETURN
 C     
       END
@@ -4002,9 +4004,9 @@ C
  100  CONTINUE
       NDISTR = IJ
       IF (NDISTR .GT. MAXDIS) THEN
-         WRITE (LUPRI,'(1X,A)')    ' Too many distributions in NDISTR.'
-         WRITE (LUPRI,'(1X,A,I5)') ' Number of distributions:',NDISTR
-         WRITE (LUPRI,'(1X,A,I5)') ' Maximum allowed:        ',MAXDIS
+         WRITE (LUPRI,'(A)')    ' Too many distributions in NDISTR.'
+         WRITE (LUPRI,'(A,I6)') ' Number of distributions:',NDISTR
+         WRITE (LUPRI,'(A,I6)') ' Maximum allowed:        ',MAXDIS
          CALL QUIT('Too many distributions required in NDISTR')
       END IF
       RETURN
@@ -4810,7 +4812,7 @@ C
       ELSE
          WRITE (LUPRI,'(1X,A,I5)')
      &       ' Wrong run type in TWORUN, ITYPE =', ITYPE
-         CALL QUIT('ERROR in TWORUN.')
+         CALL QUIT('ERROR in TWORUN, unknown run type.')
       END IF
 C
 C     Set symmetry of operator
