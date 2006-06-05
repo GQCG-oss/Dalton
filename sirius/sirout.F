@@ -662,24 +662,25 @@ C
 #include <implicit.h>
       DIMENSION CMO(*)
       LOGICAL   PROCC
+      PARAMETER (THRPRI = 1.0D-4)
 C
 C Used from common blocks:
 C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
 C
 C *** FORMAT statements
 C
  2400 FORMAT(/5X,'Molecular orbitals for symmetry species',I4)
- 2600 FORMAT(/' Orbital  ',7I9)
- 2620 FORMAT( ' Sup.sym. ',7I9)
- 2800 FORMAT(1X,I3,2X,2A4,7F9.4)
+ 2600 FORMAT(/' Orbital   ',7I9)
+ 2620 FORMAT( ' Sup.sym.  ',7I9)
+ 2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
 C
 C *** Print molecular orbitals
 C
@@ -707,8 +708,12 @@ C
             DO 200 I=1,NBASI
                JSMO=ISTMO+I
                JEMO=IEMO+I
-               WRITE(IOUT,2800) I,CENT(I+ISTBAS),TYPE(I+ISTBAS),
-     *            (CMO(J),J=JSMO,JEMO,NBASI)
+               JJ = 0
+               DO J=JSMO,JEMO,NBASI
+                  IF ( ABS(CMO(J)) .GE. THRPRI ) JJ = 1
+               END DO
+               IF (JJ .EQ. 1) WRITE(IOUT,2800) I,CENT(I+ISTBAS),
+     *            TYPE(I+ISTBAS),(CMO(J),J=JSMO,JEMO,NBASI)
   200       CONTINUE
          IF (IEND.NE.NENDI) GO TO 100
 C
