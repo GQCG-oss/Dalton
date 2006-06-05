@@ -111,13 +111,13 @@ else
 fi
 
 # Molecular geometry
-CRIT1=`$GREP "1 * OS * x * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
-CRIT4=`$GREP "4 * OP * 1 * x * 1\.2634502500" $log | wc -l`
+CRIT4=`$GREP "4 * x * 1\.2634502500" $log | wc -l`
 CRIT5=`$GREP "5 * y * 2\.0449019100" $log | wc -l`
 CRIT6=`$GREP "6 * z * (0| )\.0000000000" $log | wc -l`
-CRIT7=`$GREP "7 * OP * 2 * x * 1\.2634502500" $log | wc -l`
+CRIT7=`$GREP "7 * x * 1\.2634502500" $log | wc -l`
 CRIT8=`$GREP "8 * y * \-2\.0449019100" $log | wc -l`
 CRIT9=`$GREP "9 * z * (0| )\.0000000000" $log | wc -l`
 CRIT10=`$GREP "Total number of coordinates\: * 9" $log | wc -l`

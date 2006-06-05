@@ -194,16 +194,16 @@ ERROR[12]="SYMMETRY NOT DETERMINED CORRECT"
 
 # New geometry
 CRIT1=`$GREP "Total number of coordinates\: * 12" $log | wc -l`
-CRIT2=`$GREP "1 * O * 1 * x * 1\.3231824[0-1][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "1 * x * 1\.3231824[0-1][0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "2 * y * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (\-0|\-)\.029637135[0-9]" $log | wc -l`
-CRIT5=`$GREP "4 * O * 2 * x * \-1\.3231824[0-1][0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "4 * x * \-1\.3231824[0-1][0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "5 * y * (\-0|\-|0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * (\-0|\-)\.029637135[0-9]" $log | wc -l`
-CRIT8=`$GREP "7 * H * 1 * x * 1\.6580685[7-9][0-9][0-9]" $log | wc -l`
+CRIT8=`$GREP "7 * x * 1\.6580685[7-9][0-9][0-9]" $log | wc -l`
 CRIT9=`$GREP "8 * y * 1\.758533(29|30)[0-9][0-9]" $log | wc -l`
 CRIT10=`$GREP "9 * z * (0| )\.470362865[0-9]" $log | wc -l`
-CRIT11=`$GREP "10 * H * 2 * x * \-1\.6580685[7-9][0-9][0-9]" $log | wc -l`
+CRIT11=`$GREP "10 * x * \-1\.6580685[7-9][0-9][0-9]" $log | wc -l`
 CRIT12=`$GREP "11 * y * \-1\.758533(29|30)[0-9][0-9]" $log | wc -l`
 CRIT13=`$GREP "12 * z * (0| )\.470362865[0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
