@@ -51,7 +51,7 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, CARD*80, TYPE*4,
      &          WORD1*7
       DIMENSION IA(4)
-      DATA TABLE /'.SKIP  ', '.PRINT ', '.ISOTOP', '.INTERN',
+      DATA TABLE /'xxxxxxx', '.PRINT ', '.ISOTOP', '.INTERN',
      &            '.XXXXXX', '.HESFIL', '.HESPUN'/
       DATA ISOTPD/0/, ISOTHD/0/, DOINT/.FALSE./
 C
@@ -80,7 +80,6 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in VIBINP.')
     1          CONTINUE
-                  SKIP = .TRUE.
                GO TO 100
     2          CONTINUE
                   READ (LUCMD,*) IPRINT
@@ -90,10 +89,10 @@ C
                   READ (LUCMD,*) NISOTP, NATM
                   IF (NISOTP .GT. MAXSUB) THEN
                      WRITE (LUPRI,*)' Too many isotopic substitutions'//
-     &                    ' requested in VIBANA input'
+     &                    ' requested in *VIBANA input'
                      WRITE (LUPRI,*) ' Increase MAXSUB, recompile and'//
      &                    ' be welcome back'
-                     CALL QUIT('Input error in VIBANA')
+                     CALL QUIT('Input error in *VIBANA')
                   END IF
                   DO 305 ICOUNT = 1, NISOTP
                      READ (LUCMD,*) (ISOTP(ICOUNT,N), N = 1, NATM)
@@ -154,31 +153,27 @@ c                  MOLGRD = .FALSE.
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for VIBANA:',0)
-         IF (SKIP) THEN
-            WRITE (LUPRI,'(A)') ' VIBANA skipped in this run.'
+         IF (IPRINT .NE. IPRDEF) THEN
+            WRITE (LUPRI,'(A,I5)') ' Print level in VIBANA:',IPRINT
+         END IF
+         IF (DOINT) THEN
+            WRITE (LUPRI,'(A)') ' Forces and force constants will '//
+     &          'be printed in internal coordinates.'
+         END IF
+         IF (HESFIL) THEN
+            WRITE (LUPRI,'(A)') ' Vibrational analysis will be '//
+     &           'based on Hessian read from file'
+         END IF
+         IF (HESPUN) THEN
+            WRITE(LUPRI,'(A)') ' The vibrational Hessian will be '//
+     &           'punched to file'
+         END IF
+         IF (NISOTP .EQ. 0) THEN
+            WRITE (LUPRI, '(A)')
+     &           ' Vibrational analysis for parent molecule only.'
          ELSE
-            IF (IPRINT .NE. IPRDEF) THEN
-               WRITE (LUPRI,'(A,I5)') ' Print level in VIBANA:',IPRINT
-            END IF
-            IF (DOINT) THEN
-               WRITE (LUPRI,'(A)') ' Forces and force constants will '//
-     &             'be printed in internal coordinates.'
-            END IF
-            IF (HESFIL) THEN
-               WRITE (LUPRI,'(A)') ' Vibrational analysis will be '//
-     &              'based on Hessian read from file'
-            END IF
-            IF (HESPUN) THEN
-               WRITE(LUPRI,'(A)') ' The vibrational Hessian will be '//
-     &              'punched to file'
-            END IF
-            IF (NISOTP .EQ. 0) THEN
-               WRITE (LUPRI, '(A)')
-     &              ' Vibrational analysis for parent molecule only.'
-            ELSE
-               WRITE (LUPRI,'(4X,A,I3,A)')
-     &              ' Vibrational analysis for ',NISOTP+1,' molecules'
-            END IF
+            WRITE (LUPRI,'(4X,A,I3,A)')
+     &           ' Vibrational analysis for ',NISOTP+1,' molecules'
          END IF
       END IF
       RETURN
@@ -204,7 +199,6 @@ C
          DO 10 J = 1, MXCENT
          ISOTP(I,J) = 1
  10   CONTINUE 
-      SKIP   = .NOT.VIB
       IF (MOLHES) THEN
          MAXDIF = 2
       ELSE IF (MOLGRD) THEN
@@ -776,7 +770,7 @@ C
 C
       CALL HEADER
      &    ('Principal moments of inertia (u*A**2) and principal axes',0)
-      WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
+      WRITE (LUPRI,'(3X,A,F15.6,6X,3F12.6)')
      &     'IA',AIMOM,(VINRTI(K,1),K=1,3),
      &     'IB',BIMOM,(VINRTI(K,2),K=1,3),
      &     'IC',CIMOM,(VINRTI(K,3),K=1,3)
