@@ -540,8 +540,7 @@ C
 C
  9000 CONTINUE
       IF (.NOT. BETUPD)
-     *   CALL UPDBET(WRK(KREDL),WRK(KEVEC),WRK(KEVAL),
-     *               WRK(KWRK1),LWRK1)
+     &   CALL UPDBET(WRK(KREDL),WRK(KEVEC),WRK(KEVAL),WRK(KWRK1),LWRK1)
       SHFLVL = WRK(KEVAL-1+ISTATE)
 C
 C *** Calculate predicted energy difference
@@ -2345,7 +2344,6 @@ C
 C Written 31-Mar-1984 by Hans Joergen Aa. Jensen
 C
 C Revisions 26-Oct-1984 / 19-May-1984 hjaaj
-C  11-Feb-1985 hjaaj (set BETA to D1 when NR)
 C  20-Dec-1994 hjaaj (check if EVEC(1,ISTATE) .eq. 0)
 C
 C  This is the routine for update of beta in the reduced matrix
@@ -2366,6 +2364,7 @@ C
       PARAMETER (BETINC = 0.2D0, SECFAC = 0.1D0)
       PARAMETER (DHALF=0.5D0, D0=0.0D0, D1=1.0D0, D2=2.0D0)
       PARAMETER (DP1 = 0.1D0, DP9 = 0.9D0)
+#include <priunit.h>
 #include <dummy.h>
 #include <thrzer.h>
 C
@@ -2376,7 +2375,6 @@ C   INFOPT : BETA,BETMIN,(BETMAX,)RTRUST,RTTOL,RBETA,GRDNRM,NREDL
 C   INFPRI : P6FLAG(*)
 C
 #include <maxorb.h>
-#include <priunit.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <infopt.h>
@@ -2390,7 +2388,7 @@ C
 C
 C     space for NEORED
 C
-      LWRK1 = LFREE- 3*ITBMAX
+      LWRK1 = LFREE - 3*ITBMAX
 C
 C Initialize step scaling to no scaling:
 C
@@ -2439,12 +2437,14 @@ C    *                IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
       END IF
       IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) THEN
          IF (ISTATE.LT.NREDL) THEN
+            NWARN = NWARN + 1
+            WRITE(LUPRI,'(/A)') 'UPDBET WARNING: '//
+     &      'Symmetry break, will try to switch ISTATE and ISTATE+1 '
+
             CALL DSWAP(NREDL,EVEC(1,ISTATE),1,EVEC(1,ISTATE+1),1)
             EVALX = EVAL(ISTATE)
             EVAL(ISTATE) = EVAL(ISTATE+1)
             EVAL(ISTATE+1) = EVALX
-            WRITE(LUPRI,'(/A)') 'UPDBET: '//
-     &      'Symmetry break, will try to switch ISTATE and ISTATE+1 '
          END IF
          IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
       END IF
@@ -2539,12 +2539,13 @@ C        CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,G,
 C    *                IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
          IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) THEN
             IF (ISTATE.LT.NREDL) THEN
+               NWARN = NWARN + 1
+               WRITE(LUPRI,'(/A)') 'UPDBET WARNING: '//
+     &         'Symmetry break, will try to switch ISTATE and ISTATE+1'
                CALL DSWAP(NREDL,EVEC(1,ISTATE),1,EVEC(1,ISTATE+1),1)
                EVALX = EVAL(ISTATE)
                EVAL(ISTATE) = EVAL(ISTATE+1)
                EVAL(ISTATE+1) = EVALX
-               WRITE(LUPRI,'(/A)') 'UPDBET: '//
-     &         'Symmetry break, will try to switch ISTATE and ISTATE+1'
             END IF
             IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
          END IF
@@ -2580,12 +2581,13 @@ C     CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,G,
 C    *             IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
       IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) THEN
          IF (ISTATE.LT.NREDL) THEN
+            NWARN = NWARN + 1
+            WRITE(LUPRI,'(/A)') 'UPDBET WARNING: '//
+     &      'Symmetry break, will try to switch ISTATE and ISTATE+1 '
             CALL DSWAP(NREDL,EVEC(1,ISTATE),1,EVEC(1,ISTATE+1),1)
             EVALX = EVAL(ISTATE)
             EVAL(ISTATE) = EVAL(ISTATE+1)
             EVAL(ISTATE+1) = EVALX
-            WRITE(LUPRI,'(/A)') 'UPDBET: '//
-     &      'Symmetry break, will try to switch ISTATE and ISTATE+1 '
          END IF
          IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
       END IF
@@ -2608,7 +2610,7 @@ C    *             IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
       RETURN
 C
 C ***
-C *** ERROR exit
+C *** ERROR exits
 C
   900 CONTINUE
       WRITE (LUPRI,9010) ITBMAX
