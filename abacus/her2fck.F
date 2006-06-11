@@ -89,6 +89,9 @@ C
 C     Scanning for zero integrals; this is done twice, but
 C     saves quite a bit of memory
 C
+      IF (NINTYP .GT. 1) THEN
+         CALL QUIT('Programming error please report. NINTYP .gt. 1')
+      END IF
       NBUF = 0
       IF(DOSCRN) THEN
         FCKTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
@@ -892,7 +895,7 @@ C
             CALL HEADER("AO Fock matrix in SKLFC1",1)
             DO 40 N = 1, NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,
-     &                                   NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,1,LUPRI)
    40       CONTINUE
          END IF
 C

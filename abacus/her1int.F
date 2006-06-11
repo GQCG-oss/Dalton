@@ -4,15 +4,15 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -62,10 +62,10 @@ C
          NSHINT = 60
       ELSE IF (INTTYP .EQ. 58) THEN
          NPOINT = NPQUAD
-         NSHINT = 9*9*NATOM                   
+         NSHINT = 9*9*NATOM
       ELSE IF (INTTYP .EQ. 70) THEN
          NPOINT = 1
-         NSHINT = 3*NOPTYP 
+         NSHINT = 3*NOPTYP
       ELSE
          NPOINT = 1
          NSHINT = NOPTYP
@@ -385,7 +385,7 @@ C
          JMAXD  = 1
          JMAXM  = 3
          DONUC1 = .TRUE.
-         DOMOM1 = .FALSE.                    
+         DOMOM1 = .FALSE.
       ELSEIF (INTTYP .EQ.55) THEN
          JMAXD  = 1
          JMAXM  = 1
@@ -405,7 +405,7 @@ C
          JMAXD = 1
          JMAXM = 0
          DONUC1 = .TRUE.
-         DOMOM1 = .TRUE.                    
+         DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.59) THEN
          JMAXD  = 1
          JMAXM  = 0
@@ -425,12 +425,12 @@ C
          JMAXD  = 1
          JMAXM  = 1
          DONUC1 = .TRUE.
-         DOMOM1 = .FALSE.            
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.64) THEN
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .FALSE.
-         DOMOM1 = .FALSE.               
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.65) THEN
          JMAXD = 0
          JMAXM = 3
@@ -450,59 +450,59 @@ C
          JMAXD  = 3
          JMAXM  = 0
          DONUC1 = .TRUE.
-         DOMOM1 = .FALSE.               
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.71) THEN
          JMAXD  = 2
          JMAXM  = 0
          DONUC1 = .TRUE.
-         DOMOM1 = .FALSE. 
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.72) THEN
          JMAXD  = 2
          JMAXM  = 0
-         DONUC1 = .FALSE. 
-         DOMOM1 = .FALSE. 
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.73) THEN
          JMAXD  = 2
-         JMAXM  = 0        
-         DONUC1 = .FALSE. 
-         DOMOM1 = .FALSE. 
+         JMAXM  = 0
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.74) THEN
          JMAXD  = 2
          JMAXM  = 1
-         DONUC1 = .FALSE. 
-         DOMOM1 = .FALSE. 
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.75) THEN
          JMAXD  = 0
          JMAXM  = 0
-         DONUC1 = .FALSE. 
-         DOMOM1 = .FALSE. 
-      ELSE IF (INTTYP .EQ.80) THEN 
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.
+      ELSE IF (INTTYP .EQ.80) THEN
          JMAXD = 1
          JMAXM = 0
          DONUC1 = .TRUE.
-         DOMOM1 = .TRUE. 
+         DOMOM1 = .TRUE.
 cLig >> setting for INTTYP 81 and 82
       ELSE IF (INTTYP .EQ.81) THEN
          JMAXD  = 1
-         JMAXM  = 2        
-         DONUC1 = .FALSE. 
-         DOMOM1 = .TRUE. 
+         JMAXM  = 2
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.82) THEN
          JMAXD  = 1
-         JMAXM  = 1        
-         DONUC1 = .FALSE. 
-         DOMOM1 = .TRUE. 
+         JMAXM  = 1
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
 cLig <<
       ELSE IF (INTTYP .EQ.83) THEN
-         JMAXD  = 1 
-         JMAXM  = 1 
+         JMAXD  = 1
+         JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.84) THEN
          JMAXD  = 2
          JMAXM  = 1
          DONUC1 = .TRUE.
-         DOMOM1 = .FALSE.            
+         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.91) THEN
          JMAXD  = 3
          JMAXM  = 1
@@ -609,7 +609,7 @@ C
 C     ***********************************************************
 C     ***** If expectation values, construct density matrix *****
 C     ***********************************************************
-C     
+C
       IF (EXP1EL) CALL DZERO(EXPVAL,NOPTYP)
 C
 C     ************************************************************
@@ -917,12 +917,12 @@ cLig <> added JMAX adjustment  for INTTYP = 82
          IF (INTTYP .EQ. 57) JMAX = JMAX + 2
          IF (INTTYP .EQ. 58) JMAX = JMAX + 2
          IF (INTTYP .EQ. 58) JMAX = JMAX + 1
-         IF (INTTYP .EQ. 61) JMAX = JMAX + 2                
+         IF (INTTYP .EQ. 61) JMAX = JMAX + 2
          IF (INTTYP .EQ. 62) JMAX = JMAX + 2
          IF (INTTYP .EQ. 63) JMAX = JMAX + 2
          IF (INTTYP .EQ. 66) JMAX = JMAX + 1
          IF (INTTYP .EQ. 67) JMAX = JMAX + 2
-         IF (INTTYP .EQ. 70) JMAX = JMAX + 1                
+         IF (INTTYP .EQ. 70) JMAX = JMAX + 1
          IF (INTTYP .EQ. 72) JMAX = JMAX + 2
          IF (INTTYP .EQ. 73) JMAX = JMAX + 2
          IF (INTTYP .EQ. 74) JMAX = JMAX + 2
@@ -941,9 +941,9 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
      &                            .OR. (INTTYP .EQ. 20)
      &                            .OR. (INTTYP .EQ. 24)
      &                            .OR. (INTTYP .EQ. 25)
-     &                            .OR. (INTTYP .EQ. 57)      
-     &                            .OR. (INTTYP .EQ. 61)      
-     &                            .OR. (INTTYP .EQ. 62)      
+     &                            .OR. (INTTYP .EQ. 57)
+     &                            .OR. (INTTYP .EQ. 61)
+     &                            .OR. (INTTYP .EQ. 62)
      &                            .OR. (INTTYP .EQ. 63)
      &                            .OR. (INTTYP .EQ. 64)
      &                            .OR. (INTTYP .EQ. 70)
@@ -953,7 +953,7 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
 C
-         IF (INTTYP .EQ. 75 .OR. INTTYP .EQ. 66 
+         IF (INTTYP .EQ. 75 .OR. INTTYP .EQ. 66
      &        .OR. INTTYP .EQ. 67 .OR. INTTYP .EQ. 99
      &        .OR. INTTYP .EQ. 100) THEN
             NATOMC = 0
@@ -993,17 +993,17 @@ C
                CORCZ0 =  CORD(3,IATOMC)
                FACTOR = - FMULT(IBTAND(MULC,KAB))
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
-               IF ( (QM3) .AND. (.NOT. (OLDTG) ) 
-     &                    .AND. (INTTYP .EQ. 35) ) THEN 
+               IF ( (QM3) .AND. (.NOT. (OLDTG) )
+     &                    .AND. (INTTYP .EQ. 35) ) THEN
                  IF (ISUBSY(IATOMC) .NE. 0) THEN
                    FACTOR = - FACTOR*CHARGE(IATOMC)/HKAB
-                 END IF 
+                 END IF
                END IF
                IF ( (QM3) .AND. (OLDTG) .AND. (INTTYP .EQ. 35) ) THEN
                  IF (ISUBSY(IATOMC) .NE. 0) THEN
                    FACTOR = - FACTOR*CHAOLD(IATOMC)/HKAB
                  END IF
-               END IF  
+               END IF
                IF (INTTYP .EQ. 80) THEN
                   FACTOR = FACTOR/HKAB*(
      &            DISOTP(IZATOM(IATOMC),ISOTOP(IATOMC),'NEUTRONS')
@@ -1122,7 +1122,7 @@ C
                CALL TESTRA(SHLINT,EXPVAL,FACINT,JSYMC,JCENTC,NATOMC,
      &                     ISYMOP,1,NOPTYP,ANTI,EXP1EL,DENMAT,MULTA,
      &                     MULTB,IPRINT)
-            ELSE IF (INTTYP.EQ.12 .OR. INTTYP.EQ.58 .OR. 
+            ELSE IF (INTTYP.EQ.12 .OR. INTTYP.EQ.58 .OR.
      &               INTTYP.EQ.96) THEN
                CALL DSOTRA(SHLINT,EXPVAL,ISYMOP,1,NOPTYP,ANTI,DOATOM,
      &                     KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,EXP1EL,
@@ -1147,7 +1147,7 @@ C
                   END DO
                END DO
                DO ICOMP = 1, NOPTYP
-                  IF (INTREP(ICOMP) .EQ. 0) EXPVAL(ICOMP) = 
+                  IF (INTREP(ICOMP) .EQ. 0) EXPVAL(ICOMP) =
      &                                      EXPVAL(ICOMP) + WORK(ICOMP)
                END DO
             END IF
@@ -1202,7 +1202,7 @@ cLig <> added the call to NSSTRA for INTTYP = 82
      &                  INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 54) THEN
             CALL OCGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
-     &                  INTADR,IPRINT)                     
+     &                  INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 59) THEN
             CALL S1HTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT)
          ELSE IF (INTTYP .EQ. 70) THEN
@@ -1397,13 +1397,13 @@ C
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
      &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 53) .OR.
      &            (INTTYP .EQ. 54) .OR. (INTTYP .EQ. 83) .OR.
-     &            (INTTYP .EQ. 84) ) THEN                  
+     &            (INTTYP .EQ. 84) ) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
 cLig <> put the origin in GAGORG also for INTTYP = 81 and 82
          ELSE IF ((INTTYP .EQ. 18) .OR. (INTTYP .EQ. 37) .OR.
-     &            (INTTYP .EQ. 38) .OR. (INTTYP .EQ. 57) .OR. 
+     &            (INTTYP .EQ. 38) .OR. (INTTYP .EQ. 57) .OR.
      &            (INTTYP .EQ. 61) .OR. (INTTYP .EQ. 81) .OR.
      &            (INTTYP .EQ. 82) .OR. (INTTYP .EQ. 91) .OR.
      &            (INTTYP .EQ. 93) .OR. (INTTYP .EQ. 97) .OR.
@@ -1425,7 +1425,7 @@ C
                   TEMP(2) = CORD(2,KR)
                   TEMP(3) = CORD(3,KR)
                END IF
- 37         CONTINUE 
+ 37         CONTINUE
          ELSE
             TEMP(1) = ORIGIN(1)
             TEMP(2) = ORIGIN(2)
@@ -1493,7 +1493,7 @@ cLig <> added the call to DZERO also for INTTYP = 82
      &                       .OR. (INTTYP .EQ. 94)
      &                       .OR. (INTTYP .EQ. 97)
      &                       .OR. (INTTYP .EQ. 99)
-     &                       .OR. (INTTYP .EQ. 100)) THEN      
+     &                       .OR. (INTTYP .EQ. 100)) THEN
                CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
             IF (ADDNAI) THEN
                CALL DZERO(AHGTF,NAHGTF)
@@ -1912,7 +1912,7 @@ C
             DONUC1 = .TRUE.
             DOMOM1 = .FALSE.
             CALL DPGINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &                  SHGTF,SHLINT(1,10))  
+     &                  SHGTF,SHLINT(1,10))
 C
 C        Quadrupole gradient integrals
 C        -----------------------------
@@ -1929,7 +1929,7 @@ C
             DONUC1 = .TRUE.
             DOMOM1 = .FALSE.
             CALL QUGINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &                  SHGTF,SHLINT(1,19))                     
+     &                  SHGTF,SHLINT(1,19))
 C
 C        Octupole gradient integrals
 C        ---------------------------
@@ -1963,7 +1963,7 @@ C
 C
 C        Diamagnetic one-electron spin-orbit integral without London
 C        -----------------------------------------------------------
-C        
+C
          ELSE IF (INTTYP .EQ. 61) THEN
                CALL DELGIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP)
@@ -2122,7 +2122,7 @@ C        --------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 101) THEN
             CALL MQDPIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
-         END IF                                    
+         END IF
 C
   200    CONTINUE
   100 CONTINUE
@@ -2737,7 +2737,7 @@ C
          DX1 = SHGTF*ODC(LVALA,LVALB,0,1,1,1)
          DY1 = SHGTF*ODC(MVALA,MVALB,0,1,1,2)
          DZ1 = SHGTF*ODC(NVALA,NVALB,0,1,1,3)
-C     
+C
          SHLINT(INT,1) = SHLINT(INT,1) - DX1*SY0*SZ0
          SHLINT(INT,2) = SHLINT(INT,2) - DX0*SY1*SZ0
          SHLINT(INT,3) = SHLINT(INT,3) - DX0*SY0*SZ1
@@ -2791,7 +2791,7 @@ C
          DY2 = SHGTF*ODC(MVALA,MVALB,0,1,2,2)
          DZ2 = SHGTF*ODC(NVALA,NVALB,0,1,2,3)
          INT = INT + 1
-C     
+C
          SHLINT(INT,1) = SHLINT(INT,1) - DX2*SY0*SZ0
          SHLINT(INT,2) = SHLINT(INT,2) - DX1*SY1*SZ0
          SHLINT(INT,3) = SHLINT(INT,3) - DX1*SY0*SZ1
@@ -3156,7 +3156,7 @@ C
          END IF
 C
          SHLINT(INT,1) = SHLINT(INT,1) - (D2*DIFABZ*DIFABY*DPLYZ
-     &                                 -  DIFABZ*DIFABZ*DPLYY 
+     &                                 -  DIFABZ*DIFABZ*DPLYY
      &                                 - DIFABY*DIFABY*DPLZZ)*D4INV
          SHLINT(INT,2) = SHLINT(INT,2) - (DIFABZ*DIFABZ*DPLXY -
      &                   DIFABY*DIFABZ*DPLXZ -
@@ -3226,7 +3226,7 @@ C
          DZ1 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,0,3) +
      &           ADZ* ODC(NVALA    ,NVALB,0,0,0,3))
          DX2 = SHGTF*(ODC(LVALA + 2,LVALB,0,0,0,1) +
-     &        D2*ADX* ODC(LVALA + 1,LVALB,0,0,0,1) + 
+     &        D2*ADX* ODC(LVALA + 1,LVALB,0,0,0,1) +
      &        ADX*ADX*ODC(LVALA    ,LVALB,0,0,0,1))
          DY2 = SHGTF*(ODC(MVALA + 2,MVALB,0,0,0,2) +
      &        D2*ADY* ODC(MVALA + 1,MVALB,0,0,0,2) +
@@ -3543,7 +3543,7 @@ C
                   GXX = FT*EU*EV
                   GYY = ET*FU*EV
                   GZZ = ET*EU*FV
-C     
+C
                   SHLINT(INT) = SHLINT(INT)
      &                        + (GXX + GYY + GZZ)*AHGTF(IADRAU+IT)
  400           CONTINUE
@@ -4154,7 +4154,7 @@ C
                   AH0T = AHGTF(IADRAU + IT + 1)
                   AH0U = AHGTF(IADRAU + IT + ISTEPU)
                   AH0V = AHGTF(IADRAU + IT + ISTEPV)
-C     
+C
                   SHLINT(INT,1) = SHLINT(INT,1) - D2INV*
      &                              (EFE*AH0U + EEF*AH0V)
                   SHLINT(INT,2) = SHLINT(INT,2) + D2INV*FEE*AH0U
@@ -4397,7 +4397,7 @@ C
 #include <mxcent.h>
 #include <maxmom.h>
 #include <maxorb.h>
-      PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3, 
+      PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3,
      &           THRESH = 1.0D-10)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -4533,7 +4533,7 @@ C  /* Deck efbint */
       SUBROUTINE EFBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  DIFABX,DIFABY,DIFABZ)
 C
-C     London orbital correction to the electric field calculated at a 
+C     London orbital correction to the electric field calculated at a
 C     point (e.g. in a MM system) in space.
 C
 C     K.Ruud, Copenhagen January 2006
@@ -4611,7 +4611,7 @@ C  /* Deck efb2in */
       SUBROUTINE EFB2IN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  DIFABX,DIFABY,DIFABZ)
 C
-C     2.nd-order London orbital correction to the electric field 
+C     2.nd-order London orbital correction to the electric field
 C     calculated at a point (e.g. in a MM system) in space.
 C
 C     K.Ruud, Copenhagen January 2006
@@ -5709,10 +5709,10 @@ C
 C
          SHLINT(INT,XA,1) = SHLINT(INT,XA,1) + TX
          SHLINT(INT,YA,1) = SHLINT(INT,YA,1) + TY
-         SHLINT(INT,ZA,1) = SHLINT(INT,ZA,1) + TZ 
+         SHLINT(INT,ZA,1) = SHLINT(INT,ZA,1) + TZ
          SHLINT(INT,XB,2) = SHLINT(INT,XB,2) - TX
          SHLINT(INT,YB,2) = SHLINT(INT,YB,2) - TY
-         SHLINT(INT,ZB,2) = SHLINT(INT,ZB,2) - TZ 
+         SHLINT(INT,ZB,2) = SHLINT(INT,ZB,2) - TZ
 C
 C        Nuclear attraction contribution
 C
@@ -5751,13 +5751,13 @@ C
                      CDERY = -EE*AHGTF(IOFF + IADRAU + IT + ISTEPU)
                      CDERZ = -EE*AHGTF(IOFF + IADRAU + IT + ISTEPV)
 C
-                     SHLINT(INT,XA,1) = SHLINT(INT,XA,1) + ADERX 
-                     SHLINT(INT,YA,1) = SHLINT(INT,YA,1) + ADERY 
-                     SHLINT(INT,ZA,1) = SHLINT(INT,ZA,1) + ADERZ 
-                     SHLINT(INT,XB,2) = SHLINT(INT,XB,2) - ADERX - CDERX 
+                     SHLINT(INT,XA,1) = SHLINT(INT,XA,1) + ADERX
+                     SHLINT(INT,YA,1) = SHLINT(INT,YA,1) + ADERY
+                     SHLINT(INT,ZA,1) = SHLINT(INT,ZA,1) + ADERZ
+                     SHLINT(INT,XB,2) = SHLINT(INT,XB,2) - ADERX - CDERX
                      SHLINT(INT,YB,2) = SHLINT(INT,YB,2) - ADERY - CDERY
                      SHLINT(INT,ZB,2) = SHLINT(INT,ZB,2) - ADERZ - CDERZ
-                     SHLINT(INT,XC,3) = SHLINT(INT,XC,3) + CDERX 
+                     SHLINT(INT,XC,3) = SHLINT(INT,XC,3) + CDERX
                      SHLINT(INT,YC,3) = SHLINT(INT,YC,3) + CDERY
                      SHLINT(INT,ZC,3) = SHLINT(INT,ZC,3) + CDERZ
 C
@@ -5817,7 +5817,7 @@ cLig <<
      &                                    MULTA,MULTB,IPRINT)
 cLig <> added the call to SYMSQR for INTTYP = 82
                      ELSE IF (INTTYP .EQ. 26 .OR. INTTYP .EQ. 27
-     &                    .OR. INTTYP .EQ. 74 
+     &                    .OR. INTTYP .EQ. 74
      &                    .OR. INTTYP .EQ. 82 .OR. INTTYP .EQ. 93
      &                    .OR. INTTYP .EQ. 97) THEN
                         CALL SYMSQR(SHLINT(1,ITYP),SOINT(1,IADR),IREPCD,
@@ -5945,7 +5945,7 @@ C  /* Deck dpgtra */
       ! loop over cartesian displacements of the atoms
       DO 100 X = 1, 3
          JCOMP = 0
- 
+
          ! loop over components of the dipole operator
          DO 200 B = 1, 3
             ICOMP = ICOMP + 1
@@ -6150,7 +6150,7 @@ C  /* Deck hdotra */
 #include <symmet.h>
 #include <ibtfun.h>
       FULMAT = .TRUE.
-      ANTI = .FALSE. 
+      ANTI = .FALSE.
       DO 100 IREPO = 0, MAXREP
          DO 200 ICOOR = 1, 3
             IF (INTTYP .EQ. 14) THEN
@@ -6256,10 +6256,10 @@ C
 C
 C        Center A
 C        ========
-C 
+C
          ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
          IF (ISCORA .GT. 0) THEN
-            FC = HKAB 
+            FC = HKAB
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORA),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6322,11 +6322,11 @@ C
 C
 C        Center A
 C        ========
-C 
+C
          ICOORA = 3*(ICENTA - 1) + ICOOR
          ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
          IF (ISCORA .GT. 0) THEN
-            FC = HKAB 
+            FC = HKAB
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOORA,1),SOINT(1,ISCORA),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6963,7 +6963,7 @@ C
               DO 200 IATOMC = 1, MXATMC
               IF (DOATOM(IATOMC)) THEN
                 SAMECD = IATOMC .EQ. IATOMD
-                TRICR = (TRIANG .AND. INTTYP .EQ. 12) .AND. SAMECD 
+                TRICR = (TRIANG .AND. INTTYP .EQ. 12) .AND. SAMECD
                 DO 210 ISYMC = 0, MAXOPR
                 IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 210
                 IF (IBTAND(ISYMC,IBTOR(ISTBNU(IATOMC),KABD)).EQ.0) THEN
@@ -6980,7 +6980,7 @@ C
                       DO 310 ICOORC = 1, MXCRC
                         ISCORC = IPTCNT(3*(IATOMC - 1) + ICOORC,IREPO,2)
                         IF (ISCORC .GT. 0) THEN
-                          IF (INTTYP .EQ. 12) THEN   
+                          IF (INTTYP .EQ. 12) THEN
                              IF (TRIANG) THEN
                                 MXCOR = MAX(ISCORC,ISCORD)
                                 MNCOR = MIN(ISCORC,ISCORD)
@@ -6988,15 +6988,15 @@ C
                              ELSE
                                 ISCOOR = 3*NUCDEP*(ISCORD - 1) + ISCORC
                              END IF
-                          ELSE      
+                          ELSE
                              ISCOOR = 3*(ISCORD - 1) + ICOORC
-                          END IF 
+                          END IF
                           IADR = INTADR(ISCOOR)
                           FACSYM=FACD*PT(IBTAND(ISYMAX(ICOORC,2),ISYMC))
      &                               *PT(IBTAND(IREPO ,ISYMC))
                           ITYP = ITYP0 + 3*(ICOORC - 1) + ICOORD
-                          IF (INTTYP .EQ. 58) CALL DSCAL(KCKTAB,      
-     &                         CHARGE(IATOMC),SHLINT(1,ITYP),1) 
+                          IF (INTTYP .EQ. 58) CALL DSCAL(KCKTAB,
+     &                         CHARGE(IATOMC),SHLINT(1,ITYP),1)
                           IF (EXP1EL) THEN
                              CALL SYM1EV(SHLINT(1,ITYP),DMAT,
      &                                   SOINT(1,IADR),FACSYM,MULTA,
@@ -7135,7 +7135,7 @@ C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          SHLINT(KCKTAB,*)
 #include <onecom.h>
-#include <nuclei.h>   
+#include <nuclei.h>
 #include <lmns.h>
 #include <sdpre.h>
       INT = 0
@@ -7339,7 +7339,7 @@ C
       ELSE
 #if defined (SYS_AIX)
 CAIX 4.x compiler fix provided by T.Saue, Nov.12-97
-         IREPO = ISYMO - 1     
+         IREPO = ISYMO - 1
          DO 200 IREPB = 0, MAXREP
             ISYMB = IREPB + 1
             ISYMA = IBTXOR(IREPO,IREPB) + 1
@@ -7929,7 +7929,7 @@ C  /* Deck relvol */
       SUBROUTINE RELOVL(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C ach
 C     a. chr. hennum's  1. subroutine.
-C     
+C
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -7948,13 +7948,13 @@ C
             LVALB = LVALUB(ICOMPB)
             MVALB = MVALUB(ICOMPB)
             NVALB = NVALUB(ICOMPB)
-C     
+C
 C     **********************************************
 C     ***** DPT OVERLAP INTEGRALS *****
 C     **********************************************
-C     
+C
 C            WRITE(LUPRI,*) '   ACHODCER : '
-C            WRITE(LUPRI,*) 'KCKTA B' , KCKTA,KCKTB 
+C            WRITE(LUPRI,*) 'KCKTA B' , KCKTA,KCKTB
 C            WRITE(LUPRI,*) 'LVAL A B',LVALA,LVALB
 C            WRITE(LUPRI,*) 'MVAL A B',MVALA,MVALB
 C            WRITE(LUPRI,*) 'NVAL A B',NVALA,NVALB
@@ -7968,15 +7968,15 @@ C
             X2 = SHGTF*ODC(LVALA,LVALB,0,2,0,1)
             Y2 = SHGTF*ODC(MVALA,MVALB,0,2,0,2)
             Z2 = SHGTF*ODC(NVALA,NVALB,0,2,0,3)
-            INT = INT + 1 
+            INT = INT + 1
             SHLINT(INT,1) = SHLINT(INT,1) + D25*X2*Y0*Z0
             SHLINT(INT,2) = SHLINT(INT,2) + D25*X1*Y1*Z0
             SHLINT(INT,3) = SHLINT(INT,3) + D25*X1*Y0*Z1
-            SHLINT(INT,4) = SHLINT(INT,4) + D25*X0*Y2*Z0 
+            SHLINT(INT,4) = SHLINT(INT,4) + D25*X0*Y2*Z0
             SHLINT(INT,5) = SHLINT(INT,5) + D25*X0*Y1*Z1
-            SHLINT(INT,6) = SHLINT(INT,6) + D25*X0*Y0*Z2 
+            SHLINT(INT,6) = SHLINT(INT,6) + D25*X0*Y0*Z2
 C ACH CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C            
+C
 C            TOT=SHLINT(INT,1)+SHLINT(INT,4)+SHLINT(INT,6)+
 C     %           +2.0D0*(SHLINT(INT,2)+SHLINT(INT,3)+SHLINT(INT,5))
 C            WRITE(LUPRI,*) 'ACH TOT ',2.0D0*TOT
@@ -7987,7 +7987,7 @@ C            WRITE(LUPRI,*) 'ZZ',X0*Y0*Z2
 C            WRITE(LUPRI,*) 'XY',X1*Y1*Z0
 C            WRITE(LUPRI,*) 'XZ',X1*Y0*Z1
 C            WRITE(LUPRI,*) 'YZ',X0*Y1*Z1
-C            WRITE(LUPRI,*) 
+C            WRITE(LUPRI,*)
  100  CONTINUE
       RETURN
       END
@@ -8001,7 +8001,7 @@ C  /* Deck relpo1 */
 C
 C
 C     a. chr. hennum's  2. subroutine.
-C 
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -8026,7 +8026,7 @@ C
          MAXT = LVALA + LVALB + MAXADD
          MAXU = MVALA + MVALB + MAXADD
          MAXV = NVALA + NVALB + MAXADD
-         INT = INT + 1      
+         INT = INT + 1
          IADRAV = 1
          DO 200 IV = 0,MAXV
             EV = ODC(NVALA,NVALB,IV,0,0,3)
@@ -8060,8 +8060,8 @@ C
                   IADR00 = IADRAU + IT
                   IADR0T = IADR00 + 1
                   IADR0U = IADR00 + ISTEPU
-                  IADR0V = IADR00 + ISTEPV 
-C                  
+                  IADR0V = IADR00 + ISTEPV
+C
                   IADD = - NAHGTF
 C
 C                 ***** Loop over nuclei *****
@@ -8077,10 +8077,10 @@ C
                      AH0V = AHGTF(IADR0V + IADD)
 C                     write(*,*) '1ACH',FEE,AH0U,EFE,AH0T
 C
-C     A-C differentiated integrals:     
-C     ach 
-C     Adjusted to closed shell CC-module. Won't work as 
-C     planned. Added Y and Z terms to the X-term to get 
+C     A-C differentiated integrals:
+C     ach
+C     Adjusted to closed shell CC-module. Won't work as
+C     planned. Added Y and Z terms to the X-term to get
 C     only one part.
 C
                      SHLINT(INT,1)=SHLINT(INT,1)-D25*((FEE*AH0T
@@ -8105,7 +8105,7 @@ C  500             CONTINUE
   200    CONTINUE
   100 CONTINUE
 C
-C     ACH       
+C     ACH
 C      WRITE(*,*) 'ACH : ', SHLINT(1,2)
       RETURN
       END
@@ -8117,7 +8117,7 @@ C     Based on CINT2
 C
 C     a. chr. hennum's  3. subroutine.
 C     Anti-symmetric
-C 
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -8141,7 +8141,7 @@ C
          MAXT = LVALA + LVALB + MAXADD
          MAXU = MVALA + MVALB + MAXADD
          MAXV = NVALA + NVALB + MAXADD
-         INT = INT + 1      
+         INT = INT + 1
          IADRAV = 1
          DO 200 IV = 0,MAXV
             EV = ODC(NVALA,NVALB,IV,0,0,3)
@@ -8175,14 +8175,14 @@ C
                   IADR00 = IADRAU + IT
                   IADR0T = IADR00 + 1
                   IADR0U = IADR00 + ISTEPU
-                  IADR0V = IADR00 + ISTEPV 
+                  IADR0V = IADR00 + ISTEPV
 C                  IADRTT = IADR0T + 1
 C                  IADRTU = IADR0T + ISTEPU
 C                  IADRTV = IADR0T + ISTEPV
 C                  IADRUU = IADR0U + ISTEPU
 C                  IADRUV = IADR0U + ISTEPV
 C                  IADRVV = IADR0V + ISTEPV
-C                  
+C
                   IADD = - NAHGTF
 C
 C                 ***** Loop over nuclei *****
@@ -8196,7 +8196,7 @@ C
                      AH0T = AHGTF(IADR0T + IADD)
                      AH0U = AHGTF(IADR0U + IADD)
                      AH0V = AHGTF(IADR0V + IADD)
-C     
+C
 C                     write(*,*) 'ACH',FEE,AH0U,EFE,AH0T
                      SHLINT(INT,1)=SHLINT(INT,1)-D25*(FEE*AH0U
      &                    -EFE*AH0T )
@@ -8243,7 +8243,7 @@ C
          MAXU = MVALA + MVALB + 1
          MAXV = NVALA + NVALB + 1
          INT=INT+1
-         IADRAV = 1        
+         IADRAV = 1
          DO 200 IV = 0,MAXV
             EV = ODC(NVALA,NVALB,IV,0,0,3)
             FV = ODC(NVALA,NVALB,IV,1,0,3)
@@ -8253,7 +8253,7 @@ C
                FU = ODC(MVALA,MVALB,IU,1,0,2)
                EE = EU*EV
                FE = FU*EV
-               EF = EU*FV      
+               EF = EU*FV
                DO 400 IT = 0,MAXT
                   ET = ODC(LVALA,LVALB,IT,0,0,1)
                   FT = ODC(LVALA,LVALB,IT,1,0,1)
@@ -8278,7 +8278,7 @@ C
                      SHLINT(INT,IXY) = SHLINT(INT,IXY)+ EFE * AH0T
                      SHLINT(INT,IXZ) = SHLINT(INT,IXZ)+ EEF * AH0T
                      SHLINT(INT,IYX) = SHLINT(INT,IYX)+ FEE * AH0U
-                     SHLINT(INT,IYY) = SHLINT(INT,IYY)+ EFE * AH0U 
+                     SHLINT(INT,IYY) = SHLINT(INT,IYY)+ EFE * AH0U
                      SHLINT(INT,IYZ) = SHLINT(INT,IYZ)+ EEF * AH0U
                      SHLINT(INT,IZX) = SHLINT(INT,IZX)+ FEE * AH0V
                      SHLINT(INT,IZY) = SHLINT(INT,IZY)+ EFE * AH0V
@@ -8384,7 +8384,7 @@ C  /* Deck ramint */
      &                  SHLINT)
 C
 C     Calculation of the (r-r')l' integrals for determination of
-C     magnetizability in an analytical way 
+C     magnetizability in an analytical way
 C
 C     A.Ligabue Nov. 1999
 C
@@ -8443,7 +8443,7 @@ C
      &                  SHLINT,NOPTYP,NATOMC)
 C
 C     Calculation of the integrals (r-r')l'/|r-R_I|**3 for the
-C     determination of the nuclear shieldings in an analytical way 
+C     determination of the nuclear shieldings in an analytical way
 C
 C     A. Ligabue, Nov. 1999
 C

@@ -1135,6 +1135,7 @@ C     *** Need to figure out which analytical derivatives ***
 C     *** we have. If numerical derivatives, nomove=.true.***
 C        
 c      CALL FNDANA(NAORDR)
+c      .... PROBLEM: WAVE FUNCTION TYPE NOT KNOWN YET !!!
 c      IF (NAORDR.EQ.0) THEN
 c         NOMOVE = .TRUE.
 c         NMWALK = .TRUE.

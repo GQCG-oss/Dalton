@@ -4,15 +4,15 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken,
 C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
 C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema,
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar,
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen,
 C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
 C...   E. Rudberg, T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras,
-C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   T. Saue, S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,
 C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren.
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -47,8 +47,8 @@ C
       LOGICAL PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
       DIMENSION STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
-     &          STDER2(KCKTAB,6,2), SINT0(KCKTAB), SINT1(KCKTAB,3), 
-     &          DINT1(KCKTAB,3,3), QINT1(KCKTAB,3,6), 
+     &          STDER2(KCKTAB,6,2), SINT0(KCKTAB), SINT1(KCKTAB,3),
+     &          DINT1(KCKTAB,3,3), QINT1(KCKTAB,3,6),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*), EXPDER(*)
 #include <onecom.h>
@@ -113,8 +113,8 @@ C
       DIMENSION WORK(LWORK), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
-     &          QINT1(KCKTAB,3,6), ADER(*), AHGTF(*), NCENTC(*), 
-     &          FACINT(*), COORC(3,*),GNUEXP(*), TSHGTF(*), JCENTC(*), 
+     &          QINT1(KCKTAB,3,6), ADER(*), AHGTF(*), NCENTC(*),
+     &          FACINT(*), COORC(3,*),GNUEXP(*), TSHGTF(*), JCENTC(*),
      &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
@@ -246,7 +246,7 @@ C
                END DO
             END DO
          END DO
-      END IF 
+      END IF
 C
 C     ****************************************
 C     ***** Loop over primitive orbitals *****
@@ -395,7 +395,7 @@ CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammenheng med loop i PC
                CALL PCMGRI(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &              RLMINT,CORPX,CORPY,CORPZ,
      &              EXPPI,TSHGTF,WORK,LWORK,IPRINT)
-               
+
             END IF
   200    CONTINUE
   100 CONTINUE
@@ -1049,17 +1049,17 @@ C
          DX1 = SHGTF*ODC(LVALA,LVALB,1,1,0,1) + CORPX*SX1
          DY1 = SHGTF*ODC(MVALA,MVALB,1,1,0,2) + CORPY*SY1
          DZ1 = SHGTF*ODC(NVALA,NVALB,1,1,0,3) + CORPZ*SZ1
-         QX0 = SHGTF*D2*ODC(LVALA,LVALB,2,0,0,1) 
+         QX0 = SHGTF*D2*ODC(LVALA,LVALB,2,0,0,1)
      &       + D2*CORPX*DX0 - (CORPX*CORPX - DP5*EXPPI)*SX0
-         QY0 = SHGTF*D2*ODC(MVALA,MVALB,2,0,0,2) 
+         QY0 = SHGTF*D2*ODC(MVALA,MVALB,2,0,0,2)
      &       + D2*CORPY*DY0 - (CORPY*CORPY - DP5*EXPPI)*SY0
-         QZ0 = SHGTF*D2*ODC(NVALA,NVALB,2,0,0,3) 
+         QZ0 = SHGTF*D2*ODC(NVALA,NVALB,2,0,0,3)
      &       + D2*CORPZ*DZ0 - (CORPZ*CORPZ - DP5*EXPPI)*SZ0
-         QX1 = SHGTF*D2*ODC(LVALA,LVALB,2,1,0,1) 
+         QX1 = SHGTF*D2*ODC(LVALA,LVALB,2,1,0,1)
      &       + D2*CORPX*DX1 - (CORPX*CORPX - DP5*EXPPI)*SX1
-         QY1 = SHGTF*D2*ODC(MVALA,MVALB,2,1,0,2) 
+         QY1 = SHGTF*D2*ODC(MVALA,MVALB,2,1,0,2)
      &       + D2*CORPY*DY1 - (CORPY*CORPY - DP5*EXPPI)*SY1
-         QZ1 = SHGTF*D2*ODC(NVALA,NVALB,2,1,0,3) 
+         QZ1 = SHGTF*D2*ODC(NVALA,NVALB,2,1,0,3)
      &       + D2*CORPZ*DZ1 - (CORPZ*CORPZ - DP5*EXPPI)*SZ1
 C
          SINT0(INT1)   = SINT0(INT1)   + SX0*SY0*SZ0
@@ -1152,10 +1152,10 @@ C
 C
          AFAC = (DP5*(LVALA + MVALA + NVALA) + DP75)*AINV
          BFAC = (DP5*(LVALB + MVALB + NVALB) + DP75)*BINV
-         EXPDER(INT,1,1) = EXPDER(INT,1,1) + AFAC*S0X*S0Y*S0Z 
-     &                   - SAX*S0Y*S0Z - S0X*SAY*S0Z - S0X*S0Y*SAZ 
+         EXPDER(INT,1,1) = EXPDER(INT,1,1) + AFAC*S0X*S0Y*S0Z
+     &                   - SAX*S0Y*S0Z - S0X*SAY*S0Z - S0X*S0Y*SAZ
          EXPDER(INT,2,1) = EXPDER(INT,2,1) + BFAC*S0X*S0Y*S0Z
-     &                   - SBX*S0Y*S0Z - S0X*SBY*S0Z - S0X*S0Y*SBZ 
+     &                   - SBX*S0Y*S0Z - S0X*SBY*S0Z - S0X*S0Y*SBZ
 C
 C     ***************************************
 C     ***** CALCULATE KINETIC INTEGRALS *****
@@ -1207,11 +1207,11 @@ C
                   E0XZ = E0X*E0Z
                   E0YZ = E0Y*E0Z
                   IF      (IT.GT.MAXT) THEN
-                     AE = - EAX*E0YZ 
-                     BE = - EBX*E0YZ 
+                     AE = - EAX*E0YZ
+                     BE = - EBX*E0YZ
                   ELSE IF (IU.GT.MAXU) THEN
-                     AE = - EAY*E0XZ 
-                     BE = - EBY*E0XZ 
+                     AE = - EAY*E0XZ
+                     BE = - EBY*E0XZ
                   ELSE IF (IV.GT.MAXV) THEN
                      AE = - EAZ*E0XY
                      BE = - EBZ*E0XY
@@ -1289,7 +1289,7 @@ C
                   IADR0U = IADR00 + ISTEPU
                   IADR0V = IADR00 + ISTEPV
                   IADD = - NAHGTF
-CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammheng med tidliger loop. 
+CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammheng med tidliger loop.
                   DO 500 ITS = 1, NTS
                      IADD = IADD + NAHGTF
                      AH00 = TSHGTF(IADR00 + IADD)
@@ -1304,9 +1304,9 @@ C                    Undifferentiated integral:
 C
                      PCMINT(INT,1,ITS) = PCMINT(INT,1,ITS) + EEE*AH00
                      IF (ONECEN) THEN
-                        PCMINT(INT,5,ITS) = PCMINT(INT,5,ITS) - EEE*AH0T 
-                        PCMINT(INT,6,ITS) = PCMINT(INT,6,ITS) - EEE*AH0U 
-                        PCMINT(INT,7,ITS) = PCMINT(INT,7,ITS) - EEE*AH0V 
+                        PCMINT(INT,5,ITS) = PCMINT(INT,5,ITS) - EEE*AH0T
+                        PCMINT(INT,6,ITS) = PCMINT(INT,6,ITS) - EEE*AH0U
+                        PCMINT(INT,7,ITS) = PCMINT(INT,7,ITS) - EEE*AH0V
                      ELSE
 C
 C                    A differentiated integrals:
@@ -1317,11 +1317,11 @@ C
 C
 C                    C differentiated integrals:
 C
-                        PCMINT(INT,5,ITS) = PCMINT(INT,5,ITS) - EEE*AH0T 
+                        PCMINT(INT,5,ITS) = PCMINT(INT,5,ITS) - EEE*AH0T
      $                       + FEE*AH00
-                        PCMINT(INT,6,ITS) = PCMINT(INT,6,ITS) - EEE*AH0U 
+                        PCMINT(INT,6,ITS) = PCMINT(INT,6,ITS) - EEE*AH0U
      $                       + EFE*AH00
-                        PCMINT(INT,7,ITS) = PCMINT(INT,7,ITS) - EEE*AH0V 
+                        PCMINT(INT,7,ITS) = PCMINT(INT,7,ITS) - EEE*AH0V
      $                       + EEF*AH00
                      END IF
  500              CONTINUE

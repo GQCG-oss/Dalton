@@ -490,6 +490,7 @@ C
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
+C     ... I am a "slave" ... (MYNUM .ne. 0)
          IF (PARIO) THEN
             CALL GNRLIN
             IF (TESTIN) THEN
