@@ -6469,7 +6469,8 @@ C
       ELSE IF (WORD(ILINE) .EQ. SWORD) THEN
          WRITE (WORD(ILINE+1),'(8I4)') (NCURNT(IREP),IREP=1,NSYM)
       END IF
-      IF (WORD(ILINE) .NE. '*END OF') GOTO 400
+      IF (.NOT.(WORD(ILINE)(1:6) .EQ. '*END O' .OR.
+     &          WORD(ILINE)(1:6) .EQ. '**END ')) GOTO 400
 C
       REWIND(LUCMD,IOSTAT=IOS)
       DO I = 1, ILINE
