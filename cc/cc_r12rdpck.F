@@ -430,17 +430,17 @@ c---------------------------------------------------------------------
 *======================================================================*
       subroutine cc_r12generaltf(xint,xtf,idelta,isymd,lam1,isyml1,
      &                           lam2,isyml2,lidxtf1,ioffl1,ioffl2,
-     &                           nmat1,nr1,ixint,nxint,ixtf,nxtf,ixtf1,
-     &                           igamxtf,work,lwork)
+     &                           nmat1,nr1,nb1,ixint,ixtf,nxtf,
+     &                           ixtf1,igamxtf,work,lwork)
 c----------------------------------------------------------------------
-c     purpose: two index transformation of R12 and Coulomb intergrals
+c     purpose: two index transformation of R12 and Coulomb integrals
 c              with different transformation matrices
 c
 c              r^ab_kl --> r^MtNt_kl
 c              g^ab_MN --> g^itjt_MN
 c
 c              xint: input integral
-c              ixint, nxint: offset and dimension for xint
+c              ixint: offset for xint
 c              xtf : transformed integral
 c              ixtf, nxtf, igamxtf: offsets and dimension for xtf
 c              ixtf1: offset for one index transformed result
@@ -448,24 +448,27 @@ c              lam1: transformation matrix for first index
 c              lam2: transformation matrix for second index
 c              ioffl1: offset for lam1
 c              ioffl2: offset for lam2
-c              nmat1, nr1: dimensions for first transformation
+c              nr1, nmat1, nb1: dimensions for first transformation
+c
+c     lidxtf1 = .T.: transform only first index
+c
+c     result is ADDED to xtf!       
 c
 c     H. Fliegl, C. Haettig, winter 2004
+c     modified by C. Neiss, 2005/2006
 c----------------------------------------------------------------------
       implicit none
 #include <priunit.h>
 #include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
 #include <dummy.h>
 
       logical lidxtf1,locdbg
       parameter (locdbg = .false.)
       integer idelta,isymd,isyml1,isyml2,ioffl1(8,8),ioffl2(8,8),
-     &        nmat1(8),nr1(8),ixint(8,8),nxint(8),ixtf(8,8),nxtf(8),
+     &        nmat1(8),nr1(8),ixint(8,8),ixtf(8,8),nxtf(8),
      &        ixtf1(8,8),igamxtf(8,8),lwork,isyma,isymkl,isymm,nkl,nm,
      &        koff1,koff2,ntotkl,ntota,ntotm,krtf,isymn,isymmn,idxmn,
-     &        idxdn 
+     &        idxdn,nb1(8),na,m,n 
 #if defined (SYS_CRAY)
       real xint(*),xtf(*),lam1(*),lam2(*),work(*),ddot,one,zero
 #else
@@ -482,6 +485,7 @@ c     transform first index
 
         nkl = nmat1(isymkl)
         nm  = nr1(isymm)
+        na  = nb1(isyma)
         if (lwork.lt.nkl*nm) then
           call quit('Insufficient work space in generaltf')
         end if
@@ -490,10 +494,10 @@ c     transform first index
         koff2  = 1 + ioffl1(isyma,isymm)
 
         ntotkl = max(1,nkl)
-        ntota  = max(1,nbas(isyma))
+        ntota  = max(1,na)
         ntotm  = max(1,nm)
 
-        call dgemm('T','N',nm,nkl,nbas(isyma),
+        call dgemm('T','N',nm,nkl,na,
      &             one,lam1(koff2),ntota,
      &             xint(koff1),ntota,
      &             zero,work,ntotm)
@@ -505,8 +509,8 @@ c     transform first index
           write(lupri,*)'norm^2 after first tf',
      &      ddot(nmat1(isymkl)*nr1(isymm),work,1,work,1)
           write(lupri,*)'R^d_alpha,kl:'
-          call output(xint(koff1),1,nbas(isyma),1,nmat1(isymkl),
-     &                nbas(isyma),nmat1(isymkl),1,lupri)
+          call output(xint(koff1),1,nb1(isyma),1,nmat1(isymkl),
+     &                nb1(isyma),nmat1(isymkl),1,lupri)
           write(lupri,*)'work:'
           call output(work,1,nr1(isymm),1,nmat1(isymkl),
      &                nr1(isymm),nmat1(isymkl),1,lupri)
@@ -514,7 +518,8 @@ c     transform first index
 c
         if (lidxtf1) then
           krtf = 1 + ixtf1(isymkl,isymm)
-          call dcopy(nkl*nm,work,1,xtf(krtf),1)
+c         call dcopy(nkl*nm,work,1,xtf(krtf),1)
+          call daxpy(nkl*nm,one,work,1,xtf(krtf),1)
         else
 c         transform second index
           isymn  = muld2h(isyml2,isymd)
@@ -526,7 +531,7 @@ c         transform second index
      &                nr1(isymm)*(n-1) + m
               krtf  = igamxtf(isymmn,isymkl) + idxmn
               idxdn = ioffl2(isymd,isymn) +
-     &                nbas(isymd)*(n-1)+idelta
+     &                nb1(isymd)*(n-1)+idelta
 
               call daxpy(nmat1(isymkl),lam2(idxdn),
      &                   work(m),nr1(isymm),

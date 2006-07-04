@@ -376,11 +376,10 @@ C     (controls the calculation of certain integrals)
 C-----------------------------------------------------------------
       CCR12RSP = CCR12 .AND. (LRSPSYM .OR. NONHF .OR. CCFOP) .AND.
      &           .NOT. R12PRP
-      IF (CCR12RSP.AND..NOT.(CC2.AND.(IANCC2.EQ.1))) THEN
+      IF (CCR12RSP.AND.(IANCC2.NE.1)) THEN
         WRITE(LUPRI,*) 'CCR12RSP = ',CCR12RSP
-        WRITE(LUPRI,*) 'CC2 = ',CC2
         WRITE(LUPRI,*) 'IANR12 = ',IANCC2
-        CALL QUIT('Sorry, only CC2-R12/Ansatz 1 implemented '//
+        CALL QUIT('Sorry, only Ansatz 1 implemented '//
      &            'for CC response')
       END IF
 
@@ -403,7 +402,7 @@ C     CCR12LIM - controls if intermediates for CCR12 left transf.
 C                are needed
 C----------------------------------------------------------------
 C
-      CCR12LIM = CCR12 .AND. ( LRSPSYM.OR.LLEFTEIG.OR.LHTR)
+      CCR12LIM = CCR12.AND.(CCR12RSP.OR.LLEFTEIG.OR.LHTR)
 C
 C------------------------------------------
 C     Sort AO-integrals into distributions.
@@ -1045,8 +1044,8 @@ C
          IF ( .TRUE. ) THEN
 C
             IF (CCS .or. CC2 .or. CCSD) THEN
-C              !NOTE: Only CC_FTSTNEW is compatible with CCR12!
-C              CALL CC_BTST(WORK,LWORK)
+C              !NOTE: Only CC_FTSTNEW, CC_BTST are compatible with CC-R12!
+C              CALL CC_BTST(WORK,LWORK,APROXR12)
 C              CALL CC_CTST(WORK,LWORK)
 C              CALL CC_DTST(WORK,LWORK)
 C              CALL CC_FTSTNEW(WORK,LWORK,APROXR12)

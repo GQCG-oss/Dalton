@@ -37,7 +37,7 @@ C  /* Deck ccrhs_cio */
       SUBROUTINE CCRHS_CIO2(OMEGA2,T2AM,XLAMDH,WORK,LWORK,
      *                      ISYVEC,ISYCIM,LUC,CFIL,IV,IOPT,
      *                      IOPTB,LUCB,CBFIL,IOFFB,FACB,
-     *                      IOPTE,EMAT1)
+     *                      IOPTE,EMAT1,R12CON)
 C
 C
 C      vectors        ISYVEC
@@ -64,6 +64,9 @@ C       the offset IOFFB
 C
 C      in energy calc: iv=1,iopt=1
 C
+C      R12CON: calculate C'-term for CCSDR12
+C              Note: XLAMDH, T2AM have different dimensions/offsets!
+C     
 C
 C     PURPOSE:
 C             Calculate the C-term 
@@ -73,11 +76,15 @@ C
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
       CHARACTER CFIL*(*)
+      LOGICAL   R12CON
+      INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
+     &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <maxorb.h>
 #include <ccsdio.h>
+#include <r12int.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -89,7 +96,43 @@ C
          CALL QUIT('OMEGSQ = .TRUE.  in CCRHS_CIO')
       END IF
 C
+C     WRITE(LUPRI,*) 'Entered CCRHS_CIO2'
+C     CALL FLSHFO(LUPRI)
+C
       ISAIBJ = MULD2H(ISYVEC,ISYCIM)
+C
+C     Define offsets/dimensions:
+      IF (R12CON) THEN
+        CALL ICOPY(8,NORB2,1,NC,1)
+        CALL ICOPY(8,NG1AM,1,NT1CK,1)
+        CALL ICOPY(64,IG1AM,1,IT1CK,1)
+        CALL ICOPY(64,ITG2SQ,1,IT2SQP,1)
+      ELSE
+        CALL ICOPY(8,NVIR,1,NC,1)
+        CALL ICOPY(8,NT1AM,1,NT1CK,1)
+        CALL ICOPY(64,IT1AM,1,IT1CK,1)
+        CALL ICOPY(64,IT2SQ,1,IT2SQP,1)
+      END IF
+      MBAS1T = 0
+      ICOUN1 = 0
+      ICOUN2 = 0
+      DO ISYM = 1, NSYM
+        NMATAC(ISYM) = 0
+        NT1AO2(ISYM) = 0
+        DO ISYM2 = 1, NSYM
+          ISYM1 = MULD2H(ISYM,ISYM2)
+          IMATAC(ISYM1,ISYM2) = NMATAC(ISYM)
+          NMATAC(ISYM) = NMATAC(ISYM) + NVIR(ISYM1)*NC(ISYM2)
+          IT1AO2(ISYM1,ISYM2) = NT1AO2(ISYM)
+          NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
+        END DO
+        MBAS1T = MBAS1T + MBAS1(ISYM)
+        IBASX(ISYM) = ICOUN1
+        ILAMDX(ISYM) = ICOUN2
+        ICOUN1 = ICOUN1 + MBAS2(ISYM)
+        ICOUN2 = ICOUN2 + (MBAS1(ISYM)+MBAS2(ISYM))*
+     *                    (NORB1(ISYM)+NORB2(ISYM))
+      END DO  
 C
       DO 100 ISYMAI = 1,NSYM
 C
@@ -106,6 +149,7 @@ C
          NT1AI = NT1AM(ISYMAI)
 C
          LENAI  = NT1AO(ISYMDK)
+         IF (R12CON) LENAI = MAX(NT1AO(ISYMDK),NT1AO2(ISYMDK))
          LENMIN = 2*LENAI
          IF (LENMIN .EQ. 0) GOTO 100
 C
@@ -137,9 +181,9 @@ C           Memory allocation.
 C-----------------------------
 C
             KSCR1 = 1
-            KSCR2 = KSCR1 + NDISAI*NT1AO(ISYMDK)
-            KSCR3 = KSCR2 + NDISAI*NT1AO(ISYMDK)
-            KEND  = KSCR3 + NT1AM(ISYMCK)
+            KSCR2 = KSCR1 + NDISAI*NT1CK(ISYMCK)
+            KSCR3 = KSCR2 + NDISAI*LENAI
+            KEND  = KSCR3 + MAX(NDISAI*LENAI,NT1CK(ISYMCK))
             LWRK1 = LWORK - KEND
 C
             IF (LWRK1 .LT. 0) THEN
@@ -151,7 +195,7 @@ C----------------------------------
 C           Construct P(del k,#ai).
 C----------------------------------
 C
-            KOFF1 = KSCR1
+            KOFF1 = KSCR3
             DO 120 ISYDEL = 1,NSYM
 C
                ISYMK = MULD2H(ISYDEL,ISYMDK)
@@ -205,18 +249,26 @@ C
                   ISYDEL = ISYMC
                   ISYMK  = MULD2H(ISYMC,ISYMCK)
 C
-                  NBASD = MAX(NBAS(ISYDEL),1)
-                  NVIRC = MAX(NVIR(ISYMC),1)
+                  NBASD1 = MAX(NBAS(ISYDEL),1)
+                  NBASD2 = NBASD1
+                  IF (R12CON) NBASD1=MAX(MBAS1(ISYDEL)+MBAS2(ISYDEL),1)
+                  IF (R12CON) NBASD2=MAX(MBAS1(ISYDEL),1)
+                  NVIRC = MAX(NC(ISYMC),1)
 C
-                  KOFF4 = ILMVIR(ISYDEL) + 1
+                  IF (R12CON) THEN
+                    KOFF4 = 1 + ILAMDX(ISYDEL) +
+     *                      (MBAS1(ISYDEL)+MBAS2(ISYDEL))*NORB1(ISYMC)
+                  ELSE
+                    KOFF4 = ILMVIR(ISYDEL) + 1
+                  END IF
                   KOFF5 = KSCR2 + NT1AO(ISYMDK)*(KAI - 1)
      *                  + IT1AO(ISYDEL,ISYMK)
-                  KOFF6 = KSCR1 + NT1AM(ISYMCK)*(KAI - 1)
-     *                  + IT1AM(ISYMC,ISYMK)
+                  KOFF6 = KSCR1 + NT1CK(ISYMCK)*(KAI - 1)
+     *                  + IT1CK(ISYMC,ISYMK)
 C
-                  CALL DGEMM('T','N',NVIR(ISYMC),NRHF(ISYMK),
-     *                       NBAS(ISYDEL),ONE,XLAMDH(KOFF4),NBASD,
-     *                       WORK(KOFF5),NBASD,ZERO,WORK(KOFF6),
+                  CALL DGEMM('T','N',NC(ISYMC),NRHF(ISYMK),
+     *                       NBAS(ISYDEL),ONE,XLAMDH(KOFF4),NBASD1,
+     *                       WORK(KOFF5),NBASD2,ZERO,WORK(KOFF6),
      *                       NVIRC)
 C
   160          CONTINUE
@@ -225,7 +277,87 @@ C
 C           XNORM = XNORM + 
 C    &         DDOT(NDISAI*NT1AM(ISYMDK),WORK(KSCR1),1,WORK(KSCR1),1)
 C           WRITE (LUPRI,*) 'CCRHS_CIO2> XNORM,YNORM:',XNORM,YNORM
-
+C
+            IF (R12CON) THEN 
+C
+C----------------------------------
+C           Construct P(del k,#ai).
+C----------------------------------
+C
+            KOFF1 = KSCR3
+            DO 121 ISYDEL = 1,NSYM
+C
+               ISYMK = MULD2H(ISYDEL,ISYMDK)
+C
+               DO 131 IDELTA = 1,MBAS2(ISYDEL)
+C
+                  ID = MBAS1T + IDELTA + IBASX(ISYDEL)
+C
+                  IF (IOPT .EQ. 1 ) THEN
+                     IOFF = IT2DEL(ID) + IT2BCT(ISYMK,ISYMAI)
+     *                    + NRHF(ISYMK)*(IFSTAI - 1) + 1
+                  ELSE
+                     IOFF = IT2DLR(ID,IV) + IT2BCT(ISYMK,ISYMAI)
+     *                    + NRHF(ISYMK)*(IFSTAI - 1) + 1
+                  ENDIF
+C
+                  LEN  = NDISAI*NRHF(ISYMK)
+C
+                  IF (LEN .GT. 0) THEN
+                     CALL GETWA2(LUC,CFIL,WORK(KOFF1),IOFF,LEN)
+                  ENDIF
+C
+                  DO 141 NAI = IFSTAI,ILSTAI
+C
+                     KAI = NAI - IFSTAI + 1
+C
+                     KOFF2 = KOFF1 + NRHF(ISYMK)*(KAI - 1)
+                     KOFF3 = KSCR2 + NT1AO2(ISYMDK)*(KAI - 1)
+     *                     + IT1AO2(ISYDEL,ISYMK) + IDELTA - 1
+C
+                     CALL DCOPY(NRHF(ISYMK),WORK(KOFF2),1,WORK(KOFF3),
+     *                          MBAS2(ISYDEL))
+C
+  141             CONTINUE
+C
+                  KOFF1 = KOFF1 + LEN
+C
+  131          CONTINUE
+  121       CONTINUE
+C
+C-----------------------------------------
+C              Transform delta index to c.
+C-----------------------------------------
+C
+            DO 151 NAI = IFSTAI,ILSTAI
+C
+               KAI = NAI - IFSTAI + 1
+C
+               DO 161 ISYMC = 1,NSYM
+C
+                  ISYDEL = ISYMC
+                  ISYMK  = MULD2H(ISYMC,ISYMCK)
+C
+                  NBASD1 = MAX(MBAS1(ISYDEL)+MBAS2(ISYDEL),1)
+                  NBASD2 = MAX(MBAS2(ISYDEL),1)
+                  NVIRC = MAX(NC(ISYMC),1)
+C
+                  KOFF4 = 1 + ILAMDX(ISYDEL) + 
+     *                    (MBAS1(ISYDEL)+MBAS2(ISYDEL))*NORB1(ISYMC) +
+     *                    MBAS1(ISYDEL) 
+                  KOFF5 = KSCR2 + NT1AO2(ISYMDK)*(KAI - 1)
+     *                  + IT1AO2(ISYDEL,ISYMK)
+                  KOFF6 = KSCR1 + NT1CK(ISYMCK)*(KAI - 1)
+     *                  + IT1CK(ISYMC,ISYMK)
+C
+                  CALL DGEMM('T','N',NC(ISYMC),NRHF(ISYMK),
+     *                       MBAS2(ISYDEL),ONE,XLAMDH(KOFF4),NBASD1,
+     *                       WORK(KOFF5),NBASD2,
+     *                       ONE,WORK(KOFF6),NVIRC)
+C
+  161          CONTINUE
+  151       CONTINUE
+            END IF !R12CON 
 C
 C------------------------------------------
 C         add E1 to contrib. to R diagonal:
@@ -246,13 +378,13 @@ C
 
                  IF (NAK.GE.IFSTAI .AND. NAK.LE.ILSTAI) THEN
 
-                   DO C = 1, NVIR(ISYMC)
+                   DO C = 1, NC(ISYMC)
 
-                      NCK = IT1AM(ISYMC,ISYMK) + NVIR(ISYMC)*(K-1) + C
+                      NCK = IT1CK(ISYMC,ISYMK) + NC(ISYMC)*(K-1) + C
 
-                      KOFF1 = IMATAB(ISYMA,ISYMC)+NVIR(ISYMA)*(C-1)+A
+                      KOFF1 = IMATAC(ISYMA,ISYMC)+NVIR(ISYMA)*(C-1)+A
 
-                      KOFF6 = KSCR1-1 + NT1AM(ISYMCK)*(KAK - 1) + NCK
+                      KOFF6 = KSCR1-1 + NT1CK(ISYMCK)*(KAK - 1) + NCK
 
                       WORK(KOFF6) = WORK(KOFF6) - 0.5D0 * EMAT1(KOFF1) 
 
@@ -272,6 +404,8 @@ C         add FACB * CBAR to P(ck,#ai)
 C---------------------------------------------
 C
           IF (IOPTB .EQ. 1) THEN
+            IF (R12CON) 
+     &        CALL QUIT('IOPTB = 1 not implemented for CCSDR12')
             DO NAI = IFSTAI, ILSTAI
 
               IADR = IOFFB+IT2SQ(ISYMCK,ISYMAI)+NT1AM(ISYMCK)*(NAI-1)+1
@@ -298,12 +432,12 @@ C           Contract P(ck,#ai) with T(bj,ck).
 C--------------------------------------------
 C
             NT1BJ = MAX(NT1AM(ISYMBJ),1)
-            NT1CK = MAX(NT1AM(ISYMCK),1)
 C
-            KOFF7 = IT2SQ(ISYMBJ,ISYMCK) + 1
+            KOFF7 = IT2SQP(ISYMBJ,ISYMCK) + 1
 C
-            CALL DGEMM('N','N',NT1AM(ISYMBJ),NDISAI,NT1AM(ISYMCK),
-     *                 ONE,T2AM(KOFF7),NT1BJ,WORK(KSCR1),NT1CK,
+            CALL DGEMM('N','N',NT1AM(ISYMBJ),NDISAI,NT1CK(ISYMCK),
+     *                 ONE,T2AM(KOFF7),NT1BJ,WORK(KSCR1),
+     *                 MAX(NT1CK(ISYMCK),1),
      *                 ZERO,WORK(KSCR2),NT1BJ)
 C
 C------------------------------
@@ -360,13 +494,16 @@ C
   110    CONTINUE
   100 CONTINUE
 C
+C     WRITE(LUPRI,*) 'Leaving CCRHS_CIO2'
+C     CALL FLSHFO(LUPRI)
+C
       RETURN
       END
 C  /* Deck ccrhs_dio */
       SUBROUTINE CCRHS_DIO2(OMEGA2,T2AM,XLAMDH,WORK,LWORK,
      *                      ISYVEC,ISYDIM,LUD,DFIL,LUC,CFIL,IV,IOPT,
      *                      IOPTB,LUDB,DBFIL,IOFFB,FACB,
-     *                      IOPTE,EMAT1)
+     *                      IOPTE,EMAT1,R12CON)
 C
 C     asm 20-aug-1994
 C
@@ -394,6 +531,9 @@ C       the offset IOFFB
 C
 C      in energy calc: iv=1,iopt=1
 C
+C      R12CON: calculate D'-term for CCSDR12
+C              Note: XLAMDH, T2AM have different dimensions/offsets!
+C
 C     PURPOSE:
 C             Calculate the D-term 
 C
@@ -402,11 +542,15 @@ C
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
       CHARACTER DFIL*(*)
+      LOGICAL   R12CON
+      INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
+     &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <maxorb.h>
 #include <ccsdio.h>
+#include <r12int.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -418,7 +562,43 @@ C
          CALL QUIT('OMEGSQ = .TRUE.  in CCRHS_DIO')
       END IF
 C
+C     WRITE(LUPRI,*) 'Entered CCRHS_DIO2'
+C     CALL FLSHFO(LUPRI)
+C
       ISAIBJ = MULD2H(ISYVEC,ISYDIM)
+C
+C     Define offsets/dimensions:
+      IF (R12CON) THEN
+        CALL ICOPY(8,NORB2,1,NC,1)
+        CALL ICOPY(8,NG1AM,1,NT1CK,1)
+        CALL ICOPY(64,IG1AM,1,IT1CK,1)
+        CALL ICOPY(64,ITG2SQ,1,IT2SQP,1)
+      ELSE
+        CALL ICOPY(8,NVIR,1,NC,1)
+        CALL ICOPY(8,NT1AM,1,NT1CK,1)
+        CALL ICOPY(64,IT1AM,1,IT1CK,1)
+        CALL ICOPY(64,IT2SQ,1,IT2SQP,1)
+      END IF
+      MBAS1T = 0
+      ICOUN1 = 0
+      ICOUN2 = 0
+      DO ISYM = 1, NSYM
+        NMATAC(ISYM) = 0
+        NT1AO2(ISYM) = 0
+        DO ISYM2 = 1, NSYM
+          ISYM1 = MULD2H(ISYM,ISYM2)
+          IMATAC(ISYM1,ISYM2) = NMATAC(ISYM)
+          NMATAC(ISYM) = NMATAC(ISYM) + NVIR(ISYM1)*NC(ISYM2)
+          IT1AO2(ISYM1,ISYM2) = NT1AO2(ISYM)
+          NT1AO2(ISYM) = NT1AO2(ISYM) + MBAS2(ISYM1)*NRHF(ISYM2)
+        END DO
+        MBAS1T = MBAS1T + MBAS1(ISYM)
+        IBASX(ISYM) = ICOUN1
+        ILAMDX(ISYM) = ICOUN2
+        ICOUN1 = ICOUN1 + MBAS2(ISYM)
+        ICOUN2 = ICOUN2 + (MBAS1(ISYM)+MBAS2(ISYM))*
+     *                    (NORB1(ISYM)+NORB2(ISYM))
+      END DO
 C
       DO 100 ISYMAI = 1,NSYM
 C
@@ -436,6 +616,7 @@ C
          NT1AI = NT1AM(ISYMAI)
 C
          LENAI  = NT1AO(ISYMDK)
+         IF (R12CON) LENAI = MAX(NT1AO(ISYMDK),NT1AO2(ISYMDK))
          LENMIN = 2*LENAI 
          IF (LENMIN .EQ. 0) GOTO 100
          LENMIN = LENMIN + NRHFT
@@ -467,9 +648,9 @@ C           Memory allocation.
 C-----------------------------
 C
             KSCR1 = 1
-            KSCR2 = KSCR1 + NDISAI*NT1AO(ISYMDK)
-            KSCR3 = KSCR2 + NDISAI*NT1AO(ISYMDK)
-            KEND  = KSCR3 + NT1AM(ISYMCK)
+            KSCR2 = KSCR1 + NDISAI*NT1CK(ISYMCK)
+            KSCR3 = KSCR2 + NDISAI*LENAI
+            KEND  = KSCR3 + MAX(NDISAI*LENAI,NT1CK(ISYMCK))
             LWRK1 = LWORK - KEND
 C
             IF (LWRK1 .LT. 0) THEN
@@ -481,7 +662,7 @@ C----------------------------------
 C           Construct P(del k,#ai).
 C----------------------------------
 C
-            KOFF1 = KSCR1
+            KOFF1 = KSCR3
             DO 120 ISYDEL = 1,NSYM
 C
                ISYMK = MULD2H(ISYDEL,ISYMDK)
@@ -507,10 +688,13 @@ C
 C
                   IF (LEN .GT. 0) THEN
                      CALL GETWA2(LUD,DFIL,WORK(KOFF1),IOFF,LEN)
-                     CALL GETWA2(LUC,CFIL,WORK(KSCR4),IOFF,LEN)
 C
-                     CALL DSCAL(LEN,TWO,WORK(KOFF1),1)
-                     CALL DAXPY(LEN,-ONE,WORK(KSCR4),1,WORK(KOFF1),1)
+                     IF (IOPT.NE.1) THEN
+                       CALL GETWA2(LUC,CFIL,WORK(KSCR4),IOFF,LEN)
+C
+                       CALL DSCAL(LEN,TWO,WORK(KOFF1),1)
+                       CALL DAXPY(LEN,-ONE,WORK(KSCR4),1,WORK(KOFF1),1)
+                     END IF
 C
                   ENDIF
 C
@@ -545,22 +729,125 @@ C
                   ISYDEL = ISYMC
                   ISYMK  = MULD2H(ISYMC,ISYMCK)
 C
-                  NBASD = MAX(NBAS(ISYDEL),1)
-                  NVIRC = MAX(NVIR(ISYMC),1)
+                  NBASD1 = MAX(NBAS(ISYDEL),1)
+                  NBASD2 = NBASD1
+                  IF (R12CON) NBASD1=MAX(MBAS1(ISYDEL)+MBAS2(ISYDEL),1)
+                  IF (R12CON) NBASD2=MAX(MBAS1(ISYDEL),1)
+                  NVIRC = MAX(NC(ISYMC),1)
 C
-                  KOFF4 = ILMVIR(ISYDEL) + 1
+                  IF (R12CON) THEN
+                    KOFF4 = 1 + ILAMDX(ISYDEL) +
+     *                      (MBAS1(ISYDEL)+MBAS2(ISYDEL))*NORB1(ISYMC)
+                  ELSE
+                    KOFF4 = ILMVIR(ISYDEL) + 1
+                  END IF
                   KOFF5 = KSCR2 + NT1AO(ISYMDK)*(KAI - 1)
      *                  + IT1AO(ISYDEL,ISYMK)
-                  KOFF6 = KSCR1 + NT1AM(ISYMCK)*(KAI - 1)
-     *                  + IT1AM(ISYMC,ISYMK)
+                  KOFF6 = KSCR1 + NT1CK(ISYMCK)*(KAI - 1)
+     *                  + IT1CK(ISYMC,ISYMK)
 C
-                  CALL DGEMM('T','N',NVIR(ISYMC),NRHF(ISYMK),
-     *                       NBAS(ISYDEL),ONE,XLAMDH(KOFF4),NBASD,
-     *                       WORK(KOFF5),NBASD,ZERO,WORK(KOFF6),
+                  CALL DGEMM('T','N',NC(ISYMC),NRHF(ISYMK),
+     *                       NBAS(ISYDEL),ONE,XLAMDH(KOFF4),NBASD1,
+     *                       WORK(KOFF5),NBASD2,ZERO,WORK(KOFF6),
      *                       NVIRC)
 C
   160          CONTINUE
   150       CONTINUE
+C
+            IF (R12CON) THEN           
+C
+C----------------------------------
+C           Construct P(del k,#ai).
+C----------------------------------
+C
+            KOFF1 = KSCR3
+            DO 121 ISYDEL = 1,NSYM
+C
+               ISYMK = MULD2H(ISYDEL,ISYMDK)
+C
+               DO 131 IDELTA = 1,MBAS2(ISYDEL)
+C
+                  ID = MBAS1T + IDELTA + IBASX(ISYDEL)
+C
+                  IF (IOPT .EQ. 1 ) THEN
+                     IOFF = IT2DEL(ID) + IT2BCT(ISYMK,ISYMAI)
+     *                    + NRHF(ISYMK)*(IFSTAI - 1) + 1
+                  ELSE
+                     IOFF = IT2DLR(ID,IV) + IT2BCT(ISYMK,ISYMAI)
+     *                    + NRHF(ISYMK)*(IFSTAI - 1) + 1
+                  ENDIF
+C
+                  LEN  = NDISAI*NRHF(ISYMK)
+C
+                  KSCR4 = KEND
+                  IF (LWRK1 .LT. LEN) THEN
+                     CALL QUIT('Insufficient memory in CCRHS_DIO2')
+                  END IF
+C
+                  IF (LEN .GT. 0) THEN
+                     CALL GETWA2(LUD,DFIL,WORK(KOFF1),IOFF,LEN)
+C
+                     IF (IOPT.NE.1) THEN
+                       CALL GETWA2(LUC,CFIL,WORK(KSCR4),IOFF,LEN)
+C
+                       CALL DSCAL(LEN,TWO,WORK(KOFF1),1)
+                       CALL DAXPY(LEN,-ONE,WORK(KSCR4),1,WORK(KOFF1),1)
+                     END IF
+C
+                  ENDIF
+C
+                  DO 141 NAI = IFSTAI,ILSTAI
+C
+                     KAI = NAI - IFSTAI + 1
+C
+                     KOFF2 = KOFF1 + NRHF(ISYMK)*(KAI - 1)
+                     KOFF3 = KSCR2 + NT1AO2(ISYMDK)*(KAI - 1)
+     *                     + IT1AO2(ISYDEL,ISYMK) + IDELTA - 1
+C
+                     CALL DCOPY(NRHF(ISYMK),WORK(KOFF2),1,WORK(KOFF3),
+     *                          MBAS2(ISYDEL))
+C
+  141             CONTINUE
+C
+                  KOFF1 = KOFF1 + LEN
+C
+  131          CONTINUE
+  121       CONTINUE
+C
+C--------------------------------------
+C           Transform delta index to c.
+C--------------------------------------
+C
+            DO 151 NAI = IFSTAI,ILSTAI
+C
+               KAI = NAI - IFSTAI + 1
+C
+               DO 161 ISYMC = 1,NSYM
+C
+                  ISYDEL = ISYMC
+                  ISYMK  = MULD2H(ISYMC,ISYMCK)
+C
+                  NBASD1 = MAX(MBAS1(ISYDEL)+MBAS2(ISYDEL),1)
+                  NBASD2 = MAX(MBAS2(ISYDEL),1)
+                  NVIRC = MAX(NC(ISYMC),1)
+C
+                  KOFF4 = 1 + ILAMDX(ISYDEL) +
+     *                    (MBAS1(ISYDEL)+MBAS2(ISYDEL))*NORB1(ISYMC) +
+     *                    MBAS1(ISYDEL)
+                  KOFF5 = KSCR2 + NT1AO2(ISYMDK)*(KAI - 1)
+     *                  + IT1AO2(ISYDEL,ISYMK)
+                  KOFF6 = KSCR1 + NT1CK(ISYMCK)*(KAI - 1)
+     *                  + IT1CK(ISYMC,ISYMK)
+C
+                  CALL DGEMM('T','N',NC(ISYMC),NRHF(ISYMK),
+     *                       MBAS2(ISYDEL),ONE,XLAMDH(KOFF4),NBASD1,
+     *                       WORK(KOFF5),NBASD2,ONE,WORK(KOFF6),
+     *                       NVIRC)
+C
+  161          CONTINUE
+  151       CONTINUE
+C
+            END IF !R12CON           
 C
 C--------------------------------------------------
 C           contract to contrib. to R intermediate:
@@ -581,13 +868,13 @@ C
 
                  IF (NAK.GE.IFSTAI .AND. NAK.LE.ILSTAI) THEN
 
-                   DO C = 1, NVIR(ISYMC)
+                   DO C = 1, NC(ISYMC)
 
-                      NCK = IT1AM(ISYMC,ISYMK) + NVIR(ISYMC)*(K-1) + C
+                      NCK = IT1CK(ISYMC,ISYMK) + NC(ISYMC)*(K-1) + C
 
-                      KOFF1 = IMATAB(ISYMA,ISYMC)+NVIR(ISYMA)*(C-1)+A
+                      KOFF1 = IMATAC(ISYMA,ISYMC)+NVIR(ISYMA)*(C-1)+A
 
-                      KOFF6 = KSCR1-1 + NT1AM(ISYMCK)*(KAK - 1) + NCK
+                      KOFF6 = KSCR1-1 + NT1CK(ISYMCK)*(KAK - 1) + NCK
 
                       WORK(KOFF6) = WORK(KOFF6) + 0.5D0 * EMAT1(KOFF1)
 
@@ -607,6 +894,8 @@ C         add DBAR intermediate to P(ck,#ai)
 C---------------------------------------------
 C
           IF (IOPTB .EQ. 1) THEN
+            IF (R12CON)
+     &        CALL QUIT('IOPTB = 1 not implemented for CCSDR12')
             DO NAI = IFSTAI, ILSTAI
 
               IADR = IOFFB+IT2SQ(ISYMCK,ISYMAI)+NT1AM(ISYMCK)*(NAI-1)+1
@@ -632,12 +921,12 @@ C           Contract P(ck,#ai) with T(bj,ck).
 C--------------------------------------------
 C
             NT1BJ = MAX(NT1AM(ISYMBJ),1)
-            NT1CK = MAX(NT1AM(ISYMCK),1)
 C
-            KOFF7 = IT2SQ(ISYMBJ,ISYMCK) + 1
+            KOFF7 = IT2SQP(ISYMBJ,ISYMCK) + 1
 C
-            CALL DGEMM('N','N',NT1AM(ISYMBJ),NDISAI,NT1AM(ISYMCK),
-     *                 ONE,T2AM(KOFF7),NT1BJ,WORK(KSCR1),NT1CK,
+            CALL DGEMM('N','N',NT1AM(ISYMBJ),NDISAI,NT1CK(ISYMCK),
+     *                 ONE,T2AM(KOFF7),NT1BJ,WORK(KSCR1),
+     *                 MAX(NT1CK(ISYMCK),1),
      *                 ZERO,WORK(KSCR2),NT1BJ)
 C
 C------------------------------
@@ -665,6 +954,9 @@ C
 C
   110    CONTINUE
   100 CONTINUE
+C
+C     WRITE(LUPRI,*) 'Leaving CCRHS_DIO2'
+C     CALL FLSHFO(LUPRI)
 C
       RETURN
       END
@@ -977,7 +1269,7 @@ C
 *=====================================================================*
 c /* deck cc_iajb2 */
 *=====================================================================*
-      SUBROUTINE CC_IAJB2( XIAJB, ISYIAJB, IOPT, LRELAX, LOCC,
+      SUBROUTINE CC_IAJB2( XIAJB, ISYIAJB, IOPT, LRELAX, LOCC, LCBS,
      &                     LU0IAJB, FN0IAJB, IT2DEL0, XLAMD0, ISYM0,
      &                     LUBIAJB, FNBIAJB, IT2DELB, XLAMDB, ISYMB,
      &                     WORK, LWORK                               )
@@ -995,6 +1287,12 @@ c /* deck cc_iajb2 */
 *            if LOCC, transform to occupied index instead of a virtual:
 *
 *               (ia|kj) += sum_del (ia|j del) * XLAMD(del k)
+*
+*            if LCBS, transform to complementary auxiliary MOs
+*            (note, that in this case delta runs over primary and
+*             auxiliary atomic orbitals):
+*
+*               (ia|p'j) += sum_del (ia|j del) * XLAMD(del p')
 *
 *            for IOPT=1 LUBIAJB, FNBIAJB, ..., ISYMB is dummy input
 *
@@ -1016,12 +1314,13 @@ c /* deck cc_iajb2 */
 #include <ccsdsym.h>
 #include <maxorb.h>
 #include <ccisao.h>
+#include <r12int.h>
 
 * local parameters:
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
-      LOGICAL LRELAX, LOCC
+      LOGICAL LRELAX, LOCC, LCBS
       CHARACTER*(*) FN0IAJB, FNBIAJB
       INTEGER ISYIAJB, ISYM0, ISYMB, IOPT, LWORK, LU0IAJB, LUBIAJB
       INTEGER IT2DEL0(*), IT2DELB(*)
@@ -1035,20 +1334,35 @@ c /* deck cc_iajb2 */
 #endif
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0)
       
-      INTEGER ISYMB0, ISYMBB, ISYDEL, ISY0IAJ, ISYBIAJ
-      INTEGER LEN0,IADR0,LENB,IADRB,IDEL,KEND1,LWRK1,KX0IAJ,KXBIAJ
+      INTEGER ISYMB0, ISYMBB, ISYDEL, ISY0IAJ, ISYBIAJ, IRECORD
+      INTEGER LEN0,IADR0,LENB,IADRB,KEND1,LWRK1,KX0IAJ,KXBIAJ,
+     &        IBASTYP, IBASTYPST, IBASTYPND, MBAS1T, IBASX(8), ISYM, 
+     &        IDST, IDND
 
 *---------------------------------------------------------------------*
 * do the transformation in a loop over AO delta index:
 *---------------------------------------------------------------------*
+      IF (LCBS) THEN
+        IBASTYPST = 1
+        IBASTYPND = 2 
+
+        IBASX(1) = 0
+        MBAS1T = 0
+        DO ISYM = 1,NSYM
+          IF (ISYM.GT.1) IBASX(ISYM) = IBASX(ISYM-1)+MBAS2(ISYM-1)
+          MBAS1T = MBAS1T + MBAS1(ISYM) ! # primary. AOs in total
+        END DO
+  
+      ELSE ! default: delta runs over orbital basis 1...nbas
+        IBASTYPST = 1
+        IBASTYPND = 1 
+      END IF
+
+      DO IBASTYP = IBASTYPST, IBASTYPND
+
       DO ISYDEL = 1, NSYM
 
         ISYMB0  = MULD2H(ISYDEL,ISYM0)
-C VB mar 2001:
-C     If IOPT=1 ISYMB is a dummy argument at the statement below may
-C     cause a segmentation fault. Moved inside IF-test instead
-C
-C        ISYMBB  = MULD2H(ISYDEL,ISYMB)
 
         IF (IOPT.EQ.1) THEN
           ISY0IAJ = MULD2H(ISYIAJB,ISYMB0)
@@ -1075,10 +1389,27 @@ C        ISYMBB  = MULD2H(ISYDEL,ISYMB)
           CALL QUIT('Insufficient work space in CC_IAJB2.')
         END IF
 
-        DO D = 1, NBAS(ISYDEL)
+        IF      (IBASTYP.EQ.1 .AND. LCBS) THEN
+          IDST = 1 
+          IDND = MBAS1(ISYDEL) 
+        ELSE IF (IBASTYP.EQ.2 .AND. LCBS) THEN
+C         IDST = 1 
+C         IDND = MBAS2(ISYDEL)
+          IDST = MBAS1(ISYDEL) + 1
+          IDND = MBAS1(ISYDEL) + MBAS2(ISYDEL)
+        ELSE
+          IDST = 1 
+          IDND = NBAS(ISYDEL) 
+        END IF
 
-          IDEL  = D + IBAS(ISYDEL)
+        DO D = IDST, IDND
 
+          IF (IBASTYP.EQ.2 .AND. LCBS) THEN
+            IRECORD = MBAS1T + IBASX(ISYDEL) + D - MBAS1(ISYDEL)
+C           IRECORD = MBAS1T + IBASX(ISYDEL) + D
+          ELSE
+            IRECORD = IBAS(ISYDEL) + D
+          END IF
 
           IF (IOPT.EQ.1) THEN
 
@@ -1086,12 +1417,21 @@ C           ----------------------------------------------
 C           (ia|jb) += (ia|j del) * XLAMD0(del b)
 C           ----------------------------------------------
             LEN0  = NT2BCD(ISY0IAJ)
-            IADR0 = IT2DEL0(IDEL)
+            IADR0 = IT2DEL0(IRECORD)
 
             CALL GETWA2(LU0IAJB, FN0IAJB, WORK(KX0IAJ), IADR0, LEN0)
       
-            CALL CC_IAJB3(WORK(KX0IAJ),ISY0IAJ,IDEL,LOCC,
+            CALL CC_IAJB3(WORK(KX0IAJ),ISY0IAJ,D,ISYDEL,LOCC,LCBS,
      &                    XLAMD0,ISYM0,XIAJB)
+
+CCN
+C           write(lupri,*) 'In CC_IAJB2: iadr = ', iadr0
+C           WRITE(lupri,*) 'In CC_IAJB2: isydel = ', isydel
+C           WRITE(lupri,*) 'In CC_IAJB2: Norm^2 of WORK(KX0IAJ): ',
+C    &        DDOT(LEN0,WORK(KX0IAJ),1,WORK(KX0IAJ),1)
+C           WRITE(lupri,*) 'In CC_IAJB2: Norm^2 of XIAJB: ',
+C    &        DDOT(ntg2sq(isyiajb),XIAJB,1,XIAJB,1)
+CCN
 
           END IF
 
@@ -1101,11 +1441,11 @@ C           ----------------------------------------------
 C           (ia|jb)-bar += (ia|j del)-bar * XLAMD0(del b)
 C           ----------------------------------------------
             LENB  = NT2BCD(ISYBIAJ)
-            IADRB = IT2DELB(IDEL)
+            IADRB = IT2DELB(IRECORD)
 
             CALL GETWA2(LUBIAJB, FNBIAJB, WORK(KXBIAJ), IADRB, LENB)
 
-            CALL CC_IAJB3(WORK(KXBIAJ),ISYBIAJ,IDEL,LOCC,
+            CALL CC_IAJB3(WORK(KXBIAJ),ISYBIAJ,D,ISYDEL,LOCC,LCBS,
      &                    XLAMD0,ISYM0,XIAJB)
 
 
@@ -1115,11 +1455,11 @@ C             ----------------------------------------------
 C             (ia|jb)-bar += (ia|j del) * XLAMDB(del b-bar)
 C             ----------------------------------------------
               LEN0  = NT2BCD(ISY0IAJ)
-              IADR0 = IT2DEL0(IDEL)
+              IADR0 = IT2DEL0(IRECORD)
 
               CALL GETWA2(LU0IAJB, FN0IAJB, WORK(KX0IAJ), IADR0, LEN0)
 
-              CALL CC_IAJB3(WORK(KX0IAJ),ISY0IAJ,IDEL,LOCC,
+              CALL CC_IAJB3(WORK(KX0IAJ),ISY0IAJ,D,ISYDEL,LOCC,LCBS,
      &                      XLAMDB,ISYMB,XIAJB)
 
             END IF
@@ -1127,7 +1467,8 @@ C             ----------------------------------------------
 
         END DO
 
-      END DO
+      END DO ! ISYDEL
+      END DO ! IBASTYP
 
       RETURN
       END
@@ -1136,7 +1477,8 @@ C             ----------------------------------------------
 *=====================================================================*
 c /* deck cc_iajb3 */
 *=====================================================================*
-      SUBROUTINE CC_IAJB3(XIAJ,ISYAIJ,IDEL,LOCC,XLAMDA,ISYLAM,XIAJB)
+      SUBROUTINE CC_IAJB3(XIAJ,ISYAIJ,D,ISYDEL,LOCC,LCBS,
+     &                    XLAMDA,ISYLAM,XIAJB)
 *---------------------------------------------------------------------*
 *
 *   Purpose: transformation to (ia|jb) integrals
@@ -1162,8 +1504,9 @@ c /* deck cc_iajb3 */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include <r12int.h>
+C#include <maxorb.h>
+C#include <ccisao.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -1176,7 +1519,7 @@ c /* deck cc_iajb3 */
 #endif
       PARAMETER (ONE = 1.0d0, ZERO = 0.0d0)
 
-      INTEGER IDEL, ISYAIJ, ISYLAM
+      INTEGER ISYAIJ, ISYLAM, ISYDEL
       
 #if defined (SYS_CRAY)
       REAL XLAMDA(*), XIAJ(*), XIAJB(*)
@@ -1184,38 +1527,49 @@ c /* deck cc_iajb3 */
       DOUBLE PRECISION XLAMDA(*), XIAJ(*), XIAJB(*)
 #endif
       
-      LOGICAL LOCC
-      INTEGER ITAIKJ(8,8), NTAIKJ(8), ISYM, ICOUNT
-      INTEGER ISYDEL, ISYMB, ISYMJ, ISYMAI, ISYMBJ, ISYMK, ISYMAIK
-      INTEGER KOFF0, KOFF1, KLAMD, NBJ
+      LOGICAL LOCC, LCBS
+      INTEGER ITAIKJ(8,8), ISYM, ISYM1, ISYM2, ICOUNT,
+     &        ICOUN1, ICOUN2, ILAMDX(8,8)
+      INTEGER ISYMB, ISYMJ, ISYMAI, ISYMBJ, ISYMK, ISYMAIK
+      INTEGER KOFF0, KOFF1, KLAMD, NBJ, NPJ, ISYMPJ, ISYMP
 
 *---------------------------------------------------------------------*
-*     set D index and its symmetry and symmetry of B index:
+*     precompute non-standard symmetry offsets:
 *---------------------------------------------------------------------*
-      ISYDEL = ISAO(IDEL)
-      ISYMB  = MULD2H(ISYDEL,ISYLAM)
-      ISYMK  = MULD2H(ISYDEL,ISYLAM)
-
       DO  ISYM = 1, NSYM
         ICOUNT = 0
+        ICOUN1 = 0
+        ICOUN2 = 0
         DO ISYMAIK = 1, NSYM
            ISYMJ  = MULD2H(ISYMAIK,ISYM)
            ITAIKJ(ISYMAIK,ISYMJ) = ICOUNT
            ICOUNT = ICOUNT + NT2BCD(ISYMAIK)*NRHF(ISYMJ)
         END DO 
-        NTAIKJ(ISYM) = ICOUNT
+        DO ISYM2 = 1, NSYM
+           ISYM1 = MULD2H(ISYM2,ISYM)
+           ILAMDX(ISYM1,ISYM2) = ICOUN2
+           ICOUN2 = ICOUN2 + (MBAS1(ISYM1)+MBAS2(ISYM1)) *
+     &                              (NORB1(ISYM2)+NORB2(ISYM2))
+        END DO
       END DO
 
-      D = IDEL - IBAS(ISYDEL)
+*---------------------------------------------------------------------*
+*     set D index and its symmetry and symmetry of B index:
+*---------------------------------------------------------------------*
+      ISYMB  = MULD2H(ISYDEL,ISYLAM)
+      ISYMK  = MULD2H(ISYDEL,ISYLAM)
+      ISYMP  = MULD2H(ISYDEL,ISYLAM)
 
 *---------------------------------------------------------------------*
 *     (ia|jb) = sum_{del} (ia|del j) * XLAMDA(del b)
+* or  (ia|jp') = sum_{del} (ia|del j) * XLAMDA(del p')
 * or  (ia|jk) = sum_{del} (ia|del j) * XLAMDA(del k)
 *---------------------------------------------------------------------*
       DO ISYMJ = 1, NSYM
 
         ISYMAI  = MULD2H(ISYAIJ,ISYMJ)
         ISYMBJ  = MULD2H(ISYMB,ISYMJ)
+        ISYMPJ  = MULD2H(ISYMP,ISYMJ)
         ISYMAIK = MULD2H(ISYMAI,ISYMK)
 
         DO J = 1, NRHF(ISYMJ)
@@ -1229,6 +1583,19 @@ c /* deck cc_iajb3 */
                KLAMD = IGLMRH(ISYDEL,ISYMK) + NBAS(ISYDEL)*(K-1) + D
                KOFF1 = ITAIKJ(ISYMAIK,ISYMJ) + NT2BCD(ISYMAIK)*(J-1)
      &               + IT2BCD(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1) + 1
+
+               CALL DAXPY(NT1AM(ISYMAI),XLAMDA(KLAMD),XIAJ(KOFF0),1,
+     &                                         XIAJB(KOFF1),1)
+
+             END DO
+
+          ELSE IF (LCBS) THEN
+
+             DO P = 1, NORB2(ISYMP)
+               NPJ   = IG1AM(ISYMP,ISYMJ) + NORB2(ISYMP)*(J-1) + P
+               KLAMD = ILAMDX(ISYDEL,ISYMP) + 
+     &           (MBAS1(ISYDEL)+MBAS2(ISYDEL))*(NORB1(ISYMP)+P-1) + D
+               KOFF1 = ITG2SQ(ISYMAI,ISYMPJ) + NT1AM(ISYMAI)*(NPJ-1)+1
 
                CALL DAXPY(NT1AM(ISYMAI),XLAMDA(KLAMD),XIAJ(KOFF0),1,
      &                                         XIAJB(KOFF1),1)
@@ -1995,7 +2362,8 @@ C
 *---------------------------------------------------------------------*
 c/* deck cc_cd */
 *=====================================================================*
-      SUBROUTINE CC_CD(TYPE, ISIDE, OMEGA2, ISYRES, T2AMP, ISYTAM,
+      SUBROUTINE CC_CD(TYPE, ISIDE, IOPTR12,
+     &                 OMEGA2, ISYRES, T2AMP, ISYTAM,
      &                 CDBAR, ISYCDBAR, WORK, LWORK        )
 *---------------------------------------------------------------------*
 *    Purpose: calculate C/D term from C/D in core
@@ -2023,13 +2391,14 @@ c/* deck cc_cd */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
+#include <r12int.h>
 
 * local parameters:
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
       CHARACTER*(*) TYPE
-      INTEGER LWORK, ISYTAM, ISYCDBAR, ISYRES
+      INTEGER LWORK, ISYTAM, ISYCDBAR, ISYRES, IOPTR12
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -2047,15 +2416,16 @@ c/* deck cc_cd */
       PARAMETER (ONE = 1.0d0, HALF = 0.5D0, TWO = 2.0D0)
 
       INTEGER IOPTZWVI, ISYTIN, ISYCIN, ISIDE
-      INTEGER ISYMA, ISYOME, ISYMI, ISYMBJ, ISYMAI
-      INTEGER NAI, NI, NBJ, NBJAI, NAIAI, NTNI
+      INTEGER ISYMA, ISYOME, ISYMI, ISYMBJ, ISYMAI, ISYAIBJ
+      INTEGER NAI, NI, NBJ, NBJAI, NAIAI, NTNI, LENOME
       INTEGER KEND1, LWRK1, KTINT, KOMEG, KSCR, INDEX
+      INTEGER IT2PJI(8,8), NT2PJI(8), ICOUN9
 
 * statement functions:
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 
 *---------------------------------------------------------------------*
-* check symmetries:
+* check symmetries and calculate non-standard symmetry arrays:
 *---------------------------------------------------------------------*
       IF (MULD2H(ISYTAM,ISYCDBAR) .NE. ISYRES) THEN
         WRITE (LUPRI,*) 'ERROR> SYMMETRY MISMATCH IN CC_CD.'
@@ -2068,6 +2438,17 @@ c/* deck cc_cd */
         XNORM =  0.0d0
       END IF
 
+      IF (IOPTR12.EQ.1) THEN
+        DO  ISYAIBJ = 1, NSYM
+          ICOUN9 = 0
+          DO ISYMAI = 1, NSYM
+             ISYMBJ = MULD2H(ISYMAI,ISYAIBJ)
+             IT2PJI(ISYMBJ,ISYMAI)   = ICOUN9
+             ICOUN9 = ICOUN9 + NG1AM(ISYMBJ)*NRHF(ISYMAI)
+          END DO
+          NT2PJI(ISYAIBJ) = ICOUN9
+        END DO
+      END IF
 *---------------------------------------------------------------------*
 * set option for CC_ZWVJ routine:
 *---------------------------------------------------------------------*
@@ -2104,10 +2485,16 @@ c/* deck cc_cd */
         ISYTIN = MULD2H(ISYTAM,ISYMA)
         ISYOME = MULD2H(ISYTIN,ISYCDBAR)
 
+        IF (IOPTR12.EQ.1) THEN
+          LENOME = NT2PJI(ISYOME)
+        ELSE
+          LENOME = NT2BCD(ISYOME)
+        END IF
+
         KTINT = 1
         KOMEG = KTINT + NT2BCD(ISYTIN)
-        KSCR  = KOMEG + NT2BCD(ISYOME)
-        KEND1 = KSCR  + NT2BCD(ISYOME)
+        KSCR  = KOMEG + LENOME
+        KEND1 = KSCR  + LENOME
 
         LWRK1 = LWORK - KEND1
         IF (LWRK1 .LE. 0) THEN
@@ -2117,56 +2504,83 @@ c/* deck cc_cd */
       DO A = 1, NVIR(ISYMA)
         
 C       ----------------------------------------------
-C       get t^{a}(bj,i) submatrix of the t amplitudes:
+C       get t^{a}(ck,i) submatrix of the t amplitudes:
 C       ----------------------------------------------
         CALL CCG_TI(WORK(KTINT),ISYTIN,T2AMP,ISYTAM,A,ISYMA)
 
 C       ----------------------------------------
-C       calculate OMEGA2^{a}(ck,i) intermediate:
+C       calculate OMEGA2^{a}(bj,i) intermediate:
 C       ----------------------------------------
         IF (ISIDE.EQ.+1) THEN
-          Call CC_ZWVJ(WORK(KOMEG), CDBAR, ISYCDBAR, WORK(KTINT),
-     &                 ISYTIN, WORK(KEND1), LWRK1, IOPTZWVI)
+          IF (IOPTR12.EQ.1) THEN
+            Call CC_ZWVJ(WORK(KOMEG),ISYOME,IT2PJI,NT2PJI,IG1AM,NG1AM,
+     &               CDBAR,ISYCDBAR,ITG2SQ, 
+     &               WORK(KTINT),ISYTIN,IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR, 
+     &               WORK(KEND1), LWRK1, IOPTZWVI,'T')
+          ELSE
+            Call CC_ZWVJ(WORK(KOMEG),ISYOME,IT2BCD,NT2BCD,IT1AM,NT1AM,
+     &               CDBAR,ISYCDBAR,IT2SQ, 
+     &               WORK(KTINT),ISYTIN,IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR, 
+     &               WORK(KEND1), LWRK1, IOPTZWVI,'T')
+          END IF
         ELSE IF (ISIDE.EQ.-1) THEN
+          IF (IOPTR12.EQ.1) CALL QUIT('Unfinished case in CC_CD')
           Call CC_ZWVI(WORK(KOMEG), CDBAR, ISYCDBAR, WORK(KTINT),
      &                 ISYTIN, WORK(KEND1), LWRK1, IOPTZWVI)
         ELSE
           CALL QUIT('ILLEGAL OPTION IN CC_CD.')
         END IF
 
-
 C       ---------------------------------------------------
 C       for D term in right transformation scale with +1/2:
 C       ---------------------------------------------------
         IF ( TYPE(1:1).EQ.'D' .AND. ISIDE.EQ.+1 ) THEN
-           CALL DSCAL(NT2BCD(ISYOME),HALF,WORK(KOMEG),1)
+           CALL DSCAL(LENOME,HALF,WORK(KOMEG),1)
         END IF
 
 C       ------------------------------------------------------
 C       for C term in left transformation scale with -1/2 Pij:
 C       ------------------------------------------------------
         IF ( TYPE(1:1).EQ.'C' .AND. ISIDE.EQ.-1 ) THEN
-           CALL DSCAL(NT2BCD(ISYOME),-HALF,WORK(KOMEG),1)
-           CALL CCLT_P21I(WORK(KOMEG),ISYOME,WORK(KEND1),LWRK1)
+           CALL DSCAL(LENOME,-HALF,WORK(KOMEG),1)
+           IF (IOPTR12.EQ.1) THEN
+             CALL CCLT_P21I(WORK(KOMEG),ISYOME,WORK(KEND1),LWRK1,
+     &                      IT2PJI,NT2PJI,IG1AM,NG1AM,NORB2)
+           ELSE
+             CALL CCLT_P21I(WORK(KOMEG),ISYOME,WORK(KEND1),LWRK1,
+     &                      IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
+           END IF
         END IF
 
 C       --------------------------------------------------------------
 C       for C term in right transformation apply -1/2 * (1 + 2 * Pij):
 C       --------------------------------------------------------------
         IF ( TYPE(1:1).EQ.'C' .AND. ISIDE.EQ.+1) THEN
-           CALL DCOPY(NT2BCD(ISYOME),WORK(KOMEG),1,WORK(KSCR),1)
-           CALL CCLT_P21I(WORK(KSCR),ISYOME,WORK(KEND1),LWRK1)
-           CALL DAXPY(NT2BCD(ISYOME),TWO,WORK(KSCR),1,WORK(KOMEG),1)
-           CALL DSCAL(NT2BCD(ISYOME),-HALF,WORK(KOMEG),1)
+           CALL DCOPY(LENOME,WORK(KOMEG),1,WORK(KSCR),1)
+           IF (IOPTR12.EQ.1) THEN
+             CALL CCLT_P21I(WORK(KSCR),ISYOME,WORK(KEND1),LWRK1,
+     &                      IT2PJI,NT2PJI,IG1AM,NG1AM,NORB2)
+           ELSE
+             CALL CCLT_P21I(WORK(KSCR),ISYOME,WORK(KEND1),LWRK1,
+     &                      IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
+           END IF
+           CALL DAXPY(LENOME,TWO,WORK(KSCR),1,WORK(KOMEG),1)
+           CALL DSCAL(LENOME,-HALF,WORK(KOMEG),1)
         END IF
 
 C       --------------------------------------------------------
 C       for D term in left transformation apply (1 - 1/2 * Pij):
 C       --------------------------------------------------------
         IF ( TYPE(1:1).EQ.'D' .AND. ISIDE.EQ.-1) THEN
-           CALL DCOPY(NT2BCD(ISYOME),WORK(KOMEG),1,WORK(KSCR),1)
-           CALL CCLT_P21I(WORK(KSCR),ISYOME,WORK(KEND1),LWRK1)
-           CALL DAXPY(NT2BCD(ISYOME),-HALF,WORK(KSCR),1,WORK(KOMEG),1)
+           CALL DCOPY(LENOME,WORK(KOMEG),1,WORK(KSCR),1)
+           IF (IOPTR12.EQ.1) THEN
+             CALL CCLT_P21I(WORK(KSCR),ISYOME,WORK(KEND1),LWRK1,
+     &                      IT2PJI,NT2PJI,IG1AM,NG1AM,NORB2)
+           ELSE
+             CALL CCLT_P21I(WORK(KSCR),ISYOME,WORK(KEND1),LWRK1,
+     &                      IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
+           END IF
+           CALL DAXPY(LENOME,-HALF,WORK(KSCR),1,WORK(KOMEG),1)
         END IF
 
 C       -----------------------
@@ -2183,7 +2597,11 @@ C       -----------------------
           DO I = 1, NRHF(ISYMI)
 
             NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
-            NI  = KOMEG + IT2BCD(ISYMBJ,ISYMI)+NT1AM(ISYMBJ)*(I-1)
+            IF ( IOPTR12.EQ.1 ) THEN
+              NI  = KOMEG + IT2PJI(ISYMBJ,ISYMI)+NG1AM(ISYMBJ)*(I-1)
+            ELSE
+              NI  = KOMEG + IT2BCD(ISYMBJ,ISYMI)+NT1AM(ISYMBJ)*(I-1)
+            END IF
 
 c           WRITE (LUPRI,*)TYPE,'-term: ISYMA,A,ISYMI,I=',ISYMA,A,ISYMI,I
 c           NTNI = KTINT + IT2BCD(ISYMBJ,ISYMI)+NT1AM(ISYMBJ)*(I-1)
@@ -2192,7 +2610,15 @@ c           CALL CC_PRP(WORK(NTNI),WORK,ISYMBJ,1,0)
 c           WRITE (LUPRI,*) 'contribution:'
 c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
 
-            IF      ( ISYMBJ .EQ. ISYMAI ) THEN
+            IF      ( IOPTR12.EQ.1 ) THEN
+
+               ! store R12 (intermediate) result vector as rectangular
+               ! matrix with indeces ordered as Omega(a i,p' j), p'=b
+               NBJAI = ITG2SQ(ISYMAI,ISYMBJ) + NAI
+               CALL DAXPY(NG1AM(ISYMBJ),ONE,WORK(NI),1,
+     &                                     OMEGA2(NBJAI),NT1AM(ISYMAI))
+          
+            ELSE IF ( ISYMBJ .EQ. ISYMAI ) THEN
 
                DO NBJ = 1, NT1AM(ISYMBJ)
                  NBJAI = IT2AM(ISYMBJ,ISYMAI) + INDEX(NBJ,NAI)
@@ -2350,7 +2776,8 @@ C
 
         CALL DSCAL(NT2BCD(ISYTIN),-ONE,WORK(KTJNT),1)
 
-        CALL CCLT_P21I(WORK(KTJNT),ISYTIN,WORK(KEND1),LWRK1)
+        CALL CCLT_P21I(WORK(KTJNT),ISYTIN,WORK(KEND1),LWRK1,
+     &                 IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
         
         CALL DAXPY(NT2BCD(ISYTIN),TWO,WORK(KTINT),1,WORK(KTJNT),1)
         TIMTAM = TIMTAM + SECOND() - DTIME
@@ -2821,25 +3248,48 @@ C
       RETURN
       END
 C  /* Deck cc_zwvj */
-      SUBROUTINE CC_ZWVJ(ZINT,CTR2,ISYMC2 ,TINT,ISYTIN,
-     *                   WORK,LWORK,IOPT)
+      SUBROUTINE CC_ZWVJ(ZINT,ISYZIN,IT2PJI,NT2PJI,IG1AM,NG1AM,
+     *                   CTR2,ISYMC2,ITAIPJ,
+     *                   TINT,ISYTIN,IT2BCD,NT2BCD,IT1AM,NT1AM,MVIR,
+     *                   WORK,LWORK,IOPT,TRANS)
 C
-C     like Asgers CC_ZWVI routine, but CTR2 is used transposed
+C     generalization of Asgers CC_ZWVI routine...
 C
-#include <implicit.h>
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
-      DIMENSION ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
+C      IOPT = 2 : use TINT with occupied indeces transposed
+C
+C      TRANS='T'/'t' transpose CTR2 matrix, i.e. contract leading
+c             occ./vir. pair of CTR2 with TINT
+C            
+C      TRANS='N'/'n' do not transpose CTR2 matrix, i.e. contract
+C             the outer occ./vir. pair of CTR2 with TINT
+C
+C    C. Haettig, 1999, restructured for R12 in 2006
+C
+      IMPLICIT NONE
 #include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+      INTEGER ISYZIN,ISYMC2,ISYTIN,IOPT,LWORK
+#if defined (SYS_CRAY)
+      REAL ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
+      REAL ZERO, ONE
+#else
+      DOUBLE PRECISION ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
+      DOUBLE PRECISION ZERO, ONE
+#endif
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      CHARACTER TRANS*1
+      INTEGER ITAIPJ(8,8),IT2PJI(8,8),NT2PJI(8),IT2BCD(8,8),NT2BCD(8),
+     &        IG1AM(8,8),NG1AM(8),MVIR(8),IT1AM(8,8),NT1AM(8)
+      INTEGER ISYMDK, ISYMEI, ISYMJ, NTOTEI, NTOTDK, LDCTR2, KOFF1,
+     &        KOFF2, KOFF3
 C
 C-----------------------------
 C     Initialize result array.
 C-----------------------------
 C
-      ISYZIN = MULD2H(ISYMC2,ISYTIN)
+      IF (ISYZIN .NE. MULD2H(ISYMC2,ISYTIN))
+     &  CALL QUIT('Symmetry mismatch in CC_ZWVJ')
 C
-      CALL DZERO(ZINT,NT2BCD(ISYZIN))
+      CALL DZERO(ZINT,NT2PJI(ISYZIN))
 C
 C-----------------------------------------------------
 C     Transpose occupied indices of TINT if requested.
@@ -2847,7 +3297,8 @@ C-----------------------------------------------------
 C
       IF (IOPT .EQ. 2) THEN
 C
-         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK)
+         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK,
+     &                  IT2BCD,NT2BCD,IT1AM,NT1AM,MVIR)
 C
       ENDIF
 C
@@ -2855,23 +3306,31 @@ C------------------------
 C     Do the calculation.
 C------------------------
 C
-      DO 100 ISYMDK = 1,NSYM
+      DO ISYMDK = 1,NSYM
 C
          ISYMEI = MULD2H(ISYMDK,ISYMC2)
          ISYMJ  = MULD2H(ISYMDK,ISYTIN)
 C
-         KOFF1  = IT2SQ(ISYMDK,ISYMEI) + 1
-         KOFF2  = IT2BCD(ISYMDK,ISYMJ) + 1
-         KOFF3  = IT2BCD(ISYMEI,ISYMJ) + 1
-C
-         NTOTEI = MAX(NT1AM(ISYMEI),1)
+         NTOTEI = MAX(NG1AM(ISYMEI),1)
          NTOTDK = MAX(NT1AM(ISYMDK),1)
 C
-         CALL DGEMM('T','N',NT1AM(ISYMEI),NRHF(ISYMJ),NT1AM(ISYMDK),
-     *              ONE,CTR2(KOFF1),NTOTDK,TINT(KOFF2),NTOTDK,ZERO,
+         IF (TRANS.EQ.'T'.OR.TRANS.EQ.'t') THEN
+           KOFF1  = ITAIPJ(ISYMDK,ISYMEI) + 1
+           LDCTR2 = NTOTDK
+         ELSE IF (TRANS.EQ.'N'.OR.TRANS.EQ.'n') THEN
+           KOFF1  = ITAIPJ(ISYMEI,ISYMDK) + 1
+           LDCTR2 = NTOTEI
+         ELSE
+           CALL QUIT('Illegal value of TRANS in CC_ZWVJ')
+         END IF
+         KOFF2  = IT2BCD(ISYMDK,ISYMJ) + 1
+         KOFF3  = IT2PJI(ISYMEI,ISYMJ) + 1
+C
+         CALL DGEMM(TRANS,'N',NG1AM(ISYMEI),NRHF(ISYMJ),NT1AM(ISYMDK),
+     *              ONE,CTR2(KOFF1),LDCTR2,TINT(KOFF2),NTOTDK,ZERO,
      *              ZINT(KOFF3),NTOTEI)
 C
-  100 CONTINUE
+      END DO
 C
 C-------------------------------------------
 C     Restore TINT intermediate if necessary
@@ -2879,7 +3338,8 @@ C-------------------------------------------
 C
       IF (IOPT .EQ. 2) THEN
 C
-         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK)
+         CALL CCLT_P21I(TINT,ISYTIN,WORK,LWORK,
+     &                  IT2BCD,NT2BCD,IT1AM,NT1AM,MVIR)
 C
       ENDIF
 C
@@ -3026,7 +3486,8 @@ C
 
         CALL DSCAL(NT2BCD(ISYTIN),-ONE,WORK(KTJNT),1)
 
-        CALL CCLT_P21I(WORK(KTJNT),ISYTIN,WORK(KEND2),LWRK2)
+        CALL CCLT_P21I(WORK(KTJNT),ISYTIN,WORK(KEND2),LWRK2,
+     &                 IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
         
         CALL DAXPY(NT2BCD(ISYTIN),TWO,WORK(KTINT),1,WORK(KTJNT),1)
         TIMTAM = TIMTAM + SECOND() - DTIME
@@ -3534,7 +3995,7 @@ C
 C
       END
 *=====================================================================*
-      SUBROUTINE CC_CDBAR2(CDBAR,EMAT1,FAC,ISYCDBAR)
+      SUBROUTINE CC_CDBAR2(CDBAR,EMAT1,FAC,LCBS,ISYCDBAR)
 *---------------------------------------------------------------------*
 *
 * Purpose: add EMAT1 (scaled by FAC) to the k=i diagonal of the 
@@ -3545,9 +4006,30 @@ C
 #include <implicit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+#include <r12int.h>
 C
       DIMENSION CDBAR(*),EMAT1(*)
-C
+      LOGICAL LCBS
+      INTEGER IMATPB(8,8)
+
+*---------------------------------------------------------------------*
+*     precompute non-standard symmetry offsets:
+*---------------------------------------------------------------------*
+      IF (LCBS) THEN
+        DO  ISYM = 1, NSYM
+          ICOUN1 = 0
+          ICOUN2 = 0
+          DO ISYM2 = 1, NSYM
+             ISYM1 = MULD2H(ISYM2,ISYM)
+             IMATPB(ISYM1,ISYM2) = ICOUN2
+             ICOUN2 = ICOUN2 + NORB2(ISYM1)*NVIR(ISYM2)
+          END DO
+        END DO
+      END IF
+
+*---------------------------------------------------------------------*
+*     add E intermediate to the diagonal of the CDBAR intermediate
+*---------------------------------------------------------------------*
       DO ISYMAI = 1, NSYM
         ISYMCI = MULD2H(ISYCDBAR,ISYMAI)
 
@@ -3556,6 +4038,24 @@ C
           ISYMC = MULD2H(ISYMCI,ISYMI)
 
           DO I = 1, NRHF(ISYMI)
+
+           IF (LCBS) THEN
+
+            DO A = 1, NORB2(ISYMA)
+
+              NAI  = IG1AM(ISYMA,ISYMI) + NORB2(ISYMA)*(I-1) + A
+              KOFF = ITG2SQ(ISYMCI,ISYMAI) + NT1AM(ISYMCI)*(NAI-1)
+
+              DO C = 1, NVIR(ISYMC)
+                NCI = IT1AM(ISYMC,ISYMI)  + NVIR(ISYMC)*(I-1) + C
+                NAC = IMATPB(ISYMA,ISYMC) + NORB2(ISYMA)*(C-1) + A
+                CDBAR(KOFF+NCI) = CDBAR(KOFF+NCI) + FAC*EMAT1(NAC)
+              END DO
+
+            END DO
+
+           ELSE
+
             DO A = 1, NVIR(ISYMA)
 
               NAI  = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
@@ -3568,6 +4068,9 @@ C
               END DO
 
             END DO
+
+           END IF
+
           END DO
              
         END DO

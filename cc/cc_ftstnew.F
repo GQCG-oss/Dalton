@@ -73,7 +73,7 @@ C
       IDLSTL = 0
 
       LISTR  = 'R1 '
-      IDLSTR = IR1TAMP('XDIPLEN ',.FALSE.,0.0D0,ISYM)
+      IDLSTR = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,ISYM)
       NFTRAN = 1
 
       IFTRAN(1,1) = IDLSTL
@@ -100,7 +100,7 @@ C Models:
       else
         call quit('unkown CC method in CC_FTSTNEW!')
       end if
-      CALL CCSD_MODEL(MODELW,LENMOD,10,MODELW,10,APROXR12)
+      CALL CCSD_MODEL(MODELW,LENMOD,24,MODELW,10,APROXR12)
 C     write(lupri,*) 'MODEL in CC_FTSTNEW: ',MODELW
      
 C     Generate R12-parts for Lagrange-multipliers and trial-vector
@@ -165,10 +165,22 @@ C       iopt=32
 C       call cc_wrrsp(listr,idlstr,1,iopt,modelw,work(kt0amp0),dummy,
 C    &                work(kt12),work(kend1),lwrk1)
 C     end if 
-
+CCN
+C     !TEST: Zero ALL singles amplit., resp. vecs. and lagr. mult.:
+C     CALL DZERO(WORK,NT1AM(1))
+C     IOPT = 1
+C     CALL CC_WRRSP('R0 ',0,1,IOPT,MODELW,WORK,WORK,DUMMY,
+C    &              WORK(1+NT1AM(1)),LWORK-NT1AM(1)-1)
+C     IOPT = 1
+C     CALL CC_WRRSP(LISTR,IDLSTR,1,IOPT,MODELW,WORK,WORK,DUMMY,
+C    &              WORK(1+NT1AM(1)),LWORK-NT1AM(1)-1)
+C     IOPT = 1
+C     CALL CC_WRRSP(LISTL,IDLSTL,1,IOPT,MODELW,WORK,WORK,DUMMY,
+C    &              WORK(1+NT1AM(1)),LWORK-NT1AM(1)-1)
+CCN
       CALL CC_FMATRIX(IFTRAN,NFTRAN,LISTL,LISTR,IOPTRES,FILFMAT,
      &                IDUMMY,DUMMY,0,WORK,LWORK)
-    
+
       KRHOANA1  = IFTRAN(3,1)
       KRHOANA2  = KRHOANA1 + NT1AM(ISYRES)
       KEND1     = KRHOANA2 + NT2AM(ISYRES)
@@ -243,8 +255,14 @@ C     end if
      &             DDOT(NTR12AM(1),WORK(KRHOANA12),1,WORK(KRHOANA12),1)
         END IF  
      
-        WRITE(LUPRI,'(//A)') 'Difference between Results:'
+        WRITE(LUPRI,'(//A)') 'Norm of Difference between Results:'
         WRITE(LUPRI,*) 'Norm:',ERRNRM
+        WRITE(LUPRI,*) 'Singles part: ',
+     &                 DDOT(NT1AMX,WORK(KRHOANA1),1,WORK(KRHOANA1),1)
+        WRITE(LUPRI,*) 'Doubles part: ',
+     &                 DDOT(NT2AMX,WORK(KRHOANA2),1,WORK(KRHOANA2),1)
+        IF (CCR12) WRITE(LUPRI,*) 'R12-Doubles part: ',
+     &             DDOT(NTR12AM(1),WORK(KRHOANA12),1,WORK(KRHOANA12),1)
         CALL CC_PRP(WORK(KRHOANA1),WORK(KRHOANA2),1,1,N)
         IF (CCR12) THEN
            CALL CC_PRPR12(WORK(KRHOANA12),1,1,.TRUE.)
@@ -273,12 +291,12 @@ C
 #include <ccsdinp.h>
 #include <ccfro.h>
 #include <dummy.h>
+#include <r12int.h>
 #include <ccr12int.h>
 
 * local parameters:
-      LOGICAL LOCDBG
+      LOGICAL LOCDBG, LTESTV
       PARAMETER (LOCDBG = .FALSE.)
-
 
       INTEGER LWORK
 #if defined (SYS_CRAY) 
@@ -301,7 +319,8 @@ C
       INTEGER KZETA1, KZETA2, KZETA12, KT0AMP0, ISYM0, ISYMR, ISYML
       INTEGER KRHO1, KRHO2, KRHO12, KETA1, KETA2, KETA12, LUNIT
       INTEGER IDUM, LDUM, LENMOD
-      INTEGER KEND1, LWRK1
+      INTEGER KEND1, LWRK1, KEND2, LWRK2
+      INTEGER KLAMDP, KLAMDH, KVABKL, KVDIFF, NVCDKL, KVCDKL
       
       ! external functions:      
       INTEGER IR1TAMP
@@ -322,255 +341,341 @@ C---------------------------------------------------------------------*
 C Initialisation
 C---------------------------------------------------------------------*
 
+      LTESTV = .FALSE..AND.CCR12.AND..NOT.(CCS.OR.CC2)
+
+C calc. dimension:
+      NVCDKL = 0
+      DO I = 1, NSYM
+        NVCDKL = NVCDKL + NVIR(1)*NRHFB(1)*(NVIR(1)*NRHFB(1)+1)/2
+      END DO
+
 C only C1-symmetry:
-       if (nsym.gt.1) then
-         write (lupri,*) 'CC_FDF must run in C1 symmetry!'
-         write (lupri,*) 'Will ignore finite differences....'
-         goto 1000 
-       end if
-       isym  = 1
-       isym0 = 1
-       isyml = 1
-       isymr = 1
+      if (nsym.gt.1) then
+        write (lupri,*) 'CC_FDF must run in C1 symmetry!'
+        write (lupri,*) 'Will ignore finite differences....'
+        goto 1000 
+      end if
+      isym  = 1
+      isym0 = 1
+      isyml = 1
+      isymr = 1
 
 C Models:
-       modelw = 'UNKNOWN   '
-       if (CCS) modelw  = 'CCS       '
-       if (CC2) modelw  = 'CC2       '
-       if (CCSD) modelw = 'CCSD      '
-       
-       CALL CCSD_MODEL(MODELW,LENMOD,10,MODELW,10,APROXR12)
+      modelw = 'UNKNOWN   '
+      if (CCS) modelw  = 'CCS       '
+      if (CC2) modelw  = 'CC2       '
+      if (CCSD) modelw = 'CCSD      '
+      
+      CALL CCSD_MODEL(MODELW,LENMOD,24,MODELW,10,APROXR12)
 
 C memory allocation:
-       kt1ampsav = 1
-       kt2ampsav = kt1ampsav + nt1amx
-       kend1     = kt2ampsav + nt2amx
-       if (CCR12) then
-         kt12ampsav = kend1
-         kend1      = kt12ampsav + ntr12am(isym)
-       end if
+      kt1ampsav = 1
+      kt2ampsav = kt1ampsav + nt1amx
+      kend1     = kt2ampsav + nt2amx
+      if (CCR12) then
+        kt12ampsav = kend1
+        kend1      = kt12ampsav + ntr12am(isym)
+      end if
 
-       kt1ampa = kend1
-       kt2ampa = kt1ampa + nt1amx
-       kend1   = kt2ampa + nt2amx
-       if (CCR12) then
-         kt12ampa = kend1
-         kend1    = kt12ampa + ntr12am(isym)
-C      dirty hack; otherwise problems with g77-compiler!
-       else
-         kt12ampa = lwork-1
-       end if
+      kt1ampa = kend1
+      kt2ampa = kt1ampa + nt1amx
+      kend1   = kt2ampa + nt2amx
+      if (CCR12) then
+        kt12ampa = kend1
+        kend1    = kt12ampa + ntr12am(isym)
+C     dirty hack; otherwise problems with g77-compiler!
+      else
+        kt12ampa = lwork-1
+      end if
 
-       keta1  = kend1
-       keta2  = keta1 + nt1amx
-       kend1  = keta2 + nt2amx
-       if (CCR12) then
-         keta12 = kend1
-         kend1  = keta12 + ntr12am(1)
-       end if
+      keta1  = kend1
+      keta2  = keta1 + nt1amx
+      kend1  = keta2 + nt2amx
+      if (CCR12) then
+        keta12 = kend1
+        kend1  = keta12 + ntr12am(1)
+      end if
 
-       kzeta1 = kend1
-       kzeta2 = kzeta1 + nt1amx
-       kend1  = kzeta2 + nt2amx
-       if (CCR12) then
-         kzeta12 = kend1
-         kend1   = kzeta12 + ntr12am(isym)
-       end if
+      kzeta1 = kend1
+      kzeta2 = kzeta1 + nt1amx
+      kend1  = kzeta2 + nt2amx
+      if (CCR12) then
+        kzeta12 = kend1
+        kend1   = kzeta12 + ntr12am(isym)
+      end if
 
-       kt0amp0 = kend1 
-       kt1amp0 = kt0amp0 + 2*nallai(isym)
-       komega1 = kt1amp0 + nt1amx
-       komega2 = komega1 + nt1amx
-       kt2amp0 = komega2 + max(nt2amx,2*nt2ort(1),nt2ao(1))
-       kend1   = kt2amp0 + max(nt2sq(1),nt2r12(1))
-       if (CCR12) then
-         kt12amp0 = kend1
-         kend1    = kt12amp0 + ntr12am(isym)
-       end if
+      kt0amp0 = kend1 
+      kt1amp0 = kt0amp0 + 2*nallai(isym)
+      komega1 = kt1amp0 + nt1amx
+      komega2 = komega1 + nt1amx
+      kt2amp0 = komega2 + max(nt2amx,2*nt2ort(1),nt2ao(1))
+      kend1   = kt2amp0 + max(nt2sq(1),nt2r12(1))
+      if (CCR12) then
+        kt12amp0 = kend1
+        kend1    = kt12amp0 + ntr12am(isym)
+      end if
 
-       krho1  = kend1
-       krho2  = krho1 + nt1amx
-       kend1  = krho2 + nt2amx
-       if (CCR12) then
-         krho12 = kend1
-         kend1  = krho12 + ntr12am(isym)
-       end if
-       lwrk1 = lwork - kend1
+      if (ltestv) then
+        kvdiff = kend1
+        kvcdkl = kvdiff + nvcdkl
+        kend1  = kvcdkl + nvcdkl
+      end if
+
+      krho1  = kend1
+      krho2  = krho1 + nt1amx
+      kend1  = krho2 + nt2amx
+      if (CCR12) then
+        krho12 = kend1
+        kend1  = krho12 + ntr12am(isym)
+      end if
+      lwrk1 = lwork - kend1
 
 C test if work space is enough:
-       if (lwrk1 .lt. 0) then
-         write(lupri,*) 'Not enough work memory in cc_FDF:'
-         write(lupri,*) 'Available: LWORK = ',lwork
-         write(lupri,*) 'Needed: ', kend1
-         call quit('Too little work space in CC_FDF!')
-       end if
+      if (lwrk1 .lt. 0) then
+        write(lupri,*) 'Not enough work memory in cc_FDF:'
+        write(lupri,*) 'Available: LWORK = ',lwork
+        write(lupri,*) 'Needed: ', kend1
+        call quit('Too little work space in CC_FDF!')
+      end if
 
 C zero out result arrays:
-       call dzero(rhodif1,nt1amx)
-       call dzero(rhodif2,nt2amx)
-       if (CCR12) call dzero(rhodif12,ntr12am(isym))
+      call dzero(rhodif1,nt1amx)
+      call dzero(rhodif2,nt2amx)
+      if (CCR12) call dzero(rhodif12,ntr12am(isym))
 
+      if (ltestv) then
+        call dzero(work(kvcdkl),nvcdkl)
+        call dzero(work(kvdiff),nvcdkl)
+      end if
 
 C---------------------------------------------------------------------*
 C Read in Lagrange multipliers
 C---------------------------------------------------------------------*
-       iopt=3
+      iopt=3
+      call cc_rdrsp(listl,idlstl,isyml,iopt,model,
+     &              work(kzeta1),work(kzeta2))
+      if (locdbg) then
+        write(lupri,*) 'norm of zeta1 at 0:',
+     &    ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
+      end if
+      if (CCR12) then
+       iopt=32
        call cc_rdrsp(listl,idlstl,isyml,iopt,model,
-     &               work(kzeta1),work(kzeta2))
-       if (locdbg) then
-         write(lupri,*) 'norm of zeta1 at 0:',
-     &     ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
-       end if
-       if (CCR12) then
-        iopt=32
-        call cc_rdrsp(listl,idlstl,isyml,iopt,model,
-     &                dummy,work(kzeta12))
-       end if
-       
+     &               dummy,work(kzeta12))
+      end if
+      
 C---------------------------------------------------------------------*
 C Read in cluster amplitudes
 C---------------------------------------------------------------------*
-       iopt=3
-       call cc_rdrsp('R0 ',0,isym0,iopt,model,work(kt1ampsav),
-     &                work(kt2ampsav))
-       if (CCR12) then
-         iopt=32
-         call cc_rdrsp('R0 ',0,isym0,iopt,model,
-     &                 dummy,work(kt12ampsav))
-       end if
+      iopt=3
+      call cc_rdrsp('R0 ',0,isym0,iopt,model,work(kt1ampsav),
+     &               work(kt2ampsav))
+      if (CCR12) then
+        iopt=32
+        call cc_rdrsp('R0 ',0,isym0,iopt,model,
+     &                dummy,work(kt12ampsav))
+      end if
 
 C---------------------------------------------------------------------*
 C Read in trial vector
 C---------------------------------------------------------------------*
-       iopt=3
-       call cc_rdrsp(listr,idlstr,isymr,iopt,model,work(kt1ampa),
-     &               work(kt2ampa))
-C      trial vector diagonal elements must be scaled by 2 due to 
-C      different format than ground state amplitudes:
-       call cclr_diascl(work(kt2ampa),two,1)
-       if (CCR12) then
-         iopt=32
-         call cc_rdrsp(listr,idlstr,isymr,iopt,model,dummy,
-     &                  work(kt12ampa))
-         if (locdbg) then
-           write(lupri,*) 'T12AMPA in CC_FDF:'
-           call outpak(work(kt12ampa),nmatki(1),1,lupri)
-         end if
-       end if
-       if (locdbg) then 
-         write(lupri,*) 'norm of zeta1 at 1:',
-     &     ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
-       end if
+      iopt=3
+      call cc_rdrsp(listr,idlstr,isymr,iopt,model,work(kt1ampa),
+     &              work(kt2ampa))
+C     trial vector diagonal elements must be scaled by 2 due to 
+C     different format than ground state amplitudes:
+C     (CCRHSN expects ground state format)
+      call cclr_diascl(work(kt2ampa),two,1)
+      if (CCR12) then
+        iopt=32
+        call cc_rdrsp(listr,idlstr,isymr,iopt,model,dummy,
+     &                 work(kt12ampa))
+C       trial vector diagonal elements must be scaled by KETSCL due to
+C       different format than ground state amplitudes:
+C       (CCRHSN expects ground state format)
+        call cclr_diasclr12(work(kt12ampa),ketscl,1)
+        if (locdbg) then
+          write(lupri,*) 'T12AMPA in CC_FDF:'
+          call outpak(work(kt12ampa),nmatki(1),1,lupri)
+        end if
+      end if
+      if (locdbg) then 
+        write(lupri,*) 'norm of zeta1 at 1:',
+     &    ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
+      end if
 
 C---------------------------------------------------------------------*
 C Loop for +/- displacement DELTA
 C---------------------------------------------------------------------*
-       do i = 1, 2
+      do n = 1, 2
 
 C---------------------------------------------------------------------*
 C   add/subtract finite displacement Delta*Trialvector to t 
 C   and recalculate intermediates
 C---------------------------------------------------------------------*
-         call dcopy(nt1amx,work(kt1ampsav),1,work(kt1amp0),1)
-         call dcopy(nt2amx,work(kt2ampsav),1,work(kt2amp0),1)
-         if (CCR12) then
-           call dcopy(ntr12am(isym),work(kt12ampsav),1,work(kt12amp0),1)
-         end if       
-         
-         if (i.eq.1) fac=one
-         if (i.eq.2) fac=-one
+        call dcopy(nt1amx,work(kt1ampsav),1,work(kt1amp0),1)
+        call dcopy(nt2amx,work(kt2ampsav),1,work(kt2amp0),1)
+        if (CCR12) then
+          call dcopy(ntr12am(isym),work(kt12ampsav),1,work(kt12amp0),1)
+        end if       
+        
+        if (n.eq.1) fac=one
+        if (n.eq.2) fac=-one
 
-         call daxpy(nt1amx,fac*delta,work(kt1ampa),1,work(kt1amp0),1)
-         call daxpy(nt2amx,fac*delta,work(kt2ampa),1,work(kt2amp0),1)
-         if (CCR12) then
-           call daxpy(ntr12am(isym),fac*delta,work(kt12ampa),1,
-     &                work(kt12amp0),1)
-         end if
+        call daxpy(nt1amx,fac*delta,work(kt1ampa),1,work(kt1amp0),1)
+        call daxpy(nt2amx,fac*delta,work(kt2ampa),1,work(kt2amp0),1)
+        if (CCR12) then
+          call daxpy(ntr12am(isym),fac*delta,work(kt12ampa),1,
+     &               work(kt12amp0),1)
+        end if
 
-         iopt=3
-         call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
-     &               work(kt1amp0),work(kt2amp0),work(kend1),lwrk1)
-         if (CCR12) then
-           iopt = 32
-           call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
-     &                   dummy,work(kt12amp0),work(kend1),lwrk1)
-         end if
+        iopt=3
+        call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
+     &              work(kt1amp0),work(kt2amp0),work(kend1),lwrk1)
+        if (CCR12) then
+          iopt = 32
+          call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
+     &                  dummy,work(kt12amp0),work(kend1),lwrk1)
+        end if
 
-         rspim=.TRUE.
-         call ccrhsn(work(komega1),work(komega2),
-     &               work(kt1amp0),
-     &               work(kt2amp0),work(kend1),lwrk1,aproxr12)
+        if (CCR12.AND..NOT.(CCS.OR.CC2)) then
+          klamdp = kend1
+          klamdh = klamdp + nlamdt
+          kvabkl = klamdh + nlamdt
+          kend2  = kvabkl + nvabkl(1)
+          lwrk2  = lwork - kend2
+          if (lwrk2.lt.0) then
+            call quit('Insufficient work space for Vabkl in CC_FDF')
+          end if
 
+          call lammat(work(klamdp),work(klamdh),work(kt1amp0),
+     &                work(kend2),lwrk2)
+
+          lunit = 0
+          call gpopen(lunit,fvabkl,'OLD',' ','UNFORMATTED',idummy,
+     &                .FALSE.)
+          read(lunit) (work(kvabkl+i-1), i=1, nvabkl(1))
+          call gpclose(lunit,'KEEP')
+       
+          iopt = 1 
+          call cc_r12mkvirt(work(kvabkl),work(klamdp),1,work(klamdp),1,
+     &                      'R12VCTDTKL',iopt,work(kend2),lwrk2)
+        end if
+
+        rspim=.TRUE.
+        call ccrhsn(work(komega1),work(komega2),
+     &              work(kt1amp0),work(kt2amp0),
+     &              work(kend1),lwrk1,aproxr12)
 
 C---------------------------------------------------------------------*
 C   Do left hand transformation with Lagrange multipliers 
 C---------------------------------------------------------------------*
-         if (locdbg) then 
-           write(lupri,*) 'norm^2 of zeta1 at 2:',
-     &       ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
-         end if
-         call dcopy(nt1amx,work(kzeta1),1,work(krho1),1)
-         call dcopy(nt2amx,work(kzeta2),1,work(krho2),1)
-         if (CCR12) then
-           call dcopy(ntr12am(isym),work(kzeta12),1,work(krho12),1)
-         end if
+        if (locdbg) then 
+          write(lupri,*) 'norm^2 of zeta1 at 2:',
+     &      ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
+        end if
+        call dcopy(nt1amx,work(kzeta1),1,work(krho1),1)
+        call dcopy(nt2amx,work(kzeta2),1,work(krho2),1)
+        if (CCR12) then
+          call dcopy(ntr12am(isym),work(kzeta12),1,work(krho12),1)
+        end if
 
-         ecurr=0.0D0 
-         iside=-1
-       
-         call cc_atrr(ecurr,isym,iside,work(krho1),lwrk1,.FALSE.,dummy,
-     &                aproxr12)
+        ecurr=0.0D0 
+        iside=-1
+      
+        call cc_atrr(ecurr,isym,iside,work(krho1),lwrk1,.FALSE.,dummy,
+     &               aproxr12)
 
-         call cc_eta(work(keta1),work(kend1),lwrk1)
+        call cc_eta(work(keta1),work(kend1),lwrk1)
 
-C        we do not need to add doubles- and r12-contributions of eta
-C        to rho, since these quantities are independent on amplitudes:
-         call daxpy(nt1amx,one,work(keta1),1,work(krho1),1)
-         
-         if (locdbg) then
-           write(lupri,*) 'norm of zeta1 at 3:',
-     &       ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
-         end if
+C       we do not need to add doubles- and r12-contributions of eta
+C       to rho, since these quantities are independent on amplitudes:
+        call daxpy(nt1amx,one,work(keta1),1,work(krho1),1)
+        
+        if (locdbg) then
+          write(lupri,*) 'norm of zeta1 at 3:',
+     &      ddot(nt1amx,work(kzeta1),1,work(kzeta1),1)
+        end if
 C---------------------------------------------------------------------*
 C   divide by 2*delta
 C---------------------------------------------------------------------*
-         call daxpy(nt1amx,fac*half*delinv,work(krho1),1,rhodif1,1)
-         call daxpy(nt2amx,fac*half*delinv,work(krho2),1,rhodif2,1)
-         if (CCR12) then
-           call daxpy(ntr12am(isym),fac*half*delinv,work(krho12),1,
-     &                 rhodif12,1)
-         end if
+        call daxpy(nt1amx,fac*half*delinv,work(krho1),1,rhodif1,1)
+        call daxpy(nt2amx,fac*half*delinv,work(krho2),1,rhodif2,1)
+        if (CCR12) then
+          call daxpy(ntr12am(isym),fac*half*delinv,work(krho12),1,
+     &                rhodif12,1)
+        end if
+
+        if (ltestv) then
+          lunit = 0
+          call gpopen(lunit,'R12VCTDTKL','OLD',' ','UNFORMATTED',idummy,
+     &                .FALSE.)
+          read(lunit) (work(kvcdkl+i-1), i=1, nvcdkl)
+          call gpclose(lunit,'KEEP')
+
+          call daxpy(nvcdkl,fac*half*delinv,work(kvcdkl),1,
+     &               work(kvdiff),1)
+
+          if (n.eq.2) then
+            call around('Finite Diff. Result of Vabkl in CC_FDF')
+            call outpkb(work(kvdiff),nvir(1)*nrhfb(1),1,1,lupri)
+          end if 
+        end if
 
 C---------------------------------------------------------------------*
 C End of Loop over +/- DELTA
 C---------------------------------------------------------------------*
-       end do
+      end do
 
 C---------------------------------------------------------------------*
 C restore original amplitudes
 C---------------------------------------------------------------------*
-       call dcopy(nt1amx,work(kt1ampsav),1,work(kt1amp0),1)
-       call dcopy(nt2amx,work(kt2ampsav),1,work(kt2amp0),1)
-       if (CCR12) then
-         call dcopy(ntr12am(isym),work(kt12ampsav),1,work(kt12amp0),1)
-       end if
+      call dcopy(nt1amx,work(kt1ampsav),1,work(kt1amp0),1)
+      call dcopy(nt2amx,work(kt2ampsav),1,work(kt2amp0),1)
+      if (CCR12) then
+        call dcopy(ntr12am(isym),work(kt12ampsav),1,work(kt12amp0),1)
+      end if
 
-       iopt=3
-       call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
-     &               work(kt1amp0),work(kt2amp0),work(kend1),lwrk1)
-       if (CCR12) then
-         iopt = 32
-         call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
-     &                 dummy,work(kt12amp0),work(kend1),lwrk1)
-       end if
+      iopt=3
+      call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
+     &              work(kt1amp0),work(kt2amp0),work(kend1),lwrk1)
+      if (CCR12) then
+        iopt = 32
+        call cc_wrrsp('R0 ',0,isym0,iopt,modelw,work(kt0amp0),
+     &                dummy,work(kt12amp0),work(kend1),lwrk1)
+      end if
 
 C---------------------------------------------------------------------*
 C restore original intermediates
 C---------------------------------------------------------------------*
-       rspim=.TRUE.
-       call ccrhsn(work(komega1),work(komega2),
-     &             work(kt1amp0),
-     &             work(kt2amp0),work(kend1),lwrk1,aproxr12)
+      if (CCR12.AND..NOT.(CCS.OR.CC2)) then
+        klamdp = kend1
+        klamdh = klamdp + nlamdt
+        kvabkl = klamdh + nlamdt
+        kend2  = kvabkl + nvabkl(1)
+        lwrk2  = lwork - kend2
+        if (lwrk2.lt.0) then
+          call quit('Insufficient work space for Vabkl in CC_FDF')
+        end if
+
+        call lammat(work(klamdp),work(klamdh),work(kt1amp0),
+     &              work(kend2),lwrk2)
+
+        lunit = 0
+        call gpopen(lunit,fvabkl,'OLD',' ','UNFORMATTED',idummy,
+     &              .FALSE.)
+        read(lunit) (work(kvabkl+i-1), i=1, nvabkl(1))
+        call gpclose(lunit,'KEEP')
+
+        iopt = 1
+        call cc_r12mkvirt(work(kvabkl),work(klamdp),1,work(klamdp),1,
+     &                    'R12VCTDTKL',iopt,work(kend2),lwrk2)
+      end if
+
+      rspim=.TRUE.
+      call ccrhsn(work(komega1),work(komega2),
+     &            work(kt1amp0),work(kt2amp0),
+     &            work(kend1),lwrk1,aproxr12)
 
 1000  continue
       CALL QEXIT('CC_FDF')

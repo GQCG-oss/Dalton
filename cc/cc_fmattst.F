@@ -1396,6 +1396,8 @@ C
 C
                   FACTC = XMONE 
                   ICON  = 3
+                  IOPTR12 = 0
+                  IOPTE = 0
 C
                   DTIME   = SECOND()
                   IF (.NOT. T2TCOR) THEN
@@ -1404,18 +1406,18 @@ C
      *                            WORK(KLAMDP),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KLAMPC),ISYMR,
      *                            WORK(KLAMHC),ISYMR,
-     *                            DUMMY,WORK(KEND4),
-     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,LUC,
-     *                            CTFIL,1)
+     *                            DUMMY,DUMMY,WORK(KEND4),
+     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,IOPTR12,
+     *                            IOPTE,LUC,CTFIL,IDUMMY,DUMMY,1)
                   ELSE
                      CALL CCRHS_C(WORK(KXINT),WORK(KDSRHF),
      *                            DUMMY, WORK(K2C2C2),ISYMR,
      *                            WORK(KLAMDP),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KLAMPC),ISYMR,
      *                            WORK(KLAMHC),ISYMR,
-     *                            DUMMY,WORK(KEND4),
-     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,LUC,
-     *                            CTFIL,1)
+     *                            DUMMY,DUMMY,WORK(KEND4),
+     *                            LWRK4,IDEL,ISYMD,FACTC,ICON,IOPTR12,
+     *                            IOPTE,LUC,CTFIL,DUMMY,DUMMY,1)
                   ENDIF
                   TIMC    = TIMC + SECOND() - DTIME
 
@@ -1443,14 +1445,17 @@ C
 C
                   ICON   = 3
                   FACTD  = 1.0D00
+                  IOPTR12 = 0
+                  IOPTE  = 0
 C
                   DTIME   = SECOND()
                   CALL CCRHS_D(WORK(KXINT),WORK(KDSRHF),DUMMY,
      *                         WORK(KC2AM),ISYMR,
      *                         WORK(KLAMDP),DUMMY,WORK(KLAMDH),
      *                         WORK(KLAMPC),ISYMR,WORK(KLAMHC),ISYMR,
-     *                         DUMMY,WORK(KEND4),LWRK4,IDEL,
-     *                         ISYMD,FACTD,ICON,LUD,DTFIL,1)
+     *                         DUMMY,DUMMY,WORK(KEND4),LWRK4,IDEL,
+     *                         ISYMD,FACTD,ICON,IOPTR12,IOPTE,
+     *                         LUD,DTFIL,IDUMMY,DUMMY,1)
                   TIMD    = TIMD     + SECOND() - DTIME
 C
                ENDIF

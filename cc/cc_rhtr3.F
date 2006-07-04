@@ -1033,7 +1033,8 @@ c*DECK CC_RHTR3
                      IF (IV .EQ. 1) THEN
                         CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS0),
      &                                 WORK(KFOCK0),WORK(KEND2),
-     &                                 LWRK2,IDEL,ISYMD,ISYDEN)
+     &                                 LWRK2,IDEL,ISYMD,.FALSE.,DUMMY,
+     &                                 ISYDEN)
                      ENDIF
                   ENDIF
 !

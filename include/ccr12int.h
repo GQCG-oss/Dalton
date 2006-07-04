@@ -1,10 +1,11 @@
       character*8 fnback, frhtf, frhtf2, fghtf, fccgmnab, fvabkl,
-     &            fvcdkl, fvijkl, fnsak, fr12f12htf
-      parameter (fnback = 'CCR12BAK', frhtf = 'R12HTF  ', 
+     &            fvcdkl, fvijkl, fnsak, fr12f12htf, fnback2
+      parameter (fnback = 'R12BATF1', frhtf = 'R12HTF  ', 
      &           frhtf2 = 'R12HTF2 ', 
      &           fghtf  = 'R12V12A2', fccgmnab = 'R12GMNAB', 
      &           fvabkl = 'R12VABKL', fvcdkl = 'R12VCDKL',
-     &           fnsak  = 'CCR12SAK', fr12f12htf = 'R12F12HT')
+     &           fnsak  = 'CCR12SAK', fr12f12htf = 'R12F12HT',
+     &           fnback2 = 'R12BATF2')
       character*10 fv12back, ft12back,fvajkl,fq12back,fu12back,
      &             fv12back2, ft12back2
       parameter (fvijkl = 'R12VIJKL')
@@ -17,9 +18,8 @@
       character*6 fkr12, ftr12, fr12r12, fr12v12  
       parameter (fkr12 =   'R12K12', ftr12 = 'R12T12', 
      &           fr12r12 = 'R12R12', fr12v12 = 'R12V12')
-      character*9 fgdpakl, fnback2
+      character*9 fgdpakl
       parameter (fgdpakl = 'R12GDPAKL')
-      parameter (fnback2 = 'CCR12BAK2')
       character*7 fccr12v,fccr12x,fccr12e,fccr12b,fccr12d,fccr12c,
      &            fccr12k
       parameter (fccr12v = 'CCR12_V', fccr12x = 'CCR12_X', 

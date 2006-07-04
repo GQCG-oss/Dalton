@@ -669,11 +669,12 @@ C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
 C
-#include "maxorb.h"
-#include "maxash.h"
-#include "infinp.h"
-#include "inforb.h"
-#include "infind.h"
+#include <maxorb.h>
+#include <maxash.h>
+#include <infinp.h>
+#include <inforb.h>
+#include <infind.h>
+#include <r12int.h>
 C
 C *** FORMAT statements
 C
@@ -687,11 +688,15 @@ C
       ISTBAS = 0
       DO 400 ISYM = 1,NSYM
          IF (PROCC) THEN
-            NENDI = NOCC(ISYM)
+C           NENDI = NOCC(ISYM)
+            NENDI = NOCC(ISYM) + MIN(5,NORB(ISYM)-NOCC(ISYM)) - 
+     *                NRXR12(ISYM)
          ELSE
             NENDI = NORB(ISYM)
          END IF
          NBASI = NBAS(ISYM)
+         MBASI = NBAS(ISYM)
+         IF (LMULBS) MBASI = MBAS1(ISYM)
       IF (NENDI.EQ.0) GO TO 300
          WRITE(IOUT,2400) ISYM
 C
@@ -705,7 +710,7 @@ C
             IEMO=NBASI*(IEND-1)+ICMOI
             WRITE(IOUT,2600) (I,I=IST,IEND)
             IF (SUPSYM) WRITE(IOUT,2620) (ISSMO(ISTORB+I),I=IST,IEND)
-            DO 200 I=1,NBASI
+            DO 200 I=1,MBASI
                JSMO=ISTMO+I
                JEMO=IEMO+I
                JJ = 0

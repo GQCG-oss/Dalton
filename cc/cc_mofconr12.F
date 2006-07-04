@@ -40,7 +40,7 @@ c-----------------------------------------------------------------------
 #include <r12int.h>
 #include <ccr12int.h>
 #include <second.h>
-      logical locdbg,lvijkl,lvabkl,lvajkl,temp_direct
+      logical locdbg,lvijkl,lvabkl,lvajkl,temp_direct,lauxd,mkfock
       parameter(locdbg =.false.)
 #if defined (SYS_CRAY)
       real zero,one,two
@@ -59,12 +59,14 @@ c-----------------------------------------------------------------------
      &        kodpp1,kodpp2,krdpp1,krdpp2,krecnr,kend2,lwrk2,kscr2
      &        isymd,isydis,kxint,isymd,kgaijd,isymh,
      &        ibasx(8),irgkl(8,8),nrgkl(8),ir1bas(8,8),
-     &        nggij(8),iggij(8,8),nmaklm(8),imaklm(8,8)
-      integer ibastyp,ibastypst,ibastypend,idum,ioptbas
+     &        nggij(8),iggij(8,8),nmaklm(8),imaklm(8,8),
+     &        nbas2(8),ngdp(8),igdp(8,8),isym1,isym2
+      integer ibastyp,ibastypst,ibastypend,idum,ioptbas,ic,isyden
+      integer kdens,kfgdp,lunit
 
 #if defined (SYS_CRAY)
       real xlamdh(*),work(*),vijkl(*),vajkl(*)
-      real dtime,timrdao,timfr12,timintr12,xlamdhs(*)
+      real dtime,timrdao,timfr12,timintr12,ddot,xlamdhs(*),xlamdps(*)
       real vabkl(*),xlamdhcs(*),facterm23
 #else
       double precision xlamdh(*),work(*),vijkl(*),vajkl(*)
@@ -77,15 +79,43 @@ c-----------------------------------------------------------------------
       index(i,j) = max(i,j)*(max(i,j) - 3)/2 + i + j
 
       call qenter('mofconr12')
+c
+      do isym = 1, nsym
+        nbas2(isym)  = mbas1(isym) + mbas2(isym)
+      end do  
+      do isym = 1, nsym
+        ngdp(isym) = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          igdp(isym1,isym2) = ngdp(isym)
+          ngdp(isym) = ngdp(isym) + mbas1(isym1)*nbas2(isym2)
+        end do
+      end do
 
-      kend1 = 1     
+c     initialization:
+      mkfock = lvabkl .and. (.not.cc2) .and. (ianr12.eq.3)
+
+      kend1 = 1
+      if (mkfock) then
+      kfgdp = kend1
+      kdens = kfgdp + ngdp(1)
+      kend1 = kdens + n2bast
+      end if     
       lwrk1 = lwork - kend1
       if (lwrk1 .lt.0) then
          call quit('Insufficient work space in CC_MOFCONR12')
       end if
-
+c
+      if (mkfock) then
+        ic = 0
+        call cc_aodens(xlamdh,xlamdh,work(kdens),isymh,ic,
+     &                 work(kend1),lwrk1)
+        call dzero(work(kfgdp),ngdp(1))
+      end if
+c
 c     loop over orbital and auxiliary basis (e.g. for CCSD(R12) model)
 c     or loop over auxiliary basis (e.g. for CC2-R12 model)
+c     write(lupri,*) 'ioptbas = ',ioptbas
       if (ioptbas.eq.1) then
         ibastypst = 2
         ibastypend = ibastypst
@@ -300,18 +330,48 @@ c                ---------------------------------------
      &                               lwrk2)
 
                  else if (lvabkl) then
-c                  calculate ccsd(r12) part
+c                  calculate V^(alpha,beta)_kl
                    call cc_r12mkvabkl(vabkl,work(kxint),idel,isymd,
      &                                isydis,ibastyp,ibasx,
      &                                work(kend2),lwrk2)
+c
                  end if
                  timfr12 = timfr12 + ( second() - dtime )
+c                calculate F_(gamma delta'):
+                 if (mkfock) then
+                   isyden = 1
+                   lauxd = .true. 
+                   call cc_aofock(work(kxint),work(kdens),work(kfgdp),
+     &                            work(kend2),lwrk2,idel,isymd,lauxd,
+     &                            ibasx,isyden)
+                 end if
+c    
               end do ! idel2
            end do ! illl
         end do ! isymd1
         if (ibastyp.eq.2) DIRECT = TEMP_DIRECT
       end do ! ibastyp
-
+c
+c     write out  F_(gamma delta'):
+      if (mkfock) then
+        lunit = 0
+        call gpopen(lunit,'R12FOCK','UNKNOWN',' ','UNFORMATTED',idummy,
+     &              .false.)
+        call writt(lunit,ngdp(1),work(kfgdp))
+        call gpclose(lunit,'KEEP')
+c
+        if (locdbg) then
+        write(lupri,*) "F_(gamma delta') in cc_mofconr12:"
+        write(lupri,*) "Norm^2:", 
+     &                 ddot(ngdp(1),work(kfgdp),1,work(kfgdp),1) 
+        do isym = 1, nsym
+          write(lupri,*) 'Symmetry block:',isym,isym
+          call output(work(kfgdp+igdp(isym,isym)),1,mbas1(isym),
+     &                1,nbas2(isym),mbas1(isym),nbas2(isym),1,lupri)
+        end do
+        end if
+      end if
+c
       mbsmax = 4
       loopdp = .false.
 
@@ -358,7 +418,7 @@ c---------------------------------------------------------------------
      &        koff2,ntalbe,ntotg,isymhcs,isymd,isymi,isymbe,isymal,
      &        isyma,kscr5,kend2,lwrk2,koff3,ntotal,ntotbe,isymij,
      &        idxai,idxij,idxaij,krtf,isymm,ntota,ntotm,koffc,
-     &        koffg,koffgtf,isymhs,isymh,
+     &        koffg,koffgtf,isymhs,isymh,idelta,ianr12sv,
      &        nggij(8),iggij(8,8),imaklm(8,8),nmaklm(8)
 #if defined (SYS_CRAY)
       real zero,one,two,xlamdh(*),xlamdhs(*),xlamdps(*),
@@ -410,14 +470,14 @@ c
      &     xlamdh(koff2),ntotg,zero,work(kscr1),ntalbe)
 
          if (locdbg) then
-c          write(lupri,*) 'in cc_r12mofcc2: Ints. before first '//
-c    &                    'index transformation: '
-c          call output(xint(koff1),1,nnbst(isalbe),1,nbas(isymg),
-c    &                 nnbst(isalbe),nbas(isymg),1,lupri)
-c          write(lupri,*) 'in cc_r12mofcc2: XLAMDH for first '//
-c    &                    'index transformation: '
-c          call output(xlamdh(koff2),1,nbas(isymg),1,nrhf(isymj),
-c    &                 nbas(isymg),nrhf(isymj),1,lupri)
+           write(lupri,*) 'in cc_r12mofcc2: Ints. before first '//
+     &                    'index transformation: '
+           call output(xint(koff1),1,nnbst(isalbe),1,nbas(isymg),
+     &                 nnbst(isalbe),nbas(isymg),1,lupri)
+           write(lupri,*) 'in cc_r12mofcc2: XLAMDH for first '//
+     &                    'index transformation: '
+           call output(xlamdh(koff2),1,nbas(isymg),1,nrhf(isymj),
+     &                 nbas(isymg),nrhf(isymj),1,lupri)
            write(lupri,*) 'in cc_r12mofcc2: Ints. after first '//
      &                    'index transformation: '
            call output(work(kscr1),1,nnbst(isalbe),1,nrhf(isymj),
@@ -428,17 +488,24 @@ c------------------------------------------------
 c        compute contributions to V(alpha j,kl)
 c------------------------------------------------
          if (lvajkl) then
+          idelta = idel - ibasx(isymd)
           if (mbas1(isymg).gt.0 .or. nrhf(isymj).gt.0) then
+            ianr12sv = ianr12
             if (ianr12.eq.1) then
               filback = fnback
             else if (ianr12.eq.2 .or. ianr12.eq.3) then
-              filback = frhtf
+              filback = fnback2
+              !dirty hack for Ansatz 3 with CABS:
+              !do not compute the add. contributions of Ansatz 3
+              !for V_(alpha jt)^(kl), since they are accounted later...  
+              if (r12cbs .and. ianr12.eq.3) ianr12 = 2
             end if
             call r12mkvamkl(filback,work(kscr1),work(kscr1),vajkl,
      &           xlamdh,isymh,xlamdhs,xlamdps,xint(koff1),xint(koff1),
-     &           idel,isymd,isymj,
+     &           idelta,isymd,isymj,
      &           isalbe,isymg,work(kscr2),ibasx,iglmrhs,
-     &           nglmds,.true.,work(kend1),lwrk1)
+     &           nglmds,work(kend1),lwrk1)
+            ianr12 = ianr12sv
           end if
          end if
 c------------------------------------------------
@@ -565,7 +632,7 @@ c       case respose calculation calculate second part for V
         call cc_r12mkvkl(work(krtf),vijkl,facterm23,xlamdhcs,iglmrhs,
      &                  isymd,isymhcs,idel,ibasx,imaijm,nmaijm,
      &                  imaklm,nmaklm,
-     &                  lauxd,work(kend2),lwrk2,frhtf)
+     &                  lauxd,work(kend2),lwrk2,fnback2)
 c
         if (locdbg) then
           write(lupri,*)'norm^2 Vijkl = ',
@@ -758,9 +825,11 @@ c
          
          if (idelta.le.mbas1(isymd)) then
             factor = one
+            if (R12CBS .and. ianr12.eq.1) factor = - one
+            if (R12CBS .and. ianr12.ne.1) factor = - facterm23
          else 
 c           factor = - two
-c           if (.not.lmkvajkl) factor = -one
+c           if (.not.lmkvajkl) factor = - one
             factor = - facterm23
          end if
 c

@@ -667,7 +667,6 @@ C     END IF
          IF (CCR12) THEN
            MODELW = 'CCSD-R12  '
            IOPTWR12 = 32
-           CALL QUIT('No CCSD-R12 yet in CC_XIETA!')
          END IF
          IOPTW  = 3
       ELSE IF (CC3) THEN
@@ -675,7 +674,7 @@ C     END IF
          IF (CCR12) THEN
            MODELW = 'CC3-R12   '
            IOPTWR12 = 32
-           CALL QUIT('No CC3-R12 yet in CC_XIETA!')
+CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
          END IF
          IOPTW  = 3
          IOPTWE = 24
@@ -2547,13 +2546,6 @@ C
             CALL QUIT('CC-R12 response can only handle unrelaxed '//
      &                'orbitals')
           END IF
-          IF (.NOT. CC2) THEN
-            write(lupri,*)'Warning> CCR12 response only implemented '//
-     &                     'for CC2-R12 yet'
-            CALL DZERO(WORK(KXIR12),NTR12AM(ISYRES))
-            WRITE(LUPRI,*) 'Warning> R12 part of Xi vector is set to 0'
-            goto 8888
-          END IF
 
 C------------------------
 C         allocate memory
@@ -2636,16 +2628,15 @@ C         calculate R12 part of Xi:
 C----------------------------------
           call cc_r12xi(work(kxir12sq),isyres,'N',work(ktr12sq),1,
      &                  work(kxmatsq),work(kvxintsq),isyres,
-     &                  work(kprpao),WORK(KCMO0),WORK(KLAMH0),'N',
+     &                  work(kprpao),WORK(KLAMP0),WORK(KLAMH0),'N',
      &                  work(kend3),lwrk3)
-
           ! pack Xi to triangular format
           iopt = 1
           call ccr12pck2(work(kxir12),isyres,.false.,work(kxir12sq),
      &                   'N',iopt)
           call cclr_diasclr12(work(kxir12),brascl,isyres)
 
- 8888   END IF
+        END IF
         
 
 
@@ -2941,12 +2932,6 @@ C--------------------------------------
             KEND2   = KETAR12 + NTR12AM(ISYRES)
             LWRK2   = LWORK - KEND2
 
-            IF (.NOT. CC2) THEN
-              CALL DZERO(WORK(KETAR12),NTR12AM(ISYRES))
-              WRITE(LUPRI,*) 'Warning> R12 part of Eta{O} is set to 0!'
-              GOTO 6666
-            END IF
-
             KETAR12SQ = KEND2
             KTR12     = KETAR12SQ + NTR12SQ(ISYRES)
             KTR12SQ   = KTR12 + NTR12AM(1)
@@ -3033,10 +3018,9 @@ C--------------------------------------------------
 C-------------------------------------
 C         calculate R12 part of Eta{O}:
 C-------------------------------------
-            call dzero(work(ketar12sq),ntr12sq(isyres))
             call cc_r12xi(work(ketar12sq),isyres,'N',work(kctrr12sq),
      &                    isyctr,work(kxmatsq),work(kvxintsq),isymv,
-     &                    work(kprpao),WORK(KCMO0),WORK(KLAMH0),'T',
+     &                    work(kprpao),WORK(KLAMP0),WORK(KLAMH0),'T',
      &                    work(kend3),lwrk3)
 
             ! pack Eta{O} to triangular format
@@ -3054,7 +3038,7 @@ C-------------------------------------
               end if
             end if 
 
- 6666     END IF
+          END IF
   
           IF (CCSDT) THEN
 #if !defined CC_AARHUS
@@ -4114,7 +4098,7 @@ C        ---------------------------------------------------
 
              IOPT = 0
              CALL CC_IAJB(X0INT(KOFF0),ISY0ALBE,X1INT(KOFF1),ISY1ALBE,
-     &                    IDEL,JGAM,
+     &                    IDEL,JGAM,.FALSE.,IDUMMY,
      &                    WORK(KX0IAJB),DUMMY,DUMMY,
      &                    WORK(KX1IAJB),DUMMY,DUMMY,
      &                    XLAMDP0,XLAMDH0,ISYM0,XLAMDPQ,XLAMDHQ,ISYHOP,
@@ -4241,6 +4225,7 @@ c /* deck ccxiintao */
       INTEGER KX0IAJB, KX0IABJ, KX0IJBA, KX1AIBJ
       INTEGER LEN0, LEN1, IADR0, IADRB, ISYGAM, ISY0ALBE, ISY1ALBE
       INTEGER JGAM, KOFF0, KOFF1, ISYSRH1, KEND5, LWRK5, IOPT, ISYM
+      INTEGER IDUMMY
 
       CALL QENTER('CCXIINTAO')
 
@@ -4482,7 +4467,7 @@ C           ------------------------------------------------------
             IF (CC2) IOPT = 0
 
             CALL CC_IAJB(X0INT(KOFF0),ISY0ALBE,X1INT(KOFF1),ISY1ALBE,
-     &                   IDEL,JGAM,
+     &                   IDEL,JGAM,.FALSE.,IDUMMY,
      &                   WORK(KX0IAJB),WORK(KX0IABJ),WORK(KX0IJBA),
      &                   WORK(KX1IAJB),WORK(KX1IABJ),WORK(KX1IJBA),
      &                   XLAMDP0,XLAMDH0,ISYM0,XLAMDQP,XLAMDQH,ISYHOP,
@@ -4505,8 +4490,8 @@ C           ---------------------------------------------------------
               END IF
 
               IOPT = 0
-              CALL CC_IAJB(X0INT(KOFF0),ISY0ALBE,
-     &                     X1INT(KOFF1),ISY1ALBE,IDEL,JGAM,
+              CALL CC_IAJB(X0INT(KOFF0),ISY0ALBE,X1INT(KOFF1),ISY1ALBE,
+     &                     IDEL,JGAM,.FALSE.,IDUMMY,
      &                     WORK(KX0AIBJ),DUMMY,DUMMY,
      &                     WORK(KX1AIBJ),DUMMY,DUMMY,
      &                     XLAMDH0,XLAMDP0,ISYM0,XLAMDQH,XLAMDQP,ISYHOP,
@@ -4674,7 +4659,7 @@ C     --------------------------------------------
       LOGICAL LRELAX1, LRELAX2, LTRSPF
       INTEGER KEND1, LWRK1, KEND2, LWRK2, LENBF0, LENBF1, KBF, IOPTG
       INTEGER ICON, ISYMBF, IOPT, KT2AMP0, ISYIAJB, KXIAJB, KT2AM
-      INTEGER KCBAR, KDBAR, IDUM, KEND3, LWRK3, ISYRES, IF
+      INTEGER KCBAR, KDBAR, IDUM, KEND3, LWRK3, ISYRES, IF, IOPTR12
       INTEGER KONEH1, KONEH2, KCMOP1, KCMOP2, KLAMDP1, KLAMDP2
       INTEGER KCMOH1, KCMOH2, KLAMDH1, KLAMDH2, KT1AMP0, KFCKHF0
       INTEGER IRREP, IERR, ISYM, IOPER1, IOPER2, KXAIBJ, KFIELD
@@ -4970,7 +4955,7 @@ C           ---------------------------------------------------
          CALL DZERO(WORK(KXAIBJ),NT2SQ(ISYHOP))
 
          IOPT = 2
-         CALL CC_IAJB2(WORK(KXAIBJ),ISYHOP,IOPT,LRELAX,.FALSE.,
+         CALL CC_IAJB2(WORK(KXAIBJ),ISYHOP,IOPT,LRELAX,.FALSE.,.FALSE.,
      &                 LU0AIBJ,FN0AIBJ,IT2DEL0,XLAMDP0,ISYM0,
      &                 LU1AIBJ,FN1AIBJ,IT2DELB,XLAMDQP,ISYHOP,
      &                 WORK(KEND2),LWRK2)
@@ -5208,7 +5193,7 @@ c            WRITE (LUPRI,*) 'norm^2(gbim):',xnorm
 
          IOPT = 2
          LOCC = .FALSE.
-         CALL CC_IAJB2(WORK(KXIAJB),ISYIAJB,IOPT,LRELAX,LOCC,
+         CALL CC_IAJB2(WORK(KXIAJB),ISYIAJB,IOPT,LRELAX,LOCC,.FALSE.,
      &                 LU0IAJB,FN0IAJB,IT2DEL0,XLAMDH0,ISYM0,
      &                 LU1IAJB,FN1IAJB,IT2DELB,XLAMDQH,ISYHOP,
      &                 WORK(KEND2),LWRK2)
@@ -5270,7 +5255,7 @@ C         using XLAMDP0/QP matrices and add to the CBAR intermediate:
 C         -----------------------------------------------------------
           IOPT = 2
           LOCC = .FALSE.
-          CALL CC_IAJB2(WORK(KCBAR),ISYIAJB,IOPT,LRELAX,LOCC,
+          CALL CC_IAJB2(WORK(KCBAR),ISYIAJB,IOPT,LRELAX,LOCC,.FALSE.,
      &                  LU0IJBA,FN0IJBA,IT2DEL0,XLAMDP0,ISYM0,
      &                  LU1IJBA,FN1IJBA,IT2DELB,XLAMDQP,ISYHOP,
      &                  WORK(KEND3),LWRK3)
@@ -5280,7 +5265,7 @@ C         ------------------------------------------------------------
 C         add E1 intermediate to the diagonal of the C intermediate:
 C         ------------------------------------------------------------
           FAC = -0.5D0
-          CALL CC_CDBAR2(WORK(KCBAR),EMAT1,FAC,ISYRES)
+          CALL CC_CDBAR2(WORK(KCBAR),EMAT1,FAC,.FALSE.,ISYRES)
 
 
 C         ------------------------------------------------------------
@@ -5293,7 +5278,8 @@ C         ------------------------------------------
 C         calculate C term and add to result vector:
 C         ------------------------------------------
           IF (.NOT. SKIPXI) THEN
-             CALL CC_CD('C',+1,RHO2,ISYRES,WORK(KT2AM),
+             ioptr12 = 0
+             CALL CC_CD('C',+1,ioptr12,RHO2,ISYRES,WORK(KT2AM),
      &                  ISYM0,WORK(KCBAR),ISYIAJB,WORK(KEND3),LWRK3)
 
              IF (LOCDBG) THEN
@@ -5347,7 +5333,7 @@ C        using XLAMDP0/QP matrices and add to the CBAR intermediate:
 C        -------------------------------------------------------------
          IOPT = 2
          LOCC = .FALSE.
-         CALL CC_IAJB2(WORK(KDBAR),ISYIAJB,IOPT,LRELAX,LOCC,
+         CALL CC_IAJB2(WORK(KDBAR),ISYIAJB,IOPT,LRELAX,LOCC,.FALSE.,
      &                 LU0IABJ,FN0IABJ,IT2DEL0,XLAMDP0,ISYM0,
      &                 LU1IABJ,FN1IABJ,IT2DELB,XLAMDQP,ISYHOP,
      &                 WORK(KEND3),LWRK3)
@@ -5356,7 +5342,7 @@ C        ------------------------------------------------------------
 C        add E1 intermediate to the diagonal of the D intermediate:
 C        ------------------------------------------------------------
          FAC = 0.5D0
-         CALL CC_CDBAR2(WORK(KDBAR),EMAT1,FAC,ISYRES)
+         CALL CC_CDBAR2(WORK(KDBAR),EMAT1,FAC,.FALSE.,ISYRES)
 
 C        ------------------------------------------------------------
 C        save the D intermediate on file:
@@ -5370,7 +5356,8 @@ C        calculate D term and add to result vector:
 C        (note, that this assumes 2T(ia;jb)-T(ja;ib) in T amplitudes)
 C        ------------------------------------------------------------
          IF (.NOT. SKIPXI) THEN
-            CALL CC_CD('D',+1,RHO2,ISYRES,WORK(KT2AM),
+            ioptr12 = 0
+            CALL CC_CD('D',+1,ioptr12,RHO2,ISYRES,WORK(KT2AM),
      &              ISYM0,WORK(KDBAR),ISYIAJB,WORK(KEND3),LWRK3)
 
             IF (LOCDBG) THEN
@@ -5490,7 +5477,7 @@ c /* deck cceta2 */
       INTEGER ISYMF, ISYALJ, ISYJLI, IVIRF, KYPS0, KYPS1, LEN
       INTEGER NTAIKJ(9), ITAIKJ(8,8), ICOUNT, ISYM, ISYMAIK, ISYMJ
       INTEGER ISYMBF, KCDBAR, IADR, LENBFZ0, LENBFZ1, KBFZ, IORD
-      INTEGER ILSTSYM, IOPTTCME
+      INTEGER ILSTSYM, IOPTTCME, IOPTR12
 
       CALL QENTER('CCETA2')
 
@@ -6160,7 +6147,8 @@ C         ------------------------------------------------------------
 C         ------------------------------------------------------------
 C         calculate D term and add to result vector:
 C         ------------------------------------------------------------
-          CALL CC_CD('D',-1,RHO2,ISYETA,WORK(KCTR2),
+          ioptr12 = 0
+          CALL CC_CD('D',-1,ioptr12,RHO2,ISYETA,WORK(KCTR2),
      &               ISYCTR,WORK(KCDBAR),ISYHOP,WORK(KEND3),LWRK3)
 
           IF (LOCDBG) THEN
@@ -6178,7 +6166,8 @@ C         ------------------------------------------------------------
 C         ------------------------------------------
 C         calculate C term and add to result vector:
 C         ------------------------------------------
-          CALL CC_CD('C',-1,RHO2,ISYETA,WORK(KCTR2),
+          ioptr12 = 0
+          CALL CC_CD('C',-1,ioptr12,RHO2,ISYETA,WORK(KCTR2),
      &               ISYCTR,WORK(KCDBAR),ISYHOP,WORK(KEND3),LWRK3)
 
           IF (LOCDBG) THEN
@@ -6231,7 +6220,7 @@ C       -------------------------------------------------
 
         IOPT = 2
         LOCC = .TRUE.
-        CALL CC_IAJB2(WORK(KXIFJL),ISYIFJL,IOPT,LRELAX,LOCC,
+        CALL CC_IAJB2(WORK(KXIFJL),ISYIFJL,IOPT,LRELAX,LOCC,.FALSE.,
      &                LU0IAJB,FN0IAJB,IT2DEL0,XLAMDH0,ISYM0,
      &                LU1IAJB,FN1IAJB,IT2DELB,XLAMDQH,ISYHOP,
      &                WORK(KEND3),LWRK3)
@@ -6321,7 +6310,7 @@ C
 
             IOPT = 2
             LOCC = .FALSE.
-            CALL CC_IAJB2(WORK(KXIAJB),ISYETA,IOPT,LRELAX,LOCC,
+            CALL CC_IAJB2(WORK(KXIAJB),ISYETA,IOPT,LRELAX,LOCC,.FALSE.,
      &                    LU0IAJB,FN0IAJB,IT2DEL0,WORK(KYPS0),ISYCTR,
      &                    LU1IAJB,FN1IAJB,IT2DELB,WORK(KYPS1),ISYETA,
      &                    WORK(KEND3),LWRK3)
@@ -6334,7 +6323,8 @@ C
 
               IOPT = 2
               LOCC = .FALSE.
-              CALL CC_IAJB2(WORK(KXIAJB),ISYETA,IOPT,LRELAX,LOCC,
+              CALL CC_IAJB2(WORK(KXIAJB),ISYETA,IOPT,
+     &                      LRELAX,LOCC,.FALSE.,
      &                      LUHINT0,FNHINT0,IADRH0,XLAMDH0,ISYM0,
      &                      LUHINT1,FNHINT1,IADRH1,XLAMDQH,ISYHOP,
      &                      WORK(KEND3),LWRK3)

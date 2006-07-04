@@ -204,10 +204,15 @@ C
         END IF
         CALL RGORD(NVIR(ISYM),NVIR(ISYM),WORK(KEIVAL+IVIR1(ISYM)),
      &             WORK(KFV1),WORK(KEIVEC+IMATAB(ISYM,ISYM)),.TRUE.)
-        IF (LOCDBG) THEN
-          WRITE(LUPRI,*)'Eigenvalues after reorder: symmetry=',ISYM
-          CALL OUTPUT(WORK(KEIVAL+IVIR1(ISYM)),1,NVIR(ISYM),
+        WRITE(LUPRI,*)'R12-NATVIR: Nat. occ. numbers after ordering: '//
+     &                'symmetry=',ISYM
+        IF (NVIR(ISYM).EQ.0) THEN
+          WRITE(LUPRI,*) 'This block is empty'
+        ELSE
+          CALL OUTPUT(WORK(KEIVAL+IVIR1(ISYM)),1,MIN(10,NVIR(ISYM)),
      &                1,1,NVIR(ISYM),1,1,LUPRI)
+        END IF
+        IF (LOCDBG) THEN
           WRITE(LUPRI,*)'Eigenvectors after reorder:'
           CALL OUTPUT(WORK(KEIVEC+IMATAB(ISYM,ISYM)),1,NVIR(ISYM),
      &                1,NVIR(ISYM),NVIR(ISYM),NVIR(ISYM),1,LUPRI)
@@ -289,11 +294,6 @@ C
      *    ' EIGENVALUE PROBLEM NOT CONVERGED IN RS, IERR =',IERR
           CALL QUIT(' CCRED: EIGENVALUE EQUATION NOT CONVERGED ')
         END IF
-        IF ( IERR.NE.0 ) THEN
-          WRITE(LUPRI,'(/A,I5)')
-     *    ' EIGENVALUE PROBLEM NOT CONVERGED IN RS, IERR =',IERR
-          CALL QUIT(' CCRED: EIGENVALUE EQUATION NOT CONVERGED ')
-        END IF
         IF (LOCDBG) THEN
           WRITE(LUPRI,*)'Fock-Eigenvalues after RS: symmetry=',ISYM
           CALL OUTPUT(WORK(KEIVAL+IVIR1(ISYM)),1,NRXR12(ISYM),
@@ -305,9 +305,21 @@ C
         CALL RGORD(NRXR12(ISYM),NRXR12(ISYM),WORK(KEIVAL+IVIR1(ISYM)),
      &             WORK(KFV1),WORK(KEIVEC+IMATAB(ISYM,ISYM)),.FALSE.)
         WRITE(LUPRI,*)
-        WRITE(LUPRI,*)'Fock-Eigenvalues after reorder: symmetry=',ISYM
-        CALL OUTPUT(WORK(KEIVAL+IVIR1(ISYM)),1,NRXR12(ISYM),
+        WRITE(LUPRI,*)'R12-NATVIR: Fock-Eigenvalues after ordering: '//
+     &                'symmetry=',ISYM
+        IF (NRXR12(ISYM).EQ.0) THEN
+          WRITE(LUPRI,*) 'This block is empty'
+        ELSE IF (NVIR(ISYM).LT.NRXR12(ISYM)) THEN
+          WRITE(LUPRI,*) 'You specified more virtual R12 orbitals '//
+     &                   'than there are virtual orbitals in this '//
+     &                   'symmery:'
+          WRITE(LUPRI,*) 'NVIR(',ISYM,') = ',NVIR(ISYM)
+          WRITE(LUPRI,*) 'NRXR12(',ISYM,') = ',NRXR12(ISYM)
+          CALL QUIT('Too many virtual R12 orbitals')
+        ELSE
+          CALL OUTPUT(WORK(KEIVAL+IVIR1(ISYM)),1,NRXR12(ISYM),
      &                1,1,NVIR(ISYM),1,1,LUPRI)
+        END IF
         IF (LOCDBG) THEN
           WRITE(LUPRI,*)'Eigenvectors after reorder:'
           CALL OUTPUT(WORK(KEIVEC+IMATAB(ISYM,ISYM)),1,NRXR12(ISYM),
@@ -326,13 +338,18 @@ C
         CALL DCOPY(NBAS(ISYM)*NRXR12(ISYM),WORK(KOFF3),1,WORK(KOFF1),1)
       END DO
 C
-      IF (LOCDBG) THEN
-        WRITE(LUPRI,*)'CMO matrix of semi-natural '//
-     &                'virtual R12-orbitals:'
+      WRITE(LUPRI,*)
+C
+      IF (IPRINT.GE.5) THEN
+        WRITE(LUPRI,*)'R12-NATVIR: MO coefficient matrix of '//
+     &                'semi-natural virtual R12-orbitals:'
         DO ISYM = 1, NSYM
-          KOFF1 = KCMOTR + IGLMVI(ISYM,ISYM)
-          CALL OUTPUT(WORK(KOFF1),1,NBAS(ISYM),1,NRXR12(ISYM),
-     &                NBAS(ISYM),NRXR12(ISYM),1,LUPRI)
+          IF (NRXR12(ISYM).GT.0) THEN
+            WRITE(LUPRI,*) 'symmetry=',ISYM
+            KOFF1 = KCMOTR + IGLMVI(ISYM,ISYM)
+            CALL OUTPUT(WORK(KOFF1),1,NBAS(ISYM),1,NRXR12(ISYM),
+     &                  NBAS(ISYM),NRXR12(ISYM),1,LUPRI)
+          END IF
         END DO
       END IF
 C

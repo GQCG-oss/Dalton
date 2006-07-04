@@ -38,6 +38,7 @@ c
 c  Heike Fliegl, Christof Haettig  spring 2003
 c  adapted for max. two auxiliary functions: Christian Neiss, fall 2004
 c  introduced projvir option: Christof Haettig, spring 2005
+c  adapted for CABS, Ansatz 3: Christian Neiss, winter 2006
 c----------------------------------------------------------------------
       implicit none
 #include <priunit.h>
@@ -52,7 +53,7 @@ c----------------------------------------------------------------------
       parameter (locdbg = .false.)
 
       character*(*) fback,fback2
-      logical lauxbeta, projvir
+      logical lauxbeta, projvir, modifyinttyp1
 
 #if defined (SYS_CRAY)
       real zero,one
@@ -72,8 +73,8 @@ c----------------------------------------------------------------------
       integer kcmo,lwrk0,lusifc,idummy
       integer nr2bas,kcmobas,kcmoaux,lwrk1,koff1,ntotg1
       integer kr2sm,kend2,kr2gk,kr2pk,lwrk2,istartq,iendq,ntotdk,isymg
-      integer koffl,koffr,kofft,ntotp,ntotg,ndell,iadr,len
-      integer kend0,kend1,nvabkl(8),ivabkl(8,8),kend3,lwrk3
+      integer koffl,kofft,ntotp,ntotg,ndell,iadr,len
+      integer kend0,kend1,kend3,lwrk3
       integer iendtyp,inttyp,istartdelta,ienddelta,istartgamma
       integer istartp,iendp,norbp,norbq,nbasg,lur2back2
       integer nalphaj(8),ialphaj(8,8)
@@ -97,7 +98,7 @@ c-----------------------------------------------------------------------
 
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,ir2xbas,
-     & irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,ialphaj)
+     & irgkl,irxgkl,iaodis1,nalphaj,ialphaj)
 
       ! nr2bas2 = lenghts for nr1bas x nr1xbas over all symmetries 
       ! nvircc  = number of active virtual orbitals in a symmetry
@@ -192,6 +193,8 @@ C-----------------------------------------------------------------------
         end if
       end if
 
+      modifyinttyp1 = ianr12.eq.1 .and. r12cbs
+
       if (locdbg) then
         write (lupri,*) 'MBSMAX = ', MBSMAX
       end if
@@ -218,14 +221,13 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C         Set start and end values for orbital spaces (part1)
 C-----------------------------------------------------------------------
-          if (r12cbs .and. (inttyp .eq. 1)) then
+          if (modifyinttyp1 .and. (inttyp .eq. 1)) then
             istartdelta = 1
             ienddelta   = mbas1(isymd)
             istartq   = 1
             iendq     = norb1(isymq) + norb2(isymq)
             norbq     = norb1(isymq) + norb2(isymq)
-          elseif ((.not. r12cbs .and. inttyp .eq. 1) 
-     &             .or. (inttyp .eq. 3)) then
+          elseif ((inttyp .eq. 1) .or. (inttyp .eq. 3)) then
             istartdelta = 1
             ienddelta   = mbas1(isymd)
            if (projvir) then
@@ -259,11 +261,10 @@ c           get row vector out of transformation matrix C_delta,q
 c           for fixed delta:
 c           ------------------------------------------------------------
             kcmobas = kend0
-            if (r12cbs .and. inttyp .eq. 1) then
+            if (modifyinttyp1 .and. inttyp .eq. 1) then
               kend1 = kcmobas + norb1(isymd) + norb2(isymd)  
               koff1 = kcmo - 1 + iglmvi(isymd,isymq) + idelta
-            elseif (.not. r12cbs .and. ((inttyp.eq.1) .or.
-     &              (inttyp.eq.3))) then
+            elseif ((inttyp.eq.1) .or. (inttyp.eq.3)) then
               if (projvir) then
                 kend1   = kcmobas + norbq
                 koff1 = kcmo - 1 + iglmvi(isymd,isymq) +
@@ -283,12 +284,12 @@ c           ------------------------------------------------------------
             end if
             call dcopy(norbq,work(koff1),nbas(isymd),
      &                    work(kcmobas),1)
-c            if (locdbg) then
-c              write(lupri,*) 'C_MO vector for fixed delta:'
-c              write(lupri,*) 'idelta, C_MO: ',idelta
-c              call output(work(kcmobas),1,1,1,kend1-kcmobas,
-c     &                    1,kend1-kcmobas,1,lupri)
-c            end if
+            if (locdbg) then
+              write(lupri,*) 'C_MO vector for fixed delta:'
+              write(lupri,*) 'idelta, C_MO: ',idelta
+              call output(work(kcmobas),1,1,1,kend1-kcmobas,
+     &                    1,kend1-kcmobas,1,lupri)
+            end if
 
 c           ------------------------------------------------------------
 c           loop over symmetry blocks of the pair index (pk) ->
@@ -306,7 +307,7 @@ C               kr2gk  : R(gamma,k)    matrix AO * occupied
 C               --------------------------------------------------------
                 kr2gk = kend1
                 if ((inttyp .eq. 1) .or. (inttyp .eq. 2)) then
-                  if (r12cbs .and. inttyp .eq. 1) then
+                  if (modifyinttyp1 .and. (inttyp .eq. 1)) then
                      kr2gk2= kr2gk + nr1bas(isympk)
                      kend2 = kr2gk2+ nr1bas(isympk)
                   else 
@@ -361,12 +362,13 @@ c                   kr2sm  : r(pk,q)  three-index array batch of r2am
 c                   kr2pk  : R(pk)    matrix MO * occupied
 c                   ----------------------------------------------------
                     kr2sm = kend2
-                    if (r12cbs .and. inttyp .eq. 1) then
-                       kr2sm2= kr2sm + nr1orb(isympk)*(norb1(isymq)
-     &                           +norb2(isymq))
-                       kr2pk = kr2sm2+ nr1xorb(isympk)*norb1(isymq)
-                       kr2pk2= kr2pk + nr1orb(isympk)
-                       kend3 = kr2pk2+ nr1xorb(isympk)
+                    if (modifyinttyp1 .and. inttyp .eq. 1) then
+                       kr2sm2= kr2sm + norb1(isymp)*nrhf(isymk)*
+     &                          (norb1(isymq)+norb2(isymq))
+                       kr2pk = kr2sm2+ norb2(isymp)*nrhf(isymk)*
+     &                           norb1(isymq)
+                       kr2pk2= kr2pk + norb1(isymp)*nrhf(isymk)
+                       kend3 = kr2pk2+ norb2(isymp)*nrhf(isymk)
                     else 
                        kr2pk = kr2sm + norbp * nrhf(isymk) * norbq
                        kend3 = kr2pk + norbp * nrhf(isymk) 
@@ -380,7 +382,7 @@ c                   ----------------------------------------------------
      &                                 istartq,iendq,isymq,istartp,
      &                                 iendp,isymp,r2am,
      &                                 isympk,isymql,nr1orb,ir1orb)
-                    if (r12cbs .and. (inttyp .eq.1)) then
+                    if (modifyinttyp1 .and. (inttyp .eq.1)) then
                        call cc_r12getrpkq(fback,work(kr2sm2),l,isyml,
      &                                    1,norb1(isymq),isymq,
      &                                    norb1(isymp)+1,
@@ -388,26 +390,37 @@ c                   ----------------------------------------------------
      &                                    isymp,r2am,
      &                                    isympk,isymql,nr1orb,ir1orb)
                     endif
-c                   if (locdbg) then
-c                     write(lupri,*) 'r^(l)_(pkq):'
-c                     call output(work(kr2sm),1,norbp*nrhf(isymk),1,
-c    &                            norbq,norbp*nrhf(isymk),norbq,
-c    &                            1,lupri)
-c                   end if
+                    if (locdbg) then
+                      write(lupri,*) 'r^(l)_(pkq):'
+                      call output(work(kr2sm),1,norbp*nrhf(isymk),1,
+     &                            norbq,norbp*nrhf(isymk),norbq,
+     &                            1,lupri)
+                      if (modifyinttyp1 .and. (inttyp .eq.1)) then
+                        write(lupri,*) 'r^(l)_(pkq) 2:'
+                        call output(work(kr2sm2),1,norb2(isymp)*
+     &                              nrhf(isymk),1,norb1(isymq),
+     &                              norb2(isymp)*nrhf(isymk),
+     &                              norb1(isymq),1,lupri)
+                      end if 
+                    end if
 
 c                   ----------------------------------------------------
 c                   transform q to delta (contravariant AO basis)
 c                   ----------------------------------------------------
                     ntotdk = max(norbp*nrhf(isymk),1)
+                    !zero out result (dgemv may give wrong result)!
+                    call dzero(work(kr2pk),norbp*nrhf(isymk))
                     call dgemv('N',norbp*nrhf(isymk),
      &                          norbq,one,
      &                          work(kr2sm),ntotdk,
      &                          work(kcmobas),1,
      &                          zero,work(kr2pk),1)
-                    if (r12cbs .and. (inttyp .eq.1)) then
-                       ntotdk = max(nr1xorb(isympk),1)
-                       call dgemv('N',nr1xorb(isympk),
-     &                             norb1(isymq),one,
+                    if (modifyinttyp1 .and. (inttyp .eq.1)) then
+                       ntotdk = max(norb2(isymp)*nrhf(isymk),1)
+                       !zero out result (dgemv may give wrong result)!
+                       call dzero(work(kr2pk2),norb2(isymp)*nrhf(isymk))
+                       call dgemv('N',norb2(isymp)*nrhf(isymk),
+     &                            norb1(isymq),one,
      &                             work(kr2sm2),ntotdk,
      &                             work(kcmobas),1,
      &                             zero,work(kr2pk2),1)
@@ -431,17 +444,16 @@ c                   ----------------------------------------------------
      &                         one,work(koffl),ntotg,
      &                             work(kr2pk),ntotp,
      &                         zero,work(kofft),ntotg1) 
-                    if (r12cbs .and. inttyp .eq. 1) then
+                    if (modifyinttyp1 .and. (inttyp .eq. 1)) then
                        koffl=kcmo + norb1(isymp)*nbas(isymg)
      &                            + iglmvi(isymg,isymp)
-                       koffr=kr2pk2 + ir1xorb(isymp,isymk)
                        koffs=kr2gk2 + ir1bas(isymg,isymk)
                        ntotp=max(norb2(isymp),1)
                        call dgemm('N','N',mbas1(isymg),nrhf(isymk),
-     &                        norb2(isymp),one,work(koffl),ntotg,
-     &                        work(koffr),ntotp,zero,work(koffs),ntotg1)
+     &                       norb2(isymp),one,work(koffl),ntotg,
+     &                       work(kr2pk2),ntotp,zero,work(koffs),ntotg1)
                        call daxpy(mbas1(isymg)*nrhf(isymk),one,
-     &                                 work(koffs),1,work(kofft),1)
+     &                            work(koffs),1,work(kofft),1)
                     endif
 
                   end do ! loop over symmetries of gamma
@@ -487,12 +499,10 @@ c                 ----------------------------------------------------
                   if (locdbg) then
                     write(lupri,'(a,2i5,g20.10)') 
      &                'iadr,len,norm^2(R)=',iadr,len,
-c     &                dnrm2(len,work(kr2gk),1)
      &                 ddot(len,work(kr2gk),1,work(kr2gk),1)
                     write(lupri,*) 'R^(l delta)_(gamma k):'
-c                   call output(work(kr2gk),1,nrhf(isymk),1,
-c    &                          norbp,nrhf(isymk),norbp,
-c    &                          1,lupri)
+                    call output(work(kr2gk),1,len,1,1,
+     &                          len,1,1,lupri)
                     write(lupri,*)'nr2bas,ir2xbas',nr2bas,
      &                   ir2xbas(isympk,isymql)
                     write(lupri,*)'ndell',ndell
@@ -674,7 +684,7 @@ c           ---------------------------------------------------------
 *=====================================================================*
       subroutine cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      & nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,ir2xbas,
-     & irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,ialphaj)
+     & irgkl,irxgkl,iaodis1,nalphaj,ialphaj)
 c----------------------------------------------------------------------
 c     set some symmetry offsets and dimensions needed only when 
 c     working in the R12 environment and the standard CC offset 
@@ -693,7 +703,7 @@ c----------------------------------------------------------------------
       integer nr1orb(8),nr1xorb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
       integer ir1xbas(8,8),ir1xorb(8,8)
       integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
-      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8),nvabkl(8),ivabkl(8,8)
+      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8)
       integer nrxgkl(8),irxgkl(8,8)
       integer isymdk,isymk,isymd,isym,isym1,isym2
       integer icount1,icount2,icount3,icount4,icount5,icount6
@@ -749,16 +759,16 @@ c     ------------------------------------
       end do
 
 c
-      do isym = 1, nsym
-        nvabkl(isym) = 0
-        icount1      = 0
-        do isym2 = 1, nsym
-          isym1 = muld2h(isym,isym2)
-          nvabkl(isym) = nvabkl(isym) + n2bst(isym1)*nmatkl(isym2)
-          ivabkl(isym1,isym2) = icount1
-          icount1 = icount1 + n2bst(isym1)*nmatkl(isym2)
-        end do
-      end do
+c     do isym = 1, nsym
+c       nvabkl(isym) = 0
+c       icount1      = 0
+c       do isym2 = 1, nsym
+c         isym1 = muld2h(isym,isym2)
+c         nvabkl(isym) = nvabkl(isym) + n2bst(isym1)*nmatkl(isym2)
+c         ivabkl(isym1,isym2) = icount1
+c         icount1 = icount1 + n2bst(isym1)*nmatkl(isym2)
+c       end do
+c     end do
 
 c     ---------------------------------------
 c     lenghts for nr1bas over all symmetries 

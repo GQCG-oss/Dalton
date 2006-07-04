@@ -642,18 +642,20 @@ C
 C
                     CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*LETOT),
      *                           PT1,ISYM)
-                    IF ((IPRINT.GT.10).OR.DEBUG) THEN
-                      RHO1N = DDOT(NT1AM(ISYM),WORK(KT1),1,WORK(KT1),1)
+                    IF ((IPRINT.GT.2).OR.DEBUG) THEN
+                      RHO1N = DSQRT(DDOT(NT1AM(ISYM),WORK(KT1),1,
+     *                                               WORK(KT1),1))
                       WRITE(LUPRI,'(1X,A35,1X,E20.10)')
      *               'Norm of singles part:   ',RHO1N
                       IF ( .NOT. CCS) THEN
-                       RHO2N=DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
+                       RHO2N = DSQRT(DDOT(NT2AM(ISYM),WORK(KT2),1,
+     *                                                WORK(KT2),1))
                        WRITE(LUPRI,'(1X,A35,1X,E20.10)')
      *                 'Norm of doubles part:   ',RHO2N
                       ENDIF
                       IF (CCR12) THEN
-                       RHO12N=DDOT(NTR12AM(ISYM),WORK(KT12),1,
-     &                             WORK(KT12),1)
+                       RHO12N = DSQRT(DDOT(NTR12AM(ISYM),WORK(KT12),1,
+     &                                                   WORK(KT12),1))
                        WRITE(LUPRI,'(1X,A35,1X,E20.10)')
      *                 'Norm of r12 doubles part:   ',RHO12N
                       ENDIF

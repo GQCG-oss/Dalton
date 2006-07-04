@@ -1538,7 +1538,7 @@ C
        CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','UNFORMATTED',
      &         IDUMMY,.FALSE.)
        READ(LUNIT) (WORK(KCR12AM+N), N = 0, NTR12AM(1)-1 )
-       CALL GPCLOSE(LUNIT,'KEEP') 
+       CALL GPCLOSE(LUNIT,'DELETE') 
        IOPT = 32
        CALL CC_WRRSP('R0 ',0,1,IOPT,MODELR12,DUMMY,DUMMY,
      *               WORK(KCR12AM),WORK(KEND1),LWRK1) 
@@ -2639,7 +2639,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     30-5-1995 Ove Christiansen
 C
-C     Purpose: To zero core and secondary part og
+C     Purpose: To zero core and secondary part of
 C              CC vector.
 C              ISYMTR is symmetry of vector.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

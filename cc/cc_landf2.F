@@ -889,7 +889,8 @@ C---------------------------------------------
 C           Resort intermediate result-matrix.
 C---------------------------------------------
 C
-            CALL CCLT_P21I(WORK(KSCR1),ISYAJI,WORK(KEND1),LWRK1)
+            CALL CCLT_P21I(WORK(KSCR1),ISYAJI,WORK(KEND1),LWRK1,
+     &                     IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
 C
 C-----------------------------------------------------------------
 C           Final scaling with XLAMDH-element and storage in RHO2.
@@ -1068,7 +1069,8 @@ C----------------------------------------
 C
             CALL DCOPY(NT2BCD(ISYAIJ),WORK(KSCRN),1,WORK(KSCRT),1)
 C
-            CALL CCLT_P21I(WORK(KSCRT),ISYAIJ,WORK(KEND1),LWRK1)
+            CALL CCLT_P21I(WORK(KSCRT),ISYAIJ,WORK(KEND1),LWRK1,
+     &                     IT2BCD,NT2BCD,IT1AM,NT1AM,NVIR)
 C
 C-----------------------------------------------------------------
 C           Final scaling with XLAMDH-element and storage in RHO2.

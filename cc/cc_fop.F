@@ -3980,7 +3980,8 @@ C-------------------------------------------
 C
                ISYDEN = 1
                CALL CC_AOFOCK(WORK(KXINT),WORK(KDENSI),WORK(KFOCK),
-     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,ISYDEN)
+     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,.FALSE.,
+     *                        DUMMY,ISYDEN)
 C
 C------------------------------------------
 C              Work space allocation three.

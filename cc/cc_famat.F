@@ -534,8 +534,8 @@ c /* deck cc_famat */
 * CC-R12 part:
 *=====================================================================*
       IF (CCR12) THEN 
-        IF (.NOT.(CC2.AND.IANR12.EQ.1)) THEN
-          CALL QUIT('Sorry, only CC2-R12 Ansatz 1 implemented yet!')
+        IF (.NOT.IANR12.EQ.1) THEN
+          CALL QUIT('Sorry, only CC-R12 Ansatz 1 implemented yet!')
         ENDIF
 * allocate memory:
         KGAMMAR12 = KEND0

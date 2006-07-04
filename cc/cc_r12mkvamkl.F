@@ -2,7 +2,7 @@ c*=====================================================================*
       subroutine r12mkvamkl(filback,gabjd,tabjd,vajkl,cmo,isymcmo,
      &                      xlamdhs,xlamdps,xint,
      &                      tint,idel,isymd,isymj,isymab,isymg,scr1,
-     &                      ibasx,iglmrhs,nglmds,lauxd,work,lwork)
+     &                      ibasx,iglmrhs,nglmds,work,lwork)
 *----------------------------------------------------------------------*
 c     Purpose: calculation of V^{alpha,j}_{k,l} 
 c     
@@ -17,6 +17,8 @@ c                         !Ansatz 2 still needs to be checked!
 c     isymcmo    Symmetry of cmo-matrix (needed if cmo=lambda_bar)
 c
 c     adapted for ansatz 3, Christof Haettig, spring 2005.
+c
+c     adapted for CABS, Christian Neiss, winter 2005/2006
 *----------------------------------------------------------------------*
       implicit none
 #include <priunit.h>
@@ -26,7 +28,7 @@ c     adapted for ansatz 3, Christof Haettig, spring 2005.
 #include <ccr12int.h>
 #include <dummy.h>
 
-      logical locdbg,lauxd
+      logical locdbg
       parameter(locdbg=.false.)
 #if defined (SYS_CRAY)
       real zero,one,two
@@ -58,7 +60,7 @@ c     adapted for ansatz 3, Christof Haettig, spring 2005.
      &        isymdj,idxmja,idxmaj,isymma, kend3,kend4,
      &        lwrk4, igmaj(8), ngmaj, ngmgi, kcmo,kgmaj,ntotm,igmgi(8)
       integer koffrtf,imaklm(8,8),nmaklm(8),isymklm,icount1,isymij
-      integer nvabkl(8),ivabkl(8,8),nalphaj(8),ialphaj(8,8)
+      integer nalphaj(8),ialphaj(8,8)
 #if defined (SYS_CRAY)
       real gabjd(*),tabjd(*),vajkl(*),cmo(*),xint(*),work(*)
       real scr1(*), ddot, nbjd(*), tint(*),xlamdhs(*), xlamdps(*) 
@@ -77,13 +79,14 @@ c     adapted for ansatz 3, Christof Haettig, spring 2005.
 
 
       idelta = idel - ibas(isymd)
-      if (lauxd) idelta = idelta -ibasx(isymd)
 
 c    ----------------------------------------------------
 c     for ansatz 2 skip loop over deltas in orbital basis 
 c    ----------------------------------------------------
-      if (ianr12.eq.2.and. idelta.le.mbas1(isymd)) return
-      
+      if (ianr12.eq.2 .and. idelta.le.mbas1(isymd) .and. .not.r12cbs) 
+c     if (ianr12.eq.2 .and. idelta.le.mbas1(isymd) ) 
+     &  return
+
       ! map ianr12 --> iansatz to get simpler if statements
       ! for ansatz 3 which has common terms with ansatz 2
       if (ianr12.eq.1 .or. ianr12.eq.2) then
@@ -99,18 +102,18 @@ c    ----------------------------------------------------
           ! delta is from orbital basis
           ! -> sum_{delta beta}, as in ansatz 1,
           !    but with AO indeces at R projected onto virtuals
-          iansatz = 1 
+          iansatz = 1
           factor  = -one
         else
           ! delta is from auxiliary basis 
           ! -> sum_{delta' m} as in ansatz 2
-          iansatz = 2 
+          iansatz = 2
           factor  = -one
         end if
       else
         call quit('Unknown ansatz in r12mkvamkl.')
       end if
-      
+
 
       call qenter('r12mkvamkl')
 
@@ -126,8 +129,7 @@ c     calculate some symmetry offsets and dimensions
 c    ------------------------------------------------
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
-     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
-     &     ialphaj)
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nalphaj,ialphaj)
 
       do isymaj = 1,nsym
          icou2 = 0
@@ -167,7 +169,7 @@ c
         end do
         nmaklm(isymklm) = icount1
       end do
-      
+c
       kr2bkl = 1
       kend0  = kr2bkl + nrgkl(isymd)
       if (iansatz.eq.2) then
@@ -216,11 +218,11 @@ c     -------------------------------------
       call cc_r12getrint(work(kr2bkl),idel,isymd,nr1bas,ir1bas,
      &     nr2bas,ir2bas,nrgkl,irgkl,ir1xbas,ir2xbas,
      &     nrhfb,nmatkl,imatkl,
-     &     ibasx,lauxd,.false.,filback,work(kend1),lwrk1)
+     &     ibasx,.false.,.false.,filback,work(kend1),lwrk1)
       
       if (locdbg) then
         write(lupri,'(a,l5,i5,/,8i7)')
-     &           'lauxd,idel,ibasx:',lauxd,idel,ibasx
+     &           'idel,ibasx:',idel,ibasx
         write(lupri,*)'Rdp_a,kl in mkvamkl',idel,
      &    ddot(nrgkl(isymd),work(kr2bkl),1,work(kr2bkl),1)
 c       write(lupri,*) (work(kr2bkl+i-1),i=1,nrgkl(isymd))
@@ -440,15 +442,25 @@ c         m runs over all occupied orbitals
       end if
       if (locdbg.and.iansatz.eq.2) then
         write(lupri,*)'Vajkl ansatz 2 auxbas first part:'
-        call output(vajkl,1,nvajkl(isymv),1,nvajkl(isymv),nvajkl(1),
-     &              nvajkl(isymv),1,lupri) 
+        write(lupri,*)'norm^2:',ddot(nvajkl(isymv),vajkl,1,vajkl,1)
+        do isymkl = 1, nsym
+           isymaj = muld2h(isymv,isymkl)
+           write(lupri,*) 'Block isymaj, isymkl: ',isymaj,isymkl
+           if ((nalphaj(isymaj).eq.0).or.(nmatkl(isymkl).eq.0)) then
+            write(lupri,*) 'This block is empty'
+           else
+            call output(vajkl(1+ivajkl(isymaj,isymkl)),1,
+     &                  nalphaj(isymaj),1,nmatkl(isymkl),
+     &                  nalphaj(isymaj),nmatkl(isymkl),1,lupri)
+           end if
+        end do
       end if
 
 c     ---------------------------------------------
 c      case: delta element of auxiliary basis
-c      calculate some new offsets
 c     ---------------------------------------------
-      if (idelta.gt.mbas1(isymd) .and. mbas1(isymg).gt.0) then
+      if ((idelta.gt.mbas1(isymd)) .or. (r12cbs.and.(iansatz.eq.2))
+     &      .and. mbas1(isymg).gt.0) then
          ngbgi = 0
          do isymb = 1, nsym  
             isyma = muld2h(isymab,isymb)
@@ -793,7 +805,7 @@ c--------------------------------------------------------------------
       integer isymab,isyma,isymb,isymaj,isyml
       integer idxab,idxak,idxkl,idxlk,idxlj,idxajkl,koffc
       integer ksab,ksak,kski,kend1,lwrk1,lwork,koffsak,koffski
-      integer idxaj,nnbast,nvabkl(8),ivabkl(8,8)
+      integer idxaj,nnbast
       integer idxabkl,idxbl,lusak,luvajkl,idxbj
       integer iopt,length,isymij,idxij,idxki,idxijkl
       integer lr12f12htf
@@ -808,8 +820,7 @@ c--------------------------------------------------------------------
 
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
-     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
-     &     ialphaj)
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nalphaj,ialphaj)
 
 
       nnbast = 0
@@ -867,13 +878,14 @@ c
 c  
       call dzero(vxykl,length)
 c
+      if (R12EOR) then
+        call cc_r12getvxykl(vxykl,length,cmo,isycmo,nr1bas,
+     &                      ir1bas,ir2bas,nalphaj,ialphaj,
+     &                      lr12f12htf,fr12f12htf,
+     &                      iopt,work(kend1),lwrk1)
+      else
+c
       if (iopt.eq.0) then
-       if (R12EOR) then
-        call cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,nr1bas,
-     &                     ir1bas,ir2bas,ivabkl,nalphaj,ialphaj,
-     &                     lr12f12htf,fr12f12htf,
-     &                     iopt,work(kend1),lwrk1)
-       else
 c       ----------------------------------------------
 c       initialize V(ak,bl) with S(alpha,k)*S(beta,l)
 c       ----------------------------------------------
@@ -902,28 +914,7 @@ c       ----------------------------------------------
           end do
         end do 
 c
-       end if
-c
-
-       if (locdbg) then
-         write(lupri,*) 'in cc_r12mkvamkl0: iopt, vxykl', iopt,
-     &    ddot(length,vxykl,1,vxykl,1)
-         do isymab = 1, nsym
-          isymkl = isymab
-          write(lupri,*) 'symmetry block ',isymab,isymkl
-          call output(vxykl(1+ivabkl(isymab,isymkl)),1,n2bst(isymab),
-     &         1,nmatkl(isymkl),n2bst(isymab),nmatkl(isymkl),1,lupri)
-         end do
-       end if
-c
       else if (iopt.eq.1) then
-      if (R12EOR) then 
-        call cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,nr1bas,
-     &                      ir1bas,ir2bas,ivabkl,nalphaj,ialphaj,
-     &                      lr12f12htf,fr12f12htf,
-     &                      iopt,work(kend1),lwrk1)
-
-      else 
 c       -------------------------------------------------
 c       initialize V(aj,kl) with S(alpha,k)*S(j,l)
 c       -------------------------------------------------
@@ -954,27 +945,7 @@ c       -------------------------------------------------
           end do
         end do
 c
-      end if
-c
-        if (locdbg) then
-          write(lupri,*) 'in cc_r12mkvamkl0: iopt, vxykl', iopt,
-     &     ddot(length,vxykl,1,vxykl,1)
-          do isymkl = 1, nsym
-           isymaj  = muld2h(isycmo,isymkl)
-           write(lupri,*) 'symmetry block ',isymaj,isymkl
-           call output(vxykl(1+ivajkl(isymaj,isymkl)),1,nalphaj(isymaj),
-     &          1,nmatkl(isymkl),nalphaj(isymaj),nmatkl(isymkl),1,lupri)
-          end do
-        end if
-c
       else if (iopt.eq.2) then
-      if (R12EOR) then 
-        call cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,nr1bas,
-     &                      ir1bas,ir2bas,ivabkl,nalphaj,ialphaj,
-     &                      lr12f12htf,fr12f12htf,
-     &                      iopt,work(kend1),lwrk1)
-
-      else 
 c       -------------------------------------------------
 c       initialize V(ij,kl) with S(i,k)*S(j,l)
 c       -------------------------------------------------
@@ -1003,22 +974,42 @@ c       -------------------------------------------------
           end do
         end do
 c
+      else 
+        call quit('Unkown value for IOPT in CC_R12MKVAMKL0')
       end if
-        if (locdbg) then
-        write(lupri,*)'Norm Vijkl:', ddot(length,vxykl,1,vxykl,1)
-        do isymij = 1, nsym
+c
+      end if !(R12EOR)
+c
+      if (locdbg) then
+        write(lupri,*) 'in cc_r12mkvamkl0: iopt, norm^2(vxykl):', iopt,
+     &  ddot(length,vxykl,1,vxykl,1)
+        if (iopt.eq.0) then
+         do isymab = 1, nsym
+          isymkl = isymab
+          write(lupri,*) 'symmetry block ',isymab,isymkl
+          call output(vxykl(1+ivabkl(isymab,isymkl)),1,n2bst(isymab),
+     &         1,nmatkl(isymkl),n2bst(isymab),nmatkl(isymkl),1,lupri)
+         end do
+c
+        else if (iopt.eq.1) then
+         do isymkl = 1, nsym
+          isymaj  = muld2h(isycmo,isymkl)
+          write(lupri,*) 'symmetry block ',isymaj,isymkl
+          call output(vxykl(1+ivajkl(isymaj,isymkl)),1,nalphaj(isymaj),
+     &         1,nmatkl(isymkl),nalphaj(isymaj),nmatkl(isymkl),1,lupri)
+         end do
+c
+        else if (iopt.eq.2) then
+         do isymij = 1, nsym
           isymkl = isymij
           write(lupri,*)'symmetry block (ij,kl)',isymij,isymkl
           call output(vxykl(1+itr12sqt(isymij,isymkl)),1,
      &         nmatij(isymij),1,nmatkl(isymkl),nmatij(isymij),
      &         nmatkl(isymkl),1,lupri)
-        end do
+         end do
         end if
-c
-      else 
-        call quit('Unkown value for IOPT in CC_R12MKVAMKL0')
-      end if 
-
+      end if
+c     
       call qexit('r12mkvamkl0')       
       end                       
 *=====================================================================*
@@ -1049,7 +1040,7 @@ c---------------------------------------------------------------------
       parameter (locdbg = .false.)
 
       integer nr1orb(8),nr1bas(8),nr1xbas(8),n2bst1(8),nrgkl(8)
-      integer nr2bas(8),nvabkl(8),ivabkl(8,8),nalphaj(8),ialphaj(8,8)
+      integer nr2bas(8),nalphaj(8),ialphaj(8,8)
       integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),ir1xbas(8,8)
       integer ir2xbas(8,8),iaodis1(8,8),irgkl(8,8)
       integer nr1xorb(8),ir1xorb(8,8),nrxgkl(8),irxgkl(8,8)
@@ -1069,8 +1060,7 @@ c---------------------------------------------------------------------
 
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
-     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
-     &     ialphaj)
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nalphaj,ialphaj)
 
       if (locdbg) then
         write(lupri,*) 'in cc_r12mkvijkl: vajkl',
@@ -2011,6 +2001,9 @@ c     -----------------------------
                  call output(work(kvint),1,nvir(isyma),1,
      &              nrhf(isymj),nvir(isyma),
      &              nrhf(isymj),1,lupri)
+                 write(lupri,*)'in ccrhs_gp0: Lambdap'
+                 call output(lambp(koffl),1,nbas(isymmu),1,nvir(isyma),
+     &                       nbas(isymmu),nvir(isyma),1,lupri)
                end if
 c              ------------------------------
 c               make ctilde*V(atilde,m,k,l) 
@@ -2342,7 +2335,7 @@ c----------------------------------------------------------------------
       integer isymab,isyma,isymb,isymk,isym0
       integer idxab,idxak,koffc,ntotb,ntota
       integer koverlp,ksab,ksak,kend1,lwrk1,lwork,koff1,koffs
-      integer nnbast,nvabkl(8),ivabkl(8,8)
+      integer nnbast,nlamdsx,idum
       integer kcmo,lusifc,lusak
 #if defined (SYS_CRAY)
       real work(*)
@@ -2354,8 +2347,7 @@ c----------------------------------------------------------------------
 
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &     nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,ir1xbas,ir2bas,
-     &     ir2xbas,irgkl,irxgkl,iaodis1,nvabkl,ivabkl,nalphaj,
-     &     ialphaj)
+     &     ir2xbas,irgkl,irxgkl,iaodis1,nalphaj,ialphaj)
 
       nnbast = 0
       do i = 1,nsym
@@ -2388,7 +2380,10 @@ c     -------------------------------------------
      &            .FALSE.)
       REWIND LUSIFC
       CALL MOLLAB('FULLBAS ',LUSIFC,LUPRI)
-      READ (LUSIFC)
+      READ (LUSIFC) IDUM,IDUM,IDUM,NLAMDSX
+      IF (NLAMDSX.NE.NLAMDS) THEN
+        CALL QUIT('CC_R12MKSAK assumes MP2-R12 environment!')
+      END IF 
       READ (LUSIFC)
       READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
       CALL GPCLOSE(LUSIFC,'KEEP')
@@ -2409,8 +2404,8 @@ c       -------------------------------------------
 c       transform S_{alpha beta} with C_{beta k} 
 c       to obtain S_{alpha k}
 c       -------------------------------------------            
-        koffc = kcmo + iglmvi(isymb,isymk) + nbas(isymb)*nrhffr(isymk)
-        koffs = ksak + ir1bas(isyma,isymb)
+        koffc = kcmo + iglmrh(isymb,isymk) 
+        koffs = ksak + ir1bas(isyma,isymk)
         ntotb = max(nbas(isymb),1)
         ntota = max(mbas1(isyma),1)
          
@@ -2443,9 +2438,9 @@ c     ----------------------------------
       return
       end       
 *======================================================================*
-      subroutine cc_r12getvxykl(vxykl,length,cmo,isycmo,nvabkl,
+      subroutine cc_r12getvxykl(vxykl,length,cmo,isycmo,
      &                          nr1bas,ir1bas,ir2bas,
-     &                          ivabkl,nalphaj,ialphaj,
+     &                          nalphaj,ialphaj,
      &                          lunit,filename,iopt,work,lwork)
 c---------------------------------------------------------------------
 c     purpose: get Vabkl for initialisation routine cc_r12mkvamkl0
@@ -2471,7 +2466,7 @@ c---------------------------------------------------------------------
       integer lunit,isyma,isymb,isymk,isyml,isymab,isymkl,isymak,
      &        nbetl,iadr,ilen,idxkl,idxak,kend2,kscr2,kend1,lwrk2 
       integer lwork,isymbl,idxab,idxabkl,iopt,idxbl,idxbi,idxil
-      integer nvabkl(8),nr1bas(8),ir1bas(8,8),ir2bas(8,8),ivabkl(8,8)
+      integer nr1bas(8),ir1bas(8,8),ir2bas(8,8)
       integer idxbjlk,kend3,lwrk3,ntota,koffv,koffc,length
       integer isymj,kscr3,isycmo,isymbj,nalphaj(8),ialphaj(8,8)
       integer ntota1,koffvblak,idxbj,isymi,isymij

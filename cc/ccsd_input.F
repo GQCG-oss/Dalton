@@ -8227,7 +8227,7 @@ CCN
       LOGICAL SET
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_R12IN')
-      PARAMETER (NTABLE = 21, D0 = 0.0D0)
+      PARAMETER (NTABLE = 22, D0 = 0.0D0)
       CHARACTER WORD*(7)
       CHARACTER TABLE(NTABLE)*(7)
       CHARACTER*120 CC2LAB
@@ -8236,7 +8236,7 @@ CCN
      &            '.R12DIA','.R12SVD','.R12LEV','.R12RST',
      &            '.BASSCL','.NO 1  ','.NO 2  ','.R12PRP',
      &            '.CABS  ','.NO B'' ','.NO 3  ','.CC2   ',
-     &            '.NATVIR'/
+     &            '.NATVIR','.CCVABKL'/
       DATA SET/.FALSE./
       R12LEV = D0
       IF (SET) RETURN
@@ -8254,7 +8254,7 @@ CCN
           END DO
           IF (IJUMP .LE. NTABLE) THEN
             GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
-     &            21), IJUMP
+     &            21,22), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_R12IN.')
     1       CONTINUE
                R12HYB = .FALSE.
@@ -8364,7 +8364,11 @@ celena
                R12NOP = .TRUE.
                NOTTWO = .TRUE.
                NOTTRE = .TRUE.
-            GO TO 100         
+            GO TO 100  
+   22       CONTINUE
+               !use V^(alpha beta)_(kl) intermediate
+               USEVABKL = .TRUE.
+            GO TO 100      
           ELSE
            WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -8393,7 +8397,8 @@ celena
                IF (NATVIR) THEN 
                   R12NOA = .FALSE.
                   R12NOP = .FALSE.
-                  R12NOB = .TRUE. 
+                  R12NOB = .TRUE.
+                  NORXR  = .TRUE.
                END IF
                IAP = 2
             ELSE IF (IAPCC2 .EQ. 2) THEN

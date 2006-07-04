@@ -332,10 +332,13 @@ C       MPERM = ??
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,
      &                  WORK(KCHI1),WORK(KCHI2))
+          IF (CCR12.AND..NOT.(CCS.OR.CC2)) 
+     &      CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTRWR12,MODEL,
+     &                    DUMMY,WORK(KCHIR12))
           XNORM = DDOT(NT1AM(ISYM),WORK(KCHI1),1,WORK(KCHI1),1)
           IF (.NOT.CCS) 
      &     XNORM = XNORM+DDOT(NT2AM(ISYM),WORK(KCHI2),1,WORK(KCHI2),1)
-          IF (CCR12)
+          IF (CCR12.AND..NOT.(CCS.OR.CC2))
      &     XNORM = XNORM+DDOT(NTR12AM(ISYM),WORK(KCHIR12),1,
      &                        WORK(KCHIR12),1)
           WRITE (LUPRI,*) MSGDBG, IVEC,XNORM

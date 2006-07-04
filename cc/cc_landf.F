@@ -2132,7 +2132,8 @@ C
       RETURN
       END
 C  /* Deck cclt_p21i */
-      SUBROUTINE CCLT_P21I(X21INT,ISYINT,WORK,LWORK)
+      SUBROUTINE CCLT_P21I(X21INT,ISYINT,WORK,LWORK,
+     &                     IT2BCD,NT2BCD,IT1AM,NT1AM,MVIR)
 C
 C     Written by Asger Halkier 26/10 - 1995
 C
@@ -2142,11 +2143,20 @@ C     Purpose: To transpose the occupied indices of the intermediates
 C              entering some of the terms in the 2.1-block.
 C
 C
-#include <implicit.h>
-      DIMENSION X21INT(*), WORK(LWORK)
+C#include <implicit.h>
+      IMPLICIT NONE
 #include <priunit.h>
 #include <ccorb.h>
-#include <ccsdsym.h>
+C#include <ccsdsym.h>
+
+      INTEGER LWORK,ISYINT
+      INTEGER IT2BCD(8,8),NT2BCD(8),IT1AM(8,8),NT1AM(8),MVIR(8)
+      INTEGER ISYMJ, J, ISYMI, I, ISYMA, ISYMAI, ISYMAJ, NAIJ, NAJI
+#if defined (SYS_CRAY)
+      REAL X21INT(*), WORK(LWORK)
+#else
+      DOUBLE PRECISION X21INT(*), WORK(LWORK)
+#endif
 C
       CALL QENTER('CCLT_P21I')
 C
@@ -2174,11 +2184,11 @@ C
                DO 130 I = 1,NRHF(ISYMI)
 C
                   NAIJ = IT2BCD(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J - 1)
-     &                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + 1
+     &                 + IT1AM(ISYMA,ISYMI) + MVIR(ISYMA)*(I - 1) + 1
                   NAJI = IT2BCD(ISYMAJ,ISYMI) + NT1AM(ISYMAJ)*(I - 1)
-     &                 + IT1AM(ISYMA,ISYMJ) + NVIR(ISYMA)*(J - 1) + 1
+     &                 + IT1AM(ISYMA,ISYMJ) + MVIR(ISYMA)*(J - 1) + 1
 C
-                  CALL DCOPY(NVIR(ISYMA),WORK(NAIJ),1,X21INT(NAJI),1)
+                  CALL DCOPY(MVIR(ISYMA),WORK(NAIJ),1,X21INT(NAJI),1)
 C
   130          CONTINUE
   120       CONTINUE

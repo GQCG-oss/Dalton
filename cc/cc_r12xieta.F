@@ -51,6 +51,8 @@ C
 *                The result should be the same as the corresponding
 *                part of the R12 overlap matrix.
 *
+* Note: This routine does NOT work using CABS!
+*
 * by  C. Neiss      winter 2004/2005
 *-----------------------------------------------------------------------
 
@@ -74,7 +76,7 @@ C-----------------------------------------------------------------------
       integer nr1orb(8),nr1xorb(8),nr1bas(8),nr1xbas(8),nr2bas,n2bst1(8)
       integer ir1xbas(8,8),ir1xorb(8,8),ibasx(8)
       integer ir1orb(8,8),ir1bas(8,8),ir2bas(8,8),iaodis1(8,8)
-      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8),nvabkl(8),ivabkl(8,8) 
+      integer ir2xbas(8,8),irgkl(8,8),nrgkl(8) 
       integer nrxgkl(8),irxgkl(8,8),nalphaj(8),ialphaj(8,8)
       integer nr2bas2,ir2bas2(8,8),ir2xbas2(8,8)
       integer iaodis2(8,8),nallbas,nbasxtd(8),norbxtd(8),nlamdsxtd
@@ -90,7 +92,7 @@ C-----------------------------------------------------------------------
       integer koffv,koffr,koffrv,koffrv2,koffc,koffres,koffx
       integer isympt,imatrix,ierr,iprp,lusifc,idel,idelta,idum,iopt
       integer luvxint
-      integer kappa,beta,ienddelta
+      integer kappa,beta,ienddelta,istartdelta
 
 #if defined (SYS_CRAY)
       real zero,one,work(*),fac,ddot,time,dummy
@@ -110,15 +112,17 @@ C-----------------------------------------------------------------------
         call flshfo(lupri)
       end if
       time = second()
-
+C
+      if (R12CBS) call quit('CC_R12VXINT does not work with CABS!')
+C
       filer12 = frhtf
       filer12_2 = frhtf2
- 
+C
 C     additional dimensions/offsets:
       call cc_r12offset(nr1orb,nr1xorb,nr1bas,nr1xbas,nr2bas,
      &                  nrgkl,nrxgkl,n2bst1,ir1orb,ir1xorb,ir1bas,
      &                  ir1xbas,ir2bas,ir2xbas,irgkl,irxgkl,iaodis1,
-     &                  nvabkl,ivabkl,nalphaj,ialphaj)
+     &                  nalphaj,ialphaj)
      
       nallbas = 0
       nlamdsxtd = 0
@@ -464,9 +468,11 @@ C         allocate memory for r integrals:
 c          call dzero(work(kr12bkl),nrgkl(isymd))
 c          call dzero(work(kr12bkl2),nrxgkl(isymd)) 
 
+          istartdelta = 1
           ienddelta = nbasxtd(isymd)
           if (ltstxint) ienddelta = mbas1(isymd)
-          do idelta = 1, ienddelta
+c
+          do idelta = istartdelta, ienddelta
             !is delta auxiliary function?
             if (idelta .gt. mbas1(isymd)) then
               lauxdelta = .true.
@@ -540,6 +546,7 @@ C-----------------------------------------------------------------------
               else 
                 fac = -one
               end if
+C
               koffv = iaodis2(isymb,isymkappa) + kprpao
               koffr = irgkl(isymkappa,isymmn) + kr12bkl 
               koffrv = irgkl(isymb,isymmn) + krvbkl
@@ -585,7 +592,8 @@ c              end if
      &                 max(1,nbasxtd(isymb)),
      &                 work(koffr),max(1,mbas2(isymkappa)),one,
      &                 work(koffrv2),max(1,mbas2(isymb)))
-              end if
+              end if !ltstxint
+
               if (locdbg) then
                 write(lupri,*) 'Symmetry beta, mn:',isymb,isymmn
                 write(lupri,*) 'beta is AO basis function:'
@@ -810,6 +818,540 @@ C-----------------------------------------------------------------------
       end
 
 *=======================================================================
+*=======================================================================
+      subroutine cc_r12vxint2(rpkql,work,lwork)
+*-----------------------------------------------------------------------
+* Purpose: Calculate VX-intermediate for CC-R12 response and store 
+*          on file
+*
+*          !!!for use in MP2-R12!!!
+*
+* by  C. Neiss      jan. 2006
+*-----------------------------------------------------------------------
+
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <r12int.h>
+#include <ccr12int.h>
+#include <ccrspprp.h>
+#include <second.h>
+
+C-----------------------------------------------------------------------
+C variables/parameter:
+C-----------------------------------------------------------------------
+      logical locdbg,lauxq
+      parameter (locdbg = .false.)
+      character*8 label1,lab123(3)
+      integer iaodis2(8,8),nallbas,nbasxtd(8),norbxtd(8),nlamdsxtd
+      integer iaomo(8,8),naomo(8),n2bstxtd(8),iaomox(8,8)
+      integer icount1,icount2,idum
+      integer lwork,kend1,kend2,kend3,kend4,
+     &        lwrk1,lwrk2,lwrk3,lwrk4
+      integer kcmo,kprpao,kprpmo,kvxintsq,kvxint
+      integer koff1,koff2,koffc,koffv,koffres,kr12pkl,kr12pkl2,
+     &        krvpmn,krvpmn2,koffx
+      integer isym,isym1,isym2,isympt,isymb,isymkappa,isymp,isymq,isyms,
+     &        isymkl,isymmn,isympq,idxq,istartq
+      integer ierr,iprp,imatrix,iopt
+      integer luvxint
+
+#if defined (SYS_CRAY)
+      real zero,one,work(*),rpkql(*),fac,ddot,time,dummy
+#else
+      double precision zero,one,work(*),rpkql(*),fac,ddot,time,dummy
+#endif
+      parameter (zero = 0.0D0, one = 1.0D0)
+      data lab123/'********','********','********'/
+
+C-----------------------------------------------------------------------
+C initialisation
+C-----------------------------------------------------------------------
+      call qenter ('cc_r12vxint')
+      if (locdbg) then
+        write(lupri,*) 'Entered CC_R12VXINT'
+        write(lupri,*) 'memory available: ',lwork,' double words'
+        call flshfo(lupri)
+      end if
+      time = second()
+C
+C     additional dimensions/offsets:
+C    
+      nallbas = 0
+      nlamdsxtd = 0
+      do isym = 1, nsym
+        nbasxtd(isym) = mbas1(isym) + mbas2(isym)
+        norbxtd(isym) = norb1(isym) + norb2(isym)
+        nallbas = nallbas + nbasxtd(isym)
+        nlamdsxtd = nlamdsxtd + nbasxtd(isym)*norbxtd(isym) 
+      end do
+
+      do isym = 1, nsym
+        icount1 = 0
+        icount2 = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          iaodis2(isym1,isym2) = icount1
+          iaomo(isym1,isym2) = icount2
+          icount1 = icount1 + nbasxtd(isym1)*nbasxtd(isym2)
+          icount2 = icount2 + nbasxtd(isym1)*norbxtd(isym2)
+        end do
+        n2bstxtd(isym) = icount1
+        naomo(isym) = icount2
+      end do
+
+      if (locdbg) then
+        call around('r_12 integrals:')
+        call cc_prp(dummy,rpkql,1,0,1)
+      end if
+
+C-----------------------------------------------------------------------
+C open output file
+C-----------------------------------------------------------------------
+      luvxint = 0
+      call gpopen(luvxint,'CCR12VXINT','UNKNOWN',' ','UNFORMATTED',
+     &            idum,.false.)
+
+C-----------------------------------------------------------------------
+C read in MO coefficients
+C-----------------------------------------------------------------------
+C     allocate memory for MO coefficients:
+      kcmo  = 1
+      kend1 = kcmo + nlamdsxtd
+      lwrk1 = lwork - kend1
+      if (lwrk1 .lt. 0) then
+        call quit ('Insufficient work memory in CC_R12VXINT at #1')
+      end if
+
+      call cc_r12cmo(work(kcmo),work(kend1),lwrk1)
+C
+C-----------------------------------------------------------------------
+C start loop over operators V
+C-----------------------------------------------------------------------
+      IF (LOCDBG) THEN
+        CALL AROUND('LABELS on Operator-List:')
+        DO IPRP = 1, NPRLBL
+          WRITE(LUPRI,*) PRPLBL(IPRP)
+        END DO
+      END IF
+
+      DO IPRP = 1, NPRLBL
+        LABEL1 = PRPLBL(IPRP)
+        IF (LABEL1(1:5).NE.'HAM0 ') THEN
+C
+C-----------------------------------------------------------------------
+C read in V integrals
+C-----------------------------------------------------------------------
+C       allocate memory for V integrals:
+        !since we do not know the symmetry of V in advance, it is more
+        !memory allocated than needed in general!
+        kprpao = kend1
+        kend2 = kprpao + nallbas*nallbas
+        lwrk2 = lwork - kend2
+        if (locdbg) write(lupri,*) 'lwrk2 at #2 = ',lwrk2 
+        if (lwrk2 .lt. 0) then
+          call quit ('Insufficient work memory in CC_R12VXINT at #2')
+        end if
+        !just to be on the safe side:
+        call dzero(work(kprpao),nallbas*nallbas)
+
+        !symmetry of V is determined here
+        CALL CCPRPAO(LABEL1,.FALSE.,WORK(KPRPAO),ISYMPT,IMATRIX,IERR,
+     &               WORK(KEND2),LWRK2)
+
+        if (ierr .gt. 0 ) then
+          call quit('property not found on file')
+        end if
+        
+        if (isympt .eq. 0) then
+          write(lupri,*) 'WARNING: Symmetry for operator could not be'//
+     &          ' determined!'
+          write(lupri,*) 'WARNING: Will use IRREP = 1'
+          isympt = 1
+        end if
+
+        if (locdbg) then
+          call around('Original V integrals')
+          write(lupri,*) 'LABEL = ',label1, 'ISYMPT = ',isympt
+          do isymkappa = 1, nsym
+            isymb = muld2h(isympt,isymkappa)
+            koffv = iaodis2(isymb,isymkappa) + kprpao
+            write(lupri,*) 'Symmetry block:', isymb, isymkappa
+            if (nbasxtd(isymkappa) .eq. 0) then
+              write(lupri,*) 'This symmetry is empty'
+            else
+              call output(work(koffv),1,nbasxtd(isymb),1,
+     &                    nbasxtd(isymkappa),nbasxtd(isymb),
+     &                    nbasxtd(isymkappa),1,lupri)
+            end if
+          end do
+        end if
+
+C-----------------------------------------------------------------------
+C transform first index to MO
+C-----------------------------------------------------------------------
+        kprpmo = kend2
+        kend3  = kprpmo + n2bstxtd(isympt)
+        lwrk3  = lwork - kend3
+        if (locdbg) write(lupri,*) 'lwrk3 at #3 = ',lwrk3
+        if (lwrk3 .lt. 0) then
+          call quit ('Insufficient work memory in CC_R12VXINT at #3')
+        end if
+        
+        do isymkappa = 1, nsym
+          isymb = muld2h(isympt,isymkappa)
+          isyms = isymkappa  
+          koffv = iaodis2(isymb,isymkappa) + kprpao
+          koffc = iaomo(isymkappa,isyms) + kcmo
+          koffres = iaomo(isymb,isyms) + kprpmo
+          call dgemm('N','N',nbasxtd(isymb),norbxtd(isyms),
+     &               nbasxtd(isymkappa),one,work(koffv),
+     &               max(1,nbasxtd(isymb)),work(koffc),
+     &               max(1,nbasxtd(isymkappa)),
+     &               zero,work(koffres),max(1,nbasxtd(isymb))) 
+
+C-----------------------------------------------------------------------
+C transform second index to MO
+C-----------------------------------------------------------------------
+          isymp = isymb
+          !overwrite original values
+          call dzero(work(koffv),nbasxtd(isymp)*nbasxtd(isyms))
+          if (norbxtd(isymp)*norbxtd(isyms).gt.
+     &        nbasxtd(isymb)*nbasxtd(isymkappa)) then
+            call quit('Dimension error in CC_R12VXINT2')
+          end if
+          koffc = iaomo(isymb,isymp) + kcmo
+          call dgemm('T','N',norbxtd(isymp),norbxtd(isyms),
+     &               nbasxtd(isymb),
+     &               one,work(koffc),max(1,nbasxtd(isymb)),
+     &               work(koffres),max(1,nbasxtd(isymb)),
+     &               zero,work(koffv),max(1,norbxtd(isymp)))
+
+        end do
+
+        if (locdbg) then
+          call around('V integrals in MO basis')
+          write(lupri,*) 'LABEL = ',label1
+          do isym2 = 1, nsym
+            isym1 = muld2h(isympt,isym2)
+            koffv = iaodis2(isym1,isym2) + kprpao
+            write(lupri,*) 'Symmetry block:', isym1, isym2
+            if (norbxtd(isym2) .eq. 0) then
+              write(lupri,*) 'This symmetry is empty'
+            else
+              call output(work(koffv),1,norbxtd(isym1),1,
+     &                    norbxtd(isym2),norbxtd(isym1),
+     &                    norbxtd(isym2),1,lupri)
+            end if
+          end do
+        end if
+
+C-----------------------------------------------------------------------
+C allocate memory for result arrays (square matrix and lower triangle)
+C-----------------------------------------------------------------------
+        kvxintsq = kend2
+        kvxint   = kvxintsq + nr12r12sq(isympt)
+        kend3 = kvxint + nr12r12p(isympt)
+        lwrk3 = lwork - kend3
+        if (locdbg) write(lupri,*) 'lwrk3 at #4 = ',lwrk3
+        if (lwrk3 .lt. 0) then
+          call quit('Insufficient memory in CC_R12VXINT at #4')
+        end if
+C       zero out result array:
+        call dzero(work(kvxintsq),nr12r12sq(isympt))
+        call dzero(work(kvxint),nr12r12p(isympt))
+
+C-----------------------------------------------------------------------
+C start loop over q/q':
+C-----------------------------------------------------------------------
+        do isymq = 1, nsym
+          do isymp = 1, nsym
+            isympq = muld2h(isymp,isymq)
+            isymkl = isympq
+            isymmn = muld2h(isympt,isympq)
+            isyms  = muld2h(isympt,isymp)
+
+C           allocate memory for "(r*V)", r_12 integrals:
+            if (r12cbs) then
+              krvpmn2  = kend3
+              kr12pkl2 = krvpmn2 + norb2(isymp)*nmatkl(isymmn)
+            else
+              krvpmn   = kend3
+              krvpmn2  = krvpmn  + norb1(isymp)*nmatkl(isymmn)
+              kr12pkl  = krvpmn2 + norb2(isymp)*nmatkl(isymmn)
+              kr12pkl2 = kr12pkl + max(norb1(isymp)*nmatkl(isymkl),
+     &                     norb1(isyms)*nmatkl(isymmn))
+            end if
+            kend4    = kr12pkl2+ max(norb2(isymp)*nmatkl(isymkl),
+     &                   norb2(isyms)*nmatkl(isymmn))
+            lwrk4   = lwork - kend4
+            if (locdbg) write(lupri,*) 'lwrk4 at #5 = ',lwrk4
+            if (lwrk4 .lt. 0) then
+              call quit('Insufficient work memory in CC_R12VXINT at #5')
+            end if 
+           
+            if (r12cbs) then
+              istartq = norb1(isymq) + 1
+            else
+              istartq = 1
+            end if
+ 
+            do idxq = istartq, norbxtd(isymq)
+              !is q auxiliary function?
+              if (idxq .gt. norb1(isymq)) then
+                lauxq = .true.
+              else
+                lauxq = .false.
+              end if
+ 
+C-----------------------------------------------------------------------
+C contract r_12 with V
+C-----------------------------------------------------------------------
+              if (lauxq) then
+                fac = one
+              else 
+                fac = -one
+              end if
+C
+              if (.not.r12cbs) 
+     &          call cc_r12sort(rpkql,1,work(kr12pkl),idxq,isymq,
+     &                          1,norb1(isyms),isyms,norbxtd,nrhfb)
+              call cc_r12sort(rpkql,1,work(kr12pkl2),idxq,isymq,
+     &                        norb1(isyms)+1,norb1(isyms)+norb2(isyms),
+     &                        isyms,norbxtd,nrhfb)
+              if (locdbg) then
+                call around('r_(s,mn)^q integrals')
+                write(lupri,*) 'isyms, isymmn: ',isyms, isymmn
+                if (.not.r12cbs) then
+                write(lupri,*) 's is MO basis function:'
+                call output(work(kr12pkl),1,norb1(isyms),
+     &                      1,nmatkl(isymmn),norb1(isyms),
+     &                      nmatkl(isymmn),1,lupri)
+                write(lupri,*)
+                end if
+                write(lupri,*) 's is aux. function:'
+                call output(work(kr12pkl2),1,norb2(isyms),
+     &                      1,nmatkl(isymmn),norb2(isyms),
+     &                      nmatkl(isymmn),1,lupri)
+              end if              
+C
+              if (.not.r12cbs) then
+                koffv = iaodis2(isymp,isyms) + kprpao
+                call dgemm('N','N', norb1(isymp),nmatkl(isymmn),
+     &                  norb1(isyms),fac,work(koffv),
+     &                  max(1,norbxtd(isymp)),
+     &                  work(kr12pkl),max(1,norb1(isyms)),zero,
+     &                  work(krvpmn),max(1,norb1(isymp)))
+                koffv = iaodis2(isymp,isyms) +
+     &                  norbxtd(isymp)*norb1(isyms) + kprpao
+                call dgemm('N','N',norb1(isymp),nmatkl(isymmn),
+     &                  norb2(isyms),-fac,work(koffv),
+     &                  max(1,norbxtd(isymp)),
+     &                  work(kr12pkl2),max(1,norb2(isyms)),one,
+     &                  work(krvpmn),max(1,norb1(isymp)))
+                koffv = iaodis2(isymp,isyms) + norb1(isymp) + kprpao
+                call dgemm('N','N',norb2(isymp),nmatkl(isymmn),
+     &                  norb1(isyms),-fac,work(koffv),
+     &                  max(1,norbxtd(isymp)),
+     &                  work(kr12pkl),max(1,norb1(isyms)),zero,
+     &                  work(krvpmn2),max(1,norb2(isymp)))
+              else 
+                call dzero(work(krvpmn2),norb2(isymp)*nmatkl(isymmn))
+              end if
+              koffv = iaodis2(isymp,isyms) +
+     &                norbxtd(isymp)*norb1(isyms) + norb1(isymp) +
+     &                kprpao
+              call dgemm('N','N',norb2(isymp),nmatkl(isymmn),
+     &                norb2(isyms),fac,work(koffv),
+     &                max(1,norbxtd(isymp)),
+     &                work(kr12pkl2),max(1,norb2(isyms)),one,
+     &                work(krvpmn2),max(1,norb2(isymp)))
+
+              if (locdbg) then
+                call around('r*V integrals')
+                write(lupri,*) 'Symmetry p, mn:',isymp,isymmn
+                if (.not.r12cbs) then
+                write(lupri,*) 'p is MO basis function:'
+                call output(work(krvpmn),1,norb1(isymp),1,
+     &                      nmatkl(isymmn),norb1(isymp),
+     &                      nmatkl(isymmn),1,lupri)
+                if (min(norb1(isymp),nmatkl(isymmn)).eq.0) then
+                  write(lupri,*) 'This symmetry block is empty'
+                end if
+                end if
+                write(lupri,*) 'p is aux. function:'
+                call output(work(krvpmn2),1,norb2(isymp),1,
+     &                      nmatkl(isymmn),norb2(isymp),
+     &                      nmatkl(isymmn),1,lupri)
+                if (min(norb2(isymp),nmatkl(isymmn)).eq.0) then
+                  write(lupri,*) 'This symmetry block is empty'
+                end if
+              end if
+
+C-----------------------------------------------------------------------
+C get r_12 integrals for second time:  
+C-----------------------------------------------------------------------
+
+              if (.not.r12cbs) 
+     &          call cc_r12sort(rpkql,1,work(kr12pkl),idxq,isymq,
+     &                          1,norb1(isymp),isymp,norbxtd,nrhfb)
+              call cc_r12sort(rpkql,1,work(kr12pkl2),idxq,isymq,
+     &                        norb1(isymp)+1,norb1(isymp)+norb2(isymp),
+     &                        isymp,norbxtd,nrhfb)
+
+              if (locdbg) then
+                call around('r_(p,kl)^q integrals')
+                write(lupri,*) 'isymp, isymkl: ',isymp, isymkl
+                if (.not.r12cbs) then
+                write(lupri,*) 'p is MO basis function:'
+                call output(work(kr12pkl),1,norb1(isymp),
+     &                      1,nmatkl(isymkl),norb1(isymp),
+     &                      nmatkl(isymkl),1,lupri)
+                write(lupri,*)
+                end if
+                write(lupri,*) 'p is aux. function:'
+                call output(work(kr12pkl2),1,norb2(isymp),
+     &                      1,nmatkl(isymkl),norb2(isymp),
+     &                      nmatkl(isymkl),1,lupri)
+              end if
+
+C----------------------------------------------------------------------
+C contract and add up over all q:
+C----------------------------------------------------------------------
+              koffx  = ir12r12sq(isymkl,isymmn) + kvxintsq
+              if (.not.r12cbs)
+     &          call dgemm('T','N',nmatkl(isymkl),nmatkl(isymmn),
+     &               norb1(isymp),one,work(kr12pkl),max(1,norb1(isymp)),
+     &               work(krvpmn),max(1,norb1(isymp)),one,work(koffx),
+     &               max(1,nmatkl(isymkl)))
+              call dgemm('T','N',nmatkl(isymkl),nmatkl(isymmn),
+     &              norb2(isymp),one,work(kr12pkl2),max(1,norb2(isymp)),
+     &              work(krvpmn2),max(1,norb2(isymp)),one,
+     &              work(koffx),max(1,nmatkl(isymkl)))
+              if (locdbg) then
+                call around ('intermediate VX:')
+                write(lupri,*) 'idxq, isymq: ',idxq,isymq
+                write(lupri,*) 'isymkl, isymmn :',isymkl,isymmn
+                write(lupri,*) 'nr12r12sq(isympt),'//
+     &                         'ir12r12sq(isymkl,isymmn): ',
+     &                          nr12r12sq(isympt),
+     &                          ir12r12sq(isymkl,isymmn)
+                call output(work(koffx),1,nmatkl(isymkl),1,
+     &                    nmatkl(isymmn),nmatkl(isymkl),nmatkl(isymmn),
+     &                    1,lupri)
+              end if
+            end do
+
+C----------------------------------------------------------------------
+C end of loops
+C----------------------------------------------------------------------
+          end do !isymp
+        end do !isymq
+ 
+C-----------------------------------------------------------------------
+C resort result into a symmetry packed triangular matrix and
+C apply the projection operator P_(mn)^(kl):
+C-----------------------------------------------------------------------
+        iopt = 2
+        call ccr12pck2(work(kvxint),isympt,.TRUE.,work(kvxintsq),
+     &                 'N',iopt)
+
+        if (locdbg) then
+          call around('final VXINT before packing')
+          do isymmn = 1, nsym
+            isymkl = muld2h(isympt,isymmn)
+            koffx = ir12r12sq(isymkl,isymmn) + kvxintsq
+            write(lupri,*) 'Symmetry block:', isymkl, isymmn
+            if (nmatkl(isymkl).eq.0 .or. nmatkl(isymmn).eq.0) then
+              write(lupri,*) 'This symmetry is empty'
+            else
+              call output(work(koffx),1,nmatkl(isymkl),1,
+     &                    nmatkl(isymmn),nmatkl(isymkl),nmatkl(isymmn),
+     &                    1,lupri)
+            end if
+          end do
+          write(lupri,*) 
+          write(lupri,*) 'Norm^2 over symmetries: ',
+     &         ddot(nr12r12sq(isympt),work(kvxintsq),1,work(kvxintsq),1)
+          call around('final VXINT after packing')
+          do isym2 = 1, nsym
+            isym1 = muld2h(isympt,isym2)
+            koffx = ir12r12p(isym1,isym2) + kvxint 
+            if (isym1 .lt. isym2) then 
+              write(lupri,*) 'Symmetry block: ', isym1, isym2
+              if (nmatkl(isym1).eq.0 .or. nmatkl(isym2).eq.0) then
+                write(lupri,*) 'This symmetry is empty' 
+              else
+                call output(work(koffx),1,nmatkl(isym1),1,
+     &                      nmatkl(isym2),nmatkl(isym1),
+     &                      nmatkl(isym2),1,lupri)
+              end if
+            else if (isym1 .eq. isym2) then
+              write(lupri,*) 'Symmetry block: ', isym1, isym2
+              if (nmatkl(isym1) .eq. 0) then
+                write(lupri,*) 'This symmetry is empty'
+              else 
+                call outpak(work(koffx),nmatkl(isym1),1,lupri)
+              end if
+            end if
+          end do
+        end if
+
+C-----------------------------------------------------------------------
+C write result on file for future use
+C-----------------------------------------------------------------------
+        !place date and time in lab123
+        call getdat(lab123(2),lab123(3))
+
+        !need to write always at least 4 ("long") items, otherwise  
+        !problems with subroutine MOLLAB
+        write(luvxint) lab123, label1
+        write(luvxint) isympt,dummy,dummy,dummy,dummy
+        write(luvxint) (work(kvxint-1+i), i=1, max(4,nr12r12p(isympt)))
+
+        if (locdbg) then
+          write(lupri,*)
+          write(lupri,*) 'nr12r12p(isympt) = ',nr12r12p(isympt)
+          write(lupri,*) label1, isympt
+          write(lupri,*) 'norm:',ddot(nr12r12p(isympt),work(kvxint),1,
+     &                                                 work(kvxint),1)
+          write(lupri,*) (work(kvxint-1+i), i=1, nr12r12p(isympt))
+        end if
+
+C-----------------------------------------------------------------------
+C end loop over operators V
+C-----------------------------------------------------------------------
+        end if
+      end do !operator V
+
+C-----------------------------------------------------------------------
+C close output file
+C-----------------------------------------------------------------------
+      call gpclose(luvxint,'KEEP')
+
+C-----------------------------------------------------------------------
+C end subroutine
+C-----------------------------------------------------------------------
+      time = second() - time
+      WRITE(LUPRI,'(1X,A)')
+     &     'Computation of CC-R12 VXINT response intermediates done'
+      WRITE(LUPRI,'(/1X,A,F7.2,A)')
+     &     '>>> Time used for VXINT is',time,' seconds'
+      WRITE(LUPRI,*)
+
+      if (locdbg) then
+        write(lupri,*) 'Leaving CC_R12VXINT'
+        call flshfo(lupri)
+      end if
+     
+      call qexit('cc_r12vxint')
+
+      return 
+      end
+
+*=======================================================================
 
 *=====================================================================*
       subroutine cc_r12xi(XIR12,ISYMXI,TRXI,TR12,ISYMC,XINT,VXINT,ISYMV,
@@ -964,9 +1506,10 @@ C----------------------------------------------------------------------
       character*1 trv !allowed are 'N' and 'T'
 
 #if defined (SYS_CRAY)
-      real vcint(*),tr12(*),prpao(*),lamh(*),cmo(*),work(*)
+      real vcint(*),tr12(*),prpao(*),lamh(*),cmo(*),work(*),ddot
 #else
-      double precision vcint(*),tr12(*),prpao(*),lamh(*),cmo(*),work(*)
+      double precision vcint(*),tr12(*),prpao(*),lamh(*),cmo(*),work(*),
+     &                 ddot
 #endif
 
       call qenter('cc_r12xi2a')
@@ -993,6 +1536,8 @@ C-----------------------------------------------------------------------
       if (locdbg) then
         call around('R12 amplitudes in CC_R12XI after unpacking')
         call cc_prsqr12(tr12,isymc,'N',1,.false.)
+        write(lupri,*) 'Norm^2 of R12 amplitudes: ',
+     &    ddot(ntr12sq(isymc),tr12,1,tr12,1)
       end if
  
 C-----------------------------------------------------------------------
@@ -1000,12 +1545,14 @@ C transform perturbation integrals in MO-basis (occ. orbitals only)
 C-----------------------------------------------------------------------
       kvint = 1
       kend1 = kvint + nmatij(muld2h(isymh,isymv))
+
       kscr1 = kend1
       kend2 = kscr1 + nt1ao(isymv)
       lwrk2 = lwork - kend2
       if (lwrk2 .lt. 0) then
         call quit('Insufficient memory in CC_R12XI2A')
       end if 
+
       do isym2 = 1, nsym
         isym1 = muld2h(isymv,isym2)
         koffv = 1 + iaodis(isym1,isym2)
@@ -1015,8 +1562,8 @@ C-----------------------------------------------------------------------
      &              one,cmo(koffc),max(1,nbas(isym1)),prpao(koffv),
      &              max(1,nbas(isym1)),zero,work(kscr1),
      &              max(1,nrhf(isym1)))
-c       call output(work(kscr1),1,nrhf(isym1),1,nbas(isym2),nrhf(isym1),
-c    &              nbas(isym2),1,lupri)
+C       call output(work(kscr1),1,nrhf(isym1),1,nbas(isym2),nrhf(isym1),
+C    &              nbas(isym2),1,lupri)
         !second transformation
         koffv = kvint + imatij(isym1,muld2h(isymh,isym2))
         koffc = 1 + iglmrh(isym2,muld2h(isymh,isym2))
@@ -1075,6 +1622,8 @@ c    &              nbas(isym2),1,lupri)
      &                  nrhf(isym1),nrhf(isym2),1,lupri)
           end if
         end do
+        write(lupri,*) 'Norm^2 of Transformed V integrals: ',
+     &    ddot(nmatij(muld2h(isymh,isymv)),work(kvint),1,work(kvint),1)
         call flshfo(lupri)
       end if
 
@@ -1137,6 +1686,8 @@ c    &                nrhf(isymm),1,lupri)
           end if
         end do
 C       write(lupri,*) (vcint(i), i=1, ntr12sq(isymvc))
+        write(lupri,*) 'Norm^2 of c*V before P_{kl}^{ij}: ',
+     &    ddot(ntr12sq(isymvc),vcint,1,vcint,1)
       end if
 
       !apply P_{kl}^{ij}
@@ -1155,6 +1706,8 @@ C       write(lupri,*) (vcint(i), i=1, ntr12sq(isymvc))
      &                  nmatkl(isymkl),nmatij(isymij),1,lupri)
           end if
         end do
+        write(lupri,*) 'Norm^2 of  VC-intermediate ',
+     &    ddot(ntr12sq(isymvc),vcint,1,vcint,1)
       end if
     
       if (locdbg) write(lupri,*) 'Leaving CC_R12XI2A'
@@ -2305,4 +2858,235 @@ c    &                nrhf(isymj),nrhf(isymi),1,lupri)
       end
 *=======================================================================
 
+*======================================================================*
+      subroutine cc_r12sort(rxkyl,isymr,rxkly,y,isymy,istartx,iendx,
+     &                      isymx,dimx,dimk)
+c----------------------------------------------------------------------
+c     purpose: sort R_xy^kl as R_x,kl^y with fixed y
+c              expect R_xy^kl stored as a lower triangular matrix
+c     substitute routine cc_r12sortk, more flexible
+c
+c     it is assumed that dimx=dimy, dimk=diml 
+c
+c     rxkyl    R_xy^kl
+c     rxkly    R_x,kl^y with fixed y
+c     isymr    sym. of R_xy^kl
+c     y        index y within isymy
+c     isymy    sym. of y
+c     istartx  startvalue for x in rxkly within isymx
+c     iendx    endvalue for x in rxkly within isymx
+c     dimx     dimension of x in rxkyl (=dimy)
+c     dimk     dimension of k in rxkyl (=diml)
+c
+c     C. Neiss, jan. 2006
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccorb.h>
+
+      integer isymr,isymy,istartx,iendx,isymx,dimx(8),dimk(8),x,y
+      integer nxk(8),ixk(8,8),nkl(8),ikl(8,8),nxkyl(8),ixkyl(8,8)
+      integer isym,isym1,isym2,isymkl,isymxkl,isymk,isyml,
+     &        isymxk,isymyl,xdimout
+      integer idxkl,idxxk,idxyl,idxxkl,idxxkyl
+      integer i,j,k,l,index
+#if defined (SYS_CRAY)
+      real rxkyl(*),rxkly(*)
+#else
+      double precision rxkyl(*),rxkly(*)
+#endif
+      index(i,j) = max(i,j)*(max(i,j)-3)/2 + i + j
+
+      call qenter('cc_r12sort')
+
+C     calculate dimensions and offsets:
+      do isym = 1, nsym
+        nxk(isym) = 0
+        nkl(isym) = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          ixk(isym1,isym2) = nxk(isym)
+          ikl(isym1,isym2) = nkl(isym)
+          nxk(isym) = nxk(isym) + dimx(isym1)*dimk(isym2) 
+          nkl(isym) = nkl(isym) + dimk(isym1)*dimk(isym2)
+        end do
+      end do      
+C
+      do isym = 1, nsym
+        nxkyl(isym) = 0
+        do isym2 = 1, nsym
+          isym1 = muld2h(isym,isym2)
+          if (isym2.gt.isym1) then
+            ixkyl(isym1,isym2) = nxkyl(isym) 
+            ixkyl(isym2,isym1) = nxkyl(isym)
+            nxkyl(isym) = nxkyl(isym) + nxk(isym1)*nxk(isym2)
+          else if (isym2.eq.isym1) then
+            ixkyl(isym1,isym2) = nxkyl(isym)
+            nxkyl(isym) = nxkyl(isym) + nxk(isym1)*(nxk(isym1)+1)/2
+          end if
+        end do
+      end do
+C
+      xdimout = iendx - istartx + 1
+C
+      isymxkl = muld2h(isymr,isymy)
+      isymkl = muld2h(isymxkl,isymx)
+      call dzero(rxkly,xdimout*nkl(isymkl))
+C
+C     start resort:
+      do isymk = 1, nsym
+        isyml = muld2h(isymkl,isymk)
+        isymxk = muld2h(isymx,isymk)
+        isymyl = muld2h(isymy,isyml)
+        do l = 1, dimk(isyml)
+          idxyl = ixk(isymy,isyml) + dimx(isymy)*(l-1) + y
+          do k = 1, dimk(isymk)
+            idxkl = ikl(isymk,isyml) + dimk(isymk)*(l-1) + k
+            if (isymxk.eq.isymyl) then
+              do x = istartx, iendx
+              idxxkl = xdimout*(idxkl-1) + x - istartx + 1 
+              idxxk = ixk(isymx,isymk) + dimx(isymx)*(k-1) + x  
+              idxxkyl = ixkyl(isymxk,isymyl) + index(idxxk,idxyl)
+              rxkly(idxxkl) = rxkyl(idxxkyl)
+              end do 
+            else if (isymxk.lt.isymyl) then
+              idxxkl = xdimout*(idxkl-1) + 1
+              idxxk = ixk(isymx,isymk) + dimx(isymx)*(k-1) + istartx
+              idxxkyl = ixkyl(isymxk,isymyl) + nxk(isymxk)*(idxyl-1) +
+     &                  idxxk
+              call dcopy(xdimout,rxkyl(idxxkyl),1,rxkly(idxxkl),1)
+            else if (isymxk.gt.isymyl) then
+              do x = istartx, iendx
+              idxxkl = xdimout*(idxkl-1) + x - istartx + 1
+              idxxk = ixk(isymx,isymk) + dimx(isymx)*(k-1) + x
+              idxxkyl = ixkyl(isymyl,isymxk) + nxk(isymyl)*(idxxk-1) +
+     &                  idxyl
+              rxkly(idxxkl) = rxkyl(idxxkyl)
+              end do
+            end if
+          end do
+        end do
+      end do
+
+      call qexit('cc_r12sort')
+      end
+*======================================================================*
+
+*======================================================================*
+      subroutine cc_r12cmo(cmo,work,lwork)
+c----------------------------------------------------------------------
+c     purpose: read CMO-Matrix for LABEL=FULLBAS and delete redundant 
+c              orbitals
+c              
+c     C. Neiss, march 2006
+c----------------------------------------------------------------------
+      implicit none
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <r12int.h>
+
+      integer lusifc,idum,isym,nsymx,norbtsx,nbastx,nlamdsx,nlamdsxtd,
+     &        nrhfsx(8),norbsx(8),nbasxtd(8),norbxtd(8)
+      integer kcmox,kend1,lwrk1,koffc,koff1,koff2,lwork
+      logical locdbg
+      parameter (locdbg=.FALSE.)
+#if defined (SYS_CRAY)
+      real cmo(*),work(*)
+#else
+      double precision cmo(*),work(*)
+#endif
+
+      call qenter('cc_r12cmo')
+C-----------------------------------------------------------------------
+C define dimensions/offsets
+C-----------------------------------------------------------------------
+      if (.not. CCR12) THEN
+        do isym = 1, nsym
+          mbas1(isym) = nbas(i)
+          mbas2(isym) = 0
+          norb1(isym) = norb(isym)
+          norb2(isym) = 0
+        end do
+      end if
+      
+      nlamdsxtd = 0
+      do isym = 1, nsym
+        nbasxtd(isym) = mbas1(isym) + mbas2(isym)
+        norbxtd(isym) = norb1(isym) + norb2(isym)
+        nlamdsxtd = nlamdsxtd + nbasxtd(isym)*norbxtd(isym)
+      end do
+
+C-----------------------------------------------------------------------
+C read in MO coefficients
+C-----------------------------------------------------------------------
+      lusifc = 0
+      call gpopen(lusifc,'SIRIFC','OLD',' ','UNFORMATTED',idum,.false.)
+      ! read dimensions for CMO coefficients for full basis (nlamdsx)
+      rewind(lusifc)
+      call mollab('FULLBAS ',lusifc,lupri)
+      read(lusifc) nsymx,norbtsx,nbastx,nlamdsx,(nrhfsx(i),i=1,nsym),
+     &             (norbsx(i),i=1,nsym)
+C     allocate memory for MO coefficients:
+      kcmox = 1 
+      kend1 = kcmox + nlamdsx
+      lwrk1 = lwork - kend1
+      if (lwrk1 .lt. 0) then
+        call quit ('Insufficient work memory in CC_R12CMO')
+      end if
+      call dzero(cmo,nlamdsxtd)
+      call dzero(work(kcmox),nlamdsx)
+      read(lusifc)
+      read(lusifc) (work(kcmox+i-1),i=1,nlamdsx)
+      call gpclose(lusifc,'KEEP')
+      if (locdbg) then
+        write(lupri,*) 'nsymx, norbtsx, nbastx, nlamdsx: ',
+     &                  nsymx, norbtsx, nbastx, nlamdsx
+        do isym = 1, nsym
+          write(lupri,*) 'nrhfsx(',isym,') = ', nrhfsx(isym)
+          write(lupri,*) 'norbsx(',isym,') = ', norbsx(isym)
+        end do
+
+        call around('MO-coefficient matrix incl. redundant orbitals')
+        do isym = 1, nsym
+          koffc = kcmox
+          write(lupri,*) 'Symmetry number:', isym
+          if (norbsx(isym) .eq. 0) then
+            write(lupri,*) 'This symmetry is empty'
+          else
+            call output(work(koffc),1,nbasxtd(isym),1,norbsx(isym),
+     &                  nbasxtd(isym),norbsx(isym),1,lupri)
+          end if
+          koffc = koffc + nbasxtd(isym)*norbsx(isym)
+        end do
+      end if
+
+C     delete redundant occupied orbitals from CMO matrix:
+      koff1 = kcmox 
+      koff2 = 1
+      do isym= 1, nsym 
+        koff1 = koff1 + nbasxtd(isym)*nrhfsx(isym) 
+        call dcopy(nbasxtd(isym)*norbxtd(isym),work(koff1),1,
+     &             cmo(koff2),1)
+        koff1 = koff1 + nbasxtd(isym)*norbxtd(isym)
+        koff2 = koff2 + nbasxtd(isym)*norbxtd(isym)
+      end do
+      if (locdbg) then
+        call around('MO-coefficient matrix')
+        do isym = 1, nsym
+          koffc = 1
+          write(lupri,*) 'Symmetry number:', isym
+          if (norbxtd(isym) .eq. 0) then
+            write(lupri,*) 'This symmetry is empty'
+          else
+            call output(cmo(koffc),1,nbasxtd(isym),1,norbxtd(isym),
+     &                  nbasxtd(isym),norbxtd(isym),1,lupri)
+          end if
+          koffc = koffc + nbasxtd(isym)*norbxtd(isym)
+        end do
+      end if
+      call qexit('cc_r12cmo')
+      end
+*======================================================================*
 

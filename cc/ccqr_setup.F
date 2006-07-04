@@ -2167,6 +2167,7 @@ c /* deck CC_DOTDRV */
       IF (MXVEC*NDTRAN.NE.0) THEN
         CALL DZERO(DCON,MXVEC*NDTRAN)
       ELSE
+        CALL QEXIT('CC_DOTDRV')
         RETURN
       END IF
 

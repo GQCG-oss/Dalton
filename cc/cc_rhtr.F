@@ -131,7 +131,7 @@ CCN   !set LCC2R12A3
       LCC2R12A3 = CC2 .AND. CCR12 .AND. IANR12.EQ.3 
 CCN
       !set CCSDR12
-      CCSDR12 = CCR12 .AND. (.NOT.CC2) 
+      CCSDR12 = CCR12 .AND. .NOT.(CC2.OR.CCS)
 C
 C---------------------------
 C     For ccs no c2 vectors.
@@ -741,7 +741,8 @@ C
                   IF (IV .EQ. 1) THEN
                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENSI),
      *                              WORK(KFOCK),WORK(KEND2),
-     *                              LWRK2,IDEL,ISYMD,ISYDEN)
+     *                              LWRK2,IDEL,ISYMD,.FALSE.,DUMMY,
+     *                              ISYDEN)
                   ENDIF
                ENDIF
 C
@@ -752,7 +753,8 @@ C
                ISYDEN  = ISYMTR
                DTIME   = SECOND()
                CALL CC_AOFOCK(WORK(KXINT),WORK(KDNSC1),WORK(KFCKC1),
-     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,ISYDEN)
+     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,.FALSE.,
+     *                        DUMMY,ISYDEN)
                DTIME  = SECOND() - DTIME
                TIMFCK = TIMFCK + DTIME
 C
@@ -879,14 +881,17 @@ C
                   ISYMHC = ISYMTR
                   ICON   = 1
                   FACTD  = 0.0D00
+                  IOPTR12 = 0
+                  IOPTE  = 0
 C
                   DTIME   = SECOND()
                   CALL CCRHS_D(WORK(KXINT),WORK(KDSRHF),RHO2,
      *                         C2AM,ISYMTR,
      *                         WORK(KLAMDP),DUMMY,WORK(KLAMDH),
      *                         WORK(KLPC1),ISYMPC,WORK(KLHC1),ISYMHC,
-     *                         WORK(KSCRCM),WORK(KEND4),LWRK4,IDEL,
-     *                         ISYMD,FACTD,ICON,LUD,DTFIL,IV)
+     *                         WORK(KSCRCM),DUMMY,WORK(KEND4),LWRK4,
+     *                         IDEL,ISYMD,FACTD,ICON,IOPTR12,IOPTE,
+     *                         LUD,DTFIL,IDUMMY,DUMMY,IV)
                   DTIME   = SECOND() - DTIME
                   TIMD    = TIMD     + DTIME
 C
@@ -901,15 +906,17 @@ C
 C
                   FACTC = 0.0D00
                   ICON = 1
+                  IOPTR12 = 0
+                  IOPTE = 0
 C
                   DTIME   = SECOND()
                   CALL CCRHS_C(WORK(KXINT),WORK(KDSRHF),RHO2,
      *                         C2AM,ISYMTR,WORK(KLAMDP),DUMMY,
      *                         WORK(KLAMDH),WORK(KLPC1),ISYMTR,
      *                         WORK(KLHC1),ISYMTR,
-     *                         WORK(KSCRCM),WORK(KEND4),
-     *                         LWRK4,IDEL,ISYMD,FACTC,ICON,LUC,
-     *                         CTFIL,IV)
+     *                         WORK(KSCRCM),DUMMY,WORK(KEND4),
+     *                         LWRK4,IDEL,ISYMD,FACTC,ICON,IOPTR12,
+     *                         IOPTE,LUC,CTFIL,IDUMMY,DUMMY,IV)
                   DTIME   = SECOND() - DTIME
                   TIMC    = TIMC     + DTIME
                ENDIF
@@ -1128,9 +1135,10 @@ C        Add B'-Term for CCSD(R12)
 C--------------------------------------------------------------
 C
          IF (CCSDR12) THEN
+           IOPT = 0
            IAMP = 1
-           CALL CCRHS_BP(RHO2,ISYMTR,IAMP,FC12AM,LUFC12,IV+IVEC-1,
-     *                   KETSCL,WORK(KEND1),LWRK1)
+           CALL CCRHS_BP(RHO2,ISYMTR,IOPT,IAMP,FC12AM,LUFC12,IV+IVEC-1,
+     *                   DUMMY,IDUMMY,KETSCL,WORK(KEND1),LWRK1)
          END IF
 C
 C--------------------------------------------------------------
@@ -1880,7 +1888,7 @@ C           Calculate finite field contributions:
 C           -------------------------------------
 C
             IF (NONHF) THEN
-              IF ((.NOT.CC2).OR.(IANR12.NE.1)) THEN
+              IF (CCR12.AND.(IANR12.NE.1)) THEN
                 CALL QUIT('Sorry, finite fields not implemented for '//
      &                    'this model')
               ELSE
@@ -1956,9 +1964,6 @@ C
      &                        work(kxintsq),work(kvxintsq),1,
      &                        work(kfieldao),work(klamdp),work(klamdh),
      &                        'N',work(kend3),lwrk3)
-C               !transpose: in CC_R12XI the r12-pair index (kl) is leading,
-C               !in RHOR12 the occ. index pair (ij) is leading!!!
-C               call cclr_trsqr12(work(kscr),isymtr)
                 !add it to VIJKL
                 call daxpy(ntr12sq(isymtr),one,work(kscr),1,
      &                     work(kvijkl),1) 
@@ -2010,6 +2015,7 @@ c
               LVABKL = .FALSE.
               LVIJKL = .TRUE.
               IOPTBAS = 1
+              IF (R12CBS) IOPTBAS = 2
               FACTERM23 = ONE
 c
               CALL GETTIM(T0,W0)
@@ -2146,7 +2152,7 @@ c
      *                IVEC+IV-1,C2AM)
               CALL CCLR_DIASCL(C2AM,TWO,ISYMTR)
               CALL CCRHS_BPP(WORK(KVIJKL),C2AM,ISYMTR,.TRUE.,
-     *                       FVCDKL,WORK(KEND2),LWRK2)
+     *                       FVCDKL,1,WORK(KEND2),LWRK2)
             END IF
 c
             ! R*B
@@ -2210,11 +2216,12 @@ c             ! calculate H'(R2)
               IAMP  = 1 ! get trial vectors
               ISYMC = ISYMTR
               IFILE = IV + IVEC -1 
+              IOPTE = 0
               CALL GETTIM(T0,W0)
               CALL CCRHS_HP(RHO1(1,IV),WORK(KLAMDH),ISYMH,
      &                      WORK(KLAMDH),ISYMH,WORK(KEND2),
      &                      LWRK2,IAMP,ISYMC,
-     &                      FC12AM,LUFC12,IFILE)
+     &                      FC12AM,LUFC12,IFILE,IOPTE)
               CALL GETTIM(T1,W1)
               TIMHP2CPU = T1-T0
               TIMHP2WAL = T1-T0
@@ -2243,21 +2250,25 @@ c
                 CONT(19,IV) = -
      &               DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
               END IF
-              ! calculate H'(R1)
-              IAMP  = 0 ! get ground state amplitudes
-              IFILE = IV + IVEC -1 
-              ISYMC = 1
-              ISYMH = 1
-              CALL GETTIM(T0,W0)
-              CALL CCRHS_HP(RHO1(1,IV),WORK(KLHC1),ISYMTR,
-     &                      WORK(KLAMDH),ISYMH,WORK(KEND2),
-     &                      LWRK2,IAMP,ISYMC,FC12AM,LUFC12,
-     &                      IFILE)
-              CALL GETTIM(T1,W1)
-              TIMHPCPU = T1-T0 
-              TIMHPWAL = W1-W0
-              TIMR12CPU = TIMR12CPU + (T1-T0)
-              TIMR12WAL = TIMR12WAL + (W1-W0)
+CCN
+C             --substituted by correction of conv. E1 intermediate--
+C             ! calculate H'(R1)
+C             IAMP  = 0 ! get ground state amplitudes
+C             IFILE = IV + IVEC -1 
+C             ISYMC = 1
+C             ISYMH = 1
+C             IOPTE = 0
+C             CALL GETTIM(T0,W0)
+C             CALL CCRHS_HP(RHO1(1,IV),WORK(KLHC1),ISYMTR,
+C    &                      WORK(KLAMDH),ISYMH,WORK(KEND2),
+C    &                      LWRK2,IAMP,ISYMC,FC12AM,LUFC12,
+C    &                      IFILE,IOPTE)
+C             CALL GETTIM(T1,W1)
+C             TIMHPCPU = T1-T0 
+C             TIMHPWAL = W1-W0
+C             TIMR12CPU = TIMR12CPU + (T1-T0)
+C             TIMR12WAL = TIMR12WAL + (W1-W0)
+CCN
 c
 c             ! get trial vector C1
               IFILE = IV + IVEC -1 

@@ -103,7 +103,7 @@ c /* deck ccfbtaao1 */
       INTEGER IADRBFA(*), IADRBFQA(*)
       INTEGER IT2DEL0(*), IT2DELB(*)
       INTEGER IT2DEL0A(*), IT2DELBA(*)
-      INTEGER KDUM
+      INTEGER KDUM, IDUMMY
       PARAMETER (KDUM = +99 999 999) ! dummy address
 
 
@@ -408,7 +408,7 @@ C     ---------------------------------------------------
           IOPT = 0
           CALL CC_IAJB(X0INT(KOFF0),ISY0ALBE,
      &                 X1INT(KOFF1),ISY1ALBE,
-     &                 IDEL,JGAM,
+     &                 IDEL,JGAM,.FALSE.,IDUMMY,
      &                 WORK(KX0IAJB),WORK(KDUM),WORK(KDUM),
      &                 WORK(KX1IAJB),WORK(KDUM),WORK(KDUM),
      &                 XLAMD0P,XLAMD0H,ISYM0,XLAMDQP,XLAMDQH,ISYHOP,

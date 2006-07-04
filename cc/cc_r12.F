@@ -1829,8 +1829,8 @@ c       WRITE(LUPRI,*) 'NGAMMA(1) in CC_R12: ', NGAMMA(1)
         CALL DSCAL(NSPAIR*NSPAIR,2.0D0,WT11,1)
         CALL DSCAL(NSPAIR*NSPAIR,1.0D0/3.0D0,WT11,1)
         CALL CCR12PCK(WORK(KSCR),1,WS11,WT11,NRHF,NRHFA,NKILJ)
-C       WRITE(LUPRI,*) 'VIJKL written in MP2R12:'
-C       CALL CC_PRPR12(WORK(KSCR),1,1,.FALSE.)
+c       WRITE(LUPRI,*) 'VIJKL written in MP2R12:'
+c       CALL CC_PRPR12(WORK(KSCR),1,1,.FALSE.)
         CALL GPOPEN(LU43,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
      &              IDUM,LDUM)
         WRITE(LU43) 1
@@ -3727,6 +3727,7 @@ c             KV2AM = KR2AM
 c             KW2AM = KV2AM
 cWK        END IF
            KEND1 = KW2AM + NH2AMX
+           LENT2AM = NH2AMX
          ELSE
            KT2AM = KS2AM + NT2AMX
            KU2AM = KT2AM
@@ -3734,6 +3735,7 @@ cWK        END IF
            KV2AM = MAX(KR2AM + NT2AMX, KU2AM + NU2AMX)
            KW2AM = KV2AM + NT2AMX
            KEND1 = KW2AM + NT2AMX
+           LENT2AM = NT2AMX
          END IF
          WRITE(LUPRI,'(A,I15,A/)')' Core memory required by CCSD_R12 :',
      &                             KEND1,'  (double words)'
@@ -3784,7 +3786,7 @@ C
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             CALL CCSD_IKJL(WORK(KQQ6M),NRHFT,WXRK(KS2AM))
             WRITE(LUPRI,'(1X,A)')
      *        'Computation of (ik|[[f12,T1],f12]|jl) integrals done' 
@@ -3805,7 +3807,7 @@ C
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             CALL CCSD_IKJL(WORK(KQQ4M),NRHFT,WXRK(KS2AM))
             WRITE(LUPRI,'(1X,A)')
      *        'Computation of (ik|f12**2|jl) integrals done' 
@@ -3827,7 +3829,7 @@ C
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = CCR12
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1) 
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1) 
             CALL CCSD_IKJL(WORK(KQQ2M),NRHFT,WXRK(KS2AM))
             WRITE(LUPRI,'(1X,A)')
      *        'Computation of (ik|f12/r12|jl) integrals done' 
@@ -3907,28 +3909,31 @@ C
          IF (CC2R12INT .OR. CCSDR12INT .OR. R12PRP) THEN
            IF (IANR12.EQ.1.OR.IANR12.EQ.3) THEN
              PROJVIR = (IANR12.EQ.3)
-             CALL R12BATF(WXRK(KS2AM),FNBACK,FNBACK2,CCR12RSP,
+             CALL R12BATF(WXRK(KS2AM),FNBACK,DUMMY,.FALSE.,
      &                    PROJVIR,WORK(KEND1),LWRK1)
-             WRITE(LUPRI,'(1X,A)')
-     *         'Backtransformation of (ip''|r12|jq'') integrals done'
-             CALL TIMER('R12BATF',TIMSTR,TIMEND)  
            END IF
            IF (IANR12.EQ.2.OR.IANR12.EQ.3) THEN
              CALL CC_R12BATF2(WORK(KEND1),LWRK1)
            END IF
+           WRITE(LUPRI,'(1X,A)')
+     *       'Backtransformation of (ip''|r12|jq'') integrals done'
+           CALL TIMER('R12BATF',TIMSTR,TIMEND)  
 CCN   
            CALL CC_R12MKSAK(WORK(KEND1),LWRK1)
+
+           IF (CCR12RSP) THEN
+             CALL CC_R12VXINT2(WXRK(KS2AM),WORK(KEND1),LWRK1)
+           END IF
 CCN
          END IF
 celena
          IF (IANR12.EQ.1.AND.R12PRP) THEN
             MKVAJKL = .TRUE.
-c            FNBACK = 'CCR12_BACK'
             FNVAJKL = 'CCR12XAJKL'
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             MKVAJKL = .FALSE.
          ENDIF
 celena
@@ -4063,7 +4068,7 @@ chf         FNBACK = 'CCV12_BACK'
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
  
             MKVAJKL = .FALSE.           
          END IF
@@ -4119,7 +4124,7 @@ C
                CALL DZERO(WORK(KT1AM),NT1AMX)
                LHTF = .FALSE.
                CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
-     &                        LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                        LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
                CALL CCSD_IKJL(WORK(KQQAM),NRHFT,WXRK(KU2AM))
                LUSIFC = 0
                CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
@@ -4158,14 +4163,14 @@ celena
             V12INT = .FALSE.
             CALL DZERO(WORK(KT1AM),NT1AMX)
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             R12SQR = .TRUE.
             MKVAJKL = .TRUE.
             FNVAJKL = 'CCR12QIJAL' 
             LHTF = .FALSE.
             CALL DZERO(WORK(KT1AM),NT1AMX)
             CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             MBSMAX  = 5
             CALL R12BATF(WXRK(KU2AM),FQ12BACK,DUMMY,.FALSE.,.FALSE.,
      &                   WORK(KEND1),LWRK1)
@@ -4173,20 +4178,20 @@ celena
             R12SQR = .FALSE.
             CALL DZERO(WORK(KT1AM),NT1AMX)
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             CALL R12BATF(WXRK(KU2AM),FU12BACK,DUMMY,.FALSE.,.FALSE.,
      &                   WORK(KEND1),LWRK1)
             FNVAJKL = 'CCR12UAJKL' 
             CALL DZERO(WORK(KT1AM),NT1AMX)
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             R12SQR = .TRUE.
             MKVAJKL = .FALSE.
          ELSE
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
          ENDIF
          CALL QCAL(WORK(KQQAM),WXRK(KS2AM),WXRK(KU2AM),
      *             WORK(KEND1),LWRK1,1,1)
@@ -4221,7 +4226,7 @@ celena
                CALL DZERO(WORK(KT1AM),NT1AMX)
                LHTF = .FALSE.
                CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
-     &                       LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                       LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             END IF
             CALL COMKR(WXRK(KS2AM),WXRK(KU2AM),WORK(KV2AM),
      *                 WORK(KW2AM),WORK(KEND1),LWRK1)
@@ -4294,11 +4299,11 @@ chf         FNBACK = 'CCR12_BACK'
          IF (ONEAUX) THEN
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KS2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
          ELSE
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KU2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             CALL TESTUU(WXRK(KU2AM),WXRK(KS2AM))
          END IF
          HERDIR = TEMP_HERDIR
@@ -4333,7 +4338,7 @@ chf         FNBACK = 'CCT12_BACK'
             CALL DZERO(WORK(KT1AM),NT1AMX)
             LHTF = .FALSE.
             CALL CCSD_IAJB(WXRK(KT2AM),WORK(KT1AM),
-     &                     LHTF,CCR12RSP,MKVAJKL,WORK(KEND1),LWRK1)
+     &                     LHTF,.FALSE.,MKVAJKL,WORK(KEND1),LWRK1)
             MKVAJKL = .FALSE.           
          END IF
 C
@@ -4381,7 +4386,14 @@ C
            WRITE(LU43) (WXRK(KT2AM+I-1), I = 1,NELEM)
            CALL GPCLOSE(LU43,'KEEP')  
          END IF
-
+C
+         IF (CCSDR12INT.AND.(IANR12.EQ.2.OR.IANR12.EQ.3)) THEN
+           !write integrals r_(bp')^(mn) to file
+           CALL CC_R12GETRAMNP(WORK(KS2AM),'R12RMNAP',ONEAUX,NORB1,
+     &                         NORB2,NRHF,NRHFSA,IH1AM,IH2AM,
+     &                         WXRK(KT2AM),LENT2AM)
+         END IF
+C
          CALL GPOPEN(LU43,FR12V12,
      &                    'UNKNOWN',' ','UNFORMATTED',IDUM,LDUM)
          READ(LU43) (WXRK(KT2AM+I-1), I = 1,NH2AMX)

@@ -2804,7 +2804,17 @@ C
       IF (LMULBS .OR. R12CAL) THEN
 C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
          DO ISYM = 1, NSYM
-	    NOCC(ISYM) = NOCC(ISYM) + NRXR12(ISYM)
+           IF (NRXR12(ISYM).GT.(NORB1(ISYM)-NOCC(ISYM))) THEN
+             WRITE(LUPRI,*) 'You specified more virtual R12 orbitals '//
+     &                   'than there are virtual orbitals in this '//
+     &                   'symmery:'
+             WRITE(LUPRI,*) 'NVIR(',ISYM,') = ',NORB1(ISYM)-NOCC(ISYM)
+             WRITE(LUPRI,*) 'NRXR12(',ISYM,') = ',NRXR12(ISYM)
+             CALL QUIT('Too many virtual R12 orbitals')
+           ELSE
+             !redefine NOCC
+             NOCC(ISYM) = NOCC(ISYM) + NRXR12(ISYM)
+           END IF
          END DO
          LUMULB = 34
          CALL GPOPEN(LUMULB,'AUXBAS','UNKNOWN','SEQUENTIAL',

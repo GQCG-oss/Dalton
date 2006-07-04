@@ -121,7 +121,7 @@ C
 C
 C
       !set CCSDR12
-      CCSDR12 = CCR12 .AND. (.NOT.CC2)
+      CCSDR12 = CCR12 .AND. .NOT.(CC2.OR.CCS)
 C
       SKIPMI = .FALSE.
 C
@@ -728,7 +728,8 @@ C
                AUTIME = SECOND()
                ISYDEN = ISYMTR
                CALL CC_AOFOCK(WORK(KXINT),WORK(KOFFCT),WORK(KOFFFG),
-     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,ISYDEN)
+     *                        WORK(KEND2),LWRK2,IDEL,ISYMD,.FALSE.,
+     *                        DUMMY,ISYDEN)
                AUTIME = SECOND() - AUTIME
                TIMFCK = TIMFCK + AUTIME
 C
@@ -1086,10 +1087,12 @@ C
           END IF
 C  
           !calculate B''-contribution:
+          IOPT = 0
           IAMP = 1
           IFILE = IVEC+IV-1
-          CALL CCRHS_BP(RHO2,ISYMTR,IAMP,FC12AM,LUFC12,
-     &                  IFILE,2.0D0*BRASCL,WORK(KEND1),LWRK1)
+          CALL CCRHS_BP(RHO2,ISYMTR,IOPT,IAMP,FC12AM,LUFC12,
+     &                  IFILE,DUMMY,IDUMMY,2.0D0*BRASCL,
+     &                  WORK(KEND1),LWRK1)
 C 
           IF (.NOT. MINSCR) THEN
             DTIME = SECOND()
@@ -1382,7 +1385,7 @@ C            ------------
 C            add B' term:
 C            ------------
              CALL CCRHS_BPP(WORK(KRHOR12),CTR2,ISYMTR,.FALSE.,
-     *                      'R12VCTDTKL',WORK(KEND1),LWRK1)
+     *                      'R12VCTDTKL',1,WORK(KEND1),LWRK1)
 C            ------------
 C            add A' term:
 C            ------------
@@ -1412,7 +1415,7 @@ C
              KEND2 = KVINT + NTR12AM(1)
              LWRK2 = LWORK - KEND2
              IF (LWRK2 .LT. 0) THEN
-               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND2
                CALL QUIT('Insufficient memory for V-intermediate '//
      &                   'in CC_LHTR')
              ENDIF

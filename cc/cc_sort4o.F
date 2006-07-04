@@ -116,11 +116,15 @@ C  /* Deck cc_sort4o */
 C
 *=====================================================================*
 C  /* Deck cc_sort4o2 */
-      SUBROUTINE CC_SORT4O2(XKJIL,ISYM4O,XJLKI,IOPT)
+      SUBROUTINE CC_SORT4O2(XMINT,ISYM4O,XGAMSQ,IOPT,LINV)
 *---------------------------------------------------------------------*
 *     Purpose: resort I(kj,i;l) to I(jl;ki)
 *
 *     based on CC_SORT4O
+*
+*     IOPT = 1 : Initialize result with zero
+*
+*     LINV =.T.: Do inverse operation
 *
 *     Christian Neiss, 20/10-2005
 *---------------------------------------------------------------------*
@@ -132,12 +136,13 @@ C  /* Deck cc_sort4o2 */
 #include <ccorb.h>
 #include <maxorb.h>
 #include <ccsdsym.h>
+      LOGICAL LINV
       INTEGER ISYM4O, IOPT
 #if defined (SYS_CRAY)
-      REAL XKJIL(*), XJLKI(*)
+      REAL XMINT(*), XGAMSQ(*)
       REAL ZERO, ONE, HALF, DDOT, XNORM, FAC
 #else
-      DOUBLE PRECISION XKJIL(*), XJLKI(*)
+      DOUBLE PRECISION XMINT(*), XGAMSQ(*)
       DOUBLE PRECISION ZERO, ONE, HALF, DDOT, XNORM, FAC
 #endif
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
@@ -163,6 +168,7 @@ C  /* Deck cc_sort4o2 */
                ISYMKJ = MULD2H(ISYKJI,ISYMI)
                ISYJKL = MULD2H(ISYM4O,ISYMI)
                ISYMJK = MULD2H(ISYJKL,ISYML)
+               IF (ISYMKJ.NE.ISYMJK) CALL QUIT('Error in CC_SORT4O2')
                DO I = 1, NRHF(ISYMI)
                   DO ISYMK = 1, NSYM
                      ISYMJ = MULD2H(ISYMJK,ISYMK)
@@ -181,7 +187,11 @@ C  /* Deck cc_sort4o2 */
      &                 NMATIJ(ISYMJL)*(IDXKI-1) +
      &                 IMATIJ(ISYMJ,ISYML) + NRHF(ISYMJ)*(L-1) + J
 
-               XJLKI(JLKI) = FAC*XJLKI(JLKI) + XKJIL(KJIL)
+                IF (LINV) THEN
+                  XMINT(KJIL)  = FAC*XMINT(KJIL) + XGAMSQ(JLKI)
+                ELSE
+                  XGAMSQ(JLKI) = FAC*XGAMSQ(JLKI) + XMINT(KJIL)
+                END IF
 
                      END DO         !J
                      END DO         !K
