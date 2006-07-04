@@ -34,10 +34,6 @@ C
 C
 #include "single.h"
 C
-C VERSION : $Revision: 1.23 $
-C DATE    : $Date: 2006-03-10 12:52:52 $
-C FILE    : hergp.F
-C
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
 #include "implicit.h"

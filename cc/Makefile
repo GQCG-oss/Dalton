@@ -65,9 +65,8 @@ cc_mofconr12.o cc_r12batf.o cc_r12mkvamkl.o \
 cc_r12mkxajkl.o cc_r12xprep.o cc_r12mkxajklfr.o \
 cc_r12rdpck.o cc_r12vunpack.o cc_r12a2.o cc_lammats.o \
 cclhtr_r12.o cc_r12ccsd.o cc_ftstnew.o cc_r12xieta.o \
-ccsoppa.o cc_qm3.o cc_jmat.o ccsdr12ao.o ccsdr12cd.o \
-cc_kmat.o cc_setk11.o cclr_fa.o cc_r12no.o cc_fckdela.o \
-ccsdr12oxr.o
+ccsoppa.o cc_qm3.o cc_jmat.o \
+cc_kmat.o cc_setk11.o cclr_fa.o cc_r12no.o ccsdr12ao.o cc_fckdela.o ccsdr12cd.o ccsdr12oxr.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
