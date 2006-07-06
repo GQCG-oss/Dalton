@@ -172,7 +172,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <iratdef.h>
-      PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
+      PARAMETER (IBIT10 = 1023, IBUFMX = 600, NBUF = 1202)
       LOGICAL OLDDX
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
      *          IBUFDA(IRAT*NBUF)
@@ -197,6 +197,16 @@ C
          MXABUF = IRAT*((INDMAX + IRAT - 1)/IRAT)
          LABUFI = (IRAT + 1)*MXABUF + 2
          LABUFD = LABUFI/IRAT
+      END IF
+C
+C     Make sure we have not been out of bounds for the labels. K.Ruud-06
+C
+      IF (INDMAX .GE. 2**22) THEN
+         WRITE (LUPRI,*) ' Number of differentiated one-electron '//
+     &        'integrals larger than available labels'
+         WRITE (LUPRI,*) 'Please contact dalton-admin@kjemi.uio.no '//
+     &        'for assistance'
+         CALL QUIT('Differentiated integrals out of variable range')
       END IF
       MXABF2 = IRAT*MXABUF
       LABUF1 = LABUFI - 1
@@ -259,9 +269,9 @@ C           Loop over elements in this buffer
 C
             DO 400 I = 1, LENGTH
                LABEL = IBUF(I)
-               IMAT  = IBTAND(LABEL,IBIT16)
+               IMAT  = IBTAND(LABEL,IBIT10)
                IF (IMAT.GE.IFIRST .AND. IMAT.LE.ILAST) THEN
-                  IOFF = (IMAT - IFIRST)*INDMAX + IBTSHR(LABEL,16)
+                  IOFF = (IMAT - IFIRST)*INDMAX + IBTSHR(LABEL,10)
                   SOINT(IOFF) = SOINT(IOFF) + BUF(I)
 C
 C                 Print Section
@@ -273,7 +283,7 @@ C
      *                  (IMAT + NMATS - 1)/NMATS,
      *                  (MOD(IMAT-1,NMATS)+1+MAXREP)/(MAXREP+1),
      *                  MOD(IMAT - 1,MAXREP + 1),
-     *                  IBTSHR(LABEL,16), BUF(I), SOINT(IOFF)
+     *                  IBTSHR(LABEL,10), BUF(I), SOINT(IOFF)
                   END IF
                END IF
   400       CONTINUE
@@ -381,7 +391,7 @@ C
 #include <mxcent.h>
 #include <iratdef.h>
 #include <nuclei.h>
-      PARAMETER (IBIT16 = 65535, NBUF = 1202)
+      PARAMETER (IBIT22 = 4194303, NBUF = 1202)
       CHARACTER ONEMAT*(*)
       DIMENSION BUF(NBUF), IBUF(IRAT*NBUF), WORK(NDIM)
 #include <oneadr.h>
@@ -417,7 +427,7 @@ C
             DO 300 INT = 1, NOFF
                DINT = BUF(INT)
                LABEL = IBUF(MXABF2 + INT)
-               IORBAB = IBTAND(LABEL,IBIT16)
+               IORBAB = IBTAND(LABEL,IBIT22)
                WORK(IORBAB) = DINT
   300       CONTINUE
             IDISK = IBUF(LABUFI)

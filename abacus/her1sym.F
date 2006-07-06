@@ -626,6 +626,13 @@ C
                WRITE (LUPRI, '(A,F12.6)') ' FAC ', FAC
             END IF
             IMAT0 = (IPTCNT(3*(JCENT-1)+JCDIR,IREPD,1)-1)*(MAXREP+1)+1
+            IF (IMAT0 .GE. 2**10) THEN
+               WRITE (LUPRI,*) 'Not enough space in label to store '//
+     &              'derivative direction of one-electron integrals'
+               WRITE (LUPRI,*) 'Please contact dalton-admin@kjemi.'//
+     &              'uio.no for assistance'
+               CALL QUIT('Not enough space in label for diff.direction')
+            END IF
             IF (IREPD .EQ. 0) THEN
 C
 C              Overlap matrix - totally symmetric perturbation
@@ -853,7 +860,7 @@ C
                   IF (ABS(RINT) .GT. THRESH) THEN
                      IND  = (INDM*(INDM - 3))/2 + INDA + INDB
                      INDMAX = MAX(IND,INDMAX)
-                     LABEL = IND*2**16 + IMAT
+                     LABEL = IND*2**10 + IMAT
                      IF (IPRINT .GT. 20) THEN
                        WRITE (LUPRI,'(A,F12.6,2I3,2I2,I4,I2,I5)')
      *                     'SYM1S - NA/B,IREPA/B,IND,IREPO,IMAT',
