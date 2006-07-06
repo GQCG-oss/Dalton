@@ -1003,7 +1003,7 @@ C
                         IND  = NAOS(IREPA+1)*(INDB-1) + INDA
                      ENDIF
                      INDMAX = MAX(IND,INDMAX)
-                     LABEL  = IND*2**16 + IMAT0 + MAX(IREPA,IREPB)
+                     LABEL  = IND*2**10 + IMAT0 + MAX(IREPA,IREPB)
                      IF (IPRINT .GT. 20) THEN
                        WRITE (LUPRI,'(A,F12.6,2I3,2I2,I4,I2,I5)')
      *                     'SYM1N - NA/B,IREPA/B,IND,IREPO,IMAT',
