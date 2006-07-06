@@ -3913,11 +3913,11 @@ C
          IF (SHIELD) CALL DCOPY(9*MXCENT,TMAT,1,SIGMA0,1)
          IF (SPINRO) CALL DCOPY(9*MXCENT,GTRANT,1,SRC0,1)
          IF (POLAR)  CALL DCOPY(9,POLARS,1,POLAR0,1)
-         IF (ALFA)   CALL DCOPY(9*MXFR,POLDD,2,ALFA0,1)
+         IF (ALFA)   CALL DCOPY(2*9*MXFR,POLDD,2,ALFA0,1)
          IF (NQCC)   CALL DCOPY(9*MXCENT,ELNQC,1,EFG0,1)
          IF (SPNSPN) CALL DCOPY(MXCOOR*MXCOOR,SPNTOT,1,SSJ0,1)
-         IF (OPTROT) CALL DCOPY(9*MXFR,ROANL,2,ROANL0,1)
-         IF (OPTROT) CALL DCOPY(9*MXFR,ROALO,2,ROALO0,1)
+         IF (OPTROT) CALL DCOPY(2*9*MXFR,ROANL,2,ROANL0,1)
+         IF (OPTROT) CALL DCOPY(2*9*MXFR,ROALO,2,ROALO0,1)
 C
 C     Should we transform the normal coordinates to an Eckart frame?
 C
@@ -3952,62 +3952,62 @@ C
          END IF
          IF (.NOT. REUSED) THEN
             IF (ACCURT) THEN
-               CALL FEMDIF(DIPM0,DIP0,DIPMF(1,I),DISPLC,IWHERE,3)
+               CALL FEMDIF(DIPM0,DIP0,DIPMF(1,I),DISPLC,IWHERE,3,1)
                IF (MAGSUS) THEN
                   CALL DSCAL(9,DM1,SUSTOT,1)
                   CALL FEMDIF(SUSTO0,SUSTOT,SUSTF(1,1,I),
-     &                        DISPLC,IWHERE,9)
+     &                        DISPLC,IWHERE,9,1)
                END IF
                IF (MOLGFA) CALL FEMDIF(GFAC0,GTRAN,GFACF(1,1,I),
-     &                              DISPLC,IWHERE,9)
+     &                              DISPLC,IWHERE,9,1)
                IF (QUADRU) CALL FEMDIF(QUAD0,QUADT,QUADF(1,1,I),
-     &                              DISPLC,IWHERE,9)
+     &                              DISPLC,IWHERE,9,1)
                IF (SHIELD) CALL FEMDIF(SIGMA0,TMAT,SIGMAF(1,1,1,I),
-     &                              DISPLC,IWHERE,9*NUCDEP)
+     &                              DISPLC,IWHERE,9*NUCDEP,1)
                IF (SPINRO) CALL FEMDIF(SRC0,GTRANT,SRCF(1,1,1,I),
-     &                              DISPLC,IWHERE,9*NUCDEP)
+     &                              DISPLC,IWHERE,9*NUCDEP,1)
                IF (POLAR) CALL FEMDIF(POLAR0,POLARS,POLARF(1,1,I),
-     &                             DISPLC,IWHERE,9)
+     &                             DISPLC,IWHERE,9,1)
                IF (ALFA) CALL FEMDIF(ALFA0,POLDD,ALFAF(1,1,1,I),
-     &                            DISPLC,IWHERE,NFRVAL*9)
+     &                            DISPLC,IWHERE,NFRVAL*9,2)
                IF (NQCC) CALL FEMDIF(EFG0,ELNQC,EFGF(1,1,1,I),
-     &                            DISPLC,IWHERE,NUCDEP*9)
+     &                            DISPLC,IWHERE,NUCDEP*9,1)
                IF (SPNSPN) CALL FEMDIF(SSJ0,SPNTOT,SSJF(1,1,I),
-     &                              DISPLC,IWHERE,NUCDEP*NUCDEP*9)
+     &                              DISPLC,IWHERE,NUCDEP*NUCDEP*9,1)
                IF (OPTROT) THEN
                   CALL FEMDIF(ROANL0,ROANL,ROANLF(1,1,1,I),
-     &                        DISPLC,IWHERE,NFRVAL*9)
+     &                        DISPLC,IWHERE,NFRVAL*9,2)
                   CALL FEMDIF(ROALO0,ROALO,ROALOF(1,1,1,I),
-     &                        DISPLC,IWHERE,NFRVAL*9)
+     &                        DISPLC,IWHERE,NFRVAL*9,2)
                END IF
             ELSE
-               CALL TREDIF(DIPM0,DIP0,DIPMF(1,I),DISPLC,ODD,3)
+               CALL TREDIF(DIPM0,DIP0,DIPMF(1,I),DISPLC,ODD,3,1)
                IF (MAGSUS) THEN
                   CALL DSCAL(9,DM1,SUSTOT,1)
                   CALL TREDIF(SUSTO0,SUSTOT,SUSTF(1,1,I),
-     &                        DISPLC,ODD,9)
+     &                        DISPLC,ODD,9,1)
                END IF
                IF (MOLGFA) CALL TREDIF(GFAC0,GTRAN,GFACF(1,1,I),
-     &                                 DISPLC,ODD,9)
+     &                                 DISPLC,ODD,9,1)
                IF (QUADRU) CALL TREDIF(QUAD0,QUADT,QUADF(1,1,I),
-     &                                 DISPLC,ODD,9)
+     &                                 DISPLC,ODD,9,1)
                IF (SHIELD) CALL TREDIF(SIGMA0,TMAT,SIGMAF(1,1,1,I),
-     &                                 DISPLC,ODD,9*NUCDEP)
+     &                                 DISPLC,ODD,9*NUCDEP,1)
                IF (SPINRO) CALL TREDIF(SRC0,GTRANT,SRCF(1,1,1,I),
-     &                                 DISPLC,ODD,9*NUCDEP)
+     &                                 DISPLC,ODD,9*NUCDEP,1)
                IF (POLAR) CALL TREDIF(POLAR0,POLARS,POLARF(1,1,I),
-     &                                DISPLC,ODD,9)
+     &                                DISPLC,ODD,9,1)
                IF (ALFA) CALL TREDIF(ALFA0,POLDD,ALFAF(1,1,1,I),
-     &                               DISPLC,ODD,NFRVAL*9)
+     &                               DISPLC,ODD,NFRVAL*9,2)
                IF (NQCC) CALL TREDIF(EFG0,ELNQC,EFGF(1,1,1,I),
-     &                               DISPLC,ODD,NUCDEP*9)
+     &                               DISPLC,ODD,NUCDEP*9,1)
                IF (SPNSPN) CALL TREDIF(SSJ0,SPNTOT,SSJF(1,1,I),
-     &                                 DISPLC,ODD,NUCDEP*NUCDEP*9)
+     &                                 DISPLC,ODD,NUCDEP*NUCDEP*9,1)
                IF (OPTROT) THEN
                   CALL TREDIF(ROANL0,ROANL,ROANLF(1,1,1,I),
-     &                        DISPLC,ODD,NFRVAL*9)
+     &                        DISPLC,ODD,NFRVAL*9,2)
                   CALL TREDIF(ROALO0,ROALO,ROALOF(1,1,1,I),
-     &                        DISPLC,ODD,NFRVAL*9)
+     &                        DISPLC,ODD,NFRVAL*9,2)
                END IF
             END IF
          END IF
@@ -7771,48 +7771,53 @@ C
       RETURN
       END
 C /* Deck tredif */
-      SUBROUTINE TREDIF(PROP0,PROP,PROPD,DISPLC,ODD,IDIM)
+      SUBROUTINE TREDIF(PROP0,PROP,PROPD,DISPLC,ODD,IDIM,IABS)
 C
 C     Three-point numerical differentiation
+C     IABS tells whether the imaginary component of the response function
+C     also was calculated. Currently we do not average this component.
 C     K.Ruud, June 2001
 C
 #include <implicit.h>
       LOGICAL ODD
-      DIMENSION PROP0(IDIM), PROP(IDIM), PROPD(IDIM)
+      DIMENSION PROP0(IDIM), PROP(IABS,IDIM), PROPD(IDIM)
 C
       IF (ODD) THEN
          DO I = 1, IDIM
-            PROPD(I) = (PROP(I)-PROP0(I))/DISPLC**2
+            PROPD(I) = (PROP(IABS,I)-PROP0(I))/DISPLC**2
          END DO
       ELSE
          DO I = 1, IDIM
-            PROPD(I) = PROPD(I) + (PROP(I)-PROP0(I))/DISPLC**2
+            PROPD(I) = PROPD(I) + (PROP(IABS,I)-PROP0(I))/DISPLC**2
          END DO
       END IF
       RETURN
       END
 C /* Deck femdif */
-      SUBROUTINE FEMDIF(PROP0,PROP,PROPD,DISPLC,IPOINT,IDIM)
+      SUBROUTINE FEMDIF(PROP0,PROP,PROPD,DISPLC,IPOINT,IDIM,IABS)
 C
 C     Five-point numerical differentiation
+C     IABS tells whether the imaginary component of the response function
+C     also was calculated. Currently we do not average this component.
 C     K.Ruud, June 2001
 C
 #include <implicit.h>
       PARAMETER (D3 = 3.0D0, D4 = 4.0D0, D12 = D3*D4)
-      DIMENSION PROP0(IDIM), PROP(IDIM), PROPD(IDIM)
+      DIMENSION PROP0(IDIM), PROP(IABS,IDIM), PROPD(IDIM)
 C
       IF (IPOINT .EQ. 1) THEN
          DO I = 1, IDIM
-            PROPD(I) = (D4/D3)*(PROP(I)-PROP0(I))/(DISPLC**2)
+            PROPD(I) = (D4/D3)*(PROP(IABS,I)-PROP0(I))/(DISPLC**2)
          END DO
       ELSE IF (IPOINT .EQ. 2 .OR. IPOINT .EQ. 3) THEN
          DO I = 1, IDIM
             PROPD(I) = PROPD(I)
-     &               - (PROP(I)-PROP0(I))/(D12*(DISPLC**2))
+     &               - (PROP(IABS,I)-PROP0(I))/(D12*(DISPLC**2))
          END DO
       ELSE
          DO I = 1, IDIM
-            PROPD(I) = PROPD(I) + (D4/D3)*(PROP(I)-PROP0(I))/(DISPLC**2)
+            PROPD(I) = PROPD(I)
+     &               + (D4/D3)*(PROP(IABS,I)-PROP0(I))/(DISPLC**2)
          END DO
       END IF
       RETURN
