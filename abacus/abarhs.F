@@ -554,8 +554,9 @@ C
             LONDON = .TRUE.
             KLAST = KFRSAV
          ELSE
+            KLAST = KFRSAV
             IF (IATOM .EQ. 1 .AND. DOREAL .AND. (.NOT. NODIFC)) THEN
-               KINTRP = KFRSAV
+               KINTRP = KLAST
                KINTAD = KINTRP + (9*MXCENT + 1)/IRAT
                KLAST  = KINTAD + (9*MXCENT + 1)/IRAT
                LWRK   = LWORK - KLAST + 1
