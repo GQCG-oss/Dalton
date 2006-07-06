@@ -529,6 +529,7 @@ C
       MXHFMA = 60
       MXHFMI = 12
       HSROHF = .FALSE.
+      BCKSTP = .TRUE.
       CALL IZERO(NROHF,8)
 C 960625-hjaaj: NISHT and NACTEL used in MOLCHR in
 C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
@@ -2505,7 +2506,7 @@ C
       DATA TABLE /'.DOUBLY','.THRESH','.FOCK I','.H1VIRT','.NOQCSC',
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
-     *            '.MAX ER','.XXXXXX','.COREHO','.CORERE','.HF OCC',
+     *            '.MAX ER','.NO BAC','.COREHO','.CORERE','.HF OCC',
      *            '.ELECTR','.AUTOCC','.FC MVO','.SINGLY','.SHIFT '/
 C
 C     ***** PROCESS INPUT FOR SCFINP *****
@@ -2650,6 +2651,7 @@ C *** Option 16 >MAX ER< Max. number of DIIS error vectors
 C
 C *** Option 17 (not in use)
   117 CONTINUE
+      BCKSTP = .FALSE.
       GO TO 100
 C
 C *** Option 18 >COREHO< core hole calculation

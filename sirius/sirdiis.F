@@ -983,8 +983,8 @@ C        Do not try that with open-shell - it does not work./pawsa
           IF (ONLYFC.AND.JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
-     &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10 )
-     &      ) THEN
+     &         EMCDIF*(GRDNRM-GNRMSV) .LT. -1.0D-10) .AND. BCKSTP)
+     &       THEN
 C              .. test EMCDIF*grddif against -1.0D-10 instead of 0.0D0
 C                 to avoid round-off problems here /hjaaj Sep 2005
 #endif
