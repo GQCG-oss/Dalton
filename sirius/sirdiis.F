@@ -481,7 +481,8 @@ C------------------
 C CBN+JK 03.01.06
 C------------------
       DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
-     &           .AND. .NOT. PCM .AND. .NOT. HSROHF .AND. .NOT. QM3
+     &           .AND. .NOT. PCM .AND. .NOT. HSROHF .AND. .NOT. QM3 
+     &           .AND. .NOT. AOSAVE
 C------------------
 C CBN+JK 03.01.06
 C------------------
@@ -492,7 +493,7 @@ Cov:    DIFDEN disabled for high spin HF
       DIFDEN   = DODIFDEN
       IF (.NOT. USRSCR) THEN
          IF (AOSAVE) THEN
-            IFTHRS = 14
+            IFTHRS = 20
          ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
             IFTHRS = 14
@@ -870,7 +871,7 @@ Chj-aug99: for effective DIFDEN; note this test is OK w. ILIM.eq.2
             ELSE
                ILIM = 1
             END IF
-            IF (ABS(ITHRS-IFTHRS) .GE. ILIM) THEN 
+            IF (.NOT. AOSAVE .AND. ABS(ITHRS-IFTHRS) .GE. ILIM) THEN 
                NEWTHR = .TRUE.
                IFTHRS = MIN(14,MAX(7,ITHRS))
             END IF
