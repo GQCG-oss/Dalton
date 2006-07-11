@@ -247,8 +247,8 @@ CTRL[8]=3
 ERROR[8]="THIRD ITERATION NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "C * \-0*\.01467.* \-0*\.00034.*   1\.46247" $log | wc -l`
-CRIT2=`$GREP "C * \-0*\.04023.*   0*\.00034.* \-1\.46285" $log | wc -l`
+CRIT1=`$GREP "C * \-0*\.01467.* \-0*\.0003[4-5].*   1\.46247" $log | wc -l`
+CRIT2=`$GREP "C * \-0*\.0402[2-3].*   0*\.0003[4-5].* \-1\.46285" $log | wc -l`
 CRIT3=`$GREP "H *    1\.1356.*    1\.5330.*   2\.1924" $log | wc -l`
 CRIT4=`$GREP "H *  \-1\.9081.*   0*\.2233.*   2\.2187" $log | wc -l`
 CRIT5=`$GREP "H *   0*\.7478.*  \-1\.7579.*   2\.1950" $log | wc -l`
