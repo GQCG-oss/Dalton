@@ -52,6 +52,8 @@ cat > ccsdr12_be.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .CC
 *ORBITALS
+.MOSTART
+ H1DIAG
 .R12ORB
  0 1 1 0 1 0 0 0
 *CC INPUT
