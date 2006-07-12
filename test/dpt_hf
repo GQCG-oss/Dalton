@@ -138,17 +138,17 @@ TEST[6]=`expr   $CRIT6`
 CTRL[6]=1
 ERROR[6]="CCSD(T) 2-elec. Darwin term not correct"
 
-CRIT7=`$GREP "BP2EOO: * \0\.0013769507...." $log | wc -l`
+CRIT7=`$GREP "BP2EOO: * \0\.0013769507.." $log | wc -l`
 TEST[7]=`expr   $CRIT7`
 CTRL[7]=1
 ERROR[7]="CCS orbit-orbit correction not correct"
 
-CRIT8=`$GREP "BP2EOO: * \0\.0011090284...." $log | wc -l`
+CRIT8=`$GREP "BP2EOO: * \0\.0011090284.." $log | wc -l`
 TEST[8]=`expr   $CRIT8`
 CTRL[8]=1
 ERROR[8]="CCSD orbit-orbit correction not correct"
 
-CRIT9=`$GREP "BP2EOO: * \0\.0011078672...." $log | wc -l`
+CRIT9=`$GREP "BP2EOO: * \0\.0011078672.." $log | wc -l`
 TEST[9]=`expr   $CRIT9`
 CTRL[9]=1
 ERROR[9]="CCSD(T) orbit-orbit correction not correct"
