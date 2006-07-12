@@ -2275,6 +2275,7 @@ C Largest exchange contribution
      &                 INDX_SHL3 .GE. ISHELC .AND. 
      &                 INDX_SHL4 .GE. ISHELD .AND. IPREVA .EQ. -1
      &                 .AND. HFXMU .EQ. D0) THEN
+                     NINTYP = 1
                      I_SHL = I_SHL + NINTYP*NCCINT
                      IF (I_SHL .GT. MMCORE) THEN
                         write(lupri,*) 'Received quit because '//

@@ -1335,7 +1335,8 @@ C
  
                   IF (IOPREL.EQ.3) THEN
                     CALL CCSD_ASYMSQ(WORK(KOFFIN),ISYMPQ,WORK(KINTAO),
-     &                               ISYMG,ISYMD)
+     &                               0,0)
+c    &                               ISYMG,ISYMD)
                   ELSE
                     CALL CCSD_SYMSQ(WORK(KOFFIN),ISYMPQ,WORK(KINTAO))
                   END IF

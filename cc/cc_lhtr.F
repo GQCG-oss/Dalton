@@ -1147,7 +1147,7 @@ C
              CALL DZERO(WORK(KVXINTSQ),NR12R12SQ(1))
            END IF
            DO IF = 1, NFIELD
-             WRITE(LUPRI,*) IF, NHFFIELD(IF), EFIELD(IF), LFIELD(IF)
+C            WRITE(LUPRI,*) IF, NHFFIELD(IF), EFIELD(IF), LFIELD(IF)
              IF ( NHFFIELD(IF) ) THEN
                CALL CC_ONEP(WORK(KFIELD),WORK(KEND2),LWRK2,EFIELD(IF),1,
      *                      LFIELD(IF))
@@ -1164,8 +1164,9 @@ C
            LUSIFC = 0
            CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
+           LUERR = 6
            REWIND(LUSIFC)
-           CALL MOLLAB('TRCCINT ',LUSIFC,6)
+           CALL MOLLAB('TRCCINT ',LUSIFC,LUERR)
            READ(LUSIFC)
            READ(LUSIFC)
            READ(LUSIFC) (WORK(KCMO+I-1),I=1,NLAMDS)

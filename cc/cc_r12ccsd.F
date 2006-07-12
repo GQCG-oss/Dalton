@@ -765,6 +765,8 @@ c       Caution!!!! d_ki, d_lj have to be put to one !!!!
 
       isymom = muld2h(isymv,isymc)
 
+      kend1 = 1
+
       if (ioptom.eq.0) then
         kom2 = 1
         kend1 = kom2 + nt2ao(isymom)
@@ -783,6 +785,13 @@ c       Caution!!!! d_ki, d_lj have to be put to one !!!!
         xc = 0.0d0
         write(lupri,*)'norm^2(c2am):',ddot(ntr12am(isymc),c2am,1,c2am,1)
         write(lupri,*)'isymom,nt2ao:',isymom,nt2ao(isymom)
+        if (ioptom.eq.0) then
+          write(lupri,*) 'norm^2 work(kom2)',
+     &                   ddot(nt2ao(isymom),work(kom2),1,work(kom2),1)
+        else if (ioptom.eq.1) then
+          write(lupri,*) 'norm^2 omega2',
+     &                   ddot(nt2ao(isymom),omega2,1,omega2,1)
+        end if
       end if
 
       do isymb = 1, nsym
@@ -872,16 +881,22 @@ c               matrix with bj.ge.ai
       end do
 
 
-      if (locdbg.and.(ioptom.eq.0)) then
+      if (locdbg) then
         write(lupri,*)'xv =', xv
         write(lupri,*)'xc =', xc
         write(lupri,*)'x1 =', x1
         write(lupri,*)'in mkcv:'
-        write(lupri,*)'norm^2 work(kom2):', 
-     &               ddot(nt2ao(isymom),work(kom2),1,work(kom2),1)    
-        call cc_prpao(dummy,work(kom2),isymom,0,1)
-        write(lupri,*)'norm^2 omega2: ', 
-     &   ddot(2*nt2ort(isymom),omega2,1,omega2,1)
+        if (ioptom.eq.0) then
+          write(lupri,*)'norm^2 work(kom2):', 
+     &                  ddot(nt2ao(isymom),work(kom2),1,work(kom2),1) 
+          call cc_prpao(dummy,work(kom2),isymom,0,1)
+          write(lupri,*)'norm^2 omega2: ', 
+     &                  ddot(2*nt2ort(isymom),omega2,1,omega2,1)
+        else if (ioptom.eq.1) then
+          write(lupri,*)'norm^2 omega2:',
+     &                  ddot(nt2ao(isymom),omega2,1,omega2,1)
+          call cc_prpao(dummy,omega2,isymom,0,1)
+        end if
       end if
 c
       if (ioptom.eq.0) then
@@ -981,7 +996,7 @@ c
 
                     end if
 c
-                    if (locdbg) then
+                    if (.false.) then
                       write(lupri,'(a,8i5,2g20.10)')
      &           'a,b,ai,bj,iaibj,ibiaj,iabijp,iabijm,O(aibj),O(biaj):',
      &                a,b,idxai,idxbj,idxaibj,idxbiaj,idxabijp,idxabijm,
@@ -1003,7 +1018,8 @@ c
 c
       end if     
  
-      if (locdbg.and.(ioptom.eq.0)) then
+      if (.false.) then
+c     if (locdbg.and.(ioptom.eq.0)) then
         write(lupri,*)'norm^2 omega2+: ', 
      &   ddot(nt2ort(isymom),omega2,1,omega2,1)
         write(lupri,*)'norm^2 omega2-: ', 

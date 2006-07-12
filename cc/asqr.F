@@ -110,33 +110,32 @@ C     PURPOSE:
 C      Antisymmetric Square up packed matrix.
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      DIMENSION PKMAT(*),SQMAT(NDIM,NDIM),SKMAT(NDIM,NDIM)
+      DIMENSION PKMAT(*),SQMAT(NDIM,NDIM)
  
 C
       IF (ISYMG .EQ. 0) THEN
+
+       IJ = 0
        DO  I = 1,NDIM
           DO  J = 1,I
 C
-             IJ = I*(I-1)/2 + J
-             SQMAT(I,J) =  PKMAT(IJ) 
+             IJ = IJ + 1
+             SQMAT(I,J) =   PKMAT(IJ) 
              SQMAT(J,I) = - PKMAT(IJ) 
           ENDDO
        ENDDO
 
       ELSE
-      DO I = 1,NDIM
-         DO J = 1,I
-             SKMAT(I,J) = SQMAT(I,J)
-             SKMAT(J,I) = SQMAT(J,I)  
-         ENDDO
-      ENDDO  
+      IJ = 0
       DO 100 I = 1,NDIM
           DO 110 J = 1,I
-
-             IJ = I*(I-1)/2 + J
-             SQMAT(I,J) =  PKMAT(IJ)  -  SKMAT(I,J)
-             SQMAT(J,I) =  -PKMAT(IJ)  -  SKMAT(J,I)
-
+           IJ = IJ + 1
+           IF (I.EQ.J) THEN
+             SQMAT(J,I) =  - PKMAT(IJ)  -  SQMAT(J,I)
+           ELSE
+             SQMAT(I,J) =    PKMAT(IJ)  -  SQMAT(I,J)
+             SQMAT(J,I) =  - PKMAT(IJ)  -  SQMAT(J,I)
+           END IF
   110     CONTINUE
   100 CONTINUE
       ENDIF
