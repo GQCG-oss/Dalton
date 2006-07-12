@@ -61,8 +61,6 @@ cat > ccsdr12_h2o_gamma2.dal <<'%EOF%'
 .THRESHOLD
  1D-10
 *ORBITALS
-.MOSTART
- H1DIAG
 .R12ORB
  1 0 0 0 
 .MOSTART 
