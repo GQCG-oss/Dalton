@@ -1164,7 +1164,6 @@ C            WRITE(LUPRI,*) IF, NHFFIELD(IF), EFIELD(IF), LFIELD(IF)
            LUSIFC = 0
            CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)
-           LUERR = 6
            REWIND(LUSIFC)
            CALL MOLLAB('TRCCINT ',LUSIFC,LUERR)
            READ(LUSIFC)
