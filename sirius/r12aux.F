@@ -52,6 +52,7 @@ C
 #include <scbrhf.h>
 #include <gnrinf.h>
 #include <r12int.h>
+#include "incore.h"
       LOGICAL DELEMO, FOUND, LDUMMY, TEMP_DIRFCK
       INTEGER NBASF(8)
 #include <memint.h>
@@ -59,6 +60,7 @@ C
       CALL QENTER('R12AUX')
       TEMP_DIRFCK = DIRFCK
       DIRFCK = .TRUE.
+      AOSAVE = .FALSE.
       IF (.NOT. LMULBS) THEN
          DO ISYM = 1, NSYM
             MBAS1(ISYM) = NBAS(ISYM)
