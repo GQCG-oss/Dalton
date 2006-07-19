@@ -740,7 +740,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,
 
     electrons = dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
     
-    dft_qr_resp_collect_info(data->dftcontr, work,lwork); /* NO-OP in serial */
+    dft_qr_resp_collect_info(data->dftcontr, work,*lwork); /* NO-OP in serial */
     daxpy_(&inforb_.n2orbx, &ONER, data->dftcontr, &ONEI, fi, &ONEI);
     if(inforb_.norbt<=4) {
         fort_print("Dumping DFT quadratic contribution");
