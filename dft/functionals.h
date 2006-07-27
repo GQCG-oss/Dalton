@@ -346,6 +346,7 @@ extern Functional LYPFunctional;
 extern Functional LYPrFunctional;
 extern Functional HCTHFunctional;
 extern Functional HCTH93Functional;
+extern Functional HCTH93mFunctional;
 extern Functional HCTH120Functional;
 extern Functional HCTH147Functional;
 extern Functional HCTH407Functional;

@@ -73,6 +73,7 @@ Functional* available_functionals[] = {
     &LYPrFunctional,
     &HCTHFunctional,
     &HCTH93Functional,
+    &HCTH93mFunctional,
     &HCTH120Functional,
     &HCTH147Functional,
     &HCTH407Functional,

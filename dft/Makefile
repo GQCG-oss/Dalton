@@ -45,11 +45,12 @@ FUNFILES = \
 	fun-example9.c	\
 	fun-g96.c	\
 	fun-gga.c	\
+	fun-hcth93.c	\
+	fun-hcth93m.c	\
 	fun-hcth120.c	\
 	fun-hcth147.c	\
 	fun-hcth407.c	\
 	fun-hcth407p.c	\
-	fun-hcth93.c	\
 	fun-kt.c	\
 	fun-lb94.c	\
 	fun-lg93.c	\
