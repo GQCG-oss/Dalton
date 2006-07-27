@@ -157,22 +157,22 @@ CTRL[7]=1
 ERROR[7]="CCSD OSCILLATOR STRENGTH IS NOT CORRECT"
 
 # CCS excited state dipole moment for 1 state in symmetry 1
-# z     -0.14163648     -0.36000399
-CRIT1=`$GREP "( -|-0)\.141636..     ( -|-0).36000(39|40)." $log | wc -l`
+# z     -0.14163648        -0.36000398        -1.20084403
+CRIT1=`$GREP "( -|-0)\.141636.. * ( -|-0).36000(39|40). * \-1\.20084[3-4].." $log | wc -l`
 TEST[8]=`expr $CRIT1`
 CTRL[8]=1
 ERROR[8]="CCS EXCITED STATE DIPOLE MOMENT IS NOT CORRECT"
 
 # CC2 excited state dipole moment for 1 state in symmetry 1
-# z     -0.07521183     -0.19116938
-CRIT1=`$GREP "( -|-0)\.075211..     ( -|-0).1911693." $log | wc -l`
+# z     -0.07521183        -0.19116938        -0.63767241
+CRIT1=`$GREP "( -|-0)\.075211.. * ( -|-0)\.191169.. * ( -|-0)\.637672.." $log | wc -l`
 TEST[9]=`expr $CRIT1`
 CTRL[9]=1
 ERROR[9]="CC2 EXCITED STATE DIPOLE MOMENT IS NOT CORRECT"
 
 # CCSD excited state dipole moment for 1 state in symmetry 1
-# z     -0.03598914     -0.09147526
-CRIT1=`$GREP "( -|-0)\.0359891.     ( -|-0).0914752." $log | wc -l`
+# z     -0.03598914        -0.09147526        -0.30512862
+CRIT1=`$GREP "( -|-0)\.0359891. * ( -|-0)\.0914752. * ( -|-0)\.3051286." $log | wc -l`
 TEST[10]=`expr $CRIT1`
 CTRL[10]=1
 ERROR[10]="CCSD EXCITED STATE DIPOLE MOMENT IS NOT CORRECT"

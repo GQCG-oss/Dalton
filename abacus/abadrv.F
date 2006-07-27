@@ -1691,6 +1691,7 @@ cLig <<
             CALL QUIT('Inconsistent input in ABACUS for SOPPA')
          END IF
       END IF
+C
       IF (DFTRUN .AND. VCD) THEN
          WRITE (LUPRI,'(2X,A)') 'VCD currently not implemented for DFT'
          CALL QUIT('VCD not implemented for DFT')
@@ -2231,15 +2232,25 @@ C            END IF
          END IF
 C
 C     Dipole moments (disable printing for SOPPA)
+Cdjw added SI units
 C
          IF (.NOT. ABASOP) THEN
             CALL HEADER('Dipole moment',-1)
             DIPMOM = SQRT(DIP0(1)*DIP0(1) + DIP0(2)*DIP0(2) + 
      &           DIP0(3)*DIP0(3))
-            WRITE (LUPRI,'(9X,2(7X,F12.6,A)//)')
-     *           DIPMOM, ' au', DEBYE*DIPMOM, ' Debye'
+C
+            WRITE (LUPRI,'(17X,A,15X,A,10X,A/)') 
+     *             'au','Debye','C m (/(10**-30)'
+            WRITE (LUPRI,'(7X,3(F15.6,4X))') 
+     *             DIPMOM, DEBYE*DIPMOM, DIPSI*DIPMOM
             CALL HEADER('Dipole moment components',-1)
             CALL DP0PRI(DIP0)
+C
+         WRITE (LUPRI,'(2X,A,2X,A,F9.5,A)') ' Units:',
+     *          ' 1 a.u. = ',DEBYE,' Debye '
+         WRITE (LUPRI,'(11X,A,F9.5,A//)') ' 1 a.u. = ',DIPSI,
+     *           ' (10**-30) C m (SI)'
+C
             DO IPRPC = 1,3 
                IF (IPRPC .EQ. 1) LAPRPC = 'XDIPLEN '
                IF (IPRPC .EQ. 2) LAPRPC = 'YDIPLEN '
@@ -2253,8 +2264,10 @@ Clf Printout of the LF dipole moment
                CALL HEADER('Local-field corrected dipole moment',-1)
                DIPLF = SQRT(DIPLF0(1)*DIPLF0(1) + DIPLF0(2)*DIPLF0(2) + 
      &              DIPLF0(3)*DIPLF0(3))
-               WRITE (LUPRI,'(9X,2(7X,F12.6,A)//)')
-     *              DIPLF, ' au', DEBYE*DIPLF, ' Debye'
+            WRITE (LUPRI,'(17X,A,15X,A,10X,A/)')
+     *             'au','Debye','C m (/(10**-30)'
+            WRITE (LUPRI,'(7X,3(F15.6,4X))')
+     *             DIPLF, DEBYE*DIPLF, DIPSI*DIPLF
                CALL HEADER(
      $              'Local-field corrected dipole moment components',-1)
                CALL DP0PRI(DIPLF0)
@@ -2745,7 +2758,7 @@ C
       CALL POLPRI(QUADRT,'SIU',1)
       RETURN
       END
-C  /* Deck qdrres */
+C  /* Deck secres */
       SUBROUTINE SECRES(IPRINT)
 #include <implicit.h>
 #include <priunit.h>
@@ -2774,7 +2787,7 @@ C
       CALL POLPRI(SECNDT,'CGS',1)
       RETURN
       END
-C  /* Deck qdrres */
+C  /* Deck octres */
       SUBROUTINE OCTRES(IPRINT)
 #include <implicit.h>
 #include <priunit.h>

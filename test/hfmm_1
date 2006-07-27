@@ -150,9 +150,9 @@ ERROR[1]="HF/MM ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Test of HF/MM dipole moment
 #
-CRIT1=`$GREP "x   *   ( |0)\.0858208" $log | wc -l`
-CRIT2=`$GREP "y   *  ( \-|\-0)\.7039249" $log | wc -l`
-CRIT3=`$GREP "z   *   ( |0)\.0177502" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.0858208" $log | wc -l`
+CRIT2=`$GREP "y * ( \-|\-0)\.7039249" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.0177502" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="HF/MM DIPOLE MOMENT NOT CORRECT"

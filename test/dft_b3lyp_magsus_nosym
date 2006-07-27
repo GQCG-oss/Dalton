@@ -34,11 +34,6 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_basis "6-31G**" "
-H 1 1 [4s1p|2s1p]                                        
-O 1 8 [10s4p1d|3s2p1d]                                   
-F 1 9 [10s4p1d|3s2p1d]                                   
-"
 
 check_scf_energy DFT -175.457033091816 1e-10
 
@@ -78,3 +73,10 @@ check_g_tensors 1e-6 "
 '
 . ./functions || { echo "'functions' library not found." ; exit 1; }
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
+
+
+# check_basis "6-31G**" "
+# H 1 1  4s1p 2s1p
+# O 1 6  10s4p1d 3s2p1d
+# F 1 9  10s4p1d 3s2p1d
+

@@ -166,8 +166,8 @@ CTRL[6]=3
 ERROR[6]="INITIAL GRADIENT NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP "(0| )\.204760 au * (0| )\.520448 Debye" $log | wc -l`
-CRIT2=`$GREP "x * (\-0|\-)\.2047600[0-9] * (\-0|\-)\.5204481[0-9]" $log | wc -l`
+CRIT1=`$GREP "(0| )\.204760 * (0| )\.520448 * 1\.736028" $log | wc -l`
+CRIT2=`$GREP "x * (\-0|\-)\.2047600[0-9] * (\-0|\-)\.5204481[0-9] * \-1\.7360281[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="INITIAL DIPOLE MOMENT NOT CORRECT"

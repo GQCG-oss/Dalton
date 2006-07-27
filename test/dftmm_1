@@ -153,9 +153,9 @@ ERROR[1]="DFT/MM ENERGT CONTRIBUTIONS NOT CORRECT"
 #
 # Test of DFT/MM dipole moment
 #
-CRIT1=`$GREP "x   *   ( |0)\.0794030" $log | wc -l`
-CRIT2=`$GREP "y   *  ( \-|\-0)\.6093462" $log | wc -l`
-CRIT3=`$GREP "z   *   ( |0)\.0143806" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.0794030" $log | wc -l`
+CRIT2=`$GREP "y * ( \-|\-0)\.6093462" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.0143806" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="DFT/MM DIPOLE MOMENT NOT CORRECT"

@@ -112,7 +112,7 @@ CTRL[1]=2
 ERROR[1]="ENERGY TERMS NOT CORRECT"
 
 # Dipole moment components compared:
-CRIT1=`$GREP "z      ( |0)\.84596085      2\.15021775" $log | wc -l`
+CRIT1=`$GREP "z * ( |0)\.84596085 * 2\.15021775 * 7\.17235440" $log | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"

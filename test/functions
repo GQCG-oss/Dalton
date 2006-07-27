@@ -65,7 +65,7 @@ fi
 #      types of primitives and contracted functions.
 check_basis() {
 if [ "$2" = "" ]; then echo "not enough parameters to $0"; return 1; fi
-$AWK -v"s=$2" '
+$AWK -v "s=$2" '
 /Basis set used is /{
 split(s,a)
 getline;getline;getline
@@ -98,7 +98,7 @@ return(v>r||v<-r)}
 # $2 - max deviation
 check_dipole() {
 [ "$2" = "" ] &&  echo "not enough parameters to check_dipole."
-$AWK '/Dipole moment$/{getline; getline;getline;s=($1<'$1-$2'||$1>'$1+$2'); exit 0;}END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
+$AWK '/Dipole moment$/{getline;getline;getline;getline;getline;s=($1<'$1-$2'||$1>'$1+$2'); exit 0;}END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
 }
 
 # check_dip_components:
@@ -401,7 +401,7 @@ if [ "$2" = "" ]; then
     echo "not enough parameters to check_vibr_freq."; return 1
 fi
 p=`echo $2`
-$AWK -v"tol=$1" 'function e(v,r){#print "vibr_freq: checking " v,",", r;
+$AWK -v "tol=$1" 'function e(v,r){#print "vibr_freq: checking " v,",", r;
 return(v>r||v<-r)}
  BEGIN {s=0;c=0}
 / Vibrational Frequencies and IR Intensities/ {
