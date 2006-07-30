@@ -140,7 +140,7 @@ CTRL[3]=2
 ERROR[3]="RELATIVISTIC PROPERTIES NOT CORRECT"
 
 # Dipole moment
-CRIT1=`$GREP "(0| )\.748785 au * 1\.903222 Debye" $log | wc -l`
+CRIT1=`$GREP "(0| )\.748785 * 1\.903222" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="DIPOLE MOMENT NOT CORRECT"

@@ -208,7 +208,7 @@ CTRL[6]=22
 ERROR[6]="HESSIAN NOT CORRECT"
 
 # Dipole moment:
-CRIT1=`$GREP "1\.104664 au * 2\.807776 Debye" $log | wc -l`
+CRIT1=`$GREP "1\.104664 * 2\.807776" $log | wc -l`
 CRIT2=`$GREP "z * \-1\.1046640. * \-2\.8077756." $log | wc -l`
 TEST[7]=`expr $CRIT1  \+ $CRIT2`
 CTRL[7]=2
