@@ -399,11 +399,14 @@ C
             END IF
             IF (IRAT .EQ. 1) LWORD = 8
             IF (IRAT .EQ. 2) LWORD = 4
-            FBYTES = NBUF*LWORD*(LBUF*IRAT + NIBUF*LBUF + 1)
+Chjaaj:     FBYTES is calculed in four lines, to avoid integer overflows.
+            FBYTES = LBUF*IRAT + NIBUF*LBUF + 1
+            FBYTES = NBUF*FBYTES
+            FBYTES = LWORD*FBYTES
             FBYTES = FBYTES / SDPRE(1024*1024)
-            NALL   = (NBASIS*(NBASIS + 1))/2
-            NALL   = (NALL*(NALL + 1))/2
-            PERCNT = SDPRE(100*N2WRIT) / SDPRE(NALL)
+            FNALL   = (NBASIS*(NBASIS + 1))/2
+            FNALL   = (FNALL*(FNALL + 1.0D0))*0.5D0
+            PERCNT = 100.0D0*SDPRE(N2WRIT) / FNALL
             WRITE (LUPRI,'(/1X,A,I12,A,F5.1,A,/1X,A,F12.3//)')
      &         'Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'% )',
