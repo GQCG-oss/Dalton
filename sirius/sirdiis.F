@@ -452,11 +452,12 @@ C
 c     DEFLVL is read from SCF INPUT/.SHIFT
       SHFTLVL = DEFLVL
       SHFTFAC = 0.7D0 
-#ifdef DYNAMIC_SCREENING
-  ... not finished yet ... hjaaj 01 feb 2001
-      SCRFAC = 100*NBAST
-      SCRFAC = D1 / SCRFAC
-      IFTMAX = NINT(-LOG10(SCRFAC*THDIIS))
+C ---  hjaaj: find safe screening factor depending on
+C             convergence threshold:
+C     SCRFAC = 100*NBAST
+      SCRFAC = 100*N2BAST
+      IFTMAX = INT(-LOG10(THDIIS/SCRFAC)) + 1
+      IFTMIN = INT(-LOG10(1.0D-1/SCRFAC)) + 1
 Chjaaj: screening factor for safe Fock matrix construction
 C       is chosen to be 100 (we want accuracy to 0.1 times THDIIS)
 C       F_ij ~ sum(kl) (ij|kl) * D_kl, where sum(kl) is over
@@ -466,9 +467,15 @@ C       The 100*NBAST is thus with an extra factor 10 factor for
 C       safety, and because IFTHRS only can change screening
 C       with a factor 10.   /01-Feb-2001 hjaaj
 C
+C       Yes, but for the gradient norm we in addition will have a sum
+C       of ca. NOCCT*NVIRT/NSYM elements, thus to be safe wrt
+C       gradient norm let us use 10*N2BAST in SCRFAC instead 
+C       of 100*NBAST.
+C       Also minimum accuracy corresponding to error in
+C       GRDNORM ~ 0.1 (IFTMIN). /31-Jul-2006 hjaaj
+C
 C       In iterations we want 0.001 times GRDNRM because we do
 C       keep vectors until GRDNRM fallen a factor 100
-#endif
       DAMP   = D0
       EMCLOW = D0
       GNRMSV = D0
@@ -496,10 +503,10 @@ Cov:    DIFDEN disabled for high spin HF
             IFTHRS = 20
          ELSE IF (FLAG(13)) THEN
 Chj-aug99: MO's read from input, assume good guess
-            IFTHRS = 14
+            IFTHRS = IFTMAX
          ELSE
 Chj-aug99: MO's from huckel or H1DIAG, assume poor guess
-            IFTHRS = 7
+            IFTHRS = IFTMIN
          END IF
       END IF
       IF (ICI0 .EQ. 6) THEN
@@ -780,7 +787,7 @@ C-------------------
          IF (MOLDEN) CALL MOSCFCON(ITDIIS,EMCSCF,.FALSE.)
 C
 C        Test and exit if energy is increasing
-C        (from itdiis .eq. 7, second iteration is Roothaan step
+C        (from itdiis .ge. 7, second iteration is Roothaan step
 C        and often increases in energy; fourth iteration has been
 C        observed to increase in energy (perhaps in connection with
 C        new occupation for AUTOCC)).
@@ -857,23 +864,23 @@ Chj 990819: use DIFDEN more often
 Chj was: IF (IFTHRS .GE. 12 .AND. .NOT. FLAG(49)) DIFDEN = .TRUE.
          NEWTHR = .FALSE.
          IF (DIRFCK .AND. .NOT. USRSCR) THEN
-            ITHRS = NINT(-LOG10(GRDNRM))+9
-C           ... "+9" is very conservative, but we must
+            ITHRS = INT(-LOG10(GRDNRM/SCRFAC))+3
+C           ... "+3" instead of "+1" because we must
 C               have sufficient accuracy for lowering the
 C               gradient norm with a factor 100 and for
 C               a significant contribution in CVEC later ...
-C               (comment inserted Feb 2001/hjaaj)
+C               (comment inserted Feb 2001/Jul 2006/hjaaj)
             IF (DODIFDEN) THEN
                ILIM = 2
 Chj-aug99: only NEWTHR with skip of 2 for DIFDEN
-               IF (ITHRS .GE. 12) ITHRS = 14
+               IF (ITHRS .GE. IFTMAX-2) ITHRS = IFTMAX
 Chj-aug99: for effective DIFDEN; note this test is OK w. ILIM.eq.2
             ELSE
                ILIM = 1
             END IF
             IF (.NOT. AOSAVE .AND. ABS(ITHRS-IFTHRS) .GE. ILIM) THEN 
                NEWTHR = .TRUE.
-               IFTHRS = MIN(14,MAX(7,ITHRS))
+               IFTHRS = MIN(IFTMAX,MAX(IFTMIN,ITHRS))
             END IF
          END IF
 Chj 990819/000103 new:
