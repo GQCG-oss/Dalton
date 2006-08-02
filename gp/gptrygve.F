@@ -1307,6 +1307,7 @@ C
       LUINTR = -9032
       LUMOLDEN=-9033
       LUNDPF = -9034
+      LUSRINT =-9035
       DO I = 1, MXCOOR
          LUAORC(I) = -9035 - I
       ENDDO
