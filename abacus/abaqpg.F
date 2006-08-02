@@ -44,7 +44,7 @@ C  /* Deck qpginp */
 #include <abainf.h>
 #include <cbiqpg.h>
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
-     *            '.XXXXXX', '.AOMAT ', '.STOP  '/
+     *            'XXXXXXX', 'XXXXXXX', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*QPGCTL')
       ICHANG = 0
@@ -85,7 +85,7 @@ C
                GO TO 100
     5             CONTINUE
                GO TO 100
-    6             QAOMAT = .TRUE.
+    6             CONTINUE
                GO TO 100
     7             QCUT   = .TRUE.
                GO TO 100
@@ -113,8 +113,6 @@ C
      *      ' density matrix neglected in QPGCTL.'
             IF (QTEST) WRITE (LUPRI,'(/,2A)') ' Test for quadrupole',
      *      ' moments and quadrupole reorthonormalization.'
-            IF (QAOMAT) WRITE (LUPRI, '(A)')
-     *         ' AO printing of SO overlap matrices.'
             IF (QCUT) THEN
                WRITE (LUPRI,'(/,A)') ' Program is stopped after QPGCTL.'
             END IF
@@ -135,16 +133,15 @@ C
       QNODC   = .FALSE.
       QNODV   = .FALSE.
       QTEST   = .FALSE.
-      QAOMAT  = .FALSE.
       QSKIP = .NOT. QPGRAD
       QCUT  = .FALSE.
 C
       RETURN
       END
-C  /* Deck dipctl */
+C  /* Deck qpgctl */
       SUBROUTINE QPGCTL(WORK,LWORK,PASS)
 C
-C     tuh 1985
+C     Based on DIPCTL by tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
 #include <implicit.h>
@@ -312,8 +309,7 @@ ckr               END IF
 C
 C           ***** Reorthonormalization and right-hand side *****
             CALL OPGCTL(SECREO,SECRHS,CMO,DV,SOINT,SECACT,SECICT,
-     &                           WORK,LWORK,IREP,QNODC,QNODV,QAOMAT,
-     &                           IPRINT)
+     &                  WORK,LWORK,IREP,QNODC,QNODV,IPRINT)
 C
 C           ***** Add reorthonormalization to DSECS *****
 C
