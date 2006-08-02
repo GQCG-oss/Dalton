@@ -44,6 +44,7 @@ C
       EXTERNAL DFT_ISGGA
       COMMON /DKSMPRIV/ ENERGY
 C      
+      CALL QENTER('DFTKSMb')
       CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
       DOGGA = DFT_ISGGA()
       ENERGY = 0D0
@@ -68,6 +69,7 @@ C
       IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14,A,E8.2)')
      &     'K-S electrons/energy :', ELE, EDFTY,
      &     ' err:', ELE-2D0*NRHFT
+      CALL QEXIT('DFTKSMb')
       RETURN
       END
 C
@@ -88,6 +90,7 @@ C
 C
       DIMENSION VXC(NBLEN),VX(5)
       PARAMETER (DUMMY = 0D0)
+      CALL QENTER('DFTKSMLDA')
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
@@ -99,6 +102,7 @@ C
       END DO
       CALL DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &     VXC,GAO,FKSM)
+      CALL QEXIT('DFTKSMLDA')
       RETURN
       END
 c
@@ -117,6 +121,7 @@ C
 C
       DIMENSION VXC(2,NBLEN),VX(5)
       COMMON /DKSMPRIV/ ENERGY
+      CALL QENTER('DFTKSMGGA')
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
@@ -134,6 +139,8 @@ C
       END DO
       CALL DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &              VXC,GAO,GRADA,FKSM)
+      CALL QEXIT('DFTKSMGGA')
+C
       RETURN
       END
 c     ================================================================
@@ -356,6 +363,7 @@ c
 #include <infpar.h>
 #include <inforb.h>
       DIMENSION WRK(LWRK)
+      CALL QENTER('DFT_KSMSLAVE')
 c
       CALL DFTINTBCAST
       KDMAT = 1
@@ -367,6 +375,7 @@ c
       CALL DZERO(WRK(KFKSM),N2BASX)
       CALL DFTKSMb(WRK(KDMAT),WRK(KFKSM),EDFTY,
      &             WRK(KFREE),LFREE,IPRINT)
+      CALL QEXIT('DFT_KSMSLAVE')
       END
 c      
       SUBROUTINE KSMSYNC(DMAT)
