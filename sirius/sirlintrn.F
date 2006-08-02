@@ -234,11 +234,7 @@ C-- SIRTR1, ..., ORBSIG
       KFXV   = KFXC   + NOSIM*N2ORBX
       KFTV   = KFXV   + NOSIM*N2ORBX
 C-- SIRTR1, ORBSIG, CISIG
-      LFTV   = MCSIM*N2ORBX
-      IF (DOMCSRDFT) LFTV = 2*LFTV
-C     ... Extra allocation for "FTC" in MCSCF-SRDFT
-C         Will be constructed in TR1FCY
-      KH2XAC = KFTV   + LFTV
+      KH2XAC = KFTV   + MCSIM*N2ORBX
       KFXQ   = KH2XAC + MOSIM*NNASHX*NNASHX
       KFTQ   = KFXQ   + NOSIM*NASHT*NORBT
 C-- SIRTR1, ORBSIG
@@ -277,7 +273,7 @@ C     KDTV need to be zeroed out in case of FCI solvent calculation
 C     (DTV only set in sirtr1). K.Ruud-July 97
 C
       CALL DZERO(WRK(KDTV),MCSIM*NNASHX)
-      IF (NWOPT.EQ.0.AND. .NOT.DOMCSRDFT) THEN
+      IF (NWOPT.EQ.0) THEN
          T2 = T1
          T3 = T1
          T4 = T1
@@ -355,39 +351,12 @@ C
 C           CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,
 C    *                  INDXCI,WRK,LFREE)
             DO 540 ICSIM = 1,NCSIM
-               JSCVEC = (KSCVEC-1) + (ICSIM-1)*NVAR
+               JSCSIM = (KSCVEC-1) + (ICSIM-1)*NVAR
                DO 520 I = 1,NCONF
-                  WRK(JSCVEC+I) =
-     *               D2 * ( WRK(JSCVEC+I) - EACTIV * BCVECS(I,ICSIM) )
+                  WRK(JSCSIM+I) =
+     *               D2 * ( WRK(JSCSIM+I) - EACTIV * BCVECS(I,ICSIM) )
   520          CONTINUE
   540       CONTINUE
-            IF (DOMCSRDFT) THEN
-C              ... special MCSRDFT contribution to csf sigma-vectors,
-C                  stored in FTV(1,NCSIM+ICSIM) in SIRTR1 after the 
-C                  standard FTV matrices.
-               ESRLTR   = D0
-C              ... expectation value is not zero, but it doesn't matter
-C                  because CREF is projected out of SCVEC later
-               KSRCVEC  = KCW
-               KSRLTRAC = KSRCVEC + NCONF
-               KSRW     = KSRLTRAC + NNASHX
-               LSRW     = LFREE - KSRW
-               DO ICSIM = 1,NCSIM
-                  JFTC  = KFTV + (NCSIM+ICSIM-1)*N2ORBX
-                  JSCVEC = KSCVEC + (ICSIM-1)*NVAR
-                  CALL GETAC1(WRK(JFTC),WRK(KSRW))
-                  CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC))
-                 IF (IPRLIN .GT. 10) THEN
-                     WRITE(LUPRI,'(/A,I3)') 'MCSRDFT "FTC" no.',ICSIM
-             CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-                     WRITE(LUPRI,'(/A,I3)') 'MCSRDFT SRLTRAC no.',ICSIM
-                     CALL OUTPAK(WRK(KSRLTRAC),NASHT,1,LUPRI)
-                 END IF
-                  CALL SOLGC(CREF,WRK(KSRLTRAC),ESRLTR,WRK(KSRCVEC),
-     &                       INDXCI,WRK(KSRW),LSRW)
-                  CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
-               ENDDO
-            END IF
          END IF
          IF (NOSIM .GT. 0 .AND. NCONF .GT. 0) THEN
          IF (NCONF .GT. 1 .OR. LSYMPT .NE. 1) THEN
@@ -543,7 +512,6 @@ C
 #include <infdim.h>
 #include <inflin.h>
 #include <infpri.h>
-#include <infinp.h>
 C
       LOGICAL ORBLIN
 C
@@ -582,17 +550,6 @@ C
       CALL ORBSI2(NCSIM,NOSIM,SCVECS,SOVECS,
      *            DTV,FC,FTV,FTQ,DV,FXC,FXV,FXQ,
      *            WRK(KUBO),WRK(KUGORB),WRK(KUDV))
-C
-C     Special MCSRDFT correction, corresponding effective operator is
-C     saved in FTV(1,NCSIM+ICSIM) in SIRTR1.
-C
-      IF (DOMCSRDFT .AND. NCSIM .GT. 0) THEN
-         DO ICSIM = 1,NCSIM
-            JSCVEC = (NCONF + 1) + (ICSIM-1)*NVAR
-            JFSR   = 1 + (NCSIM+ICSIM-1)*N2ORBX
-             CALL SRDFTSO(2.0D0,DV,FTV(JFSR),SCVECS(JSCVEC))
-         END DO
-      END IF
 C
 C     *** Make microcanonical average on SVECS
 C         (AVERAG returns immediately if no averageing requested)

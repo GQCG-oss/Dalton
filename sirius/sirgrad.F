@@ -331,24 +331,22 @@ C            "Calculation of Generalized Fock Matrices from
 C            Regular and One-Index Transformed Integrals"
 C
 #include <implicit.h>
-#include <priunit.h>
       DIMENSION DV(*), CMO(*), FC(*), FV(*), WRK(*)
-      LOGICAL   ONLYFC, NOFV, LSRHYBR
+      LOGICAL   ONLYFC, NOFV
 C
 C Used from common blocks:
 C   INFORB : NASHT, NNBASX, NSYM, ...
 C   INFPRI : P6FLAG()
 C
-#include <maxorb.h>
-#include <infinp.h>
+#include <priunit.h>
 #include <inforb.h>
 #include <infpri.h>
+#include <maxorb.h>
+#include <infinp.h>
       PARAMETER( D1 = 1.0D0 )
-#include <dftcom.h>
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
-      LSRHYBR = SRHYBR .AND. .NOT. MCTYPE.EQ.0
 C
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -356,16 +354,9 @@ C
       IF (.NOT. NOFV) THEN
 C        FCAO and FVAO must be consequetive
 C        DCAO and DVAO must be consequetive
-         IF (LSRHYBR) THEN
-            NF = 3
-         ELSE
-            NF = 2
-         END IF
-         CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KDCAO, 2*N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFCAO,2*N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDCAO,2*N2BASX,WRK,KFREE,LFREE)
          KFVAO = KFCAO + N2BASX
-         KSRAO = KFVAO + N2BASX
-C        ... KSRAO only for LSRHYBR /hjaaj
          KDVAO = KDCAO + N2BASX
       ELSE
          CALL MEMGET('REAL',KFCAO,N2BASX,WRK,KFREE,LFREE)
@@ -373,6 +364,7 @@ C        ... KSRAO only for LSRHYBR /hjaaj
          CALL MEMGET('REAL',KDCAO,N2BASX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KDVAO,0,WRK,KFREE,LFREE)
       END IF
+      CALL MEMGET('WORK',KWRK,LWRK,WRK,KFREE,LFREE)
 C
 C
 C ***** Construct folded inactive and active parts of the one-electron
@@ -380,7 +372,7 @@ C       density matrix in AO-basis (DCAO and DVAO). DV is the active
 C       part of the one-electron density matrix in MO-basis.
 C
       CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
-     *            WRK(KDCAO),WRK(KDVAO),CMO,DV,WRK(KFREE),LFREE)
+     *            WRK(KDCAO),WRK(KDVAO),CMO,DV,WRK(KWRK),LWRK)
 C     CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
 C
       IF (HSROHF) THEN
@@ -388,7 +380,7 @@ C
          CALL DSCAL(N2BASX,-D1,WRK(KDVAO),1)
       END IF
       CALL FCKMAO(NOFV,DV,EMCMY, WRK(KFCAO),WRK(KFVAO),
-     *            WRK(KDCAO),WRK(KDVAO),CMO,WRK(KFREE),LFREE)
+     *            WRK(KDCAO),WRK(KDVAO),CMO,WRK(KWRK),LWRK)
 C
 C ***** Transform inactive and active Fock-matrices to MO basis
 C ***** (FC and FV) using DCAO as scratch space
@@ -404,13 +396,6 @@ C
          IF (NSYM .GT. 1) CALL PKSYM1(WRK(KFVAO),WRK(KFVAO),NBAS,NSYM,2)
          CALL UTHUB(WRK(KFVAO),FV,CMO,WRK(KDCAO),NSYM,NBAS,NORB)
       END IF
-      IF (LSRHYBR) THEN
-         CALL DCOPY(N2BASX,WRK(KSRAO),1,WRK(KDCAO),1)
-         CALL DGETSP(NBAST,WRK(KDCAO),WRK(KSRAO))
-         IF (NSYM .GT. 1) CALL PKSYM1(WRK(KSRAO),WRK(KSRAO),NBAS,NSYM,2)
-         CALL UTHUB(WRK(KSRAO),FV(1+NNORBT),CMO,WRK(KDCAO),
-     &      NSYM,NBAS,NORB)
-      END IF
 C
       IF (P6FLAG(14)) THEN
         WRITE(LUPRI,1200)
@@ -419,14 +404,9 @@ C
           WRITE(LUPRI,1300)
           CALL OUTPKB(FV,NORB,NSYM,1,LUPRI)
         END IF
-        IF (LSRHYBR) THEN
-          WRITE(LUPRI,1400)
-          CALL OUTPKB(FV(1+NNORBT),NORB,NSYM,1,LUPRI)
-        END IF
       END IF
  1200 FORMAT(/' FC = Fock matrix, inactive part (MO-basis)')
  1300 FORMAT(/' FV = Fock matrix, active part (MO-basis)')
- 1400 FORMAT(/' SRHYBR extra matrix (MO-basis)')
 C
       CALL MEMREL('FCKMAT',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('FCKMAT')
@@ -486,8 +466,6 @@ C
 C ***** TWO-ELECTRON PART calculated in FCAO, FVAO
 C       (FCAO, FVAO zeroed in FCK2AO)
 C
-      ESRDFTY = D0
-C     ... make sure ESRDFTY is reset for CISRDFT following HFSRDFT
       CALL FCK2AO(ONLYFC,FCAO,FVAO,DCAO,DVAO,WRK,KFREE,LFREE)
       IF(DODFT) THEN
          IF(NASHT.NE.0) CALL QUIT('Gradient not implemented for RO-DFT')
@@ -522,10 +500,9 @@ C
          EMCMY = DDOT(N2BASX,DCAO,1,WRK(KH1AO),1)
          IF (P6FLAG(11)) WRITE (LUPRI,'(/A,F25.12)')
      *   ' Inactive one-electron energy :',EMCMY
-         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)+EDFTY+ESRDFTY
+         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1) + EDFTY
       ELSE
-C        EMCMY = D0
-         EMCMY = ESRDFTY
+         EMCMY = D0
       END IF
       IF (P6FLAG(11)) WRITE (LUPRI,'(/A,F25.12)')
      *   ' Inactive total energy        :',EMCMY
@@ -596,8 +573,6 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <dftcom.h>
-#include <gnrinf.h>
-#include <priunit.h>
 C
       DIMENSION ISYMDM(2), IFCTYP(2)
       SAVE ISYMDM, IFCTYP
@@ -615,12 +590,10 @@ C
             NFMAT = 0
          END IF
          IOFFAO = 1
-      ELSE IF (NISHT .GT. 0 .OR. ADDSRI) THEN
+      ELSE IF (NISHT .GT. 0) THEN
          NDMAT = 2
          NFMAT = 2
          IOFFAO = 1
-         IF (NISHT.EQ.0) CALL DZERO(DCAO,N2BASX)
-C        ... zero DCAO for ADDSRI with NISHT.eq.0
       ELSE IF (NASHT.EQ.1) THEN 
 C  one-electron system
          NDMAT = 2
@@ -652,8 +625,7 @@ C
       CALL DZERO(FCAO,NDMAT*N2BASX)
 CKR   This line read NDMAT instead of NFMAT, 150997
       IF (NFMAT .GT. 0) THEN
-      IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSROHF .OR. DFTRUN .OR. DOCISRDFT .OR. DOHFSRDFT)) THEN
+      IF (LUSUPM .NE. -1 .AND. (.NOT. (HSROHF .OR. DFTRUN))) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,
@@ -663,7 +635,6 @@ C            else construct Fock matrix from LUINTA
 C            ISYMDM(1:NFMAT) = 1 : symmetry of density matrix (DUNP)
 C            IFCTYP(1:NFMAT) = 13 : singlet, symmetric Fock matrix
 C            NFMAT is max = 2 here
-C
       END IF
       END IF
 C
@@ -2371,7 +2342,6 @@ C Scratch:
 C   WRK
 C
 #include <implicit.h>
-#include <priunit.h>
       DIMENSION CREF(*),CMO(*),DV(*),PV(*), G(*),
      *          FC(*),FV(*),FQ(*), DIAOR(*), INDXCI(*), WRK(LFREE)
 #include <iratdef.h>
@@ -2393,6 +2363,7 @@ C   INFDIM : ?
 C   INFTAP : LUIT2,?
 C
 #include <maxorb.h>
+#include <priunit.h>
 #include <infinp.h>
 #include <infvar.h>
 #include <inforb.h>

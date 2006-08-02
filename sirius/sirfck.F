@@ -70,51 +70,37 @@ C
 C     DIRECT = .TRUE.   Direct calculation using hermit.
 C              .FALSE.  Read integrals from AOTWOINT.
 #include <implicit.h>
-      LOGICAL   DIRECT, DOERG, DOATR, LSRHYBR
-      DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
+#include <cbirea.h>
+      LOGICAL   DIRECT
+      DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT)
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT), MBAS(8)
-      DIMENSION WRK(*), IFCTMP(10)
+      DIMENSION WRK(*)
       DIMENSION DFCOEFF(NBAST) !denisty-fitting coefficients
 C
 #include <dummy.h>
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D4 = 4.0D0, 
-     &           DMP5 = -0.5D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, DMP5 = -0.5D0)
 C
 C Used from common blocks
-C   GNRINF: SRINTS, CHIVAL
 C   INFORB: NSYM, NBAS(:), N2BASX
 C   INFTAP: LUINTA
 C   INFPRI: IPRFCK
-C   CBIREA: ATOMDF, NODDYDF
 C
 #include <maxorb.h>
 #include <priunit.h>
-#include <gnrinf.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
 #include <dftcom.h>
-#include <dfterg.h>
-#include <cbirea.h>
 C
-      LOGICAL SFIRST,PREHF
+      LOGICAL SFIRST
       SAVE SFIRST
-      DATA SFIRST  /.TRUE./
+      DATA SFIRST /.TRUE./
 C
 C
 #include <memint.h>
       IF (NDMAT.EQ.0) RETURN
       CALL QENTER('SIRFCK')
-!      print *,'SIRFCK: entering'
-!      print *,'SIRFCK: NDMAT=', NDMAT
-!      print *,'SIRFCK: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
-C     ...PREHF: Find out if this is a HF calculation preceeding
-C        a Multiconfigurational SR-DFT calculation.
-      PREHF = DOSCF.AND.(DOMCSRDFT.OR.DOCISRDFT).AND.
-     &                  (.NOT.DOHFSRDFT).AND.(MCTYPE.EQ.0)
-      LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT .AND. .NOT.PREHF
-C
       IF (DIRECT) THEN
          IF (SFIRST) THEN
             IPRHER = 2*IPRFCK
@@ -125,29 +111,14 @@ C           CALL SETHER(IPRHER,NEWGEO,WORK,LWORK)
          DO I = 1,NDMAT
             ISYMDM(I) = ISYMDM(I) - 1
          END DO
-C
-C        Special code for short range/long range integrals
-C        ... never short range integrals in first call of HERFCK
-C        ... if normal HF then normal 2-el ints (CHIVAL=0)
-         SRINTS = .FALSE.
-         CHIVALSAVE = CHIVAL
-         HFXFACSAVE = HFXFAC
-         IF (ADDSRI .OR. PREHF) HFXFAC = D1
-C        ... full exchange for long range part
-         IF (ADDSRI .AND. .NOT.(DOHFSRDFT.OR.DOMCSRDFT)) THEN
-C           this is e.g. PREHF, i.e. standard HF
-            CHIVAL = D0
-         END IF
-C
-         IF (NSYM.GT.1 .AND. (DODFT.OR.DOHFSRDFT.OR.DOMCSRDFT)) THEN
+         IF (NSYM.GT.1 .AND. DODFT) THEN
 C           HERFCK destroys DMAT when called with symmetry
             KDMAT = 1
-            KLAST = KDMAT + NDMAT*N2BASX
+            KLAST = KDMAT + N2BASX*NDMAT
             LWRK  = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','DMAT',KLAST,LWORK)
-            CALL DCOPY(NDMAT*N2BASX,DMAT,1,WRK(KDMAT),1)
-            if (atomdf .AND. CHIVAL .LE. D0) then
-C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
+            CALL DCOPY(N2BASX*NDMAT,DMAT,1,WRK(KDMAT),1)
+            if (atomdf) then
               call dens_fit(fmat,wrk(kdmat),ndmat,ISYMDM,IFCTYP,IPRFCK,
      &                    WRK(KLAST),LWRK)
             else
@@ -155,8 +126,7 @@ C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
      &                    WRK(KLAST),LWRK)
             end if
          ELSE
-            if (atomdf .AND. CHIVAL .LE. D0) then
-C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
+            if (atomdf) then
               call dens_fit(fmat,dmat,ndmat,ISYMDM,IFCTYP,IPRFCK,
      &                      wrk,lwork)
             else
@@ -164,262 +134,20 @@ C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
      &                      WRK,LWORK)
             end if
          END IF
-         CHIVAL = CHIVALSAVE
-         IF (.NOT. PREHF) HFXFAC = HFXFACSAVE
-C
-C        Add Short-range integrals (HFSRDFT hybrid model)
-C
-         IF (ADDSRI .AND. (DOHFSRDFT.OR.DOMCSRDFT)) THEN
-            IF (DOMCSRDFT)
-     &      CALL QUIT('DOMCSRDFT not implemented DIRECT')
-C           ... we need to add density matrices as below for not DIRECT
-C               in order to get this working
-            IF (NDMAT .GT. 10)
-     &         CALL QUIT('NDMAT .gt. 10 in SIRFCK, increase dimension!')
-            SRINTS = .TRUE.
-            IF (HFXFAC .NE. 0.0D0) THEN
-C           ... Use exact SR-exchange for the HF-DFT hybrid
-C               (i.e both exchange and coulomb : IFCTYP = 13)
-                IFCVAL = 13
-            ELSE
-C           ... Exchange in functional ->  add only Coul (IFCTYP = 11)
-                IFCVAL = 11
-            ENDIF
-            DO I = 1,NDMAT
-               IFCTMP(I) = IFCVAL
-            END DO
-!            print *,'SIRFCK: after IFCTMP(I) = IFCVAL'       !JT
-!            print *,'SIRFCK: NDMAT=',NDMAT                   !JT
-!            print *,'SIRFCK: IFCTMP=',(IFCTMP(I),I=1,NDMAT)  !JT
-C           HERFCK zeroes FMAT with long range term, thus :
-            KFMAT = 1
-            KLAST = KFMAT + NDMAT*N2BASX
-            LWRK  = LWORK - KLAST + 1
-            IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','FMAT',KLAST,LWORK)
-            CALL HERFCK(WRK(KFMAT),DMAT,NDMAT,ISYMDM,IFCTMP,IPRFCK,
-     &                  WRK(KLAST),LWRK)
-            CALL DAXPY(NDMAT*N2BASX,D1,WRK(KFMAT),1,FMAT,1)
-            SRINTS = .FALSE.
-         ENDIF
          DO I = 1,NDMAT
             ISYMDM(I) = ISYMDM(I) + 1
          END DO
-         HFXFAC = HFXFACSAVE
       ELSE
          IF (HFXMU .NE. D0) CALL QUIT(
      &       'SIRFCK2: nonzero HFXMU requires .DIRECT calculation.') 
 C     ... not DIRECT
-C
-C        ... if SRHYBR (DFT-SRDFT hybrid) only include Coulomb terms 
-C            (core is treated with BLYP -> hence no exchange here!)
-         IF(LSRHYBR) THEN
-            IFCTMP(1) = 11
-C           ... FC,lr = JC,lr = J,lr * DC for SR-hybrid
-            IF (NDMAT .EQ. 2) IFCTMP(2) = 13
-C           ... FV,lr = G,lr * DV
-            IF (NDMAT .GT. 2) CALL QUIT('NDMAT.gt.2 for SRHYBR & lr')
-         ELSE
-!JT           IFCTMP(1) = IFCTYP(1)
-!JT           IFCTMP(2) = IFCTYP(2)
-           DO I = 1,NDMAT          !JT
-            IFCTMP(I) = IFCTYP(I)  !JT
-           ENDDO                   !JT
-         END IF
-         HFXFACSAVE = HFXFAC
-         IF (ADDSRI .OR. PREHF) HFXFAC = D1
-!         print *,'SIRFCK: calling SIRFCK2 with'
-!         print *,'SIRFCK: NDMAT=',NDMAT
-!         print *,'SIRFCK: IFCTMP=',(IFCTMP(I),I=1,NDMAT)
-         if (atomdf .AND. CHIVAL .LE. D0) then
-C             hjaaj mar 2006: dens_fit not for short range integrals (yet)
-           call dens_fit(fmat,dmat,ndmat,ISYMDM,IFCTMP,IPRFCK,wrk,lwork)
+         if (atomdf) then
+           call dens_fit(fmat,dmat,ndmat,ISYMDM,IFCTYP,IPRFCK,wrk,lwork)
          else
            CALL SIRFCK2(LUINTA,'AOTWOINT',
-     &                FMAT,DMAT,NDMAT,ISYMDM,IFCTMP,WRK,LWORK)
+     &                  FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WRK,LWORK)
          end if
-C
-C        Add Short-range integrals to FC part of FMAT (SRDFT hybrid models)
-C
-         IF (ADDSRI) THEN
-            IF (.NOT.PREHF) HFXFAC = HFXFACSAVE
-             IF (NASHT.GT.0 .AND. (.NOT.DOCISRDFT))THEN
-C              ... get total DMAT = DC + DV if NASHT.gt.0
-C                  for Hartree SR term
-               NSRDMAT = NDMAT/2
-               IF (2*NSRDMAT .NE. NDMAT) THEN
-                  WRITE(LUPRI,'(3X,A,3I4)')
-     &           'SIRFCK : NSRDMAT, NDMAT, NASHT = ',NSRDMAT,NDMAT,NASHT
-                  CALL QUIT('2*NSRDMAT.ne.NDMAT for '//
-     &                      'ADDSRI and NASHT.gt.0')
-               ENDIF
-               DO I = 1,NSRDMAT
-                  CALL DAXPY(N2BASX,D1,DMAT(1,NSRDMAT+I),1,DMAT(1,I),1)
-C                 ... add DV(I) to DC(I)
-               END DO
-            ELSE
-C              ... total DMAT = DC when NASHT.eq.0 or CISRDFT
-               NSRDMAT = NDMAT
-            END IF
-C
-            IF(HFXFAC.NE.D0) THEN
-C           ... for normal/presceding HF and for SRDFT with exact exch.
-C               (add SR coul. and exch. to LR to give full 2-el part)
-                IFCVAL = 13
-            ELSE 
-C           ... add only Coul
-C               (only SR Hartree term for SRDFT hybrids)
-                IFCVAL = 11
-            END IF
-            IF (NSRDMAT .GT. 10)
-     &         CALL QUIT('NSRDMAT.gt.10 in SIRFCK, increase dimension!')
-            DO I = 1,NSRDMAT
-               IFCTMP(I) = IFCVAL
-            END DO
-            IF (NSRDMAT.GT.1) CALL QUIT('NSRDMAT .GT. 1 for ADDSRI')
-            KSRAO = 1
-            KLAST = KSRAO  + NSRDMAT*N2BASX
-            LWRK  = LWORK - KLAST + 1
-            CALL DZERO(WRK(KSRAO),NSRDMAT*N2BASX)
-            CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KSRAO),
-     &                   DMAT,NSRDMAT,ISYMDM,IFCTMP,WRK(KLAST),LWRK)
-            CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT,1)
-            EJSR = DDOT(N2BASX,DMAT(1,1),1,WRK(KSRAO),1)
-            IF (NASHT.GT.0) THEN
-               EJVSR =-DP5*DDOT(N2BASX,DMAT(1,NSRDMAT+1),1,WRK(KSRAO),1)
-            ELSE
-               EJVSR = D0
-            END IF
-            if (HFXFAC .NE. 0.0D0) then
-               nsrdmat = 1
-               IFCTMP(1) = 12
-               CALL DZERO(WRK(KSRAO),NSRDMAT*N2BASX)
-               CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KSRAO),
-     &                   DMAT,NSRDMAT,ISYMDM,IFCTMP,WRK(KLAST),LWRK)
-               EKSR = DDOT(N2BASX,DMAT(1,1),1,WRK(KSRAO),1)
-               EJSR = EJSR - EKSR
-            else
-               EKSR = D0
-            end if
-            IF (NASHT.GT.0) THEN
-               DO I = 1,NSRDMAT
-                  CALL DAXPY(N2BASX,-D1,DMAT(1,NSRDMAT+I),1,DMAT(1,I),1)
-C                 ... restore DC(I) = DTOT(I) -  DV(I)
-               END DO
-            END IF
-         END IF
-         HFXFAC = HFXFACSAVE
       END IF
-#ifdef OLD_DFT_CODE
-!hjaaj: can probably be deleted, but want to be sure about srdft first. March 2006.
-C
-C     Add DFT contribution
-C
-      IF (DODFT) THEN
-         DOERG = DFTADD
-         DOATR = .NOT.DFTADD
-         IF(DOATR)THEN
-            J = NDMAT + 1
-C           DTOTAO is put in DMAT(1,NDMAT+1) in TR1FCK.
-C           We now need to copy DXAO to DMAT(1,NDMAT+2) for EXCMAT
-            CALL DCOPY(N2BASX,DMAT,1,DMAT(1,J+1),1)
-            NDMTMP = 2
-            KSRAO  = 1
-            KLAST  = KSRAO  + N2BASX
-            LWRK  = LWORK - KLAST + 1
-            CALL DZERO(WRK(KSRAO),N2BASX)
-            CALL DFTEXC(DMAT(1,J),NDMTMP,WRK(KSRAO),1,
-     &           .FALSE.,DOERG,.FALSE.,.FALSE.,DOATR,
-     &           .FALSE.,DUMMY,.FALSE.,WRK(KLAST),LWRK,IPRFCK)
-C           CALL HEADER('AO Fock matrix contribution in DFTATR /SIRFCK',-1)
-C           CALL OUTPUT(WRK(KSRAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT,1)
-         ELSE
-            J = 1
-            NDMTMP = 1
-            CALL DFTEXC(DMAT(1,J),NDMTMP,FMAT,1,.FALSE.,DOERG,.FALSE.,
-     &           .FALSE.,DOATR,.FALSE.,DUMMY,.FALSE.,WRK,LWORK,IPRFCK)
-         ENDIF
-C        ... DFTADD tells if add normal DFT Vxc or second order Vxc
-         IF (NDMAT.GT.1) CALL QUIT('DFTADD and NDMAT.gt.1')
-      END IF
-#endif
-C
-C     ADD SR-DFT contribution if MCSCF-DFT or if HF-SRDFT
-C
-      IF (ADDSRI.AND.(DOHFSRDFT.OR.DOMCSRDFT).AND.(.NOT.PREHF)) THEN
-         IF (NDMAT .GT. 2)
-     &   CALL QUIT('SR-DFT not implemented for NDMAT.gt.2')
-C        we need to do as above for ADDSRI !!!!!!!
-         DOERG = DFTADD
-         DOATR = .NOT.DFTADD
-C        ... DFTADD tells if add normal DFT Vxc or second order Vxc
-         IF (LSRHYBR) THEN
-            NSRMAT = 2
-         ELSE
-            NSRMAT = 1
-         END IF
-         KSRAO  = 1
-         KLAST  = KSRAO  + NSRMAT*N2BASX
-         LWRK  = LWORK - KLAST + 1
-         IF (DOATR) THEN
-            JDAO = NDMAT + 1
-C           ... DTOTAO is in DMAT(1,NDMAT+1) from TR1FCK.
-C           For SRHYBR we also need DVAO in DMAT(1,NDMAT+2) from TR1FCK.:
-            IF (LSRHYBR) THEN
-               JDXAO = JDAO + 2
-            ELSE
-               JDXAO = JDAO + 1
-            END IF
-C
-C           we need DXTOTAO in DMAT(1,JDXAO) for SRDFT :
-            CALL DCOPY(N2BASX,DMAT(1,1),1,DMAT(1,JDXAO),1)
-            IF (NDMAT.EQ.2) THEN
-               CALL DAXPY(N2BASX,D1,DMAT(1,2),1,DMAT(1,JDXAO),1)
-C              ... DXTOTAO = DXCAO + DXVAO
-               IF (LSRHYBR)
-     &         CALL DCOPY(N2BASX,DMAT(1,2),1,DMAT(1,JDXAO+1),1)
-C              ... copy DXVAO
-            END IF
-         ELSE
-            JDAO = 1
-            IF (NDMAT.EQ.2)
-     &      CALL DAXPY(N2BASX,D1,DMAT(1,2),1,DMAT(1,1),1)
-C           ... get total DMAT = DC + DV if NDMAT .gt. 1
-         END IF
-         CALL DZERO(WRK(KSRAO),NSRMAT*N2BASX)
-C        SRDFT(EXCMAT,DMAT,EDFTY,DOERG,DOATR,WORK,LWORK,IPRINT)
-!         WRITE(LUPRI,*) 'SIRFCK: calling SRDFT'  !JT
-         CALL SRDFT(WRK(KSRAO),DMAT(1,JDAO),EDFT,DOERG,DOATR,
-     &              WRK(KLAST),LWRK,IPRFCK)
-C        IF (DOATR)
-C    &      ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)
-C           ... for MCSRDFT csf sigma-vectors : - 2 ESRLTR cref(i)
-C               NOT NEEDED because we project out CREF component in sigma vectors
-         IF (NDMAT.EQ.2 .AND. .NOT.DOATR)
-     &      CALL DAXPY(N2BASX,-D1,DMAT(1,2),1,DMAT(1,1),1)
-C        ... restore DC = DTOT - DV
-         CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT,1)
-         IF (LSRHYBR) CALL DCOPY(N2BASX,
-     &      WRK(KSRAO+N2BASX),1,FMAT(1,NDMAT+1),1)
-         IF (DOERG) THEN
-            ECSR = -DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KSRAO),1)
-            IF (NASHT.GT.0) THEN
-               EVSR = -DDOT(N2BASX,DMAT(1,2),1,WRK(KSRAO),1)
-            ELSE
-               EVSR = D0
-            END IF
-            ESRDFTY = EDFT + ECSR + EVSR + EJVSR
-C           IF (IPRFCK .GT. 0)
-            WRITE (LUPRI,'(A,F25.10)')
-     &         '   EDFT    ',EDFT,
-     &         ' + ECSR    ',ECSR,
-     &         ' + EVSR    ',EVSR,
-     &         ' + EJVSR   ',EJVSR,
-     &         ' = ESRDFTY ',ESRDFTY,
-     &         '   EJSR    ',EJSR,
-     &         '   EKSR    ',EKSR
-         END IF
-      ENDIF
 C
       IF (NODDYDF) THEN
          IF (IFCTYP(1).NE.11) THEN
@@ -459,10 +187,11 @@ C
       IF (IPRFCK.GT.2) THEN
          CALL HEADER('Density and Fock matrices in SIRFCK',-1)
          DO 300 I = 1, NDMAT
-            WRITE (LUPRI,'(//A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(//A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            ISTR = N2BASX*(I - 1) + 1
+            WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
+            CALL OUTPUT(DMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+            CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
   300    CONTINUE
       END IF
 #endif
@@ -523,9 +252,6 @@ C
 #include <dftcom.h>
 #include <memint.h>
       CALL QENTER('SIRFCK2')
-!
-!      print *,'SIRFCK2: NDMAT=', NDMAT
-!      print *,'SIRFCK2: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
 C
 C     Transfer constant factors to DMAT
 C     IFCTYP 11,12,13,22; symmetrization or antisymmetrization:
@@ -539,7 +265,7 @@ C     IFCTYP 02   : factor -0.5 from exchange integral
             CALL DSCAL(N2BASX,D4,DMAT(1,I),1)
          ELSE IF (IFCTYP(I) .EQ. 2) THEN
             IF (HFXFAC .EQ. D0) THEN
-C              This exchange-only matrix is zero
+C This exchange-only matrix is zero
                IFCTYP(I) = 0
             ELSE
                CALL DSCAL(N2BASX,HFXFAC*DMP5,DMAT(1,I),1)
@@ -641,6 +367,7 @@ C     Finish symmetric and antisymmetric Fock matrices
 C     Restore original density matrices
 C
       DO 300 I = 1,NDMAT
+C
          IF (IFCTYP(1) .EQ. 11 .OR. IFCTYP(I) .EQ. 12 .OR.
      &       IFCTYP(I) .EQ. 13) THEN
             CALL FCKEN1(FMAT(1,I),NBAST)
@@ -753,6 +480,7 @@ C     Note that X(q,s) = -X(s,q)
 C
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER (D1 = 1.0D00, DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
 #include <dftcom.h>
@@ -766,9 +494,9 @@ C
          R    = IBUF(3,INT)
          S    = IBUF(4,INT)
          GINT = EFAC*BUF(INT)
-         IF (P.EQ.Q)              GINT = GINT / 2
-         IF (R.EQ.S)              GINT = GINT / 2
-         IF (P.EQ.R .AND. S.EQ.Q) GINT = GINT / 2
+         IF (P.EQ.Q)              GINT = DP5*GINT
+         IF (R.EQ.S)              GINT = DP5*GINT
+         IF (P.EQ.R .AND. S.EQ.Q) GINT = DP5*GINT
          FMAT(P,R) = FMAT(P,R) - GINT*XMAT(Q,S)
          FMAT(P,S) = FMAT(P,S) - GINT*XMAT(Q,R)
          FMAT(Q,R) = FMAT(Q,R) - GINT*XMAT(P,S)
@@ -838,6 +566,7 @@ C     to accumulate.
 C
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER (DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
 #include <dftcom.h>
@@ -845,16 +574,16 @@ C
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include <ibtfun.h>
 C
-      EFAC = HFXFAC / 2
+      EFAC = DP5*HFXFAC
       DO 100 INT = 1, LENGTH
          P    = IBUF(1,INT)
          Q    = IBUF(2,INT)
          R    = IBUF(3,INT)
          S    = IBUF(4,INT)
          GINT = BUF(INT)
-         IF (P.EQ.Q)              GINT = GINT / 2
-         IF (R.EQ.S)              GINT = GINT / 2
-         IF (P.EQ.R .AND. S.EQ.Q) GINT = GINT / 2
+         IF (P.EQ.Q)              GINT = DP5*GINT
+         IF (R.EQ.S)              GINT = DP5*GINT
+         IF (P.EQ.R .AND. S.EQ.Q) GINT = DP5*GINT
 C           coulomb:
          FADD = GINT*(DMAT(R,S)+DMAT(S,R))
          FMAT(P,Q) = FMAT(P,Q) + FADD
@@ -890,6 +619,7 @@ C     to accumulate.
 C
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER (DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
@@ -898,16 +628,15 @@ C
 C
       DO 100 INT = 1, LENGTH
 C        factor "-0.5" is multiplied on DMAT in SIRFCK
-C        factor HFXFAC is multiplied on DMAT in SIRFCK
-C        GINT = - ( HFXFAC * BUF(INT) ) / 2
+C        GINT = -DP5*BUF(INT)
          GINT = BUF(INT)
          P    = IBUF(1,INT)
          Q    = IBUF(2,INT)
          R    = IBUF(3,INT)
          S    = IBUF(4,INT)
-         IF (P.EQ.Q)              GINT = GINT / 2
-         IF (R.EQ.S)              GINT = GINT / 2
-         IF (P.EQ.R .AND. S.EQ.Q) GINT = GINT / 2
+         IF (P.EQ.Q)              GINT = DP5*GINT
+         IF (R.EQ.S)              GINT = DP5*GINT
+         IF (P.EQ.R .AND. S.EQ.Q) GINT = DP5*GINT
          FMAT(P,R) = FMAT(P,R) + GINT*DMAT(Q,S)
          FMAT(Q,R) = FMAT(Q,R) + GINT*DMAT(P,S)
          FMAT(R,P) = FMAT(R,P) + GINT*DMAT(S,Q)
@@ -931,6 +660,7 @@ C     to accumulate.
 C
 #include <implicit.h>
       INTEGER P, Q, R, S
+      PARAMETER ( DP5 = 0.5D0 )
 #include <inforb.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
@@ -941,9 +671,9 @@ C
          R    = IBUF(3,INT)
          S    = IBUF(4,INT)
          GINT = BUF(INT)
-         IF (P.EQ.Q)              GINT = GINT / 2
-         IF (R.EQ.S)              GINT = GINT / 2
-         IF (P.EQ.R .AND. S.EQ.Q) GINT = GINT / 2
+         IF (P.EQ.Q)              GINT = DP5*GINT
+         IF (R.EQ.S)              GINT = DP5*GINT
+         IF (P.EQ.R .AND. S.EQ.Q) GINT = DP5*GINT
 C           coulomb:
          FADD = GINT*(DMAT(R,S)+DMAT(S,R))
          FMAT(P,Q) = FMAT(P,Q) + FADD
@@ -967,12 +697,13 @@ C     symmetric content of FMAT from before SIRFCK call.
 C
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER ( DP5 = 0.5D0 )
       DIMENSION FMAT(NBAST,NBAST)
       INTEGER   P, Q
 C
       DO P = 1,NBAST
          DO Q = 1,P
-            FPQ = ( FMAT(P,Q) + FMAT(Q,P) ) / 2
+            FPQ = DP5*( FMAT(P,Q) + FMAT(Q,P) )
             FMAT(P,Q) = FPQ
             FMAT(Q,P) = FPQ
          END DO
@@ -993,11 +724,12 @@ C
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION FMAT(NBAST,NBAST)
+      PARAMETER (DP5 = 0.5D0)
       INTEGER   P, Q
 C
       DO P = 1,NBAST
          DO Q = 1,P
-            FPQ = ( FMAT(P,Q) - FMAT(Q,P) ) / 2
+            FPQ = DP5 * ( FMAT(P,Q) - FMAT(Q,P) )
             FMAT(P,Q) =  FPQ
             FMAT(Q,P) = -FPQ
          END DO

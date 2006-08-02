@@ -235,7 +235,7 @@ C
       READ(LUQUAD) NPOINT
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
-         CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
+         CALL REAQUA(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
          DO 300 IPNT = 1, NPOINT
             IF (IPRINT .GT. 100) THEN
                WRITE (LUPRI,'(2X,I6,4F12.6)') 
@@ -331,8 +331,7 @@ C              London contributions to Kohn-Sham matrix
 C              ========================================
 C
                IF (DOLND) THEN
-                  CALL DFTMAG(EXCMAT,
-     &                        CORX(IPNT),CORY(IPNT),CORZ(IPNT),
+                  CALL DFTMAG(EXCMAT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
      &                        GSO(KSO0),GSO(KSO1),GSO(KSOB),GSO(KSOB1),
      &                        VX(FR0),VX(FZ0),RHG,DOGGA,
      &                        FROMVX)
@@ -1024,7 +1023,7 @@ C
   100 CONTINUE
       READ(LUQUAD) NPOINT
       IF (NPOINT.GT.0) THEN
-         CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
+         CALL REAQUA(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
          DO 300 IPNT = 1, NPOINT
             CALL DFTAOS(GAO,GAO1,NCNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
      &                  WORK,LWORK,NBAST,DOLND,IPRINT)

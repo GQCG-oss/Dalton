@@ -522,8 +522,6 @@ C        *** CI ***
 C
       IF (DOCI .OR. DOCINO) THEN
          NUMRUN = NUMRUN + 1
-         DOHFSRDFT = .FALSE.
-C        ... no more HFSRDFT
          FLAG( 4) = .TRUE.
          FLAG( 2) = .FALSE.
          FLAG(21) = .FALSE.
@@ -574,9 +572,6 @@ C ***************************************************
 C        *** MCSCF ***
 C
       IF (DOMC) THEN
-         DOHFSRDFT = .FALSE.
-         DOCISRDFT = .FALSE.
-C        ... no more HFSRDFT nor CISRDFT
          NUMRUN = NUMRUN + 1
 C
 C Recover MCSCF flags and settings
