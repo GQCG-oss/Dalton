@@ -90,7 +90,7 @@ C
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                   DINTSKP,RELCAL)         
+     &                   DINTSKP,RELCAL)
       ELSE
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
@@ -724,6 +724,8 @@ C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
+C
+C        Send (I|J) batch to NODEID
 C
          CALL MPIXRECV(IPLAC2,1,'INTEGER',NWHO,MTAG51)
 C
