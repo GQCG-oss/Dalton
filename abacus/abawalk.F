@@ -112,9 +112,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in WLKINP.'
+     *            '" not recognized in *WALK input.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in WLKINP.')
+               CALL QUIT('Illegal keyword in *WALK input')
     1          CONTINUE
                   START = .FALSE.
                GO TO 100
@@ -263,10 +263,11 @@ Cpeo mass-scaled coordinates as default
                   DOTEMP = .TRUE.
                   READ (LUCMD, *) NTEMP
                   IF (NTEMP .GT. MAXTMP) THEN
-                     WRITE (LUPRI,'(/A)') 'Too many temperatures '//
-     &                    'requested. Increase MAXTMP in cbiwlk.h'//
-     &                    ' and recompile'
-                     CALL QUIT('Too many temperatures requested')
+                     WRITE (LUPRI,'(/A/A)')
+     &               'Too many temperatures requested in *WALK input.',
+     &               'Increase MAXTMP in cbiwlk.h and recompile.'
+                     CALL QUIT(
+     &               'Too many temperatures requested in *WALK input')
                   END IF
                   READ (LUCMD, *) (TEMP(ITMP), ITMP=1,NTEMP)
                   GOTO 100
@@ -283,16 +284,16 @@ Cpeo mass-scaled coordinates as default
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in WLKINP.'
+     *            '" not recognized for *WALK'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in WLKINP.')
+               CALL QUIT('Illegal prompt in *WALK input')
             END IF
       END IF
   300 CONTINUE
 C
       IF (.NOT.DOWALK) THEN
          IF (ICHANG .GT. 0) WRITE (LUPRI,'(//A/)')
-     &      ' Walk not requested, *WLKINP input ignored.'
+     &      ' Walk not requested, *WALK input ignored.'
          GO TO 9999
       END IF
 C
@@ -347,7 +348,7 @@ C
          DO 510 I = 1, NWKTYP
             IF (IWKVEC(I).GT.0) WRITE (LUPRI,'(5X,A)') WLKTYP(I)
   510    CONTINUE
-         CALL QUIT('ERROR in WLKINP.')
+         CALL QUIT('ERROR in *WALK input.')
       END IF
       WRITE (LUPRI,'(/2A)') ' Walk type: ', WLKTYP(IWKTYP)
       IF (V3CAL) THEN
@@ -419,7 +420,7 @@ C
             WRITE (LUPRI,'(//,2(A,/))')
      *         ' Inconsistent specification of scaling.',
      *         ' Only mass scaling allowed for dynamic walks.'
-            CALL QUIT('ERROR in WLKINP.')
+            CALL QUIT('ERROR in *WALK input')
          END IF
 C
 C     c) Error: more than one type requested
@@ -431,7 +432,7 @@ C
          IF (ISCVEC(1).GT.0) WRITE (LUPRI,'(/A)') ' No scaling.'
          IF (ISCVEC(2).GT.0) WRITE (LUPRI,'(/A)') ' Scaling from input.'
          IF (ISCVEC(3).GT.0) WRITE (LUPRI,'(/A)') ' Mass scaling.'
-         CALL QUIT('ERROR in WLKINP.')
+         CALL QUIT('ERROR in *WALK input')
       END IF
       IF (WFPRED) GDALL = .TRUE.
 C
@@ -470,7 +471,7 @@ C
             IF (START) THEN
                IF (IRCSGN .EQ. 0) THEN
                   WRITE (LUPRI,'(//,A)')
-     &               ' Error in input, IRCSGN equal to zero.'
+     &               ' Error in *WALK input, IRCSGN equal to zero.'
                      CALL QUIT('IRCSGN equal to zero.')
                END IF
                IMODE = SIGN(1,IRCSGN)
@@ -869,6 +870,7 @@ C
          ESTART = ERGMOL
          IF (IWKTYP .EQ. 3) THEN
             TACCUM = D0
+            TIMSTP = D0 ! dynamically reset later
             CALL DZERO(PMCAR,NCRTOT)
          ELSE IF (IWKTYP .EQ. 7) THEN
             AACCUM = D0
@@ -2415,7 +2417,7 @@ C
 C  /* Deck wlkwrt */
       SUBROUTINE WLKWRT(EVAL,EVEC,PMCAR,GRAD0,HESS0,DIPM0,DIPG0,COOR0,
      &                  GRADF,HESSF,DIPGF,ERGMOL,GRDNRM,ERGSEC,TRUSTR,
-     &                  ESTART,TACCUM,TDET,EKINTO,EKINPA,COOR,GRDCAR,
+     &                  ESTART,TACCUM,TIMSTP,EKINTO,EKINPA,COOR,GRDCAR,
      &                  HESCAR,STPCAR,DISPLC,STPSYM,STPNRM,STPDIA,
      &                  GRDDIA,EKIN0,TRUMAX,NCRTOT,N2CRT,NCRIND,NCART,
      &                  IWKTYP,IWKIND,IMODE,ISCTYP,ISTIND,ISTTYP,NXYZ,
@@ -2490,7 +2492,7 @@ C
   100       CONTINUE
          END IF
          WRITE (LUWLK) IPOINT, DUMMY, DUMMY, DUMMY, DUMMY
-         WRITE (LUWLK) ERGMOL, ERGSEC, EKINTO, EKINPA, TDET
+         WRITE (LUWLK) ERGMOL, ERGSEC, EKINTO, EKINPA, TIMSTP
          WRITE (LUWLK) COOR, GRDCAR, HESCAR, STPCAR, PMCAR
          CALL NEWLAB('POINT   ',LUWLK,LUPRI)
          CALL GPCLOSE(LUWLK,'KEEP')
@@ -5551,7 +5553,7 @@ C     END WLKEXT
 C
       END
 C  /* Deck wlkdyn */
-      SUBROUTINE WLKDYN(TDET,Q,P,GRDDIA,EVAL,NCART,RADIUS,IPRINT)
+      SUBROUTINE WLKDYN(TIMSTP,Q,P,GRDDIA,EVAL,NCART,RADIUS,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <codata.h>
@@ -5631,7 +5633,7 @@ C
      *   ' Initial time step ', DELTAT
       END IF
 C
-C     Determine TMIN and TMAX bracketing TDET for bisection
+C     Determine TMIN and TMAX bracketing TIMSTP for bisection
 C
       TMAX = D0
       STPMAX = WLKSTD(TMAX,Q,P,GRDDIA,EVAL,NCART,TRADAU)
@@ -5675,10 +5677,10 @@ C
       ITER = 0
  400  CONTINUE
          ITER= ITER+1
-         TDET= (TMAX+TMIN)/D2
-         STP = WLKSTD(TDET,Q,P,GRDDIA,EVAL,NCART,TRADAU)
-         IF (STP.GT.D0) TMAX=TDET
-         IF (STP.LT.D0) TMIN=TDET
+         TIMSTP= (TMAX+TMIN)/D2
+         STP = WLKSTD(TIMSTP,Q,P,GRDDIA,EVAL,NCART,TRADAU)
+         IF (STP.GT.D0) TMAX=TIMSTP
+         IF (STP.LT.D0) TMIN=TIMSTP
       IF (ABS(STP) .LT. TRADAU/D100) GO TO 401
       IF (ITER .LT. MAXIT) GO TO 400
 C
@@ -5689,7 +5691,7 @@ C
  401  CONTINUE
       IF (IPRINT .GT. 2) THEN
          WRITE (LUPRI,'(//A,I5)')  ' Number of bisections   ', ITER
-         WRITE (LUPRI,'(A,1P,D12.4)') ' Time to reach boundary ', TDET
+         WRITE (LUPRI,'(A,1P,D12.4)') ' Time to reach boundary ', TIMSTP
          CALL HEADER('Final coordinates and momenta',-1)
          WRITE (LUPRI,'(2A)')
      *    '   #    gradient    Hessian     old coor.  new coor.   ',
@@ -5698,14 +5700,14 @@ C
       DO 500 K=1,NCART
          Q0   = Q(K)
          P0   = P(K)
-         Q(K) = WLKQT(TDET,Q0,P0,GRDDIA(K),EVAL(K))
-         P(K) = WLKPT(TDET,Q0,P0,GRDDIA(K),EVAL(K))
+         Q(K) = WLKQT(TIMSTP,Q0,P0,GRDDIA(K),EVAL(K))
+         P(K) = WLKPT(TIMSTP,Q0,P0,GRDDIA(K),EVAL(K))
          IF (IPRINT .GT. 2) THEN
             WRITE (LUPRI,'(1X,I3,2X,6D12.5)')
      *         K, GRDDIA(K), EVAL(K), Q0, Q(K), P0, P(K)
          END IF
  500  CONTINUE
-      STP = WLKSTD(TDET,Q,P,GRDDIA,EVAL,NCART,D0)
+      STP = WLKSTD(TIMSTP,Q,P,GRDDIA,EVAL,NCART,D0)
       IF (IPRINT .GT. 2) THEN
          WRITE (LUPRI,'(A,1P,D12.4)') ' Norm of step           ', STP
       END IF
@@ -5824,29 +5826,29 @@ C
 C        Determine step size using Newton's method such that the
 C        integration is to the boundary RADIUS
 C
-         TDET = WLKIRN(GRDDIA,EVAL,NCART,RADIUS,IPRINT)
-         IF (TDET .GT. TMAX) THEN
-            WRITE (LUPRI,'(//A,2(/A,E12.6),/A)')
+         TIMSTP = WLKIRN(GRDDIA,EVAL,NCART,RADIUS,IPRINT)
+         IF (TIMSTP .GT. TMAX) THEN
+            WRITE (LUPRI,'(//A,2(/A,1P,E12.6),/A)')
      &         ' >>>>> WARNING: Time step exceeded in WLKIRN!',
-     &         ' Time step determined in WLKIRN:', TDET,
-     &         ' Maximum time step allowed:    ', TMAX,
-     &         ' Calculation proceeds with TDET = TMAX.'
-            TDET = TMAX
+     &         ' Time step determined in WLKIRN:', TIMSTP,
+     &         ' Maximum time step allowed:     ', TMAX,
+     &         ' Calculation proceeds with TIMSTP = TMAX.'
+            TIMSTP = TMAX
             NWNABA = NWNABA + 1
          END IF
          IF (IPRINT .GT. 10) THEN
             WRITE (LUPRI,'(/A,F12.6)')
-     &         ' Time step after Newton iterations: ', TDET
+     &         ' Time step after Newton iterations: ', TIMSTP
          END IF
 C
 C        Get step in diagonal representation
 C
-         CALL WLKIRQ(TDET,GRDDIA,EVAL,Q,NCART)
+         CALL WLKIRQ(TIMSTP,GRDDIA,EVAL,Q,NCART)
       END IF
 C
       IF (IPRINT .GT. 10) THEN
-         WRITE (LUPRI,'(1X,A,L5)') ' DONWTN ', DONWTN
-         IF (.NOT.DONWTN) WRITE (LUPRI,'(1X,A,F12.6)')' Time step ',TDET
+         WRITE (LUPRI,'(A,L5)') ' DONWTN ', DONWTN
+         IF (.NOT.DONWTN) WRITE (LUPRI,'(A,F12.6)')' Time step ',TIMSTP
          CALL HEADER('Step vector in WLKIRC',-1)
          CALL OUTPUT(Q,1,1,1,NCART,1,NCART,1,LUPRI)
       END IF
