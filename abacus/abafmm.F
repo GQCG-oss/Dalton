@@ -293,7 +293,9 @@ C
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
-     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.)
+     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.)
+c     call onedrv(work,lwork,iprint,propty,maxdif,difint,nodc,
+C    &            nodv,difdip,difqdp,hfonly,nclone,pcm)
       CALL RDONEL('ONEHAMIL',.TRUE.,WORK(KHMAT),NNBAST)
       CALL GET1EL(ERGONE,WORK(KDMAT),WORK(KHMAT),IPRINT)
       CALL RDONEL('KINETINT',.TRUE.,WORK(KHMAT),NNBAST)
@@ -453,7 +455,7 @@ C
          CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTR),WORK(KINTA),
      &               WORK(KLABL),'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
      &               IPRINT,SPHINT(1,IOFF+1),NCOMP,TOFILE,'TRIANG',
-     &               DOINT)
+     &               DOINT,DUMMY,.FALSE.,DUMMY)
          IF (IPRINT .GT. 5) CALL FMMSPR(SPHINT(1,IOFF+1),
      &                                  WORK(KLABL),WORK(KINTR),NCOMPS)
          IOFF = IOFF + NCOMPS
