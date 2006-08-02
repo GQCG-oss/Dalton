@@ -2587,6 +2587,7 @@ C        distributions must be available (needtp .gt. 0).
      &         'NXTH2M error, LVLMOL on LUINTM too small'
             WRITE (LUPRI,*) 'LVLMOL =',LVLMOL
             WRITE (LUPRI,*) 'need   :',LVLMIN
+            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=1,6)
             CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error, LVLMOL too small')
          END IF

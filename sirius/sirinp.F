@@ -36,7 +36,7 @@ C
 #ifdef OLD_REV_LOG
 !===========================================================================
 !Revision 1.9  2000/05/24 12:39:05  hjj
-!only MAXCIT=3 as default if MC combination with DORHF or DOMP2
+!only MAXCIT=3 as default if MC combination with DOSCF or DOMP2
 !
 !Revision 1.7  2000/05/01 14:11:43  hjj
 !removed obsolete KAVER, KSYM(4); removed .AVERAG from input
@@ -311,7 +311,7 @@ C
          IF (NEWSYM) THEN
             IRDMO = 8
             FLAG(13) = .FALSE.
-            IF (DORHF) THEN
+            IF (DOSCF) THEN
                AUTOCC = .TRUE.
                INIOCC = 0
                DO 13 I = 1, 8
@@ -417,14 +417,21 @@ C
          P6FLAG(I) = .FALSE.
   670 CONTINUE
 C
-      DORHF = .FALSE.
-      DOMP2 = .FALSE.
-      DOCINO= .FALSE.
-      DOCI  = .FALSE.
-      DOMC  = .FALSE.
-      DODFT = .FALSE.
+      DOSCF     = .FALSE.
+      DOMP2     = .FALSE.
+      DOCINO    = .FALSE.
+      DOCI      = .FALSE.
+      DOMC      = .FALSE.
+      DODFT     = .FALSE.
       DONEVPT= .FALSE.
-      DORSP = RNRESP
+C  ---> Initialize SR-DFT stuff here !
+      DOMCSRDFT = .FALSE.
+      DOCISRDFT = .FALSE.
+      DOHFSRDFT = .FALSE.
+      ADDSRI    = .FALSE.
+      SRHYBR    = .FALSE.
+C <---
+      DORSP     = RNRESP
       ABAIPH= RNABAC
 C     ... It's followed by an abacus run
       CORHOL= .FALSE.
@@ -670,6 +677,14 @@ C
       INERSI = .FALSE.
       INERSF = .FALSE.
 C
+C********** Default values section dfterg.h *****
+C
+C (initialize energy values to zero, so they are defined
+C  for non-DFT calcualtions, i.e. standard HF or MCSCF)
+C
+      EDFTY = D0
+      ESRDFTY = D0
+C
 C********** Default values section PRIINP *****
 C +++ remember to change reference manual if values are changed!
 C
@@ -699,14 +714,14 @@ C     Extra default: CALL SIROUT for summary
       FLAG(5) = .TRUE.
 C
       CALL NEWINP(INPERR,NUMRUN,IRDMO,IREST,NSYM)
-      IF (.NOT.DORHF) MAXFCK = 0
+      IF (.NOT.DOSCF) MAXFCK = 0
       IF (.NOT.DOCI ) DOCINO = .FALSE.
 C     .. ignore .CINO if no CI calculation
       IF (.NOT.DOMC .AND. .NOT.DOCI) MCTYPE = 0
 C     ... ignore any *CONFIGURATION input
 C         if neither DOMC nor DOCI /hjaaj aug 2005
 C
-      IF (DORHF .AND. .NOT.FLAG(21)) THEN
+      IF (DOSCF .AND. .NOT.FLAG(21)) THEN
         IF (MXDIIS .LE. 0) THEN
 C        ... March 2000/hjaaj: solvent and writing interface are
 C            now also defined in DIIS module.
@@ -741,7 +756,7 @@ c    &      ' because SUPSYM not implemented in MP2 and CC'
 c     END IF
       IF (DOCCSD) THEN
          FLAG(11) = .TRUE.
-         IF (DORHF) FLAG(25) = .TRUE.
+         IF (DOSCF) FLAG(25) = .TRUE.
       END IF
       IF (RNRESP .OR. RNABAC) THEN
          FLAG(25) = .TRUE.
@@ -789,7 +804,7 @@ C
          IF (THQKVA .LE. D0) THQKVA = 8.0D0
       ELSE IF (DOCI) THEN
          THRGRD = THRCI
-      ELSE IF (DORHF) THEN
+      ELSE IF (DOSCF) THEN
          THRGRD = THRRHF
          IF (THQKVA .LE. D0) THQKVA = 0.8D0
       END IF
@@ -867,7 +882,7 @@ C
 C
 C     Disable AUTOCC for RHF if RHF not used (HJ aug95)
 C
-      IF (MCTYPE .GT. 0 .AND. .NOT.DORHF) THEN
+      IF (MCTYPE .GT. 0 .AND. .NOT.DOSCF) THEN
          AUTOCC = .FALSE.
          INIOCC = -1
       END IF
@@ -878,7 +893,7 @@ C     Fock parameters must be transferred to the CI/MCSCF wave
 C     function parameters.
 C
 C     910723-hjaaj: define wave function for Hartree-Fock,
-C     even if DORHF false and DOMP2 false; JWOP information
+C     even if DOSCF false and DOMP2 false; JWOP information
 C     may be needed for RESPONSE
 C
       IF (MCTYPE .EQ. 0) THEN
@@ -959,7 +974,7 @@ C
          ELSE IF (IREST .EQ. 2) THEN
 C           ... start from SIRIUS.RST, perhaps from another geometry
             IRDMO = 9
-            IF (.NOT.DORHF) ICI0 = 4
+            IF (.NOT.DOSCF) ICI0 = 4
          ELSE IF (IREST .EQ. 3) THEN
 C           ... start from SIRIFC, perhaps from another geometry
             IRDMO = 10
@@ -995,7 +1010,7 @@ C
 C
 C     If MAXCIT, MAXMAC, MAXJT, MAXMIC not specified in input:
       IF (MAXCIT .LT. 0) THEN
-         IF (DORHF .OR. DOMP2 .OR. DOCINO .OR. .NOT.FLAG(13)) THEN
+         IF (DOSCF .OR. DOMP2 .OR. DOCINO .OR. .NOT.FLAG(13)) THEN
             MAXCIT = 3
          ELSE
 C           ... only MC and reading orbitals from file:
@@ -1171,7 +1186,7 @@ C
 C *** Check for input errors for core hole calculation
 C
       IF (CORHOL) THEN
-         IF (DORHF .AND. AUTOCC) THEN
+         IF (DOSCF .AND. AUTOCC) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,*) 'Input error for core-hole calculation:'
             WRITE (LUPRI,*)
@@ -1183,7 +1198,7 @@ C
             WRITE (LUPRI,*) 'no initial molecular orbitals from'//
      &         ' previous calculation specified'
          END IF
-         IF (DORHF .AND. DOMC) THEN
+         IF (DOSCF .AND. DOMC) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,*) 'Input error for core-hole calculation:'
             WRITE (LUPRI,*) 'both Hartree-Fock and MCSCF specified.'
@@ -1292,7 +1307,7 @@ C
          NRHFEL = 2*NRHFT
          IF (IOPRHF .GT. 0) NRHFEL = NRHFEL + 1
       END IF
-      IF (DORHF .AND. AUTOCC .AND. IREST .EQ. 0
+      IF (DOSCF .AND. AUTOCC .AND. IREST .EQ. 0
      &   .AND. INPERR .EQ. 0) THEN
 C
 C        Initial occupation may have been specified in input
@@ -1357,7 +1372,7 @@ C
 C
 C *** Check if initial occupation for RHF has been defined.
 C
-      IF ((DORHF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
+      IF ((DOSCF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A/A)')
      &      ' Input error for DFT, HF, MP2, or CC calculation:',
@@ -1379,7 +1394,7 @@ C If (MP2) force canonical Hartree-Fock orbitals
 C hjaaj Aug 04: Also if (CC)
 C
       IF (DOMP2 .OR. DOCCSD) THEN
-      IF (DORHF .AND. (IOPRHF .NE. 0 .OR. HSROHF)) THEN
+      IF (DOSCF .AND. (IOPRHF .NE. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A)') ' Input error: closed shell MP2/CC'//
      &      ' not compatible with open shell RHF'
@@ -1464,7 +1479,7 @@ C
       END IF
       IF(NRHFT .LT.0 .OR.NRHFT .GT.MAXOCC) CALL ERRINP( 9,INPERR)
       IF(NASHT .LT.0 .OR.NASHT .GT.MAXASH) CALL ERRINP(10,INPERR)
-      IF(DORHF .AND. AUTOCC .AND. MCTYPE .GT. 0 .AND. NSYM .GT. 1) THEN
+      IF(DOSCF .AND. AUTOCC .AND. MCTYPE .GT. 0 .AND. NSYM .GT. 1) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A)') 'ERROR: HF occupation must be specified'//
      *         ' when SCF followed by CI or MCSCF'
@@ -1777,13 +1792,11 @@ C
 C******************************************
 C
 #include <implicit.h>
-      LOGICAL SKIP
 C
 C -- local variables and constants
 C
       PARAMETER (NTBMOD = 22)
-      CHARACTER WORD*7, PROMPT*1, PROMPX*2, TABMOD(NTBMOD)*7,
-     *          REWORD*12, RWORD*7, TITLIN*80
+      CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO
 C
 #include <priunit.h>
@@ -1856,8 +1869,8 @@ C
        GO TO 910
  1900  CALL TRAINP(WORD,INPERR,ALLOPT)
        GO TO 910
- 2000  CONTINUE
-       GO TO 1200
+C2000  CONTINUE
+C      GO TO 1200
  2100  CALL UPDINP(WORD,INPERR,ALLOPT)
        GO TO 910
  2200  CALL SOLINP(WORD,INPERR,ALLOPT)
@@ -1911,9 +1924,9 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NTABLE = 30)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*20, TITLIN*80
+     *          REWORD*20, TITLIN*80, SRFTMP*72
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
@@ -1922,12 +1935,16 @@ C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
 C  INFORB : NSYM
 C  INFPRI : P6FLAG,
+C  INFTAP : LUSUPM
+C  GNRINF : DOCCSD,
+C  CBIHER : SUPMAT,
 C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infpri.h>
+#include <inftap.h>
 #include <gnrinf.h>
 #include <inftra.h>
 #include <dftcom.h>
@@ -1938,7 +1955,9 @@ C
       DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
-     *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA'/
+     *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
+     *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
+     *            '.SRHYBR','.COPFAC','xXXXXXX','xXXXXXX','xXXXXXX'/
 C
 C
 C
@@ -1954,7 +1973,8 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112,113,114,115,106,117,118,119,120), II
+     *                   111,112,113,114,115,106,117,118,119,120,
+     *                   121,122,123,124,125,126,127,128,129,130), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2028,8 +2048,8 @@ C *** Option 4 >CC< We want to do a subsequent Coupled Cluster calculation
   104 CONTINUE
          DOCCSD = .TRUE.
          NUMRUN = NUMRUN + 1
-         IF (.NOT. DORHF) THEN
-            DORHF  = .TRUE.
+         IF (.NOT. DOSCF) THEN
+            DOSCF  = .TRUE.
             NUMRUN = NUMRUN + 1
          END IF
          FLAG(21) = .TRUE.
@@ -2042,9 +2062,9 @@ C *** Option 5 >RESTAR< restart SIRIUS, LUIT1 must be available
 C
 C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
   106 CONTINUE
-         IF (.NOT.DORHF) THEN
-C           ... DORHF may also be set with .CC
-            DORHF    = .TRUE.
+         IF (.NOT.DOSCF) THEN
+C           ... DOSCF may also be set with .CC
+            DOSCF    = .TRUE.
             FLAG(21) = .TRUE.
 C           ... flag for QCSCF -- quadratically convergent HF or DFT
             NUMRUN = NUMRUN + 1
@@ -2148,13 +2168,13 @@ C    Default: specified by integral program
 C
 C *** Option 17 >DFT   <  Restricted Kohn-Sham DFT
   117 CONTINUE
-         IF (DORHF) THEN
-C           ... DORHF may also be set with .CC
+         IF (DOSCF) THEN
+C           ... DOSCF may also be set with .CC
             WRITE (LUPRI,*) 'Input error: both HF and DFT specified!'
             INPERR = INPERR + 1
          END IF
          DODFT    = .TRUE.
-         DORHF    = .TRUE.
+         DOSCF    = .TRUE.
          FLAG(21) = .TRUE.
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
 c     dodft should be enough but it is sometimes to have also dftrun set.
@@ -2194,6 +2214,66 @@ C *** Option 20: .IT1START
          IREST = 2
       GO TO 100
 C
+  121 CONTINUE
+C     ... CISRDFT Hybrid
+         DOCI = .TRUE.
+         FLAG(4) = .TRUE.
+         DOCISRDFT = .TRUE.
+         ADDSRI    = .TRUE.
+         THRCIDFT  = 1.D-5
+         LUSUPM = -1
+C        ... Disable use of super-matrix integrals,
+C        ... we want to use SIRFCK for generating U_sr integrals.
+         NUMRUN = NUMRUN + 1
+      GO TO 100
+C
+  122 CONTINUE
+C        ... Hartree-Fock DFT hybrid
+         DOSCF     = .TRUE.
+         DOHFSRDFT = .TRUE.
+         ADDSRI    = .TRUE.
+         FLAG(21)  = .TRUE.
+C        ... flag for QCHF -- quadratically convergent Hartree-Fock
+         NUMRUN = NUMRUN + 1
+      GO TO 100
+C
+  123 CONTINUE
+C        ... MCSCF DFT hybrid
+         DOMC      = .TRUE.
+         DOMCSRDFT = .TRUE.
+         FLAG(2)   = .TRUE.
+         ADDSRI    = .TRUE.
+         NUMRUN = NUMRUN + 1
+      GO TO 100
+C&&& SRLDA (SR-DFT) : Use SR-LDA functionals for both 
+C                     exchange and correlation
+ 124  SRXFUN = 'SRXLDA'
+      SRCFUN = 'SRCLDA'
+      DFTADD = .TRUE.
+      IF (.NOT.HFXSET) THEN
+         HFXFAC = 0.0D0
+         HFXSET = .TRUE.
+      END IF
+      GO TO 100
+C&&& SRFUN : Read Correlation (SRCFUN) and 
+C&&&         Exchange (SRXFUN) functionals
+ 125  READ (LUCMD,'(A)') SRFTMP
+C     Process functional keywords :
+      DFTADD = .TRUE.
+      CALL SRFUNINP(SRFTMP)
+      GO TO 100
+C&&&  SRHYBR : Perform a DFT MC-SRDFT hybrid calculation.
+C&&&           Treat core with regular DFT and valence with MC-SRDFT
+ 126  SRHYBR = .TRUE.
+Chjaaj TODO what about HFXFAC here ????
+      GO TO 100
+ 127  READ (LUCMD,*) COPFAC
+      GO TO 100
+ 128  CONTINUE
+ 129  CONTINUE
+ 130  CONTINUE
+      GO TO 100
+C
       END
 C  /* Deck haminp */
       SUBROUTINE HAMINP(WORD,INPERR,ALLOPT)
@@ -2202,8 +2282,7 @@ C Copyright Nov 1990 Hans Joergen Aa. Jensen
 C
 #include <implicit.h>
       PARAMETER (NTABLE = 2)
-      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*12
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -2285,8 +2364,7 @@ C 1-Oct 1987 Hans Agren
 C
 #include <implicit.h>
       PARAMETER (NTABLE = 12)
-      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*12,  TITLIN*80
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -2472,8 +2550,7 @@ C
 #include <implicit.h>
       PARAMETER (NTABLE = 25)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*12
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -2498,10 +2575,9 @@ C
 #include <dfterg.h>
 #include <dftacb.h>
 C
-      LOGICAL NODIIS,SET,ELECTR, LDUMMY
+      LOGICAL NODIIS,SET,ELECTR
       SAVE SET,ELECTR
       DATA SET,ELECTR /2*.FALSE./
-      CHARACTER*80 LINE
 C
       DATA TABLE /'.DOUBLY','.THRESH','.FOCK I','.H1VIRT','.NOQCSC',
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
@@ -2698,7 +2774,8 @@ C     Reference: C.W. Bauschlicher, JCP 72 (1980) 880.
       END IF
       FCVORB = .TRUE.
       GO TO 100
-C High spin orbitals input
+C
+C *** Option 24 >SINGLY< High spin orbitals input
  124  HSROHF = .TRUE.
       READ(LUCMD,*) (NROHF(I),I=1,NSYM)
 C
@@ -2717,13 +2794,14 @@ C
       IF (INIOCC .EQ. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .HSROHF must not be specified together with .ELECTR or .AUTOCC'
+     &' .SINGLY must not be specified together with .ELECTR or .AUTOCC'
       END IF
       AUTOCC = .FALSE.
       NRHFEL = 0
       INIOCC = 1
       GO TO 100
 C Shift level
+C *** Option 25 >SHIFT < Shift level
  125  READ(LUCMD,*) DEFLVL
       DEFLVL = -ABS(DEFLVL)
       GO TO 100
@@ -2749,7 +2827,7 @@ C
       IF (IOPRHF .NE. 0 .AND. HSROHF) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*) 'SCFINP input error:'//
-     &      ' .OPEN SHELL and .HSROHF both specified'
+     &      ' .OPEN SHELL and .SINGLY both specified'
       END IF
       SET = .TRUE.
       RETURN
@@ -2761,8 +2839,7 @@ C 17/9 - 1990 Hans Agren
 C
 #include <implicit.h>
       PARAMETER (NTABLE = 2)
-      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*12
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -3145,8 +3222,7 @@ C 1-Oct 1987 Hans Agren
 C
 #include <implicit.h>
       PARAMETER (NTABLE = 11)
-      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     &          REWORD*12, RWORD*7
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -3266,7 +3342,7 @@ C
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*12
       PARAMETER (MAXNRT = 40)
-      DIMENSION NOR(8),INORO(MAXNRT),NREOR(8),NNOR(8)
+      DIMENSION INORO(MAXNRT),NREOR(8),NNOR(8)
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -4576,6 +4652,7 @@ C   INFIND : ISMO(),?
 C   INFDIM : MAXPHP
 C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
+C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C
 #include <priunit.h>
@@ -4594,6 +4671,7 @@ C
 #include <infpri.h>
 #include <huckel.h>
 #include <gnrinf.h>
+#include <dftcom.h>
 #include <dfterg.h>
 #include <dftacb.h>
 C
@@ -4623,7 +4701,7 @@ C
  200  FORMAT(1X,A)
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
- 400     FORMAT(/,T2,'Main authors of the SIRIUS module:'
+ 400     FORMAT(/,T2,'Main authors of the SIRIUS module (1984-1990):'
      *    /T5,'Hans Joergen Aa. Jensen, University of Odense,  Denmark',
      *        ' (principal author)',
      *    /T5,'Hans Agren,              University of Uppsala, Sweden')
@@ -4664,6 +4742,8 @@ C Type of calculation:
 C
  1050 FORMAT(/T6,A/)
  1051 FORMAT(T16,A)
+ 1052 FORMAT(/T6,A,$)
+ 1053 FORMAT(A/)
       IF (IORTO .EQ. 1) THEN
          WRITE (IWUNIT,1050) 'Orthonormalization of molecular orbitals.'
          WRITE (IWUNIT,1100) (I,      I=1,NSYM)
@@ -4683,7 +4763,7 @@ C     formulation of NEVPT.
            WRITE (IWUNIT,1050)
      &     "N-electron valence state 2. order perturbation theory "//
      &     "using Ken Dyall's zeroth-order Hamiltonian"
-           WRITE (IWUNIT,1051) '  preceeded by :'
+           WRITE (IWUNIT,1051) 'preceeded by :'
          ENDIF
          IF ( DOMC ) THEN
             WRITE (IWUNIT,1050) 'MC-SCF optimization.'
@@ -4728,39 +4808,30 @@ C          to get here unless someone modifies SIRIUS incorrectly
          WRITE (IWUNIT,1050) ' Moller-Plesset PT2 calculation.'
       ELSE IF ( DOCCSD) THEN
          WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
-      ELSE IF ( DORHF ) THEN
-         IF (.NOT.DODFT) THEN
-            IF (HSROHF) THEN
-               WRITE(IWUNIT,1050) 'Restricted,'//
-     *         ' high spin open shell Hartree-Fock calculation.'
-            ELSE IF (IOPRHF .EQ. 0) THEN
-               WRITE(IWUNIT,1050)
-     *            'Restricted, closed shell Hartree-Fock calculation.'
-               IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
-     *            'Restricted, closed shell Hartree-Fock calculation.'
-            ELSE
-               WRITE(IWUNIT,1050)
-     *            'Restricted, one open shell Hartree-Fock calculation.'
-            END IF
-            IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Time-dependent Hartree-Fock calculation '//
-     *         '(random phase approximation).'
+      ELSE IF ( DOSCF ) THEN
+         IF (HSROHF) THEN
+            WRITE(IWUNIT,1052) 'Restricted, high spin open shell'
+         ELSE IF (IOPRHF .EQ. 0) THEN
+            WRITE(IWUNIT,1052) 'Restricted, closed shell'
          ELSE
-            IF (HSROHF) THEN
-               WRITE(IWUNIT,1050)
-     *         'Restricted, high spin open shell Kohn-Sham calculation.'
-            ELSE IF (IOPRHF .EQ. 0) THEN
-               WRITE(IWUNIT,1050)
-     *            'Restricted, closed shell Kohn-Sham calculation.'
-               IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
-     *            'Restricted, closed shell Kohn-Sham calculation.'
-            ELSE
-               WRITE(IWUNIT,1050)
-     *            'Restricted, one open shell Kohn-Sham calculation.'
-            END IF
+            WRITE(IWUNIT,1052) 'Restricted, one open shell'
+         END IF
+         IF (DOHFSRDFT) THEN
+            WRITE (IWUNIT,1053) ' HF-SRDFT hybrid calculation.'
+         ELSE IF (DODFT) THEN
+            WRITE (IWUNIT,1053) ' Kohn-Sham calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *         'Time-dependent Kohn-Sham calculation '//
      *         '(random phase approximation).'
+            IF (LUCME.GT.0 .AND. NASHT.EQ.0) WRITE(LUCME,'(A/)')
+     *         'Restricted, closed shell Kohn-Sham calculation.'
+         ELSE
+            WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *         'Time-dependent Hartree-Fock calculation '//
+     *         '(random phase approximation).'
+            IF (LUCME.GT.0 .AND. NASHT.EQ.0) WRITE(LUCME,'(A/)')
+     *         'Restricted, closed shell Hartree-Fock calculation.'
          END IF
       ELSE
          WRITE (IWUNIT,1050) 'No wave function optimization.'
@@ -4772,7 +4843,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
      *      'This is a combination run starting with'
          IRUN = 1
          IF (DONEVPT) IRUN = 2
-         IF (DORHF) THEN
+         IF (DOSCF) THEN
             IF (HSROHF) THEN
                WRITE(IWUNIT,1050) 'a high spin ROHF calculation'
             ELSE IF (IOPRHF .EQ. 0) THEN
@@ -4908,11 +4979,39 @@ C
  1075 FORMAT(/5X,'Number of active orbitals in RAS1, RAS2, and RAS3 :',
      &       3I4)
 C
-C     DFT run
+C     DFT run (standard Kohn-Sham -- not short range)
 C
       IF (DODFT) THEN
          CALL DFTREPORT
       END IF
+
+      IF (DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT) THEN
+C        ... Check inconsistencies :
+
+
+         WRITE (IWUNIT,'(/5X,A/,2(5X,2A/))')
+     &        'This is a hybrid DFT calculation using a ',
+     &        SRXFUN,' type exchange functional and a',
+     &        SRCFUN,' type correlation functional.'
+
+         IF (IWINT.NE.0) WRITE(IWUNIT,'(5X,A,F10.6/)')
+     &        'COPFAC  : ',COPFAC
+         WRITE (IWUNIT,'(/5X,A,2F12.6)')
+     &        'SR-DFT and SR-HF exchange weights:',
+     &         (1.0D0-HFXFAC),HFXFAC
+
+         IF (DOSRBCK.AND.DOMCSRDFT) 
+     &      CALL QUIT(' SRBCK functional not implemented for MCSRDFT !')
+C JT 09-03-05 beg
+         IF (DOMCSRDFT .AND. CHIVAL.EQ.0.D0)  THEN
+           CALL QUIT(' MCSRDFT not allowed for CHIVAL=0')
+         ENDIF
+C JT 09-03-05 end
+         IF (DFTRUN) THEN
+           CALL QUIT('DFT and SRDFT not both allowed in same run')
+         END IF
+
+      ENDIF
 C
 C ***** Orbital specifications *****
 C
@@ -4938,7 +5037,7 @@ C
       END IF
       WRITE(IWUNIT,1450) (NORB(I),I=1,NSYM)
       WRITE(IWUNIT,1500) (NBAS(I),I=1,NSYM)
-      IF (DORHF .AND. (AUTOCC .OR. MCTYPE .GT. 0)) THEN
+      IF (DOSCF .AND. (AUTOCC .OR. MCTYPE .GT. 0)) THEN
          IF (AUTOCC) THEN
            IF (.NOT.DODFT) THEN
              WRITE(IWUNIT,'(/5X,A/5X,2A/5X,A)')
@@ -4960,7 +5059,7 @@ C
          IF (IOPRHF .NE. 0) WRITE (IWUNIT,1560) IOPRHF
       END IF
       IF (SUPSYM) CALL AVEPRT(IWUNIT)
-      IF (BOYORB .AND. (DORHF .OR. DOMC)) WRITE(IWUNIT,'(/5X,A)')
+      IF (BOYORB .AND. (DOSCF .OR. DOMC)) WRITE(IWUNIT,'(/5X,A)')
      &   'Boys localization of all doubly occupied orbitals'//
      %   ' will be performed after RHF/DFT/MCSCF'
  1100 FORMAT(/5X,'Orbital specifications',
@@ -5035,8 +5134,11 @@ C
          ELSE IF (ISTACI .GT. 0) THEN
             WRITE(IWUNIT,'(/5X,A,I4)')
      *      'The CI calculation converges only root no.',ISTACI
+         ELSE IF (ISTACI .LT. 0 .AND. DOCISRDFT) THEN
+            WRITE(IWUNIT,'(/5X,A,I4)')
+     *      'The CI-DFT calculation gets DV(ref) from root no.',-ISTACI
          END IF
-      ELSE IF (DORHF) THEN
+      ELSE IF (DOSCF) THEN
          WRITE(IWUNIT,1900) MAXFCK,MXDIIS,MXHFMA, THRRHF
       END IF
       IF (DOCCSD) CALL CC_PRTI
@@ -5066,7 +5168,7 @@ C
       NFROT = ISUM(NSYM,NFRO,1)
       NFRHT = ISUM(NSYM,NFRRHF,1)
       NFRMT = ISUM(NSYM,NFRMP2,1)
-      IF (DORHF .AND. NFRHT .GT. 0) THEN
+      IF (DOSCF .AND. NFRHT .GT. 0) THEN
          IF (.NOT.DODFT) THEN
             WRITE (IWUNIT,6110) (NFRRHF(I),I=1,NSYM)
          ELSE
@@ -5117,8 +5219,7 @@ C  2003 -- input for NEVPT2
 C
 #include <implicit.h>
       PARAMETER (NTABLE = 3)
-      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*12
+      CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -5188,4 +5289,219 @@ C
   103 READ(LUCMD,*) ISTNEVCI
       GO TO 100
 C
+      END
+C  /* Deck srfuninp */
+      SUBROUTINE SRFUNINP(SRFTMP)
+C**************************************************************
+C
+C     Written by Jesper Kielberg Pedersen, Sep. 2003
+C
+C     Purpose :
+C     Process input from .SRFUN keyword in **HF INPUT
+C     which defines the Exchange and Correlation functionals
+C     to be used for the DFT-hybrid model in question
+C
+C**************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dftcom.h>
+C JT 12-02-05 beg
+C      PARAMETER  (NXTABLE = 10, NCTABLE = 9)
+C      PARAMETER  (NXTABLE = 12, NCTABLE = 13)
+      PARAMETER  (NXTABLE = 13, NCTABLE = 13) ! Manu 01-02-2006
+      PARAMETER  (maxfld=10)
+C JT 12-02-05 end
+!JT      CHARACTER*6 XTABLE(NXTABLE),CTABLE(NCTABLE)
+      CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
+      CHARACTER SRFTMP*72
+      CHARACTER*(100) fields(maxfld)
+      integer lenfld(maxfld)
+      LOGICAL SETXFUN,SETCFUN
+      DATA XTABLE /'NULL      ','SRXLDA    ','SRXGGA    ','SRBCK     ',
+     >             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ',
+     >             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', !JT 12-02-05
+     >             'SRXRI     '/ ! Manu 01-02-2006 
+      DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRMULO    ',
+     >             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ',
+     >             'SRCWI4    ','SRCPBETCS ','SRCPBETCSJ','SRCRI     ',
+     >             'SRCWI     '/ !JT 12-02-05
+      DATA SETXFUN,SETCFUN /2*.FALSE./
+      IXWINT = 0
+      ICWINT = 0
+C
+C Cut string SRFTMP 
+       call  CUTFLD (SRFTMP,' ',maxfld,fields,lenfld,Nfld) !JT
+       SRXFUN = fields(1)
+       SRCFUN = fields(2)
+
+C      write (lupri, *) 'DOSRXRI=',DOSRXRI,srxfun  ! Manu debug
+C      print *,'SRXFUN=',SRXFUN   ! Manu debug
+
+C     Remove trailing blanks
+! 5    IF (SRFTMP(1:1).EQ.' ') THEN
+!         SRFTMP = SRFTMP(2:72)
+!         GO TO 5
+!      ENDIF
+C     Remove blanks before Corr. Functional
+!      I=INDEX(SRFTMP(1:72),' ')
+! 10   IF (SRFTMP(I:I+1).EQ.' ') THEN
+!         I = I + 1
+!         GO TO 10
+!      ELSE
+!        SRXFUN = SRFTMP(1:10)
+!        SRCFUN = SRFTMP(I+1:I+10)
+!      ENDIF
+c
+      DO 100 II = 1, NXTABLE
+        IF (XTABLE(II) .EQ. SRXFUN) THEN
+C JT 12-02-05 beg
+          GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113),II  ! Manu 01-02-2006
+C JT 12-02-05 end
+        END IF
+ 100  CONTINUE
+      GO TO 15
+C
+ 101  SETXFUN  = .TRUE.
+      GO TO 15
+ 102  DOSRXLDA = .TRUE.
+      GO TO 15
+ 103  DOSRXGGA = .TRUE.
+      GO TO 15
+ 104  DOSRBCK  = .TRUE.
+      GO TO 15
+ 105  DOHFEXCH = .TRUE.
+      IF (.NOT.HFXSET) THEN
+         HFXFAC = 1.0D0
+         HFXSET = .TRUE.
+      END IF
+      GO TO 15
+ 106  DOSRGGA2 = .TRUE.
+      GO TO 15
+ 107  DOSRXWIB = .TRUE.
+      IXWINT    = 1
+      GO TO 15
+ 108  DOSRXWIB = .TRUE.
+      IXWINT    = 2
+      GO TO 15
+ 109  DOSRXWIB = .TRUE.
+      IXWINT    = 3
+      GO TO 15
+ 110  DOSRXWIB = .TRUE.
+      IXWINT    = 12
+      GO TO 15
+
+C JT 12-02-05 beg
+C     Short-range exchange PBE functional of HSE
+ 111  DOSRXPBEHSE = .TRUE.
+      ISJT        = .TRUE.
+      GO TO 15
+C     Short-range exchange PBE functional of TCS
+ 112  DOSRXPBETCS = .TRUE.
+      ISJT        = .TRUE.
+      GO TO 15  ! Manu 01-02-2006
+C JT 12-02-05 end
+C Manu 01-02-2006 begin
+C Short-range exchange rational interpolation functional
+ 113  DOSRXRI = .TRUE.
+      ISJT    = .TRUE. 
+C Manu 01-02-2006 end
+C
+  15  CONTINUE
+
+C      print *,'DOSRXRI = ',DOSRXRI  ! Manu
+
+      SETXFUN = SETXFUN.OR.DOSRXLDA.OR.DOSRXGGA.OR.DOSRBCK.OR.DOHFEXCH
+     >          .OR.DOSRGGA2.OR.DOSRXWIB.OR.DOSRXPBEHSE.OR.DOSRXPBETCS
+     >          .OR.DOSRXRI ! Manu 01-02-2006
+ 
+      IF (.NOT.SETXFUN) THEN
+          WRITE(LUPRI,'(/2A/,A/)') 
+     > '  SRFUNINP : Invalid or no SR exchange func. specified : ',
+     >    SRXFUN,'             Currently implemented functionals are :'
+          DO J = 1,NXTABLE
+              WRITE(LUPRI,'(13X,A)') XTABLE(J)
+          ENDDO
+          CALL QUIT('  Exit from SRFUNINP')
+      ENDIF
+C
+      DO 200 II = 1, NCTABLE
+        IF (CTABLE(II) .EQ. SRCFUN) THEN
+         GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213),II  !JT
+        END IF
+ 200  CONTINUE
+      GO TO 20
+C
+ 201  SETCFUN  = .TRUE.
+      GO TO 20
+ 202  DOSRCLDA = .TRUE.
+      GO TO 20
+ 203  DOSRCGGA = .TRUE.
+      GO TO 20
+ 204  DOSRMULO = .TRUE.
+      GO TO 20
+ 205  DOSRLYPT = .TRUE.
+      GO TO 20
+ 206  DOSRCWIB = .TRUE.
+      ICWINT    = 1
+      GO TO 20
+ 207  DOSRCWIB = .TRUE.
+      ICWINT    = 2
+      GO TO 20
+ 208  DOSRCWIB = .TRUE.
+      ICWINT    = 3
+      GO TO 20
+ 209  DOSRCWIB = .TRUE.
+      ICWINT    = 12
+      GO TO 20
+
+C JT 12-02-05 beg
+C     Short-range correlation PBE TCS functional
+ 210  DOSRCPBETCS = .TRUE.
+      ISJT     = .TRUE.
+      GO TO 20
+
+C     Short-range correlation PBE TCS J functional 
+ 211  DOSRCPBETCSJ = .TRUE.
+      ISJT     = .TRUE.
+      GO TO 20
+
+C     Rational interpolation
+ 212  DOSRCRI = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+
+C     Weighted interpolation
+ 213  DOSRCWI = .TRUE.
+      ISJT    = .TRUE.
+C JT 12-02-05 end
+C
+  20  CONTINUE
+C
+      SETCFUN = SETCFUN.OR.DOSRCLDA.OR.DOSRCGGA.OR.DOSRMULO.OR.DOSRLYPT
+     >          .OR.DOSRCWIB .OR. DOSRCPBETCS .OR. DOSRCPBETCSJ 
+     >          .OR. DOSRCRI .OR. DOSRCWI !JT
+
+      IF (.NOT.SETCFUN) THEN
+          WRITE(LUPRI,'(/2A/,A/)') 
+     > '  SRFUNINP : Invalid or no SR correlation func. specified : ',
+     >    SRCFUN,'             Corrently implemented functionals are :'
+          DO J = 1,NCTABLE
+              WRITE(LUPRI,'(13X,A)') CTABLE(J)
+          ENDDO
+          CALL QUIT('  Exit from SRFUNINP')
+      ENDIF
+      IF (IXWINT.EQ.ICWINT) THEN
+         IWINT = IXWINT
+      ELSE
+         CALL QUIT ('Different extrapolation schemes specified for'//
+     >              ' exchange and correlation')
+      END IF
+C
+      IF (.NOT.HFXSET) THEN
+C        if user hasn't specified HFXFAC with .HFXFAC or implicitly with HFEXCH
+C        then set HF exchange factor to zero.
+         HFXFAC = 0.0D0
+         HFXSET = .TRUE.
+      END IF
+      RETURN
       END

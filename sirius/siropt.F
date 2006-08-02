@@ -123,6 +123,7 @@ C------------------------
 C------------------------
 C CBN 03.01.06
 C------------------------
+#include <dfterg.h>
 C ---
 C
 C *** local:
@@ -224,7 +225,12 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
       KPV    = KDV    + NNASHX
       KFC    = KPV    + NNASHX*NNASHX
       KFV    = KFC    + NNORBT
-      KFQ    = KFV    + NNORBT
+      KSRHYB = KFV    + NNORBT
+      IF (SRHYBR .AND. MCTYPE.NE.0) THEN
+         KFQ = KSRHYB + NNORBT
+      ELSE
+         KFQ = KSRHYB
+      END IF
       KFCAC  = KFQ    + NASHT*NORBT
       KCREF  = KFCAC  + NNASHX
       KH2AC  = KCREF  + NCONF
@@ -535,17 +541,29 @@ C----------------
          WRITE (LUW4,1005) EMCSCF,ITABS
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,1005) EMCSCF,ITABS
       ELSE
-         WRITE (LUW4,1010) EMCSCF,ITMAC
-         IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
-      END IF
-      IF (P4FLAG(2)) THEN
-         WRITE (LUW4,1015) POTNUC,EMY,EACTIV
-      END IF
-      IF (P6FLAG(1)) THEN
-         IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
-            WRITE (LUPRI,1015) POTNUC,EMY,EACTIV
+         IF(DOHFSRDFT.OR.DOMCSRDFT) THEN
+            WRITE (LUW4,1011) EMCSCF,ITMAC
+            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1011) EMCSCF,ITMAC
+         ELSE
+            WRITE (LUW4,1010) EMCSCF,ITMAC
+            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
          END IF
       END IF
+      IF(DOHFSRDFT.OR.DOMCSRDFT) THEN
+         EMYTMP = EMY - ESRDFTY
+      ELSE
+         EMYTMP = EMY
+      ENDIF
+      IF (P4FLAG(2)) THEN
+         WRITE (LUW4,1015) POTNUC,EMYTMP,EACTIV
+         IF(DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUW4,1017) ESRDFTY
+      END IF
+chj   IF (P6FLAG(1)) THEN
+         IF (LUPRI.NE.LUW4 .OR. .NOT.P4FLAG(2)) THEN
+            WRITE (LUPRI,1015) POTNUC,EMYTMP,EACTIV
+            IF(DOHFSRDFT.OR.DOMCSRDFT) WRITE(LUPRI,1018) ESRDFTY
+         END IF
+chj   END IF
       IF (SOLVNT.OR.PCM) WRITE (LUW4,1016) ESOLT
       IF (QM3) WRITE (LUW4,1017) EQM3
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
@@ -558,11 +576,14 @@ C----------------
      *        '(after absorp ',I3,')' )
  1010 FORMAT(/' Total MCSCF energy       :',F25.15,T60,
      *        '(MACRO  ',I3,')' )
+ 1011 FORMAT(/' Total MC-SRDFT energy    :',F25.15,T60,
+     *        '(MACRO  ',I3,')' )
  1015 FORMAT(/' - Nuclear repulsion      :',F25.15,
      *       /' - Inactive energy        :',F25.15,
      *       /' - Active energy          :',F25.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',F25.15)
  1017 FORMAT( ' - QM/MM solvation ener.:',F25.15)
+ 1018 FORMAT( ' - SRDFT effective energy :',F25.15)
  1020 FORMAT(/' Norm of total gradient   :',F22.12,
      *       /' -    of CI gradient      :',F22.12,
      *       /' -    of orbital gradient :',F22.12)
@@ -730,7 +751,8 @@ C        close to convergence, no step control performed
      &         ' ERROR EXIT: gradient norm increasing in local region.',
      &         ' Probable cause: numerical round-off errors'//
      &         ' or too many integrals neglected.'
-            GO TO 750
+c           GO TO 750
+            write(lupri,*) 'Well, let us try anyway ...'
          END IF
          ITBCK = 0
       ELSE
@@ -1640,10 +1662,18 @@ C        ... we do not know which root will become ISTATE
             ISTACI = ISTATE
          END IF
 C
+         IF (DOMCSRDFT) THEN
+            ADDSRI    = .FALSE.
+            DOCISRDFT = .TRUE.
+         END IF
          CALL CICTL(1,LROOTS,MAXCIT,THRCIX,WRK(KCMO),INDXCI,
      *              WRK(KECI),ICONV,WRK(KICROO),WRK(KW22),LW22)
 C        CALL CICTL(ICICTL,NCROOT,MAXITC,THRCIX,CMO,INDXCI,
 C    *              ECI,ICONV,ICROOT,WRK,LFREE)
+         IF (DOMCSRDFT) THEN
+            ADDSRI    = .TRUE.
+            DOCISRDFT = .FALSE.
+         END IF
          FLAG(15) = LSAV15
          ISTACI   = ISTASV
 C
@@ -1977,7 +2007,7 @@ C
       DIMENSION CMO(*), IBNDX(*), INDXCI(*), WRK(LFREE)
       PARAMETER ( DP1 = 0.1D0, DP5 = 0.5D0,
      *            D0  = 0.0D0, D1  = 1.0D0, D2  = 2.0D0 )
-      PARAMETER ( THDE = 1.D-10 )
+      PARAMETER ( THDE = 1.D-5 )
 #include <dummy.h>
 C
 C Used from common blocks:
@@ -2033,9 +2063,15 @@ C
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
       ELSE
+         IF (DEPRED .NE. 0.0D0) THEN
+           RATIO = DEACT / DEPRED
+           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
+           WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
+         ELSE
+           IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
+         END IF
          RATIO = D1
          ISTEP = -1
-         IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
       END IF
  1100 FORMAT (/' (SIRSTP) Energy difference;',
      *        /' actual, predicted and ratio:',2F15.10,F12.6)

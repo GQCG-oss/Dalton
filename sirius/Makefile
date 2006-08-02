@@ -31,13 +31,16 @@ pre: $(F_CPPS)
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > sirius.ftnchek
 
+calltree: pre
+	ftnchek $(CHEKFLAGS) -calltree=tree -nocheck -mkhtml *.i > sirius.calltree
+
 libsirius.a : $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 # sirtra.o has to be compiled without less optimization under HP-UX
 
-sirtra.o: sirtra.F
-	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c sirtra.F
+#sirtra.o: sirtra.F
+#	$(F77) $(INCLUDE_DIR) $(CPP_FLAGS) $(SAFEOPTFLAGS) -c $*.F
 
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a

@@ -485,14 +485,12 @@ C       keep vectors until GRDNRM fallen a factor 100
       NEWOCC = 0
       NOSCIL = 0
 C------------------
-C CBN+JK 03.01.06
-C------------------
-      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
-     &           .AND. .NOT. PCM .AND. .NOT. HSROHF .AND. .NOT. QM3 
+      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DFTRUN
+     &           .AND. .NOT. PCM .AND. .NOT. HSROHF .AND. .NOT. QM3
      &           .AND. .NOT. AOSAVE
+     &           .AND. .NOT.DOHFSRDFT
 C------------------
-C CBN+JK 03.01.06
-C------------------
+C CBN+JK 03.01.06: .not.QM3
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
@@ -521,7 +519,7 @@ Chj      ... if (GEOWLK) then
          INDEVC = MOD(JTDIIS-1,MXERRV) + 1
          NEVC   = MIN(MXERRV,JTDIIS)
 C
-         IF (DIRFCK .AND. (IPRDIS .GE. 0 .OR. IPRDIS .LE. 1)) THEN
+         IF (DIRFCK .AND. (IPRDIS .GE. 0 .AND. IPRDIS .LE. 1)) THEN
             WRITE (LUPRI,'(A,I5,L5)') 
      &          ' Screening settings in next iteration (IFTHRS/DIFDEN)',
      &           IFTHRS, DIFDEN
@@ -641,6 +639,7 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
          END IF
          EMY = DDOT(NNBAST,DAOSAV,1,H1AO,1)
      &       + DDOT(NNBAST,DAOSAV,1,FAOSAV(1,INDEVC,1),1) * DP5
+         IF (DOHFSRDFT) EMY = EMY + EDFTY + ESRDFTY
 C
          IF (ONLYFC) THEN
             EACTIV = D0

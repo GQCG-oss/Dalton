@@ -456,7 +456,7 @@ C
             IF (RBETA .GE. MIN(RKVAD,(RTRUST/RTTOL))) JCONV = -1
          END IF
 C
-         ESHIFT = D0
+         ESHIFT = 0.01D0
 C
          CALL NEONEX(G,WRK(KEVAL),WRK(KEVEC),EACTVN,ESHIFT,
      *               CREF,CMO,DV,PV,FC,FV,
@@ -1116,10 +1116,20 @@ C                 assure first trial vector is an orbital vector
                      WRK((KTHKAP-1)+NOVEC) =
      *               MAX(FKAPC*QCNRM, FKAPO*QONRM)
                   END IF
+                  FACTRN = 1.0 D-3
+                  CTEST = FACTRN * QONRM
+                  DO I = JORV+1,JORV+NWOPT
+                     IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
+                  END DO
                ELSE IF (QCNRAT*QCNRM.GT.QONRM) THEN
 C                 CI trial vector, prepare for Davidson:
                   NCVEC = NCVEC + 1
                   IBNDX(IBNOFF+ISIMX) = 1
+                  FACTRN = 1.0 D-3
+                  CTEST = FACTRN * QCNRM
+                  DO I = JCRV+1,JCRV+NCONF
+                     IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
+                  END DO
                ELSE
 C                 orbital trial vector
                   NOVEC = NOVEC + 1
@@ -1128,6 +1138,11 @@ C                 orbital trial vector
                      WRK((KTHKAP-1)+NOVEC) =
      *               MAX(FKAPC*QCNRM, FKAPO*QONRM)
                   END IF
+                  FACTRN = 1.0 D-3
+                  CTEST = FACTRN * QONRM
+                  DO I = JORV+1,JORV+NWOPT
+                     IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
+                  END DO
                END IF
             END IF
             JCRV = JCRV + NVARX
@@ -1947,6 +1962,7 @@ C       &              RES,DIAG,IPRPHP,WRK,LWRK)
       END IF
       GETBVO = ( NWOPT.GT.0 .AND.
      *   (OTRIAL .OR. .NOT.GETBVC .OR. FLAG(55) .OR. .NOT.FLAG(41)) )
+      if (domcsrdft .and. NCVEC .gt. 0) GETBVO = .false.
 C     861107-hj/pj: only include Gorb/Ldiag if Hartree-Fock
 C                   or specifically requested (NEXKAP is more
 C                   efficient for getting orbital trial vec.s)
@@ -2810,6 +2826,8 @@ C
   340 CONTINUE
       IF (NERROR .EQ. 0) WRITE (LUPRI,'(A)') ' None, redH is symmetric.'
 C
+      WRITE (LUPRI,'(/A,(/15I5))') ' IBNDX vector:',
+     &   (IBNDX(I), I = 1,NREDL)
       WRITE (LUPRI,'(//A)') ' Reduced Hessian (as bT*s) :'
       CALL OUTPUT(WRK(KREDH),1,NREDH,1,NREDH,NREDH,NREDH,1,LUPRI)
       WRITE (LUPRI,'(//A)') ' Reduced overlap (as bT*b) :'

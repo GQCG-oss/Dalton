@@ -16,6 +16,13 @@ FFILES = \
         dft_aux.F    \
         dft_int.F    \
         dft_inp.F    \
+	dftaux_srdft.F \
+	dftdrv_srdft.F \
+	dftfun_srdft.F \
+	dftgrd_srdft.F \
+        dftfunjt.F   \
+        srdft.F      \
+        srdftjt.F    \
 	dso_cb.F
 
 #        dft_ac.F     dft_old.F

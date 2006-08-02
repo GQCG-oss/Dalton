@@ -287,6 +287,7 @@ C
 #include <infdim.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       DIMENSION DVZRAS(3)
       LOGICAL TRTONO, GETOCC, TRTOFC, TRTOCO, TRCVEC, TSTFLG
@@ -402,6 +403,9 @@ C .. 1.2 .. (FCKMAT)
       KFC    = KWRK1
       KFV    = KFC    + NNORBT
       KWRK2  = KFV    + NNORBT
+      IF (SRHYBR) KWRK2 = KWRK2 + NNORBT
+C     ... space for extra matrix for SRHYBR
+C         but we do not use this matrix in SIRCNO /hjaaj oct 04
       LWRK2  = LWRK   - KWRK2
 C .. 1.3  (2*JACO)
       KBIG   = KWRK2
@@ -930,7 +934,7 @@ C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
                WRITE(LUPRI,'(/A)')
      *           ' GETNO: The natural orbitals are reordered.'
             ENDIF
-         END IF
+        END IF
       END IF
       IF (IPRINT .GE. 1) THEN
          WRITE (LUPRI,'(//A/A)')
