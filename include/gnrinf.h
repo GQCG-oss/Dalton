@@ -1,3 +1,5 @@
+C File : gnrinf.h
+C
 c     -*- mode: fortran; fortran-continuation-string: "&" -*-
 c     File: gnrinf.h -- general information for DALTON
 c
@@ -5,14 +7,16 @@ c
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,
-     &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX
-      COMMON /GNRINF/ GRADML, PANAS,  TESTIN, OPTWLK, RNHERM,
+     &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,
+     &        ERFEXP, DOSRIN, SRINTS
+      COMMON /GNRINF/ GRADML, PANAS,  CHIVAL, TESTIN, OPTWLK, RNHERM,
      &                RNSIRI, RNABAC, GEOCNV, HRINPC, SRINPC, RDINPC, 
      &                RDMLIN, PARCAL, DIRCAL, KCHARG, WRINDX, 
      &                WLKREJ, WALKIN, RNRESP, USRIPR, ITERNR,
      &                ITERMX, IPRUSR, SEGBAS, DOCCSD, OPTNEW, NEWSYM,
      &                LENBAS, NEWBAS, NEWPRP, RELCAL, TOTSYM, NMWALK,
-     &                DKTRAN, GEOALL, WESTA,  SEGAUX
+     &                DKTRAN, GEOALL, WESTA,  SEGAUX,
+     &                ERFEXP, DOSRIN, SRINTS
 
       INTEGER LBASDIR
       PARAMETER (LBASDIR = 600)

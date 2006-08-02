@@ -1,3 +1,5 @@
+C File : inftap.h
+C
 C     Most file variables used in Dalton
 C     ("TAP" for tapes here for historical reasons)
       INTEGER         LUCME, LUMOL, LUPROP, LUSOL, LUINTA,
@@ -5,7 +7,7 @@ C     ("TAP" for tapes here for historical reasons)
      &                LU2DER, LUDASP, LURDR, LURDI, LUGDR, LUGDI,
      &                LUGDT, LURDT, LUDFCK, LUSFDA, LUFDC, LUWLK,
      &                LUPAO, LUPAS, LUNR1, LUNR3, LUNR5,
-     &                LUINTR, LUMOLDEN, LUR12, LUORDA, LUMINT
+     &                LUINTR, LUMOLDEN, LUR12, LUORDA, LUMINT, LUSRINT
       INTEGER         LUAHSO, LUCRV1, LUCRV2, LUXYVE, LUCRVE,
      &                LURSP3, LURSP4, LURSP5, LUMHSO, LURSP
       INTEGER         LUINTM, LUIT1, LUIT2, LUIT3, LUIT5, LUINF,
@@ -28,7 +30,7 @@ C     ("TAP" for tapes here for historical reasons)
      &                LUINTR, LUMOLDEN, LUR12(20), LUORDA, LUMINT,
      &                LUPMOM,LUMOM,LUEIND,LUENUC, LUESITE, LUEOBAR,
      &                LUVDWSE,LUENSA,LUQM3E,LUQM3P,LUOSCR,LUMMOV,
-     &                LUOVER,LUNDPF
+     &                LUOVER,LUNDPF, LUSRINT
       COMMON /RSPTAP/ LUAHSO, LUCRV1, LUCRV2, LUXYVE, LUCRVE,
      &                LURSP3, LURSP4, LURSP5, LUMHSO, LURSP
       COMMON /SIRTAP/ LUINTM, LUIT1, LUIT2, LUIT3, LUIT5, LUINF,
