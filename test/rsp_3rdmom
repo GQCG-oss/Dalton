@@ -150,18 +150,18 @@ CTRL[6]=6
 ERROR[6]="SYMMETRIES NOT CORRECT"
 
 # Third order transition moments
-CRIT1=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )37777\.4713(4|5)[0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )1962\.30392[0-9][0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )7455\.95220[0-9][0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )1053\.14769[0-9][0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )4472\.26774[0-9][0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )1077\.08173[0-9][0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )4472\.26775[0-9][0-9][0-9]" $log | wc -l`
-CRIT8=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )13587\.57717[0-9][0-9][0-9]" $log | wc -l`
-CRIT9=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )37892\.657(69|70)[0-9][0-9][0-9]" $log | wc -l`
-CRIT10=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )21916\.9157[4-5][0-9][0-9][0-9]" $log | wc -l`
-CRIT11=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )11170\.3415[7-8][0-9][0-9][0-9]" $log | wc -l`
-CRIT12=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )423\.76738[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )37777" $log | wc -l`
+CRIT2=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )1962" $log | wc -l`
+CRIT3=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )7455" $log | wc -l`
+CRIT4=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )1053" $log | wc -l`
+CRIT5=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )4472" $log | wc -l`
+CRIT6=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )1077" $log | wc -l`
+CRIT7=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )4472" $log | wc -l`
+CRIT8=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )13587" $log | wc -l`
+CRIT9=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )37892" $log | wc -l`
+CRIT10=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )21916" $log | wc -l`
+CRIT11=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )11170" $log | wc -l`
+CRIT12=`$GREP "\@ < 0 \| ABC \| f > * \= * (\-| )423\.7" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 CTRL[7]=15

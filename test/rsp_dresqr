@@ -145,12 +145,12 @@ CTRL[5]=12
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Moments
-CRIT1=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1195891[0-9] * (0| )\.1195891[0-9] * \-4\.1415754[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1195891[0-9] * (0| )\.2721887[0-9] * (\-0|\-)\.9392014[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.2721887[0-9] * (0| )\.2721887[0-9] * (\-0|\-)\.5358602[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1195891[0-9] * (0| )\.1577654[0-9] * \-1\.5416279[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.2721887[0-9] * (0| )\.1577654[0-9] * 1\.0912588[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1577654[0-9] * (0| )\.1577654[0-9] * \-2\.2958250[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1195.... * (0| )\.1195.... * \-4\.1415...." $log | wc -l`
+CRIT2=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1195.... * (0| )\.2721.... * (\-0|\-)\.9392...." $log | wc -l`
+CRIT3=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.2721.... * (0| )\.2721.... * (\-0|\-)\.5358...." $log | wc -l`
+CRIT4=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1195.... * (0| )\.1577.... * \-1\.5416...." $log | wc -l`
+CRIT5=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.2721.... * (0| )\.1577.... * 1\.0912...." $log | wc -l`
+CRIT6=`$GREP "\@ *B and C excitation energies\, moment\: * (0| )\.1577.... * (0| )\.1577.... * \-2\.2958...." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[6]=6
 ERROR[6]="CALCULATED MOMENTS NOT CORRECT"

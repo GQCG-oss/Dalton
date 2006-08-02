@@ -232,6 +232,9 @@ CRIT3=`$GREP "1\.974627... * (0| )\.02521[45]..." $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=6
+   if [ ${TEST[6]} -gt ${CTRL[6]} ]; then
+      CTRL[6]=${TEST[6]}
+   fi
 ERROR[6]="FINAL OCCUPANCY NOT CORRECT"
 
 PASSED=1
