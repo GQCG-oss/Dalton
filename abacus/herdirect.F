@@ -452,12 +452,14 @@ C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or HRFCK2
 C     (old integral routines or new ERI integral routines)
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <iratdef.h>
 #include <dummy.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <aovec.h>
       LOGICAL USEERI, LDUMMY
+      PARAMETER (D0 = 0.0D0)
 C
       DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*), 
      &          WORK(*)
@@ -491,10 +493,14 @@ C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h & aobtch.h
 C We need to include nuclei.h here, to have NBASIS and NODD.
 C Initalization of NODD in herrdn.F and eriaob.F
 C
-      USEERI = RUNERI
+      USEERI = RUNERI .AND.
+     &        .NOT.SRINTS .AND. CHIVAL.EQ.-1.D0 .AND. PANAS.EQ.D0
       DO I = 1, NDMT
          USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
       END DO
+      IF (RUNERI .AND. .NOT.USEERI) WRITE(LUPRI,'(/A/A)')
+     &   'INFO HERFCK: Using Hermit instead of ERI for 2-el. ints.',
+     &   'because requested calculation is not implemented in ERI.'
 #if defined (VAR_VECTOR)
       ICHUNK = MAX(IVECLN/NDMT,1)
 #endif
@@ -667,7 +673,7 @@ C
          CALL DSOTAO(DMAT(1,IMAT),FMAT(1,1),NBAST,ISYMDM(IMAT),IPRINT)
          CALL DCOPY(N2BASX,FMAT(1,1),1,DMAT(1,IMAT),1)
   200 CONTINUE
-      CALL DZERO(FMAT(1,1),N2BASX)
+      CALL DZERO(FMAT(1,1),NDMAT*N2BASX)
 C
 C     Prepare for screening
 C     =====================
@@ -680,8 +686,13 @@ C
 C     
 C     Get GAB-matrix (Cauchy-Schwartz)
 C
-      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,
-     &            WORK(KFREE),LFREE)
+      IF (SRINTS) THEN
+         CALL GETGAB(WORK(KGAB),'GABSRXXX',N2GAB,
+     &               WORK(KFREE),LFREE)
+      ELSE
+         CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,
+     &               WORK(KFREE),LFREE)
+      END IF
 C
 C     Make reduced density matrix for screening
 C

@@ -1941,6 +1941,7 @@ Cef begin
 #include "blocks.h"
 #include "dftcom.h"
 #include "incore.h"
+#include "gnrinf.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -1971,7 +1972,7 @@ Cef begin
      &          GABRAO(NSYMBL,NSYMBL),DMRAO(NSYMBL,NSYMBL,NDMAT),
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*),
      &          IXPAB(NUCA*NUCB,2,NODCAB), IXPCD(NUCC*NUCD,2,NODCCD)
-      dimension coefcd(*)
+      dimension COEFCD(*)
 #include "ibtfun.h"
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
@@ -2563,6 +2564,9 @@ C
                IF (DCCR12) THEN
                   CALL RN2OUT(SOINT,NSOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,
      &                        LAST,THRESH,NINDAB,NINDCD,IPRINT)
+               ELSE IF (SRINTS) THEN
+                  CALL SR2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+     &                        THRESH,NINDAB,NINDCD,IPRINT)
                ELSE
                   CALL UN2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                        THRESH,NINDAB,NINDCD,IPRINT)
@@ -2918,6 +2922,8 @@ C
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
             END IF
+         ELSE
+            CALL QUIT('Programming error in CAOINT please report.')
          END IF
       END IF
       RETURN
@@ -2941,6 +2947,7 @@ C  /* Deck paovec */
       SUBROUTINE PAOVEC(JSTRSH,NPRIMS,NCONTS,IORBSH,JORBSH,KORBSH,
      &                  IATOM,NOBLK,IPRINT)
 #include "implicit.h"
+#include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -2951,7 +2958,6 @@ C  /* Deck paovec */
       DIMENSION JSTRSH(MXSHEL,MXAOVC,2), NPRIMS(MXSHEL,MXAOVC,2),
      &          NCONTS(MXSHEL,MXAOVC,2), IORBSH(MXSHEL,MXAOVC)
 #include "gnrinf.h"
-#include "priunit.h"
 #include "shells.h"
 #include "blocks.h"
 #include "symmet.h"

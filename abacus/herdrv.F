@@ -183,6 +183,8 @@ C        Delete old MO integrals and AOSUP integrals
          CALL GPCLOSE(LUSUPM,'DELETE')
 C        Open LUINTA for new integrals
          CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         IF (DOSRIN) CALL
+     &      GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
       CALL HERINT(WORK,LWORK)
@@ -1686,7 +1688,7 @@ C  /* Deck hr2inp */
 #include <priunit.h>
 #include <mxcent.h>
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
-      PARAMETER (NTABLE = 10)
+      PARAMETER (NTABLE = 15)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1696,7 +1698,8 @@ C
 #include <gnrinf.h>
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
-     &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.XXXXXX'/
+     &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
+     &            '.ERFEXP', '.DOSRIN', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -1729,6 +1732,10 @@ C
       THRFAC(1) = D1
       THRFAC(2) = D1
 C
+C     Put ERFEXP in /GNRINF/ to awoid TKTIME conflict with twosta.h
+C
+C      ERFEXP = .FALSE.
+C
       NEWDEF = WORD .EQ. '*TWOINT'
       ICHANG = 0
       IF (NEWDEF) THEN
@@ -1742,7 +1749,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1768,6 +1775,7 @@ C
                   READ (LUCMD,*,ERR=35) PANAS
                   GOTO 36
  35               PANAS = 0.25D0
+                  BACKSPACE LUCMD
  36               CONTINUE 
 C     
 C     We cannot use new integral code for Panas correction
@@ -1800,6 +1808,28 @@ C&&& This option only used in DIRAC
                  READ(LUCMD,*) THRFAC(1),THRFAC(2)
                GO TO 100
    10          CONTINUE
+C&&& ERF  : Value of \chi in separation of two-electron operator
+C&&&        Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)/(r_12)
+               READ (LUCMD,*,ERR=37) CHIVAL
+               GO TO 100
+ 37            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERF')
+   11          CONTINUE
+C&&& ERFEXP: Value of \chi in separation of two-electron operator
+C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
+               ERFEXP = .TRUE.
+               READ (LUCMD,*,ERR=39) CHIVAL
+               GO TO 100
+ 39            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFEXP')
+   12          CONTINUE
+C&&& DOSRIN : Calculate short-range 2-elec. integrals needed for
+C&&&          computing the short-range Hartree term (U_sr) in MCDFT
+               DOSRIN = .TRUE.
+               GO TO 100
+   13          CONTINUE
+               GO TO 100
+   14          CONTINUE
+               GO TO 100
+   15          CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1831,6 +1861,15 @@ C&&& This option only used in DIRAC
      &         ' integral calculation will be provided.'
             IF (PANAS .NE. 0.0D0) WRITE (LUPRI,'(/,A,F10.5)')
      &           ' Coulomb integrals screened with a factor of',PANAS
+            IF (CHIVAL .NE. -1.0D0) THEN
+               IF (ERFEXP) THEN
+                  WRITE (LUPRI,410)
+               ELSE
+                  WRITE (LUPRI,400)
+               ENDIF
+               WRITE (LUPRI,'(A,F10.5)')
+     &         '              with the coupling parameter : ',CHIVAL
+            ENDIF
             IF (DIRCAL) THEN
               IF(SOFOCK) THEN
                 WRITE(LUPRI,'(/1X,A)')
@@ -1863,6 +1902,8 @@ C&&& This option only used in DIRAC
      +           'SS-integrals: ',THRFAC(2)
             ENDIF
          END IF
+ 400  FORMAT(/' DFT-hybrid : Using a Erf type two-elec. operator')
+ 410  FORMAT(/' DFT-hybrid : Using a Erf+Exp type two-elec. operator')
       END IF
  199  CALL QEXIT('HR2INP')
       RETURN
@@ -1989,6 +2030,7 @@ C  /* Deck herint */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <dummy.h>
+      PARAMETER (D0 = 0.0D0)
 C
 #include <gnrinf.h>
 #include <cbiher.h>
@@ -3161,6 +3203,44 @@ C
                CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
             END IF
          END IF
+C
+C        ******************************************************
+C        ***** Short-range two-electron integrals (MCDFT) *****
+C        ******************************************************
+C
+         IF(DOSRIN) THEN
+            IF (PANAS .EQ. D0 .AND. CHIVAL .EQ. -1.d0) 
+     &      CALL QUIT('HERINT ERROR : Short-range integrals '//
+     &                'specified with the unmodified 2e-operator!')
+            SRINTS = .TRUE.
+            NPAO = MXSHEL*MXAOVC
+            CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)
+            CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &                  WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),0,
+     &                  .FALSE.,IPRDEF)
+            CALL MEMREL('HERINT.PAOVEC',WORK,KWORK,KJORBS,KFREE,
+     &                  LFREE)
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            IRNTYP = 0
+            CALL TWOINT(WORK(KFREE),LFREE,DUMMY,DUMMY,DUMMY,1,IDUMMY,
+     &                  IDUMMY,DUMMY,IDUMMY,NUMDIS,1,IRNTYP,0,0,
+     &                  .TRUE.,.TRUE.,.FALSE.,TKTIME,
+     &                  IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                  RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
+     &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                  .FALSE.)
+            CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+            CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
+            SRINTS = .FALSE.
+            DOSRIN = .FALSE.
+         ENDIF
 C
 C        *****************************************************
 C        ***** Spatial two-electron spin-orbit integrals *****

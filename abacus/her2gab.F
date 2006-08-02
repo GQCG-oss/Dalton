@@ -1812,8 +1812,12 @@ C***********************************************************************
 #include <priunit.h>
 #include <dummy.h>
 C
+C Used from
+C  gnrinf.h: SRINTS
+C
 #include <maxorb.h>
 #include <mxcent.h>
+#include <gnrinf.h>
 #include <nuclei.h>
 #include <blocks.h>
 #include <inftap.h>
@@ -1837,7 +1841,12 @@ C
       ENDIF
       DO I = 1,NGAB
          IF    (IJOB.EQ.0) THEN
-            GABLAB(I)(4:5) = 'AO'
+            IF (SRINTS) THEN
+C           ... short range integrals
+               GABLAB(I)(4:5) = 'SR'
+            ELSE
+               GABLAB(I)(4:5) = 'AO'
+            END IF
          ELSEIF(IJOB.EQ.1) THEN
             GABLAB(I)(4:5) = 'SO'
          ELSE
@@ -1957,6 +1966,8 @@ C***********************************************************************
       DIMENSION GABM(N2GAB), WORK(*)
 #include <inftap.h>
 C
+      CALL QENTER('GETGAB')
+C
 C     Check if file AOPROPER is present
 C
       CALL GPINQ('AOPROPER','EXIST',EXTST)
@@ -1965,7 +1976,7 @@ C     File AOPROPER present; see if it is opened
         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,
      &     'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       ELSE
-        WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'
+        WRITE(LUPRI,'(/A)') 'GETGAB: AOPROPER not found !'
         CALL QUIT('GETGAB: AOPROPER not found !')
       ENDIF
 C
@@ -1978,23 +1989,24 @@ C
          WRITE(LUPRI,'(/A,A8,A)') '*** WARNING  GETGAB: ',
      &        GABLAB,' not found on AOPROPER. Regenerating.'
          CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
-         CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',
-     &               IDUMMY,.FALSE.)
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER',
+     &      'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
          REWIND LUPROP
          IF(FNDLAB(GABLAB,LUPROP)) THEN
             READ(LUPROP,ERR=10,END=20) GABM
          ELSE
-            WRITE(LUPRI,'(A,A8,A)')
+            WRITE(LUPRI,'(/A,A8,A)')
      &           'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
             CALL QUIT('GETGAB: No GAB on AOPROPER !')
          END IF
       ELSE
-         WRITE(LUPRI,'(A,A8,A)')
+         WRITE(LUPRI,'(/A,A8,A)')
      &   'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
          CALL QUIT('GETGAB: No derivative GAB on AOPROPER !')
       ENDIF
 C
       CALL GPCLOSE(LUPROP,'KEEP')
+      CALL QEXIT('GETGAB')
       RETURN
  10   CONTINUE
       WRITE(LUPRI,'(A,A8)') '* GETGAB: ERROR reading ',GABLAB
