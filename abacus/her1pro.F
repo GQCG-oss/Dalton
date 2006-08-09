@@ -1249,8 +1249,8 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Diamagnetic contribution integrals to rotational g factors NSTCGOS
-C     ----------------------------------------------------------
+C     Diamagnetic contribution integrals to spin-rotation constanst NSTCGOS
+C     ---------------------------------------------------------------------
 C
  51   CONTINUE
          INTTYP = 48

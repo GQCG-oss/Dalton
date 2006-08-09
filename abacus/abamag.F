@@ -309,10 +309,10 @@ C
          IF (SPINRO .AND. .NOT. NOLOND) THEN
             WORD = 'NSTCGOS'
             NDEGMX = 1
-            DO 13 I = 1, NUCIND
+            DO I = 1, NUCIND
                NDEG = NUCDEG(I)
                IF (NDEG .GT. NDEGMX) NDEGMX = NDEG
- 13         CONTINUE
+            END DO
             NCOMP = 9*NDEGMX
             CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),
      &                  LWRK,MPRINT,MNODC,MNODV,WORD,NCOMP)
@@ -520,6 +520,16 @@ C
      &               EXP1VL,DENMAT,IPRINT)
          CALL MAGAVE(SPNDSO,EXPVAL,KCOMP,WORK,LWORK,
      &               IPRINT,WORD,LABINT,SIGN)
+      ELSE IF (WORD .EQ. 'NSTCGOS') THEN
+         NPATOM = 2
+         DO I = 1, NUCIND
+            KCOMP = 0
+            CALL GET1IN(DUMMY,WORD,KCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &                  INTADR,I,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &                  EXP1VL,DENMAT,IPRINT)
+            CALL MAGAVE(SPNDSO,EXPVAL,KCOMP,WORK,LWORK,
+     &                  IPRINT,WORD,LABINT,SIGN)
+         END DO
       ELSE
          NPATOM = 0
          IF (WORD .EQ. 'DSUSCGM') THEN
@@ -528,8 +538,8 @@ C
      &           EXP1VL,DENMAT,IPRINT)
          ELSE
             CALL GET1IN(DUMMY,WORD,KCOMP,WORK(1),LWORK,LABINT,INTREP,
-     &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
-     &               EXP1VL,DENMAT,IPRINT)
+     &                  INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,EXPVAL,
+     &                  EXP1VL,DENMAT,IPRINT)
          END IF
 C
 C     Add contribution from electric field, KRu, Aug.-93
@@ -908,7 +918,7 @@ C     for getting first-order magnetic derivatives from HERMIT
 C
 C     Some comments about the input variables:
 C     KPATOM = 1 => Spin-spin couplings
-C     KPATOM = 2 => The nuclear shieldings (or eleectric field gradients)
+C     KPATOM = 2 => The nuclear shieldings (or electric field gradients)
 C                   are calculated for one symmetry
 C                   independent nuclei at a time (loop is outside subroutine)
 C
