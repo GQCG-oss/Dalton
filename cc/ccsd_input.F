@@ -353,6 +353,7 @@ C
          WORD1 = WORD
  1000    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
 
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -381,6 +382,7 @@ C
                  ! keyword. in the former case read next input line
                  IF (WORD.EQ.'*END OF' .AND. WORD1.EQ.'**CC   ') THEN
                    READ (LUCMD, '(A7)') WORD
+                   CALL UPCASE(WORD)
                  END IF
 
                  GO TO 300
@@ -1258,8 +1260,10 @@ C
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -1289,6 +1293,7 @@ C           -------------------------------------------
 
                ! check for further excitation energy input:
                READ (LUCMD,'(A7)') WORD
+               CALL UPCASE(WORD)
                BACKSPACE(LUCMD)
                IF (WORD(1:1).NE.'.' .AND. WORD(1:1).NE.'*'
      &                              .AND. WORD(1:1).NE.'!' ) THEN
@@ -1394,6 +1399,7 @@ C              Read the singlet states
 C
 C              Check for further excitation energy input:
                READ(LUCMD,'(A7)') WORD
+               CALL UPCASE(WORD)
                BACKSPACE(LUCMD)
                IF (WORD(1:1).NE.'.' .AND. WORD(1:1).NE.'*'
      *            .AND. WORD(1:1).NE.'#' .AND. WORD(1:1).NE.'!' ) THEN
@@ -1750,8 +1756,10 @@ C
 
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -2380,8 +2388,10 @@ C=====================================================================*
 
 ! get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -2841,8 +2851,10 @@ C=====================================================================*
 100   CONTINUE
 ! get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
         IF (WORD(1:1) .EQ. '.') THEN
 
@@ -3242,8 +3254,10 @@ C
 
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -3480,8 +3494,10 @@ C
 
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
         IF (WORD(1:1) .EQ. '.') THEN
           IJUMP = 1
@@ -3633,8 +3649,10 @@ C
 
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
         IF (WORD(1:1) .EQ. '.') THEN
           IJUMP = 1
@@ -3893,8 +3911,10 @@ C
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -4227,8 +4247,10 @@ C
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -4918,8 +4940,10 @@ c /* deck cc_qrinp */
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -5484,8 +5508,10 @@ C#include <ccrspprp.h>
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -6159,8 +6185,10 @@ c /* deck CC_4RINP */
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -6486,8 +6514,10 @@ c /* deck CC_5RINP */
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -7001,8 +7031,10 @@ c /* deck cc_exlrinp */
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -7367,8 +7399,10 @@ C#endif
        
 * get new input line:
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -7703,8 +7737,10 @@ C      RELORB1   = .FALSE.           !orbital relaxation vectors
 * get new input line:
 
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -8037,8 +8073,10 @@ C=====================================================================*
 100   CONTINUE
 
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
 
         IF (WORD(1:1) .EQ. '.') THEN
@@ -8244,8 +8282,10 @@ CCN
       IF (WORD(1:4) .EQ. '*R12') THEN
   100   CONTINUE
         READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
           READ (LUCMD,'(A7)') WORD
+          CALL UPCASE(WORD)
         END DO
         IF (WORD(1:1) .EQ. '.') THEN
           IJUMP = 1

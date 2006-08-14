@@ -56,6 +56,7 @@ C
          WORD1 = WORD
  100     CONTINUE
          READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
             GOTO 100
@@ -1158,7 +1159,7 @@ C  /* Deck spninp */
 #include <spnout.h>
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
-     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDxFC ','.ISOTOP',
+     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDXFC ','.ISOTOP',
      &            '.COUPLI'/
 C
       NEWDEF = (WORD .EQ. '*SPIN-S')
@@ -1167,6 +1168,7 @@ C
          WORD1 = WORD
  100     CONTINUE
             READ (LUCMD,'(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GOTO 100
@@ -1342,6 +1344,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

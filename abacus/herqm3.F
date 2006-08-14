@@ -95,6 +95,7 @@ C
   100   CONTINUE
 C
         READ (LUCMD, '(A7)') WORD
+        CALL UPCASE(WORD)
         PROMPT = WORD(1:1)
 C
         IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN

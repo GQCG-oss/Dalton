@@ -93,6 +93,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -2194,11 +2195,12 @@ C
 C
 C     Coordinates written are always in atomic units
 C
-      IPOS = INDEX(MLINE(NMLAU),'Ato')
+      CALL UPCASE(MLINE(NMLAU))
+      IPOS = INDEX(MLINE(NMLAU),'ATO')
       IF (IPOS .EQ. 0) THEN
          MLINE(NMLAU)(20:20) = ' '
       ELSE
-         IPOS = INDEX(MLINE(NMLAU),'Ang')
+         IPOS = INDEX(MLINE(NMLAU),'ANG')
          IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(MLINE(NMLAU)(IPOS:),' ')
             DO ICHARP = IPOS, IPOS + IPOS2 - 1

@@ -30,7 +30,7 @@ cat > energy_direct.info <<'%EOF%'
 #  MOLECULE INPUT
 #######################################################################
 cat > energy_direct.mol <<'%EOF%'
-BASIS
+basis
 cc-pVDZ
 Direct SCF calculation using symmetry
 
@@ -47,11 +47,11 @@ H    -1.45235 0.899623 0.0
 #######################################################################
 cat > energy_direct.dal <<'%EOF%'
 **DALTON INPUT
-.RUN WAVE FUNCTION
-.DIRECT
+.RUn wAVE FUNCTION
+.DiRECT
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+*end of input
 %EOF%
 #######################################################################
 

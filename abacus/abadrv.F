@@ -873,6 +873,7 @@ C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
       WORD1 = WRDSRC
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. WORD1) THEN
          GO TO 930
       ELSE
@@ -902,6 +903,7 @@ C     ***** Process input for COMMON  /ABAINF/  *****
 C
       INPSYM = 0
   100 READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
  211  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -975,6 +977,7 @@ cLig <> added goto 151
   109    CONTINUE
             RESTAR = .TRUE.
             READ (LUCMD,'(A12)') REWORD
+            CALL UPCASE(REWORD)
             IF ((REWORD(1:6) .NE. '.FROM ') .AND.
      *          (REWORD(1:4) .NE. '.AT ')) THEN
                WRITE(LUPRI,'(4A)')

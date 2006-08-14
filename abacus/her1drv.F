@@ -54,6 +54,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -69,6 +70,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

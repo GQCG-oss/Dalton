@@ -634,6 +634,7 @@ C
 C
       REWIND (LUCMD,IOSTAT=IOS)
   100 READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. TABLE(2)) GO TO 100
 C
   200 CONTINUE
@@ -746,6 +747,7 @@ C
       WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -1131,6 +1133,7 @@ C
          WORD1  = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -1588,6 +1591,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -1999,6 +2003,7 @@ C
       WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN
@@ -4013,6 +4018,7 @@ C
       DATA TABLE /'.SINGLE'/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
@@ -4025,6 +4031,7 @@ C Without keyword a normal alpha calculation is assumed
 C
  11   REWIND (LUCMD,IOSTAT=IOS)
  111  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 111
       CALL LRINP(WORD)
       RETURN
@@ -4033,6 +4040,7 @@ C A single residue of the linear response function is calculated
 C
  1    REWIND (LUCMD,IOSTAT=IOS)
  110  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 110
       CALL PPINP(WORD)
       RETURN
@@ -4061,6 +4069,7 @@ C
      &            '.MNFPHO'/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
@@ -4073,6 +4082,7 @@ C Without keyword a normal beta calculation is assumed
 C
  11   REWIND (LUCMD,IOSTAT=IOS)
  111  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 111
       CALL HYPINP(WORD)
       RETURN
@@ -4081,6 +4091,7 @@ C A single residue of the quadratic response function is calculated
 C
  1    REWIND (LUCMD,IOSTAT=IOS)
  110  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 110
       CALL SMOINP(WORD)
       RETURN
@@ -4089,6 +4100,7 @@ C A double residue of the quadratic response function is calculated
 C
  2    REWIND (LUCMD,IOSTAT=IOS)
  120  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 120
       EXMOM = .TRUE.
       CALL PPINP(WORD)
@@ -4098,6 +4110,7 @@ C Spin orbit calculation
 C
  3    REWIND (LUCMD,IOSTAT=IOS)
  130  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 130
       CALL SMOINP(WORD)
       RETURN
@@ -4106,6 +4119,7 @@ C Two-photon absorption calculation
 C
  4    REWIND (LUCMD,IOSTAT=IOS)
  140  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 140
       CALL SMOINP(WORD)
       RETURN
@@ -4114,6 +4128,7 @@ C     Phosphorescence calculation using mean-field integrals
 C
  5    REWIND (LUCMD,IOSTAT=IOS)
  150  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 150
       CALL SMOINP(WORD)
       RETURN
@@ -4138,6 +4153,7 @@ C
       DATA TABLE /'.SINGLE', '.DOUBLE','.THREE-'/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
@@ -4150,6 +4166,7 @@ C Without keyword a normal gamma calculation is assumed
 C
  11   REWIND (LUCMD,IOSTAT=IOS)
  111  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 111
       CALL CRINP(WORD)
       RETURN
@@ -4158,6 +4175,7 @@ C A single residue of the cubic response function is calculated
 C
  1    REWIND (LUCMD,IOSTAT=IOS)
  110  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 110
       CALL TMOINP(WORD)
       RETURN
@@ -4166,6 +4184,7 @@ C A double residue of the cubic response function is calculated
 C
  2    REWIND (LUCMD,IOSTAT=IOS)
  120  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 120
       CALL TPAINP(WORD)
       RETURN
@@ -4174,6 +4193,7 @@ C Three-photon absorption calculation
 C
  3    REWIND (LUCMD,IOSTAT=IOS)
  130  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 130
       CALL TMOINP(WORD)
       RETURN
@@ -4203,6 +4223,7 @@ C A single residue of the linear response function is calculated
 C
       REWIND (LUCMD,IOSTAT=IOS)
  110  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 110
       CALL ESGGRINP(WORD)
       RETURN
@@ -4261,6 +4282,7 @@ C
          WORD1  = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
             IF (PROMPT .EQ. '.') THEN

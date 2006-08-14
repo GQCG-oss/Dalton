@@ -77,6 +77,7 @@ C
       WORD1 = WORD
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',6)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -454,6 +455,7 @@ C
       WORD1 = WORD
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',6)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE

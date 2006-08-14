@@ -758,6 +758,7 @@ C
      &                     IDUMMY,.FALSE.)
                REWIND (LUCMD,IOSTAT=IOS)
  1100          READ (LUCMD,'(A7)') WORD
+               CALL UPCASE(WORD)
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
                CALL GPCLOSE(LUCMD,'KEEP')
@@ -783,6 +784,7 @@ C
      &                           'FORMATTED',IDUMMY,.FALSE.)
                      REWIND (LUCMD,IOSTAT=IOS)
  901                 READ (LUCMD,'(A7)') WORD
+                     CALL UPCASE(WORD)
                      IF (WORD .NE. '*WALK  ') GOTO 901
                      CALL WLKINP(WORD)
                      CALL GPCLOSE(LUCMD,'KEEP')
@@ -804,6 +806,7 @@ C
      &                           'FORMATTED',IDUMMY,.FALSE.)
                      REWIND (LUCMD,IOSTAT=IOS)
  900                 READ (LUCMD,'(A7)') WORD
+                     CALL UPCASE(WORD)
                      IF (WORD .NE. '*WALK  ') GOTO 900
                      CALL WLKINP(WORD)
                      CALL GPCLOSE(LUCMD,'KEEP')
@@ -937,6 +940,7 @@ C     Let us first see if we can find any **RESPONSE input
 C
  133        CONTINUE
             READ (LUCMD,'(A7)',END=134,ERR=134) WORD
+            CALL UPCASE(WORD)
             IF (WORD .EQ. '**RESPO') THEN
                REWIND (LUCMD)
                RNRESP = .TRUE.
@@ -1015,6 +1019,7 @@ C
      &                     IDUMMY,.FALSE.)
                REWIND (LUCMD,IOSTAT=IOS)
  940           READ (LUCMD,'(A7)') WORD
+               CALL UPCASE(WORD)
                IF (WORD .NE. '*WALK  ') GOTO 940
                CALL WLKINP(WORD)
                CALL GPCLOSE(LUCMD,'KEEP')
@@ -1239,6 +1244,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF ((WORD .EQ. '**GENER') .OR. (WORD .EQ. '*GENERA') .OR.
      &    (WORD .EQ. '**DALTO') .OR. (WORD .EQ. '*DALTON')) THEN
          GO TO 930
@@ -1256,6 +1262,7 @@ C     ***** Process input for COMMON  /GENINF/  *****
 C
       IPRERR = -10
   100 READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -1457,6 +1464,7 @@ C     ... default print level for statistics /hjaaj apr 2000
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          READ (LUCMD,'(A7)') WORD
+         CALL UPCASE(WORD)
          GO TO 200
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
@@ -1490,6 +1498,7 @@ C     We have to wait with the input processing until we know
 C     more about the molecule
 C
  203    READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         IF (WORD(1:1) .NE. '*') GOTO 203
       GO TO 200
     4   CONTINUE
@@ -1501,6 +1510,7 @@ C     We have to wait with the input processing until we know
 C     more about the molecule
 C       
  204    READ (LUCMD,'(A7)') WORD
+        CALL UPCASE(WORD)
         IF (WORD(1:1) .NE. '*') GOTO 204        
       GO TO 200
     6   CONTINUE
@@ -1527,10 +1537,13 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
  5000 READ (LUCMD,'(A7)',END=8000) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. '*ORBITA') THEN
  400     READ (LUCMD,'(A7)') WORD
+         CALL UPCASE(WORD)
          IF (WORD .EQ. '.MOSTAR') THEN
             READ (LUCMD,'(A7)') WORD
+            CALL UPCASE(WORD)
             IF (INDEX(WORD,'EWMO') .GT. 0) THEN
                EWMO = .TRUE.
                DOHUCKEL = .TRUE.
@@ -1590,6 +1603,7 @@ C
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
  5000 READ (LUCMD,'(A7)',END=4070) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. '.PARNMD') THEN
          PARIO = .TRUE.
          GOTO 4070

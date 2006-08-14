@@ -73,6 +73,7 @@ C
       IF (.NOT. FIRST) THEN
          IF ((WORD .NE. '*END OF') .AND. (WORD(1:2) .NE. '**')) THEN
  969        READ(LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GOTO 969
          END IF
@@ -199,6 +200,7 @@ C
          WORD1 = WORD
  100     CONTINUE
          READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF ((PROMPT .EQ. '!') .OR. (PROMPT .EQ. '#')) THEN
             GOTO 100
@@ -6425,7 +6427,8 @@ C
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
-      IF (INDEX(TMPLN,'Ato') .NE. 0) THEN
+      CALL UPCASE(TMPLN)
+      IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
          DOCART = .FALSE.
          DOOWN = .FALSE.
          CALL LINE4(TMPLN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
@@ -6446,7 +6449,8 @@ C
       IATOM = 1
       I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
-         IF (INDEX(MLINE(I),'Cha') .NE. 0) THEN
+         CALL UPCASE(MLINE(I))
+         IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM,JCO(1,J),MXAQN,
      &                 BASIS,ATOMBA,BSNM,KSPH)
          ELSE
@@ -6501,7 +6505,7 @@ C
             IATOM = IATOM + 1
  70      CONTINUE
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
-         IF (INDEX(TMPLN,'Cha') .NE. 0) THEN
+         IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,ATOMBA,
      &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
          ELSE
@@ -6676,7 +6680,7 @@ C     to detect it again after each preoptimization phase.
 C
       TMPLIN = MLINE(NMLAU)
       IF ((MAXOPR .EQ. 0) .AND. (ITRBRK .GE. 0)) THEN
-         IF (INDEX(TMPLIN,'Ato') .NE. 0) THEN
+         IF (INDEX(TMPLIN,'ATO') .NE. 0) THEN
             DOCART = .FALSE.
             DOOWN = .FALSE.
             CALL LINE4(TMPLIN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
@@ -7468,6 +7472,7 @@ C
      &            IDUMMY,.FALSE.)
       REWIND (LUCMD,IOSTAT=IOS)
  1100 READ (LUCMD,'(A7)',END=1110) WORD
+      CALL UPCASE(WORD)
       IF (WORD .NE. '**NMDDR') GOTO 1100
       CALL NMDINP(WORD,IPRINT)
  1110 CALL GPCLOSE(LUCMD,'KEEP')

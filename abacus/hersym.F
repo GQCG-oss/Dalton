@@ -216,7 +216,8 @@ C ::: The new symmetry is added. :::
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Aangstroem mark, it's removed.    :::
          TMPLN = MLINE(NMLAU)
-         IF (INDEX(TMPLN,'Ato') .EQ. 0) THEN
+         CALL UPCASE(MLINE(NMLAU))
+         IF (INDEX(TMPLN,'ATO') .EQ. 0) THEN
             WRITE(TMPLN(10:10), '(I1)') NSYMOP
             WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
          ELSE
@@ -315,7 +316,8 @@ C ::: Finally the number of atoms are updated. :::
          DO 500 K = 1, NONTYP
             NC = NCLINE(I) - 1
             TMPLN = MLINE(NC)
-            IF (INDEX(TMPLN,'Cha') .EQ. 0) THEN
+            CALL UPCASE(TMPLN)
+            IF (INDEX(TMPLN,'CHA') .EQ. 0) THEN
                WRITE(TMPLN(12:15),'(I4)') NONT(K)
             ELSE
                CALL LINE5(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,BASIS,

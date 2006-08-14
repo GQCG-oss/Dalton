@@ -354,6 +354,7 @@ C
 C        ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900    READ (LUCMD,'(A)',END=910,ERR=920) WORD
+         CALL UPCASE(WORD)
          IF (WORD(1:8) .NE. '**SIRIUS' .AND.
      &       WORD(1:8) .NE. '**WAVE F' .AND.
      &       WORD(1:8) .NE. '**WAVEFU') THEN
@@ -1832,6 +1833,7 @@ C
             IF (WORD .EQ. '.ALLOPT') ALLOPT = .TRUE.
             PTABMO = .TRUE.
             READ (LUCMD,'(A7)') WORD
+            CALL UPCASE(WORD)
             GO TO 910
          END IF
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
@@ -1949,6 +1951,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
  1101    PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -2054,6 +2057,7 @@ C
 C *** Option 7 >STOP  <  Stop acc. to instruction given on next line
   107 CONTINUE
          READ (LUCMD,'(A20)') REWORD
+         CALL UPCASE(REWORD)
          IF (INDEX(REWORD,'AFTER ') .LE. 0) THEN
             WRITE(LUPRI,'(/4A)') '"',REWORD,'" is incorrect input,',
      *         ' " AFTER <stop point>" expected after ".STOP" '
@@ -2088,6 +2092,7 @@ C *** Option  9 >TITLE <  Title
       ELSE
          READ (LUCMD,'(A7)') WORD
       END IF
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '.' .OR. PROMPT .EQ. '*') THEN
          NTIT = MIN(6,NTIT - 1)
@@ -2224,6 +2229,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -2315,6 +2321,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -2527,6 +2534,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -2787,6 +2795,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -2870,6 +2879,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
  1001    PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -2904,6 +2914,7 @@ C
 C *** Option 1 >ABSORP<  Orbital absorption
  101  CONTINUE
          READ (LUCMD,'(A12)') REWORD
+         CALL UPCASE(REWORD)
          IF (INDEX(REWORD,'LEVEL 1') .GT. 0) THEN
             FLAG(51) = .TRUE.
          ELSE IF (INDEX(REWORD,'LEVEL 2') .GT. 0) THEN
@@ -3167,6 +3178,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -3295,6 +3307,7 @@ C
       IF(ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                      LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -3376,6 +3389,7 @@ C
 C *** Option 4 >MOSTAR<   Molecular orbital input
  104  CONTINUE
         READ (LUCMD,'(A)') REWORD
+        CALL UPCASE(REWORD)
           IF (INDEX(REWORD,'FORM18') .GT. 0) THEN
              IRDMO = 3
           ELSE IF (INDEX(REWORD,'FORM12') .GT. 0) THEN
@@ -3544,6 +3558,7 @@ C
      &   WORD1,' INPUT ERROR: .LOCALI specified more than once'
       END IF
       READ (LUCMD,'(A)') REWORD
+      CALL UPCASE(REWORD)
       IF (INDEX(REWORD,'BOYLOC') .GT. 0) THEN
          BOYORB = .TRUE.
       ELSE IF (INDEX(REWORD,'PIPLOC') .GT. 0) THEN
@@ -3595,6 +3610,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -3684,6 +3700,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -3820,6 +3837,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -3931,6 +3949,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -4023,6 +4042,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -4098,6 +4118,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -4228,6 +4249,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -4411,6 +4433,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -5146,6 +5169,7 @@ C
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE

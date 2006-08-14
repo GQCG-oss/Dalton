@@ -74,6 +74,7 @@ C
       WORD1 = WORD
  100  CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -1294,11 +1295,12 @@ C
       NTYPE  = 3
       LASTE  = .FALSE.
       NOSYM  = .FALSE.
-      IPOS = INDEX(MLINE(NMLAU),'Ato')
+      CALL UPCASE(MLINE(NMLAU))
+      IPOS = INDEX(MLINE(NMLAU),'ATO')
       IF (IPOS .EQ. 0) THEN
          IF (MLINE(NMLAU)(10:10).EQ.'0') NOSYM = .TRUE.
       ELSE
-         IPOS = INDEX(MLINE(NMLAU),'Nos')
+         IPOS = INDEX(MLINE(NMLAU),'NOS')
          IF (IPOS .NE. 0) NOSYM = .TRUE.
       END IF
 C
@@ -2035,7 +2037,8 @@ C
          NADD   = 0
          IATOM  = 0
          NCLAST = 0
-         IPOS = INDEX(MLINE(NMLAU),'Ato')
+         CALL UPCASE(MLINE(NMLAU))
+         IPOS = INDEX(MLINE(NMLAU),'ATO')
          IF (IPOS .EQ. 0) THEN
             IF (MLINE(NMLAU)(10:10).EQ.'0') THEN
                MLINE(NMLAU)(20:20) = ' '
@@ -2099,14 +2102,16 @@ C
 C
 C        Do a count of each type of atom....
 C
-         NEWINP = (INDEX(MLINE(NCLINE(1) - 1),'Cha') .NE. 0)
+         CALL UPCASE(MLINE(NCLINE(1)-1))
+         NEWINP = (INDEX(MLINE(NCLINE(1) - 1),'CHA') .NE. 0)
          KCENT2 = 0
          ICENT1 = 1
  500     CONTINUE
          ICENT1 = ICENT1 + KCENT2
          DO 700 ICENT2 = ICENT1+1, NUCIND
             IF (NEWINP) THEN
-               NEWATO = (INDEX(MLINE(NCLINE(ICENT2) - 1),'Cha') .NE. 0)
+               CALL UPCASE(MLINE(NCLINE(ICENT2)-1))
+               NEWATO = (INDEX(MLINE(NCLINE(ICENT2) - 1),'CHA') .NE. 0)
             ELSE
                READ (MLINE(NCLINE(ICENT2)-1),'(A)') CHR
                NEWATO = (CHR .EQ. '      ')
@@ -2119,6 +2124,7 @@ C
                IF (NEWINP) THEN
                   IF (MLINE(1)(1:5) .EQ. 'BASIS') BASIS  = .TRUE.
                   IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
+                  CALL UPCASE(MLINE(NCLINE(ICENT1)-1))
                   CALL LINE5(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
      &                       IQM1,JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
                   CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
@@ -2142,6 +2148,7 @@ C
             NAT = NAT + NUCDEG(IC)
  1100    CONTINUE
          IF (NEWINP) THEN
+            CALL UPCASE(MLINE(NCLINE(KCENT1)-1))
             CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,IQM1,
      &                 JCO1,MXAQN,BASIS,ATOMBA,BSNM,KSPH)
             CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,ATOMBA,
@@ -5250,6 +5257,7 @@ C
       ILINE = 0
       REWIND (LUCMD,IOSTAT=IOS)
  100  READ (LUCMD,'(A)',ERR=2000) WORD(ILINE+1)
+      CALL UPCASE(WORD(ILINE+1))
          ILINE = ILINE + 1
          IF (INDEX(WORD(ILINE),'*END OF').GT.0) GOTO 200
       GOTO 100
@@ -6352,6 +6360,7 @@ C
       REWIND (LUCMD,IOSTAT=IOS)
  100  CONTINUE
       READ (LUCMD,'(A)') WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. '.NSYM  ') NOMOVE = .TRUE.
       IF((WORD .NE. '*END OF ') .AND.
      &   (WORD .NE. '**END OF')) GOTO 100
@@ -6464,6 +6473,7 @@ C
  400  CONTINUE
       ILINE = ILINE + 1
       READ (LUCMD,'(A)') WORD(ILINE)
+      CALL UPCASE(WORD(ILINE))
       IF (WORD(ILINE) .EQ. '.NSYM  ') THEN
          WRITE (WORD(ILINE+1),'(I3)')  NSYM
       ELSE IF (WORD(ILINE) .EQ. SWORD) THEN

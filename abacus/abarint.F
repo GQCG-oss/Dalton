@@ -3978,7 +3978,7 @@ C
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
-      IF (INDEX(TMPLN,'Ato') .NE. 0) THEN
+      IF (INDEX(TMPLN,'ATO') .NE. 0) THEN
          DOCART = .FALSE.
          DOOWN = .FALSE.
          CALL LINE4(TMPLN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
@@ -3999,7 +3999,7 @@ C
       IATOM = 1
       I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
-         IF (INDEX(MLINE(I),'Cha') .NE. 0) THEN
+         IF (INDEX(MLINE(I),'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),MXAQN,
      &                 BASIS,ATOMBA,BSNM,KSPH)
          ELSE
@@ -4054,7 +4054,7 @@ C
             IATOM = IATOM + 1
  70      CONTINUE
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
-         IF (INDEX(TMPLN,'Cha') .NE. 0) THEN
+         IF (INDEX(TMPLN,'CHA') .NE. 0) THEN
             CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,ATOMBA,
      &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN,KSPH)
           ELSE

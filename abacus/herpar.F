@@ -1963,6 +1963,7 @@ C
       IF (.NOT. FIRST) THEN
          IF (WORD .NE. '*END OF' .OR. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -1990,6 +1991,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -2030,6 +2032,7 @@ C
                GO TO 100
     4          CONTINUE
                   READ (LUCMD,'(A7)') WORD
+                  CALL UPCASE(WORD)
                   IF (WORD.EQ.' DATADE') THEN
                      NCODE = PVMDATADEFAULT
                   ELSE IF (WORD.EQ.' DATARA') THEN

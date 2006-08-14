@@ -164,6 +164,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -393,6 +394,7 @@ C
          END IF
          REWIND(LUCMD)
          READ (LUCMD,'(A6)') KEYWRD
+         CALL UPCASE(KEYWRD)
          IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD .EQ. 'BASIS ' .OR. 
      &        KEYWRD .EQ. 'ATOMBA') LUMLCL = LUCMD
          IF (CMDOPN) CALL GPCLOSE(LUCMD,'KEEP')
@@ -419,6 +421,7 @@ C
       IF (.NOT.SLAVE) REWIND(LUINFO)
       NMLINE = 0
       CALL RDLINE(LUINFO)
+      CALL UPCASE(MLINE(NMLINE))
       READ (MLINE(NMLINE),'(A6)') KEYWRD
       IF (KEYWRD(1:5) .EQ. 'BASIS') THEN
          BASIS = .TRUE.
@@ -641,6 +644,7 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C******************************************************************************
       CALL RDLINE(LUINFO)
+      CALL UPCASE(MLINE(NMLINE))
       NONTYP = 0
       DOCART = .FALSE.
       DOOWN = .FALSE.
@@ -904,7 +908,7 @@ C*****************************************************************************
      &          SEG(KBLOCK,3),
      &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,3)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BSNM*80, BASNAMSAVE*80,
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BKPLIN*80, BASNAMSAVE*80,
      &          TSTCHA*2
       DIMENSION IBLOCK(3)
 #include <molinp.h>
@@ -963,11 +967,13 @@ C         JCO   - number of AO-blocks for each l-value
 C*****************************************************************************
 C
          CALL RDLINE(LUINFO)
+         BKPLIN = MLINE(NMLINE)
+         CALL UPCASE(BKPLIN)
 C
 C        Test if Z-matrix for first line (I.eq.1):
 C
          IF (I .EQ. 1) THEN
-           READ (MLINE(NMLINE),'(A4)') ZMATL
+           READ (BKPLIN,'(A4)') ZMATL
            IF (ZMATL .EQ. 'ZMAT') THEN
              ZMTTST = .TRUE.
              WRITE (LUPRI,'(/A)')
@@ -986,7 +992,7 @@ C
 C
 C     New or old input?
 C
-         IF (INDEX(MLINE(NMLINE),'Cha') .NE. 0) THEN
+         IF (INDEX(BKPLIN,'CHA') .NE. 0) THEN
             CALL LINE5(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
      &                JCO(1,I,1),KANG,BASIS,ATOMBA,BASNAMSAVE,KSPH)
          ELSE
@@ -1032,7 +1038,7 @@ C ach
 C
             LMMINP = .FALSE.
             IF (QM3) THEN
-              IPOS = INDEX(MLINE(NMLINE),'MM')
+              IPOS = INDEX(BKPLIN,'MM')
               IF (IPOS .GT. 0) LMMINP = .TRUE.
             END IF
 C
@@ -1161,7 +1167,7 @@ C
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
               ELSE IF (ATOMBA) THEN
-                 IPOS = INDEX(MLINE(NMLINE-NONT(I)),'Bas')
+                 IPOS = INDEX(BKPLIN,'BAS')
                  IF (IPOS .NE. 0) THEN
                     IPOS2 = INDEX(MLINE(NMLINE-NONT(I))(IPOS:),'=')
                     IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
@@ -1172,7 +1178,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                        CALL QUIT('Incorrect input for basis set name')
                     ELSE
                        IF (ATOMDF) THEN
-                         IPOS3 = INDEX(MLINE(NMLINE-NONT(I)),'Aux')
+                         IPOS3 = INDEX(BKPLIN,'AUX')
                          IF (IPOS3 .NE. 0) THEN
                            IPOS4 = INDEX(MLINE(NMLINE-NONT(I))(IPOS3:), 
      &                                                             '=')
@@ -6537,7 +6543,7 @@ C
 C
 C     Number of different atom types
 C
-      IPOS = INDEX(LINE,'Ato')
+      IPOS = INDEX(LINE,'ATO')
       IF (IPOS .NE. 0) THEN
          IPOS2 = INDEX(LINE(IPOS:),'=')
          IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 10)) THEN
@@ -6550,11 +6556,11 @@ C
 C
 C     Kind of basis set
 C     
-         IPOS = INDEX(LINE,'Car')
+         IPOS = INDEX(LINE,'CAR')
          IF (IPOS .NE. 0) DOCART = .TRUE.
-         IPOS = INDEX(LINE,'Own')
+         IPOS = INDEX(LINE,'OWN')
          IF (IPOS .NE. 0) DOOWN = .TRUE.
-         IPOS = INDEX(LINE,'Sph')
+         IPOS = INDEX(LINE,'SPH')
          IF (IPOS .NE. 0) THEN
             DOOWN = .FALSE.
             DOCART = .FALSE.
@@ -6562,7 +6568,7 @@ C
 C
 C     Charge of molecule
 C     
-         IPOS = INDEX(LINE,'Cha')
+         IPOS = INDEX(LINE,'CHA')
          IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(LINE(IPOS:80),'=')
             IF ((IPOS2 .EQ. 0) .OR. (IPOS2 .GT. 7)) THEN
@@ -6579,7 +6585,7 @@ C
 C     Angstrom?
 C
          ID3 = ' '
-         IPOS = INDEX(LINE,'Ang') 
+         IPOS = INDEX(LINE,'ANG') 
          IF (IPOS .NE. 0) ID3 = 'X'
 C     
 C     Symmetry generators
@@ -6589,8 +6595,8 @@ C
                KASYM(I,J) = ' '
             END DO
          END DO
-         IPOS = INDEX(LINE,'Gen')
-         IPSO = INDEX(LINE,'Nos')
+         IPOS = INDEX(LINE,'GEN')
+         IPSO = INDEX(LINE,'NOS')
          IF (IPOS .NE. 0 .AND. IPSO .NE. 0) THEN
             WRITE (LUPRI,*) 'Incorrect symmetry input. No symmetry '//
      &           'requested, but generators given'
@@ -6640,7 +6646,7 @@ C
 C
 C     Change of integral threshold?
 C
-         IPOS = INDEX(LINE,'Int')
+         IPOS = INDEX(LINE,'INT')
          IF (IPOS .NE. 0) THEN
             IPOS2 = INDEX(LINE(IPOS:),'=')
             IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 11)) THEN
@@ -6756,37 +6762,39 @@ C
 #include <priunit.h>
 #include "r12int.h"
 #include <pcmlog.h>
-      CHARACTER TMPLN*80, BASNAM*80, FRMT*5
+      CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
       LOGICAL BASIS, ATOMBA
       DIMENSION JCO(KANG)
 C
       KSPH = 0
-      IPOS = INDEX(TMPLN,'Cha')
-      IPOS2 = INDEX(TMPLN(IPOS:),'=')
+      BKPLIN=TMPLN
+      CALL UPCASE(BKPLIN)
+      IPOS = INDEX(BKPLIN,'CHA')
+      IPOS2 = INDEX(BKPLIN(IPOS:),'=')
       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
          WRITE (LUPRI,*) 'Incorrect input for atomic charge'
          WRITE (LUPRI,*) 'Format is "Charge=?"'
          CALL QUIT('Incorrect input for atomic charge')
       ELSE
-         READ (TMPLN((IPOS+IPOS2):),*) Q
-         IPOS = INDEX(TMPLN,'Ato')
+         READ (BKPLIN((IPOS+IPOS2):),*) Q
+         IPOS = INDEX(BKPLIN,'ATO')
          IF (IPOS .NE. 0) THEN
-            IPOS2 = INDEX(TMPLN(IPOS:),'=')
+            IPOS2 = INDEX(BKPLIN(IPOS:),'=')
             IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
                WRITE (LUPRI,*) 'Incorrect input for # of atoms'
                WRITE (LUPRI,*) 'Format is "Atoms=?"'
                CALL QUIT('Incorrect input for # of atoms')
             ELSE
-               READ (TMPLN((IPOS+IPOS2):),*) NONT
+               READ (BKPLIN((IPOS+IPOS2):),*) NONT
             END IF
          END IF
 C     
 C     Multiple basis sets used
 C         
          IF (LMULBS) THEN
-            IPOS = INDEX(TMPLN,'Set')
+            IPOS = INDEX(BKPLIN,'SET')
             IF (IPOS .NE. 0) THEN
-               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2. GT. 5)) THEN
                   WRITE (LUPRI,*) 'Incorrect input for # of '//
      &                 'basis sets'
@@ -6794,7 +6802,7 @@ C
                   CALL QUIT('Incorrect input for # of '//
      &                 'basis sets')
                ELSE
-                  READ (TMPLN((IPOS+IPOS2):),*) MBSI
+                  READ (BKPLIN((IPOS+IPOS2):),*) MBSI
                END IF
             END IF
          END IF
@@ -6802,9 +6810,9 @@ C
 C     Read in basis set information
 C     
          IF (.NOT. (BASIS .OR. ATOMBA)) THEN
-            IPOS = INDEX(TMPLN,'Blo')
+            IPOS = INDEX(BKPLIN,'BLO')
             IF (IPOS .NE. 0) THEN
-               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
                   WRITE (LUPRI,*) 'Incorrect input for # of '//
      &                 'integral blocks'
@@ -6813,17 +6821,17 @@ C
      &                 'integral blocks')
                ELSE
                   ISTART = IPOS + IPOS2
-                  CALL FREFRM(TMPLN,ISTART,IQM,DUMMY,'INT',IERR)
+                  CALL FREFRM(BKPLIN,ISTART,IQM,DUMMY,'INT',IERR)
                   DO IQMLOP = 1, IQM
-                     CALL FREFRM(TMPLN,ISTART,JCO(IQMLOP),DUMMY,'INT',
+                     CALL FREFRM(BKPLIN,ISTART,JCO(IQMLOP),DUMMY,'INT',
      &                           IERR)
                   END DO
                END IF
             END IF
          ELSE IF (ATOMBA) THEN
-            IPOS = INDEX(TMPLN,'Bas')
+            IPOS = INDEX(BKPLIN,'BAS')
             IF (IPOS .NE. 0) THEN
-               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
                   WRITE (LUPRI,*) 'Incorrect input for choice '//
      &                 'of atomic basis set'
@@ -6831,7 +6839,7 @@ C
                   CALL QUIT('Incorrect input for choice of '//
      &                 'atomic basis set')
                ELSE
-                  IPOS3 = INDEX(TMPLN((IPOS+IPOS2):),' ')
+                  IPOS3 = INDEX(BKPLIN((IPOS+IPOS2):),' ')
                   IF (IPOS3 .LT. 10) THEN
                      WRITE (FRMT,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
                   ELSE
@@ -6850,9 +6858,9 @@ C
 C read in cavity information
 C
          IF (PCM) THEN
-            IPOS = INDEX(TMPLN,'Sph')
+            IPOS = INDEX(BKPLIN,'SPH')
             IF (IPOS .NE. 0) THEN
-               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IPOS2 = INDEX(BKPLIN(IPOS:),'=')
                IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
                   WRITE (LUPRI,*) 'Incorrect input for choice '//
      &                 'of PCM cavity'
@@ -6860,7 +6868,7 @@ C
                   CALL QUIT('Incorrect input for choice of '//
      &                 'PCM cavity')
                ELSE
-                  READ (TMPLN((IPOS+IPOS2):),*) KSPH
+                  READ (BKPLIN((IPOS+IPOS2):),*) KSPH
                END IF
             END IF
          END IF
