@@ -22,7 +22,7 @@ C     maximum number of spheres is not known, take worst case
 C
       NUMTS = MXTS
       NUMSPH = MXSP
-      NATM = MXCENT
+      NATM = MXSP
       NUMVER = MXVER
 C
       LOADFM = 1
@@ -619,7 +619,7 @@ C
 C
 C     Call the routine which checks if the cavity is single or divided.
 C
-      CALL CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NATM,SOME)
+      CALL CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NESF,SOME)
 C
 C     The dispersion calculation is allowed only in the case of
 C     single cavity.
@@ -1134,7 +1134,6 @@ CcheckWRITE(LUPRI,*)'IN REPCAV',NTS
       IF (NTS.GT.MXTS) THEN 
          CALL QUIT('REPCAV: TOO MANY TESSERAE, INCREASE MXTS')
       END IF
-
       DO ISYMOP=1,MAXREP
         DO I=1,NTSIRR
           II=I+Ntsirr*ISYMOP
@@ -1156,7 +1155,7 @@ Clf Moving the normal points in a safe location where they will not be overwritt
 C
       DO I=1,NTSIRR
         II=I+NTSIRR
-        II2=I+(MAXREP+1)*NTS
+        II2=I+(MAXREP+1)*NTSIRR
         XTSCOR(II2)=XTSCOR(II)
         YTSCOR(II2)=YTSCOR(II)
         ZTSCOR(II2)=ZTSCOR(II)
