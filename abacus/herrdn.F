@@ -4154,7 +4154,7 @@ C
       DIMENSION WORK(LWORK)
 C
 #include <nuclei.h>
-Clf#include <pcmnuclei.h>
+#include <pcmnuclei.h>
 #include <symmet.h>
 #include <pgroup.h>
 #include <cbirea.h>

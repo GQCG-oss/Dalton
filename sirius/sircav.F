@@ -22,7 +22,7 @@ C     maximum number of spheres is not known, take worst case
 C
       NUMTS = MXTS
       NUMSPH = MXSP
-      NATM = MXSP
+      NATM = MXCENT
       NUMVER = MXVER
 C
       LOADFM = 1
@@ -619,7 +619,7 @@ C
 C
 C     Call the routine which checks if the cavity is single or divided.
 C
-      CALL CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NESF,SOME)
+      CALL CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NPCMN,SOME)
 C
 C     The dispersion calculation is allowed only in the case of
 C     single cavity.
