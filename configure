@@ -376,7 +376,7 @@ if [ "$answer" = "y" ]; then
 #
 	    for testdir in $incdir; do
 	        if [ -f $testdir/$incfile ]; then
-	            parinc=$testdir
+	            parinc=-I$testdir
 		    break
 	        fi
 	    done
