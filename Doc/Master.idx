@@ -2271,6 +2271,8 @@
 \indexentry{B97|hyperpage}{216}
 \indexentry{B97-K|hyperpage}{216}
 \indexentry{HCTH|hyperpage}{216}
+\indexentry{HCTH407|hyperpage}{216}
+\indexentry{HCTH|hyperpage}{216}
 \indexentry{HCTH93|hyperpage}{216}
 \indexentry{HCTH|hyperpage}{216}
 \indexentry{HCTH120|hyperpage}{216}
@@ -3589,6 +3591,12 @@
 \indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}|hyperpage}{289}
 \indexentry{linear response|hyperpage}{289}
 \indexentry{response!linear|hyperpage}{289}
+\indexentry{TPCD@{\normalfont  \ttfamily  {.TPCD}}|hyperpage}{289}
+\indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}|hyperpage}{289}
+\indexentry{TWO-PHOTON@{\normalfont  \ttfamily  {.TWO-PHOTON}}|hyperpage}{289}
+\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}|hyperpage}{289}
+\indexentry{ANGMOM@{\normalfont  \ttfamily  {.ANGMOM}}|hyperpage}{289}
+\indexentry{ROTSTR@{\normalfont  \ttfamily  {.ROTSTR}}|hyperpage}{289}
 \indexentry{TWO-PHOTON@{\normalfont  \ttfamily  {.TWO-PHOTON}}|hyperpage}{289}
 \indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}|hyperpage}{289}
 \indexentry{X2TEST@{\normalfont  \ttfamily  {.X2TEST}}|hyperpage}{289}
@@ -3601,14 +3609,14 @@
 \indexentry{dipole length|hyperpage}{289}
 \indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}|hyperpage}{289}
 \indexentry{dipole length|hyperpage}{289}
-\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}|hyperpage}{289}
-\indexentry{dipole length|hyperpage}{289}
-\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}|hyperpage}{289}
-\indexentry{dipole length|hyperpage}{289}
-\indexentry{DIPMAG@{\normalfont  \ttfamily  {.DIPMAG}}|hyperpage}{289}
-\indexentry{angular momentum|hyperpage}{289}
-\indexentry{DIPMGX/Y/Z@{\normalfont  \ttfamily  {.DIPMGX/Y/Z}}|hyperpage}{289}
-\indexentry{angular momentum|hyperpage}{289}
+\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}|hyperpage}{290}
+\indexentry{dipole length|hyperpage}{290}
+\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}|hyperpage}{290}
+\indexentry{dipole length|hyperpage}{290}
+\indexentry{DIPMAG@{\normalfont  \ttfamily  {.DIPMAG}}|hyperpage}{290}
+\indexentry{angular momentum|hyperpage}{290}
+\indexentry{DIPMGX/Y/Z@{\normalfont  \ttfamily  {.DIPMGX/Y/Z}}|hyperpage}{290}
+\indexentry{angular momentum|hyperpage}{290}
 \indexentry{DOUBLE RESIDUE@{\normalfont  \ttfamily  {.DOUBLE RESIDUE}}|hyperpage}{290}
 \indexentry{quadratic response!double residue|hyperpage}{290}
 \indexentry{double residue!quadratic response|hyperpage}{290}
@@ -3626,11 +3634,11 @@
 \indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}|hyperpage}{290}
 \indexentry{optimal orbital trial vector|hyperpage}{290}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}|hyperpage}{290}
-\indexentry{PROPRT@{\normalfont  \ttfamily  {.PROPRT}}|hyperpage}{290}
-\indexentry{QUADMOM@{\normalfont  \ttfamily  {.QUADMOM}}|hyperpage}{290}
-\indexentry{quadrupole operator|hyperpage}{290}
-\indexentry{QUADXX/XY/XZ/YY/YZ/ZZ@{\normalfont  \ttfamily  {.QUADXX/XY/XZ/YY/YZ/ZZ}}|hyperpage}{290}
-\indexentry{quadrupole operator|hyperpage}{290}
+\indexentry{PROPRT@{\normalfont  \ttfamily  {.PROPRT}}|hyperpage}{291}
+\indexentry{QUADMOM@{\normalfont  \ttfamily  {.QUADMOM}}|hyperpage}{291}
+\indexentry{quadrupole operator|hyperpage}{291}
+\indexentry{QUADXX/XY/XZ/YY/YZ/ZZ@{\normalfont  \ttfamily  {.QUADXX/XY/XZ/YY/YZ/ZZ}}|hyperpage}{291}
+\indexentry{quadrupole operator|hyperpage}{291}
 \indexentry{SPIN-O@{\normalfont  \ttfamily  {.SPIN-O}}|hyperpage}{291}
 \indexentry{spin-orbit|hyperpage}{291}
 \indexentry{TRIPLET@{\normalfont  \ttfamily  {.TRIPLET}}|hyperpage}{291}
@@ -3661,12 +3669,12 @@
 \indexentry{dipole length|hyperpage}{291}
 \indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}|hyperpage}{291}
 \indexentry{dipole length|hyperpage}{291}
-\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}|hyperpage}{291}
-\indexentry{dipole length|hyperpage}{291}
-\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}|hyperpage}{291}
-\indexentry{dipole length|hyperpage}{291}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{291}
-\indexentry{frequency!cubic response|hyperpage}{291}
+\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}|hyperpage}{292}
+\indexentry{dipole length|hyperpage}{292}
+\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}|hyperpage}{292}
+\indexentry{dipole length|hyperpage}{292}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{292}
+\indexentry{frequency!cubic response|hyperpage}{292}
 \indexentry{IDRI @{\normalfont  \ttfamily  {.IDRI }}|hyperpage}{292}
 \indexentry{refractive index!intensity dependent|hyperpage}{292}
 \indexentry{INVEXP@{\normalfont  \ttfamily  {.INVEXP}}|hyperpage}{292}
@@ -3678,20 +3686,20 @@
 \indexentry{THG @{\normalfont  \ttfamily  {.THG }}|hyperpage}{292}
 \indexentry{third harmonic generation|hyperpage}{292}
 \indexentry{THRNRM@{\normalfont  \ttfamily  {.THRNRM}}|hyperpage}{292}
-\indexentry{CUBIC@{\normalfont  \ttfamily  {*CUBIC}}|hyperpage}{292}
-\indexentry{SINGLE RESIDUE@{\normalfont  \ttfamily  {.SINGLE RESIDUE}}|hyperpage}{292}
-\indexentry{single residue!cubic response|hyperpage}{292}
-\indexentry{cubic response!single residue|hyperpage}{292}
-\indexentry{response!cubic, single residue|hyperpage}{292}
-\indexentry{APROP@{\normalfont  \ttfamily  {.APROP}}|hyperpage}{292}
-\indexentry{BPROP@{\normalfont  \ttfamily  {.BPROP}}|hyperpage}{292}
-\indexentry{CPROP@{\normalfont  \ttfamily  {.CPROP}}|hyperpage}{292}
-\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}|hyperpage}{292}
-\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}|hyperpage}{292}
-\indexentry{frequency!cubic response single residue|hyperpage}{292}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{292}
-\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}|hyperpage}{292}
-\indexentry{dipole length|hyperpage}{292}
+\indexentry{CUBIC@{\normalfont  \ttfamily  {*CUBIC}}|hyperpage}{293}
+\indexentry{SINGLE RESIDUE@{\normalfont  \ttfamily  {.SINGLE RESIDUE}}|hyperpage}{293}
+\indexentry{single residue!cubic response|hyperpage}{293}
+\indexentry{cubic response!single residue|hyperpage}{293}
+\indexentry{response!cubic, single residue|hyperpage}{293}
+\indexentry{APROP@{\normalfont  \ttfamily  {.APROP}}|hyperpage}{293}
+\indexentry{BPROP@{\normalfont  \ttfamily  {.BPROP}}|hyperpage}{293}
+\indexentry{CPROP@{\normalfont  \ttfamily  {.CPROP}}|hyperpage}{293}
+\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}|hyperpage}{293}
+\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}|hyperpage}{293}
+\indexentry{frequency!cubic response single residue|hyperpage}{293}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{293}
+\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}|hyperpage}{293}
+\indexentry{dipole length|hyperpage}{293}
 \indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}|hyperpage}{293}
 \indexentry{dipole length|hyperpage}{293}
 \indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}|hyperpage}{293}
@@ -3706,14 +3714,14 @@
 \indexentry{NOHG@{\normalfont  \ttfamily  {.NOHG}}|hyperpage}{293}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}|hyperpage}{293}
 \indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}|hyperpage}{293}
-\indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}|hyperpage}{293}
-\indexentry{single residue!cubic response|hyperpage}{293}
-\indexentry{cubic response!single residue|hyperpage}{293}
-\indexentry{three-photon!absorption|hyperpage}{293}
-\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}|hyperpage}{293}
-\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}|hyperpage}{293}
-\indexentry{THREE-PHOTON@{\normalfont  \ttfamily  {.THREE-PHOTON}}|hyperpage}{293}
-\indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}|hyperpage}{293}
+\indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}|hyperpage}{294}
+\indexentry{single residue!cubic response|hyperpage}{294}
+\indexentry{cubic response!single residue|hyperpage}{294}
+\indexentry{three-photon!absorption|hyperpage}{294}
+\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}|hyperpage}{294}
+\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}|hyperpage}{294}
+\indexentry{THREE-PHOTON@{\normalfont  \ttfamily  {.THREE-PHOTON}}|hyperpage}{294}
+\indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}|hyperpage}{294}
 \indexentry{CUBIC@{\normalfont  \ttfamily  {*CUBIC}}|hyperpage}{294}
 \indexentry{DOUBLE RESIDUE@{\normalfont  \ttfamily  {.DOUBLE RESIDUE}}|hyperpage}{294}
 \indexentry{double residue!cubic response|hyperpage}{294}
@@ -3742,11 +3750,11 @@
 \indexentry{response!cubic|hyperpage}{294}
 \indexentry{two-photon!transition moment!excited states|hyperpage}{294}
 \indexentry{excited state!polarizability|hyperpage}{294}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{294}
-\indexentry{frequency!cubic response|hyperpage}{294}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}|hyperpage}{294}
-\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}|hyperpage}{294}
-\indexentry{MAXITP@{\normalfont  \ttfamily  {.MAXITP}}|hyperpage}{294}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{295}
+\indexentry{frequency!cubic response|hyperpage}{295}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}|hyperpage}{295}
+\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}|hyperpage}{295}
+\indexentry{MAXITP@{\normalfont  \ttfamily  {.MAXITP}}|hyperpage}{295}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}|hyperpage}{295}
 \indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}|hyperpage}{295}
 \indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}|hyperpage}{295}
@@ -3778,16 +3786,16 @@
 \indexentry{dipole length|hyperpage}{295}
 \indexentry{DIPLNX/Y/Z@{\normalfont  \ttfamily  {.DIPLNX/Y/Z}}|hyperpage}{295}
 \indexentry{dipole length|hyperpage}{295}
-\indexentry{DIPMAG@{\normalfont  \ttfamily  {.DIPMAG}}|hyperpage}{295}
-\indexentry{angular momentum|hyperpage}{295}
-\indexentry{DIPMGX/Y/Z@{\normalfont  \ttfamily  {.DIPMGX/Y/Z}}|hyperpage}{295}
-\indexentry{angular momentum|hyperpage}{295}
-\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}|hyperpage}{295}
-\indexentry{dipole velocity|hyperpage}{295}
-\indexentry{DIPVLX/Y/Z@{\normalfont  \ttfamily  {.DIPVLX/Y/Z}}|hyperpage}{295}
-\indexentry{dipole velocity|hyperpage}{295}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{295}
-\indexentry{frequency|hyperpage}{295}
+\indexentry{DIPMAG@{\normalfont  \ttfamily  {.DIPMAG}}|hyperpage}{296}
+\indexentry{angular momentum|hyperpage}{296}
+\indexentry{DIPMGX/Y/Z@{\normalfont  \ttfamily  {.DIPMGX/Y/Z}}|hyperpage}{296}
+\indexentry{angular momentum|hyperpage}{296}
+\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}|hyperpage}{296}
+\indexentry{dipole velocity|hyperpage}{296}
+\indexentry{DIPVLX/Y/Z@{\normalfont  \ttfamily  {.DIPVLX/Y/Z}}|hyperpage}{296}
+\indexentry{dipole velocity|hyperpage}{296}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}|hyperpage}{296}
+\indexentry{frequency|hyperpage}{296}
 \indexentry{GSLEGN@{\normalfont  \ttfamily  {.GSLEGN}}|hyperpage}{296}
 \indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}|hyperpage}{296}
 \indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}|hyperpage}{296}
@@ -3799,11 +3807,11 @@
 \indexentry{QUADXX/XY/XZ/YY/YZ/ZZ@{\normalfont  \ttfamily  {.QUADXX/XY/XZ/YY/YZ/ZZ}}|hyperpage}{296}
 \indexentry{quadrupole operator|hyperpage}{296}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}|hyperpage}{296}
-\indexentry{PROPRT@{\normalfont  \ttfamily  {.PROPRT}}|hyperpage}{296}
-\indexentry{THCC6@{\normalfont  \ttfamily  {.THCC6}}|hyperpage}{296}
-\indexentry{C8SPH@{\normalfont  \ttfamily  {.C8SPH}}|hyperpage}{296}
-\indexentry{C8ATM@{\normalfont  \ttfamily  {.C8ATM}}|hyperpage}{296}
-\indexentry{C8LMO@{\normalfont  \ttfamily  {.C8LMO}}|hyperpage}{296}
+\indexentry{PROPRT@{\normalfont  \ttfamily  {.PROPRT}}|hyperpage}{297}
+\indexentry{THCC6@{\normalfont  \ttfamily  {.THCC6}}|hyperpage}{297}
+\indexentry{C8SPH@{\normalfont  \ttfamily  {.C8SPH}}|hyperpage}{297}
+\indexentry{C8ATM@{\normalfont  \ttfamily  {.C8ATM}}|hyperpage}{297}
+\indexentry{C8LMO@{\normalfont  \ttfamily  {.C8LMO}}|hyperpage}{297}
 \indexentry{C6xxx@{\normalfont  \ttfamily  {.C6xxx}}|hyperpage}{297}
 \indexentry{C10xxx@{\normalfont  \ttfamily  {.C10xxx}}|hyperpage}{297}
 \indexentry{ESR@{\normalfont  \ttfamily  {*ESR}}|hyperpage}{297}
@@ -3813,11 +3821,11 @@
 \indexentry{FCCALC@{\normalfont  \ttfamily  {.FCCALC}}|hyperpage}{297}
 \indexentry{SDCALC@{\normalfont  \ttfamily  {.SDCALC}}|hyperpage}{297}
 \indexentry{ATOMS@{\normalfont  \ttfamily  {.ATOMS}}|hyperpage}{297}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}|hyperpage}{297}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}|hyperpage}{297}
-\indexentry{THCESR@{\normalfont  \ttfamily  {.THCESR}}|hyperpage}{297}
-\indexentry{FCCALC@{\normalfont  \ttfamily  {.FCCALC}}|hyperpage}{297}
-\indexentry{SDCALC@{\normalfont  \ttfamily  {.SDCALC}}|hyperpage}{297}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}|hyperpage}{298}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}|hyperpage}{298}
+\indexentry{THCESR@{\normalfont  \ttfamily  {.THCESR}}|hyperpage}{298}
+\indexentry{FCCALC@{\normalfont  \ttfamily  {.FCCALC}}|hyperpage}{298}
+\indexentry{SDCALC@{\normalfont  \ttfamily  {.SDCALC}}|hyperpage}{298}
 \indexentry{SNGPRP@{\normalfont  \ttfamily  {.SNGPRP}}|hyperpage}{298}
 \indexentry{TRPPRP@{\normalfont  \ttfamily  {.TRPPRP}}|hyperpage}{298}
 \indexentry{ZFS@{\normalfont  \ttfamily  {.ZFS}}|hyperpage}{298}
@@ -3825,13 +3833,13 @@
 \indexentry{G-TENSOR@{\normalfont  \ttfamily  {.G-TENSOR}}|hyperpage}{298}
 \indexentry{G-TENSOR@{\normalfont  \ttfamily  {.G-TENSOR}}|hyperpage}{298}
 \indexentry{RMC@{\normalfont  \ttfamily  {.RMC}}|hyperpage}{298}
-\indexentry{OZSO1@{\normalfont  \ttfamily  {.OZSO1}}|hyperpage}{298}
-\indexentry{OZSO2@{\normalfont  \ttfamily  {.OZSO2}}|hyperpage}{298}
-\indexentry{GC1@{\normalfont  \ttfamily  {.GC1}}|hyperpage}{298}
-\indexentry{GC2@{\normalfont  \ttfamily  {.GC2}}|hyperpage}{298}
-\indexentry{ECC@{\normalfont  \ttfamily  {.ECC}}|hyperpage}{298}
-\indexentry{ADD-SO@{\normalfont  \ttfamily  {.ADD-SO}}|hyperpage}{298}
-\indexentry{MEAN-FIELD@{\normalfont  \ttfamily  {.MEAN-FIELD}}|hyperpage}{298}
+\indexentry{OZSO1@{\normalfont  \ttfamily  {.OZSO1}}|hyperpage}{299}
+\indexentry{OZSO2@{\normalfont  \ttfamily  {.OZSO2}}|hyperpage}{299}
+\indexentry{GC1@{\normalfont  \ttfamily  {.GC1}}|hyperpage}{299}
+\indexentry{GC2@{\normalfont  \ttfamily  {.GC2}}|hyperpage}{299}
+\indexentry{ECC@{\normalfont  \ttfamily  {.ECC}}|hyperpage}{299}
+\indexentry{ADD-SO@{\normalfont  \ttfamily  {.ADD-SO}}|hyperpage}{299}
+\indexentry{MEAN-FIELD@{\normalfont  \ttfamily  {.MEAN-FIELD}}|hyperpage}{299}
 \indexentry{SCALED@{\normalfont  \ttfamily  {.SCALED}}|hyperpage}{299}
 \indexentry{ZERO@{\normalfont  \ttfamily  {.ZERO}}|hyperpage}{299}
 \indexentry{Coupled Cluster|hyperpage}{300}

@@ -1,4 +1,4 @@
-\contentsline {chapter}{Preface}{viii}{section*.1}
+\contentsline {chapter}{Preface}{viii}{chapter*.2}
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}
 \contentsline {section}{\numberline {1.1}General description of the manual}{2}{section.1.1}
 \contentsline {section}{\numberline {1.2}Acknowledgments}{3}{section.1.2}
@@ -144,10 +144,10 @@
 \contentsline {subsection}{\numberline {24.2.5}{\normalfont \ttfamily {*CONFIGURATION INPUT}}}{211}{subsection.24.2.5}
 \contentsline {subsection}{\numberline {24.2.6}{\normalfont \ttfamily {*DFT INPUT}}}{212}{subsection.24.2.6}
 \contentsline {subsection}{\numberline {24.2.7}DFT functionals}{213}{subsection.24.2.7}
-\contentsline {subsubsection}{Exchange Functionals}{213}{subsection.24.2.7}
-\contentsline {subsubsection}{Correlation Functionals}{215}{subsection.24.2.7}
-\contentsline {subsubsection}{Standalone Functionals}{216}{subsection.24.2.7}
-\contentsline {subsubsection}{Combined functionals}{216}{subsection.24.2.7}
+\contentsline {subsubsection}{Exchange Functionals}{213}{section*.3}
+\contentsline {subsubsection}{Correlation Functionals}{215}{section*.4}
+\contentsline {subsubsection}{Standalone Functionals}{216}{section*.5}
+\contentsline {subsubsection}{Combined functionals}{216}{section*.6}
 \contentsline {subsection}{\numberline {24.2.8}{\normalfont \ttfamily {*HAMILTONIAN}}}{222}{subsection.24.2.8}
 \contentsline {subsection}{\numberline {24.2.9}{\normalfont \ttfamily {*MP2 INPUT}}}{223}{subsection.24.2.9}
 \contentsline {subsection}{\numberline {24.2.10}{\normalfont \ttfamily {*NEVPT2 INPUT}}}{223}{subsection.24.2.10}
@@ -191,13 +191,13 @@
 \contentsline {subsection}{\numberline {26.1.5}Quadratic response calculation of second order transition moments: {\normalfont \ttfamily {*QUADRA}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{287}{subsection.26.1.5}
 \contentsline {subsection}{\numberline {26.1.6}Quadratic response calculation of transition moments between excited states: {\normalfont \ttfamily {*QUADRA}} with {\normalfont \ttfamily {.DOUBLE RESIDUE}}}{289}{subsection.26.1.6}
 \contentsline {subsection}{\numberline {26.1.7}Cubic response calculation: {\normalfont \ttfamily {*CUBIC}}}{291}{subsection.26.1.7}
-\contentsline {subsection}{\numberline {26.1.8}Cubic response calculation of third-order transition moments: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{292}{subsection.26.1.8}
+\contentsline {subsection}{\numberline {26.1.8}Cubic response calculation of third-order transition moments: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{293}{subsection.26.1.8}
 \contentsline {subsection}{\numberline {26.1.9}Cubic response calculation of second order moments between excited states and excited state polarizabilities: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.DOUBLE RESIDUE}}}{294}{subsection.26.1.9}
 \contentsline {subsection}{\numberline {26.1.10}Module for C6, C8, C10 coefficients and more{\normalfont \ttfamily {*C6}}}{295}{subsection.26.1.10}
 \contentsline {subsection}{\numberline {26.1.11}Electron Spin Resonance: {\normalfont \ttfamily {*ESR}}}{297}{subsection.26.1.11}
-\contentsline {subsubsection}{Hyperfine coupling}{297}{subsection.26.1.11}
-\contentsline {subsubsection}{Zero-field splitting: {\normalfont \ttfamily {.ZFS}}}{298}{subsection.26.1.11}
-\contentsline {subsubsection}{Electronic g-tensors: {\normalfont \ttfamily {.G-TENSOR}}}{298}{subsection.26.1.11}
+\contentsline {subsubsection}{Hyperfine coupling}{297}{section*.7}
+\contentsline {subsubsection}{Zero-field splitting: {\normalfont \ttfamily {.ZFS}}}{298}{section*.8}
+\contentsline {subsubsection}{Electronic g-tensors: {\normalfont \ttfamily {.G-TENSOR}}}{298}{section*.9}
 \contentsline {chapter}{\numberline {27}Coupled-cluster calculations, CC}{300}{chapter.27}
 \contentsline {section}{\numberline {27.1}General input for CC: {\normalfont \ttfamily {*CC INPUT}}}{302}{section.27.1}
 \contentsline {section}{\numberline {27.2}Ground state first-order properties: {\normalfont \ttfamily {*CCFOP}}}{307}{section.27.2}

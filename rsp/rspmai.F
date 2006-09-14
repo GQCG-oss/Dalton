@@ -4062,18 +4062,18 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 C
-      PARAMETER ( NTABLE = 5 )
+      PARAMETER ( NTABLE = 6 )
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
       PARAMETER ( STRING = '*QUADRA' )
       DATA TABLE /'.SINGLE', '.DOUBLE', '.PHOSPH', '.TWO-PH',
-     &            '.MNFPHO'/
+     &            '.MNFPHO', '.TPCD  '/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
-            GO TO (1,2,3,4,5), I
+            GO TO (1,2,3,4,5,4), I
          END IF
       END DO
       GO TO 100

@@ -604,7 +604,7 @@ C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.APROP ', '.ROOTS ',
      *            '.MAXITP', '.THCLR ', '.MAXITL', '.THCPP ',
      *            '.MAXITO', '.PRINT ', '.DIPLEN', '.E3TEST',
-     *            '.ISPABC', '.XXXXXX', '.X2TEST', '.A2TEST',
+     *            '.ISPABC', '.TPCD  ', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
      *            '.MCDBTE'/
@@ -699,7 +699,46 @@ C
                   JSPABC = JSPABC + 1
                   READ (LUCMD,*) ISPINA,ISPINB,ISPINC
                GO TO 100
+C              Option 14 .TPACD calculates tensor components for Tinoco
+C              original, gauge invariant formulation
  14            CONTINUE
+                  TWOPHO = .TRUE.
+C                 A operators
+                  LABEL='XDIPVEL'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPVEL'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPVEL'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+
+                  LABEL='XANGMOM'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YANGMOM'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZANGMOM'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+
+                  LABEL='XXROTSTR'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YYROTSTR'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZZROTSTR'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='XYROTSTR'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='XZROTSTR'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YZROTSTR'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+
+C                 B operators
+
+                  LABEL='XDIPVEL'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPVEL'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPVEL'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
  15            CONTINUE
                   X2TEST = .TRUE.
