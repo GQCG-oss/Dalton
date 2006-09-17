@@ -90,10 +90,13 @@ C
 #endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
-         WRITE (LUPRI,'()')
-         CALL TIMTXT('>>> Time used in '//TEXT//' is',TIME,LUPRI)
-         WRITE (LUPRI,'()')
-         CALL FLSHFO(LUPRI)
+         IF (TIME .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            WRITE (LUPRI,'()')
+            CALL TIMTXT('>>> Time used in '//TEXT//' is',TIME,LUPRI)
+            WRITE (LUPRI,'()')
+            CALL FLSHFO(LUPRI)
+         END IF
       END IF
       RETURN
       END
