@@ -78,10 +78,10 @@ C
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
 #include <implicit.h>
-      CHARACTER TEXT*6
+      CHARACTER TEXT*(*), OUT_TEXT*50
 #include <priunit.h>
 C
-      IF (TEXT .EQ. 'START ') THEN
+      IF (TEXT(1:6) .EQ. 'START ') THEN
          CALL GETTIM(TIMSTR,DUMMY)
       ELSE
          CALL GETTIM(TIMEND,DUMMY)
@@ -93,7 +93,11 @@ C
          IF (TIME .GT. 0.1D0) THEN
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             WRITE (LUPRI,'()')
-            CALL TIMTXT('>>> Time used in '//TEXT//' is',TIME,LUPRI)
+            LTEXT = LEN(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
+            LOUT = 17 + LTEXT + 3
+            CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
             WRITE (LUPRI,'()')
             CALL FLSHFO(LUPRI)
          END IF
