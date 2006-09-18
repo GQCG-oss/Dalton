@@ -114,7 +114,7 @@ C EXTERNAL FUNCTIONS
 C
       LOGICAL FNDLAB
 C
-      LOGICAL CICALC, MOISNO
+      LOGICAL CICALC, MOISNO, LDUMP
 C
       CHARACTER*8 TABLE(4), RTNLBL(2), LAPRPC
       DATA TABLE/'********','OLDORB  ','NEWORB  ','STARTVEC'/
@@ -130,6 +130,7 @@ C
       LWRK1  = MAX(LBIMAC,NCMOT)
       IF (LWRK.LT.LWRK1) CALL ERRWRK('SIROUT',LWRK1,LWRK)
 C
+      LDUMP = .TRUE.
       IF (IPRI4 .GE. 3) P4FLAG(3) = .TRUE.
       IF (P4FLAG(3) .AND. FLAG(2)) THEN
 C
@@ -377,7 +378,8 @@ C        ... DIIS-HF or QC-HF optimization
 C        ... DIIS-DFT or QC-DFT optimization
              WRITE (LUW4,5022) EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
-         IF (.NOT. DOCCSD) THEN
+         IF (DOCCSD .AND. .NOT.(QM3)) LDUMP = .FALSE.
+         IF (LDUMP) THEN
             LAPRPC = 'ENERGY  '
             CALL WRIPRO(EMCSCF,"SCF/DFT   ",0,
      *                  LAPRPC,LAPRPC,LAPRPC,LAPRPC,

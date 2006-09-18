@@ -330,9 +330,9 @@ C
          CALL CC_PRPC(ESCF,MODREF,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
-C         CALL WRIPRO(ESCF,MODREF,0,
-C     *               LABEL1,LABEL1,LABEL1,LABEL1,
-C     *               ZERO,ZERO,ZERO,1,0,0,0)
+         CALL WRIPRO(ESCF,MODREF,0,
+     *               LABEL1,LABEL1,LABEL1,LABEL1,
+     *               ZERO,ZERO,ZERO,1,0,0,0)
 
          CALL QEXIT('CCSD_ENERGY')
          RETURN
@@ -1057,18 +1057,21 @@ C
          CALL CC_PRPC(ESCF,MODREF,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
-C         CALL WRIPRO(ESCF,MODREF,0,
-C     *               LABEL1,LABEL1,LABEL1,LABEL1,
-C     *               ZERO,ZERO,ZERO,1,0,0,0)
       ENDIF
       IF (.NOT.CCSLV) THEN
          LABEL1 = 'ENERGY  '
          CALL CC_PRPC(EN2,MOPRPC,0,
      *                LABEL1,LABEL1,LABEL1,LABEL1,
      *                ZERO,ZERO,ZERO,1,0,0,0)
-         CALL WRIPRO(EN2,MOPRPC,0,
-     *               LABEL1,LABEL1,LABEL1,LABEL1,
-     *               ZERO,ZERO,ZERO,1,0,0,0)
+         IF (CCPTSV .OR. CCP3SV) THEN
+            CALL WRIPRO(ETOT,MOPRPC,0,
+     *                  LABEL1,LABEL1,LABEL1,LABEL1,
+     *                  ZERO,ZERO,ZERO,1,0,0,0)
+         ELSE
+            CALL WRIPRO(EN2,MOPRPC,0,
+     *                  LABEL1,LABEL1,LABEL1,LABEL1,
+     *                  ZERO,ZERO,ZERO,1,0,0,0)
+         ENDIF
       ENDIF
 C
       IF (CCPTSV .OR. CCP3SV) THEN
