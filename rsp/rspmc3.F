@@ -211,8 +211,7 @@ C
      *                  IDAX,INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),
      *                  WRK(KH2),WRK(KH2X),WRK(KFREE),KONE,LFREE,
      *                  LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,ISPIN3,
-     *                  IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2,ZYMAT3,ISYM3,
-     $                  CMO)
+     *                  IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2,ZYMAT3,ISYM3)
       ELSE
          CALL RSPFX(WRK(KFI),WRK(KFA),WRK(KQA),WRK(KQB),WRK(KH2AX),IDAX,
      *              INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),WRK(KH2X),
