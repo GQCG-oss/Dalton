@@ -766,7 +766,12 @@ camb3lyp_third_sigma(real rho, real ex, RGThirdDrv *f3,
     real bfactor, b_first, b_second, b_third, a;
     RGThirdDrv ader;
 
-    if(ex<THR) { memset(res, 0, sizeof(*res)); return; }
+    /* Avoid division by zero. Note: a) absolute value of the ex must
+       be checked or eg. CO molecule test case will get wrong. b)
+       surprisingly, fun-tester does not detected that skipping
+       negative values of ex introduces an error. This calls for an
+       improvement of fun-tester... */
+    if(fabs(ex)<THR) { memset(res, 0, sizeof(*res)); return; }
     a = fun_a(rho, ex);
     bfactor  = -BETA*EVALUATOR(a, energy);
     b_first  = BETA*EVALUATOR(a, first);
