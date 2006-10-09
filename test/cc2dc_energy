@@ -118,17 +118,17 @@ CTRL[2]=1
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 # Quadrupole moment components compared:
-CRIT1=`$GREP "1       1\.56200408    (  | 0| \-|\-0)\.00000000    (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT2=`$GREP "2      (  | 0| \-|\-0)\.00000000    -1\.70619161    (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT3=`$GREP "3      (  | 0| \-|\-0)\.00000000    (  | 0| \-|\-0)\.00000000     ( |0)\.14418753" $log | wc -l`
+CRIT1=`$GREP "1 * 1\.56200408 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT2=`$GREP "2 * (  | 0| \-|\-0)\.00000000 * -1\.70619161 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT3=`$GREP "3 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000 * ( |0)\.14418753" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 # Second order electric moment components compared:
-CRIT1=`$GREP "1       7\.18394658    (  | 0| \-|\-0)\.00000000    (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT2=`$GREP "2      (  | 0| \-|\-0)\.00000000     5\.27212657    (  | 0| \-|\-0)\.00000000" $log | wc -l`
-CRIT3=`$GREP "3      (  | 0| \-|\-0)\.00000000    (  | 0| \-|\-0)\.00000000     6\.49117785" $log | wc -l`
+CRIT1=`$GREP "1 * 7\.18394658 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT2=`$GREP "2 * (  | 0| \-|\-0)\.00000000 * 5\.27212657 * (  | 0| \-|\-0)\.00000000" $log | wc -l`
+CRIT3=`$GREP "3 * (  | 0| \-|\-0)\.00000000 * (  | 0| \-|\-0)\.00000000 * 6\.49117785" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="SECOND ORDER MOMENT NOT CORRECT"
