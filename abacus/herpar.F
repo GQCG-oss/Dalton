@@ -952,6 +952,32 @@ C     This is a slave in a parallel run
 C
       SLAVE = .TRUE.
 C
+C     For the time being we assume long-range and short-range integrals
+C     will not be done in parallel, otherwise we need to initialize
+C     through message passing
+C
+C
+C ...............
+C     Flags for calculation of long and short range integrals
+C     (mostly programmed by Jesper Kielberg Pedersen) /hjaaj
+C     For ERFEXP false:
+C       g(R12) = g_erf(R12) = erf(CHIVAL*R12) / R12
+C       where CHIVAL .ge. 0, and CHIVAL.eq.0 is normal 1/R12
+C     For ERFEXP true:
+C       g(R12) = g_erfexp(R12)
+C              = g_erf(R12) - 2*CHIVAL/SQRT(PI) * EXP(-CHIVAL**2*R12**2/3.0D0)
+      ERFEXP = .FALSE.
+C
+C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
+C                             ELSE calculate g(R12) listed above
+C
+      CHIVAL = -1.0D0
+C
+C     SRINTS: calculate 1/R12 - g(R12)
+C
+      DOSRIN = .FALSE.
+      SRINTS = .FALSE.
+C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_NODSTR','*',103)
 C
 C     Receive initialization from master
