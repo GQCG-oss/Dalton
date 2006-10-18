@@ -59,7 +59,7 @@ C
       CHARACTER*42 WLKTYP(7)
       DATA TABLE /'.RESTAR', '.PRINT ', '.INDEX ', '.TRUST ',
      &            '.ANHARM', '.DISPLA', '.SCALE ', '.MODE  ',
-     &            '.TOLERA', '.XXXXXX', '.NOPRED', '.MAXNUC',
+     &            '.TOLERA', '.HESFIL', '.NOPRED', '.MAXNUC',
      &            '.KEEPSY', '.REJECT', '.RATLIM', '.NEWTON',
      &            '.VIBCNV', '.GRDEXT', '.MODFOL', '.MASSES',
      &            '.REPS  ', '.ZERGRD', '.EIGEN ', '.DYNAMI',
@@ -155,6 +155,7 @@ C
                   READ (LUCMD,*) TOLST
                GO TO 100
    10          CONTINUE
+                  HESFLW = .TRUE.
                GO TO 100
    11          CONTINUE
                   WFPRED = .FALSE.
@@ -391,6 +392,8 @@ C
      &        'a previous geometry will be used'
          IF (ACCURT) WRITE(LUPRI,'(A)') ' A five-point derivative '//
      &        'scheme will be used for property derivatives'
+         IF (HESFLW) WRITE (LUPRI,'(A)') ' The molecular Hessian '//
+     &        ' be read from the file DALTON.HES'
       END IF
       IF (IMAGE) THEN
          WRITE (LUPRI,'(A)') ' Minimization of image surface '
@@ -966,33 +969,33 @@ C
          LWRK1  = LWORK  - KWRK1 + 1
          IF (LWRK1 .LE. 0) CALL STOPIT('WLKVIB',' ',KWRK1,LWORK)
 C
-         if (.false.) then
-         LUHES = -90
-         CALL DZERO(HESCAR,NCART*NCART)
-         INQUIRE(FILE='DALTON.HES')
-         CALL GPOPEN(LUHES,'DALTON.HES','OLD',' ','FORMATTED',
-     &              IDUMMY,.FALSE.)
-         READ(LUHES,*) IDIM
-         READ(LUHES,*)
-         IF (IDIM .NE. NCART) CALL QUIT('The Hessian in DALTON.HES '//
-     &        'has wrong dimensions.')
-         IPOS = 1
-         DO 10 I = 1, NCART
-            DO 15 J = 1, NCART
-               READ(LUHES,*) HESCAR(IPOS)
-               IPOS = IPOS + 1
- 15         CONTINUE
+         IF (HESFLW) THEN
+            LUHES = -90
+            CALL DZERO(HESCAR,NCART*NCART)
+            INQUIRE(FILE='DALTON.HES')
+            CALL GPOPEN(LUHES,'DALTON.HES','OLD',' ','FORMATTED',
+     &                  IDUMMY,.FALSE.)
+            READ(LUHES,*) IDIM
             READ(LUHES,*)
- 10      CONTINUE
-         CALL DCOPY(NCART*NCART,HESCAR,1,HESS0,1)
+            IF (IDIM .NE. NCART) CALL QUIT('The Hessian in DALTON.HES '
+     &         //'has wrong dimensions.')
+            IPOS = 1
+            DO 10 I = 1, NCART
+               DO 15 J = 1, NCART
+                  READ(LUHES,*) HESCAR(IPOS)
+                  IPOS = IPOS + 1
+ 15            CONTINUE
+               READ(LUHES,*)
+ 10         CONTINUE
+            CALL DCOPY(NCART*NCART,HESCAR,1,HESS0,1)
 C
 C     We try to see if the user has supplied some coordinates on the
 C     file that we should use for updating the coordinate information
 C     Also check if they match coordinates from MOLECULE.INP
 C
-         IDIFF = 0
-         CALL GPCLOSE(LUHES,'KEEP')
-         end if
+            IDIFF = 0
+            CALL GPCLOSE(LUHES,'KEEP')
+         END IF
          CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),WORK(KNUMIS),
      &               IPRWLK)
 C     
