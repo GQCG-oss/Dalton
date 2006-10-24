@@ -1088,7 +1088,8 @@ C            where we know the 5 d's have same norm.
             MXQHUCK = 20
          ELSE
 Chj - apr00: this has been fixed with normalized spherical GTO's from SPHCOM
-            MXQHUCK = 86
+C Manu MXQHUCK set to 103 instead of 86 
+            MXQHUCK = 103 
          ENDIF
          IF (DOHUCKEL .AND. NINT(Q) .GT. MXQHUCK) THEN
             NSETS = 1
