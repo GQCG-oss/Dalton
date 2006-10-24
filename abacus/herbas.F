@@ -210,8 +210,11 @@ C           ...  Hg
          ELSE IF (INTQ .LE. 86) THEN
 C           ...  Rn
             BASNAM = 'HUCKEL    6 5 3 1'
-         ELSE
-            CALL QUIT('BASLIB error: HUCKEL not defined for Z.gt.86')
+C         ELSE IF (INTQ .LE. 103) THEN
+C           ...  Lr
+C            BASNAM = 'HUCKEL    7 6 4 2'
+C         ELSE 
+C            CALL QUIT('BASLIB error: HUCKEL not defined for Z.gt.103')
          END IF
 C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
