@@ -178,6 +178,7 @@ C
          CALL DSCAL(NTS,-1.0D0,WRK(KCHRG),1)
          CALL V2Q(WRK(KW30),WRK(KCHRG),VTEX(1,ICSIM),QET,NEQRSP)
       END DO
+      CALL GPCLOSE(LUPCMD,'KEEP')
       CALL DZERO(WRK(KPCMXB),NCSIM*NNORBX)
 C
       DO ICSIM = 1, NCSIM
@@ -555,6 +556,7 @@ C
             END DO
          END IF
       ENDDO
+      CALL GPCLOSE(LUPCMD,'KEEP')
 C
 C     TRANSFORMED CHARGES MULTIPIED TO POTENTIALS.
 C     There are only one-index-transformed charges for the totally

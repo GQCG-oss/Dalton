@@ -502,7 +502,7 @@ C     Contract transformed charges with the density
       END DO
       
       CALL V2Q(WORK(KQMAT),WORK(KTCHG),WORK(KQCHG),QTEXS,.false.)
-
+      CALL GPCLOSE(LUPCMD,'KEEP')
       CALL DAXPY(NTS,D1,WORK(KQCHG),1,TCHG,1)
 
       RETURN

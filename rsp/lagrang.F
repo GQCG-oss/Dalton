@@ -1562,6 +1562,7 @@ C
      &           1,WRK(KWRK1),LW21)
       CALL DZERO(QSE,MXTS)
       CALL V2Q(WRK(KWRK1),WRK(KPOT),QSE,QET,.FALSE.)
+      CALL GPCLOSE(LUPCMD,'KEEP')
 C      CALL DSCAL(NTS,-1.0D0,QSE,1)
 C     
 C     Read J1 (=ELECTROSTATIC POTENTIAL) in ao basis and transform to mo
