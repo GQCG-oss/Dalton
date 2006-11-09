@@ -3247,7 +3247,6 @@ C
             CALL FLSHFO(LUPRI)
             CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
             SRINTS = .FALSE.
-            DOSRIN = .FALSE.
          ENDIF
 C
 C        *****************************************************
