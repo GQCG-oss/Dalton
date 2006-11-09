@@ -555,9 +555,11 @@ C  /* Deck radius */
 #include <qm3.h>
 C     Based on covalent radii and metallic radii in Angstrom.
 C     Returns -1 where data is inavailable
+C     Oct 2006 hjaaj: changed Hydrogen from 30 to 40 pm,
+C              such that H2 is printed as bonded ;-) .
       DIMENSION RAD(100)
       DATA (RAD(I), I = 1, 100)/
-     &        30.,  155.,  160.,  110.,
+     &        40.,  155.,  160.,  110.,
      & 90.,   80.,   70.,   68.,   65.,
      &154.,  190.,  160.,  140.,  110.,
      &110.,  105.,  105.,  190.,  238.,
