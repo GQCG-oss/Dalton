@@ -329,24 +329,25 @@ C
 #include <dftcom.h>
 #include <ecpinf.h>
 #include <ccsdinp.h>
-      LOGICAL MCSCF, DMP2, WAVTP, DPCM
+      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOCISRDFT, DOMCSRDFT, WAVTP, DPCM
 C
 C     *** Workaround to many common variables with the same name ***
 C     *** MCSCF is set to DOMC (in infinp.h), and DMP2 is set    ***
 C     *** to DOMP2 (in infinp.h through the logical function     ***
 C     *** WAVTP.                                                 ***
 C
-      MCSCF = WAVTP('MCSCF')
-      DMP2  = WAVTP('DOMP2')
-      DPCM  = WAVTP('DOPCM')
-!
-! Sonia: CCSD(T) analytical exists!
-!
+      MCSCF      = WAVTP('MCSCF')
+      DMP2       = WAVTP('MP2')
+      DPCM       = WAVTP('PCM')
+      DOHFSRDFT  = WAVTP('HFSRDFT')
+      DOCISRDFT  = WAVTP('CISRDFT')
+      DOMCSRDFT  = WAVTP('MCSRDFT')
 C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
      &    CCD   .OR. CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
-     &    CCR1A .OR. CCR1B .OR. CCR1B.OR. CCT .OR.
-     &   (DMP2.AND..NOT.MCSCF) .OR. ECP) THEN
+     &    CCR1A .OR. CCR1B .OR. CCT .OR.
+     &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP) THEN
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
@@ -357,17 +358,15 @@ C
          NAORDR = 2
       END IF
 C
-      WRITE (LUPRI,'(A)') '                                   '
-      WRITE (LUPRI,'(5X,A,I4)') 'Order of the analytical ' //
-     &          'energy-derivative available:', NAORDR
-      WRITE (LUPRI,'(5X,A,I4)') 'This will be the default.'
-      WRITE (LUPRI,'(A)') '                                   '
+      WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
+     &          'energy-derivatives available:', NAORDR
+      WRITE (LUPRI,'(5X,A,I4/)') 'This will be the default.'
 C
       RETURN
       END
 C
 C
-C     /* Deck wavmc */
+C     /* Deck wavtp */
       LOGICAL FUNCTION WAVTP(STRING)
 C     **************************************************************
 C     *** Workaround to many common variables with the same name ***
@@ -375,18 +374,27 @@ C     *** MCSCF is set to DOMC (in infinp.h) through the logical ***
 C     *** function WAVMC.                                        ***
 C     **************************************************************
 #include <implicit.h>
+#include <priunit.h>
 #include "pcmlog.h"
 #include <maxorb.h>
 #include <infinp.h>
-      CHARACTER*5 STRING
+      CHARACTER*(*) STRING
 C
       IF (STRING.EQ.'MCSCF') THEN
          WAVTP = DOMC
-      ELSE IF (STRING.EQ.'DOMP2') THEN
+      ELSE IF (STRING.EQ.'MP2') THEN
          WAVTP = DOMP2
-      ELSE IF (STRING .EQ. 'DOPCM') THEN
+      ELSE IF (STRING .EQ. 'PCM') THEN
          WAVTP = PCM
+      ELSE IF (STRING.EQ.'HFSRDFT') THEN
+         WAVTP = DOHFSRDFT
+      ELSE IF (STRING.EQ.'CISRDFT') THEN
+         WAVTP = DOCISRDFT
+      ELSE IF (STRING.EQ.'MCSRDFT') THEN
+         WAVTP = DOMCSRDFT
       ELSE
+         WRITE (LUPRI,'(A2A)')
+     &   'Undefined string in WAVTP :', STRING
          CALL QUIT('Wrong string in WAVTP')
       END IF
 C
@@ -3755,8 +3763,8 @@ C
          WRITE (LUPRI,'(A)') '                                        '
       END DO
 
-C
-C     *** Writing to sepctro file if requested. ***
+C     
+C     *** Writing to spectro file if requested. ***
 C
       IF (SPECTR) THEN
          NTIME = 1
@@ -4192,7 +4200,7 @@ C
      &               IPRINT,TEXT)
       END IF
 C
-C     *** Writing to sepctro file if requested. ***
+C     *** Writing to spectro file if requested. ***
 C
       IF (SPECTR) THEN
          NTIME = 2
