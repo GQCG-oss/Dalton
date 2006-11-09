@@ -386,12 +386,14 @@ C
          WAVTP = DOMP2
       ELSE IF (STRING .EQ. 'PCM') THEN
          WAVTP = PCM
+#ifdef MC-SRDFT
       ELSE IF (STRING.EQ.'HFSRDFT') THEN
          WAVTP = DOHFSRDFT
       ELSE IF (STRING.EQ.'CISRDFT') THEN
          WAVTP = DOCISRDFT
       ELSE IF (STRING.EQ.'MCSRDFT') THEN
          WAVTP = DOMCSRDFT
+#endif
       ELSE
          WRITE (LUPRI,'(A2A)')
      &   'Undefined string in WAVTP :', STRING
