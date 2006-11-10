@@ -339,9 +339,15 @@ C
       MCSCF      = WAVTP('MCSCF')
       DMP2       = WAVTP('MP2')
       DPCM       = WAVTP('PCM')
+#ifdef MC_SRDFT
       DOHFSRDFT  = WAVTP('HFSRDFT')
       DOCISRDFT  = WAVTP('CISRDFT')
       DOMCSRDFT  = WAVTP('MCSRDFT')
+#else
+      DOHFSRDFT  = .FALSE.
+      DOCISRDFT  = .FALSE.
+      DOMCSRDFT  = .FALSE.
+#endif
 C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
      &    CCD   .OR. CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
@@ -386,7 +392,7 @@ C
          WAVTP = DOMP2
       ELSE IF (STRING .EQ. 'PCM') THEN
          WAVTP = PCM
-#ifdef MC-SRDFT
+#ifdef MC_SRDFT
       ELSE IF (STRING.EQ.'HFSRDFT') THEN
          WAVTP = DOHFSRDFT
       ELSE IF (STRING.EQ.'CISRDFT') THEN
