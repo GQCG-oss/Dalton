@@ -147,33 +147,33 @@ CTRL[7]=2
 ERROR[7]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.1037824..[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.4179897..[0-9] * (0| )\.9876428..[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.4179897..[0-9] * (0| )\.9876428..[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.1036673..[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.4181935..[0-9] * (0| )\.9875853..[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.4181935..[0-9] * (0| )\.9875853..[0-9]" $log | wc -l`
 TEST[8]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="INITIAL STEP NOT CORRECT"
 
 # 2nd iteration:
 CRIT1=`$GREP "Energy at this geometry is * \: * \-76\.053317" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.01363[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.02083[0-9]" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.01366[0-9]" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * (0| )\.02096[0-9]" $log | wc -l`
 TEST[9]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="SECOND ITERATION NOT CORRECT"
 
 # 3rd iteration:
 CRIT1=`$GREP "Energy at this geometry is * \: * \-76\.053412" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00209[0-9]" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.00671[0-9]" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00207[0-9]" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * (0| )\.01027[0-9]" $log | wc -l`
 TEST[10]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=3
 ERROR[10]="THIRD ITERATION NOT CORRECT"
 
 # Final geometry:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.087959149[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.422569037[0-9] * (0| )\.979731214[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.422569037[0-9] * (0| )\.979731214[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.08796256.[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 1 * (0| )\.0000000000 * 1\.42256595.[0-9] * (0| )\.97973292.[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.42256595.[0-9] * (0| )\.97973292.[0-9]" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=12
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
@@ -187,37 +187,37 @@ CTRL[12]=3
 ERROR[12]="FINAL ENERGY NOT CORRECT"
 
 # Quadropole moment:
-CRIT1=`$GREP "Ex * \-1\.755668 * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * 1\.938555 * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * (\-0|\-)\.182887" $log | wc -l`
+CRIT1=`$GREP "Ex * \-1\.75566. * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * 1\.93853. * (\-0|\-|0| )\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * (\-0|\-)\.18287." $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
 ERROR[13]="QUADROPOLE MOMENT NOT CORRECT"
 
 # Magnetizability:
 CRIT1=`$GREP "Isotropic magnetizability\: * \-2\.8986 * \-228\.7311 * \-13\.7745" $log | wc -l`
-CRIT2=`$GREP "Diamagnetic contribution\: * \-3\.2053 * \-252\.9296 * \-15\.2318" $log | wc -l`
+CRIT2=`$GREP "Diamagnetic contribution\: * \-3\.2053 * \-252\.929. * \-15\.2318" $log | wc -l`
 CRIT3=`$GREP "Paramagnetic contribution\: * (0| )\.3067 * 24\.1985 * 1\.4573" $log | wc -l`
-CRIT4=`$GREP "1st anisotropy\: * (\-0|\-)\.0339 * \-2\.6750 * (\-0|\-)\.1611" $log | wc -l`
-CRIT5=`$GREP "2nd anisotropy\: * (0| )\.0367 * 2\.8937 * (0| )\.1743" $log | wc -l`
-CRIT6=`$GREP "Bx * \-2\.90046699[4-5][0-9][0-9][0-9] * (\-0| 0| \-|  )\.000000000000 * (\-0| 0| \-|  )\.000000000000" $log | wc -l`
-CRIT7=`$GREP "By * (\-0| 0| \-|  )\.000000000000 * \-2\.8741724910[0-9][0-9] * (\-0| 0| \-|  )\.000000000000" $log | wc -l`
-CRIT8=`$GREP "Bz * (\-0| 0| \-|  )\.000000000000 * (\-0| 0| \-|  )\.000000000000 * \-2\.9212192851[0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "1st anisotropy\: * (\-0|\-)\.0339 * \-2\.674. * (\-0|\-)\.1611" $log | wc -l`
+CRIT5=`$GREP "2nd anisotropy\: * (0| )\.0367 * 2\.893. * (0| )\.1743" $log | wc -l`
+CRIT6=`$GREP "Bx * \-2\.90046806.[0-9][0-9][0-9] * (\-0| 0| \-|  )\.000000000000 * (\-0| 0| \-|  )\.000000000000" $log | wc -l`
+CRIT7=`$GREP "By * (\-0| 0| \-|  )\.000000000000 * \-2\.874173744.[0-9][0-9] * (\-0| 0| \-|  )\.000000000000" $log | wc -l`
+CRIT8=`$GREP "Bz * (\-0| 0| \-|  )\.000000000000 * (\-0| 0| \-|  )\.000000000000 * \-2\.921217595.[0-9][0-9]" $log | wc -l`
 TEST[14]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8`
 CTRL[14]=8
 ERROR[14]="MAGNETIZABILITIES NOT CORRECT"
 
 # Molecular g-factors:
-CRIT1=`$GREP "Isotropic g-tensor * \: * (0| )\.68204743" $log | wc -l`
-CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.97479960" $log | wc -l`
-CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.02502992" $log | wc -l`
-CRIT4=`$GREP "Electronic contribution * \: * (\-0|\-)\.31778209" $log | wc -l`
-CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.01875819" $log | wc -l`
-CRIT6=`$GREP "2nd anisotropy\: * (0| )\.07291864" $log | wc -l`
-CRIT7=`$GREP "A * (0| )\.66954197 (\-0| 0| \-|  )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT8=`$GREP "B * (\-0| 0| \-|  )\.00000000 * (0| )\.73065986 * (0| )\.00000000" $log | wc -l`
-CRIT9=`$GREP "C * (0| )\.00000000 * (0| )\.00000000 * (0| )\.64594046" $log | wc -l`
+CRIT1=`$GREP "Isotropic g-tensor * \: * (0| )\.682047.." $log | wc -l`
+CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.974799.." $log | wc -l`
+CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.025030.." $log | wc -l`
+CRIT4=`$GREP "Electronic contribution * \: * (\-0|\-)\.317782.." $log | wc -l`
+CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.018757.." $log | wc -l`
+CRIT6=`$GREP "2nd anisotropy\: * (0| )\.072917.." $log | wc -l`
+CRIT7=`$GREP "A * (0| )\.669542.. (\-0| 0| \-|  )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT8=`$GREP "B * (\-0| 0| \-|  )\.00000000 * (0| )\.730658.. * (0| )\.00000000" $log | wc -l`
+CRIT9=`$GREP "C * (0| )\.00000000 * (0| )\.00000000 * (0| )\.645940.." $log | wc -l`
 TEST[15]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
 CTRL[15]=9
@@ -234,7 +234,7 @@ CRIT7=`$GREP "Anisotropy\: * 20\.5468 ppm" $log | wc -l`
 CRIT8=`$GREP "Asymmetry\: * (0| )\.0968" $log | wc -l`
 CRIT9=`$GREP "S parameter\: * 20\.5789 ppm" $log | wc -l`
 CRIT10=`$GREP "A parameter\: * (0| )\.6772 ppm" $log | wc -l`
-CRIT11=`$GREP "\@1 *O * 334\.25[3-4][0-9] * 417\.2752 * \-83\.021[2-3] * (0| )\.611[0-1] * 58\.78[1-3][0-9] * 53\.06[5-6][0-9] * (0| )\.323[1-2]" $log | wc -l`
+CRIT11=`$GREP "\@1 *O * 334\.25[3-4][0-9] * 417\.2752 * \-83\.021[2-4] * (0| )\.611[0-1] * 58\.78[1-3][0-9] * 53\.06[5-6][0-9] * (0| )\.323[1-2]" $log | wc -l`
 CRIT12=`$GREP "\@1 *H * 1 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.5468 * (0| )\.0968" $log | wc -l`
 CRIT13=`$GREP "\@1 *H * 2 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.5468 * (0| )\.0968" $log | wc -l`
 TEST[16]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
@@ -245,14 +245,14 @@ ERROR[16]="SHIELDINGS NOT CORRECT"
 
 # Vibrational frequencies:
 CRIT1=`$GREP "2 * A1 * 4142\.56 * (0| )\.01887[0-9] * 29\.84[0-9] * (0| )\.706[0-9]" $log | wc -l`
-CRIT2=`$GREP "3 * A1 * 1726\.24 * (0| )\.00786[0-9] * 85\.61[0-9] * 2\.026[0-9]" $log | wc -l`
+CRIT2=`$GREP "3 * A1 * 1726\.2. * (0| )\.00786[0-9] * 85\.61[0-9] * 2\.026[0-9]" $log | wc -l`
 CRIT3=`$GREP "1 * B2 * 4244\.54 * (0| )\.01934[0-9] * 88\.27[0-9] * 2\.089[0-9]" $log | wc -l`
 TEST[17]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[17]=3
 ERROR[17]="FREQUENCIES NOT CORRECT"
 
 # Geometry optimization:
-CRIT1=`$GREP "Geometry converged in * 6( |  )iterations\!" $log | wc -l`
+CRIT1=`$GREP "Geometry converged in * 5( |  )iterations\!" $log | wc -l`
 CRIT2=`$GREP "Energy at final geometry is * \: * \-76\.053424 a\.u\." $log | wc -l`
 CRIT3=`$GREP "Energy change during optimization \: * (\-0|\-)\.001964 a\.u\." $log | wc -l`
 TEST[18]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`

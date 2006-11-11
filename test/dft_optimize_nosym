@@ -35,9 +35,9 @@ check_mol_gradient 1  "H1    "  -0.1044292794 0.0  -0.0821054667 1e-5
 check_mol_gradient 1  "H2    "   0.1044292794 0.0  -0.0821054667 1e-5
 
 # Final geometry
-check_final_geometry "O     "  0           0 -0.2194230514 1e-6
-check_final_geometry "H1    "  1.441383715 0  0.9097115257 1e-6
-check_final_geometry "H2    " -1.441383715 0  0.9097115257 1e-6
+check_final_geometry "O     "  0           0 -0.2194233604 1e-6
+check_final_geometry "H1    "  1.441400732 0  0.9097116802 1e-6
+check_final_geometry "H2    " -1.441400732 0  0.9097116802 1e-6
 
 # Optimization steps
 #check_optimization_step 0
