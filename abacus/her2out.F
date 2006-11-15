@@ -1515,8 +1515,8 @@ C     &                  NCOUNT(IDIST),1,NBITS,IDSORB(IDIST),IPRINT)
          NALL = NDIST*(NBASIS + 1)*(NBASIS**2)/2
          PERCNT = SDPRE(100*NWRIT) / SDPRE(NALL)
          IF (IPRINT.GT.0) WRITE (LUPRI,'(/1X,A,I10,A,F4.1,A)')
-     &         'Number of two-electron integrals written:',NWRIT,
-     &         ' (',PERCNT,'%)'
+     &         'Number of two-electron spin-orbit integrals written:',
+     &         NWRIT,' (',PERCNT,'%)'
       END IF
 C
       RETURN
@@ -2007,8 +2007,8 @@ C
             NALL   = (NALL*(NALL + 1))/2
             PERCNT = SDPRE(100*N2WRIT) / SDPRE(NALL)
             WRITE (LUPRI,'(/1X,A,I12,A,F5.1,A,/1X,A,F12.3//)')
-     &         'Number of two-electron integrals written:',N2WRIT,
-     &         ' (',PERCNT,'% )',
+     &         'Number of two-electron short-range integrals written:',
+     &         N2WRIT,' (',PERCNT,'% )',
      &         'Megabytes written:                       ',FBYTES
          END IF
          CALL GPCLOSE(LUSRINT,'KEEP')
