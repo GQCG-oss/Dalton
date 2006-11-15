@@ -148,25 +148,24 @@ C     Be sure to allocate enough workspace for array SORTED
 C
       IF (NTMPMT .LT. (MTOTTK + 2)) NTMPMT = MTOTTK + 2
 C
-      KTMPMT = 1
-      KINDEX = KTMPMT +  NTMPMT
-      KTIMES = KINDEX + (NINDEX + 1)/IRAT
-      KTKCPU = KTIMES +  MTOTTK
-      KWHICH = KTKCPU +  MTOTTK
-      KLAST  = KWHICH + (MTOTTK + 1)/IRAT 
-C
-      IF (KLAST .GT. LWORK)
-     &   CALL STOPIT('HER_PARDRV',' ',KLAST,LWORK)
-      LWRK = LWORK - KLAST
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWORK
+      CALL MEMGET('REAL',KTMPMT,NTMPMT,WORK,KFREE,LFREE)     
+      CALL MEMGET('INTE',KINDEX,3*NINDEX,WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KTKCPU,MTOTTK,WORK,KFREE,LFREE)     
+      CALL MEMGET('INTE',KWHICH,MTOTTK,WORK,KFREE,LFREE)     
 C
       CALL HER_PARDR1(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                WORK(KTMPMT),WORK(KINDEX),WORK(KTIMES),
-     &                WORK(KTKCPU),WORK(KWHICH),WORK(KLAST),LWRK,
+     &                WORK(KTKCPU),WORK(KWHICH),WORK(KFREE),LFREE,
      &                NINDEX,NTMPMT,NUMGRA,NUMHES,NUMSUS,NUMFCK,
      &                ITYPE,MAXDER,IATOM,NODV,NOPV,NOCONT,
      &                TKTIME,RETUR,IPRINT,
      &                ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                DINTSKP)
+      CALL MEMREL('HER_PARDRV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('HER_PARDRV')
       RETURN
@@ -435,8 +434,8 @@ C        Print the index array.
 C
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
-            WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
 Cef begin
+            WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
      &           'I =',I,'index(i) =',INDEX(1,I)
 Cef end
  400      CONTINUE
@@ -777,7 +776,8 @@ C
             CALL MPIXRECV(IWHICH(ICOUNT+1),ITASKS,'INTEGER',NWHO,MTAG7)
             CALL MPIXRECV(TSKCPU(ICOUNT+1),ITASKS,'DOUBLE' ,NWHO,MTAG7)
             DO 200 J=1,ITASKS
-               TIMES(IWHICH(J)) = TSKCPU(J)
+               K = IWHICH(J)
+               IF (K .GT. 0) TIMES(K) = TSKCPU(J)
  200        CONTINUE
          END IF
 C
@@ -813,7 +813,8 @@ C
             CALL PVMXUNPACK(TSKCPU(ICOUNT+1),ITASKS,'DOUBLE')
 C
             DO 200 J=1,ITASKS
-               TIMES(IWHICH(J)) = TSKCPU(J)
+               K = IWHICH(J)
+               IF (K .GT. 0) TIMES(K) = TSKCPU(J)
  200        CONTINUE
          END IF
 C
