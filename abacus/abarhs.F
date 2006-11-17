@@ -862,12 +862,36 @@ C
      &               CALL STOPIT('RHSIDE','PARDRV',KLAST,LWRK)
                   LWRK = LWRK - KLAST
                   IPRTYP = 1
+                  HFXM0 = HFXMU
+                  HFXMU = D0
                   CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,
      &                        IFCTYP,WORK(KLAST),WORK(KNSTAT),DUMMY,
      &                        LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
      &                        TKTIME,RETUR,IPRINT,IPRTYP,
      &                        IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
      &                        DUMMY)
+                  HFXMU = HFXM0
+                  IF (HFXMU.NE.D0) THEN
+                     KFCTMP = KLAST
+                     KLAST  = KFCTMP + NFMAT*N2BASX
+                     IF (KLAST .GT. LWRK)
+     &                    CALL STOPIT('TWOEXP','PARDRV',KLAST,LWRK)
+                     LWRK = LWRK - NFMAT*N2BASX
+                     
+                     HFXFC0 = HFXFAC
+                     HFXFAC = HFXATT
+                     CALL DCOPY(NFMAT*N2BASX,WORK(KFMAT),1,
+     &                    WORK(KFCTMP),1)
+                     CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,
+     &                    IFCTYP,WORK(KLAST),WORK(KNSTAT),DUMMY,
+     &                    LWRK,ITYPE,MAXDIF,IATOM,NODV,NOPV,.FALSE.,
+     &                    TKTIME,RETUR,IPRINT,IPRTYP,
+     &                    IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
+     &                    DUMMY)
+                     CALL DAXPY(NFMAT*N2BASX,1D0,WORK(KFCTMP),1,
+     &                    WORK(KFMAT),1)
+                     HFXFAC = HFXFC0
+                  END IF               
                   IF (IPRALL .GT. 2 .AND. (MAGSUS .OR. MOLGFA)) THEN
                      CALL HEADER('Two-electron expectation value '
      &                    //'contribution to susceptibilities',-1)
