@@ -502,13 +502,40 @@ C
      &         CALL STOPIT('TWOEXP','PARDRV',KLAST,LWRK)
             LWRK = LWRK - KLAST
 C
+            IATOM = 0
             IPRTYP = 1
+            HFXM0 = HFXMU
+            HFXMU = D0
             CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
      &                  WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
      &                  RETUR,IPRINT,IPRTYP,
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
      &                  DUMMY)
+            HFXMU = HFXM0
+            IF (HFXMU.NE.D0) THEN
+
+               KFCTMP = KLAST
+               KLAST  = KFCTMP + NFMAT*N2BASX
+               IF (KLAST .GT. LWRK)
+     &              CALL STOPIT('TWOEXP','PARDRV',KLAST,LWRK)
+               LWRK = LWRK - NFMAT*N2BASX
+
+               HFXFC0 = HFXFAC
+               HFXFAC = HFXATT
+               IATOM = 1
+               IF (NFMAT .GT. 0) CALL DCOPY(NFMAT*N2BASX,WORK(KFMAT),1,
+     &                                      WORK(KFCTMP),1)
+               CALL PARDRV(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,
+     &              WORK(KLAST),WORK(KNSTAT),WORK(KHESEE),LWRK,
+     &              ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,TKTIME,
+     &              RETUR,IPRINT,IPRTYP,
+     &              IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
+     &              DUMMY)
+               IF (NFMAT .GT. 0) CALL DAXPY(NFMAT*N2BASX,1D0,
+     &                                     WORK(KFCTMP),1,WORK(KFMAT),1)
+               HFXFAC = HFXFC0
+            END IF
          ELSE
 #endif
             IF (DOERI) THEN
