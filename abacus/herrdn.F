@@ -927,6 +927,7 @@ C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       NUCIND    = 0
       NCTOT     = 0
       NHTYP     = 0
+      NTYECP    = 0
       IBLOCK(1) = 1
       IBLOCK(2) = 1
       IBLOCK(3) = 1
