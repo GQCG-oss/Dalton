@@ -79,6 +79,12 @@ C
 C
 C     Calculate MM corrections for all distributed polarizabilities
 C
+C     Remember that the first coordinate for the polarizability is the COM for the QM system.
+C     Therefor we increase L with 1. If however we have distributed polarizability for the QM 
+C     system we need to skip the first NUALIS(0) points
+
+      L = L + NUALIS(0)
+
       LM = 0
       KRAX   = 1
       KRAY   = KRAX   + NCOMS
@@ -114,6 +120,7 @@ C
                   DIPORG(1) = CORD(1,IATNOW)
                   DIPORG(2) = CORD(2,IATNOW)
                   DIPORG(3) = CORD(3,IATNOW)
+
                   CALL GET1IN(WORK(KMAT),'EFIELB1',NOSIM,WORK(KLAST),
      &                        LWRK,LABINT,INTREP,INTADR,IATNOW,TOFILE,
      &                        KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IQM3PR)
@@ -267,6 +274,12 @@ C
 C
 C     Calculate MM corrections for all distributed polarizabilities
 C
+C     Remember that the first coordinate for the polarizability is the COM for the QM system.
+C     Therefor we increase L with 1. If however we have distributed polarizability for the QM
+C     system we need to skip the first NUALIS(0) points
+
+      L = L + NUALIS(0)
+
       LM = 0
       KRAX   = 1
       KRAY   = KRAX   + NCOMS
