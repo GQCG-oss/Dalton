@@ -4042,6 +4042,12 @@ C
       CALL DZERO(XMAT,N2BASX)
       DO I = 1, NBAST
          II = I*(I + 1)/2
+         IF (TRMAT1(II) .LT. 1.0D-6) THEN
+            WRITE (LUPRI,*) ' >>> ERROR DKDRIV: Linear dependency in '//
+     &           'primitive basis used in Douglas-Kroll'
+            CALL QUIT('Linear dependency in primitive Douglas-Kroll'//
+     &           ' basis')
+         END IF
          E1DIAG(I) = D1/SQRT(TRMAT1(II))
       END DO
       DO I = 1, NBAST

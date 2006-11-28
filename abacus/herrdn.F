@@ -2421,12 +2421,15 @@ C  /* Deck gtoinp */
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
+#include <gnrinf.h>
 #include <cbirea.h>
 #include <molinp.h>
 #include <ccom.h>
 C
+      IWARN = 0
       NBLOCK = 0
       DO 100 I = 1, IQM
+         IF (UNCONT .AND. DKTRAN .AND. JCO(I) .GT. 1) IWARN = IWARN + 1
          DO 200 J = 1, JCO(I)
             NBLOCK = NBLOCK + 1
             IF(NBLOCK.GT.KAOVEC) GOTO 5000
@@ -2487,6 +2490,17 @@ C
             NRC(NBLOCK) = NRCIJ
  200     CONTINUE
   100 CONTINUE
+      IF (IWARN .GT. 0) THEN
+C
+C     A small test to avoid Douglas-Kroll problems. However, it is not
+C     sufficient, as it will not stop duplication of AOs within a single
+C     block, as for instance may happen if you use Pople-type basis sets
+C     K.Ruud, Nov.-2006
+C
+         WRITE (LUPRI,*) ' >>> WARNING GTOINP: If primitive exponents'//
+     &        ' are duplicated in several blocks, ',
+     &        ' >>> Douglas-Kroll will not work correctly'
+      END IF
       RETURN
 C
 C     Error messages:
@@ -6922,13 +6936,16 @@ C
          END DO
       END IF
 C
+      IF (PCM) THEN
+         WRITE (LINE(ISTART:),'(A7,I1)') 'Sphere=',KSPH
+         ISTART = ISTART + 8
+      END IF
+c
       IF (ATOMBA) THEN
-         WRITE (LINE,'(A25)') 'Basis='//BASNAM(1:25)
+         WRITE (LINE(ISTART:),'(A6,A25)') 'Basis='//BASNAM(1:25)
+         ISTART = ISTART + 31
       END IF
 C
-      IF (PCM) THEN
-         WRITE (LINE,'(A25)') 'Sphere=',KSPH
-      END IF
       RETURN
       END
 
