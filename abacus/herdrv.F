@@ -3868,6 +3868,7 @@ C
 #include <mxcent.h>
       DIMENSION WORK(LWORK)
       LOGICAL UNCONTBKP
+      CHARACTER*7 WORD
 #include <maxaqn.h>
 #include <ccom.h>
 #include <mxsymm.h>
@@ -3892,6 +3893,25 @@ C
 C     We also need two variables from cbiher.h
 C
       CALL RDCBIH(IPREAD, INPTST)
+C
+C     An important input for the READIN procedure is the number of primitives
+C     per block in the input file. First check if this has been reset.
+C
+      MAXPRI = MAXPRD
+      LUTMP = LUCMD
+      IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ',
+     &     'FORMATTED',IDUMMY,.FALSE.)
+      REWIND (LUCMD,IOSTAT=IOS)
+ 5000 READ (LUCMD,'(A7)',END=5010) WORD
+      CALL UPCASE(WORD)
+      IF (WORD .EQ. '.MAXPRI') THEN
+         READ (LUCMD,*) MAXPRI
+         GOTO 5010
+      ELSE
+         GOTO 5000
+      END IF
+ 5010 CONTINUE
+      IF (LUTMP .LE.0) CALL GPCLOSE(LUCMD,'KEEP')
 C
 C     Now call READIN to get the specification of the primitive basis.
 C     Note that UNCONT = .true., to force decontracted specification
