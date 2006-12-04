@@ -52,6 +52,9 @@ C
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMGGA,FKSM,ELE)
       ELSE
+         DO I = 1, NBAST
+            FKSM(I,I) = FKSM(I,I)*2.0D0
+         END DO
          CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LWORK,
      &               DFTKSMLDA,FKSM,ELE)
 C
