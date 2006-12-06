@@ -75,12 +75,20 @@ const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 /* stub subroutines for the functional code */
 extern real dftgethf_(void);
 extern void dftsethf_(real *w);
+extern real dftgetmp2_(void);
+extern void dftsetmp2_(real *w);
 extern void dftsetcam_(const real *w, const real *b);
 
 static real
 dal_get_hf_weight(void) { return dftgethf_(); }
 static void
 dal_set_hf_weight(real w) { dftsethf_(&w); }
+
+static real
+dal_get_mp2_weight(void) { return dftgetmp2_(); }
+static void
+dal_set_mp2_weight(real w) { dftsetmp2_(&w); }
+
 static void
 dal_set_cam_param(int cnt, const real *w, const real *be) {
   dftsetcam_(w, be);
@@ -108,6 +116,8 @@ FSYM(dftsetfunc)(const char* line, int * inperr, int len)
     fun_printf        = fort_print;
     fun_set_hf_weight = dal_set_hf_weight;
     fun_get_hf_weight = dal_get_hf_weight;
+    fun_set_mp2_weight = dal_set_mp2_weight;
+    fun_get_mp2_weight = dal_get_mp2_weight;
     fun_set_cam_param = dal_set_cam_param;
 
     for(i=len-1; i>=0 && isspace((int)line[i]); i--)

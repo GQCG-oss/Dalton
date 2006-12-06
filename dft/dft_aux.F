@@ -241,6 +241,18 @@ C
 #include <dftcom.h>
       dftgethf = HFXFAC
       END
+
+      SUBROUTINE dftsetmp2(W)
+#include <implicit.h>
+#include <dftcom.h>
+      WDFTMP = W
+      END
+C     
+      FUNCTION dftgetmp2()
+#include <implicit.h>
+#include <dftcom.h>
+      dftgetmp2 = WDFTMP
+      END
 c
       SUBROUTINE dftsetcam(W,BETA)
 #include <implicit.h>

@@ -272,6 +272,8 @@ extern Functional *selected_func;
 extern int (*fun_printf)(const char *fmt, ...);
 extern void (*fun_set_hf_weight)(real w);
 extern real (*fun_get_hf_weight)(void);
+extern void (*fun_set_mp2_weight)(real w);
+extern real (*fun_get_mp2_weight)(void);
 extern void (*fun_set_cam_param)(int cnt, const real *w, const real *b);
 
 /* FunDensProp structure contains properties of the density that are
@@ -377,6 +379,7 @@ extern Functional WignerFunctional;
 extern Functional WL90cFunctional;
 
 /* sorted list of mixed functionals */
+extern Functional B2PLYPFunctional;
 extern Functional B3LYPFunctional;
 extern Functional B3LYPgFunctional;
 extern Functional B3LYPGaussFunctional;

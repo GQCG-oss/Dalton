@@ -1,3 +1,4 @@
+/*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /*
 C...   Copyright (c) 2005 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -74,6 +75,7 @@ static int  b86pw91_read(const char* conf_line);
 static int  bvwn_read(const char* conf_line);
 static int  blyp_read(const char* conf_line);
 static int  b1lyp_read(const char* conf_line);
+static int  b2plyp_read(const char* conf_line);
 static int  b3lyp_read(const char* conf_line);
 static int  b3lypg_read(const char* conf_line);
 static int  bp86_read(const char* conf_line);
@@ -149,6 +151,7 @@ Functional LDAFunctional =    LDA_FUNCTIONAL("LDA",      lda_read);
 /* SVWN5 aliases LDA */
 Functional SVWN5Functional =   LDA_FUNCTIONAL("SVWN5",   lda_read);
 Functional SVWN3Functional =   GGA_FUNCTIONAL("SVWN3",   ldagauss_read);
+Functional B2PLYPFunctional =  GGA_FUNCTIONAL("B2PLYP",   b2plyp_read);
 Functional B3LYPFunctional =   GGA_FUNCTIONAL("B3LYP",   b3lyp_read);
 Functional B3LYPgFunctional =  GGA_FUNCTIONAL("B3LYPg",  b3lypg_read);
 Functional B3LYPGaussFunctional = GGA_FUNCTIONAL("B3LYPGauss", b3lypg_read);
@@ -375,6 +378,19 @@ b1lyp_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   0.75);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     1.0);
     fun_set_hf_weight(0.25);
+    return 1;
+}
+
+
+static int
+b2plyp_read(const char* conf_line)
+{
+    static const real lypw = 0.73, dirw = 0.47;
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   0.47);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     lypw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
+    fun_set_hf_weight(1-dirw);
+    fun_set_mp2_weight(0.27);
     return 1;
 }
 
@@ -962,6 +978,12 @@ gga_key_read(const char* conf_line)
                            conf_line);
                 res = 0;
             } else fun_set_hf_weight(f);
+        } else if(strncasecmp("MP2=", str, 3)==0) {
+            if(sscanf(str+3,"%g", &f) != 1) {
+                fun_printf("GGAKey: MP2 not followed by the weight: ",
+                           conf_line);
+                res = 0;
+            } else fun_set_mp2_weight(f);
         } else {
             for(i=0; available_functionals[i]; i++) {
                 int len = strlen(available_functionals[i]->name);

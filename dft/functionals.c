@@ -103,6 +103,7 @@ Functional* available_functionals[] = {
     &WignerFunctional,
     &WL90cFunctional,
     /* mixed functionals */
+    &B2PLYPFunctional,
     &B3LYPFunctional,
     &B3LYPgFunctional,
     &B3LYPGaussFunctional,
@@ -187,6 +188,8 @@ Functional* selected_func = &LDAFunctional;
 int (*fun_printf)(const char *fmt, ...) = my_printf;
 void (*fun_set_hf_weight)(real w)         = set_hf_weight;
 real (*fun_get_hf_weight)(void)           = get_hf_weight;
+void (*fun_set_mp2_weight)(real w)        = set_hf_weight;
+real (*fun_get_mp2_weight)(void)          = get_hf_weight;
 void (*fun_set_cam_param)(int cnt, const real *mu, const real *b)
      = set_cam_param;
 
