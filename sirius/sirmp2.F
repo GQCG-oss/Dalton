@@ -100,6 +100,7 @@ C
 #include <infinp.h>
 #include <infind.h>
 #include <inftra.h>
+#include <dftcom.h>
 C
       CALL QENTER('MP2CTL')
       CALL GETTIM(TIMMP2,DUMMY)
@@ -262,10 +263,20 @@ C
             WRITE (LUW4,'(/A)')
      *      ' Total energy and NO:s calculated with frozen orbitals.'
          END IF
-         WRITE (LUW4,'(/,3(/A,F25.10))')
-     *    ' Hartree-Fock total energy :',EMY,
-     *    ' + MP2 contribution        :',EMP2,
-     *    ' = MP2 second order energy :',EMY+EMP2
+         IF (.NOT.DODFT) THEN
+            WRITE (LUW4,'(/,3(/A,F25.10))')
+     *       ' Hartree-Fock total energy :',EMY,
+     *       ' + MP2 contribution :',EMP2,
+     *       ' = MP2 second order energy :',EMY+EMP2
+         ELSE
+            WRITE (LUW4,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
+     *        (/A,F25.10))')
+     *       ' Kohn--Sham contribution   :',EMY,
+     *       ' + scaled PT2 contribution :',EMP2,' *',WDFTMP,
+     *       ' = ',EMP2*WDFTMP,
+     *       ' = KS-PT2 energy           :',EMY+WDFTMP*EMP2
+            EMCSCF = EMY + WDFTMP*EMP2
+         END IF
       END IF
       ECORR = EMY + EMP2
 C write the correlation coefficients and second order one-density to

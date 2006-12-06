@@ -43,6 +43,7 @@ C
       WDFTC  = D0
       WDFTL  = D0
       WDFTB  = D0
+      WDFTMP = 0.27D0 
       DFTHR0 = 1.0D-9
       DFTHRL = 1.0D-10
       DFTHRI = 2.0D-12
