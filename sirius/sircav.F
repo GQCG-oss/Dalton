@@ -31,8 +31,8 @@ C
       LCENTR = LVERT  + NUMTS*10*3
       LNEWSP = LCENTR + NUMTS*10*3
       LICAV1 = LNEWSP + (NUMSPH*2 + 1)/IRAT
-      LICAV2 = LICAV1 + NATM
-      LX     = LICAV2 + NATM
+      LICAV2 = LICAV1 + MXCENT
+      LX     = LICAV2 + MXCENT
       LY     = LX     + NUMTS
       LZ     = LY     + NUMTS
       LJTR   = LZ     + NUMTS

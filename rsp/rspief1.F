@@ -336,8 +336,10 @@ C Contract transformed charges with the density
 #endif
          CALL V2Q(WRK(KFREE),WRK(KTCHG),WRK(KQCHG),QTEXS,NEQRSP)
       END IF
-      CALL GPCLOSE(LUPCMD,'KEEP')
-C
+      IF(LUPCMD .GT. 0) THEN
+         CALL GPCLOSE(LUPCMD,'KEEP')
+      END IF
+C     
 C     Make charges of the n-index transformed potentials
 C
 C     
