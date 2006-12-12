@@ -1703,7 +1703,7 @@ C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
-     &            '.ERFEXP', '.DOSRIN', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
+     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.XXXXXX', '.XXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -1832,6 +1832,11 @@ C&&&          computing the short-range Hartree term (U_sr) in MCDFT
                DOSRIN = .TRUE.
                GO TO 100
    13          CONTINUE
+               READ (LUCMD,*,ERR=38) CHIVAL 
+               CHI1ST = .TRUE.
+               RUNTWO = .TRUE.
+               GO TO 100
+ 38            CALL QUIT('Error reading CHIVAL for *TWOINT/.MU ')
                GO TO 100
    14          CONTINUE
                GO TO 100
@@ -1848,7 +1853,7 @@ C&&&          computing the short-range Hartree term (U_sr) in MCDFT
       END IF
   300 CONTINUE
       ICEDIF = ICDIFF + 2*IEDIFF
-      IF (ICHANG .EQ. 0.AND.(.NOT.DIRCAL)) GOTO 199
+      IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
       IF (NEWDEF) THEN
          CALL HEADER('Changes of defaults for HR2INP:',1)
          IF (.NOT.(RUNTWO.OR.DIRCAL)) THEN
@@ -1868,14 +1873,23 @@ C&&&          computing the short-range Hartree term (U_sr) in MCDFT
             IF (PANAS .NE. 0.0D0) WRITE (LUPRI,'(/,A,F10.5)')
      &           ' Coulomb integrals screened with a factor of',PANAS
             IF (CHIVAL .NE. -1.0D0) THEN
-               IF (ERFEXP) THEN
-                  WRITE (LUPRI,410)
+               IF (CHI1ST) THEN
+                  DIRCAL = .TRUE.
+                  WRITE (LUPRI,'(2A,E15.5)') 
+     &              ' Two-electron integrals calculated',
+     &              ' for KS-PT2 with mu = ',CHIVAL
+                  WRITE (LUPRI,'(A)') 
+     &              ' DFT optimization is run .DIRECT' 
                ELSE
-                  WRITE (LUPRI,400)
-               ENDIF
-               WRITE (LUPRI,'(A,F10.5)')
-     &         '              with the coupling parameter : ',CHIVAL
+                  IF (ERFEXP) THEN
+                     WRITE (LUPRI,410)
+                  ELSE
+                     WRITE (LUPRI,400)
+                  ENDIF
+                  WRITE (LUPRI,'(A,F10.5)')
+     &            '              with the coupling parameter : ',CHIVAL
             ENDIF
+            END IF
             IF (DIRCAL) THEN
               IF(SOFOCK) THEN
                 WRITE(LUPRI,'(/1X,A)')
@@ -3209,6 +3223,7 @@ C
                CALL TIMER('TWOINT',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
                CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
+               IF (CHI1ST) CHIVAL = -1.0D0
             END IF
          END IF
 C

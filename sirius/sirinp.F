@@ -427,6 +427,7 @@ C
       DONEVPT= .FALSE.
       DORSP = RNRESP
       ABAIPH= RNABAC
+      ADDMP2 = .FALSE.
 C     ... It's followed by an abacus run
       CORHOL= .FALSE.
       CORRLX= .FALSE.
@@ -805,7 +806,7 @@ C
  124    CONTINUE
       IF (DIRFCK) THEN
          LUSUPM = -1
-         IF (DOMP2 .OR. DOCI .OR. DOMC) THEN
+         IF ((DOMP2 .AND..NOT.ADDMP2) .OR. DOCI .OR. DOMC) THEN
             WRITE (LUPRI,'(/A/A)')
      &      'INPUT ERROR: Direct Fock matrix construction',
      &      '             not possible for MP2, CI, and MCSCF.'
@@ -1913,7 +1914,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NTABLE = 21)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*20, TITLIN*80
       LOGICAL ALLOPT
@@ -1940,7 +1941,8 @@ C
       DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
-     *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA'/
+     *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
+     *            '.KSPT2 '/
 C
 C
 C
@@ -1957,7 +1959,8 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112,113,114,115,106,117,118,119,120), II
+     *                   111,112,113,114,115,106,117,118,119,120,
+     *                   121), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2180,7 +2183,14 @@ C todo      INPERR = INPERR + 1 ! remove comment when DFT_GETFUNC ready
             WORD = TITLIN(1:7)
             GO TO 1101
          END IF
+         WDFTMP = 0.0D0
          CALL DFTsetFunc(TITLIN,INPERR)
+         IF (WDFTMP.NE.0.0D0) THEN
+            DOMP2    = .TRUE.
+            FLAG(9)  = .TRUE.
+            FLAG(3)  = .FALSE.
+            ADDMP2   = .TRUE.
+         END IF
       GO TO 100
 C
 C *** Option NEW NEVPT2
@@ -2197,6 +2207,14 @@ C
 C *** Option 20: .IT1START
   120 CONTINUE
          IREST = 2
+      GO TO 100
+  121 CONTINUE
+        DOMP2    = .TRUE.
+        NUMRUN   = NUMRUN + 1
+        FLAG(9)  = .TRUE.
+        FLAG(3)  = .FALSE.
+        ADDMP2   = .TRUE.
+        READ (LUCMD,*) WDFTMP
       GO TO 100
 C
       END

@@ -1191,6 +1191,7 @@ C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                             ELSE calculate g(R12) listed above
 C
       CHIVAL = -1.0D0
+      CHI1ST = .FALSE. 
 C
 C     SRINTS: calculate 1/R12 - g(R12)
 C
