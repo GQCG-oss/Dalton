@@ -225,7 +225,7 @@ C*****************************************************************************
 C    
 C     ERI_POINT: Initialization of ERI pointers for Fock matrix calculation.
 C        
-C     Taken from HRFCK2 by Luuk Visscher, october 2004
+C     Taken from ERIFCK by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
 #include "implicit.h"
@@ -326,7 +326,7 @@ C     The active classes should be set outside of this routine.
 C     Control of writing versus Fock matrix construction is also done
 C     on the outside.
 C        
-C     Second part of HRFCK2, split by Luuk Visscher, october 2004
+C     Second part of ERIFCK, split by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
 #include "implicit.h"
