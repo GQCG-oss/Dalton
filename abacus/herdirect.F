@@ -448,7 +448,7 @@ C               two-electron part of the fock matrices.
 C               We assume the densities and fock matrices are full
 C               squares and without symmetry reduction .
 C
-C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or HRFCK2
+C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or ERIFCK
 C     (old integral routines or new ERI integral routines)
 C
 #include <implicit.h>
@@ -517,8 +517,7 @@ C
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
      &                  LDUMMY,LDUMMY,LDUMMY,LDUMMY,LDUMMY,
      &                  IPRFCK,IPRTYP,
-     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                  DUMMY)
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY)
 
          ELSE
            CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
@@ -529,7 +528,7 @@ C
 #else
            KFCKTP = KFREE
 #endif
-           CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+           CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
          END IF
@@ -542,11 +541,11 @@ C
 #else
          KFCKTP = KFREE
 #endif
-         CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+         CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &               WORK(KFREE),LFREE)
 #endif
-         CALL MEMREL('HERFCK',WORK,KWORK,KWORK,KFREE,LFREE)
+         CALL MEMREL('ERIFCK',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
       CALL QEXIT('HERFCK')
       RETURN
