@@ -340,13 +340,20 @@ C
 
         DO 10 J= 1,NUCDEP
           RADJ = RADIUS(ICHARG(J))
+          IF (RADJ .LT. 0.0D0 .AND. ICHARG(J) .GT. 0) THEN
+C             do not print if cavity center or floating orbital /hjaaj
+              WRITE(LUPRI,*)
+     &        'RADIUS FOR ATOM WITH ATOMIC NUMBER ',
+     &        ICHARG(J),' IS UNAVAILABLE, USING 2.0 AA'
+            RADJ = 2.0D0
+          END IF
           DO 20 I= 1, J-1
             RADI = RADIUS(ICHARG(I))
+            IF (RADI .LT. 0.0D0 .AND. ICHARG(I) .GT. 0) THEN
+              RADI = 2.0D0
+            END IF
             IF (RADI .LT. 0 .OR. RADJ .LT. 0) THEN
-C               do not print if cavity center or floating orbital /hjaaj
-              IF (ICHARG(I).GT.0 .AND. ICHARG(J).GT.0) WRITE(LUPRI,*)
-     &        'RADII FOR ATOMS WITH ATOMIC NUMBER ',
-     &        ICHARG(I), ' AND/OR ', ICHARG(J), ' ARE UNAVAILABLE'
+C             not bonded if cavity center or floating orbital /hjaaj
               BONDED(I,J) = .FALSE.
               BONDED(J,I) = .FALSE.
             ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
@@ -639,6 +646,12 @@ C
          CALL QUIT('VDWRAD called with illegal NCHARGE')
       ELSE
          VDWRAD = 0.01D0 * RAD(NCHARGE)
+         IF (VDWRAD .LT. 0.0D0) THEN
+C           if no table value, use covalent radius plus 0.65 AA
+C           (as for B-F above) /Dec. 2006, hjaaj
+            WDWRAD = RADIUS(NCHARGE) 
+            IF (VDWRAD .GT. 0.0D0) VDWRAD = VDWRAD + 0.65D0
+         END IF
       END IF
       RETURN
       END
