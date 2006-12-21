@@ -1271,19 +1271,30 @@ C
 #include <inforb.h>
 #include <infpri.h>
 #include <infspi.h>
+#include <priunit.h>
+C
+C panor:
+C     DOESA=.TRUE.
+C     For excited state absorption we require the B-state to be the
+C     first state of symmetry ESASYM and that the C-state is separate
+C     from the B-state.
 C
       DO 300 ICSYM = 1,NSYM
-         IF ( EXMTES ) THEN
+         IF (DOESA .OR. EXMTES) THEN
             NBSYME = NSYM
          ELSE
             NBSYME = ICSYM
          END IF
          DO 400 IBSYM = 1,NBSYME
+            IF (DOESA.AND.IBSYM.NE.ESASYM) GOTO 400
             IASYM = MULD2H(ICSYM,IBSYM)
             IF ( (NPPCNV(ICSYM) .GT. 0) .AND. (NPPCNV(IBSYM) .GT. 0)
      *          .AND. (NGPPP(IASYM).GT.0) ) THEN
                DO 900 IC = 1,NPPCNV(ICSYM)
-                  IF ( EXMTES .OR. ICSYM.NE.IBSYM ) THEN
+                  IF (DOESA .AND. ICSYM.EQ.IBSYM .AND. IC.EQ.1) GOTO 900
+                  IF (DOESA) THEN
+                     IBE = 1
+                  ELSE IF ( EXMTES .OR. ICSYM.NE.IBSYM ) THEN
                      IBE = NPPCNV(IBSYM)
                   ELSE
                      IBE = IC

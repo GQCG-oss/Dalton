@@ -1079,7 +1079,7 @@ C
 #include "mxcent.h"
 #include "pcmdef.h"
       LOGICAL NEWDEF, ISLINR
-      PARAMETER ( NTABLE = 50 )
+      PARAMETER ( NTABLE = 51 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -1116,7 +1116,8 @@ C
      *            '.ANTTES', '.RESTPP', '.ABCHK ', '.ABSYM ','.PRINT ',
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC','.ECD   ',
      *            '.X2TEST', '.A2TEST', '.SINGLE', '.DOUBLE','.THCLR ',
-     *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART','.OECD  '/
+     *            '.MAXITL', '.TRIPLE', '.NSIMUL', '.NSTART','.OECD  ',
+     *            '.ESA   '/
       INTEGER IXARR(MAXLPP)
 C
 C READ IN  INPUT
@@ -1143,7 +1144,7 @@ C
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
      *                      28,29,30,31,32,33,34,35,36,37,38,39,
-     *                      40,41,42,43,44,45,46,47,48,49,50), I
+     *                      40,41,42,43,44,45,46,47,48,49,50,51), I
                   END IF
                END DO
                IF (WORD .EQ. '.OPTION') THEN
@@ -1401,6 +1402,23 @@ c              selected excited states
                   END IF
                END IF
                GO TO 100
+ 51            CONTINUE
+C panor: 
+C     Excited state absorption is calculated from the lowest excited
+C     state of symmetry ESASYM to other excited states specified on
+C     subsequent line.
+               DOESA = .TRUE.
+               READ (LUCMD,*) ESASYM
+               LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
+               LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
+               LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
+               NPPTOT = 0
+               READ (LUCMD,*) (NPPCNV(J),J=1,NSYM)
+               IF (NPPCNV(ESASYM).EQ.0) NPPCNV(ESASYM)=1
+               DO J=1,NSYM
+                  NPPTOT = NPPTOT + NPPCNV(J)
+               END DO
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1467,6 +1485,11 @@ C-------------------
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
+         END IF
+         IF (DOESA) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Excited state absorption calculattion requested: DOESA  ='
+     *      ,DOESA
          END IF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
@@ -4062,18 +4085,18 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 C
-      PARAMETER ( NTABLE = 6 )
+      PARAMETER ( NTABLE = 7 )
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
       PARAMETER ( STRING = '*QUADRA' )
       DATA TABLE /'.SINGLE', '.DOUBLE', '.PHOSPH', '.TWO-PH',
-     &            '.MNFPHO', '.TPCD  '/
+     &            '.MNFPHO', '.TPCD  ', '.ESA   '/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
-            GO TO (1,2,3,4,5,4), I
+            GO TO (1,2,3,4,5,4,6), I
          END IF
       END DO
       GO TO 100
@@ -4131,6 +4154,15 @@ C
       CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 150
       CALL SMOINP(WORD)
+      RETURN
+C
+C Excited state absorption calculation
+C
+ 6    REWIND (LUCMD,IOSTAT=IOS)
+ 160  READ (LUCMD, '(A7)',END=2100) WORD
+      IF (WORD .NE. STRING) GO TO 160
+      EXMOM = .TRUE.
+      CALL PPINP(WORD)
       RETURN
 C
  2100 CALL QUIT('**END OF not found in DALTON input')

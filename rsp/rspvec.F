@@ -1531,6 +1531,8 @@ C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
      &            IMXEXC=20, D30 = 30.0D0)
       PARAMETER ( DP5 = 0.5D0 , D3 = 3.0D0)
+      PARAMETER (AU_TO_GM=80*3.1415926D0**3 / 137.036**2 * 
+     &     0.591177**4 *2.418884)
       DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
 #include <iratdef.h>
@@ -2102,16 +2104,21 @@ C
       IF (TWOPHO) THEN
          CALL TITLER('FINAL RESULTS FROM TWO-PHOTON CALCULATION',
      &        '*',112)
-         WRITE(LUPRI,'(A64,4(/A64))') 
+         WRITE(LUPRI,'(A64,5(/A64))') 
      & ' The two-photon absorption strength for an average molecular  ',
      & ' orientation is computed according to formulas given by       ',
      & ' P.R. Monson and W.M. MacClain in J. Chem. Phys. 53:29, 1970  ',
      & ' and W.M. MacClain in J. Chem. Phys. 55:2789, 1971.           ',
      & ' The absorption depends on the light polarization.            ',
      & ' A monochromatic light source is assumed.                     '
-         WRITE(LUPRI,'(2(/A64))')
+         WRITE(LUPRI,'(3(/A64))')
      & ' All results are presented in atomic units, except the        ',
-     & ' excitation energy which is given in eV.                      '
+     & ' excitation energy which is given in eV and two-photon cross  ',
+     & ' section which is given in GM.                                '
+         WRITE(LUPRI,'(3(/A))')
+     &        '   Conversion factors:',
+     &        '      1 a.u. = 1.896788 10^{-50} cm^4 s/photon',
+     &        '      1 GM = 10^{-50} cm^4 s/photon'
          WRITE(LUPRI,'(/,3(/A52))') 
      &        '+--------------------------------+',
      &        '| Two-photon transition tensor S |',
@@ -2144,21 +2151,25 @@ C
      &        ' D  = -2*Df + 6*Dg, Circular polarization',
      &        ' Df = sum(i,j){ S_ii * S_jj }/30         ',
      &        ' Dg = sum(i,j){ S_ij * S_ij }/30         '
+         WRITE(LUPRI,'(3(/A60))') 
+     &        '          Two-photon cross sections                ',
+     &        '---------------------------------------------------',
+     &        ' sigma  =  8*pi^3*alpha^2*hbar/e^4 * E^2*D   (a.u.)'
          WRITE(LUPRI,'(3(/A53))') 
      &        '       Polarization ratio      ',
      &        '-------------------------------',
      &        '    R  = (-Df+3*Dg)/(Df+2*Dg)  '  
          WRITE(LUPRI,'(/,3(/A56))') 
      &        '+-----------------------------------+',
-     &        '| Two-photon transition probability |',
+     &        '|   Two-photon absorption summary   |',
      &        '+-----------------------------------+'
          WRITE(LUPRI,'(A62,A)')
      &'-----------------------------------------------------------',
-     &'-----------'
-         WRITE(LUPRI,'(A6,A4,A8,A14,3A11,A8/A62,A)') 'Sym','No',
-     &        'Energy','Polarization','Df','Dg','D','R',
+     &'----------------------'
+         WRITE(LUPRI,'(A6,A4,A8,A14,4A11,A8/A62,A)') 'Sym','No',
+     &        'Energy','Polarization','Df','Dg','D','sigma','R',
      &'-----------------------------------------------------------',
-     &'-----------'
+     &'----------------------'
          DO ISYMC=1,NSYM
          DO IC = 1,NSMCNV(ISYMC)
             IF (IC.LE.IMXEXC) THEN
@@ -2172,70 +2183,57 @@ C
                END DO
                DF = DF/D30
                DG = DG/D30
-               R=(-DF+3*DG)/(DF+2*DG)
-               D=2*DF+4*DG
-               WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMC,IC,
-     &              RESFRE(IC,ISYMC)*XTEV,'Linear     ',DF,DG,D,R
+               R = (-DF+3*DG)/(DF+2*DG)
+               D = 2*DF+4*DG
+               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
+     &              RESFRE(IC,ISYMC)*XTEV,'Linear     ',DF,DG,D,s,R
                D=-2*DF+6*DG
-               WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMC,IC,
-     &              RESFRE(IC,ISYMC)*XTEV,'Circular   ',DF,DG,D,R
-*********************************************************************
-*                                                                   *
-*                 Compute rotationally averaged                     *
-*                 two-photon transition strengths                   *
-*                 for different light beam polarizations            *
-*                                                                   *
-*       Martin J. Paterson      22/02/05                            *
-*                                                                   *
-*********************************************************************
-         WRITE(LUPRI,'(a)')
-     &    ' '
-         WRITE(LUPRI,'(6x,a)')
+               s = D * RESFRE(IC,ISYMC)**2 * AU_TO_GM
+               WRITE(LUPRI,'(A2,2I4,F8.2,A14,4E11.3,F8.2)')' ',ISYMC,IC,
+     &              RESFRE(IC,ISYMC)*XTEV,'Circular   ',DF,DG,D,s,R
+               IF (IPRRSP.GT.2) THEN
+                  WRITE(LUPRI,'(/,6x,a)')
      &    ' Rotationally averaged two-photon transition strengths',
      &    '                 and rate constants'
-
-         DELTA_TPlpa = ZERO
-         DELTA_TPlpa = ((2*DF)+(4*DG))
-         DELTA_TPlpe = ZERO
-         DELTA_TPlpe = ((-1*DF)+(5*DG))
-         DELTA_TPc = ZERO
-         DELTA_TPc = ((-2*DF)+(6*DG))
-         AUTIME = HBAR/XTJ
-         dK_1 = ZERO
-         dK_1 = (XTANG*XTANG*XTANG*XTANG)*AUTIME
-         dK_2 = ZERO
-         dK_2 = (8*PI*PI*PI)*(ALPHAC*ALPHAC)
-         dK_3 = ZERO
-         dK_3 = RESFRE(IC,ISYMC)*RESFRE(IC,ISYMC)
-         dK_lpa = ZERO
-         dK_lpa = dK_1*dK_2*dK_3*DELTA_TPlpa
-         dK_lpe = ZERO
-         dK_lpe = dK_1*dK_2*dK_3*DELTA_TPlpe
-         dK_c = ZERO
-         dK_c = dK_1*dK_2*dK_3*DELTA_TPc
-
-         WRITE(LUPRI,'(a)')
-     &    ' '
-         WRITE(LUPRI,'(6x,a)')
+                  DELTA_TPlpa = ZERO
+                  DELTA_TPlpa = ((2*DF)+(4*DG))
+                  DELTA_TPlpe = ZERO
+                  DELTA_TPlpe = ((-1*DF)+(5*DG))
+                  DELTA_TPc = ZERO
+                  DELTA_TPc = ((-2*DF)+(6*DG))
+                  AUTIME = HBAR/XTJ
+                  dK_1 = ZERO
+                  dK_1 = (XTANG*XTANG*XTANG*XTANG)*AUTIME
+                  dK_2 = ZERO
+                  dK_2 = (8*PI*PI*PI)*(ALPHAC*ALPHAC)
+                  dK_3 = ZERO
+                  dK_3 = RESFRE(IC,ISYMC)*RESFRE(IC,ISYMC)
+                  dK_lpa = ZERO
+                  dK_lpa = dK_1*dK_2*dK_3*DELTA_TPlpa
+                  dK_lpe = ZERO
+                  dK_lpe = dK_1*dK_2*dK_3*DELTA_TPlpe
+                  dK_c = ZERO
+                  dK_c = dK_1*dK_2*dK_3*DELTA_TPc
+                  WRITE(LUPRI,'(/,6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' |   Polarization    |    DELTA_TP    |   K (0 -> f)   |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+                  WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
      &    ' |  linear (para)    |', DELTA_TPlpa, '   |', dK_lpa,'  |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+                  WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
      &    ' |  linear (perp)    |', DELTA_TPlpe, '   |', dK_lpe,'  |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-         WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
+                  WRITE(LUPRI,'(6x,a,f13.8,a,E14.6,a)')
      &    ' |    circular       |', DELTA_TPc,   '   |', dK_c,'  |'
-         WRITE(LUPRI,'(6x,a)')
+                  WRITE(LUPRI,'(6x,a)')
      &    ' +-------------------+----------------+----------------+'
-
-
+               END IF
 *********************************************************************
             ELSE
                WRITE(LUPRI,'(/A)') 
@@ -2245,7 +2243,7 @@ C
          END DO
          WRITE(LUPRI,'(A62,A)')
      &'-----------------------------------------------------------',
-     &'-----------'
+     &'----------------------'
       END IF
 C
 C
@@ -2291,21 +2289,29 @@ C In 900 loop, if NGPPP(MSYMC).GT.0 calculate <0/C/i> moments
 C Calculate oscillator strengths,
 C    if DIPVEL then divide by frequency
 C
+C panor:
+C     DOESA=.TRUE.
+C     For excited state absorption we require the B-state to be the
+C     first state of symmetry ESASYM and that the C-state is separate
+C     from the B-state.
+C
       CALL QENTER('QREXM')
       IPRRSP = IPREXM
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
-         IF (EXMTES) THEN
+         IF (DOESA .OR. EXMTES) THEN
             MSYMBE = NSYM
          ELSE
             MSYMBE = MSYMC
          END IF
          DO 400 MSYMB = 1,MSYMBE
+            IF (DOESA .AND. MSYMB.NE.ESASYM) GOTO 400
             MSYMBX = MULD2H(IREFSY,MSYMB)
             MSYMA = MULD2H(MSYMC,MSYMB)
             IF ( (NPPCNV(MSYMC) .GT. 0) .AND. (NPPCNV(MSYMB) .GT. 0)
      *          .AND. (NGPPP(MSYMA).GT.0) ) THEN
                DO 900 IC = 1,NPPCNV(MSYMC)
+                  IF (DOESA .AND. MSYMC.EQ.MSYMB .AND. IC.EQ.1) GOTO 900
                   IF(.NOT.LCMEXC(IC,MSYMC)) GO TO 900
                   IF (ISPINC.EQ.ISPINB) THEN
                      ICEXNU = INQREX(MSYMC,IC)
@@ -2359,7 +2365,9 @@ C
      *                                  MZWOPT(MSYMC),MSYMC,
      *                                  MZVAR(MSYMC),LUPRI)
                   END IF
-                  IF (EXMTES .OR. MSYMB.NE.MSYMC) THEN
+                  IF (DOESA) THEN
+                     IBE = 1
+                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC) THEN
                      IBE = NPPCNV(MSYMB)
                   ELSE
                      IBE = IC

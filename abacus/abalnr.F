@@ -392,7 +392,7 @@ C
       CALL TIMER('START ',TIMEIN,TIMOUT)
 C
       IF (IPRLNR .GE. 0) 
-     &     CALL TITLER('Solving Linear Response Equations','¤',118)
+     &     CALL TITLER('Solving Linear Response Equations','*',118)
 C
       IPRRSP = IPRLNR
 C
@@ -1601,7 +1601,12 @@ C
   100    CONTINUE
       ENDIF
       IF (ROAG) THEN
-         CALL TITLER('Optical rotation','+',118)
+         IF (ABSORP) THEN
+            CALL TITLER('Optical Rotation and Electronic Circular '//
+     &           'Dichroism','+',102)
+         ELSE
+            CALL TITLER('Optical rotation','+',118)
+         END IF
          IF (IPRINT .GE. 0) THEN
             DO IFRVAL = 1,NFRVAL
                WRITE(LUPRI,9005) FRVAL(IFRVAL)
@@ -1721,9 +1726,21 @@ C
             END DO
          END DO
          FACTOT = FACTOR*XTKAYS*XTKAYS
-         WRITE(LUPRI,'(2(/,10X,A))')
-     &        'Optical rotation summary',
-     &        '------------------------'
+         IF (ABSORP) THEN
+            WRITE(LUPRI,'(2(/,10X,A))')
+     &      'Optical rotation and Electronic Circular Dicroism summary',
+     &      '---------------------------------------------------------'
+            WRITE(LUPRI,'(/,10X,A)')
+     &           'ORD is given in units:'//
+     &           ' degrees/(dm g/cm^3)'
+            WRITE(LUPRI,'(10X,A)')
+     &           'CD extinction coefficient is given in units:'//
+     &           ' cm^2/dmol'
+         ELSE
+            WRITE(LUPRI,'(2(/,10X,A))')
+     &           'Optical rotation summary',
+     &           '------------------------'
+         END IF
          DO IFRVAL = 1, NFRVAL
             TSTFR = ABS(FRVAL(IFRVAL))
             IF (TSTFR .LT. 1.0D-14) THEN
@@ -1791,15 +1808,20 @@ C
      &              'Optical rotation (Mod. Vel.) :',
      &              ALPHVV(1),'  + i ',ALPHVV(2)
                ELSE
-                  WRITE(LUPRI,'(4(/10X,2(A,F12.6)))') 
-     &              'Beta (London)                :',
+                  WRITE(LUPRI,'(2(/10X,2(A,F12.6)))') 
+     &              'Beta (London)                  :',
      &              BETAL(1), '  + i ',BETAL(2),
-     &              'Beta (No-London)             :',
-     &              BETANL(1),'  + i ',BETANL(2),
-     &              'Optical rotation (London)    :', 
-     &              ALPHAL(1),'  + i ',ALPHAL(2),
-     &              'Optical rotation (No-London) :', 
-     &              ALPHNL(1),'  + i ',ALPHNL(2)
+     &              'Beta (No-London)               :',
+     &              BETANL(1),'  + i ',BETANL(2)
+                  WRITE(LUPRI,'(4(/10X,A,F12.6))') 
+     &              'Optical rotation (London)      :', 
+     &              ALPHAL(1),
+     &              'Optical rotation (No-London)   :', 
+     &              ALPHNL(1),
+     &              'Circular dichroism (London)    :', 
+     &              ALPHAL(2)*TMASS/3.2988D5,
+     &              'Circular dichroism (No-London) :', 
+     &              ALPHNL(2)*TMASS/3.2988D5
                END IF
             ELSE
                IF (MVEOR) THEN
