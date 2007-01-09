@@ -1735,7 +1735,7 @@ C
      &           ' degrees/(dm g/cm^3)'
             WRITE(LUPRI,'(10X,A)')
      &           'CD extinction coefficient is given in units:'//
-     &           ' cm^2/dmol'
+     &           ' L/(mol cm)'
          ELSE
             WRITE(LUPRI,'(2(/,10X,A))')
      &           'Optical rotation summary',
