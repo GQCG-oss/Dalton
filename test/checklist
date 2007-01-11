@@ -1,0 +1,455 @@
+#!/usr/bin/perl -w
+#
+# CHECK LIST FILE
+#
+#
+# SYNTAX (disregard the two leading characters -# - in each line of the following example) 
+#-------------------------------------------- 
+# ## namecheck start  ######
+# {$params={
+#   name      => "namecheck", 
+#   type      => n, 
+#   some_text => "some string", 
+#   some_int  => m, 
+#   some_real => xx.xxxEp
+#   some_list => [n1,n2,n3,r1,r2,s1,s2,s3]};
+# }
+# ## namecheck end  ######
+# --------------------------------------------
+# Comments:
+#
+# 1) the syntax of the first and last comment line IS important 
+#    since the program will fetch the hash between those two lines
+#    based on a corresponding sting search
+# 2) "namecheck" has to be the same as the one used in the CHECKLIST
+#    of the .tst file and in the element "name" of the hash referenced 
+#    by $params
+# 3) "type" defines the kind of test to be performed, and the other 
+#    necessary parameters depend on it (some_text, some_int and some_real are given for conveneience)
+# 4) one or more list-type parameter can be specified if needed
+# 5) the input parsing of the .tst file allows to chance the values of the parameters
+# test type 0
+# search for a number in a selected line and compare it with its reference counterpart
+# arguments
+# 1: string to search
+# 2: number position in the line (spaces stripped out)
+# 3: accuracy of the test
+#
+
+## enedft start ###############################
+{$params={
+  name   => "enedft", 
+  type   => 0, 
+  string => "Final DFT", 
+  pos    => 4, 
+  thr    => 1.0e-10};
+}
+## enedft end  #################################
+
+## enehf start ################################
+{$params={
+  name   => "enehf",
+  type   => 0,
+  string => "Final HF",
+  pos    => 4,
+  thr    => 1.0e-10};
+}
+## enehf end  #################################
+
+## tes start ################################################
+{$params={
+  name   => "tes",
+  type   => 0,
+  string => "TOTAL NUMBER OF TESSERAE",
+  pos    => 5,
+  thr    => 0.1};
+}
+## tes end  #################################################
+
+## nuc start #####################################################
+{$params={
+  name   => "nuc",
+  type   => 0,
+  string => "Nuclear repulsion energy",
+  pos    => 5,
+  thr    => 1.0e-10};
+}
+## nuc end  ######################################################
+
+## surf start #####################################################
+{$params={
+  name   => "surf",
+  type   => 0,
+  string => "SURFACE AREA",
+  pos    => 6,
+  thr    => 1.0e-7};
+}
+## surf end  #####################################################
+
+## nucchg start #########################################################
+{$params={
+  name   => "nucchg",
+  type   => 0,
+  string => "NUCLEAR APPARENT CHARGE",
+  pos    => 4,
+  thr    => 1.0e-4};
+}
+## nucchg end  #########################################################
+
+## elactive start #######################################################
+{$params={
+  name   => "elactive",
+  type   => 0,
+  string => "Number of electrons in active shells",
+  pos    => 7,
+  thr    => 1.0e-5};
+}
+## elactive end  #######################################################
+
+
+#
+# test type 1
+# fetch all/some lines containing a predefined string
+# for each line performs the same test as test type 0
+# arguments of the list
+# 1: string to search
+# 2: maximum lines of output to parse in file (all if negative)
+# 3: maximum number of matching lines to fetch (all if negative)
+# 4: number position in the line (spaces stripped out)
+# 5: accuracy of the test
+#
+
+## beta start #######################################################
+{$params ={
+  name     => "beta",
+  type     => 1,
+  string   => "B-freq =",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 10,
+  thr      => 1.0e-4};
+}
+## beta end  #####################################################
+
+## diplen start #######################################################
+{$params ={
+  name     => "diplen",
+  type     => 1,
+  string   => "DIPLEN  ;",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 8,
+  thr      => 1.0e-6};
+}
+## diplen end  #####################################################
+
+## diploc start #######################################################
+{$params ={
+  name     => "diploc",
+  type     => 1,
+  string   => "DIPLOC  ;",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 8,
+  thr      => 1.0e-6};
+}
+## diploc end  #####################################################
+
+## qrlrve start #######################################################
+{$params ={
+  name     => "qrlrve",
+  type     => 1,
+  string   => "QRLRVE: SINGLET",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 7,
+  thr      => 1.0e-6};
+}
+## qrlrve end  #####################################################
+
+## qrlrve2 start #######################################################
+{$params ={
+  name     => "qrlrve2",
+  type     => 1,
+  string   => "QRLRVE:  ",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 9,
+  thr      => 1.0e-8};
+}
+## qrlrve2 end  #####################################################
+
+## Bterm start #######################################################
+{$params ={
+  name     => "Bterm",
+  type     => 1,
+  string   => "B term",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 4,
+  thr      => 1.0e-8};
+}
+## Bterm end  #####################################################
+
+## or_lon start #######################################################
+{$params ={
+  name     => "or_lon",
+  type     => 1,
+  string   => "Optical rotation \\(L",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 5,
+  thr      => 1.0e-4};
+}
+## or_lon end  #####################################################
+
+## shield start #######################################################
+{$params ={
+  name     => "shield",
+  type     => 1,
+  string   => "Shielding constant:",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 3,
+  thr      => 1.0e-4};
+}
+## shield end  #####################################################
+
+## Icoupl start #######################################################
+{$params ={
+  name     => "Icoupl",
+  type     => 1,
+  string   => "Isotropic coupling  ",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 4,
+  thr      => 1.0e-4};
+}
+## Icoupl end  #####################################################
+
+## Acoupl start #######################################################
+{$params ={
+  name     => "Acoupl",
+  type     => 1,
+  string   => "Anisotropic coupling  ",
+  maxout   => -1,
+  maxfetch => -1,
+  pos      => 4,
+  thr      => 1.0e-4};
+}
+## Acoupl end  #####################################################
+
+
+#
+# test type 2
+# fetch a block of lines between two user-defined strings, then perform a test
+# type 0 on a selected line
+# arguments
+# 1: String defining the starting line
+# 2: String defining the final line
+# 3: Starting offset: n. of lines stripped away at the beginning of the block
+# 4: End offset: n. of lines stripped away at the end of the block (if negative add the coresponding number of linse after the matching end string)
+# 5: Line number (after stripping): line on which test type 0 is performed
+# 6: Number position in the line
+# 7: accuracy of the test
+#
+## dipole start #######################################################
+{$params={
+  name         => "dipole",
+  type         => 2,
+  start_string => "Dipole moment",
+  end_string   => "Dipole moment components",
+  start_offset => 0,
+  end_offset   => 0,
+  line         => 6,
+  pos          => 1,
+  thr          => 1.0e-6};
+}
+## dipole end  #######################################################
+
+## dipolelf start #######################################################
+{$params ={
+  name         => "dipolelf",
+  type         => 2,
+  start_string => "Local-field corrected dipole moment",
+  end_string   => "Local-field corrected dipole moment components",
+  start_offset => 0,
+  end_offset   => 0,
+  line         => 6,
+  pos          => 1,
+  thr          => 1.0e-6};
+}
+## dipolelf end  #######################################################
+#
+#
+# test type 3
+# fetch lines as in test type 1 then compare several numbers on each line
+# arguments
+# 1: string to search
+# 2: maximum lines of output to parse in file (all if negative)
+# 3: maximum number of matching lines to fetch (all if negative)
+# 4: list of n positions 
+# 5: list of m thresholds
+# if m = n the i-th position will take the i-th threshold
+# if m > n thresholds beyond n are ignored
+# if m < n the last threshold value is replicated until n
+## tramom start #######################################################
+{$params ={
+  name   => "tramom",
+  type   => 3,
+  string => " STATE NO: ",
+  maxout => -1,
+  maxget => -1,
+  pos    => [ 7, 9 ],
+  thr    => [ 1.0e-6, 1.0e-5 ] };
+}
+## tramom end  #######################################################
+
+## omegab start #######################################################
+{$params ={
+  name   => "omegab",
+  type   => 3,
+  string => "omega B",
+  maxout => -1,
+  maxget => -1,
+  pos    => [ 7, 8, 9 ],
+  thr    => [ 1.0e-5 ]};
+}
+## omegab end  #######################################################
+
+## cmass start #######################################################
+{$params ={
+  name   => "cmass",
+  type   => 3,
+  string => "Center-of-mass",
+  maxout => -1,
+  maxget => -1,
+  pos    => [ 4, 5, 6 ],
+  thr    => [1.0e-5]};
+}
+## cmass end  #######################################################
+
+## occSCF start #######################################################
+{$params ={
+  name   => "occSCF",
+  type   => 3,
+  string => "Occupied SCF orbitals",
+  maxout => -1,
+  maxget => -1,
+  pos    => [ 4, 5, 6 ],
+  thr    => [ 1.0e-5 ]};
+}
+## occSCF end  #######################################################
+
+## gauge_or start #######################################################
+{$params ={
+  name   => "gauge_or",
+  type   => 3,
+  string => "Center of mass gauge origin",
+  maxout => -1,
+  maxget => -1,
+  pos    => [ 6, 7, 8 ],
+  thr    => [ 1.0e-5 ] };
+}
+## gauge_or end  #########################################################
+
+#
+# test type 4
+# fetch a line and compare it with the reference output
+# arguments
+# 1: string to search
+# 2: maximum lines of output to parse in file (all if negative)
+# 3: post processing of fetched line: 
+#    allowed values: 0 no post processing
+#                    1 strip initial spaces
+#                    2 strip all spaces
+#                    3 remove n char from the beginning before comparing
+#                    4 remove m char from the end before comparing
+#                    5 remove n char from the beginning and m char from the end before comparing
+# 4: n
+# 5: m
+#
+## pcmsol start #######################################################
+{$params = {
+  name   => "pcmsol",
+  type   => 4,
+  string => "LOOKING UP INTERNALLY STORED DATA FOR SOLVENT",
+  maxout => -1,
+  post   => 2,
+  rembeg => 0,
+  remend => 0};
+}
+## pcmsol end  #######################################################
+
+## sym start #######################################################
+{$params = {
+  name   => "sym",
+  type   => 4,
+  string => "Point group",
+  maxout => -1,
+  post   => 2,
+  rembeg => 0,
+  remend => 0};
+}
+## sym end  #######################################################
+
+## addlf start #######################################################
+{$params = {
+  name   => "addlf",
+  type   => 4,
+  string => "ADDING LOCAL",
+  maxout => -1,
+  post   => 2,
+  rembeg => 0,
+  remend => 0};
+}
+## addlf end  #######################################################
+
+## symop start #######################################################
+{$params = {
+  name   => "symop",
+  type   => 4,
+  string => "Spin symmetry of",
+  maxout => -1,
+  post   => 2,
+  rembeg => 0,
+  remend => 0};
+}
+## symop end  #######################################################
+
+## neqrsp start #######################################################
+{$params = {
+  name   => "neqrsp",
+  type   => 4,
+  string => "NEQRSP =T",
+  maxout => -1,
+  post   => 2,
+  rembeg => 0,
+  remend => 0};
+}
+## neqrsp end  #######################################################
+
+#
+# test type 5
+# fetch a block of lines (as in test type 2) then sends output to a specific routine 
+# for further post processing
+# arguments:
+# 1: String defining the starting line
+# 2: String defining the final line
+# 3: Starting offset: n. of lines stripped away at the beginning of the block
+# 4: End offset: n. of lines stripped away at the end of the block (if negative add the coresponding number of linse after the matching end string)
+# 5: post processing type
+#    allowed values: 0 coordinates check
+#
+## coordi start #######################################################
+{$params = {
+  name         => "coordi",
+  type         => 5,
+  start_string => "Cartesian Coordinates",
+  end_string   => "Symmetry Coordinates",
+  start_offset => 3,
+  end_offset   => 3,
+  post         => 0};
+}
+## coordi end  #######################################################
+

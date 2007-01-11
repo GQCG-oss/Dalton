@@ -1,4 +1,4 @@
-#!/bin/sh    
+#!/bin/bash    
 #########################################################################
 #
 # Shell script for running DALTON test suite
@@ -137,6 +137,7 @@ ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
 #
 BENCHMARK="benchmark_eri_r12 benchmark_eri_r12xl \
 benchmark_eri_adzs benchmark_her_adzs benchmark_eri_adz benchmark_her_adz"
+run_new=0;
 #
 #########################################################################
 # function usage(): print usage information 
@@ -175,6 +176,8 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           benchmark            -- run all BENCHMARK testcases
           dpt                  -- run all DPT testcases
           numder               -- run all numerical derivatives testcases
+          pcm                  -- run all pcm testcases
+          perl                 -- run all perl-style testcases 
           all                  -- run all non-parallel testcases
                                   (= short + medium + long)
           <case1 [case2] ...>  -- run only the specified testcase(s)
@@ -207,6 +210,8 @@ reftest=""
 bell=""
 benchmark=""
 listing="TESTLOG"
+perl_log="test.log"
+perl_err="test.err"
 emptystring="                                "
 
 tmpfile=/tmp/dalton-$$.log
@@ -261,85 +266,134 @@ if   [ "$testcase" = "" ]; then
   echo '    ***********************************'
   usage
 fi
-testcase=
+testcase=""
+perl_style_kwd=""
+perl_style=0
+all_perl_style=0
 while [ -n "$1" ]; do
    case $1 in
   "essential" )
-   testcase="$testcase $ESSENTIAL"; shift ;;
+   testcase="$testcase $ESSENTIAL"; 
+   perl_style_kwd="$perl_style_kwd $1";
+   shift ;;
   "energy" )
-   testcase="$testcase $SHORTENRGY"; shift ;;
+   testcase="$testcase $SHORTENRGY"; 
+   perl_style_kwd="$perl_style_kwd $1";
+   shift ;;
+  "pcm" )
+   perl_style_kwd="$perl_style_kwd $1";
+   shift ;;
   "short_nocc" )
-   testcase="$testcase $SHORTNOCC"; shift ;;
+   testcase="$testcase $SHORTNOCC"; 
+   shift ;;
    "shortcc" )
-   testcase="$testcase $SHORTCC"; shift ;;
+   testcase="$testcase $SHORTCC"; 
+   shift ;;
   "short" )
-   testcase="$testcase $SHORT"; shift ;;
+   perl_style_kwd="$perl_style_kwd $1";
+   testcase="$testcase $SHORT";
+   shift ;;
   "medium" )
-   testcase="$testcase $MEDIUM"; shift ;;
+   perl_style_kwd="$perl_style_kwd $1";
+   testcase="$testcase $MEDIUM"; 
+   shift ;;
   "long" )
-   testcase="$testcase $LONG"; shift ;;
+   perl_style_kwd="$perl_style_kwd $1";
+   testcase="$testcase $LONG"; 
+   shift ;;
   "parallel" )
    if [ "$paramlist" = "" ]; then
      paramlist="-N 3"
    fi
-   testcase="$testcase $PARALLEL"; shift ;;
+   testcase="$testcase $PARALLEL"; 
+   shift ;;
   "all" )
-   testcase="$testcase $ALL"; shift ;;
+   all_perl_style=1;
+   testcase="$testcase $ALL"; 
+   shift ;;
+  "perl" )
+   echo "perl"
+   all_perl_style=1;
+   shift ;;
   "allcc" )
-   testcase="$testcase $ALLCC"; shift ;;
+   testcase="$testcase $ALLCC"; 
+   shift ;;
   "dft" )
-   testcase="$testcase $DFT"; shift ;;
+   perl_style_kwd="$perl_style_kwd $1";
+   testcase="$testcase $DFT"; 
+   shift ;;
   "dpt" )
-   testcase="$testcase $DPT"; shift ;;
+   testcase="$testcase $DPT"; 
+   shift ;;
    "r12" )
-   testcase="$testcase $R12"; shift ;;
+   testcase="$testcase $R12"; 
+   shift ;;
    "ccr12" )
-   testcase="$testcase $CCR12"; shift ;;
+   testcase="$testcase $CCR12"; 
+   shift ;;
    "mp2r12" )
-   testcase="$testcase $MP2R12"; shift ;;
+   testcase="$testcase $MP2R12"; 
+   shift ;;
    "shortccr12" )
-   testcase="$testcase $SHORTCCR12"; shift ;;
+   testcase="$testcase $SHORTCCR12"; 
+   shift ;;
    "longccr12" )
-   testcase="$testcase $LONGCCR12"; shift ;;
+   testcase="$testcase $LONGCCR12"; 
+   shift ;;
    "benchmark" )
-   testcase="$testcase $BENCHMARK"; shift ;;
+   testcase="$testcase $BENCHMARK"; 
+   shift ;;
    "numder" )
-   testcase="$testcase $NUMDER"; shift ;;
+   testcase="$testcase $NUMDER"; 
+   shift ;;
    "qm3" )
-   testcase="$testcase $QM3"; shift ;;
+   testcase="$testcase $QM3"; 
+   shift ;;
    * )
-   testcase="$testcase $1"; shift ;;
+   testcase="$testcase $1"; 
+   shift ;;
    esac
 done
 
+if [ -n "$perl_style_kwd" -o  "$all_perl_style" -eq 1 ]; then
+    perl_style=1
+fi
 
 #########################################################################
 # create a unique directory for test output /hjaaj
 # nonportable characters in the directory name removed. /pawsa
 #########################################################################
-if [ "$reftest" = "true" ]; then
-#   testdir=`pwd`
-   testdir=`pwd`/trueresult
-else
-   testdir="`date +'%Y-%m-%dT%H_%M'`-testjob"
-# test if more than one testjob submitted within same time-stamp:
-   while [ -e $testdir ]; do
-      testdir=${testdir}x
-   done
-   mkdir $testdir 
-fi
+testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+while [ -e $testdir ]; do
+    testdir=${testdir}x
+done
+mkdir $testdir 
 cp functions $testdir
 cd $testdir || exit 1
 
 
 #########################################################################
-# check file for test listing:
+# check files for test listing:
 #########################################################################
 if [ -s $listing ]; then
    echo "$listing already exists... should it be deleted first? (y/n)"
    read answer
    if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then
-     echo > $listing
+       rm -f $listing
+   fi
+fi
+if [ -s $perl_log ]; then
+   echo "$perl_log already exists... should it be deleted first? (y/n)"
+   read answer
+   if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then
+       rm -f $perl_log
+   fi
+fi
+if [ -s $perl_err ]; then
+   echo "$perl_err already exists... should it be deleted first? (y/n)"
+   read answer
+   if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then
+       rm -f $perl_err
    fi
 fi
 
@@ -416,12 +470,8 @@ do
           myprint ""
           myprint "evaluate reference output file $reffile:"
           myprint "-----------------------------------------------------------"
-          compressed="false"
           if [ ! -r $reffile ]; then
-              if [ -r $reffile.gz ]; then
-                  compressed="true"
-                  gunzip -f $reffile.gz
-              fi
+	      cp ../trueresult/$reffile .
           fi
           checkout=`$checkfile $reffile | tee -a $listing`
           if [ "$benchmark" = "true" ]; then
@@ -430,9 +480,6 @@ do
               else
                   CPU_usage="N/A"
               fi
-          fi
-          if [ "$compressed" = "true" ]; then
-              gzip -f --best $reffile
           fi
           if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
               checkout="TEST ENDED PROPERLY"
@@ -501,7 +548,7 @@ do
         if [ "$bell" = "true" ]; then
           echo "\a"
         fi
-        passedall="THERE IS A PROBLEM IN TEST CASE"
+        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
         if [ "$trouble" -eq 1 ]; then
             problems="$problems $item"
         fi
@@ -522,6 +569,49 @@ do
       fi
   fi
 done
+
+#########################################################################
+# PCM test suite
+#########################################################################
+if [ "$perl_style" -gt 0 ]; then
+    perl_fail=""
+    myprint ""
+    myprint "Now running perl-style tests..."
+    myprint ""
+    cp ../test.pl .    
+    cp ../*.tst .
+    cp ../checklist .
+    parameters="--dalton=$DALTON"
+    if [ "$keep" = "true" ]; then
+	parameters="$parameters --keep"
+    fi
+    if [ "$paramlist" != "" ]; then
+	parameters="$parameters --options=$paramlist"
+    fi
+    if [ "$reftest" = "true" ]; then
+	parameters="$parameters --checkref"
+    fi
+    myprint "Perl-style testsuite invoked with the following parameters"
+    myprint "$parameters"
+    if [ -n "$perl_style_kwd" ]; then
+	./test.pl $parameters --keyword "$perl_style_kwd"
+    else
+	parameters="$parameters --all"
+	./test.pl $parameters
+    fi
+    perl_fail="`grep -A1 'tests have failed' test.log | tail -1`"
+    myprint ""
+    myprint "Perl-style tests finished!"
+    myprint "`cat test.log`"
+    myprint ""
+    if [ -n "$perl_fail" ]; then
+        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+	problems="$problems $perl_fail"
+    fi	
+    rm test.pl    
+    rm *.tst
+    rm checklist
+fi
 
 #########################################################################
 # final result:
