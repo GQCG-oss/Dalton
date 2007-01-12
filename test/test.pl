@@ -4,7 +4,6 @@
 #
 # Setting default command line options
 #
-my $dalton   = "../bin/dalton";
 my $options = "";
 my $all = 0;
 my $checkref = 0;
@@ -16,6 +15,7 @@ my $keyword = '';
 my $biglog = 'test.log';
 my $bigerr = 'test.err';
 chomp(my $tstdir =`pwd`);
+my $dalton   = $tstdir."/../bin/dalton";
 $verbose = 0;
 %verb = ('test_inp'  => 0,
 	 'fetch_out' => 1,
@@ -23,7 +23,6 @@ $verbose = 0;
 	 'fetch_inp' => 3,
 	 'check_det' => 4,
 	 'all'       => 5);
-
 use Getopt::Long;
 use Pod::Usage;
 #use Getopt::Long 2.34;
@@ -1267,7 +1266,7 @@ __END__
 
 =head1 SYNOPSIS
 
-new_test.pl [options] 
+test.pl [options] 
 
 Options:
   
@@ -1289,9 +1288,9 @@ Options:
 
 =over 8
 
-=item B<--dalton> (default ../bin/dalton)
+=item B<--dalton> (default `pwd`/../../bin/dalton)
 
-Shell script to run Dalton
+Shell script to run Dalton (absolute path)
 
 =item B<--options "dalton options">
 

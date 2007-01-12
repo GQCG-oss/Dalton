@@ -156,7 +156,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
                               the summary
        -param "option list" : pass "option list" to dalton-script
        -dalton script       : use script instead of the default
-                              dalton-script "../dalton"
+                              dalton-script "`pwd`/../dalton" (absolute path) 
        -log logfile         : write output into logfile instead of the
                               default "TESTLOG"
 
