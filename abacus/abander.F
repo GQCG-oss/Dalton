@@ -3551,7 +3551,7 @@ C     /* Deck mknrmc */
      &          DKIN(NCOOR), TM1TMP(NCOOR,NCOOR), TRAMSS(NCOOR),
      &          TM2TMP(NCOOR,NCOOR), TRNCCR(NCOOR,NCOOR),
      &          FREQ(NCOOR), HTESTM(NCOOR,NCOOR), RNNORM(NCOOR),
-     &          CORTMP(NCOOR), WORK(LWORK)
+     &          CORTMP(NCOOR), WORK(LWORK), ENORMN(NCOOR)
       DIMENSION ICRIRP(NCOOR,2), NATTYP(NATOMS), NMSYSP(NCOOR)
       INTEGER BEGIN
 C
@@ -3771,6 +3771,47 @@ C
          WRITE (LUPRI,'(A)') '                                        '
       END DO
 
+C     We punch out harmonic freqs and normal coordinates on file
+C     DALTON.NOR for use in Midas Vibrational calculations
+
+      LUNOR = 0
+      CALL GPOPEN(LUNOR,'DALTON.NOR','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+      WRITE(LUNOR,'(A)') 'Harmonic Freqs. in cm^-1'
+      DO 911 IMODE = 1, NONZRO
+        WRITE(LUNOR,'(E23.16)') XTKAYS*FREQ(IMODE)
+ 911  CONTINUE
+      WRITE(LUNOR,*)
+
+
+C     The normal coordinates in SYMCOR is normalized to one in cartesian (x) space. We
+C     would like the normal coordinates to be normalized to one in q-space, q = sqrt(m)*x
+
+      DO 912 IMODE = 1,NONZRO
+        ENORM2 = 0.0D0
+        DO 913 I = 1, NCOOR
+          ENORM2 = ENORM2 + (SYMCOR(I,IMODE)**2)/(DKIN(I)*DKIN(I)*XFAMU)
+ 913    CONTINUE
+      ENORMN(IMODE) = D1/SQRT(ENORM2)
+ 912  CONTINUE
+
+      WRITE(LUNOR,'(A)') 'Normal Coordinates'
+      DO 914 IMODE = 1, NONZRO
+        WRITE(LUNOR,8041) (ENORMN(IMODE)*SYMCOR(I,IMODE),I=1,NCOOR)
+        WRITE(LUNOR,*)
+ 914  CONTINUE
+
+      WRITE(LUNOR,'(A)') 'Norm of Vectors'
+      DO 915 IMODE = 1, NONZRO
+        ENORM2 = 0.0D0
+        DO 916 I = 1, NCOOR
+          ENORM2 = ENORM2 + (ENORMN(IMODE)*SYMCOR(I,IMODE))**2
+ 916    CONTINUE
+      WRITE(LUNOR,'(E23.16)') SQRT(ENORM2)
+ 915  CONTINUE
+
+      CALL GPCLOSE(LUNOR,'KEEP')
+
 C     
 C     *** Writing to spectro file if requested. ***
 C
@@ -3847,6 +3888,7 @@ C
          END DO
  1000    FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
  2000    FORMAT (1X,I4,2X,6F12.6)
+ 8041    FORMAT(1P,3E23.16)
       END IF
 C
       RETURN
