@@ -420,6 +420,7 @@ C
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       DIMENSION RES(*), T2MAM(*), WORK(LWORK)
+      INTEGER YIJIJ, YIJIJT
       LOGICAL   R12PRP
 C
 #include <priunit.h>
