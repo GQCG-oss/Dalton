@@ -981,8 +981,10 @@ case "$WHICH" in
           if [ "$F77" = mpif77 ]; then
               if mpif77 -V 2>&1 | grep -q Intel 2> /dev/null; then
                   F77_be=ifort
-              elif mpif77 -v 2>&1 | grep -q 'gcc version' 2> /dev/null; then
+              elif mpif77 -v 2>&1 | grep -q 'gcc version 3' 2> /dev/null; then
                   F77_be=g77
+              elif mpif77 -v 2>&1 | grep -q 'gcc version 4' 2> /dev/null; then
+                  F77_be=gfortran
               else
                   # wild guess.
                   F77_be=pgf77

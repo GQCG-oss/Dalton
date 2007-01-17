@@ -85,14 +85,16 @@ C
       CALL PVMXMCAST(NODTOT,NODEID(1),MTAG1)
 #endif
       IF (IPRTYP.EQ.1) THEN
-         if (iprint .gt. 3) write (lupri,*) 'Calling parallel HERMIT routines.'
+         if (iprint .gt. 3) 
+     &        write (lupri,*) 'Calling parallel HERMIT routines.'
          CALL HER_PARDRV(FMAT,DMAT,HESSEE,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &                   DINTSKP,RELCAL)
       ELSE
-         if (iprint .gt. 3) write (lupri,*) 'Calling parallel ERI routines.'
+         if (iprint .gt. 3)
+     &    write (lupri,*) 'Calling parallel ERI routines.'
          CALL ERI_PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,NSTAT,
      &                   WORK,LWORK,IPRINT)
       END IF
