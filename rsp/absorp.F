@@ -900,7 +900,7 @@ c     imag part
                WRITE (LUPRI,*)
      &          ' occ  real    occ  imag'
                DO I=1,NSRC
-                  WRITE (LUPRI,'(I5,F7.3,I6,F7.3)'),ISRCORBR(I),
+                  WRITE (LUPRI,'(I5,F7.3,I6,F7.3)') ISRCORBR(I),
      &                 WRK(KORBWR+ISRCORBR(I)-1)/DNORM_RE**2,
      &                 ISRCORBI(I),
      &                 WRK(KORBWI+ISRCORBI(I)-1)/DNORM_IM**2
