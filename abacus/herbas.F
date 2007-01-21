@@ -160,7 +160,9 @@ CHJ         BASNAM = 'HUCKEL    3 1 0 0'
             BASNAM = 'HUCKEL    3 2 0 0'
          ELSE IF (INTQ .LE. 18) THEN
 C           ... Al, Si, P, S, Cl, Ar
-            BASNAM = 'HUCKEL    3 2 0 0'
+CHJ-jun06   BASNAM = 'HUCKEL    3 2 0 0'
+CHJ-jun06   added 3d
+            BASNAM = 'HUCKEL    3 2 1 0'
          ELSE IF (INTQ .LE. 20) THEN
 C           ...  K, Ca
 CHJ         BASNAM = 'HUCKEL    4 2 0 0'
@@ -210,11 +212,11 @@ C           ...  Hg
          ELSE IF (INTQ .LE. 86) THEN
 C           ...  Rn
             BASNAM = 'HUCKEL    6 5 3 1'
-C         ELSE IF (INTQ .LE. 103) THEN
+         ELSE IF (INTQ .LE. 103) THEN
 C           ...  Lr
-C            BASNAM = 'HUCKEL    7 6 4 2'
-C         ELSE 
-C            CALL QUIT('BASLIB error: HUCKEL not defined for Z.gt.103')
+            BASNAM = 'HUCKEL    7 6 4 2'
+         ELSE 
+            CALL QUIT('BASLIB error: HUCKEL not defined for Z.gt.103')
          END IF
 C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
@@ -1102,7 +1104,7 @@ C
       END 
 C             
 C
-C*********************************************************	
+C*********************************************************
 C* This is the subroutine that finds out wheter it is a  *
 C* new block with primitives and contraction-            *
 C* coeffecients, or if it is a new element. It returns   *
@@ -1267,7 +1269,7 @@ C        We print which basis set is used, user may have
 C        specified several basis set directories, and
 C        without this output there is not documentation
 C        for which is used.
-C        This text is continuation of text in BASLIB.½
+C        This text is continuation of text in BASLIB.
 C        (By default suppressed for HUCKEL basis by setting
 C         IPRINT = IPREAD - 1 for HUCKEL) /hjaaj
          IF (IPRINT .GE. 1) WRITE (LUPRI,'(3A)')
