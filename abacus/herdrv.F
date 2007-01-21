@@ -225,10 +225,17 @@ C
 C     Integrals on AOORDINT
 C
       IF (RNINTS) THEN
-         CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL SORTAO(WORK,LWORK)
-         CALL TIMER('SORTAO',TIMSTR,TIMEND)
-         CALL FLSHFO(LUPRI)
+         CALL GPINQ('AOTWOINT','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL SORTAO(WORK,LWORK)
+            CALL TIMER('SORTAO',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+         ELSE
+            NWARN = NWARN + 1
+            WRITE(LUPRI,'(/A)')
+     &      ' * WARNING: .SORT INT requested but no integrals to sort!'
+         END IF
       END IF
 C
 C     ******************************
@@ -739,7 +746,7 @@ C
             ONEPRP = .TRUE.
             GOTO 100
  169     CONTINUE
-            NOTWO = .TRUE.
+            NOTWO  = .TRUE.
             SUPMAT = .FALSE.
             GO TO 100
  170     CONTINUE
@@ -1330,7 +1337,7 @@ cLig <<
          IF (PVPINT) WRITE (LUPRI,'(10X,A)')
      &      '- pVp integrals of the Douglas-Kroll Hamiltonian'
          IF (PXPINT) WRITE (LUPRI,'(10X,A)')
-     &      '- small component dipole lengths integrals for DPT'
+     &      '- small component dipole length integrals for DPT'
          IF (DKTRAN) WRITE (LUPRI,'(10X,A)')
      &      '- The second order Douglas-Kroll transformation'//
      &      ' will be applied'
@@ -2093,6 +2100,24 @@ C     **********************************
 C
       IF (RUNONE) THEN
          IF (IPRDEF .GT. 1) CALL TITLER('Output from HERONE','*',126)
+C
+C        ***********************************************
+C        ***** Overlap, kinetic energy and nuclear *****
+C        ***** attraction integrals                *****
+C        ***********************************************
+C
+C        Integrals written on LUONEL -
+C        Some previous information has been written in READIN
+C
+         IF (.NOT. ONLYOV) THEN
+            IF (HAMILT) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
+     &                     .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,PCM)
+               CALL TIMER('ONEDRV',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+         END IF
 C
 C     Contract any primitive Douglas-Kroll integrals if necessary
 C     
@@ -3114,24 +3139,6 @@ C
             END IF
 cLig <<
          END IF
-C
-C        ***********************************************
-C        ***** Overlap, kinetic energy and nuclear *****
-C        ***** attraction integrals                *****
-C        ***********************************************
-C
-C        Integrals written on LUONEL -
-C        Some previous information has been written in READIN
-C
-         IF (.NOT. ONLYOV) THEN
-            IF (HAMILT) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                     .TRUE.,.FALSE.,.FALSE.,.FALSE.,.FALSE.,PCM)
-               CALL TIMER('ONEDRV',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-         END IF
       END IF
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
@@ -3369,6 +3376,50 @@ C
       END IF
 C
       CALL QEXIT('HERINT')
+      RETURN
+      END
+C
+      SUBROUTINE MAKE_AOTWOINT(WORK,LWORK)
+C
+C 11-jan-2007 Hans Joergen Aa. Jensen
+C
+C Calculate two-electron integrals
+C
+#include "implicit.h"
+      DIMENSION WORK(LWORK)
+#include "priunit.h"
+C
+C Used from common blocks:
+C  GNRINF: DIRCAL, DOSRIN
+C  CBIHR1: RUNONE
+C  CBIHR2: RUNTWO
+C  INFTAP: LUINTA, LUSRINT
+#include "gnrinf.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "inftap.h"
+C
+      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, RUNTWO_SAV
+C
+      CALL GPINQ('AOTWOINT','EXIST',AOEXIST)
+      IF (.NOT. AOEXIST) THEN
+         WRITE (LUPRI,'(/A)') '---> (Re)generating AOTWOINT'
+C        Open LUINTA/LUSRINT for new integrals
+         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         IF (DOSRIN) CALL
+     &      GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         DIRCAL_SAV = DIRCAL
+         RUNONE_SAV = RUNONE
+         RUNTWO_SAV = RUNTWO
+         DIRCAL = .FALSE.
+         RUNONE = .FALSE.
+         RUNTWO = .TRUE.
+         CALL HERINT(WORK,LWORK)
+         DIRCAL = DIRCAL_SAV
+         RUNONE = RUNONE_SAV
+         RUNTWO = RUNTWO_SAV
+      END IF
+
       RETURN
       END
 C  /* Deck setdch */
@@ -3907,7 +3958,7 @@ C
 C
 C     We also need two variables from cbiher.h
 C
-      CALL RDCBIH(IPREAD, INPTST)
+      CALL READ_CBIHER(IPREAD, INPTST)
 C
 C     An important input for the READIN procedure is the number of primitives
 C     per block in the input file. First check if this has been reset.
@@ -4457,8 +4508,8 @@ C
      &               INTREP,PROPRI,IPRINT)
       ELSE
          WRITE (LUPRI,'(//3A)') ' >>> DKCONT error: Primitive Douglas'//
-     &      '-Kroll integrals not found on LUDKIN.'
-         CALL QUIT('DKCONT error: Integrals not found on LUDKIN')
+     &      '-Kroll integrals not found on DKINT file.'
+         CALL QUIT('DKCONT error: Integrals not found on DKINT file')
       END IF
       CALL GPCLOSE(LUDKIN,'DELETE')
       RETURN
@@ -4551,8 +4602,10 @@ C
 C     
       RETURN
       END
-C/* Deck rdcbih */
-      SUBROUTINE RDCBIH(IPDF, INTST)
+C/* Deck READ_CBIHER */
+      SUBROUTINE READ_CBIHER(IPDF, INTST)
+C
+C Fetch two definitions from cbiher.h
 C
 #include <implicit.h>
 #include <mxcent.h>
@@ -4564,6 +4617,8 @@ C
       END
 C/* Deck rstgft */
       subroutine rstgft(alpha,i,ggan,ggas)
+C
+C R12 calculation requested with fitted "r12-times-Slater" geminal (WK/UniKA/03-24-2005).
 C
 #include <implicit.h>
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
@@ -4644,6 +4699,8 @@ c----& /
 C/* Deck stgfit */
       subroutine stgfit(alpha,i,ggan,ggas)
 C
+C R12 calculation requested with fitted Slater-type geminal (WK/UniKA/03-24-2005).
+C
 #include <implicit.h>
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
@@ -4706,6 +4763,8 @@ C
 C/* Deck erffit */
       subroutine erffit(alpha,i,ggan,ggas)
 C
+C R12 calculation requested with fitted ERFC-type geminal (WK/UniKA/03-29-2005).
+C
 #include <implicit.h>
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
@@ -4767,6 +4826,8 @@ C
       end
 C/* Deck rrffit */
       subroutine rrffit(alpha,i,ggan,ggas)
+C
+C  R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/UniKA/03-29-2005).
 C
 #include <implicit.h>
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
