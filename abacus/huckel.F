@@ -373,24 +373,27 @@ C
 C     We do this as (S_{NN})^{-1}*(S_{NO}*C_{O})
 C     N and O refers to new (large) and old (small) basis respectively
 C     For HUCKEL basis to HUCKEL basis this gives the identity matrix
-C
-C     Explicit inversion may take some time.....
-C
+
+C     Jan 2007 HJAaJ: No! We want to project on the MO basis
+C     from DELMO, otherwise this will reintroduce some parts of the
+C     deleted atomic orbitals again, leading to "mysterious" too
+C     big MO coefficients.
+C     Revised algorithm: (CMO_{Nn})^{T}*(S_{NO}*CMO_{O})
+C     where N,n is new basis NBASI,NORBI, O is old basis (Huckel basis)
+C     and CMO_(O) contains the molecular orbitals from Huckel.
+
          KSCRA1 = KWRK
-         KSCRA2 = KSCRA1 + NBASI
+         KSCRA2 = KSCRA1 + NBASI*NHAOSY
          KLAST  = KSCRA1 + NBASI*NHAOSY
          IF (KLAST.GT.LWORK) CALL STOPIT('HUCDRV','DGEINV',KLAST,LWORK)
-         CALL DGEINV(NBASI,OVERLP,OVERLP,WORK(KSCRA1),WORK(KSCRA2),INFO)
-         IF (INFO .NE. 0) THEN
-            WRITE (LUPRI,'(/A/A)') ' Singular overlap matrix HUCDRV',
-     &           ' Huckel guess aborted'
-            CALL QUIT('Singular overlap matrix when projecting '//
-     &                'in Huckel')
-         END IF
-         CALL DGEMM('N','N',NBASI,NHAOSY,NBASI,1.D0,
-     &              OVERLP,NBASI, TRANMT,NBASI,0.D0, WORK(KSCRA1),NBASI)
-         CALL DGEMM('N','N',NBASI,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KSCRA1),NBASI, EIGVEC,NHAOSY,0.D0,
+         CALL DGEMM('T','N',NORBI,NHAOSY,NBASI,1.D0,
+     &              CMO(ICSYM),NBASI, TRANMT,NBASI,0.D0,
+     &              WORK(KSCRA1),NORBI)
+         CALL DGEMM('N','N',NORBI,NHAOSY,NHAOSY,1.D0,
+     &              WORK(KSCRA1),NORBI, EIGVEC,NHAOSY,0.D0,
+     &              WORK(KSCRA2),NORBI)
+         CALL DGEMM('N','N',NBASI,NHAOSY,NORBI,1.D0,
+     &              WORK(KCMO1-1+ICSYM),NBASI, WORK(KSCRA2),NORBI,0.D0,
      &              CMO(ICSYM),NBASI)
  100  CONTINUE 
       IF (P6FLAG(6)) THEN
