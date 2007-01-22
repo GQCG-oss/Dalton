@@ -111,8 +111,28 @@ C
 #include "inftap.h"
 C
       LOGICAL NOCOUL,NOEXCH,NOTUVX,MCOPT,DELORD
+      LOGICAL AOEXIST,MOEXIST
 C
       CALL QENTER('N_TRACTL')
+C
+C     (Re)calculate AO integrals, if necessary
+C     /hjaaj 11-jan-2007
+C
+      CALL GPINQ('AOORDINT','EXIST',AOEXIST)
+      CALL GPINQ('MOTWOINT','EXIST',MOEXIST)
+      IF (.NOT.(AOEXIST .AND. MOEXIST)) THEN
+C        ... we must (re)generate AOORDINT
+C            but first we must test for AOTWOINT
+         CALL MAKE_AOTWOINT(WORK,KWORK)
+C
+         WRITE (LUPRI,'(/A)') '---> Generating AOORDINT'
+         CALL TIMER('START ',TIMSTR,TIMEND)
+         CALL SORTAO(WORK,KWORK)
+         CALL TIMER('SORTAO',TIMSTR,TIMEND)
+         CALL FLSHFO(LUPRI)
+C
+         CALL N_SIROPI
+      END IF
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
@@ -265,14 +285,26 @@ C
 #include "implicit.h"
 C
 C Used from common blocks:
+C   INFPRI : LUPRI
 C   INFTAP : LUORDA,LUMINT
 C
+#include "priunit.h"
 #include "inftap.h"
-#if defined (VAR_DARECL)
-      CALL DARECL(LUORDA,8*8*1024)
-#endif
-      IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
-      IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
+C
+      LOGICAL FEXIST
+C
+C     070111-hjaaj:
+C     Open old files if they exist,
+C     otherwise they will be attempted generated later.
+C
+      CALL GPINQ('AOORDINT','EXIST',FEXIST)
+      IF (.NOT.FEXIST) THEN
+        IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
+      END IF
+      CALL GPINQ('MOTWOINT','EXIST',FEXIST)
+      IF (.NOT.FEXIST) THEN
+        IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
+      END IF
       RETURN
       END
 C  /* Deck n_nxth2m */
@@ -2898,7 +2930,7 @@ C
 C
       IF (IPRTRA .GE. 10 .OR. NERROR .GT. 0) THEN
          WRITE (LUPRI,'(/A,2(/A,I5),2(/A,8I5))')
-     *      ' KEEP information from LUORDA',
+     *      ' KEEP information from AOORDINT',
      *      ' -- KEEP(1)     = MSYM     ',KEEP(1),
      *      ' -- KEEP(2)     = INTSYM   ',KEEP(2),
      *      ' -- KEEP(3:10)  = MBAS(1:8)',(KEEP(I),I=3,10),
@@ -2906,13 +2938,13 @@ C
       END IF
       IF (NERROR .GT. 0) THEN
          WRITE (LUPRI,'(/A)')
-     *      ' ERROR, MSYM and/or MBAS(*) not consistent with LUORDA'
+     *      ' ERROR, MSYM and/or MBAS(*) not consistent with AOORDINT'
          CALL QUIT(' ERROR, MSYM and/or MBAS(*) not consistent '//
-     *             'with LUORDA')
+     *             'with AOORDINT')
       END IF
       IF (IPRTRA .GE. 15) THEN
          WRITE (LUPRI,'(3(/A))')
-     *      ' Non-zero IDATA information from LUORDA :',
+     *      ' Non-zero IDATA information from AOORDINT :',
      *      ' ========================================',
      *      '     NCHAIN      LADX       NPQ'
          DO 20 I = 1,LIDATA
@@ -2924,7 +2956,7 @@ C
       IF (KEEP(2) .NE. 0) THEN
          INTSYM = KEEP(2)
          IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
-     *   ' Symmetry of integrals from LUORDA :',INTSYM
+     *   ' Symmetry of integrals from AOORDINT :',INTSYM
       ELSE
          INTSYM = 1
          IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
