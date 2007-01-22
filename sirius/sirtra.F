@@ -2333,6 +2333,9 @@ C        ... LUDA does not exist
          END IF
       END IF
       IF (LSRTAO.EQ.0) THEN
+C        hjaaj 11-jan-2007: make sure AOTWOINT exists
+         CALL MAKE_AOTWOINT(WORK,KWORK)
+
 C     HJ-840710 was: IF (JTER.EQ.1) THEN
          CALL GPCLOSE(LUINTM,'DELETE')
          CALL GPOPEN(LUINTM,FNINTM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
