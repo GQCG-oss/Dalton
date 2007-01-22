@@ -457,11 +457,11 @@ C           include only 'X', 'Y', or 'Z' in TEXTUC
       RETURN
       END
 C  /* Deck delmo */
-      SUBROUTINE DELMO(CMO,SCRA,LSCRA,THROVL,DELEMO)
+      SUBROUTINE DELMO(CMO,SCRA,LSCRA,THROVL,CMAXMO,DELEMO)
 C
 C Written 18-Jan-198* by Hans Jorgen Aa. Jensen and Hans Agren
 C Revised 26-Aug-1992 by OV+HJAaJ
-C Revised 2004-Feb.2005 by HJAaJ
+C Revised 2004-Feb.2005, Jan.2007 by HJAaJ
 C
 C Purpose:
 C  Obtain initial guess for molecular orbitals by
@@ -469,6 +469,14 @@ C  diagonalizing the overlap matrix and discarding
 C  numerically linar dependent orbitals
 C  (defined by eigenvalue of overlap matrix .lt. THROVL).
 C
+C Input:
+C  CMO contains initial molecular orbital coefficients
+C      (unit matrix, one where 3s in d etc. are deleted, or ?).
+C  THROVL: min overlap eigenvalue
+C  CMAXMO: max MO coefficient
+C          (Generally CMAXMO \approx sqrt(d1/THROVL)
+C           but they can be set independently by user.
+C           Therefore we require both criteria fulfilled. /hjaaj jan 07)
 C Output:
 C  CMO; molecular orbitals
 C  DELEMO set true if orbitals have been deleted
@@ -489,10 +497,9 @@ C
 #include <infpri.h>
 #include <r12int.h>
 C
-C         CMO contains initial matrix
-C         (either unit matrix or one where 3s in d etc. are deleted).
+      CALL QENTER('DELMO ')
 C
-C core allocate
+C Core allocation
 C
       KOVLP = 1
       KS1T  = KOVLP + NNBAST
@@ -504,6 +511,8 @@ C
 C Read the overlap matrix in AO-basis.
 C
       CALL RDONEL('OVERLAP ',.TRUE.,SCRA(KOVLP),NNBAST)
+C
+      DELEMO = .FALSE.
 C
       ICSYM = 1
       DO 200 ISYM = 1,NSYM
@@ -542,51 +551,7 @@ C              This routine will then delete the corresponding vectors from CMO.
             ENDIF
          END IF
 C
-C        If orbitals are deleted, take another turn for better
-C        numerical stability /hjaaj Dec 2004
-C        
-         ITURN = 0
-         JDEL  = 0
-         NORBISAV = NORBI
-  100    CONTINUE
-         ITURN = ITURN + 1
-         IF (JDEL .GT. 0) THEN
-            WRITE (LUW4,*) 'DELMO: ISYM, ITURN, NORBISAV, NORBI',
-     &                             ISYM, ITURN, NORBISAV, NORBI
-         END IF
-C
-	 IF (.NOT. LAUXBS) THEN
-            IF (NORBI .NE. NBASI) THEN
-C              Make CMO orthornormal wrt. unit metric
-C              (needed for canonicial orthonormalization)
-               THRLDP = 1.0D-14
-               CALL ORTVEC(0,NORBI,NBASI,THRLDP,CMO(ICSYM),SCRA(KSCR1))
-               CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
-     *                   NBASI,NORBI)
-C              CALL UTHU(H,HT,U,WRK,NAO,NMO)
-            ELSE
-               NNBASI = NNBAS(ISYM)
-               CALL DCOPY(NNBASI,SCRA(ISSYM),1,SCRA(KS1T),1)
-               CALL DUNIT(CMO(ICSYM),NBASI)
-            END IF
-C
-C           Normalize primary CMO vectors
-C           (required for proper canonical orthonormalization)
-C
-            JS1T = KS1T - 1
-            DO I = 1, NORBI
-              JS1T = JS1T + I
-              IF (SCRA(JS1T) .GT. 0.0D0) THEN
-C             ... we may have zeroed some elements above
-C                 in order that they should be excluded by this routine
-                 FAC = D1 / SQRT(SCRA(JS1T))
-                 JCSYM = ICSYM + (I-1)*NBASI
-                 CALL DSCAL(NBASI,FAC,CMO(JCSYM),1)
-              END IF
-            END DO
-         END IF
-C
-C        and update SCR(KS1T) to the new CMO vectors:
+C        Update SCR(KS1T) to the new CMO vectors:
 C
          CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
      *             NBASI,NORBI)
@@ -605,11 +570,11 @@ C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
          IF (IPRI6 .GT. 10 .OR. P6FLAG(38)) THEN
             IF (LMULBS .AND. LAUXBS) THEN
               WRITE (LUPRI,'(/A,I5/)')
-     &        'DELMO: eigenvalues of overlap matrix for '//
+     &        ' DELMO: eigenvalues of overlap matrix for '//
      &        'auxiliary basis for symmetry',ISYM
             ELSE
               WRITE (LUPRI,'(/A,I5/)')
-     &        'DELMO: eigenvalues of overlap matrix for symmetry',ISYM
+     &        ' DELMO: eigenvalues of overlap matrix for symmetry',ISYM
             END IF
             WRITE (LUPRI,'(1P,5D15.5)') (SCRA(KS1T-1+I),I=1,NORBI)
          END IF
@@ -619,7 +584,10 @@ C
          IDEL = 0
          DO 275 J = 1, NORBI
            EIGVAL = SCRA(KS1T + J - 1)
-           IF (EIGVAL .LT. THROVL) THEN
+           JCMO = ICSYM + (J-1)*NBASI
+           ICMOMAX = IDAMAX(NBASI,CMO(JCMO),1)
+           CMOMAX  = ABS( CMO(JCMO-1+ICMOMAX) ) / SQRT(EIGVAL)
+           IF (EIGVAL .LT. THROVL .OR. CMOMAX .GT. CMAXMO) THEN
               IDEL  = (NORBI + 1 - J)
 C
               IF (LAUXBS) THEN
@@ -653,13 +621,18 @@ C             ... primary basis
                 IF (JDEL .GT. 0) THEN
                    IF (.NOT.DELEMO) WRITE (LUW4,'(//A/A/A,1P,D10.2)')
      *           '@ Primary orbitals are deleted during canonical'//
-     *           ' orthonormalization',
-     *           '@   because of detected numerical linear dependence.',
+     *            ' orthonormalization',
+     *           '@   because of detected numerical linear dependence'//
+     &            ' or too large coefficients.',
      *           '@ Eigenvalue threshold for num. lin. dep. =',THROVL
                    WRITE (LUW4,'(/A,I4,A,I5/A/,(1P,5D10.2))')
      *           '@',JDEL,' MO components are deleted in symmetry',ISYM,
      *           ' Overlap eigenvalues of the deleted orbitals:',
      *            (SCRA(KS1T + J - 2 + I),I = 1,JDEL)
+                   WRITE (LUW4,'(/A,1P,2D10.2)')
+     &           ' Max MO coeff. of last deleted MO & limit:',
+     &             CMOMAX,CMAXMO
+
                  DELEMO = .TRUE.
                 END IF
                 IF (ISYM .LT. NSYM) THEN
@@ -676,11 +649,6 @@ C             ... primary basis
                 NORB(ISYM) = NORB(ISYM) - IDEL
                 NCMOT = NCMOT - IDEL*NBASI
               END IF
-C             We have deleted some orbitals, for numerical
-C             stability we take another turn ... /hjaaj Dec 04
-              NORBI = NORBI - IDEL
-              GO TO 100
-           ELSE
            END IF
   275    CONTINUE
 C
@@ -728,6 +696,7 @@ C
 C
 C *** end of subroutine DELMO
 C
+      CALL QEXIT('DELMO ')
       RETURN
       END
 C  /* Deck reord */
@@ -870,7 +839,7 @@ C
 C
       IMAX = IDAMAX(NCMOT,CMO,1)
       CMAX = ABS( CMO(IMAX) )
-      IF (CMAX .GE. CMAXMO) P6FLAG(6) = .TRUE.
+c     IF (CMAX .GE. CMAXMO) P6FLAG(6) = .TRUE.
 C
 C     ***** PRINT MOLECULAR ORBITALS ON UNIT LUPRI *****
 C
@@ -906,18 +875,34 @@ C     ***** (LINEAR DEPENDENCIES IN ATOMIC BASIS SET)
 C
 C
   104 CONTINUE
-      WRITE(LUERR,3010) CMAX,CMAXMO
-      WRITE(LUW4 ,3010) CMAX,CMAXMO
-      IF (IPRI6.GT.0 .AND. LUPRI.NE.LUW4) WRITE(LUPRI,3010) CMAX,CMAXMO
+      DO ISYM = 1,NSYM
+         NORBI = NORB(ISYM)
+         NBASI = NBAS(ISYM)
+         NCMOI = NORBI*NBASI
+         IMAX = IDAMAX(NCMOI,CMO(ICMO(ISYM)+1),1)
+         CMAX = ABS( CMO(ICMO(ISYM)+IMAX) )
+      IF (CMAX .GT. CMAXMO) THEN
+         IORBI = (IMAX-1)/NBASI + 1
+         WRITE(LUERR,3010) CMAX,ISYM,IORBI,NORBI,CMAXMO
+         WRITE(LUW4 ,3010) CMAX,ISYM,IORBI,NORBI,CMAXMO
+         IF (LUPRI.NE.LUW4)
+     &   WRITE(LUPRI,3010) CMAX,ISYM,IORBI,NORBI,CMAXMO
+      END IF
+      END DO
+      WRITE (LUW4,3020)
+      IF (LUPRI.NE.LUW4) WRITE(LUPRI,3020)
  3010 FORMAT(/' *** ORTHO-FATAL ERROR ***',
-     *    /'Largest molecular orbital coefficient    ',1P,E20.6
-     *    /'This number is larger than accepted limit',E20.6
-     *    /'Significant loss of accuaracy is probable ',
-     *    /'in transformation of two-electron integrals,'
-     *    /'*** program stops here. ***   Your options:',
-     *    /'Modify basis set, decrease numerical linear dependency',
-     &    /'with ".AO DELETE", or take the chance and increase ',
-     *    /'limit with ".CMOMAX" in "*ORBITAL INPUT".')
+     &    /' Largest molecular orbital coefficient/sym',1P,D20.6,3I5,
+     &    /' This number is larger than accepted limit',D20.6)
+ 3020 FORMAT(
+     &    /' Significant loss of accuaracy is probable ',
+     &    /' in transformation of two-electron integrals,'
+     &   //'*** Program stops here. ***   Your options:',
+     &    /' 1) modify basis set,',
+     &    /' 2) decrease numerical linear dependency by increasing',
+     &     ' ".AO DELETE" limit, or'
+     &    /' 3) take the chance and increase',
+     &     ' limit with ".CMOMAX" in "*ORBITAL INPUT".')
       GO TO 5000
 C
 C
@@ -1337,7 +1322,6 @@ C
 #include <infind.h>
 #include <infpri.h>
 #include <infinp.h>
-#include <gnrinf.h>
 C
       DIMENSION MISH(8), MRHF(8)
 C
@@ -1375,7 +1359,6 @@ C
       CALL ICOPY(8,NMVO,1,NISH,1)
       MISHT = NISHT
       NISHT = NMVOT
-      IF(DIRCAL) CALL QUIT('FCVIRT: NO direct !!!')
       CALL FCKMAT(.TRUE.,DUMMY,CMO,EMCMY,WRK(KFC),DUMMY,
      &             WRK(KWRK),LWRK)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFRSAV)

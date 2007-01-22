@@ -596,6 +596,7 @@ C KDEL  : if .gt. 0, then delete 3s component in d; 4p in f; etc.
 C         If IRDMO .eq. 8, i.e. new calculation, call CMODEL
 C         to find 3s,4p,... components and delete them.
 C         if .lt. 0, orbitals have been deleted in input
+C CMAXMO: max allowed MO coefficient (to ensure 2-el integral accuracy)
 C THROVL: limit for basis set numerical linear dependence
 C DEFLVL: default shift level - must be 0 or negative.
 C
@@ -806,12 +807,13 @@ C
  124    CONTINUE
       IF (DIRFCK) THEN
          LUSUPM = -1
-         IF ((DOMP2 .AND..NOT.ADDMP2) .OR. DOCI .OR. DOMC) THEN
-            WRITE (LUPRI,'(/A/A)')
-     &      'INPUT ERROR: Direct Fock matrix construction',
-     &      '             not possible for MP2, CI, and MCSCF.'
-            INPERR = INPERR + 1
-         END IF
+c        IF ((DOMP2 .AND..NOT.ADDMP2) .OR. DOCI .OR. DOMC) THEN
+c        IF (DOCI .OR. DOMC) THEN
+c           WRITE (LUPRI,'(/A/A)')
+c    &      'INPUT ERROR: Direct Fock matrix construction',
+c    &      '             not possible for MP2, CI, and MCSCF.'
+c           INPERR = INPERR + 1
+c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
@@ -1043,8 +1045,7 @@ C
          KSH1  = 1    + NCMOT
          KSCRA = KSH1 + NNBAST
          LSCRA = LCMO - KSCRA
-         DELEMO = .FALSE.
-         CALL DELMO(CMO(1),CMO(KSCRA),LSCRA,THROVL,DELEMO)
+         CALL DELMO(CMO(1),CMO(KSCRA),LSCRA,THROVL,CMAXMO,DELEMO)
 C        ... DELEMO true means orbitals have been deleted.
          IF (DELEMO) THEN
             IF (.NOT.FLAG(33)) THEN
@@ -2208,6 +2209,7 @@ C *** Option 20: .IT1START
   120 CONTINUE
          IREST = 2
       GO TO 100
+C *** Option 21: .KSPT2
   121 CONTINUE
         DOMP2    = .TRUE.
         NUMRUN   = NUMRUN + 1
