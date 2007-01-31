@@ -1455,7 +1455,7 @@ C
          END IF
       ELSE
          WRITE (LUPRI,'(//3A)') ' >>> DKTRF error: Douglas-Kroll'//
-     &      'integrals not found on LUPROP.'
+     &      ' integrals not found on LUPROP.'
          CALL QUIT('DKTRF error: Integrals not found on LUPROP')
       END IF
       RETURN
