@@ -2106,6 +2106,12 @@ C        ***** Overlap, kinetic energy and nuclear *****
 C        ***** attraction integrals                *****
 C        ***********************************************
 C
+C        Contract any primitive Douglas-Kroll integrals if necessary
+C     
+         IF (DKTRAN .AND. .NOT. PVPINT) THEN
+            CALL DKCONT(PROPRI,IPRONE,WORK,LWORK)
+         END IF
+C
 C        Integrals written on LUONEL -
 C        Some previous information has been written in READIN
 C
@@ -2117,12 +2123,6 @@ C
                CALL TIMER('ONEDRV',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
-         END IF
-C
-C     Contract any primitive Douglas-Kroll integrals if necessary
-C     
-         IF (DKTRAN .AND. .NOT. PVPINT) THEN
-            CALL DKCONT(PROPRI,IPRONE,WORK,LWORK)
          END IF
 C
 C        *****************************************
