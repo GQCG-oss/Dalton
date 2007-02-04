@@ -76,7 +76,6 @@ C
 !   false; b) changed DORUPQ and DOUSPQ definitions so now always false
 !   if the corresponding integrals not needed for exchange.
 !-- TRACTL: USEDRC reset to true if ITRLVL 1,2,3, or 4
-!-- TRASE2: dummy routine
 !900924-hjaaj: define LUAINT as LUORD = LUDA = 14
 !-- changed IBM names from ORDINT,MOLINT to AORDINT,MTWOINT
 !900912-hjaaj: call flshfo(lupri) at end of tractl
@@ -294,17 +293,15 @@ C
       LOGICAL FEXIST
 C
 C     070111-hjaaj:
-C     Open old files if they exist,
-C     otherwise they will be attempted generated later.
+C     Open old AOORDINT if it exists,
+C     otherwise it will be attempted generated later.
 C
       CALL GPINQ('AOORDINT','EXIST',FEXIST)
-      IF (.NOT.FEXIST) THEN
+      IF (FEXIST) THEN
         IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
       END IF
-      CALL GPINQ('MOTWOINT','EXIST',FEXIST)
-      IF (.NOT.FEXIST) THEN
-        IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
-      END IF
+C
+      IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
       RETURN
       END
 C  /* Deck n_nxth2m */
@@ -1243,7 +1240,7 @@ C            ' Exchange (Dirac) integrals not calculated.'
       END IF
       L2M = 0
 C
-C     READ THE DAFILE ADDRESS LIST ON UNIT 13
+C     READ THE DAFILE ADDRESS LIST ON UNIT LUMINT
 C
       IDISKM = 0
       CALL DAREAD(LUMINT,IADOUT,3*LIADUT,IDISKM)
@@ -2863,7 +2860,7 @@ C
       IF (IRDAO .EQ. 0) THEN
          ITUSYM =  1
          LX2X3  =  0
-         CALL TRASE0
+         CALL TRASET_0
       ELSE IF (IRDAO.EQ.1) THEN
          ITUSYM =  1
          LX2X3  = ( LMSBIN*(IRAT+1)+2 - 1 ) / IRAT + 1
@@ -2871,7 +2868,7 @@ C
          ITUSYM = -1
          LX2X3  = 2*600
 C MAERKE: husk at rette her naar ny DSOUT2
-         CALL TRASE2
+         CALL TRASET_2
       ELSE
          WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
          CALL QTRACE(LUPRI)
@@ -2882,7 +2879,7 @@ C
       RETURN
       END
 C  /* Deck trase0 */
-      SUBROUTINE TRASE0
+      SUBROUTINE TRASET_0
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -2906,7 +2903,7 @@ C
 #include "inftra.h"
 #include "inftap.h"
 C
-      CALL QENTER('TRASE0')
+      CALL QENTER('TRASET_0')
 C
 C     RETRIEVE BASE DATA FROM UNIT LUORDA
 C        KEEP(1)     = MSYM
@@ -2962,7 +2959,7 @@ C
          IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
      *   ' Integrals assumed to be totally symmetric.'
       END IF
-      CALL QEXIT('TRASE0')
+      CALL QEXIT('TRASET_0')
       RETURN
       END
 C  /* Deck tralim */

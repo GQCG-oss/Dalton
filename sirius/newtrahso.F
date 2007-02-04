@@ -143,8 +143,8 @@ C     restore LUORDA, LUMINT (may point to normal integrals)
       CALL QEXIT('TRAHSO')
       RETURN
       END
-C/*deck  trase2*/
-      SUBROUTINE TRASE2
+C/*deck  traset_2*/
+      SUBROUTINE TRASET_2
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -166,7 +166,7 @@ C
 #include <trhso.h>
 #include <trunit.h>
 C
-      CALL QENTER('TRASE2')
+      CALL QENTER('TRASET_2')
       KEEP(1) = MSYM
       INTSYM  = KSYMSO
       KEEP(2) = INTSYM
@@ -192,7 +192,7 @@ C
   200 CONTINUE
       IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
      *   ' Symmetry of spin-orbit integrals from LUAHSO :',INTSYM
-      CALL QEXIT('TRASE2')
+      CALL QEXIT('TRASET_2')
       RETURN
       END
 C /*deck  rdhso2*/
