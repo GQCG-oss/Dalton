@@ -175,15 +175,17 @@ C
 C
       WRITE(LUPRI,1000)
  1000 FORMAT(10X,'AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 12 01',
-     &      /10X,'Author: Bjoern Roos',
-     &     //10X,'Sirius release Jan 1989/April 1994')
+     &  /10X,'Author: Bjoern Roos',
+     &  /10X,'Revised by hjaaj for Sirius release Jan 1989/April 1994')
 C
       IF (IRAT .NE. 2 .OR. IRAT2 .NE. 4) THEN
-         WRITE(LUPRI,'(/,3(/A))') 
-     *   ' This version of INTSORT only works on computers with',
-     *   ' REAL*8, INTEGER*4, and INTEGER*2.',
-     *   ' You must change the packing scheme.'
-         CALL QUIT('Error in INTSORT, packing scheme will not work.')
+         NWARN = NWARN + 1
+         WRITE(LUPRI,'(/,3(/A))') 'WARNING-WARNING-WARNING'
+     *  ,' This version of INTSORT only tested on computers with'
+     *  ,' REAL*8, INTEGER*4, and INTEGER*2.'
+     &  ,' --- This may not work!!!! ---'
+CHJ  *  ,' You must change the packing scheme.'
+CHJ      CALL QUIT('Error in INTSORT, packing scheme will not work.')
       END IF
 C
 C     Initialize
