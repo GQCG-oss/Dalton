@@ -266,7 +266,7 @@ C
          IF (.NOT.DODFT) THEN
             WRITE (LUW4,'(/,3(/A,F25.10))')
      *       ' Hartree-Fock total energy :',EMY,
-     *       ' + MP2 contribution :',EMP2,
+     *       ' + MP2 contribution        :',EMP2,
      *       ' = MP2 second order energy :',EMY+EMP2
          ELSE
             WRITE (LUW4,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
