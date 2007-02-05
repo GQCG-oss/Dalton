@@ -702,6 +702,7 @@ C--------------------------------
 C     Calculate fock matrices.
 C--------------------------------
 C
+      CALL GETTIM(CPU1,WALL1)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       IF (PARCAL) THEN
          IATOM = 0
@@ -715,6 +716,12 @@ C
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+         IF (IPRINT .GT. 0) THEN
+           CALL GETTIM(CPU2,WALL2)
+           WALL   = WALL2 - WALL1
+           CALL SCRSTA('HRFCK1/PARDRV',WORK(KDSKP),WALL)
+         END IF
+
          HFXMU = HFXM0
 C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
@@ -737,13 +744,16 @@ c           calculation.
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+            IF (IPRINT .GT. 0) THEN
+              CALL GETTIM(CPU1,WALL1)
+              WALL   = WALL1 - WALL2
+              CALL SCRSTA('HRFCK1/PARDRV-hfxatt',WORK(KDSKP),WALL)
+            END IF
             CALL DAXPY(NDMAT*N2BASX,1D0,WORK(KFCTMP),1,FMAT,1)
             HFXFAC = HFXFC0
          END IF
 
          CALL MEMREL('HRFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
-         IF (IPRINT .GT. 0)
-     &      CALL SCRSTA('PARDRV',WORK(KDSKP))
       ELSE
 #endif
 C
@@ -761,6 +771,11 @@ C
      &               WORK(KIORBS),ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
          HFXMU = HFXM0
+         IF (IPRINT .GT. 0) THEN
+           CALL GETTIM(CPU2,WALL2)
+           WALL   = WALL2 - WALL1
+           CALL SCRSTA('HRFCK1/TWOINT',WORK(KDSKP),WALL)
+         END IF
 C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C
@@ -775,11 +790,14 @@ C
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+            IF (IPRINT .GT. 0) THEN
+              CALL GETTIM(CPU1,WALL1)
+              WALL   = WALL1 - WALL2
+              CALL SCRSTA('HRFCK1/TWOINT-hfxatt',WORK(KDSKP),WALL)
+            END IF
             HFXFAC = HFXFC0
          END IF
          IF (IPRINT .GT. 0) CALL TIMER('HRFCK1/TWOINT',TIMSTR,TIMEND)
-         IF (IPRINT .GT. 0)
-     &      CALL SCRSTA('HRFCK1/TWOINT',WORK(KDSKP))
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
