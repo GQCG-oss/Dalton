@@ -81,10 +81,12 @@ C
 C
 C Used from common blocks:
 C ABAINF : DODRCT
+C INFLIN : NCONRF
 C INFTRA : USEDRC
 C
 #include <abainf.h>
 #include <exeinf.h>
+#include <inflin.h>
 #include <infinp.h>
 #include <cbisol.h>
 #include <inforb.h>
@@ -131,8 +133,8 @@ C
       END IF
       CALL FLSHFO(LUPRI)
 C
-      IF (DODRCT) FABRHS = .FALSE.
-C     ... no integral transformation for direct calculations.
+      IF (DODRCT .AND. NCONRF.LE.1) FABRHS = .FALSE.
+C     ... no integral transformation for HF or DFT direct calculations.
 C
       REWIND LUGDVE
       REWIND LUSOVE
