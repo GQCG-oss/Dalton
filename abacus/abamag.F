@@ -824,7 +824,7 @@ C
      &                           WORD
          END IF
          DO 30 ICOMP = 1, NCOMP
-            WRITE (LUPRI,'(A,A,10X,F12.6)') ' Component: ',
+            WRITE (LUPRI,'(A,A,10X,F16.6)') ' Component: ',
      &            LABINT(ICOMP), EXPVAL(ICOMP)
  30      CONTINUE
          WRITE(LUPRI,'(//)')
@@ -1740,14 +1740,16 @@ C
          NREC = NREC + 9*NUCDEP
       END IF
       CALL GPOPEN(LUGDT,ABAGDT,'UNKNOWN','DIRECT',' ',IRAT*NVARMA,OLDDX)
-      IF (OLDDX) THEN
-         WRITE (LUPRI,'(/A)') ' Old LUGDT file opened in TRPRH1.'
-      ELSE
-         CALL DZERO(WORK,NVARMA)
-         DO 50 I = 1, NREC
-            CALL WRITDX(LUGDT,I,IRAT*NVARMA,WORK)
- 50      CONTINUE
-      END IF
+chj 7-mar-06: I don't think it matters if old or not ... /hjaaj
+chj           and the records are anyway written below
+chj   IF (OLDDX) THEN
+chj      WRITE (LUPRI,'(/A)') ' Old LUGDT file opened in TRPRH1.'
+chj   ELSE
+chj      CALL DZERO(WORK,NVARMA)
+chj      DO I = 1, NREC
+chj         CALL WRITDX(LUGDT,I,IRAT*NVARMA,WORK)
+chj      END DO
+chj   END IF
 C
 C     Construct right-hand side
 C
@@ -1813,11 +1815,9 @@ C
                ELSE
                   PRFAC = 0.1D0
                END IF
-               CALL PRKAP(NWOPPT,WORK(NCONST + 1),PRFAC,
-     &              LUPRI)
+               CALL PRKAP(NWOPPT,WORK(NCONST + 1),PRFAC,LUPRI)
             END IF
-            CALL WRITDX(LUGDT,IREC,IRAT*NVARPT,
-     &           WORK)
+            CALL WRITDX(LUGDT,IREC,IRAT*NVARPT,WORK)
  200     CONTINUE
  100  CONTINUE
 C
@@ -3410,27 +3410,27 @@ C
      &   'Nuclear contribution * proton mass * moment of inertia',-1)
          CALL POLPRI(GFANUC,'   ',-2)
          AVENUC = (GFANUC(1,1) + GFANUC(2,2) + GFANUC(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVENUC
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVENUC
 C
          CALL HEADER(
      &   'Diamagnetic contribution * proton mass * moment of inertia',
      &   -1)
          CALL POLPRI(GFACDI,'   ',-2)
          AVEDIA = (GFACDI(1,1) + GFACDI(2,2) + GFACDI(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVEDIA
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVEDIA
 C
          CALL HEADER(
      &   'Electronic contribution * proton mass * moment of inertia',-1)
          CALL POLPRI(ELMGF,'   ',-2)
          AVEEL = (ELMGF(1,1) + ELMGF(2,2) + ELMGF(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVEEL
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVEEL
 C
          CALL HEADER(
      &   'Total molecular g-tensor * proton mass * moment of inertia',
      &   -1)
          CALL POLPRI(TOTMGF,'   ',2)
          AVETOT = (TOTMGF(1,1) + TOTMGF(2,2) + TOTMGF(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVETOT
+         WRITE (LUPRI,'(/,6X,A,F16.6)') ' Average value:',AVETOT
       END IF
 C
 C     Determine principal moments of inertia
@@ -3483,10 +3483,10 @@ C
             GTRAN(1,1) = AVETOT
          END IF
          IF (IPRDEF .GE. 0) THEN
-            WRITE (LUPRI,'(A,F12.6)') ' Moment of inertia :',
+            WRITE (LUPRI,'(A,F16.6)') ' Moment of inertia :',
      &           D1/EIGVAL(3)
             CALL HEADER('Molecular g-factor',1)
-            WRITE(LUPRI,'(4(A,F12.8/))')
+            WRITE(LUPRI,'(4(A,F16.8/))')
      &           ' Isotropic g-factor          :',AVETOT,
      &           ' Nuclear part of g-factor    :',AVENUC,
      &           ' Diamagnetic part of g-factor:',AVEDIA,
@@ -3533,7 +3533,7 @@ C
          AVEDIA = (GTRAN3(1,1) + GTRAN3(2,2) + GTRAN3(3,3))/D3
          IF (IPRINT .GE. 0) THEN
          IF (D12 .AND. D23) THEN
-            WRITE (LUPRI,'(4(/,1X,A,F12.8))')
+            WRITE (LUPRI,'(4(/,1X,A,F16.8))')
      &           ' Molecular g-factor      :  ',AVETOT,
      &           ' Nuclear contribution    :  ',AVENUC,
      &           ' Diamagnetic contribution:  ',AVEDIA,
@@ -3549,7 +3549,7 @@ C
             END IF
             ANI = PAR - PER
             CALL HEADER('Molecular g-factor',1)
-            WRITE (LUPRI,'(6(1X,A,F12.8,/))')
+            WRITE (LUPRI,'(6(1X,A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
      &           ' Electronic contribution  : ',AVEEL,
@@ -3559,25 +3559,25 @@ C
             WRITE (LUPRI,'(1X,A)') ' Molecular g-tensor is cylindrical.'
             CALL HEADER('Molecular g-tensor in principal axis system '//
      &                  '(a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
      &         'C', (GTRAN(I,3),I = 1,3)
             CALL HEADER('Nuclear contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN1(I,1),I = 1,3),
      &         'B', (GTRAN1(I,2),I = 1,3),
      &         'C', (GTRAN1(I,3),I = 1,3)
             CALL HEADER('Electronic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN2(I,1),I = 1,3),
      &         'B', (GTRAN2(I,2),I = 1,3),
      &         'C', (GTRAN2(I,3),I = 1,3)
             CALL HEADER('Diamagnetic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN3(I,1),I = 1,3),
      &         'B', (GTRAN3(I,2),I = 1,3),
      &         'C', (GTRAN3(I,3),I = 1,3)
@@ -3585,7 +3585,7 @@ C
             ANI1 = GTRAN(1,1) - (GTRAN(2,2) + GTRAN(3,3))/D2
             ANI2 = GTRAN(2,2) - (GTRAN(1,1) + GTRAN(3,3))/D2
             CALL HEADER('Molecular g-tensor',1)
-            WRITE (LUPRI,'(6(1X,A,F12.8,/))')
+            WRITE (LUPRI,'(6(1X,A,F16.8,/))')
      &           ' Isotropic g-tensor       : ',AVETOT,
      &           ' Nuclear contribution     : ',AVENUC,
      &           ' Diamagnetic contribution : ',AVEDIA,
@@ -3594,25 +3594,25 @@ C
      &           ' 2nd anisotropy:            ',ANI2
             CALL HEADER('Molecular g-tensor in principal axis system '//
      &                  '(a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN(I,1),I = 1,3),
      &         'B', (GTRAN(I,2),I = 1,3),
      &         'C', (GTRAN(I,3),I = 1,3)
             CALL HEADER('Nuclear contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN1(I,1),I = 1,3),
      &         'B', (GTRAN1(I,2),I = 1,3),
      &         'C', (GTRAN1(I,3),I = 1,3)
             CALL HEADER('Electronic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN2(I,1),I = 1,3),
      &         'B', (GTRAN2(I,2),I = 1,3),
      &         'C', (GTRAN2(I,3),I = 1,3)
             CALL HEADER('Diamagnetic contribution '//
      &                  'in principal axis system (a.u.):',1)
-            WRITE (LUPRI,'(3X,A,6X,3F12.8)')
+            WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &         'A', (GTRAN3(I,1),I = 1,3),
      &         'B', (GTRAN3(I,2),I = 1,3),
      &         'C', (GTRAN3(I,3),I = 1,3)
@@ -3712,8 +3712,8 @@ C     All components of the moment of inertia not defined for linear molecules
 C
       IF (LINEAR) THEN
          IF (IPRINT .GE. 0) THEN
-            WRITE (LUPRI,'(1X,A)') 'The molecule is linear'
-            WRITE (LUPRI,'(1X,A,F12.6)')'Moment of inertia :',
+            WRITE (LUPRI,'(A)') ' The molecule is linear'
+            WRITE (LUPRI,'(A,F16.6)')' Moment of inertia :',
      &                                  D1/EIGVAL(3)
          END IF
          DO 98 IATOM = 1, NUCDEP
@@ -3788,23 +3788,23 @@ C
      &              'principal axis system'
                   IF (IPRINT .GT. 2) THEN
                      CALL HEADER('Nuclear contribution',-1)
-                     WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRANN(I,1),I = 1,3),
      &                    'B', (GTRANN(I,2),I = 1,3),
      &                    'C', (GTRANN(I,3),I = 1,3)
                      CALL HEADER('Diamagnetic contribution',-1)
-                     WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRAND(I,1),I = 1,3),
      &                    'B', (GTRAND(I,2),I = 1,3),
      &                    'C', (GTRAND(I,3),I = 1,3)
                      CALL HEADER('Paramagnetic contribution',-1)
-                     WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                    'A', (GTRANP(I,1),I = 1,3),
      &                    'B', (GTRANP(I,2),I = 1,3),
      &                    'C', (GTRANP(I,3),I = 1,3)
                      CALL HEADER('Total spin rotation constants',-1)
                   END IF
-                  WRITE (LUPRI,'(3X,A,6X,3F12.6)')
+                  WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
