@@ -1582,7 +1582,7 @@ C
 #include <ibtfun.h>
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
-         WRITE(LUPRI,9000)
+         CALL TITLER('Frequency dependent polarizabilities','+',118)
          DO 100 IFRVAL = 1,NFRVAL
             WRITE(LUPRI,9001) FRVAL(IFRVAL)
             WRITE(LUPRI,9002)
@@ -1598,6 +1598,11 @@ C
                WRITE(LUPRI,9004) 'Ey',(POLDD(2,2,JDIP,IFRVAL), JDIP=1,3)
                WRITE(LUPRI,9004) 'Ez',(POLDD(2,3,JDIP,IFRVAL), JDIP=1,3)
             END IF
+            POLISO = (POLDD(1,1,1,IFRVAL) +
+     &                POLDD(1,2,2,IFRVAL) +
+     &                POLDD(1,3,3,IFRVAL)) / D3
+            WRITE (LUPRI,'(/A,1P,G14.7)')
+     &         'Isotropic polarizability: ',POLISO
   100    CONTINUE
       ENDIF
       IF (ROAG) THEN
@@ -1865,12 +1870,11 @@ C
          END DO
       END IF
 C
- 9000 FORMAT (/)
  9001 FORMAT (/,10X,'Polarizability tensor for frequency ',F12.6,' au')
  9002 FORMAT (10X,'----------------------------------------------------'
      &       )
- 9003 FORMAT (16X,3(A12),/)
- 9004 FORMAT (16X,A,2X,3F12.7)
+ 9003 FORMAT (16X,3(A14),/)
+ 9004 FORMAT (16X,A,2X,1P,3G14.7)
  9005 FORMAT (/,10X,'London    G tensor for frequency ',F12.6,' au')
  9006 FORMAT (/,10X,'No-London G tensor for frequency ',F12.6,' au')
  9007 FORMAT (10X,'-------------------------------------------------')
