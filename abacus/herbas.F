@@ -212,9 +212,26 @@ C           ...  Hg
          ELSE IF (INTQ .LE. 86) THEN
 C           ...  Rn
             BASNAM = 'HUCKEL    6 5 3 1'
+C Manu beg 12-02-2007
+         ELSE IF (INTQ .LE. 88) THEN
+C           ...  Ra
+            BASNAM = 'HUCKEL    7 5 3 1'
+         ELSE IF (INTQ .LE. 90) THEN
+C           ...  Th
+            BASNAM = 'HUCKEL    7 5 4 1'
+         ELSE IF (INTQ .LE. 93) THEN
+C           ...  Np
+            BASNAM = 'HUCKEL    7 5 4 2'
+         ELSE IF (INTQ .LE. 95) THEN
+C           ...  Am
+            BASNAM = 'HUCKEL    7 5 3 2'
+C         ELSE IF (INTQ .EQ. 92) THEN
+C           ...  Special dirty fix for U
+C            BASNAM = 'HUCKEL    7 5 4 2'
          ELSE IF (INTQ .LE. 103) THEN
 C           ...  Lr
             BASNAM = 'HUCKEL    7 6 4 2'
+C Manu end
          ELSE 
             CALL QUIT('BASLIB error: HUCKEL not defined for Z.gt.103')
          END IF
@@ -716,19 +733,20 @@ C
 C
 C Reading the primitive and contracted coeffecients
 C
-      MAXEXP = 8
-      NUMEXP = (INTEXP - 1)/MAXEXP
-      J = 1
+c     MAXEXP = 8
+c     NUMEXP = (INTEXP - 1)/MAXEXP
+c     J = 1
       IF (INTORB .GT. 0) THEN
-         DO I = 0, NUMEXP
-            IF (I.LT.NUMEXP .OR. MOD(INTEXP,MAXEXP).EQ.0 ) THEN
-               READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J,J - 1 + MAXEXP)
-            ELSE
-               READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
-     &              J - 1 + MOD(INTEXP,MAXEXP))
-            END IF
-            J = J + MAXEXP
-         END DO
+c        DO I = 0, NUMEXP
+c           IF (I.LT.NUMEXP .OR. MOD(INTEXP,MAXEXP).EQ.0 ) THEN
+c              READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J,J - 1 + MAXEXP)
+c           ELSE
+c              READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
+c    &              J - 1 + MOD(INTEXP,MAXEXP))
+c           END IF
+c           J = J + MAXEXP
+c        END DO
+         READ (LUBAS,*) (ALPHA(K,NBLOCK), K = 1, INTEXP)
          IF (UNCONT .AND. BASNAM(1:6) .NE. 'HUCKEL') THEN
 C        ... force uncontracted
             DO I = 1, INTEXP
@@ -750,9 +768,7 @@ C           skip core orbitals for Huckel guess for ECP
          END IF
   
       ELSE
-         DO I = 0, NUMEXP
-            READ (LUBAS,*)
-         END DO
+         READ (LUBAS,*) (XXX, K = 1, INTEXP)
          DO I = 1, INTEXP
             READ (LUBAS,*)
          END DO
@@ -1141,6 +1157,8 @@ C
  20   CONTINUE
       READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
+      write (lupri,*) string
+      call flshfo(lupri)
       READ (STRING, '(A1)') SIGN
 C
       IF (SIGN .EQ. ' ') THEN
@@ -1151,7 +1169,10 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
          IF (BLANK) THEN
             GOTO 20
          ELSE
-            READ (STRING, '(BN,2I5)') INTEXP, INTORB
+            READ (STRING, '(BN,2I5)',IOSTAT=IOERR,ERR=2000)
+     &           INTEXP, INTORB
+          write (lupri,*) 'TEST intexp, intorb',INTEXP,INTORB
+          write (lupri,*) string
             RETURN
          END IF
       ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
@@ -1172,9 +1193,14 @@ C
       RETURN
 C
  1000 CONTINUE
-      WRITE (LUPRI,'(/A,I5)') 'Error in reading file, your basis '//
-     &     'is not complete. IOSTAT code:',IOERR
-      CALL QUIT('Incomplete basis set file in HERBAS')
+      WRITE (LUPRI,'(/A,I5)') 'Error in reading basis set file, '//
+     &     'your basis is not complete. IOSTAT code:',IOERR
+      CALL QUIT('Incomplete basis set file in FINPOS')
+ 2000 CONTINUE
+      WRITE (LUPRI,'(/A,I5//A/A)')'Error in searching basis set file,'//
+     &     ' your basis is not complete. IOSTAT code:',IOERR,
+     &     'Last line read:',STRING
+      CALL QUIT('Error searching basis set file in FINPOS')
       END
 C/* Deck FIND_BASFIL */
       SUBROUTINE FIND_BASFIL(BASNAM,LUBAS,IPRINT)
