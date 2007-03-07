@@ -460,7 +460,6 @@ C
       IF (IPRLE. GT. 10 ) THEN
           CALL AROUND( ' START OF CCEQ_STR ' )
           WRITE(LUPRI,*) 'CCEQ_STR: LIST     =',LIST(1:3)
-          WRITE(LUPRI,*) 'CCEQ_STR: LINQCC   =',LINQCC
           WRITE(LUPRI,*) 'CCEQ_STR: TRIPLET  =',TRIPLET
           WRITE(LUPRI,*) 'CCEQ_STR: LPROJECT =',LPROJECT
           WRITE(LUPRI,*) 'NCCVAR             =',NCCVAR

@@ -2368,8 +2368,7 @@ C
       IF (CCR12) THEN
         CALL DZERO(WORK(KAMAT),MAXRED*MAXRED)
         CALL DCOPY(MAXRED*MAXRED,WORK(KSOLEQ),1,WORK(KAMAT),1)
-        WRITE(LUPRI,*)'' 
-        WRITE(LUPRI,*)'Jacobi matrix:' 
+        WRITE(LUPRI,'(/A)')'Jacobi matrix:' 
         CALL OUTPUT(WORK(KAMAT),1,MAXRED,1,NREDH,MAXRED,MAXRED,1,LUPRI)
 
 C       lujacobi = 0
@@ -2460,8 +2459,7 @@ c         get eigenvalues of S matrix to check if it is positive definite
 c         caution rg routine destroys old S matrix
           CALL RG(MAXRED,NREDH,WORK(KSCOPY),WORK(KSEIVAL),WORK(KSWI),
      &            MATZ,WORK(KSOLEQS),WORK(KIV1),WORK(KFV1),IERR)
-          WRITE(LUPRI,*)'' 
-          WRITE(LUPRI,*)'Eigenvalues of S matrix:' 
+          WRITE(LUPRI,'(/A)')'Eigenvalues of S matrix:' 
           CALL OUTPUT(WORK(KSEIVAL),1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)
         END IF
 c

@@ -2656,7 +2656,7 @@ C
          KEND1  = KEMAT2 + NMATIJ(ISYMTR)
          LWRK1  = LWORK  - KEND1
          IF (LWRK1 .LT. 0) THEN
-            WRITE(LUPRI,*) 'Needed:', KWRK1, 'Available:', LWORK
+            WRITE(LUPRI,*) 'Needed:', KEND1, 'Available:', LWORK
             CALL QUIT('Insufficient memory for allocation in cc_rcc2ff')
          ENDIF
 C
@@ -2766,7 +2766,7 @@ C
       KEND1  = KFOCK2 + MAX(N2BST(ISYMOP),N2BST(ISYMLA))
       LWRK1  = LWORK  - KEND1
       IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Needed:', KWRK1, 'Available:', LWORK
+         WRITE(LUPRI,*) 'Needed:', KEND1, 'Available:', LWORK
            CALL QUIT('Insufficient memory for allocation in cc_lcc2ff')
       ENDIF
 C
@@ -2864,7 +2864,7 @@ C
       KEND1  = KEMAT2 + NMATIJ(ISYMLA)
       LWRK1  = LWORK  - KEND1
       IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Needed:', KWRK1, 'Available:', LWORK
+         WRITE(LUPRI,*) 'Needed:', KEND1, 'Available:', LWORK
          CALL QUIT('Insufficient memory for allocation in cc_fcc2ff')
       ENDIF
 C

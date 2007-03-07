@@ -807,8 +807,8 @@ C
                      WRITE(LUPRI,*) 'Norm of RMAT2 -after CONOCC',XRMAT
                      RHO1N = DDOT(NT1AM(ISYRES),OMEGA1,1,OMEGA1,1)
                      RHO2N = DDOT(NT2AM(ISYRES),OMEGA2,1,OMEGA2,1)
-                     WRITE(LUPRI,*) 'Norm of Rho1 -after CC3_CONOCC',RHO1N
-                     WRITE(LUPRI,*) 'Norm of Rho2 -after CC3_CONOCC',RHO2N
+                   WRITE(LUPRI,*) 'Norm of Rho1 -after CC3_CONOCC',RHO1N
+                   WRITE(LUPRI,*) 'Norm of Rho2 -after CC3_CONOCC',RHO2N
                   ENDIF
 C
                   IF (IPRINT .GT. 220) THEN

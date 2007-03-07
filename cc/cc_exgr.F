@@ -90,7 +90,7 @@ C
       PARAMETER (FS2AM ='CCR_S2DM')
       CHARACTER MODEL*10
       CHARACTER MODELPRI*4, MODELPRI2*30
-      CHARACTER LABEL*8, LABR12*3
+      CHARACTER LABEL*8, LABR12*4
       CHARACTER*2 LIST
 C
 #include <leinf.h>
@@ -112,8 +112,11 @@ C
       LUFS12 = 0
       LUFS2  = 0
 
-      LABR12 = ''
-      IF (CCR12) LABR12 = '-R12'
+      IF (CCR12) THEN
+         LABR12 = '-R12'
+      ELSE
+         LABR12 = '    '
+      END IF
 C
       IF (CCR12) CALL QUIT('R12 not yet implemented in CC_EXGR.')
 C      
@@ -231,7 +234,9 @@ C-----------------------------------------------
 C     Calculate appropriate F/B-transformations.
 C-----------------------------------------------
 C
-      IF ((.NOT.E0SKIP).AND.(.NOT.B0SKIP)) THEN
+c     IF ((.NOT.E0SKIP).AND.(.NOT.B0SKIP)) THEN
+c hjaaj jan-07: B0SKIP is not defined
+      IF (.NOT.E0SKIP) THEN
          CALL CC_FRE(WORK,LWORK)
       ENDIF
 C

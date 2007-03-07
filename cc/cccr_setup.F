@@ -873,6 +873,7 @@ c /* deck CCCR_DISP_SETUP */
       MXVAEA = 0
       MXX    = 0
       MXO    = 0
+      MXL    = 0
 
       NCREXPCF = 0
  

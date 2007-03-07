@@ -646,6 +646,8 @@ c /* deck cccm_setup */
       NFCTRAN = 0
       NXETRAN = 0
       NCAUMOM = 0
+      MFCVEC  = 0
+      MXEVEC  = 0
  
 *---------------------------------------------------------------------*
 * start loop over all requested Cauchy moments 

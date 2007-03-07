@@ -81,7 +81,6 @@ C  /* Deck ccpt_fckd1 */
            ISYMI = MULD2H(ISYMA,ISYFCK)
            DO A = 1,NVIR(ISYMA)
              KOFFPQ = IFCVIR(ISYMI,ISYMA) + NORB(ISYMI)*(A - 1) + 1
-     &                                      
              KOFFIA = IT1AMT(ISYMI,ISYMA) + NRHF(ISYMI)*(A - 1) + KFCKIA
              CALL DCOPY(NRHF(ISYMI),FOCK(KOFFPQ),1,WORK(KOFFIA),1)
             END DO

@@ -4242,7 +4242,7 @@ C     -----------------------------------------------------------
       ! read zeroth-order singles amplitudes and compute Lambda
       IOPT = 1
       CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AM0),DUMMY)
-      CALL LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AM),
+      CALL LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AM0),
      *            WORK(KEND1),LWRK1)
  
 C     -----------------------------------------------------------

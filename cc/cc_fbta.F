@@ -1531,7 +1531,7 @@ C            WRITE(LUPRI,*) 'returned from CCETAINT1...'
          IF (DIRECT) THEN
             NTOSYM = 1
             IF (HERDIR) THEN
-              CALL HERDI1(WORK(KEND),LWRK,IPRERI)
+              CALL HERDI1(WORK(KEND2),LWRK,IPRERI)
             ELSE
               KCCFB1 = KEND2
               KINDXB = KCCFB1 + MXPRIM*MXCONT

@@ -328,7 +328,7 @@ C
                write(lupri,*)'norm of ia,gamma;delta', 
      &                        xtest, isymd, idel
 
-                  xniagd = xniagd + xtest
+                  xnaigd = xnaigd + xtest
 
                   xtest = ddot(ND2ABG(ISYDEN),WORK(KD2ABG_PT),1,
      &                                     WORK(KD2ABG_PT),1)
