@@ -315,7 +315,10 @@ C
       WRTINT = .FALSE.
       FCKINT = .FALSE.
       EXPERI = .TRUE.
-      UNDIFF = .FALSE.
+c
+c     Cristian, change it
+      UNDIFF = .TRUE.
+c
       CCRUN  = .TRUE.
       NPDIMA = NDIMA
       NPDIMB = NDIMB
@@ -559,7 +562,7 @@ C
                   NHKDST = NHKTBT(I)
                   KHKDST = KHKTBT(I)
                   MLTDST = MULTBT(I)
-                  NCTDST = NCTFBT(I)
+C                 NCTDST = NCTFBT(I) ! tew: number of contractns not always constant
 C                 NPRDST = NPRFBT(I)
                   ISTABL = ISTBBT(I)
                   FIRST = .FALSE.
@@ -578,27 +581,34 @@ C    &                   NPRFBT(I).NE.NPRDST .OR.
                      CALL QUIT('Error in ERIDSI')
                   END IF
                END IF
+            else
+c             print * ,"skipping i = ", i
             END IF
          END DO
 C
+C tew: allow for different numbers of contractions for each J
+C tew: NB// The order of IDIST is not the same as before.
          IDIST = 0
-         DO ICNT = 1, NCTDST 
-            DO IREP = 0, MAXREP
-               IA = 0
-               DO ICMP = 1, KHKDST
-               IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP))) 
-     &            .EQ. 0) THEN
-                  IA = IA + 1
-                  DO J = 1, NACDST
+         IF (NACDST .GT. 0) THEN
+           DO IREP = 0, MAXREP
+             IA = 0
+             DO ICMP = 1, KHKDST
+               IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP)))
+     &          .EQ. 0) THEN
+                 IA = IA + 1
+                 DO J = 1, NACDST
+                   NCTDST=NCTFBT(IACDST(J))
+                   DO ICNT = 1, NCTDST
                      IDIST = IDIST + 1
                      INDA = INDXBT(KNDXBT(IACDST(J))-1+ICNT,IREP)+IA-1
                      INDDST(IDIST) = INDA
                      INDXDS(INDA) = IDIST
-                  END DO
+                   END DO
+                 END DO
                END IF
-               END DO
-            END DO
-         END DO
+             END DO
+           END DO
+         END IF
 C
       ELSE
          NDISTR = 1
@@ -870,12 +880,18 @@ C     Information about distributions
 C     ===============================
 C
       CALL ERIDSI(INDXBT,IPRINT)
+
 C
 C     Transfer information
 C     ====================
 C
       NUMDIS = NDISTR
-      CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+!fox
+!fox  25-04-2003
+!fox  CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+      IF (NUMDIS .GT. 0) CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+!fox
+c      CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIIDX',2)
          WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
