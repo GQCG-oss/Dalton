@@ -2101,6 +2101,21 @@ C
       IF (RUNONE) THEN
          IF (IPRDEF .GT. 1) CALL TITLER('Output from HERONE','*',126)
 C
+C           ***** These integrals are used to modify the Hamiltonian ****
+C           ***** thus calculated first of all if requested          ****
+C           ***** DPT potential energy  integrals                    ****
+C
+         IF (ONEPRP .AND. DPTPOT) THEN
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL PR1INT('DPTPO1 ',WORK,LWORK,IDUMMY,
+     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
+            CALL FLSHFO(LUPRI)
+            CALL PR1INT('DPTPO2 ',WORK,LWORK,IDUMMY,
+     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
+            CALL TIMER('DPTPOT',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+         END IF
+C
 C        ***********************************************
 C        ***** Overlap, kinetic energy and nuclear *****
 C        ***** attraction integrals                *****
@@ -3065,19 +3080,6 @@ C
                CALL PR1INT('DPTOVL ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('DPTOVL',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** DPT potential energy  integrals ***********************
-C
-            IF (DPTPOT) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DPTPO1 ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL FLSHFO(LUPRI)
-               CALL PR1INT('DPTPO2 ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DPTPOT',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
 C
