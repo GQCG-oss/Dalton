@@ -163,7 +163,7 @@ C           ... Al, Si, P, S, Cl, Ar
 CHJ-jun06   BASNAM = 'HUCKEL    3 2 0 0'
 CHJ-jun06   added 3d
 CKR-march 07 This is dangerous if you run with a minal basis. Reverted.
-            BASNAM = 'HUCKEL    3 2 0 0'
+            BASNAM = 'HUCKEL    3 2 1 0'
          ELSE IF (INTQ .LE. 20) THEN
 C           ...  K, Ca
 CHJ         BASNAM = 'HUCKEL    4 2 0 0'

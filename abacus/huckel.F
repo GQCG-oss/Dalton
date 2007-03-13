@@ -155,13 +155,6 @@ C
             NBASI  = NBAS(ISYM)
             IBASTO = IBAS(ISYM) + NHUCT
             IHUCI  = IBASTO + NBASI
-            NORBI  = NORB(ISYM)
-            IF (NORBI .EQ. 0) THEN
-               WRITE (LUPRI,'(/A,I3/I5,A)')
-     &            'HUCDRV error in symmetry',ISYM,
-     &            NHAOSY,' Huckel orbitals, but no orbitals!'
-               CALL QUIT('HUCDRV error, NHAOSY.ne.0 .and. NORBI.eq.0')
-            END IF
             ISTRT  = (IHUCI*(IHUCI + 1))/2
 C
 C           Copy the Huckel overlap matrix into a lower triangular matrix,
@@ -224,10 +217,12 @@ C
          IHUCI  = IBASTO + NBASI
          NORBI  = NORB(ISYM)
          IF (NORBI .EQ. 0) THEN
-            WRITE (LUPRI,'(/A,I3/I5,A)')
-     &         'HUCDRV error in symmetry',ISYM,
-     &         NHAOSY,' Huckel orbitals, but no orbitals!'
-            CALL QUIT('HUCDRV error, NHAOSY.ne.0 .and. NORBI.eq.0')
+            WRITE (LUPRI,'(/A,I3/I5,A/A)')
+     &         'HUCDRV warning in symmetry',ISYM,
+     &         NHAOSY,' Huckel orbitals, but no orbitals!',
+     &         'Thus no Huckel projection in this symmetry!'
+            GO TO 100
+c           CALL QUIT('HUCDRV error, NHAOSY.ne.0 .and. NORBI.eq.0')
          END IF
          ISTRT  = (IHUCI*(IHUCI + 1))/2
          ICSYM  = ICMO(ISYM) + 1
@@ -378,22 +373,42 @@ C     Jan 2007 HJAaJ: No! We want to project on the MO basis
 C     from DELMO, otherwise this will reintroduce some parts of the
 C     deleted atomic orbitals again, leading to "mysterious" too
 C     big MO coefficients.
-C     Revised algorithm: (CMO_{Nn})^{T}*(S_{NO}*CMO_{O})
-C     where N,n is new basis NBASI,NORBI, O is old basis (Huckel basis)
-C     and CMO_(O) contains the molecular orbitals from Huckel.
+C     Revised algorithm: (CMO_{Nn})^{T}*(S_{NO}*CMO_{OO})
+C     where N,n is new basis NBASI,NORBI; O is old basis (Huckel basis);
+C     and CMO_(OO) contains the Huckel molecular orbitals in Huckel basis.
 
          KSCRA1 = KWRK
          KSCRA2 = KSCRA1 + NBASI*NHAOSY
-         KLAST  = KSCRA1 + NBASI*NHAOSY
-         IF (KLAST.GT.LWORK) CALL STOPIT('HUCDRV','DGEINV',KLAST,LWORK)
+         KLAST  = KSCRA2 + NBASI*NHAOSY
+         IF (KLAST.GT.LWORK) CALL STOPIT('HUCDRV','DGEMM ',KLAST,LWORK)
+C        1) Do (S_{NO}*CMO_{O}) part: 
+         CALL DGEMM('N','N',NBASI,NHAOSY,NHAOSY,1.D0,
+     &              TRANMT,NBASI, EIGVEC,NHAOSY,0.D0,
+     &              WORK(KSCRA1),NBASI)
+C        2) Check for orbital types in Huckel basis not in regular basis
+C           (e.g. a 3d on Aluminium, not included in basis sets w/o pol)
+         MHAOSY = 0
+         DO IHAOSY = 1, NHAOSY
+            JSCRA1 = KSCRA1 + (IHAOSY-1)*NBASI
+            TNORM = DNRM2(NBASI,WORK(JSCRA1),1)
+            IF (TNORM .GT. 1.0D-8) THEN
+               JSCRA2 = KSCRA2 + MHAOSY*NBASI
+               MHAOSY = MHAOSY + 1
+               CALL DCOPY(NBASI,WORK(JSCRA1),1,WORK(JSCRA2),1)
+            END IF
+         END DO
+         IF (NHAOSY .NE. MHAOSY) THEN
+            WRITE(LUPRI,'(/A,I2,A,I3,A,I3)')
+     &      'HUCDRV: reduced number of huckel orbitals in sym',ISYM,
+     &      ' from',NHAOSY,' to',MHAOSY
+            NHAOSY = MHAOSY
+         END IF
+C        3) DO (CMO_{Nn})^{T}* (work(kscra2)) part
          CALL DGEMM('T','N',NORBI,NHAOSY,NBASI,1.D0,
-     &              CMO(ICSYM),NBASI, TRANMT,NBASI,0.D0,
+     &              CMO(ICSYM),NBASI, WORK(KSCRA2),NBASI,0.D0,
      &              WORK(KSCRA1),NORBI)
-         CALL DGEMM('N','N',NORBI,NHAOSY,NHAOSY,1.D0,
-     &              WORK(KSCRA1),NORBI, EIGVEC,NHAOSY,0.D0,
-     &              WORK(KSCRA2),NORBI)
          CALL DGEMM('N','N',NBASI,NHAOSY,NORBI,1.D0,
-     &              WORK(KCMO1-1+ICSYM),NBASI, WORK(KSCRA2),NORBI,0.D0,
+     &              WORK(KCMO1-1+ICSYM),NBASI, WORK(KSCRA1),NORBI,0.D0,
      &              CMO(ICSYM),NBASI)
  100  CONTINUE 
       IF (P6FLAG(6)) THEN
