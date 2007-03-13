@@ -1873,8 +1873,8 @@ C
  9001 FORMAT (/,10X,'Polarizability tensor for frequency ',F12.6,' au')
  9002 FORMAT (10X,'----------------------------------------------------'
      &       )
- 9003 FORMAT (16X,3(A14),/)
- 9004 FORMAT (16X,A,2X,1P,3G14.7)
+ 9003 FORMAT (16X,3(A14,1X),/)
+ 9004 FORMAT (16X,A,2X,1P,3(G14.7,1X))
  9005 FORMAT (/,10X,'London    G tensor for frequency ',F12.6,' au')
  9006 FORMAT (/,10X,'No-London G tensor for frequency ',F12.6,' au')
  9007 FORMAT (10X,'-------------------------------------------------')
