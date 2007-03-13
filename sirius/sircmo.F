@@ -649,8 +649,10 @@ C             ... primary basis
                 NORB(ISYM) = NORB(ISYM) - IDEL
                 NCMOT = NCMOT - IDEL*NBASI
               END IF
+              GOTO 280
            END IF
   275    CONTINUE
+  280    CONTINUE
 C
 C        Finish canonical orthonormalization by 
 C        normalization (C = S**(-0.5)*U = U * Seig**(-0.5) )
