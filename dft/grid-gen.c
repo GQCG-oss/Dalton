@@ -1491,6 +1491,7 @@ grid_generate(const char* filename, int atom_cnt,
     fort_print("Radial Quadrature : %s", radial_quad->name);
     fort_print("Space partitioning: %s", selected_partitioning->name);
     fort_print("Radial integration threshold: %g", threshold);
+    fort_print("Angular polynomials in range [%i %i]", minang, maxang);
 
     times(&starttm);
     mgrid->verbose = 1; /* to increase verbosity */
