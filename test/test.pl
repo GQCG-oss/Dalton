@@ -12,6 +12,7 @@ my $keep = '';
 my $explist ='';
 my $check = '';
 my $keyword = '';
+my $oldout = '';
 my $biglog = 'test.log';
 my $bigerr = 'test.err';
 chomp(my $tstdir =`pwd`);
@@ -25,6 +26,7 @@ $verbose = 0;
 	 'all'       => 5);
 use Getopt::Long;
 use Pod::Usage;
+use Tie::File;
 #use Getopt::Long 2.34;
 parse_input();
 ##############################################################################
@@ -46,7 +48,7 @@ sub parse_input {
 			     "all"      => \$all,
 			     "checkref" => \$checkref,
 			     "keep"     => \$keep,
-			     "oldout"   => \$oldout,
+			     "oldout=s" => \$oldout,
 			     "tstdir=s" => \$tstdir,
 			     "help"     => \$help);
     pod2usage(1) if $help;
@@ -435,7 +437,7 @@ sub check_files
 # input: list of file names, hash with needed filehandles
 #
     my %files = %{pop(@_)};
-    my ($log, $err) = ($files{log}, $files{err});
+    my ($log, $err, $biglog) = ($files{log}, $files{err}, $files{biglog});
     my $result = 0;
     foreach $file (@_) {
 	next if -f $file;
@@ -445,6 +447,9 @@ sub check_files
     if ($result) {
 	print $err "One or more file are missing. Test will be skipped\n";
 	print $log "One or more file are missing. Test will be skipped\n";
+	print $log "Check error file for details\n";
+	print $biglog "One or more file are missing. Test will be skipped\n";
+	print $biglog "Check error file for details\n";
     }
     return $result;
 }
@@ -539,9 +544,9 @@ sub title_print
 {
     my $FH = shift;
     my $string= shift;
-    print {$FH} "--------------------------------------------------------------\n".
-              "$string\n".
-	      "--------------------------------------------------------------\n";
+    print {$FH} "--------------------------------------------\n".$string.
+              "\n--------------------------------------------\n";
+    
 }
 #################################################################################################
 # test drivers
@@ -1018,10 +1023,30 @@ sub make_testlist($$$$$$) {
 	$list{$name} = 1;
     }
     @list = keys(%list);
-    print $log "----------List of performed tests---------\n";
-    print $log "@list\n";
-    print $log "------------------------------------------\n";
+    print $log "The following tests will be performed:\n";
+    print $log "@list\n\n";
     return @list;
+}
+###########################################################################################################
+sub preprocess_files($) {
+#
+# we need to have "clean" output and reference files before performing any checks
+# things to be cleaned:
+# 1) all real defined with D/d need to be changed in E 
+#    since perl does not recognize xxxx.xxD+xxx and similar
+#    as numbers
+#
+    my %files = %{$_[$#_]};
+    my $file="";
+    my $array=();
+    foreach $file ($files{out_f},$files{ref_f})
+    {    
+	tie @array, 'Tie::File', $file or die "Cannot tie file $file";
+	for (@array) {
+	    s/([.\d])D([+-]\d)/$1E$2/g;
+	}
+	untie @array;
+    }
 }
 ###########################################################################################################
 #
@@ -1081,7 +1106,6 @@ open $BIGERR, ">$bigerr" or die;
 my $dir = make_dirname();
 mkdir $dir || die "Fatal: Unable to create perl-tests directory!";
 chdir $dir || die "Fatal: Unable to enter perl-tests directory!"; 
-
 my @testlist = make_testlist($all,$check,$keyword,$explist,$tstdir,\%bigfiles);
 #
 # Main loop
@@ -1123,7 +1147,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     open $MOLINP, ">$molinp"  or die;
     open $REFOUT, ">$refout " or die;
 
-    title_print($BIGLOG, "Log information for test $test");
+    print $BIGLOG "Now performing test $test ..............\n";
     title_print($LOGFILE,"Log information for test $test");
     title_print($ERRFILE,"Error information for test $test");
     $TOT_ERR = 0;
@@ -1144,6 +1168,8 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
 #
     if ($checkref) {
 	system("cp $refout $dalout");
+    } elsif ($oldout) {
+	system("cp $tstdir/$oldout $dalout");
     } else { 
 	system("$dalton $options $dalinp $molinp 1> $logdal 2> $errdal") unless $oldout;
     }
@@ -1158,6 +1184,12 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     close $MOLINP  or die;
     close $REFOUT  or die;
 #
+# Preprocessing of output and reference files
+# in order to be sure we have "clean" files
+#
+    preprocess_files(\%files);
+#
+#
 # Main check loop
 #
     my $ok = 0;
@@ -1171,7 +1203,6 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
 	  print $LOGFILE "\n----------Check: $name-------------\n";
 	  print $LOGFILE "Error in check input. Check number $idx will be skipped\n";
 	  print $LOGFILE "Check name not yet defined, increase verbosity and check error files for more details\n";
-	  print $BIGLOG  "\n----------Check: $name-------------\n";
 	  print $BIGLOG  "Error in check input. Check number $idx will be skipped\n";
 	  print $BIGLOG  "Check name not yet defined, increase verbosity and check error files for more details\n";
 	  print $ERRFILE "Error in check input!\n";
@@ -1196,7 +1227,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
 #
     continue {
 	if (not $ok) {
-	    print $BIGLOG  "Error in check $name!\n----------------------------------------------\n\n";
+	    print $BIGLOG  "Error in check $name! See $test.lgf and $test.erf for details\n";
 	    print $LOGFILE "Error in check $name!\n----------------------------------------------\n\n";
 	    print $ERRFILE "Error in check $name!\n----------------------------------------------\n\n";
 	    $TOT_ERR++;
