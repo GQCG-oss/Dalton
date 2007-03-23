@@ -2296,11 +2296,11 @@ C     Symmetrized magnetic moments
 C
       IF (HERMIT) CALL MAGCOR(IPREAD)
 C
-C     ***************************
-C     ***** Determine IAOAO *****
-C     ***************************
+C     *************************************************
+C     ***** Determine IAOAO and its inverse JAOAO *****
+C     *************************************************
 C
-      CALL AOTOAO(IAOAO,IPREAD)
+      CALL AOTOAO(IAOAO,JAOAO,IPREAD)
 C
 C     **************************
 C     **** Determine ICNTAO ****
@@ -4521,7 +4521,7 @@ C  /* Deck carlab */
       RETURN
       END
 C  /* Deck aotoao */
-      SUBROUTINE AOTOAO(IAOAO,IPREAD)
+      SUBROUTINE AOTOAO(IAOAO,JAOAO,IPREAD)
 C
 C     This subroutine sets up pointer IAOAO which convertes between
 C     two different orderings of AO's: from the ordering
@@ -4539,7 +4539,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 C
-      DIMENSION IAOAO(MXCORB)
+      DIMENSION IAOAO(MXCORB),JAOAO(MXCORB,2)
 C
 #include <symmet.h>
 #include <nuclei.h>
@@ -4548,6 +4548,10 @@ C
 #include <ibtfun.h>
 C
       IF (IPREAD .GE. 10) CALL TITLER('Output from AOTOAO','*',103)
+      DO I = 1,MXCORB
+         JAOAO(I,1) = 0
+         JAOAO(I,2) = 0
+      END DO
 C
 C     Loop over all atoms
 C
@@ -4573,6 +4577,27 @@ C
                      IF (JATOM .EQ. JCENT) THEN
                         IAO = IAO + 1
                         IAOAO(JAO) = IAO
+                        JAOAO(IAO,1) = JAO
+Clf
+Clf Molden needs d, f,.. functions ordered in the following way
+Clf 0,+1,-1,+2,-2,+3,-3 etc...
+Clf therefore we provide the following index to reorder
+Clf the coefficients in the molden.inp file.
+Clf The shift index is ISHIFT and it has to be placed
+Clf in KAO=IAO-ISHIFT
+Clf WARNING: this only works for spherical functions 
+Clf and not for cartesians. 
+Clf
+                        IF(KHKT(ISHELL) .GE. 5) THEN
+                           LMAX = (KHKT(ISHELL)-1)/2
+                           LZ = ICMP - 1 - LMAX
+                           ISGN = ISIGN(1,LZ)
+                           IF(LZ .EQ. 0) ISGN = 0
+                           ISHIFT = LMAX + LZ - 2*ABS(LZ) +
+     $                          (ISGN+1) * ISGN**2 / 2
+                           KAO = IAO-ISHIFT
+                           JAOAO(KAO,2) = ISHIFT
+                        END IF
                      END IF
                   END IF
   500             CONTINUE
@@ -5290,6 +5315,8 @@ C
       call output(ctran,1,nbasis,1,8,mxcorb,8,1,lupri)
       WRITE(LUPRI,*) ' itran ',((itran(i,j),i=1,nbasis),j=1,8)
       WRITE(LUPRI,*) ' iaoao ',(iaoao(i),i=1,nbasis)
+      WRITE(LUPRI,*) ' jaoao1 ',(jaoao(i,1),i=1,nbasis)
+      WRITE(LUPRI,*) ' jaoao2 ',(jaoao(i,2),i=1,nbasis)
       return
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

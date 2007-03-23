@@ -1313,7 +1313,7 @@ C                     because the Fock matrix is not zero for these
             WRITE (LUPRI,1750) (SCRA(IORBI+I),I=1,NLAST)
          END IF
   200 CONTINUE
-      IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY)
+      IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY,DUMMY,DUMMY,DUMMY)
 C     take care of 1-electron case and no virtuals case
       IF (EHOMO .EQ. -DBIG) EHOMO = D0
       IF (ELUMO .EQ.  DBIG) ELUMO = D0

@@ -268,9 +268,9 @@ C
       KFRSAV= 1
       KFREE = KFRSAV
       LFREE = LWRK
-      CALL MEMGET('REAL', KCMO,NCMOT,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCREF,NCONF,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL', KOCC,NORBT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL', KCMO,NCMOT, WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCREF,NCONF, WRK,KFREE,LFREE)
+      CALL MEMGET('REAL', KOCC,NORBT, WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
             NWARN = NWARN + 1
@@ -487,9 +487,15 @@ C             (CREF was not saved on file)
      *              WRK,KFREE,LFREE,LUW4,IPRNO)
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
-         CALL MEMREL('SIROUT.molden.GETNO',WRK,KFRSAV,KREL1,KFREE,LFREE)
+         CALL MEMREL('SIROUT.MOLDEN.GETNO',WRK,KFRSAV,KREL1,KFREE,LFREE)
        END IF
-         CALL MOMOS(1,WRK(KCMO),WRK(KOCC))
+       KREL2 = KFREE
+       CALL MEMGET('REAL', KAOSO,  N2BASX,      WRK, KFREE, LFREE)
+       CALL MEMGET('REAL', KUNPAK, NORBT*NBAST, WRK, KFREE, LFREE)
+       CALL MEMGET('REAL', KOVEC,  NBAST,       WRK, KFREE, LFREE)
+       CALL MOMOS(1,WRK(KCMO), WRK(KOCC), WRK(KAOSO),
+     $            WRK(KUNPAK), WRK(KOVEC))
+       CALL MEMREL('SIROUT.MOMOS',WRK,KREL2,KREL2,KFREE,LFREE)
       END IF
 C     
 C ***  Print final MCSCF orbitals ***
@@ -715,10 +721,10 @@ C
             DO 200 I=1,MBASI
                JSMO=ISTMO+I
                JEMO=IEMO+I
-               JJ = 0
-               DO J=JSMO,JEMO,NBASI
-                  IF ( ABS(CMO(J)) .GE. THRPRI ) JJ = 1
-               END DO
+               JJ = 1
+Clf               DO J=JSMO,JEMO,NBASI
+Clf                  IF ( ABS(CMO(J)) .GE. THRPRI ) JJ = 1
+Clf               END DO
                IF (JJ .EQ. 1) WRITE(IOUT,2800) I,CENT(I+ISTBAS),
      *            TYPE(I+ISTBAS),(CMO(J),J=JSMO,JEMO,NBASI)
   200       CONTINUE

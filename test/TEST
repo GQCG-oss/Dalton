@@ -581,7 +581,7 @@ if [ "$perl_style" -gt 0 ]; then
     cp ../test.pl .    
     cp ../*.tst .
     cp ../checklist .
-    parameters="--dalton=$DALTON"
+    parameters="--quiet --dalton=$DALTON"
     if [ "$keep" = "true" ]; then
 	parameters="$parameters --keep"
     fi

@@ -13,6 +13,7 @@ my $explist ='';
 my $check = '';
 my $keyword = '';
 my $oldout = '';
+my $quiet = '';
 my $biglog = 'test.log';
 my $bigerr = 'test.err';
 chomp(my $tstdir =`pwd`);
@@ -48,11 +49,55 @@ sub parse_input {
 			     "all"      => \$all,
 			     "checkref" => \$checkref,
 			     "keep"     => \$keep,
+			     "quiet"    => \$quiet,
 			     "oldout=s" => \$oldout,
 			     "tstdir=s" => \$tstdir,
 			     "help"     => \$help);
     pod2usage(1) if $help;
     pod2usage(3) if $result != 1;
+}
+############################################################################
+sub load_def_check_param ($$$) {
+#
+# Load defaults values for the check parameters
+# Defaults are loaded from a corresponding default check in checklist
+#
+    my %check = %{$_[0]};
+    my $tstdir = $_[1];
+    my %files = %{$_[$#_]};
+    my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
+    my $result = 0;
+
+    if ((not defined $check{type}) or $check{type} < 0) {
+	print $log "The present check does not have a valid type\n";
+	print $log "Check type set to zero\n";
+	$check{type} = 0;
+    }
+
+    my $type = $check{type};
+    print $log "Setting default values for present check. Type $type\n" if $verbose > $verb{check_det};
+    $def_name="default_".$type;
+
+    my %def_check = load_check($def_name,$tstdir,\%files);
+
+    if ($verbose > $verb{all}) {
+	print $log "Check list before setting default values:\n";
+	print_hash(\%check,$log);
+	print $log "Check list containing default values:\n";
+	print_hash(\%def_check,$log);
+    } 
+
+    foreach $def_key (keys %def_check) {
+	if ((not defined $check{$def_key})) {
+	    print $log "Setting default value for parameter $def_key\n" if $verbose > $verb{check_det};
+	    $check{$def_key} = $def_check{$def_key};
+	}
+    }
+    if ($verbose > $verb{all}) {
+	print $log "Check list after setting default values:\n";
+	print_hash(\%check,$log);
+    }
+    %{$_[0]} = %check;
 }
 ############################################################################
 sub control_check_list ($$) {
@@ -75,8 +120,8 @@ sub control_check_list ($$) {
 	return $result;
     }
     my $type = $check{type};
-    my $name = $check{type};
-    print {$log} "Integrity verification of check $name. Type $type" if $verbose > $verb{check_det};
+    my $name = $check{name};
+    print {$log} "Integrity verification of check $name. Type $type\n" if $verbose > $verb{check_det};
 
     my %key_list =();
   SWITCH: {
@@ -85,17 +130,29 @@ sub control_check_list ($$) {
 		     name   => 'string',
 		     type   => 'integer',
 		     pos    => 'integer',
+		     abs    => 'integer',
 		     thr    => 'float');
+	  %max_val=(abs => 1);
+	  %min_val=(abs => 0,
+		    pos => 1,
+		    thr => 1.0e-20);
 	  last SWITCH;
       } 
       if ($type == 1) {
-	  %key_list=(string   => 'string',
-		     name     => 'string',
-		     type     => 'integer',
-		     pos      => 'integer',
-		     maxout   => 'integer',
-		     maxfetch => 'integer',
-		     thr      => 'float');
+	  %key_list=(string => 'string',
+		     name   => 'string',
+		     type   => 'integer',
+		     pos    => 'integer',
+		     maxout => 'integer',
+		     maxget => 'integer',
+		     abs    => 'integer',
+		     thr    => 'float');
+	  %max_val=(abs => 1);
+	  %min_val=(abs => 0,
+		    pos => 1,
+		    maxout => -1,
+		    maxget => -1,
+		    thr => 1.0e-20);
 	  last SWITCH;
       } 
       if ($type == 2) {
@@ -107,7 +164,14 @@ sub control_check_list ($$) {
 		     type           => 'integer',
 		     pos            => 'integer',
 		     line           => 'integer',
+		     abs            => 'integer',
 		     thr            => 'float');
+	  %max_val=(abs => 1);
+	  %min_val=(abs => 0,
+		    start_offset => 0,
+		    pos => 1,
+		    line => 1,
+		    thr => 1.0e-20);
 	  last SWITCH;
       } 
       if ($type == 3) {
@@ -117,7 +181,14 @@ sub control_check_list ($$) {
 		     maxout   => 'integer',
 		     maxget   => 'integer',
 		     pos      => 'integer_list',
+		     abs      => 'integer_list',
 		     thr      => 'float_list');
+	  %max_val=(abs => 1);
+	  %min_val=(abs => 0,
+		    pos => 1,
+		    maxout => -1,
+		    maxget => -1,
+		    thr => 1.0e-20);
 	  last SWITCH;
       } 
       if ($type == 4) {
@@ -128,6 +199,12 @@ sub control_check_list ($$) {
 		     post   => 'integer',
 		     rembeg => 'integer',
 		     remend => 'integer');
+	  %max_val=(post   => 5);
+	  %min_val=(rembeg => 0,
+		    remend => 0,
+		    post   => 0,
+		    maxout => -1,
+		    thr => 1.0e-20);
 	  last SWITCH;
       } 
       if ($type == 5) {
@@ -138,15 +215,50 @@ sub control_check_list ($$) {
 		       start_offset => 'integer',
 		       end_offset   => 'integer',
 		       post         => 'integer');
+	  %max_val=(post         => 0);
+	  %min_val=(start_offset => 0,
+		    post         => 0);
 	  last SWITCH;
       } 
   }
-    print $log "Verifying that the hash\n".%check."\n holds the following elements:\n".%key_list."\n" if $verbose > $verb{check_det};
-    $result = verify_hash_element_types(\%check,\%key_list,\%files);
+    $result = verify_hash_element_types(\%check,
+					\%key_list,
+					\%min_val,
+					\%max_val,
+					\%files);
     return $result;
 }
 ############################################################################
-sub verify_hash_element_types($$$) {
+sub check_hash_element($$$$$$) {
+    my $key   = $_[0];
+    my $val   = $_[1];
+    my $type  = $_[2];
+    my $min   = $_[3];
+    my $max   = $_[4];
+    my %files = %{$_[$#_]};
+    my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
+    my $result = 0;
+    my $error = 0;
+    if ($type != check_num($val)) {
+	print $log "wrong type for parameter $key\n" if $verbose > $verb{check_det};
+	print $err "wrong type for parameter $key\n";
+	$error++;
+    } 
+    if (defined $min && $val < $min) {
+	print $log "value of parameter $key is not allowed. Value=$val Min=$min\n" if $verbose > $verb{check_det};
+	print $err "value of parameter $key is not allowed. Value=$val Min=$min\n";
+	$error++;
+    } 
+    if (defined $max && $val > $max) {
+	print $log "value of parameter $key is not allowed. Value=$val Max=$max\n" if $verbose > $verb{check_det};
+	print $err "value of parameter $key is not allowed. Value=$val Max=$max\n";
+	$error++;
+    }
+    $result = 1 if ($error == 0);
+    return $result;
+}
+############################################################################
+sub verify_hash_element_types($$$$$) {
 #
 # This routine verifies that the values of the checklist hash
 # are existing and contain what they should.
@@ -159,11 +271,16 @@ sub verify_hash_element_types($$$) {
     
     my %check    = %{$_[0]};
     my %key_list = %{$_[1]};
+    my %min = %{$_[2]};
+    my %max = %{$_[3]};
     my %files    = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     my $n_right = 0;
     my $n_wrong = 0;
     my $result = 0;
+    my $type = "";
+    my $value = "";
+    my $ref_type = "";
     
     foreach $key (keys(%key_list)) {
 	if (defined $check{$key}) {
@@ -174,13 +291,9 @@ sub verify_hash_element_types($$$) {
 		my $n_array_right = 0;
 		my $n_array_wrong = 0;
 		foreach $elm (@{$value}) {
-		    if ($type == check_num($elm)) {
+		    if(check_hash_element($key,$elm,$type,$min{$key},$max{$key},\%files)) {
 			$n_array_right++;
-			if ($verbose > $verb{all}) {
-			    print $log "Element \"$elm\" of array \"$key\" has been checked\n";
-			}
 		    } else { 
-			print $err "Element \"$elm\" of array \"$key\" is incorrect\n";
 			$n_array_wrong++;
 		    }
 		}
@@ -196,27 +309,18 @@ sub verify_hash_element_types($$$) {
 		    print $err "Content \"@{$value}\" is NOT correct\n";
 		}
 	    } else {
-		if ($type == check_num($value)) {
+		if(check_hash_element($key,$value,$type,$min{$key},$max{$key},\%files)) {
 		    $n_right++;
-		    if ($verbose > $verb{all}) {
-			print $log "Element \"$key\" has ben checked\n";
-			print $log "Content \"$value\" is correct\n";
-		    }
 		} else { 
 		    $n_wrong++;
-		    print $err "Element \"$key\" has been checked\n";
-		    print $err "Content \"$value\" is NOT correct\n";
 		}
 	    }
-#	} elsif ($check{$key} = load_check_def_val($key,$check{type}) {
-#	    print $log "Loaded default value for element \"$key\"\n" if $verbose > $verb{all} ;
 	} else {
 	    $n_wrong++;
 	    print $err "Element \"$key\" has been checked\n";
 	    print $err "Content is NOT defined\n";
 	}
     }
-#    my @key_list = keys(%key_list);
     $result = 1 if (($n_right == (keys(%key_list))) and ($n_wrong == 0));
     return $result;	    
 }
@@ -353,19 +457,23 @@ sub check_num($)
 
 
 ############################################################################
-sub compare($$$$) {
+sub compare($$$$$) {
 # 
 # Compare two numbers up to the required precision
 #
-    my ($test_value, $ref_value, $thr) = ($_[0],$_[1],$_[2]);
+    my ($test_value, $ref_value, $thr, $abs) = ($_[0],$_[1],$_[2],$_[3]);
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
 
-    my $check = check_num($test_value) * check_num($ref_value) * check_num($thr);    
+    my $check = check_num($test_value) * check_num($ref_value) * check_num($thr) * check_num($abs);    
     my $result = 0;
     if ($check == 0) {
-	print $err "compare(): non numeric value as input, test skipped\n";;
+	print $err "compare(): non numeric value(s) as input, test skipped\n";;
     } else {
+	if ($abs == 1) {
+	    $test_value = abs($test_value);
+	    $ref_value  = abs($ref_value);
+	}
 	my $diff = abs($test_value - $ref_value);
 	if($diff <= $thr) {
 	    print $log 
@@ -501,7 +609,7 @@ sub post_coord {
 	    my @r_list = split(/\s+/,$ref[$idx]);
 	    if(($#t_list == $#r_list) && $#t_list >= 0)
 	    {
-		$n_right += compare($t_list[$#t_list],$r_list[$#r_list],$threshold,\%files);
+		$n_right += compare($t_list[$#t_list],$r_list[$#r_list],$threshold,0,\%files);
 	    }
 	    else {
 		print $log "post_coord(): empty ot not matching lists\n" if $verbose > $verb{check_det};
@@ -555,7 +663,7 @@ sub test_line {
 #
 # fetches the first line of text matching a string, extracts a number and compares it with the reference 
 # 
-    my ($string, $pos, $thr, $name) = ($_[0]{string}, $_[0]{pos}, $_[0]{thr}, $_[0]{name});    
+    my ($string, $pos, $thr, $name, $abs) = ($_[0]{string}, $_[0]{pos}, $_[0]{thr}, $_[0]{name}, $_[0]{abs});    
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     my %files = %{$_[$#_]};
 
@@ -576,7 +684,7 @@ sub test_line {
 
     if (@test and @ref) {
 	print $log "Checking values.....\n test value: $test[$#test]\n  ref value: $ref[$#ref]\n" if $verbose > $verb{check_res};
- 	$result = compare($test[$#test],$ref[$#ref],$thr,\%files);
+ 	$result = compare($test[$#test],$ref[$#ref],$thr,$abs,\%files);
     } else {
 	print $log "ERROR: empty test or reference list, check $name skipped!\n";
 	print $err "ERROR: empty test or reference list, check $name skipped!\n";
@@ -589,8 +697,8 @@ sub test_lines {
 #
 # fetches some/all lines of text matching a string, extracts a number and compares with the reference 
 #
-    my ($name,         $string,       $maxout,       $maxfetch,       $pos,       $thresh) = 
-       ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxfetch}, $_[0]{pos}, $_[0]{thr});
+    my (     $name,       $string,       $maxout,       $maxget,       $pos,       $thr,       $abs) = 
+       ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxget}, $_[0]{pos}, $_[0]{thr}, $_[0]{abs});
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     my %files = %{$_[$#_]};
 
@@ -601,11 +709,11 @@ sub test_lines {
     my $matching = 0;
 
     open OUT, $files{out_f} or die;
-    my @test_lines = get_lines($string, $maxout, $maxfetch, \%files);
+    my @test_lines = get_lines($string, $maxout, $maxget, \%files);
     print {$log} "Fetched list from output\n @test_lines\n\n" if $verbose > $verb{fetch_out};
     close OUT;
     open OUT, $files{ref_f} or die;
-    my @ref_lines =  get_lines($string, $maxout, $maxfetch, \%files);
+    my @ref_lines =  get_lines($string, $maxout, $maxget, \%files);
     print {$log} "Fetched list from reference\n @ref_lines\n\n" if $verbose > $verb{fetch_out};
     close OUT;
     
@@ -622,7 +730,7 @@ sub test_lines {
 	    my $test = get_substring($test_lines[$i],$pos,\%files);
 	    my $ref  = get_substring($ref_lines[$i], $pos,\%files);
 	    print $log ($i+1)." $test $ref\n" if $verbose > $verb{check_res};
-	    $matching = $matching + compare($test, $ref, $thresh, \%files);
+	    $matching = $matching + compare($test, $ref, $thr, $abs, \%files);
 	}
 	$result = 1 if $matching == $#test_lines + 1;
     }
@@ -640,8 +748,9 @@ sub test_portion ($$) {
     my $end_offset   = $_[0]{end_offset};      
     my $line_pos     = $_[0]{line};        
     my $name         = $_[0]{name};        
+    my $abs   	     = $_[0]{abs};         
     my $pos   	     = $_[0]{pos};         
-    my $thresh       = $_[0]{thr};
+    my $thr       = $_[0]{thr};
 
     my %files = %{$_[$#_]};
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
@@ -686,14 +795,15 @@ sub test_portion ($$) {
 	my $t_val = get_substring($test,$pos,\%files);
 	my $r_val = get_substring($ref, $pos,\%files);
 	print $log "test value: $t_val\n ref value: $r_val\n" if $verbose > $verb{check_res};
-	$result = compare($t_val,$r_val,$thresh, \%files);
+	$result = compare($t_val,$r_val,$thr, $abs, \%files);
     }
     return $result;
 }
 ############################################################################
 sub test_lines_mult {
-    my ($name, $string, $maxout, $maxfetch) = ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxget});
+    my ($name, $string, $maxout, $maxget) = ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{maxget});
     my @pos = @{$_[0]{pos}};
+    my @abs = @{$_[0]{abs}};
     my @thr = @{$_[0]{thr}};
     
     my %files = %{$_[$#_]};
@@ -707,12 +817,15 @@ sub test_lines_mult {
     while ($#thr < $#pos) {
 	push @thr, $thr[$#thr];
     }
+    while ($#abs < $#pos) {
+	push @abs, $abs[$#abs];
+    }
     open OUT, $files{out_f};
-    my @test_lines = get_lines($string, $maxout, $maxfetch, \%files);
+    my @test_lines = get_lines($string, $maxout, $maxget, \%files);
     print $log "Fetched list from output\n @test_lines\n\n" if $verbose > $verb{fetch_out};
     close OUT;
     open OUT, $files{ref_f};
-    my @ref_lines = get_lines($string, $maxout, $maxfetch, \%files); 
+    my @ref_lines = get_lines($string, $maxout, $maxget, \%files); 
     print $log "Fetched list from reference\n @ref_lines\n\n" if $verbose > $verb{fetch_out};
     close OUT;
 
@@ -736,10 +849,11 @@ sub test_lines_mult {
 	    for ($j=0; $j <= $#pos; $j++) {
 		my $pos = $pos[$j];
 		my $thr = $thr[$j];
+		my $abs = $abs[$j];
 		my $test = get_substring($test_lines[$i],$pos,\%files);
 		my $ref  = get_substring($ref_lines[$i], $pos,\%files);
 		print $log "test value: $test\n ref value: $ref\n" if $verbose > $verb{check_res};
-		$matching = $matching + compare($test,$ref,$thr,\%files);
+		$matching = $matching + compare($test,$ref,$thr,$abs,\%files);
 	    }
 	}
     }
@@ -751,7 +865,7 @@ sub test_line_fetch {
 #
 # fetches a line, process it according to the defined options, then compares it with the reference
 #
-    my (     $name,       $string,       $maxout,       $type,       $m,            $n) = 
+    my (     $name,       $string,       $maxout,       $type,       $m,            $n      ) = 
        ($_[0]{name}, $_[0]{string}, $_[0]{maxout}, $_[0]{post}, $_[0]{rembeg}, $_[0]{remend});
     my ($log, $err) = ($_[$#_]{log}, $_[$#_]{err});
     my %files = %{$_[$#_]};
@@ -1049,6 +1163,16 @@ sub preprocess_files($) {
     }
 }
 ###########################################################################################################
+sub print_hash($$)
+{
+    my %hash_to_print = %{$_[0]};
+    my $filehand = $_[1];
+    print $filehand "keyword    value\n";
+    foreach my $k (sort keys %hash_to_print) {
+	print $filehand "$k => $hash_to_print{$k}\n";
+    }
+}
+###########################################################################################################
 #
 # And finally the main code!!!!!
 #
@@ -1098,13 +1222,15 @@ my %files = (log    => $LOGFILE,
 
 my $TOT_ERR = 0;
 
-open $BIGLOG, ">$biglog" or die;
-open $BIGERR, ">$bigerr" or die;
 #
 # create and enter test directory
 #
 my $dir = make_dirname();
 mkdir $dir || die "Fatal: Unable to create perl-tests directory!";
+$biglog = "$dir.log";
+$bigerr = "$dir.err";
+open $BIGLOG, ">$biglog" or die;
+open $BIGERR, ">$bigerr" or die;
 chdir $dir || die "Fatal: Unable to enter perl-tests directory!"; 
 my @testlist = make_testlist($all,$check,$keyword,$explist,$tstdir,\%bigfiles);
 #
@@ -1119,6 +1245,17 @@ my $errdal  = '';
 my $logfile = '';
 my $errfile = '';
 my $tgzfile = '';
+
+print $BIGLOG "Perl testsuite started.....\n";
+print $BIGLOG "Global logfiles will be stored in $tstdir/$dir\n";
+print $BIGLOG "Test-specific logfiles will be kept only for failed tests\n" unless $keep;
+print $BIGLOG "Test-specific logfiles will be kept for all tests\n" if $keep;
+unless ($quiet) {
+    print "Perl testsuite started.....\n";
+    print "Global logfiles will be stored in $tstdir/$dir\n";
+    print "Test-specific logfiles will be kept only for failed tests\n" unless $keep;
+    print "Test-specific logfiles will be kept for all tests\n" if $keep;
+}
 
 TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" block
 
@@ -1148,11 +1285,18 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     open $REFOUT, ">$refout " or die;
 
     print $BIGLOG "Now performing test $test ..............\n";
+    print "Now performing test $test ..............\n" unless $quiet;
     title_print($LOGFILE,"Log information for test $test");
     title_print($ERRFILE,"Error information for test $test");
     $TOT_ERR = 0;
-    @performed_checks = parse_test_file($test,$tstdir,\%files);
-
+    if(-r "$tstdir/$test.tst") {
+	@performed_checks = parse_test_file($test,$tstdir,\%files);
+    } else {
+	$TOT_ERR++;
+	print $BIGLOG "File $test.tst does not exist or is not readable: test skipped!\n";
+	print "File $test.tst does not exist or is not readable: test skipped!\n" unless $quiet;
+	next TEST;
+    }
 #
 # Test wether input files are corrupted
 #
@@ -1197,21 +1341,22 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
     my $n_test = $#performed_checks + 1;
 
   CHECK:while ($idx < $n_test) { #CAREFUL: this loop has also a "continue" block
+      load_def_check_param($performed_checks[$idx],$tstdir,\%files);
+      $name="UNDEF";
+      $type=-1;
+      $name = $performed_checks[$idx]{name} if defined $performed_checks[$idx]{name};
+      $type = $performed_checks[$idx]{type} if defined $performed_checks[$idx]{type};
       unless (control_check_list($performed_checks[$idx],\%files)) {
-	  $name = "UNDEFINED";
-	  $type = "UNDEFINED";
 	  print $LOGFILE "\n----------Check: $name-------------\n";
-	  print $LOGFILE "Error in check input. Check number $idx will be skipped\n";
+	  print $LOGFILE "Error in input check. Check number $idx will be skipped\n";
 	  print $LOGFILE "Check name not yet defined, increase verbosity and check error files for more details\n";
 	  print $BIGLOG  "Error in check input. Check number $idx will be skipped\n";
 	  print $BIGLOG  "Check name not yet defined, increase verbosity and check error files for more details\n";
-	  print $ERRFILE "Error in check input!\n";
+	  print $ERRFILE "Error in input check!\n";
 	  print $ERRFILE "Increase verbosity for more details\n" if $verbose < $verb{check_res};
 	  next CHECK;
 	  
       }	  
-      $name = $performed_checks[$idx]{name};
-      $type = $performed_checks[$idx]{type};
       print $LOGFILE "\n----------Check: $name-------------\n";
       goto ("line","lines","portion","lines_mult","line_fetch","portion_post")[$type];
       
@@ -1227,6 +1372,7 @@ TEST: foreach $test (@testlist) { #CAREFUL: this loop has also a "continue" bloc
 #
     continue {
 	if (not $ok) {
+	    print "Error in check $name! See $test.lgf and $test.erf for details\n" unless $quiet;
 	    print $BIGLOG  "Error in check $name! See $test.lgf and $test.erf for details\n";
 	    print $LOGFILE "Error in check $name!\n----------------------------------------------\n\n";
 	    print $ERRFILE "Error in check $name!\n----------------------------------------------\n\n";
@@ -1252,24 +1398,28 @@ continue {
 }
 
 if ((@passed_tests) or (@failed_tests)) {
+    print "Tests finished!\n" unless $quiet;
     print $BIGLOG "Tests finished!\n";
     if (@passed_tests) {
-#	print "The following tests have been computed successfully:\n";
-#	print "@passed_tests\n";
 	print $BIGLOG "The following perl tests have been computed successfully:\n";
 	print $BIGLOG "@passed_tests\n";
+	print "The following perl tests have been computed successfully:\n" unless $quiet;
+	print "@passed_tests\n" unless $quiet;
     }
     if (@failed_tests) {
-#	print "The following tests have failed:\n";
-#	print "@failed_tests\n";
+	print "The following perl tests have failed:\n" unless $quiet;
+	print "@failed_tests\n" unless $quiet;
 	print $BIGLOG "The following perl tests have failed:\n";
 	print $BIGLOG "@failed_tests\n";
 	print $BIGERR "The following perl tests have failed:\n";
 	print $BIGERR "@failed_tests\n";
     } else {
+	print "All tests completed successfully\n" unless $quiet;
 	print $BIGLOG "All tests completed successfully\n";
     }
 } else {
+    print "WARNING! No tests have been performed!\n" unless $quiet;
+    print "use test.pl --help for more info on how to choose the perl tests\n" unless $quiet;
     print $BIGLOG "WARNING! No tests have been performed!\n";
     print $BIGLOG "use test.pl --help for more info on how to choose the perl tests\n";
 }
@@ -1286,11 +1436,12 @@ if ((@passed_tests) or (@failed_tests)) {
 #    zero for symmetry)
 # 3) a better mechanism for parsing through the test and reference 
 #    files: e.g. use Tie::File
-# 4) test descriptions
-# 5) allow for default values of check parameters (e.g. to decide 
-#    for absolute or relative error check or for the discard_almost_zero 
-#    parameter)
+# 4) check wether a hash element which is supposed to be a list is correctly
+#    initialized as a list and viceversa. Currently we siliently check the
+#    elemnts of a list if a list is given but there is no check to determine
+#    if that is correct.
 #
+
 __END__
 
 =head1 Dalton 2.0 test suite
@@ -1311,6 +1462,7 @@ Options:
    --verbose [0-5]     verbosity level: 0 (default) 5 (print everything)
    --all               perform all tests (*.tst)
    --checkref          check reference files (consistency check)
+   --quiet             output on STDOUT is suppressed
    --keep              keep all log files
    --oldout            checks a previously generated output
    --help              print detailed instructions
@@ -1381,6 +1533,11 @@ Perform all tests in the current directory based on `ls *.tst`
 
 no real test is performed the script is run using the reference file twice. 
 Useful for debugging and checking consistency of new tests
+
+=item B<--quiet>
+
+The output to STDOUT is suppressed. Used within the TEST script since there
+the test.log file is attached to TESTLOG.
 
 =item B<--keep>
 

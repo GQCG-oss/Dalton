@@ -28,13 +28,29 @@
 #    necessary parameters depend on it (some_text, some_int and some_real are given for conveneience)
 # 4) one or more list-type parameter can be specified if needed
 # 5) the input parsing of the .tst file allows to chance the values of the parameters
+#
+#########################################################################################
+#
 # test type 0
 # search for a number in a selected line and compare it with its reference counterpart
 # arguments
-# 1: string to search
-# 2: number position in the line (spaces stripped out)
-# 3: accuracy of the test
+# string: string to search
+# pos: number position in the line (spaces stripped out)
+# abs: 0/1 0: check with sign 1: check absolute value
+# thr: accuracy of the test
 #
+
+# WARNING: DO NOT change the following test. It provides default values for all tests of type 0
+## default_0 start ###############################
+{$params={
+  name   => "default_0", 
+  type   => 0, 
+  string => "abcdefghijklmnopqrstuvwxyz", 
+  pos    => 999, 
+  abs    => 0,
+  thr    => 1.0e-10};
+}
+## default_0 end  #################################
 
 ## enedft start ###############################
 {$params={
@@ -112,12 +128,27 @@
 # fetch all/some lines containing a predefined string
 # for each line performs the same test as test type 0
 # arguments of the list
-# 1: string to search
-# 2: maximum lines of output to parse in file (all if negative)
-# 3: maximum number of matching lines to fetch (all if negative)
-# 4: number position in the line (spaces stripped out)
-# 5: accuracy of the test
+# string:   string to search
+# maxout:   maximum lines of output to parse in file (all if negative)
+# maxget: maximum number of matching lines to fetch (all if negative)
+# pos:      number position in the line (spaces stripped out)
+# abs:      0/1 0: check with sign 1: check absolute value
+# thr:      accuracy of the test
 #
+
+# WARNING: DO NOT change the following test. It provides default values for all tests of type 1
+## default_1 start ###############################
+{$params={
+  name     => "default_1", 
+  type     => 1, 
+  string   => "abcdefghijklmnopqrstuvwxyz", 
+  maxout   => -1,
+  maxget   => -1,
+  pos      => 999, 
+  abs      => 0,
+  thr      => 1.0e-10};
+}
+## default_1 end  #################################
 
 ## beta start #######################################################
 {$params ={
@@ -125,7 +156,7 @@
   type     => 1,
   string   => "B-freq =",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 10,
   thr      => 1.0e-4};
 }
@@ -137,7 +168,7 @@
   type     => 1,
   string   => "DIPLEN  ;",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 8,
   thr      => 1.0e-6};
 }
@@ -149,7 +180,7 @@
   type     => 1,
   string   => "DIPLOC  ;",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 8,
   thr      => 1.0e-6};
 }
@@ -161,7 +192,7 @@
   type     => 1,
   string   => "QRLRVE: SINGLET",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 7,
   thr      => 1.0e-6};
 }
@@ -173,7 +204,7 @@
   type     => 1,
   string   => "QRLRVE:  ",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 9,
   thr      => 1.0e-8};
 }
@@ -185,7 +216,7 @@
   type     => 1,
   string   => "B term",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 4,
   thr      => 1.0e-8};
 }
@@ -197,7 +228,7 @@
   type     => 1,
   string   => "Optical rotation \\(L",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 5,
   thr      => 1.0e-4};
 }
@@ -209,7 +240,7 @@
   type     => 1,
   string   => "Shielding constant:",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 3,
   thr      => 1.0e-4};
 }
@@ -221,7 +252,7 @@
   type     => 1,
   string   => "Isotropic coupling  ",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 4,
   thr      => 1.0e-4};
 }
@@ -233,7 +264,7 @@
   type     => 1,
   string   => "Anisotropic coupling  ",
   maxout   => -1,
-  maxfetch => -1,
+  maxget   => -1,
   pos      => 4,
   thr      => 1.0e-4};
 }
@@ -245,14 +276,32 @@
 # fetch a block of lines between two user-defined strings, then perform a test
 # type 0 on a selected line
 # arguments
-# 1: String defining the starting line
-# 2: String defining the final line
-# 3: Starting offset: n. of lines stripped away at the beginning of the block
-# 4: End offset: n. of lines stripped away at the end of the block (if negative add the coresponding number of linse after the matching end string)
-# 5: Line number (after stripping): line on which test type 0 is performed
-# 6: Number position in the line
-# 7: accuracy of the test
+# start_string: String defining the starting line
+# end_string:   String defining the final line
+# start_offset: n. of lines stripped away at the beginning of the block
+# end_offset:   n. of lines stripped away at the end of the block (if negative add the coresponding number of lines after the matching end string)
+# line:         line on which test type 0 is performed
+# pos:          number position in the line
+# thr:          accuracy of the test
+# abs: 0/1      0: check with sign 1: check absolute value
 #
+
+# WARNING: DO NOT change the following test. It provides default values for all tests of type 2
+## default_2 start ###############################
+{$params={
+  name         => "default_2", 
+  type         => 2, 
+  start_string => "abcdefghijklmnopqrstuvwxyz", 
+  end_string   => "zyxwvutsrqponmlkjihgfedcba",
+  start_offset => 0,
+  end_offset   => 0,
+  line         => 999,
+  pos          => 999, 
+  abs          => 0,
+  thr          => 1.0e-10};
+}
+## default_2 end  #################################
+
 ## dipole start #######################################################
 {$params={
   name         => "dipole",
@@ -285,14 +334,31 @@
 # test type 3
 # fetch lines as in test type 1 then compare several numbers on each line
 # arguments
-# 1: string to search
-# 2: maximum lines of output to parse in file (all if negative)
-# 3: maximum number of matching lines to fetch (all if negative)
-# 4: list of n positions 
-# 5: list of m thresholds
+# string: string to search
+# maxout: maximum lines of output to parse in file (all if negative)
+# maxget: maximum number of matching lines to fetch (all if negative)
+# pos:    list of n positions 
+# thr:    list of m1 thresholds
+# abs: list of m2 0/1  0: check with sign 1: check absolute value
+#
 # if m = n the i-th position will take the i-th threshold
-# if m > n thresholds beyond n are ignored
-# if m < n the last threshold value is replicated until n
+# if m > n thresholds/abs beyond n are ignored
+# if m < n the last threshold/abs value is replicated until n
+
+# WARNING: DO NOT change the following test. It provides default values for all tests of type 3
+## default_3 start ###############################
+{$params={
+  name   => "default_3", 
+  type   => 3, 
+  string => "abcdefghijklmnopqrstuvwxyz", 
+  maxout => -1,
+  maxget => -1,
+  pos    => [998, 999], 
+  abs    => [0, 0],
+  thr    => [1.0e-10, 1.0e-10]};
+}
+## default_3 end  #################################
+
 ## tramom start #######################################################
 {$params ={
   name   => "tramom",
@@ -300,6 +366,7 @@
   string => " STATE NO: ",
   maxout => -1,
   maxget => -1,
+  abs    => [ 1, 0 ],
   pos    => [ 7, 9 ],
   thr    => [ 1.0e-6, 1.0e-5 ] };
 }
@@ -312,6 +379,7 @@
   string => "omega B",
   maxout => -1,
   maxget => -1,
+  abs    => [ 0, 0, 1 ],
   pos    => [ 7, 8, 9 ],
   thr    => [ 1.0e-5 ]};
 }
@@ -357,18 +425,32 @@
 # test type 4
 # fetch a line and compare it with the reference output
 # arguments
-# 1: string to search
-# 2: maximum lines of output to parse in file (all if negative)
-# 3: post processing of fetched line: 
-#    allowed values: 0 no post processing
-#                    1 strip initial spaces
-#                    2 strip all spaces
-#                    3 remove n char from the beginning before comparing
-#                    4 remove m char from the end before comparing
-#                    5 remove n char from the beginning and m char from the end before comparing
-# 4: n
-# 5: m
+# string: string to search
+# maxout: maximum lines of output to parse in file (all if negative)
+# post: post processing of fetched line: 
+#       allowed post values: 0 no post processing
+#                            1 strip initial spaces
+#                            2 strip all spaces
+#                            3 remove n char from the beginning before comparing
+#                            4 remove m char from the end before comparing
+#                            5 remove n char from the beginning and m char from the end before comparing
+# rembeg: n (see post=3/5)
+# remend: m (see post=4/5)
 #
+
+# WARNING: DO NOT change the following test. It provides default values for all tests of type 4
+## default_4 start ###############################
+{$params={
+  name   => "default_4", 
+  type   => 4, 
+  string => "abcdefghijklmnopqrstuvwxyz", 
+  maxout => -1,
+  post   => 0, 
+  rembeg => 0,
+  remend => 0};
+}
+## default_4 end  #################################
+
 ## pcmsol start #######################################################
 {$params = {
   name   => "pcmsol",
@@ -434,13 +516,27 @@
 # fetch a block of lines (as in test type 2) then sends output to a specific routine 
 # for further post processing
 # arguments:
-# 1: String defining the starting line
-# 2: String defining the final line
-# 3: Starting offset: n. of lines stripped away at the beginning of the block
-# 4: End offset: n. of lines stripped away at the end of the block (if negative add the coresponding number of linse after the matching end string)
-# 5: post processing type
-#    allowed values: 0 coordinates check
+# start_string: String defining the starting line
+# end_string:   String defining the final line
+# star_offset:  n. of lines stripped away at the beginning of the block
+# end_offset:   n. of lines stripped away at the end of the block (if negative add the coresponding number of linse after the matching end string)
+# post:         post processing type
+#               allowed values: 0 coordinates check
 #
+
+# WARNING: DO NOT change the following test. It provides default values for all tests of type 5
+## default_5 start ###############################
+{$params={
+  name         => "default_5", 
+  type         => 5, 
+  start_string => "abcdefghijklmnopqrstuvwxyz", 
+  end_string   => "zyxwvutsrqponmlkjihgfedcba",
+  start_offset => 0,
+  end_offset   => 0,
+  post         => 0};
+}
+## default_5 end  #################################
+
 ## coordi start #######################################################
 {$params = {
   name         => "coordi",
