@@ -141,11 +141,12 @@ fi
 
 #
 # Test of polarizability
+# djw: ugly fix for XLF/SUSE compilation
 #
-CRIT1=`$GREP "Polarizability tensor for frequency     0.040000 au" $log | wc -l`
-CRIT2=`$GREP "Ex * 6\.37422. * (\-|\-0)\.19551.. *  3\.59764..E\-(2|02)" $log | wc -l`
-CRIT3=`$GREP "Ey * (\-|\-0)\.19551.. *  9\.56063. * ( -|\-0)\.22295.." $log | wc -l`
-CRIT4=`$GREP "Ez * 3\.59764..E\-(2|02) * (\-|\-0)\.22295.. * 2\.6091(3|4)." $log | wc -l`
+CRIT1=`$GREP "Polarizability tensor for frequency     ( |0).040000 au" $log | wc -l`
+CRIT2=`$GREP "Ex * 6\.37422[0-9] * ( \-|\-0)\.19551.. * (( |0)\.03597..|3\.5976...E\-02)" $log | wc -l`
+CRIT3=`$GREP "Ey * ( \-|\-0)\.19551.. * 9\.56063(..|. ) * ( \-|\-0)\.22295.." $log | wc -l`
+CRIT4=`$GREP "Ez * (( |0)\.03597..|3\.5976...E\-02) * ( \-|\-0)\.22295.. * 2\.6091(3|4)." $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
 CTRL[1]=4
 ERROR[1]="DFT/MM FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"

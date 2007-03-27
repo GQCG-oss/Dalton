@@ -101,19 +101,19 @@ else
 fi
 
 # ?
-CRIT1=`$GREP "Electronic dipole moment \(au\)\: * (0| )\.000000000 * (0| )\.000000000 * \-1\.106791823" $log | wc -l`
+CRIT1=`$GREP "Electronic dipole moment \(au\)\: * (0| )\.000000000( |0E\+00) * (0| )\.000000000( |0E\+00) * \-1\.106791823" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="ELECTRONIC DIPOLEMOMENT(APPROXIMATION A) NOT CORRECT"
 
 # ?
-CRIT1=`$GREP "Electronic dipole moment \(au\)\: * (0| )\.000000000 * (0| )\.000000000 * \-1\.059744837" $log | wc -l`
+CRIT1=`$GREP "Electronic dipole moment \(au\)\: * (0| )\.000000000( |0E\+00) * (0| )\.000000000( |0E\+00) * \-1\.059744837" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="ELECTRONIC DIPOLEMOMENT(APPROXIMATION A') NOT CORRECT"
 
 # ?
-CRIT1=`$GREP "Electronic dipole moment \(au\)\: * (0| )\.000000000 * (0| )\.000000000 * \-1\.208972302" $log | wc -l`
+CRIT1=`$GREP "Electronic dipole moment \(au\)\: * (0| )\.000000000( |0E\+00) * (0| )\.000000000( |0E\+00) * \-1\.208972302" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="ELECTRONIC DIPOLEMOMENT(APPROXIMATION B) NOT CORRECT"
