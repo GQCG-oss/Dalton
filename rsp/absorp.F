@@ -29,12 +29,20 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C ============================================================================
-C     absorp.F: Main author Patrick Norman, written 2001.
+C     absorp.F: Main author Patrick Norman
 C     This implementation is published in:
+C
 C        P. Norman, D.M. Bishop, H.J.Aa. Jensen, and J. Oddershede,
 C        "Near-resonant absorption in the time-dependent self-consistent
 C        field and multiconfigurational self-consistent field approximations",
 C        J. Chem. Phys. 115 (2001) 10323-10334.
+C
+C        and
+C
+C        P. Norman, D.M. Bishop, H.J.Aa. Jensen, and J. Oddershede,
+C        "Nonlinear response theory with relaxation: the first
+C        hyperpolarizability",
+C        J. Chem. Phys. 123 (2005) 194103.
 C ============================================================================
 C
       SUBROUTINE ABSORP_INPUT(WORD)
@@ -55,16 +63,17 @@ C
 #include <codata.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 17 )
+      PARAMETER ( NTABLE = 18 )
       PARAMETER ( D0=0.0D0, D1=1.0D0, THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
-      CHARACTER*8 DIPLEN(3)
+      CHARACTER*8 DIPLEN(3), ANGMOM(3)
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
+      DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
       DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAX MI','.MAXITO',
      &            '.PRINT ','.DAMPIN','.EXCITA','.MAX MA','.THCPP ',
      &            '.BETA  ','.BFREQ ','.CFREQ ','.SHG   ','.ANALYZ',
-     &            '.BATCH ','.FREQ I'/
+     &            '.BATCH ','.FREQ I','.MCD   '/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
       ICHANG = 0
@@ -76,6 +85,7 @@ C
          ABS_BETA   = .FALSE.
          ABS_GAMMA  = .FALSE.
          ABS_SHG    = .FALSE.
+         ABS_MCD    = .FALSE.
          ABS_ANALYZE = .FALSE.
          ABS_INTERVAL = .FALSE.
 C     Common default value of the damping parameter is set to 
@@ -111,7 +121,8 @@ C
                ICHANG = ICHANG + 1
                DO I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) 
-     &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),I
+     &                GOTO (1,2,3,4,5,6,7,8,9,10,
+     &                 11,12,13,14,15,16,17,18),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -180,7 +191,7 @@ C     User input of damping parameter
                ABS_GAMMA=.FALSE.
                GOTO 100
  12            CONTINUE
-               IF (ABS_BETA) THEN
+               IF (ABS_BETA .OR. ABS_MCD) THEN
                   READ (LUCMD,*) NFREQ_BETA_B
                   IF (NFREQ_BETA_B.LE.MXFREQ) THEN
                      READ (LUCMD,*) (FREQ_BETA_B(J),J=1,NFREQ_BETA_B)
@@ -238,6 +249,12 @@ C     User input of damping parameter
                ABS_INTERVAL = .TRUE.
                READ(LUCMD,*) (FREQ_INTERVAL(I), I=1,3)
                GOTO 100
+ 18            CONTINUE
+               ABS_ALPHA=.FALSE.
+               ABS_BETA =.FALSE.
+               ABS_GAMMA=.FALSE.
+               ABS_MCD  =.TRUE.
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -251,20 +268,25 @@ C     User input of damping parameter
 C
 C     Process user input
 C
-      ABSORP = ABS_ALPHA .OR. ABS_BETA .OR. ABS_GAMMA
+      ABSORP = ABS_ALPHA .OR. ABS_BETA .OR. ABS_GAMMA .OR. ABS_MCD
       IF (.NOT.ABSORP) THEN
          WRITE(LUPRI,'(/A)') ' Absorption input ignored because:'
-         WRITE(LUPRI,'(A,L2)')' (Hyper)polarizability not requested:',
-     &        ' ABS_ALPHA = ABS_BETA = ABS_GAMMA = ', ABSORP
+         WRITE(LUPRI,'(A,L2)')' No process requested:',
+     &        ' ABS_ALPHA = ABS_BETA = ABS_GAMMA = ABS_MCD = ', ABSORP
       ELSE 
 C
-C     Put dipole operators in lists.
+C     Put operators in lists
 C
          CALL IZERO(NOPER,8)
          DO ILABEL=1,3
             ISYM = ISYMAX(ILABEL,1)+1
             NOPER(ISYM) = NOPER(ISYM) + 1
             LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+            IF (ABS_MCD) THEN
+               ISYM = ISYMAX(ILABEL,2)+1
+               NOPER(ISYM) = NOPER(ISYM) + 1
+               LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+            END IF 
          END DO
 C
          CALL AROUND('Variable settings for absorption calculation')
@@ -284,6 +306,14 @@ C
      &           ' B-FREQ:',(FREQ_BETA_B(I),I=1,NFREQ_BETA_B)
             WRITE(LUPRI,'(A,5(4F12.8))')
      &           ' C-FREQ:',(FREQ_BETA_C(I),I=1,NFREQ_BETA_C)
+         END IF
+C
+         IF (ABS_MCD) THEN
+            WRITE (LUPRI,'(A,L4)')
+     &     ' Magnetic circular dichroism requested    : ABS_MCD      =',
+     &           ABS_MCD
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' at frequencies:',(FREQ_BETA_B(I),I=1,NFREQ_BETA_B)
          END IF
 C
          IF (NEXCITED_STATES .GT. MXSTATES) THEN
@@ -314,10 +344,10 @@ C
      &      ' Damping parameter (a.u. and cm-1)        : DAMPING      ='
      &      ,DAMPING,DAMPING*XTKAYS
          WRITE(LUPRI,'(A,I4)')
-     &      ' No of excited states used in start iter. : NEXCIT       ='
+     &      ' Number of states used in start iteration : NEXCIT       ='
      &       ,NEXCITED_STATES
          WRITE(LUPRI,'(A,1P,D8.1)')
-     &      ' Thrd for convergence of lin. resp. eq.s  : THCLR        ='
+     &      ' Threshold of convergence in LR solver    : THCLR        ='
      &      ,THCLR_ABSORP
          WRITE(LUPRI,'(A,I4)')
      &      ' Maximum iterations in complex LR solver  : MAX_MACRO    ='
@@ -335,7 +365,7 @@ C
      &      ' Absorption calc over frequency interval  : ABS_INTERVAL ='
      &       , ABS_INTERVAL
          WRITE(LUPRI,'(A,I4)')
-     &      ' No of frequencies per batch              : NFREQ_BATCH  ='
+     &      ' Number of frequencies per batch          : NFREQ_BATCH  ='
      &       ,NFREQ_BATCH
       END IF
 C
@@ -383,7 +413,7 @@ C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
 C
-      IF (ABS_BETA) THEN
+      IF (ABS_BETA .OR. ABS_MCD) THEN
          CALL BETA_SETUP
       END IF
 C
@@ -396,7 +426,7 @@ C
          NFREQ_INTERVAL = NFREQ_ALPHA
       END IF
 C
-      CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRES,2*NFREQ_INTERVAL*3*3*2,WRK,KFREE,LFREE)
 C
 C     Determine linear response vectors
 C
@@ -406,7 +436,7 @@ C
 C
 C     Determine nonlinear response functions
 C
-      IF (ABS_BETA) THEN
+      IF (ABS_BETA.OR.ABS_MCD) THEN
          CALL AROUND('Evaluate Quadratic Response Functions')
          CALL ABSQRF(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &               XINDX,WRK(KMJWOP),WRK(KFREE),LFREE)
@@ -419,7 +449,7 @@ C
       RETURN
       END
       SUBROUTINE ABSVEC1(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
-     &                   XINDX,MJWOP,RES_ALPHA,WRK,LWRK)
+     &                   XINDX,MJWOP,RESLRF,WRK,LWRK)
 C
 C PURPOSE:
 C     Solve the linear response equations and store response vectors on
@@ -435,7 +465,7 @@ C
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
-      DIMENSION RES_ALPHA(2,NFREQ_INTERVAL,3,3),WRK(LWRK)
+      DIMENSION RESLRF(2,NFREQ_INTERVAL,3,3,2),WRK(LWRK)
 C
       KFREE = 1
       LFREE = LWRK
@@ -464,7 +494,7 @@ C
      &              WRK(KREDZ),WRK(KREDGD),WRK(KREDZGD),
      &              WRK(KEIVEC),WRK(KIBTYP),
      &              CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     &              RES_ALPHA,WRK(KFREE),LFREE)
+     &              RESLRF,WRK(KFREE),LFREE)
             END DO
          END IF
       END DO
@@ -510,7 +540,7 @@ C
       THCRSP = THCPP_ABSORP
       MAXIT  = MAX_MICRO
       CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
-      IF (ABS_BETA .OR. ABS_ANALYZE) THEN
+      IF (ABS_BETA .OR. ABS_MCD .OR. ABS_ANALYZE) THEN
          CALL SETZY(MJWOP)
       END IF
 C
@@ -527,8 +557,9 @@ C
 C      
       RETURN
       END
-      SUBROUTINE ABSREDUC(IOP,LABEL,REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
-     &     REDVEC,FC,FV,CMO,UDV,PV,XINDX,NBATCH,RES_ALPHA,WRK,LWRK)
+      SUBROUTINE ABSREDUC(IOP,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
+     &     REDVEC,FC,FV,CMO,UDV,PV,XINDX,NBATCH,RESLRF,WRK,LWRK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -548,7 +579,8 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),IBTYP(*),
      &     WRK(LWRK),REDE(MAXRM*MAXRM),REDS(MAXRM*MAXRM),
      &     REDZ(2*MAXRM*MAXRM),REDGD(MAXRM),REDZGD(2*MAXRM),
-     &     REDVEC(2*MAXRM,MXFREQ),RES_ALPHA(2,NFREQ_INTERVAL,3,3)
+     &     REDVEC(2*MAXRM,MXFREQ),RESLRF(2,NFREQ_INTERVAL,3,3,2),
+     &     FREQ_ABS(MXFREQ)
 C
       KFREE = 1
       LFREE = LWRK
@@ -616,7 +648,7 @@ C
          CALL OUTPAK(REDS,KZYRED,1,LUPRI)
       END IF
 C
-      DO IFREQ=1,NFREQ_ALPHA
+      DO IFREQ=1,NFREQ_ABS
 C
 C     Put the reduced gradient B[1] in a complex form 
 C     (with zero imaginary part) for later call to linear equation 
@@ -627,14 +659,14 @@ C
          CALL DCOPY(KZYRED,REDGD,1,REDZGD,2)      
          CALL DZERO(REDZ,2*MAXRM*MAXRM)
          CALL DCOPY(KZYRED*KZYRED,WRK(KREDE),1,REDZ,2)
-         CALL DAXPY(KZYRED*KZYRED,-FREQ_ALPHA(IFREQ),WRK(KREDS),1,
+         CALL DAXPY(KZYRED*KZYRED,-FREQ_ABS(IFREQ),WRK(KREDS),1,
      &              REDZ,2)
          CALL DAXPY(KZYRED*KZYRED,-DAMPING,WRK(KREDS),1,REDZ(2),2)
 C
          IF (IPRABS.GT.10) THEN
             WRITE(LUPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)') 
      &           ' Reduced ( E[2] - {w+iW}*S[2] )  matrix',
-     &           ' with w =', FREQ_ALPHA(IFREQ),' and W =', DAMPING,
+     &           ' with w =', FREQ_ABS(IFREQ),' and W =', DAMPING,
      &           '========================================' 
             CALL OUTPUT(REDZ,1,2*KZYRED,1,KZYRED,2*KZYRED,KZYRED,
      &           1,LUPRI)
@@ -652,17 +684,26 @@ C
          IF (IPRABS.GE.5) THEN
             WRITE(LUPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)') 
      &           ' Reduced ( E[2] - {w+iW}*S[2] )-1 * B[1] vector',
-     &           ' with w =', FREQ_ALPHA(IFREQ),' and W =', DAMPING,
+     &           ' with w =', FREQ_ABS(IFREQ),' and W =', DAMPING,
      &           '================================================' 
             CALL OUTPUT(REDVEC(1,IFREQ),1,2,1,KZYRED,2,KZYRED,1,LUPRI)
          END IF
 C
+         IF (LABEL(2:8).EQ.'DIPLEN') THEN
+            ITYPE = 1
+         ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
+            ITYPE = 2
+         ELSE
+            WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+            GOTO 99
+         END IF
          CALL DIPLAB(LABEL,INDEX)
-         RES_ALPHA(1,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX) = 
+         RESLRF(1,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX,ITYPE) = 
      &        DDOT(KZYRED,REDGD,1,REDVEC(1,IFREQ),2)
-         RES_ALPHA(2,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX) = 
+         RESLRF(2,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX,ITYPE) = 
      &        DDOT(KZYRED,REDGD,1,REDVEC(2,IFREQ),2)
-C
+ 99      CONTINUE
+C     
 C     End of loop over frequencies
 C
       END DO
@@ -677,10 +718,10 @@ C
      &        KZYVAR,'.           <<<',
      &        ' Frequency   Damping         Real   Imaginary',
      &        '----------------------------------------------'
-         DO IFREQ=1,NFREQ_ALPHA
-            WRITE(LUPRI,'(6X,F10.4,F11.6,2F12.6)') FREQ_ALPHA(IFREQ),
-     &         DAMPING, 
-     &         (RES_ALPHA(I,IFREQ+NBATCH*NFREQ_BATCH,INDEX,INDEX),I=1,2)
+         DO IFREQ=1,NFREQ_ABS
+            WRITE(LUPRI,'(6X,F10.4,F11.6,2F12.6)') FREQ_ABS(IFREQ),
+     &         DAMPING, (RESLRF(I,IFREQ+NBATCH*NFREQ_BATCH,
+     &                          INDEX,INDEX,ITYPE),I=1,2)
          END DO
       END IF
 C
@@ -714,7 +755,7 @@ C     now put I after J is there is space
       NMAX = N
       END
 
-      SUBROUTINE ABSRESULT(MJWOP,RES_ALPHA,WRK,LWRK)
+      SUBROUTINE ABSRESULT(MJWOP,RESLRF,WRK,LWRK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -728,7 +769,7 @@ C
 C
       LOGICAL FOUND, CONV
 C
-      DIMENSION MJWOP(2,MAXWOP,8),RES_ALPHA(2,NFREQ_INTERVAL,3,3)
+      DIMENSION MJWOP(2,MAXWOP,8),RESLRF(2,NFREQ_INTERVAL,3,3,2)
       DIMENSION WRK(LWRK),ISRCORBR(5),ISRCORBI(5)
 C
       KFREE = 1
@@ -763,17 +804,17 @@ C
          END IF
          WRITE(LUPRI,'(3(/,I3,2A10,F12.6,2F16.6))') 
      &        3*IFREQ-2,'XDIPLEN','XDIPLEN',FREQ,
-     &        RES_ALPHA(1,IFREQ,1,1),RES_ALPHA(2,IFREQ,1,1),
+     &        RESLRF(1,IFREQ,1,1,1),RESLRF(2,IFREQ,1,1,1),
      &        3*IFREQ-1,'YDIPLEN','YDIPLEN',FREQ,
-     &        RES_ALPHA(1,IFREQ,2,2),RES_ALPHA(2,IFREQ,2,2),
+     &        RESLRF(1,IFREQ,2,2,1),RESLRF(2,IFREQ,2,2,1),
      &        3*IFREQ,'ZDIPLEN','ZDIPLEN',FREQ,
-     &        RES_ALPHA(1,IFREQ,3,3),RES_ALPHA(2,IFREQ,3,3)
+     &        RESLRF(1,IFREQ,3,3,1),RESLRF(2,IFREQ,3,3,1)
          WRITE(LUPRI,'(6X,A14,3X,F12.6,2F16.6)') 
      &        'Averaged value',FREQ,
-     &        (RES_ALPHA(1,IFREQ,1,1)+RES_ALPHA(1,IFREQ,2,2)+
-     &         RES_ALPHA(1,IFREQ,3,3))/3,
-     &        (RES_ALPHA(2,IFREQ,1,1)+RES_ALPHA(2,IFREQ,2,2)+
-     &         RES_ALPHA(2,IFREQ,3,3))/3
+     &        (RESLRF(1,IFREQ,1,1,1)+RESLRF(1,IFREQ,2,2,1)+
+     &         RESLRF(1,IFREQ,3,3,1))/3,
+     &        (RESLRF(2,IFREQ,1,1,1)+RESLRF(2,IFREQ,2,2,1)+
+     &         RESLRF(2,IFREQ,3,3,1))/3
       END DO
       WRITE(LUPRI,'(A)')' '
       CALL PRSYMB(LUPRI,'-',66,1)
@@ -786,6 +827,11 @@ C
       IF (ABS_BETA) THEN
          CALL AROUND('First-order hyperpolarizability'//
      &        ' with damping')
+      ELSE IF (ABS_MCD) THEN
+         CALL AROUND('Magnetic circular dichroism'//
+     &        ' with damping')
+      END IF
+      IF (ABS_BETA.OR.ABS_MCD) THEN
          CALL PRSYMB(LUPRI,'-',94,1)
          WRITE(LUPRI,'(A3,6A10,2A16)') 
      &        ' No','A-oper','B-oper','C-oper','A-freq',
@@ -799,9 +845,15 @@ C
                BTMP = QRFFRQ(IQRF,1)
                CTMP = QRFFRQ(IQRF,2)
             END IF
-            WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
-     &           (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
-     &           (RES_BETA(IQRF,I), I=1,2)
+            IF (ABS_BETA) THEN
+               WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+     &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
+     &              (RES_BETA(IQRF,I), I=1,2)
+            ELSE IF (ABS_MCD) THEN
+               WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+     &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
+     &              RES_BETA(IQRF,2),RES_BETA(IQRF,1)
+            END IF
          END DO
          WRITE(LUPRI,'(A)')' '
          CALL PRSYMB(LUPRI,'-',94,1)
@@ -913,8 +965,8 @@ c     imag part
 C     
       RETURN
       END
-      SUBROUTINE ABSRESID(IOP,LABEL,CONVERGED,REDVEC,IBTYP,
-     &              FC,CMO,UDV,PV,XINDX,WRK,LWRK)
+      SUBROUTINE ABSRESID(IOP,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     CONVERGED,REDVEC,IBTYP,FC,CMO,UDV,PV,XINDX,WRK,LWRK)
 C
 C PURPOSE:
 C     Compute the imaginary residual vector to the linear response 
@@ -950,7 +1002,7 @@ C
 C
       LOGICAL CONVERGED
       CHARACTER*8 LABEL
-      DIMENSION REDVEC(2*MAXRM,MXFREQ),IBTYP(MAXRM),
+      DIMENSION REDVEC(2*MAXRM,MXFREQ),IBTYP(MAXRM),FREQ_ABS(MXFREQ),
      &     CMO(*),UDV(*),PV(*),FC(*),XINDX(*),WRK(LWRK)
 C
       KFREE = 1
@@ -964,7 +1016,7 @@ C
 C
 C     Get the gradient
 C
-      DO IFREQ=1,NFREQ_ALPHA
+      DO IFREQ=1,NFREQ_ABS
 C
 C     Initialize residual vector
 C
@@ -1004,10 +1056,10 @@ C
             FI1 = REDVEC(4*I-2,IFREQ)
             FI2 = REDVEC(4*I,IFREQ)
 C
-            FR3 = (FREQ_ALPHA(IFREQ)*FR1-DAMPING*FI1)
-            FR4 = (FREQ_ALPHA(IFREQ)*FR2-DAMPING*FI2)
-            FI3 = (FREQ_ALPHA(IFREQ)*FI1+DAMPING*FR1)
-            FI4 = (FREQ_ALPHA(IFREQ)*FI2+DAMPING*FR2)
+            FR3 = (FREQ_ABS(IFREQ)*FR1-DAMPING*FI1)
+            FR4 = (FREQ_ABS(IFREQ)*FR2-DAMPING*FI2)
+            FI3 = (FREQ_ABS(IFREQ)*FI1+DAMPING*FR1)
+            FI4 = (FREQ_ABS(IFREQ)*FI2+DAMPING*FR2)
 C
 C     Sigma vectors used that equal E[2]*N
 C
@@ -1086,9 +1138,9 @@ C
      &        THCLR_ABSORP,
      &  '-------------------------------------------------------------',
      &        '(dimension of reduced space:',KZYRED,')'
-         DO IFREQ = 1,NFREQ_ALPHA
+         DO IFREQ = 1,NFREQ_ABS
             WRITE(LUPRI,'(1X,A,F7.4,3X,A,F10.6,3X,A,1P,3D9.2)')
-     &           'Frequency:',FREQ_ALPHA(IFREQ),
+     &           'Frequency:',FREQ_ABS(IFREQ),
      &           'Damping:',DAMPING,
      &           'Residual:',(RESID(I,IFREQ,IOP,KSYMOP),I=1,3)
          END DO
@@ -1096,9 +1148,9 @@ C
 C
       RETURN
       END
-      SUBROUTINE ABSLR(IOP,LABEL,REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
-     &                 REDVEC,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     &                 WRK,LWRK)
+      SUBROUTINE ABSLR(IOP,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
+     &     REDVEC,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1119,7 +1171,7 @@ C
       PARAMETER (BLANK='        ', D0=0.0D0,DSQRT2=1.4142135623731D0)
       DIMENSION REDE(MAXRM*MAXRM),REDS(MAXRM*MAXRM),REDZ(2*MAXRM*MAXRM),
      &          REDGD(MAXRM),REDZGD(2*MAXRM),REDVEC(2*MAXRM,MXFREQ),
-     &          IBTYP(MAXRM)
+     &          IBTYP(MAXRM),FREQ_ABS(MXFREQ)
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(LWRK)
 C
@@ -1130,11 +1182,11 @@ C
       CALL MEMGET('REAL',KSLI,KZYVAR,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KBVEC,KZYVAR,WRK,KFREE,LFREE)
 C
-      DO IFREQ=1,NFREQ_ALPHA
+      DO IFREQ=1,NFREQ_ABS
 C
          IF (RESID(3,IFREQ,IOP,KSYMOP).LT.THCLR_ABSORP) THEN
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,1X,A,F8.4,A)') 
-     &           '>>>>> Frequency:',FREQ_ALPHA(IFREQ),' converged <<<<<'
+     &           '>>>>> Frequency:',FREQ_ABS(IFREQ),' converged <<<<<'
             GO TO 100
          END IF
 C
@@ -1213,7 +1265,7 @@ C
          DNORM_GD2 = DNRM2(KZYVAR,WRK(KGD2),1)
 C
          IF (IPRABS.GE.2) WRITE(LUPRI,'(/,1X,A,F7.4,4(/,1X,A,1P,D9.2))')
-     &        'Frequency = ',FREQ_ALPHA(IFREQ),
+     &        'Frequency = ',FREQ_ABS(IFREQ),
      &        'Norm of gradient vector 1 =',DNORM_GD1,
      &        'Norm of solution vector 1 =',DNORM_NR,
      &        'Norm of gradient vector 2 =',DNORM_GD2,
@@ -1236,11 +1288,11 @@ C
          ELSE
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,/,1X,A,F8.4,A)') 
      &           '>>>>> Solving real equation for frequency:',
-     &           FREQ_ALPHA(IFREQ),' <<<<<<'
+     &           FREQ_ABS(IFREQ),' <<<<<<'
             THCRSP = 0.1D0*THCLR_ABSORP*DNORM_NT/DNORM_NR/DSQRT2
             CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &           .TRUE.,BLANK,BLANK,WRK(KGD1),REDGD,REDE,REDS,
-     &           IBTYP,FREQ_ALPHA(IFREQ),RESIDUAL,REDVEC,XINDX,
+     &           IBTYP,FREQ_ABS(IFREQ),RESIDUAL,REDVEC,XINDX,
      &           WRK(KFREE),LFREE)
          END IF
 C
@@ -1253,11 +1305,11 @@ C
          ELSE
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,/,1X,A,F8.4,A)') 
      &           '>>>>> Solving imaginary equation for frequency:',
-     &           FREQ_ALPHA(IFREQ),' <<<<<<'
+     &           FREQ_ABS(IFREQ),' <<<<<<'
             THCRSP = 0.1D0*THCLR_ABSORP*DNORM_NT/DNORM_NI/DSQRT2
             CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &           .TRUE.,BLANK,BLANK,WRK(KGD2),REDGD,REDE,REDS,
-     &           IBTYP,FREQ_ALPHA(IFREQ),RESIDUAL,REDVEC,XINDX,
+     &           IBTYP,FREQ_ABS(IFREQ),RESIDUAL,REDVEC,XINDX,
      &           WRK(KFREE),LFREE)
          END IF
 C
@@ -1270,7 +1322,8 @@ C
 C
       RETURN
       END
-      SUBROUTINE ABSWRT(LABEL,IOP,IBTYP,REDVEC,WRK,LWRK)
+      SUBROUTINE ABSWRT(LABEL,IOP,NFREQ_ABS,FREQ_ABS,
+     &     IBTYP,REDVEC,WRK,LWRK)
 C
 C PURPOSE:
 C
@@ -1297,7 +1350,8 @@ C
 C
       CHARACTER*8 LABEL,BLANK
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
-      DIMENSION REDVEC(2*MAXRM,MXFREQ),IBTYP(MAXRM),WRK(LWRK)
+      DIMENSION REDVEC(2*MAXRM,MXFREQ),IBTYP(MAXRM),
+     &     FREQ_ABS(MXFREQ),WRK(LWRK)
 C
 C     Do not allocate with MEMGET since that will give some extra
 C     bytes of information in between real and imaginary parts
@@ -1309,7 +1363,7 @@ C
       LFREE = LWRK  - KFREE
       IF (LFREE.LT.0) CALL ERRWRK('ABSWRT',KFREE,LWRK)
 C
-      DO IFREQ=1,NFREQ_ALPHA
+      DO IFREQ=1,NFREQ_ABS
 C
 C     Read trial vectors and add contributions to response vector
 C
@@ -1370,14 +1424,14 @@ C
 C     Write response vectors to file
 C
          CALL WRTRSP(LURSP,2*KZYVAR,WRK(KNR),LABEL,'COMPLEX ',
-     &        FREQ_ALPHA(IFREQ),D0,KSYMOP,0,
+     &        FREQ_ABS(IFREQ),D0,KSYMOP,0,
      &        RESID(3,IFREQ,IOP,KSYMOP),D1)
 C
       IF (IPRRSP.GE.10) THEN
          WRITE(LUPRI,'(/A,A10,A,I4,/A,F12.8,A,I4)') 
      &        ' Response vector in ABSWRT for operator',LABEL,
      &        ' of symmetry',
-     &        KSYMOP,' and frequency',FREQ_ALPHA(IFREQ),
+     &        KSYMOP,' and frequency',FREQ_ABS(IFREQ),
      &        ' is written to file LURSP=',LURSP
          CALL PRSYMB(LUPRI,'=',72,1)
          WRITE(LUPRI,'(4X,4A15)') 'ZR','YR','ZI','YI'
@@ -1391,7 +1445,7 @@ C
       SUBROUTINE ABSCTL(IOPER,LABEL,
      &     REDE,REDS,REDZ,REDGD,REDZGD,REDVEC,IBTYP,
      &     CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
-     &     RES_ALPHA,WRK,LWRK)
+     &     RESLRF,WRK,LWRK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1414,11 +1468,12 @@ C     ( E[2] - w*S[2] )* NI = W*S[2]*NR
 C
       LOGICAL CONVERGED
       CHARACTER LABEL*8
+      DIMENSION FREQ_ABS(MXFREQ)
       DIMENSION REDE(MAXRM*MAXRM),REDS(MAXRM*MAXRM),REDZ(2*MAXRM*MAXRM),
      &     REDGD(MAXRM),REDZGD(2*MAXRM),REDVEC(2*MAXRM,MXFREQ),
      &     IBTYP(MAXRM)
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
-      DIMENSION XINDX(*),RES_ALPHA(2,NFREQ_INTERVAL,3,3),WRK(LWRK)
+      DIMENSION XINDX(*),RESLRF(2,NFREQ_INTERVAL,3,3,2),WRK(LWRK)
 C
       KFREE = 1
       LFREE = LWRK
@@ -1427,16 +1482,27 @@ C
 C     Check if this an absorption calculation over a specified frequency
 C     interval in which case we divide the interval in batches of freqs.
 C
-C     NFREQ_BATCH = number freqs per batch
+C     NFREQ_BATCH = number of frequencies per batch
 C
       IBATCH = 0
  10   CONTINUE
       IF (ABS_INTERVAL) THEN
-         NFREQ_ALPHA=MIN(NFREQ_BATCH,NFREQ_INTERVAL-IBATCH*NFREQ_BATCH)
-         DO I=1,NFREQ_ALPHA
-            FREQ_ALPHA(I)=FREQ_INTERVAL(1) + 
+         NFREQ_ABS=MIN(NFREQ_BATCH,NFREQ_INTERVAL-IBATCH*NFREQ_BATCH)
+         DO I=1,NFREQ_ABS
+            FREQ_ABS(I)=FREQ_INTERVAL(1) + 
      &           (I-1+IBATCH*NFREQ_BATCH)*FREQ_INTERVAL(3)
          END DO
+      END IF
+C
+C     Copy the frequencies into local variables to be used in the solver.
+C     One can thereby choose to change the frequencies for certain operators.
+C
+      IF (LABEL(2:8).EQ.'ANGMOM') THEN
+         NFREQ_ABS = 1
+         FREQ_ABS(1) = 0.0D0
+      ELSE
+         NFREQ_ABS = NFREQ_ALPHA
+         CALL DCOPY(NFREQ_ALPHA,FREQ_ALPHA,1,FREQ_ABS,1)
       END IF
 C
       IF (IPRABS.GE.0) THEN
@@ -1445,7 +1511,7 @@ C
      &        ' ( E[2] - {w-iW}*S[2] ) N = B[1]  ',
      &        ' ABSVEC1 -- for operator ', LABEL,
      &        ' of symmetry',KSYMOP,' at frequencies:',
-     &        ' ABSVEC1 --',(FREQ_ALPHA(I),I=1,NFREQ_ALPHA)
+     &        ' ABSVEC1 --',(FREQ_ABS(I),I=1,NFREQ_ABS)
       END IF
 C     
       ITER = 0
@@ -1460,15 +1526,16 @@ C
       END IF
 C     
 C     Solve for resonse vector in reduced space
-C     
-      CALL ABSREDUC(IOPER,LABEL,REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
-     &     REDVEC,FC,FV,CMO,UDV,PV,XINDX,IBATCH,RES_ALPHA,
+C
+      CALL ABSREDUC(IOPER,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     REDE,REDS,REDZ,REDGD,REDZGD,IBTYP,
+     &     REDVEC,FC,FV,CMO,UDV,PV,XINDX,IBATCH,RESLRF,
      &     WRK(KFREE),LFREE)
 C     
 C     Compute the residual in this iteration
 C     
-      CALL ABSRESID(IOPER,LABEL,CONVERGED,REDVEC,IBTYP,
-     &     FC,CMO,UDV,PV,XINDX,WRK(KFREE),LFREE)
+      CALL ABSRESID(IOPER,LABEL,NFREQ_ABS,FREQ_ABS,
+     &     CONVERGED,REDVEC,IBTYP,FC,CMO,UDV,PV,XINDX,WRK(KFREE),LFREE)
 C     
 C     Check status
 C     
@@ -1477,7 +1544,7 @@ C
 C     
 C     Not converged, expand reduced space by solving coupled LR equations
 C     
-      CALL ABSLR(IOPER,LABEL,
+      CALL ABSLR(IOPER,LABEL,NFREQ_ABS,FREQ_ABS,
      &     REDE,REDS,REDZ,REDGD,REDZGD,
      &     IBTYP,REDVEC,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
      &     WRK(KFREE),LFREE)
@@ -1492,14 +1559,14 @@ C
  900  CONTINUE
       IF (IPRABS.GE.0) THEN
          WRITE(LUPRI,'(/,1X,A,I4,A)')
-     &        '*** THE REQUESTED',NFREQ_ALPHA,
+     &        '*** THE REQUESTED',NFREQ_ABS,
      &        ' SOLUTION VECTORS CONVERGED'
       END IF
       GOTO 990
  910  CONTINUE
       IF (IPRABS.GE.0) THEN
          WRITE(LUPRI,'(/,1X,A,I4,A)')
-     &        '*** THE REQUESTED',NFREQ_ALPHA,
+     &        '*** THE REQUESTED',NFREQ_ABS,
      &        ' SOLUTION VECTORS NOT CONVERGED'
          WRITE(LUPRI,'(/,1X,A)')
      &        '--- MAXIMUM NUMBER OF ITERATIONS REACHED ---'
@@ -1509,7 +1576,7 @@ C
 C     Construct and write response vectors to file
 C     
  990  CONTINUE
-      CALL ABSWRT(LABEL,IOPER,IBTYP,REDVEC,
+      CALL ABSWRT(LABEL,IOPER,NFREQ_ABS,FREQ_ABS,IBTYP,REDVEC,
      &     WRK(KFREE),LFREE)
 C     
       IF (IPRABS.GE.0) THEN
@@ -1519,24 +1586,34 @@ C
      &        THCLR_ABSORP,
      & '-------------------------------------------------------------',
      &        '(dimension of reduced space:',KZYRED,')'
-         DO IFREQ = 1,NFREQ_ALPHA
+         DO IFREQ = 1,NFREQ_ABS
             WRITE(LUPRI,'(1X,A,F7.4,4X,A,F10.6,4X,A,1P,D9.2)')
-     &           'Frequency:',FREQ_ALPHA(IFREQ),
+     &           'Frequency:',FREQ_ABS(IFREQ),
      &           'Damping:',DAMPING,
      &           'Residual:',RESID(3,IFREQ,IOPER,KSYMOP)
          END DO
          WRITE(LUPRI,'(/2A,3(/A))') 
-     &        '@ Value of linear polarizability for operator: ',
+     &        '@ Value of linear response result for operator: ',
      &        LABEL,
      &        '@ --------------------------------------------',
      &        '@ Frequency   Damping         Real   Imaginary',
      &        '@ --------------------------------------------'
+         IF (LABEL(2:8).EQ.'DIPLEN') THEN
+            ITYPE = 1
+         ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
+            ITYPE = 2
+         ELSE
+            WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
+            GOTO 99
+         END IF
          CALL DIPLAB(LABEL,INDEX)
-         DO IFREQ=1,NFREQ_ALPHA
+         DO IFREQ=1,NFREQ_ABS
             WRITE(LUPRI,'(A,F10.4,F11.6,2F12.6)') '@',
-     &         FREQ_ALPHA(IFREQ), DAMPING, 
-     &         (RES_ALPHA(I,IFREQ+IBATCH*NFREQ_BATCH,INDEX,INDEX),I=1,2)
+     &         FREQ_ABS(IFREQ), DAMPING, 
+     &         (RESLRF(I,IFREQ+IBATCH*NFREQ_BATCH,
+     &                 INDEX,INDEX,ITYPE),I=1,2)
          END DO
+ 99      CONTINUE
       END IF
 C
 C     If this an absorption calculation over a specified frequency
@@ -1867,6 +1944,12 @@ C
          CALL T3DRV(1,ISYMA,ISYMB,ISYMC,WRK(KVECB),WRK(KVECC),
      &        .FALSE.,WRK(KVECA),-FREQB,-FREQC,XINDX,UDV,PV,MJWOP,
      &        WRK(KFREE),LFREE,CMO,FC,FV)
+         IF (IPRABS.GE.10) THEN
+            WRITE(LUPRI,'(/A)') ' E[3] vector '
+            CALL PRSYMB(LUPRI,'=',72,1)
+            WRITE(LUPRI,'(4X,4A15)') 'ZR','YR','ZI','YI'
+            CALL OUTPUT(WRK(KFREE),1,KZYVA/2,1,4,KZYVA/2,4,1,LUPRI)
+         END IF
          VAL(1) = -DDOT(KZYVA,WRK(KVECA),1,WRK(KFREE),1)
          VAL(2) = -DDOT(KZYVA,WRK(KVECA+KZYVA),1,WRK(KFREE),1)
          VAL(3) = D0
@@ -1968,6 +2051,13 @@ C
       DIMENSION FREQ(3),ISYM(3)
 C
       DOHYP = .TRUE.
+C
+C     Operator requirement for magnetic circular dichrism
+C
+      IF (ABS_MCD) THEN
+         IF (ALAB(2:8).NE.'DIPLEN' .OR. BLAB(2:8).NE.'DIPLEN' .OR.
+     &       CLAB(2:8).NE.'ANGMOM') DOHYP = .FALSE.
+      END IF
 C
 C     Check if equivalent QRF is in the list already.
 C
@@ -2324,6 +2414,7 @@ C
 C
       KFREE=1
       LFREE=LWRK
+      CALL QUIT('TWOMOM: to be implemented....')
 C
       RETURN
       END

@@ -327,7 +327,7 @@ C
      *                 KZYVB,KZYVC,
      *                 ISYMA,ISYMB,ISYMC,
      *                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
-         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA) THEN
+         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA.OR.ABS_MCD) THEN
             DFTSAV=DODFT
             DODFT=.FALSE.
             CALL Q3FOCK(
