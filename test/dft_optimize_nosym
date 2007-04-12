@@ -28,7 +28,7 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT  -76.342046239428 1e-11
+check_scf_energy DFT  -76.342046117333 1e-11
 
 check_mol_gradient 1  "O     "   0.0000000000 0.0   0.1642015597 1e-5
 check_mol_gradient 1  "H1    "  -0.1044292794 0.0  -0.0821054667 1e-5

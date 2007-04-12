@@ -240,7 +240,7 @@ gga_isgga(void)
     return res;
 }
 static FuncList*
-add_functional(FuncList* lst, Functional* f, float weight)
+add_functional(FuncList* lst, Functional* f, real weight)
 {
     FuncList* n = malloc(sizeof(FuncList));
     n->func = f; n->weight = weight; n->next = lst;
@@ -251,8 +251,8 @@ add_functional(FuncList* lst, Functional* f, float weight)
 static int
 xalpha_read(const char* conf_line)
 {
-    float weight;
-    int res = (sscanf(conf_line, "%g", &weight)==1);
+    real weight;
+    int res = (sscanf(conf_line, "%lg", &weight)==1);
     if(res) 
         gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 
                                       1.5*weight);
@@ -964,7 +964,7 @@ static int
 gga_key_read(const char* conf_line)
 {
     int res = 1, i;
-    float f;
+    real f;
     const char* str = conf_line;
 
     fun_set_hf_weight(0);
@@ -973,13 +973,13 @@ gga_key_read(const char* conf_line)
         while(*str && isspace((int)*str)) str++; /* skip whitespace */
         if(*str =='\0') break; /* line ended by whitespace */
         if(strncasecmp("HF=", str, 3)==0) {
-            if(sscanf(str+3,"%g", &f) != 1) {
+            if(sscanf(str+3,"%lg", &f) != 1) {
                 fun_printf("GGAKey: HF not followed by the weight: ",
                            conf_line);
                 res = 0;
             } else fun_set_hf_weight(f);
         } else if(strncasecmp("MP2=", str, 3)==0) {
-            if(sscanf(str+3,"%g", &f) != 1) {
+            if(sscanf(str+3,"%lg", &f) != 1) {
                 fun_printf("GGAKey: MP2 not followed by the weight: ",
                            conf_line);
                 res = 0;
@@ -989,7 +989,7 @@ gga_key_read(const char* conf_line)
                 int len = strlen(available_functionals[i]->name);
                 if(strncasecmp(available_functionals[i]->name, str, len)==0 &&
                    str[len] == '=') {
-                    if(sscanf(str+len+1,"%g", &f) != 1) {
+                    if(sscanf(str+len+1,"%lg", &f) != 1) {
                         fun_printf("GGAKey: keyword '%s' not followed by "
                                    "weight: %s",
                                    available_functionals[i]->name, 

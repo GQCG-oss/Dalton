@@ -141,7 +141,7 @@ parse_table(const char *func, const char *str,
       int len = strlen(keywords[i]);
       if(strncasecmp(keywords[i], str, len)==0 &&
          str[len] == '=') {
-          float f;
+          real f;
           if(sscanf(str+len+1,"%g", &f) != 1) {
               fun_printf("%s: %s not followed by the weight: ",
                          func, keywords[i]);
@@ -176,10 +176,10 @@ camb3lyp_read(const char *conf_line)
     if(!parse_table("CAM-B3LYP", conf_line,
                     ELEMENTS(cam_keywords), cam_keywords, weights))
         return 0;
-    /* sanity checks */
-    if(weights[2]<=0) weights[2] = 1e-30;
     fun_set_hf_weight(weights[0]);
     fun_set_cam_param(1, &weights[2], &weights[1]);
+    /* sanity checks */
+    if(weights[2]<=0) weights[2] = 1e-30;
     CamMuFactor = weights[2]; CamBeta = weights[1];
 
     CamAlpha = weights[0];

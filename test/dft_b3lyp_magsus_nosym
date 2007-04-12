@@ -35,7 +35,7 @@ dalton='**DALTON INPUT
 
 test='
 
-check_scf_energy DFT -175.457033091816 1e-10
+check_scf_energy DFT -175.457032841072 1e-10
 
 check_magnetizabilities -2.8715 -9.7870 6.9155 -1.8761 1.1057
 
