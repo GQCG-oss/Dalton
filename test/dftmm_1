@@ -145,10 +145,10 @@ CRIT1=`$GREP "QM/MM calculation converged" $log | wc -l`
 CRIT2=`$GREP "Electrostatic energy: * ( \-|\-0)\.007810375" $log | wc -l`
 CRIT3=`$GREP "Polarization energy: * ( \-|\-0)\.000517001" $log | wc -l`
 CRIT4=`$GREP "Total QM/MM energy: * ( \-|\-0)\.008327376" $log | wc -l`
-CRIT5=`$GREP "Final DFT energy:    *       \-112\.900659102" $log | wc -l`
+CRIT5=`$GREP "Final DFT energy:    *       \-112\.900658911" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
 CTRL[1]=5
-ERROR[1]="DFT/MM ENERGT CONTRIBUTIONS NOT CORRECT"
+ERROR[1]="DFT/MM ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Test of DFT/MM dipole moment

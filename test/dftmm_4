@@ -141,8 +141,8 @@ fi
 #
 # Test of polarizability
 #
-CRIT1=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 6\.37422227[0-9][0-9][0-9][0-9](D|E)\+00" $log | wc -l`
-CRIT2=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 9\.56063871[0-9][0-9][0-9][0-9](D|E)\+00" $log | wc -l`
+CRIT1=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 6\.3742222.[0-9][0-9][0-9][0-9](D|E)\+00" $log | wc -l`
+CRIT2=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 9\.5606387[0-1][0-9][0-9][0-9][0-9](D|E)\+00" $log | wc -l`
 CRIT3=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 2\.60913988[0-9][0-9][0-9][0-9](D|E)\+00" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[1]=3
