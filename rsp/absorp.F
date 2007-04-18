@@ -839,8 +839,14 @@ C
          CALL PRSYMB(LUPRI,'-',94,1)
          BTMP = 99.9D9
          CTMP = 99.9D9
+         BTERM = 0.0
          DO IQRF=1,NQRF
             IF (BTMP.NE.QRFFRQ(IQRF,1).OR.CTMP.NE.QRFFRQ(IQRF,2)) THEN
+               IF ((ABS_MCD).AND.(.NOT.IQRF.EQ.1)) THEN
+                  WRITE(LUPRI,'(5X,A14,44X,F16.6)') 
+     &                 'Faraday B term',BTERM
+                  BTERM = 0.0
+               END IF
                WRITE(LUPRI,'(A)') ' '
                BTMP = QRFFRQ(IQRF,1)
                CTMP = QRFFRQ(IQRF,2)
@@ -853,8 +859,38 @@ C
                WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
      &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
      &              RES_BETA(IQRF,2),RES_BETA(IQRF,1)
-            END IF
+C
+C              Add contribution to B term
+C
+               IF ((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &              .AND.(QRFLAB(IQRF,2)(:1).EQ.'Y') 
+     &              .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  BTERM = BTERM + RES_BETA(IQRF,2) 
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Z') 
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  BTERM = BTERM + RES_BETA(IQRF,2)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'X') 
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  BTERM = BTERM + RES_BETA(IQRF,2) 
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Y') 
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  BTERM = BTERM - RES_BETA(IQRF,2) 
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Z') 
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  BTERM = BTERM - RES_BETA(IQRF,2) 
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'X') 
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  BTERM = BTERM - RES_BETA(IQRF,2) 
+               END IF
+           END IF
          END DO
+         WRITE(LUPRI,'(5X,A14,44X,F16.6)') 'Faraday B term',BTERM
+
          WRITE(LUPRI,'(A)')' '
          CALL PRSYMB(LUPRI,'-',94,1)
          WRITE (LUPRI,'(A,F10.6,A,F7.4,A,F7.1,A)')
@@ -2052,7 +2088,7 @@ C
 C
       DOHYP = .TRUE.
 C
-C     Operator requirement for magnetic circular dichrism
+C     Operator requirement for magnetic circular dichroism
 C
       IF (ABS_MCD) THEN
          IF (ALAB(2:8).NE.'DIPLEN' .OR. BLAB(2:8).NE.'DIPLEN' .OR.
