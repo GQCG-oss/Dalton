@@ -721,10 +721,10 @@ C
             DO 200 I=1,MBASI
                JSMO=ISTMO+I
                JEMO=IEMO+I
-               JJ = 1
-Clf               DO J=JSMO,JEMO,NBASI
-Clf                  IF ( ABS(CMO(J)) .GE. THRPRI ) JJ = 1
-Clf               END DO
+               JJ = 0
+               DO J=JSMO,JEMO,NBASI
+                  IF ( ABS(CMO(J)) .GE. THRPRI ) JJ = 1
+               END DO
                IF (JJ .EQ. 1) WRITE(IOUT,2800) I,CENT(I+ISTBAS),
      *            TYPE(I+ISTBAS),(CMO(J),J=JSMO,JEMO,NBASI)
   200       CONTINUE
