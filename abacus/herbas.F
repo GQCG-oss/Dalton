@@ -303,6 +303,10 @@ C
             ANO = .TRUE.
             BASTMP(1:5) = BASNAM(1:5)
             ISTART = 6
+         ELSE IF (BASNAM(1:3) .EQ. 'ANO') THEN
+            ANO = .TRUE.
+            BASTMP(1:7) = BASNAM(1:7)
+            ISTART = 8
          ELSE IF (BASNAM(1:3) .EQ. 'raf') THEN
             ANO = .TRUE.
             BASTMP(1:5) = 'raf-r'
@@ -1158,8 +1162,6 @@ C
  20   CONTINUE
       READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
-      write (lupri,*) string
-      call flshfo(lupri)
       READ (STRING, '(A1)') SIGN
 C
       IF (SIGN .EQ. ' ') THEN
@@ -1172,8 +1174,6 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
          ELSE
             READ (STRING, '(BN,2I5)',IOSTAT=IOERR,ERR=2000)
      &           INTEXP, INTORB
-          write (lupri,*) 'TEST intexp, intorb',INTEXP,INTORB
-          write (lupri,*) string
             RETURN
          END IF
       ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
