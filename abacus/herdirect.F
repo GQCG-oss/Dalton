@@ -356,29 +356,24 @@ C  /* Deck sqdens */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include <inforb.h>
-#include <symmet.h>
 C
-      IF (IPRINT .GT. 5) CALL TITLER('Output from SQDENS','*',103)
       CALL DZERO(DMAT,NBAST*NBAST)
       ISOFF = 0
-      DO 100 IREP = 1, NSYM
-         DO 200 I = 1, NBAS(IREP)
-            INDA = IBAS(IREP) + I
+      DO 100 ISYM = 1, NSYM
+         DO 200 I = 1, NBAS(ISYM)
+            INDA = IBAS(ISYM) + I
             DO 300 J = 1, I
-               INDB = IBAS(IREP) + J
-               ISOFF = ISOFF + 1
-               DMAT(INDA,INDB) = DMAT(INDA,INDB) + DTSO(ISOFF)
+               INDB = IBAS(ISYM) + J
+               DMAT(INDA,INDB) = DMAT(INDA,INDB) + DTSO(ISOFF+J)
                DMAT(INDB,INDA) = DMAT(INDA,INDB)
  300        CONTINUE
+            ISOFF = ISOFF + I
  200     CONTINUE
  100  CONTINUE
       IF (IPRINT .GT. 10) THEN
-         CALL HEADER('Squared matrix in SQDENS',-1)
+         CALL TITLER('Output of squared matrix from SQDENS','*',103)
          CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
       RETURN
