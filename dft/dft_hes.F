@@ -1211,6 +1211,7 @@ C
             VXCRR(I) = VX(3)
             VXCRZ(I) = VX(4)*GDNRMI + VX(6)
             VXCZZ(I) = DP5*(VX(5)*(GDNRMI**2)-VX(2)*(GDNRMI**3))
+     &                 + DP5*VX(8) + GDNRMI* VX(7)
          END DO
       ELSE
          DO I = 1, NBLEN
