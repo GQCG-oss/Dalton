@@ -1818,7 +1818,7 @@ C
      &              BETAL(1), '  + i ',BETAL(2),
      &              'Beta (No-London)               :',
      &              BETANL(1),'  + i ',BETANL(2)
-                  WRITE(LUPRI,'(4(/10X,A,F12.6))') 
+                  WRITE(LUPRI,'(4(/10X,A,F16.6))') 
      &              'Optical rotation (London)      :', 
      &              ALPHAL(1),
      &              'Optical rotation (No-London)   :', 
