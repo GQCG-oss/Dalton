@@ -292,9 +292,10 @@ C
          CALL AROUND('Variable settings for absorption calculation')
 C
          IF (ABS_ALPHA) THEN
-            WRITE (LUPRI,'(A,L4,/A,5(4F12.8,/,16X))')
+            WRITE (LUPRI,'(A,L4)')
      &     ' Linear polarizability calculation requested:  ABS_ALPHA =',
-     &           ABS_ALPHA,
+     &           ABS_ALPHA
+            IF (.NOT.ABS_INTERVAL) WRITE(LUPRI,'(A,5(4F12.8,/,16X))')
      &           ' at frequencies:',(FREQ_ALPHA(I),I=1,NFREQ_ALPHA)
          END IF
 C
@@ -314,6 +315,18 @@ C
      &           ABS_MCD
             WRITE(LUPRI,'(A,5(4F12.8))')
      &           ' at frequencies:',(FREQ_BETA_B(I),I=1,NFREQ_BETA_B)
+         END IF
+C
+         WRITE(LUPRI,'(A,L4)')
+     &      ' Absorption calc over frequency interval  : ABS_INTERVAL ='
+     &       , ABS_INTERVAL
+         IF (ABS_INTERVAL) THEN
+            WRITE(LUPRI,'(A,I4)')
+     &      ' Number of frequencies per batch          : NFREQ_BATCH  ='
+     &       ,NFREQ_BATCH
+            WRITE(LUPRI,'(3(A,F8.5))')
+     &      ' Start:',FREQ_INTERVAL(1),'   Stop:',FREQ_INTERVAL(2),
+     &      '   Step:',FREQ_INTERVAL(3)
          END IF
 C
          IF (NEXCITED_STATES .GT. MXSTATES) THEN
@@ -361,12 +374,6 @@ C
          WRITE(LUPRI,'(A,I4)')
      &      ' Print level in absorption modules        : IPRABS       ='
      &       ,IPRABS
-         WRITE(LUPRI,'(A,L4)')
-     &      ' Absorption calc over frequency interval  : ABS_INTERVAL ='
-     &       , ABS_INTERVAL
-         WRITE(LUPRI,'(A,I4)')
-     &      ' Number of frequencies per batch          : NFREQ_BATCH  ='
-     &       ,NFREQ_BATCH
       END IF
 C
 C Messages
@@ -1514,6 +1521,16 @@ C
       KFREE = 1
       LFREE = LWRK
 C
+C     Copy the frequencies into local variables to be used in the solver.
+C     One can thereby choose to change the frequencies for certain operators.
+C
+      IF (LABEL(2:8).EQ.'ANGMOM') THEN
+         NFREQ_ABS = 1
+         FREQ_ABS(1) = 0.0D0
+      ELSE
+         NFREQ_ABS = NFREQ_ALPHA
+         CALL DCOPY(NFREQ_ALPHA,FREQ_ALPHA,1,FREQ_ABS,1)
+      END IF
 C
 C     Check if this an absorption calculation over a specified frequency
 C     interval in which case we divide the interval in batches of freqs.
@@ -1528,17 +1545,6 @@ C
             FREQ_ABS(I)=FREQ_INTERVAL(1) + 
      &           (I-1+IBATCH*NFREQ_BATCH)*FREQ_INTERVAL(3)
          END DO
-      END IF
-C
-C     Copy the frequencies into local variables to be used in the solver.
-C     One can thereby choose to change the frequencies for certain operators.
-C
-      IF (LABEL(2:8).EQ.'ANGMOM') THEN
-         NFREQ_ABS = 1
-         FREQ_ABS(1) = 0.0D0
-      ELSE
-         NFREQ_ABS = NFREQ_ALPHA
-         CALL DCOPY(NFREQ_ALPHA,FREQ_ALPHA,1,FREQ_ABS,1)
       END IF
 C
       IF (IPRABS.GE.0) THEN
