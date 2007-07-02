@@ -46,6 +46,7 @@ C
 c     
 C     Grid spacing to H and inner grid point to AH
       IF(IPRINT.GE.3)WRITE(LUPRI,'(A)') '* Grid spacing'
+      NR = 0
       H  = DUMMY
       AH = 0D0
       DO LL = 1,NHTYP
@@ -62,6 +63,7 @@ C     Grid spacing to H and inner grid point to AH
 c        AH = MAX(AA(1,LL,1),AA(1,LL,2)) 
          AH = MAX(AH,AA(1,LL,1))
       ENDDO
+      IF(AH .EQ. 0d0) RETURN
       EPH = EXP(H)
       IF(IPRINT.GE.3)WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',H
 C...  Inner grid point AA->R transformation.

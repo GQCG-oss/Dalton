@@ -750,12 +750,15 @@ block_postprocess(GridGenMolGrid *mg, real *center,
         real dy = mg->atom_coords[atno].y - center[1];
         real dz = mg->atom_coords[atno].z - center[2];
         real dist2 = dx*dx + dy*dy + dz*dz;
+        real r;
+        if(ag->pnt == 0)
+            continue;
+        assert(ag->pnt>=2);
+        assert(ag->rad[0]> ag->rad[1]);
         /* Increase the radius beyond the last point to let the grid
          * time to end.  Adding a scaled-up difference between last
          * two radial points is possibly the best way out. */
-        real r;
-        assert(ag->pnt>=2);
-        r = ag->rad[0] + 1.5*(ag->rad[0]-ag->rad[1]);
+        r = ag->rad[0] + CELL_SIZE;
         if(r*r>dist2) {
 	    map2r[atno] = uniq_atoms;
 	    relevant_atoms[uniq_atoms++] = atno;
