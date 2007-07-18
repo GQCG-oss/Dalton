@@ -214,11 +214,10 @@ C
       CALL DAXPY(N2BASX,1.0D0,WRK(KDENV),1,WRK(KDENC),1)
       CALL DZERO(WRK(KDENV),N2BASX)
       CALL DGEFSP(NBAST,WRK(KDENC),WRK(KDENV))
-      CALL DZERO(WRK(KDENC),N2BASX)
-      CALL PKSYM1(WRK(KDENV),WRK(KDENC),NBAS,NSYM,1)
+ckr      CALL PKSYM1(WRK(KDENV),WRK(KDENC),NBAS,NSYM,1)
       EXP1VL = .TRUE.
       TOFILE = .FALSE.
-      CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENC),1,TOFILE,'NPETES ',
+      CALL J1INT(WRK(KPOT),EXP1VL,WRK(KDENV),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LW21)
       CALL DZERO(QSE,MXTS)
       CALL V2Q(WRK(KWRK1),WRK(KPOT),QSE,QET,.FALSE.)
@@ -559,7 +558,7 @@ C
 C     Loop over all tesserae. We temporarily use FSOL for the unpacked
 C     inactive density matrix
 C
-         CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
+ckr         CALL PKSYM1(FSOL,DC,NBAS,NSYM,-1)
 C
 C    PCMEN = interaction solute electrons - polarization nuclear charges
 C             PCMEN = sum_i [Vel(i) * QSN(i)]
@@ -567,7 +566,7 @@ C
          PCMEN = -DDOT(NNBASX,FSOL,1,WRK(KJENAO),1)
          EXP1VL = .TRUE.
          TOFILE = .FALSE.
-         CALL J1INT(WRK(KTJ2),EXP1VL,DC,1,TOFILE,'NPETES ',
+         CALL J1INT(WRK(KTJ2),EXP1VL,FSOL,1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
          CALL V2Q(WRK(KWRK1),WRK(KTJ2),QSE,QET,.FALSE.)
       ELSE

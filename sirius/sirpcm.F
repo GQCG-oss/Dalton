@@ -1270,8 +1270,15 @@ C
          KDEN = 1
          KLAST = KDEN + NNBASX
          LWRK = LWORK - KLAST
-         CALL DSYM1(WORK(KDEN),DUMMY,DENMAT,DUMMY,.FALSE.,
-     &              NBAST,IPRPCM)
+         IF (KSYMP .EQ. 1) THEN
+            CALL DCOPY(NNBASX,DENMAT,1,WORK(KDEN),1)
+            CALL DZERO(WORK(DENMAT),MATDIM)
+            CALL PKSYM1(WORK(KDEN),DENMAT,NBAS,NSYM,1)
+            CALL DSYM1(WORK(KDEN),DUMMY,DENMAT,DUMMY,.FALSE.,
+     &                 NBAST,IPRPCM)
+         ELSE
+            CALL DSYM2(WORK(KDEN),DENMAT,NBAST,KSYMP,IPRINT)
+         END IF
          IF (NOSIM .GT. 1) CALL QUIT('NOSIM .GT. 1 and EXP1VL not '//
      &        'permitted in J1INT')
       ELSE
