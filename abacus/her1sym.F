@@ -628,10 +628,10 @@ C
 C
 C                 Weight and parity factor
 C
+                     IREPT1 = IBTXOR(IREP,ISYMAO(NHKTA,NA))
+                     IREPT2 = IBTXOR(IREPB,ISYMAO(NHKTB,NB))
                      FAC = HKAB*
-     *                 PT(IBTAND(ISYMOP,
-     &                    IBTXOR(IBTXOR(IREP,ISYMAO(NHKTA,NA)),
-     &                           IBTXOR(IREPB,ISYMAO(NHKTB,NB)))))
+     *                    PT(IBTAND(ISYM2,IBTXOR(IREPT1,IREPT2)))
                      INDM = MAX(INDA,INDB)
                      IND  = (INDM*(INDM - 3))/2 + INDA + INDB
                      write (lupri,*) 'inda/b/m,fac,sign',inda,indb,ind,
